@@ -45,10 +45,14 @@ direct fashion:
 \end{verbatim}
 
 By default the two-electron integrals will be
-screened~\cite{krdjpnhatshjajpdthjcp108}, and a integral 
-threshold of $10^{-10}$ is the default threshold for whether an
-integral will be calculated or not. This can be changed with the
-keywords \Key{IFTHRS} and \Key{ICEDIF}\index{integral screening}.
+screened~\cite{krdjpnhatshjajpdthjcp108}, using an increasingly
+tighter integral screening threshold during the SCF iterations. Thus,
+direct calculations calculated using integral screening will, when
+converged, be almost as exact as the results obtained with integral
+screening turned of. The thresholds can be changed with the
+keywords \Key{IFTHRS} and \Key{ICEDIF}\index{integral screening}. To
+turn of integral screening in direct or parallel calculations
+altogether, \Key{IFTHRS} should be set to 20 or larger.
 
 \section{Parallel methods}\label{sec:parallel}
 
@@ -67,15 +71,14 @@ and H.Koch. \newblock {\em Chem.Phys.Lett.}, {\bf
 \end{center}
 
 As for direct methods, the entire Hartree--Fock part of the \siraba\
-program has been parallelized, allowing the use of both PVM and
-MPI\index{PVM}\index{MPI}\index{message passing} as
-message passing interfaces. The use of the parallel code requires,
+program has been parallelized using MPI\index{MPI}\index{message passing} as
+message passing interface. The use of the parallel code requires,
 however, that the code has been installed as a parallel
 code\index{parallel calculation}, which is
 being determined during the building of the program as described in
 Section~\ref{sec:Makefile}.
 
-If MPI is used as message passing interface, all that is needed to do
+All that is needed to do
 of changes in the \verb|DALTON.INP| file is to add the keyword
 \Key{PARALLEL} in the general input section, as demonstrated for a
 calculation of vibrational frequencies\index{vibrational frequency}:
@@ -95,38 +98,44 @@ The number of nodes\index{node} to be used in the calculation is
 requested to the 
 \verb|dalton| run script after the \verb|-N| option (see
 Section~\ref{sec:firstcalc}), or as stated in local
-documantation. Note that the master/slave\index{master}\index{slave}
+documentation. Note that the master/slave\index{master}\index{slave}
 paradigm employed by 
 \siraba\ will leave the master mainly doing sequential parts of the
 calculation and distribution of tasks, thus very little computation
 compared to the \verb|N-1| slaves, see
 Ref.~\cite{pndjhapdkrthhkcpl253}.
 
-In case of PVM runs, the program will spawn the requested number of
-slaves (enabling you to create a slave on the same machine as the
-master process in order to provide a more efficient use of the CPU
-power on the master machine). The number of slaves is requested
-through the keyword \Key{NODES} in the \Sec{PARALLEL} input module, as
-indicated in the following example: 
+%In case of PVM runs, the program will spawn the requested number of
+%slaves (enabling you to create a slave on the same machine as the
+%master process in order to provide a more efficient use of the CPU
+%power on the master machine). The number of slaves is requested
+%through the keyword \Key{NODES} in the \Sec{PARALLEL} input module, as
+%indicated in the following example: 
+%
+%\begin{verbatim}
+%**DALTON INPUT
+%.RUN PROPERTIES
+%.PARALLEL
+%*PARALLEL
+%.NODES
+% 4
+%**WAVE FUNCTIONS
+%.HF
+%**PROPERTIES
+%.SHIELD
+%**END OF DALTON INPUT
+%\end{verbatim}
 
-\begin{verbatim}
-**DALTON INPUT
-.RUN PROPERTIES
-.PARALLEL
-*PARALLEL
-.NODES
- 4
-**WAVE FUNCTIONS
-.HF
-**PROPERTIES
-.SHIELD
-**END OF DALTON INPUT
-\end{verbatim}
+%Note that this input would correspond to an MPI run with 5 nodes, as
+%the master-process has to be added to the number of nodes.
 
-Note that this input would correspond to an MPI run with 5 nodes, as
-the master-process has to be added to the number of nodes.
+By default the two-electron integrals will be
+screened~\cite{krdjpnhatshjajpdthjcp108}, using an increasingly
+tighter integral screening threshold during the SCF iterations. Thus,
+direct calculations calculated using integral screening will, when
+converged, be almost as exact as the results obtained with integral
+screening turned of. The thresholds can be changed with the
+keywords \Key{IFTHRS} and \Key{ICEDIF}\index{integral screening}. To
+turn of integral screening in direct or parallel calculations
+altogether, \Key{IFTHRS} should be set to 20 or larger.
 
-By default the two-electron integrals will be screened, and an integral
-threshold of $10^{-10}$ is the default threshold for whether an
-integral will be calculated or not. This can be changed with the
-keywords \Key{IFTHRS} and \Key{ICEDIF}\index{integral screening}.
