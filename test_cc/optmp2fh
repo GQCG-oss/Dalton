@@ -51,7 +51,7 @@ H   1    1
 cat > optmp2fh.dal <<%EOF%
 **GENERAL
 .DIRECT
-.MINIMIZE
+.OPTIMIZE
 **INTEGRAL
 .DIPLEN
 .DEROVL

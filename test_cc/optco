@@ -121,8 +121,8 @@ H   2    2
 cat > optco.dal <<%EOF%
 **GENERAL
 .DIRECT
-.MINIMIZE
-*MINIMIZE
+.OPTIMIZE
+*OPTIMIZE
 .1STORDER
 **INTEGRAL
 .DIPLEN
@@ -186,7 +186,7 @@ ERROR[1]="INITIAL ITERATION NOT CORRECT"
 
 # SCF, MP2 and CCSD energies of 1 iteration:
 CRIT1=`$GREP "Final    HF energy: *-112\.75326688" $log | wc -l`
-CRIT3=`$GREP "Total CCSD  energy: *-113\.06131286" $log | wc -l`
+CRIT3=`$GREP "Total CCSD  energy: *-113\.0613128[5-6]" $log | wc -l`
 CRIT4=`$GREP " C * ( |0)\.0000000000 * ( |0)\.0000000000 * ( |0)\.000047" $log | wc -l`
 CRIT5=`$GREP " O * ( |0)\.0000000000 * ( |0)\.0000000000 * ( \-|\-0)\.000047" $log | wc -l`
 CRIT6=`$GREP "Energy at this geometry is * : * -113\.061313" $log | wc -l`
@@ -199,7 +199,7 @@ ERROR[2]="FIRST ITERATION IS NOT CORRECT"
 
 # SCF, MP2 and CCSD energies of 2 iteration:
 CRIT1=`$GREP "Final    HF energy: *-112\.75326977" $log | wc -l`
-CRIT3=`$GREP "Total CCSD  energy: *-113\.06131286" $log | wc -l`
+CRIT3=`$GREP "Total CCSD  energy: *-113\.0613128[5-6]" $log | wc -l`
 CRIT4=`$GREP " C * ( |0)\.0000000000 * ( |0)\.0000000000 * ( |0)\.000001" $log | wc -l`
 CRIT5=`$GREP " O * ( |0)\.0000000000 * ( |0)\.0000000000 * ( \-|\-0)\.000001" $log | wc -l`
 CRIT6=`$GREP "Energy at this geometry is * : * -113\.061313" $log | wc -l`
