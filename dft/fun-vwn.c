@@ -44,11 +44,9 @@ C
 #define _XOPEN_SOURCE          500
 #define _XOPEN_SOURCE_EXTENDED 1
 #endif
-/*  exit() defined in posix standard. */
-#define _POSIX_SOURCE 1
 #include <math.h>
 #include <stddef.h>
-#include <unistd.h>
+#include <stdlib.h>
 
 #define __CVERSION__
 
