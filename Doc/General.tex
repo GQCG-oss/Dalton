@@ -77,11 +77,12 @@ the chapter on potential energy surfaces
 describing the input cards for the \Sec{OPTIMIZE} submodule for a more
 detailed description of possible options.
 
-\item[\Key{NMDDRV}] Calls for a generalized numerical differentiations. These 
-routines will take advantage of the full molecular point group in order
-to minimize the number of point to be calculated. What order of derivatives and 
-whether any analytical derivatives are to be used is determined in the 
-\verb|*NMDDRV| input module.
+\item[\Key{NMDDRV}] Calls for a generalized numerical
+differentiations. These routines will take advantage of the full
+molecular point group in order to minimize the number of point to be
+calculated. What order of derivatives and whether any analytical
+derivatives are to be used is determined in the \verb|*NMDDRV| input
+module. 
 
 \item[\Key{PARALL}] Requests that the calculation of two-electron
 integrals\index{two-electron integral}
@@ -643,6 +644,46 @@ mass-scaled) should be visualized. These are written to the files
 \item[\Key{VR-VIB}]\verb| |
 
 \end{description}
+
+\subsection{Numerical differentiation : \Sec{nmddrv}}
+
+This submodule controls the calculation of force constants from
+available analytical derivatives (for instance molecular
+gradients). Implementation will be described elsewhere. 
+
+\begin{description}
+
+\item[\Key{DORDR}]\verb| |\newline
+\verb|READ (LUCMD,*) NMORDR, NAORDR|
+Sets the numerical (NMORDR) and analytical (NAORDR) differentiating
+order for calculating force constants. Current implementation has an
+artificial boundary at the 5. numerical derivative (independent of the
+analytical differentiation order).
+
+\item[\Key{SYMMET}]\verb| |\newline
+\verb|READ (LUCMD,*) FCLASS|
+Assigns the molecular point group of the molecule (FCLASS). For
+instance for water FCLASS would be equal to ``C2v''. Main rotational
+axis needs to be set to the z-axis in the .mol file. Additional
+generating elements needs to be the x-axis for a C2 rotation, and the
+xy plane for a mirror plane. The current implementation only allows
+for symmetry use, when differentiating from energies. 
+
+\item[\Key{RSTRT}]\verb| |
+Controls the restart procedure. If a calculation crashes during a
+force constant calculation, there will be a file in the work directory
+called RSTRT.FC. This will contain all of the information necessary to
+restart the calculation. If this file is available and the keyword is
+used, dalton will attempt to restart the calculation. 
+
+\item[\Key{NORMAL}]\verb| |
+Using this keyword the numerical differentiation will be carried out
+with respect to normal coordinates. The program will then do the
+necessary numerical differentiation to get the Hessian (and thus
+normal coordinates), before it will carry on calculating the force
+field requested with respect to normal coordinates.
+
+\end description}
 
 \subsection{Parallel calculations : \Sec{PARALL}}
 
