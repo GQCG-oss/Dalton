@@ -18,12 +18,16 @@
 #include <stdio.h>
 #include <errno.h>
 #include <memory.h>
-#include <pthread.h>
 #include <time.h>
 #include <stdarg.h>
 #include "general.h"
 #include "grid-gen.h"
 #include "basisinfo.h"
+
+//#define USE_PTHREADS
+#ifdef USE_PTHREADS
+#include <pthread.h>
+#endif
 
 static const int CUBATURE_RULE = 3;
 static const int CUBATURE_RULE_2 = 6;
@@ -111,8 +115,9 @@ static real   global_maxerror       = 1.0e-7;
 /*#define SKIP_THREADS */
 
 
+#ifdef USE_PTHREADS
 pthread_mutex_t globalOutputMutex = PTHREAD_MUTEX_INITIALIZER;
-
+#endif
 
 
 /*//////////////////////////////////////////////////////////////////////// */
@@ -228,7 +233,9 @@ do_output_2(int prio, const char* format, ...)
   if(prio > global_outputLevel)
     return;
 
+#ifdef USE_PTHREADS
   pthread_mutex_lock(&globalOutputMutex);
+#endif
 
   va_start(a, format);
   vsnprintf(s, sizeof(s), format, a);
@@ -242,7 +249,9 @@ do_output_2(int prio, const char* format, ...)
   //printf("%s\n", s); 
 #endif
 
+#ifdef USE_PTHREADS
   pthread_mutex_unlock(&globalOutputMutex);
+#endif
 }
 
 
@@ -1972,10 +1981,14 @@ compute_grid_thread_func(void* arg)
 
 
   /* get initial assignedJobNumber */
+#ifdef USE_PTHREADS
   pthread_mutex_lock(inputParams->jobMutex);
+#endif
   assignedJobNumber = *inputParams->currJobNumber;
   *inputParams->currJobNumber += N_BATCH_JOBS;
+#ifdef USE_PTHREADS
   pthread_mutex_unlock(inputParams->jobMutex);
+#endif
   jobCount = 0;
   noOfWrittenBatches = 0;
   totalIntegralResult = 0;
@@ -1991,10 +2004,14 @@ compute_grid_thread_func(void* arg)
 	      if(jobCount >= (assignedJobNumber + N_BATCH_JOBS))
 		{
                     /* get new assignedJobNumber */
+#ifdef USE_PTHREADS
 		  pthread_mutex_lock(inputParams->jobMutex);
+#endif
 		  assignedJobNumber = *inputParams->currJobNumber;
 		  *inputParams->currJobNumber += N_BATCH_JOBS;
+#ifdef USE_PTHREADS
 		  pthread_mutex_unlock(inputParams->jobMutex);
+#endif
 		}
 	      if(jobCount < assignedJobNumber)
 		continue;
@@ -2164,7 +2181,9 @@ compute_grid_thread_func(void* arg)
 
 		  /* write grid points to file */
 		  int nPointsLeft = nPoints;
+#ifdef USE_PTHREADS
 		  pthread_mutex_lock(inputParams->fileMutex);
+#endif
 		  while(nPointsLeft > 0)
 		    {
 		      if(nPointsLeft <= MAX_NO_OF_POINTS_PER_WRITE)
@@ -2190,7 +2209,9 @@ compute_grid_thread_func(void* arg)
 		      nPointsLeft -= NthisWrite;
 		      noOfWrittenBatches++;		      
 		    } /* END WHILE points left */
+#ifdef USE_PTHREADS
 		  pthread_mutex_unlock(inputParams->fileMutex);
+#endif
 		} /* END IF (gridFile != NULL) */
 	    } /* END FOR k */
 	} /* END FOR j */
@@ -2576,8 +2597,10 @@ int compute_grid(
   /* up to this point there is no parallellization */
   /* this is where we start to think about threading */
 
+#ifdef USE_PTHREADS
   pthread_mutex_t fileMutex = PTHREAD_MUTEX_INITIALIZER;
   pthread_mutex_t jobMutex = PTHREAD_MUTEX_INITIALIZER;
+#endif
 
   compute_grid_thread_func_struct* threadParamsList;
 
@@ -2597,8 +2620,10 @@ int compute_grid(
       threadParamsList[i].Nx = Nx;
       threadParamsList[i].Ny = Ny;
       threadParamsList[i].Nz = Nz;
+#ifdef USE_PTHREADS
       threadParamsList[i].fileMutex = &fileMutex;
       threadParamsList[i].jobMutex = &jobMutex;
+#endif
       threadParamsList[i].currJobNumber = &currJobNumber;
       threadParamsList[i].noOfPoints = -1;
       threadParamsList[i].noOfWrittenBatches = 0;
@@ -2607,8 +2632,8 @@ int compute_grid(
     } /* END FOR i */
 
 
-#ifdef SKIP_THREADS
-  do_output_2(2, "SKIP_THREADS is set, no threads created");
+#ifndef USE_PTHREADS
+  do_output_2(2, "USE_PTHREADS not set, no threads created");
   if(noOfThreads != 1)
     {
       do_output_2(0, "error: cannot skip threads when (noOfThreads != 1)");
