@@ -923,7 +923,7 @@ compute_integral_from_points(
 
 
 
-static inline real 
+static real 
 to_power(real x, int n)
 {
   real result;
@@ -970,7 +970,7 @@ compute_1d_gaussian_integral_recursive(real a, real b, int n, real alpha)
 
 
 
-static inline real
+static real
 compute_1d_gaussian_integral(real a, real b, int n, real alpha)
 {
   real result, sqrtalpha, term1, term2;
@@ -1005,7 +1005,7 @@ compute_1d_gaussian_integral(real a, real b, int n, real alpha)
 } /* END compute_1d_gaussian_integral */
 
 
-static inline real 
+static real 
 compute_integral_over_box(DistributionSpecStruct* distr, BoxStruct* box)
 {
   real result, a, b, alpha;
