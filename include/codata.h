@@ -33,17 +33,17 @@ C
 #include <alphac.h>
 C -- conversion from hartree (au) to:
       PARAMETER ( XTJ  = HBAR**2/(XTANGM10*XTANGM10*EMASS),
-     &            XTKAYS = 1.0D-2*HBAR/(CCM*2.0*PI*XTANGM10**2*EMASS),
-     *            XTHZ =  HBAR/(2.0*PI*XTANGM10*XTANGM10*EMASS),
+     &            XTHZ =  HBAR/(2.0D0*PI*XTANGM10*XTANGM10*EMASS),
+     &            XTKAYS = 1.0D-2*XTHZ/CCM,
      &            XTEV = XTJ/ECHARGE,
      &            XKJMOL = XTJ*XFMOL*1.D-3, XKCMOL = XKJMOL/4.184 D0,
      &            XTKJML = XKJMOL,          XTKCML = XKCMOL,
-     *            XTNM = 1.D7/XTKAYS,       XAJOUL = 1.0 D18*XTJ)
+     &            XTNM = 1.D7/XTKAYS,       XAJOUL = 1.0 D18*XTJ)
 C
 C -- other
       PARAMETER ( XFSEC = HBAR/XTJ)
       PARAMETER ( XTKMML = 974.864 D0)
       PARAMETER ( TESLA=(XTANG*XTANG*ECHARGE/HBAR)*1.D-20 )
       PARAMETER ( AUTK = 3.157 7465 D5 )
-      PARAMETER ( DEBYE = ECHARGE*XTANG*CCM*1D11 )
+      PARAMETER ( DEBYE = ECHARGE*XTANG*CCM*1.D11 )
 C
