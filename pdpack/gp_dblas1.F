@@ -31,13 +31,16 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
- (both AIX and IBM systems may have ESSL)
-31-Oct-1991 Hans Joergen Aa. Jensen
-  separate BLAS routines for MOTECC-90
-  DNORM2 routine for IBM (=VM/CMS) if no essl library
-  (if -def,ibm, DNORM2 is in the gp file).
-===========================================================================
-#endif
+C======================================================================
+C  /* Comdeck comments */
+C  30-Mar-1993-hjaaj: changed DNORM2 test to ESSL instead of IBM
+C    (both AIX and IBM systems may have ESSL)
+C  31-Oct-1991 Hans Joergen Aa. Jensen
+C    separate BLAS routines for MOTECC-90
+C    DNORM2 routine for IBM (=VM/CMS) if no essl library
+C    (if -def,ibm, DNORM2 is in the gp file).
+C======================================================================
+C
 #ifndef SYS_T3D
 C  /* Deck blas */
       DOUBLE PRECISION FUNCTION DASUM(N,DX,INCX)
