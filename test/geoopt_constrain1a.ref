@@ -4,7 +4,7 @@
     ***********  DALTON - An electronic structure program  ***********
     ******************************************************************
 
-               This is output from DALTON (Release 1.2, April 2001)
+            This is output from DALTON (Release 2.0, ? 2001)
 
                           Principal authors:
 
@@ -17,6 +17,7 @@
 
                           Contributors:
 
+            Alexander A. Auer,     University of Mainz,        Germany
             Keld L. Bak,           UNI-C,                      Denmark
             Vebjoern Bakken,       University of Oslo,         Norway 
             Ove Christiansen,      University of Lund,         Sweden 
@@ -36,16 +37,18 @@
             Henrik Koch,           SDU - Odense University,    Denmark
             Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
             Patrick Norman,        University of Linkoeping,   Sweden 
+            Thomas B. Pedersen,    U.of Santiago de Compostela,Spain  
             Martin J. Packer,      University of Sheffield,    UK     
             Torgeir A. Ruden,      University of Oslo,         Norway 
+            Alfredo Sanchez,       University of Valencia,     Spain  
             Trond Saue,            University of Toulouse,     France 
             Stephan P. A. Sauer,   University of Copenhagen,   Denmark
             Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
             K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
             Peter R.Taylor,        San Diego Superc. Center,   USA    
             Olav Vahtras,          PDC, Stockholm,             Sweden 
-------------------------------------------------------------------------
 
+------------------------------------------------------------------------
 
 
      NOTE:
@@ -63,16 +66,19 @@
      If results obtained with this code are published, an
      appropriate citation would be:
       
-     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,H. Aagren,
-     K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,P. Dahle, E.K. Dalskov,
-     T. Enevoldsen, B. Fernandez,C. Haettig, K. Hald, A. Halkier,
+     "Dalton, a molecular electronic structure program, Release 1.2
+     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
      H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-     H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T.A. Ruden, T. Saue,
-     S.P.A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,P.R. Taylor, and O. Vahtras:
-     "Dalton release 1.2 (2001), an electronic structure program"
+     H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+     T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+     B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+     and O. Vahtras"
 
  
-     Date and time (Linux)  : Tue Feb 13 05:09:32 2001
+     Date and time (Linux)  : Sat Jun  8 21:27:56 2002
      Host name              : slater.uio.no                           
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
@@ -96,7 +102,7 @@
  The model Hessian parameters of Roland Lindh will be used.
 
 
- Threshold for symmetry-break set to       :      0.10D-02
+ Threshold for symmetry-break set to       :      0.10E-02
  Trust region method will be used to control step (default).
 
 
@@ -134,14 +140,14 @@
 
 
                Column   1     Column   2     Column   3     Column   4
-       1       6.00000000     0.92859362     0.00000000     0.00000000
-       2       6.00000000    -0.92859362     0.00000000     0.00000000
-       3       1.00000000     1.29360255     1.02706529     0.00000000
-       4       1.00000000    -1.29360255    -1.02706529     0.00000000
-       5       1.00000000     1.29360255    -0.51353266     0.88946467
-       6       1.00000000     1.29360255    -0.51353266    -0.88946467
-       7       1.00000000    -1.29360255     0.51353266     0.88946467
-       8       1.00000000    -1.29360255     0.51353266    -0.88946467
+       1       6.00000000     0.05944710     0.92668881     0.00000000
+       2       6.00000000    -0.05944710    -0.92668881     0.00000000
+       3       1.00000000    -0.94214410     1.35670011     0.00000000
+       4       1.00000000     0.94214410    -1.35670011     0.00000000
+       5       1.00000000     0.59529365     1.25807346     0.88946467
+       6       1.00000000     0.59529365     1.25807346    -0.88946467
+       7       1.00000000    -0.59529365    -1.25807346     0.88946467
+       8       1.00000000    -0.59529365    -1.25807346    -0.88946467
 
 
                       Redundant internal coordinates
@@ -183,9 +189,9 @@
                       ### Coordinates determined ###
                       ##############################
 
- >>>> Total CPU  time used in DALTON:   1.16 seconds
- >>>> Total wall time used in DALTON:   1.00 seconds
+ >>>> Total CPU  time used in DALTON:   5.25 seconds
+ >>>> Total wall time used in DALTON:   5.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 05:09:33 2001
+     Date and time (Linux)  : Sat Jun  8 21:28:01 2002
      Host name              : slater.uio.no                           

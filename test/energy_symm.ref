@@ -4,7 +4,7 @@
     ***********  DALTON - An electronic structure program  ***********
     ******************************************************************
 
-               This is output from DALTON (Release 1.2, April 2001)
+            This is output from DALTON (Release 2.0, ? 2001)
 
                           Principal authors:
 
@@ -17,6 +17,7 @@
 
                           Contributors:
 
+            Alexander A. Auer,     University of Mainz,        Germany
             Keld L. Bak,           UNI-C,                      Denmark
             Vebjoern Bakken,       University of Oslo,         Norway 
             Ove Christiansen,      University of Lund,         Sweden 
@@ -36,16 +37,18 @@
             Henrik Koch,           SDU - Odense University,    Denmark
             Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
             Patrick Norman,        University of Linkoeping,   Sweden 
+            Thomas B. Pedersen,    U.of Santiago de Compostela,Spain  
             Martin J. Packer,      University of Sheffield,    UK     
             Torgeir A. Ruden,      University of Oslo,         Norway 
+            Alfredo Sanchez,       University of Valencia,     Spain  
             Trond Saue,            University of Toulouse,     France 
             Stephan P. A. Sauer,   University of Copenhagen,   Denmark
             Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
             K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
             Peter R.Taylor,        San Diego Superc. Center,   USA    
             Olav Vahtras,          PDC, Stockholm,             Sweden 
-------------------------------------------------------------------------
 
+------------------------------------------------------------------------
 
 
      NOTE:
@@ -63,16 +66,19 @@
      If results obtained with this code are published, an
      appropriate citation would be:
       
-     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,H. Aagren,
-     K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,P. Dahle, E.K. Dalskov,
-     T. Enevoldsen, B. Fernandez,C. Haettig, K. Hald, A. Halkier,
+     "Dalton, a molecular electronic structure program, Release 1.2
+     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
      H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-     H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T.A. Ruden, T. Saue,
-     S.P.A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,P.R. Taylor, and O. Vahtras:
-     "Dalton release 1.2 (2001), an electronic structure program"
+     H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+     T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+     B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+     and O. Vahtras"
 
  
-     Date and time (Linux)  : Mon Feb 12 21:49:52 2001
+     Date and time (Linux)  : Sat Jun  8 21:25:24 2002
      Host name              : slater.uio.no                           
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
@@ -101,8 +107,8 @@
   Title Cards
   -----------
 
-  Test1 i test-suite: Geometrioptimering med symmetri, med beregning av   
-  egenskaper i foerste og siste punkt. Generelt kontraherte basissett     
+  Energy calculation with symmetry                                        
+                                                                          
 
 
                   SYMADD: Requested addition of symmetry
@@ -161,6 +167,21 @@ Represented as: C2v
     A2  | A2   B2   B1   A1 
 
 
+                             Isotopic Masses
+                             ---------------
+
+                           O          15.994915
+                           H    1      1.007825
+                           H    2      1.007825
+
+                       Total mass:    18.010565 amu
+                       Natural abundance:  99.730 %
+
+
+
+ Center-of-mass coordinates (A):    0.000000    0.000000    0.000000
+
+
   Atoms and basis sets
   --------------------
 
@@ -178,7 +199,7 @@ Represented as: C2v
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00D-15
+  Threshold for integrals:  1.00E-15
 
 
   Cartesian Coordinates
@@ -189,15 +210,15 @@ Represented as: C2v
 
    1   O        x      0.0000000000
    2            y      0.0000000000
-   3            z     -0.7496859287
+   3            z     -0.1258515023
 
    4   H    1   x      0.0000000000
    5            y      1.4523500000
-   6            z      0.3748429643
+   6            z      0.9986773907
 
    7   H    2   x      0.0000000000
    8            y     -1.4523500000
-   9            z      0.3748429643
+   9            z      0.9986773907
 
 
 
@@ -209,27 +230,27 @@ Represented as: C2v
 
   Symmetry 1
 
-   1   O     z    3
-   2   H     y    [  5  -   8 ]/2
-   3   H     z    [  6  +   9 ]/2
+   1   O     z    [  5  -   8 ]/2
+   2   H     y    [  6  +   9 ]/2
+   3   H     z    1
 
 
   Symmetry 2
 
-   4   O     x    1
-   5   H     x    [  4  +   7 ]/2
+   4   O     x    [  4  +   7 ]/2
+   5   H     x    2
 
 
   Symmetry 3
 
-   6   O     y    2
-   7   H     y    [  5  +   8 ]/2
-   8   H     z    [  6  -   9 ]/2
+   6   O     y    [  5  +   8 ]/2
+   7   H     y    [  6  -   9 ]/2
+   8   H     z    [  4  -   7 ]/2
 
 
   Symmetry 4
 
-   9   H     x    [  4  -   7 ]/2
+   9   H     x    2
 
 
    Interatomic separations (in Angstroms):
@@ -259,6 +280,27 @@ Represented as: C2v
                   atom 1     atom 2     atom 3                   angle
                   ------     ------     ------                   -----
   bond angle:       H  1       O          H  2                 104.500
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    0.567417          0.000000    1.000000    0.000000
+   IB    1.190584          0.000000    0.000000    1.000000
+   IC    1.758001          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is planar.
+
+               A                   B                   C
+
+         890665.3782         424480.0013         287473.6488 MHz
+           29.709399           14.159129            9.589089 cm-1
 
 
   Nuclear repulsion energy :    9.055004525638
@@ -330,7 +372,7 @@ Represented as: C2v
 
 
 
- >>> Time used in TWOINT is   0.09 seconds
+ >>> Time used in TWOINT is   0.08 seconds
 
 
 
@@ -341,27 +383,27 @@ Represented as: C2v
   NOSYM :  F
  OLDSUP :  F
 
- Threshold for discarding integrals :  1.00D-15
+ Threshold for discarding integrals :  1.00E-15
 
- >>> Time used in FRMSUP is   0.01 seconds
+ >>> Time used in FRMSUP is   0.02 seconds
 
  >>>> Total CPU  time used in HERMIT:   0.14 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Mon Feb 12 21:49:52 2001
+     Date and time (Linux)  : Sat Jun  8 21:25:25 2002
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     Test1 i test-suite: Geometrioptimering med symmetri, med beregning av   
-     egenskaper i foerste og siste punkt. Generelt kontraherte basissett     
+     Energy calculation with symmetry                                        
+                                                                             
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -411,7 +453,7 @@ Represented as: C2v
 
      Maximum number of macro iterations      15
      Maximum number of micro iterations     360
-     Threshold for gradient            1.00D-05
+     Threshold for gradient            1.00E-05
      Number of initial trial vectors          1
      Number of initial CI iterations          3
      Number of simultaneous trial vectors     1
@@ -428,16 +470,16 @@ Represented as: C2v
 
  Iter      Total energy        Error norm    Delta(E)
  ----------------------------------------------------
-    1      -75.670901820992    3.77861D+00   -7.57D+01
-    2      -76.007414913511    5.05129D-01   -3.37D-01
-    3      -76.023050214081    2.14333D-01   -1.56D-02
-    4      -76.025312606709    6.22463D-02   -2.26D-03
-    5      -76.025662324684    1.19036D-02   -3.50D-04
-    6      -76.025679476062    3.14009D-03   -1.72D-05
-    7      -76.025681464444    3.49645D-04   -1.99D-06
-    8      -76.025681483796    3.67664D-05   -1.94D-08
-    9      -76.025681483938    6.71847D-06   -1.42D-10
-   10      -76.025681483944    9.96111D-07   -5.46D-12
+    1      -75.670901820992    3.77861E+00   -7.57E+01
+    2      -76.007414913511    5.05129E-01   -3.37E-01
+    3      -76.023050214081    2.14333E-01   -1.56E-02
+    4      -76.025312606709    6.22463E-02   -2.26E-03
+    5      -76.025662324684    1.19036E-02   -3.50E-04
+    6      -76.025679476062    3.14009E-03   -1.72E-05
+    7      -76.025681464444    3.49645E-04   -1.99E-06
+    8      -76.025681483796    3.67664E-05   -1.94E-08
+    9      -76.025681483938    6.71847E-06   -1.42E-10
+   10      -76.025681483944    9.96111E-07   -5.49E-12
  DIIS converged in  10 iterations !
 
 
@@ -482,7 +524,7 @@ Represented as: C2v
   --------------------------
     gap     :     0.67516549
 
- ABS SUM OF OFF-DIAGONAL FOCK CORE ELEMENTS ARE :  2.49D-06
+ ABS SUM OF OFF-DIAGONAL FOCK CORE ELEMENTS ARE :  2.49E-06
 
  MP2 move   0.101828 electrons to unoccupied HF orbitals
 
@@ -526,7 +568,7 @@ Represented as: C2v
  RHF     0.00000000
  Diff.   0.00529488
 
- Time used for MP2 natural orbitals :       0.050 CPU seconds.
+ Time used for MP2 natural orbitals :       0.060 CPU seconds.
 
 
         SIRIUS MCSCF optimization (SIROPT)
@@ -558,7 +600,7 @@ Represented as: C2v
 
 
  CI energies and residuals:
-    1      -76.144842658560240       4.96D-02
+    1      -76.144842658560194       4.96E-02
 
    <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
 
@@ -581,7 +623,7 @@ Represented as: C2v
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :      -76.144842658560210       (MACRO    1)
+ Total MCSCF energy       :      -76.144842658560094       (MACRO    1)
 
  Norm of total gradient   :        0.108632960779
  -    of CI gradient      :        0.099250669023
@@ -614,7 +656,7 @@ Represented as: C2v
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :      -76.147430802595840       (MACRO    2)
+ Total MCSCF energy       :      -76.147430802595807       (MACRO    2)
 
  Norm of total gradient   :        0.040797599933
  -    of CI gradient      :        0.039777815887
@@ -647,7 +689,7 @@ Represented as: C2v
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :      -76.147613683343510       (MACRO    3)
+ Total MCSCF energy       :      -76.147613683343451       (MACRO    3)
 
  Norm of total gradient   :        0.001228582690
  -    of CI gradient      :        0.001067166222
@@ -680,7 +722,7 @@ Represented as: C2v
  <<< MACRO ITERATION  4 >>>
  --------------------------
 
- Total MCSCF energy       :      -76.147614159011440       (MACRO    4)
+ Total MCSCF energy       :      -76.147614159011425       (MACRO    4)
 
  Norm of total gradient   :        0.000011099910
  -    of CI gradient      :        0.000006599011
@@ -713,7 +755,7 @@ Represented as: C2v
  <<< MACRO ITERATION  5 >>>
  --------------------------
 
- Total MCSCF energy       :      -76.147614159020950       (MACRO    5)
+ Total MCSCF energy       :      -76.147614159020918       (MACRO    5)
 
  Norm of total gradient   :        0.000002953714
  -    of CI gradient      :        0.000001626105
@@ -722,13 +764,13 @@ Represented as: C2v
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            5
      Number of micro iterations used           30
-     Total number of CPU seconds used         0.00
+     Total number of CPU seconds used         1.21
 
 
                >>> SIRIUS OPTIMIZATION STATISTICS <<<
 
  
-     Date and time (Linux)  : Mon Feb 12 21:49:54 2001
+     Date and time (Linux)  : Sat Jun  8 21:25:26 2002
      Host name              : slater.uio.no                           
 
 
@@ -736,8 +778,8 @@ Represented as: C2v
  ---------------------------------------------------------------------
     1    6    -76.144842658560   0.1086329608  0.000000   0.2945121451
     2    8    -76.147430802596   0.0407975999  0.843383   0.0404730660
-    3   14    -76.147613683344   0.0012285827  1.023048   0.0030410590
-    4    2    -76.147614159011   0.0000110999  1.001218   0.0000088270
+    3   14    -76.147613683343   0.0012285827  1.023048   0.0030410590
+    4    2    -76.147614159011   0.0000110999  1.001219   0.0000088270
     5    0    -76.147614159021   0.0000029537  1.000000   0.0000000000
 
 
@@ -753,18 +795,18 @@ Represented as: C2v
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1     6     4     3      0.00      0.00      1.88      0.00      0.31
-    2     8     6     3      0.00      0.00      1.88      0.00      0.23
-    3    14    10     5      0.00      0.00      1.88      0.00      0.13
-    4     2     2     1      0.00      0.00      1.88      0.00      0.94
-    5     0     0     0      0.00      0.00      0.00      0.00
+    1     6     4     3      0.24      0.04      0.17      0.15      0.03
+    2     8     6     3      0.28      0.05      0.21      0.20      0.03
+    3    14    10     5      0.41      0.04      0.34      0.31      0.02
+    4     2     2     1      0.15      0.05      0.07      0.05      0.04
+    5     0     0     0      0.07      0.04      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
 
     1    -61.283764014745    -23.916083169453    -76.144842658560
     2    -61.281927737891    -23.920507590343    -76.147430802596
-    3    -61.283148088259    -23.919470120723    -76.147613683344
+    3    -61.283148088258    -23.919470120723    -76.147613683343
     4    -61.283286628249    -23.919332056400    -76.147614159011
     5    -61.283287830883    -23.919330853776    -76.147614159021
 
@@ -772,10 +814,10 @@ Represented as: C2v
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.003068766331     -0.002588144036      0.843382570143
-    3     -0.000178760634     -0.000182880748      1.023048216524
-    4     -0.000000475089     -0.000000475668      1.001218447458
-    5     -0.000000000010     -0.000000000010      1.000000000000
+    2     -0.003068766331     -0.002588144036      0.843382570171
+    3     -0.000178760634     -0.000182880748      1.023048216365
+    4     -0.000000475089     -0.000000475668      1.001218537193
+    5     -0.000000000010     -0.000000000009      1.000000000000
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
@@ -810,7 +852,7 @@ Represented as: C2v
      Final gradient norm:           0.000002953714
 
  
-     Date and time (Linux)  : Mon Feb 12 21:49:54 2001
+     Date and time (Linux)  : Sat Jun  8 21:25:26 2002
      Host name              : slater.uio.no                           
 
 
@@ -942,21 +984,21 @@ Represented as: C2v
   10- 5 to 10- 4       115    0.31903504E-06    0.10000000E+01
   10- 6 to 10- 5        35    0.11298017E-08    0.10000000E+01
   10- 7 to 10- 6         1    0.50971291E-12    0.10000000E+01
-  Number of coefficients less than 10^-11 times norm is            0
+  Number of coefficients less than 10^-11 times norm is  0
 
 
 
- >>>> Total CPU  time used in SIRIUS :      1.45 seconds
- >>>> Total wall time used in SIRIUS :      2.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      1.32 seconds
+ >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
-     Date and time (Linux)  : Mon Feb 12 21:49:54 2001
+     Date and time (Linux)  : Sat Jun  8 21:25:26 2002
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
- >>>> Total CPU  time used in DALTON:   1.59 seconds
+ >>>> Total CPU  time used in DALTON:   1.46 seconds
  >>>> Total wall time used in DALTON:   2.00 seconds
 
  
-     Date and time (Linux)  : Mon Feb 12 21:49:54 2001
+     Date and time (Linux)  : Sat Jun  8 21:25:26 2002
      Host name              : slater.uio.no                           

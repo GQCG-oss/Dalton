@@ -4,7 +4,7 @@
     ***********  DALTON - An electronic structure program  ***********
     ******************************************************************
 
-               This is output from DALTON (Release 1.2, June 2001)
+            This is output from DALTON (Release 2.0, ? 2001)
 
                           Principal authors:
 
@@ -78,8 +78,8 @@
      and O. Vahtras"
 
  
-     Date and time (Linux)  : Mon Oct  1 10:14:35 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:17:57 2002
+     Host name              : slater.uio.no                           
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
 
@@ -97,7 +97,7 @@
  The model Hessian parameters of Roland Lindh will be used.
 
 
- Threshold for symmetry-break set to       :      0.10D-02
+ Threshold for symmetry-break set to       :      0.10E-02
  Trust region method will be used to control step (default).
 
 
@@ -213,6 +213,21 @@ Represented as: C2v
     A2  | A2   B2   B1   A1 
 
 
+                             Isotopic Masses
+                             ---------------
+
+                           O          15.994915
+                           H    1      1.007825
+                           H    2      1.007825
+
+                       Total mass:    18.010565 amu
+                       Natural abundance:  99.730 %
+
+
+
+ Center-of-mass coordinates (A):    0.000000    0.000000    0.000000
+
+
   Atoms and basis sets
   --------------------
 
@@ -230,7 +245,7 @@ Represented as: C2v
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00D-15
+  Threshold for integrals:  1.00E-15
 
 
   Cartesian Coordinates
@@ -241,15 +256,15 @@ Represented as: C2v
 
    1   O        x      0.0000000000
    2            y      0.0000000000
-   3            z     -0.5333333333
+   3            z     -0.0895318942
 
    4   H    1   x      0.0000000000
    5            y      1.4300000000
-   6            z      0.2666666667
+   6            z      0.7104681058
 
    7   H    2   x      0.0000000000
    8            y     -1.4300000000
-   9            z      0.2666666667
+   9            z      0.7104681058
 
 
 
@@ -261,27 +276,27 @@ Represented as: C2v
 
   Symmetry 1
 
-   1   O     z    3
-   2   H     y    [  5  -   8 ]/2
-   3   H     z    [  6  +   9 ]/2
+   1   O     z    [  5  -   8 ]/2
+   2   H     y    [  6  +   9 ]/2
+   3   H     z    1
 
 
   Symmetry 2
 
-   4   O     x    1
-   5   H     x    [  4  +   7 ]/2
+   4   O     x    [  4  +   7 ]/2
+   5   H     x    2
 
 
   Symmetry 3
 
-   6   O     y    2
-   7   H     y    [  5  +   8 ]/2
-   8   H     z    [  6  -   9 ]/2
+   6   O     y    [  5  +   8 ]/2
+   7   H     y    [  6  -   9 ]/2
+   8   H     z    [  4  -   7 ]/2
 
 
   Symmetry 4
 
-   9   H     x    [  4  -   7 ]/2
+   9   H     x    2
 
 
    Interatomic separations (in Angstroms):
@@ -311,6 +326,27 @@ Represented as: C2v
                   atom 1     atom 2     atom 3                   angle
                   ------     ------     ------                   -----
   bond angle:       H  1       O          H  2                 121.551
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    0.287172          0.000000    1.000000    0.000000
+   IB    1.154222          0.000000    0.000000    1.000000
+   IC    1.441394          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is planar.
+
+               A                   B                   C
+
+        1759850.7342         437852.4026         350618.2702 MHz
+           58.702302           14.605184           11.695367 cm-1
 
 
   Nuclear repulsion energy :   10.114283351242
@@ -368,7 +404,7 @@ Represented as: C2v
  >>> Time used in ONEDRV is   0.01 seconds
 
 
- >>> Time used in OVERLA is   0.01 seconds
+ >>> Time used in OVERLA is   0.00 seconds
 
 
  Number of two-electron integrals written:        3461 ( 23.5% )
@@ -376,9 +412,9 @@ Represented as: C2v
 
 
 
- >>> Time used in TWOINT is   0.03 seconds
+ >>> Time used in TWOINT is   0.04 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.06 seconds
+ >>>> Total CPU  time used in HERMIT:   0.07 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
@@ -389,8 +425,8 @@ Represented as: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Mon Oct  1 10:14:35 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:17:57 2002
+     Host name              : slater.uio.no                           
 
  Title lines from integral program:
      H2O                                                                     
@@ -420,8 +456,8 @@ Represented as: C2v
 
      Dirac, Becke, and HF exchange weights:    0.800000    0.720000    0.200000
      WVN and LYP correlation weights:          0.190000    0.810000
-     Default thresholds:                       0.10D-07    0.10D-09    0.10D-12
-     Default threshold for number of electrons:                        0.10D-02
+     Default thresholds:                       0.10E-07    0.10E-09    0.10E-12
+     Default threshold for number of electrons:                        0.10E-02
      DFT quadrature level: 4
 
      Orbital specifications
@@ -440,7 +476,7 @@ Represented as: C2v
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-06
+     Threshold for HF convergence      1.00E-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -457,77 +493,77 @@ H     2   21828      60     590
    Number of grid points in quadrature:     43466 (100.0%)
 
 
-   Number of electrons/abscissas:        9.999999      -.79D-06         43466
+   Number of electrons/abscissas:        9.999999      -.79E-06         43466
    Dirac and Becke exchange energy:     -6.423546     -0.619427     -7.042973
    VWN and LYP correlation energy :     -0.125032     -0.274167     -0.399200
    DFT exchange-correlation energy:                                 -7.442172
 
- >>> Time used in DFTDRV is   1.61 seconds
+ >>> Time used in DFTDRV is   1.97 seconds
 
-   1    -75.982809745155   4.14D+00  -7.60D+01    3  1  1  0
+   1    -75.982809745155   4.14E+00  -7.60E+01    3  1  1  0
 
-   Number of electrons/abscissas:        9.999999      -.12D-05         43466
+   Number of electrons/abscissas:        9.999999      -.12E-05         43466
    Dirac and Becke exchange energy:     -6.734995     -0.630608     -7.365604
    VWN and LYP correlation energy :     -0.128977     -0.282814     -0.411791
    DFT exchange-correlation energy:                                 -7.777394
 
- >>> Time used in DFTDRV is   1.54 seconds
+ >>> Time used in DFTDRV is   1.88 seconds
 
-   2    -76.291108016064   1.06D+00  -3.08D-01    3  1  1  0
+   2    -76.291108016064   1.06E+00  -3.08E-01    3  1  1  0
 
-   Number of electrons/abscissas:        9.999996      -.37D-05         43466
+   Number of electrons/abscissas:        9.999996      -.37E-05         43466
    Dirac and Becke exchange energy:     -6.419039     -0.622324     -7.041363
    VWN and LYP correlation energy :     -0.125670     -0.274103     -0.399773
    DFT exchange-correlation energy:                                 -7.441136
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.90 seconds
 
-   3    -76.296378213300   1.03D+00  -5.27D-03    3  1  1  0
+   3    -76.296378213300   1.03E+00  -5.27E-03    3  1  1  0
 
-   Number of electrons/abscissas:        9.999998      -.23D-05         43466
+   Number of electrons/abscissas:        9.999998      -.23E-05         43466
    Dirac and Becke exchange energy:     -6.580501     -0.626617     -7.207118
    VWN and LYP correlation energy :     -0.127358     -0.278670     -0.406027
    DFT exchange-correlation energy:                                 -7.613145
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.89 seconds
 
-   4    -76.341862919825   6.33D-02  -4.55D-02    3  1  1  0
+   4    -76.341862919825   6.33E-02  -4.55E-02    3  1  1  0
 
-   Number of electrons/abscissas:        9.999998      -.23D-05         43466
+   Number of electrons/abscissas:        9.999998      -.23E-05         43466
    Dirac and Becke exchange energy:     -6.574408     -0.626501     -7.200910
    VWN and LYP correlation energy :     -0.127295     -0.278496     -0.405791
    DFT exchange-correlation energy:                                 -7.606701
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.88 seconds
 
-   5    -76.342044421329   5.23D-03  -1.82D-04    3  1  1  0
+   5    -76.342044421329   5.23E-03  -1.82E-04    3  1  1  0
 
-   Number of electrons/abscissas:        9.999998      -.23D-05         43466
+   Number of electrons/abscissas:        9.999998      -.23E-05         43466
    Dirac and Becke exchange energy:     -6.575028     -0.626525     -7.201553
    VWN and LYP correlation energy :     -0.127301     -0.278512     -0.405813
    DFT exchange-correlation energy:                                 -7.607366
 
- >>> Time used in DFTDRV is   4.63 seconds
+ >>> Time used in DFTDRV is   1.89 seconds
 
-   6    -76.342045781737   3.26D-04  -1.36D-06    3  1  1  0
+   6    -76.342045781737   3.26E-04  -1.36E-06    3  1  1  0
 
-   Number of electrons/abscissas:        9.999998      -.23D-05         43466
+   Number of electrons/abscissas:        9.999998      -.23E-05         43466
    Dirac and Becke exchange energy:     -6.575074     -0.626527     -7.201600
    VWN and LYP correlation energy :     -0.127302     -0.278513     -0.405815
    DFT exchange-correlation energy:                                 -7.607415
 
- >>> Time used in DFTDRV is   1.54 seconds
+ >>> Time used in DFTDRV is   1.88 seconds
 
-   7    -76.342045787852   8.40D-06  -6.11D-09    3  1  1  0
+   7    -76.342045787852   8.40E-06  -6.11E-09    3  1  1  0
 
-   Number of electrons/abscissas:        9.999998      -.23D-05         43466
+   Number of electrons/abscissas:        9.999998      -.23E-05         43466
    Dirac and Becke exchange energy:     -6.575073     -0.626527     -7.201600
    VWN and LYP correlation energy :     -0.127302     -0.278513     -0.405815
    DFT exchange-correlation energy:                                 -7.607415
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.89 seconds
 
-   8    -76.342045787860   1.99D-07  -8.41D-12    3  1  1  0
+   8    -76.342045787860   1.99E-07  -8.39E-12    3  1  1  0
  DIIS converged in   8 iterations !
 
 
@@ -573,8 +609,8 @@ H     2   21828      60     590
      Final gradient norm:           0.000000198898
 
  
-     Date and time (Linux)  : Mon Oct  1 10:14:51 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:18:12 2002
+     Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
 
@@ -607,12 +643,12 @@ H     2   21828      60     590
 
 
 
- >>>> Total CPU  time used in SIRIUS :     15.56 seconds
- >>>> Total wall time used in SIRIUS :     16.00 seconds
+ >>>> Total CPU  time used in SIRIUS :     15.24 seconds
+ >>>> Total wall time used in SIRIUS :     15.00 seconds
 
  
-     Date and time (Linux)  : Mon Oct  1 10:14:51 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:18:12 2002
+     Host name              : slater.uio.no                           
 
 - End of Wave Function Section
                                    
@@ -623,12 +659,12 @@ H     2   21828      60     590
 
 
  
-     Date and time (Linux)  : Mon Oct  1 10:14:51 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:18:12 2002
+     Host name              : slater.uio.no                           
 
-   Number of electrons/abscissas:        9.999998      -.23D-05         43466
+   Number of electrons/abscissas:        9.999998      -.23E-05         43466
 
- >>> Time used in DFTDRV is   3.46 seconds
+ >>> Time used in DFTDRV is   3.84 seconds
 
 
 
@@ -656,8 +692,8 @@ H     2   21828      60     590
 
 
  
-     Date and time (Linux)  : Mon Oct  1 10:14:55 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:18:16 2002
+     Host name              : slater.uio.no                           
 
  WARNING: warnings have been issued, please check the output above !
 
@@ -666,9 +702,9 @@ H     2   21828      60     590
                          Molecular geometry (au)
                          -----------------------
 
- O          0.0000000000            0.0000000000           -0.5333333333
- H    1     0.0000000000            1.4300000000            0.2666666667
- H    2     0.0000000000           -1.4300000000            0.2666666667
+ O          0.0000000000            0.0000000000           -0.0895318942
+ H    1     0.0000000000            1.4300000000            0.7104681058
+ H    2     0.0000000000           -1.4300000000            0.7104681058
 
 
 
@@ -681,8 +717,8 @@ H     2   21828      60     590
 
 
      Total energy        -76.3420457879 au (Hartrees)
-                         -2077.37267747 eV
-                           -200436.0127 kJ/mol
+                         -2077.37268036 eV
+                           -200436.0124 kJ/mol
 
 
 
@@ -690,11 +726,11 @@ H     2   21828      60     590
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.1944817187 au
-     Mass-velocity correction:                  -0.2457207950 au
+     Darwin correction:                          0.1944816895 au
+     Mass-velocity correction:                  -0.2457207580 au
 
-     Total relativistic correction:             -0.0512390762 au (0.0671%)
-     Non-relativistic + relativistic energy:   -76.3932848641 au
+     Total relativistic correction:             -0.0512390685 au (0.0671%)
+     Non-relativistic + relativistic energy:   -76.3932848564 au
 
 
 
@@ -719,7 +755,7 @@ H     2   21828      60     590
                               Dipole moment
                               -------------
 
-                    0.677295 au           1.721529 Debye
+                    0.677295 au           1.721513 Debye
 
 
 
@@ -729,9 +765,9 @@ H     2   21828      60     590
 
                                au             Debye
 
-                    z      0.67729531      1.72152889
+                    z      0.67729531      1.72151276
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -771,13 +807,13 @@ H     2   21828      60     590
  CPU time statistics for ABACUS
  ------------------------------
 
- ONEINT     00:00:03      98 %
+ ONEINT     00:00:04      98 %
 
  TOTAL      00:00:04     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   3.54 seconds
+ >>>> Total CPU  time used in ABACUS:   3.93 seconds
  >>>> Total wall time used in ABACUS:   4.00 seconds
 
 - End of Static Property Section
@@ -792,9 +828,9 @@ H     2   21828      60     590
                             Next geometry (au)
                             ------------------
 
- O          0.0000000000            0.0000000000           -0.6111466704
- H    1     0.0000000000            1.5329173545            0.3055733352
- H    2     0.0000000000           -1.5329173545            0.3055733352
+ O          0.0000000000            0.0000000000           -0.1673452313
+ H    1     0.0000000000            1.5329173545            0.7493747743
+ H    2     0.0000000000           -1.5329173545            0.7493747743
 
 
 
@@ -853,15 +889,15 @@ H     2   21828      60     590
  **********************************************************************
 
  
-     Date and time (Linux)  : Mon Oct  1 10:14:55 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:18:16 2002
+     Host name              : slater.uio.no                           
 
  Title lines from integral program:
      H2O                                                                     
      Symmetry                                                                
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -884,8 +920,8 @@ H     2   21828      60     590
 
      Dirac, Becke, and HF exchange weights:    0.800000    0.720000    0.200000
      WVN and LYP correlation weights:          0.190000    0.810000
-     Default thresholds:                       0.10D-07    0.10D-09    0.10D-12
-     Default threshold for number of electrons:                        0.10D-02
+     Default thresholds:                       0.10E-07    0.10E-09    0.10E-12
+     Default threshold for number of electrons:                        0.10E-02
      DFT quadrature level: 4
 
      Orbital specifications
@@ -907,7 +943,7 @@ H     2   21828      60     590
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-06
+     Threshold for HF convergence      1.00E-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -922,77 +958,77 @@ H     2   21828      60     590
    Number of grid points in quadrature:     43466 (100.0%)
 
 
-   Number of electrons/abscissas:        9.999998      -.20D-05         43466
+   Number of electrons/abscissas:        9.999998      -.20E-05         43466
    Dirac and Becke exchange energy:     -6.543716     -0.626989     -7.170705
    VWN and LYP correlation energy :     -0.126914     -0.277006     -0.403919
    DFT exchange-correlation energy:                                 -7.574625
 
- >>> Time used in DFTDRV is   1.61 seconds
+ >>> Time used in DFTDRV is   1.96 seconds
 
-    1      -76.359683196134    2.54933D-01   -7.64D+01
+    1      -76.359683196134    2.54933E-01   -7.64E+01
 
-   Number of electrons/abscissas:        9.999997      -.31D-05         43466
+   Number of electrons/abscissas:        9.999997      -.31E-05         43466
    Dirac and Becke exchange energy:     -6.477580     -0.624978     -7.102558
    VWN and LYP correlation energy :     -0.126167     -0.275229     -0.401396
    DFT exchange-correlation energy:                                 -7.503953
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.91 seconds
 
-    2      -76.361946705465    2.36169D-01   -2.26D-03
+    2      -76.361946705465    2.36169E-01   -2.26E-03
 
-   Number of electrons/abscissas:        9.999997      -.27D-05         43466
+   Number of electrons/abscissas:        9.999997      -.27E-05         43466
    Dirac and Becke exchange energy:     -6.522337     -0.626065     -7.148402
    VWN and LYP correlation energy :     -0.126637     -0.276518     -0.403155
    DFT exchange-correlation energy:                                 -7.551557
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.90 seconds
 
-    3      -76.364247462400    5.63684D-02   -2.30D-03
+    3      -76.364247462400    5.63684E-02   -2.30E-03
 
-   Number of electrons/abscissas:        9.999997      -.28D-05         43466
+   Number of electrons/abscissas:        9.999997      -.28E-05         43466
    Dirac and Becke exchange energy:     -6.513658     -0.625900     -7.139558
    VWN and LYP correlation energy :     -0.126545     -0.276262     -0.402808
    DFT exchange-correlation energy:                                 -7.542365
 
- >>> Time used in DFTDRV is   1.97 seconds
+ >>> Time used in DFTDRV is   1.90 seconds
 
-    4      -76.364393572929    4.40786D-03   -1.46D-04
+    4      -76.364393572929    4.40786E-03   -1.46E-04
 
-   Number of electrons/abscissas:        9.999997      -.28D-05         43466
+   Number of electrons/abscissas:        9.999997      -.28E-05         43466
    Dirac and Becke exchange energy:     -6.513902     -0.625904     -7.139806
    VWN and LYP correlation energy :     -0.126548     -0.276269     -0.402817
    DFT exchange-correlation energy:                                 -7.542623
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.91 seconds
 
-    5      -76.364394498972    3.33975D-04   -9.26D-07
+    5      -76.364394498972    3.33975E-04   -9.26E-07
 
-   Number of electrons/abscissas:        9.999997      -.28D-05         43466
+   Number of electrons/abscissas:        9.999997      -.28E-05         43466
    Dirac and Becke exchange energy:     -6.513929     -0.625905     -7.139834
    VWN and LYP correlation energy :     -0.126548     -0.276270     -0.402818
    DFT exchange-correlation energy:                                 -7.542652
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.90 seconds
 
-    6      -76.364394506197    2.58593D-05   -7.23D-09
+    6      -76.364394506197    2.58593E-05   -7.23E-09
 
-   Number of electrons/abscissas:        9.999997      -.28D-05         43466
+   Number of electrons/abscissas:        9.999997      -.28E-05         43466
    Dirac and Becke exchange energy:     -6.513932     -0.625905     -7.139838
    VWN and LYP correlation energy :     -0.126548     -0.276270     -0.402818
    DFT exchange-correlation energy:                                 -7.542656
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.91 seconds
 
-    7      -76.364394506250    1.50918D-06   -5.30D-11
+    7      -76.364394506250    1.50918E-06   -5.30E-11
 
-   Number of electrons/abscissas:        9.999997      -.28D-05         43466
+   Number of electrons/abscissas:        9.999997      -.28E-05         43466
    Dirac and Becke exchange energy:     -6.513932     -0.625905     -7.139838
    VWN and LYP correlation energy :     -0.126548     -0.276270     -0.402818
    DFT exchange-correlation energy:                                 -7.542656
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.90 seconds
 
-    8      -76.364394506250    9.25459D-08   -2.47D-13
+    8      -76.364394506250    9.25459E-08   -2.20E-13
  DIIS converged in   8 iterations !
 
 
@@ -1032,52 +1068,23 @@ H     2   21828      60     590
      Spatial symmetry:            1
 
      Final    HF energy:          -76.364394506250
-     Nuclear repulsion:             9.284159106812
+     Nuclear repulsion:             9.284159106811
      Electronic energy:           -85.648553613062
 
      Final gradient norm:           0.000000092546
 
  
-     Date and time (Linux)  : Mon Oct  1 10:15:08 2001
-     Host name              : lowdin.uio.no                           
-
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3
-   1  O   1s     0.9950  -0.2133   0.0733
-   2  O   1s     0.0280   0.4675  -0.1632
-   3  O   1s    -0.0132   0.4665  -0.3152
-   4  O   2pz    0.0016   0.1137   0.5731
-   5  O   2pz   -0.0021   0.0547   0.4128
-   6  O   3d0    0.0000   0.0012   0.0333
-   7  O   3d2+   0.0002  -0.0207   0.0009
-   8  H   1s     0.0000   0.1407   0.1277
-   9  H   1s     0.0031   0.0008   0.0893
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1
-   1  O   2px    0.6419
-   2  O   2px    0.5091
-   3  O   3d1+   0.0324
-
-     Molecular orbitals for symmetry species   3
-
- Orbital          1
-   1  O   2py    0.5145
-   2  O   2py    0.2527
-   3  O   3d1-   0.0362
-   4  H   1s     0.2464
-   5  H   1s     0.1239
+     Date and time (Linux)  : Sat Jun  8 21:18:32 2002
+     Host name              : slater.uio.no                           
 
 
 
- >>>> Total CPU  time used in SIRIUS :     12.89 seconds
- >>>> Total wall time used in SIRIUS :     13.00 seconds
+ >>>> Total CPU  time used in SIRIUS :     15.31 seconds
+ >>>> Total wall time used in SIRIUS :     16.00 seconds
 
  
-     Date and time (Linux)  : Mon Oct  1 10:15:08 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:18:32 2002
+     Host name              : slater.uio.no                           
 
 - End of Wave Function Section
  Trust radius increased due to good ratio.
@@ -1090,17 +1097,17 @@ H     2   21828      60     590
 
 
  
-     Date and time (Linux)  : Mon Oct  1 10:15:08 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:18:32 2002
+     Host name              : slater.uio.no                           
 O     1   21638      64     590
 H     2   21828      60     590
 
    Number of grid points in quadrature:     43466 (100.0%)
 
 
-   Number of electrons/abscissas:        9.999997      -.28D-05         43466
+   Number of electrons/abscissas:        9.999997      -.28E-05         43466
 
- >>> Time used in DFTDRV is   3.52 seconds
+ >>> Time used in DFTDRV is   3.89 seconds
 
 
 
@@ -1122,8 +1129,8 @@ H     2   21828      60     590
  Largest deviation from tra-rot symmetry is in gradient element  1:  2.25E-06
 
  
-     Date and time (Linux)  : Mon Oct  1 10:15:12 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:18:36 2002
+     Host name              : slater.uio.no                           
 
  WARNING: warnings have been issued, please check the output above !
 
@@ -1138,7 +1145,7 @@ H     2   21828      60     590
 
 
 
- >>>> Total CPU  time used in ABACUS:   3.60 seconds
+ >>>> Total CPU  time used in ABACUS:   3.98 seconds
  >>>> Total wall time used in ABACUS:   4.00 seconds
 
 - End of Static Property Section
@@ -1153,9 +1160,9 @@ H     2   21828      60     590
                             Next geometry (au)
                             ------------------
 
- O          0.0000000000            0.0000000000           -0.6618991930
- H    1     0.0000000000            1.5227784820            0.3309495965
- H    2     0.0000000000           -1.5227784820            0.3309495965
+ O          0.0000000000            0.0000000000           -0.2180977538
+ H    1     0.0000000000            1.5227784820            0.7747510356
+ H    2     0.0000000000           -1.5227784820            0.7747510356
 
 
 
@@ -1189,7 +1196,7 @@ H     2   21828      60     590
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- >>> Time used in ONEDRV is   0.01 seconds
+ >>> Time used in ONEDRV is   0.00 seconds
 
 
  Number of two-electron integrals written:        3461 ( 23.5% )
@@ -1215,15 +1222,15 @@ H     2   21828      60     590
  **********************************************************************
 
  
-     Date and time (Linux)  : Mon Oct  1 10:15:12 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:18:36 2002
+     Host name              : slater.uio.no                           
 
  Title lines from integral program:
      H2O                                                                     
      Symmetry                                                                
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -1246,8 +1253,8 @@ H     2   21828      60     590
 
      Dirac, Becke, and HF exchange weights:    0.800000    0.720000    0.200000
      WVN and LYP correlation weights:          0.190000    0.810000
-     Default thresholds:                       0.10D-07    0.10D-09    0.10D-12
-     Default threshold for number of electrons:                        0.10D-02
+     Default thresholds:                       0.10E-07    0.10E-09    0.10E-12
+     Default threshold for number of electrons:                        0.10E-02
      DFT quadrature level: 4
 
      Orbital specifications
@@ -1269,7 +1276,7 @@ H     2   21828      60     590
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-06
+     Threshold for HF convergence      1.00E-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -1284,68 +1291,68 @@ H     2   21828      60     590
    Number of grid points in quadrature:     43466 (100.0%)
 
 
-   Number of electrons/abscissas:        9.999997      -.31D-05         43466
+   Number of electrons/abscissas:        9.999997      -.31E-05         43466
    Dirac and Becke exchange energy:     -6.507272     -0.626079     -7.133350
    VWN and LYP correlation energy :     -0.126466     -0.275934     -0.402399
    DFT exchange-correlation energy:                                 -7.535749
 
- >>> Time used in DFTDRV is   1.61 seconds
+ >>> Time used in DFTDRV is   1.95 seconds
 
-    1      -76.366955352977    7.14002D-02   -7.64D+01
+    1      -76.366955352977    7.14002E-02   -7.64E+01
 
-   Number of electrons/abscissas:        9.999997      -.35D-05         43466
+   Number of electrons/abscissas:        9.999997      -.35E-05         43466
    Dirac and Becke exchange energy:     -6.494073     -0.625857     -7.119931
    VWN and LYP correlation energy :     -0.126310     -0.275542     -0.401852
    DFT exchange-correlation energy:                                 -7.521783
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.89 seconds
 
-    2      -76.367318244390    5.08358D-02   -3.63D-04
+    2      -76.367318244390    5.08358E-02   -3.63E-04
 
-   Number of electrons/abscissas:        9.999997      -.33D-05         43466
+   Number of electrons/abscissas:        9.999997      -.33E-05         43466
    Dirac and Becke exchange energy:     -6.505597     -0.626123     -7.131719
    VWN and LYP correlation energy :     -0.126431     -0.275877     -0.402308
    DFT exchange-correlation energy:                                 -7.534027
 
- >>> Time used in DFTDRV is   1.56 seconds
+ >>> Time used in DFTDRV is   1.92 seconds
 
-    3      -76.367404305072    2.47582D-02   -8.61D-05
+    3      -76.367404305072    2.47582E-02   -8.61E-05
 
-   Number of electrons/abscissas:        9.999997      -.34D-05         43466
+   Number of electrons/abscissas:        9.999997      -.34E-05         43466
    Dirac and Becke exchange energy:     -6.501747     -0.626044     -7.127791
    VWN and LYP correlation energy :     -0.126390     -0.275764     -0.402154
    DFT exchange-correlation energy:                                 -7.529944
 
- >>> Time used in DFTDRV is   1.56 seconds
+ >>> Time used in DFTDRV is   1.90 seconds
 
-    4      -76.367432537955    3.25835D-04   -2.82D-05
+    4      -76.367432537955    3.25835E-04   -2.82E-05
 
-   Number of electrons/abscissas:        9.999997      -.34D-05         43466
+   Number of electrons/abscissas:        9.999997      -.34E-05         43466
    Dirac and Becke exchange energy:     -6.501780     -0.626045     -7.127825
    VWN and LYP correlation energy :     -0.126390     -0.275764     -0.402155
    DFT exchange-correlation energy:                                 -7.529980
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.91 seconds
 
-    5      -76.367432546206    5.74676D-05   -8.25D-09
+    5      -76.367432546206    5.74676E-05   -8.25E-09
 
-   Number of electrons/abscissas:        9.999997      -.34D-05         43466
+   Number of electrons/abscissas:        9.999997      -.34E-05         43466
    Dirac and Becke exchange energy:     -6.501782     -0.626045     -7.127827
    VWN and LYP correlation energy :     -0.126390     -0.275765     -0.402155
    DFT exchange-correlation energy:                                 -7.529982
 
- >>> Time used in DFTDRV is   1.95 seconds
+ >>> Time used in DFTDRV is   1.90 seconds
 
-    6      -76.367432546387    9.28718D-06   -1.81D-10
+    6      -76.367432546387    9.28718E-06   -1.81E-10
 
-   Number of electrons/abscissas:        9.999997      -.34D-05         43466
+   Number of electrons/abscissas:        9.999997      -.34E-05         43466
    Dirac and Becke exchange energy:     -6.501783     -0.626045     -7.127828
    VWN and LYP correlation energy :     -0.126390     -0.275765     -0.402155
    DFT exchange-correlation energy:                                 -7.529983
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.91 seconds
 
-    7      -76.367432546393    1.78454D-07   -5.45D-12
+    7      -76.367432546393    1.78454E-07   -5.49E-12
  DIIS converged in   7 iterations !
 
 
@@ -1391,46 +1398,17 @@ H     2   21828      60     590
      Final gradient norm:           0.000000178454
 
  
-     Date and time (Linux)  : Mon Oct  1 10:15:23 2001
-     Host name              : lowdin.uio.no                           
-
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3
-   1  O   1s     0.9950  -0.2130   0.0764
-   2  O   1s     0.0279   0.4674  -0.1708
-   3  O   1s    -0.0131   0.4701  -0.3252
-   4  O   2pz    0.0016   0.1165   0.5654
-   5  O   2pz   -0.0023   0.0580   0.4020
-   6  O   3d0    0.0000   0.0032   0.0335
-   7  O   3d2+   0.0002  -0.0197   0.0004
-   8  H   1s     0.0001   0.1381   0.1337
-   9  H   1s     0.0030   0.0014   0.0962
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1
-   1  O   2px    0.6428
-   2  O   2px    0.5081
-   3  O   3d1+   0.0330
-
-     Molecular orbitals for symmetry species   3
-
- Orbital          1
-   1  O   2py    0.5133
-   2  O   2py    0.2599
-   3  O   3d1-   0.0379
-   4  H   1s     0.2428
-   5  H   1s     0.1309
+     Date and time (Linux)  : Sat Jun  8 21:18:49 2002
+     Host name              : slater.uio.no                           
 
 
 
- >>>> Total CPU  time used in SIRIUS :     11.34 seconds
- >>>> Total wall time used in SIRIUS :     11.00 seconds
+ >>>> Total CPU  time used in SIRIUS :     13.40 seconds
+ >>>> Total wall time used in SIRIUS :     13.00 seconds
 
  
-     Date and time (Linux)  : Mon Oct  1 10:15:23 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:18:49 2002
+     Host name              : slater.uio.no                           
 
 - End of Wave Function Section
  Trust radius increased due to good ratio.
@@ -1443,17 +1421,17 @@ H     2   21828      60     590
 
 
  
-     Date and time (Linux)  : Mon Oct  1 10:15:23 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:18:49 2002
+     Host name              : slater.uio.no                           
 O     1   21638      64     590
 H     2   21828      60     590
 
    Number of grid points in quadrature:     43466 (100.0%)
 
 
-   Number of electrons/abscissas:        9.999997      -.34D-05         43466
+   Number of electrons/abscissas:        9.999997      -.34E-05         43466
 
- >>> Time used in DFTDRV is   3.54 seconds
+ >>> Time used in DFTDRV is   3.90 seconds
 
 
 
@@ -1475,8 +1453,8 @@ H     2   21828      60     590
  Largest deviation from tra-rot symmetry is in gradient element  1:  2.05E-06
 
  
-     Date and time (Linux)  : Mon Oct  1 10:15:27 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:18:53 2002
+     Host name              : slater.uio.no                           
 
  WARNING: warnings have been issued, please check the output above !
 
@@ -1491,7 +1469,7 @@ H     2   21828      60     590
 
 
 
- >>>> Total CPU  time used in ABACUS:   3.62 seconds
+ >>>> Total CPU  time used in ABACUS:   3.98 seconds
  >>>> Total wall time used in ABACUS:   4.00 seconds
 
 - End of Static Property Section
@@ -1506,9 +1484,9 @@ H     2   21828      60     590
                             Next geometry (au)
                             ------------------
 
- O          0.0000000000            0.0000000000           -0.7460827991
- H    1     0.0000000000            1.4714682522            0.3730413995
- H    2     0.0000000000           -1.4714682522            0.3730413995
+ O          0.0000000000            0.0000000000           -0.3022813599
+ H    1     0.0000000000            1.4714682522            0.8168428387
+ H    2     0.0000000000           -1.4714682522            0.8168428387
 
 
 
@@ -1542,7 +1520,7 @@ H     2   21828      60     590
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- >>> Time used in ONEDRV is   0.01 seconds
+ >>> Time used in ONEDRV is   0.00 seconds
 
 
  Number of two-electron integrals written:        3461 ( 23.5% )
@@ -1550,14 +1528,14 @@ H     2   21828      60     590
 
 
 
- >>> Time used in TWOINT is   0.03 seconds
+ >>> Time used in TWOINT is   0.04 seconds
 
 O     1   21638      64     590
 H     2   21828      60     590
 
    Number of grid points in quadrature:     43466 (100.0%)
 
- >>>> Total CPU  time used in HERMIT:   0.10 seconds
+ >>>> Total CPU  time used in HERMIT:   0.11 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
@@ -1568,15 +1546,15 @@ H     2   21828      60     590
  **********************************************************************
 
  
-     Date and time (Linux)  : Mon Oct  1 10:15:27 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:18:53 2002
+     Host name              : slater.uio.no                           
 
  Title lines from integral program:
      H2O                                                                     
      Symmetry                                                                
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -1599,8 +1577,8 @@ H     2   21828      60     590
 
      Dirac, Becke, and HF exchange weights:    0.800000    0.720000    0.200000
      WVN and LYP correlation weights:          0.190000    0.810000
-     Default thresholds:                       0.10D-07    0.10D-09    0.10D-12
-     Default threshold for number of electrons:                        0.10D-02
+     Default thresholds:                       0.10E-07    0.10E-09    0.10E-12
+     Default threshold for number of electrons:                        0.10E-02
      DFT quadrature level: 4
 
      Orbital specifications
@@ -1622,7 +1600,7 @@ H     2   21828      60     590
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-06
+     Threshold for HF convergence      1.00E-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -1637,68 +1615,68 @@ H     2   21828      60     590
    Number of grid points in quadrature:     43466 (100.0%)
 
 
-   Number of electrons/abscissas:        9.999997      -.35D-05         43466
+   Number of electrons/abscissas:        9.999997      -.35E-05         43466
    Dirac and Becke exchange energy:     -6.495483     -0.626231     -7.121714
    VWN and LYP correlation energy :     -0.126314     -0.275445     -0.401760
    DFT exchange-correlation energy:                                 -7.523474
 
- >>> Time used in DFTDRV is   1.62 seconds
+ >>> Time used in DFTDRV is   1.96 seconds
 
-    1      -76.368632492718    1.05215D-01   -7.64D+01
+    1      -76.368632492718    1.05215E-01   -7.64E+01
 
-   Number of electrons/abscissas:        9.999996      -.41D-05         43466
+   Number of electrons/abscissas:        9.999996      -.41E-05         43466
    Dirac and Becke exchange energy:     -6.481400     -0.626126     -7.107526
    VWN and LYP correlation energy :     -0.126144     -0.275002     -0.401146
    DFT exchange-correlation energy:                                 -7.508672
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.90 seconds
 
-    2      -76.369480740105    5.87684D-02   -8.48D-04
+    2      -76.369480740105    5.87684E-02   -8.48E-04
 
-   Number of electrons/abscissas:        9.999996      -.39D-05         43466
+   Number of electrons/abscissas:        9.999996      -.39E-05         43466
    Dirac and Becke exchange energy:     -6.496700     -0.626441     -7.123142
    VWN and LYP correlation energy :     -0.126305     -0.275454     -0.401759
    DFT exchange-correlation energy:                                 -7.524901
 
- >>> Time used in DFTDRV is   1.57 seconds
+ >>> Time used in DFTDRV is   1.90 seconds
 
-    3      -76.369550683146    4.34081D-02   -6.99D-05
+    3      -76.369550683146    4.34081E-02   -6.99E-05
 
-   Number of electrons/abscissas:        9.999996      -.40D-05         43466
+   Number of electrons/abscissas:        9.999996      -.40E-05         43466
    Dirac and Becke exchange energy:     -6.489906     -0.626301     -7.116208
    VWN and LYP correlation energy :     -0.126232     -0.275254     -0.401486
    DFT exchange-correlation energy:                                 -7.517694
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.91 seconds
 
-    4      -76.369636621518    1.38313D-03   -8.59D-05
+    4      -76.369636621518    1.38313E-03   -8.59E-05
 
-   Number of electrons/abscissas:        9.999996      -.40D-05         43466
+   Number of electrons/abscissas:        9.999996      -.40E-05         43466
    Dirac and Becke exchange energy:     -6.490029     -0.626307     -7.116336
    VWN and LYP correlation energy :     -0.126234     -0.275257     -0.401490
    DFT exchange-correlation energy:                                 -7.517827
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.89 seconds
 
-    5      -76.369636716806    1.29030D-04   -9.53D-08
+    5      -76.369636716806    1.29030E-04   -9.53E-08
 
-   Number of electrons/abscissas:        9.999996      -.40D-05         43466
+   Number of electrons/abscissas:        9.999996      -.40E-05         43466
    Dirac and Becke exchange energy:     -6.490030     -0.626307     -7.116337
    VWN and LYP correlation energy :     -0.126234     -0.275257     -0.401490
    DFT exchange-correlation energy:                                 -7.517828
 
- >>> Time used in DFTDRV is   1.96 seconds
+ >>> Time used in DFTDRV is   1.89 seconds
 
-    6      -76.369636718049    1.37636D-05   -1.24D-09
+    6      -76.369636718049    1.37636E-05   -1.24E-09
 
-   Number of electrons/abscissas:        9.999996      -.40D-05         43466
+   Number of electrons/abscissas:        9.999996      -.40E-05         43466
    Dirac and Becke exchange energy:     -6.490032     -0.626307     -7.116339
    VWN and LYP correlation energy :     -0.126234     -0.275257     -0.401491
    DFT exchange-correlation energy:                                 -7.517830
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.92 seconds
 
-    7      -76.369636718061    4.45785D-07   -1.26D-11
+    7      -76.369636718061    4.45785E-07   -1.25E-11
  DIIS converged in   7 iterations !
 
 
@@ -1744,46 +1722,17 @@ H     2   21828      60     590
      Final gradient norm:           0.000000445785
 
  
-     Date and time (Linux)  : Mon Oct  1 10:15:38 2001
-     Host name              : lowdin.uio.no                           
-
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3
-   1  O   1s     0.9951  -0.2123   0.0818
-   2  O   1s     0.0279   0.4662  -0.1840
-   3  O   1s    -0.0131   0.4716  -0.3417
-   4  O   2pz    0.0017   0.1231   0.5526
-   5  O   2pz   -0.0025   0.0632   0.3833
-   6  O   3d0    0.0000   0.0071   0.0344
-   7  O   3d2+   0.0003  -0.0178   0.0001
-   8  H   1s     0.0003   0.1364   0.1428
-   9  H   1s     0.0029   0.0018   0.1036
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1
-   1  O   2px    0.6442
-   2  O   2px    0.5065
-   3  O   3d1+   0.0345
-
-     Molecular orbitals for symmetry species   3
-
- Orbital          1
-   1  O   2py    0.5147
-   2  O   2py    0.2697
-   3  O   3d1-   0.0405
-   4  H   1s     0.2376
-   5  H   1s     0.1424
+     Date and time (Linux)  : Sat Jun  8 21:19:07 2002
+     Host name              : slater.uio.no                           
 
 
 
- >>>> Total CPU  time used in SIRIUS :     11.36 seconds
- >>>> Total wall time used in SIRIUS :     11.00 seconds
+ >>>> Total CPU  time used in SIRIUS :     13.37 seconds
+ >>>> Total wall time used in SIRIUS :     14.00 seconds
 
  
-     Date and time (Linux)  : Mon Oct  1 10:15:38 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:19:07 2002
+     Host name              : slater.uio.no                           
 
 - End of Wave Function Section
  Trust radius increased due to good ratio.
@@ -1796,17 +1745,17 @@ H     2   21828      60     590
 
 
  
-     Date and time (Linux)  : Mon Oct  1 10:15:38 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:19:07 2002
+     Host name              : slater.uio.no                           
 O     1   21638      64     590
 H     2   21828      60     590
 
    Number of grid points in quadrature:     43466 (100.0%)
 
 
-   Number of electrons/abscissas:        9.999996      -.40D-05         43466
+   Number of electrons/abscissas:        9.999996      -.40E-05         43466
 
- >>> Time used in DFTDRV is   3.52 seconds
+ >>> Time used in DFTDRV is   3.90 seconds
 
 
 
@@ -1828,8 +1777,8 @@ H     2   21828      60     590
  Largest deviation from tra-rot symmetry is in gradient element  1:  1.31E-06
 
  
-     Date and time (Linux)  : Mon Oct  1 10:15:42 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:19:11 2002
+     Host name              : slater.uio.no                           
 
  WARNING: warnings have been issued, please check the output above !
 
@@ -1844,7 +1793,7 @@ H     2   21828      60     590
 
 
 
- >>>> Total CPU  time used in ABACUS:   3.60 seconds
+ >>>> Total CPU  time used in ABACUS:   3.99 seconds
  >>>> Total wall time used in ABACUS:   4.00 seconds
 
 - End of Static Property Section
@@ -1859,9 +1808,9 @@ H     2   21828      60     590
                             Next geometry (au)
                             ------------------
 
- O          0.0000000000            0.0000000000           -0.7535456999
- H    1     0.0000000000            1.4547205836            0.3767728500
- H    2     0.0000000000           -1.4547205836            0.3767728500
+ O          0.0000000000            0.0000000000           -0.3097442608
+ H    1     0.0000000000            1.4547205836            0.8205742891
+ H    2     0.0000000000           -1.4547205836            0.8205742891
 
 
 
@@ -1895,7 +1844,7 @@ H     2   21828      60     590
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
- >>> Time used in ONEDRV is   0.01 seconds
+ >>> Time used in ONEDRV is   0.00 seconds
 
 
  Number of two-electron integrals written:        3461 ( 23.5% )
@@ -1903,7 +1852,7 @@ H     2   21828      60     590
 
 
 
- >>> Time used in TWOINT is   0.03 seconds
+ >>> Time used in TWOINT is   0.04 seconds
 
 O     1   21638      64     590
 H     2   21828      60     590
@@ -1921,15 +1870,15 @@ H     2   21828      60     590
  **********************************************************************
 
  
-     Date and time (Linux)  : Mon Oct  1 10:15:42 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:19:11 2002
+     Host name              : slater.uio.no                           
 
  Title lines from integral program:
      H2O                                                                     
      Symmetry                                                                
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -1952,8 +1901,8 @@ H     2   21828      60     590
 
      Dirac, Becke, and HF exchange weights:    0.800000    0.720000    0.200000
      WVN and LYP correlation weights:          0.190000    0.810000
-     Default thresholds:                       0.10D-07    0.10D-09    0.10D-12
-     Default threshold for number of electrons:                        0.10D-02
+     Default thresholds:                       0.10E-07    0.10E-09    0.10E-12
+     Default threshold for number of electrons:                        0.10E-02
      DFT quadrature level: 4
 
      Orbital specifications
@@ -1975,7 +1924,7 @@ H     2   21828      60     590
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-06
+     Threshold for HF convergence      1.00E-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -1990,59 +1939,59 @@ H     2   21828      60     590
    Number of grid points in quadrature:     43466 (100.0%)
 
 
-   Number of electrons/abscissas:        9.999996      -.39D-05         43466
+   Number of electrons/abscissas:        9.999996      -.39E-05         43466
    Dirac and Becke exchange energy:     -6.491256     -0.626279     -7.117534
    VWN and LYP correlation energy :     -0.126251     -0.275324     -0.401574
    DFT exchange-correlation energy:                                 -7.519109
 
- >>> Time used in DFTDRV is   1.62 seconds
+ >>> Time used in DFTDRV is   1.96 seconds
 
-    1      -76.369803729241    1.69776D-02   -7.64D+01
+    1      -76.369803729241    1.69776E-02   -7.64E+01
 
-   Number of electrons/abscissas:        9.999996      -.39D-05         43466
+   Number of electrons/abscissas:        9.999996      -.39E-05         43466
    Dirac and Becke exchange energy:     -6.493469     -0.626381     -7.119851
    VWN and LYP correlation energy :     -0.126275     -0.275378     -0.401653
    DFT exchange-correlation energy:                                 -7.521504
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.92 seconds
 
-    2      -76.369817794892    7.52306D-03   -1.41D-05
+    2      -76.369817794892    7.52306E-03   -1.41E-05
 
-   Number of electrons/abscissas:        9.999996      -.39D-05         43466
+   Number of electrons/abscissas:        9.999996      -.39E-05         43466
    Dirac and Becke exchange energy:     -6.491487     -0.626334     -7.117821
    VWN and LYP correlation energy :     -0.126254     -0.275321     -0.401574
    DFT exchange-correlation energy:                                 -7.519396
 
- >>> Time used in DFTDRV is   1.56 seconds
+ >>> Time used in DFTDRV is   1.90 seconds
 
-    3      -76.369818961628    5.60130D-03   -1.17D-06
+    3      -76.369818961628    5.60130E-03   -1.17E-06
 
-   Number of electrons/abscissas:        9.999996      -.39D-05         43466
+   Number of electrons/abscissas:        9.999996      -.39E-05         43466
    Dirac and Becke exchange energy:     -6.492396     -0.626352     -7.118749
    VWN and LYP correlation energy :     -0.126263     -0.275347     -0.401611
    DFT exchange-correlation energy:                                 -7.520359
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.91 seconds
 
-    4      -76.369820356343    5.47035D-04   -1.39D-06
+    4      -76.369820356343    5.47035E-04   -1.39E-06
 
-   Number of electrons/abscissas:        9.999996      -.39D-05         43466
+   Number of electrons/abscissas:        9.999996      -.39E-05         43466
    Dirac and Becke exchange energy:     -6.492343     -0.626352     -7.118695
    VWN and LYP correlation energy :     -0.126263     -0.275346     -0.401609
    DFT exchange-correlation energy:                                 -7.520304
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.91 seconds
 
-    5      -76.369820370286    4.56038D-06   -1.39D-08
+    5      -76.369820370286    4.56038E-06   -1.39E-08
 
-   Number of electrons/abscissas:        9.999996      -.39D-05         43466
+   Number of electrons/abscissas:        9.999996      -.39E-05         43466
    Dirac and Becke exchange energy:     -6.492344     -0.626352     -7.118696
    VWN and LYP correlation energy :     -0.126263     -0.275346     -0.401609
    DFT exchange-correlation energy:                                 -7.520304
 
- >>> Time used in DFTDRV is   1.95 seconds
+ >>> Time used in DFTDRV is   1.90 seconds
 
-    6      -76.369820370288    3.90256D-07   -1.94D-12
+    6      -76.369820370288    3.90256E-07   -1.92E-12
  DIIS converged in   6 iterations !
 
 
@@ -2088,46 +2037,17 @@ H     2   21828      60     590
      Final gradient norm:           0.000000390256
 
  
-     Date and time (Linux)  : Mon Oct  1 10:15:52 2001
-     Host name              : lowdin.uio.no                           
-
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3
-   1  O   1s     0.9951  -0.2120   0.0827
-   2  O   1s     0.0279   0.4657  -0.1861
-   3  O   1s    -0.0131   0.4698  -0.3446
-   4  O   2pz    0.0017   0.1252   0.5514
-   5  O   2pz   -0.0026   0.0638   0.3809
-   6  O   3d0    0.0000   0.0077   0.0348
-   7  O   3d2+   0.0003  -0.0175   0.0003
-   8  H   1s     0.0003   0.1375   0.1435
-   9  H   1s     0.0030   0.0016   0.1029
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1
-   1  O   2px    0.6443
-   2  O   2px    0.5064
-   3  O   3d1+   0.0350
-
-     Molecular orbitals for symmetry species   3
-
- Orbital          1
-   1  O   2py    0.5158
-   2  O   2py    0.2702
-   3  O   3d1-   0.0410
-   4  H   1s     0.2373
-   5  H   1s     0.1429
+     Date and time (Linux)  : Sat Jun  8 21:19:23 2002
+     Host name              : slater.uio.no                           
 
 
 
- >>>> Total CPU  time used in SIRIUS :      9.79 seconds
- >>>> Total wall time used in SIRIUS :     10.00 seconds
+ >>>> Total CPU  time used in SIRIUS :     11.51 seconds
+ >>>> Total wall time used in SIRIUS :     12.00 seconds
 
  
-     Date and time (Linux)  : Mon Oct  1 10:15:52 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:19:23 2002
+     Host name              : slater.uio.no                           
 
 - End of Wave Function Section
  Trust radius increased due to good ratio.
@@ -2140,17 +2060,17 @@ H     2   21828      60     590
 
 
  
-     Date and time (Linux)  : Mon Oct  1 10:15:52 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:19:23 2002
+     Host name              : slater.uio.no                           
 O     1   21638      64     590
 H     2   21828      60     590
 
    Number of grid points in quadrature:     43466 (100.0%)
 
 
-   Number of electrons/abscissas:        9.999996      -.39D-05         43466
+   Number of electrons/abscissas:        9.999996      -.39E-05         43466
 
- >>> Time used in DFTDRV is   3.52 seconds
+ >>> Time used in DFTDRV is   3.90 seconds
 
 
 
@@ -2172,8 +2092,8 @@ H     2   21828      60     590
  Largest deviation from tra-rot symmetry is in gradient element  1:  1.49E-06
 
  
-     Date and time (Linux)  : Mon Oct  1 10:15:56 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:19:27 2002
+     Host name              : slater.uio.no                           
 
  WARNING: warnings have been issued, please check the output above !
 
@@ -2188,7 +2108,7 @@ H     2   21828      60     590
 
 
 
- >>>> Total CPU  time used in ABACUS:   3.59 seconds
+ >>>> Total CPU  time used in ABACUS:   3.99 seconds
  >>>> Total wall time used in ABACUS:   4.00 seconds
 
 - End of Static Property Section
@@ -2203,9 +2123,9 @@ H     2   21828      60     590
                             Next geometry (au)
                             ------------------
 
- O          0.0000000000            0.0000000000           -0.7533477584
- H    1     0.0000000000            1.4408818018            0.3766738792
- H    2     0.0000000000           -1.4408818018            0.3766738792
+ O          0.0000000000            0.0000000000           -0.3095463193
+ H    1     0.0000000000            1.4408818018            0.8204753183
+ H    2     0.0000000000           -1.4408818018            0.8204753183
 
 
 
@@ -2247,7 +2167,7 @@ H     2   21828      60     590
 
 
 
- >>> Time used in TWOINT is   0.03 seconds
+ >>> Time used in TWOINT is   0.04 seconds
 
 O     1   21638      64     590
 H     2   21828      60     590
@@ -2265,15 +2185,15 @@ H     2   21828      60     590
  **********************************************************************
 
  
-     Date and time (Linux)  : Mon Oct  1 10:15:56 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:19:27 2002
+     Host name              : slater.uio.no                           
 
  Title lines from integral program:
      H2O                                                                     
      Symmetry                                                                
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -2296,8 +2216,8 @@ H     2   21828      60     590
 
      Dirac, Becke, and HF exchange weights:    0.800000    0.720000    0.200000
      WVN and LYP correlation weights:          0.190000    0.810000
-     Default thresholds:                       0.10D-07    0.10D-09    0.10D-12
-     Default threshold for number of electrons:                        0.10D-02
+     Default thresholds:                       0.10E-07    0.10E-09    0.10E-12
+     Default threshold for number of electrons:                        0.10E-02
      DFT quadrature level: 4
 
      Orbital specifications
@@ -2319,7 +2239,7 @@ H     2   21828      60     590
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-06
+     Threshold for HF convergence      1.00E-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -2334,68 +2254,68 @@ H     2   21828      60     590
    Number of grid points in quadrature:     43466 (100.0%)
 
 
-   Number of electrons/abscissas:        9.999996      -.39D-05         43466
+   Number of electrons/abscissas:        9.999996      -.39E-05         43466
    Dirac and Becke exchange energy:     -6.494498     -0.626303     -7.120801
    VWN and LYP correlation energy :     -0.126292     -0.275459     -0.401750
    DFT exchange-correlation energy:                                 -7.522552
 
- >>> Time used in DFTDRV is   1.62 seconds
+ >>> Time used in DFTDRV is   1.95 seconds
 
-    1      -76.369873891809    1.82014D-02   -7.64D+01
+    1      -76.369873891809    1.82014E-02   -7.64E+01
 
-   Number of electrons/abscissas:        9.999996      -.38D-05         43466
+   Number of electrons/abscissas:        9.999996      -.38E-05         43466
    Dirac and Becke exchange energy:     -6.498729     -0.626442     -7.125171
    VWN and LYP correlation energy :     -0.126340     -0.275573     -0.401913
    DFT exchange-correlation energy:                                 -7.527084
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.90 seconds
 
-    2      -76.369884389788    1.49031D-02   -1.05D-05
+    2      -76.369884389788    1.49031E-02   -1.05E-05
 
-   Number of electrons/abscissas:        9.999996      -.38D-05         43466
+   Number of electrons/abscissas:        9.999996      -.38E-05         43466
    Dirac and Becke exchange energy:     -6.495652     -0.626372     -7.122024
    VWN and LYP correlation energy :     -0.126307     -0.275483     -0.401791
    DFT exchange-correlation energy:                                 -7.523814
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.91 seconds
 
-    3      -76.369892985364    5.28003D-03   -8.60D-06
+    3      -76.369892985364    5.28003E-03   -8.60E-06
 
-   Number of electrons/abscissas:        9.999996      -.38D-05         43466
+   Number of electrons/abscissas:        9.999996      -.38E-05         43466
    Dirac and Becke exchange energy:     -6.496472     -0.626387     -7.122859
    VWN and LYP correlation energy :     -0.126316     -0.275508     -0.401824
    DFT exchange-correlation energy:                                 -7.524683
 
- >>> Time used in DFTDRV is   1.63 seconds
+ >>> Time used in DFTDRV is   1.91 seconds
 
-    4      -76.369894249492    5.09038D-04   -1.26D-06
+    4      -76.369894249492    5.09038E-04   -1.26E-06
 
-   Number of electrons/abscissas:        9.999996      -.38D-05         43466
+   Number of electrons/abscissas:        9.999996      -.38E-05         43466
    Dirac and Becke exchange energy:     -6.496430     -0.626386     -7.122816
    VWN and LYP correlation energy :     -0.126316     -0.275507     -0.401822
    DFT exchange-correlation energy:                                 -7.524638
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.89 seconds
 
-    5      -76.369894261629    9.88501D-06   -1.21D-08
+    5      -76.369894261629    9.88501E-06   -1.21E-08
 
-   Number of electrons/abscissas:        9.999996      -.38D-05         43466
+   Number of electrons/abscissas:        9.999996      -.38E-05         43466
    Dirac and Becke exchange energy:     -6.496429     -0.626386     -7.122816
-   VWN and LYP correlation energy :     -0.126316     -0.275507     -0.401822
-   DFT exchange-correlation energy:                                 -7.524638
-
- >>> Time used in DFTDRV is   1.55 seconds
-
-    6      -76.369894261641    1.21535D-06   -1.19D-11
-
-   Number of electrons/abscissas:        9.999996      -.38D-05         43466
-   Dirac and Becke exchange energy:     -6.496429     -0.626386     -7.122815
    VWN and LYP correlation energy :     -0.126316     -0.275507     -0.401822
    DFT exchange-correlation energy:                                 -7.524638
 
  >>> Time used in DFTDRV is   1.90 seconds
 
-    7      -76.369894261641    3.85361D-08    1.60D-14
+    6      -76.369894261641    1.21535E-06   -1.19E-11
+
+   Number of electrons/abscissas:        9.999996      -.38E-05         43466
+   Dirac and Becke exchange energy:     -6.496429     -0.626386     -7.122815
+   VWN and LYP correlation energy :     -0.126316     -0.275507     -0.401822
+   DFT exchange-correlation energy:                                 -7.524638
+
+ >>> Time used in DFTDRV is   1.91 seconds
+
+    7      -76.369894261641    3.85362E-08   -3.55E-15
  DIIS converged in   7 iterations !
 
 
@@ -2435,52 +2355,23 @@ H     2   21828      60     590
      Spatial symmetry:            1
 
      Final    HF energy:          -76.369894261641
-     Nuclear repulsion:             9.084715666665
-     Electronic energy:           -85.454609928306
+     Nuclear repulsion:             9.084715666661
+     Electronic energy:           -85.454609928302
 
      Final gradient norm:           0.000000038536
 
  
-     Date and time (Linux)  : Mon Oct  1 10:16:07 2001
-     Host name              : lowdin.uio.no                           
-
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3
-   1  O   1s     0.9950  -0.2118   0.0833
-   2  O   1s     0.0279   0.4652  -0.1872
-   3  O   1s    -0.0132   0.4674  -0.3466
-   4  O   2pz    0.0017   0.1270   0.5514
-   5  O   2pz   -0.0026   0.0638   0.3801
-   6  O   3d0    0.0000   0.0081   0.0353
-   7  O   3d2+   0.0003  -0.0174   0.0005
-   8  H   1s     0.0003   0.1390   0.1434
-   9  H   1s     0.0030   0.0013   0.1013
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1
-   1  O   2px    0.6442
-   2  O   2px    0.5065
-   3  O   3d1+   0.0354
-
-     Molecular orbitals for symmetry species   3
-
- Orbital          1
-   1  O   2py    0.5169
-   2  O   2py    0.2697
-   3  O   3d1-   0.0413
-   4  H   1s     0.2375
-   5  H   1s     0.1423
+     Date and time (Linux)  : Sat Jun  8 21:19:40 2002
+     Host name              : slater.uio.no                           
 
 
 
- >>>> Total CPU  time used in SIRIUS :     11.37 seconds
- >>>> Total wall time used in SIRIUS :     11.00 seconds
+ >>>> Total CPU  time used in SIRIUS :     13.40 seconds
+ >>>> Total wall time used in SIRIUS :     13.00 seconds
 
  
-     Date and time (Linux)  : Mon Oct  1 10:16:07 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:19:40 2002
+     Host name              : slater.uio.no                           
 
 - End of Wave Function Section
  Trust radius squarely increased due to very good ratio.
@@ -2493,17 +2384,17 @@ H     2   21828      60     590
 
 
  
-     Date and time (Linux)  : Mon Oct  1 10:16:07 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:19:40 2002
+     Host name              : slater.uio.no                           
 O     1   21638      64     590
 H     2   21828      60     590
 
    Number of grid points in quadrature:     43466 (100.0%)
 
 
-   Number of electrons/abscissas:        9.999996      -.38D-05         43466
+   Number of electrons/abscissas:        9.999996      -.38E-05         43466
 
- >>> Time used in DFTDRV is   3.52 seconds
+ >>> Time used in DFTDRV is   3.90 seconds
 
 
 
@@ -2525,8 +2416,8 @@ H     2   21828      60     590
  Largest deviation from tra-rot symmetry is in gradient element  1:  1.78E-06
 
  
-     Date and time (Linux)  : Mon Oct  1 10:16:11 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:19:44 2002
+     Host name              : slater.uio.no                           
 
  WARNING: warnings have been issued, please check the output above !
 
@@ -2541,7 +2432,7 @@ H     2   21828      60     590
 
 
 
- >>>> Total CPU  time used in ABACUS:   3.60 seconds
+ >>>> Total CPU  time used in ABACUS:   3.98 seconds
  >>>> Total wall time used in ABACUS:   4.00 seconds
 
 - End of Static Property Section
@@ -2556,9 +2447,9 @@ H     2   21828      60     590
                             Next geometry (au)
                             ------------------
 
- O          0.0000000000            0.0000000000           -0.7527809800
- H    1     0.0000000000            1.4413662253            0.3763904900
- H    2     0.0000000000           -1.4413662253            0.3763904900
+ O          0.0000000000            0.0000000000           -0.3089795409
+ H    1     0.0000000000            1.4413662253            0.8201919292
+ H    2     0.0000000000           -1.4413662253            0.8201919292
 
 
 
@@ -2600,7 +2491,7 @@ H     2   21828      60     590
 
 
 
- >>> Time used in TWOINT is   0.03 seconds
+ >>> Time used in TWOINT is   0.04 seconds
 
 O     1   21638      64     590
 H     2   21828      60     590
@@ -2618,15 +2509,15 @@ H     2   21828      60     590
  **********************************************************************
 
  
-     Date and time (Linux)  : Mon Oct  1 10:16:11 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:19:44 2002
+     Host name              : slater.uio.no                           
 
  Title lines from integral program:
      H2O                                                                     
      Symmetry                                                                
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -2649,8 +2540,8 @@ H     2   21828      60     590
 
      Dirac, Becke, and HF exchange weights:    0.800000    0.720000    0.200000
      WVN and LYP correlation weights:          0.190000    0.810000
-     Default thresholds:                       0.10D-07    0.10D-09    0.10D-12
-     Default threshold for number of electrons:                        0.10D-02
+     Default thresholds:                       0.10E-07    0.10E-09    0.10E-12
+     Default threshold for number of electrons:                        0.10E-02
      DFT quadrature level: 4
 
      Orbital specifications
@@ -2672,7 +2563,7 @@ H     2   21828      60     590
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-06
+     Threshold for HF convergence      1.00E-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -2687,50 +2578,50 @@ H     2   21828      60     590
    Number of grid points in quadrature:     43466 (100.0%)
 
 
-   Number of electrons/abscissas:        9.999996      -.38D-05         43466
+   Number of electrons/abscissas:        9.999996      -.38E-05         43466
    Dirac and Becke exchange energy:     -6.496457     -0.626386     -7.122842
    VWN and LYP correlation energy :     -0.126316     -0.275508     -0.401824
    DFT exchange-correlation energy:                                 -7.524666
 
- >>> Time used in DFTDRV is   1.61 seconds
+ >>> Time used in DFTDRV is   1.96 seconds
 
-    1      -76.369894324719    7.27613D-04   -7.64D+01
+    1      -76.369894324719    7.27613E-04   -7.64E+01
 
-   Number of electrons/abscissas:        9.999996      -.38D-05         43466
+   Number of electrons/abscissas:        9.999996      -.38E-05         43466
    Dirac and Becke exchange energy:     -6.496533     -0.626386     -7.122919
    VWN and LYP correlation energy :     -0.126317     -0.275510     -0.401827
    DFT exchange-correlation energy:                                 -7.524746
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.89 seconds
 
-    2      -76.369894365384    3.30491D-04   -4.07D-08
+    2      -76.369894365384    3.30491E-04   -4.07E-08
 
-   Number of electrons/abscissas:        9.999996      -.38D-05         43466
+   Number of electrons/abscissas:        9.999996      -.38E-05         43466
    Dirac and Becke exchange energy:     -6.496440     -0.626384     -7.122824
    VWN and LYP correlation energy :     -0.126316     -0.275508     -0.401823
    DFT exchange-correlation energy:                                 -7.524648
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.91 seconds
 
-    3      -76.369894366394    2.95644D-04   -1.01D-09
+    3      -76.369894366394    2.95644E-04   -1.01E-09
 
-   Number of electrons/abscissas:        9.999996      -.38D-05         43466
+   Number of electrons/abscissas:        9.999996      -.38E-05         43466
    Dirac and Becke exchange energy:     -6.496487     -0.626385     -7.122872
    VWN and LYP correlation energy :     -0.126316     -0.275509     -0.401825
    DFT exchange-correlation energy:                                 -7.524697
 
- >>> Time used in DFTDRV is   1.58 seconds
+ >>> Time used in DFTDRV is   1.90 seconds
 
-    4      -76.369894370346    1.16711D-05   -3.95D-09
+    4      -76.369894370346    1.16711E-05   -3.95E-09
 
-   Number of electrons/abscissas:        9.999996      -.38D-05         43466
+   Number of electrons/abscissas:        9.999996      -.38E-05         43466
    Dirac and Becke exchange energy:     -6.496486     -0.626385     -7.122870
    VWN and LYP correlation energy :     -0.126316     -0.275509     -0.401825
    DFT exchange-correlation energy:                                 -7.524696
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.90 seconds
 
-    5      -76.369894370352    6.70594D-07   -6.36D-12
+    5      -76.369894370352    6.70594E-07   -6.55E-12
  DIIS converged in   5 iterations !
 
 
@@ -2770,52 +2661,23 @@ H     2   21828      60     590
      Spatial symmetry:            1
 
      Final    HF energy:          -76.369894370352
-     Nuclear repulsion:             9.085282463562
-     Electronic energy:           -85.455176833915
+     Nuclear repulsion:             9.085282463561
+     Electronic energy:           -85.455176833913
 
      Final gradient norm:           0.000000670594
 
  
-     Date and time (Linux)  : Mon Oct  1 10:16:19 2001
-     Host name              : lowdin.uio.no                           
-
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3
-   1  O   1s     0.9950  -0.2118   0.0832
-   2  O   1s     0.0279   0.4652  -0.1871
-   3  O   1s    -0.0132   0.4674  -0.3464
-   4  O   2pz    0.0017   0.1270   0.5514
-   5  O   2pz   -0.0026   0.0637   0.3803
-   6  O   3d0    0.0000   0.0080   0.0353
-   7  O   3d2+   0.0003  -0.0174   0.0005
-   8  H   1s     0.0003   0.1390   0.1433
-   9  H   1s     0.0030   0.0013   0.1013
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1
-   1  O   2px    0.6442
-   2  O   2px    0.5065
-   3  O   3d1+   0.0354
-
-     Molecular orbitals for symmetry species   3
-
- Orbital          1
-   1  O   2py    0.5169
-   2  O   2py    0.2696
-   3  O   3d1-   0.0412
-   4  H   1s     0.2375
-   5  H   1s     0.1422
+     Date and time (Linux)  : Sat Jun  8 21:19:54 2002
+     Host name              : slater.uio.no                           
 
 
 
- >>>> Total CPU  time used in SIRIUS :      7.85 seconds
- >>>> Total wall time used in SIRIUS :      8.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      9.58 seconds
+ >>>> Total wall time used in SIRIUS :     10.00 seconds
 
  
-     Date and time (Linux)  : Mon Oct  1 10:16:19 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:19:54 2002
+     Host name              : slater.uio.no                           
 
 - End of Wave Function Section
  Trust radius squarely increased due to very good ratio.
@@ -2828,17 +2690,17 @@ H     2   21828      60     590
 
 
  
-     Date and time (Linux)  : Mon Oct  1 10:16:19 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:19:54 2002
+     Host name              : slater.uio.no                           
 O     1   21638      64     590
 H     2   21828      60     590
 
    Number of grid points in quadrature:     43466 (100.0%)
 
 
-   Number of electrons/abscissas:        9.999996      -.38D-05         43466
+   Number of electrons/abscissas:        9.999996      -.38E-05         43466
 
- >>> Time used in DFTDRV is   3.56 seconds
+ >>> Time used in DFTDRV is   3.89 seconds
 
 
 
@@ -2860,8 +2722,8 @@ H     2   21828      60     590
  Largest deviation from tra-rot symmetry is in gradient element  1:  1.78E-06
 
  
-     Date and time (Linux)  : Mon Oct  1 10:16:22 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:19:58 2002
+     Host name              : slater.uio.no                           
 
  WARNING: warnings have been issued, please check the output above !
 
@@ -2876,8 +2738,8 @@ H     2   21828      60     590
 
 
 
- >>>> Total CPU  time used in ABACUS:   3.65 seconds
- >>>> Total wall time used in ABACUS:   3.00 seconds
+ >>>> Total CPU  time used in ABACUS:   3.98 seconds
+ >>>> Total wall time used in ABACUS:   4.00 seconds
 
 - End of Static Property Section
 
@@ -2891,9 +2753,9 @@ H     2   21828      60     590
                             Next geometry (au)
                             ------------------
 
- O          0.0000000000            0.0000000000           -0.7527542617
- H    1     0.0000000000            1.4413872472            0.3763771309
- H    2     0.0000000000           -1.4413872472            0.3763771309
+ O          0.0000000000            0.0000000000           -0.3089528226
+ H    1     0.0000000000            1.4413872472            0.8201785700
+ H    2     0.0000000000           -1.4413872472            0.8201785700
 
 
 
@@ -2942,8 +2804,8 @@ H     2   21828      60     590
 
    Number of grid points in quadrature:     43466 (100.0%)
 
- >>>> Total CPU  time used in HERMIT:   0.11 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.10 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
@@ -2953,15 +2815,15 @@ H     2   21828      60     590
  **********************************************************************
 
  
-     Date and time (Linux)  : Mon Oct  1 10:16:23 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:19:58 2002
+     Host name              : slater.uio.no                           
 
  Title lines from integral program:
      H2O                                                                     
      Symmetry                                                                
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4  =   2 is   5
+ Print level on unit LUW4  =   2 is   3
 
      Restricted, closed shell Hartree-Fock calculation.
 
@@ -2984,8 +2846,8 @@ H     2   21828      60     590
 
      Dirac, Becke, and HF exchange weights:    0.800000    0.720000    0.200000
      WVN and LYP correlation weights:          0.190000    0.810000
-     Default thresholds:                       0.10D-07    0.10D-09    0.10D-12
-     Default threshold for number of electrons:                        0.10D-02
+     Default thresholds:                       0.10E-07    0.10E-09    0.10E-12
+     Default threshold for number of electrons:                        0.10E-02
      DFT quadrature level: 4
 
      Orbital specifications
@@ -3007,7 +2869,7 @@ H     2   21828      60     590
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-06
+     Threshold for HF convergence      1.00E-06
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -3022,41 +2884,41 @@ H     2   21828      60     590
    Number of grid points in quadrature:     43466 (100.0%)
 
 
-   Number of electrons/abscissas:        9.999996      -.38D-05         43466
+   Number of electrons/abscissas:        9.999996      -.38E-05         43466
    Dirac and Becke exchange energy:     -6.496487     -0.626385     -7.122872
    VWN and LYP correlation energy :     -0.126316     -0.275509     -0.401825
    DFT exchange-correlation energy:                                 -7.524697
 
- >>> Time used in DFTDRV is   1.61 seconds
+ >>> Time used in DFTDRV is   1.95 seconds
 
-    1      -76.369894370440    3.40838D-05   -7.64D+01
+    1      -76.369894370440    3.40838E-05   -7.64E+01
 
-   Number of electrons/abscissas:        9.999996      -.38D-05         43466
+   Number of electrons/abscissas:        9.999996      -.38E-05         43466
    Dirac and Becke exchange energy:     -6.496491     -0.626385     -7.122876
    VWN and LYP correlation energy :     -0.126316     -0.275509     -0.401825
    DFT exchange-correlation energy:                                 -7.524702
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.94 seconds
 
-    2      -76.369894370531    1.71755D-05   -9.03D-11
+    2      -76.369894370530    1.71755E-05   -9.03E-11
 
-   Number of electrons/abscissas:        9.999996      -.38D-05         43466
+   Number of electrons/abscissas:        9.999996      -.38E-05         43466
    Dirac and Becke exchange energy:     -6.496487     -0.626385     -7.122871
    VWN and LYP correlation energy :     -0.126316     -0.275509     -0.401825
    DFT exchange-correlation energy:                                 -7.524697
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.90 seconds
 
-    3      -76.369894370535    1.41222D-05   -4.26D-12
+    3      -76.369894370535    1.41222E-05   -4.20E-12
 
-   Number of electrons/abscissas:        9.999996      -.38D-05         43466
+   Number of electrons/abscissas:        9.999996      -.38E-05         43466
    Dirac and Becke exchange energy:     -6.496489     -0.626385     -7.122874
    VWN and LYP correlation energy :     -0.126316     -0.275509     -0.401825
    DFT exchange-correlation energy:                                 -7.524699
 
- >>> Time used in DFTDRV is   1.55 seconds
+ >>> Time used in DFTDRV is   1.88 seconds
 
-    4      -76.369894370544    4.23195D-07   -9.20D-12
+    4      -76.369894370544    4.23195E-07   -9.28E-12
  DIIS converged in   4 iterations !
 
 
@@ -3096,52 +2958,23 @@ H     2   21828      60     590
      Spatial symmetry:            1
 
      Final    HF energy:          -76.369894370544
-     Nuclear repulsion:             9.085316379284
-     Electronic energy:           -85.455210749828
+     Nuclear repulsion:             9.085316379285
+     Electronic energy:           -85.455210749829
 
      Final gradient norm:           0.000000423195
 
  
-     Date and time (Linux)  : Mon Oct  1 10:16:29 2001
-     Host name              : lowdin.uio.no                           
-
-     Molecular orbitals for symmetry species   1
-
- Orbital          1        2        3
-   1  O   1s     0.9950  -0.2118   0.0832
-   2  O   1s     0.0279   0.4652  -0.1871
-   3  O   1s    -0.0132   0.4674  -0.3464
-   4  O   2pz    0.0017   0.1270   0.5514
-   5  O   2pz   -0.0026   0.0637   0.3803
-   6  O   3d0    0.0000   0.0080   0.0353
-   7  O   3d2+   0.0003  -0.0174   0.0005
-   8  H   1s     0.0003   0.1390   0.1433
-   9  H   1s     0.0030   0.0013   0.1013
-
-     Molecular orbitals for symmetry species   2
-
- Orbital          1
-   1  O   2px    0.6442
-   2  O   2px    0.5065
-   3  O   3d1+   0.0354
-
-     Molecular orbitals for symmetry species   3
-
- Orbital          1
-   1  O   2py    0.5169
-   2  O   2py    0.2696
-   3  O   3d1-   0.0412
-   4  H   1s     0.2375
-   5  H   1s     0.1422
+     Date and time (Linux)  : Sat Jun  8 21:20:06 2002
+     Host name              : slater.uio.no                           
 
 
 
- >>>> Total CPU  time used in SIRIUS :      6.27 seconds
- >>>> Total wall time used in SIRIUS :      6.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      7.70 seconds
+ >>>> Total wall time used in SIRIUS :      8.00 seconds
 
  
-     Date and time (Linux)  : Mon Oct  1 10:16:29 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:20:06 2002
+     Host name              : slater.uio.no                           
 
 - End of Wave Function Section
  Trust radius increased due to good ratio.
@@ -3154,17 +2987,17 @@ H     2   21828      60     590
 
 
  
-     Date and time (Linux)  : Mon Oct  1 10:16:29 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:20:06 2002
+     Host name              : slater.uio.no                           
 O     1   21638      64     590
 H     2   21828      60     590
 
    Number of grid points in quadrature:     43466 (100.0%)
 
 
-   Number of electrons/abscissas:        9.999996      -.38D-05         43466
+   Number of electrons/abscissas:        9.999996      -.38E-05         43466
 
- >>> Time used in DFTDRV is   3.58 seconds
+ >>> Time used in DFTDRV is   3.90 seconds
 
 
 
@@ -3186,8 +3019,8 @@ H     2   21828      60     590
  Largest deviation from tra-rot symmetry is in gradient element  1:  1.78E-06
 
  
-     Date and time (Linux)  : Mon Oct  1 10:16:33 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:20:10 2002
+     Host name              : slater.uio.no                           
 
  WARNING: warnings have been issued, please check the output above !
 
@@ -3202,7 +3035,7 @@ H     2   21828      60     590
 
 
 
- >>>> Total CPU  time used in ABACUS:   3.67 seconds
+ >>>> Total CPU  time used in ABACUS:   3.99 seconds
  >>>> Total wall time used in ABACUS:   4.00 seconds
 
 - End of Static Property Section
@@ -3217,9 +3050,9 @@ H     2   21828      60     590
                            Final geometry (au)
                            -------------------
 
- O          0.0000000000            0.0000000000           -0.7527542617
- H    1     0.0000000000            1.4413872472            0.3763771309
- H    2     0.0000000000           -1.4413872472            0.3763771309
+ O          0.0000000000            0.0000000000           -0.3089528226
+ H    1     0.0000000000            1.4413872472            0.8201785700
+ H    2     0.0000000000           -1.4413872472            0.8201785700
 
 
 
@@ -3242,8 +3075,8 @@ H     2   21828      60     590
 
 
  
-     Date and time (Linux)  : Mon Oct  1 10:16:33 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:20:10 2002
+     Host name              : slater.uio.no                           
 
 
  ***************************************************************************
@@ -3252,17 +3085,17 @@ H     2   21828      60     590
 
 
  
-     Date and time (Linux)  : Mon Oct  1 10:16:33 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:20:10 2002
+     Host name              : slater.uio.no                           
 
 
 
                          Molecular geometry (au)
                          -----------------------
 
- O          0.0000000000            0.0000000000           -0.7527542617
- H    1     0.0000000000            1.4413872472            0.3763771309
- H    2     0.0000000000           -1.4413872472            0.3763771309
+ O          0.0000000000            0.0000000000           -0.3089528226
+ H    1     0.0000000000            1.4413872472            0.8201785700
+ H    2     0.0000000000           -1.4413872472            0.8201785700
 
 
 
@@ -3275,8 +3108,8 @@ H     2   21828      60     590
 
 
      Total energy        -76.3698943705 au (Hartrees)
-                         -2078.13047593 eV
-                           -200509.1291 kJ/mol
+                         -2078.13047882 eV
+                           -200509.1289 kJ/mol
 
 
 
@@ -3284,11 +3117,11 @@ H     2   21828      60     590
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.1947315230 au
-     Mass-velocity correction:                  -0.2460025171 au
+     Darwin correction:                          0.1947314937 au
+     Mass-velocity correction:                  -0.2460024801 au
 
-     Total relativistic correction:             -0.0512709942 au (0.0671%)
-     Non-relativistic + relativistic energy:   -76.4211653647 au
+     Total relativistic correction:             -0.0512709865 au (0.0671%)
+     Non-relativistic + relativistic energy:   -76.4211653570 au
 
 
 
@@ -3296,7 +3129,7 @@ H     2   21828      60     590
                               Dipole moment
                               -------------
 
-                    0.820818 au           2.086331 Debye
+                    0.820818 au           2.086311 Debye
 
 
 
@@ -3306,9 +3139,9 @@ H     2   21828      60     590
 
                                au             Debye
 
-                    z      0.82081818      2.08633102
+                    z      0.82081818      2.08631147
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -3352,7 +3185,7 @@ H     2   21828      60     590
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.02 seconds
+ >>>> Total CPU  time used in ABACUS:   0.03 seconds
  >>>> Total wall time used in ABACUS:   0.00 seconds
 
 - End of Static Property Section
@@ -3367,9 +3200,9 @@ H     2   21828      60     590
                               Final geometry
                               --------------
 
- O          0.0000000000            0.0000000000           -0.7527542617
- H    1     0.0000000000            1.4413872472            0.3763771309
- H    2     0.0000000000           -1.4413872472            0.3763771309
+ O          0.0000000000            0.0000000000           -0.3089528226
+ H    1     0.0000000000            1.4413872472            0.8201785700
+ H    2     0.0000000000           -1.4413872472            0.8201785700
 
 
 
@@ -3386,15 +3219,15 @@ H     2   21828      60     590
 
  *) Newton step taken.
 
- Geometry converged in            8 iterations!
+ Geometry converged in  8 iterations!
 
  Energy at final geometry is       :     -76.369894 a.u.
  Energy change during optimization :      -0.027849 a.u.
                                             -73.116 kJ/mol
 
- >>>> Total CPU  time used in DALTON:  1 minute  56 seconds
- >>>> Total wall time used in DALTON:  1 minute  58 seconds
+ >>>> Total CPU  time used in DALTON:  2 minutes 12 seconds
+ >>>> Total wall time used in DALTON:  2 minutes 13 seconds
 
  
-     Date and time (Linux)  : Mon Oct  1 10:16:33 2001
-     Host name              : lowdin.uio.no                           
+     Date and time (Linux)  : Sat Jun  8 21:20:10 2002
+     Host name              : slater.uio.no                           
