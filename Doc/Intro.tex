@@ -3,7 +3,7 @@
 
 The \dalton\ program system is designed to allow convenient,
 automated determination of a large number of molecular properties
-based on an SCF, DFT, MP2, Coupled Cluster, or MCSCF reference wave
+based on an HF, DFT, MP2, coupled cluster, or MCSCF reference wave
 function. Additions to the Dalton~2.0 release include
 density functional theory implemented fully up to quadratic response
 theory for closed-shell systems, as well as second derivatives for
@@ -25,7 +25,7 @@ in the time-independent, non-relativistic Schr\"{o}dinger
 equation, as well as an extensive number of integrals related to
 different molecular properties. \eri\ is a vectorized and
 distribution-oriented integral generator that may be invoked in
-certain calculations, in particular in integral-direct coupled-cluster
+certain calculations, in particular in integral-direct coupled cluster
 calculations. \sir\ is the (MC)SCF wave function 
 optimization part, and is described comprehensively in the
 METECC-94 book~\cite{hjajhajomotecc}. \aba\ evaluates the
@@ -40,9 +40,9 @@ Amplitudes - SOPPA(CCSD). A new density functional theory module has
 been added in the 2.0 release of the program. Existing modules have
 been extended with the NEVPT2 and the MP2-R12 methodologies.
 %New for
-%this release is {\cc}, a Coupled Cluster program that can calculate
-%coupled-cluster energies and response properties for a number of
-%coupled-cluster approximations. 
+%this release is {\cc}, a coupled cluster program that can calculate
+%coupled cluster energies and response properties for a number of
+%coupled cluster approximations. 
 
 Throughout this manual there will be references to articles
 describing the implementation of a specific molecular property or

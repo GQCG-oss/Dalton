@@ -11,9 +11,49 @@ P.~R. Taylor.
 \newblock Symmetry-adapted integral derivatives.
 \newblock {\em Theor.~Chim.~Acta}, 69:447, 1986.
 
+\bibitem{tydptnchcpl393}
+T.~Yanai, D.~P. Tew, and N.~C. handy.
+\newblock {\em Chem.~Phys.~Lett.}, 393:51, 2004.
+
+\bibitem{ytttsytykhjcp120}
+Y.~Tawada, T.~Tsuneda, S.~Yanagisawa, T.~Yanai, and K.~Hirao.
+\newblock {\em J.~Chem.~Phys.}, 120:8425, 2004.
+
+\bibitem{carcsetljpmjcp114}
+C.~Angeli, R.~Cimiraglia, S.~Evangelisti, T.~Leininger, and J.-P. Malrieu.
+\newblock {\em J.~Chem.~Phys.}, 114:10252, 2001.
+
+\bibitem{carcjpmcpl350}
+C.~Angeli, R.~Cimiraglia, and J.-P. Malrieu.
+\newblock {\em Chem.~Phys.~Lett.}, 350:297, 2001.
+
+\bibitem{carcjpmjcp117}
+C.~Angeli, R.~Cimiraglia, and J.-P. Malrieu.
+\newblock {\em J.~Chem.~Phys.}, 117:9138, 2002.
+
+\bibitem{kapamborjcp96}
+K.~Andersson, P.-{\AA}. Malmqvist, and B.~O. Roos.
+\newblock {\em J.~Chem.~Phys.}, 96:1218, 1992.
+
+\bibitem{kgdjcp102}
+K.~G. Dyall.
+\newblock {\em J.~Chem.~Phys.}, 102:4909, 1995.
+
+\bibitem{wkccmsjcp116}
+W.~Klopper and C.~C.~M. Samson.
+\newblock {\em J.~Chem.~Phys.}, 116:6397, 2002.
+
+\bibitem{ccmswkthcpc149}
+C.~C.~M. Samson, W.~Klopper, and T.~Helgaker.
+\newblock {\em Comp.~Phys.~Commun.}, 149:1, 2002.
+
 \bibitem{pndmbhjajjojcp115}
 P.~Norman, D.~M. Bishop, H.~J.~Aa. Jensen, and J.~Oddershede.
 \newblock {\em J.~Chem.~Phys.}, 115:10323, 2001.
+
+\bibitem{fjjcp115}
+F.~Jensen.
+\newblock {\em J.~Chem.~Phys.}, 115:9113, 2001.
 
 \bibitem{poakrprtjcp112}
 {\mbox{P.-O.}}~{\AA}strand, K.~Ruud, and P.~R. Taylor.
@@ -581,6 +621,12 @@ H.~B. Schlegel.
 \newblock Optimization of equilibrium geometries and transition structures.
 \newblock {\em J.~Comput.~Chem.}, 3:214, 1982.
 
+\bibitem{numder}
+T.~A. Ruden, P.~R. Taylor, and T.~Helgaker.
+\newblock Automated calculation of fundamental frequencies: application to
+  {AlH$_3$} using the {CCSD(T)} method.
+\newblock {\em J.~Chem.~Phys.}, 119:1951--1960, 2003.
+
 \bibitem{pemsjaahborjcp74}
 P.~E.~M. Siegbahn, J.~Alml\"{o}f, A.~Heiberg, and B.~O. Roos.
 \newblock The complete active space {SCF} ({CASSCF}) method in a
@@ -820,6 +866,12 @@ P.~Norman, K.~Ruud, and T.~Helgaker.
 H.~Sellers.
 \newblock {\em Int.~J.~Quantum Chem.}, 30:433, 1986.
 
+\bibitem{trarot}
+T.~Helgaker.
+\newblock Translational and rotational symmetries of molecular geometrical
+  derivatives.
+\newblock {\em Acta Chem. Scand.}, pages 515--518, 1988.
+
 \bibitem{jrtsvmjcp58}
 J.~Rose, T.~Shibuya, and V.~McKoy.
 \newblock {\em J.~Chem.~Phys.}, 58:74, 1973.
@@ -892,6 +944,10 @@ D.~Jonsson, P.~Norman, Y.~Liu, and H.~{\AA}gren.
 \newblock Response theory for static and dynamic polarizabilities of excited
   states.
 \newblock {\em J.~Chem.~Phys.}, 105:581, 1996.
+
+\bibitem{skmwsmsgjpca102}
+S.~Koseki, M.~W. Schmidt, and M.~S. Gordon.
+\newblock {\em J.~Phys.~Chem.~{\bf A}}, 102:10430, 1998.
 
 \bibitem{Christiansen:CPL243}
 O.~Christiansen, H.~Koch, and P.~J{\o}rgensen.

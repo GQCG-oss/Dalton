@@ -187,6 +187,8 @@ J.Am.Chem.Soc.}, {\bf 112},\hspace{0.25em}8251, (1990)
 \item Solvent effects: K.V.Mikkelsen,
 P.J{\o}rgensen, K.Ruud, and T.Helgaker. \newblock {\em J.Chem.Phys.}, {\bf
 107},\hspace{0.25em}1170, (1997).
+\item DFT nuclear shieldings: T.Helgaker, P.J.Wilson, R.D.Amos, and N.C.Handy.
+\newblock {\em J.Chem.Phys.}, {\bf 113},\hspace{0.25em}2983, (2000).
 \item CTOCD-DZ nuclear shielding: A.Ligabue, S.P.A.Sauer, P.Lazzeretti.
 \newblock {\em J.Chem.Phys.}, {\bf 118},\hspace{0.25em}6830, (2003).
 \end{list}
@@ -352,7 +354,7 @@ look like
 .HF
 **PROPERTIES
 .SPIN-R
-.ISOTOP
+,ISOTOP
     3
     2   1    1
 **END OF DALTON INPUT
@@ -399,6 +401,8 @@ K.Ruud and T.Helgaker.  \newblock {\em J.Chem.Phys.}, {\bf
 108},\hspace{0.25em}2528, (1998)
 \item SOPPA and SOPPA(CCSD): T.Enevoldsen, J.Oddershede, and S.P.A. Sauer.
 \newblock {\em Theor.~Chem.~Acc.}, {\bf 100},\hspace{0.25em}275, (1998)
+\item DFT: T.Helgaker, M.Watson, and N.C.Handy 
+\newblock {\em J.Chem.Phys.}, {\bf 113},\hspace{0.25em}9402, (2000)
 \end{list}
 }}
 \end{center}
@@ -601,7 +605,7 @@ sections describing the options available.
 \noindent
 {\bf Reference literature:}
 \begin{list}{}{}
-\item ROHF and MCSCF: O.Vahtras, B.  Minaev and H.Ågren
+\item ROHF and MCSCF: O.Vahtras, B.  Minaev and H.{\AA}gren
 \newblock {\em Chem.Phys.Lett.}, {\bf
 281},\hspace{0.25em}186, (1997).
 \item DFT: Z.Rinkevicius, L.Telyatnyk, P.Sa{\l}ek, O.Vahtras and H.{\AA}gren.
@@ -778,7 +782,7 @@ whereas for the same calculation at SOPPA level it will be:
 **END OF DALTON INPUT
 \end{verbatim}
 
-A Coupled Cluster calculation of the diamagnetic term of the CTOCD-DZ
+A coupled cluster calculation of the diamagnetic term of the CTOCD-DZ
 magnetizability requires the following input:
 
 \begin{verbatim}

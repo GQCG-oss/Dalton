@@ -984,8 +984,8 @@ structure.
 \section{Geometry optimization using non-variational wave
 functions}\label{sec:nonvargeom}
 
-\dalton\ do not have any support for the calculation of molecular
-gradients and Hessians for the non-variational wave functions such as
+\dalton\ does not have any support for the calculation of molecular
+gradients and Hessians for the non-variational wave functions 
 CI and NEVPT2\index{CI}\index{Configuration Interaction}\index{NEVPT2}. However, in order to
 exploit the facilities of the first-order
 geometry optimization routines in {\dalton}, a numerical
@@ -993,7 +993,7 @@ gradient\index{numerical gradient} based
 on energies will be calculated if a geometry optimization is invoked
 for a non-variational wave function. As a simple example, to optimize
 the MP2 geometry of a molecule using numerical gradients\footnote{Note
-that MP2 analytical gradients are available through the {\cc}
+that MP2, CCSD, and CCSD(T) analytical gradients are available through the {\cc}
 module}, the only input needed is
 
 \begin{verbatim}

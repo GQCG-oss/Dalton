@@ -165,7 +165,7 @@ Section~\ref{ref-auxinp} \Sec{AUXILIARY INPUT}
 
 \noindent
 Finally we note that there is an input module controlling the
-calculation of Coupled Cluster wave functions. This is treated in a
+calculation of coupled cluster wave functions. This is treated in a
 separate chapter:
 
 Chapter~\ref{ch:CC} \Sec{CC INPUT}
@@ -251,14 +251,14 @@ Specification of which wave function calculation is to be performed.
 
 \item[\Key{CC}]
   \index{Coupled Cluster}\index{CC}
-  Coupled Cluster calculation. Automatically activates Hartree--Fock (\quotekw{.HF}).
+  Coupled-cluster calculation. Automatically activates Hartree--Fock (\quotekw{.HF}).
   After the Hartree--Fock calculation,
-  the \cc\ program is called to do a Coupled Cluster (response) calculation.
+  the \cc\ program is called to do a coupled cluster (response) calculation.
   For further input options for the \cc\ program see Section~\ref{sec:ccgeneral}. 
 
 \item[\Key{CC ONLY}] Skip the calculation of a Hartree--Fock wave
-  function, and start directly in the Coupled Cluster part. Convenient
-  for restarts in the Coupled Cluster module.
+  function, and start directly in the coupled cluster part. Convenient
+  for restarts in the coupled cluster module.
 
 \end{description}
 
@@ -814,7 +814,7 @@ The field integrals are read from file \verb|AOPROPER| with the specified label.
 
 \index{MP2}\index{M{\o}ller-Plesset!second-order}
 To direct MP2 calculation. Note that MP2 energies as well as
-properties also are available through the Coupled Cluster module, see
+properties also are available through the coupled cluster module, see
 Chapter~\ref{ch:CC}.
 
 \begin{description}

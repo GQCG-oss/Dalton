@@ -20,7 +20,7 @@ two integral programs. {\twoint} is the more general one and is invoked by
 default in sequential calculations; {\eri} (Electron Repulsion
 Integrals) is a highly vectorized two-electron integral code with
 orientation towards integral distributions. {\eri} is
-invoked by default in integral-direct coupled-cluster calculations and
+invoked by default in integral-direct coupled cluster calculations and
 may in other cases be invoked by specifying the \Key{RUNERI} keyword
 in the \Sec{*DALTON INPUT} input section, which ensures that {\eri}
 rather than {\twoint} is called whenever {\eri} has the required
@@ -1427,7 +1427,7 @@ two-electron integral calculation.
 
 Directives controlling the two-electron integral calculation with {\eri}
 are specified in the \Sec{ER2INT} section.
-By default {\eri} is only used for integral-direct coupled-cluster
+By default {\eri} is only used for integral-direct coupled cluster
 calculations. However, {\eri} can also be invoked by specifying the
 \Key{RUNERI} keyword in the \Sec{*DALTON INPUT} input section. Note that
 {\dalton} will automatically use {\twoint} for all integrals not
