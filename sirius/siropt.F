@@ -29,12 +29,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: siropt.F,v 1.3 2001-03-17 17:42:24 vebjornb Exp $
+C$Id: siropt.F,v 1.4 2001-03-20 07:47:49 vebjornb Exp $
 C
 #include <single.h>
 C
 #ifdef REV_LOG
 $Log: not supported by cvs2svn $
+Revision 1.3  2001/03/17 17:42:24  vebjornb
+Small bugfix (prevented testcase energy_solv from working on SGI 64-bit)
+
 Revision 1.2  2001/03/12 14:45:35  vebjornb
 Fixed bug that caused the test energy_solv to crash on SGI
 
@@ -1584,32 +1587,32 @@ C
          IF (ICSTRT .EQ. 4) THEN
             NWARN = NWARN + 1
             WRITE (LUPRI,'(//A/A//)')
-     *       '@@*** (OPTST) MC start vectors not found on f21-file',
+     *       '@@*** (OPTST) MC start vectors not found on SIRIUS.RST',
      *       '@@*** WARNING lowest diagonal elements used.'
             ICSTRT = 1
             GO TO 10
          ELSE IF (ICSTRT .EQ. 5) THEN
             WRITE (LUPRI,'(//A/A//)')
-     *       '@@*** (OPTST) MC start vectors not found on f21-file,',
+     *       '@@*** (OPTST) MC start vectors not found on SIRIUS.RST,',
      *       '@@            .RESTART not possible.'
             CALL QTRACE(LUPRI)
             CALL QUIT(
-     &         'MC start vectors for .RESTART not found on f21-file.')
+     &         'MC start vectors for .RESTART not found on SIRIUS.RST.')
          ELSE
             WRITE (LUPRI,'(//A/A/A//)')
-     *       ' *** (OPTST) MC start vectors not found on f21-file,',
+     *       ' *** (OPTST) MC start vectors not found on SIRIUS.RST,',
      *       '             no recover when CISTRT 6 or 7',
      *       '             optimization abandoned.'
             CALL QTRACE(LUPRI)
             CALL QUIT(
-     &       '(OPTST) Start vectors not found on f21-file as expected.')
+     &     '(OPTST) Start vectors not found on SIRIUS.RST as expected.')
          END IF
   493 CONTINUE
          REWIND LUIT1
          IF ( LROIT1 .GE. NROOTS) THEN
             WRITE (LUPRI,'(//A,I3,A/T14,A,I3,A,I3/)')
      *         ' *** (OPTST) only',LROIT1,' start vectors found ',
-     *         'on f21-file,', 'LROOTS reset from',LROOTS,' to',LROIT1
+     *         'on SIRIUS.RST,', 'LROOTS reset from',LROOTS,' to',LROIT1
             LROOTS = LROIT1
          ELSE
             GO TO 490
@@ -1628,10 +1631,10 @@ C        "NEOSAVE" or "NRSAVE" restart;
 C        1) get trust radius and beta
 C        2) if (absorption) check if absorption switched off
          IF ( .NOT.FNDLB2(TABLE(5),LBLINF,LUIT1) ) THEN
-            WRITE (LUPRI,'(//A)')
-     &      ' (OPTST) Error, restart information not found on f21-file.'
-            CALL QUIT(
-     &      '(OPTST) Error, restart information not found on f21-file.')
+          WRITE (LUPRI,'(//A)')
+     &    ' (OPTST) Error, restart information not found on SRIUS.RST.'
+          CALL QUIT(
+     &    '(OPTST) Error, restart information not found on SIRIUS.RST.')
          END IF
          READ (LUIT1) EMCOLD,DEPRED,BETA,RDUMMY,RTRUST,ITMAC
          WRITE (LUPRI,5000) EMCOLD,ITMAC,BETA,RTRUST,EMCOLD+DEPRED
@@ -1678,9 +1681,9 @@ C
             IF (.NOT. OPTNEW) THEN
                NWARN = NWARN + 1
                WRITE (LUPRI,'(//A/A/)')
-     *           '@@ WARNING : Label "GEOWALK " not found on f21-file,',
-     *           '@@ WARNING : calculation continues without'//
-     *           ' test for rejection of geometry change.'
+     *         '@@ WARNING : Label "GEOWALK " not found on SIRIUS.RST,',
+     *         '@@ WARNING : calculation continues without'//
+     *         ' test for rejection of geometry change.'
             END IF
             ICSTRT = 4
             ICI0   = 4

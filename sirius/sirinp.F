@@ -29,11 +29,14 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: sirinp.F,v 1.2 2001-02-12 18:17:57 vebjornb Exp $
+C$Id: sirinp.F,v 1.3 2001-03-20 07:47:49 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
 $Log: not supported by cvs2svn $
+Revision 1.2  2001/02/12 18:17:57  vebjornb
+First commit after CC merge
+
 Revision 1.1.1.1  2001/01/15 13:53:36  vebjornb
 Dalton 1.2
 
@@ -4331,13 +4334,13 @@ C
       DATA RDMOLB/'CANORB','MOLORB','FORM18','FORM12','--5-- ',
      &            '--6-- ','OLDORB','H1DIAG','NEWORB','SIRIFC',
      &            'HUCKEL'/
-      CHARACTER*28 TXTOCC(0:5)
-      DATA TXTOCC/'NOTHING because of error(s).',
-     &            'user input.                 ',
-     &            'SIRIUS restart file (f21).  ',
-     &            'SIRIUS interface file (ifc).',
-     &            'diagonal of H1 matrix.      ',
-     &            'Huckel guess.               '/
+      CHARACTER*33 TXTOCC(0:5)
+      DATA TXTOCC/'NOTHING because of error(s).     ',
+     &            'user input.                      ',
+     &            'SIRIUS restart file (SIRIUS.RST).',
+     &            'SIRIUS interface file (SIRIFC).  ',
+     &            'diagonal of H1 matrix.           ',
+     &            'Huckel guess.                    '/
 C
 #include <identify.h>
 C
