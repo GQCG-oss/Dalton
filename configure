@@ -1005,6 +1005,7 @@ case "$WHICH" in
                copt="$copt -std=c99 -DRESTRICT=restrict"
                def='linux.x'
                inc='-I../include'
+               LIB="-lcc_dynamic"
                cpp=${cpp}" -DIMPLICIT_NONE"
             else
                cpp="-D SYS_LINUX -D VAR_ABSOFT -D NO_F90 -D 'INSTALL_WRKMEM=$memsiz' -D IMPLICIT_NONE"
