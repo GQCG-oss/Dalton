@@ -193,7 +193,7 @@ CTRL[14]=8
 ERROR[14]="MAGNETIZABILITIES NOT CORRECT"
 
 # Molecular g-factors:
-CRIT1=`$GREP "Isotropic g-factor * \: * (0| )\.68204743" $log | wc -l`
+CRIT1=`$GREP "Isotropic g-tensor * \: * (0| )\.68204743" $log | wc -l`
 CRIT2=`$GREP "Nuclear contribution * \: * (0| )\.97479960" $log | wc -l`
 CRIT3=`$GREP "Diamagnetic contribution \: * (0| )\.02502992" $log | wc -l`
 CRIT4=`$GREP "Electronic contribution * \: * (\-0|\-)\.31778209" $log | wc -l`
@@ -205,7 +205,7 @@ CRIT9=`$GREP "C * (0| )\.00000000 * (0| )\.00000000 * (0| )\.64594046" $log | wc
 TEST[15]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
                $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9`
 CTRL[15]=9
-ERROR[15]="G-FACTORS NOT CORRECT"
+ERROR[15]="G-TENSORS NOT CORRECT"
 
 # Chemical shielding:
 CRIT1=`$GREP "Shielding constant\: * 334\.2539 ppm" $log | wc -l`

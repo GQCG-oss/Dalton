@@ -2219,7 +2219,7 @@ Represented as: C2v
   Molecular g-factor
   ------------------
 
-  Isotropic g-factor       :   0.68204743
+  Isotropic g-tensor       :   0.68204743
   Nuclear contribution     :   0.97479960
   Diamagnetic contribution :   0.02502992
   Electronic contribution  :  -0.31778209
