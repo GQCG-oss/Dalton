@@ -179,7 +179,6 @@ C     TUH 91
 C
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER (D2 = 2.D0)
       INTEGER T, A, B, AB
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3)
@@ -192,7 +191,7 @@ C
       PBX = CORPX - CORBX
       PBY = CORPY - CORBY
       PBZ = CORPZ - CORBZ
-      EXPPIH = EXPPI/D2
+      EXPPIH = EXPPI/2
       DO 100 A = 0, JMAXAP
          IF (A .EQ. 0) THEN
             ODCUND(0,0,0,0,0,1) = FAC

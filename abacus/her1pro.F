@@ -125,6 +125,7 @@ C
      &            DOINT)
       CALL MEMREL('after PR1IN1 '//WORD,WORK,1,1,KFREE,LFREE)
       IF (WORD .EQ. 'HUCKEL') THEN
+C        ... restore normal values
          KMAX   = NLRGSH
          NBASIS = NLARGE
          NPBAS  = NPLRG
@@ -269,12 +270,13 @@ C
             LABINT(1) = 'HUCKEL  '
             IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &      ' Calculation of overlap integrals for Huckel.'
+            INTTYP = -1
          ELSE
             LABINT(1) = 'OVERLAP '
             IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &      ' Calculation of overlap integrals.'
+            INTTYP = 1
          END IF
-         INTTYP = 1
          NOPTYP = 1
          CALL NTYPTS(NOPTYP)
          CALL SETATM(WORK(KATOM),NATOM,INTTYP)

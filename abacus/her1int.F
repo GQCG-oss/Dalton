@@ -115,11 +115,11 @@ C
 C
 #include <ibtfun.h>
 C
-      IF(THRS.EQ.0D0) THRS = 1D-15
+      IF(THRS.EQ.0.D0) THRS = 1.D-15
       TOLS   = THRS*THRS
       TOLOG  = - LOG(TOLS)
 C
-      IF (INTTYP .EQ. 1 .OR. INTTYP .EQ. 45) THEN
+      IF (ABS(INTTYP) .EQ. 1 .OR. INTTYP .EQ. 45) THEN
          JMAXD  = 0
          JMAXM  = 0
          DONUC1 = .TRUE.
@@ -582,11 +582,7 @@ C
       IF (INTTYP .EQ. 45) IBCNT = 2
       IORBA = 0
       CALL IZERO(ISOFRA, 8)
-      IF (DOHUCKEL .AND. INTTYP .EQ. 1) THEN
-         KMAXT = NSMLSH + NLRGSH
-      ELSE
-         KMAXT = KMAX
-      END IF
+      KMAXT = KMAX
       DO 200 ISHELA = 1,KMAXT
          NHKTA = NHKT(ISHELA)
          KHKTA = KHKT(ISHELA)
@@ -949,7 +945,8 @@ C           and HUCMAT was scaled with the 1/sqrt(SCAL) factor.
 C           Code modified so projection vectors are also properly scaled.
 C
          HUCFAC = 1.0D0
-         IF (DOHUCKEL .AND. INTTYP.EQ.1) THEN
+         IF (INTTYP .EQ. -1) THEN
+C           ...  INTTYP .eq. -1 signals HUCKEL integrals
             SCAL = 1.0D0
             IF (LCLASS(ISHELA) .EQ. 2) SCAL = DFLOAT(MULTA)
             IF (LCLASS(ISHELB) .EQ. 2) SCAL = DFLOAT(MULTB)*SCAL
@@ -1352,7 +1349,7 @@ C
 C        Overlap integrals
 C        -----------------
 C
-         IF (INTTYP .EQ. 1 .OR. INTTYP .EQ. 45) THEN
+         IF (ABS(INTTYP) .EQ. 1 .OR. INTTYP .EQ. 45) THEN
             CALL OVLINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,HUCFAC,
      &                  SHGTF,SHLINT)
 C

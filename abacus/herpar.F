@@ -269,6 +269,7 @@ C
       SAVE FIRST,NPOS
       DATA FIRST/.TRUE./
 C
+      CALL QENTER('HER_PARDR1')
       IF (IPRINT .GT. 3) CALL TITLER('Output from HER_PARDR1','*',103)
 C
 C     Take calculation time of each IJ pair?
@@ -316,6 +317,7 @@ C
       IF (NEWGEO) NEWGEO = .FALSE.
       IF (NEWBAS) NEWBAS = .FALSE.
 C
+      CALL QEXIT('HER_PARDR1')
       RETURN
       END
 C  /* Deck indeks */
@@ -444,6 +446,7 @@ C
 C
 #include <cbisol.h>
 C
+      CALL QENTER('HER_SDINIT')
       IF (IPRINT .GT. 3) CALL TITLER('Output from HER_SDINIT','*',103)
 C
 C     Calculate the number of Fock matrices that will be
@@ -590,6 +593,7 @@ C
       CALL PVMXMCAST(NODTOT,NODEID(1),MTAG3)
 C
 #endif
+      CALL QEXIT('HER_SDINIT')
       RETURN
       END
 C  /* Deck her_rvres */
@@ -621,6 +625,7 @@ C
 #include <inforb.h>
 #include <infpar.h>
 C
+      CALL QENTER('HER_RVRES')
       IF (IPRINT .GT. 3) CALL TITLER('Output from HER_RVRES','*',103)
 C
 C     Clean matrices.
@@ -731,6 +736,7 @@ C
 c        CALL QUIT('Inconsistence in RVRES -> MTOTTK .NE. ICOUNT')
       ENDIF
 C
+      CALL QEXIT('HER_RVRES')
       RETURN
       END
 C  /* Deck parsrt */
