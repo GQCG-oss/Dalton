@@ -177,3 +177,17 @@ MEM_OBJ :
 
 AMFI_OBJ :
 	cd amfi && $(MAKE) all
+
+ftnchek: pre
+	ftnchek $(CHEKFLAGS) */*.i > dalton.ftnchek
+
+pre :
+	cd abacus && $(MAKE) pre
+	cd amfi   && $(MAKE) pre
+	cd cc     && $(MAKE) pre
+	cd dft    && $(MAKE) pre
+	cd eri    && $(MAKE) pre
+	cd gp     && $(MAKE) pre
+	cd pdpack && $(MAKE) pre
+	cd rsp    && $(MAKE) pre
+	cd sirius && $(MAKE) pre

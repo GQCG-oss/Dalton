@@ -948,6 +948,12 @@ INSTALLDIR    = $INSTALL_DIR
 PDPACK_EXTRAS = $pdpackextras
 AR            = ar
 ARFLAGS       = rvs
+# flags for ftnchek on Dalton /hjaaj
+CHEKFLAGS  = -nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet \
+ -noargumants -arguments=number \
+ -usage=var-unitialized
+# -usage=var-unitialized:arg-const-modified:arg-alias
+# -usage=var-unitialized:var-set-unused:arg-unused:arg-const-modified:arg-alias
 #
 default : $def
 EOF
@@ -1027,7 +1033,7 @@ if [ $WHICH = 'hal' ]; then
 #
 # Suffix rules
 #
-.SUFFIXES : .F .f .o .c
+.SUFFIXES : .F .f .o .c .i
 
 .F.o:
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F 
@@ -1035,6 +1041,9 @@ $tab\$(RM) \$*.f
 
 .c.o:
 $tab\$(CC) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(CFLAGS) -c \$*.F 
+
+.F.i:
+$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) -E \$*.F > \$*.i
 EOF
 elif [ $WHICH = 'rs6000' ]; then
    if [ $opsys = '2' ]; then
@@ -1043,7 +1052,7 @@ CPP        = $cppuse
 #
 # Suffix rules
 #
-.SUFFIXES : .F .o .c 
+.SUFFIXES : .F .o .c .i
 
 .F.o:
 $tab\$(CPP) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$*.F
@@ -1053,18 +1062,24 @@ $tab\$(RM) \$*.f
 
 .c.o:
 $tab\$(CC) \$(CFLAGS) \$(OPTFLAGS) -c \$*.c
+
+.F.i:
+$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) -E \$*.F > \$*.i
 EOF
     else cat <<EOF>> Makefile.config
 #
 # Suffix rules
 #
-.SUFFIXES : .F .o .c
+.SUFFIXES : .F .o .c .i
 
 .F.o:
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F 
 
 .c.o:
 $tab\$(CC) \$(CFLAGS) \$(OPTFLAGS) -c \$*.c 
+
+.F.i:
+$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) -E \$*.F > \$*.i
 EOF
     fi
 elif [ $WHICH = 'linux' ]; then
@@ -1072,25 +1087,31 @@ cat <<EOF>> Makefile.config
 #
 # Suffix rules
 #
-.SUFFIXES : .F .o .c
+.SUFFIXES : .F .o .c .i
 
 .F.o:
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F 
 
 .c.o:
 $tab\$(CC) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(CFLAGS) -c \$*.c 
+
+.F.i:
+$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) -E \$*.F > \$*.i
 EOF
 else cat <<EOF>> Makefile.config
 #
 # Suffix rules
 #
-.SUFFIXES : .F .o .c
+.SUFFIXES : .F .o .c .i
 
 .F.o:
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F 
 
 .c.o:
 $tab\$(CC) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(CFLAGS) -c \$*.c 
+
+.F.i:
+$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) -E \$*.F > \$*.i
 EOF
 fi
 #
