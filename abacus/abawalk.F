@@ -4169,14 +4169,14 @@ C
             END DO
          END IF
          IF (POLAR) THEN
-            CALL HEADER('Polarizability at effective geometry',1)
-            CALL POLPRI(POLAR0,'   ',-2)
+            CALL HEADER('Static polarizability at effective geometry',1)
+            CALL POLPRI(POLAR0,'   ',-1)
          END IF
          IF (ALFA) THEN
-            CALL HEADER('Polarizability at effective geometry',1)
+           CALL HEADER('Dynamic polarizability at effective geometry',1)
             DO IFRQR = 1, NFRVAL
-               WRITE (LUPRI,'(/1X,A,F8.5)') 'Frequency:   ',FRVAL(IFRQR)
-               CALL POLPRI(ALFA0(1,1,IFRQR),'   ',-2)
+               WRITE (LUPRI,'(/A,F8.5)') ' Frequency:   ',FRVAL(IFRQR)
+               CALL POLPRI(ALFA0(1,1,IFRQR),'   ',-1)
             END DO
          END IF
          IF (NQCC) THEN
@@ -4238,7 +4238,7 @@ C
             IF (QUADRU) THEN
                CALL HEADER('Molecular quadrupole moment at displaced '//
      &                     'geometry',1)
-               CALL POLPRI(QUADT,'   ',-2)            
+               CALL POLPRI(QUADT,'   ',-1)            
             END IF
             IF (SHIELD) THEN
                CALL HEADER('Chemical shielding tensors at displaced '//
@@ -4266,14 +4266,14 @@ C
             END IF
             IF (POLAR) THEN
                CALL HEADER('Polarizability at displaced geometry',1)
-               CALL POLPRI(POLARS,'   ',-2)            
+               CALL POLPRI(POLARS,'   ',-1)            
             END IF
             IF (ALFA) THEN
                CALL HEADER('Polarizability at displaced geometry',1)
                DO IFRQR = 1, NFRVAL
                   WRITE (LUPRI,'(/1X,A,F8.5)') 'Frequency:   ',
      &                 FRVAL(IFRQR)
-                  CALL POLPRI(POLDD(1,1,1,IFRQR),'   ',-2)
+                  CALL POLPRI(POLDD(1,1,1,IFRQR),'   ',-1)
                END DO
             END IF
             IF (NQCC) THEN

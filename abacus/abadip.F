@@ -354,6 +354,10 @@ C  /* Deck dipadd */
       END
 C  /* Deck polpri */
       SUBROUTINE POLPRI(AMAT,SPC,ITYPE1)
+C
+C   ITYPE = 1 : electric polarizability
+C   ITYPE = 2 : magnetic susceptibility
+C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
@@ -374,7 +378,7 @@ C  /* Deck polpri */
       DATA CHRABC /'A','B','C'/
 C
       INERT = INDEX(SPC,'PRI') .NE. 0
-      LARGE = ITYPE1 .EQ. -2
+      LARGE = ITYPE1 .LT. 0
       ITYPE = ABS(ITYPE1)
 C
 C     *****************************************
@@ -430,14 +434,13 @@ C
          IF (INERT) WRITE (LUPRI,'(15X,A/)')
      &      '(Along principal axes of moments of inertia)'
          IF (LARGE) THEN
-            WRITE (LUPRI,'(15X,3(18X,A2))') (LAB(I),I=1,NCOMP)
+            WRITE (LUPRI,'(5X,3(18X,A2)/)') (LAB(I),I=1,NCOMP)
          ELSE
-            WRITE (LUPRI,'(15X,3(10X,A2))') (LAB(I),I=1,NCOMP)
+            WRITE (LUPRI,'(15X,3(10X,A2)/)') (LAB(I),I=1,NCOMP)
          END IF
-         WRITE (LUPRI, '(/)')
          DO 300 I = 1, NCOMP
             IF (LARGE) THEN
-               WRITE (LUPRI, '(12X,A2,3X,3F20.12)') LAB(I),
+               WRITE (LUPRI, '(2X,A2,3X,3F20.12)') LAB(I),
      &                  (FAC*AMAT(IND(I),IND(J)),J=1,NCOMP)
             ELSE
                WRITE (LUPRI, '(12X,A2,3X,3F12.6)') LAB(I),
@@ -456,7 +459,7 @@ csonia 04/10/95
          WRITE (LUPRI,'(2X,A)') ' Polarizabilities not calculated - '//
      &                       ' appropriate symmetries not requested.'
       END IF
-      WRITE (LUPRI, '(/)')
+      WRITE (LUPRI, '()')
       RETURN
       END
 C  /* Deck aptpop */
