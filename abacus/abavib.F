@@ -755,6 +755,7 @@ C
       AIMOM = AINRTP(1)
       BIMOM = AINRTP(2)
       CIMOM = AINRTP(3)
+C
       CALL HEADER
      &    ('Principal moments of inertia (u*A**2) and principal axes',0)
       WRITE (LUPRI,'(3X,A,F12.6,6X,3F12.6)')
@@ -781,6 +782,14 @@ C
 C     
 C        ***** Rotational constants *****
 C
+      CALL HEADER('Rotational constants',0)
+      IF (CIMOM .LT. TSTLIN) THEN
+C        ... this is an atom !
+         WRITE (LUPRI,'(A/)')
+     &      ' All are zero as the "molecule" is an atom!'
+         LINEAR = .TRUE.
+         GO TO 9999
+      END IF
       IF ( ABS(CIMOM-BIMOM-AIMOM) .LT. TSTLIN) THEN
          PLANAR = .TRUE.
       ELSE
@@ -795,7 +804,6 @@ C
       END IF
       ROTB = ROTMHZ/BIMOM
       ROTC = ROTMHZ/CIMOM
-      CALL HEADER('Rotational constants',0)
       IF (LINEAR) THEN
          WRITE (LUPRI,'(A/)') ' The molecule is linear.'
          WRITE (LUPRI,'(T16,A,F16.2,A,F12.6,A)')
@@ -807,7 +815,7 @@ C
      &     WRITE (LUPRI,'(T16,A,T36,A,T56,A,//3F20.4,A,/3F20.6,A)')
      &     'A','B','C', ROTA, ROTB, ROTC, ' MHz',
      &     CINVRS*ROTA, CINVRS*ROTB, CINVRS*ROTC, ' cm-1'
-      RETURN
+ 9999 RETURN
       END
 C  /* Deck vibana */
       SUBROUTINE VIBANA(AMASS,HESS,GRAD,GRDN,EVAL,EVEC,EVECS,VINRTI,
