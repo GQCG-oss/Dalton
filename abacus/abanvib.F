@@ -48,7 +48,7 @@ C     ************************************************
 #include <priunit.h>
 #include <mxcent.h>
       PARAMETER (NTABLE = 5)
-      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, 
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7,
      &          WORD1*7
 #include <numder.h>
 #include <prpndr.h>
@@ -126,7 +126,7 @@ C
          WRITE (LUPRI,'(A)') '                                    '
          WRITE (LUPRI,'(5X,A,I4)') 'Numerical derivatives' //
      &             ' of energy calculated to order', NMORDR
-         WRITE (LUPRI,'(5X,A,I4,A)') 'from analytical', NAORDR, 
+         WRITE (LUPRI,'(5X,A,I4,A)') 'from analytical', NAORDR,
      &                              '. derivatives'
          WRITE (LUPRI,'(5X,A,I4)') 'Total order of differentiation:',
      &        NAORDR+NMORDR
@@ -145,11 +145,11 @@ C
             WRITE (LUPRI,'(A)') '                                  '
             WRITE (LUPRI,'(5X,A)') 'Harmonic contribution calculated.'
             IF ((NMORDR+NAORDR).GT.2) THEN
-               WRITE (LUPRI,'(5X,A)') 
+               WRITE (LUPRI,'(5X,A)')
      &              'Anharmonic contribution calculated.'
             END IF
             WRITE (LUPRI,'(5x,A)') 'Cannot use group theory for this. '
-            WRITE (LUPRI,'(5x,A)') 'Group used in calculations: ' // 
+            WRITE (LUPRI,'(5x,A)') 'Group used in calculations: ' //
      &                          FCLASS
 
          END IF
@@ -172,10 +172,10 @@ C
 #include <prpndr.h>
 #include <pvibav.h>
 #include <abainf.h>
-C     
+C
 C     /PRPNDR/
       NSPNSP = .FALSE.
-C 
+C
 C     /ABAINF/
       SPNSPN = .FALSE.
 C
@@ -184,7 +184,7 @@ C     /PVIBAV/
       RETURN
       END
 C
-C     
+C
 C  /* Deck nvbrst */
       SUBROUTINE NVBPIN(IPRINT)
 C     ************************************************
@@ -204,7 +204,7 @@ C
       IF (IPRINT.GT.20) THEN
          CALL HEADER('No properties calculated in this geometry of ' //
      &               'numerical differentiation',0)
-         WRITE (LUPRI,'(A)') '                                    ' 
+         WRITE (LUPRI,'(A)') '                                    '
          WRITE (LUPRI,'(5X,A)') 'Properties neglected are: '
          IF (SPNSPN) THEN
             WRITE (LUPRI,'(5X,A)') 'No spin-spin couplings.'
@@ -238,7 +238,7 @@ C
 #include <trkoor.h>
 #include <cbinum.h>
 #include <numder.h>
-      DIMENSION DERIV(NDERIV), SYMCOR(NCOOR,NCOOR), FREQ(NCOOR), 
+      DIMENSION DERIV(NDERIV), SYMCOR(NCOOR,NCOOR), FREQ(NCOOR),
      &          RNNORM(NCOOR), CSTART(NCOOR      ), WORK(LWORK)
 C
       IF (NUMVIB) THEN
@@ -259,9 +259,9 @@ C
             NPPDER = NPPDER + NDCOOR*(NDCOOR+1)/2
          END IF
 C
-         IF (NMRDRP.GE.3) NPPDER = NPPDER 
+         IF (NMRDRP.GE.3) NPPDER = NPPDER
      &                           + NDCOOR*(NDCOOR+1)*(NDCOOR+2)/6
-         IF (NMRDRP.GE.4) NPPDER = NPPDER 
+         IF (NMRDRP.GE.4) NPPDER = NPPDER
      &                      + NDCOOR*(NDCOOR+1)*(NDCOOR+2)*(NDCOOR+3)/24
 C
          KLAST = 1
@@ -270,7 +270,7 @@ C
             KDSPSP = KSPNSP + 6*NCOOR**2
             KLAST  = KDSPSP + 6*NCOOR**2*NPPDER
          END IF
-C         
+C
          LWRK1 = LWORK - KLAST
          IF (LWRK1.LT.1) CALL QUIT('Memory exceeded in PPVBAN')
          CALL PPVBAN(DERIV,FREQ,SYMCOR,RNNORM,WORK(KSPNSP),WORK(KDSPSP),
@@ -292,11 +292,11 @@ C     *********************************************************
       PARAMETER (D1 = 1.0D0)
 #include <trkoor.h>
 #include <cbinum.h>
-#include <inftap.h> 
+#include <inftap.h>
 #include <numder.h>
-#include <cbiwlk.h>     
-      DIMENSION DERIV(NDERIV), SYMCOR(NCOOR,NCOOR), FREQ(NCOOR), 
-     &          TDER(NCOOR,NCOOR,NCOOR), EVEC(NCOOR,NCOOR), 
+#include <cbiwlk.h>
+      DIMENSION DERIV(NDERIV), SYMCOR(NCOOR,NCOOR), FREQ(NCOOR),
+     &          TDER(NCOOR,NCOOR,NCOOR), EVEC(NCOOR,NCOOR),
      &          RNNORM(NCOOR), CSTART(NCOOR), WORK(LWORK)
 C
 C     *** Initialisation ***
@@ -378,7 +378,7 @@ C     ************************************************************
 C
 #include <fcsym.h>
       CHARACTER*80 TEXT
-      DIMENSION TDER  (NCOOR,NCOOR,NCOOR), TMPTDR(NCOOR,NCOOR,NCOOR), 
+      DIMENSION TDER  (NCOOR,NCOOR,NCOOR), TMPTDR(NCOOR,NCOOR,NCOOR),
      &          SYMCOR(NCOOR,NCOOR      ), CSTART(NCOOR            ),
      &          WORK  (LWORK            )
 C
@@ -412,7 +412,7 @@ C
                INLC2 = 6*(INLCMX-1) + 1
                INLC  = MIN(INLC+6,NCOOR)
                DO 600 ICOL1 = 1, NCOOR
-                  WRITE (LUPRI,'(A,6F12.6)') '         ', 
+                  WRITE (LUPRI,'(A,6F12.6)') '         ',
      &                             (TDER(I,ICOL1,ICOL2), I=INLC2, INLC)
  600           CONTINUE
                WRITE (LUPRI,'(A)') '                              '
@@ -456,7 +456,7 @@ C
             DO IDIM2 = 1, NDIM2
                WRITE (LUNDPR,'(3F36.16)') (PRMTRX(IDIM1,IDIM2,IDIM3),
      &                                 IDIM1 = KDIM+1,MIN(KDIM+3,NDIM1))
-               
+
             END DO
             WRITE (LUNDPR,'(A)') '                       '
             KDIM = KDIM + 3
@@ -469,15 +469,15 @@ C     *******************
 C
       IF (IPRINT .GT. 20) THEN
          WRITE (LUPRI,'(A)') 'The property text :' // PRPTXT
-         WRITE (LUPRI,'(A,I6)') 
+         WRITE (LUPRI,'(A,I6)')
      &                   'This is property calculation number:',
-     &                   NMDPRP    
+     &                   NMDPRP
          DO IDIM3 = 1, NDIM3
             KDIM = 0
             WRITE (LUPRI,'(A,I4)') 'The third dimension', IDIM3
             DO ITCOL = 1, NTCOL
                DO IDIM2 = 1, NDIM2
-                  WRITE (LUPRI,'(3F36.16)') 
+                  WRITE (LUPRI,'(3F36.16)')
      &                  (PRMTRX(IDIM1,IDIM2,IDIM3),
      &                                 IDIM1 = KDIM+1,MIN(KDIM+3,NDIM1))
                END DO
@@ -490,7 +490,7 @@ C
       RETURN
       END
 C
-C     
+C
 C     /* Deck ndrdpp */
       SUBROUTINE NDRDPP(SPSPFV,TRLNFV,EXENFV,TRAMAT,SYMCOR,WORK,LWORK,
      &                  IPRINT,DODIPS)
@@ -508,9 +508,9 @@ C
 #include <abainf.h>
 #include <trkoor.h>
 #include <numder.h>
-      CHARACTER*9 PRPTXT 
+      CHARACTER*9 PRPTXT
       LOGICAL DODIPS
-      DIMENSION SPSPFV(NCOOR,NCOOR,6,NMPCAL), 
+      DIMENSION SPSPFV(NCOOR,NCOOR,6,NMPCAL),
      &          TRLNFV(3,NSYM,MXNEXI,NMPCAL),
      &          EXENFV(  NSYM,MXNEXI,NMPCAL), SYMCOR(NCOOR,NCOOR),
      &          TRAMAT(NCOOR,NCOOR,NMPCAL), WORK(LWORK)
@@ -522,7 +522,7 @@ C
 C     *** Number of properties each loop. ***
 C
       NMEPRP = NMDPRP/NMPCAL
-C     
+C
 C     *************************************************
 C     *** For all molecuar geometries (IDIME) and   ***
 C     *** properties in each geometry (IMEPRP) read ***
@@ -539,7 +539,7 @@ C
 
          CALL CHPRRD(SPSPFV(1,1,1,IMPCAL),TRAMAT(1,1,IMPCAL),
      &               TRLNFV(1,1,1,IMPCAL),EXENFV(1,1,IMPCAL),NDIM1,
-     &               NDIM2,NDIM3,PRPTXT) 
+     &               NDIM2,NDIM3,PRPTXT)
 C
       END DO
       END DO
@@ -553,7 +553,7 @@ C
 C        *** Figures out which property read in, and reads it. ***
 C
          CALL CHPRRD(SPSPFV(1,1,1,1),TRAMAT(1,1,1),TRLNFV(1,1,1,1),
-     &               EXENFV(1,1,1),NDIM1,NDIM2,NDIM3,PRPTXT) 
+     &               EXENFV(1,1,1),NDIM1,NDIM2,NDIM3,PRPTXT)
       END DO
 C
 C     *** Transformation of all the matrices/vectors back ***
@@ -575,8 +575,8 @@ C
                WRITE (LUPRI,'(5X,A)') '                            '
             END IF
 C
-            DO ISPIN  = 1, 6 
-C            
+            DO ISPIN  = 1, 6
+C
                CALL OTRTEN(SPSPFV(1,1,ISPIN,IMPCAL),TRAMAT(1,1,IMPCAL),
      &                     WORK(KSPTMP),NCOOR,NCOOR,NCOOR,IPRINT,'N',
      &                     'T')
@@ -585,7 +585,7 @@ C
       END IF
 C
 C     *** Test print. ***
-C     
+C
       IF (IPRINT.GE.20) THEN
 C
 C        *** Workaround for common common block variables. ***
@@ -594,11 +594,11 @@ C
 C
 C        *** If one property is spin-spin. ***
 C
-         IF (SPNSPN) THEN      
+         IF (SPNSPN) THEN
             CALL HEADER('Spin-spin read from file.',0)
             DO IMPCAL = 1, NMPCAL
                WRITE (LUPRI,'(A,I6)')'Molecular geometry number:',IMPCAL
-               CALL PRSPSP(SPSPFV(1,1,1,IMPCAL),NCOOR,NCOOR,LUPRI) 
+               CALL PRSPSP(SPSPFV(1,1,1,IMPCAL),NCOOR,NCOOR,LUPRI)
             END DO
          END IF
 C
@@ -615,7 +615,7 @@ C
          END IF
 C
 C        *** Transformation matrices. ***
-C            
+C
          CALL HEADER('Transformation matrices read from file.',0)
          DO IMPCAL = 1, NMPCAL
             WRITE (LUPRI,'(5X,A,I6)')'Molecular geometry number:',IMPCAL
@@ -631,7 +631,7 @@ C
 C
 C     /* Deck chprrd*/
       SUBROUTINE CHPRRD(SPSPFV,TRAMAT,TRLNFV,EXENFV,NDIM1,NDIM2,NDIM3,
-     &                  PRPTXT) 
+     &                  PRPTXT)
 #include <implicit.h>
 #include <mxcent.h>
 C
@@ -675,8 +675,8 @@ C
       RETURN
       END
 C
-C     
-C     /* Deck rdavfl*/ 
+C
+C     /* Deck rdavfl*/
       SUBROUTINE RDAVFL(PRMTRX,NDIM1,NDIM2,NDIM3)
 C     ****************************************************
 C     *** This routine reads a property from vib. ave. ***
@@ -684,10 +684,10 @@ C     *** file, and stores it in PRMTRX.               ***
 C     ****************************************************
 #include <implicit.h>
 C
-#include <numder.h>     
+#include <numder.h>
       CHARACTER*23 GRBG
       DIMENSION PRMTRX(NDIM1,NDIM2,NDIM3)
-C      
+C
       NTCOL = NDIM1/3 + 1
       IF (MOD(NDIM1,3).EQ.0) NTCOL = NDIM1/3
 C
@@ -707,7 +707,7 @@ C
       RETURN
       END
 C
-C     
+C
 C     /* Deck otrten */
       SUBROUTINE OTRTEN(AMTRIX,TRAMAT,TMPMAT,NDIMA,NDIMT1,NDIMT2,
      &                  IPRINT,T1,T2)
@@ -718,7 +718,7 @@ C
 #include <infpar.h>
 #include <priunit.h>
       CHARACTER*1 T1, T2
-      DIMENSION AMTRIX(NDIMA,NDIMA), TMPMAT(NDIMT1,NDIMT1), 
+      DIMENSION AMTRIX(NDIMA,NDIMA), TMPMAT(NDIMT1,NDIMT1),
      &          TRAMAT(NDIMT1,NDIMT2)
 C
       CALL DZERO(TMPMAT,NDIMT1*NDIMT2)
@@ -731,15 +731,15 @@ C
 C
       IF (IPRINT.GT.20) THEN
          WRITE (LUPRI,'(A)') 'Transformed tensor: '
-         CALL PRTRMA(AMTRIX,NDIMA,NDIMA,NDIMT2,NDIMT2,LUPRI)         
+         CALL PRTRMA(AMTRIX,NDIMA,NDIMA,NDIMT2,NDIMT2,LUPRI)
          WRITE (LUPRI,'(A)') 'Transformation tensor: '
-         CALL PRTRMA(TRAMAT,NDIMT1,NDIMT2,NDIMT1,NDIMT2,LUPRI) 
+         CALL PRTRMA(TRAMAT,NDIMT1,NDIMT2,NDIMT1,NDIMT2,LUPRI)
       END IF
 C
       RETURN
       END
 C
-C     
+C
 C     /* Deck ndwtpp */
       SUBROUTINE NDWTPP(SPSPFV,SPSPDR,NPPDER,IPRINT)
 C     ***********************************************
@@ -754,7 +754,7 @@ C
 #include <trkoor.h>
 #include <numder.h>
 #include <abainf.h>
-      DIMENSION SPSPFV(NCOOR,NCOOR,6,NMPCAL), 
+      DIMENSION SPSPFV(NCOOR,NCOOR,6,NMPCAL),
      &          SPSPDR(NCOOR,NCOOR,6,NPPDER)
 C
 C     *** Opening file ***
@@ -777,7 +777,7 @@ C
       RETURN
       END
 C
-C     
+C
 C     /* Deck nvibfl*/
       SUBROUTINE NVIBFL(FUNVAL,DERVAL,NDIM1,NDIM2,NDIM3,NDERVL,IPRINT,
      &                  PRPTXT)
@@ -791,7 +791,7 @@ C     **************************************************************
 #include <priunit.h>
       LOGICAL PRIVAL
       CHARACTER*9 PRPTXT
-      DIMENSION FUNVAL(NDIM1,NDIM2,NDIM3       ), 
+      DIMENSION FUNVAL(NDIM1,NDIM2,NDIM3       ),
      &          DERVAL(NDIM1,NDIM2,NDIM3,NDERVL)
 #include <numder.h>
 C
@@ -800,18 +800,18 @@ C
       CALL WRAVFL(FUNVAL,NDIM1,NDIM2,NDIM3,PRPTXT,IPRINT)
 C
 C     *** Derivatives ***
-C     
+C
       IDERV = 0
-      DO ICOOR = 1, NDCOOR 
+      DO ICOOR = 1, NDCOOR
          IDERV = IDERV + 1
          WRITE (LUNDPR,'(A,I7)') 'Derivative:', ICOOR
          CALL WRAVFL(DERVAL(1,1,1,IDERV),NDIM1,NDIM2,NDIM3,'         ',
      &               IPRINT)
-      END DO      
+      END DO
       DO ICOOR2 = 1, NDCOOR
       DO ICOOR1 = 1, ICOOR2
          IDERV = IDERV + 1
-C     
+C
 C        *** If only the diagonal is needed. ***
 C
          IF (PRPVIB.AND.((NARDRP+NMRDRP).EQ.2)) THEN
@@ -845,15 +845,15 @@ C     *****************************************************
 #include <priunit.h>
 #include <mxcent.h>
 C
-#include <trkoor.h>      
+#include <trkoor.h>
 #include <numder.h>
       CHARACTER*9 PRPTXT
-      DIMENSION DERIV(NDERIV), SPSPDR(NCOOR,NCOOR,6,NPPDER), 
+      DIMENSION DERIV(NDERIV), SPSPDR(NCOOR,NCOOR,6,NPPDER),
      &          FREQ(NCOOR), SPSPFV(NCOOR,NCOOR,6), RNNORM(NCOOR),
      &          SYMCOR(NCOOR,NCOOR),WORK(LWORK)
 C
 C     *** Opening property file. ***
-C     
+C
       LUNDPR = 0
       CALL GPOPEN(LUNDPR,'PROPERTY.NDER','UNKNOWN',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
@@ -876,7 +876,7 @@ C
 C
 C     *** Closing property file. ***
 C
-      CALL GPCLOSE(LUNDPR,'KEEP')      
+      CALL GPCLOSE(LUNDPR,'KEEP')
 C
       RETURN
       END
@@ -891,13 +891,13 @@ C     *** This sorts out the nescecary information and calculate ***
 C     *** vibrational average of property in funval.             ***
 C     **************************************************************
 #include <implicit.h>
-#include <priunit.h>      
+#include <priunit.h>
 #include <mxcent.h>
 C
 #include <trkoor.h>
-#include <numder.h>      
+#include <numder.h>
       CHARACTER*9 PRPTXT
-      DIMENSION FDERIV(NDERIV), DERIVA(NDIM1,NDIM2,NDIM3,NPPDER), 
+      DIMENSION FDERIV(NDERIV), DERIVA(NDIM1,NDIM2,NDIM3,NPPDER),
      &          FREQ(NCOOR), FUNVAL(NDIM1,NDIM2,NDIM3), RNNORM(NCOOR),
      &          SYMCOR(NCOOR,NCOOR), WORK(LWORK)
 C
@@ -938,7 +938,7 @@ C
       CHARACTER*9  PRPTXT
       CHARACTER*11 GRBG
       LOGICAL RDDVAL
-      DIMENSION FUNVAL(NDIM1,NDIM2,NDIM3       ), 
+      DIMENSION FUNVAL(NDIM1,NDIM2,NDIM3       ),
      &          DERIVA(NDIM1,NDIM2,NDIM3,NPPDER)
 C
 C     *** Function value ***
@@ -1019,7 +1019,7 @@ C
          CALL HEADER('2. Derivatives',0)
          DO ICOOR2 = 1, NDCOOR
          DO ICOOR1 = 1, ICOOR2
-C         
+C
 C           *** If only the diagonal is used. ***
 C
             IF (PRPVIB.AND.((NARDRP+NMRDRP).EQ.2)) THEN
@@ -1058,7 +1058,7 @@ C     /* Deck clcvba */
       DIMENSION FDERIV(NDERIV), FREQ(NCOOR), TDER(NDCOOR,NDCOOR,NDCOOR),
      &          DERIVA(NDIM1,NDIM2,NDIM3,NPPDER), RNNORM(NCOOR),
      &          FUNVAL(NDIM1,NDIM2,NDIM3), HARMCO(NDIM1,NDIM2,NDIM3),
-     &          AHRMCO(NDIM1,NDIM2,NDIM3), VIBAVE(NDIM1,NDIM2,NDIM3), 
+     &          AHRMCO(NDIM1,NDIM2,NDIM3), VIBAVE(NDIM1,NDIM2,NDIM3),
      &          SYMCOR(NCOOR,NCOOR), WORK(LWORK)
 C
       CALL TITLER('Vibrational average of properties.','*',118)
@@ -1071,7 +1071,7 @@ C
       CALL STTDER(FDERIV,TDER,RNNORM,NDERIV,IPRINT)
 C
 C     *** Analysis of the contributing modes. ***
-C     
+C
       IF (MDEANA) THEN
          KCMPVB = 1
          KLAST  = KCMPVB + NDIM1*NDIM2*NDIM3*NDCOOR
@@ -1100,7 +1100,7 @@ C
          DO IDIM2 = 1, NDIM2
          DO IDIM1 = 1, NDIM1
 C
-            HARMCO(IDIM1,IDIM2,IDIM3) = HARMCO(IDIM1,IDIM2,IDIM3      ) 
+            HARMCO(IDIM1,IDIM2,IDIM3) = HARMCO(IDIM1,IDIM2,IDIM3      )
      &                           + PFAC*DERIVA(IDIM1,IDIM2,IDIM3,IDERV)
          END DO
          END DO
@@ -1113,7 +1113,7 @@ C
       DO ICOOR2 = 1, NDCOOR
          TMP = D0
          DO ICOOR1 = 1, NDCOOR
-            TMP = TMP 
+            TMP = TMP
      &          + TDER(ICOOR1,ICOOR1,ICOOR2)/FREQ(ICOOR1)
          END DO
          PFAC = -D025*TMP*RNNORM(ICOOR2)/(FREQ(ICOOR2)**D2)
@@ -1212,7 +1212,7 @@ C
       END IF
 C
       IF (PRPTXT.EQ.'SPIN-SPIN') THEN
-         CALL HEADER('Anharmonic contribution to vibrational average' // 
+         CALL HEADER('Anharmonic contribution to vibrational average' //
      &               ' of property ' // PRPTXT,0)
          KAVEIS = 1
          KANISO = KAVEIS + 5*NUCDEP*(NUCDEP+1)/2
@@ -1239,7 +1239,7 @@ C
      &                  LUPRI)
          END DO
 C
-         CALL HEADER('Function value of property ' // PRPTXT // 
+         CALL HEADER('Function value of property ' // PRPTXT //
      &               ' at reference geometry',0)
          DO IDIM3 = 1, NDIM3
             IF (NDIM3.GT.1) THEN
@@ -1254,7 +1254,7 @@ C
 C
       END IF
 C
-      RETURN 
+      RETURN
       END
 C
 C
@@ -1288,6 +1288,7 @@ C
          CALL HEADER('Diagonal of cubic force field, F(I,J,J)',-1)
 C
          ISTRT = 1
+         KCOL  = 6
          LAST  = MIN(NDCOOR,KCOL)
          KCOOR = NDCOOR
          NCOL  = NDCOOR/KCOL
@@ -1298,7 +1299,7 @@ C
                WRITE (LUPRI,'(5X,6F12.6)')
      &                        (TDER(ICOOR,I,I),I=ISTRT,LAST)
             END DO
-            WRITE (LUPRI,'(A)') '                                  '
+            WRITE (LUPRI,'(A)') ' '
             ISTRT = ISTRT + KCOL
             LAST  = MIN(NDCOOR,KCOL+LAST)
          END DO
@@ -1320,12 +1321,12 @@ C     /* Deck modean */
 #include <nuclei.h>
 #include <spnout.h>
       CHARACTER*9 PRPTXT
-      DIMENSION CMPVIB(NDIM1,NDIM2,NDIM3,NDCOOR), 
-     &          DERIVA(NDIM1,NDIM2,NDIM3,NPPDER), FREQ(NCOOR), 
-     &          TDER(NDCOOR,NDCOOR,NDCOOR), VIBAVE(NDIM1,NDIM2,NDIM3), 
+      DIMENSION CMPVIB(NDIM1,NDIM2,NDIM3,NDCOOR),
+     &          DERIVA(NDIM1,NDIM2,NDIM3,NPPDER), FREQ(NCOOR),
+     &          TDER(NDCOOR,NDCOOR,NDCOOR), VIBAVE(NDIM1,NDIM2,NDIM3),
      &          RNNORM(NCOOR), FUNVAL(NDIM1,NDIM2,NDIM3), WORK(LWORK)
 C
-      CALL DZERO(CMPVIB,NDIM1*NDIM2*NDIM3*NDCOOR)      
+      CALL DZERO(CMPVIB,NDIM1*NDIM2*NDIM3*NDCOOR)
 C
       IDERV = NDCOOR
       IADD  = 0
@@ -1343,7 +1344,7 @@ C
          DO IDIM2 = 1, NDIM2
          DO IDIM1 = 1, NDIM1
 C
-            CMPVIB(IDIM1,IDIM2,IDIM3,ICOOR1) = 
+            CMPVIB(IDIM1,IDIM2,IDIM3,ICOOR1) =
      &                                 CMPVIB(IDIM1,IDIM2,IDIM3,ICOOR1)
      &                          + PFAC*DERIVA(IDIM1,IDIM2,IDIM3,IDERV )
          END DO
@@ -1357,7 +1358,7 @@ C
       DO ICOOR2 = 1, NDCOOR
          TMP = D0
          DO ICOOR1 = 1, NDCOOR
-            TMP = TMP 
+            TMP = TMP
      &          + TDER(ICOOR1,ICOOR1,ICOOR2)/FREQ(ICOOR1)
          END DO
          PFAC = -D025*TMP*RNNORM(ICOOR2)/(FREQ(ICOOR2)**D2)
@@ -1365,7 +1366,7 @@ C
          DO IDIM3 = 1, NDIM3
          DO IDIM2 = 1, NDIM2
          DO IDIM1 = 1, NDIM1
-            CMPVIB(IDIM1,IDIM2,IDIM3,ICOOR2) = 
+            CMPVIB(IDIM1,IDIM2,IDIM3,ICOOR2) =
      &                                  CMPVIB(IDIM1,IDIM2,IDIM3,ICOOR2)
      &                           + PFAC*DERIVA(IDIM1,IDIM2,IDIM3,ICOOR2)
          END DO
@@ -1399,7 +1400,7 @@ C
             WRITE (LUPRI,'(10X,A)') '                   '
             WRITE (LUPRI,'(10X,A)') '                   '
             WRITE (LUPRI,'(10X,A,I4)') 'Mode number:  ', ICOOR
-            WRITE (LUPRI,'(10X,A)') '------------------' 
+            WRITE (LUPRI,'(10X,A)') '------------------'
             WRITE (LUPRI,'(10X,A)') '                   '
             WRITE (LUPRI,'(10X,A)') '                   '
             IF (SPNISO) THEN
