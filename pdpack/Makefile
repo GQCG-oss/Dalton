@@ -2,9 +2,13 @@ include ../Makefile.config
 
 all :	libpdpack.a
 
-OBJS = arhpack.o fastio_g07.o linextra.o printpkg.o jacobi.o gp_zblas.o
+F_OBJS = arhpack.o fastio_g07.o linextra.o printpkg.o jacobi.o gp_zblas.o
 
-libpdpack.a: $(OBJS) $(PDPACK_EXTRAS)
+F_CPPS = $(F_OBJS:.o=.i)
+
+pre: $(F_CPPS)
+
+libpdpack.a: $(F_OBJS) $(PDPACK_EXTRAS)
 	 $(AR) $(ARFLAGS) $@ $?
 
 # eispack.o has to be compiled without optimization under Linux/pgf77
@@ -18,6 +22,9 @@ clean :
 depend:; ../tools/check_depend $(INCLUDE_DIR) > Makefile.depend
 
 ######################################################################
-# read dependencies:
-include Makefile.depend
-###################################################################### 
+# read dependencies using sinclude (silent include)
+# which continues if Makefile.depend is not readable (incl. doesn't exist!).
+# Makefile.depend can be created with 'make depend'.
+sinclude Makefile.depend
+######################################################################
+

@@ -2,9 +2,13 @@ include ../Makefile.config
 
 all : libamfi.a
 
-OBJS = 	amfi.o symtra.o
+F_OBJS = 	amfi.o symtra.o
 
-libamfi.a: $(OBJS)
+F_CPPS = $(F_OBJS:.o=.i)
+
+pre: $(F_CPPS)
+
+libamfi.a: $(F_OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 
 clean :	
@@ -13,6 +17,9 @@ clean :
 depend:; ../tools/check_depend $(INCLUDE_DIR) > Makefile.depend
 
 ######################################################################
-# read dependencies:
-include Makefile.depend
-###################################################################### 
+# read dependencies using sinclude (silent include)
+# which continues if Makefile.depend is not readable (incl. doesn't exist!).
+# Makefile.depend can be created with 'make depend'.
+sinclude Makefile.depend
+######################################################################
+

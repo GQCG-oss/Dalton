@@ -2,7 +2,7 @@ include ../Makefile.config
 
 all : libabacus.a
 
-OBJS = 	dalgnr.o     aba2tex.o    abaaat.o     abadip.o\
+F_OBJS = 	dalgnr.o     aba2tex.o    abaaat.o     abadip.o\
 	abadrv.o     abadtra.o    abaedrv.o    abaenr.o\
 	abaesym.o    abaexc.o     abaflt.o     abafsd.o\
 	abalnr.o     abalrs.o     abaltra.o    abamag.o\
@@ -22,7 +22,11 @@ OBJS = 	dalgnr.o     aba2tex.o    abaaat.o     abadip.o\
 	abasop.o     abamolden.o  eckart.o     ecp.o\
 	abafmm.o     abanvib.o    aba2r12.o    aba2eth.o
 
-libabacus.a: $(OBJS)
+F_CPPS = $(F_OBJS:.o=.i) dalton.i 
+
+pre: $(F_CPPS)
+
+libabacus.a: $(F_OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 
 main  : dalton.o
@@ -37,6 +41,9 @@ clean :
 depend:; ../tools/check_depend $(INCLUDE_DIR) > Makefile.depend
 
 ######################################################################
-# read dependencies:
-include Makefile.depend
-###################################################################### 
+# read dependencies using sinclude (silent include)
+# which continues if Makefile.depend is not readable (incl. doesn't exist!).
+# Makefile.depend can be created with 'make depend'.
+sinclude Makefile.depend
+######################################################################
+

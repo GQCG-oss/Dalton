@@ -1,6 +1,8 @@
 include ../Makefile.config
 
-OBJS = \
+all: librsp.a
+
+F_OBJS = \
 	deq27.o		\
 	expone.o	\
 	fone.o		\
@@ -50,9 +52,11 @@ OBJS = \
 	absorp.o	\
 	x2expl.o
 
-all: librsp.a
+F_CPPS = $(F_OBJS:.o=.i)
 
-librsp.a: $(OBJS)
+pre: $(F_CPPS)
+
+librsp.a: $(F_OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 
 clean : 
@@ -61,6 +65,9 @@ clean :
 depend:; ../tools/check_depend $(INCLUDE_DIR) > Makefile.depend
 
 ######################################################################
-# read dependencies:
-include Makefile.depend
-###################################################################### 
+# read dependencies using sinclude (silent include)
+# which continues if Makefile.depend is not readable (incl. doesn't exist!).
+# Makefile.depend can be created with 'make depend'.
+sinclude Makefile.depend
+######################################################################
+

@@ -2,10 +2,14 @@ all : libdft.a
 
 include ../Makefile.config
 
-OBJS =  dftdrv.o dftgrd.o  dftden.o dftaos.o dftaux.o \
+F_OBJS =  dftdrv.o dftgrd.o  dftden.o dftaos.o dftaux.o \
         dftfun.o  dftest.o dftac.o dftpar.o Lebedev-Laikov.o
 
-libdft.a: $(OBJS)
+F_CPPS = $(F_OBJS:.o=.i)
+
+pre: $(F_CPPS)
+
+libdft.a: $(F_OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 
 clean :
@@ -14,6 +18,9 @@ clean :
 depend:; ../tools/check_depend $(INCLUDE_DIR) > Makefile.depend
 
 ######################################################################
-# read dependencies:
-include Makefile.depend
+# read dependencies using sinclude (silent include)
+# which continues if Makefile.depend is not readable (incl. doesn't exist!).
+# Makefile.depend can be created with 'make depend'.
+sinclude Makefile.depend
 ######################################################################
+

@@ -2,11 +2,17 @@ include ../Makefile.config
 
 all : liberi.a
 
-liberi.a : eri2cft.o        eri2her.o     eri2sym.o \
+F_OBJS =  eri2cft.o        eri2her.o     eri2sym.o \
 eri2aob.o     eri2dis.o     eri2odb.o     eri2vec.o \
 eri2car1.o    eri2drv.o     eri2out.o     eri2pro.o \
 eri2car2.o    eri2fck.o     eri2sph.o     eri2ave.o \
 erisph.o      eri2r12.o
+
+F_CPPS = $(F_OBJS:.o=.i)
+
+pre: $(F_CPPS)
+
+liberi.a : $(F_OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 
 slave : eri2par.o
@@ -19,6 +25,9 @@ clean :
 depend:; ../tools/check_depend $(INCLUDE_DIR) > Makefile.depend
 
 ######################################################################
-# read dependencies:
-include Makefile.depend
-###################################################################### 
+# read dependencies using sinclude (silent include)
+# which continues if Makefile.depend is not readable (incl. doesn't exist!).
+# Makefile.depend can be created with 'make depend'.
+sinclude Makefile.depend
+######################################################################
+

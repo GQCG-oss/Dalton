@@ -2,7 +2,7 @@ include ../Makefile.config
 
 all : libcc.a
 
-OBJS = herdirect_cc.o  cc_drv.o       ccsd_input.o   ccsd_energy.o \
+F_OBJS = herdirect_cc.o  cc_drv.o       ccsd_input.o   ccsd_energy.o \
 ccsd_sortao.o  ccsd_rhs.o     cc3_t3int.o    cc3_omeg.o    \
 cc_exci.o      cc_lr.o        cc_fop.o       cc_pqi.o      \
 cc_exgr.o      cc_rhtr.o      cc_lhtr.o      cceq_solv.o   \
@@ -56,11 +56,15 @@ ccsdt_eta_cont.o cc3_fmat.o     ccsdt_fbmat.o  \
 cc3_etasd.o cc3_ft3b.o cc3_fmatsd.o cc3_xi_cont.o \
 cc3_init.o ccexnorm.o cc_opa.o ccsdt_aden_noddy.o cc3_aden.o \
 cc_foppt_sc.o cc_r12.o       cc_mkrv.o cc_rhtr_noddy.o
+
+F_CPPS = $(F_OBJS:.o=.i)
+
+pre: $(F_CPPS)
   
 # cc_pckcr8.o    cc_pckutil.o   
 io : crayio.o
 
-libcc.a: $(OBJS)
+libcc.a: $(F_OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 
 clean : 
@@ -71,6 +75,9 @@ tags:;          $(RM) -f tags ; etags  *.F
 depend:; ../tools/check_depend $(INCLUDE_DIR) > Makefile.depend
 
 ######################################################################
-# read dependencies:
-include Makefile.depend
+# read dependencies using sinclude (silent include)
+# which continues if Makefile.depend is not readable (incl. doesn't exist!).
+# Makefile.depend can be created with 'make depend'.
+sinclude Makefile.depend
 ######################################################################
+

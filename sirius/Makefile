@@ -2,7 +2,8 @@ all : libsirius.a
 
 include ../Makefile.config
 
-OBJS =	ciauth.o          ciham.o           cioff.o\
+F_OBJS = \
+	ciauth.o          ciham.o           cioff.o\
 	cisig.o           csfstuff.o        dens.o\
 	detfi.o           detpr.o           dets0.o\
 	dets1.o           drcctl.o          getcix.o\
@@ -20,7 +21,11 @@ OBJS =	ciauth.o          ciham.o           cioff.o\
 	newtrahso.o       sirntra.o         intsort.o \
 	r12aux.o
 
-libsirius.a : $(OBJS)
+F_CPPS = $(F_OBJS:.o=.i)
+
+pre: $(F_CPPS)
+
+libsirius.a : $(F_OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 
 # sirtra.o has to be compiled without less optimization under HP-UX
@@ -34,6 +39,8 @@ clean :
 depend:; ../tools/check_depend $(INCLUDE_DIR) > Makefile.depend
 
 ######################################################################
-# read dependencies:
-include Makefile.depend
+# read dependencies using sinclude (silent include)
+# which continues if Makefile.depend is not readable (incl. doesn't exist!).
+# Makefile.depend can be created with 'make depend'.
+sinclude Makefile.depend
 ######################################################################
