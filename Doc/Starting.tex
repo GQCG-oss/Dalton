@@ -297,15 +297,16 @@ BASIS
 6-31G**
 Water
 using the 6-31G** basis
-    2
-        8.    1
+Atomtypes=2
+Charge=8.0 Atoms=1
 O      .0000000000        -.2249058930         .0000000000
-        1.    2
+Charge=1.0 Atoms=2
 H     1.4523499293         .8996235720         .0000000000
 H    -1.4523499293         .8996235720         .0000000000
 \end{verbatim}
 
-The number on the fifth line denotes the number of blocks of atoms,
+On the fifth line the number of different atomtypes or more correctly,
+the number of  blocks of atoms,
 in this case two, oxygen and hydrogen. There are one oxygen with
 charge 8, and two hydrogens with charge 1. The symmetry of the system
 will be detected by the program during the input processing unless
@@ -315,16 +316,18 @@ input files.
 We may also add the symmetry elements\index{symmetry!element} of the
 symmetry group\index{symmetry!group} ourselves. We must
 then remove any symmetry-dependent centers\index{symmetry-dependent center}. For the above input this
-will result in, if we use the yz- and xy-planes as symmetry elements:
+will result in, if we use the yz- (the x axis changes sign during the
+symmetry operation) and xy- (the $z$ axis changes sign) -planes as
+symmetry elements: 
 
 \begin{verbatim}
 ATOMBASIS
 Water
 using ANOs specified for each atomtype
-    2    2  X  Y
-        8.    1 ano-1 5 4 3 1
+Atomtypes=2 Generators=2 X Y
+Charge=8.0 Atoms=1 Basis=ano-1 5 4 3 1
 O      .0000000000        -.2249058930         .0000000000
-        1.    1 ano-1 4 3 2
+Charge=1.0 Atoms=1 Basis=ano-1 4 3 2
 H     1.4523499293         .8996235720         .0000000000
 \end{verbatim}
 
@@ -345,17 +348,17 @@ BASIS
 sadlej
 Water - geometry optimization with Sadlej's basis set
 Project - Raman
-    3  2 0
+Atomtypes=3  Charge=2 Nosymmetry
 ZMAT
 O   1 8.0
 H   2 1 0.97 1.0
 H   3 1 0.97 2 104.5 1.0
 \end{verbatim}
 
-The numbers on the fourth row denote, respectively, the number of atoms
-in the molecule (3), the charge\index{molecular charge} of the
-molecule ($+2$), and the zero
-tells that symmetry is not to be used in this calculation. Note that
+In addition to the number of atoms in the input (3), we have given the
+total charge\index{molecular charge} of the
+molecule ($+2$), and the keyword \verb|Nosymmetry| indicates that
+symmetry is not to be used in this calculation. Note that
 unlike Cartesian coordinate input, which by default is in atomic units, the
 Z-matrix input is always to be in \AA ngstr\o ms.
 
