@@ -3655,6 +3655,7 @@ C
      &   ' RSPLR -- frequencies :',(FREQ(I),I=1,NFREQ)
          CALL GETGPV(LBLLR(KSYMOP,IOP),FC,CMO,UDV,PV,XINDX,ANTSYM,
      *               WRK(KGD),LWRK1)
+         DNORM = DNRM2(KZYVAR,WRK(KGD),1)
          IF (IPRRSP .GT. 30) THEN
             CALL HEADER('Gradient vectors in RSPLR for operator '//
      &                  LBLLR(KSYMOP,IOP)//':',-1)
@@ -3689,8 +3690,22 @@ C
             GOTO 600
          END IF
 C
+         IF (DNORM .LT. THRNRM) THEN
+            WRITE (LUPRI,*) ' >>> RSPCTL skipped because norm of'
+            WRITE (LUPRI,*) '     property vector '//LBLLR(KSYMOP,IOP)//
+     &                      ' is only',DNORM
+            CALL DZERO(WRK(KBVECS),KZYVAR)
+            DO 450 IFREQ = 1,NFREQ
+               CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS),LBLLR(KSYMOP,IOP),
+     *                     BLANK,WRK(KEIVAL-1+IFREQ),D0,KSYMOP,0,D0,
+     *                     ANTSYM)
+  450       CONTINUE
+            GO TO 600
+         END IF
+C
          KEXSIM = NFREQ
          KEXCNV = NFREQ
+C
          CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
      *               .TRUE.,LBLLR(KSYMOP,IOP),BLANK,WRK(KGD),
      *               WRK(KREDGD),WRK(KREDE),WRK(KREDS),
