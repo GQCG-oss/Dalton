@@ -2669,15 +2669,17 @@ C     We initialize the scaling vector (the inverse of the
 C     normalization vector in WLKCGH).
 C
       CALL DZERO(SCLVEC,MXCOOR)
+C
+C Latest version of g77 has problems with loop-unrolling here,
+C loop rewritten to avoid problems. VB Oct 2003
+C
       DO 1 IREP = 0, MAXREP
-         DO 2 ICENT = 1, NUCIND
+         DO 2 ICRD = 1, 3*NUCIND
 #include <scalar.h>
-            DO 3 ICOOR = 1, 3
-               ISCOOR = IPTCNT(3*(ICENT-1)+ICOOR,IREP,1)
-               IF (ISCOOR .GT. 0) THEN
-                  SCLVEC(ISCOOR) = SQRT(FMULT(ISTBNU(ICENT)))
-               END IF
- 3          CONTINUE
+            IF (IPTCNT(ICRD,IREP,1) .GT. 0) THEN
+               SCLVEC(IPTCNT(ICRD,IREP,1)) =
+     &              SQRT(FMULT(ISTBNU((ICRD-1)/3 + 1)))
+            END IF
  2       CONTINUE
  1    CONTINUE
 C
