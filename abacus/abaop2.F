@@ -369,7 +369,6 @@ C
 C     Alternatively we restrivt the step norm to be equal or less
 C     than the trust radius.
 C
-         print *, 'er her 11'
          STPNRM = SQRT(DDOT(ICRD,STEP,1,STEP,1))
          IF (STPNRM .GT. TRSTRA) THEN
             FAC = TRSTRA/STPNRM
@@ -419,7 +418,6 @@ C
 C     Alternatively we restrivt the step norm to be equal or less
 C     than the trust radius.
 C     
-         print *, 'er her 12'
          STPNRM = SQRT(DDOT(ICRD,STEP,1,STEP,1))
          IF (STPNRM .GT. TRSTRA) THEN
             FAC = TRSTRA/STPNRM
@@ -479,7 +477,6 @@ C
          ERGPRD = DDOT(ICRD,GRAD,1,STEP,1)
      &        + 0.5D0*SNDTRM
       END IF
-      print *, 'er her 13'
       STPNRM = SQRT(DDOT(ICRD,STEP,1,STEP,1))
       RETURN
       END

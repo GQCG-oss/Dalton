@@ -270,7 +270,6 @@ C     ----------------------------------------------------------------
                IAO = ITRAN(ISAO,K)
                FAC = CTRAN(ISAO,K)
  
-               print *, isao,k,iao,fac
                IPOSAO = KPOSAO + NPRIM*(ISAO-1)
                CALL DAXPY(NPRIM,FAC,WORK(KSCR-1+IAO),NBASIS,
      &                              WORK(IPOSAO),1)
