@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abafsd.F,v 1.3 2001-03-26 11:31:51 ruud Exp $
+C$Id: abafsd.F,v 1.4 2001-04-28 16:07:46 ruud Exp $
 C
 #include <single.h>
 C  /* Deck getfd */
@@ -1163,7 +1163,7 @@ C
      *          WORK(KWRK),IDIM,IDIM)
       IF (IPRINT .GT. 6) THEN
          CALL HEADER('Matrix transformed from AO to SO basis',-1)
-         CALL OUTPAK(WORK(KFCSO),IDIM,1,6)
+         CALL OUTPAK(WORK(KFCSO),IDIM,1,LUPRI)
       END IF
       RETURN
       END

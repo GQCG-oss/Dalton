@@ -29,11 +29,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: herrdn.F,v 1.9 2001-04-21 14:28:16 vebjornb Exp $
+C$Id: herrdn.F,v 1.10 2001-04-28 16:07:46 ruud Exp $
 C
 #include <single.h>
 #ifdef REVISION_LOG
 $Log: not supported by cvs2svn $
+Revision 1.9  2001/04/21 14:28:16  vebjornb
+Removed all ASSIGN statements, and replaced them with explicit FORMAT labels.
+The ASSIGNs caused trouble when compiling on 64-bit HP - VB
+
 Revision 1.8  2001/04/21 12:11:59  ruud
 Added the possibility of reusing property derivatives in vibrational average
 calculations. Fixed a bug in the temperature part, as well as in the Eckart
@@ -3059,6 +3063,7 @@ C*****************************************************************************
       CALL IZERO(NAOS,8)
       CALL IZERO(NCOS,16)
       CALL IZERO(IRREP,MXCORB)
+      CALL DZERO(CTRAN,8*MXCORB)
 C
 C     Run over Irreducible Representations LAMBDA
 C
