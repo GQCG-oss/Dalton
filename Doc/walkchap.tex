@@ -50,10 +50,10 @@ surface so that subsequent molecular dynamics analysis can be
 made. There are two options for doing this in the program: One can
 either follow an Intrinsic Reaction Coordinate
 (IRC)~\cite{pjhjajthtca73}\index{IRC}\index{intrinsic reaction
-coordinate}, or solve Newtons equations for the nuclei under the
+coordinate}, or solve Newton's equations for the nuclei under the
 potential put up by the electronic cloud
 \cite{theuhjajcpl173}\index{dynamics}. Whereas the first option
-can be used for modelling the immediate surroundings of a
+can be used for modeling the immediate surroundings of a
 molecular reaction path, the second will give a precise
 description of {\em one} molecular trajectory. Chemical reactions
 may thus be monitored in time from an initial set of starting
@@ -246,7 +246,7 @@ sensitive to this, and the \Sec{WALK} module thus only uses
 Cartesian coordinates. However, the coordinate system may be crucial
 to the performance of first-order methods, especially when starting
 from approximate Hessians. \Sec{OPTIMIZE} provides the normal Cartesian
-coordinates\index{cartesian coordinate} and redundant
+coordinates\index{Cartesian coordinate} and redundant
 internal coordinates\index{redundant internal coordinates},
 the latter being highly recommended when using
 first-order methods. Redundant internal coordinates consists of all
@@ -260,7 +260,7 @@ possible to override this with the keywords \Key{REDINT} and
 The \Sec{OPTIMIZE} decides when a minimum is reached through a set of
 convergence criteria\index{convergence criteria}. These will be
 set automatically depending on the accuracy of the wave function
-using three different criterions, namely the change in energy
+using three different criteria, namely the change in energy
 between two iterations, the norm of the molecular
 gradient\index{norm of gradient} and the norm of the
 step\index{step norm}. The convergence threshold for the change
@@ -280,8 +280,8 @@ insensitive to changes in these thresholds due to their quadratic
 convergence, first-order methods may run into severe trouble if the
 criteria are too close to the accuracy of the wave function and the
 gradient. The quickest way to get somewhat looser convergence
-criterias, is to use the keyword \Key{BAKER} enforcing the convergence
-criterias of Baker\cite{Baker} (see the Reference Manual for
+criteria, is to use the keyword \Key{BAKER} enforcing the convergence
+criteria of Baker\cite{Baker} (see the Reference Manual for
 details). This will normally give energies converged to within
 $1.0\cdot 10^{-6}$ a.u.
 
