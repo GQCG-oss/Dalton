@@ -127,6 +127,7 @@ C
       DIMENSION NEEDMU(6),NEEDDI(6)
       DATA NEEDMU /1,1,1,0,0,0/
       DATA NEEDDI /1,1,1,0,0,0/
+      CALL QENTER('RSPOLI')
       ROKS = NASHT.GT.0 .AND. DFTADD
 C
       IF (SOPPA) THEN
@@ -546,7 +547,7 @@ C       DXCAO,DXVAO must be stored consecutively
 C       (requirement for SIRFCK call)
 C
       NFMAT  = 0
-      IF (NISHT .GT. 0) NFMAT = NFMAT + NOSIM
+      IF (NISHT .GT. 0 .OR. DFTRUN) NFMAT = NFMAT + NOSIM
 C     ... for FXCAO
       IF (NASHT .GT. 0) NFMAT = NFMAT + NOSIM
 C     ... for FXVAO
@@ -866,5 +867,6 @@ C
 C
 C END OF RSPOLI
 C
+      CALL QEXIT('RSPOLI')
       RETURN
       END
