@@ -351,10 +351,10 @@ c
                CORX = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
                CORY = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
                CORZ = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
-               PX = X-CORX
-               PY = Y-CORY
-               PZ = Z-CORZ
-               DST2 = MAX(PX*PX,PY*PY,PZ*PZ)
+               PX = X-CENT(ISHELA,1,1)
+               PY = Y-CENT(ISHELA,2,1)
+               PZ = Z-CENT(ISHELA,3,1)
+               DST2 = PX*PX + PY*PY + PZ*PZ
 c              RSHEL2(ISHELA)
                IF(DST2.LE.RSHEL2(ISHELA)+RCELL2) THEN
 c                 accepted...

@@ -1395,14 +1395,14 @@ lin_resp_cb_b_gga(DftIntegratorBl* grid, real * RESTRICT tmp,
         real ngrad  = sqrt(grid->g.grad[i][0]*grid->g.grad[i][0]+
                            grid->g.grad[i][1]*grid->g.grad[i][1]+
                            grid->g.grad[i][2]*grid->g.grad[i][2]);
-        real b0 = vt3[i][0];
+        real br, b0 = vt3[i][0];
         if(ngrad<1e-15|| grid->r.rho[i]<1e-15) {
             vt3[i][0] = vt3[i][1] = vt3[i][2] = vt3[i][3] = 0;
             continue;
         }
-        real br = (vt3[i][1]*grid->g.grad[i][0]
-                   + vt3[i][2]*grid->g.grad[i][1] 
-                   + vt3[i][3]*grid->g.grad[i][2])/ngrad;
+        br = (vt3[i][1]*grid->g.grad[i][0] +
+              vt3[i][2]*grid->g.grad[i][1] +
+              vt3[i][3]*grid->g.grad[i][2])/ngrad;
         dp. rhoa = dp. rhob = 0.5*grid->r.rho[i];
         dp.grada = dp.gradb = 0.5*ngrad;
         dp.gradab = dp.grada*dp.gradb;

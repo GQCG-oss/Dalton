@@ -64,8 +64,6 @@ c     LEBMIN is in the common block but is used only internall in dftgrd
       DFTHES = .FALSE.
       DFTHRS = .FALSE.
       NOPRUN = .FALSE.
-      DOVWN3 = .FALSE.
-      DOVWNI = .TRUE.
 C
       DFTIPT = 1.0D-20
       DFTBR1 = 1.0D-20

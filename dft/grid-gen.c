@@ -146,7 +146,6 @@ struct GridGenWork_ {
 typedef struct GridGenWork_ GridGenWork;
 
 void dzero_(real*arr, const int* cnt);
-static int verbose=0;
 /* include_selected partitioning points to selected partitioning scheme:
    Becke or SSF. The function is supposed to update weights wg.
 */
@@ -621,8 +620,6 @@ include_partitioning_ssf(GridGenMolGrid* mg, int atom, int point_cnt,
 
 /** include_block_partitioning transforms a set of POINT_CNT points.
 */
-static int cmpint(const void *a, const void *b)
-{ return *((int*)a)-*((int*)b); }
 typedef struct {
     real (*coor)[3];
     real *rj;
@@ -655,7 +652,7 @@ block_compute_rjs(GGBlockWork *ggw, GridGenMolGrid* mg,
                   int rel_at_cnt, int *relevant_atoms,
                   int point_cnt)
 {
-    int atno, ptno, i;
+    int ptno, i;
 
     for(i=0; i<rel_at_cnt; i++) {
         int atno = relevant_atoms[i];
@@ -675,7 +672,7 @@ block_partition_postprocess(GridGenMolGrid *mg, struct point *c,
                             int point_cnt, const int *atom_nums,
                             real (*coor)[3], real *w)
 {
-    int atno, atno2, ptno, h, isign=-1, i, j;
+    int atno, ptno, h, isign=-1, i, j;
     real mu, mu2, g_mu, apasc;
     real xpasc[HARDNESS1], facult[HARDNESS1];
     /* compute confocal ellipical coordinates for the batch of points to
@@ -683,7 +680,7 @@ block_partition_postprocess(GridGenMolGrid *mg, struct point *c,
     int *relevant_atoms = dal_malloc(mg->atom_cnt*sizeof(int));
     /* map2r: map from all to relevant_atoms array */
     int *map2r = dal_malloc(mg->atom_cnt*sizeof(int));
-    int last_atom = -1, uniq_atoms, curr_atom_pos;
+    int uniq_atoms;
     GGBlockWork ggw;
     int dest;
 
@@ -1547,7 +1544,6 @@ save_final(GridGenMolGrid *mg, const char *fname, int point_cnt,
     gtexts_(rshel2);
     for(idx=0; idx<point_cnt; idx += cnt) {
         int closest = 0, i;
-        unsigned tmp;
         struct point c;
         real mindist = 4*cell_size, maxdist = 0;
         GridPointKey key = keys[idx].key;
@@ -1716,7 +1712,7 @@ grid_getchunk_blocked(DftGridReader* rawgrid, int maxlen,
                       int *nblocks, int *shlblocks, 
                       real (*coor)[3], real *weight)
 {
-    int sz = 0, i, rc, bl_cnt;
+    int sz = 0, rc, bl_cnt;
     FILE *f = rawgrid->f;
 
     if(fread(&sz, sizeof(int), 1, f) <1)
@@ -1739,6 +1735,7 @@ grid_getchunk_blocked(DftGridReader* rawgrid, int maxlen,
         rc = fread(shlblocks, sizeof(int), bl_cnt*2, f);
     } else {
         int buf, cnt;
+        rc = 0;
         for(cnt=0; cnt<bl_cnt*2; cnt+=rc) {
             rc=fread(&buf, sizeof(int), 1, f);
             if( rc < 1)
