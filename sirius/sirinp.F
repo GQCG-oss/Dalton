@@ -532,7 +532,6 @@ C               ICHRG = ICHRGNU - (2*NISHT+NACTEL)
       NACTEL = -1
       NRHFEL = ICHRG - KCHARG
       INIOCC = -1
-      DIISMETHOD = DIMDIIS
       IF (NRHFEL .GT. 0) THEN
          AUTOCC = .TRUE.
       ELSE
@@ -2398,7 +2397,7 @@ C 13-May-1995 K.Ruud, added keyword .ELECTRONS.
 C 1999 Helgaker, DFT input added 
 C
 #include <implicit.h>
-      PARAMETER (NTABLE = 25)
+      PARAMETER (NTABLE = 24)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      *          REWORD*12
@@ -2435,7 +2434,7 @@ C
      *            '.PRINT ','.OPEN S','.MAX MA','.MAX MI','.NONCAN',
      *            '.FROZEN','.DIRFOC','.NODIIS','.MAX DI','.C2DIIS',
      *            '.MAX ER','.DDSCF ','.COREHO','.CORERE','.HF OCC',
-     *            '.ELECTR','.AUTOCC','.FC MVO','.HSROHF','.EDIIS '/
+     *            '.ELECTR','.AUTOCC','.FC MVO','.HSROHF'/
 C
 C     ***** PROCESS INPUT FOR SCFINP *****
 C
@@ -2461,7 +2460,7 @@ C
                IF (TABLE(II) .EQ. WORD) THEN
                   GO TO (101,102,103,104,105,106,107,108,109,110,
      &                   111,112,113,114,115,116,117,118,119,120,
-     &                   121,122,123,124,125),II
+     &                   121,122,123,124),II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -2570,7 +2569,7 @@ C *** Option 14 >MAX DI< Max. number of DIIS iterations
       GO TO 100
 C
 C *** Option 15 >C2DIIS< Use Sellers C2-DIIS algorithm for DIIS
-  115 DIISMETHOD = DIMC2DIIS
+  115 FLAG(22) = .TRUE.
       GO TO 100
 C
 C *** Option 16 >MAX ER< Max. number of DIIS error vectors
@@ -2628,9 +2627,6 @@ C     Reference: C.W. Bauschlicher, JCP 72 (1980) 880.
 C High spin orbitals input
  124  HSROHF = .TRUE.
       READ(LUCMD,*) (NROHF(I),I=1,NSYM)
-C *** Option 20 >.EDIIS< ediis method enabled.
- 125  WRITE(0,*) "EDIIS method enabled"
-      DIISMETHOD = DIMEDIIS
       GO TO 100
 C
  2000 CONTINUE

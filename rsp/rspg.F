@@ -1,9 +1,8 @@
 C /* Deck gdrv */
       SUBROUTINE GDRV(WORK,LWORK)
 #include <implicit.h>
-#include <kinds.h>
       INTEGER LWORK
-      REAL(DOUBLE) WORK(LWORK)
+      DIMENSION WORK(LWORK)
 #include <infdim.h>
 #include <inforb.h>
 #include <infrsp.h>
@@ -269,14 +268,13 @@ C
       END
 C
       SUBROUTINE SETECC
-      IMPLICIT NONE
-#include <kinds.h>
+#include <implicit.h>
 #include <inforb.h>
 #include <inftap.h>
 #include <gtensor.h>
 #include <priunit.h>
-      REAL(DOUBLE) D(N2BASX), P(N2BASX)
-      REAL(DOUBLE) DDOT
+      DIMENSION D(N2BASX), P(N2BASX)
+c      REAL(DOUBLE) DDOT
       EXTERNAL DDOT
       CHARACTER*8 RTNLBL(2)
       INTEGER N
@@ -304,18 +302,17 @@ C
       END
 
       SUBROUTINE GET_TD(D)
-      IMPLICIT NONE
-#include <kinds.h>
-      REAL(DOUBLE) D(*)
+#include <implicit.h>
+      DIMENSION D(*)
 #include <inforb.h>
 #include <inftap.h>
 #include <dummy.h>
 #include <priunit.h>
-      REAL(DOUBLE) CMO(NCMOT)
-      REAL(DOUBLE) UDV(N2ASHX)
-      REAL(DOUBLE) DV(N2BASX)
-      REAL(DOUBLE) WRK(N2BASX)
-      REAL(DOUBLE) D1
+      DIMENSION CMO(NCMOT)
+      DIMENSION UDV(N2ASHX)
+      DIMENSION DV(N2BASX)
+      DIMENSION WRK(N2BASX)
+c      REAL(DOUBLE) D1
       PARAMETER ( D1 = 1.0D0)
       LOGICAL CLOSED
 
@@ -340,7 +337,6 @@ C
 
       SUBROUTINE ECCSET(CMO,UDV,WRK,LWRK)
 #include <implicit.h>
-#include <kinds.h>
       DIMENSION CMO(*), UDV(*), WRK(LWRK)
 #include <maxorb.h>
 #include <priunit.h>
@@ -357,7 +353,7 @@ C
 #include <iratdef.h>
       LOGICAL FNDLB2
       CHARACTER*7 RTNLBL(2)
-      REAL(DOUBLE) AVER(3)
+      DIMENSION AVER(3)
       CALL QENTER('ECCSET')
 C
 C  Determine electronic charge centroid
@@ -868,7 +864,6 @@ C /* Deck gset  */
 C  /* Deck gprint  */
       SUBROUTINE GPRINT(WORK,LWORK)
 #include <implicit.h>
-#include <kinds.h>
       DIMENSION WORK(*), PVAL(6)
 #include <infpri.h>
 #include <gtensor.h>
@@ -878,7 +873,7 @@ C  /* Deck gprint  */
 #include <priunit.h>
 C
       PARAMETER (D1=1.0D0, PPM=1.0D6, DP5=0.5D0)
-      REAL(DOUBLE) GEIG(3)
+      DIMENSION GEIG(3)
 C
       IF (.NOT.GCALC) RETURN
       IF (REFSPIN.NE.0) THEN
@@ -1527,9 +1522,9 @@ C
       END
 
       SUBROUTINE WRFMTD(LU,FMT,MAT,N)
-#include <kinds.h>
+#include <implicit.h>
       INTEGER LU, N
-      REAL(DOUBLE) MAT(N,N)
+      DIMENSION RMAT(N,N)
       CHARACTER*(*) FMT
       DO I=1,N
          WRITE(LU,FMT)(MAT(I,J),J=1,N)

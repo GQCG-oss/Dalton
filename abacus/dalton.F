@@ -482,6 +482,7 @@ C
       END
       SUBROUTINE GETMMBAS(LMWORK,BASDIR,LBASDR)
 #include <implicit.h>
+#include <priunit.h>
       CHARACTER*70 BASDIR
 #if defined(SYS_AIX)||defined(SYS_CRAY)||defined(SYS_IRIX)||defined(SYS_NEC)||defined(SYS_CONVEX)||defined(SYS_T3D)||defined(SYS_SUN)||defined (SYS_LINUX)||defined(SYS_HPUX)||defined(SYS_HAL)||defined(SYS_T90)||defined(SYS_DEC)
       CHARACTER*20 WRKMEM

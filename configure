@@ -459,7 +459,7 @@ for testdir in $dirlist; do
       	               blas3="true";;
             libcomplib.sgimath.a) LIB='-lcomplib.sgimath'
 	                          blas3='true';;
-            libmkl_p3.a) LIB="-L$mkllib -lmkl_p3 -Vaxlib -lguide -lpthread -static"
+            libmkl_p3.a) LIB="-L$mkllib -lmkl_p3 -lguide -lpthread -static"
                          blas3="true";;
 	    lib[cd]xml.a) LIB='-ldxml'
 	               blas3="true"; lapack="true"
@@ -918,6 +918,7 @@ case "$WHICH" in
               icc) copt="-O3 $proc -ip -restrict -DRESTRICT=restrict";;
               gcc) copt="-O3 -malign-double -std=c99 -DRESTRICT=restrict";;
           esac
+	  LIBS="$LIBS -Vaxlib -lsvml"
       elif [ $F77 = 'pgf77' ]; then
 	  if [ $prc = 'i686' ]; then
 	      proc='-tp p6'

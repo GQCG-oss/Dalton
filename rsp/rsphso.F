@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rsphso.F,v 1.2 2003-11-05 10:43:52 pawsa Exp $
+C$Id: rsphso.F,v 1.3 2003-11-11 15:43:52 pawsa Exp $
 C
 #include <single.h>
 C  /* Deck hsoctl */
@@ -2205,13 +2205,12 @@ C
 C /* Deck getfmatx */
 C
       SUBROUTINE GETFMATX(WORD,TRIPLET,F,D,ND)
-      IMPLICIT NONE
-#include <kinds.h>
+#include <implicit.h>
       CHARACTER*8 WORD
       INTEGER ND
       LOGICAL TRIPLET(ND)
 #include <inforb.h>
-      REAL(DOUBLE) F(NBAST,NBAST,ND), D(NBAST,NBAST,ND)
+      DIMENSION F(NBAST,NBAST,ND), D(NBAST,NBAST,ND)
 C
 C Generalize GETFMAT to handle non-symmetric densities (quadratic
 C response)
@@ -2220,11 +2219,12 @@ C
 C
 C LOCAL
 C
-      REAL(DOUBLE) BUF(600)
+      DIMENSION BUF(600)
       INTEGER IBUF(600)
       INTEGER IB, LENGTH, I,J,K,L,ICOOR, LUHSOAO, COMPONENT,LABEL,ID
-      REAL(DOUBLE) GIJKL,XIJKL,DIJ,DKL
-      REAL(DOUBLE) DP5, D1P5, D1, D2, LEFT(2), RIGHT(2)
+      DIMENSION LEFT(2), RIGHT(2)
+c      REAL(DOUBLE) GIJKL,XIJKL,DIJ,DKL,
+c      REAL(DOUBLE) DP5, D1P5, D1, D2, 
       PARAMETER(DP5=0.5D0, D1P5=1.5D0, D1=1.0D0, D2=2.0D0)
 C
       CALL QENTER('GETFMATX')

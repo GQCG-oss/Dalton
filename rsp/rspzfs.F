@@ -2,8 +2,6 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rspzfs.F,v 1.2 2003-11-05 10:43:54 pawsa Exp $
-C
 #include <single.h>
 C  /* Deck zfsdrv */
       SUBROUTINE ZFSDRV(WORK,LWORK)
@@ -152,8 +150,7 @@ C
 C  /* Deck zfsana */
       SUBROUTINE ZFSANA(WORK,LWORK,IPRINT)
 #include <implicit.h>
-#include <kinds.h>
-      REAL(DOUBLE) WORK(*)
+      DIMENSION WORK(LWORK)
 #include <maxorb.h>
 #include <infinp.h>
       INTEGER S
@@ -182,20 +179,18 @@ C  /* Deck zfsan1 */
       SUBROUTINE ZFSAN1(MULT,HZFS,RZFS,CG,HEIG,RWORK,WORK,KFREE,LFREE,
      &   IPRINT)
 #include <implicit.h>
-#include <kinds.h>
       DOUBLE COMPLEX HZFS(MULT,MULT)
-      REAL(DOUBLE) RZFS(MULT,MULT)
-      REAL(DOUBLE) CG(MULT,MULT)
-      REAL(DOUBLE) HEIG(MULT)
-      REAL(DOUBLE) WORK(*), RWORK(*)
+      DIMENSION RZFS(MULT,MULT)
+      DIMENSION CG(MULT,MULT)
+      DIMENSION HEIG(MULT)
+      DIMENSION WORK(*), RWORK(*)
 #include <priunit.h>
 #include <zfs.h>
 #include <codata.h>
 #include <gfac.h>
-      REAL(DOUBLE) S,M,N
       DOUBLE COMPLEX U(-2:2)
-      REAL(DOUBLE) RU(-2:2)
-      REAL(DOUBLE) ZFSEIG(3)
+      DIMENSION RU(-2:2)
+      DIMENSION ZFSEIG(3)
       DOUBLE COMPLEX I
       PARAMETER ( D1 = 1.0D0 , D2 = 2.0D0 , D6=6.0D0, D8 = 8.0D0 )
       PARAMETER (DP5=0.5D0, D1P5=1.5D0, D0=0.0D0)
@@ -252,33 +247,33 @@ C
 
       CALL DZERO(CG,MULT*MULT)
       DO IM=1,MULT
-         M = -S-1+IM
+         RM = -S-1+IM
          DO IN=1,MULT
-            N = -S-1+IN
+            RN = -S-1+IN
             MN=(IM-IN)
             IF (MN.EQ.2) THEN
                CG(IM,IN)=SQRT(
-     &            (3*(S+M-1)*(S+M)*(S-M+1)*(S-M+2))/
+     &            (3*(S+RM-1)*(S+RM)*(S-RM+1)*(S-RM+2))/
      &            ((2*S-1)*2*S*(S+1)*(2*S+3))
      &            )
             ELSE IF (MN.EQ.1) THEN
-               CG(IM,IN)=(1-2*M)
+               CG(IM,IN)=(1-2*RM)
      &           * SQRT(
-     &               DBLE(3*(S-M+1)*(S+M)) /
+     &               DBLE(3*(S-RM+1)*(S+RM)) /
      &               ((2*S-1)*S*(2*S+2)*(2*S+3))
      &               )
             ELSE IF (MN .EQ. 0) THEN
-               CG(IM,IN)=DBLE(3*M*M-S*(S+1))/
+               CG(IM,IN)=DBLE(3*RM*RM-S*(S+1))/
      &            SQRT( DBLE((2*S-1)*S*(S+1)*(2*S+3)) )
             ELSE IF (MN.EQ.-1) THEN
-               CG(IM,IN)=(2*M+1)
+               CG(IM,IN)=(2*RM+1)
      &           * SQRT(
-     &               DBLE(3*(S-M)*(S+M+1))/
+     &               DBLE(3*(S-RM)*(S+RM+1))/
      &               ((2*S-1)*S*(2*S+2)*(2*S+3))
      &               )
             ELSE IF (MN.EQ.-2) THEN
                CG(IM,IN)=SQRT(
-     &            DBLE(3*(S-M-1)*(S-M)*(S+M+1)*(S+M+2))/
+     &            DBLE(3*(S-RM-1)*(S-RM)*(S+RM+1)*(S+RM+2))/
      &            ((2*S-1)*S*(2*S+2)*(2*S+3))
      &            )
             END IF

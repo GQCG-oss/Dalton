@@ -68,7 +68,7 @@ lb94_energy(const DftDensProp* dp)
     return DiracFunctional.func(dp)+VWNFunctional.func(dp);
 }
 
-inline double
+__inline__ double
 max(double a, double b) { return a>b ? a : b; }
 static void
 lb94_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
