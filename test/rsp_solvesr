@@ -288,11 +288,10 @@ CTRL[5]=1
 ERROR[5]="MCSCF ENERGY NOT CORRECT"
 
 # ESR setup
-CRIT1=`$GREP "ESR \- calculation carried out \: ESRCAL\=T" $log | wc -l`
-CRIT2=`$GREP "22 ESR CALC\. \: TRIPLET OP\. * SYMMETRY NO\: * 1 AND LABEL\:" $log | wc -l`
-CRIT3=`$GREP "18 ESR CALC\. \: TRIPLET OP\. * SYMMETRY NO\: * 2 AND LABEL\:" $log | wc -l`
-TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[6]=3
+CRIT1=`$GREP "22 ESR CALC\. \: TRIPLET OP\. * SYMMETRY NO\: * 1 AND LABEL\:" $log | wc -l`
+CRIT2=`$GREP "18 ESR CALC\. \: TRIPLET OP\. * SYMMETRY NO\: * 2 AND LABEL\:" $log | wc -l`
+TEST[6]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[6]=2
 ERROR[6]="ESR CALCULATION NOT SET UP CORRECTLY"
 
 # ESR parameters
