@@ -443,6 +443,16 @@ C
       CALL DSPTGE(KZYRED,REDE,WRK(KREDE))
       CALL DSPTGE(KZYRED,REDS,WRK(KREDS))
 C
+      GRDNRM = DNORM2(KZYRED,REDGD,1)
+      IF (GRDNRM.EQ.D0) THEN
+         WRITE(LUPRI,'(4(/,5X,A))') 
+     &        ' ABSREDUC: The reduced property gradient has',
+     &        ' zero norm in the space of trial vectors.',
+     &        ' The reason may be that you should employ a higher',
+     &        ' point group in your calculation.'
+         CALL QUIT('Zero norm of reduced property gradient.')
+      END IF
+C
       IF (IPRABS.GE.20) THEN
          WRITE(LUPRI,'(2(/,5X,A))') ' Reduced B[1] gradient',
      &        '========================'
