@@ -470,7 +470,7 @@ C
       END DO
 C
       IF (LMULBS .AND. .NOT. R12TRA) THEN
-C        Do not compute integrals that involve auxilliary
+C        Do not compute integrals that involve auxiliary
 C        basis functions (WK/UniKA/04-11-2002).
          DO I = 1, NAOBCH
             IF (MBIDBT(I) .GT. 1) THEN
