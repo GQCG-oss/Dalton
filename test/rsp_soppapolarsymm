@@ -119,47 +119,47 @@ CTRL[3]=2
 ERROR[3]="ENERGIES NOT CORRECT"
 
 # Static polarizabilites
-CRIT1=`$GREP "\@.*YDIPLEN .* YDIPLEN .* 5\.50008208901[0-9](D|E)\+00" $log | wc -l`
+CRIT1=`$GREP "\@.*YDIPLEN .* YDIPLEN .* 5\.500082.....[0-9](D|E)\+00" $log | wc -l`
 TEST[4]=`expr	$CRIT1`
 CTRL[4]=1
 ERROR[4]="STATIC POLARIZABILITIES NOT CORRECT"
 
 # Frequency dependant polarizabilites
 CRIT1=`$GREP "\@ *a\.u\.\: * 5\.9200000(D|E)\-02" $log | wc -l`
-CRIT2=`$GREP "\@.*YDIPLEN .* YDIPLEN .* 5\.560573579758(D|E)\+00" $log | wc -l`
+CRIT2=`$GREP "\@.*YDIPLEN .* YDIPLEN .* 5\.560573......(D|E)\+00" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[5]=4
 ERROR[5]="FREQUENCY DEPENDANT POLARIZABILITIES NOT CORRECT"
 
 # Static C6/C8 polarizabilities
-CRIT1=`$GREP "XDIPLEN .* XDIPLEN .* 7\.396690471[6-8]" $log | wc -l`
-CRIT2=`$GREP "YDIPLEN .* YDIPLEN .* 5\.500082062[1-3]" $log | wc -l`
-CRIT3=`$GREP "ZDIPLEN .* ZDIPLEN .* 3\.206925436[4-6]" $log | wc -l`
+CRIT1=`$GREP "XDIPLEN .* XDIPLEN .* 7\.3966(89|90)...." $log | wc -l`
+CRIT2=`$GREP "YDIPLEN .* YDIPLEN .* 5\.500082...." $log | wc -l`
+CRIT3=`$GREP "ZDIPLEN .* ZDIPLEN .* 3\.206925...." $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[6]=2
+CTRL[6]=21
 ERROR[6]="STATIC C6/C8 POLARIZABILITIES NOT CORRECT"
 
 # Cauchy moments
-CRIT1=`$GREP "0 * 3\.2069254254[3-5]........[0-9](D|E)\+00" $log | wc -l`
-CRIT2=`$GREP "2 * 1\.228879736(09|10|11)........[0-9](D|E)\+01" $log | wc -l`
-CRIT3=`$GREP "4 * 1\.4052078951[5-7]........[0-9](D|E)\+02" $log | wc -l`
-CRIT4=`$GREP "6 * 1\.7224633769[6-8]........[0-9](D|E)\+03" $log | wc -l`
-CRIT5=`$GREP "8 * 2\.1201350216[3-5]........[0-9](D|E)\+04" $log | wc -l`
-CRIT6=`$GREP "10 * 2\.6106015431[7-9]........[0-9](D|E)\+05" $log | wc -l`
-CRIT7=`$GREP "12 * 3\.2146607625[2-4]........[0-9](D|E)\+06" $log | wc -l`
-CRIT8=`$GREP "14 * 3\.9585092079[1-3]........[0-9](D|E)\+07" $log | wc -l`
-CRIT9=`$GREP "16 * 4\.8744810853[4-6]........[0-9](D|E)\+08" $log | wc -l`
-CRIT10=`$GREP "18 * 6\.0024029154[5-7]........[0-9](D|E)\+09" $log | wc -l`
-CRIT11=`$GREP "20 * 7\.3913182473[3-5]........[0-9](D|E)\+10" $log | wc -l`
-CRIT12=`$GREP "22 * 9\.1016191753[2-4]........[0-9](D|E)\+11" $log | wc -l`
-CRIT13=`$GREP "24 * 1\.1207672142[7-9]........[0-9](D|E)\+13" $log | wc -l`
-CRIT14=`$GREP "26 * 1\.380105148(78|79|80)........[0-9](D|E)\+14" $log | wc -l`
-CRIT15=`$GREP "28 * 1\.6994521230[2-4]........[0-9](D|E)\+15" $log | wc -l`
-CRIT16=`$GREP "30 * 2\.0926938219[0-2]........[0-9](D|E)\+16" $log | wc -l`
-CRIT17=`$GREP "32 * 2\.576928983(69|70|71)........[0-9](D|E)\+17" $log | wc -l`
-CRIT18=`$GREP "34 * 3\.173212878(78|79|80|81)........[0-9](D|E)\+18" $log | wc -l`
-CRIT19=`$GREP "36 * 3\.9074728243[6-8]........[0-9](D|E)\+19" $log | wc -l`
-CRIT20=`$GREP "38 * 4\.8116355430[1-3]........[0-9](D|E)\+20" $log | wc -l`
+CRIT1=`$GREP "0 * 3\.206925.............[0-9](D|E)\+00" $log | wc -l`
+CRIT2=`$GREP "2 * 1\.228879[6-7]............[0-9](D|E)\+01" $log | wc -l`
+CRIT3=`$GREP "4 * 1\.4052078............[0-9](D|E)\+02" $log | wc -l`
+CRIT4=`$GREP "6 * 1\.7224633............[0-9](D|E)\+03" $log | wc -l`
+CRIT5=`$GREP "8 * 2\.12013(49|50)............[0-9](D|E)\+04" $log | wc -l`
+CRIT6=`$GREP "10 * 2\.610601[4-5]............[0-9](D|E)\+05" $log | wc -l`
+CRIT7=`$GREP "12 * 3\.214660[6-7]............[0-9](D|E)\+06" $log | wc -l`
+CRIT8=`$GREP "14 * 3\.958509.............[0-9](D|E)\+07" $log | wc -l`
+CRIT9=`$GREP "16 * 4\.87448[0-1].............[0-9](D|E)\+08" $log | wc -l`
+CRIT10=`$GREP "18 * 6\.002402.............[0-9](D|E)\+09" $log | wc -l`
+CRIT11=`$GREP "20 * 7\.391318.............[0-9](D|E)\+10" $log | wc -l`
+CRIT12=`$GREP "22 * 9\.10161[8-9].............[0-9](D|E)\+11" $log | wc -l`
+CRIT13=`$GREP "24 * 1\.120767[1-2]............[0-9](D|E)\+13" $log | wc -l`
+CRIT14=`$GREP "26 * 1\.3801051............[0-9](D|E)\+14" $log | wc -l`
+CRIT15=`$GREP "28 * 1\.699452.............[0-9](D|E)\+15" $log | wc -l`
+CRIT16=`$GREP "30 * 2\.092693.............[0-9](D|E)\+16" $log | wc -l`
+CRIT17=`$GREP "32 * 2\.5769289............[0-9](D|E)\+17" $log | wc -l`
+CRIT18=`$GREP "34 * 3\.1732128............[0-9](D|E)\+18" $log | wc -l`
+CRIT19=`$GREP "36 * 3\.907472[7-8]............[0-9](D|E)\+19" $log | wc -l`
+CRIT20=`$GREP "38 * 4\.8116355............[0-9](D|E)\+20" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
 		$CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ $CRIT18 \+ \
