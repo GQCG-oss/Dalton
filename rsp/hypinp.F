@@ -49,10 +49,10 @@ C
 #include <infinp.h>
 #include <inftap.h>
 C
-      LOGICAL NEWDEF, BCFREQ, COMFREQ
-      PARAMETER ( NTABLE = 26, ZERO = 0.0D0 , THRFRQ = 1.0D-14 )
+      LOGICAL NEWDEF, BCFREQ, COMFREQ, NXTLAB
+      PARAMETER ( NTABLE = 27, ZERO = 0.0D0 , THRFRQ = 1.0D-14 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-      CHARACTER*8 LABEL
+      CHARACTER*8 LABEL, LABFND, RTNLBL(2)
 C
       DATA TABLE /'.BPROP ', '.BFREQ ', '.CPROP ', '.CFREQ ',
      *            '.APROP ', '.MAXIT ', '.THCLR ', '.MAXITO',
@@ -60,7 +60,7 @@ C
      *            '.ISPABC', '.A2TEST', '.X2TEST', '.REFCHK',
      *            '.TSTJEP', '.SHG   ', '.POCKEL', '.FREQUE',
      *            '.DIPLNX', '.DIPLNY', '.DIPLNZ', '.ASPIN ',
-     *            '.BSPIN ', '.CSPIN '/
+     *            '.BSPIN ', '.CSPIN ', '.SOSHIE'/
 C
 C READ quadratic response INPUT
 C
@@ -81,7 +81,7 @@ C
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,
      *                    14,15,16,17,18,19,20,21,22,23,24,
-     *                    25,26),I
+     *                    25,26,27),I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -94,7 +94,25 @@ C
                CALL QUIT(' ILLEGAL KEYWORD IN *QUADRA')
     1          CONTINUE
                   READ(LUCMD,'( A )')LABEL
-                  BQROP( INDPRP(LABEL)) = .TRUE.
+                  IF (LABEL .EQ. 'ANGMOM  ') THEN
+                     BQROP(INDPRP('XANGMOM ')) = .TRUE.
+                     BQROP(INDPRP('YANGMOM ')) = .TRUE.
+                     BQROP(INDPRP('ZANGMOM ')) = .TRUE.
+                  ELSE IF (LABEL .EQ. '1SPNORB ') THEN
+                     BQROP(INDPRP('X1SPNORB')) = .TRUE.
+                     BQROP(INDPRP('Y1SPNORB')) = .TRUE.
+                     BQROP(INDPRP('Z1SPNORB')) = .TRUE.
+                  ELSE IF (LABEL .EQ. '2SPNORB ') THEN
+                     BQROP(INDPRP('X2SPNORB')) = .TRUE.
+                     BQROP(INDPRP('Y2SPNORB')) = .TRUE.
+                     BQROP(INDPRP('Z2SPNORB')) = .TRUE.
+                  ELSE IF (LABEL .EQ. 'MNFSPNOR') THEN
+                     BQROP(INDPRP('X1MNF-SO')) = .TRUE.
+                     BQROP(INDPRP('Y1MNF-SO')) = .TRUE.
+                     BQROP(INDPRP('Z1MNF-SO')) = .TRUE.
+                  ELSE
+                     BQROP( INDPRP(LABEL)) = .TRUE.
+                  END IF
                GO TO 100
     2          CONTINUE
                   BCFREQ = .TRUE.
@@ -113,7 +131,45 @@ C
                GO TO 100
     3          CONTINUE
                   READ(LUCMD,'( A )')LABEL
-                  CQROP( INDPRP(LABEL)) = .TRUE.
+                  IF (LABEL .EQ. 'ANGMOM  ') THEN
+                     CQROP(INDPRP('XANGMOM ')) = .TRUE.
+                     CQROP(INDPRP('YANGMOM ')) = .TRUE.
+                     CQROP(INDPRP('ZANGMOM ')) = .TRUE.
+                  ELSE IF (LABEL .EQ. '1SPNORB ') THEN
+                     CQROP(INDPRP('X1SPNORB')) = .TRUE.
+                     CQROP(INDPRP('Y1SPNORB')) = .TRUE.
+                     CQROP(INDPRP('Z1SPNORB')) = .TRUE.
+                  ELSE IF (LABEL .EQ. '2SPNORB ') THEN
+                     CQROP(INDPRP('X2SPNORB')) = .TRUE.
+                     CQROP(INDPRP('Y2SPNORB')) = .TRUE.
+                     CQROP(INDPRP('Z2SPNORB')) = .TRUE.
+                  ELSE IF (LABEL .EQ. 'MNFSPNOR') THEN
+                     CQROP(INDPRP('X1MNF-SO')) = .TRUE.
+                     CQROP(INDPRP('Y1MNF-SO')) = .TRUE.
+                     CQROP(INDPRP('Z1MNF-SO')) = .TRUE.
+                  ELSE IF (LABEL .EQ. 'FERMI CO') THEN
+                     CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
+     &                           'UNFORMATTED',IDUMMY,.FALSE.)
+ 199                 CONTINUE
+                     IF (NXTLAB(LABFND,RTNLBL,LUPROP)) THEN
+                        IF (LABFND(1:3) .EQ. 'FC ')
+     &                       CQROP(INDPRP(LABFND)) = .TRUE.
+                        GOTO 199
+                     END IF
+                     CALL GPCLOSE(LUPROP,'KEEP')
+                  ELSE IF (LABEL .EQ. 'SPIN-DIP') THEN
+                     CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
+     &                           'UNFORMATTED',IDUMMY,.FALSE.)
+ 299                 CONTINUE
+                     IF (NXTLAB(LABFND,RTNLBL,LUPROP)) THEN
+                        IF (LABFND(1:3) .EQ. 'SD ')
+     &                       CQROP(INDPRP(LABFND)) = .TRUE.
+                        GOTO 299
+                     END IF
+                     CALL GPCLOSE(LUPROP,'KEEP')
+                  ELSE
+                     CQROP( INDPRP(LABEL)) = .TRUE.
+                  END IF
                GO TO 100
     4          CONTINUE
                   BCFREQ = .TRUE.
@@ -132,7 +188,25 @@ C
                GO TO 100
     5          CONTINUE
                   READ(LUCMD,'( A )')LABEL
-                  AQROP( INDPRP(LABEL)) = .TRUE.
+                  IF (LABEL .EQ. 'ANGMOM  ') THEN
+                     AQROP(INDPRP('XANGMOM ')) = .TRUE.
+                     AQROP(INDPRP('YANGMOM ')) = .TRUE.
+                     AQROP(INDPRP('ZANGMOM ')) = .TRUE.
+                  ELSE IF (LABEL .EQ. '1SPNORB ') THEN
+                     AQROP(INDPRP('X1SPNORB')) = .TRUE.
+                     AQROP(INDPRP('Y1SPNORB')) = .TRUE.
+                     AQROP(INDPRP('Z1SPNORB')) = .TRUE.
+                  ELSE IF (LABEL .EQ. '2SPNORB ') THEN
+                     AQROP(INDPRP('X2SPNORB')) = .TRUE.
+                     AQROP(INDPRP('Y2SPNORB')) = .TRUE.
+                     AQROP(INDPRP('Z2SPNORB')) = .TRUE.
+                  ELSE IF (LABEL .EQ. 'MNFSPNOR') THEN
+                     AQROP(INDPRP('X1MNF-SO')) = .TRUE.
+                     AQROP(INDPRP('Y1MNF-SO')) = .TRUE.
+                     AQROP(INDPRP('Z1MNF-SO')) = .TRUE.
+                  ELSE
+                     AQROP( INDPRP(LABEL)) = .TRUE.
+                  END IF
                GO TO 100
     6          CONTINUE
                   READ (LUCMD,*) MAXITL
@@ -234,6 +308,9 @@ C
                GO TO 100
    26          CONTINUE
                READ(LUCMD,*)ISPINC
+               GO TO 100
+ 27            CONTINUE
+                  SOCOLL = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300

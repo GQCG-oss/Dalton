@@ -733,6 +733,7 @@ C
 #include <implicit.h>
 #include <dummy.h>
 #include <iratdef.h>
+#include <mxcent.h>
 C
 C PURPOSE:
 C CALCULATION OF FIRST HYPERPOLARIZABILITIES AND RELATED
@@ -767,6 +768,7 @@ C
       LOGICAL   DIPLEN, DOCAL, FOUND, CONV
 C
       CALL QENTER('QRHYP')
+      IF (SOCOLL) CALL SOINIT
       CALL HEADER(' Results from quadratic response calculation',0)
 C
       LURSPRES = -1
@@ -1513,6 +1515,9 @@ C
      *                           '@omega B, omega C, QR value :',
      *                           BQRFR(IBFR),CQRFR(ICFR),HYPVAL(IAOP)
                               END IF
+                             IF (SOCOLL) CALL SODIST(AQRLB(MSYMA,IAOP),
+     *                             MSYMA,BQRLB(MSYMB,IBOP),MSYMB,
+     *                             CQRLB(MSYMC,ICOP),MSYMC,HYPVAL(IAOP))
  950                       CONTINUE
  800                    CONTINUE
  700                 CONTINUE
@@ -1521,6 +1526,13 @@ C
             END IF
  400     CONTINUE
  300  CONTINUE
+      IF (SOCOLL) THEN 
+         KMAT1 = 1
+         KMAT2 = KMAT1 + 3*MXCOOR
+         KCSTRA = KMAT2 + MXCOOR*MXCOOR
+         KSCTRA = KCSTRA + MXCOOR*MXCOOR
+         CALL SOSOUT(WRK(KMAT1),WRK(KMAT2),WRK(KCSTRA),WRK(KSCTRA))
+      END IF
       CALL GPCLOSE(LURSPRES,'KEEP')
       CALL QEXIT('QRHYP')
       RETURN
@@ -3185,6 +3197,309 @@ C
             END DO
             END DO
          END IF
+      END DO
+C
+      RETURN
+      END
+C  /* Deck sodist */
+      SUBROUTINE SODIST(AOPLAB,IASYM,BOPLAB,IBSYM,COPLAB,ICSYM,VALUE)
+C
+C     This routine collects contributions to the SO-corrected shielding 
+C     tensor in suitable arrays. K.Ruud, July-03
+C
+#include <implicit.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <maxaqn.h>
+#include <codata.h>
+#include <gfac.h>
+      LOGICAL ONESO, TWOSO, SUMSO, FRMONL, SDONL, FCSD
+      CHARACTER*8 AOPLAB, BOPLAB, COPLAB
+      CHARACTER DIRB*1, DIRSO*1, NUMNUC*2, NUCDIR*3, DIR2*1
+#include <nuclei.h>
+#include <symmet.h>
+#include <sigmaso.h>
+C
+      ONESO = .FALSE.
+      TWOSO = .FALSE.
+      SUMSO = .FALSE.
+      FRMONL = .FALSE.
+      SDONL  = .FALSE.
+      FCSD   = .FALSE.
+      VALUE = VALUE*GFAC/8.0D0
+C
+      IF (AOPLAB(2:7).EQ.'ANGMOM') DIRB = AOPLAB(1:1)
+      IF (BOPLAB(2:7).EQ.'ANGMOM') DIRB = BOPLAB(1:1)
+      IF (COPLAB(2:7).EQ.'ANGMOM') DIRB = COPLAB(1:1)
+C
+      IF (AOPLAB(3:8).EQ.'SPNORB' .OR. AOPLAB(3:8) .EQ. 'MNF-SO') THEN
+         DIRSO = AOPLAB(1:1)
+         ONESO = AOPLAB(2:2).EQ.'1'
+         TWOSO = AOPLAB(2:2).EQ.'2'
+         SUMSO = AOPLAB(2:2).EQ.' '
+         IREPSO = IASYM
+      ELSE IF (BOPLAB(3:8).EQ.'SPNORB'.OR.BOPLAB(3:8).EQ.'MNF-SO') THEN
+         DIRSO = BOPLAB(1:1)
+         ONESO = BOPLAB(2:2).EQ.'1'
+         TWOSO = BOPLAB(2:2).EQ.'2'
+         SUMSO = BOPLAB(2:2).EQ.' '
+         IREPSO = IBSYM
+      ELSE IF (COPLAB(3:8).EQ.'SPNORB'.OR.BOPLAB(3:8).EQ.'MNF-SO') THEN
+         DIRSO = COPLAB(1:1)
+         ONESO = COPLAB(2:2).EQ.'1'
+         TWOSO = COPLAB(2:2).EQ.'2'
+         SUMSO = COPLAB(2:2).EQ.' '
+         IREPSO = ICSYM
+      END IF
+C
+      IF (AOPLAB(1:3) .EQ. 'FC ') THEN 
+         NUMNUC = AOPLAB(7:8)
+         FRMONL = .TRUE.
+      ELSE IF (BOPLAB(1:3) .EQ. 'FC ') THEN 
+         NUMNUC = BOPLAB(7:8)
+         FRMONL = .TRUE.
+      ELSE IF (COPLAB(1:3) .EQ. 'FC ') THEN 
+         NUMNUC = COPLAB(7:8)
+         FRMONL = .TRUE.
+      END IF
+      IF (AOPLAB(1:3) .EQ. 'SD ') THEN 
+         NUCDIR = AOPLAB(4:6)
+         DIR2 = AOPLAB(8:8)
+         SDONL = .TRUE.
+      ELSE IF (BOPLAB(1:3) .EQ. 'SD ') THEN 
+         NUCDIR = BOPLAB(4:6)
+         DIR2 = BOPLAB(8:8)
+         SDONL = .TRUE.
+      ELSE IF (COPLAB(1:3) .EQ. 'SD ') THEN 
+         NUCDIR = COPLAB(4:6)
+         DIR2 = COPLAB(8:8)
+         SDONL = .TRUE.
+      END IF
+      IF (AOPLAB(1:3) .EQ. 'SDC') THEN 
+         NUCDIR = AOPLAB(4:6)
+         DIR2 = AOPLAB(8:8)
+         FCSD = .TRUE.
+      ELSE IF (BOPLAB(1:3) .EQ. 'SDC') THEN 
+         NUCDIR = BOPLAB(4:6)
+         DIR2 = BOPLAB(8:8)
+         FCSD = .TRUE.
+      ELSE IF (COPLAB(1:3) .EQ. 'SDC') THEN 
+         NUCDIR = COPLAB(4:6)
+         DIR2 = COPLAB(8:8)
+         FCSD = .TRUE.
+      END IF
+C
+C     Add contributions to the proper place of the shielding tensor
+C     
+      IF (DIRB .EQ. 'X') IDIRB = 1
+      IF (DIRB .EQ. 'Y') IDIRB = 2
+      IF (DIRB .EQ. 'Z') IDIRB = 3
+      IF (DIRSO .EQ. 'X') IDIRSO = 1
+      IF (DIRSO .EQ. 'Y') IDIRSO = 2
+      IF (DIRSO .EQ. 'Z') IDIRSO = 3
+      IF (FRMONL) THEN
+         READ (NUMNUC,'(I2)') INUCNM
+         ISCOOR = IPTCNT(3*(INUCNM - 1) + IDIRSO,IREPSO - 1,2)
+         IF (ONESO) SIGFC1(IPTAX(IDIRB,2),ISCOOR) = 
+     &                        SIGFC1(IPTAX(IDIRB,2),ISCOOR) - VALUE
+         IF (TWOSO) SIGFC2(IPTAX(IDIRB,2),ISCOOR) = 
+     &                        SIGFC2(IPTAX(IDIRB,2),ISCOOR) - VALUE
+         IF (SUMSO) SIGFC(IPTAX(IDIRB,2),ISCOOR) = 
+     &                         SIGFC(IPTAX(IDIRB,2),ISCOOR) - VALUE
+      ELSE
+         IF (DIR2 .EQ. 'x') IDIR2 = 1
+         IF (DIR2 .EQ. 'y') IDIR2 = 2
+         IF (DIR2 .EQ. 'z') IDIR2 = 3
+         READ (NUCDIR, '(I3)') INUCDR 
+         IF (IDIR2 .EQ. IDIRSO) THEN
+            IF (SDONL) THEN
+               IF (ONESO) SIGSD1(IPTAX(IDIRB,2),INUCDR) =
+     &                         SIGSD1(IPTAX(IDIRB,2),INUCDR) - VALUE
+               IF (TWOSO) SIGSD2(IPTAX(IDIRB,2),INUCDR) = 
+     &                         SIGSD2(IPTAX(IDIRB,2),INUCDR) - VALUE
+               IF (SUMSO) SIGSD(IPTAX(IDIRB,2),INUCDR) = 
+     &                         SIGSD(IPTAX(IDIRB,2),INUCDR) - VALUE
+            ELSE IF (FCSD) THEN
+               IF (ONESO) SIGFS1(IPTAX(IDIRB,2),INUCDR) =
+     &                         SIGFS1(IPTAX(IDIRB,2),INUCDR) - VALUE
+               IF (TWOSO) SIGFS2(IPTAX(IDIRB,2),INUCDR) =
+     &                         SIGFS2(IPTAX(IDIRB,2),INUCDR) - VALUE
+               IF (SUMSO) SIGFS(IPTAX(IDIRB,2),INUCDR) =
+     &                         SIGFS2(IPTAX(IDIRB,2),INUCDR) - VALUE
+            END IF
+         END IF
+      END IF
+C
+      RETURN
+      END
+C  /* Deck soinit */
+      SUBROUTINE SOINIT
+#include <implicit.h>
+#include <mxcent.h>
+#include <sigmaso.h>
+C
+      CALL DZERO(SIGFC1,3*MXCOOR)
+      CALL DZERO(SIGFC2,3*MXCOOR)
+      CALL DZERO(SIGFC,3*MXCOOR)
+      CALL DZERO(SIGSD1,3*MXCOOR)
+      CALL DZERO(SIGSD2,3*MXCOOR)
+      CALL DZERO(SIGSD,3*MXCOOR)
+      CALL DZERO(SIGFS1,3*MXCOOR)
+      CALL DZERO(SIGFS2,3*MXCOOR)
+      CALL DZERO(SIGFS,3*MXCOOR)
+      RETURN
+      END
+C  /* Deck sosout */
+      SUBROUTINE SOSOUT(SMAT1,SMAT2,CSTRA,SCTRA)
+C
+C     Collects and prints the final results of the SO-corrections to the
+C     shielding constants. K.Ruud, July-03
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <maxaqn.h>
+#include <codata.h>
+      DIMENSION SMAT1(3,3,MXCENT), SMAT2(3,3,MXCENT), CSTRA(*), SCTRA(*)
+#include <abainf.h>
+#include <nuclei.h>
+#include <symmet.h>
+#include <sigmaso.h>
+#include <ibtfun.h>
+C
+      FC1SUM = DNORM2(3*MXCOOR,SIGFC1,1)
+      FC2SUM = DNORM2(3*MXCOOR,SIGFC2,1)
+      FCSUM = DNORM2(3*MXCOOR,SIGFC,1)
+      SD1SUM = DNORM2(3*MXCOOR,SIGSD1,1)
+      SD2SUM = DNORM2(3*MXCOOR,SIGSD2,1)
+      SDSUM = DNORM2(3*MXCOOR,SIGSD,1)
+      FS1SUM = DNORM2(3*MXCOOR,SIGFS1,1)
+      FS2SUM = DNORM2(3*MXCOOR,SIGFS2,1)
+      FSSUM = DNORM2(3*MXCOOR,SIGFS,1)
+      DO I = 1, 8
+         DOSYM(I) = .TRUE.
+      END DO
+C
+      IF (FCSUM .LT. THRZER .AND. (FC1SUM .GT. THRZER .AND. 
+     &                             FC2SUM .GT. THRZER)) THEN
+         DO I = 1, 3*MXCOOR
+            SIGFC(I,1) = SIGFC1(I,1) + SIGFC2(I,1)
+         END DO
+         FCSUM = DNORM2(3*MXCOOR,SIGFC,1)
+      END IF
+      IF (SDSUM .LT. THRZER .AND. (SD1SUM .GT. THRZER .AND. 
+     &                             SD2SUM .GT. THRZER)) THEN
+         DO I = 1, 3*MXCOOR
+            SIGSD(I,1) = SIGSD1(I,1) + SIGSD2(I,1)
+         END DO
+         SDSUM = DNORM2(3*MXCOOR,SIGSD,1)
+      END IF
+      IF (FSSUM .LT. THRZER .AND. (FS1SUM .GT. THRZER .AND. 
+     &                             FS2SUM .GT. THRZER)) THEN
+         DO I = 1, 3*MXCOOR
+            SIGFS(I,1) = SIGFS1(I,1) + SIGFS2(I,1)
+         END DO
+         FSSUM = DNORM2(3*MXCOOR,SIGFS,1)
+      END IF
+C
+      CALL TITLER('ABACUS - SO CORRECTIONS TO CHEMICAL SHIELDINGS',
+     &     '*',124)
+      IF (FC1SUM .GT. THRZER) THEN
+         CALL HEADER('FC(1) contribution to shielding tensors '//
+     &        'in symmetry coordinates (ppm)',-1)
+         CALL FCPRI(SIGFC1,'SIGMA ',CSTRA,SCTRA)
+      END IF
+      IF (FC2SUM .GT. THRZER) THEN
+         CALL HEADER('FC(2) contribution to shielding tensors '//
+     &        'in symmetry coordinates (ppm)',-1)
+         CALL FCPRI(SIGFC2,'SIGMA ',CSTRA,SCTRA)
+      END IF
+      IF (FCSUM .GT. THRZER) THEN
+         CALL HEADER('FC contribution to shielding tensors '//
+     &        'in symmetry coordinates (ppm)',-1) 
+         CALL FCPRI(SIGFC,'SIGMA ',CSTRA,SCTRA)
+      END IF
+      IF (SDSUM1 .GT. THRZER) THEN
+         CALL HEADER('SD(1) contribution to shielding tensors '//
+     &        'in symmetry coordinates (ppm)',-1)
+         CALL FCPRI(SIGSD1,'SIGMA ',CSTRA,SCTRA)
+      END IF
+      IF (SD2SUM .GT. THRZER) THEN
+         CALL HEADER('SD(2) contribution to shielding tensors '//
+     &        'in symmetry coordinates (ppm)',-1)
+         CALL FCPRI(SIGSD2,'SIGMA ',CSTRA,SCTRA)
+      END IF
+      IF (SDSUM .GT. THRZER) THEN
+         CALL HEADER('SD contribution to shielding tensors '//
+     &        'in symmetry coordinates (ppm)',-1)
+         CALL FCPRI(SIGSD,'SIGMA ',CSTRA,SCTRA)
+      END IF
+      IF (FS1SUM .GT. THRZER) THEN
+         CALL HEADER('SD(1)+FC(1) contribution to shielding tensors '//
+     &        'in symmetry coordinates (ppm)',-1)
+         CALL FCPRI(SIGFS1,'SIGMA ',CSTRA,SCTRA)
+      END IF
+      IF (FS2SUM .GT. THRZER) THEN
+         CALL HEADER('SD(2)+FC(2) contribution to shielding tensors '//
+     &        'in symmetry coordinates (ppm)',-1)
+         CALL FCPRI(SIGFS2,'SIGMA ',CSTRA,SCTRA)
+      END IF
+      IF (FSSUM .GT. THRZER) THEN
+         CALL HEADER('SD+FC contribution to shielding tensors '//
+     &        'in symmetry coordinates (ppm)',-1)
+         CALL FCPRI(SIGFS,'SIGMA ',CSTRA,SCTRA)
+      END IF
+C
+      CALL TRADIP(SIGFC1,SMAT1,CSTRA,SCTRA,3*NUCDEP,2,2)
+      call output(smat1,1,3,1,3*nucdep,3,3*nucdep,1,2)
+      CALL TRADIP(SIGFC2,SMAT2,CSTRA,SCTRA,3*NUCDEP,2,2)
+      CALL AROUND('Summary of isotropic SO-FC contribution to '//
+     &            'chemical shieldings')
+      WRITE (LUPRI,'(1X,A,/,1X,A)')
+      WRITE (LUPRI,'(1X,A,/,1X,A)')
+     & '@1atom   1-electron FC    2-electron FC    Total FC',
+     & '@1----------------------------------------------'/
+     &  /'-------------'
+      IATOM = 0
+      FAC= ALPHA2*1.D6/3.0D0
+      DO I = 1, NUCIND
+         DO ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
+               IATOM = IATOM + 1
+               SIGMA1 = (SMAT1(1,1,IATOM) + SMAT1(2,2,IATOM)
+     &                + SMAT1(3,3,IATOM))*FAC
+               SIGMA2 = (SMAT2(1,1,IATOM) + SMAT2(2,2,IATOM)
+     &                + SMAT2(3,3,IATOM))*FAC
+               SIGMAT = SIGMA1 + SIGMA2
+               WRITE (LUPRI,'(1X,2A,3F15.9)') '@1',
+     &              NAMDEP(IATOM), SIGMA1, SIGMA2, SIGMAT
+            END IF
+         END DO
+      END DO
+C
+      CALL TRADIP(SIGSD1,SMAT1,CSTRA,SCTRA,3*NUCDEP,2,2)
+      CALL TRADIP(SIGSD2,SMAT2,CSTRA,SCTRA,3*NUCDEP,2,2)
+      CALL AROUND('Summary of isotropic SO-SD contribution to '//
+     &            'chemical shieldings')
+      WRITE (LUPRI,'(1X,A,/,1X,A)')
+     & '@1atom   1-electron FC    2-electron FC    Total FC',
+     & '@1----------------------------------------------'/
+     &  /'-------------'
+      IATOM = 0
+      DO I = 1, NUCIND
+         DO ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
+               IATOM = IATOM + 1
+               SIGMA1 = (SMAT1(1,1,IATOM) + SMAT1(2,2,IATOM)
+     &                + SMAT1(3,3,IATOM))*FAC
+               SIGMA2 = (SMAT2(1,1,IATOM) + SMAT2(2,2,IATOM)
+     &                + SMAT2(3,3,IATOM))*FAC
+               SIGMAT = SIGMA1 + SIGMA2
+               WRITE (LUPRI,'(1X,2A,3F15.9)') '@1',
+     &              NAMDEP(IATOM), SIGMA1, SIGMA2, SIGMAT
+            END IF
+         END DO
       END DO
 C
       RETURN
