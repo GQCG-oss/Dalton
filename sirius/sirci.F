@@ -2040,7 +2040,7 @@ C
       MCSIM  = 0
       NCSIM0 = NCSIM
       JCI1   = ICI1
-      IF (JCI1 .EQ. 4) JCI1 = 2
+      IF (JCI1 .EQ. 4 .OR. JCI1 .EQ. 5) JCI1 = 2
    10 CONTINUE
       IF (JCI1 .NE. 2 .AND. MCSIM .EQ. 0) THEN
 C
