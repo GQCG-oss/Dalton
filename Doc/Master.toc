@@ -109,7 +109,7 @@
 \contentsline {subsection}{\numberline {18.2.4}{\normalfont \ttfamily *CI VECTOR} }{149}
 \contentsline {subsection}{\numberline {18.2.5}{\normalfont \ttfamily *CONFIGURATION INPUT} }{150}
 \contentsline {subsection}{\numberline {18.2.6}{\normalfont \ttfamily *HAMILTONIAN} }{151}
-\contentsline {subsection}{\numberline {18.2.7}{\normalfont \ttfamily *HF INPUT} }{152}
+\contentsline {subsection}{\numberline {18.2.7}{\normalfont \ttfamily *HF INPUT} }{151}
 \contentsline {subsection}{\numberline {18.2.8}{\normalfont \ttfamily *MP2 INPUT} }{155}
 \contentsline {subsection}{\numberline {18.2.9}{\normalfont \ttfamily *OPTIMIZATION} }{155}
 \contentsline {subsection}{\numberline {18.2.10}{\normalfont \ttfamily *ORBITAL INPUT} }{160}
