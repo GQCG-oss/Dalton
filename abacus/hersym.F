@@ -44,8 +44,8 @@ understand for the compiler
 Added solvent in FNDSYM, as well as using NUCIND instead ATMARR in loops
 950208-vebjorn
 SYMADD: Completely new module to determine molecular symmetry, find the
-	symmetry elements, remove symmetry-dependant atoms and finally
-	return a string containing the full point group.
+        symmetry elements, remove symmetry-dependant atoms and finally
+        return a string containing the full point group.
 ===========================================================================
 #endif
 C  /* Deck symadd */
@@ -63,28 +63,28 @@ C*****************************************************************************
 #include <mxsymm.h>
 #include <priunit.h>
 #include <optinf.h>
-         DIMENSION WORK(LWORK), NONT(KATOM)
-         CHARACTER*1 KASYM(3,3), CLASS*15
-         IF (TOLLRN .EQ. 0.0D0) TOLLRN = 5.0D-6
-         ZERTOL = 1.0D-12
-         MAXAXS = 50
-         MAXMIR = 25
-         CALL HEADER('SYMADD: Requested addition of symmetry',-1)
-	 WRITE(LUPRI,'(A,G9.2)') ' Symmetry threshold: ', TOLLRN
-         KCOOR = 1
-         KROT = KCOOR + 6 * (MXCENT + 1)
-         KIROT = KROT + 6 * (MAXAXS + 1)
-         KMIR = KIROT + 6 * (MAXAXS + 1)
-         KTEMP = KMIR + 6 * (MAXMIR + 1)
-         KTEMP2 = KTEMP + 7 * (MAX(2*MXCENT,MXCENT+2*MAXAXS+MAXMIR) + 1)
-         KLAST = KTEMP2 + 6 * (MXCENT + 1)
-	 IF (KLAST.GT.LWORK) CALL STOPIT('SYMADD',' ',KLAST,LWORK)
-	 LWRK = LWORK - KLAST + 1
-         LENTMP = MAX(2*MXCENT,MXCENT+2*MAXAXS+MAXMIR)
-         CALL FNDSYM(WORK(KCOOR),WORK(KROT),WORK(KIROT),WORK(KMIR),
-     &               WORK(KTEMP),WORK(KTEMP2),NONTYP,NSYMOP,NONT,
-     &               KATOM,KASYM,LENTMP,CLASS,VRSYMM,WORK(KLAST),LWRK)
-         RETURN
+      DIMENSION WORK(LWORK), NONT(KATOM)
+      CHARACTER*1 KASYM(3,3), CLASS*15
+      IF (TOLLRN .EQ. 0.0D0) TOLLRN = 5.0D-6
+      ZERTOL = 1.0D-12
+      MAXAXS = 50
+      MAXMIR = 25
+      CALL HEADER('SYMADD: Requested addition of symmetry',-1)
+      WRITE(LUPRI,'(A,G9.2)') ' Symmetry threshold: ', TOLLRN
+      KCOOR = 1
+      KROT = KCOOR + 6 * (MXCENT + 1)
+      KIROT = KROT + 6 * (MAXAXS + 1)
+      KMIR = KIROT + 6 * (MAXAXS + 1)
+      KTEMP = KMIR + 6 * (MAXMIR + 1)
+      KTEMP2 = KTEMP + 7 * (MAX(2*MXCENT,MXCENT+2*MAXAXS+MAXMIR) + 1)
+      KLAST = KTEMP2 + 6 * (MXCENT + 1)
+      IF (KLAST.GT.LWORK) CALL STOPIT('SYMADD',' ',KLAST,LWORK)
+      LWRK = LWORK - KLAST + 1
+      LENTMP = MAX(2*MXCENT,MXCENT+2*MAXAXS+MAXMIR)
+      CALL FNDSYM(WORK(KCOOR),WORK(KROT),WORK(KIROT),WORK(KMIR),
+     &            WORK(KTEMP),WORK(KTEMP2),NONTYP,NSYMOP,NONT,
+     &            KATOM,KASYM,LENTMP,CLASS,VRSYMM,WORK(KLAST),LWRK)
+      RETURN
       END
 C  /* Deck fndsym */
       SUBROUTINE FNDSYM(ATMARR,DRTAXS,DIRAXS,DMRPLN,TMPARR,TMP2AR,
@@ -129,11 +129,11 @@ C
          CALL DZERO(DMRPLN,6*(MAXMIR + 1))
          CALL DZERO(TMPARR,7*(LENTMP + 1))
          CALL DZERO(TMP2AR,6*(MXCENT + 1))
-C         IF (SOLVNT .OR. DORLM) THEN
-C	    NUCLP = NUCIND - 1
-C	 ELSE
-	    NUCLP = NUCIND
-C	 END IF
+C        IF (SOLVNT .OR. DORLM) THEN
+C          NUCLP = NUCIND - 1
+C        ELSE
+           NUCLP = NUCIND
+C        END IF
          DO 100 I = 1, NUCLP
             ATMARR(1,I) = CORD(1,I)
             ATMARR(2,I) = CORD(2,I)
@@ -141,38 +141,36 @@ C	 END IF
             ATMARR(4,I) = ANINT(CHARGE(I))
             ATMARR(5,I) = FLOAT(I)
             ATMARR(6,I) = FLOAT(ISOTOP(I))
- 100	 CONTINUE
-         ATMARR(1,0)= FLOAT(I - 1)
+ 100     CONTINUE
+         ATMARR(1,0) = NUCLP
          IF (IPREAD .GE. IPRTHR) THEN
             TEXT = 'Original Coordinates                    '
             CALL PRNARR(TEXT, MXCENT, ATMARR)
          END IF
          CALL SRTATM(MXCENT, 6, ATMARR, .TRUE.)
-	 IF (.NOT. NOMOVE) THEN
- 	    CALL CNTRML(MXCENT, ATMARR)
- 	 END IF
+         IF (.NOT. NOMOVE) THEN
+            CALL CNTRML(MXCENT, ATMARR)
+          END IF
          CALL FNDGRP(MXCENT, ATMARR, DRTAXS, DIRAXS, DMRPLN,
      &                               TMPARR, CLASS)
 C ::: If requested, a VRML representation of :::
 C ::: the symmetry elements is constructed.  :::
-	 IF (VRML) CALL MKVRSY(ATMARR,DRTAXS,MAXAXS,
+         IF (VRML) CALL MKVRSY(ATMARR,DRTAXS,MAXAXS,
      &                          DMRPLN,MAXMIR,WORK,LWORK)
 C
-         WRITE(LUPRI,'(/1X,A,A7)') 'Symmetry class found: ', CLASS
+         WRITE(LUPRI,'(/A,A7)') ' Symmetry class found: ', CLASS
          LENTMP = NINT(ATMARR(1,0) + DRTAXS(1,0) + DMRPLN(1,0))
-	 IF (.NOT. NOMOVE) THEN
- 	   CALL TRNMOL(MXCENT,ATMARR,DRTAXS,DIRAXS,DMRPLN,TMPARR,LENTMP)
- 	 END IF
+         IF (.NOT. NOMOVE) THEN
+           CALL TRNMOL(MXCENT,ATMARR,DRTAXS,DIRAXS,DMRPLN,TMPARR,LENTMP)
+         END IF
          IF (IPREAD .GE. IPRTHR) THEN
-	    IF (.NOT. NOMOVE) THEN
- 	      TEXT = 'Centered and Rotated                    '
- 	      CALL PRNARR(TEXT , MXCENT, ATMARR)
- 	    ELSE
- 	      WRITE (LUPRI,'(A)') '                        '
- 	      WRITE (LUPRI,'(A)') 
-     &	      '   System not be centered or rotated due to finite field'
- 	      WRITE (LUPRI,'(A)') '                        '
- 	    END IF
+            IF (.NOT. NOMOVE) THEN
+              TEXT = 'Centered and Rotated                    '
+              CALL PRNARR(TEXT , MXCENT, ATMARR)
+            ELSE
+              WRITE (LUPRI,'(/A/)') 
+     &  '   System could not be centered or rotated due to finite field'
+             END IF
          END IF
          IF (IPREAD .GE. IPRTHR) THEN
             IF (NINT(DRTAXS(1,0)) .EQ. 0) THEN
@@ -234,11 +232,13 @@ C ::: The reduced coordinates are moved back. :::
             DO 260 J = 1, 3
                CORD(J,I) = ATMARR(J,I)
  260        CONTINUE
-            CHARGE(I) = CHARGE(NINT(ATMARR(5,I)))
+            IOLD = NINT(ATMARR(5,I))
+C           ... IOLD .ge. I after CALL SRTOLD
+            CHARGE(I) = CHARGE(IOLD)
 C           GNUEXP(I) and MULBSI(I) have been added (WK/UniKA/04-11-2002).
-            GNUEXP(I) = GNUEXP(NINT(ATMARR(5,I)))
-            MULBSI(I) = MULBSI(NINT(ATMARR(5,I)))
-            NCLINE(I) = NCLINE(NINT(ATMARR(5,I)))
+            GNUEXP(I) = GNUEXP(IOLD)
+            MULBSI(I) = MULBSI(IOLD)
+            NCLINE(I) = NCLINE(IOLD)
  250     CONTINUE
 C ::: Then the different elements are counted, and arrays updated. :::
          NONTYP = 1
@@ -254,7 +254,7 @@ C ::: Then the different elements are counted, and arrays updated. :::
             NAMEX(3*I)   = NAMN(I)//'z'
             NAMEX(3*I-1) = NAMN(I)//'y'
             NAMEX(3*I-2) = NAMN(I)//'x'
-	    ISOTOP(I) = NINT(ATMARR(6,I))
+            ISOTOP(I) = NINT(ATMARR(6,I))
  275     CONTINUE
          NUCIND = NINT(ATMARR(1,0))
          DO 300 I = NUCIND + 1, KATOM
@@ -266,7 +266,7 @@ C ::: Then the different elements are counted, and arrays updated. :::
             CORD(2,I) = D0
             CORD(3,I) = D0
             CHARGE(I) = D0
-	    ISOTOP(I) = 1
+            ISOTOP(I) = 1
  300     CONTINUE
 C ::: We update the coordinates of the input file :::
          DO 400 I = 1, NUCIND
@@ -275,8 +275,8 @@ C ::: We update the coordinates of the input file :::
             WRITE(TMPLN(5:24),'(F20.14)') CORD(1,I)
             WRITE(TMPLN(25:44),'(F20.14)') CORD(2,I)
             WRITE(TMPLN(45:64),'(F20.14)') CORD(3,I)
-	    QMASS = DISOTP(NINT(CHARGE(I)),ISOTOP(I),'MASS')
-	    IF (ISOTOP(I) .GT. 1) WRITE(TMPLN(66:76),'(A8,I3)')
+            QMASS = DISOTP(NINT(CHARGE(I)),ISOTOP(I),'MASS')
+            IF (ISOTOP(I) .GT. 1) WRITE(TMPLN(66:76),'(A8,I3)')
      &                            'Isotope=', NINT(QMASS)
             MLINE(NC) = TMPLN
  400     CONTINUE
@@ -295,20 +295,20 @@ C ::: Finally the number of atoms are updated. :::
             END IF
             J = NINT(ATMARR(4,I))
  500     CONTINUE
-C	 IF (SOLVNT .OR. DORLM) THEN
-C	    NUCIND = NUCIND + 1
-C	    NCNTCV = NUCIND
-C	    NAMN(NUCIND) = 'cav '
-C	    NCLINE(NUCIND) = 0
-C	    NAMEX(3*NUCIND)     = NAMN(NUCIND)//' z'
-C	    NAMEX(3*NUCIND - 1) = NAMN(NUCIND)//' y'
-C	    NAMEX(3*NUCIND - 2) = NAMN(NUCIND)//' x'
-C	    CORD(1,NUCIND) = D0
-C	    CORD(2,NUCIND) = D0
-C	    CORD(3,NUCIND) = D0
-C	    CHARGE(NUCIND) = D0
-C	 END IF
-	 RETURN
+C        IF (SOLVNT .OR. DORLM) THEN
+C           NUCIND = NUCIND + 1
+C           NCNTCV = NUCIND
+C           NAMN(NUCIND) = 'cav '
+C           NCLINE(NUCIND) = 0
+C           NAMEX(3*NUCIND)     = NAMN(NUCIND)//' z'
+C           NAMEX(3*NUCIND - 1) = NAMN(NUCIND)//' y'
+C           NAMEX(3*NUCIND - 2) = NAMN(NUCIND)//' x'
+C           CORD(1,NUCIND) = D0
+C           CORD(2,NUCIND) = D0
+C           CORD(3,NUCIND) = D0
+C           CHARGE(NUCIND) = D0
+C        END IF
+      RETURN
       END
 C  /* Deck prnarr */
       SUBROUTINE PRNARR(TEXT, MXM, ARR)
@@ -527,8 +527,8 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
                ATM2(1)=ARR(1,J+1)
                ATM2(2)=ARR(2,J+1)
                ATM2(3)=ARR(3,J+1)
-	       IF (ILOWER .EQ. 6) THEN
-		  IF ((NINT(ARR(4,J+1)) .GT. NINT(ARR(4,J))) .OR.
+               IF (ILOWER .EQ. 6) THEN
+                  IF ((NINT(ARR(4,J+1)) .GT. NINT(ARR(4,J))) .OR.
      &        ((NINT(ARR(4,J+1)) .EQ. NINT(ARR(4,J))) .AND.
      &         (NINT(ARR(6,J+1)) .GT. NINT(ARR(6,J)))) .OR.
      &        ((NINT(ARR(4,J+1)) .EQ. NINT(ARR(4,J))) .AND. 
@@ -536,24 +536,24 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
      &        ((ATM1(1)*ATM1(1)+ATM1(2)*ATM1(2)+ATM1(3)*ATM1(3)).LT.
      &        (ATM2(1)*ATM2(1)+ATM2(2)*ATM2(2)+ATM2(3)*ATM2(3)))))THEN
                      DO 300 K = 1, 6
-			TEMP = ARR(K,J)
-			ARR(K,J) = ARR(K,J+1)
-			ARR(K,J+1) = TEMP
- 300		     CONTINUE
-		     SORTED = .FALSE.
-		  END IF
-	       ELSE
-		  IF ((NINT(ARR(4,J+1)) .GT. NINT(ARR(4,J))) .OR.
+                        TEMP = ARR(K,J)
+                        ARR(K,J) = ARR(K,J+1)
+                        ARR(K,J+1) = TEMP
+ 300                 CONTINUE
+                     SORTED = .FALSE.
+                  END IF
+               ELSE
+                  IF ((NINT(ARR(4,J+1)) .GT. NINT(ARR(4,J))) .OR.
      &        ((NINT(ARR(4,J+1)) .EQ. NINT(ARR(4,J))) .AND. USENRM .AND.
      &        ((ATM1(1)*ATM1(1)+ATM1(2)*ATM1(2)+ATM1(3)*ATM1(3)).LT.
      &        (ATM2(1)*ATM2(1)+ATM2(2)*ATM2(2)+ATM2(3)*ATM2(3)))))THEN
-		     DO K = 1, 5
-			TEMP = ARR(K,J)
-			ARR(K,J) = ARR(K,J+1)
-			ARR(K,J+1) = TEMP
-		     END DO
-		     SORTED = .FALSE.
-		  END IF
+                     DO K = 1, 5
+                        TEMP = ARR(K,J)
+                        ARR(K,J) = ARR(K,J+1)
+                        ARR(K,J+1) = TEMP
+                     END DO
+                     SORTED = .FALSE.
+                  END IF
                END IF
  200        CONTINUE
             I = I + 1
@@ -615,19 +615,19 @@ C :::::::::::::::::::::::::::::::::::::::::::
          SUM(3) = 0.0D0
 C ::: Finds the three coordinates of the center of mass, then the molecule :::
 C ::: is moved so that the center of mass coincides with the origin.        :::
-	 TOTMAS = 0.0D0
+         TOTMAS = 0.0D0
          DO 100 I=1,N
-	       AMASS = DISOTP(NINT(ATMARR(4,I)),NINT(ATMARR(6,I)),'MASS')
-	       TOTMAS = TOTMAS + AMASS
-               SUM(1) = SUM(1) + ATMARR(1,I)*AMASS
-               SUM(2) = SUM(2) + ATMARR(2,I)*AMASS
-               SUM(3) = SUM(3) + ATMARR(3,I)*AMASS
+            AMASS = DISOTP(NINT(ATMARR(4,I)),NINT(ATMARR(6,I)),'MASS')
+            TOTMAS = TOTMAS + AMASS
+            SUM(1) = SUM(1) + ATMARR(1,I)*AMASS
+            SUM(2) = SUM(2) + ATMARR(2,I)*AMASS
+            SUM(3) = SUM(3) + ATMARR(3,I)*AMASS
  100     CONTINUE
-	 DO 200 I=1,N
-	    ATMARR(1,I) = ATMARR(1,I) - SUM(1)/TOTMAS
-	    ATMARR(2,I) = ATMARR(2,I) - SUM(2)/TOTMAS
-	    ATMARR(3,I) = ATMARR(3,I) - SUM(3)/TOTMAS
- 200	 CONTINUE
+         DO 200 I=1,N
+            ATMARR(1,I) = ATMARR(1,I) - SUM(1)/TOTMAS
+            ATMARR(2,I) = ATMARR(2,I) - SUM(2)/TOTMAS
+            ATMARR(3,I) = ATMARR(3,I) - SUM(3)/TOTMAS
+ 200     CONTINUE
          RETURN
       END
 C  /* Deck rotmol */
@@ -710,53 +710,53 @@ C ::: First we make a new array of vectors, consisting of mirror :::
 C ::: planes, even-ordered rotational axes and atom positions.   :::
          ITURN = 0
          J = 1
-	 DO 100 I = 1, NINT(DRTAXS(1,0))
+         DO 100 I = 1, NINT(DRTAXS(1,0))
 ckr
 ckr         The following test prevented the molecule from being rotated
 ckr         to standard orientation in case of groups in which the highest
 ckr         rotation axis was of order 2.
 ckr
-ckr	    IF ((NINT(DRTAXS(4,I)) .GT. 2) .AND.
-	    IF ((NINT(DRTAXS(4,I)) .GE. 2) .AND.
+ckr         IF ((NINT(DRTAXS(4,I)) .GT. 2) .AND.
+            IF ((NINT(DRTAXS(4,I)) .GE. 2) .AND.
      &         (ABS(MOD(DRTAXS(4,I),2.0D0)) .LT. 1.0D-8)) THEN
-	       DO 105 K = 1, 3
-		  TMPARR(K,J) = DRTAXS(K,I)
- 105	       CONTINUE
-	       TMPARR(4,J) = 1.0D0
-	       J = J + 1
-	    END IF
- 100	 CONTINUE
-	 DO 110 I = 1, NINT(DMRPLN(1,0))
-	    DO 115 K = 1, 3
-	       TMPARR(K,J) = DMRPLN(K,I)
- 115	    CONTINUE
-	    TMPARR(4,J) = 1.0D0
-	    J = J + 1
- 110	 CONTINUE
-	 DO 120 I = 1, NINT(DRTAXS(1,0))
-	    IF ((NINT(DRTAXS(4,I)) .GT. 2) .AND.
+               DO 105 K = 1, 3
+                  TMPARR(K,J) = DRTAXS(K,I)
+ 105           CONTINUE
+               TMPARR(4,J) = 1.0D0
+               J = J + 1
+            END IF
+ 100     CONTINUE
+         DO 110 I = 1, NINT(DMRPLN(1,0))
+            DO 115 K = 1, 3
+               TMPARR(K,J) = DMRPLN(K,I)
+ 115        CONTINUE
+            TMPARR(4,J) = 1.0D0
+            J = J + 1
+ 110     CONTINUE
+         DO 120 I = 1, NINT(DRTAXS(1,0))
+            IF ((NINT(DRTAXS(4,I)) .GT. 2) .AND.
      &         (ABS(MOD(DRTAXS(4,I),2.0D0)) .GT. 1.0D-2)) THEN
-	       DO 125 K = 1, 4
-		  TMPARR(K,J) = DRTAXS(K,I)
- 125	       CONTINUE
-	       J = J + 1
-	    END IF
- 120	 CONTINUE
-	 DO 130 I = 1, N
-	    DO 135 K = 1, 3
-	       TMPARR(K,J) = ATMARR(K,I)
- 135	    CONTINUE
-	    TMPARR(4,J) = 0.0D0
-	    TMPARR(6,J) = 1.0D0
-	    J = J + 1
- 130	 CONTINUE
-	 NTOT = J - 1
+               DO 125 K = 1, 4
+                  TMPARR(K,J) = DRTAXS(K,I)
+ 125           CONTINUE
+               J = J + 1
+            END IF
+ 120     CONTINUE
+         DO 130 I = 1, N
+            DO 135 K = 1, 3
+               TMPARR(K,J) = ATMARR(K,I)
+ 135        CONTINUE
+            TMPARR(4,J) = 0.0D0
+            TMPARR(6,J) = 1.0D0
+            J = J + 1
+ 130     CONTINUE
+         NTOT = J - 1
          TMPARR(1,0) = 1.0D0*NTOT
-	 IF (NTOT .GT. 0) THEN
+         IF (NTOT .GT. 0) THEN
             V1(1) = TMPARR(1,1)
             V1(2) = TMPARR(2,1)
             V1(3) = TMPARR(3,1)
-	 END IF
+         END IF
          I = 1
  150     CONTINUE
          IF (((V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3)) .LT. TOLLRN*TOLLRN)
@@ -790,14 +790,14 @@ ckr	    IF ((NINT(DRTAXS(4,I)) .GT. 2) .AND.
          JJ = I + 1
  200     CONTINUE
          IF ((ITURN .LT. 2) .AND. (I .LE. NTOT)) THEN
-	    IBEF = I
- 250	    CONTINUE
-	    IF ((ABS(TMPARR(3,I)) .GT. 1.0D-8) .AND. (I .LE. NTOT)) THEN
-	       I = I + 1
-	       GOTO 250
-	    ELSE IF (I .GT. NTOT) THEN
-	       I = IBEF
-	    END IF
+            IBEF = I
+ 250        CONTINUE
+            IF ((ABS(TMPARR(3,I)) .GT. 1.0D-8) .AND. (I .LE. NTOT)) THEN
+               I = I + 1
+               GOTO 250
+            ELSE IF (I .GT. NTOT) THEN
+               I = IBEF
+            END IF
             V1(1) = TMPARR(1,I)
             V1(2) = TMPARR(2,I)
             V1(3) = 0.0D0
@@ -1088,7 +1088,7 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
          LOGICAL PROPER,EQL
          DIMENSION VROT(3), V1(3), V2(3)
          DIMENSION IUSED(2*MXCENT)
-	 IORDR = IORDER
+         IORDR = IORDER
          IF (.NOT. PROPER) IORDR = 2*IORDER
          CON2PO = 2.0D0*PI/DBLE(IORDR)
 C ::: If we're looking for improper rotational axes, we have to :::
@@ -1126,21 +1126,21 @@ C ::: If we're looking for an axis of improper rotation, now is the :::
 C ::: time to reflect all the atoms through a plane perpendicular   :::
 C ::: to the possible rotational axis. Only applies to atoms with   :::
 C ::: a non-zero z-coordinate (after rotation).                     :::
-	 IF (.NOT. PROPER) THEN
-	    IND = N+1
-	    DO 150 I=1,N
-	       IF (ABS(ATMARR(3,I)) .GT. 1.0D-8) THEN
-		  ATMARR(1,IND) = ATMARR(1,I)
-		  ATMARR(2,IND) = ATMARR(2,I)
-		  ATMARR(3,IND) = -ATMARR(3,I)
-		  ATMARR(4,IND) = -ATMARR(4,I)
-		  ATMARR(6,IND) = -ATMARR(6,I)
-		  IND = IND + 1
-	       END IF
- 150	    CONTINUE
-	    N = IND - 1
-	    ATMARR(1,0) = 1.0D0*N
-	 END IF
+         IF (.NOT. PROPER) THEN
+            IND = N+1
+            DO 150 I=1,N
+               IF (ABS(ATMARR(3,I)) .GT. 1.0D-8) THEN
+                  ATMARR(1,IND) = ATMARR(1,I)
+                  ATMARR(2,IND) = ATMARR(2,I)
+                  ATMARR(3,IND) = -ATMARR(3,I)
+                  ATMARR(4,IND) = -ATMARR(4,I)
+                  ATMARR(6,IND) = -ATMARR(6,I)
+                  IND = IND + 1
+               END IF
+ 150        CONTINUE
+            N = IND - 1
+            ATMARR(1,0) = 1.0D0*N
+         END IF
 C ::: All atoms lying on the Z-axis are dropped :::
          DO 200 I=1,N
             V2(1) = ATMARR(1,I)
@@ -1160,25 +1160,25 @@ C ::: We take the XY-component. :::
                V1(2) = ATMARR(2,I)
                V1(3) = 0.0D0
                V1NRM = SQRT(V1(1)*V1(1)+V1(2)*V1(2))
-	       J = I + 1
+               J = I + 1
                IORD = 1
  350           CONTINUE
-	       IF (PROPER) THEN
-		  EQL = (NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J)) .AND.
+               IF (PROPER) THEN
+                  EQL = (NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J)) .AND.
      &                   NINT(ATMARR(6,I)) .EQ. NINT(ATMARR(6,J)))
-	       ELSE
-		  EQL = (NINT(ATMARR(4,I)) .EQ. -NINT(ATMARR(4,J)) .AND.
+               ELSE
+                  EQL = (NINT(ATMARR(4,I)) .EQ. -NINT(ATMARR(4,J)) .AND.
      &                   NINT(ATMARR(6,I)) .EQ. -NINT(ATMARR(6,J)))
-		  IF ((J .LT. N) .AND. (.NOT. EQL)) THEN
-		     J = J + 1
-		     GOTO 350
-		  END IF
-	       END IF
+                  IF ((J .LT. N) .AND. (.NOT. EQL)) THEN
+                     J = J + 1
+                     GOTO 350
+                  END IF
+               END IF
                IF ((IORD .LT. IORDR) .AND. (J .LE. N) .AND. EQL) THEN
                   V2(1) = ATMARR(1,J)
                   V2(2) = ATMARR(2,J)
-		  V2(3) = ATMARR(3,J) - ATMARR(3,I)
-		  DEG = VECANG(V1, V2)
+                  V2(3) = ATMARR(3,J) - ATMARR(3,I)
+                  DEG = VECANG(V1, V2)
                   DEG = DEG - ANINT(DEG/CON2PO)*CON2PO
 C ::: Program checks if the two atoms got the same Z-coordinate,   :::
 C ::: that the vectors have the same length, and finally that the  :::
@@ -1194,11 +1194,11 @@ C ::: angle between them is correct based on the rotational order. :::
                   GOTO 350
                END IF
 C ::: We also have to check that the symmetry is complete :::
-	       IF (PROPER) THEN
-		  ROTAXS = (IORD .GE. IORDR)
-	       ELSE
-		  ROTAXS = (IORD .GE. IORDR/2)
-	       END IF
+               IF (PROPER) THEN
+                  ROTAXS = (IORD .GE. IORDR)
+               ELSE
+                  ROTAXS = (IORD .GE. IORDR/2)
+               END IF
             END IF
             I = I + 1
             GOTO 300
@@ -1233,8 +1233,8 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
          LOGICAL ROTAXS, PROP
          DRTAXS(1,0) = 0.0D0
          N = NINT(ATMARR(1,0))
-	 MINORD = 2
-	 IF (.NOT. PROP) MINORD = 1
+         MINORD = 2
+         IF (.NOT. PROP) MINORD = 1
          VSTORE(1) = 0.0D0
          VSTORE(2) = 0.0D0
          VSTORE(3) = 0.0D0
@@ -1406,59 +1406,59 @@ C ::: products between themselves.                                      :::
 C ::: To be sure to get all the rotational axes in high order symmetry :::
 C ::: species, all sums and differences of rotational axes are tested  :::
 C ::: as well. Maximum order is the highest order among the axes.      :::
-			NAX = NINT(DRTAXS(1,0))
-			MXORDR = NINT(DRTAXS(4,1))
-			IF (NAX .GE. 2) THEN
-			 K = 1
-			 ICHANG = 0
- 175			 CONTINUE
-			 IF (K .LT. NAX) THEN
-			   L = K + 1
-			   V1(1) = DRTAXS(1,K)
-			   V1(2) = DRTAXS(2,K)
-			   V1(3) = DRTAXS(3,K)
- 177			   CONTINUE
-			   IF ((L .LE. NAX) .AND. (ICHANG .EQ. 0))THEN
-			     V2(1) = V1(1) + DRTAXS(1,L)
-			     V2(2) = V1(2) + DRTAXS(2,L)
-			     V2(3) = V1(3) + DRTAXS(3,L)
-			     V3(1) = V1(1) - DRTAXS(1,L)
-			     V3(2) = V1(2) - DRTAXS(2,L)
-			     V3(3) = V1(3) - DRTAXS(3,L)
-	                     IF (V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(3)
+                        NAX = NINT(DRTAXS(1,0))
+                        MXORDR = NINT(DRTAXS(4,1))
+                        IF (NAX .GE. 2) THEN
+                         K = 1
+                         ICHANG = 0
+ 175                     CONTINUE
+                         IF (K .LT. NAX) THEN
+                           L = K + 1
+                           V1(1) = DRTAXS(1,K)
+                           V1(2) = DRTAXS(2,K)
+                           V1(3) = DRTAXS(3,K)
+ 177                       CONTINUE
+                           IF ((L .LE. NAX) .AND. (ICHANG .EQ. 0))THEN
+                             V2(1) = V1(1) + DRTAXS(1,L)
+                             V2(2) = V1(2) + DRTAXS(2,L)
+                             V2(3) = V1(3) + DRTAXS(3,L)
+                             V3(1) = V1(1) - DRTAXS(1,L)
+                             V3(2) = V1(2) - DRTAXS(2,L)
+                             V3(3) = V1(3) - DRTAXS(3,L)
+                             IF (V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(3)
      &                                     .LT. ZERTOL) V2(1) = 1.0D0
-	                     IF (V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3)
+                             IF (V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3)
      &                                     .LT. ZERTOL) V3(1) = 1.0D0
-			     DO 179 M = MXORDR, 2, -1
-			      IF (ROTAXS(MXM,ATMARR,TMPARR,M,
+                             DO 179 M = MXORDR, 2, -1
+                              IF (ROTAXS(MXM,ATMARR,TMPARR,M,
      &                                                  V2,PROP)) THEN
-				 CALL ADD2AR(MAXAXS, DRTAXS, M, V2)
-				 CALL DLDPAX(MAXAXS, DRTAXS)
-			      END IF
-			      IF (ROTAXS(MXM,ATMARR,TMPARR,M,
+                                 CALL ADD2AR(MAXAXS, DRTAXS, M, V2)
+                                 CALL DLDPAX(MAXAXS, DRTAXS)
+                              END IF
+                              IF (ROTAXS(MXM,ATMARR,TMPARR,M,
      &                                                  V3,PROP)) THEN
-				 CALL ADD2AR(MAXAXS, DRTAXS, M, V3)
-				 CALL DLDPAX(MAXAXS, DRTAXS)
-			      END IF
- 179			     CONTINUE
-			     IF(NAX .LT. NINT(DRTAXS(1,0))) ICHANG = 1
-			     L = L + 1
-			     GOTO 177
-			   END IF
-			   K = K + 1
-			   IF (ICHANG .NE. 0) THEN
-			      K = 1
-			      NAX = NINT(DRTAXS(1,0))
-			      MXORDR = NINT(DRTAXS(4,1))
-			      ICHANG = 0
-			   END IF
-			   GOTO 175
-			 END IF
-		        END IF
+                                 CALL ADD2AR(MAXAXS, DRTAXS, M, V3)
+                                 CALL DLDPAX(MAXAXS, DRTAXS)
+                              END IF
+ 179                         CONTINUE
+                             IF(NAX .LT. NINT(DRTAXS(1,0))) ICHANG = 1
+                             L = L + 1
+                             GOTO 177
+                           END IF
+                           K = K + 1
+                           IF (ICHANG .NE. 0) THEN
+                              K = 1
+                              NAX = NINT(DRTAXS(1,0))
+                              MXORDR = NINT(DRTAXS(4,1))
+                              ICHANG = 0
+                           END IF
+                           GOTO 175
+                         END IF
+                        END IF
 C ::: Finally the atoms are marked as used. :::
                         DO 180 M = J-IORD, J-1
                            IUSED(M) = 1
- 180			CONTINUE
+ 180                    CONTINUE
                      END IF
 C ::: Then we move on to the linear case :::
                   ELSE
@@ -1533,8 +1533,8 @@ C ::: And we call upon FindAx to find all axes for this molecule. :::
          CALL FINDAX(2*MXM, ATMARR, AXIMAR, TMPARR, .FALSE.)
 C ::: We have to multiply all orders by a factor of two to get S_n not S_2n :::
          DO 100 I = 1, NINT(AXIMAR(1,0))
-	    AXIMAR(4,I) = 2.0D0*AXIMAR(4,I)
- 100	 CONTINUE
+            AXIMAR(4,I) = 2.0D0*AXIMAR(4,I)
+ 100     CONTINUE
 C ::: Finally we remove all imroper rotational axes with the same order :::
 C ::: and parallellity to proper axes.                                   :::
          DO 200 I = 1, NINT(AXARR(1,0))
@@ -1747,10 +1747,10 @@ C ::: If the number of rotational axes exceeds 10, the number :::
 C ::: of improper rotational axes is likely to be very high   :::
 C ::: and we chosse to skip their determination.              :::
          IF (NINT(DRTAXS(1,0)) .LE. 10) THEN
-	    CALL FNDIMA(MXM, ATMARR, DIRAXS, DRTAXS, TMPARR)
-	 ELSE
-	    DIRAXS(1,0) = -1.0D0
-	 END IF
+            CALL FNDIMA(MXM, ATMARR, DIRAXS, DRTAXS, TMPARR)
+         ELSE
+            DIRAXS(1,0) = -1.0D0
+         END IF
          CALL FNDMIR(MXM, ATMARR, DMRPLN, DRTAXS, TMPARR)
          IF (LINMOL(MXM, ATMARR)) THEN
             IF (INVMOL(MXM, ATMARR)) THEN
@@ -1851,7 +1851,7 @@ C ::: Number of perpendicular mirror planes is counted. :::
 			WRITE(CLASS(3:4),222) NINT(DRTAXS(4,1))
 		     END IF
                   ELSE
-		     IF (NINT(DIRAXS(1,0)) .LT. 0)
+                     IF (NINT(DIRAXS(1,0)) .LT. 0)
      &                  CALL FNDIMA(MXM, ATMARR, DIRAXS, DRTAXS, TMPARR)
                      IF ((NINT(DIRAXS(1,0)) .GE. 1) .AND.
      &                (NINT(DIRAXS(4,1)).GE.2*NINT(DRTAXS(4,1))))THEN
@@ -1894,8 +1894,8 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
             TMPARR(I,1) = ARR(I, IATNO1)
             TMPARR(I,2) = ARR(I, IATNO2)
  100     CONTINUE
-	 TMPARR(6,1) = ARR(6, IATNO1)
-	 TMPARR(6,2) = ARR(6, IATNO2)
+         TMPARR(6,1) = ARR(6, IATNO1)
+         TMPARR(6,2) = ARR(6, IATNO2)
 C ::: The icode determines what should be tested     :::
 C ::: 1 - mirror plane   2 - C2 axis   3 - inversion :::
          IF (((ICODE .EQ. 1) .AND. (MIRMOL(2,TMPARR, TARR, VEC))) .OR.
@@ -1908,12 +1908,12 @@ C     &                          (NINT(ARR(6,IATNO2)) .EQ. 0))
             DO 110 I = 1, 3
                TEMP = TEMP + TMPARR(I,1) - TMPARR(I,2)
  110        CONTINUE
-	    IF (TEMP .GT. 0.0D0) THEN
-	       GENELM = (NINT(ARR(7,IATNO2)) .LT. 1)
-	       ARR(7, IATNO2) = ANINT(ARR(7,IATNO2)+1.0D0)
-	    ELSE
-	       GENELM = (NINT(ARR(7,IATNO1)) .LT. 1)
-	       ARR(7, IATNO1) = ANINT(ARR(7,IATNO1)+1.0D0)
+            IF (TEMP .GT. 0.0D0) THEN
+               GENELM = (NINT(ARR(7,IATNO2)) .LT. 1)
+               ARR(7, IATNO2) = ANINT(ARR(7,IATNO2)+1.0D0)
+            ELSE
+               GENELM = (NINT(ARR(7,IATNO1)) .LT. 1)
+               ARR(7, IATNO1) = ANINT(ARR(7,IATNO1)+1.0D0)
             END IF
          END IF
          RETURN
@@ -2017,16 +2017,16 @@ C ::: necessary. The last is removed here (extremely dirty solution!!!) :::
 C ::: 12-1999 Torgeir: Expanded hack to make sure D2 symmetry is ok, and:::
 C ::: make use of as much symmetry as possible.                         :::
                IF ((NROT .EQ. 3) .AND. (IELMNT .GT. 1)) THEN
-		  CALL D2SYMM(ATMARR,N,MXM,SYMELM)
+                  CALL D2SYMM(ATMARR,N,MXM,SYMELM)
                END IF
 C ::: Some molecules causes a problem, with two mirror planes (A & B) :::
 C ::: and  a redundant rotation (AB), the last is removed             :::
 C ::: (another dirty solution!!!)                                     :::
                IF ((IELMNT .EQ. 3) .AND. (NROT .EQ. 1)) THEN
-		  IF ((SYMELM(1:1)//SYMELM(4:4)).EQ.SYMELM(7:8))THEN
-		     IELMNT = IELMNT - 1
-		     SYMELM(IELMNT*3+1:IELMNT*3+2) = '  '
-		  END IF
+                  IF ((SYMELM(1:1)//SYMELM(4:4)).EQ.SYMELM(7:8))THEN
+                     IELMNT = IELMNT - 1
+                     SYMELM(IELMNT*3+1:IELMNT*3+2) = '  '
+                  END IF
                END IF
             END IF
             V1(I) = 0.0D0
@@ -2174,7 +2174,7 @@ C
               END IF
            END DO
 C
-C          *** If necessary the second axis is arbitarily chosen ***
+C          *** If necessary the second axis is arbitrarily chosen ***
 C
            DO IAXS = 3, 1, -1 
               IF ((IEL.LT.2) .AND. (.NOT.HAVAXS(IAXS))) THEN
