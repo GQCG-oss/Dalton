@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: deq27.F,v 1.1.1.1 2001-02-08 13:33:13 hjj Exp $
+C$Id: deq27.F,v 1.2 2001-04-05 13:58:50 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck deq27 */
@@ -227,15 +227,17 @@ C     see eq. 22
 C
 C **     the inactive one-index transformed dm:
 C        DXC(p,i) = 2*Bo(i,p)
-         CALL DGEMM('N','T',NBASJ,NISHI,NORBJ,1.D0,
-     &              CMO(ICMOJ+1),NBASJ,
-     &              UBO(IORBI+1,IORBJ+1),NORBT,0.D0,
-     &              WRK(KDXAO1),NBASJ)
-         IDXAO2 = KDXAO2 + IBAS(JSYM)*NBAST + IBAS(ISYM)
-         CALL DGEMM('N','T',NBASI,NBASJ,NISHI,1.D0,
-     &              CMO(ICMOI+1),NBASI,
-     &              WRK(KDXAO1),NBASJ,0.D0,
-     &              WRK(IDXAO2),NBAST)
+         IF (NBASI*NBASJ*NORBJ .NE. 0) THEN
+            CALL DGEMM('N','T',NBASJ,NISHI,NORBJ,1.D0,
+     &                 CMO(ICMOJ+1),NBASJ,
+     &                 UBO(IORBI+1,IORBJ+1),NORBT,0.D0,
+     &                 WRK(KDXAO1),NBASJ)
+            IDXAO2 = KDXAO2 + IBAS(JSYM)*NBAST + IBAS(ISYM)
+            CALL DGEMM('N','T',NBASI,NBASJ,NISHI,1.D0,
+     &                 CMO(ICMOI+1),NBASI,
+     &                 WRK(KDXAO1),NBASJ,0.D0,
+     &                 WRK(IDXAO2),NBAST)
+         END IF
 C **  this symmetry block finished
  4000 CONTINUE
          CALL DCOPY(N2BASX,WRK(KDXAO2),1,DXCAO,1)
@@ -262,15 +264,17 @@ C **     the inactive one-index transformed dm:
 C        UBO not transposed for D-II (see eq. 25)
 C
 C        DXC(p,i) = 2*Bo(i,p)
-         CALL DGEMM('N','N',NBASJ,NISHI,NORBJ,1.D0,
-     &              CMO(ICMOJ+1),NBASJ,
-     &              UBO(IORBJ+1,IORBI+1),NORBT,0.D0,
-     &              WRK(KDXAO1),NBASJ)
-         IDXAO2 = KDXAO2 + IBAS(ISYM)*NBAST + IBAS(JSYM)
-         CALL DGEMM('N','T',NBASJ,NBASI,NISHI,1.D0,
-     &              WRK(KDXAO1),NBASJ,
-     &              CMO(ICMOI+1),NBASI,0.D0,
-     &              WRK(IDXAO2),NBAST)
+         IF (NBASI*NBASJ*NORBJ .NE. 0) THEN
+            CALL DGEMM('N','N',NBASJ,NISHI,NORBJ,1.D0,
+     &                 CMO(ICMOJ+1),NBASJ,
+     &                 UBO(IORBJ+1,IORBI+1),NORBT,0.D0,
+     &                 WRK(KDXAO1),NBASJ)
+            IDXAO2 = KDXAO2 + IBAS(ISYM)*NBAST + IBAS(JSYM)
+            CALL DGEMM('N','T',NBASJ,NBASI,NISHI,1.D0,
+     &                 WRK(KDXAO1),NBASJ,
+     &                 CMO(ICMOI+1),NBASI,0.D0,
+     &                 WRK(IDXAO2),NBAST)
+         END IF
 C **  this symmetry block finished
  5000 CONTINUE
 C
