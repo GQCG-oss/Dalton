@@ -198,8 +198,7 @@ dft_wake_slaves(DFTPropEvalMaster evaluator)
         id<ELEMENTS(PropEvaluatorList) && 
             PropEvaluatorList[id].master_func != evaluator;
         id++)
-        printf("master %p does not match requested %p\n",
-               PropEvaluatorList[id].master_func, evaluator);
+        ;
         
     if(id>=ELEMENTS(PropEvaluatorList)) {
         /* this would really be an programming error.... */
