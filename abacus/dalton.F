@@ -32,12 +32,22 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: dalton.F,v 1.9 2001-06-22 13:19:40 hjj Exp $
+C$Id: dalton.F,v 1.10 2001-06-22 19:44:28 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
 C
 $Log: not supported by cvs2svn $
+Revision 1.9  2001/06/22 13:19:40  hjj
+1) Initialize MPI at top with MPIXINIT so we know if master or slave
+   before LUERR is used.
+2) Only open LUERR with name for Master, use LUERR=0 for slaves.
+3) Do not call GPIOIN a second time, this destroys LUERR again!
+4) Open LUPRI as DALTON.OUTxx where xx is node number on slaves.
+5) Do not open LUCME on slaves (I have inserted tests for LUCME.gt.0
+   everywhere before prints to LUCME)
+/hjaaj
+
 Revision 1.7  2001/06/20 13:15:36  vebjornb
 Only master opens DALTON.OUT, not the slaves - VB
 
@@ -163,8 +173,8 @@ C
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
       LOGICAL FINISH
-      CHARACTER*12 FILNAM
 #endif
+      CHARACTER*12 FILNAM
 #if defined (VAR_G77)
       INTEGER(KIND=2) IWOFF
 #endif
@@ -375,7 +385,7 @@ C
      &            IDUMMY,.FALSE.)
       ELSE
          WRITE (FILNAM,'(A,I2.2)') 'DALTON.OUT',MYNUM
-         CALL GPOPEN(LUPRI,filnam,'NEW',' ','FORMATTED',
+         CALL GPOPEN(LUPRI,FILNAM,'NEW',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
       END IF
       CALL MEMINI(LUPRI,LUERR)
