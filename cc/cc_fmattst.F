@@ -91,7 +91,6 @@ C
         WRITE (LUPRI,*) 'LWORK:',LWORK
       END IF
 C
-C     FTST  = .TRUE.
       DEBUG = .TRUE.
 C
 C---------------------------------------------
@@ -299,7 +298,7 @@ C
       IF (LLIST(1:2).NE.'L0') IOPT = 3
 
       DTIME = SECOND()
-      CALL CC_RDRSP('R0',0,ISYM0,IOPT,MODELX,WORK(KT1AM),WORK(KRHO2))
+      CALL CC_RDRSP('R0',0,1,IOPT,MODELX,WORK(KT1AM),WORK(KRHO2))
       DTIME = SECOND() - DTIME
       TIMIO = TIMIO + DTIME
 C
@@ -335,12 +334,11 @@ C
 C
 C------------------------------------------------------------
 C     Calculate <HF| [[H,tau,mu],R1]|HF> contribution.
-C     Do not add if FTST.
 C     Note inside FHF a Integral(ai,bj) is allocated. 
 C     Of course released afterwards.
 C------------------------------------------------------------
 C
-      IF ((LLIST(1:2).EQ.'L0').AND.(.NOT. FTST )) THEN
+      IF ((LLIST(1:2).EQ.'L0')) THEN
  
          CALL CC_FHF(WORK(KC1AM),WORK(KRHO1),ISYMR,WORK(KEND0),LWRK0)
  
@@ -2133,20 +2131,15 @@ C     MO basis T2SQ section.
 C     Contract intermediates constructed in loop with T2SQ.
 C==========================================================
 C
-C------------------------------------
-C        Readin T2 amplitude in RHO2.
-C------------------------------------
+C-------------------------------------
+C        Read in T2 amplitude in RHO2.
+C-------------------------------------
 C
          DTIME = SECOND()
 C
          IF (.NOT. CCS) THEN
-            LUMAT = 0
-            CALL GPOPEN(LUMAT,'CCSD_TAM','OLD',' ','UNFORMATTED',
-     *                  IDUMMY,.FALSE.)
-            REWIND(LUTAM)
-            READ(LUTAM)
-            READ(LUTAM) (WORK(KRHO2-1+J), J = 1, NT2AM(1))
-            CALL GPCLOSE(LUTAM,'KEEP')
+            IOPT = 2
+            CALL CC_RDRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KRHO2))
 C
             DTIME = SECOND() - DTIME
             TIMIO = TIMIO + DTIME

@@ -227,17 +227,12 @@ C
 C
 C------------------------------------------------
 C     Read the CC reference amplitudes from disk.
-C     LUTAM should be outside if-loop
 C------------------------------------------------
 C
       DTIME = SECOND()
-      LUTAM = 0
       IF (.NOT.(CCS.OR.CCP2)) THEN
-         CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
-     *               IDUMMY,.FALSE.)
-         REWIND(LUTAM)
-         READ(LUTAM) (WORK(KT1AM - 1 + J), J = 1, NT1AMX )
-         CALL GPCLOSE(LUTAM,'KEEP')
+         IOPT = 1
+         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),DUMMY)
       ENDIF
       DTIME = SECOND() - DTIME
       TIMIO = TIMIO + DTIME
@@ -1567,12 +1562,8 @@ C------------------------------------
 C
          DTIME = SECOND()
 C
-         CALL GPOPEN(LUTAM,'CCSD_TAM','OLD',' ','UNFORMATTED',IDUMMY,
-     *               .FALSE.)
-         REWIND(LUTAM)
-         READ(LUTAM)
-         READ(LUTAM) (RHO2(J), J = 1, NT2AM(1))
-         CALL GPCLOSE(LUTAM,'KEEP')
+         IOPT = 2
+         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,DUMMY,RHO2)
 C
          DTIME = SECOND() - DTIME
          TIMIO = TIMIO + DTIME
@@ -1917,12 +1908,8 @@ C------------------------------
 C
          DTIME = SECOND()
 C
-         CALL GPOPEN(LUTAM,'CCSD_TAM','OLD',' ','UNFORMATTED',IDUMMY,
-     *               .FALSE.)
-         REWIND(LUTAM)
-         READ(LUTAM)
-         READ(LUTAM) (WORK(KT2AM + J -1), J = 1, NT2AM(1))
-         CALL GPCLOSE(LUTAM,'KEEP')
+         IOPT = 2
+         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KT2AM))
 C
          DTIME = SECOND() - DTIME
          TIMIO = TIMIO + DTIME
@@ -2128,12 +2115,8 @@ C
 C
          DTIME = SECOND()
 C
-         CALL GPOPEN(LUTAM,'CCSD_TAM','OLD',' ','UNFORMATTED',IDUMMY,
-     *               .FALSE.)
-         REWIND(LUTAM)
-         READ(LUTAM)
-         READ(LUTAM) (WORK(KT2AM + J -1), J = 1, NT2AM(1))
-         CALL GPCLOSE(LUTAM,'KEEP')
+         IOPT = 2
+         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KT2AM))
 C
          DTIME = SECOND() - DTIME
          TIMIO = TIMIO + DTIME

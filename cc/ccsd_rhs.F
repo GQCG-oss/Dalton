@@ -1096,8 +1096,8 @@ C
             IF (DEBUG) THEN
                XNORM1 = DDOT(NMATAB(1),WORK(KEMAT1),1,WORK(KEMAT1),1)
                XNORM2 = DDOT(NMATIJ(1),WORK(KEMAT2),1,WORK(KEMAT2),1)
-               PRINT *,'Norm of E1 intermediate:',XNORM1
-               PRINT *,'Norm of E2 intermediate:',XNORM2
+               WRITE(LUPRI,*) 'Norm of E1 intermediate:',XNORM1
+               WRITE(LUPRI,*) 'Norm of E2 intermediate:',XNORM2
             END IF
 C
          ENDIF
@@ -4502,6 +4502,7 @@ C
       COMMON/SORTIO/LUAOIN(8)
 C
       CALL QENTER('CCRDAO')
+C
       ISYMD  = ISAO(IDELTA)
       ISYDIS = MULD2H(ISYMD,ISYMOP)
 C
@@ -4567,7 +4568,7 @@ C
       KEND2 = KRBUF + LBUF
       LWRK2 = LWORK - KEND2
       IF (LWRK2 .LT. 0) THEN
-         CALL QUIT('Insuficcient work space in CCRDAO')
+         CALL QUIT('Insufficient work space in CCRDAO')
       ENDIF
 C
       CALL CCRDA1(XINT,WORK(KIBUF),WORK(KRBUF),IDELTA,IDEL2,
@@ -4648,9 +4649,6 @@ C
             FAODER = 'AO2DIS'//CHRNOS(0)//CHRNOS(0)
             CALL GPOPEN(LUAORC(0),FAODER,'UNKNOWN','DIRECT',
      &           'UNFORMATTED',LRECL,OLDDX)
-C VB mar 2001:
-C     REWIND should not be performed on a file connected for direct I/O
-C                rewind(luaorc(0))
       END IF
 C
       ICOUNT = 0

@@ -13,7 +13,7 @@ C
 #include <dummy.h>
 #include <maxorb.h>
       PARAMETER (XMONE = -1.0D0, IZERO = 0, TWO = 2.0D0, ZERO = 0.0D00)
-      LOGICAL   CCSAV, CC1BSV, CC1ASV, CCPTSV, CCP3SV, MP2DIF, LSORT
+      LOGICAL   CCSAV, CC1BSV, CC1ASV, CCPTSV, CCP3SV, LSORT
       DIMENSION WORK(LWORK)
       COMMON /LUDIIS/ LUTDIS, LUSDIS
 #include <ccorb.h>
@@ -28,8 +28,29 @@ C
 #include <cclr.h>
 #include <ccslvinf.h>
 #include <ccfdgeo.h>
-      LOGICAL LCONVG,RSPIM2,EX
+      LOGICAL LCONVG,RSPIM2,EX,LEXIST
       CHARACTER*5 ETY0, ETY1, ETY2, MODEL*10
+C
+C     -------------------------------------------------------------
+C     set model for which the current t-amplitudes were calculated:
+C     -------------------------------------------------------------
+C
+      MODEL = 'UNKOWN    '
+      IF (CIS)   MODEL = 'CIS       '
+      IF (CCS)   MODEL = 'CCS       '
+      IF (MP2)   MODEL = 'MP2       '
+      IF (CC2)   MODEL = 'CC2       '
+      IF (CCD)   MODEL = 'CCD       '
+      IF (CCSD)  MODEL = 'CCSD      '
+      IF (CC3)   MODEL = 'CC3       '
+      IF (CC1A)  MODEL = 'CCSDT-1a  '
+      IF (CC1B)  MODEL = 'CCSDT-1b  '
+      IF (CCPT)  MODEL = 'CCSD(T)   '
+      IF (CCP3)  MODEL = 'CC(3)     '
+      IF (CCRT)  MODEL = 'CCSDR(T)  '
+      IF (CCR3)  MODEL = 'CCSDR(3)  '
+      IF (CCR1A) MODEL = 'CCSDR(1A) '
+      IF (CCR1B) MODEL = 'CCSDR(1B) '
 C
 #if defined (SYS_CRAY)
 C     Open file for diis extrapolation
@@ -234,49 +255,59 @@ C
          CALL READI(LUIAJB,IRAT*NT2AM(ISYMOP),WORK(KT2AM))
       ENDIF
 C
-C------------------------------------
-C     Setup the initial guess vector.
-C------------------------------------
+C----------------------------------------------------------------------
+C     Setup the initial guess vector:
+C       1) if CCRSTR flag set try to restart from old amplitude vector
+C          (ignored for MP2 calculations)
+C       2) if CCRSTR flag not set or if restart failed or if we do
+C          a MP2 calculation, construct MP2 amplitude vector from
+C          the integrals, which we have in memory
+C----------------------------------------------------------------------
 C
       IF (CCRSTR.AND.(.NOT.MP2)) THEN
-         ILSTNR = 1
-         ISYM   = 1
+         ETY1   = 'RSTAR'
          IOPT   = 33
-         CALL CC_RDRSP('R0',ILSTNR,ISYM,IOPT,MODEL,WORK(KT1AM),
-     *                 WORK(KT2AM))
-         ETY1 = 'RSTAR'
+         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),WORK(KT2AM))
+         IF (IOPT.EQ.33) THEN
+           INQUIRE(FILE='CCSD_TAM',EXIST=LEXIST,IOSTAT=IOS,ERR=990)
+           IF (LEXIST) THEN ! read old CCSD_TAM file
+             LUTAM = 0
+             CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
+     *                   IDUMMY,.FALSE.)
+             REWIND (LUTAM)
+             WRITE(LUTAM) (WORK(KT1AM+I-1), I = 1,NT1AMX)
+             IF (.NOT.CCS) WRITE(LUTAM) (WORK(KT2AM+I-1), I = 1,NT2AMX)
+             CALL GPCLOSE(LUTAM,'KEEP')
+             IOPT = 3
+           ELSE
+990          CONTINUE ! nothing to restart from ...
+           END IF
+         END IF
       ENDIF
    
       IF  ( (.NOT.CCRSTR) .OR. MP2 .OR. (IOPT.EQ.33) ) THEN
          CALL CCSD_GUESS(WORK(KT1AM),WORK(KT2AM),WORK(KFOCKD),
      *                   IALPR)
 C
-C-----------------------------------------------------------------
-C        Print largest amplitudes in the zero order wave function.
-C-----------------------------------------------------------------
-C
          IF (IPRINT .GT. 4) THEN
-C
             CALL AROUND('Largest amplitudes in MP2 guess')
 C
             CALL DCOPY(NT1AMX,WORK(KT1AM),1,WORK(KOMEG1),1)
             CALL DCOPY(NT2AMX,WORK(KT2AM),1,WORK(KOMEG1+NT1AMX),1)
-C
             CALL CC_PRAM(WORK(KOMEG1),PT1,1)
-C
          ENDIF
 C
          ETY1 = 'MP2  '
-C
       ENDIF
 C
+C-----------------------------------------------------------------------
+C     START OF ITERATIVE LOOP
+C-----------------------------------------------------------------------
 C
       EN1=0D0
       EN2=99D0
       LCONVG=.FALSE.
       ITER=1
-C
-C     START OF ITERATIVE LOOP
 C
 C
       IF (LCOR .OR. LSEC ) THEN
@@ -317,16 +348,9 @@ C---------------------------------
 C        Write amplitudes to disk.
 C---------------------------------
 C
-C        needed in loop over models if CCDERI=.true. !?
-C        IF (LUTAM.GT.0) CALL GPCLOSE(LUTAM,'KEEP')
-C
-         LUTAM = 0
-         CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
-     *               IDUMMY,.FALSE.)
-         REWIND (LUTAM)
-         WRITE(LUTAM) (WORK(KT1AM+I-1), I = 1,NT1AMX)
-         WRITE(LUTAM) (WORK(KT2AM+I-1), I = 1,NT2AMX)
-         CALL GPCLOSE(LUTAM,'KEEP')
+         IOPT = 3
+         CALL CC_WRRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KT1AM),
+     *                 WORK(KT2AM),WORK(KEND1),LWRK1)
 C
          EN1 = EN2
 C
@@ -410,7 +434,6 @@ C
          IF (CC1B)  ETY2 = 'CC-1b '
          IF (CC1A)  ETY2 = 'CC-1a '
          IF (CC2)   ETY2 = 'CC2  '
-         IF (MCC2)  ETY2 = 'MCC2'
 C
          IT1 = 1
          CALL CCSD_ECCSD(WORK(KT1AM),WORK(KT2AM),WORK(KFOCKD),
@@ -468,13 +491,6 @@ C
       IF (CCSTST) THEN
          CALL DZERO(WORK(KT2AM),NT2AMX)
       ENDIF
-      LUTAM = 0
-      CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     *            .FALSE.)
-      REWIND (LUTAM)
-      WRITE(LUTAM) (WORK(KT1AM+I-1), I = 1,NT1AMX)
-      WRITE(LUTAM) (WORK(KT2AM+I-1), I = 1,NT2AMX)
-      CALL GPCLOSE(LUTAM,'KEEP')
 C
 C----------------------------------
 C     save a copy on file CCR0___0
@@ -486,100 +502,10 @@ C
 
       CALL DZERO(WORK(KT0AM),2*NALLAI(1))
 C
-C     -------------------------------------------------------------
-C     set model for which the current t-amplitudes were calculated:
-C     (this should be more or less the same as ETY2)
-C     -------------------------------------------------------------
-C
-      MODEL = 'UNKOWN'
-      IF (CIS)  MODEL = 'CIS'
-      IF (CCS)  MODEL = 'CCS'
-      IF (MP2)  MODEL = 'MP2'
-      IF (CC2)  MODEL = 'CC2'
-      IF (CCD)  MODEL = 'CCD'
-      IF (CCSD) MODEL = 'CCSD'
-      IF (CC3)  MODEL = 'CC3'
-      IF (CC1A) MODEL = 'CCSDT-1a'
-      IF (CC1B) MODEL = 'CCSDT-1b'
-      IF (CCPT) MODEL = 'CCSD'
-      IF (CCP3) MODEL = 'CCSD'
-      IF (CCRT) MODEL = 'CCSD'
-      IF (CCR3) MODEL = 'CCSD'
-      IF (CCR1A) MODEL = 'CCSD'
-      IF (CCR1B) MODEL = 'CCSD'
-C
       IOPT = 7
       CALL CC_WRRSP('R0',0,1,IOPT,MODEL,WORK(KT0AM),WORK(KT1AM),
      *              WORK(KT2AM),WORK(KEND0),LWRK0)
 C
-C---------------------------------
-C     Comparison with MP2 vectors.
-C---------------------------------
-C
-      MP2DIF = .FALSE.
-      IF (MP2DIF) THEN
-C
-         CALL DCOPY(NT1AMX,WORK(KT1AM),1,WORK(KOMEG1),1)
-         CALL DCOPY(NT2AMX,WORK(KT2AM),1,WORK(KOMEG1+NT1AMX),1)
-C
-         REWIND(LUIAJB)
-         CALL READI(LUIAJB,IRAT*NT2AM(ISYMOP),WORK(KT2AM))
-C
-         CALL CCSD_GUESS(WORK(KT1AM),WORK(KT2AM),WORK(KFOCKD),
-     *                   IALPR)
-C
-         CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
-     &               IDUMMY,.FALSE.)
-         REWIND(LUTAM)
-         READ(LUTAM) (WORK(KT1AM+I-1), I = 1,NT1AMX)
-         CALL GPCLOSE(LUTAM,'KEEP')
-C        
-         CALL DAXPY(NT1AMX,-1.0D0,WORK(KT1AM),1,WORK(KOMEG1),1)
-C
-C        CALL DAXPY(NT2AMX,-1.0D0,WORK(KT2AM),1,WORK(KOMEG1+NT1AMX),1)
-C
-C        CALL CC_PRAM(WORK(KOMEG1),PT1,1)
-C
-         LUTMP = 0
-         CALL GPOPEN(LUTMP,' ','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     &               .FALSE.)
-         REWIND(LUTMP)
-         WRITE(LUTMP) (WORK(KT2AM+I-1), I = 1,NT2AMX) 
-         XTH = 1.0D0
-         DO 600 I = 1,15
-            REWIND(LUTMP)
-            READ(LUTMP) (WORK(KT2AM+K-1), K = 1,NT2AMX) 
-C
-C        CALL DZERO(WORK(KT2AM),NT2AMX)
-C
-            ICOUNT = 0
-            DO 610 J = 1,NT2AMX
-C              IF ( ABS(WORK(KOMEG1+NT1AMX+J-1)) .GE. XTH) THEN
-               IF ( ABS(WORK(KT2AM+J-1)) .LE. XTH) THEN
-                  WORK(KT2AM+J-1) = ZERO                     
-                  ICOUNT = ICOUNT + 1
-               ELSE
-                  WORK(KT2AM+J-1) = WORK(KOMEG1+NT1AMX+J-1) 
-C
-C                 WORK(KT2AM+J-1) = WORK(KT2AM+J-1) 
-C    *                            + WORK(KOMEG1+NT1AMX+J-1)
-C
-C                 ICOUNT = ICOUNT + 1
-               ENDIF
-  610       CONTINUE
-C
-            WRITE(LUPRI,*)'ICOUNT=',ICOUNT
-            IT1 = 1
-            CALL CCSD_ECCSD(WORK(KT1AM),WORK(KT2AM),WORK(KFOCKD),
-     *                      WORK(KEND1),LWRK1,EN2,POTNUC,ESCF,
-     *                      ETY2,IPRINT,IT1,I)
- 
-            XTH = XTH/10.0D0
-C
-  600    CONTINUE 
-         CALL GPCLOSE(LUTMP,'DELETE')
-C
-      ENDIF
 C
 C SLV98,OC
 C
@@ -629,12 +555,8 @@ C
          ECCP1 = TWO*DDOT(NT1AMX,WORK(KT1AM),1,WORK(KOMEG1),1)
          ECCP2 = TWO*DDOT(NT2AMX,WORK(KT2AM),1,WORK(KOMEG2),1)
 C
-         CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
-     &               IDUMMY,.FALSE.)
-         REWIND (LUTAM)
-         READ(LUTAM) (WORK(KT1AM+I-1), I = 1,NT1AMX)
-         READ(LUTAM) (WORK(KT2AM+I-1), I = 1,NT2AMX)
-         CALL GPCLOSE(LUTAM,'KEEP')
+         IOPT = 3
+         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),WORK(KT2AM))
 C
          IF ( CCR3 ) THEN
 C
@@ -665,12 +587,9 @@ C
                CALL CC_PRP(WORK(KOMEG1),WORK(KOMEG2),1,1,1)
             ENDIF
 C
-            CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
-     *                  IDUMMY,.FALSE.)
-            REWIND (LUTAM)
-            WRITE(LUTAM) (WORK(KT1AM+I-1), I = 1,NT1AMX)
-            WRITE(LUTAM) (WORK(KT2AM+I-1), I = 1,NT2AMX)
-            CALL GPCLOSE(LUTAM,'KEEP')
+            IOPT = 3
+            CALL CC_WRRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KT1AM),
+     *                    WORK(KT2AM),WORK(KEND1),LWRK1)
 C
             IF (IPRINT .GT. 4) THEN
 C
@@ -1092,12 +1011,8 @@ C
          IF (.NOT.(CCS.OR.CCP2)) THEN
 C
             IF ( IT1 .EQ. 1 ) THEN
-               LUTAM = 0
-               CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ',
-     *                     'UNFORMATTED',IDUMMY,.FALSE.)
-               REWIND(LUTAM)
-               READ(LUTAM) (WORK(KT1AM - 1 + J), J = 1,NT1AMX)
-               CALL GPCLOSE(LUTAM,'KEEP')
+               IOPT = 1
+               CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),DUMMY)
             ELSE IF (IT1 .EQ. 0) THEN
                CALL DZERO(WORK(KT1AM),NT1AMX)
             ELSE
