@@ -15,7 +15,7 @@ cLig <> added CTOCD
      &        DARWIN, ABALNR, VROA,   NOCMC,  EXPFCK,
      &        RAMAN,  QUADRU, NQCC,   HYPER,  VERDET,
      &        MCD,    HELFEY, LINCPL, ABASOP, SKIPAB,
-     &        ABA_ALPHA, EXPGRD, CTOCD, NUMHES
+     &        ABA_ALPHA, EXPGRD, CTOCD
       COMMON /ABAINF/ NTCSY(8), NSCSY(8), IPRDEF, NWNABA, 
      &                MOLGRD, MOLHES, DIPDER, POLAR,  TSTINP,
      &                VIB,    RESTAR, DOWALK, GDALL,  CCSD,
@@ -26,4 +26,4 @@ cLig <> added CTOCD
      &                DARWIN, ABALNR, VROA,   NOCMC,  EXPFCK,
      &                RAMAN,  QUADRU, NQCC,   HYPER,  VERDET,
      &                MCD,    HELFEY, LINCPL, ABASOP, SKIPAB,
-     &                ABA_ALPHA, EXPGRD, CTOCD, NUMHES
+     &                ABA_ALPHA, EXPGRD, CTOCD

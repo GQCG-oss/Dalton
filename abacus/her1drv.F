@@ -1,4 +1,3 @@
-C
 C...   Copyright (c) 2001 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
@@ -207,6 +206,7 @@ C
 #include <nuclei.h>
 #include <shells.h>
 #include <symmet.h>
+#include <drw2el.h>
 #include <cbisol.h>
 C
 #include <ibtfun.h>
@@ -235,7 +235,11 @@ C
       NNBASX = NBAST*(NBAST + 1)/2
 C
       KSTHMA = 1
-      KDENMA = KSTHMA + 3*NNBASX
+      IF (FINDPT) THEN
+         KDENMA = KSTHMA + 4*NNBASX
+      ELSE
+         KDENMA = KSTHMA + 3*NNBASX
+      END IF
       KFOCMA = KDENMA +   NNBASX
       KFACIN = KFOCMA +   NNBASX
       KCOORC = KFACIN +   NUCDEP
@@ -308,19 +312,22 @@ C
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <iratdef.h>
+#include <drw2el.h>
+#include <codata.h>
 #include <priunit.h>
       PARAMETER (D0 = 0.00 D00)
 C
 #include <nuclei.h>
       LOGICAL NODC, NODV, FRSDER, SECDER, DIFDIP, PROPTY, DOINT(2,2),
-     &        TOFILE, HFONLY, NCLONE, FOUND
-      DIMENSION DENMAT(NNBASX), FOCMAT(NNBASX), STHMAT(NNBASX,3),
+     &        TOFILE, HFONLY, NCLONE, FOUND, FNDLB2
+      DIMENSION DENMAT(NNBASX), FOCMAT(NNBASX), STHMAT(NNBASX,*),
      &          FACINT(NUCDEP), WORK(LWORK), COORC(3,NUCDEP),
      &          SIGNC(3,NUCDEP), NCENTC(NUCDEP), JSYMC(NUCDEP),
      &          JCENTC(NUCDEP), TLMD(3*NUCDEP*LMNTOT,2),
      &          HESSKE(MXCOOR,MXCOOR), HESSNA(MXCOOR,MXCOOR),
      &          HESFS2(MXCOOR,MXCOOR), HSOLT2(MXCOOR,MXCOOR),
      &          HSOLNN(MXCOOR,MXCOOR), CSTRA(*), SCTRA(*)
+      CHARACTER*8 RTNLBL(2)
 #include <inftap.h>
 #include <onecom.h>
 #include <lmns.h>
@@ -446,7 +453,11 @@ C     ************************************************************
 C     ***** Triangular loop over symmetry independent shells *****
 C     ************************************************************
 C
-      CALL DZERO(STHMAT,3*NNBASX)
+      IF (FINDPT) THEN
+         CALL DZERO(STHMAT,4*NNBASX)
+      ELSE
+         CALL DZERO(STHMAT,3*NNBASX)
+      END IF
       CALL IZERO(ISOFRA, 8)
       IDENA = 0
       DO 100 ISHELA = 1,KMAX
@@ -623,6 +634,23 @@ C
      *       ' has been written on LUITMP in ONEDR1.'
          END IF
       ELSE
+         IF (FINDPT) THEN
+C
+C           Add DPT correction to nuclear attraction integrals (WK/UniKA/26-03-2004).
+C
+            IF (LUPROP .GT. 0) CALL GPCLOSE(LUPROP,'KEEP')
+            CALL GPOPEN(LUPROP,'AOPROPER',
+     &                  'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
+            IF (FNDLB2('DERXXPVP',RTNLBL,LUPROP)) THEN
+                CALL READT(LUPROP,NNBASX,STHMAT(1,4))
+            ELSE
+                CALL QUIT('Integrals with label ''DERXXPVP'' '//
+     &                    'not found on file ''AOPROPER''.')
+            END IF 
+            FF = DPTFAC * ALPHA2
+            CALL PKSYM1(STHMAT(1,4),STHMAT(1,4),NAOS,MAXREP+1,2)
+            CALL DAXPY(NNBASX,FF,STHMAT(1,4),1,STHMAT(1,2),1)
+         END IF 
 C
 C        Write undifferentiated one-electron integrals
 C

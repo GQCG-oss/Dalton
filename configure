@@ -231,28 +231,21 @@ elif [ $WHICH = 'hp' ]; then
     spec=`uname -m`
     if [ $spec = '9000/800' ]; then
       bit='64'
-      arch='hpux'
-    elif [ $spec = "ia64" ]; then
-      bit='64'
-      arch='ia64/hpux'
     else
       bit='32'
-      arch='hpux'
     fi
-    if [ $arch = "hpux" ]; then
-       answer=
-       while [ "$answer" != "y" -a "$answer" != "n" ]
-       do
-         $ECHO "This appears to be a $bit-bit architecture. Is this correct? [y/n] \c"
-         read answer
-       done
-       if [ "$answer" = "n" ]; then
-         if [ $bit = '64' ]; then
-           bit='32'
-         else
-           bit='64'
-         fi
-       fi
+    answer=
+    while [ "$answer" != "y" -a "$answer" != "n" ]
+    do
+      $ECHO "This appears to be a $bit-bit architecture. Is this correct? [y/n] \c"
+      read answer
+    done
+    if [ "$answer" = "n" ]; then
+      if [ $bit = '64' ]; then
+        bit='32'
+      else
+        bit='64'
+      fi
     fi
 fi
 
@@ -753,7 +746,7 @@ case "$WHICH" in
 		       cpp=${cpp}",-DNO_F90"
 		   fi
             esac
-            copt="$copt -I../include -DSYS_AIX -D_LARGE_FILES -qlanglvl=stdc99 -DRESTRICT=restrict -O3 -qarch=auto -qtune=auto"
+            copt="$copt -I../include -DSYS_AIX -D_LARGE_FILES -qlanglbl=stdc99 -DRESTRICT=restrict -O3 -qarch=auto -qtune=auto"
             opt='-O3 -qstrict -qarch=auto -qtune=auto -qmaxmem=-1 -bmaxdata:0x40000000 -bmaxstack:0x10000000 -qextname';;
     iris4d) case $opsys in
                IRIX64) opt='-O2 -64 -mips4 -G 0 -woff 2290 -OPT:Olimit=0'
@@ -857,28 +850,22 @@ case "$WHICH" in
           fi
           inc='-I../include'
           cpp=${cpp}" -DIMPLICIT_NONE"
-          if [ $arch = "ia64/hpux" ]; then
-             opt='+O2 +U77 +Onolimit +Oparmsoverlap +ppu'
-             LIB="$LIB"
-             copt='+O2 +Onolimit +Oparmsoverlap'
+          if [ $F77 = 'f90' ]; then
+              case $bit in
+                  64) opt='+DA2.0W +O2 +U77 +Onolimit +Ofastaccess +ppu'
+                      LIB="$LIB +U77 +DA2.0W"
+                      copt='+DA2.0W +O3 +Onolimit +Ofastaccess';;
+                  *)  opt='+DA2.0 +O2 +U77 +Onolimit +Ofastaccess'
+                      LIB="-lV7 +U77 $LIB"
+                      copt='+DA2.0 +O3 +Onolimit +Ofastaccess';;
+              esac
           else
-             if [ $F77 = 'f90' ]; then
-                 case $bit in
-                     64) opt='+DA2.0W +O2 +U77 +Onolimit +Ofastaccess +ppu'
-                         LIB="$LIB +U77 +DA2.0W"
-                         copt='+DA2.0W +O3 +Onolimit +Ofastaccess';;
-                     *)  opt='+DA2.0 +O2 +U77 +Onolimit +Ofastaccess'
-                         LIB="-lV7 +U77 $LIB"
-                         copt='+DA2.0 +O3 +Onolimit +Ofastaccess';;
-                 esac
-             else
-                 opt='+O2 +U77 +E4 +E5'
-                 safe_opt='+O1 +U77 +E4 +E5'
-                 copt='-D_FILE_OFFSET_BITS=64 +O3'
-                 LIB="-lV7 +U77 $LIB"
-             fi
+              opt='+O2 +U77 +E4 +E5'
+              safe_opt='+O1 +U77 +E4 +E5'
+              copt='-D_FILE_OFFSET_BITS=64 +O3'
+              LIB="-lV7 +U77 $LIB"
           fi
-          copt=${copt}" -AC99"
+          copt="copt -AC99"
           cpp=${cpp}${f90yes};;
      linux-alpha)  
 	  if [ "$mesp" = "dummy" ]; then

@@ -196,6 +196,8 @@ C
 #include <huckel.h>
 #include <cbihr1.h>
 #include <elweak.h>
+#include <drw2el.h>
+#include <codata.h>
 #include <orgcom.h>
 #include <gtensor.h>
 C
@@ -1877,7 +1879,7 @@ c
  80   CONTINUE
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      'Calculation of DPT correction to dipole (1)'
-         INTTYP = 83
+         INTTYP = 83 
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
          CALL SETATM(WORK(KATOM),NATOM,INTTYP)
@@ -1956,6 +1958,31 @@ C
      &            NPQUAD,LABINT,INTTYP,INTREP,NOPTYP,NBAST,ANTI,
      &            IORDER,WORK(KATOM),INTADR,TRIANG,NATOM,SQUARE,
      &            IPRINT,DOINT)
+C
+      IF (FINDPT .AND. .NOT. NOPICH) THEN 
+       IF (INTTYP .EQ. 2) THEN
+         CALL MEMGET('REAL',LSOINT,NOPTYP*NELMNT,WORK,KFREE,LFREE)
+         CALL DCOPY(NOPTYP*NELMNT,WORK(KSOINT),1,WORK(LSOINT),1)
+         GOTO 80
+       ELSE IF (INTTYP .EQ. 83 .AND. WORD .EQ. 'DIPLEN ') THEN
+         INTTYP = 2
+         NOPTYP = 3
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         LABINT(1) = 'XDIPLEN '
+         LABINT(2) = 'YDIPLEN '
+         LABINT(3) = 'ZDIPLEN '
+         INTREP(1) = ISYMAX(1,1)
+         INTREP(2) = ISYMAX(2,1)
+         INTREP(3) = ISYMAX(3,1)
+         ANTI = .FALSE.
+         FF = DPTFAC * ALPHA2
+         DO I = 0, NOPTYP*NELMNT - 1
+           WORK(KSOINT+I) = FF * WORK(KSOINT+I)
+           WORK(KSOINT+I) = WORK(KSOINT+I) + WORK(LSOINT+I)
+         END DO
+       END IF
+      END IF
 C
 C     *********************************************************
 C     ***** Transform from Cartesian to spherical moments *****

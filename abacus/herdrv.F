@@ -207,8 +207,8 @@ C
 #include <efield.h>
 C     NTABLE has been increased from 102 to 105 (WK/UniKA/04-11-2002).
 cLig <> changed NTABLE from 111 to 112
-C     NTABLE has been increased 113 (WK/UniKA/09-03-2004).
-      PARAMETER (NDIR = 7, NTABLE = 113)
+C     NTABLE has been increased 114 (WK/UniKA/09-03-2004).
+      PARAMETER (NDIR = 7, NTABLE = 114)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, D10 = 1.0D1)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -264,7 +264,7 @@ cLig <> added RANGMO and RPSO
      &             '.QDBINT', '.QDBTST', '.R12   ', '.R12EXP',
      &             '.AUXBAS', '.NOTV12', '.R12INT', '.U12INT',
      &             '.U21INT', '.DCCR12', '.RANGMO', '.RPSO  ',
-     &             '.DPTPXP'/
+     &             '.DPTPXP', '.NOPICH'/
 C
 C     Check if input has been processed earlier.
 C
@@ -329,7 +329,7 @@ cLig <> added go to 211 and 212
      &                181,182,183,184,185,186,187,188,189,190,
      &                191,192,193,194,195,196,197,198,199,200,
      &                201,202,203,204,205,206,207,208,209,210,
-     &                211,212,213), I
+     &                211,212,213,214), I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -781,10 +781,6 @@ C&&& Nuclear model
             DPTPOT = .TRUE.
             FINDPT = .TRUE.
             READ (LUCMD, *) DPTFAC
-            NFIELD = NFIELD + 1
-            IF (NFIELD .GT. MXFELT) CALL QUIT('Too many finite fields')
-            EFIELD(NFIELD) = DPTFAC * ALPHAC**2
-            LFIELD(NFIELD) = 'DERXXPVP'
             GOTO 100 
  198     CONTINUE
             READ (LUCMD, *) X10FNP
@@ -875,6 +871,9 @@ cLig >> added what to do for RANGMO and RPSO options
  213     CONTINUE
             PXPINT = .TRUE.
             ONEPRP = .TRUE.
+            GO TO 100
+ 214     CONTINUE
+            NOPICH = .TRUE.
             GO TO 100
 cLig <<
       ELSE IF (PROMPT .EQ. '*') THEN
@@ -1746,22 +1745,6 @@ C     Contract any primitive Douglas-Kroll integrals if necessary
 C     
          IF (DKTRAN .AND. .NOT. PVPINT) THEN
             CALL DKCONT(PROPRI,IPRONE,WORK,LWORK)
-         END IF
-C
-C        ***********************************************
-C        ***** Overlap, kinetic energy and nuclear *****
-C        ***** attraction integrals                *****
-C        ***********************************************
-C
-C        Integrals written on LUONEL -
-C        Some previous information has been written in READIN
-C
-         IF (HAMILT) THEN
-            CALL TIMER('START ',TIMSTR,TIMEND)
-            CALL ONEDRV(WORK,LWORK,IPRONE,.FALSE.,0,.FALSE.,.TRUE.,
-     &                  .TRUE.,.FALSE.,.FALSE.,.FALSE.)
-            CALL TIMER('ONEDRV',TIMSTR,TIMEND)
-            CALL FLSHFO(LUPRI)
          END IF
 C
 C        *****************************************
@@ -2636,6 +2619,22 @@ C
             END IF
 cLig <<
          END IF
+C
+C        ***********************************************
+C        ***** Overlap, kinetic energy and nuclear *****
+C        ***** attraction integrals                *****
+C        ***********************************************
+C
+C        Integrals written on LUONEL -
+C        Some previous information has been written in READIN
+C
+         IF (HAMILT) THEN
+            CALL TIMER('START ',TIMSTR,TIMEND)
+            CALL ONEDRV(WORK,LWORK,IPRONE,.FALSE.,0,.FALSE.,.TRUE.,
+     &                  .TRUE.,.FALSE.,.FALSE.,.FALSE.)
+            CALL TIMER('ONEDRV',TIMSTR,TIMEND)
+            CALL FLSHFO(LUPRI)
+         END IF
       END IF
 C
 C     Determine number of different integrals in R12 method (WK/UniKA/19-11-2002).
@@ -3054,6 +3053,7 @@ C#endif
       PVPINT = .FALSE.
       POTENE = .FALSE.
       PXPINT = .FALSE.
+      NOPICH = .FALSE.
       PRTHRS = 1.0D-10
       NPQUAD = 40
       ALLATM = .TRUE.

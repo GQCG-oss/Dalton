@@ -75,6 +75,9 @@ C
             IF (IPRINT .GE. 5) WRITE (LUPRI,'(/A)') ' Overlap matrix'
             WRITE (LUONEL) LAB123, TITLES
          ELSE IF (ITYPE .EQ. 2) THEN
+            IF (FINDPT) WRITE (LUPRI,'(/A)') 
+     &      ' One-electron Hamiltionian is changed by'//
+     &      ' direct perturbation theory (DPT) '
             IF (IPRINT .GE. 5)
      &         WRITE (LUPRI,'(/A)')' One-el. Ham. matrix'
             WRITE (LUONEL) LAB123, TITLEH

@@ -1736,7 +1736,7 @@ C
      *      '     cm-1:',XTKAYS*FREQ(IFREQ),
      *      '     e.V.:',XTEV*FREQ(IFREQ),
      *      '  kJ/mol.:',XKJMOL*FREQ(IFREQ),
-     *      '     nm  :',XTNM/FREQ(IFREQ)
+     *      ' Angstrom:',1.0D8/(XTKAYS*FREQ(IFREQ))
          END IF
 
          DO 400 IOP = 1,NOP
