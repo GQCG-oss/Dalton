@@ -17,8 +17,8 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > $0.info <<%EOF%
-   $0
+cat > rsp_socorr2.info <<%EOF%
+   rsp_socorr2
    ----------
    Molecule:         HeH+
    Wave Function:    SCF
@@ -29,7 +29,7 @@ cat > $0.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > $0.mol <<'%EOF%'
+cat > rsp_socorr2.mol <<'%EOF%'
 INTGRL
 Calculation of spin-orbit corrections to spin-spin coupling constants
 
@@ -49,7 +49,7 @@ F   1   1
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > $0.dal <<'%EOF%'
+cat > rsp_socorr2.dal <<'%EOF%'
 **DALTON INPUT
 .RUN RESPONSE
 **INTEGRALS
@@ -116,8 +116,8 @@ X2SPNORB
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >$0.check
-cat >>$0.check <<'%EOF%'
+echo $CHECK_SHELL >rsp_socorr2.check
+cat >>rsp_socorr2.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
