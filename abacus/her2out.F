@@ -1551,7 +1551,7 @@ c        NBUFX(0) = 0
          IF (INDA .NE. 0) WRITE (LUINTR) INDA
          WRITE (LUAORC(0),REC=NBUFX(0)) BUF,IBUF,ICOUNT
 C
-C        IF (IPRINT .GE. 6) THEN
+         IF (IPRINT .GE. 6) THEN
 C        if (bph2oo) then
             WRITE (LUPRI,'(2X,A,I5,A/)')
      &         'Integral buffer #',NBUFX(0),' has been written.'
@@ -1571,7 +1571,7 @@ C        if (bph2oo) then
                WRITE (LUPRI,'(10X,A,2X,4I4,5X,1P,D16.8)')
      &                      ' ## ', I, J, K, L, BUF(INT)
   100       CONTINUE
-C        END IF
+         END IF
          ICOUNT = 0
       ELSE
          IF (INDA .NE. 0) THEN
@@ -1581,7 +1581,7 @@ C        END IF
             CALL QUIT('Error in UN2WRN')
          END IF
 C
-C        IF (IPRINT .GE. 6) THEN
+         IF (IPRINT .GE. 6) THEN
 C        if (bph2oo) then
             IF (ICOUNT .GT. 0) THEN
                WRITE (LUPRI,'(2X,A,I5,A/)')
@@ -1603,7 +1603,7 @@ C        if (bph2oo) then
      &                         ' ## ', I, J, K, L, BUF(INT)
   200          CONTINUE
             END IF
-C        END IF
+         END IF
 C
 C        Statistics
 C

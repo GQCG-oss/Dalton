@@ -103,10 +103,6 @@ C
       LOGICAL CICLC,HFCLC,TRPCLC,EXCLC,OOTV,FLAGSV,EX
 C
       CALL QENTER('ABARSP')
-      write(lupri,*)' FABRHS',FABRHS
-      write(lupri,*)' dodrct',dodrct
-      write(lupri,*)' xxx1'
-      call flshfo(lupri)
       TIMRSP = SECOND()
       IPRRSP = IPRCLC - 2
       IF (IPRRSP .GE. 0) THEN
@@ -195,23 +191,13 @@ C
       ENDIF
 C
 C
-      write(lupri,*)' xxx2a'
-      call flshfo(lupri)
-      write(lupri,*)'nexval',nexval
-      call flshfo(lupri)
       IF (NEXVAL.GT.0) CALL RSPSET
-      write(lupri,*)' xxx3'
-      call flshfo(lupri)
 C
       CALL FLSHFO(LUPRI)
 C
 C     PERFORM INTEGRAL TRANSFORMATION
 C
-      write(lupri,*)' xxx1'
-      call flshfo(lupri)
       IF (FABRHS) THEN
-      write(lupri,*)' xxx3a'
-      call flshfo(lupri)
          KCMO   = 1
          KWTRA  = KCMO   + NCMOT
          LWTRA  = LWRK   - KWTRA
@@ -247,16 +233,12 @@ cs
 C
 C     ORGANIZE CALCULATION FOR EACH PERTURBATION OPERATOR
 C
-      write(lupri,*)' xxx3'
-      call flshfo(lupri)
       IF (NEXVAL.EQ.0) THEN
          KWSYM = 1
          LWSYM = LWRK  - KWSYM
          IF (LWSYM.LT.0) CALL ERRWRK('ABARSP  ',KWSYM,LWRK)
          CALL RSPSYM(WRK(KWSYM),LWSYM)
       END IF
-      write(lupri,*)' xxx2'
-      call flshfo(lupri)
 C
 C     ALLOCATE WORK SPACE FOR MATRICES THAT WILL BE KEPT DURING THE
 C     WHOLE RESPONSE CALCULATION AND READ IN THE MATRICES
@@ -295,8 +277,6 @@ C
 C
 C     For SOPPA :
 C
-      write(lupri,*)' xxx3'
-      call flshfo(lupri)
       IF (SOPPA) THEN
 C
 C        Initialize XINDX
@@ -360,8 +340,6 @@ C        CALL RSPDM(ILSYM,IRSYM,NCLDIM,NCRDIM,CL,CR, RHO1,RHO2,
 C    *              ISPIN1,ISPIN2,TDM,NORHO2,XNDXCI,WORK,
 C    *              KFREE,LFREE)
 C
-      write(lupri,*)' xxx4'
-      call flshfo(lupri)
          IF (TRPLET) THEN
             ISPIN1 = 1
             ISPIN2 = 1
@@ -436,8 +414,6 @@ C      ELSE
 C
 C       DEFINE VARIABLES THAT DEPEND ON SYMMETRY
 C
-      write(lupri,*)' xxx5'
-      call flshfo(lupri)
         CALL RSPVAR(WRK(KUDV),WRK(KFOCK),WRK(KFC),WRK(KFV),
      *              WRK(KFCAC),WRK(KH2AC),WRK(KINDX),WRK(KWRK1),LWRK1)
 C       CALL RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
@@ -453,8 +429,6 @@ C
 C       ... FIND EXCITATION ENERGIES AND TRANSITION MOMENTS
 C
            IF (IPRRSP .GT. 0) TIMPP = SECOND()
-      write(lupri,*)' xxx6'
-      call flshfo(lupri)
            CALL RSPLEX(LUSOVE,EXVAL,
      *                 WRK(KCMO),WRK(KUDV),WRK(KPVX),
      *                 WRK(KFC),WRK(KFV),WRK(KFCAC),WRK(KH2AC),
@@ -468,14 +442,10 @@ C
 C
         ELSE
            IF (IPRRSP .GT. 0) TIMLR = SECOND()
-      write(lupri,*)' xxx7'
-      call flshfo(lupri)
            CALL RSPLLE(LUGDVE,LUSOVE,LUREVE,NABAOP,NABATY,LABEL,
      *                 WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KFC),WRK(KFV),
      *                 WRK(KFCAC),WRK(KH2AC),WRK(KINDX),WRK(KFOCK),
      *                 WRK(KWRK1),LWRK1)
-      write(lupri,*)' xxx8'
-      call flshfo(lupri)
            IF (IPRRSP .GT. 0) THEN
               TIMLR = SECOND() - TIMLR
               WRITE (LUPRI,'(//A,F10.2,A,I2)')
@@ -491,8 +461,6 @@ C
 C
   100 CONTINUE
 C
-      write(lupri,*)' xxx9'
-      call flshfo(lupri)
       CALL GPCLOSE(LURSP3,'KEEP')
       CALL GPCLOSE(LURSP4,'DELETE')
       CALL GPCLOSE(LURSP5,'KEEP')
