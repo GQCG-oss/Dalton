@@ -363,7 +363,23 @@ do
           myprint "evaluate output file $logfile:"
           myprint "-----------------------------------------------------------"
           checkout=`$checkfile $logfile | tee -a $listing`
-          test x$failed = xtrue && checkout="TEST FAILED ABNORMALLY"
+
+          # Successful tests report "TEST ENDED PROPERLY" unless
+          # the test is meant to return non-zero exit code.  These
+          # return "TEST ENDED AS EXPECTED".  In the latter case, we
+          # change it to "TEST ENDED PROPERLY" if the exit code was
+          # nonzero, otherwise we return "DALTON SCRIPT ERROR"
+
+          if [ "$checkout" = "TEST ENDED PROPERLY" ]; then
+              [ "$failed" = "true" ] && checkout="TEST FAILED ABNORMALLY"
+          elif [ "$checkout" = "TEST ENDED AS EXPECTED" ]; then
+              echo "checkout=$checkout, failed=$failed"
+              if [ "$failed" = "true" ]; then
+                  checkout="TEST ENDED PROPERLY"
+              else
+                  checkout="DALTON SCRIPT ERROR"                  
+              fi
+          fi
           if [ "$benchmark" = "true" ]; then
               if [ `$GREP "CPU  time used in DALTON" $logfile | wc -l` = 1 ]; then
                   CPU_usage=`$GREP "CPU  time used in DALTON" $logfile | sed s/">>>> Total CPU  time used in DALTON\:"/""/`
