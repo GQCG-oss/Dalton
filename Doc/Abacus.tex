@@ -25,7 +25,9 @@ linear response\index{frequency}\index{linear response} calculations.
 At present this only  
 includes the frequency dependent polarizability\index{polarizability} as well as directives
 controlling the calculation of Raman related properties\index{Raman
-intensity}\index{Raaman optical activity}\index{ROA}.
+intensity}\index{Raman optical activity}\index{ROA}. Combined with the 
+keyword \Key{SOPPA} it invokes a SOPPA\index{SOPPA} calculation of the 
+frequency dependent polarizability.
 
 \item[\Key{CAVORG}]\verb| |\newline
 \verb|READ (LUCMD,*) (CAVORG(ICOOR), ICOOR = 1, 3)|
@@ -76,7 +78,10 @@ response}\index{single residue} as described by
 Olsen and J\o rgensen \cite{jopjjcp82}. It also calculates closely
 related properties like transition moments\index{transition
 moment}\index{rotatory strength} and 
-rotatory strengths.
+rotatory strengths. Combined with the 
+keyword \Key{SOPPA} it invokes a SOPPA\index{SOPPA} calculation of electronic
+excitation energies and transition moments.
+
 
 \item[\Key{EXPFCK}] Invokes the simultaneous calculation of
 two-electron expectation values and derivative Fock-matrices. This is
@@ -170,6 +175,9 @@ mass\index{center of mass} of the molecule.
 This origin can be changed by the two keywords \Key{GAUGEO} and
 \Key{NOCMC}. This will of course not affect the total magnetizability,
 only the size of the dia- and paramagnetic terms.
+Combined with the keyword \Key{SOPPA} it invokes a SOPPA\index{SOPPA} 
+calculation of the magnetizability and the rotational {\em g} tensor. London 
+orbitals are automatically disabled in SOPPA\index{SOPPA} calculations.
 
 %\item[\Key{MCD}] Requests the calculation of Magnetic Circular
 %Dichroism~\cite{}.
@@ -195,6 +203,9 @@ the vibrational wave function has lower symmetry than the electronic
 wave function, the program will give wrong results unless the symmetry
 of the electronic wave function is reduced to that of the vibrational
 part.
+Combined with the keyword \Key{SOPPA} it invokes a SOPPA\index{SOPPA} 
+calculation of the magnetizability and the rotational {\em g} tensor. London 
+orbitals are automatically disabled in SOPPA\index{SOPPA} calculations.
 
 \item[\Key{MOLGRA}] Invokes the calculation of the analytical
 molecular gradient as \index{gradient}described in Ref.~\cite{tuhjahjajpjjcp84}.
@@ -360,6 +371,9 @@ This origin can be changed by the two keywords \verb|.GAUGEO| and
 \verb|.NOCMC |. This choice of gauge origin will not affect
 the final shieldings if London orbitals are used, only the size of the
 dia- and paramagnetic contributions.
+Combined with the keyword \Key{SOPPA} it invokes a SOPPA\index{SOPPA} 
+calculation of the magnetizability and the rotational {\em g} tensor. London 
+orbitals are automatically disabled in SOPPA\index{SOPPA} calculations.
 
 \item[\Key{SOPPA}] Indicates that the requested molecular properties
 be calculated using the second-order polarization-propagator

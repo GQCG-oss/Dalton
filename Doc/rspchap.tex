@@ -74,6 +74,9 @@ cubic response functions.
 Poul J{\o}rgensen, Hans J{\o}rgen Aagaard Jensen, and Jeppe Olsen, \newblock {\em J. Chem. Phys.} {\bf 89}, \hspace{0.25em}3654, (1988)
 \item Triplet linear response:
 Jeppe Olsen, Danny L. Yeager, and Poul J{\o}rgensen, \newblock {\em J. Chem. Phys.} {\bf 91}, \hspace{0.25em}381, (1989)
+\item SOPPA linear response:
+Martin J. Packer, Erik K. Dalskov, Thomas Enevoldsen, Hans J{\o}rgen Aagaard Jensen and Jens Oddershede, 
+\newblock {\em J. Chem. Phys.}, {\bf 105}, \hspace{0.25em}5886, (1996)
 \end{list}
 }}
 \end{center}
@@ -99,6 +102,33 @@ atomic units) will be:
 \end{verbatim}
 The {\tt .DIPLEN} keyword has the effect of defining the $A$ and $B$
 operators as all components of the electric dipole operator.
+
+A Second Order Polarization Propagator Approximation (SOPPA)\index{SOPPA} 
+cite{esnpjjodjcp73,jodpjdycpr2,mjpekdtehjajjojcp} calculation of linear 
+response functions
+can be invoked if the additonal keyword \Key{SOPPA} is specified in the 
+\Sec{*RESPONSE} input module and an MP2 calculation is requested by the 
+keyword \Key{MP2} in the \Sec{*WAVE FUNCTIONS} input module.  A typical input 
+for SOPPA dynamic polarizability tensors  will be:
+\begin{verbatim}
+**DALTON INPUT
+.RUN RESPONSE
+**WAVE FUNCTIONS
+.HF
+.MP2
+**RESPONSE
+.SOPPA
+.NOITRA
+*LINEAR
+.DIPLEN
+.FREQUENCY
+ 3
+ 0.0 0.5 1.0
+*END OF INPUT
+\end{verbatim}
+The {\tt .NOITRA} keyword has the effect that the transformation of the two 
+electron integrals necessary for a MP2 and SOPPA calculation is only perfomed
+once in the \Sec{*WAVE FUNCTIONS} module.
 
 The linear response function contains a wealth of
 information about the spectrum of a given Hamiltonian. 
