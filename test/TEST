@@ -171,20 +171,20 @@ do
   myprint "###########################################################"
   myprint "start now with test $item:"
   myprint "-----------------------------------------------------------"
-  chmod +x $item
-  $item
+  chmod +x ./$item
+  ./$item
 # Check if this is a multistep job
   numsteps=1
-  if [ -e $item'__'1.dal ]; then
+  if [ -e ./$item'__'1.dal ]; then
       multi=1
-      numsteps=`ls $item\_\_[0-9].dal | wc -l`
+      numsteps=`ls ./$item\_\_[0-9].dal | wc -l`
       myprint "This is a multi-step job consisting of $numsteps steps"
-      rm -f $item'__'[0-9]'_'$item.log
-      chmod +x $item'__'[0-9].check
+      rm -f ./$item'__'[0-9]'_'$item.log
+      chmod +x ./$item'__'[0-9].check
   else
       multi=0
-      rm -f $item.log
-      chmod +x $item.check
+      rm -f ./$item.log
+      chmod +x ./$item.check
   fi
 # Multi-step tests loop over the different jobsteps, regular tests just
 # go through this once
@@ -199,15 +199,15 @@ do
           fi
           molfile=$item
           dalfile=$item'__'$step
-          logfile=$item'__'$step'_'$item.log
-          checkfile=$item'__'$step.check
-          reffile=$item'__'$step.ref
+          logfile=./$item'__'$step'_'$item.log
+          checkfile=./$item'__'$step.check
+          reffile=./$item'__'$step.ref
       else
           molfile=$item
           dalfile=$item
-          logfile=$item.log
-          checkfile=$item.check
-          reffile=$item.ref
+          logfile=./$item.log
+          checkfile=./$item.check
+          reffile=./$item.ref
       fi
 # If it's a reftest, no calculation uis performed
       if [ "$reftest" = "true" ]; then

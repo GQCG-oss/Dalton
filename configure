@@ -74,6 +74,7 @@ if [ -z "$1" ]; then
 		ARCH="-linux"
 	    fi ;;
 	OSF1 ) ARCH="-dec-alpha";;
+ 	HP-UX ) ARCH="-hp";;
     * ) $ECHO "Error: No architecture specified.\nPlease enter architecture on command line as 'configure -architecture'\n\nThe following architectures are allowed:\n    $arclist"
         exit;;
     esac
@@ -879,6 +880,7 @@ INCLUDE_DIR   = $inc $parinc
 LIB_LIST      = $LIB
 INSTALLDIR    = $INSTALL_DIR
 PDPACK_EXTRAS = $pdpackextras
+AR            = ar
 ARFLAGS       = rvs
 #
 default : $def
