@@ -91,6 +91,7 @@ C  /* Deck fndsym */
      &                         NONTYP,NSYMOP,NONT,KATOM,KASYM,LENTMP,
      &                         CLASS,VRML,WORK,LWORK)
 #include <implicit.h>
+#include <maxaqn.h>
 #include <mxsymm.h>
 #include <mxcent.h>
 #include <nuclei.h>
@@ -112,11 +113,11 @@ C ***********************************************************
          DIMENSION ATMARR(6,0:MXCENT), DRTAXS(6,0:MAXAXS)
          DIMENSION DIRAXS(6,0:MAXAXS), DMRPLN(6,0:MAXMIR)
          DIMENSION TMPARR(7,0:LENTMP), WORK(LWORK)
-         DIMENSION TMP2AR(6,0:MXCENT), NONT(KATOM)
-         LOGICAL VRML
+         DIMENSION TMP2AR(6,0:MXCENT), NONT(KATOM), JCO(MXAQN)
+         LOGICAL VRML, ADDSYM, DOCART, DOOWN, AUTOSY, NOSYM
          PARAMETER (D0 = 0.0D0)
-         CHARACTER*1 KASYM(3,3), CLASS*15, TEXT*41
-         CHARACTER SYMM*9, TMPLN*80
+         CHARACTER*1 KASYM(3,3), CLASS*15, TEXT*41, ID3, CRT
+         CHARACTER SYMM*9, TMPLN*80, BSNM*80
          I = 1
 C ::: IPRTHR - Print level threshold for verbose output. :::
          IPRTHR = 7
@@ -218,8 +219,27 @@ C ::: If there's any Aangstroem mark, it's removed.    :::
          I = 4
          IF (BASIS) I = 5
          TMPLN = MLINE(I)
-         WRITE(TMPLN(10:10), '(I1)') NSYMOP
-         WRITE(TMPLN(11:20), '(A9,A1)') SYMM, ' '
+         IF (INDEX(TMPLN,'Ato') .EQ. 0) THEN
+            WRITE(TMPLN(10:10), '(I1)') NSYMOP
+            WRITE(TMPLN(11:20), '(A9,A1)') SYMM, ' '
+         ELSE
+            DOCART = .FALSE.
+            DOOWN = .FALSE.
+            CALL LINE4(TMPLN,NONTYP,NSMOP2,CRT,KCHARG,THRS,ADDSYM,KASYM,
+     &                 ID3,DOCART,DOOWN)
+            AUTOSY = .FALSE.
+            NOSYM = .FALSE.
+            IWHERE = 1
+            DO I2 = 1, 3
+               DO J2 = 1, 3
+                  KASYM(J2,I2) = SYMM(IWHERE:IWHERE)
+                  IWHERE = IWHERE + 1
+               END DO
+            END DO
+            ID3 = ' '
+            CALL LINE4W(TMPLN,NONTYP,NSYMOP,KCHARG,THRS,AUTOSY,NOSYM,
+     &                  KASYM,ID3,DOCART,DOOWN)
+         END IF
          MLINE(I) = TMPLN
          IF (NSYMOP .EQ. 0) THEN
             WRITE(LUPRI, '(/1X,A)') 'No symmetry elements were found.'
@@ -292,7 +312,14 @@ C ::: Finally the number of atoms are updated. :::
          DO 500 K = 1, NONTYP
             NC = NCLINE(I) - 1
             TMPLN = MLINE(NC)
-            WRITE(TMPLN(12:15),'(I4)') NONT(K)
+            IF (INDEX(TMPLN,'Cha') .EQ. 0) THEN
+               WRITE(TMPLN(12:15),'(I4)') NONT(K)
+            ELSE
+               CALL LINE5(TMPLN,Q,NONT2,MBSI,IQM,JCO,MXAQN,BASIS,
+     &                    ATOMBA,BSNM)
+               CALL LINE5W(TMPLN,Q,NONT(K),MBSI,ATOMBA,BASIS,BSNM,
+     &                     IQM,JCO,MXAQN)
+            END IF
             MLINE(NC) = TMPLN
  510        CONTINUE
             IF (J .EQ. NINT(ATMARR(4,I))) THEN

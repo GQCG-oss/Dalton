@@ -1256,7 +1256,13 @@ C
       NTYPE  = 3
       LASTE  = .FALSE.
       NOSYM  = .FALSE.
-      IF (MLINE(NMLAU)(10:10).EQ.'0') NOSYM = .TRUE.
+      IPOS = INDEX(MLINE(NMLAU),'Ato')
+      IF (IPOS .EQ. 0) THEN
+         IF (MLINE(NMLAU)(10:10).EQ.'0') NOSYM = .TRUE.
+      ELSE
+         IPOS = INDEX(MLINE(NMLAU),'Nos')
+         IF (IPOS .NE. 0) NOSYM = .TRUE.
+      END IF
 C
       KIDTMP = 1
       KIRPDG = KIDTMP + NMORDR
@@ -1961,18 +1967,21 @@ C  /* Deck upcomb */
 #include <maxorb.h>
 C
       PARAMETER (D100 = 100.0D0, THRSH = 1.0D-12)
+#include <cbirea.h>
 #include <molinp.h>
 #include <nuclei.h>
 #include <trkoor.h>
 #include <symmet.h>
 #include <numder.h>
 #include <inftap.h>
-      LOGICAL BIG, USED, LASTE
+      LOGICAL BIG, USED, LASTE, DOCART, DOOWN, AUTOSY, NOSYM, ADDSYM,
+     &        NEWINP, NEWATO
       CHARACTER*6 CHR
       CHARACTER*4 NAME
-      CHARACTER*80 MBKLIN
+      CHARACTER*80 MBKLIN, BSNM
       CHARACTER*11 TMPTXT
-      DIMENSION MBKLIN(NMBKLN)
+      CHARACTER*1 KASYM(3,3), ID3, CRT
+      DIMENSION MBKLIN(NMBKLN), JCO1(MXAQN)
       DIMENSION COOR(3,NCOOR/3), NATOM(NUCIND), NLINE(NUCIND),
      &          NATIND(NUCIND)
 #include <ibtfun.h>
@@ -1988,10 +1997,23 @@ C
          NADD   = 0
          IATOM  = 0
          NCLAST = 0
-         IF (MLINE(NMLAU)(10:10).EQ.'0') THEN
-            MLINE(NMLAU)(20:20) = ' '
+         IPOS = INDEX(MLINE(NMLAU),'Ato')
+         IF (IPOS .EQ. 0) THEN
+            IF (MLINE(NMLAU)(10:10).EQ.'0') THEN
+               MLINE(NMLAU)(20:20) = ' '
+            ELSE
+               MLINE(NMLAU)(10:20) = '           '
+            END IF
          ELSE
-            MLINE(NMLAU)(10:20) = ' '
+            DOCART = .FALSE.
+            DOOWN = .FALSE.
+            CALL LINE4(MLINE(NMLAU),NONTYP,NSYMOP,CRT,KCHARG,THRS,
+     &                 ADDSYM,KASYM,ID3,DOCART,DOOWN)
+            AUTOSY = .TRUE.
+            NOSYM = .FALSE.
+            ID3 = ' '
+            CALL LINE4W(MLINE(NMLAU),NONTYP,NSYMOP,KCHARG,THRS,AUTOSY,
+     &                  NOSYM,KASYM,ID3,DOCART,DOOWN)
          END IF
          DO 200 ICENT = 1, NUCIND
             ISYM   = 0
@@ -2039,18 +2061,33 @@ C
 C
 C        Do a count of each type of atom....
 C
+         NEWINP = (INDEX(MLINE(NCLINE(1) - 1),'Cha') .NE. 0)
          KCENT2 = 0
          ICENT1 = 1
  500     CONTINUE
          ICENT1 = ICENT1 + KCENT2
          DO 700 ICENT2 = ICENT1+1, NUCIND
-            READ (MLINE(NCLINE(ICENT2)-1),'(A)') CHR
-            IF (CHR .EQ. '      ') THEN
+            IF (NEWINP) THEN
+               NEWATO = (INDEX(MLINE(NCLINE(ICENT2) - 1),'Cha') .NE. 0)
+            ELSE
+               READ (MLINE(NCLINE(ICENT2)-1),'(A)') CHR
+               NEWATO = (CHR .EQ. '      ')
+            END IF
+            IF (NEWATO) THEN
                NAT = 0
                DO 800 IC = ICENT1, ICENT2-1
                   NAT = NAT + NUCDEG(IC)
  800           CONTINUE
-               WRITE (MLINE(NCLINE(ICENT1)-1)(13:15),'(I3)') NAT
+               IF (NEWINP) THEN
+                  IF (MLINE(1)(1:5) .EQ. 'BASIS') BASIS  = .TRUE.
+                  IF (MLINE(1)(1:5) .EQ. 'ATOMB') ATOMBA = .TRUE.
+                  CALL LINE5(MLINE(NCLINE(ICENT1) - 1),Q1,NONT1,MBSI1,
+     &                       IQM1,JCO1,MXAQN,BASIS,ATOMBA,BSNM)
+                  CALL LINE5W(MLINE(NCLINE(ICENT1) - 1),Q1,NAT,MBSI1,
+     &                        ATOMBA,BASIS,BSNM,IQM1,JCO1,MXAQN)
+               ELSE
+                  WRITE (MLINE(NCLINE(ICENT1)-1)(13:15),'(I3)') NAT
+               END IF
                KCENT2 = ICENT2-ICENT1
                GOTO 500
             ELSE
@@ -2066,7 +2103,16 @@ C
          DO 1100 IC = KCENT1, NUCIND
             NAT = NAT + NUCDEG(IC)
  1100    CONTINUE
-         WRITE (MLINE(NCLINE(KCENT1)-1)(13:15),'(I3)') NAT
+         IF (NEWINP) THEN
+            CALL LINE5(MLINE(NCLINE(KCENT1) - 1),Q1,NONT1,MBSI1,IQM1,
+     &                 JCO1,MXAQN,BASIS,ATOMBA,BSNM)
+            CALL LINE5W(MLINE(NCLINE(KCENT1) - 1),Q1,NAT,MBSI1,ATOMBA,
+     &                  BASIS,BSNM,IQM1,JCO1,MXAQN)
+            BASIS  = .FALSE.
+            ATOMBA = .FALSE.
+         ELSE
+            WRITE (MLINE(NCLINE(KCENT1)-1)(13:15),'(I3)') NAT
+         END IF
       END IF
 C
 C     Punch MOLECULE input with updated coordinates to LUMOL

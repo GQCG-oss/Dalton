@@ -588,8 +588,11 @@ C                 specify axis that are reversed under the operation
 C       THRS    - integral threshold
 C******************************************************************************
       CALL RDLINE(LUINFO)
-      READ (MLINE(NMLINE),'(BN,A1,I4,I3,A2,10A1,D10.2,6I5)')
-     &     CRT,NONTYP,KCHARG,SYMTXT,((KASYM(I,J),I=1,3),J=1,3),ID3,THRS
+      NONTYP = 0
+      DOCART = .FALSE.
+      DOOWN = .FALSE.
+      CALL LINE4(MLINE(NMLINE),NONTYP,NSYMOP,CRT,KCHARG,THRS,ADDSYM,
+     &           KASYM,ID3,DOCART,DOOWN)
       IF (NONTYP.EQ.0) THEN
         WRITE (LUPRI,'(/A/A//A)')
      &    ' You have specified a molecule with zero atoms,',
@@ -606,16 +609,7 @@ C******************************************************************************
      &   '                   current maximum number ',KATOM
         CALL QUIT('Too many atomic types in .mol input')
       END IF
-C*****************************************************************************
-C Check integral threshold: THRS must be .gt. 0
-C       ( log(thrs*thrs) taken in oneint) (851005-hjaaj)
-C*****************************************************************************
-C
-      IF (MLINE(NMLINE)(21:30) .EQ. '          ') THEN
-C        nothing specified, default minimum value used
-         THRS = THRMIN
-Chj   ELSE IF (THRS .LE. D0) THEN
-      ELSE IF (THRS .LT. THRMIN) THEN
+      IF (THRS .LT. THRMIN) THEN
          WRITE (LUPRI,'(/2X,A)') '*** WARNING from READIN ***'
          WRITE (LUPRI,'(2(/2X,A,1P,D12.2))')
      &      'Threshold for discarding integrals was',THRS,
@@ -628,12 +622,9 @@ C*****************************************************************************
 C Check if symmetry is to be added automatically
 C       ADDSYM  - flag for automatic determination of symmetry
 C*****************************************************************************
-      ADDSYM = (SYMTXT .EQ. '  ')
       IF (.NOT. ADDSYM) THEN
-         READ(SYMTXT,'(I2)') NSYMOP
          NOADSY = .TRUE.
       ELSE
-         NSYMOP = 0
          NOADSY = .FALSE.
       END IF
       NMLAU = NMLINE
@@ -652,8 +643,6 @@ C*****************************************************************************
 C Process Cartesian to spherical or your own transformation
 C     note: SPHINP will read additional input lines if DOOWN true
 C*****************************************************************************
-      DOCART = CRT .EQ. 'C' .OR. CRT .EQ. 'c'
-      DOOWN  = CRT. EQ. 'X'
       CALL CRTEST(DOCART)
       CALL SPHINP(LUINFO,WORK,LWORK,DOOWN,MXSPD)
 C
@@ -821,6 +810,7 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
+#include <dummy.h>
 #include <pi.h>
 #include <mxcent.h>
 #include <maxorb.h>
@@ -836,7 +826,7 @@ C*****************************************************************************
      &          SEG(KBLOCK,2),
      &          ALPHA(KPRIM,KBLOCK,2),CPRIM(KPRIM,KPRIM,KBLOCK,2),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2)
-      CHARACTER SPDCAR*1,BSET*5,ZMATL*4
+      CHARACTER SPDCAR*1,BSET*5,ZMATL*4, BSNM*80
       DIMENSION IBLOCK(2)
 #include <molinp.h>
 #include <ccom.h>
@@ -885,6 +875,13 @@ C         JCO   - number of AO-blocks for each l-value
 C*****************************************************************************
 C
          CALL RDLINE(LUINFO)
+C
+C     New or old input?
+C
+         IF (INDEX(MLINE(NMLINE),'Cha') .NE. 0) THEN
+            CALL LINE5(MLINE(NMLINE),Q,NONT(I),MBSI,IQM(I,1),
+     &                JCO(1,I,1),KANG,BASIS,ATOMBA,BSNM)
+         ELSE
 C
 C        Test if Z-matrix for first line (I.eq.1):
 C
@@ -953,6 +950,10 @@ C           Put MBSI = 1 otherwise (WK/UniKA/04-11-2002).
      &                    Q,NONT(I),IQM(I,1),(JCO(J,I,1), J=1, IQM(I,1))
                MBSI = 1
             END IF
+         END IF
+C
+C     End of processing of old input format for line "5"
+C         
          END IF
 C        Check MBSI (WK/UniKA/04-11-2002).
          IF (LMULBS .AND. MBSI .LE. 0) CALL QUIT(
@@ -1052,7 +1053,21 @@ C
 C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
                  BASNAM = MULNAM(MBSI)
               ELSE IF (ATOMBA) THEN
-                 BASNAM = MLINE(NMLINE-NONT(I))(16:)
+                 IPOS = INDEX(MLINE(NMLINE-NONT(I)),'Bas')
+                 IF (IPOS .NE. 0) THEN
+                    IPOS2 = INDEX(MLINE(NMLINE-NONT(I))(IPOS:),'=')
+                    IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 6)) THEN
+                       WRITE (LUPRI,*) 'Incorrect input for '//
+     &                      'basis set name'
+                       WRITE (LUPRI,*) 'Format is "Basis=?"'
+                       CALL QUIT('Incorrect input for basis set name')
+                    ELSE
+                       BASNAM = MLINE(NMLINE-NONT(I))((IPOS+IPOS2):)
+                    END IF
+                 ELSE
+                    WRITE (LUPRI,'(A,I4)') 'No basis set given '//
+     &                   'for atom kind # ', I
+                 END IF
                  DO ILEN = 1, LEN(BASNAM)
                     IF (BASNAM(ILEN:ILEN) .NE. ' ') GO TO 33
                  END DO
@@ -1218,6 +1233,7 @@ C*****************************************************************************
 #include <cbirea.h>
 C
       LOGICAL ANG
+      CHARACTER*4 FRMT
 #include <gnrinf.h>
 #include <molinp.h>
 #include <ccom.h>
@@ -1246,18 +1262,31 @@ C           CORR - coordinates of symmetry independent center
 C*****************************************************************************
 C
          CALL RDLINE(LUINFO)
-         READ (MLINE(NMLINE),'(A4)') NAMN(NUCIND)
+         IPOS = INDEX(MLINE(NMLINE),' ')
+         IF (IPOS .LT. 2) THEN
+            WRITE (LUPRI,*) 'Atom name mast start in first column'
+            CALL QUIT('Error in placement of atom name. See output')
+         ELSE IF (IPOS .EQ. 2) THEN
+            FRMT = '(A1)'
+         ELSE IF (IPOS .EQ. 3) THEN
+            FRMT = '(A2)'
+         ELSE IF (IPOS .EQ. 4) THEN
+            FRMT = '(A3)'
+         ELSE
+            FRMT = '(A4)'
+         END IF
+         READ (MLINE(NMLINE),FRMT) NAMN(NUCIND)
 C        951115-hjaaj: NAMN() must never be read with free format
 C          (otherwise it will on e.g. AIX be filled with nulls:
 C           e.g. ' C  ' would become 'C\NULL\NULL\NULL'; and on
 C           e.g. IRIX free format read of char. var. is not defined).
 #if !defined (SYS_CRAY) && !defined (VAR_NOFREE) && !defined (SYS_T3D) && !defined (SYS_T90)
-         READ (MLINE(NMLINE)(5:80),*,ERR=101) (CORD(J,NUCIND),J = 1, 3)
+         READ (MLINE(NMLINE)(IPOS:80),*,ERR=101) (CORD(J,NUCIND),J=1,3)
          GOTO 104
-  101    READ (MLINE(NMLINE)(1:80),'(BN,4X,3F20.0)',ERR=102)
+  101    READ (MLINE(NMLINE)(IPOS:80),'(BN,3F20.0)',ERR=102)
      &        (CORD(J,NUCIND), J = 1,3)
          GO TO 104
-  102    READ (MLINE(NMLINE)(1:80),'(BN,4X,3F10.0)',ERR=103)
+  102    READ (MLINE(NMLINE)(IPOS:80),'(BN,3F10.0)',ERR=103)
      &           (CORD(J,NUCIND), J = 1,3)
          GO TO 104
   103    CONTINUE
@@ -1268,9 +1297,10 @@ C           e.g. IRIX free format read of char. var. is not defined).
          CALL QUIT('ERROR reading atomic coordinates in MOLECULE input')
   104    CONTINUE
 #else
-         ISTART = 5
+         ISTART = IPOS
          DO J = 1, 3
-           CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CORD(J,NUCIND),'REA')
+           CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CORD(J,NUCIND),'REA',
+     &                 IERR)
          END DO
 #endif
          IPOS = INDEX(MLINE(NMLINE),'Isotope=')
@@ -1285,6 +1315,29 @@ C           e.g. IRIX free format read of char. var. is not defined).
             WRITE(LUPRI,'(6X,A4,3F20.15)') NAMN(NUCIND),
      &          (CORD(J,NUCIND), J = 1,3)
          ENDIF
+C
+C     To avoid problems in later stages, we now rewrite the coordinates
+C     of the nuclei in traditional Dalton format, with 4 characters for the
+C     name of the atom
+C
+         IF (IPOS .EQ. 0) THEN
+            WRITE (MLINE(NMLINE),'(A4,3F20.10,2X,A14)') NAMN(NUCIND),
+     &           (CORD(J,NUCIND),J = 1, 3), '                '
+         ELSE
+            IF (MASSNM .LT. 10) THEN
+               WRITE (MLINE(NMLINE),'(A4,3F20.10,A10,I1,A5)') 
+     &              NAMN(NUCIND),(CORD(J,NUCIND),J = 1, 3), 
+     &              '  Isotope=', MASSNM, '     '
+            ELSE IF (MASSNM .LT. 100) THEN
+               WRITE (MLINE(NMLINE),'(A4,3F20.10,A10,I2,A4)') 
+     &              NAMN(NUCIND),(CORD(J,NUCIND),J = 1, 3), 
+     &              '  Isotope=', MASSNM, '    '
+            ELSE
+               WRITE (MLINE(NMLINE),'(A4,3F20.10,A10,I3,A3)') 
+     &              NAMN(NUCIND),(CORD(J,NUCIND),J = 1, 3), 
+     &              '  Isotope=', MASSNM, '   '
+            END IF
+         END IF
          NCLINE(NUCIND) = NMLINE
          NAMEX(3*NUCIND)     = NAMN(NUCIND)//' z'
          NAMEX(3*NUCIND - 1) = NAMN(NUCIND)//' y'
@@ -2127,10 +2180,10 @@ C
            IF (FREE) THEN
 #if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D) || defined (SYS_T90)
               ISTART = 1
-              CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,ALPHA(L),'REA')
+              CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,ALPHA(L),'REA',IERR)
               DO M = 1, NRCIJ
                  CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,
-     &                       CPRIMU(L,M),'REA')
+     &                       CPRIMU(L,M),'REA',IERR)
               END DO
 #else
               IF (WRTLIN) THEN 
@@ -2175,7 +2228,7 @@ C
            IF (FREE) THEN
 #if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D) || defined (SYS_T90)
               ISTART = 1
-              CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,ALPHA(L),'REA')
+              CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,ALPHA(L),'REA',IERR)
 #else
               READ (MLINE(NMLINE),*) ALPHA(L)
 #endif
@@ -5197,33 +5250,33 @@ C
       GO TO 203
 #if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D) || defined (SYS_T90)
  200  ISTART = 5
-      CALL FREFRM(MLINE(NMLINE),ISTART,INUM,DUMMY,'INT')
-      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CHARGE(NUCIND),'REA')
+      CALL FREFRM(MLINE(NMLINE),ISTART,INUM,DUMMY,'INT',IERR)
+      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CHARGE(NUCIND),'REA',IERR)
       GO TO 204
  201  ISTART = 5
-      CALL FREFRM(MLINE(NMLINE),ISTART,INUM,DUMMY,'INT')
-      CALL FREFRM(MLINE(NMLINE),ISTART,IZ(NUCIND,1),DUMMY,'INT')
-      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,BL(NUCIND),'REA')
-      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CHARGE(NUCIND),'REA')
+      CALL FREFRM(MLINE(NMLINE),ISTART,INUM,DUMMY,'INT',IERR)
+      CALL FREFRM(MLINE(NMLINE),ISTART,IZ(NUCIND,1),DUMMY,'INT',IERR)
+      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,BL(NUCIND),'REA',IERR)
+      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CHARGE(NUCIND),'REA',IERR)
       GO TO 204
  202  ISTART = 5
-      CALL FREFRM(MLINE(NMLINE),ISTART,INUM,DUMMY,'INT')
-      CALL FREFRM(MLINE(NMLINE),ISTART,IZ(NUCIND,1),DUMMY,'INT')
-      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,BL(NUCIND),'REA')
-      CALL FREFRM(MLINE(NMLINE),ISTART,IZ(NUCIND,2),DUMMY,'INT')
-      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,ALP(NUCIND),'REA')
-      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CHARGE(NUCIND),'REA')
+      CALL FREFRM(MLINE(NMLINE),ISTART,INUM,DUMMY,'INT',IERR)
+      CALL FREFRM(MLINE(NMLINE),ISTART,IZ(NUCIND,1),DUMMY,'INT',IERR)
+      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,BL(NUCIND),'REA',IERR)
+      CALL FREFRM(MLINE(NMLINE),ISTART,IZ(NUCIND,2),DUMMY,'INT',IERR)
+      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,ALP(NUCIND),'REA',IERR)
+      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CHARGE(NUCIND),'REA',IERR)
       GO TO 204
  203  ISTART = 5
-      CALL FREFRM(MLINE(NMLINE),ISTART,INUM,DUMMY,'INT')
-      CALL FREFRM(MLINE(NMLINE),ISTART,IZ(NUCIND,1),DUMMY,'INT')
-      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,BL(NUCIND),'REA')
-      CALL FREFRM(MLINE(NMLINE),ISTART,IZ(NUCIND,2),DUMMY,'INT')
-      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,ALP(NUCIND),'REA')
-      CALL FREFRM(MLINE(NMLINE),ISTART,IZ(NUCIND,3),DUMMY,'INT')
-      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,BET(NUCIND),'REA')
-      CALL FREFRM(MLINE(NMLINE),ISTART,IZ(NUCIND,4),DUMMY,'INT')
-      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CHARGE(NUCIND),'REA')
+      CALL FREFRM(MLINE(NMLINE),ISTART,INUM,DUMMY,'INT',IERR)
+      CALL FREFRM(MLINE(NMLINE),ISTART,IZ(NUCIND,1),DUMMY,'INT',IERR)
+      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,BL(NUCIND),'REA',IERR)
+      CALL FREFRM(MLINE(NMLINE),ISTART,IZ(NUCIND,2),DUMMY,'INT',IERR)
+      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,ALP(NUCIND),'REA',IERR)
+      CALL FREFRM(MLINE(NMLINE),ISTART,IZ(NUCIND,3),DUMMY,'INT',IERR)
+      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,BET(NUCIND),'REA',IERR)
+      CALL FREFRM(MLINE(NMLINE),ISTART,IZ(NUCIND,4),DUMMY,'INT',IERR)
+      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CHARGE(NUCIND),'REA',IERR)
 #else
  200  READ (MLINE(NMLINE)(5:80),*) INUM,CHARGE(NUCIND)
       GO TO 204
@@ -5607,7 +5660,7 @@ C
       RETURN
       END
 C/*  Deck frefrm */
-      SUBROUTINE FREFRM(STRING,ISTART,IVAL,RVAL,TYPE)
+      SUBROUTINE FREFRM(STRING,ISTART,IVAL,RVAL,TYPE,IERR)
 C
 C     Simulate free format input for Cray computers when reading from an
 C     internal file, K.Ruud-Feb.97
@@ -5618,6 +5671,7 @@ C
       CHARACTER*80 STRING
       CHARACTER TYPE*3, FRMT*7
 C
+      IERR = 0
       IF (TYPE .EQ. 'INT') THEN
          IVAL = 0
       ELSE
@@ -5636,19 +5690,23 @@ C
          ELSE
             WRITE (FRMT,'(3X,A2,I1,A1)') '(I',ILEN,')'
          END IF
-         READ (STRING(ISTART:80),FRMT) IVAL
+         READ (STRING(ISTART:80),FRMT,ERR=9000) IVAL
       ELSE IF (TYPE .EQ. 'REA') THEN
          IF (ILEN .GT. 9) THEN
             WRITE (FRMT,'(A2,I2,A3)') '(F',ILEN,'.0)'
          ELSE
             WRITE (FRMT,'(1X,A2,I1,A3)') '(F',ILEN,'.0)'
          END IF
-         READ (STRING(ISTART:80),FRMT) RVAL
+         READ (STRING(ISTART:80),FRMT,ERR=9000) RVAL
       ELSE
          WRITE (LUPRI,'(/,A)') 'Illegal variable type in FREFRM'
          CALL QUIT('Illegal variable type in FREFRM')
       END IF
       ISTART = IEND + IPOS
+      GO TO 9010
+ 9000 CONTINUE
+      IERR = 1
+ 9010 CONTINUE
       RETURN
       END
 C  /* Deck molout */
@@ -5912,5 +5970,366 @@ C
    10 CONTINUE
       LMULBS = LMULBS .OR. (N .GT. 1)
       NMULBS = N
+      RETURN
+      END
+      SUBROUTINE LINE4(LINE,NONTYP,NSYMOP,CRT,KCHARG,THRS,ADDSYM,KASYM,
+     &                 ID3,DOCART,DOOWN)
+C
+C     Read in the fourth input line using the new input scheme
+C
+#include <implicit.h>
+#include <dummy.h>
+#include <priunit.h>
+      LOGICAL ADDSYM, DOCART, DOOWN
+      CHARACTER*80 LINE
+      CHARACTER CRT*1, ID3*1, SYMTXT*2
+      CHARACTER*1 KASYM(3,3)
+C
+C     Number of different atom types
+C
+      IPOS = INDEX(LINE,'Ato')
+      IF (IPOS .NE. 0) THEN
+         IPOS2 = INDEX(LINE(IPOS:),'=')
+         IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 10)) THEN
+            WRITE (LUPRI,*) 'Incorrect input for # atomtypes'
+            WRITE (LUPRI,*) 'Format is "Atomtypes=?"'
+            CALL QUIT('Incorrect input for # atomtypes')
+         ELSE
+            READ (LINE((IPOS+IPOS2):),*) NONTYP
+         END IF
+C
+C     Kind of basis set
+C     
+         IPOS = INDEX(LINE,'Car')
+         IF (IPOS .NE. 0) DOCART = .TRUE.
+         IPOS = INDEX(LINE,'Own')
+         IF (IPOS .NE. 0) DOOWN = .TRUE.
+         IPOS = INDEX(LINE,'Sph')
+         IF (IPOS .NE. 0) THEN
+            DOOWN = .FALSE.
+            DOCART = .FALSE.
+         END IF
+C
+C     Charge of molecule
+C     
+         IPOS = INDEX(LINE,'Cha')
+         IF (IPOS .NE. 0) THEN
+            IPOS2 = INDEX(LINE(IPOS:80),'=')
+            IF ((IPOS2 .EQ. 0) .OR. (IPOS2 .GT. 7)) THEN
+               WRITE (LUPRI,*) 'Incorrect input for molecular charge'
+               WRITE (LUPRI,*) 'Format is "Charge=?"'
+               CALL QUIT('Incorrect input for molecular charge')
+            ELSE
+               READ (LINE(IPOS+IPOS2:),*) KCHARG
+            END IF
+         ELSE
+            KCHARG = 0
+         END IF
+C     
+C     Angstrom?
+C
+         ID3 = ' '
+         IPOS = INDEX(LINE,'Ang') 
+         IF (IPOS .NE. 0) ID3 = 'X'
+C     
+C     Symmetry generators
+C     
+         DO I = 1, 3
+            DO J = 1, 3
+               KASYM(I,J) = ' '
+            END DO
+         END DO
+         IPOS = INDEX(LINE,'Gen')
+         IPSO = INDEX(LINE,'Nos')
+         IF (IPOS .NE. 0 .AND. IPSO .NE. 0) THEN
+            WRITE (LUPRI,*) 'Incorrect symmetry input. No symmetry '//
+     &           'requested, but generators given'
+            CALL QUIT('Inconsistent symmetry input')
+         ELSE IF (IPOS .NE. 0) THEN
+            IPOS2 = INDEX(LINE(IPOS:),'=')
+            IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 11)) THEN
+               WRITE (LUPRI,*) 'Incorrect input for # generators'
+               WRITE (LUPRI,*) 'Format is "Generators=?"'
+               CALL QUIT('Incorrect input for # generators')
+            ELSE
+               READ (LINE((IPOS+IPOS2):),*) NSYMOP
+            END IF
+            IF (NSYMOP .GT. 0 .AND. NSYMOP .LT. 4) THEN
+C     
+C     For each generator, determine number of axis changing sign
+C
+               ISTART = IPOS + IPOS2 + 1
+               DO I = 1, NSYMOP
+                  DO ISTP = ISTART, 80
+                     IF (LINE(ISTP:ISTP) .NE. ' ') GO TO 20
+                  END DO
+ 20               CONTINUE
+                  IEND = INDEX(LINE(ISTP:),' ')
+                  ILEN = IEND - 1
+                  DO J = 1, ILEN
+                     IWHERE = ISTP + J - 1
+                     KASYM(J,I) = LINE(IWHERE:IWHERE)
+                  END DO
+                  ISTART = ISTART + IEND + 2
+               END DO
+            ELSE
+               IF (NSYMOP .GT. 3) THEN
+                  WRITE (LUPRI,*) 'Incorrect number of symmetry '//
+     &                 'generating elements'
+                  CALL QUIT('Incorrect number of group generators')
+               END IF
+            END IF
+            ADDSYM = .FALSE.
+         ELSE IF (IPSO .NE. 0) THEN
+            ADDSYM = .FALSE.
+            NSYMOP = 0
+         ELSE
+            ADDSYM = .TRUE.
+            NSYMOP = 0
+         END IF
+C
+C     Change of integral threshold?
+C
+         IPOS = INDEX(LINE,'Int')
+         IF (IPOS .NE. 0) THEN
+            IPOS2 = INDEX(LINE(IPOS:),'=')
+            IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 11)) THEN
+               WRITE (LUPRI,*) 'Incorrect input for integral threshold'
+               WRITE (LUPRI,*) 'Format is "Integrals=?"'
+               CALL QUIT('Incorrect input for integral threshold')
+            ELSE
+               CALL FREFRM(LINE,IPOS+IPOS2,IDUMMY,THRS,'REA',IERR)
+            END IF
+         ELSE
+            THRS = 0.0D0
+         END IF
+      ELSE
+C     
+C     Since the number of atom types have not been specified, assume old
+C     input format
+C         
+         READ (LINE,'(BN,A1,I4,I3,A2,10A1,D10.2,6I5)') CRT,
+     &        NONTYP,KCHARG,SYMTXT,((KASYM(I,J),I=1,3),J=1,3),ID3,THRS
+         ADDSYM = (SYMTXT .EQ. '  ')
+         IF (.NOT. ADDSYM) THEN
+            READ(SYMTXT,'(I2)') NSYMOP
+         ELSE
+            NSYMOP = 0
+         END IF
+         DOCART = CRT .EQ. 'C' .OR. CRT .EQ. 'c'
+         DOOWN  = CRT. EQ. 'X'
+      END IF
+C
+      RETURN
+      END
+      SUBROUTINE LINE4W(TMPLN,NONTYP,NSYMOP,KCHARG,THRS,AUTOSY,NOSYM,
+     &                  KASYM,ID3,DOCART,DOOWN)
+C
+C     Write out molecule specific information in new input format
+C
+#include <implicit.h>
+      CHARACTER*80 TMPLN
+      CHARACTER*1 KASYM(3,3), ID3
+      LOGICAL AUTOSY, NOSYM, DOCART, DOOWN
+C
+      DO I = 1, 71, 10
+         WRITE (TMPLN(I:),'(A10)') '          '
+      END DO
+      IF (NONTYP .LT. 10) THEN
+         WRITE (TMPLN,'(A10,I1)') 'Atomtypes=', NONTYP
+         ISTART = 13
+      ELSE IF (NONTYP .LT. 100) THEN
+         WRITE (TMPLN,'(A10,I2)') 'Atomtypes=', NONTYP
+         ISTART = 14
+      ELSE
+         WRITE (TMPLN,'(A10,I3)') 'Atomtypes=', NONTYP
+         ISTART = 15
+      END IF
+C
+C     We assume we will not pass +/-9 as a total charge for the molecule
+C
+      IF (KCHARG .LT. 0) THEN
+         WRITE (TMPLN(ISTART:),'(A7,I2)') 'Charge=',KCHARG
+         ISTART = ISTART + 10
+      ELSE IF (KCHARG .GT. 0) THEN
+         WRITE (TMPLN(ISTART:),'(A7,I1)') 'Charge=',KCHARG
+         ISTART = ISTART + 9
+      END IF
+C
+      IF (NOSYM) THEN
+         WRITE (TMPLN(ISTART:),'(A11)') 'Nosymmetry'
+         ISTART = ISTART + 12
+      END IF
+C
+      IF (.NOT. AUTOSY) THEN
+         WRITE (TMPLN(ISTART:),'(A11,I1,A1)')  'Generators=',NSYMOP,' '
+         ISTART = ISTART + 13
+         DO I = 1, 3
+            DO J = 1, 3
+               WRITE (TMPLN(ISTART:ISTART),'(A1)') KASYM(J,I)
+               ISTART = ISTART + 1
+            END DO
+         END DO
+      END IF 
+C
+      IF (DOCART) THEN
+         WRITE (TMPLN(ISTART:),'(A10)') 'Cartesian '
+         ISTART = ISTART + 10
+      END IF
+      IF (DOOWN) THEN
+         WRITE (TMPLN(ISTART:),'(A10)') 'Own '
+         ISTART = ISTART + 4
+      END IF
+C
+      IF (ID3 .NE. ' ') THEN
+         WRITE (TMPLN(ISTART:),'(A7)') 'Angstrom'
+      END IF
+      RETURN
+      END
+C
+      SUBROUTINE LINE5(TMPLN,Q,NONT,MBSI,IQM,JCO,KANG,BASIS,
+     &                 ATOMBA,BASNAM)
+C
+C     Read the atom-specific information in new input style
+C
+#include <implicit.h>
+#include <dummy.h>
+#include <priunit.h>
+#include "r12int.h"
+      CHARACTER TMPLN*80, BASNAM*80, FRMT*4
+      LOGICAL BASIS, ATOMBA
+      DIMENSION JCO(KANG)
+C
+      IPOS = INDEX(TMPLN,'Cha')
+      IPOS2 = INDEX(TMPLN(IPOS:),'=')
+      IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 7)) THEN
+         WRITE (LUPRI,*) 'Incorrect input for atomic charge'
+         WRITE (LUPRI,*) 'Format is "Charge=?"'
+         CALL QUIT('Incorrect input for atomic charge')
+      ELSE
+         READ (TMPLN((IPOS+IPOS2):),*) Q
+         IPOS = INDEX(TMPLN,'Ato')
+         IF (IPOS .NE. 0) THEN
+            IPOS2 = INDEX(TMPLN(IPOS:),'=')
+            IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 6)) THEN
+               WRITE (LUPRI,*) 'Incorrect input for # of atoms'
+               WRITE (LUPRI,*) 'Format is "Atoms=?"'
+               CALL QUIT('Incorrect input for # of atoms')
+            ELSE
+               READ (TMPLN((IPOS+IPOS2):),*) NONT
+            END IF
+         END IF
+C     
+C     Multiple basis sets used
+C         
+         IF (LMULBS) THEN
+            IPOS = INDEX(TMPLN,'Set')
+            IF (IPOS .NE. 0) THEN
+               IPOS2 = INDEX(TMPLN(IPOS:),'=')
+               IF (IPOS2 .EQ. 0 .OR. (IPOS2. GT. 5)) THEN
+                  WRITE (LUPRI,*) 'Incorrect input for # of '//
+     &                 'basis sets'
+                  WRITE (LUPRI,*) 'Format is "Sets=?"'
+                  CALL QUIT('Incorrect input for # of '//
+     &                 'basis sets')
+               ELSE
+                  READ (TMPLN((IPOS+IPOS2):),*) MBSI
+               END IF
+            END IF
+         END IF
+C     
+C     Read in basis set information
+C     
+         IF (.NOT. (BASIS .OR. ATOMBA)) THEN
+            IPOS = INDEX(TMPLN,'Blo')
+            IF (IPOS .NE. 0) THEN
+               IPOS2 = INDEX(TMPLN(IPOS:),'=')
+               IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 7)) THEN
+                  WRITE (LUPRI,*) 'Incorrect input for # of '//
+     &                 'integral blocks'
+                  WRITE (LUPRI,*) 'Format is "Blocks=? ? ?"'
+                  CALL QUIT('Incorrect input for # of '//
+     &                 'integral blocks')
+               ELSE
+                  ISTART = IPOS + IPOS2
+                  CALL FREFRM(TMPLN,ISTART,IQM,DUMMY,'INT',IERR)
+                  DO IQMLOP = 1, IQM
+                     CALL FREFRM(TMPLN,ISTART,JCO(IQMLOP),DUMMY,'INT',
+     &                           IERR)
+                  END DO
+               END IF
+            END IF
+         ELSE IF (ATOMBA) THEN
+            IPOS = INDEX(TMPLN,'Bas')
+            IF (IPOS .NE. 0) THEN
+               IPOS2 = INDEX(TMPLN(IPOS:),'=')
+               IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 6)) THEN
+                  WRITE (LUPRI,*) 'Incorrect input for choice '//
+     &                 'of atomic basis set'
+                  WRITE (LUPRI,*) 'Format is "Basis=? ? ?"'
+                  CALL QUIT('Incorrect input for choice of '//
+     &                 'atomic basis set')
+               ELSE
+                  IPOS3 = INDEX(TMPLN((IPOS+IPOS2):),' ')
+                  WRITE (FRMT,'(A2,I1,A1)') '(A',(IPOS3 - 1)/10,')'
+                  READ (TMPLN((IPOS + IPOS2):),FRMT) BASNAM
+               END IF
+            ELSE
+               WRITE (LUPRI,*) 'ATOMBASIS selected, but no '//
+     &              'atomic basis set specified for one atom type'
+               CALL QUIT( 'ATOMBASIS selected, but no '//
+     &              'atomic basis set specified for one atom type')
+            END IF
+         END IF
+      END IF
+      RETURN
+      END
+C
+      SUBROUTINE LINE5W(LINE,Q,NONT,MBSI,ATOMBA,BASIS,BASNAM,
+     &                  IQM,JCO,KANG)
+C
+C     Write out atom-specific input line in new format
+C     
+#include <implicit.h>
+#include "r12int.h"
+      CHARACTER LINE*80, BASNAM*80
+      DIMENSION JCO(KANG)
+      LOGICAL ATOMBA, BASIS
+C
+      DO I = 1, 71, 10
+         WRITE (LINE(I:),'(A10)') '          '
+      END DO
+C
+      WRITE (LINE,'(A7,F6.4)') 'Charge=', Q
+      ISTART = 15
+C
+      IF (NONT .LT. 10) THEN
+         WRITE (LINE(ISTART:),'(A6,I1)') 'Atoms=', NONT
+         ISTART = ISTART + 8
+      ELSE IF (NONT .LT. 100) THEN
+         WRITE (LINE(ISTART:),'(A6,I2)') 'Atoms=', NONT
+         ISTART = ISTART + 9
+      ELSE
+         WRITE (LINE(ISTART:),'(A6,I3)') 'Atoms=', NONT
+         ISTART = ISTART + 10
+      END IF
+C
+      IF (LMULBS) THEN
+         WRITE (LINE(ISTART:),'(A5,I1)') 'Sets=', MBSI
+         ISTART = ISTART + 7
+      END IF
+C
+      IF (.NOT. (BASIS .OR. ATOMBA)) THEN
+         WRITE (LINE(ISTART:),'(A7,I1)') 'Blocks=',IQM
+         ISTART = ISTART + 9
+         DO I = 1, IQM
+            WRITE (LINE(ISTART:),'(I4)') JCO(I)
+            ISTART = ISTART + 4
+         END DO
+      END IF
+C
+      IF (ATOMBA) THEN
+         WRITE (LINE,'(A25)') 'Basis='//BASNAM(1:25)
+      END IF
       RETURN
       END

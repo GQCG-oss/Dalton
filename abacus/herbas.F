@@ -310,16 +310,20 @@ C
  33      CONTINUE
          CALL CHBLANK(BLANK,BASNAM(ISTART:))
          IF (.NOT. BLANK) THEN
-            CALL FREFRM(BASNAM,ISTART,IQUANT,DUMMY,'INT')
-            CALL FREFRM(BASNAM,ISTART,IDUMMY,EXPON,'REA')
-            IF (IQUANT .EQ. NBLOCK) THEN
-               FOUND  = .TRUE.
-               INTEXP = INTEXP + 1
-               INTORB = INTORB + 1
-               ALPHA(INTEXP,NBLOCK) = EXPON
-               CPRIMU(INTEXP,INTORB,NBLOCK) = 1.0D0
+            CALL FREFRM(BASNAM,ISTART,IQUANT,DUMMY,'INT',IERR)
+            IF (IERR .EQ. 0) THEN
+               CALL FREFRM(BASNAM,ISTART,IDUMMY,EXPON,'REA',IERR2)
+               IF (IERR2 .EQ. 0) THEN
+                  IF (IQUANT .EQ. NBLOCK) THEN
+                     FOUND  = .TRUE.
+                     INTEXP = INTEXP + 1
+                     INTORB = INTORB + 1
+                     ALPHA(INTEXP,NBLOCK) = EXPON
+                     CPRIMU(INTEXP,INTORB,NBLOCK) = 1.0D0
+                  END IF
+               END IF
             END IF
-            GOTO 33
+            IF ((IERR .EQ. 0) .AND. (IERR2 .EQ. 0)) GOTO 33
          END IF
          IF (INTEXP.GT.KPRIM) GOTO 5010
          IF (INTORB.GT.KPRIM) GOTO 5020          
@@ -555,15 +559,19 @@ C
  33         CONTINUE
             CALL CHBLANK(BLANK,BASNAM(ISTART:))
             IF (.NOT. BLANK) THEN
-               CALL FREFRM(BASNAM,ISTART,IQUANT,DUMMY,'INT')
-               CALL FREFRM(BASNAM,ISTART,IDUMMY,EXPON,'REA')
-               IF (IQUANT .EQ. NBLOCK) THEN
-                  INTEXP = INTEXP + 1
-                  INTORB = INTORB + 1
-                  ALPHA(INTEXP,NBLOCK) = EXPON
-                  CPRIMU(INTEXP,INTORB,NBLOCK) = 1.0D0
+               CALL FREFRM(BASNAM,ISTART,IQUANT,DUMMY,'INT',IERR)
+               IF (IERR .EQ. 0) THEN
+                  CALL FREFRM(BASNAM,ISTART,IDUMMY,EXPON,'REA',IERR2)
+                  IF (IERR2 .EQ. 0) THEN
+                     IF (IQUANT .EQ. NBLOCK) THEN
+                        INTEXP = INTEXP + 1
+                        INTORB = INTORB + 1
+                        ALPHA(INTEXP,NBLOCK) = EXPON
+                        CPRIMU(INTEXP,INTORB,NBLOCK) = 1.0D0
+                     END IF
+                  END IF
                END IF
-               GOTO 33
+               IF ((IERR .EQ. 0) .AND. (IERR2 .EQ. 0)) GOTO 33
             END IF
          END IF
          RETURN
@@ -598,7 +606,7 @@ Chjaaj aug00: prepared for adding max # of contracted orbitals
 C             in ano-* files (for this consistency check).
          INTORBMAX = INTORB
          IF (INTORBMAX .LE. 0) INTORBMAX = INTEXP
-         CALL FREFRM(BASNAM,ISTART,INTORB,DUMMY,'INT')
+         CALL FREFRM(BASNAM,ISTART,INTORB,DUMMY,'INT',IERR)
          IF (INTORB .GT. INTORBMAX) THEN
             WRITE (LUPRI,'(/2A/A,I5/A,I5)')
      &      'Fatal error in REAANO for basis ',BASNAM,
@@ -666,15 +674,19 @@ C           skip core orbitals for Huckel guess for ECP
  33      CONTINUE
          CALL CHBLANK(BLANK,BASNAM(IREAD:))
          IF (.NOT. BLANK) THEN
-            CALL FREFRM(BASNAM,IREAD,IQUANT,DUMMY,'INT')
-            CALL FREFRM(BASNAM,IREAD,IDUMMY,EXPON,'REA')
-            IF (IQUANT .EQ. NBLOCK) THEN
-               INTEXP = INTEXP + 1
-               INTORB = INTORB + 1
-               ALPHA(INTEXP,NBLOCK) = EXPON
-               CPRIMU(INTEXP,INTORB,NBLOCK) = 1.0D0
+            CALL FREFRM(BASNAM,IREAD,IQUANT,DUMMY,'INT',IERR)
+            IF (IERR .EQ. 0) THEN
+               CALL FREFRM(BASNAM,IREAD,IDUMMY,EXPON,'REA',IERR2)
+               IF (IERR2 .EQ. 0) THEN
+                  IF (IQUANT .EQ. NBLOCK) THEN
+                     INTEXP = INTEXP + 1
+                     INTORB = INTORB + 1
+                     ALPHA(INTEXP,NBLOCK) = EXPON
+                     CPRIMU(INTEXP,INTORB,NBLOCK) = 1.0D0
+                  END IF
+               END IF
             END IF
-            GOTO 33
+            IF ((IERR .EQ. 0) .AND. (IERR2 .EQ. 0)) GOTO 33
          END IF
       END IF
       RETURN
@@ -853,18 +865,18 @@ C
 C     Determine primitive basis
 C
       ISTART = 5
-      CALL FREFRM(BASNAM,ISTART,ISPRIM,DUMMY,'INT')
+      CALL FREFRM(BASNAM,ISTART,ISPRIM,DUMMY,'INT',IERR)
       IF (INTQ .GT. 4) THEN
-         CALL FREFRM(BASNAM,ISTART,IPPRIM,DUMMY,'INT')
+         CALL FREFRM(BASNAM,ISTART,IPPRIM,DUMMY,'INT',IERR)
       END IF
       IF (UNCONT) THEN
 C     ... force uncontracted irrespective of .mol file
          ISCONT = ISPRIM
          IPCONT = IPPRIM
       ELSE
-         CALL FREFRM(BASNAM,ISTART,ISCONT,DUMMY,'INT')
+         CALL FREFRM(BASNAM,ISTART,ISCONT,DUMMY,'INT',IERR)
          IF (INTQ .GT. 4) THEN
-            CALL FREFRM(BASNAM,ISTART,IPCONT,DUMMY,'INT')
+            CALL FREFRM(BASNAM,ISTART,IPCONT,DUMMY,'INT',IERR)
          END IF
       END IF
       STRING = BASDIR(1:LENBAS)//'NQvD'
@@ -883,11 +895,11 @@ C
          READ (STRING, '(A1)') SIGN
          IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN
             ISTART = 2
-            CALL FREFRM(STRING,ISTART,NUCEL,DUMMY,'INT')
-            CALL FREFRM(STRING,ISTART,IS,DUMMY,'INT')
+            CALL FREFRM(STRING,ISTART,NUCEL,DUMMY,'INT',IERR)
+            CALL FREFRM(STRING,ISTART,IS,DUMMY,'INT',IERR)
             IF (NUCEL .EQ. INTQ .AND. IS .EQ. ISPRIM) THEN
                IF (NUCEL .GT. 4) THEN
-                  CALL FREFRM(STRING,ISTART,IP,DUMMY,'INT')
+                  CALL FREFRM(STRING,ISTART,IP,DUMMY,'INT',IERR)
                   IF (IP .NE. IPPRIM) GO TO 20
                END IF
                NBLOCK = NBLOCK + 1
@@ -953,8 +965,10 @@ C
  33               CONTINUE
                   CALL CHBLANK(BLANK,BASNAM(ISTART:))
                   IF (.NOT. BLANK) THEN
-                     CALL FREFRM(BASNAM,ISTART,IQUANT,DUMMY,'INT')
-                     CALL FREFRM(BASNAM,ISTART,IDUMMY,EXPON,'REA')
+                     CALL FREFRM(BASNAM,ISTART,IQUANT,DUMMY,'INT',IERR)
+                     IF (IERR .EQ. 0) THEN
+                     CALL FREFRM(BASNAM,ISTART,IDUMMY,EXPON,'REA',IERR2)
+                     IF (IERR2 .EQ. 0) THEN
                      IF (IQUANT .EQ. NBLOCK) THEN
                         ISPRIM = ISPRIM + 1
                         ISCONT = ISCONT + 1
@@ -967,7 +981,9 @@ C
                         ALPHA(IPPRIM,NBLOCK + 1) = EXPON
                         CPRIMU(IPPRIM,IPCONT,NBLOCK + 1) = 1.0D0
                      END IF
-                     GOTO 33
+                     END IF
+                     END IF
+                     IF ((IERR .EQ. 0) .AND. (IERR2 .EQ. 0)) GOTO 33
                   END IF
                END IF
                IF (ISPRIM.GT.KPRIM) GOTO 5010

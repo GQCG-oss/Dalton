@@ -2184,7 +2184,18 @@ C
 C
 C     Coordinates written are always in atomic units
 C
-      MLINE(NMLAU)(20:20) = ' '
+      IPOS = INDEX(MLINE(NMLAU),'Ato')
+      IF (IPOS .EQ. 0) THEN
+         MLINE(NMLAU)(20:20) = ' '
+      ELSE
+         IPOS = INDEX(MLINE(NMLAU),'Ang')
+         IF (IPOS .NE. 0) THEN
+            IPOS2 = INDEX(MLINE(NMLAU)(IPOS:),' ')
+            DO ICHARP = IPOS, IPOS + IPOS2 - 1
+               WRITE (MLINE(NMLAU)(ICHARP:ICHARP),'(A1)') ' '
+            END DO
+         END IF
+      END IF
       DO 100 N = 1, NUCIND
          CRX = COONEW(1,N) - CCAVX
          CRY = COONEW(2,N) - CCAVY

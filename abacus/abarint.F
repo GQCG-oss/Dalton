@@ -3843,11 +3843,12 @@ C
 #include "symmet.h"
 #include "trkoor.h"
 #include "huckel.h"
-      LOGICAL EXHER, EXSIR, EXABA, BRKALS
-      CHARACTER FILENM*10, TMPLN*80, TMPTXT*11
-      DIMENSION GEINFO(0:ITRMAX,6), NONT(MXCENT)
+      LOGICAL EXHER, EXSIR, EXABA, BRKALS, DOCART, DOOWN, AUTOSY, NOSYM
+      CHARACTER FILENM*10, TMPLN*80, TMPTXT*11, CRT*1, BSNM*80, ID3*1
+      CHARACTER*1 KASYM(3,3)
+      DIMENSION GEINFO(0:ITRMAX,6), NONT(MXCENT), JCO(MXAQN,MXCENT)
       DIMENSION EVEC(MX2CRD,MX2CRD), BMTINV(MXRCRD,MXCOOR)
-      DIMENSION CSTEP(MXCOOR)
+      DIMENSION CSTEP(MXCOOR), Q(MXCENT), IQM(MXCENT)
       DIMENSION TMPVEC(IINTCR), TMPMAT(IINTCR*IINTCR)
       SAVE INDOLD
       DATA INDOLD /999/
@@ -3971,21 +3972,39 @@ C
       I = 4
       IF (BASIS) I = 5
       TMPLN = MLINE(I)
-      READ(TMPLN(1:5),'(I5)') NONTYP 
-      WRITE(TMPLN(10:20), '(A11)') '           '
       II = 0
       DO 49 J = 0, ITRNMR-1
          IF ((GEINFO(J,3) .LT. -0.5D0) .AND.
      &        (ABS(ENERGY-GEINFO(J,1)) .LT. THRERG*10)) II=II+1
  49   CONTINUE
       IF (II .GT. 0) BRKALS = .TRUE.
-      IF (BRKALS) WRITE(TMPLN(10:20), '(A11)') '0          '
+      IF (INDEX(TMPLN,'Ato') .NE. 0) THEN
+         DOCART = .FALSE.
+         DOOWN = .FALSE.
+         CALL LINE4(TMPLN,NONTYP,NSYMOP,CRT,KCHARG,THRS,ADDSYM,KASYM,
+     &              ID3,DOCART,DOOWN)
+         AUTOSY = .TRUE.
+         NOSYM = .FALSE.
+         IF (BRKALS) NOSYM = .TRUE.
+         ID3 = ' '
+         CALL LINE4W(TMPLN,NONTYP,NSYMOP,KCHARG,THRS,AUTOSY,NOSYM,
+     &               KASYM,ID3,DOCART,DOOWN)
+      ELSE
+         READ(TMPLN(1:5),'(I5)') NONTYP 
+         WRITE(TMPLN(10:20), '(A11)') '           '
+         IF (BRKALS) WRITE(TMPLN(10:20), '(A11)') '0          '
+      END IF
       MLINE(I) = TMPLN
 C
       IATOM = 1
       I = NCLINE(IATOM)-1
       DO 50 J = 1, NONTYP
-         READ(MLINE(I),'(BN,6X,F4.1,I5)') Q, NONT(J)
+         IF (INDEX(MLINE(I),'Cha') .NE. 0) THEN
+            CALL LINE5(MLINE(I),Q(J),NONT(J),MBSI,IQM(J),JCO(1,J),MXAQN,
+     &                 BASIS,ATOMBA,BSNM)
+         ELSE
+            READ(MLINE(I),'(BN,6X,F4.1,I5)') Q, NONT(J)
+         END IF
          IATOM = IATOM + NONT(J)
          I = NCLINE(IATOM)-1
  50   CONTINUE
@@ -4028,7 +4047,12 @@ C
             IATOM = IATOM + 1
  70      CONTINUE
          TMPLN = MLINE(NCLINE(IATOM - NONT(ITYP)) - 1)
-         WRITE(TMPLN(11:15),'(I5)') NONT(ITYP) + IXTRA
+         IF (INDEX(TMPLN,'Cha') .NE. 0) THEN
+            CALL LINE5W(TMPLN,Q(ITYP),NONT(ITYP) + IXTRA,MBSI,ATOMBA,
+     &                  BASIS,BSNM,IQM(ITYP),JCO(1,ITYP),MXAQN)
+          ELSE
+            WRITE(TMPLN(11:15),'(I5)') NONT(ITYP) + IXTRA
+         END IF
          MLINE(NCLINE(IATOM - NONT(ITYP)) - 1) = TMPLN
  60   CONTINUE
 C
