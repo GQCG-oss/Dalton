@@ -252,8 +252,8 @@ COMMENT COMMENT COMMENT
          END IF
       endif
 COMMENT COMMENT COMMENT
-       write(lupri,*) 'WMAT after dzero'
-       call print_pt3(work(kx3am),ISYFKY,4)
+!       write(lupri,*) 'WMAT after dzero'
+!       call print_pt3(work(kx3am),ISYFKY,4)
 COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT

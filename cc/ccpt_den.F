@@ -1408,13 +1408,13 @@ C
              !write(lupri,*) ' Norm of ZKbar_iJ : ', xnorm
          END IF
 
-         if (.true.) then 
+         !if (.true.) then 
            write(lupri,*)'CC_DEN_PTFC using CCETACOR'
            CALL CCETACOR(ETAAI,ZKDIA,WORK(KEND1),LWRK1)
-         else
-           write(lupri,*)'CC_DEN_PTFC using CCETACORNEW'
-           CALL CCETACORNEW(ETAAI,ZKDIA,WORK(KEND1),LWRK1)
-         end if
+         !else
+         !  write(lupri,*)'CC_DEN_PTFC using CCETACORNEW'
+         !  CALL CCETACORNEW(ETAAI,ZKDIA,WORK(KEND1),LWRK1)
+         !end if
  
           KOFFIJ = 1
           KOFFAB = NMATIJ(1) + 1
