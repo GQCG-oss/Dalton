@@ -52,7 +52,7 @@ static int    global_gridCount = 0;
    ---------- CONFIGURABLE PARAMETERS ------------------------------
    ---------- CONFIGURABLE PARAMETERS ------------------------------ */
 /* number of threads */
-static int    global_nThreads          = 4; 
+static int    global_nThreads          = 1;
 
 /* flag for test integration. If turned on, the grid file is
 reopened after it has been created, and the density is integrated
@@ -69,7 +69,7 @@ static int    global_outputLevel       = 1;
 a new one. nFreeze=1 gives a new grid for each iteration.
 nFreeze=1000 means that the first grid is used throughout
 the whole calculation. */
-static int    global_nFreeze           = 3;
+static int    global_nFreeze           = 1000;
 
 /* Threshold value for distributions. A gaussian is ignored in areas
 where its value is below this threshold. A low value is 

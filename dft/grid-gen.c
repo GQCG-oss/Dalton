@@ -1258,7 +1258,8 @@ dftgridinput_(const char *line, int line_len)
         "GC2","LMG", "SSF","BECKE","BECKE2", "BLOCK"
     };
     int st, en, i;
-    for(st=0; (en=get_word(line, st, line_len)) != 0; 
+    int start = skip_spaces(line, 0, line_len);
+    for(st=start; (en=get_word(line, st, line_len)) != 0; 
         st=skip_spaces(line, en, line_len)) {
         for(i=0; i<ELEMENTS(keywords); i++) {
             if(strncasecmp(keywords[i], line+st, en-st)==0)
