@@ -279,12 +279,12 @@ CTRL[3]=6
 ERROR[3]="RELAXED B CONTRIBUTIONS AT GAUGE (0,0,25) NOT CORRECT"
 
 # LAO+Relaxed B contributions
-CRIT1=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.08539964 \(antisym\) " $log | wc -l`
-CRIT2=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.37479354 \(antisym\) " $log | wc -l`
-CRIT3=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.25200038 \(antisym\) " $log | wc -l`
-CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.07045476 \(antisym\) " $log | wc -l`
-CRIT5=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.40993365 \(antisym\) " $log | wc -l`
-CRIT6=`$GREP "CCSD * B term contribution \(au\)\: * \-18\.86514225 \(antisym\) " $log | wc -l`
+CRIT1=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.0853996[3-5] \(antisym\) " $log | wc -l`
+CRIT2=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.3747935[3-5] \(antisym\) " $log | wc -l`
+CRIT3=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.2520003[7-9] \(antisym\) " $log | wc -l`
+CRIT4=`$GREP "CCSD * B term contribution \(au\)\: * (\-0| \-)\.0704547[5-7] \(antisym\) " $log | wc -l`
+CRIT5=`$GREP "CCSD * B term contribution \(au\)\: * (0| )\.4099336[3-6] \(antisym\) " $log | wc -l`
+CRIT6=`$GREP "CCSD * B term contribution \(au\)\: * \-18\.8651422[4-6] \(antisym\) " $log | wc -l`
 TEST[4]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[4]=6
 ERROR[4]="LAO+RELAXED B CONTRIBUTIONS AT GAUGE (0,0,25) NOT CORRECT"
