@@ -1146,7 +1146,6 @@ C
  11            CONTINUE
                   READ (LUCMD, *)  NUCSPI
                   READ (LUCMD, *) (IPOINT(IS), IS = 1, NUCSPI)
-                  ABUND = D0
                   IF (NUCSPI .GT. 0) THEN
                      DO IS = 1, MXCENT
                         NCSPNI(IS) = .FALSE.

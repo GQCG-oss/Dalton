@@ -686,7 +686,7 @@ C           (Brillouin-matrix elements ).
 C           Arrangement is symmetry first, then within
 C           each symmetry order is IT,IA,TA.
 C
-      NWOPMA = 0
+      IF (WRINDX) NWOPMA = 0
 C
 C If active-active rotations specified with ACTROT in SIRINP
 C check if the specified rotations are OK
