@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: her1pro.F,v 1.6 2001-03-28 10:00:22 haettig Exp $
+C$Id: her1pro.F,v 1.7 2001-03-28 11:45:35 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck pr1int */
@@ -164,6 +164,7 @@ C
 #include <nuclei.h>
 #include <huckel.h>
 #include <cbihr1.h>
+#include <orgcom.h>
 C
       DATA TABLE /'OVERLAP', 'DIPLEN ', 'DIPVEL ', 'QUADRUP',
      &            'SPNORB ', 'SECMOM ', 'THETA  ', 'CARMOM ',
