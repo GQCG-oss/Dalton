@@ -46,7 +46,7 @@ look like:
 .HF
 **PROPERTIES
 .VCD
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 This will invoke the calculation of vibrational circular dichroism
@@ -88,7 +88,7 @@ alternative Hessian\index{Hessian} matrix with the input
 .VCD
 *VIBANA
 .HESFIL
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 If more close control of the different parts of the calculation of
@@ -158,7 +158,7 @@ input for a molecule without symmetry will thus look like:
 *EXCITA
 .NEXCIT
     3
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 In this run we will calculate the rotatory strength\index{rotatory
@@ -193,7 +193,7 @@ C$_{2v}$ symmetry an input would look like:
 .DIPSTR
 .NEXCIT
     3    2    1    0
-*END OF DALTON
+**END OF DALTON INPUT
 \end{verbatim}
 
 This input will calculate the dipole strength (\Key{DIPSTR}) of the
@@ -229,7 +229,7 @@ strength to be calculated without the use of London orbitals):
 .ROTVEL
 .NEXCIT
     3
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 We also note that excitation energies also can be obtained using the
@@ -294,7 +294,7 @@ be:
  0.001 0.077318
 .THRESH
  1.0D-4
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 Dalton will always calculate the optical rotation both with and
@@ -419,7 +419,7 @@ polarizabilities. This may be achieved by the following input:
 .ISOTOP
  1 5
  1 1 1 2 3
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 This is the complete input for a calculation of
@@ -525,7 +525,7 @@ the VROA parameters obtained with a given basis set through the input:
 .ISOTOP
  1 5
  1 1 1 2 3
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 by copying different \verb|DALTON.HES| files to the scratch
 directory, which in turn is read through the keyword \Key{HESFIL}. By

@@ -46,7 +46,7 @@ gradient). The input file for such a calculation will look like:
 \begin{tabular}{ll}
 **DALTON INPUT\hspace{3cm} & Must start all input files\\
 .OPTIMIZE & Request geometry optimization\\
-***WAVE FUNCTIONS & Wave function input\\
+***WAVE FUNCTIONS & Wave function input\\ % first * is swallowed by \\
 .HF & We start with HF\\
 .MP2 & Then MP2 (starting orb. for MCSCF)\\
 .MCSCF & Request an MCSCF\\
@@ -70,7 +70,7 @@ gradient). The input file for such a calculation will look like:
 ***FINAL & Input for optimized geometry\\
 .DIPGRA & Dipole gradient\\
 .VIBANA & Vibrational analysis\\
-**END OF INPUT\\
+***END OF DALTON INPUT\\
 \end{tabular}}
 
 \subsection{A RASSCF calculation of NMR parameters}
@@ -97,7 +97,7 @@ CAS) and in addition allow single- and double-excitations into
 \begin{tabular}{ll}
 **DALTON INPUT\\
 .RUN PROPERTIES\hspace{2cm} & Run integrals, wave function\ and properties\\
-**WAVE FUNCTIONS\\
+***WAVE FUNCTIONS\\
 .HF\\
 .MP2\\
 .MCSCF\\
@@ -126,7 +126,7 @@ CAS) and in addition allow single- and double-excitations into
 ***PROPERTIES & Input for single property run\\
 .SHIELD\\
 .SPIN-S\\
-**END OF INPUT\\
+***END OF DALTON INPUT\\
 \end{tabular}}
 
 \subsection{A parallel cubic response calculation}\index{parallel calculation}
@@ -151,8 +151,7 @@ specify that we are to do a Hartree--Fock calculation.
 {\ttfamily
 \begin{tabular}{ll}
 **DALTON INPUT\\
-.RUN RESPONS\hspace{2.5cm} & Run integrals, wave func.\ and
-response\\
+.RUN RESPONS\hspace{2.5cm} & Run integrals, wave func.\ and response\\
 .PARALLEL & This is a parallel run\\
 ***WAVE FUNCTIONS\\
 .HF\\
@@ -170,7 +169,7 @@ response\\
  0.0\\
 .THCLR & Threshold for linear response equations\\
  1.0D-5\\
-**END OF INPUT\\
+***END OF DALTON INPUT\\
 \end{tabular}}
 
 \section{General structure of the DALTON.INP file}\label{sec:inputstructure}
@@ -241,7 +240,7 @@ in the first position of the command line.
 A general input structure for {\dalton} will look like
 
 \begin{verbatim}
-**GENERAL
+**DALTON INPUT
 ...
 **INTEGRALS
 ...
@@ -258,7 +257,7 @@ A general input structure for {\dalton} will look like
 **RESPONSE
 *CUBIC
 ...
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 Several submodules can of course be added in each of the above

@@ -40,13 +40,13 @@ one has to specify the \Key{CC} keyword in the general input
 section of \sir\ \Sec{*WAVE FUNCTIONS}. For instance, a minimal
 input file for a CCSD(T) energy calculation would be:
 \begin{verbatim}
-**GENERAL
-.RUNSIR
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
 **WAVE FUNCTIONS
 .CC
 *CC INPUT
 .CC(T)
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 Several models can be calculated at the same time by specifying more models

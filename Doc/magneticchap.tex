@@ -110,7 +110,7 @@ magnetizabilities will look like:
 .HF
 **PROPERTIES
 .MAGNET
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 This will invoke the calculation of molecular magnetizabilities using
@@ -203,7 +203,7 @@ be:
 .HF
 **PROPERTIES
 .SHIELD
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 This will invoke the calculation of nuclear shieldings using
@@ -276,7 +276,7 @@ input file for the calculation of the molecular g tensor is thus:
 .HF
 **PROPERTIES
 .MOLGFA
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 The molecular g tensor consists of two terms: a nuclear term and a
@@ -357,7 +357,7 @@ look like
 .ISOTOP
     3
     2   1    1
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 As the nuclear spin--rotation\index{spin-rotation constant} constants
@@ -421,7 +421,7 @@ follows:
 .HF
 **PROPERTIES
 .SPIN-SPIN
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 This input will calculate the indirect nuclear spin--spin
@@ -466,7 +466,7 @@ selected three atoms will look as:
 .SELECT
     3
     2    4    5
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 We refer to the section describing the \Sec{SPIN-S} input module for
@@ -564,7 +564,7 @@ SD  01 z
 .
 .
 
-*END OF
+**END OF DALTON INPUT
 \end{verbatim}
 
     This will invoke the calculation of hyperfine
@@ -688,7 +688,7 @@ the nuclear magnetic shieldings will be:
 .CTOCD
 .MAGNET
 .SHIELD
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 whereas for the same calculation at SOPPA level it will be:
@@ -704,7 +704,7 @@ whereas for the same calculation at SOPPA level it will be:
 .CTOCD
 .MAGNET
 .SHIELD
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 A Coupled Cluster calculation of the diamagnetic term of the CTOCD-DZ
@@ -712,7 +712,7 @@ magnetizability requires the following input:
 
 \begin{verbatim}
 **DALTON INPUT
-.RUNSIR
+.RUN WAVE FUNCTIONS
 **INTEGRALS
 .RANGMO
 .DIPVEL
@@ -743,7 +743,7 @@ ZDIPVEL ZZRANG
 XDIPVEL YZRANG
 XDIPVEL ZZRANG
 YDIPVEL YZRANG
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 The value for each component of the CTOCD-DZ diamagnetic contribution to the

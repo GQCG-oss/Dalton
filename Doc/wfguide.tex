@@ -128,7 +128,7 @@ calculation on water with maximum use of defaults:
 *ORBITAL INPUT
 .MOSTART            -- initial orbitals are orbitals from a previous run
  NEWORB                (for example MP2 orbitals)
-**END OF INPUTS
+**(name of next input module)
 \end{verbatim}
 
 \noindent
@@ -357,7 +357,7 @@ then updated during the DIIS\index{DIIS} iterations:
 .RUN WAVE FUNCTIONS
 **WAVE FUNCTIONS
 .HF
-*END OF DALTON
+**END OF DALTON INPUT
 \end{verbatim}
 \label{sirius_ex1a}
 
@@ -372,7 +372,7 @@ calculation (see previous example):
 **WAVE FUNCTIONS
 .HF
 .MP2
-*END OF DALTON
+**END OF DALTON INPUT
 \end{verbatim}
 \label{sirius_ex1b}
 
@@ -391,7 +391,7 @@ file, as indicated in the following example:
 *ORBITAL INPUT
 .MOSTART
  NEWORB
-*END OF DALTON
+**END OF DALTON INPUT
 \end{verbatim}
 \label{sirius_ex2}
 
@@ -447,7 +447,7 @@ described in Ref.~\cite{hjajpjhajojcp88}. The input would be:
  6 4 4 0
 *ORBITAL INPUT
 .NOSUPSYM
-*END OF DALTON
+**END OF DALTON INPUT
 \end{verbatim}
 \label{sirius_ex3}
 
@@ -487,7 +487,7 @@ MCSCF\index{RASSCF} as indicated in this input example:
 *OPTIMIZATION
 .TRACI
 .FOCKONLY
-**END OF DALTON
+**END OF DALTON INPUT
 \end{verbatim}
 \label{sirius_ex4}
 
@@ -554,7 +554,7 @@ Ref.~\cite{hjajpjhajcp87}. Such an input would look like:
  6 6
 .PRINTLEVELS
  5 5
-**END OF DALTON
+**END OF DALTON INPUT
 \end{verbatim}
 \label{sirius_ex5}
 
@@ -616,7 +616,7 @@ Frozen core orbital calculation.
  NEWORB            | Start from corresponding MCSCF ground state
 *CI VECTOR
 .STARTHDIAGONAL
-**END OF DALTON
+**END OF DALTON INPUT
 \end{verbatim}
 \label{sirius_ex6}
 
@@ -713,6 +713,6 @@ non-equilibrium excited state calculation; keyword \Key{INERSINITIAL}.
  10
 .PRINT
  6
-*END OF DALTON
+**END OF DALTON INPUT
 \end{verbatim}
 \label{sirius_ex8}

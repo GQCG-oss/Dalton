@@ -46,7 +46,7 @@ specifying the keyword \quotekw{\Key{OPTIONS}}.  For example, the input
 \begin{inputex} \begin{verbatim}
 **WAVE FUNCTIONS
 .OPTIONS
-**END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim} \end{inputex}
    will cause a dump of the labels for the main input groups in {\sir},
    while
@@ -55,7 +55,7 @@ specifying the keyword \quotekw{\Key{OPTIONS}}.  For example, the input
 **WAVE FUNCTIONS
 *ORBITAL INPUT
 .OPTIONS
-**END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim} \end{inputex}
    will cause a dump of the labels for the \quotekw{*ORBITAL INPUT} input group
    in {\sir}.
@@ -64,7 +64,7 @@ specifying the keyword \quotekw{\Key{OPTIONS}}.  For example, the input
    e.g.
 
 \begin{inputex} \begin{verbatim}
-**END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim} \end{inputex}
 }
 \end{enumerate}
@@ -174,14 +174,14 @@ The wave function input is finished when a line is encountered beginning
 with two stars, for example
 
 \begin{inputex} \begin{verbatim}
-   **END OF INPUT
+   **END OF DALTON INPUT
 \end{verbatim} \end{inputex}
 or
 
 \begin{inputex} \begin{verbatim}
    **MOLORB
    ... formatted molecular orbitals coefficients
-   **END OF INPUT
+   **END OF DALTON INPUT
 \end{verbatim} \end{inputex}
 
 \noindent

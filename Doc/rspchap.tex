@@ -104,7 +104,7 @@ atomic units) will be:
 .FREQUENCIES
  3
  0.0 0.5 1.0
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 The {\tt .DIPLEN} keyword has the effect of defining the $A$ and $B$
 operators as all components of the electric dipole operator.
@@ -130,7 +130,7 @@ for SOPPA dynamic polarizability tensors  will be:
 .FREQUENCIES
  3
  0.0 0.5 1.0
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 The {\tt .NOITRA} keyword has the effect that the transformation of the two 
 electron integrals necessary for a MP2 and SOPPA calculation is only perfomed
@@ -158,7 +158,7 @@ for SOPPA(CCSD) dynamic polarizability tensors  will be:
 .FREQUENCIES
  3
  0.0 0.5 1.0
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 The linear response function contains a wealth of
@@ -180,7 +180,6 @@ modification of the input above will suffice;
 .DIPLEN
 .ROOTS
  0 0 0 3
-*END OF INPUT
 \end{verbatim}
 
 \subsection{Quadratic response}
@@ -219,7 +218,7 @@ only we may use the following input:
 **RESPONSE
 *QUADRATIC
 .DIPLNZ
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 When no frequencies are given in the input, the static value is assumed by
 default. If we wish to calculate dynamic hyperpolarizabilities we supply
@@ -243,7 +242,6 @@ keywords as in the linear case (Sec.~\ref{subsec:linrsp}):
 .SINGLE RESIDUE
 .ROOTS
  2 0 0 0
-*END OF INPUT
 \end{verbatim}
 which in this case means the two-photon transition
 amplitude\index{two-photon!amplitude} between the
@@ -275,7 +273,6 @@ circularly polarized.
 .TWO-PHOTON
 .ROOTS
  3 0 0 0
-*END OF
 \end{verbatim}
 
 Another special case of a residue of the quadratic response function 
@@ -287,7 +284,6 @@ is the ${\cal{B}}(0\to f)$ term of magnetic circular dichroism (MCD).
 .ROOTS
  2 2 0 0
 .MCDBTERM
-*END OF INPUT
 \end{verbatim}
 For each dipole-allowed excited state among those specified in 
 {\tt .ROOTS}, the {\tt .MCDBTERM} keyword automatically 
@@ -349,7 +345,7 @@ $-\langle\!\langle x_i;x_j,x_k,x_l\rangle\!\rangle_{000}$,
 **RESPONSE
 *CUBIC
 .DIPLEN
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 
@@ -379,7 +375,7 @@ input.
  0.01
 .ROOTS
   1 0 0 0
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 

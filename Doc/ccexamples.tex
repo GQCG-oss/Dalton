@@ -25,7 +25,7 @@ The following input describes the calculation of SCF, MP2, CCSD and
 CCSD(T) ground state energies:
 %
 \begin{verbatim}
-**GENERAL
+**DALTON INPUT
 .RUN WAVE FUNCTIONS
 **WAVE FUNCTIONS
 .CC
@@ -33,7 +33,7 @@ CCSD(T) ground state energies:
 .MP2              
 .CCSD
 .CC(T)
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 Note that SCF, MP2 and CCSD energies are obtained by default if 
 CCSD(T) (\Key{CC(T)}) is required. Therefore the 
@@ -47,7 +47,7 @@ first-order one-electron properties available in \cc, for the hierarchy of
 wavefunction models SCF (indirectly obtained through CCS), MP2, CCSD and CCSD(T).
 For details, see Section~\ref{sec:ccfop}.
 \begin{verbatim}
-**GENERAL
+**DALTON INPUT
 .RUN WAVE FUNCTIONS
 **INTEGRALS
 .DIPLEN
@@ -65,7 +65,7 @@ For details, see Section~\ref{sec:ccfop}.
 .CC(T)
 *CCFOP
 .ALLONE
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 \section{Static and frequency-dependent dipole polarizabilities and
@@ -80,7 +80,7 @@ The calculation of the electric dipole moment has been
 included in the same run.
 
 \begin{verbatim}
-**GENERAL
+**DALTON INPUT
 .RUN WAVE FUNCTIONS
 **INTEGRALS
 .DIPLEN
@@ -100,7 +100,7 @@ ZDIPLEN ZDIPLEN
 0.00  0.072
 .DISPCF
   6
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 \section{Static and frequency-dependent dipole hyperpolarizabilities 
@@ -117,7 +117,7 @@ are also calculated.
 For other specific cases, see Sections~\ref{sec:ccqr} and \ref{sec:cccr}
 
 \begin{verbatim}
-**GENERAL
+**DALTON INPUT
 .RUN WAVE FUNCTIONS
 **INTEGRALS
 .DIPLEN
@@ -154,7 +154,7 @@ ZDIPLEN ZDIPLEN ZDIPLEN ZDIPLEN
 0.00  0.072                      !omega_3
 .DISPCF
  6
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 Obviously, linear, quadratic and cubic response modules can also be
 run separately. 
@@ -163,7 +163,7 @@ run separately.
 This is an example for the calculation of singlet excitation energy and
 oscillator strength for a system with \verb+NSYM = 2+ (C$_s$).
 \begin{verbatim}
-**GENERAL
+**DALTON INPUT
 .RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
@@ -178,7 +178,7 @@ oscillator strength for a system with \verb+NSYM = 2+ (C$_s$).
  2 1                    !2 states in symmetry 1 and 1 state in symmetry 2
 *CCLRSD
 .DIPOLE
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 Triplet excitation energies can be obtained adding
 an extra line to \Key{NCCEXCI} specifying the number 
@@ -191,7 +191,7 @@ Available for CCS, CC2, MP2, CCSD and CCSD(T) using integral direct analytic gra
 
 \noindent For a single integral-direct gradient calculation:
 \begin{verbatim}
-**GENERAL
+**DALTON INPUT
 .DIRECT
 .RUN WAVE FUNCTIONS
 **INTEGRAL
@@ -205,7 +205,7 @@ Available for CCS, CC2, MP2, CCSD and CCSD(T) using integral direct analytic gra
 *CC INP
 .CCSD
 *DERIVATIVES
-*END OF
+**END OF DALTON INPUT
 \end{verbatim}
 Note that if several wavefunction models are specified, 
 the gradient calculation is performed only for the ``lowest-level" 
@@ -213,7 +213,7 @@ model in the list.
 
 \noindent For a geometry optimization:
 \begin{verbatim}
-**GENERAL
+**DALTON INPUT
 .OPTIMIZE
 **INTEGRAL
 .DIPLEN
@@ -225,7 +225,7 @@ model in the list.
 .NOSUPSYM
 *CC INPUT
 .CC(T)
-*END OF
+**END OF DALTON INPUT
 \end{verbatim}
 
 %\section{Excited state geometry optimization}
@@ -235,7 +235,7 @@ model in the list.
 an MP2-R12/A calculation is as follows (the key \Key{AUXBAS} is used only if
 an auxiliary basis is employed):
 \begin{verbatim}
-**GENERAL
+**DALTON INPUT
 .DIRECT
 .RUN WAVE FUNCTIONS
 **INTEGRAL
@@ -250,5 +250,5 @@ an auxiliary basis is employed):
 *R12
 .NO A'
 .NO B
-*END OF
+**END OF DALTON INPUT
 \end{verbatim}

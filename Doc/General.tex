@@ -40,7 +40,7 @@ Douglas-Kroll transformed one-electron potential and kinetic energy Hamiltonian.
 
 %\item[\Key{HERMIT}] Alternative keyword to \verb|.INTEGRALS|. Obsolete, do not use.
 
-\item[\Key{INPTES}] Test the input of the \Sec{*GENERAL} input
+\item[\Key{INPTES}] Test the input of the \Sec{*DALTON INPUT} input
 module. The program will abort after the completion of the input test,
 and no calculation will be executed.
 
@@ -169,7 +169,7 @@ calculation.
 Invoke all the programs {\her}, {\sir}, and {\resp} for a single point
 calculation.
 
-\item[\Key{RUN WAVE FUNCTION}]
+\item[\Key{RUN WAVE FUNCTIONS}]
 
 Invoke the programs {\her} and {\sir} for a single point energy calculation.
 
@@ -217,10 +217,11 @@ Cluster and MCSCF wave functions as well as DFT calculations. See
 Chapter~\ref{chap:inpref}. 
 \end{description}
 
-\subsection{End of General input: \Sec{END OF}}
-
-The last input card for the general input section (\Sec{*DALTON})
-may be \Sec{END OF}.
+%hjaaj Feb 2003: next is redundant, do not mention but keep in code for now
+%\subsection{End of General input: \Sec{END OF}}
+%
+%The last input card for the general input section (\Sec{*DALTON})
+%may be \Sec{END OF}.
 
 \subsection{General: \Sec{OPTIMIZE}}\label{subsec:minimize}
 

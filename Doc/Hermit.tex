@@ -22,7 +22,7 @@ Integrals) is a highly vectorized two-electron integral code with
 orientation towards integral distributions. {\eri} is
 invoked by default in integral-direct coupled-cluster calculations and
 may in other cases be invoked by specifying the \Key{RUNERI} keyword
-in the \Sec{*GENERAL} input section, which ensures that {\eri}
+in the \Sec{*DALTON INPUT} input section, which ensures that {\eri}
 rather than {\twoint} is called whenever {\eri} has the required
 functionality. {\dalton} will, however, automatically revert to
 {\twoint} for any two-electron integral not available in {\eri}:
@@ -1253,7 +1253,7 @@ Directives controlling the two-electron integral calculation with {\eri}
 are specified in the \Sec{ER2INT} section.
 By default {\eri} is only used for integral-direct coupled-cluster
 calculations. However, {\eri} can also be invoked by specifying the
-\Key{RUNERI} keyword in the \Sec{*GENERAL} input section. Note that
+\Key{RUNERI} keyword in the \Sec{*DALTON INPUT} input section. Note that
 {\dalton} will automatically use {\twoint} for all integrals not
 available in {\eri}.
 

@@ -110,7 +110,7 @@ geometry, will look like
 **FINAL
 .VIBANA
 .SHIELD
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 The keyword \Key{OPTIMIZE} by default signals a search for a minimum,
@@ -156,7 +156,7 @@ input:
 **FINAL
 .VIBANA
 .SHIELD
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 In case a vibrational analysis has been requested at the optimized
@@ -189,7 +189,7 @@ optimization\index{first-order optimization}\index{geometry optimization!first-o
 **FINAL
 .VIBANA
 .SHIELD
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 This will use the default method of \Key{OPTIMIZE}: a first-order
@@ -327,7 +327,7 @@ STO-3G
 cc-daug-pVTZ
 **WAVE FUNCTIONS
 .HF
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 As one can see, two small basis sets have been chosen 
@@ -418,7 +418,7 @@ section:
 .2NDORD
 **WAVE FUNCTIONS
 .HF
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 or by adding the keyword \Key{IMAGE} in the \Sec{WALK} section:
 \begin{verbatim}
@@ -428,7 +428,7 @@ or by adding the keyword \Key{IMAGE} in the \Sec{WALK} section:
 .IMAGE
 **WAVE FUNCTIONS
 .HF
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 Any property may of course be specified at all stages of the
@@ -492,7 +492,7 @@ image optimization where the third mode is inverted:
  3
 **WAVE FUNCTIONS
 .HF
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 \subsection{Transition states using first-order
@@ -519,7 +519,7 @@ transition state optimization using \Sec{OPTIMIZE} is:
 .SADDLE
 **WAVE FUNCTIONS
 .HF
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 This will calculate the Hessian at the initial geometry, then update
 it using Bofill's
@@ -545,7 +545,7 @@ a model Hessian indicated by the keyword \Key{INIMOD}:
 .SADDLE
 **WAVE FUNCTIONS
 .HF
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 Provided the starting geometry is reasonably near the transition
 state, such optimization will usually converge correctly. If not, it
@@ -604,7 +604,7 @@ ethane\index{ethane} molecule:
  1 1 2 1 1 1 1 1 1
 **WAVE FUNCTIONS
 .HF
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 
@@ -676,7 +676,7 @@ input following the third mode will thus look like:
  3
 **WAVE FUNCTIONS
 .HF
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 The level-shifted mode-following uses an algorithm similar to the
@@ -750,7 +750,7 @@ and a typical input would look like:
  1
 **WAVE FUNCTIONS
 .HF
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 Most of this input should now be self-explanatory. The request for an
@@ -860,7 +860,7 @@ protonated formaldehyde\index{formaldehyde} would look like:
  1
 **WAVE FUNCTIONS
 .HF
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 That the walk is to
@@ -1012,7 +1012,7 @@ module}, the only input needed is
 **WAVE FUNCTIONS
 .HF
 .MP2
-*END OF INPUT
+**END OF DALTON INPUT
 \end{verbatim}
 
 The size of the displacements used during the evaluation of the
