@@ -1256,6 +1256,16 @@ $tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(SAFEFFLAGS) -c \$*.F
 hersym.o: hersym.F
 $tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(SAFEFFLAGS) -c \$*.F 
 EOF
+
+cat <<EOF>>eri/Makefile
+eri2cft.o: eri2cft.F
+$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(SAFEFFLAGS) -c \$*.F 
+EOF
+
+cat<<EOF>>amfi/Makefile
+amfi.o: amfi.F
+$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(SAFEFFLAGS) -c \$*.F 
+EOF
 fi
 #
 # Update the DALTON run-script
