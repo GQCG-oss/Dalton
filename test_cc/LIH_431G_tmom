@@ -102,7 +102,7 @@ ERROR[1]="ENERGIES NOT CORRECT"
 
 
 # CC3 polarizability :
-CRIT1=`$GREP  "     \| ZDIPLEN   \|     ( -|-0).48586700 \|     ( -|-0).94072329 \|       ( |0).45706641    \|" $log | wc -l`
+CRIT1=`$GREP  "     \| *ZDIPLEN *\| *( -?|-?0)\.48586700 *\| *( -?|-?0)\.94072329 *\| *( |0)\.45706641 *\|" $log | wc -l`
 
 TEST[2]=$CRIT1
 CTRL[2]=1
