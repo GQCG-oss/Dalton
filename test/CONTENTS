@@ -893,6 +893,31 @@ Wave Function:    MP2 (SOPPA)
 Test Purpose:     Calculation of excitation energies through ABACUS
 
 
+prop_newtramcscf
+----------------
+Molecule:         H2O
+Wave Function:    MCSCF (CAS)
+Test Purpose:     Spin-spin coupling constants using New integral
+                  transformation
+
+
+prop_newtrasoppa
+----------------
+Molecule:         CH4
+Wave Function:    MP2 (SOPPA) / cc-pVDZ
+Test Purpose:     Calculation of SOPPA spin-spin coupling constants
+                  through ABACUS using the PRESORT option
+                  (new integral transformation)
+
+
+prop_newtrasoppacc
+------------------
+Molecule:         H2O
+Wave Function:    CCSD (SOPPA(CCSD))
+Test Purpose:     Calculation of SOPPA(CCSD) spin-spin coupling constants
+                  through ABACUS using New integral transformation
+
+
 prop_nolondon
 -------------
 Molecule:         H2O

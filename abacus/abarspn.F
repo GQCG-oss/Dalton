@@ -199,7 +199,8 @@ C     PERFORM INTEGRAL TRANSFORMATION
 C
 cSPAS:29.11.2002 debugging newtra for SOPPA
 cSPAS IF (FABRHS) THEN
-      IF (FABRHS .AND. .NOT. (SOPPA .AND. NEWTRA)) THEN
+      IF (FABRHS .AND. 
+     &    .NOT. (SOPPA .AND. NEWTRA .AND. .NOT. CCPPA)) THEN
 cKeinSPASMehr:29.11.2002 debugging newtra for SOPPA
          KCMO   = 1
          KWTRA  = KCMO   + NCMOT
