@@ -23,9 +23,6 @@
 
 #ifdef VAR_PGF77
 #define __FUNCTION__ "PGI_does_not_define__FUNCTION__"
-#define "PGI"
-#else
-#warning "OK"
 #endif
 
 #define ELEMENTS(arr) (sizeof(arr)/sizeof(arr[0]))
