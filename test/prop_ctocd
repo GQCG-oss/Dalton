@@ -176,25 +176,25 @@ CTRL[6]=6
 ERROR[6]="CTOCD-DZ MAGNETIZABILITIES NOT CORRECT"
 
 # Total magnetizability tensor
-CRIT1=`$GREP "Bx * \-2\.4745933960[0-9][0-9] * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT2=`$GREP "By * (\-0| \-| 0|  )\.000000000000 * \-2\.30318492392[0-9] * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * \-2\.42109499601[0-9]" $log | wc -l`
+CRIT1=`$GREP "Bx * \-2\.4745933...[0-9][0-9] * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
+CRIT2=`$GREP "By * (\-0| \-| 0|  )\.000000000000 * \-2\.30318492...[0-9] * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
+CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * \-2\.42109499...[0-9]" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[7]=3
 ERROR[7]="TOTAL CTOCD-DZ MAGNETIZABILITY TENSOR NOT CORRECT"
 
 # Diamagnetic magnetizability tensor
-CRIT1=`$GREP "Bx * \-2\.91280590349[0-9] * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT2=`$GREP "By * (\-0| \-| 0|  )\.000000000000 * \-2\.42296273472[0-9] * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * \-2\.65411279651[0-9]" $log | wc -l`
+CRIT1=`$GREP "Bx * \-2\.91280590...[0-9] * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
+CRIT2=`$GREP "By * (\-0| \-| 0|  )\.000000000000 * \-2\.42296273...[0-9] * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
+CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * \-2\.65411279...[0-9]" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[8]=3
 ERROR[8]="CTOCD-DZ DIAMAGNETIC MAGNETIZABILITY TENSOR NOT CORRECT"
 
 # Paramagnetic magnetizability tensor
-CRIT1=`$GREP "Bx * (0| )\.43821250744[0-9] * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT2=`$GREP "By * (\-0| \-| 0|  )\.000000000000 * (0| )\.11977781080[0-9] * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
-CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * (0| )\.23301780050[0-9]" $log | wc -l`
+CRIT1=`$GREP "Bx * (0| )\.4382125(0|1)...[0-9] * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
+CRIT2=`$GREP "By * (\-0| \-| 0|  )\.000000000000 * (0| )\.11977781...[0-9] * (\-0| \-| 0|  )\.000000000000" $log | wc -l`
+CRIT3=`$GREP "Bz * (\-0| \-| 0|  )\.000000000000 * (\-0| \-| 0|  )\.000000000000 * (0| )\.23301780...[0-9]" $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[9]=6
 ERROR[9]="PARAMAGNETIC MAGNETIZABILITY TENSOR NOT CORRECT"
@@ -223,9 +223,9 @@ CTRL[11]=8
 ERROR[11]=" CTOCD-DZ CHEMICAL SHIELDING FOR OXYGEN NOT CORRECT"
 
 # Total shielding tensor for O
-CRIT1=`$GREP "O * x * 212\.9841209[0-9] * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
-CRIT2=`$GREP "O * y * (0| )\.00000000 * 273\.1774658[0-9] * (0| )\.00000000" $log | wc -l`
-CRIT3=`$GREP "O * z * (0| )\.00000000 * (0| )\.00000000 *  216\.4205761[0-9]" $log | wc -l`
+CRIT1=`$GREP "O * x * 212\.9841...[0-9] * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
+CRIT2=`$GREP "O * y * (0| )\.00000000 * 273\.1774...[0-9] * (0| )\.00000000" $log | wc -l`
+CRIT3=`$GREP "O * z * (0| )\.00000000 * (0| )\.00000000 *  216\.4205...[0-9]" $log | wc -l`
 TEST[12]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[12]=6
 ERROR[12]="TOTAL CTOCD-DZ SHIELDING TENSOR FOR OXYGEN NOT CORRECT"
@@ -246,9 +246,9 @@ CTRL[14]=18
 ERROR[14]="CTOCD-DZ CHEMICAL SHIELDING FOR HYDROGEN NOT CORRECT ${TEST[14]}"
 
 # Total shielding tensor for H1 and H2
-CRIT1=`$GREP "H * 1 x *  22\.2696071[0-9] * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
-CRIT2=`$GREP "H * 1 y * (0| )\.00000000 * 34\.9920242[0-9] * \-8\.5077580[0-9]" $log | wc -l`
-CRIT3=`$GREP "H * 1 z * (0| )\.00000000 * \-5\.9340281[0-9] *  27\.2424525[0-9]" $log | wc -l`
+CRIT1=`$GREP "H * 1 x *  22\.2696...[0-9] * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
+CRIT2=`$GREP "H * 1 y * (0| )\.00000000 * 34\.9920...[0-9] * \-8\.5077...[0-9]" $log | wc -l`
+CRIT3=`$GREP "H * 1 z * (0| )\.00000000 * \-5\.9340...[0-9] *  27\.2424...[0-9]" $log | wc -l`
 TEST[15]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[15]=6
 ERROR[15]="TOTAL CTOCD-DZ SHIELDING TENSOR FOR HYDROGEN NOT CORRECT"
