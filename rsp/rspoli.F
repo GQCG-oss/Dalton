@@ -110,6 +110,13 @@ C
 #include <wrkrsp.h>
 #include <infsop.h>
 #include <dftcom.h>
+CSONIA SONIA SONIA
+CSONIA SONIA SONIA control direct for kappabar of CCSD(T)
+CSONIA SONIA SONIA
+#include <grdccpt.h>
+CSONIA SONIA SONIA
+CSONIA SONIA SONIA end control direct for kappabar of CCSD(T)
+CSONIA SONIA SONIA
 C
 C -- local constants
 C
@@ -219,6 +226,17 @@ C IF DIRFCK (direct RPA) compute new densities
 C and Fock matrices in AO basis
 C
       IF (DIRFCK) GO TO 1000
+
+CSONIA SONIA SONIA
+CSONIA SONIA SONIA control direct for kappabar of CCSD(T)
+CSONIA SONIA SONIA
+      IF (LGRDCCPT) THEN
+         write(lupri,*)'Warning RSPOLI: LGRDCCPT = ', LGRDCCPT
+         GO TO 1000
+      END IF
+CSONIA SONIA SONIA
+CSONIA SONIA SONIA end control direct for kappabar of CCSD(T)
+CSONIA SONIA SONIA
 C
 C not DIRFCK, i.e.
 C calculate Fock matrices etc. in MO basis
