@@ -428,6 +428,7 @@ C
 C
       NLBTOT = 0
 C
+      IPRINT=IPRLNR
       IF (ALFA .OR. ROAA .OR. ROAG) THEN
          NCOMP  = 0
          NPATOM = 0
