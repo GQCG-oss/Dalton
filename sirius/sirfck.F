@@ -188,7 +188,7 @@ C
 C
 #include <iratdef.h>
 #include <dummy.h>
-      PARAMETER (D1 = 1.0D0, D4 = 4.0D0, DMP5 = -0.5D0)
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, DMP5 = -0.5D0)
 C
 C Used from common blocks
 C   INFORB: NSYM, NBAS(:), N2BASX
@@ -202,6 +202,7 @@ C
 C
 C
 #include <memint.h>
+#include <dftcom.h>
       CALL QENTER('SIRFCK2')
 C
 C     Transfer constant factors to DMAT
@@ -215,7 +216,12 @@ C     IFCTYP 02   : factor -0.5 from exchange integral
          IF (IFCTYP(I) .EQ. 11 .OR. IFCTYP(I) .EQ. 13) THEN
             CALL DSCAL(N2BASX,D4,DMAT(1,I),1)
          ELSE IF (IFCTYP(I) .EQ. 2) THEN
-            CALL DSCAL(N2BASX,DMP5,DMAT(1,I),1)
+            IF (HFXFAC .EQ. D0) 
+C This exchange-only matrix is zero
+               IFCTYP(I) = 0
+            ELSE
+               CALL DSCAL(N2BASX,HFXFAC*DMP5,DMAT(1,I),1)
+            END IF
          END IF
       END DO
 C
@@ -325,8 +331,10 @@ C
             DFAC = D1 / D4
             CALL DSCAL(N2BASX,DFAC,DMAT(1,I),1)
          ELSE IF (IFCTYP(I) .EQ. 2) THEN
-            DFAC = D1 / DMP5
-            CALL DSCAL(N2BASX,DFAC,DMAT(1,I),1)
+            IF (HFXFAC .NE. D0) THEN
+               DFAC = D1 / (DMP5*HFXFAC)
+               CALL DSCAL(N2BASX,DFAC,DMAT(1,I),1)
+            END IF
          END IF
 C
   300 CONTINUE
