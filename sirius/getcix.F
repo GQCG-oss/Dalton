@@ -385,7 +385,7 @@ C               symmetries or triplet in ABACUS and RESPONSE
          LCINDX = LCINSV
       ELSE
 C     ... NASHT .le. 1 .or. HSROHF (Hartree-Fock)
-         IF (HSROHF) THEN
+         IF (HSROHF .OR. DOMC) THEN
 C        ... high spin ROHF
             JCSYM = LSYM
          ELSE IF (NASHT .EQ. 1) THEN

@@ -97,6 +97,7 @@ C
 C
 C
 #include <memint.h>
+      IF (NDMAT.EQ.0) RETURN
       CALL QENTER('SIRFCK')
       IF (DIRECT) THEN
          IF (SFIRST) THEN

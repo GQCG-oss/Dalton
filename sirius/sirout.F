@@ -327,7 +327,7 @@ C        CI calculation
          ELSE
             WRITE (LUW4,5012)
          END IF
-      ELSE IF (FLAG(2) .AND. (NASHT .GT. 1 .OR. ISTATE .NE. 1)) THEN
+      ELSE IF (FLAG(2) .AND. (NASHT .GE. 1 .OR. ISTATE .NE. 1)) THEN
 C        MCSCF calculation (presumably)
          WRITE (LUW4,5020) ISTATE,EMCSCF,POTNUC,(EMCSCF-POTNUC-ESOLT)
          IF (FLAG(16)) WRITE (LUW4,5025) ESOLT
