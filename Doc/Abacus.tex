@@ -748,7 +748,7 @@ vectors are added as described in Ref.~\cite{tuhjahjajpjjcp84}. Read
 one more line containing maximum dimension. Default value is~400.
 
 \item[\Key{NEXCIT}]\verb| |\newline
-\verb|READ (LUCMD, '(8I5)') (NEXCIT(I), I= 1,8)|
+\verb|READ (LUCMD,*) (NEXCIT(I), I= 1,NSYM)|
 
 Set the number of excitation energies\index{excitation energy} to be
 calculated in each 
@@ -1497,6 +1497,27 @@ spin-spin coupling constants will be calculated. Read one more line
 containing the abundance threshold in per cent. The default value is~1.0 (i.e. 1\%),
 which includes both protons and $^{13}$C nuclei.
 
+\item[\Key{COUPLING NUCLEUS}]\verb| |\newline
+\verb|READ (LUCMD,*) NUCSPI|\newline
+\verb|READ (LUCMD,*) (IPOINT(IS), IS=1,NUCSPI)|
+
+Calculates all coupling constants in a molecule to a selected number
+of nuclei only. The first number \verb|NUCSPI| is the number of nuclei
+to which couplings shall be calculated, and the next line reads in
+the number of the symmetry-independent nucleus as given in the
+\verb|MOLECULE.INP| file.
+
+\item[\Key{ISOTOPE}]\verb| |\newline
+\verb|READ (LUCMD,*) (ISOTPS(IS), IS=1, NATOMS)|
+
+Calculate the indirect spin--spin coupling constants for a given
+isotopic constitution of the molecule. The next line reads the isotope
+number for each of the atoms in the molecule (including also
+symmetry-dependent molecules). The isotopic number for each atom is
+given in terms of the occurance in the list of natural abundance of
+the isotopes for the given atom, {\it i.e.\/} the most abundant
+isotope is number 1, the second-most abundant is number 2 and so on.
+
 \item[\Key{NODSO}] Do not calculate diamagnetic
 spin-orbit\index{diamagnetic spin-orbit}
 contributions to the total indirect spin-spin 
@@ -1533,15 +1554,17 @@ of \verb|IPRDEF| from the general input module.
 spin-dipole\index{spin-dipole}\index{Fermi contact} and Fermi
 contact contributions in the calculations.
 
-\item[\Key{SDxFC ONLY}]\verb| |\newline
+\item[\Key{SDxFC ONLY}]
 
-Will only calculate the spin dipole--Fermi\index{spin-dipole}\index{Fermi contact} contact cross term, and the
-Fermi contanct--Fermi contact contribution for the triplet
-responses. The first of these to terms only contribute to the
+Will only calculate the spin
+dipole--Fermi\index{spin-dipole}\index{Fermi contact} contact cross
+term, and the 
+Fermi contact--Fermi contact contribution for the triplet
+responses. The first of these two terms only contribute to the
 anistotropy, and one may in this way obtain the most important triplet
 contributions to the isotropic and 
 anisotropic\index{spin-spin coupling}\index{spin-spin anisotropy}
-spin-spin couplings by only solving one instead of ten response
+spin-spin couplings by only solving one instead of seven response
 equations for each nucleus.
 
 \item[\Key{SELECT}]\verb| |\newline
@@ -1556,7 +1579,7 @@ at least one isotope of the nuclei requested will be evaluated (even
 though the most abundant isotope with a non-zero spin has a lower
 natural abundance 
 than the abundance threshold). Read one more line containing the
-number of nuclei selected, and another line their number (sorted after
+number of nuclei selected, and another line with their number (sorted after
 the input order). By default, all nuclei with an isotope with non-zero spin
 and with a natural abundance larger than the threshold will be included in
 the list of nuclei for which indirect spin-spin couplings will be
