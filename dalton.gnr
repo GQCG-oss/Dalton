@@ -147,7 +147,7 @@ if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
       cp $WRKDIR/$molfil.$MOLEXT MOLECULE.INP
    else
       echo "$WRKDIR/$molfil.$MOLEXT does not exist or is not readable"
-      ierr=1
+#      ierr=1
    fi
    if [ "$optf" != "0" ] ; then
       if [ -s $WRKDIR/$optf.tar.gz -a -r $WRKDIR/$optf.tar.gz ] ; then
