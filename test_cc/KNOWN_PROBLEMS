@@ -22,12 +22,3 @@ HP-UX
 
   test case field doesn't yet work, because the .PACK flag
   is not yet implemented for HP-UX
-
-
-
-------------------------------------------------------------------------
-SGI 64-bit
-------------------------------------------------------------------------
-
-  test case optco yields incorrect RSTAR energy, though it
-  eventually converges to the correct geometry
