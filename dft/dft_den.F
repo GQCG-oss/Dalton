@@ -43,10 +43,10 @@ C
 #include <dummy.h>
 #include <mxcent.h>
 #include <iratdef.h>
+#include <inforb.h>
 C 
       DIMENSION DMAT(NBAST,NBAST), WORK(LWORK)
 C
-#include <inforb.h>
 #include <inftap.h>
 #include <infvar.h>
 #include <nuclei.h>
@@ -129,15 +129,15 @@ C  /* Deck qdrds1 */
 C
 #include <implicit.h>
       PARAMETER (D0 = 0.0D0, TWO = 2.0D0, HALF = 0.5D0)
+#include <maxorb.h>
+#include <inforb.h>
       LOGICAL NODC, NODV
       DIMENSION CMO(*), DV(*), DSO(NNBAST)
 #include <iratdef.h>
 #include <mxcent.h>
 #include <priunit.h>
-#include <maxorb.h>
 C
 #include <abainf.h>
-#include <inforb.h>
 #include <inftap.h>
       INTEGER R, S, RS, U, V, UV
 C

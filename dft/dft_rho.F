@@ -45,12 +45,12 @@ C
 #include <mxcent.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0,
      &           DP5 = 0.5D0)
+#include <inforb.h>
 C
       DIMENSION DMAT(NBAST,NBAST), GSO(NBAST,NTYPSO), DMAGAO(NBAST)
 C
 #include <dftinf.h>
 #include <symmet.h>
-#include <inforb.h>
 C
 C
       IF (NSYM.EQ.1) THEN

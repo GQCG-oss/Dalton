@@ -90,7 +90,7 @@ C
 #if defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_DEC) || (defined (SYS_LINUX) && defined (VAR_PGF77))
       POINTER (WADDR,WORK(1))
 #else
-#if (defined (SYS_LINUX) && defined (VAR_G77))
+#if (defined (SYS_LINUX))
       DIMENSION WORK(2)
 #else
 #if defined (SYS_NEC) || defined (SYS_AIX) || (defined (SYS_LINUX) && defined (VAR_IFC))
@@ -163,7 +163,7 @@ C
       ALLOCATE (WORK(LMWORK+2),STAT=I)
 #endif
 #endif
-#if (defined (SYS_LINUX) && defined (VAR_G77))
+#if (defined (SYS_LINUX))
       WADDR = 1
 #endif
       IF (WADDR .EQ. 0) THEN
@@ -217,7 +217,7 @@ C        BASDIR="/Users/helgaker/Dalton/basis/"
 C
 C     Set memory traps and initialize unit numbers
 C
-#if !(defined (SYS_LINUX) && defined (VAR_G77))
+#if !(defined (SYS_LINUX))
       WORK(1)        = WRKDLM
       WORK(2+LMWORK) = WRKDLM
 #endif
@@ -374,7 +374,7 @@ C
       END IF
 #else /* VAR_MPI */
          CALL RECVNAMES
-#if defined (VAR_G77)
+#if defined (SYS_LINUX)
          CALL CEXE(EXEDRV, LMWORK, WRKDLM,MASTER,MYNUM)
 #else
          CALL EXEDRV(WORK, LMWORK, WRKDLM,MASTER,MYNUM)
@@ -395,7 +395,7 @@ C
             IF (TESTIN) THEN
                CALL QUIT('*** End of input test for GENERAL ***')
             END IF
-#if defined (VAR_G77)
+#if defined (SYS_LINUX)
             CALL CEXE(EXEDRV, LMWORK, WRKDLM,MASTER,MYNUM)
 #else
             CALL EXEDRV(WORK, LMWORK,WRKDLM,MASTER,MYNUM)
@@ -412,7 +412,7 @@ C
             CALL GPCLOSE(LUPRI,'KEEP')
          ELSE
             CALL SENDNAME(MASTER,MYNUM)
-#if defined (VAR_G77)
+#if defined (SYS_LINUX)
             CALL CEXE(NODSTR,LMWORK,WRKDLM,MASTER,MYNUM)
 #else
             CALL NODSTR(WORK,LMWORK,WRKDLM,MASTER,MYNUM)
@@ -437,7 +437,7 @@ C
       END IF
 #endif
 #if !defined (VAR_MPI)
-#if defined (VAR_G77)
+#if defined (SYS_LINUX)
       CALL CEXE(EXEDRV, LMWORK, WRKDLM,MASTER,MYNUM)
 #else
       CALL EXEDRV(WORK, LMWORK,WRKDLM,MASTER,MYNUM)

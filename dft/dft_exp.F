@@ -15,13 +15,14 @@ C
 C
       PARAMETER (D0=0.D0, D1=1.D0, D2=2.D0, D3=3.D0, D4=4.D0, D7=7.D0)
 C
+#include <inforb.h>
+C
       LOGICAL DOGGA 
       DIMENSION DMAT(NBAST,NBAST), 
      &          GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6)
       DIMENSION GA10(MXAQN), GB00VC(MXAQN), 
      &          GA11(MXAQN), GB00VB(MXAQN), GB01VB(MXAQN)
 C
-#include <inforb.h>
 #include <energy.h>
 #include <symmet.h>
 #include <shells.h>

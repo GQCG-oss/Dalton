@@ -51,13 +51,13 @@ C     P. Salek and T. Helgaker oct 2003
 C
 #include <implicit.h>
       PARAMETER (D2 = 2.0D0)
+#include <inforb.h>
 C
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN),WGHT(NBLEN),
      &     RHOA(NBLEN), GRADA(3,NBLEN),NBLCNT(8),NBLOCKS(2,LDAIB,8),
      &     CBDATA(*)
       EXTERNAL DFTENE
 C
-#include <inforb.h>
 #include <dftinf.h>
 c
       DIMENSION VXC(NBLEN),VX(5)
@@ -84,13 +84,13 @@ C
 C     P. Salek and T. Helgaker oct 2003
 C
 #include <implicit.h>
+#include <inforb.h>
 C
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN),WGHT(NBLEN),
      &     RHOA(NBLEN), GRADA(3,NBLEN),NBLCNT(8),NBLOCKS(2,LDAIB,8),
      &     CBDATA(*)
       EXTERNAL DFTENE
 C
-#include <inforb.h>
 #include <dftinf.h>
 c
       DIMENSION VXC(2,NBLEN),VX(5)

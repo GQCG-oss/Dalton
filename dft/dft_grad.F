@@ -40,13 +40,13 @@ C
 #include <maxaqn.h>
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
 #include "dftmolgrad.h"
+#include <inforb.h>
 C
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN),WGHT(NBLEN),
      &          RHOA(NBLEN), GRADA(3,NBLEN),
      &          NBLCNT(8),NBLOCKS(2,LDAIB,8),
      &          DMAT(NBAST,NBAST)
 C
-#include <inforb.h>
 #include <dftinf.h>
 #include <energy.h>
 #include <symmet.h>
