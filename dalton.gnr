@@ -81,7 +81,7 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -o ) OUTFIL=$2; export OUTFIL; opto=1; shift;;
 #          OUTFIL and WRKDIR are read from environment inside dalton.x
       -t ) TMPDIR=$2; shift;;
-      -w ) WRKDIR=`pwd`/$2; shift;;
+      -w ) WRKDIR=$2; shift;;
        * ) usage; exit 1;;
    esac
    shift
