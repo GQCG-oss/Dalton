@@ -125,18 +125,17 @@ C           HERFCK destroys DMAT when called with symmetry
             ISYMDM(I) = ISYMDM(I) + 1
          END DO
       ELSE
+C     ... not DIRECT
          CALL SIRFCK2(LUINTA,'AOTWOINT',
      &                FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,WRK,LWORK)
+      END IF
 C
-C        Add DFT contribution
+C     Add DFT contribution
 C
-         IF (DFTADD) THEN
-            IF (NDMAT.GT.1) CALL QUIT('DFTADD and NDMAT.gt.1')
-            CALL DFTEXC(DMAT,1,FMAT,1,.FALSE.,.TRUE.,.FALSE.,.FALSE.,
-     &           .FALSE.,.FALSE.,DUMMY,.FALSE.,WRK,LWORK,IPRFCK)
-         END IF
-C
-C
+      IF (DFTADD) THEN
+         IF (NDMAT.GT.1) CALL QUIT('DFTADD and NDMAT.gt.1')
+         CALL DFTEXC(DMAT,1,FMAT,1,.FALSE.,.TRUE.,.FALSE.,.FALSE.,
+     &        .FALSE.,.FALSE.,DUMMY,.FALSE.,WRK,LWORK,IPRFCK)
       END IF
 C
 #if defined (VAR_OLDCODE)
