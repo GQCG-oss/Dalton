@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: herdrv.F,v 1.8 2001-03-28 06:54:54 haettig Exp $
+C$Id: herdrv.F,v 1.9 2001-04-23 08:07:51 helgaker Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -134,7 +134,7 @@ C
      &     'AOPROPER','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       IF (DORLM) CALL GPOPEN(LUSOL,
      &     'AOSOLINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-      IF (RUNTWO .OR. ERITWO .OR. RUNSUP) CALL GPOPEN (LUINTA,
+      IF (RUNTWO .OR. RUNERI .OR. RUNSUP) CALL GPOPEN (LUINTA,
      &     'AOTWOINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       IF (RUNSUP) CALL GPOPEN(LUSUPM,'AOSUPINT','NEW',' ',' ',IDUMMY,
      &                        .FALSE.)
@@ -2431,30 +2431,42 @@ C        ***** Two-electron repulsion integrals *****
 C        ********************************************
 C
          IF (HAMILT) THEN
-            NPAO = MXSHEL*MXAOVC
-            CALL MEMGET('INTE',KJSTRS,NPAO*2,WORK,KFREE,LFREE)     
-            CALL MEMGET('INTE',KNPRIM,NPAO*2,WORK,KFREE,LFREE)     
-            CALL MEMGET('INTE',KNCONT,NPAO*2,WORK,KFREE,LFREE)     
-            CALL MEMGET('INTE',KIORBS,NPAO  ,WORK,KFREE,LFREE)     
-            CALL MEMGET('INTE',KJORBS,NPAO  ,WORK,KFREE,LFREE)     
-            CALL MEMGET('INTE',KKORBS,NPAO  ,WORK,KFREE,LFREE)     
-            CALL PAOVEC(WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),
-     &                  WORK(KIORBS),WORK(KJORBS),WORK(KKORBS),0,
-     &                  .FALSE.,IPRDEF)
-            CALL MEMREL('HERINT.PAOVEC',WORK,KWORK,KJORBS,KFREE,LFREE)
-            CALL TIMER('START ',TIMSTR,TIMEND)
-            IRNTYP = 0
-            CALL TWOINT(WORK(KFREE),LFREE,DUMMY,DUMMY,DUMMY,1,IDUMMY,
-     &                  IDUMMY,
-     &                  DUMMY,IDUMMY,NUMDIS,1,IRNTYP,0,0,.TRUE.,.TRUE.,
-     &                  .FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
-     &                  IPRNTD,RTNTWO,IDUMMY,I2TYP,WORK(KJSTRS),
-     &                  WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
-     &                  IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
-     &                  .FALSE.)
-            CALL TIMER('TWOINT',TIMSTR,TIMEND)
-            CALL FLSHFO(LUPRI)
-            CALL MEMREL('HERINT.TWOINT',WORK,KWORK,KWORK,KFREE,LFREE)
+            IF (RUNERI) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL MEMGET('REAL',KCCFBT,MXCONT*MXPRIM,WORK,KFREE,LFREE)     
+               CALL MEMGET('INTE',KINDXB,8*MXSHEL*MXCONT,WORK,KFREE,
+     &                     LFREE)     
+               CALL ER2INT(WORK(KCCFBT),WORK(KINDXB),WORK(KFREE),LFREE)
+               CALL MEMREL('HERINT.ER2INT',WORK,KWORK,KWORK,KFREE,LFREE)
+               CALL TIMER('ERIDRV',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
+            ELSE
+               NPAO = MXSHEL*MXAOVC
+               CALL MEMGET('INTE',KJSTRS,NPAO*2,WORK,KFREE,LFREE)     
+               CALL MEMGET('INTE',KNPRIM,NPAO*2,WORK,KFREE,LFREE)     
+               CALL MEMGET('INTE',KNCONT,NPAO*2,WORK,KFREE,LFREE)     
+               CALL MEMGET('INTE',KIORBS,NPAO  ,WORK,KFREE,LFREE)     
+               CALL MEMGET('INTE',KJORBS,NPAO  ,WORK,KFREE,LFREE)     
+               CALL MEMGET('INTE',KKORBS,NPAO  ,WORK,KFREE,LFREE)     
+               CALL PAOVEC(WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),
+     &                     WORK(KIORBS),WORK(KJORBS),WORK(KKORBS),0,
+     &                     .FALSE.,IPRDEF)
+               CALL MEMREL('HERINT.PAOVEC',WORK,KWORK,KJORBS,KFREE,
+     &                     LFREE)
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               IRNTYP = 0
+               CALL TWOINT(WORK(KFREE),LFREE,DUMMY,DUMMY,DUMMY,1,IDUMMY,
+     &                     IDUMMY,DUMMY,IDUMMY,NUMDIS,1,IRNTYP,0,0,
+     &                     .TRUE.,.TRUE.,.FALSE.,TKTIME,
+     &                     IPRTWO,IPRNTA,IPRNTB,IPRNTC,IPRNTD,
+     &                     RTNTWO,IDUMMY,I2TYP,WORK(KJSTRS),
+     &                     WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
+     &                     IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
+     &                     .FALSE.)
+               CALL TIMER('TWOINT',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
+               CALL MEMREL('HERINT.TWOINT',WORK,KWORK,KWORK,KFREE,LFREE)
+            END IF
          END IF
 C
 C        *****************************************************
@@ -2512,36 +2524,6 @@ C        ********************************************************
 C
          IF (MGMO2T) THEN
             CALL MM2TST(WORK,LWORK,PRTHRS,IPRINT)
-         END IF
-      END IF
-C
-C     ********************************
-C     ***** New integral program *****
-C     ********************************
-C
-      IF (RUNERI) THEN
-         IF (IPRDEF .GT. 1) CALL TITLER('Output from ER2INT','*',126)
-C
-C        ********************************************
-C        ***** Two-electron repulsion integrals *****
-C        ********************************************
-C
-         IF (HAMILT) THEN
-            CALL TIMER('START ',TIMSTR,TIMEND)
-            IRNTYP = 0
-            IF (DISTST) THEN
-               CALL ER2DIS(WORK,LWORK)
-            ELSE
-               CALL MEMGET('REAL',KCCFBT,MXCONT*MXPRIM  ,
-     &                     WORK,KFREE,LFREE)     
-               CALL MEMGET('INTE',KINDXB,8*MXSHEL*MXCONT,
-     &                     WORK,KFREE,LFREE)     
-               CALL ER2INT(WORK(KCCFBT),WORK(KINDXB),WORK(KFREE),LFREE)
-               CALL MEMREL('HERINT.ER2INT',WORK,KWORK,KWORK,
-     &                     KFREE,LFREE)
-            END IF
-            CALL TIMER('ERIDRV',TIMSTR,TIMEND)
-            CALL FLSHFO(LUPRI)
          END IF
       END IF
 C

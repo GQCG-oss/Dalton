@@ -133,7 +133,7 @@ C
 C
          IF (NUMBAT .EQ. 0) THEN
             WRITE(LUPRI,*) 'In CCSD_SORTAO NUMBAT is zero'
-            CALL QUIT('Insufiicient work space in CCRDAO')
+            CALL QUIT('Insufficient work space in CCRDAO')
          ENDIF
 C
          ITOTBA = (NTOTD-1)/NUMBAT + 1

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: aba2tex.F,v 1.2 2001-03-30 07:11:38 vebjornb Exp $
+C$Id: aba2tex.F,v 1.3 2001-04-23 08:07:50 helgaker Exp $
 C
 #include <single.h>
 C  /* Deck twoinp */
@@ -264,10 +264,11 @@ C
 #include <maxaqn.h>
 #include <mxorb.h>
 #include <aovec.h>
-      LOGICAL PASS, ANTI, PANTI, ANTIDM, DIA2SO
+      LOGICAL PASS, ANTI, PANTI, ANTIDM, DIA2SO, DOERI
       DIMENSION WORK(LWORK)
 #include <abainf.h>
 #include <exeinf.h>
+#include <cbieri.h>
 #include <cbitwo.h>
 #include <cbisol.h>
 #include <inforb.h>
@@ -450,8 +451,14 @@ C           dimension ISYMDM(MXDMAT), IFCTYP(MXDMAT)
                IFCTYP(I) = 13
             END DO
          END IF
+C
+C        ERI can only be used for Hartree-Fock gradients
+C
+         DOERI = RUNERI .AND. .NOT.PARCAL .AND. NODV .AND. NOPV
+     &                  .AND. ITYPE.EQ.2 .AND. MAXDIF .LT. 2
+C
          CALL GETDMT(WORK(KDMAT),NDMAT,WORK(KLAST),LWRK,NODC,NODV,
-     &               IPRINT)
+     &               .NOT.DOERI,IPRINT)
 C
 #if defined (VAR_MPI) || defined (VAR_PVM)
          IF (PARCAL) THEN
@@ -473,24 +480,40 @@ C
      &                  DUMMY)
          ELSE
 #endif
-            IF (IPRINT .GE. 2) CALL TIMER('START ',TIMSTR,TIMEND)
-            CALL TWOINT(WORK(KLAST),LWRK,WORK(KHESEE),WORK(KFMAT),
-     &                WORK(KDMAT),NDMAT,
-     &                ISYMDM,IFCTYP,DUMMY,IDUMMY,NUMDIS,1,ITYPE,MAXDIF,
-     &                0,NODV,NOPV,NOCONT,TKTIME,IPRINT,IPRNTA,IPRNTB,
-     &                IPRNTC,IPRNTD,RETUR,IDUMMY,I2TYP,WORK(KJSTRS),
-     &                WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
-     &                IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,
-     &                DUMMY,.FALSE.)
-            IF (IPRINT .GE. 2) CALL TIMER('TWOINT',TIMSTR,TIMEND)
+            IF (DOERI) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               KCCFBT = KLAST
+               KINDXB = KCCFBT + MXPRIM*MXCONT
+               KLAST  = KINDXB + 8*MXSHEL*MXCONT
+               IF (KLAST.GT.LWRK) 
+     &            CALL STOPIT('TWOEXP','ERIPRO',KLAST,LWRK)
+               LWRK = LWRK - KLAST
+               CALL ERIPRO(WORK(KFMAT),WORK(KDMAT),NDMAT,ISYMDM,
+     &                     IFCTYP,.TRUE.,.FALSE.,IPRINT,WORK(KCCFBT),
+     &                     WORK(KINDXB),WORK(KLAST),LWRK)
+               CALL TIMER('ERIPRO',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
+            ELSE
+               IF (IPRINT .GE. 2) CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL TWOINT(WORK(KLAST),LWRK,WORK(KHESEE),WORK(KFMAT),
+     &                     WORK(KDMAT),NDMAT,ISYMDM,IFCTYP,DUMMY,IDUMMY,
+     &                     NUMDIS,1,ITYPE,MAXDIF,0,NODV,NOPV,NOCONT,
+     &                     TKTIME,IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,
+     &                     RETUR,IDUMMY,I2TYP,WORK(KJSTRS),WORK(KNPRIM),
+     &                     WORK(KNCONT),WORK(KIORBS),IDUMMY,IDUMMY,
+     &                     DUMMY,DUMMY,DUMMY,DUMMY,.FALSE.)
+               IF (IPRINT .GE. 2) CALL TIMER('TWOINT',TIMSTR,TIMEND)
+            END IF
 #if defined (VAR_MPI) || defined (VAR_PVM)
          END IF
 #endif
 CTROND
-         CALL SKLFCK(WORK(KFMAT),WORK(KHESEE),WORK(KLAST),LWRK,
-     &               IPRINT,.FALSE.,
-     &               DDFOCK,.TRUE.,.FALSE.,NODV,MAXDIF,.FALSE.,NDMAT,
-     &               ISYMDM,IFCTYP,0)
+         IF (.NOT.DOERI) THEN
+            CALL SKLFCK(WORK(KFMAT),WORK(KHESEE),WORK(KLAST),LWRK,
+     &                  IPRINT,.FALSE.,
+     &                  DDFOCK,.TRUE.,.FALSE.,NODV,MAXDIF,.FALSE.,NDMAT,
+     &                  ISYMDM,IFCTYP,0)
+         END IF
 C
 C     <<<<< Print Section - Gradient and Hessian Elements >>>>>
 C
@@ -552,11 +575,11 @@ C
       RETURN
       END
 C  /* Deck getdmt */
-      SUBROUTINE GETDMT(DMAT,NDMAT,WORK,LWORK,NODC,NODV,IPRINT)
+      SUBROUTINE GETDMT(DMAT,NDMAT,WORK,LWORK,NODC,NODV,SYMUNQ,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-      LOGICAL NODC, NODV
+      LOGICAL NODC, NODV, SYMUNQ
       DIMENSION DMAT(NBAST,NBAST,NDMAT), WORK(LWORK)
 #include <abainf.h>
 #include <inforb.h>
@@ -570,12 +593,17 @@ C
       KLAST = KDASQ + N2BASX
       IF (KLAST.GT.LWORK) CALL STOPIT('GETDMT','ONEDSF',KLAST,LWORK)
 C
-      CALL ONEDSF(WORK(KCMO),WORK(KDV),WORK(KDTSQ),WORK(KDASQ),
-     &            IPRINT,NODC,NODV)
-      ISYMDM = 0
-      CALL DSOTAO(WORK(KDTSQ),DMAT(1,1,1),NBAST,ISYMDM,IPRINT)
-      IF (.NOT.NODV) CALL DSOTAO(WORK(KDASQ),DMAT(1,1,2),NBAST,ISYMDM,
-     &                           IPRINT)
+      IF (SYMUNQ) THEN
+         CALL ONEDSF(WORK(KCMO),WORK(KDV),WORK(KDTSQ),WORK(KDASQ),
+     &               IPRINT,NODC,NODV)
+         ISYMDM = 0
+         CALL DSOTAO(WORK(KDTSQ),DMAT(1,1,1),NBAST,ISYMDM,IPRINT)
+         IF (.NOT.NODV) CALL DSOTAO(WORK(KDASQ),DMAT(1,1,2),NBAST,
+     &                              ISYMDM,IPRINT)
+      ELSE
+         CALL ONEDSF(WORK(KCMO),WORK(KDV),DMAT,WORK(KDASQ),
+     &               IPRINT,NODC,NODV)
+      END IF
 C
       CALL QEXIT('GETDMT')
       RETURN

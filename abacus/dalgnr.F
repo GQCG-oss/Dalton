@@ -1026,7 +1026,7 @@ C
      &             '.PRESOR', '.HERMIT', '.SIRIUS',
      &             '.ABACUS', '.RUNABA', '.RUNSIR',
      &             '.RUNRSP', '.MINIMI', '.TOTSYM',
-     &             '.VECLEN', '.RUNERI', '.ERITWO',
+     &             '.VECLEN', '.RUNERI', '.XXXXXX',
      &             '.RUN AL', '.NMDDRV', '.PARNMD',
      &             '.OPTIMI', '.DOUGLA'/
 C
@@ -1065,7 +1065,6 @@ C
       USRIPR = .FALSE.
       RNHERM = .FALSE.
       RUNERI = .FALSE.
-      ERITWO = .FALSE.
       RNSIRI = .FALSE.
       RNABAC = .FALSE.
       RNRESP = .FALSE.
@@ -1223,7 +1222,6 @@ C
             RUNERI = .TRUE.
          GO TO 100
  127     CONTINUE
-            ERITWO = .TRUE.
          GO TO 100
  128     CONTINUE
             RNHERM = .TRUE.
@@ -1305,18 +1303,13 @@ C     ... default print level for statistics /hjaaj apr 2000
          WRITE (LUPRI,'(3X,A)')
      &     ' Integrals are calculated using ERI '//
      &     'instead of HERMIT (where possible)'
-         RUNERI = RUNERI .AND. DIRCAL .AND. .NOT. PARCAL
+         RUNERI = RUNERI .AND. .NOT. PARCAL
          IF (.NOT. RUNERI) THEN
             NINFO = NINFO + 1
             WRITE (LUPRI,'(3X,A)')
      & ' INFO: NO! ERI is only implemented for direct and not parallel'
          END IF
       END IF
-      ERITWO = ERITWO .AND. RUNERI
-C apr 2000 hjaaj: as far as I can see ERITWO alway false,
-C                 because DIRCAL false for MCSCF ??????????
-      IF (ERITWO) WRITE (LUPRI,'(3X,A)')
-     &     ' Two-electron integrals written to disk for MCSCF'
       IF (NMWALK) THEN
          WRITE (LUPRI,'(3X,A)') 
      &                       'Numerical derivatives will be calculated'

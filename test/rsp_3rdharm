@@ -105,9 +105,9 @@ CTRL[3]=2
 ERROR[3]="SYMMETRY NOT CORRECT"
 
 # Energies
-CRIT1=`$GREP "Hartree\-Fock total energy \: * \-7\.977349367[0-9]" $log | wc -l`
-CRIT2=`$GREP "\= MP2 second order energy \: * \-7\.990192719[0-9]" $log | wc -l`
-CRIT3=`$GREP "Final MCSCF energy\: * \-7\.99413052963[0-9]" $log | wc -l`
+CRIT1=`$GREP "Hartree\-Fock total energy \: * \-7\.97734936.[0-9]" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy \: * \-7\.99019271.[0-9]" $log | wc -l`
+CRIT3=`$GREP "Final MCSCF energy\: * \-7\.9941305296.[0-9]" $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=3
 ERROR[4]="ENERGIES NOT CORRECT"
@@ -189,7 +189,7 @@ CRIT18=`$GREP "\@ gamma\(Z\;Z\,Y\,Y\) * 175505\.78[0-9][0-9]" $log | wc -l`
 CRIT19=`$GREP "\@ gamma\(Z\;Y\,Y\,Z\) * 175505\.78[0-9][0-9]" $log | wc -l`
 CRIT20=`$GREP "\@ gamma\(Z\;Y\,Z\,Y\) * 175505\.78[0-9][0-9]" $log | wc -l`
 CRIT21=`$GREP "\@ gamma\(Z\;Z\,Z\,Z\) * 825362\.93[0-9][0-9]" $log | wc -l`
-CRIT22=`$GREP "\@ Averaged gamma parallel to the applied field is * 340809\.0255[0-9][0-9]" $log | wc -l`
+CRIT22=`$GREP "\@ Averaged gamma parallel to the applied field is * 340809\.025.[0-9][0-9]" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
 		$CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ $CRIT18 \+ \

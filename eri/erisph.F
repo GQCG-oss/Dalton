@@ -308,18 +308,21 @@ C  /* Deck sphadr */
       LOGICAL FIRST
       INTEGER A, B, C, D, X, Y, Z
       INTEGER ACOEF(0:MXQN-1,0:MXDR), BCOEF(0:MXQN-1,0:MXDR)
+#include <ccom.h>
 C
-      SAVE FIRST, ACOEF, BCOEF
+      SAVE FIRST, ACOEF, BCOEF, NHOLD
       DATA FIRST /.TRUE./
 C
-      IF (FIRST) THEN
-         DO 100 J = 0, MXQN - 1
-         DO 100 D = 0, MXDR
+      IF (FIRST .OR. NHTYP.NE.NHOLD) THEN
+         DO J = 0, MXQN - 1
+         DO D = 0, MXDR
             CALL SPHAB(J,D,A,B)
             ACOEF(J,D) = A
             BCOEF(J,D) = B
-  100    CONTINUE
+         END DO
+         END DO
          FIRST = .FALSE.
+         NHOLD = NHTYP
       END IF 
       D = X + Y + Z
       IXYZ = Y + Y**2 + 2*Y*Z + Z*(3 + Z)

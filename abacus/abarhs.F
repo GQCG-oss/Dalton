@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abarhs.F,v 1.4 2001-04-21 12:11:58 ruud Exp $
+C$Id: abarhs.F,v 1.5 2001-04-23 08:07:50 helgaker Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -800,7 +800,7 @@ C
                   END IF
                   IF ((MAGSUS .OR. MOLGFA) .OR. FCKDDR) THEN
                      CALL GETDMT(WORK(KDMAT),NDMAT,WORK(KLAST),LWRK,
-     &                           NODC,NODV,IPRINT)
+     &                           NODC,NODV,.TRUE.,IPRINT)
                   END IF
                ELSE IF (ITYPE .EQ. 8) THEN
                   MAXDIF = 1
@@ -816,7 +816,7 @@ C
                      CALL STOPIT('RHSIDE','ITYPE8',KLAST,LWORK)
                   END IF
                   CALL GETDMT(WORK(KDMAT),NDMAT,WORK(KLAST),LWRK,
-     &                        NODC,NODV,IPRINT)
+     &                        NODC,NODV,.TRUE.,IPRINT)
                   CALL DZERO(WORK(KFMAT),LFMAT)
                END IF
 C

@@ -1,4 +1,7 @@
-C C...   Copyright (c) 1997 by the authors of Dalton (see below).  C...   All Rights Reserved.  C...
+C 
+C...   Copyright (c) 1997 by the authors of Dalton (see below).  
+C...   All Rights Reserved.  
+C...
 C...   The source code in this file is part of 
 C...   "Dalton, an ab initio electronic structure program, Release 1.0
 C...   (1997), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
@@ -26,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2pro.F,v 1.2 2001-04-03 14:25:13 vebjornb Exp $
+C$Id: eri2pro.F,v 1.3 2001-04-23 08:07:54 helgaker Exp $
 C
 #include <single.h>
 C  /* Deck eripro */
@@ -72,29 +75,17 @@ C
       GDER = DOGDER
       BDER = DOBDER 
       CCRUN = .FALSE.
+      EXPERI = .TRUE.
+      UNDIFF = .FALSE.
+      WRTINT = .FALSE.
 C
       IF (.NOT. SLAVE) THEN
-CTROND         IF (IFCTYP(1).NE.1) THEN
-C        IF (IFCTYP(1).NE.13) THEN
-C           WRITE (LUPRI,'(/,A,I5,/A)')
-CTROND     &           ' IFCTYP different from 1 or 3 in ERIPRO',IFCTYP,
-C    &           ' IFCTYP different from 13 or 3 in ERIPRO',IFCTYP,
-C    &           ' Process aborted.'
-CTROND            CALL QUIT('IFCTYP .ne. 1 in ERIPRO.')
-C           CALL QUIT('IFCTYP .ne. 13in ERIPRO.')
-C        END IF
          IF (NDMT .GT. 1) THEN
             WRITE (LUPRI,'(/A,I5,/A)')
      &           ' NDMT .gt. 1 in ERIPRO.', NDMT,
      &           ' Process aborted'
             CALL QUIT('NDMT .gt. 1 in ERIPRO')
          END IF
-C        IF (ISYMDM(1) .NE. 0) THEN
-C           WRITE (LUPRI, '(/A,I5,/A)')
-C    &           ' ISYMDM .ne. 1 in ERIPRO', ISYMDM(1),
-C    &           ' Process aborted'
-C           CALL QUIT('ISYMDM .ne. 1 in ERIPRO')
-C        END IF
       END IF
 C
 C     Memory
@@ -104,13 +95,6 @@ C
       MODAB  = 0
       MODCD  = 0
 C
-C     Symmetry transformation
-C
-      SYMTRA = DOSTRA .OR. MAXREP .GT. 0
-C
-      WRTINT = .FALSE.
-      FCKINT = .TRUE.
-C
 C     Pi
 C
       CALL GETPI
@@ -119,18 +103,6 @@ C     AO batches
 C     ==========
 C
       CALL SETAOB(CCFBT,INDXBT,WORK,LWORK,IPRINT)
-C
-C     Density matrix (not needed yet)
-C     ===============================
-C
-C     KDAO  = 1
-C     KLAST = KDAO + N2BASX*NDMT
-C     IF(KLAST.GT.LWORK) CALL STOPIT('HERFCK','DSOTAO',KLAST,LWORK)
-C     LWRK  = LWORK - KLAST + 1
-C     DO 200 IMAT = 1,NDMT
-C        JDAO = KDAO + (IMAT-1)*N2BASX
-C        CALL DSOTAO(DMAT(1,IMAT),WORK(JDAO),NBAST,ISYMDM,IPRINT)
-C 200 CONTINUE
 C
 C     OD batches
 C     ==========
@@ -209,12 +181,12 @@ C
          IF (IPRINT.GT.4) THEN
             CALL HEADER('Density matrix in ERIPRO',-1)
             KSTR = 1
-            DO 300 I = 1, NDMT
+            DO I = 1, NDMT
                WRITE (LUPRI,'(//,1X,A,I3)') ' Density matrix No.',I
                CALL OUTPUT(DMAT(KSTR),1,NBASE,1,NBASE,NBASE,
      &                     NBASE,1,LUPRI)
                KSTR = NBASE*NBASE
-  300       CONTINUE
+            END DO
          END IF
 C
          CALL TIMER('ERIPRO',TIMSTR,TIMEND)

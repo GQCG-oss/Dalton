@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: herdirect.F,v 1.3 2001-04-03 14:25:08 vebjornb Exp $
+C$Id: herdirect.F,v 1.4 2001-04-23 08:07:51 helgaker Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -476,9 +476,7 @@ C
 C
       CALL QENTER('HERFCK')
 C
-C     The new ERI routines haven't been parallelized yet, nor do
-C     do we have any differentiated integrals in the new routines.
-C     Furthermore, general contraction is not allowed.
+C     The new ERI routines haven't been parallelized yet.
 C     RUNERI is the flag from input processing, to tell that we should use eri,
 C     USEERI is a temporary flag to check if we actually can in the present 
 C     passage.
@@ -490,7 +488,7 @@ C and FCKCON (dimensioning). Analog hermit. NODD added to nuclei.h & aobtch.h
 C We need to include nuclei.h here, to have NBASIS and NODD.
 C Initalization of NODD in herrdn.F and eriaob.F
 C
-      USEERI = (DIRCAL.OR.RUNERI) .AND. SEGBAS
+      USEERI = RUNERI
       DO I = 1, NDMT
          USEERI = USEERI .AND. ((IFCTYP(I).EQ.13).OR.(IFCTYP(I).EQ.3))
       END DO
@@ -498,7 +496,6 @@ C
       ICHUNK = MAX(IVECLN/NDMT,1)
 #endif
 C
-      useeri = .false.
       IF (.NOT. USEERI) THEN
          CALL HRFCK1(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      &               ICEDIF,IFTHRS,WORK(KFREE),LFREE)

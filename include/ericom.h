@@ -1,8 +1,8 @@
       LOGICAL DOPTH1, DOPTH2, GDER,   BDER,  UNDIFF,
-     &        FIRST,  LAST,   LSTCLS, DIACLS,SYMTRA,
+     &        FIRST,  LAST,   LSTCLS, DIACLS,
      &        SPHRA,  SPHRB,  SPHRC,  SPHRD, SPHRAB, SPHRCD,
      &        GCONA,  GCONB,  GCONC,  GCOND, GCONAB, GCONCD, 
-     &        DIAGAB, DIAGCD, TKMPAB, TKMPCD,TCMPAB, TCMPCD 
+     &        DIAGAB, DIAGCD, DIAGPQ, TKMPAB, TKMPCD,TCMPAB, TCMPCD
 C
       COMMON /ERICOM/ SCRMAB, SCRMCD,
 C
@@ -36,7 +36,8 @@ C
      &                IHHXYZ, IHCXYZ, ICHXYZ, ICCXYZ,
 C
      &                DOPTH1, DOPTH2, GDER,   BDER,  UNDIFF,
-     &                FIRST,  LAST,   LSTCLS, DIACLS,SYMTRA,
+     &                FIRST,  LAST,   LSTCLS, DIACLS,
      &                SPHRA,  SPHRB,  SPHRC,  SPHRD, SPHRAB, SPHRCD,
      &                GCONA,  GCONB,  GCONC,  GCOND, GCONAB, GCONCD, 
-     &                DIAGAB, DIAGCD, TKMPAB, TKMPCD,TCMPAB, TCMPCD
+     &                DIAGAB, DIAGCD, DIAGPQ, 
+     &                TKMPAB, TKMPCD,TCMPAB, TCMPCD

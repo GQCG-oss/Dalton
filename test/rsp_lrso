@@ -114,7 +114,7 @@ CTRL[4]=1
 ERROR[4]="SPIN-ORBIT INTEGRALS NOT CALCULATED"
 
 # Energy
-CRIT1=`$GREP "Final MCSCF energy\: * \-149\.5560750235[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Final MCSCF energy\: * \-149\.556075023[4-5][0-9][0-9]" $log | wc -l`
 TEST[5]=`expr	$CRIT1`
 CTRL[5]=1
 ERROR[5]="ENERGY NOT CORRECT"

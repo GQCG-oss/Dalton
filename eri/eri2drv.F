@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2drv.F,v 1.5 2001-04-09 07:11:59 helgaker Exp $
+C$Id: eri2drv.F,v 1.6 2001-04-23 08:07:53 helgaker Exp $
 C
 #include <single.h>
 C  /* Deck er2inp */
@@ -50,7 +50,7 @@ C
 #include <gnrinf.h>
       DATA TABLE /'.SKIP  ', '.PRINT ', '.TIME  ', '.RETURN', '.AOBTCH',
      &            '.NOPSAB', '.NOPSCD', '.NOPS12', '.OFFCNT', '.NO12GS',
-     &            '.NEWCR1', '.CANIND', '.WRITEA', '.NOWRIT', '.SYMTRA',
+     &            '.NEWCR1', '.NONCAN', '.WRITEA', '.NOWRIT', '.XXXXXX',
      &            '.EXTPRI', '.SELCT1', '.SELCT2', '.SELCT3', '.SELCT4',
      &            '.INTPRI', '.DISTRI', '.INTSKI', '.BUFFER', '.MAXDIS',
      &            '.DISTST', '.MXBCH ', '.NSPMAX', '.NOLOCS', '.GRDZER',
@@ -67,13 +67,13 @@ C
                GO TO 100
             ELSE IF (PROMPT .EQ. '.') THEN
                ICHANG = ICHANG + 1
-               DO 200 I = 1, NTABLE
+               DO I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,
      &                      18,19,20,21,22,23,24,25,26,27,28,29,30,31,
      &                      32,33,34,35),I
                   END IF
-  200          CONTINUE
+               END DO
                IF (WORD .EQ. '.OPTION') THEN
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                  GO TO 100
@@ -120,7 +120,7 @@ C
                   OLDCR1 = .FALSE.
                GO TO 100
    12          CONTINUE
-                  CANIND = .TRUE.
+                  CANIND = .FALSE.
                GO TO 100
    13          CONTINUE
                   WRTSCR = .FALSE.
@@ -129,7 +129,6 @@ C
                   NOWRIT = .TRUE.
                GO TO 100
    15          CONTINUE
-                  DOSTRA = .TRUE.
                GO TO 100
    16          CONTINUE
                   EXTPRI = .TRUE.
@@ -244,14 +243,12 @@ C
      &         ' AO batch',IAOBCH,' calculated.'
             IF (.NOT.OLDCR1) WRITE (LUPRI,'(A)')
      &         ' New algorithm for Cartesians on first electron.'
-            IF (CANIND) WRITE (LUPRI,'(A)')
-     &         ' Indices sorted in canonical order.'
-            IF (WRTSCR) WRITE (LUPRI,'(A)')
-     &         ' Integrals screened before write.'
+            IF (.NOT.CANIND) WRITE (LUPRI,'(A)')
+     &         ' Indices not sorted in canonical order.'
+            IF (.NOT.WRTSCR) WRITE (LUPRI,'(A)')
+     &         ' Integrals not screened before write.'
             IF (NOWRIT) WRITE (LUPRI,'(A)')
      &         ' Integrals will not be written to file.'
-            IF (DOSTRA) WRITE (LUPRI,'(A)')
-     &         ' Symmetry transformation always carried out.'
             IF (NOLOCS) WRITE (LUPRI,'(A)')
      &         ' No use of local symmetry.'
             IF (GRDZER) WRITE (LUPRI,'(A)')
@@ -278,14 +275,14 @@ C
                   CALL QUIT('Inconsistent input in ER2INP.')
                END IF
             END IF
-            DO 400 IELCTR = 1, 4
+            DO IELCTR = 1, 4
                IF (NSELCT(IELCTR).GT.0) THEN
                   WRITE (LUPRI,'(/A,I3,A,I2,A,5I5,/,(43X,5I5)))')
      &            ' Only ',NSELCT(IELCTR),
      &            ' AO batches active for electron',IELCTR,':',
      &            (NACTAO(I,IELCTR),I=1,NSELCT(IELCTR))
                END IF
-  400       CONTINUE
+            END DO
             IF (LBFINP .NE. 600) THEN
                WRITE (LUPRI,'(A,I5)')
      &            ' Non-default buffer length:',LBFINP
@@ -324,13 +321,6 @@ C  /* Deck er2ini */
 C
 C     Initialize /CBIERI/
 C
-C RUNERI should be RUNERI = SEGBAS when SIRIUS can read ERI-created 
-C integrals from file
-C
-C NECgh970904 We now initialze RUNERI in General input processing.
-C      RUNERI = .FALSE.
-C      IF (DIRCAL .OR. PARCAL) RUNERI = .FALSE.
-C
       IF (PARCAL) RUNERI = .FALSE.
       IPRERI = IPRDEF
       IPRNT1 = 0
@@ -344,10 +334,9 @@ C
       OFFCNT = .FALSE.
       DIASRT = .TRUE.
       OLDCR1 = .TRUE.
-      CANIND = .FALSE.
-      WRTSCR = .FALSE.
+      CANIND = .TRUE.
+      WRTSCR = .TRUE.
       NOWRIT = .FALSE.
-      DOSTRA = .FALSE.
       EXTPRI = .FALSE.
       INTPRI = .FALSE.
       DODIST = .FALSE.
@@ -357,6 +346,7 @@ C
       COMPRS = .TRUE.
       GDER   = .FALSE.
       BDER   = .FALSE.
+      EXPERI = .FALSE.
       LBFINP = 600
       MAXDSD = 30
       MAXDST = MAXDSD
@@ -396,16 +386,14 @@ C
       IPRINT = IPRERI
       THRSH  = MAX(THRS,1.00D-15)
 C
+      CALL ER2INI
+C
 C     Memory
 C
       MEMOK  = .TRUE.
       MEMADD = 0
       MODAB  = 0
       MODCD  = 0
-C
-C     Symmetry transformation
-C
-      SYMTRA = DOSTRA .OR. MAXREP .GT. 0
 C
       WRTINT = .TRUE.
       FCKINT = .FALSE.
@@ -752,21 +740,21 @@ C
          WRITE (LUPRI,'(2X,A,2L4)') ' ODTRI1, ODTRI2 ', ODTRI1, ODTRI2
          IF (IPRINT .GT. 8) THEN
             CALL HEADER('IODCL1 in ODCDR1',1)
-            DO 100 I = 1, NODCL1
+            DO I = 1, NODCL1
                WRITE (LUPRI,'(5X,I4,5X,16I4)') I,(IODCL1(I,J),J=1,NITCL)
-  100       CONTINUE
+            END DO
             CALL HEADER('IODCL2 in ODCDR1',1)
-            DO 110 I = 1, NODCL2
+            DO I = 1, NODCL2
                WRITE (LUPRI,'(5X,I4,5X,16I4)') I,(IODCL2(I,J),J=1,NITCL)
-  110       CONTINUE
+            END DO
             CALL HEADER('IODBC1 in ODCDR1',1)
-            DO 120 I = 1, NODBC1
+            DO I = 1, NODBC1
                WRITE (LUPRI,'(5X,I4,5X,7I4)') I,(IODBC1(I,J),J=1,NITBC)
-  120       CONTINUE
+            END DO
             CALL HEADER('IODBC2 in ODCDR1',1)
-            DO 130 I = 1, NODBC2
+            DO I = 1, NODBC2
                WRITE (LUPRI,'(5X,I4,5X,7I4)') I,(IODBC2(I,J),J=1,NITBC)
-  130       CONTINUE
+            END DO
             CALL HEADER('RODBC1 in ODCDR1',-1)
             CALL OUTPUT(RODBC1,1,NODBC1,1,NRTBC,NODBC1,NRTBC,1,LUPRI)
             CALL HEADER('RODBC2 in ODCDR1',-1)
@@ -855,7 +843,7 @@ C
 C
 C     Loop over pairs of OD classes
 C
-      DO 200 IODAB = 1, NODCL1
+      DO IODAB = 1, NODCL1
       IF (NACTAB(IODAB) .GT. 0) THEN
          NODSAB = NACTAB(IODAB)
 C
@@ -885,7 +873,7 @@ C
          MAXCD = NODCL2
          IF (ODTR12) MAXCD = IODAB
 C
-         DO 300 IODCD = 1, MAXCD
+         DO IODCD = 1, MAXCD
          IF (NACTCD(IODCD) .GT. 0) THEN
             NODSCD = NACTCD(IODCD)
 C
@@ -979,22 +967,18 @@ C
             MLTPT = MULT(ISTBLT)
             MLTPX = MLTPR*MLTPS*MLTPT
 C
-C           DIAGAB = NGTOAB .EQ. 1 .AND. ODTRI1 .AND. MAXDER .EQ. 0 
-C           DIAGCD = NGTOCD .EQ. 1 .AND. ODTRI2 .AND. MAXDER .EQ. 0
             DIAGAB = NGTOAB .EQ. 1 .AND. ODTRI1
             DIAGCD = NGTOCD .EQ. 1 .AND. ODTRI2
 C
             IF (MAXDER .EQ. 0) THEN
               TKMPAB = NCNTAB.EQ.1 .AND. KHKTA.EQ.KHKTB .AND..NOT.DODIST
               TKMPCD = NCNTCD.EQ.1 .AND. KHKTC.EQ.KHKTD .AND..NOT.DODIST
-              TCMPAB = TKMPAB .AND. .NOT.SPHRAB
-              TCMPCD = TKMPCD .AND. .NOT.SPHRCD
             ELSE IF (MAXDER .EQ. 1) THEN
-              TKMPAB = DIAGAB .AND. EXPERI .AND. .NOT.DODIST
-              TKMPCD = DIAGCD .AND. EXPERI .AND. .NOT.DODIST
-              TCMPAB = TKMPAB .AND. .NOT.SPHRAB
-              TCMPCD = TKMPCD .AND. .NOT.SPHRCD
+              TKMPAB = .FALSE. 
+              TKMPCD = .FALSE. 
             END IF
+            TCMPAB = TKMPAB .AND. .NOT.SPHRAB
+            TCMPCD = TKMPCD .AND. .NOT.SPHRCD
 C
             KHKTAB = KHKTA*KHKTB
             KHKTCD = KHKTC*KHKTD
@@ -1046,13 +1030,13 @@ C              MIXBCH = MIN(IJ,MEMBC1)
 C              MINPRZ = MIN(MXBCHD,MIXBCH)
 C              MAXBCH = MAX(MINPRZ,1)
                IJ = 0
-               DO 400 I = KODSAB, KODSAB + NODTAB - 1
+               DO I = KODSAB, KODSAB + NODTAB - 1
                   MAXJ = KODSCD + NODTCD - 1
                   IF (ODTR12 .AND. IODAB.EQ.IODCD) MAXJ = I
-                  DO 410 J = KODSCD, MAXJ
+                  DO J = KODSCD, MAXJ
                      IF (SCRNAB(I)*SCRNCD(J).GT.THRSH) IJ = IJ + 1
-  410             CONTINUE
-  400          CONTINUE
+                  END DO
+               END DO
 C              MXBCH1 = MIN(IJ,(IRAT*LWORK-(IRAT-1)*NALLOI)/MEMBCH)
 C              MAXBCH = MIN(MXBCH/(MLTPZ*NPRFAB*NPRFCD),MXBCH1)
 C              IF (MAXBCH .LT. 1) MAXBCH = 1
@@ -1125,9 +1109,9 @@ C
             END IF
          END IF
          END IF
-  300    CONTINUE
+         END DO
       END IF
-  200 CONTINUE
+      END DO
 C
 C     Empty last buffer
 C     =================
@@ -1210,6 +1194,7 @@ C  /* Deck odcpar */
      &          BUF(*), IBUF(*),
      &          CCFBT(*), INDXBT(*), NCOUNT(*), CSQ(*), WORK(LWORK)
 #include <aobtch.h>
+#include <cbieri.h>
 #include <ericom.h>
 #include <erimem.h>
 #include <erithr.h>
@@ -1232,13 +1217,14 @@ C
       MINJ = KODSCD
       MAXJ = KODSCD + NODTCD - 1
 C
-      DIACLS = (ODTR12 .AND. IODAB.EQ.IODCD)
+      DIAGPQ = ODTR12 .AND. IODAB.EQ.IODCD
+      DIACLS = DIAGPQ .AND. .NOT.EXPERI
 C
       NTYPE = 1
       IF (DIACLS) NTYPE = 2
-      DO 100 ITYPE = 1, NTYPE
+      DO ITYPE = 1, NTYPE
 C
-         DO 200 I = MINI, MAXI
+         DO I = MINI, MAXI
          SCRAB = SCRNAB(I)
          IF (SCRAB*SCRMCD .GT. THRSH) THEN
 C
@@ -1251,7 +1237,7 @@ C
                END IF
             END IF
 C
-            DO 300 J = MINJ, MAXJ
+            DO J = MINJ, MAXJ
 C
                IF (SCRAB*SCRNCD(J).GT.THRSH) THEN
                   IJ = IJ + 1
@@ -1278,10 +1264,10 @@ C
      &                           INDXBT,NCOUNT,IPASS,IPRINT)
                   END IF
                END IF
-  300       CONTINUE
+            END DO
          END IF
-  200    CONTINUE
-  100 CONTINUE
+         END DO
+      END DO
 C
       IF (IJ.GT.0) THEN
          CALL ODCPA2(IJ,II,IODPP1,IODPP2,RODPP1,RODPP2,
@@ -1859,7 +1845,7 @@ C     IF (NREDZ .GT. 1) CALL DZERO(AOINT,NCCT*KHKTAB*KHKTCD*NDIMD)
 C     Try to avoid zeroing - check sph2 rouintes.
 C
       IOFRST = 0
-      DO 100 IOPS = 1, NREDZ 
+      DO IOPS = 1, NREDZ 
 C
          IF (IPRINT .GT. 10) THEN
             WRITE (LUPRI,'(//,1X,A,I5,A,I5,A,/)')
@@ -2074,7 +2060,7 @@ C
          END IF
 C
          IOFRST = IOFRST + MLTPZ
-  100 CONTINUE
+      END DO
 C
       RETURN
       END
@@ -2102,12 +2088,12 @@ C  /* Deck pntuv */
 C
       ICMPAB = 0
       MAXB = KCKTB
-      DO 100 ICMPA = 1, KCKTA
+      DO ICMPA = 1, KCKTA
          LA = LMNPWR(ICMPA,NHKTA,1)
          MA = LMNPWR(ICMPA,NHKTA,2)
          NA = LMNPWR(ICMPA,NHKTA,3)
          IF (TCMPAB) MAXB = ICMPA
-         DO 110 ICMPB = 1, MAXB
+         DO ICMPB = 1, MAXB
             ICMPAB = ICMPAB + 1
             LB = LMNPWR(ICMPB,NHKTB,1)
             MB = LMNPWR(ICMPB,NHKTB,2)
@@ -2122,17 +2108,17 @@ C
                IPNTUV(ICMPAB,2,1,2) = INDHER(LA+LB+1,MA+MB,NA+NB+1)
                IPNTUV(ICMPAB,3,1,2) = INDHER(LA+LB+1,MA+MB+1,NA+NB)
             END IF 
-  110    CONTINUE
-  100 CONTINUE
+         END DO
+      END DO
 C
       ICMPCD = 0
       MAXD = KCKTD
-      DO 200 ICMPC = 1, KCKTC
+      DO ICMPC = 1, KCKTC
          LC = LMNPWR(ICMPC,NHKTC,1)
          MC = LMNPWR(ICMPC,NHKTC,2)
          NC = LMNPWR(ICMPC,NHKTC,3)
          IF (TCMPCD) MAXD = ICMPC
-         DO 210 ICMPD = 1, MAXD
+         DO ICMPD = 1, MAXD
             ICMPCD = ICMPCD + 1
             LD = LMNPWR(ICMPD,NHKTD,1)
             MD = LMNPWR(ICMPD,NHKTD,2)
@@ -2147,21 +2133,21 @@ C
                IPNTUV(ICMPCD,2,2,2) = INDHER(LC+LD+1,MC+MD,NC+ND+1)
                IPNTUV(ICMPCD,3,2,2) = INDHER(LC+LD+1,MC+MD+1,NC+ND)
             END IF
-  210    CONTINUE
-  200 CONTINUE
+         END DO
+      END DO
 C
       IF (DOCART) THEN
-         DO 250 I = 0, NRDER
+         DO I = 0, NRDER
             CALL ICOPY(KHKTAB,IPNTUV(1,I,1,2),1,IPNTUV(1,I,1,1),1)
             CALL ICOPY(KHKTCD,IPNTUV(1,I,2,2),1,IPNTUV(1,I,2,1),1)
-  250    CONTINUE
+         END DO
       ELSE
          ICMPAB = 0
          MAXB = KHKTB
-         DO 300 ICMPA = 1, KHKTA
+         DO ICMPA = 1, KHKTA
             IA = IDMAX(KCKTA,CSP(ISPADR(NHKTA)+ICMPA-1),KHKTA)
             IF (TKMPAB) MAXB = ICMPA
-            DO 310 ICMPB = 1, MAXB
+            DO ICMPB = 1, MAXB
                ICMPAB = ICMPAB + 1
                IB = IDMAX(KCKTB,CSP(ISPADR(NHKTB)+ICMPB-1),KHKTB)
                IF (TCMPAB) THEN
@@ -2169,18 +2155,18 @@ C
                ELSE
                   IAB = (IA - 1)*KCKTB + IB
                END IF
-               DO 350 I = 0, NRDER 
+               DO I = 0, NRDER 
                   IPNTUV(ICMPAB,I,1,1) = IPNTUV(IAB,I,1,2)
-  350          CONTINUE
-  310       CONTINUE
-  300    CONTINUE
+               END DO
+            END DO
+         END DO
 C
          ICMPCD = 0
          MAXD = KHKTD
-         DO 400 ICMPC = 1, KHKTC
+         DO ICMPC = 1, KHKTC
             IC = IDMAX(KCKTC,CSP(ISPADR(NHKTC)+ICMPC-1),KHKTC)
             IF (TKMPCD) MAXD = ICMPC
-            DO 410 ICMPD = 1, MAXD
+            DO ICMPD = 1, MAXD
                ICMPCD = ICMPCD + 1
                ID = IDMAX(KCKTD,CSP(ISPADR(NHKTD)+ICMPD-1),KHKTD)
                IF (TCMPCD) THEN
@@ -2188,22 +2174,22 @@ C
                ELSE
                   ICD = (IC - 1)*KCKTD + ID
                END IF
-               DO 450 I = 0, NRDER
+               DO I = 0, NRDER
                   IPNTUV(ICMPCD,I,2,1) = IPNTUV(ICD,I,2,2)
-  450          CONTINUE
-  410       CONTINUE
-  400    CONTINUE
+               END DO
+            END DO
+         END DO
       END IF
 C
       IF (IPRINT .GT. 20) THEN
          CALL HEADER('IPNTUV in PNTUV',-1)
          WRITE (LUPRI,'(2X,A,I2,/)') ' NRDER ',NRDER
-         DO 500 J = 0,NRDER
+         DO J = 0,NRDER
             WRITE (LUPRI,'(15I5  )') (IPNTUV(I,J,1,2),I=1,KCKTAB)
             WRITE (LUPRI,'(15I5  )') (IPNTUV(I,J,1,1),I=1,KHKTAB)   
             WRITE (LUPRI,'(15I5  )') (IPNTUV(I,J,2,2),I=1,KCKTCD)
             WRITE (LUPRI,'(15I5,/)') (IPNTUV(I,J,2,1),I=1,KHKTCD)
-  500    CONTINUE
+         END DO
       END IF
 C
       RETURN
@@ -2437,7 +2423,7 @@ C  /* Deck lmnprp */
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from LMNPRP','*',103)
 C
-      DO 100 I = 1, NHKMAX
+      DO I = 1, NHKMAX
          KCKTX = I*(I + 1)/2
          KHKTX = 2*I - 1
          IF (DOCART) KHKTX = KCKTX
@@ -2448,48 +2434,52 @@ C
 C
 C        Local symmetries for Cartesian functions
 C
-         DO 200 ISYM = 0, 7
-         DO 200 J = 1, KCKTX
+         DO ISYM = 0, 7
+         DO J = 1, KCKTX
             IBITS =   MOD(LMNPWR(J,I,1),2)
      &            + 2*MOD(LMNPWR(J,I,2),2)
      &            + 4*MOD(LMNPWR(J,I,3),2)
             LMNSYM(J,I,1,ISYM) = IBTAND(ISYM,IBITS)
-  200    CONTINUE
+         END DO
+         END DO
 C
 C        Local symmetries for spherical functions
 C
-         DO 300 ISYM = 0, 7
-         DO 300 J = 1, KHKTX
+         DO ISYM = 0, 7
+         DO J = 1, KHKTX
             IF (DOCART) THEN
                INDMAX = J
             ELSE
                INDMAX = IDMAX(KCKTX,CSP(ISPADR(I)+J-1),KHKTX)
             END IF
             LMNSYM(J,I,2,ISYM) = LMNSYM(INDMAX,I,1,ISYM)
-  300    CONTINUE
-  100 CONTINUE
+         END DO
+         END DO
+      END DO
 C
       IF (IPRINT .GT. 5) THEN
          CALL HEADER('LMNPWR from LMNPRP',-1)
-         DO 400 I = 1, NHKMAX
-         DO 400 J = 1, I*(I + 1)/2
+         DO I = 1, NHKMAX
+         DO J = 1, I*(I + 1)/2
             WRITE (LUPRI,'(5X,2I5,5X,3I5)') I,J,(LMNPWR(J,I,K),K=1,3)
-  400    CONTINUE
+         END DO
+         END DO
 C
          CALL HEADER('LMNSYM (Cartesian) from LMNPRP',-1)
-         DO 500 I = 1, NHKMAX
-         DO 500 J = 1, I*(I + 1)/2
+         DO I = 1, NHKMAX
+         DO J = 1, I*(I + 1)/2
             WRITE (LUPRI,'(5X,2I5,5X,8I5)') I,J,(LMNSYM(J,I,1,K),K=0,7)
-  500    CONTINUE
+         END DO
+         END DO
 C
          CALL HEADER('LMNSYM (Spherical) from LMNPRP',-1)
-         DO 600 I = 1, NHKMAX
+         DO I = 1, NHKMAX
             KHKMX = 2*I - 1
             IF (DOCART) KHKMX = I*(I + 1)/2
-            DO 700 J = 1, KHKMX
+            DO J = 1, KHKMX
                WRITE(LUPRI,'(5X,2I5,5X,8I5)')I,J,(LMNSYM(J,I,2,K),K=0,7)
-  700       CONTINUE
-  600    CONTINUE
+            END DO
+         END DO
       END IF
       RETURN
       END
@@ -2507,11 +2497,11 @@ C  /* Deck kcdim */
 C
       NMAX = 0
       NOFF = ITRI2(MAX(JMAX1,JMAX2) - 1)
-      DO 100 J = 0, MIN(JMAX1,JMAX2)
+      DO J = 0, MIN(JMAX1,JMAX2)
          NDIM1 = ITRI1(J)
          NDIM2 = ITRI2(JMAX1 + JMAX2 - J) - NOFF
          NMAX = MAX(NMAX,NDIM1*NDIM2)
-  100 CONTINUE
+      END DO
       KCDIM = NMAX
 C
       RETURN

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2fck.F,v 1.3 2001-03-19 14:40:57 vebjornb Exp $
+C$Id: eri2fck.F,v 1.4 2001-04-23 08:07:53 helgaker Exp $
 C
 #include <single.h>
 C  /* Deck erifck */
@@ -84,10 +84,6 @@ C
       MODAB  = 0
       MODCD  = 0
 C
-C     Symmetry transformation
-C
-      SYMTRA = DOSTRA .OR. MAXREP .GT. 0
-C
       WRTINT = .FALSE.
       FCKINT = .TRUE.
 C
@@ -107,10 +103,10 @@ C     KDAO  = 1
 C     KLAST = KDAO + N2BASX*NDMAT
 C     IF(KLAST.GT.LWORK) CALL STOPIT('HERFCK','DSOTAO',KLAST,LWORK)
 C     LWRK  = LWORK - KLAST + 1
-C     DO 200 IMAT = 1,NDMAT
+C     DO IMAT = 1,NDMAT
 C        JDAO = KDAO + (IMAT-1)*N2BASX
 C        CALL DSOTAO(DMAT(1,IMAT),WORK(JDAO),NBAST,ISYMDM,IPRINT)
-C 200 CONTINUE
+C     END DO
 C
 C     OD batches
 C     ==========
@@ -238,7 +234,7 @@ C
          IF (IPRINT.GT.4) THEN
             CALL HEADER('Density and Fock matrices in ERIFCK',-1)
             KSTR = 1
-            DO 300 I = 1, NDMT
+            DO I = 1, NDMT
                WRITE (LUPRI,'(//,1X,A,I3)') ' Density matrix No.',I
                CALL OUTPUT(DMAT(KSTR),1,NBASE,1,NBASE,NBASE,
      &                     NBASE,1,LUPRI)
@@ -246,7 +242,7 @@ C
                CALL OUTPUT(FMAT(KSTR),1,NBASE,1,NBASE,NBASE,
      &                     NBASE,1,LUPRI)
                KSTR = KSTR + NBASE*NBASE
-  300       CONTINUE
+            END DO
          END IF
 C
          CALL TIMER('ERIFCK',TIMSTR,TIMEND)
@@ -340,10 +336,10 @@ C  /* Deck erindf */
 #include <mxcent.h>
 #include <mxorb.h>
 #include <aovec.h>
-      PARAMETER (DP5=0.50D0)
-      INTEGER A, B, C, D, I, A1, B1, C1, D1, AB, CD, R, S, T, KP,
-     &	      KQ, KR, KS
-      LOGICAL DOREP(0:7,4), CTRIAB, CTRICD, CTRIAC, CTRIBD, CTRIPQ
+      PARAMETER (D1 = 1.0D0, DP5=0.50D0)
+      INTEGER A, B, C, D, AB, CD, R, S, T
+      LOGICAL DOREP(0:7,4), CTRIAB, CTRICD, CTRIAC, CTRIBD, CTRIPQ,
+     &        AEQB, CEQD, PEQQ
       DIMENSION SO(NCCS,MLTPR,MLTPS,MLTPT,KHKTAB,KHKTCD),
      &          INDEX(NCCS,4), CCFBT(MXPRIM*MXCONT),
      &          IPNTCR(MAXBCH,4), INDXBT(MXSHEL*MXCONT,0:7),
@@ -360,13 +356,8 @@ C  /* Deck erindf */
 C
 #include <ibtfun.h>
       IBTEST(I,J,K,L) = IBTAND(I,IBTXOR(J,ISYMAO(K,L)))
-      IBTREP(I,J,K,L) = IBTXOR(J,IBTAND(I,ISYMAO(K,L)))
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERINDF',-1)
-C
-      IF (IPRINT .GT. 15) THEN
-         WRITE (LUPRI,'(2X,A,2I5)') ' NPQBCS,NPPBCS ',NPQBCS,NPPBCS
-      END IF
 C
       CALL PRPREP(DOREP(0,1),NHKTA,KHKTA,ISTBLA)
       CALL PRPREP(DOREP(0,2),NHKTB,KHKTB,ISTBLB)
@@ -392,173 +383,113 @@ C
 C
       INT = 0
 C
-      IF (NCCS1 .GT. 0) THEN
+      DO A = 0, MAXREP
+      IF (DOREP(A,1)) THEN
+      DO B = 0, MAXREP
+      IF (DOREP(B,2)) THEN
+      DO C = 0, MAXREP
+      IF (DOREP(C,3) .AND. DOREP(IBTXOR(IBTXOR(A,B),C),4)) THEN
+         D = IBTXOR(IBTXOR(A,B),C)
+         CD = IBTXOR(C,D)
 C
-         DO 100 A = 0, MAXREP
-         IF (DOREP(A,1)) THEN
-            DO 101 I = 1, NCCS1
-               INDEX(I,1) = INDXBT(KNDXBT(IPNTCR(I,1)),A)
-  101       CONTINUE
-         DO 110 B = 0, MAXREP
-         IF (DOREP(B,2)) THEN
-            DO 111 I = 1, NCCS1
-               INDEX(I,2) = INDXBT(KNDXBT(IPNTCR(I,2)),B)
-  111       CONTINUE
-         DO 120 C = 0, MAXREP
-         IF (DOREP(C,3) .AND. DOREP(IBTXOR(IBTXOR(A,B),C),4)) THEN
-            D = IBTXOR(IBTXOR(A,B),C)
-            CD = IBTXOR(C,D)
+         IF (DIAGAB .AND. B.GT.A) GO TO 100
+         IF (DIAGCD .AND. D.GT.C) GO TO 100
 C
-            IF (DIAGAB .AND. B.GT.A) GO TO 190
-            IF (DIAGCD .AND. D.GT.C) GO TO 190
+         CTRIAB = DIAGAB .AND. A.EQ.B
+         CTRICD = DIAGCD .AND. C.EQ.D
+         CTRIAC = A.EQ.C
+         CTRIBD = B.EQ.D
+         CTRIPQ = A.EQ.C .AND. B.EQ.D
 C
-            DO 121 I = 1, NCCS1
-               INDEX(I,3) = INDXBT(KNDXBT(IPNTCR(I,3)),C)
-               INDEX(I,4) = INDXBT(KNDXBT(IPNTCR(I,4)),D)
-  121       CONTINUE
+         R = IPNRST(B,1)
+         S = IPNRST(D,2)
+         T = IPNRST(CD,3)
 C
-            R = IPNRST(B,1)
-            S = IPNRST(D,2)
-            T = IPNRST(CD,3)
+         CALL ERIPNT(INDEX,A,B,C,D,IPNTCR,INDXBT,1)
+C
+         IF (NCCS1 .GT. 0) THEN
 C
             IA   = -1
             MAXB = KHKTB
             MAXD = KHKTD
-            CTRIAB = DIAGAB .AND. A.EQ.B
-            CTRICD = DIAGCD .AND. C.EQ.D
-            DO 300 ICMPA = 1, KHKTA
+            DO ICMPA = 1, KHKTA
             IVARA = IBTEST(ISTBLA,A,NHKTA,ICMPA)
             IF (IVARA.EQ.0) THEN
                IA = IA + 1
                IB = -1
                IF (CTRIAB) MAXB = ICMPA
-               DO 310 ICMPB = 1, MAXB
+               DO ICMPB = 1, MAXB
                IVARB = IBTEST(ISTBLB,B,NHKTB,ICMPB)
                IF (IVARB.EQ.0) THEN
                   IB = IB + 1
                   IC = -1
                   ICMPAB = IADCMP(ICMPA,ICMPB,1)
                   IODDAB = IODDCC(IPNTUV(ICMPAB,0,1))
-                  DO 320 ICMPC = 1, KHKTC
+                  AEQB = CTRIAB .AND. ICMPA.EQ.ICMPB
+                  DO ICMPC = 1, KHKTC
                   IVARC = IBTEST(ISTBLC,C,NHKTC,ICMPC)
                   IF (IVARC.EQ.0) THEN
                      IC = IC + 1
                      ID = -1
                      IF (CTRICD) MAXD = ICMPC
-                     DO 330 ICMPD = 1, MAXD
+                     DO ICMPD = 1, MAXD
                      IVARD = IBTEST(ISTBLD,D,NHKTD,ICMPD)
                      IF (IVARD.EQ.0) THEN
                         ID = ID + 1
                         ICMPCD = IADCMP(ICMPC,ICMPD,2)
                         IODDCD = IODDCC(IPNTUV(ICMPCD,0,2))
                         IF (IODDAB .EQ. IODDCD) THEN
-                           IF (WRTSCR) THEN
-                              DO 400 I = 1, NCCS1
-                                 SOABCD = SO(I,R,S,T,ICMPAB,ICMPCD)
-                                 IF (ABS(SOABCD) .GT. THRSH) THEN
-                                    INT = INT + 1
-                                    BIN (INT  ) = SOABCD
-                                    IBIN(INT,1) = INDEX(I,1) + IA
-                                    IBIN(INT,2) = INDEX(I,2) + IB
-                                    IBIN(INT,3) = INDEX(I,3) + IC
-                                    IBIN(INT,4) = INDEX(I,4) + ID
-                                 END IF
-  400                         CONTINUE
-                           ELSE
-                              DO 450 I = 1, NCCS1
-                                 SOABCD = SO(I,R,S,T,ICMPAB,ICMPCD)
+                           CEQD = CTRICD .AND. ICMPC.EQ.ICMPD
+                           FAC = D1
+                           IF (AEQB) FAC = DP5*FAC
+                           IF (CEQD) FAC = DP5*FAC
+                           DO I = 1, NCCS1
+                              SOABCD = SO(I,R,S,T,ICMPAB,ICMPCD)
+                              IF (ABS(SOABCD) .GT. THRSH) THEN
                                  INT = INT + 1
-                                 KP = INDEX(I,1) + IA
-                                 KQ = INDEX(I,2) + IB
-                                 KR = INDEX(I,3) + IC
-                                 KS = INDEX(I,4) + ID
-                                 IF  (KP.EQ.KQ) SOABCD = DP5*SOABCD
-                                 IF  (KR.EQ.KS) SOABCD = DP5*SOABCD
-                                 IF ((KP.EQ.KR .AND. KQ.EQ.KS) .OR.
-     &                                (KP.EQ.KS .AND. KQ.EQ.KR))
-     &                                SOABCD = DP5*SOABCD
-                                 BIN(INT) = SOABCD
-                                 IBIN(INT,1) = KP
-                                 IBIN(INT,2) = KQ
-                                 IBIN(INT,3) = KR
-                                 IBIN(INT,4) = KS
-  450                         CONTINUE
-                           END IF
+                                 BIN(INT) = FAC*SOABCD
+                                 IBIN(INT,1) = INDEX(I,1) + IA
+                                 IBIN(INT,2) = INDEX(I,2) + IB
+                                 IBIN(INT,3) = INDEX(I,3) + IC
+                                 IBIN(INT,4) = INDEX(I,4) + ID
+                              END IF
+                           END DO
                         END IF
                      END IF
-  330                CONTINUE
+                     END DO
                   END IF
-  320             CONTINUE
+                  END DO
                END IF
-  310          CONTINUE
+               END DO
             END IF
-  300       CONTINUE
-C
-  190       CONTINUE
-C
+            END DO
          END IF
-  120    CONTINUE
-         END IF
-  110    CONTINUE
-         END IF
-  100    CONTINUE
-      END IF
 C
-      IF (NCCS2 .GT. 0) THEN
+         IF (NCCS2 .GT. 0) THEN
 C
-         DO 105 A = 0, MAXREP
-         IF (DOREP(A,1)) THEN
-            DO 106 I = NCCS1 + 1, NCCS
-               INDEX(I,1) = INDXBT(KNDXBT(IPNTCR(I,1)),A)
-  106       CONTINUE
-         DO 115 B = 0, MAXREP
-         IF (DOREP(B,2)) THEN
-            DO 116 I = NCCS1 + 1, NCCS
-               INDEX(I,2) = INDXBT(KNDXBT(IPNTCR(I,2)),B)
-  116       CONTINUE
-         DO 125 C = 0, MAXREP
-         IF (DOREP(C,3) .AND. DOREP(IBTXOR(IBTXOR(A,B),C),4)) THEN
-            D = IBTXOR(IBTXOR(A,B),C)
-            CD = IBTXOR(C,D)
-C
-            IF (DIAGAB .AND. B.GT.A) GO TO 195
-            IF (DIAGCD .AND. D.GT.C) GO TO 195
-            IF (C.GT.A .OR. (C.EQ.A .AND. D.GT.B)) GO TO 195
-C
-            DO 126 I = NCCS1 + 1, NCCS
-               INDEX(I,3) = INDXBT(KNDXBT(IPNTCR(I,3)),C)
-               INDEX(I,4) = INDXBT(KNDXBT(IPNTCR(I,4)),D)
-  126       CONTINUE
-C
-            R = IPNRST(B,1)
-            S = IPNRST(D,2)
-            T = IPNRST(CD,3)
+            IF (C.GT.A .OR. (C.EQ.A .AND. D.GT.B)) GO TO 200
 C
             MAXB = KHKTB
             MAXC = KHKTC
             MAXD = KHKTD
-            CTRIAB = DIAGAB .AND. A.EQ.B
-            CTRICD = DIAGCD .AND. C.EQ.D
-            CTRIAC = A.EQ.C
-            CTRIBD = B.EQ.D
-            CTRIPQ = A.EQ.C .AND. B.EQ.D
 C
             IA = -1
-            DO 305 ICMPA = 1, KHKTA
+            DO ICMPA = 1, KHKTA
             IVARA = IBTEST(ISTBLA,A,NHKTA,ICMPA)
             IF (IVARA.EQ.0) THEN
                IA = IA + 1
                IB = -1
                IF (CTRIAB) MAXB = ICMPA
-               DO 315 ICMPB = 1, MAXB
+               DO ICMPB = 1, MAXB
                IVARB = IBTEST(ISTBLB,B,NHKTB,ICMPB)
                IF (IVARB.EQ.0) THEN
                   IB = IB + 1
                   IC = -1
                   ICMPAB = IADCMP(ICMPA,ICMPB,1)
                   IODDAB = IODDCC(IPNTUV(ICMPAB,0,1))
+                  AEQB = CTRIAB .AND. ICMPA.EQ.ICMPB
                   IF (CTRIAC) MAXC = ICMPA
-                  DO 325 ICMPC = 1, MAXC
+                  DO ICMPC = 1, MAXC
                   IVARC = IBTEST(ISTBLC,C,NHKTC,ICMPC)
                   IF (IVARC.EQ.0) THEN
                      IC = IC + 1
@@ -569,64 +500,49 @@ C
                         MAXD = KHKTD
                         IF (CTRICD) MAXD = ICMPC
                      END IF
-                     DO 335 ICMPD = 1, MAXD
+                     DO ICMPD = 1, MAXD
                      IVARD = IBTEST(ISTBLD,D,NHKTD,ICMPD)
                      IF (IVARD.EQ.0) THEN
                         ID = ID + 1
                         ICMPCD = IADCMP(ICMPC,ICMPD,2)
                         IODDCD = IODDCC(IPNTUV(ICMPCD,0,2))
                         IF (IODDAB .EQ. IODDCD) THEN
-                           IF (WRTSCR) THEN
-                              DO 405 I = NCCS1 + 1, NCCS
-                                 SOABCD = SO(I,R,S,T,ICMPAB,ICMPCD)
-                                 IF (ABS(SOABCD) .GT. THRSH) THEN
-                                    INT = INT + 1
-                                    BIN (INT  ) = SOABCD
-                                    IBIN(INT,1) = INDEX(I,1) + IA
-                                    IBIN(INT,2) = INDEX(I,2) + IB
-                                    IBIN(INT,3) = INDEX(I,3) + IC
-                                    IBIN(INT,4) = INDEX(I,4) + ID
-                                 END IF
-  405                         CONTINUE
-                           ELSE
-                              DO 455 I = NCCS1 + 1, NCCS
-                                 SOABCD = SO(I,R,S,T,ICMPAB,ICMPCD)
+                           CEQD = CTRICD .AND. ICMPC.EQ.ICMPD
+                           PEQQ = CTRIPQ .AND. ICMPA.EQ.ICMPC
+     &                                   .AND. ICMPB.EQ.ICMPD 
+                           FAC = D1
+                           IF (AEQB) FAC = DP5*FAC
+                           IF (CEQD) FAC = DP5*FAC
+                           IF (PEQQ) FAC = DP5*FAC
+                           DO I = NCCS1 + 1, NCCS
+                              SOABCD = SO(I,R,S,T,ICMPAB,ICMPCD)
+                              IF (ABS(SOABCD) .GT. THRSH) THEN
                                  INT = INT + 1
-                                 KP = INDEX(I,1) + IA
-                                 KQ = INDEX(I,2) + IB
-                                 KR = INDEX(I,3) + IC
-                                 KS = INDEX(I,4) + ID
-                                 IF  (KP.EQ.KQ) SOABCD = DP5*SOABCD
-                                 IF  (KR.EQ.KS) SOABCD = DP5*SOABCD
-                                 IF ((KP.EQ.KR .AND. KQ.EQ.KS) .OR.
-     &                                (KP.EQ.KS .AND. KQ.EQ.KR))
-     &                                SOABCD = DP5*SOABCD
-                                 BIN(INT) = SOABCD
-                                 IBIN(INT,1) = KP
-                                 IBIN(INT,2) = KQ
-                                 IBIN(INT,3) = KR
-                                 IBIN(INT,4) = KS
-  455                         CONTINUE
-                           END IF
+                                 BIN(INT) = FAC*SOABCD
+                                 IBIN(INT,1) = INDEX(I,1) + IA
+                                 IBIN(INT,2) = INDEX(I,2) + IB
+                                 IBIN(INT,3) = INDEX(I,3) + IC
+                                 IBIN(INT,4) = INDEX(I,4) + ID
+                              END IF
+                           END DO
                         END IF
                      END IF
-  335                CONTINUE
+                     END DO
                   END IF
-  325             CONTINUE
+                  END DO
                END IF
-  315          CONTINUE
+               END DO
             END IF
-  305       CONTINUE
-C
-  195       CONTINUE
-C
+            END DO
+  200       CONTINUE
          END IF
-  125    CONTINUE
-         END IF
-  115    CONTINUE
-         END IF
-  105    CONTINUE
+  100    CONTINUE
       END IF
+      END DO
+      END IF
+      END DO
+      END IF
+      END DO
       RETURN
       END
 C  /* Deck fokdi1 */
@@ -678,12 +594,13 @@ C  /* Deck erisfk */
 #include <priunit.h>
       DIMENSION FMAT(NBASE,NBASE,NDMT)
       DO IDM = 1, NDMT
-         DO 100 I = 1, NBASE
-         DO 100 J = 1, I
+         DO I = 1, NBASE
+         DO J = 1, I
             FMT = FMAT(I,J,IDM) + FMAT(J,I,IDM)
             FMAT(I,J,IDM) = FMT
             FMAT(J,I,IDM) = FMT
- 100     CONTINUE
+         END DO
+         END DO
       END DO
       RETURN
       END

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2dis.F,v 1.4 2001-04-18 07:09:09 helgaker Exp $
+C$Id: eri2dis.F,v 1.5 2001-04-23 08:07:53 helgaker Exp $
 C
 #include <single.h>
 C  /* Deck eridi1 */
@@ -60,12 +60,10 @@ C
       IPRINT = IPRERI
       THRSH  = MAX(THRS,1.00D-15)
 C
-c       IPRINT = 999
 C
       DODIST = .TRUE.
       PMSAB  = .FALSE.
       PMS12  = .FALSE.
-      CANIND = .FALSE.
 C
 C
 C     Memory
@@ -74,10 +72,6 @@ C
       MEMADD = 0
       MODAB  = 0
       MODCD  = 0
-C
-C     Symmetry transformation
-C
-      SYMTRA = DOSTRA .OR. MAXREP .GT. 0
 C
       WRTINT = .TRUE.
       FCKINT = .FALSE.
@@ -223,10 +217,6 @@ C
      &        'UNFORMATTED',LRECL,OLDDX)
       END DO
 C
-C     Symmetry transformation
-C
-      SYMTRA = DOSTRA .OR. MAXREP .GT. 0
-C
       CALL GETDST(ICALL,0,IPRINT)
 C
 C     Select integrals to be calculated
@@ -337,10 +327,6 @@ C
       MEMADD = 0
       MODAB  = 0
       MODCD  = 0
-C
-C     Symmetry transformation
-C
-      SYMTRA = DOSTRA .OR. MAXREP .GT. 0
 C
       CALL GETDST(ICALL1,ICALL2,IPRINT)
 C

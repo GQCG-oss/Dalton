@@ -280,7 +280,8 @@ C
 C     Density matrix
 C     ==============
 C
-      CALL GETDMT(WORK(KDMAT),1,WORK(KLAST),LWRK,.FALSE.,.TRUE.,IPRINT)
+      CALL GETDMT(WORK(KDMAT),1,WORK(KLAST),LWRK,.FALSE.,.TRUE.,.TRUE.,
+     &            IPRINT)
 C
 C     One-electron interactions
 C     =========================

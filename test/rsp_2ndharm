@@ -105,9 +105,9 @@ CTRL[3]=2
 ERROR[3]="SYMMETRY NOT CORRECT"
 
 # Energies
-CRIT1=`$GREP "Hartree\-Fock total energy \: * \-7\.977349367[0-9]" $log | wc -l`
-CRIT2=`$GREP "\= MP2 second order energy \: * \-7\.990192719[0-9]" $log | wc -l`
-CRIT3=`$GREP "Final MCSCF energy\: * \-7\.99413052963[0-9]" $log | wc -l`
+CRIT1=`$GREP "Hartree\-Fock total energy \: * \-7\.97734936.[0-9]" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy \: * \-7\.99019271.[0-9]" $log | wc -l`
+CRIT3=`$GREP "Final MCSCF energy\: * \-7\.9941305296.[0-9]" $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=3
 ERROR[4]="ENERGIES NOT CORRECT"
@@ -138,7 +138,7 @@ CTRL[5]=18
 ERROR[5]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
 
 # Linear response
-CRIT1=`$GREP "Value of linear response\: * 27\.19655721[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Value of linear response\: * 27\.1965572.[0-9][0-9][0-9][0-9]" $log | wc -l`
 CRIT2=`$GREP "Value of linear response\: * 28\.52015057[0-9][0-9][0-9][0-9]" $log | wc -l`
 CRIT3=`$GREP "Value of linear response\: * 32\.01644696[0-9][0-9][0-9][0-9]" $log | wc -l`
 CRIT4=`$GREP "Value of linear response\: * 33\.21286320[0-9][0-9][0-9][0-9]" $log | wc -l`

@@ -63,7 +63,7 @@ cat > prop_nucquad.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/ksh
+echo '#!/bin/ksh 
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -95,7 +95,7 @@ CTRL[2]=2
 ERROR[2]="SYMMETRY NOT CORRECT"
 
 # Energy
-CRIT1=`$GREP "Final MCSCF energy\: * \-609\.1655896242[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Final MCSCF energy\: * \-609\.165589624(1|2)[0-9][0-9]" $log | wc -l`
 TEST[3]=`expr	$CRIT1`
 CTRL[3]=1
 ERROR[3]="ENERGY NOT CORRECT"
