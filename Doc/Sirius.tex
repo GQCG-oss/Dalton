@@ -720,6 +720,10 @@ program.\index{B3LYP-G} This functional can be explicitely set up by
   \funexample{GGAKey hf=0.2 slater=0.8 becke=0.72 p86c=0.81 vwn3=1}
   \index{B3P86}
 
+\item[BPW91] is a sum of Slater functional, Becke correction and
+  PW91 correlation functional.\index{BPW91}
+  \funexample{GGAKey slater=1 becke=1 pw91c=1}
+
 \item[CAMB3LYP] Coulomb Attenuated Method Functional of Yanai, Tew and
 Handy\cite{dft:camb3lyp}. This functional accepts additional arguments
 \verb|alpha|, \verb|beta| and \verb|mu| to modify the fraction of HF
@@ -766,9 +770,16 @@ factor $\mu$. This input can be specified as follows:
   following:
   \funexample{GGAKey pbex=1 PW91c=1}.
 
-\item[BPW91] is a sum of Slater functional, Becke correction and
-  PW91 correlation functional.\index{BPW91}
-  \funexample{GGAKey slater=1 becke=1 pw91c=1}
+\item[SVWN3] is a sum of Slater functional and VWN3 correlation
+  functional.  It is equivalent to Gaussian's LSDA functional and can
+  alternatively by selected by following set of keywords
+  \funexample{GGAKey slater=1 vwn3=1}
+  \index{SVWN3}
+
+\item[SVWN5] is a sum of Slater functional and VWN5 correlation
+  functional.  It is equivalent to
+  \funexample{GGAKey slater=1 vwn5=1}
+  \index{SVWN5}
 
 \end{description}
 
