@@ -286,9 +286,8 @@ C
          CALL TITLER(' DALTON - An electronic structure program ',
      &               '*',111)
 C
-         WRITE (LUPRI,'(T5,A,43(/T5,A))')
+         WRITE (LUPRI,'(T5,A//,(T5,A))')
      *  'This is output from DALTON (Release 2.0 rev. 0, Mar. 2005)',
-     &  ' ',
      *  'Celestino Angeli,         University of Ferrara,'
      &                      //'        Italy      ',
      *  'Keld L. Bak,              UNI-C,                        '
@@ -321,7 +320,7 @@ C
      &                      //'Norway     ',
      *  'Hinne Hettema,            University of Auckland,       '
      &                      //'New Zealand',
-     *  'Hans Joergen Aa. Jensen,  SDU - Odense University,      '
+     *  'Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    '
      &                      //'Denmark    ',
      *  'Dan Jonsson,              KTH Stockholm,                '
      &                      //'Sweden     ',
@@ -373,7 +372,7 @@ C
      &                      //'Sweden     ',
      *  'David J. Wilson,          University of Oslo,           '
      &                      //'Norway     ',
-     *  'Hans Agren,              KTH Stockholm,                '
+     *  'Hans Agren,               KTH Stockholm,                '
      &                      //'Sweden     '
 C
 C        Changed format (WK/UniKA/04-11-2002).
@@ -401,7 +400,7 @@ C        Changed format (WK/UniKA/04-11-2002).
 C
 C     Stamp date and time and hostname to output
 C
-         CALL TSTAMP(' ',LUPRI)
+         CALL TSTAMP('INIT',LUPRI)
 C
 C     Read general input
 C
