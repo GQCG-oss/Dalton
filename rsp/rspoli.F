@@ -630,8 +630,14 @@ C           Coulomb+exchange
       END DO
 C     Change IFCTYP for all Fa matrices 
       IF (ROKS.OR.HSROHF) THEN
-      DO 1443 I=1,NFMAT/2
-          IFCTYP(NOSIM+I)=10*(IFCTYP(NOSIM+I)/10) + 2    
+      DO 1443 I=1,NOSIM  
+          IF (TRPLET) THEN
+             IFCTYP(I)=10*(IFCTYP(I)/10) + 2
+             IFCTYP(NOSIM+I)=10*(IFCTYP(NOSIM+I)/10) + 3
+          ELSE
+             IFCTYP(I)=10*(IFCTYP(I)/10) + 3
+             IFCTYP(NOSIM+I)=10*(IFCTYP(NOSIM+I)/10) + 2
+          END IF
  1443 CONTINUE   
       END IF  
       DFTADX = DFTADD

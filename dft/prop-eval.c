@@ -790,6 +790,7 @@ lin_resp_cbab_gga(DftGrid* grid, LinRespDataab* data)
     real *atvZ = &grid->atv[inforb_.nbast*3];
 
     compute_trans_rho(grid, data, &rhowa, &rhowb);
+     if (data->trplet) rhowb = -rhowb; 
     /* gradwa evaluation */
     dgemv_("T",&inforb_.nbast,&THREEI,&ONER,atvX, &inforb_.nbast,
            data->dtgaoa,&ONEI, &ZEROR, gradwa, &ONEI);
@@ -803,7 +804,12 @@ lin_resp_cbab_gga(DftGrid* grid, LinRespDataab* data)
     dgemv_("T",&inforb_.nbast, &inforb_.nbast, &ONER, data->kappab,
            &inforb_.nbast,grid->atv,&ONEI,&ZEROR,data->dtgaob,&ONEI);
     dgemv_("T",&inforb_.nbast,&THREEI,&ONER,atvX,
-           &inforb_.nbast,data->dtgaob,&ONEI,&ONER,gradwb,&ONEI);
+           &inforb_.nbast,data->dtgaob,&ONEI,&ONER,gradwb,&ONEI); 
+    if  (data->trplet) {
+        gradwb[0]= -gradwb[0];
+        gradwb[1]= -gradwb[1];
+        gradwb[2]= -gradwb[2];
+    }
     /* second derivatives calculation */
     drv2_clear(&vxc);
     selected_func->second(&vxc, grid->curr_weight, &grid->dp);
@@ -927,7 +933,8 @@ lin_resp_cbab_nogga(DftGrid* grid, LinRespDataab* data)
     SecondFuncDrv vxc;    
     real vt, gvi;
 
-    compute_trans_rho(grid, data, &rhowa, &rhowb);
+    compute_trans_rho(grid, data, &rhowa, &rhowb); 
+    if (data->trplet) rhowb = -rhowb; 
     drv2_clear(&vxc);
     selected_func->second(&vxc, grid->curr_weight, &grid->dp);
     /* alpha Fock contribution */
@@ -1078,8 +1085,12 @@ dft_lin_respab_(real* fmatc, real* fmato,  real *cmo, real *zymat,
     }    
     daxpy_(&inforb_.n2orbx,&TWOR,fmata,&ONEI,fmatc,&ONEI);
     if (inforb_.nasht > 0) {
-       daxpy_(&inforb_.n2orbx,&ONER,fmatb,&ONEI,fmato,&ONEI); 
-       daxpy_(&inforb_.n2orbx,&MONER,fmata,&ONEI,fmato,&ONEI);  
+        if (*trplet) {
+             daxpy_(&inforb_.n2orbx,&MONER,fmatb,&ONEI,fmato,&ONEI);
+        } else {
+             daxpy_(&inforb_.n2orbx,&ONER,fmatb,&ONEI,fmato,&ONEI);
+        }
+       daxpy_(&inforb_.n2orbx,&MONER,fmata,&ONEI,fmato,&ONEI);
     }
     free(fmata);
     free(fmatb);

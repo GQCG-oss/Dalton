@@ -601,7 +601,8 @@ C
 #include <infpar.h>
 #include <blocks.h>
 C
-#include <memint.h>
+#include <memint.h> 
+      IF (NDMAT .EQ. 0) RETURN  
       CALL QENTER('HERFCK1')
       I2TYP = 0
 C
