@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2fck.F,v 1.2 2001-02-12 18:17:54 vebjornb Exp $
+C$Id: eri2fck.F,v 1.3 2001-03-19 14:40:57 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck erifck */
@@ -58,7 +58,7 @@ C
 #include <odbtch.h>
 #include <symmet.h>
 #include <infpar.h>
-      DIMENSION FMAT(NBASE,NBASE,NDMT), DMAT(*), WORK(LWORK),
+      DIMENSION FMAT(*), DMAT(*), WORK(LWORK),
      &          IFCTYP(NDMT), ISYMDM(NDMT), CCFBT(*), INDXBT(*), 
      &	        FCKTMP(*)
 C
@@ -145,7 +145,7 @@ C
       CALL ERIDSI(INDXBT,IPRINT)
 #if defined (VAR_VECTOR)
       ICHUNK = MAX(IVECLN/NDMT,1)
-      CALL DZERO(FCKTMP,ICHUNK*NDMT*(NBASIS + NODD)*NBASIS)
+      CALL DZERO(FCKTMP,ICHUNK*NDMT*(NBASE + NODD)*NBASE)
 #endif
 C
       KLAST = KFREE
@@ -210,11 +210,14 @@ C
          IOFF = 0
          DO I = 1, ICHUNK
             DO J = 1, NDMT
-               DO L = 1, NBASIS
-                  DO K = 1, NBASIS
-                     FMAT(K,L,J) = FMAT(K,L,J) + FCKTMP(IOFF + K)
+               DO L = 1, NBASE
+                  DO K = 1, NBASE
+C                    FMAT(K,L,J) = FMAT(K,L,J) + FCKTMP(IOFF + K)
+                     FMAT(K+(L-1)*NBASE+(J-1)*NBASE*NBASE) =
+     &                    FMAT(K+(L-1)*NBASE+(J-1)*NBASE*NBASE) +
+     &                    FCKTMP(IOFF + K)
                   END DO
-                  IOFF = IOFF + NBASIS+NODD
+                  IOFF = IOFF + NBASE+NODD
                END DO
             END DO
          END DO
@@ -225,9 +228,9 @@ C        ====================================
 C
 C NECgh980314  Kenneth found on 98/03/14 that this is the IFCTYP=3 bug.
 C NECgh980314  Now, we scale with 2.0 instead of symmetrizing.
-C NECgh980314  CALL ERISFK(FMAT,NBASIS,NDMT)
+C NECgh980314  CALL ERISFK(FMAT,NBASE,NDMT)
 C NECgh980505 Instead of doing this call, we adjust the FAC in the FCKCON call.
-C NECgh980505  call dscal(nbasis*nbasis*ndmt,2.0d0,fmat,1)
+C NECgh980505  call dscal(nbase*nbase*ndmt,2.0d0,fmat,1)
 C
 C        Print densities and Fock matrix
 C        ===============================
@@ -240,7 +243,7 @@ C
                CALL OUTPUT(DMAT(KSTR),1,NBASE,1,NBASE,NBASE,
      &                     NBASE,1,LUPRI)
                WRITE (LUPRI,'(//,1X,A,I3)') ' Fock matrix No.',I
-               CALL OUTPUT(FMAT(1,1,I),1,NBASE,1,NBASE,NBASE,
+               CALL OUTPUT(FMAT(KSTR),1,NBASE,1,NBASE,NBASE,
      &                     NBASE,1,LUPRI)
                KSTR = KSTR + NBASE*NBASE
   300       CONTINUE
