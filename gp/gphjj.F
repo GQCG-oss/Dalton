@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: gphjj.F,v 1.5 2001-03-26 09:37:05 ruud Exp $
+C$Id: gphjj.F,v 1.6 2001-03-28 13:00:53 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck flshfo */
@@ -1729,7 +1729,7 @@ C 941013-hjaaj and for Intel Paragon
 C     idum = elapsed time, itime(1:2) = system and user time
       second = dfloat (itime(1) + itime(2)) * 0.01d0
 #endif
-#if defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_DEC) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_HAL) || (defined (SYS_LINUX) && defined (VAR_G77))
+#if defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_DEC) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_HAL) || (defined (SYS_LINUX) && defined (VAR_PGF77))
 #include <implicit.h>
       real*4 etime,tarray(2)
 #if !defined (SYS_T3D)
