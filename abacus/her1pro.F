@@ -2284,11 +2284,14 @@ c  /* Deck SCACHRG */
 #include <nuclei.h>
 #include <priunit.h>
 #include <elements.h>
+#include <ecpinf.h>
       DIMENSION SVCHRG(*)
 C      
       PARAMETER (CHGLi = 3D0, CHGF  = 9D0,  CHGNa = 11D0, CHGCl = 17D0,
      &     CHGSc = 21D0, CHGZn = 30D0, CHGY  = 39D0, CHGCd = 48D0,
-     &     CHGLa = 57D0, CHGHg = 80D0)       
+     &     CHGLa = 57D0, CHGHg = 80D0, CHGK=19, CHGCA=20, CHGGE=32,
+     &     CHGGA=31, CHGBR=35, CHGRB=37, CHGSR=38, CHGIN=49, CHGSN=50,
+     &     CHGI=53)       
 C
 C     Scale charges 
 C
@@ -2304,27 +2307,54 @@ C            true charge if ECP). With this change this
 C            may (???) also work for ECP ???
 C
 c     scaling according to Koseki et al, J.Phys.Chem 1995, 99, 12764
-         IF(CHG.GE.CHGLi.AND.CHG.LE.CHGF) THEN
-            VLE = CHG - 2D0
-            FAC = 0.40 + 0.05*VLE
-         ELSE IF(CHG.GE.CHGNa.AND.CHG.LE.CHGCl) THEN
-            VLE = CHG - 10D0
-            FAC = 0.925 - 0.0125*VLE
+         IF (INDECP(I) .NE. 0) THEN
+            IF(CHG.GE.CHGLi.AND.CHG.LE.CHGF) THEN
+               VLE = CHG - 2D0
+               FAC = 0.40 + 0.05*VLE
+            ELSE IF(CHG.GE.CHGNa.AND.CHG.LE.CHGCl) THEN
+               FAC = 12.0D0
 c     scaling according to Koseki et al, J. Pys. Chem. A 1998, 102, 10430  
 c     first-row transition metals  
-         ELSE IF(CHG.GE.CHGSc.AND.CHG.LE.CHGZn) THEN
-            VLE = CHG - 20D0
-            FAC = 0.385 + 0.025*VLE
-c      second-row transition metals 
-          ELSE IF(CHG.GE.CHGY.AND.CHG.LE.CHGCd) THEN
-            VLE = CHG - 38D0
-            FAC = 4.680 + 0.060*VLE 
-c      third-row transition metals
-          ELSE IF(CHG.GE.CHGY.AND.CHG.LE.CHGCd) THEN
-            VLE = CHG - 56D0
-            FAC = 13.960 + 0.140*VLE
+            ELSE IF (CHG .GE. CHGK .AND. CHG.LE.CHGCA) THEN
+               FAC = 41.0D0
+            ELSE IF (CHG .GE. CHGGE .AND. CHG.LE.CHGBR) THEN
+               FAC = 41.0D0
+            ELSE IF (CHG .EQ. CHGGA) THEN
+               FAC = 11.0D0
+C
+            ELSE IF (CHG .GE. CHGRB .AND. CHG.LE.CHGSR) THEN
+               FAC = 110.0D0
+            ELSE IF (CHG .GE. CHGSN .AND. CHG.LE.CHGI) THEN
+               FAC = 110.0D0
+            ELSE IF (CHG .EQ. CHGIN) THEN
+               FAC = 33.0D0
+c     scaling according to Koseki et al, J. Pys. Chem. A 1998, 102, 10430  
+c     first-row transition metals  
+            ELSE IF(CHG.GE.CHGSc.AND.CHG.LE.CHGZn) THEN
+               VLE = CHG - 20D0
+               FAC = 0.385 + 0.025*VLE
+c     second-row transition metals 
+            ELSE IF(CHG.GE.CHGY.AND.CHG.LE.CHGCd) THEN
+               VLE = CHG - 38D0
+               FAC = 4.680 + 0.060*VLE 
+c     third-row transition metals
+            ELSE IF(CHG.GE.CHGY.AND.CHG.LE.CHGCd) THEN
+               VLE = CHG - 56D0
+               FAC = 13.960 + 0.140*VLE
+            ELSE
+               FAC = 1D0
+            END IF
+C
          ELSE
-            FAC = 1D0
+            IF(CHG.GE.CHGLi.AND.CHG.LE.CHGF) THEN
+               VLE = CHG - 2D0
+               FAC = 0.40 + 0.05*VLE
+            ELSE IF(CHG.GE.CHGNa.AND.CHG.LE.CHGCl) THEN
+               VLE = CHG - 10D0
+               FAC = 0.925 - 0.0125*VLE
+            ELSE
+               FAC = 1D0
+            END IF
          END IF
          IND=IZATOM(I)
 Chjaaj   CHARGE(I) = CHARGE(I)*FAC

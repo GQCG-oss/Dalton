@@ -954,9 +954,10 @@ C               thus always use isotope no. 1 /hjaaj feb 2003
 C           Read basis-set identifier from MLINE(NMLINE)
 C           Put MBSI = 1 otherwise (WK/UniKA/04-11-2002).
             IF (LMULBS) THEN
-               READ (MLINE(NMLINE),'(BN,I3,F7.0,I5)') MBSI,Q,NONT(I)
+               READ (MLINE(NMLINE),'(BN,I3,F7.0,I5)',ERR=299) 
+     &               MBSI,Q,NONT(I)
             ELSE
-               READ (MLINE(NMLINE),'(BN,F10.0,I5)') Q,NONT(I)
+               READ (MLINE(NMLINE),'(BN,F10.0,I5)',ERR=299) Q,NONT(I)
                MBSI = 1
             END IF
          ELSE
@@ -968,10 +969,10 @@ C ach
 C           Read basis-set identifier from MLINE(NMLINE)
 C           Put MBSI = 1 otherwise (WK/UniKA/04-11-2002).
             IF (LMULBS) THEN
-               READ (MLINE(NMLINE),'(BN,I3,F7.0,I5,24I5)') 
+               READ (MLINE(NMLINE),'(BN,I3,F7.0,I5,24I5)',ERR=299) 
      &               MBSI,Q,NONT(I),IQM(I,1),(JCO(J,I,1), J=1, IQM(I,1))
             ELSE
-               READ (MLINE(NMLINE),'(BN,F10.0,I5,24I5)') 
+               READ (MLINE(NMLINE),'(BN,F10.0,I5,24I5)',ERR=299) 
      &                    Q,NONT(I),IQM(I,1),(JCO(J,I,1), J=1, IQM(I,1))
                MBSI = 1
             END IF
@@ -1151,7 +1152,7 @@ C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
                        WRITE (LUPRI,'(/A,I3,A)')
      &                    ' Atomic type no.',I,
      &                    ' is a point charge without basis functions.'
-                    ELSE IF (BASNAM(1:3) .EQ. 'ECP') THEN
+                    ELSE IF (INDEX(BASNAM,'ecp') .NE. 0) THEN
                        WRITE (LUPRI,'(/A,I3,A/5X,A/A)')
      &                 ' For atomic type no.',I,
      &                 ' the effective core potential basis set ',
@@ -1193,7 +1194,7 @@ C                Use DIRAC style format for specifying IQM and JCO.
      &                ALPHA(1,IBLOCK(J),J),CPRIM(1,1,IBLOCK(J),J),
      &                CPRIMU(1,1,IBLOCK(J),J),NBLOCK,KAOVEC,KPRIM)
               ELSE IF (BASNAM(1:11) .NE. 'pointcharge') THEN
-                 IF (BASNAM(1:3) .EQ. 'ECP' .AND. J.EQ.1) THEN
+                 IF (INDEX(BASNAM,'ecp') .NE. 0 .AND. J.EQ.1) THEN
 C     Read effective core potential information from file for atom. 
 C     The charge of atom type will be set to the effective charge below
 C     after J=2: reading Huckel basis (if DOHUCKEL)
@@ -1264,7 +1265,7 @@ C
 C
          DO 400 K = 1,NONT(I)
             NOORBT(K+INUC) = NOORBI
-            IF (BASNAM(1:3) .EQ. 'ECP') CHARGE(K+INUC) =  QEFF
+            IF (INDEX(BASNAM,'ecp') .NE. 0) CHARGE(K+INUC) =  QEFF
 C           reset charge to effective charge for ECP
             IF (IQM(I,1) .EQ. 0) IZATOM(K+INUC) = -2
 C           ... code to tell this is a point charge (no basis fu.) /hjaaj Nov 2003
@@ -1319,6 +1320,11 @@ C
          IF (NHTYP.GT.MXQN) WRITE (LUPRI,'(9X,2(A,I3),A)')
      &      ' Increase MXQN from',MXQN,' to',NHTYP,' and recompile.'
          CALL QUIT('Too high angular quantum no. specified in input.')
+ 299  CONTINUE
+      WRITE (LUPRI,'(A,1X,I4)') 'Cannot determine the charge of atom '//
+     &     'type', I
+      WRITE (LUPRI,'(A)') 'Correct input format is: Charge=???'
+      CALL QUIT('Cannot determine the charge of one atom')
       END
 C  /* Deck cntinp */
       SUBROUTINE CNTINP(LUINFO,NONT,Q,NSYMOP,ANG,MBSI)
@@ -6312,7 +6318,7 @@ C
 C     Since the number of atom types have not been specified, assume old
 C     input format
 C         
-         READ (LINE,'(BN,A1,I4,I3,A2,10A1,D10.2,6I5)') CRT,
+         READ (LINE,'(BN,A1,I4,I3,A2,10A1,D10.2,6I5)',ERR=199) CRT,
      &        NONTYP,KCHARG,SYMTXT,((KASYM(I,J),I=1,3),J=1,3),ID3,THRS
          IF (LINE(21:30) .EQ. '          ') THRS = -1.0D0
 C        ... tell READIN that user hasn't specified THRS
@@ -6327,6 +6333,12 @@ C        ... tell READIN that user hasn't specified THRS
       END IF
 C
       RETURN
+ 199  CONTINUE
+      WRITE (LUPRI,'(A)') ' Error in the determination of the number '//
+     &     'of atomic types'
+      WRITE (LUPRI,*) ' Correct input structure is: Atomtypes=???'
+      CALL QUIT('Error in determining the number of different '//
+     &     'atom types')
       END
       SUBROUTINE LINE4W(TMPLN,NONTYP,NSYMOP,KCHARG,THRS,AUTOSY,NOSYM,
      &                  KASYM,ID3,DOCART,DOOWN)
