@@ -4,6 +4,8 @@
      &        DEBUG,  CCSTST, ANAAOD,
      &        HERDIR, FREEZE, KEEPAOIN
 
+      LOGICAL ETACCPT, DIRKAPB
+
       INTEGER MXDIIS, MXLRV,
      &        ICHANG, IPRINT, KEEPAOTWO
 
@@ -18,7 +20,8 @@
      &                   DEBUG,  CCSTST, ANAAOD,
      &                   MXDIIS, MXLRV,
      &                   ICHANG, IPRINT, KEEPAOTWO, HERDIR,
-     &                   FREEZE, KEEPAOIN
+     &                   ETACCPT, DIRKAPB,
+     &                   FREEZE, KEEPAOIN 
 
       COMMON /CCMODELS/ CCS,  CIS,  MP2,  CC2,   CC1A,  CC1B,
      &                  MCC2, CCP2, CCD,  CCSD,  CC3,   CCPT,

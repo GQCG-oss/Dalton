@@ -27,7 +27,10 @@
      &        IMAIJA,NMAIJA,ID2IJG,ID2AIG,
      &        ID2ABG,ND2IJG,ND2AIG,ND2ABG,
      &        IFCKDO,IFCKDV, NDSGRH,
-     &        NU2AMX, NU2AM, IU2AM
+     &        I3VOOO,N3VOOO,
+     &        NU2AMX, NU2AM, IU2AM,
+     &        ICDKAO,ICDKVI,N3VDEL, N3VVIR,
+     &        I3VDEL, I3VVIR,IMAABC, NMAABC
       LOGICAL OMEGSQ,T2TCOR,OMEGOR,CC3LR,RSPIM,LSEC,LCOR,NEWGAM,INTTR,
      &        TRIPIM
       COMMON /CCSDSYM/ NT1AMX, NT2AMX, NT1AM(8), NT2AM(8), NT2AMA(8),
@@ -60,9 +63,13 @@
      &                 NT2AIJ(8),NMAIJK(8),IMAIJK(8,8),NCKASR(8),
      &                 IMAIJA(8,8),NMAIJA(8),ID2IJG(8,8),ID2AIG(8,8),
      &                 ID2ABG(8,8),ND2IJG(8),ND2AIG(8),ND2ABG(8),
+     &                 ICDKAO(8,8),ICDKVI(8,8),
      &                 IFCKDO(8),IFCKDV(8),NDSGRH(8,8),
+     &                 IMAABC(8,8), NMAABC(8), I3VDEL(8,8), 
+     &                 I3VVIR(8,8), N3VDEL(8), N3VVIR(8),
      &                 OMEGSQ,T2TCOR,OMEGOR,CC3LR,RSPIM,LSEC,LCOR,
-     &                 NEWGAM,INTTR,TRIPIM,NU2AMX,NU2AM(8),IU2AM(8,8)
-C     NU2AMX, NU2AM(8) and IU2AM(8,8) are used for non-Hermitean integrals (WK/UniKA/31-10-2002).
+     &                 NEWGAM,INTTR,TRIPIM,
+     &                 I3VOOO(8,8),N3VOOO(8),
+     &                 NU2AMX,NU2AM(8),IU2AM(8,8)
 C
       INTEGER A,B,C,D,E,F,G,P,Q,R,S,I,J,K,L,M,N
