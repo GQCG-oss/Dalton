@@ -308,12 +308,13 @@ C
                ELSE
                   IF (DOTRPL) THEN
                      SELLER = .TRUE.
-                     IF (ANISON) DOSEL = .FALSE.
+                     IF (ANISON .OR. NUCSPI .GT. 0) DOSEL = .FALSE.
                   ELSE
                      IF ((SHIELD .OR. SPINRO) .AND. .NOT.
      &                   (SPNSPN .AND. DOPSO)) THEN
                         SELLER = .FALSE.
                      ELSE
+                        IF (NUCSPI .GT. 0) DOSEL = .FALSE.
                         SELLER = .TRUE.
                      END IF
                   END IF
@@ -493,7 +494,11 @@ C
             IF (SYMTST) THEN
               JST = 1
             ELSE
-              JST = IOP
+               IF (NUCSPI .GT. 0) THEN
+                  JST = 1
+               ELSE
+                  JST = IOP
+               END IF
             END IF
          END IF
          DO 200 JOP = JST,NOP
@@ -507,7 +512,10 @@ C
                   JREC = 2*IGDREC(JOP,LSYMPT,ITYPE) - 1
                END IF
             END IF
+            IF (DOTRPL .AND. IDORCT(ITRREC(JOP,LSYMPT)).NE.0) GO TO 200
             IF (DOTRPL .AND. ANISON .AND. (JCOR .GT. 0)) GO TO 200
+            IF (ITYPE .EQ. 2 .AND. .NOT. DOTRPL .AND.
+     &          IDORCI(IGDREC(JOP,LSYMPT,ITYPE),ITYPE).NE.0) GO TO 200
             CALL READDX(LURD,JREC,IRAT*NVARPT,WORK(KJVEC))
             REL(IOP,JOP) = DDOT(NVARPT,WORK(KIRHS),1,WORK(KJVEC),1)
             IF (DOSEL) THEN
@@ -611,6 +619,8 @@ C
      &              (SPNSPN .AND. DOPSO))) GOTO 200
                JREC = 2*JREC - 1
             END IF
+            IF (ITYPE .EQ. 2 .AND.
+     &          IDORCI(IGDREC(JOP,LSYMPT,ITYPE),ITYPE).NE.0) GO TO 200
             CALL READDX(LURD,JREC,IRAT*NVARPT,WORK(KJVEC))
             REL(IOP,JOP) = DDOT(NVARPT,WORK(KIRHS),1,WORK(KJVEC),1)
             REL(JOP,IOP) = REL(IOP,JOP)

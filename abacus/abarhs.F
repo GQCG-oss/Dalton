@@ -576,24 +576,26 @@ C
          END IF
 C
 C     Restart checks
+CKR   These are no longer properly used. For the time being IDORCI used
+CKR   used for new spin-spin coupling feature.
 C
-         ICOUNT = 0
-         ITOT   = 0
-         DO 101 ISYM = 1, 8
-            DO 101 ICOOR = 1, 3
-               IF (IATOM .GT. 0) THEN
-                  ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,ISYM - 1,1)
-                  IF (ISCOOR .GT. 0) THEN
-                     ITOT = ITOT + 1
-                     IF (IDORCI(ISCOOR,1) .GT. 0) ICOUNT = ICOUNT + 1
-                  END IF
-               ELSE
-                  ISCOOR = 3*NUCDEP + IPTAX(ICOOR,2)
-                  ITOT = ITOT + 1
-                  IF (IDORCI(ISCOOR,2) .NE.0) ICOUNT = ICOUNT + 1
-               END IF
- 101     CONTINUE 
-         IF (ICOUNT .EQ. ITOT) GO TO 100
+ckr         ICOUNT = 0
+ckr         ITOT   = 0
+ckr         DO 101 ISYM = 1, 8
+ckr            DO 101 ICOOR = 1, 3
+ckr               IF (IATOM .GT. 0) THEN
+ckr                  ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,ISYM - 1,1)
+ckr                  IF (ISCOOR .GT. 0) THEN
+ckr                     ITOT = ITOT + 1
+ckr                     IF (IDORCI(ISCOOR,1) .GT. 0) ICOUNT = ICOUNT + 1
+ckr                  END IF
+ckr               ELSE
+ckr                  ISCOOR = 3*NUCDEP + IPTAX(ICOOR,2)
+ckr                  ITOT = ITOT + 1
+ckr                  IF (IDORCI(ISCOOR,2) .NE.0) ICOUNT = ICOUNT + 1
+ckr               END IF
+ckr 101     CONTINUE 
+ckr         IF (ICOUNT .EQ. ITOT) GO TO 100
 C
 C     If all directions for this atom calculated in last run, skip
 C     the construction of the right-hand sides for this atom.
@@ -1334,7 +1336,7 @@ C
             IF (IATOM .NE. 0) THEN
                ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,ISYM - 1,1)
                IF (.NOT.DOPERT(ISCOOR,1)) GO TO 300
-               IF (IDORCI(ISCOOR,1) .GT. 0) GO TO 300
+ckr               IF (IDORCI(ISCOOR,1) .GT. 0) GO TO 300
             ELSE
                IF (ISYMAX(ICOOR,2) .NE. ISYM - 1) GO TO 300
 C
@@ -1342,7 +1344,7 @@ C              what happens when no shieldings are calculated?
 C              compare open statement for the file in mcorl.
 C
                ISCOOR = 3*NUCDEP + IPTAX(ICOOR,2)
-               IF (IDORCI(ISCOOR,2) .GT. 0) GO TO 300
+ckr               IF (IDORCI(ISCOOR,2) .GT. 0) GO TO 300
             END IF
             IF (IPRMAX .GT. 0) THEN
                WRITE (LUPRI,'(//A,I3,I3,/A/)')
@@ -1608,9 +1610,9 @@ C
             END IF
          END IF
          IF (IATOM .EQ. 0) THEN
-            IDORCI(ISCOOR,2) = 1
+ckr            IDORCI(ISCOOR,2) = 1
          ELSE
-            IDORCI(ISCOOR,1) = 1
+ckr            IDORCI(ISCOOR,1) = 1
          END IF
          CALL WRITRS
   300    CONTINUE

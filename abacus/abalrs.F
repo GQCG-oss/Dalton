@@ -425,7 +425,7 @@ C
                   IREC2 = 2*IREC
                   CALL WRITDX (LURDI,IREC2,IRAT*NVARPT,
      &                         WORK(NVARPT + 1))
-                  IDORCI(IREC,2) = 2
+ckr                  IDORCI(IREC,2) = 2
                   CALL WRITRS
                   IF (IPRCLC .GT. 5) THEN
                      CALL HEADER('Response and residuum vectors in '//

@@ -420,6 +420,7 @@ C
                               NSYMCR = NSYMCR + 1
                               IGDCOR(NSYMCR,IREP + 1,I) = ISCOOR
                               IGDREC(NSYMCR,IREP + 1,I) = ISCOOR
+                              IF (.NOT.NCSPNI(JATOM)) IDORCI(ISCOOR,2)=2
                            END IF
                         END IF
                      END IF
@@ -470,7 +471,7 @@ C
                   IF (DOPERT(JATOM,2)) THEN
                      DO 427 ICOOR1 = 1, 3
                         ISCOR1 = IPTCNT(3*(JATOM - 1) + ICOOR1,IREP2,2)
-                        IF (ISCOR1 .GT. 0) then
+                        IF (ISCOR1 .GT. 0) THEN
                         DO 429 ICOOR2 = 1, 3
                            ISYM = IBTXOR(IREP2,ISYMAX(ICOOR2,2))
                            IF (ISYM .EQ. IREP1) THEN
@@ -479,6 +480,7 @@ C
                               ISCOR2 = 3*(ISCOR1 - 1) + ICOOR2
                               ITRCOR(NSYMCR,IREP1 + 1) = ISCOR2
                               ITRREC(NSYMCR,IREP1 + 1) = ISYMCR
+                              IF (.NOT.NCSPNI(JATOM)) IDORCT(ISYMCR) = 1
                            END IF
  429                    CONTINUE
                         END IF
@@ -496,6 +498,7 @@ C
                      ISYMCR = ISYMCR + 1
                      ITRCOR(NSYMCR,IREP1 + 1) = - IATOM
                      ITRREC(NSYMCR,IREP1+1) = ISYMCR
+                     IF (.NOT.NCSPNI(JATOM)) IDORCT(ISYMCR) = 1
                   END IF
                END IF
  431        CONTINUE

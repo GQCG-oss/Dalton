@@ -1060,7 +1060,7 @@ C  /* Deck spninp */
 #include <mxcent.h>
 #include <nuclei.h>
 #include <abainf.h>
-      PARAMETER (NTABLE = 10, D0 = 0.0D0)
+      PARAMETER (NTABLE = 11, D0 = 0.0D0)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION IPOINT(MXCENT)
@@ -1068,7 +1068,8 @@ C  /* Deck spninp */
 #include <spnout.h>
 C
       DATA TABLE /'.ABUNDA','.PRINT ','.SELECT','.NODSO ','.NOSD  ',
-     &            '.NOFC  ','.NOPSO ','.SD+FC ','.SDxFC ','.ISOTOP'/
+     &            '.NOFC  ','.NOPSO ','.SD+FC ','.SDxFC ','.ISOTOP',
+     &            '.COUPLI'/
 C
       NEWDEF = (WORD .EQ. '*SPIN-S')
       ICHANG = 0
@@ -1083,7 +1084,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GOTO (1,2,3,4,5,6,7,8,9,10), I
+                     GOTO (1,2,3,4,5,6,7,8,9,10,11), I
                   END IF
  200           CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1142,6 +1143,28 @@ C
                   READ (LUCMD, *) (ISOTOP(IS), IS = 1, NATOMS)
                   ABUND = D0
                GOTO 100
+ 11            CONTINUE
+                  READ (LUCMD, *)  NUCSPI
+                  READ (LUCMD, *) (IPOINT(IS), IS = 1, NUCSPI)
+                  ABUND = D0
+                  IF (NUCSPI .GT. 0) THEN
+                     DO IS = 1, MXCENT
+                        NCSPNI(IS) = .FALSE.
+                     END DO
+                  END IF
+                  DO IS = 1, NUCSPI
+                     IF (IPOINT(IS) .LE. 0 .OR.
+     &                   IPOINT(IS) .GT. NUCIND) THEN
+                        WRITE (LUPRI,*) 'Non-existent '//
+     &                     'symmetry-dependent nucleus specified for'//
+     &                     ' .COUPLING NUCLEUS'
+                        CALL QUIT('Inconsistent input in *SPIN-SPIN '//
+     &                            'module')
+                     ELSE
+                        NCSPNI(IPOINT(IS)) = .TRUE.
+                     END IF
+                  END DO
+               GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GOTO 300
             ELSE
@@ -1152,7 +1175,6 @@ C
             END IF
       END IF
  300  CONTINUE
-      isppri = 10
       IF (ICHANG .GT. 0) THEN
          CALL HEADER('Changes of defaults for SPIN-S:',0)
          IF (ABUND .NE. 1.0D0) THEN
@@ -1174,8 +1196,10 @@ C
      &      ' No paramagnetic spin-orbit contribution calculated'
          IF (DOSDFC) WRITE (LUPRI,'(A)')
      &      ' Only the sum of SD and FC will be calculated'
+         IF (NUCSPI .GT. 0) 
+     &      WRITE (LUPRI,'(A)')' The spin-spin couplings of selected '//
+     &           'nuclei with all the others will be calculated'
       END IF
-      isppri = 0
       RETURN
       END
 C  /* Deck spnini */
@@ -1184,17 +1208,24 @@ C
 C     Initialize SPNOUT
 C
 #include <implicit.h>
+#include <mxcent.h>
+#include <abainf.h>
 #include <spnout.h>
 C
-      ABUND = 1.0D0
-      DODSO = .TRUE.
-      DOSD  = .TRUE.
-      DOFC  = .TRUE.
-      DOPSO = .TRUE.
-      DOSDFC= .FALSE.
-      DOSELE= .FALSE.
-      ANISON= .FALSE.
-      SPNISO= .FALSE.
+      ABUND  = 1.0D0
+      ISPPRI = IPRDEF
+      DODSO  = .TRUE.
+      DOSD   = .TRUE.
+      DOFC   = .TRUE.
+      DOPSO  = .TRUE.
+      DOSDFC = .FALSE.
+      DOSELE = .FALSE.
+      ANISON = .FALSE.
+      SPNISO = .FALSE.
+      NUCSPI = 0
+      DO IS = 1, MXCENT
+         NCSPNI(IS) = .TRUE.
+      END DO
       RETURN
       END
 C  /* Deck trpinp */
@@ -1799,7 +1830,7 @@ C
                CALL WRITDX(LURDT,IREC2,IRAT*NVARPT,WORK)
                IREC2 = 2*IREC
                CALL WRITDX(LURDT,IREC2,IRAT*NVARPT,WORK(NVARPT+1))
-               IDORCT(IREC) = 1
+ckr               IDORCT(IREC) = 1
                CALL WRITRS
                IF (IPRTRP .GT. 5) THEN
                   CALL HEADER('Response and residuum vectors in '//
@@ -2204,7 +2235,6 @@ C
 C
 C Print individual contributions, if requested
 C
-      ISPPRI = 11
       IF (ISPPRI .GE. 10) THEN
          CALL HEADER('DSO-part of coupling constants',1)
          CALL PRIHES (SPNDSO,'SPNSPN',CSTRA,SCTRA)
@@ -2221,7 +2251,6 @@ C
          NCOOR = 3*NUCDEP
          CALL PR2DER(CHESS(1,1,1),NCOOR,NCOOR,LUPRI)
       END IF
-      ISPPRI = 0
 C
 C     *** Final indirect spin-spin coupling analysis. ***
 C
@@ -2527,6 +2556,7 @@ C
                IF (DOPERT(I1,2)) THEN
       IATOM2 = 0
       DO 85 I2 = 1, I1
+         IF (.NOT.(NCSPNI(I1) .OR. NCSPNI(I2))) GOTO 85
          IF (I2 .EQ. I1) THEN
             MAXSYM = ISYM1 - 1
          ELSE
