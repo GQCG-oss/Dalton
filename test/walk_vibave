@@ -1,4 +1,4 @@
-#!/bin/sh
+
 #
 # This is the script for generating files for a specific Dalton test job.
 #
@@ -363,9 +363,9 @@ CTRL[21]=28
 ERROR[21]="CHEMICAL SHIELDING TENSORS AT EFFECTIVE GEOMETRY NOT CORRECT"
 
 # Polarizability at effective geometry
-CRIT1=`$GREP "Bx * 1\.3949847841[0-9][0-9] * (0| )\.0000007376[0-9][0-9] * (\-0|\-|0| )\.000000000000" $log | wc -l`
-CRIT2=`$GREP "By * (0| )\.0000007376[0-9][0-9] * 5\.719486105[0-1][0-9][0-9] * (\-0|\-|0| )\.000000000000" $log | wc -l`
-CRIT3=`$GREP "Bz * (\-0|\-|0| )\.000000000000 * (\-0|\-|0| )\.000000000000 * 5\.7194848598[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Ex *     1\.39498478.*    0*\.00000073.* \-*0*\.0000000" $log | wc -l`
+CRIT2=`$GREP "Ey *    0*\.00000073.*     5\.71948610.* \-*0*\.0000000" $log | wc -l`
+CRIT3=`$GREP "Ez * \-*0*\.00000000.* \-*0*\.00000000.*     5\.7194848" $log | wc -l`
 TEST[22]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[22]=3
 ERROR[22]="POLARIZABILITY AT EFFECTIVE GEOMETRY NOT CORRECT"
