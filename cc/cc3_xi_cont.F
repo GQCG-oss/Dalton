@@ -985,33 +985,19 @@ C
      *                            WORK(KT3VBG3),ISYMB,B,ISYMD,D,ISCKIJ,
      *                            WORK(KEND5),LWRK5)
 C
+COMMENT COMMENT COMMENT
+COMMENT COMMENT COMMENT
+c       call sum_pt3(work(KT3MAT),isymb,b,isymd,d,
+c    *             ISYM0,work(kx3am),4)
+COMMENT COMMENT COMMENT
+COMMENT COMMENT COMMENT
+C
+C
 C                 -------------------------------------
 C                 Write T3 amplitudes as T3^D(ai,bj,l) to disc
 C                 -------------------------------------
-                  DO ISYML = 1, NSYM
-                   ISYMDL = MULD2H(ISYMD,ISYML)
-                   ISAIBJ = MULD2H(ISYM0,ISYMDL)
-                   DO L = 1, NRHF(ISYML)
-                    DO ISYMJ = 1, NSYM
-                     ISYMBJ = MULD2H(ISYMJ,ISYMB)
-                     ISYMAI = MULD2H(ISAIBJ,ISYMBJ)
-                     ISYAIL = MULD2H(ISYMAI,ISYML)
-                     DO J = 1, NRHF(ISYMJ)
-
-                      KOFF1 = ISAIKJ(ISYAIL,ISYMJ)+ NCKI(ISYAIL)*(J-1)
-     *                      + ISAIK(ISYMAI, ISYML)+NT1AM(ISYMAI)*(L-1)
-
-                      NBJ  = IT1AM(ISYMB,ISYMJ)+NVIR(ISYMB)*(J-1)+B
-                      IADR = ISWTL(ISAIBJ,ISYML)+NT2SQ(ISAIBJ)*(L-1)+
-     *                    IT2SQ(ISYMAI,ISYMBJ)+NT1AM(ISYMAI)*(NBJ-1)+1
-
-                      CALL PUTWA2(LUT3,FNT3,WORK(KT3MAT+KOFF1),
-     *                            IADR,NT1AM(ISYMAI))
-
-                     END DO
-                    END DO
-                   END DO
-                  END DO
+                  CALL WRITE_T3_DL(LUT3,FNT3,WORK(KT3MAT),ISYM0,
+     *                             ISYMD,ISYMB,B)
 C
 C---------------------------------------------------------
 C                 Get T3bar_BD multipliers (using S and U)
@@ -1037,8 +1023,8 @@ C
      *                               WORK(KEND5),LWRK5)
 C
 COMMENT COMMENT COMMENT
-C      write(lupri,*) 'WMAT before contributions'
-C      call print_pt3(work(kx3am),ISYMBY,4)
+c      call sum_pt3(work(KTMAT),isymb,b,isymd,d,
+c    *             ISYM0,work(kx3am),4)
 COMMENT COMMENT COMMENT
 C
 C
@@ -1112,8 +1098,8 @@ C
 C
 COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
-C       call sum_pt3(work(kwmat),isymb,b,isymd,d,
-C    *             ISWMAT,work(kx3am),4)
+c       call sum_pt3(work(kwmat),isymb,b,isymd,d,
+c    *             ISWMAT,work(kx3am),4)
 COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
 C
@@ -1121,30 +1107,8 @@ C
 C                 -------------------------------------
 C                 Write WMAT as WMAT^D(ai,bj,l) to disc
 C                 -------------------------------------
-                  DO ISYML = 1, NSYM
-                   ISYMDL = MULD2H(ISYMD,ISYML)
-                   ISAIBJ = MULD2H(ISYMBY,ISYMDL)
-                   DO L = 1, NRHF(ISYML)
-                    DO ISYMJ = 1, NSYM
-                     ISYMBJ = MULD2H(ISYMJ,ISYMB)
-                     ISYMAI = MULD2H(ISAIBJ,ISYMBJ)
-                     ISYAIL = MULD2H(ISYMAI,ISYML)
-                     DO J = 1, NRHF(ISYMJ)
-
-                      KOFF1 = ISAIKJ(ISYAIL,ISYMJ)+ NCKI(ISYAIL)*(J-1)
-     *                      + ISAIK(ISYMAI, ISYML)+NT1AM(ISYMAI)*(L-1)
-
-                      NBJ  = IT1AM(ISYMB,ISYMJ)+NVIR(ISYMB)*(J-1)+B
-                      IADR = ISWTL(ISAIBJ,ISYML)+NT2SQ(ISAIBJ)*(L-1)+
-     *                    IT2SQ(ISYMAI,ISYMBJ)+NT1AM(ISYMAI)*(NBJ-1)+1
-
-                      CALL PUTWA2(LUWBMAT,FNWBMAT,WORK(KWMAT+KOFF1),
-     *                            IADR,NT1AM(ISYMAI))
-                     END DO
-                    END DO
-                   END DO
-                  END DO
-
+                  CALL WRITE_T3_DL(LUWBMAT,FNWBMAT,WORK(KWMAT),ISYMBY,
+     *                             ISYMD,ISYMB,B)
 C
 C------------------------------------------------
 C    Calculate density
@@ -1184,8 +1148,8 @@ C
       ENDDO          ! ISYMD 
 C
 COMMENT COMMENT
-c      write(lupri,*) 'cont to w3bxkl in CC3_XI_CONT'
-c      call print_pt3(work(kx3am),ISYMBY,4)
+c      write(lupri,*) 'cont to t3bx in CC3_XI_CONT'
+c      call print_pt3(work(kx3am),ISYM0,4)
 COMMENT COMMENT
 C
 C---------------------------------
@@ -1243,9 +1207,11 @@ C
 #if defined (SYS_CRAY)
       REAL T1AM(*), TMAT(*), XIAJB(*) 
       REAL WMAT(*),WORK(LWORK)
+      real xnormval,ddot
 #else
       DOUBLE PRECISION T1AM(*), TMAT(*), XIAJB(*) 
       DOUBLE PRECISION WMAT(*),WORK(LWORK)  
+      double precision xnormval,ddot
 #endif
 C
 #include <priunit.h>
@@ -1368,6 +1334,7 @@ C
          ENDDO
 C
       ENDDO
+c
 C
 C----------------------------------------
 C     Sum the result into WMAT.

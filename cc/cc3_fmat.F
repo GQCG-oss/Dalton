@@ -335,7 +335,9 @@ C
       CALL DZERO(WORK(KOIOOVV),NT2SQ(ISYMOP))
 C
       CALL CC3_INT(WORK(KOIOOOO),WORK(KOIOOVV),WORK(KOIOVVO),
-     *             ISYMOP,LU4V,FN4V,.FALSE.,'DUMMY',IDUMMY,IDUMMY,
+     *             ISYMOP,LU4V,FN4V,
+     *             .FALSE.,'DUMMY',IDUMMY,IDUMMY,
+     *             .FALSE.,'DUMMY',IDUMMY,IDUMMY,
      *             WORK(KEND0),LWRK0)
 C
 C---------------------------------------------------------------
@@ -358,7 +360,9 @@ C
       CALL DZERO(WORK(KBIOOVV),NT2SQ(ISINTR1))
 C
       CALL CC3_INT(WORK(KBIOOOO),WORK(KBIOOVV),WORK(KBIOVVO),
-     *             ISINTR1,LU4VB,FN4VB,.TRUE.,LISTB,IDLSTB,ISYMB1,
+     *             ISINTR1,LU4VB,FN4VB,
+     *             .TRUE.,LISTB,IDLSTB,ISYMB1,
+     *             .FALSE.,'DUMMY',IDUMMY,IDUMMY,
      *             WORK(KEND0),LWRK0)
 C
 C---------------------------------------------------------
@@ -1150,7 +1154,9 @@ C
       END
 C  /* Deck cc3_int */
       SUBROUTINE CC3_INT(XOOOO,XOOVV,XOVVO,ISYINT,LU4V,FN4V,
-     *                   DO_LAMB,LISTB,IDLSTB,ISYMB,WORK,LWORK)
+     *                   DO_LAMB,LISTB,IDLSTB,ISYMB,
+     *                   DO_LAMC,LISTC,IDLSTC,ISYMC,
+     *                   WORK,LWORK)
 C
 C     Written by Kasper Hald, Summer 2002
 C
@@ -1159,7 +1165,11 @@ C
 C     Calculate g_{oooo}, g_{ovvo} and g_{oovv}
 C
 C     IF DO_LAMB = TRUE we calculate the T^{B}_{1} transformed integrals.
+C     IF DO_LAMB = TRUE and DO_LAMC = TRUE calculated T^{B}_{1} T^{C}_{1}
+C     (doubly) transformed integrals.
 C     Otherwise we calculate the ordinary (lambda^{(0)}) integrals.
+C
+C     DO_LAMC can only be TRUE if DO_LAMB is TRUE !!!
 C
       IMPLICIT NONE
 C
@@ -1191,6 +1201,7 @@ C
       INTEGER KLAMPB, KLAMHB, KT1AM, ISYMLP, K3OINT2
       INTEGER KOOOO, ISYMB2
       INTEGER INDEXA(MXCORB)
+      INTEGER ISYMC2,ISYMC,IDLSTC,ISYMBC,MAXBC,KLAMPC,KLAMHC
 C
 #if defined (SYS_CRAY)
       REAL XOOOO(*), XOOVV(*), XOVVO(*), WORK(LWORK)
@@ -1207,16 +1218,25 @@ C
 #endif
 #endif
 C
-      LOGICAL DO_LAMB
+      LOGICAL DO_LAMB,DO_LAMC
 C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
 C
-      CHARACTER*(*) FN4V, LISTB
+      CHARACTER*(*) FN4V, LISTB, LISTC
       CHARACTER*12 FNIN3O, FNIN3O2, FN3V, FN3VB
       CHARACTER*10 MODEL
 C
       CALL QENTER('CC3_INT')
 C
+C     DO_LAMC can only be TRUE if DO_LAMB is TRUE !!!
+C
+      IF ( (DO_LAMC) .AND. (.NOT.DO_LAMB) ) THEN
+         WRITE(LUPRI,*)'DO_LAMC can only be TRUE if DO_LAMB is TRUE !!!'
+         WRITE(LUPRI,*)'DO_LAMC = ', DO_LAMC
+         WRITE(LUPRI,*)'DO_LAMB = ', DO_LAMB
+         CALL QUIT('Incorrect logic in CC3_INT')
+      END IF
+    
       TIMTOT     = SECOND()
       TIRDAO     = ZERO
       TIME1O     = ZERO
@@ -1231,16 +1251,33 @@ C
          ISYMB2 = ISYMB
       ENDIF
 C
+      IF (.NOT. DO_LAMC) THEN
+         ISYMC2 = ISYMOP
+      ELSE
+         ISYMC2 = ISYMC
+      ENDIF
+C
+      ISYMBC = MULD2H(ISYMB2,ISYMC2)
+      IF (ISYMBC .NE. ISYINT) THEN
+         WRITE(LUPRI,*)'ISYMBC and ISYINT should be the same'
+         WRITE(LUPRI,*)'ISYMBC = ',ISYMBC
+         WRITE(LUPRI,*)'ISYINT = ',ISYINT
+         CALL QUIT('Symmetry mismatch in CC3_INT')
+      END IF
+C
 C-----------------------------
 C     Work-space allocation 1.
 C-----------------------------
 C
+      MAXBC  = MAX(NT1AM(ISYMB2),NT1AM(ISYMC2))
       KLAMDP = 1
       KLAMDH = KLAMDP + NLAMDT
       KLAMPB = KLAMDH + NLAMDT
       KLAMHB = KLAMPB + NGLMDT(ISYMB2)
-      KT1AM  = KLAMHB + NGLMDT(ISYMB2)
-      KEND1  = KT1AM  + MAX(NT1AM(ISYMOP),NT1AM(ISYMB2))
+      KLAMPC = KLAMHB + NGLMDT(ISYMB2)
+      KLAMHC = KLAMPC + NGLMDT(ISYMC2)
+      KT1AM  = KLAMHC + NGLMDT(ISYMC2)
+      KEND1  = KT1AM  + MAX(NT1AM(ISYMOP),MAXBC)
       LWRK1  = LWORK  - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
@@ -1291,6 +1328,23 @@ C
       ELSE
          CALL DCOPY(NLAMDT,WORK(KLAMDP),1,WORK(KLAMPB),1)
          CALL DCOPY(NLAMDT,WORK(KLAMDH),1,WORK(KLAMHB),1)
+      ENDIF
+C
+C--------------------------------------------
+C     Calculate the "C" lamda matrices.
+C--------------------------------------------
+C
+      IF (DO_LAMC) THEN
+         IOPT = 1
+         CALL CC_RDRSP(LISTC,IDLSTC,ISYMC2,IOPT,MODEL,
+     *                 WORK(KT1AM),DUMMY)
+C
+
+         CALL CCLR_LAMTRA(WORK(KLAMDP),WORK(KLAMPC),WORK(KLAMDH),
+     *                    WORK(KLAMHC),WORK(KT1AM),ISYMC2)
+      ELSE
+         CALL DCOPY(NLAMDT,WORK(KLAMDP),1,WORK(KLAMPC),1)
+         CALL DCOPY(NLAMDT,WORK(KLAMDH),1,WORK(KLAMHC),1)
       ENDIF
 C
 C------------------------------------------
@@ -1461,8 +1515,8 @@ C              Calculate integral batch with three occupied indices.
 C-------------------------------------------------------------------
 C
                DTIME = SECOND()
-               CALL CC_INT3O(WORK(K3OINT),WORK(KDSRHF),WORK(KLAMDH),
-     *                       ISYMOP,WORK(KLAMDP),WORK(KEND3),LWRK3,
+               CALL CC_INT3O(WORK(K3OINT),WORK(KDSRHF),WORK(KLAMHC),
+     *                       ISYMC2,WORK(KLAMDP),WORK(KEND3),LWRK3,
      *                       IDEL,ISYMD,LUIN3O,FNIN3O)
                DTIME = SECOND() - DTIME
                TIME3O = TIME3O + DTIME
@@ -1488,11 +1542,11 @@ C
      *                           WORK(KEND3),LWRK3,IDEL,ISYMD)
                ELSE
                  CALL CC3_INTDEL2(WORK(KXINT),ISYMOP,LU3V,FN3V,
-     *                            WORK(KLAMDP),ISYMOP,
+     *                            WORK(KLAMPC),ISYMC2,
      *                            WORK(KLAMDH),ISYMOP,
      *                            WORK(KLAMPB),ISYMB2,
      *                            WORK(KLAMHB),ISYMB2,
-     *                            ISYMB2,WORK(KEND3),LWRK3,IDEL,ISYMD)
+     *                            ISYINT,WORK(KEND3),LWRK3,IDEL,ISYMD)
                ENDIF
                DTIME = SECOND() - DTIME
                TIMEINTDEL = TIMEINTDEL + DTIME
@@ -1502,15 +1556,15 @@ C
      *                       XOVVO,XOOVV,WORK(KLAMDP),ISYMOP,
      *                       WORK(KLAMDH),ISYMOP,
      *                       WORK(KLAMPB),ISYMB2,
-     *                       WORK(KLAMDH),ISYMOP,ISYMB2,
+     *                       WORK(KLAMHC),ISYMC2,ISYINT,
      *                       WORK(KEND3),LWRK3,IDEL,ISYMD)
 C
                IF (DO_LAMB) THEN
                   CALL CC3_2O2V(WORK(KXINT),ISYMOP,WORK(KDSRHF),ISYMOP,
      *                          XOVVO,XOOVV,WORK(KLAMDP),ISYMOP,
      *                          WORK(KLAMDH),ISYMOP,
-     *                          WORK(KLAMDP),ISYMOP,
-     *                          WORK(KLAMHB),ISYMB2,ISYMB2,
+     *                          WORK(KLAMPC),ISYMC2,
+     *                          WORK(KLAMHB),ISYMB2,ISYINT,
      *                          WORK(KEND3),LWRK3,IDEL,ISYMD)
                ENDIF
 C
@@ -1537,7 +1591,7 @@ C
 C     for DO_LAMB lamH^B is in KLAMHB otherwise lamH^0
 C
       IOPT = 3
-      CALL CC3_INTSTORE(LUIN3O,FNIN3O,XOOOO,ISYMB2,
+      CALL CC3_INTSTORE(LUIN3O,FNIN3O,XOOOO,ISYINT,
      *                  WORK(KLAMHB),ISYMB2,WORK(KLAMDH),ISYMOP,
      *                  LU3V,FN3V,LU4V,FN4V,ISYMB2,
      *                  WORK(KEND1),LWRK1,IOPT)
@@ -1554,15 +1608,15 @@ C
          CALL DZERO(WORK(KOOOO),N3ORHF(ISYINT))
 C
          IOPT = 1
-         CALL CC3_INTSTORE(LUIN3O2,FNIN3O2,WORK(KOOOO),ISYMB2,
-     *                     WORK(KLAMDH),ISYMOP,WORK(KLAMDH),ISYMOP,
+         CALL CC3_INTSTORE(LUIN3O2,FNIN3O2,WORK(KOOOO),ISYINT,
+     *                     WORK(KLAMHC),ISYMC2,WORK(KLAMDH),ISYMOP,
      *                     LU3V,FN3V,LU4V,FN4V,ISYMOP,
      *                     WORK(KEND1),LWRK1,IOPT)
 C
-         CALL DAXPY(N3ORHF(ISYMB2),ONE,WORK(KOOOO),1,XOOOO,1)
+         CALL DAXPY(N3ORHF(ISYINT),ONE,WORK(KOOOO),1,XOOOO,1)
       ENDIF
 C
-      CALL CC3_SORT4O(XOOOO,ISYMB2,WORK(KEND1),LWRK1)
+      CALL CC3_SORT4O(XOOOO,ISYINT,WORK(KEND1),LWRK1)
 C
 C-------------------------------
 C     Delete intermediate files.

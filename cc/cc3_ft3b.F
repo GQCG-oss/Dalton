@@ -506,7 +506,7 @@ C        Read B transformed virtual integrals used for W for TOT_T3Y
 C-----------------------------------------------------------------------
 C
             IOFF = ICKBD(ISCKB2Y,ISYMD) + NCKATR(ISCKB2Y)*(D - 1) + 1
-            IF (NCKATR(ISCKB2) .GT. 0) THEN
+            IF (NCKATR(ISCKB2Y) .GT. 0) THEN
                CALL GETWA2(LUDKBCR,FNDKBCR,WORK(KW3XVDGX1),IOFF,
      &                     NCKATR(ISCKB2Y))
             ENDIF
@@ -617,7 +617,7 @@ C--------------------------------------------------------------------
 C
                   IOFF = ICKBD(ISCKD2Y,ISYMB) + 
      &                   NCKATR(ISCKD2Y)*(B - 1) + 1
-                  IF (NCKATR(ISCKD2) .GT. 0) THEN
+                  IF (NCKATR(ISCKD2Y) .GT. 0) THEN
                      CALL GETWA2(LUDKBCR,FNDKBCR,WORK(KW3XVDGX2),IOFF,
      &                           NCKATR(ISCKD2Y))
                   ENDIF
@@ -677,10 +677,6 @@ C     Divide by the energy difference and
 C     remove the forbidden elements
 C------------------------------------------------
 C
-COMMENT COMMENT COMMENT
-C      call sum_pt3(work(kwmat),isymb,b,isymd,d,
-C    *             isckij,work(kx3am),4)
-COMMENT COMMENT COMMENT
                      CALL WBD_DIA(B,ISYMB,D,ISYMD,FREQB,
      *                            ISWMAT,WORK(KWMAT),
      *                            WORK(KDIAGW),WORK(KFOCKD))
@@ -694,8 +690,8 @@ C     Calculate the  term <L2|[H,E_ai],W^BD(3)]]|HF>
 C----------------------------------------------------------------------
 C 
 COMMENT COMMENT COMMENT
-C      call sum_pt3(work(kwmat),isymb,b,isymd,d,
-C    *             isckij,work(kx3am),4)
+c      call sum_pt3(work(kwmat),isymb,b,isymd,d,
+c    *             iswmat,work(kx3am),4)
 COMMENT COMMENT COMMENT
 C
                   CALL T3_ONEL1W(OMEGA1,WORK(KWMAT),WORK(KTMAT),
@@ -734,8 +730,8 @@ COMMENT COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT COMMENT 
 COMMENT COMMENT
 COMMENT COMMENT
-C      write(lupri,*) 'E3 in CC3_FT3B : '
-C      call print_pt3(work(kx3am),1,4)
+c      write(lupri,*) 'cont to t3x in CC3_FT3B'
+c      call print_pt3(work(kx3am),1,4)
 C      write(lupri,*) 'The summed S terms : '
 C      call print_pt3(work(kx3am),1,1)
 COMMENT COMMENT

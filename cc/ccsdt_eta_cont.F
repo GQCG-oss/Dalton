@@ -210,7 +210,7 @@ C         --------------------
            call FLSHFO(LUPRI)
              CALL CC3_ADEN(LISTL,IDLSTL,LISTR,IDLSTR,
      *                      WORK(KLAMP0),WORK(KLAMH0),WORK(KFOCK0),
-     *                      WORK(KDIJ),WORK(KDAB),WORK(KDIA),
+     *                      WORK(KDIJ),WORK(KDAB),WORK(KDIA),ISYDEN,
      *                      WORK(KEND1),LWRK1,
      *                      LUDELD,FNDELD,LUCKJD,FNCKJD,LUDKBC,
      *                      FNDKBC,LUTOC,FNTOC,LU3VI,FN3VI,

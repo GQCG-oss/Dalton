@@ -307,7 +307,9 @@ C
       CALL DZERO(WORK(KOIOOVV),NT2SQ(ISYMOP))
 C
       CALL CC3_INT(WORK(KOIOOOO),WORK(KOIOOVV),WORK(KOIOVVO),
-     *             ISYMOP,LU4V,FN4V,.FALSE.,'DUMMY',IDUMMY,IDUMMY,
+     *             ISYMOP,LU4V,FN4V,
+     *             .FALSE.,'DUMMY',IDUMMY,IDUMMY,
+     *             .FALSE.,'DUMMY',IDUMMY,IDUMMY,
      *             WORK(KEND0),LWRK0)
 C
 C

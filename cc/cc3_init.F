@@ -2061,3 +2061,69 @@ C
 C
       RETURN
       END
+C  /* Deck write_t3_dl */
+      SUBROUTINE WRITE_T3_DL(LUFILE,FNFILE,T3,ISYMT3,ISYMD,ISYMB,B)
+***************************************************
+*  
+*  Write T3 amplitudes as T3^D(ai,bj,l) to disc.
+*  
+*  F. Pawlowski, 25-02-2003, Aarhus.
+***************************************************
+C
+      IMPLICIT NONE
+C
+#include <ccsdsym.h>
+#include <ccorb.h>
+#include <cc3t3d.h>
+C
+      INTEGER LUFILE
+      INTEGER ISYMT3,ISYMD,ISYMB
+      INTEGER ISYML,ISYMDL,ISAIBJ,ISYMJ,ISYMBJ,ISYMAI,ISYAIL
+      INTEGER KOFF1,NBJ,IADR
+C
+      CHARACTER*(*) FNFILE
+C
+#if defined (SYS_CRAY)
+      REAL T3(*)
+#else
+      DOUBLE PRECISION T3(*)
+#endif
+C
+      CALL QENTER('WRITE_T3_DL')
+C
+      DO ISYML = 1, NSYM
+         ISYMDL = MULD2H(ISYMD,ISYML)
+         ISAIBJ = MULD2H(ISYMT3,ISYMDL)
+         DO L = 1, NRHF(ISYML)
+            DO ISYMJ = 1, NSYM
+               ISYMBJ = MULD2H(ISYMJ,ISYMB)
+               ISYMAI = MULD2H(ISAIBJ,ISYMBJ)
+               ISYAIL = MULD2H(ISYMAI,ISYML)
+               DO J = 1, NRHF(ISYMJ)
+
+                 KOFF1 = ISAIKJ(ISYAIL,ISYMJ)+ NCKI(ISYAIL)*(J-1)
+     *                 + ISAIK(ISYMAI, ISYML)+NT1AM(ISYMAI)*(L-1)
+     *                 + 1
+
+                 NBJ  = IT1AM(ISYMB,ISYMJ)+NVIR(ISYMB)*(J-1)+B
+                 IADR = ISWTL(ISAIBJ,ISYML)+NT2SQ(ISAIBJ)*(L-1)
+     *                + IT2SQ(ISYMAI,ISYMBJ)+NT1AM(ISYMAI)*(NBJ-1)
+     *                + 1
+
+                 CALL PUTWA2(LUFILE,FNFILE,T3(KOFF1),IADR,NT1AM(ISYMAI))
+C
+               END DO
+            END DO
+         END DO
+      END DO
+C
+C--------------
+C     End.
+C--------------
+C
+      CALL QEXIT('WRITE_T3_DL')
+C
+      RETURN
+      END
+C
+

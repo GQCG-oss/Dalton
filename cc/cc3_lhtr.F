@@ -1375,11 +1375,13 @@ C
      *      + 1
       KOFF3 = KEND1
 C
+      CALL DZERO(WORK(KOFF3),NRHF(ISYMN))
+C
       NUMFLM = MAX(1,NCKI(ISYFLM))
 C
       CALL DGEMV('T',NCKI(ISYFLM),NRHF(ISYMN),ONE,
      *           TMAT(KOFF1),NUMFLM,C2TP(KOFF2),1,
-     *           ZERO,WORK(KOFF3),1)
+     *           ONE,WORK(KOFF3),1)
 C
       KOFF1 = KTMAT
      *      + ISAIKJ(ISYFLM,ISYMN)

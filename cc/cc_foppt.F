@@ -6146,6 +6146,8 @@ C     Sum up the T3 amplitudes from the S-MAT alone (IOPT = 1).
 C     Sum up the T3 amplitudes from the Q-MAT alone (IOPT = 2).
 C     Sum up the T3 amplitudes from the U-MAT alone (IOPT = 3).
 C     Sum up the T3 amplitudes from the W-MAT alone (IOPT = 4).
+C     Sum up the T3 amplitudes only with aibjck_perm (IOPT = 5).
+C     Sum up the T3 amplitudes only with aibjck_perm + bjaick_perm (IOPT = 6).
 C
 C     HOWEVER : PLEASE DO NOT REMOVE THIS ROUTINE
 C
@@ -6185,6 +6187,10 @@ C
          FACT = 1.0D0
       ELSE IF (IOPT .EQ. 4) THEN
          FACT = HALF
+      ELSE IF (IOPT .EQ. 5) THEN
+         FACT = 1.0D0
+      ELSE IF (IOPT .EQ. 6) THEN
+         FACT = 1.0D0
       ELSE
          CALL QUIT('Wrong IOPT in sum_pt3')
       ENDIF
@@ -6255,6 +6261,16 @@ C
      *                 + NCKI(ISYAIK)*(J - 1)
      *                 + ISAIK(ISYMAI,ISYMK) + NT1AM(ISYMAI)*(K-1)
      *                 + IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I-1) + A
+               ELSE IF (IOPT .EQ. 5) THEN
+                 KOFF7 = ISAIKJ(ISYAIK,ISYMJ)
+     *                 + NCKI(ISYAIK)*(J - 1)
+     *                 + ISAIK(ISYMAI,ISYMK) + NT1AM(ISYMAI)*(K-1)
+     *                 + IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I-1) + A
+               ELSE IF (IOPT .EQ. 6) THEN
+                 KOFF7 = ISAIKJ(ISYAIK,ISYMJ)
+     *                 + NCKI(ISYAIK)*(J - 1)
+     *                 + ISAIK(ISYMAI,ISYMK) + NT1AM(ISYMAI)*(K-1)
+     *                 + IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I-1) + A
                ENDIF
 C
          IF (LDEBUG) THEN
@@ -6275,6 +6291,14 @@ C
                  WRITE(LUPRI,*) 'CONTRIBUTION FROM I = ',
      *                              KOFF7,' WITH WMAT = ',
      *                              SMAT(KOFF7)
+              ELSE IF (IOPT .EQ. 5) THEN
+                 WRITE(LUPRI,*) 'CONTRIBUTION FROM I = ',
+     *                              KOFF7,' WITH WMAT = ',
+     *                              SMAT(KOFF7)
+              ELSE IF (IOPT .EQ. 6) THEN
+                 WRITE(LUPRI,*) 'CONTRIBUTION FROM I = ',
+     *                              KOFF7,' WITH WMAT = ',
+     *                              SMAT(KOFF7)
               ENDIF
 C
                WRITE(LUPRI,'(A,6I3)') ' A, B, D, I, J, K : ',A,B,D,I,J,K
@@ -6289,12 +6313,16 @@ C
      *   T3SUM(A+KOFF1,B+KOFF2,D+KOFF3,I+KOFF4,J+KOFF5,K+KOFF6) +
      *   FACT*SMAT(KOFF7)
 C
-         T3SUM(A+KOFF1,D+KOFF3,B+KOFF2,I+KOFF4,K+KOFF6,J+KOFF5) = 
-     *   T3SUM(A+KOFF1,D+KOFF3,B+KOFF2,I+KOFF4,K+KOFF6,J+KOFF5) +
-     *   FACT*SMAT(KOFF7)
+         IF (IOPT .NE. 5) THEN
 C
          T3SUM(B+KOFF2,A+KOFF1,D+KOFF3,J+KOFF5,I+KOFF4,K+KOFF6) = 
      *   T3SUM(B+KOFF2,A+KOFF1,D+KOFF3,J+KOFF5,I+KOFF4,K+KOFF6) +
+     *   FACT*SMAT(KOFF7)
+C
+         IF (IOPT .NE. 6) THEN
+C
+         T3SUM(A+KOFF1,D+KOFF3,B+KOFF2,I+KOFF4,K+KOFF6,J+KOFF5) = 
+     *   T3SUM(A+KOFF1,D+KOFF3,B+KOFF2,I+KOFF4,K+KOFF6,J+KOFF5) +
      *   FACT*SMAT(KOFF7)
 C
          T3SUM(B+KOFF2,D+KOFF3,A+KOFF1,J+KOFF5,K+KOFF6,I+KOFF4) = 
@@ -6308,6 +6336,9 @@ C
          T3SUM(D+KOFF3,B+KOFF2,A+KOFF1,K+KOFF6,J+KOFF5,I+KOFF4) = 
      *   T3SUM(D+KOFF3,B+KOFF2,A+KOFF1,K+KOFF6,J+KOFF5,I+KOFF4) +
      *   FACT*SMAT(KOFF7)
+C
+         END IF
+         END IF
 C
                  ENDDO
                  ENDDO
@@ -6520,6 +6551,11 @@ C
 C
            ELSE IF (IOPT .EQ. 4) THEN
               write(lupri,1) 'WMAT(',a+koff1,',',b+koff2,',',
+     *                               c+koff3,',',i+koff4,',',
+     *                               j+koff5,',',k+koff6,') = ',
+     *        T3SUM(A+KOFF1,B+KOFF2,C+KOFF3,I+KOFF4,J+KOFF5,K+KOFF6) 
+           ELSE IF (IOPT .EQ. 5) THEN
+              write(lupri,1) 'WBDD(',a+koff1,',',b+koff2,',',
      *                               c+koff3,',',i+koff4,',',
      *                               j+koff5,',',k+koff6,') = ',
      *        T3SUM(A+KOFF1,B+KOFF2,C+KOFF3,I+KOFF4,J+KOFF5,K+KOFF6) 

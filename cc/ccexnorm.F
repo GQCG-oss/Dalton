@@ -1747,30 +1747,8 @@ C
 C                 -------------------------------------
 C                 Write WEBMAT as EB^C(ai,bj,l) to disc
 C                 -------------------------------------
-                  DO ISYML = 1, NSYM
-                   ISYMCL = MULD2H(ISYMC,ISYML)
-                   ISAIBJ = MULD2H(ISYMEB,ISYMCL)
-                   DO L = 1, NRHF(ISYML)
-                    DO ISYMJ = 1, NSYM
-                     ISYMBJ = MULD2H(ISYMJ,ISYMB)
-                     ISYMAI = MULD2H(ISAIBJ,ISYMBJ)
-                     ISYAIL = MULD2H(ISYMAI,ISYML)
-                     DO J = 1, NRHF(ISYMJ)
-
-                      KOFF1 = ISAIKJ(ISYAIL,ISYMJ)+ NCKI(ISYAIL)*(J-1)
-     *                      + ISAIK(ISYMAI, ISYML)+NT1AM(ISYMAI)*(L-1)
-
-                      NBJ  = IT1AM(ISYMB,ISYMJ)+NVIR(ISYMB)*(J-1)+B
-                      IADR = ISWTL(ISAIBJ,ISYML)+NT2SQ(ISAIBJ)*(L-1)+
-     *                    IT2SQ(ISYMAI,ISYMBJ)+NT1AM(ISYMAI)*(NBJ-1)+1
-
-                      CALL PUTWA2(LUWEB,FNWEB,WORK(KWEBMAT+KOFF1),
-     *                            IADR,NT1AM(ISYMAI))
-
-                     END DO
-                    END DO
-                   END DO
-                  END DO
+                  CALL WRITE_T3_DL(LUWEB,FNWEB,WORK(KWEBMAT),ISYMEB,
+     *                            ISYMC,ISYMB,B)
 C
 C-----------------------------------------------------------------------
 C                 Construct TMAT^AC(bjik) = WE^AC(bkji) + WE^AC(bjki)
@@ -1782,30 +1760,8 @@ C
 C                 -------------------------------------
 C                 Write WTMAT as E^C(bj,ai,l) to disc
 C                 -------------------------------------
-                  DO ISYML = 1, NSYM
-                   ISYMCL = MULD2H(ISYMC,ISYML)
-                   ISAIBJ = MULD2H(ISYME,ISYMCL)
-                   DO L = 1, NRHF(ISYML)
-                    DO ISYMJ = 1, NSYM
-                     ISYMBJ = MULD2H(ISYMJ,ISYMB)
-                     ISYMAI = MULD2H(ISAIBJ,ISYMBJ)
-                     ISYAIL = MULD2H(ISYMAI,ISYML)
-                     DO J = 1, NRHF(ISYMJ)
-
-                      KOFF1 = ISAIKJ(ISYAIL,ISYMJ)+ NCKI(ISYAIL)*(J-1)
-     *                      + ISAIK(ISYMAI, ISYML)+NT1AM(ISYMAI)*(L-1)
-
-                      NBJ  = IT1AM(ISYMB,ISYMJ)+NVIR(ISYMB)*(J-1)+B
-                      IADR = ISWTL(ISAIBJ,ISYML)+NT2SQ(ISAIBJ)*(L-1)+
-     *                    IT2SQ(ISYMAI,ISYMBJ)+NT1AM(ISYMAI)*(NBJ-1)+1
-
-                      CALL PUTWA2(LUWE,FNWE,WORK(KWEMAT+KOFF1),
-     *                            IADR,NT1AM(ISYMAI))
-C
-                     END DO
-                    END DO
-                   END DO
-                  END DO
+                  CALL WRITE_T3_DL(LUWE,FNWE,WORK(KWEMAT),ISYME,ISYMC,
+     *                             ISYMB,B)
 C
                END DO ! B
             END DO    ! ISYMB

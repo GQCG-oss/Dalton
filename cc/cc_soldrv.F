@@ -136,7 +136,7 @@ C
       LUFR1 = 0
       LUFR2 = 0
 C
-      IF (LOCDBG) THEN
+c     IF (LOCDBG) THEN
         WRITE (LUPRI,*) 'LIST  :',LIST
         WRITE (LUPRI,*) 'NSTAT :',NSTAT
         WRITE (LUPRI,*) 'ORDER :',ORDER
@@ -158,7 +158,7 @@ C
         IF (LIST(1:2).EQ.'ER' .OR. LIST(1:2).EQ.'EL') THEN
           WRITE (LUPRI,*) 'LPROJ :',(LPROJ(I),I=1,NVEC)
         END IF
-      END IF
+c     END IF
 
       IF (NVEC.EQ.0) THEN
          CALL QEXIT('CC_SOLDRV')
@@ -431,7 +431,7 @@ C
                WRITE(LUPRI,*) 'CC_SOLRSP-1: NSIMR  = ',NSIMR
             ENDIF
 C
-            IF (IPRINT.GT.2 .OR. LOCDBG) THEN
+c           IF (IPRINT.GT.2 .OR. LOCDBG) THEN
                WRITE (LUPRI,'(/,1X,A,I3,A)')
      &            'Solving ',NSIMR,' response equations:'
                DO IR = IRST, IREND
@@ -443,7 +443,7 @@ C
      &               (LABEL(IR,I),FREQS(IR,I),ISYMO(IR,I),I=1,ORDER)
                  END IF
                END DO
-            ENDIF
+c           ENDIF
             IF (IPRINT.GT.10 .OR. LOCDBG)
      *            WRITE(LUPRI,*) 'CC_SOLRSP-1: Workspace:',LWORK
 C
