@@ -461,15 +461,17 @@ C  /* Deck delmo */
 C
 C Written 18-Jan-198* by Hans Jorgen Aa. Jensen and Hans Agren
 C Revised 26-Aug-1992 by OV+HJAaJ
+C Revised 2004-Feb.2005 by HJAaJ
 C
 C Purpose:
 C  Obtain initial guess for molecular orbitals by
-C  diagonalizing the overlap matrix and discard
-C  numerically linar dependent orbitals (defined by
-C  eigenvalue of overlap matrix .lt. THROVL).
+C  diagonalizing the overlap matrix and discarding
+C  numerically linar dependent orbitals
+C  (defined by eigenvalue of overlap matrix .lt. THROVL).
 C
 C Output:
 C  CMO; molecular orbitals
+C  DELEMO set true if orbitals have been deleted
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -503,15 +505,16 @@ C Read the overlap matrix in AO-basis.
 C
       CALL RDONEL('OVERLAP ',.TRUE.,SCRA(KOVLP),NNBAST)
 C
-      JCSYM = 1
+      ICSYM = 1
       DO 200 ISYM = 1,NSYM
          NBASI = NBAS(ISYM)
          ISSYM = KOVLP + IIBAS(ISYM)
          IF (LAUXBS) THEN
             NORBI = NORB2(ISYM)
          ELSE
+            NORB1(ISYM) = NORB(ISYM)
             NORBI = NORB(ISYM)
-            JCSYM = ICMO(ISYM) + 1
+            ICSYM = ICMO(ISYM) + 1
          END IF
       IF (NORBI.EQ.0) GO TO 200
          IF (LMULBS) THEN
@@ -519,6 +522,7 @@ C
               IF (.NOT. R12ECO) THEN
 C              Overlap matrix elements that belong to the 
 C              primary basis are zeroed (WK/UniKA/04-11-2002).
+C              This routine will then delete the corresponding vectors from CMO.
                MBSYM = ISSYM 
                MBNUL = MBAS1(ISYM) * (MBAS1(ISYM) + 1) / 2
                CALL DZERO(SCRA(MBSYM),MBNUL)
@@ -531,36 +535,61 @@ C              primary basis are zeroed (WK/UniKA/04-11-2002).
             ELSE
 C              Overlap matrix elements that belong to the 
 C              secondary basis are zeroed (WK/UniKA/04-11-2002).
+C              This routine will then delete the corresponding vectors from CMO.
                MBSYM = ISSYM + MBAS1(ISYM) * (MBAS1(ISYM) + 1) / 2
                MBNUL = NNBAS(ISYM) - MBSYM + ISSYM
                CALL DZERO(SCRA(MBSYM),MBNUL)
             ENDIF
          END IF
 C
+C        If orbitals are deleted, take another turn for better
+C        numerical stability /hjaaj Dec 2004
+C        
          ITURN = 0
+         JDEL  = 0
+         NORBISAV = NORBI
   100    CONTINUE
          ITURN = ITURN + 1
-         IF (ITURN .GT. 1) THEN
+         IF (JDEL .GT. 0) THEN
             WRITE (LUW4,*) 'DELMO: ISYM, ITURN, NORBISAV, NORBI',
      &                             ISYM, ITURN, NORBISAV, NORBI
          END IF
-         NORBISAV = NORBI
-         THRLDP = 1.0D-14
-         CALL ORTVEC(0,NORBI,NBASI,THRLDP,CMO(JCSYM),SCRA(KSCR1))
 C
          IF (NORBI .NE. NBASI) THEN
-            CALL UTHU(SCRA(ISSYM),SCRA(KS1T),CMO(JCSYM),SCRA(KSCR1),
+C           Make CMO orthornormal wrt. unit metric
+C           (needed for canonicial orthonormalization)
+            THRLDP = 1.0D-14
+            CALL ORTVEC(0,NORBI,NBASI,THRLDP,CMO(ICSYM),SCRA(KSCR1))
+            CALL UTHU(SCRA(ISSYM),SCRA(KS1T),CMO(ICSYM),SCRA(KSCR1),
      *                NBASI,NORBI)
 C           CALL UTHU(H,HT,U,WRK,NAO,NMO)
          ELSE
             NNBASI = NNBAS(ISYM)
             CALL DCOPY(NNBASI,SCRA(ISSYM),1,SCRA(KS1T),1)
-            CALL DUNIT(CMO(JCSYM),NBASI)
+            CALL DUNIT(CMO(ICSYM),NBASI)
          END IF
+C
+C        Normalize primary CMO vectors
+C        (required for proper canonical orthonormalization)
+C
+         JS1T = KS1T - 1
+         DO I = 1, NORBI
+           JS1T = JS1T + I
+           IF (SCRA(JS1T) .GT. 0.0D0) THEN
+C          ... we may have zeroed some elements above
+C              in order that they should be excluded by this routine
+              FAC = D1 / SQRT(SCRA(JS1T))
+              JCSYM = ICSYM + (I-1)*NBASI
+              CALL DSCAL(NBASI,FAC,CMO(JCSYM),1)
+           END IF
+         END DO
+C        and update SCR(KS1T) to the new CMO vectors:
+         CALL UTHU(SCRA(ISSYM),SCRA(KS1T),CMO(ICSYM),SCRA(KSCR1),
+     *             NBASI,NORBI)
 C
 C        Diagonalize overlap matrix ( S * U = U * Seig )
 C
-         CALL JACO(SCRA(KS1T),CMO(JCSYM),NORBI,NORBI,NBASI,
+         CALL JACO(SCRA(KS1T),CMO(ICSYM),NORBI,NORBI,NBASI,
      *             SCRA(KSCR1),SCRA(KSCR2))
 C        CALL JACO (F,V,NB,NMAX,NROWV,BIG,JBIG)
          II = 0
@@ -568,15 +597,15 @@ C        CALL JACO (F,V,NB,NMAX,NROWV,BIG,JBIG)
             II = II + I
             SCRA(KS1T-1+I)=SCRA(KS1T-1+II)
   175    CONTINUE
-         CALL ORDER2(CMO(JCSYM),SCRA(KS1T),NORBI,NBASI)
+         CALL ORDER2(CMO(ICSYM),SCRA(KS1T),NORBI,NBASI)
          IF (IPRI6 .GT. 10 .OR. P6FLAG(38)) THEN
             IF (LMULBS .AND. LAUXBS) THEN
               WRITE (LUPRI,'(/A,I5/)')
-     &        'CMODEL: eigenvalues of overlap matrix for symmetry',ISYM
+     &        'DELMO: eigenvalues of overlap matrix for '//
+     &        'auxiliary basis for symmetry',ISYM
             ELSE
               WRITE (LUPRI,'(/A,I5/)')
-     &        'CMODEL: eigenvalues of overlap matrix for '//
-     &        'auxiliary basis for symmetry',ISYM
+     &        'DELMO: eigenvalues of overlap matrix for symmetry',ISYM
             END IF
             WRITE (LUPRI,'(1P,5D15.5)') (SCRA(KS1T-1+I),I=1,NORBI)
          END IF
@@ -588,24 +617,23 @@ C
            EIGVAL = SCRA(KS1T + J -1)
            IF (EIGVAL .LT. THROVL) THEN
               IDEL  = (NORBI + 1 - J)
-              IF (.NOT. DELEMO) THEN        
-                 NWARN = NWARN + 1
-                 WRITE (LUW4,'(//A/A/A,1P,D10.2)')
-     *           '@ WARNING: orbitals are deleted during canonical'//
+C
+              IF (LAUXBS) THEN
+C             ... secondary basis
+                 JDEL = IDEL
+                 IF (.NOT.DELEMO) WRITE (LUW4,'(//A/A/A,1P,D10.2)')
+     *           '@ Auxiliary orbitals are deleted during canonical'//
      *           ' orthonormalization',
      *           '@   because of detected numerical linear dependence.',
      *           '@ Eigenvalue threshold for num. lin. dep. =',THROVL
-              END IF
-              IF (.NOT.LAUXBS) DELEMO = .TRUE.
-              WRITE (LUW4,'(/A,I4,A,I5/A/,(1P,5D10.2))')
-     *        '@',IDEL,' MO components are deleted in symmetry',ISYM,
-     *        ' Overlap eigenvalues of the deleted orbitals:',
-     *        (SCRA(KS1T + J - 2 + I),I = 1,IDEL)
-C
-              IF (LAUXBS) THEN
+                 WRITE (LUW4,'(/A,I4,A,I5/A/,(1P,5D10.2))')
+     *           '@',IDEL,' MO components are deleted in symmetry',ISYM,
+     *           ' Overlap eigenvalues of the deleted orbitals:',
+     *          (SCRA(KS1T + J - 2 + I),I = 1,IDEL)
+                 DELEMO = .TRUE.
                 IF (ISYM .LT. NSYM) THEN
-                 ICTO  = JCSYM + (NORB2(ISYM)-IDEL)*NBASI
-                 ICFROM= JCSYM + NORB2(ISYM)*NBASI
+                 ICTO  = ICSYM + (NORB2(ISYM)-IDEL)*NBASI
+                 ICFROM= ICSYM + NORB2(ISYM)*NBASI
                  DO 260 JSYM = ISYM+1, NSYM
                    DO 250 I = 0, NORB2(JSYM)*NBAS(JSYM) - 1
                      CMO(ICTO + I) = CMO(ICFROM + I)
@@ -616,6 +644,20 @@ C
                 END IF
                 NORB2(ISYM) = NORB2(ISYM) - IDEL
               ELSE
+C             ... primary basis
+                JDEL = IDEL - MBAS2(ISYM)
+                IF (JDEL .GT. 0) THEN
+                   IF (.NOT.DELEMO) WRITE (LUW4,'(//A/A/A,1P,D10.2)')
+     *           '@ Primary orbitals are deleted during canonical'//
+     *           ' orthonormalization',
+     *           '@   because of detected numerical linear dependence.',
+     *           '@ Eigenvalue threshold for num. lin. dep. =',THROVL
+                   WRITE (LUW4,'(/A,I4,A,I5/A/,(1P,5D10.2))')
+     *           '@',JDEL,' MO components are deleted in symmetry',ISYM,
+     *           ' Overlap eigenvalues of the deleted orbitals:',
+     *            (SCRA(KS1T + J - 2 + I),I = 1,JDEL)
+                 DELEMO = .TRUE.
+                END IF
                 IF (ISYM .LT. NSYM) THEN
                  ICTO  = ICMO(ISYM) + (NORB(ISYM)-IDEL)*NBASI
                  ICFROM= ICMO(ISYM+1)
@@ -628,28 +670,32 @@ C
   261            CONTINUE
                 END IF
                 NORB(ISYM) = NORB(ISYM) - IDEL
-                NORB1(ISYM) = NORB(ISYM)
                 NCMOT = NCMOT - IDEL*NBASI
               END IF
-C             We have deleted some orbitals, for numerical stability
-C             we take another turn ... /hjaaj Dec 04
+C             We have deleted some orbitals, for numerical
+C             stability we take another turn ... /hjaaj Dec 04
               NORBI = NORBI - IDEL
               GO TO 100
            ELSE
-              IF (.NOT.LAUXBS) NORB1(ISYM) = NORB(ISYM)
            END IF
   275    CONTINUE
 C
 C        Finish canonical orthonormalization by 
 C        normalization (C = S**(-0.5)*U = U * Seig**(-0.5) )
 C
-         DO J = 1, NORB(ISYM)
+         IF (LAUXBS) THEN
+            NORBI = NORB2(ISYM)
+         ELSE
+            NORBI = NORB(ISYM)
+            NORB1(ISYM) = NORB(ISYM)
+         END IF
+         DO J = 1, NORBI
            EIGVAL = SCRA(KS1T + J -1)
            EIGVAL = D1/SQRT(EIGVAL)
-           CALL DSCAL(NBASI,EIGVAL,CMO(JCSYM+(J-1)*NBASI),1)
+           CALL DSCAL(NBASI,EIGVAL,CMO(ICSYM+(J-1)*NBASI),1)
          END DO
 C
-         JCSYM = JCSYM + NORB2(ISYM)*NBASI       
+         ICSYM = ICSYM + NORB2(ISYM)*NBASI       
   200 CONTINUE
 C
 C *** Make sure primary orbitals are orthonormal /hjaaj-dec-04
