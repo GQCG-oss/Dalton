@@ -62,7 +62,7 @@ backup () {
   for i in $* ; do
      if [ -f "${i}" ]; then
         for j in 6 5 4 3 2 1 0 ; do
-           let jp=$j+1
+           jp=`expr $j + 1`
            if [ -f "${i}.${j}" ]; then
               [ $ekko -eq 1 ] && echo "Backup: renaming ${i}.${j} to ${i}.${jp}"
               mv -f "${i}.${j}" "${i}.${jp}"
@@ -640,7 +640,7 @@ do
     $ECHO 'How many millions of *8 words to use as default for work memory? \c'
     read memsiz
 done
-let memsiz=$memsiz*1000000
+memsiz=`expr $memsiz \* 1000000`
 $ECHO '\n   Program will be installed with a default work memory of '$memsiz' words'
 
 #
