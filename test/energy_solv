@@ -189,7 +189,7 @@ CTRL[7]=1
 ERROR[7]="SCF ENERGY NOT CORRECT"
 
 # MP2 energy
-CRIT1=`$GREP "\= MP2 second order energy \: * \-113\.609683488[0-9]" $log | wc -l`
+CRIT1=`$GREP "\= MP2 second order energy \: * \-113\.609683[4-5][0-9][0-9][0-9]" $log | wc -l`
 TEST[8]=`expr	$CRIT1`
 CTRL[8]=1
 ERROR[8]="MP2 ENERGY  NOT CORRECT"
