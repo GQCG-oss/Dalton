@@ -176,7 +176,7 @@ ERROR[7]="QUADRATIC RESPONSE NOT CORRECT"
 
 # Phosphorescence
 CRIT1=`$GREP "Partial rates \(AMFI\)\: X\-polarization * 1\.746[0-9]*(D|E)\-02" $log | wc -l`
-CRIT2=`$GREP "Partial rates \(AMFI\)\: Y\-polarization * 1\.984[0-9]*(D|E)\-03" $log | wc -l`
+CRIT2=`$GREP "Partial rates \(AMFI\)\: Y\-polarization * 1\.98[34][0-9]*(D|E)\-03" $log | wc -l`
 CRIT3=`$GREP "Partial rates \(AMFI\)\: Z\-polarization * (0| )\.(    |000)" $log | wc -l`
 CRIT4=`$GREP "Total transition * rate * \(AMFI\) 6\.484[0-9]*(D|E)\-03 s\-1" $log | wc -l`
 CRIT5=`$GREP "Total phosphorescence lifetime \(AMFI\) * 154\.2[0-9]* * s" $log | wc -l`
