@@ -332,3 +332,69 @@ C
       END IF
       RETURN
       END
+C /* Deck dftdnsab */  
+      SUBROUTINE DFTDNSAB(DMATA,DMATB,WORK,LWORK,IPRINT)
+C
+C     DFTDNS adaptation for open shell case ZR
+C
+#include <implicit.h>
+#include <kinds.h>
+      DIMENSION DMATA(*), DMATB(*)
+      DIMENSION WORK(LWORK)
+      INTEGER IPRINT
+#include <inforb.h>
+#include <inftap.h>
+#include <dummy.h>
+#include <priunit.h>
+      REAL(DOUBLE) D1
+      PARAMETER ( D1 = 1.0D0, DP5 =0.5D0)
+      LOGICAL CLOSED
+C
+      CALL QENTER('DFTDNSAB')
+C
+      KFREE = 1
+      LFREE = LWORK
+      CALL MEMGET('REAL',KCMO,NCMOT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KUDV,NNASHX,WORK,KFREE,LFREE)
+C
+      CLOSED=LUSIFC.LT.0
+      IF (CLOSED) CALL GPOPEN(
+     &   LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,.FALSE.
+     &   )
+      REWIND(LUSIFC)
+      CALL MOLLAB(LBSIFC,LUSIFC,LUPRI)
+      READ(LUSIFC)
+      READ(LUSIFC)
+      CALL READT(LUSIFC,NCMOT,WORK(KCMO))
+      CALL READT(LUSIFC,NNASHX,WORK(KUDV))
+      
+      JKEEP = JWOPSY
+      JWOPSY = 1
+      IF (NASHT.EQ.0) THEN
+          CALL FCKDEN(.TRUE.,.FALSE.,DMATB,DUMMY,WORK(KCMO),DUMMY,
+     &                WORK(KFREE),LFREE)
+          CALL DZERO(DMATA,N2BASX)
+      ELSE
+          CALL FCKDEN(.TRUE.,.TRUE.,DMATB,DMATA,WORK(KCMO),WORK(KUDV),
+     &                WORK(KFREE),LFREE)
+      END IF
+      JWOPSY = JKEEP
+      CALL DSCAL(N2BASX,DP5,DMATB,1)
+      CALL DAXPY(N2BASX,D1,DMATB,1,DMATA,1)
+C
+      IF (CLOSED) CALL GPCLOSE(LUSIFC,'KEEP')
+C
+      IF (IPRINT.GT.100) THEN
+         CALL HEADER('AO alpha density matrix in DFTDNSAB ',-1)
+         CALL OUTPUT(DMATA,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL HEADER('AO beta density matrix in DFTDNSAB ',-1)
+         CALL OUTPUT(DMATB,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      END IF
+C        
+      CALL MEMREL('DFTDNSAB',WORK,1,1,KFREE,LFREE)
+C
+      CALL QEXIT('DFTDNSAB')
+C      
+      END
+
+

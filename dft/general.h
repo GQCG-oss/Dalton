@@ -99,7 +99,7 @@ void dft_kohn_shamab_(real* dmat, real* ksm, real *edfty,
                       real* work, int *lwork, int* ipr);
 void dft_lin_respab_(real* fmatc, real* fmato,  real *cmo, real *zymat, 
                      int *trplet, int *ksymop, real* work,int* lwork);
-
+void dftmolgradab_(real* work, int* lwork, int* iprint);
 typedef void (*DFTPropEvalMaster)(void);
 typedef void (*DFTPropEvalSlave)(real* work, int* lwork, const int* iprint);
 #if defined(VAR_MPI)
@@ -137,6 +137,9 @@ void getrho_(const real*dmat, const real* atv, real* rho, real* dmagao,
 void dftgrd_(real* work, int* lwork, const int* d1, const int* log1);
 void dftdns_(real* dmat, real* work,int *lwork,int* iprint);
 void gtdmso_(real* udv, real* cmo, real* di, real* dv, real* work);
+void dftdnsab_(real* dmata,real* dmatb, real* work, int* lwork, int* iprint);
+void udftmolgrdab_(real* gao, real* damta, real* dmatb, real* rha, real* rhb, 
+                   real* vra, real* vrb, real* vza, real* vzb, real* vzg); 
 int FSYM2(ishell_cnt)(void);
 void dalton_quit(const char* format, ...);
 

@@ -1758,3 +1758,54 @@ dft_kohn_shamab_b_(real* dmat, real* ksm, real *edfty,
                electrons, (electrons-exp_el)/exp_el,
                result.energy, utm/(double)sysconf(_SC_CLK_TCK));
 }
+
+/*---------------------------------------------------------------------
+            DFT contribution to molecular gradient for RODFT   
+----------------------------------------------------------------------*/
+
+
+static void
+dft_mol_grad_ab(DftGrid* grid, real* dmat)
+{ 
+    FirstFuncDrv drvs;
+
+    real* dmata = dmat;
+    real* dmatb = dmat + inforb_.n2basx;
+
+    drv1_clear(&drvs);
+    selected_func->first(&drvs, grid->curr_weight, &grid->dp);
+   
+    udftmolgrdab_(grid->atv,dmata,dmatb,grid->grada,grid->gradb,
+                  &drvs.df1000,&drvs.df0100,&drvs.df0010, 
+                  &drvs.df0001,&drvs.df00001);
+}
+
+
+void
+dftmolgradab_(real* work, int* lwork, int* iprint)
+{
+    DftCallbackData cbdata[1];
+    DftDensity dens = { dft_dens_unrestricted, NULL, NULL };
+    struct tms starttm, endtm; clock_t utm;
+    real electrons;
+    
+    dens.dmata = malloc(2*inforb_.n2basx*sizeof(real));
+    dens.dmatb = dens.dmata+inforb_.n2basx;
+    dftdnsab_(dens.dmata,dens.dmatb,work,lwork,iprint);  
+
+    cbdata[0].callback = (DftCallback)dft_mol_grad_ab;
+    cbdata[0].cb_data  = dens.dmata;
+     
+    times(&starttm);
+    electrons = dft_integrate_ao(&dens, work, lwork, 0, 1, 0,
+                                 cbdata, ELEMENTS(cbdata));
+    times(&endtm);
+    utm = endtm.tms_utime-starttm.tms_utime;
+    if(*iprint)
+        fort_print("Electrons: %f(%9.1g): MOLGRAD time: %10.2f s\n",
+                   electrons, (double)(electrons-(int)(electrons+0.5)),
+                   utm/(double)sysconf(_SC_CLK_TCK));
+}
+
+
+  

@@ -18,6 +18,10 @@ C
       DOGGA = DFT_ISGGA()
 C      
       CALL DZERO(GRADFT,MXCOOR)
+      IF (NASHT.GT.0) THEN 
+          CALL DFTMOLGRADAB(WORK,LWORK,1)
+          RETURN 
+      END IF    
 C
       KDMAT = 1
       KLAST = KDMAT + NBAST*NBAST
@@ -211,3 +215,121 @@ C
       RETURN
 #endif
       END
+C
+C   DFT contribution to open-shell gradients 
+C   Adaptation of "old" T. Helgaker code  
+C   ZR 
+C 
+      SUBROUTINE UDFTMOLGRDAB(GAO,DMATA,DMATB,RHA,RHB,
+     &           VRA,VRB,VZA,VZB,VZG)
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <maxorb.h>
+#include <mxcent.h>
+C
+      PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
+C
+      LOGICAL DOGGA, DFT_ISGGA
+      EXTERNAL DFT_ISGGA
+      DIMENSION DMATA(NBAST,NBAST), DMATB(NBAST,NBAST)
+      DIMENSION GAO(NBAST,*)
+      DIMENSION RHA(3),RHB(3)
+C
+#include <inforb.h>
+#include <energy.h>
+#include <symmet.h>
+#include <shells.h>
+C
+#include <ibtfun.h>
+C
+      DOGGA = DFT_ISGGA()  
+      VRA = D2*VRA 
+      VRB = D2*VRB
+      GRDNRMA = DSQRT(RHA(1)**2 + RHA(2)**2 + RHA(3)**2)
+      GRDNRMB = DSQRT(RHB(1)**2 + RHB(2)**2 + RHB(3)**2)
+      VZA = D2*VZA/GRDNRMA 
+      VZB = D2*VZB/GRDNRMB
+      VZG = D2*VZG
+      DO IX = 1, 3
+         IF (IX.EQ.1) THEN
+            K1 = 1
+            K2 = 2
+            K3 = 3
+         ELSE IF (IX.EQ.2) THEN
+            K1 = 2
+            K2 = 4
+            K3 = 5
+         ELSE
+            K1 = 3
+            K2 = 5
+            K3 = 6
+         END IF
+         DO IREPA = 0, MAXREP
+            ISTR = IBAS(IREPA+1) + 1
+            IEND = IBAS(IREPA+1) + NBAS(IREPA+1)
+            IRPAX = IBTXOR(IREPA,ISYMAX(IX,1))
+            IORBA = 0 
+            DO ISHELA = 1, KMAX
+               ISCOOR = IPTCNT(3*(NCENT(ISHELA) - 1) + IX,0,1)
+               DO ICOMPA = 1, KHKT(ISHELA)
+                  IORBA = IORBA + 1
+                  IA = IPTSYM(IORBA,IREPA)
+                  KA = IPTSYM(IORBA,IRPAX)
+                  IF (KA.GT.0) THEN 
+                    IF (.NOT.DOGGA) THEN    
+                        GDA = D0
+                        GDB = D0
+                        DO IB = ISTR, IEND
+                           GDA = GDA + GAO(IB,1)*DMATA(IB,IA)
+                           GDB = GDB + GAO(IB,1)*DMATB(IB,IA) 
+                        END DO
+                        FRC = VRA*GDA*GAO(KA,IX+1)
+                        FRC = FRC + VRB*GDB*GAO(KA,IX+1)
+                        
+                    ELSE 
+                        GA   = GAO(KA,IX+1)
+                        GAAX = RHA(1)*GA
+                        GAAY = RHA(2)*GA
+                        GAAZ = RHA(3)*GA
+                        GAA2 = RHA(1)*GAO(KA,K1+4) + RHA(2)*GAO(KA,K2+4)
+     &                                        + RHA(3)*GAO(KA,K3+4)
+                        GDA = D0
+                        GFA = D0
+                        GGA = D0
+C                            
+                        GA   = GAO(KA,IX+1)
+                        GABX = RHB(1)*GA
+                        GABY = RHB(2)*GA
+                        GABZ = RHB(3)*GA
+                        GAB2 = RHB(1)*GAO(KA,K1+4) + RHB(2)*GAO(KA,K2+4)
+     &                                        + RHB(3)*GAO(KA,K3+4)
+                        GDB = D0
+                        GFB = D0
+                        GGB = D0
+                        DO IB = ISTR, IEND
+                           GAB = GAO(IB,1)*GAB2 + GAO(IB,2)*GABX +
+     &                           GAO(IB,3)*GABY + GAO(IB,4)*GABZ 
+                           GAA = GAO(IB,1)*GAA2 + GAO(IB,2)*GAAX + 
+     &                           GAO(IB,3)*GAAY + GAO(IB,4)*GAAZ
+                           GDB = GDB + DMATB(IB,IA)*GAO(IB,1)
+                           GDA = GDA + DMATA(IB,IA)*GAO(IB,1)
+                           GFB = GFB + DMATB(IB,IA)*GAB 
+                           GFA = GFA + DMATA(IB,IA)*GAA
+                           GGB = GGB + DMATB(IB,IA)*GAA 
+                           GGA = GGA + DMATA(IB,IA)*GAB     
+                        END DO 
+                        FRC = VRA*GDA*GA+VZA*GFA+VZG*GGA
+                        FRC = FRC+VRB*GDB*GA+VZB*GFB+VZG*GGB   
+                    END IF   
+                    GRADFT(ISCOOR) = GRADFT(ISCOOR) - FRC
+                  END IF
+               END DO
+            END DO
+         END DO
+      END DO     
+      RETURN
+      END
+
+ 
+

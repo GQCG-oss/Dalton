@@ -327,10 +327,11 @@ C
       IF (CCSDT .OR. CIS   .OR. CC1A .OR. CC1B .OR. MCC2 .OR. CCP2 .OR.
      &    CCD   .OR. CC3   .OR. CCP3  .OR. CCRT .OR. CCR3 .OR.
      &    CCR1A .OR. CCR1B .OR. CCR1B.OR. CCT .OR.
-     &   (DMP2.AND..NOT.MCSCF) .OR. (DFTRUN.AND.NASHT.GT.0)) THEN
+     &   (DMP2.AND..NOT.MCSCF)) THEN
          NAORDR = 0
       ELSE IF (CCSD .OR. CCS .OR. CC2 .OR. MP2 .OR.
-     &         CCPT .OR. (DFTRUN .AND. (NSYM.GT.1.OR.HFXMU.NE.D0))) THEN
+     &         CCPT .OR. (DFTRUN .AND. (NASHT.GT.0)) .OR. 
+     &        (DFTRUN .AND. (NSYM.GT.1.OR.HFXMU.NE.D0))) THEN
          NAORDR = 1
       ELSE
          NAORDR = 2
