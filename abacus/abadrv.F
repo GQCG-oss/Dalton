@@ -33,16 +33,6 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef UNDEF
-===========================================================================
-/* Comdeck log */
-970819-hjaaj:
-      transfer IPRIN4,IPRIN6 from RHSINP to 'CALL SETSIR'
-950601-vebjorn:
-      Small changes in input processing to allow external control of walks.
-941103-hjaaj: moved ABARUN to herdirect.u (needed for HERMIT)
-===========================================================================
-#endif
 C  /* Deck abactl */
       SUBROUTINE ABACTL(WORK,LWORK)
 C
@@ -2370,7 +2360,7 @@ C  /* Deck timsta */
       SUBROUTINE TIMSTA(TIMALL,TIMINP,TIMTRO,TIMONE,TIMMAG,TIMTEX,
      *                  TIMDRC,TIMORT,TIMDIP,TIMRES,TIMREL,
      *                  TIMTST,TIMVIB,TIMWLK,
-     *                  TIMLRS,TIMTRP,TIMEXC,TIMAAT,TIMLNR)
+     *                  TIMLRS,TIMTRP,TIMEXC,TIMAAT,TIMLNR,TIMCT0)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -2394,6 +2384,7 @@ C  /* Deck timsta */
       CALL TIMPRI('RELAX ',TIMREL,TIMALL)
       CALL TIMPRI('WALK  ',TIMWLK,TIMALL)
       CALL TIMPRI('VIBCTL',TIMVIB,TIMALL)
+      CALL TIMPRI('CTOCD ',TIMCTO,TIMALL)
       CALL TIMPRI('REST  ',TIMWLK,TIMALL)
       WRITE (LUPRI,'()')
       CALL TIMPRI('TOTAL ',TIMALL,TIMALL)
