@@ -482,7 +482,7 @@ fi
 #
 
 split="false"
-if [ $WHICH = 'rs6000' -o $WHICH = 'sun4' -o $WHICH = 'iris4d' ] ; then
+if [ $WHICH = 'rs6000' -o $WHICH = 'sun4' -o $WHICH = 'iris4d' -o $WHICH = 'linux' ] ; then
     answer=
     while [ "$answer" != "y" -a "$answer" != "n" ]
     do
@@ -846,9 +846,17 @@ case $WHICH in
           cpp=${cpp}" -DIMPLICIT_NONE"
           copt='-fast';;
     linux) if [ "$mesp" = "dummy" ]; then
-              cpp="-DSYS_LINUX -DNO_F90 -DVAR_MFDS -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
-          else
-              cpp="-DSYS_LINUX -DNO_F90 -DVAR_MFDS -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
+	      if [ $split = 'true' ] ; then
+                 cpp="-DSYS_LINUX -DNO_F90 -DVAR_MFDS -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
+	      else
+                 cpp="-DSYS_LINUX -DNO_F90 -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
+  	      fi
+            else
+	      if [ $split = 'true' ] ; then
+                 cpp="-DSYS_LINUX -DNO_F90 -DVAR_MFDS -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
+              else
+                 cpp="-DSYS_LINUX -DNO_F90 -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
+ 	      fi
 	      set_parallel_def $mesp
           fi
               if [ $F77 = 'pgf77' ]; then
