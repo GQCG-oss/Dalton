@@ -67,14 +67,14 @@ usually require a much larger number of iterations.
 
 \item[\Key{OPTIMIZE}] Do a geometry walk\index{geometry walk}. If no
 input is given in the
-\Sec{MINIMIZE} input submodule, an optimization of the molecular
+\Sec{OPTIMIZE} input submodule, an optimization of the molecular
 geometry\index{geometry optimization} to a stationary point with no
 negative Hessian eigenvalues\index{Hessian} (a
 local minimum) will be done using the default first-order methods. However, this may changed be appropriate
-keywords in the submodule \Sec{MINIMIZE}, and we refer to examples in
+keywords in the submodule \Sec{OPTIMIZE}, and we refer to examples in
 the chapter on potential energy surfaces
 (Chapter~\ref{ch:geometrywalks}), and  subsection~\ref{sec:abawalk}
-describing the input cards for the \Sec{MINIMIZE} submodule for a more
+describing the input cards for the \Sec{OPTIMIZE} submodule for a more
 detailed description of possible options.
 
 \item[\Key{NMDDRV}] Calls for a generalized numerical differentiations. These 
@@ -194,12 +194,12 @@ ller-Plesset}\index{MCSCF}\index{CC}. See Chapter~\ref{chap:inpref}.
 The last input card for the general input section (\Sec{*DALTON INPUT})
 may be \Sec{END OF}.
 
-\subsection{General: \Sec{MINIMIZE}}\label{subsec:minimize}
+\subsection{General: \Sec{OPTIMIZE}}\label{subsec:minimize}
 
 This submodule is driver for geometry optimizations, although we
 note that the \Sec{WALK} module contains another second-order
 geometry optimization driver\index{geometry optimization}. The
-\Sec{MINIMIZE} module contains both first and second-order methods
+\Sec{OPTIMIZE} module contains both first and second-order methods
 for energy\index{first-order optimization}\index{second-order
 optimization}\index{geometry optimization} minimization (geometry
 optimization). Most of the Hessian updating\index{Hessian update}

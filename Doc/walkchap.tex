@@ -87,7 +87,7 @@ geometry, will look like
 
 \begin{verbatim}
 **DALTON INPUT
-.MINIMIZE
+.OPTIMIZE
 **WAVE FUNCTIONS
 .HF
 **FINAL
@@ -96,7 +96,7 @@ geometry, will look like
 *END OF INPUT
 \end{verbatim}
 
-The keyword \Key{MINIMIZE} signalizes a search for a minimum, that is,
+The keyword \Key{OPTIMIZE} signals a search for a minimum, that is,
 a stationary point on the molecular surface with Hessian index 0 using
 a second-order geometry optimization procedure as described in
 Ref.~\cite{tuhjahjajpjjcp84}. At
@@ -167,8 +167,8 @@ illustrated in the following input:
 
 \begin{verbatim}
 **DALTON INPUT
-.MINIMIZE
-*MINIMIZE
+.OPTIMIZE
+*OPTIMIZE
 .1STORD
 **WAVE FUNCTIONS
 .HF
@@ -285,8 +285,8 @@ basis set. Both these features are illustrated in the input file below:
 
 \begin{verbatim}
 **DALTON INPUT
-.MINIMIZE
-*MINIMIZE
+.OPTIMIZE
+*OPTIMIZE
 .PREOPT
 2
 STO-3G
@@ -316,9 +316,9 @@ affect the geometry optimization  as well as a short description of
 which part of the calculation that module controls. The reader is
 referred to the section describing each module for a closer
 description of the different options. These sections may, with the
-exception of the \Sec{MINIMIZE} and \Sec{WALK} section, be specified
+exception of the \Sec{OPTIMIZE} and \Sec{WALK} section, be specified
 in any of the modules \Sec{*START}, \Sec{*PROPERTIES},
-\Sec{*FINAL}. The \Sec{MINIMIZE} and \Sec{WALK} is
+\Sec{*FINAL}. The \Sec{OPTIMIZE} and \Sec{WALK} is
 to be placed in the \Sec{*DALTON} module, and will apply to the
 entire calculation.
 
@@ -327,7 +327,7 @@ entire calculation.
 molecular geometry is to be printed.
 \item[\Sec{GETSGY}] Controls the set up of the right-hand sides
 (gradient terms).
-\item[\Sec{MINIMIZE}] Controls the first- and second-order
+\item[\Sec{OPTIMIZE}] Controls the first- and second-order
 minimization methods
 (gradient terms).
 \item[\Sec{NUCREP}] Controls the calculation of the nuclear contributions.
@@ -896,8 +896,8 @@ geometry of a molecule, the only input needed is
 
 \begin{verbatim}
 **DALTON INPUT
-.MINIMIZE
-*MINIMIZE
+.OPTIMIZE
+*OPTIMIZE
 .1STORDER
 **WAVE FUNCTION
 .HF
