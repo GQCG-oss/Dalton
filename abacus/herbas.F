@@ -237,7 +237,7 @@ C
             IF (ANO .OR. SADLEJ) THEN
                CALL REAANO(INTEXP, INTORB, NBLOCK, KAOVEC, CPRIMU,ALPHA,
      +                     KPRIM,ANO,SADLEJ,BASNAM,ISTART,POLFUN,IPOLST,
-     +                     UNCONT,LUBAS)
+     +                     UNCONT,ISET,LUBAS)
                IF (INTORB .EQ. 0) THEN
                   NBLOCK = NBLOCK - 1
                   CALL FINPOS(NEWEL,INTEXP,INTORB,LUBAS)
@@ -571,7 +571,7 @@ C
 C/* Deck reaano */
       SUBROUTINE REAANO(INTEXP, INTORB, NBLOCK, KAOVEC, CPRIMU, ALPHA, 
      +                  KPRIM,ANO,SADLEJ,BASNAM,ISTART,POLFUN,IPOLST,
-     +                  UNCONT,LUBAS)
+     +                  UNCONT,ISET,LUBAS)
 #include <implicit.h>
 #include <dummy.h>
 #include <priunit.h>
@@ -621,7 +621,7 @@ C
             END IF
             J = J + MAXEXP
          END DO
-         IF (UNCONT) THEN
+         IF (UNCONT .AND. ISET .EQ. 1) THEN
 C        ... force uncontracted
             DO I = 1, INTEXP
                READ (LUBAS,*)
