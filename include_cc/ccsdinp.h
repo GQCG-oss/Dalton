@@ -2,7 +2,7 @@
       LOGICAL SKIP,   DIRECT, DIRGRD, CCRSTR, 
      &        FROIMP, FROEXP, NOCCIT,
      &        CCSAVE, STOLD,  JACEXP, LHTR,
-     &        FTST,   DEBUG,  CCSTST, ANAAOD,
+     &        DEBUG,  CCSTST, ANAAOD,
      &        HERDIR, FREEZE, KEEPAOIN
 
       INTEGER MXDIIS, MXLRV,
@@ -16,7 +16,7 @@
       COMMON /CCSDGNINP/ SKIP,   DIRECT, DIRGRD, CCRSTR,
      &                   FROIMP, FROEXP, NOCCIT,
      &                   CCSAVE, STOLD,  JACEXP, LHTR,
-     &                   FTST,   DEBUG,  CCSTST, ANAAOD,
+     &                   DEBUG,  CCSTST, ANAAOD,
      &                   MXDIIS, MXLRV,
      &                   ICHANG, IPRINT, KEEPAOTWO, HERDIR,
      &                   FREEZE, KEEPAOIN
