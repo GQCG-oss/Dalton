@@ -187,7 +187,7 @@ C
       WADDR = MALLOC(NBYTES)
 #else
       WADDR = 1
-      ALLOCATE (WORK(LMWORK+2))
+      ALLOCATE (WORK(LMWORK+2),STAT=I)
 #endif
 #endif
 #if (defined (SYS_LINUX) && defined (VAR_G77))
