@@ -163,7 +163,7 @@ case $WHICH in
               complist='frt'
               ccmplist='cc';;
     hp)       liblist='libblas.a libveclib.a'
-              complist='fort77 f77 f90'
+              complist='f90 fort77 f77'
               ccmplist='cc'
 esac
 #
@@ -805,16 +805,18 @@ case $WHICH in
           if [ $F77 = 'f90' ]; then
               case $bit in
                   64) opt='+DA2.0W +O2 +U77 +Onolimit +Ofastaccess +noppu'
+                      LIB="$LIB"
                       copt='+DA2.0W +O3 +Onolimit +Ofastaccess';;
                   *)  opt='+DA2.0 +O2 +U77 +Onolimit +Ofastaccess'
+                      LIB="-lV7 $LIB"
                       copt='+DA2.0 +O3 +Onolimit +Ofastaccess';;
               esac
           else
               opt='+O2 +U77 +E4 +E5'
               safe_opt='+O1 +U77 +E4 +E5'
               copt='-D_FILE_OFFSET_BITS=64 +O3'
-          fi
-          LIB="-lV7 $LIB";;
+              LIB="-lV7 $LIB"
+          fi;;
      linux-alpha)  
 	  if [ "$mesp" = "dummy" ]; then
               cpp="$cpp -DHAVE_GCPP -DSYS_DEC -DVAR_64BITS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
