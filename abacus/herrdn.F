@@ -1464,7 +1464,7 @@ C
          IF (MBSI .GT. 1) THEN
             CHARGE(NUCIND) = D0
             IZATOM(NUCIND) = -1
-C           ... code -1 to tell MBSI
+C           ... code -1 to tell MBSI (value of 0 is floating orbitals)
             GNUEXP(NUCIND) = D0
          ELSE
             CHARGE(NUCIND) = Q
