@@ -1,0 +1,151 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > ccr3_exci.info <<'%EOF%'
+   ccr3_exci
+   -----------
+   Molecule:         N2 exci
+   Wave Function:    CCSDR(3)/cc-pVDZ
+   Test Purpose:     Pert. corr. to CCSD excitation energies
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > ccr3_exci.mol <<'%EOF%'
+BASIS
+cc-pVDZ
+FCI n2
+ Benchmark calculation
+    1    3  X  Y  Z   1.00D-15
+        7.0   1    3    1    1    1
+N     0.00000000          0.00000000          1.03400000               *
+
+    9    3    0
+9046.0000  0.0007000 -0.000153  0.000000  0.00000000
+1357.0000  0.0053890 -0.001208  0.000000  0.00000000
+309.30000  0.0274060 -0.005992  0.000000  0.00000000
+87.730000  0.1032070 -0.024544  0.000000  0.00000000
+28.560000  0.2787230 -0.067459  0.000000  0.00000000
+10.210000  0.4485400 -0.158078  0.000000  0.00000000
+3.8380000  0.2782380 -0.121831  0.000000  0.00000000
+0.7466000  0.0154400  0.549003  0.000000  0.00000000
+0.2248000 -0.0028640  0.578815  1.000000  0.00000000
+    4    2    0
+13.550000  0.0399190  0.000000  0.000000
+2.9170000  0.2171690  0.000000  0.000000
+0.7973000  0.5103190  0.000000  0.000000
+0.2185000  0.4622140  1.000000  0.000000
+    1    1    0
+0.8170000  1.0000000  0.00000000
+%EOF%
+
+
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > ccr3_exci.dal <<'%EOF%'
+**GENERAL
+.RUN WAVEFUNCTION 
+**SIRIUS
+.CC 
+*SCF INPUT 
+.HF OCCUPATION
+ 3 1 1 0 2 0 0 0
+.THRESH
+1.0D-11
+*ORBITALS
+.NOSUPSY
+*CC INP
+!.RESTART
+.PRINT
+ 5
+.MAX ITE
+ 150
+.MXLRV
+ 20
+.MXDIIS
+ 20
+.MAXRED
+ 300
+!.CCSD
+.CCR(3)
+!.CC3
+.THRLEQ
+ 1.0D-07
+.THRENR
+ 1.0D-11
+.FROIMP
+ 1 0 0 0 1 0 0 0
+ 0 0 0 0 0 0 0 0
+*CCEXCI
+.NCCEXCI
+ 0 1 0 0 0 0 0 0         
+ 0 0 0 0 0 0 0 0         
+.THREXC
+1.0D-05
+*END OF
+%EOF%
+
+#######################################################################
+
+
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >ccr3_exci.check
+cat >>ccr3_exci.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# SCF, MP2 and CCSD energies:
+CRIT1=`$GREP "CCSDR" $log | $GREP "13.83534[4,5,6]" | wc -l`
+TEST[1]=`expr $CRIT1 ` 
+CTRL[1]=1
+ERROR[1]="CCSDR(3) EXCITATION ENERGIES NOT CORRECT"
+echo $CRIT1
+
+PASSED=1
+for i in 1 
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo ${ERROR[i]}
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi                
+%EOF%
+#######################################################################
