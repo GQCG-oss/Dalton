@@ -29,12 +29,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: siropt.F,v 1.1.1.1 2001-02-08 13:33:32 hjj Exp $
+C$Id: siropt.F,v 1.2 2001-03-12 14:45:35 vebjornb Exp $
 C
 #include <single.h>
 C
 #ifdef REV_LOG
 $Log: not supported by cvs2svn $
+Revision 1.1.1.1  2001/02/08 13:33:32  hjj
+*** Dalton Master Version *** cvs started 8-Feb-2001.
+
 Revision 1.2  2001/01/17 10:41:34  vebjornb
 Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
 
@@ -2335,6 +2338,13 @@ C     If (INERSI but not the interface flag flag(25)) go to solvent part
          IF (IPRI6 .GE. 1) WRITE (LUPRI,'(/A)')
      *   ' >>> Writing Sirius interface file for'//
      *   ' inertial solvent polarization in WRSIFC. <<<'
+C
+C VB mar 2001:
+C     KWRK1 and KFCDIA has to initialized before we jump further down
+C     in the subroutine.
+C
+         KWRK1 = 1
+         KFCDIA = 1
          GO TO 700
       END IF
       IF (IPRI6 .GE. 5) WRITE (LUPRI,'(/A)')
