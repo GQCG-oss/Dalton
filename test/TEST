@@ -231,12 +231,14 @@ do
           logfile=./$item'__'$step'_'$item.log
           checkfile=./$item'__'$step.check
           reffile=./$item'__'$step.ref
+          moldenfile=./$item'__'$step'_'$item.molden
       else
           molfile=$item
           dalfile=$item
           logfile=./$item.log
           checkfile=./$item.check
           reffile=./$item.ref
+          moldenfile=./$item.molden
       fi
 # If it's a reftest, no calculation uis performed
       if [ "$reftest" = "true" ]; then
@@ -298,7 +300,7 @@ do
       passed=`echo $checkout | grep "TEST ENDED PROPERLY"`
       if [ -n "$passed" ]; then
         if [ "$keep" = "false" ]; then
-          rm -f $dalfile.dal $checkfile $logfile $item.info $item.molden
+          rm -f $dalfile.dal $checkfile $logfile $item.info $moldenfile
         fi
       else
         trouble=`expr $trouble \+ 1`
