@@ -33,93 +33,92 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef REV_LOG
-===========================================================================
-se efter HJTODO
-HJTODO 940816: if .FREEZE implemented in FCKEIG (requires new ORDRSS)
-  then check all setting of MXDIIS = 0 and MAXFCK = 0 (I think MAXFCK
-  also will work if .FREEZE implemented in FCKEIG).
-
-
-Revision 1.13  2001/03/12 09:03:22  hjj
-version sendt til Patrick 12.mar.2001
-
-Revision 1.12  2001/02/21 12:39:18  hjj
-version sendt til Patrick 21.feb.2001
-
-Revision 1.9  2001/02/01 17:30:12  hjj
-restart DIIS if DIIS is stalled ...
-
-Revision 1.8  2001/01/31 13:49:00  hjj
-allocate FQ matrix for open shell before WRSIFC
-
-Revision 1.7  2001/01/31 13:43:48  hjj
-dalton1.1 beta 01aug2000
-
-Revision 1.6  2000/05/24 12:28:27  hjj
-1) fixed solvent calculations (DIFDEN must be false for solvent)
-2) fixed WRSIFC call for open shell and solvent
-   (required change in SOLFCK also)
-
-Revision 1.5  2000/05/16 08:31:17  hjj
-bugfix, s/WORK,LWORK/WRK(KFREE),LFREE/ (bug found with ftnchek)
-
-Revision 1.4  2000/05/01 13:22:04  hjj
-removed obsolete KAVER test.
-
-revision 1.2 + 1.3 April 2000 hjj
-1)bug fix from bug made by hjaaj in aug 99:
-  DIFDEN was not reset to false when threshold was changed.
-2)corrected error in print statement
-3)comments and polishing
-4)restructured test of if new LUINDX file needs to be written
- (removed again IOPRH1 and FLAGSV in parameter list, this
- is more "clean").
-=============================================================================
-970326-hjaaj -- adjusted abort DIIS algorithm (allow more NEWOCC and more
-  oscillations)
-951130-hjaaj
-DISCTL: moved 'reset to not converged' for solvent and writing SIRIFC to
-        DISCTL from SIRCTL; it is a deficiency in the DIIS routines that
-        it cannot be done in them. Look for MAERKE.
-950824-hjaaj
-DISCTL: output for AUTOCC
-FCKEIG: also AUTOCC for open shell plus smaller changes.
-9505-k.ruud
-c: implemented AUTOCC option
-950517-hjaaj
-DISCTL: fixed MEMCHK error caused in RHFENR section; new call to READMO
-940916-hjaaj
-DISCTL: changed print of energy from F18.12 to F22.12
-  (to avoid stars for e.g. Pb)
-940701-hjaaj
-SRDIIS: let MXERRV to default to MAX(2,MIN(NWOPT,10)) (was MXDIIS).
-  This fixes linear dependency problem for very small debug runs:
-  MXERRV=10 gave lin.dep. for 2 el. in 2 orbitals,
-  MXERRV=2 gave quadratic convergence !
-940511-hjaaj
-SRDIIS,DISCTL: call flshfo so progress can be followed in output file;
-   moved heading printing from DISCTL to SRDIIS
-940505-hjaaj
-DISCTL: exit if energy increasing or convergence is too slow.
-940501-hjaaj
-FCKEIG: exit if ".FREEZE" not compatible with ORDRSS.
-    ORDRSS now always called (this also fixes error in prev. version).
-940408-hjaaj
-DISCTL: s/EMCACT/EACTIV/ to define active energy in /INFOPT/
-940311-hjaaj
-DISCTL: s/EVCNRM/GRDNRM/ (so gradient norm is transferred to SIROUT)
-        nice output to LUW4 if LUW4 .ne. LUPRI
-931126-hjaaj
-DISCTL: call NEWORB after each iteration (for restart)
-930720-hjaaj
-SRDIIS: new parameter PROCC .FALSE. in CALL PRORB
-930715-hjaaj
-------: improved some print
-SRDIIS: exit MXDGSS .GT. 0
-930623-hjaaj
-FCKEIG: inserted PARAMETER(D0=0.0D0)
-===========================================================================
+#ifdef OLD_REV_LOG
+!===========================================================================
+!se efter HJTODO
+!HJTODO 940816: if .FREEZE implemented in FCKEIG (requires new ORDRSS)
+!  then check all setting of MXDIIS = 0 and MAXFCK = 0 (I think MAXFCK
+!  also will work if .FREEZE implemented in FCKEIG).
+!
+!
+!Revision 1.13  2001/03/12 09:03:22  hjj
+!version sendt til Patrick 12.mar.2001
+!
+!Revision 1.12  2001/02/21 12:39:18  hjj
+!version sendt til Patrick 21.feb.2001
+!
+!Revision 1.9  2001/02/01 17:30:12  hjj
+!restart DIIS if DIIS is stalled ...
+!
+!Revision 1.8  2001/01/31 13:49:00  hjj
+!allocate FQ matrix for open shell before WRSIFC
+!
+!Revision 1.7  2001/01/31 13:43:48  hjj
+!dalton1.1 beta 01aug2000
+!
+!Revision 1.6  2000/05/24 12:28:27  hjj
+!1) fixed solvent calculations (DIFDEN must be false for solvent)
+!2) fixed WRSIFC call for open shell and solvent
+!   (required change in SOLFCK also)
+!
+!Revision 1.5  2000/05/16 08:31:17  hjj
+!bugfix, s/WORK,LWORK/WRK(KFREE),LFREE/ (bug found with ftnchek)
+!
+!Revision 1.4  2000/05/01 13:22:04  hjj
+!removed obsolete KAVER test.
+!
+!revision 1.2 + 1.3 April 2000 hjj
+!1)bug fix from bug made by hjaaj in aug 99:
+!  DIFDEN was not reset to false when threshold was changed.
+!2)corrected error in print statement
+!3)comments and polishing
+!4)restructured test of if new LUINDX file needs to be written
+! (removed again IOPRH1 and FLAGSV in parameter list, this is more "clean").
+!=============================================================================
+!970326-hjaaj -- adjusted abort DIIS algorithm (allow more NEWOCC and more
+!  oscillations)
+!951130-hjaaj
+!DISCTL: moved 'reset to not converged' for solvent and writing SIRIFC to
+!        DISCTL from SIRCTL; it is a deficiency in the DIIS routines that
+!        it cannot be done in them. Look for MAERKE.
+!950824-hjaaj
+!DISCTL: output for AUTOCC
+!FCKEIG: also AUTOCC for open shell plus smaller changes.
+!9505-k.ruud
+!c: implemented AUTOCC option
+!950517-hjaaj
+!DISCTL: fixed MEMCHK error caused in RHFENR section; new call to READMO
+!940916-hjaaj
+!DISCTL: changed print of energy from F18.12 to F22.12
+!  (to avoid stars for e.g. Pb)
+!940701-hjaaj
+!SRDIIS: let MXERRV to default to MAX(2,MIN(NWOPT,10)) (was MXDIIS).
+!  This fixes linear dependency problem for very small debug runs:
+!  MXERRV=10 gave lin.dep. for 2 el. in 2 orbitals,
+!  MXERRV=2 gave quadratic convergence !
+!940511-hjaaj
+!SRDIIS,DISCTL: call flshfo so progress can be followed in output file;
+!   moved heading printing from DISCTL to SRDIIS
+!940505-hjaaj
+!DISCTL: exit if energy increasing or convergence is too slow.
+!940501-hjaaj
+!FCKEIG: exit if ".FREEZE" not compatible with ORDRSS.
+!    ORDRSS now always called (this also fixes error in prev. version).
+!940408-hjaaj
+!DISCTL: s/EMCACT/EACTIV/ to define active energy in /INFOPT/
+!940311-hjaaj
+!DISCTL: s/EVCNRM/GRDNRM/ (so gradient norm is transferred to SIROUT)
+!        nice output to LUW4 if LUW4 .ne. LUPRI
+!931126-hjaaj
+!DISCTL: call NEWORB after each iteration (for restart)
+!930720-hjaaj
+!SRDIIS: new parameter PROCC .FALSE. in CALL PRORB
+!930715-hjaaj
+!------: improved some print
+!SRDIIS: exit MXDGSS .GT. 0
+!930623-hjaaj
+!FCKEIG: inserted PARAMETER(D0=0.0D0)
+!===========================================================================
 #endif
 C  /* Deck srdiis */
       SUBROUTINE SRDIIS (ICONV,CMO,WRK,KFRSAV,LFRSAV)
@@ -343,6 +342,10 @@ C
 C     save current IOPRHF for check below
       IOPRH1 = IOPRHF
 C
+C     Get one-electron Hamiltonian
+C
+      CALL SIRH1(H1AO,WRK(KFREE),LFREE)
+C
       IF (LUW4 .NE. LUPRI .OR. IPRDIS .LE. 1) THEN
       IF (FLAG(16)) THEN
       IF (.NOT.AUTOCC) THEN
@@ -398,10 +401,6 @@ C
       END IF
       END IF
       END IF
-C
-C     Get one-electron Hamiltonian
-C
-      CALL SIRH1(H1AO,WRK(KFREE),LFREE)
 C
       IF (NISHT.EQ.0) CALL DZERO(DAOSAV,NNBAST)
       ONLYFC = (NASHT .EQ. 0)
@@ -903,7 +902,7 @@ C        Note that we only "stall" if energy goes up while gradient goes
 C          down or vice versa because DIIS minimizes gradient and it is
 C          OK wrt. DIIS if both goes up or both goes down /Feb-2004 hjaaj
 C
-#if 1 /* I am not sure what the test for stalling detection should be */
+#if 0 /* I am not sure what the test for stalling detection should be */
 c We ignore small jump up.
          IF (JTDIIS.GT.1 .AND.
      &       EMCDIF.GT.5D-5) THEN
@@ -956,13 +955,13 @@ C
              NEVC    = 1
 C            also restrict orbital rotation with a level shift
 c            the formula is empirical EMCDIF is positive here.
-             SHFTLVL = MAX(-12D0,SHFTLVL - MIN(4D0,ABS(EMCDIF)*10D0))
+             SHFTLVL = MAX(-12D0,SHFTLVL - MIN(4.0D0,ABS(EMCDIF)*10.D0))
 c            and slow down  the level shifting annealing...
-             SHFTFAC = MIN(SHFTFAC + (1D0-SHFTFAC)*0.25,0.85D0)
+             SHFTFAC = MIN(SHFTFAC + (1.D0-SHFTFAC)*0.25,0.85D0)
          ELSE
              SHFTLVL =  SHFTLVL*SHFTFAC
-c             make sure we get right HOMO-LUMO gap in the end.
-             IF(ITDIIS.GT.1.AND.ABS(EMCDIF).LE.5e-5) SHFTLVL = 0D0
+c            make sure we get right HOMO-LUMO gap in the end.
+             IF(ITDIIS.GT.1.AND.ABS(EMCDIF).LE.5.D-5) SHFTLVL = 0D0
          END IF
          GNRMSV = GRDNRM
 C
@@ -1046,14 +1045,13 @@ C
 C        If requested (by SHFTLVL .ne. 0) :
 C        Perform "restricted step" step reduction (i.e. level shift)
 C        by adding 0.5*SHFTLVL*DENS(i,i) to all diagonal elements;
-C        reset level shift param. to zero /hjaaj-Feb.2001
+C        /hjaaj-Feb.2001
 C
 C        Diagonalize FC (saved in DCAO)
 C
          CALL ICOPY(8,NISH,1,MISH,1)
          JOPRHF = IOPRHF
          CALL FCKEIG(CMO,DCAO,SHFTLVL,WRK(KFREE),LFREE,IPRDIS)
-Chjaaj   SHFTLVL = D0
 C        test if AUTOCC has changed occupation
          NTEST = 0
          DO ISYM = 1,8
@@ -1239,7 +1237,7 @@ C
      *      ' >>> Transforming 2-el. integrals acc. to'//
      *      ' .FINAL TRANSFORMATION =',ITRFIN,' <<<'
          JTRLVL = ITRFIN
-         CALL TRACTL(JTRLVL,CMO,WRK(KFREE),LFREE,MWORK)
+         CALL TRACTL(JTRLVL,CMO,WRK(KFREE),LFREE)
       END IF
 C
 C ***********************************************************
@@ -1724,8 +1722,10 @@ C
 C
 C     Step 1: Diagonalize Fock-matrix:
 C
-      IF (SHFTLVL .NE. D0)
-     &     WRITE(LUPRI,*)'Applying shift level=',SHFTLVL
+      IF (SHFTLVL .NE. D0) WRITE(LUPRI,'(/A,F10.4)')
+     &   ' Level shift: occupied orbital energies shifted by',SHFTLVL
+chjaaj: improve comment with something about "restricted step"
+chjaaj: and "0.5*occ(i)* " /23may hjaaj
       DO 200 ISYM = 1,NSYM
          NORBI = NORB(ISYM)
       IF (NORBI.EQ.0) GO TO 200
@@ -1797,6 +1797,8 @@ C
          NNOTFR= NORBI - JFRZI
          CALL ORDRSS(CMO(JCSYM),FC(JORBI),ISSMO(JORBI),NNOTFR,NBASI)
   200 CONTINUE
+      IF (SUPSYM) CALL AVEORD()
+C     ... remake ISSORD() as ISSMO() may have changed in ORDRSS
 C
 C     Step 2: Reorthogonalize new mo's
 C
@@ -1908,6 +1910,7 @@ C
       CALL MEMGET('REAL',KFI,N2BAS(1),WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KTMP1,N2BAS(1),WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KTMP2,N2BAS(1),WRK,KFREE,LFREE)
+      FOUND = .FALSE.
       CALL RDONEL('OVERLAP',FOUND,WRK(KS),NNBAST)
       IF (.NOT.FOUND) THEN
          CALL QUIT('FVCORR:Error reading overlap')
