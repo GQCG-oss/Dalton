@@ -109,7 +109,7 @@ void dftgrd_(real* work, int* lwork, const int* d1, const int* log1);
 void dftdns_(real* dmat, real* work,int *lwork,int* iprint);
 void gtdmso_(real* udv, real* cmo, real* di, real* dv, real* work);
 int ishell_cnt_(void);
-void quit(const char* format, ...);
+void dalton_quit(const char* format, ...);
 
 /* BLAS and other linear algebra routines */
 real dsum_(const int* cnt, const real* v, const int* stride);

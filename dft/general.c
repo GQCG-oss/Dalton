@@ -333,13 +333,13 @@ dft_nodstr_(real* work,int*lwork,int*iprint)
 #endif /* VAR_MPI */
 
 
+extern void quit_(const char* str, int len);
 void
-quit(const char* format, ...)
+dalton_quit(const char* format, ...)
 {
     char line[128];
     int len;
     va_list a;
-    void quit_(const char* str, int len);
  
     va_start(a, format);
     vsnprintf(line, sizeof(line), format, a);

@@ -1293,13 +1293,13 @@ create_cubes(const char* fname, int point_cnt, real cell_size,
 
     if( !keys ) { 
       fprintf(stderr, "Cannot sort grid this way: not enough memory.\n");
-      quit("no mem in create_subes: 1");
+      dalton_quit("no mem in create_subes: 1");
     }
     if(worksz<4*point_cnt*sizeof(real)) { 
       fprintf(stderr, "Cannot sort grid this way: not enough memory.\n"
 	      "worksz=%d needed size=%d\n", worksz, 
 	      point_cnt*sizeof(struct point_key_t));
-      quit("no mem in create_subes: 2");
+      dalton_quit("no mem in create_subes: 2");
     }
     f = fopen(fname,"rb");
     if(!f) {
@@ -1469,7 +1469,7 @@ grid_getchunk_blocked(DftGridReader* rawgrid, int maxlen,
         fprintf(stderr,
                 "grid_getchunk: too long vector length in file: %d > %d\n"
                 "Calculation will stop.\n", sz, maxlen);
-        quit("grid_getchunk: too long vector length in file: %d > %d\n"
+        dalton_quit("grid_getchunk: too long vector length in file: %d > %d\n"
                 "Calculation will stop.\n", sz, maxlen);
         return -1; /* stop this! */
     }
