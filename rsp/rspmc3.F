@@ -32,12 +32,18 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: rspmc3.F,v 1.3 2001-07-19 15:24:50 hjj Exp $
+C$Id: rspmc3.F,v 1.4 2001-07-20 10:43:18 hjj Exp $
 C
 #include <single.h>
 C
 #ifdef REV_LOG
 $Log: not supported by cvs2svn $
+Revision 1.3  2001/07/19 15:24:50  hjj
+BUGFIX: someone did not initialize FA, QA, QB in call to RSPFXD
+ because they are not used -- however, they are referenced in
+ RSPFXD and this caused a segment violation on DEC alpha,
+ probably because FA contained a NAN.  /hjaaj
+
 Revision 1.2  2001/05/31 06:38:30  vebjornb
 Updated copyright, authors and reference in all Fortran-files - VB
 
@@ -196,11 +202,11 @@ C
       IF (LFREE.LT.0) CALL ERRWRK('MELTWO',KFREE-1,LWRK)
 C
       CALL DCOPY(N2ORBX,H1,1,WRK(KFI),1)
-      CALL DZERO(WORK(KFA),N2ORBX)
+      CALL DZERO(WRK(KFA),N2ORBX)
       IF (NASHT .GT. 0) THEN
-         CALL DZERO(QA,NASHT*NORBT)
-         CALL DZERO(QB,NASHT*NORBT)
-         CALL DZERO(H2AX,LH2AX)
+         CALL DZERO(WRK(KQA),NASHT*NORBT)
+         CALL DZERO(WRK(KQB),NASHT*NORBT)
+         CALL DZERO(WRK(KH2AX),LH2AX)
       END IF
 C
       IF (DIROIT) THEN
