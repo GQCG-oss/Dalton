@@ -1679,6 +1679,7 @@ grid_par_slave(const char *fname, real threshold)
         if(selected_partitioning->postprocess)
             arr[0] = selected_partitioning->postprocess
                 (mg, center, arr[0], atom_nums,  (real(*)[3])dt, dt + 3*lda);
+        if(arr[0] == 0) continue;
         if(fwrite(arr,       sizeof(int), 2, f) != 2) abort();
         if(fwrite(shlblocks, sizeof(int), arr[1]*2, f) != arr[1]*2)
             dalton_quit("write error in %s(), point 2", __FUNCTION__);
