@@ -393,8 +393,10 @@ C
       IF (KLAST .GT. LWORK) CALL STOPIT('DFTBHES',' ',KLAST,LWORK)
       CALL DFTDNS(WORK(KDMAT),WORK(KLAST),LWRK,0)
       CALL DZERO(WORK(KSUSDF),9)
+      CALL KICK_SLAVES_SUSCEP(N2BASX,WORK(KDMAT),IPRINT)
       CALL DFTINT(WORK(KDMAT),1,0,.TRUE.,WORK(KLAST),LWRK,DFTBHES1,
      &            WORK(KDMAT),ELE)
+      CALL DFT_SUSCEP_COLLECT(WORK(KSUSDF),WORK(KLAST),LWRK)
 C     
 C add dft contribution to the result (SUSCP=SUSDFT probably) and print
 C     
@@ -632,6 +634,64 @@ C
       CALL DCOPY(3*N2BASX,FMAT,1,WORK,1)
       CALL MPI_REDUCE(WORK,FMAT,3*N2BASX,MPI_DOUBLE_PRECISION,
      &                MPI_SUM,0,MPI_COMM_WORLD,IERR)
+      RETURN
+#endif
+      END
+C
+      SUBROUTINE KICK_SLAVES_SUSCEP(N2BASX,DMAT,IPRINT)
+#if defined (VAR_MPI)
+#include "implicit.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "mpif.h"
+C
+      DIMENSION DMAT(N2BASX)
+      IF (MYNUM .EQ. MASTER) THEN
+         IPRTYP = 10
+         CALL MPI_BCAST(IPRTYP,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(IPRINT,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+         CALL DFTINTBCAST
+         CALL KSMSYNC(DMAT)
+      END IF
+      RETURN
+#endif
+      END
+C
+#if defined (VAR_MPI)
+      SUBROUTINE DFT_SUSCEP_SLAVE(WORK,LWORK,IPRINT)
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "inforb.h"
+C
+      DIMENSION WORK(LWORK)
+      EXTERNAL DFTBHES1
+C
+      KDMAT  = 1 
+      KSUSDF = KDMAT  +  N2BASX
+      KLAST  = KSUSDF +  9 
+      LWRK   = LWORK  -  KLAST + 1
+      IF (KLAST .GT. LWORK) CALL STOPIT('DFT_SUSCEP_SLAVE',' ',
+     &                                  KLAST,LWORK)
+      CALL DFTINTBCAST
+      CALL KSMSYNC(WORK(KDMAT))
+      CALL DZERO(WORK(KSUSDF),9)
+      CALL DFTINT(WORK(KDMAT),1,0,.TRUE.,WORK(KLAST),LWRK,DFTBHES1,
+     &            WORK(KDMAT),ELE)
+      CALL DFT_SUSCEP_COLLECT(WORK(KSUSDF),WORK(KLAST),LWRK)
+      RETURN
+      END
+#endif
+C
+      SUBROUTINE DFT_SUSCEP_COLLECT(SUSCEP,WORK,LWORK)
+#if defined (VAR_MPI)
+#include "implicit.h"
+#include "mpif.h"
+      DIMENSION SUSCEP(3,3), WORK(LWORK)
+      CALL DCOPY(9,SUSCEP,1,WORK,1)
+      CALL MPI_REDUCE(WORK,SUSCEP,9,MPI_DOUBLE_PRECISION,MPI_SUM,0,
+     &                MPI_COMM_WORLD,IERR)
       RETURN
 #endif
       END
