@@ -34,12 +34,12 @@ C
 #include <single.h>
 C
 C  /* Deck cimain */
-      SUBROUTINE CIMAIN(WORK,LFREE,ICONV)
+      SUBROUTINE CIMAIN(WORK,LWORK,ICONV)
 C
 C 28-Jun-1985 hjaaj
 C
 #include <implicit.h>
-      DIMENSION WORK(LFREE)
+      DIMENSION WORK(LWORK)
 #include <dummy.h>
 C
 C Used from common blocks:
@@ -58,21 +58,21 @@ C
       THRCIX = THRCI
 C
 C
-      KCINDX = 1
-      KCMO   = KCINDX + LCINDX
-      KECI   = KCMO   + NCMOT
-      KICROO = KECI   + NCROOT
-      KW1    = KICROO + NCROOT
-      LW1    = LFREE  - KW1
-      IF (LW1 .LT. 0) CALL ERRWRK('CIMAIN.CICTL',-KW1,LW1)
+      KFREE  = 1
+      LFREE  = LWORK
+      CALL MEMGET('REAL',KCINDX,LCINDX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCMO  ,NCMOT ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KECI  ,NCROOT,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KICROO,NCROOT,WORK,KFREE,LFREE)
 C
       IF (NASHT .GT. 1)
-     *   CALL GETCIX(WORK(KCINDX),LSYM,LSYM,WORK(KW1),LW1,0)
-      CALL READMO(WORK(KCMO),9,WORK(KW1),LW1)
+     *   CALL GETCIX(WORK(KCINDX),LSYM,LSYM,WORK(KFREE),LFREE,0)
+      CALL READMO(WORK(KCMO),9,WORK(KFREE),LFREE)
 C
       CALL CICTL(ICIST,NCROOT,MXCIMA,THRCIX,WORK(KCMO),WORK(KCINDX),
-     *           WORK(KECI),ICONV,WORK(KICROO),WORK(KW1),LW1)
+     *           WORK(KECI),ICONV,WORK(KICROO),WORK(KFREE),LFREE)
 C
+      CALL MEMREL('CIMAIN',WORK,1,1,KFREE,LFREE)
 C
       CALL QEXIT('CIMAIN')
       RETURN
@@ -339,6 +339,8 @@ C
       CALL MOLLAB('STARTVEC',LUIT1,LUERR)
       REWIND LUIT3
       MXCSIM = 2*MAXSIM - 1
+C     reuse space for orthonormalization,
+C     except reserving last NCONF elements for CPREV
       KCPREV = KCVECS + MXCSIM*NCONF
       NCPREV = 0
       DO 490 I = 1,NCSIM,MXCSIM
@@ -406,14 +408,14 @@ C
   340       CONTINUE
             NCIRED = NCIRED + NXSIM
             CALL CIRED(1,NCIRED,WRK(KREDCI),NXSIM,WRK(KCVECS),
-     *                 WRK(KSVECS),DUMMY,DUMMY,WRK(KW3))
+     *                 WRK(KSVECS),DUMMY,DUMMY,WRK(KW3),LW3)
             NCSIM = NCSIM - NXSIM
             IF (NCSIM .GT. 0) GO TO 240
 C        ^----------------------------- END REPEAT
 C
          CALL CIRED(2,NCIRED,WRK(KREDCI),0,WRK(KCVECS),
-     *              DUMMY,WRK(KEVAL),WRK(KEVEC),WRK(KSVECS))
-C        CALL CIRED(ICTL,NCIRED,REDCI,NCNEW,CVECS,SVECS,EVAL,EVEC,WRK)
+     *              DUMMY,WRK(KEVAL),WRK(KEVEC),WRK(KSVECS),LSVECS)
+C        CALL CIRED(ICTL,NCIRED,REDCI,NCNEW,CVECS,SVECS,EVAL,EVEC,WRK,LWRK)
          IF (P6FLAG(10) .OR. P6FLAG(34)) THEN
             WRITE (LUPRI,'(/A,I3)')
      *         ' The reduced CI matrix, iteration',ITCI
@@ -1145,7 +1147,7 @@ C        solution vector plus residual vector
          MWRK1 = NCONF
 C        only residual vector
       END IF
-      MAXRCV = (LFREE-MWRK0) / MWRK1
+      MAXRCV = MIN(NCSIM, (LFREE-MWRK0) / MWRK1)
       IF (IPRERR .GE. 5) THEN
          WRITE (LUERR,'(/,(A,I10))')
      *      ' (CINEX) number of residual vectors',NCSIM,
@@ -1804,7 +1806,7 @@ C
       END
 C  /* Deck cired */
       SUBROUTINE CIRED (ICTL,NREDCI,REDCI,NCNEW,
-     *                  CVECS,SVECS,EVAL,EVEC,WRK)
+     *                  CVECS,SVECS,EVAL,EVEC,WRK,LWRK)
 C
 C Written 25-Jun-1985 by Hans Jorgen Aa. Jensen
 C
@@ -1835,7 +1837,7 @@ C  WRK, real scratch array for BIG and JBIG in JACO, dim: 2*NREDCI
 C
 #include <implicit.h>
       DIMENSION CVECS(*), SVECS(NCONF,*)
-      DIMENSION REDCI(*),EVEC(NREDCI,*),EVAL(*), WRK(*)
+      DIMENSION REDCI(*), EVEC(NREDCI,*),EVAL(*), WRK(LWRK)
 C
 C Used from common blocks:
 C   INFVAR : NCONF
@@ -1897,15 +1899,22 @@ C
 C Diagonalize reduced CI matrix.
 C Copy REDCI to CVECS for diagonalization.
 C
-      KMA = IROW(NREDCI+1)
-      CALL DCOPY(KMA,REDCI,1,CVECS,1)
+      LMA = IROW(NREDCI+1)
+      KFREE = 1
+      LFREE = LWRK
+      CALL MEMGET('REAL',KREDCI,LMA   ,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KBUF  ,NREDCI,WRK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBUF ,NREDCI,WRK,KFREE,LFREE)
+      CALL DCOPY(LMA,REDCI,1,WRK(KREDCI),1)
       CALL DUNIT(EVEC,NREDCI)
-      CALL JACO(CVECS,EVEC,NREDCI,NREDCI,NREDCI,WRK,WRK(1+NREDCI))
-      II = 0
+      CALL JACO(WRK(KREDCI),EVEC,NREDCI,NREDCI,NREDCI,
+     &          WRK(KBUF),WRK(KIBUF))
+      II = KREDCI - 1
       DO 1100 I = 1,NREDCI
          II = II + I
-         EVAL(I) = CVECS(II)
+         EVAL(I) = WRK(II)
  1100 CONTINUE
+      CALL MEMREL('CIRED.JACO',WRK,1,1,KFREE,LFREE)
       CALL ORDER (EVEC,EVAL,NREDCI,NREDCI)
 C
 C *** End of subroutine CIRED
@@ -2407,7 +2416,9 @@ C
 C
 C     Sort first NELMNT elements of VEC
 C
-      DO 120 I = 1,NELMNT
+      WRK(1) = VEC(1)
+      IPLACE(1) = 1
+      DO 120 I = 2,NELMNT
          VECI = VEC(I)
          DO 115 J = 1,(I-1)
          IF (WRK(J) .GT. VECI) THEN
