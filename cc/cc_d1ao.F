@@ -37,7 +37,6 @@ C
 #include <distcl.h>
 #include <cbieri.h>
 #include <eribuf.h>
-#include <cclr.h>
 #include <ccfop.h>
 #include <ccfro.h>
 C
@@ -119,9 +118,9 @@ C
          CALL DZERO(AODEN,N2BST(1))
 C
          ISDEN = 1
-         CALL CC_DENAO(AODEN,WORK(KONEAI),WORK(KONEAB),
-     *                 WORK(KONEIJ),WORK(KONEIA),WORK(KLAMDP),
-     *                 WORK(KLAMDH),WORK(KEND1),LWRK1,ISDEN)
+         CALL CC_DENAO(AODEN,1,WORK(KONEAI),WORK(KONEAB),
+     *                 WORK(KONEIJ),WORK(KONEIA),ISDEN,WORK(KLAMDP),1,
+     *                 WORK(KLAMDH),1,WORK(KEND1),LWRK1)
 C
 C----------------------------------------------------
 C        Add frozen core contributions to AO density.
@@ -198,13 +197,8 @@ C----------------------------------------------
 C        Read zero'th order cluster amplitudes.
 C----------------------------------------------
 C
-         LUTAM = 0
-         CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
-     *               IDUMMY,.FALSE.)
-         REWIND(LUTAM)
-         READ(LUTAM) (WORK(KT1AM + I - 1), I = 1,NT1AMX)
-         READ(LUTAM) (WORK(KT2AM + I - 1), I = 1,NT2AMX)
-         CALL GPCLOSE(LUTAM,'KEEP')
+         IOPT = 3
+         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),WORK(KT2AM))
 C
 C---------------------------------------------------
 C        Zero out single vectors in CCD-calculation.
@@ -290,9 +284,9 @@ C
          CALL DZERO(AODEN,N2BST(1))
 C
          ISDEN = 1
-         CALL CC_DENAO(AODEN,WORK(KONEAI),WORK(KONEAB),
-     *                 WORK(KONEIJ),WORK(KONEIA),WORK(KLAMDP),
-     *                 WORK(KLAMDH),WORK(KEND1),LWRK1,ISDEN)
+         CALL CC_DENAO(AODEN,1,WORK(KONEAI),WORK(KONEAB),
+     *                 WORK(KONEIJ),WORK(KONEIA),ISDEN,WORK(KLAMDP),1,
+     *                 WORK(KLAMDH),1,WORK(KEND1),LWRK1)
 C
          IF (RELORB) THEN
 C
@@ -325,9 +319,9 @@ C
             KOFDIA = KOFDAI + NT1AMX
 C
             ISDEN = 1
-            CALL CC_DENAO(AODEN,ZKAM(KOFDAI),ZKAM(KOFDAB),
-     *                    ZKAM(KOFDIJ),ZKAM(KOFDIA),WORK(KCMO),
-     *                    WORK(KCMO),WORK(KEND1),LWRK1,ISDEN)
+            CALL CC_DENAO(AODEN,1,ZKAM(KOFDAI),ZKAM(KOFDAB),
+     *                    ZKAM(KOFDIJ),ZKAM(KOFDIA),ISDEN,WORK(KCMO),1,
+     *                    WORK(KCMO),1,WORK(KEND1),LWRK1)
 C
 C
 C-------------------------------------------------------
@@ -442,12 +436,17 @@ C
       RETURN
       END
 C  /* Deck cc_denao */
-      SUBROUTINE CC_DENAO(AODEN,DENAI,DENAB,DENIJ,DENIA,XLAMDP,
-     *                    XLAMDH,WORK,LWORK,ISDEN)
+      SUBROUTINE CC_DENAO(AODEN,ISYDAO,DENAI,DENAB,DENIJ,DENIA,ISYDMO,
+     *                    XLAMDP,ISYMLP,XLAMDH,ISYMLH,WORK,LWORK)
 C
 C     Written by Asger Halkier 26/1 - 1996
 C
 C     Version: 1.0
+C
+C     Symmetries:   ISYDAO  --  AODEN
+C                   ISYDMO  --  DENAI,DENAB,DENIJ,DENIA
+C                   ISYMLP  --  XLAMDP
+C                   ISYMLH  --  XLAMDH
 C
 C     Purpose: To transform all four blocks of the Coupled
 C              Cluster one electron density to AO-basis and add
@@ -460,14 +459,20 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
-      DO 100 ISYM1 = 1,NSYM
+      CALL QENTER('CC_DENAO')
 C
-         ISYM2 = MULD2H(ISDEN,ISYM1)
+      DO ISYM1 = 1,NSYM
 C
-         LVIR  = NBAS(ISYM1)*NVIR(ISYM2)
-         LRHF  = NBAS(ISYM1)*NRHF(ISYM2)
+         ISYM2 = MULD2H(ISYDMO,ISYM1)
+         ISYMA = MULD2H(ISYMLP,ISYM1)
+         ISYMB = MULD2H(ISYMLH,ISYM2)
+         IF (ISYDAO.NE.MULD2H(ISYMA,ISYMB)) THEN
+           CALL QUIT('Symmetry mismatch in CC_DENAO')
+         END IF
+C
+         LVIR  = MAX(NBAS(ISYMA)*NVIR(ISYM2),NBAS(ISYMB)*NVIR(ISYM1))
+         LRHF  = MAX(NBAS(ISYMA)*NRHF(ISYM2),NBAS(ISYMB)*NRHF(ISYM2))
          LNEED = MAX(LVIR,LRHF)
 C
          IF (LWORK .LT. LNEED) THEN
@@ -477,109 +482,88 @@ C
 C
          CALL DZERO(WORK,LNEED)
 C
+         NBASA  = MAX(NBAS(ISYMA),1)
+         NBASB  = MAX(NBAS(ISYMB),1)
+         NTOVI1 = MAX(NVIR(ISYM1),1)
+         NTOVI2 = MAX(NVIR(ISYM2),1)
+         NTORH1 = MAX(NRHF(ISYM1),1)
+C
 C-----------------------------------------
 C        Transform virtual-occupied block.
 C-----------------------------------------
 C
-         KOFF1  = ILMVIR(ISYM1) + 1
-         KOFF2  = IT1AM(ISYM1,ISYM2) + 1
+         KOFF1  = IGLMVI(ISYMA,ISYM1) + 1
+         KOFF2  =  IT1AM(ISYM1,ISYM2) + 1
 C
-         NTOBA1 = MAX(NBAS(ISYM1),1)
-         NTOVI1 = MAX(NVIR(ISYM1),1)
+         CALL DGEMM('N','N',NBAS(ISYMA),NRHF(ISYM2),NVIR(ISYM1),
+     *              ONE,XLAMDP(KOFF1),NBASA,DENAI(KOFF2),NTOVI1,
+     *              ZERO,WORK,NBASA)
 C
-         CALL DGEMM('N','N',NBAS(ISYM1),NRHF(ISYM2),NVIR(ISYM1),
-     *              ONE,XLAMDP(KOFF1),NTOBA1,DENAI(KOFF2),NTOVI1,
-     *              ZERO,WORK,NTOBA1)
+         KOFF3  = IGLMRH(ISYMB,ISYM2) + 1
+         KOFF4  = IAODIS(ISYMA,ISYMB) + 1
 C
-         KOFF3  = ILMRHF(ISYM2) + 1
-         KOFF4  = IAODIS(ISYM1,ISYM2) + 1
-C
-         NTOBA1 = MAX(NBAS(ISYM1),1)
-         NTOBA2 = MAX(NBAS(ISYM2),1)
-C
-         CALL DGEMM('N','T',NBAS(ISYM1),NBAS(ISYM2),NRHF(ISYM2),
-     *              ONE,WORK,NTOBA1,XLAMDH(KOFF3),NTOBA2,ONE,
-     *              AODEN(KOFF4),NTOBA1)
-C
-         CALL DZERO(WORK,LNEED)
+         CALL DGEMM('N','T',NBAS(ISYMA),NBAS(ISYMB),NRHF(ISYM2),
+     *              ONE,WORK,NBASA,XLAMDH(KOFF3),NBASB,ONE,
+     *              AODEN(KOFF4),NBASA)
 C
 C----------------------------------------
 C        Transform virtual-virtual block.
 C----------------------------------------
 C
-         KOFF1  = ILMVIR(ISYM1) + 1
+         KOFF1  = IGLMVI(ISYMA,ISYM1) + 1
          KOFF2  = IMATAB(ISYM1,ISYM2) + 1
 C
-         NTOBA1 = MAX(NBAS(ISYM1),1)
-         NTOVI1 = MAX(NVIR(ISYM1),1)
+         CALL DGEMM('N','N',NBAS(ISYMA),NVIR(ISYM2),NVIR(ISYM1),
+     *              ONE,XLAMDP(KOFF1),NBASA,DENAB(KOFF2),NTOVI1,
+     *              ZERO,WORK,NBASA)
 C
-         CALL DGEMM('N','N',NBAS(ISYM1),NVIR(ISYM2),NVIR(ISYM1),
-     *              ONE,XLAMDP(KOFF1),NTOBA1,DENAB(KOFF2),NTOVI1,
-     *              ZERO,WORK,NTOBA1)
+         KOFF3  = IGLMVI(ISYMB,ISYM2) + 1
+         KOFF4  = IAODIS(ISYMA,ISYMB) + 1
 C
-         KOFF3  = ILMVIR(ISYM2) + 1
-         KOFF4  = IAODIS(ISYM1,ISYM2) + 1
-C
-         NTOBA1 = MAX(NBAS(ISYM1),1)
-         NTOBA2 = MAX(NBAS(ISYM2),1)
-C
-         CALL DGEMM('N','T',NBAS(ISYM1),NBAS(ISYM2),NVIR(ISYM2),
-     *              ONE,WORK,NTOBA1,XLAMDH(KOFF3),NTOBA2,ONE,
-     *              AODEN(KOFF4),NTOBA1)
-C
-         CALL DZERO(WORK,LNEED)
+         CALL DGEMM('N','T',NBAS(ISYMA),NBAS(ISYMB),NVIR(ISYM2),
+     *              ONE,WORK,NBASA,XLAMDH(KOFF3),NBASB,ONE,
+     *              AODEN(KOFF4),NBASA)
 C
 C------------------------------------------
 C        Transform occupied-occupied block.
 C------------------------------------------
 C
-         KOFF1  = ILMRHF(ISYM1) + 1
+         KOFF1  = IGLMRH(ISYMA,ISYM1) + 1
          KOFF2  = IMATIJ(ISYM1,ISYM2) + 1
 C
-         NTOBA1 = MAX(NBAS(ISYM1),1)
-         NTORH1 = MAX(NRHF(ISYM1),1)
 C
-         CALL DGEMM('N','N',NBAS(ISYM1),NRHF(ISYM2),NRHF(ISYM1),
-     *              ONE,XLAMDP(KOFF1),NTOBA1,DENIJ(KOFF2),NTORH1,
-     *              ZERO,WORK,NTOBA1)
+         CALL DGEMM('N','N',NBAS(ISYMA),NRHF(ISYM2),NRHF(ISYM1),
+     *              ONE,XLAMDP(KOFF1),NBASA,DENIJ(KOFF2),NTORH1,
+     *              ZERO,WORK,NBASA)
 C
-         KOFF3  = ILMRHF(ISYM2) + 1
-         KOFF4  = IAODIS(ISYM1,ISYM2) + 1
+         KOFF3  = IGLMRH(ISYMB,ISYM2) + 1
+         KOFF4  = IAODIS(ISYMA,ISYMB) + 1
 C
-         NTOBA1 = MAX(NBAS(ISYM1),1)
-         NTOBA2 = MAX(NBAS(ISYM2),1)
-C
-         CALL DGEMM('N','T',NBAS(ISYM1),NBAS(ISYM2),NRHF(ISYM2),
-     *              ONE,WORK,NTOBA1,XLAMDH(KOFF3),NTOBA2,ONE,
-     *              AODEN(KOFF4),NTOBA1)
-C
-         CALL DZERO(WORK,LNEED)
+         CALL DGEMM('N','T',NBAS(ISYMA),NBAS(ISYMB),NRHF(ISYM2),
+     *              ONE,WORK,NBASA,XLAMDH(KOFF3),NBASB,ONE,
+     *              AODEN(KOFF4),NBASA)
 C
 C-------------------------------------------------------------
 C        Transform occupied-virtual block (stored transposed).
 C-------------------------------------------------------------
 C
-         KOFF1  = ILMVIR(ISYM2) + 1
-         KOFF2  = IT1AM(ISYM2,ISYM1) + 1
+         KOFF1  = IGLMVI(ISYMB,ISYM2) + 1
+         KOFF2  =  IT1AM(ISYM2,ISYM1) + 1
 C
-         NTOBA2 = MAX(NBAS(ISYM2),1)
-         NTOVI2 = MAX(NVIR(ISYM2),1)
+         CALL DGEMM('N','N',NBAS(ISYMB),NRHF(ISYM1),NVIR(ISYM2),
+     *              ONE,XLAMDH(KOFF1),NBASB,DENIA(KOFF2),NTOVI2,
+     *              ZERO,WORK,NBASB)
 C
-         CALL DGEMM('N','N',NBAS(ISYM2),NRHF(ISYM1),NVIR(ISYM2),
-     *              ONE,XLAMDH(KOFF1),NTOBA2,DENIA(KOFF2),NTOVI2,
-     *              ZERO,WORK,NTOBA2)
+         KOFF3  = IGLMRH(ISYMA,ISYM1) + 1
+         KOFF4  = IAODIS(ISYMA,ISYMB) + 1
 C
-         KOFF3  = ILMRHF(ISYM1) + 1
-         KOFF4  = IAODIS(ISYM1,ISYM2) + 1
+         CALL DGEMM('N','T',NBAS(ISYMA),NBAS(ISYMB),NRHF(ISYM1),
+     *              ONE,XLAMDP(KOFF3),NBASA,WORK,NBASB,ONE,
+     *              AODEN(KOFF4),NBASA)
 C
-         NTOBA1 = MAX(NBAS(ISYM1),1)
-         NTOBA2 = MAX(NBAS(ISYM2),1)
+      END DO
 C
-         CALL DGEMM('N','T',NBAS(ISYM1),NBAS(ISYM2),NRHF(ISYM1),
-     *              ONE,XLAMDP(KOFF3),NTOBA1,WORK,NTOBA2,ONE,
-     *              AODEN(KOFF4),NTOBA1)
-C
-  100 CONTINUE
+      CALL QEXIT('CC_DENAO')
 C
       RETURN
       END
@@ -599,7 +583,6 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
 C--------------------------
 C     Set up density block.
@@ -641,7 +624,6 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -666,7 +648,7 @@ C
       RETURN
       END
 C  /* Deck dijk01 */
-      SUBROUTINE DIJK01(D2IJK,XLAMDH,IDEL,ISYMD)
+      SUBROUTINE DIJK01(D2IJK,ISYIJK,XLAMDH,ISYMLH,IDEL,ISYMD)
 C
 C     Written by Asger Halkier 29/1 - 1996
 C
@@ -680,11 +662,11 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
-      ISYDEN = ISYMD
-      ISYMK  = ISYMD
-      ISYMIJ = MULD2H(ISYDEN,ISYMK)
+      ISYMK  = MULD2H(ISYMD,ISYMLH)
+      ISYMIJ = MULD2H(ISYIJK,ISYMK)
+C
+      IF (ISYMIJ.NE.1) CALL QUIT('Symmetry mismatch in DIJK01')
 C
 C-----------------------------------------------
 C     Calculate special adresses and add result.
@@ -698,7 +680,7 @@ C
 C
                NIJK = IMAIJK(ISYMIJ,ISYMK) + NMATIJ(ISYMIJ)*(K - 1)
      *              + IMATIJ(ISYMJ,ISYMJ) + NRHF(ISYMJ)*(J - 1) + J
-               NDEL = ILMRHF(ISYMK) + NBAS(ISYMD)*(K - 1)
+               NDEL = IGLMRH(ISYMD,ISYMK) + NBAS(ISYMD)*(K - 1)
      *              + IDEL - IBAS(ISYMD)
 C
                D2IJK(NIJK) = D2IJK(NIJK) + FOUR*XLAMDH(NDEL)
@@ -710,7 +692,7 @@ C
       RETURN
       END
 C  /* Deck dijk02 */
-      SUBROUTINE DIJK02(D2IJK,XLAMDH,IDEL,ISYMD)
+      SUBROUTINE DIJK02(D2IJK,ISYIJK,XLAMDH,ISYMLH,IDEL,ISYMD)
 C
 C     Written by Asger Halkier 29/1 - 1996
 C
@@ -724,10 +706,10 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
-      ISYDEN = ISYMD
-      ISYMI  = ISYMD
+      ISYMI  = MULD2H(ISYMD,ISYMLH)
+C
+      IF (ISYMI.NE.ISYIJK) CALL QUIT('Symmetry mismatch in DIJK02')
 C
 C-----------------------------------------------
 C     Calculate special adresses and add result.
@@ -743,7 +725,7 @@ C
 C
                NIJK = IMAIJK(ISYMIJ,ISYMK) + NMATIJ(ISYMIJ)*(K - 1)
      *              + IMATIJ(ISYMI,ISYMK) + NRHF(ISYMI)*(K - 1) + I
-               NDEL = ILMRHF(ISYMI) + NBAS(ISYMD)*(I - 1)
+               NDEL = IGLMRH(ISYMD,ISYMI) + NBAS(ISYMD)*(I - 1)
      *              + IDEL - IBAS(ISYMD)
 C
                D2IJK(NIJK) = D2IJK(NIJK) - TWO*XLAMDH(NDEL)
@@ -772,12 +754,11 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
       ISYMK  = ISYMG
       ISYMPQ = MULD2H(ISYMG,ISYDEN)
 C
-      KOFFGK = ILMRHF(ISYMK) + G
+      KOFFGK = IGLMRH(ISYMG,ISYMK) + G
 C
 C-------------------------------
 C     Transform (occ,occ) block.
@@ -835,9 +816,8 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
-      ISYINT = MULD2H(ISYMD,ISYMOP)
+      ISYINT = ISYMD
       ISYDEN = ISYMD
       ISYMPQ = MULD2H(ISYMG,ISYDEN)
       ISALBE = ISYMPQ
@@ -900,7 +880,7 @@ C
          CALL DZERO(WORK(KEND2),NBAS(ISYMAL)*NRHF(ISYMJ))
 C
          KOFF2  = KAOINT + IAODIS(ISYMAL,ISYMBE)
-         KOFF3  = ILMRHF(ISYMJ) + 1
+         KOFF3  = IGLMRH(ISYMBE,ISYMJ) + 1
 C
          NTOTAL = MAX(NBAS(ISYMAL),1)
          NTOTBE = MAX(NBAS(ISYMBE),1)
@@ -909,7 +889,7 @@ C
      *              WORK(KOFF2),NTOTAL,XLAMDH(KOFF3),NTOTBE,ZERO,
      *              WORK(KEND2),NTOTAL)
 C
-         KOFF4  = ILMRHF(ISYMI) + 1
+         KOFF4  = IGLMRH(ISYMAL,ISYMI) + 1
          KOFF5  = KINTMO + IMATIJ(ISYMI,ISYMJ)
 C
          NTOTAL = MAX(NBAS(ISYMAL),1)
@@ -946,7 +926,7 @@ C
          CALL DZERO(WORK(KEND2),NBAS(ISYMAL)*NVIR(ISYMB))
 C
          KOFF6  = KAOINT + IAODIS(ISYMAL,ISYMBE)
-         KOFF7  = ILMVIR(ISYMB) + 1
+         KOFF7  = IGLMVI(ISYMBE,ISYMB) + 1
 C
          NTOTAL = MAX(NBAS(ISYMAL),1)
          NTOTBE = MAX(NBAS(ISYMBE),1)
@@ -955,7 +935,7 @@ C
      *              WORK(KOFF6),NTOTAL,XLAMDH(KOFF7),NTOTBE,ZERO,
      *              WORK(KEND2),NTOTAL)
 C
-         KOFF8  = ILMVIR(ISYMA) + 1
+         KOFF8  = IGLMVI(ISYMAL,ISYMA) + 1
          KOFF9  = KINTMO + IMATAB(ISYMA,ISYMB)
 C
          NTOTAL = MAX(NBAS(ISYMAL),1)
@@ -992,7 +972,7 @@ C
          CALL DZERO(WORK(KEND2),NBAS(ISYMAL)*NRHF(ISYMI))
 C
          KOFF10 = KAOINT + IAODIS(ISYMAL,ISYMBE)
-         KOFF11 = ILMRHF(ISYMI) + 1
+         KOFF11 = IGLMRH(ISYMBE,ISYMI) + 1
 C
          NTOTAL = MAX(NBAS(ISYMAL),1)
          NTOTBE = MAX(NBAS(ISYMBE),1)
@@ -1001,7 +981,7 @@ C
      *              WORK(KOFF10),NTOTAL,XLAMDH(KOFF11),NTOTBE,ZERO,
      *              WORK(KEND2),NTOTAL)
 C
-         KOFF12 = ILMVIR(ISYMA) + 1
+         KOFF12 = IGLMVI(ISYMAL,ISYMA) + 1
          KOFF13 = KINTMO + IT1AM(ISYMA,ISYMI)
 C
          NTOTAL = MAX(NBAS(ISYMAL),1)
@@ -1038,7 +1018,7 @@ C
          CALL DZERO(WORK(KEND2),NBAS(ISYMBE)*NRHF(ISYMI))
 C
          KOFF14 = KAOINT + IAODIS(ISYMAL,ISYMBE)
-         KOFF15 = ILMRHF(ISYMI) + 1
+         KOFF15 = IGLMRH(ISYMAL,ISYMI) + 1
 C
          NTOTAL = MAX(NBAS(ISYMAL),1)
          NTOTBE = MAX(NBAS(ISYMBE),1)
@@ -1047,7 +1027,7 @@ C
      *              WORK(KOFF14),NTOTAL,XLAMDP(KOFF15),NTOTAL,ZERO,
      *              WORK(KEND2),NTOTBE)
 C
-         KOFF16 = ILMVIR(ISYMA) + 1
+         KOFF16 = IGLMVI(ISYMBE,ISYMA) + 1
          KOFF17 = KINTMO + IT1AM(ISYMA,ISYMI)
 C
          NTOTBE = MAX(NBAS(ISYMBE),1)
@@ -1065,7 +1045,8 @@ C
       RETURN
       END
 C  /* Deck dijk11 */
-      SUBROUTINE DIJK11(D2IJK,XLAMDH,DIA,WORK,LWORK,IDEL,ISYMD)
+      SUBROUTINE DIJK11(D2IJK,ISYIJK,XLAMDH,ISYMLH,DIA,ISYD1,
+     *                  WORK,LWORK,IDEL,ISYMD)
 C
 C     Written by Asger Halkier 2/2 - 1996
 C
@@ -1080,12 +1061,12 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
-      ISYDEN = ISYMD
-      ISYMA  = ISYMD
-      ISYMK  = ISYMA
-      ISYMIJ = MULD2H(ISYMK,ISYDEN)
+      ISYMA  = MULD2H(ISYMD,ISYMLH)
+      ISYMK  = MULD2H(ISYMA,ISYD1)
+      ISYMIJ = MULD2H(ISYMK,ISYIJK)
+C
+      IF (ISYMK.NE.ISYIJK) CALL QUIT('Symmetry mismatch in DIJK11 (1)')
 C
       IF (LWORK .LT. NRHF(ISYMK)) THEN
          WRITE(LUPRI,*) 'Available:', LWORK, 'NEEDED:', NRHF(ISYMK)
@@ -1099,7 +1080,7 @@ C     Contract D(ia) with lamda hole matrix.
 C-------------------------------------------
 C
       KOFF1 = IT1AM(ISYMA,ISYMK) + 1
-      KOFF2 = ILMVIR(ISYMD) + IDEL - IBAS(ISYMD)
+      KOFF2 = IGLMVI(ISYMD,ISYMA) + IDEL - IBAS(ISYMD)
 C
       NTOTA = MAX(NVIR(ISYMA),1)
 C
@@ -1132,8 +1113,10 @@ C---------------------------------------
 C     Calculate the DIJK12 contribution.
 C---------------------------------------
 C
-      ISYMI  = ISYMA
-      ISYMJK = MULD2H(ISYMI,ISYDEN)
+      ISYMI  = MULD2H(ISYMA,ISYD1)
+      ISYMJK = MULD2H(ISYMI,ISYIJK)
+
+      IF (ISYMI.NE.ISYIJK) CALL QUIT('Symmetry mismatch in DIJK11 (2)')
 C
       DO 130 ISYMK = 1,NSYM
 C
@@ -1158,7 +1141,7 @@ C
       RETURN
       END
 C  /* Deck dijk13 */
-      SUBROUTINE DIJK13(D2IJK,DENAI,T2TIN,ISYMD)
+      SUBROUTINE DIJK13(D2IJK,ISYIJK,DENAI,ISYD1,T2TIN,ISYTIN)
 C
 C     Written by Asger Halkier 2/2 - 1996
 C
@@ -1172,11 +1155,9 @@ C
       DIMENSION D2IJK(*), DENAI(*), T2TIN(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
-      ISYDEN = ISYMD
-      ISYTIN = MULD2H(ISYMD,ISYMOP)
-      ISYMEJ = ISYMTR
+      IF (MULD2H(ISYTIN,ISYD1).NE.ISYIJK)
+     &  CALL QUIT('Symmetry mismatch in DIJK13')
 C
 C----------------------------
 C     Calculate contribution.
@@ -1185,14 +1166,14 @@ C
       DO 100 ISYMK = 1,NSYM
 C
          ISYMEI = MULD2H(ISYMK,ISYTIN)
-         ISYMIJ = MULD2H(ISYMK,ISYDEN)
+         ISYMIJ = MULD2H(ISYMK,ISYIJK)
 C
          DO 110 K = 1,NRHF(ISYMK)
 C
             DO 120 ISYMI = 1,NSYM
 C
                ISYME = MULD2H(ISYMI,ISYMEI)
-               ISYMJ = MULD2H(ISYME,ISYMEJ)
+               ISYMJ = MULD2H(ISYME,ISYD1)
 C
                KOFF1 = IT2BCD(ISYMEI,ISYMK) + NT1AM(ISYMEI)*(K - 1)
      *               + IT1AM(ISYME,ISYMI) + 1
@@ -1214,7 +1195,7 @@ C
       RETURN
       END
 C  /* Deck daij11 */
-      SUBROUTINE DAIJ11(D2AIJ,DAI,XLAMDH,IDEL,ISYMD)
+      SUBROUTINE DAIJ11(D2AIJ,ISYAIJ,DAI,ISYD1,XLAMDH,ISYMLH,IDEL,ISYMD)
 C
 C     Written by Asger Halkier 2/2 - 1996
 C
@@ -1228,10 +1209,12 @@ C
       DIMENSION D2AIJ(*), XLAMDH(*), DAI(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
-      ISYMJ  = ISYMD
-      ISYMAI = ISYMTR
+      ISYMJ  = MULD2H(ISYMD,ISYMLH)
+      ISYMAI = ISYD1
+      IF (MULD2H(ISYMJ,ISYMAI).NE.ISYAIJ) THEN
+        CALL QUIT('Symmetry mismatch in DAIJ11')
+      END IF
 C
 C----------------------------
 C     Calculate contribution.
@@ -1239,7 +1222,8 @@ C----------------------------
 C
       DO 100 J = 1,NRHF(ISYMJ)
 C
-         NDJ = ILMRHF(ISYMJ) + NBAS(ISYMD)*(J - 1) + IDEL - IBAS(ISYMD)
+         NDJ = IGLMRH(ISYMD,ISYMJ) + NBAS(ISYMD)*(J - 1) + 
+     *         IDEL - IBAS(ISYMD)
 C
          FACT = TWO*XLAMDH(NDJ)
 C
@@ -1252,7 +1236,8 @@ C
       RETURN
       END
 C  /* Deck daij12 */
-      SUBROUTINE DAIJ12(D2AIJ,DAI,XLAMDH,WORK,LWORK,IDEL,ISYMD)
+      SUBROUTINE DAIJ12(D2AIJ,ISYAIJ,DAI,ISYD1,XLAMDH,ISYMLH,
+     *                  WORK,LWORK,IDEL,ISYMD)
 C
 C     Written by Asger Halkier 2/2 - 1996
 C
@@ -1267,12 +1252,13 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
-      ISYDEN = ISYMD
-      ISYMK  = ISYMD
-      ISYMA  = ISYMK
-      ISYMIJ = MULD2H(ISYMA,ISYMD)
+      ISYMK  = MULD2H(ISYMD,ISYMLH)
+      ISYMA  = MULD2H(ISYMK,ISYD1)
+C
+      IF (ISYMA.NE.ISYAIJ) THEN
+        CALL QUIT('Symmetry mismatch in DAIJ12')
+      END IF
 C
       IF (LWORK .LT. NVIR(ISYMA)) THEN
          WRITE(LUPRI,*) 'Available:', LWORK, 'NEEDED:', NVIR(ISYMA)
@@ -1286,7 +1272,7 @@ C     Calculate contraction of D(ai) and lamda hole matrix.
 C----------------------------------------------------------
 C
       KOFF1 = IT1AM(ISYMA,ISYMK) + 1
-      KOFF2 = ILMRHF(ISYMK) + IDEl - IBAS(ISYMD)
+      KOFF2 = IGLMRH(ISYMD,ISYMK) + IDEl - IBAS(ISYMD)
 C
       NTOTA = MAX(NVIR(ISYMA),1)
 C
@@ -1316,7 +1302,7 @@ C
       RETURN
       END
 C  /* Deck diaj11 */
-      SUBROUTINE DIAJ11(D2IAJ,DIA,XLAMDH,IDEL,ISYMD)
+      SUBROUTINE DIAJ11(D2IAJ,ISYIAJ,DIA,ISYD1,XLAMDH,ISYMLH,IDEL,ISYMD)
 C
 C     Written by Asger Halkier 4/2 - 1996
 C
@@ -1330,10 +1316,12 @@ C
       DIMENSION D2IAJ(*), XLAMDH(*), DIA(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
-      ISYMJ  = ISYMD
-      ISYMAI = 1
+      ISYMJ  = MULD2H(ISYMD,ISYMLH)
+      ISYMAI = ISYD1
+
+      IF (MULD2H(ISYMJ,ISYMAI).NE.ISYIAJ) 
+     *   CALL QUIT('Symmetry mismatch in DIAJ11. (1)')
 C
 C--------------------------------------
 C     Calculate the first contribution.
@@ -1341,7 +1329,8 @@ C--------------------------------------
 C
       DO 100 J = 1,NRHF(ISYMJ)
 C
-         NDJ = ILMRHF(ISYMJ) + NBAS(ISYMD)*(J - 1) + IDEL - IBAS(ISYMD)
+         NDJ = IGLMRH(ISYMD,ISYMJ) + NBAS(ISYMD)*(J - 1) + 
+     *         IDEL - IBAS(ISYMD)
 C
          FACT = TWO*XLAMDH(NDJ)
 C
@@ -1351,8 +1340,11 @@ C
 C
   100 CONTINUE
 C
-      ISYMI  = ISYMD
-      ISYMAJ = 1
+      ISYMI  = MULD2H(ISYMD,ISYMLH)
+      ISYMAJ = ISYD1
+
+      IF (MULD2H(ISYMI,ISYMAJ).NE.ISYIAJ) 
+     *   CALL QUIT('Symmetry mismatch in DIAJ11. (2)')
 C
 C---------------------------------------
 C     Calculate the second contribution.
@@ -1367,7 +1359,7 @@ C
 C
             DO 130 I = 1,NRHF(ISYMI)
 C
-               NDI = ILMRHF(ISYMI) + NBAS(ISYMD)*(I- 1) + IDEL 
+               NDI = IGLMRH(ISYMD,ISYMI) + NBAS(ISYMD)*(I- 1) + IDEL 
      *             - IBAS(ISYMD)
                NAJ  = IT1AM(ISYMA,ISYMJ) + NVIR(ISYMA)*(J - 1) + 1
                NIAJ = IT2BCD(ISYMAI,ISYMJ) + NT1AM(ISYMAI)*(J - 1)
@@ -1383,7 +1375,7 @@ C
       RETURN
       END
 C  /* Deck dabi11 */
-      SUBROUTINE DABI11(D2ABI,DAI,T2TDEL,ISYMD)
+      SUBROUTINE DABI11(D2ABI,ISYABI,DAI,ISYD1,T2TDEL,ISYMTI)
 C
 C     Written by Asger Halkier 4/2 - 1996
 C
@@ -1397,11 +1389,9 @@ C
       DIMENSION D2ABI(*), DAI(*), T2TDEL(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
-      ISYDEN = ISYMD
-      ISYMAM = ISYMTR
-      ISYBMI = MULD2H(ISYMD,ISYMOP)
+      IF (MULD2H(ISYMTI,ISYD1).NE.ISYABI)
+     &  CALL QUIT('Symmetry in DABI11')
 C
 C----------------------------
 C     Calculate contribution.
@@ -1409,14 +1399,14 @@ C----------------------------
 C
       DO 100 ISYMI = 1,NSYM
 C
-         ISYMBM = MULD2H(ISYMI,ISYBMI)
-         ISYMAB = MULD2H(ISYMI,ISYDEN)
+         ISYMBM = MULD2H(ISYMI,ISYMTI)
+         ISYMAB = MULD2H(ISYMI,ISYABI)
 C
          DO 110 I = 1,NRHF(ISYMI)
 C
             DO 120 ISYMA = 1,NSYM
 C
-               ISYMM = MULD2H(ISYMA,ISYMAM)
+               ISYMM = MULD2H(ISYMA,ISYD1)
                ISYMB = MULD2H(ISYMM,ISYMBM)
 C
                KOFF1 = IT1AM(ISYMA,ISYMM)   + 1
@@ -1453,7 +1443,6 @@ C
       DIMENSION D2AOIJ(*), XLAMDH(*), Z1AO(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
 C--------------------------------------
 C     Calculate the first contribution.
@@ -1463,7 +1452,7 @@ C
 C
          ISYMK = ISYMG
 C
-         NDK = ILMRHF(ISYMK) + IDEL - IBAS(ISYMD)
+         NDK = IGLMRH(ISYMD,ISYMK) + IDEL - IBAS(ISYMD)
          NGK = IGLMRH(ISYMG,ISYMK) + G
 C
          FACT = DDOT(NRHF(ISYMK),Z1AO(NGK),NBAS(ISYMG),XLAMDH(NDK),
@@ -1498,7 +1487,7 @@ C
 C
          DO 130 I = 1,NRHF(ISYMI)
 C
-            NDI = ILMRHF(ISYMI) + NBAS(ISYMD)*(I - 1) + IDEL 
+            NDI = IGLMRH(ISYMD,ISYMI) + NBAS(ISYMD)*(I - 1) + IDEL 
      *          - IBAS(ISYMD)
             NIJ = IMATIJ(ISYMI,ISYMJ) + NRHF(ISYMI)*(J - 1) + I
 C
@@ -1510,7 +1499,8 @@ C
       RETURN
       END
 C  /* Deck diaj13 */
-      SUBROUTINE DIAJ13(D2IAJ,DAI,T2AMT,XLAMDH,WORK,LWORK,IDEL,ISYMD)
+      SUBROUTINE DIAJ13(D2IAJ,ISYIAJ,DAI,ISYD1,T2AMT,XLAMDH,ISYMLH,
+     *                  WORK,LWORK,IDEL,ISYMD)
 C
 C     Written by Asger Halkier 5/2 - 1996
 C
@@ -1525,13 +1515,15 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
-      ISYMK  = ISYMD
-      ISYME  = ISYMK
-      ISYIAJ = ISYMD
+      IF (MULD2H(ISYMLH,ISYMD).NE.MULD2H(ISYIAJ,ISYD1)) THEN
+        CALL QUIT('Symmetry mismatch in DIAJ13.')
+      END IF
+C
+      ISYMK  = MULD2H(ISYMD,ISYMLH)
+      ISYME  = MULD2H(ISYMK,ISYD1)
 C
 C-----------------------------------------
 C     Spaghetti goto's if no contribution.
@@ -1561,7 +1553,7 @@ C     Calculate contraction of zeta1 and xlamdh.
 C-----------------------------------------------
 C
       KOFF1 = IT1AM(ISYME,ISYMK) + 1
-      KOFF2 = ILMRHF(ISYMK) + IDEL - IBAS(ISYMD)
+      KOFF2 = IGLMRH(ISYMD,ISYMK) + IDEL - IBAS(ISYMD)
 C
       NTOTE = MAX(NVIR(ISYME),1)
 C
@@ -1571,7 +1563,7 @@ C
       DO 100 ISYMJ = 1,NSYM
 C
          ISYMAI = MULD2H(ISYMJ,ISYIAJ)
-         ISYMEJ = MULD2H(ISYMAI,ISYMOP)
+         ISYMEJ = ISYMAI
 C
 C----------------------------------
 C        Work space allocation two.
@@ -1639,10 +1631,9 @@ C
       DIMENSION D2AOIA(*), Z1AO(*), T2TIN(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
-      ISYAIM = MULD2H(ISYMD,ISYMOP)
-      ISYMM  = MULD2H(ISYMG,ISYMTR)
+      ISYAIM = ISYMD
+      ISYMM  = ISYMG
       ISYMAI = MULD2H(ISYMM,ISYAIM)
 C
 C----------------------------
@@ -1660,7 +1651,7 @@ C
       RETURN
       END
 C  /* Deck dijk25 */
-      SUBROUTINE DIJK25(D2IJK,XMINT,XLAMDH,IDEL,ISYMD)
+      SUBROUTINE DIJK25(D2IJK,ISYIJK,XMINT,XLAMDH,ISYMLH,IDEL,ISYMD)
 C
 C     Written by Asger Halkier 10/2 - 1996
 C
@@ -1674,17 +1665,16 @@ C
       DIMENSION D2IJK(*), XMINT(*), XLAMDH(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
-      ISYML  = ISYMD
-      ISYIJK = ISYML
+      ISYML  = MULD2H(ISYMD,ISYMLH)
+      IF (ISYIJK.NE.ISYML) CALL QUIT('Symmetry mismatch in DIJK25')
 C
 C--------------------------------
 C     Calculate the contribution.
 C--------------------------------
 C
       KOFF1  = I3ORHF(ISYIJK,ISYMD) + 1
-      KOFF2  = ILMRHF(ISYML) + IDEL - IBAS(ISYMD)
+      KOFF2  = IGLMRH(ISYMD,ISYML) + IDEL - IBAS(ISYMD)
 C
       NTOIJK = MAX(NMAIJK(ISYIJK),1)
 C
@@ -1694,7 +1684,7 @@ C
       RETURN
       END
 C  /* Deck dijk24 */
-      SUBROUTINE DIJK24(D2IJK,XMAT,XLAMDH,IDEL,ISYMD)
+      SUBROUTINE DIJK24(D2IJK,ISYIJK,XMAT,XLAMDH,ISYMLH,IDEL,ISYMD)
 C
 C     Written by Asger Halkier 10/2 - 1996
 C
@@ -1708,10 +1698,11 @@ C
       DIMENSION D2IJK(*), XMAT(*), XLAMDH(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
-      ISYMI  = ISYMD
+      ISYMI  = MULD2H(ISYMD,ISYMLH)
       ISYMKJ = 1
+C
+      IF (ISYMI.NE.ISYIJK) CALL QUIT('Symmetry mismatch in DIJK24')
 C
 C--------------------------------
 C     Calculate the contribution.
@@ -1727,7 +1718,7 @@ C
             DO 120 J = 1,NRHF(ISYMJ)
 C
                NKJ  = IMATIJ(ISYMK,ISYMJ)  + NRHF(ISYMK)*(J - 1) + K
-               NDEI = ILMRHF(ISYMI) + IDEL - IBAS(ISYMD)
+               NDEI = IGLMRH(ISYMD,ISYMI) + IDEL - IBAS(ISYMD)
                NIJK = IMAIJK(ISYMIJ,ISYMK) + NMATIJ(ISYMIJ)*(K - 1)
      *              + IMATIJ(ISYMI,ISYMJ)  + NRHF(ISYMI)*(J - 1) + 1
 C
@@ -1741,7 +1732,7 @@ C
       RETURN
       END
 C  /* Deck dijk23 */
-      SUBROUTINE DIJK23(D2IJK,XMAT,XLAMDH,IDEL,ISYMD)
+      SUBROUTINE DIJK23(D2IJK,ISYIJK,XMAT,XLAMDH,ISYMLH,IDEL,ISYMD)
 C
 C     Written by Asger Halkier 10/2 - 1996
 C
@@ -1755,10 +1746,11 @@ C
       DIMENSION D2IJK(*), XMAT(*), XLAMDH(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
-      ISYMK  = ISYMD
+      ISYMK  = MULD2H(ISYMD,ISYMLH)
       ISYMIJ = 1
+C
+      IF (ISYMK.NE.ISYIJK) CALL QUIT('Symmetry mismatch in DIJK23')
 C
 C--------------------------------
 C     Calculate the contribution.
@@ -1766,7 +1758,7 @@ C--------------------------------
 C
       DO 100 K = 1,NRHF(ISYMK)
 C
-         NDEK = ILMRHF(ISYMK) + NBAS(ISYMD)*(K - 1)
+         NDEK = IGLMRH(ISYMD,ISYMK) + NBAS(ISYMD)*(K - 1)
      *        + IDEL - IBAS(ISYMD)
          NIJK = IMAIJK(ISYMIJ,ISYMK) + NMATIJ(ISYMIJ)*(K - 1) + 1
 C
@@ -1779,7 +1771,8 @@ C
       RETURN
       END
 C  /* Deck dijk21 */
-      SUBROUTINE DIJK21(D2IJK,XMAT,XLAMDH,WORK,LWORK,IDEL,ISYMD)
+      SUBROUTINE DIJK21(D2IJK,ISYIJK,XMAT,XLAMDH,ISYMLH,
+     *                  WORK,LWORK,IDEL,ISYMD)
 C
 C     Written by Asger Halkier 10/2 - 1996
 C
@@ -1794,10 +1787,11 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
-      ISYML  = ISYMD
+      ISYML  = MULD2H(ISYMD,ISYMLH)
       ISYMX1 = ISYML
+C
+      IF (ISYML.NE.ISYIJK) CALL QUIT('Symmetry mismatch in DIJK21')
 C
 C-----------------------------------------------------------------
 C     Calculate contraction of X-intermediate & lamda hole matrix.
@@ -1811,7 +1805,7 @@ C
       CALL DZERO(WORK,NRHF(ISYMX1))
 C
       KOFF1 = IMATIJ(ISYMX1,ISYML) + 1
-      KOFF2 = ILMRHF(ISYML) + IDEL - IBAS(ISYMD)
+      KOFF2 = IGLMRH(ISYMD,ISYML) + IDEL - IBAS(ISYMD)
 C
       NTOTI = MAX(NRHF(ISYMX1),1)
 C
@@ -1868,7 +1862,8 @@ C
       RETURN
       END
 C  /* Deck daij22 */
-      SUBROUTINE DAIJ22(D2AIJ,DAB,XLAMDH,WORK,LWORK,IDEL,ISYMD)
+      SUBROUTINE DAIJ22(D2AIJ,ISYAIJ,DAB,ISYD1,XLAMDH,ISYMLH,
+     *                  WORK,LWORK,IDEL,ISYMD)
 C
 C     Written by Asger Halkier 10/2 - 1996
 C
@@ -1883,11 +1878,12 @@ C
 #include <priunit.h>      
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
-      ISYMB  = ISYMD
-      ISYMA  = ISYMB
+      ISYMB  = MULD2H(ISYMD,ISYMLH)
+      ISYMA  = MULD2H(ISYMB,ISYD1)
       ISYMIJ = 1
+C
+      IF (ISYMA.NE.ISYAIJ) CALL QUIT('Symmetry mismatch in DAIJ22')
 C
 C-----------------------------------------------------------------
 C     Calculate contraction of Y-intermediate & lamda hole matrix.
@@ -1901,7 +1897,7 @@ C
       CALL DZERO(WORK,NVIR(ISYMA))
 C
       KOFF1 = IMATAB(ISYMA,ISYMB) + 1
-      KOFF2 = ILMVIR(ISYMB) + IDEL - IBAS(ISYMB)
+      KOFF2 = IGLMVI(ISYMD,ISYMB) + IDEL - IBAS(ISYMD)
 C
       NTOTA = MAX(NVIR(ISYMA),1)
 C
@@ -1931,7 +1927,7 @@ C
       RETURN
       END
 C  /* Deck dabi21 */
-      SUBROUTINE DABI21(D2ABI,DAB,XLAMDH,IDEL,ISYMD)
+      SUBROUTINE DABI21(D2ABI,ISYABI,DAB,ISYD1,XLAMDH,ISYMLH,IDEL,ISYMD)
 C
 C     Written by Asger Halkier 11/2 - 1996
 C
@@ -1945,10 +1941,12 @@ C
       DIMENSION D2ABI(*), DAB(*), XLAMDH(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
-      ISYMI  = ISYMD
-      ISYMAB = 1
+      ISYMI  = MULD2H(ISYMD,ISYMLH)
+      ISYMAB = ISYD1
+C
+      IF (MULD2H(ISYMI,ISYMAB).NE.ISYABI)
+     *  CALL QUIT('Symmetry mismatch in DABI21')
 C
 C--------------------------------
 C     Calculate the contribution.
@@ -1956,7 +1954,7 @@ C--------------------------------
 C
       DO 100 I = 1,NRHF(ISYMI)
 C
-         NDEI = ILMRHF(ISYMI) + NBAS(ISYMD)*(I - 1) 
+         NDEI = IGLMRH(ISYMD,ISYMI) + NBAS(ISYMD)*(I - 1) 
      *        + IDEL - IBAS(ISYMD)
          NABI = ICKASR(ISYMAB,ISYMI) + NMATAB(ISYMAB)*(I - 1) + 1
 C
@@ -1969,7 +1967,7 @@ C
       RETURN
       END
 C  /* Deck diaj21 */
-      SUBROUTINE DIAJ21(D2IAJ,YMAT,T2TINT,ISYMD)
+      SUBROUTINE DIAJ21(D2IAJ,ISYAIJ,YMAT,T2TINT,ISYMTI)
 C
 C     Written by Asger Halkier 11/2 - 1996
 C
@@ -1983,11 +1981,10 @@ C
       DIMENSION D2IAJ(*), YMAT(*), T2TINT(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
-      ISYEIJ = MULD2H(ISYMOP,ISYMD)
-      ISYAIJ = ISYMD
       ISYMAE = 1
+C
+      IF (ISYMTI.NE.ISYAIJ) CALL QUIT('Symmetry mismatch in DIAJ21.')
 C
 C--------------------------------
 C     Calculate the contribution.
@@ -1995,7 +1992,7 @@ C--------------------------------
 C
       DO 100 ISYMJ = 1,NSYM
 C
-         ISYMEI = MULD2H(ISYMJ,ISYEIJ)
+         ISYMEI = MULD2H(ISYMJ,ISYMTI)
          ISYMAI = MULD2H(ISYMJ,ISYAIJ)
 C
          DO 110 J = 1,NRHF(ISYMJ)
@@ -2025,7 +2022,7 @@ C
       RETURN
       END
 C  /* Deck diaj22 */
-      SUBROUTINE DIAJ22(D2IAJ,XMAT,T2TINT,ISYMD)
+      SUBROUTINE DIAJ22(D2IAJ,ISYAIJ,XMAT,T2TINT,ISYMTI)
 C
 C     Written by Asger Halkier 11/2 - 1996
 C
@@ -2039,11 +2036,8 @@ C
       DIMENSION D2IAJ(*), XMAT(*), T2TINT(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
-      ISYAMJ = MULD2H(ISYMOP,ISYMD)
-      ISYAIJ = ISYMD
-      ISYMIM = 1
+      IF (ISYAIJ.NE.ISYMTI) CALL QUIT('Symmetry mismatch in DIAJ22.')
 C
 C--------------------------------
 C     Calculate the contribution.
@@ -2051,7 +2045,7 @@ C--------------------------------
 C
       DO 100 ISYMJ = 1,NSYM
 C
-         ISYMAM = MULD2H(ISYMJ,ISYAMJ)
+         ISYMAM = MULD2H(ISYMJ,ISYMTI)
          ISYMAI = MULD2H(ISYMJ,ISYAIJ)
 C
          DO 110 J = 1,NRHF(ISYMJ)
@@ -2081,7 +2075,7 @@ C
       RETURN
       END
 C  /* Deck diaj23 */
-      SUBROUTINE DIAJ23(D2IAJ,XMAT,T2TINT,ISYMD)
+      SUBROUTINE DIAJ23(D2IAJ,ISYAIJ,XMAT,T2TINT,ISYMTI)
 C
 C     Written by Asger Halkier 11/2 - 1996
 C
@@ -2095,11 +2089,10 @@ C
       DIMENSION D2IAJ(*), XMAT(*), T2TINT(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
-      ISYAIM = MULD2H(ISYMOP,ISYMD)
-      ISYAIJ = ISYMD
       ISYMJM = 1
+C
+      IF (ISYMTI.NE.ISYAIJ) CALL QUIT('Symmetry mismatch in DIAJ23')
 C
 C--------------------------------
 C     Calculate the contribution.
@@ -2107,7 +2100,7 @@ C--------------------------------
 C
       DO 100 ISYMAI = 1,NSYM
 C
-         ISYMM = MULD2H(ISYMAI,ISYAIM)
+         ISYMM = MULD2H(ISYMAI,ISYMTI)
          ISYMJ = MULD2H(ISYMAI,ISYAIJ)
 C
          KOFF1 = IT2BCD(ISYMAI,ISYMM) + 1
@@ -2126,7 +2119,8 @@ C
       RETURN
       END
 C  /* Deck diaj24 */
-      SUBROUTINE DIAJ24(D2IAJ,T2AMT,DAB,XLAMDH,WORK,LWORK,IDEL,ISYMD)
+      SUBROUTINE DIAJ24(D2IAJ,ISYIAJ,T2AMT,DAB,ISYD1,XLAMDH,ISYMLH,
+     *                  WORK,LWORK,IDEL,ISYMD)
 C
 C     Written by Asger Halkier 13/2 - 1996
 C
@@ -2141,13 +2135,15 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
-      ISYMB  = ISYMD
-      ISYMC  = ISYMB
-      ISYIAJ = ISYMD
+      ISYMB  = MULD2H(ISYMD,ISYMLH)
+      ISYMC  = MULD2H(ISYMB,ISYD1)
+C
+      IF (MULD2H(ISYMLH,ISYMD).NE.MULD2H(ISYD1,ISYIAJ)) THEN
+        CALL QUIT('Symmetry mismatch in DIAJ24.')
+      END IF
 C
       IF (NVIR(ISYMB) .EQ. 0) RETURN 
 C
@@ -2171,7 +2167,7 @@ C     Calculate contraction of transposed Y-matrix (DAB) and XLAMDH.
 C-------------------------------------------------------------------
 C
       KOFF1 = IMATAB(ISYMC,ISYMB) + 1
-      KOFF2 = ILMVIR(ISYMB) + IDEL - IBAS(ISYMD)
+      KOFF2 = IGLMVI(ISYMD,ISYMB) + IDEL - IBAS(ISYMD)
 C
       NTOTC = MAX(NVIR(ISYMC),1)
 C
@@ -2185,7 +2181,7 @@ C
       DO 100 ISYMJ = 1,NSYM
 C
          ISYMAI = MULD2H(ISYMJ,ISYIAJ)
-         ISYMCJ = MULD2H(ISYMAI,ISYMOP)
+         ISYMCJ = ISYMAI
 C
          DO 110 J = 1,NRHF(ISYMJ)
 C
@@ -2225,7 +2221,6 @@ C
       DIMENSION DFOCK(*), DAI(*), DAB(*), DIJ(*), DIA(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
       DO 100 ISYM = 1,NSYM
 C
@@ -2305,7 +2300,6 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
 C----------------------------------------------
 C     Add contributions to the (occ,vir) block.
@@ -2439,7 +2433,6 @@ C
       DIMENSION XARR(*), YARR(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
 C----------------------
 C     Do the resorting.
@@ -2485,7 +2478,6 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
-#include <cclr.h>
 C
       SUMRHF = ZERO
       SUMALL = ZERO
@@ -2663,16 +2655,13 @@ C
 #include <distcl.h>
 #include <cbieri.h>
 #include <eribuf.h>
-#include <cclr.h>
 #include <ccfop.h>
 #include <ccfro.h>
 C
       LOGICAL LOCDBG
+      PARAMETER ( LOCDBG=.FALSE. )
 C
       CALL QENTER('CC2_D1AO')
-C
-      LOCDBG=.FALSE.
-      CALL FLSHFO(LUPRI)
 C
 C------------------------------------------------------------------
 C     Both t-vectors and tbar-vectors (zeta) are totally symmetric.
@@ -2705,16 +2694,8 @@ C----------------------------------------
 C     Read zero'th order zeta amplitudes.
 C----------------------------------------
 C
-C
-      IF (LULAM .LE. 0) THEN
-         CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ','UNFORMATTED',
-     *               IDUMMY,.FALSE.)
-      ENDIF
-      REWIND(LULAM)
-      READ(LULAM) NVEDUM, MODDUM
-      READ(LULAM) (WORK(KZ1AM + I - 1), I = 1,NT1AMX)
-      READ(LULAM) (WORK(KZ2AM + I - 1), I = 1,NT2AMX)
-      CALL GPCLOSE(LULAM,'KEEP')
+      IOPT   = 3
+      CALL CC_RDRSP('L0',0,1,IOPT,MODEL,WORK(KZ1AM),WORK(KZ2AM))
 C
 C--------------------------------
 C     Square up zeta2 amplitudes.
@@ -2728,13 +2709,8 @@ C-------------------------------------------
 C     Read zero'th order cluster amplitudes.
 C-------------------------------------------
 C
-      LUTAM = 0
-      CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
-     *            IDUMMY,.FALSE.)
-      REWIND(LUTAM)
-      READ(LUTAM) (WORK(KT1AM + I - 1), I = 1,NT1AMX)
-      READ(LUTAM) (WORK(KT2AM + I - 1), I = 1,NT2AMX)
-      CALL GPCLOSE(LUTAM,'KEEP')
+      IOPT = 3
+      CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),WORK(KT2AM))
 C
 C----------------------------------
 C     Calculate the lamda matrices.
@@ -2813,9 +2789,9 @@ C
       CALL DZERO(AODEN,N2BST(1))
 C
       ISDEN = 1
-      CALL CC_DENAO(AODEN,WORK(KONEAI),WORK(KONEAB),
-     *              WORK(KONEIJ),WORK(KONEIA),WORK(KLAMDP),
-     *              WORK(KLAMDH),WORK(KEND1),LWRK1,ISDEN)
+      CALL CC_DENAO(AODEN,1,WORK(KONEAI),WORK(KONEAB),
+     *              WORK(KONEIJ),WORK(KONEIA),ISDEN,WORK(KLAMDP),1,
+     *              WORK(KLAMDH),1,WORK(KEND1),LWRK1)
 C
 C----------------------------------------------------------
 C     Read MO-coefficients from interface file and reorder.
@@ -2843,9 +2819,9 @@ C
       KOFDIA = KOFDAI + NT1AMX
 C
       ISDEN = 1
-      CALL CC_DENAO(AODEN,ZKAM(KOFDAI),ZKAM(KOFDAB),
-     *              ZKAM(KOFDIJ),ZKAM(KOFDIA),WORK(KCMO),
-     *              WORK(KCMO),WORK(KEND1),LWRK1,ISDEN)
+      CALL CC_DENAO(AODEN,1,ZKAM(KOFDAI),ZKAM(KOFDAB),
+     *              ZKAM(KOFDIJ),ZKAM(KOFDIA),ISDEN,WORK(KCMO),1,
+     *              WORK(KCMO),1,WORK(KEND1),LWRK1,ISDEN)
 C
       CALL QEXIT('CC2_D1AO')
       RETURN

@@ -2937,6 +2937,7 @@ C
       INTEGER KTINT, KTJNT, KPINT, KQINT, KLAMDH, KLAMDP, KT1AM, KYIM
      
 
+      CALL QENTER('CC_PQI2')
 *----------------------------------------------------------------------
 * set symmetries and allocate work space:
 *----------------------------------------------------------------------
@@ -3004,7 +3005,7 @@ C
 C       calculate delta batch of backtransformed amplitudes:
 C
         DTIME = SECOND()
-        CALL CC_TI(WORK(KTINT),T2AM,ISYTAMP,WORK(KLAMDH),
+        CALL CC_TI(WORK(KTINT),ISYTIN,T2AM,ISYTAMP,WORK(KLAMDH),1,
      &             WORK(KEND2),LWRK2,IDEL,ISYMD)
         TIMTI = TIMTI + SECOND() - DTIME
 C
@@ -3126,7 +3127,7 @@ C
 C       calculate delta batch of backtransformed amplitudes:
 C
         DTIME = SECOND()
-        CALL CC_TI(WORK(KTINT),T2AM,ISYTAMP,WORK(KLAMDH),
+        CALL CC_TI(WORK(KTINT),ISYTIN,T2AM,ISYTAMP,WORK(KLAMDH),1,
      &             WORK(KEND2),LWRK2,IDEL,ISYMD)
         TIMTI = TIMTI + SECOND() - DTIME
 C
@@ -3213,6 +3214,7 @@ C
 
    1  FORMAT(1x,'Time used for',2x,A18,2x,': ',f10.2,' seconds')
  
+      CALL QEXIT('CC_PQI2')
       RETURN
       END
 *======================================================================
@@ -3230,6 +3232,8 @@ C
       DIMENSION XLAMDH(*), XLAMDP(*), T1AM(*), CMOH(*), CMOP(*)
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      CALL QENTER('LAMDA2')
 C
       IF (ISYMX.NE.MULD2H(ISYCMO,ISYTAM)) THEN
          CALL QUIT('Symmetry mismatch in LAMDA2.')
@@ -3270,6 +3274,7 @@ C
 C
       END DO
 C
+      CALL QEXIT('LAMDA2')
       RETURN
       END
 C  /* Deck cmo_reorder2 */

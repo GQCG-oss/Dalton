@@ -119,14 +119,8 @@ C----------------------------------------
 C     Read zero'th order zeta amplitudes.
 C----------------------------------------
 C
-         LULAM = -645
-         CALL GPOPEN(LULAM,'CCSAV_LAM','OLD',' ','UNFORMATTED',
-     *               IDUMMY,.FALSE.)
-         REWIND(LULAM)
-         READ(LULAM) NVEDUM, MODDUM
-         READ(LULAM) (WORK(KZ1AM + I - 1), I = 1,NT1AMX)
-         READ(LULAM) (WORK(KZ2AM + I - 1), I = 1,NT2AMX)
-         CALL GPCLOSE(LULAM,'KEEP')
+         IOPT   = 3
+         CALL CC_RDRSP('L0',0,1,IOPT,MODEL,WORK(KZ1AM),WORK(KZ2AM))
 C
 C--------------------------------
 C     Square up zeta2 amplitudes.
@@ -139,13 +133,8 @@ C-------------------------------------------
 C     Read zero'th order cluster amplitudes.
 C-------------------------------------------
 C
-         LUTAM = 0
-         CALL GPOPEN(LUTAM,'CCSD_TAM','OLD',' ','UNFORMATTED',
-     *               IDUMMY,.FALSE.)
-         REWIND(LUTAM)
-         READ(LUTAM) (WORK(KT1AM + I - 1), I = 1,NT1AMX)
-         READ(LUTAM) (WORK(KT2AM + I - 1), I = 1,NT2AMX)
-         CALL GPCLOSE(LUTAM,'KEEP')
+         IOPT = 3
+         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),WORK(KT2AM))
 C
 C------------------------------------------------
 C     Zero out single vectors in CCD-calculation.
@@ -301,9 +290,9 @@ C
 C
          ISDEN = 1
          CALL DZERO(WORK(KKABAO),N2BST(1))
-         CALL CC_DENAO(WORK(KKABAO),WORK(KOFDAI),WORK(KOFDAB),
-     *                 WORK(KOFDIJ),WORK(KOFDIA),WORK(KCMO),
-     *                 WORK(KCMO),WORK(KEND1),LWRK1,ISDEN)
+         CALL CC_DENAO(WORK(KKABAO),ISDEN,WORK(KOFDAI),WORK(KOFDAB),
+     *                 WORK(KOFDIJ),WORK(KOFDIA),ISDEN,WORK(KCMO),1,
+     *                 WORK(KCMO),1,WORK(KEND1),LWRK1)
 C
          CALL CCS_D1AO(WORK(KDHFAO),WORK(KEND1),LWRK1)
          IF (FROIMP .OR. FROEXP) THEN
@@ -348,9 +337,9 @@ C     We thus have the entire effective one-electron density.
 C------------------------------------------------------------
 C
          ISDEN = 1
-         CALL CC_DENAO(WORK(KAODEN),WORK(KONEAI),WORK(KONEAB),
-     *                 WORK(KONEIJ),WORK(KONEIA),WORK(KLAMDP),
-     *                 WORK(KLAMDH),WORK(KEND1),LWRK1,ISDEN)
+         CALL CC_DENAO(WORK(KAODEN),ISDEN,WORK(KONEAI),WORK(KONEAB),
+     *                 WORK(KONEIJ),WORK(KONEIA),ISDEN,WORK(KLAMDP),1,
+     *                 WORK(KLAMDH),1,WORK(KEND1),LWRK1)
 C
 C--------------------------------------------------------
 C     Calculate M-intermediate of zeta- and t-amplitudes.
@@ -457,9 +446,9 @@ C
          CALL DZERO(WORK(KAODEN),N2BST(1))
 C
          ISDEN = 1
-         CALL CC_DENAO(WORK(KAODEN),WORK(KONEAI),WORK(KONEAB),
-     *                 WORK(KONEIJ),WORK(KONEIA),WORK(KLAMDP),
-     *                 WORK(KLAMDH),WORK(KEND1),LWRK1,ISDEN)
+         CALL CC_DENAO(WORK(KAODEN),ISDEN,WORK(KONEAI),WORK(KONEAB),
+     *                 WORK(KONEIJ),WORK(KONEIA),ISDEN,WORK(KLAMDP),1,
+     *                 WORK(KLAMDH),1,WORK(KEND1),LWRK1)
 C
 C--------------------------------------------------------------
 C     Calculate ao-transformed zeta-kappa-bar-0 and HF density.
@@ -472,9 +461,9 @@ C
 C
          ISDEN = 1
          CALL DZERO(WORK(KKABAO),N2BST(1))
-         CALL CC_DENAO(WORK(KKABAO),WORK(KOFDAI),WORK(KOFDAB),
-     *                 WORK(KOFDIJ),WORK(KOFDIA),WORK(KLAMDP),
-     *                 WORK(KLAMDH),WORK(KEND1),LWRK1,ISDEN)
+         CALL CC_DENAO(WORK(KKABAO),ISDEN,WORK(KOFDAI),WORK(KOFDAB),
+     *                 WORK(KOFDIJ),WORK(KOFDIA),ISDEN,WORK(KLAMDP),1,
+     *                 WORK(KLAMDH),1,WORK(KEND1),LWRK1)
 C
          CALL CCS_D1AO(WORK(KDHFAO),WORK(KEND1),LWRK1)
          IF (FROIMP .OR. FROEXP) THEN
@@ -533,24 +522,15 @@ C----------------------------------------
 C     Read zero'th order zeta amplitudes.
 C----------------------------------------
 C
-         CALL GPOPEN(LULAM,'CCSAV_LAM','OLD',' ','UNFORMATTED',
-     *               IDUMMY,.FALSE.)
-         REWIND(LULAM)
-         READ(LULAM) NVEDUM, MODDUM
-         READ(LULAM) (WORK(KSKOD + I - 1), I = 1,NT1AMX)
-         READ(LULAM) (WORK(KZ2AM + I - 1), I = 1,NT2AMX)
-         CALL GPCLOSE(LULAM,'KEEP')
+         IOPT   = 3
+         CALL CC_RDRSP('L0',0,1,IOPT,MODEL,WORK(KSKOD),WORK(KZ2AM))
 C
 C-------------------------------------------
 C     Read zero'th order cluster amplitudes.
 C-------------------------------------------
 C
-         CALL GPOPEN(LUTAM,'CCSD_TAM','OLD',' ','UNFORMATTED',
-     *               IDUMMY,.FALSE.)
-         REWIND(LUTAM)
-         READ(LUTAM) (WORK(KSKOD + I - 1), I = 1,NT1AMX)
-         READ(LUTAM) (WORK(KT2AM + I - 1), I = 1,NT2AMX)
-         CALL GPCLOSE(LUTAM,'KEEP')
+         IOPT = 3
+         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KSKOD),WORK(KT2AM))
 C
 C-----------------------------------------------------------------------
 C        Set up special modified amplitudes needed in the integral loop.
@@ -766,8 +746,8 @@ C
      *                      WORK(KD2ABG),WORK(KZ2AM),WORK(KT2AM),
      *                      WORK(KT2AMT),WORK(KMINT),WORK(KXMAT),
      *                      WORK(KYMAT),WORK(KONEAB),WORK(KONEAI),
-     *                      WORK(KONEIA),WORK(KMIRES),WORK(KLAMDH),
-     *                      WORK(KLAMDP),WORK(KEND2),LWRK2,IDEL,
+     *                      WORK(KONEIA),WORK(KMIRES),WORK(KLAMDH),1,
+     *                      WORK(KLAMDP),1,WORK(KEND2),LWRK2,IDEL,
      *                      ISYMD)
             ELSE IF (MP2) THEN
                CALL CCS_DEN2(WORK(KD2IJG),WORK(KCMO),WORK(KEND2),
@@ -833,8 +813,8 @@ C
                      LWRK3  = LWORK  - KEND3
 C
                      IF (LWRK3 .LT. 0) THEN
-                        WRITE(LUPRI,*) 'Available:', LWORK
-                        WRITE(LUPRI,*) 'Needed:', KEND3
+                        WRITE(LURPI,*) 'Available:', LWORK
+                        WRITE(LURPI,*) 'Needed:', KEND3
                         CALL QUIT( 
      *                    'Insufficient work space in CC_GRAD2E')
                      ENDIF
@@ -886,11 +866,11 @@ C---------------------------------------------------------
 C
                   AUTIM1 = SECOND()
                   IF (CCSD) THEN
-                     CALL CC_DENAO(WORK(KAODEN),WORK(KD2GAI),
-     *                             WORK(KD2GAB),
-     *                             WORK(KD2GIJ),WORK(KD2GIA),
-     *                             WORK(KLAMDP),WORK(KLAMDH),
-     *                             WORK(KEND4),LWRK4,ISYMPQ)
+                     CALL CC_DENAO(WORK(KAODEN),ISYMPQ,
+     *                             WORK(KD2GAI),WORK(KD2GAB),
+     *                             WORK(KD2GIJ),WORK(KD2GIA),ISYMPQ,
+     *                             WORK(KLAMDP),1,WORK(KLAMDH),1,
+     *                             WORK(KEND4),LWRK4)
                   ELSE
                      CALL CCMP_DAO(WORK(KAODEN),WORK(KD2GIJ),
      *                             WORK(KD2GIA),WORK(KCMO),
@@ -1171,5 +1151,4 @@ C
       CALL QEXIT('CC_GRAD2E')
       RETURN
   165 CALL QUIT('Error reading CCTWODEN')
-      RETURN
       END

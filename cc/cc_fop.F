@@ -61,17 +61,17 @@ C
 #include <ccinftap.h>
 #include <ccslvinf.h>
 C
-      LOGICAL LINQCC,CC1BSV,CC1ASV,FASAVE,CICLC,HFCLC, DAR2SA,
-     *        TRPCLC,OOTV, EXCLC, RLORBS, LPROJECT, EX, TRIPLET
+      LOGICAL CC1BSV,CC1ASV,FASAVE,CICLC,HFCLC, DAR2SA,
+     *        TRPCLC,OOTV, EXCLC, RLORBS, LPROJECT, EX, TRIPLET,
+     *        LDUM
       DIMENSION WORK(LWORK), ELSEMO(3,3), SKODE(3,3), SKODN(3,3)
-      CHARACTER*8 FC1AM,FC2AM,FRHO1,FRHO2
-      CHARACTER*1 LR
-      PARAMETER (FC1AM='CCR_C1AM',FC2AM='CCR_C2AM')
-      PARAMETER (FRHO1='CCR_RHO1',FRHO2='CCR_RHO2')
-      CHARACTER MODEL*10,FILEX*10,ETY1*5
+      CHARACTER*1 LR, CDUM
+      CHARACTER MODEL*10,ETY1*5
       CHARACTER MODELPRI*4, MODELPRI2*14
       CHARACTER*8 LABEL
       CHARACTER*3 LIST
+C
+      INTEGER ISYOF(8)
 C
 #include <leinf.h>
 C
@@ -80,12 +80,6 @@ C
 C------------------------------------
 C     Header of Property calculation.
 C------------------------------------
-C
-C     CALL TIMER('START ',TIMEIN,TIMOUT)
-      LUFC1 = 0
-      LUFC2 = 0
-      LUFR1 = 0
-      LUFR2 = 0
 C
       WRITE (LUPRI,'(1X,A,/)') '  '
       WRITE (LUPRI,'(1X,A)')
@@ -117,11 +111,6 @@ C
          CALL AROUND('Coupled Cluster model is: CC2')
          MODEL = 'CC2'
          MODELPRI = ' CC2'
-      ENDIF
-      IF (MCC2) THEN
-         CALL AROUND('Coupled Cluster model is: MCC2')
-         MODEL = 'MCC2'
-         MODELPRI = 'MCC2'
       ENDIF
       IF (MP2) THEN
          CALL AROUND('Model is second order pert. theory: MP2 ')
@@ -165,7 +154,6 @@ C
          MODELPRI = 'CCSD'
       ENDIF
 C
-      NSIDIN = NSIDE
       IF (MP2) RLORBS = .TRUE.
       IF (CC2) RLORBS = .FALSE.
       IF (RELORB .AND. CC2) THEN
@@ -191,21 +179,7 @@ C     Initialize Variables.
 C-----------------------------
 C
       ISYMTR = ISYMOP
-      NCCVAR = NT1AM(ISYMTR) + NT2AM(ISYMTR)
-      IF ( CCS) NCCVAR = NT1AM(ISYMTR)
-      TRIPLET = .FALSE.
-      CALL CCLR_LEINFI(TRIPLET)
-      THRLE = THRLEQ
-      LINQCC = .TRUE.
-      NLOAD  = 1
-      ISIDE  = -1
-      IF (NCCVAR .LE. 0) THEN
-         WRITE(LUPRI,*) 'There is no amplitudes of this symmetry'
-         CALL QUIT('There is no amplitudes of this symmetry')
-      ENDIF
-      NSIM  = 1
       LIST  = 'L0 '
-      IRST  = 1
 C
 C----------------------------------------------------------------
 C     In case of CCS calculation, no equations need to be solved,
@@ -237,139 +211,79 @@ C
 C
          CALL MP_LAM(WORK(KMP2LA),WORK(KWRK1),LWRK1)
 C
-      ELSE
-C
-C------------------------------
-C     Allocation of work space.
-C------------------------------
-C
-         KIPLAC = 1
-         KREDH  = KIPLAC + MAXRED
-         KREDGD = KREDH  + MAXRED*MAXRED
-         KEIVAL = KREDGD + MAXRED
-         KSOLEQ = KEIVAL + MAXRED
-         KWRK1  = KSOLEQ + MAXRED*MAXRED
-         LWRK1  = LWORK  - KWRK1
-C
-         IF (LWRK1.LT. 0 )
-     *      CALL QUIT(' TOO LITTLE WORKSPACE IN CC_RSPSOL')
-C
-C-------------------------
-C        Zero frequencies.
-C-------------------------
-C
-         CALL DZERO(WORK(KEIVAL),MAXRED)
-C
-C-------------------
-C        Open files.
-C-------------------
-C
-         CALL CC_FILOP(FRHO1,LUFR1,FRHO2,LUFR2,
-     *                 FC1AM,LUFC1,FC2AM,LUFC2)
-C
-C-----------------------------
-C        Create start vectors.
-C-----------------------------
-C
-         TRIPLET  = .FALSE.
-         LPROJECT = .FALSE.
-         CALL CCEQ_STR(FC1AM,LUFC1,FC2AM,LUFC2,
-     *                 LPROJECT, ISTATPRJ,
-     *                 TRIPLET,ISIDE,IRST,NSIM,NUPVEC,
-     *                 NREDH,WORK(KEIVAL),WORK(KIPLAC),
-     *                 WORK(KWRK1),LWRK1,LIST)
-C
-C------------------------------------------
-C        Solve equations by call to solver.
-C------------------------------------------
-C
-         CALL CCEQ_SOL(FRHO1,LUFR1,FRHO2,LUFR2,
-     *                 FC1AM,LUFC1,FC2AM,LUFC2,LIST,
-     *                 LPROJECT, ISTATPRJ,
-     *                 LINQCC,TRIPLET,ISIDE,IRST,NSIM,NUPVEC,
-     *                 NREDH,WORK(KREDH),WORK(KEIVAL),
-     *                 WORK(KSOLEQ),WORK(KWRK1),LWRK1)
-C
-      ENDIF
-C
-C-------------------------------------
-C        Analysis of solution vectors.
-C-------------------------------------
-C
-      FILEX  = 'CCSAV_LAM'
-      LULAM = -912
-      CALL GPOPEN(LULAM,FILEX,'UNKNOWN',' ',
-     *     'UNFORMATTED',IDUMMY,.FALSE.)
-      WRITE(LULAM) NSIM,MODEL
-C
-      IF (MP2) THEN
          KWRK2 = KMP2LA
          LWRK2 = LWRK1
-      ELSE
-         KWRK2 = KWRK1 + LETOT
-         LWRK2 = LWORK - KWRK2
-      ENDIF
 C
-      THRESH = 0.05
-      MAXLIN = 100
-      NSIMUL = MIN(NSIM,LWRK2/LETOT )
-      NBATCH = (NSIM-1)/NSIMUL + 1
-      IOFF1  = 1
-      ICOUNT = 0
 C
-      DO 500 I = 1,NBATCH
-         IOFF2 = MIN(NSIMUL,NSIM - (I-1)*NSIMUL)
-         IF (.NOT. MP2) THEN
-            CALL CCCONV(LUFC1,FC1AM,LUFC2,FC2AM,TRIPLET,NREDH,
-     *                  IOFF1,IOFF2,WORK(KSOLEQ),
-     *                  WORK(KWRK2),WORK(KWRK1))
-         ENDIF
-C
-         IF ( IPRINT .GT. 10 ) THEN
+         IF ( IPRINT .GT. 10 .OR. DEBUG) THEN
             RHO1N = DDOT(NT1AM(ISYMTR),WORK(KWRK2),1,WORK(KWRK2),1)
             RHO2N = DDOT(NT2AM(ISYMTR),WORK(KWRK2+NT1AMX),1,
      *                   WORK(KWRK2+NT1AMX),1)
-            WRITE(LUPRI,*) 'Norm of Lambda vector :',RHO1N
-            WRITE(LUPRI,*) 'Norm of Lambda vector :',RHO2N
+            WRITE(LUPRI,*) 'Norm of singles Lambda vector :',RHO1N
+            WRITE(LUPRI,*) 'Norm of doubles Lambda vector :',RHO2N
          ENDIF
 C
          IF ( IPRINT .GT. 30 ) THEN
             CALL AROUND('CCLR_FOP: Lambda vector in mo basis' )
-            CALL OUTPUT(WORK(KWRK2),1,LETOT,1,NSIM,
-     *                  LETOT,NSIM,1,LUPRI)
+            CALL OUTPUT(WORK(KWRK2),1,NT1AMX+NT2AMX,1,1,
+     *                                NT1AMX+NT2AMX,1,1,LUPRI)
          ENDIF
 C
-         DO 510 J = 1,IOFF2
-            ICOUNT = ICOUNT + 1
-            DDUMMY  = 0.0D0
-            WRITE(LUPRI,'(//1X,A)')
-     *'Analysis of the undifferentiated Lagrangian multipliers: '
-         WRITE(LUPRI,'(1X,A)')
-     *'--------------------------------------------------------'
-            CALL CC_PRAM(WORK(KWRK2 + (ICOUNT-1)*LETOT),
-     *                   DDUMMY,ISYMTR)
+         IF (IPRINT.GT.1) THEN
+           DDUMMY  = 0.0D0
+           WRITE(LUPRI,'(//1X,A)')
+     *       'Analysis of the undifferentiated Lagrangian multipliers:'
+           WRITE(LUPRI,'(1X,A)')
+     *       '--------------------------------------------------------'
+           CALL CC_PRAM(WORK(KWRK2),DDUMMY,ISYMTR)
+         END IF
 C
-            IF (CCSTST) THEN
-               CALL DZERO(WORK(KWRK2+(ICOUNT-1)*LETOT+
-     *                    NT1AM(ISYMTR)),NT2AMX)
-            ENDIF
-            CALL WRITT(LULAM,NT1AM(ISYMTR),
-     *                 WORK(KWRK2+(ICOUNT-1)*LETOT))
-            IF (.NOT. CCS) THEN
-               CALL WRITT(LULAM,NT2AM(ISYMTR),WORK(KWRK2+
-     *                    (ICOUNT-1)*LETOT+NT1AM(ISYMTR)))
-            ENDIF
-            IF (DEBUG) THEN
-                 WRITE(LUPRI,'(/,1X,A,I10,A,A)') 
-     *          'Write CC ',LETOT ,'left amplitudes to file ',FILEX
-            ENDIF
+         KWRK3  = KWRK2 + NT1AMX + NT2AMX
+         LWRK3  = LWORK - KWRK3
+C
+         IOPT   = 3
+         CALL CC_WRRSP('L0',0,1,IOPT,MODEL,DUMMY,
+     *                 WORK(KWRK2),WORK(KWRK2+NT1AM(ISYMTR)),
+     *                 WORK(KWRK3),LWRK3)
 
+         IF ( IPRINT .GT. 10 .OR. DEBUG) THEN
+            RHO1N = DDOT(NT1AM(ISYMTR),WORK(KWRK2),1,WORK(KWRK2),1)
+            RHO2N = DDOT(NT2AM(ISYMTR),WORK(KWRK2+NT1AMX),1,
+     *                   WORK(KWRK2+NT1AMX),1)
+            WRITE(LUPRI,*) 'Norm of singles Lambda vector :',RHO1N
+            WRITE(LUPRI,*) 'Norm of doubles Lambda vector :',RHO2N
+         ENDIF
+      ELSE
+
+         NSTAT = 0
+         ORDER = 0
+         ISIDE = -1
+
+         ISYOF(1) = 0
+         DO I = 2, NSYM
+           ISYOF(I) = 1
+         END DO
+
+         CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,
+     *                  IDUM,IDUM,RDUM,LDUM,
+     *                  IDUM,CDUM,RDUM,IDUM,
+     *                  ISYOF,1,1,WORK,LWORK)
+
+      ENDIF
+C
 C---------------------------------------------------
 C SLV98,OC Solvent part 1
 C           Calculate norm and test for convergence.
 C---------------------------------------------------
 C
-            IF (CCSLV) THEN
+      IF (CCSLV) THEN
+C
+              KLAM   = 1
+              KLAM2  = 1 + NT1AMX
+C
+              IOPT = 3
+              CALL CC_RDRSP('L0',0,1,IOPT,MODEL,WORK(KLAM),WORK(KLAM2))
+
               XLNCCCU = DDOT(LETOT,WORK(KWRK2),1,WORK(KWRK2),1)
               IF (ABS(XLNCCPR-XLNCCCU).LT.CVGLSOL) LSLLCVG = .TRUE.
               IF (IPRINT.GT.2) THEN
@@ -385,10 +299,7 @@ C
 
               XLNCCPR = XLNCCCU
 C
-              KLAM   = KWRK2
-              KLAM2  = KWRK2 + NT1AMX
-C
-              KWRK3  = KWRK2 + LETOT
+              KWRK3  = KLAM  + NT1AMX + NT2AMX
               KRHO1  = KWRK3
               KRHO2  = KRHO1 + NT1AMX
               KWRK4  = KRHO2 + NT2AMX
@@ -439,37 +350,11 @@ c                CALL CCLR_DIASCL(WORK(KOMEG2),0.5D0,ISYMTR)
               WRITE(LUPRI,'(12X,A,F25.10)')
      *        'The doubles contribution is:', ECCP2
 C
-            ENDIF
+      ENDIF
 C
 C---------------------------------------------------
 C SLV98,OC solvent part 1 end
 C---------------------------------------------------
-C
-  510    CONTINUE
-         IOFF1 = IOFF1 + NSIMUL
-  500 CONTINUE
-C
-C
-C     -----------------------------------------------------
-C     save a copy of the Lagrangian multipliers on CCL0___0
-C     -----------------------------------------------------
-C
-      KZETA1 = KWRK2
-      KZETA2 = KZETA1 + NT1AMX
-      KWRK3  = KZETA2 + NT2AMX
-      LWRK3  = LWORK - KWRK3
-      IOPT   = 3
-      CALL CC_WRRSP('L0',0,1,IOPT,MODEL,DUMMY,WORK(KZETA1),
-     *              WORK(KZETA2),WORK(KWRK3),LWRK3)
-C
-C----------------------------
-C     Close and delete files.
-C----------------------------
-C
-      IF (.NOT. MP2) THEN
-      CALL CC_FILCL(FRHO1,LUFR1,FRHO2,LUFR2,
-     *              FC1AM,LUFC1,FC2AM,LUFC2)
-      ENDIF
 C
       CALL FLSHFO(LUPRI)
 C
@@ -712,13 +597,6 @@ C
 C
       ENDIF
 C
-      IF (.NOT.(CCSLV.OR.DIPMOM.OR.QUADRU.OR.NQCC.OR.
-     *    RELCOR.OR.SECMOM.OR.TSTDEN.OR.(NAFOP.GT.0))) GOTO 47
-C
-C----------------------------------------------------------
-C     Calculate one electron AO-density and CC nat.occ.num.
-C----------------------------------------------------------
-C
       KDENS = KWRK2     
       KWRK3 = KDENS + N2BST(ISYMOP)
       LWRK3 = LWORK - KWRK3
@@ -727,6 +605,13 @@ C
          WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KWRK3
          CALL QUIT('Insufficient memory for one e- density in CC_FOP')
       ENDIF
+C
+      IF (.NOT.(CCSLV.OR.DIPMOM.OR.QUADRU.OR.NQCC.OR.
+     *    RELCOR.OR.SECMOM.OR.TSTDEN.OR.(NAFOP.GT.0))) GOTO 47
+C
+C----------------------------------------------------------
+C     Calculate one electron AO-density and CC nat.occ.num.
+C----------------------------------------------------------
 C
 
       ILSTNR = 1
@@ -759,7 +644,7 @@ C
         KWRK4  = KETLM + 2*NLMCU
         LWRK4  = LWORK - KWRK4
         IF (LWRK4 .LT. 0) THEN
-          WRITE(LUPRI,*) 'Needed:', KWRK3, 'Available:', LWORK
+          WRITE(LUPRI,*) 'Needed:', KWRK4, 'Available:', LWORK
           CALL QUIT('Insufficient memory for solvent alloc in cc_fop')
         ENDIF
         CALL CC_SLV(WORK(KDENS),WORK(KETLM),WORK(KWRK4),LWRK4)
@@ -1362,13 +1247,8 @@ C
             CALL QUIT('Insufficient space in CC_FOP ')
          ENDIF
 C
-         LUTAM = -723
-         CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
-     *               IDUMMY,.FALSE.)
-         REWIND (LUTAM)
-         READ(LUTAM) (WORK(KT1AM+I-1), I = 1,NT1AMX)
-         READ(LUTAM) (WORK(KT2AM+I-1), I = 1,NT2AMX)
-         CALL GPCLOSE(LUTAM,'KEEP')
+         IOPT = 3
+         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),WORK(KT2AM))
 C
          IF ( IPRINT .GT. 50 ) THEN
            CALL AROUND( 'In CC_FOP:  (T1,T2)  vector before ' )
@@ -1437,13 +1317,9 @@ C
             CALL QUIT('Insufficient memory for allocation in cc_fop')
          ENDIF
 C
-         LULAM = -148
-         CALL GPOPEN(LULAM,FILEX,'UNKNOWN',' ',
-     *              'UNFORMATTED',IDUMMY,.FALSE.)
-         REWIND(LULAM)
-         READ(LULAM)
-         READ(LULAM) (WORK(KLAM+I-1), I = 1,NT1AMX)
-         READ(LULAM) (WORK(KLAM+I+NT1AMX-1), I = 1,NT2AMX)
+         IOPT   = 3
+         CALL CC_RDRSP('L0',0,1,IOPT,MODEL,WORK(KLAM),
+     *                 WORK(KLAM+NT1AMX)) 
 C
          KLAM2 = KLAM + NT1AMX
 C
@@ -1481,14 +1357,10 @@ C
          ECCGRS = ETOT
       ENDIF
 C
-      IF (LULAM .GT. 0) CALL GPCLOSE(LULAM,'KEEP')
-C
 C------------------------------------
-C     Restore NSIDE to input/default.
 C     Restore RELORB for CC2 and MP2.
 C------------------------------------
 C
-      IF (.NOT. CCS) NSIDE = NSIDIN
       IF ((.NOT.RLORBS).AND.MP2) RELORB = RLORBS 
 C
       CALL QEXIT('CC_FOP')
@@ -1575,12 +1447,8 @@ C
 C
       CALL DZERO(WORK(KT1AM),NT1AM(1))
       IF (.NOT.(CCS.OR.CCP2)) THEN
-         LUTAM = 0
-         CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
-     *               IDUMMY,.FALSE.)
-         REWIND(LUTAM)
-         READ(LUTAM) (WORK(KT1AM - 1 + J), J = 1, NT1AMX )
-         CALL GPCLOSE(LUTAM,'KEEP')
+         IOPT = 1
+         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),DUMMY)
       ENDIF
 C
       CALL LAMMAT(WORK(KLAMDP),WORK(KLAMDH),WORK(KT1AM),
@@ -2025,6 +1893,8 @@ C
 #include <ccsdsym.h>
 #include <cclr.h>
 C
+      CALL QENTER('CCS_D1AO')
+C
 C---------------------------
 C     Work space allocation.
 C---------------------------
@@ -2083,9 +1953,11 @@ C
       CALL DZERO(AODEN,N2BST(1))
 C
       ISDEN = 1
-      CALL CC_DENAO(AODEN,WORK(KONEAI),WORK(KONEAB),
-     *              WORK(KONEIJ),WORK(KONEIA),WORK(KLAMDP),
-     *              WORK(KLAMDH),WORK(KEND1),LWRK1,ISDEN)
+      CALL CC_DENAO(AODEN,ISDEN,WORK(KONEAI),WORK(KONEAB),
+     *              WORK(KONEIJ),WORK(KONEIA),ISDEN,WORK(KLAMDP),1,
+     *              WORK(KLAMDH),1,WORK(KEND1),LWRK1)
+C
+      CALL QEXIT('CCS_D1AO')
 C
       RETURN
       END
@@ -2212,6 +2084,8 @@ C
 #include <eribuf.h>
 #include <cclr.h>
 C
+      CALL QENTER('MP2_KARI')
+C
       CALL HEADER('Constructing right-hand-side for MP2-kappa-0(ai)',-1)
 C
       TIMETO = ZERO
@@ -2253,14 +2127,8 @@ C----------------------------------------
 C     Read zero'th order zeta amplitudes.
 C----------------------------------------
 C
-      LULAM = -765
-      CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ',
-     *     'UNFORMATTED',IDUMMY,.FALSE.)
-      REWIND(LULAM)
-      READ(LULAM) NVEDUM, MODDUM
-      READ(LULAM) (WORK(KZ1AM + I - 1), I = 1,NT1AMX)
-      READ(LULAM) (WORK(KZ2AM + I - 1), I = 1,NT2AMX)
-      CALL GPCLOSE(LULAM,'KEEP')
+      IOPT   = 3
+      CALL CC_RDRSP('L0',0,1,IOPT,MODEL,WORK(KZ1AM),WORK(KZ2AM))
 C
       KEND1 = KZ1AM
       LWRK1 = LWORK  - KEND1
@@ -2277,13 +2145,8 @@ C-------------------------------------------
 C     Read zero'th order cluster amplitudes.
 C-------------------------------------------
 C
-      LUTAM = 0
-      CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     *            .FALSE.)
-      REWIND(LUTAM)
-      READ(LUTAM) (WORK(KT1AM + I - 1), I = 1,NT1AMX)
-      READ(LUTAM) (WORK(KT2AM + I - 1), I = 1,NT2AMX)
-      CALL GPCLOSE(LUTAM,'KEEP')
+      IOPT = 3
+      CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),WORK(KT2AM))
 C
 C----------------------------------
 C     Calculate the lambda matrices.
@@ -2323,14 +2186,8 @@ C     (By doing it this way, we only need one packed vector in core
 C     along with the integral distribution in the delta loop.)
 C--------------------------------------------------------------------
 C
-      LULAM = -127
-      CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ',
-     *     'UNFORMATTED',IDUMMY,.FALSE.)
-      REWIND(LULAM)
-      READ(LULAM) NVEDUM, MODDUM
-      READ(LULAM) (WORK(KZ1AM + I - 1), I = 1,NT1AMX)
-      READ(LULAM) (WORK(KZ2AM + I - 1), I = 1,NT2AMX)
-      CALL GPCLOSE(LULAM,'KEEP')
+      IOPT   = 3
+      CALL CC_RDRSP('L0',0,1,IOPT,MODEL,WORK(KZ1AM),WORK(KZ2AM))
 C
       CALL DSCAL(NT2AMX,TWO,WORK(KT2AM),1)
       CALL DAXPY(NT2AMX,ONE,WORK(KZ2AM),1,WORK(KT2AM),1)
@@ -2376,15 +2233,12 @@ C
          KEND1  = KINDXB + (8*MXSHEL*MXCONT + 1)/IRAT
          LWRK1  = LWORK  - KEND1
          NTOSYM = 1
-         DTIME  = SECOND()
          CALL ERIDI1(KODCL1,KODCL2,KODBC1,KODBC2,KRDBC1,KRDBC2,
      *               KODPP1,KODPP2,KRDPP1,KRDPP2,
      *               KFREE,LFREE,KEND1,WORK(KCCFB1),WORK(KINDXB),
      *               WORK(KEND1),LWRK1,IPRERI)
          KEND1 = KFREE
          LWRK1 = LFREE
-         DTIME  = SECOND() - DTIME
-         TIMHE1 = TIMHE1 + DTIME
       ELSE
          NTOSYM = NSYM
       ENDIF
@@ -2502,8 +2356,8 @@ C---------------------------------------------------------------------
 C              Calculate partially backtransformed modified amplitude.
 C---------------------------------------------------------------------
 C
-               CALL CC_TI(WORK(KSCRTI),WORK(KT2AM),ISYMOP,WORK(KLAMDP),
-     *                      WORK(KEND3),LWRK3,IDEL,ISYMD)
+               CALL CC_TI(WORK(KSCRTI),ISYMD,WORK(KT2AM),ISYMOP,
+     *                    WORK(KLAMDP),1,WORK(KEND3),LWRK3,IDEL,ISYMD)
 C
 C--------------------------------------------------------
 C              Transform one index in the integral batch.
@@ -2610,6 +2464,8 @@ C
          WRITE(LUPRI,*) ' CCPT2 Eta-0(kappa) calculation completed'
          WRITE(LUPRI,*) 'Total time used in MP2_KARI:', TIMETO
       ENDIF
+C
+      CALL QEXIT('MP2_KARI')
 C
       RETURN
       END
@@ -3243,7 +3099,7 @@ C
 C
       RETURN
       END
-C  /* Deck cc_denao */
+C  /* Deck cc_dedian */
       SUBROUTINE CC_DEDIAN(DENSI,MODEL,WORK,LWORK)
 C
 C     Written by Asger Halkier 18/3 - 1998
@@ -3423,14 +3279,8 @@ C----------------------------------------
 C     Read zero'th order zeta amplitudes.
 C----------------------------------------
 C
-      IF (LULAM .LE. 0)
-     *     CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ',
-     *                'UNFORMATTED',IDUMMY,.FALSE.)
-      REWIND(LULAM)
-      READ(LULAM) NVEDUM, MODDUM
-      READ(LULAM) (WORK(KZ1AM + I - 1), I = 1,NT1AMX)
-      READ(LULAM) (WORK(KZ2AM + I - 1), I = 1,NT2AMX)
-      CALL GPCLOSE(LULAM,'KEEP')
+      IOPT   = 3
+      CALL CC_RDRSP('L0',0,1,IOPT,MODEL,WORK(KZ1AM),WORK(KZ2AM))
 C
       KEND1 = KZ1AM
       LWRK1 = LWORK  - KEND1
@@ -3447,13 +3297,9 @@ C-------------------------------------------
 C     Read zero'th order cluster amplitudes.
 C-------------------------------------------
 C
-      LUTAM = 0
-      CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     *            .FALSE.)
-      REWIND(LUTAM)
-      READ(LUTAM) (WORK(KT1AM + I - 1), I = 1,NT1AMX)
-      READ(LUTAM) (WORK(KT2AM + I - 1), I = 1,NT2AMX)
-      CALL GPCLOSE(LUTAM,'KEEP')
+      IOPT = 3
+      CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),WORK(KT2AM))
+C
       KEND1 = KT1AM
 C
 C
@@ -3508,14 +3354,8 @@ C     Store it squared in KZ2AM to make smart contraction with
 C     packed integrals (ai|bj) using the X- and Y-routines.
 C-------------------------------------------------------------
 C
-      LULAM = -626
-      CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ','UNFORMATTED',
-     *     IDUMMY,.FALSE.)
-      REWIND(LULAM)
-      READ(LULAM) NVEDUM, MODDUM
-      READ(LULAM) (WORK(KZ1AM + I - 1), I = 1,NT1AMX)
-      READ(LULAM) (WORK(KZ2AM + I - 1), I = 1,NT2AMX)
-      CALL GPCLOSE(LULAM,'KEEP')
+      IOPT   = 3
+      CALL CC_RDRSP('L0',0,1,IOPT,MODEL,WORK(KZ1AM),WORK(KZ2AM))
 C
       CALL DSCAL(NT2AMX,TWO,WORK(KT2AM),1)
       CALL DAXPY(NT2AMX,ONE,WORK(KZ2AM),1,WORK(KT2AM),1)
@@ -3767,6 +3607,8 @@ C
 #include <cclr.h>
 #include <ccfro.h>
 C
+      CALL QENTER('MP2_KANEW')
+C
       CALL HEADER('Constructing right-hand-side for MP2-kappa-0(ai)',-1)
 C
       TIMETO = ZERO
@@ -3804,13 +3646,9 @@ C-------------------------------------------
 C     Read zero'th order cluster amplitudes.
 C-------------------------------------------
 C
-      LUTAM = 0
-      CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     *            .FALSE.)
-      REWIND(LUTAM)
-      READ(LUTAM) (WORK(KT1AM + I - 1), I = 1,NT1AMX)
-      READ(LUTAM) (WORK(KT2AM + I - 1), I = 1,NT2AMX)
-      CALL GPCLOSE(LUTAM,'KEEP')
+      IOPT = 3
+      CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),WORK(KT2AM))
+C
       CALL DZERO(WORK(KT1AM),NT1AMX)
 C
 C----------------------------------
@@ -3824,14 +3662,8 @@ C----------------------------------------
 C     Read zero'th order zeta amplitudes.
 C----------------------------------------
 C
-      LULAM = -1230
-      CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ',
-     *     'UNFORMATTED',IDUMMY,.FALSE.)
-      REWIND(LULAM)
-      READ(LULAM) NVEDUM, MODDUM
-      READ(LULAM) (WORK(KT1AM + I - 1), I = 1,NT1AMX)
-      READ(LULAM) (WORK(KZ2AM + I - 1), I = 1,NT2AMX)
-      CALL GPCLOSE(LULAM,'KEEP')
+      IOPT   = 3
+      CALL CC_RDRSP('L0',0,1,IOPT,MODEL,WORK(KT1AM),WORK(KZ2AM))
 C
 C---------------------------------------
 C     Set up 2C-E of cluster amplitudes.
@@ -3885,15 +3717,12 @@ C
          KEND1  = KINDXB + (8*MXSHEL*MXCONT + 1)/IRAT
          LWRK1  = LWORK  - KEND1
          NTOSYM = 1
-         DTIME  = SECOND()
          CALL ERIDI1(KODCL1,KODCL2,KODBC1,KODBC2,KRDBC1,KRDBC2,
      *               KODPP1,KODPP2,KRDPP1,KRDPP2,
      *               KFREE,LFREE,KEND1,WORK(KCCFB1),WORK(KINDXB),
      *               WORK(KEND1),LWRK1,IPRERI)
          KEND1 = KFREE
          LWRK1 = LFREE
-         DTIME  = SECOND() - DTIME
-         TIMHE1 = TIMHE1 + DTIME
       ELSE
          NTOSYM = NSYM
       ENDIF
@@ -4009,8 +3838,8 @@ C---------------------------------------------------------------------
 C              Calculate partially backtransformed modified amplitude.
 C---------------------------------------------------------------------
 C
-               CALL CC_TI(WORK(KSCRTI),WORK(KT2AM),ISYMOP,WORK(KLAMDP),
-     *                      WORK(KEND3),LWRK3,IDEL,ISYMD)
+               CALL CC_TI(WORK(KSCRTI),ISYMD,WORK(KT2AM),ISYMOP,
+     *                    WORK(KLAMDP),1,WORK(KEND3),LWRK3,IDEL,ISYMD)
 C
 C----------------------------------------------------------------------
 C              Transform one index in the integral batch to correlated.
@@ -4181,6 +4010,8 @@ C
          WRITE(LUPRI,*) 'MP2 Eta-0(kappa) calculation completed'
          WRITE(LUPRI,*) 'Total time used in MP2_KANEW:', TIMETO
       ENDIF
+C
+      CALL QEXIT('MP2_KANEW')
 C
       RETURN
       END
@@ -4663,15 +4494,12 @@ C
          KEND1  = KINDXB + (8*MXSHEL*MXCONT + 1)/IRAT
          LWRK1  = LWORK  - KEND1
          NTOSYM = 1
-         DTIME  = SECOND()
          CALL ERIDI1(KODCL1,KODCL2,KODBC1,KODBC2,KRDBC1,KRDBC2,
      *               KODPP1,KODPP2,KRDPP1,KRDPP2,
      *               KFREE,LFREE,KEND1,WORK(KCCFB1),WORK(KINDXB),
      *               WORK(KEND1),LWRK1,IPRERI)
          KEND1 = KFREE
          LWRK1 = LFREE
-         DTIME  = SECOND() - DTIME
-         TIMHE1 = TIMHE1 + DTIME
       ELSE
          NTOSYM = NSYM
       ENDIF
@@ -4993,6 +4821,8 @@ C
 #include <ccfro.h>
 #include <drw2el.h>
 C
+      CALL QENTER('CC_2EEXP')
+C
 C------------------------------
 C     Initialization of result.
 C------------------------------
@@ -5072,14 +4902,8 @@ C-------------------------------------------
 C        Read zero'th order zeta amplitudes.
 C-------------------------------------------
 C
-         LULAM = -871
-         CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ',
-     *                 'UNFORMATTED',IDUMMY,.FALSE.)
-         REWIND(LULAM)
-         READ(LULAM) NVEDUM, MODDUM
-         READ(LULAM) (WORK(KZ1AM + I - 1), I = 1,NT1AMX)
-         READ(LULAM) (WORK(KZ2AM + I - 1), I = 1,NT2AMX)
-         CALL GPCLOSE(LULAM,'KEEP')
+         IOPT   = 3
+         CALL CC_RDRSP('L0',0,1,IOPT,MODEL,WORK(KZ1AM),WORK(KZ2AM))
 C
 C-----------------------------------
 C        Square up zeta2 amplitudes.
@@ -5092,13 +4916,8 @@ C----------------------------------------------
 C        Read zero'th order cluster amplitudes.
 C----------------------------------------------
 C
-         LUTAM = 0
-         CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
-     *               IDUMMY,.FALSE.)
-         REWIND(LUTAM)
-         READ(LUTAM) (WORK(KT1AM + I - 1), I = 1,NT1AMX)
-         READ(LUTAM) (WORK(KT2AM + I - 1), I = 1,NT2AMX)
-         CALL GPCLOSE(LUTAM,'KEEP')
+         IOPT = 3
+         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),WORK(KT2AM))
 C
 C-------------------------------------
 C        Calculate the lambda matrices.
@@ -5169,9 +4988,9 @@ C
          CALL DZERO(WORK(KAODEN),N2BST(1))
 C
          ISDEN = 1
-         CALL CC_DENAO(WORK(KAODEN),WORK(KONEAI),WORK(KONEAB),
-     *                 WORK(KONEIJ),WORK(KONEIA),WORK(KLAMDP),
-     *                 WORK(KLAMDH),WORK(KEND1),LWRK1,ISDEN)
+         CALL CC_DENAO(WORK(KAODEN),ISDEN,WORK(KONEAI),WORK(KONEAB),
+     *                 WORK(KONEIJ),WORK(KONEIA),ISDEN,WORK(KLAMDP),1,
+     *                 WORK(KLAMDH),1,WORK(KEND1),LWRK1)
 C
 C----------------------------------------------
 C     Read orbital relaxation vector from disc.
@@ -5197,9 +5016,9 @@ C
 C
          ISDEN = 1
          CALL DZERO(WORK(KKABAO),N2BST(1))
-         CALL CC_DENAO(WORK(KKABAO),WORK(KOFDAI),WORK(KOFDAB),
-     *                 WORK(KOFDIJ),WORK(KOFDIA),WORK(KCMO),
-     *                 WORK(KCMO),WORK(KEND1),LWRK1,ISDEN)
+         CALL CC_DENAO(WORK(KKABAO),ISDEN,WORK(KOFDAI),WORK(KOFDAB),
+     *                 WORK(KOFDIJ),WORK(KOFDIA),ISDEN,WORK(KCMO),1,
+     *                 WORK(KCMO),1,WORK(KEND1),LWRK1)
 C
          CALL CCS_D1AO(WORK(KDHFAO),WORK(KEND1),LWRK1)
          IF (FROIMP .OR. FROEXP) THEN
@@ -5247,14 +5066,8 @@ C----------------------------------------
 C     Read zero'th order zeta amplitudes.
 C----------------------------------------
 C
-         LULAM = -476
-         CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ',
-     *                 'UNFORMATTED',IDUMMY,.FALSE.)
-         REWIND(LULAM)
-         READ(LULAM) NVEDUM, MODDUM
-         READ(LULAM) (WORK(KZ1AM + I - 1), I = 1,NT1AMX)
-         READ(LULAM) (WORK(KZ2AM + I - 1), I = 1,NT2AMX)
-         CALL GPCLOSE(LULAM,'KEEP')
+         IOPT   = 3
+         CALL CC_RDRSP('L0',0,1,IOPT,MODEL,WORK(KZ1AM),WORK(KZ2AM))
 C
 C--------------------------------
 C     Square up zeta2 amplitudes.
@@ -5267,14 +5080,8 @@ C-------------------------------------------
 C     Read zero'th order cluster amplitudes.
 C-------------------------------------------
 C
-         LUTAM = 0
-         CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
-     *               IDUMMY,.FALSE.)
-         REWIND (LUTAM)
-         REWIND(LUTAM)
-         READ(LUTAM) (WORK(KT1AM + I - 1), I = 1,NT1AMX)
-         READ(LUTAM) (WORK(KT2AM + I - 1), I = 1,NT2AMX)
-         CALL GPCLOSE(LUTAM,'KEEP')
+         IOPT = 3
+         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),WORK(KT2AM))
 C
 C------------------------------------------------
 C     Zero out single vectors in CCD-calculation.
@@ -5429,9 +5236,9 @@ C
 C
          ISDEN = 1
          CALL DZERO(WORK(KKABAO),N2BST(1))
-         CALL CC_DENAO(WORK(KKABAO),WORK(KOFDAI),WORK(KOFDAB),
-     *                 WORK(KOFDIJ),WORK(KOFDIA),WORK(KCMO),
-     *                 WORK(KCMO),WORK(KEND1),LWRK1,ISDEN)
+         CALL CC_DENAO(WORK(KKABAO),ISDEN,WORK(KOFDAI),WORK(KOFDAB),
+     *                 WORK(KOFDIJ),WORK(KOFDIA),ISDEN,WORK(KCMO),1,
+     *                 WORK(KCMO),1,WORK(KEND1),LWRK1)
 C
          CALL CCS_D1AO(WORK(KDHFAO),WORK(KEND1),LWRK1)
          IF (FROIMP .OR. FROEXP) THEN
@@ -5476,9 +5283,9 @@ C     We thus have the entire effective one-electron density.
 C------------------------------------------------------------
 C
          ISDEN = 1
-         CALL CC_DENAO(WORK(KAODEN),WORK(KONEAI),WORK(KONEAB),
-     *                 WORK(KONEIJ),WORK(KONEIA),WORK(KLAMDP),
-     *                 WORK(KLAMDH),WORK(KEND1),LWRK1,ISDEN)
+         CALL CC_DENAO(WORK(KAODEN),ISDEN,WORK(KONEAI),WORK(KONEAB),
+     *                 WORK(KONEIJ),WORK(KONEIA),ISDEN,WORK(KLAMDP),1,
+     *                 WORK(KLAMDH),1,WORK(KEND1),LWRK1)
 C
 C--------------------------------------------------------
 C     Calculate M-intermediate of zeta- and t-amplitudes.
@@ -5586,9 +5393,9 @@ C
          CALL DZERO(WORK(KAODEN),N2BST(1))
 C
          ISDEN = 1
-         CALL CC_DENAO(WORK(KAODEN),WORK(KONEAI),WORK(KONEAB),
-     *                 WORK(KONEIJ),WORK(KONEIA),WORK(KLAMDP),
-     *                 WORK(KLAMDH),WORK(KEND1),LWRK1,ISDEN)
+         CALL CC_DENAO(WORK(KAODEN),ISDEN,WORK(KONEAI),WORK(KONEAB),
+     *                 WORK(KONEIJ),WORK(KONEIA),ISDEN,WORK(KLAMDP),1,
+     *                 WORK(KLAMDH),1,WORK(KEND1),LWRK1)
 C
 C--------------------------------------------------------------
 C     Calculate ao-transformed zeta-kappa-bar-0 and HF density.
@@ -5601,9 +5408,9 @@ C
 C
          ISDEN = 1
          CALL DZERO(WORK(KKABAO),N2BST(1))
-         CALL CC_DENAO(WORK(KKABAO),WORK(KOFDAI),WORK(KOFDAB),
-     *                 WORK(KOFDIJ),WORK(KOFDIA),WORK(KLAMDP),
-     *                 WORK(KLAMDH),WORK(KEND1),LWRK1,ISDEN)
+         CALL CC_DENAO(WORK(KKABAO),ISDEN,WORK(KOFDAI),WORK(KOFDAB),
+     *                 WORK(KOFDIJ),WORK(KOFDIA),ISDEN,WORK(KLAMDP),1,
+     *                 WORK(KLAMDH),1,WORK(KEND1),LWRK1)
 C
          CALL CCS_D1AO(WORK(KDHFAO),WORK(KEND1),LWRK1)
          IF (FROIMP .OR. FROEXP) THEN
@@ -5662,26 +5469,15 @@ C----------------------------------------
 C     Read zero'th order zeta amplitudes.
 C----------------------------------------
 C
-         LULAM = -2156
-         CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ',
-     *        'UNFORMATTED',IDUMMY,.FALSE.)
-         REWIND(LULAM)
-         READ(LULAM) NVEDUM, MODDUM
-         READ(LULAM) (WORK(KSKOD + I - 1), I = 1,NT1AMX)
-         READ(LULAM) (WORK(KZ2AM + I - 1), I = 1,NT2AMX)
-         CALL GPCLOSE(LULAM,'KEEP')
+         IOPT   = 3
+         CALL CC_RDRSP('L0',0,1,IOPT,MODEL,WORK(KSKOD),WORK(KZ2AM))
 C
 C-------------------------------------------
 C     Read zero'th order cluster amplitudes.
 C-------------------------------------------
 C
-         LUTAM = -1568
-         CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
-     *               IDUMMY,.FALSE.)
-         REWIND(LUTAM)
-         READ(LUTAM) (WORK(KSKOD + I - 1), I = 1,NT1AMX)
-         READ(LUTAM) (WORK(KT2AM + I - 1), I = 1,NT2AMX)
-         CALL GPCLOSE(LUTAM,'KEEP')
+         IOPT = 3
+         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KSKOD),WORK(KT2AM))
 C
 C-----------------------------------------------------------------------
 C        Set up special modified amplitudes needed in the integral loop.
@@ -5923,16 +5719,16 @@ C
      *                      WORK(KD2ABG),WORK(KZ2AM),WORK(KT2AM),
      *                      WORK(KT2AMT),WORK(KMINT),WORK(KXMAT),
      *                      WORK(KYMAT),WORK(KONEAB),WORK(KONEAI),
-     *                      WORK(KONEIA),WORK(KMIRES),WORK(KLAMDH),
-     *                      WORK(KLAMDP),WORK(KEND2),LWRK2,IDEL,
+     *                      WORK(KONEIA),WORK(KMIRES),WORK(KLAMDH),1,
+     *                      WORK(KLAMDP),1,WORK(KEND2),LWRK2,IDEL,
      *                      ISYMD)
             ELSE IF (CC2) THEN
                CALL CC_DEN2(WORK(KD2IJG),WORK(KD2AIG),WORK(KD2IAG),
      *                      WORK(KD2ABG),WORK(KZ2AM),WORK(KT2AM),
      *                      WORK(KT2AMT),WORK(KEND2),WORK(KEND2),
      *                      WORK(KEND2),WORK(KONEAB),WORK(KONEAI),
-     *                      WORK(KONEIA),WORK(KEND2),WORK(KLAMDH),
-     *                      WORK(KLAMDP),WORK(KEND2),LWRK2,IDEL,ISYMD)
+     *                      WORK(KONEIA),WORK(KEND2),WORK(KLAMDH),1,
+     *                      WORK(KLAMDP),1,WORK(KEND2),LWRK2,IDEL,ISYMD)
             ELSE IF (MP2) THEN
                CALL CCS_DEN2(WORK(KD2IJG),WORK(KCMO),WORK(KEND2),
      *                       LWRK2,IDEL,ISYMD)
@@ -6049,11 +5845,11 @@ C---------------------------------------------------------
 C
                   AUTIM1 = SECOND()
                   IF (CCSD .OR. CC2) THEN
-                     CALL CC_DENAO(WORK(KAODEN),WORK(KD2GAI),
-     *                             WORK(KD2GAB),
-     *                             WORK(KD2GIJ),WORK(KD2GIA),
-     *                             WORK(KLAMDP),WORK(KLAMDH),
-     *                             WORK(KEND4),LWRK4,ISYMPQ)
+                     CALL CC_DENAO(WORK(KAODEN),ISYMPQ,
+     *                             WORK(KD2GAI),WORK(KD2GAB),
+     *                             WORK(KD2GIJ),WORK(KD2GIA),ISYMPQ,
+     *                             WORK(KLAMDP),1,WORK(KLAMDH),1,
+     *                             WORK(KEND4),LWRK4)
                   ELSE
                      CALL CCMP_DAO(WORK(KAODEN),WORK(KD2GIJ),
      *                             WORK(KD2GIA),WORK(KCMO),
@@ -6284,6 +6080,8 @@ C
          WRITE(LUPRI,*) 
      *        'Time used for 1 e- density & intermediates:',TIMONE
       ENDIF
+C
+      CALL QEXIT('CC_2EEXP')
 C
       RETURN
   165 CALL QUIT('Error reading CCTWODEN')

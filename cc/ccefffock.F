@@ -35,7 +35,7 @@ C
       INTEGER LIROW, JTFRO, JTINAC, JTACT, JTSEC, JTSEAC, JTSESE
       INTEGER JTFRFR,JTINFR,JTACFR,JTSEFR,JTININ,JTACIN,JTACAC,JTSEIN
       INTEGER ISAO, IROW, ISMO, ISX, ISW, ICH, IOBTYP, LOC, ISSMO
-      INTEGER ISSORD, IACTYP, NSM, LULAM, LUTAM, LUBAR0
+      INTEGER ISSORD, IACTYP, NSM, LUBAR0
 
 #  include <priunit_dec.h>
 #  include <dummy_dec.h>
@@ -105,7 +105,9 @@ C
       CHARACTER*8 LABEL, LABELH, FILFCK
       CHARACTER*5 MODEL
       CHARACTER*3 LSTRLX
+
       INTEGER LWORK
+
 #if defined (SYS_CRAY)
       REAL WORK(LWORK)
       REAL RE2DAR, RELCO1, ECCSD
@@ -152,6 +154,8 @@ C
       INTEGER KEND2, LWRK2, NFOCK0LBL, IDLST0, ISYMOPR, ISYFCK, MXCOMP
       INTEGER NVEDUM, MODDUM, NFRL, NII, ICON, ISDEN, IOPER, IORDER
       INTEGER NFOCKLBL, IROPER, IDXRLX
+
+* external functions:
       INTEGER IR1TAMP, ILSTSYM
 C
       CALL QENTER('CCEFFFOCK')
@@ -163,12 +167,12 @@ C
       LANYTHING = .FALSE.
       LFOCK     = .FALSE.
       LONLYEXP  = .FALSE.
-C
+
       IF (IOPREL.GT.0) THEN
          LANYTHING = .TRUE.
          LONLYEXP  = .TRUE.
       END IF
-C
+
       IF (.NOT.LONLYEXP) THEN
         IF (I1DXORD.EQ.0) THEN
           DO IDLST = 1, NEXPFCKLBL
@@ -180,16 +184,16 @@ C
           IF (N1DXFLBL.GT.0) LFOCK     = .TRUE.
         END IF
       END IF
-C
+
       IF (.NOT. LANYTHING) GOTO 999
-C
+
       IF (LFOCK .AND. (.NOT.RELORB)) THEN
         WRITE(LUPRI,*) 
      *     'Calculation of eff. Fock mat. needs RELORB = .TRUE.'
         CALL QUIT(
      *     'Calculation of eff. Fock mat. needs RELORB = .TRUE.')
       END IF
-C
+
       IF (LOCDBG) THEN
          WRITE(LUPRI,*) 'Entering CCEFFFOCK with I1DXORD = ',I1DXORD
       END IF
@@ -248,9 +252,9 @@ C
         NALLAIM = MAX(NALLAIM,NALLAI(ISYM))
         NGLMDTM = MAX(NGLMDTM,NGLMDT(ISYM))
       END DO
-C
+
       LENBAR = 2*NT1AMX+NMATIJ(1)+NMATAB(1)+2*NT1FRO(1)+2*NCOFRO(1)
-C
+
       KEND0 = 1
 C
 C---------------------------------------------------------------------
@@ -280,9 +284,9 @@ C
          KEND0    = KLAMDHQ2 + NGLMDTM  
         END IF
       END IF
-C
+
       LWRK0 = LWORK - KEND0
-C
+
 C
 C------------------------------------------------------------------
 C     if we are going to calculate one-index transformed effective
@@ -295,7 +299,7 @@ C
          CALL RDONEL('OVERLAP ',.TRUE.,WORK(KEND1),NBAST)
          CALL CCSD_SYMSQ(WORK(KEND1),ISYM0,WORK(KOVERLP))
       END IF 
-C
+
 *======================================================================*
 * do model specific initializations for calculating the densities:
 *======================================================================*
@@ -348,14 +352,8 @@ C-------------------------------------------
 C        Read zero'th order zeta amplitudes.
 C-------------------------------------------
 C
-         LULAM = -765
-         CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ','UNFORMATTED',
-     *               IDUMMY,.FALSE.)
-         REWIND(LULAM)
-         READ(LULAM) NVEDUM, MODDUM
-         READ(LULAM) (WORK(KZ1AM + I - 1), I = 1,NT1AMX)
-         READ(LULAM) (WORK(KZ2AM + I - 1), I = 1,NT2AMX)
-         CALL GPCLOSE(LULAM,'KEEP')
+         IOPT   = 3
+         CALL CC_RDRSP('L0',0,ISYM0,IOPT,MODEL,WORK(KSKOD),WORK(KZ2AM))
 C
 C-----------------------------------
 C        Square up zeta2 amplitudes.
@@ -368,13 +366,8 @@ C----------------------------------------------
 C        Read zero'th order cluster amplitudes.
 C----------------------------------------------
 C
-         LUTAM = 0
-         CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
-     *               IDUMMY,.FALSE.)
-         REWIND(LUTAM)
-         READ(LUTAM) (WORK(KT1AM + I - 1), I = 1,NT1AMX)
-         READ(LUTAM) (WORK(KT2AM + I - 1), I = 1,NT2AMX)
-         CALL GPCLOSE(LUTAM,'KEEP')
+         IOPT = 3
+         CALL CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,WORK(KT1AM),WORK(KT2AM))
 C
 C-------------------------------------
 C        Calculate the lambda matrices.
@@ -444,9 +437,9 @@ C
          CALL DZERO(WORK(KAODEN),N2BST(1))
 C
          ISDEN = 1
-         CALL CC_DENAO(WORK(KAODEN),WORK(KONEAI),WORK(KONEAB),
-     *                 WORK(KONEIJ),WORK(KONEIA),WORK(KLAMDP),
-     *                 WORK(KLAMDH),WORK(KEND1),LWRK1,ISDEN)
+         CALL CC_DENAO(WORK(KAODEN),ISDEN,WORK(KONEAI),WORK(KONEAB),
+     *                 WORK(KONEIJ),WORK(KONEIA),ISDEN,WORK(KLAMDP),1,
+     *                 WORK(KLAMDH),1,WORK(KEND1),LWRK1)
 C
 C----------------------------------------------
 C     Read orbital relaxation vector from disc.
@@ -472,9 +465,9 @@ C
 C
          ISDEN = 1
          CALL DZERO(WORK(KKABAO),N2BST(1))
-         CALL CC_DENAO(WORK(KKABAO),WORK(KOFDAI),WORK(KOFDAB),
-     *                 WORK(KOFDIJ),WORK(KOFDIA),WORK(KCMO),
-     *                 WORK(KCMO),WORK(KEND1),LWRK1,ISDEN)
+         CALL CC_DENAO(WORK(KKABAO),ISDEN,WORK(KOFDAI),WORK(KOFDAB),
+     *                 WORK(KOFDIJ),WORK(KOFDIA),ISDEN,WORK(KCMO),1,
+     *                 WORK(KCMO),1,WORK(KEND1),LWRK1)
 C
          CALL CCS_D1AO(WORK(KDHFAO),WORK(KEND1),LWRK1)
          IF (FROIMP .OR. FROEXP) THEN
@@ -516,13 +509,8 @@ C----------------------------------------
 C     Read zero'th order zeta amplitudes.
 C----------------------------------------
 C
-         CALL GPOPEN(LULAM,'CCSAV_LAM','OLD',' ','UNFORMATTED',
-     *               IDUMMY,.FALSE.)
-         REWIND(LULAM)
-         READ(LULAM) NVEDUM, MODDUM
-         READ(LULAM) (WORK(KZ1AM + I - 1), I = 1,NT1AMX)
-         READ(LULAM) (WORK(KZ2AM + I - 1), I = 1,NT2AMX)
-         CLOSE(LULAM,STATUS='KEEP')
+         IOPT   = 3
+         CALL CC_RDRSP('L0',0,ISYM0,IOPT,MODEL,WORK(KSKOD),WORK(KZ2AM))
 C
 C--------------------------------
 C     Square up zeta2 amplitudes.
@@ -535,12 +523,8 @@ C-------------------------------------------
 C     Read zero'th order cluster amplitudes.
 C-------------------------------------------
 C
-         CALL GPOPEN(LUTAM,'CCSD_TAM','OLD',' ','UNFORMATTED',
-     *               IDUMMY,.FALSE.)
-         REWIND(LUTAM)
-         READ(LUTAM) (WORK(KT1AM + I - 1), I = 1,NT1AMX)
-         READ(LUTAM) (WORK(KT2AM + I - 1), I = 1,NT2AMX)
-         CALL GPCLOSE(LUTAM,'KEEP')
+         IOPT = 3
+         CALL CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,WORK(KT1AM),WORK(KT2AM))
 C
 C------------------------------------------------
 C     Zero out single vectors in CCD-calculation.
@@ -669,14 +653,7 @@ C----------------------------------------------------------
 C     Read MO-coefficients from interface file and reorder.
 C----------------------------------------------------------
 C
-         CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
-     *               IDUMMY,.FALSE.)
-         REWIND LUSIFC
-         CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
-         READ (LUSIFC)
-         READ (LUSIFC)
-         READ (LUSIFC) (WORK(KCMO+I-1), I=1,NLAMDS)
-         CALL GPCLOSE (LUSIFC,'KEEP')
+         CALL CC_GET_CMO(CMO)
 C
          CALL CMO_REORDER(WORK(KCMO),WORK(KEND1),LWRK1)
 C
@@ -691,9 +668,9 @@ C
 C
          ISDEN = 1
          CALL DZERO(WORK(KKABAO),N2BST(1))
-         CALL CC_DENAO(WORK(KKABAO),WORK(KOFDAI),WORK(KOFDAB),
-     *                 WORK(KOFDIJ),WORK(KOFDIA),WORK(KCMO),
-     *                 WORK(KCMO),WORK(KEND1),LWRK1,ISDEN)
+         CALL CC_DENAO(WORK(KKABAO),ISDEN,WORK(KOFDAI),WORK(KOFDAB),
+     *                 WORK(KOFDIJ),WORK(KOFDIA),ISDEN,WORK(KCMO),1,
+     *                 WORK(KCMO),1,WORK(KEND1),LWRK1)
 C
          CALL CCS_D1AO(WORK(KDHFAO),WORK(KEND1),LWRK1)
          IF (FROIMP .OR. FROEXP) THEN
@@ -738,9 +715,9 @@ C     We thus have the entire effective one-electron density.
 C------------------------------------------------------------
 C
          ISDEN = 1
-         CALL CC_DENAO(WORK(KAODEN),WORK(KONEAI),WORK(KONEAB),
-     *                 WORK(KONEIJ),WORK(KONEIA),WORK(KLAMDP),
-     *                 WORK(KLAMDH),WORK(KEND1),LWRK1,ISDEN)
+         CALL CC_DENAO(WORK(KAODEN),ISDEN,WORK(KONEAI),WORK(KONEAB),
+     *                 WORK(KONEIJ),WORK(KONEIA),ISDEN,WORK(KLAMDP),1,
+     *                 WORK(KLAMDH),1,WORK(KEND1),LWRK1)
 C
 C--------------------------------------------------------
 C     Calculate M-intermediate of zeta- and t-amplitudes.
@@ -838,9 +815,9 @@ C
          CALL DZERO(WORK(KAODEN),N2BST(1))
 C
          ISDEN = 1
-         CALL CC_DENAO(WORK(KAODEN),WORK(KONEAI),WORK(KONEAB),
-     *                 WORK(KONEIJ),WORK(KONEIA),WORK(KLAMDP),
-     *                 WORK(KLAMDH),WORK(KEND1),LWRK1,ISDEN)
+         CALL CC_DENAO(WORK(KAODEN),ISDEN,WORK(KONEAI),WORK(KONEAB),
+     *                 WORK(KONEIJ),WORK(KONEIA),ISDEN,WORK(KLAMDP),1,
+     *                 WORK(KLAMDH),1,WORK(KEND1),LWRK1)
 C
 C--------------------------------------------------------------
 C     Calculate ao-transformed zeta-kappa-bar-0 and HF density.
@@ -853,9 +830,9 @@ C
 C
          ISDEN = 1
          CALL DZERO(WORK(KKABAO),N2BST(1))
-         CALL CC_DENAO(WORK(KKABAO),WORK(KOFDAI),WORK(KOFDAB),
-     *                 WORK(KOFDIJ),WORK(KOFDIA),WORK(KLAMDP),
-     *                 WORK(KLAMDH),WORK(KEND1),LWRK1,ISDEN)
+         CALL CC_DENAO(WORK(KKABAO),ISDEN,WORK(KOFDAI),WORK(KOFDAB),
+     *                 WORK(KOFDIJ),WORK(KOFDIA),ISDEN,WORK(KLAMDP),1,
+     *                 WORK(KLAMDH),1,WORK(KEND1),LWRK1)
 C
          CALL CCS_D1AO(WORK(KDHFAO),WORK(KEND1),LWRK1)
          IF (FROIMP .OR. FROEXP) THEN
@@ -915,13 +892,8 @@ C----------------------------------------
 C     Read zero'th order zeta amplitudes.
 C----------------------------------------
 C
-         CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ','UNFORMATTED',
-     *               IDUMMY,.FALSE.)
-         REWIND(LULAM)
-         READ(LULAM) NVEDUM, MODDUM
-         READ(LULAM) (WORK(KZ1AM + I - 1), I = 1,NT1AMX)
-         READ(LULAM) (WORK(KZ2AM + I - 1), I = 1,NT2AMX)
-         CALL GPCLOSE(LULAM,'KEEP')
+         IOPT   = 3
+         CALL CC_RDRSP('L0',0,ISYM0,IOPT,MODEL,WORK(KSKOD),WORK(KZ2AM))
 C
          CALL DZERO(WORK(KZ1AM),NT1AMX)
 C
@@ -929,12 +901,8 @@ C-------------------------------------------
 C     Read zero'th order cluster amplitudes.
 C-------------------------------------------
 C
-         CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
-     *               IDUMMY,.FALSE.)
-         REWIND(LUTAM)
-         READ(LUTAM) (WORK(KT1AM + I - 1), I = 1,NT1AMX)
-         READ(LUTAM) (WORK(KT2AM + I - 1), I = 1,NT2AMX)
-         CALL GPCLOSE(LUTAM,'KEEP')
+         IOPT = 3
+         CALL CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,WORK(KT1AM),WORK(KT2AM))
 C
          CALL DZERO(WORK(KT1AM),NT1AMX)
 C
@@ -1247,6 +1215,7 @@ C           Work space allocation two.
 C-------------------------------------
 C
             ISYDEN = ISYMD
+            ISYDNQ = MULD2H(ISYDEN,ISYRLX)
 C
             IF (CCSD .OR. CC2) THEN
                KD2IJG = KEND1
@@ -1267,35 +1236,35 @@ C
                IF (CCSD .OR. CC2) THEN
                   ! for lambda^q transformed densities
                   KDB2IJG = KEND2
-                  KDB2AIG = KDB2IJG + ND2IJG(ISYDEN)
-                  KDB2IAG = KDB2AIG + ND2AIG(ISYDEN)
-                  KDB2ABG = KDB2IAG + ND2AIG(ISYDEN)
-                  KEND2   = KDB2ABG + ND2ABG(ISYDEN)
+                  KDB2AIG = KDB2IJG + ND2IJG(ISYDNQ)
+                  KDB2IAG = KDB2AIG + ND2AIG(ISYDNQ)
+                  KDB2ABG = KDB2IAG + ND2AIG(ISYDNQ)
+                  KEND2   = KDB2ABG + ND2ABG(ISYDNQ)
 
                   ! for lambda^q2 transformed densities
                   KDB22IJG = KEND2
-                  KDB22AIG = KDB22IJG + ND2IJG(ISYDEN)
-                  KDB22IAG = KDB22AIG + ND2AIG(ISYDEN)
-                  KDB22ABG = KDB22IAG + ND2AIG(ISYDEN)
-                  KEND2    = KDB22ABG + ND2ABG(ISYDEN)
+                  KDB22AIG = KDB22IJG + ND2IJG(ISYDNQ)
+                  KDB22IAG = KDB22AIG + ND2AIG(ISYDNQ)
+                  KDB22ABG = KDB22IAG + ND2AIG(ISYDNQ)
+                  KEND2    = KDB22ABG + ND2ABG(ISYDNQ)
                ELSE IF (MP2) THEN
                   ! for lambda^q transformed densities
                   KDB2IJG = KEND2
-                  KDB2IAG = KDB2IJG + NF2IJG(ISYDEN)
-                  KEND2   = KDB2IAG + ND2AIG(ISYDEN)
+                  KDB2IAG = KDB2IJG + NF2IJG(ISYDNQ)
+                  KEND2   = KDB2IAG + ND2AIG(ISYDNQ)
 
                   ! for lambda^q2 transformed densities
                   KDB22IJG = KEND2
-                  KDB22IAG = KDB22IJG + NF2IJG(ISYDEN)
-                  KEND2    = KDB22IAG + ND2AIG(ISYDEN)
+                  KDB22IAG = KDB22IJG + NF2IJG(ISYDNQ)
+                  KEND2    = KDB22IAG + ND2AIG(ISYDNQ)
                ELSE IF (CCS) THEN
                   ! for lambda^q transformed densities
                   KDB2IJG = KEND2
-                  KEND2   = KDB2IJG + NF2IJG(ISYDEN)
+                  KEND2   = KDB2IJG + NF2IJG(ISYDNQ)
 
                   ! for lambda^q2 transformed densities
                   KDB22IJG = KEND2
-                  KEND2    = KDB22IJG + NF2IJG(ISYDEN)
+                  KEND2    = KDB22IJG + NF2IJG(ISYDNQ)
                ENDIF
             END IF
 C
@@ -1323,23 +1292,23 @@ C
             ENDIF
 
             IF (I1DXORD.EQ.1) THEN
-              CALL DZERO(WORK(KDB2IJG),NF2IJG(ISYDEN))
+              CALL DZERO(WORK(KDB2IJG),NF2IJG(ISYDNQ))
               IF (.NOT. CCS) THEN
-                 CALL DZERO(WORK(KDB2IAG),ND2AIG(ISYDEN))
+                 CALL DZERO(WORK(KDB2IAG),ND2AIG(ISYDNQ))
                  IF (CCSD .OR. CC2) THEN
-                    CALL DZERO(WORK(KDB2AIG),ND2AIG(ISYDEN))
-                    CALL DZERO(WORK(KDB2ABG),ND2ABG(ISYDEN))
-                    CALL DZERO(WORK(KDB2IJG),ND2IJG(ISYDEN))
+                    CALL DZERO(WORK(KDB2AIG),ND2AIG(ISYDNQ))
+                    CALL DZERO(WORK(KDB2ABG),ND2ABG(ISYDNQ))
+                    CALL DZERO(WORK(KDB2IJG),ND2IJG(ISYDNQ))
                  ENDIF
               ENDIF
 
-              CALL DZERO(WORK(KDB22IJG),NF2IJG(ISYDEN))
+              CALL DZERO(WORK(KDB22IJG),NF2IJG(ISYDNQ))
               IF (.NOT. CCS) THEN
-                 CALL DZERO(WORK(KDB22IAG),ND2AIG(ISYDEN))
+                 CALL DZERO(WORK(KDB22IAG),ND2AIG(ISYDNQ))
                  IF (CCSD .OR. CC2) THEN
-                    CALL DZERO(WORK(KDB22AIG),ND2AIG(ISYDEN))
-                    CALL DZERO(WORK(KDB22ABG),ND2ABG(ISYDEN))
-                    CALL DZERO(WORK(KDB22IJG),ND2IJG(ISYDEN))
+                    CALL DZERO(WORK(KDB22AIG),ND2AIG(ISYDNQ))
+                    CALL DZERO(WORK(KDB22ABG),ND2ABG(ISYDNQ))
+                    CALL DZERO(WORK(KDB22IJG),ND2IJG(ISYDNQ))
                  ENDIF
               ENDIF
             END IF
@@ -1353,36 +1322,41 @@ C
      *                     WORK(KD2ABG),WORK(KZ2AM),WORK(KT2AM),
      *                     WORK(KT2AMT),WORK(KMINT),WORK(KXMAT),
      *                     WORK(KYMAT),WORK(KONEAB),WORK(KONEAI),
-     *                     WORK(KONEIA),WORK(KMIRES),WORK(KLAMDH),
-     *                     WORK(KLAMDP),WORK(KEND2),LWRK2,IDEL,ISYMD)
+     *                     WORK(KONEIA),WORK(KMIRES),
+     *                     WORK(KLAMDH),1,WORK(KLAMDP),1,
+     *                     WORK(KEND2),LWRK2,IDEL,ISYMD)
               IF (I1DXORD.EQ.1) THEN
                 CALL CC_DEN2(WORK(KDB2IJG),WORK(KDB2AIG),
      *                       WORK(KDB2IAG),WORK(KDB2ABG),
      *                       WORK(KZ2AM),WORK(KT2AM),WORK(KT2AMT),
      *                       WORK(KMINT),WORK(KXMAT),WORK(KYMAT),
      *                       WORK(KONEAB),WORK(KONEAI),WORK(KONEIA),
-     *                       WORK(KMIRES),WORK(KLAMDHQ),WORK(KLAMDP),
+     *                       WORK(KMIRES),
+     *                       WORK(KLAMDHQ),ISYRLX,WORK(KLAMDP),1,
      *                       WORK(KEND2),LWRK2,IDEL,ISYMD)
                 CALL CC_DEN2(WORK(KDB2IJG),WORK(KDB2AIG),
      *                       WORK(KDB2IAG),WORK(KDB2ABG),
      *                       WORK(KZ2AM),WORK(KT2AM),WORK(KT2AMT),
      *                       WORK(KMINT),WORK(KXMAT),WORK(KYMAT),
      *                       WORK(KONEAB),WORK(KONEAI),WORK(KONEIA),
-     *                       WORK(KMIRES),WORK(KLAMDH),WORK(KLAMDPQ),
+     *                       WORK(KMIRES),
+     *                       WORK(KLAMDH),1,WORK(KLAMDPQ),ISYRLX,
      *                       WORK(KEND2),LWRK2,IDEL,ISYMD)
                 CALL CC_DEN2(WORK(KDB22IJG),WORK(KDB22AIG),
      *                       WORK(KDB22IAG),WORK(KDB22ABG),
      *                       WORK(KZ2AM),WORK(KT2AM),WORK(KT2AMT),
      *                       WORK(KMINT),WORK(KXMAT),WORK(KYMAT),
      *                       WORK(KONEAB),WORK(KONEAI),WORK(KONEIA),
-     *                       WORK(KMIRES),WORK(KLAMDHQ2),WORK(KLAMDP),
+     *                       WORK(KMIRES),
+     *                       WORK(KLAMDHQ2),ISYRLX,WORK(KLAMDP),1,
      *                       WORK(KEND2),LWRK2,IDEL,ISYMD)
                 CALL CC_DEN2(WORK(KDB22IJG),WORK(KDB22AIG),
      *                       WORK(KDB22IAG),WORK(KDB22ABG),
      *                       WORK(KZ2AM),WORK(KT2AM),WORK(KT2AMT),
      *                       WORK(KMINT),WORK(KXMAT),WORK(KYMAT),
      *                       WORK(KONEAB),WORK(KONEAI),WORK(KONEIA),
-     *                       WORK(KMIRES),WORK(KLAMDH),WORK(KLAMDPQ2),
+     *                       WORK(KMIRES),
+     *                       WORK(KLAMDH),1,WORK(KLAMDPQ2),ISYRLX,
      *                       WORK(KEND2),LWRK2,IDEL,ISYMD)
               END IF
             ELSE IF (CC2) THEN
@@ -1390,36 +1364,41 @@ C
      *                     WORK(KD2ABG),WORK(KZ2AM),WORK(KT2AM),
      *                     WORK(KT2AMT),WORK(KEND2),WORK(KEND2),
      *                     WORK(KEND2),WORK(KONEAB),WORK(KONEAI),
-     *                     WORK(KONEIA),WORK(KEND2),WORK(KLAMDH),
-     *                     WORK(KLAMDP),WORK(KEND2),LWRK2,IDEL,ISYMD)
+     *                     WORK(KONEIA),WORK(KEND2),
+     *                     WORK(KLAMDH),1,WORK(KLAMDP),1,
+     *                     WORK(KEND2),LWRK2,IDEL,ISYMD)
               IF (I1DXORD.EQ.1) THEN
                 CALL CC_DEN2(WORK(KDB2IJG),WORK(KDB2AIG),
      *                       WORK(KDB2IAG),WORK(KDB2ABG),
      *                       WORK(KZ2AM),WORK(KT2AM),WORK(KT2AMT),
      *                       WORK(KEND2),WORK(KEND2),WORK(KEND2),
      *                       WORK(KONEAB),WORK(KONEAI),WORK(KONEIA),
-     *                       WORK(KEND2),WORK(KLAMDHQ),WORK(KLAMDP),
+     *                       WORK(KEND2),
+     *                       WORK(KLAMDHQ),ISYRLX,WORK(KLAMDP),1,
      *                       WORK(KEND2),LWRK2,IDEL,ISYMD)
                 CALL CC_DEN2(WORK(KDB2IJG),WORK(KDB2AIG),
      *                       WORK(KDB2IAG),WORK(KDB2ABG),
      *                       WORK(KZ2AM),WORK(KT2AM),WORK(KT2AMT),
      *                       WORK(KEND2),WORK(KEND2),WORK(KEND2),
      *                       WORK(KONEAB),WORK(KONEAI),WORK(KONEIA),
-     *                       WORK(KEND2),WORK(KLAMDH),WORK(KLAMDPQ),
+     *                       WORK(KEND2),
+     *                       WORK(KLAMDH),1,WORK(KLAMDPQ),ISYRLX,
      *                       WORK(KEND2),LWRK2,IDEL,ISYMD)
                 CALL CC_DEN2(WORK(KDB22IJG),WORK(KDB22AIG),
      *                       WORK(KDB22IAG),WORK(KDB22ABG),
      *                       WORK(KZ2AM),WORK(KT2AM),WORK(KT2AMT),
      *                       WORK(KEND2),WORK(KEND2),WORK(KEND2),
      *                       WORK(KONEAB),WORK(KONEAI),WORK(KONEIA),
-     *                       WORK(KEND2),WORK(KLAMDHQ2),WORK(KLAMDP),
+     *                       WORK(KEND2),
+     *                       WORK(KLAMDHQ2),ISYRLX,WORK(KLAMDP),1,
      *                       WORK(KEND2),LWRK2,IDEL,ISYMD)
                 CALL CC_DEN2(WORK(KDB22IJG),WORK(KDB22AIG),
      *                       WORK(KDB22IAG),WORK(KDB22ABG),
      *                       WORK(KZ2AM),WORK(KT2AM),WORK(KT2AMT),
      *                       WORK(KEND2),WORK(KEND2),WORK(KEND2),
      *                       WORK(KONEAB),WORK(KONEAI),WORK(KONEIA),
-     *                       WORK(KEND2),WORK(KLAMDH),WORK(KLAMDPQ2),
+     *                       WORK(KEND2),
+     *                       WORK(KLAMDH),1,WORK(KLAMDPQ2),ISYRLX,
      *                       WORK(KEND2),LWRK2,IDEL,ISYMD)
               END IF
             ELSE IF (MP2) THEN
@@ -1479,15 +1458,17 @@ C
                DO 130 G  = 1, NBAS(ISYMG)
 C
                   IGAM   = G + IBAS(ISYMG)
+C
                   ISYMPQ = MULD2H(ISYMG,ISYDEN)
+                  ISYPQ1 = MULD2H(ISYMG,ISYDNQ)
 C
 C--------------------------------------------------------
 C                 Set addresses for 2-electron densities.
 C--------------------------------------------------------
 C
                   AUTIME = SECOND()
+
                   IF (CCSD .OR. CC2) THEN
-                     ISYMPQ = MULD2H(ISYMG,ISYDEN)
                      KD2GIJ = KD2IJG + ID2IJG(ISYMPQ,ISYMG)
      *                      + NMATIJ(ISYMPQ)*(G - 1) 
                      KD2GAI = KD2AIG + ID2AIG(ISYMPQ,ISYMG)
@@ -1497,23 +1478,22 @@ C
                      KD2GIA = KD2IAG + ID2AIG(ISYMPQ,ISYMG)
      *                      + NT1AM(ISYMPQ)*(G - 1)
                      IF (I1DXORD.EQ.1) THEN
-                       ISYPQ1   = MULD2H(ISYMG,ISYRLX)
-                       KDB2GIJ  = KDB2IJG  + ID2IJG(ISYMPQ,ISYMG)
-     *                          + NMATIJ(ISYMPQ)*(G - 1) 
-                       KDB2GAI  = KDB2AIG  + ID2AIG(ISYMPQ,ISYMG)
-     *                          + NT1AM(ISYMPQ)*(G - 1)
-                       KDB2GAB  = KDB2ABG  + ID2ABG(ISYMPQ,ISYMG)
-     *                          + NMATAB(ISYMPQ)*(G - 1)
-                       KDB2GIA  = KDB2IAG  + ID2AIG(ISYMPQ,ISYMG)
-     *                          + NT1AM(ISYMPQ)*(G - 1)
-                       KDB22GIJ = KDB22IJG + ID2IJG(ISYMPQ,ISYMG)
-     *                          + NMATIJ(ISYMPQ)*(G - 1) 
-                       KDB22GAI = KDB22AIG + ID2AIG(ISYMPQ,ISYMG)
-     *                          + NT1AM(ISYMPQ)*(G - 1)
-                       KDB22GAB = KDB22ABG + ID2ABG(ISYMPQ,ISYMG)
-     *                          + NMATAB(ISYMPQ)*(G - 1)
-                       KDB22GIA = KDB22IAG + ID2AIG(ISYMPQ,ISYMG)
-     *                          + NT1AM(ISYMPQ)*(G - 1)
+                       KDB2GIJ  = KDB2IJG  + ID2IJG(ISYPQ1,ISYMG)
+     *                          + NMATIJ(ISYPQ1)*(G - 1) 
+                       KDB2GAI  = KDB2AIG  + ID2AIG(ISYPQ1,ISYMG)
+     *                          + NT1AM(ISYPQ1)*(G - 1)
+                       KDB2GAB  = KDB2ABG  + ID2ABG(ISYPQ1,ISYMG)
+     *                          + NMATAB(ISYPQ1)*(G - 1)
+                       KDB2GIA  = KDB2IAG  + ID2AIG(ISYPQ1,ISYMG)
+     *                          + NT1AM(ISYPQ1)*(G - 1)
+                       KDB22GIJ = KDB22IJG + ID2IJG(ISYPQ1,ISYMG)
+     *                          + NMATIJ(ISYPQ1)*(G - 1) 
+                       KDB22GAI = KDB22AIG + ID2AIG(ISYPQ1,ISYMG)
+     *                          + NT1AM(ISYPQ1)*(G - 1)
+                       KDB22GAB = KDB22ABG + ID2ABG(ISYPQ1,ISYMG)
+     *                          + NMATAB(ISYPQ1)*(G - 1)
+                       KDB22GIA = KDB22IAG + ID2AIG(ISYPQ1,ISYMG)
+     *                          + NT1AM(ISYPQ1)*(G - 1)
                      END IF
                   ELSE IF (MP2) THEN
                      KD2GIJ = KD2IJG + IF2IJG(ISYMPQ,ISYMG)
@@ -1521,23 +1501,23 @@ C
                      KD2GIA = KD2IAG + ID2AIG(ISYMPQ,ISYMG)
      *                      + NT1AM(ISYMPQ)*(G - 1)
                      IF (I1DXORD.EQ.1) THEN
-                       KDB2GIJ  = KDB2IJG + IF2IJG(ISYMPQ,ISYMG)
-     *                          + NFROIJ(ISYMPQ)*(G - 1)
-                       KDB2GIA  = KDB2IAG + ID2AIG(ISYMPQ,ISYMG)
-     *                          + NT1AM(ISYMPQ)*(G - 1)
-                       KDB22GIJ = KDB22IJG + IF2IJG(ISYMPQ,ISYMG)
-     *                          + NFROIJ(ISYMPQ)*(G - 1)
-                       KDB22GIA = KDB22IAG + ID2AIG(ISYMPQ,ISYMG)
-     *                          + NT1AM(ISYMPQ)*(G - 1)
+                       KDB2GIJ  = KDB2IJG  + IF2IJG(ISYPQ1,ISYMG)
+     *                          + NFROIJ(ISYPQ1)*(G - 1)
+                       KDB2GIA  = KDB2IAG  + ID2AIG(ISYPQ1,ISYMG)
+     *                          + NT1AM(ISYPQ1)*(G - 1)
+                       KDB22GIJ = KDB22IJG + IF2IJG(ISYPQ1,ISYMG)
+     *                          + NFROIJ(ISYPQ1)*(G - 1)
+                       KDB22GIA = KDB22IAG + ID2AIG(ISYPQ1,ISYMG)
+     *                          + NT1AM(ISYPQ1)*(G - 1)
                      END IF
                   ELSE IF (CCS) THEN
                      KD2GIJ = KD2IJG + IF2IJG(ISYMPQ,ISYMG)
      *                      + NFROIJ(ISYMPQ)*(G - 1)
                      IF (I1DXORD.EQ.1) THEN
-                       KDB2GIJ  = KDB2IJG + IF2IJG(ISYMPQ,ISYMG)
-     *                          + NFROIJ(ISYMPQ)*(G - 1)
-                       KDB22GIJ = KDB22IJG + IF2IJG(ISYMPQ,ISYMG)
-     *                          + NFROIJ(ISYMPQ)*(G - 1)
+                       KDB2GIJ  = KDB2IJG  + IF2IJG(ISYPQ1,ISYMG)
+     *                          + NFROIJ(ISYPQ1)*(G - 1)
+                       KDB22GIJ = KDB22IJG + IF2IJG(ISYPQ1,ISYMG)
+     *                          + NFROIJ(ISYPQ1)*(G - 1)
                      END IF
                      KLAMDH = KEND3
                   ENDIF
@@ -1651,11 +1631,11 @@ C                   ----------------------------------------
 C
                     AUTIM1 = SECOND()
                     IF (CCSD .OR. CC2) THEN
-                       CALL CC_DENAO(WORK(KAODEN),WORK(KD2GAI),
-     *                               WORK(KD2GAB),
-     *                               WORK(KD2GIJ),WORK(KD2GIA),
-     *                               WORK(KLAMDP),WORK(KLAMDH),
-     *                               WORK(KEND4),LWRK4,ISYMPQ)
+                       CALL CC_DENAO(WORK(KAODEN),ISYMPQ,
+     *                               WORK(KD2GAI),WORK(KD2GAB),
+     *                               WORK(KD2GIJ),WORK(KD2GIA),ISYMPQ,
+     *                               WORK(KLAMDP),1,WORK(KLAMDH),1,
+     *                               WORK(KEND4),LWRK4)
                     ELSE
                        CALL CCMP_DAO(WORK(KAODEN),WORK(KD2GIJ),
      *                               WORK(KD2GIA),WORK(KCMO),
@@ -1959,7 +1939,7 @@ C
      *              TIMONE
       ENDIF
 C
- 999  CONTINUE
+  999 CONTINUE
       CALL QEXIT('CCEFFFOCK')
       RETURN
   165 CALL QUIT('Error reading CCTWODEN')

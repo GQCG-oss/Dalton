@@ -225,13 +225,8 @@ C     Read zero'th order zeta amplitudes.
 C----------------------------------------
 C
       IF (.NOT.CCS) THEN
-        IF (LULAM .LE. 0) CALL GPOPEN(LULAM,'CCSAV_LAM','OLD',' ',
-     *              'UNFORMATTED',IDUMMY,.FALSE.)
-        REWIND(LULAM)
-        READ(LULAM) NVEDUM, MODDUM
-        READ(LULAM) (WORK(KZ1AM + I - 1), I = 1,NT1AMX)
-        READ(LULAM) (WORK(KZ2AM + I - 1), I = 1,NT2AMX)
-        CALL GPCLOSE(LULAM,'KEEP')
+        IOPT   = 3
+        CALL CC_RDRSP('L0',0,1,IOPT,MODEL,WORK(KZ1AM),WORK(KZ2AM))
       ELSE
         CALL DZERO(WORK(KZ1AM),NT1AMX)
         CALL DZERO(WORK(KZ2AM),NT2AMX)
@@ -249,13 +244,8 @@ C     Read zero'th order cluster amplitudes.
 C-------------------------------------------
 C
       IF (.NOT.CCS) THEN
-         LUTAM = 0
-         CALL GPOPEN(LUTAM,'CCSD_TAM','OLD',' ','UNFORMATTED',IDUMMY,
-     *               .FALSE.)
-         REWIND(LUTAM)
-         READ(LUTAM) (WORK(KT1AM + I - 1), I = 1,NT1AMX)
-         READ(LUTAM) (WORK(KT2AM + I - 1), I = 1,NT2AMX)
-         CALL GPCLOSE(LUTAM,'KEEP')
+         IOPT = 3
+         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),WORK(KT2AM))
       ELSE
         CALL DZERO(WORK(KT1AM),NT1AMX)
         CALL DZERO(WORK(KT2AM),NT2AMX)
@@ -380,14 +370,7 @@ C----------------------------------------------------------
 C     Read MO-coefficients from interface file and reorder.
 C----------------------------------------------------------
 C
-      CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
-      REWIND LUSIFC
-      CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
-      READ (LUSIFC)
-      READ (LUSIFC)
-      READ (LUSIFC) (WORK(KCMO+I-1), I=1,NLAMDS)
-      CALL GPCLOSE(LUSIFC,'KEEP')
+      CALL CC_GET_CMO(WORK(KCMO))
 C
       CALL CMO_REORDER(WORK(KCMO),WORK(KEND1),LWRK1)
 C
@@ -402,9 +385,9 @@ C
 C
       ISDEN = 1
       CALL DZERO(WORK(KKABAO),N2BST(1))
-      CALL CC_DENAO(WORK(KKABAO),WORK(KOFDAI),WORK(KOFDAB),
-     *              WORK(KOFDIJ),WORK(KOFDIA),WORK(KCMO),
-     *              WORK(KCMO),WORK(KEND1),LWRK1,ISDEN)
+      CALL CC_DENAO(WORK(KKABAO),ISDEN,WORK(KOFDAI),WORK(KOFDAB),
+     *              WORK(KOFDIJ),WORK(KOFDIA),ISDEN,WORK(KCMO),1,
+     *              WORK(KCMO),1,WORK(KEND1),LWRK1)
 C
       CALL CCS_D1AO(WORK(KDHFAO),WORK(KEND1),LWRK1)
       CALL DSCAL(N2BST(1),HALF,WORK(KDHFAO),1) 
@@ -421,9 +404,9 @@ C     We thus have the entire effective one-electron density.
 C------------------------------------------------------------
 C
       ISDEN = 1
-      CALL CC_DENAO(WORK(KAODEN),WORK(KONEAI),WORK(KONEAB),
-     *              WORK(KONEIJ),WORK(KONEIA),WORK(KLAMDP),
-     *              WORK(KLAMDH),WORK(KEND1),LWRK1,ISDEN)
+      CALL CC_DENAO(WORK(KAODEN),ISDEN,WORK(KONEAI),WORK(KONEAB),
+     *              WORK(KONEIJ),WORK(KONEIA),ISDEN,WORK(KLAMDP),1,
+     *              WORK(KLAMDH),1,WORK(KEND1),LWRK1)
 C
 C--------------------------------------------------------
 C     Calculate M-intermediate of zeta- and t-amplitudes.
@@ -557,32 +540,32 @@ C
                   XNORM=DNRM2(N2BST(ISYM0),WORK(KDHFAO),1)
                   WRITE (LUPRI,*) 'norm^2(dhfao):',xnorm
 c                 WRITE (LUPRI,*) 'DHFAO:'
-c                 CALL CC_PRONELAO(WORK(KDHFAO),1)
+c                 CALL CC_PRONELAO(WORK(KDHFAO),ISYM0)
 
                   XNORM=DNRM2(N2BST(ISYRLX),WORK(KB1DHFAO),1)
                   WRITE (LUPRI,*) 'norm^2(b1dhfao):',xnorm
 c                 WRITE (LUPRI,*) 'B1DHFAO:'
-c                 CALL CC_PRONELAO(WORK(KB1DHFAO),1)
+c                 CALL CC_PRONELAO(WORK(KB1DHFAO),ISYRLX)
 
                   XNORM=DNRM2(N2BST(ISYRLX),WORK(KB2DHFAO),1)
                   WRITE (LUPRI,*) 'norm^2(b2dhfao):',xnorm
 c                 WRITE (LUPRI,*) 'B2DHFAO:'
-c                 CALL CC_PRONELAO(WORK(KB2DHFAO),1)
+c                 CALL CC_PRONELAO(WORK(KB2DHFAO),ISYRLX)
 
                   XNORM=DNRM2(N2BST(ISYM0),WORK(KKABAO),1)
                   WRITE (LUPRI,*) 'norm^2(kabao):',xnorm
 c                 WRITE (LUPRI,*) 'KABAO:'
-c                 CALL CC_PRONELAO(WORK(KKABAO),1)
+c                 CALL CC_PRONELAO(WORK(KKABAO),ISYM0)
 
                   XNORM=DNRM2(N2BST(ISYRLX),WORK(KB1KABAO),1)
                   WRITE (LUPRI,*) 'norm^2(b1kabao):',xnorm
 c                 WRITE (LUPRI,*) 'B1KABAO:'
-c                 CALL CC_PRONELAO(WORK(KB1KABAO),1)
+c                 CALL CC_PRONELAO(WORK(KB1KABAO),ISYRLX)
 
                   XNORM=DNRM2(N2BST(ISYRLX),WORK(KB2KABAO),1)
                   WRITE (LUPRI,*) 'norm^2(b2kabao):',xnorm
 c                 WRITE (LUPRI,*) 'B2KABAO:'
-c                 CALL CC_PRONELAO(WORK(KB2KABAO),1)
+c                 CALL CC_PRONELAO(WORK(KB2KABAO),ISYRLX)
                END IF
 
             END IF
@@ -705,6 +688,7 @@ C              Work space allocation two.
 C----------------------------------------
 C
                ISYDEN = ISYMD
+               ISYDNB = MULD2H(ISYDEN,ISYRLX)
 C
                KD2IJG = KEND1A
                KD2AIG = KD2IJG + ND2IJG(ISYDEN)
@@ -715,17 +699,17 @@ C
                IF (I1DXORD.EQ.1) THEN
                   ! for lambda^q transformed
                   KDB2IJG = KEND2
-                  KDB2AIG = KDB2IJG + ND2IJG(ISYDEN)
-                  KDB2IAG = KDB2AIG + ND2AIG(ISYDEN)
-                  KDB2ABG = KDB2IAG + ND2AIG(ISYDEN)
-                  KEND2   = KDB2ABG + ND2ABG(ISYDEN)
+                  KDB2AIG = KDB2IJG + ND2IJG(ISYDNB)
+                  KDB2IAG = KDB2AIG + ND2AIG(ISYDNB)
+                  KDB2ABG = KDB2IAG + ND2AIG(ISYDNB)
+                  KEND2   = KDB2ABG + ND2ABG(ISYDNB)
 
                   ! for lambda^q2 transformed
                   KDB22IJG = KEND2
-                  KDB22AIG = KDB22IJG + ND2IJG(ISYDEN)
-                  KDB22IAG = KDB22AIG + ND2AIG(ISYDEN)
-                  KDB22ABG = KDB22IAG + ND2AIG(ISYDEN)
-                  KEND2    = KDB22ABG + ND2ABG(ISYDEN)
+                  KDB22AIG = KDB22IJG + ND2IJG(ISYDNB)
+                  KDB22IAG = KDB22AIG + ND2AIG(ISYDNB)
+                  KDB22ABG = KDB22IAG + ND2AIG(ISYDNB)
+                  KEND2    = KDB22ABG + ND2ABG(ISYDNB)
                END IF
 C
                LWRK2  = LWORK  - KEND2
@@ -744,15 +728,15 @@ C
                CALL DZERO(WORK(KD2ABG),ND2ABG(ISYDEN))
 C
                IF (I1DXORD.EQ.1) THEN
-                  CALL DZERO(WORK(KDB2IJG),ND2IJG(ISYDEN))
-                  CALL DZERO(WORK(KDB2AIG),ND2AIG(ISYDEN))
-                  CALL DZERO(WORK(KDB2IAG),ND2AIG(ISYDEN))
-                  CALL DZERO(WORK(KDB2ABG),ND2ABG(ISYDEN))
+                  CALL DZERO(WORK(KDB2IJG),ND2IJG(ISYDNB))
+                  CALL DZERO(WORK(KDB2AIG),ND2AIG(ISYDNB))
+                  CALL DZERO(WORK(KDB2IAG),ND2AIG(ISYDNB))
+                  CALL DZERO(WORK(KDB2ABG),ND2ABG(ISYDNB))
 
-                  CALL DZERO(WORK(KDB22IJG),ND2IJG(ISYDEN))
-                  CALL DZERO(WORK(KDB22AIG),ND2AIG(ISYDEN))
-                  CALL DZERO(WORK(KDB22IAG),ND2AIG(ISYDEN))
-                  CALL DZERO(WORK(KDB22ABG),ND2ABG(ISYDEN))
+                  CALL DZERO(WORK(KDB22IJG),ND2IJG(ISYDNB))
+                  CALL DZERO(WORK(KDB22AIG),ND2AIG(ISYDNB))
+                  CALL DZERO(WORK(KDB22IAG),ND2AIG(ISYDNB))
+                  CALL DZERO(WORK(KDB22ABG),ND2ABG(ISYDNB))
                END IF
 C
 C-------------------------------------------------------------------
@@ -765,8 +749,8 @@ C
      *                      WORK(KD2ABG),WORK(KZ2AM),WORK(KT2AM),
      *                      WORK(KT2AMT),WORK(KMINT),WORK(KXMAT),
      *                      WORK(KYMAT),WORK(KONEAB),WORK(KONEAI),
-     *                      WORK(KONEIA),WORK(KMIRES),WORK(KLAMDH),
-     *                      WORK(KLAMDP),WORK(KEND2),LWRK2,IDEL,ISYMD)
+     *                      WORK(KONEIA),WORK(KMIRES),WORK(KLAMDH),1,
+     *                      WORK(KLAMDP),1,WORK(KEND2),LWRK2,IDEL,ISYMD)
 C
                IF (I1DXORD.EQ.1) THEN
                  CALL CC_DEN2(WORK(KDB2IJG),WORK(KDB2AIG),WORK(KDB2IAG),
@@ -774,7 +758,7 @@ C
      *                        WORK(KT2AMT),WORK(KMINT),WORK(KXMAT),
      *                        WORK(KYMAT),WORK(KONEAB),WORK(KONEAI),
      *                        WORK(KONEIA),WORK(KMIRES),
-     *                        WORK(KLAMDHQ),WORK(KLAMDP),
+     *                        WORK(KLAMDHQ),ISYRLX,WORK(KLAMDP),1,
      *                        WORK(KEND2),LWRK2,IDEL,ISYMD)
 C
                  CALL CC_DEN2(WORK(KDB2IJG),WORK(KDB2AIG),WORK(KDB2IAG),
@@ -782,7 +766,7 @@ C
      *                        WORK(KT2AMT),WORK(KMINT),WORK(KXMAT),
      *                        WORK(KYMAT),WORK(KONEAB),WORK(KONEAI),
      *                        WORK(KONEIA),WORK(KMIRES),
-     *                        WORK(KLAMDH),WORK(KLAMDPQ),
+     *                        WORK(KLAMDH),1,WORK(KLAMDPQ),ISYRLX,
      *                        WORK(KEND2),LWRK2,IDEL,ISYMD)
 C
                  CALL CC_DEN2(WORK(KDB22IJG),WORK(KDB22AIG),
@@ -791,7 +775,7 @@ C
      *                        WORK(KT2AMT),WORK(KMINT),WORK(KXMAT),
      *                        WORK(KYMAT),WORK(KONEAB),WORK(KONEAI),
      *                        WORK(KONEIA),WORK(KMIRES),
-     *                        WORK(KLAMDHQ2),WORK(KLAMDP),
+     *                        WORK(KLAMDHQ2),ISYRLX,WORK(KLAMDP),1,
      *                        WORK(KEND2),LWRK2,IDEL,ISYMD)
 C
                  CALL CC_DEN2(WORK(KDB22IJG),WORK(KDB22AIG),
@@ -800,7 +784,7 @@ C
      *                        WORK(KT2AMT),WORK(KMINT),WORK(KXMAT),
      *                        WORK(KYMAT),WORK(KONEAB),WORK(KONEAI),
      *                        WORK(KONEIA),WORK(KMIRES),
-     *                        WORK(KLAMDH),WORK(KLAMDPQ2),
+     *                        WORK(KLAMDH),1,WORK(KLAMDPQ2),ISYRLX,
      *                        WORK(KEND2),LWRK2,IDEL,ISYMD)
                END IF
 C
@@ -874,23 +858,23 @@ C
                         IF (I1DXORD.EQ.1) THEN
                            ISYPQ1  = MULD2H(ISYMPQ,ISYRLX)
 
-                           KDB2GIJ = KDB2IJG + ID2IJG(ISYMPQ,ISYMG)
-     *                             + NMATIJ(ISYMPQ)*(G - 1) 
-                           KDB2GAI = KDB2AIG + ID2AIG(ISYMPQ,ISYMG)
-     *                             + NT1AM(ISYMPQ)*(G - 1)
-                           KDB2GAB = KDB2ABG + ID2ABG(ISYMPQ,ISYMG)
-     *                             + NMATAB(ISYMPQ)*(G - 1)
-                           KDB2GIA = KDB2IAG + ID2AIG(ISYMPQ,ISYMG)
-     *                             + NT1AM(ISYMPQ)*(G - 1)
+                           KDB2GIJ = KDB2IJG + ID2IJG(ISYPQ1,ISYMG)
+     *                             + NMATIJ(ISYPQ1)*(G - 1) 
+                           KDB2GAI = KDB2AIG + ID2AIG(ISYPQ1,ISYMG)
+     *                             + NT1AM(ISYPQ1)*(G - 1)
+                           KDB2GAB = KDB2ABG + ID2ABG(ISYPQ1,ISYMG)
+     *                             + NMATAB(ISYPQ1)*(G - 1)
+                           KDB2GIA = KDB2IAG + ID2AIG(ISYPQ1,ISYMG)
+     *                             + NT1AM(ISYPQ1)*(G - 1)
 
-                           KDB22GIJ = KDB22IJG + ID2IJG(ISYMPQ,ISYMG)
-     *                              + NMATIJ(ISYMPQ)*(G - 1) 
-                           KDB22GAI = KDB22AIG + ID2AIG(ISYMPQ,ISYMG)
-     *                              + NT1AM(ISYMPQ)*(G - 1)
-                           KDB22GAB = KDB22ABG + ID2ABG(ISYMPQ,ISYMG)
-     *                              + NMATAB(ISYMPQ)*(G - 1)
-                           KDB22GIA = KDB22IAG + ID2AIG(ISYMPQ,ISYMG)
-     *                              + NT1AM(ISYMPQ)*(G - 1)
+                           KDB22GIJ = KDB22IJG + ID2IJG(ISYPQ1,ISYMG)
+     *                              + NMATIJ(ISYPQ1)*(G - 1) 
+                           KDB22GAI = KDB22AIG + ID2AIG(ISYPQ1,ISYMG)
+     *                              + NT1AM(ISYPQ1)*(G - 1)
+                           KDB22GAB = KDB22ABG + ID2ABG(ISYPQ1,ISYMG)
+     *                              + NMATAB(ISYPQ1)*(G - 1)
+                           KDB22GIA = KDB22IAG + ID2AIG(ISYPQ1,ISYMG)
+     *                              + NT1AM(ISYPQ1)*(G - 1)
                         END IF
 C
 C--------------------------------------------------------------------

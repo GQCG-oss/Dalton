@@ -24,13 +24,11 @@
 #  include <dummy_dec.h>
 #  include <ccorb_dec.h>
 #  include <ccsdsym_dec.h>
-#include <inftap_dec.h>
 #else
 #  include <implicit.h>
 #endif
 #include <priunit.h>
 #include <dummy.h>
-#include <inftap.h>     
 #include <ccorb.h>
 #include <ccsdsym.h>
 
@@ -87,14 +85,7 @@
 *---------------------------------------------------------------------*
 *     read (undifferentiated) MO coefficients from file:
 *---------------------------------------------------------------------*
-      CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
-      REWIND(LUSIFC)
-      CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
-      READ(LUSIFC)
-      READ(LUSIFC)
-      READ(LUSIFC) (WORK(KCMO+I-1),I=1,NLAMDS)
-      CALL GPCLOSE(LUSIFC,'KEEP')
+      CALL CC_GET_CMO(WORK(KCMO))
 
 *---------------------------------------------------------------------*
 *     build Q matrix in MO representation:

@@ -1,5 +1,5 @@
 C  /* Deck ccs_dhfao */
-      SUBROUTINE CC_DHFAO(AODEN,CMOP,ISYMP,CMOH,ISYMH,WORK,LWORK)
+      SUBROUTINE CC_DHFAO(AODEN,ISYDAO,CMOP,ISYMP,CMOH,ISYMH,WORK,LWORK)
 C
 C     Purpose: To set up HF one electron AO-density matrix
 C              allow for two different CMO vectors to handle
@@ -25,10 +25,7 @@ C
       KONEAB = KONEAI + NT1AMX
       KONEIJ = KONEAB + NMATAB(1)
       KONEIA = KONEIJ + NMATIJ(1)
-      KT1AM  = KONEIA + NT1AMX
-      KLAMDH = KT1AM  + NT1AMX
-      KLAMDP = KLAMDH + NLAMDT
-      KEND1  = KLAMDP + NLAMDT
+      KEND1  = KONEIA + NT1AMX
       LWRK1  = LWORK  - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
@@ -75,10 +72,10 @@ C
          CALL QUIT('CC_DHFAO only implemented for total symmetric CMO.')
       END IF
 C
-      ISDEN = 1
-      CALL CC_DENAO(AODEN,WORK(KONEAI),WORK(KONEAB),
-     *              WORK(KONEIJ),WORK(KONEIA),CMOP,
-     *              CMOH,WORK(KEND1),LWRK1,ISDEN)
+      ISYDMO = 1
+      CALL CC_DENAO(AODEN,ISYDAO,WORK(KONEAI),WORK(KONEAB),
+     *              WORK(KONEIJ),WORK(KONEIA),ISYDMO,CMOP,ISYMP,
+     *              CMOH,ISYMH,WORK(KEND1),LWRK1)
 C
       RETURN
       END

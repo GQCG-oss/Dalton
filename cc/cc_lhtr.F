@@ -64,6 +64,8 @@ C
 C
       LOGICAL ETRAN,FCKCON
 C
+      CALL QENTER('CC_LHTR')
+C
       THIRD = ONE/THREE
 C
 C---------------------------------
@@ -186,13 +188,10 @@ C     Read zero'th order cluster amplitudes.
 C-------------------------------------------
 C
       DTIME = SECOND()
-      LUTAM = 0
-      CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     *            .FALSE.)
-      REWIND (LUTAM)
-      READ(LUTAM) (WORK(KT1AM+I-1), I = 1,NT1AMX)
-      READ(LUTAM) (WORK(KT2AM+I-1), I = 1,NT2AMX)
-      CALL GPCLOSE(LUTAM,'KEEP')
+
+      IOPT = 3
+      CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),WORK(KT2AM))
+
       DTIME = SECOND() - DTIME
       TIMIO = TIMIO + DTIME
 C
@@ -708,8 +707,8 @@ C                 CALL DSCAL(NT2BCD(ISY21I),TWO,WORK(KSCRZI),1)
                IF (.NOT. CC2) THEN
 C
                   AUTIME = SECOND()
-                  CALL CC_TI(WORK(KSCRTI),WORK(KT2AM),ISYMOP,
-     *                         WORK(KLAMDH),WORK(KEND3),LWRK3,
+                  CALL CC_TI(WORK(KSCRTI),ISYMTI,WORK(KT2AM),ISYMOP,
+     *                         WORK(KLAMDH),1,WORK(KEND3),LWRK3,
      *                         IDEL,ISYMD)
                   AUTIME = SECOND() - AUTIME
                   TIMETI = TIMETI + AUTIME
@@ -980,12 +979,11 @@ C              Reread zero'th order cluster amplitudes.
 C------------------------------------------------------
 C
                DTIME = SECOND()
-               CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
-     *                     IDUMMY,.FALSE.)
-               REWIND (LUTAM)
-               READ(LUTAM) (WORK(KEND1+I-1), I = 1,NT1AMX)
-               READ(LUTAM) (WORK(KT2AM+I-1), I = 1,NT2AMX)
-               CALL GPCLOSE(LUTAM,'KEEP')
+
+               IOPT = 3
+               CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KEND1),
+     *                       WORK(KT2AM))
+
                DTIME = SECOND() - DTIME
                TIMIO = TIMIO + DTIME
             ENDIF
@@ -1609,5 +1607,7 @@ C
 C
    1  FORMAT(1x,A35,1X,E20.10)
 C
+C
+      CALL QEXIT('CC_LHTR')
       RETURN
       END

@@ -1049,16 +1049,12 @@ C
      *              WORK(KR1AM),WORK(KR2AM))
       IF (ISYMR.EQ.1) CALL CCLR_DIASCL(WORK(KR2AM),TWO,ISYMR)
 C
-C-------------------------------------------
-C     Read zero'th order cluster amplitudes.
-C-------------------------------------------
+C---------------------------------------------------
+C     Read zero'th order cluster singles amplitudes.
+C---------------------------------------------------
 C
-      LUTAM = 0
-      CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
-      REWIND(LUTAM)
-      READ(LUTAM) (WORK(KT1AM + I - 1), I = 1,NT1AM(ISYMOP))
-      CALL GPCLOSE(LUTAM,'KEEP')
+      IOPT = 1
+      CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),DUMMY)
 C
 C---------------------------------------
 C     Set up 2C-E of cluster amplitudes.
@@ -1193,9 +1189,9 @@ C     Add the one electron density in the AO-basis.
 C--------------------------------------------------------
 C
       ISDEN = 1
-      CALL CC_DENAO(AODEN,WORK(KONEAI),WORK(KONEAB),
-     *              WORK(KONEIJ),WORK(KONEIA),WORK(KLAMDP),
-     *              WORK(KLAMDH),WORK(KEND4),LWRK4,ISDEN)
+      CALL CC_DENAO(AODEN,ISDEN,WORK(KONEAI),WORK(KONEAB),
+     *              WORK(KONEIJ),WORK(KONEIA),ISDEN,WORK(KLAMDP),1,
+     *              WORK(KLAMDH),1,WORK(KEND4),LWRK4)
 C
    1  FORMAT(1x,A35,1X,E20.10)
       RETURN
@@ -1371,17 +1367,12 @@ C
       IF (ISYRES .NE. ISYMT2)
      &     CALL QUIT('symmetry mismatch in CC_DXIA21.')
 C
-C-------------------------------------------
-C     Read zero'th order cluster amplitudes.
-C-------------------------------------------
+C---------------------------------------------------
+C     Read zero'th order cluster doubles amplitudes.
+C---------------------------------------------------
 C
-      LUTAM = 0
-      CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     *            .FALSE.)
-      REWIND(LUTAM)
-      READ(LUTAM) 
-      READ(LUTAM) (T2AM(I), I = 1,NT2AMX)
-      CALL GPCLOSE(LUTAM,'KEEP')
+      IOPT = 2
+      CALL CC_RDRSP('R0',0,1,IOPT,MODEL,DUMMY,T2AM)
 C
 C----------------------------------------------------------
 C     Construct <L2|[[Eia,R1],T2]|HF> contribution to DXia.
@@ -1616,9 +1607,9 @@ C--------------------------------------------------------
 C
       CALL DZERO(AODEN,N2BST(1))
       ISDEN = 1
-      CALL CC_DENAO(AODEN,WORK(KONEAI),WORK(KONEAB),
-     *              WORK(KONEIJ),WORK(KONEIA),WORK(KLAMDP),
-     *              WORK(KLAMDH),WORK(KEND1),LWRK1,ISDEN)
+      CALL CC_DENAO(AODEN,ISDEN,WORK(KONEAI),WORK(KONEAB),
+     *              WORK(KONEIJ),WORK(KONEIA),ISDEN,WORK(KLAMDP),1,
+     *              WORK(KLAMDH),1,WORK(KEND1),LWRK1)
 C
       END
 c*DECK TNSRAN
