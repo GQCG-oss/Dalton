@@ -26,7 +26,6 @@ static void pz81_first (FirstFuncDrv *ds,  real factor, const DftDensProp* dp);
 static void pz81_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp);
 static void pz81_third (ThirdFuncDrv *ds,  real factor, const DftDensProp* dp);
 
-static int fun_false(void) { return 0; }
 Functional PZ81Functional = {
   "PZ81",
   fun_false,

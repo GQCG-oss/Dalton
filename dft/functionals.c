@@ -54,9 +54,9 @@ Functional* available_functionals[] = {
     &LYPFunctional,
     &OPTXFunctional,
     &P86cFunctional,
-    &PBEFunctional,
+    &PbexFunctional,
     &PW86xFunctional,
-    &PW91clFunctional,
+    &PW91cFunctional,
     &PW92Functional,
     &PWggaIIc2Functional,
     &PWggaIIcFunctional,
@@ -80,6 +80,8 @@ Functional* available_functionals[] = {
     &LDAFunctional,
     &LDAGaussFunctional,
     &OLYPFunctional,
+    &PBE0Functional,
+    &PBEFunctional,
     &PW91Functional,
     NULL
 };
@@ -299,3 +301,5 @@ dftpot2_(ThirdDrv *ds, real factor, const DftDensProp* dp, int isgga,
     }
 }
 
+int fun_true(void)  { return 1; }
+int fun_false(void) { return 0; }

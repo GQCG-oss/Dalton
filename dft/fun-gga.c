@@ -26,8 +26,6 @@
 #include "functionals.h"
 
 /* INTERFACE PART */
-static int  fun_false(void) { return 0; }
-static int  fun_true (void) { return 1; }
 static int  lda_read(const char* conf_line);
 static real lda_energy(const DftDensProp* dp);
 static void lda_first(FirstFuncDrv *ds,   real factor, const DftDensProp* dp);
@@ -43,6 +41,8 @@ static int  kt1_read(const char* conf_line);
 static int  kt2_read(const char* conf_line);
 static int  kt3_read(const char* conf_line);
 static int  olyp_read(const char* conf_line);
+static int  pbe_read(const char* conf_line);
+static int  pbe0_read(const char* conf_line);
 static int  pw91_read(const char* conf_line);
 
 static int  gga_isgga(void);
@@ -193,6 +193,28 @@ Functional OLYPFunctional = {
     "OLYP",      /* name */
     gga_isgga,     /* gga-corrected */
     olyp_read,
+    gga_report,
+    gga_energy,
+    gga_first,
+    gga_second,
+    gga_third
+};
+
+Functional PBEFunctional = {
+    "PBE",         /* name */
+    gga_isgga,     /* gga-corrected */
+    pbe_read,
+    gga_report,
+    gga_energy,
+    gga_first,
+    gga_second,
+    gga_third
+};
+ 
+Functional PBE0Functional = {
+    "PBE0",         /* name */
+    gga_isgga,     /* gga-corrected */
+    pbe0_read,
     gga_report,
     gga_energy,
     gga_first,
@@ -397,6 +419,24 @@ olyp_read(const char* conf_line)
     gga_fun_list = add_functional(gga_fun_list, &OPTXFunctional, optkw);
     gga_fun_list = add_functional(gga_fun_list, &LYPFunctional,   1.0);
     dft_set_hf_weight(0);
+    return 1;
+}
+
+static int
+pbe_read(const char* conf_line)
+{
+    gga_fun_list = add_functional(gga_fun_list, &PW91cFunctional, 1.0);
+    gga_fun_list = add_functional(gga_fun_list, &PbexFunctional, 1.0);
+    dft_set_hf_weight(0);
+    return 1;
+}
+ 
+static int
+pbe0_read(const char* conf_line)
+{
+    gga_fun_list = add_functional(gga_fun_list, &PW91cFunctional, 1.0);
+    gga_fun_list = add_functional(gga_fun_list, &PbexFunctional, 0.75);
+    dft_set_hf_weight(0.25);
     return 1;
 }
 

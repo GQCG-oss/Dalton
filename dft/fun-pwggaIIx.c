@@ -49,7 +49,6 @@ static void pwggaIIx_second(SecondFuncDrv *ds, real factor,
 static void pwggaIIx_third(ThirdFuncDrv *ds, real factor,
                        const DftDensProp* dp);
 
-static int fun_true(void) { return 1; }
 Functional PWggaIIxFunctional = {
   "pwggaIIx",
   fun_true,

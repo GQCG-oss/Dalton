@@ -395,6 +395,20 @@ file, as indicated in the following example:
 \end{verbatim}
 \label{sirius_ex2}
 
+Running \index{DFT} calculations is very similar to Hartree-Fock, except for
+functional specification: The \verb|.DFT| keyword is followed by a
+line describing the functional to be used. Simple input below will
+start a B3LYP geometry optimization:
+\begin{verbatim}
+**DALTON INPUT
+.OPTIMIZE
+**WAVE FUNCTIONS
+.DFT
+ B3LYP
+**END OF DALTON INPUT
+\end{verbatim}
+Complete list of available functionals can be found in the Reference Guide.
+
 \begin{center}
 \fbox{
 \parbox[h][\height][l]{12cm}{

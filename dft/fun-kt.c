@@ -127,8 +127,8 @@ kt_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
 static void
 kt_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
 {
-    real xa, ra43, ra13, ra23, ram1, ram2;
-    real xb, rb43, rb13, rb23, rbm1, rbm2;
+    real xa, ra43, ra13, ram2;
+    real xb, rb43, rb13, rbm2;
     real denoma, denoma2, t1a;
     real denomb, denomb2, t1b; 
     real faR, faZ, faRZ, faZZ, faRR;

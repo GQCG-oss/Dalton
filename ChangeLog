@@ -1,3 +1,11 @@
+2004-12-14  Pawel Salek 
+
+	* Doc/wfguide.tex: add DFT example.
+	* dft/Makefile: add PBE functional that appears to work.
+	* dft/fun-gga.c: ditto.
+	* dft/functionals.{hc]: PBE+collect all fun_{true,false}() here.
+	* dft/fun-*.c: use common fun_{true,false}() functions.
+	
 2004-11-23  Pawel Salek 
 
 	* dft/Makefile: rename Dirac to Slater to follow other programs.

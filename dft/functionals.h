@@ -222,9 +222,9 @@ extern Functional LB94Functional;
 extern Functional LYPFunctional;
 extern Functional OPTXFunctional;
 extern Functional P86cFunctional;
-extern Functional PBEFunctional;
+extern Functional PbexFunctional;
 extern Functional PW86xFunctional;
-extern Functional PW91clFunctional;
+extern Functional PW91cFunctional;
 extern Functional PW92Functional;
 extern Functional PW92peFunctional;
 extern Functional PWggaIIc2Functional;
@@ -250,10 +250,14 @@ extern Functional KT1Functional;
 extern Functional KT2Functional;
 extern Functional KT3Functional;
 extern Functional OLYPFunctional;
+extern Functional PBE0Functional;
+extern Functional PBEFunctional;
 extern Functional PW91Functional;
 /* the list of the functionals */
 extern Functional* available_functionals[];
 
+int fun_true(void);
+int fun_false(void);
 extern void dftsethf_(real *);
 extern real dftgethf_(void);
 extern void dftsetcam_(real *, real *);

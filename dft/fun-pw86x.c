@@ -24,8 +24,6 @@ static int pw86x_isgga(void) { return 1; }
 static int pw86x_read(const char* conf_line);
 static real pw86x_energy(const DftDensProp* dp);
 static void pw86x_first (FirstFuncDrv *ds,  real factor, const DftDensProp*dp);
-static void pw86x_second(SecondFuncDrv *ds, real factor, const DftDensProp*dp);
-static void pw86x_third (ThirdFuncDrv *ds,  real factor, const DftDensProp*dp);
 
 Functional PW86xFunctional = {
   "PW86x",       /* name */

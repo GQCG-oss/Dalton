@@ -97,8 +97,8 @@ optx_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
 {
     real ra, gra, xa, ra43, ra13, ua, ua2, gxa2;
     real rb, grb, xb, rb43, rb13, ub, ub2, gxb2;
-    real faR, faZ, faca;
-    real fbR, fbZ, facb;
+    real faR, faZ;
+    real fbR, fbZ;
 
     if (dp->rhoa >OPTX_THRESHOLD) {
         ra = dp->rhoa;

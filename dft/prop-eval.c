@@ -1496,7 +1496,7 @@ FSYM2(dft_lin_respf)(int *nosim, real* fmat, real *cmo, real *zymat, int *trplet
        FIXME: consider using work for this purpose. */
     static const int MAX_VEC = 5;
     struct tms starttm, endtm; clock_t utm;
-    real electrons;
+    real electrons = 0;
     LinRespBlData lr_data; /* linear response data */
     real dummy;
     int i, j, ivec, jvec;
