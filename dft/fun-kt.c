@@ -18,6 +18,8 @@
 #define _XOPEN_SOURCE_EXTENDED 1
 #endif
 
+/* #define FOURTH_ORDER_DERIVATIVES */
+
 #include <math.h>
 #include <stddef.h>
 
@@ -35,6 +37,10 @@ static void kt_second(FunSecondFuncDrv *ds, real factor,
                         const FunDensProp* dens_prop);
 static void kt_third(FunThirdFuncDrv *ds, real factor, 
                         const FunDensProp* dens_prop);
+#ifdef FOURTH_ORDER_DERIVATIVES
+static void kt_fourth(FourthFuncDrv *ds, real factor, const FunDensProp* dens_prop);
+#endif
+
 
 Functional KTFunctional = {
     "KT",      /* name */
@@ -45,6 +51,9 @@ Functional KTFunctional = {
     kt_first, 
     kt_second,
     kt_third
+#ifdef FOURTH_ORDER_DERIVATIVES
+    ,kt_fourth
+#endif
 };
 
 /* IMPLEMENTATION PART */
@@ -259,5 +268,115 @@ kt_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 }
 
 
+#ifdef FOURTH_ORDER_DERIVATIVES
+static void
+kt_fourth(FourthFuncDrv *ds, real factor, const FunDensProp* dp)
+{       
+    real ra, xa, ra43, ra13, ra23, ram1, ram2;
+    real rb, xb, rb43, rb13, rb23, rbm1, rbm2;
+    real xad2, t1a, t2a, t3a;
+    real xbd2, t1b, t2b, t3b;
+    real denoma, denoma2, denoma3;
+    real denomb, denomb2, denomb3;
+    real faR, faZ, faRR, faZZ, faRZ;
+    real fbR, fbZ, fbRR, fbZZ, fbRZ;
+    real faRRR, faRRZ, faRZZ, faZZZ;
+    real fbRRR, fbRRZ, fbRZZ, fbZZZ;
+    real faRRRR, faRRRZ, faRRZZ, faRZZZ, faZZZZ;
+    real fbRRRR, fbRRRZ, fbRRZZ, fbRZZZ, fbZZZZ;
+        
+    if (dp->rhoa >KT_THRESHOLD) {
+        xa = dp->grada;
+        ra = dp->rhoa;
+        ra13 = pow(dp->rhoa,1.0/3.0);
+        ra43 = ra13*ra;
+        ra23 = ra13*ra13;
+        ram2 = ra13/ra;
+        ram1 = ram2*ra13;
+        denoma = ra43 + DELTA;
+        denoma2= denoma*denoma;
+        denoma3= denoma2*denoma;
+        xad2 = xa/denoma2;
+        t1a = 8.0/9.0*xad2*xa*ram1;
+        t2a = 1.0 - 8.0*ra43/denoma;
+        t3a = 8.0/27.0*xad2*ram1;
+        faR  = -4.0/3.0*xad2*xa*ra13;
+        faZ  = 2.0*xa/denoma;
+        faRR = -4.0/9.0*xad2*xa*ram2;
+        faRZ = -8.0/3.0*xad2*ra13;
+        faZZ = 2.0/denoma;
+        faZZZ = 0.0;
+        faRZZ = -8.0/3.0*ra13/denoma2;
+        faRRZ =  -8.0/9.0*xad2*ram2;
+        faRZZ = -8.0/3.0*ra13/denoma2;
+        faRRR = 1.0/(3.0*ra43) + 4.0/denoma -
+                16.0*ra43/denoma2;
+        faZZZZ = 0.0;
+        faRZZZ = 0.0;
+        faRRZZ = 1.0/xa*faRZZ;
+        faRRRR = -5.0/(3.0*ra*ra43) -20.0*ra/(3.0*denoma) 
+                 -96.0*ra13/denoma2 +256.0*ra*ra23/denoma3;
+        ds->df10000 += factor*faR;
+        ds->df00100 += factor*faZ;
+        ds->df10100 += factor*faRZ;
+        ds->df20000 += factor*faRR*t2a;
+        ds->df00200 += factor*faZZ;
+        ds->df30000 += factor*faRRR*t1a;
+        ds->df00300 += factor*faZZZ;
+        ds->df20100 += factor*faRRZ*t2a;
+        ds->df10200 += factor*faRZZ;
+        ds->df40000 += factor*faRRRR*t3a;
+        ds->df00400 += factor*faZZZZ;
+        ds->df30100 += factor*faRRRZ;
+        ds->df10300 += factor*faRZZZ;
+        ds->df20200 += factor*faRRZZ;
+    }
+    if (dp->rhob >KT_THRESHOLD) {
+        xb = dp->gradb;
+        rb = dp->rhob;
+        rb13 = pow(dp->rhob,1.0/3.0);
+        rb43 = rb13*rb;
+        rb23 = rb13*rb13;
+        rbm2 = rb13/rb;
+        rbm1 = rbm2*rb13;
+        denomb = rb43 + DELTA;
+        denomb2= denomb*denomb;
+        denomb3= denomb2*denomb;
+        xbd2 = xb/denomb2;
+        t1b = 8.0/9.0*xbd2*xb*rbm1;
+        t2b = 1.0 - 8.0*rb43/denomb;
+        t3b = 8.0/27.0*xbd2*rbm1;
+        fbR  = -4.0/3.0*xbd2*xb*rb13;
+        fbZ  = 2.0*xb/denomb; 
+        fbRR = -4.0/9.0*xbd2*xb*rbm2;
+        fbRZ = -8.0/3.0*xbd2*rb13;
+        fbZZ = 2.0/denomb;
+        fbZZZ = 0.0;
+        fbRRZ = -8.0/9.0*xbd2*rbm2;
+        fbRZZ = -8.0/3.0*rb13/denomb2;
+        fbRRR = 1.0/(3.0*rb43) +  4.0/denomb -
+                16.0*rb43/denomb2;
+        fbZZZZ = 0.0;
+        fbRZZZ = 0.0;
+        fbRRZZ = 1.0/xb*fbRZZ;
+        fbRRRR = -5.0/(3.0*rb*rb43) - 20.0*rb/(3.0*denomb) -
+                 96.0*rb13/denomb2 + 256.0*rb*rb23/denomb3;
+        ds->df01000 += factor*fbR;
+        ds->df00010 += factor*fbZ;
+        ds->df01010 += factor*fbRZ;
+        ds->df02000 += factor*fbRR*t2b;
+        ds->df00020 += factor*fbZZ;
+        ds->df03000 += factor*fbRRR*t1b;
+        ds->df00030 += factor*fbZZZ;
+        ds->df02010 += factor*fbRRZ*t2b;
+        ds->df01020 += factor*fbRZZ;
+        ds->df04000 += factor*fbRRRR*t3b;
+        ds->df00040 += factor*fbZZZZ;
+        ds->df03010 += factor*fbRRRZ;
+        ds->df01030 += factor*fbRZZZ;
+        ds->df02020 += factor*fbRRZZ;
+    }
+}
+#endif
 
 
