@@ -1772,21 +1772,47 @@ C
             LLEFT = LWRK - MWRK + 1
             DO 556 IFIELD = 1, NFIELD
                IF (EFIELD(IFIELD) .NE. D0) THEN
-                  IF (LFIELD(IFIELD) .EQ. 'XDIPLEN ') THEN
-                     FIELD1 = 'X-FIELD'
-                  ELSE IF (LFIELD(IFIELD) .EQ. 'YDIPLEN ') THEN
-                     FIELD1 = 'Y-FIELD'
-                  ELSE IF (LFIELD(IFIELD) .EQ. 'ZDIPLEN ') THEN
-                     FIELD1 = 'Z-FIELD'
-                  ELSE
-                     WRITE (LUPRI,'(/,3A,/)') 'Field type ',
-     &                     LFIELD(IFIELD),
-     &                     ' not implemented for magnetic properties'
-                  CALL QUIT('Illegal field type for mag. properties')
+                  IF (LFIELD(IFIELD)(2:7) .EQ. 'DIPLEN') THEN
+                     IF (LFIELD(IFIELD) .EQ. 'XDIPLEN ') THEN
+                        FIELD1 = 'X-FIELD'
+                     ELSE IF (LFIELD(IFIELD) .EQ. 'YDIPLEN ') THEN
+                        FIELD1 = 'Y-FIELD'
+                     ELSE IF (LFIELD(IFIELD) .EQ. 'ZDIPLEN ') THEN
+                        FIELD1 = 'Z-FIELD'
+                     ELSE
+                        WRITE (LUPRI,'(/,3A,/)') 'Field type ',
+     &                       LFIELD(IFIELD),
+     &                       ' not implemented for magnetic properties'
+                        CALL QUIT('Illegal field type for '//
+     &                            'magnetic properties')
+                     END IF
+                     NCOMP = 3
+                     CALL GET1PR(WORK(KTMAT),'CM1    ',NCOMP,'SQUARE',
+     &                           .TRUE.,WORK(MWRK),LLEFT,IDUMMY,INTPRI)
+                  ELSE IF (LFIELD(IFIELD)(3:7) .EQ. 'THETA') THEN
+                     IF (LFIELD(IFIELD) .EQ. 'XXTHETA ') THEN
+                        FIELD3 = 'XX-FGRD'
+                     ELSE IF (LFIELD(IFIELD) .EQ. 'YYTHETA ') THEN
+                        FIELD3 = 'YY-FGRD'
+                     ELSE IF (LFIELD(IFIELD) .EQ. 'ZZTHETA ') THEN
+                        FIELD3 = 'ZZ-FGRD'
+                     ELSE IF (LFIELD(IFIELD) .EQ. 'XYTHETA ') THEN
+                        FIELD3 = 'XY-FGRD'
+                     ELSE IF (LFIELD(IFIELD) .EQ. 'XZTHETA ') THEN
+                        FIELD3 = 'XZ-FGRD'
+                     ELSE IF (LFIELD(IFIELD) .EQ. 'YZTHETA ') THEN
+                        FIELD3 = 'YZ-FGRD'
+                     ELSE
+                        WRITE (LUPRI,'(/,3A,/)') 'Field type ',
+     &                       LFIELD(IFIELD),
+     &                       ' not implemented for magnetic properties'
+                        CALL QUIT('Illegal field type for '//
+     &                            'magnetic properties')
+                     END IF
+                     NCOMP = 3
+                     CALL GET1PR(WORK(KTMAT),'QDBINT ',NCOMP,'SQUARE',
+     &                           .TRUE.,WORK(MWRK),LLEFT,IDUMMY,INTPRI)
                   END IF
-                  NCOMP = 3
-                  CALL GET1PR(WORK(KTMAT),'CM1    ',NCOMP,'SQUARE',
-     &                        .TRUE.,WORK(MWRK),LLEFT,IDUMMY,INTPRI)
                   CALL DAXPY(N2BASX*3,EFIELD(IFIELD),WORK(KTMAT),1,
      &                    WORK(KMATS),1)
                END IF

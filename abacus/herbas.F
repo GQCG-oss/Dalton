@@ -261,6 +261,11 @@ C
             NRC(NBLOCK) = INTORB
             SEG(NBLOCK) = SEGEJ
 C
+C     For Douglas-Kroll we need to keep exponents properly sorted
+C
+            CALL PRIORD(ALPHA(1,NBLOCK),CPRIMU(1,1,NBLOCK),NUC(NBLOCK),
+     &                  NRC(NBLOCK),SEG(NBLOCK),KPRIM,DSM)
+C
 C Normalizing CPRIMU for (angular quantumnumber + 1).
 C
 #ifdef STO3G_HUCKEL
