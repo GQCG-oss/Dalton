@@ -1,5 +1,5 @@
-C
-C  codata.h revised 1999/04/29 and combined with units.h
+C 
+C  codata.h revised 1999/04/29 and combined with units.h 
 C
 C
 C  From
@@ -28,7 +28,7 @@ C -- conversion from hartree (au) to:
      *            XTNM = 1.D7/XTKAYS,       XAJOUL = 1.0 D18*XTJ)
 C
 C -- other
-      PARAMETER ( AUTIME = HBAR/XTJ, XFSEC = AUTIME)
+      PARAMETER ( XFSEC = HBAR/XTJ)
       PARAMETER ( XTKMML = 974.864 D0)
       PARAMETER ( TESLA=(XTANG*XTANG*ECHARGE/HBAR)*1.D-20 )
       PARAMETER ( AUTK = 3.157 7465 D5 )

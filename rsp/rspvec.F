@@ -2179,14 +2179,14 @@ C ---------------------------------------------------------------endofmcd-------
                      IF (MNFPHO) XDIPA=XDIPA+ PHOSMN(I,J,IC)**2
                   END DO
                   IF (PHOSPH) THEN
-                     XRATE=D4D3*(ALPHAC*W)**3*XDIP/AUTIME
+                     XRATE=D4D3*(ALPHAC*W)**3*XDIP/XFSEC
                      WRITE(LUPRI,'(2A,G17.5)')
      &               ' Partial rates (H_SO): ',
      &               CHAR(ICHAR('X')+I-1)//'-polarization', XRATE
                      RATE=RATE+XRATE
                    END IF
                   IF (MNFPHO) THEN
-                     XRATEA=D4D3*(ALPHAC*W)**3*XDIPA/AUTIME
+                     XRATEA=D4D3*(ALPHAC*W)**3*XDIPA/XFSEC
                      WRITE(LUPRI,'(2A,G17.5)')
      &               ' Partial rates (AMFI): ',
      &               CHAR(ICHAR('X')+I-1)//'-polarization', XRATEA
