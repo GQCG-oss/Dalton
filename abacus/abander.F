@@ -2204,12 +2204,11 @@ C     *** For spin-spin couplings. ***
 C
       CALL GPINQ('RSPVEC','EXIST',EX)
       IF (EX) THEN
-         CALL GPOPEN(LURSP,'RSPVEC','OLD',' ','UNFORMATTED',IDUMMY,
-     &               .FALSE.)
+         LURSP = -1
+         CALL GPOPEN(LURSP,'RSPVEC','OLD',
+     &               ' ','UNFORMATTED',IDUMMY,.FALSE.)
          CALL GPCLOSE(LURSP,'DELETE')
       END IF
-      
-
 cC
 c      CALL GPINQ('RSPRST.E2C','EXIST',EX)
 c      IF (EX) THEN
