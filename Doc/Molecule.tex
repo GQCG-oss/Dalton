@@ -38,7 +38,7 @@ basis set requirements that can be calculated with \dalton .
 Most of the basis sets have been downloaded from the EMSL basis set
 library service\index{EMSL basis set library service}\index{basis set!EMSL library}\newline
 (http://www.emsl.pnl.gov:2080/forms/basisform.html)~\cite{emslref}.
-Only six of the basis sets were obtained from different sources:
+Only a small number of the basis sets were obtained from different sources:
 
 \begin{list}{--}{}
 \item The ano-1, ano-2, ano-3, ano-4 and Sadlej-pVTZ basis sets which where
@@ -47,6 +47,8 @@ home-page\index{NQvD basis set}\index{basis set!NQvD}\index{ANO basis set}\index
 (http://garm.teokem.lu.se/MOLCAS/).
 \item The NQvD (The Not Quite van Duijneveldt) basis sets were constructed
 by Knut F\ae gri for this distribution~\cite{nqvdref}.
+\item The Turbomole-X {X = SV,SVP,DZ,DZP,TZ,TZP,TZV,TZVP,TZVPP,TZVPPP} basis sets have
+been downloaded from Turbomole\index{Turbomole basis set}\index{basis set!Turbomole}(http://www.turbomole.com)
 \end{list}
 
 We note that each file containing a given basis set in the BASIS
@@ -706,24 +708,29 @@ Note that the keyword \Key{AUXBAS} must be specified in the
 \label{sec:basislist}
 \index{basis set!library}
 
-As mentioned above, all the basis sets supplied with this distribution
-of the \dalton\ program --- with the exception of the ANO\index{ANO basis set}\index{basis set!ANO}, 
-Sadlej-pVTZ\index{sadlej basis set}\index{basis set!sadlej} 
-and NQvD basis sets\index{NQvD basis set}\index{basis set!NQvD} --- have been obtained 
+As was mentioned above, all the basis sets supplied with this distribution
+of the \dalton\ program --- with a few exceptions --- have been obtained 
 from the EMSL basis set library~\cite{emslref}. 
 Supplied basis sets include the STO-$n$G and Pople style basis sets,
 Dunning's correlation-consistent basis 
 sets\index{basis!correlation-consistent}\index{correlation-consistent basis set}, 
-Ahlrich's basis sets and Huzinaga basis sets. 
+Ahlrichs Turbomole basis sets and Huzinaga basis sets. 
 In a very few cases we have corrected the
 files as obtained from EMSL, however we take no responsibility
 for any errors inherent in these files.
 
 The ANO and Sadlej-pVTZ polarization basis sets have been obtained from the
 MOLCAS homepage without any further processing, and should therefore
-be free of errors. The NQvD has been provided to us by Knut F\ae gri,
-and has been slightly reformatted for more convenient processing of
-the file, hopefully without having introduced any errors.
+be free of errors. The NQvD basis provided to us by Knut F\ae gri 
+along with the Turbomole basis sets have been slightly reformatted for more 
+convenient processing of the file, hopefully without having introduced any errors. 
+
+We have included several Turbomole basis sets, although we have retained Ahlrichs basis sets
+from the EMSL basis set library. We recommend the Turbomole
+basis sets rather than the Ahlrichs basis sets from EMSL, which
+contain some errors. The Ahlrichs-VDZ basis
+is similar to the Turbomole-SV basis, while the Ahlrichs-VTZ is a
+combination of the Turbomole-TZ (H--Ar) and Turbomole-DZ (K--Kr).
 
 Below we give a comprehensive list of all basis sets included in 
 the basis set library\index{basis set!library}, together with 
@@ -793,7 +800,6 @@ STO-6G & H--Ar & \cite{wjhrfsjapjcp51,wjhrdrfsjapjcp52} \\
 6-311++G(3df,3pd) & H--Ar & 6-311++G, with polariz. functions from
   \cite{mjfjapjsbjcp80}.\\
 \hline
-\newpage
 %
 Huckel & H--Cd & \\
 MINI(Huzinaga) & H--Ca & \cite{huzinagabasis} \\
@@ -851,10 +857,17 @@ cc-pVXZ-DK (X = D,T,Q,5) & H,He,B--Ne, & \cite{thdjcp90,dewthdjcp100,dewthdjcp98
   & Al--Ar, Ga--Kr & Douglas-Kroll calculations.\\
 \hline
 \newpage
-\bf{\emph{Ahlrich's VXZ basis sets}} & & \\
-Ahlrichs-VXZ (X = D,T) & H--Kr & \cite{ashhrajcp97}\\
-Ahlrichs-TZV & Li--Kr & \cite{aschrajcp100} \\
-Ahlrichs-pVDZ & H--Kr & \cite{ashhrajcp97} polariz. functions largely unpublished.\\
+\bf{\emph{Ahlrich's Turbomole basis sets}} & & \\
+\multicolumn{3}{l}{\emph{Note}: See text above -- Turbomole basis sets are preferred over EMSL sets} \\
+Turbomole-SV & H--Kr & \cite{ashhrajcp97} Turbomole SV basis\\
+Turbomole-XZ (X=D,T) & H--Kr & \cite{ashhrajcp97} Turbomole DZ,TZ basis\\
+Turbomole-TZV & H--Kr & \cite{aschrajcp100} Turbomole TZV basis \\
+Turbomole-XP (X=SV,DZ,TZ,TZV) & H--Kr & \cite{ashhrajcp97,aschrajcp100} Turbomole polariz. basis \\
+Turbomole-TZVPP & H--Kr & \cite{aschrajcp100} Turbomole TZVPP basis \\
+Turbomole-TZVPPP & H--He,B--Ne,Al--Ar & \cite{aschrajcp100} Turbomole TZVPPP basis \\
+Ahlrichs-VXZ (X=D,T) & H--Kr & \cite{ashhrajcp97} From EMSL \\
+Ahlrichs-pVDZ & H--Kr & \cite{ashhrajcp97} From EMSL: polariz. functions unpublished.\\
+\hline
 %
 \bf{\emph{Huzinaga basis sets}} & & \\
 Huz-II & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern} All the Huz basis sets are of\\
