@@ -416,3 +416,8 @@ main(int argc, char* argv[])
     else printf("OK\n");
     return res;
 }
+
+void FSYM(dftsethf)(real *w){}
+real FSYM(dftgethf)(void){return 0;}
+void FSYM(dftsetcam)(real *b, real *mu) {}
+void fort_print(const char *fmt, ...) {}

@@ -79,7 +79,7 @@ libdft.a: $(OBJS) Makefile
 	$(AR) $(ARFLAGS) $@ $(OBJS)
 
 
-fun-tester: fun-tester.c functionals.c $(FUNFILES)
+fun-tester: fun-tester.c functionals.c $(FUNFILES:.c=.o)
 	$(CC) -g -O -I../include -DNO_BACKWARD_COMP $^ -o $@  -lm
 
 fun4-tester: fun4-tester.c functionals.c $(FUNFILES)
