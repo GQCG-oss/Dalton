@@ -1,0 +1,144 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION                                                   #
+#######################################################################
+cat > prop_expgrad.info <<'%EOF%'
+   prop_expgrad
+   ------------
+   Molecule:         N2
+   Wave Function:    BLYP
+   Test Purpose:     Calculate exponent gradient
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT                                                     #
+#######################################################################
+cat > prop_expgrad.mol <<'%EOF%'
+INTGRL
+Geometry optimization, calculation of quadrupole moment, magnetizabilities
+and nuclear shieldings at the optimized geometry
+    1    0
+        7.    2    6    1    1    1    1    1    1
+N     0.00000 0.000000  1.034
+N     0.00000 0.000000 -1.034
+H   7    0
+1792.96029032
+ 269.84707155
+  61.33531163
+  17.00072818
+   5.18324751
+   0.67431212
+   0.18300181
+H   4    0
+13.75333842
+ 3.01377620
+ 0.81923924
+ 0.22417597
+H   1    0
+0.87680110
+H   1    0
+1.09547007
+H   1    0
+1.25075670
+H   1    0
+1.29425886
+%EOF%
+
+#######################################################################
+#  DALTON INPUT                                                       #
+#######################################################################
+cat > prop_expgrad.dal <<'%EOF%'
+**GENERAL
+.RUN PROPERTIES
+**INTEGRALS
+.NOSUP
+**WAVE FUNCTION
+.DFT
+*HF INPUT
+.BLYP
+**PROPERTIES
+.EXPGRA
+*END OF INPUT
+%EOF%
+
+#######################################################################
+#  CHECK SCRIPT                                                       #
+#######################################################################
+echo $CHECK_SHELL > prop_expgrad.check
+cat >> prop_expgrad.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# Basis set
+CRIT1=`$GREP "N * 1 * 7 * 51 * 51 * \[7s4p1d1f1g1h\|7s4p1d1f1g1h\]" $log | wc -l`
+TEST[1]=`expr	$CRIT1`
+CTRL[1]=2
+ERROR[1]="BASIS SET NOT READ CORRECTLY"
+
+# Energy
+CRIT1=`$GREP "Final * HF energy\: * \-109\.5089380479[0-9][0-9]" $log | wc -l`
+TEST[2]=`expr	$CRIT1`
+CTRL[2]=1
+ERROR[2]="ENERGY NOT CORRECT"
+
+# Exponent gradient
+CRIT1=`$GREP "\@\@ * 7 * s * 1792\.9602903200 * (\-0| \-)\.0000000[0-9][0-9][0-9] * (\-0| \-)\.000000[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT2=`$GREP "\@\@ * 7 * s * 269\.8470715500 * (\-0| \-)\.0000000[0-9][0-9][0-9] * (\-0| \-)\.000001[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT3=`$GREP "\@\@ * 7 * s * 61\.3353116300 * (0| )\.0000000[0-9][0-9][0-9] * (0| )\.000001[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT4=`$GREP "\@\@ * 7 * s * 17\.0007281800 * (\-0| \-)\.0000000[0-9][0-9][0-9] * (\-0| \-)\.000000[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT5=`$GREP "\@\@ * 7 * s * 5\.1832475100 * (\-0| \-)\.0000000[0-9][0-9][0-9] * (\-0| \-)\.000000[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT6=`$GREP "\@\@ * 7 * s * (0| )\.6743121200 * (\-0| \-)\.0000000[0-9][0-9][0-9] * (\-0| \-)\.000000[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT7=`$GREP "\@\@ * 7 * s * (0| )\.1830018100 * (0| )\.0000000[0-9][0-9][0-9] * (0| )\.000000[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT8=`$GREP "\@\@ * 7 * p * 13\.7533384200 * (0| )\.0000000[0-9][0-9][0-9] * (0| )\.000000[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT9=`$GREP "\@\@ * 7 * p * 3\.0137762000 * (\-0| \-)\.0000000[0-9][0-9][0-9] * (\-0| \-)\.000000[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT10=`$GREP "\@\@ * 7 * p * (0| )\.8192392400 * (\-0| \-)\.0000000[0-9][0-9][0-9] * (\-0| \-)\.000000[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT11=`$GREP "\@\@ * 7 * p * (0| )\.2241759700 * (\-0| \-)\.0000000[0-9][0-9][0-9] * (\-0| \-)\.000000[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT12=`$GREP "\@\@ * 7 * d * (0| )\.8768011000 * (\-0| \-)\.0000000[0-9][0-9][0-9] * (\-0| \-)\.000000[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT13=`$GREP "\@\@ * 7 * f * 1\.0954700700 * (\-0| \-)\.0000000[0-9][0-9][0-9] * (\-0| \-)\.000000[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT14=`$GREP "\@\@ * 7 * g * 1\.2507567000 * (\-0| \-)\.0000000[0-9][0-9][0-9] * (\-0| \-)\.000000[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT15=`$GREP "\@\@ * 7 * h * 1\.2942588600 * (0| )\.0000000[0-9][0-9][0-9] * (0| )\.000000[0-9][0-9][0-9][0-9]" $log | wc -l`
+TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
+		$CRIT13 \+ $CRIT14 \+ $CRIT15`
+CTRL[3]=15
+ERROR[3]="EXPONENT GRADIENT NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+      echo ${ERROR[i]}
+      PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+   echo TEST ENDED PROPERLY
+   exit 0
+else
+   echo THERE IS A PROBLEM
+   exit 1
+fi
+
+%EOF%
