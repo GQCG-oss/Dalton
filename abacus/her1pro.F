@@ -2660,7 +2660,7 @@ C  /* Deck frmtyp */
                      LABINT(ITYP) = 'FC '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                                //CHRNOS(IPTNUC(IATOM,IREP)/10)//
      &	                              CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
-                  ELSE IF (INTTYP .EQ. 69) THEN
+                  ELSE IF (INTTYP .EQ. 95) THEN
                      LABINT(ITYP) = 'FCKE'//NAMDEP(NUCPRE(IATOM)+1)(1:2)
      &                                //CHRNOS(IPTNUC(IATOM,IREP)/10)//
      &                                CHRNOS(MOD(IPTNUC(IATOM,IREP),10))

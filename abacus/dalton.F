@@ -97,8 +97,8 @@ C
 #if defined (NO_F90)
       POINTER (WADDR,WORK(1))
 #else
-      DOUBLE PRECISION , ALLOCATABLE , DIMENSION(:) :: WORK
-      INTEGER                                       :: WADDR
+      REAL , ALLOCATABLE , DIMENSION(:) :: WORK
+      INTEGER                           :: WADDR
 #endif
 #else
 C
