@@ -174,9 +174,12 @@ C              MSKIP = .TRUE.
      &           'density matrix neglected in EXPECT.'
             IF (MNODV) WRITE (LUPRI,'(/,2A)') 'Active one-electron',
      &           'density matrix neglected in EXPECT.'
-            IF (ALLCOM .AND. DODRCT) WRITE(LUPRI,'(/,A)')
+            IF (ALLCOM .AND. DODRCT .AND. NST) WRITE(LUPRI,'(/,A)')
      &           ' All components of shielding expexctation value '//
      &           'calculated at once'
+            IF (ALLCOM .AND. DODRCT .AND. SST) WRITE(LUPRI,'(/,A)')
+     &           ' All components of diamagnetic spin-orbit operators'//
+     &           ' calculated at once'
             IF (MCUT) WRITE (LUPRI,'(/,A)')
      &           ' Program is stopped after EXPECT.'
          END IF
