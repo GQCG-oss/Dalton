@@ -6380,9 +6380,7 @@ C     molecule has to be minimized withim the C1 point group.
 C
       TMPLN = MLINE(1)
       BASIS = (TMPLN(1:5) .EQ. 'BASIS')
-      I = 4
-      IF (BASIS) I = 5
-      TMPLN = MLINE(I)
+      TMPLN = MLINE(NMLAU)
       II = 0
       DO 49 J = 0, ITRNMR-1
          IF ((GEINFO(J,3) .LT. -0.5D0) .AND.
@@ -6405,7 +6403,7 @@ C
          WRITE(TMPLN(10:20), '(A11)') '           '
          IF (BRKALS) WRITE(TMPLN(10:20), '(A11)') '0          '
       END IF
-      MLINE(I) = TMPLN
+      MLINE(NMLAU) = TMPLN
 C
       IATOM = 1
       I = NCLINE(IATOM)-1
@@ -6632,7 +6630,7 @@ C
 C     If all symmetry has been removed during preoptimization, we try
 C     to detect it again after each preoptimization phase.
 C
-      TMPLIN = MLINE(5)
+      TMPLIN = MLINE(NMLAU)
       IF ((MAXOPR .EQ. 0) .AND. (ITRBRK .GE. 0)) THEN
          IF (INDEX(TMPLIN,'Ato') .NE. 0) THEN
             DOCART = .FALSE.
@@ -6647,7 +6645,7 @@ C
          ELSE
             WRITE(TMPLIN(10:20), '(A11)') '           '
          END IF
-         MLINE(5) = TMPLIN
+         MLINE(NMLAU) = TMPLIN
          NWSYMM = .TRUE.
       END IF
       CALL PNCMOL
