@@ -264,12 +264,12 @@ operator specified is the same which was used \textit{last} in the previous
 response calculation.
 
 \item{\Key{MAXIT}}\\
-\verb|READ (LUCMDS,*) MAXITL|\\
+\verb|READ (LUCMD,*) MAXITL|\\
 Maximum number of iterations for solving a linear response 
 equation. Default is 60.
 
 \item{\Key{MAXITO}}\\
-\verb|READ (LUCMDS,*) MAXITO|\\
+\verb|READ (LUCMD,*) MAXITO|\\
 Maximum number of iterations in the optimal orbital
 algorithm\index{optimal orbital trial vector}
 \cite{tuhjahjajpjjcp84}. 
@@ -850,7 +850,7 @@ value is 20.
 
 \item{\Key{ROOTS}}
 Number of roots (excited states) to converge. \\
-\verb|READ (LUCMDS,*) (NTMCNV(J),J=1,NSYM)|\\
+\verb|READ (LUCMD,*) (NTMCNV(J),J=1,NSYM)|\\
 
 \item{\Key{THCPP}}
 Threshold for convergence of eigenvector, default value is $10^{-6}$.
@@ -888,7 +888,7 @@ between excited states \cite{djpnylhajcp105}.
 
 \item{\Key{ROOTS}}
 Number of roots (excited states) to converge for each spatial symmetry. \\
-\verb|READ (LUCMDS,*) (NTPCNV(J),J=1,NSYM)|\\
+\verb|READ (LUCMD,*) (NTPCNV(J),J=1,NSYM)|\\
 Default: one of each symmetry.
 
 \item[\Key{APROP}, \Key{BPROP}]
@@ -984,25 +984,41 @@ Default\index{hyperfine coupling}: hyperfine coupling tensors using
 the Restricted-Unrestricted Approach\index{restricted-unrestricted method}.
 
 \begin{description}
-
+\item{\Key{FCCALC}} \\
+Calculate the isotroppic Fermi-contact contributions to hyperfine coupling tensors
+\item{\Key{SDCALC}} \\
+Calculate the spin-dipole contributions to the hyperfine coupling tensor
+\item{\Key{ATOMS}} \\
+\verb|READ (LUCMD,'(I5)'),ESRNUC |\\
+\verb|READ (LUCMD,*) (NUCINF(IG), IG = 1, ESRNUC) | \\
+Select atoms for which to calculate hyperfine coupling constants.
+The first line contains  the number of atoms and the second line the
+index of each atom (ordered as in the molecule input file \texttt{MOLECULE.INP})
 \item{\Key{MAXIT}}      \\
-\verb|READ (LUCMDS,'(I5)'),MAXESR |\\
+\verb|READ (LUCMD,'(I5)'),MAXESR |\\
    The line following gives the maximum number of iterations.  (Default = 20)
 
 \item{\Key{PRINT}}     \\
-\verb|READ (LUCMDS,'(I5)'),IPRESR |\\
+\verb|READ (LUCMD,'(I5)'),IPRESR |\\
    The line following gives the print level for ESR routines.
 
-\item{\Key{SNGPRP}}    \\
-\verb|READ (LUCMDS,'(A)'), LABEL|\\
-   Singlet Operator. The line following is the label in the AOPROPER file.
-
 \item{\Key{THCESR}}     \\
-\verb|READ (LUCMDS,*),THCESR|\\
+\verb|READ (LUCMD,*),THCESR|\\
    The line following is the threshold for convergence (Default = 1.0D-5)
 
+\end{description}
+The following options are obsolete but are kept for backward compatibility.
+They are replaced by \Key{FCCALC} and \Key{SDCALC} above which also
+enables the printing of the tensors of the most important isotopes of the
+atoms is established units.
+\begin{description}
+
+\item{\Key{SNGPRP}}    \\
+\verb|READ (LUCMD,'(A)'), LABEL|\\
+   Singlet Operator. The line following is the label in the AOPROPER file.
+
 \item{\Key{TRPPRP}}    \\
-\verb|READ (LUCMDS,'(A)'), LABEL |\\
+\verb|READ (LUCMD,'(A)'), LABEL |\\
    Triplet Operator. The line following is the label in the AOPROPER file.
 
 
@@ -1044,22 +1060,22 @@ options selects individual contributions
 The following are utility options for modifying the default calculational
 procedure.
 \begin{description}
-   \item{\Key{ZERO}}
-   \verb|READ(LUCMD,'(A80)')G_LINE |\\
-   This option is mainly for linear molecules in a $\Sigma$ state.
-   Specifying e.g. "ZZ" on the input line instructs the program
-   to skip the calculation of the paramagnetic contribution to $g_{zz}$.
+%  \item{\Key{ZERO}}
+%  \verb|READ(LUCMD,'(A80)')G_LINE |\\
+%  This option is mainly for linear molecules in a $\Sigma$ state.
+%  Specifying e.g. "ZZ" on the input line instructs the program
+%  to skip the calculation of the paramagnetic contribution to $g_{zz}$.
    \item{\Key{MEAN-FIELD}}
    Uses the approximate atomic mean field (AMFI) spin-orbit operator
    for evaluating the paramagnetic contributions.
    \item{\Key{SCALED}}
    Uses the approximate 1-electron spin-orbit operator with scaled nuclear
    charges for evaluating the paramagnetic contributions.
-   \item{\Key{ADD-SO}}
-   Adds the 1- and 2-electron spin-orbit operators. This 
-   option may be used when one is not interested in the individual
-   1- and 2-electron contribution to the paramagnetic g-tensor,
-   since it reduces the number of response equations to be solved.
+%  \item{\Key{ADD-SO}}
+%  Adds the 1- and 2-electron spin-orbit operators. This 
+%  option may be used when one is not interested in the individual
+%  1- and 2-electron contribution to the paramagnetic g-tensor,
+%  since it reduces the number of response equations to be solved.
 \end{description}
 
 

@@ -520,6 +520,8 @@ H.J.Aa.Jensen. \newblock {\em J.Chem.Phys.}, {\bf
 \item Solvent effects: B.Fernandez, O.Christiansen, O.Bludsky,
 P.J{\o}rgensen, K.V. Mikkelsen. \newblock {\em J.Chem.Phys.}, {\bf
 104},\hspace{0.25em}629, (1996).
+\item DFT: Z.Rinkevicius, L.Telyatnyk, O.Vahtras and H.{\AA}gren.
+\newblock {\em J.Chem.Phys.}, {\bf 00},\hspace{0.25em} 000 (2004)
 \end{list}
 }}
 \end{center}
@@ -542,28 +544,32 @@ hyperfine coupling tensors will be:
 .TRPFLG
 *ESR
 .ESRCAL
+.ATOMS
+ 2
+ 1 2
+.FCCALC
+.SDCALC
 .MAXIT
    30
-.TRPPRP
-FC Cl 01
-.TRPPRP
-.
-.
-.
-
-.TRPPRP
-SD  01 x
-.TRPPRP
-SD  01 y
-.TRPPRP
-SD  01 z
-.TRPPRP
-.
-.
-.
-
 **END OF DALTON INPUT
 \end{verbatim}
+%.TRPPRP
+%FC Cl 01
+%.TRPPRP
+%.
+%.
+%.
+%
+%.TRPPRP
+%SD  01 x
+%.TRPPRP
+%SD  01 y
+%.TRPPRP
+%SD  01 z
+%.TRPPRP
+%.
+%.
+%.
 
     This will invoke the calculation of hyperfine
 coupling\index{hyperfine coupling} tensors
@@ -596,9 +602,12 @@ sections describing the options available.
 \noindent
 {\bf Reference literature:}
 \begin{list}{}{}
-\item O.Vahtras, B.  Minaev and H.Ågren
+\item ROHF and MCSCF: O.Vahtras, B.  Minaev and H.Ågren
 \newblock {\em Chem.Phys.Lett.}, {\bf
 281},\hspace{0.25em}186, (1997).
+\item DFT: Z.Rinkevicius, L.Telyatnyk, P.Sa{\l}ek, O.Vahtras and H.{\AA}gren.
+\newblock {\em J.Chem.Phys.}, {\bf 119
+},\hspace{0.25em}10489, (2003).
 \end{list}
 }}
 \end{center}
@@ -606,7 +615,6 @@ sections describing the options available.
 The calculation of electronic g-tensors\index{g-tensor} is invoked 
 with the keyword \Key{G-TENSOR} in the 
 \Sec{ESR} section of the \Sec{*RESPONSE} input module
-A sample input is thus
 
 \begin{verbatim}
 **DALTON INPUT
@@ -623,6 +631,37 @@ which gives by default all contributions to the g-tensor to second order in
 the fine-structure parameter. Keywords following the \Key{G-TENSOR} keyword
 will be interpreted as g-tensor options, which are defined in section
 \ref{sec:g-tensor}
+
+\section{Zero field splitting}
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item ROHF and MCSCF: O.Vahtras, O.Loboda, B.Minaev, H.{\AA}gren and K.Ruud.
+\newblock {\em Chem.Phys.}, {\bf
+279},\hspace{0.25em}133, (2002).
+\end{list}
+}}
+\end{center}
+The calculation of the zero-field splitting is invoked 
+with the keyword \Key{ZFS} in the 
+\Sec{ESR} section of the \Sec{*RESPONSE} input module
+\begin{verbatim}
+**DALTON INPUT
+.RUN RESPONSE
+**WAVE FUNCTIONS
+.HARTREE-FOCK
+**RESPON
+*ESR
+.ZFS
+**END OF DALTON INPUT
+\end{verbatim}
+Note that only the first-order electron spin-spin contribution
+is implemented.
 
 \section{CTOCD-DZ calculations}\label{sec:ctocd}
 
