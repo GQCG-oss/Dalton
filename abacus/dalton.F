@@ -228,9 +228,9 @@ C
       IF (BASDIR(1:1) .NE. '/') THEN
 C
          BASDIR=
-     &INSTALL_BASDIR
+     &"/usr/local/chemistry/dalton/dalton/basis/"
          WRITE(LUERR,'(/A,/8X,A)') ' Default basis set library used:',
-     &                              BASDIR
+     &BASDIR
       ELSE
          WRITE(LUERR,'(/A,/8X,A)') ' User supplied basis '//
      &                               'set directory :',BASDIR

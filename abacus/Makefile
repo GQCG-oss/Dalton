@@ -44,6 +44,5 @@ depend:; ../tools/check_depend $(INCLUDE_DIR) > Makefile.depend
 # read dependencies using sinclude (silent include)
 # which continues if Makefile.depend is not readable (incl. doesn't exist!).
 # Makefile.depend can be created with 'make depend'.
-sinclude Makefile.depend
+-include Makefile.depend
 ######################################################################
-
