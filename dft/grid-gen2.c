@@ -186,13 +186,13 @@ typedef struct
 #ifdef USE_PTHREADS
     pthread_mutex_t* fileMutex;
     pthread_mutex_t* jobMutex;
+    pthread_t thread;
 #endif
     int* currJobNumber;
       int noOfPoints;         /* OUTPUT */
       int noOfWrittenBatches; /* OUTPUT */
       real integralResult;    /* OUTPUT */
     int threadNo;
-    pthread_t thread;
   } compute_grid_thread_func_struct;
 
 
@@ -378,7 +378,9 @@ static void make_float_string(char* s, real x)
 static int 
 parseParam(char* s)
 {
-  const int maxBytes = 222;
+/* use #define instead of more modern static const int to please old
+ * compilers. */
+#define MAX_BYTES 222
   char* p = s;
   char* endPtr = s + strlen(s);
   // look for =
@@ -391,11 +393,11 @@ parseParam(char* s)
       return -1;
     }
   // now q points to '='
-  char paramName[maxBytes];
+  char paramName[MAX_BYTES];
   memcpy(paramName, p, q-p);
   paramName[q-p] = 0;
   //printf("paramName = '%s'\n", paramName);
-  char paramValueString[maxBytes];
+  char paramValueString[MAX_BYTES];
   memcpy(paramValueString, q+1, endPtr-q-1);
   paramValueString[endPtr-q-1] = 0;
   //printf("paramValueString = '%s'\n", paramValueString);
@@ -432,7 +434,7 @@ parseParam(char* s)
 	  return -1;
 	}
       global_maxerror = new_maxerror;
-      char ss[maxBytes];
+      char ss[MAX_BYTES];
       make_float_string(ss, global_maxerror);
       do_output_2(2, "grid parameter maxerror = %s", ss);
       return 0;
@@ -483,14 +485,14 @@ parseParam(char* s)
 void
 dftcartesianinput_(const char *line, int line_len)
 {
+#define MAX_BYTES 222
   int inperr;
   int* inperrPtr = &inperr;
   do_output_2(1, "dftcartesianinput, line_len = %i", line_len);
   if(line_len < 0)
     return;
-  const int maxBytes = 222;
-  char line2[maxBytes];
-  memset(line2, 0, maxBytes);
+  char line2[MAX_BYTES];
+  memset(line2, 0, MAX_BYTES);
   memcpy(line2, line, line_len);
   line2[line_len] = 0;
   //printf("dftgridparams_ len = %i\n", line_len);
@@ -508,7 +510,7 @@ dftcartesianinput_(const char *line, int line_len)
       char* q = p;
       while((*q != ' ') && (*q != 0))
 	q++;
-      char paramBuf[maxBytes];
+      char paramBuf[MAX_BYTES];
       memcpy(paramBuf, p, q-p);
       paramBuf[q-p] = 0;
       if(parseParam(paramBuf) != 0)
@@ -1035,10 +1037,10 @@ compute_integral_over_box(DistributionSpecStruct* distr, BoxStruct* box)
 static int 
 get_distrs_for_box(int* resultList, rhoTreeNode* node, BoxStruct* inputBoxPtr)
 {
-  const int maxDepth = 888;
+#define MAX_DEPTH 888
   int n, i, overlap, currDepth;
-  rhoTreeNode* nodeList[maxDepth];
-  int statusList[maxDepth];
+  rhoTreeNode* nodeList[MAX_DEPTH];
+  int statusList[MAX_DEPTH];
   rhoTreeNode* currNode;
   BoxStruct box;
   BoxStruct* currBox;
@@ -1412,6 +1414,8 @@ compute_grid_for_box(compute_grid_for_box_params_struct* params,
 		     real* workList,
 		     real* totalIntegralResult)
 {
+#define MAX_NO_OF_TEST_POINTS 88
+
   int noOfGridPoints;
   int Ngrid;
   int i;
@@ -1471,11 +1475,10 @@ compute_grid_for_box(compute_grid_for_box_params_struct* params,
         /* it seems that the error is small enough. */
         /* however, this could be a coincidence. */
         /* to check, compare with denser grid */
-      const int maxNoOfTestPoints = 88;
-      real testCoor[3][maxNoOfTestPoints];
-      real testWeight[maxNoOfTestPoints];
+      real testCoor[MAX_NO_OF_TEST_POINTS][3];
+      real testWeight[MAX_NO_OF_TEST_POINTS];
       int Ngrid2;
-      Ngrid2 = use_cubature_rule(maxNoOfTestPoints, 
+      Ngrid2 = use_cubature_rule(MAX_NO_OF_TEST_POINTS, 
 				 testCoor, testWeight, box, CUBATURE_RULE_2);
       if(Ngrid2 <= 0)
 	{
@@ -2907,6 +2910,7 @@ get_density(DistributionSpecStruct* rho,
 	    ShellSpecStruct* shellList,
 	    BasisFuncStruct* basisFuncList)
 {
+#define MAX_DISTR_IN_TEMP_LIST 888
   real cutoff = cutoffInp;
 
   do_output_2(2, "entering function get_density, cutoff = %22.15f", cutoff);
@@ -2971,14 +2975,13 @@ get_density(DistributionSpecStruct* rho,
 	    symmetryFactor = 2;
 	  if(i > j)
 	    continue;
-	  const int maxDistrsInTempList = 888;
-	  DistributionSpecStruct tempList[maxDistrsInTempList];
+	  DistributionSpecStruct tempList[MAX_DISTR_IN_TEMP_LIST];
 	  //printf("calling get_product_simple_primitives\n");
 	  int nPrimitives = 
 	    get_product_simple_primitives(&basisInfo, i,
 					  &basisInfo, j,
 					  tempList,
-					  maxDistrsInTempList);
+					  MAX_DISTR_IN_TEMP_LIST);
 	  do_output_2(3, "get_product_simple_primitives returned %i",
 		      nPrimitives);
 	  if(nPrimitives <= 0)

@@ -3176,8 +3176,8 @@ C  /* Deck mgfres */
 #include <suscpt.h>
 #include <molgfa.h>
 #include <orgcom.h>
-#include <ibtfun.h>
 #include <dftcom.h>
+#include <ibtfun.h>
 C
       D12 = .FALSE.
       D23 = .FALSE.

@@ -1,3 +1,4 @@
+/* Written by Elias Rudberg, KTH, Stockholm */
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
@@ -8,9 +9,6 @@
 #include <stdarg.h>
 #include "general.h"
 #include "basisinfo.h"
-
-
-const real CONSTPI = 3.141592654;
 
 
 static int    global_outputLevel       = 1;
@@ -533,7 +531,7 @@ get_simple_primitives_all(BasisInfoStruct* basisInfo)
 }
 
 
-const int kMaxDim = 44;
+#define K_MAX_DIM 44
 
 typedef struct{
   real a0;
@@ -547,9 +545,9 @@ multiply_polynomials(real result[],
 		     real a[])
 {
   int i;
-  real p1[kMaxDim + 1];
-  real p2[kMaxDim + 1];
-  if(dim >= (kMaxDim-1))
+  real p1[K_MAX_DIM + 1];
+  real p2[K_MAX_DIM + 1];
+  if(dim >= (K_MAX_DIM-1))
     return -1;
   for(i = 0; i <= dim; i++)
     p1[i] = a[i]*polydeg1->a0;
@@ -592,12 +590,12 @@ get_product_simple_prims(DistributionSpecStruct* primA,
 	(primA->exponent + primB->exponent);
     } /* END FOR k */
 
-  real poly0[kMaxDim];
-  real poly1[kMaxDim];
-  real poly2[kMaxDim];
-  real tempPoly[kMaxDim];
-  real tempPoly2[kMaxDim];
-  real tempPoly3[kMaxDim];
+  real poly0[K_MAX_DIM];
+  real poly1[K_MAX_DIM];
+  real poly2[K_MAX_DIM];
+  real tempPoly[K_MAX_DIM];
+  real tempPoly2[K_MAX_DIM];
+  real tempPoly3[K_MAX_DIM];
   int tempPolyDegree, tempPoly2Degree;
   int poly0degree, poly1degree, poly2degree;
   polydeg1struct polyDeg1;
@@ -643,7 +641,7 @@ get_product_simple_prims(DistributionSpecStruct* primA,
 	} /* END FOR m */
 
       /* now do variable change */
-      for(m = 0; m < kMaxDim; m++)
+      for(m = 0; m < K_MAX_DIM; m++)
 	poly[m] = 0;
       tempPoly2Degree = 0;
       for(m = 0; m <= tempPolyDegree; m++)
@@ -684,7 +682,7 @@ get_product_simple_prims(DistributionSpecStruct* primA,
 	    {
 	      real newCoeff = AiAj * CxCyCz * poly0[k] * poly1[l] * poly2[m];
 
-	      real sqrtValue = sqrt(CONSTPI / alphaNew);
+	      real sqrtValue = sqrt(M_PI / alphaNew);
 	      real absvalue = newCoeff * sqrtValue * sqrtValue * sqrtValue;
 	      if(absvalue < 0) absvalue *= -1;
 

@@ -160,7 +160,7 @@ case $WHICH in
     paragon)  liblist='libmath.a libblas.a'
               complist='if90 if77 f90 f77'
               ccmplist='cc';;
-    linux)    liblist='libmkl_p3.a libatlas.a libblas.a'
+    linux)    liblist='libacml.a libmkl_p3.a libatlas.a libblas.a'
               complist='ifc efc pgf77 g77'
               ccmplist='icc ecc pgcc gcc';;
     darwin)   liblist='libatlas.a libblas.a'
@@ -184,7 +184,8 @@ if [ $WHICH = "linux" ]; then
 	dirlist="$mkllib"
     elif [ ! -z $PGI ]; then
 	if [ $PGI != "" ]; then
-	    dirlist="$dirlist $PGI/linux86/lib"
+	    dirlist="$PGI/linux86/lib $PGI/linux86-64/*/lib $dirlist"
+            echo "dirlist=$dirlist"
 	fi
     fi
 fi
@@ -460,8 +461,10 @@ LIB=''
 for testdir in $dirlist; do
   if [ -n "$liblist" ]; then
     for testlib in $liblist; do
+        echo "testing existence of $testdir/$testlib"
       if test -f $testdir/$testlib; then
          case $testlib in
+             libacml.a) LIB='-lacml'; blas3=true;;
 	    libatlas.a) LIB='-lf77blas -latlas'; blas3='true'
                        pdpackextras="$pdpackextras gp_zlapack.o";;
 	    libessl.a) LIB='-lessl'
@@ -933,18 +936,10 @@ case "$WHICH" in
              LIBS="$LIBS -Vaxlib -lsvml"
              ;;
           pgf77)
-             if grep -q sse2 /proc/cpuinfo >& /dev/null; then
-                 proc='-tp p7'
-             elif [ $prc = 'i686' ]; then
-                 proc='-tp p6'
-             elif [ $prc = 'i586' ]; then
-                 proc='-tp p5'
-             else
-                 proc=''
-             fi
              cpp="-DVAR_PGF77 $cpp"
-             copt="-fastsse $proc -Munroll -c9x -DRESTRICT=restrict"
-             opt="-fastsse $proc -Munroll"; safe_opt="-fastsse $proc"
+             # vect=idiom gives 40% performance improvement on opteron (pgcc5.2).
+             copt="-fastsse -Mvect=idiom -Munroll -c9x -DRESTRICT=restrict"
+             opt="-fastsse -Munroll"; safe_opt="-fastsse"
              ;;
           *)
               test_linux_g77=false
