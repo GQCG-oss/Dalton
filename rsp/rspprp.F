@@ -573,7 +573,7 @@ C
             CALL PRPONE(WRK(KPRPMO),UDV,ONETOT,IPRONE,WORD)
          END IF
       END IF
-C     
+C
 C Construct orbital property vector
 C
       IF (KZWOPT.GT.0) THEN
@@ -611,7 +611,7 @@ C           CALL PRPCON(NSIM,PRPMO,GP,XINDX,WRK,LWRK)
          ENDIF
       ENDIF
 C ---------------------------------------------------------------
-C     
+C
       CALL MEMREL('PRPCTL',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('PRPCTL')
       RETURN
@@ -739,7 +739,7 @@ C
          CALL OUTPUT(PRPMO,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
       END IF
 C
-C     Whereas ANTSYM above has refered matrix symmetry, it will from here on
+C     Whereas ANTSYM above has referred matrix symmetry, it will from here on
 C     refer to the antisymmetry of the response vector, thus we change sign
 C     on it. K.Ruud, July 10 2000.
 C
@@ -945,104 +945,4 @@ C
           CALL OUTPUT(B(1,1),1,NB,1,NA,NB,NA,1,LUPRI)
        END IF
        RETURN
-      END
-C  /* Deck prpone */
-      SUBROUTINE PRPONE(PRPMO,UDV,ONETOT,IPRONE,PRPLBL)
-C
-C CALCULATE AVERAGE VALUE OF ONE ELECTRON OPERATOR
-C
-#include <implicit.h>
-C
-      CHARACTER*(*)PRPLBL
-C
-      DIMENSION PRPMO(NORBT,NORBT),UDV(NASHDI,NASHDI)
-C
-#include <priunit.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <inforb.h>
-#include <infdim.h>
-#include <infpri.h>
-C
-      PARAMETER ( D2 = 2.0D0 , D0 = 0.0D0 )
-      PARAMETER ( BIGLIM = 100000.0D0, SMLLIM = 0.01D0 )
-C
-      IPRORB = IPRONE
-      IF (NOCCT .GT. 12) IPRORB = MAX(IPRORB,2)
-C     hjaaj Mar 2003: default IPRRSP is 2, do not print individual
-C     contributions by default if more than 12 occupied orbitals.
-      IF (IPRRSP.GT.IPRORB) THEN
-         WRITE(LUPRI,'(/A/3A/)')
-     &      ' *** Individual non-zero orbital contributions',
-     &      ' *** to the expectation value for property ',PRPLBL,' :'
-      END IF
-         ONEACT = D0
-         ONEINA = D0
-         ONESEC = D0
-         DO 50 ISYM = 1,NSYM
-            JSYM = MULD2H(KSYMOP,ISYM)
-            NASHI = NASH(ISYM)
-            NISHI = NISH(ISYM)
-            IORBI = IORB(ISYM)
-            IASHI = IASH(ISYM)
-            NASHJ = NASH(JSYM)
-            NISHJ = NISH(JSYM)
-            IORBJ = IORB(JSYM)
-            IASHJ = IASH(JSYM)
-            IF ( .NOT. TRPLET ) THEN
-               DO 80 IINAC = 1,NISHI
-                  TMP = PRPMO(IORBI+IINAC,IORBI+IINAC) * D2
-                  IF (IPRRSP.GT.IPRORB .AND. TMP .NE. D0)
-     &               WRITE(LUPRI,'(5X,A,2I3,A,I2,A,F15.8)')
-     &               'Inactive     ',IINAC,IINAC,' in sym',ISYM,' :',TMP
-                  ONEINA = ONEINA + TMP
- 80            CONTINUE
-            END IF
-            DO 60 IA = 1,NASHI
-               DO 70 JA = 1,NASHJ
-                  TMP = UDV(IASHI+IA,IASHJ+JA) *
-     *                  PRPMO(IORBI+NISHI+IA,IORBJ+NISHJ+JA)
-                  IF (IPRRSP.GT.IPRORB .AND. TMP .NE. D0)
-     &               WRITE(LUPRI,'(5X,A,2I3,A,I2,A,F15.8)')
-     &               'Active-active',IA,JA,' in sym',ISYM,' :',TMP
-                  ONEACT = ONEACT + TMP
- 70            CONTINUE
- 60         CONTINUE
- 50      CONTINUE
-C
-      IF (SOPPA) CALL ONEMP2(PRPMO,UDV,ONESEC)
-C
-      ONETOT = ONEINA + ONEACT + ONESEC
-      IF (IPRRSP.GE.IPRONE) THEN
-         IF (ABS(ONETOT) .GT. SMLLIM .AND. ABS(ONETOT) .LT. BIGLIM)
-     *                                                       THEN
-            IF (.NOT. SOPPA) THEN
-               WRITE(LUPRI,'(3(/5X,2A,F15.8))')
-     *         PRPLBL,' inactive part:',ONEINA,
-     *         PRPLBL,' active part  :',ONEACT,
-     *         PRPLBL,' total        :',ONETOT
-            ELSE
-               WRITE(LUPRI,'(3(/5X,2A,F15.8))')
-     *         PRPLBL,' Hartree-Fock part:',ONEINA,
-     *         PRPLBL,' second order part:',ONESEC,
-     *         PRPLBL,' total 2. order   :',ONETOT
-            END IF
-         ELSE
-            IF (.NOT. SOPPA) THEN
-               WRITE(LUPRI,'(3(/5X,2A,1P,D15.8))')
-     *         PRPLBL,' inactive part:',ONEINA,
-     *         PRPLBL,' active part  :',ONEACT,
-     *         PRPLBL,' total        :',ONETOT
-            ELSE
-               WRITE(LUPRI,'(3(/5X,2A,1P,D15.8))')
-     *         PRPLBL,' Hartree-Fock part:',ONEINA,
-     *         PRPLBL,' second order part:',ONESEC,
-     *         PRPLBL,' total 2. order   :',ONETOT
-            END IF
-         END IF
-      END IF
-C
-C END OF PRPONE
-C
-      RETURN
       END

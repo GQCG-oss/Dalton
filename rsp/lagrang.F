@@ -31,7 +31,7 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-#include <single.h>
+#include "single.h"
 C
 #ifdef REV_LOG
 ===========================================================================
@@ -49,20 +49,20 @@ C 18-AUG-1991
 C
 C Called from GETGPV when label(5:8) = 'LAGR'
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       DIMENSION CMO(*),UDV(NASHT,*),FC(*),PV(*),XINDX(*),WRK(*)
       CHARACTER*8 WORD
 C-- common blocks:
-#include <maxorb.h>
-#include <priunit.h>
-#include <infdim.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infpri.h>
-#include <infinp.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infdim.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infpri.h"
+#include "infinp.h"
 C
       PARAMETER (DHALF=0.5D0,ONE=1.0D0,DMONE=-1.0D0)
 C
@@ -200,21 +200,21 @@ C  /* Deck rsplan */
 C
 C     Lagrangian solution vector is returned in WRK(1)
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "iratdef.h"
 C
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
-#include <priunit.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <inflr.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <infesr.h>
+#include "priunit.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inflr.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "infesr.h"
 C
 C Local variables
 C
@@ -311,14 +311,14 @@ C  /* Deck esrinp */
 C
 C     Module for *ESR    input under **RESPONSE
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <inflr.h>
-#include <infesr.h>
-#include <rspprp.h>
-#include <infpri.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "inflr.h"
+#include "infesr.h"
+#include "rspprp.h"
+#include "infpri.h"
 C
       LOGICAL NEWDEF
       PARAMETER ( NTABLE = 6 )
@@ -411,8 +411,14 @@ C
 C  /* Deck rspesr */
       SUBROUTINE RSPESR(CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
 C
-#include <implicit.h>
-#include <iratdef.h>
+C Calculate triplet expectation values with Lagrangian correction
+C and singlet expectation values for open shell systems with MCSCF or CI
+C (non-zero spin densities).
+C
+C Revised March 2003 hjaaj
+C
+#include "implicit.h"
+#include "iratdef.h"
 C
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
@@ -420,14 +426,14 @@ C
       PARAMETER ( D0 = 0.0D0, DUMMY = 1.0D+20 )
       LOGICAL TRPSAVE
 C
-#include <priunit.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <inflr.h>
-#include <infdim.h>
-#include <inforb.h>
-#include <infesr.h>
+#include "priunit.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inflr.h"
+#include "infdim.h"
+#include "inforb.h"
+#include "infesr.h"
 C
       CALL QENTER('RSPESR')
       CALL HEADER('Output from RSPESR module',0)
@@ -441,25 +447,32 @@ C        ... we use determinants when triplet, thus not NCREF
 Chj   ... we use determinants triplet, thus KZCONF,
 Chj   ... However, for ROHF NCREF = 1, KZCONF = 0 and
 Chj       we need CREF(1) for RSPDM. Thus MAX(KZCONF,NCREF)
-         KLAGR = 1
+C
+C        Note that GETGPV uses WRK(KGP) as scratch, thus KGP last allocation !
+C
          IF (RSPCI) THEN
-            KCREF  = KLAGR
-            KUDV   = KCREF  + NDREF
-            KGP    = KUDV   + NASHT*NASHT
-            KWRK1  = KGP
+            KTUDV = 1
+            KCREF = KTUDV + N2ASHX
+            KWRK1 = KCREF + NDREF
+            KLAGR = KCREF
+            KGP   = KCREF
          ELSE
+            KLAGR = 1
             CALL RSPLAN(CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
             IF (IPRRSP.GT.120) THEN
-               WRITE(LUPRI,'(/A)') ' SOLUTION VECTOR FOR LAGRANGIAN '
-               CALL OUTPUT(WRK,1,KZYVAR,1,1,KZYVAR,1,1,LUPRI)
+               WRITE(LUPRI,'(/A)')
+     &            'RSPESR: solution vector for lagrangian :'
+               CALL OUTPUT(WRK,1,KZVAR,1,2,KZVAR,2,1,LUPRI)
             END IF
-            KCREF  = KLAGR  + KZYVAR
-            KUDV   = KCREF  + NDREF
-            KGP    = KUDV   + NASHT*NASHT
-            KWRK1  = KGP    + KZYVAR
+            KTUDV = KLAGR + KZYVAR
+            KCREF = KTUDV + N2ASHX
+            KGP   = KCREF
+            KWRK1 = KGP   + MAX(KZYVAR,NDREF)
          END IF
-         LWRK1  = LWRK   - KWRK1
+         LWRK1 = LWRK - KWRK1
          IF (LWRK1.LT.0) CALL ERRWRK('RSPESR',KWRK1-1,LWRK)
+C
+C        Get one electron spin density (triplet MS=0 density)
 C
          CALL GETREF(WRK(KCREF),NDREF)
          KFREE  = 1
@@ -467,14 +480,14 @@ C
          ISPIN1 = 1
          ISPIN2 = 0
          CALL RSPDM(IREFSY,IREFSY,NDREF,NDREF,WRK(KCREF),WRK(KCREF),
-     *              WRK(KUDV),DUMMY, ISPIN1,ISPIN2,.FALSE.,.TRUE.,
+     *              WRK(KTUDV),DUMMY, ISPIN1,ISPIN2,.FALSE.,.TRUE.,
      *              XINDX,WRK(KWRK1),KFREE,LFREE)
 C        CALL RSPDM(ISYM,ISYM,NCDIM.NCDIM,REF,REF,
 C                   TUDV,DUMMY, ISPIN1,ISPIN2,TDM,NORHO2,
 C                   XINDX,WRK,KFREE,LFREE)
          IF (IPRRSP.GE.5) THEN
-            WRITE(LUPRI,'(/A)')'  ONE ELECTRON SPIN DENSITY '
-            CALL OUTPUT(WRK(KUDV),1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
+            WRITE(LUPRI,'(/A)')'RSPESR: one electron spin density '
+            CALL OUTPUT(WRK(KTUDV),1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
          END IF
          TRPSAVE= TRPLET
          TRPLET = .TRUE.
@@ -482,7 +495,7 @@ C                   XINDX,WRK,KFREE,LFREE)
             IF (.NOT. RSPCI ) THEN
                IF (IPRRSP.GT.150) THEN
                   WRITE(LUPRI,'(/A)')
-     *              ' LAGRANGIAN VECTOR BEFORE PRODUCT'
+     *              'RSPESR: Lagrangian vector before product'
                   CALL OUTPUT(WRK(KLAGR),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
                END IF
                CALL GETGPV(LBESRT(KSYMOP,IOP),FC,CMO,UDV,PV,XINDX,
@@ -490,18 +503,18 @@ C                   XINDX,WRK,KFREE,LFREE)
 C              CALL GETGPV(LABELOP,FC,CMO,UDV,PV,XINDX,ANTSYM,WRK,LWRK)
                IF (IPRRSP.GT.120) THEN
                   WRITE(LUPRI,'(/2A)')
-     *              ' GP VECTOR  LABEL: ',LBESRT(KSYMOP,IOP)
+     *              'RSPESR: GP vector with label: ',LBESRT(KSYMOP,IOP)
                   CALL OUTPUT(WRK(KGP),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
                END IF
                FOPLG = -DDOT(KZYVAR,WRK(1),1,WRK(KGP),1)
-               IF (IPRRSP.GT.120) WRITE(LUPRI,'(/A,1P,D18.10)')
+               IF (IPRRSP.GT.5) WRITE(LUPRI,'(/A,1P,D18.10)')
      &            ' GP * LAGRANG SOLUTION:',FOPLG
 C
             ELSE
                FOPLG = D0
             END IF
-            CALL ESRAVE(LBESRT(KSYMOP,IOP),AVEVAL,CMO,
-     *                  WRK(KUDV),WRK(KWRK1),LWRK1)
+            CALL PRPAVE(LBESRT(KSYMOP,IOP),AVEVAL,CMO,
+     *                  WRK(KTUDV),WRK(KWRK1),LWRK1)
             HYPFIN = AVEVAL + FOPLG
             WRITE(LUPRI,'(/2A,3(A,F10.6))')
      *        'TRIPLET OPERATOR: "',LBESRT(KSYMOP,IOP),
@@ -511,119 +524,37 @@ C
       END IF
       DO 300 ISYM = 2,NSYM
          DO 350 IOP = 1,NESRT(ISYM)
-            WRITE(LUPRI,'(/2A,A)') 'TRIPLET OPERATOR: "',
-     &         LBESRT(ISYM,IOP),'" contribution = 0.0 by symmetry'
+            WRITE(LUPRI,'(/3A/A,I3)') 'TRIPLET OPERATOR: "',
+     &         LBESRT(ISYM,IOP),'" contribution = 0.0 by symmetry.',
+     &         '- Operator is of symmetry no.',ISYM
 350      CONTINUE
 300   CONTINUE
 C
 C     Singlet operators:
 C
+      TRPSAVE= TRPLET
+      TRPLET = .FALSE.
+C     ... so PRPAVE calculates singlet expectation values /hjaaj march 2003 ...
+C         (if TRPLET true, then inactive density matrix is omitted!)
       DO 400 IOP = 1,NESRS(KSYMOP)
-         CALL ESRAVE(LBESRS(KSYMOP,IOP),AVEVAL,CMO,
+         CALL PRPAVE(LBESRS(KSYMOP,IOP),AVEVAL,CMO,
      *               UDV,WRK(KWRK1),LWRK1)
-C        CALL ESRAVE(LABELOP,AVEVAL,CMO, UDV,WRK,LWRK)
+C        CALL PRPAVE(LABELOP,AVEVAL,CMO, UDV,WRK,LWRK)
          WRITE(LUPRI,'(/3A,F10.6)')
      *      'SINGLET OPERATOR: "',LBESRS(KSYMOP,IOP),'" AVERAGE:',AVEVAL
 400   CONTINUE
 C
       DO 500 ISYM = 2,NSYM
          DO 550 IOP = 1,NESRS(ISYM)
-            WRITE(LUPRI,'(/2A,A)') 'SINGLET OPERATOR: "',
-     &         LBESRS(ISYM,IOP),'" contribution = 0.0 by symmetry'
+            WRITE(LUPRI,'(/3A/A,I3)') 'SINGLET OPERATOR: "',
+     &         LBESRS(ISYM,IOP),'" contribution = 0.0 by symmetry.',
+     &         '- Operator is of symmetry no.',ISYM
 550      CONTINUE
 500   CONTINUE
+      TRPLET = TRPSAVE
 C
 C *** end of RSPESR --
       CALL QEXIT('RSPESR')
-      RETURN
-      END
-C  /* Deck aveone */
-      SUBROUTINE ESRAVE(LBESR,AVEVAL,CMO,UDV,WRK,LWRK)
-C
-C CALCULATE AVERAGE VALUE OF PROPERTIES in ESR module
-C
-C
-#include <implicit.h>
-#include <dummy.h>
-C
-      PARAMETER ( D1 = 1.0D0 , D2 = 2.0D0 , D8 = 8.0D0 )
-      PARAMETER ( D1INF = 0.99999D0 , CKMXPR = 1.0D-6 )
-      LOGICAL FNDLAB
-      CHARACTER*8 LBESR
-C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <infind.h>
-#include <wrkrsp.h>
-#include <infave.h>
-#include <infpri.h>
-#include <inftap.h>
-#include <infesr.h>
-C
-      DIMENSION CMO(*),UDV(*),WRK(*)
-C
-C ALLOCATE WORK SPACE
-C
-      KMO    = 1
-      KWRK1  = KMO    + NORBT*NORBT
-      LWRK1  = LWRK   - KWRK1
-      IF (LWRK1.LT.0) CALL ERRWRK('ESRAVE',KWRK1-1,LWRK)
-C
-C Read AO property integrals
-C
-      CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
-      REWIND (LUPROP)
-      IF ( FNDLAB(LBESR,LUPROP) )  THEN
-         CALL READT(LUPROP,NNBASX,WRK)
-         IND   = IDAMAX(NNBASX,WRK,1)
-         IF (ABS(WRK(IND)).GT.CKMXPR) THEN
-            X = D1 + D8*IND
-            IIND  = INT( (SQRT(X) - D1INF)/ D2 )
-            IIMAX = IIND*(IIND+1)/2
-            IF ( IIMAX .EQ. IND ) THEN
-               JIND = IIND
-            ELSE
-               IIND = IIND + 1
-               JIND = IND  - IIMAX
-            END IF
-            KSYMPT = MULD2H( ISAO(IIND) , ISAO(JIND) )
-            IF ( KSYMPT .EQ. 1 ) THEN
-C
-C Read AO property integrals and transform to MO basis.
-C
-               KSYMOP = KSYMPT
-               CALL PRPGET (LBESR,CMO,WRK(KMO),ANTSYM,WRK(KWRK1),LWRK1)
-C              CALL PRPGET (WORD,CMO,PRPMO,WRK,LWRK)
-C
-C
-C CALCULATE AVERAGE VALUE OF ONE ELECTRON OPERATOR
-C
-               IPRONE = 0
-               CALL PRPONE(WRK(KMO),UDV,AVEVAL,IPRONE,LBESR)
-            ELSE
-               WRITE(LUPRI,'(/3A,I5,A)')
-     *         ' PROPERTY ',LBESR,' HAS SYMMETRY',KSYMPT,
-     *         ' AND HAS THEREFORE AVERAGE VALUE ZERO'
-            END IF
-         ELSE
-            NWARN = NWARN + 1
-            WRITE(LUPRI,'(/A,/3A,1P,D15.7,/A)')' ** WARNING **',
-     *        ' ELEMENTS ON PROPERTY FILE  WITH LABEL: ',
-     *        LBESR,' SMALLER THAN :',CKMXPR,
-     *        ' AVERAGE VALUE OF PROPERTY NOT CALCULATED '
-         END IF
-      ELSE
-            NWARN  = NWARN + 1
-           WRITE(LUPRI,'(/5A/4A)')
-     *      ' ** WARNING ** LABEL ',LBESR,
-     *      ' NOT FOUND ON LUPROP.',
-     *      ' AVERAGE VALUE OF PROPERTY NOT CALCULATED '
-      END IF
-      IF (LUPROP .GT. 0) CALL GPCLOSE(LUPROP,'KEEP')
       RETURN
       END
 C  /* Deck solgdt */
@@ -642,16 +573,16 @@ C    ESOLT      total solvation energy
 C    ERLM(lm,1) contains Esol(l,m) contribution to ESOLT
 C    ERLM(lm,2) contains Tsol(l,m)
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       DIMENSION CREF(*), CMO(*), INDXCI(*)
       DIMENSION DV(*),   G(*),   ERLM(NLMSOL,2),  WRK(*)
       PARAMETER ( D0 = 0.0D0, D2 = 2.0D0 )
-#include <thrzer.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <infrsp.h>
+#include "thrzer.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "infrsp.h"
 C
 C Used from common blocks:
 C   INFINP: NLMSOL, LSOLMX, EPSOL, RSOL(3)
@@ -661,14 +592,14 @@ C   INFIND: IROW(*)
 C   INFTAP: LUSOL,  LUIT2
 C   INFPRI: IPRSOL
 C
-#include <maxash.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infind.h>
-#include <inftap.h>
-#include <infpri.h>
+#include "maxash.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infind.h"
+#include "inftap.h"
+#include "infpri.h"
 C
       LOGICAL     FIRST
       PARAMETER  (MXLMAX = 50)

@@ -85,7 +85,7 @@ C  /* Deck e2sym */
      &                 WRK,LWRK)
 C
 #include <implicit.h>
-C     
+C
 C  THIS IS A TEST ROUTINE THAT
 C  1)  READ LINEAR TRANSFORMED VECTORS FOR (Z,Y) VECTORS FROM LURSP3 AND
 C      LURSP5 AND CALCULATE LINEAR TRANSFORMATION FOR (Y,Z) VECTORS
@@ -173,7 +173,7 @@ C
             CALL READST(LURSP3,LRSP3,WRK(JBOOFF),JRSP3,.TRUE.)
             IF (LRSP3 .NE. KZYWOP) CALL QUIT('Inconsistent record '//
      &           'length on unit LURSP3 in E2SYM')
-#else            
+#else
             CALL READT(LURSP3,KZYWOP,WRK(JBOOFF))
 #endif
             CALL DCOPY(KZWOPT,WRK(JBOOFF),1,WRK(JBOOFF+JOTOT+KZWOPT),1)
@@ -1292,11 +1292,11 @@ C
                JRSP3 = 0
                IF (KOFFTY.EQ.1)
      &              CALL READST(LURSP3,LRSP3,DUMMY,JRSP3,.FALSE.)
-#endif                  
+#endif
                DO 61 IVEC = 1,KZRED
 #if defined (VAR_SPLITFILES)
                   CALL READST(LURSP3,LRSP3,DUMMY,JRSP3,.FALSE.)
-#else                  
+#else
                   READ (LURSP3)
 #endif
  61            CONTINUE
@@ -1376,7 +1376,7 @@ C
 #endif
                   ENDIF
                   ISTBC = ISTBC + KZCONF
-                  ISTEC = ISTEC + KZYVAR 
+                  ISTEC = ISTEC + KZYVAR
                ELSE
 #if defined (VAR_SPLITFILES)
                   CALL READST(LURSP3,LRSP3,WRK(ISTBO),JRSP3,.TRUE.)
@@ -1573,7 +1573,7 @@ C
          END IF
          THRLDV = KZYVAR*THRLDP
 C
-C        hj-aug2000: we must make sure that configuration and orbital 
+C        hj-aug2000: we must make sure that configuration and orbital
 C        trial vectors are consecutive in memory before CALL RSPORT
 C
          ISTBO = KBCVEC+NCSIM*KZCONF
@@ -1736,8 +1736,8 @@ C
                CALL GETGPV(LBLLR(KSYMOP,IOP),FC,CMO,UDV,PV,XINDX,ANTSYM,
      *                     WRK(KGP),LWRKGP)
                CALL SOPDW4(WRK(KGP),WRK(KISOL),WRK(KJSOL),FREQ(IFREQ))
-            END IF            
-c ach            
+            END IF
+c ach
             DO 600 JOP = JST,NOP
                XPROP = SOPR(IFREQ,IOP,JOP)
                WRITE(LUPRI,'(A,A,3X,A,1P,D20.12)')
@@ -3092,7 +3092,7 @@ C
          CALL READST(LURSP4,LRSP4,A,JRSP4,.TRUE.)
          IF (LRSP4 .NE. KZCONF) CALL QUIT('Inconsistent record length'//
      &        ' on unit LURSP4 in RSPDIA')
-#else         
+#else
          CALL READT (LURSP4,KZCONF,A)
 #endif
       END IF
@@ -5144,80 +5144,6 @@ C END OF EO2CHK
 C
       RETURN
       END
-C  /* Deck mixs0 */
-      SUBROUTINE MIXS0(CMO,UDV,WRK,LWRK)
-C
-C CALCULATE S(0) IN MIXED REPRESENTATION
-C
-C     NELECTRON = abs ( <0| [p,r] |0> )
-C
-#include <implicit.h>
-C
-#include <priunit.h>
-#include <infs0.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infpri.h>
-C
-      DIMENSION CMO(*),UDV(*),WRK(*)
-C
-      IF (NOS0MX) RETURN
-      WRITE(LUPRI,'(/A)')' ** S(0) sum rule in mixed representation **'
-C
-C ALLOCATE WORK SPACE
-C
-      KDLEN  = 1
-      KDVEL  = KDLEN  + NORBT*NORBT
-      KWRK1  = KDVEL  + NORBT*NORBT
-      LWRK1  = LWRK   - KWRK1
-      IF (LWRK1.LT.0) CALL ERRWRK('MIXS0',KWRK1-1,LWRK)
-      DO 100 JSYMOP = 1,NSYM
-         NOP = NGPS0(JSYMOP)
-      DO 100 IOP    = 1,NOP
-C
-C Read AO property integrals and transform to MO basis.
-C
-         KSYMOP = JSYMOP
-         CALL PRPGET (LBLS0(JSYMOP,IOP,1),
-     *                CMO,WRK(KDLEN),ANTSYM,WRK(KWRK1),LWRK1)
-         CALL PRPGET (LBLS0(JSYMOP,IOP,2),
-     *                CMO,WRK(KDVEL),ANTSYM,WRK(KWRK1),LWRK1)
-C        CALL PRPGET (WORD,CMO,PRPMO,WRK,LWRK)
-C
-C Calculate [ d/dx , x ]
-C
-         CALL DGEMM('N','N',NORBT,NORBT,NORBT,1.D0,
-     &              WRK(KDVEL),NORBT,
-     &              WRK(KDLEN),NORBT,0.D0,
-     &              WRK(KWRK1),NORBT)
-         CALL DGEMM('N','N',NORBT,NORBT,NORBT,-1.D0,
-     &              WRK(KDLEN),NORBT,
-     &              WRK(KDVEL),NORBT,1.D0,
-     &              WRK(KWRK1),NORBT)
-C
-C Print atomic and molecular property integrals, if desired
-C
-         IF (IPRRSP.GT.125) THEN
-            WRITE (LUPRI,'(/3A)')' [d/dq,q] PROPERTY INTEGRALS:',
-     *         LBLS0(JSYMOP,IOP,2), LBLS0(JSYMOP,IOP,1)
-            CALL OUTPUT(WRK(KWRK1),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
-         END IF
-C
-C CALCULATE AVERAGE VALUE OF ONE ELECTRON OPERATOR
-C
-         WRITE(LUPRI,'(/5A,I2,/A)')
-     *   ' Symmetry of ',
-     *   LBLS0(JSYMOP,IOP,1),' and ', LBLS0(JSYMOP,IOP,2),
-     *   ' is',JSYMOP,
-     *   ' number of electrons from S(0) mixed :'
-         KSYMOP = 1
-         IPRONE = 0
-         CALL PRPONE(WRK(KWRK1),UDV,ONETOT,IPRONE,' S(0) MIXED : ')
- 100  CONTINUE
-      RETURN
-      END
-C
 C  /* Deck lrnsl */
       SUBROUTINE LRNSL(CMO,UDV,PV,FC,XINDX,VECB,WRK,LWRK)
 C
@@ -5226,7 +5152,7 @@ C
 C
 C PURPOSE:
 C CALCULATION OF LINEAR POLARIZABILITIES WITHOUT USING
-C SELLERS' FORMULA. 
+C SELLERS' FORMULA.
 C
 C Modified version of LRHYP, done by K.Ruud on the plane from SLC to SAN
 C on July 1, 2000
@@ -5250,7 +5176,7 @@ C
 C
       WRITE(LUPRI,'(A)') ' '
       CALL PRSYMB(LUPRI,'=',70,1)
-      WRITE(LUPRI,'(2A)') 
+      WRITE(LUPRI,'(2A)')
      &     ' >>>>>>>>    L I N E A R   R E S P O N S E   ',
      &     'F U N C T I O N   <<<<<<<<'
       CALL PRSYMB(LUPRI,'=',70,1)
@@ -5274,7 +5200,7 @@ C
      &                        FOUND,CONV,ANTSYM)
                   IF (.NOT. (FOUND .AND. CONV)) THEN
                      IF (.NOT. FOUND) THEN
-                        WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') 
+                        WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)')
      &                      ' Response label ',LBLLR(KSYMOP,IOPB),
      &                      ' with frequency ',FREQ(IFREQ),
      &                      ' and symmetry',KSYMOP,
@@ -5282,7 +5208,7 @@ C
                         CALL QUIT('Response vector not '//
      &                            'found on file')
                      ELSE
-                        WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') 
+                        WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)')
      &                      ' Response label ',LBLLR(KSYMOP,IOPB),
      &                      ' with frequency ',FREQ(IFREQ),
      &                      ' and symmetry',KSYMOP,
@@ -5292,10 +5218,10 @@ C
                      END IF
                   END IF
 C
-C     Compute linear response value 
+C     Compute linear response value
 C
                   VAL = DDOT(KZYVAR,WRK(KVECA),1,VECB,1)
-C     
+C
                   WRITE(LUPRI,'(/A,2(/A,A10,I4,F10.6),/,/A,F20.12)')
      &                    ' Linear response function in a.u.',
      &                    ' A operator, symmetry, frequency: ',
@@ -5310,7 +5236,7 @@ C
 C
       RETURN
       END
-        
+
       subroutine printelweak(nop,sopr,ksymop)
 #include <implicit.h>
 #include <priunit.h>
@@ -5342,18 +5268,17 @@ C     .or.
 C     &             (lab1.eq.'Y1SPNORB' .and. lab2 .eq.'PVIOLA Y')) then
                   tot=tot+sopr(ksymop,i,j)*2867.081D0
                endif
-               if ((lab2.eq.'Z1SPNORB' .and. lab1 .eq.'PVIOLA Z')) then 
+               if ((lab2.eq.'Z1SPNORB' .and. lab1 .eq.'PVIOLA Z')) then
 c     .or.
 C     &             (lab1.eq.'Z1SPNORB' .and. lab2 .eq.'PVIOLA Z')) then
                   tot=tot+sopr(ksymop,i,j)*2867.081D0
                endif
             enddo
          enddo
-         
+
          tot1el=tot
          call around('One-el pv term based on one-el so-operator')
-         write(lupri,'(F20.8,A10)') tot,'  10^-20 Eh'
-         write(lupri,*) 
+         write(lupri,'(F20.8,A10/)') tot,'  10^-20 Eh'
 
       endif
 
@@ -5361,40 +5286,40 @@ C     &             (lab1.eq.'Z1SPNORB' .and. lab2 .eq.'PVIOLA Z')) then
          tot=0.0d0
          call dzero(pvodd,natoms)
          do I=1,NOP
-            do j=1,NOP               
+            do j=1,NOP
                lab1=lbllr(ksymop,i)
                lab2=lbllr(ksymop,j)
-               read(lab2(1:3),'(A3)') PRELAB               
+               read(lab2(1:3),'(A3)') PRELAB
 C
                if (lab1.eq.'PVIOLA X' .and.PRELAB.eq.'PSO') then
-                  read(lab2(5:8),'(I4)') INUM                
+                  read(lab2(5:8),'(I4)') INUM
                   iatom=((inum-1)/3)+1
                   if (mod(inum,3).eq.1) then
 C                     write(0,*) lab1, lab2,inum,iatom,mod(inum,3)
                      pvodd(iatom)= pvodd(iatom)+sopr(ksymop,i,j)
                   endif
-               endif            
+               endif
                if (lab1.eq.'PVIOLA Y' .and.PRELAB.eq.'PSO') then
-                  read(lab2(5:8),'(I4)') INUM                
+                  read(lab2(5:8),'(I4)') INUM
                   iatom=((inum-1)/3)+1
                   if (mod(inum,3).eq.2) then
                      pvodd(iatom)= pvodd(iatom)+sopr(ksymop,i,j)
 C                     write(0,*) lab1,lab2,inum,iatom,mod(inum,3)
                   endif
-               endif            
+               endif
                if (lab1.eq.'PVIOLA Z' .and.PRELAB.eq.'PSO') then
-                  read(lab2(5:8),'(I4)') INUM                
+                  read(lab2(5:8),'(I4)') INUM
                   iatom=((inum-1)/3)+1
                   if (mod(inum,3).eq.0) then
 C                     write(0,*)lab1,lab2,inum,iatom,mod(inum,3)
                      pvodd(iatom)= pvodd(iatom)+sopr(ksymop,i,j)
                   endif
-               endif            
+               endif
             enddo
          enddo
-         write(lupri,*) 
+         write(lupri,*)
          call around('One-el term based on pso-integrals')
-         write(lupri,*) 
+         write(lupri,*)
          write(lupri,*) 'Name   Charge             PV '
          do iatom=1,natoms
             pvodd(iatom) = pvodd(iatom)*charge(iatom)/4.0d0
@@ -5404,8 +5329,7 @@ C                     write(0,*)lab1,lab2,inum,iatom,mod(inum,3)
             tot = tot +  pvodd(iatom)
          enddo
          call around('Total One-el term based on the pso integrals')
-         write(lupri,'(F20.8,A10)') tot,'  10^-20 Eh'
-         write(lupri,*) 
+         write(lupri,'(F20.8,A10/)') tot,'  10^-20 Eh'
 
          if (.not. pvso) tot1el = tot
       endif
@@ -5426,8 +5350,8 @@ C                     write(0,*)lab1,lab2,inum,iatom,mod(inum,3)
                   tot=tot+sopr(ksymop,i,j)*2867.081D0
                endif
             enddo
-         enddo      
-         
+         enddo
+
          tot2el=tot
          call around('Two-el term based on two-el spin orbit operator')
          write(lupri,'(F20.8,A10)') tot,'  10^-20 Eh'
@@ -5438,7 +5362,7 @@ C                     write(0,*)lab1,lab2,inum,iatom,mod(inum,3)
       write(lupri,'(F20.8,A10)') (tot1el+tot2el),' 10^-20 Eh'
       write(lupri,*)
 
-      return 
+      return
       end
 
 
