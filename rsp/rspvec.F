@@ -2082,7 +2082,7 @@ C ---------------------------------------------------------------endofmcd-------
      &         ' Total transition       rate     (H_SO)',RATE/D3,' s-1',
      &           ' Total phosphorescence lifetime (H_SO)', D3/RATE, ' s'
                IF (MNFPHO) WRITE(LUPRI,'(1P,2(/A,G12.5,A))')
-     &         ' Total transition       rate     (AMFI)',RATEA/D3,' s-1',
+     &        ' Total transition       rate     (AMFI)',RATEA/D3,' s-1',
      &           ' Total phosphorescence lifetime (AMFI)', D3/RATEA,' s'
                WRITE(LUPRI,'(/A)') 
      &        '   (Triplet->singlet transition, high-temperature limit)'
