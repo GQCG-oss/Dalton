@@ -19,19 +19,21 @@ summarized below:
 
 The largest new extension to Dalton~2.0 is the addition of a complete
 Density Functional Theory (DFT) module. It contains 24 different
-exchange-correlation  functions (and in addition the
-Coulomb-Attenuating Method~\cite{tydptnchcpl393}), and is implemented for energies,
+exchange-correlation  functions,
+% (and in addition the
+%Coulomb-Attenuating Method~\cite{tydptnchcpl393}),
+ and is implemented for energies,
 linear and quadratic response functions (for both singlet and triplet
 perturbing operators) and geometric Hessians, nuclear shielding
 tensors, and magnizabilities as well as indirect spin--spin coupling
 constants. Energies and linear response properties are also available
 for spin-restricted, high-spin DFT ({\em vide infra\/}).
 
-\item{\bf Coulomb-Attenuating Method:} The new hybrid
-  exchange-correlation functional named CAM-B3LYP is
-  included~\cite{tydptnchcpl393}. This hybrid functional  combines the
-  hybrid qualities of B3LYP and the long-range correction presented by
-  Tawada {\it et al.\/}~\cite{ytttsytykhjcp120}.
+%\item{\bf Coulomb-Attenuating Method:} The new hybrid
+%  exchange-correlation functional named CAM-B3LYP is
+%  included~\cite{tydptnchcpl393}. This hybrid functional  combines the
+%  hybrid qualities of B3LYP and the long-range correction presented by
+%  Tawada {\it et al.\/}~\cite{ytttsytykhjcp120}.
 
 
 \item{\bf NEVPT2:} Dalton~2.0 allows for the calculation of
@@ -147,23 +149,13 @@ sad-J & Sadlej-pVTZ-J \\
   version using MPI. Note also that if a parallel \dalton\ is
   requested, the executable can both run parallel and sequential
   calculations.
-
-%\item{\bf Polarizable Continuum Model (PCM):} The official release of
-%  Dalton~2.0 does not contain any major extensions to the solvent
-%  models used. However, a separate version containing the Polarizable
-%  Continuum Model (PCM) for quadratically convergent SCF and MCSCF
-%  wave function as well as DFT, including also linear and quadratic
-%  respons functions. This module is av
-
-%\item{\bf Higher-order Douglas--Kroll--He\ss :}
-
 %
 \item{\bf Numerical Hessian in VROA/Raman calculations:} The
   analytical Hessian is no longer required for the calculation of
   Raman intensities and Vibrational Raman optical activities. Instead,
   the Hessian may be calculated numerically using the analytical
   gradients. This can be achieved adding the keyword \Key{NUMHES} in
-  the three input modules \Key{*START}, \Key{*EACH S} and \Key{*PROPER}.
+  the three input modules \Sec{*START}, \Sec{*EACH S} and \Sec{*PROPER}.
 
 \end{enumerate}
 
