@@ -8,6 +8,20 @@ all 64-bit architectures
 
 
 ------------------------------------------------------------------------
+DEC alpha
+------------------------------------------------------------------------
+
+  due to problems in ERI the following test cases do not work correctly:
+
+	cc_energy_triplesdirect		cc_geoopt_mp2
+	cc_energy_triplesdirect2	cc_grad2
+	cc_energy_triplesdirect3	cc_grad3
+	cc_geoopt			cc_rsp_gammadirect
+	cc_geoopt2			cc_rsp_twophotdirect
+
+
+
+------------------------------------------------------------------------
 linux g77
 ------------------------------------------------------------------------
 
