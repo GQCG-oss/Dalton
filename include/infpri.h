@@ -1,0 +1,10 @@
+C
+C$Id: infpri.h,v 1.1.1.1 2001-02-08 13:33:23 hjj Exp $
+C
+      LOGICAL P4FLAG,P6FLAG
+      PARAMETER (NPFLAG = 60)
+      COMMON /INFPRI/ IPRI4, IPRI6, IPRSIR,
+     &                IPRCNO,IPRDIA,IPRSIG,IPRDNS,IPRMP2,IPRSOL,
+     &                IPRKAP,IPRMUL,IPRCIX,IPRRHF,IPRAVE,IPRFCK,
+     &                MPRI4, MPRI6, MPRSIR,
+     &                P4FLAG(NPFLAG),P6FLAG(NPFLAG)

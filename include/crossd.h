@@ -1,0 +1,5 @@
+C
+C$Id: crossd.h,v 1.1.1.1 2001-02-08 13:33:25 hjj Exp $
+C
+      LOGICAL CROSS1, CROSS2
+      COMMON /CROSSD/ CROSS1, CROSS2

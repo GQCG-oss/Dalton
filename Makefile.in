@@ -1,0 +1,215 @@
+include ./Makefile.config
+
+DALTON_LIBS = \
+-Labacus -labacus	\
+-Lrsp -lrsp 		\
+-Lsirius -lsirius	\
+-Lpdpack -lpdpack	\
+-Lgp -lgp               \
+-Leri -leri
+
+PDLIB = pdpack/pdlib.a
+
+CCOBJS = \
+cc/cc_fop.o       cc/ccsd_diis.o    cc/ccsd_rhs.o     cc/cc3_t3int.o  \
+cc/ccsd_energy.o  cc/ccsd_sortao.o  cc/cc_drv.o       cc/cccr_aa.o    \
+cc/cclr_util.o    cc/ccsd_input.o   cc/cc_den.o       cc/cc_pqi.o     \
+cc/cc_d1ao.o      cc/cc_fmat.o      cc/cc3_omeg.o     cc/cc_cphf.o    \
+cc/cc_landf.o     cc/cc_landf2.o    cc/cc_landf3.o    cc/cc_aofock2.o \
+cc/cc_hyppol.o    cc/cc_gmat.o      cc/ccrspsym.o     cc/cc_solrsp.o  \
+cc/cc_rdrsp.o     cc/cc_wrrsp.o     cc/cc_getgd.o     cc/cc_rhtr.o    \
+cc/cc_lhtr.o      cc/cclr_fa.o      cc/cc_lr.o        cc/ccqr_setup.o \
+cc/cceq_solv.o    cc/cc_exci.o      cc/cc_fdc.o       cc/cc_fdd.o     \
+cc/cccr_util.o    cc/cc_3hyp.o      cc/cc_mofcon2.o   cc/ccder1.o     \
+cc/cc_2hyp.o      cc/cccr_setup.o   cc/cc_etadrv.o    cc/crayio2.o    \
+cc/cc_exgr.o      cc/cc_qr2rs.o     cc/ccrhsvec.o     cc/cc_util.o    \
+cc/cc_soldrv.o    cc/cc_smcal.o     cc/cc_tmcal.o     cc/cc_pckutil.o \
+cc/cc_4hyp.o      cc/ccexlr.o       cc/cc_cauchy.o    cc/cc_fropro.o  \
+cc/cc_dmat.o      cc/cc_cmat.o      cc/cc_bamat.o     cc/cc_hmat.o    \
+cc/cc_aamat.o     cc/cc_mcd.o       cc/cc_bmat.o      cc/cc_getgp.o   \
+cc/cc_bfden.o     cc/cc_iajb.o      cc/cc_xetst.o     cc/cc_xieta.o   \
+cc/cc_ftst.o      cc/ccqr_fdrv.o  \
+cc/cc_fmattst.o   cc/cc_grad2.o     cc/cc_rdaod.o     cc/ccexpfck.o   \
+cc/ccrlxxim.o     cc/cckappasq.o    cc/cc_1idxtran.o  cc/cc_effckmo.o \
+cc/cc_trdrv.o     cc/cc_rhtr3.o     cc/ccsd_rou3.o    cc/ccsd_rhs3.o  \
+cc/cc_setdorps.o  cc/cc_sop.o       cc/cc_setfa.o     cc/cc_setxe.o   \
+cc/ccfndop.o      cc/cc_get_rmat.o  cc/cc_qmat.o      cc/cc_mmommo.o  \
+cc/cc_nuccon.o    cc/cc_f1inact.o   cc/cc_lambdaq.o   cc/iroper2.o    \
+cc/cc_gradient.o  cc/cc_fbtst.o     cc/cc_fdaa.o      cc/cc_qaos.o    \
+cc/cc_maomao.o    cc/cc_dhfao.o    cc/cc_1idx_d2eff.o cc/cclr_setup.o \
+cc/ccximcon.o     cc/ccreo2con.o  cc/cc_get_lambda1.o cc/cc_grad.o \
+cc/herdirect_cc.o
+
+OBJPRG = abacus/dalton.o
+
+OBJSLAVE = abacus/herpar.o eri/eri2par.o
+
+OBJNODE = eri/eriprg.o
+
+OBJSIO = cc/crayio.o
+
+OBJSAMFI = amfi/amfi.o amfi/symtra.o
+
+OBJSMEM = abacus/linux_mem_allo.o
+#
+#	The most common build of the program
+#
+dalton.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ ERI_OBJ PD_OBJ AMFI_OBJ
+	$(F77) $(OPTFLAGS) \
+	-o dalton.x $(OBJPRG) $(OBJSAMFI) $(DALTON_LIBS) \
+	$(LIB_LIST)
+	mv dalton.x $(INSTALLDIR)
+#
+#     Dalton with coupled-cluster in the code
+#
+dalton_cc.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
+	PD_OBJ CC_OBJ IO_OBJ AMFI_OBJ
+	$(F77) $(OPTFLAGS) \
+	-o dalton.x $(OBJPRG) $(CCOBJS) $(OBJMAINCC) $(OBJSIO) $(OBJSLAVE) \
+	$(OBJSAMFI) $(DALTON_LIBS) \
+	$(MPI_LIB_PATH) $(MPI_LIB)
+	mv dalton.x $(INSTALLDIR)
+#
+#       Linux version of the program
+#
+linux.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ ERI_OBJ PD_OBJ \
+	MEM_OBJ AMFI_OBJ
+	$(F77) $(OPTFLAGS) \
+	-o dalton.x $(OBJPRG) $(OBJSMEM) $(OBJSAMFI) $(DALTON_LIBS) \
+	$(LIB_LIST)
+	mv dalton.x $(INSTALLDIR)
+#
+#     Linux parallel build
+#
+linuxparallel.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
+	PD_OBJ MEM_OBJ AMFI_OBJ
+	$(F77) $(OPTFLAGS) $(LIB_LIST) \
+	-o dalpar.x $(OBJPRG) $(OBJSLAVE) $(OBJSMEM) $(OBJSAMFI) \
+	$(LIB_LIST) $(DALTON_LIBS) $(MPI_LIB_PATH) $(MPI_LIB) 
+	mv dalpar.x $(INSTALLDIR)
+#
+#	Linux couplec cluster build
+#
+linux_cc.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
+	PD_OBJ MEM_OBJ CC_OBJ IO_OBJ AMFI_OBJ
+	$(F77) $(OPTFLAGS) \
+	-o dalton.x $(OBJPRG) $(CCOBJS) $(OBJMANCC) $(OBJSIO) $(OBJSMEM) \
+	$(OBJSLAVE) $(OBJSAMFI) $(DALTON_LIBS) $(LIB_LIST) \
+	$(MPI_LIB_PATH) $(MPI_LIB) 
+	mv dalton.x $(INSTALLDIR)
+#
+#	Minimal parallel build
+#
+parallel.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
+	PD_OBJ AMFI_OBJ
+	$(F77) $(OPTFLAGS) $(LIB_LIST) \
+	-o dalpar.x $(OBJPRG) $(OBJSLAVE) $(OBJSAMFI) $(DALTON_LIBS) \
+	$(LIB_LIST) $(MPI_LIB_PATH) $(MPI_LIB)
+	mv dalpar.x $(INSTALLDIR)
+#
+#	Build with PVMe
+#	We will never need MPILIB when using PVM
+#       First buikld master, then slave
+#
+dalpvm.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
+	PD_OBJ AMFI_OBJ NODE_OBJ
+	$(F77) $(OPTFLAGS) $(LIB_LIST) \
+	-o dalpvm.x $(OBJPRG) $(LIB_LIST) $(OBJSAMFI) $(OBJSLAVE) \
+	$(DALTON_LIBS) $(PVM_LIB_PATH) \
+	$(PVM_LIB_LIST) $(PVM_INC_PATH)
+	$(F77) $(OPTFLAGS) $(LIB_LIST) -o node.x $(OBJNODE) $(OBJSLAVE) \
+	$(OBJSAMFI) $(LIB_LIST) $(DALTON_LIBS) $(PVM_LIB_PATH) \
+	$(PVM_LIB_LIST)  $(PVM_INC_PATH)
+	mv dalpvm.x $(INSTALLDIR)
+	mv node.x $(PVM_NOD_PATH)
+#
+#	Not tested MPI on Cray yet. Thus no MPILIB, and no OBJSMXM nor
+#	OBJSEIS
+#
+cray.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
+	PD_OBJ AMFI_OBJ
+	$(F77) $(OPTFLAGS) $(LIB_LIST) -o dalton.x \
+	$(OBJPRG) $(OBJSLAVE) $(OBJSAMFI) $(DALTON_LIBS)
+	mv dalton.x $(INSTALLDIR)
+
+cray_cc.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ \
+	ERI_OBJ PD_OBJ CC_OBJ AMFI_OBJ
+	$(F77) $(OPTFLAGS) $(LIB_LIST) -o dalton.x $(OBJPRG) $(CCOBJS)\
+	$(OBJMAINCC) $(OBJSLAVE) $(OBJSAMFI) $(DALTON_LIBS)
+	mv dalton.x $(INSTALLDIR)
+#
+#	This is a proper build for the Cray-T3D
+#
+t3d.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
+	PD_OBJ AMFI_OBJ
+	$(F77) $(OPTFLAGS) $(LIB_LIST) $(MPI_LIB_PATH) $(MPI_LIB) \
+	-o dalpar.x $(OBJPRG) $(OBJSLAVE) \
+	$(LIB_LIST) $(OBJSAMFI) $(DALTON_LIBS)
+	mv dalpar.x $(INSTALLDIR)
+
+t90.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
+	PD_OBJ CC_OBJ IO_OBJ AMFI_OBJ
+	$(F77) $(OPTFLAGS) $(LIB_LIST) $(MPI_LIB_PATH) $(MPI_LIB) \
+	-o dalpar.x $(OBJPRG) $(CCOBJS) $(OBJMAINCC) (IO_OBJS) $(OBJSLAVE) \
+	$(LIB_LIST) $(OBJSAMFI) $(DALTON_LIBS)
+	mv dalpar.x $(INSTALLDIR)
+#
+#	Make it a bit cleaner, remover all .o/.lst/*.f -files
+#
+clean   :
+	cd abacus && $(MAKE) clean
+	cd sirius && $(MAKE) clean
+	cd rsp    && $(MAKE) clean
+	cd gp     && $(MAKE) clean
+	cd eri    && $(MAKE) clean
+	cd amfi   && $(MAKE) clean
+	cd pdpack && $(MAKE) clean
+	if [ -e cc ] ; \
+		then cd cc && $(MAKE) clean ; \
+	fi
+	$(RM) -f *~
+#
+#	We remove the entire source code as well if we do not plan to debug
+#
+veryclean :
+	$(RM) -rf abacus sirius rsp gp include eri pdpack cc
+
+MAIN_OBJ :
+	cd abacus && $(MAKE) main
+
+ABA_OBJ :
+	cd abacus && $(MAKE) all
+
+SIR_OBJ :
+	cd sirius && $(MAKE) all
+
+RSP_OBJ :
+	cd rsp && $(MAKE) all
+
+GP_OBJ :
+	cd gp && $(MAKE) all
+
+SLAVE_OBJ :
+	cd abacus && $(MAKE) slave
+	cd eri && $(MAKE) slave
+
+NODE_OBJ :
+	cd eri && $(MAKE) node
+
+ERI_OBJ	:
+	cd eri && $(MAKE) all
+
+CC_OBJ	:
+	cd cc && $(MAKE) all
+
+IO_OBJ	:
+	cd cc && $(MAKE) io
+
+PD_OBJ	:
+	cd pdpack && $(MAKE) all
+
+MEM_OBJ :
+	cd abacus && $(MAKE) linuxmem
+
+AMFI_OBJ :
+	cd amfi && $(MAKE) all

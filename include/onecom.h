@@ -1,0 +1,12 @@
+C
+C$Id: onecom.h,v 1.1.1.1 2001-02-08 13:33:24 hjj Exp $
+C
+      LOGICAL         LDIAG, ONECEN, SPHRA, SPHRB, SPHRAB
+      COMMON /ONECOM/ CORAX,CORAY,CORAZ,CORBX,CORBY,CORBZ,
+     &                SIGNBX,SIGNBY,SIGNBZ,HKAB,
+     &                NHKTA,NHKTB,KHKTA,KHKTB,KHKTAB,
+     &                KCKTA,KCKTB,KCKTAB,IDENA,IDENB,
+     &                NCENTA,NCENTB,ICENTA,ICENTB,ONECEN,NUCA,NUCB,
+     &                JSTA,JSTB,MULA,MULB,MAB,LDIAG,JMAX,
+     &                ISTEPU,ISTEPV,NAHGTF,NUMCFA,NUMCFB,
+     &                SPHRAB,SPHRA,SPHRB

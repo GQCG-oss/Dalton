@@ -1,0 +1,1319 @@
+C
+C...   Copyright (c) 1997 by the authors of Dalton (see below).
+C...   All Rights Reserved.
+C...
+C...   The source code in this file is part of 
+C...   "Dalton, an ab initio electronic structure program, Release 1.0
+C...   (1997), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+C...   J. Olsen, K. Ruud, H. Aagren, T. Andersen, K. L. Bak, V. Bakken,
+C...   O. Christiansen, P. Dahle, E. K. Dalskov, T. Enevoldsen,
+C...   H. Heiberg, D. Jonsson, S. Kirpekar, R. Kobayashi, H. Koch,
+C...   K. V. Mikkelsen, P. Norman, M. J. Packer, T.Saue,
+C...   P. R. Taylor, and O. Vahtras"
+C...
+C...   This source code is provided under a written licence and may be 
+C...   used, copied, transmitted, or stored only in accord with that
+C...   written licence.
+C...
+C...   In particular, no part of the source code or compiled modules may 
+C...   be distributed outside the research group of the licence holder. 
+C...   This means also that persons (e.g. post-docs) leaving the research
+C...   group of the licence holder may not take any part of Dalton,
+C...   including modified files, with him/her, unless that person has
+C...   obtained his/her own licence. 
+C...
+C...   For questions concerning this copyright write to:
+C...      dalton-admin@kjemi.uio.no
+C...
+C...   For information on how to get a licence see:
+C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
+C
+C
+C$Id: hypinp.F,v 1.1.1.1 2001-02-08 13:33:14 hjj Exp $
+C
+#include <single.h>
+C  /* Deck hypinp */
+      SUBROUTINE HYPINP(WORD)
+C
+#include <implicit.h>
+C
+#include <priunit.h>
+#include <infrsp.h>
+#include <inflr.h>
+#include <infhyp.h>
+#include <rspprp.h>
+#include <infpri.h>
+#include <infspi.h>
+#include <maxorb.h>
+#include <infinp.h>
+#include <inftap.h>
+C
+      LOGICAL NEWDEF, BCFREQ
+      PARAMETER ( NTABLE = 26, ZERO = 0.0D0 , THRFRQ = 1.0D-14 )
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      CHARACTER*8 LABEL
+C
+      DATA TABLE /'.BPROP ', '.BFREQ ', '.CPROP ', '.CFREQ ',
+     *            '.APROP ', '.MAXIT ', '.THCLR ', '.MAXITO',
+     *            '.PRINT ', '.DIPLEN', '.E3TEST', '.DIROIT',
+     *            '.ISPABC', '.A2TEST', '.X2TEST', '.REFCHK',
+     *            '.TSTJEP', '.SHG   ', '.POCKEL', '.FREQUE',
+     *            '.DIPLNX', '.DIPLNY', '.DIPLNZ', '.ASPIN ',
+     *            '.BSPIN ', '.CSPIN '/
+C
+C READ quadratic response INPUT
+C
+      NEWDEF = (WORD .EQ. '*QUADRA')
+      ICHANG = 0
+      IF (NEWDEF) THEN
+      HYPCAL = .TRUE.
+      BCFREQ = .FALSE.
+      WORD1 = WORD
+  100    CONTINUE
+            READ (LUCMD, '(A7)') WORD
+            PROMPT = WORD(1:1)
+            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') GO TO 100
+            IF (PROMPT .EQ. '.') THEN
+               ICHANG = ICHANG + 1
+               DO 200 I = 1, NTABLE
+                  IF (TABLE(I) .EQ. WORD) THEN
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,
+     *                    14,15,16,17,18,19,20,21,22,23,24,
+     *                    25,26),I
+                  END IF
+  200          CONTINUE
+               IF (WORD .EQ. '.OPTION') THEN
+                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+                 GO TO 100
+               END IF
+               WRITE (LUPRI,'(/,3A,/)') ' KEYWORD "',WORD,
+     *            '" NOT RECOGNIZED IN RSPQR.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT(' ILLEGAL KEYWORD IN *QUADRA')
+    1          CONTINUE
+                  READ(LUCMD,'( A )')LABEL
+                  BQROP( INDPRP(LABEL)) = .TRUE.
+               GO TO 100
+    2          CONTINUE
+                  BCFREQ = .TRUE.
+                  READ (LUCMD,*) NBQRFR
+                  IF (NBQRFR.LE.MBQRFR) THEN
+                     READ (LUCMD,*) (BQRFR(J),J=1,NBQRFR)
+                  ELSE
+                     WRITE (LUPRI,'(3(/,A,I5),/)')
+     *               ' NUMBER OF FREQUENCIES SPECIFIED    :',NBQRFR,
+     *               ' IS GREATER THAN THE ALLOWED NUMBER :',MBQRFR,
+     *               ' THE NUMBER IS RESET TO THE MAXIMUM :',MBQRFR
+                     READ (LUCMD,*) (BQRFR(J),J=1,MBQRFR),
+     *                              (FFFF,J=MBQRFR+1,NBQRFR)
+                     NBQRFR = MBQRFR
+                  END IF
+               GO TO 100
+    3          CONTINUE
+                  READ(LUCMD,'( A )')LABEL
+                  CQROP( INDPRP(LABEL)) = .TRUE.
+               GO TO 100
+    4          CONTINUE
+                  BCFREQ = .TRUE.
+                  READ (LUCMD,*) NCQRFR
+                  IF (NCQRFR.LE.MCQRFR) THEN
+                     READ (LUCMD,*) (CQRFR(J),J=1,NCQRFR)
+                  ELSE
+                     WRITE (LUPRI,'(3(/,A,I5),/)')
+     *               ' NUMBER OF FREQUENCIES SPECIFIED    :',NCQRFR,
+     *               ' IS GREATER THAN THE ALLOWED NUMBER :',MCQRFR,
+     *               ' THE NUMBER IS RESET TO THE MAXIMUM :',MCQRFR
+                     READ (LUCMD,*) (CQRFR(J),J=1,MCQRFR),
+     *                              (FFFF,J=MCQRFR+1,NCQRFR)
+                     NCQRFR = MCQRFR
+                  END IF
+               GO TO 100
+    5          CONTINUE
+                  READ(LUCMD,'( A )')LABEL
+                  AQROP( INDPRP(LABEL)) = .TRUE.
+               GO TO 100
+    6          CONTINUE
+                  READ (LUCMD,*) MAXITL
+               GO TO 100
+    7          CONTINUE
+                  READ (LUCMD,*) THCLR
+               GO TO 100
+    8          CONTINUE
+                  READ (LUCMD,*) MAXITO
+               GO TO 100
+    9          CONTINUE
+                  READ (LUCMD,*) IPRHYP
+               GO TO 100
+   10          CONTINUE
+                  LABEL='XDIPLEN'
+                  AQROP( INDPRP(LABEL)) = .TRUE.
+                  BQROP( INDPRP(LABEL)) = .TRUE.
+                  CQROP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='YDIPLEN'
+                  AQROP( INDPRP(LABEL)) = .TRUE.
+                  BQROP( INDPRP(LABEL)) = .TRUE.
+                  CQROP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='ZDIPLEN'
+                  AQROP( INDPRP(LABEL)) = .TRUE.
+                  BQROP( INDPRP(LABEL)) = .TRUE.
+                  CQROP( INDPRP(LABEL)) = .TRUE.
+               GO TO 100
+   11          CONTINUE
+                  E3TEST = .TRUE.
+               GO TO 100
+   12          CONTINUE
+                  DIROIT = .TRUE.
+               GO TO 100
+   13          CONTINUE
+                  READ (LUCMD,*) ISPINA,ISPINB,ISPINC
+               GO TO 100
+   14          CONTINUE
+                  A2TEST = .TRUE.
+               GO TO 100
+   15          CONTINUE
+                  X2TEST = .TRUE.
+               GO TO 100
+   16          CONTINUE
+                  REFCHK = .TRUE.
+               GO TO 100
+   17          CONTINUE
+                  READ(LUCMD,*) IAABB
+               GO TO 100
+   18          CONTINUE
+                  QRSPEC = .TRUE.
+                  QRSHG  = .TRUE.
+               GO TO 100
+   19          CONTINUE
+                  QRSPEC = .TRUE.
+                  QRPOCK = .TRUE.
+               GO TO 100
+   20          CONTINUE
+                  READ (LUCMD,*) NBQRFR
+                  IF (NBQRFR.LE.MBQRFR) THEN
+                     READ (LUCMD,*) (BQRFR(J),J=1,NBQRFR)
+                  ELSE
+                     WRITE (LUPRI,'(3(/,A,I5),/)')
+     *               ' NUMBER OF FREQUENCIES SPECIFIED    :',NBQRFR,
+     *               ' IS GREATER THAN THE ALLOWED NUMBER :',MBQRFR,
+     *               ' THE NUMBER IS RESET TO THE MAXIMUM :',MBQRFR
+                     READ (LUCMD,*) (BQRFR(J),J=1,MBQRFR),
+     *                              (FFFF,J=MBQRFR+1,NBQRFR)
+                     NBQRFR = MBQRFR
+                  END IF
+               GO TO 100
+   21          CONTINUE
+                  LABEL='XDIPLEN'
+                  AQROP( INDPRP(LABEL)) = .TRUE.
+                  BQROP( INDPRP(LABEL)) = .TRUE.
+                  CQROP( INDPRP(LABEL)) = .TRUE.
+               GO TO 100
+   22          CONTINUE
+                  LABEL='YDIPLEN'
+                  AQROP( INDPRP(LABEL)) = .TRUE.
+                  BQROP( INDPRP(LABEL)) = .TRUE.
+                  CQROP( INDPRP(LABEL)) = .TRUE.
+               GO TO 100
+   23          CONTINUE
+                  LABEL='ZDIPLEN'
+                  AQROP( INDPRP(LABEL)) = .TRUE.
+                  BQROP( INDPRP(LABEL)) = .TRUE.
+                  CQROP( INDPRP(LABEL)) = .TRUE.
+               GO TO 100
+   24          CONTINUE
+               READ(LUCMD,*)ISPINA
+               GO TO 100
+   25          CONTINUE
+               READ(LUCMD,*)ISPINB
+               GO TO 100
+   26          CONTINUE
+               READ(LUCMD,*)ISPINC
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '*') THEN
+               GO TO 300
+            ELSE
+               WRITE (LUPRI,'(/,3A,/)') ' PROMPT "',WORD,
+     *            '" NOT RECOGNIZED IN *QUADRA.'
+               CALL QUIT(' ILLEGAL PROMPT IN *QUADRA')
+            END IF
+         GO TO 100
+      END IF
+  300 CONTINUE
+      NAQRTO = 0
+      NBQRTO = 0
+      NCQRTO = 0
+      IF (ICHANG .GT. 0) THEN
+         DO 500 I = 1,NPRLBL
+            IF (AQROP(I)) NAQRTO = NAQRTO + 1
+            IF (BQROP(I)) NBQRTO = NBQRTO + 1
+            IF (CQROP(I)) NCQRTO = NCQRTO + 1
+  500    CONTINUE
+C
+C  If special processes specified, we need to put the input freq. into 
+C  the relevant frequency arrays.
+C
+         IF (QRSPEC) THEN
+            IF (BCFREQ) THEN
+               WRITE (LUPRI,'(/A/A/A)')
+     &  ' ERROR : inconsistent quadratic response input as',
+     &  ' .BFREQ and/or .CFREQ  has been specified together with'//
+     &     ' .SHG and/or .POCKEL',
+     &  ' Use only .FREQUE with .SHG and/or .POCKEL !!!!!'
+               CALL QUIT('Inconsistent input for quadratic response')
+            END IF
+            NCQRFR = 0
+C
+            JFR = 0
+            IF (QRPOCK) THEN
+               NCQRFR = NCQRFR + 1
+               CQRFR(NCQRFR) = ZERO
+               DO IFR=1,NBQRFR
+                  IF (ABS(BQRFR(IFR)).LE.THRFRQ) JFR = IFR
+               ENDDO
+            ENDIF
+C
+            IF (QRSHG) THEN
+               DO IFR=1,NBQRFR
+                  IF (IFR.NE.JFR) THEN
+C                     IFR.EQ.JFR has already been included under QRPOCK
+                     NCQRFR = NCQRFR + 1
+                     CQRFR(NCQRFR) = BQRFR(IFR)
+                  END IF
+               END DO
+            ENDIF
+C
+         ENDIF
+      END IF
+      NQRCAL = MIN(NAQRTO,NBQRTO,NCQRTO,NBQRFR,NCQRFR)
+      IF  (HYPCAL .AND. NQRCAL.LE.0)  THEN
+        HYPCAL = .FALSE.
+        WRITE(LUPRI,'(/A)') ' Quadratic response input ignored because:'
+        IF (NAQRTO .EQ. 0) WRITE (LUPRI,'(A)')
+     *     ' - no A operators requested'
+        IF (NBQRTO .EQ. 0) WRITE (LUPRI,'(A)')
+     *     ' - no B operators requested'
+        IF (NBQRFR .LE. 0) WRITE (LUPRI,'(A,I8)')
+     &     ' - no B frequencies requested, NBQRFR =',NBQRFR
+        IF (NCQRTO .EQ. 0) WRITE (LUPRI,'(A)')
+     *     ' - no C operators requested'
+        IF (NCQRFR .LE. 0) WRITE (LUPRI,'(A,I8)')
+     &     ' - no C frequencies requested, NCQRFR =',NCQRFR
+      ELSE IF (HYPCAL) THEN
+         CALL HEADER('Quadratic Response calculation',0)
+         WRITE (LUPRI,'(A,L2)')
+     *      ' First hyperpolarizability calculation : HYPCAL='
+     *      ,HYPCAL
+         WRITE (LUPRI,'(/A,I5)') ' Spin of operator A , ISPINA=',ISPINA
+         WRITE (LUPRI,'( A,I5)') ' Spin of operator B , ISPINB=',ISPINB
+         WRITE (LUPRI,'( A,I5)') ' Spin of operator C , ISPINC=',ISPINC
+         WRITE(LUPRI,'(/I3,A,(1P,5D14.6))')
+     *      NBQRFR,' B-frequencies', (BQRFR(I),I=1,NBQRFR)
+         WRITE(LUPRI,'(I3,A,(1P,5D14.6))')
+     *      NCQRFR,' C-frequencies', (CQRFR(I),I=1,NCQRFR)
+         IF (FLAG(16) .AND. .NOT.INERSI) THEN
+            WRITE(LUPRI,'(A,L2,/)')
+     *      ' Equilibrium solvent model requested            : SOLVNT ='
+     *      ,FLAG(16)
+            WRITE(LUPRI,'(A,F8.4)')
+     *      ' Dielectric constant                            : EPSOL  ='
+     *      ,EPSOL
+         END IF
+         IF (FLAG(16) .AND. INERSI) THEN
+            WRITE(LUPRI,'(A,L2,/)')
+     *      ' Non-equilibrium solvent model requested        : INERSI ='
+     *      ,INERSI
+            WRITE(LUPRI,'(A,F8.4)')
+     *      ' Static dielectric constant                     : EPSTAT ='
+     *      ,EPSTAT
+            WRITE(LUPRI,'(A,F8.4)')
+     *      ' Optical dielectric constant                    : EPSOL  ='
+     *      ,EPSOL
+         END IF
+         IF (QRSHG) THEN
+            WRITE (LUPRI,'(A,L2)')
+     *      ' Second harmonic generation                     : SHG='
+     *      ,QRSHG
+         END IF
+         IF (QRPOCK) THEN
+            WRITE (LUPRI,'(/A,L2)')
+     *      ' Electro-optical Pockels effect                 : POCKEL='
+     &      ,QRPOCK
+         END IF
+         WRITE(LUPRI,'(/A,I4)')
+     *      ' Print level                                    : IPRHYP ='
+     *       ,IPRHYP
+         WRITE(LUPRI,'(A,I4)')
+     *      ' Maximum number of iterations in lin.rsp. solver: MAXITL ='
+     *       ,MAXITL
+         WRITE(LUPRI,'(A,1P,D10.3)')
+     *      ' Threshold for convergence of linear resp. eq.s : THCLR  ='
+     *      ,THCLR
+         WRITE(LUPRI,'(A,I4)')
+     *      ' Maximum iterations in optimal orbital algorithm: MAXITO ='
+     *      ,MAXITO
+         IF (DIROIT) WRITE (LUPRI,'(A,L2)')
+     *      ' Direct one-index transformation                : DIROIT='
+     *      ,DIROIT
+         IF (E3TEST) WRITE (LUPRI,'(/A)')
+     *      ' Test of contributions from E3 and S3 terms.'
+         IF (A2TEST) WRITE (LUPRI,'(/A)')
+     *      ' Test of contributions from A2 terms.'
+         IF (X2TEST) WRITE (LUPRI,'(/A)')
+     *      ' Test of contributions from X2 terms.'
+      END IF
+C
+C *** END OF HYPINP
+C
+      RETURN
+      END
+C  /* Deck smoinp */
+      SUBROUTINE SMOINP(WORD)
+C
+#include <implicit.h>
+C
+#include <priunit.h>
+#include <infrsp.h>
+#include <inforb.h>
+#include <infsmo.h>
+#include <inflr.h>
+#include <infpp.h>
+#include <rspprp.h>
+#include <infpri.h>
+#include <infspi.h>
+#include <inflin.h>
+#include <infhso.h>
+#include <maxorb.h>
+#include <infinp.h>
+#include <inftap.h>
+C
+      LOGICAL NEWDEF
+      PARAMETER ( NTABLE = 24)
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      CHARACTER*8 LABEL
+C
+      DATA TABLE /'.BPROP ', '.BFREQ ', '.APROP ', '.ROOTS ',
+     *            '.MAXITP', '.THCLR ', '.MAXITL', '.THCPP ',
+     *            '.MAXITO', '.PRINT ', '.DIPLEN', '.E3TEST',
+     *            '.ISPABC', '.DIROIT', '.X2TEST', '.A2TEST',
+     *            '.DIPLNX', '.DIPLNY', '.DIPLNZ', '.FREQUE',
+     *            '.SINGLE', '.PHOSPH', '.MNFPHO', '.TWO-PH'/
+C
+C READ IN  INPUT
+C
+      NEWDEF = (WORD .EQ. '*QUADRA')
+      ICHANG = 0
+      IF (NEWDEF) THEN
+         SOMOM = .TRUE.
+         JSPABC = 0
+         WORD1 = WORD
+  100    CONTINUE
+            READ (LUCMD, '(A7)') WORD
+            PROMPT = WORD(1:1)
+            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') GO TO 100
+            IF (PROMPT .EQ. '.') THEN
+               ICHANG = ICHANG + 1
+               DO 200 I = 1, NTABLE
+                  IF (TABLE(I) .EQ. WORD) THEN
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,
+     &                      17,18,19,20,21,22,23,24), I
+                  END IF
+  200          CONTINUE
+               IF (WORD .EQ. '.OPTION') THEN
+                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+                 GO TO 100
+               END IF
+               WRITE (LUPRI,'(/,3A,/)') ' KEYWORD "',WORD,
+     *            '" NOT RECOGNIZED IN SMOINP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT(' ILLEGAL KEYWORD IN SMOINP ')
+ 1             CONTINUE
+                  READ(LUCMD,'( A )')LABEL
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+               GO TO 100
+ 2             CONTINUE
+                  READ (LUCMD,*) NBSMFR
+                  IF (NBSMFR.LE.MBSMFR) THEN
+                     READ (LUCMD,*) (BSMFR(J),J=1,NBSMFR)
+                  ELSE
+                     WRITE (LUPRI,'(3(/,A,I5),/)')
+     *               ' NUMBER OF FREQUENCIES SPECIFIED    :',NBSMFR,
+     *               ' IS GREATER THAN THE ALLOWED NUMBER :',MBSMFR,
+     *               ' THE NUMBER IS RESET TO THE MAXIMUM :',MBSMFR
+                     READ (LUCMD,*) (BSMFR(J),J=1,MBSMFR),
+     *                              (FFFF,J=MBSMFR+1,NBSMFR)
+                     NBSMFR = MBSMFR
+                  END IF
+               GO TO 100
+ 3             CONTINUE
+                  READ(LUCMD,'( A )')LABEL
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+               GO TO 100
+ 4             CONTINUE
+                  READ (LUCMD,*) (NSMCNV(MULD2H(J,LSYMRF)),J=1,NSYM)
+               GO TO 100
+ 5             CONTINUE
+                  READ (LUCMD,*) MAXITL
+               GO TO 100
+ 6             CONTINUE
+                  READ (LUCMD,*) THCLR
+               GO TO 100
+ 7             CONTINUE
+                  READ (LUCMD,*) MAXITP
+               GO TO 100
+ 8             CONTINUE
+                  READ (LUCMD,*) THCPP
+               GO TO 100
+ 9             CONTINUE
+                  READ (LUCMD,*) MAXITO
+               GO TO 100
+ 10            CONTINUE
+                  READ (LUCMD,*) IPRSMO
+               GO TO 100
+ 11            CONTINUE
+                  LABEL='XDIPLEN'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='YDIPLEN'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='ZDIPLEN'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+               GO TO 100
+ 12            CONTINUE
+                  E3TEST = .TRUE.
+               GO TO 100
+ 13            CONTINUE
+                  JSPABC = JSPABC + 1
+                  READ (LUCMD,*) ISPINA,ISPINB,ISPINC
+               GO TO 100
+ 14            CONTINUE
+                  DIROIT = .TRUE.
+               GO TO 100
+ 15            CONTINUE
+                  X2TEST = .TRUE.
+               GO TO 100
+ 16            CONTINUE
+                  A2TEST = .TRUE.
+               GO TO 100
+ 17            CONTINUE
+                  LABEL='XDIPLEN'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+               GO TO 100
+ 18            CONTINUE
+                  LABEL='YDIPLEN'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+               GO TO 100
+ 19            CONTINUE
+                  LABEL='ZDIPLEN'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+               GO TO 100
+ 20            CONTINUE
+               GO TO 2
+ 21            CONTINUE
+               GO TO 100
+ 22            CONTINUE
+                  PHOSPH = .TRUE.
+                  LABEL='XDIPLEN '
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='YDIPLEN '
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='ZDIPLEN '
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='X SPNORB'
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='Y SPNORB'
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='Z SPNORB'
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+               GO TO 100
+ 23            CONTINUE
+                  MNFPHO = .TRUE.
+                  LABEL='XDIPLEN '
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='YDIPLEN '
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='ZDIPLEN '
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='X1MNF-SO'
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='Y1MNF-SO'
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='Z1MNF-SO'
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+ 24            CONTINUE
+                  TWOPHO = .TRUE.
+                  LABEL='XDIPLEN'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='YDIPLEN'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='ZDIPLEN'
+                  ASMOP( INDPRP(LABEL)) = .TRUE.
+                  BSMOP( INDPRP(LABEL)) = .TRUE.
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '*') THEN
+               GO TO 300
+            ELSE
+               WRITE (LUPRI,'(/,3A,/)') ' PROMPT "',WORD,
+     *            '" NOT RECOGNIZED IN SMOINP.'
+               CALL QUIT(' ILLEGAL PROMPT IN SMOINP ')
+            END IF
+         GO TO 100
+      END IF
+  300 CONTINUE
+C
+C If two-photon calculation then we assume that the frequencies of the 
+C photons match the excitation. At this point we set the frequencies
+C to dummy values, later they become half of the excitation energies.
+C
+      IF (TWOPHO) THEN
+         NBSMFR = ISUM(NSYM,NSMCNV,1)
+         IF (NBSMFR .EQ. 0) THEN
+            WRITE (LUPRI,'(/2A)')
+     *      ' Input ignored because no excited states specified.',
+     *      ' Use the .ROOTS keyword.'
+            WRITE(LUPRI,'(/A)') ' <<<<<<< End of DALTON >>>>>>>'
+            CALL QUIT('***** End of DALTON *****')
+         END IF
+         DO J=1,NBSMFR
+            BSMFR(J)=1.0D0
+         END DO
+      END IF
+C
+      NASMTO = 0
+      NBSMTO = 0
+      IF (ICHANG .GT. 0) THEN
+         DO 500 I = 1,NPRLBL
+            IF (ASMOP(I)) NASMTO = NASMTO + 1
+            IF (BSMOP(I)) NBSMTO = NBSMTO + 1
+ 500     CONTINUE
+      END IF
+      NSMCAL = MIN(NASMTO,NBSMTO,NBSMFR)
+      IF  (SOMOM .AND. NSMCAL.LE.0)  THEN
+         SOMOM = .FALSE.
+         WRITE (LUPRI,'(/A)')
+     & ' Quadratic Response single residue calculation ignored because:'
+         IF (NASMTO .EQ. 0) WRITE (LUPRI,'(A)')
+     &      ' - no A operators requested'
+         IF (NBSMTO .EQ. 0) WRITE (LUPRI,'(A)')
+     &      ' - no B operators requested'
+         IF (NBSMFR .LE. 0) WRITE (LUPRI,'(A,I8)')
+     &      ' - no B frequencies requested, NBSMFR =',NBSMFR
+      ELSE IF (SOMOM) THEN
+         CALL HEADER('Quadratic Response single residue calculation',0)
+         IF (PHOSPH) THEN
+           WRITE(LUPRI,'(/A)') ' Phosporescence calculation requested'//
+     &       ' with full spin-orbit operator.'
+         END IF
+         IF (MNFPHO) THEN
+           WRITE(LUPRI,'(/A)') ' Phosporescence calculation requested'//
+     &       ' with atomic mean-field spin-orbit operator (AMFI).'
+         END IF
+         IF (PHOSPH .OR. MNFPHO) THEN
+            IF (JSPABC .GT. 0 .AND. ISPINA .NE. 0 .AND.
+     &          ISPINB .NE. 1 .AND. ISPINC .NE. 1) THEN
+               NWARN = NWARN + 1
+               WRITE (LUPRI,'(/A/A,3I4/A)')
+     &         ' WARNING : inconsistent phosphorescence input as',
+     &         ' .ISPABC has been specified with',ISPINA,ISPINB,ISPINC,
+     &         ' .ISPABC has been reset to         0   1   1'
+            END IF
+            ISPINA = 0
+            ISPINB = 1
+            ISPINC = 1
+C
+            I = 0
+            DO J = 1,NSYM
+            IF (NSMCNV(J) .GT. MXPHOS) THEN
+               I = I + 1
+               NSMCNV(J) = MXPHOS
+            END IF
+            END DO
+            IF (I .GT. 0) THEN
+               NWARN = NWARN + 1
+               WRITE (LUPRI,'(/A,I3,A/I2,A/)')
+     &         ' WARNING: infhso.h is currently dimensioned to max.',
+     &            MXPHOS,' excited states of any symmetry.',
+     &         I,' specification(s) under .ROOTS have been'//
+     &            ' reduced to this value.'
+            END IF
+         END IF
+         IF (TWOPHO) THEN
+            WRITE(LUPRI,'(A,L1,/)')
+     *      ' Two-photon transition process computed         : TWOPHO ='
+     *      ,TWOPHO
+         END IF
+         WRITE (LUPRI,'(/A,I5)') ' Spin of operator A , ISPINA=',ISPINA
+         WRITE (LUPRI,'( A,I5)') ' Spin of operator B , ISPINB=',ISPINB
+         WRITE (LUPRI,'(2A,I5)') ' Spin of operator C ,'
+     *    ,' (Excitation energy) ISPINC=',ISPINC
+         IF (ISPINA+ISPINB+ISPINC .GT. 0) THEN
+            TRPLET = .TRUE.
+            TRPFLG = .TRUE.
+         END IF
+         WRITE(LUPRI,'(/I3,A,(1P,5D14.6))')
+     *      NBSMFR,' B-frequencies', (BSMFR(I),I=1,NBSMFR)
+         IF (FLAG(16) .AND. .NOT.INERSI) THEN
+            WRITE(LUPRI,'(A,L2,/)')
+     *      ' Equilibrium solvent model requested            : SOLVNT ='
+     *      ,FLAG(16)
+            WRITE(LUPRI,'(A,F8.4)')
+     *      ' Dielectric constant                            : EPSOL  ='
+     *      ,EPSOL
+         END IF
+         IF (FLAG(16) .AND. INERSI) THEN
+            WRITE(LUPRI,'(A,L2,/)')
+     *      ' Non-equilibrium solvent model requested        : INERSI ='
+     *      ,INERSI
+            WRITE(LUPRI,'(A,F8.4)')
+     *      ' Static dielectric constant                     : EPSTAT ='
+     *      ,EPSTAT
+            WRITE(LUPRI,'(A,F8.4)')
+     *      ' Optical dielectric constant                    : EPSOL  ='
+     *      ,EPSOL
+         END IF
+         WRITE(LUPRI,'(/A,I5)')
+     *      ' Print level                                    : IPRSMO ='
+     *      ,IPRSMO
+         WRITE(LUPRI,'(A,1P,D10.3)')
+     *      ' Threshold for convergence in RSPPP             : THCPP  ='
+     *      ,THCPP
+         WRITE(LUPRI,'(A,I5)')
+     *      ' Maximum number of iterations in RSPPP          : MAXITP ='
+     *      ,MAXITP
+         WRITE(LUPRI,'(A,1P,D10.3)')
+     *      ' Threshold for convergence in RSPLR             : THCLR  ='
+     *      ,THCLR
+         WRITE(LUPRI,'(A,I5)')
+     *      ' Maximum number of iterations in RSPLR          : MAXITL ='
+     *      ,MAXITL
+         WRITE(LUPRI,'(A,I5)')
+     *      ' Maximum iterations in optimal orbital algorithm: MAXITO ='
+     *      ,MAXITO
+         IF (E3TEST) WRITE (LUPRI,'(/A)')
+     *      ' Test of contributions from E3 and S3 terms.'
+      END IF
+C
+C *** END OF SMOINP
+C
+      RETURN
+      END
+C  /* Deck exiind */
+      SUBROUTINE EXIIND(NEVAL)
+C
+C SET UP A LIST WITH THE NUMBER OF EIGENVECTORS THAT HAS
+C TO BE SOLVED
+C
+#include <implicit.h>
+C
+#include <indqr.h>
+#include <inforb.h>
+#include <infpri.h>
+#include <infsmo.h>
+C
+      DIMENSION NEVAL(*)
+C
+C If two-photon calculation is specified we only compute a restricted 
+C number of excitation vectors.
+C
+      IF (TWOPHO) THEN
+         DO ICSYM = 1,NSYM
+         DO IBSYM = 1,NSYM
+            IASYM = MULD2H(ICSYM,IBSYM)
+            IF ( (NSMCNV(ICSYM) .GT. 0) .AND. (NBSMOP(IBSYM) .GT. 0)
+     *          .AND. (NASMOP(IASYM).GT.0) ) THEN
+               DO IC = 1,NSMCNV(ICSYM)
+                  INUM = INQREX(ICSYM,IC)
+               END DO            
+            END IF
+         END DO
+         END DO
+      ELSE
+C
+C The general case computes all combinations.
+C
+         DO 100 ISYM = 1,NSYM
+            DO 200 IROOT = 1,NEVAL(ISYM)
+               INUM = INQREX(ISYM,IROOT)
+ 200        CONTINUE
+ 100     CONTINUE
+C
+      END IF
+C
+      RETURN
+      END
+C  /* Deck inqrex */
+      INTEGER FUNCTION INQREX(ISYM,IROOT)
+C
+C FIND THE NUMBER THAT HAS BEEN GIVEN TO THE INUM EXCITATION OF
+C SYMMETRY ISYM
+C
+#include <implicit.h>
+C
+#include <priunit.h>
+#include <infrsp.h>
+#include <indqr.h>
+#include <infpri.h>
+C
+      DO 100 I=1,NEXLBL
+         IF ( (ISYM .EQ. ISEXQR(I) ) .AND. ( IROOT.EQ.JEXQR(I))) THEN
+            INQREX = I
+            RETURN
+         END IF
+ 100  CONTINUE
+      NEXLBL = NEXLBL + 1
+      IF ( NEXLBL.GT.MXEXQR ) THEN
+         WRITE(LUPRI,'(/A,/A,I5,A,I5)')
+     *   'INQREX: SPECIFIED OPERATORS EXCEED THE ALLOWED NUMBER'
+     *   ,' NEXLBL =',NEXLBL,' MXEXQR =',MXEXQR
+          CALL QUIT(' INQREX: TOO MANY EXCITATION OPERATORS')
+      END IF
+      JEXQR(NEXLBL) = IROOT
+      ISEXQR(NEXLBL) = ISYM
+      INQREX = NEXLBL
+      IF (IPRRSP.GT.40) THEN
+         WRITE(LUPRI,'(/A)')' INQREX: NEW EXCITATION '
+         WRITE(LUPRI,'(A,I5,2X,A,I5,2X,A,I5)')
+     *   ' EXCITATION NUMBER:',NEXLBL,'SYMMETRY',ISYM,
+     *   ' ROOT NUMBER',IROOT
+      END IF
+      RETURN
+      END
+C  /* Deck hypind */
+      SUBROUTINE HYPIND
+C
+C CALCULATE A POINTER TO THE NUMBER OF DIFFERENT
+C LINEAR RESPONSE EQUATIONS THAT NEED TO BE SOLVED
+C IN A HYPERPOLARIZABILITY CALCULATION
+C
+#include <implicit.h>
+C
+#include <infhyp.h>
+#include <inforb.h>
+#include <infrsp.h>
+#include <infpri.h>
+#include <infspi.h>
+C
+      DO 300 ICSYM = 1,NSYM
+         DO 400 IBSYM = 1,NSYM
+            IASYM = MULD2H(ICSYM,IBSYM)
+            IF ( (NCQROP(ICSYM) .GT. 0) .AND. (NBQROP(IBSYM) .GT. 0)
+     *          .AND. (NAQROP(IASYM).GT.0) ) THEN
+               DO 500 ICOP = 1,NCQROP(ICSYM)
+                  DO 600 ICFR = 1,NCQRFR
+                     IF ( ISPINC.EQ.1 ) THEN
+                        INUM = INQRTR(CQRLB(ICSYM,ICOP),
+     *                                CQRFR(ICFR),ICSYM)
+                     ELSE
+                        INUM = INQRLR(CQRLB(ICSYM,ICOP),
+     *                                CQRFR(ICFR),ICSYM)
+                     END IF
+ 600              CONTINUE
+ 500           CONTINUE
+               DO 700 IBOP = 1,NBQROP(IBSYM)
+                  DO 800 IBFR = 1,NBQRFR
+                     IF ( ISPINB.EQ.1 ) THEN
+                        INUM = INQRTR(BQRLB(IBSYM,IBOP),
+     *                                BQRFR(IBFR),IBSYM)
+                     ELSE
+                        INUM = INQRLR(BQRLB(IBSYM,IBOP),
+     *                                BQRFR(IBFR),IBSYM)
+                     END IF
+ 800              CONTINUE
+ 700           CONTINUE
+C
+C  If a special process is specified we only need some of the
+C  combinations of the frequencies on the B and C operators
+C
+               IF (QRSPEC) THEN
+                  DO IBFR=1,NBQRFR
+C
+C  If Pockels effect we need to solve linear response equations for w.
+C
+                     IF (QRPOCK) THEN
+                        DO IAOP=1,NAQROP(IASYM)
+                           INUM = INQRLR(AQRLB(IASYM,IAOP),
+     &                                   BQRFR(IBFR),IASYM)
+                        ENDDO
+                     ENDIF
+C
+C  If SHG we need to solve linear response equations for 2w.
+C
+                     IF (QRSHG) THEN
+                        DO IAOP=1,NAQROP(IASYM)
+                           INUM = INQRLR(AQRLB(IASYM,IAOP),
+     &                                 2*BQRFR(IBFR),IASYM)
+                        ENDDO
+                       END IF
+                  ENDDO
+               ELSE
+                  DO 1000 ICFR = 1,NCQRFR
+                     DO 1100 IBFR = 1,NBQRFR
+                        BPCFR = CQRFR(ICFR) + BQRFR(IBFR)
+                        DO 1200 IAOP=1,NAQROP(IASYM)
+                           IF ( ISPINA.EQ.1 ) THEN
+                              INUM = INQRTR(AQRLB(IASYM,IAOP),
+     &                                      BPCFR,IASYM)
+                           ELSE
+                              INUM = INQRLR(AQRLB(IASYM,IAOP),
+     &                                      BPCFR,IASYM)
+                           END IF
+ 1200                   CONTINUE
+ 1100                CONTINUE
+ 1000             CONTINUE
+               END IF
+            END IF
+ 400     CONTINUE
+ 300  CONTINUE
+      RETURN
+      END
+C  /* Deck somind */
+      SUBROUTINE SOMIND
+C
+C CALCULATE A POINTER TO THE NUMBER OF DIFFERENT
+C LINEAR RESPONSE EQUATIONS THAT ARE USED IN A
+C A CALCULATION OF SECOND ORDER TRANSITION MOMENTS
+C
+#include <implicit.h>
+C
+#include <infsmo.h>
+#include <indqr.h>
+#include <inforb.h>
+#include <infrsp.h>
+#include <infpri.h>
+#include <infspi.h>
+C
+C If two-photon calculation is specified we only compute a restricted 
+C number of response vectors.
+C
+      IF (TWOPHO) THEN
+         NBSMFR = 0
+         DO ICSYM = 1,NSYM
+         ICEXC = NSMCNV(ICSYM)
+         DO IBSYM = 1,NSYM
+            IASYM = MULD2H(ICSYM,IBSYM)
+            IF ( (NSMCNV(ICSYM) .GT. 0) .AND. (NBSMOP(IBSYM) .GT. 0)
+     *          .AND. (NASMOP(IASYM).GT.0) ) THEN
+               DO IC = 1,NSMCNV(ICSYM)
+                  IBFR = NBSMFR+IC
+                  BSMFR(IBFR) = EXCITA(ICSYM,IC,ISPINC+1)/2
+                  DO IAOP=1,NASMOP(IASYM)
+                     INUM=INQRLR(ASMLB(IASYM,IAOP),BSMFR(IBFR),IASYM)
+                  END DO
+                  DO IBOP=1,NBSMOP(IBSYM)
+                     INUM=INQRLR(BSMLB(IBSYM,IBOP),-BSMFR(IBFR),IBSYM)
+                  END DO
+               END DO            
+               NBSMFR = NBSMFR + ICEXC
+               ICEXC = 0
+            END IF
+         END DO
+         END DO
+      ELSE
+C
+C The general case computes all combinations.
+C
+      DO 300 ICSYM = 1,NSYM
+         DO 400 IBSYM = 1,NSYM
+            IASYM = MULD2H(ICSYM,IBSYM)
+            IF ( (NSMCNV(ICSYM) .GT. 0) .AND. (NBSMOP(IBSYM) .GT. 0)
+     *          .AND. (NASMOP(IASYM).GT.0) ) THEN
+               DO 700 IBOP = 1,NBSMOP(IBSYM)
+                  DO 800 IBFR = 1,NBSMFR
+                     IF ( ISPINB.EQ.1 ) THEN
+                        INUM = INQRTR(BSMLB(IBSYM,IBOP),
+     *                                -BSMFR(IBFR),IBSYM)
+                     ELSE
+                        INUM = INQRLR(BSMLB(IBSYM,IBOP),
+     *                                -BSMFR(IBFR),IBSYM)
+                     END IF
+ 800              CONTINUE
+ 700           CONTINUE
+               DO 900 IC = 1,NSMCNV(ICSYM)
+                  DO 1000 IBFR = 1,NBSMFR
+                     CEXMBF = EXCITA(ICSYM,IC,ISPINC+1) -BSMFR(IBFR)
+                     DO 1100 IAOP = 1,NASMOP(IASYM)
+                        IF ( ISPINA.EQ.0 ) THEN
+                           INUM = INQRLR(ASMLB(IASYM,IAOP),CEXMBF,IASYM)
+                        ELSE
+                           INUM = INQRTR(ASMLB(IASYM,IAOP),CEXMBF,IASYM)
+                        END IF
+ 1100                CONTINUE
+ 1000             CONTINUE
+ 900           CONTINUE
+            END IF
+ 400     CONTINUE
+ 300  CONTINUE
+C
+      END IF
+C
+      RETURN
+      END
+C  /* Deck exmind */
+      SUBROUTINE EXMIND
+C
+C CALCULATE A POINTER TO THE NUMBER OF DIFFERENT LINEAR
+C RESPONSE EQUATIONS THAT ARE USED IN A CALCULATION OF
+C TRANSITION MOMENTS BETWEEN EXCITED STATES
+C
+#include <implicit.h>
+C
+#include <infrsp.h>
+#include <infpp.h>
+#include <infsmo.h>
+#include <indqr.h>
+#include <inforb.h>
+#include <infpri.h>
+#include <infspi.h>
+C
+      DO 300 ICSYM = 1,NSYM
+         IF ( EXMTES ) THEN
+            NBSYME = NSYM
+         ELSE
+            NBSYME = ICSYM
+         END IF
+         DO 400 IBSYM = 1,NBSYME
+            IASYM = MULD2H(ICSYM,IBSYM)
+            IF ( (NPPCNV(ICSYM) .GT. 0) .AND. (NPPCNV(IBSYM) .GT. 0)
+     *          .AND. (NGPPP(IASYM).GT.0) ) THEN
+               DO 900 IC = 1,NPPCNV(ICSYM)
+                  IF ( EXMTES .OR. ICSYM.NE.IBSYM ) THEN
+                     IBE = NPPCNV(IBSYM)
+                  ELSE
+                     IBE = IC
+                  END IF
+                  DO 1000 IB = 1,IBE
+                     CEXMBE = EXCITA(ICSYM,IC,ISPINC+1) -
+     *                        EXCITA(IBSYM,IB,ISPINB+1)
+                     DO 1100 IAOP = 1,NGPPP(IASYM)
+                        IF (.NOT.RSPCI) THEN
+                           IF (ISPINA .EQ. 0) THEN
+                              INUM = INQRLR
+     *                               (LBLPP(IASYM,IAOP),CEXMBE,IASYM)
+                           ELSE
+                              INUM = INQRTR
+     *                               (LBLPP(IASYM,IAOP),CEXMBE,IASYM)
+                           END IF
+                        END IF
+ 1100                CONTINUE
+ 1000             CONTINUE
+ 900           CONTINUE
+            END IF
+ 400     CONTINUE
+ 300  CONTINUE
+      RETURN
+      END
+C  /* Deck inqrlr */
+      INTEGER FUNCTION INQRLR(NEWLBL,FRQVAL,ISYM)
+C
+C DETERMINE IF A POINTER TO LINEAR RESPONSE EQUATION
+C CHARACTERIZED BY NEWLBL AND FRQVAL HAS OCCURRED
+C IF SO INDQR GIVES ITS NUMBER IN THE LIST
+C IF THE POINTER DOES NOT APPEAR IT IS ADDED TO
+C LIST AND INDQR GIVES THE ADDED NUMBER
+C
+#include <implicit.h>
+C
+#include <priunit.h>
+#include <infrsp.h>
+#include <indqr.h>
+C
+      PARAMETER ( DIFFR = 1.0D-8 )
+      CHARACTER*8 NEWLBL
+      DO 100 I=1,NLRLBL
+         IF ( (NEWLBL .EQ. QRLBL(I) ) .AND.
+     *       ( ABS(FRQVAL- QRFREQ(I)).LE.DIFFR) ) THEN
+            INQRLR = I
+            RETURN
+         END IF
+ 100  CONTINUE
+      NLRLBL = NLRLBL + 1
+      IF (NLRLBL.GT.MXLRQR) THEN
+         WRITE(LUPRI,'(A,/A,I5,A,I5)')
+     *   ' NUMBER OF SPECIFIED PROPERTIES EXCEED THE MAXIMUM ALLOWED',
+     *   ' MXLRQR =',MXLRQR,' NLRLBL = ',NLRLBL
+         CALL QUIT(' INQRLR: TOO MANY PROPERTIES SPECIFIED')
+      END IF
+      QRLBL(NLRLBL) = NEWLBL
+      QRFREQ(NLRLBL) = FRQVAL
+      ISYMQR(NLRLBL) = ISYM
+      INQRLR = NLRLBL
+      IF (IPRRSP.GT.40) THEN
+         WRITE(LUPRI,'(/A)')' INQRLR: NEW OPERATOR'
+         WRITE(LUPRI,'(A,I5,2X,A,A,2X,/A,D12.6,2X,A,I5)')
+     *   ' NUMBER:',NLRLBL,' LABEL: ',NEWLBL,' FREQUENCY: ',FRQVAL,
+     *   'SYMMETRY',ISYM
+      END IF
+      RETURN
+      END
+C  /* Deck qrlrsr */
+      SUBROUTINE QRLRSR
+C
+C SORT THE LINEAR RESPONSE EQUATIONS AFTER SYMMETRY
+C THE NUMBER OF LINEAR EQUATIONS OF A GIVEN SYMMETRY ARE
+C STORED IN NLRQR WITH OFSET IN ILRQR
+C
+#include <implicit.h>
+C
+      CHARACTER*8 LABEL
+C
+#include <priunit.h>
+#include <inforb.h>
+#include <indqr.h>
+#include <infpri.h>
+#include <infrsp.h>
+C
+      IF (IPRRSP.GT.40) THEN
+         WRITE(LUPRI,'(/A,I5,2X,A)')
+     *   ' LIST OF NLRLBL= ',NLRLBL,
+     *   ' LINEAR EQUATIONS FOR QUADRATIC RESPONSE'
+         WRITE(LUPRI,'(A)')' BEFORE SORTING'
+         WRITE(LUPRI,'(/A)')'   I  QRLBL(I)  QRFREQ(I)  ISYMQR(I) '
+         DO 90 I = 1,NLRLBL
+            WRITE(LUPRI,'(I5,5X,A,D12.6,I12)')
+     *      I,QRLBL(I),QRFREQ(I),ISYMQR(I)
+  90     CONTINUE
+      END IF
+      ISMMAX = 1
+      DO 100 ISYM = 1,NSYM
+         I = ISMMAX
+         DO 200 ISRT = I,NLRLBL
+            IF ( ISYMQR(ISRT).EQ.ISYM) THEN
+                IQR   = ISYMQR(ISRT)
+                FRVAL  = QRFREQ(ISRT)
+                LABEL = QRLBL(ISRT)
+                ISYMQR(ISRT) = ISYMQR(ISMMAX)
+                QRFREQ(ISRT) = QRFREQ(ISMMAX)
+                QRLBL(ISRT)  = QRLBL(ISMMAX)
+                ISYMQR(ISMMAX) = IQR
+                QRFREQ(ISMMAX) = FRVAL
+                QRLBL(ISMMAX)  = LABEL
+                ISMMAX = ISMMAX + 1
+            END IF
+ 200     CONTINUE
+ 100  CONTINUE
+      ITOTOP = 0
+      DO 300 ISYM = 1,NSYM
+         INUMOP = 0
+         DO 400 I = 1,NLRLBL
+            IF(ISYMQR(I).EQ.ISYM) THEN
+               INUMOP = INUMOP + 1
+            END IF
+ 400     CONTINUE
+         ILRQR(ISYM) = ITOTOP
+         ITOTOP = ITOTOP + INUMOP
+         NLRQR(ISYM) = INUMOP
+ 300  CONTINUE
+      IF (IPRRSP.GT.40) THEN
+         WRITE(LUPRI,'(/A,I5,2X,A)')
+     *   ' LIST OF NLRLBL= ',NLRLBL,
+     *   ' LINEAR EQUATIONS FOR QUADRATIC RESPONSE'
+         WRITE(LUPRI,'(A)')'AFTER SORTING'
+         DO 301 I = 1,NLRLBL
+            WRITE(LUPRI,'(/A)')'   I  QRLBL(I)  QRFREQ(I)  ISYMQR(I) '
+            WRITE(LUPRI,'(I5,5X,A,D12.6,I12)')
+     *      I,QRLBL(I),QRFREQ(I),ISYMQR(I)
+ 301     CONTINUE
+      END IF
+      IF (IPRRSP.GT.35) THEN
+         WRITE(LUPRI,'(/A)')
+     *   ' NUMBER OF LINEAR RESPONSE EQUATIONS IN VARIOUS SYMMETRIES'
+         WRITE(LUPRI,'(/A)')' NLRQR(ISYM),ISYM=1,NSYM '
+         WRITE(LUPRI,'(8I5)')( NLRQR(ISYM),ISYM=1,NSYM )
+      END IF
+      RETURN
+      END
+C  /* Deck qrexsr */
+      SUBROUTINE QREXSR
+C
+C SORT THE EXCITATION ENERGIES  AFTER SYMMETRY
+C THE NUMBER OF EXCITATION ENERGIES OF A GIVEN SYMMETRY ARE
+C STORED IN NEXQR WITH OFFSET IN IEXQR
+C
+#include <implicit.h>
+C
+#include <priunit.h>
+#include <infrsp.h>
+#include <inforb.h>
+#include <indqr.h>
+#include <infpri.h>
+C
+      IF (IPRRSP.GT.40) THEN
+         WRITE(LUPRI,'(/A,I5,2X,A)')
+     *   ' LIST OF NEXLBL= ',NEXLBL,'EXCITATIONS FOR QUADRATIC RESPONSE'
+         WRITE(LUPRI,'(A)')' BEFORE SORTING'
+         DO 90 I = 1,NEXLBL
+            WRITE(LUPRI,'(/A)')'     I   ISEXQR(I)  JEXQR(I)'
+            WRITE(LUPRI,'(/3I10)')I,ISEXQR(I),JEXQR(I)
+ 90      CONTINUE
+      END IF
+      ISMMAX = 1
+      DO 100 ISYM = 1,NSYM
+         I = ISMMAX
+         DO 200 ISRT = I,NEXLBL
+            IF ( ISEXQR(ISRT).EQ.ISYM) THEN
+                IQR   = ISEXQR(ISRT)
+                JQR   = JEXQR(ISRT)
+                ISEXQR(ISRT) = ISEXQR(ISMMAX)
+                JEXQR(ISRT)  = JEXQR(ISMMAX)
+                ISEXQR(ISMMAX) = IQR
+                JEXQR(ISMMAX)  = JQR
+                ISMMAX = ISMMAX + 1
+            END IF
+ 200     CONTINUE
+ 100  CONTINUE
+      ITOTOP = 0
+      DO 300 ISYM = 1,NSYM
+         INUMOP = 0
+         DO 400 I = 1,NEXLBL
+            IF(ISEXQR(I).EQ.ISYM) THEN
+               INUMOP = INUMOP + 1
+            END IF
+ 400     CONTINUE
+         IEXQR(ISYM) = ITOTOP
+         ITOTOP = ITOTOP + INUMOP
+         NEXQR(ISYM) = INUMOP
+ 300  CONTINUE
+      IF (IPRRSP.GT.40) THEN
+         WRITE(LUPRI,'(/A,I5,2X,A)')
+     *   ' LIST OF NEXLBL= ',NEXLBL,'EXCITATIONS FOR QUADRATIC RESPONSE'
+         WRITE(LUPRI,'(A)')' AFTER SORTING'
+         DO 310 I = 1,NEXLBL
+            WRITE(LUPRI,'(/A)')'     I   ISEXQR(I)  JEXQR(I)'
+            WRITE(LUPRI,'(/3I10)')I,ISEXQR(I),JEXQR(I)
+ 310     CONTINUE
+      END IF
+      IF (IPRRSP.GT.35) THEN
+         WRITE(LUPRI,'(/A)')
+     *   ' NUMBER OF EXCITATIONS IN VARIOUS SYMMETRIES'
+         WRITE(LUPRI,'(/A)')' NEXQR(ISYM),ISYM=1,NSYM '
+         WRITE(LUPRI,'(8I5)')( NEXQR(ISYM),ISYM=1,NSYM )
+      END IF
+      RETURN
+      END
+C  /* Deck inqrtr */
+      INTEGER FUNCTION INQRTR(NEWLBL,FRQVAL,ISYM)
+C
+C DETERMINE IF A POINTER TO TRIPLET LINEAR RESPONSE EQUATION
+C CHARACTERIZED BY NEWLBL AND FRQVAL
+C HAS OCCURED IF SO INQRTR GIVES ITS NUMBER IN THE
+C LIST IF THE POINTER DOES NOT APPEAR IT IS ADDED TO
+C LIST AND INQRTR GIVES THE ADDED NUMBER
+C
+#include <implicit.h>
+C
+#include <priunit.h>
+#include <infrsp.h>
+#include <indqr.h>
+#include <infpri.h>
+C
+      PARAMETER ( DIFFR = 1.0D-8 )
+      CHARACTER*8 NEWLBL
+      DO 100 I=1,NTRLBL
+         IF ( (NEWLBL .EQ. TRLBL(I) ) .AND.
+     *       ( ABS(FRQVAL- TRFREQ(I)).LE.DIFFR) ) THEN
+            INQRTR = I
+            RETURN
+         END IF
+ 100  CONTINUE
+      NTRLBL = NTRLBL + 1
+      IF (NTRLBL.GT.MXLRQR) THEN
+         WRITE(LUPRI,'(A,/A,I5,A,I5)')
+     *   ' NUMBER OF SPECIFIED PROPERTIES EXCEED THE MAXIMUM ALLOWED',
+     *   ' MXLRQR =',MXLRQR,' NTRLBL = ',NTRLBL
+         CALL QUIT(' INQRTR: TOO MANY PROPERTIES SPECIFIED')
+      END IF
+      TRLBL(NTRLBL) = NEWLBL
+      TRFREQ(NTRLBL) = FRQVAL
+      ISYMTR(NTRLBL) = ISYM
+      INQRTR = NTRLBL
+      IF (IPRRSP.GT.40) THEN
+         WRITE(LUPRI,'(/A)')' INQRTR: NEW OPERATOR'
+         WRITE(LUPRI,'(A,I5,2X,A,A,2X,/A,D12.6,2X,A,I5)')
+     *   ' NUMBER:',NTRLBL,' LABEL: ',NEWLBL,' FREQUENCY: ',FRQVAL,
+     *   'SYMMETRY',ISYM
+      END IF
+      RETURN
+      END
+C  /* Deck qrtrsr */
+      SUBROUTINE QRTRSR
+C
+C SORT THE TRIPLET LINEAR RESPONSE EQUATIONS AFTER SYMMETRY
+C THE NUMBER OF LINEAR EQUATIONS OF A GIVEN SYMMETRY ARE
+C STORED IN NTRQR WITH OFSET IN ITRQR
+C
+#include <implicit.h>
+C
+      CHARACTER*8 LABEL
+C
+#include <priunit.h>
+#include <inforb.h>
+#include <indqr.h>
+#include <infpri.h>
+#include <infrsp.h>
+C
+      IF (IPRRSP.GT.40) THEN
+         WRITE(LUPRI,'(/A,I5,2X,A)')
+     *   ' LIST OF NTRLBL= ',NTRLBL,
+     *   ' TRIPLET LINEAR EQUATIONS FOR QUADRATIC RESPONSE'
+         WRITE(LUPRI,'(A)')' BEFORE SORTING'
+         WRITE(LUPRI,'(/A)')'   I  TRLBL(I)  TRFREQ(I)  ISYMTR(I) '
+         DO 90 I = 1,NTRLBL
+            WRITE(LUPRI,'(I5,5X,A,D12.6,I12)')
+     *      I,TRLBL(I),TRFREQ(I),ISYMTR(I)
+  90     CONTINUE
+      END IF
+      ISMMAX = 1
+      DO 100 ISYM = 1,NSYM
+         I = ISMMAX
+         DO 200 ISRT = I,NTRLBL
+            IF ( ISYMTR(ISRT).EQ.ISYM) THEN
+                IQR   = ISYMTR(ISRT)
+                FRVAL  = TRFREQ(ISRT)
+                LABEL = TRLBL(ISRT)
+                ISYMTR(ISRT) = ISYMTR(ISMMAX)
+                TRFREQ(ISRT) = TRFREQ(ISMMAX)
+                TRLBL(ISRT)  = TRLBL(ISMMAX)
+                ISYMTR(ISMMAX) = IQR
+                TRFREQ(ISMMAX) = FRVAL
+                TRLBL(ISMMAX)  = LABEL
+                ISMMAX = ISMMAX + 1
+            END IF
+ 200     CONTINUE
+ 100  CONTINUE
+      ITOTOP = 0
+      DO 300 ISYM = 1,NSYM
+         INUMOP = 0
+         DO 400 I = 1,NTRLBL
+            IF(ISYMTR(I).EQ.ISYM) THEN
+               INUMOP = INUMOP + 1
+            END IF
+ 400     CONTINUE
+         ITRQR(ISYM) = ITOTOP
+         ITOTOP = ITOTOP + INUMOP
+         NTRQR(ISYM) = INUMOP
+ 300  CONTINUE
+      IF (IPRRSP.GT.40) THEN
+         WRITE(LUPRI,'(/A,I5,2X,A/A)')
+     *   ' LIST OF NTRLBL= ',NTRLBL,
+     *   ' TRIPLET LINEAR EQUATIONS FOR QUADRATIC RESPONSE',
+     *   ' AFTER SORTING'
+         DO 301 I = 1,NTRLBL
+            WRITE(LUPRI,'(/A)')'   I  TRLBL(I)  TRFREQ(I)  ISYMTR(I) '
+            WRITE(LUPRI,'(I5,5X,A,D12.6,I12)')
+     *      I,TRLBL(I),TRFREQ(I),ISYMTR(I)
+ 301     CONTINUE
+      END IF
+      IF (IPRRSP.GT.35) THEN
+         WRITE(LUPRI,'(/2A)')
+     *   ' NUMBER OF TRIPLET LINEAR RESPONSE EQUATIONS',
+     *   ' IN VARIOUS SYMMETRIES'
+         WRITE(LUPRI,'(/A)')' NTRQR(ISYM),ISYM=1,NSYM '
+         WRITE(LUPRI,'(8I5)')( NTRQR(ISYM),ISYM=1,NSYM )
+      END IF
+      RETURN
+      END

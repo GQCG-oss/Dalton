@@ -1,0 +1,12 @@
+C
+C$Id: n_sort.h,v 1.1.1.1 2001-02-08 13:33:30 hjj Exp $
+C
+#include <iratdef.h>
+#include <maxorb.h>
+      PARAMETER (LRECAO = 28*1024, LRINT=LRECAO)
+      COMMON/N_SORT/ RINT(LRECAO),IT(MAXORB),IBATCH(666),LASTAD(106),
+     *             KEEP(8),NBAS(8),IS(MAXORB),IBAS(8),NREC(106),NSYM,
+     *             IDATA(18),NSOINT(106),LINT,LBATCH,
+     *             NSOBAT(106),INTSYM,IPRINT,IPRFIO,IW
+      INTEGER IINT(IRAT*LRINT)
+      EQUIVALENCE (RINT, IINT)

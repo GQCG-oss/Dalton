@@ -1,0 +1,7 @@
+C
+C$Id: infave.h,v 1.1.1.1 2001-02-08 13:33:23 hjj Exp $
+C
+      PARAMETER ( MAXAV = 60 )
+      CHARACTER*8 LBLAV
+      COMMON /INFAV/ NAVTOT
+      COMMON /CHRAV/ LBLAV(MAXAV)

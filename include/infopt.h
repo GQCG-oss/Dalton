@@ -1,0 +1,11 @@
+C
+C$Id: infopt.h,v 1.1.1.1 2001-02-08 13:33:30 hjj Exp $
+C
+      COMMON /INFOPT/ EMCSCF,EMCOLD,DEPRED,BETA,BETMIN,BETMAX,
+     *                GNORM(3),RTRUST,RTTOL,RATMIN,RATGOD,
+     *                EPOT,EMY,EACTIV,RATREJ,SHFLVL,REJWMI,REJWMA,
+     *                STPLEN,STPMAX,STPINC,STPRED,
+     *                THQMIN,THQLIN,THQKVA,GAMMA,RBETA,
+     *                ITMAC,ITMICT,NREDL,NROOTC,JROOT(10),
+     *                STPC,STPO, ESOLT, ECORR
+      EQUIVALENCE (GRDNRM,GNORM(3))

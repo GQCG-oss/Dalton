@@ -1,0 +1,267 @@
+\chapter{Getting the property you want}\label{ch:rspchap}
+
+
+In the preceding chapters we have shown how to calculate a number of
+properties that are associated with specific spectroscopic applications,
+such as NMR-parameters (Chapter~\ref{ch:magnetic}). These properties
+are in part
+calculated in the \resp\ program, but given that a large number of
+standard calculations usually are carried out in a similar fashion, some
+applications have a simplified input (under {\tt **PROPERTIES}), 
+and an appealing output that meets common demands 
+(e.g. customary unit conversions). In this chapter we
+describe how to set up the input for calculating a general property that
+can be defined in terms of electronic response functions.
+
+\section{General considerations}
+\label{sec:rspgen}
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item Response theory:
+Jeppe Olsen and Poul J{\o}rgensen, \newblock {\em J. Chem. Phys.} {\bf 82}, \hspace{0.25em}3235, (1985)
+\end{list}
+}}
+\end{center}
+
+A response function is a measure of how a property of a system changes in
+the presence of one or more perturbations. With our notation (see e.g.
+Ref.~\cite{jopjjcp82}),  $\langle\!\langle A;B\rangle\!\rangle_{\omega_b}$,
+$\langle\!\langle A;B,C\rangle\!\rangle_{\omega_b,\omega_c}$, and 
+$\langle\!\langle A;B,C,D\rangle\!\rangle_{\omega_b,\omega_c,\omega_d}$
+denote linear, quadratic and cubic response functions\index{linear
+response}\index{quadratic response}\index{cubic
+response}\index{response function}, respectively, which
+provide the first, second, and third-order corrections to the
+expectation-value of $A$, due to perturbations $B$, $C$, and $D$, each of
+which is associated with a frequency $\omega_b$, $\omega_c$, and
+$\omega_d$. Often the perturbations are considered to be 
+external monochromatic fields, or static (e.g. relativistic) perturbations,
+in which case the frequency is zero.   In general, the perturbations $B$,
+$C$, and $D$ represent Fourier components of an arbitrary time-dependent
+perturbation.
+
+\section{Input description}
+\label{sec:rspex}
+ 
+In this section we describe a few minimal input examples for calculating some
+molecular properties that can be expressed in terms of linear, quadratic, and
+cubic response functions.
+ 
+\subsection{Linear response}
+\label{subsec:linrsp}
+%\subsection{Polarizability, $\alpha_{ij}(0;0)$ $i,j \in \{x,y,z\}$}
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item Singlet linear response:
+Poul J{\o}rgensen, Hans J{\o}rgen Aagaard Jensen, and Jeppe Olsen, \newblock {\em J. Chem. Phys.} {\bf 89}, \hspace{0.25em}3654, (1988)
+\item Triplet linear response:
+Jeppe Olsen, Danny L. Yeager, and Poul J{\o}rgensen, \newblock {\em J. Chem. Phys.} {\bf 91}, \hspace{0.25em}381, (1989)
+\end{list}
+}}
+\end{center}
+
+A well-known example of a linear response\index{linear
+response}\index{polarizability} function is the polarizability. 
+A typical input for SCF static and dynamic polarizability tensors
+$\alpha_{ij}(-\omega;\omega)\equiv-\langle\!\langle
+x_i;x_j\rangle\!\rangle_\omega$, given a few selected frequencies (in
+atomic units) will be:
+\begin{verbatim}
+**DALTON INPUT
+.RUN RESPONSE
+**WAVE FUNCTIONS
+.HF
+**RESPONSE
+*LINEAR
+.DIPLEN
+.FREQUENCY
+ 3
+ 0.0 0.5 1.0
+*END OF INPUT
+\end{verbatim}
+The {\tt .DIPLEN} keyword has the effect of defining the $A$ and $B$
+operators as all components of the electric dipole operator.
+
+The linear response function contains a wealth of
+information about the spectrum of a given Hamiltonian. 
+It has poles\index{pole of response function} at the excitation
+energies\index{electronic excitation}, 
+relative to the reference state (not necessarily the ground state) and the
+corresponding residues\index{residue} are transition
+moments\index{transition moment} between the reference and
+excited states. To calculate the excitation energies\index{electronic
+excitation} and dipole transition 
+moments\index{transition moment} for the three lowest excited states
+in the fourth symmetry a small 
+modification of the input above will suffice;
+\begin{verbatim}
+**RESPONSE
+*LINEAR
+.DIPLEN
+.SINGLE RESIDUE
+.ROOTS
+ 0 0 0 3
+*END OF INPUT
+\end{verbatim}
+
+\subsection{Quadratic response}
+\label{subsec:quadrsp}
+%\subsection{First hyperpolarizability, 
+%$\beta_{zzz}(0;0,0)
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item Singlet quadratic response: 
+Hinne Hettema, Hans J{\o}rgen Aa. Jensen, Poul J{\o}rgensen, and Jeppe Olsen, \newblock {\em J. Chem. Phys.} {\bf 97}, \hspace{0.25em}1174, (1992)
+\item Triplet quadratic response: 
+Olav Vahtras, Hans {\AA}gren, Poul J{\o}rgensen, Hans J{\o}rgen Aa. Jensen, Trygve Helgaker, and Jeppe Olsen, \newblock {\em J. Chem. Phys.} {\bf 97}, \hspace{0.25em}9178, (1992)
+\item Integral direct quadratic response: 
+Hans {\AA}gren, Olav Vahtras, Henrik Koch, Poul J{\o}rgensen, and Trygve Helgaker, \newblock {\em J. Chem. Phys.} {\bf 98}, \hspace{0.25em}6417, (1993)
+\end{list}
+}}
+\end{center}
+
+An example of a quadratic response\index{quadratic response} function
+is the first 
+hyperpolarizability\index{first hyperpolarizability}. If we are
+interested in the  
+$\beta_{zzz}\equiv-\langle\!\langle z;z,z\rangle\!\rangle_{0,0}$ 
+component only we may use the following input:
+\begin{verbatim}
+**DALTON INPUT
+.RUN RESPONSE
+**WAVE FUNCTIONS
+.HF
+**RESPONSE
+*QUADRATIC
+.DIPLNZ
+*END OF INPUT
+\end{verbatim}
+When no frequencies are given in the input, the static value is assumed by
+default. If we wish to calculate dynamic hyperpolarizabilities we supply
+frequencies\index{frequency}, but in this case we have two frequencies
+$\omega_b, \omega_c$ which are given by the keywords \texttt{.BFREQ} and
+{\tt .CFREQ} (see the Reference Manual, chapter~\ref{ch:response}).
+
+The residue of a quadratic response function gives two-photon
+transition amplitudes\index{two-photon amplitude}. For such a
+calculation we supply the same extra 
+keywords as in the linear case (Sec.~\ref{subsec:linrsp}):
+\begin{verbatim}
+**RESPONSE
+*QUADRATIC
+.DIPLNZ
+.SINGLE RESIDUE
+.ROOTS
+ 2 0 0 0
+*END OF INPUT
+\end{verbatim}
+which in this case means the two-photon transition
+amplitude\index{two-photon amplitude} between the
+reference state and the first two excited states in the first symmetry.  In
+general the residue of a quadratic response function corresponds to the
+induced transition moment of an operator $A$ due to a perturbation $B$.
+The $C$ operator is arbitrary and is not specified.  A typical example is
+the dipole matrix element between a singlet and triplet state that is
+induced by spin-orbit coupling
+(phosphorescence)\index{phosphoresence}. For this special case we 
+have the keyword, {\tt .PHOSPHORESCENCE} under {\tt *QUADRATIC}, which sets
+$A$ to electric dipole operators and $B$ to spin-orbit operators.
+
+It is possible to construct double
+residues\index{residue}\index{double residue} of the quadratic
+response function, the interpretation of which is transition
+moments\index{transition moment}\index{excited state}
+between two 
+excited states. Specifying {\tt .DOUBLE} in the example above thus gives
+the matrix elements of the $z$-component of the dipole moment between
+all excited specified in {\tt .ROOTS}. Note that the diagonal contributions
+gives,  not the expectation value in the excited state, but rather the
+difference relative to the reference state expectation value.
+
+\subsection{Cubic response}
+\label{subsec:cubrsp}
+%\subsection{Second hyperpolarizability, $\gamma_{ijkl}(0;0,0,0)$
+%$i,j,k,l \in \{x,y,z\}$} \cite{pndjhapdkrthhkcpl253}
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item SCF cubic response:
+Patrick Norman, Dan Jonsson, Olav Vahtras, and Hans {\AA}gren, \newblock {\em Chem. Phys. Lett.} {\bf 242}, \hspace{0.25em}7, (1995)
+\item MCSCF cubic response:
+Dan Jonsson, Patrick Norman, and Hans {\AA}gren, \newblock {\em J. Chem. Phys.} {\bf 105}, \hspace{0.25em}6401, (1996)
+\end{list}
+}}
+\end{center}
+
+The static second hyperpolarizability\index{cubic
+response}\index{second hyperpolarizability}
+$\gamma_{ijkl}(-0;0,0,0)\equiv
+-\langle\!\langle x_i;x_j,x_k,x_l\rangle\!\rangle_{000}$,
+all components of which may be obtained by the following input
+
+\begin{verbatim}
+**DALTON INPUT
+.RUN RESPONSE
+**WAVE FUNCTIONS
+.HF
+**RESPONSE
+*CUBIC
+.DIPLEN
+*END OF INPUT
+\end{verbatim}
+
+
+%\subsection{Polarizability of the first excited state of symmetry 1, \\
+%$\alpha^e_{zz}(-0.01;0.01) - \alpha^0_{zz}(-0.01;0.01)$}
+%\cite{djpnylhajcp105}
+
+We mentioned above (Sec.~\ref{subsec:quadrsp}) that the "diagonal" 
+double residue\index{residue}\index{double residue} of the quadratic
+response function is the change in the expectation value relative to the
+reference state. The analogue for cubic
+response functions is the change in
+polarizability\index{polarizability}\index{excited state} relative to the
+reference state polarizability, which is demonstrated by the following
+input.
+\begin{verbatim}
+**DALTON INPUT
+.RUN RESPONSE
+**WAVE FUNCTIONS
+.HF
+**RESPONSE
+*CUBIC
+.DOUBLE RESIDUE
+.DIPLNZ
+.FREQUENCIES
+ 1
+ 0.01
+.ROOTS
+  1 0 0 0
+*END OF INPUT
+\end{verbatim}
+
+
+

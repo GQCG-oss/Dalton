@@ -1,0 +1,228 @@
+\section*{Appendix: DALTON Tool box}
+
+This appendix describes the pre- and postprocessing processing program
+supplied to us by various users and authors. The programs are designed
+to create files directly useable by the \siraba\ program, or do
+various final analyses of one or more \siraba\ output files. We
+strongly encourage users to supply with any such programs they have
+written in connection with their own use of the \siraba\ program,
+which we will be glad to distribute along with the \siraba\
+program.
+
+This appendix gives a short description of the programs supplied with
+the current distribution of the program, with proper references and a
+short description of the use of the program.
+
+Executable versions of the programs in this directory will
+automatically be produced during installation of the \siraba\ program,
+but they will by default not be installed in the installation
+directory of the \siraba\ program, but rather placed in the
+\verb|tools| directory.
+
+\subsection*{A1: FChk2HES}
+
+\noindent
+{\large\bf Author: \normalsize\large Gilbert Hangartner,
+Universit\"{a}t Freiburg, Switzerland}
+
+\smallskip
+
+\noindent 
+{\bf Purpose:} Reads the Formatted Checkpoint file of Gaussian  
+     and creates a DALTON.HES file with Hessian and Atomic coordinates
+     as well as a dummy MOLECULE.INP file.
+
+\smallskip
+\noindent
+{\bf Commandline:} FChk2HES [-n] [filename]
+
+-n does not read and write geometry; filename is optional, default is
+"\verb|Test.FChk|" .
+
+\smallskip
+\noindent
+{\bf Comments:}     The Gaussian checkpointfile "Test.FChk" is created
+     with the keyword "FormCheck=ForceCart", and where the keyword "NoSymm"
+     has  been specified
+
+If symmetry is used: Hessian\index{Hessian} will be in standard(Gaussian) orientation,
+        but geometry will be in input orientation. So do not use the
+        MOLECULE.INP file from this utility, neither the coordinates in the
+        end of DALTON.HES.
+        Use either the standard-orientation from Gaussian outputfile, or
+        use the converted checkpointfile (created with the command
+        "formchk checkpointfilename convertedfilename") as an input for
+        this program. Anyway, this will not lead to the geometry you 
+        specified in the input, and the Hessian will be incompatible with the
+        calculation you want to do in DALTON. (If this was already carried
+        out at the input orientation ...)
+
+The only way to get the geometry orientation you want is to turn
+        off symmetry. 
+        Then, both the Hessian and the geometry in the Test.FChk file are
+        in the input orientation, and everthing is fine.
+
+The program has been made for the purpose of being used in VCD or
+VROA\index{VCD}\index{ROA}\index{vibrational circular
+dichroism}\index{Raman optical activity} 
+calculations where it may be of interest to compare predicted spectra
+obtained from SCF London orbital invariants/AATs\index{atomic axial
+tensor}\index{AAT} with a MP2 or DFT force field.
+
+\subsection*{A2: labread}
+
+\noindent
+{\large\bf Author: \normalsize\large Hans J\o rgen Aa.Jensen,
+Odense University, Denmark}
+
+\smallskip
+
+\noindent 
+{\bf Purpose:} Reads unformatted AO-integral files and prints the
+INTEGRAL labels found on the file
+
+\smallskip
+\noindent
+{\bf Commandline:} labread $<$ infile $>$ outfile
+
+\smallskip
+\noindent
+{\bf Comments:}  A convenient tool in connection with \siraba\ errors
+connected to missing labels on a given file in order to check that the
+given integrals do indeed, or do not, exist on a given file (usually
+\verb|AOPROPER|). 
+
+\subsection*{A3: ODCPROG}
+
+\noindent
+{\large\bf Author: \normalsize\large Antonio Rizzo (Istituto di
+Chimica Quantistica ed Energetica Molecolare, Pisa, Italy), and
+Sonia Coriani (Aarhus University, Denmark)}
+
+\smallskip
+
+\noindent 
+{\bf Purpose:} Analyze the magnetizability and nuclear shielding
+polarizabilities from a set of finite-field magnetizability and
+nuclear shielding calculations.
+
+\smallskip
+\noindent
+{\bf Commandline:} odcprog
+
+Requires the existence of a readmg.dat file, and n DALTON.CM files,
+where n is the number of finite field output files.
+
+\smallskip
+\noindent
+{\bf readmg.dat:} 
+
+\begin{verbatim}
+TITLE (1 line)
+N ZPRT IPG ISSYM NIST NLAST NSTEP
+FILE1
+FILE2
+... 
+FILEN 
+\end{verbatim}
+
+\begin{itemize}
+\item[N] Number of output DALTON.CM files for the FF calculations
+\item[ZPRT]  Sets the print level (T for maximum print level, F otherwise)
+\item[IPG] Point group (1=Td, 2=Civ, 3=D2h, 4=C2v, 5=C3v, 6=Dih)
+\item[ISSYM] Site symmetry of the atom for which the shielding
+polarizabilities are required
+\item[NIST] First atom of which shielding polarizabilities must be computed
+        (of those in  the DALTON.CM files)
+\item[NLAST] Last atom of which shielding polarizabilities must be computed
+        (of those in  the DALTON.CM files)
+\item[NSTEP] Step to go from nist to nlast in the do-loop for
+shielding polarizabilities
+\item[FILEn] n.th DALTON.CM file (current name and location)
+\end{itemize}
+
+
+\smallskip
+\noindent
+{\bf Comments:} 
+    Only 6 point groups are presently implemented, of which
+    C3v only for shielding-polarizabilities and 
+    Dih only for hyperpolarizabilities 
+
+    When \verb|issym.ne.ipg| and both
+    hypermagnetizabilities\index{magnetizability
+    polarizability}\index{shielding polarizability} and shielding 
+    polarizabilities are required, the number of field set-ups should 
+    be equal to the one for shieldings
+
+    Different field set-ups are needed according to
+    molecular  and/or nuclear site symmetries
+    See for reference Raynes and Ratcliffe~\cite{wtrrrmp37}.
+    Linear molecules along the Z axis, planar molecules
+    on XZ plane. In general, follow standard point
+    symmetry arrangements
+
+\begin{itemize}
+\item[T$_d$]   Eg. CH$_4$ - No symmetry - 3 calculations
+
+\begin{verbatim}
+Need     0  0  0
+Need     0  0  z
+Need     x  0  z
+\end{verbatim}
+
+\item[C$_{\infty v}$] Eg. CO - No symmetry - 5 calculations
+
+\begin{verbatim}
+Need     0  0  0
+Need     x  0  0
+Need     0  0  z
+Need     0  0 -z
+Need     x  0  z
+\end{verbatim}
+
+\item[D$_{2h}$] Eg. C$_2$H$_4$ -  No symmetry - 7 calculations
+
+\begin{verbatim}
+Need     0  0  0
+Need     0  0  z
+Need     x  0  0
+Need     0  y  0
+Need     x  y  0
+Need     x  0  z
+Need     0  y  z
+\end{verbatim}
+
+\item[C$_{2v}$] Eg. H$_2$O - No symmetry - 8 calculations
+
+\begin{verbatim}
+Need     0  0  0
+Need     0  0  z
+Need     0  0 -z
+Need     x  0  0
+Need     0  y  0
+Need     x  y  0
+Need     x  0  z
+Need     0  y  z
+\end{verbatim}
+
+\item[C$_{3v}$] Eq. Shielding H1 in CH$_4$
+
+\begin{verbatim}
+Need     0  0  0
+Need     0  0  z
+Need     0  0 -z
+Need     x  0  0
+Need    -x  0  0
+Need     x  0  z
+\end{verbatim}
+
+\item[D$_{\infty h}$] Eg. N$_2$ -  4 calculations
+
+\begin{verbatim}
+Need     0  0  0
+Need     0  0  z
+Need     x  0  0
+Need     x  0  z
+\end{verbatim}
+\end{itemize}

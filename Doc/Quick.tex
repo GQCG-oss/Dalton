@@ -1,0 +1,344 @@
+\chapter{Quick guide}\label{ch:quick}
+
+\section{Introduction}\label{sec:quickintro}
+
+          This chapter is designed to provide a quick introduction for
+the impatient user.  All of the topics discussed here are dealt with
+in considerable more detail in the other chapters.  Here we shall
+consider the CH$_2$ test job from the \verb|testin/CH2| subdirectory as a
+simple illustrative example.
+
+\section{Job script and input files}\label{sec:quickscr}
+
+The following files will be found in the subdirectory
+\verb|testin/CH2|: \verb|A.sh|, \verb|A_her.inp|, \newline
+\verb|A00_mol.inp|,
+\verb|A_sirstr.inp|, \verb|A_sirwlk.inp|, \verb|A_abastr.inp|,
+\verb|A_abawlk.inp|, and \newline \verb|A_abafin.inp|.  There is also a file
+named \verb|A.nqs|, which illustrates one way of running the job under
+NQS. We now discuss these files in turn.
+
+\subsection{{\tt A.sh}}
+
+\begin{verbatim}
+ABAWRK=12000000
+HERWRK=5000000
+export ABAWRK
+export HERWRK
+root=/users/helgaker
+ABA=$root/exeabashell/abacus.sh
+scr=/scratch/taylor
+inpdir=$root/testin/CH2 \
+outdir=$root/testin/CH2 \
+rootscr=$scr \ 
+herexe=$exe/hermit.x \ 
+sirexe=$exe/sirius.x \ 
+abaexe=$exe/abacus.x \ 
+wf=MCSCF $ABA CH2 A
+\end{verbatim}
+
+This script specifies the location of various executable files and the
+``master script'' \verb|abacus.sh|, the directory path to generate run
+files in~(\verb|$scr|), as well as the directory for input and output
+files. These latter two options, inpdir and outdir, are optional, and
+will by default be set to the current directory. The ``molecule name''
+for this run 
+is~\verb|CH2|, and the letter identifying this particular run
+is~\verb|A|.  The run files will therefore be generated in the directory
+\begin{verbatim}
+/scratch/taylor/CH2/A
+\end{verbatim}
+for this calculation.  The output files will be copied back to the
+\verb|outdir| directory automatically.
+
+The user should modify these pathnames to reflect the local
+installation and disk structure.  The file \verb|A.sh| can then be
+submitted for execution.  (The individual input files \verb|A_*.inp|
+are discussed further in the next sections, as are output files.)  If
+the run is successful, the output files can be compared to those
+supplied in the subdirectory \verb|testout/CH2|.  While there will be
+many small differences due to differences in hardware, precision, etc,
+the energies and properties should be the same.
+
+After the test run, the naming convention for files should be clear.
+The first step in a walk is assigned the number~\verb|00|, and this is
+incremented by successive steps.  Some files receive just this number
+--- for example, the output from the \her\ integral calculation for
+the first step of this walk would be named \verb|A00_her.out|.  Some
+files appear with an extra digit or letter, reflecting the possibility
+that in some walks a step that is later deemed unsuccessful, according
+to some optimization criterion, will be taken; the script will then
+try to ``backstep'' and the backstep number will be appended to the
+two-digit number.  The first \sir\ output from the walk is thus named
+\verb|A000_sir.out|.  The final \aba\ calculation after convergence
+receives an~\verb|X| in this position, so the output might be called
+\verb|A02X_aba.out|. 
+
+\subsection{{\tt A\_her.inp}}
+
+\begin{verbatim}
+*HERMIT
+*END OF
+\end{verbatim}
+
+This file contains control information for the \her\ calculation.  It
+rarely requires any changes between different calculations, and on
+some machines a \verb|here| document contained within the master
+script can replace it.
+
+\subsection{{\tt A00\_mol.inp}}
+
+(Note that the column spacing in this file has been adjusted to
+fit the printed page and does not reflect the true format of some
+lines.) 
+\begin{verbatim}
+BASIS
+4-31G**
+         Methylene test job --- triplet geometry
+      4-31G** basis
+    2    2  X  Y  Z   1.00D-15
+    9999.0       3.0
+        6.    1
+C     0.0000000000000000  0.0000000000000000  0.               *
+        1.    1
+H     1.871093            0.0000000000000000  0.82525          *
+\end{verbatim}
+
+This file contains the necessary information about molecular
+coordinates and basis set for the first step, numbered~\verb|00|.
+The equivalent file for subsequent steps is generated
+automatically by \aba\ and the master script.
+
+\subsection{{\tt A\_sirstr.inp}}
+
+\begin{verbatim}
+**SIRIUS
+*GENERAL INPUT
+.ABACUS
+.TITLE
+Methylene test
+.HARTREE-FOCK
+.MP2
+.MCSCF
+.NSYM
+ 4
+*RHF CALCULATION
+.HF OCCUPATION
+ 3 1 0 0
+*MP2 CALCULATION
+.MP2 FROZEN
+ 1 0 0 0
+*WAVE FUNCTION
+.SYMMETRY
+ 3
+.SPIN MULT
+ 3
+.INACTIVE
+ 1 0 0 0
+.ELECTRONS
+ 6
+.CAS SPACE
+ 3 2 1 0
+*OPTIMI
+.DETERM
+.TRACI
+.MAX MICRO ITERATIONS
+ 30
+.MAX MACRO ITERATIONS
+ 30
+.MAX CI ITERATIONS AT START
+ 10
+**END OF SIRIUS
+\end{verbatim}
+
+This file describes the input, for the first walk step, for a
+CASSCF calculation on the 
+methylene ${}^3B_1$ ground state.  The active space comprises the
+six valence orbitals.  The program first performs a
+Hartree-Fock calculation on the ${}^1A_1$~state, and then
+generates MP2 natural orbitals for this state to provide starting
+orbitals for the MCSCF calculation.  Note that it is currently a
+requirement that determinants be used as the many-particle basis
+in \sir\ (the \verb|.DETERM| option in the \verb|*OPTIMIZ|
+section).
+
+\subsection{{\tt A\_sirwlk.inp}}
+
+\begin{verbatim}
+**SIRIUS
+*GENERAL INPUT
+.ABACUS
+.TITLE
+Methylene test
+.MCSCF
+.NSYM
+ 4
+*WAVE FUNCTION
+.SYMMETRY
+ 3
+.SPIN MULT
+ 3
+.INACTIVE
+ 1 0 0 0
+.ELECTRONS
+ 6
+.CAS SPACE
+ 3 2 1 0
+*ORBITAL INPUT
+.MOSTART
+ NEWORB
+*CI VEC
+.ABACUS
+*OPTIMI
+.DETERM
+.TRACI
+.MAX MICRO ITERATIONS
+ 30
+.MAX MACRO ITERATIONS
+ 30
+**END OF SIRIUS
+\end{verbatim}
+
+This file also describes the input for a CASSCF calculation on the 
+methylene ${}^3B_1$~ground state, but here for all walk steps
+other than the first.  Hence starting orbitals are available from the
+previous walk step. 
+
+\subsection{{\tt A\_abastr.inp}}
+
+\begin{verbatim}
+*ABACUS
+.WALK
+.TOTSYM
+*GEOANA
+.ANGLES
+    1
+    2    1    3
+*WALK
+.START
+*END OF INPUT
+\end{verbatim}
+
+This file contains the \aba\ input for the first walk step.  For
+minimizations, the only input that would normally be changed here
+is the specification of geometry parameters for printing in the
+\verb|*GEOANA| section. Additional molecular properties may also be
+wanted to be requested, in particular if the start geometry
+corresponds to the experimental geometry.
+
+\subsection{{\tt A\_abawlk.inp}}
+
+\begin{verbatim}
+*ABACUS
+.WALK
+.TOTSYM
+*GEOANA
+.ANGLES
+    1
+    2    1    3
+*WALK
+*END OF INPUT
+\end{verbatim}
+
+This file contains the \aba\ input for walk steps subsequent to
+the first.  The only difference with the file \verb|A_abastr.inp|
+is in the absence of the \verb|.START| keyword from the
+\verb|*WALK| section, since now information about previous steps
+in the walk is available for use in the optimization. Furthermore, no
+property calculations are usually wanted during a geometry optimization.
+
+
+\subsection{{\tt A\_abarej.inp}}
+
+\begin{verbatim}
+*ABACUS
+.WALK
+.REJECT
+.FROM
+*WALK
+.REJECT
+*READIN
+.UNIT
+    9
+*GEOANA
+.ANGLES
+    1
+    2    1    3
+*END OF INPUT
+\end{verbatim}
+
+This input file will only be used if a step is being rejected, that
+is, the potential energy surface show deviations from a quadratic
+surface within the given boundaries. The main purpose of the input is
+to reuse as much of previously calculated information as possible, by
+reading this from file and starting in the \verb|walk|-part of the
+calculation with a reduced trust radius.
+
+\subsection{{\tt A\_abafin.inp}}
+
+\begin{verbatim}
+*ABACUS
+.PRINT
+    2
+.VIBANA
+.DIPGRA
+.POLARI
+*READIN
+.UNIT
+    9
+*GEOANA
+.ANGLES
+    1
+    2    1    3
+*END OF INPUT
+\end{verbatim}
+
+This file controls the final \aba\ calculation, in which specified
+properties such as vibrational frequencies, intensities, dipole
+gradiant and frequency independent polarizabilities will be computed.
+It might often be that a given set of properties is wanted both in an
+experimental as well as in an optimized geometry. The same keywords
+are then added in the {\tt A\_abastr.inp} and {\tt A\_abafin.inp}
+files, whereas no such properties will then be calculated during the
+run.
+
+\section{Output files}
+
+The contents of the output files will not be discussed in any
+detail here, since information in the formatted output files
+should be self-evident.  Some general points follow.
+
+\subsection{{\tt A*her.out}, {\tt A*sir.out}, {\tt A*aba.out}}
+
+These files contain the output from \her, \sir, and \aba,
+respectively.  They allow the progress of a walk to be monitored
+step by step.  The volume of information in these files can be
+controlled by setting print levels, as described in later
+chapters.
+
+\subsection{{\tt A\_abacus.err}, {\tt A*.err}}
+
+These files contain diagnostic information and error messages (if
+any).  Note that some error messages from the master script are
+routine and can be ignored if the run otherwise appears to have
+been satisfactory.
+
+\subsection{{\tt A.log}}
+
+This file is a log of messages generated by the master script.
+Since the codes have developed considerably since the master
+script was first written, the log contains a number of warning
+messages that can safely be ignored, particularly about testing in
+\sir, if the script has continued to execute.
+
+\subsection{{\tt A*.f21}, {\tt A*.geo}}
+
+These files contain wave function and restart information
+essential for the next step in a walk.  They can be very large for
+large MCSCF calculations and/or large basis sets.
+
+\subsection{Miscellaneous files}
+
+Small files with names ending \verb|.mol|, \verb|.rst| and several
+other suffixes are generated to be passed to other walk steps.
+These can be deleted once the job has finished.

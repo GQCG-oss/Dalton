@@ -1,0 +1,9 @@
+C
+C$Id: inflr.h,v 1.1.1.1 2001-02-08 13:33:26 hjj Exp $
+C
+      PARAMETER ( MAXLLR = 60 )
+      LOGICAL LLROP,SOPRSY
+      CHARACTER*8 LBLLR
+      COMMON /INFLR/  THCLR, THRNRM,  IPRLR,  MAXITL, NGPLR(8),
+     *                LLROP(MAXLLR), SOPRSY
+      COMMON /CHRLR/  LBLLR(8,MAXLLR)

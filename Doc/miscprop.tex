@@ -1,0 +1,39 @@
+\chapter{Miscellaneous properties}\label{ch:miscprop}
+
+This chapter shortly describes how to calculate certain properties not
+otherwise described in the previous chapters. Most of these properties
+are self-explanatory, as well as requiring only very modest amount of
+input. In addition, it should be possible to extract the information
+contained in this chapter from the chapter describing the general
+abacus input~\ref{sec:abacus}. Because of this, they are only given a
+very short description.
+
+\section{Population analysis}\label{sec:popana}
+
+A number of population analysises can be performed in \sir , including
+Mulliken population analysis and gross and net molecular orbital
+population analysis. We refer to the \sir\ input manual for more
+information of how to perform these poulation analysis.
+
+However, a population analysis based upon the dipole gradient was
+presented by Cieslowski some years ago \cite{jcjacs111}, and it was
+shown that this population analysis gives results that are more in the
+spirit of chemical intuition for several molecular systems. This
+population analysis can be invoked by addint the keyword
+\verb|.POPANA| in the \verb|*ABACUS| input module.
+
+\section{Static polarizabilites}\label{sec:polari}
+
+Whereas we in the Sec.~\ref{sec:vroa} described how frequency
+dependent polarizabilities could be calculated, we here only note that
+frequency independent polarizabilities can be calculated by using the
+keyword \verb|.POLARI| in the general \verb|*ABACUS| input module.
+
+\section{Dipole moment and dipole gradient}\label{sec:dipmom}
+
+Dipole moment and dipole moment gradients (also known as Atomic Axial
+Tensors (APTs)) can be calculated by the
+keyword \verb|.DIPGRA| in the general input section \verb|*ABACUS|.
+
+\section{Vibrational analysis}\label{sec:vibrasjon}
+

@@ -1,0 +1,7 @@
+C
+C$Id: cbiczr.h,v 1.1.1.1 2001-02-08 13:33:25 hjj Exp $
+C
+      LOGICAL SKIP, EXPJAC, LRTEST, NEWRD, NOTRIA, NOSOL, RDTEST, CUT
+      COMMON /CBICZR/ DTEST, THRESH,
+     &                SKIP, IPRINT, MAXSIM, EXPJAC, LRTEST,
+     &                NEWRD, NOTRIA, MAXIT, NOSOL, RDTEST, CUT

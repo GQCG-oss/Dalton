@@ -1,0 +1,340 @@
+\chapter{Molecular vibrations and rotations}\label{ch:vibrot}
+
+In this chapter we discuss properties related the
+vibrational and rotational motions of a molecule. This includes
+vibrational frequencies and the associated infrared (IR)\index{IR
+intensity} and Raman  intensities\index{Raman intensity}. 
+
+\siraba\ is the only quantum chemical software package that can calculate
+ Raman intensities at the frequency of the incident laser light. Thus,
+\siraba\ gives an unique opportunity to study the effect of the
+dispersion on the Raman intensity.
+
+\section{Vibrational frequencies}\label{sec:vibfreq}
+
+The calculation of vibrational frequencies\index{vibrational
+frequency} and rotation constants\index{rotation constant} are 
+controled by the keyword \Key{VIBANA}. Thus, in order to calculate
+the vibrational frequencies and the rotation constants of a molecule
+all that is is needed is the input:
+
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+**PROPERTIES
+.VIBANA
+*END OF INPUT
+\end{verbatim}
+
+This keyword will, in addition to calculating the molecular frequencies
+and rotational constants, also calculate the zero-point vibrational
+energy correction\index{zero-point vibrational energy} and vibrational
+and rotational partition functions\index{partition functions} 
+at selected temperatures.
+
+\siraba\ evaluates the molecular Hessian\index{Hessian} in Cartesian
+coordinates\index{cartesian coordinate}, and
+the vibrational frequencies of any isotopically substituted  species
+may therefore easily be obtained on the basis of the full
+Hessian. Thus, if we would like to calculate the vibrational
+frequencies of isotopically substituted molecules\index{isotopic
+constitution}, this may be obtained through an input like: 
+
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+**PROPERITES
+.VIBANA
+*VIBANA
+.ISOTOP
+    2
+ 1 2 1 1 1
+ 2 1 1 1 1
+*END OF INPUT
+\end{verbatim}
+
+The keyword \Key{ISOTOP} in the \Sec{VIBANA} input module
+indicates that more than only the isotopic species containing the most
+abundant isotopes are to be calculated, which always will be
+calculated. The number on the second line denotes the number of
+isotopically substituted species that is wanted. The following line then
+lists the isotopic constitution of each of these species. 1
+corresponds to the most abundant isotope, 2 corresponds to the second
+most abundant isotope and so on. The isotopic substitution have to be
+given for all atoms in the molecule (not only the symmetry
+independent), and the above input could for instance correspond to a
+methane\index{methane} molecule, with the isotopic species $^{13}CH_4$
+and $CH_3D$. 
+
+As the isotopic substitution of all atoms in the molecule has to be
+specified, let us mention the way symmetry-dependent atoms will be
+generated. The atoms will be grouped in symmetry-dependent atom
+blocks. The specified symmetry-independent atom will be the first of
+this block, and the symmetry-dependent atoms will be generated
+according to the order of the symmetry elements. Thus, assuming
+D$_{2h}$ symmetry with symmetry generating elements \verb|X  Y  Z|,
+the atoms generated will come in the order \verb|X|, \verb|Y|,
+\verb|XY|, \verb|Z|, \verb|XZ|, \verb|YZ|, and \verb|XYZ|.
+
+\section{Infrared (IR) intensities}\label{sec:irint}
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item R.D.Amos. \newblock {\em Chem.Phys.Lett.}, {\bf
+108},\hspace{0.25em}185, (1984). 
+\item T.U.Helgaker, H.J.Aa.Jensen, and P.J{\o}rgensen. \newblock {\em
+J.Chem.Phys.}, {\bf 84},\hspace{0.25em}6280, (1986).
+\end{list}
+}}
+\end{center}
+
+\index{IR intensity} The evaluation of infrared intensities
+requires the calculation of the 
+dipole gradients\index{dipole gradient}\index{APT}\index{atomic polar
+tensor} (also known as Atomic Polar Tensors (APTs)). Thus, by 
+combining the calculation of vibrational frequencies with the
+calculation of dipole gradients, IR intensities will be obtained. Such
+an input may look like:
+
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+**PROPERTIES
+.VIBANA
+.DIPGRA
+*VIBANA
+.ISOTOP
+    2
+ 1 2 1 1 1
+ 2 1 1 1 1
+*END OF INPUT
+\end{verbatim}
+
+The keyword \Key{DIPGRA} invokes the calculation of the dipole
+gradients.
+
+\section{Dipole gradient based population analysis}
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item J.Cioslowski. \newblock {\em J.Am.Chem.Soc.}, {\bf
+111},\hspace{0.25em}8333, (1989). 
+\item T.U.Helgaker, H.J.Aa.Jensen, and P.J{\o}rgensen. \newblock {\em
+J.Chem.Phys.}, {\bf 84},\hspace{0.25em}6280, (1986).
+\end{list}
+}}
+\end{center}
+
+\index{population analysis} As dipole gradients\index{dipole
+gradient}\index{APT}\index{atomic polar tensor} are readily available in the
+\siraba\ program, the 
+population analysis basis on the Atomic Polar Tensor as suggested by
+Cioslowski~\cite{jcjacs111} can be obtained from an input like
+
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+**PROPERTIES
+.POPANA
+*END OF DALTON
+\end{verbatim}
+
+This population analysis is of course significantly more expensive
+than the ordinary Mulliken population analysis\index{Mulliken
+population analysis} obtainable directly
+from the molecular wave functions through an input like
+
+\begin{verbatim}
+**DALTON INPUT
+.RUN WAVE FUNCTIONS
+**WAVE FUNCTIONS
+.HF
+*POPULATION ANALYSIS
+.MULLIKEN
+*END OF DALTON
+\end{verbatim}
+
+
+\section{Raman intensities}\label{sec:ramanint}
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item T.Helgaker, K.Ruud, K.L.Bak, P.J{\o}rgensen, and J.Olsen. \newblock {\em
+Faraday Discuss.}, {\bf 99},\hspace{0.25em}165, (1994).
+\end{list}
+}}
+\end{center}
+
+\index{Raman intensity} Calculating Raman intensities is by no means
+a trivial task, and 
+because of the computational cost of such calculations (as there does
+not exist any program which avoids the numerical differentiation of the
+polarizability with respect to nuclear distortions), there are 
+few theoretical investigations of basis set requirements and
+correlation effects on calculated Raman intensities.
+
+\siraba\ is the only quantum chemical program package capable of
+calculating the Raman intensities at the frequency of the incident
+laser beam. \siraba\ also has the same possibilities as other
+common quantum chemical software packages to calculate static
+Raman intensities (that is, where the frequency dependence of the
+polarizability has been neglected). The Raman intensities calculated
+are the ones obtained within the Placzek
+approximation~\cite{placzek}\index{Placzek approximation},
+and the implementation is described in Ref.~\cite{thkrklbpjjofd99}.
+
+The Raman intensity is the differentiated frequency-dependent
+polarizability\index{polarizability} with respect to nuclear displacements.
+As it is a third derivative depending on the nuclear positions through
+the basis set, numerical differentiation of
+the polarizability with respect to nuclear coordinates is  
+necessary. 
+
+The input looks very similar to the input needed for the calculation
+of Raman optical activity\index{ROA}\index{Raman optical activity}  described
+in Section~\ref{sec:vroa} 
+
+\begin{verbatim}
+**DALTON INPUT
+.WALK
+.MAX IT
+ 31
+*WALK
+.NUMERI
+**WAVE FUNCTIONS
+.HF
+*HF INPUT
+.THRESH
+1.0D-8
+**START
+.RAMAN
+.ABALNR
+*ABALNR
+.THRLNR
+1.0D-7
+.FREQUE
+     2
+0.0 0.09321471
+**PROPERTIES
+.RAMAN
+.ABALNR
+*ABALNR
+.THRLNR
+1.0D-7
+.FREQUE
+     2
+0.0 0.09321471
+**FINAL
+.RAMAN
+.ABALNR
+.VIBANA
+*RESPONSE
+.THRESH
+1.0D-6
+*ABALNR
+.THRLNR
+1.0D-7
+.FREQUE
+     2
+0.0 0.09321471
+*VIBANA
+.PRINT
+ 1
+ 1 1 1 2 3
+*END OF INPUT
+\end{verbatim}
+
+The keyword \Key{ABALNR} in the general input module indicates that
+a frequency dependent linear response\index{linear response}
+calculation is to be done, in 
+this case the calculation of the frequency-dependent
+polarizability\index{polarizability} as 
+specified by the \Key{ALFA} keyword in the \Sec{ABALNR} input
+module. The keyword \Key{RAMAN} indicates that we are only
+interested in the Raman intensities\index{Raman intensity} and
+depolarization ratios\index{depolarization ratio}. Note
+that these parameters are also obtainable by using the keyword
+\Key{VROA}. In this calculation we calculate the Raman intensities for two
+frequencies, the static case and a frequency of the incident light
+corresponding to a laser of wavelength 488.8 nm. Note, however, that
+Raman intensities corresponding to zero frequency cannot be calculated
+with the \Key{POLARI} keyword, even though static
+polarizabilities may be obtained using this keyword.
+
+Due to the numerical differentiation\index{numerical differentiation}
+that is done, the threshold for 
+the iterative solution of the response equations are by default
+10$^{-7}$, in order to get Raman intensities that are numerically
+stable to one decimal digit.
+
+In the \Sec{WALK} input module we have specified
+that the walk is a numerical differentiation in the \Sec{WALK}
+input module. This will automatically
+turn off the calculation of the geometric Hessian\index{Hessian},
+putting limitations 
+on what kind of properties that may be calculated at the same time as
+Raman intensities. Because the Hessian is not calculated,  
+there will not be any prediction of the energy at the new
+point.
+
+It should also be noted that  in a numerical
+differentiation\index{numerical differentiation} the
+program will 
+step plus and minus one displacement unit along each Cartesian coordinate
+of all nuclei, as well as calculating the property at the reference
+geometry. Thus, for a molecule with $N$ atoms the properties will need
+to be calculated in a total of 2*3*$N$ + 1 points, which for a 5 atom
+molecule will amount to 31 points. The default maximum number of
+steps in \siraba\ is 20. Thus one often need to
+change the maximum number of allowed iterations\index{geometry
+iteration} by adding the keyword 
+\Key{MAX IT} in the \Sec{*DALTON} input module.
+
+The default step length in the numerical
+differentiation\index{numerical differentiation} is $1.0\cdot 10^{-4}$
+a.u., and this step length may be adjusted by the keyword
+\Key{DISPLA} in the \Sec{WALK} input module. The steps are taken
+in the Cartesian directions and 
+not along normal modes. This enables us to study the Raman intensities
+of a large number of isotopically substituted molecules at once. This
+is done in the \Sec{*FINAL} input section, where we 
+have requested one isotopically substituted species in addition to the
+isotopic species containing the most abundant isotope of each element.
+
+It should be evident that the calculation of Raman intensities is 
+ a task for connoisseurs. However, the fact that \siraba\ can calculate
+Raman intensities at the frequency of the incident light, puts \siraba\
+in a special position among {\em ab initio} programs, as these only
+can  at most calculate Raman intensities based on static polarizabilities. 
+
+Concerning basis sets requirement for Raman intensities,  there
+is yet much work to be done. In the only study 
+presented of Raman Optical Activity using London atomic orbitals, it is
+argued in favor of the aug-cc-pVDZ basis set supplied with the basis
+set library. However, in order to get Hartree-Fock limit quality of
+the vibrational frequencies as well, a basis set of at least
+aug-cc-pVTZ seems to be necessary. Whether these observations will
+also apply to the Raman intensities is not known.

@@ -1,0 +1,6 @@
+C
+C$Id: trunit.h,v 1.1.1.1 2001-02-08 13:33:29 hjj Exp $
+C
+      PARAMETER ( LIDATA = 1296, LIADUT = 1297 )
+      COMMON/TRUNIT/ IDATA(LIDATA,2), KEEP(18),IDISKA,
+     &               IADOUT(3,LIADUT),IDISKM, LUMINT, LUORDA

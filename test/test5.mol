@@ -1,0 +1,9 @@
+ATOMBASIS
+Test1 i test-suite: Geometrioptimering med symmetri, med beregning av
+egenskaper i foerste og siste punkt. Generelt kontraherte basissett
+    2    2  X  Z
+        8.    1 6-311G Pol 1 0.0845D0 3 1.292D0 2 0.0845D0
+O     0.0 -0.2249058930 0.0
+        1.    1 6-311G Pol 1 0.0360D0 2 0.750D0
+H     1.45235 0.899623 0.0
+H    -1.45235 0.899623 0.0

@@ -1,0 +1,5 @@
+C
+C$Id: efield.h,v 1.1.1.1 2001-02-08 13:33:26 hjj Exp $
+C
+      CHARACTER*7 FIELD1, FIELD2
+      COMMON /EFIELD/ FIELD1, FIELD2

@@ -1,0 +1,4 @@
+C
+C$Id: xyzpow.h,v 1.1.1.1 2001-02-08 13:33:22 hjj Exp $
+C
+      COMMON /XYZPOW/ ISTEP(MXAQNM),  MVAL(MXAQNM),   NVAL(MXAQNM)

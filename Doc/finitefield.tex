@@ -1,0 +1,113 @@
+\chapter{Finite field calculations}\label{ch:finite}
+
+Despite the large number of properties that in principle can be
+calculated with \siraba , it is often of interest to study the
+dependence of these properties under an external electric
+perturbation. This can be easily achieved by adding static electric
+fields\index{finite field}, and thus increase the number of properties
+that can be 
+calculated with \siraba .
+
+In the next section we comment briefly on some important aspects of
+finite electric field calculations, and the following section
+describes the input for finite field calculations.
+
+\section{General considerations}\label{sec:finitegeneral}
+
+The presence of an external electric field can be modeled by adding a
+term to our ordinary field-free, non-relativistic Hamiltonian
+corresponding to the interaction between the dipole moment operator
+and the external electric field:
+
+\begin{equation}
+\mathcal{H} = \mathcal{H}^{0} - \mathbf{Ed}_{e}
+\end{equation}
+where $\mathbf{d}_{e}$ is the electric dipole moment\index{dipole
+moment} operator defined as 
+
+\begin{equation}
+\mathbf{d}_{e} = \sum_{i}\mathbf{r}_{i}
+\end{equation}
+and $\mathcal{H}^{0}$ is our ordinary field-free, non-relativistic
+Hamiltonian operator. It is noteworthy that we do not include the
+nuclear dipole moment\index{nuclear dipole moment} operator, and the
+total electronic energy will 
+thus depend on the position of the molecule in the Cartesian
+coordinate frame.
+
+The electric field dependence of different molecular properties are
+obtainable by adding fields in different directions and with different
+signs and then extract the information by numerical
+differentiation\index{numerical differentiation}. Note that care has
+to be taken to choose a field that 
+is weak enough for the numeric differentiation to be valid,
+yet large enough to give numerically significant changes in the
+molecular properties. Note also that it may be necessary to increase
+the convergence threshold for the solution of the response equations
+if molecular properties are being evaluated.
+
+Whereas the finite field approach may be combined with any property
+that can be calculated with the \resp\ program, more care need to be
+taken if the finite field method is used with the \aba\
+program. Properties that involve perturbation-dependent basis
+sets\index{perturbation-dependent basis set},
+like nuclear shieldings and molecular Hessians, will often introduce
+extra reorthonormalization terms due to the finite field operator, and
+care has to be taken to ensure that these terms indeed have been
+included in \siraba . 
+
+{\em NOTE: In the current release, the only properties
+calculated with perturbation dependent basis sets that may be
+numerically differentiated using finite field, are the nuclear shieldings
+and magnetizabilities using the implementation described in
+Ref.~\cite{arthkrabmjpjjcp102}, and molecular gradients as described
+in Ref.~\cite{}}. 
+
+\section{Input description}\label{sec:finiteinput}
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item Shielding and magnetizability polarizabilities: A.Rizzo, T.Helgaker, K.Ruud, A.Barszczewicz, M.Jaszu\'{n}ski and P.J{\o}rgensen. \newblock {\em J.Chem.Phys.}, {\bf 102},\hspace{0.25em}8953, (1995).
+\end{list}
+}}
+\end{center}
+
+The necessary input for a finite-field\index{finite field} calculation
+is given in the 
+\Sec{*INTEGRALS} and \Sec{*WAVE FUNCTIONS} input modules. A typical input file
+for an finite field SCF calculation of the
+magnetizability\index{magnetizability} of a molecule will be:
+
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPERTIES
+**INTEGRALS
+.DIPLEN
+**WAVE FUNCTIONS
+.HARTREE-FOCK
+*HAMILTONIAN
+.FIELD
+ 0.003
+ XDIPLEN
+**PROPERTIES
+.MAGNET
+*END OF INPUT
+\end{verbatim}
+
+In the \Sec{*INTEGRALS} input module we request the evaluation of dipole
+length\index{dipole length integral} integrals, as these correspond to
+the electric dipole operator\index{dipole moment}, 
+and will be used when in \sir\ for evaluating the interactions between the
+electric dipole and the external electric field. This is achieved in
+the \Sec{HAMILTONIAN} input module, where the presence of an external
+electric field\index{electric field, external} is signaled by the keyword \Key{FIELD}. On the next line, the
+strength of the electric field (in atomic units) is given, and on the following
+line we give the direction of the applied electric field
+(\verb|XDIPLEN|, \verb|YDIPLEN|, or \verb|ZDIPLEN|). Several fields may
+of course be applied at the same time.
+

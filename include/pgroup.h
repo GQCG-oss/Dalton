@@ -1,0 +1,5 @@
+C
+C$Id: pgroup.h,v 1.1.1.1 2001-02-08 13:33:30 hjj Exp $
+C
+      CHARACTER GROUP*3,SYMOP*3,REP*3
+      COMMON/PGROUP/GROUP,SYMOP(0:7),REP(0:7)

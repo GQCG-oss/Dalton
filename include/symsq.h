@@ -1,0 +1,4 @@
+C
+C$Id: symsq.h,v 1.1.1.1 2001-02-08 13:33:29 hjj Exp $
+C
+      COMMON /SYMSQ/ I2BST(8),IAODPK(8,8),IADRPK(MAXORB*MAXORB)

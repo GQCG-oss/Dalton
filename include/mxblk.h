@@ -1,0 +1,4 @@
+C
+C$Id: mxblk.h,v 1.1.1.1 2001-02-08 13:33:24 hjj Exp $
+C
+      COMMON/MXBLK/MXSASM,MXVBLK

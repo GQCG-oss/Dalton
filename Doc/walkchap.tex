@@ -1,0 +1,922 @@
+\chapter{Potential energy surfaces}\index{geometry walk}\label{ch:geometrywalks}
+
+This section describes one of the most important features of any
+quantum chemical software package; locating equilibrium
+geometries\index{equilibrium structure} and 
+transition structures\index{transition state} of molecules. In
+\siraba\ this is done using either 
+second-order trust-region \index{second-order optimization}\index{trust region}
+optimizations~\cite{tuhjahjajpjjcp84} or a 
+variety of first-order\index{first-order optimization}
+methods~\cite{Fletcher}. These methods 
+have been implemented for SCF and MCSCF wave functions. For
+non-variational wave functions --- like MP2 or CI --- the program can
+only do first-order geometry optimizations using a
+numerically\index{numerical gradient}
+calculated gradient. This will be invoked automatically by the program
+in case of a non-variational wave function. Some comments connected to
+such geometry optimizations are collected in Sec.~\ref{sec:nonvargeom}.
+
+One of the strengths of the \siraba\ program package is the
+stable algorithms for locating first-order transition
+states\index{transition state}. As described below, 
+this is done by one of three algorithms: by trust-region
+second-order image surface minimization~\cite{thcpl182}\index{image
+surface}, by gradient extremal
+walks~\cite{pjhjajthtca73}\index{gradient extremal}, or by following a
+specific mode~\cite{hjajpjthjcp85}\index{mode following}. These
+options will be discussed in more detail below.  
+
+Another feature of the \siraba\ program system is the options for
+calculating essential information about the potential energy surface
+so that subsequent molecular dynamics analysis can be made. There are two
+options for doing this in the program: One can either follow an
+Intrinsic Reaction Coordinate
+(IRC)~\cite{pjhjajthtca73}\index{IRC}\index{intrinsic reaction coordinate}, or 
+solve Newtons equations for the nuclei under the potential put up by
+the electronic cloud \cite{theuhjajcpl173}\index{dynamics}. Whereas
+the first option can be 
+used for modeling the immediate surroundings of a molecular reaction
+path, the second will give a precise description of {\em one} molecular
+trajectory. 
+Chemical reactions may thus be monitored in time from an initial set
+of starting conditions.
+The program will automatically generate a complete description of the
+energy distribution into internal energies and relative translational energies.
+By calculating a large number of trajectories, a more
+complete description of the chemical reaction may be
+obtained~\cite{rsgmtjdwrjbjcp106}. 
+
+Please note that for geometry optimizations using the Self-Consistent
+Reaction Field model, certain restrictions apply, as discussed in
+Sec.~\ref{sec:solventgeoopt}. 
+
+\section{Locating stationary points}
+
+\subsection{Equilibrium geometries}
+\label{sec:minimization}
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item 2.nd-order methods: T.U.Helgaker, J.Alml\"{o}f, H.J.Aa.Jensen,
+and P.J{\o}rgensen.\newblock {\em J.Chem.Phys.}, {\bf
+84},\hspace{0.25em}6266, (1986).
+\item 1.st-order methods: V.Bakken, and T.Helgaker, To be published.
+\item Excited-state optimization: A.Cesar, H.\AA gren, T.Helgaker, P.J\o rgensen, and H.J.Aa.Jensen.\newblock {\em J.Chem.Phys.}, {\bf
+95},\hspace{0.25em}5906, (1991).
+\item Solvent Hessian: P.-O.\AA strand, K.V.Mikkelsen, K.Ruud and
+T.Helgaker. \newblock {\em J.Phys.Chem.}, {\bf
+100},\hspace{0.25em}19771, (1996).
+\end{list}
+}}
+\end{center}
+
+A minimal input file for the location of a molecular geometry
+corresponding to minimum molecular energy
+(using a second-order optimization\index{second-order optimization}
+method) and performing a vibrational 
+analysis\index{vibrational analysis} at the stationary point, as well
+as determining the nuclear 
+shielding\index{nuclear shielding} constants at the optimized
+geometry, will look like 
+(assuming a Hartree-Fock wave function):
+
+\begin{verbatim}
+**DALTON INPUT
+.MINIMIZE
+**WAVE FUNCTIONS
+.HF
+**FINAL
+.VIBANA
+.SHIELD
+*END OF INPUT
+\end{verbatim}
+
+The keyword \Key{MINIMIZE} signalizes a search for a minimum, that is,
+a stationary point on the molecular surface with Hessian index 0 using
+a second-order geometry optimization procedure as described in
+Ref.~\cite{tuhjahjajpjjcp84}. At 
+the final, optimized geometry the input in the \Sec{*FINAL} section requests
+a vibrational analysis and the evaluation of nuclear shieldings.
+
+In second-order methods the Hessian\index{Hessian} is calculated at every
+geometry. The analytical Hessian naturally gives a better description
+of the potential energy surface than the approximate Hessians of
+first-order methods, and fewer steps will usually be needed to reach
+the minimum. However, the price one has to pay for this, is that each
+iteration uses significantly more CPU time. Another advantage of
+second-order methods, is that the program will automatically break the
+symmetry\index{symmetry breaking} of the molecule, if needed in order
+to reach a minimum 
+(unless the user specifies that symmetry not should be broken). If
+one wants to minimize a water molecule starting from a linear
+geometry and using molecular symmetry, a first-order method will
+``happily'' yield a linear geometry with optimized bond lengths, whereas
+the second-order method will correctly decide that symmetry should be
+reduced to C$_{2v}$ and minimize the molecule.
+The bottom-line is, however, that while second-order methods
+definitely are the more robust, they will generally be outperformed by
+the much more time-efficient first-order methods.
+
+If you are convinced that the symmetry of your starting geometry is
+the correct, you may take advantage of the fact there will not be any
+forces out of the totally symmetric modes of the molecules, and thus
+only evaluate the Hessian in the totally symmetric Cartesian symmetry
+coordinates. This can be achived with the input:
+
+\begin{verbatim}
+**DALTON INPUT
+.WALK
+.TOTSYM
+**WAVE FUNCTIONS
+.HF
+**FINAL
+.VIBANA
+.SHIELD
+*END OF INPUT
+\end{verbatim}
+
+In case a vibrational analysis has been requested at the optimized
+geometry, the program will recalculate the complete molecular Hessian
+at the optimized geometry in order to be able to evaluate all
+frequencies. Note that the generalized potential energy surface
+routines have to be used, indicated by the keyword \Key{WALK}. We also
+note that any requests for static
+polarizabilities\index{polarizability}, Cioslowski population
+analysis\index{population analysis}, dipole gradients\index{dipole
+gradient} or vibrational circular dichroism (VCD)\index{vibrational
+circular dichroism}\index{VCD} will be ignored as all the necessary
+property vectors will not be available. However, at the optimized
+geometry, the full Hessian will be evaluated, as may then also these
+properties.
+
+
+For direct calculations\index{direct calculation} --- where the
+two-electron integrals are not 
+stored on disc --- the cost of a second-order geometry optimization
+algorithm may become prohibitely expensive despite the rather few
+iterations normally needed to converge the geometry. In these cases,
+it may be advantageous to use first-order geometry
+optimization\index{first-order optimization}
+routines as illustrated in the following input:
+
+\begin{verbatim}
+**DALTON INPUT
+.MINIMIZE
+*MINIMIZE
+.1STORD
+**WAVE FUNCTIONS
+.HF
+**FINAL
+.VIBANA
+.SHIELD
+*END OF INPUT
+\end{verbatim}
+
+The above input yields a first-order
+optimization~\cite{Fletcher} in redundant internal
+coordinates~\cite{gfxfzpwtppjacs114,ppgfjcp96,vbth}\index{redundant
+internal coordinates} using the BFGS\index{BFGS}\index{Hessian update} 
+Hessian update. This means that 
+only the energy and the gradient is calculated in each iteration, and
+an approximate Hessian is obtained using the gradients and the
+displacements. The initial Hessian is diagonal in the redundant
+internal coordinates. To obtain the properties at the optimized
+geometry, the Hessian has to be calculated. By looking at the
+vibrational frequencies one can then verify that a true minimum has
+been reached (as all frequencies are real, corresponding to a positive
+definite Hessian).
+
+Several first-order methods have been implemented in DALTON, the
+recommended method being the Broyden-Fletcher-Goldfarb-Shanno (BFGS)
+Hessian updating scheme\index{BFGS}\index{Hessian update}. Though other
+updates may perform better in 
+certain cases, the BFGS update generally seems to be the most
+reliable and thus is the default method.
+
+Without the calculation of the Hessian at the optimized geometry, one
+can never be sure that the geometry is indeed a minimum, and this is the
+main problem with first-order methods. 
+
+Both first- and second-order methods are based on
+trust-region\index{trust region}
+optimization. The trust-region is the region of the potential energy
+surface where our quadratic model (based on an analytical or
+approximate Hessian) gives a good representation of the true
+surface. This region is given the shape of a
+hypersphere. In the trust-region based optimization algorithm, the
+radius of the trust-region is
+automatically updated during the optimization by a feedback mechanism.
+Occasionally, however, the potential surface may show locally large
+deviations from quadratic form. This will result in a large
+disagreement between the predicted energy change and the energy
+calculated at the new geometry. If this deviation is larger than a
+given threshold the step will be reduced through a decrease in the
+trust radius and a simple line search. A quadratic function is fitted
+to the rejected energy and the previous energy and gradient. The
+minimum of this function is then used as the new step, and this
+process may be repeated.
+
+Another consideration concerning optimizations, is the choice of
+coordinate system. Second-order methods doesn't seem to be very
+sensitive to this, but it may be crucial to the performance of
+first-order methods. {\siraba} provides the normal Cartesian
+coordinates\index{cartesian coordinate} and redundant internal
+coordinates\index{redundant internal coordinates}, the latter being 
+highly recommended when using first-order methods. Redundant internal
+coordinates consists of all bond lengths, angles and dihedral angles
+in a molecule, and the redundancies are removed through
+projection. The default for second-order methods is Cartesian
+coordinates, while redundant internal coordinates is the default for
+first-order methods.
+
+The program decides when a minimum is reached through a set of
+convergence criteria\index{convergence criteria}. These will be set
+automatically depending on the 
+accuracy of the wavefunction using three different criterions, namely
+the change in energy between two iterations, the norm of the molecular
+gradient\index{norm of gradient} and the norm of the step\index{step
+norm}. The threshold for convergence are 
+for all these criterions the maximum of 1.0D-6 and two times the
+convergence threshold for the wave function. Two out
+of these three have to decrease below its threshold, before the program
+declares convergence. These criteria ensure a good geometry suitable
+for vibrational analysis, but may be unnecessary tight if one only
+wants the energy. The convergence criteria can be controlled through
+the input file. One should keep in mind that while second-order
+methods are rather insensitive to changes in theses thresholds due to
+their quadratic convergence, first-order methods may run into severe
+trouble if the criteria are too close to the accuracy of the wavefunction
+and the gradient. 
+
+In case of non-variational\index{non-variational wave functions} wave
+functions, where a numerical gradient\index{numerical gradient} 
+is used, the threshold for convergence is reset to 1.0D-4, due to
+possible numerical instabilities occuring in the finite
+difference\index{finite difference} methods employed to determine the
+molecular gradient\index{molecular gradient}. 
+
+We also note that for optimization of excited states\index{excited
+state} where the state 
+of interest is not the lowest of it's symmetry, that most of the
+parameters controling the trust-region optimization method will be
+reset to much more conservative values, as one in such calculations
+will loose the possibility of back-stepping during the wave function
+optimization, as well as in order to ensure that the start wave
+function at the new geometry is within the local region of the
+optimized wave function. 
+
+Calculations involving large basis sets may be very time-consuming,
+and it becomes very important to start the optimization from a decent
+geometry. One way to solve this is through
+preoptimization\index{preoptimization}, that is, 
+one or more smaller basis sets are first used to optimize the
+molecule. {\siraba} supports the use of up to ten different basis sets
+for preoptimization. This may also be used as a very effective way to
+get the optimized energy of a molecule for a series of basis
+sets. One may also want to calculate the energy of a molecule using a
+large basis set at the optimized geometry of a smaller basis set, and
+this is also supported in {\siraba}, but limited to only one single-point
+basis set. Both these features are illustrated in the input file below:
+
+\begin{verbatim}
+**DALTON INPUT
+.MINIMIZE
+*MINIMIZE
+.PREOPT
+2
+STO-3G
+4-31G
+.SP BAS
+cc-daug-pVTZ
+**WAVE FUNCTIONS
+.HF
+*END OF INPUT
+\end{verbatim}
+
+As one can see, two small basis sets have been chosen for
+preoptimization\index{preoptimization}. Note that they will be used in
+the order they appear 
+in the input file, so one should sort the sets and put the smaller one
+at the top for maximum efficiency. The ``main'' basis set, that is, the
+one that will be used for the final optimized geometry, is specified
+in the file MOLECULE.INP as usual. After the last optimization, the
+energy of the molecule will be calculated at the final geometry with the
+cc-daug-pVTZ basis. Please note that these features will work only
+when using basis sets from the basis set library.
+
+It is possible to control the optimization procedure more closely
+by giving the program instructions on how to do the different parts of
+the calculation. Below we have listed all the modules that may
+affect the geometry optimization  as well as a short description of
+which part of the calculation that module controls. The reader is
+referred to the section describing each module for a closer
+description of the different options. These sections may, with the
+exception of the \Sec{MINIMIZE} and \Sec{WALK} section, be specified
+in any of the modules \Sec{*START}, \Sec{*PROPERTIES},
+\Sec{*FINAL}. The \Sec{MINIMIZE} and \Sec{WALK} is
+to be placed in the \Sec{*DALTON} module, and will apply to the
+entire calculation.
+
+\begin{description}
+\item[\Sec{GEOANA}] Describes what kind  of information about the
+molecular geometry is to be printed. 
+\item[\Sec{GETSGY}] Controls the set up of the right-hand sides
+(gradient terms).
+\item[\Sec{MINIMIZE}] Controls the first- and second-order
+minimization methods
+(gradient terms).
+\item[\Sec{NUCREP}] Controls the calculation of the nuclear contributions.
+\item[\Sec{ONEINT}] Controls the calculation of one-electron contributions.
+\item[\Sec{RELAX}] Controls the adding of solution and right-hand side vectors
+into relaxation contributions.
+\item[\Sec{REORT}] Controls the calculation of reorthonormalization terms.
+\item[\Sec{RESPON}] Controls the solution of the geometric response equations.
+\item[\Sec{TROINV}] Controls the use of translation and rotational invariance.
+\item[\Sec{TWOEXP}] Controls the calculation of two-electron
+expectation values.
+\item[\Sec{VIBANA}] Set up the vibrational and rotational analysis of the
+molecule.
+\item[\Sec{WALK}] Controls the walk (see also ``Locating transition
+states'' and ``Doing Dynamical walks'').
+\end{description}
+
+\subsection{Transition states using the image method}\index{image surface} 
+\label{sec:image}
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item T.Helgaker. \newblock {\em Chem.Phys.Lett.}, {\bf
+182},\hspace{0.25em}503, (1991). 
+\end{list}
+}}
+\end{center}
+
+\index{transition state}\index{image surface}
+The simplest way of locating a first order transition state, which are the
+chemically most interesting ones, is to use the trust-region
+image\index{image surface,trust region}
+minimization method described in Ref.~\cite{thcpl182}. Such geometry
+optimizations  may be considered as a special case of walks on
+second-order surfaces, and are controled by the keywork \Key{WALK} in
+the general input section, and the request for a trust-region image
+minimzation is achieved  by adding the keyword \Key{IMAGE} in the
+\Sec{WALK} input module and the input file will then
+look like:
+\begin{verbatim}
+**DALTON INPUT
+.WALK
+*WALK
+.IMAGE
+**WAVE FUNCTIONS
+.HF
+*END OF INPUT
+\end{verbatim}
+
+Any property may of course be specified at all stages of the
+optimization in the same fashion as for geometry minimizations.
+
+The principle behind the trust-region image minimization is simple. A
+first-order transition state is characterized by having one negative
+Hessian\index{Hessian} eigenvalue. By reversing the sign of this
+eigenvalue, we have 
+taken the mirror image of our potential surface along the associated
+mode, thus turning our problem into an ordinary
+minimization problem. A global one-to-one correspondence between the
+image surface and our potential energy surface is only valid for a
+second-order surface, but in general the lack of a global one-to-one
+correspondence seldom gives any problems.
+
+The advantage of the trust-region image optimization as compared to
+for instance following gradient extremals\index{gradient extremal}
+lies mainly in the 
+fact that we may take advantage of well-known techniques for
+minimization. In addition, the method does not need to be started at
+a stationary point of the potential surface which is necessary when
+following a gradient extremal. We
+have so far not experienced that the trust-region image optimization
+fails to locate a first order transition state, even though this is by
+no means globally guaranteed from the approach. Note that the
+first-order saddle-points normally obtained using the image method
+starting at a minimum, often corresponds to conformational transition
+states, and thus not necessarily to the chemically most interesting
+transition states.
+
+There are two approaches for locating several first-order saddle
+points with the trust-region image optimization. One may take
+advantage of the fact the image method is not dependent upon starting
+at a stationary point, and thus start the image minimization from
+several different geometries, and thus hopefully ending up at different
+first-order saddle points\index{saddle-point}, as the lowest eigenmode
+at different 
+regions of the potential energy surface may lead to different
+transition states.
+
+The other approach is to request
+that not the lowest mode, but some other eigenmode is to be inverted.
+This can be achieved by explicitly give the mode which is to be
+inverted through the keyword \Key{MODE}. However, one 
+should keep in mind that there will be crossings where a given mode
+will switch from the chosen mode to a lower mode. However, what will happen
+is these crossing points cannot be predicted in advance. Thus, for such
+investigations, the gradient extremal approach may prove equally well 
+suited. Let us finally give an example of an input for a trust-region
+image optimization where the third mode is inverted:
+
+\begin{verbatim}
+**DALTON INPUT
+.WALK
+*WALK
+.IMAGE
+.MODE
+ 3
+**WAVE FUNCTIONS
+.HF
+*END OF INPUT
+\end{verbatim}
+
+\subsection{Transition states following a gradient
+extremal}\label{sec:gradext}
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item P.J{\o}rgensen, H.J.Aa.Jensen, and T.Helgaker. \newblock {\em
+Theor.Chem.Acta}, {\bf 73},\hspace{0.25em}55, (1988). 
+\end{list}
+}}
+\end{center}
+
+\index{gradient extremal}
+A gradient extremal is defined as a locus of points in the contour 
+space where the gradient is extremal~\cite{pjhjajthtca73}. These
+gradient extremals connect 
+stationary points on a molecular potential energy surface and are
+locally characterized by requiring that the molecular gradient is an
+eigenvector of the mass-weighted molecular Hessian at each point on
+the line. From a stationary point there will be gradient extremals
+leaving in all normal coordinate directions, and stationary points
+on a molecular potential surface may thus be characterized by
+following these gradient extremals. The implementation of this approach
+in \siraba\ is described in Ref.~\cite{pjhjajthtca73}.
+
+Before discussing more closely which keywords are of importance in
+such a calculation and how they are to be used, we give an example of
+a typical gradient extremal input in a search for a first-order
+transition state along the second-lowest mode of a mono-deuterated
+ethane\index{ethane} molecule:
+
+\begin{verbatim}
+**DALTON INPUT
+.WALK
+*WALK
+.GRDEXT
+.INDEX
+ 1
+.MODE
+ 2
+.ISOTOP
+ 8
+ 1 1 2 1 1 1 1 1 1
+**WAVE FUNCTIONS
+.HF
+*END OF INPUT
+\end{verbatim}
+
+
+The request for a gradient extremal\index{gradient extremal}
+calculation is controlled by the 
+keyword \Key{GRDEXT}. In this example we have chosen to follow the
+second-lowest mode, as specified by the keyword \Key{MODE}.
+
+As the calculation of the gradient extremal uses mass-weighted
+coordinates\index{mass-weighted coordinate}, it is recommended to
+specify the isotopic constitution\index{isotopic constitution} of 
+the molecule. If none is specified, the most abundant
+isotope of each atom is used by default. In this example the
+molecule has the second-most abundant isotope of atom number 3, which,
+according to the description of the calculation should correspond 
+to a deuterium isotope. The rest of the atoms in the molecule is of
+the most abundant isotope. See also Sec.~\ref{sec:vibfreq}.
+
+A requirement in a gradient extremal calculation is that the
+calculation is started on a gradient extremal. In practice this is
+most conveniently ensured by starting at a stationary point, a minimum
+or a transition state. The index\index{Hessian index} of the critical point
+--- that is, 
+the number of negative Hessian eigenvalues\index{Hessian eigenvalue}
+--- sought, need to 
+be specified (by the keyword \Key{INDEX}), as the calculation would
+otherwise continue until a critical point with index zero
+(corresponding to a minimum), is found.
+
+\subsection{Level-shifted mode-following}\label{sec:modfol}
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item C.J.Cerjan, and W.H.Miller. \newblock {\em
+J.Chem.Phys.}, {\bf 75},\hspace{0.25em}2800, (1981). 
+\item H.J.Aa.Jensen, P.J{\o}rgensen, and T.Helgaker. \newblock {\em
+J.Chem.Phys.}, {\bf 85},\hspace{0.25em}3917, (1986). 
+\end{list}
+}}
+\end{center}
+
+The input needed for doing a level-shifted mode following\index{mode
+following} is very 
+similar to the input for following a gradient extremal\index{gradient
+extremal}, and the 
+keyword that is needed in order to invoke this kind of calculation is
+\Key{MODFOL}. As for gradient extremals, we need to specify which
+mode we follow. However, a mode following does not use mass-weighted
+molecular coordinates\index{mass-weighted coordinate} as default, and
+isotopic composition of the 
+molecule is therefore not needed. Note, however, that mass-weighted
+coordinates can be requested through the keyword \Key{MASSES} as
+described in the input section for the \Sec{WALK} module. A typical
+input following the third mode will thus look like:
+
+\begin{verbatim}
+**DALTON INPUT
+.WALK
+*WALK
+.START
+.MODFOL
+.INDEX
+ 1
+.MODE
+ 3
+**WAVE FUNCTIONS
+.HF
+*END OF INPUT
+\end{verbatim}
+
+The level-shifted mode-following uses an algorithm similar to the one
+used in the ordinary geometry optimization of a molecule, but whereas
+one in minimizations chooses a step so that the level shift parameter
+is less than the lowest eigenvalue of the molecular
+Hessian\index{Hessian}, this 
+level shift parameter is chosen to be in-between the eigenvalues
+$\lambda_{t-1}$ and $\lambda_{t}$ if we are following mode number $t$.
+This approach is described was pionered by Cerjan and
+Miller~\cite{cjcwhmjcp75}, and is also described in
+Ref.~\cite{hjajpjthjcp85}. 
+As for the gradient extremal approach, higher-order transition
+states\index{transition state}
+can be requested throguh the use of the keyword \Key{INDEX}.
+
+Note that it may often be necessary to start the mode-following
+calculation by stepping out of the stationary point along the 
+mode of interest using the keyword \Key{EIGEN} in the
+\Key{WALK} module. We refer to the reference manual for a further
+description of this option.
+
+The index\index{Hessian index} of the critical point  --- that is,
+the number of negative Hessian eigenvalues\index{Hessian eigenvalue}
+--- sought, need to 
+be specified (by the keyword \Key{INDEX}), as the calculation would
+otherwise continue until a critical point with index zero
+(corresponding to a minimum), is found.
+
+\section{Trajectories and Dynamics}
+
+\subsection{Intrinsic reaction coordinates}\label{sec:irc}
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item K.Fukui. \newblock {\em Acc.Chem.Res.}, {\bf 14},\hspace{0.25em}363, (1981). 
+\end{list}
+}}
+\end{center}
+
+A tool that have proved valuable in the study of molecular
+dynamics\index{dynamics} 
+is the use of steepest descent\index{steepest descent} based algorithms
+for following a molecular reaction from a transition
+state\index{transition state} towards a minimum. One of the
+most successful ways of doing this is the Intrinsic Reaction Coordinate (IRC)
+approach~\cite{kfacr14,pmjcp88}\index{IRC}\index{intrinsic reaction
+coordinate}. The IRC is calculated by taking small steps along the 
+negative gradient in a mass-weighted coordinate\index{mass-weighted
+coordinate} system. In \siraba , the 
+size of the step is adjusted with the use of the trust-region based
+algorithm. In order to get a sufficiently accurate potential energy surface,
+rather small steps must be taken, and the default trust radius is thus reset
+to 0.020 when an IRC is being done.
+
+In many respects the input to an IRC calculation is very similar to
+the input for a trust-region image\index{image surface} optimization,
+and a typical input would look like:
+
+\begin{verbatim}
+**DALTON INPUT
+.OPTIMIZE
+.MAX IT
+ 150
+*WALK
+.IRC
+ 1
+**WAVE FUNCTIONS
+.HF
+*END OF INPUT
+\end{verbatim}
+
+Most of this input should now be self-explanatory. The request for an
+Intrinsic Reaction Coordinate calculation is done by using the keyword
+\Key{IRC}. On the next line there is a positive or negative integer
+indicating in which direction the reaction should proceed. It is,
+however, not possible to determine in advance which reaction path a
+given sign is connected to, and the calculation should therefore
+always be checked after a few iterations in order to ensure that the
+reaction proceeds in the correct direction. If not, the calculation
+should be stopped and started from the transition state again with a
+different sign for the integer specified after the \Key{IRC} keyword.
+
+As the IRC is defined with respect to mass-weighted
+coordinates\index{mass-weighted coordinate}, care
+has to be taken in order to specify the correct isotopic substitution
+of the molecule through the keyword \Key{ISOTOP} in the
+\Sec{WALK} input module. In this example we have assumed that the
+molecule only contains the most abundant isotopes of each element. We
+refer to the reference manual as well as Sec.~\ref{sec:gradext} for a
+description and example of how the isotopic substitution can be specified.
+
+Due to the small steps that must be used in a calculation of an IRC,
+such a calculation may require a large number of
+iterations\index{geometry iteration}, and it
+may thus be necessary to increase the maximum number of iterations
+that can be taken.  This can be done by 
+the keyword \Key{MAX IT} in the \Sec{*DALTON} input
+section. Default value for this parameter is 25 iterations. 
+
+All the information about the Intrinsic Reaction Coordinate will be
+collected in a file called \texttt{DALTON.IRC}\index{DALTON.IRC}. If a
+calculation stops 
+because it has reached the maximum number of iterations, it may be
+restarted from that point, and the new information about the IRC will
+be added to the old \texttt{DALTON.IRC} file. This also implies that if a
+calculation is restarted from the beginning (because it went in the
+wrong direction) the \texttt{DALTON.IRC} file {\em must\/} be removed
+first. Thus it may often be useful to take a backup of the
+\texttt{DALTON.IRC} during the calculation of the IRC.  
+
+Finally, some comments on the interest of a calculation of IRCs.
+Whereas it will give results that mimic the behavior of what is
+considered to be a good description of the reaction
+pathway\index{reaction pathway} of a
+molecular reaction, it does not include any dynamical aspects of the
+reaction. There exists several models for approximating local regions of a
+molecular potential energy surface from the results of an IRC
+calculation, and from the
+potential energy surface valley, the dynamics\index{dynamics} of a
+chemical reaction may be 
+mimicked. However, \siraba\ gives another, more direct, opportunity
+for studying molecular dynamics through dynamic walks as described in
+more detail in the next section.
+
+\subsection{Doing a dynamical walk}\label{sec:dynamic}
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item T.Helgaker, E.Uggerud, H.J.Aa.Jensen. \newblock {\em
+Chem.Phys.Lett.}, {\bf 173},\hspace{0.25em}145, (1993). 
+\end{list}
+}}
+\end{center}
+
+The theory behind the ``direct dynamics'' as implemented in \siraba\ is
+described in Ref.~\cite{theuhjajcpl173}\index{dynamics}. The
+main idea behind this 
+approach is that Newton's equations of motion for the nuclei are
+integrated in the presence of the quantum mechanical potential set up
+by the electrons. Thus one may follow a molecular reaction from a
+given starting point (usually a transition state) as it would behave
+if the nuclei could be treated exactly as classical particles. One
+should also keep in mind that the Hamiltonian used is constructed within
+the framework of the Born-Oppenheimer approximation, which may turn
+out not to be a good approximation at given points during the
+reaction. Furthermore, the calculation describes the way molecules
+with a predefined orientation and momentum will react. Thus
+the trajectory obtained is only one of a large number of 
+possible trajectories depending on the initial state of the molecule.
+
+The necessary input in order to do a dynamical walk of for instance
+protonated formaldehyde\index{formaldehyde} would look like:
+
+\begin{verbatim}
+**DALTON INPUT
+.WALK
+.MAX IT
+ 200
+*WALK
+.DYNAMI
+.FRAGME
+ 5
+ 1 1 1 2 2
+.ISOTOP
+ 5
+ 1 1 1 1 1
+.MOMENT
+ 1
+1 -.00001
+.MODE
+ 1
+**WAVE FUNCTIONS
+.HF
+*END OF INPUT
+\end{verbatim}
+
+That the walk is to
+be a dynamic walk is specified through the keyword \Key{DYNAMI}. The
+starting trust radius will in dynamical calculations be changed to a
+new default value of~0.005.
+
+The keyword \Key{FRAGME} dictates which atoms belong to which
+molecular fragment\index{molecular fragments}. In this particular
+case, we assume that two 
+protons leave the protonated formaldehyde\index{formaldehyde} as a
+hydrogen\index{hydrogen} molecule, and 
+that the leaving hydrogen atoms are the last atoms of the \mol\ input
+file. This partitioning is mainly needed in order to get 
+proper values for the relative translational energy between the two
+fragments, as well as for deciding how much of the energy has been
+distributed into internal degrees of freedom.
+
+The default isotopic substitution is that the most abundant isotopes
+are to be used in the calculation. Thus, the input \Key{ISOTOP} is
+redundant for this calculation, as the given isotopic constitution
+corresponds to the default value. Isotopic substitution is important
+as the masses of the nuclei enters when Newtons equations of motion are
+integrated.
+
+In this calculation we start the calculation at a transition
+state\index{transition state}, 
+and in order to get the reaction started we need to give the molecule
+a slight push. This is achieved by the keyword \Key{MOMENT}. In the next
+line the user then specifies the number of modes in which there is
+ an initial momentum, followed by lines containing pairs of numbers,
+of which the first specifies the mode, and the second the momentum in
+this mode. There must be as many pairs of modes and momenta as
+specified in the line after the \Key{MOMENT} keyword. It is
+impossible to predict in advance which way the reaction will proceed,
+and the calculation should be checked after a few iterations, in order
+to ensure that it proceeds in the right direction. If not, the
+calculation should be started from the transition state again with a
+different sign on the initial momentum. The
+\texttt{DALTON.TRJ}\index{DALTON.TRJ} must 
+also be removed as discussed below.
+
+It is in principle possible to start a calculation from any point on a
+molecular potential energy surface, and in cases where these starting points
+do not correspond to a stationary point, \Key{MOMENT} may be
+skipped, as there exist a downward slope (in other words, an attractive
+force) driving the molecule(s) in a specific direction. One may of
+course also start the molecule with a given initial momentum in
+different energy modes.
+
+During the dynamical calculation, care has also to be taken in order
+to ensure that the steps taken are not too long. If this occurs, the
+initial trust radius and/or the trust radius increment should be
+reduced by the keyword \Key{TRUST}. In the \siraba\ output one will
+find ``Accumulated kinetic energy since start'', and this property
+will be calculated in two ways: From conservation of the total energy,
+and from integrated momenta. If the difference between these numbers
+is larger than approximately 1\% , the calculation should be stopped and the
+starting trust radius be decreased and the calculation restarted from
+the starting point again after removal of the \texttt{DALTON.TRJ}-file.
+
+The calculation of dynamical walks may take from about 70 to 1200
+iterations (as a general rule) and one must therefore adjust the
+maximum number of iterations allowed. This is done by  the
+\Key{MAX IT} keyword. In the present example the maximum number of
+iterations have been reset to 200. If the calculation
+cannot be closely monitored, it is recommended not to set the maximum
+number of iterations\index{geometry iteration} too high, and rather
+restart the calculation if 
+this turns out to be necessary. This can be accomplished by specifying
+the iteration at which the calculation will restarted by the keyword
+\Key{ITERAT} in the \Sec{*DALTON} input module.
+
+The calculation should be stopped (at least for ordinary hydrogen
+elimination reactions) when the ``Relative velocity'' starts to
+decrease, as this indicates that the molecules are so far apart that
+basis set superposition errors\index{BSSE}\index{basis set superposition error}
+become apparent. We will below return to how 
+one then calculates translational energy release of the reaction.
+
+During the whole calculation a file
+\texttt{DALTON.TRJ}\index{DALTON.TRJ} is updated. This 
+file contains information from the entire dynamic walk. If a
+walk is restarted from a given point, the new information will be
+appended to the old \texttt{DALTON.TRJ}-file. Note that this also implies
+that if you need to restart the calculation from an the beginning
+(because the reaction went the wrong way or because of a too large trust
+radius), the 
+\texttt{DALTON.TRJ}-file {\em must} be removed. Thus, it may often be
+advisable to take a backup of this file in certain parts of the
+calculation. As this file contains all the information about the
+dynamical walk, this file can be used to generate a video-sequence of
+the molecular reaction along this specific trajectory with the correct
+time-scaling. 
+
+\subsection{Calculating relative translational energy release}
+
+It is often of interest to calculate the relative translational energy
+release\index{relative translation energy} in a given reaction, as this can be compared to experimental
+values determined from e.g. mass
+spectrometry~\cite{theuhjajcpl173}\index{mass spectrometry}. Although
+this quantity 
+is printed in the output from \siraba\ in the entire dynamical walk, the
+relative translational energy release should be calculated, due to
+basis set superposition errors\index{BSSE}\index{basis set superposition error} and
+vibrational\index{vibrational excitation} and rotational
+excitation\index{rotational excitation} in the departing molecular
+fragments, in the way described here. 
+
+The geometry of the last iterations for which relative translational
+energy release is known, is used as a starting point for minimizing
+the two molecular fragments as described in
+Section~\ref{sec:minimization}. As a check of this minimization one
+might also minimize the two molecular fragments separately, and check
+this total energy against the energy obtained when minimizing the
+molecular supersystem. The energies should be almost identical, but
+small differences due to basis set superposition errors may be
+noticeable.
+
+The barrier height can then be calculated by subtracting the energy of
+the molecule at the transition state and the energy for the separated
+molecular fragments, or an experimentally determined barrier height
+may be used. The relative translational energy release may then be
+obtained  by dividing the translational energy release
+from the last \siraba\ iteration by the barrier height. This number will
+not be identical to the number printed in the \siraba -output, because
+of the different vibrational and rotational state of
+the molecule in the final iteration point as compared to the minimized
+structure.
+
+\section{Geometry optimizations using non-variational wave
+functions}\label{sec:nonvargeom}
+
+\siraba\ do not have any support for the calculation of molecular
+gradients and Hessians for the non-variational wave functions MP2 and
+CI\index{MP2}\index{M\o ller-Plesset}\index{CI}\index{configuration
+interaction}. However, in order to 
+exploit the facilities of the first-order 
+geometry optimization routines in \siraba , a numerical
+gradient\index{numerical gradient} based
+on energies will be calculated if a geometry optimization is invoked
+for a non-variational wave function. Thus, to optimize the MP2
+geometry of a molecule, the only input needed is
+
+\begin{verbatim}
+**DALTON INPUT
+.MINIMIZE
+*MINIMIZE
+.1STORDER
+**WAVE FUNCTION
+.HF
+.MP2
+*END OF INPUT
+\end{verbatim}
+
+The size of the displacements used during the evaluation of the
+numerical gradient can be controled through the keyword \Key{DISPLA}
+in the \Sec{MINIMI} input module. Default value is $1.0\cdot 10^{-3}$
+a.u. By default, the threshold for convergence of the geometry will be
+changed because of estimated inaccuracies in the numerical
+gradients. However, if the threshold for convergence is altered
+manually, this user supplied threshold for convergence will be used
+also in geometry optimizations using numerical
+gradients\index{numerical gradient}. Note that
+due to the possibility of larger numerical errors in the gradient, too
+tight convergence criteria for an optimized geometry may make it
+difficult for the program to obtained a converged geometry.

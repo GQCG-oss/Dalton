@@ -1,0 +1,15 @@
+C
+C$Id: past.h,v 1.1.1.1 2001-02-08 13:33:23 hjj Exp $
+C
+C
+C$Id: past.h,v 1.1.1.1 2001-02-08 13:33:23 hjj Exp $
+C
+      LOGICAL       PASTWO, PASORT, PASDIP, PASONE, PASRES, PASREL,
+     *              PASDPR, PASCRS, PASCZR, PASCTR, PASCRL, PASMAG,
+     *              PASAAT, PASRTR, PASLRS, PASTRP, PASLNR, PASEXC
+      COMMON /PAST/ PASTWO, PASORT, PASDIP, PASONE, PASRES, PASREL,
+     *              PASDPR, PASCRS, PASCZR, PASCTR, PASCRL, PASMAG,
+     *              PASAAT, PASRTR, PASLRS, PASTRP, PASLNR, PASEXC
+C
+C     We also need to keep a copy of /PAST/
+C

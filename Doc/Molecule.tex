@@ -1,0 +1,638 @@
+\chapter{\mol\ input style}\label{ch:molinp}
+
+The \mol-style input is originally based on the input for the \mol\
+integral program by Alml\"{o}f~\cite{moleculeref}. However, except for
+some lines still requiring formatted input, there are few remnants of
+the original input structure. 
+The program supports both Cartesian\index{cartesian coordinate input}
+and Z-matrix input\index{Z-matrix input} of the  
+molecular coordinates. However, the Z-matrix input provided is only a
+convenient way of describing the molecular geometry, as the Z-matrix is
+converted to Cartesian coordinates, which are then used in the
+subsequent calculations. Note  that the Z-matrix input can only be
+used together with the basis set library.
+
+The program includes an extensive basis set
+library\index{basis set library},  and
+additional possibilities for choosing the number of primitive
+and contracted orbitals to be used with the Atomic Natural Orbital
+(ANO) basis sets\index{ANO basis set} and the ``Not Quite van
+Duijneveldt'' (NQvD) basis 
+sets\index{NQvD basis set}. The large number of different basis sets
+provided is in part 
+related to the variety of molecular properties with very different
+basis set requirements that can be calculated with \siraba . 
+Most of the basis sets have been downloaded from the EMSL basis set
+library service\newline
+(http://www.emsl.pnl.gov:2080/forms/basisform.html)~\cite{emslref}.
+Only six of the basis sets were obtained from different sources:
+
+\begin{list}{--}{}
+\item The ano-1, ano-2, ano-3, ano-4 and sadlej basis sets which where
+downloaded from the MOLCAS home-page
+(http://garm.teokem.lu.se/MOLCAS/).
+\item The NQvD (The Not Quite van Duijneveldt) basis sets, constructed
+by Knut F\ae gri for this distribution~\cite{nqvdref}.
+\end{list}
+
+We note that each file containing a given basis sets contains the
+proper reference to be used when doing a calculation with a given
+basis set. We will give proper references for all basis sets in a
+subsequent chapter describing the input for the basis  set library.
+
+The description of the \mol\ input is divided into four parts.
+Section~\ref{sec:molgeneral} describes the general section of the
+molecule input, 
+section~\ref{sec:molcart} describes the Cartesian coordinate
+input\index{cartesian coordinate input},
+section~\ref{sec:molzmat} describes the Z-matrix input\index{Z-matrix
+input}, and finally 
+Section~\ref{sec:molbasis} describes the basis set library\index{basis
+set library}. 
+
+\section{General \mol\ input}\label{sec:molgeneral}
+
+In the general input section of the \mol\ input file, we will consider
+such information as molecular symmetry\index{symmetry}, number of
+symmetry distinct atoms\index{symmetry-distinct atom}, generators of a
+given molecular point group\index{symmetry generator}\index{symmetry
+group}, and so on. 
+This information usually constitutes the four/five first lines of the
+input, and is {\em formatted}.
+
+The input is best described by an example.
+The following is the first lines of an input for
+tetrahedrane\index{tetrahedrane}, treated in 
+$C_{2v}$~symmetry, with a 4-31G** basis.  The line numbers are for
+convenience in the subsequent input description and should {\em
+not} appear in the actual input.  Note also that in order to fit
+the example across the page some liberties have been taken with
+column spacings.
+\begin{verbatim}
+ 1:INTGRL
+ 2:        Tetrahedrane, Td_symmetric geometry
+ 3:                 4-31G** basis
+ 4:    2    2  X  Y  Z   1.00D-15
+\end{verbatim}
+
+We now define the input line-by-line.  The {\tt FORMAT} is given
+in parentheses.
+\begin{description}
+\item[1] The word \verb|INTGRL| {\tt (A6)}.
+\item[2-3] Two arbitrary title lines {\tt (A72)}.
+\item[4] \verb|CRT,NONTYP,KCHARG,SYMTXT,((KASYM(I,J),I=1,3),J=1,3), ID3, THRS|
+{\tt (A1,I4,I3,A2,10A1,D10.2)}.
+\begin{description}
+\item[CRT] By giving a small or capital 'C' in this
+position, the program will use Cartesian Gaussian basis
+functions\index{cartesian basis function} instead of
+the default, which is Spherical Gaussian basis
+functions\index{spherical basis function}\index{basis function}.
+\item[NONTYP] Number of atom types (number of atoms specified
+in separate blocks). For a Z-matrix input this will be the total
+number of atoms in the molecule.
+\item[KCHARG] The charge of the molecule\index{charge of
+molecule}. Will be used  by 
+the program to determine the Hartree-Fock occupation. A zero is
+assumed if no number is given here.
+\item[SYMTXT] Number of symmetry generators\index{symmetry
+generator}. If this field is 
+left blank, the automatic symmetry detection\index{symmetry detection}
+routines of the program will be 
+invoked. Symmetry can be turned off (needed for instance if starting a
+walk at a highly symmetric structure which one knows will break
+symmetry) by typing a zero in this place. Any other number will be
+interpreted as the number of symmetry generators (1--3).
+\item[KASYM] Symmetry generators\index{symmetry generator}.  {\tt X}
+is reflection\index{reflection} 
+in the \mbox{$yz$-plane}, {\tt XY} is rotation\index{rotation} about
+the \mbox{$z$-axis}, 
+and {\tt XYZ} denotes inversion\index{inversion}. Due to the handling
+of symmetry in 
+the program, it is recommended to use mirror planes as symmetry
+generating elements if possible.
+
+\item[ID3] A number in this place indicates that the
+coordinates of the atoms will be read in \AA ngstr\"{o}m\index{\AA
+ngstr\"{o}m}, and not in 
+atomic units which is the default.
+\item[THR] Threshold for neglect of final integrals. Default
+is 1.0D-15, which will be used if no input is given here. A threshold
+of 1.0D-15 will give integrals correct to approximately 1.0D-13.
+\end{description}
+\end{description}
+
+Note that if one wants to use the basis set library\index{basis set
+library}, there are two 
+options. One option is to use a common basis set for the entire
+molecule in which the first line should be replaced by two lines,
+which for a calculation using the 4-31G** basis would look like:
+\begin{verbatim}
+ 1:BASIS
+ 2:4-31G**
+\end{verbatim}
+This option will not be active with customizable basis sets like the
+ANO or NQvD sets.
+
+Alternatively you may specify different basis sets for different
+atoms, in which case the first line should read
+\begin{verbatim}
+ 1:ATOMBASIS
+\end{verbatim}
+
+The fourth line (fifth in a calculation using the basis set library)
+looks a bit devastating. However, for ordinary
+Hartree-Fock\index{HF}\index{MP2}\index{SCF}\index{Hartree-Fock}\index{M\o
+ller-Plesset} or MP2
+calculations, only the number of different atom types and the charge
+need to be given (if the molecule is charged), as symmetry and
+Hartree-Fock occupation\index{HF occupation}\index{Hartree-Fock
+occupation} will be taken 
+care of by the program. Thus 
+this line could in the above example be reduced to
+\begin{verbatim}
+ 4:    2
+\end{verbatim}
+
+Let us finally give some remarks about the symmetry
+detection\index{symmetry detection}
+routines. These routines will detect any symmetry of a molecule
+by explicit testing for the occurrence of rotation axes, mirror planes
+and center of inversion. The occurrence of a symmetry element is
+tested in the program against a threshold which may be adjusted by the
+keyword \Key{SYMTHR} in the \Sec{READIN} input section. By default,
+the program will require 
+geometries that are correct to the sixth decimal place in order to
+detect all symmetry elements.
+
+The program will translate and rotate the molecule into a suitable
+reference geometry before testing for the occurrence of symmetry
+operations. The program will not, due to the handling of symmetry in the
+program, transform  the molecule back to original input
+coordinates. Furthermore, if there are 
+symmetry equivalent nuclei, these will be removed from the input, and a
+new, standardized molecule input file will be generated and used in
+subsequent iterations of for instance a geometry optimization. This
+standarized input file (including basis set) can be printed to the
+file \verb|DALTON.BAS| by using the keyword \Key{MOLPRI} in the
+\Sec{READIN} submodule.
+
+\siraba\ can only take advantage of point groups that are subgroups
+of D$_{2h}$. If symmetry higher than that is detected, the program
+will use the highest common subgroup of  the symmetry group
+detected and D$_{2h}$. 
+
+We recommend that the automatic symmetry detection feature is not used
+when doing MCSCF\index{MCSCF} calculations, as symmetry
+generators\index{symmetry generator} and their order 
+in the input determines the order of the irreproducible representations
+needed when specifying active spaces. Thus, for MCSCF
+calculations we recommend that the symmetry is  explicitly specified
+through the appropriate symmetry generators, as well as the explicit
+Hartree-Fock occupation numbers. 
+
+\section{Cartesian geometry input}\label{sec:molcart}\index{cartesian
+coordinate input}
+
+Assuming that we have given the general input as indicated above, we
+now want to specify the spatial arrangements of the atoms in a
+Cartesian coordinate system. We will also for sake of illustration
+assume that we have given explicitly the generators of the point group
+to be used in the calculation (in this case C$_{2v}$, with the yz- and
+xz-planes as mirror planes).
+
+In tetrahedran we will have two different kinds of atoms, carbon and
+hydrogen, as indicated by the number 2 on the fourth (fifth) line of
+the input. We will also assume that we punch the basis set ourselves,
+in order to present the input format for the basis set.
+
+For tetrahedran, the input would then look like
+\begin{verbatim}
+ 5:        6.    2    3    1    1    1
+ 6:C1    1.379495419          .0                 0.975450565  
+ 7:C2     .0                 1.379495419         -.975450565  
+ 8:    8    3
+ 9:486.9669   .01772582
+10:73.37109   .1234779
+11:16.41346   .4338754
+12:4.344984   .5615042
+13:8.673525            -.1213837
+14:2.096619            -.2273385
+15:.6046513             1.185174
+16:.1835578                      1.00000
+17:    4    2
+18:8.673525   .06354538
+19:2.096619   .2982678
+20:.6046513   .7621032
+21:.1835578             1.000000
+22:    1    1
+23:0.8        1.0
+24:        1.    2    2    1    1
+25:H1    3.020386510         .0                  2.1357357837 
+26:H2     .0                 3.020386510         -2.1357357837
+27:    4    2
+28:18.73113   .03349460
+29:2.825394   .2347270
+30:.6401218   .8137573
+31:.1612778             1.000000
+32:    1    1
+33:0.75       1.0
+\end{verbatim}
+
+The different lines are:
+\begin{description}
+\item[5] \verb|ZMATL, CHARGE, NUMBER, MAXL, NGRP(I)|
+{\tt (BN,A6,F4.0,24I5)}.
+\begin{description}
+\item[ZMATL] This field must be left blank when Cartesian
+coordinate input\index{cartesian coordinate input} is used as the field
+is used for checking whether 
+Cartesian coordinates or Z-matrix\index{Z-matrix input} input is being
+used. Characters 
+placed in this field will tell the program to use Z-matrix input.
+\item[CHARGE] Charge of this atom\index{charge of atom} type.
+\item[NUMBER] Number of {\em symmetry-distinct}\index{symmetry-distinct atom} atoms of
+this type (or, if the symmetry detection routines are being used, all
+atoms of this kind).
+\item[MAXL] Maximum angular quantum number used in the
+basis set for this atom type ($s=1$, $p=2$, etc.). Not required if the
+basis set library is being used. 
+\item[NGRP(I)] Number of groups (blocks) of generally contracted
+functions of angular quantum number~{\tt I}. The loop is over MAXL. Not
+required if the basis set library is used. It is noteworthy that
+\siraba\ collects all basis functions into one such shell, and
+evaluates all integrals arising from that shell\index{shell of basis
+functions} simultaneously, and 
+the memory requirements grow rapidly with the number of basis
+functions in a shell (note for instance that four $g$ functions
+actually are 36
+basis functions, as there are 9 components of each $g$
+function). Memory requirements\index{memory} can therefore be reduced
+by splitting 
+basis functions of the quantum number into different blocks. However,
+this will decrease the performance of the integral\index{performance
+of integral program} calculation. 
+\end{description}
+\item[6] \verb|NAME, X, Y, Z, FLAG| {\tt (A4,3F20.15)}
+\begin{description}
+\item[NAME] Atom name.  A different name should be used for
+each atom of the same type, although this is not required.
+\item[X] $x$-coordinate (in atomic units, unless \AA ngstr\"{o}m
+has been requested on line $4$ of the input).
+\item[Y] $y$-coordinate.
+\item[Z] $z$-coordinate.
+\end{description}
+The Cartesian coordinates may
+be given in free format. However, {\em the name of the atom must still be
+left four places}, and no coordinates must enter the four first
+positions. 
+\item[7] This is the other symmetry-distinct center of this type.
+\item[8] \verb|FRMT, NPRIM, NCONT, NOINT| {\tt (A1,I4,2I5)}.
+\begin{description}
+\item[FRMT] A single character describing the input format of the
+basis set in this block. The default format is {\tt (8F10.4)} which
+will be used if {\tt FRMT} is left blank. In this format
+the first column is the orbital exponent and the seven last columns
+are contraction coefficients. If no numbers are given, a zero is
+assumed. If more than 7 contracted functions occur in a given block,
+the contraction coefficients may be continued on the next line, but
+the first column (where the orbital exponents are given) must then be
+left blank.
+
+An {\tt F} or {\tt f} in the first
+position will indicate that the input is in free format. This will of
+course require that all contraction coefficients need to be typed in,
+as all numbers need to be present on each line. However, note that
+this options is particularly handy together with completely
+decontracted basis sets, as described below. Note that the program
+reads the free format input from an internal file that is 80 charcters
+long, and no line can therefore exceed 80 characters.
+
+One may also give the format {\tt H} or {\tt h}. This corresponds to
+high precision format {\tt (4F20.8)}, where the first column again is
+reserved for the orbital exponents, and the three next lines are
+designated to the contraction coefficients. If no number is given, a zero
+is assumed. If there are more than three contracted orbitals in a
+given block, the contraction coefficients may be continued on the next
+line, though keeping the column of the orbital exponents blank.
+
+\item[NPRIM] Number of primitive\index{primitive basis function}
+Gaussians in this block. 
+\item[NCONT] Number of contracted\index{contracted basis function}
+Gaussians in this block. If a zero 
+is given, an uncontracted basis set will be assumed, and only orbital
+exponents need to be given.
+\end{description}
+\item[9] \verb|EXP, (CONT(I), I=1,NCONT)|
+\begin{description}
+\item[EXP] Exponent of this primitive.
+\item[CONT(I)] Coefficient of this primitive in contracted
+function~{\tt I}.
+\end{description}
+We note that the format of the orbital exponents\index{orbital
+exponent} and the contraction\index{contraction coefficient} 
+coefficients are determined from the value of {\tt FRMT} defined on
+line~8.
+\item[10-16] These lines complete the specification of this
+contraction block: the $s$~basis here.
+\item[17-21] New contraction block (see lines~8 and~9 above).
+\item[22-23] New contraction block.
+\item[24-33] Specifies a new atom type: coordinates and basis set.
+\end{description}
+
+\section{Z-matrix input}\label{sec:molzmat}
+
+The Z-matrix input\index{Z-matrix input} provided with \siraba\ is
+very rudimentary, and 
+common options like parameter representations of bond length and
+angles as well as dummy atoms are currently not provided. Furthermore,
+the Z-matrix input is not used in the program, but instead immediately
+converted to Cartesian coordinates which are then used in the
+subsequent calculation.
+Another restriction is that if Z-matrix input is used, one cannot
+punch ones own basis set, but must instead resort to basis sets
+provided with the basis set library.
+
+The input format is free, with, once more,
+the restriction that the name of each atom must be of be given a space
+of 4 characters, and none of the other input variables needed must be
+placed in these positions.
+
+The program will use Z-matrix input\index{Z-matrix input} if there are
+any characters 
+in the first 4 positions of line 6 in the molecule input, and it is
+important that these positions are kept blank if a Cartesian coordinate
+input is  used.
+
+A typical Z-matrix input could be:
+\begin{verbatim}
+BASIS
+6-31G(d,p)
+Test input of ammonia
+6-31G(d,p) basis set
+    4
+N   1 7.0
+H1  2 1 1.0116 1.0
+H2  3 1 1.0116 2 106.7 1.0
+H3  4 1 1.0116 2 106.7 3 106.7 1 1.0
+\end{verbatim}
+The five first lines should be familiar by now, and will be discussed
+no further here. The Z-matrix input starts on line 6, and on the first
+line only the atom name, a running number and the charge of the
+atom\index{charge of atom}
+is given. The running number is only for
+ease of reference to a given atom, and is actually not used within the
+program, where any reference to an atom, is  the number of the
+atom consecutively in the input list.
+
+The second line consists of the atom name, a running number, the
+number of the atom to which this atom is bonded with a given bond
+length, and then finally the charge of this atom.
+
+The third line is identical to the second, except that an extra atom
+number, to which the two first atoms on this line is bonded to with a
+given bond angle.
+
+On the fourth line yet another atom has been added, and the position
+of this atom relative to the three previous ones on this line is
+dependent upon on an extra number inserted just before the nuclear
+charge of this atom. If the next to last number is a 0, the
+position of this atom is given by the dihedral angle {\tt
+(A1,A2,A3,A4)}, where {\tt Ai} denotes atom {\tt i}. If, on the other
+hand, this next to last number is $\pm 1$, the position of the fourth
+atom is given with respect to two angles, namely {\tt (A1,A2,A3)} and
+{\tt (A2,A3,A4)}. The sign is to be $+ 1$ if the triple product
+$\overrightarrow{\left(A_{2}A_{1}\right)}\cdot\left[\overrightarrow{\left(A_{2}A_{3}\right)}\times\overrightarrow{\left(A_{2}A_{4}\right)}\right]$
+is positive.
+
+\section{Using the basis set library}\label{sec:molbasis}\index{basis
+set library}
+
+The use of the basis set library supplied with \siraba\ is indicated
+by the word {\tt BASIS} or {\tt ATOMBASIS} on the first line of the
+molecular input. 
+
+If {\tt BASIS} is used, a common basis set is used for all atoms in
+the molecule, and the name of this basis set is given on the second line.
+If we want to use one basis set for all the
+atoms in a molecule, the molecule input file can be significantly
+simplified, as we may delete all the input information regarding the
+basis set. Thus, the input in the previous section for tetrahedrane
+with the 6-31G** basis will, if the basis set library is used,  be reduced
+to:
+
+\begin{verbatim}
+ 1:BASIS
+ 2:6-31G**
+ 3:        Tetrahedrane, Td_symmetric geometry
+ 4:                 4-31G** basis
+ 5:    2    2  X  Y  Z   1.00D-15
+ 6:        6.    2
+ 7:C1    1.379495419          .0                 0.975450565  
+ 8:C2     .0                 1.379495419         -.975450565  
+ 9:        1.    2
+10:H1    3.020386510         .0                  2.1357357837 
+11:H2     .0                 3.020386510         -2.1357357837
+\end{verbatim}
+
+The use of the basis set library is indicated by the presence of the
+\verb|BASIS| word in the beginning of \mol-file instead of
+\verb|INTGRL|.
+
+An alternative approach would be to use different basis sets for
+different atoms, e.g. the concept of locally dense\index{locally dense
+basis set} basis sets
+introduced in NMR calculations by Chesnut {\it et
+al.\/}~\cite{dbcberkdmdaejcc14}. This is for instance also required
+when using the ANO\index{ANO basis set} or NQvD\index{NQvD basis set}
+basis sets. Another option is to use 
+standards basis sets from the basis set library\index{basis set
+library} and add your own sets 
+of diffuse, thight or polarizing\index{polarization function} basis
+functions. Returning to 
+tetrahedrane, we could for instance use the 6-31G* basis sets on
+carbon and the 4-31G** basis sets on hydrogen. This could be achieved
+as
+
+\begin{verbatim}
+ 1:ATOMBASIS
+ 2:        Tetrahedrane, Td_symmetric geometry
+ 3:    Mixed basis (6-31G* on C and 4-31G** on H)
+ 4:    2    2  X  Y  Z   1.00D-15
+ 5:        6.    2 6-31G*
+ 6:C1    1.379495419          .0                 0.975450565  
+ 7:C2     .0                 1.379495419         -.975450565  
+ 8:        1.    2 4-31G Pol 2 0.75D0
+ 9:H1    3.020386510         .0                  2.1357357837 
+10:H2     .0                 3.020386510         -2.1357357837
+\end{verbatim}
+
+
+Thus, when using {\tt ATOMBASIS}\index{ATOMBASIS} the name of the
+basis set for a given 
+set of identical atoms is given on the same line as the nuclear
+charge, following right after the number of symmetry-distinct atoms of
+this type. Everything following position 15 (the number of
+symmetry-distinct atoms) is in free format.
+
+The string {\tt Pol} denotes that the rest of the line specifies
+diffuse, thight or polarizing\index{polarization function} functions,
+all which will be added as 
+segmented basis functions. For each basis function, its ``angular
+momentum'' ($l+1$) and its exponent must be given. Thus, in the above
+input we indicate that we add a $p$ function with exponent 0.75 to the
+hydrogen basis set. The order of these functions are arbitrary (that
+is, a $p$ function can be given before an $s$ function and so on).
+
+The ANO basis sets require that you give the number of contracted
+functions you would like to use for each of the primitive sets defined
+in the basis sets. Thus, assuming we would like to simulate the
+6-31G** basis set input using an ANO basis set but with the
+polarization functions of the 6-31G** set, this could be achieved
+through an input like
+
+\begin{verbatim}
+ 1:ATOMBASIS
+ 2:        Tetrahedrane, Td_symmetric geometry
+ 3:    Mixed basis (6-31G* on C and 4-31G** on H)
+ 4:    2    2  X  Y  Z   1.00D-15
+ 5:        6.    2 ano-1 3 2 0 0 Pol 3 0.8
+ 6:C1    1.379495419          .0                 0.975450565  
+ 7:C2     .0                 1.379495419         -.975450565  
+ 8:        1.    2 ano-1 2 0 0 Pol 2 0.75D0
+ 9:H1    3.020386510         .0                  2.1357357837 
+10:H2     .0                 3.020386510         -2.1357357837
+\end{verbatim}
+
+This input will give a [3s2p0d0f] ANO basis set\index{ANO basis set}
+on carbon, with a 
+polarizing $d$ function with exponent 0.8, and a [2s0p0d] ANO basis
+set on hydrogen with a polarizing $p$ function with exponent 0.75 as
+above.
+
+Note that the number of contracted functions in the ANO\index{ANO
+basis set} set has to be 
+given for all primitive blocks, even though you do not want any
+contracted functions of a given quantum number. Here also, {\tt Pol}
+separates the number of contracted functions from polarization
+functions.
+
+The NQvD basis set~\cite{nqvdref} was constructed in order to provide,
+in electronic form, a basis set compilation very similar to original
+set of van Duijneveldt~\cite{fbvdibmrap}\index{NQvD basis set}. The
+sets are in general as 
+good, or slightly better, than the original van Duijneveldt basis,
+with only minor changes in the orbital exponents.
+
+In the NQvD basis set, you need not only to pick the number of
+contracted functions, but also your primitive set. The contracted
+basis set will be constructed contracting the (NPRIM-NCONT + 1)
+tightest functions with contraction coefficients based on the
+eigenvectors from the atomic optimization, keeping the outermost
+orbitals uncontracted.
+
+NOTE: As is customary, the orbital exponents of all hydrogen basis
+functions are automatically multiplied by a factor of 1.44.
+
+Thus, an input for tetrahedrane employing the NQvD basis set might
+look like
+
+\begin{verbatim}
+ 1:ATOMBASIS
+ 2:        Tetrahedrane, Td_symmetric geometry
+ 3:    Mixed basis (6-31G* on C and 4-31G** on H)
+ 4:    2    2  X  Y  Z   1.00D-15
+ 5:        6.    2 NQvD 8 4 3 2 Pol 3 0.8D0
+ 6:C1    1.379495419          .0                 0.975450565  
+ 7:C2     .0                 1.379495419         -.975450565  
+ 8:        1.    2 NQvD 4 2 Pol 2 0.75D0
+ 9:H1    3.020386510         .0                  2.1357357837 
+10:H2     .0                 3.020386510         -2.1357357837
+\end{verbatim}
+
+This input will use an (8s4p/4s) primitive basis set on carbon and
+hydrogen respectively, contracting it to a [3s2p/2s] set. The
+polarization functions should no further explanantion at this stage. 
+
+The only limitations to the use of polarization functions when {\tt
+ATOMBASIS} is used, is that the length of the line must note exceed 80
+characters. If that happens, we recommend dumping a standard basis set
+to \verb|DALTON.BAS| using the keyword \Key{MOLPRI}, and then adding
+functions to this set.
+
+\section{The basis sets supplied with \siraba }
+
+As mentioned above, all the basis sets supplied with this distribution
+of the \siraba\ program --- with the exception of the ANO,
+sadlej\index{sadlej basis set}\index{ANO basis set}\index{NQvD basis
+set} and NQvD basis sets --- have been obtained from the EMSL basis set
+library~\cite{emslref}. In a very few cases we have corrected the
+files as obtained from this site, but we do not take responsibility
+for any errors inherent in these files.
+
+The ANO and sadlej polarization basis sets have been obtained from the
+MOLCAS homepage without any further processing, and should therefore
+be free of errors. The NQvD has been provided to us by Knut F\ae gri,
+and has been slightly reformatted for more convenient processing of
+the file, hopefully without having introduced any errors.
+
+%Below we give a a list of all basis set that comes with this
+%distribution along with a list of the elements supported, and the
+%proper reference to be used when employing a given basis set in a
+%calculation. In the basis set directory, we have --- for the
+%convienence of the user --- supplied some files only containing basis
+%functions. Although not possible to use in the \siraba\ program, they
+%may be used when adding polarization functions using the {\tt
+%ATOMBASIS} keyword.
+
+
+%\begin{tabular}{lcl}
+%Basis set name & Elements & References\\\hline
+%3-21G & H---Ne & \cite{jsbjapwjhjacs102}\\
+%3-21G & Na---Ar & \cite{msgjsbjapwjpwjhjacs104}\\
+%3-21G & K, Ca, Ga---Kr & \cite{kddwjhjcc7}\\
+%3-21G & Sc---Zn & \cite{kddwjhjcc8-1}\\
+%3-21G & Rb---Xe & \cite{kddwjhjcc8-2}\\
+%3-21++G & H---Ar & As 3-21G, with diffuse functions from
+%Ref.~\cite{tcjcpvrsjcc4,rkjsbrsjapjcp72,pmwgbgjjapmjfcpl197}.\\
+%3-21G* & H---Cl & As 3-21G, with polarization functions from
+%Ref.\cite{wjpmmfwjhdjdjapjsbjacs104}.\\
+%3-21++G* & H---Cl & As 3-21++G and 3-21G*\\
+%4-31G & H---Ne, P---Cl & \cite{rdwjhjapjcp54}\\
+%6-31G & H---He, Be, C--Ne & \cite{wjhrdjapjcp56}\\
+%6-31G & Li, B & \cite{jddjapjcp62}\\
+%6-31G & Na---Ar & \cite{mmfwjpwjhjsbmsgdjdjapjcp77}\\
+%6-31++G & H---Ar & As 6-31G, with diffuse functions from
+%Ref.~\cite{tcjcpvrsjcc4,rkjsbrsjapjcp72,pmwgbgjjapmjfcpl197}.\\
+%6-31G** & H---Ne & As 6-31G, with polarization functions from
+%Ref.~\cite{pchjaptca28}\\
+%6-31G** & Na---Ar & As 6-31G\\
+%6-31++G** & H---Ar & As 6-31++G and 6-31G**\\
+%6-31G(3df,3pd) & H---Ar & As 6-31G, with polarization functions from
+%Ref.~\cite{mjfjapjsbjcp80}.\\ 
+%6-311G & H---Ne & \cite{rkjsbrsjapjcp72}\\
+%6-311G & Na---Ar & \cite{admgssjcp72}\\
+%6-311G** & Na---Ar & As 6-311G, with polarization functions from
+%Ref.~\cite{rkjsbrsjapjcp72}.\\
+%6-311G(2df,2pd) & H---Ne & As 6-311G, with polarization functions from
+%Ref.~\cite{mjfjapjsbjcp80}.\\
+%6-311G(3df,3pd) & H---Ne & As 6-311G, with polarization functions from
+%Ref.~\cite{mjfjapjsbjcp80}.\\
+%AhlrichsVDZ & H---Kr & \cite{ashhrajcp97}\\
+%AhlrichsVTZ & H---Kr & \cite{ashhrajcp97}\\
+%DunningDZ & H & \cite{thdjcp53}\\
+%DunningDZ & B---F, Al---Cl & \cite{thdpjhmest}\\
+%DunningDZP+diff & H---F & As DunningDZ, with polarization and/or
+%diffuse functions from ref.~\cite{thdpjhmest}\\
+%DunningDZP+diff & Si---Cl & As DunningDZ, with polarization and/or
+%diffuse functions from ref.~\cite{emhfsjcp83}\\
+%DunningTZ & H, Li---Ne & \cite{thdjcp55}\\
+%\end{tabular}
+
+
+
+
+
+
+
+

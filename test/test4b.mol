@@ -1,0 +1,10 @@
+BASIS
+STO-3G
+Test1 i test-suite: Geometrioptimering med symmetri, med beregning av
+egenskaper i foerste og siste punkt. Generelt kontraherte basissett
+    2
+        8.    1
+O          0.0000000000            0.0000000000           -0.8603913579
+        1.    2
+H          0.0000000000            1.4528192886            0.4301956789
+H          0.0000000000           -1.4528192886            0.4301956789

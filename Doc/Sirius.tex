@@ -1,0 +1,1673 @@
+\chapter{\label{chap:inpref} Molecular wave functions, SIRIUS }
+ 
+\section{\label{sec:ref-notes} General notes for the SIRIUS input reference
+manual}
+
+SIRIUS is the part of the code that computes the wave function.
+ 
+The following sections contain a list of all generally relevant keywords to
+SIRIUS, only currently inactive keywords and some special debug
+options are omitted.
+
+\begin{enumerate}
+\item {The input for the wave function section must begin with 
+ 
+\begin{inputex} \begin{verbatim}
+**WAVE FUNCTIONS
+\end{verbatim} \end{inputex}
+   with no leading blanks.  The preceeding lines in the input file may
+   contain arbitrary information.
+}
+\item{ Input is directed by keywords written in upper case.
+   Only the first 7 characters including the prompt are significant.
+   The keywords are divided in a number of main input groups. Each main
+   input group is initiated by a {\starkey}, for example
+ 
+\begin{inputex} \begin{verbatim}
+*ORBITAL INPUT
+\end{verbatim} \end{inputex}
+   marks the beginning of the input group for orbital input.
+}
+\item { The keywords belonging to one of the main input groups begin with
+   the prompt {\dotkey}.
+}
+\item { Keywords that are necessary to specify are marked by "Required".
+   For other keywords the default values can be used in ordinary runs.
+}
+\item {Any keyword line beginnning with a \quotekw{!} or
+   \quotekw{\#} will be treated as a
+   comment line.  An illegal keyword will cause a dump of all keywords
+   for the current input section.
+}
+\item{A dump of keywords can be obtained in any input section with the
+keyword \quotekw{\Key{OPTIONS}}.  For example, the input
+ 
+\begin{inputex} \begin{verbatim}
+**SIRIUS
+.OPTIONS
+**END OF INPUT
+\end{verbatim} \end{inputex}
+   will cause a dump of the labels for the main input groups in SIRIUS,
+   while
+ 
+\begin{inputex} \begin{verbatim}
+**SIRIUS
+*ORBITAL INPUT
+.OPTIONS
+**END OF INPUT
+\end{verbatim} \end{inputex}
+   will cause a dump of the labels for the \quotekw{*ORBITAL INPUT} input group
+   in SIRIUS.
+}
+\item{ The SIRIUS input is finished with a line beginning with two stars,
+   e.g.
+ 
+\begin{inputex} \begin{verbatim}
+**END OF INPUT
+\end{verbatim} \end{inputex}
+}
+\end{enumerate}
+ 
+ 
+\pagebreak[3]
+\section{\label{sec:ref-newinp}
+   Main input groups in the **WAVE FUNCTIONS input module}
+ 
+\noindent
+The main input groups (those with the {\starkey} prompt) are listed here and
+the full descriptions are given in the designated sections.
+ 
+\noindent
+The first input group is always required to specify the type of
+calculation, and follows immediately after the \Sec{*WAVE FUNCTIONS}
+keyword.
+ 
+%Section~\ref{ref-geninp} \Sec{GENERAL INPUT}
+ 
+\noindent
+The remaining input groups may be specified in any order. In this
+chpater they are grouped alphabetcially, although the short
+presentation below gather them according to purpose.
+
+\ifsolvent
+The following two input groups are used to modify the
+molecular environment by adding field-dependent
+terms in the Hamiltonian and by invoking
+the self-consistent reaction field model for solvent
+effects, respectively:
+ 
+Section~\ref{ref-haminp} \Sec{HAMILTONIAN}
+
+Section~\ref{ref-solinp} \Sec{SOLVENT CALCULATION}
+\else
+The following input group describes additional field-dependent
+terms in the Hamiltonian :
+ 
+Section~\ref{ref-haminp} \Sec{HAMILTONIAN}
+\fi
+ 
+\noindent
+The next input group specifies the configurations included
+in the MCSCF and CI wave functions:
+ 
+Section~\ref{ref-wavinp} \Sec{CONFIGURATION INPUT}
+ 
+\noindent
+The two next groups are used to specify initial orbitals and initial
+guess for the CI vector:
+ 
+Section~\ref{ref-orbinp} \Sec{ORBITAL INPUT}
+ 
+Section~\ref{ref-civinp} \Sec{CI VECTOR}
+ 
+\noindent
+The two following input groups control the second-order MCSCF
+optimization:
+ 
+Section~\ref{ref-optinp} \Sec{OPTIMIZATION}
+ 
+Section~\ref{ref-stpinp} \Sec{STEP CONTROL}
+ 
+\noindent
+The next three groups have special input only relevant for the
+respective calculation types:
+ 
+Section~\ref{ref-cicinp} \Sec{CI INPUT}
+ 
+Section~\ref{ref-rhfinp} \Sec{HF INPUT}
+ 
+Section~\ref{ref-mp2inp} \Sec{MP2 INPUT}
+ 
+\noindent
+The next section is used to select some types of analysis of the final
+MCSCF or CI wave function:
+ 
+Section~\ref{ref-popinp} \Sec{POPULATION ANALYSIS}
+ 
+\noindent
+The next section is used to change the default integral transformation
+and specify any final integral transformation after convergence (a
+program following SIRIUS may need a higher transformation level):
+ 
+Section~\ref{ref-trainp} \Sec{TRANSFORMATION}
+ 
+\noindent
+The final two input groups control the amount of printed output and
+collect options not fitting in any of the other groups:
+ 
+Section~\ref{ref-priinp} \Sec{PRINT LEVELS}
+ 
+Section~\ref{ref-auxinp} \Sec{AUXILLIARY INPUT}
+ 
+\bigskip
+\noindent
+The wave function input is finished when a line is encountered beginning
+with two stars, for example
+ 
+\begin{inputex} \begin{verbatim}
+   **END OF INPUT
+\end{verbatim} \end{inputex}
+or 
+
+\begin{inputex} \begin{verbatim}
+   **MOLORB
+   ... formatted molecular orbitals coefficients
+   **END OF INPUT
+\end{verbatim} \end{inputex}
+ 
+\noindent
+The \Sec{*MOLORB} keyword or the \Sec{*NATORB} keyword
+must be somewhere on the input file and be
+followed by molecular orbital coefficients if the option for formatted
+input of molecular orbitals has been specified.  Apart from this
+requirement, arbitrary information can be written to the following lines
+of the input file.
+ 
+ 
+ 
+\pagebreak[3]
+\subsection{\label{ref-geninp}\Sec{*WAVE FUNCTIONS}}
+ 
+{\bf Purpose:}
+ 
+Specification of which calculation to perform and
+optionally of the number of symmetries for consistency check
+of input.
+ 
+\begin{description}
+\item[\Key{BASIS SET}]
+   Default: specified by integral program \\
+   \verb"READ (LUINP,*) (NBAS(I), I = 1,NSYM)" \\
+   Number of basis functions per symmetry.
+
+\item[\Key{CI}]
+  Configuration interaction calculation.\index{CI}\index{configuration
+  interaction}
+ 
+\item[\Key{FLAGS}]
+  \verb"READ (LUINP,NMLSIR)" \\
+  Read namelist \verb"$NMLSIR ... $END" \\
+  Only for debugging. Set internal control flags directly.
+  Usage is not documented.
+
+\item[\Key{HF}]
+  Closed shell or one open shell restricted
+  Hartree-Fock\index{HF}\index{SCF}\index{Hartree-Fock}\index{open-shell HF} calculation. 
+ 
+\item[\Key{INTERFACE}]
+  Write the "SIRIFC" interface file\index{interface file} for post-programs.
+ 
+\item[\Key{MCSCF}]
+  MCSCF calculation.\index{MCSCF}
+ 
+\item[\Key{MP2}]
+  M{\o}ller-Plesset second order perturbation theory\index{M\o ller-Plesset}\index{MP2} calculation. 
+ 
+\item[\Key{NSYM}]
+%  Required, no defaults. \\
+  Default: specified by integral program \\
+  \verb"READ (LUINP,*) NSYM" \\
+  Number of spatial Abelian symmetries (1, 2, 4, or 8), corresponding
+  to $D_{2h}$ or one of its subgroups.
+ 
+ 
+\item[\Key{PRINT}]
+  \verb"READ (LUINP,*) IPRSIR" \\
+  General SIRIUS print level and default for all other print parameters.
+ 
+\item[\Key{RESTART}]
+  restart SIRIUS\index{restart, wave function},
+  the SIRIUS restart file (\f{21} file) must be available
+ 
+\item[\Key{SCF}]
+	Alias for the \quotekw{\Key{HF}} keyword.
+
+\item[\Key{STOP}]
+  \kw{READ (LUINP,'(A20)') REWORD} \\
+  Terminate SIRIUS according to the instruction given on the following line.
+  Three stop points are defined:
+\begin{enumerate}
+ 
+\item \hspace{2em} \quotekw{ AFTER INPUT}
+ 
+\item \hspace{2em} \quotekw{ AFTER MO-ORTHONORMALIZATION}
+ 
+\item \hspace{2em} \quotekw{ AFTER GRADIENT}
+\end{enumerate}
+ 
+\item[\Key{TITLE}]
+  \verb"READ (LUINP,'(A)') TITLE(NTIT)" \\
+  Any number of title lines (until next line beginning with
+  \quotekw{.} or \quotekw{*} prompt).
+  Up to 6 title lines will be saved and used in output, additional
+  lines will be discarded.
+ 
+\item[\Key{WESTA}]
+  Write the "SIRIFC" interface file for WESTA post-program
+  
+\item[\Key{BASIS SET}]
+   Default: specified by integral program \\
+   \verb"READ (LUINP,*) (NBAS(I), I = 1,NSYM)" \\
+   Number of basis functions per symmetry.
+\end{description}
+ 
+\noindent{\bf Comments:}
+
+\ifabacus
+ABACUS: If the full molecular Hessian is calculated in ABACUS and the
+number of symmetries (NSYM) is greater than one, then the MCSCF wave function
+will automatically be calculated in determinants\index{determinants}
+and, if singlet,  
+\quotekw{.PLUS COMBINATIONS}).  This is so because the CSFs can only
+have one spatial symmetry, and it is generally necessary to solve linear
+response equations of several symmetries to get the full molecular Hessian.
+\fi
+
+ 
+BASIS SET is provided such that the number of basis functions in each
+symmetry may be specified if SIRIUS is modified to interface to an
+integral program which doesn't write this information to the integral
+file.
+ 
+ 
+ 
+\pagebreak[3]
+\subsection{\label{ref-auxinp}\Sec{AUXILLIARY INPUT}}
+ 
+{\bf Purpose:}
+ 
+Input which doesn't naturally fit into any of the other catagories.
+ 
+\begin{description}
+\item[\Key{NOSUPMAT}]
+  Do not use P-SUPERMATRIX integrals, but calculate Fock matrices
+  from AO integrals (slower, but requires less disk space). The
+  default is to use the supermatrix file if it exists.
+
+\item[\Key{ONESUP}]
+  Use same unit for P-SUPERMATRIX\index{supermatrix} and ONE-ELECTRON
+  integralsindex{one-electron integraL}
+  (LUSUPM=LUONEL, default is different units).
+\end{description}
+
+\pagebreak[3]
+\subsection{\label{ref-cicinp}\Sec{CI INPUT}}
+ 
+{\bf Purpose:}
+ 
+Options for a CI calculation.
+ 
+\begin{description}
+\item[\Key{CIDENSITY}]
+  Calculate CI one-electron density matrix and natural
+  orbital\index{natural orbital}
+  occupations after convergence.
+ 
+\item[\Key{CINO}]
+  Generate CI\index{CI}\index{configuration interaction} natural
+  orbitals\index{natural orbital} for CI root 
+  number \kw{ISTACI}, 
+  clear the \f{21} file and write the orbitals with label \quotekw{NEWORB  }.
+  The \quotekw{\Key{STATE}} option must be specified.
+ 
+\item[\Key{CIROOTS}]
+  Default: NROOCI = 1\\
+  \kw{READ (LUINP,*) NROOCI} \\
+  Converge the lowest \kw{NROOCI} CI roots\index{root, CI} to threshold.
+ 
+\item[\Key{DISKH2}]
+  Active two-electron MO integrals on disk (see comments below).
+ 
+\item[\Key{MAX ITERATIONS}]
+  \kw{READ (LUINP,*) MXCIMA} \\
+  Max iterations in iterative diagonalization of CI matrix (default = 20).
+ 
+\item[\Key{STATE}]
+  Default: not specified\\
+  \kw{READ (LUINP,*) ISTACI} \\
+  Alternative to \quotekw{\Key{CIROOTS}}.  Converge root number \kw{ISTACI}
+  to threshold, converge all lower roots only to THQMIN
+  (from the \quotekw{\Sec{OPTIMIZATION}} input group, see
+  p.~\pageref{ref-optinp}). 
+
+\item[\Key{THRESHOLD}]
+  Default = 1.D-05\\
+  \kw{READ (LUINP,*) THRCI} \\
+  Threshold for CI energy gradient.  The CI energy will be converged to
+  approximately the square of this number.
+ 
+\item[\Key{THRPWF}]
+  Default = 0.05D0\\
+  \kw{READ (LUINP,*) THRPWF} \\
+  Only CI coefficients greater than threshold are printed
+  (PWF: print wave function).
+ 
+\item[\Key{WEIGHTED RESIDUALS}]
+  Use energy weighted residuals\index{residual} (see comments below).
+ 
+\item[\Key{ZEROELEMENTS}]
+  Zero small elements in CI trial vectors (see comments below).
+\end{description}
+ 
+ 
+\noindent{\bf Comments:}
+ 
+DISKH2: By default the CI module will attempt to place the two-electron
+integrals with four active indices in memory for more efficient
+calculation of CI sigma vectors, if memory is insufficient for this
+the 
+integrals will automatically be placed on disk.  The DISKH2 keyword
+forces the integrals always to be on disk.
+ 
+WEIGHTED RESIDUALS:  Normally the CI states will be converged to a
+residual less than the specified threshold, and this will give
+approximately the squared number of decimal places in the energy.
+Depending on the value of the energy, the eigenvectors will be converged
+to different accuracy. If the eigenvectors are wanted with, e.g., at
+least 6 decimal places for property calculations, specify a threshold of
+1.0D-6 and weighted residuals.
+ 
+ZEROELEMENTS: an experimental option to perhaps save time (if the CI
+module can use sparseness) by zeroing all elements less than 1.0D-3
+times the largest element in the CI trial vector before
+orthonormalization against previous trial vectors.
+ 
+See also \quotekw{.SYM CHECK} under \quotekw{*OPTIMIZATION}
+(p.~\pageref{ref-optinp}).
+ 
+ 
+\pagebreak[3]
+\subsection{\label{ref-civinp}\Sec{CI VECTOR}}
+ 
+{\bf Purpose:}
+ 
+To obtain initial guess for CI vector(s).
+ 
+\begin{description}
+\item[\Key{PLUS COMBINATIONS}]
+  Use with \quotekw{\Key{STARTHDIAGONAL}} to choose plus combination
+  of degenerate   diagonal elements ({\bf STRONGLY RECOMMENDED} for
+  calculation of singlet states  with \quotekw{\Key{DETERMINANTS}}).
+
+\item[\Key{SELECT CONFIGURATION}]
+  \kw{READ (LUINP,*) ICONF} \\
+  Select CSF (or determinant if \quotekw{\Key{DETERMINANTS}}) no.
+  ICONF as start configuration.\index{configuration, start}
+ 
+\item[\Key{STARTHDIAGONAL}]
+  Select configurations corresponding to the lowest diagonal elements in
+  the configuration part of the Hessian (this is the default option).
+ 
+\item[\Key{STARTOLDCI}]
+  Start from old CI-vector stored saved on the \f{21} file.
+
+%\ifabacus
+%\item[.ABACUS]
+%  Geometry walk, use CI vector and "GEOSAVE" information saved by
+%  ABACUS at previous geometry.  The "GEOSAVE" information is used
+%  to decide as early as possible in the wave function optimization 
+%  if the step should be rejected, thus saving CPU time if the step
+%  is rejected.
+%\fi
+ 
+\end{description}
+ 
+\pagebreak[3]
+\subsection{\label{ref-wavinp}\Sec{CONFIGURATION INPUT}}
+ 
+{\bf Purpose:}
+ 
+To specify the configuration part in MCSCF and CI calculations.
+ 
+\begin{description}
+\item[\Key{SPIN MULTIPLICITY}]
+  Required for MCSCF and CI wave
+  functions\index{MCSCF}\index{CI}\index{configuration interaction}.\\
+  \kw{READ (LUINP,*) ISPIN}\\
+  For CSF basis: state spin multiplicity\index{spin multiplicity} = $2S + 1$,
+  where $S$ is the spin quantum number. \\
+  For determinant basis this option determines the minimum spin
+  multiplicity.  The $M_S$ value is determined as (ISPIN-1)/2.
+ 
+\item[\Key{SYMMETRY}]
+  Required for MCSCF and CI wave functions.\\
+  \kw{READ (LUINP,*) LSYM} \\
+  Spatial symmetry\index{symmetry} of MCSCF wave function
+ 
+\item[\Key{INACTIVE ORBITALS}]
+  Required.\\
+  \kw{READ (LUINP,*) (NISH(I),I=1,NSYM)} \\
+  Number of inactive orbitals\index{inactive orbital} each symmetry.
+ 
+\item[\Key{ELECTRONS (active)}]
+  Required.\\
+  \kw{READ (LUINP,*) NACTEL} \\
+  Number of active electrons\index{active electrons} (the number of
+  electrons to be distributed 
+  in the active orbitals).  The total number of electrons is this number
+  plus two times the total number of inactive orbitals.
+ 
+\item[\Key{CAS SPACE}]
+  \kw{READ (LUINP,*) (NASH(I),I=1,NSYM)} \\
+  CAS calculation: Active orbitals\index{active orbital} each symmetry.
+ 
+\item[\Key{RAS1 SPACE}]
+   \kw{READ (LUINP,*) (NAS1(I),I=1,NSYM)} \\
+   RAS calculation: RAS1 orbital space\index{RAS1 orbital space}
+ 
+\item[\Key{RAS2 SPACE}]
+   \kw{READ (LUINP,*) (NAS2(I),I=1,NSYM)} \\
+   RAS calculation: RAS2 orbital space\index{RAS2 orbital space}
+ 
+\item[\Key{RAS3 SPACE}]
+   \kw{READ (LUINP,*) (NAS3(I),I=1,NSYM)} \\
+   RAS calculation: RAS3 orbital space\index{RAS3 orbital space}
+ 
+\item[\Key{RAS1 HOLES}]
+  \kw{READ (LUINP,*) NHL1MN,NHL1MX} \\
+  Minimum and maximum number of holes\index{electron hole} in RAS1; alternative
+  to \quotekw{\Key{RAS1 ELECTRONS}}
+ 
+\item[\Key{RAS1 ELECTRONS}]
+   \kw{READ (LUINP,*) NEL1MN,NEL1MX} \\
+   Minimum and maximum number of RAS1 electrons; this can alternatively
+   be specified with \quotekw{\Key{RAS1 HOLES}}
+ 
+\item[\Key{RAS3 ELECTRONS}]
+   \kw{READ (LUINP,*) NEL3MN, NEL3MX} \\
+   Minimum and maximum number of RAS3 electrons
+\end{description}
+ 
+\noindent{\bf Comments:}
+ 
+\noindent
+SYMMETRY   Specifies total spatial symmetry of the wave function in
+$D_{2h}$ symmetry and its subgroups: $C_{2v}$, $C_2h$, $D_2$, $C_s$, $C_i$,
+$C_2$, $C_1$. The  symmetry number of wave function follows MOLEULE
+output ordering of symmetries ($D_{2h}$ subgroup IR's).
+  
+\noindent
+CAS and RAS\index{RASSCF}\index{CASSCF}\index{MCSCF} are exclusive and
+both cannot be specified in the same 
+MCSCF or CI\index{MCSCF}\index{CI}\index{configuration interaction}
+calculation, one of them must be specified. 
+ 
+ 
+\pagebreak[3]
+\subsection{\label{ref-haminp}\Sec{HAMILTONIAN}}
+ 
+{\bf Purpose:}
+ 
+Add extra terms to the Hamiltonian (for finite field\index{finite
+field} calculations). 
+ 
+\begin{description}
+\item[\Key{FIELD TERM}]
+  Default = no fields. \\
+  \verb"READ (LUINP,*) EFIELD(NFIELD)" \\
+  \verb"READ (LUINP,'(1X,A8)') LFIELD(NFIELD)" \\
+  Enter field strength (in au) and label,
+  where label is a MOLE\-CULE-style property label produced
+  by the property program, See Chapter~\ref{ch:hermit}.
+ 
+ 
+\item[\Key{PRINT}]
+  Default = 0.\\
+  \verb"READ (LUINP,*) IPRH1" \\
+  If greater than zero:
+  print the one-electron Hamiltonian matrix, including
+  specified field-dependent terms, in AO basis.
+\end{description}
+ 
+\noindent{\bf Comments:}
+ 
+Up to \mxfelt simultaneous fields may be specified by repeating the
+\quotekw{\Key{FIELD TERM}} keyword.
+ 
+The field integrals are read from file LUPROP with the specified label.
+
+
+\pagebreak[3]
+\subsection{\label{ref-rhfinp}\Sec{HF INPUT}}
+ 
+{\bf Purpose:}
+ 
+This section deals with the closed shell and one open shell
+Hartree-Fock cases\index{SCF}\index{HF}\index{Hartree-Fock}.  The
+input here will usually only be used if 
+\quotekw{\Key{HF}} (or its alias \quotekw{\Key{SCF}}) or
+\quotekw{\Key{MP2}}\index{MP2}\index{M\o ller-Plesset} have been
+specified under \quotekw{\Sec{*WAVE 
+FUNCTIONS}}. Single configuration cases with more than one open
+shell\index{open shell}
+are handled by the general \Sec{CONFIGURATION INPUT} section.
+
+\begin{description}
+\item[\Key{AUTOCCUPATION}]
+  Default for SCF\index{SCF}\index{HF}\index{Hartree-Fock} and MP2\index{MP2}\index{M\o ller-Plesset} calculations starting from H\"{u}ckel or H1DIAG
+  starting orbitals\index{starting orbital}\index{H\"{u}ckel}. 
+
+  Allow the Hartree-Fock occupation\index{Hartree-Fock
+  occupation}\index{HF occupation} to  
+  change based on changes in 
+  orbital ordering during DIIS\index{DIIS} optimization.
+
+\item[\Key{C2DIIS}]
+  Use Harell Sellers' C2-DIIS algorithm instead of Pulay's C1-DIIS algorithm
+  (see comments).
+
+\item[\Key{COREHOLE}]
+  \kw{READ (LUINP,*) JCHSYM,JCHORB} \\
+  JCHSYM = symmetry of core orbital\\
+  JCHORB = the orbital in symmetry JCHSYM with a single core hole\\
+  Single core hole\index{core hole} open shell RHF calculation, \quotekw{\Key{OPEN
+  SHELL}} must not 
+  be specified.  The specified core orbital must be
+  inactive\index{inactive orbital}.
+  The HF occupation in symmetry \kw{JCHSYM} will be reduced with one
+  and instead an 
+  open shell orbital will be added for the core hole orbital.
+  If the specified core orbital is not the last occupied orbital in symmetry
+  \kw{JCHSYM} it will switch places with that orbital and user-defined reordering
+  is not possible.
+  If explicit reordering is required you must also reorder
+  the core orbital yourself and let \kw{JCHORB} point to the last occupied orbtial
+  of symmetry \kw{JCHSYM}.  See comments below.
+ 
+\item[\Key{CORERELAX}]
+  (ignored if \quotekw{\Key{COREHOLE}} isn't also specified)\\
+  Optimize core hole\index{core hole} state with relaxed
+  core\index{relaxed core} orbital using Newton-Raphson algorithm.
+  It is assumed that this calculation follows an optimization
+  with frozen core orbital and the specific value of
+  \quotekw{JCHORB} under \quotekw{\Key{COREHOLE}} is ignored (no
+  reordering will take place). 
+ 
+%\item[\Key{DIRFOCK}]
+%  Direct Fock matrix constructions (recalculate integrals when needed).
+%  Default: AO integrals or P-supermatrix integrals read from disk.
+%\fi
+
+\item[\Key{ELECTRONS}]
+  \kw{READ (LUINP,*) NRHFEL} \\
+  Number of electrons in the molecule\index{electrons in molecule}. By
+  default, this number will be 
+  determined on the basis of the nuclear charges and the total charge
+  of the molecule\index{charge of molecule} as specified in the
+  \verb|MOLECULE.INP| file. The 
+  keyword is incomaptible with the keywords \quotekw{\Key{HF
+  OCCUPATION}} and \quotekw{\Key{OPEN SHELL}}.
+
+\item[\Key{FC MVO}]
+  See Ref.~\cite{cwbjcp72}.
+
+\item[\Key{FOCK ITERATIONS}]
+  \kw{READ (LUINP,*) MAXFCK} \\
+  Maximum number of closed-shell Roothaan\index{Roothaan iteration}
+  Fock iterations (default = 0). 
+ 
+\item[\Key{FROZEN CORE ORBITALS}]
+  \kw{READ (LUINP,*) (NFRRHF(I),I=1,NSYM)} \\
+  Frozen orbitals per symmetry (if MP2 follows then at least these orbitals
+  must be frozen in the MP2 calculation).
+  NOTE: no Roothaan Fock iterations if frozen orbitals.
+
+\item[\Key{H1VIRTUALS}]
+  Virtual orbitals that diagonalize the one-electron Hamiltonian matrix
+  (see comments below).
+ 
+\item[\Key{HF OCCUPATION}]
+    \kw{READ (LUINP,*) (NRHF(I),I=1,NSYM)} \\
+  Hartree-Fock occupancy for RHF and MP2
+  calculations\index{HF}\index{SCF}\index{Hartree-Fock}\index{MP2}\index{M\o ller-Plesset}. 
+ 
+\item[\Key{MAX DIIS ITERATIONS}]
+  \kw{READ (LUINP,*) MXDIIS} \\
+  Maximum number of DIIS iterations\index{DIIS iteration} (default = 30).
+
+\item[\Key{MAX ERROR VECTORS}]
+  \kw{READ (LUINP,*) MXEVC} \\
+  Maximum number of DIIS error vectors\index{DIIS error vector} (default = 10).
+
+\item[\Key{MAX MACRO ITERATIONS}]
+  \kw{READ (LUINP,*) MXHFMA} \\
+  Maximum number of QCHF macro\index{HF, quadratic convergent} iterations (default = 15).
+ 
+\item[\Key{MAX MICRO ITERATIONS}]
+  \kw{READ (LUINP,*) MXHFMI} \\
+  Maximum number of QCHF\index{HF, quadratic convergent} micro iterations per macro iteration (default = 12).
+ 
+\item[\Key{NODIIS}]
+  Do not use DIIS algorithms\index{DIIS} (default: use DIIS algorithm).
+
+\item[\Key{NONCANONICAL}]
+  No transformation to canonical orbitals\index{canonical orbital}
+ 
+\item[\Key{NOQCHF}]
+  No quadratically convergent Hartree-Fock\index{HF, quadratic convergent} iterations
+ 
+\item[\Key{OPEN SHELL}]
+  Default = no open shell\\
+  \kw{READ (LUINP,*) IOPRHF} \\
+  Symmetry of the open shell in a one open shell\index{open-shell HF}
+  calculation. 
+ 
+\item[\Key{PRINT}]
+  \kw{READ (LUINP,*) IPRRHF} \\
+  Resets general print level to IPRRHF in Hartree-Fock calculation
+  (if not specified, global print levels will be used).
+ 
+\item[\Key{THRESHOLD}]
+  Default = 1.0D-08\\
+  \kw{READ (LUINP,*) THRRHF} \\
+  Hartree-Fock convergence threshold for energy gradient.  The convergence
+  of the energy will be approximately the square of this number.
+ 
+\end{description}
+ 
+ 
+\noindent{\bf Comments:}
+ 
+By default, the RHF part of a SIRIUS calculation will consist of :
+\begin{enumerate}
+\item {MAXFCK Roothaan Fock iterations (early exit if convergence
+    or oscillations).
+}
+\item {MXDIIS DIIS iterations (exit if convergence, i.e. gradient norm
+    less than THRRHF, and if convergence rate too slow or even diverging).
+}
+\item {Unless NOQCHF, quadratically convergent Hartree-Fock until
+    gradient norm less than THRRHF.
+}
+\item{If \quotekw{.H1VIRT} then transformation of
+    virtual orbitals to diagonalize
+    the one-electron Hamiltonion, i.e. virtual orbitals will be defined
+    for a bare nuclei potential.
+    If the RHF calculation is going to be followed
+    directly by an MCSCF calculation,
+    \quotekw{.H1VIRT} will usually provide much
+    better start orbitals than the canonical orbitals (canonical
+    orbitals will usually put diffuse, non-correlating orbitals in the
+    active space).  Note that if the basis set contains compact, core
+    correlating orbitals, \quotekw{.H1VIRT} will put those in the active space.
+    WARNING: if both \quotekw{.MP2} and \quotekw{.H1VIRT} are specified,
+    then the MP2 orbitals will be destroyed and replaced with \kw{H1VIRT}
+    orbitals.
+}
+\end{enumerate}
+ 
+In general \quotekw{.HF OCCUPATION} should be specified for CI or
+MCSCF\index{HF occupation}\index{Hartree-Fock occupation}\index{CI}\index{MCSCF}\index{configuration
+interaction} wave function calculations.  If not specified, the HF
+occupation 
+will be the number of inactive orbitals in the MCSCF calculation (or
+CI calculation if no MCSCF). For SCF or
+MP2\index{HF}\index{SCF}\index{Hartree-Fock}\index{MP2}\index{M\o
+ller-Plesset} calculations the 
+Hartree-Fock occupation will be determined on the basis of the nuclear
+charges and molecular charge of the molecule as specified in the
+\verb|MOLECULE.INP| file.
+
+By default, starting orbitals and initial Hartree-Fock occupation will
+be determined on the basis of a H\"{u}ckel\index{H\"{u}ckel}
+calculation (for elements with 
+nuclear charge less than 36). If problems is experienced due to the
+Huckel starting guess, it can be avoided by requiring another set of
+starting orbitals (e.g. \verb|H1DIAG|).
+
+%The default convergence threshold is quite sharp (compare with the
+%default for MCSCF), this is done in order to have good orbitals
+%for MP2 caculations.  For Hartree-Fock
+%calculations with many basis functions
+%which are not to be followed by MP2 or used for finite difference
+%property calculations, some CPU time may be save by lowering the
+%threshold to the minimum acceptable accuracy.
+
+It is our experience that
+it is usually most efficient not to perform any Roothaan Fock iterations
+before DIIS is activated, therefore, MAXFCK = 0 as default.
+The algorithm described in
+Harrell Sellers, Int. J. Quant. Chem. {\bf 45}, 31-41 (1993) is
+also implemented, and may be selected with \quotekw{\Key{C2DIIS}}.
+
+ 
+H1VIRTUALS: This option can be used without a Hartree-Fock calculation
+to obtain compact virtual orbitals, but \quotekw{\Key{HF OCCUPATION}} must be
+specified anyway in order to identify the virtual orbitals to be transformed.
+ 
+COREHOLE: These new options (summer 1994) are added to make SCF single
+core hole\index{core hole}
+calculations simple. To perform an SCF core hole calculation just add the
+\quotekw{\Key{COREHOLE}} keyword to the input for the closed shell RHF
+ground state calculation, 
+specifying from which orbital to remove an electron, and
+provide the program with the ground state orbitals using the appropriate
+\quotekw{\Key{MOSTART}} option (normally \kw{NEWORB}).
+Note that this is different from the MCSCF version
+of \quotekw{\Key{COREHOLE}} under \quotekw{\Sec{OPTIMIZATION}}
+(p.~\pageref{ref-optinp}); in the MCSCF case
+the user must explicitly 
+move the core hole orbital from the inactive class to RAS1
+by modifying the \quotekw{\Sec{CONFIGURATION INPUT}}
+(p.~\pageref{ref-wavinp}) specifications
+between the initial calculation with filled core orbitals and the core hole calculation.
+The core hole\index{core hole} orbital will be frozen\index{frozen
+core hole} in the following optimization. 
+After this calculation has converged, the CORERELAX option may be added
+and the core orbital will be relaxed\index{relaxed core hole}.  When
+CORERELAX is specified it is 
+assumed that the calculation was preceeded by a frozen core calculation,
+and that the orbital has already been moved to the open shell orbital.
+Only the main peak can be obtained in SCF calculations, for shake-up energies 
+MCSCF must be used.
+ 
+\pagebreak[3]
+\subsection{\label{ref-mp2inp}\Sec{MP2 INPUT}}
+ 
+{\bf Purpose:}
+ 
+To direct MP2 calculation\index{MP2}\index{M\o ller-Plesset}.
+ 
+\begin{description}
+\item[\Key{MP2 FROZEN}]
+  Default = no frozen orbitals\\
+  \kw{READ (LUINP,*) (NFRMP2(I),I=1,NSYM)} \\
+  Orbitals frozen in MP2 calculation
+ 
+\item[\Key{PRINT}]
+  \kw{READ (LUINP,*) IPRMP2} \\
+  Print level for MP2 calculation
+\end{description}
+ 
+ 
+\noindent{\bf Comments:}
+ 
+ 
+The MP2 module expects canonical Hartree-Fock orbitals\index{canonical
+orbital}, the module will
+check the orbitals and exit if the Fock matrix has off-diagonal non-zero
+elements.
+ 
+The MP2 calculation will produce the MP2 energy and the natural orbitals
+for the density matrix through second order.  The primary purpose of
+this option is to generate good starting orbitals for CI or MCSCF, but
+may of course also be used to obtain the MP2 energy, perhaps with frozen
+core orbitals. For valence MCSCF calculations it is recommended that the
+\quotekw{\Key{MP2 FROZEN}} option is used in order to obtain the appropriate
+correlating orbitals\index{correlating orbitals}\index{MCSCF} as start
+for an MCSCF calculation.  As the commonly 
+used basis sets do not contain correlating orbitals for the core
+orbitals and as the core correlation energy therefore becomes arbitrary,
+the \quotekw{\Key{MP2 FROZEN}} option can also be of benefit in MP2 energy
+calculations.
+ 
+ 
+\pagebreak[3]
+\subsection{\label{ref-optinp}\Sec{OPTIMIZATION}}
+ 
+{\bf Purpose:}
+ 
+To change defaults for optimization of an MCSCF\index{MCSCF} wave function.
+Some of the options also affect a QC-HF optimization.
+ 
+\begin{description}
+\item[\Key{ABSORPTION}]
+  \kw{READ (LUINP,'(A8)') RWORD} \\
+  RWORD = ` LEVEL 1', ` LEVEL 2', or ` LEVEL 3'\\
+  Orbital absorption\index{orbital absorption} in MCSCF optimization
+  at level 1, 2, or 3, as specified 
+  (normally level 3, see comments below).  This keyword may be repeated to
+  specify more than one absorption level, the program will then begin with
+  the lowest level requested and, when that level is converged,
+  disable the lower level and shift to the next level.
+% 940816-hjaaj: The following may not be true for RAS ????
+% Absorption at several levels are only useful in
+% first macro iteration, therefore the lower levels are disabled after 
+% convergence.
+ 
+\item[\Key{ACTROT}]
+  include specified active-active rotations
+\begin{verbatim}
+  READ (LUINP,*) NWOPT
+  DO I = 1,NWOPT
+    READ (LUINP,*) JWOP(1,I),JWOP(2,I)
+  END DO
+\end{verbatim}
+  JWOP(1:2,I) denotes normal molecular orbital numbers (not the active
+  orbital numbers).
+ 
+\item[\Key{ALWAYS ABSORPTION}]
+  Absorption\index{orbital absorption} in all MCSCF macro iterations
+  (default is to disable absorption in 
+  local region or after \quotekw{\Key{MAXABS}} macro iterations, whichever comes first).
+  Absorption is always disabled after Newton-Raphson algorithm has been used,
+  and thus also when doing \quotekw{\Key{CORERELAX}},
+  because absorption may cause variational collapse if the desired state is excited.
+ 
+\item[\Key{CI PHP MATRIX}]
+  Default : MAXPHP = 1 (Davidson's algorithm)\\
+  \kw{READ (LUINP,*) MAXPHP} \\
+  PHP is a subblock of the CI matrix which is calculated explicitly
+  in order to obtain improved CI trial vectors compared to the
+  straight Davidson\index{Davidson algorithm} algorithm.  The
+  configurations corresponding to 
+  the lowest diagonal elements are selected, unless
+  \quotekw{\Key{PHPRESIDUAL}} is specified.
+  \kw{MAXPHP} is the maximum dimension of PHP, the actual dimension
+  will be less if \kw{MAXPHP} will split degenerate configurations.
+ 
+\item[\Key{COREHOLE}]
+  \kw{READ (LUINP,*) JCHSYM,JCHORB} \\
+  JCHSYM = symmetry of core orbital\\
+  JCHORB = the orbital in symmetry JCHSYM with a single core hole\\
+  Single core hole\index{core hole} MCSCF calculation. The calculation must be of RAS type
+  with only the single core hole orbital in RAS1, the state specified with
+  \quotekw{\Key{STATE}} is optimized with the core hole orbital
+  frozen\index{frozen core hole}. 
+  The specified core hole orbital must be either inactive or
+  the one RAS1 orbital, if it is inactive then it will switch places with
+  the RAS1 orbital and it will not be possible to also
+  specify \quotekw{\Key{REORDER}}. If explicit reordering is required you must reorder
+  the core orbital yourself and let \kw{JCHORB} point to the one RAS1 orbital.
+  Orbital absorption is activated at level 2. See comments below for more information.
+ 
+\item[\Key{CORERELAX}]
+  (ignored if \quotekw{\Key{COREHOLE}} isn't also specified)\\
+  Optimize state with relaxed core orbital\index{relaxed core hole} (using Newton-Raphson algorithm, 
+  it is not necessary to explicitly specify \quotekw{\Key{NR ALWAYS}}).
+  It is assumed that this calculation follows an optimization
+  with frozen core orbital and that the orbital has already been
+  moved to the RAS1 space (i.e., the specific value of
+  \quotekw{JCHORB} under \quotekw{\Key{COREHOLE}} is ignored). Any
+  orbital absorption   will be ignored.
+ 
+\item[\Key{DETERMINANTS}]
+  Use determinant\index{determinants} basis instead of CSF basis (see comments).
+
+\item[\Key{EXACTDIAGONAL}]
+  Default for RAS calculations.\\
+  Use the exact orbital Hessian\index{orbital Hessian} diagonal.
+ 
+\item[\Key{FOCKDIAGONAL}]
+  Default for CAS calculations.\\
+  Use an approximate orbital Hessian diagonal which only uses Fock
+  contributions.
+ 
+\item[\Key{FOCKONLY}]
+  Activate TRACI option (default : program decides).\\
+  Modified TRACI option where all orbitals, also active orbitals, are
+  transformed to Fock type orbitals in each iteration.
+
+\item[\Key{MAX CI}]
+  \kw{READ (LUINP,*) MAXCIT} \\
+  maximum number of CI iterations before MCSCF (default = 3).
+ 
+\item[\Key{MAX MACRO ITERATIONS}]
+  \kw{READ (LUINP,*) MAXMAC} \\
+  maximum number of macro iterations in MCSCF optimization (default = 15).
+ 
+\item[\Key{MAX MICRO ITERATIONS}]
+  \kw{READ (LUINP,*) MAXJT} \\
+  maximum number of micro iterations per macro iteration in MCSCF optimization
+  (default = 24).
+ 
+\item[\Key{MAXABS}]
+  \kw{READ (LUINP,*) MAXABS} \\
+  maximum number of macro iterations with absorption\index{orbital
+  absorption} (default = 3). 
+ 
+\item[\Key{MAXAPM}]
+  \kw{READ (LUINP,*) MAXAPM} \\
+  maximum number orbital absorptions\index{orbital absorption} within
+  a macro iteration 
+  (APM : Absorptions Per Macro iteration; default = 5)
+ 
+\item[\Key{NATONLY}]
+  Activate TRACI option (default : program decides).\\
+  Modified TRACI option where the inactive and secondary orbitals are not
+  touched (these two types of orbitals are already natural orbitals).
+ 
+\item[\Key{NEO ALWAYS}]
+  Always norm-extended optimization (never switch to New\-ton-Raph\-son).
+  Note: \quotekw{\Key{NR ALWAYS}} and \quotekw{\Key{CORERELAX}}
+  takes precedence over \quotekw{\Key{NEO ALWAYS}}.
+ 
+\item[\Key{NO ABSORPTION}]
+  Never orbital absorption\index{orbital absorption} (default settings removed)
+ 
+\item[\Key{NO ACTIVE-ACTIVE ROTATIONS}]
+  No active-active rotations in RAS optimization.
+ 
+\item[\Key{NOTRACI}]
+  Disable TRACI option (default : program decides).
+
+\item[\Key{NR ALWAYS}]
+  Always Newton-Raphson optimization (never NEO optmization).
+  Note: \quotekw{\Key{NR ALWAYS}} takes precedence over
+  \quotekw{\Key{NEO ALWAYS}}. 
+ 
+\item[\Key{OLSEN}]
+  Use Jeppe Olsen's generalization of the Davidson
+  algorithm\index{Davidson algorithm}.
+ 
+\item[\Key{OPTIMAL ORBITAL TRIAL VECTORS}]
+  Generate "optimal" orbital trial vectors\index{optimal orbital trial vector}
+ 
+\item[\Key{ORB\_TRIAL VECTORS}]
+  Use also orbital trial vectors as start vectors for auxilliary roots
+  in each macro iteration (CI trial vectors are always generated).
+ 
+\item[\Key{PHPRESIDUAL}]
+  Select configurations for PHP matrix based on largest residual
+  rather than lowest diagonal elements.
+ 
+\item[\Key{SIMULTANEOUS ROOTS}]
+  Default : NROOTS = ISTATE, LROOTS = NROOTS\\
+  \kw{READ (LUINP,*) NROOTS, LROOTS} \\
+  NROOTS = Number of simultaneous roots in NEO\\
+  LROOTS = Number of simultaneous roots in NEO at start
+ 
+\item[\Key{STATE}]
+  Default = 1\\
+  \kw{READ (LUINP,*) ISTATE} \\
+  Index of MCSCF Hessian\index{MCSCF Hessian} at convergence (1 for
+  lowest state, 2 for first 
+  excited state, etc. within the spatial symmetry\index{symmetry} and
+  spin symmetry\index{spin symmetry}
+  specified under \Sec{CONFIGURATION INPUT}).
+ 
+\item[\Key{SYM CHECK}]
+  Default: ICHECK = 2 when NROOTS $>$ 1, else ICHECK = -1.\\
+  \kw{READ (LUINP,*) ICHECK} \\
+  Check symmetry of the LROOTS start CI-vectors and remove those which
+  have wrong symmetry (e.g. vectors of delta symmetry in a sigma
+  symmetry calculation).
+\begin{verbatim}
+  ICHECK < 0  : No symmetry check.
+  ICHECK = 1  : Remove those vectors which do not have the same
+                symmetry as the ISTATE vector, reassign ISTATE.
+  ICHECK = 2  : Remove those vectors which do not have the same
+                symmetry as the lowest state vector before selecting
+                the ISTATE vector.
+  other values: check symmetry, do not remove any CI vectors.
+\end{verbatim}
+  The \quotekw{\Key{SIMULTANEOUS ROOTS}} input will automatically be
+  updated if CI vectors are removed.
+ 
+\item[\Key{THRCGR}]
+  \kw{READ (LUINP,*) THRCGR} \\
+  Threshold for print of CI gradient.
+ 
+\item[\Key{THRESHOLD}]
+  Default = 1.0D-05\\
+  \kw{READ (LUINP,*) THRMC} \\
+  Convergence threshold for energy gradient in MCSCF optimization.
+  The convergence of the energy will be approximately the square of this
+  number.
+ 
+\item[\Key{TRACI}]
+  Activate TRACI option (default : program decides).\\
+  Active orbitals are transformed to natural orbitals and the CI-vectors
+  are counterrotated such that the CI states do not change.  The
+  inactive and secondary orbitals are transformed to Fock type orbitals
+  (corresponding to canonical orbitals for closed shell Hartree-Fock).
+  For RAS wave functions the active orbitals are only transformed
+  within their own class (RAS1, RAS2, or RAS3) as the wave function is
+  not invariant to orbital rotations between the classes.  For RAS, the
+  orbitals are thus not true natural orbitals, the density matrix is
+  only block diagonalized.  Use \quotekw{\Key{IPRCNO}} (see
+  p.~\pageref{ref-priinp})   to control output from this
+  transformation. 
+
+\end{description}
+ 
+ 
+\noindent{\bf Comments:}
+ 
+COREHOLE: Single core hole\index{core hole} calculations are performed as RAS calculations where
+the opened core orbital is in the RAS1 space.  The RAS1 space must therefore
+contain one and only one orbital when the COREHOLE option is used, and the
+occupation must be restricted to be exactly one electron. The orbital
+identified as the core orbital must be either inactive or the one RAS1 orbital,
+if it is inactive it will switch places with the one RAS1 orbital.
+The core orbital (now in RAS1) will be frozen in the following optimization.
+After this calculation has converged, the CORERELAX option may be added
+and the core orbital will be relaxed\index{relaxed core hole}.  When
+CORERELAX is specified it is 
+assumed that the calculation was preceeded by a frozen
+core\index{frozen core hole} calculation,
+and that the orbital has already been moved to the RAS1 space.
+Default corresponds to the main peak, shake-up energies may be obtained
+by specifying \quotekw{\Key{STATE}} larger than one.
+Absorption is very beneficial in core hole calculations because of the
+large orbital relaxation following the opening of the core hole.
+ 
+ABSORPTION: Absorption\index{orbital absorption} level 1 includes occupied - occupied rotations
+only (including active-active rotations); level 2 adds inactive -
+secondary rotations and only active - secondary rotations are excluded
+at this level; and finally level 3 includes all non-redundant rotation
+for the frozen CI vector.  Levels 1 and 2 require the same integral
+transformation (because the inactive - secondary rotations are
+performed using the P-supermatrix integrals) and level 1 is therefore
+usually not used. Level 3 is the normal and full level, but it can be
+advantageous to activate level 2 together with level 3 if big
+inactive-active or occupied-occupied rotations are expected.
+ 
+ORB\_TRIAL: Orbital trial\index{orbital trial vector}\ vectors as
+start vectors can be used for 
+excited states and other calculations with more than one simultaneous
+roots.  The orbital start trial vectors are based on the eigenvectors of
+the NEO matrix in the previous macro iterations.  However, they are
+probably not cost-effective for multiconfiguration calculations where
+optimal orbital trial\index{optimal orbital trial vector} vectors are
+used and they are therefore not used 
+by default.
+ 
+SYM CHECK: The symmetry check is performed on the matrix element
+$\langle VEC1 \mid oper \mid VEC2\rangle$, where "oper" is
+the CI-diagonal.
+It is recommended and default to use \quotekw{\Key{SYM CHECK}}
+for excited states, including
+CI vectors of undesired symmetries is a waste of CPU time.
+ 
+DETERMINANTS: The kernels of the CI sigma routines and density matrix
+routines are always performed in determinant\index{determinants}
+basis.  However, this 
+keyword specifies that the external representation is Slater
+determinants as well.  The default is that the external representation
+is in CSF\index{CSF}\index{configuration state function} basis as
+described in chapter 8 of MOTECC-90.  The external 
+CSF\index{CSF}\index{configuration state function} basis is generally to be preferred to be sure that the converged
+state(s) have pure and correct spin symmetry\index{spin symmetry}, and
+to save disk space. 
+It is recommended to specify \quotekw{\Key{PLUS COMBINATIONS}} under 
+\quotekw{\Sec{CI VECTOR}} for
+calculations on singlet states\index{singlet state} with
+determinants\index{determinants}, 
+in particular for 
+excited singlet\index{excited state} states which often have lower lying triplet states.
+ 
+ 
+\pagebreak[3]
+\subsection{\label{ref-orbinp}\Sec{ORBITAL INPUT}}
+ 
+{\bf Purpose:}
+ 
+To define an initial set of molecular orbitals\index{molecular
+orbital} and to control 
+use of super symmetry\index{supersymmetry}, frozen
+orbitals\index{frozen orbitals}, deletion of orbitals\index{delete orbitals}, 
+reordering and punching of orbitals.
+ 
+\begin{description}
+\item[\Key{5D7F9G}]
+  Delete unwanted components in Cartesian d, f, and g orbitals.
+  (s in d; p in f; s and d in g). By default, \her\ provides atomic
+  integrals in spherical basis, and this option should therefore not
+  be needed.
+
+\item[\Key{AO DELETE}]
+  \kw{READ (LUINP,*) THROVL } \\
+  Delete MO's based on canonical orthonormalization using eigenvalues
+  and eigenvectors of the AO overlap matrix.\index{linear dependence} \\
+  THROVL: limit for basis
+  set numerical linear dependence (eigenvectors with eigenvalue less
+  than THROVL are excluded).
+ 
+\item[\Key{AVERAGE}]
+  Default = no average (\kw{KAVER = 0})\\
+  \kw{READ (LUINP,*) KAVER,(KSYM(I),I=1,4)} \\
+  Old option for averaging degenerate symmetries in $D_{2h}$, it is
+  generally recommended to use the new SUPSYM feature.
+  If you want to use \quotekw{\Key{AVERAGE}} the SUPSYM
+  feature must be disabled with \quotekw{\Key{NOSUPSYM}}.
+\begin{verbatim}
+  KAVER=1: double degeneracy, average KSYM(1) and KSYM(2)
+  KAVER=2: a) KSYM(1)=KSYM(3): triple degeneracy, average
+              KSYM(1), KSYM(2), KSYM(4)
+           b) else: two double degeneracies,
+              average KSYM(1) and KSYM(2), and
+              average KSYM(3) and KSYM(4).
+  KAVER .ne. 0 : MO coefficients are copied from the KSYM(1) and
+           KSYM(3) to the other degenerate symmetries to avoid
+           different orbitals through numerical roundoff errors.
+\end{verbatim}
+ 
+\item[\Key{CMOMAX}]
+  \kw{READ (LUINP,*) CMAXMO} \\
+  Abort calculation if the absolute value of any initial MO coefficient is
+  greater than CMAXMO (default : CMAXMO = 10**4).  Large MO coefficients
+  can cause significant loss of accuracy in the two-electron integral
+  transformation.
+ 
+\item[\Key{DELETE}]
+  \kw{READ (LUINP,*) (NDEL(I),I = 1,NSYM) } \\ 
+  Delete orbitals\index{delete orbitals}. The delete starts from the
+  last orbital of the symmetry and counts downward.
+
+\item[\Key{FREEZE ORBITALS}]
+  Default: no frozen orbitals
+\begin{verbatim}
+  READ (LUINP,*) (NNOR(ISYM), ISYM = 1,NSYM)
+  DO ISYM = 1,NSYM
+    IF (NNOR(ISYM) .GT. 0) THEN
+      READ (LUINP,*) (INOROT(I), I = 1,NNOR(ISYM))
+      ...
+    END IF
+  END DO
+\end{verbatim}
+  where \kw{INOROT} = orbital numbers of the orbitals to be
+          frozen\index{frozen orbitals}
+          (not rotated) in symmetry \quotekw{ISYM}
+          after any reordering (counting from 1 in each symmetry).\\
+  Must be specified after all options reducing the number of orbitals.
+
+\item[\Key{FROZEN CORE ORBITALS}]
+  \kw{READ (LUINP,*) (NFRO(I),I=1,NSYM)} \\
+  Frozen orbitals : Inactive orbitals to be frozen.
+ 
+\item[\Key{GRAM-SCHMIDT ORTHONORMALIZATION}]
+  Default.\\
+  Gram-Schmidt orthonormalization\index{orthonormalization, Gram-Schmidt} of input orbitals.
+ 
+\item[\Key{MOSTART}]
+   Molecular orbital input\index{molecular orbital}\\
+   \kw{READ (LUINP,'(1X,A6)') RWORD} \\
+   where RWORD is one of the following:
+   \begin{description}
+   \item[{\tt FORM12\ }] Formatted input (6F12.8)  supplied after
+        \Sec{*MOLORB} or \Sec{*NATORB} keyword
+   \item[{\tt FORM18\ }] Formatted input (4F18.14) supplied after
+        \Sec{*MOLORB} or \Sec{*NATORB} keyword
+   \item[{\tt H1DIAG\ }] Start orbitals that diagonalize
+                            one-electron Hamiltonian matrix (default).
+   \item[{\tt NEWORB\ }] Input from SIRIUS restart file
+                            (\f{21} file) with label \quotekw{NEWORB  }
+   \item[{\tt OLDORB\ }] Input from SIRIUS restart file
+                            (\f{21} file) with label \quotekw{OLDORB  }
+   \item[{\tt SIRIFC\ }] Input from SIRIUS interface file ("SIRIFC")
+   \end{description}
+ 
+\item[\Key{NOSUPSYM}]
+  Deactivate automatic identification of "super
+  symmetry"\index{supersymmetry} (see 
+  comments). This is automatically enforced in case of \aba\ or
+  \resp\ calculations. 
+
+\item[\Key{PUNCHINPUTORBITALS}]
+  Punch input orbitals with label \Sec{*MOLORB}, Format (4F18.14)
+ 
+\item[\Key{PUNCHOUTPUTORBITALS}]
+  Punch final orbitals with label \Sec{*MOLORB}, Format (4F18.14)
+
+\item[\Key{REORDER MO'S}]
+Default: no reordering.
+\begin{verbatim}
+  READ (LUINP,*) (NREOR(I), I = 1,NSYM)
+  DO I = 1,NSYM
+     IF (NREOR(I) .GT. 0) THEN
+        READ (LUINP,*) (IMONEW(J,I), IMOOLD(J,I), J = 1,NREOR(I))
+     END IF
+  END DO
+  NREOR(I) = number of orbitals to be reordered in symmetry I
+  IMONEW(J,I), IMOOLD(J,I) are orbital numbers in symmety I.
+
+For example if orbitals 1 and 5 in symmetry 1 should change place, specify
+.REORDER
+ 2 0 0 0
+ 1 5 5 1
+\end{verbatim}
+  Reordering of molecular orbitals (see comments).
+ 
+\item[\Key{SUPSYM}]
+  Default.\\
+  Enforce automatic identification of "super
+  symmetry"\index{supersymmetry} (see comments). 
+
+\item[\Key{SYMMETRIC ORTHONORMALIZATION}]
+  Default: Gram-Schmidt orthonormalization\\
+  Symmetric orthonormalization of input
+  orbitals\index{orthonormalization, symmetric}.
+ 
+\item[\Key{THRSSY}]
+  \kw{READ (LUINP,*) THRSSY} \\
+  Threshold for identification of "super
+  symmetry"\index{supersymmetry} and degeneracies among 
+  "super symmetries" from matrix elements of the kinetic energy matrix
+  (default: 5.0D-8).
+
+\end{description}
+ 
+ 
+\noindent{\bf Comments:}
+
+A new feature from 1992 is the automatic indentification of "super
+symmetry"\index{supersymmetry}, i.e. of irreps of the true point group
+of the molecule\index{symmetry group} which 
+is a "supergroup" of the Abelian group used in the calculation.
+Degenerate orbitals will be averaged and the "super
+symmetry"\index{supersymmetry} will be 
+enforced in the orbitals.  The use of "super symmetry" may be
+deactivated with the \quotekw{.NOSUPSYM} keyword, for example in finite field
+calculations where the field lowers the symmetry.
+\ifabacus
+For \aba\ and \resp\ calculations,
+the "super symmetry" is deactivated unless explicitly enforced with
+\Key{SUPSYM}.
+\fi
+The initial orbitals must be symmetry orbitals, and the super symmetry 
+analysis is performed on the kinetic energy matrix in this basis.
+The \quotekw{.THRSSY} option is used to define when the
+kinetic energy matrix element between two orbitals is considered to be zero 
+and when two diagonal matrix elements are degenerate. In the first case
+the orbitals can belong to different irreps of the supergroup
+and in the second case the
+two orbitals are considered to be degenerate.
+The analysis will fail if there are accidental degeneracies
+in diagonal elements.  This can happen
+if the nuclear geometry deviates slightly from a higher symmetry point group,
+for example because too few digits has been used in the input of the
+nuclear geometry. If the program stops because the super symmetry analysis
+fails with a degeneracy error, you might consider to use more digits
+in the nuclear coordinates, to change \kw{THRSSY}, or to disable super
+symmtry with \quotekw{.NOSUPSYM}.  The value of \kw{THRSSY} should
+be sufficiently small to avoid accidental degeneracies and
+sufficiently large to ignore small errors in geometry and numerical
+round-off errors.
+
+ 
+REORDER MO\index{orbital reordering} can for instance be used for
+linear molecules to interchange 
+undesired delta orbitals among the active orbitals in symmetry 1 with
+sigma orbitals.  Another example is movement of the core orbital to the
+RAS1 space for core hole calculation.  In general use of this option
+necessitates a pre-calculation with STOP AFTER MO-ORTHONORMALIZATION and
+identification of the various orbitals by inspection of the output.
+ 
+ 
+\pagebreak[3]
+\subsection{\label{ref-popinp}\Sec{POPULATION ANALYSIS}}
+ 
+{\bf Purpose:}
+ 
+To direct population analysis\index{population analysis} of wave function.
+Requires a set of natural orbitals\index{natural orbital} and their occupation.
+ 
+\begin{description}
+\item[\Key{ALL}]
+  Do all options
+ 
+\item[\Key{DIPMOM}]
+  Calculate dipole moments\index{dipole moment}
+ 
+\item[\Key{GROSSALL}]
+  Do all gross population analysis\index{population analysis}
+ 
+\item[\Key{GROSSMO}]
+  Do gross MO population analysis\index{population analysis}
+ 
+\item[\Key{MULLIKEN}]
+  Do Mulliken population analysis\index{population
+  analysis}s\index{Mulliken population analysis}
+ 
+\item[\Key{NETALL}]
+  Do all net population analysis\index{population analysis}
+ 
+\item[\Key{NETMO}]
+  Do net MO population analysis\index{population analysis}
+ 
+\item[\Key{PRINT}]
+  Default = 1\\
+  \kw{READ (LUINP,*) IPRMUL} \\
+  Print level for population analysis.
+
+\item[\Key{QUADRP}]
+  Calculate quadrupole moments\index{quadrupole moment}
+
+\item[\Key{VIRIAL}]\index{virial analysis}
+  Do virial analysis
+\end{description}
+ 
+\pagebreak[3]
+\subsection{\label{ref-priinp}\Sec{PRINT LEVELS}}
+ 
+{\bf Purpose:}
+ 
+To control the printing of output.
+ 
+\begin{description}
+\item[\Key{CANONI}]
+  Generate canonical/natural orbitals if the wave function has
+  converged\index{canonical orbital}\index{natural orbital}.
+
+\item[\Key{IPRAVE}]
+  \kw{READ (LUINP,*) IPRAVE} \\
+  Sets print level for routines used in "super symmetry" averaging
+  (default = 0).
+ 
+\item[\Key{IPRCIX}]
+  \kw{READ (LUINP,*) IPRCIX} \\
+  Sets print level for setup of determinant/CSF index information (default = 0).
+ 
+\item[\Key{IPRCNO}]
+  \kw{READ (LUINP,*) IPRCNO} \\
+  Sets print level for \quotekw{.TRACI} option (default = 1,
+  to print the natural orbital occupations in each iteration set
+  IPRCNO = 1, higher values will give more print).
+ 
+\item[\Key{IPRDIA}]
+  \kw{READ (LUINP,*) IPRDIA} \\
+  Sets print level for calculation of CI diagonal (default = 0)
+ 
+\item[\Key{IPRDNS}]
+  \kw{READ (LUINP,*) IPRDNS} \\
+  Sets print level for calculation of CI density matrices (default = 0)
+
+\item[\Key{IPRERR}]
+  \kw{READ (LUINP,*) IPRERR} \\
+  Sets print level for statistics in error file, LUERR (default = 1)
+
+\item[\Key{IPRFCK}]
+  \kw{READ (LUINP,*) IPRFCK} \\ 
+  Sets print level in the supersymmetry section (default=0).
+
+\item[\Key{IPRKAP}]
+  \kw{READ (LUINP,*) IPRKAP} \\
+  Sets print level in routines for calculation of optimal orbital trial
+  vectors (default = 0)
+ 
+\item[\Key{IPRSIG}]
+  \kw{READ (LUINP,*) IPRSIG} \\
+  Sets print level for calculation of CI sigma vectors (default = 0)
+ 
+\item[\Key{IPRSOL}]
+  \kw{READ (LUINP,*) IPRSOL} \\
+  Sets print level in the solvent contribution parts of the
+  calculation (default = 5).
+
+\item[\Key{NOSUMMARY}]
+  No final summary of calculation.
+ 
+\item[\Key{PRINTFLAGS}]
+ Default: flags set by general levels in \quotekw{\Key{PRINTLEVELS}}
+\begin{verbatim}
+  READ (LUINP,*) NUM6, NUM4
+  IF (NUM6 .GT. 0) READ (LUINP,*) (NP6PTH(I), I=1,NUM6)
+  IF (NUM4 .GT. 0) READ (LUINP,*) (NP4PTH(I), I=1,NUM4)
+\end{verbatim}
+  Individual print flag settings (debug option).
+
+\item[\Key{PRINTLEVELS}]
+  Default: IPRI6 = 0 and IPRI4 = 5 \\
+  \kw{READ (LUINP,*) IPRI6,IPRI4 } \\
+  Print levels on units LUW6 and LUW4, respectively.
+ 
+\item[\Key{PRINTUNITS}]
+  \kw{READ (LUINP,*) LUW6,LUW4 } \\
+  Unit numbers for general output and summary output, respectively
+  (default: LUW4 = 6 and LUW6 = 6).
+ 
+\item[\Key{THRPWF}]
+  \kw{READ (LUINP,*) THRPWF} \\
+  Threshold for printout of wave function CI coefficients (default = 0.05).
+ \end{description}
+ 
+
+
+\ifsolvent
+\pagebreak[3]
+\subsection{\label{ref-solinp}\Sec{SOLVENT INPUT}}
+ 
+{\bf Purpose:}
+ 
+Model solvent effects with the self-consistent reaction\index{reaction
+field} field model.
+Any specification of dielectric constant(s)\index{dielectric constant}
+will activate this model. 
+ 
+\begin{description}
+\item[\Key{CAVITY}]
+  Required, no defaults.\\
+  \kw{READ (LUINP,*) RSOLAV}\\
+  Enter radius of spherical cavity\index{cavity radius} in atomic units (bohr).
+
+\item[\Key{DIELECTRIC CONSTANT}]
+  \kw{READ (LUINP,*) EPSOL}\\
+  Enter relevant dielectric constant\index{dielectric constant} of solvent.
+
+\item[\Key{INERSINITIAL}]
+  \kw{READ (LUINP,*) EPSOL}\\
+  Enter static dielectric constant\index{dielectric constant} of solvent for calculation
+  of the initial state defining inertial polarization\index{inertial
+  polarization}. 
+
+\item[\Key{INERSFINAL}]
+  \kw{READ (LUINP,*) EPSTAT,EPSOL}\\
+  Enter static and optical dielectric\index{dielectric constant} constants of solvent
+  for calculation of the final state with inertial polarization
+  from a previous calculation with \quotekw{\Key{INERSI}}\index{final
+  polarization}. 
+
+\item[\Key{MAX L}]
+  Required, no defaults.\\
+  \kw{READ (LUINP,*) LSOLMX}\\
+  Enter maximum L quantum number in multipole expansion of charge
+  distribution in cavity.
+
+\item[\Key{PRINT}]
+  \kw{READ (LUINP,*) IPRSOL} \\
+  Print level in solvent module routines (default = 0).
+\end{description}
+ 
+\noindent{\bf Comments:}
+
+One and only one of \quotekw{\Key{DIELEC}}, \quotekw{\Key{INERSI}}, and
+\quotekw{\Key{INERSF}} must be specified.
+\fi % end of \ifsolvent
+ 
+ 
+ 
+\pagebreak[3]
+\subsection{\label{ref-stpinp}\Sec{STEP CONTROL}}
+ 
+{\bf Purpose:}
+ 
+User control of the NEO restricted step optimization.
+ 
+\begin{description}
+\item[\Key{DAMPING FACTOR}]
+  Default = 1.0\\
+  \kw{READ (LUINP,*) BETA} \\
+  Initial value of damping (BETA)\index{damping}
+ 
+\item[\Key{DECREMENT FACTOR}]
+  Default = 0.67\\
+  \kw{READ (LUINP,*) STPRED} \\
+  Decrement factor on trust radius\index{trust radius}
+ 
+\item[\Key{GOOD RATIO}]
+  Default = 0.8 \\
+  \kw{READ (LUINP,*) RATGOD} \\
+  Threshold ratio for good second order agreement: the trust radius can
+  be increased if ratio is better than RATGOD.
+ 
+\item[\Key{INCREMENT FACTOR}]
+  Default = 1.2\\
+  \kw{READ (LUINP,*) STPINC} \\
+  Increment factor on trust radius\index{trust radius}
+ 
+\item[\Key{MAX DAMPING}]
+  Default = 1.0D6\\
+  \kw{READ (LUINP,*) BETMAX} \\
+  Maximum damping value\index{damping}
+ 
+\item[\Key{MAX STEP LENGTH}]
+  Default = 0.7\\
+  \kw{READ (LUINP,*) STPMAX} \\
+  Maximum acceptable step length, trust radius will never be larger than
+  STPMAX even if the ratio is good as defined by GOOD RATIO.
+ 
+\item[\Key{MIN DAMPING}]
+  Default = 0.2\\
+  \kw{READ (LUINP,*) BETMIN} \\
+  Minimum damping value
+
+\item[\Key{MIN RATIO}]
+  Default = 0.4 for ground state, 0.6 for excited states\\
+  \kw{READ (LUINP,*) RATMIN} \\
+  Threshold ratio for bad second order agreement: the trust radius is
+  to be decreased if ratio is worse than RATMIN.
+ 
+\item[\Key{NO EXTRA TERMINATION TESTS}]
+  Skip extra termination tests and converge micro iterations to
+  threshold.   Normally the micro iterations are terminated if the
+  reduced NEO matrix has more negative eigenvalues than corresponding
+  to the desired state, because then we are in a "superglobal" region
+  and we just want to step as quickly as possible to the region where
+  the Hessian (and NEO matrix) has the correct structure.  Further
+  convergence is usually wasted.
+ 
+\item[\Key{REJECT THRESHOLD}]
+  Default = 0.25 for ground state, 0.4 for excited states\\
+  \kw{READ (LUINP,*) RATREJ} \\
+  Threshold ratio for unacceptable second order agreement: the step
+  must be rejected if ratio is worse than RATREJ.
+ 
+\item[\Key{THQKVA}]
+  Default: 8.0 for MCSCF; 0.8 for QCHF\\
+  \kw{READ (LUINP,*) THQKVA} \\
+  Convergence factor for micro iterations in local (quadratic) region:
+  THQKVA*(norm of gradient)**2
+ 
+\item[\Key{THQLIN}]
+  Default: 0.2\\
+  \kw{READ (LUINP,*) THQLIN} \\
+  Convergence factor for micro iterations in global (linear) region: \\
+  THQLIN*(norm of gradient)
+ 
+\item[\Key{THQMIN}]
+  Default: 0.1\\
+  \kw{READ (LUINP,*) THQMIN} \\
+  Convergence threshold for auxilliary roots in NEO MCSCF optimization.
+ 
+\item[\Key{TIGHT STEP CONTROL}]
+  Tight step control also for ground state calculations
+  (tight step control is always enforced for excited states)
+ 
+\item[\Key{TOLERANCE}]
+  Default = 1.1\\
+  \kw{READ (LUINP,*) RTTOL} \\
+  Acceptable tolerance in deviation of actual step from trust radius
+  (the default value of 1.1 corresponds to max 10% deviation).
+ 
+\item[\Key{TRUST RADIUS}]
+  Default = STPMAX or, if restart, trust radius determined by previous
+            iteration.\index{trust radius}\\
+  \kw{READ (LUINP,*) RTRUST} \\
+  Initial trust radius.
+ 
+\end{description}
+ 
+ 
+\pagebreak[3]
+\subsection{\label{ref-trainp}\Sec{TRANSFORMATION}}
+ 
+{\bf Purpose:}
+ 
+Transformation\index{integral transformation} of two-electron
+integrals\index{two-electron integral} to molecular orbital
+basis\index{molecular orbital}. 
+ 
+\begin{description}
+\item[\Key{FINAL LEVEL}]
+  \kw{READ (LUINP,*) ITRFIN} \\
+  Final integral transformation\index{integral transformation} level (only active if the keyword
+  \quotekw{\Key{INTERFACE}} has been specified, or this is an \aba\ or
+  \resp\ calculation.
+ 
+\item[\Key{LEVEL}]
+  \kw{READ (LUINP,*) ITRLVL} \\
+  Integral transformation level (see comments).
+ 
+\item[\Key{OLD TRANSFORMATION}]
+  Use existing transformed integrals
+
+\item[\Key{PRESORTED}]
+Indicacates that the transformed two-electron integrals are already
+present generated through the keyword \Key{SORT I} in the
+\Sec{*INTEGRALS} input module. 
+
+\item[\Key{PRINT}]
+  \kw{READ (LUINP,*) IPRTRA} \\
+  Print level in integral transformation module
+ 
+\item[\Key{RESIDENT MEMORY}]
+  \kw{READ (LUINP,*) MWORK} \\
+  On virtual memory computers, the transformation will run more
+  efficiently if it can be kept within the possible resident memory
+  size: the real memory size.  SIRIUS will attempt to only use MWORK
+  double precision words in the transformation.
+\end{description}
+ 
+ 
+\noindent{\bf Comments:}
+ 
+There are several types of integral transformations which may be
+specified by the two transformation level keywords.
+\begin{itemize}
+   \item[0:] CI calculations, MCSCF gradient (default if CI, but
+             no MCSCF specified).
+             One index all orbitals, three indices only active
+             orbitals.
+ 
+   \item[1:] Obsolete, do not use.
+ 
+   \item[2:] Default for MCSCF optimization. All integrals needed for SIRIUS
+             second-order MCSCF optimization, including the integrals
+             needed to explicitly construct the diagonal of the orbital
+             hessian. Two indices occupied orbitals, two indices all
+             orbitals, with some reduction for inactive indices.
+             Both (cd/ab) and (ab/cd) are stored.
+ 
+   \item[3:] Same integrals as 2, including also the (ii/aa) and
+             (ia/ia) integrals for exact inactive-secondary diagonal elements
+             of the orbitals Hessian.
+ 
+   \item[4:] All integrals with minimum two occupied indices.
+ 
+   \item[5:] 3 general indices, one occupied index.  Required for MP2
+             natural orbital analysis (the MP2 module automatically
+             performs an integral transformation of this level).
+ 
+  \item[10:] Full transformation.
+\end{itemize}
+ 
+ 
+\pagebreak[3]
+\section{\label{sec:ref-molorbinp} \Sec{*MOLORB} input module}
+ 
+If formatted input of the molecular orbitals has been specified in the
+\Sec{ORBITAL INPUT} section, then SIRIUS will attempt to find the two-star
+label "**MOLORB" in the input file and read the orbital coefficients
+from the lines following this label.
+ 

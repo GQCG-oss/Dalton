@@ -1,0 +1,7 @@
+C
+C$Id: abares.h,v 1.1.1.1 2001-02-08 13:33:23 hjj Exp $
+C
+      LOGICAL NOCONV
+      CHARACTER*8 TRPLAB, IMGLAB
+      COMMON /ABAKRS/ FINRES, NOCONV, TRPLAB(-MXCENT:9*MXCENT),
+     &                IMGLAB(3*MXCENT + 3)

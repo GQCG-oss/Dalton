@@ -1,0 +1,6 @@
+C
+C$Id: ptrbuf.h,v 1.1.1.1 2001-02-08 13:33:24 hjj Exp $
+C
+      COMMON /PTRBUF/ MX1BUF, L1BUF, MEMS, MEMT, MAXCHN, MXABUF, LABUF,
+     *                LDAMAX, LASTAD(200), MX2BUF, L2BUF,  MAXSCM,
+     *                MAXLCM, IADR(200),   NCHAIN, MAXADR, NBLOCK

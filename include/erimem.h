@@ -1,0 +1,5 @@
+C
+C$Id: erimem.h,v 1.1.1.1 2001-02-08 13:33:29 hjj Exp $
+C
+      LOGICAL MEMOK
+      COMMON /ERIMEM/ MEMOK, MEMADD, MODAB, MODCD

@@ -1,0 +1,8 @@
+C
+C$Id: cbires.h,v 1.1.1.1 2001-02-08 13:33:23 hjj Exp $
+C
+      LOGICAL SKIP, NOTRIA, NEWRD, RSTNR, NOAVER, D1DIAG, PRIL2, CUT
+      COMMON /CBIRES/ THRRNR, MAXRNR, KAPTST,
+     *                IPRINT, MAXSIM, IRDC, NRDC, NRDT, NRDCO(MXCOOR),
+     *                SKIP, NOTRIA, NEWRD, RSTNR, NOAVER,
+     *                D1DIAG, PRIL2, CUT, MAXRED

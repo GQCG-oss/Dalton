@@ -1,0 +1,486 @@
+\chapter{Calculation of magnetic properties}\label{ch:magnetic}
+
+This chapter describes the calculation of properties depending on
+magnetic fields, both as created by an external magnetic field as well
+as the magnetic field created by a nuclear magnetic moment. 
+This includes the two 
+contributions to the ordinary spin-Hamiltonian used in NMR, nuclear
+shieldings\index{nuclear shielding} and indirect nuclear spin--spin
+couplings\index{spin-spin coupling} constants. We
+also describe the calculation of the magnetic analogue of the
+polarizability, the molecular
+magnetizability\index{magnetizability}. This property  
+is of importance in NMR experiments where the reference substance is placed
+in another tube than the sample. We also shortly
+describe two properties very closely related to the magnetizability
+and nuclear shieldings respectively, the rotational {\em g} factor and the
+nuclear spin--rotation constants\index{rotational g
+tensor}\index{spin-rotation constant}.
+
+Three properties that in principle depend on the nuclear magnetic
+moments are not treated here, namely the properties associated with
+optical activity or, more precisely, with circular dichroism. These
+properties are Vibrational Circular Dichroism
+(VCD)\index{VCD}\index{vibrational circular dichroism}, Raman Optical
+activity (ROA)\index{ROA}\index{Raman optical activity} and Electronic Circular
+Dichroism (ECD)\index{ECD}\index{electronic circular dichroism} will be
+treated in Chapter~\ref{ch:optchap}.
+
+Gauge-origin\index{gauge origin} independent nuclear shieldings,
+magnetizabilities 
+and rotational {\em g} tensors are
+obtained through the use of London atomic orbitals, and the theory is
+presented in several references
+\cite{kwjfhppjacs112,krthrkpjklbhjajjcp100,krthklbpjhjajjcp99,krthklbpjjocp195}.
+These properties are easy to calculate (from the user's point of
+view), and is thus given only a very brief description here.
+
+The indirect spin--spin couplings are calculated by using the triplet linear
+response function\index{triplet response}, as described in
+Ref.~\cite{ovhapjhjajsbpthjcp96}. 
+These are in principle equally simple to calculate with \siraba\ as
+nuclear shieldings and magnetizabilities. However, there are 13
+contributions to the spin--spin coupling constant from {\em each}
+nucleus. Furthermore, the spin--spin coupling constants put severe
+requirements on the quality of the basis set as well as a proper
+treatment of correlation, making the evaluation of spin--spin coupling
+constants a time consuming task. Some notes about how this time
+can be reduced is given below.
+
+\section{Magnetizabilities}\label{sec:magnetizability}
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item SCF magnetizabilities: K.Ruud, T.Helgaker, K.L.Bak, P.J\o rgensen and H.J.Aa.Jensen. \newblock {\em J.Chem.Phys.}, {\bf 99},\hspace{0.25em}3847, (1993).
+\item MCSCF magnetizabilities: K.Ruud, T.Helgaker, K.L.Bak, P.J\o
+rgensen, and J.Olsen. \newblock {\em Chem.Phys.}, {\bf
+195},\hspace{0.25em}157, (1995).
+\item Solvent effects: K.V.Mikkelsen,
+P.J{\o}rgensen, K.Ruud, and T.Helgaker. \newblock {\em J.Chem.Phys.}, {\bf
+107},\hspace{0.25em}1170, (1997).
+\end{list}
+}}
+\end{center}
+
+The calculation of molecular magnetizabilities\index{magnetizability}
+is invoked by the 
+keyword \Key{MAGNET} in the \Sec{*PROPERTIES} input module. Thus
+a complete input file for the calculation of molecular
+magnetizabilities will look like:
+
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+**PROPERTIES
+.MAGNET
+*END OF INPUT
+\end{verbatim}
+
+This will invoke the calculation of molecular magnetizabilities using
+London Atomic Orbitals\index{London orbitals} to ensure fast basis set
+convergence and 
+gauge-origin\index{gauge origin} independent results. The natural
+connection\index{natural connection} 
+\cite{joklbkrthpjtca90} is used in order to get numerically accurate
+results. By default the center of mass\index{center of mass} is chosen
+as gauge origin. 
+
+The augmented cc-pVXZ basis sets of Dunning and
+coworkers~\cite{thdjcp90,rakthdrjhjcp96,dewthdjcp98,dewthdjcp100} have
+been shown to give  to give excellent results for
+magnetizabilities~\cite{pdkrthklbpj,krthklbpjhjajjcp99,krthpjklbcpl223,krhsthklbpjjacs116},
+and these basis sets are obtainable from the basis set library.
+
+Notice that a general print level of 2 or higher is needed in order to
+get the individual contributions (relaxation, one- and
+two-electron expectation values and so on) to the total magnetizability.
+
+If more close control of the different parts of the calculation of the
+magnetizability is wanted we refer the reader to the section
+describing the options available. The modules that controls the
+calculation of molecular magnetizabilities are:
+
+\begin{list}{}{\itemsep 0.10cm \parsep 0.0cm}
+\item[\Sec{EXPECT}] Controls the calculation of one-electron
+expectation values contributing to the diamagnetic magnetizability.
+\item[\Sec{GETSGY}] Controls the set up of the right-hand sides
+(gradient terms) as well as the calculation of two-electron
+expectation values and reorthonormalization terms.
+\item[\Sec{LINRES}] Controls the solution of the magnetic response
+equations
+\item[\Sec{RELAX}] Controls the adding of solution and right-hand
+side vectors into relaxation contributions
+\end{list}
+
+\section{Nuclear shielding constants}\label{sec:shieldings}
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item K.Wolinski, J.F.Hinton, and P.Pulay. \newblock {\em
+J.Am.Chem.Soc.}, {\bf 112},\hspace{0.25em}8251, (1990)
+\item K.Ruud, T.Helgaker, R.Kobayashi, P.J\o rgensen, K.L.Bak, and H.J.Aa.Jensen. \newblock {\em J.Chem.Phys.}, {\bf 100},\hspace{0.25em}8178, (1994).
+\item Solvent effects: K.V.Mikkelsen,
+P.J{\o}rgensen, K.Ruud, and T.Helgaker. \newblock {\em J.Chem.Phys.}, {\bf
+107},\hspace{0.25em}1170, (1997).
+\end{list}
+}}
+\end{center}
+
+
+The calculation of nuclear shieldings\index{nuclear shielding} are
+invoked by the 
+keyword \Key{SHIELD} in the \Sec{*PROPERTIES} input module. Thus
+a complete input file for the calculation of nuclear shieldings will
+be: 
+
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+**PROPERTIES
+.SHIELD
+*END OF INPUT
+\end{verbatim}
+
+This will invoke the calculation of nuclear shieldings using
+London Atomic Orbitals\index{London orbitals} to ensure fast basis set
+convergence and gauge 
+origin\index{gauge origin} independent results. The natural connection
+\cite{joklbkrthpjtca90}\index{natural connection}
+is used in order to get 
+numerically accurate results. By default the center of mass is chosen as gauge
+origin\index{center of mass}.
+
+A basis set well suited for the calculation of nuclear shieldings (and
+indirect nuclear spin--spin coupling constants) is the TZ basis set of
+Ahlrichs and coworkers~\cite{ashhrajcp97,aschrajcp100} with two
+polarization functions~\cite{pdkrthklbpj}. This basis set is available
+from the basis set library as TZ2P. 
+
+Notice that a general print level of 2 or higher is needed in order to
+get the individual contributions (relaxation, one- and
+two-electron expectation values and so on) to the total nuclear shieldings.
+ 
+If more close control of the different parts of the calculation of the
+nuclear shieldings is wanted we refer the reader to the section
+describing the options available. For the calculation of nuclear
+shieldings, these are the same as listed above for magnetizability
+calculations.
+
+\section{Rotational {\em g} tensor}\label{sec:gfac}
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item J.Gauss, K.Ruud, and T.Helgaker. \newblock {\em J.Chem.Phys.},
+{\bf 105},\hspace{0.25em}2804, (1996). 
+\end{list}
+}}
+\end{center}
+
+The calculation of the rotational  {\em g} tensor\index{rotational g
+tensor} is invoked through the 
+keyword \Key{MOLGFA} in the \Sec{*PROPERTIES} input module. Thus a complete
+input file for the calculation of the molecular g tensor is:
+
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+**PROPERTIES
+.MOLGFA
+*END OF INPUT
+\end{verbatim}
+
+The molecular g tensor consists of two terms: a nuclear term and a
+term which may be interpreted as one definition of a paramagnetic part
+of the magnetizability tensor as 
+described in \cite{jgkrthjcp105}.
+By default the center of mass\index{center of mass} is chosen as
+rotational origin 
+origin, as this corresponds to the point about which the molecule
+rotates. The use of rotational London atomic\index{London orbitals}
+orbitals can be turned off through 
+the keyword \verb|.NOLOND|.
+
+The basis set requirements for the rotational {\em g} tensors are more or
+less equivalent with the ones for the molecular magnetizability,
+that is, the augmented cc-pVDZ of Dunning and
+Woon~\cite{thdjcp90,dewthdjcp98}, available from the basis set library
+as \verb|aug-cc-pVDZ|.
+
+If more close control of the different parts of the calculation of the
+rotational {\em g}  tensor is wanted we refer the reader to the section
+describing the options available. For the calculation of the molecular
+g tensor, these are the same as listed above for magnetizability
+calculations.
+
+\section{Nuclear spin--rotation constants}\label{sec:spinrotasjon}
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item R.Ditchfield. \newblock {\em J.Chem.Phys.}, {\bf
+56},\hspace{0.25em}5688 (1972) 
+\item J.Gauss, K.Ruud, and T.Helgaker. \newblock {\em J.Chem.Phys.},
+{\bf 105},\hspace{0.25em}2804, (1996). 
+\end{list}
+}}
+\end{center}
+
+
+In \siraba\ the nuclear spin--rotation\index{spin-rotation constant}
+constants are calculated using 
+rotational orbitals, giving an improved 
+basis set convergence~\cite{jgkrthjcp105}. We use the
+expression for the spin--rotation constant where the paramagnetic term
+is evaluated around the center of mass, and thus will only solve three
+response equations at the most.
+
+An input requesting the calculation of spin--rotation constants will
+look like
+
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+**PROPERTIES
+.SPIN-R
+.ISOTOP
+    3
+    2   1    1
+*END OF INPUT
+\end{verbatim}
+
+As the nuclear spin--rotation\index{spin-rotation constant} constants
+depend on the isotopic substitution of 
+the molecule, both through the nuclear magnetic moments and through the
+center of mass, the isotopic constitution need to be specified if this
+is different  from the most abundant isotopic constitution. Note that
+some of the most common isotopes do not have a magnetic moment.
+
+We note that in the current release of \siraba , nuclear spin--rotation
+constants can not be calculated employing symmetry-dependent
+nuclei. Thus for a molecule like N$_2$, the symmetry plane
+perpendicular to the molecular bond will have to be removed during the
+calculation.
+
+\section{Indirect nuclear spin--spin coupling
+constants}\label{sec:spinspin}
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item O.Vahtras, H.\AA gren, P.J\o rgensen, H.J.Aa.Jensen, S.B.Padkj\ae
+r, and T.Helgaker. \newblock {\em J.Chem.Phys.}, {\bf
+96},\hspace{0.25em}6120, (1992). 
+\item Solvent effects: P.-O.\AA strand, K.V.Mikkelsen, P.J{\o}rgensen,
+K.Ruud and T.Helgaker. To be published.
+\end{list}
+}}
+\end{center}
+
+As mentioned in the introduction of this chapter, the calculation of
+indirect nuclear 
+spin--spin coupling constants is a time consuming task due to the
+large number of contribution to the total spin---spin coupling
+constants. Still, if all spin---spin couplings\index{spin-spin
+coupling} in a molecule are wanted, 
+with some restrictions mentioned below, the input will look as
+follows:
+
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTION
+.HF
+**PROPERTIES
+.SPIN-SPIN
+*END OF INPUT
+\end{verbatim}
+
+This input will calculate the indirect nuclear spin--spin
+coupling\index{spin-spin coupling}
+constants between isotopes with non-zero magnetic
+moments\index{magnetic moment} and a
+natural abundance\index{abundance} of more than 1\% . This limit will
+automatically 
+include proton and $^{13}$C spin--spin coupling constants. By default
+all contributions to the coupling constants will be calculated. 
+
+Often one is interested in only certain kinds of nuclei. For example,
+ one may want to calculate only the proton spin--spin couplings of a molecule.
+This can be accomplished in two ways: either by changing the abundance
+threshold so that only this single isotope is included (most useful
+for proton couplings), or by selecting the particular nuclei of interest. 
+
+All the keywords necessary to control such adjustments to the
+calculation is given in the section describing the input for the
+\Sec{SPIN-S} submodule. Thus an input 
+in which we  have reduced the abundance threshold as well as
+selected three atoms will look as:
+
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+**PROPERTIES
+.SPIN-S
+*SPIN-S
+.ABUNDA
+ 0.10
+.SELECT
+    3
+    2    4    5
+*END OF INPUT
+\end{verbatim}
+
+We refer to the section describing the \Sec{SPIN-S} input module for
+the complete description of the syntax for these keywords, as well as
+the numbering of the atoms which are selected.
+
+We also notice that it is often of interest to calculate only specific
+contributions (usually the Fermi-contact\index{Fermi contact} contribution) at a high level
+of approximation. Sometimes the results obtained with a Hartree-Fock
+wave function may help in predicting the relative importance of the different
+contributions, thus helping in the decision of which contributions
+should be calculated at a correlated level \cite{krthklbpjcpl226}.
+The calculation of only certain contributions can be accomplished in
+the input by turning off the different 
+contributions by the keywords \Key{NODSO}, \Key{NOPSO},
+\Key{NOSD}, and \Key{NOFC}. We refer to the description of the
+\Sec{SPIN-S} input module for a somewhat more thorough discussion.
+
+If a closer a control of the individual parts of the calculation of
+indirect nuclear spin--spin coupling constants is wanted, this can be
+done through the use of keywords in the following input modules:
+
+\begin{list}{}{\itemsep 0.10cm \parsep 0.0cm}
+\item[\Sec{EXPECT}] Controls the calculation of one-electron
+expectation value contribution to the diamagnetic spin--spin coupling
+constants. 
+\item[\Sec{GETSGY}] Controls the set up of the right-hand sides
+(gradient terms) 
+expectation values and reorthonormalization terms.
+\item[\Sec{LINRES}] Controls the solution of the singlet magnetic
+response equations.
+\item[\Sec{TRPRSP}] Controls the solution of the triplet magnetic
+response equations (for Fermi-contact and spin--dipole contributions).
+\item[\Sec{RELAX}] Controls the adding of solution and right hand
+side vectors into relaxation contributions.
+\item[\Sec{SPIN-S}] Controls the choice of nuclei for which the
+spin--spin coupling constants will be calculated, as well as which
+contributions to the total spin--spin coupling constants are to be
+calculated.
+\end{list}
+
+\section{Hyperfine Coupling Tensors}
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item B.Fernandez, P.J{\o}rgensen, J.Byberg, J.Olsen, T.Helgaker, and
+H.J.Aa.Jensen. \newblock {\em J.Chem.Phys.}, {\bf
+97},\hspace{0.25em}3412, (1992).
+\item Solvent effects: B.Fernandez, O.Christiansen, O.Bludsky,
+P.J{\o}rgensen, K.V. Mikkelsen. \newblock {\em J.Chem.Phys.}, {\bf
+104},\hspace{0.25em}629, (1996).
+\end{list}
+}}
+\end{center}
+
+	The calculation of hyperfine coupling\index{hyperfine
+coupling} tensors (in vacuum or in 
+solution) is invoked by the keyword \Sec{ESR} in the \Sec{*RESPONSE}
+input module. Thus a complete input file for the calculation of
+hyperfine coupling tensors will be:
+
+\begin{verbatim}
+**DALTON INPUT
+.RUN RESPONSE
+**INTEGRALS
+.FC
+.SD
+**WAVE FUNCTIONS
+.HARTREE-FOCK
+**RESPON
+.TRPFLG
+*ESR
+.ESRCAL
+.MAXIT
+   30
+.TRPPRP
+FC Cl 01 
+.TRPPRP
+.
+.
+.
+
+.TRPPRP
+SD  01 x 
+.TRPPRP
+SD  01 y 
+.TRPPRP
+SD  01 z 
+.TRPPRP
+.
+.
+.
+
+*END OF
+\end{verbatim}
+	
+	This will invoke the calculation of hyperfine
+coupling\index{hyperfine coupling} tensors
+using the Restricted-Unrestricted\index{restricted-unrestricted method}
+methodology~\cite{bfpjjbjothhjajjcp97}. In this approach, the  
+unperturbed molecular system is described with a spin-restricted MCSCF
+wave function, and when the perturbation - Fermi Contact\index{Fermi
+contact} or Spin Dipole\index{spin-dipole}
+operators - is turned on, the wave function spin relaxes and all
+first-order molecular properties are evaluated as the sum of the
+conventional average value term and a relaxation term that includes
+the response of the wave function to the perturbations.
+
+	The selection of a flexible atomic orbital basis set is decisive
+in these calculations. Dunning's cc-pVTZ or Widmark's basis sets with some 
+functions uncontracted, and one or two sets of diffuse functions and 
+several tight s-functions added have been shown to provide accurate 
+hyperfine coupling tensors~\cite{bfpjcpl232}.
+
+	If more close control of the different parts of the calculation 
+of hyperfine coupling tensors is wanted, we refer the reader to the
+sections describing the options available.
+

@@ -1,0 +1,24 @@
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.TITLE
+H2O : 
+SOPPA calculation of excitation energies and dynamic polarizabilities
+.HF
+.MP2
+**PROPERTIES
+.SOPPA
+.ABALNR
+.EXCITA
+*EXCITA
+.DIPSTR
+.ROTVEL
+.NEXCITA
+    5    5    5    5    0    0    0    0
+*ABALNR
+.ALFA
+.FREQUE
+3
+0.0 0.05 0.1
+*END OF INPUT
+

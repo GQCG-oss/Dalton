@@ -1,0 +1,1804 @@
+\chapter{Molecular properties, ABACUS}\label{ch:abacus}
+
+\section{Directives for evaluation of molecular properties}\label{sec:abainp}
+
+          The following directives may be included in the input to
+\aba.  They are organized according to the program section (module) names
+in which they can appear.  
+
+\subsection{General: \Sec{*PROPERTIES}}\label{subsec:abacus}
+
+This module controls the main features of the property calculation, that is,
+which properties is to be calculated. In addition it includes
+directives affecting the performance of several of the program
+sections. It should be noted, however, that the specification of what
+kind of walk (minimization\index{geometry optimization}, location of
+transition states\index{transition state}, dynamical  
+walks\index{dynamics}) is given in the \Sec{WALK} or \Sec{MINIMI}
+submodules in the 
+general input  module. See also Chapter~\ref{ch:geometrywalks}. 
+
+\begin{description}
+
+\item[\Key{ABALNR}] Invokes the calculation of frequency dependent
+linear response\index{frequency}\index{linear response} calculations
+of operators. At present this only 
+includes the frequency dependent polarizability\index{polarizability} as well as directives
+controlling the calculation of Raman related properties\index{Raman
+intensity}\index{Raaman optical activity}\index{ROA}.
+
+\item[\Key{CAVORG}]\verb| |\newline
+\verb|READ (LUCMD,*) (CAVORG(ICOOR), ICOOR = 1, 3)|
+
+Reads the origin to be used for the cavity\index{cavity
+origin}\index{reaction field} during a solvent
+calculation. By this default this is chosen to be the center of
+mass\index{center of mass}. Should by used with care, as it has to
+correspond to the center 
+used in the evaluation of the undifferentiated solvent integrals in
+the \her\ section.
+
+\item[\Key{DIPGRA}] Invokes the calculation of dipole moment
+gradients\index{dipole gradient}\index{atomic polar tensor}\index{APT}
+(commonly known also as Atomic Polar Tensors 
+(APTs)) as described in Ref.~\cite{tuhhjajpjjcp84}. If combined with a
+request for \Key{VIBANA} this will generate IR intensities\index{IR
+intensity}.  
+
+\item[\Key{DIPORG}]\verb| |\newline
+\verb|READ (LUCMD, *) (DIPORG(ICOOR), ICOOR = 1, 3)|
+
+Reads in a user defined dipole origin\index{dipole origin}. This may
+affect properties in 
+which changes in dipole origin\index{dipole origin} is canceled by
+similar changes in the 
+nuclear part. It should also be used with care, as the same dipole
+origin must be used during the integral evaluation sections , in
+particular if one is doing numerical 
+differentiation with respect to electric field perturbations. For such
+finite-field calculations\index{finite field} we refer to Chapter
+\ref{ch:finite}, which deals with finite field calculations. It's
+use is mainly for debugging.  
+
+\item[\Key{ECD}] Invokes the calculation of Electronic Circular
+Dichroism (ECD)\index{electronic circular dichroism}\index{ECD} as
+described in Ref.~\cite{klbaehkrthjopjtca90}. This 
+necessitates the specification of the number electronic
+excitations\index{electronic excitation} in 
+each symmetry, given in the \Sec{EXCITA} module. The reader is
+refered to the section where the calculation of ECD is described in
+more detail (Sec.~\ref{sec:ecd}).
+
+\item{\Key{EXCITA}} Invokes the calculation of electronic
+excitation\index{electronic excitation}\index{excitation energy}
+energies as residues of linear response functions\index{linear
+response}\index{single residue} as described by
+Olsen and J\o rgensen \cite{jopjjcp82}. It also calculates closely
+related properties like transition moments\index{transition
+moment}\index{rotatory strength} and 
+rotatory strengths.
+
+\item[\Key{EXPFCK}] Invokes the simultaneous calculation of
+two-electron expectation values and derivative Fock-matrices. This is
+default in direct and parallel runs in order to save memory. In
+ordinary calculations the total CPU time will increase as a result of
+invoking this option.
+
+\item[\Key{GAUGEO}]\verb| |\newline
+\verb|READ (LUCMD, *) (GAGORG(ICOOR), ICOOR = 1, 3)|
+
+Reads in a user defined gauge origin\index{gauge origin} and overwrite
+both the \Key{NOCMC} option, as well as the default value of
+center-of-mass coordinates. Not that an unsymmetric position of the
+gauge origin will lead to wrong results in calculations employing
+symmetry. 
+
+\item[\Key{INPTES}] Checks the input only and then stops.
+
+\item[\Key{ISOTOP}]\verb| |\newline
+\verb|READ (LUCMD,*) NIS|\newline
+\verb|READ (LUCMD, *) (ISOTOP(IS), IS = 1, NIS)|
+
+Read one more line indicating the number of nuclei for which the
+isotope will be explicitly given. On the next line read the
+isotope chosen for each nuclei\index{isotopic constitution}.
+
+By default the isotope chosen for each nucleus is the most abundant
+one. Although one may choose the number of nuclei for which an
+isotopic substitution is to be given explicitly, one should notice
+that this ordering follows the ordering of the atoms in the input.
+Thus, if only the last atom is to be an isotope different from the
+most common, all atoms has to be specified (and this applies to {\em all}
+nuclei, not only the symmetry independent one, se also Sec.~\ref{sec:vibfreq}).
+
+The ordering of the isotopes for each nuclei is in the order of
+natural abundance. Thus deuterium will be isotope 2 of hydrogen, while
+tritium will be isotope 3.
+
+The choice of isotopic substituted molecules will affect the gauge
+origin\index{gauge origin}, as well as dynamical walks\index{dynamics}
+and walks using mass-weighted normal\index{mass-weighted coordinate} 
+modes, which depend on the choice of 
+isotopic substitution. We notice that for the vibrational
+analysis\index{vibrational analysis},
+the isotopic substitution may be introduced rather late, there
+is a similar \Key{ISOTOP}| keyword in the \Sec{VIBANA} input
+module. This can also be used to study the vibrational and rotational
+structure of several isotopic substituted species.
+
+\item[\Key{MAGNET}] Invokes the calculation of the molecular
+magnetizability\index{magnetizability} (commonly known as magnetic
+susceptibility) as 
+described in Ref.~\cite{krthklbpjhjajjcp99} and the rotational {\em g}
+tensor (see keyword \Key{MOLGFA})\index{rotational g tensor}.  By
+default this is done 
+using London orbitals\index{London orbitals} in order to 
+ensure fast basis set convergence as shown in
+Ref.~\cite{krthklbpjhjajjcp99}. The use of London
+orbitals can be disabled by the keyword \Key{NOLOND}.
+
+Furthermore, the natural connection\index{natural connection}
+(Ref.~\cite{joklbkrthpjtca90,krthjopjklbcpl235}) is default in order to ensure
+numerically stable results. The natural
+connection can be turned off and instead use the symmetric
+connection\index{symmetric connection}
+by the keyword \Key{NODIFC}. 
+
+The gauge origin\index{gauge origin} are chosen to be the center of
+mass\index{center of mass} of the molecule. 
+This origin can be changed by the two keywords \Key{GAUGEO} and
+\Key{NOCMC}. This will of course not affect the total magnetizability,
+only the size of the dia- and paramagnetic terms.
+
+\item[\Key{MOLGFA}] Invokes the calculation of the rotational
+{\em g} tensor\index{rotational g tensor} as described in
+Ref.~\cite{jgkrthjcp105} and the molecular 
+magnetizability\index{magnetizability} (see keyword \Key{MAGNET}). By
+default this is done 
+using London orbitals\index{London orbitals}  and the 
+natural connection\index{natural connection}. The use of London
+orbitals can be turned off by the keyword \Key{NOLOND}.
+
+By definition the gauge origin\index{gauge origin} of the molecular
+g-factor is to be the 
+center of mass\index{center of mass} of the molecule, and although the
+gauge origin can be 
+changed through the keywords \verb|.NOCMC | and \verb|.GAUGEO|, this
+is not recommended, and may give erroneous results.
+
+\item[\Key{MOLGRA}] Invokes the calculation of the analytical
+molecular gradient as \index{gradient}described in Ref.~\cite{tuhjahjajpjjcp84}.
+
+\item[\Key{MOLHES}] Invokes the calculation of the analytical
+molecular Hessian\index{Hessian} and gradient\index{gradient} as
+described in Ref.~\cite{tuhjahjajpjjcp84}. 
+
+\item[\Key{NACME}] Invokes the calculation of non-adiabatic
+coupling\index{non-adiabatic coupling element} matrix elements as
+described in 
+Ref.~\cite{klbpjhjajjothjcp97}. Presently, complete non-adiabatic
+coupling matrix elements cannot be obtained from this keyword alone,
+but has to be combined with subsequent calculations in the
+\resp\ program. Currently inactive option.
+
+\item[\Key{NMR}] Invokes the calculation of both parameters
+entering the NMR spin-Hamiltonian, that is nuclear
+shieldings\index{nuclear shielding} and
+indirect nuclear spin-spin coupling\index{spin-spin coupling}
+constants. The reader is refered to the 
+description of the to keywords \Key{SHIELD} and \Key{SPIN-S}.
+
+\item[\Key{NOCMC}] This keyword sets the gauge origin\index{gauge
+origin} to be equal to the origin of the Cartesian Coordinate system,
+that is (0,0,0). This keyword is automatically invoked in case of VCD
+calculations.
+
+\item[\Key{NODARW}] Turns off the calculation of the Darwin
+correction\index{Darwin correction}. By default the two relativistic
+corrections to the 
+energy, the mass-velocity\index{mass-velocity correction} and Darwin
+corrections, are calculated 
+perturbatively.
+
+\item[\Key{NODIFC}] Disables the use of the natural
+connection\index{natural connection}, and 
+uses instead the symmetric connection\index{symmetric connection}. The
+natural connection and 
+its differences as compared to the symmetric connection is described
+in Ref.~\cite{joklbkrthpjtca90,krthjopjklbcpl235}. 
+
+As the symmetric connection may give numerical inaccurate results,
+it's use is not recommended for other than comparisons with other
+programs.
+
+\item[\Key{NOHESS}] Turns off the calculation of the analytical
+molecular Hessian\index{Hessian}. This option overrides any request for the
+calculation of molecular Hessians.
+
+\item[\Key{NOLOND}] Turns off the use of London atomic
+orbitals\index{London orbitals} in
+the calculation of molecular magnetic properties. The gauge origin is
+by default then chosen to be the center of mass. This can be altered
+by the keywords \Key{NOCMC} and \Key{GAUGEO}.
+
+\item[\Key{NOMASV}] Turns off the calculation of the
+mass-velocity\index{mass-velocity correction}
+correction. By default the two relativistic corrections to the
+energy, the mass-velocity and Darwin corrections\index{Darwin
+correction}, are calculated 
+perturbatively.
+
+\item[\Key{NQCC}] Calculates the nuclear quadrupole moment
+coupling constant\index{nuclear quadrupole coupling}\index{NQCC}. 
+
+\item[\Key{PHASEO}]\verb| |\newline
+\verb|READ (LUCMD, *) (ORIGIN(ICOOR), ICOOR = 1, 3)|
+
+Changes the origin of the phase-factors entering the London atomic
+orbitals. This will change the value of all of the contributions to
+the different magnetic field dependent properties when using London
+atomic orbitals. To be used for debugging purposes
+only.
+
+\item[\Key{POLARI}] Invokes the calculation of frequency-independent
+polarizabilities\index{polarizability}. See the keyword \Key{ALFA} in
+the \Sec{ABALNR} 
+input module for the calculation of frequency-dependent
+polarizabilities.
+
+\item[\Key{POPANA}] Invokes a population analysis\index{population analysis}\index{dipole gradient} based on the 
+dipole gradient as first introduced by Cioslowski \cite{jcjacs111}.
+This flag also invokes the \Key{DIPGRA} flag.
+
+\item[\Key{PRINT}]\verb| |
+\newline
+\verb|READ (LUCMD, *) IPRDEF|
+
+Set default print level for the calculation.  Read one
+more line containing print level. Default print level is the
+value of \verb|IPRDEF| from the general input module.
+
+\item[\Key{QUADRU}] Calculates the molecular quadrupole
+moment\index{quadrupole moment}. This
+includes both the electronic and nuclear contribution to the
+quadrupole moment. These will printed separately only if a printed
+level of 2 or higher has been chosen. Note that quadrupole moment is
+defined according to Buckingham \cite{adbacp12}, and it is not
+transformed to the principal moments of inertia coordinate system.
+
+\item[\Key{RAMAN}] Calculates Raman intensities\index{Raman
+intensity}, as described in 
+Ref.~\cite{thkrklbpjjofd99}. This property needs a lot of settings
+in order to perform correctly, and the reader is therefore refered to
+Section~\ref{sec:vroa}, where the
+calculation of this property is described in more detail.
+
+\item[\Key{REPS}] \verb| |\newline
+\verb|READ (LUMCD, *) NREPS|\newline
+\verb|READ (LUMCD, *) (IDOSYM(I),I = 1, NREPS)|
+
+Consider perturbations of selected symmetries only.  Read one more
+line specifying how many symmetries, then one line listing the
+desired symmetries. This option is currently only implemented
+for geometric perturbations. 
+
+\item[\Key{RESTAR}] Restart in the property evaluation section. This
+keyword is currently disabled. 
+
+\item[\Key{SELECT}]\verb| |
+\newline
+\verb|READ (LUCMD,*) NPERT|\newline
+\verb|READ (LUCMD, *) (IPOINT(I),I=1,NPERT)|
+
+Select which nuclear geometric perturbations are to be considered.
+Read one more line specifying how many perturbations, then on a
+new line the sequence of perturbations to be considered. By default,
+all perturbations are to be considered, but by invoking this keyword,
+only those perturbations specified in the sequence will be considered. 
+
+The perturbation ordering follows the ordering of the symmetrized
+nuclear coordinates. This ordering can be obtained by setting the
+print level in the \verb|*READIN| module to 20 or higher.
+
+\item[\Key{SHIELD}] Invokes the calculation of nuclear
+shielding\index{nuclear shielding}
+constants. By default this is done using London orbitals\index{London
+orbitals} in order to 
+ensure fast basis set convergence as shown in
+Ref.~\cite{kwjfhppjacs112,krthrkpjklbhjajjcp100}. The use of London
+orbitals can be disabled by the keyword \verb|.NOLOND|.
+
+Furthermore, the natural connection\index{natural connection}
+(Ref.~\cite{joklbkrthpjtca90,krthjopjklbcpl235}) is default in order to ensure
+numerically stable results as well as physically interpretable
+results for the paramagnetic and diamagnetic terms. The natural
+connection can be turned off and instead use the symmetric
+connection\index{symmetric connection}
+by the keyword \verb|.NODIFC|. 
+
+The gauge origin\index{gauge origin} are chosen to be the center of
+mass\index{center of mass} of the molecule.
+This origin can be changed by the two keywords \verb|.GAUGEO| and
+\verb|.NOCMC |. This choice of gauge origin will of course not affect
+the final shieldings, only the size of the dia- and paramagnetic
+contributions.
+
+\item[\Key{SPIN-R}] Invokes the calculation of
+spin-rotation\index{spin-rotation constant}
+constants as described in Ref.~\cite{jgkrthjcp105}. By default this is
+done using London orbitals\index{London orbitals}  and the 
+natural connection\index{natural connection}. The use of London
+orbitals can be turned off by the keyword \verb|.NOLOND|.
+
+By definition the gauge origin\index{gauge origin} of the
+spin-rotation constant is to be the 
+center of mass\index{center of mass} of the molecule, and although the
+gauge origin can be 
+changed through the keywords \verb|.NOCMC | and \verb|.GAUGEO|, this
+is not recommended, and may give erroneous results.
+
+In the current implementation, symmetry dependent nuclei cannot be
+used during the calculation of spin-rotation constants.
+
+\item[\Key{SPIN-S}] Invokes the calculation of indirect nuclear
+spin-spin coupling\index{spin-spin coupling} constants. By default all
+spin-spin couplings 
+between nuclei with naturally occuring isotopes with abundance more
+than 1\% and non-zero spin will be calculated, as well as all the different
+contributions (Fermi contact, dia- and paramagnetic spin-orbit and
+spin-dipole)\index{Fermi
+contact}\index{spin-dipole}\index{paramagnetic spin-orbit}\index{diamagnetic spin-orbit}. The implementation is described in 
+Ref.~\cite{ovhapjhjajsbpthjcp96}. 
+
+As this is a very time consuming property, as well as requiring MCSCF
+wave functions in order to get reliable results, it is recommended to
+consult the chapter describing the calculation of NMR-parameters
+(Ch.~\ref{ch:magnetic}). The main control of which
+contributions and which nuclei to calculate spin-spin couplings
+between is done in the \verb|*SPIN-S| module.
+
+\item[\Key{VCD}] Invokes the calculation of Vibrational Circular
+Dichroism (VCD)\index{VCD}\index{vibrational circular dichroism}
+according to the scheme described in 
+Ref.~\cite{klbpjthkrhjajjcp98}.  By default this is done using London
+orbitals\index{London orbitals} in order to 
+ensure fast basis set convergence as shown in
+Ref.~\cite{klbpjthkrhjajjcp100}. The use of London
+orbitals can be disabled by the keyword \verb|.NOLOND|.
+
+Furthermore, the natural connection\index{natural connection}
+(Ref.~\cite{joklbkrthpjtca90,krthjopjklbcpl235}) is default in order to ensure
+numerically stable results. The natural
+connection can be turned off and instead use the symmetric
+connection\index{symmetric connection}
+by the keyword \verb|.NODIFC|. 
+
+The gauge origin\index{gauge origin} are chosen to be the center of
+mass\index{center of mass} of the molecule. 
+This origin can be changed by the two keywords \verb|.GAUGEO| and
+\verb|.NOCMC |. This will of course not affect the final VCD results,
+only the size of the contributing mechanisms.
+
+In the current implementation, the keyword \Key{NOCMC} will be set
+true in calculations of Vibrational Circular Dichroism, that is, the
+coordinate system origin will be used as gauge origin.
+
+\item[\Key{VIBANA}] Invokes a vibrational analysis\index{vibrational analysis} in the current
+geometry. This will generate the vibrational frequencies in the
+current point. If combined with \verb|.DIPGRA| the IR intensities
+will be calculated as well\index{IR intensity}. 
+
+\item[\Key{VROA}] Invokes the calculation of Vibrational Raman
+Optical Activity\index{Raman optical activity}\index{ROA}, as
+described in Ref.~\cite{thkrklbpjjofd99}. This 
+property needs a lot of settings in order to perform correctly, and
+the reader is therefore refered to Section~\ref{sec:vroa}, where the
+calculation of this property is described in more detail.
+
+\item[\Key{WRTINT}] Forces the magnetic first-derivate two-electron
+integrals to be written to disc. This is default in MCSCF
+calculations, but not for SCF runs. This file can be very large, and
+it is not recommended to use this option for ordinary SCF runs.
+
+\end{description}
+
+\subsection{Calculation of Atomic Axial Tensors (AATs):
+\Sec{AAT}}\label{sec:aat}  
+
+Directives for controlling the calculation of Atomic Axial
+Tensors\index{atomic axial tensor}\index{AAT},
+needed when calculating Vibrational Circular Dichroism
+(VCD)\index{vibrational circular dichroism}\index{VCD}.
+\begin{description}
+
+\item{\verb|.INTPRI|}\verb| |\newline
+\verb|READ (LUCMD,*)| 
+
+Set the print level in the calculation of the necessary differentiated
+integrals when calculating Atomic Axial Tensors\index{atomic axial tensor}\index{AAT}. Read one more line
+containing print level. Default value is value of \verb|IPRDEF|
+from the general input module. The print level of the rest of the
+calculation of Atomic Axial Tensors are controled by the keyword
+\verb|.PRINT |.
+
+\item{\verb|.NODBDR|} Skip contributions originating from first
+half-differentiated overlap\index{overlap, half-differentiated}
+integrals with respect to both nuclear 
+distortions as well as magnetic field. This will give wrong results
+for VCD\index{VCD}\index{vibrational circular dichroism}. Mainly for debugging purposes.
+
+\item{\verb|.NODDY |} Checks the calculation of the electronic part of
+the Atomic Axial Tensors\index{atomic axial tensor}\index{AAT} by calculating these both in the ordinary
+fashion as well as by a noddy routine. The program will not
+perform a comparison, and will not abort if differences is found.
+Mainly for debugging purposes.
+
+\item{\verb|.NOELC |} Skip the calculation of the pure electronic
+contribution to the Atomic Axial Tensors\index{atomic axial tensor}\index{AAT}. This will give wrong results
+for VCD\index{VCD}\index{vibrational circular dichroism}. Mainly for debugging purposes.
+
+\item{\verb|.NONUC |} Skip the calculation of the pure nuclear
+contribution to the Atomic Axial Tensors\index{atomic axial tensor}\index{AAT}. This will give wrong results
+for VCD. Mainly for debugging purposes.
+
+\item{\verb|.NOSEC |} Skip the calculation of second order orbital
+contributions to the Atomic Axial Tensors\index{atomic axial tensor}\index{AAT}. This will give wrong
+results for VCD\index{VCD}\index{vibrational circular dichroism}. Mainly for debugging purposes.
+
+\item{\verb|.PRINT |}\verb| |\newline
+\verb|READ (LUCMD,*) IPRINT|
+
+Set print level in the calculation of Atomic Axial Tensors\index{atomic axial tensor}\index{AAT} (this does
+not include the print level in the integral calculation, which are
+controled by the keyword \verb|.INTPRI|). Read one
+more line containing print level. Default value is the value of
+\verb|IPRDEF| from the general input module.
+
+\item{\verb|.SKIP  |} Skips the calculation of Atomic Axial Tensors\index{atomic axial tensor}\index{AAT}.
+This will give wrong results for VCD\index{VCD}\index{vibrational circular dichroism}, but may be of interest for
+debugging purposes.
+
+\item{\verb|.STOP  |} Stops the entire calculation after finishing the 
+calculation of the Atomic Axial Tensors\index{atomic axial tensor}\index{AAT}. Mainly for debugging purposes.
+\end{description}
+
+\subsection{Linear response calculation: {\tt
+*ABALNR}}\label{sec:abalnr}
+
+Directives to control the calculation of frequency dependent linear
+response\index{frequency}\index{linear response} functions. At present
+these directives only affect the 
+calculation of frequency dependent linear response functions appearing
+in connection with Vibrational Raman Optical Activity
+(ROA)\index{Raman optical activity}\index{ROA}.
+
+\begin{description}
+\item{\verb|.ALFA  |} Calculates the frequency dependent
+polarizability.\index{polarizability} 
+
+\item{\verb|.FREQUE|}\verb| |\newline
+\verb|READ (LUCMD,*) NFRVAL|\newline
+\verb|READ (LUCMD,*) (FRVAL(I), I = 1, NFRVAL)|
+
+Set the number of frequencies as well as the frequency\index{frequency} at which the
+frequency dependent linear response equations are to be evaluated.
+Read one more line containing the number of frequencies to be
+calculated, and another line reading these frequencies. The
+frequencies are to be entered in atomic units. By default only the
+static case is evaluated.
+
+\item{\verb|.IPRINT|}\verb| |\newline
+\verb|READ (LUCMD,*) IPRLNR|
+
+Set the print level in the calculation of frequency dependent linear
+response properties. Read one more line containing the print level.
+The default value is the value of \verb|IPRDEF| from the general input
+module. 
+
+\item{\verb|.MAXITE|}\verb| |\newline
+\verb|READ (LUCMD,*) MAXITE|
+
+Set the maximum number of micro iterations in the iterative solution of
+the frequency dependent linear response functions. Read one more line
+containing maximum number of micro iterations. Default value is
+40.
+
+\item{\verb|.MAXPHP|}\verb| |\newline
+\verb|READ (LUCMD,*) MXPHP|
+
+Set the maximum dimension for the sub-block of the configuration
+Hessian that will be explicitly inverted. Read one more line
+containing maximum dimension. Default value is~0.
+
+\item{\verb|.MAXRED|}\verb| |\newline
+\verb|READ (LUCMD,*) MXRM|
+
+Set the maximum dimension of the reduced space to which new basis
+vectors are added as described in Ref.~\cite{tuhjahjajpjjcp84}. Read
+one more line containing maximum dimension. Default value is~400.
+
+\item{\verb|.OPTORB|} Use optimal orbital trial vectors\index{optimal
+orbital trial vector} in the 
+iterative solution of the frequency dependent linear
+response\index{linear response}
+equations. These are generate as described in
+Ref.~\cite{tuhjahjajpjjcp84} by solving the orbital response equation
+exact, keeping the configuration part fixed.
+
+\item{\verb|.SKIP  |} Skip the calculation of the frequency dependent
+response functions. This will give wrong results for ROA. Mainly for
+debugging purposes.
+
+\item{\verb|.STOP  |} Stops the program after finishing the
+calculation of the frequency dependent linear response equations. Mainly
+for debugging purposes. 
+
+\item{\verb|.THRLNR|}\verb| |\newline
+\verb|READ (LUCMD,*) THCLNR|
+
+Set the convergence threshold for the solution
+of the frequency dependent response equations. Read one more line
+containing the convergence threshold~(D12.6). The default value is
+$5.0\cdot10^{-5}$.
+\end{description}
+
+\subsection{Dipole moment and dipole gradient contributions: {\tt
+*DIPCTL}}\label{sec:dipctl} 
+
+Directives controlling the calculation of contributions to the
+dipole gradient\index{dipole gradient} appear in the \verb|*DIPCTL| section.
+
+\begin{description}
+\item{\verb|.AOMAT |}  Print in AO as well as SO basis dipole
+matrices if printing of the latter has been requested. Obsolete keyword.
+Do not use.
+
+\item[\Key{NODC}] Neglect contributions to traces from
+inactive one-electron density matrix. This will give wrong results for
+the dipole gradient\index{dipole gradient}. Mainly for debugging purposes.
+
+\item[\Key{NODV}] Neglect contributions to traces from
+active one-electron density matrix. This will give wrong results for the
+dipole gradient\index{dipole gradient}. Mainly for debugging purposes.
+
+\item[\Key{PRINT}]\verb| |\newline
+\verb|READ (LUCMD,*) IPRINT|
+
+Set print level in the calculation of dipole gradient\index{dipole gradient}.  Read one more
+line containing print level. The default 
+is the variable \verb|IPRDEF| from the general input module.
+
+\item[\Key{SKIP}] Skip the calculation of dipole gradient\index{dipole gradient}.
+
+%\item[\Key{TEST}] Test dipole moments and dipole
+%reorthonormalization(?) through a dummy routine. This test routine is
+%currently only implemented for the symmetric connection, and must thus
+%only be used together with the \verb|.NODIFC| keyword.
+
+\item[\Key{STOP}] Stop the program after finishing the calculation
+of the dipole gradient\index{dipole gradient}. Mainly for debugging purposes.
+\end{description}
+
+\subsection{End of input: \Sec{END OF}}
+
+The last directive in the input should be \verb|*END OF|.
+
+\subsection{Calculation of excitation energies: {\tt
+*EXCITA}}\label{sec:excita}
+
+Directives to control the calculations of electronic
+transition\index{electronic excitation}
+properties and excitation energies\index{excitation energy} appear in
+the \verb|*EXCITA| input 
+module. For SCF\index{SCF}\index{HF}\index{Hartree-Fock} wave
+functions the properties are calculated using the 
+random phase approximation (RPA) and for MCSCF\index{MCSCF} wave functions the
+multiconfigurational (MC)-RPA is used. Implemented electronic transition
+properties are at the moment:
+
+\begin{enumerate}
+\item Oscillator Strength\index{oscillator strength} which determines
+visible and UV absorption. 
+\item Rotatory Strength\index{rotatory strength} which determines
+Electronic Circular Dichroism\index{electronic circular dichroism}\index{ECD}
+(ECD).
+\item Excitation Energies\index{electronic
+excitation}\index{excitation energy}. These are always calculated when
+invoking the \verb|.EXCITA| keyword in the general input module.
+\end{enumerate}
+
+\begin{description}
+\item{\verb|.DIPSTR|} Calculates the dipole strength\index{dipole
+strength}, that is, the 
+dipole oscillator strength which determine the visible and UV
+absorption, using the dipole length form.
+
+\item{\verb|.FNAC  |} Calculate first-order non-adiabatic coupling
+matrix\index{non-adiabatic coupling element} elements. This is not yet
+fully implemented in the \aba\ 
+program package and must be combined with subsequent
+RESPONSE-calculations.
+
+\item{\verb|.IPRINT|}\verb| |\newline
+\verb|READ (LUCMD, *) IPRINT|
+
+Set the print level in the calculation of the necessary differentiated
+integrals when calculating the linear response functions. Read one
+more line containing print level. Default value is the value of 
+\verb|IPRDEF| from the general input module. The print level of the
+rest of the calculation of electronic excitation energies are
+controled by the keyword \verb|.PRINT |.
+
+\item{\verb|.MAXITE|}\verb| |\newline
+\verb|READ (LUCMD,*) MAXITE|
+
+Set the maximum number of micro iterations in the iterative
+solution of the linear response equations. Read
+one more line containing maximum number of micro iterations.
+Default value is 40.
+
+\item{\verb|.MAXPHP|}\verb| |\newline
+\verb|READ (LUCMD,*) MXPHP|
+
+Set the maximum dimension for the sub-block of the configuration
+Hessian that will be explicitly inverted. Read one more line
+containing maximum dimension. Default value is~0.
+
+\item{\verb|.MAXRED|}\verb| |\newline
+\verb|READ (LUCMD,*) MXRM|
+
+Set the maximum dimension of the reduced space to which new basis
+vectors are added as described in Ref.~\cite{tuhjahjajpjjcp84}. Read
+one more line containing maximum dimension. Default value is~400.
+
+\item{\verb|.NEXCIT|}\verb| |\newline
+\verb|READ (LUCMD, '(8I5)') (NEXCIT(I), I= 1,8)|
+
+Set the number of excitation energies\index{excitation energy} to be
+calculated in each 
+symmetry. Read one more line containing the number of excitations in
+each of the irreducible representations of the molecular point group.
+The default is not to calculate any excitation energies in any of the
+irreducible representations.
+
+\item{\verb|.OPTORB|} Use optimal orbital trial vectors\index{optimal
+orbital trial vector} in the
+iterative solution of the frequency dependent linear
+response\index{linear response}
+equations. These are generate by solving the orbital response equation
+exact, keeping the configuration part fixed as described in
+Ref.~\cite{tuhjahjajpjjcp84}. 
+
+\item{\verb|.PRINT |}\verb| |\newline
+\verb|READ (LUCMD,*) IPREXE|
+
+Set the print level in the calculation of electronic excitation
+energies. Read one more line containing the print level.
+The default value is the \verb|IPRDEF| from the general input module.
+
+\item{\verb|.ROTVEL|} Calculate rotational strengths\index{electronic
+circular dichroism}\index{ECD} in Electronic
+Circular Dichroism (ECD) without using London orbitals.
+
+\item{\verb|.SKIP  |} Skip the calculation of electronic excitation
+energies. This will give wrong results for ECD and first-order NACMEs.
+Mainly for debugging purposes.
+
+\item{\verb|.STOP  |} Stops the program after finishing the 
+calculation of the linear response functions. Mainly
+for debugging purposes. 
+
+\item{\verb|.THREXC|}\verb| |\newline
+\verb|READ (LUCMD,*) THREXC|
+
+Set the convergence threshold for the solution
+of the linear response equations. Read one more line
+containing the convergence threshold. The default value is
+$1\cdot10^{-4}$.
+
+\item[\Key{TRIPLE}]
+Indicates that it is triplet excitations\index{excitation energy,
+triplet} that is to be investigated. 
+\end{description}
+
+\subsection{One-electron expectation values: {\tt
+*EXPECT}}\label{sec:expect}
+
+Directive that control the calculation of one-electron expectation
+values appear in the \verb|*EXPECT| input module. Notice, however,
+that the directives controling the calculation of one-electron
+expectation values to the geometric Hessian appear in the
+\verb|*ONEINT| section.
+
+\begin{description}
+\item{\verb|.ALL CO|} Indicates that all components of the nuclear
+shieldings\index{nuclear shielding} tensor is to be calculated at the
+same time. This is the 
+default for ordinary calculations. However, in direct and parallel
+calculations on large molecules this may give to large memory
+requirements, and instead the components of one symmetry independent
+nucleus are calculated simultaneously instead. However, by invoking
+this keyword, all components are calculated simultaneously even in
+direct/parallel calculations.
+
+\item{\verb|.DIASUS|} Invokes the calculation of the one-electron
+contribution to the magnetizability\index{magnetizability} expectation
+value. By default this 
+is done using London atomic\index{London orbitals} orbitals. Default
+value is \verb|TRUE| if 
+magnetizability has been requested in the general input module,
+otherwise \verb|FALSE|.
+
+\item{\verb|.NODC  |} Do not calculate contributions from inactive
+one-electron density matrix. This will give wrong results for the
+one-electron expectation values. Mainly for debugging purposes.
+
+\item{\verb|.NODV  |} Do not calculate contributions from active
+one-electron density matrix. This will give wrong results for the
+one-electron expectation values. Mainly for debugging purposes.
+
+\item{\verb|.ELFGRA|} Invokes the calculation of the electronic
+contribution to the nuclear quadrupole moment coupling
+tensor\index{nuclear quadrupole coupling}\index{NQCC} (that
+is, the electric field gradient\index{electric field
+gradient}). Default value is \verb|TRUE| if 
+nuclear quadrupole coupling constants have been requested in the
+general input module, otherwise \verb|FALSE|.
+
+\item{\verb|.NEFIEL|} Invokes the evaluation of the electric
+field the individual nuclei\index{electric field at nucleus}. Default
+value is \verb|TRUE| if 
+spin-rotation\index{spin-rotation constant} constants have been
+requested in the general input 
+module, otherwise \verb|FALSE|. In the current implementation,
+symmetry dependent nuclei cannot be used when calculating this property.
+
+\item{\verb|.POINTS|}\verb| |\newline
+\verb|READ (LUCMD,*)|
+
+Set the number of integration points to be used in the Gaussian
+quadrature\index{Gaussian quadrature}
+when evaluating  the diamagnetic spin-orbit\index{diamagnetic
+spin-orbit} integrals. Default 
+value is 40.
+
+\item{\verb|.PRINT |}\verb| |\newline
+\verb|READ (LUCMD,*) MPRINT|
+
+Set print level in the calculation of one-electron expectation values.
+Read one more line containing print level. Default value is the
+value of \verb|IPRDEF| from the general input module.
+
+\item{\verb|.QUADRU|} Calculates the electronic contribution to the
+molecular (traceless) quadrupole moment\index{quadrupole
+moment}. Default value is \verb|TRUE| 
+if molecular quadrupole moment have been requested in the general input
+module, otherwise \verb|FALSE|.
+
+\item{\verb|.SHIELD|} Invokes the calculation of the one-electron
+contribution to the nuclear shielding\index{nuclear shielding}
+expectation values. By default 
+this is done using London atomic\index{London orbitals}
+orbitals. Default value is 
+\verb|TRUE| if nuclear shieldings have been requested in the general
+input module, otherwise \verb|FALSE|.
+
+\item{\verb|.SKIP  |} Skip the calculation of one-electron expectation
+values. This may give wrong final results for some properties. Mainly
+for debugging purposes.
+
+\item{\verb|.SPIN-S|} Invokes the calculation of the diamagnetic
+spin-orbital\index{diamagnetic spin-orbit} integral, which is the
+diamagnetic contribution to 
+indirect nuclear spin-spin coupling\index{spin-spin coupling}
+constants. Default value is 
+\verb|TRUE| if spin-spin couplings have been requested in the general
+input module, otherwise false.
+
+\item{\verb|.STOP  |} Stop the entire calculation after finishing the
+calculation of one-electron expectation values. Mainly for debugging
+purposes.
+
+\end{description}
+
+%\subsection{Floating orbitals: \Sec{FLOAT}}\label{sec:float}
+%
+%Directives that control the calculation when using floating orbitals
+%as described by Helgaker and Alml{\"o}f \cite{thjajcp89} appear in
+%the \verb|*FLOAT| input module.
+%
+%\begin{description}
+%\item{\verb|.PRINT |}\verb| |\newline
+%\verb|READ (LUCMD,'(I5)') IPRINT|
+%
+%Set the print level in the calculation of floating orbital
+%contributions. Read one more line containing the print level~(I5).
+%Default print level is the \verb|IPRDEF| variable from the general
+%input module.
+%
+%\item{\verb|.RESPON|} Print the response contributions from
+%the floating orbitals.
+%
+%\item{\verb|.SKIP  |} Skip the calculation of specific terms
+%contributing when using floating orbitals. This may give wrong results
+%when using floating orbitals. Mainly for debugging purposes.
+%
+%\item{\verb|.STOP  |} Stop the calculation after calculating the
+%response contributions from the floating orbitals. Mainly for
+%debugging purposes.
+%\end{description}
+
+\subsection{Geometry analysis: \Sec{GEOANA}}
+
+Directives controlling the calculation and printing of bond
+angles\index{bond distance}\index{bond angle}\index{dihedral angle}
+and 
+dihedral angles appear in the \verb|*GEOANA| section. By default all
+bond distances will be calculated. The program will also define atoms
+to be bonded to each other depending on their bond distance. For all atoms
+defined to be bonded to each other, the bond distance and bond angles
+will be printed.
+
+\begin{description}
+\item[\Key{ANGLES}]\verb| |\newline
+\verb|READ (LUCMD,*) NANG|\newline
+\verb|    DO 310 I = 1, NANG|\newline
+\verb|       READ (LUCMD,*) (IANG(J,I), J = 1,3)|\newline
+\verb|310 CONTINUE|
+
+Calculate and print bond angles\index{bond angle}.  Read one
+more line specifying the number of angles, and then read \verb|NANG|
+lines containing triplets $A,B,C$ of atom labels, each
+specifying a particular bond angle~$\angle ABC$. Notice that in the
+current version of the program there is an upper limit of 20 bond
+angles that will be printed. The rest will be ignored. We also note
+that program always will print the angles between atoms defined to be
+bonded to each other on the basis of the van der Waals\index{van der
+Waals radius} radii of the atoms.
+
+\item[\Key{DIHEDR}]\verb| |\newline
+\verb|READ (LUCMD,*) NDIHED|\newline
+\verb|    DO 410 I = 1, NDIHED|\newline
+\verb|       READ (LUCMD,*) (IDIHED(J,I), J = 1,4)|\newline
+\verb|410 CONTINUE|
+
+Calculate and print dihedral\index{dihedral angle} (torsional)
+angles.  Read one more line specifying the number of angles,
+and then read \verb|NDIHED| lines containing quadruplets $A,B,C,D$ of atom
+labels.  The angle computed is that between the planes~$ABC$
+and $BCD$. Notice that in the current version of the program there is
+an upper limit of 20 dihedral angles that will be printed. The rest
+will be ignored.
+
+\item[\Key{SKIP}] Skip the geometry analysis, with the exceptions
+mentioned in the introduction to this section. This is the default
+value, but it is overwritten by the keywords \verb|.ANGLES| and
+\verb|.DIHEDR|. 
+\end{description}
+
+\subsection{Right-hand sides for response equations: \Sec{GETSGY}}
+
+Directives affecting the construction of the right-hand
+sides~(RHS)\index{property gradient}\index{right-hand side} --- that is,
+gradient terms --- for the response 
+calculation as well as some matrices needed for reorthonormalization
+appear in the \verb|*GETSGY| section. 
+
+\begin{description}
+\item[\Key{ALLCOM}] Requests that all paramagnetic
+spin-orbit\index{paramagnetic spin-orbit}
+right-hand sides are to be calculated in one batch, and not for each
+symmetry-independent center at a time which is the default. This will
+slightly speed up the calculation, at the cost of significantly larger
+memory requirements.
+
+\item[\Key{AOMAT}] Print AO as well as SO basis derivative
+overlap matrices if printing the latter has been requested. Obsolete
+keyword. Do not use.
+
+\item[\Key{DIAGTD}] Set derivative overlap matrices to diagonal
+form for test purposes. Obsolete keyword. Do not use.
+
+\item[\Key{FCKPRI}]\verb| |\newline
+\verb|READ (LUCMD,*) IPRFCK|
+
+Set print level for the calculation of derivative Fock matrices.  Read
+one more line specifying print level. The default  is the value of
+\verb|IPRDEF| in the general input module.
+
+\item[\Key{FCKSKI}] Skip the derivative Fock matrix contributions
+to the right-hand sides. This will give wrong results for all
+properties depending on right hand sides. Mainly for debugging purposes.
+
+\item[\Key{FSTTES}] Test one-index transformation of derivative
+Fock matrices. 
+
+\item[\Key{GDHAM}] Write out differentiated Hamiltonian and
+differentiated Fock matrices to file for use in post-\siraba\ programs.
+
+\item[\Key{GDYPRI}]\verb| |\newline
+\verb|READ (LUCMD,*) IPRGDY|
+
+Set print level for the calculation of the Y-matrix appearing in the
+reorthonormalization terms, as for instance in
+Ref.~\cite{tuhjahjajpjjcp84}. Default  is the value of \verb|IPRALL|
+defined by the \verb|.PRINT | keyword. If 
+this has not been specified, the default is the value of \verb|IPRDEF|
+from the general input section.
+
+\item[\Key{GDYSKI}] Skip the calculation of the lowest order
+reorthonormalization contributions to the second-order molecular
+properties. This will give wrong results for these properties. Mainly
+for debugging purposes.
+
+\item[\Key{INTPRI}]\verb| |\newline
+\verb|READ (LUCMD, '(5I5)') IPRINT, IPRNTA, IPRNTB, IPRNTC, IPRNTD|
+
+Set print level for the derivative integral calculation for a particular shell
+quadruplet.  Read one more line containing print level and the four
+shell indices~(5I5).  The print level is changed from the default
+for this quadruplet only. Default value is the value of \verb|IPRDEF|
+from the general input module. Note that the print level of all shell
+quadruplets can be changed by the keyword \verb|.PRINT |.
+
+\item[\Key{INTSKI}] Skip the calculation of derivative integrals.
+This will give wrong results for the total molecular Hessian. Mainly
+for debugging purposes.
+
+\item[\Key{MAXSIM}]\verb| |\newline
+\verb|READ (LUCMD,) MAXSIM|
+
+Maximum number of RHS to generate
+simultaneously.  Read one more line specifying this value.
+The default is~3.  This value should not be confused with the same
+keyword entered in the different sections for the solution of response
+equations like  the \verb|*RESPON|, \verb|*LINRES|, \verb|*TRPDRV|,
+\verb|*ABALNR|, and \verb|*EXCITA| sections. Obsolete keyword. Do not use.
+\typeout{>>>>>>>>Har alle responsmodulseksjoner et MAXSIM keyword?
+Foroevrig virker det paa meg som om keyword'et ikke virker.}
+
+\item[\Key{NODC}] Do not calculate contributions from inactive
+one-electron density matrix. This will give wrong results for the
+total molecular property. Mainly for debugging purposes.
+
+\item[\Key{NODDY}] Test the orbital part of the right-hand side.
+The run will not be aborted. Mainly for debugging purposes.
+
+\item[\Key{NODPTR}] The transformation of the two-electron density
+matrix is back-transformed to atomic orbital basis using a
+noddy-routine for comparison.
+
+\item[\Key{NODV}] Do not calculate contributions from the active
+one-electron density matrix. This will give wrong results for the
+molecular property. Mainly for debugging purposes.
+
+\item[\Key{NOFD}] Do not calculate the contribution from the
+differentiated Fock-matrices to the total right-hand side. This will
+give wrong results for the requested molecular property. Mainly for
+debugging purposes.
+
+\item[\Key{NOFS}] Do not calculate the contribution to the total
+right-hand side from the one-index transformed Fock-matrices with the
+differentiated connection matrix. This will give wrong results for
+the requested molecular property. Mainly for debugging purposes.
+
+\item[\Key{NOH1}] Do not calculate the contribution from the
+one-electron terms to the total right-hand side. This will give wrong
+results for the requested property. Mainly for debugging purposes.
+
+\item[\Key{NOH2}] Do not calculate the contribution from the
+two-electron terms to the total right-hand side. This will give wrong
+results for the requested molecular property. Mainly for debugging
+purposes.
+
+\item[\Key{NOORTH}] Do not calculate the orbital orthonormalization
+contribution (the one-index transformed contributions) to the total
+right-hand side. This will give wrong results for the requested
+molecular property. Mainly for debugging purposes.
+
+\item[\Key{NOPV}] Do not calculate contributions from two-electron
+density matrix. This will give wrong results for the requested
+molecular property. Mainly for debugging purposes.
+
+\item[\Key{NOSSF}] Do not calculate the contribution to the total
+right-hand side from the double-one-index
+transformation between the differentiated connection matrix and the
+Fock-matrix. This option will only affect the calculation of molecular
+Hessian, and will give a wrong result for this. Mainly for debugging
+purposes. 
+
+\item[\Key{PRINT}]\verb| |\newline
+\verb|READ (LUCMD,) IPRALL|
+
+Set print levels.  Read one more line containing the print level for
+this part of the calculation.  This will be the default print
+level in the calculation of differentiated two-electron integrals,
+differentiated Fock-matrices, derivative
+overlap matrices, two-electron density and derivative integral
+transformation, as well as in the construction of the right-hand sides.
+To set the print level in each of these parts individually, see the
+keywords \verb|.FCKPRI|, \verb|.GDYPRI|, \verb|.INTPRI|,
+\verb|.PTRPRI|, \verb|.SORPRI|, and \verb|.TRAPRI|.
+
+\item[\Key{PTRPRI}]\verb| |\newline
+\verb|READ (LUCMD,) IPRTRA|
+
+Set print level for the  two-electron densities transformation. Read
+one more line containing print level. 
+Default value is the value of  \verb|IPRDEF| from the general input
+module. Note also that this print level is also controled by the keyword
+\verb|.PRINT |. 
+
+\item[\Key{PTRSKI}] Skip transformation of active two-electron
+density matrix. This will give wrong results for the total
+second-order molecular property. Mainly for debugging purposes.
+
+\item[\Key{RETURN}] Stop after the shell quadruplet specified
+under \verb|.INTPRI| above. Mainly for debugging purposes.
+
+\item[\Key{SDRPRI}]\verb| |\newline
+\verb|READ (LUCMD,) IPRSDR|
+
+Set the print level in the calculation of the differentiated connection
+matrix. Read one more line containing the print level. Default
+value is the value given by the keyword \verb|.PRINT |. If this
+keyword has not been given, the default is the value of \verb|IPRDEF|
+given in the general input module.
+
+\item[\Key{SDRSKI}] Do not calculate the differentiated connection
+matrices. This will give wrong results for properties calculated with
+perturbation dependent basis sets. Mainly for debugging purposes.
+
+\item[\Key{SDRTES}] The differentiated connection matrices will be
+transformed and printed in atomic orbital basis. Mainly for debugging
+purposes.
+
+\item[\Key{SIRPR4}]\verb| |\newline
+\verb|READ (LUCMD, *) IPRI4|
+
+\sir\  ``output unit~4'' print level.  Read one more line specifying
+print level. Default is~0.
+
+\item[\Key{SIRPR6}]\verb| |\newline
+\verb|READ (LUCMD, *) IPRI6|
+
+\sir\ ``output unit~6'' print level.  Read one more line specifying
+print level. Default is~0.
+
+\item[\Key{SKIP}] Skip the calculation of right-hand sides. This
+will give wrong values for the requested second-order properties.
+Mainly for debugging purposes.
+
+\item[\Key{SORPRI}]\verb| |\newline
+\verb|READ (LUCMD,*) IPRSOR|
+
+Set print level for the two-electron density matrix sorting. Read one
+more line containing print level. Default value is the value of
+\verb|IPRDEF| from the general input module. Note also that this print
+level is also controled by the keyword \verb|.PRINT |.
+
+\item[\Key{STOP}] Stop the the entire calculation after finishing
+the construction of the right-hand side. Mainly for debugging purposes.
+
+\item[\Key{TIME}] Provide detailed timing breakdown for the
+two-electron integral calculation.
+
+\item[\Key{TRAPRI}]\verb| |\newline
+\verb|READ (LUCMD,*) IPRTRA|
+
+Set print level for the derivative integrals transformation.  Read one more
+line specifying print level. Default is the value of
+\verb|IPRDEF| from the general input module. Notice that the default print
+level is also affect by the keyword \verb|.PRINT |.
+
+\item[\Key{TRASKI}] Skip transformation of derivative integrals.
+Mainly for debugging purposes.
+
+\item[\Key{TRATES}] Testing of derivative integral
+transformation. The calculation will not be aborted. Mainly for
+debugging purposes.
+
+\item[\Key{TWOH1}] Obsolete keyword. Do not use.
+
+\item[\Key{UNDIF}] Calculate undifferentiated integrals. Obsolete
+keyword. Do not use.
+\end{description}
+
+\subsection{Linear response calculation: {\tt
+*LINRES}}\label{sec:linres}
+
+Directives to control the calculation of frequency independent linear
+response functions\index{linear response}. At present these directives
+only affect the 
+calculation of frequency independent linear response functions appearing
+in connection with singlet, magnetic perturbations. This
+whole section will become obsolete and be replaced by \verb|*EXCITA|
+and \verb|*ABALNR|, two sections which furthermore may become one.
+
+\begin{description}
+\item[\Key{EXCITA}] Obsolete keyword. Do not use. We refer instead
+to the keyword \verb|.EXCITA| in the \verb|*EXCITA| input module.
+
+\item[\Key{FREQUE}] Obsolete keyword. Do not use. We refer instead
+to the keyword \verb|.FREQUE| in the \verb|*EXCITA| input module.
+
+\item[\Key{MAXITE}]\verb| |\newline
+\verb|READ (LUCMD,*) MAXITE|
+
+Set the maximum number of micro iterations in the iterative solution of
+the frequency independent linear response functions. Read one more line
+containing maximum number of micro iterations. Default value is
+40.
+
+\item[\Key{MAXPHP}]\verb| |\newline
+\verb|READ (LUCMD,*) MXPHP|
+
+Set the maximum dimension of the sub-block of the configuration
+Hessian that will be explicitly inverted. Read one more line
+containing maximum dimension. Default value is~0.
+
+\item[\Key{MAXRED}]\verb| |\newline
+\verb|READ (LUCMD,*) MXRM|
+
+Set the maximum dimension of the reduced space to which new basis
+vectors are added as described in Ref.~\cite{tuhjahjajpjjcp84}. Read
+one more line containing maximum dimension. Default value is~400.
+
+\item[\Key{NEXVAL}] Obsolete keyword. Do not use. We refer instead to
+the keyword \verb|.EXCITA| in the \verb|*EXCITA| input module.
+
+\item[\Key{OPTORB}] Use optimal orbital trial vectors in
+the\index{optimal orbital trial vector}
+iterative solution of the frequency independent linear response
+equations. These are generate by solving the orbital response equation
+exact, keeping the configuration part fixed as described in
+Ref.~\cite{tuhjahjajpjjcp84}. 
+
+\item[\Key{PRINT}]\verb| |\newline
+\verb|READ (LUCMD,*) IPRCLC|
+
+Set the print level in the solution of the magnetic
+frequency-independent linear response equations. Read one more line
+containing print level. Default is the value of \verb|IPRDEF| in
+the general input module.
+
+\item[\Key{SKIP}] Skip the calculation of the frequency independent
+response functions. This will give wrong results for shielding,
+magnetizabilities, and spin-spin coupling constants\index{nuclear
+shielding}\index{spin-spin coupling}\index{magnetizability}. Mainly for
+debugging purposes.
+
+\item[\Key{STOP}] Stops the program after finishing the
+calculation of the frequency independent linear response equations. Mainly
+for debugging purposes. 
+
+\item[\Key{THRESH}]\verb| |\newline
+\verb|READ (LUCMD,*) THRCLC|
+
+Set the convergence threshold for the solution
+of the frequency dependent response equations. Read one more line
+containing the convergence threshold. The default value is
+$1.0\cdot10^{-4}$ for calculations which cannot take advantage of Sellers
+formular for quadratic errors in the response
+property~\cite{hsijqc30}, and $2.0\cdot10^{-3}$ for those calculations
+that can.
+\end{description}
+
+\subsection{Nuclear contributions: \Sec{NUCREP}}
+
+Directives affecting the nuclear contribution to the molecular
+gradient\index{gradient} and molecular Hessian\index{Hessian}
+calculation appear in the 
+\verb|*NUCREP| section.
+\begin{description}
+\item[\Key{PRINT}]\verb| |\newline
+\verb|READ (LUCMD,*) IPRINT|
+
+Set the print level in the calculation of the nuclear contributions.
+Read one more line containing print level. Default value is the
+value of \verb|IPRDEF| from the general input module.
+
+\item[\Key{SKIP}] Skip the calculation of the nuclear
+contribution. This will give wrong
+results for the total molecular gradient and Hessian. Mainly for
+debugging purposes. 
+
+\item[\Key{STOP}] Stop the program after finishing the calculation
+of the nuclear contributions. Mainly for debugging purposes.
+\end{description}
+
+\subsection{One-electron integrals: \Sec{ONEINT}}
+
+Directives affecting the calculation of one-electron integrals in the
+calculation of molecular gradients\index{gradient} and molecular
+Hessians\index{Hessian} appear in the 
+\verb|*ONEINT| section. 
+\begin{description}
+\item[\Key{NODC}] Do not calculate contributions from inactive
+one-electron density matrix. This will give wrong results for the
+total molecular gradient and
+Hessian\index{gradient}\index{Hessian}. Mainly for debugging
+purposes. 
+
+\item[\Key{NODV}] Do not calculate contributions from active
+one-electron density matrix. This will give wrong results for the
+total molecular gradient and Hessian\index{gradient}\index{Hessian}. Mainly for debugging purposes.
+
+\item[\Key{PRINT}]\verb| |\newline
+\verb|READ (LUCMD,*) IPRINT|
+
+ Set print level in the calculation of one-electron contributions to
+the molecular gradient and Hessian\index{gradient}\index{Hessian}.  Read one more line containing
+print level. Default value is the value of \verb|IPRDEF| from the
+general input module.
+
+\item[\Key{SKIP}] Skip the calculation of one-electron integral
+contributions to the molecular gradient and Hessian\index{gradient}\index{Hessian}. This will give
+wrong total results for these properties. Mainly for debugging
+purposes.
+
+\item[\Key{STOP}] Stop the entire calculation after the
+one-electron integral contributions to the molecular gradients and
+Hessians has been evaluated\index{gradient}\index{Hessian}. Mainly for debugging purposes.
+\end{description}
+
+\subsection{Relaxation contribution to Hessian: \Sec{RELAX}}
+
+Directives controlling the calculation of the relaxation
+contributions (i.e., those from the response terms) to the different
+second-order molecular properties, appear in the \verb|*RELAX| section.
+\begin{description}
+\item[\Key{NOSELL}] Do not use Sellers' method \cite{hsijqc30} that
+ensures that the error in the relaxation Hessian is quadratic in the
+error of the response equation solution, rather than linear. Mainly
+for debugging purposes.
+
+\item[\Key{PRINT}]\verb| |\newline
+\verb|READ (LUCMD,*) IPRINT|
+
+Set the print level in the calculation of the relaxation
+contributions.  Read one more line containing print level.
+Default value is the value of \verb|IPRDEF| from the general input
+module.
+
+\item[\Key{SKIP}] Skip the calculation of the relaxation
+contributions.  This does not skip the solution of the response
+equations. This will give wrong results for a large number of
+second-order molecular properties. Mainly for debugging purposes.
+
+\item[\Key{STOP}] Stop the entire calculation after the
+calculation of the relaxation contributions to the requested
+properties. Mainly for debugging purposes.
+
+\item[\Key{SYMTES}] Calculate both the $ij$ and $ji$ elements of
+the relaxation Hessian to verify its Hermiticity or anti-Hermiticity
+(depending on the property being calculated). Mainly for debugging
+purposes.  
+\end{description}
+
+\subsection{Reorthonormalization contributions: \Sec{REORT}}
+
+Directives affecting the calculation of reorthonormalization
+contributions to the geometric Hessian appear in the \verb|*REORT |
+section. 
+\begin{description}
+\item[\Key{PRINT}]\verb| |\newline
+\verb|READ (LUCMD,*) IPRINT|
+
+Set print level in the calculation of the lowest-order
+reorthonormalization contributions to the molecular Hessian.  Read one
+more line containing print level. Default value is the value of
+\verb|IPRDEF| from the general input module.
+
+\item[\Key{SKIP}] Skip the calculation of the reorthonormalization
+contributions to the molecular Hessian. This will give wrong results
+for this property. Mainly for debugging purposes.
+
+\item[\Key{STOP}] Stop the entire calculation after finishing the
+calculation of the reorthonormalization contributions to the molecular
+Hessian. Mainly for debugging purposes.
+\end{description}
+
+\subsection{Response calculation: \Sec{RESPON}}
+\label{sec:abares}
+
+Directives affecting the response (coupled-perturbed MCSCF)
+calculation  of geometric perturbations appear in the \verb|*RESPON|
+section. 
+\begin{description}
+\item[\Key{D1DIAG}] Neglect diagonal elements of the orbital
+Hessian when generating trial vectors. Mainly for debugging
+purposes. 
+
+\item[\Key{DONEXT}] Force the use of optimal orbital
+trial\index{optimal orbital trial vector} vectors in 
+the solution of the geometric response equations as described in
+Ref.~\cite{tuhjahjajpjjcp84}. This is done by solving the orbital part
+exact while keeping the configuration part fixed.
+
+\item[\Key{MAXITE}]\verb| |\newline
+\verb|READ (LUCMD,*) MAXNR|
+
+Maximum number of iterations to be used when solving the geometric
+response equations.  Read one more line specifying value.
+Default value is~50.
+
+\item[\Key{MAXRED}]\verb| |\newline
+\verb|READ (LUCMD,*) MAXRED|
+
+Set the maximum dimension of the reduced space to which new basis
+vectors are added as described in Ref.~\cite{tuhjahjajpjjcp84}. Read
+one more line containing maximum dimension. Default value is~400.
+
+\item[\Key{MAXSIM}]\verb| |\newline
+\verb|READ (LUCMD,*) MAXSIM|
+
+Maximum number of geometric perturbations to solve simultaneously in a
+given symmetry.  Read one more line specifying value.  Default
+is~15.
+
+\item[\Key{MCHESS}] Explicitly calculate electronic Hessian and
+test its symmetry. Does not abort the calculation. Mainly for
+debugging purposes.
+
+\item[\Key{NEWRD}] Forces the solution vectors to be written to a
+new file. This will also imply that \verb|.NOTRIA| will be set to
+\verb|TRUE|, that is, that no previous solution vectors will be used
+as trial vectors.
+
+\item[\Key{NOAVER}] Use an approximation to the orbital Hessian
+diagonal when generating trial vectors.
+
+\item[\Key{NONEXT}] Do not use optimal orbital trial\index{optimal
+orbital trial vector} vectors. 
+
+\item[\Key{NOTRIA}] Do not use old solutions as trial vectors, even
+though they may exist.
+
+\item[\Key{NRREST}] Restart geometric response calculation using old
+solution vectors.
+
+\item[\Key{PRINT}]\verb| |\newline
+\verb|READ (LUCMD,*) IPRINT|
+
+Set the print level during the solution of the geometric response
+equations.  Read one more line containing print level. Default
+value is the value of \verb|IPRDEF| in the general input module.
+
+\item[\Key{RDVECS}]\verb| |\newline
+\verb|READ (LUCMD, *) NRDT|\newline
+\verb|READ (LUCMD, *) (NRDCO(I), I = 1, NRDT)|
+
+Solve for specific geometric perturbations only.  Read
+one more line specifying number to solve for and then another
+line specifying their sequence numbers. This may give wrong results
+for some components of the molecular Hessian. Mainly for debugging
+purposes. 
+
+\item[\Key{SKIP}] Skip the solution of the geometric response
+equations. This will give wrong results for the geometric Hessian.
+Mainly for debugging purposes.
+
+\item[\Key{THRESH}]\verb| |\newline
+\verb|READ (LUCMD,*) THRNR|
+
+Threshold for convergence of the geometric response
+equations.  Read one more line specifying value.  Default
+value is~10$^{-3}$.
+
+\item[\Key{STOP}] Stop the entire calculation after solving all
+the geometric  response equations. Mainly for debugging purposes.
+\end{description}
+
+\subsection{Indirect nuclear spin-spin couplings: {\tt
+*SPIN-S}}\label{sec:spin-s}
+
+This input module controls the calculation of which indirect nuclear
+spin-spin coupling constants and what contributions to the total
+spin-spin coupling constants that are to be calculated.
+
+\begin{description}
+\item[\Key{ABUNDA}]\verb| |\newline
+\verb|READ (LUCMD,*) ABUND|
+
+Set the natural abundance\index{abundance} threshold for discarding coupling between
+certain nuclei. By default all isotopes in the molecule with a natural
+abundance above this limit will be included in the list of nuclei for which
+spin-spin coupling constants will be calculated. Read one more line
+containing the abundance threshold. The default value is~1.0,
+which includes both proton and $^{13}$C nuclides.
+
+\item[\Key{NODSO}] Do not calculate diamagnetic
+spin-orbit\index{diamagnetic spin-orbit}
+contributions to the total indirect spin-spin coupling\index{spin-spin
+coupling} constants. This 
+will give wrong results for the total spin-spin couplings.
+
+\item[\Key{NOFC}] Do not calculate the Fermi contact\index{Fermi
+contact} contribution 
+to the total indirect spin-spin coupling\index{spin-spin coupling}
+constants. This will give 
+wrong results for the total spin-spin couplings.
+
+\item[\Key{NOPSO}] Do not calculate the paramagnetic
+spin-orbit\index{paramagnetic spin-orbit}
+contribution to the indirect spin-spin coupling\index{spin-spin
+coupling} constants. This will 
+give wrong results for the total spin-spin couplings.
+
+\item[\Key{NOSD}] Do not calculate the spin-dipole\index{spin-dipole}
+contribution to 
+the total indirect spin-spin coupling\index{spin-spin coupling}
+constants. This will give wrong 
+results for the total spin-spin couplings.
+
+\item[\Key{PRINT}]\verb| |\newline
+\verb|READ (LUCMD,*) ISPPRI|
+
+Set the print level in the output of the final results from the
+spin-spin coupling constants. In order to get all individual tensor
+components (in a.u.) a print level of at least~5 is needed. Read one
+more line containing the print level. Default value is the value
+of \verb|IPRDEF| from the general input module.
+
+\item[\Key{SD+FC}] Do not split the
+spin-dipole\index{spin-dipole}\index{Fermi contact} and Fermi
+contact contributions in the calculations.
+
+\item[\Key{SDxFC ONLY}]\verb| |\newline
+
+Will only calculate the spin dipole--Fermi\index{spin-dipole}\index{Fermi contact} contact cross term, and the
+Fermi contanct--Fermi contact contribution for the triplet
+responses. The first of these to terms only contribute to the
+anistotropy, and one may in this way obtain the most important triplet
+contributions to the isotropic and anisotropic\index{spin-spin
+coupling}\index{spin-spin anisotropy} spin-spin couplings by
+only solving one instead of ten response equations for each nucleus.
+
+\item[\Key{SELECT}]\verb| |\newline
+\verb|READ (LUCMD,*) NPERT|\newline
+\verb|READ (LUCMD, *) (IPOINT(I), I = 1, NPERT)|
+
+Select which symmetry-independent nuclei for which there is to be calculated
+indirect nuclear spin-spin couplings. This option will override any
+selection based on natural abundance (the \verb|.ABUNDA| keyword), and
+at least one isotope of the nuclei requested will be evaluated (even
+though the most abundant isotope with a non-zero spin has a lower
+natural abundance 
+than the abundance threshold). Read one more line containing the
+number of nuclei selected, and another line their number (sorted after
+the input order). By default, all nuclei with an isotope with non-zero spin
+and with a natural abundance larger than the threshold will be included in
+the list of nuclei for which indirect spin-spin couplings will be
+calculated.
+\end{description}
+
+\subsection{Translational and rotational invariance: 
+\Sec{TROINV}}\label{sec:abatro}
+
+Directives affecting the use of translational and rotational
+invariance\index{translational invariance}\index{rotational invariance}
+appear in the \verb|*TROINV| section.
+\begin{description}
+\item[\Key{COMPAR}] Use translational and rotational\index{translational invariance}\index{rotational invariance} symmetry
+ and check the molecular Hessian against the Hessian obtained
+without use of translational and rotational invariance. This is
+default in a calculation of vibrational circular dichroism
+(VCD)\index{vibrational circular dichroism}\index{VCD}.
+
+\item[\Key{GD}] Obsolete keyword. Do not use.
+
+\item[\Key{NOROT}] Obsolete keyword. Do not use.
+
+\item[\Key{PRINT}]\verb| |\newline
+\verb|READ (LUCMD,*) IPRINT|
+
+Set print level for the setting up and use of translational and
+rotational invariance.  Read one more line containing print
+level. Default value is the value of \verb|IPRDEF| from the
+general input module.
+
+\item[\Key{RD}] Obsolete keyword. Do not use.
+
+\item[\Key{SKIP}] Skip the setting up and use of translational
+and rotational invariance\index{translational invariance}\index{rotational invariance}.
+
+\item[\Key{STOP}] Stop the entire calculation after the setup of
+translational and rotational invariance\index{translational invariance}\index{rotational invariance}. Mainly for debugging purposes.
+
+\item[\Key{THRESH}]\verb| |\newline
+\verb|READ (LUCMD,*) THRESH|
+
+Threshold defining linear dependence among
+supposedly independent coordinates.  Read one more line specifying
+value.  Default is~0.1.
+\end{description}
+
+\subsection{Response equations for triplet operators: {\tt
+*TRPRSP}}\label{sec:trprsp}
+
+Directives controlling the set-up of right-hand sides for triplet
+perturbing operators (for instance the Fermi contact and spin-dipole
+operators entering the nuclear spin-spin coupling
+constants)\index{spin-dipole}\index{Fermi contact}\index{spin-spin
+coupling}, as well 
+as when solving the triplet response equations appear in the
+\verb|*TRPRSP| input module. 
+
+\begin{description}
+\item[\Key{INTPRI}]\verb| |\newline
+\verb|READ (LUCMD ,*) INTPRI|
+
+Set the print level in the calculation of the atomic integrals
+contributing to the different triplet operator right-hand sides. Read
+one more line containing the print level. Default is the value
+of \verb|IPRDEF| from the general input module.
+
+\item[\Key{MAXITE}]\verb| |\newline
+\verb|READ (LUCMD,*) MAXTRP|
+
+Set the maximum number of micro iterations in the iterative solution of
+the triplet response equations. Read one more line containing the
+maximum number of iterations. Default is~40.
+
+\item[\Key{MAXPHP}]\verb| |\newline
+\verb|READ (LUCMD,*) MXPHP|
+
+Set the maximum dimension for the sub-block of the configuration
+Hessian that will be explicitly inverted. Read one more line
+containing maximum dimension. Default value is~0.
+
+\item[\Key{MAXRED}]\verb| |\newline
+\verb|READ (LUCMD,*) MXRM|
+
+Set the maximum dimension of the reduced space to which new basis
+vectors are added as described in Ref.~\cite{tuhjahjajpjjcp84}. Read
+one more line containing maximum dimension. Default value is~400.
+
+\item[\Key{NORHS}] Skip the construction of the right-hand sides
+for triplet perturbations. As this by necessity implies that all
+right-hand sides and solution vectors are zero, this option is
+equivalent to \verb|.SKIP  |. This will furthermore give wrong results
+for the total spin-spin\index{spin-spin coupling} couplings. Mainly for debugging purposes.
+
+\item[\Key{NORSP}] Skip the solution of the triplet response
+equations. This will give wrong results for the total spin-spin
+couplings\index{spin-spin coupling}. Mainly for debugging purposes.
+
+\item[\Key{OPTORB}] Optimal orbital trial\index{optimal orbital trial
+vector} vectors used in the 
+solution of the triplet response equations. These are generate by
+solving the orbital response equation 
+exact, keeping the configuration part fixed as described in
+Ref.~\cite{tuhjahjajpjjcp84}. 
+
+\item[\Key{PRINT}]\verb| |\newline
+\verb|READ (LUCMD,*) IPRTRP|
+
+Set the print level during the setting up of triplet operator
+right-hand sides and in the solution of the response equations for
+the triplet perturbation operators. Read one more line containing the
+print level. Default is the value of \verb|IPRDEF| from the
+general input module.
+
+\item[\Key{SKIP}] Skip the construction of triplet right-hand
+sides as well as the solution of the response equations for
+the triplet perturbation operators. This will give wrong results for
+the indirect nuclear spin-spin\index{spin-spin coupling}
+couplings. Mainly for debugging 
+purposes.
+
+\item[\Key{STOP}] Stop the entire calculation after generating the
+triplet right-hand sides, and solution of the triplet response
+equations. Mainly for debugging purposes.
+
+\item[\Key{THRESH}]\verb| |\newline
+\verb|READ (LUCMD,*) THRTRP|
+
+Set the threshold for convergence in the solution of the triplet
+response equations. Read one more line containing the
+threshold. Default is~$1\cdot10^{-4}$.
+\end{description}
+
+\subsection{Two-electron contributions: \Sec{TWOEXP}}
+
+Directives affecting the calculation of two-electron derivative
+integral contributions to the molecular gradient\index{gradient} and
+Hessian\index{Hessian} appear in 
+the \verb|*TWOEXP| section.  
+
+\begin{description}
+\item[\Key{DIRTST}] Test the direct calculation of Fock matrices and
+integral distributions. Mainly for debugging purposes.
+
+\item[\Key{FIRST}] Compute first derivative integrals but not
+second derivatives. This is default if only molecular gradients and
+not the molecular Hessian has been requested.
+
+\item[\Key{INTPRI}]\verb| |\newline
+\verb|READ (LUCMD, '(5I5)') IPRINT, IPRNTA, IPRNTB, IPRNTC, IPRNTD|
+
+Set print level for the derivative integral calculation for a particular shell
+quadruplet.  Read one more line containing print level and the four
+shell indices~(5I5).  The print level is changed from the default
+for this quadruplet only. Default value is the value of \verb|IPRDEF|
+from the general input module. Note that the print level of all shell
+quadruplets can be changed by the keyword \verb|.PRINT |.
+
+\item[\Key{INTSKI}] Skip the calculation of derivative integrals.
+This will give wrong results for the total molecular gradients and
+Hessians. Mainly for debugging purposes.
+
+\item[\Key{NOCONT}] Do not contract derivative integrals
+(program back-transforms density matrices to the primitive Gaussian
+basis instead).
+
+\item[\Key{NODC}] Do not calculate contributions from inactive
+one-electron density matrix. This will give wrong results for the
+total molecular gradient and Hessian. Mainly for debugging purposes.
+
+\item[\Key{NODV}] Do not calculate contributions from the active
+one-electron density matrix. This will give wrong results for the
+total molecular gradient and Hessian. Mainly for debugging purposes.
+
+\item[\Key{NOPV}] Do not calculate contributions from two-electron
+density matrix. This will give wrong results for the total molecular
+gradient and Hessian. Mainly for debugging purposes.
+
+\item[\Key{PRINT}]\verb| |\newline
+\verb|READ (LUCMD,*) IPRALL|
+
+Set print levels.  Read one more line containing the print level for
+this part of the calculation.  The will be the default print
+level in the two-electron density matrix transformation, the 
+symmetry orbital two-electron density matrix sorting, as well as the
+print level in the integral derivative evaluation. To set the print
+level in each of these parts individually, see the keywords
+\verb|.INTPRI|, \verb|.PTRPRI|, \verb|.SORPRI|.
+
+\item[\Key{PTRNOD}] The transformation of the two-electron density
+matrix is back-transformed to atomic orbital basis using a
+noddy-routine for comparison.
+
+\item[\Key{PTRPRI}]\verb| |\newline
+\verb|READ (LUCMD,*) IPRPRT|
+
+Set print level for the the two-electron density matrix transformation.
+Read one more line containing print level. Default value is the
+value of  \verb|IPRDEF| from the general input module. Note also that
+this print level is controled by the keyword \verb|.PRINT |.
+
+\item[\Key{PTRSKI}] Skip transformation of active two-electron
+density matrix. This will give wrong results for the total molecular
+Hessian. Mainly for debugging purposes.
+
+\item[\Key{RETURN}] Stop after the shell quadruplet specified
+under \verb|.INTPRI| above. Mainly for debugging purposes.
+
+\item[\Key{SORPRI}]\verb| |\newline
+\verb|READ (LUCMD,*) IPRSOR|
+
+Set print level for the two-electron density matrix sorting. Read one
+more line containing print level. Default value is the value of
+\verb|IPRDEF| from the general input module. Note also that this print
+level is controled by the keyword \verb|.PRINT |.
+
+\item[\Key{SORSKI}] Skip sorting of symmetry orbital two-electron
+density matrix. This will give wrong results for the total molecular
+Hessian. Mainly for debugging purposes.
+
+\item[\Key{SECOND}] Compute both first and second derivative
+integrals. This is default when calculating molecular Hessians.
+
+\item[\Key{SKIP}] Skip all two-electron derivative integral
+and two-electron density matrix processing.
+
+\item[\Key{STOP}] Stop the the entire calculation after finishing
+the calculation of the two-electron derivative integrals. Mainly for
+debugging purposes.
+
+\item[\Key{TIME}] Provide detailed timing breakdown for the
+two-electron integral calculation.
+\end{description}
+
+\subsection{Vibrational analysis: \Sec{VIBANA}}
+\label{sec:abavib}
+
+Directives controlling the calculation of harmonic
+vibrational\index{vibrational analysis}
+frequencies appear in the \verb|*VIBANA| section, as well as properties
+depending on a normal coordinate analysis or vibrational frequencies.
+Such properties include in the present version of the program:
+Vibrational Circular Dichroism (VCD), Raman intensities, and Raman
+Optical Activity (ROA)\index{vibrational circular
+dichroism}\index{VCD}\index{Raman intensity}\index{IR
+intensity}\index{Raman optical activity}\index{ROA}.
+
+\begin{description}
+%\item[\Key{INTERN}] Use internal coordinates for the vibrational
+%analysis.  This has no effect on vibrational analyses performed at
+%stationary points, but is asserted to provide more reliable
+%results at non-stationary points.  Read more lines (see below) to
+%specify the internal coordinates, variables are \verb|TYPE|,
+%\verb|A|, \verb|B|, \verb|C|, \verb|D|, \verb|COEF|,
+%\verb|SCAL|~(1X,A4,4I5,2F10.5). Currently this option is not bug-free,
+%and it's use is not to be recommended.
+%\begin{description}
+%\item[\bf TYPE] This has the value \verb*|    | if this line continues
+%a linear combination of primitive internal coordinates.  Otherwise
+%the possible values are
+%\begin{description}
+%\item[\bf STRE] Bond stretch
+%\item[\bf INVR] Reciprocal of bond stretch
+%\item[\bf BEND] Angle bend
+%\item[\bf OUT ] Angle between bond and plane
+%\item[\bf TORS] Torsional angle
+%\item[\bf LIN1] First of a collinear bending pair
+%\item[\bf LIN2] Second of a collinear bend
+%\end{description}
+%\item[\bf A-D ] Atom numbers specifying the internal coordinates.
+%Note that for an angle bend the angle is $\angle ACB$, including
+%collinear bends!  Also, the out-of-plane mode is the angle between
+%$AC$ and $BCD$??  Finally , in the collinear bend case the
+%collinear angle is $\angle ACB$, and $D$ is used to specify a
+%plane such that the first bend is in the plane~$ABD$.
+%\item[\bf COEF] Coefficient of this primitive internal coordinate in
+%the current linear combination.  Default is~1.
+%\item[\bf SCAL] Overall scale factor for this linear combination
+%(specify on first line only).  Default is~1.
+%\end{description}
+
+\item[\Key{HESFIL}] Read the molecular Hessian\index{Hessian} from the file
+\verb|DALTON.HES|. This file may have been made in an earlier
+calculation using the keyword \Key{HESPUN}, or constructed from a
+calculation with the Gaussian94 program and converted to \siraba\
+format using the \verb|FChk2HES.f| program. Useful in VCD and VROA
+analyses\index{VCD}\index{ROA}\index{vibrational circular
+dichroism}\index{Raman optical activity}.
+
+\item[\Key{HESPUN}] Write the molecular Hessian\index{Hessian} to the file
+\verb|DALTON.HES| for use as starting Hessian in
+first-order\index{first-order optimization} geometry
+optimizations (see keyword \Key{HESFIL} in the \Sec{MINIMIZE} input
+module), or for later use in a vibrational analysis (see keyword
+\Key{HESFIL} in this input module)\index{vibrational analysis}.
+
+\item[\Key{NOCID}] Do not calculate the Circular Intensity
+Differentials\index{circular intensity differential}\index{CID} (CIDs)
+as defined by Barron~\cite{barronbook}, but 
+instead print the chirality\index{chirality number} numbers defined by
+Hug~\cite{whc48} in 
+calculation of vibrational Raman Optical Activity
+(VROA)\index{ROA}\index{Raman optical activity}.
+
+\item[\Key{ISOTOP}]\verb| |\newline
+\begin{verbatim}
+READ (LUCMD,*) NISOTP, NATM
+DO 305 ICOUNT = 1, NISOTP
+   READ (LUCMD,*) (ISOTP(ICOUNT,N), N = 1, NATM)
+END DO
+\end{verbatim}
+
+Read in the number of different isotopically\index{isotopic
+constitution} substituted species 
+\verb|NISOTP| fore which we will do a vibrational analysis. The
+isotopic species containing only the most abundant isotopes is always
+calculated.
+
+\verb|NATM| is the total number of atoms in the molecules (see
+discussion in Section~\ref{sec:vibfreq}. For each isotopic species,
+the isotope for each atom in the molecule is read in. A 1 denotes the
+most abundant isotope, a 2 the second-most abundant isotope and so on.
+
+\item[\Key{PRINT}]\verb| |\newline
+\verb|READ (LUCMD,*) PRINT|
+
+Set the print level in the vibrational\index{vibrational analysis}
+analysis of the molecule.  Read 
+one more line containing print level. Default value is the value
+of \verb|IPRDEF| from the general input module.
+
+\item[\Key{SKIP}] Skip the analysis of the vibrational frequencies
+and modes of the molecule.
+\end{description}
+

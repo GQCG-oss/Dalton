@@ -1,0 +1,5 @@
+C
+C$Id: memcb1.h,v 1.1.1.1 2001-02-08 13:33:24 hjj Exp $
+C
+      COMMON /MEMCB1/ LUWMEM, LUEMEM, NWNMEM
+

@@ -1,0 +1,238 @@
+\chapter{Calculation of NMR parameters}\index{NMR}\label{ch:nmrchap}
+
+This chapter describes the calculation of properties important in
+nuclear magnetic resonance (NMR) and related spectroscopic techniques.
+This includes the the two 
+contributions to the ordinary spin-Hamiltonian used in NMR, nuclear
+shieldings and indirect nuclear spin-spin couplings constants. In
+addition we describe the calculation of molecular magnetizability, a
+property of importance when doing NMR experiments with the reference
+in another tube than the sample.\typeout{Hva heter forsoek der
+referanse og proeve er i hvert sitt NMR-roer?} We also shortly
+describe two properties very closely related to the magnetizability
+and nuclear shieldings respectively, the molecular g-factor and the
+spin-rotation constants.
+
+Gauge origin independent nuclear shieldings and magnetizabilities are
+obtained through the use of London atomic orbitals, and the theory is
+presented in several references
+\cite{kwjfhppjacs112,krthrkpjklbhjajjcp100,krthklbpjhjajjcp99,krthklbpjjo}.
+These properties are very easily to calculate (from a users point of
+view), and thus is given only a very brief description below.
+
+The indirect spin-spin couplings are calculated by using the quadratic
+response function, as described in Ref.~\cite{ovhapjhjajsbpthjcp96}.
+These are in principle equally simple to calculate with \aba\ as
+nuclear shieldings and magnetizabilities. However, there are 13
+contributions to the spin-spin coupling constant from {\em each}
+nucleus. Furthermore, the spin-spin coupling constants put severe
+requirements on the quality of the basis set as well as a proper
+treatment of correlation, making the evaluation of spin-spin coupling
+constants a very time consuming task. Some notes about how this time
+can be reduced is given below.
+
+\section{Magnetizabilities}\label{sec:magnetizability}
+
+{\it \aba\ input files:} abastr.inp
+
+\bigskip
+
+The calculation of molecular magnetizabilities is invoked by the
+keyword \verb|.MAGNET| in the general input module of abastr.inp. Thus
+a complete input file for the calculation of molecular
+magnetizabilities will look as:
+
+\smallskip
+
+\begin{tabular}{l}
+\verb|*ABACUS|\\
+\verb|.MAGNET|\\
+\verb|*END OF|
+\end{tabular}
+
+\smallskip
+
+This will invoke the calculation of molecular magnetizabilities using
+London Atomic Orbitals to ensure fast basis set convergence and gauge
+orgin independent results. The natural connection \cite{joklbkrthpj}
+is used in order to get numerically accurate results as well as give
+the diamagnetic and paramagnetic contribution to the magnetizability a
+proper physical interpretation. By default the center of mass is
+chosen as gauge origin.
+
+A basis set especially well suited for the calculation of
+magnetizabilites, the cc+p-basis, has been developed
+\cite{pdkrthklbpj}, and it is obtainable from the basis set library.
+The excellent performance of this basis set with London orbitals is
+well documented
+\cite{krthklbpjhjajjcp99,krthpjklbcpl223,krhsthklbpjjacs}.
+
+Notice that a general print level of 2 or higher is needed in order to
+get the individual contributions (relaxation, one- and
+two-electron expectation values and so on) to the total magnetizability.
+
+If more close control of the different parts of the calculation of the
+magnetizability is wanted we refer the reader to the section
+describing the options available. The modules that controls the
+calculation of molecular magnetizabilities are:
+
+\begin{list}{}{\itemsep 0.10cm \parsep 0.0cm}
+\item[\verb|*EXPECT|] Controls the calculation of one-electron
+expectation values contributing to the diamagnetic magnetizability.
+\item[\verb|*GETSGY|] Controls the set up of the right-hand sides
+(gradient terms) as well as the calculation of two-electron
+expectation values and reorthonormalization terms.
+\item[\verb|*LINRES|] Controls the solution of the magnetic response
+equations
+\item[\verb|*RELAX |] Controls the adding of solution and right-hand
+side vectors into relaxation contributions
+\end{list}
+
+\section{Nuclear shielding constants}\label{sec:shieldings}
+
+{\it \aba\ input files:} abastr.inp
+
+\bigskip
+
+The calculation of nuclear shieldings are invoked by the
+keyword \verb|.SHIELD| in the general input module of abastr.inp. Thus
+a complete input file for the calculation of nuclear shieldings will
+look as: 
+
+\smallskip
+
+\begin{tabular}{l}
+\verb|*ABACUS|\\
+\verb|.SHIELD|\\
+\verb|*END OF|
+\end{tabular}
+
+\smallskip
+
+This will invoke the calculation of nuclear shieldings using
+London Atomic Orbitals to ensure fast basis set convergence and gauge
+orgin independent results. The natural connection \cite{joklbkrthpj}
+is used in order to get 
+numerically accurate results as well as give the diamagnetic and
+paramagnetic contribution to the nuclear shieldings a proper physical
+interpretation. By default the center of mass is chosen as gauge
+origin.
+
+A basis set well suited for the calculation of nuclear shieldings (and
+indirect nuclear spin-spin coupling constants) has been recommended
+\cite{pdkrthklbpj} and is available from the basis set library as H
+III. Several investigations of nuclear shieldings using this basis
+sets have been done
+\cite{mjthkrklbpjcpl220,krthrkpjklbhjajjcp100,krthklbpjcpl226}.
+
+Notice that a general print level of 2 or higher is needed in order to
+get the individual contributions (relaxation, one- and
+two-electron expectation values and so on) to the total nuclear shieldings.
+ 
+If more close control of the different parts of the calculation of the
+nuclear shieldings is wanted we refer the reader to the section
+describing the options available. For the calculation of nuclear
+shieldings, these are the same as listed above for magnetizability
+calculations.
+
+\section{Molecular g-factor}\label{sec:gfac}
+
+Not implemented yet.
+
+\section{Spin-rotation constants}\label{sec:spinrotasjon}
+
+Not implemented yet.
+
+\section{Indirect nuclear spin-spin coupling
+constants}\label{sec:spinspin}
+
+{\it \aba\ input files:} abastr.inp
+
+\bigskip
+
+As mentioned in the introduction of this chapter, the calculation of indirect nuclear
+spin-spin coupling constants is a time consuming task due to the
+large number of contribution to the total spin-spin coupling
+constants. Still, if all spin-spin couplings in a molecule are wanted,
+with some restrictions mentioned below, the input will look as
+follows:
+
+\smallskip
+
+\begin{tabular}{l}
+\verb|*ABACUS|\\
+\verb|.SPIN-S|\\
+\verb|*END OF|
+\end{tabular}
+
+\smallskip
+
+By default this will calculate the indirect nuclear spin-spin coupling
+constants between isotopes with a non-zero magnetic moments and a
+natural abundance of more than 1\% . This limit will automatically
+include proton and $^{13}$C spins-spin coupling constants. By default
+all contributions to the coupling constants will be calculated. 
+
+Often one is interested in only certain kinds of nuclei. For example,
+ one may want to calculate only the proton spin-spin couplings of the molecule.
+This can be accomplished in two ways: either by changing the abundancy
+threshold so that it only includes that single isotope (most useful
+for proton couplings), or by selecting the particular nuclei of interest. The
+first of these options is useful when several isotopes of a single
+nuclei is wanted, some of which have low abundacy.
+
+All the keywords necessary to control such adjustments to the
+calculation is given in the \verb|*SPIN-S| input module. Thus an input
+in which we both have reduced the the abundancy threshold as well as
+selected three atoms will look as:
+
+\smallskip
+
+\begin{tabular}{l}
+\verb|*ABACUS|\\
+\verb|.SPIN-S|\\
+\verb|*SPIN-S|\\
+\verb|.ABUNDA|\\
+\verb| 0.10|\\
+\verb|.SELECT|\\
+\verb|    3  |\\
+\verb|    2    4    5|\\
+\verb|*END OF|
+\end{tabular}
+
+\smallskip
+
+We refer to the section describing the \verb|*SPIN-S| input module for
+the complete description of the syntax for these keywords, as well as
+the numbering of the atoms which are selected.
+
+We also notice that it is often of interest to calculate only specific
+contributions (usually the Fermi-contact contribution) at a high level
+of approximation. There is some indication that Hartree-Fock may be
+able to predict the relative importance of the different
+contributions, thus helping in the decision of which contributions
+should be calculated at a correlated level \cite{krthklbpjcpl226}.
+The calculation of only certain contributions can be accomplished in
+the input by turning off the different 
+contributions by the keywords \verb|.NODSO |, \verb|.NOPSO |,
+\verb|.NOSD  |, and \verb|.NOFC  |. We refer to the description of the
+\verb|*SPIN-S| input module for a somewhat more thorough discussion.
+
+If a closer a control of the individual parts of the calculation of
+indirect nuclear spin-spin coupling constants is wanted, this can be
+done through the use of keywords in the following input modules:
+
+\begin{list}{}{\itemsep 0.10cm \parsep 0.0cm}
+\item[\verb|*EXPECT|] Controls the calculation of one-electron
+expectation value contribution to the diamagnetic spin-spin coupling
+constants. 
+\item[\verb|*GETSGY|] Controls the set up of the right-hand sides
+(gradient terms) 
+expectation values and reorthonormalization terms.
+\item[\verb|*LINRES|] Controls the solution of the singlet magnetic
+response equations
+\item[\verb|*TRPRSP|] Controls the solution of the triplet magnetic
+response equations (for Fermi-contact and spin-dipole contributions)
+\item[\verb|*RELAX |] Controls the adding of solution and right hand
+side vectors into relaxation contributions
+\end{list}

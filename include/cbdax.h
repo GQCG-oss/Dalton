@@ -1,0 +1,6 @@
+C
+C$Id: cbdax.h,v 1.1.1.1 2001-02-08 13:33:25 hjj Exp $
+C
+      PARAMETER (MXDAX = 5)
+      COMMON /CBDAX / LUDAX(MXDAX),IOPEN(MXDAX),IUSED(MXDAX),
+     *                LSYDAX(MXDAX),LVLDAX(MXDAX)

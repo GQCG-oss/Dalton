@@ -1,0 +1,102 @@
+\chapter{UPDATE}\label{ch:update}\index{UPDATE|textbf}
+
+\section{General}
+
+\siraba\ is maintained using a utility named UPDATE\index{UPDATE} --- this is a
+FORTRAN code that mimics some features of the CDC and CRAY system\index{Cray}
+software of the same name.  In particular, it provides an
+``include'' function by allowing the contents of {\em common
+decks\/} to be inserted into the source code on demand.  In
+addition, it allows {\em conditional generation\/} of source code:
+depending on whether certain flags are set or not code will be
+generated or ignored.  The version distributed was originally
+written by N.~H.~F.~Beebe, and has been extensively modified by
+H.~J.~Aa.~Jensen.  We will describe the various features only briefly
+here.
+
+\section{Operation}
+
+UPDATE\index{UPDATE}\index{UPDATE|options} is normally invoked by a
+script, conventionally named 
+\verb|upd|.  Source file names presented to the script have a
+\verb|.u| suffix, and each is processed in turn to give a
+\verb|.f| file, that is, true FORTRAN source.  Apart from the list
+of input file names, the \verb|upd| script takes several options.
+\begin{description}
+\item[\verb|-c|~{\em file\/}] Specifies {\em file\/} is a common
+deck file.  This replaces any existing common deck file
+specifications.
+\item[\verb|-C|~{\em file\/}] Add {\em file\/} to the existing
+list of common deck files.
+\item[\verb|-d|~{\em name\/}] Specifies {\em name\/} is a defined
+name (see Sec.~\ref{sec:upddef}) for this update.  This replaces
+any existing defined names.
+\item[\verb|-D|~{\em name\/}] Add {\em name\/} to the existing
+list of defined names.
+\item[\verb|-o|~{\em file\/}] Write informative output to {\em
+file\/}.  Default is \verb|upd.lis|
+\item[\verb|-e|~{\em file\/}] Write diagnostic output to {\em
+file\/}.  Default is \verb|upd.err|
+\end{description}
+
+Typically, the common deck list is empty and the define list
+contains only the current target machine name at start-up.  The
+initial values are set inside the script.  A typical invocation
+might be
+\begin{verbatim}
+upd -c gpf9.cdk -D NOBLAS *.u
+\end{verbatim}
+to update all the files in the current directory, using
+\verb|gpf9.cdk| as the common deck file and adding the name
+\verb|NOBLAS| to the define list.
+
+\section{Source files and UPDATE directives}\label{sec:upddef}
+
+Source files can contain anything, in principle, but usually
+contain FORTRAN code, together with UPDATE directives.  The latter
+are described here --- they must begin in column~1.\index{UPDATE|directives}
+\begin{description}
+\item[\verb|*DECK|~{\em deck\/}] Introduces a deck named {\em
+deck\/}; conventionally each module constitues a separate
+deck, called by the name of the routine.  A deck ends at the next
+\verb|*DECK| or \verb|*COMDECK| directive, or at end-of-file.
+\item[\verb|*COMDECK|~{\em comdeck\/}] Introduces a common deck
+named {\em comdeck\/}.  A common deck ends at the next
+\verb|*DECK| or \verb|*COMDECK| directive, or at end-of-file.
+\item[\verb|*CALL |~{\em comdeck\/}] Insert the contents of common
+deck {\em comdeck\/} at this point in the source.  It is a fatal
+error if {\em comdeck\/} cannot be found in any of the common deck
+files specified for this update.
+\item[\verb|*DEFINE|~{\em name\/}] Add {\em name\/} to the list of
+defined names for this update.
+\item[\verb|*IF DEF,|{\em name1, name2...\/}] If {\em name1\/} AND
+{\em name2\/}, etc., are defined, retain the next block of text
+in the source.
+\item[\verb|*ENDIF|] Terminates a block of text begun with an
+\verb|*IF| statement.  \verb*|*END IF| is also acceptable.
+\item[\verb|*IF -DEF,|{\em name1, name2...\/}] If {\em name1\/} OR
+{\em name2\/}, etc., are defined, delete the next block of text
+in the source.
+\item[\verb|*ELSE|] Provides an alternative for the current
+\verb|*IF|: if the condition causes the text following the
+\verb|*IF| to be included, the text between \verb|*ELSE| and
+\verb|*ENDIF| is deleted, and vice versa.
+\end{description}
+
+It is possible to nest \verb|*IF| constructions with this version
+of UPDATE.  However, this should be avoided where possible,
+especially when \verb|*ELSE| is being used as well, since it
+becomes almost impossible to decide what will happen under a given
+set of circumstances.
+
+In this version of UPDATE, the convention has been adopted that
+common decks in a \verb|.u| file are ignored without messages.
+This provides a mechanism for including general comments and text
+in a file.  Thus all common decks needed for a particular update
+must reside in their own file or files.
+
+With the above descriptions, it should be simple to see how the
+different versions of the source code are generated from the one
+master copy.  In fact, UPDATE itself can be maintained with UPDATE
+--- all that is required is a FORTRAN version for some machine to
+which the user has access to ``bootstrap'' others.

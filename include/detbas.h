@@ -1,0 +1,13 @@
+C
+C$Id: detbas.h,v 1.1.1.1 2001-02-08 13:33:24 hjj Exp $
+C
+      COMMON/DETBAS/KIASTR,KSTBAA,KSTASA,KIBSTR,KSTBAB,KSTASB,
+     &              KTAIJ,KTATO,KTASYM,KTBIJ,KTBTO,KTBSYM,
+     &              KCOFF,KHCOFF,KISSYM,
+     &              KNSSOA,KNSSOB,KISSOA,KISSOB,
+     &              KNXFSA,KNXFSB,
+     &              KIOCOC,KIXSOA,KIXSOB,
+     &              KICSO, KIHCSO, KICOOS,KIHOOS,
+     &              KKLTP,KICREA,KIANNI,KKLCAN,KTPFSA,KTPFSB,
+     &              KCDTAS,KHDTAS,KTPFOB,KLTSOB,KSTLOB,KCOFF2,
+     &              KZA,KZB,KIPNSA,KIPNSB,KORBSM

@@ -1,0 +1,6 @@
+C
+C$Id: cicb01.h,v 1.1.1.1 2001-02-08 13:33:23 hjj Exp $
+C
+      PARAMETER ( MXCIRT = 125)
+      COMMON /CICB01/ THRCIT, NCIRED,
+     *                NJCR, NKCR, JCROOT(MXCIRT), KCROOT(MXCIRT)

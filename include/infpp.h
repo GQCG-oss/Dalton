@@ -1,0 +1,10 @@
+C
+C$Id: infpp.h,v 1.1.1.1 2001-02-08 13:33:26 hjj Exp $
+C
+      PARAMETER ( MAXLPP = 60 )
+      LOGICAL LPPOP, EXMOM, EXMTES
+      CHARACTER*8 LBLPP
+      COMMON /INFPP/  THCPP,  IPRPP,  MAXITP, IPREXM,  NPPCNV(8),
+     *                NPPSIM(8), NPPSTV(8), NGPPP(8), EXMOM ,
+     *                LPPOP(MAXLPP),EXMTES
+      COMMON /CHRPP/  LBLPP(8,MAXLPP)

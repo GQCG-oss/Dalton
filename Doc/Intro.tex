@@ -1,0 +1,132 @@
+\chapter{Introduction}\label{ch:intro}
+\pagenumbering{arabic}
+
+          The \siraba\ program system is designed to allow
+convenient, automated determination of a large number of molecular
+properties based on an SCF, MP2 or MCSCF reference wave function.  The program 
+consists of four separate components, developed more or less
+independently. \her\ is the integral generator, generating ordinary
+atomic\index{atomic integrals} and molecular integrals appearing in
+the time-independent, 
+non-relativistic Schr\"{o}dinger equation, as well as an extensive number of
+integrals related to different molecular properties. \sir\ is the (MC)SCF wave
+function optimization part, and is described
+comprehensively in the METECC-94 book~\cite{hjajhajomotecc}.
+\aba\ evaluates the molecular properties of interest.
+\resp\ is a general purpose program for evaluating response functions,
+up to cubic response functions for (MC)SCF wave functions and
+linear response for the Second-Order Polarization Propagator
+Approach (SOPPA).
+
+Throughout this manual there will be references to articles
+describing the implementation of a specific molecular property or
+input option. This will hopefully suffice to give the reader a proper
+theoretical understanding of the current implementation. Only one
+reference otherwise not mentioned in the text, the treatment of
+symmetry\index{symmetry}, is given here~\cite{prttca69}. 
+
+\siraba\ is in many respects an ``expert's'' program. This is first
+noticeable in the range and selection of molecular properties that may
+be calculated. As described in the individual sections, the range of
+molecular properties, some of which are highly non-standard, is fairly
+large. On the other hand, several common properties can perhaps more
+easily be calculated using other, commercially available, quantum
+chemistry program packages.
+
+We have tried when writing this manual to emphasize the modularity of
+the input, as well as indicating  the advantages that may be obtained from
+the flexibility of the input. Yet, whether the authors of
+this manual have succeeded or not, is up to the reader to decide, and
+any comments and suggestions for improvements, both on the manual as
+well as the program, will be much welcome.
+
+\section{General description of the manual}
+
+The manual is divided into three main sections
+
+\begin{description}
+\item The Installation Guide (Chapter 2---3) describes the
+installation and configuration of the \siraba\ program. Although of
+interest primarily to those installing the program, the section
+describes the program's use of memory and the default settings for
+various parameters in the program and how they may be changed. Thus,
+we strongly recommend that all users read through this section at least
+once.
+
+\item The User's Guide (Chapter 4---14) will be the most important part
+of this manual for most users. These chapters provide a  short
+introduction on how to do a calculation with the \siraba\ program,
+considering both the supplied shell-script as well as some examples of
+input files for a complete run of the program. A short description of
+the different output files is also given. 
+
+These chapters also describe the input file needed to
+calculate different molecular properties. Some
+suggestions for how to do a calculation most efficiently, as well as
+recommendations for basis sets to be used when calculating non-standard
+molecular properties are also included. Although highly biased, we
+still hope that they may be of some 
+use to the user. These are the most useful sections for
+ordinary calculations done with the \siraba\ program.
+
+{\em In these chapters there are boxes indicating what we call {\em
+reference literature}\index{reference literature}. This reference
+literature not only serve as 
+the best introduction to the implementational aspects of a given
+calculational procedure, but is also our recommended reference in published
+work employing specific parts of the code.}
+
+\item The Reference Manual (Chapter 15---20) will for most calculations be of
+little use to the ordinary user apart from Chapter 17, which describes
+the most important file in any quantum chemistry calculation: the
+description of the molecule being studied. However, all possible
+keywords that may be given to direct the calculation using \siraba\ is
+documented in this Reference Manual.
+
+\item Appendix A gives a description of various tools provided to us
+from different users for pre- or post-processing of \siraba\
+input/output.
+\end{description}
+
+Before starting we thus recommend reading\index{recommended reading}
+the following chapters: 4, 5, and 17, and one or more of chapters
+6---14, depending on the 
+calculations you would like to do with the program. Chapters
+2 and 3 are also highly recommended.
+
+
+Questions\index{questions} and bug reports\index{bug fixes} should be directed to
+\verb|dalton-admin@kjemi.uio.no|. Help on input and/or error messages
+produced during execution of the program should be directed to the
+\siraba\ mailing list\index{mailing list}, \verb|dalton-users@kjemi.uio.no|.
+
+
+\section{Acknowledgement}
+
+We are grateful to Prof.Bj\"{o}rn O.Roos and Dr. Per-Olof Widmark,
+University of Lund, for kindly allowing us to include in this
+distribution of the \siraba\ program routines for integral
+presorting\index{integral presorting}
+(BOR), two-electron integral transformation routines\index{integral
+transformation} (BOR) and 
+routines for syncronous and asyncronous I/O (POW). The distribution of
+these routines in the \siraba\ distribution is done with the consent
+of the authors of these routines.
+
+We are grateful to professor Knut F\ae gri (University of Oslo) who
+took the time to reoptimize the basis set of van Duijneveldt in order
+to provide in electronic form a basis set of similar performance to
+these widely used basis set, included here as the Not Quite van
+Duijneveldt (NQvD) basis sets.
+
+We would also like to express our gratitude to Sonia Coriani (Aarhus
+University), Gilbert Hangartner (University of Freiburg), and Antonio
+Rizzo (Istituto di Chimica Quantistica ed Energetica Molecolare del
+CNR, Pisa), for allowing us to distribute their utility programs for
+pre- and post-processing of \siraba\ input/output-files, as described
+in the Appendix.
+
+A long list of users, too long to mention here, is thanked for an
+enormous amount of valuable feedback on the performance of the
+code. Without their assistance, the code would probably not looked the
+way it does now.

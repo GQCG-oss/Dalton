@@ -1,0 +1,4 @@
+C
+C$Id: inftim.h,v 1.1.1.1 2001-02-08 13:33:26 hjj Exp $
+C
+      COMMON /INFTIM/ TIMCPU(7,20),TIMWAL(7,20),NCALLS(20),NVECS(20)

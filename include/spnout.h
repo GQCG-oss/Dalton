@@ -1,0 +1,7 @@
+C
+C$Id: spnout.h,v 1.1.1.1 2001-02-08 13:33:30 hjj Exp $
+C
+      LOGICAL DOSD, DODSO, DOFC, DOSDFC, DOPSO, DOSELE, ANISON,
+     &        FCFIN
+      COMMON /SPNOUT/ ABUND, ISPPRI, DOSD, DODSO, DOFC, DOPSO,
+     &                DOSDFC, DOSELE, ANISON, FCFIN

@@ -1,0 +1,5 @@
+C
+C$Id: cbicrl.h,v 1.1.1.1 2001-02-08 13:33:25 hjj Exp $
+C
+      LOGICAL SKIP, SYMTST, CUT
+      COMMON /CBICRL/ IPRINT, SKIP, SYMTST, CUT

@@ -1,0 +1,922 @@
+\chapter{General input module}\label{chap:general}
+
+In this chapter the general structure of the input file for \siraba\
+is described, as well as the possible input cards that can be entered in
+the \Sec{*DALTON} input module. This input section should always begin an
+input file for the \siraba\ program.
+
+\section{General input to DALTON : \Sec{*DALTON INPUT}}\label{sec:general}
+
+This input module describes the overall type of calculation that is to
+be done, and also which of the four programs that \siraba\ consists of,
+that is to be executed. It also contains two submodules describing the
+performance of parallel calculations and the geometry optimization
+routines. We note that this input module has to start all input files
+for \siraba .
+
+\begin{description}
+
+\item[\Key{DIRECT}] The calculation is to be done in a direct
+manner\index{direct calculation}, that
+is, the two-electron integrals\index{two-electron integral} are to be
+constructed ``on the fly'' 
+and not written to disc as is the default. This keyword will only work
+for SCF\index{SCF}\index{HF}\index{Hartree-Fock} wave functions, and
+two-electron integrals (and differentiated 
+two-electron integrals) will not be written to disc in any part of the
+calculation. 
+
+\item[\Key{INPTES}] Test the input of the \Sec{*GENERAL} input
+module. The program will abort after the completion of the input test,
+and no calculation will be executed.
+
+\item[\Key{INTEGRALS}] Invoke the \her\ program for generating molecular one-
+and two-electron integrals. See
+Chapter~\ref{ch:hermit}\index{one-electron
+integral}\index{two-electron integral}.
+
+\item[\Key{ITERAT}]\verb| |\newline
+\verb|READ (LUCMD, '(I5)') ITERNR|
+
+Tells the program at which iteration to start the geometry
+optimization\index{iteration number}. Note that this will {\em not}
+affect which molecule 
+input file that is going to be read, as this have to be handled by the
+shell script\index{shell script}. It only determines what number the
+output of the predicted molecular geometry will be.
+
+\item[\Key{MAX IT}]\verb| |\newline
+\verb|READ (LUCMD, '(I5)') ITERMX|
+
+Change the maximum number of geometry iterations\index{iteration
+number}\index{geometry iteration} that can be done. Default
+is~20. This number has to be increased in Intrinsic Reaction Coordinate
+(IRC)\index{IRC}\index{intrinsic reaction coordinate} or dynamical
+trajectory studies\index{dynamics}, as these 
+usually require a much larger number of iterations.
+
+\item[\Key{OPTIMI}] Do a geometry walk\index{geometry walk}. If no
+input is given in the 
+\Sec{WALK} input submodule, an optimization of the molecular
+geometry\index{geometry optimization} to a stationary point with no
+negative Hessian eigenvalues\index{Hessian} (a 
+local minimum) will be done. However, this may changed be appropriate
+keywords in the submodule \Sec{WALK}, and we refer to examples in
+the chapter on potential energy surfaces
+(Chapter~\ref{ch:geometrywalks}), and  subsection~\ref{sec:abawalk}
+describing the input cards for the \Sec{WALK} submodule for a more
+detailed description of possible options.
+
+\item[\Key{PARALL}] Denotes that the calculation of two-electron
+integrals\index{two-electron integral}
+are to be done in parallel\index{parallel calculation}. This also
+implies that the calculation is 
+done without writing two-electron integrals to disc. This keyword only
+applies to SCF\index{SCF}\index{HF}\index{Hartree-Fock} wave
+functions, but all two-electron integral 
+evaluations in an SCF calculation will be done parallel. More details
+about the parallelization strategy in \siraba\ can be found
+elsewhere~\cite{pndjhapdkrthhkcpl253}.
+
+The keyword requires that the program has been installed and compiled
+with the appropriate preprocessor directives for an MPI
+installation\index{MPI}, or the construction of a slave program for
+the PVM installation\index{PVM}.  
+
+If MPI\index{MPI} is used as message passing\index{message passing}
+interface, no further keywords are 
+needed, as the number of nodes will be set equal to the number of 
+nodes asked for when submitting the job. However, if PVM\index{PVM} is used as
+message passing interface, the number of nodes needs to be given in the
+\Sec{PARALL} submodule input, and this number have to be equal to
+the number of nodes asked for when submitting the job. Note also that
+in order to evaluate the parallelization efficiency\index{parallel
+efficiency}, a print level of 
+at least 2 is needed in the \Sec{PARALL} submodule.
+
+\item[\Key{PRESORT}]\index{integral sort} Requests that the
+two-electron integrals should be 
+sorted and that the integral transformation routines of Bj\o rn
+Roos should be used during execution of the program. This will only
+work on 32-bit architectures, but is needed in order to be able to run
+with more than 255 basis functions.
+
+\item[\Key{PRINT}]\verb| |\newline
+\verb|READ (LUCMD, *) IPRUSR|
+\index{print level}
+Reads in the print level that is to be used the rest of the subsequent
+calculations. Default is a print level of 0.
+
+\item[\Key{PROPERTIES}] Invoke the \aba\ program for the evaluation of static
+and dynamic properties. See Chapter~\ref{ch:abacus}.
+
+\item[\Key{RESPONSE}]
+
+Invoke the \resp\ program for the evaluation of static and dynamic
+properties. See Chapter~\ref{ch:response}.
+
+\item[\Key{RUN ALL}]
+
+Invoke all the programs \her , \sir , \resp , and \aba\ for a single point
+     calculation. 
+
+\item[\Key{RUN PROPERTIES}]
+
+Invoke the programs \her , \sir , and \aba\ for a single point
+calculation.
+
+\item[\Key{RUN RESPONSE}] 
+
+Invoke all the programs \her , \sir , and \resp\ for a single point
+calculation.
+
+\item[\Key{TOTSYM}] Consider only totally symmetric
+perturbations\index{symmetry}. 
+This option only affects geometric perturbations and static
+electric-field perturbations requested through the keyword \Key{POLARI}. 
+
+\item[\Key{WAVE FUNCTIONS}]
+
+Invoke the \sir\ program for the evaluation of SCF, MP2, and MCSCF
+wave
+functions\index{SCF}\index{HF}\index{Hartree-Fock}\index{MP2}\index{M\o
+ller-Plesset}\index{MCSCF}. See Chapter~\ref{chap:inpref}.  
+\end{description}
+
+\subsection{End of General input: \Sec{END OF}}
+
+The last input card for the general input section (\Sec{*DALTON INPUT})
+may be \Sec{END OF}.
+
+\subsection{General: \Sec{MINIMIZE}}\label{subsec:minimize}
+
+This submodule is driver for geometry optimizations, although we note
+that the \Sec{WALK} module contains another second-order gometry
+optimization driver-\index{geometry optimization}. The \Sec{MINIMIZE} module
+contains both first and second-order methods for
+energy\index{first-order optimization}\index{second-order
+optimization}\index{geometry optimization}
+minimization (geometry optimization). Most of the Hessian
+updating\index{Hessian update}
+schemes were taken from ref.\cite{thkrprt95} and \cite{Fletcher}. The
+implementation of redundant internal coordinates\index{redundant
+internal coordinates} follows the work done
+by Peng {\it et al.\/}~\cite{Peng}. In addition to this, several
+keywords for VRML visualization are included~\cite{VRML}.
+
+\begin{description}
+
+\item[\Key{1STORD}]\verb| |
+
+Use default first-order method\index{first-order optimization}. This
+means that the BFGS update will\index{BFGS update}
+be used, and the optimization carried out in redundant internal
+coordinates\index{redundant internal coordinates}. Same effect as the
+combination of the two keywords 
+\Key{BFGS} and \Key{REDINT}. 
+
+\item[\Key{2NDORD}]\verb| |
+
+Use default second-order method\index{second-order optimization}. The
+level-shifted Newton method and 
+Cartesian coordinates\index{cartesian coordinate} are used. Identical
+to specifying the two 
+keywords \Key{NEWTON} and \Key{CARTES}.
+
+\item[\Key{BAKER}]\verb| |
+
+Activates the convergence criteria of Baker \cite{Baker}. The minimum is then said
+to be found, when the largest element of the gradient vector (in
+Cartesian or redundant internal coordinates) falls below 3.0D-4 and
+either the energy change from the last iteration is less than 1.0D-6
+or the largest element of the predicted step vector is less 3.0D-4.
+
+\item[\Key{BFGS}]\verb| |
+
+Specifies the use of a first-order method\index{first-order
+optimization} with the 
+Broyden-Fletcher-Goldfarb-Shanno (BFGS) update\index{BFGS update} formula for
+optimization. This is the preferred first-order method.
+
+\item[\Key{CARTES}]\verb| |
+
+Indicates that Cartesian coordinates should be used in the
+optimization. This is the default for second-order methods.
+
+\item[\Key{CONDIT}]\verb| |
+\newline
+\verb|READ(LUCMD,*) ICONDI|
+
+Set the number of convergence criteria\index{convergence criteria}
+that should be fulfilled before 
+convergence occurs. There are three different convergence thresholds,
+one for the energy\index{energy change}, one for the gradient
+norm\index{norm of gradient} and one for the step
+norm\index{norm of step}. The possible values for this variable is
+therefore between 1 and 
+3. Default is 2. The three convergence thresholds can be adjusted with
+the keywords \Key{ENERGY}, \Key{GRADIE} and \Key{STEP T}.
+
+\item[\Key{DFP}]\verb| |
+
+Specifies that a first-order\index{first-order optimization} method with the
+Davidon-Fletcher-Powell (DFP) update\index{DFP update} formula should be used
+for optimization.
+
+\item[\Key{DISPLA}]\verb| |
+\newline
+\verb|READ(LUCMD,*) DISPLA|
+
+Read one more line containing the norm of the displacement vector to
+be used during numerical evaluation of the molecular gradient, as is
+needed when doing geometry optimizations with CI or MP2 wave
+functions. Default is $1.0\cdot 10^{-3}$ a.u.
+
+\item[\Key{ENERGY}]\verb| |
+\newline
+\verb|READ(LUCMD,*) THRERG|
+
+Set the convergence threshold for the energy. This is one of the three
+convergence thresholds\index{convergence criteria} (the keywords
+\Key{GRADIE} and \Key{STEP T}
+control the other two). Default value is the maximum of 1.0D-6 and two
+times the threshold for the wave function gradient.
+
+\item[\Key{GRADIE}]\verb| |
+\newline
+\verb|READ(LUCMD,*) THRGRD|
+
+Set the convergence threshold for the gradient norm. This is one of
+the three convergence thresholds (the keywords \Key{ENERGY} and
+\Key{STEP T} control the other two). Default value is the maximum of
+1.0D-6 and two times the threshold for the wave function gradient.
+
+\item[\Key{GRDINI}]\verb| |
+
+Specifies that the Hessian\index{hessian reinitialization} should be
+reinitialized every time the norm 
+of the gradient is larger than norm of the gradient two iterations
+earlier. This keyword should only be used when it's difficult to
+obtain a good approximation to the Hessian during optimization. Only
+applies to first-order methods\index{first-order optimization}.
+
+\item[\Key{HESFIL}]\verb| |
+
+Specifies that the initial Hessian\index{Hessian, initial} should be
+read from the file 
+\verb|DALTON.HES|. This applies to first-order methods, and the
+Hessian in the file must have the correct dimensions. This option
+overrides other options for the initial Hessian.
+
+Each time a Hessian is calculated or updated\index{Hessian update},
+it's written to this 
+file. If an optimization is interrupted, it can be restarted with the
+last geometry and the Hessian in \verb|DALTON.HES|, minimizing the
+loss of information. Another useful possibility, is to transfer
+the Hessian from a calculation on the same molecule with another
+(smaller) basis. Finally, one can go in and edit the file directly to
+set up a specific forcefield.
+
+\item[\Key{INIRED}]\verb| |
+
+Specifies that the initial Hessian\index{initial Hessian} should be
+diagonal in redundant 
+internal coordinates, and it is then transformed to Cartesian
+coordinates. This only applies to first-order
+optimizationsindex{first-order optimization} in
+Cartesian coordinates\index{cartesian coordinate}.
+
+\item[\Key{INITEV}]\verb| |
+\newline
+\verb|READ(LUCMD,*) EVLINI|
+
+The default initial Hessian\index{Hessian index} for first-order
+minimizations\index{first-order optimization} is the 
+identity matrix when Cartesian coordinates are used, and a diagonal
+matrix when redundant internal coordinates are used. If \Key{INITEV}
+is used all the diagonal elements (and therefore the eigenvalues) are
+set equal to the value EVLINI. This option only has effect when
+first-order methods are used and \Key{INITHE} and \Key{HESFIL} are 
+non-present.
+
+\item[\Key{INITHE}]\verb| |
+
+Specifies that the initial Hessian\index{initial Hessian} should be
+calculated (analytical Hessian), thus yielding a first step that is
+identical to second-order methods. This provides an excellent starting
+point for first-order methods, but should only be used when the
+Hessian can be calculated within a reasonable amount of time. It has only
+effect for first-order methods and overrides the keywords
+\Key{INITEV} and \Key{INIRED}. It has no effect when \Key{HESFIL} has
+been specified.
+
+\item[\Key{INTERA}]\verb| |
+
+Specifies a interactive run\index{interactive geometry
+optimization}. The energy, gradient 
+norm\index{norm of gradient}, step length\index{norm of step} and
+Hessian index\index{Hessian index} is then written to the unit LUERR(=0) 
+in each iteration, allowing easy monitoring of the optimization.
+
+\item[\Key{MAX IT}]\verb| |
+\newline
+\verb|READ(LUCMD,*) ITRMAX|
+
+Read the maximum number of geometry iterations\index{geometry
+iteration}. Default value is 25. 
+
+\item[\Key{MAX RE}]\verb| |
+\newline
+\verb|READ(LUCMD,*) MAXREJ|
+
+Read maximum number of rejected steps\index{rejected geometry step} in
+each iterations, default is 
+5.
+
+\item[\Key{NEWTON}]\verb| |
+
+Specifies that a second-order level-shifted Newton method should
+be used for optimization. This is the default method.
+
+\item[\Key{NOBREA}]\verb| |
+
+Disables breaking of symmetry\index{symmetry breaking}. The geometry will
+be optimized within the given symmetry, even if a non-zero Hessian
+index is found. The default is to let the symmetry be broken until
+a minimum is found with a Hessian index\index{Hessian index} of zero. This option only has
+effect when second-order methods are used.
+
+\item[\Key{NOREIN}]\verb| |
+
+When first-order methods are used, the Hessian\index{Hessian
+reinitialization} is reinitialized every 
+time the Hessian index\index{Hessian index} becomes non-zero (due to negative
+eigenvalues). This guarantees that the Hessian describes a minimum,
+but valuable information gathered in the Hessian may be
+lost.
+
+\Key{NOREIN} disables this reinitialization, relying on the
+optimization method to restore the Hessian to its correct structure
+(by locating the area near the minimum). This option is particularly
+useful in conjunction with the keyword \Key{INITHE}, as it is
+not meaningful to calculate the Hessian at the initial geometry, then reset
+it to the identity matrix because some negative eigenvalue showed up.
+
+\item[\Key{NOTRUS}]\verb| |
+
+Turns off the trust radius\index{trust radius}, so that a full Newton step
+is taken in each iteration. This should be used with caution, as
+global convergence is no longer guaranteed. If long steps are desired,
+it is safer to adjust the initial trust radius and the limits for the
+actual/predicted energy ratio. 
+
+\item[\Key{PREOPT}]\verb| |\newline
+\begin{verbatim}
+               READ(LUCMD,*) NUMPRE
+               DO 144 I = 1, NUMPRE 
+                  READ(LUCMD,*) PREBTX(I)
+ 144           CONTINUE
+\end{verbatim}
+
+First we read the number of basis sets\index{basis set} that should be used for
+preoptimization\index{preoptimization}, then we read those basis set
+names as strings. These 
+sets will be used for optimization in the order they appear in the
+input. One should therefore place the smaller basis at the top. After
+the preoptimization, optimization is performed with the basis
+specified in the molecule input file.
+
+\item[\Key{PRINT}]\verb| |
+\newline
+\verb|READ(LUCMD,*) IPRINT|
+
+Set print level for this module.  Read one more line containing print
+level. Default value is 0.
+
+\item[\Key{PSB}]\verb| |
+
+Specifies that a first-order method\index{first-order optimization} with the
+Powell-symmetric-Broyden (PSB)\index{PSB update} update formula should be used
+for optimization.
+
+\item[\Key{RANKON}]\verb| |
+
+Specifies that a first-order method\index{first-order optimization}
+with the rank 
+one update\index{rank one update} formula should be used for optimization.
+
+\item[\Key{REDINT}]\verb| |
+
+Specifies that redundant internal coordinates\index{redundant internal
+coordinates} should be used in the 
+optimization. This is the default for first-order
+methods\index{first-order optimization}. 
+
+\item[\Key{REJINI}]\verb| |
+
+Specifies that the Hessian should be reinitialized\index{Hessian
+reinitialization} after every 
+rejected step\index{rejected geometry step}, as a rejected step
+indicates that the Hessian models the 
+true potential surface poorly. Only applies to first-order
+methods\index{first-order optimization}.
+
+\item[\Key{SCHLEG}]\verb| |
+
+Specifies that a first-order method\index{first-order optimization}
+with Schlegel's updating scheme\index{Schlegel update}
+\cite{Schlegel} should be used. This makes use of all previous
+displacements and gradients, not just the last, to update the
+Hessian.
+
+\item[\Key{SP BAS}]\verb| |
+\newline
+\verb|READ(LUCMD,*) SPBSTX|
+
+Read a string containing the name of a basis set. When the geometry
+has converged, a single-point energy will be calculated using this
+basis set\index{basis set}.
+
+\item[\Key{STEEPD}]\verb| |
+
+Specifies that the first-order steepest descent\index{first-order
+optimization}\index{steepest descent} method should be
+used. No update is done on the Hessian, so the optimization will be
+guided by the gradient alone. The ``pure'' steepest descent method is
+obtained when the Hessian is set equal to the identity matrix. Each
+step will then be the negative of the gradient vector, and the
+convergence towards the minimum will be extremely slow. However, this
+option can be combined with other initial Hessians in Cartesian or
+redundant internal coordinates\index{cartesian
+coordinate}\index{redundant internal coordinates}, giving a method
+where the main feature 
+is the lack of Hessian updates.
+
+\item[\Key{STEP T}]\verb| |
+\newline
+\verb|READ(LUCMD,*) THRSTP|
+
+Set the convergence\index{convergence criteria} threshold for the step
+norm. This is one of the 
+three convergence thresholds (the keywords \Key{ENERGY} and
+\Key{GRADIE} control the other two). Default value is 1.0D-6.
+
+\item[\Key{SYMTHR}]\verb| |
+\newline
+\verb|READ(LUCMD,*) THRSYM|
+
+Determines the gradient threshold for breaking of the
+symmetry\index{symmetry breaking}. That
+is, if the index of the Hessian\index{Hessian index} is non-zero when the gradient norm
+drops below this value, the symmetry is broken to avoid unnecessary
+iterations within the wrong symmetry. This option only applies to
+second-order\index{second-order optimization} methods and when the
+keyword \Key{NOBREA} is 
+not present. The default value of this threshold is 1.0D-3.
+
+\item[\Key{TR FAC}]\verb| |
+\newline
+\verb|READ(LUCMD,*) TRSTIN, TRSTDE|
+
+Read two factors that will be used for increasing and decreasing the
+trust radius\index{trust radius} respectively. Default values are
+1.2D0 and 0.7D0. 
+
+\item[\Key{TR LIM}]\verb| |
+\newline
+\verb|READ(LUCMD,*) RTENBD, RTENGD, RTRJMN, RTRJMX|
+
+Read four limits for the ratio between the actual and predicted
+energies. This ratio indicates how good the step is, that
+is how accurately the the quadratic model describes the true energy
+surface. If the ratio is below RTRJMN or above RTRJMX, the step is
+rejected. With a ratio between RTRJMN and RTENBD, the step is
+considered bad an the trust radius\index{trust radius} decreased to
+less than the step 
+length. Ratios between RTENBD and RTENGD are considered satisfactory,
+the trust radius is set equal to the norm of the step. Finally ratios
+above RTENGD (but below RTRJMX) indicate a good step, and the trust
+radius is given a value larger than the step length. The amount the
+trust radius is increased or decreased can be adjusted with \Key{TR
+FAC}. The default values of RTENBD, RTENGD, RTRJMN and RTRJMX are
+0.4D0, 0.8D0, 0.1D0 and 3.0D0 respectively.
+
+\item[\Key{TRUSTR}]\verb| |
+\newline
+\verb|READ(LUCMD,*) TRSTRA|
+
+Set initial trust radius\index{trust radius} for calculation. This
+will also be the 
+maximum step length for the first iteration. The trust radius is
+updated after each iteration depending on the ratio between predicted
+and actual energy change. The default trust radius is 0.5D0.
+
+\item[\Key{VISUAL}]\verb| |
+
+Specifies that the molecule should be
+visualized\index{visualization}\index{VRML}, 
+writing a VRML file of the molecular geometry. {\em{No}} optimization
+will be performed when this keyword is given. See also related
+keywords \Key{VR-BON} and \Key{VR-EIG}.
+
+\item[\Key{VRML}]\verb| |
+
+Specifies that the molecule should be
+visualized\index{visualization}\index{VRML}. VRML files describing
+both the initial and final geometry 
+will be written (as \verb|initial.wrl| and \verb|final.wrl|). The file
+\verb|final.wrl| is  updated in each iteration, so that it always
+reflects the latest geometry. See also related keywords \Key{VR-BON}
+and \Key{VR-EIG}.
+
+\item[\Key{VR-BON}]\verb| |
+
+Only has effect together with \Key{VRML} or \Key{VISUAL}. Specifies
+that the VRML files should include bonds\index{bonded atoms} between nearby
+atoms\index{visualization}\index{VRML}. The 
+bonds are drawn as grey cylinders, making it easier to see the
+structure of the molecule. If \Key{VR-BON} is omitted, only the
+spheres representing the different atoms will be drawn.
+
+\item[\Key{VR-EIG}]\verb| |
+
+Only has effect together with \Key{VRML} or
+\Key{VISUAL}\index{visualization}\index{VRML}´index{eigenvector}.
+Specifies that the eigenvectors of the molecule (that is the eigenvectors of the
+Hessian, which differs from the normal modes as they are not
+mass-scaled) should be visualized. These are written to the files
+\verb|eigv_###.wrl|.
+
+\end{description}
+
+\subsection{Parallel calculations : \Sec{PARALL}}
+
+This submodule controls the performance of the parallel
+version\index{parallel calculation}
+of \siraba . The implementation has been described
+elsewhere~\cite{pndjhapdkrthhkcpl253}. When PVM\index{PVM} is used as
+message passing interface\index{message passing}, the 
+keyword \Key{NODES} is required, otherwise all keywords are
+optional.
+
+\begin{description}
+
+\item[\Key{DEBUG}]\verb| |
+Transfers the print level from the master\index{master}\index{slave}
+to the slaves, otherwise the print level on the slaves will always be
+zero. Only for debugging purposes. 
+
+\item[\Key{DEGREE}]\verb| |\newline
+\verb|READ (LUCMD,*) NDEGDI|
+
+Determines the percent of available tasks\index{parallel tasks} that
+is to be distributed in 
+a given distribution of tasks, where a distribution of tasks is defined
+as the process of giving batches to {\em all} slaves. The default is
+5\% , which ensures that each slave will receive 20 tasks during one
+integral evaluation, which will give a reasonable control with the
+idle time of each slave.
+
+\item[\Key{ENCODE}]\verb| |\newline
+\verb|READ (LUCMD, '(A7)') WORD|
+
+This keyword only applies if PVM\index{PVM} has been chosen as message passing
+interface. Three different options exists:
+
+\begin{list}{--}{}
+\item\verb|PVMDEFA|
+\item\verb|PVMRAW|
+\item\verb|PVMINPL|
+\end{list}
+
+The default is \verb|PVMDEFA|. We refer to PVM\index{PVM} manuals for a
+closer description of the different ways of encoding the transfer of
+data between nodes.
+
+\item[\Key{NODES}]\verb| |\newline
+\verb|READ (LUCMD,*) NODES|
+
+When MPI\index{MPI} is used as message passing interface, the
+default value is the number of nodes that has been assigned to the
+job, and these nodes will be partitioned into one master\index{master} and
+\verb|NODES-1| slaves\index{slave}. When PVM is used for message
+passing\index{message passing}, the default is 0,  and it is 
+therefore required to specify the number of nodes to be used in the
+calculation when PVM is used. \verb|NODES| will in such calculations
+correspond to the number of slaves the user would like to use in the
+calculation. Note that this number may often have to be adjusted in
+accordance with limits in the queuing system of various computers.
+
+\item[\Key{NTASK}]\verb| |\newline
+\verb|READ (LUCMD,*) NTASK|
+
+The number of tasks to send to each node when distributing the
+calculation of two-electron integrals\index{two-electron
+integral}. The default is 1. A task is 
+defined as a shell of atomic integrals\index{basis functions, shell
+of}, a shell being an input 
+block. One may therefore increase the number of shells given to each
+node in order to reduce the amount of communication. However, the
+program uses dynamical allocation of work to each 
+node, and thus this option should be used with some care, as too large
+tasks may cause the dynamical load balancing to fail\index{load
+balancing}, giving an 
+overall decrease in efficiency\index{parallel efficiency}. The
+parallelization is also very 
+coarse grained, so that the amount of
+communication\index{communication} seldom represents 
+any significant problem. Will be come obsolete, and replaced by \Key{DEGREE}.
+
+\item[\Key{PRINT}]\verb| |\newline
+\verb|READ (LUCMD, '(A7)') KPRINT|
+
+Read in the print level for the parallel calculation. A print level of
+at least 2 is needed in order to be able to evaluate the
+parallelization efficiency\index{parallel efficiency}. A complete
+timing for all nodes will be 
+given if the print level is 4 or higher.
+\end{description}
+
+\subsection{Geometry optimization: \Sec{WALK}}
+\label{sec:abawalk}
+
+Directives controlling one of the two second-order
+geometry\index{second-order optimization}
+optimizations  as well as the
+execution of dynamical walks and numerical
+differentiation\index{numerical differentiation} in
+calculations of Raman intensities and optical activity\index{Raman
+intensity}\index{Raman optical activity}\index{ROA},
+appear in the \Sec{WALK} section.
+
+\begin{description}
+\item[\Key{DISPLA}]\verb| |\newline
+\verb|READ (LUCMD, *) DISPLC|
+
+Displacement taken in a numerical differentiation\index{numerical
+differentiation}. This applies both 
+for a numerical molecular Hessian\index{Hessian}, as well as in
+calculation of Raman intensities and optical activity\index{Raman
+intensity}\index{Raman optical activity}\index{ROA}. Read one more line specifying
+value~(*).  Default is~10$^{-4}$ a.u. However, note that this variable
+do not determine the displacements used when evaluating numerical 
+gradient for use in first-order geometry optimizations with MP2 or CI
+wave functions\index{MP2}\index{CI}\index{M\o
+ller-Plesset}\index{configuration interaction}, which is controled by
+the \Key{DISPLA} keyword in the 
+\Sec{MINIMI} module.
+
+\item[\Key{DYNAMI}] Perform a ``dynamic walk''\index{dynamics}: integrate the
+classical equations of motion\index{equation of motion} for the nuclei
+analytically on a locally 
+quadratic surface. The method is discussed in
+Ref.~\cite{theuhjajcpl173} as well as in Section~\ref{sec:dynamic}. 
+
+\item[\Key{EIGEN}] Take a step to the boundary of the trust
+region\index{trust radius}
+along the eigenvector mode\index{eigenvector} specified by \Key{MODE}.
+
+\item[\Key{FRAGME}]\verb| |\newline
+\verb|READ (LUCMD, *) NIP|\newline
+\verb|READ (LUCMD, *) (IPART(IP), IP = 1, NIP)|
+
+Identify which fragments\index{molecular fragments} atoms belong to in
+a dynamic walk.  Read one more line specifying the number of
+atoms (the total number of atoms in the molecule), then one more
+line identifying which fragment an atom belongs to. The atoms in the
+molecule are given a number, different for each fragment. See also the
+discussion in Sec.~\ref{sec:dynamic}.
+
+\item[\Key{GRDEXT}] Perform a gradient extremal-based\index{gradient
+extremal} optimization. The algorithm used in this kind of optimization is
+thoroughly described in Ref.\cite{pjhjajthtca73}. This is default walk
+type if the  index of the critical point searched is higher than
+1. See also the discussion in Sec.~\ref{sec:gradext}.
+
+\item[\Key{HARMON}]\verb| |\newline
+\verb|READ (LUCMD, *) ANHFAC|
+
+Threshold for harmonic dominance.  Read one
+more line specifying value. Default is~100. This is  another
+way of changing the criterion for changes of the trust
+radius\index{trust radius}. See also the keyword \Key{TRUST}.
+
+\item[\Key{IMAGE}] Locate a transition state\index{transition state} using a
+trust-region-based image surface\index{image surface} minimization.
+Note that only a 
+point with a Hessian index of~1 can currently be located with this
+method, not higher-order stationary points. See also the discussion in
+Sec.~\ref{sec:image}. 
+
+\item[\Key{INDEX}]\verb| |\newline
+\verb|READ (LUCMD,*) IWKIND|
+
+Desired Hessian index\index{Hessian index} (strictly, of the
+totally symmetric block of the Hessian) at the optimized geometry.
+Read one more line specifying value.  Default is~0 (minimum).
+Note that a stationary point with the wrong Hessian index will not
+be accepted as an optimized geometry.
+
+\item[\Key{IRC}]\verb| |\newline
+\verb|READ (LUCMD, *) IRCSGN|
+
+Set the geometry walk to be  an
+Intrinsic Reaction Coordinate (IRC)\index{intrinsic reaction
+coordinate}\index{IRC} as described in
+Ref.~\cite{kfacr14,pmjcp88}. Read one  
+more line containing the sign (-1 or 1) of the reaction coordinate. It
+cannot be decided in advance which reaction pathway a specific sign is
+associated with. See also the discussion in Sec.~\ref{sec:irc}.
+
+\item[\Key{ISOTOP}]\verb| |\newline
+\verb|READ (LUCMD, *) NIS|\newline
+\verb|READ (LUCMD, *) (ISOTPS(IS), IS = 1, NIS)|
+
+Specify the isotopic constitution\index{isotopic constitution} of the
+molecule under investigation. 
+This is most interesting in dynamic walks\index{dynamics}, as well as
+when using mass-scaled atomic coordinates\index{mass-weighted
+coordinate}. Note that the internal structure of 
+\aba\ uses Cartesian coordinates, and for vibrational analysis alone
+the keyword \Key{ISOTOP} in the \Sec{VIBANA} input section is to be
+preferred. Note also that for defining center of mass
+coordinates, there is a similar \verb|ISOTOP| keyword in the general
+input module, and this will become the only keyword for specifying
+isotopic substitutions in later versions of the program. The
+\Key{ISOTOP} keyword in this input module (\Sec{WALK}) is to become
+obsolete. 
+
+\item[\Key{KEEPSY}] Ensure that the symmetry of the molecule is not
+broken. The threshold for determining a mode as breaking symmetry is
+controled by the keyword \Key{ZERGRD}.
+
+\item[\Key{MASSES}] Mass-scale the atomic coordinates\index{mass-weighted
+coordinate}.  This is the
+default for dynamic walks\index{dynamics}, gradient
+extremal\index{gradient extremal} walks and in calculations
+of Intrinsic Reaction Coordinates (IRCs)\index{intrinsic reaction
+coordinate}\index{IRC}. 
+
+\item[\Key{MAXNUC}]\verb| |\newline
+\verb|READ (LUCMD, *) XMXNUC|
+
+Maximum displacement\index{displacement of atom} allowed for any one
+atom as a result of the 
+geometry update.  Read one more line specifying value.  Default
+is~0.5. 
+
+\item[\Key{MAXTRU}]\verb| |\newline
+\verb|READ (LUCMD, *) TRUMX1|
+
+Set the maximum arc length in an Intrinsic Reaction Coordinate (IRC)
+walk\index{intrinsic reaction coordinate}\index{IRC}. Read one more
+line containing the maximum arc length. 
+Default is~0.10. Note that this arc length is also affected by the
+\Key{TRUST} keyword, and if both are specified, the arc length will
+be set to the minimum value of these to.
+
+\item[\Key{MODE}]\verb| |\newline
+\verb|READ (LUCMD,*) IMODE|
+
+Mode to follow in level-shifted Newton optimizations for transition
+states\index{transition state}.  Read one more line specifying
+mode. Default is to follow 
+the lowest mode (mode~1). 
+
+\item[\Key{MODFOL}] Perform a mode-following (level-shifted
+Newton) optimization. This is the default for minimizations and
+localization of transition states. See also discussion in
+Section~\ref{sec:modfol}. 
+
+\item[\Key{MOMENT}]\verb| |\newline
+\verb|      READ (LUCMD, *) NSTMOM|\newline
+\verb|      DO 265 IP = 1, NSTMOM|\newline
+\verb|         READ (LUCMD, *) ISTMOM(IP), STRMOM(IP)|\newline
+\verb|  265 CONTINUE|
+
+Initial momentum for a dynamic walk\index{dynamics}\index{momentum}.
+Read one more line specifying 
+the number of modes to which there is added an initial momentum. Then
+read one line for each of these modes, containing first the number of
+the mode, and then the momentum. The default is to have no momentum.
+See also the section describing how to perform a dynamic
+walk, Sec.~\ref{sec:dynamic}.
+
+\item[\Key{NATCON}] Use the natural connection\index{natural connection} when orthogonalizing
+the predicted molecular orbitals at the new geometry. By default the
+symmetric connection is used.
+
+\item[\Key{NEWTON}] Use a strict Newton-Raphson\index{Newton-Raphson
+step} step to update 
+the geometry. This means that no trust region will be used.
+
+\item[\Key{NOGRAD}]\verb| |\newline
+\verb|READ (LUCMD, *) NZEROG|\newline
+\verb|READ (LUCMD, *) (IZEROG(I), I = 1, NZEROG)|
+
+ Set some gradient elements to zero.  Read
+one more line specifying how many elements to zero, then one
+or more lines listing their sequence numbers.
+
+\item[\Key{NOORTH}] The predicted molecular orbitals at the new
+geometry are {\em not} orthogonalized. Default is that the orbitals
+are orthogonalized with the symmetric connection. Orthogonalization
+can also be done with the natural
+connection~\cite{joklbkrthpjtca90}. See the keyword \Key{NATCON}. 
+
+\item[\Key{NOPRED}] No prediction of the energy of the wave function
+at updated geometry. 
+
+\item[\Key{NUMERI}] Do a numerical differentiation\index{numerical
+differentiation}, for instance when 
+calculating Raman intensities or Raman optical activity, see
+Sections~\ref{sec:ramanint} and~\ref{sec:vroa}.
+
+\item[\Key{PRINT}]\verb| |\newline
+\verb|READ (LUCMD,*) IPRWLK|
+
+Set the print level in the prediction of new geometry steps.  Read one 
+more line containing print level. Default value is the value of
+\verb|IPRDEF| in the general input module.
+
+\item[\Key{RATLIM}]\verb| |\newline
+\verb|READ (LUCMD, *) RTMIN, RTRGOD, REJMIN, REJMAX|
+
+Limits on ratios between predicted and
+observed energy change.  Read one more line specifying four
+values~(*).  These are respectively the bad prediction ratio, good
+prediction ratio, low rejection ratio and high rejection ratio.
+Defaults are~0.4, 0.8, 0.1, and 1.9.
+
+\item[\Key{REJECT}] Signals that the previous geometry step was
+rejected\index{rejected geometry step}, and the trust
+region\index{trust radius} is
+reduced. This keyword is 
+used in case of restarts to tell the program that when the program
+stopped, the last geometry was in fact rejected.
+
+\item[\Key{REPS}]\verb| |\newline
+\verb|READ (LUCMD, *) NREPS|\newline
+\verb|READ (LUCMD, *) (IDOREP(I), I = 1, NREPS)|
+
+Consider perturbations of selected
+symmetries only.  Read one more line specifying how many
+symmetries, then one line listing the desired symmetries. Note that
+only those symmetries previously defined to be true with the keyword
+\Key{REPS} from the \aba\ input modules will be calculated. This
+keyword thus represents a subset of the \Key{REPS} of the general
+input module.
+
+\item[\Key{SCALE}]\verb| |\newline
+\verb|      READ (LUCMD, *) NUMNUC|\newline
+\verb|      DO 7000 INUC = 1, NUMNUC|\newline
+\verb|         READ (LUCMD, *) IATOM,(SCALCO(J,IATOM), J = 1, 3)|\newline
+\verb| 7000 CONTINUE|
+
+Scale the atomic coordinates.  Read one more
+line specifying how many atoms to scale, then one line for
+each of these atoms~(*) specifying the atom number and scale
+factors for all three Cartesian coordinates. Default is no scaling of
+the atomic coordinates. 
+
+\item[\Key{RESTART}] Tells the program that this is a restarted
+geometry optimization\index{restart, geometry optimization} and that
+information may therefore be available 
+on the \verb|DALTON.WLK| file.
+
+\item[\Key{STRICT}] Strict mode following. Obsolete keyword. Do not use.
+
+\item[\Key{TOLERA}]\verb| |\newline
+\verb|READ (LUCMD, *) TOLST|
+
+Threshold for convergence of the geometry optimization (on gradient
+norm).  Read one more line specifying the threshold~(*).  Default
+is~10$^{-5}$. 
+
+\item[\Key{TRUST}]\verb| |\newline
+\verb|READ (LUCMD, *) TRUSTR, TRUSTI, TRUSTD|
+
+Trust region information\index{trust radius}.  Read one more
+line specifying three values~(*): initial trust radius, factor by
+which radius can be incremented, and factor by which it can be
+decremented.  Defaults are~0.5, 1.2 and 0.7, respectively; initial
+trust radius default is~0.3 if desired Hessian index is
+greater than zero. In dynamic walks\index{dynamics} the trust radius
+is by default put 
+to 0.005, and in walks along an Intrinsic Reaction Coordinate
+(IRC)\index{intrinsic reaction coordinate}\index{IRC} the
+default trust radius is 0.020. For dynamical walks the default
+increment and decrement factor is changed to~2.0 and~0.8
+respectively. 
+
+\item[\Key{ZERGRD}]\verb| |\newline
+\verb|READ (LUCMD, *) ZERGRD|
+
+Threshold below which gradient elements are
+treated as zero.  Read one more line specifying value~(*). Default
+is~10$^{-5}$. This keyword is mainly used for judging which modes are
+symmetry breaking when using the keyword \Key{KEEPSY} as well as
+when deciding what step to take when starting a walk from a transition
+state.
+\end{description}
+

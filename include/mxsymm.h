@@ -1,0 +1,4 @@
+C
+C$Id: mxsymm.h,v 1.1.1.1 2001-02-08 13:33:28 hjj Exp $
+C
+      COMMON /MXSYMM/ TOLLRN, ZERTOL, MAXAXS, MAXMIR

@@ -1,0 +1,292 @@
+\chapter{Scripts}\label{ch:scripts}
+
+\section{General}
+
+          On UNIX systems geometry optimizations with \siraba\ can
+conveniently be controlled by an elaborate Bourne shell script,
+found in the directory \verb|abashell| and conventionally named
+\verb|abacus.sh|.  This script is best called from another, much
+shorter, shell script, as discussed briefly in
+Sec.~\ref{sec:quickscr}.  In this chapter we shall discuss how
+parameters to these scripts are used to create job and file names,
+and to control restarting calculations, etc.
+\begin{quote}
+SPECIAL NOTE:  On CRAY \mbox{X--MP} and \mbox{Y--MP} UNICOS
+systems a problem may be encountered when trying to execute the
+script \verb|abacus.sh|.  The error message will be similar to
+\begin{verbatim}
+-sh: stack space exceeded
+\end{verbatim}
+This comes about because the Bourne shell implementation in UNICOS
+cannot dynamically expand its memory (the \mbox{CRAY--2} version
+cannot either, but its default size is much larger).  There are
+two possible solutions.  The easier is to specifically request
+that the script execute under Korn shell (\verb|/bin/ksh|) --- by
+setting the shell to be used under NQS, say --- although the Korn
+shell is only available in UNICOS~6.0 and later.  The other
+solution is to increase the stack space in the Bourne shell, which
+requires a system patch.  More details are given inside the script
+itself.
+\end{quote}
+
+\section{Executing the {\tt abacus.sh} script}
+
+A typical optimization is initiated by running a start-up script
+similar to the following, which is taken from the
+\verb|testin/CH2| directory.  (The line numbers are added for
+convenience.)
+\begin{verbatim}
+1:root=/users/helgaker
+2:ABA=$root/abashell/abacus.sh
+3:scr=/scratch/taylor
+4:exedir=$root/exe \ 
+5:rootscr=$scr \ 
+6:herexe=$exe/hermit.x \ 
+7:sirexe=$exe/sirius.x \ 
+8:abaexe=$exe/abacus.x \ 
+9:wf=MCSCF $ABA CH2 A
+\end{verbatim}
+Line~1 defines the first part of the directory path in which the
+programs are to be found. Line~2 is the
+full pathname of the \verb|abacus.sh| script.  Line~3 defines the
+pathname for the directory \verb|$scr|, in which the various files
+(integrals, wave function information, etc.) will be generated.
+
+Lines~4 to~9 are effectively a single line, since each line ends
+with a continuation character.  (Recall that no blanks may follow
+the continuation backslash.)  Lines~4 and~5 specify particular
+directories required by the script, while lines~6 through~8
+specify the explicit pathnames for the programs.  Line~9 includes
+the actual script invocation as~\verb|$ABA|.  Note that this
+approach to executing the scripts utilitizes the Bourne shell
+convention that keyword=value pairs precede the script name, while
+positional parameters follow it.  We now itemize the parameters
+that can be passed to the script.
+
+\subsection{{\tt abacus.sh} keyword parameters}
+\label{sec:keyscr}
+
+          The following keyword parameters can be defined for the
+script.
+\begin{description}
+\item[\verb|exedir|] Directory to search for executable programs.
+If the latter are named explicitly the value of this keyword is
+irrelevant.
+\item[\verb|inpdir|] Directory to search for the molecular input. If
+not specified the directory from which the calculation is submitted is
+chosen as input directory.
+\item[\verb|outdir|] Directory to put output from the calculation. If
+not specified the directory from which the job was submitted will be
+chosen as output directory.
+\item[\verb|rootscr|] Initial pathname for scratch directory.
+This will normally be the same as~\verb|$scr|.
+\item[\verb|herexe|] Full pathname of \her\ executable.
+\item[\verb|sirexe|] Full pathname of \sir\ executable.
+\item[\verb|abaexe|] Full pathname of \aba\ executable.
+\item[\verb|notest|] If set to \verb|true|, the shell script will not
+check whether \sir\ accepted the  \aba\ prediction of the wave
+function at the next step was within acceptable accuracy.  Notice that
+in order to  make this option perform adequately, the \verb|.ABACUS|
+keyword un the \verb|*CI VEC| input module added in the {\tt
+sirwlk.inp} file must not be added.
+\item[\verb|sirf21|] If set to \verb|true|, \sir\ will use its own
+interface to provide a guess at the wave function at the next
+step, rather than the \aba\ prediction.  
+\item[\verb|wf    |] Type of wave function to be computed. Three
+different options exist:
+\begin{description}
+\item[\verb|wf=RHF|] To be used in conventional Hartree-Fock
+calculations.
+\item[\verb|wf=DIR|] To be used for direct and/or parallel
+Hartree-Fock calculations.
+\item[\verb|wf=MCSCF|] To be used for MCSCF as well as MP2
+calculations (but note that MP2 wave functions only can be used to
+compute energies).
+\end{description}
+\item[\verb|walk  |] Specifies whether this a continuation of a
+previous optimization (\verb|walk=old|) or a new optimization
+(\verb|walk=new|, the default).  See also the positional
+parameters in Sec.~\ref{sec:pospscr}.
+\item[\verb|restart|] Specifies a restart point within a walk
+step.  Possible values are
+\begin{description}
+\item[\verb|restart=sir|] Restart at the \sir\ step.
+\item[\verb|restart=aba|] Restart at the \aba\ step.
+\item[\verb|restart=pro|] Restart at the final \aba\ calculation
+to obtain properties from a converged optimization.
+\item[\verb|restart=fin|] The same as \verb|restart=pro|.
+\end{description}
+All restart points can be specified in upper-case or lower-case
+letters (but not mixed case).  Note that restarts of this type are
+only possible when ``scratch'' files --- those containing
+integrals, etc. --- are preserved after a job completes or aborts.
+See also the discussion in Sec.~\ref{sec:oldwscr}.
+\item[\verb|clean |] Various data files created in each walk step
+will be removed when no longer required if \verb|clean=true| is
+specified.
+\item[\verb|sironly|] If \verb|sironly=true| is set, the walk will
+stop after the first \sir\ calculation.
+\item[\verb|max|\_\verb|iter=abc|] Specify the maximum number of iterations
+allowed in an optimization, dynamical walk or numerical
+differentiation. Default value is $30$. This is also a way of
+preventing \aba\ from calculating more than one geometry by setting
+\verb|max_iter=1|.
+\end{description}
+
+\subsection{{\tt abacus.sh} positional parameters}
+\label{sec:pospscr}
+
+Positional parameters are denoted \verb|$1, $2...| here.
+\begin{description}
+\item[{\tt \$1}] Major identifier: used to construct working
+directory pathname.  Conventionally set to the molecular formula;
+there is no default for this parameter.  See also
+Sec.~\ref{sec:labscr}.
+\item[{\tt \$2}] Minor identifier: used to construct working
+directory pathname and input and output file names.
+Conventionally a single letter; default is~\verb|A|.  See also
+Sec.~\ref{sec:labscr}.
+\item[{\tt \$3}] Walk step to restart at if \verb|walk=old| was
+specified (see Sec.~\ref{sec:keyscr}).  Note that restart will be
+from the results of the step preceding this one.  Default is~0 (no
+old walk).
+\end{description}
+
+\section{Job labels and file names}\label{sec:labscr}
+
+The first positional parameter \verb|$1| to the script
+\verb|abacus.sh| is the major identifier, which is conventionally
+set to the formula of the molecule.  The second parameter
+\verb|$2| is the minor identifier, which is used to distinguish
+between different calculations on the same molecule.  It is
+conventionally set to a single letter.  While a string of any
+length can be used in principle, this distinguishing identifier is
+used to construct many file names: if it is a single letter, none
+of the resulting file names will exceed 14~characters in length.
+{\em On some UNIX systems no filename can exceed this length, and so
+use of a longer identifier may cause problems.}
+
+The first use of the two identifiers is to construct a pathname
+for the working directory, which will be the expansion of
+\begin{verbatim}
+$scr/$1/$2
+\end{verbatim}
+using the current values of these shell variables.  All files
+such as integrals, density matrices, etc., generated
+during the run will be written in this directory.  However, some
+temporary files are opened as \verb|SCRATCH| by FORTRAN, and are
+written to \verb|$TMPDIR| in some system versions and to a
+subdirectory of \verb|/tmp| in others. (Does this still apply to any
+computers of today?)
+
+The second use of the identifiers is to define file names.  Only
+the minor identifier is used for this purpose.  Input files which
+do not depend on a particular walk step number have names of the
+form \verb|$2_*.inp|.  Specifically, the directive input to \her\
+is in \verb|$2_her.inp|, the input to the first \sir\ calculation
+in the walk is in \verb|$2_sirstr.inp|, and the input for
+subsequent \sir\ calculations in the walk is \verb|$2_sirwlk.inp|.
+The reason for having different file names is that it in the first
+step, no guess at the MCSCF wave function may be available.
+However, after the first step, the MCSCF orbitals and CI
+coefficients from one step will provide an excellent guess for the
+next, and this will require different \sir\ input.  The \aba\
+input for the first walk step is in \verb|$2_abastr.inp|, while
+that for subsequent steps is in \verb|$2_abawlk.inp|.  Usually, at
+the conclusion of the walk \aba\ is executed again to compute
+molecular properties like nuclear shieldings and/or optical
+properties. The input to this step is \verb|$2_abafin.inp|. If only
+properties depending on the molecular Hessian is 
+to be printed, it is recommended to use the keyword \verb|.VIBCNV| in
+the \verb|*WALK  | input module instead of a seperate {\em abafin.inp}
+file. 
+The geometry input to \her, which changes from
+one walk step to another, has the step number (two digits)
+appended, becoming \verb|$2nn_mol.inp|.  In the \verb|testin/CH2|
+example considered above, the files would be \verb|A_*.inp|, with
+\verb|A00_mol.inp| containing the geometry information for the
+first walk step.
+
+The naming of output files is more complicated.  Some parts of a
+step, such as the \sir\ or \aba\ calculations, could be repeated
+if the geometry change predicted by the previous step is
+determined to be inappropriate --- the script is then said to
+``backstep''.  Since multiple backsteps can be taken, the sequence
+number of a particular backstep is appended to the two-digit step
+number, making a three-digit number.  For minimizations, at least,
+the current geometry optimization methods in \aba\ almost never
+require backsteps, and most of these three-digit numbers will end
+in zero.  Typically, in step \verb|nn| the \her\ output is named
+\verb|$2nn_her.out|, the \sir\ output \verb|$2nn0_sir.out| and the
+\aba\ output \verb|$2nn0_aba.out|.  Returning to the CH$_2$
+example, the files from the first walk step would be
+\verb|A00_her.out|, \verb|A000_sir.out|, and \verb|A000_aba.out|.
+
+After the optimization is complete, the script will re-execute
+\aba\ to calculate any desired properties.  The output from this
+step is named \verb|$2nnX_aba.out|, where \verb|nn|~is the final
+step number of the optimization.
+
+Corresponding to files with a \verb|.out| suffix are files with a
+\verb|.err| suffix, which contain the error output from the
+corresponding calculation.  In general, any serious problem will
+cause the optimization to terminate, and so information in these
+files can be ignored if the walk continues.  Error information for
+the walk is also written to \verb|$2_abacus.err|, which should be
+consulted if the calculation aborts.  The file \verb|$2.log|
+contains output messages from the script itself, including some
+timing information.
+
+Several other files are written back to the job directory from the
+working directory at the end of a given iteration.  The file
+\verb|$2nn_sir.f21| is the \sir\ interface file, with the
+converged MCSCF orbitals and CI vector on it.  The file
+\verb|$2nn_sir.geo| contains information such as transformed
+integrals to be passed from \sir\ to \aba.  These files are not
+required after iteration \verb|nn+1| is complete and can then be
+removed (unless, of course, the user wishes to stop the walk and
+restart it from some earlier point).  Other data files written
+back are mostly small files: these can also be deleted as
+described above.
+
+\section{Restarting calculations}\label{sec:oldwscr}
+
+The \verb|abacus.sh| script includes several possibilities for
+restarting optimizations.  The simplest is to set the keyword
+parameter \verb|walk=old| and set positional parameter~\verb|$3|
+to one more than the last {\em complete\/} walk step.  Also
+simple, but more laborious, is to copy the last
+\verb|$2nn_mol.inp| file to \verb|$200_mol.inp| and then start the
+optimization again.  However, this loses any information \aba\ has
+accumulated about updating the trust radius, etc.  Copying over
+the last \sir\ \verb|.f21| interface file to the current step will
+provide a better wave function starting guess.
+
+It is also possible to restart at some point within a walk step,
+as described in Sec.~\ref{sec:keyscr},
+but some complications arise from the operating system
+environment here, since the working directory contents must be
+preserved for such restarts to work.  If the job is being run on a
+machine in which the working directory
+\begin{verbatim}
+$scr/$1/$2
+\end{verbatim}
+is on a device where files survive the end of a job, like
+conventional UNIX systems, there is no problem.  However, some
+machines, such as many CRAY systems, are configured so that most
+of the disk space is ``scratch'' in nature, and all such space is
+deleted at termination of a job.  In this situation restarting
+within a walk step is not an option.  
+
+Finally, it is necessary to
+be cautious when restarting within a step if the previous walk
+aborted for some reason.  The previous walk may have left behind
+certain files that the restarted walk will try to open afresh with
+a FORTRAN status of \verb|NEW|, causing an abort.  The user should
+remove all files with names ending in \verb|.DA| or \verb|.DA1|
+from the working directory before attempting a restart.  This
+cleaning up has to be done only
+when the previous job was aborted by the system:
+any termination of the walk by the script itself, whether because
+the optimization is converged or because of some error, involves
+cleaning up these temporary files.

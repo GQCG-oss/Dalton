@@ -1,0 +1,423 @@
+\begin{thebibliography}{10}
+
+\bibitem{hjajhajomotecc}
+H.J.Aa.Jensen, H.{\AA}gren, and J.Olsen.
+\newblock \sir : a general-purpose direct second-order mcscf program.
+\newblock In E.Clementi, editor, {\em Modern Techniques in Computational
+  Chemistry}. ESCOM, Leiden, 1991.
+
+\bibitem{prttca69}
+P.R.Taylor.
+\newblock {\em Theor.Chim.Acta}, 69:447, 1986.
+
+\bibitem{powpambortca77}
+P.-O.Widmark, P.-{\AA}.Malmqvist, and B.O.Roos.
+\newblock {\em Theor.Chim.Acta}, 77:291, 1990.
+
+\bibitem{powbjpbortca79}
+P.-O.Widmark, B.J.Persson, and B.O.Roos.
+\newblock {\em Theor.Chim.Acta}, 79:491, 1991.
+
+\bibitem{hjajpjhajojcp88}
+H.J.Aa.Jensen, P.J{\o}rgensen, H.{\AA}gren, and J.Olsen.
+\newblock {\em J.Chem.Phys.}, 88:3824, 1987.
+
+\bibitem{hjajpjhajcp87}
+H.J.Aa.Jensen, P.J{\o}rgensen, and H.{\AA}gren.
+\newblock {\em J.Chem.Phys.}, 87:451, 1987.
+
+\bibitem{tuhjahjajpjjcp84}
+T.U.Helgaker, J.Alml\"{o}f, H.J.Aa.Jensen, and P.J{\o}rgensen.
+\newblock {\em J.Chem.Phys.}, 84:6266, 1986.
+
+\bibitem{Fletcher}
+R.Fletcher.
+\newblock {\em Practical Methods of Optimization Vol.1 - Unconstrained
+  Optimization}.
+\newblock Wiley, New York, 1981.
+
+\bibitem{thcpl182}
+T.Helgaker.
+\newblock {\em Chem.Phys.Lett.}, 182:503, 1991.
+
+\bibitem{pjhjajthtca73}
+P.J{\o}rgensen, H.J.Aa.Jensen, and T.Helgaker.
+\newblock {\em Theor.Chim.Acta}, 73:55, 1988.
+
+\bibitem{hjajpjthjcp85}
+H.J.Aa.Jensen, P.J{\o}rgensen, and T.Helgaker.
+\newblock {\em J.Chem.Phys.}, 85:3917, 1986.
+
+\bibitem{theuhjajcpl173}
+T.Helgaker, E.Uggerud, and H.J.Aa.Jensen.
+\newblock {\em Chem.Phys.Lett.}, 173:145, 1993.
+
+\bibitem{rsgmtjdwrjbjcp106}
+R.Steckler, G.M.Thurman, J.D.Watts, and R.J.Bartlett.
+\newblock {\em J.Chem.Phys.}, 106:3926, 1997.
+
+\bibitem{gfxfzpwtppjacs114}
+G.Fogarasi, X.F.Zhou, P.W.Taylor, and P.Pulay.
+\newblock {\em J.Am.Chem.Soc.}, 114:8191, 1992.
+
+\bibitem{ppgfjcp96}
+P.Pulay and G.Fogarasi.
+\newblock {\em J.Chem.Phys.}, 96:2856, 1992.
+
+\bibitem{vbth}
+V.Bakken and T.Helgaker.
+\newblock To be published.
+
+\bibitem{cjcwhmjcp75}
+C.J.Cerjan and W.H.Miller.
+\newblock {\em J.Chem.Phys.}, 75:2800, 1981.
+
+\bibitem{kfacr14}
+K.Fukui.
+\newblock {\em Acc.Chem.Res.}, 14:363, 1981.
+
+\bibitem{pmjcp88}
+M.Page and J.W.{\mbox McIver Jr.}
+\newblock {\em J.Chem.Phys.}, 88:922, 1988.
+
+\bibitem{jcjacs111}
+J.Cioslowski.
+\newblock {\em J.Am.Chem.Soc.}, 111:8333, 1989.
+
+\bibitem{placzek}
+G.Placzek.
+\newblock volume 6(2) of {\em Handbuch der Radiologie}, page 205.
+\newblock Akademische Verlagsgesellschaft (Leipzig), 1934.
+
+\bibitem{thkrklbpjjofd99}
+T.Helgaker, K.Ruud, K.L.Bak, P.J{\o}rgensen, and J.Olsen.
+\newblock {\em Faraday Disc.}, 99:165, 1994.
+
+\bibitem{adbacp12}
+A.D.Buckingham.
+\newblock volume~12 of {\em Adv.Chem.Phys.}, page 107.
+\newblock J.Wiley \& Sons Ltd., 1967.
+
+\bibitem{whmklwhfjcp48}
+W.H\"{u}ttner, M.-K.Lo, and W.H.Flygare.
+\newblock {\em J.Chem.Phys.}, 48:1206, 1968.
+
+\bibitem{jsdhszna46}
+J.Spiekermann and D.H.Sutter.
+\newblock {\em Z.Naturforsch. {\bf A}}, 46:715, 1991.
+
+\bibitem{krthcpl264}
+K.Ruud and T.Helgaker.
+\newblock {\em Chem.Phys.Lett.}, 264:17, 1997.
+
+\bibitem{mjssocpjthkrcpl243}
+M.Jaszu\'{n}ski, S.Szym\'{a}nski, O.Christiansen, P.J{\o}rgensen, T.Helgaker,
+  and K.Ruud.
+\newblock {\em Chem.Phys.Lett.}, 243:144, 1995.
+
+\bibitem{jopjjcp82}
+J.Olsen and P.J{\o}rgensen.
+\newblock {\em J.Chem.Phys.}, 82:3235, 1985.
+
+\bibitem{kwjfhppjacs112}
+K.Wolinski, J.F.Hinton, and P.Pulay.
+\newblock {\em J.Am.Chem.Soc.}, 112:8251, 1990.
+
+\bibitem{krthrkpjklbhjajjcp100}
+K.Ruud, T.Helgaker, R.Kobayashi, P.J{\o}rgensen, K.L.Bak, and H.J.Aa.Jensen.
+\newblock {\em J.Chem.Phys.}, 100:8178, 1994.
+
+\bibitem{krthklbpjhjajjcp99}
+K.Ruud, T.Helgaker, K.L.Bak, P.J{\o}rgensen, and H.J.Aa.Jensen.
+\newblock {\em J.Chem.Phys.}, 99:3847, 1993.
+
+\bibitem{krthklbpjjocp195}
+K.Ruud, T.Helgaker, K.L.Bak, P.J{\o}rgensen, and J.Olsen.
+\newblock {\em Chem.Phys.}, 195:157, 1995.
+
+\bibitem{ovhapjhjajsbpthjcp96}
+O.Vahtras, H.{\AA}gren, P.J{\o}rgensen, H.J.Aa.Jensen, S.B.Padkj{\ae}r, and
+  T.Helgaker.
+\newblock {\em J.Chem.Phys.}, 96:6120, 1992.
+
+\bibitem{joklbkrthpjtca90}
+J.Olsen, K.L.Bak, K.Ruud, T.Helgaker, and P.J{\o}rgensen.
+\newblock {\em Theor.Chim.Acta}, 90:421, 1995.
+
+\bibitem{thdjcp90}
+T.H.{\mbox Dunning Jr.}
+\newblock {\em J.Chem.Phys.}, 90:1007, 1989.
+
+\bibitem{rakthdrjhjcp96}
+R.A.Kendall, {T.H.Dunning Jr.}, and R.J.Harrison.
+\newblock {\em J.Chem.Phys.}, 96:6796, 1992.
+
+\bibitem{dewthdjcp98}
+D.E.Woon and {T.H.Dunning Jr.}
+\newblock {\em J.Chem.Phys.}, 98:1358, 1993.
+
+\bibitem{dewthdjcp100}
+D.E.Woon and {T.H.Dunning Jr.}
+\newblock {\em J.Chem.Phys.}, 100:2975, 1994.
+
+\bibitem{pdkrthklbpj}
+P.Dahle, K.Ruud, T.Helgaker, K.L.Bak, and P.J{\o}rgensen.
+\newblock unpublished.
+
+\bibitem{krthpjklbcpl223}
+K.Ruud, T.Helgaker, P.J{\o}rgensen, and K.L.Bak.
+\newblock {\em Chem.Phys.Lett.}, 223:12, 1994.
+
+\bibitem{krhsthklbpjjacs116}
+K.Ruud, H.Skaane, T.Helgaker, K.L.Bak, and P.J{\o}rgensen.
+\newblock {\em J.Am.Chem.Soc.}, 116:10135, 1994.
+
+\bibitem{ashhrajcp97}
+A.Sch\"{a}fer, H.Horn, and R.Ahlrichs.
+\newblock {\em J.Chem.Phys.}, 97:2571, 1992.
+
+\bibitem{aschrajcp100}
+A.Sch\"{a}fer, C.Huber, and R.Ahlrichs.
+\newblock {\em J.Chem.Phys.}, 100:5829, 1994.
+
+\bibitem{jgkrthjcp105}
+J.Gauss, K.Ruud, and T.Helgaker.
+\newblock {\em J.Chem.Phys.}, 105:2804, 1996.
+\newblock See also S.M.Cybulski and D.M.Bishop, J.Chem.Phys., {\bf 106}, 4357
+  (1997).
+
+\bibitem{krthklbpjcpl226}
+K.Ruud, T.Helgaker, K.L.Bak, and P.J{\o}rgensen.
+\newblock {\em Chem.Phys.Lett.}, 226:1, 1994.
+
+\bibitem{bfpjjbjothhjajjcp97}
+B.Fernandez, P.J{\o}rgensen, J.Byberg, J.Olsen, T.Helgaker, and H.J.Aa.Jensen.
+\newblock {\em J.Chem.Phys.}, 97:3412, 1992.
+
+\bibitem{bfpjcpl232}
+B.Fernandez and P.J{\o}rgensen.
+\newblock {\em Chem.Phys.Lett.}, 232:463, 1995.
+
+\bibitem{klbpjthkrhjajjcp98}
+K.L.Bak, P.J{\o}rgensen, T.Helgaker, K.Ruud, and H.J.Aa.Jensen.
+\newblock {\em J.Chem.Phys.}, 98:8873, 1993.
+
+\bibitem{klbaehkrthjopjtca90}
+K.L.Bak, Aa.E.Hansen, K.Ruud, T.Helgaker, J.Olsen, and P.J{\o}rgensen.
+\newblock {\em Theor.Chim.Acta}, 90:441, 1995.
+
+\bibitem{krthjopjklbcpl235}
+K.Ruud, T.Helgaker, J.Olsen, P.J{\o}rgensen, and K.L.Bak.
+\newblock {\em Chem.Phys.Lett.}, 235:47, 1995.
+
+\bibitem{klbpjthkrhjajjcp100}
+K.L.Bak, P.J{\o}rgensen, T.Helgaker, K.Ruud, and H.J.Aa.Jensen.
+\newblock {\em J.Chem.Phys.}, 100:6620, 1994.
+
+\bibitem{klbpjthkrfd99}
+K.L.Bak, P.J\o rgensen, T.Helgaker, and K.Ruud.
+\newblock {\em Faraday Disc.}, 99:121, 1994.
+
+\bibitem{pndjhapdkrthhkcpl253}
+P.Norman, D.Jonsson, H.\AA gren, P.Dahle, K.Ruud, T.Helgaker, and H.Koch.
+\newblock {\em Chem.Phys.Lett.}, 253:1, 1996.
+
+\bibitem{arthkrabmjpjjcp102}
+A.Rizzo, T.Helgaker, K.Ruud, A.Barszczewicz, M.Jaszu\'{n}ski, and
+  P.J{\o}rgensen.
+\newblock {\em J.Chem.Phys.}, 102:8953, 1995.
+
+\bibitem{kvmedpsjpc91}
+K.V.Mikkelsen, E.Dalgaard, and P.Swanstr{\o}m.
+\newblock {\em J.Phys.Chem.}, 91:3081, 1987.
+
+\bibitem{kvmhahjajthjcp89}
+K.V.Mikkelsen, H.{\AA}gren, H.J.Aa.Jensen, and T.Helgaker.
+\newblock {\em J.Chem.Phys.}, 89:3086, 1988.
+
+\bibitem{kvmpjhjajjcp100}
+K.V.Mikkelsen, P.J{\o}rgensen, and H.J.Aa.Jensen.
+\newblock {\em J.Chem.Phys.}, 100:6597, 1994.
+
+\bibitem{kvmylhapjjcp100}
+K.V.Mikkelsen, Y.Luo, H.{\AA}gren, and P.J{\o}rgensen.
+\newblock {\em J.Chem.Phys.}, 100:8240, 1994.
+
+\bibitem{bfocobpjkvmjcp104}
+B.Fernandez, O.Christiansen, O.Bludsky, P.J{\o}rgensen, and K.V.Mikkelsen.
+\newblock {\em J.Chem.Phys.}, 104:629, 1996.
+
+\bibitem{kvmachahjajjcp103}
+K.V.Mikkelsen, A.Cesar, H.{\AA}gren, and H.J.Aa.Jensen.
+\newblock {\em J.Chem.Phys.}, 103:9010, 1995.
+
+\bibitem{kvmpjkrthjcp106}
+K.V.Mikkelsen, P.J{\o}rgensen, K.Ruud, and T.Helgaker.
+\newblock {\em J.Chem.Phys.}, 106:1170, 1997.
+
+\bibitem{poakvmkrthjpc100}
+P.-O.\AA strand, K.V.Mikkelsen, K.Ruud, and T.Helgaker.
+\newblock {\em J.Phys.Chem.}, 100:19771, 1996.
+
+\bibitem{thkrprt95}
+K.Ruud T.Helgaker and P.R.Taylor.
+\newblock Second-order methods for the optimization of molecular potential
+  energy surfaces.
+\newblock In D.Heidrich, editor, {\em The reaction path in Chemistry: Current
+  Approaches and Perspectives}. Kluwer, Netherlands, 1995.
+
+\bibitem{VRML}
+A.J.Robinson.
+\newblock {\em Chem.Design Automat.News}, 10:50, 1995.
+
+\bibitem{Baker}
+J.Baker.
+\newblock {\em J.Comp.Chem.}, 14:1085, 1993.
+
+\bibitem{Schlegel}
+H.B.Schlegel.
+\newblock {\em J.Comp.Chem.}, 3:214, 1982.
+
+\bibitem{pemsjaahborjcp74}
+P.E.M.Siegbahn, J.Alml\"{o}f, A.Heiberg, and B.O.Roos.
+\newblock {\em J.Chem.Phys.}, 74:2384, 1981.
+
+\bibitem{thpjjcp95}
+T.Helgaker and P.J{\o}rgensen.
+\newblock {\em J.Chem.Phys.}, 95:2595, 1991.
+
+\bibitem{dmtajcp73}
+D.Matsuoka and T.Aoyama.
+\newblock {\em J.Chem.Phys.}, 73:5718, 1980.
+
+\bibitem{klbpjhjajjothjcp97}
+K.L.Bak, P.J{\o}rgensen, H.J.Aa.Jensen, J.Olsen, and T.Helgaker.
+\newblock {\em J.Chem.Phys.}, 97:7573, 1992.
+
+\bibitem{ovhapjhjajthjojcp96}
+O.Vahtras, H.{\AA}gren, P.J{\o}rgensen, H.J.Aa.Jensen, T.Helgaker, and J.Olsen.
+\newblock {\em J.Chem.Phys.}, 96:2118, 1992.
+
+\bibitem{kkwbmjjpbamop22}
+K.Kaufman, W.Baumeister, and M.Jungen.
+\newblock {\em J.Phys.{\bf B}: Am.Mol.Opt.Phys.}, 22:2233, 1989.
+
+\bibitem{ipcpl245}
+I.Panas.
+\newblock {\em Chem.Phys.Lett.}, 245:171, 1995.
+
+\bibitem{moleculeref}
+J.Alml\"{o}f.
+\newblock A vectorized Gaussian integral program.
+
+\bibitem{emslref}
+Basis sets were obtained from the Extensible Computational Chemistry
+  Environment Basis Set Database, Version 1.0, as developed and distributed by
+  the Molecular Science Computing Facility, Environmental and Molecular
+  Sciences Laboratory which is part of the Pacific Northwest Laboratory, P.O.
+  Box 999, Richland, Washington 99352, USA, and funded by the U.S. Department
+  of Energy. The Pacific Northwest Laboratory is a multi-program laboratory
+  operated by Battelle Memorial Institue for the U.S. Department of Energy
+  under contract DE-AC06-76RLO 1830. Contact David Feller, Karen Schuchardt, or
+  Don Jones for further information.
+
+\bibitem{nqvdref}
+K.F{\ae}gri.
+\newblock Nqvd basis sets.
+\newblock Technical report, Department of Chemistry, University of Oslo, 1994.
+
+\bibitem{dbcberkdmdaejcc14}
+D.B.Chesnut, B.E.Rusiloski, K.D.Moore, and D.A.Egolf.
+\newblock {\em J.Comp.Chem.}, 14:1364, 1993.
+
+\bibitem{fbvdibmrap}
+F.B.van Duijneveldt.
+\newblock {\mbox IBM Res. Rep. RJ945}.
+\newblock Technical report, 1971.
+
+\bibitem{cwbjcp72}
+C.W.Bauschlicher.
+\newblock {\em J.Chem.Phys.}, 72:880, 1980.
+
+\bibitem{tuhhjajpjjcp84}
+T.U.Helgaker, H.J.Aa.Jensen, and P.J{\o}rgensen.
+\newblock {\em J.Chem.Phys.}, 182:6280, 1986.
+
+\bibitem{hsijqc30}
+H.Sellers.
+\newblock {\em Int.J.Quantum Chem.}, 30:433, 1986.
+
+\bibitem{barronbook}
+L.D.Barron.
+\newblock {\em Molecular light scattering and optical activity}.
+\newblock Cambridge University Press, Cambridge, 1982.
+
+\bibitem{whc48}
+W.Hug.
+\newblock {\em Chimia}, 48:386, 1994.
+
+\bibitem{mjpekdtehjajjojcp}
+M.J.Packer, E.K.Dalskov andT.Enevoldsen, H.J.Aa.Jensen, and J.Oddershede.
+\newblock J.Chem.Phys., submitted.
+
+\bibitem{jrtsvmjcp58}
+J.Rose, T.Shibuya, and V.McKoy.
+\newblock {\em J.Chem.Phys.}, 58:74, 1973.
+
+\bibitem{tsjrvmjcp58}
+T.Shibuya, J.Rose, and V.McKoy.
+\newblock {\em J.Chem.Phys.}, 58:500, 1973.
+
+\bibitem{erdjcp17}
+E.R.Davidson.
+\newblock {\em J.Comput.Phys.}, 17:87, 1975.
+
+\bibitem{ovhahjajjcc15}
+O.Vahtras, H.{\AA}gren, and H.J.Aa.Jensen.
+\newblock {\em J.Comp.Chem.}, 15:573, 1994.
+
+\bibitem{jopjdlycpr2}
+P.J{\o}rgensen J.Oddershede and D.L.Yeager.
+\newblock {\em Comp.Phys.Rep.}, 2:33, 1984.
+
+\bibitem{jodlypjjcp91}
+J.Olsen, D.L.Yeager, and P.J{\o}rgensen.
+\newblock {\em J.Chem.Phys.}, 91:381, 1989.
+
+\bibitem{ovhapjhjajthjojcp97}
+O.Vahtras, H.{\AA}gren, P.J{\o}rgensen, H.J.Aa.Jensen, T.Helgaker, and J.Olsen.
+\newblock {\em J.Chem.Phys.}, 97:9178, 1992.
+
+\bibitem{pjhjajjojcp89}
+P.J{\o}rgensen, H.J.Aa.Jensen, and J.Olsen.
+\newblock {\em J.Chem.Phys.}, 89:3654, 1988.
+
+\bibitem{hhhjajpjjojcp97}
+H.Hettema, H.J.Aa.Jensen, P.J{\o}rgensen, and J.Olsen.
+\newblock {\em J.Chem.Phys.}, 97:1174, 1992.
+
+\bibitem{haovhkpjthjcp98}
+H.{\AA}gren, O.Vahtras, H.Koch, P.J{\o}rgensen, and T.Helgaker.
+\newblock {\em J.Chem.Phys.}, 98:6471, 1993.
+
+\bibitem{haovbmaqc27}
+Hans {\AA}gren, Olav Vahtras, and Boris Minaev.
+\newblock {\em Adv. Quantum Chem.}, 27:71, 1996.
+
+\bibitem{pndjovhacpl242}
+P.Normann, D.Jonsson, O.Vahtras, and H.{\AA}gren.
+\newblock {\em Chem.Phys.Lett.}, 242:7, 1995.
+
+\bibitem{djpnhajcp105}
+D.Jonsson, P.Norman, and H.{\AA}gren.
+\newblock {\em J.Chem.Phys.}, 105:6401, 1996.
+
+\bibitem{djpnylhajcp105}
+D.Jonsson, P.Norman, Y.Liu, and H.{\AA}gren.
+\newblock {\em J.Chem.Phys.}, 105:581, 1996.
+
+\bibitem{wtrrrmp37}
+W.T.Raynes and R.Ratcliffe.
+\newblock {\em Mol.Phys.}, 37:571, 1979.
+
+\end{thebibliography}

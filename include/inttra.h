@@ -1,0 +1,10 @@
+C
+C$Id: inttra.h,v 1.1.1.1 2001-02-08 13:33:26 hjj Exp $
+C
+      COMMON/INTTRA/ MSYM,MISH(8),MASH(8),MSSH(8),MOCC(8),MORB(8),
+     *               MBAS(8),JORB(8),JBAS(8),JCMO(8),
+     *               MOCCT,NMOCCX,MSSHT,MORBT,MBAST,NMBASX,NMORBX,
+     *               ITSMO(255),ITSAO(255),ITSW(255),ITSX(255),MUL(8,8),
+     *               NPQ,NCD,NUMCHA,LDABUF,LDAMAX,LASTAD(2500),
+     *               LASTAE(2500),IT(256),JTER,NMORBT,NMBAST,
+     *               LTRI,LPQCD,LDABUG,MASHT,NMASHX,LPQRS
