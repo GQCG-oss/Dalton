@@ -49,7 +49,7 @@ const real ZEROR = 0.0, ONER = 1.0, TWOR = 2.0, FOURR = 4.0;
 */
 static char* DftConfString = NULL;
 int
-dftgetfunc_(const char* line, int * inperr, int len)
+FSYM(dftsetfunc)(const char* line, int * inperr, int len)
 {
     char func_name[20];
     int i;
@@ -179,107 +179,6 @@ mpi_sync_data(const SyncData* data, int count)
                   infpar_.master, MPI_COMM_WORLD);
 }
 
-/* dft_getgao_sync:
-   sync data needed by AO evaluator. 
-   FIXME1: it does not really belong here...
-   FIXME2: do it in one shot.
-   FIXME3: why does it depend on so many parameters!?
-*/
-#include <lmns.h>
-#include <primit.h>
-#include <nuclei.h>
-#include <onecom.h>
-#include <pincom.h>
-#include <shells.h>
-#include <sphtrm.h>
-#include <symmet.h>
-#include <xyzpow.h>
-static void
-dft_getgao_sync()
-{
-    static const SyncData sync_data[] = {
-        { &inforb_.nsym,  1,            MPI_INT     },
-        { inforb_.muld2h, 8*8,          MPI_INT     },
-        { &shells_.kmax,  1,            MPI_INT     }, 
-        { symmet_.iptcnt, 3*MXCENT*8*2, MPI_INT     },
-        { symmet_.iptsym, MXCORB*8,     MPI_INT     },
-        { &symmet_.maxopr,1,            MPI_INT     },
-        { &symmet_.maxrep,1,            MPI_INT     },
-        { inforb_.nbas,   8,            MPI_INT     },
-        { lmns_.lvalua,   MXAQN,        MPI_INT     },
-        { lmns_.mvalua,   MXAQN,        MPI_INT     },
-        { lmns_.nvalua,   MXAQN,        MPI_INT     },
-        { &onecom_.jsta,  1,            MPI_INT     },
-        { &onecom_.nuca,  1,            MPI_INT     },
-        { pincom_.ipind,  MXCORB,       MPI_INT     },
-        { primit_.priccf, MXCONT*MXPRIM,MPI_DOUBLE },
-        { primit_.priexp, MXPRIM,       MPI_DOUBLE },
-        { shells_.cent,   MXSHEL*2*3,   MPI_DOUBLE },
-        { shells_.istbao, MXSHEL,       MPI_INT     },
-        { shells_.jstrt,  MXSHEL,       MPI_INT     },
-        { shells_.kckt,   MXSHEL,       MPI_INT     },
-        { shells_.khkt,   MXSHEL,       MPI_INT     },
-        { shells_.kstrt,  MXSHEL,       MPI_INT     },
-        { shells_.nhkt,   MXSHEL,       MPI_INT     },
-        { shells_.nuco,   MXSHEL,       MPI_INT     },
-        { shells_.numcf,  MXSHEL,       MPI_INT     },
-        { shells_.sphr,   MXSHEL,       MPI_INT     },
-        { sphtrm_.csp,    NCSP,         MPI_DOUBLE },
-        { sphtrm_.ispadr, MXQN,         MPI_INT     },
-        { symmet_.isymao, MXAQN*MXQN,   MPI_INT     },
-        { symmet_.isymax, 3*2,          MPI_INT     },
-        { symmet_.naos,   8,            MPI_INT     },
-        { symmet_.pt,     8,            MPI_DOUBLE },
-        { xyzpow_.istep,  MXAQNM,       MPI_INT     },
-        { xyzpow_.mval,   MXAQNM,       MPI_INT     },
-        { xyzpow_.nval,   MXAQNM,       MPI_INT     }
-    };
-    mpi_sync_data(sync_data, ELEMENTS(sync_data));
-}
-
-static void
-dft_lifesupport_sync(void)
-{
-#include <symmet.h>
-    int syncdata[7];
-    char* line;
-    static int first = 1;
-    dft_getgao_sync();
-    if(!first) return;
-
-    if(infpar_.mynum == infpar_.master) {
-        syncdata[0] = DftConfString ? strlen(DftConfString)+1 : 0;
-        syncdata[1] = inforb_.nbast;
-        syncdata[2] = inforb_.n2basx;
-        syncdata[3] = inforb_.n2orbx;
-        syncdata[4] = inforb_.norbt;
-        syncdata[5] = inforb_.nocct;
-        syncdata[6] = inforb_.nvirt;
-    }
-    MPI_Bcast(syncdata, ELEMENTS(syncdata), MPI_INT, 
-              infpar_.master, MPI_COMM_WORLD);
-    
-    if(syncdata[0]>0) {
-        line = malloc(syncdata[0]);
-        if(infpar_.mynum == infpar_.master) 
-            strcpy(line, DftConfString);
-        MPI_Bcast(line, syncdata[0], MPI_CHAR, infpar_.master, MPI_COMM_WORLD);
-        if(infpar_.mynum != infpar_.master) {
-            int res;
-            dftinput_(line, &res, syncdata[0]);
-            free(line);
-        }
-    }
-    if(infpar_.mynum != infpar_.master) {
-        inforb_.nbast  = syncdata[1];
-        inforb_.n2basx = syncdata[2];
-        inforb_.n2orbx = syncdata[3];
-        inforb_.norbt  = syncdata[4];
-        inforb_.nocct  = syncdata[5];
-        inforb_.nvirt  = syncdata[6];
-    }
-    first = 0;
-}
 
 void
 dft_wake_slaves(DFTPropEvalMaster evaluator)
@@ -368,3 +267,33 @@ fort_print(const char* format, ...)
     len = strlen(line);
     fort_wrt_(line, &len, len);
 }
+
+/* ===================================================================
+ * Parallel support.
+ * =================================================================== */
+#ifdef VAR_MPI
+#include <mpi.h>
+
+/* dftfuncsync synchronises the selected functional between all
+ * nodes. */
+void
+FSYM(dftfuncsync)(int *mynum, int *nodes)
+{
+    int len = DftConfString ? strlen(DftConfString) + 1: 0;
+    MPI_Bcast(&len, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    if(len>0) {
+        int res;
+        char *line = malloc(len);
+        if(*mynum == 0)
+            strcpy(line, DftConfString);
+        MPI_Bcast(line, len, MPI_CHAR, 0, MPI_COMM_WORLD);
+        if(*mynum != 0) {
+            int res;
+            FSYM(dftsetfunc)(line, &res, len);
+        }
+        free(line);
+    }
+}
+
+#endif
+ 

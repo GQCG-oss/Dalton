@@ -22,7 +22,8 @@ struct GridGenAtom_ {
 typedef enum {
     GRID_PART_BECKE,  /* with  Bragg radii correction */
     GRID_PART_BECKE2, /* w/o   Bragg radii correction */
-    GRID_PART_SSF
+    GRID_PART_SSF,
+    GRID_PART_BLOCK
 } GridGenPartScheme;
 
 typedef enum {

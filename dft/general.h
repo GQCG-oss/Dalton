@@ -13,6 +13,14 @@
 #define RESTRICT
 #endif
 
+/* Match Fortran name mangling. If the Fortran compiler does not
+ * mangle names, define NO_UNDERSCORE in CFLAGS. */
+#ifdef NO_UNDERSCORE
+#define FSYM(a) a
+#else
+#define FSYM(a) a ## _
+#endif
+
 #define ELEMENTS(arr) (sizeof(arr)/sizeof(arr[0]))
 
 /* define the basic floating-point variable type used by the Fortran code */
@@ -94,7 +102,8 @@ void mpi_sync_data(const SyncData* data, int count);
 #define dft_wake_slaves(a)
 #endif
 
-void* dal_malloc(size_t sz);
+void* dal_malloc_(size_t sz, const char *func, int line);
+#define dal_malloc(sz) dal_malloc_((sz),__FUNCTION__, __LINE__)
 
 void fort_print(const char* format, ...);
 /* FORTRAN FUNCTION PROTOTYPES */

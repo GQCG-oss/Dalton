@@ -17,6 +17,7 @@ C
       KLST  = KKSM  + NBAST*NBAST
       LWRK  = LWORK - KLST +1
       IF(KLST.GT.LWORK) CALL QUIT('NOMEM IN DFTKSM')
+      CALL KICK_KSM_SLAVES_ALIVE(NBAST,DMAT,IPRFCK)
       DOGGA = DFT_ISGGA()
       CALL DZERO(WORK(KENER),NBAST*NBAST+1)
       IF(DOGGA) THEN
@@ -27,6 +28,7 @@ C
      &               DFTKSMLDA,WORK(KENER),ELE)
 C
       END IF
+      CALL KSMCOLLECT(WORK(KENER),WORK(KLST),LWORK)
       DO I = 1, NBAST
          DO J = 1, NBAST
             AVERAG = 0.5*(WORK(KKSM+(J-1)+(I-1)*NBAST)
@@ -37,7 +39,7 @@ C
       END DO
       EDFTY = WORK(KENER)
       CALL DAXPY(N2BASX,1D0,WORK(KKSM),1, FKSM,1)
-      IF(IPRFCK.GT.0) WRITE(LUPRI,'(A,2F20.14)')
+      IF(IPRFCK.GE.0) WRITE(LUPRI,'(A,2F20.14)')
      &     'Kohn-Sham electrons/energy :', ELE, WORK(KENER)
       RETURN
       END
@@ -202,4 +204,75 @@ c
          END DO
       END DO
       RETURN
+      END
+c
+      SUBROUTINE KICK_KSM_SLAVES_ALIVE(NBAST,DMAT,IPRINT)
+#include <implicit.h>
+c     do nothing when running serial code.
+#ifdef VAR_MPI
+#include <maxorb.h>
+#include <infpar.h>
+#include <mpif.h>
+      DIMENSION DMAT(NBAST,NBAST)
+      IF(MYNUM.EQ.MASTER) THEN
+c        IPRTYP=4 is registered for KSM Slave driver.
+         IPRTYP = 4
+      WRITE(40+MYNUM,*)
+     &     "master blows the horn!",mynum,master
+         CALL MPI_Bcast(iprtyp,1, MPI_INTEGER,
+     &                  MASTER, MPI_COMM_WORLD,IERR)
+         CALL MPI_Bcast(iprint,1, MPI_INTEGER,
+     &                  MASTER, MPI_COMM_WORLD,IERR)
+         CALL DFTINTBCAST
+         CALL KSMSYNC(DMAT)
+      END IF
+      WRITE(40+MYNUM,*)
+     &     "Slave checked status!",mynum,master
+#endif
+      END
+c
+#ifdef VAR_MPI
+      SUBROUTINE DFT_KSMSLAVE(WRK,LWRK,IPRINT)
+#include <implicit.h>
+#include <maxorb.h>
+#include <infpar.h>
+#include <inforb.h>
+      DIMENSION WRK(LWRK)
+c
+      CALL DFTINTBCAST
+      KDMAT = 1
+      KFKSM = KDMAT + N2BASX
+      KFREE = KFKSM + N2BASX
+      IF(KFREE.GT.LWRK) CALL STOPIT('DFT_KSMSLAVE','',KFREE,LWRK)
+      LFREE = LWRK - KFREE + 1
+      CALL KSMSYNC(WRK(KDMAT))
+      CALL DZERO(WRK(KFKSM),N2BASX)
+      CALL DFTKSMb(WRK(KDMAT),WRK(KFKSM),EDFTY,
+     &             WRK(KFREE),LFREE,IPRINT)
+      END
+c      
+      SUBROUTINE KSMSYNC(DMAT)
+#include <implicit.h>
+#include <mpif.h>
+#include <priunit.h>
+#include <inforb.h>
+      CALL MPI_Bcast(DMAT,NBAST*NBAST,MPI_DOUBLE_PRECISION,
+     &               0, MPI_COMM_WORLD,ierr)
+      END
+#endif
+      SUBROUTINE KSMCOLLECT(FMAT,WRK,LFREE)
+#ifdef VAR_MPI
+c
+#include <implicit.h>
+#include <mpif.h>
+#include <maxorb.h>
+#include <infpar.h>
+#include <inforb.h>
+      DIMENSION FMAT(N2BASX)
+      DIMENSION WRK(LFREE)
+      IF(LFREE.LE.N2BASX) CALL STOPIT('KSMCOLLECT','',LFREE,N2BASX)
+      CALL DCOPY(N2BASX+1,FMAT,1,WRK,1)
+      CALL MPI_Reduce(WRK,FMAT,N2BASX+1,MPI_DOUBLE_PRECISION,MPI_SUM,
+     &                0,MPI_COMM_WORLD,IERR)
+#endif
       END

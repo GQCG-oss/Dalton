@@ -2117,7 +2117,7 @@ C todo      INPERR = INPERR + 1 ! remove comment when DFT_GETFUNC ready
             WORD = TITLIN(1:7)
             GO TO 1101
          END IF
-         CALL DFTgetFunc(TITLIN,INPERR)
+         CALL DFTsetFunc(TITLIN,INPERR)
       GO TO 100
 C
 C *** Option NEW NEVPT2

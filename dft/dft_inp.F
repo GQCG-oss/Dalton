@@ -87,7 +87,7 @@ c     >.RADINT< check keyword
       GO TO 100  
 c     >.ANGINT< check keyword
  5    CONTINUE
-      READ(LUCMD,*) ANGMIN
+      READ(LUCMD,*) ANGINT
       GO TO 100  
 c     >.ANGMIN< check keyword
  6    CONTINUE

@@ -42,8 +42,7 @@ void lrao2mo_(const real* cmo, const int *ksymop,
 
 #if 0 && defined(VAR_MPI)
 #include <mpi.h>
-#include <infvar.h>
-#include "infpar.h"
+#define MASTER_NO 0
 
 /* dft_kohn_sham_slave:
    this is a slave driver. It's task is to allocate memory needed by
@@ -64,7 +63,7 @@ static __inline__ void
 dft_kohn_sham_sync_slaves(real* dmat)
 {
     MPI_Bcast(dmat, inforb_.n2basx,MPI_DOUBLE,
-	      infpar_.master, MPI_COMM_WORLD);
+	      MASTER_NO, MPI_COMM_WORLD);
 }
 
 static __inline__ void
@@ -73,9 +72,9 @@ dft_kohn_sham_collect_info(real*ksm, real* energy, real* work)
     real tmp = *energy;
     dcopy_(&inforb_.n2basx, ksm,&ONEI, work, &ONEI);
     MPI_Reduce(work, ksm, inforb_.n2basx, MPI_DOUBLE, MPI_SUM, 
-	       infpar_.master, MPI_COMM_WORLD);
+	       MASTER_NO, MPI_COMM_WORLD);
     MPI_Reduce(&tmp, energy, 1, MPI_DOUBLE, MPI_SUM, 
-	       infpar_.master, MPI_COMM_WORLD);
+	       MASTER_NO, MPI_COMM_WORLD);
 }
 
 #else /* VAR_MPI */
@@ -274,7 +273,7 @@ dft_lin_resp_collect_info(real* fmat, real*work)
 {
     dcopy_(&inforb_.n2orbx, fmat,&ONEI, work, &ONEI);
     MPI_Reduce(work, fmat, inforb_.n2orbx, MPI_DOUBLE, MPI_SUM, 
-	       infpar_.master, MPI_COMM_WORLD);
+	       MASTER_NO, MPI_COMM_WORLD);
 }
 
 #else  /* VAR_MPI */
@@ -592,7 +591,7 @@ static __inline__ void
 dft_kohn_shamab_sync_slaves(real* dmat)
 {
     MPI_Bcast(dmat,2*inforb_.n2basx,MPI_DOUBLE,
-	      infpar_.master, MPI_COMM_WORLD);
+	      MASTER_NO, MPI_COMM_WORLD);
 }
 
 static __inline__ void
@@ -602,9 +601,9 @@ dft_kohn_shamab_collect_info(real*ksm, real* energy, real* work)
     int sz = 2*inforb_.n2basx;
     dcopy_(&sz, ksm,&ONEI, work, &ONEI);
     MPI_Reduce(work, ksm, sz, MPI_DOUBLE, MPI_SUM, 
-	       infpar_.master, MPI_COMM_WORLD);
+	       MASTER_NO, MPI_COMM_WORLD);
     MPI_Reduce(&tmp, energy, 1, MPI_DOUBLE, MPI_SUM, 
-	       infpar_.master, MPI_COMM_WORLD);
+	       MASTER_NO, MPI_COMM_WORLD);
 }
 
 #else /* VAR_MPI */
@@ -759,7 +758,7 @@ dft_lin_respab_collect_info(real* fmat, real*work)
     int sz = 2*inforb_.n2orbx; 
     dcopy_(&sz, fmat,&ONEI, work, &ONEI);
     MPI_Reduce(work, fmat, sz, MPI_DOUBLE, MPI_SUM, 
-	       infpar_.master, MPI_COMM_WORLD);
+	       MASTER_NO, MPI_COMM_WORLD);
 }
 
 #else  /* VAR_MPI */

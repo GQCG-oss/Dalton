@@ -1,3 +1,15 @@
+2004-02-25  Pawel Salek 
+
+	* dft/dft_inp.F: set ANGINT, not ANGMIN, on .ANGINT keyword.
+	* dft/dft_int.F: parallelize (KS build only so far).
+	* dft/dft_ksm.F: ditto.
+	* dft/general.[hc]: remove part of dft-qr MPI code.
+	* dft/grid-gen.[hc]: parallelize with load-balancing.
+	* dft/prop-eval.c: disable unused MPI code.
+	* eri/eri2par.F: plug dft MPI code in.
+	* include/dftcom.h: move MXBLLEN here.
+	* sirius/sirinp.F: DFTgetFunc -> DFTsetFunc.
+	
 2004-02-06  Pawel Salek 
 
 	* dft/dft_grid.F: do not assume s-functions are tightest in LMG
