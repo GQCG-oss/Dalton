@@ -171,7 +171,7 @@ quadfast_data_new(const real* kY, int symY, int spinY,
     res->dftcontr = alloc_mat_MO(1);
     res->pref2sum = 0;
     res->trYsum = res->trZsum = 0; /* initialize them for dogga == FALSE */
-    res->trYtimesZ = 0;
+    res->trYZZYsum = res->trYtimesZ = 0;
 
     res->memblock = calloc(inforb_.norbt*7, sizeof(real));
     /* aliases below */
