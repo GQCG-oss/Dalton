@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: herdrv.F,v 1.11 2001-05-02 07:34:22 ruud Exp $
+C$Id: herdrv.F,v 1.12 2001-05-16 07:33:14 ruud Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -2868,6 +2868,7 @@ C
 C
       LOGICAL BREIT, PROPRI
       DIMENSION WORK(LWORK)
+#include <gnrinf.h>
 #include <inftap.h>
 #include <nuclei.h>
 #include <cbirea.h>
@@ -2883,7 +2884,7 @@ C
 C
 C     For the time being, no Breit-integrals (but soon....)
 C
-      BREIT = .TRUE.
+      BREIT = .NOT.DKTRAN
 CBS  SO FAR ONLY BREIT-PAULI  !!!   Not no-pair
 C
 C     We loop over symmetry-independent center
