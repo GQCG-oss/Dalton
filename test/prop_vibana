@@ -222,7 +222,7 @@ ERROR[6]="HESSIAN NOT CORRECT"
 CRIT1=`$GREP "6739\.467[0-9] * 6011\.118[0-9] * 3177\.245[0-9] MHz" $log | wc -l`
 CRIT2=`$GREP "(0| )\.22480[0-9] * (0| )\.20050[0-9] * (0| )\.10598[0-9] cm\-1" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2`
-CTRL[7]=2
+CTRL[7]=4
 ERROR[7]="ROTATIONAL CONSTANTS NOT CORRECT"
 
 # Vibrational frequencies
