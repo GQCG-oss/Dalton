@@ -1,5 +1,5 @@
 ========================================================================
-50 test jobs have been translated to the new automatic test job system
+62 test jobs have been translated to the new automatic test job system
 All these tests have now been given names instead of numbers:
 
 	test1	energy_nosymm
@@ -52,6 +52,18 @@ All these tests have now been given names instead of numbers:
 	test50	rsp_sreslrso
 	test51	rsp_solvesr
 	test52	rsp_socorr
+	test53	walk_image
+	test54	walk_gradex
+	test55	walk_modeflw
+	test57	prop_spinspin4
+	test58	prop_exci
+	test59	prop_nolondon
+	test60	rsp_solvhyper
+	test61	geoopt_mp2froz
+	test62	walk_vibave
+	test63	walk_vibave2
+	test64	walk_vibave3
+	test65	prop_vibana
 
 ========================================================================
 
@@ -114,6 +126,14 @@ Test Purpose:     Optimization of the first excited state of A1 symmetry
                   vibrational analysis in the final point.
 
 
+geoopt_mp2froz
+--------------
+Molecule:         C6H6
+Wave Function:    MP2 with frozen core
+Test Purpose:     1st order geometry optimization using MP2 frozen
+                  core numerical gradients
+
+
 geoopt_numgrd
 -------------
 Molecule:         H2O
@@ -166,6 +186,21 @@ Wave Function:    SCF
 Test Purpose:     Electronic circular dichroism parameters (ECD)
 
 
+prop_exci
+---------
+Molecule:         H2O
+Wave Function:    MP2 (SOPPA)
+Test Purpose:     Calculation of excitation energies through ABACUS
+
+
+prop_nolondon
+-------------
+Molecule:         H2O
+Wave Function:    MP2 (SOPPA)
+Test Purpose:     Calculation of no-London shielding constants
+                  through ABACUS
+
+
 prop_nucquad
 ------------
 Molecule:         ClO2
@@ -207,6 +242,21 @@ Test Purpose:     Nuclear shieldings and Fermi-contact contribution to
                   spin-spin coupling constants, thus note that only
                   three imaginary singlet response vectors should be
                   solved.
+
+
+prop_spinspin4
+--------------
+Molecule:         H2O
+Wave Function:    MP2 (SOPPA)
+Test Purpose:     Calculation of spin-spin coupling constants
+                  through ABACUS
+
+
+prop_vibana
+-----------
+Molecule:         Pyrimidine cation
+Wave Function:    Open-shell HF
+Test Purpose:     Vibrational analysis
 
 
 prop_vibvcd
@@ -336,6 +386,14 @@ Wave Function:    MCSCF (CAS)
 Test Purpose:     ESR hyperfine couplings with solvent effects
 
 
+rsp_solvhyper
+-------------
+Molecule:         H2O
+Wave Function:    SCF
+Test Purpose:     Non-equilibrium solvation first hyper-
+                  polarizabilities
+
+
 rsp_soppa1excinosymm
 --------------------
 Molecule:         H2O
@@ -414,6 +472,35 @@ Wave Function:    MCSCF (CAS)
 Test Purpose:     Single residue of the quadratic response function
 
 
+rsp_twophot
+-----------
+Molecule:         KUM1
+Wave Function:    SCF
+Test Purpose:     Two-photon absorption
+
+
+walk_gradex
+-----------
+Molecule:         NH3
+Wave Function:    SCF
+Test Purpose:     Locating a transition state following a gradient
+                  extremal
+
+
+walk_image
+----------
+Molecule:         NH3
+Wave Function:    SCF
+Test Purpose:     Locating a transition state using the IMAGE method
+
+
+walk_modeflw
+------------
+Molecule:         NH3
+Wave Function:    SCF
+Test Purpose:     Locating a transition state using mode following
+
+
 walk_polar
 ----------
 Molecule:         H2O
@@ -444,6 +531,28 @@ Test Purpose:     Geometry walk and shielding and magnetizability for a
                   solvated molecule (equilibrium solvation)
 
 
+walk_vibave
+-----------
+Molecule:         NH3
+Wave Function:    SCF
+Test Purpose:     Vibrational average of shieldings, magnetizabilities
+                  and polarizabilities
+
+
+walk_vibave2
+------------
+Molecule:         HF
+Wave Function:    SCF
+Test Purpose:     Vibrational average of shieldings
+
+
+walk_vibave3
+------------
+Molecule:         H2O
+Wave Function:    SCF
+Test Purpose:     Vibrational average of shieldings
+
+
 TEST20:
 Molecule:	CO
 Wave Function:	MCSCF (RAS)
@@ -457,89 +566,10 @@ Wave Function:	MCSCF (CAS)
 Test Purpose:	Restart an MCSCF wave function.
 
 
-TEST53:
-Molecule:	NH3
-Wave Function:	SCF
-Test Purpose:	Locating a transition state using the IMAGE method
-
-
-TEST54:
-Molecule:	NH3
-Wave Function:	SCF
-Test Purpose:	Locating a transition state following a gradient extremal
-
-
-TEST55:
-Molecule:	NH3
-Wave Function:	SCF
-Test Purpose:	Locating a transition state using mode following.
-
-
 TEST56:
 Molecule:       H2CO
 Wave function:  MCSCF (CAS)
 Test purpose:   Non-equilibrium solvation energies
-
-
-TEST57:
-Molecule:       H2O
-Wave function:  MP2 (SOPPA)
-Test purpose:   Spin-spin coupling constants through ABACUS
-
-
-TEST58:
-Molecule:       H2O
-Wave function:  MP2 (SOPPA)
-Test purpose:   Excitation energies through ABACUS
-
-
-TEST59:
-Molecule:       H2O
-Wave function:  MP2 (SOPPA)
-Test purpose:   No-London shielding constants through ABACUS
-
-
-TEST60:
-Molecule:       H2O
-Wave function:  SCF
-Test purpose:   Non-equilibrium solvation first hyperpolarizabilities
-
-
-TEST61:
-Molecule:       Benzene
-Wave function:  MP2 with frozen core
-Test purpose:   Numerical differentiation and 1.order minimization
-
-
-TEST62:
-Molecule:       NH3
-Wave function:  SCF
-Test purpose:   Vibrational average of shieldings, magnetizabilities
-                and polarizabilities
-
-
-TEST63:
-Molecule:       HF
-Wave function:  SCF
-Test purpose:   Vibrational average of shieldings
-
-
-TEST64:
-Molecule:       H2O
-Wave function:  SCF
-Test purpose:   Vibrational average of shieldings
-
-
-TEST65:
-Molecule:       Pyrimidine cation
-Wave function:  Open-shell HF
-Test purpose:   Vibrational analysis
-
-
-TEST66:
-Molecule:       KUM1
-Wave function:  SCF
-Test purpose:   Two-photon absorption
 
 
 TEST67:

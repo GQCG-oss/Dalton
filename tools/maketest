@@ -103,11 +103,13 @@ while (<INPFILE>) {
 # Scientific notation requires special attention
 #
 		$_ = $args[$ielm];
-		if (/\dD.-\d/ || /\dD\d/ || /\dD.+\d/) {
+		if (/\dD.-\d/ || /\dD\d/ || /\dD.+\d/ || /\_D.-\d/ ||
+		    /\_D\d/ || /\_D.+\d/) {
 		    s/D/(D|E)/;
 		    $args[$ielm] = $_;
 		}
-		elsif (/\dE.-\d/ || /\dE\d/ || /\dE.+\d/) {
+		elsif (/\dE.-\d/ || /\dE\d/ || /\dE.+\d/ || /\_E.-\d/ ||
+		       /\_E\d/ || /\_E.+\d/) {
 		    s/E/(D|E)/;
 		    $args[$ielm] = $_;
 		}
