@@ -2356,6 +2356,8 @@ C
       DATA TABVEL/'XDIPVEL ', 'YDIPVEL ', 'ZDIPVEL '/
       DATA TABOVL/'OVERLAP '/
 C
+      CALL QENTER('RSPSYM')
+C
 C GIVE ARBITRARY EXCITATION ENERGIES TO OBTAIN THE RIGHT
 C NUMBER OF LINEAR RESPONSE EQUATIONS THAT HAVE TO BE SOLVED
 C IN CALCULATION OF TRANSITION MOMENTS BETWEEN EXCITED STATES
@@ -3092,6 +3094,7 @@ C
 C
 C *** END OF RSPSYM
 C
+      CALL QEXIT('RSPSYM')
       RETURN
       END
 C  /* Deck anasym */
@@ -3492,6 +3495,8 @@ C
 #include "infrsp.h"
 #include "wrkrsp.h"
 C
+      CALL QENTER('RSPMC ')
+C
 C     ====================================================
 C     Initial checks based on info in Sirius common blocks
 C     (we assume that either the SIRIUS module or the SETSIR
@@ -3650,6 +3655,7 @@ C
 C READ IN MATRICES NEEDED IN RESPONSE CALCULATION
 C
       CALL READT (LUSIFC,NCMOT,CMO)
+      READ (LUSIFC)
       IF (NASHT .GT. 0) THEN
 C        read and unpack DV
          CALL READT (LUSIFC,NNASHX,WRK)
@@ -3761,8 +3767,10 @@ C
      $                  NBAS(ISYM),NORB(ISYM),1,LUPRI)
  60      CONTINUE
       END IF
+C
 C *** End of RSPMC
 C
+      CALL QEXIT('RSPMC ')
       RETURN
       END
 C  /* Deck getref */
