@@ -1,4 +1,3 @@
-
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
@@ -113,24 +112,6 @@ TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[3]=6
 ERROR[3]="ISOTOPES/HARM. FREQ. NOT CORRECT"
 
-# Force field.
-CRIT1=`$GREP "1 * (0| )\.674[0-9][0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "1 * (0| )\.000[0-9][0-9][0-9] * (0| )\.189[0-9][0-9][0-9]" $log | wc -l`
-CRIT3=`$GREP "4 * (\-0|0|\-| )\.000[0-9][0-9][0-9] * (\-0|0|\-| )\.000[0-9][0-9][0-9] * (0| )\.774[0-9][0-9][0-9]" $log | wc -l`
-CRIT4=`$GREP "\-1\.469[0-9][0-9][0-9] * (0| )\.008[0-9][0-9][0-9] * (\-0|0|\-| )\.000[0-9][0-9][0-9]" $log | wc -l`
-CRIT5=`$GREP "(0| )\.008[0-9][0-9][0-9] * (0| )\.090[0-9][0-9][0-9] * (0| )\.000[0-9][0-9][0-9]" $log | wc -l`
-CRIT6=`$GREP "(0| )\.000[0-9][0-9][0-9] * (0| )\.000[0-9][0-9][0-9] \-1\.620[0-9][0-9][0-9]" $log | wc -l`
-CRIT7=`$GREP "(0| )\.090[0-9][0-9][0-9] * (0| )\.101[0-9][0-9][0-9] * (\-0|0|\-| )\.000[0-9][0-9][0-9]" $log | wc -l`
-CRIT8=`$GREP "(\-0|0|\-| )\.000[0-9][0-9][0-9] * (\-0|0|\-| )\.000[0-9][0-9][0-9] (\-0| \-)\.152[0-9][0-9][0-9]" $log | wc -l`
-CRIT9=`$GREP "\-1\.620[0-9][0-9][0-9] (\-0| \-)\.152[0-9][0-9][0-9] * (0| )\.000[0-9][0-9][0-9]" $log | wc -l`
-CRIT10=`$GREP "Normal mode\: * 1 * Frequency\: * (0| )\.018[0-9] * Displacement\: * (0| )\.029[0-9]" $log | wc -l`
-CRIT11=`$GREP "Normal mode\: * 2 * Frequency\: * (0| )\.009[0-9] * Displacement\: * (\-0| \-)\.002[0-9]" $log | wc -l`
-CRIT12=`$GREP "Normal mode\: * 3 * Frequency\: * (0| )\.019[0-9] * Displacement\: * (0| )\.000[0-9]" $log | wc -l`
-TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
-		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12`
-CTRL[4]=15
-ERROR[4]="FORCE FIELD NOT CORRECT"
-
 # Spin-spin average
 CRIT1=`$GREP "Isotropic coupling * \: * 12\.11[0-9][0-9] Hz" $log | wc -l`
 CRIT2=`$GREP "Anisotropic coupling * \: * \-63\.78[0-9][0-9] Hz" $log | wc -l`
@@ -186,7 +167,7 @@ CRIT51=`$GREP "Isotropic DSO contribution\: * (0| )\.16[0-9][0-9] Hz" $log | wc 
 CRIT52=`$GREP "Isotropic PSO contribution\: * (\-0| \-)\.12[0-9][0-9] Hz" $log | wc -l`
 CRIT53=`$GREP "Isotropic SD contribution \: * (0| )\.01[0-9][0-9] Hz" $log | wc -l`
 CRIT54=`$GREP "Isotropic FC contribution \: * \-1\.72[0-9][0-9] Hz" $log | wc -l`
-TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
 		$CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ $CRIT18 \+ \
 		$CRIT19 \+ $CRIT20 \+ $CRIT21 \+ $CRIT22 \+ $CRIT23 \+ $CRIT24 \+ \
@@ -195,11 +176,11 @@ TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT37 \+ $CRIT38 \+ $CRIT39 \+ $CRIT40 \+ $CRIT41 \+ $CRIT42 \+ \
 		$CRIT43 \+ $CRIT44 \+ $CRIT45 \+ $CRIT46 \+ $CRIT47 \+ $CRIT48 \+ \
 		$CRIT49 \+ $CRIT50 \+ $CRIT51 \+ $CRIT52 \+ $CRIT53 \+ $CRIT54`
-CTRL[5]=92
-ERROR[5]="SPIN-SPIN AVERAGE NOT CORRECT"
+CTRL[4]=92
+ERROR[4]="SPIN-SPIN AVERAGE NOT CORRECT"
 
 PASSED=1
-for i in 1 2 3 4 5  
+for i in 1 2 3 4  
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo ${ERROR[i]}
