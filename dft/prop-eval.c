@@ -27,6 +27,7 @@
 #include <unistd.h>
 
 #define __CVERSION__
+#include "general.h"
 #include "integrator.h"
 #include "functionals.h"
 
@@ -1123,7 +1124,7 @@ distribute_lda_bl(DftIntegratorBl *grid, int bllen, int blstart, int blend,
     real * RESTRICT aos = grid->atv;
 
     for(isym=0; isym<grid->nsym; isym++) {
-        int (*restrict blocks)[2] = BASBLOCK(grid,isym);
+        int (*RESTRICT blocks)[2] = BASBLOCK(grid,isym);
         int bl_cnt = grid->bas_bl_cnt[isym];
 
         for(jbl=0; jbl<bl_cnt; jbl++)
@@ -1165,7 +1166,7 @@ distribute_gga_bl(DftIntegratorBl *grid, int bllen, int blstart, int blend,
     real * RESTRICT aos = grid->atv;
 
     for(isym=0; isym<grid->nsym; isym++) {
-        int (*restrict blocks)[2] = BASBLOCK(grid,isym);
+        int (*RESTRICT blocks)[2] = BASBLOCK(grid,isym);
         int nblocks = grid->bas_bl_cnt[isym];
         for(jbl=0; jbl<nblocks; jbl++)
             for(j=blocks[jbl][0]-1; j<blocks[jbl][1]; j++) { 
@@ -1361,7 +1362,7 @@ lin_resp_cb_b_lda(DftIntegratorBl* grid, real * RESTRICT tmp,
     }
 
     for(isym=0; isym<grid->nsym; isym++) {
-        int (*restrict iblocks)[2] = BASBLOCK(grid,isym);
+        int (*RESTRICT iblocks)[2] = BASBLOCK(grid,isym);
         int ibl_cnt = grid->bas_bl_cnt[isym];
         
         for(ibl=0; ibl<ibl_cnt; ibl++)
@@ -1375,7 +1376,7 @@ lin_resp_cb_b_lda(DftIntegratorBl* grid, real * RESTRICT tmp,
         for(i=iblocks[ibl][0]-1; i<iblocks[ibl][1]; i++) { 
             int ioff = i*inforb_.nbast;
 	    int jsym = inforb_.muld2h[data->ksymop-1][isym]-1;
-            int (*restrict jblocks)[2] = BASBLOCK(grid,jsym);
+            int (*RESTRICT jblocks)[2] = BASBLOCK(grid,jsym);
             int jbl_cnt = grid->bas_bl_cnt[jsym];
 	    if (isym<jsym) continue;
             for(jbl=0; jbl<jbl_cnt; jbl++) {
@@ -1430,7 +1431,7 @@ lin_resp_cb_b_gga(DftIntegratorBl* grid, real * RESTRICT tmp,
     }
 
     for(isym=0; isym<grid->nsym; isym++) {
-        int (*restrict iblocks)[2] = BASBLOCK(grid,isym);
+        int (*RESTRICT iblocks)[2] = BASBLOCK(grid,isym);
         int ibl_cnt = grid->bas_bl_cnt[isym];
         
         for(ibl=0; ibl<ibl_cnt; ibl++) {
@@ -1441,7 +1442,7 @@ lin_resp_cb_b_gga(DftIntegratorBl* grid, real * RESTRICT tmp,
                 real *RESTRICT gzi = &aoz[i*bllen];
                 int ioff = i*inforb_.nbast;
                 int jsym = inforb_.muld2h[data->ksymop-1][isym]-1;
-                int (*restrict jblocks)[2] = BASBLOCK(grid,jsym);
+                int (*RESTRICT jblocks)[2] = BASBLOCK(grid,jsym);
                 int jbl_cnt = grid->bas_bl_cnt[jsym];
                 if(isym<jsym) continue;
                 for(jbl=0; jbl<jbl_cnt; jbl++) {

@@ -124,9 +124,10 @@ esac
 #
 # Now we try to check the compiler and find some mathematical libraries. 
 # I don't think I will find more than two possible libraries of interest, 
-# thus define only two for each computer type
-#
-dirlist='/lib /usr/lib /usr/local/lib'
+# thus define only two for each computer type.
+# Check first local libraries (hoping they were installed there for a
+# reason), then system-provided libraries.
+dirlist='/lib /usr/local/lib /usr/lib'
 
 case $WHICH in
     rs6000)   liblist='libessl.a libesslp2.a libblas.a'
@@ -144,9 +145,6 @@ case $WHICH in
     cray_t3e) liblist=''
               complist='f90 cf90 cf77 f77'
               ccmplist='cc';;
-    darwin)   liblist='libatlas.a libblas.a'
-              complist='g77 pgf77'
-              ccmplist='pgcc gcc';;
     nec)      liblist='libblas0_640.a libeispack0_640.a liblinpack0_640.a'
               complist='f77sx'
               ccmplist='ccsx';;
@@ -461,12 +459,9 @@ for testdir in $dirlist; do
       	               blas3="true";;
             libcomplib.sgimath.a) LIB='-lcomplib.sgimath'
 	                          blas3='true';;
-	    libcxml.a) LIB="$LIB -lcxml"
-	               blas3="true"; lapack="true"
-	               cpp="$cpp -DVAR_DXML";;
             libmkl_p3.a) LIB="-L$mkllib -lmkl_p3 -Vaxlib -lguide -lpthread -static"
                          blas3="true";;
-	    libdxml.a) LIB='-ldxml'
+	    lib[cd]xml.a) LIB='-ldxml'
 	               blas3="true"; lapack="true"
 	               cpp='-DVAR_DXML';;
             libblas.a) LIB='-lblas'
@@ -497,6 +492,16 @@ for testdir in $dirlist; do
     done
     test -n "$LIB" && break
   fi
+done
+
+#
+# Look for LAPACK library.
+#
+for testdir in $dirlist; do
+    if test -f $testdir/liblapack.a; then
+        lapack=true; LIB="$LIB -llapack"
+        break
+    fi
 done
 
 if [ -z "$LIB" -a -n "$liblist" ]; then
@@ -896,7 +901,9 @@ case "$WHICH" in
 	      set_parallel_def $mesp
 	      fi
       if [ $F77 = 'ifc' ]; then
-	  if [ $prc = 'i686' ]; then
+          if  grep -q sse2 /proc/cpuinfo 2>/dev/null; then
+              proc='-xW'
+          elif [ $prc = 'i686' ]; then
 	      proc='-tpp6 -xK'
 	  elif [ $prc = 'i586' ]; then
 	      proc='-tpp5 -xi'
@@ -904,7 +911,7 @@ case "$WHICH" in
 	      proc=''
 	  fi
 	  cpp="-DVAR_IFC $cpp"
-	  copt="-O3"
+	  copt="-O3 $proc -ip -restrict -DRESTRICT=restrict"
 	  opt="-O3 $proc -ip -w"
 	  safe_opt="-O1 -w"
       elif [ $F77 = 'pgf77' ]; then
@@ -973,6 +980,7 @@ case "$WHICH" in
                copt="-mcpu=7450"
                copt="$copt -O3 -ffast-math -fexpensive-optimizations -funroll-loops"
                opt="$copt -fno-second-underscore -fno-globals -Wno-globals"
+               copt="$copt -std=c99 -DRESTRICT=restrict"
                def='linux.x'
                inc='-I../include'
                cpp=${cpp}" -DIMPLICIT_NONE"
