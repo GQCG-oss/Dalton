@@ -333,7 +333,7 @@ C ::::::::::::::::::::::::::::::::::::::::::::::
          WRITE(LUPRI,'(/1X,A/1X,A)') TEXT, UNDER
          DO 200 I=1,NINT(ARR(1,0))
             WRITE (LUPRI,11) NINT(ARR(4,I)), (ARR(J,I), J=1,3), ARR(6,I)
- 11         FORMAT (1X, T5, I3, T10, 3F15.8,T2,I3)
+ 11	    FORMAT (1X, T5, I3, T10, 3F15.8,T2,I3)
  200     CONTINUE
          RETURN
       END
@@ -1374,31 +1374,35 @@ C ::: atoms on one side of the origo. All these have positive dot       :::
 C ::: products between themselves.                                      :::
                         V1(1) = 0.0D0
                         V1(2) = 0.0D0
-                        V1(3) = 1.0D0
-                        V3(1) = 0.0D0
-                        V3(2) = 0.0D0
-                        V3(3) = 0.0D0
-                        DO 170 L = J-IORD, J-1
-                           V2(1) = ATMARR(1,L)
-                           V2(2) = ATMARR(2,L)
-                           V2(3) = ATMARR(3,L)
-                           IF (V1(1)*V2(1)+V1(2)*V2(2)+V1(3)*V2(3)
-     &                                               .GT. 0.0D0) THEN
-                              V3(1) = V3(1) + V2(1)
-                              V3(2) = V3(2) + V2(2)
-                              V3(3) = V3(3) + V2(3)
-                           END IF
- 170                    CONTINUE
-                        IF (V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3)
-     &                                       .GT. TOLLRN*TOLLRN) THEN
-                           DO 172 M = IORD/2, MINORD, -1
-                              IF (ROTAXS(MXM,ATMARR,TMPARR,M,
-     &                                                    V3,PROP)) THEN
-                                 CALL ADD2AR(MAXAXS, DRTAXS, M, V3)
-                                 CALL DLDPAX(MAXAXS, DRTAXS)
-                              END IF
- 172                       CONTINUE
-                        END IF
+                        V1(3) = 0.0D0
+			DO 169 ICRDAX = 1, 3
+			   V1(ICRDAX) = 1.0D0
+			   V3(1) = 0.0D0
+			   V3(2) = 0.0D0
+			   V3(3) = 0.0D0
+			   DO 170 L = J-IORD, J-1
+			      V2(1) = ATMARR(1,L)
+			      V2(2) = ATMARR(2,L)
+			      V2(3) = ATMARR(3,L)
+			      IF (V1(1)*V2(1)+V1(2)*V2(2)+V1(3)*V2(3)
+     &                           .GT. 0.0D0) THEN
+				 V3(1) = V3(1) + V2(1)
+				 V3(2) = V3(2) + V2(2)
+				 V3(3) = V3(3) + V2(3)
+			      END IF
+ 170			   CONTINUE
+			   IF (V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3)
+	1			.GT. TOLLRN*TOLLRN) THEN
+			      DO 172 M = IORD/2, MINORD, -1
+				 IF (ROTAXS(MXM,ATMARR,TMPARR,M,
+	1			      V3,PROP)) THEN
+				    CALL ADD2AR(MAXAXS, DRTAXS, M, V3)
+				    CALL DLDPAX(MAXAXS, DRTAXS)
+				 END IF
+ 172			      CONTINUE
+			   END IF
+			   V1(ICRDAX) = 0.0D0
+ 169			CONTINUE
 C ::: To be sure to get all the rotational axes in high order symmetry :::
 C ::: species, all sums and differences of rotational axes are tested  :::
 C ::: as well. Maximum order is the highest order among the axes.      :::
@@ -1737,6 +1741,7 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
          CHARACTER*15 CLASS
          LOGICAL LINMOL, INVMOL
  111     FORMAT(I1)
+ 222	 FORMAT(I2)
          CALL FINDAX(MXM, ATMARR, DRTAXS, TMPARR, .TRUE.)
 C ::: If the number of rotational axes exceeds 10, the number :::
 C ::: of improper rotational axes is likely to be very high   :::
@@ -1791,8 +1796,13 @@ C ::: Number of perpendicular C2 axes is counted. :::
                IF (ITEMP .GE. NINT(DRTAXS(4,1))) THEN
                   IF ((NINT(DMRPLN(1,0)) .GE. 0) .AND.
      &                            (NINT(DMRPLN(4,1)) .EQ. 2)) THEN
-                     CLASS = 'D(nh)'
-                     WRITE(CLASS(3:3),111) NINT(DRTAXS(4,1))
+		     IF (NINT(DRTAXS(4,1)) .LT. 10) THEN
+			CLASS = 'D(nh)'
+			WRITE(CLASS(3:3),111) NINT(DRTAXS(4,1))
+		     ELSE
+			CLASS = 'D(nnh)'
+			WRITE(CLASS(3:4),222) NINT(DRTAXS(4,1))
+		     END IF
                   ELSE
 C ::: Number of perpendicular mirror planes is counted. :::
                      ITEMP = 0
@@ -1800,17 +1810,32 @@ C ::: Number of perpendicular mirror planes is counted. :::
                         IF (NINT(DMRPLN(4,I)) .EQ. 1) ITEMP = ITEMP + 1
  300                 CONTINUE
                      IF (ITEMP .GE. NINT(DRTAXS(4,1))) THEN
-                        CLASS = 'D(nd)'
-                        WRITE(CLASS(3:3),111) NINT(DRTAXS(4,1))
+			IF (NINT(DRTAXS(4,1)) .LT. 10) THEN
+			   CLASS = 'D(nd)'
+			   WRITE(CLASS(3:3),111) NINT(DRTAXS(4,1))
+			ELSE
+			   CLASS = 'D(nnd)'
+			   WRITE(CLASS(3:4),222) NINT(DRTAXS(4,1))
+			END IF
                      ELSE
-                        CLASS = 'D(n)'
-                        WRITE(CLASS(3:3),111) NINT(DRTAXS(4,1))
+			IF (NINT(DRTAXS(4,1)) .LT. 10) THEN
+			   CLASS = 'D(n)'
+			   WRITE(CLASS(3:3),111) NINT(DRTAXS(4,1))
+			ELSE
+			   CLASS = 'D(nn)'
+			   WRITE(CLASS(3:4),222) NINT(DRTAXS(4,1))
+			END IF
                      END IF
                   END IF
                ELSE IF((NINT(DMRPLN(1,0)) .GE. 0) .AND.
      &                               (NINT(DMRPLN(4,1)) .EQ. 2)) THEN
-                  CLASS = 'C(nh)'
-                  WRITE(CLASS(3:3),111) NINT(DRTAXS(4,1))
+		  IF (NINT(DRTAXS(4,1)) .LT. 10) THEN
+		     CLASS = 'C(nh)'
+		     WRITE(CLASS(3:3),111) NINT(DRTAXS(4,1))
+		  ELSE
+		     CLASS = 'C(nnh)'
+		     WRITE(CLASS(3:4),222) NINT(DRTAXS(4,1))
+		  END IF
                ELSE
 C ::: Number of perpendicular mirror planes is counted. :::
                   ITEMP = 0
@@ -1818,8 +1843,13 @@ C ::: Number of perpendicular mirror planes is counted. :::
                      IF (NINT(DMRPLN(4,I)) .EQ. 1) ITEMP = ITEMP + 1
  400              CONTINUE
                   IF (ITEMP .GE. NINT(DRTAXS(1,0))) THEN
-                     CLASS = 'C(nv)'
-                     WRITE(CLASS(3:3),111) NINT(DRTAXS(4,1))
+		     IF (NINT(DRTAXS(4,1)) .LT. 10) THEN
+			CLASS = 'C(nv)'
+			WRITE(CLASS(3:3),111) NINT(DRTAXS(4,1))
+		     ELSE
+			CLASS = 'C(nnv)'
+			WRITE(CLASS(3:4),222) NINT(DRTAXS(4,1))
+		     END IF
                   ELSE
 		     IF (NINT(DIRAXS(1,0)) .LT. 0)
      &                  CALL FNDIMA(MXM, ATMARR, DIRAXS, DRTAXS, TMPARR)
@@ -1831,11 +1861,15 @@ C ::: Number of perpendicular mirror planes is counted. :::
                         ELSE
                            CLASS = 'S(nn)'
                            WRITE(CLASS(3:4),222) 2*NINT(DRTAXS(4,1))
- 222                       FORMAT(I2)
                         END IF
                      ELSE
-                        CLASS = 'C(n)'
-                        WRITE(CLASS(3:3),111) NINT(DRTAXS(4,1))
+			IF (NINT(DRTAXS(4,1)) .LT. 10) THEN
+			   CLASS = 'C(n)'
+			   WRITE(CLASS(3:3),111) NINT(DRTAXS(4,1))
+			ELSE
+			   CLASS = 'C(nn)'
+			   WRITE(CLASS(3:4),222) NINT(DRTAXS(4,1))
+			END IF
                      END IF
                   END IF
                END IF
