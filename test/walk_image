@@ -3,11 +3,13 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# walk_image
 #*# ----------
 #*# Molecule:         NH3
 #*# Wave Function:    SCF
 #*# Test Purpose:     Locating a transition state using the IMAGE method
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT

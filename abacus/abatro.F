@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abatro.F,v 1.2 2001-02-12 18:17:50 vebjornb Exp $
+C$Id: abatro.F,v 1.3 2001-03-07 10:20:35 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck troinp */
@@ -1328,7 +1328,7 @@ C
             END IF
          END IF
   100 CONTINUE
-      IF (DIFMAX.GT.1.D-08) THEN
+      IF (DIFMAX.GT.1.D-06) THEN
          IF (.NOT.LPRINT) THEN
             LPRINT = .TRUE.
             GO TO 10

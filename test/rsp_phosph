@@ -3,11 +3,13 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# rsp_phosph
 #*# ----------
 #*# Molecule:         LiH
 #*# Wave Function:    MCSCF (CAS)
 #*# Test Purpose:     Phosphorescence
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT

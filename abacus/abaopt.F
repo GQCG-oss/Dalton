@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abaopt.F,v 1.2 2001-02-12 18:17:50 vebjornb Exp $
+C$Id: abaopt.F,v 1.3 2001-03-07 10:20:35 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -1852,7 +1852,7 @@ C
             WRITE(LUPRI,'(A)') ' Preoptimization was performed using'//
      &           ' the basis set(s):'
             DO 111 I = 1, IPRE-1
-               WRITE(LUPRI,'(A,A60)') '       ',PREBTX(I)
+               WRITE(LUPRI,'(A,A60)') '     ',PREBTX(I)
  111        CONTINUE
             WRITE(LUPRI,*)
          END IF

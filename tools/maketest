@@ -93,7 +93,12 @@ while (<INPFILE>) {
 		    }
 #
 # Special characters get an extra '\' in front of them
+# The character "'" is very special and should just be replaced with
+# a period (interpreted as any character).
 #
+		    elsif (/'/) {
+			$args[$ielm] = $args[$ielm].chr(46)
+		    }
 		    else {
 			$args[$ielm] = $args[$ielm].chr(92).$_
 		    }
@@ -122,6 +127,27 @@ while (<INPFILE>) {
 		    s/_/[0-9]/g;
 		    $args[$ielm] = $_;
 		}
+#
+# Some computers prints .123 and -.456 instead of 0.123 and -0.456.
+# This has to be dealt with
+#
+		$_ = $args[$ielm];
+		if (/\\\-0\\\.\d/) {
+		    s/\\\-0\\\./\(\\\-0\| \\\-\)\\\./g;
+		    $args[$ielm] = $_;
+		}
+		if (/0\\\.\d/) {
+		    s/0\\\./\(0\| \)\\\./g;
+		    $args[$ielm] = $_;
+		}
+#
+# Special exceptions
+#
+		$_ = $args[$ielm];
+		if (/\d iterations\\\!/) {
+                    s/ iterations\\\!/\( \|  \)iterations\\\!/;
+		    $args[$ielm] = $_;
+                }
 #
 # Check if there's more stuff on this line
 #

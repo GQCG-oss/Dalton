@@ -3,13 +3,16 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# geoopt_delintmin
 #*# ----------------
 #*# Molecule:         C6H5CHO
 #*# Wave Function:    SCF
 #*# Test Purpose:     Minimization in delocalized internal coordinates.
-#*#                   A model Hessian is determined initially, then updated using
-#*#                   the DFP-formula. Baker's convergence criteria are used.
+#*#                   A model Hessian is determined initially, then updated
+#*#                   using the DFP-formula. Baker's convergence criteria
+#*#                   are used.
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT

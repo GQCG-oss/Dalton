@@ -3,6 +3,7 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# prop_spinspin2
 #*# --------------
 #*# Molecule:         H2O
@@ -12,6 +13,7 @@
 #*#                   isotropic and anisotropic coupling constants, namely
 #*#                   the FC-FC and FC-SD terms, thus only solving one
 #*#                   response equation. 
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT

@@ -3,11 +3,13 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# rsp_3rdmom
 #*# ----------
 #*# Molecule:         LiH
 #*# Wave Function:    MCSCF (CAS)
 #*# Test Purpose:     Third moments
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT

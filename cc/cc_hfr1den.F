@@ -56,6 +56,7 @@
       LABEL = LBLOPR(IOPER)
       IF (LABEL.EQ.'HAM0    ') THEN
          CALL DZERO(R1DEN,N2BST(ISYMOPR))
+         CALL QEXIT('CC_HFR1DEN')
          RETURN
       END IF                       
 

@@ -12,24 +12,25 @@
 #########################################################################
 ESSENTIAL=""
 #
-SHORT="energy_direct energy_nosymm energy_symm geoopt_cartsad \
-geoopt_cartsad2 geoopt_constrain1a geoopt_constrain1b geoopt_delintsad \
-geoopt_exci2 geoopt_numgrd geoopt_prop geoopt_prop2 geoopt_redintmin \
-geoopt_vrml prop_ecd prop_exci prop_nolondon \
-prop_spinspin prop_spinspin2 prop_spinspin3 prop_spinspin4 prop_vibvcd \
-rsp_2ndharm rsp_3rdharm rsp_3rdmom rsp_dresqr rsp_exci rsp_excipolar2 \
-rsp_hyperpolar rsp_lrso rsp_lrso2 rsp_phosph rsp_polar rsp_propave \
-rsp_socorr rsp_solvhyper rsp_soppa1excinosymm rsp_soppa1excisymm \
-rsp_soppa3excinosymm rsp_soppa3excisymm rsp_soppafcnosymm \
-rsp_soppafcsymm rsp_soppapolar rsp_soppapolarnosymm rsp_soppapolarsymm \
-rsp_sreslrso rsp_sresqr walk_gradex walk_image walk_modeflw walk_polar \
-walk_vibave walk_vibave2 walk_vibave3"
+SHORT="energy_direct energy_nosymm energy_restart energy_symm \
+geoopt_cartsad geoopt_cartsad2 geoopt_constrain1a geoopt_constrain1b \
+geoopt_delintsad geoopt_exci2 geoopt_numgrd geoopt_preopt geoopt_prop \
+geoopt_prop2 geoopt_redintmin geoopt_vrml prop_ecd prop_exci \
+prop_nolondon prop_spinspin prop_spinspin2 prop_spinspin3 prop_spinspin4 \
+prop_vibvcd rsp_2ndharm rsp_3rdharm rsp_3rdmom rsp_dresqr rsp_exci \
+rsp_excipolar2 rsp_hyperpolar rsp_lrso rsp_lrso2 rsp_phosph rsp_polar \
+rsp_propave rsp_socorr rsp_solvhyper rsp_soppa1excinosymm \
+rsp_soppa1excisymm rsp_soppa3excinosymm rsp_soppa3excisymm \
+rsp_soppafcnosymm rsp_soppafcsymm rsp_soppapolar rsp_soppapolarnosymm \
+rsp_soppapolarsymm rsp_sreslrso rsp_sresqr walk_gradex walk_image \
+walk_modeflw walk_polar walk_vibave walk_vibave2 walk_vibave3"
 #
-MEDIUM="geoopt_cartmin geoopt_dckerr geoopt_delintmin geoopt_exci \
-geoopt_mp2froz geoopt_prop3 geoopt_redintsad geoopt_symbrk prop_nucquad \
-prop_roa rsp_dckerr rsp_esr rsp_esr2 rsp_solvesr walk_polar2"
+MEDIUM="energy_corehole energy_solv geoopt_cartmin geoopt_dckerr \
+geoopt_delintmin geoopt_exci geoopt_mp2froz geoopt_redintsad \
+geoopt_symbrk prop_nucquad prop_roa rsp_dckerr rsp_esr rsp_esr2"
 #
-LONG="prop_vibana rsp_excipolar rsp_twophot walk_solvmag"
+LONG="geoopt_prop3 prop_vibana rsp_excipolar rsp_solvesr rsp_twophot \
+walk_polar2 walk_solvmag"
 #
 PARALLEL="energy_parallel"
 #
@@ -40,29 +41,31 @@ ALL="$SHORT $MEDIUM $LONG"
 #########################################################################
 usage() {
  cat << %EOF%
-usage: TEST [-h|-help|--help] [-keep] [-reftest] [-bell] [-bench]
-            [-param "option list"] [-dalton script] [-list listing-file] testcase
+usage: TEST [-h|-help|--help] [-keep] [-reftest] [-bell] [-benchmark]
+            [-param "option list"] [-dalton script] [-log logfile] testcase
 
        -h | -help | --help  : show this help description
-       -keep                : keep *.mol *.dal *.log files
-       -reftest             : test reference files; do not run any
+       -keep                : keep *.mol, *.dal, *.check and *.log files
+       -reftest             : test reference file(s); do not run any
                               calculations
-       -bell                : sound bell each a testcase fails
-       -bench               : print CPU time for each test
-       -param "option list" : pass "option list" to dalton script
+       -bell                : sound bell each time a test fails
+       -benchmark           : print CPU time for each testcase as part of
+                              the summary
+       -param "option list" : pass "option list" to dalton-script
        -dalton script       : use script instead of the default
                               dalton-script "../dalton"
-       -list listing-file   : write output into listing-file
+       -log logfile         : write output into logfile instead of the
+                              default "TESTLOG"
 
        where testcase might be one of the following:
-          essential            -- run a minimal set of essential test jobs
-          parallel             -- run all parallel test jobs
-          short                -- run all short test jobs
-          medium               -- run all medium length test jobs
-          long                 -- run all long test jobs
-          all                  -- run all non-parallel test jobs
+          essential            -- run a minimal set of essential testcases
+          parallel             -- run all parallel testcases
+          short                -- run all short testcases
+          medium               -- run all medium length testcases
+          long                 -- run all long testcases
+          all                  -- run all non-parallel testcases
                                   (= short + medium + long)
-          <case1 [case2] ...>  -- run only the specified test case(s)
+          <case1 [case2] ...>  -- run only the specified testcase(s)
 %EOF%
 exit 1
 }
@@ -91,7 +94,8 @@ paramlist=""
 reftest=""
 bell=""
 benchmark=""
-listing="RESULTS"
+listing="TESTLOG"
+emptystring="                                "
 
 if [ `uname` = IRIX64 ]; then
    GREP="egrep"
@@ -103,12 +107,12 @@ while [ -n "`echo $1 | grep '-'`" ]; do
    case $1 in
      "-h" | "-help" | "--help" ) help="true" ; break;;
      "-dalton" )  shift; DALTON=$1; shift;;
-     "-list" ) shift; listing=$1; shift;;
+     "-log" ) shift; listing=$1; shift;;
      "-keep" ) keep="true"; shift;;
      "-param" ) shift; paramlist="$1"; shift;;
      "-reftest" ) reftest="true"; shift;;
      "-bell" ) bell="true"; shift;;
-     "-bench" ) benchmark="true"; shift;;
+     "-benchmark" ) benchmark="true"; shift;;
      * ) usage;;
    esac
 done
@@ -163,70 +167,126 @@ problems=""
 numresult=0
 for item in ${testcase}
 do
+  trouble=0
   myprint "###########################################################"
   myprint "start now with test $item:"
   myprint "-----------------------------------------------------------"
   chmod +x $item
   $item
-  rm -f $item.log
-  chmod +x $item.check
-
-  if [ "$reftest" = "true" ]; then
-      myprint ""
-      myprint "evaluate reference output file $item.ref:"
-      myprint "-----------------------------------------------------------"
-      compressed="false"
-      if [ ! -e $item.ref ]; then
-          if [ -e $item.ref.gz ]; then
-              compressed="true"
-              gunzip -f $item.ref.gz
-          fi
-      fi
-      checkout=`$item.check $item.ref | tee -a $listing`
-      if [ "$benchmark" = "true" ]; then
-          if [ `$GREP "CPU  time used in DALTON" $item.ref | wc -l` = 1 ]; then
-              CPU_usage=`$GREP "CPU  time used in DALTON" $item.ref | sed s/">>>> Total CPU  time used in DALTON\:"/""/`
-          else
-              CPU_usage="N/A"
-          fi
-      fi
-      if [ "$compressed" = "true" ]; then
-	  gzip -f --best $item.ref
-      fi
+# Check if this is a multistep job
+  numsteps=1
+  if [ -e $item'__'1.dal ]; then
+      multi=1
+      numsteps=`ls $item\_\_[0-9].dal | wc -l`
+      myprint "This is a multi-step job consisting of $numsteps steps"
+      rm -f $item'__'[0-9]'_'$item.log
+      chmod +x $item'__'[0-9].check
   else
-    $DALTON $paramlist -ext log $item $item | \
-      grep -v '\*\*\**' | \
-      grep -v 'OUTPUT FROM' | grep -v 'Version' | grep -v 'PID' | \
-      grep -v '^$' | tee -a $listing
-      myprint ""
-      myprint "evaluate output file $item.log:"
-      myprint "-----------------------------------------------------------"
-      checkout=`$item.check $item.log | tee -a $listing`
-      if [ "$benchmark" = "true" ]; then
-          if [ `$GREP "CPU  time used in DALTON" $item.log | wc -l` = 1 ]; then
-              CPU_usage=`$GREP "CPU  time used in DALTON" $item.log | sed s/">>>> Total CPU  time used in DALTON\:"/""/`
+      multi=0
+      rm -f $item.log
+      chmod +x $item.check
+  fi
+# Multi-step tests loop over the different jobsteps, regular tests just
+# go through this once
+  step=1
+  while [ "$step" -le "$numsteps" ]
+  do
+      if [ "$multi" -eq 1 ]; then
+          if [ "$step" -gt 1 ]; then
+              myprint ""
+              myprint "start $item step $step:"
+              myprint "-----------------------------------------------------------"
+          fi
+          molfile=$item
+          dalfile=$item'__'$step
+          logfile=$item'__'$step'_'$item.log
+          checkfile=$item'__'$step.check
+          reffile=$item'__'$step.ref
+      else
+          molfile=$item
+          dalfile=$item
+          logfile=$item.log
+          checkfile=$item.check
+          reffile=$item.ref
+      fi
+# If it's a reftest, no calculation uis performed
+      if [ "$reftest" = "true" ]; then
+          myprint ""
+          myprint "evaluate reference output file $reffile:"
+          myprint "-----------------------------------------------------------"
+          compressed="false"
+          if [ ! -e $reffile ]; then
+              if [ -e $reffile.gz ]; then
+                  compressed="true"
+                  gunzip -f $reffile.gz
+              fi
+          fi
+          checkout=`$checkfile $reffile | tee -a $listing`
+          if [ "$benchmark" = "true" ]; then
+              if [ `$GREP "CPU  time used in DALTON" $reffile | wc -l` = 1 ]; then
+                  CPU_usage=`$GREP "CPU  time used in DALTON" $reffile | sed s/">>>> Total CPU  time used in DALTON\:"/""/`
+              else
+                  CPU_usage="N/A"
+              fi
+          fi
+          if [ "$compressed" = "true" ]; then
+              gzip -f --best $reffile
+          fi
+      else
+          if [ "$step" -eq "$numsteps" ]; then
+              $DALTON $paramlist -ext log $dalfile $molfile | \
+              grep -v '\*\*\**' | \
+              grep -v 'OUTPUT FROM' | grep -v 'Version' | grep -v 'PID' | \
+              grep -v '^$' | tee -a $listing
           else
-              CPU_usage="N/A"
+              $DALTON -D $paramlist -ext log $dalfile $molfile | \
+              grep -v '\*\*\**' | \
+              grep -v 'OUTPUT FROM' | grep -v 'Version' | grep -v 'PID' | \
+              grep -v '^$' | tee -a $listing
+          fi
+          myprint ""
+          myprint "evaluate output file $logfile:"
+          myprint "-----------------------------------------------------------"
+          checkout=`$checkfile $logfile | tee -a $listing`
+          if [ "$benchmark" = "true" ]; then
+              if [ `$GREP "CPU  time used in DALTON" $logfile | wc -l` = 1 ]; then
+                  CPU_usage=`$GREP "CPU  time used in DALTON" $logfile | sed s/">>>> Total CPU  time used in DALTON\:"/""/`
+              else
+                  CPU_usage="N/A"
+              fi
           fi
       fi
-  fi
-  if [ "$benchmark" = "true" ]; then
-      numresult=`expr $numresult \+ 1`
-      testlist[$numresult]="$item"
-      timelist[$numresult]="$CPU_usage"
-  fi
-  echo $checkout
-  passed=`echo $checkout | grep "TEST ENDED PROPERLY"`
-  if [ -n "$passed" ]; then
-    if [ "$keep" = "false" ]; then
-      rm -f $item.dal $item.mol $item.check $item.log
-    fi
-  else
-    if [ "$bell" = "true" ]; then
-      echo "\a"
-    fi
-    passedall="THERE IS A PROBLEM IN TEST CASE"
-    problems="$problems $item"
+      if [ "$benchmark" = "true" ]; then
+          numresult=`expr $numresult \+ 1`
+          if [ $step -eq 1 ]; then
+              testlist[$numresult]="$item"
+          else
+              testlist[$numresult]="...step$step"
+          fi
+          timelist[$numresult]="$CPU_usage"
+      fi
+      echo $checkout
+      passed=`echo $checkout | grep "TEST ENDED PROPERLY"`
+      if [ -n "$passed" ]; then
+        if [ "$keep" = "false" ]; then
+          rm -f $dalfile.dal $checkfile $logfile
+        fi
+      else
+        trouble=`expr $trouble \+ 1`
+        if [ "$bell" = "true" ]; then
+          echo "\a"
+        fi
+        passedall="THERE IS A PROBLEM IN TEST CASE"
+        if [ "$trouble" -eq 1 ]; then
+            problems="$problems $item"
+        fi
+      fi
+    step=`expr $step \+ 1`
+  done
+  if [ "$trouble" -eq 0 ]; then
+      if [ "$keep" = "false" ]; then
+          rm -f $molfile.mol
+      fi
   fi
 done
 
@@ -241,7 +301,6 @@ myprint ""
 
 if [ "$benchmark" = "true" ]; then
     if [ "$numresult" -gt 0  ]; then
-        emptystring="                                "
         ind=1
         while [ "$ind" -le "$numresult" ]
         do

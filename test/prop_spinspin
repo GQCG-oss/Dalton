@@ -3,11 +3,13 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# prop_spinspin
 #*# -------------
 #*# Molecule:         H2O
 #*# Wave Function:    MCSCF (CAS)
 #*# Test Purpose:     Spin-spin coupling constants
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT

@@ -3,6 +3,7 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# geoopt_exci2
 #*# ------------
 #*# Molecule:         LiH
@@ -10,6 +11,7 @@
 #*# Test Purpose:     Optimization of the first excited state of A1 symmetry
 #*#                   using the .OPTIMIZE module (1st order), and with a
 #*#                   vibrational analysis in the final point.
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT

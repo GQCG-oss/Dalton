@@ -3,11 +3,13 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# rsp_sresqr
 #*# ----------
 #*# Molecule:         LiH
 #*# Wave Function:    MCSCF (CAS)
 #*# Test Purpose:     Single residue of the quadratic response function
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT

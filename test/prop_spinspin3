@@ -3,6 +3,7 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# prop_spinspin3
 #*# --------------
 #*# Molecule:         H2O
@@ -11,6 +12,7 @@
 #*#                   spin-spin coupling constants, thus note that only
 #*#                   three imaginary singlet response vectors should be
 #*#                   solved. 
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT

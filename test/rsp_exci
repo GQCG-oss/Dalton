@@ -3,11 +3,13 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# rsp_exci
 #*# --------
 #*# Molecule:         LiH
 #*# Wave Function:    MCSCF (CAS)
 #*# Test Purpose:     Excitation energy
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT

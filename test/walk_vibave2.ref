@@ -73,7 +73,7 @@
      "Dalton release 1.2 (2001), an electronic structure program"
 
  
-     Date and time (Linux)  : Tue Feb 27 16:48:49 2001
+     Date and time (Linux)  : Sun Mar  4 13:39:02 2001
      Host name              : slater.uio.no                           
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
@@ -223,7 +223,7 @@ Point group: C1
 
  >>> Time used in FRMSUP is   0.03 seconds
 
- >>>> Total CPU  time used in HERMIT:   1.08 seconds
+ >>>> Total CPU  time used in HERMIT:   1.10 seconds
  >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
@@ -234,7 +234,7 @@ Point group: C1
  ************************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 27 16:48:50 2001
+     Date and time (Linux)  : Sun Mar  4 13:39:03 2001
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
@@ -335,7 +335,7 @@ Point group: C1
      Final gradient norm:           0.000000000031
 
  
-     Date and time (Linux)  : Tue Feb 27 16:48:50 2001
+     Date and time (Linux)  : Sun Mar  4 13:39:03 2001
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -377,10 +377,10 @@ Point group: C1
 
 
  >>>> Total CPU  time used in SIRIUS :      0.13 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 27 16:48:50 2001
+     Date and time (Linux)  : Sun Mar  4 13:39:04 2001
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -474,7 +474,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 27 16:48:50 2001
+     Date and time (Linux)  : Sun Mar  4 13:39:04 2001
      Host name              : slater.uio.no                           
 
 
@@ -654,7 +654,7 @@ Point group: C1
 
 
 
- >>> Time used in ONEINT is   0.28 seconds
+ >>> Time used in ONEINT is   0.29 seconds
 
 
 
@@ -785,7 +785,7 @@ Point group: C1
 
 
 
- >>> Time used in MAGINT is   1.05 seconds
+ >>> Time used in MAGINT is   1.04 seconds
 
 1 <<<<<<<<<< Output from TWOEXP >>>>>>>>>> 
 
@@ -836,14 +836,14 @@ Point group: C1
   Number of primitive integrals (counting zeros) :     1567335
 
 
-  Average time for non-zero (written) integrals:   69.7 microseconds
-  Average time for zero/non-zero integrals     :   15.2 microseconds
-  Average time for primitive integrals         :    1.4 microseconds
+  Average time for non-zero (written) integrals:   68.7 microseconds
+  Average time for zero/non-zero integrals     :   15.0 microseconds
+  Average time for primitive integrals         :    1.3 microseconds
 
   Average reduction of primitive ODC vectors:    0.97 %
   Average reduction of contracted ODC vectors:   0.00 %
 
- >>> Time used in TWOINT is   2.12 seconds
+ >>> Time used in TWOINT is   2.09 seconds
 
 
 
@@ -895,7 +895,7 @@ Point group: C1
 
 
 
- >>> Time used in TWOEXP is   2.12 seconds
+ >>> Time used in TWOEXP is   2.09 seconds
 
 
 
@@ -944,9 +944,9 @@ Point group: C1
   Number of primitive integrals (counting zeros) :     1567335
 
 
-  Average time for non-zero (written) integrals:   38.8 microseconds
-  Average time for zero/non-zero integrals     :    8.4 microseconds
-  Average time for primitive integrals         :    0.8 microseconds
+  Average time for non-zero (written) integrals:   99.6 microseconds
+  Average time for zero/non-zero integrals     :   21.7 microseconds
+  Average time for primitive integrals         :    1.9 microseconds
 
   Average reduction of primitive ODC vectors:    0.97 %
   Average reduction of contracted ODC vectors:   0.00 %
@@ -1021,13 +1021,13 @@ Point group: C1
  >>> Time used in GETFD  is   0.00 seconds
 
 
- >>> Time used in GETSD  is   0.01 seconds
+ >>> Time used in GETSD  is   0.00 seconds
 
 
  >>> Time used in ABARHS is   0.00 seconds
 
 
- >>> Time used in RHSIDE is   1.98 seconds
+ >>> Time used in RHSIDE is   3.83 seconds
 
   <<<<<<<<<< OUTPUT FROM REORT >>>>>>>>>> 
 
@@ -1298,7 +1298,7 @@ Point group: C1
              ANRRED       9      0.00
              ANRNEX       9      0.00
 
- >>> Time used in ANRCTL is   0.06 seconds
+ >>> Time used in ANRCTL is   0.07 seconds
 
 
  >>> Time used in RESPON is   0.07 seconds
@@ -1324,7 +1324,7 @@ Point group: C1
  Number of response frequencies:     1
  Convergence threshold:     1.00D-06
 
- WORKING AREA IN TRANSFORMATION SECTION   14998962
+ WORKING AREA IN TRANSFORMATION SECTION   19998962
 
  TRANSFORMATION SECTION: PARAMETER =   4
  MAXIMUM NUMBER OF AO INTEGRALS =     139656
@@ -1560,7 +1560,7 @@ Point group: C1
 
 
 
- >>> Time used in RELAX  is   0.00 seconds
+ >>> Time used in RELAX  is   0.01 seconds
 
 
 
@@ -1587,7 +1587,7 @@ Point group: C1
 
  Largest deviation from tra-rot symmetry is in gradient element  6:  0.00E+00
 
- >>> Time used in TROINV is   0.01 seconds
+ >>> Time used in TROINV is   0.00 seconds
 
 
 
@@ -1597,7 +1597,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 27 16:48:56 2001
+     Date and time (Linux)  : Sun Mar  4 13:39:12 2001
      Host name              : slater.uio.no                           
 
 
@@ -2064,23 +2064,23 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
   F    y     0.00000000   381.49945838     0.00000000
   F    z     0.00000000     0.00000000   481.77723476
 
- >>> Time used in WLKDRV is   0.47 seconds
+ >>> Time used in WLKDRV is   0.10 seconds
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- MAGINT     00:00:01      17 %
- TWOTEX     00:00:02      34 %
- RHSIDE     00:00:02      32 %
+ MAGINT     00:00:01      13 %
+ TWOTEX     00:00:02      27 %
+ RHSIDE     00:00:04      50 %
 
- TOTAL      00:00:06     100 %
+ TOTAL      00:00:08     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   6.27 seconds
- >>>> Total wall time used in ABACUS:   6.00 seconds
+ >>>> Total CPU  time used in ABACUS:   7.72 seconds
+ >>>> Total wall time used in ABACUS:   8.00 seconds
 
 - End of Static Property Section
 
@@ -2435,8 +2435,8 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
  >>> Time used in FRMSUP is   0.04 seconds
 
- >>>> Total CPU  time used in HERMIT:   2.04 seconds
- >>>> Total wall time used in HERMIT:   3.00 seconds
+ >>>> Total CPU  time used in HERMIT:   1.20 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
@@ -2446,7 +2446,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
  ************************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 27 16:49:00 2001
+     Date and time (Linux)  : Sun Mar  4 13:39:13 2001
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
@@ -2562,7 +2562,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
      Final gradient norm:           0.000000000056
 
  
-     Date and time (Linux)  : Tue Feb 27 16:49:00 2001
+     Date and time (Linux)  : Sun Mar  4 13:39:13 2001
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -2603,11 +2603,11 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.10 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.09 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 27 16:49:00 2001
+     Date and time (Linux)  : Sun Mar  4 13:39:13 2001
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -2658,7 +2658,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
 
  
-     Date and time (Linux)  : Tue Feb 27 16:49:00 2001
+     Date and time (Linux)  : Sun Mar  4 13:39:13 2001
      Host name              : slater.uio.no                           
 
 
@@ -2898,7 +2898,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
 
 
- >>> Time used in MAGINT is   1.04 seconds
+ >>> Time used in MAGINT is   1.05 seconds
 
 1 <<<<<<<<<< Output from TWOEXP >>>>>>>>>> 
 
@@ -2949,14 +2949,14 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
   Number of primitive integrals (counting zeros) :     1567335
 
 
-  Average time for non-zero (written) integrals:   27.3 microseconds
-  Average time for zero/non-zero integrals     :    5.9 microseconds
+  Average time for non-zero (written) integrals:   26.3 microseconds
+  Average time for zero/non-zero integrals     :    5.7 microseconds
   Average time for primitive integrals         :    0.5 microseconds
 
   Average reduction of primitive ODC vectors:    1.03 %
   Average reduction of contracted ODC vectors:   0.00 %
 
- >>> Time used in TWOINT is   0.83 seconds
+ >>> Time used in TWOINT is   0.80 seconds
 
 
 
@@ -2991,7 +2991,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
                    Molecular gradient norm:  6.91E-02
 
- >>> Time used in TWOEXP is   0.83 seconds
+ >>> Time used in TWOEXP is   0.80 seconds
 
 
 
@@ -3040,9 +3040,9 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
   Number of primitive integrals (counting zeros) :     1567335
 
 
-  Average time for non-zero (written) integrals:   77.6 microseconds
-  Average time for zero/non-zero integrals     :   16.9 microseconds
-  Average time for primitive integrals         :    1.5 microseconds
+  Average time for non-zero (written) integrals:   38.5 microseconds
+  Average time for zero/non-zero integrals     :    8.4 microseconds
+  Average time for primitive integrals         :    0.7 microseconds
 
   Average reduction of primitive ODC vectors:    1.03 %
   Average reduction of contracted ODC vectors:   0.00 %
@@ -3066,7 +3066,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
  >>> Time used in ABARHS is   0.01 seconds
 
 
- >>> Time used in ABARHS is   0.01 seconds
+ >>> Time used in ABARHS is   0.00 seconds
 
 
  >>> Time used in ABARHS is   0.00 seconds
@@ -3104,7 +3104,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
  >>> Time used in PSORHS is   0.10 seconds
 
 
- >>> Time used in RHSIDE is   3.07 seconds
+ >>> Time used in RHSIDE is   1.88 seconds
 
 
 
@@ -3127,7 +3127,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
  Number of response frequencies:     1
  Convergence threshold:     1.00D-04
 
- WORKING AREA IN TRANSFORMATION SECTION   14998962
+ WORKING AREA IN TRANSFORMATION SECTION   19998962
 
  TRANSFORMATION SECTION: PARAMETER =   4
  MAXIMUM NUMBER OF AO INTEGRALS =     139656
@@ -3389,7 +3389,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
 
  
-     Date and time (Linux)  : Tue Feb 27 16:49:06 2001
+     Date and time (Linux)  : Sun Mar  4 13:39:17 2001
      Host name              : slater.uio.no                           
 
 
@@ -3797,16 +3797,16 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
  CPU time statistics for ABACUS
  ------------------------------
 
- MAGINT     00:00:01      19 %
- RHSIDE     00:00:03      56 %
- REST       00:00:02      35 %
+ MAGINT     00:00:01      24 %
+ RHSIDE     00:00:02      44 %
+ REST       00:00:02      44 %
 
- TOTAL      00:00:06     100 %
+ TOTAL      00:00:04     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   5.53 seconds
- >>>> Total wall time used in ABACUS:   6.00 seconds
+ >>>> Total CPU  time used in ABACUS:   4.32 seconds
+ >>>> Total wall time used in ABACUS:   5.00 seconds
 
 - End of Static Property Section
 
@@ -4146,7 +4146,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
 
 
- >>> Time used in TWOINT is   0.43 seconds
+ >>> Time used in TWOINT is   0.44 seconds
 
 
 
@@ -4159,10 +4159,10 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
  Threshold for discarding integrals :  1.00D-15
 
- >>> Time used in FRMSUP is   0.04 seconds
+ >>> Time used in FRMSUP is   0.03 seconds
 
  >>>> Total CPU  time used in HERMIT:   1.20 seconds
- >>>> Total wall time used in HERMIT:   2.00 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
@@ -4172,7 +4172,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
  ************************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 27 16:49:08 2001
+     Date and time (Linux)  : Sun Mar  4 13:39:19 2001
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
@@ -4289,7 +4289,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
      Final gradient norm:           0.000000000007
 
  
-     Date and time (Linux)  : Tue Feb 27 16:49:08 2001
+     Date and time (Linux)  : Sun Mar  4 13:39:19 2001
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -4330,11 +4330,11 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.10 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.11 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 27 16:49:08 2001
+     Date and time (Linux)  : Sun Mar  4 13:39:19 2001
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -4385,7 +4385,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
 
  
-     Date and time (Linux)  : Tue Feb 27 16:49:08 2001
+     Date and time (Linux)  : Sun Mar  4 13:39:19 2001
      Host name              : slater.uio.no                           
 
 
@@ -4494,7 +4494,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
 
 
- >>> Time used in ONEINT is   0.14 seconds
+ >>> Time used in ONEINT is   0.15 seconds
 
 
 
@@ -4676,14 +4676,14 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
   Number of primitive integrals (counting zeros) :     1567335
 
 
-  Average time for non-zero (written) integrals:   27.0 microseconds
-  Average time for zero/non-zero integrals     :    5.9 microseconds
+  Average time for non-zero (written) integrals:   26.6 microseconds
+  Average time for zero/non-zero integrals     :    5.8 microseconds
   Average time for primitive integrals         :    0.5 microseconds
 
   Average reduction of primitive ODC vectors:    0.84 %
   Average reduction of contracted ODC vectors:   0.00 %
 
- >>> Time used in TWOINT is   0.82 seconds
+ >>> Time used in TWOINT is   0.81 seconds
 
 
 
@@ -4718,7 +4718,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
                    Molecular gradient norm:  2.62E-02
 
- >>> Time used in TWOEXP is   0.82 seconds
+ >>> Time used in TWOEXP is   0.81 seconds
 
 
 
@@ -4767,9 +4767,9 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
   Number of primitive integrals (counting zeros) :     1567335
 
 
-  Average time for non-zero (written) integrals:   39.1 microseconds
-  Average time for zero/non-zero integrals     :    8.5 microseconds
-  Average time for primitive integrals         :    0.8 microseconds
+  Average time for non-zero (written) integrals:   38.5 microseconds
+  Average time for zero/non-zero integrals     :    8.4 microseconds
+  Average time for primitive integrals         :    0.7 microseconds
 
   Average reduction of primitive ODC vectors:    0.84 %
   Average reduction of contracted ODC vectors:   0.00 %
@@ -4787,10 +4787,10 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
  >>> Time used in GETFD  is   0.52 seconds
 
 
- >>> Time used in GETSD  is   0.07 seconds
+ >>> Time used in GETSD  is   0.08 seconds
 
 
- >>> Time used in ABARHS is   0.01 seconds
+ >>> Time used in ABARHS is   0.00 seconds
 
 
  >>> Time used in ABARHS is   0.01 seconds
@@ -4828,10 +4828,10 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
 
 
- >>> Time used in PSORHS is   0.10 seconds
+ >>> Time used in PSORHS is   0.11 seconds
 
 
- >>> Time used in RHSIDE is   1.90 seconds
+ >>> Time used in RHSIDE is   1.91 seconds
 
 
 
@@ -4854,7 +4854,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
  Number of response frequencies:     1
  Convergence threshold:     1.00D-04
 
- WORKING AREA IN TRANSFORMATION SECTION   14998962
+ WORKING AREA IN TRANSFORMATION SECTION   19998962
 
  TRANSFORMATION SECTION: PARAMETER =   4
  MAXIMUM NUMBER OF AO INTEGRALS =     139656
@@ -5118,7 +5118,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
 
  
-     Date and time (Linux)  : Tue Feb 27 16:49:12 2001
+     Date and time (Linux)  : Sun Mar  4 13:39:23 2001
      Host name              : slater.uio.no                           
 
 
@@ -5591,7 +5591,7 @@ Atom : F
 
  Numerical differentiation complete.
 
- >>> Time used in WLKDRV is   0.14 seconds
+ >>> Time used in WLKDRV is   0.15 seconds
 
 
 
@@ -5606,7 +5606,7 @@ Atom : F
 
 
 
- >>>> Total CPU  time used in ABACUS:   4.34 seconds
+ >>>> Total CPU  time used in ABACUS:   4.35 seconds
  >>>> Total wall time used in ABACUS:   4.00 seconds
 
 - End of Static Property Section
@@ -5939,7 +5939,7 @@ F     0.0000000000000000  0.0000000000000000  0.0241892414000000       *
 
 
 
- >>> Time used in ONEDRV is   0.05 seconds
+ >>> Time used in ONEDRV is   0.14 seconds
 
 
  Number of two-electron integrals written:       30407 ( 21.8% )
@@ -5947,7 +5947,7 @@ F     0.0000000000000000  0.0000000000000000  0.0241892414000000       *
 
 
 
- >>> Time used in TWOINT is   0.48 seconds
+ >>> Time used in TWOINT is   0.44 seconds
 
 
 
@@ -5962,8 +5962,8 @@ F     0.0000000000000000  0.0000000000000000  0.0241892414000000       *
 
  >>> Time used in FRMSUP is   0.03 seconds
 
- >>>> Total CPU  time used in HERMIT:   1.23 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total CPU  time used in HERMIT:   1.29 seconds
+ >>>> Total wall time used in HERMIT:   2.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
@@ -5973,7 +5973,7 @@ F     0.0000000000000000  0.0000000000000000  0.0241892414000000       *
  ************************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 27 16:49:13 2001
+     Date and time (Linux)  : Sun Mar  4 13:39:25 2001
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
@@ -6089,7 +6089,7 @@ F     0.0000000000000000  0.0000000000000000  0.0241892414000000       *
      Final gradient norm:           0.000000000062
 
  
-     Date and time (Linux)  : Tue Feb 27 16:49:13 2001
+     Date and time (Linux)  : Sun Mar  4 13:39:25 2001
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -6134,7 +6134,7 @@ F     0.0000000000000000  0.0000000000000000  0.0241892414000000       *
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 27 16:49:13 2001
+     Date and time (Linux)  : Sun Mar  4 13:39:25 2001
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -6142,11 +6142,11 @@ F     0.0000000000000000  0.0000000000000000  0.0241892414000000       *
 
 
  
-     Date and time (Linux)  : Tue Feb 27 16:49:13 2001
+     Date and time (Linux)  : Sun Mar  4 13:39:25 2001
      Host name              : slater.uio.no                           
 
  
-     Date and time (Linux)  : Tue Feb 27 16:49:14 2001
+     Date and time (Linux)  : Sun Mar  4 13:39:25 2001
      Host name              : slater.uio.no                           
 
 
@@ -6159,12 +6159,12 @@ F     0.0000000000000000  0.0000000000000000  0.0241892414000000       *
 
 
  >>>> Total CPU  time used in ABACUS:   0.28 seconds
- >>>> Total wall time used in ABACUS:   1.00 seconds
+ >>>> Total wall time used in ABACUS:   0.00 seconds
 
 - End of Static Property Section
- >>>> Total CPU  time used in DALTON:  22.46 seconds
- >>>> Total wall time used in DALTON:  25.00 seconds
+ >>>> Total CPU  time used in DALTON:  21.91 seconds
+ >>>> Total wall time used in DALTON:  23.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 27 16:49:14 2001
+     Date and time (Linux)  : Sun Mar  4 13:39:25 2001
      Host name              : slater.uio.no                           

@@ -1,10 +1,10 @@
-*Comdeck datapow $Revision: 1.1.1.1 $
-      parameter (Lpowmax=6) 
-      dimension ixyzpow(3*(Lpowmax+1)*(Lpowmax+1)) !  
+*Comdeck datapow $Revision: 1.2 $
+      parameter (Lpowmax=6)
+      dimension ixyzpow(3*(Lpowmax+1)*(Lpowmax+1))
+cbs   the ones and zeros stand four odd and even powers of x,y,z
+cbs   if you want to go higher than l=6, you have to look up
+cbs   the powers yourself, and add them to the table
       data ixyzpow /
-cbs   the ones and zeros stand four odd and even powers of x,y,z 
-cbs   if you want to go higher than l=6, you have to look up 
-cbs   the powers yourself, and add them to the table 
      *0,0,0,                                 ! s-function
      *0,1,0, 0,0,1, 1,0,0,                   ! p-functions
      *1,1,0, 0,1,1, 0,0,0,  1,0,1, 0,0,0,    ! d-functions
@@ -19,4 +19,3 @@ cbs   the powers yourself, and add them to the table
      *0,1,1, 0,0,0, 1,0,1, 0,0,0, 1,0,1,     ! i-functions
      *0,0,0, 1,0,1, 0,0,0                    ! i-functions
      */
-

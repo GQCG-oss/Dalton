@@ -3,11 +3,13 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# prop_nucquad
 #*# ------------
 #*# Molecule:         ClO2
 #*# Wave Function:    MCSCF (CAS)
 #*# Test Purpose:     Nuclear quadrupole coupling constants
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT

@@ -205,43 +205,37 @@ CTRL[16]=1
 ERROR[16]="DIPOLE MOMENT SECOND DERIVATIVES NOT CORRECT"
 
 # Nuclear shielding tensor second derivatives for hydrogen
-CRIT1=`$GREP "1 * 32\.88[0-9] * (\-0|\-)\.00[0-9] * (0| )\.000 * (\-0|\-)\.00[0-9] * 32\.87[0-9] * (0| )\.00[0-9] * (0| )\.000 * (0| )\.000 * 62\.46[0-9]" $log | wc -l`
+CRIT1=`$GREP "1 * 32\.8[4-8][0-9] * (\-0|\-|0| )\.0[0-9][0-9] * (\-0|\-|0| )\.00[0-9] * (\-0|\-|0| )\.0[0-9][0-9] * 32\.8[4-7][0-9] * (\-0|\-|0| )\.00[0-9] * (\-0|\-|0| )\.00[0-9] * (\-0|\-|0| )\.00[0-9] * 62\.46[4-6]" $log | wc -l`
 TEST[17]=`expr	$CRIT1`
 CTRL[17]=1
 ERROR[17]="NUCLEAR SHIELDING TENSOR SECOND DERIVATIVES FOR HYDROGEN NOT CORRECT"
 
 # Nuclear shielding tensor second derivatives for fluorine
-CRIT1=`$GREP "1 * \-603\.14[0-9] * (\-0|\-)\.14[0-9] * (0| )\.000 * (\-0|\-)\.13[0-9]\-604\.15[0-9] * (\-0|\-)\.73[0-9] * (0| )\.000 * (0| )\.000 * 5\.92[0-9]" $log | wc -l`
+CRIT1=`$GREP "1 * \-60[3-7]\.[0-9][0-9][0-9] * (\-[0-2]|\-|[0-2]| )\.[0-9][0-9][0-9] * (\-0|\-|0| )\.0[0-9][0-9] * (\-[0-1]|\-|[0-1]| )\.[0-9][0-9][0-9]\-60[3-6]\.[0-9][0-9][0-9] * (\-0|\-|0| )\.[0-9][0-9][0-9] * (\-0|\-|0| )\.00[0-9] * (\-0|\-|0| )\.00[0-9] * 5\.92[7-9]" $log | wc -l`
 TEST[18]=`expr	$CRIT1`
 CTRL[18]=1
 ERROR[18]="NUCLEAR SHIELDING TENSOR SECOND DERIVATIVES FOR FLUORINE NOT CORRECT"
 
 # Vibrationally averaged dipole moment
-CRIT1=`$GREP "Z * (0| )\.7593853[0-9] * (0| )\.0007738[0-9] * (0| )\.7601592[0-9]" $log | wc -l`
+CRIT1=`$GREP "Z * (0| )\.7593853[0-9] * (0| )\.00077[3-4][0-9][0-9] * (0| )\.7601(60|59)[0-9][0-9]" $log | wc -l`
 TEST[19]=`expr	$CRIT1`
 CTRL[19]=1
 ERROR[19]="VIBRATIONALLY AVERAGED DIPOLE MOMENT NOT CORRECT"
 
 # Vibrationally averaged nuclear magnetic shielding constants for hydrogen
-CRIT1=`$GREP "Bxmx * 21\.4006853[0-9] * (0| )\.2323608[0-9] * 21\.6330461[0-9]" $log | wc -l`
-CRIT2=`$GREP "Bymx * (0| )\.00000000 * (\-0|\-)\.0000261[0-9] * (\-0|\-)\.0000261[0-9]" $log | wc -l`
-CRIT3=`$GREP "Bxmy * (0| )\.00000000 * (\-0|\-)\.0000232[0-9] * (\-0|\-)\.0000232[0-9]" $log | wc -l`
-CRIT4=`$GREP "Bymy * 21\.4006853[0-9] * (0| )\.2323230[0-9] * 21\.6330084[0-9]" $log | wc -l`
-CRIT5=`$GREP "Bymz * (0| )\.00000000 * (0| )\.0000048[0-9] * (0| )\.0000048[0-9]" $log | wc -l`
-CRIT6=`$GREP "Bzmz * 44\.3849888[0-9] * (0| )\.4413866[0-9] * 44\.8263755[0-9]" $log | wc -l`
-TEST[20]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
-CTRL[20]=6
+CRIT1=`$GREP "Bxmx * 21\.4006853[0-9] * (0| )\.232[0-4]...[0-9] * 21\.63[2-3]....[0-9]" $log | wc -l`
+CRIT2=`$GREP "Bymy * 21\.4006853[0-9] * (0| )\.232[0-4]...[0-9] * 21\.63[2-3]....[0-9]" $log | wc -l`
+CRIT3=`$GREP "Bzmz * 44\.3849888[0-9] * (0| )\.44[1-2]....[0-9] * 44\.82[6-7]....[0-9]" $log | wc -l`
+TEST[20]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[20]=3
 ERROR[20]="VIBRATIONALLY AVERAGED NUCLEAR SHIELDING FOR HYDROGEN NOT CORRECT"
 
 # Vibrationally averaged nuclear magnetic shielding constants for fluorine
-CRIT1=`$GREP "Bxmx * 381\.4994583[0-9] * \-4\.2618916[0-9] * 377\.2375667[0-9]" $log | wc -l`
-CRIT2=`$GREP "Bymx * (0| )\.00000000 * (\-0|\-)\.0009508[0-9] * (\-0|\-)\.0009508[0-9]" $log | wc -l`
-CRIT3=`$GREP "Bxmy * (0| )\.00000000 * (\-0|\-)\.0010423[0-9] * (\-0|\-)\.0010423[0-9]" $log | wc -l`
-CRIT4=`$GREP "Bymy * 381\.4994583[0-9] * \-4\.2690362[0-9] * 377\.2304221[0-9]" $log | wc -l`
-CRIT5=`$GREP "Bymz * (0| )\.00000000 * (\-0|\-)\.0052132[0-9] * (\-0|\-)\.0052132[0-9]" $log | wc -l`
-CRIT6=`$GREP "Bzmz * 481\.7772347[0-9] * (0| )\.0418892[0-9] * 481\.8191239[0-9]" $log | wc -l`
-TEST[21]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
-CTRL[21]=6
+CRIT1=`$GREP "Bxmx * 381\.4994583[0-9] * \-4\.2[6-7].....[0-9] * 377\.2[0-3].....[0-9]" $log | wc -l`
+CRIT2=`$GREP "Bymy * 381\.4994583[0-9] * \-4\.2[6-7].....[0-9] * 377\.2[0-3].....[0-9]" $log | wc -l`
+CRIT3=`$GREP "Bzmz * 481\.7772347[0-9] * (0| )\.041[8-9]...[0-9] * 481\.8191[0-9]..[0-9]" $log | wc -l`
+TEST[21]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[21]=3
 ERROR[21]="VIBRATIONALLY AVERAGED NUCLEAR SHIELDING FOR FLUORINE NOT CORRECT"
 
 # Final energy

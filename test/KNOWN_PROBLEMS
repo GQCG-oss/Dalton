@@ -1,8 +1,24 @@
----------
-linux g77
----------
-  test cases rsp_lrso, rsp_lrso2, rsp_phosph, rsp_socorr and rsp_sreslrso
-  does not work due to a problem with FASTIO
+------------------------------------------------------------------------
+all architectures
+------------------------------------------------------------------------
 
-  test cases rsp_soppapolarnosymm and walk_vibave2 produces (some)
+  test cases rsp_soppapolarnosymm and walk_vibave2 produce (some)
   erroneous results
+
+
+
+------------------------------------------------------------------------
+all 64-bit architectures
+------------------------------------------------------------------------
+
+  test cases rsp_lrso, rsp_lrso2, rsp_phosph, rsp_socorr and
+  rsp_sreslrso will not work if Dalton is compiled as 64-bit code
+
+
+
+------------------------------------------------------------------------
+linux g77
+------------------------------------------------------------------------
+
+  test cases rsp_lrso, rsp_lrso2, rsp_phosph, rsp_socorr and
+  rsp_sreslrso do not work due to a problem with FASTIO

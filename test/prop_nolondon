@@ -3,12 +3,14 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# prop_nolondon
 #*# -------------
 #*# Molecule:         H2O
 #*# Wave Function:    MP2 (SOPPA)
 #*# Test Purpose:     Calculation of no-London shielding constants
 #*#                   through ABACUS
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT

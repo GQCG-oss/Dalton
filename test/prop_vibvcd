@@ -329,7 +329,7 @@ TEST[12]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
                $CRIT21 \+ $CRIT22 \+ $CRIT23 \+ $CRIT24 \+ $CRIT25 \+ \
                $CRIT26 \+ $CRIT27 \+ $CRIT28 \+ $CRIT29 \+ $CRIT30`
 CTRL[12]=30
-ERROR[12]="DIPOLE\/ROTATIONAL STRENGTHS NOT CORRECT"
+ERROR[12]="DIPOLE/ROTATIONAL STRENGTHS NOT CORRECT"
 
 # Vibrational Polarizabilities:
 CRIT1=`$GREP "Ex * (0| )\.326994 * (0| )\.000000 * (0| )\.000000" $log | wc -l`

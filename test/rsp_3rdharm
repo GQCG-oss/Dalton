@@ -3,11 +3,13 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# rsp_3rdharm
 #*# -----------
 #*# Molecule:         LiH
 #*# Wave Function:    MCSCF (CAS)
 #*# Test Purpose:     Third-Harmonic generation
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT

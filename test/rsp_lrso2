@@ -3,11 +3,13 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# rsp_lrso2
 #*# ---------
 #*# Molecule:         LiH
 #*# Wave Function:    MCSCF (CAS)
 #*# Test Purpose:     Linear response with spin-orbit operator
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT

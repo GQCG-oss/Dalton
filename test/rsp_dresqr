@@ -3,11 +3,13 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# rsp_dresqr
 #*# ----------
 #*# Molecule:         LiH
 #*# Wave Function:    MCSCF (CAS)
 #*# Test Purpose:     Double residue of the quadratic response function
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT

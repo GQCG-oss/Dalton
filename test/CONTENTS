@@ -1,6 +1,5 @@
 ========================================================================
-74 test jobs have been translated to the new automatic test job system
-All these tests have now been given names instead of numbers:
+All the old testjobs have been given names instead of numbers:
 
 	test1	energy_nosymm
 	test2	energy_symm
@@ -21,6 +20,7 @@ All these tests have now been given names instead of numbers:
 	test17	rsp_esr2
 	test18	prop_ecd
 	test19	walk_solvmag
+	test20	energy_corehole
 	test21	rsp_excipolar
 	test22	rsp_lrso
 	test23	rsp_hyperpolar
@@ -31,6 +31,7 @@ All these tests have now been given names instead of numbers:
 	test28	geoopt_exci2
 	test29	geoopt_numgrd
 	test30	geoopt_symbrk
+	test31	energy_restart
 	test32	rsp_soppapolarnosymm
 	test33	rsp_soppapolarsymm
 	test34	rsp_soppafcnosymm
@@ -55,6 +56,7 @@ All these tests have now been given names instead of numbers:
 	test53	walk_image
 	test54	walk_gradex
 	test55	walk_modeflw
+	test56	energy_solv
 	test57	prop_spinspin4
 	test58	prop_exci
 	test59	prop_nolondon
@@ -79,6 +81,15 @@ All these tests have now been given names instead of numbers:
 
 ========================================================================
 
+
+energy_corehole
+---------------
+Molecule:         CO
+Wave Functions:   MCSCF (RAS)
+Test Purpose:     Core-hole excitations using both a frozen and a
+                  relaxed core orbital
+
+
 energy_direct
 -------------
 Molecule:         H2O
@@ -100,6 +111,20 @@ Molecule:         H2O
 Wave Function:    Parallel SCF
 Test Purpose:     Check energy calculated in parallel (using TWOINT) and
                   with symmetry
+
+
+energy_restart
+--------------
+Molecule:         H2O
+Wave Functions:   MCSCF (RAS)
+Test Purpose:     Restart an MCSCF wave function
+
+
+energy_solv
+-----------
+Molecule:         H2CO
+Wave Functions:   SCF, MP2 and MCSCF (CAS)
+Test Purpose:     Solvation energies
 
 
 energy_symm
@@ -134,8 +159,8 @@ Wave Function:    SCF
 Test Purpose:     First order transition state optimization in Cartesian
                   coordinates. Initial approximate (model) Hessian, updates
                   are done with Bofill's method. The partitioned rational
-                  function method controls the steps and Baker's convergence
-                  criteria are used
+                  function method controls the steps and Baker's
+                  convergence criteria are used
 
 
 geoopt_constrain1a
@@ -171,8 +196,9 @@ geoopt_delintmin
 Molecule:         C6H5CHO
 Wave Function:    SCF
 Test Purpose:     Minimization in delocalized internal coordinates.
-                  A model Hessian is determined initially, then updated using
-                  the DFP-formula. Baker's convergence criteria are used.
+                  A model Hessian is determined initially, then updated
+                  using the DFP-formula. Baker's convergence criteria
+                  are used.
 
 
 geoopt_delintsad
@@ -220,6 +246,16 @@ Molecule:         H2O
 Wave Function:    MP2
 Test Purpose:     Geometry optimization (1st order) using numerical
                   gradients
+
+
+geoopt_preopt
+-------------
+Molecule:         H2O
+Wave Function:    SCF
+Test Purpose:     Demonstrate pre-optimization using smaller
+                  basis sets. The molecule is optimized using
+                  using STO-3G, then 4-31G before finally
+                  optimizing with cc-pVDZ
 
 
 geoopt_prop
@@ -665,22 +701,3 @@ walk_vibave3
 Molecule:         H2O
 Wave Function:    SCF
 Test Purpose:     Vibrational average of shieldings
-
-
-TEST20:
-Molecule:	CO
-Wave Function:	MCSCF (RAS)
-Test Purpose:	Core-hole excitations using both a frozen and a
-		relaxed core orbital
-
-
-TEST31:
-Molecule:	H2O
-Wave Function:	MCSCF (CAS)
-Test Purpose:	Restart an MCSCF wave function.
-
-
-TEST56:
-Molecule:       H2CO
-Wave function:  MCSCF (CAS)
-Test purpose:   Non-equilibrium solvation energies

@@ -3,11 +3,13 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# rsp_propave
 #*# -----------
 #*# Molecule:         LiH
 #*# Wave Function:    SCF
 #*# Test Purpose:     Check that AVEPRP in response works properly
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT

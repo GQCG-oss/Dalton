@@ -3,11 +3,13 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# rsp_twophot
 #*# -----------
 #*# Molecule:         KUM1
 #*# Wave Function:    SCF
 #*# Test Purpose:     Two-photon absorption
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT

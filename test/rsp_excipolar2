@@ -3,11 +3,13 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# rsp_excipolar2
 #*# --------------
 #*# Molecule:         LiH
 #*# Wave Function:    MCSCF (CAS)
 #*# Test Purpose:     Polarizability of an excited state
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT

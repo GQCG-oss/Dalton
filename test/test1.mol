@@ -1,9 +1,0 @@
-ATOMBASIS
-Test1 i test-suite: Geometrioptimering med symmetri, med beregning av
-egenskaper i foerste og siste punkt. Generelt kontraherte basissett
-    2    0
-        8.    1      cc-pVDZ
-O     0.0 -0.2249058930 0.0
-        1.    2      cc-pVDZ
-H     1.45235 0.899623 0.0
-H    -1.45235 0.899623 0.0

@@ -3,11 +3,13 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# geoopt_symbrk
 #*# -------------
 #*# Molecule:         H2O2
 #*# Wave Function:    SCF
 #*# Test Purpose:     Geometry optimization (2nd order) with symmetry breaking
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT
