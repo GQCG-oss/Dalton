@@ -148,7 +148,7 @@ C     convergence flag ICONV to "not converged"
 C     UPDATE , if use UPDATE for MC optimization
 C
       ICONV  = 0
-      RHFCLC = (NASHT .LE. 1)
+      RHFCLC = (NASHT .LE. 1 .OR. HSROHF)
       SOLVNT = FLAG(16)
       ABSORP = ( FLAG(51) .OR. FLAG(52) .OR. FLAG(53) )
 #if defined (VAR_NOEXCABS)

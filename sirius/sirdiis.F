@@ -461,9 +461,11 @@ C       keep vectors until GRDNRM fallen a factor 100
       NEWOCC = 0
       NOSCIL = 0
       DODIFDEN = .NOT. FLAG(49) .AND. .NOT. FLAG(16) .AND. .NOT.DODFT
+     &.AND..NOT.HSROHF
 Chjaaj: DIFDEN does not work with solvent
 C       because FC_sol is added to the old FC matrix, but not the new!
 Ctuh:   DIFDEN does not work with DFT either   
+Cov:    DIFDEN disabled for high spin HF
       DIFDEN   = DODIFDEN
       IF (.NOT. USRSCR) THEN
          IF (FLAG(13)) THEN
@@ -585,6 +587,7 @@ C
                CALL DGETSP(NBAST,FCAO(1+N2BASX),FAOSAV(1,INDEVC,2))
             END IF
          END IF
+
          IF (DIFDEN .AND. NEVC .GT. 1) THEN
             INDEVP = MOD(JTDIIS-2,MXERRV) + 1
             CALL DAXPY(NNBAST,DCOVLP,FAOSAV(1,INDEVP,1),1,
@@ -601,9 +604,6 @@ C           .. subtract DCOVLP*FVAO_previous to get DCOVLP*FCAO_previous
          END IF
          EMY = DDOT(NNBAST,DAOSAV,1,H1AO,1)
      &       + DDOT(NNBAST,DAOSAV,1,FAOSAV(1,INDEVC,1),1) * DP5
-         IF(DODFT) CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
-     &                  FAOSAV(1,INDEVC,1),FAOSAV(1,INDEVC,2),
-     &                  WRK(KFREE),LFREE,IPRDIS)
 C
          IF (ONLYFC) THEN
             EACTIV = D0
@@ -627,6 +627,9 @@ C                  = DVAO(p,q)FC2AO(p,q) + DVAO(p,q)H1AO(p,q)
      &                 FAOSAV(1,INDEVC,1),1)
             END IF
          END IF
+         IF(DODFT) CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
+     &                  FAOSAV(1,INDEVC,1),FAOSAV(1,INDEVC,2),
+     &                  WRK(KFREE),LFREE,IPRDIS)
 C
          ESOLT = D0
          IF (FLAG(16)) THEN
@@ -968,12 +971,29 @@ C        Iteration accepted; save current CMO for restart
          CALL NEWORB(CMOLBL,CMO,.FALSE.)
 C        ... REWIT1 false: do not destroy any GEOWALK information
 C
-         CALL DCOPY(NNBAST,H1AO,1,FCAO,1)
+         IF (HSFOCK) THEN
+C
+C Update FCAO with the FV correction in AO basis 
+C
+            CALL DAXPY(NNBAST,D1,H1AO,1,FAOSAV(1,INDEVC,1),1)
+            CALL DCOPY(NNBAST,FAOSAV(1,INDEVC,1),1,FCAO,1)
+            CALL FVCORR(
+     &            1,D1,DAOSAV,FAOSAV(1,INDEVC,1),MXERRV,FCAO,
+     &            WRK,KFREE,LFREE
+     &            )
+C
+C Update the latest FAOSAV with the effective fock matrix
+C
+            CALL DCOPY(NNBAST,FCAO,1,FAOSAV(1,INDEVC,1),1)
+            CALL DZERO(FCAO,NNBAST)
+         ELSE
+            CALL DCOPY(NNBAST,H1AO,1,FCAO,1)
+         END IF
          CALL DGEMM('N','N',NNBAST,1,NEVC,1.D0,
      &              FAOSAV(1,1,1),NNBAST,
      &              CVEC,NEVC,1.D0,
      &              FCAO,NNBAST)
-         IF (.NOT. ONLYFC) THEN
+         IF (.NOT. ONLYFC .AND..NOT.HSFOCK) THEN
          CALL DGEMM('N','N',NNBAST,1,NEVC,1.D0,
      &              FAOSAV(1,1,2),NNBAST,
      &              CVEC,NEVC,0.D0,
@@ -985,6 +1005,13 @@ C        Find FV and make open-shell Fock matrix
 C
          CALL UTHUB(FCAO,DCAO,CMO,WRK(KFREE),NSYM,NBAS,NORB)
          IF (.NOT. ONLYFC) THEN
+         IF (HSFOCK) THEN
+            IF (IPRDIS .GE. 15) THEN
+                  WRITE (LUPRI,'(/A)')
+     &            ' Fock matrix after FV correction'
+               CALL OUTPKB(DCAO,NORB,NSYM,1,LUPRI)
+            END IF
+         ELSE   
          DO 300 ISYM = 1,NSYM
             IF (NASH(ISYM) .EQ. 0) GO TO 300
             IF (IPRDIS .GE. 15) THEN
@@ -1013,6 +1040,7 @@ C
                CALL OUTPAK(DCAO(1+IIORB(ISYM)),NORB(ISYM),1,LUPRI)
             END IF
   300    CONTINUE
+         END IF
          END IF
 C
 C        If requested (by SHFTLVL .ne. 0) :
@@ -1243,6 +1271,7 @@ C
 #include <inforb.h>
 #include <infdim.h>
 #include <infpri.h>
+#include <dftcom.h>
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0)
 C
@@ -1252,7 +1281,7 @@ C
       CALL MEMGET('REAL',KTMP1,N2BASM,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KTMP2,N2BASM,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KTMP3,N2BASM,WRK,KFREE,LFREE)
-      IF (HSROHF) THEN
+      IF (HSROHF.OR.DFTRUN.AND.NASHT.GE.1) THEN
          CALL DAXPY(NNBAST,D1,DVAO,1,DCAO,1)
          CALL DSCAL(NNBAST,DM1,DVAO,1)
       END IF
@@ -1368,7 +1397,7 @@ C
             CALL OUTPUT(WRK(KTMP1),1,NORBI,1,NORBI,NORBI,NORBI,1,LUPRI)
          END IF
   800 CONTINUE
-      IF (HSROHF) THEN
+      IF (HSROHF.OR.DFTRUN.AND.NASHT.GE.1) THEN
          CALL DAXPY(NNBAST,D1,DVAO,1,DCAO,1)
          CALL DSCAL(NNBAST,DM1,DVAO,1)
       END IF
@@ -1571,7 +1600,7 @@ c
       KLST  = KTMP2 + N2BASX
       LFREE = LWRK  - KLST +1
       IF(LFREE.LT.0) CALL STOPIT('ADDKS1','SIRDIIS',KLST,LFREE)
-      EXCTRO = DP5*DDOT(NNBASX,DCAO,1,FCAO,1)
+C     EXCTRO = DP5*DDOT(NNBASX,DCAO,1,FCAO,1)
       IF(ONLYFC) THEN
          CALL DZERO(WRK(KTMP2),N2BASX)
          CALL DFTKSMb(DCAO,WRK(KTMP2),EDFTY,WRK(KLST),LFREE,IPRFCK)
@@ -1587,7 +1616,7 @@ c
          END IF 
       ELSE
 C     memory allocation
-         stop "TODO"
+C        stop "TODO"
          KDENA = KLST
          KKSMA = KDENA +N2BASX*2
          KKSPA = KKSMA +N2BASX*2
@@ -1606,7 +1635,8 @@ C     Kohn-Sham contribution evaluation
          CALL DAXPY(N2BASX,1D0,DCAO(1+N2BASX),1,WRK(KDENA),1)     
 c         CALL OUTPUT(WRK(KDENA),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
 c         CALL OUTPUT(WRK(KDENA+N2BASX),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)  
-         CALL dft_kohn_shamab(WRK(KDENA),WRK(KKSMA),WRK(KFREE),LFREE,1)
+         CALL dft_kohn_shamab(WRK(KDENA),WRK(KKSMA),EDFTY,WRK(KFREE),
+     &      LFREE,1)
 C     packing
          CALL DGETSP(NBAST,WRK(KKSMA),WRK(KTMP1))
          IF (NSYM .GT. 1) THEN
@@ -1633,7 +1663,7 @@ c
       END IF
 C
       EMY = EMY+EDFTY
-      EDFTY = EDFTY +EXCTRO-DP5*DDOT(N2BASX,DCAO,1,FCAO,1)
+C     EDFTY = EDFTY +EXCTRO-DP5*DDOT(N2BASX,DCAO,1,FCAO,1)
       END
 C  /* Deck fckeig */
       SUBROUTINE FCKEIG(CMO,FC,SHFTLVL,SCRA,LSCRA,IPRDIS)
@@ -1841,4 +1871,100 @@ C
          END IF
       END DO
       RETURN
+      END
+      SUBROUTINE FVCORR(NVEC,W,DAO,FAO,MXERRV,F,WRK,KFREE,LFREE)
+      IMPLICIT NONE
+C
+C Form projected (effective) fock matrix in AO basis for each accumulated
+C iteration and sum up with diis weights. 
+C
+C Input: NVEC accumulated Fock (FAO) and density (DAO) 
+C        matrices from previous DIIS iterations
+C
+C Output: sum of weighted effective fock matrices to be diagonalized
+C         
+C
+      INTEGER NVEC, MXERRV, KFREE, LFREE
+      REAL*8 W(NVEC)
+#include <inforb.h>
+#include <priunit.h>
+C     REAL*8 DAO(NNBAST,MXERRV,2), FAO(NNBAST,MXERRV,2), F(NNBAST)
+      REAL*8 DAO(NNBAST,1,2),      FAO(NNBAST,MXERRV,2), F(NNBAST)
+      REAL*8 WRK(*)
+C
+C Local
+C
+      REAL*8 D0, D1, D2
+      PARAMETER (D0=0.0D0, D1=1.0D0, D2=2.0D0)
+      INTEGER ISYM, KS, KTMP1, KTMP2, KDI, KFI, KSI
+      INTEGER NBASI, NNBASI, IIBASI, N2BASI, IBLK, IVEC, I, II
+      LOGICAL FOUND
+C
+      CALL QENTER('FVCORR')
+
+      CALL MEMGET('REAL',KS,NNBAST,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDI,N2BAS(1),WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KSI,N2BAS(1),WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KFI,N2BAS(1),WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTMP1,N2BAS(1),WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTMP2,N2BAS(1),WRK,KFREE,LFREE)
+      CALL RDONEL('OVERLAP',FOUND,WRK(KS),NNBAST)
+      IF (.NOT.FOUND) THEN
+         CALL QUIT('FVCORR:Error reading overlap')
+      END IF
+      DO ISYM=1,NSYM
+         NBASI=NBAS(ISYM)
+         NNBASI=NNBAS(ISYM)
+         N2BASI=N2BAS(ISYM)
+         IIBASI=IIBAS(ISYM)
+         IBLK=IIBAS(ISYM)+1
+         IF (NBASI.EQ.0) GO TO 100
+         CALL DSPTSI(NBASI,WRK(KS+IIBASI),WRK(KSI))
+         DO IVEC=1,NVEC
+            CALL DUNFLD(NBASI,DAO(IBLK,IVEC,2),WRK(KDI))
+         ! -s*(-do)
+            CALL DGEMM(
+     &         'N','N',NBASI,NBASI,NBASI,
+     &        -D1,WRK(KSI),NBASI,
+     &            WRK(KDI),NBASI,
+     &         D0,WRK(KTMP1),NBASI
+     &         )
+      ! (s*do)*(fc-fo)
+            CALL DSPTSI(NBASI,FAO(IBLK,IVEC,2),WRK(KFI))
+            CALL DGEMM(
+     &         'N','N',NBASI,NBASI,NBASI,
+     &         D1,WRK(KTMP1),NBASI,
+     &            WRK(KFI),NBASI,
+     &         D0,WRK(KTMP2),NBASI
+     &         )
+        ! (do+dc)*s
+            !CALL DUNFLD(NBASI,DAO(IBLK,IVEC,1),WRK(KTMP1))
+            !CALL DAXPY(N2BASI,D1,WRK(KTMP1),1,WRK(KDI),1)
+            CALL DUNFLD(NBASI,DAO(IBLK,IVEC,1),WRK(KDI))
+            CALL DGEMM(
+     &         'N','N',NBASI,NBASI,NBASI,
+     &         D1,WRK(KDI),NBASI,
+     &            WRK(KSI),NBASI,
+     &         D0,WRK(KTMP1),NBASI
+     &         )
+        ! (do+dc)*s-1
+            DO I=1,NBASI
+               II=KTMP1+(NBASI+1)*(I-1)
+               WRK(II) = WRK(II) - D1
+            END DO
+        !final correction
+        ! (s*do)*(fc-fo)*((do+dc)*s-1)
+            CALL DGEMM(
+     &         'N','N',NBASI,NBASI,NBASI,
+     &         D1,WRK(KTMP2),NBASI,
+     &            WRK(KTMP1),NBASI,
+     &         D0,WRK(KDI),NBASI
+     &         )
+            CALL DGETSP(NBASI,WRK(KDI),WRK(KFI))
+            CALL DAXPY(NNBASI,D2*W(IVEC),WRK(KFI),1,F(IBLK),1)
+         END DO
+ 100     CONTINUE
+      END DO
+      CALL MEMREL('FVCORR',WRK,KS,KS,KFREE,LFREE)
+      CALL QEXIT('FVCORR')
       END

@@ -217,7 +217,7 @@ C
 C ***  Calculate contributions from MO two-electron integrals
 C
 C
-      IF (MOFCFV .OR. NASHT .GT. 1) THEN
+      IF (MOFCFV .OR. NASHT .GT. 1 .AND. .NOT.HSROHF) THEN
          CALL TR1H2M(NCSIM,NOSIM,FTQ,H2XAC,FXQ,
      *               DTV,WRK(KPTV),DV,PV,UBO,
      *               FTV,FXC,FXV,MOFCFV,.NOT.USEDRC,WRK(KWRK1),LWRK1)
@@ -659,7 +659,7 @@ C
       LOGICAL   AODRCT, P6SAVE, DFTADX
 C
 #include <dummy.h>
-      PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0)
+      PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1=1.0D0, D2 = 2.0D0)
 C
 C Used from common blocks:
 C   INFORB : N2ORBX,N2ORBT,N2BASX,NNASHX
@@ -679,6 +679,7 @@ C
 #include <infdim.h>
 #include <inftap.h>
 #include <infpri.h>
+#include <dftcom.h>
 #include <infinp.h>
 #include <abainf.h>
 C
@@ -703,6 +704,10 @@ C       the Fock matrices with one-index transformed integrals.
 C
         CALL TR1DEN (CMO,UBO(1,IOSIM),DV,DXCAO(1,IOSIM),DXVAO(1,IOSIM),
      &               WRK(KFREE),LFREE)
+        IF (HSROHF) THEN
+           CALL DAXPY(N2BASX,D1,DXVAO(1,NOSIM),1,DXCAO(1,NOSIM),1)
+           CALL DSCAL(N2BASX,-D1,DXVAO(1,NOSIM),1)
+        END IF
         IF (P6FLAG(24) .OR. IPRLIN .GE. 24) THEN
           IF (NISHT.GT.0) THEN
             WRITE (LUPRI,2010) IOSIM,NOSIM
@@ -783,8 +788,19 @@ C        CALL RDSUPM(NSIM,FMAT,DMAT,WORK,LFREE)
             ISYMDM(IDMAT) = JWOPSY
             IFCTYP(IDMAT) = 13
   400    CONTINUE
+         IF (HSROHF) THEN
+            DO IDMAT = NOSIM+1,NDMAT
+               IFCTYP(IDMAT) = 12
+            END DO
+         END IF
+         DFTADX = DFTADD
+         DFTADD = .FALSE.
          CALL SIRFCK(FXCAO,DXCAO,NDMAT,ISYMDM,IFCTYP,
      *               AODRCT,WRK(KFREE),LFREE)
+         DFTADD = DFTADX
+         IF (HSROHF) THEN
+            CALL DAXPY(NOSIM*N2BASX,-D1,FXVAO,1,FXCAO,1)
+         END IF
 C        ... if (AODRCT) construct Fock matrix directly
 C            else construct Fock matrix from LUINTA
 C            ISYMDM : symmetry of density matrix (DUNP)

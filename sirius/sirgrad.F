@@ -274,6 +274,9 @@ C
 #include <priunit.h>
 #include <inforb.h>
 #include <infpri.h>
+#include <maxorb.h>
+#include <infinp.h>
+      PARAMETER( D1 = 1.0D0 )
 C
       CALL QENTER('FCKMAT')
       NOFV   = ( (NASHT .EQ. 0) .OR. ONLYFC )
@@ -305,6 +308,10 @@ C
      *            WRK(KDCAO),WRK(KDVAO),CMO,DV,WRK(KWRK),LWRK)
 C     CALL FCKDEN(GETDC,GETDV,DCAO,DVAO,CMO,DV,WRK,LWRK)
 C
+      IF (HSROHF) THEN
+         CALL DAXPY(N2BASX,D1,WRK(KDVAO),1,WRK(KDCAO),1)
+         CALL DSCAL(N2BASX,-D1,WRK(KDVAO),1)
+      END IF
       CALL FCKMAO(NOFV,DV,EMCMY, WRK(KFCAO),WRK(KFVAO),
      *            WRK(KDCAO),WRK(KDVAO),CMO,WRK(KWRK),LWRK)
 C
@@ -405,6 +412,10 @@ C
       NOFV   = ( (NASHT .EQ. 0) .OR. ONLYFC )
       IF (DIRFCK) CALL FCKDEN((NISHT.GT.0),.NOT.NOFV,
      *                        DCAO,DVAO,CMO,DV,WRK(KFREE),LFREE)
+      IF (HSROHF) THEN
+         CALL DAXPY(N2BASX,D1,DVAO,1,DCAO,1)
+         CALL DSCAL(N2BASX,-D1,DVAO,1)
+      END IF
 C
 C ***** one-electron part in WRK(KH1AO)
 C
@@ -431,7 +442,7 @@ C
 C ***** add one-electron contribution to FCAO
 C
 C     One-electron contribution is not added for the construction of 
-C     the exchange operator in the auxiliary basis (WK/UniKA/04-11-2002).
+C     the exchange operator in the auxilliary basis (WK/UniKA/04-11-2002).
       IF (.NOT. (R12TRA .OR. R12ECO))
      *     CALL DAXPY(N2BASX,D1,WRK(KH1AO),1,FCAO,1)
 C
@@ -450,7 +461,7 @@ C
         END IF
       END IF
  1000 FORMAT(/' FCAO = Fock matrix, inactive part (AO-basis)')
- 1001 FORMAT(/' FCAO = Fock matrix, inactive part (auxiliary basis)')
+ 1001 FORMAT(/' FCAO = Fock matrix, inactive part (auxilliary basis)')
  1100 FORMAT(/' FVAO = Fock matrix, active part (AO-basis)')
 C
 C *** End of subroutine FCKMAO
@@ -493,6 +504,7 @@ C
 #include <inftap.h>
 #include <infdim.h>
 #include <infpri.h>
+#include <dftcom.h>
 C
       DIMENSION ISYMDM(2), IFCTYP(2)
       SAVE ISYMDM, IFCTYP
@@ -510,17 +522,10 @@ C
             NFMAT = 0
          END IF
          IOFFAO = 1
-      ELSE IF (NISHT .GT. 0 .OR. DODFT .OR. HSROHF) THEN
-C        for DODFT and HSROHF:
-C        "DCAO" is DCAO+DVAO and "DVAO" is -DVAO
-C        thus also needed if NISHT.eq.0 /hjaaj
+      ELSE IF (NISHT .GT. 0) THEN
          NDMAT = 2
          NFMAT = 2
          IOFFAO = 1
-         IF (DODFT .OR. HSROHF) IFCTYP(2) = 12
-C        ... This gives the exchange part of the active Fock matrix
-C        ... we need only the difference between Fa and Q which is
-C        ... negative of the exchange part.
       ELSE
 C        DCAO zero matrix, only FVAO contribution
          NDMAT = 2
@@ -528,11 +533,22 @@ C        DCAO zero matrix, only FVAO contribution
          IOFFAO = 1+N2BASX
 C        ... off-set to FVAO,DVAO in FCAO,DCAO
       END IF
+      IF (DFTRUN .AND. (NASHT .EQ. 1)) THEN
 C
+C This gives the exchange part of the active Fock matrix
+C we need only the difference between Fa and Q which is negative
+C of the exchange part
+C
+         IFCTYP(2)=12
+      END IF
+      IF (HSROHF) THEN
+         IFCTYP(2)=12
+      END IF  
+
       CALL DZERO(FCAO,NDMAT*N2BASX)
-CKR   ... This line read NDMAT instead of NFMAT, 150997
+CKR   This line read NDMAT instead of NFMAT, 150997
       IF (NFMAT .GT. 0) THEN
-      IF (LUSUPM .NE. -1 .AND. (.NOT. (DODFT .OR. HSROHF))) THEN
+      IF (LUSUPM .NE. -1 .AND. (.NOT. (HSROHF .OR. DFTRUN))) THEN
          CALL RDSUPM(NFMAT,FCAO(IOFFAO),DCAO(IOFFAO),WRK(KFREE),LFREE)
       ELSE
          CALL SIRFCK(FCAO(IOFFAO),DCAO(IOFFAO),NFMAT,ISYMDM,IFCTYP,
@@ -544,8 +560,6 @@ C            IFCTYP(1:NFMAT) = 13 : singlet, symmetric Fock matrix
 C            NFMAT is max = 2 here
       END IF
       END IF
-      IFCTYP(NFMAT) = 13
-C     ... restore IFCTYP(NFMAT) after DODFT or HSROHF
 C
 C *** End of subroutine FCK2AO
 C
@@ -1187,7 +1201,7 @@ C
 C
 C -- local constants
 C
-      PARAMETER (D0 = 0.0D0)
+      PARAMETER (D0 = 0.0D0, D1=1.0D0)
       PARAMETER (THRSML = 1.D-8)
 #include <thrzer.h>
 C
@@ -1262,6 +1276,13 @@ C
       IF (NASHT .EQ. 1 .AND. NACTEL .LT. 2) THEN
          DV(1) = NACTEL
          PV(1) = D0
+      ELSE IF (HSROHF) THEN
+         CALL DZERO(DV,NNASHX)
+         DO I=1,NASHT
+            II=I*(I+1)/2
+            DV(II)=D1
+         END DO
+         CALL DZERO(PV,NNASHX*NNASHX)
       ELSE
          CALL MAKDM(CREF,DV,PV,INDXCI,WRK,LFREE)
 C        CALL MAKDM(CREF,DV,PV,INDXCI,WRK,LFREE)
@@ -1307,7 +1328,7 @@ C
             CALL OUTPAK (FCAC,NASHT,1,LUPRI)
          END IF
       END IF
-      IF (NASHT .GT. 1) THEN
+      IF (NASHT .GT. 1 .AND. .NOT. HSROHF) THEN
          CALL GETH2(DV,PV,H2AC,FQ,WRK(KORDIA),FULODG,
      *              WRK(KW3),LW3)
 C        CALL GETH2(DV,PV,H2AC,FQ,ORDIAG,FULODG,WRK,LFRSAV)
@@ -1334,6 +1355,10 @@ C
          CALL GETFCI(FCAC,H2AC,WRK(KW3),LW3)
 C        CALL GETFCI(FCAC,H2AC,WRK,LFREE)
 C
+      ELSE IF (HSROHF) THEN
+         CALL DZERO(FQ,NORBT*NASHT)
+         CALL GETAC(FV,FCAC)
+         EMCACT = -ENRACT(DV,FCAC,FQ)/2
       ELSE IF (NASHT .EQ. 1) THEN
          CALL DZERO(FQ,NORBT)
          EMCACT = ENRACT(DV,FCAC,FQ)
@@ -1348,6 +1373,7 @@ C Step 3: calculate Fock matrix contributions to the diagonal of the
 C         orbital Hessian.
 C
       IF (NWOPT .GT. 0) THEN
+         IF (HSROHF) CALL DAXPY(NNORBT,-D1,FV,1,FC,1)
          CALL ORDIAG(DV,PV,FC,FV,FQ,H2AC,WRK(KORDIA),
      &               AVEODG,IPRSIR)
 C        CALL ORDIAG(DV,PV,FC,FV,FQ,H2AC,DIAG,AVEODG,IPRINT)
