@@ -269,6 +269,7 @@ C
       PARAMETER ( THRCAN = 1.0D-10 )
 C
 C Used from common blocks:
+C   GNRINF : WRINDX
 C   INFINP : FLAG(*),NACTEL,SUPSYM,LNOROT,?
 C   INFVAR : NCONF,?
 C   INFORB : NASHT,?
@@ -279,6 +280,7 @@ C
 #include <maxash.h>
 #include <maxorb.h>
 #include <priunit.h>
+#include <gnrinf.h>
 #include <infinp.h>
 #include <inforb.h>
 #include <infind.h>
@@ -549,6 +551,8 @@ C
      *   WRITE (LUPRI,'(/A,I3,//,(5F14.9))')
      *   ' Symmetry',ISYM, (WRK(KBIG-1 + I),I=1,NORBI)
   200 CONTINUE
+      IF (SUPSYM) CALL AVEORD()
+C     ... remake ISSORD() as ISSMO() may have changed in ORDRSS
 C
 C
 C Step 4: Diagonalize 1-el density matrix to get active natural
@@ -718,6 +722,9 @@ C
       IF (SUPSYM) THEN
          KFREE = 1
          LFREE = LWRK
+         WRINDX = .TRUE.
+         CALL SIRSET(WRK(KFRSAV),LWRK,.FALSE.)
+C        ... redo JWOP in case ISSMO should have changed in ORDRSS /hjaaj aug 04
          CALL AVECPH(IPHCHA,CMO,WRK(KFRSAV),KFREE,LFREE)
          IF (IPHCHA .GT. 0) THEN
             WRITE(LUPRI,'(/A,I4,A/A)')
@@ -796,12 +803,14 @@ C
 #include <thrzer.h>
 C
 C Used from common blocks:
+C  GNRINF: WRINDX
 C  INFINP: LSYM
 C  INFORB: ICMO(*),...
 C  INFIND: ISSMO()
 C
 #include <maxash.h>
 #include <maxorb.h>
+#include <gnrinf.h>
 #include <infinp.h>
 #include <inforb.h>
 #include <infind.h>
@@ -912,6 +921,8 @@ C            for non-zero diagonal elements.
             CALL ORD2SS(UNO(1,JACT),OCCNO(JOCCA),
      &                  ISSMO(JORB),NASHI,NASHT)
   420    CONTINUE
+         IF (SUPSYM) CALL AVEORD()
+C        ... remake ISSORD() as ISSMO() may have changed in ORD2SS
          IF (MOISNO) THEN
             DO 430 I = 1,NASHT
   430          IF (UNO(I,I) .NE. D1) MOISNO = .FALSE.
@@ -996,6 +1007,11 @@ C
 C
 C
       CALL MEMREL('GETNO',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
+      IF (ORDER .AND. SUPSYM) THEN
+         WRINDX = .TRUE.
+         CALL SIRSET(WRK(KFREE),LFREE,.FALSE.)
+C        ... redo JWOP in case ISSMO should have changed in ORDRSS /hjaaj aug 04
+      END IF
       CALL QEXIT('GETNO ')
       RETURN
       END
