@@ -63,9 +63,8 @@ C              CC_EXGR     for (integral direct) calculation of excited
 C                          state gradient properties.
 C                          Currently only first order properties.
 C
-C              CC_LR       control the calculation of polarizabilities.
-C                          Frequency dependent, without orbital
-C                          relaxation.
+C              CC_LR &     Linear Response or Second-Order Properties:
+C              CC_SOP      polarizabilities, property gradients etc.
 C
 C              CC_LRESID   Control calculation of residues and
 C                          oscillator strenths.
@@ -76,7 +75,7 @@ C              CC_2HYP     calculation of cubic response properties.
 C
 C              CC_3HYP     calculation of quartic response properties.
 C
-C              CC_SMCAL    calculation of second order moments
+C              CC_TPA      Two-Photon Absorption strengths and moments.
 C
 C              CC_TMCAL    calculation of third order moments
 C
