@@ -190,7 +190,7 @@ C
 C
       IF (IQCORE .GT. 0) THEN
          IF (MOD(IQCORE,2) .NE. 0) THEN
-            WRITE(LUPRI,'(/A,I5')
+            WRITE(LUPRI,'(/A,I5)')
      &      'ECPLCORE ECP: odd number of core electrons',IQCORE
             CALL QUIT('ECPLCORE ECP: odd number of core electrons ')
          END IF
