@@ -49,7 +49,7 @@ C#include <ccropr2.h>
       CHARACTER*(19) MSGDBG
       PARAMETER (MSGDBG = '[debug] CC_MCDCAL> ')
       LOGICAL LOCDBG
-      PARAMETER (LOCDBG = .TRUE.)
+      PARAMETER (LOCDBG = .FALSE.)
 #if defined (SYS_CRAY)
       REAL DDOT,DNRM2
       REAL ZERO, D05, TWO
@@ -905,8 +905,8 @@ C     &      ' S^of_AB,C = M^AB_of(0.0) x M^C_fo   = ', XMAB_MC,
 C     &      ' S^of_C,AB = M^C*_of x M^AB*_fo(0.0) = ', XMC_MAB
          WRITE(LUPRI,'(3(/1X,A,F16.8))') 
      &     ' Dipole strength (au) (C oper) = ',FORZADIP,
-     &     ' M^AB_of(0.0) x M^C_fo     = ',XMAB_MC,
-     &     ' M^C*_of x M^AB*_fo(0.0)   = ',XMC_MAB
+     &     ' M^AB_of(0.0) x M^C_fo         = ',XMAB_MC,
+     &     ' M^C*_of x M^AB*_fo(0.0)       = ',XMC_MAB
          IF (IPRINT.GT.5) THEN 
             WRITE(LUPRI,'(/1X,A,F16.6,A,F16.8,A)')
      &     ' B term contribution (au): ', D05*BTERM_A, ' (antisym) ', 
