@@ -1010,12 +1010,12 @@ C
      &                                      EXHER,EXSIR,EXABA,WORK,
      &                                      LWORK,IWOFF,WRKDLM)
                                 DO ISCOO2 = 1, NCOOR
-                                DO ISCOO1 = 1, ICOOR2
+                                DO ISCOO1 = 1, ISCOO2
                                    IDIME = IDIME + 1
 #if defined (VAR_MPI)
-                                   FTVAL(IDIME) = HESMOL(ICOOR1,ICOOR2)
+                                   FTVAL(IDIME) = HESMOL(ISCOO1,ISCOO2)
 #else
-                                   FUVAL(IDIME) = HESMOL(ICOOR1,ICOOR2)
+                                   FUVAL(IDIME) = HESMOL(ISCOO1,ISCOO2)
 #endif
                                 END DO
                                 END DO
@@ -1093,9 +1093,9 @@ C
 C     
                DO 2200 I = 1, NCOOR
 #if defined (VAR_MPI)
-                  FTVAL(I) = WORK(KGRAD+I-1)
+                  FTVAL(I) = EGRAD(I)
 #else
-                  FUVAL(I) = WORK(KGRAD+I-1)
+                  FUVAL(I) = EGRAD(I)
 #endif
  2200          CONTINUE
             ELSE IF (NAORDR .EQ. 2) THEN
@@ -1109,7 +1109,7 @@ C
                DO 2300 J = 1, MXCOOR
                DO 2300 I = 1, J
                   KHINT = KHINT + 1
-                  IF (WORK(KHESS+KINT-1) .GT. DMAX) THEN
+                  IF (WORK(KHESS+KHINT-1) .GT. DMAX) THEN
                      KFINT = KFINT + 1
 #if defined (VAR_MPI)
                      FTVAL(KFINT) = WORK(KHESS+KHINT-1)
@@ -3016,8 +3016,8 @@ C     ***               cartesian basis.               ***
 C
       IF (MAXREP.GT.0) THEN
          KSCTR = 1
-         KCSTR = KSCTRA + NCOOR**2
-         KLAST  = KCSTRA + NCOOR**2
+         KCSTR = KSCTR + NCOOR**2
+         KLAST  = KCSTR + NCOOR**2
          IF (KLAST.GT.LWORK) CALL QUIT('Memory exceeded inside SDERTT')
          CALL TRAGRD(GRDMOL,TMPGRD,WORK(KCSTR),WORK(KSCTR),NCRREP(0,1),
      &               NCOOR)

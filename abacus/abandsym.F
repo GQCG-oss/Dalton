@@ -2026,7 +2026,7 @@ C           *** Sorting the components, such that the force-constants ***
 C           *** calculated is situated last.                          ***
 C
             KITMPE = 1
-            KITMPR = KEQTMP + 8**2
+            KITMPR = KITMPE + 8**2
             CALL SRTNCF(EQUMTX,WORK(KITMPR),ICRWMX,WORK(KITMPE),8,3,
      &                  ICIJK,IPRINT)
             ICTUV = ICIJK
@@ -2434,7 +2434,7 @@ C           *** component is first. In addition matrix elements for  ***
 C           *** equal force-constants are added together             ***
 C
             KITMPE = 1
-            KITMPR = KEQTMP + ITHDDM**2
+            KITMPR = KITMPE + ITHDDM**2
             CALL SRTNCF(EQUMTX,WORK(KITMPR),ICRWMX,WORK(KITMPE),ITHDDM,
      &                  4,ICIJKL,IPRINT)
 C
@@ -3435,9 +3435,9 @@ C
      &                                       ' PRTPNR.')
 C
                C2NRGY = .FALSE.
-               CALL SYMMLT(GRIREP,INDTMP,ICRIRP,WORK(IRPST),WORK(IRPDG),
-     &                     WORK(KKIRPD),WORK(KIDDEG),WORK(KIDEGI),
-     &                     MXIDCR,2,3,IPRINT,C2NRGY)
+               CALL SYMMLT(GRIREP,INDTMP,ICRIRP,WORK(KIRPST),
+     &                     WORK(KIRPDG),WORK(KKIRPD),WORK(KIDDEG),
+     &                     WORK(KIDEGI),MXIDCR,2,3,IPRINT,C2NRGY)
                PRTNR = PRTNR .AND. .NOT. C2NRGY
             END IF
  300     CONTINUE
@@ -3453,7 +3453,7 @@ C
          ITINNR = IINNER - 1
          DO 400 I = IORDR, 1, -1
             IS = 2**(I-1)
-            IDXTMP(I) = (ITINNR-MOD(ITTNNR,IS))/IS
+            IDXTMP(I) = (ITINNR-MOD(ITINNR,IS))/IS
             ITINNR = ITINNR - IDXTMP(I)*IS
  400     CONTINUE
 C
