@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: herdrv.F,v 1.15 2001-05-31 06:38:07 vebjornb Exp $
+C$Id: herdrv.F,v 1.16 2001-06-22 10:40:22 ruud Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -217,7 +217,7 @@ C
      &             '.MGMO2T', '.MGMTHR', '.HBDO  ', '.SUSCGO',
      &             '.NSTCGO', '.EXPIKR', '.MASSVE', '.DARWIN',
      &             '.CM-1  ', '.CM-2  ', '.SQHDOL', '.SQHDOR',
-     &             '.NOTWO ', '.GAUGEO', '.DIPORG', '.GFACDI',
+     &             '.NOTWO ', '.GAUGEO', '.DIPORG', '.XXXXXX',
      &             '.S1ELE ', '.S1ELB ', '.ONEELD', '.THETA ',
      &             '.NUCMOD', '.SORT I', '.DIPGRA', '.QUAGRA',
      &             '.OCTGRA', '.ROTSTR', '.THIRDM', '.SOFIEL',
@@ -616,8 +616,6 @@ C
             READ (LUCMD, *) (DIPORG(I),I=1,3)
             GO TO 100
  172     CONTINUE
-            GFACDI = .TRUE.
-            ONEPRP = .TRUE.
             GOTO 100
  173     CONTINUE
             S1ELE  = .TRUE.
@@ -919,8 +917,6 @@ C&&& Nuclear model
      &      '- Diamagnetic magnetizability using common gauge origin'
          IF (NSTCGO) WRITE (LUPRI,'(10X,A)')
      &      '- Diamagnetic shielding tensor using common gauge origin'
-         IF (GFACDI) WRITE (LUPRI,'(10X,A)')
-     &      '- Diamagnetic London contribution to rotational g-factors'
          IF (EXPIKR) WRITE (LUPRI,'(10X,A)')
      &      '- Cosine and sine integals'
          IF (DPLGRA) WRITE (LUPRI,'(10X,A)')
@@ -1914,15 +1910,6 @@ C
                CALL FLSHFO(LUPRI)
             END IF
 C
-C           ***** Diamagnetic contribution to molecular g-factors *****
-C
-            IF (GFACDI) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('GFACDIA',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('GFACDI',TIMSTR,TIMEND)
-            END IF
-C
 C           *** Test of ket-differentiated hdo-integrals with respect to B ***
 C
             IF (HDOBRT) THEN
@@ -2803,7 +2790,6 @@ CTSAUE
       S1ELE  = .FALSE.
       S1ELB  = .FALSE.
       ONEELD = .FALSE.
-      GFACDI = .FALSE.
       THETA  = .FALSE.
       DPLGRA = .FALSE.
       QUAGRA = .FALSE.
