@@ -23,6 +23,10 @@ interaction}. Two types of configuration selection
 schemes are implemented: the complete active space model (CAS) and the
 restricted active space model (RAS).
 
+\item[CC] Coupled Cluster\index{CC}\index{coupled cluster}.
+For information on how to run this kind of calculation, we refer to 
+Chapers~\ref{ec:ccexamples} and~\ref{cc:CC}.
+
 \item[MCSCF] Multiconfiguration self-consistent field based on
 the complete active space model (CASSCF) and
 the restricted active space model
@@ -31,8 +35,8 @@ the restricted active space model
 \end{description}
 
 SIRIUS is the part of the code that computes all of these
-wave functions.
-This part of the DALTON manual discusses aspects of converging to the
+wave functions, with the exception of the coupled-cluster wave functions.
+This part of the DALTON manual discusses aspects of converging the
 wave function you want.
 
 \section{\label{sec:ig_necinp} Necessary input to SIRIUS}
@@ -179,6 +183,8 @@ input modules through indentation
      *CI VECTOR            (4)
      *OPTIMIZATION
      *STEP CONTROL
+  .CC
+     *CC INPUT
   .STOP
   .RESTART
   .INTERFACE
@@ -246,18 +252,22 @@ input modules through indentation
 \section{\label{sec:ig_restart} How to restart a wave function calculation}
 
 It is possible to restart\index{restart} after the last finished
-macro iteration in (MC)SCF, provided the "f21"\index{fort.21}
-\typeout{Sonia: SIRIUS.RST} file was saved.  You will then at most
+macro iteration in (MC)SCF, provided the \verb|SIRIUS.RST|\index{SIRIUS.RST}
+file was saved.  You will then at most
 loose part of one macro iteration in case of system crashes, disks
 running full, or other irregularities. \noindent In general the
 only change needed to the wave function input is to add the
-\Key{RESTART} keyword under \Sec{*WAVE FUNCTION}. If the correct
+\Key{RESTART} keyword under \Sec{*WAVE FUNCTION}. However, if the
+original job was a multistep calculation involving {\it e.g.\/} SCF,
+MP2 and MCSCF wave functions, restarting the MCSCF part requires the
+removal of the \quotekw{HF} and \quotekw{MP2} keywords in the input
+file. If the correct
 two-electron integrals over molecular orbitals are available, you
 can skip the integral transformation\index{integral
 transformation} in the beginning of the macro iteration by means
 of the \Key{OLD TRANSFORMATION} keyword under
 \Sec{TRANSFORMATION}. When resubmitting the job, you must make
-sure that the correct "f21" \typeout{Sonia: SIRIUS.RST} file is
+sure that the correct \verb|SIRIUS.RST| file is
 made available to the job.
 %(specify the old "f21" file using
 %the format described in Section~\ref{VM-runs} for VM/CMS
@@ -268,8 +278,8 @@ made available to the job.
 You can also use the restart feature if you find it desirable to
 converge\index{convergence threshold} the wave function sharper
 than specified in the original input. By default, SCF wave
-functions are converged to 1.0D-6, whereas MCSCF and CI wave
-functions are converged to 1.0D-5.
+functions are converged to 1.0D-6 in the gradient norm, whereas MCSCF
+and CI wave functions are converged to 1.0D-5 in the gradient norm. 
 
 \pagebreak[2]
 \section{\label{sec:ig_orbtransfer}
@@ -286,8 +296,8 @@ coefficients.  The options are
 in input group \Sec{ORBITAL INPUT}. The first option is used to
 punch the orbitals at the end of the optimization, while the
 second option is used to punch some molecular
-orbitals\index{molecular orbital} already available on the "f21"
-\typeout{Sonia: SIRIUS.RST} file, for instance the converged
+orbitals\index{molecular orbital} already available on the \verb|SIRIUS.RST|
+file, for instance the converged
 orbitals from a previous calculation.  The orbitals can then be
 transferred to another computer and appended to the SIRIUS input
 there. The orbitals may then be read by \siraba\ using the
@@ -305,7 +315,7 @@ experience any dramatic changes with respect to the DALTON input,
 although a few minor differences exist in order to create a more
 user-friendly environment. The input sections are the same as
 before starting with a wavefunction specification, currently,
-including options for SCF, MP2, and MCSCF reference states.
+including options for SCF, MP2, MCSCF, and CC reference states.
 Depending on this choice of reference state the following input
 sections take different form, from the simplest SCF input to the
 more complex MCSCF input. Minimal SCF and SCF+MP2
@@ -324,18 +334,21 @@ determined when establishing a suitably chosen active
 space\index{active space}. An example of an
 MCSCF-CAS\index{CASSCF} input without starting
 orbitals\index{starting orbitals} will be given, as well as an
-MCSCF-RAS\index{RASSCF} with starting orbitals. We note that and
+MCSCF-RAS\index{RASSCF} with starting orbitals. We note that an
 MCSCF wave function by default will be optimized using
 spin-adapted configurations (CSFs)\index{CSF}\index{configuration
-state function}, unless the wave function optimization is followed
-by a calculation of molecular properties or geometry optimization,
-when determinants\index{determinants} will be used. The three
-following examples illustrate calculations on excited
-states\index{excited state}, on a core hole\index{core hole} state
+state function}.
+% unless the wave function optimization is followed
+%by a calculation of molecular properties or geometry optimization,
+%when determinants\index{determinants} will be used. 
+The three
+following examples illustrate calculations on and excited
+state\index{excited state}, on a core hole\index{core hole} state
 with frozen core orbital\index{frozen core} and on a core hole
 state with relaxed core\index{relaxed core} orbital. The last
 example shows an MCSCF calculation of non-equilibrium solvation
-energy\index{non-equilibrium solvation}.
+energy\index{non-equilibrium solvation}. For examples on how to run CC
+wave functions, we refer to Chapter~\ref{Sec:ccexamples}.
 
 \bigskip
 
@@ -373,8 +386,8 @@ If we would like to calculate molecular properties in several
 geometries, we may take advantage of the fact the molecular
 orbitals at the previous geometry probably is quite close to the
 optimized MOs at the new geometry, and thus restart\index{restart}
-from the MOs contained in the f21\index{fort.21} \typeout{Sonia:
-SIRIUS.RST} file, as indicated in the following example:
+from the MOs contained in the \verb|SIRIUS.RST|\index{SIRIUS.RST}
+file, as indicated in the following example:
 
 \begin{verbatim}
 **DALTON INPUT
@@ -408,14 +421,14 @@ rgensen, H.\AA gren, and J.Olsen. \newblock {\em J.Chem.Phys.}, {\bf
 }}
 \end{center}
 
-The next input example gives the necessary input for an Complete
+The next input example gives the necessary input for a Complete
 Active Space SCF (CASSCF)\index{CASSCF} calculation where we use MP2 to provide
 starting orbitals\index{MP2}\index{M\o ller-Plesset}\index{starting
 orbitals} for our MCSCF. The
 active space may for instance be
 chosen on the basis of an MP2 natural orbital occupation
 analysis\index{active space} as
-described in Ref.~\cite{hjajpjhajojcp88}. The input would like:
+described in Ref.~\cite{hjajpjhajojcp88}. The input would be:
 
 \begin{verbatim}
 **DALTON INPUT
@@ -428,13 +441,13 @@ described in Ref.~\cite{hjajpjhajojcp88}. The input would like:
 .HF OCCUPATION
  2 0 0 0
 *CONFIGURATION INPUT
-.SYMMET
+.SYMMETRY
  1
-.SPIN MULT
+.SPIN MULTIPLICITY
  1
-.INACTIVE
+.INACTIVE ORBITALS
  0 0 0 0
-.ELECTRONS
+.ELECTRONS (active)
  4
 .CAS SPACE
  6 4 4 0
@@ -458,13 +471,13 @@ MCSCF\index{RASSCF} as indicated in this input example:
 .HF OCCUPATION
  2 0 0 0
 *CONFIGURATION INPUT
-.SYMMET
+.SYMMETRY
  1
-.SPIN MULT
+.SPIN MULTIPLICITY
  1
-.INACTIVE
+.INACTIVE ORBITALS
  0 0 0 0
-.ELECTRONS
+.ELECTRONS (active)
  4
 .RAS1 SPACE
  2 1 1 0
@@ -524,9 +537,9 @@ Ref.~\cite{hjajpjhajcp87}. Such an input would look like:
   1                 | same symmetry as ground state
 .SPIN MULTIPLICITY
   1
-.INACTIVE
+.INACTIVE ORBITALS
  1 0 0 0
-.ELECTRONS
+.ELECTRONS (active)
  8
 .CAS SPACE
  4 2 2 0
@@ -587,14 +600,14 @@ Frozen core orbital calculation.
   1
 .SPIN MULTIPLICITY
   2                | doublet spin symmetry because of opened core orbital
-.INACTIVE
+.INACTIVE ORBITALS
  2 0 0 0           | O1s and O2s orbitals are inactive while the
 !                    opened core orbital, C1s, must be active
-.ELECTRONS
+.ELECTRONS (active)
  9                 | all valence electrons plus the core hole electron
 !                    are active
 .RAS1 SPACE
- 1 0 0 0           | the opened core orbital (OBS always only this orbital)
+ 1 0 0 0           | the opened core orbital (NOTE: always only this orbital)
 .RAS1 ELECTRONS
  1 1               | We impose single occupancy for the opened core orbital
 .RAS2 SPACE
@@ -657,9 +670,10 @@ H.J.Aa.Jensen.\newblock {\em J.Chem.Phys.}, {\bf
 \end{center}
 
 This example describes calculations for non-equilibrium
-solvation\index{non-equilibrium solvation}. Usually one starts
+solvation\index{non-equilibrium solvation}, where the molecule will be
+enclosed in a spherical cavity. Usually one starts
 with a calculation of a reference state (most often the ground
-state) with equilibrium solvation, using keyword \Key{INESRF}. The
+state) with equilibrium solvation, using keyword \Key{INERSF}. The
 interface file is then used (without user interference) for a
 non-equilibrium excited state calculation; keyword \Key{INERSI}.
 
@@ -679,7 +693,7 @@ non-equilibrium excited state calculation; keyword \Key{INERSI}.
  1
 .INACTIVE ORBITALS
  1  0  0  0  0  0  0  0
-.ELECTRONS
+.ELECTRONS (active)
  6
 .RAS1 SPACE
  0  0  0  0  0  0  0  0
@@ -693,7 +707,7 @@ non-equilibrium excited state calculation; keyword \Key{INERSI}.
  0  2
 *OPTIMIZATION
 .NEO ALWAYS
-.OPTIMA
+.OPTIMAL ORBITAL TRIAL VECTORS
 *ORBITAL INPUT
 .MOSTART
  NEWORB
