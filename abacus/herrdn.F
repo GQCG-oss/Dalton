@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: herrdn.F,v 1.17 2001-11-24 09:43:50 bernds Exp $
+C$Id: herrdn.F,v 1.18 2002-02-08 12:25:38 ruud Exp $
 C
 #include <single.h>
 #ifdef REVISION_LOG
@@ -1875,7 +1875,7 @@ C  /* Deck acporb */
 #include <dummy.h>
 #include <priunit.h>
 #include <mxcent.h>
-      PARAMETER(D1 = 1.0D0)
+      PARAMETER(D1 = 1.0D0, D0 = 0.0D0)
       CHARACTER*1 FRMT
       CHARACTER*11 FMT1
       CHARACTER*15 FMT2
@@ -1937,7 +1937,13 @@ C      to position LUINFO correctly)
 C
           IF (UNCONT) THEN
             NRCIJ = NUCIJ
-            CALL DUNIT( CPRIMU(1,1), NUCIJ)
+            DO IJ = 1, NUCIJ
+               DO JI = 1, IJ - 1
+                  CPRIMU(IJ,JI) = D0
+                  CPRIMU(JI,IJ) = D0
+               END DO
+               CPRIMU(IJ,IJ) = D1
+            END DO
           END IF
       ELSE
 C

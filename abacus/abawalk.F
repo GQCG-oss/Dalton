@@ -32,11 +32,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abawalk.F,v 1.11 2001-12-13 08:52:37 ruden Exp $
+C$Id: abawalk.F,v 1.12 2002-02-08 12:25:38 ruud Exp $
 C
 #include <single.h>
 #ifdef REVLOG
 $Log: not supported by cvs2svn $
+Revision 1.11  2001/12/13 08:52:37  ruden
+Merged dft-1-0 into dalton for the last time. New updates for numerical derivatives.
+TR.
+
 Revision 1.4.2.3  2001/12/12 10:49:17  ruden
 Merging dft-1-0 into dalton. TR
 
@@ -698,6 +702,12 @@ C
       CALL QENTER('WLKDRV')
       IF (IPRWLK .GT. 3) CALL TIMER ('START ',TIMEIN,TIMOUT)
       IF (IPRWLK .GT. 2) CALL TITLER('Output from WLKDRV','*',103)
+      IF (V3CAL .OR. VIBAVE .AND. IREP .GT. 0) THEN
+         WRITE (LUPRI,'(/A)') ' Program cannot use symmetry when '//
+     &        'doing vibrational averaging'
+         CALL QUIT('Symmetry not implemented for vibrational '//
+     &        'averaging')
+      END IF
 C
 C     NPRREP(IREP): Number of coordinates to be projected out
 C

@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abadrv.F,v 1.10 2001-10-01 13:22:09 vebjornb Exp $
+C$Id: abadrv.F,v 1.11 2002-02-08 12:25:37 ruud Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -1568,7 +1568,7 @@ C     CALL PSAVE
 C
       IF ( (NASHT .LT. 1) .AND.
      &     (MOLHES .OR. DIPDER .OR. VCD .OR. MAGSUS .OR.
-     &     ECD .OR. VROA .OR. OPTROT .OR. SHIELD )) THEN
+     &     ECD .OR. VROA .OR. OPTROT .OR. SHIELD .OR. SPINRO)) THEN
 C
 C	We add this line when direct, non-symmetric SKLFCK is fixed,KR
 C

@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abarhs.F,v 1.7 2001-10-01 13:22:11 vebjornb Exp $
+C$Id: abarhs.F,v 1.8 2002-02-08 12:25:37 ruud Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -1025,7 +1025,7 @@ C        Close and delete AO2MGINT if it has been used
 C
          IF (LU2DER .GT. 0) CALL GPCLOSE(LU2DER,'DELETE')
          IF (DOPRHS .AND. IATOM .EQ. 0) THEN
-            IF (.NOT. SHIELD) THEN
+            IF (.NOT. (SHIELD .OR. SPINRO)) THEN
                KWRK = KWMAT
             ELSE
                KWRK = KWMAT + 3*N2ORBX
