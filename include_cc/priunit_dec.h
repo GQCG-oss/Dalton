@@ -3,5 +3,5 @@
 * -------------------------------------------------------------------- *
 * explicite variable declaration for PRIUNIT.H
 * -------------------------------------------------------------------- *
-      Integer LUCMD, LUPRI, LUERR , LUW4
+      Integer LUCMD, LUPRI, LUERR , LUW4, NINFO, NWARN, IPRERR
 * -------------------------------------------------------------------- *
