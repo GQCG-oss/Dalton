@@ -450,7 +450,9 @@ C
         IMIN = I
         ISSI = ISS(I)
         DO 20 J=I+1,N
-          IF (ISS(J) .NE. ISSI) GO TO 20
+C         IF (ISS(J) .NE. ISSI) GO TO 20
+C           ... now also reorder diff. supsym, instead update ISS(:)
+C               /hjaaj aug 04
           IF (EVAL(J) .LT. EMIN) THEN
             EMIN = EVAL(J)
             IMIN = J
@@ -462,6 +464,8 @@ C
           IF (NEVEC .GT. 0) THEN
             CALL DSWAP(NEVEC,EVEC(IN),1,EVEC((IMIN-1)*NEVEC+1),1)
           ENDIF
+          ISS(I) = ISS(IMIN)
+          ISS(IMIN) = ISSI
         ENDIF
         IN = IN + NEVEC
    10 CONTINUE
@@ -471,8 +475,7 @@ C  /* Deck ord2ss */
       SUBROUTINE ORD2SS(EVEC,EVAL,ISS,N,NEVEC)
 C
 C Purpose: order the N values in EVAL and their associated vectors
-C          in EVEC so EVAL(i+1) .le. EVAL(i) using the infomation
-C          in ISS
+C          in EVEC so EVAL(i+1) .le. EVAL(i) using the infomation in ISS
 C          (this is opposite order of "ORDRSS")
 C
 #include "implicit.h"
@@ -484,7 +487,9 @@ C
          IMAX = I
          ISSI = ISS(I)
          DO 20 J=I+1,N
-            IF (ISS(J) .NE. ISSI) GO TO 20
+C           IF (ISS(J) .NE. ISSI) GO TO 20
+C           ... now also reorder diff. supsym, instead update ISS(:)
+C               /hjaaj aug 04
             IF (EVAL(J) .GT. EMAX) THEN
                EMAX = EVAL(J)
                IMAX = J
@@ -496,6 +501,8 @@ C
             IF (NEVEC .GT. 0) THEN
               CALL DSWAP(NEVEC,EVEC(IN),1,EVEC((IMAX-1)*NEVEC+1),1)
             ENDIF
+            ISS(I) = ISS(IMAX)
+            ISS(IMAX) = ISSI
          ENDIF
          IN = IN + NEVEC
    10 CONTINUE
@@ -1935,6 +1942,9 @@ C
 C     K.Ruud, April 19 (2000)
 C
 #if !defined (VAR_SPLITFILES)
+      IF (LU .LT. 1) THEN
+         CALL QUIT('REWSPL called with negative unit number LU')
+      END IF
       REWIND (LU)
 #else
 #include "implicit.h"
