@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2aob.F,v 1.3 2001-04-03 14:25:11 vebjornb Exp $
+C$Id: eri2aob.F,v 1.4 2001-04-18 07:09:09 helgaker Exp $
 C
 #include <single.h>
 C  /* Deck setaob */
@@ -51,17 +51,18 @@ C
 C     Number of basis functions
 C
       NBASE  = 0
-      DO 100 K = 0, MAXREP
-      DO 100 I = 1, KMAX
+      DO K = 0, MAXREP
+      DO I = 1, KMAX
          IF (IBTAND(K,ISTBAO(I)).EQ.0) NBASE = NBASE + KHKT(I)
-  100 CONTINUE
+      END DO
+      END DO
 C
       NODD = 1 - MOD(NBASE,2)
 C
       NGAB = 0
-      DO 110 I = 1, KMAX
+      DO I = 1, KMAX
          NGAB = NGAB + MULT(ISTBAO(I))*NUCO(I)
-  110 CONTINUE
+      END DO
 C
       IORBRP(0) = 1
       DO IREPA = 1, MAXREP
@@ -72,7 +73,7 @@ C     AO batches
 C
       NB = 0
       NC = 0
-      DO 200 ISHELL = 1, KMAX
+      DO ISHELL = 1, KMAX
          IF (NB.NE.NBCH(ISHELL) .OR. NC.NE.NCENT(ISHELL)) THEN
             NB = NBCH(ISHELL)
             NC = NCENT(ISHELL)
@@ -82,7 +83,7 @@ C
             IORBRP(IREPA) = IORBRP(IREPA)
      &        + MLTCMP(NHKT(ISHELL),KHKT(ISHELL),ISTBAO(ISHELL),IREPA)
          END DO
-  200 CONTINUE
+      END DO
 C
 C     Identity contraction matrices
 C
@@ -94,7 +95,7 @@ C
          CALL HEADER(
      &       '   #  NORB   NHKT KCKT KHKT   NPRF NCTF KCMT  '//
      &       ' NCNT   ISTB MULT',1)
-         DO 900 I = 1, NAOBCH
+         DO I = 1, NAOBCH
             WRITE (LUPRI,'(1X,2I5,2X,3I5,2X,3I5,2X,I5,2X,2I5)')
      &          I,
      &          NORBBT(I),
@@ -102,34 +103,34 @@ C
      &          NPRFBT(I), NCTFBT(I), KCMTBT(I),
      &          NCNTBT(I),
      &          ISTBBT(I), MULTBT(I)
-  900    CONTINUE
+         END DO
       END IF
       IF (IPRINT .GT. 5) THEN
          CALL HEADER('Exponents and contraction coefficients',-1)
-         DO 910 I = 1, NAOBCH
+         DO I = 1, NAOBCH
             WRITE (LUPRI,'(/,1X,A,I2,A,2I3,/)')
      &         ' Exp. and cont. coef. for AO batch',I,
      &         ' of dimensions',NPRFBT(I),NCTFBT(I)
             KEXP = KEXPBT(I) - 1
             KPRI = KCCFBT(I) - 1
-            DO 920 J = 1, NPRFBT(I)
+            DO J = 1, NPRFBT(I)
                WRITE (LUPRI,'(2X,E8.3,7(2X,E8.2))') EXPBT(KEXP + J),
      &             (CCFBT(KPRI + J + NPRFBT(I)*(K-1)),K=1,NCTFBT(I))
-  920       CONTINUE
-  910    CONTINUE
+            END DO
+         END DO
          CALL HEADER('Coordinates for AO batches',-1)
-         DO 930 I = 1, NAOBCH
+         DO I = 1, NAOBCH
             WRITE (LUPRI,'(2X,I5,5X,3F12.6)')
      &          I, CORXBT(I), CORYBT(I), CORZBT(I)
-  930    CONTINUE
+         END DO
          CALL HEADER('Orbital indices for AO batches',-1)
-         DO 940 IREPA = 0, MAXREP
+         DO IREPA = 0, MAXREP
             WRITE (LUPRI,'(2X,A,I5)') 'Symmetry ',IREPA
-            DO 950 I = 1, NAOBCH
+            DO I = 1, NAOBCH
                WRITE (LUPRI,'(2X,I5,3X,(22I3))')
      &             I, (INDXBT(KNDXBT(I) - 1 + J,IREPA),J=1,NCTFBT(I))
-  950       CONTINUE
-  940    CONTINUE
+            END DO
+         END DO
       END IF
 C
 C     Sort AO batches
@@ -140,17 +141,17 @@ C     MAXQN, KQNBT, NQNBT
 C
       MAXQN = 0
       NHKOLD = 0
-      DO 300 I = 1, NAOBCH
+      DO I = 1, NAOBCH
          NHKTA = NHKTBT(KAOSRT(I))
          IF (NHKTA.NE.NHKOLD) THEN
             KQNBT(NHKTA) = I
             NHKOLD = NHKTA
          END IF
          MAXQN = MAX(MAXQN,NHKTA)
-  300 CONTINUE
-      DO 400 I = 1, MAXQN - 1
+      END DO
+      DO I = 1, MAXQN - 1
          NQNBT(I) = KQNBT(I+1) - KQNBT(I)
-  400 CONTINUE
+      END DO
       NQNBT(MAXQN) = NAOBCH - KQNBT(MAXQN) + 1
 C
       IF (IPRINT .GT. 3) THEN
@@ -240,7 +241,7 @@ C     NMAT, NDIMP(), NDIMC(), IPNTP(), IPNTC()
 C
       NMAT = 0
       CALL IZERO(IDONE,NUCA)
-      DO 300 I = 1, NRCA
+      DO I = 1, NRCA
          IF (IDONE(I).EQ.0) THEN
 C
             NMAT = NMAT + 1
@@ -251,12 +252,13 @@ C
 C           First non-zero primitive
 C
             KCONT = I
-            DO 410 J = 1, NUCA
-            IF (MAT(J,KCONT) .EQ. 1) THEN
-               KPRIM = J
-               GO TO 410
-            END IF
-  410       CONTINUE
+            DO J = 1, NUCA
+               IF (MAT(J,KCONT) .EQ. 1) THEN
+                  KPRIM = J
+                  GO TO 100
+               END IF
+            END DO
+  100       CONTINUE
 C
 C           IPNTP and NDIMP
 C
@@ -281,7 +283,7 @@ C
             NDIMC(NMAT) = ICNT
 C
          END IF
-  300 CONTINUE
+      END DO
 C
       IF (IPRINT .GT. 5) THEN
          CALL HEADER('Output from AOBCH1',-1)
@@ -310,7 +312,7 @@ C
          NBTCH = 0
       END IF
 C
-      DO 500 IMAT = 1, NMAT
+      DO IMAT = 1, NMAT
          IBATCH = NBTCH + IMAT
          CORXBT(IBATCH) = CENT(ISHELL,1,1)
          CORYBT(IBATCH) = CENT(ISHELL,2,1)
@@ -354,7 +356,7 @@ C
             IADRO = IADRO + 1
          END DO
 C
-  500 CONTINUE
+      END DO
 C
       NBTCH = NBTCH + NMAT
       NAOBCH = NBTCH
@@ -459,10 +461,10 @@ C  /* Deck mltcmp */
 #include <ibtfun.h>
 C
       MLTCMP = 0
-      DO 100 ICMPA = 1, KHKTA
+      DO ICMPA = 1, KHKTA
          IPARA = IBTXOR(IREPA,ISYMAO(NHKTA,ICMPA))
          IF (IBTAND(MULA,IPARA) .EQ. 0) MLTCMP = MLTCMP + 1
-  100 CONTINUE
+      END DO
 C
       RETURN
       END

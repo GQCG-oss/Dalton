@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2dis.F,v 1.3 2001-04-03 14:25:11 vebjornb Exp $
+C$Id: eri2dis.F,v 1.4 2001-04-18 07:09:09 helgaker Exp $
 C
 #include <single.h>
 C  /* Deck eridi1 */
@@ -631,9 +631,9 @@ C
 C        MAXCML
 C
          MAXCML = 0
-         DO 100 I = 1, NAOBCH
+         DO I = 1, NAOBCH
             MAXCML = MAX(MAXCML,NORBBT(KAOSRT(I)))
-  100    CONTINUE
+         END DO
 C
 C        MXDIST: value used in parameter statement for 
 C                common blocks etc. 
@@ -666,7 +666,7 @@ C
          MCLASS(ICLASS) = NORBBT(IOLD)
          KCLASS(ICLASS) = 1
          KLAOBT(1) = 1
-         DO 200 I = 2, NAOBCH
+         DO I = 2, NAOBCH
             INEW = KAOSRT(I)
             IF (AOBTGT(INEW,IOLD)) THEN
                ICLASS = ICLASS + 1
@@ -678,7 +678,7 @@ C
                NCLASS(ICLASS) = NCLASS(ICLASS) + 1
             END IF
             KLAOBT(I) = ICLASS
-  200    CONTINUE
+         END DO
          NTCLAS = ICLASS
 C
          IF (IPRINT .GT. 2) THEN
@@ -702,7 +702,7 @@ C        Determine number of calls to integral program
 C
          IPRVDS = 0
          ICALL = 0
-         DO 300 I = 1, NAOBCH
+         DO I = 1, NAOBCH
             IFIRST = IPRVDS + 1
             ICLASS = KLAOBT(IFIRST)
             MULTPL = MCLASS(ICLASS)
@@ -728,10 +728,10 @@ C
 C
             IPRVDS = ILAST
 C
-            IF (ILAST .EQ. NAOBCH) GO TO 399
+            IF (ILAST .EQ. NAOBCH) GO TO 100
 C
-  300    CONTINUE
-  399    CONTINUE
+         END DO
+  100    CONTINUE
 C
          MXCALL = ICALL
          IF (IPRINT .GT. 1) THEN
@@ -800,7 +800,7 @@ C
       KEND1 = KFREE
       LWRK1 = LFREE
 C
-      DO 100 IDIST = 1, MXCALL
+      DO IDIST = 1, MXCALL
          WRITE (LUPRI,'(A,I5)')
      &      ' Calling ERIDI2 for distribution #',IDIST
          CALL TIMER('START ',TIMSTR,TIMEND)
@@ -816,7 +816,7 @@ C
          WRITE (LUPRI,'(1X,A,8I5,/,(30X,8I5))')
      &      ' Distributions:              ',(INDEXA(I),I=1,NUMDIS)
          CALL TIMER('ERIDI2',TIMSTR,TIMEND)
-  100 CONTINUE
+      END DO
 C
       RETURN
       END
