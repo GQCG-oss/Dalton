@@ -3481,6 +3481,7 @@ C
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <maxorb.h>
+#include <gnrinf.h>
 C
       CHARACTER*4 NAME
       INTEGER NBASE(8), NSIGN(8)
@@ -3622,8 +3623,9 @@ C
 C
 C     Print internuclear distances
 C
-      IF (IPREAD .GT. 0) CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,.FALSE.,
-     &                               IDUMMY,WORK(ISTRT),LWORK)
+      IF ((IPREAD .GT. 0) .OR. (GEOALL)) 
+     &     CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,.FALSE.,
+     &                 IDUMMY,WORK(ISTRT),LWORK)
 C
 C     As a new default, we (almost) always print a rotational analysis, kr-02
 C

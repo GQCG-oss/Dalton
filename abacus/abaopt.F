@@ -71,7 +71,7 @@ C
      &            '.RF    ', '.GDIIS ', '.DELINT', '.NODIHE',
      &            '.VR-COR', '.VR-VIB', '.VR-SYM', '.M-PSB ',
      &            '.LINE S', '.SADDLE', '.MODE  ', '.BOFILL',
-     &            '.NOAUX ', '.BFGSR1', '.XXXXXX', '.XXXXXX'/
+     &            '.NOAUX ', '.BFGSR1', '.STABIL', '.GEOANA'/
 C
       DATA FIRST /.TRUE./
 C
@@ -112,6 +112,7 @@ C
       IREDIC = -1
       IINTCR = 0
       ICRTCR = 0
+      ISTBLZ = -1
       STEEPD = .FALSE.
       RANKON = .FALSE.
       PSB    = .FALSE.
@@ -402,9 +403,9 @@ C
             GOTO 100
  62         BFGSR1 = .TRUE.
             GOTO 100
- 63         CONTINUE
+ 63         READ (LUCMD,*) ISTBLZ
             GOTO 100
- 64         CONTINUE
+ 64         GEOALL = .TRUE.
             GOTO 100
          ELSE IF (PROMPT .EQ. '*') THEN
             GOTO 300
@@ -1092,6 +1093,23 @@ C
      &        ' Eigenvectors will be visualized.'
          IF (VRVIBA) WRITE(LUPRI,'(A)')
      &        ' Eigenvectors will be visualized.'
+      END IF
+C
+C     Geometry analysis
+C
+      IF (GEOALL) WRITE(LUPRI,'(/A/)')
+     &        ' Geometry analysis will be printed for each iteration.'
+C
+C     Adjusted accuracy
+C
+      IF (ISTBLZ .GT. 0) THEN
+         WRITE(LUPRI,'(A,I2)')
+     &        ' Geometries are stabilized by ignoring all digits '
+     &        // 'beyond digit number ', ISTBLZ
+         WRITE(LUPRI,'(A/A)')
+     &        ' WARNING: This is an experimental feature!', 
+     &        ' Use it at your own risk, ' // 
+     &        'the result may or may not be meaningful...'
       END IF
       RETURN
       END
@@ -4664,8 +4682,6 @@ C
       CALL WLKCGH(EGRAD,ALLHES,WORK(1),WORK(4),WORK(4+3*NCART),
      &            LWORK-(4+3*NCART),DOREPW,TRU,FAL,NCRTOT,
      &            NCRTOT*NCRTOT,0,NCART,FAL,IPRINT)
-C     CALL WLKCGH(GRDCAR,HESCAR,DIPM,DIPG0,WORK,LWORK,DOREPW,DOHESS,
-C    *            DODIP,NCRTOT,N2CRT,NXYZ,NCART,START,IPRWLK)
       JI = 1
       DO 10 I = 1, NCART
          DO 20 J = 1, NCART
@@ -5913,7 +5929,7 @@ C
 #include <gnrinf.h>
 #include <priunit.h>
       DIMENSION CSTEP(MXCOOR), EGRAD(MXCOOR)
-      DIMENSION COONEW(3,MXCENT), COOOLD(3,MXCENT)
+      DIMENSION COONEW(3,MXCENT), COOOLD(3,MXCENT), ICRD(3)
       DIMENSION WORK(LWORK)
       DIMENSION GEINFO(0:ITRMAX,6)
       CHARACTER*10 FILENM
@@ -5945,6 +5961,32 @@ C     is initially set TRUE to enter the loop.
 C
  50   CONTINUE
       IF ((IREJ .LE. MAXREJ) .AND. REJGEO) THEN
+C
+C     If geometry stabilization has been requested (experimental feature!!!),
+C     all coordinates with a difference less than the limit are set equal.
+C
+         IF (ISTBLZ .GT. 0) THEN
+            IF (IPRINT .GT. 6) THEN
+               CALL HEADER('Non-stabilized geometry',-1)
+               CALL PRIGEO(COONEW)
+            END IF
+            DO 33 J = 1, NUCIND - 1
+               ICRD(1) = NINT(COONEW(1,J)*10**ISTBLZ)
+               ICRD(2) = NINT(COONEW(2,J)*10**ISTBLZ)
+               ICRD(3) = NINT(COONEW(3,J)*10**ISTBLZ)
+               DO 34 JJ = J, NUCIND
+                  DO 35 I = 1, 3
+                     IF (ABS(ICRD(I) - NINT(COONEW(I,JJ)*10**ISTBLZ))
+     &                    .LE. 1) COONEW(I,JJ) = COONEW(I,J)
+ 35               CONTINUE
+ 34            CONTINUE
+ 33         CONTINUE
+            IF (IPRINT .GT. 6) THEN
+               CALL HEADER('Stabilized geometry',-1)
+               CALL PRIGEO(COONEW)
+            END IF
+         END IF
+C
          IF (IPRINT .GT. 2) THEN
             CALL HEADER('New geometry',-1)
             CALL PRIGEO(COONEW)

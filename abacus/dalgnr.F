@@ -1097,6 +1097,7 @@ C     NEWTRA is in /INFTRA/ for practical reasons
       RELCAL = .FALSE.
       NMWALK = .FALSE.
       DKTRAN = .FALSE.
+      GEOALL = .FALSE.
       PANAS  = 0.0D0
 C
 C     Initialize /EXEINF/

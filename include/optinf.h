@@ -18,7 +18,7 @@
      &                EVALOL(8*MXCENT), GRDINT(8*MXCENT),
      &                CRDIN1(8*MXCENT), CRDINT(8*MXCENT),
      &                CNDHES(0:7), INDHES(0:7), INTCRD(8*MXCENT,6),
-     &                ICONF(0:5), ICNSTR(8*MXCENT),
+     &                ICONF(0:5), ICNSTR(8*MXCENT), ISTBLZ,
      &                IAUXRD, ITOTRJ, KEPTIT, NSPMOD, NCNSTP,
      &                INDTOT, ITRNMR, ITRMAX, MAXREJ, IPRINT, NCRTOT,
      &                NCART,  NPROJ,  NTMAT,  IINTCR, IREDIC, ICRTCR,
