@@ -501,7 +501,7 @@ C     **************************************************
 #include <priunit.h>
 #include <mxcent.h>
 C
-#include <cbilrs.h>
+#include <cbiexc.h>
 #include <inforb.h>
 #include <abainf.h>
 #include <trkoor.h>
@@ -524,7 +524,7 @@ c         CALL IZERO(NREDSM,NSYM**2)
 C
 C     *** Read reference properties from file. ***
 C
-c         CALL RDREFG(EXCERF,NSYM,MXNEXI,PRPTXT)
+c         CALL RDREFG(EXCERF,NSYM,PRPTXT)
 c      END IF
 C
 C     *** Rewind property file. ***
@@ -647,7 +647,7 @@ C
                WRITE (LUPRI,'(1X,A,I6)')'Molecular geometry number:',
      &                IMPCAL
                CALL PRDPTR(TRLNFV(1,1,1,IMPCAL),EXENFV(1,1,IMPCAL),NSYM,
-     &                     MXNEXI,LUPRI)
+     &                     LUPRI)
             END DO
          END IF
 C
@@ -672,7 +672,7 @@ C     /* Deck chprrd*/
 #include <implicit.h>
 #include <mxcent.h>
 C
-#include <cbilrs.h>
+#include <cbiexc.h>
 #include <trkoor.h>
 #include <inforb.h>
 #include <prpc.h>
@@ -1488,8 +1488,9 @@ C
       END
 C
 C
+#ifdef NOT_USED_IN_THIS_DALTON_VERSION
 C     /* Deck rdrefg */
-      SUBROUTINE RDREFG(EXCERF,NSYM,MXNEXI,PRPTXT)
+      SUBROUTINE RDREFG(EXCERF,NSYM,PRPTXT)
 #include <implicit.h>
 #include <priunit.h>
 C
@@ -1527,8 +1528,9 @@ C     *** Debug print. ***
 C
       IF (IPRINT.GT.20) THEN
          CALL HEADER('Excitation energies at ref. geom.',0)
-         CALL PREXCE(EXCERF,NSYM,MXNEXI,LUPRI)
+         CALL PREXCE(EXCERF,NSYM,LUPRI)
       END IF
 C
       RETURN
       END
+#endif  /* NOT_USED_IN_THIS_DALTON_VERSION */

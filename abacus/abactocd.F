@@ -198,14 +198,14 @@ cLig  <> added the TODOINT to see if the property was already in the file
       ELSE
         CALL GET1IN(DUMMY,'DIPVEL ',NCOMP,WORK(KWORK2),LWORK2,
      &              LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &              IDUMMY,.TRUE.,NPATOM,.TRUE.,IPRINT)
+     &              IDUMMY,.TRUE.,NPATOM,.TRUE.,IPR1IN)
       ENDIF
       NLAB = 3
       CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
       IF (MAGSUS) THEN
          CALL GET1IN(DUMMY,'RANGMO ',NCOMP,WORK(KWORK2),LWORK2,
      &               LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,IPRINT)
+     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,IPR1IN)
          NLAB = 9
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
          NLBSHIS = 13
@@ -217,7 +217,7 @@ cLig  <> added the TODOINT to see if the property was already in the file
          ELSE
            CALL GET1IN(DUMMY,'RPSO   ',NCOMP,WORK(KWORK2),LWORK2,
      &                 LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &                 IDUMMY,.TRUE.,NPATOM,.TRUE.,IPRINT)
+     &                 IDUMMY,.TRUE.,NPATOM,.TRUE.,IPR1IN)
          ENDIF
          NLAB = 3*NCOOR
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
@@ -227,7 +227,7 @@ cLig  <> added the TODOINT to see if the property was already in the file
          ELSE
            CALL GET1IN(DUMMY,'PSO    ',NCOMP,WORK(KWORK2),LWORK2,
      &                 LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &                 IDUMMY,.TRUE.,NPATOM,.TRUE.,IPRINT)
+     &                 IDUMMY,.TRUE.,NPATOM,.TRUE.,IPR1IN)
          ENDIF
          NLAB = NCOOR
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)

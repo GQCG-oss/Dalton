@@ -1189,7 +1189,7 @@ c#include <pario.h>
 c#endif
 #include <infpar.h>
 #include <inforb.h>
-#include <cbilrs.h>
+#include <cbiexc.h>
 C
 #include <trkoor.h>
 #include <nuclei.h>
@@ -5758,7 +5758,7 @@ C
      &                    ICOOR
 C
                      CALL PRDPTR(TRLNDR(1,1,1,IDERV),EXENFV(1,1,1),NSYM,
-     &                           MXNEXI,LUPRI)
+     &                           LUPRI)
                   END DO
                ELSE IF (IORDR.EQ.2) THEN
 C
@@ -5781,7 +5781,7 @@ C
      &                       ICOOR2, ' and ', ICOOR1
 C
                         CALL PRDPTR(TRLNDR(1,1,1,IDERV),EXENFV(1,1,1),
-     &                              NSYM,MXNEXI,LUPRI)
+     &                              NSYM,LUPRI)
                      END IF
                   END DO
                   END DO
@@ -5864,7 +5864,7 @@ C
 C
 C
 C     /* Deck trfcgd */
-      SUBROUTINE PRDPTR(TRLEN,EXENG,NSYM,MXNEXI,LUPRI)
+      SUBROUTINE PRDPTR(TRLEN,EXENG,NSYM,LUPRI)
 C     ***************************************************
 C     *** Subroutine that prints the dipole transition***
 C     *** moments.                                    ***
@@ -6622,7 +6622,7 @@ C
 C
 C
 C     /* Deck prexce */
-      SUBROUTINE PREXCE(EXENG,NSYM,MXNEXI,LUPRI)
+      SUBROUTINE PREXCE(EXENG,NSYM,LUPRI)
 C     **************************************************
 C     *** Subroutine that prints excitation energies ***
 C     **************************************************
@@ -6668,11 +6668,11 @@ C     *************************************************************
 #include <maxaqn.h>
       PARAMETER (THRSH=1.0D-8)
 #include <inforb.h>
-#include <cbilrs.h>
+#include <cbiexc.h>
 #include <pvibav.h>
 #include <symmet.h>
 #include <numder.h>
-      DIMENSION TRLNFV(3,NSYM,MXNEXI,NMPCAL), NEXCIT(MAXREP+1)
+      DIMENSION TRLNFV(3,NSYM,MXNEXI,NMPCAL)
 C
       DO 100 IMPCAL = 1, NMPCAL
          CALL NMCOMP(NFIRST,IMPCAL,NMRDRP,IPRINT)
