@@ -381,7 +381,7 @@ c /* deck CC_2HYP */
       IF (L_USE_CHI2) THEN
         TIM1 = SECOND()
 
-        CALL CC_DOTDRV('X2 ','R2 ',NXTRAN,MXVEC2,
+        CALL CC_DOTDRV('X2B','R2 ',NXTRAN,MXVEC2,
      &                 WORK(KXTRAN), WORK(KXDOTS), WORK(KXCONS),
      &                 WORK(KEND0), LEND0 )
 C       CALL CC_DOTDRV('L2 ','O2 ',NXTRAN,MXVEC2,
@@ -418,7 +418,7 @@ C    &                 WORK(KEND0), LEND0 )
 
         TIM1 = SECOND()
 
-        CALL CC_DOTDRV('R3','X1',NOTRAN,MXVEC1,
+        CALL CC_DOTDRV('R3','X1B',NOTRAN,MXVEC1,
      &                 WORK(KOTRAN), WORK(KODOTS), WORK(KOCONS),
      &                 WORK(KEND0), LEND0 )
 
@@ -501,18 +501,31 @@ C    &                 WORK(KEND0), LEND0 )
      &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
 
         IF (L_USE_CHI2) THEN
-          IX2(AB)=ICHI2(LBLOPR(IOP(A)),.FALSE.,SIGN*ACRFR(IFREQ),ISYM1,
-     &                  LBLOPR(IOP(B)),.FALSE.,SIGN*BCRFR(IFREQ),ISYM2)
-          IX2(AC)=ICHI2(LBLOPR(IOP(A)),.FALSE.,SIGN*ACRFR(IFREQ),ISYM1,
-     &                  LBLOPR(IOP(C)),.FALSE.,SIGN*CCRFR(IFREQ),ISYM2)
-          IX2(AD)=ICHI2(LBLOPR(IOP(A)),.FALSE.,SIGN*ACRFR(IFREQ),ISYM1,
-     &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
-          IX2(BC)=ICHI2(LBLOPR(IOP(B)),.FALSE.,SIGN*BCRFR(IFREQ),ISYM1,
-     &                  LBLOPR(IOP(C)),.FALSE.,SIGN*CCRFR(IFREQ),ISYM2)
-          IX2(BD)=ICHI2(LBLOPR(IOP(B)),.FALSE.,SIGN*BCRFR(IFREQ),ISYM1,
-     &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
-          IX2(CD)=ICHI2(LBLOPR(IOP(C)),.FALSE.,SIGN*CCRFR(IFREQ),ISYM1,
-     &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
+c         IX2(AB)=ICHI2(LBLOPR(IOP(A)),.FALSE.,SIGN*ACRFR(IFREQ),ISYM1,
+c    &                  LBLOPR(IOP(B)),.FALSE.,SIGN*BCRFR(IFREQ),ISYM2)
+c         IX2(AC)=ICHI2(LBLOPR(IOP(A)),.FALSE.,SIGN*ACRFR(IFREQ),ISYM1,
+c    &                  LBLOPR(IOP(C)),.FALSE.,SIGN*CCRFR(IFREQ),ISYM2)
+c         IX2(AD)=ICHI2(LBLOPR(IOP(A)),.FALSE.,SIGN*ACRFR(IFREQ),ISYM1,
+c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
+c         IX2(BC)=ICHI2(LBLOPR(IOP(B)),.FALSE.,SIGN*BCRFR(IFREQ),ISYM1,
+c    &                  LBLOPR(IOP(C)),.FALSE.,SIGN*CCRFR(IFREQ),ISYM2)
+c         IX2(BD)=ICHI2(LBLOPR(IOP(B)),.FALSE.,SIGN*BCRFR(IFREQ),ISYM1,
+c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
+c         IX2(CD)=ICHI2(LBLOPR(IOP(C)),.FALSE.,SIGN*CCRFR(IFREQ),ISYM1,
+c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
+
+         IX2(AB)=IL2ZETA(LBLOPR(IOP(A)),        SIGN*ACRFR(IFREQ),ISYM1,
+     &                   LBLOPR(IOP(B)),        SIGN*BCRFR(IFREQ),ISYM2)
+         IX2(AC)=IL2ZETA(LBLOPR(IOP(A)),        SIGN*ACRFR(IFREQ),ISYM1,
+     &                   LBLOPR(IOP(C)),        SIGN*CCRFR(IFREQ),ISYM2)
+         IX2(AD)=IL2ZETA(LBLOPR(IOP(A)),        SIGN*ACRFR(IFREQ),ISYM1,
+     &                   LBLOPR(IOP(D)),        SIGN*DCRFR(IFREQ),ISYM2)
+         IX2(BC)=IL2ZETA(LBLOPR(IOP(B)),        SIGN*BCRFR(IFREQ),ISYM1,
+     &                   LBLOPR(IOP(C)),        SIGN*CCRFR(IFREQ),ISYM2)
+         IX2(BD)=IL2ZETA(LBLOPR(IOP(B)),        SIGN*BCRFR(IFREQ),ISYM1,
+     &                   LBLOPR(IOP(D)),        SIGN*DCRFR(IFREQ),ISYM2)
+         IX2(CD)=IL2ZETA(LBLOPR(IOP(C)),        SIGN*CCRFR(IFREQ),ISYM1,
+     &                   LBLOPR(IOP(D)),        SIGN*DCRFR(IFREQ),ISYM2)
         END IF
 
         IF (L_USE_XKS3) THEN
@@ -692,27 +705,27 @@ C    &                 WORK(KEND0), LEND0 )
 *---------------------------------------------------------------------*
       IF (L_USE_CHI2) THEN
         CALL CC_SETDOT(WORK(KXTRAN),WORK(KXDOTS),MXTRAN2,MXVEC2,
-     &                 IX2(AB),IX2(CD),ITRAN,IVEC)
+     &                 IX2(AB),IR2(CD),ITRAN,IVEC)
         XCON(1) = WORK(KXCONS-1 + (ITRAN-1)*MXVEC2 + IVEC)
 
         CALL CC_SETDOT(WORK(KXTRAN),WORK(KXDOTS),MXTRAN2,MXVEC2,
-     &                 IX2(AC),IX2(BD),ITRAN,IVEC)
+     &                 IX2(AC),IR2(BD),ITRAN,IVEC)
         XCON(2) = WORK(KXCONS-1 + (ITRAN-1)*MXVEC2 + IVEC)
 
         CALL CC_SETDOT(WORK(KXTRAN),WORK(KXDOTS),MXTRAN2,MXVEC2,
-     &                 IX2(AD),IX2(BC),ITRAN,IVEC)
+     &                 IX2(AD),IR2(BC),ITRAN,IVEC)
         XCON(3) = WORK(KXCONS-1 + (ITRAN-1)*MXVEC2 + IVEC)
 
         CALL CC_SETDOT(WORK(KXTRAN),WORK(KXDOTS),MXTRAN2,MXVEC2,
-     &                 IX2(CD),IX2(AB),ITRAN,IVEC)
+     &                 IX2(CD),IR2(AB),ITRAN,IVEC)
         XCON(4) = WORK(KXCONS-1 + (ITRAN-1)*MXVEC2 + IVEC)
 
         CALL CC_SETDOT(WORK(KXTRAN),WORK(KXDOTS),MXTRAN2,MXVEC2,
-     &                 IX2(BD),IX2(AC),ITRAN,IVEC)
+     &                 IX2(BD),IR2(AC),ITRAN,IVEC)
         XCON(5) = WORK(KXCONS-1 + (ITRAN-1)*MXVEC2 + IVEC)
 
         CALL CC_SETDOT(WORK(KXTRAN),WORK(KXDOTS),MXTRAN2,MXVEC2,
-     &                 IX2(BC),IX2(AD),ITRAN,IVEC)
+     &                 IX2(BC),IR2(AD),ITRAN,IVEC)
         XCON(6) = WORK(KXCONS-1 + (ITRAN-1)*MXVEC2 + IVEC)
       ELSE 
         XCON(1) = ZERO

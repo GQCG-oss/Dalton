@@ -306,7 +306,7 @@ c /* deck cc_hyppol */
       IF ( USE_R2 ) THEN
         TIM1 = SECOND()
 
-        CALL CC_DOTDRV('R2 ','X1 ',NR2TRAN,MXVEC,
+        CALL CC_DOTDRV('R2 ','X1B',NR2TRAN,MXVEC,
      &                 WORK(KR2TRAN), WORK(KR2DOTS), WORK(KR2CONS),
      &                 WORK(KEND0), LEND0 )
 
