@@ -1814,6 +1814,7 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
          DIMENSION ARR(6, 0:MXM), TARR(5, 0:MXM)
          DIMENSION TMPARR(5, 0:2), VEC(3)
          LOGICAL GENELM, MIRMOL, ROTAXS, INVMOL
+         GENELM = .FALSE.
          TMPARR(1,0) = 2.0D0
 	 GENELM = .FALSE.
          DO 100 I = 1,4
@@ -1832,12 +1833,12 @@ C     &                          (NINT(ARR(6,IATNO2)) .EQ. 0))
             DO 110 I = 1, 3
                TEMP = TEMP + TMPARR(I,1) - TMPARR(I,2)
  110        CONTINUE
-             IF (TEMP .GT. 0.0D0) THEN
-                GENELM = (NINT(ARR(6,IATNO2)) .LT. 1)
-                ARR(6, IATNO2) = ANINT(ARR(6,IATNO2)+1.0D0)
-             ELSE
-                GENELM = (NINT(ARR(6,IATNO1)) .LT. 1)
-                ARR(6, IATNO1) = ANINT(ARR(6,IATNO1)+1.0D0)
+	    IF (TEMP .GT. 0.0D0) THEN
+	       GENELM = (NINT(ARR(6,IATNO2)) .LT. 1)
+	       ARR(6, IATNO2) = ANINT(ARR(6,IATNO2)+1.0D0)
+	    ELSE
+	       GENELM = (NINT(ARR(6,IATNO1)) .LT. 1)
+	       ARR(6, IATNO1) = ANINT(ARR(6,IATNO1)+1.0D0)
             END IF
          END IF
          RETURN
@@ -2047,7 +2048,6 @@ C
            DO ICART = 1, 3
               IF ((ABS(DIST-ABS(ATMARR(ICART,IATOM))) .LT. THRS)
      &                                    .AND. (DIST .GE. THRS)) THEN
-                 
                  IATAXS(ICART) = IATAXS(ICART) + 1
                  IF (IATAXS(ICART) .EQ. 2) THEN
                     ONAXS(ICART) = .TRUE.
@@ -2096,7 +2096,7 @@ C
               END IF
            END DO
 C
-C          *** If necesarry the second axis is arbitarily chosen ***
+C          *** If necessary the second axis is arbitarily chosen ***
 C
            DO IAXS = 3, 1, -1 
               IF ((IEL.LT.2) .AND. (.NOT.HAVAXS(IAXS))) THEN
