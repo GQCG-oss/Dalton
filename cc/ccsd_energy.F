@@ -436,7 +436,7 @@ C
          CALL DZERO(WORK(KT2AM),NT2AMX)
       ENDIF
 
-      IF (LMULBS) THEN
+      IF (CCR12) THEN
 C       read R12 amplitudes
         N2 = NRHFTRIA * NRHFTRIA
         KTAMP12S = KOMEG2   + NT2AMX
@@ -607,7 +607,7 @@ C
      *                   WORK(KEND2),LWRK2,EN2,POTNUC,ESCF,
      *                   ETY2,ER12S,ER12T,LMULBS,IPRINT,IT1,ITER)
 C
-         IF (LMULBS) THEN
+         IF (CCR12) THEN
 C          Save new R12 amplitudes on disk:
            LUNIT = 0 
            CALL GPOPEN(LUNIT,'CCR12_C','UNKNOWN',' ','FORMATTED',
@@ -4432,7 +4432,8 @@ C        Find # frozen orbitals in each symmetryclass: NRHFFR
 C-------------------------------------------------------------
 C
        DO I = 1,NFC0
-         IF (LABEL .EQ. 'FULLBAS ' .AND. MOD(I,2) .NE. 0) THEN
+         IF (LABEL .NE. 'FULLBAS ' .OR.
+     *      (LABEL .EQ. 'FULLBAS ' .AND. MOD(I,2) .NE. 0)) THEN
            IHFO = IPLACE(I)
            CALL CC_SYMHFO(IHFO,ISYMHFO)
            WRITE(LUPRI,'(A,I3,A,I3,A,F10.4)') 
