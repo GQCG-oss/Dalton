@@ -115,7 +115,7 @@ C ***********************************************************
          DIMENSION TMP2AR(6,0:MXCENT), NONT(KATOM)
          LOGICAL VRML
          PARAMETER (D0 = 0.0D0)
-         CHARACTER*1 KASYM(3,3), CLASS*15, TEXT*40
+         CHARACTER*1 KASYM(3,3), CLASS*15, TEXT*41
          CHARACTER SYMM*9, TMPLN*80
          I = 1
 C ::: IPRTHR - Print level threshold for verbose output. :::
@@ -357,7 +357,8 @@ C ::: than one. ACOS is undefined for these values, so we have to round  :::
 C ::: them off, removing the "excess", accumulated numerical error.      :::
 C ::: Also, ACOS is extremely sensitive around +/-1, so we round off     :::
 C ::: numbers close to these values
-            IF ((ABS(TEMP)-1.0D0) .GT. -ZERTOL) THEN
+            IF ((ABS(ABS(TEMP)-1.0D0) .LT. ZERTOL)
+     &           .OR. (ABS(TEMP).GT.1.0D0)) THEN
                TEMP = ANINT(TEMP)
             END IF
             VECANG = ACOS(TEMP)
