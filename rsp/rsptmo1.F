@@ -251,7 +251,7 @@ C
 C
 C If three-photon calculation then we assume that the frequencies of the 
 C photons match the excitation. At this point we set the frequencies
-C to dummy values, later they become half of the excitation energies.
+C to dummy values, later they become one third of the excitation energies.
 C
       IF (THREEPHOTON) THEN
          NBTMFR = ISUM(NSYM,NTMCNV,1)
@@ -279,31 +279,33 @@ C
             WRITE(LUPRI,'(A,L1,/)')
      *      ' Three-photon transition process computed  : THREEPHOTON ='
      *      ,THREEPHOTON
+            WRITE(LUPRI,'(/I3,A)')
+     *      NBTMFR,' B- and C-frequencies will later be set to 1/3 '//
+     *      'of the excitation energies'
+         ELSE
+            WRITE(LUPRI,'(/I3,A,(T18,1P,5D14.6))')
+     *      NBTMFR,' B-frequencies', (BTMFR(I),I=1,NBTMFR)
+            WRITE(LUPRI,'(I3,A,(T18,1P,5D14.6))')
+     *      NCTMFR,' C-frequencies', (CTMFR(I),I=1,NCTMFR)
          END IF
          WRITE(LUPRI,'(/A,I5)')
      *      ' Print level                                    : IPRTMO ='
      *      ,IPRTMO
          WRITE(LUPRI,'(A,I5)')
-     *      ' Maximum number of iterations                   : MAXITP ='
+     *      ' Maximum number of exc.en. iterations           : MAXITP ='
      *      ,MAXITP
          WRITE(LUPRI,'(A,1P,D10.3)')
-     *      ' Threshold for convergence                      : THCPP  ='
+     *      ' Threshold for exc.en. convergence              : THCPP  ='
      *      ,THCPP
          WRITE(LUPRI,'(A,I5)')
-     *      ' Maximum number of iterations                   : MAXITL ='
+     *      ' Maximum number of lin.resp. iterations         : MAXITL ='
      *      ,MAXITL
          WRITE(LUPRI,'(A,1P,D10.3)')
-     *      ' Threshold for convergence                      : THCLR  ='
+     *      ' Threshold for lin.resp. convergence            : THCLR  ='
      *      ,THCLR
          WRITE(LUPRI,'(A,I5)')
      *      ' Maximum iterations in optimal orbital algorithm: MAXITO ='
      *      ,MAXITO
-         WRITE(LUPRI,'(/I3,A,(1P,5D14.6))')
-     *      NBTMFR,' B-frequencies',
-     *      (BTMFR(I),I=1,NBTMFR)
-         WRITE(LUPRI,'(I3,A,(1P,5D14.6))')
-     *      NCTMFR,' C-frequencies',
-     *      (CTMFR(I),I=1,NCTMFR)
       END IF
 C
 C *** END OF TMOINP

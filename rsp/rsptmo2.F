@@ -140,7 +140,7 @@ C IN A SECOND HYPERPOLARIZABILITY CALCULATION
 C
 #include <implicit.h>
 C
-      PARAMETER ( ZERO = 1.0D-10 )
+      PARAMETER ( ZEROTHR = 1.0D-10 )
 C
 #include <infcr.h>
 #include <inforb.h>
@@ -174,9 +174,9 @@ C     If three photon absorption calculation only certain frequencies
 C     are considered.
 C
                   IF (THREEPHOTON .AND. 
-     &                ( (ABS(DTMFR-3*BTMFR(IBFR)).GT.ZERO) 
+     &                ( (ABS(DTMFR-3*BTMFR(IBFR)).GT.ZEROTHR) 
      &                  .OR.
-     &                  (ABS(DTMFR-3*CTMFR(ICFR)).GT.ZERO) ) 
+     &                  (ABS(DTMFR-3*CTMFR(ICFR)).GT.ZEROTHR) ) 
      &               ) GOTO 120
 C
 C  If harmonic generation is specified we only need two index
