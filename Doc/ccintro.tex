@@ -10,12 +10,13 @@
 
 The coupled cluster program \cc\ is designed for large-scale
 correlated calculations of energies and properties using the
-hierachy of coupled cluster models: CCS, CC2, CCSD and CC3.
+hierarchy of coupled cluster models: CCS, CC2, CCSD and CC3.
+\typeout{SONIA: Mention CCSD(T) more explicitly as well???}
 The program offers almost the same options as the other
 parts of the Dalton program for SCF and MCSCF wave functions.
-It thus contains a wave function optmization section and 
-a response function section
-where linear, quadratic and cubic response functions are calculated.
+It thus contains a wave function optimization section and 
+a response function section where linear, quadratic and cubic response functions 
+and residues are calculated.
 For CC3 however, it is only possible to calculate the wave function and 
 singlet excitation energies. 
 \index{response functions}
@@ -37,8 +38,8 @@ The complete input for the coupled cluster program appears as
 sections in the input for the \sir\ program, with the general
 input in \Sec{CC INPUT}. In order to get into the CC program
 one has to specify the \Key{CC} keyword in the general input
-section of \sir\ \Sec{*WAVE FUNCTIONS}. A minimal
-input file f.x.\ for a CCSD(T) energy calculation would be:
+section of \sir\ \Sec{*WAVE FUNCTIONS}. For instance, a minimal
+input file for a CCSD(T) energy calculation would be:
 \begin{verbatim}
 **GENERAL
 .RUNSIR
