@@ -1339,10 +1339,10 @@ C
          END DO
          END DO
       END DO
-C
-C     *** Calculating the vibrational average of ***
-C     *** the property                           ***
-C
+cC
+cC     *** Calculating the vibrational average of ***
+cC     *** the property                           ***
+cC
 c      DO IDIM3 = 1, NDIM3
 c      DO IDIM2 = 1, NDIM2
 c      DO IDIM1 = 1, NDIM1

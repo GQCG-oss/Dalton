@@ -2439,7 +2439,7 @@ C /* Deck NMNDER */
       DIMENSION COEFF(-MXCOEF:MXCOEF,0:NORDR), DERIV(NDERIV), 
      &          FUNVAL(NFINNR,NDIME), GRIREP(NGORDR,NGVERT), WORK(LWORK)
       DIMENSION ICNT(NTYPE), IADRSS(NTYPE), IMAX(NORDR), IMIN(NORDR), 
-     &     INDSTP(NTORDR), INDTMP(NTORDR), IDCOMP(NCOOR), 
+     &          INDSTP(NTORDR), INDTMP(NTORDR), IDCOMP(NCOOR), 
      &          IDDCMP(NCOOR), NCVAL(NCOOR), 
      &          KDPMTX(LDPMTX,NSTRDR,IFRSTD), ICRIRP(NCOOR,2)
 C
@@ -2633,7 +2633,9 @@ C              *** First indices in INDSTP are kept for the ***
 C              *** analytical derivative.                   ***
 C
                KITMP = 1
+
                CALL SRTINS(INDSTP,INDTMP,WORK(KITMP),NTORDR,IPRINT)
+
 C              *** Checking whether this component should *** 
 C              *** not be calculated, due to symmetry.    ***
 C
@@ -5803,7 +5805,6 @@ C
 C     *** Transforming into the "old" set of cartesian ***
 C     *** coordinates.                                 ***
 C
-      iprint = 200
       KCRPRG = 1
       KTRAMT = KCRPRG + NCOOR1
       CALL TROCHS(EHESS,COOR,SEHESS,WORK(KCRPRG),WORK(KTRAMT),NCOOR1,
@@ -5812,7 +5813,6 @@ C
 C     *** Transforming into symmetry coordinates. ***
 C
       CALL TRSFC2(EHESS,SYMCOR,SEHESS,NCOOR1,NCOOR2,MXCOOR,IPRINT)
-      iprint = 0
 C
       RETURN
       END

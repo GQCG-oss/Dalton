@@ -975,9 +975,9 @@ C
          EXIST = .FALSE.
          CALL ORTSCP(TMPSYM,SYMCOR,ICRIRP,ISYMCO,IREP,IPL,IPRINT,EXIST)
 C     
-         IF (.NOT.EXIST) THEN
-            DO 2400 IPHASE = 1, 2
-            DO 2400 ICOO2  = 1, ISYMCO
+         DO 2400 IPHASE = 1, 2
+         DO 2400 ICOO2  = 1, ISYMCO
+            IF (.NOT.EXIST) THEN
                EXIST = .TRUE.
                PHASE = D1
                IF (IPHASE.EQ.2) PHASE = -D1
@@ -989,8 +989,8 @@ C
                   IF (DIFF2 .GT. DTHR) EXIST = .FALSE.
  2500          CONTINUE
 C
- 2400       CONTINUE
-         END IF
+            END IF
+ 2400    CONTINUE
          IF (EXIST) GOTO 2700
 C
 C        *** We have now found a new symmetry coordinate, and find ***
