@@ -2548,9 +2548,9 @@ C
           END IF
 
           ! find the associated frequency
-          IF (IOPTRES.EQ.5) THEN
+          IF (IOPTRES.EQ.5 .OR. LCAUCHY) THEN
             FREQ  = 0.0D0
-          ELSE IF (.NOT.LCAUCHY) THEN
+          ELSE
             IFILE = IXETRAN(3,ITRAN)
             FREQ  = FREQLST(FILXI,IFILE)
           END IF
