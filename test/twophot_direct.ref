@@ -1,0 +1,2995 @@
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+               This is output from DALTON (Release 1.2, April 2001)
+
+                          Principal authors:
+
+            Trygve Helgaker,       University of Oslo,         Norway 
+            Hans Joergen Jensen,   SDU - Odense University,    Denmark
+            Poul Joergensen,       Aarhus University,          Denmark
+            Jeppe Olsen,           Aarhus University,          Denmark
+            Kenneth Ruud,          San Diego Superc. Center,   USA    
+            Hans Aagren,           KTH Stockholm,              Sweden 
+
+                          Contributors:
+
+            Keld L. Bak,           UNI-C,                      Denmark
+            Vebjoern Bakken,       University of Oslo,         Norway 
+            Ove Christiansen,      University of Lund,         Sweden 
+            Sonia Coriani,         University of Trieste,      Italy  
+            Paal Dahle,            University of Oslo,         Norway 
+            Erik K. Dalskov,       UNI-C,                      Denmark
+            Thomas Enevoldsen,     SDU - Odense University,    Denmark
+            Berta Fernandez,       U.of Santiago de Compostela,Spain  
+            Christof Haettig,      Forschungszentrum Karlsruhe,Germany
+            Kasper Hald,           Aarhus University,          Denmark
+            Asger Halkier,         Aarhus University,          Denmark
+            Hanne Heiberg,         University of Oslo,         Norway 
+            Hinne Hettema,         University of Auckland,     NZ     
+            Dan Jonsson,           San Diego Superc. Center,   USA    
+            Sheela Kirpekar,       SDU - Odense University,    Denmark
+            Rika Kobayashi,        Cambridge University,       England
+            Henrik Koch,           SDU - Odense University,    Denmark
+            Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
+            Patrick Norman,        University of Linkoeping,   Sweden 
+            Martin J. Packer,      University of Sheffield,    UK     
+            Torgeir A. Ruden,      University of Oslo,         Norway 
+            Trond Saue,            University of Toulouse,     France 
+            Stephan P. A. Sauer,   University of Copenhagen,   Denmark
+            Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
+            K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
+            Peter R.Taylor,        San Diego Superc. Center,   USA    
+            Olav Vahtras,          PDC, Stockholm,             Sweden 
+------------------------------------------------------------------------
+
+
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF wave functions. The authors accept no
+     responsibility for the performance of the code or for the
+     correctness of the results.
+      
+     The code (in whole or part) is provided under a license and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+     See licence agreement for further information.
+      
+     If results obtained with this code are published, an
+     appropriate citation would be:
+      
+     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,
+     H. Aagren, K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,
+     P. Dahle, E.K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
+     K. Hald, A. Halkier, H. Heiberg, H. Hettema, D. Jonsson,
+     S. Kirpekar, R. Kobayashi, H. Koch, K.V. Mikkelsen, P. Norman,
+     M.J. Packer, T.A. Ruden, T. Saue, S.P.A. Sauer, B. Schimmelpfennig,
+     K. O. Sylvester-Hvid, P.R. Taylor, and O. Vahtras:
+     "Dalton release 1.2 (2001), an electronic structure program"
+
+ 
+     Date and time (Linux)  : Wed Mar 28 15:50:56 2001
+     Host name              : dschcoriani.univ.trieste.it             
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Direct calculation
+    Integral sections will be executed
+    Wave function sections will be executed
+    Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated:
+          - overlap integrals
+          - dipole length integrals
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  Hydrogen flourid                                                        
+  small test basis                                                        
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 2
+
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C2v
+
+   * The point group was generated by:
+
+      Reflection in the xz-plane
+      Reflection in the yz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E 
+    C2z | C2z   E 
+    Oxz | Oxz  Oyz   E 
+    Oyz | Oyz  Oxz  C2z   E 
+
+   * Character table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B2  |   1   -1   -1    1
+    B1  |   1   -1    1   -1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B2   B1   A2 
+   -----+--------------------
+    A1  | A1 
+    B2  | B2   A1 
+    B1  | B1   A2   A1 
+    A2  | A2   B1   B2   A1 
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    2
+
+  Basis set used is "6-31G**" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  F           1       9      27      14      [10s4p1d|3s2p1d]                             
+  H           1       1       7       5      [4s1p|2s1p]                                  
+  ----------------------------------------------------------------------
+  total:      2      10      34      19
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for integrals:  1.00E-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  6
+
+
+   1   F        x      0.0000000000
+   2            y      0.0000000000
+   3            z      1.7632000000
+
+   4   H        x      0.0000000000
+   5            y      0.0000000000
+   6            z      0.0000000000
+
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:   2  2  2  0
+
+
+  Symmetry 1
+
+   1   F     z    3
+   2   H     z    6
+
+
+  Symmetry 2
+
+   3   F     y    2
+   4   H     y    5
+
+
+  Symmetry 3
+
+   5   F     x    1
+   6   H     x    4
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            F           H   
+
+   F       0.000000
+   H       0.933045    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H          F                              0.933045
+
+
+  Nuclear repulsion energy :    5.104355716878
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:         10   4   4   1
+
+
+  Symmetry  A1 ( 1)
+
+    1     F        1s         1
+    2     F        1s         2
+    3     F        1s         3
+    4     F        2pz        6
+    5     F        2pz        9
+    6     F        3d0       12
+    7     F        3d2+      14
+    8     H        1s        15
+    9     H        1s        16
+   10     H        2pz       19
+
+
+  Symmetry  B2 ( 2)
+
+   11     F        2py        5
+   12     F        2py        8
+   13     F        3d1-      11
+   14     H        2py       18
+
+
+  Symmetry  B1 ( 3)
+
+   15     F        2px        4
+   16     F        2px        7
+   17     F        3d1+      13
+   18     H        2px       17
+
+
+  Symmetry  A2 ( 4)
+
+   19     F        3d2-      10
+
+  Symmetries of electric field:  B1 (3)  B2 (2)  A1 (1)
+
+  Symmetries of magnetic field:  B2 (2)  B1 (3)  A2 (4)
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in ONEDRV is   0.01 seconds
+
+
+ >>> Time used in OVERLA is   0.01 seconds
+
+
+ >>> Time used in DIPLEN is   0.00 seconds
+
+
+ >>> Time used in GABGEN is   0.02 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.06 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
+
+- End of Integral Section
+     Starting Wave Function Section -
+
+ NCCEXCI for singlet: 0 0 0 1
+ SET CCSM TO TRUE
+ ************************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
+ ************************************************************************
+
+ 
+     Date and time (Linux)  : Wed Mar 28 15:50:56 2001
+     Host name              : dschcoriani.univ.trieste.it             
+
+ Title lines from integral program:
+     Hydrogen flourid                                                        
+     small test basis                                                        
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+      (Integral direct) CC calculation.
+
+
+     This is a combination run starting with
+
+               a RHF calculation
+
+               Fock matrices are calculated directly
+               without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         10
+     Number of electrons in active shells      0
+     Number of active orbitals                 0
+     Total number of orbitals                 19
+
+     Spin multiplicity                         1
+     Total number of symmetries                4
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1   2   3   4
+                                       --  --  --  --
+     Total number of orbitals          10   4   4   1
+     Number of basis functions         10   4   4   1
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from Huckel guess.               
+      -- Initial occupation of symmetries is : --
+
+     Occupied HF orbitals               3   1   1   0
+
+     Maximum number of Fock  iterations       0
+     Maximum number of DIIS  iterations      30
+     Maximum number of QC-HF iterations      15
+     Threshold for HF convergence      1.00E-12
+
+
+ Changes of defaults for CC:
+ ---------------------------
+
+
+ -This is a direct atomic orbital integral based
+  calculation for coupled cluster wave function
+
+ Excitation energies calculated
+  
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ Automatic occupation of symmetries with  10 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    HF occupation
+ -----------------------------------------------------------------------------
+ Screening settings in next iteration (IFTHRS/DIFDEN)    7    T
+
+ >>> Time used in ERIFCK is   0.06 seconds
+
+   1    -99.735041634039   3.53E+00  -9.97E+01    3  1  1  0
+ Screening settings in next iteration (IFTHRS/DIFDEN)    7    T
+
+ >>> Time used in ERIFCK is   0.06 seconds
+
+   2    -99.999515918713   3.90E-01  -2.64E-01    3  1  1  0
+ Screening settings in next iteration (IFTHRS/DIFDEN)    9    F
+
+ >>> Time used in ERIFCK is   0.07 seconds
+
+   3   -100.008001428631   1.41E-01  -8.49E-03    3  1  1  0
+ Screening settings in next iteration (IFTHRS/DIFDEN)    9    T
+
+ >>> Time used in ERIFCK is   0.07 seconds
+
+   4   -100.008808105229   4.72E-02  -8.07E-04    3  1  1  0
+ Screening settings in next iteration (IFTHRS/DIFDEN)    9    T
+
+ >>> Time used in ERIFCK is   0.06 seconds
+
+   5   -100.008919443898   3.47E-03  -1.11E-04    3  1  1  0
+ Screening settings in next iteration (IFTHRS/DIFDEN)   11    F
+
+ >>> Time used in ERIFCK is   0.07 seconds
+
+   6   -100.008919911216   2.99E-04  -4.67E-07    3  1  1  0
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    F
+
+ >>> Time used in ERIFCK is   0.07 seconds
+
+   7   -100.008919920217   7.78E-05  -9.00E-09    3  1  1  0
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in ERIFCK is   0.06 seconds
+
+   8   -100.008919920973   9.61E-06  -7.56E-10    3  1  1  0
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in ERIFCK is   0.06 seconds
+
+   9   -100.008919920982   4.84E-07  -9.19E-12    3  1  1  0
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in ERIFCK is   0.07 seconds
+
+  10   -100.008919920982   5.95E-08  -1.33E-14    3  1  1  0
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in ERIFCK is   0.06 seconds
+
+  11   -100.008919920982   3.98E-09   1.51E-14    3  1  1  0
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in ERIFCK is   0.06 seconds
+
+  12   -100.008919920982   1.39E-10  -1.33E-14    3  1  1  0
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in ERIFCK is   0.07 seconds
+
+  13   -100.008919920982   2.01E-11   8.88E-16    3  1  1  0
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in ERIFCK is   0.07 seconds
+
+  14   -100.008919920982   2.72E-12   1.51E-14    3  1  1  0
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in ERIFCK is   0.06 seconds
+
+  15   -100.008919920982   1.29E-13  -1.33E-14    3  1  1  0
+ DIIS converged in  15 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    3    1    1    0
+
+ Hartree-Fock orbital energies, symmetry 1
+
+       -26.27306679    -1.57292660    -0.73710507     0.21639317     1.01969776
+         1.53899981     1.93101581     2.15801855
+
+ Hartree-Fock orbital energies, symmetry 2
+
+        -0.62549530     1.48848731     1.89379535     3.02038756
+
+ Hartree-Fock orbital energies, symmetry 3
+
+        -0.62549530     1.48848731     1.89379535     3.02038756
+
+ Hartree-Fock orbital energies, symmetry 4
+
+         2.15801855
+
+    E(LUMO) :     0.21639317 au (symmetry 1)
+  - E(HOMO) :    -0.62549530 au (symmetry 2)
+  ------------------------------------------
+    gap     :     0.84188847 au
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+
+     Final    HF energy:         -100.008919920982
+     Nuclear repulsion:             5.104355716878
+     Electronic energy:          -105.113275637860
+
+     Final gradient norm:           0.000000000000
+
+ 
+     Date and time (Linux)  : Wed Mar 28 15:50:57 2001
+     Host name              : dschcoriani.univ.trieste.it             
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3
+   1  F   1s     0.9955  -0.2308  -0.0555
+   2  F   1s     0.0212   0.5025   0.1234
+   3  F   1s    -0.0052   0.5082   0.2358
+   4  F   2pz   -0.0013  -0.0602   0.5496
+   5  F   2pz    0.0009  -0.0224   0.3522
+   6  F   3d0    0.0000   0.0013  -0.0237
+   7  F   3d2+   0.0000   0.0000   0.0000
+   8  H   1s     0.0001   0.1311  -0.2709
+   9  H   1s     0.0013   0.0073  -0.1255
+  10  H   2pz   -0.0006   0.0312  -0.0288
+
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1
+   1  F   2py    0.6587
+   2  F   2py    0.4859
+   3  F   3d1-  -0.0223
+   4  H   2py    0.0198
+
+     Molecular orbitals for symmetry species   3
+
+ Orbital          1
+   1  F   2px    0.6587
+   2  F   2px    0.4859
+   3  F   3d1+  -0.0223
+   4  H   2px    0.0198
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      1.03 seconds
+ >>>> Total wall time used in SIRIUS :      1.00 seconds
+
+ 
+     Date and time (Linux)  : Wed Mar 28 15:50:57 2001
+     Host name              : dschcoriani.univ.trieste.it             
+
+- End of Wave Function Section
+     Starting Coupled Cluster -
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                    START OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+
+                         +------------------------+
+                         ! Information from CCORB !
+                         +------------------------+
+
+   NBAS   :      10       4       4       1
+   IBAS   :       0      10      14      18
+   NRHF   :       3       1       1       0
+   NVIR   :       7       3       3       1
+   NRHFS  :       3       1       1       0
+   NVIRS  :       7       3       3       1
+   NRHFFR :       0       0       0       0
+   NVIRFR :       0       0       0       0
+   NORBTS :      19
+   NORBT  :      19
+   N2BAST :     133
+   N2BASX :     361
+   NNBASX :     190
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :        27
+          Number of t2 amplitudes                 :       729
+          Total number of amplitudes in ccsd      :       756
+
+
+
+          CCS CALC. - NO WAVEFUNCTION OPTIMIZATION
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER RESPONSE  >>>>>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                     +-------------------------------+
+                     ! Coupled Cluster model is: CCS !
+                     +-------------------------------+
+
+  
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER LINEAR RESPONSE >>>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<<<     CALCULATION OF EXCITATION ENERGIES      >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                       +---------------------------+
+                       !  CCS Excitation Energies  !
+                       +---------------------------+
+
+ --------------------------
+
+
+
+ Symmetry class Nr.:     1
+
+
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:        27
+ No Excitation Energies calculated in this symmetry class
+ --------------------------
+
+
+
+ Symmetry class Nr.:     1
+
+
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:        27
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     2
+
+
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:        17
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     2
+
+
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:        17
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     3
+
+
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:        17
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     3
+
+
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:        17
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     4
+
+
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:         9
+ Converging for  1 roots.
+ Start vector guessed from diagonal
+ ... selected element no.  4
+
+
+ SYMMETRY CLASS NR.    4
+ MULTIPLICITY          1
+
+
+ CCS        right excitation energies:
+ ====================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV 
+ --------------       -------               --
+
+         1            1.455144           39.596488
+
+
+ Total excited state energies for states of symmetry/spin    4    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    4    1           -98.553775661117115
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                            39.5965 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   3   |   1       1     |        7          |              |   -0.707079  |
+ | 3   2   |   1       1     |        4          |              |    0.707079  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             1.0000
+
+
+          Printed all single excitations greater than 0.200000
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     4
+
+
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:         9
+ No Excitation Energies calculated in this symmetry class
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER LINEAR RESPONSE >>>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<<<     CALCULATION OF EXCITATION ENERGIES      >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                       +---------------------------+
+                       !  CCS Excitation Energies  !
+                       +---------------------------+
+
+ --------------------------
+
+
+
+ Symmetry class Nr.:     1
+
+
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:        27
+ No Excitation Energies calculated in this symmetry class
+ --------------------------
+
+
+
+ Symmetry class Nr.:     1
+
+
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:        27
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     2
+
+
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:        17
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     2
+
+
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:        17
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     3
+
+
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:        17
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     3
+
+
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:        17
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     4
+
+
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:         9
+ Converging for  1 roots.
+ Start left vector eigenvalue equation from right eigenvectors.
+ CC_GETSAV> IOPT =  33
+ Vector nr.  1 of symmetry  4 found on file - RESTART SUCCESS
+ Start vector is a CCS       RE  vector
+
+
+ SYMMETRY CLASS NR.    4
+ MULTIPLICITY          1
+
+
+ CCS        left excitation energies:
+ ====================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV 
+ --------------       -------               --
+
+         1            1.455144           39.596488
+
+
+ Total excited state energies for states of symmetry/spin    4    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    4    1           -98.553775661117115
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                            39.5965 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   3   |   1       1     |        7          |              |   -0.707079  |
+ | 3   2   |   1       1     |        4          |              |    0.707079  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             1.0000
+
+
+          Printed all single excitations greater than 0.200000
+
+ Overlap between left and right vector:         1.0000000000
+
+ Renormalized overlap left-right:               1.0000000000
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     4
+
+
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:         9
+ No Excitation Energies calculated in this symmetry class
+
+ UNSORTED LIST OF REQUIRED OPERATORS:
+    1   YDIPLEN     2    1  F    0
+    2   XDIPLEN     3    1  F    0
+    3   HAM0        1    1  T    0
+
+ LIST OF REQUIRED PROPERTY OPERATORS:
+    1   HAM0        1    1  T
+    2   YDIPLEN     2    1  F
+    3   XDIPLEN     3    1  F
+
+ LIST OF REQUIRED EXPECTATION VALUES:
+
+ LIST OF REQUIRED EFFECTIVE FOCK MATRICES:
+
+ LIST OF REQUIRED FIRST ORDER XI VECTORS:
+    1   YDIPLEN   F    2     0.000000E+00
+    2   XDIPLEN   F    3     0.000000E+00
+
+ LIST OF REQUIRED FIRST ORDER T VECTORS:
+    1   YDIPLEN   F    2    -1.455144E+00
+    2   YDIPLEN   F    2     0.000000E+00
+    3   YDIPLEN   F    2     1.455144E+00
+    4   XDIPLEN   F    3    -1.455144E+00
+    5   XDIPLEN   F    3     0.000000E+00
+    6   XDIPLEN   F    3     1.455144E+00
+
+ LIST OF REQUIRED FIRST ORDER ETA VECTORS:
+    1   YDIPLEN   F    2     0.000000E+00
+    2   XDIPLEN   F    3     0.000000E+00
+
+ LIST OF REQUIRED FIRST ORDER ZETA VECTORS:
+    1   YDIPLEN   F    2    -1.455144E+00
+    2   YDIPLEN   F    2     0.000000E+00
+    3   XDIPLEN   F    3    -1.455144E+00
+    4   XDIPLEN   F    3     0.000000E+00
+
+ LIST OF REQUIRED FIRST ORDER M-VECTORS:
+    1          1    4     1.455144E+00
+
+ LIST OF REQUIRED SECOND-ORDER XKSI VECTORS:
+    1   YDIPLEN   2    -1.455144E+00   XDIPLEN   3     0.000000E+00  4
+    2   YDIPLEN   2     1.455144E+00   XDIPLEN   3     0.000000E+00  4
+    3   XDIPLEN   3    -1.455144E+00   YDIPLEN   2     0.000000E+00  4
+    4   XDIPLEN   3     1.455144E+00   YDIPLEN   2     0.000000E+00  4
+
+ LIST OF REQUIRED SECOND-ORDER ETA VECTORS:
+    1   YDIPLEN   2    -1.455144E+00   XDIPLEN   3     0.000000E+00  4
+    2   XDIPLEN   3    -1.455144E+00   YDIPLEN   2     0.000000E+00  4
+      
+
+    *******************************************************************
+    *          SOLVING COUPLED CLUSTER RESPONSE EQUATIONS             *
+    *******************************************************************
+
+
+
+ +======================================================================+
+ !                     RHS & ETA VECTORS TO COMPUTE:                    !
+ +======================================================================+
+ | TYPE | # VEC. |  NEEDED FOR:                                         |
+ +----------------------------------------------------------------------+
+ |  O1  |    2   |  first-order amplitude equations                     |
+ |  X1  |    2   |  first-order multipliers equations                   |
+ |  O2  |    4   |  second-order amplitude equations                    |
+ |  X2  |    2   |  second-order multipliers equations                  |
+ +======================================================================+
+
+
+
+ +======================================================================+
+ !                       LINEAR EQUATIONS TO SOLVE:                     !
+ +======================================================================+
+ | TYPE | # VEC. |  EQUATION:                                           |
+ +----------------------------------------------------------------------+
+ |  R1  |    6   |  first-order amplitude response                      |
+ |  L1  |    4   |  first-order multiplier response                     |
+ |  M1  |    1   |  first-order ground - excited state multipliers      |
+ +======================================================================+
+
+
+
+ +======================================================================+
+ !                F MATRIX TRANSFORMATIONS TO COMPUTE:                  !
+ +======================================================================+
+ | TYPE | # VEC. |  TRANSFORMED:                                        |
+ +----------------------------------------------------------------------+
+ |  F1  |    6   |  first-order amplitude response (R1) vector          |
+ |  FR  |    1   |  right eigenvectors (RE)                             |
+ +======================================================================+
+
+
+
+ Warning: no 1-index transformed eff. Fock 
+ matrices calculated... 
+ Relaxed second-order properties will be wrong!.
+
+ -------------------------------------------------------------------
+ |          OUTPUT FROM AMPLITUDE RHS VECTOR SECTION               |
+ -------------------------------------------------------------------
+
+
+
+   For the requested  2 1th.-order amplitude rhs vectors "O1 ".
+         -   0 D matrix transformations 
+         -   0 C matrix transformations 
+         -   0 B matrix transformations 
+         -   0 C{O} matrix transformations 
+         -   0 B{O} matrix transformations 
+         -   0 A{O} matrix transformations 
+         -   2Xi{O} vector calculations    
+   will be performed.
+
+
+     R1  start vector nr.  1 of symmetry  2 generated from gradient
+     R1  start vector nr.  2 of symmetry  2 generated from gradient
+     R1  start vector nr.  3 of symmetry  2 generated from gradient
+
+ (CCORT) new  b-vector no.  3
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.52897E-32
+  After Gram Smidt orthonormalization
+ -1 vectors with norm le:  1.E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from  3 to  2
+     R1  start vector nr.  4 of symmetry  3 generated from gradient
+     R1  start vector nr.  5 of symmetry  3 generated from gradient
+     R1  start vector nr.  6 of symmetry  3 generated from gradient
+
+ (CCORT) new  b-vector no.  3
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 2.81416E-32
+  After Gram Smidt orthonormalization
+ -1 vectors with norm le:  1.E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from  3 to  2
+     L1  start vector nr.  1 of symmetry  2 generated from gradient
+     L1  start vector nr.  2 of symmetry  2 generated from gradient
+     L1  start vector nr.  3 of symmetry  3 generated from gradient
+     L1  start vector nr.  4 of symmetry  3 generated from gradient
+     M1  start vector nr.  1 of symmetry  4 generated from gradient
+
+ -------------------------------------------------------------------
+ |          OUTPUT FROM AMPLITUDE RHS VECTOR SECTION               |
+ -------------------------------------------------------------------
+
+
+
+   For the requested  4 2th.-order amplitude rhs vectors "O2 ".
+         -   0 D matrix transformations 
+         -   0 C matrix transformations 
+         -   4 B matrix transformations 
+         -   0 C{O} matrix transformations 
+         -   0 B{O} matrix transformations 
+         -   8 A{O} matrix transformations 
+         -   0Xi{O} vector calculations    
+   will be performed.
+
+
+ +--------------------------------------------------+
+ | total time for   4 B transforms.:      0.58 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      1.72      |
+ |  % of time used in Fock interm. :      1.72      |
+ |  % of time used in ERI          :     87.93      |
+ |  % of time used in CCRDAO       :      8.62      |
+ |  % of time used in (**|k del)   :      0.00      |
+ |  % of time used in singles part :      0.00      |
+ |  % of time used in A term       :      0.00      |
+ |  % of time used in BF term      :      0.00      |
+ |  % of time used in F term       :      0.00      |
+ |  % of time used in E term       :      0.00      |
+ |  % of time used in C term       :      0.00      |
+ |  % of time used in D term       :      0.00      |
+ |  % of time used in I/O          :      0.00      |
+ +==================================================+
+
+
+
+ -------------------------------------------------------------------
+ |                 OUTPUT FROM ETA/RHS VECTOR SECTION              |
+ -------------------------------------------------------------------
+
+
+
+   For the requested  2 X2 eta  vectors
+         -   0 H matrix transformations 
+         -   2 G matrix transformations 
+         -   0 generalized G matrix transformations 
+         -   4 generalized F matrix transformations 
+         -   4 F{O} matrix transformations 
+         -   0 generalized F{O} matrix transformations 
+         -   4 generalized ETA{O} vector calculations 
+   will be performed.
+
+
+ +--------------------------------------------------+
+ | total time for   2 G transforms.:      0.00 secs.|
+ +--------------------------------------------------+
+ |  % of time used in ERI          :       nan      |
+ |  % of time used in CCRDAO       :       nan      |
+ |  % of time used in CCTRBT       :       nan      |
+ |  % of time used in CCG_21CD     :       nan      |
+ |  % of time used in Fock interm. :       nan      |
+ |  % of time used in CCS part     :       nan      |
+ |  % of time used in 21 CCSD part :       nan      |
+ |  % of time used in doubles part :       nan      |
+ |  % of time used in I/O          :       nan      |
+ +==================================================+
+
+
+
+ Solution of CC response equations completed.
+
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<< OUTPUT FROM COUPLED CLUSTER QUADRATIC RESPONSE >>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<< CALCULATION OF TWO PHOTON TRANSITION STRENGTHS >>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+ -----------------------------------------------------------------
+ For trans. to |f(  1.455144)>, state nr.1 of symm. 4
+
+  A : YDIPLEN (2); B : XDIPLEN (3)
+  C : YDIPLEN (2); D : XDIPLEN (3)
+
+  Laser frequency w (au) =         0.000000
+
+  M^AB_of(-w):     0.364653972  M^CD_fo(w):     0.143659976
+  M^CD_of(-w):     0.364653972  M^AB_fo(w):     0.143659976
+
+  M^AB_of(-w) x M^CD_fo(w)   =     0.052386181
+ [M^CD_of(-w) x M^AB_fo(w)]* =     0.052386181
+
+ CCS  Transition strength for Second Order Moment: 
+ CCS  S^of_AB,CD(  0.000000) =     0.052386181
+ -----------------------------------------------------------------
+ -----------------------------------------------------------------
+ For trans. to |f(  1.455144)>, state nr.1 of symm. 4
+
+  A : XDIPLEN (3); B : YDIPLEN (2)
+  C : XDIPLEN (3); D : YDIPLEN (2)
+
+  Laser frequency w (au) =         0.000000
+
+  M^AB_of(-w):    -0.364653972  M^CD_fo(w):    -0.143659976
+  M^CD_of(-w):    -0.364653972  M^AB_fo(w):    -0.143659976
+
+  M^AB_of(-w) x M^CD_fo(w)   =     0.052386181
+ [M^CD_of(-w) x M^AB_fo(w)]* =     0.052386181
+
+ CCS  Transition strength for Second Order Moment: 
+ CCS  S^of_AB,CD(  0.000000) =     0.052386181
+ -----------------------------------------------------------------
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :        27
+          Number of t2 amplitudes                 :       729
+          Total number of amplitudes in ccsd      :       756
+
+ Iter.  1: Coupled cluster MP2   energy :    -100.1936626104499908
+ Iter.  1: Coupled cluster CC2   energy :    -100.1935148618325258
+ Iter.  2: Coupled cluster CC2   energy :    -100.1946026130781462
+ Iter.  3: Coupled cluster CC2   energy :    -100.1947010271784109
+ Iter.  4: Coupled cluster CC2   energy :    -100.1946891665332942
+ Iter.  5: Coupled cluster CC2   energy :    -100.1946869732978627
+ Iter.  6: Coupled cluster CC2   energy :    -100.1946869097186976
+ Iter.  7: Coupled cluster CC2   energy :    -100.1946869305644299
+ Iter.  8: Coupled cluster CC2   energy :    -100.1946869343450999
+
+ CC2   energy converged to within   0.10E-07 is   -100.194686934
+
+
+
+
+
+         +-------------------------------------------------------+
+         ! Final results from the Coupled Cluster energy program !
+         +-------------------------------------------------------+
+
+
+
+            Total SCF   energy:                  -100.0089199210
+
+            Total MP2   energy:                  -100.1936626104
+
+            Total CC2   energy:                  -100.1946869343
+
+
+
+
+              +---------------------------------------------+
+              ! Calculating singlet intermediates for CCLR  !
+              +---------------------------------------------+
+
+
+
+            E-intermediates calculated 
+            Fock-intermediate calculated 
+
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER RESPONSE  >>>>>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                     +-------------------------------+
+                     ! Coupled Cluster model is: CC2 !
+                     +-------------------------------+
+
+     Start vector generated from gradient
+
+
+ Analysis of the undifferentiated Lagrangian multipliers: 
+ --------------------------------------------------------
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :               0.5057 %
+
+          Double Excitation Contribution :              99.4943 %
+
+          ||T1||/||T2||                  :               0.0713
+
+          Tau1 diagnostic                :               0.0093
+
+          Norm of Total Amplitude Vector :               0.4117
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   1   |   1       3     |       15          |              |   -0.018621  |
+ +-----------------------------------------------------------------------------+
+ | 1 1 1 1 |   3   4   3   2 |       17       11 |          147 |    0.046864  |
+ | 1 1 1 1 |   1   1   3   3 |       15       15 |          120 |   -0.063958  |
+ | 1 1 1 1 |   2   1   3   3 |       16       15 |          135 |    0.049998  |
+ | 1 1 1 1 |   2   2   3   3 |       16       16 |          136 |   -0.074965  |
+ | 1 1 1 1 |   3   3   3   3 |       17       17 |          153 |   -0.053973  |
+ | 2 1 2 1 |   1   1   1   2 |       22        8 |          239 |   -0.043359  |
+ | 2 1 2 1 |   1   4   1   2 |       22       11 |          242 |    0.065933  |
+ | 2 1 2 1 |   1   1   1   3 |       22       15 |          246 |    0.075634  |
+ | 2 1 2 1 |   1   2   1   3 |       22       16 |          247 |   -0.068459  |
+ | 2 1 2 1 |   2   2   1   3 |       23       16 |          269 |   -0.043114  |
+ | 2 1 2 1 |   1   3   1   3 |       22       17 |          248 |   -0.089882  |
+ | 3 1 3 1 |   1   1   1   2 |       25        8 |          308 |   -0.043359  |
+ | 3 1 3 1 |   1   4   1   2 |       25       11 |          311 |    0.065933  |
+ | 3 1 3 1 |   1   1   1   3 |       25       15 |          315 |    0.075634  |
+ | 3 1 3 1 |   1   2   1   3 |       25       16 |          316 |   -0.068459  |
+ | 3 1 3 1 |   2   2   1   3 |       26       16 |          341 |   -0.043114  |
+ | 3 1 3 1 |   1   3   1   3 |       25       17 |          317 |   -0.089882  |
+ | 2 2 2 2 |   1   1   1   1 |       22       22 |          253 |   -0.086594  |
+ | 3 2 3 2 |   1   1   1   1 |       25       22 |          322 |   -0.126825  |
+ | 3 3 3 3 |   1   1   1   1 |       25       25 |          325 |   -0.086594  |
+ | 4 1 3 2 |   1   5   1   1 |       17       14 |          528 |    0.056600  |
+ | 1 4 3 2 |   5   1   1   1 |       15       10 |          646 |   -0.056600  |
+ | 2 3 3 2 |   1   1   1   1 |        7        4 |          709 |    0.049504  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.3328
+
+
+          Printed all single excitations greater than 0.014222
+
+
+          Printed all double excitations greater than 0.039899
+  
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER LINEAR RESPONSE >>>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<<<     CALCULATION OF EXCITATION ENERGIES      >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                       +---------------------------+
+                       !  CC2 Excitation Energies  !
+                       +---------------------------+
+
+ --------------------------
+
+
+
+ Symmetry class Nr.:     1
+
+
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:       756
+ No Excitation Energies calculated in this symmetry class
+ --------------------------
+
+
+
+ Symmetry class Nr.:     1
+
+
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:      1485
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     2
+
+
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:       629
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     2
+
+
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:      1241
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     3
+
+
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:       629
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     3
+
+
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:      1241
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     4
+
+
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:       541
+ Converging for  1 roots.
+ Start vector guessed from diagonal
+ ... selected element no.189
+
+
+ SYMMETRY CLASS NR.    4
+ MULTIPLICITY          1
+
+
+ CC2        right excitation energies:
+ ====================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV 
+ --------------       -------               --
+
+         1            1.518329           41.315844
+
+
+ Total excited state energies for states of symmetry/spin    4    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    4    1           -98.676357507545816
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                            41.3158 eV
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :              99.1347 %
+
+          Double Excitation Contribution :               0.8653 %
+
+          ||T1||/||T2||                  :              10.7034
+
+          Tau1 diagnostic                :               0.3149
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   3   |   1       1     |        7          |              |   -0.703882  |
+ | 3   2   |   1       1     |        4          |              |   -0.703882  |
+ +-----------------------------------------------------------------------------+
+ | 1 2 3 1 |   4   1   1   2 |       14        4 |           65 |    0.019347  |
+ | 3 1 1 2 |   1   6   2   1 |        4       15 |          242 |   -0.019347  |
+ | 4 1 2 2 |   1   2   1   1 |       10       11 |          180 |   -0.022880  |
+ | 3 1 2 1 |   1   5   1   2 |        4       12 |          392 |    0.020549  |
+ | 2 1 3 1 |   1   7   1   3 |        7       21 |          476 |    0.020549  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9965
+
+
+          Printed all single excitations greater than 0.199133
+
+
+          Printed all double excitations greater than 0.018605
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     4
+
+
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:      1073
+ No Excitation Energies calculated in this symmetry class
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER LINEAR RESPONSE >>>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<<<     CALCULATION OF EXCITATION ENERGIES      >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                       +---------------------------+
+                       !  CC2 Excitation Energies  !
+                       +---------------------------+
+
+ --------------------------
+
+
+
+ Symmetry class Nr.:     1
+
+
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:       756
+ No Excitation Energies calculated in this symmetry class
+ --------------------------
+
+
+
+ Symmetry class Nr.:     1
+
+
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:      1485
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     2
+
+
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:       629
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     2
+
+
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:      1241
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     3
+
+
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:       629
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     3
+
+
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:      1241
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     4
+
+
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:       541
+ Converging for  1 roots.
+ Start left vector eigenvalue equation from right eigenvectors.
+ CC_GETSAV> IOPT =  33
+ Vector nr.  1 of symmetry  4 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+
+
+ SYMMETRY CLASS NR.    4
+ MULTIPLICITY          1
+
+
+ CC2        left excitation energies:
+ ====================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV 
+ --------------       -------               --
+
+         1            1.518329           41.315844
+
+
+ Total excited state energies for states of symmetry/spin    4    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    4    1           -98.676357507513416
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                            41.3158 eV
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :              98.2370 %
+
+          Double Excitation Contribution :               1.7630 %
+
+          ||T1||/||T2||                  :               7.4648
+
+          Tau1 diagnostic                :               0.3134
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   3   |   1       1     |        7          |              |   -0.700695  |
+ | 3   2   |   1       1     |        4          |              |   -0.700695  |
+ +-----------------------------------------------------------------------------+
+ | 1 2 3 1 |   4   1   1   2 |       14        4 |           65 |    0.026849  |
+ | 3 1 1 2 |   1   6   2   1 |        4       15 |          242 |   -0.026849  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9917
+
+
+          Printed all single excitations greater than 0.198229
+
+
+          Printed all double excitations greater than 0.026555
+
+ Overlap between left and right vector:         0.9977478395
+
+ Renormalized overlap left-right:               1.0000000000
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     4
+
+
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:      1073
+ No Excitation Energies calculated in this symmetry class
+
+ UNSORTED LIST OF REQUIRED OPERATORS:
+    1   YDIPLEN     2    1  F    0
+    2   XDIPLEN     3    1  F    0
+    3   HAM0        1    1  T    0
+
+ LIST OF REQUIRED PROPERTY OPERATORS:
+    1   HAM0        1    1  T
+    2   YDIPLEN     2    1  F
+    3   XDIPLEN     3    1  F
+
+ LIST OF REQUIRED EXPECTATION VALUES:
+
+ LIST OF REQUIRED EFFECTIVE FOCK MATRICES:
+
+ LIST OF REQUIRED FIRST ORDER XI VECTORS:
+    1   YDIPLEN   F    2     0.000000E+00
+    2   XDIPLEN   F    3     0.000000E+00
+
+ LIST OF REQUIRED FIRST ORDER T VECTORS:
+    1   YDIPLEN   F    2    -1.518329E+00
+    2   YDIPLEN   F    2     0.000000E+00
+    3   YDIPLEN   F    2     1.518329E+00
+    4   XDIPLEN   F    3    -1.518329E+00
+    5   XDIPLEN   F    3     0.000000E+00
+    6   XDIPLEN   F    3     1.518329E+00
+
+ LIST OF REQUIRED FIRST ORDER ETA VECTORS:
+    1   YDIPLEN   F    2     0.000000E+00
+    2   XDIPLEN   F    3     0.000000E+00
+
+ LIST OF REQUIRED FIRST ORDER ZETA VECTORS:
+    1   YDIPLEN   F    2    -1.518329E+00
+    2   YDIPLEN   F    2     0.000000E+00
+    3   XDIPLEN   F    3    -1.518329E+00
+    4   XDIPLEN   F    3     0.000000E+00
+
+ LIST OF REQUIRED FIRST ORDER M-VECTORS:
+    1          1    4     1.518329E+00
+
+ LIST OF REQUIRED SECOND-ORDER XKSI VECTORS:
+    1   YDIPLEN   2    -1.518329E+00   XDIPLEN   3     0.000000E+00  4
+    2   YDIPLEN   2     1.518329E+00   XDIPLEN   3     0.000000E+00  4
+    3   XDIPLEN   3    -1.518329E+00   YDIPLEN   2     0.000000E+00  4
+    4   XDIPLEN   3     1.518329E+00   YDIPLEN   2     0.000000E+00  4
+
+ LIST OF REQUIRED SECOND-ORDER ETA VECTORS:
+    1   YDIPLEN   2    -1.518329E+00   XDIPLEN   3     0.000000E+00  4
+    2   XDIPLEN   3    -1.518329E+00   YDIPLEN   2     0.000000E+00  4
+      
+
+    *******************************************************************
+    *          SOLVING COUPLED CLUSTER RESPONSE EQUATIONS             *
+    *******************************************************************
+
+
+
+ +======================================================================+
+ !                     RHS & ETA VECTORS TO COMPUTE:                    !
+ +======================================================================+
+ | TYPE | # VEC. |  NEEDED FOR:                                         |
+ +----------------------------------------------------------------------+
+ |  O1  |    2   |  first-order amplitude equations                     |
+ |  X1  |    2   |  first-order multipliers equations                   |
+ |  O2  |    4   |  second-order amplitude equations                    |
+ |  X2  |    2   |  second-order multipliers equations                  |
+ +======================================================================+
+
+
+
+ +======================================================================+
+ !                       LINEAR EQUATIONS TO SOLVE:                     !
+ +======================================================================+
+ | TYPE | # VEC. |  EQUATION:                                           |
+ +----------------------------------------------------------------------+
+ |  R1  |    6   |  first-order amplitude response                      |
+ |  L1  |    4   |  first-order multiplier response                     |
+ |  M1  |    1   |  first-order ground - excited state multipliers      |
+ +======================================================================+
+
+
+
+ +======================================================================+
+ !                F MATRIX TRANSFORMATIONS TO COMPUTE:                  !
+ +======================================================================+
+ | TYPE | # VEC. |  TRANSFORMED:                                        |
+ +----------------------------------------------------------------------+
+ |  F1  |    6   |  first-order amplitude response (R1) vector          |
+ |  FR  |    1   |  right eigenvectors (RE)                             |
+ +======================================================================+
+
+
+
+ Warning: no 1-index transformed eff. Fock 
+ matrices calculated... 
+ Relaxed second-order properties will be wrong!.
+
+ -------------------------------------------------------------------
+ |          OUTPUT FROM AMPLITUDE RHS VECTOR SECTION               |
+ -------------------------------------------------------------------
+
+
+
+   For the requested  2 1th.-order amplitude rhs vectors "O1 ".
+         -   0 D matrix transformations 
+         -   0 C matrix transformations 
+         -   0 B matrix transformations 
+         -   0 C{O} matrix transformations 
+         -   0 B{O} matrix transformations 
+         -   0 A{O} matrix transformations 
+         -   2Xi{O} vector calculations    
+   will be performed.
+
+
+     R1  start vector nr.  1 of symmetry  2 generated from gradient
+     R1  start vector nr.  2 of symmetry  2 generated from gradient
+     R1  start vector nr.  3 of symmetry  2 generated from gradient
+     R1  start vector nr.  4 of symmetry  3 generated from gradient
+     R1  start vector nr.  5 of symmetry  3 generated from gradient
+     R1  start vector nr.  6 of symmetry  3 generated from gradient
+     L1  start vector nr.  1 of symmetry  2 generated from gradient
+     L1  start vector nr.  2 of symmetry  2 generated from gradient
+     L1  start vector nr.  3 of symmetry  3 generated from gradient
+     L1  start vector nr.  4 of symmetry  3 generated from gradient
+     M1  start vector nr.  1 of symmetry  4 generated from gradient
+
+ -------------------------------------------------------------------
+ |          OUTPUT FROM AMPLITUDE RHS VECTOR SECTION               |
+ -------------------------------------------------------------------
+
+
+
+   For the requested  4 2th.-order amplitude rhs vectors "O2 ".
+         -   0 D matrix transformations 
+         -   0 C matrix transformations 
+         -   4 B matrix transformations 
+         -   0 C{O} matrix transformations 
+         -   0 B{O} matrix transformations 
+         -   8 A{O} matrix transformations 
+         -   0Xi{O} vector calculations    
+   will be performed.
+
+
+ +--------------------------------------------------+
+ | total time for   4 B transforms.:      0.62 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      0.00      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in ERI          :     87.10      |
+ |  % of time used in CCRDAO       :      6.45      |
+ |  % of time used in (**|k del)   :      0.00      |
+ |  % of time used in singles part :      0.00      |
+ |  % of time used in A term       :      0.00      |
+ |  % of time used in BF term      :      0.00      |
+ |  % of time used in F term       :      3.23      |
+ |  % of time used in E term       :      1.61      |
+ |  % of time used in C term       :      0.00      |
+ |  % of time used in D term       :      0.00      |
+ |  % of time used in I/O          :      1.61      |
+ +==================================================+
+
+
+
+ -------------------------------------------------------------------
+ |                 OUTPUT FROM ETA/RHS VECTOR SECTION              |
+ -------------------------------------------------------------------
+
+
+
+   For the requested  2 X2 eta  vectors
+         -   0 H matrix transformations 
+         -   2 G matrix transformations 
+         -   0 generalized G matrix transformations 
+         -   4 generalized F matrix transformations 
+         -   4 F{O} matrix transformations 
+         -   0 generalized F{O} matrix transformations 
+         -   4 generalized ETA{O} vector calculations 
+   will be performed.
+
+
+ +--------------------------------------------------+
+ | total time for   2 G transforms.:      0.57 secs.|
+ +--------------------------------------------------+
+ |  % of time used in ERI          :     91.23      |
+ |  % of time used in CCRDAO       :      5.26      |
+ |  % of time used in CCTRBT       :      0.00      |
+ |  % of time used in CCG_21CD     :      1.75      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in CCS part     :      0.00      |
+ |  % of time used in 21 CCSD part :      0.00      |
+ |  % of time used in doubles part :      0.00      |
+ |  % of time used in I/O          :      1.75      |
+ +==================================================+
+
+
+
+ Solution of CC response equations completed.
+
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<< OUTPUT FROM COUPLED CLUSTER QUADRATIC RESPONSE >>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<< CALCULATION OF TWO PHOTON TRANSITION STRENGTHS >>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+ -----------------------------------------------------------------
+ For trans. to |f(  1.518329)>, state nr.1 of symm. 4
+
+  A : YDIPLEN (2); B : XDIPLEN (3)
+  C : YDIPLEN (2); D : XDIPLEN (3)
+
+  Laser frequency w (au) =         0.000000
+
+  M^AB_of(-w):     0.815478436  M^CD_fo(w):     0.414048195
+  M^CD_of(-w):     0.815478436  M^AB_fo(w):     0.414048195
+
+  M^AB_of(-w) x M^CD_fo(w)   =     0.337647375
+ [M^CD_of(-w) x M^AB_fo(w)]* =     0.337647375
+
+ CC2  Transition strength for Second Order Moment: 
+ CC2  S^of_AB,CD(  0.000000) =     0.337647375
+ -----------------------------------------------------------------
+ -----------------------------------------------------------------
+ For trans. to |f(  1.518329)>, state nr.1 of symm. 4
+
+  A : XDIPLEN (3); B : YDIPLEN (2)
+  C : XDIPLEN (3); D : YDIPLEN (2)
+
+  Laser frequency w (au) =         0.000000
+
+  M^AB_of(-w):     0.815478436  M^CD_fo(w):     0.414048195
+  M^CD_of(-w):     0.815478436  M^AB_fo(w):     0.414048195
+
+  M^AB_of(-w) x M^CD_fo(w)   =     0.337647375
+ [M^CD_of(-w) x M^AB_fo(w)]* =     0.337647375
+
+ CC2  Transition strength for Second Order Moment: 
+ CC2  S^of_AB,CD(  0.000000) =     0.337647375
+ -----------------------------------------------------------------
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :        27
+          Number of t2 amplitudes                 :       729
+          Total number of amplitudes in ccsd      :       756
+
+ Iter.  1: Coupled cluster RSTAR energy :    -100.1946869343450999
+ Iter.  1: Coupled cluster CCSD  energy :    -100.1952031943697818
+ Iter.  2: Coupled cluster CCSD  energy :    -100.1975917209566092
+ Iter.  3: Coupled cluster CCSD  energy :    -100.1977331170518966
+ Iter.  4: Coupled cluster CCSD  energy :    -100.1977837437366361
+ Iter.  5: Coupled cluster CCSD  energy :    -100.1977917847731163
+ Iter.  6: Coupled cluster CCSD  energy :    -100.1977909128963944
+ Iter.  7: Coupled cluster CCSD  energy :    -100.1977909671295208
+ Iter.  8: Coupled cluster CCSD  energy :    -100.1977909365742647
+ Iter.  9: Coupled cluster CCSD  energy :    -100.1977909379635179
+
+ CCSD  energy converged to within   0.10E-07 is   -100.197790938
+
+
+
+
+
+         +-------------------------------------------------------+
+         ! Final results from the Coupled Cluster energy program !
+         +-------------------------------------------------------+
+
+
+
+            Total SCF   energy:                  -100.0089199210
+
+            Total RSTAR energy:                  -100.1946869343
+
+            Total CCSD  energy:                  -100.1977909380
+
+
+
+
+              +---------------------------------------------+
+              ! Calculating singlet intermediates for CCLR  !
+              +---------------------------------------------+
+
+
+
+            E-intermediates calculated 
+            Fock-intermediate calculated 
+            Gamma-intermediate calculated 
+            BF-intermediate calculated 
+            C-intermediate calculated 
+            D-intermediate calculated 
+
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER RESPONSE  >>>>>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                     +--------------------------------+
+                     ! Coupled Cluster model is: CCSD !
+                     +--------------------------------+
+
+ CC_GETSAV> IOPT =  33
+ Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
+ Start vector is a CC2       L0  vector
+
+
+ Analysis of the undifferentiated Lagrangian multipliers: 
+ --------------------------------------------------------
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :               0.3110 %
+
+          Double Excitation Contribution :              99.6890 %
+
+          ||T1||/||T2||                  :               0.0559
+
+          Tau1 diagnostic                :               0.0070
+
+          Norm of Total Amplitude Vector :               0.3993
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   1   |   1       3     |       15          |              |   -0.013143  |
+ +-----------------------------------------------------------------------------+
+ | 1 1 1 1 |   3   4   3   2 |       17       11 |          147 |    0.044931  |
+ | 1 1 1 1 |   1   1   3   3 |       15       15 |          120 |   -0.072951  |
+ | 1 1 1 1 |   2   1   3   3 |       16       15 |          135 |    0.060123  |
+ | 1 1 1 1 |   2   2   3   3 |       16       16 |          136 |   -0.083988  |
+ | 1 1 1 1 |   3   3   3   3 |       17       17 |          153 |   -0.056136  |
+ | 2 1 2 1 |   1   1   1   2 |       22        8 |          239 |   -0.040956  |
+ | 2 1 2 1 |   1   4   1   2 |       22       11 |          242 |    0.063489  |
+ | 2 1 2 1 |   1   1   1   3 |       22       15 |          246 |    0.062626  |
+ | 2 1 2 1 |   1   2   1   3 |       22       16 |          247 |   -0.059509  |
+ | 2 1 2 1 |   2   2   1   3 |       23       16 |          269 |   -0.043321  |
+ | 2 1 2 1 |   1   3   1   3 |       22       17 |          248 |   -0.081902  |
+ | 3 1 3 1 |   1   1   1   2 |       25        8 |          308 |   -0.040956  |
+ | 3 1 3 1 |   1   4   1   2 |       25       11 |          311 |    0.063489  |
+ | 3 1 3 1 |   1   1   1   3 |       25       15 |          315 |    0.062626  |
+ | 3 1 3 1 |   1   2   1   3 |       25       16 |          316 |   -0.059509  |
+ | 3 1 3 1 |   2   2   1   3 |       26       16 |          341 |   -0.043321  |
+ | 3 1 3 1 |   1   3   1   3 |       25       17 |          317 |   -0.081902  |
+ | 2 2 2 2 |   1   1   1   1 |       22       22 |          253 |   -0.091974  |
+ | 3 2 3 2 |   1   1   1   1 |       25       22 |          322 |   -0.114781  |
+ | 3 3 3 3 |   1   1   1   1 |       25       25 |          325 |   -0.091974  |
+ | 4 1 3 2 |   1   5   1   1 |       17       14 |          528 |    0.057570  |
+ | 1 4 3 2 |   5   1   1   1 |       15       10 |          646 |   -0.057570  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.3187
+
+
+          Printed all single excitations greater than 0.011153
+
+
+          Printed all double excitations greater than 0.039938
+  
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER LINEAR RESPONSE >>>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<<<     CALCULATION OF EXCITATION ENERGIES      >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                       +----------------------------+
+                       !  CCSD Excitation Energies  !
+                       +----------------------------+
+
+ --------------------------
+
+
+
+ Symmetry class Nr.:     1
+
+
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:       756
+ No Excitation Energies calculated in this symmetry class
+ --------------------------
+
+
+
+ Symmetry class Nr.:     1
+
+
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:      1485
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     2
+
+
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:       629
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     2
+
+
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:      1241
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     3
+
+
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:       629
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     3
+
+
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:      1241
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     4
+
+
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:       541
+ Converging for  1 roots.
+ CC_GETSAV> IOPT =  33
+ Vector nr.  1 of symmetry  4 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+
+
+ SYMMETRY CLASS NR.    4
+ MULTIPLICITY          1
+
+
+ CCSD       right excitation energies:
+ ====================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV 
+ --------------       -------               --
+
+         1            1.328216           36.142599
+
+
+ Total excited state energies for states of symmetry/spin    4    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    4    1           -98.869574795842894
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                            36.1426 eV
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :               0.3455 %
+
+          Double Excitation Contribution :              99.6545 %
+
+          ||T1||/||T2||                  :               0.0589
+
+          Tau1 diagnostic                :               0.0186
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   3   |   1       1     |        7          |              |    0.038934  |
+ | 2   3   |   2       1     |        8          |              |   -0.014537  |
+ | 3   2   |   1       1     |        4          |              |    0.038934  |
+ | 3   2   |   2       1     |        5          |              |   -0.014537  |
+ +-----------------------------------------------------------------------------+
+ | 4 1 2 2 |   1   2   1   1 |       10       11 |          180 |    0.920606  |
+ | 4 1 2 2 |   1   3   1   1 |       10       12 |          197 |   -0.225373  |
+ | 1 1 3 2 |   1   2   1   1 |       11       11 |          181 |   -0.225373  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9760
+
+
+          Printed all single excitations greater than 0.011755
+
+
+          Printed all double excitations greater than 0.199654
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     4
+
+
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:      1073
+ No Excitation Energies calculated in this symmetry class
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER LINEAR RESPONSE >>>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<<<     CALCULATION OF EXCITATION ENERGIES      >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                       +----------------------------+
+                       !  CCSD Excitation Energies  !
+                       +----------------------------+
+
+ --------------------------
+
+
+
+ Symmetry class Nr.:     1
+
+
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:       756
+ No Excitation Energies calculated in this symmetry class
+ --------------------------
+
+
+
+ Symmetry class Nr.:     1
+
+
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:      1485
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     2
+
+
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:       629
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     2
+
+
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:      1241
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     3
+
+
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:       629
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     3
+
+
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:      1241
+ No Excitation Energies calculated in this symmetry class
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     4
+
+
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:       541
+ Converging for  1 roots.
+ CC_GETSAV> IOPT =  33
+ Vector nr.  1 of symmetry  4 found on file - RESTART SUCCESS
+ Start vector is a CC2       LE  vector
+
+
+ SYMMETRY CLASS NR.    4
+ MULTIPLICITY          1
+
+
+ CCSD       left excitation energies:
+ ====================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV 
+ --------------       -------               --
+
+         1            1.328216           36.142599
+
+
+ Total excited state energies for states of symmetry/spin    4    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    4    1           -98.869574795923569
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                            36.1426 eV
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :               0.1488 %
+
+          Double Excitation Contribution :              99.8512 %
+
+          ||T1||/||T2||                  :               0.0386
+
+          Tau1 diagnostic                :               0.0122
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   3   |   1       1     |        7          |              |    0.022797  |
+ | 2   3   |   2       1     |        8          |              |   -0.014974  |
+ | 3   2   |   1       1     |        4          |              |    0.022797  |
+ | 3   2   |   2       1     |        5          |              |   -0.014974  |
+ +-----------------------------------------------------------------------------+
+ | 4 1 2 2 |   1   2   1   1 |       10       11 |          180 |    0.920061  |
+ | 4 1 2 2 |   1   3   1   1 |       10       12 |          197 |   -0.225298  |
+ | 1 1 3 2 |   1   2   1   1 |       11       11 |          181 |   -0.225298  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9744
+
+
+          Printed all single excitations greater than 0.007715
+
+
+          Printed all double excitations greater than 0.199851
+
+ Overlap between left and right vector:         0.9990474448
+
+ Renormalized overlap left-right:               1.0000000000
+
+
+ *******************************************************************************
+ --------------------------
+
+
+
+ Symmetry class Nr.:     4
+
+
+ Multiplicity      :     3
+ --------------------------
+
+ Length of Excitation vectors in this class is:      1073
+ No Excitation Energies calculated in this symmetry class
+
+ UNSORTED LIST OF REQUIRED OPERATORS:
+    1   YDIPLEN     2    1  F    0
+    2   XDIPLEN     3    1  F    0
+    3   HAM0        1    1  T    0
+
+ LIST OF REQUIRED PROPERTY OPERATORS:
+    1   HAM0        1    1  T
+    2   YDIPLEN     2    1  F
+    3   XDIPLEN     3    1  F
+
+ LIST OF REQUIRED EXPECTATION VALUES:
+
+ LIST OF REQUIRED EFFECTIVE FOCK MATRICES:
+
+ LIST OF REQUIRED FIRST ORDER XI VECTORS:
+    1   YDIPLEN   F    2     0.000000E+00
+    2   XDIPLEN   F    3     0.000000E+00
+
+ LIST OF REQUIRED FIRST ORDER T VECTORS:
+    1   YDIPLEN   F    2    -1.328216E+00
+    2   YDIPLEN   F    2     0.000000E+00
+    3   YDIPLEN   F    2     1.328216E+00
+    4   XDIPLEN   F    3    -1.328216E+00
+    5   XDIPLEN   F    3     0.000000E+00
+    6   XDIPLEN   F    3     1.328216E+00
+
+ LIST OF REQUIRED FIRST ORDER ETA VECTORS:
+    1   YDIPLEN   F    2     0.000000E+00
+    2   XDIPLEN   F    3     0.000000E+00
+
+ LIST OF REQUIRED FIRST ORDER ZETA VECTORS:
+    1   YDIPLEN   F    2    -1.328216E+00
+    2   YDIPLEN   F    2     0.000000E+00
+    3   XDIPLEN   F    3    -1.328216E+00
+    4   XDIPLEN   F    3     0.000000E+00
+
+ LIST OF REQUIRED FIRST ORDER M-VECTORS:
+    1          1    4     1.328216E+00
+
+ LIST OF REQUIRED SECOND-ORDER XKSI VECTORS:
+    1   YDIPLEN   2    -1.328216E+00   XDIPLEN   3     0.000000E+00  4
+    2   YDIPLEN   2     1.328216E+00   XDIPLEN   3     0.000000E+00  4
+    3   XDIPLEN   3    -1.328216E+00   YDIPLEN   2     0.000000E+00  4
+    4   XDIPLEN   3     1.328216E+00   YDIPLEN   2     0.000000E+00  4
+
+ LIST OF REQUIRED SECOND-ORDER ETA VECTORS:
+    1   YDIPLEN   2    -1.328216E+00   XDIPLEN   3     0.000000E+00  4
+    2   XDIPLEN   3    -1.328216E+00   YDIPLEN   2     0.000000E+00  4
+      
+
+    *******************************************************************
+    *          SOLVING COUPLED CLUSTER RESPONSE EQUATIONS             *
+    *******************************************************************
+
+
+
+ +======================================================================+
+ !                     RHS & ETA VECTORS TO COMPUTE:                    !
+ +======================================================================+
+ | TYPE | # VEC. |  NEEDED FOR:                                         |
+ +----------------------------------------------------------------------+
+ |  O1  |    2   |  first-order amplitude equations                     |
+ |  X1  |    2   |  first-order multipliers equations                   |
+ |  O2  |    4   |  second-order amplitude equations                    |
+ |  X2  |    2   |  second-order multipliers equations                  |
+ +======================================================================+
+
+
+
+ +======================================================================+
+ !                       LINEAR EQUATIONS TO SOLVE:                     !
+ +======================================================================+
+ | TYPE | # VEC. |  EQUATION:                                           |
+ +----------------------------------------------------------------------+
+ |  R1  |    6   |  first-order amplitude response                      |
+ |  L1  |    4   |  first-order multiplier response                     |
+ |  M1  |    1   |  first-order ground - excited state multipliers      |
+ +======================================================================+
+
+
+
+ +======================================================================+
+ !                F MATRIX TRANSFORMATIONS TO COMPUTE:                  !
+ +======================================================================+
+ | TYPE | # VEC. |  TRANSFORMED:                                        |
+ +----------------------------------------------------------------------+
+ |  F1  |    6   |  first-order amplitude response (R1) vector          |
+ |  FR  |    1   |  right eigenvectors (RE)                             |
+ +======================================================================+
+
+
+
+ Warning: no 1-index transformed eff. Fock 
+ matrices calculated... 
+ Relaxed second-order properties will be wrong!.
+
+ -------------------------------------------------------------------
+ |          OUTPUT FROM AMPLITUDE RHS VECTOR SECTION               |
+ -------------------------------------------------------------------
+
+
+
+   For the requested  2 1th.-order amplitude rhs vectors "O1 ".
+         -   0 D matrix transformations 
+         -   0 C matrix transformations 
+         -   0 B matrix transformations 
+         -   0 C{O} matrix transformations 
+         -   0 B{O} matrix transformations 
+         -   0 A{O} matrix transformations 
+         -   2Xi{O} vector calculations    
+   will be performed.
+
+
+ CC_GETSAV> IOPT =  33
+ vector for wrong frequencies on file CCR1_2___1
+FILE  :CCR1_2___1
+IDXLST:    1
+ISYLST:    2
+ISYFIL:    2
+LABLST:  YDIPLEN 
+LABFIL:  YDIPLEN 
+FRQLST: -1.328216
+FRQFIL: -1.518329
+INDLST:    0
+INDFIL:    0
+LORXLST:    F
+LORXFIL:    F
+  IOPTSV=33... read vector nevertheless...
+ Vector nr.  1 of symmetry  2 found on file - RESTART SUCCESS
+ Start vector is a CC2       R1  vector
+ CC_GETSAV> IOPT =  33
+ Vector nr.  2 of symmetry  2 found on file - RESTART SUCCESS
+ Start vector is a CC2       R1  vector
+ CC_GETSAV> IOPT =  33
+ vector for wrong frequencies on file CCR1_2___3
+FILE  :CCR1_2___3
+IDXLST:    3
+ISYLST:    2
+ISYFIL:    2
+LABLST:  YDIPLEN 
+LABFIL:  YDIPLEN 
+FRQLST:  1.328216
+FRQFIL:  1.518329
+INDLST:    0
+INDFIL:    0
+LORXLST:    F
+LORXFIL:    F
+  IOPTSV=33... read vector nevertheless...
+ Vector nr.  3 of symmetry  2 found on file - RESTART SUCCESS
+ Start vector is a CC2       R1  vector
+ CC_GETSAV> IOPT =  33
+ vector for wrong frequencies on file CCR1_3___1
+FILE  :CCR1_3___1
+IDXLST:    4
+ISYLST:    3
+ISYFIL:    3
+LABLST:  XDIPLEN 
+LABFIL:  XDIPLEN 
+FRQLST: -1.328216
+FRQFIL: -1.518329
+INDLST:    0
+INDFIL:    0
+LORXLST:    F
+LORXFIL:    F
+  IOPTSV=33... read vector nevertheless...
+ Vector nr.  4 of symmetry  3 found on file - RESTART SUCCESS
+ Start vector is a CC2       R1  vector
+ CC_GETSAV> IOPT =  33
+ Vector nr.  5 of symmetry  3 found on file - RESTART SUCCESS
+ Start vector is a CC2       R1  vector
+ CC_GETSAV> IOPT =  33
+ vector for wrong frequencies on file CCR1_3___3
+FILE  :CCR1_3___3
+IDXLST:    6
+ISYLST:    3
+ISYFIL:    3
+LABLST:  XDIPLEN 
+LABFIL:  XDIPLEN 
+FRQLST:  1.328216
+FRQFIL:  1.518329
+INDLST:    0
+INDFIL:    0
+LORXLST:    F
+LORXFIL:    F
+  IOPTSV=33... read vector nevertheless...
+ Vector nr.  6 of symmetry  3 found on file - RESTART SUCCESS
+ Start vector is a CC2       R1  vector
+ CC_GETSAV> IOPT =  33
+ vector for wrong frequencies on file CCL1_2___1
+FILE  :CCL1_2___1
+IDXLST:    1
+ISYLST:    2
+ISYFIL:    2
+LABLST:  YDIPLEN 
+LABFIL:  YDIPLEN 
+FRQLST: -1.328216
+FRQFIL: -1.518329
+INDLST:    0
+INDFIL:    0
+LORXLST:    F
+LORXFIL:    F
+  IOPTSV=33... read vector nevertheless...
+ Vector nr.  1 of symmetry  2 found on file - RESTART SUCCESS
+ Start vector is a CC2       L1  vector
+ CC_GETSAV> IOPT =  33
+ Vector nr.  2 of symmetry  2 found on file - RESTART SUCCESS
+ Start vector is a CC2       L1  vector
+ CC_GETSAV> IOPT =  33
+ vector for wrong frequencies on file CCL1_3___1
+FILE  :CCL1_3___1
+IDXLST:    3
+ISYLST:    3
+ISYFIL:    3
+LABLST:  XDIPLEN 
+LABFIL:  XDIPLEN 
+FRQLST: -1.328216
+FRQFIL: -1.518329
+INDLST:    0
+INDFIL:    0
+LORXLST:    F
+LORXFIL:    F
+  IOPTSV=33... read vector nevertheless...
+ Vector nr.  3 of symmetry  3 found on file - RESTART SUCCESS
+ Start vector is a CC2       L1  vector
+ CC_GETSAV> IOPT =  33
+ Vector nr.  4 of symmetry  3 found on file - RESTART SUCCESS
+ Start vector is a CC2       L1  vector
+ CC_GETSAV> IOPT =  33
+ vector for wrong frequencies on file CCM1_4___1
+FILE  :CCM1_4___1
+IDXLST:    1
+ISYLST:    4
+ISYFIL:    4
+LABLST:          
+LABFIL:          
+FRQLST:  1.328216
+FRQFIL:  1.518329
+INDLST:    1
+INDFIL:    1
+LORXLST:    F
+LORXFIL:    F
+  IOPTSV=33... read vector nevertheless...
+ Vector nr.  1 of symmetry  4 found on file - RESTART SUCCESS
+ Start vector is a CC2       M1  vector
+
+ -------------------------------------------------------------------
+ |          OUTPUT FROM AMPLITUDE RHS VECTOR SECTION               |
+ -------------------------------------------------------------------
+
+
+
+   For the requested  4 2th.-order amplitude rhs vectors "O2 ".
+         -   0 D matrix transformations 
+         -   0 C matrix transformations 
+         -   4 B matrix transformations 
+         -   0 C{O} matrix transformations 
+         -   0 B{O} matrix transformations 
+         -   8 A{O} matrix transformations 
+         -   0Xi{O} vector calculations    
+   will be performed.
+
+
+ +--------------------------------------------------+
+ | total time for   4 B transforms.:      0.69 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      0.00      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in ERI          :     75.36      |
+ |  % of time used in CCRDAO       :      5.80      |
+ |  % of time used in (**|k del)   :      1.45      |
+ |  % of time used in singles part :      0.00      |
+ |  % of time used in A term       :      1.45      |
+ |  % of time used in BF term      :      0.00      |
+ |  % of time used in F term       :      0.00      |
+ |  % of time used in E term       :      2.90      |
+ |  % of time used in C term       :      5.80      |
+ |  % of time used in D term       :      1.45      |
+ |  % of time used in I/O          :      5.80      |
+ +==================================================+
+
+
+
+ -------------------------------------------------------------------
+ |                 OUTPUT FROM ETA/RHS VECTOR SECTION              |
+ -------------------------------------------------------------------
+
+
+
+   For the requested  2 X2 eta  vectors
+         -   0 H matrix transformations 
+         -   2 G matrix transformations 
+         -   0 generalized G matrix transformations 
+         -   4 generalized F matrix transformations 
+         -   4 F{O} matrix transformations 
+         -   0 generalized F{O} matrix transformations 
+         -   4 generalized ETA{O} vector calculations 
+   will be performed.
+
+
+ +--------------------------------------------------+
+ | total time for   2 G transforms.:      0.59 secs.|
+ +--------------------------------------------------+
+ |  % of time used in ERI          :     86.44      |
+ |  % of time used in CCRDAO       :      8.47      |
+ |  % of time used in CCTRBT       :      0.00      |
+ |  % of time used in CCG_21CD     :      1.69      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in CCS part     :      0.00      |
+ |  % of time used in 21 CCSD part :      3.39      |
+ |  % of time used in doubles part :      0.00      |
+ |  % of time used in I/O          :      0.00      |
+ +==================================================+
+
+
+
+ Solution of CC response equations completed.
+
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<< OUTPUT FROM COUPLED CLUSTER QUADRATIC RESPONSE >>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<< CALCULATION OF TWO PHOTON TRANSITION STRENGTHS >>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+ -----------------------------------------------------------------
+ For trans. to |f(  1.328216)>, state nr.1 of symm. 4
+
+  A : YDIPLEN (2); B : XDIPLEN (3)
+  C : YDIPLEN (2); D : XDIPLEN (3)
+
+  Laser frequency w (au) =         0.000000
+
+  M^AB_of(-w):    -0.168028854  M^CD_fo(w):    -0.047586894
+  M^CD_of(-w):    -0.168028854  M^AB_fo(w):    -0.047586894
+
+  M^AB_of(-w) x M^CD_fo(w)   =     0.007995971
+ [M^CD_of(-w) x M^AB_fo(w)]* =     0.007995971
+
+ CCSD Transition strength for Second Order Moment: 
+ CCSD S^of_AB,CD(  0.000000) =     0.007995971
+ -----------------------------------------------------------------
+ -----------------------------------------------------------------
+ For trans. to |f(  1.328216)>, state nr.1 of symm. 4
+
+  A : XDIPLEN (3); B : YDIPLEN (2)
+  C : XDIPLEN (3); D : YDIPLEN (2)
+
+  Laser frequency w (au) =         0.000000
+
+  M^AB_of(-w):    -0.168028854  M^CD_fo(w):    -0.047586894
+  M^CD_of(-w):    -0.168028854  M^AB_fo(w):    -0.047586894
+
+  M^AB_of(-w) x M^CD_fo(w)   =     0.007995971
+ [M^CD_of(-w) x M^AB_fo(w)]* =     0.007995971
+
+ CCSD Transition strength for Second Order Moment: 
+ CCSD S^of_AB,CD(  0.000000) =     0.007995971
+ -----------------------------------------------------------------
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                   SUMMARY OF COUPLED CLUSTER CALCULATION                    *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+                                                                                
+            Total SCF   energy:                  -100.0089199210                
+                                                                                
+                                                                                
+ +=============================================================================+
+ |  sym. | Exci.  |        CCS        Excitation energies            | ||T1||  |
+ |(spin, |        +------------------------------------------------------------+
+ | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
+ +=============================================================================+
+ | ^1A2  |    1   |     1.4551443  |      39.59649  |    319367.250  | 100.00  |
+ +=============================================================================+
+                                                                                
+                                                                                
+            Total SCF   energy:                  -100.0089199210                
+            Total MP2   energy:                  -100.1936626104                
+            Total CC2   energy:                  -100.1946869343                
+                                                                                
+                                                                                
+ +=============================================================================+
+ |  sym. | Exci.  |        CC2        Excitation energies            | ||T1||  |
+ |(spin, |        +------------------------------------------------------------+
+ | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
+ +=============================================================================+
+ | ^1A2  |    1   |     1.5183294  |      41.31584  |    333234.791  |  99.13  |
+ +=============================================================================+
+                                                                                
+                                                                                
+            Total SCF   energy:                  -100.0089199210                
+            Total RSTAR energy:                  -100.1946869343                
+            Total CCSD  energy:                  -100.1977909380                
+                                                                                
+                                                                                
+ +=============================================================================+
+ |  sym. | Exci.  |        CCSD       Excitation energies            | ||T1||  |
+ |(spin, |        +------------------------------------------------------------+
+ | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
+ +=============================================================================+
+ | ^1A2  |    1   |     1.3282161  |      36.14260  |    291509.748  |   0.35  |
+ +=============================================================================+
+
+  1 a.u. =        27.21138 eV.  
+  1 a.u. =    219474.63137 cm-1.
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                      END OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+- End of Coupled Cluster
+ >>>> Total CPU  time used in DALTON:  3 minutes 50 seconds
+ >>>> Total wall time used in DALTON:  4 minutes 14 seconds
+
+ 
+     Date and time (Linux)  : Wed Mar 28 15:55:10 2001
+     Host name              : dschcoriani.univ.trieste.it             

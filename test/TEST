@@ -26,6 +26,15 @@ rsp_soppafcnosymm rsp_soppafcsymm rsp_soppapolar rsp_soppapolarnosymm \
 rsp_soppapolarsymm rsp_sreslrso rsp_sresqr walk_gradex walk_image \
 walk_modeflw walk_polar walk_vibave walk_vibave2 walk_vibave3"
 #
+SHORTCC="alpha alpha3 beta beta2 beta_freq beta_freq2 cc2drw2e \
+cc2refop cc2rf exgr1 exlr_ccsd exlr_ccsd_2 field fop1 fop2 freeze1 \
+gamma_ccs gamma_ccsd gamma_direct gamma_freq gamma_freq2 mcd_nonlao \
+oddisp threephot triples triples_direct triples_direct2 triples_direri \
+triplet triplet3 twophot twophot_c2v twophot_cc2_cs twophot_direct \
+twophotb"
+#
+SHORT="$SHORT $SHORTCC"
+#
 MEDIUM="energy_corehole energy_solv geoopt_cartmin geoopt_dckerr \
 geoopt_delintmin geoopt_exci geoopt_mp2froz geoopt_redintsad \
 geoopt_symbrk prop_nucquad prop_roa rsp_dckerr rsp_esr rsp_esr2"
@@ -62,6 +71,7 @@ usage: TEST [-h|-help|--help] [-keep] [-reftest] [-bell] [-benchmark]
           essential            -- run a minimal set of essential testcases
           parallel             -- run all parallel testcases
           short                -- run all short testcases
+          shortcc              -- run all short cc testcases
           medium               -- run all medium length testcases
           long                 -- run all long testcases
           all                  -- run all non-parallel testcases
@@ -137,6 +147,8 @@ elif [ "$testcase" = "parallel" ]; then
   testcase=$PARALLEL
 elif [ "$testcase" = "all" ]; then
   testcase=$ALL
+elif [ "$testcase" = "shortcc" ]; then
+  testcase=$SHORTCC
 fi
 
 
@@ -174,6 +186,9 @@ do
   myprint "-----------------------------------------------------------"
   chmod +x ./$item
   ./$item
+  if [ -f $item.info ]; then
+    cat $item.info | tee -a $listing
+  fi
 # Check if this is a multistep job
   numsteps=1
   if [ -r ./$item'__'1.dal ]; then
