@@ -74,7 +74,7 @@
 #include "grid-gen.h"
 
 /* common screening for cubes/cells */
-static const real CELL_SIZE = 4.0;
+static const real CELL_SIZE = 1.25;
 /* the weight threshold:: a grid point will be ignored if has a weight
  * lower than the WEIGHT_THRESHOLD. This should probably depend on the
  * calculation's accuracy. */
@@ -748,7 +748,13 @@ block_postprocess(GridGenMolGrid *mg, struct point *c,
         real dy = mg->atom_coords[atno].y - c->y;
         real dz = mg->atom_coords[atno].z - c->z;
         real dist2 = dx*dx + dy*dy + dz*dz;
-        real r = ag->rad[ag->pnt-1]+CELL_SIZE;
+        /* Increase the radius beyond the last point to let the grid
+         * time to end.  Adding a scaled-up difference between last
+         * two radial points is possibly the best way out. */
+        real r;
+        assert(ag->pnt>=2);
+        r = ag->rad[ag->pnt-1]
+            + 1.5*(ag->rad[ag->pnt-1]-ag->rad[ag->pnt-2]); 
         if(r*r>dist2) {
             map2r[atno] = uniq_atoms;
             relevant_atoms[uniq_atoms++] = atno;
@@ -883,9 +889,9 @@ comp_point_key(const void* a, const void* b)
     return ((struct point_key_t*)a)->key-((struct point_key_t*)b)->key;
 }
 
-void gtexts_(real* r2);
-void getblocks_(real *X,real *Y, real *Z, real *CELLSZ, real RSHEL2[],
-                int *NBLCNT, int (*IBLCKS)[2]);
+void FSYM(gtexts)(real* r2);
+void FSYM(getblocks)(real *X,real *Y, real *Z, real *CELLSZ, real RSHEL2[],
+                     int *NBLCNT, int (*IBLCKS)[2]);
 static void
 boxify_load_grid(const char *fname, int point_cnt, real *work, int worksz,
                  real (**coor)[3], real **w, int *x_allocated,
@@ -977,7 +983,7 @@ static void
 boxify_save_batch_local(FILE *f, int cnt, int nblocks, int shlblocks[][2],
                         real *coor, real *w)
 {
-    if(cnt == 0) {printf("batch of zero length!\n"); return;}
+    if(cnt == 0) return;
     if(fwrite(&cnt, sizeof(cnt), 1, f)!=1) {
         fprintf(stderr, "GRIDGEN: 'too short write' error.\n");
         exit(1);
@@ -1118,7 +1124,7 @@ boxify_save(GridGenMolGrid *mg, const char *fname, int point_cnt,
         exit(1);
     }
     rshel2 = dal_malloc(FSYM2(ishell_cnt)()*sizeof(real));
-    gtexts_(rshel2);
+    FSYM(gtexts)(rshel2);
     for(idx=0; idx<point_cnt; idx += cnt) {
         int closest = 0, i;
         struct point c;
@@ -1153,7 +1159,7 @@ boxify_save(GridGenMolGrid *mg, const char *fname, int point_cnt,
             dt[cnt*3+i]  = w[j];
             if(atom_idx) atom_nums[i] = atom_idx[j];
         }
-        getblocks_(&c.x, &c.y, &c.z, &cell_size, rshel2, &nblocks, shlblocks);
+        FSYM(getblocks)(&c.x, &c.y, &c.z, &cell_size, rshel2, &nblocks, shlblocks);
         if(nblocks==0) continue;        
 
         if(0) {
@@ -1242,7 +1248,7 @@ mgrid_new(int atom_cnt, const GridGenAtom* atoms)
     return mg;
 }
 
-void
+static void
 mgrid_free(GridGenMolGrid* mg)
 {
     int i;
@@ -1404,7 +1410,7 @@ mgrid_compute_coords_worker(GridGenMolGrid* mgrid)
     return NULL;
 }
 
-int
+static int
 mgrid_compute_coords(GridGenMolGrid* mgrid, const char* filename)
 {
     if( (mgrid->fl = fopen(filename,"wb"))==NULL) {

@@ -395,6 +395,9 @@ c     get radii of all shells as defined by specified threshold DFTHRI.
 cdebug below
 #include <mxcent.h>
 #include <nuclei.h>
+      DIMENSION FACL(10)
+      DATA FACL /1D0,1.3333D0,1.6D0,1.83D0,2.03D0,
+     &     2.22D0,2.39D0,2.55D0,2.70D0,2.84D0/
       DIMENSION RSHEL(KMAX)
       THLOG = LOG(DFTHRI)
       DO ISHELA=1,KMAX
@@ -409,7 +412,7 @@ cdebug below
          END DO
       END DO
       DO ISHELA=1,KMAX
-         RSHEL(ISHELA) = SQRT(RSHEL(ISHELA))
+         RSHEL(ISHELA) = SQRT(RSHEL(ISHELA))*FACL(NHKT(ISHELA))
       END DO
       END
 c
