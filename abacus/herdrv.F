@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: herdrv.F,v 1.18 2001-10-09 16:40:42 vebjornb Exp $
+C$Id: herdrv.F,v 1.19 2001-10-30 11:41:08 hjj Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -714,6 +714,7 @@ C&&& Nuclear model
             GO TO 100
  190     CONTINUE
             MNF_SO = .TRUE.
+            ONEPRP = .TRUE.
             GO TO 100
  191     CONTINUE
             DPTOVL = .TRUE.
@@ -811,11 +812,11 @@ C&&& Nuclear model
          IF (THETA)  WRITE (LUPRI,'(10X,A)')
      &                         '- traceless quadrupole moment integrals'
          IF (SECMOM) WRITE (LUPRI,'(10X,A)')'- second moments integrals'
-         IF (THRMOM) WRITE (LUPRI,'(10X,A)')'- third moment integrals'   
+         IF (THRMOM) WRITE (LUPRI,'(10X,A)')'- third moment integrals'
          IF (SPNORB) WRITE (LUPRI,'(10X,A)')
-     &                                  '- spatial spin-orbit integrals'
+     &                         '- spatial spin-orbit integrals'
          IF (OCTUPO) WRITE (LUPRI,'(10X,A)')
-     &                                    '- octupole moment integrals'
+     &                         '- octupole moment integrals'
          IF (CARMOM) THEN
             IF (IORCAR .GT. 0) THEN
                WRITE (LUPRI,'(10X,A,I2,A)')
@@ -969,7 +970,7 @@ C&&& Nuclear model
          IF (SOFLD) WRITE (LUPRI,'(10X,A)')
      &      '- Magnetic-field correction to one-electron SO integrals'
          IF (SOMM) WRITE (LUPRI,'(10X,A)')
-     &      '- Magnetic-moment correction to one-electron SO integrals'   
+     &      '- Magnetic-moment correction to one-electron SO integrals'
          IF (PVPINT) WRITE (LUPRI,'(10X,A)')
      &      '- pVp integrals of the Douglas-Kroll Hamiltonian'
          IF (POTENE) WRITE (LUPRI,'(10X,A)')
@@ -992,7 +993,7 @@ C&&& Nuclear model
      &        '- Geometrical derivatives of overlap integrals'
          IF (DERHAM) WRITE (LUPRI,'(10X,A)')
      &        '- Geometrical derivatives of one-electron Hamiltonian '//
-     &        'integrals'                                                   
+     &        'integrals'
          IF (DPTPOT) WRITE (LUPRI,'(10X,A,A)')
      &        '- small component potential energy for DPT'
          IF (DPTOVL) WRITE (LUPRI,'(10X,A)')
@@ -1721,7 +1722,7 @@ C
      &                     IDUMMY,TRIANG,PROPRI,IPRONE)
                CALL TIMER('THRMOM',TIMSTR,TIMEND)
                CALL FLSHFO(LUPRI)
-            END IF                                      
+            END IF
 C
 C           ***** Kinetic energy integrals *****
 C
@@ -2311,7 +2312,7 @@ C
                CALL PR1INT('DPLGRA ',WORK,LWORK,IDUMMY,
      &                     IDUMMY,TRIANG,PROPRI,IPRONE)
                CALL TIMER('DPLGRA',TIMSTR,TIMEND)
-            END IF                                                  
+            END IF
 C
 C           ****  First geometricl derivative of quadrupole integrals  ****
 C
@@ -2320,7 +2321,7 @@ C
                CALL PR1INT('QUAGRA ',WORK,LWORK,IDUMMY,
      &                     IDUMMY,TRIANG,PROPRI,IPRONE)
                CALL TIMER('QUAGRA',TIMSTR,TIMEND)
-            END IF                                               
+            END IF
 C
 C           ****  First geometricl derivative of octupole integrals  ****
 C
@@ -2329,7 +2330,7 @@ C
                CALL PR1INT('OCTGRA ',WORK,LWORK,IDUMMY,
      &                     IDUMMY,TRIANG,PROPRI,IPRONE)
                CALL TIMER('OCTGRA ',TIMSTR,TIMEND)
-            END IF                                             
+            END IF
 C
 C           ****  Rotational strength integrals  ****
 C
@@ -2347,7 +2348,7 @@ C
                CALL PR1INT('SOFIELD',WORK,LWORK,IDUMMY,
      &                     IDUMMY,TRIANG,PROPRI,IPRONE)
                CALL TIMER('SOFIELD',TIMSTR,TIMEND)
-            END IF                                                          
+            END IF
 C
 C           ****  ??? integrals  ****
 C
@@ -2356,7 +2357,7 @@ C
                CALL PR1INT('SOMAGMO',WORK,LWORK,IDUMMY,
      &                     NPQUAD,TRIANG,PROPRI,IPRONE)
                CALL TIMER('SOMAGMO',TIMSTR,TIMEND)
-            END IF                                                           
+            END IF
 C
 C           ****   First electric derivative of overlap integrals    ****
 C           ****   Type A   ****
@@ -2392,7 +2393,7 @@ C
                CALL PR1INT('DEROVLP',WORK,LWORK,IDUMMY,IDUMMY,
      &                     TRIANG,PROPRI,IPRONE)
                CALL TIMER('DEROVL',TIMSTR,TIMEND)
-            END IF                          
+            END IF
 C
 C           **** First geometr. deriv. of 1el hamiltonian integrals ***
 C
@@ -2401,7 +2402,7 @@ C
                CALL PR1INT('DERHAMI',WORK,LWORK,IDUMMY,IDUMMY,
      &                     TRIANG,PROPRI,IPRONE)
                CALL TIMER('DERHAM',TIMSTR,TIMEND)
-            END IF                                        
+            END IF
 C
 C           ***** DPT overlap integrals ********************************
 C
@@ -2474,21 +2475,21 @@ C
          IF (HAMILT) THEN
             IF (RUNERI) THEN
                CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL MEMGET('REAL',KCCFBT,MXCONT*MXPRIM,WORK,KFREE,LFREE)     
+               CALL MEMGET('REAL',KCCFBT,MXCONT*MXPRIM,WORK,KFREE,LFREE)
                CALL MEMGET('INTE',KINDXB,8*MXSHEL*MXCONT,WORK,KFREE,
-     &                     LFREE)     
+     &                     LFREE)
                CALL ER2INT(WORK(KCCFBT),WORK(KINDXB),WORK(KFREE),LFREE)
                CALL MEMREL('HERINT.ER2INT',WORK,KWORK,KWORK,KFREE,LFREE)
                CALL TIMER('ERIDRV',TIMSTR,TIMEND)
                CALL FLSHFO(LUPRI)
             ELSE
                NPAO = MXSHEL*MXAOVC
-               CALL MEMGET('INTE',KJSTRS,NPAO*2,WORK,KFREE,LFREE)     
-               CALL MEMGET('INTE',KNPRIM,NPAO*2,WORK,KFREE,LFREE)     
-               CALL MEMGET('INTE',KNCONT,NPAO*2,WORK,KFREE,LFREE)     
-               CALL MEMGET('INTE',KIORBS,NPAO  ,WORK,KFREE,LFREE)     
-               CALL MEMGET('INTE',KJORBS,NPAO  ,WORK,KFREE,LFREE)     
-               CALL MEMGET('INTE',KKORBS,NPAO  ,WORK,KFREE,LFREE)     
+               CALL MEMGET('INTE',KJSTRS,NPAO*2,WORK,KFREE,LFREE)
+               CALL MEMGET('INTE',KNPRIM,NPAO*2,WORK,KFREE,LFREE)
+               CALL MEMGET('INTE',KNCONT,NPAO*2,WORK,KFREE,LFREE)
+               CALL MEMGET('INTE',KIORBS,NPAO  ,WORK,KFREE,LFREE)
+               CALL MEMGET('INTE',KJORBS,NPAO  ,WORK,KFREE,LFREE)
+               CALL MEMGET('INTE',KKORBS,NPAO  ,WORK,KFREE,LFREE)
                CALL PAOVEC(WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),
      &                     WORK(KIORBS),WORK(KJORBS),WORK(KKORBS),0,
      &                     .FALSE.,IPRDEF)
@@ -2624,7 +2625,7 @@ C
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
       SAVE SET
-      DATA TABLE /'.SORTST', '.COMND ', '.THRQ  ', '.PRINT ', '.IO PRI',
+      DATA TABLE /'xxxxxxx', 'xxxxxx ', '.THRQ  ', '.PRINT ', '.IO PRI',
      &            '.INTSYM', '.DELAO ', '.KEEP  ', 'XXXXXXX', 'XXXXXXX'/
       DATA SET/.FALSE./
 C
@@ -2641,8 +2642,6 @@ C
 C
 C     Initialize /INTSRT/
 C
-      SORTST = 0.D0 ! not used
-      COMND  = ' '
       THRQ2   = 1.0D-15
       ISPRINT = 0
       ISPRFIO = 0
@@ -2679,8 +2678,6 @@ C
     1          CONTINUE
                GO TO 100
     2          CONTINUE
-                  READ (LUCMD, '(A40)') COMND
-                  IF (COMND.NE.' ') ICHANG=ICHANG+1
                GO TO 100
     3          CONTINUE
                   READ (LUCMD, *) THRQ2
@@ -2721,8 +2718,6 @@ C
       IF (ICHANG .EQ. 0) RETURN
       IF (RNINTS. AND. NEWDEF) THEN
          CALL HEADER('Changes of defaults for SORTAO:',1)
-         IF (COMND  .NE. ' ') WRITE (LUPRI,'(A)')
-     &        ' COMND ',COMND
          IF (THRQ2 .NE. 1.0D-15) WRITE (LUPRI,'(A,D12.2)')
      &        ' Threshold for sorted integrals:', THRQ2
          IF (ISPRINT .NE. 0) WRITE(LUPRI,'(A,I5)')
@@ -2948,7 +2943,10 @@ C     We should now have all the atomic mean-field SO integrals,
 C     now generate them in symmetry-orbital basis
 C
       REWIND (MNFPRP)
-         CALL SYMTRAFO(MNFPRP,LUPROP,PROPRI,IPRINT,WORK,LWORK)
+      CALL SYMTRAFO(MNFPRP,LUPROP,PROPRI,IPRINT,WORK,LWORK)
+C
+      CALL GPCLOSE(LUTMP2,'KEEP')
+      CALL GPCLOSE(MNFPRP,'DELETE')
       RETURN
       END
 C  /* Deck dkint */
