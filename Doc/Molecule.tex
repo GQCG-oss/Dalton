@@ -793,8 +793,8 @@ MINI(Scaled) & H--Ca & \cite{huzinagabasis,htshjcc1} \\
 \newpage
 %
 \bf{\emph{Ahlrich's VXZ basis sets}} & & \\
-AhlrichsVDZ & H--Kr & \cite{ashhrajcp97}\\
-AhlrichsVTZ & H--Kr & \cite{ashhrajcp97}\\
+Ahlrichs-VXZ (X = D,T) & H--Kr & \cite{ashhrajcp97}\\
+Ahlrichs-pVDZ & H--Kr & \cite{ashhrajcp97} polariz. functions largely unpublished.\\
 %
 \bf{\emph{Huzinaga basis sets}} & & \\
 Huz-II & H, C--F, P, S & \cite{wkijc19,mswkjcp76,huzinagaintern} All the Huz basis sets are of\\
@@ -826,27 +826,30 @@ DZP+Rydberg(Dunning) & H, B--Ne, Al--Cl & DZP, with polariz. functions from
 TZ(Dunning) & H, Li--Ne & \cite{thdjcp55}\\
 \hline
 \multicolumn{2}{l}{\bf{\emph{Dunning's correlation consistent basis sets}}} & \\
-cc-pVXZ (X = D,T,Q,5,6) & H--Ne, Al--Ar & \cite{thdjcp90,dewthdjcp100,dewthdjcp98} 
-  Note: 6Z only includes H,C--O\\
-cc-pVXZ-DK (X = D,T,Q,5) & H,He,B--Ne & \cite{thdjcp90,dewthdjcp100,dewthdjcp98,akwdewkapthdjcp110} 
-  cc-pVXZ recontracted for \\
+\multicolumn{3}{l}{\emph{Note: H,He (valence only) are included in all core-valence basis sets 
+  for convenience.}} \\
+cc-pVXZ (X = D,T,Q,5,6) & H--Ne, Al--Ar, & \cite{thdjcp90,dewthdjcp100,dewthdjcp98,
+  jkkapjpca106,akwdewkapthdjcp110} \\
+  & Ca, Ga--Kr & \emph{Note}: 6Z only includes H,C--O\\
+cc-pVXZ-DK (X = D,T,Q,5) & H,He,B--Ne, & \cite{thdjcp90,dewthdjcp100,dewthdjcp98,akwdewkapthdjcp110} 
+  cc-pVXZ re-contracted for \\
   & Al--Ar, Ga--Kr & Douglas-Kroll calculations.\\
-cc-pCVXZ (X = D,T,Q,5) & H, He, B--Ne & cc-pVXZ, with core functions from
-  \cite{thdjcp90,dewthdjcp103}. \\
-  & & Note: H,He are included but are cc-pVXZ \\
-%cc-pwCVXZ (X = D,T) & H, He, C--Ne  & cc-pCVXZ with core functions from 
-%  \cite{thdjcp90,kapthdjcp117} \\
-%  & Al--Ar & Note: H,He are included but are cc-pVXZ \\
-aug-cc-pVXZ (X = D,T,Q,5) & H,He,B--Ne & cc-pVXZ, with aug. functions from 
+cc-pCVXZ (X = D,T,Q,5) & H, He, B--Ne, & cc-pVXZ, with core functions from
+  \cite{thdjcp90,jkkapjpca106,dewthdjcp103}. \\
+  & Na--Ar & \emph{Note}: 5Z only includes H, He, B--Ne. \\
+cc-pwCVXZ (X = D,T,Q,5) & H, He, C--Ne,  & cc-pCVXZ with core functions from 
+  \cite{thdjcp90,kapthdjcp117} \\
+  & Al--Ar & \\
+aug-cc-pVXZ (X = D,T,Q,5) & H, He, B--Ne, & cc-pVXZ, with aug. functions from 
   \cite{thdjcp90,rakthdrjhjcp96,dewthdjcp98,dewthdjcp100}.\\
   & Al--Ar, Ga--Kr & \\
-aug-cc-pCVXZ & H,He,B--F & aug-cc-pVXZ and cc-pCVXZ and Ref.~\cite{kapthdjcp117}.\\
-  & Ne & Available for TZ and QZ only \\
-  & P--Cl & Available for DZ, TZ and QZ only \\
-  & & Note: H,He are included but are aug-cc-pVXZ \\
+aug-cc-pV6Z & H, He, B--Ne, & \cite{akwtvmthdjsm388,tmakwtdhmp96} with aug. functions from 
+  \cite{akwtvmthdjsm388,tmakwtdhmp96,tmthdijqc76}.\\
+  & Al--Ar & \\
+aug-cc-pCVXZ (X = D,T,Q,5) & H, He, B--F, & aug-cc-pVXZ, cc-pCVXZ and \cite{idewthdjcp103,kapthdjcp117}.\\
+  & Ne, Al-Ar & \emph{Note}: Ne only available for TZ and QZ \\
 $n$-aug-cc-pVXZ ($n$ = d,t,q) & as aug-cc-pVXZ & aug-cc-pVXZ. See Sec.~\ref{sec:molbasis} \\
 $n$-aug-cc-pCVXZ ($n$ = d,t,q) & as aug-cc-pCVXZ & aug-cc-pCVXZ. See Sec.~\ref{sec:molbasis} \\
-  & & Note: H,He are included but are $n$-aug-cc-pVXZ \\
 \hline
 \newpage
 GAMESS-VTZ & H, Be--Ne & \cite{thdjcp55,admgscjcp72,ajhwjcp52} From GAMESS program \\
@@ -855,22 +858,22 @@ GAMESS-PVTZ & H, Be--Ne & \cite{thdjcp55,admgscjcp72,ajhwjcp52} From GAMESS prog
 McLean-Chandler-VTZ & Na--Ar & \cite{admgscjcp72} \\
 Wachtersa+f & Sc--Cu & \cite{ajhwjcp52,wachterintern1969} with $f$ functions from \cite{cwbsrllabjcp91} \\
 Sadlej-pVTZ & H--I & \cite{ajstca79,ajsmujmst234,ajstca81,ajstca81-2} \\
-  &  & No rare-gas, B, Al, Ga or In basis sets\\
+  &  & \emph{Note}: No rare-gas, B, Al, Ga or In basis sets\\
 %
 Sadlej-pVTZ-J & H, C--O, S & \cite{pfpgaaspasjcp115} Sadlej-pVTZ optimized for NMR calcs.\\
 aug-cc-pVTZ-J & H, C--F, S & \cite{pfpgaaspasjcp115} aug-cc-pVTZ optimized for NMR calcs. \\
 \hline
 \bf{\emph{ANO basis sets}} & & \\
 NQvD & & \cite{nqvdref} See Sec.~\ref{sec:molbasis} \\
-NASA-Ames-ANO & H, B--Ne & \cite{japrtjcp86,cwbsrlaktca77} \\
+NASA-Ames-ANO & H, B--Ne, & \cite{japrtjcp86,cwbsrlaktca77} \\
   & Al, P, Ti, Fe, Ni & \\
 ano-1 & H--Ne & \cite{powpambortca77} Roos Augmented ANO basis sets\\
 ano-2 & Na--Ar & \cite{powbjpbortca79} \\
 ano-3 & Sc--Zn & \cite{rpamminpowbortca92} \\
 ano-4 & H--Kr & \cite{kpbdpowbortca90} Roos ANO basis sets\\
-japrtano & & ANO functions\\
+japrtano & H--Ne & \cite{japrtjcp86} Almlof and Taylor ANO, see Sec.~\ref{sec:molbasis}.\\
 \hline
-raf-r & O, Y--Pd, Hf--Tl & Wahlgren/Faegri Relavistic Basis Set\\
+raf-r & O, Y--Pd, Hf--Tl, & Wahlgren/Faegri Relavistic Basis Set\\
  & Po, Th, U & \\
 ecp-sdd-DZ & Li--Bi & Stuttgart ECPs (some elements excluded) \\
 ecp-sdd-pseudo & H--Rn &  See BASIS/ecp-sdd-pseudo file for references \\
