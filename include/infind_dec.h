@@ -1,8 +1,0 @@
-C
-C     This is the declation of infind.h
-C
-      INTEGER LIROW, JTFRO, JTINAC, JTACT, JTSEC, JTFRFR, JTINFR,
-     *        JTACFR, JTSEFR, JTININ, JTACIN, JTACAC, JTSEIN, JTSEAC,
-     *        JTSESE
-      INTEGER IROW, ISMO, ISAO, ISW, ISX, ICH, LOC, IOBTYP,
-     *        NSM, IACTYP, ISSMO, ISSORD

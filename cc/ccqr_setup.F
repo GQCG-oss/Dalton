@@ -62,8 +62,6 @@ c /* deck ccqr_setup */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -556,8 +554,6 @@ c /* deck CCQR_DISP_SETUP */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -1057,7 +1053,6 @@ c /* deck ccqr_setg */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit_dec.h>
 #include <priunit.h>
 
       INTEGER MXVEC, MXTRAN
@@ -1158,7 +1153,6 @@ c /* deck ccqr_setf */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit_dec.h>
 #include <priunit.h>
 
       INTEGER MXVEC, MXTRAN
@@ -1256,7 +1250,6 @@ c /* deck ccqr_setfa */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit_dec.h>
 #include <priunit.h>
 
       INTEGER MXVEC, MXTRAN
@@ -1357,7 +1350,6 @@ c /* deck ccqr_setea */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit_dec.h>
 #include <priunit.h>
 
       INTEGER MXVEC, MXTRAN
@@ -1438,10 +1430,6 @@ c /* deck ccqr_fadrv */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  ! makes debugging easier...
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <dummy_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -1679,10 +1667,6 @@ c /* deck ccqr_eadrv */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <dummy_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -1902,10 +1886,6 @@ c /* deck CC_DOTDRV */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <dummy_dec.h>
 #else
 #  include <implicit.h>
 #endif

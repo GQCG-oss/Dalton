@@ -723,9 +723,7 @@ C     CPERT : Perturbative estimate for the R amplitudes.
 C
       IMPLICIT NONE
 C
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 C
       INTEGER NCCVAR, NITER, MXDIIS, LWORK

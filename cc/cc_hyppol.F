@@ -50,9 +50,6 @@ c /* deck cc_hyppol */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -955,7 +952,6 @@ c /* deck ccqrdisp */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -1594,8 +1590,6 @@ c /* deck ccqhypprt */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -1914,8 +1908,6 @@ c /* deck ccqexpprt */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -2031,8 +2023,6 @@ c /* deck ccqdisprt */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif

@@ -72,11 +72,6 @@ c /* deck ccfbtaf */
 *---------------------------------------------------------------------*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <maxorb_dec.h>
-#  include <ccisao_dec.h>
 #else
 #  include <implicit.h>
 #endif

@@ -63,13 +63,9 @@ C
 !
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, XMONE = -1.0D0)
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccinftap_dec.h>
 #include <ccinftap.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
 !
@@ -310,9 +306,7 @@ C
       DOUBLE PRECISION XCKJ(*), WORK(LWORK)
 #endif
 !
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 !
       CALL QENTER('CC3_CKJSOR')

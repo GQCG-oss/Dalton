@@ -62,8 +62,6 @@ c /* deck ccmcd_setup */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif

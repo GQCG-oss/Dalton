@@ -62,10 +62,6 @@ C
 *     Version: 08/10-1999
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit_dec.h>
-#include <ccsdsym_dec.h>
-#include <maxorb_dec.h>
-#include <ccorb_dec.h>
 #include <priunit.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>

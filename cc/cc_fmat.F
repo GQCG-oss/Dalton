@@ -51,14 +51,12 @@ c/* Deck CC_FMATRIX */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include "maxorb_dec.h"
 #else
 #  include <implicit.h>
 #endif
 #include <priunit.h>
-#include "maxorb.h"
-#include "ccsdio.h"
+#include <maxorb.h>
+#include <ccsdio.h>
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -170,18 +168,14 @@ c/* Deck CC_FTRAN */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include "maxorb_dec.h"
-#  include "ccorb_dec.h"
-#  include "ccsdsym_dec.h"
 #else
 #  include <implicit.h>
 #endif
 #include <priunit.h>
-#include "maxorb.h"
-#include "ccorb.h"
-#include "ccsdsym.h"
-#include "ccsdinp.h"
+#include <maxorb.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccsdinp.h>
 
       INTEGER LUFMAT
 
@@ -342,18 +336,6 @@ c/* Deck CC_FMATNEW */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <maxorb_dec.h>
-#  include <mxcent_dec.h>
-#  include <ccorb_dec.h>
-#  include <cbieri_dec.h>
-#  include <distcl_dec.h>
-#  include <iratdef_dec.h>
-#  include <eribuf_dec.h>
-#  include <ccisao_dec.h>
-#  include <aovec_dec.h>
-#  include <blocks_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -2112,10 +2094,6 @@ C  /* Deck ccfpreint */
 *---------------------------------------------------------------------*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <maxorb_dec.h>
-#  include <ccsdsym_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -2504,9 +2482,6 @@ c/* Deck CCFOPEN*/
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -2693,9 +2668,6 @@ c/* Deck CCFSAVE*/
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -2859,9 +2831,6 @@ c/* Deck CCFPRE2 */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -3063,10 +3032,6 @@ c/* Deck CCFINT2 */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <maxorb_dec.h>
-#  include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -3258,11 +3223,6 @@ c/* Deck CCFMAT2 */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <dummy_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <maxorb_dec.h>
-#  include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -4051,10 +4011,7 @@ C           CALL CC_PRP(THETA1,THETA2,ISYRES,0,1)
 * Christof Haettig, November 1998
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
-#include <ccsdsym_dec.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
 
@@ -4143,15 +4100,12 @@ c/* Deck CC_ZETADEN */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include "ccsdsym_dec.h"
-#  include "ccorb_dec.h"
 #else
 #  include <implicit.h>
 #endif
 #include <priunit.h>
-#include "ccsdsym.h"
-#include "ccorb.h"
+#include <ccsdsym.h>
+#include <ccorb.h>
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -4348,10 +4302,6 @@ C  /* Deck cc_bfif */
 *---------------------------------------------------------------------*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <maxorb_dec.h>
-#  include <ccsdsym_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -4437,10 +4387,6 @@ C  /* Deck cc_bfifsort */
 *---------------------------------------------------------------------*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <maxorb_dec.h>
-#  include <ccsdsym_dec.h>
 #else
 #  include <implicit.h>
 #endif

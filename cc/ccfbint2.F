@@ -72,10 +72,6 @@ C
 * (OBS: the routine is not called for CCS!!!)
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit_dec.h>
-#include <ccsdsym_dec.h>
-#include <maxorb_dec.h>
-#include <ccorb_dec.h>
 #include <priunit.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>

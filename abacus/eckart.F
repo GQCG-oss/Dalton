@@ -636,7 +636,6 @@ C
       PARAMETER (NMAX=500,TINY=1.0d-20) 
       INTEGER i,imax,j,k
       DOUBLE PRECISION aamax,dum,sum,vv(NMAX)
-      INTEGER LUCMD, LUERR, LUPRI, LUW4
 #include <priunit.h>
       d=1.d0   
       call output(a,1,np,1,np,np,np,1,LUPRI)

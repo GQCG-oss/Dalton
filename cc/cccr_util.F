@@ -45,9 +45,6 @@ c/* Deck CC_GATHEROO */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-# include <priunit_dec.h>
-# include <ccsdsym_dec.h>
-# include <ccorb_dec.h>
 #else
 # include <implicit.h>
 #endif
@@ -91,9 +88,6 @@ c/* Deck CC_GATHEROV */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-# include <priunit_dec.h>
-# include <ccsdsym_dec.h>
-# include <ccorb_dec.h>
 #else
 # include <implicit.h>
 #endif
@@ -137,9 +131,6 @@ c/* Deck CC_GATHERVV */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-# include <priunit_dec.h>
-# include <ccsdsym_dec.h>
-# include <ccorb_dec.h>
 #else
 # include <implicit.h>
 #endif
@@ -189,9 +180,6 @@ c/* Deck CC_XBAR */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-# include <priunit_dec.h>
-# include <ccsdsym_dec.h>
-# include <ccorb_dec.h>
 #else
 # include <implicit.h>
 #endif
@@ -262,9 +250,6 @@ c/* Deck CC_YBAR */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-# include <priunit_dec.h>
-# include <ccsdsym_dec.h>
-# include <ccorb_dec.h>
 #else
 # include <implicit.h>
 #endif
@@ -324,7 +309,6 @@ c /* deck iccset1 */
 *=====================================================================*
       IMPLICIT NONE  
 
-#include <priunit_dec.h>
 #include <priunit.h>
 #include "cciccset.h"
 
@@ -423,7 +407,6 @@ c /* deck iccset2 */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit_dec.h>
 #include <priunit.h>
 
 #include "cciccset.h"

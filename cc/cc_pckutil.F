@@ -52,7 +52,6 @@ C
 *---------------------------------------------------------------------*
 C#if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#include <priunit_dec.h>
 C#else
 C#  include <implicit.h>
 C#endif
@@ -198,7 +197,6 @@ C
 *---------------------------------------------------------------------*
 C#if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#include <priunit_dec.h>
 C#else
 C#  include <implicit.h>
 C#endif
@@ -340,7 +338,6 @@ C
 *---------------------------------------------------------------------*
 C#if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#include <priunit_dec.h>
 C#else
 C#  include <implicit.h>
 C#endif
@@ -470,7 +467,6 @@ C
 *---------------------------------------------------------------------*
 C#if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#include <priunit_dec.h>
 C#else
 C#  include <implicit.h>
 C#endif
@@ -515,7 +511,6 @@ C
 *---------------------------------------------------------------------*
 C#if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#include <priunit_dec.h>
 C#else
 C#  include <implicit.h>
 C#endif

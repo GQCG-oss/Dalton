@@ -49,8 +49,6 @@ c /* deck CC_2HYP */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -1280,8 +1278,6 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -1578,8 +1574,6 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -1836,7 +1830,6 @@ c /* deck CCCRDISP */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -2883,8 +2876,6 @@ c /* deck CCCDISPRT */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif

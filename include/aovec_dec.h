@@ -1,1 +1,0 @@
-      INTEGER MXAOVC, MXCONT

@@ -49,9 +49,6 @@ c /* deck cc_cauchy */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -625,8 +622,6 @@ c /* deck cccm_setup */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -868,10 +863,6 @@ c /* deck CCCM_VEC */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <dummy_dec.h>
 #else
 #  include <implicit.h>
 #endif

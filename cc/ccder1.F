@@ -46,10 +46,6 @@ c /* deck ccder1 */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <mxcent_dec.h>
-#  include <nuclei_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -721,17 +717,6 @@ c /* deck ccgeth2d */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#include <inftap_dec.h>
-#  include <ccorb_dec.h>
-#  include <dummy_dec.h>
-#  include <iratdef_dec.h>
-#  include <aovec_dec.h>
-#  include <nuclei_dec.h>
-#  include <nodint_dec.h>
-#  include <mxcent_dec.h>
-#  include <maxaqn_dec.h>
-#  include <maxorb_dec.h>
 #else
 #  include <implicit.h>
 #endif

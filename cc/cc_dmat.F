@@ -98,18 +98,6 @@ c/* Deck CC_DMAT */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include "priunit_dec.h"
-#  include "ccsdsym_dec.h"
-#  include "maxorb_dec.h"
-#  include "mxcent_dec.h"
-#  include "ccorb_dec.h"
-#  include "cbieri_dec.h"
-#  include "distcl_dec.h"
-#  include "iratdef_dec.h"
-#  include "eribuf_dec.h"
-#  include "ccisao_dec.h"
-#  include "aovec_dec.h"
-#  include "blocks_dec.h"
 #else
 #  include <implicit.h>
 #endif
@@ -772,9 +760,6 @@ c/* Deck CC_DTST */
        SUBROUTINE CC_DTST(WORK,LWORK)
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include "ccsdsym_dec.h"
-#  include "ccorb_dec.h"
 #else
 #  include <implicit.h>
 #endif

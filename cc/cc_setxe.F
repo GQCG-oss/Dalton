@@ -63,7 +63,6 @@ c /* deck CC_SETXE */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit_dec.h>
 #include <priunit.h>
 #include <cclists.h>
       INTEGER MXVEC, MXTRAN

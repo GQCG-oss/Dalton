@@ -715,9 +715,6 @@ c /* deck cc_r2gd */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -830,9 +827,6 @@ c /* deck CC_L2GD */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -963,9 +957,6 @@ c /* deck CC_L3GD */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -1094,10 +1085,6 @@ c /* deck CC_LCGD */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <dummy_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -1443,9 +1430,6 @@ c /* deck CC_CR2GD */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -1644,9 +1628,6 @@ c /* deck CC_CL2GD */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
 #else
 #  include <implicit.h>
 #endif

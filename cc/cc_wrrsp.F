@@ -121,9 +121,7 @@ C  PL1 vectors introduced in March 2000 by Sonia Coriani
 C
 C---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 #include <ccfro.h>
 #include <ccer1rsp.h>
@@ -156,7 +154,6 @@ C---------------------------------------------------------------------*
 #include <cccx2rsp.h>
 #include <ccexci.h>
 #include <ccpl1rsp.h>
-#include <dummy_dec.h>
 #include <dummy.h>
  
       CHARACTER SUBRNAME*(8)
@@ -824,11 +821,8 @@ C  Christof Haettig, April 1997
 C
 C---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 #include <ccfro.h>
  

@@ -104,9 +104,6 @@ c/* Deck CC_HMAT */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -431,9 +428,6 @@ c/* Deck CC_HCD */
 *---------------------------------------------------------------------*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <priunit_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -601,9 +595,6 @@ C
 C----------------------------------------------------------------------
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
 #else
 #  include <implicit.h>
 #endif

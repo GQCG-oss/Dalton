@@ -82,21 +82,14 @@ C
 #endif
       PARAMETER (XMONE = -1.0D0, ONE = 1.0D0)
 C
-#include <iratdef_dec.h>
 #include <iratdef.h>
-#include <dummy_dec.h>
 #include <dummy.h>
-#include <inftap_dec.h>
 #include <inftap.h>
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccinftap_dec.h>
 #include <ccinftap.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
-#include <ccsdsym_dec.h>
 C
       CALL QENTER('CC3_OMEG3')
 C
@@ -1014,12 +1007,9 @@ C
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, HALF = 0.5D0)
 C
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
 #include <ccsdinp.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
@@ -1389,11 +1379,8 @@ C
 #endif
       PARAMETER (TWO = 2.0D0, HALF = 0.5D0, ZERO = 0.0D0)
 C
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
@@ -1541,12 +1528,9 @@ C
 #endif
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, HALF = 0.5D0)
 C
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
 #include <ccsdinp.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
@@ -1889,12 +1873,9 @@ C
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
 #include <ccsdinp.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
@@ -2132,20 +2113,13 @@ C
 C
       PARAMETER (XMONE = -1.0D0, ONE = 1.0D0)
 C
-#include <iratdef_dec.h>
 #include <iratdef.h>
-#include <dummy_dec.h>
 #include <dummy.h>
-#include <inftap_dec.h>
 #include <inftap.h>
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccinftap_dec.h>
 #include <ccinftap.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
 #include <ccsdinp.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 C
       LOGICAL LDEBUG
@@ -3449,14 +3423,10 @@ C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, XMONE = -1.0D0)
       PARAMETER(TWO = 2.0D0, HALF = 0.5D0, XMHALF = -0.5D0)
 C
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
 #include <ccsdinp.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
-#include <cclr_dec.h>
 #include <cclr.h>
 C
       LOGICAL LDEBUG
@@ -4230,13 +4200,9 @@ C
 !
       PARAMETER (ONE = 1.0D0, XMONE = -1.0D0)
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccinftap_dec.h>
 #include <ccinftap.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 !
       CALL QENTER('CC3_SORT3')
@@ -4522,12 +4488,9 @@ C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, HALF = 0.5D0)
       PARAMETER (XMTWO = -2.0D0, XMONE = -1.0D0)
 C
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
 #include <ccsdinp.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 C
       LOGICAL LDEBUG
@@ -4908,9 +4871,7 @@ CC     K. Hald, Spring 2001.
 CC
 C      IMPLICIT NONE
 CC
-C#include <priunit_dec.h>
 C#include <priunit.h>
-C#include <ccorb_dec.h>
 C#include <ccorb.h>
 CC
 C      INTEGER ISYMB, ISYMD, B, D, nckij, i
@@ -4975,11 +4936,8 @@ CC
 CC     HOWEVER : PLEASE DO NOT REMOVE THIS ROUTINE
 CC
 CC     K. Hald, Spring 2001.
-C#include <priunit_dec.h>
 C#include <priunit.h>
-C#include <ccorb_dec.h>
 C#include <ccorb.h>
-C#include <ccsdsym_dec.h>
 C#include <ccsdsym.h>
 CC
 C      integer isyamp, koff1, isckij, koff2, isyma, isymb, isymi, isymab
@@ -5191,11 +5149,8 @@ C
 #endif
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
 C
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
 C
@@ -5372,11 +5327,8 @@ C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
 C
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
 C
@@ -5439,11 +5391,8 @@ C     to a sorting of (ljcb) for a given b and c.
 C
       IMPLICIT NONE
 C
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 C
       INTEGER ISYAMP, LWORK, ISYMB, ISYMC
@@ -5545,12 +5494,9 @@ C
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, XMONE = -1.0D0)
 C
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
 #include <ccsdinp.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 C
       LOGICAL LDEBUG
@@ -5977,12 +5923,9 @@ C     Sort the cc3 result vector ai,j to aj,i
 C
       IMPLICIT NONE
 C
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <ccsdsym_dec.h>
 C
       INTEGER ISYAIJ, ISYMJ, ISYMAI, ISYMA, ISYMI, ISYMAJ, NAI
       INTEGER NAJ, KOFF1, KOFF2
@@ -6039,13 +5982,9 @@ C     Transform the integrals from (ai|del c) to (ai|bc)
 C     and store them on file.
 C
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccinftap_dec.h>
 #include <ccinftap.h>
 C
       LOGICAL FIRST
@@ -6143,11 +6082,8 @@ C     Ove Christiansen 9-1-1996:
 C
       IMPLICIT NONE
 C
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
 C

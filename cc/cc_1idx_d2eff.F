@@ -57,8 +57,6 @@ C
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
 #else
 #  include <implicit.h>
 #endif

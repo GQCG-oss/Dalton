@@ -1,3 +1,8 @@
+      INTEGER         LUIAJB, LUCKJD, LU3VI2, LUDKBC, LU3VI, LUDELD,
+     &                LUTOC, LU3SRT, LUBFDN, LURES, 
+     &                LUCSOL, LUCTLM, LU3VI3, LU3VI4, LU3SRT2, LU3SRT3,
+     &                LUCKJD2, LUCKJD3, LUDELD2, LUDELD3, LUDELD4,
+     &                LUDELD5, LUDKBC2, LUDKBC3, LUDKBC4, LUDKBC5
       CHARACTER       FNTOC*8, FN3VI*6, FN3VI2*8, FN3SRT*8,
      &                FNDELD*6, FNDKBC*4, FNCKJD*6,
      &                FN3VI3*8, FN3VI4*8, FN3SRT2*9,

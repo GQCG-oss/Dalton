@@ -64,7 +64,6 @@ c /* deck CC_SETFB12 */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit_dec.h>
 #include <priunit.h>
 
       INTEGER MXVEC, MXTRAN

@@ -2711,8 +2711,6 @@ C
 C=====================================================================*
 C#if defined (IMPLICIT_NONE)
 C      IMPLICIT NONE  
-C#  include <priunit_dec.h>
-C#  include <ccsdsym_dec.h>
 C#else
 #  include <implicit.h>
 C#endif
@@ -3113,7 +3111,6 @@ c /* deck cc_qrinp */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#include <priunit_dec.h>
 #else
 #include <implicit.h>
 #endif
@@ -3670,7 +3667,6 @@ c /* deck cc_crinp */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -4359,7 +4355,6 @@ c /* deck CC_4RINP */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -4688,7 +4683,6 @@ c /* deck CC_5RINP */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -5011,7 +5005,6 @@ C  /* Deck indprpcc */
       INTEGER FUNCTION INDPRPCC(NEWLBL)
 C
 #include <ccrspprp.h>
-#include <priunit_dec.h>
 #include <priunit.h>
 C
       CHARACTER*8 NEWLBL
@@ -5055,7 +5048,6 @@ c /* deck cc_exlrinp */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -5391,7 +5383,6 @@ C           ---------------------------------------------------
 *=====================================================================*
 C#if defined (IMPLICIT_NONE)
 C      IMPLICIT NONE  
-C#  include <priunit_dec.h>
 C#else
 #  include <implicit.h>
 C#endif
@@ -5709,7 +5700,6 @@ C           _______________________________________________
 *=====================================================================*
 C#if defined (IMPLICIT_NONE)
 C      IMPLICIT NONE  
-C#  include <priunit_dec.h>
 C#else
 #  include <implicit.h>
 C#endif
@@ -6047,7 +6037,6 @@ C           _______________________________________________
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
 #else
 #  include <implicit.h>
 #endif

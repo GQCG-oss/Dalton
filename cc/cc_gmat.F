@@ -59,13 +59,11 @@ c/* Deck CC_GMATRIX */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include "maxorb_dec.h"
 #else
 #  include <implicit.h>
 #endif
 #include <priunit.h>
-#include "maxorb.h"
+#include <maxorb.h>
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -242,18 +240,6 @@ c/* Deck CC_GMAT */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <iratdef_dec.h>
-#  include <cbieri_dec.h>
-#  include <eribuf_dec.h>
-#  include <maxorb_dec.h>
-#  include <mxcent_dec.h>
-#  include <distcl_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccisao_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <aovec_dec.h>
-#  include <blocks_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -1776,9 +1762,6 @@ c/* Deck CCG_1ITROO */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-# include <priunit_dec.h>
-# include <ccorb_dec.h>     
-# include <ccsdsym_dec.h>     
 #else
 # include <implicit.h>
 #endif
@@ -1858,9 +1841,6 @@ c/* Deck CCG_1ITRVO */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-# include <priunit_dec.h>
-# include <ccorb_dec.h>
-# include <ccsdsym_dec.h>     
 #else
 # include <implicit.h>
 #endif
@@ -1968,9 +1948,6 @@ c/* Deck CCG_1ITRVV */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-# include <priunit_dec.h>
-# include <ccorb_dec.h>
-# include <ccsdsym_dec.h>     
 #else
 # include <implicit.h>
 #endif
@@ -2065,10 +2042,6 @@ c/* Deck CCG_21CCSD */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <maxorb_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -2701,9 +2674,6 @@ c/* Deck CCG_21CD */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-# include <priunit_dec.h>
-# include <ccsdsym_dec.h>     
-# include <ccorb_dec.h>     
 #else
 # include <implicit.h>
 #endif
@@ -3055,9 +3025,6 @@ c/* Deck CCG_22CD */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-# include <priunit_dec.h>
-# include <ccsdsym_dec.h>     
-# include <ccorb_dec.h>     
 #else
 # include <implicit.h>
 #endif
@@ -3379,9 +3346,6 @@ c/* Deck CCG_4O */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-# include <priunit_dec.h>
-# include <ccsdsym_dec.h>     
-# include <ccorb_dec.h>     
 #else
 # include <implicit.h>
 #endif
@@ -3515,9 +3479,6 @@ c/* Deck CCG_4OS */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-# include <priunit_dec.h>
-# include <ccsdsym_dec.h>     
-# include <ccorb_dec.h>     
 #else
 # include <implicit.h>
 #endif
@@ -3707,9 +3668,6 @@ c/*  Deck CCG_OOVV */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-# include <priunit_dec.h>
-# include <ccsdsym_dec.h>     
-# include <ccorb_dec.h>     
 #else
 # include <implicit.h>
 #endif
@@ -3933,10 +3891,6 @@ c/* Deck CCG_RDIAJB */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-# include <priunit_dec.h>
-# include <ccsdsym_dec.h>     
-# include <iratdef_dec.h>     
-# include <ccinftap_dec.h>
 #else
 # include <implicit.h>
 #endif
@@ -3998,9 +3952,6 @@ c/* Deck CCG_TI */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-# include <priunit_dec.h>
-# include <ccorb_dec.h>     
-# include <ccsdsym_dec.h>     
 #else
 # include <implicit.h>
 #endif
@@ -4096,9 +4047,6 @@ c/* Deck CCG_TRANS13 */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-# include <priunit_dec.h>
-# include <ccsdsym_dec.h>     
-# include <ccorb_dec.h>     
 #else
 # include <implicit.h>
 #endif
@@ -4217,9 +4165,6 @@ c/* Deck CCG_TRANS2 */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-# include <priunit_dec.h>
-# include <ccsdsym_dec.h>     
-# include <ccorb_dec.h>     
 #else
 # include <implicit.h>
 #endif
@@ -4362,9 +4307,6 @@ c/* Deck CCG_TRANS4 */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-# include <priunit_dec.h>
-# include <ccsdsym_dec.h>     
-# include <ccorb_dec.h>     
 #else
 # include <implicit.h>
 #endif
@@ -4462,9 +4404,6 @@ c/* Deck CCG_SORT1 */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-# include <priunit_dec.h>
-# include <ccsdsym_dec.h>     
-# include <ccorb_dec.h>     
 #else
 # include <implicit.h>
 #endif
@@ -4678,9 +4617,6 @@ c/* Deck CCG_LXD */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-# include <priunit_dec.h>
-# include <ccorb_dec.h>     
-# include <ccsdsym_dec.h>     
 #else
 # include <implicit.h>
 #endif

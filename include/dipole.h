@@ -1,3 +1,9 @@
+#if defined (SYS_CRAY)
+      REAL DIPMN, DIPME, DDIPN, DDIPE, DDIPS, DDIPR
+#else
+      DOUBLE PRECISION DIPMN, DIPME, DDIPN, DDIPE, DDIPS, DDIPR
+#endif
       COMMON /DIPOLE/ DIPMN(3),    DIPME(3),
      &                DDIPN(3,MXCOOR), DDIPE(3,MXCOOR), DDIPS(3,MXCOOR),
      &                DDIPR(3,MXCOOR)
+

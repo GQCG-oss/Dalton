@@ -1,4 +1,11 @@
 #if defined (VAR_STAR2)
+      INTEGER*2 JWOP, KLWOP
+#else
+      INTEGER JWOP, KLWOP
+#endif
+      INTEGER NCONF, NWOPT, NVAR, JWOPSY, NWOP, NWOPH, NVARH, MAXWOP, 
+     *        NCDETS
+#if defined (VAR_STAR2)
       INTEGER*2 JWOP
 #endif
 #if defined (VAR_STAR4)

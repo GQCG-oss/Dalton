@@ -5,8 +5,12 @@ C     NOTE: New logicals should appear after PROFIL
 C           New integers should appear after IANGMO.
 C           Reals should appear at the end.
 C
+      INTEGER NCBII,  NCBIL
       PARAMETER (NCBII = 13,
      &           NCBIL = 22)
+      INTEGER IPRERI, IAOBCH, IPRNT1, IPRNT2, IPROD1, IPROD2
+      INTEGER LBFINP, MAXDST, NDMAT,  IANGMO, NSPMAX, MAXDSD,
+     &        MXBCH,  MXBCH0
       LOGICAL RUNERI, TIMERI, PMSAB,  PMSCD,  PMS12,  RTNERI, OFFCNT,
      &        DIASRT, OLDCR1, CANIND, WRTSCR, NOWRIT, EXTPRI,
      &        INTPRI, DODIST, INTSKP, DISTST, WRTINT, FCKINT, PROFIL,

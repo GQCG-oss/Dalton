@@ -66,16 +66,6 @@ c /* deck cclr_fa */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <iratdef_dec.h>
-#  include <cbieri_dec.h>
-#  include <mxcent_dec.h>
-#  include <eribuf_dec.h>
-#  include <maxorb_dec.h>
-#  include <distcl_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccisao_dec.h>
-#  include <ccsdsym_dec.h>
 #else
 #  include <implicit.h>
 #endif

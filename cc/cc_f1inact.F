@@ -51,11 +51,8 @@ C
 *
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 #include <ccexpfck.h>
 

@@ -53,7 +53,7 @@ C
 #include <gnrinf.h>
 #include <r12int.h>
       LOGICAL DELEMO, FOUND, LDUMMY
-      INTEGER NBASF(8), IDUMMY
+      INTEGER NBASF(8)
 #include <memint.h>
 C
       CALL QENTER('R12AUX')

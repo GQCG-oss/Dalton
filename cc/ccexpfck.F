@@ -49,9 +49,6 @@ C
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -448,9 +445,6 @@ c            CALL CC_PRONELAO(WORK(K1INT),ISYFCK)
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -955,22 +949,15 @@ C  /* Deck cc_expfck_init */
 *
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
 #include <ccexpfck.h>
 #include <ccroper.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
 #include <ccsections.h>
-#include <maxorb_dec.h>
 #include <maxorb.h>
-#include <maxaqn_dec.h>
 #include <maxaqn.h>
-#include <mxcent_dec.h>
 #include <mxcent.h>
-#include <nuclei_dec.h>
 #include <nuclei.h>
-#include <symmet_dec.h>
 #include <symmet.h>
 #include <chrnos.h>
  
@@ -1112,7 +1099,6 @@ C  /* Deck iefffock */
 *
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
 
 #include <ccexpfck.h>
@@ -1198,7 +1184,6 @@ C  /* Deck iexpect */
 *
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
 #include <ccexpfck.h>
  
@@ -1278,7 +1263,6 @@ C  /* Deck i1dxfck */
 *
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
 #include <cc1dxfck.h>
  
@@ -1359,7 +1343,6 @@ C  /* Deck ccefffockhlp1 */
 *
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
 #include <cc1dxfck.h>
 #include <ccexpfck.h>
@@ -1479,24 +1462,17 @@ C  /* Deck ccefffockhlp2 */
 *
 *======================================================================*
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
 #include <cc1dxfck.h>
 #include <ccroper.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 #include <ccfro.h>
 #include <ccr1rsp.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
 #include <chrxyz.h>
-#include <maxorb_dec.h>
 #include <maxorb.h>
-#include <mxcent_dec.h>
 #include <mxcent.h>
-#include <maxaqn_dec.h>
 #include <maxaqn.h>
-#include <symmet_dec.h>
 #include <symmet.h>
 
       LOGICAL LOCDBG
@@ -1695,24 +1671,18 @@ C  /* Deck ccefffockhlp3 */
 *
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
 #include <ccexpfck.h>
 #include <cc1dxfck.h>
 #include <ccroper.h>
 #include <ccropr2.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 #include <ccfro.h>
 #include <ccr1rsp.h>
 #include <chrxyz.h>
-#include <maxorb_dec.h>
 #include <maxorb.h>
-#include <mxcent_dec.h>
 #include <mxcent.h>
-#include <maxaqn_dec.h>
 #include <maxaqn.h>
-#include <symmet_dec.h>
 #include <symmet.h>
 
       LOGICAL LOCDBG

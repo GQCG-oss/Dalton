@@ -1008,11 +1008,6 @@ c /* deck cc_iajb2 */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <maxorb_dec.h>
-#  include <ccisao_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -1161,11 +1156,6 @@ c /* deck cc_iajb3 */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <maxorb_dec.h>
-#  include <ccisao_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -2026,9 +2016,6 @@ c/* deck cc_cd */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <ccsdsym_dec.h>
-#  include <ccorb_dec.h>
-#include <priunit_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -2268,11 +2255,6 @@ c           CALL CC_PRP(WORK(NI),WORK,ISYMBJ,1,0)
 *======================================================================
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <ccorb_dec.h>
-#  include <maxorb_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <iratdef_dec.h>
-#include <priunit_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -2574,10 +2556,6 @@ C
 *======================================================================
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <ccorb_dec.h>
-#  include <maxorb_dec.h>
-#  include <ccsdsym_dec.h>
-#include <priunit_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -2931,11 +2909,6 @@ C
 *======================================================================
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <ccorb_dec.h>
-#  include <maxorb_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <iratdef_dec.h>
-#include <priunit_dec.h>
 #else
 #  include <implicit.h>
 #endif

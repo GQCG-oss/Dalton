@@ -154,11 +154,8 @@ C
 !
       PARAMETER(ZERO= 0.0D00, HALF= 0.5D00, ONE= 1.0D00, TWO= 2.0D00)
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 !
       CALL QENTER('CC_BF3')
@@ -283,13 +280,9 @@ C  /* Deck cc_bf3_1 */
 !
       IMPLICIT NONE
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <iratdef_dec.h>
 #include <iratdef.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
 !
@@ -707,11 +700,8 @@ C  /* Deck ccrhs_d3 */
       PARAMETER (ONE = 1.0D00, TWO = 2.0D00)
       CHARACTER DFIL*(*)
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
 !
@@ -809,15 +799,10 @@ C
 !
       IMPLICIT NONE
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <maxorb_dec.h>
 #include <maxorb.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <symsq_dec.h>
 #include <symsq.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 #include <ccsdio.h>
 !
@@ -1552,11 +1537,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
       IMPLICIT NONE
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
 !
@@ -1815,15 +1797,10 @@ C
 C     Purpose: Calculate C-term.
 C
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <maxorb_dec.h>
 #include <maxorb.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <symsq_dec.h>
 #include <symsq.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 #include <ccsdio.h>
 #include <ccsdinp.h>
@@ -1964,15 +1941,10 @@ C         icon=3,fact=1.0, NB - not implemented several vectors yet.
 C     Purpose: Calculate C-term intermediate.
 C
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <maxorb_dec.h>
 #include <maxorb.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <symsq_dec.h>
 #include <symsq.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 #include <ccsdio.h>
 !
@@ -2543,11 +2515,8 @@ C             Calculate only minus the exchange term.
 C             The amplitudes are assumed to be a square matrix.
 C
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 !
       INTEGER LWORK, ISYMJ, ISYMB, ISYMBJ, ISYMAI, ISYM, NBJ, ISYMI
@@ -2711,13 +2680,9 @@ C  /* Deck ccrhs_cio */
 !
       IMPLICIT NONE
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
-#include <maxorb_dec.h>
 #include <maxorb.h>
 #include <ccsdio.h>
 !
@@ -2977,13 +2942,9 @@ C  /* Deck ccrhs_cio */
 !
       IMPLICIT NONE
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
-#include <maxorb_dec.h>
 #include <maxorb.h>
 #include <ccsdio.h>
 !
@@ -3292,13 +3253,9 @@ C     PURPOSE:
 C             Calculate the D-term making I/O
 C
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
-#include <maxorb_dec.h>
 #include <maxorb.h>
 #include <ccsdio.h>
 !
@@ -3561,13 +3518,9 @@ C
 !                            ANTISYM and FACD.
       IMPLICIT NONE
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
-#include <maxorb_dec.h>
 #include <maxorb.h>
 #include <ccsdio.h>
 !
@@ -3696,11 +3649,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
       IMPLICIT NONE
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 !
       INTEGER LWORK, ISYDIS, ISYDEL, ISYMTR
@@ -3741,11 +3691,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
       IMPLICIT NONE
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 !
       INTEGER LWORK, INDEX, ISYAKL, ISYMTR, ISYDEL, ISYML, ISYMGB
@@ -3880,11 +3827,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
       IMPLICIT NONE
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 !
       INTEGER LWORK, ISYINT, ISYMH1, ISYALI, KSCR1, KEND1
@@ -3946,11 +3890,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
       IMPLICIT NONE
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 !
       INTEGER LWORK, INDEX, ISYINT, ISYMH1, ISYALI, ISYMTR, ISYMAI
@@ -4163,11 +4104,8 @@ C
 #endif
       PARAMETER(ONETHD = 1.0D00/3.0D00,TWOTHD = 2.0D00/3.0D00)
       PARAMETER(ONEMINUS = -1.0D00)
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 C
       CALL QENTER('CCRHS3_T2BT')
@@ -4296,13 +4234,9 @@ C  /* Deck ccrhs3_cd */
 !
       IMPLICIT NONE
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
-#include <maxorb_dec.h>
 #include <maxorb.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
 #include <ccsdio.h>
 !
@@ -4374,13 +4308,9 @@ C  /* Deck ccrhs3_prcd */
 !
       IMPLICIT NONE
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
-#include <maxorb_dec.h>
 #include <maxorb.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
 #include <ccsdio.h>
 !
@@ -4470,11 +4400,8 @@ C
 #endif
 !
       PARAMETER (ONE = 1.0D00, TWO = 2.0D00)
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 !
       CALL QENTER('CCRHS3_EI')
@@ -4523,11 +4450,8 @@ C     Purpose: Calculate E-intermediates.
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 !
       INTEGER LWORK, IDEL, ISYMD, ISYDIS, ISYMTR, KBM
@@ -4731,9 +4655,7 @@ C
       INTEGER ISYDIS, ISYMD, ISYMG, ISYMAB, NDISTG, NBATCH
       INTEGER IBATCH, NUMG, IG1, IG2, KOFF2, IG, KOFF1, ISYMA
       INTEGER ISYDEN, ISYMB, KAD, IDEL, KGB, NTOTA, NTOTG, LWORK
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <maxorb_dec.h>
 #include <maxorb.h>
 #if defined (SYS_CRAY)
       REAL ZERO, ONE, TWO
@@ -4743,11 +4665,8 @@ C
       DOUBLE PRECISION XINT(*), DENSIT(*), FOCK(*), WORK(LWORK)
 #endif
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <symsq_dec.h>
 #include <symsq.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 C
       CALL QENTER('CC_AOFOCK3')
@@ -5334,17 +5253,11 @@ C  /* Deck ccrhs3_ij */
 !
       IMPLICIT NONE
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <maxorb_dec.h>
 #include <maxorb.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <symsq_dec.h>
 #include <symsq.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
-#include <cclr_dec.h>
 #include <cclr.h>
 #include <ccsdio.h>
 !
@@ -5508,17 +5421,11 @@ C  /* Deck ccrhs3_r2ij */
 !
       IMPLICIT NONE
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <maxorb_dec.h>
 #include <maxorb.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <symsq_dec.h>
 #include <symsq.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
-#include <cclr_dec.h>
 #include <cclr.h>
 #include <ccsdio.h>
 !
@@ -5686,11 +5593,8 @@ C
 C     Purpose: Calculate A-term.
 C
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 !
       INTEGER LWORK, ISYGAM, ISYVEC, IOPT
@@ -5902,11 +5806,8 @@ C  /* Deck cc_t2sq3 */
 #endif
       INTEGER ISYM, KOFF1, KOFF2, ISYMBJ, KOFF, ISYMAI, NAMP, NAI
       INTEGER NBJ
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 !
       CALL QENTER('CC_T2SQ3')
@@ -5969,7 +5870,6 @@ C  /* Deck cc_t2sq3 */
 !---------------------------------------------------------------
 !
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
 !
       INTEGER LDA, LDB, M, N, I
@@ -6009,7 +5909,6 @@ C  /* Deck sqmatr3 */
 !-----------------------------------------------------
 !
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
       INTEGER I, J, NDIM, IJ
 #if defined (SYS_CRAY)
@@ -6100,17 +5999,11 @@ C
 C     NOTE: Linear response options only valid and debugged for OMEGOR!
 C
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <maxorb_dec.h>
 #include <maxorb.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
-#include <symsq_dec.h>
 #include <symsq.h>
-#include <cclr_dec.h>
 #include <cclr.h>
 !
       INTEGER INDEX, ISYMBF, ISYMPC, ISYMO1, ISYMO2, ISYMC2, ICON
@@ -6674,7 +6567,6 @@ C  /* Deck hescompa */
 !
       IMPLICIT NONE
 !
-#include <priunit_dec.h>
 #include <priunit.h>
 !
       INTEGER NREDH, NCOMPO, I, J, K, L, KOFF1, KOFF2

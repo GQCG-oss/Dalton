@@ -1,3 +1,4 @@
+      INTEGER MXAOVC, MXCONT
 #if defined (VAR_ABASMALL)
       PARAMETER (MXAOVC = 10, MXCONT = MXAOVC)
 #else

@@ -48,13 +48,11 @@ C
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include "maxorb_dec.h"
 #else
 #  include <implicit.h>
 #endif
 #include <priunit.h>
-#include "maxorb.h"
+#include <maxorb.h>
 
 * local
       LOGICAL LOCDBG
@@ -320,21 +318,6 @@ c /* deck cc_fbta1 */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <dummy_dec.h>
-#  include <aovec_dec.h>
-#  include <mxcent_dec.h>
-#  include <maxorb_dec.h>
-#  include <blocks_dec.h>
-#  include <maxaqn_dec.h>
-#  include <symmet_dec.h>
-#  include <nuclei_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <iratdef_dec.h>
-#  include <distcl_dec.h>
-#  include <eribuf_dec.h>
-#  include <ccisao_dec.h>
 #else
 #  include <implicit.h>
 #endif

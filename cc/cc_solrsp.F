@@ -1424,11 +1424,6 @@ C
 *---------------------------------------------------------------------*
       IMPLICIT NONE
 C                                                                
-#include <priunit_dec.h>
-#include <maxorb_dec.h>
-#include <ccorb_dec.h>
-#include <ccsdsym_dec.h>
-C
 #include <priunit.h>
 #include <maxorb.h>
 #include <ccorb.h>

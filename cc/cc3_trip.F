@@ -55,27 +55,16 @@ C  /* Deck cc3_triplet */
 !
       IMPLICIT NONE
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <dummy_dec.h>
 #include <dummy.h>
-#include <maxorb_dec.h>
 #include <maxorb.h>
-#include <maxash_dec.h>
 #include <maxash.h>
-#include <mxorb_dec.h>
 #include <maxorb.h>
-#include <mxcent_dec.h>
 #include <mxcent.h>
-#include <aovec_dec.h>
 #include <aovec.h>
-#include <iratdef_dec.h>
 #include <iratdef.h>
-#include <eribuf_dec.h>
 #include <eribuf.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <inftap_dec.h>
 #include <inftap.h>
 !
       INTEGER INDEX, LWORK, KCMO, KSCR1, KFOCKD, KINT1T
@@ -125,15 +114,11 @@ C  /* Deck cc3_triplet */
       PARAMETER (LOCDBG = .FALSE.)
 !
 !
-#include <infind_dec.h>
 #include <infind.h>
-#include <blocks_dec.h>
 #include <blocks.h>
 #include <ccsdinp.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 #include <ccsdio.h>
-#include <cclr_dec.h>
 #include <cclr.h>
 !
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
@@ -651,14 +636,10 @@ C  /* Deck cc3_c3am */
 !
       IMPLICIT NONE
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
 #include <ccsdinp.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
-#include <cclr_dec.h>
 #include <cclr.h>
 !
       INTEGER NAI, NCK, NCJ, NBK, NBJ, NDI, NDJ, NDK
@@ -786,10 +767,8 @@ C  /* Deck cc3_omega1c3 */
 !
       IMPLICIT NONE
 !
-#include <ccorb_dec.h>
 #include <ccorb.h>
 #include <ccsdinp.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 !
       INTEGER NAI, NAJ, NBJ, NBK, NCK, NCI
@@ -865,12 +844,9 @@ C  /* Deck cc33_omega2t3 */
 !
       IMPLICIT NONE
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
 #include <ccsdinp.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 !
       INTEGER NBK, NAK, NAI, NBJ, NCK, NCJ, NCI, NDJ
@@ -1044,10 +1020,8 @@ C  /* Deck cc33_omega2c3 */
 !
       IMPLICIT NONE
 !
-#include <ccorb_dec.h>
 #include <ccorb.h>
 #include <ccsdinp.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 !
       INTEGER NAI,NAJ,NBI,NBJ,NBK,NCK,NCI,NDJ,NDK,NDI
@@ -1219,12 +1193,9 @@ C  /* Deck ccsdt_t3am */
 !
       IMPLICIT NONE
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
 #include <ccsdinp.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 !
       INTEGER NAI, NCK, NBJ, NDJ, NBL
@@ -1299,12 +1270,9 @@ C  /* Deck cc3exci_int2 */
 !
       IMPLICIT NONE
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
 #include <ccsdinp.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 !
       INTEGER IB, INDEX, IDEL, NAB
@@ -1406,25 +1374,15 @@ C  /* Deck cc33_transtemp */
 !
       IMPLICIT NONE
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <maxorb_dec.h>
 #include <maxorb.h>
-#include <maxash_dec.h>
 #include <maxash.h>
-#include <mxcent_dec.h>
 #include <mxcent.h>
-#include <mxorb_dec.h>
 #include <maxorb.h>
-#include <aovec_dec.h>
 #include <aovec.h>
-#include <iratdef_dec.h>
 #include <iratdef.h>
-#include <eribuf_dec.h>
 #include <eribuf.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
 !
       INTEGER NCK, NCL, NDK, NAI, NBJ, NBK
@@ -1726,9 +1684,7 @@ C  /* Deck intcompare */
 !
       IMPLICIT NONE
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 !
 #if defined (SYS_CRAY)
@@ -1806,11 +1762,8 @@ C  /* Deck gcompare */
 !
       IMPLICIT NONE
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
 !
 #if defined (SYS_CRAY)
@@ -1851,11 +1804,8 @@ C  /* Deck intcompare2 */
 !
       IMPLICIT NONE
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
 !
 #if defined (SYS_CRAY)
@@ -2016,11 +1966,8 @@ C  /* Deck tcompare */
 !
       IMPLICIT NONE
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
 !
 #if defined (SYS_CRAY)
@@ -2115,12 +2062,9 @@ C  /* Deck cc3exci_int1 */
 !
       IMPLICIT NONE
 !
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
 #include <ccsdinp.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h> 
       INTEGER INDEX, NAB, NDL, NCK, IDEL
 !

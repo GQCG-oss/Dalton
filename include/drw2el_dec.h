@@ -1,6 +1,0 @@
-      INTEGER LTUV34
-#if defined (SYS_CRAY)
-      REAL DPTFAC,DARFAC 
-#else
-      DOUBLE PRECISION DPTFAC,DARFAC
-#endif

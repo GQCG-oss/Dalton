@@ -61,7 +61,6 @@ c /* deck cc_setfa */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit_dec.h>
 #include <priunit.h>
 
       INTEGER MXVEC, MXTRAN

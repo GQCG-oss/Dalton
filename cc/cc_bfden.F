@@ -172,11 +172,6 @@ C  /* Deck cc_bfden */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <maxorb_dec.h>
-#  include <ccsdsym_dec.h>
-#include <ccinftap_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -363,11 +358,8 @@ C  /* Deck cc_bfdenf */
 *     Christof Haettig, November 1998
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 
       INTEGER LWORK, ISYCTR, ISYMIN, ISYXLP, ISYCHI, ISYTAM
@@ -504,9 +496,6 @@ C  /* Deck cc_bfao */
 *---------------------------------------------------------------------*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -666,9 +655,6 @@ C  /* Deck cc_bfmiao */
 *---------------------------------------------------------------------*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -868,9 +854,6 @@ C  /* Deck cc_bfmimo */
 *---------------------------------------------------------------------*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -1100,10 +1083,6 @@ C  /* Deck cc_bfib */
 *---------------------------------------------------------------------*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <maxorb_dec.h>
-#  include <ccsdsym_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -1217,11 +1196,6 @@ C  /* Deck cc_bfbsort */
 *---------------------------------------------------------------------*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <maxorb_dec.h>
-#  include <ccsdsym_dec.h>
-      INTEGER I2BST, IAODPK, IADRPK
 #else
 #  include <implicit.h>
 #endif

@@ -70,35 +70,21 @@ c*DECK CC_RHTR3
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <dummy_dec.h>
 #include <dummy.h>
-#include <maxorb_dec.h>
 #include <maxorb.h>
-#include <mxcent_dec.h>
 #include <mxcent.h>
-#include <aovec_dec.h>
 #include <aovec.h>
-#include <iratdef_dec.h>
 #include <iratdef.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccisao_dec.h>
 #include <ccisao.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
 #include <ccfield.h>
-#include <distcl_dec.h>
 #include <distcl.h>
-#include <cbieri_dec.h>
 #include <cbieri.h>
-#include <eribuf_dec.h>
 #include <eribuf.h>
-#include <cclr_dec.h>
 #include <cclr.h>
-#include <blocks_dec.h>
 #include <blocks.h>
 #include <ccsdio.h>
 !

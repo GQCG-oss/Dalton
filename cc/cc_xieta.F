@@ -49,8 +49,6 @@ C
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include "maxorb_dec.h"
 #else
 #  include <implicit.h>
 #endif
@@ -312,22 +310,6 @@ c /* deck cc_xieta1 */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <aovec_dec.h>
-#  include <maxorb_dec.h>
-#  include <blocks_dec.h>
-#  include <mxcent_dec.h>
-#  include <maxaqn_dec.h>
-#  include <nuclei_dec.h>
-#  include <symmet_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <iratdef_dec.h>
-#  include <distcl_dec.h>
-#  include <eribuf_dec.h>
-#  include <ccisao_dec.h>
-#  include <dummy_dec.h>
-#  include <inftap_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -2602,13 +2584,9 @@ C          END IF
 *
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
-#include <maxorb_dec.h>
 #include <maxorb.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
 #include <ccfield.h>
 #include <ccsdinp.h>
@@ -2774,10 +2752,6 @@ c           WRITE (LUPRI,*) 'CCXIINT1>', LABELH, ISIGNH, DBLE(ISIGNH)
 *
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit_dec.h>
-#include <ccsdsym_dec.h>
-#include <maxorb_dec.h>
-#include <ccorb_dec.h>
 #include <priunit.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
@@ -3073,11 +3047,6 @@ c           WRITE (LUPRI,*) 'CCXIINT1>', LABELH, ISIGNH, DBLE(ISIGNH)
 *
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit_dec.h>
-#include <ccsdsym_dec.h>
-#include <maxorb_dec.h>
-#include <ccorb_dec.h>
-#include <ccisao_dec.h>
 #include <priunit.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
@@ -3430,11 +3399,6 @@ c /* deck ccxiintao */
 *----------------------------------------------------------------------*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <maxorb_dec.h>
-#  include <ccisao_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -3873,13 +3837,9 @@ C     --------------------------------------------
 *
 *---------------------------------------------------------------------*
        IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <dummy_dec.h>
 #include <dummy.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccfield.h>
@@ -4684,12 +4644,6 @@ c /* deck cceta2 */
 *----------------------------------------------------------------------*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <maxorb_dec.h>
-#  include <ccisao_dec.h>
-#  include <dummy_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -5662,9 +5616,6 @@ C
 *======================================================================
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -6012,9 +5963,6 @@ C
 *======================================================================
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -6144,9 +6092,6 @@ C
 *======================================================================
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
 #else
 #  include <implicit.h>
 #endif

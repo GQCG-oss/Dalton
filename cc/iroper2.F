@@ -53,7 +53,6 @@ C  /* Deck iroper2 */
 * Christof Haettig, March 99
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
 #include <ccroper.h>
 #include <ccropr2.h>

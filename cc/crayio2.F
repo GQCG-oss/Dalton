@@ -40,7 +40,6 @@ c/* Deck WOPEN2 */
 *---------------------------------------------------------------------*
 * Purpose: open file and test error flag, if not 0, stop
 *=====================================================================*
-#include <priunit_dec.h>
 #include <priunit.h>
 #include <ccsdinp.h>
       INTEGER LUNIT, IADR, ILEN, IERR, BLOCKSIZE, STATUS, IUN
@@ -110,7 +109,6 @@ c/* Deck PUTWA2 */
 *---------------------------------------------------------------------*
 * Purpose: call putwa and test error flag, if not 0, stop
 *=====================================================================*
-#include <priunit_dec.h>
 #include <priunit.h>
       INTEGER LUNIT, IADR, LEN, IERR
       CHARACTER*(*) FILE
@@ -142,7 +140,6 @@ c/* Deck GETWA2 */
 *---------------------------------------------------------------------*
 * Purpose: call GETWA and test error flag, if not 0, stop
 *=====================================================================*
-#include <priunit_dec.h>
 #include <priunit.h>
       INTEGER LUNIT, IADR, LEN, IERR
       CHARACTER*(*) FILE
@@ -177,7 +174,6 @@ c/* Deck WCLOSE2 */
 * Purpose: close file, test error flag, if not 0 bump...
 *          if MODE='DELETE' remove the file, else keep it
 *=====================================================================*
-#include <priunit_dec.h>
 #include <priunit.h>
 #include <ccsdinp.h>
       INTEGER LUNIT, IERR, ILEN
@@ -249,7 +245,6 @@ c/* Deck WCLOSEALL */
 *---------------------------------------------------------------------*
 * Purpose: close all files opened by WOPEN2 which have not been closed
 *=====================================================================*
-#include <priunit_dec.h>
 #include <priunit.h>
 #include <ccsdinp.h>
       COMMON /UNICRAYIO/ IUNCRAY(1:99)

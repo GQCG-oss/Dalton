@@ -649,15 +649,10 @@ C  into array IRECNR
 *----------------------------------------------------------------------*
       IMPLICIT NONE
 
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <mxcent_dec.h>
 #include <mxcent.h>
-#include <dummy_dec.h>
 #include <dummy.h>
-#include <inftap_dec.h>
 #include <inftap.h>
-#include <eribuf_dec.h>
 #include <eribuf.h>
 
       LOGICAL LOCDBG

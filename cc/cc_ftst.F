@@ -39,16 +39,13 @@ c/* Deck CC_FTST */
        SUBROUTINE CC_FTST(WORK,LWORK)
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include "ccsdsym_dec.h"
-#  include "ccorb_dec.h"
 #else
 #  include <implicit.h>
 #endif
 #include <priunit.h>
-#include "ccsdinp.h"
-#include "ccsdsym.h"
-#include "ccorb.h"
+#include <ccsdinp.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
 
 * local parameters:
       CHARACTER MSGDBG*(18)
@@ -3326,12 +3323,6 @@ C----------------------------------------------------------------------
 *======================================================================
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <maxorb_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <iratdef_dec.h>
-#  include <dummy_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -3630,11 +3621,6 @@ C
 *======================================================================
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <iratdef_dec.h>
-#  include <dummy_dec.h>
 #else
 #  include <implicit.h>
 #endif

@@ -48,14 +48,6 @@ c /* deck cc_gradient */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <maxaqn_dec.h>
-#  include <mxcent_dec.h>
-#  include <nuclei_dec.h>
-#  include <energy_dec.h>
-#  include <taymol_dec.h>
 #else
 #  include <implicit.h>
 #endif

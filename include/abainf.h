@@ -3,6 +3,7 @@ C     Parameters NSYML must be updated after changes (for parallelization)
 C     NOTE: DOSYM are sent to slaves in a parallel calculation and
 C           should not be move from this subroutine
 C
+      INTEGER NSYML, IPRDEF, NWNABA, NTCSY, NSCSY
       PARAMETER (NSYML = 8)
       LOGICAL MOLGRD, MOLHES, DIPDER, POLAR,  TSTINP,
      &        VIB,    RESTAR, DOWALK, GDALL,  CCSD,

@@ -136,11 +136,8 @@ C  Christof Haettig, October 1996, restructered in May 1997
 C  PL1 vectors introduced in March 2000 by Sonia Coriani
 C---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <dummy_dec.h>
 #include <dummy.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
 #include <ccexci.h>
@@ -315,11 +312,8 @@ C  Christof Haettig, november 1998
 C 
 C---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <dummy_dec.h>
 #include <dummy.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
 #include <ccexci.h>
@@ -434,9 +428,7 @@ C  Christof Haettig, november 1998
 C 
 C---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
 #include <ccrc1rsp.h>
@@ -597,7 +589,6 @@ c/* Deck cc_rcrsp */
 *=====================================================================*
        IMPLICIT NONE
 
-#include <priunit_dec.h>
 #include <priunit.h>
 #include <ccer1rsp.h>
 #include <ccer2rsp.h>
@@ -1541,13 +1532,6 @@ c /* deck CCPRPAO */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <maxorb_dec.h>
-#  include <ccorb_dec.h>
-#  include <ccisao_dec.h>
-#include <inftap_dec.h>
-#include <dummy_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -1710,13 +1694,9 @@ c /* deck CCPRPAO */
 *     Christof Haettig, spring 2001, Oslo
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <inftap_dec.h>
 #include <inftap.h>
-#include <dummy_dec.h>
 #include <dummy.h>
 #include <ccsdinp.h>
 

@@ -50,10 +50,6 @@ C  /* Deck cc_bfbsort1 */
 *---------------------------------------------------------------------*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-#  include <ccorb_dec.h>
-#  include <maxorb_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <symsq_dec.h>
 #else
 #  include <implicit.h>
 #endif

@@ -48,13 +48,6 @@ c /* deck ccrspsym */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <maxorb_dec.h>
-#  include <maxaqn_dec.h>
-#  include <mxcent_dec.h>
-#  include <nuclei_dec.h>
-#  include <symmet_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -1977,8 +1970,6 @@ c /* deck cc_qrind */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -2306,8 +2297,6 @@ c /* deck cc_crind */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -2848,8 +2837,6 @@ c /* deck CC_4RIND */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -3151,8 +3138,6 @@ c /* deck CC_5RIND */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -3312,8 +3297,6 @@ c /* deck cc_smind */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -3518,8 +3501,6 @@ c /* deck cc_tmind */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -3721,8 +3702,6 @@ c /* deck cc_mcdind */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -4033,9 +4012,6 @@ c /* deck cc_exlrind */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
-#  include <cclr_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -4282,7 +4258,6 @@ C  /* Deck iroper */
 *=====================================================================*
       IMPLICIT NONE
 #include <ccroper.h>
-#include <priunit_dec.h>
 #include <priunit.h>
 C
       LOGICAL LOCDBG
@@ -4356,7 +4331,6 @@ C LORXA, LORXB flags introduced in July 1999
 *---------------------------------------------------------------------*
       IMPLICIT NONE
 #include <ccr2rsp.h>
-#include <priunit_dec.h>
 #include <priunit.h>
 C
       LOGICAL LORXA, LORXB
@@ -4450,7 +4424,6 @@ C
 *---------------------------------------------------------------------*
       IMPLICIT NONE
 #include <ccr1rsp.h>
-#include <priunit_dec.h>
 #include <priunit.h>
  
       LOGICAL LORX, LORXI,LEQV
@@ -4527,7 +4500,6 @@ C Christof Haettig, october 1997
 *---------------------------------------------------------------------*
       IMPLICIT NONE
 #include <ccrc1rsp.h>
-#include <priunit_dec.h>
 #include <priunit.h>
 C
       INTEGER ISYM,ICAUCH
@@ -4584,7 +4556,6 @@ C Christof Haettig, october 1997
 *---------------------------------------------------------------------*
       IMPLICIT NONE
 #include <cclc1rsp.h>
-#include <priunit_dec.h>
 #include <priunit.h>
 C
       INTEGER ISYM,ICAUCH
@@ -4647,7 +4618,6 @@ C
 *---------------------------------------------------------------------*
       IMPLICIT NONE
 #include <ccl1rsp.h>
-#include <priunit_dec.h>
 #include <priunit.h>
 C
 
@@ -4707,7 +4677,6 @@ C Ove Christiansen April 1997
 C
       IMPLICIT NONE
 #include <cclrmrsp.h>
-#include <priunit_dec.h>
 #include <priunit.h>
 C
       INTEGER ISYM,IEXCI,I
@@ -4799,7 +4768,6 @@ C  /* Deck cclstsort */
 * PL1 vectors, Sonia march 2000
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -4956,7 +4924,6 @@ C  /* Deck cclstcmp */
 * PL1 vectors, LORX in EL1 ... Sonia Coriani  2000
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -5206,7 +5173,6 @@ C  /* Deck cclstswap */
 * Sonia Coriani: PL1 and LORX for EL1
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
 #include <ccroper.h>
 
@@ -5357,9 +5323,7 @@ C  /* Deck ilstsym */
 * PL1 introduced Sonia
 *=====================================================================*
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
 #include <ccroper.h>
 #include <cclrmrsp.h>
@@ -5553,7 +5517,6 @@ C  /* Deck idxsym */
 * PL1 vectors, Sonia 2000
 *=====================================================================*
       IMPLICIT NONE
-#include <ccorb_dec.h>
 #include <ccorb.h>
 #include <ccroper.h>
 #include <ccer1rsp.h>
@@ -5586,7 +5549,6 @@ C  /* Deck idxsym */
 #include <cccx2rsp.h>
 #include <ccexci.h>
 #include <ccpl1rsp.h>
-#include <priunit_dec.h>
 #include <priunit.h>
 
       CHARACTER*(*) LIST
@@ -5734,7 +5696,6 @@ C LORXA, LORXB flags introduced in July 1999
 *---------------------------------------------------------------------*
       IMPLICIT NONE
 #include <cco2rsp.h>
-#include <priunit_dec.h>
 #include <priunit.h>
 C
       INTEGER ISYMA, ISYMB
@@ -5823,7 +5784,6 @@ C Christof Haettig, April 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
 #include <ccx2rsp.h>
-#include <priunit_dec.h>
 #include <priunit.h>
 C
       INTEGER ISYMA, ISYMB
@@ -5912,7 +5872,6 @@ C Christof Haettig, April 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
 #include <ccl2rsp.h>
-#include <priunit_dec.h>
 #include <priunit.h>
 C
       INTEGER ISYMA, ISYMB
@@ -5995,7 +5954,6 @@ C
 C Christof Haettig, maj 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
 C
       LOGICAL LOPEN, CHANGES, SWAP, NOSWAP, LFOUND
@@ -6518,7 +6476,6 @@ C Christof Haettig, july 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
 #include <ccer1rsp.h>
-#include <priunit_dec.h>
 #include <priunit.h>
 C
       LOGICAL LPROJ, LPROJ1
@@ -6599,7 +6556,6 @@ C Christof Haettig, july 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
 #include <ccer2rsp.h>
-#include <priunit_dec.h>
 #include <priunit.h>
 C
       LOGICAL LPROJ, LPROJ1
@@ -6701,7 +6657,6 @@ C LORXA flag introduced, Sonia Coriani april 2000
 *---------------------------------------------------------------------*
       IMPLICIT NONE
 #include <ccel1rsp.h>
-#include <priunit_dec.h>
 #include <priunit.h>
 C
       LOGICAL LPROJ, LPROJ1, LORXA
@@ -6784,7 +6739,6 @@ C Christof Haettig, july 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
 #include <ccel2rsp.h>
-#include <priunit_dec.h>
 #include <priunit.h>
 C
       LOGICAL LPROJ, LPROJ1
@@ -6885,7 +6839,6 @@ C Ove Christiansen, April 97
 *---------------------------------------------------------------------*
       IMPLICIT NONE
 #include <ccn2rsp.h>
-#include <priunit_dec.h>
 #include <priunit.h>
 C
       INTEGER ISYMI, ISYMF
@@ -6963,7 +6916,6 @@ C Christof Haettig, March 98
 *---------------------------------------------------------------------*
       IMPLICIT NONE
 #include <cccl2rsp.h>
-#include <priunit_dec.h>
 #include <priunit.h>
 C
       LOGICAL LOCDBG
@@ -7065,7 +7017,6 @@ C Christof Haettig, March 98
 *---------------------------------------------------------------------*
       IMPLICIT NONE
 #include <cccr2rsp.h>
-#include <priunit_dec.h>
 #include <priunit.h>
 C
       LOGICAL LOCDBG
@@ -7167,7 +7118,6 @@ C Christof Haettig, March 98
 *---------------------------------------------------------------------*
       IMPLICIT NONE
 #include <cccx2rsp.h>
-#include <priunit_dec.h>
 #include <priunit.h>
 C
       LOGICAL LOCDBG
@@ -7270,7 +7220,6 @@ C Christof Haettig, March 98
 *---------------------------------------------------------------------*
       IMPLICIT NONE
 #include <ccco2rsp.h>
-#include <priunit_dec.h>
 #include <priunit.h>
 C
       LOGICAL LOCDBG
@@ -7377,7 +7326,6 @@ C Christof Haettig, Juni 1998
 *---------------------------------------------------------------------*
       IMPLICIT NONE
 #include <cco1rsp.h>
-#include <priunit_dec.h>
 #include <priunit.h>
  
       LOGICAL LORX
@@ -7457,7 +7405,6 @@ C Christof Haettig, Juni 1998
 *---------------------------------------------------------------------*
       IMPLICIT NONE
 #include <ccx1rsp.h>
-#include <priunit_dec.h>
 #include <priunit.h>
  
       LOGICAL LORX, LORX1
@@ -7550,7 +7497,6 @@ C based of IL1ZETA and IEL1AMP
 *---------------------------------------------------------------------*
       IMPLICIT NONE
 #include <ccpl1rsp.h>
-#include <priunit_dec.h>
 #include <priunit.h>
 
       LOGICAL LORXA, LPROJ, LPROJ1

@@ -48,7 +48,6 @@ c /* deck CC_4HYP */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -378,8 +377,6 @@ c /* deck CC5HYPPRT */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -527,8 +524,6 @@ c /* deck CC5R_SETUP */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -1233,7 +1228,6 @@ c /* deck CC_SETBA12 */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit_dec.h>
 #include <priunit.h>
 #include <cclists.h>
 
@@ -1336,7 +1330,6 @@ c /* deck CC_SETB11 */
 *=====================================================================*
       IMPLICIT NONE  
 
-#include <priunit_dec.h>
 #include <priunit.h>
       INTEGER MXVEC, MXTRAN
       INTEGER IBTRAN(3,MXTRAN)
@@ -1434,7 +1427,6 @@ c /* deck CC_SETD1111 */
 *=====================================================================*
       IMPLICIT NONE  
 
-#include <priunit_dec.h>
 #include <priunit.h>
       INTEGER MXVEC, MXTRAN
       INTEGER IDTRAN(5,MXTRAN)
@@ -1555,7 +1547,6 @@ c /* deck CC_SETH2112 */
 *=====================================================================*
       IMPLICIT NONE  
 
-#include <priunit_dec.h>
 #include <priunit.h>
       INTEGER MXVEC, MXTRAN
       INTEGER IHTRAN(5,MXTRAN)
@@ -1661,7 +1652,6 @@ c /* deck CC_SETC211 */
 *=====================================================================*
       IMPLICIT NONE  
 
-#include <priunit_dec.h>
 #include <priunit.h>
       INTEGER MXVEC, MXTRAN
       INTEGER ICTRAN(4,MXTRAN)

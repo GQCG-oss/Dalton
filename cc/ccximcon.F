@@ -58,22 +58,16 @@ C
 *
 *---------------------------------------------------------------------*
       IMPLICIT NONE
-#include <priunit_dec.h>
 #include <priunit.h>
-#include <dummy_dec.h>
 #include <dummy.h>
-#include <ccorb_dec.h>
 #include <ccorb.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 #include <ccexpfck.h>
 #include <cc1dxfck.h>
 #include <ccr1rsp.h>
 #include <ccfro.h>
 #include <ccroper.h>
-#include <inftap_dec.h>
 #include <inftap.h>
-#include <iratdef_dec.h>
 #include <iratdef.h>
 
       LOGICAL LOCDBG

@@ -48,7 +48,6 @@ c /* deck CC_3HYP */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -403,8 +402,6 @@ c /* deck CC4HYPPRT */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -585,8 +582,6 @@ c /* deck CC4R_SETUP */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -1370,7 +1365,6 @@ c /* deck CC_SETH1112 */
 *
 *=====================================================================*
       IMPLICIT NONE  
-#include <priunit_dec.h>
       INTEGER MXVEC, MXTRAN
       INTEGER IHTRAN(5,MXTRAN)
       INTEGER IHDOTS(MXVEC,MXTRAN)
@@ -1482,7 +1476,6 @@ c /* deck CC_SETG212 */
 *=====================================================================*
       IMPLICIT NONE  
 
-#include <priunit_dec.h>
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
 

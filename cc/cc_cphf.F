@@ -49,16 +49,6 @@ c /* deck cc_cphf */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#include <priunit_dec.h>
-#include <dummy_dec.h>
-#include <exeinf_dec.h>
-#include <maxorb_dec.h>
-#include <infvar_dec.h>
-#include <iratdef_dec.h>
-#include <ccsdsym_dec.h>
-#include <ccorb_dec.h>
-#include <cclr_dec.h>
-#include <inftap_dec.h>
       INTEGER IPRLIN, LSYMRF, LSYMPT, LSYMST,
      &        NCONRF, NCONST, NWOPPT, NVARPT
 #else

@@ -65,32 +65,11 @@ C
 *----------------------------------------------------------------------*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-     
       INTEGER MAXASH
       INTEGER LIROW, JTFRO, JTINAC, JTACT, JTSEC, JTSEAC, JTSESE
       INTEGER JTFRFR,JTINFR,JTACFR,JTSEFR,JTININ,JTACIN,JTACAC,JTSEIN
       INTEGER ISAO, IROW, ISMO, ISX, ISW, ICH, IOBTYP, LOC, ISSMO
       INTEGER ISSORD, IACTYP, NSM, LUBAR0
-
-#  include <priunit_dec.h>
-#  include <dummy_dec.h>
-#  include <maxorb_dec.h>
-#  include <mxorb_dec.h>
-#  include <mxcent_dec.h>
-#  include <maxaqn_dec.h>
-#  include <aovec_dec.h>
-#  include <iratdef_dec.h>
-#  include <nuclei_dec.h>
-#  include <symmet_dec.h>
-#  include <ccorb_dec.h>
-#  include <blocks_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <distcl_dec.h>
-#  include <cbieri_dec.h>
-#  include <eribuf_dec.h>
-#  include <cclr_dec.h>
-#  include <drw2el_dec.h>
-#  include <inftap_dec.h>
 #else
 #  include <implicit.h>
 #endif
