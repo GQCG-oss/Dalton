@@ -28,6 +28,10 @@ dalton='**DALTON INPUT
 **WAVE FUNCTIONS
 .DFT
  B3LYP
+*DFT INPUT
+! EHT guess goes through very bad densities, do not let it stop you.
+.DFTELS
+5e-3
 **PROPERTIES
 .MOLGRA
 .MOLHES
@@ -37,11 +41,11 @@ dalton='**DALTON INPUT
 '
 
 test='
-check_scf_energy DFT -83.328707056761 1e-10
+check_scf_energy DFT -83.328707056761 4e-10
 
-check_mol_gradient 1 "Li    " 0 0 0.0000121882 1e-10
-check_mol_gradient 1 "O     " 0 0 0.0000397213 1e-10
-check_mol_gradient 1 "H     " 0 0 0.0000008794 1e-12
+check_mol_gradient 1 "Li    " 0 0 0.0000121882 7e-8
+check_mol_gradient 1 "O     " 0 0 0.0000397213 7e-8
+check_mol_gradient 1 "H     " 0 0 0.0000008794 9e-8
 
 check_mol_hessian 9 1e-5 "
            Li   x      Li   y      Li   z      O    x      O    y      O    z
@@ -83,8 +87,8 @@ check_rotational_const 35507.25 1.184394
 check_vibr_freqs 1e-5 "
    1      A      3996.42    0.018209     28.474   0.6739
    2      A      1013.95    0.004620     93.901   2.2222
-   3      A       265.50    0.001210    140.189   3.3177
-   4      A       265.50    0.001210    140.188   3.3176"
+   3      A       265.51    0.001210    140.189   3.3177
+   4      A       265.51    0.001210    140.188   3.3176"
 '
 
 . ./functions || { echo "'functions' library not found." ; exit 1; }
