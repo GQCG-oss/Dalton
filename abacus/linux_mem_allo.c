@@ -30,9 +30,8 @@
     
        For information on how to get a licence see:
           http://www.kjemi.uio.no/software/dalton/dalton.html
-*/
 
-/******************************************************
+ ******************************************************
  * linux_mem_allo: dynamically allocates memory       *
  *                 for Dalton calculation for         *
  *                 linux systems.                     *
@@ -44,36 +43,25 @@
  ******************************************************/
 #include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
-  
-#define INT long long
-  
-int linux_mem_allo__(INT * waddr,int * nbytes,double *wrk)
-  {
-   int test=0;
-   int success=0;
-   int indx;
-   int indy;
-   int indz;
-   double *where;
 
-  where=(double *)malloc(*nbytes);
- 
-  if(where==NULL)
-    {
-      fprintf(stderr,"Allocation of %d MB of memory failed.\n", 
-	      (*nbytes)/(1024*1024));
-      return(0);
+typedef void (*DaltonDriver)(double* work, int* lmwork, double* wrkdlm,
+                             int* master, int* mynum);
+extern DaltonDriver nodstr_;
+extern DaltonDriver exedrv_;
+void cexe_(DaltonDriver drv, int* nwords, double* wrkdlm, 
+           int* master, int* mynum)
+{
+    double* mem_block;
+    static const int debug = 0;
+
+    mem_block = (double*)malloc((*nwords+2)*sizeof(double));
+    if(!mem_block) {
+        fprintf(stderr,"CEXE: Cannot allocate  work: %i dwords\n", *nwords);
+        return;
     }
-
-   if(test) 
-      fprintf(stderr,"Allocating block at %i, work: %i, offset: %ld dwords\n",
-            (int)where, (int)wrk, (long)*waddr);
-   indx=(int)((void *)where);
-   indy=(int)((void *)wrk);
-   indz=(indx-indy)/(sizeof(double)/sizeof(char))+1;
-   *waddr = indz;
-  
-  /*------> Finished <-------*/
-  return 1;
-  }
+    mem_block[0] = *wrkdlm;
+    mem_block[1+*nwords] = *wrkdlm;
+    if(debug) fprintf(stderr,"CEXE: Allocating  work: %i dwords\n", *nwords);
+    drv(mem_block, nwords, wrkdlm,master,mynum);
+    if(debug) fprintf(stderr,"CEXE finished.\n");
+}

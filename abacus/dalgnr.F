@@ -414,9 +414,6 @@ C  /* Deck exeher */
       SUBROUTINE EXEHER(WORK, LMWORK, IWOFF, WRKDLM)
 #include <implicit.h>
 #include <dummy.h>
-#if defined (VAR_G77)
-      INTEGER(KIND=2) IWOFF
-#endif
       DIMENSION WORK(LMWORK)
 #include <priunit.h>
 #include <gnrinf.h>
@@ -454,9 +451,6 @@ C     any more.
 C  /* Deck exesir */
       SUBROUTINE EXESIR(WORK, LMWORK, IWOFF, WRKDLM)
 #include <implicit.h>
-#if defined (VAR_G77)
-      INTEGER(KIND=2) IWOFF
-#endif
       DIMENSION WORK(LMWORK)
 #include <priunit.h>
 #include <maxorb.h>
@@ -518,9 +512,6 @@ C
 C  /* Deck execc */
       SUBROUTINE EXECC(WORK, LMWORK, IWOFF, WRKDLM)
 #include <implicit.h>
-#if defined (VAR_G77)
-      INTEGER(KIND=2) IWOFF
-#endif
       DIMENSION WORK(LMWORK)
 #include <priunit.h>
 #include <siripc.h>
@@ -551,9 +542,6 @@ C     It causes the End of Record to be skipped.
 C  /* Deck exeaba */
       SUBROUTINE EXEABA(WORK, LMWORK, IWOFF, WRKDLM)
 #include <implicit.h>
-#if defined (VAR_G77)
-      INTEGER(KIND=2) IWOFF
-#endif
       DIMENSION WORK(LMWORK)
 #include <priunit.h>
 #include <maxorb.h>
@@ -583,11 +571,8 @@ C
       RETURN
       END
 C  /* Deck exedrv */
-      SUBROUTINE EXEDRV(WORK, LMWORK, IWOFF, WRKDLM)
+      SUBROUTINE EXEDRV(WORK, LMWORK, WRKDLM,MAST1,MYNUM1)
 #include <implicit.h>
-#if defined (VAR_G77)
-      INTEGER(KIND=2) IWOFF
-#endif
 #include <dummy.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -611,6 +596,7 @@ C  /* Deck exedrv */
       DIMENSION WORK(LMWORK), CORBKP(3*MXCENT)
       LOGICAL NEWWLK, EX
       CHARACTER FILENM*12, WORD*7, NAVN*6
+      IWOFF = 0
       CALL QENTER('DALTON')
       CALL GETTIM(CSTR,WSTR)
       WLKREJ = .FALSE.
