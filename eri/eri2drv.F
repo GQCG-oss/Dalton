@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: eri2drv.F,v 1.7 2001-05-31 06:38:24 vebjornb Exp $
+C$Id: eri2drv.F,v 1.8 2002-02-12 08:14:19 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck er2inp */
@@ -351,7 +351,7 @@ C
       BDER   = .FALSE.
       EXPERI = .FALSE.
       LBFINP = 600
-      MAXDSD = 30
+      MAXDSD = 40
       MAXDST = MAXDSD
       DISTST = .FALSE.
       MXBCH0 = 1000000000
