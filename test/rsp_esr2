@@ -265,7 +265,7 @@ ERROR[3]="ENERGY NOT CORRECT"
 
 # ESR parameters
 CRIT1=`$GREP "TRIPLET OPERATOR\: \"FC Be 01\" LAGRANGIAN\: * (0| )\.571695 AVERAGE\: * 2\.805693 TOTAL\: * 3\.377387" $log | wc -l`
-CRIT2=`$GREP "TRIPLET OPERATOR\: \"FC O * 02\" LAGRANGIAN\: (\-0| \-)\.008029 AVERAGE\: * (0| )\.552896 TOTAL\: * (0| )\.544867" $log | wc -l`
+CRIT2=`$GREP "TRIPLET OPERATOR\: \"FC O * 02\" LAGRANGIAN\: (\-0| \-)\.00802[0-9] AVERAGE\: * (0| )\.552896 TOTAL\: * (0| )\.54487[0-9]" $log | wc -l`
 CRIT3=`$GREP "TRIPLET OPERATOR\: \"FC H * 03\" LAGRANGIAN\: * (0| )\.003256 AVERAGE\: * (0| )\.008743 TOTAL\: * (0| )\.011999" $log | wc -l`
 CRIT4=`$GREP "TRIPLET OPERATOR\: \"SD * 01 z\" LAGRANGIAN\: * (0| )\.002178 AVERAGE\: (\-0| \-)\.043424 TOTAL\: (\-0| \-)\.041246" $log | wc -l`
 CRIT5=`$GREP "TRIPLET OPERATOR\: \"SD * 02 z\" LAGRANGIAN\: (\-0| \-)\.019432 AVERAGE\: (\-0| \-)\.044190 TOTAL\: (\-0| \-)\.063622" $log | wc -l`

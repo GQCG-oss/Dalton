@@ -189,8 +189,8 @@ C
 C
 C     Open direct access file
 C
-      CALL GPOPEN(LUDA1,'ABACUS.DA1','UNKNOWN','DIRECT',' ',LABUFI,
-     &            OLDDX)
+      IF (LUDA1 .LE. 0) CALL GPOPEN(LUDA1,'ABACUS.DA1','UNKNOWN',
+     &                              'DIRECT',' ',LABUFI,OLDDX)
       NMAT = LSOINT/INDMAX
       IF (NMAT .EQ. 0) THEN
          WRITE (LUPRI,'(//A/)') ' >>>> ERROR in SORONE: NMAT = 0.'

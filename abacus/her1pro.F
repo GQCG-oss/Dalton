@@ -3435,7 +3435,6 @@ C
 #include <gnrinf.h>
 C
       CHARACTER*8 LABEL,RTNLBL(2)
-      LOGICAL FIRST
       DIMENSION AINT(LENGTH)
 C
 C     Decide whether we start to write at the beginning or the end of the

@@ -185,6 +185,8 @@ C
                   VIBCNV = .TRUE.
                GO TO 100
    18          CONTINUE
+Cpeo mass-scaled coordinates as default
+                  ISCVEC(3) = 1
                   IWKVEC(2) = 1
                GO TO 100
    19          CONTINUE

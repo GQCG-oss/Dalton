@@ -2349,6 +2349,7 @@ C
          KWRK1 = 1
          KFCDIA = 1
          MMORBT = MAX(4,NNORBT)
+         NCMOT4 = MAX(4,NCMOT)
          GO TO 700
       END IF
       IF (IPRI6 .GE. 5) WRITE (LUPRI,'(/A)')
