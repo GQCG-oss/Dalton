@@ -374,7 +374,7 @@ C DFT modifications T. Helgaker
 C
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER (DP5 = 0.50D00, DP25 = 0.25D0)
+      PARAMETER (DP25 = 0.25D0)
       INTEGER P, Q, R, S
 #include <inforb.h>
 #include <dftcom.h>
@@ -619,6 +619,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
       INTEGER P, Q, R, S
+      PARAMETER ( DP5 = 0.5D0 )
 #include <inforb.h>
 #include <dftcom.h>
       DIMENSION FMAT(NBAST,NBAST), DMAT(NBAST,NBAST),
