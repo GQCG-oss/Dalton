@@ -583,7 +583,11 @@ C                on LUIT1 with label NEWORB.
 C
  3000 CONTINUE
       CALL ROTATE(XKAP,CMO,WRK,LFREE)
-      LAB123(3) = '(MCOPT) '
+      IF (NCONF .GT. 1) THEN
+         LAB123(3) = '(MCOPT) '
+      ELSE
+         LAB123(3) = '(HFOPT) '
+      END IF
       WRITE (LUIT1) LAB123,TABLE(6)
       CALL WRITT(LUIT1,NCMOT,CMO)
       REWIND LUIT1
