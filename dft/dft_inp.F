@@ -117,7 +117,7 @@ c     >.CARPAR< cartesian grid parameters.
 
       CALL HEADER('Settings for DFT calculation:',0)
 c     code goes here
-#if 0
+C#if 0
          IF (DFTHRS) THEN
             WRITE (IWUNIT,'(4X,A,17X,3D12.2)')
      &        ' Redefined thresholds:', DFTHR0, DFTHRL, DFTHRI 
@@ -148,5 +148,5 @@ c     code goes here
             WRITE (IWUNIT,'(/,4X,A)') 
      &        ' DFT electronic Hessian constructed.'
          END IF
-#endif
+C#endif
       END
