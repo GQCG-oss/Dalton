@@ -1162,22 +1162,6 @@ $tab\$(CC) \$(CFLAGS) -c \$*.c
 $tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) -E \$*.F > \$*.i
 EOF
     fi
-elif [ $WHICH = 'linux' ]; then
-cat <<EOF>> Makefile.config
-#
-# Suffix rules
-#
-.SUFFIXES : .F .o .c .i
-
-.F.o:
-$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F 
-
-.c.o:
-$tab\$(CC) \$(INCLUDES) \$(CPPFLAGS) \$(CFLAGS) -c \$*.c 
-
-.F.i:
-$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) -E \$*.F > \$*.i
-EOF
 elif [ $WHICH = 'darwin' ]; then
 if [ "$F77" = g77 ]; then
 cat <<EOF>> Makefile.config
@@ -1215,14 +1199,22 @@ fi
 else cat <<EOF>> Makefile.config
 #
 # Suffix rules
+# hjaaj Oct 04: .g is a "cheat" suffix, for debugging.
+#               'make x.g' will create x.o from x.F or x.c with -g debug flag set.
 #
-.SUFFIXES : .F .o .c .i
+.SUFFIXES : .F .o .c .i .g
 
 .F.o:
 $tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F 
 
+.F.g:
+$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -g -c \$*.F 
+
 .c.o:
 $tab\$(CC) \$(INCLUDES) \$(CPPFLAGS) \$(CFLAGS) -c \$*.c 
+
+.c.g:
+$tab\$(CC) \$(INCLUDES) \$(CPPFLAGS) \$(CFLAGS) -g -c \$*.c 
 
 .F.i:
 $tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) -E \$*.F > \$*.i
