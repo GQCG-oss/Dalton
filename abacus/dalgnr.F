@@ -1009,9 +1009,9 @@ CSONIA
      &             '.INPTES', '.PARALL', '.DIRECT',
      &             '.WALK  ', '.MAX IT', '.RESPON',
      &             '.RUN PR', '.RUN RE', '.RUN WA',
-     &             '.PRESOR', '.HERMIT', '.SIRIUS',
-     &             '.ABACUS', '.RUNABA', '.RUNSIR',
-     &             '.RUNRSP', '.MINIMI', '.TOTSYM',
+     &             '.PRESOR', '.XXXXXX', '.XXXXXX',
+     &             '.XXXXXX', '.XXXXXX', '.XXXXXX',
+     &             '.XXXXXX', '.XXXXXX', '.TOTSYM',
      &             '.VECLEN', '.RUNERI', '.XXXXXX',
      &             '.RUN AL', '.NMDDRV', '.PARNMD',
      &             '.OPTIMI', '.DOUGLA'/
