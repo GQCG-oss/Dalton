@@ -1062,7 +1062,7 @@ C
 C
          IF (ITURN .EQ. 1 .AND. IROUND .GT. 0) THEN
             IF (IPRERR .GT. 0) THEN
-               WRITE (LUERR,*) 'INFO: second round in NORM, I=',I
+               WRITE (LUERR,*) 'Info: second round in NORM, I=',I
                CALL QDUMP(LUERR)
             END IF
             GO TO 1
