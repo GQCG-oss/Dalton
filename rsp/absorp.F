@@ -28,6 +28,14 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
+C ============================================================================
+C     absorp.F: Main author Patrick Norman, written 2001.
+C     This implementation is published in:
+C        P. Norman, D.M. Bishop, H.J.Aa. Jensen, and J. Oddershede,
+C        "Near-resonant absorption in the time-dependent self-consistent
+C        field and multiconfigurational self-consistent field approximations",
+C        J. Chem. Phys. 115 (2001) 10323-10334.
+C ============================================================================
 C
       SUBROUTINE ABSORP_INPUT(WORD)
 C
