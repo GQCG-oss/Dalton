@@ -326,6 +326,7 @@ C        Changed format (WK/UniKA/04-11-2002).
      *  ' Patrick Norman,        University of Linkoeping,     Sweden ',
      *  ' Thomas B. Pedersen,    U. of Santiago de Compostela, Spain  ',
      *  ' Martin J. Packer,      University of Sheffield,      UK     ',
+     *  ' Zilvinas Rinkevicius   KTH Stockholm,                Sweden ',
      *  ' Torgeir A. Ruden,      University of Oslo,           Norway ',
      *  ' Pawel Salek,           KTH Stockholm,                Sweden ',
      *  ' Alfredo Sanchez,       University of Valencia,       Spain  ',
@@ -334,7 +335,7 @@ C        Changed format (WK/UniKA/04-11-2002).
      *  ' Bernd Schimmelpfennig, KTH Stockholm,                Sweden ',
      *  ' K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark',
      *  ' Peter R. Taylor,       University of Warwick,        UK     ',
-     *  ' Olav Vahtras,          PDC, Stockholm,               Sweden '
+     *  ' Olav Vahtras,          KTH Stockholm,                Sweden '
 C
 C        Changed format (WK/UniKA/04-11-2002).
          WRITE (LUPRI,'(/1X,69A1/)') ('-',I=1,69)
