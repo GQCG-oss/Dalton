@@ -35,6 +35,8 @@ set_parallel_def() {
     if [ "$1" = "mpi" ]; then
        def='parallel.x'
     else
+       $ECHO ERROR: $mesp is not working for this version of Dalton
+       exit 1
        def='dalpvm.x'
     fi
 }
@@ -286,14 +288,16 @@ fi
 # Parallel Dalton?
 #
 
-mesp='dummy'
-get_yes_or_no 'Do you want to install the program in a parallel version?'
+#hj# mesp='dummy'
+mesp='mpi'
+get_yes_or_no 'Do you want to install the program in a parallel MPI version?'
 if [ "$answer" = "y" ]; then
 #
 # Determine message passing protocol to be used
+#hj# hjaaj March 2005: disabled as only MPI is working now
 #
 
-    mesp=
+#hj# mesp=
     while [ "$mesp" != "mpi" -a "$mesp" != "pvm" ]
     do
         $ECHO 'Do you want to use "mpi" or "pvm" for message passing? \c'
@@ -306,7 +310,7 @@ if [ "$answer" = "y" ]; then
     parnodp=
 #
     if [ "$mesp" = "mpi" ]; then
-        $ECHO "\n   WARNING: Makefiles for mpi architecture are difficult to guess"
+        $ECHO "\n   WARNING: Makefiles for MPI architecture are difficult to guess"
         $ECHO "   Please compare the generated Makefile.config with local documentation."
 #
 # The only computer I can think of with a separate compiler for parallel
