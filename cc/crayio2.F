@@ -9,9 +9,9 @@ c/* Deck WOPEN2 */
 #include <priunit.h>
 #include <ccsdinp.h>
       INTEGER LUNIT, IADR, ILEN, IERR, BLOCKSIZE, STATUS, IUN
-      INTEGER IUNTAB, J
+      INTEGER IUNCRAY, J
       CHARACTER*(*) FILE
-      COMMON /UNITAR/ IUNTAB(1:99)
+      COMMON /UNICRAYIO/ IUNCRAY(1:99)
 C
       ILEN=LEN(FILE)
       DO J = LEN(FILE), 1, -1
@@ -22,12 +22,10 @@ C
          IUN = 0
  10      CONTINUE
          IUN = IUN + 1
-         IF ((IUN .EQ. 5) .OR. (IUN .EQ. 6))
-     &        GOTO 10
-         IF (IUNTAB(IUN) .NE. 0) GOTO 10
+         IF (IUNCRAY(IUN) .NE. 0) GOTO 10
          LUNIT = IUN
          IF (LUNIT .GT. 99) GOTO 9001
-         IUNTAB(LUNIT) = 1
+         IUNCRAY(LUNIT) = 1
       END IF
 C
       IF (DEBUG) WRITE(LUPRI,*) 'OPEN FILE "',FILE(1:ILEN),
@@ -160,7 +158,7 @@ c/* Deck WCLOSE2 */
       INTEGER LUNIT, IERR, ILEN
       CHARACTER*(*) FILE, MODE
       CHARACTER*(80) COMMAND
-      COMMON /UNITAR/ IUNTAB(1:99)
+      COMMON /UNICRAYIO/ IUNCRAY(1:99)
 C
 #if defined (SYS_AIX)
       CALL WCLOSE_(LUNIT,IERR)
@@ -196,10 +194,76 @@ C
 #endif
 
       END IF
-      IUNTAB(LUNIT) = 0
+      IUNCRAY(LUNIT) = 0
       LUNIT = 0
       RETURN
       END
 *=====================================================================*
 *            END OF SUBROUTINE WCLOSE2
+*=====================================================================*
+*---------------------------------------------------------------------*
+c/* Deck INITWIO */
+*=====================================================================*
+      SUBROUTINE INITWIO()
+*---------------------------------------------------------------------*
+* Purpose: initialize common /UNICRAYIO/ (all files marked as unused)
+*=====================================================================*
+      INTEGER IUNCRAY
+      COMMON /UNICRAYIO/ IUNCRAY(1:99)
+ 
+      DO J = 1, 99
+        IUNCRAY(J) = 0
+      END DO
+ 
+      RETURN
+      END
+*=====================================================================*
+*            END OF SUBROUTINE INITWIO
+*=====================================================================*
+*---------------------------------------------------------------------*
+c/* Deck WCLOSEALL */
+*=====================================================================*
+      SUBROUTINE WCLOSEALL()
+*---------------------------------------------------------------------*
+* Purpose: close all files opened by WOPEN2 which have not been closed
+*=====================================================================*
+#include <priunit_dec.h>
+#include <priunit.h>
+#include <ccsdinp.h>
+      COMMON /UNICRAYIO/ IUNCRAY(1:99)
+C
+      DO LUNIT = 1, 99
+
+         IF (IUNCRAY(IUN) .NE. 0) THEN
+
+           IF (DEBUG) WRITE(LUPRI,*) 'WCLOSEALL> close unit ',LUNIT
+
+#          if defined (SYS_AIX)
+             CALL WCLOSE_(LUNIT,IERR)
+#          endif
+#          if defined (SYS_CRAY)
+             CONTINUE
+#          endif
+#          if !defined (SYS_AIX) && !defined (SYS_CRAY)
+             CALL WCLOSE(LUNIT,IERR)
+#          endif
+C
+           IF (IERR.NE.0) THEN
+             WRITE (LUPRI,*) 'I/O ERROR IN WCLOSEALL:'
+             WRITE (LUPRI,*) 'FILE:', FILE
+             WRITE (LUPRI,*) 'UNIT:', LUNIT
+             WRITE (LUPRI,*) 'MODE:', MODE
+             CALL QUIT('I/O ERROR IN WCLOSEALL')
+           END IF
+ 
+           IUNCRAY(LUNIT) = 0
+
+         END IF
+
+      END DO
+
+      RETURN
+      END
+*=====================================================================*
+*            END OF SUBROUTINE WCLOSEALL
 *=====================================================================*
