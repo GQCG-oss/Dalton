@@ -53,7 +53,7 @@ backup () {
   for i in $* ; do
      if [ -f "${i}" ]; then
         for j in 6 5 4 3 2 1 0 ; do
-           let jp=$j+1
+           jp=`expr $j + 1`
            if [ -f "${i}.${j}" ]; then 
               [ $ekko -eq 1 ] && echo "Backup: renaming ${i}.${j} to ${i}.${jp}"
               mv -f "${i}.${j}" "${i}.${jp}"
@@ -77,7 +77,7 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -N ) optn=$2; shift;;
       -lam* ) optlam=$2; shift;;
       -m ) WRKMEM=$2; export WRKMEM; shift;;
-      -M ) let WRKMEM=$2*128000; export WRKMEM; shift;;
+      -M ) WRKMEM=`expr $2 "*" 128000`; export WRKMEM; shift;;
       -o ) OUTFIL=$2; export OUTFIL; opto=1; shift;;
 #          OUTFIL and WRKDIR are read from environment inside dalton.x
       -t ) TMPDIR=$2; shift;;
@@ -93,7 +93,7 @@ if [ -z "$1" ]; then
    exit 1
 fi
 #  remove .dal, if added by user
-dalfil=${1%\.$DALEXT}
+dalfil=`echo $1 | sed "s/\.$DALEXT//"`
 if [ -z "$2" ]; then
 #  only one common input file;
    molfil=$dalfil
@@ -102,7 +102,7 @@ if [ -z "$2" ]; then
 else
 #  two input files;
 #  remove .mol, if added by user
-   molfil=${2%\.$MOLEXT}
+   molfil=`echo $2 | sed "s/\.$MOLEXT//"`
    if [ "$molfil" = "$dalfil" ]; then
       outnam=$molfil
    else
