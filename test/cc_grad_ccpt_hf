@@ -22,7 +22,7 @@ cat > cc_grad_ccpt_hf.info <<%EOF%
    cc_grad_ccpt_hf
    --------------
    Molecule:         HF, C2v 
-   Wave Function:    CCSD(T) / DunningDZ
+   Wave Function:    CCSD(T) / DZ(Dunning)
    Test Purpose:     CCSD(T) gradient
 %EOF%
 
@@ -31,7 +31,7 @@ cat > cc_grad_ccpt_hf.info <<%EOF%
 #######################################################################
 cat > cc_grad_ccpt_hf.mol <<%EOF%
 BASIS
-DunningDZ
+DZ(Dunning)
 GRADIENT calculations
 for HF in CM coor. system
     2    2  X  Y  Z   1.00D-15

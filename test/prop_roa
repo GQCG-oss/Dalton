@@ -21,7 +21,7 @@ cat > prop_roa.info <<'%EOF%'
    prop_roa
    --------
    Molecule:         C3H4
-   Wave Function:    SCF / DunningDZ
+   Wave Function:    SCF / DZ(Dunning)
    Test Purpose:     Single-point calculation of Raman Optical Activity
                      parameters
 %EOF%
@@ -31,7 +31,7 @@ cat > prop_roa.info <<'%EOF%'
 #######################################################################
 cat > prop_roa.mol <<'%EOF%'
 BASIS
-DunningDZ
+DZ(Dunning)
 ROA calculation for allene (H2C=C=CH2) at optimized geometry SCF-DZ
 No symmetry
     2  0 0
