@@ -306,7 +306,7 @@ C              Labels 203-209 have been added (WK/UniKA/04-11-2002).
      &                171,172,173,174,175,176,177,178,179,180,
      &                181,182,183,184,185,186,187,188,189,190,
      &                191,192,193,194,195,196,197,198,199,200,
-     &                201,202,203,204,205,206,207,208,209,210), I
+     &                201,202,203,204,205,206,207,208,208,209), I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -812,6 +812,7 @@ C           Calculation with multiple basis sets requested (WK/UniKA/04-11-2002)
  206     CONTINUE
 C           No calculation of 1/r12 integrals (WK/UniKA/04-11-2002).
             NOTV12 = .TRUE.
+            V12INT = .FALSE.
             GOTO 100
  207     CONTINUE
 C           Calculation of integrals of the operator r12 (WK/UniKA/04-11-2002).
@@ -820,14 +821,12 @@ C           Calculation of integrals of the operator r12 (WK/UniKA/04-11-2002).
  208     CONTINUE
 C           Calculation of integrals of the operator U12 (WK/UniKA/04-11-2002).
             U12INT = .TRUE.
-            GOTO 100
- 209     CONTINUE
-C           Calculation of integrals of the operator U21 (WK/UniKA/04-11-2002).
             U21INT = .TRUE.
             GOTO 100
- 210     CONTINUE
+ 209     CONTINUE
 C           Integrals are computed for DIRCCR12 program (WK/UniKA/25-11-2002).
             DCCR12 = .TRUE.
+            SUPMAT = .FALSE.
             GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 299

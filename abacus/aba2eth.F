@@ -821,8 +821,7 @@ C
                GTTHRS = .TRUE.
             END IF
   100    CONTINUE
-CWMK     IF (GTTHRS .AND. IPRINT .GE. 10)
-         IF (GTTHRS)
+         IF (GTTHRS .AND. IPRINT .GE. 10)
      &      WRITE(LUPRI,'(4I4,4(1P,E15.6))')
      &      IA, IB, IC, ID, (SO(1,I),I=1,NOPP12)
       ELSE
@@ -836,8 +835,8 @@ CWMK     IF (GTTHRS .AND. IPRINT .GE. 10)
          GTTHRS = ABS(SO(1,1)) .GT. THRESH
 CWMK     IF (GTTHRS .AND. IPRINT .GE. 10)
          IF (GTTHRS)
-     &      WRITE(LUPRI,'(4I4,1P,E15.6)')
-     &      IA, IB, IC, ID, SO(1,1)
+     &      WRITE(LUPRI,'(4I4,1P,E15.6,2I10)')
+     &      IA, IB, IC, ID, SO(1,1), M(1), M(2)
       END IF
       XIJKL = X
       RETURN
