@@ -523,7 +523,7 @@ dalgnr.o : dalgnr.F \
   ../include/orgcom.h  ../include/pario.h \
   ../include/past.h  ../include/pastbk.h \
   ../include/pribak.h  ../include/priunit.h \
-  ../include/siripc.h  ../include/sirrun.h \
+  ../include/siripc.h  \
   ../include/taymol.h  ../include/trunit.h \
   ../include/veclen.h
 dalton.o : dalton.F \

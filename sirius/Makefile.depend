@@ -224,7 +224,7 @@ sirgrad.o : sirgrad.F \
   ../include/single.h  ../include/thrzer.h
 sirinp.o : sirinp.F \
   ../include/dummy.h  ../include/gnrinf.h \
-  ../include/huckel.h  ../include/identify.h \
+  ../include/huckel.h  \
   ../include/implicit.h  ../include/infdim.h \
   ../include/infind.h  ../include/infinp.h \
   ../include/infmp2.h  ../include/infopt.h \
@@ -234,7 +234,7 @@ sirinp.o : sirinp.F \
   ../include/maxorb.h  ../include/mxorb.h \
   ../include/orbtypdef.h  ../include/priunit.h \
   ../include/scbrhf.h  ../include/single.h \
-  ../include/siripc.h  ../include/sirrun.h
+  ../include/siripc.h
 sirlintrn.o : sirlintrn.F \
   ../include/cbgetdis.h  ../include/dummy.h \
   ../include/implicit.h  ../include/infdim.h \
