@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rsphso.F,v 1.4 2003-12-03 20:01:56 pawsa Exp $
+C$Id: rsphso.F,v 1.5 2003-12-16 17:54:47 ruud Exp $
 C
 #include <single.h>
 C  /* Deck hsoctl */
@@ -184,7 +184,17 @@ C
       IF (DO1) THEN
          LABEL = WORD
          LABEL(2:2) = '1'
-         CALL PRPGET (LABEL,CMO,WRK(KH1),ANTSYM,WRK(KWRK1),LWRK1)
+         KSYMP = -1
+         CALL PRPGET (LABEL,CMO,WRK(KH1),KSYMP,ANTSYM,WRK(KWRK1),LWRK1,
+     &                IPRHSO)
+         IF (KSYMP.NE.KSYMOP) THEN
+            WRITE (LUPRI,'(/A/2A/A,2I5/A,F10.2)')
+     &           'FATAL ERROR: KSYMOP .ne. KSYMP from PRPGET',
+     &           '   Property label  : ',WORD,
+     &           '   KSYMOP and KSYMP:',KSYMOP,KSYMP,
+     &           '   ANTSYM          :',ANTSYM
+            CALL QUIT('KSYMOP .ne. KSYMP from PRPGET')
+         END IF
       END IF
 C
 C Print atomic and molecular property integrals, if desired

@@ -1241,21 +1241,29 @@ C
                LPPOP( INDPRP('Z SPNORB')) = .TRUE.
                DOSO1 = .TRUE.
                DOSO2 = .TRUE.
+               TRPLET = .TRUE.
+               TRPFLG = .TRUE.
                GO TO 100
  21            CONTINUE
                LPPOP( INDPRP('X SPNORB')) = .TRUE.
                DOSO1 = .TRUE.
                DOSO2 = .TRUE.
+               TRPLET = .TRUE.
+               TRPFLG = .TRUE.
                GO TO 100
  22            CONTINUE
                LPPOP( INDPRP('Y SPNORB')) = .TRUE.
                DOSO1 = .TRUE.
                DOSO2 = .TRUE.
+               TRPLET = .TRUE.
+               TRPFLG = .TRUE.
                GO TO 100
  23            CONTINUE
                LPPOP( INDPRP('Z SPNORB')) = .TRUE.
                DOSO1 = .TRUE.
                DOSO2 = .TRUE.
+               TRPLET = .TRUE.
+               TRPFLG = .TRUE.
                GO TO 100
  24            CONTINUE
                READ(LUCMD,'( A )')LABEL
@@ -1585,21 +1593,29 @@ C
                   LLROP( INDPRP('X SPNORB')) = .TRUE.
                   LLROP( INDPRP('Y SPNORB')) = .TRUE.
                   LLROP( INDPRP('Z SPNORB')) = .TRUE.
+                  TRPLET=.TRUE.
+                  TRPFLG=.TRUE.
                   DOSO1 = .TRUE.
                   DOSO2 = .TRUE.
                GO TO 100
  21            CONTINUE
                   LLROP( INDPRP('X SPNORB')) = .TRUE.
+                  TRPLET=.TRUE.
+                  TRPFLG=.TRUE.
                   DOSO1 = .TRUE.
                   DOSO2 = .TRUE.
                GO TO 100
  22            CONTINUE
                   LLROP( INDPRP('Y SPNORB')) = .TRUE.
+                  TRPLET=.TRUE.
+                  TRPFLG=.TRUE.
                   DOSO1 = .TRUE.
                   DOSO2 = .TRUE.
                GO TO 100
  23            CONTINUE
                   LLROP( INDPRP('Z SPNORB')) = .TRUE.
+                  TRPLET=.TRUE.
+                  TRPFLG=.TRUE.
                   DOSO1 = .TRUE.
                   DOSO2 = .TRUE.
                GO TO 100

@@ -134,12 +134,12 @@ ERROR[4]="ENERGIES NOT CORRECT"
 
 # Response setup
 CRIT1=`$GREP "Linear Response single residue calculation" $log | wc -l`
-CRIT2=`$GREP "Spin orbit matrix elements requested" $log | wc -l`
+#CRIT2=`$GREP "Spin orbit matrix elements requested" $log | wc -l`
 CRIT3=`$GREP "1 Excitation energies are calculated for symmetry no\. * 1" $log | wc -l`
 CRIT4=`$GREP "1 Excitation energies are calculated for symmetry no\. * 2" $log | wc -l`
 CRIT5=`$GREP "1 property residues are calculated with labels\:" $log | wc -l`
-TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
-CTRL[5]=5
+TEST[5]=`expr	$CRIT1 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
+CTRL[5]=4
 ERROR[5]="RESPONSE CALCULATION NOT SET UP CORRECLY"
 
 # Excitation energy
