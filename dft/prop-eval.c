@@ -32,40 +32,6 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 */
-/*
-C...   Copyright (c) 2005 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 2.0
-C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
-C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
-C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
-C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
-C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
-C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
-C...   T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras, T. Saue, 
-C...   S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
-C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Agren. 
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
-C
-*/
 /*-*-mode: C; c-indentation-style: "bsd"; c-basic-offset: 4; -*-*/
 /* The DFT Propery evaluators.
    (c) Pawel Salek, pawsa@theochem.kth.se.
@@ -1422,7 +1388,7 @@ lin_resp_cb_b_lda(DftIntegratorBl* grid, real * RESTRICT tmp,
             real weight = grid->weight[grid->curr_point+i];
             dp.rhoa = dp.rhob = 0.5*grid->r.rho[i];
             dftpot1_(&vxc, &weight, &dp, &data->trplet);
-            vt[i] = vxc.fRR*vt[i];
+            vt[i] = vxc.fRR*vt[i]*2;
         }
 
         for(isym=0; isym<grid->nsym; isym++) {
@@ -1442,14 +1408,18 @@ lin_resp_cb_b_lda(DftIntegratorBl* grid, real * RESTRICT tmp,
                     int jsym = inforb_.muld2h[data->ksymop-1][isym]-1;
                     int (*RESTRICT jblocks)[2] = BASBLOCK(grid,jsym);
                     int jbl_cnt = grid->bas_bl_cnt[jsym];
+                    real *RESTRICT tmpi = &tmp[i*bllen];
                     if (isym<jsym) continue;
                     for(jbl=0; jbl<jbl_cnt; jbl++) {
-                        int jtop = min(jblocks[jbl][1],i+1);
+                        int jtop = min(jblocks[jbl][1],i);
                         for(j=jblocks[jbl][0]-1; j<jtop; j++) { 
                             for(k=blstart; k<blend; k++)
-                                excmat[j+ioff] += aos[k+j*bllen]*tmp[k+i*bllen];
+                                excmat[j+ioff] +=
+                                    aos[k+j*bllen]*tmpi[k];
                         }
                     }
+                    for(k=blstart; k<blend; k++)
+                        excmat[i+ioff] += aos[k+i*bllen]*tmpi[k]*0.5;
                 }
             }
         }
@@ -1499,9 +1469,9 @@ lin_resp_cb_b_gga(DftIntegratorBl* grid, real * RESTRICT tmp,
             facr = facr/ngrad + (vxc.fRG*b0+vxc.fZG*brz +vxc.fGG*brg);
             facg = vxc.fZ/ngrad + vxc.fG;
             vt3[i][0] = vxc.fRR*b0 + vxc.fRZ*brz+ vxc.fRG*brg;
-            vt3[i][1] = grid->g.grad[i][0]*facr + facg*vt3[i][1];
-            vt3[i][2] = grid->g.grad[i][1]*facr + facg*vt3[i][2];
-            vt3[i][3] = grid->g.grad[i][2]*facr + facg*vt3[i][3];
+            vt3[i][1] = (grid->g.grad[i][0]*facr + facg*vt3[i][1])*2;
+            vt3[i][2] = (grid->g.grad[i][1]*facr + facg*vt3[i][2])*2;
+            vt3[i][3] = (grid->g.grad[i][2]*facr + facg*vt3[i][3])*2;
         }
 
         for(isym=0; isym<grid->nsym; isym++) {
@@ -1518,23 +1488,19 @@ lin_resp_cb_b_gga(DftIntegratorBl* grid, real * RESTRICT tmp,
                     int jsym = inforb_.muld2h[data->ksymop-1][isym]-1;
                     int (*RESTRICT jblocks)[2] = BASBLOCK(grid,jsym);
                     int jbl_cnt = grid->bas_bl_cnt[jsym];
-                    if(isym<jsym) continue;
+                    for(k=blstart; k<blend; k++)
+                        tmp[k] = (vt3[k][0]*g0i[k] + 
+                                  vt3[k][1]*gxi[k] +
+                                  vt3[k][2]*gyi[k] +
+                                  vt3[k][3]*gzi[k]);
                     for(jbl=0; jbl<jbl_cnt; jbl++) {
-                        int jtop = min(jblocks[jbl][1],i+1);
+                        int jtop = jblocks[jbl][1];
                         for(j=jblocks[jbl][0]-1; j<jtop; j++) { 
                             real *RESTRICT g0j = &aos[j*bllen];
-                            real *RESTRICT gxj = &aox[j*bllen];
-                            real *RESTRICT gyj = &aoy[j*bllen];
-                            real *RESTRICT gzj = &aoz[j*bllen];
-                            for(k=blstart; k<blend; k++) {
-                                real a0 = g0i[k]*g0j[k];
-                                real ax = gxi[k]*g0j[k] + g0i[k]*gxj[k];
-                                real ay = gyi[k]*g0j[k] + g0i[k]*gyj[k];
-                                real az = gzi[k]*g0j[k] + g0i[k]*gzj[k];
-                                excmat[j+ioff] += 
-                                    vt3[k][0]*a0 + vt3[k][1]*ax + 
-                                    vt3[k][2]*ay + vt3[k][3]*az;
-                            }
+                            real s = 0;
+                            for(k=blstart; k<blend; k++)
+                                s += g0j[k]*tmp[k];
+                            excmat[j+ioff] += s;
                         }
                     }
                 }
@@ -1615,13 +1581,19 @@ FSYM2(dft_lin_respf)(int *nosim, real* fmat, real *cmo, real *zymat, int *trplet
                 int ioff = i*inforb_.nbast + jvec*inforb_.n2basx;
                 for(j=0; j<i; j++) {
                     int joff = j*inforb_.nbast + jvec*inforb_.n2basx;
-                    real averag = lr_data.res[i+joff] + lr_data.res[j+ioff];
+                    real averag = 0.5*(lr_data.res[i+joff] + 
+                                       lr_data.res[j+ioff]);
                     lr_data.res[i+joff] = lr_data.res[j+ioff] = averag;
                 }
             }
             /* transform to MO Fock matrix contribution  */
             FSYM(lrao2mo)(cmo, &lr_data.ksymop, lr_data.res+jvec*inforb_.n2basx,
                           fmat+(ivec+jvec)*inforb_.n2orbx, work, lwork);
+        }
+        if(DFTLR_DEBUG) {
+            fort_print("MO Fock matrix contribution in dft_lin_resp");
+            outmat_(fmat,&ONEI,&inforb_.norbt,&ONEI,&inforb_.norbt,
+                    &inforb_.norbt, &inforb_.norbt);
         }
     }
 

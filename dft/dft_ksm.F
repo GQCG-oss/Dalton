@@ -153,29 +153,24 @@ c
       DIMENSION GAOS(NBLEN,NBAST), COEF(NBLEN)
       DIMENSION EXCMAT(NBAST,NBAST)
 c
-      DIMENSION TMP(NBLEN,NBAST)
+      DIMENSION TMP(NBLEN)
 c
-      DO ISYM = 1, NSYM
+      DO ISYM = 1, NSYM         
          DO JBL = 1, NBLCNT(ISYM)
             DO J = NBLOCKS(1,JBL,ISYM), NBLOCKS(2,JBL,ISYM)
                DO K = IBLSTART, IBLEND
-                  TMP(K,J) = GAOS(K,J)*coef(K)
+                  TMP(K) = GAOS(K,J)*coef(K)
                END DO
-            END DO
-         END DO
-         
-         DO JBL = 1, NBLCNT(ISYM)
-            DO J = NBLOCKS(1,JBL,ISYM), NBLOCKS(2,JBL,ISYM)
                DO IBL = 1, NBLCNT(ISYM)
                   ITOP = MIN(J-1,NBLOCKS(2,IBL,ISYM))
                   DO I = NBLOCKS(1,IBL,ISYM),ITOP
                      DO K = IBLSTART, IBLEND
-                        EXCMAT(I,J) = EXCMAT(I,J) + GAOS(k,I)*TMP(k,J)
+                        EXCMAT(I,J) = EXCMAT(I,J) + GAOS(k,I)*TMP(k)
                      END DO
                   END DO
                END DO
                DO K = IBLSTART, IBLEND
-                  EXCMAT(J,J) = EXCMAT(J,J) + 0.5*GAOS(k,J)*TMP(k,J)
+                  EXCMAT(J,J) = EXCMAT(J,J) + 0.5*GAOS(k,J)*TMP(k)
                END DO
             END DO
          END DO
@@ -200,27 +195,22 @@ c
       DIMENSION GAOS(NBLEN,NBAST,4), COEF(2,NBLEN),GRAD(3,NBLEN)
       DIMENSION EXCMAT(NBAST,NBAST)
 c
-      DIMENSION TMP(NBLEN,NBAST)
+      DIMENSION TMP(NBLEN)
 c
       DO ISYM = 1, NSYM
          DO JBL = 1, NBLCNT(ISYM)
             DO J = NBLOCKS(1,JBL,ISYM), NBLOCKS(2,JBL,ISYM)
                DO K = IBLSTART, IBLEND
-                  TMP(K,J) =
+                  TMP(K) =
      &                   coef(1,K)* GAOS(K,J,1)
      &                 + coef(2,K)*(GAOS(K,J,2)*GRAD(1,K)+
      &                              GAOS(K,J,3)*GRAD(2,K)+
      &                              GAOS(K,J,4)*GRAD(3,K))
                END DO
-            END DO
-         END DO
-c         
-         DO JBL = 1, NBLCNT(ISYM)
-            DO J = NBLOCKS(1,JBL,ISYM), NBLOCKS(2,JBL,ISYM)
                DO IBL = 1, NBLCNT(ISYM)
                   DO I = NBLOCKS(1,IBL,ISYM),NBLOCKS(2,IBL,ISYM)
                      DO K = IBLSTART, IBLEND
-                        EXCMAT(I,J) = EXCMAT(I,J) + GAOS(K,I,1)*TMP(K,J)
+                        EXCMAT(I,J) = EXCMAT(I,J) + GAOS(K,I,1)*TMP(K)
                      END DO
                   END DO
                END DO
