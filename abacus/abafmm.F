@@ -123,9 +123,6 @@ C
      &     "/people/mark/desktop/code/data/FMM_g-data.out")
 #include <cbifmm.h>
 C
-      PRINT *, "########  FAST MULTIPOLE STARTED  ##########"   !maw
-      PRINT *, "Just entered subroutine FMMINI...  "   !maw
-C
 C     Connecting output for Gaussian product co-ordinate data
 C      to be written in MOMINT subroutine 
 C
