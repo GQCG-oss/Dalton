@@ -2138,7 +2138,17 @@ C
       IF (WORD(2:2).EQ.'1' .OR. WORD(2:2).EQ.' '.AND.DOSO1) THEN
          LABEL = WORD
          LABEL(2:2) = '1'
-         CALL PRPGET(LABEL,CMO,WRK(KFI),ANTSYM,WRK(KFREE),LFREE)
+         KSYMP = -1
+         CALL PRPGET(LABEL,CMO,WRK(KFI),KSYMP,ANTSYM,
+     &               WRK(KFREE),LFREE,IPRHSO)
+         IF (KSYMP.NE.KSYMOP) THEN
+            WRITE (LUPRI,'(/A/2A/A,2I5/A,F10.2)')
+     &           'FATAL ERROR: KSYMOP .ne. KSYMP from PRPGET',
+     &           '   Property label  : ',LABEL,
+     &           '   KSYMOP and KSYMP:',KSYMOP,KSYMP,
+     &           '   ANTSYM          :',ANTSYM
+            CALL QUIT('KSYMOP .ne. KSYMP from PRPGET')
+         END IF
       ELSE
          CALL DZERO(WRK(KFI),N2ORBX)
       END IF

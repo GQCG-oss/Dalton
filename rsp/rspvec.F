@@ -764,15 +764,15 @@ C
       LOGICAL FOUND, CONV
       CHARACTER*8 LABEL
       IF (.NOT. FOUND) THEN
-         WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') 
+         WRITE (LUPRI,'(/3A,F12.8,A,I3/A)') 
      &        ' Response label ',LABEL,' with frequency ',
-     &        FREQC, ' and symmetry',MSYMC, ' not found on file LURSP'
+     &        FREQ, ' and symmetry',MSYM,' not found on file LURSP'
          CALL QUIT('Response vector not found on file')
       ELSE
-         WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
+         WRITE (LUPRI,'(/3A,F12.8/A,I3,A)') 
      &        ' @WARNING>>>>'//
-     &        ' Response label ',LABEL,' with frequency ', FREQC,
-     &        ' and symmetry',MSYMC,' not converged on file LURSP'
+     &        ' Response label ',LABEL,' with frequency ', FREQ,
+     &        ' and symmetry',MSYM,' not converged on file LURSP'
       END IF
       END
 C  /* Deck qrhyp */
@@ -1172,14 +1172,15 @@ C                                FREQA  = QRFREQ(IAFRNU-NEXLB2)
                                     WRITE(LUPRI,'(/A,2F20.8)')
      *                              '   E3  CONTRIBUTION TO HYPVAL',
      *                              HYPVAL(IAOP),HYPVAL(IAOP)
-                                    IF (DFTADX) THEN
-                                       IF (E3TEST.AND.IAOP.EQ.1) THEN
-                                          HYPVAL(1)=HYPVAL(1)+QRDFT
-                                       WRITE(LUPRI,'(/A,2F20.8)')
-     *                              '   DFT CONTRIBUTION TO HYPVAL',
-     *                                  QRDFT,HYPVAL(1)
-                                       END IF
-                                    END IF
+chjaaj Mar 2005: DFTADX and QDRFT not set
+c                                   IF (DFTADX) THEN
+c                                      IF (E3TEST.AND.IAOP.EQ.1) THEN
+c                                         HYPVAL(1)=HYPVAL(1)+QRDFT
+c                                      WRITE(LUPRI,'(/A,2F20.8)')
+c    *                              '   DFT CONTRIBUTION TO HYPVAL',
+c    *                                  QRDFT,HYPVAL(1)
+c                                      END IF
+c                                   END IF
                                  END IF
                                  CALL FLSHFO(LUPRI)
   910                         CONTINUE

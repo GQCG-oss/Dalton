@@ -201,7 +201,7 @@ C
 C
       CALL T3DRV(1,ISYMA,ISYMB,ISYMCD,VECB,VECCD,ATEST,VECA,
      *           -FREQB,-FREQC-FREQD,XINDX,UDV,PV,MJWOP,
-     &           WRK,LWRK,CMO,FC)
+     &           WRK,LWRK,CMO,FC,FV)
       VAL = -DDOT(KZYVA,WRK,1,VECA,1)
       TMPVAL = VAL
       HYPVAL = HYPVAL + VAL
@@ -214,7 +214,7 @@ C
          HYPVAL = HYPVAL + VAL
          CALL T3DRV(1,ISYMA,ISYMD,ISYMBC,VECD,VECBC,ATEST,VECA,
      *        -FREQD,-FREQB-FREQC,XINDX,UDV,PV,MJWOP,
-     &        WRK,LWRK,CMO,FC)
+     &        WRK,LWRK,CMO,FC,FV)
          VAL = -DDOT(KZYVA,WRK,1,VECA,1)
          TMPVAL = TMPVAL + VAL
          HYPVAL = HYPVAL + VAL
@@ -223,27 +223,27 @@ C
          HYPVAL = HYPVAL + VAL
          CALL T3DRV(1,ISYMA,ISYMC,ISYMBD,VECC,VECBD,ATEST,VECA,
      *              -FREQC,-FREQB-FREQD,XINDX,UDV,PV,MJWOP,
-     &              WRK,LWRK,CMO,FC)
+     &              WRK,LWRK,CMO,FC,FV)
          VAL = -DDOT(KZYVA,WRK,1,VECA,1)
          TMPVAL = TMPVAL + VAL
          HYPVAL = HYPVAL + VAL
       ELSE IF (IBCDEQ.EQ.4) THEN
          CALL T3DRV(1,ISYMA,ISYMC,ISYMBD,VECC,VECBD,ATEST,VECA,
      *              -FREQC,-FREQB-FREQD,XINDX,UDV,PV,MJWOP,
-     &              WRK,LWRK,CMO,FC)
+     &              WRK,LWRK,CMO,FC,FV)
          VAL = -DDOT(KZYVA,WRK,1,VECA,1)
          TMPVAL = TMPVAL + 2*VAL
          HYPVAL = HYPVAL + 2*VAL
       ELSE
          CALL T3DRV(1,ISYMA,ISYMC,ISYMBD,VECC,VECBD,ATEST,VECA,
      *              -FREQC,-FREQB-FREQD,XINDX,UDV,PV,MJWOP,
-     &              WRK,LWRK,CMO,FC)
+     &              WRK,LWRK,CMO,FC,FV)
          VAL = -DDOT(KZYVA,WRK,1,VECA,1)
          TMPVAL = TMPVAL + VAL
          HYPVAL = HYPVAL + VAL
          CALL T3DRV(1,ISYMA,ISYMD,ISYMBC,VECD,VECBC,ATEST,VECA,
      *              -FREQD,-FREQB-FREQC,XINDX,UDV,PV,MJWOP,
-     &              WRK,LWRK,CMO,FC)
+     &              WRK,LWRK,CMO,FC,FV)
          VAL = -DDOT(KZYVA,WRK,1,VECA,1)
          TMPVAL = TMPVAL + VAL
          HYPVAL = HYPVAL + VAL

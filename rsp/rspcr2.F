@@ -428,7 +428,7 @@ C     Calculate T[3] Nx Ny
 C
          CALL T3DRV(1,ISYMXY,ISYMX,ISYMY,WRK(KX),WRK(KY),.FALSE.,
      *               WRK(1),-FREQX,-FREQY,XINDX,UDV,PV,MJWOP,
-     *               WRK(KX3BC),LWRK-KX3BC,CMO,FC)
+     *               WRK(KX3BC),LWRK-KX3BC,CMO,FC,FV)
 C
 C     Calculate Y[2] Nx term and store in WRK(KY2X)
 
