@@ -222,6 +222,7 @@ extern Functional LB94Functional;
 extern Functional LYPFunctional;
 extern Functional OPTXFunctional;
 extern Functional P86cFunctional;
+extern Functional PbecFunctional;
 extern Functional PbexFunctional;
 extern Functional PW86xFunctional;
 extern Functional PW91cFunctional;

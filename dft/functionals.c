@@ -54,6 +54,7 @@ Functional* available_functionals[] = {
     &LYPFunctional,
     &OPTXFunctional,
     &P86cFunctional,
+    &PbecFunctional,
     &PbexFunctional,
     &PW86xFunctional,
     &PW91cFunctional,

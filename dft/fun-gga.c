@@ -449,7 +449,7 @@ olyp_read(const char* conf_line)
 static int
 pbe_read(const char* conf_line)
 {
-    gga_fun_list = add_functional(gga_fun_list, &PW91cFunctional, 1.0);
+    gga_fun_list = add_functional(gga_fun_list, &PbecFunctional, 1.0);
     gga_fun_list = add_functional(gga_fun_list, &PbexFunctional, 1.0);
     dft_set_hf_weight(0);
     return 1;
@@ -458,7 +458,7 @@ pbe_read(const char* conf_line)
 static int
 pbe0_read(const char* conf_line)
 {
-    gga_fun_list = add_functional(gga_fun_list, &PW91cFunctional, 1.0);
+    gga_fun_list = add_functional(gga_fun_list, &PbecFunctional, 1.0);
     gga_fun_list = add_functional(gga_fun_list, &PbexFunctional, 0.75);
     dft_set_hf_weight(0.25);
     return 1;
