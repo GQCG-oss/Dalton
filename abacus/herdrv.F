@@ -138,8 +138,28 @@ C
      &     'AOPROPER','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       IF (DORLM) CALL GPOPEN(LUSOL,
      &     'AOSOLINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-      IF ((RUNTWO .OR. RUNERI) .AND. .NOT. DCCR12)
-     &   CALL GPOPEN(LUINTA,'AOTWOINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+      IF ((RUNTWO .OR. RUNERI) .AND. .NOT. DCCR12) THEN
+C        Delete old MO integrals and AOSUP integrals
+         IF (RNINTS) THEN
+            IF (LUORDA .LE. 0) CALL DAOPEN(LUORDA,'AOORDINT')
+                               CALL DARMOV(LUORDA)
+            IF (LUMINT .LE. 0) CALL DAOPEN(LUMINT,'MOTWOINT')
+                               CALL DARMOV(LUMINT)
+         ELSE
+            CALL GPOPEN(LUINTM,'AOSRTINT.DA',
+     &           'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+            CALL GPCLOSE(LUINTM,'DELETE')
+            CALL GPOPEN(LUINTM,'MOTWOINT',
+     &           'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+            CALL GPCLOSE(LUINTM,'DELETE')
+         END IF
+         CALL GPOPEN(LUSUPM,'AOSUPINT',
+     &           'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+         CALL GPCLOSE(LUSUPM,'DELETE')
+C        Open LUINTA for new integrals
+         CALL GPOPEN(LUINTA,'AOTWOINT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+      END IF
+C
       CALL HERINT(WORK,LWORK)
 C
 C     **********************************
@@ -150,19 +170,13 @@ C     Integrals on AOSUPINT
 C     HJAaJ Oct 2003: CALL FRMSUP has been moved to SIRIUS and
 C     is only done when relevant ...
 C
-C
 C     **********************************
 C     ***** Integral sorting       *****
 C     **********************************
 C
-C     Integrals on AOORDINT,
-C     first remove any from previous geometry
+C     Integrals on AOORDINT
 C
       IF (RNINTS) THEN
-         IF (LUORDA .LE. 0) CALL DAOPEN(LUORDA,'AOORDINT')
-                            CALL DARMOV(LUORDA)
-         IF (LUMINT .LE. 0) CALL DAOPEN(LUMINT,'MOTWOINT')
-                            CALL DARMOV(LUMINT)
          CALL TIMER('START ',TIMSTR,TIMEND)
          CALL SORTAO(WORK,LWORK)
          CALL TIMER('SORTAO',TIMSTR,TIMEND)
@@ -178,10 +192,8 @@ C
       IF (LUINTA .GT. 0) CALL GPCLOSE(LUINTA,'KEEP')
 C
       IF (RUNTWO .OR. RUNERI) FTRCTL = .TRUE.
-C
 C     ..transformation control, old AO/MO files cannot be used any more.
 C
-      IF (LUSUPM .GT. 0) CALL GPCLOSE(LUSUPM,'KEEP')
       IF (LUSOL  .GT. 0) CALL GPCLOSE(LUSOL,'KEEP')
       CALL GETTIM(TEND,WEND)
       TIMHER = TEND - TIMHER
