@@ -1934,7 +1934,7 @@ C
 C     For some of the elements we need the third Cartesian direction,
 C     that is k =/ i,j.
 C
-                  KK = 6-II-JJ
+                  KK = MAX(1,MIN(6-II-JJ,3))
 C
 C     With the following "building blocks" all expressions can be constructed:
 C
