@@ -68,7 +68,7 @@ C
 #include <priunit.h>
 C
       DIMENSION CMO(*), WRK(LWRK)
-      LOGICAL FNDLAB
+      LOGICAL FNDLAB, DRCOLD
 C
 #include <iratdef.h>
 #include <lbmxsq.h>
@@ -92,23 +92,26 @@ C
       LUINTD = 0
       CALL GPOPEN(LUINTD,'DRCINT','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
-      REWIND (LUINTD)
       IF (FNDLAB('DRCINFO',LUINTD)) THEN
-         READ  (LUINTD) LBINTD, LVLOLD
-         IF (LVLOLD .GE. LVLDRC) THEN
+         IF (DRCOLD(CMO,LUINTD,LVLDRC,WRK,LWRK)) GO TO 9999
+      END IF
+C
+C     IF (FNDLAB('DRCINFO',LUINTD)) THEN
+C        READ  (LUINTD) LBINTD, LVLOLD
+C        IF (LVLOLD .GE. LVLDRC) THEN
 C           read CMO matrix from LUINTD
 C           and subtract from input CMO matrix
-            READ  (LUINTD) (WRK(I),I=1,NCMOT)
-            CALL DAXPY(NCMOT,-1.0D0,CMO,1,WRK,1)
-            I = IDAMAX(NCMOT,WRK,1)
-            IF (ABS(WRK(I)) .LE. THRZER) THEN
-               IF (IPRTRA.GE.0) WRITE (LUPRI,'(/A/A)')
-     *' DRCCTL abandoned: the required MO integrals in Dirac format',
-     *' are already available on the DRCINT file.'
-               GO TO 9999
-            END IF
-         END IF
-      END IF
+C           READ  (LUINTD) (WRK(I),I=1,NCMOT)
+C           CALL DAXPY(NCMOT,-1.0D0,CMO,1,WRK,1)
+C           I = IDAMAX(NCMOT,WRK,1)
+C           IF (ABS(WRK(I)) .LE. THRZER) THEN
+C              IF (IPRTRA.GE.0) WRITE (LUPRI,'(/A/A)')
+C    *' DRCCTL abandoned: the required MO integrals in Dirac format',
+C    *' are already available on the DRCINT file.'
+C              GO TO 9999
+C           END IF
+C        END IF
+C     END IF
 C
 C Set LBINTD to optimal buffer length .le. LBMXSQ for LUINTD
 C ( N2ORBT is the maximum number of non-zero elements in
@@ -518,4 +521,41 @@ C
       IDMIN = NDW
       RETURN
 C *** END OF DRCWRT
+      END
+C  /* Deck drcctl */
+      FUNCTION DRCOLD(CMO,LUINTD,LVLDRC,WRK,LWRK)
+C
+C
+#include <implicit.h>
+#include <priunit.h>
+C
+      DIMENSION CMO(*), WRK(LWRK)
+      LOGICAL FNDLAB
+C
+#include <iratdef.h>
+#include <lbmxsq.h>
+#include <thrzer.h>
+C
+#include <inforb.h>
+#include <inftap.h>
+#include <inftra.h>
+#include <infpri.h>
+C
+      LOGICAL DRCOLD
+C
+      DRCOLD = .FALSE.
+      REWIND LUINTD
+      READ  (LUINTD) LBINTD, LVLOLD
+      IF (LVLOLD .GE. LVLDRC) THEN
+C        read CMO matrix from LUINTD
+C        and subtract from input CMO matrix
+         READ  (LUINTD) (WRK(I),I=1,NCMOT)
+         CALL DAXPY(NCMOT,-1.0D0,CMO,1,WRK,1)
+         I = IDAMAX(NCMOT,WRK,1)
+         DRCOLD = ABS(WRK(I)) .LE. THRZER
+      END IF
+      IF (DRCOLD .AND. IPRTRA.GE.0) WRITE (LUPRI,'(/A/A)')
+     *' DRCCTL abandoned: the required MO integrals in Dirac format',
+     *' are already available on the DRCINT file.'
+      RETURN
       END
