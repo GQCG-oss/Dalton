@@ -425,7 +425,7 @@ C
 C
 C ***** add one-electron contribution to FCAO
 C
-C     One one-electron contributions are not added for the construction of 
+C     One-electron contribution is not added for the construction of 
 C     the exchange operator in the auxilliary basis (WK/UniKA/04-11-2002).
       IF (.NOT. (R12TRA .OR. R12ECO))
      *     CALL DAXPY(N2BASX,D1,WRK(KH1AO),1,FCAO,1)
@@ -433,7 +433,11 @@ C
 C     ***** Test output of Fock matrices *****
 C
       IF (P6FLAG(18)) THEN
-        WRITE(LUPRI,1000)
+        IF (.NOT. (R12TRA .OR. R12ECO)) THEN
+          WRITE(LUPRI,1000)
+        ELSE
+          WRITE(LUPRI,1001)
+        END IF
         CALL OUTPUT(FCAO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
         IF (.NOT.ONLYFC) THEN
           WRITE(LUPRI,1100)
@@ -441,6 +445,7 @@ C
         END IF
       END IF
  1000 FORMAT(/' FCAO = Fock matrix, inactive part (AO-basis)')
+ 1001 FORMAT(/' FCAO = Fock matrix, inactive part (auxilliary basis)')
  1100 FORMAT(/' FVAO = Fock matrix, active part (AO-basis)')
 C
 C *** End of subroutine FCKMAO
