@@ -621,6 +621,18 @@ Test Purpose:     Check the construction and use of Douglas-Kroll
                   one-electron potential for the calculation of SCF
                   energies
 
+energy_nevpt2_ex
+----------------
+Molecule:         H2CO
+Wave Functions:   MCSCF (CAS) / NEVPT2 / ano-1 basis
+Test Purpose:     Check NEVPT2 energy calculation for el.exc. state
+
+energy_nevpt2_gs
+----------------
+Molecule:         H2CO
+Wave Functions:   MCSCF (CAS) / NEVPT2 / ano-1 basis
+Test Purpose:     Check NEVPT2 energy calculation for el.ground state
+
 energy_nosymm
 -------------
 Molecule:         H2O
