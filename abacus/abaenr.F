@@ -33,20 +33,17 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef UNDEF
-===========================================================================
-/* Comdeck abaenr_log */
-920325-hjaaj: ANRCTL: increment NWARN if not converged
-   ANRNEX: fixed for JCONV .lt. 0 as input parameter
-920302-hjaaj: corrected NCONST checks (was .gt. 1, should be .gt. 0)
-910108-prt: changing some DCOPY calls in ANRNEX, since with overlapping
-            vectors the local (not system) routine misbehaves when
-            compiled with vectorization and optimization on the CRAY
-900216-hjaaj: changed names from NR... to ANR... (A for Abacus).
-- save perturbation symmetry on LUNR1 for restart, new restart label.
-      END
-===========================================================================
-#endif
+c===========================================================================
+c/* old abaenr_log */
+c920325-hjaaj: ANRCTL: increment NWARN if not converged
+c   ANRNEX: fixed for JCONV .lt. 0 as input parameter
+c920302-hjaaj: corrected NCONST checks (was .gt. 1, should be .gt. 0)
+c910108-prt: changing some DCOPY calls in ANRNEX, since with overlapping
+c            vectors the local (not system) routine misbehaves when
+c            compiled with vectorization and optimization on the CRAY
+c900216-hjaaj: changed names from NR... to ANR... (A for Abacus).
+c- save perturbation symmetry on LUNR1 for restart, new restart label.
+c===========================================================================
 C  /* Deck anrctl */
       SUBROUTINE ANRCTL(LMAXVE,REDH,REDGD,NREDH,NGD,NLOAD,DOXKAP,
      &                  SOLEQ,CMO,CREF,GORB,DV,PV,FC,FV,FCAC,H2AC,
@@ -361,11 +358,14 @@ C
  216     CONTINUE
          NREDH =NREDH +NSIM
          IF (NREDH .GT. MAXRED) THEN
-            WRITE (LUPRI,'(2X,A,/,2X,A,I5,/,2X,A,I5,A,/,2X,A)')
-     &          ' Allocations for reduced space too small.',
-     &          ' Dimension allocated:',MAXRED,
-     &          ' Dimension needed:   ',NREDH,' (or more)',
-     &          ' Increase MAXRED using .MAXRED option under *RESPON.'
+            WRITE (LUPRI,'(3X,A/3X,A,I5/3X,A,I5/3X,A/3X,A)')
+     &      'ANRCTL: Allocation for reduced space too small.',
+     &      'Dimension allocated :',MAXRED,
+     &      'Dimension needed now:',NREDH,
+     &      'Increase dimension with e.g. 50% with the .MAXRED option'//
+     &          ' under *RESPON',
+     &      'in the ABACUS module'//
+     &          ' (i.e. under **START, **PROPE, and **FINAL)'
             CALL QUIT('MAXRED too small in ANRCTL.')
          END IF
          JNRSIM=JNRSIM-NSIM
