@@ -760,11 +760,10 @@ C
 C     Print section
 C
       IF (IPRINT .GT. 3) THEN
-         WRITE (LUPRI,'()')
          IF (SIGN .GT. 0) THEN
-            WRITE (LUPRI,'(2A)') ' Expectation values for ', WORD
+            WRITE (LUPRI,'(/2A)')' Expectation values for ', WORD
          ELSE
-            WRITE (LUPRI,'(2A)') ' Trace of Fock matrix multiplied by ',
+            WRITE (LUPRI,'(/2A)')' Trace of Fock matrix multiplied by ',
      &                           WORD
          END IF
          DO 30 ICOMP = 1, NCOMP
@@ -775,11 +774,11 @@ C
          IF (WORD .EQ. 'NUCSHI ' .OR. WORD .EQ. 'NSTCGO ') THEN
             IOFF = 0
             DO 40 IATOM = 1, NUCDEP
-               WRITE (LUPRI,1000) NAMDEP(IOFF + 1),'x',
+               WRITE (LUPRI,1000) NAMDPX(IOFF + 1),
      &               (WORK(KIVEC + IOFF + I*NROW    ), I = 0, 2)
-               WRITE (LUPRI,1000) NAMDEP(IOFF + 2),'y',
+               WRITE (LUPRI,1000) NAMDPX(IOFF + 2),
      &               (WORK(KIVEC + IOFF + I*NROW + 1), I = 0, 2)
-               WRITE (LUPRI,1000) NAMDEP(IOFF + 1),'z',
+               WRITE (LUPRI,1000) NAMDPX(IOFF + 1),
      &               (WORK(KIVEC + IOFF + I*NROW + 2), I = 0, 2)
                IOFF = IOFF + 3
                WRITE (LUPRI,'()')
@@ -802,7 +801,7 @@ C
       END IF
       CALL QEXIT('MAGAVE')
       RETURN
- 1000 FORMAT (1X,A6,1X,A1,' :',F17.10,2F24.10)
+ 1000 FORMAT (1X,A,' :',F17.10,2F24.10)
       END
 C  /* Deck get1pr */
       SUBROUTINE GET1PR(SINTMA,WORD,NCOMP,MTFORM,TRIMAT,WORK,LWORK,
