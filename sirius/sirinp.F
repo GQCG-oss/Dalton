@@ -2596,6 +2596,7 @@ C
       GO TO 100
  134  CONTINUE
       READ (LUCMD,*) DFTELS 
+      GOTO 100
 C&&& RADINT: Give relative precision of the radial integration
  135  CONTINUE
       READ (LUCMD,*) RADINT

@@ -1,6 +1,6 @@
-include ../Makefile.config
-
 all : libsirius.a
+
+include ../Makefile.config
 
 OBJS =	ciauth.o          ciham.o           cioff.o\
 	cisig.o           csfstuff.o        dens.o\
