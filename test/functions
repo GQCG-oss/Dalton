@@ -247,7 +247,7 @@ for(i=1; l[i]!= ""; i++) {
  #print "Expected:",arr[idx]," Found:",l[i]
  if(l[i] ~ /-?[.0-9]+/) {
    if(e(arr[idx]-l[i],tol)) failed++;
- else
+  } else {
    if(arr[idx] != l[i])     failed++
   } 
   idx++
@@ -332,7 +332,7 @@ for(i=1; l[i]!= ""; i++) {
  #print "Expected:",arr[idx]," Found:",l[i]
  if(l[i] ~ /-?[.0-9]+/) {
    if(e(arr[idx]-l[i],tol)) {failed++;print "a"}
- else
+  } else {
    if(arr[idx] != l[i])     {failed++;print "b"}
   } 
   idx++
