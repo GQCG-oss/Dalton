@@ -6400,6 +6400,7 @@ C     /* Deck wrispc */
 C
 C     *** Open DALTON.SPC file. ***
 C
+      LSPECT = 0
       CALL GPOPEN(LSPECT,'DALTON.SPC','UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
 C
