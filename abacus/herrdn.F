@@ -153,7 +153,7 @@ C
 #include <ccom.h>
 C
       DATA TABLE /'.PRINT ', '.OLDNOR', '.MAXPRI', '.BIGVEC',
-     *            '.MOLINP', '.SYMTHR', '.CM FUN', '.ZCMVAL',
+     *            '.XXXXX', '.SYMTHR', '.CM FUN', '.ZCMVAL',
      *            '.WRTLIN', '.UNCONT','.ANGSTR'/
 C
       NEWDEF = (WORD .EQ. '*READIN')
@@ -194,7 +194,6 @@ C
                   BIGVC = .TRUE.
                GO TO 100
     5          CONTINUE
-                  LUMLCL = LUCMD
                GO TO 100
  6             CONTINUE
                   READ (LUCMD,*) TOLLRN
@@ -366,6 +365,7 @@ C
 #include <infpar.h>
 #include <chrsgn.h>
 #include <huckel.h>
+#include <optinf.h>
 C
 C     A SET variable has been replaced by RDINPC. This allows external control
 C     of READIN processing. The processing should be performed once every
@@ -378,12 +378,17 @@ C
       IF (IPREAD .GT.  0) THEN
          CALL TITLER('Output from READIN input processing','*',118)
       END IF
-      LUINFO = LUMLCL
+      REWIND(LUCMD)
+      READ (LUCMD,'(A6)') KEYWRD
+      IF (KEYWRD .EQ. 'INTGRL' .OR. KEYWRD .EQ. 'BASIS ' .OR. 
+     &    KEYWRD .EQ. 'ATOMBA') LUMLCL = LUCMD
+      IF (ITERNR .EQ. 0 .AND. ITRNMR .EQ. 0 .AND. IPRE .EQ. 0)
+     &    LUINFO = LUMLCL
 C
 C Only the master in a parallel calc. reads the input file. The
 C slaves do not read the input file in RDLINE but use the input lines
 C read by the master and transferred in common block MOLINP. /hjaaj
-C
+C<
       NEWFILE = LUINFO .NE. LUCMD .AND. .NOT. SLAVE
       IF (NEWFILE) THEN
          CALL GPOPEN (LUINFO,'MOLECULE.INP','OLD',' ','FORMATTED',

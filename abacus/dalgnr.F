@@ -683,7 +683,7 @@ C
 C
 C     Punch MOLECULE input with updated coordinates to MOLECULE.INP
 C
-               CALL GPOPEN(LUMOL,'MOLECULE.INP','OLD',' ','FORMATTED',
+               CALL GPOPEN(LUMOL,'MOLECULE.INP',' ',' ','FORMATTED',
      &                     IDUMMY,.FALSE.)
                DO 230 IMLINE = 1,NMLINE
                   WRITE (LUMOL,'(A)') MLINE(IMLINE)
@@ -801,7 +801,7 @@ C     We may have more DOSYM under **START than under **PROPE
 C
 C     Punch MOLECULE input with updated coordinates to MOLECULE.INP
 C
-            CALL GPOPEN(LUMOL,'MOLECULE.INP','OLD',' ','FORMATTED',
+            CALL GPOPEN(LUMOL,'MOLECULE.INP',' ',' ','FORMATTED',
      &                  IDUMMY,.FALSE.)
             REWIND (LUMOL)
             DO 200 IMLINE = 1,NMLINE
@@ -1561,7 +1561,7 @@ C
          DO ILINE = 1, JLINE
             MLINE(ILINE)(1:8) = '        '
          END DO
-         CALL GPOPEN(LUMOL,'MOLECULE.INP','OLD',' ','FORMATTED',IDUMMY,
+         CALL GPOPEN(LUMOL,'MOLECULE.INP',' ',' ','FORMATTED',IDUMMY,
      &               .FALSE.)
          JLINE = 1
  6030    READ (LUMOL,'(A80)',END=6010) MLINE(JLINE)

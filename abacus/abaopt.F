@@ -6041,8 +6041,12 @@ C
 C
 C     Calculate energy at new geometry, which is compared to predicted
 C     energy(change) in UPTRAD.
+C     The temporary update of ITRNMR is in case the molecule input is
+C     provided in the DALTON input file
 C
+         ITRNMR = ITRNMR + 1
          CALL GTNRGY(EXHER,EXSIR,EXABA,.FALSE.,WORK,LWORK,IWOFF,WRKDLM)
+         ITRNMR = ITRNMR - 1
          IF (IREJ .EQ. 0 .AND. .NOT. ESG) THEN
             CALL UPTRAD(REJGEO)
             IF (.NOT. REJGEO) THEN
