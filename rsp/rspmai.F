@@ -33,50 +33,47 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include "single.h"
 C
-#ifdef REVISIONLOG
-===========================================================================
-/* Comdeck revision_log */
-
-Revision 1.7  2000/05/24 19:01:23  hjj
-polish; fixing FNDLB2 parameter lists (ftnchek)
-
-Revision 1.6  2000/05/16 09:47:13  hjj
-s/SETSOPPA2/SET2SOPPA/ (so different from SETSOPPA in first six char.)
-Moved ESRCAL outside linear response loop.
-New GETREF calls with LCREF to determine if CSFs or dets. Read NCDETS from LUSIFC.
-Use TRPFLG for SETCI2 (if any operator is triplet, then dets must be used in response).
-Save disk space and i/o: do not write CI diagonal of S[2] matrix (it is KZCONF 1's).
-Polish of some print.
-
-Revision 1.5  2000/05/01 09:56:14  hjj
-Removed reading of KLWOP (KLWOP is removed from common block).
-
-Revision 1.3  2000/05/01  hjj
-more polishing of output (and fixed bugs in previous version).
-
-Revision 1.2 Jan 2000     hjj
-polish: print if TRPLET operator (singlet or triplet was
-  missing in output, which made it difficult to follow at times!)
-  removed unnecessary "STOP"s (which also could cause MPI problems)
-  changed (2) to (*) in DIMENSIONs
-  polishing
-
-960304-spas: initialization of C6IFC moved from C6INP to RSPINF
-960304-spas: SOPPA(CCSD) included in RSPINP, RSPMC, RSPINF
-940708-hjaaj: SOPPA changes (KOFFTY = 0, MAXPHP = 0,
-940602-hjaaj: RSPDRV; set UDV and PVX for TDHF open shell
-940408-hjaaj: RSPMC; revised TDHF def. for open shell; removed EACTIV test
-940405-ekd: Added INFSOP if SOPPA-calculation
-931130-hjaaj: RSPMC: revised for proper treatment of ABACUS calls
-  modified a lot of print, incl. inserting '@' in warning/error output
-931116-mjp+hjaaj: RSPMC: set SOPPA
-931011-hjaaj: C6INP: added C6IFC definition
-931007-hjaaj: added RSPMC and GETREF (moved from rspe2c.u)
-920721-Hinne Hettema
-C6INP : inserted missing GO TO 100; corrected output of FREQUENCIES
-RSPSET: define new RSPSUP variable (use super symmetry)
-RSPDRV: initialize arrays for symmetrizing MCSCF gradient.
-===========================================================================
+#ifdef OLD_REVISIONLOG
+!===========================================================================
+!/* Comdeck revision_log */
+!
+!Revision 1.7  2000/05/24 19:01:23  hjj
+!polish; fixing FNDLB2 parameter lists (ftnchek)
+!
+!Revision 1.6  2000/05/16 09:47:13  hjj
+!s/SETSOPPA2/SET2SOPPA/ (so different from SETSOPPA in first six char.)
+!Moved ESRCAL outside linear response loop.
+!New GETREF calls with LCREF to determine if CSFs or dets. Read NCDETS from LUSIFC.
+!Use TRPFLG for SETCI2 (if any operator is triplet, then dets must be used in response).
+!Save disk space and i/o: do not write CI diagonal of S[2] matrix (it is KZCONF 1's).
+!Polish of some print.
+!
+!Revision 1.5  2000/05/01 09:56:14  hjj
+!Removed reading of KLWOP (KLWOP is removed from common block).
+!
+!Revision 1.2 Jan 2000     hjj
+!polish: print if TRPLET operator (singlet or triplet was
+!  missing in output, which made it difficult to follow at times!)
+!  removed unnecessary "STOP"s (which also could cause MPI problems)
+!  changed (2) to (*) in DIMENSIONs
+!  polishing
+!
+!960304-spas: initialization of C6IFC moved from C6INP to RSPINF
+!960304-spas: SOPPA(CCSD) included in RSPINP, RSPMC, RSPINF
+!940708-hjaaj: SOPPA changes (KOFFTY = 0, MAXPHP = 0,
+!940602-hjaaj: RSPDRV; set UDV and PVX for TDHF open shell
+!940408-hjaaj: RSPMC; revised TDHF def. for open shell; removed EACTIV test
+!940405-ekd: Added INFSOP if SOPPA-calculation
+!931130-hjaaj: RSPMC: revised for proper treatment of ABACUS calls
+!  modified a lot of print, incl. inserting '@' in warning/error output
+!931116-mjp+hjaaj: RSPMC: set SOPPA
+!931011-hjaaj: C6INP: added C6IFC definition
+!931007-hjaaj: added RSPMC and GETREF (moved from rspe2c.u)
+!920721-Hinne Hettema
+!C6INP : inserted missing GO TO 100; corrected output of FREQUENCIES
+!RSPSET: define new RSPSUP variable (use super symmetry)
+!RSPDRV: initialize arrays for symmetrizing MCSCF gradient.
+!===========================================================================
 #endif
 C  /* Deck rspdrv */
       SUBROUTINE RSPDRV(WRK,LWRK)
@@ -163,8 +160,7 @@ C
       CALL RSPACT
 C
       IF (INPTES) THEN
-         WRITE(LUPRI,'(//,A,/)')
-     &        ' *** END of input test for RESPONSE ***'
+         WRITE(LUPRI,'(//A/)') ' *** END of input test for RESPONSE ***'
          CALL QUIT('*** END of input test for RESPONSE ***')
       END IF
       CALL FLSHFO(LUPRI)
@@ -2461,67 +2457,30 @@ C
             WRITE(LUPRI,'(I5,2L10,2X,A8)')I,ATPOP(I),BTPOP(I),PRPLBL(I)
  443     CONTINUE
       END IF
-      CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
       IF (.NOT.NOS0MX) THEN
-         NS0TOT = 0
-         DO 220 IPRP = 1,3
-            NPRP = 0
-            REWIND (LUPROP)
-            IF ( FNDLAB(TABLEN(IPRP),LUPROP) ) NPRP = NPRP + 1
-            REWIND (LUPROP)
-            IF ( FNDLAB(TABVEL(IPRP),LUPROP) ) NPRP = NPRP + 1
-            IF (NPRP .EQ. 2) THEN
-               CALL READT(LUPROP,NNBASX,WRK)
-               IND   = IDAMAX(NNBASX,WRK,1)
-               IF (ABS(WRK(IND)).GT.CKMXPR) THEN
-                  VAL = D1 + D8*IND
-                  IIND  = INT( (SQRT(VAL) - D1INF)/ D2 )
-                  IIMAX = IIND*(IIND+1)/2
-                  IF ( IIMAX .EQ. IND ) THEN
-                     JIND = IIND
-                  ELSE
-                     IIND = IIND + 1
-                     JIND = IND  - IIMAX
-                  END IF
-                  KSYMPT = MULD2H( ISAO(IIND) , ISAO(JIND) )
-               ELSE
-                  KSYMPT = 0
-                  NINFO  = NINFO + 1
-                  WRITE(LUPRI,'(/A,/3A,1P,D15.7,/2A)')'@** INFO **',
-     *            '@ELEMENTS ON PROPERTY FILE  WITH LABEL: ',
-     *            TABVEL(IPRP),' SMALLER THAN :',CKMXPR,
-     *            '@PROPERTY CALCULATION NOT CARRIED OUT FOR S(0) IN',
-     *            ' MIXED REPRESENTATION'
-               END IF
-            ELSE
-               KSYMPT = 0
-               NINFO  = NINFO + 1
-               WRITE(LUPRI,'(/5A/4A)')
-     *            '@ ** INFO ** LABEL ',TABLEN(IPRP),' OR LABEL ',
-     *            TABVEL(IPRP),' NOT FOUND ON LUPROP.',
-     *            '@ S(0) IN MIXED REPRESENTATION WILL NOT BE',
-     *            ' CALCULATED FOR ',TABLEN(IPRP)(1:1),' OPERATOR.'
-            END IF
-            IF ( (KSYMPT .GT. 0) .AND. (KSYMPT .LE. NSYM) ) THEN
-               NS0TOT = NS0TOT + 1
-               NGPS0(KSYMPT) = NGPS0(KSYMPT) + 1
-               LBLS0(KSYMPT,NGPS0(KSYMPT),1)  = TABLEN(IPRP)
-               LBLS0(KSYMPT,NGPS0(KSYMPT),2)  = TABVEL(IPRP)
-            END IF
- 220     CONTINUE
-         IF (NS0TOT .EQ. 0) NOS0MX = .TRUE.
+C        ... make sure DIPLEN and DIPVEL labels for S0MIX are in PRPLBL.
+C            They will be calculated automatically with GET1INT call below
+C            if not already available on AOPROPER.  /hjaaj June 2004
+         DO IPRP = 1,3
+            J =  INDPRP(TABLEN(IPRP))
+            J =  INDPRP(TABVEL(IPRP))
+         END DO
       END IF
+C
       IF (IPRRSP.GE.30) THEN
          WRITE(LUPRI,'(/A,I5,A//A)')
-     &   ' NPRLBL=' ,NPRLBL,' LABELS IN PROPERTY CALCULATIONS:',
-     &   '  I      PRPLBL(I), I=1,NPRLBL '
-         DO 256 I = 1,NPRLBL
+     & ' NPRLBL=',NPRLBL,' labels in property calculations in RESPONS:',
+     & '  I      PRPLBL(I), I=1,NPRLBL '
+         DO I = 1,NPRLBL
             WRITE(LUPRI,'(I5,5X,A)')I,PRPLBL(I)
- 256     CONTINUE
+         END DO
       END IF
+      CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ','UNFORMATTED',IDUMMY,
+     &            .FALSE.)
       DO 250 IPRP = 1,NPRLBL
+         JTURN = 0
  248     CONTINUE
+         JTURN = JTURN + 1
          REWIND (LUPROP)
          LABEL = PRPLBL(IPRP)
          IF (LABEL(3:8).EQ.'SPNORB') LABEL(2:2) = '1'
@@ -2564,7 +2523,14 @@ C
                END IF
             END IF
          ELSE
-            IF (LABEL(1:5) .EQ. 'dh/dB') THEN
+            IF (JTURN .GT. 1) THEN
+C           ... capture input errors as asking for ".DIPLENX" or "UDIPLEN"
+C               which otherwise would cause an infinite loop here /hjaaj June 2004
+               WRITE(LUPRI,'(/3A)') '@ RSPSYM ERROR: PROPERTY LABEL "',
+     &            LABEL,'" NOT FOUND ON AOPROPER'
+               CALL QUIT('RSPSYM ERROR: PROPERTY LABEL NOT FOUND ON '//
+     &                   'AOPROPER')
+            ELSE IF (LABEL(1:5) .EQ. 'dh/dB') THEN
                TRIMAT = .TRUE.
                PRPWRD = 'MAGMOM '
             ELSE IF (LABEL(1:7) .EQ. 'd|S>/dB') THEN
@@ -2592,9 +2558,8 @@ C
                TRIMAT = .TRUE.
                PRPWRD = 'ANGECC'
             ELSE
-               KSYMPT = 0
-               WRITE(LUPRI,'(/3A)') '@ RSPSYM ERROR: PROPERTY LABEL ',
-     &            LABEL,' NOT FOUND ON AOPROPER'
+               WRITE(LUPRI,'(/3A)') '@ RSPSYM ERROR: PROPERTY LABEL "',
+     &            LABEL,'" NOT FOUND ON AOPROPER'
                CALL QUIT('RSPSYM ERROR: PROPERTY LABEL NOT FOUND ON '//
      &                   'AOPROPER')
             END IF
@@ -2701,7 +2666,59 @@ C
             END IF
          END IF
   250 CONTINUE
+C
+      IF (.NOT.NOS0MX) THEN
+         NS0TOT = 0
+         DO 220 IPRP = 1,3
+            NPRP = 0
+            REWIND (LUPROP)
+            IF ( FNDLAB(TABLEN(IPRP),LUPROP) ) NPRP = NPRP + 1
+            REWIND (LUPROP)
+            IF ( FNDLAB(TABVEL(IPRP),LUPROP) ) NPRP = NPRP + 1
+            IF (NPRP .EQ. 2) THEN
+               CALL READT(LUPROP,NNBASX,WRK)
+               IND   = IDAMAX(NNBASX,WRK,1)
+               IF (ABS(WRK(IND)).GT.CKMXPR) THEN
+                  VAL = D1 + D8*IND
+                  IIND  = INT( (SQRT(VAL) - D1INF)/ D2 )
+                  IIMAX = IIND*(IIND+1)/2
+                  IF ( IIMAX .EQ. IND ) THEN
+                     JIND = IIND
+                  ELSE
+                     IIND = IIND + 1
+                     JIND = IND  - IIMAX
+                  END IF
+                  KSYMPT = MULD2H( ISAO(IIND) , ISAO(JIND) )
+               ELSE
+                  KSYMPT = 0
+                  NINFO  = NINFO + 1
+                  WRITE(LUPRI,'(/A,/3A,1P,D15.7,/2A)')'@** INFO **',
+     *            '@ELEMENTS ON PROPERTY FILE WITH LABEL: ',
+     *            TABVEL(IPRP),' SMALLER THAN :',CKMXPR,
+     *            '@PROPERTY CALCULATION NOT CARRIED OUT FOR S(0) IN',
+     *            ' MIXED REPRESENTATION'
+               END IF
+            ELSE
+               KSYMPT = 0
+               NINFO  = NINFO + 1
+               WRITE(LUPRI,'(/5A/4A)')
+     *            '@ ** INFO ** LABEL ',TABLEN(IPRP),' OR LABEL ',
+     *            TABVEL(IPRP),' NOT FOUND ON LUPROP.',
+     *            '@ S(0) IN MIXED REPRESENTATION WILL NOT BE',
+     *            ' CALCULATED FOR ',TABLEN(IPRP)(1:1),' OPERATOR.'
+            END IF
+            IF ( (KSYMPT .GT. 0) .AND. (KSYMPT .LE. NSYM) ) THEN
+               NS0TOT = NS0TOT + 1
+               NGPS0(KSYMPT) = NGPS0(KSYMPT) + 1
+               LBLS0(KSYMPT,NGPS0(KSYMPT),1)  = TABLEN(IPRP)
+               LBLS0(KSYMPT,NGPS0(KSYMPT),2)  = TABVEL(IPRP)
+            END IF
+ 220     CONTINUE
+         IF (NS0TOT .EQ. 0) NOS0MX = .TRUE.
+      END IF
+C
       CALL GPCLOSE(LUPROP,'KEEP')
+C
       IF (IPRRSP.GT.20) THEN
         WRITE(LUPRI,'(/A/)')   ' RSPSYM: number of property vectors :'
         WRITE(LUPRI,'(A/8I5)')' NGPPP(I) ,I=1,NSYM',(NGPPP(I) ,I=1,NSYM)
@@ -3016,7 +3033,7 @@ C
        IF (IPRRSP.GT.40) THEN
          WRITE(LUPRI,'(/A,I5,A)')
      *   ' LIST OF NLRLBL= ',NLRLBL,
-     *   ' SINGLET LINEAR EQATIONS FOR CUBIC RESPONSE'
+     *   ' SINGLET LINEAR EQUATIONS FOR CUBIC RESPONSE'
          WRITE(LUPRI,'(/A)')'   I  CRLBL(I)  CRFREQ(I)  ISYMCR(I) '
          DO 890 I = 1,NLRLBL
             WRITE(LUPRI,'(I5,5X,A,2X,D12.6,I12)')
@@ -3028,7 +3045,7 @@ C
        IF (IPRRSP.GT.40) THEN
          WRITE(LUPRI,'(/A,I5,A)')
      *   ' LIST OF NLRLBL= ',NLRLBL,
-     *   ' SINGLET LINEAR EQATIONS FOR QUADRATIC RESPONSE'
+     *   ' SINGLET LINEAR EQUATIONS FOR QUADRATIC RESPONSE'
          WRITE(LUPRI,'(/A)')'   I  QRLBL(I)  QRFREQ(I)  ISYMQR(I) '
          DO 990 I = 1,NLRLBL
             WRITE(LUPRI,'(I5,5X,A,2X,D12.6,I12)')
@@ -3037,7 +3054,7 @@ C
          IF ( TRPFLG .AND. NTRLBL.GT.0 ) THEN
             WRITE(LUPRI,'(/A,I5,A)')
      *      ' LIST OF NTRLBL= ',NTRLBL,
-     *      ' TRIPLET LINEAR EQATIONS FOR QUADRATIC RESPONSE'
+     *      ' TRIPLET LINEAR EQUATIONS FOR QUADRATIC RESPONSE'
             WRITE(LUPRI,'(/A)')'   I  TRLBL(I)  TRFREQ(I)  ISYMTR(I) '
             DO 991 I = 1,NTRLBL
                WRITE(LUPRI,'(I5,5X,A,2X,D12.6,I12)')
