@@ -29,10 +29,9 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2odb.F,v 1.2 2001-02-12 18:17:54 vebjornb Exp $
+C$Id: eri2odb.F,v 1.3 2001-04-03 14:25:12 vebjornb Exp $
 C
 #include <single.h>
-C
 C  /* Deck odbchs */
       SUBROUTINE ODBCHS(KODCL1,KODCL2,
      &                  KODBC1,KODBC2,KRDBC1,KRDBC2,
@@ -55,7 +54,7 @@ C  /* Deck odbchs */
 C
 C     Initialize
 C
-      NITCL = 14
+      NITCL = 20
       NITBC = 4
       NRTBC = 1
       NITPP = 0
@@ -78,6 +77,8 @@ C
       DOSORT(4) =  DIASRT
       DOSORT(5) = MAXREP .GT. 0
       DOSORT(6) = MAXREP .GT. 0
+      DOSORT(7) = .TRUE.
+      DOSORT(8) = .TRUE.
       IF (IPRINT .GT. 5) THEN
          WRITE (LUPRI,'(2X,A,  I5)') ' NPSORT in ODBCHS ',NPSORT
          WRITE (LUPRI,'(2X,A,10L5)') ' DOSORT in ODBCHS ',
@@ -430,7 +431,8 @@ C
             IA = KAOSRT(KQNBT(NHKTA) - 1 + A)
             IB = KAOSRT(KQNBT(NHKTB) - 1 + B)
             CALL NODDIM(IA,IB,NPRFAB,NCTFAB,NCNTAB,NGTOAB,ISTBLA,ISTBLB,
-     &                  PRXFAB,IODPPR(1,IPRADR),RODPPR(1,IPRADR),CCFBT)
+     &                  ICMATA,ICMATB,PRXFAB,IODPPR(1,IPRADR),
+     &                  RODPPR(1,IPRADR),CCFBT)
             IF (NPRFAB .GT. 0) THEN
                IBATCH = IBATCH + 1
                ISORT(1,IBATCH) = IA
@@ -443,6 +445,8 @@ C
                IF (DOSORT(4)) NSORT(4,IBATCH) = NGTOAB
                IF (DOSORT(5)) NSORT(5,IBATCH) = ISTBLA
                IF (DOSORT(6)) NSORT(6,IBATCH) = ISTBLB
+               IF (DOSORT(7)) NSORT(7,IBATCH) = ICMATA
+               IF (DOSORT(8)) NSORT(8,IBATCH) = ICMATB 
                IPRADR = IPRADR + NPRFAB
                IF (IPRINT .GT. 5) THEN
                   WRITE (LUPRI,'(2X,A, I5)') ' IBATCH ', IBATCH
@@ -455,6 +459,8 @@ C
      &                                         NCNTAB,NGTOAB
                   WRITE (LUPRI,'(2X,A,2I5)') ' ISTBLA,ISTBLB ',
      &                                         ISTBLA,ISTBLB
+                  WRITE (LUPRI,'(2X,A,2I5)') ' ICMATA,ICMATB ',
+     &                                         ICMATA,ICMATB
                END IF
             END IF
   200    CONTINUE
@@ -533,7 +539,7 @@ C
       END
 C  /* Deck noddim */
       SUBROUTINE NODDIM(A,B,NPRFAB,NCTFAB,NCNTAB,NGTOAB,ISTBLA,ISTBLB,
-     &                  PRXFAB,IODPPR,RODPPR,CCFBT)
+     &                  ICMATA,ICMATB,PRXFAB,IODPPR,RODPPR,CCFBT)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
@@ -541,6 +547,7 @@ C  /* Deck noddim */
 #include <aovec.h>
 #include <mxorb.h>
       PARAMETER (D0 = 0.D0)
+      LOGICAL GCNT
       INTEGER A, B, R, R1
       DIMENSION IODPPR(NITPP,*), RODPPR(NRTPP,*), PFAC(8)
       DIMENSION CCFBT(MXPRIM*MXCONT)
@@ -562,11 +569,11 @@ C
       MLTPR  = MULT(ISTBLR)
 C
       NCTFAB = NCTFBT(A)*NCTFBT(B)
-      IF (NCTFAB .GT. 1) THEN
-         WRITE (LUPRI,'(2X,A)')
-     &     ' General contraction not implemented '
-         CALL QUIT('General contraction not allowed')
-      END IF
+      ICMATA = KCMTBT(A)
+      ICMATB = KCMTBT(B)
+C
+      GCNT   =  GENCON .OR. NCTFAB .GT. 1
+C
       NCNTAB = 2
       IF (NCNTBT(A) .EQ. NCNTBT(B) .AND. MLTPR.EQ.1) NCNTAB = 1
       NGTOAB = 2
@@ -585,28 +592,29 @@ C
             EXPA = EXPBT(INDXPA)
             EXPB = EXPBT(INDXPB)
             EXPR = EXPA*EXPB/(EXPA + EXPB)
+C
             R1 = 0
             FACMAX = D0
-            DO 300 R = 0, MAXOPR
+            DO R = 0, MAXOPR
             IF (IBTAND(R,ISTBLR) .EQ. 0) THEN
                R1 = R1 + 1
                DST2 = (CORXBT(A) - XPAR(R)*CORXBT(B))**2
      &              + (CORYBT(A) - YPAR(R)*CORYBT(B))**2
      &              + (CORZBT(A) - ZPAR(R)*CORZBT(B))**2
                FAC  = R2PI52*EXP(-EXPR*DST2)/(EXPA + EXPB)
-               IF (NCTFAB .EQ. 1) FAC = CCFBT(INDCFA)*CCFBT(INDCFB)*FAC
+               IF (.NOT.GCNT) FAC = CCFBT(INDCFA)*CCFBT(INDCFB)*FAC
                FACMAX = MAX(FACMAX,ABS(FAC))
                PFAC(R1) = FAC
             END IF
-  300       CONTINUE
+            END DO 
 C
-            IF (FACMAX.GT.THRSH) THEN
+            IF (GCNT .OR. FACMAX.GT.THRSH) THEN
                IJ = IJ + 1
                RODPPR(1,IJ) = EXPA
                RODPPR(2,IJ) = EXPB
-               DO 400 R = 1, MLTPR
+               DO R = 1, MLTPR
                   RODPPR(R+2,IJ) = PFAC(R)
-  400          CONTINUE
+               END DO
                PRXFAB = MAX(PRXFAB,FACMAX)
             END IF
 C
@@ -659,9 +667,9 @@ C
          N = KODSRT(I-1)
 C
          NEWCLS = .FALSE.
-         DO 200 J = 1, NPSORT
+         DO J = 1, NPSORT
             NEWCLS = NEWCLS .OR. NSORT(J,M) .NE. NSORT(J,N)
-  200    CONTINUE
+         END DO  
          IF (NEWCLS) THEN
             ICLASS = ICLASS + 1
             NCLASS = NCLASS + 1
@@ -689,18 +697,18 @@ C
 C     Number of batches in each class
 C     ===============================
 C
-      DO 100 I = 1, NODBCH
+      DO I = 1, NODBCH
          IODCLS(1,IODBCH(1,I)) = IODCLS(1,IODBCH(1,I)) + 1
-  100 CONTINUE
+      END DO
 C
 C     Pointers to first element in each class
 C     =======================================
 C
       IJ = 1
-      DO 200 I = 1, NODCLS
+      DO I = 1, NODCLS
          IODCLS(2,I) = IJ
          IJ = IJ + IODCLS(1,I)
-  200 CONTINUE
+      END DO  
 C
 C     Class info IODCL1/IODCL2
 C     ========================
@@ -721,15 +729,21 @@ C
          IF (DOSORT(2)) IODCLS(12,I) = IODTRA(2,IPOINT)
          IF (DOSORT(3)) IODCLS(13,I) = IODTRA(3,IPOINT)
          IF (DOSORT(4)) IODCLS(14,I) = IODTRA(4,IPOINT)
+         IODCLS(15,I) = NPRFBT(IA)
+         IODCLS(16,I) = NPRFBT(IB)
+         IODCLS(17,I) = NCTFBT(IA)
+         IODCLS(18,I) = NCTFBT(IB)
+         IODCLS(19,I) = KCCFBT(IA)
+         IODCLS(20,I) = KCCFBT(IB)
   300 CONTINUE
 C
       IF (IPRINT .GT. 3) THEN
          CALL HEADER('Output from CLSINF',-1)
          WRITE (LUPRI,'(1X,A,I5)') ' Number of classes NODCLS:',NODCLS
          CALL HEADER('Array IODCLS in CLSINF',-1)
-         DO 900 I = 1, NODCLS
-            WRITE (LUPRI,'(14I5)') I, (IODCLS(J,I), J=1,NITCL)
-  900    CONTINUE
+         DO I = 1, NODCLS
+            WRITE (LUPRI,'(20I4)') I, (IODCLS(J,I), J=1,NITCL)
+         END DO  
       END IF
 C
       CALL ODSTAT(IODCLS,WORK,LWORK,IPRINT)

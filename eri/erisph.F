@@ -210,7 +210,7 @@ C                    ALPHA = II+JJ+KK-A-B-C-(P+Q+R)/2
                               CSQ(IADR,IA) = CSQ(IADR,IA) + BFAC
                               IF (IPRINT.GT.20) THEN
                                  WRITE (LUPRI,'(1X,2I3,2(2X,3I2),I3,
-     &                                     F10.5,I4,2X,2(3I3,2X),3I3)')
+     &                                     F10.5,I4,2X,2(3I3,2X),3I3)') 
      &                                     L,M,I,J,K,E,F,G,
      &                                     IA,BFAC,ALPHA,
      &                                     PX,PY,PZ,X,Y,Z,

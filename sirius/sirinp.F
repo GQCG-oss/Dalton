@@ -29,11 +29,22 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: sirinp.F,v 1.4 2001-03-22 14:53:40 hjj Exp $
+C$Id: sirinp.F,v 1.5 2001-04-03 14:25:14 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
 $Log: not supported by cvs2svn $
+Revision 1.4  2001/03/22 14:53:40  hjj
+- Changed MWORK form 200 000 000 to 8 000 000; this should ensure
+that it will be unlikely that TRACD has insufficient memory.
+(MWORK should not be larger than resident memory to avoid paging in
+integral transformation; 64 Mbytes sounds as a good number and the
+integral transformation will hardly be more efficient with a larger number).
+- removed sirdefaults.h and reference in sirinp.F and abaset.F
+  (sirdefaults.h only defined MWORK),
+  instead define MWORK in block data in sirbkd.F
+- removed obsolete LBSYMB in sirset.F
+
 Revision 1.3  2001/03/20 07:47:49  vebjornb
 Changed all references to the old f21-file to "SIRIUS.RST"
 
@@ -698,6 +709,7 @@ C       ... if not QCHF zero iteration limit (for consistent output in PRTINP)
       END IF
 C
       IF (DOCCSD) THEN
+         FLAG(11) = .TRUE.
          IF (DORHF) FLAG(25) = .TRUE.
          SUPSYM = .FALSE.
       END IF

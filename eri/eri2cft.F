@@ -29,10 +29,9 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2cft.F,v 1.2 2001-02-12 18:17:54 vebjornb Exp $
+C$Id: eri2cft.F,v 1.3 2001-04-03 14:25:11 vebjornb Exp $
 C
 #include <single.h>
-C
 C  /* Deck expcft */
       SUBROUTINE EXPCFT(ETIJ,NPP12,JMAX1,JMAX2,COOR12,EXP12,
      &                  IAB0,HPI,PA,PB,IRUTIN,IELCTR,MAX1,MAX2,

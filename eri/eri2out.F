@@ -29,10 +29,9 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2out.F,v 1.2 2001-02-12 18:17:54 vebjornb Exp $
+C$Id: eri2out.F,v 1.3 2001-04-03 14:25:12 vebjornb Exp $
 C
 #include <single.h>
-C
 C  /* Deck eriout */
       SUBROUTINE ERIOUT(SO,ITYPE,IPNTCR,IODDCC,IPNTUV,BUF,IBUF,INDXBT,
      &                  NCOUNT,WORK,LWORK,IPRINT)
@@ -174,6 +173,7 @@ C  /* Deck eriou1 */
 #include <aobtch.h>
 #include <hertop.h>
 #include <eridst.h>
+#include <symmet.h>
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERIOU1',-1)
 C
@@ -198,10 +198,8 @@ C     ========================================
 C
       ELSE IF (GDER .OR. BDER) THEN
 C
-C        orbital labels and centers
-C
          CALL ERILAB(DUMMY,LABEL,INDORB,IPNTCR,IODDCC,IPNTUV,INDXBT,
-     &               INDXTR,IPRINT)
+     &               INDXTR,0,IPRINT)
 C
 C        loop over Cartesian directions
 C
@@ -225,7 +223,10 @@ C
                   CALL ERIPRT(SO,ISCOOR,IATOM,ICART,SOPRT,LABEL,INDORB,
      &                        IPRINT)
                ELSE
-                  CALL ERIBRT(SO,ISCOOR,SOPRT,IPRINT)
+                  IREPE = ISYMAX(ICART,2)
+                  CALL ERILAB(DUMMY,LABEL,INDORB,IPNTCR,IODDCC,IPNTUV,
+     &                        INDXBT,INDXTR,IREPE,IPRINT)
+                  CALL ERIBRT(SO,ISCOOR,SOPRT,INDORB,IPRINT)
                END IF
             END IF
 C
@@ -267,6 +268,7 @@ C
      &               IBUF(1,1,1,0),IPRINT)
       END IF
 C
+      call flush(2)
       RETURN
       END
 C  /* Deck eriwrt */
@@ -282,12 +284,13 @@ C  /* Deck eriwrt */
 #include <aovec.h>
 C
 #include <eridst.h>
+      CHARACTER*8 FAODER
       DIMENSION BUF(LBUF,NBUFS), IBUF(LBUF,NIBUF,NBUFS),
      &          BIN(LBIN), IBIN(LBIN,NIBUF),
      &          NINTS(NDISTR), NCOUNT(NDISTR,0:NCORS)
-      CHARACTER*8 FAODER
 #include <cbieri.h>
 #include <chrnos.h>
+#include <symmet.h>
 #include <nuclei.h>
 #include <ericom.h>
 #include <erithr.h>
@@ -308,7 +311,7 @@ C     ========================
 C
       IF (FIRST) THEN
          IF (DODIST) THEN
-            IF (LUINTR .LE. 0) THEN
+           IF (LUINTR .LE. 0) THEN
                CALL GPOPEN(LUINTR,'AOTWODIS','UNKNOWN',' ',' ',
      *                     IDUMMY,.FALSE.)
             ENDIF
@@ -330,8 +333,10 @@ C    &                  'UNFORMATTED',IDUMMY,.FALSE.)
 C           CALL REWSPL(LUINTX)
 C           CALL NEWLAB('AO2MGINT',LUINTX,LUPRI)
          ELSE
-            LUINTX = LUINTA 
+            LUINTX = LUINTA
             CALL REWSPL(LUINTX)
+            CALL NEWLAB('BASINFO ',LUINTA,LUPRI)
+            WRITE (LUINTA) MAXREP+1,(NAOS(I),I=1,8),LBUF,NIBUF,NBITS
             CALL NEWLAB('BASTWOEL',LUINTX,LUPRI)
          END IF
          CALL IZERO(NCOUNT(1,0),NDISTR*NCORS)
@@ -341,6 +346,8 @@ C           CALL NEWLAB('AO2MGINT',LUINTX,LUPRI)
 C
       IF (GDER .OR. BDER) THEN
          LUINTX = LUINTD(ISCOOR)
+      ELSE
+         LUINTX = LUINTA
       END IF
 C
 C     Run over distributions
@@ -507,7 +514,7 @@ C
             WRITE (LUINTX) (  BUF(K,1),  K=1,LBUF),
      &                     ((IBUF(K,L,1),K=1,LBUF),L=1,NIBUF),-1
             REWIND LUINTX
-            IF (.NOT.BDER) CALL GPCLOSE(LUINTX,'KEEP')
+            IF (.NOT.BDER) CALL GPCLOSE (LUINTX,'KEEP')
          END IF
 C
       END IF
@@ -593,6 +600,7 @@ C  /* Deck erindx */
       PARAMETER (D0 = 0.0D0, TEN14 = 1.1D14)
       INTEGER A, B, C, D, I, A1, B1, C1, D1, AB, CD, R, S, T, E
       LOGICAL DOREP(0:7,4), CTRIAB, CTRICD, CTRIAC, CTRIBD, CTRIPQ
+      LOGICAL DAB, DCD, DPQ, NRDINT
       DIMENSION SO(NCCS,MLTPR,MLTPS,MLTPT,KHKTAB,KHKTCD,*),
      &          INDORB(NCCS,NIBUF),
      &          IPNTCR(MAXBCH,4),
@@ -612,11 +620,6 @@ C
       IBTREP(I,J,K,L) = IBTXOR(J,IBTAND(I,ISYMAO(K,L)))
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERINDX',-1)
-C
-      IF (IPRINT .GT. 15) THEN
-         WRITE (LUPRI,'(2X,A,2I5)') ' NPQBCX,NPPBCX ',NPQBCX,NPPBCX
-         WRITE (LUPRI,'(2X,A,2I5)') ' NPQBCS,NPPBCS ',NPQBCS,NPPBCS
-      END IF
 C
       CALL PRPREP(DOREP(0,1),NHKTA,KHKTA,ISTBLA)
       CALL PRPREP(DOREP(0,2),NHKTB,KHKTB,ISTBLB)
@@ -650,6 +653,15 @@ C
          IBITB = 1
          IBITC = 2**NBITS
          IBITD = 1
+      END IF
+C
+      IF (IPRINT .GT. 15) THEN
+         WRITE (LUPRI,'(2X,A,2I5)') ' NPQBCX,NPPBCX ',NPQBCX,NPPBCX
+         WRITE (LUPRI,'(2X,A,2I5)') ' NPQBCS,NPPBCS ',NPQBCS,NPPBCS
+         WRITE (LUPRI,'(2X,A,4I5)') 
+     &                    ' NCTFX         ',NCTFA,NCTFB,NCTFC,NCTFD 
+         WRITE (LUPRI,'(2X,A,2I5)') ' NCCS1 ,NCCS2  ',NCCS1, NCCS2
+         WRITE (LUPRI,'(2X,A,2I5)') ' NIBUF, NBITS  ',NIBUF, NBITS 
       END IF
 C
       INT = 0
@@ -693,19 +705,47 @@ C
             IF (DIAGCD .AND. D.GT.C) GO TO 190
 C
             IF (NIBUF .EQ. 1) THEN
-               DO 201 I = 1, NCCS1
-                  INDORB(I,1) = (INDXBT(KNDXBT(IPNTCR(I,1)),A)-1)*IBITA
-     &                        + (INDXBT(KNDXBT(IPNTCR(I,2)),B)-1)*IBITB
-     &                        + (INDXBT(KNDXBT(IPNTCR(I,3)),C)-1)*IBITC
-     &                        + (INDXBT(KNDXBT(IPNTCR(I,4)),D)-1)
-  201          CONTINUE
+               IADR = 0
+               DO N = 1, NPQBCS - NPPBCS
+                  NA = KNDXBT(IPNTCR(N,1)) - 1
+                  NB = KNDXBT(IPNTCR(N,2)) - 1
+                  NC = KNDXBT(IPNTCR(N,3)) - 1
+                  ND = KNDXBT(IPNTCR(N,4)) - 1
+                  DO I = 1, NCTFA 
+                  DO J = 1, NCTFB 
+                  DO K = 1, NCTFC 
+                  DO L = 1, NCTFD 
+                     IADR = IADR + 1
+                     INDORB(IADR,1) = (INDXBT(NA + I,A)-1)*IBITA
+     &                              + (INDXBT(NB + J,B)-1)*IBITB
+     &                              + (INDXBT(NC + K,C)-1)*IBITC
+     &                              + (INDXBT(ND + L,D)-1)
+                  END DO 
+                  END DO 
+                  END DO 
+                  END DO
+               END DO
             ELSE
-               DO 202 I = 1, NCCS1
-                  INDORB(I,1) = (INDXBT(KNDXBT(IPNTCR(I,1)),A)-1)*IBITA
-     &                        + (INDXBT(KNDXBT(IPNTCR(I,2)),B)-1)
-                  INDORB(I,2) = (INDXBT(KNDXBT(IPNTCR(I,3)),C)-1)*IBITC
-     &                        + (INDXBT(KNDXBT(IPNTCR(I,4)),D)-1)
-  202          CONTINUE
+               IADR = 0
+               DO N = 1, NPQBCS - NPPBCS
+                  NA = KNDXBT(IPNTCR(N,1)) - 1
+                  NB = KNDXBT(IPNTCR(N,2)) - 1
+                  NC = KNDXBT(IPNTCR(N,3)) - 1
+                  ND = KNDXBT(IPNTCR(N,4)) - 1
+                  DO I = 1, NCTFA 
+                  DO J = 1, NCTFB 
+                  DO K = 1, NCTFC 
+                  DO L = 1, NCTFD 
+                     IADR = IADR + 1
+                     INDORB(IADR,1) = (INDXBT(NA + I,A)-1)*IBITA
+     &                              + (INDXBT(NB + J,B)-1)
+                     INDORB(IADR,2) = (INDXBT(NC + K,C)-1)*IBITC
+     &                              + (INDXBT(ND + L,D)-1)
+                  END DO
+                  END DO
+                  END DO
+                  END DO
+               END DO
             END IF
 C
             R = IPNRST(B,1)
@@ -754,6 +794,12 @@ C
                         IF (IODDAB .EQ. IODDCD .OR.
      &                      JODDAB .EQ. IODDCD) THEN
 C
+                           DAB = GCONAB .AND. CTRIAB.AND.ICMPA.EQ.ICMPB 
+     &                                  .AND .NGTOAB.EQ.1 
+                           DCD = GCONCD .AND. CTRICD.AND.ICMPC.EQ.ICMPD 
+     &                                  .AND .NGTOCD.EQ.1
+                           DPQ = .FALSE. 
+C
 C                       Standard integrals
 C
                         IF (.NOT.BDER) THEN
@@ -762,9 +808,14 @@ C
                                  DO 401 I = 1, NCCS1
                                     SOABCD = SO(I,R,S,T,ICMPAB,ICMPCD,1)
                                     IF (ABS(SOABCD) .GT. THRSH) THEN
+                                    KABCD = INDORB(I,1) + IABCD
+                                    IF(NRDINT(KABCD,DAB,DCD,DPQ)) THEN
                                        INT = INT + 1
                                        BIN (INT  ) = SOABCD
                                        IBIN(INT,1) = INDORB(I,1) + IABCD
+C                                      CALL ERIPRI(BIN(INT),IBIN(INT,1),
+C    &                                         LBIN,NIBUF,1,NBITS,0,0,0)
+                                    END IF
                                     END IF
   401                            CONTINUE
                               ELSE
@@ -781,9 +832,14 @@ C
                            ELSE
                               IF (NIBUF .EQ. 1) THEN
                                  DO 451 I = 1, NCCS1
+                                 KABCD = INDORB(I,1) + IABCD
+                                 IF(NRDINT(KABCD,DAB,DCD,DPQ)) THEN
                                     INT = INT + 1
                                     BIN(INT)=SO(I,R,S,T,ICMPAB,ICMPCD,1)
                                     IBIN(INT,1) = INDORB(I,1) + IABCD
+C                                   CALL ERIPRI(BIN(INT),IBIN(INT,1),
+C    &                                      LBIN,NIBUF,1,NBITS,0,0,0)
+                                 END IF
   451                            CONTINUE
                               ELSE
                                  DO 452 I = 1, NCCS1
@@ -905,22 +961,50 @@ C
 C
             IF (DIAGAB .AND. B.GT.A) GO TO 195
             IF (DIAGCD .AND. D.GT.C) GO TO 195
-            IF (C.GT.A .OR. (C.EQ.A .AND. D.GT.B)) GO TO 195
+            IF(C.GT.A .OR. (C.EQ.A .AND. D.GT.B)) GO TO 195
 C
             IF (NIBUF .EQ. 1) THEN
-               DO 206 I = NCCS1 + 1, NCCS
-                  INDORB(I,1) = (INDXBT(KNDXBT(IPNTCR(I,1)),A)-1)*IBITA
-     &                        + (INDXBT(KNDXBT(IPNTCR(I,2)),B)-1)*IBITB
-     &                        + (INDXBT(KNDXBT(IPNTCR(I,3)),C)-1)*IBITC
-     &                        + (INDXBT(KNDXBT(IPNTCR(I,4)),D)-1)
-  206          CONTINUE
+               IADR = NCCS1
+               DO N = NPQBCS - NPPBCS + 1, NPQBCS
+                  NA = KNDXBT(IPNTCR(N,1)) - 1
+                  NB = KNDXBT(IPNTCR(N,2)) - 1
+                  NC = KNDXBT(IPNTCR(N,3)) - 1
+                  ND = KNDXBT(IPNTCR(N,4)) - 1
+                  DO I = 1, NCTFA
+                  DO J = 1, NCTFB 
+                  DO K = 1, NCTFC
+                  DO L = 1, NCTFD 
+                     IADR = IADR + 1
+                     INDORB(IADR,1) = (INDXBT(NA + I,A)-1)*IBITA
+     &                              + (INDXBT(NB + J,B)-1)*IBITB
+     &                              + (INDXBT(NC + K,C)-1)*IBITC
+     &                              + (INDXBT(ND + L,D)-1)
+                  END DO
+                  END DO
+                  END DO
+                  END DO
+               END DO
             ELSE
-               DO 207 I = NCCS1 + 1, NCCS
-                  INDORB(I,1) = (INDXBT(KNDXBT(IPNTCR(I,1)),A)-1)*IBITA
-     &                        + (INDXBT(KNDXBT(IPNTCR(I,2)),B)-1)
-                  INDORB(I,2) = (INDXBT(KNDXBT(IPNTCR(I,3)),C)-1)*IBITC
-     &                        + (INDXBT(KNDXBT(IPNTCR(I,4)),D)-1)
-  207          CONTINUE
+               IADR = NCCS1
+               DO N = NPQBCS - NPPBCS + 1, NPQBCS
+                  NA = KNDXBT(IPNTCR(N,1)) - 1
+                  NB = KNDXBT(IPNTCR(N,2)) - 1
+                  NC = KNDXBT(IPNTCR(N,3)) - 1
+                  ND = KNDXBT(IPNTCR(N,4)) - 1
+                  DO I = 1, NCTFA 
+                  DO J = 1, NCTFB 
+                  DO K = 1, NCTFC 
+                  DO L = 1, NCTFD 
+                     IADR = IADR + 1
+                     INDORB(IADR,1) = (INDXBT(NA + I,A)-1)*IBITA
+     &                              + (INDXBT(NB + J,B)-1)
+                     INDORB(IADR,2) = (INDXBT(NC + K,C)-1)*IBITC
+     &                              + (INDXBT(ND + L,D)-1)
+                  END DO 
+                  END DO 
+                  END DO 
+                  END DO
+               END DO
             END IF
 C
             R = IPNRST(B,1)
@@ -980,6 +1064,11 @@ C
                         IF (IODDAB .EQ. IODDCD .OR.
      &                      JODDAB .EQ. IODDCD) THEN
 C
+                            DAB = CTRIAB .AND. ICMPA.EQ.ICMPB
+                            DCD = CTRICD .AND. ICMPC.EQ.ICMPD
+                            DPQ = CTRIPQ .AND. ICMPA.EQ.ICMPC
+     &                                   .AND. ICMPB.EQ.ICMPD
+C
 C                       standard integrals
 C
                         IF (.NOT.BDER) THEN
@@ -988,9 +1077,12 @@ C
                                  DO 406 I = NCCS1 + 1, NCCS
                                     SOABCD = SO(I,R,S,T,ICMPAB,ICMPCD,1)
                                     IF (ABS(SOABCD) .GT. THRSH) THEN
+                                       KABCD = INDORB(I,1) + IABCD
+                                    IF (NRDINT(KABCD,DAB,DCD,DPQ)) THEN
                                        INT = INT + 1
                                        BIN (INT  ) = SOABCD
                                        IBIN(INT,1) = INDORB(I,1) + IABCD
+                                    END IF
                                     END IF
   406                            CONTINUE
                               ELSE
@@ -1007,9 +1099,14 @@ C
                            ELSE
                               IF (NIBUF.EQ.1) THEN
                                  DO 456 I = NCCS1 + 1, NCCS
+                                    KABCD = INDORB(I,1) + IABCD
+                                 IF(NRDINT(KABCD,DAB,DCD,DPQ)) THEN
                                     INT = INT + 1
                                     BIN(INT)=SO(I,R,S,T,ICMPAB,ICMPCD,1)
                                     IBIN(INT,1) = INDORB(I,1) + IABCD
+C                                   CALL ERIPRI(BIN(INT),IBIN(INT,1),
+C    &                                       LBIN,NIBUF,1,NBITS,0,0,0)
+                             END IF 
   456                            CONTINUE
                               ELSE
                                  DO 457 I = NCCS1 + 1, NCCS
@@ -1017,6 +1114,8 @@ C
                                     BIN(INT)=SO(I,R,S,T,ICMPAB,ICMPCD,1)
                                     IBIN(INT,1) = INDORB(I,1) + IAB
                                     IBIN(INT,2) = INDORB(I,2) + IABCD
+C                                   CALL ERIPRI(BIN(INT),IBIN(INT,1),
+C    &                                       LBIN,NIBUF,1,NBITS,0,0,0)
   457                            CONTINUE
                               END IF
                            END IF
@@ -1060,7 +1159,7 @@ C
                                     IF (ABS(SOBA) .GT. THRSH) THEN
                                        INT = INT + 1
                                        BIN (INT  ) = SOBA
-                                       IBIN(INT,1) = INDORB(I,1) + IBA
+C                                      IBIN(INT,1) = INDORB(I,1) + IBA
                                        IBIN(INT,2) = INDORB(I,2) + IABCD
                                     END IF
   409                            CONTINUE
@@ -1091,7 +1190,7 @@ C
                                     IBIN(INT,2) = INDORB(I,2) + IABCD
                                     INT = INT + 1
                                     BIN(INT) = SO1 - SO2 
-                                    IBIN(INT,1) = INDORB(I,1) + IBA
+C                                   IBIN(INT,1) = INDORB(I,1) + IBA
                                     IBIN(INT,2) = INDORB(I,2) + IABCD
   459                            CONTINUE
                               END IF
@@ -1317,15 +1416,40 @@ C     ===============
 C
       IRPDST = IPNREP(1,1)
 C
-      DO 100 J = 1, 4
-         NSHFT = IBITX(J)
-         DO 110 IA = 1, NREP(J)
-            A = IPNREP(IA,J)
-            DO 120 I = 1, NCCS
-               INDXTR(I,IA,J)=(INDXBT(KNDXBT(IPNTCR(I,J)),A)-1)*NSHFT
-  120       CONTINUE
-  110    CONTINUE
-  100 CONTINUE
+C     DO 100 J = 1, 4
+C        NSHFT = IBITX(J)
+C        DO 110 IA = 1, NREP(J)
+C           A = IPNREP(IA,J)
+C           DO 120 I = 1, NCCS
+C              INDXTR(I,IA,J)=(INDXBT(KNDXBT(IPNTCR(I,J)),A)-1)*NSHFT
+C 120       CONTINUE
+C 110    CONTINUE
+C 100 CONTINUE
+C
+      DO M = 1, 4
+         NSHFT = IBITX(M)
+         DO IA = 1, NREP(M)
+            A = IPNREP(IA,M)
+            IADR = 0
+            DO N = 1, NPQBCS
+               NA = KNDXBT(IPNTCR(N,M)) - 1
+               DO I = 1, NCTFA
+               DO J = 1, NCTFB
+               DO K = 1, NCTFC
+               DO L = 1, NCTFD
+                  IADR = IADR + 1
+                  IF (M.EQ.1) NAI = NA + I
+                  IF (M.EQ.2) NAI = NA + J
+                  IF (M.EQ.3) NAI = NA + K
+                  IF (M.EQ.4) NAI = NA + L
+                  INDXTR(IADR,IA,M) = (INDXBT(NAI,A) - 1)*NSHFT
+               END DO
+               END DO
+               END DO
+               END DO
+            END DO
+         END DO
+      END DO
 C
       DO 200 ID = 1, NREP(4)
          D = IPNREP(ID,4)
@@ -1555,19 +1679,45 @@ C
 C
       IRPDST = 0
 C
+C     IANEW = 0
+C     IDIST = 0
+C     DO 100 I = 1, NCCS
+C        IAOLD = IANEW
+C        IANEW = INDXBT(KNDXBT(IPNTCR(I,1)),IRPDST)
+C        IF (IAOLD. NE. IANEW) THEN
+C           IDIST = IDIST + 1
+C           NCCDST(IDIST) = 1
+C           NCCFST(IDIST) = I
+C        ELSE
+C           NCCDST(IDIST) = NCCDST(IDIST) + 1
+C        END IF
+C100  CONTINUE
+C     NDST = IDIST
+C
       IANEW = 0
       IDIST = 0
-      DO 100 I = 1, NCCS
-         IAOLD = IANEW
-         IANEW = INDXBT(KNDXBT(IPNTCR(I,1)),IRPDST)
-         IF (IAOLD. NE. IANEW) THEN
-            IDIST = IDIST + 1
-            NCCDST(IDIST) = 1
-            NCCFST(IDIST) = I
-         ELSE
-            NCCDST(IDIST) = NCCDST(IDIST) + 1
-         END IF
- 100  CONTINUE
+      NIJKL = 0
+      DO N = 1, NPQBCS
+         NA = KNDXBT(IPNTCR(N,1)) - 1
+         DO I = 1, NCTFA
+         DO J = 1, NCTFB
+         DO K = 1, NCTFC
+         DO L = 1, NCTFD
+            NIJKL = NIJKL + 1
+            IAOLD = IANEW
+            IANEW = INDXBT(NA + I,IRPDST)
+            IF (IAOLD. NE. IANEW) THEN
+               IDIST = IDIST + 1
+               NCCDST(IDIST) = 1
+               NCCFST(IDIST) = NIJKL 
+            ELSE
+               NCCDST(IDIST) = NCCDST(IDIST) + 1
+            END IF
+         END DO
+         END DO
+         END DO
+         END DO
+      END DO
       NDST = IDIST
 C
       CALL ERICHN(INDORB,NBTCHX,LBTCHX,IPNBCH,NBCHS,NDST,NCCFST,NCCDST,
@@ -1702,7 +1852,7 @@ C
                IBTCH = NBTCHX(IDIST) + 1
                NBTCHX(IDIST) = IBTCH
                LBTCHX(IDIST) = LENGTH
-               IPNBCH(IBTCH,IDIST) = IADR
+               IF (IDIST.GT.0) IPNBCH(IBTCH,IDIST) = IADR
                IADR = IADR + NCCS
   500       CONTINUE
   400    CONTINUE
@@ -1780,7 +1930,7 @@ C
 C
       RETURN
       END
-      SUBROUTINE ERIBRT(SO,ISCOOR,SOPRT,IPRINT)
+      SUBROUTINE ERIBRT(SO,ISCOOR,SOPRT,INDORB,IPRINT)
 C
 C     T. Helgaker
 C
@@ -1797,7 +1947,7 @@ C
 #include <eribuf.h>
 #include <erithr.h>
 C
-      IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERIPRT',-1)
+      IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERIBRT',-1)
 C
       IF (ISCOOR .LE. 3) THEN
          DO I = 1, NAOINT
@@ -1810,7 +1960,7 @@ C
       END IF
 C
       IF (IPRINT .GT. 10) THEN
-         CALL HEADER('Output from ERIPRT',-1)
+         CALL HEADER('Output from ERIBRT',-1)
          CALL ERIPRI(SOPRT,INDORB,NAOINT,NIBUF,NAOINT,NBITS,0,IDUMMY,
      &               ISCOOR)
       END IF
@@ -1837,33 +1987,36 @@ C
       LBIN   = NCCT*KHKTA*KHKTB*KHKTC*KHKTD
       KWGHT  = 1
       KLABEL = KWGHT + NAOINT
-      KPOINT = KLABEL + (4*NAOINT - 1)/IRAT + 1
+      KPOINT = KLABEL + (5*NAOINT - 1)/IRAT + 1
       KLAST  = KPOINT + (4*LBIN - 1)/IRAT + 1
       IF (KLAST .GT. LWORK) CALL STOPIT('ERIAVE',' ',KLAST,LWORK)
       LWRK = LWORK - KLAST + 1
 C
+      CALL ERILBD(SO,DMAT,D2MAT,ID2MAT,IPNTCR,IODDCC,IPNTUV,
+     &            INDXBT,WORK(KPOINT),IPRINT)
+C
 C     Generate weights and labels
 C     ===========================
 C 
-      CALL ERILAB(WORK(KWGHT),WORK(KLABEL),IDUMMY,IPNTCR,IODDCC,IPNTUV,
-     &            INDXBT,WORK(KPOINT),IPRINT)
+C     CALL ERILAB(WORK(KWGHT),WORK(KLABEL),IDUMMY,IPNTCR,IODDCC,IPNTUV,
+C    &            INDXBT,WORK(KPOINT),0,IPRINT)
 C
 C     Generate density matrix 
 C     =======================
 C
-      CALL ERIDMT(PMAT,WORK(KWGHT),WORK(KLABEL),IPNTUV,IODDCC,
-     &            DMAT,D2MAT,ID2MAT,IPRINT)
+C     CALL ERIDMT(PMAT,WORK(KWGHT),WORK(KLABEL),IPNTUV,IODDCC,
+C    &            DMAT,D2MAT,ID2MAT,IPRINT)
 C
 C     Multiply integrals and densities 
 C     ================================
 C
-      CALL ERIGRD(SO,PMAT,WORK(KLABEL),IPNTUV,IODDCC,IPRINT)
+C     CALL ERIGRD(SO,PMAT,WORK(KLABEL),IPNTUV,IODDCC,IPRINT)
 C
       RETURN
       END
 C  /* Deck erilab */
       SUBROUTINE ERILAB(WEIGHT,LABEL,INDORB,IPNTCR,IODDCC,IPNTUV,INDXBT,
-     &                  IPOINT,IPRINT)
+     &                  IPOINT,IREPE,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
@@ -1940,12 +2093,13 @@ C
                IPOINT(I,2) = INDXBT(KNDXBT(IPNTCR(I,2)),B)
   111       CONTINUE
          DO 120 C = 0, MAXREP
-         IF (DOREP(C,3) .AND. DOREP(IBTXOR(IBTXOR(A,B),C),4)) THEN
-            D = IBTXOR(IBTXOR(A,B),C)
+         D = IBTXOR(IBTXOR(IBTXOR(A,B),C),IREPE)
+         IF (DOREP(C,3) .AND. DOREP(D,4)) THEN
             CD = IBTXOR(C,D)
 C
-            IF (DIAGAB .AND. B.GT.A) GO TO 190
-            IF (DIAGCD .AND. D.GT.C) GO TO 190
+C commented out as test
+C           IF (DIAGAB .AND. B.GT.A) GO TO 190
+C           IF (DIAGCD .AND. D.GT.C) GO TO 190
 C
             DO 121 I = 1, NCCS1
                IPOINT(I,3) = INDXBT(KNDXBT(IPNTCR(I,3)),C)
@@ -2079,9 +2233,9 @@ C
          IF (DOREP(C,3) .AND. DOREP(IBTXOR(IBTXOR(A,B),C),4)) THEN
             D = IBTXOR(IBTXOR(A,B),C)
             CD = IBTXOR(C,D)
-C
-            IF (DIAGAB .AND. B.GT.A) GO TO 195
-            IF (DIAGCD .AND. D.GT.C) GO TO 195
+C commented out as test
+C           IF (DIAGAB .AND. B.GT.A) GO TO 195
+C           IF (DIAGCD .AND. D.GT.C) GO TO 195
 C           IF (C.GT.A .OR. (C.EQ.A .AND. D.GT.B)) GO TO 195
 C
             DO 126 I = NCCS1 + 1, NCCS
@@ -2355,5 +2509,379 @@ C
          CALL HEADER('GRADEE in ERIGRD',-1) 
          CALL OUTPUT(GRADEE,1,3,1,NUCDEP,3,NUCDEP,1,LUPRI)
       END IF
+      RETURN
+      END
+C  /* Deck erilbd */
+      SUBROUTINE ERILBD(SO,DMAT,D2MAT,ID2MAT,IPNTCR,IODDCC,IPNTUV,
+     &                  INDXBT,IPOINT,IPRINT)
+#include <implicit.h>
+#include <priunit.h>
+#include <iratdef.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <mxorb.h>
+#include <aovec.h>
+      PARAMETER (D2=2.0D0, D1=1.0D0)
+      INTEGER A, B, C, D, AB, CD, R, S, T
+      LOGICAL DOREP(0:7,4), CTRIAB, CTRICD, DCD
+      DIMENSION IPOINT(NCCS,5), 
+     &          IPNTCR(MAXBCH,4), INDXBT(MXSHEL*MXCONT,0:7),
+     &          IODDCC(NRTOP), IPNTUV(KC2MAX,0:NRDER,2),
+     &          IPNRST(0:7,3), IODXYZ(3),
+     &          IADCMP(MXAQN,MXAQN,2),
+     &          SO(NCCS,MLTPR,MLTPS,MLTPT,KHKTAB,KHKTCD,12),
+     &          DMAT(NBASE,NBASE),
+     &          D2MAT(NBASE,NBASE,NPDIMB,NPDIMA),
+     &          ID2MAT(MXCORB,2)
+#include <cbieri.h>
+#include <ericom.h>
+#include <erithr.h>
+#include <eribuf.h>
+#include <aobtch.h>
+#include <hertop.h>
+#include <symmet.h>
+#include <nuclei.h>
+#include <energy.h>
+C
+#include <ibtfun.h>
+      IBTEST(I,J,K,L) = IBTAND(I,IBTXOR(J,ISYMAO(K,L)))
+      IBTREP(I,J,K,L) = IBTXOR(J,IBTAND(I,ISYMAO(K,L)))
+C
+      IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERILBD',-1)
+C
+      IF (IPRINT .GT. 15) THEN
+         WRITE (LUPRI,'(2X,A,2I5)') ' NPQBCS,NPPBCS ',NPQBCS,NPPBCS
+      END IF
+C
+      IF (GRDZER) CALL DZERO(GRADEE,MXCOOR)
+C
+      CALL PRPREP(DOREP(0,1),NHKTA,KHKTA,ISTBLA)
+      CALL PRPREP(DOREP(0,2),NHKTB,KHKTB,ISTBLB)
+      CALL PRPREP(DOREP(0,3),NHKTC,KHKTC,ISTBLC)
+      CALL PRPREP(DOREP(0,4),NHKTD,KHKTD,ISTBLD)
+C
+      IF (IPRINT .GT. 10) THEN
+         WRITE (LUPRI,'(/,2X,A,8L2)')'DOREP A  ',(DOREP(I,1),I=0,MAXREP)
+         WRITE (LUPRI,'(2X,A,8L2)')  'DOREP B  ',(DOREP(I,2),I=0,MAXREP)
+         WRITE (LUPRI,'(2X,A,8L2)')  'DOREP C  ',(DOREP(I,3),I=0,MAXREP)
+         WRITE (LUPRI,'(2X,A,8L2)')  'DOREP D  ',(DOREP(I,4),I=0,MAXREP)
+      END IF
+C
+      CALL CMPADR(IADCMP(1,1,1),KHKTA,KHKTB,TKMPAB)
+      CALL CMPADR(IADCMP(1,1,2),KHKTC,KHKTD,TKMPCD)
+C
+      CALL GETRST(IPNRST(0,1),ISTBLR)
+      CALL GETRST(IPNRST(0,2),ISTBLS)
+      CALL GETRST(IPNRST(0,3),ISTBLT)
+C
+      NCCS1 = (NPQBCS - NPPBCS)*NCTFAB*NCTFCD
+      NCCS2 = NPPBCS*NCTFAB*NCTFCD
+C
+C     loop over irreps
+C
+      DO A = 0, MAXREP
+      IF (DOREP(A,1)) THEN
+      DO B = 0, MAXREP
+      IF (DOREP(B,2)) THEN
+      DO C = 0, MAXREP
+      IF (DOREP(C,3) .AND. DOREP(IBTXOR(IBTXOR(A,B),C),4)) THEN
+         D = IBTXOR(IBTXOR(A,B),C)
+         CD = IBTXOR(C,D)
+C
+         CTRIAB = DIAGAB .AND. A.EQ.B 
+         CTRICD = DIAGCD .AND. C.EQ.D 
+C
+         R = IPNRST(B,1)
+         S = IPNRST(D,2)
+         T = IPNRST(CD,3)
+C
+         CALL ERIPNT(IPOINT,A,B,C,D,IPNTCR,INDXBT)
+C
+         IF (NCCS1 .GT. 0) THEN
+C
+C           IF (DIAGAB .AND. B.GT.A) GO TO 190
+            IF (DIAGCD .AND. D.GT.C) GO TO 190
+C
+            IA   = -1
+            MAXB = KHKTB
+            MAXD = KHKTD
+            DO ICMPA = 1, KHKTA
+            IVARA = IBTEST(ISTBLA,A,NHKTA,ICMPA)
+            IF (IVARA.EQ.0) THEN
+               IA = IA + 1
+               IB = -1
+               IF (CTRIAB) MAXB = ICMPA
+               DO ICMPB = 1, MAXB
+               IVARB = IBTEST(ISTBLB,B,NHKTB,ICMPB)
+               IF (IVARB.EQ.0) THEN
+                  IB = IB + 1
+                  IC = -1
+                  ICMPAB = IADCMP(ICMPA,ICMPB,1)
+                  IODXYZ(1) = IODDCC(IPNTUV(ICMPAB,1,1))
+                  IODXYZ(2) = IODDCC(IPNTUV(ICMPAB,2,1))
+                  IODXYZ(3) = IODDCC(IPNTUV(ICMPAB,3,1))
+                  DO ICMPC = 1, KHKTC
+                  IVARC = IBTEST(ISTBLC,C,NHKTC,ICMPC)
+                  IF (IVARC.EQ.0) THEN
+                     IC = IC + 1
+                     ID = -1
+                     IF (CTRICD) MAXD = ICMPC
+                     DO ICMPD = 1, MAXD
+                     IVARD = IBTEST(ISTBLD,D,NHKTD,ICMPD)
+                     IF (IVARD.EQ.0) THEN
+                        ID = ID + 1
+                        ICMPCD = IADCMP(ICMPC,ICMPD,2)
+                        IODDCD = IODDCC(IPNTUV(ICMPCD,0,2))
+                        DCD = GCONCD .AND. CTRICD.AND.ICMPC.EQ.ICMPD
+                        CALL ERIFRC(IA,IB,IC,ID,
+     &                              SO(1,R,S,T,ICMPAB,ICMPCD,1),
+     &                              IPOINT,NCCS1,
+     &                              DMAT,D2MAT,ID2MAT,D1,
+     &                              IODDCD,IODXYZ,DCD,IPRINT)
+                     END IF
+                     END DO
+                  END IF
+                  END DO
+               END IF
+               END DO
+            END IF
+            END DO
+C
+  190       CONTINUE
+C
+         END IF
+         IF (NCCS2 .GT. 0) THEN
+C
+C           IF (DIAGAB .AND. B.GT.A) GO TO 195
+C           IF (DIAGCD .AND. D.GT.C) GO TO 195
+C           IF (C.GT.A .OR. (C.EQ.A .AND. D.GT.B)) GO TO 195
+C
+            IA = -1
+            MAXB = KHKTB
+            MAXD = KHKTD
+            DO ICMPA = 1, KHKTA
+            IVARA = IBTEST(ISTBLA,A,NHKTA,ICMPA)
+            IF (IVARA.EQ.0) THEN
+               IA = IA + 1
+               IB = -1
+C              IF (CTRIAB) MAXB = ICMPA
+               DO ICMPB = 1, MAXB
+               IVARB = IBTEST(ISTBLB,B,NHKTB,ICMPB)
+               IF (IVARB.EQ.0) THEN
+                  IB = IB + 1
+                  IC = -1
+                  ICMPAB = IADCMP(ICMPA,ICMPB,1)
+                  IODXYZ(1) = IODDCC(IPNTUV(ICMPAB,1,1))
+                  IODXYZ(2) = IODDCC(IPNTUV(ICMPAB,2,1))
+                  IODXYZ(3) = IODDCC(IPNTUV(ICMPAB,3,1))
+                  DO ICMPC = 1, KHKTC
+                  IVARC = IBTEST(ISTBLC,C,NHKTC,ICMPC)
+                  IF (IVARC.EQ.0) THEN
+                     IC = IC + 1
+                     ID = -1
+C                    IF (CTRICD) MAXD = ICMPC
+                     DO ICMPD = 1, MAXD
+                     IVARD = IBTEST(ISTBLD,D,NHKTD,ICMPD)
+                     IF (IVARD.EQ.0) THEN
+                        ID = ID + 1
+                        ICMPCD = IADCMP(ICMPC,ICMPD,2)
+                        IODDCD = IODDCC(IPNTUV(ICMPCD,0,2))
+                        DCD = GCONCD .AND. CTRICD.AND.ICMPC.EQ.ICMPD
+                        CALL ERIFRC(IA,IB,IC,ID,
+     &                              SO(NCCS1+1,R,S,T,ICMPAB,ICMPCD,1),
+     &                              IPOINT(NCCS1+1,1),NCCS2,
+     &                              DMAT,D2MAT,ID2MAT,D2,
+     &                              IODDCD,IODXYZ,DCD,IPRINT)
+                     END IF
+                     END DO
+                  END IF
+                  END DO
+               END IF
+               END DO
+            END IF
+            END DO
+C
+  195       CONTINUE
+         END IF
+C
+      END IF
+      END DO !C
+      END IF
+      END DO !B
+      END IF
+      END DO !A
+C
+      IF (IPRINT .GE. 10) THEN
+         CALL HEADER('GRADEE in ERILBD',-1) 
+         CALL OUTPUT(GRADEE,1,3,1,NUCDEP,3,NUCDEP,1,LUPRI)
+      END IF
+      RETURN
+      END
+C  /* Deck eripnt */
+      SUBROUTINE ERIPNT(IPOINT,A,B,C,D,IPNTCR,INDXBT)
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <mxorb.h>
+#include <aovec.h>
+      INTEGER A,B,C,D
+      DIMENSION IPOINT(NCCS,5), 
+     &          IPNTCR(MAXBCH,4), INDXBT(MXSHEL*MXCONT,0:7)
+#include <cbieri.h>
+#include <ericom.h>
+#include <aobtch.h>
+C
+      IADR = 0
+      DO N = 1, NPQBCS
+         NA = KNDXBT(IPNTCR(N,1)) - 1
+         NB = KNDXBT(IPNTCR(N,2)) - 1
+         NC = KNDXBT(IPNTCR(N,3)) - 1
+         ND = KNDXBT(IPNTCR(N,4)) - 1
+         DO I = 1, NCTFA
+         DO J = 1, NCTFB
+         DO K = 1, NCTFC
+         DO L = 1, NCTFD
+            IADR = IADR + 1
+            IPOINT(IADR,1) = INDXBT(NA + I,A)
+            IPOINT(IADR,2) = INDXBT(NB + J,B)
+            IPOINT(IADR,3) = INDXBT(NC + K,C)
+            IPOINT(IADR,4) = INDXBT(ND + L,D)
+         END DO
+         END DO
+         END DO
+         END DO
+      END DO
+C
+      IADR = 0
+      DO N = 1, NPQBCS
+         DO I = 1, NCTFA
+         DO J = 1, NCTFB
+         DO K = 1, NCTFC
+         DO L = 1, NCTFD
+            IADR = IADR + 1
+            IPOINT(IADR,5) = (I - 1)*NCTFB + J
+     &                     + (K - 1)*NCTFAB*NCTFD
+     &                     + (L - 1)*NCTFAB 
+     &                     + (N - 1)*NCTFPQ
+         END DO
+         END DO
+         END DO
+         END DO
+      END DO
+      RETURN
+      END
+C  /* Deck erifrc */
+      SUBROUTINE ERIFRC(IA,IB,IC,ID,SO,IPOINT,NINTS,DMAT,D2MAT,ID2MAT,
+     &                  DFAC,IODDAB,IODXYZ,DCD,IPRINT)
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <mxorb.h>
+#include <aovec.h>
+      PARAMETER (D4=4.0D0, D2=2.0D0, D1=1.0D0, DP5=0.5D0, DP25=0.25D0)
+      LOGICAL DCD,  NOTRAS
+      DIMENSION SO(NCCT*KHKTAB*KHKTCD,3,4),
+     &          IPOINT(NCCS,5), 
+     &          DMAT(NBASE,NBASE), 
+     &          D2MAT(NBASE,NBASE,NPDIMB,NPDIMA),
+     &          ID2MAT(MXCORB,2),
+     &          IODXYZ(3)
+#include <cbieri.h>
+#include <ericom.h>
+#include <eribuf.h>
+#include <aobtch.h>
+#include <hertop.h>
+#include <nuclei.h>
+#include <symmet.h>
+#include <energy.h>
+C    
+      IF (IODDAB.EQ.IODXYZ(1) .OR. IODDAB.EQ.IODXYZ(2) 
+     &                        .OR. IODDAB.EQ.IODXYZ(3)) THEN
+C
+         NOTRAS = .TRUE.
+C
+         DO I = 1, NINTS
+C
+            KA = IPOINT(I,1) + IA
+            KB = IPOINT(I,2) + IB
+            KC = IPOINT(I,3) + IC
+            KD = IPOINT(I,4) + ID
+            IF (CCRUN) THEN
+               PMAT = DFAC*D2MAT(KD,KC,ID2MAT(KB,2),ID2MAT(KA,1))
+               IF (DCD .OR. KC.EQ.KD) PMAT = DP5*PMAT
+            ELSE
+               PMAT = DFAC*D4*(DMAT(KA,KB)*DMAT(KC,KD) 
+     &                  - DP25*DMAT(KA,KC)*DMAT(KB,KD)
+     &                  - DP25*DMAT(KA,KD)*DMAT(KB,KC))
+               IF (KA .EQ. KB)        PMAT = DP5*PMAT
+               IF (DCD .OR. KC.EQ.KD) PMAT = DP5*PMAT
+            END IF
+C
+            JA = 3*ICNTAO(KA) - 3
+            JB = 3*ICNTAO(KB) - 3
+            JC = 3*ICNTAO(KC) - 3
+            JD = 3*ICNTAO(KD) - 3
+C
+            IF (NOTRAS) THEN
+               J = IPOINT(I,5)
+               DO ICOOR = 1, 3
+               IF (IODDAB .EQ. IODXYZ(ICOOR)) THEN
+                  ISCORA = IPTCNT(JA+ICOOR,0,1)
+                  ISCORB = IPTCNT(JB+ICOOR,0,1)
+                  ISCORC = IPTCNT(JC+ICOOR,0,1)
+                  ISCORD = IPTCNT(JD+ICOOR,0,1)
+                  IF (ISCORA.GT.0) GRADEE(ISCORA) 
+     &                           = GRADEE(ISCORA) + PMAT*SO(J,ICOOR,1)
+                  IF (ISCORB.GT.0) GRADEE(ISCORB) 
+     &                           = GRADEE(ISCORB) + PMAT*SO(J,ICOOR,2)
+                  IF (ISCORC.GT.0) GRADEE(ISCORC) 
+     &                           = GRADEE(ISCORC) + PMAT*SO(I,ICOOR,3)
+                  IF (ISCORD.GT.0) GRADEE(ISCORD) 
+     &                           = GRADEE(ISCORD) + PMAT*SO(I,ICOOR,4)
+               END IF
+               END DO
+            ELSE
+               DO ICOOR = 1, 3
+               IF (IODDAB .EQ. IODXYZ(ICOOR)) THEN
+                  FA = PMAT*SO(J,ICOOR,1)
+                  FB = PMAT*SO(I,ICOOR,2)
+                  FC = PMAT*SO(I,ICOOR,3)
+                  FD = - FA - FB - FC
+                  ISCORA = IPTCNT(JA+ICOOR,0,1)
+                  ISCORB = IPTCNT(JB+ICOOR,0,1)
+                  ISCORC = IPTCNT(JC+ICOOR,0,1)
+                  ISCORD = IPTCNT(JD+ICOOR,0,1)
+                  IF (ISCORA.GT.0) GRADEE(ISCORA) = GRADEE(ISCORA) + FA 
+                  IF (ISCORB.GT.0) GRADEE(ISCORB) = GRADEE(ISCORB) + FB 
+                  IF (ISCORC.GT.0) GRADEE(ISCORC) = GRADEE(ISCORC) + FC 
+                  IF (ISCORD.GT.0) GRADEE(ISCORD) = GRADEE(ISCORD) + FD 
+               END IF
+               END DO
+            END IF
+         END DO
+      END IF
+      RETURN
+      END
+C  /* Deck nrdint */
+      FUNCTION NRDINT(INDEX,DAB,DCD,DPQ)
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+      LOGICAL NRDINT, DAB, DCD, DPQ
+#include <eribuf.h>
+#include <ibtpar.h>
+#include <ibtfun.h>
+      IBIT1 = 2**NBITS - 1
+      I = IBTAND(IBTSHR(INDEX,3*NBITS),IBIT1)
+      J = IBTAND(IBTSHR(INDEX,2*NBITS),IBIT1)
+      K = IBTAND(IBTSHR(INDEX,  NBITS),IBIT1)
+      L = IBTAND(       INDEX,         IBIT1)
+      IJ = MAX(I,J)*IBIT1 + I + J
+      KL = MAX(K,L)*IBIT1 + K + L
+      NRDINT = .NOT.((DAB .AND. I.GT.J) .OR.
+     &               (DCD .AND. K.GT.L) .OR.
+     &               (DPQ .AND. IJ.GT.KL))
       RETURN
       END

@@ -3,8 +3,7 @@
      &        GCONA,  GCONB,  GCONC,  GCOND, GCONAB, GCONCD, 
      &        DIAGAB, DIAGCD, TKMPAB,TKMPCD,TCMPAB, TCMPCD,
      &        FIRST,  LAST,   LSTCLS, DIACLS, SYMTRA,
-     &        DOPTH1, DOPTH2, GDER, NEWDER, BDER,
-     &        UNDIFF
+     &        DOPTH1, DOPTH2, GDER,  BDER, UNDIFF
       COMMON /ERICOM/ SCRMAB, SCRMCD,
      &                NHKTA,  NHKTB,  NHKTC,  NHKTD,
      &                JMAXA,  JMAXB,  JMAXC,  JMAXD,
@@ -43,6 +42,6 @@
      &                IHHXYZ, IHCXYZ, ICHXYZ, ICCXYZ,
      &                FIRST,  LAST,  LSTCLS, MAXDER, SYMTRA,
      &                DOPTH1, DOPTH2, IPATH, 
-     &                GDER,   NCSQ1,  NCSQ2, NEWDER, BDER, DOERP,
+     &                GDER,   NCSQ1,  NCSQ2, BDER, DOERP,
      &                IODDPT(3) , NPDIMA, NPDIMB, UNDIFF,  NCORS,
      &                NPERTS

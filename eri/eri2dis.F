@@ -29,10 +29,9 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2dis.F,v 1.2 2001-02-12 18:17:54 vebjornb Exp $
+C$Id: eri2dis.F,v 1.3 2001-04-03 14:25:11 vebjornb Exp $
 C
 #include <single.h>
-C
 C  /* Deck eridi1 */
       SUBROUTINE ERIDI1(KODCL1,KODCL2,
      &                  KODBC1,KODBC2,KRDBC1,KRDBC2,
@@ -178,7 +177,6 @@ C
       CCRUN  = .TRUE.
       NPDIMA = 0
       NPDIMB = 0
-c     write(2,*) 'in eridi2: undiff,gder,bder=',undiff,gder,bder
 C
       NEWDIS = .TRUE.
 C
@@ -249,7 +247,7 @@ C
       IF ( IPRINT .GT. 2 ) THEN
          CALL HEADER('Output from ERIDI2',2)
          WRITE (LUPRI,'(2X,I3,A,8I5/,(40X,8I5))')
-     &         NDISTR,' distributions in this HERMIT call:',
+     &         NDISTR,' distributions in this ERI call:',
      &         (INDEXA(I),I=1,NDISTR)
       ENDIF
 C
@@ -466,24 +464,25 @@ C  /* Deck pickao */
 #include <erisel.h>
 #include <aobtch.h>
 C
-      DO 100 J = 1, 4
-      DO 100 I = 1, NAOBCH
+      DO J = 1, 4
+      DO I = 1, NAOBCH
          ACTVBT(I,J) = .TRUE.
-  100 CONTINUE
+      END DO
+      END DO
 C
 C     First orbital
 C
-      DO 200 J = 1, 4
+      DO J = 1, 4
          NSET = NSELCT(J)
          IF (NSET .GT. 0) THEN
-            DO 300 I = 1, NAOBCH
+            DO I = 1, NAOBCH
                ACTVBT(I,J) = .FALSE.
-  300       CONTINUE
-            DO 400 I = 1, NSET
+            END DO
+            DO I = 1, NSET
                ACTVBT(NACTAO(I,J),J) = .TRUE.
-  400       CONTINUE
+            END DO
          END IF
-  200 CONTINUE
+      END DO
 C
       IF (IPRINT .GT. 3) THEN
          CALL HEADER('Output from PICKAO',-1)
@@ -492,9 +491,9 @@ C
      &         ' Number of active AO batches for each electron:',
      &         (NSELCT(I),I=1,4)
             WRITE (LUPRI,'(1X,A,/)') ' ACTVBT in PICKAO:'
-            DO 500 I = 1, NAOBCH
+            DO I = 1, NAOBCH
                WRITE (LUPRI,'(10X,I5,5X,4L5))') I, (ACTVBT(I,J),J=1,4)
-  500       CONTINUE
+            END DO
          ELSE
             WRITE (LUPRI,'(1X,A)') ' All AO batches active.'
          END IF
@@ -526,7 +525,7 @@ C
          NDISTR = 0
          NACDST = 0
          FIRST  = .TRUE.
-         DO 100 I = 1, NAOBCH
+         DO I = 1, NAOBCH
             IF (ACTVBT(I,1)) THEN
                NDISTR = NDISTR + NORBBT(I)
                IF (NDISTR .GT. MXDIST) THEN
@@ -543,6 +542,7 @@ C
                   NHKDST = NHKTBT(I)
                   KHKDST = KHKTBT(I)
                   MLTDST = MULTBT(I)
+                  NCTDST = NCTFBT(I)
 C                 NPRDST = NPRFBT(I)
                   ISTABL = ISTBBT(I)
                   FIRST = .FALSE.
@@ -562,23 +562,26 @@ C    &                   NPRFBT(I).NE.NPRDST .OR.
                   END IF
                END IF
             END IF
-  100    CONTINUE
+         END DO
 C
          IDIST = 0
-         DO 200 IREP = 0, MAXREP
-            IA = 0
-            DO 300 ICMP = 1, KHKDST
-            IF(IBTAND(ISTABL,IBTXOR(IREP,ISYMAO(NHKDST,ICMP))).EQ.0)THEN
-               IA = IA + 1
-               DO 400 J = 1, NACDST
-                  IDIST = IDIST + 1
-                  INDA = INDXBT(KNDXBT(IACDST(J)),IREP)+IA-1
-                  INDDST(IDIST) = INDA
-                  INDXDS(INDA) = IDIST
-  400          CONTINUE
-            END IF
-  300       CONTINUE
-  200    CONTINUE
+         DO ICNT = 1, NCTDST 
+            DO IREP = 0, MAXREP
+               IA = 0
+               DO ICMP = 1, KHKDST
+               IF(IBTAND(ISTABL,IBTXOR(IREP,ISYMAO(NHKDST,ICMP))) 
+     &            .EQ. 0) THEN
+                  IA = IA + 1
+                  DO J = 1, NACDST
+                     IDIST = IDIST + 1
+                     INDA = INDXBT(KNDXBT(IACDST(J))-1+ICNT,IREP)+IA-1
+                     INDDST(IDIST) = INDA
+                     INDXDS(INDA) = IDIST
+                  END DO
+               END IF
+               END DO
+            END DO
+         END DO
 C
       ELSE
          NDISTR = 1
@@ -735,10 +738,10 @@ C
             WRITE (LUPRI,'(/,2X,A,I5)')
      &         'Number of calls to integral program ',MXCALL
             IF (IPRINT .GT. 2) THEN
-               DO 400 I = 1, MXCALL
+               DO I = 1, MXCALL
                   WRITE (LUPRI,'(5X,5I5)')
      &                I, ICLFRS(I), ICLLST(I), ICLBCH(I), ICLDST(I)
-  400          CONTINUE
+               END DO
             END IF
          END IF
       ELSE IF (ICLX2.EQ.0) THEN
@@ -747,22 +750,22 @@ C
          NSELCT(3) = 0
          NSELCT(4) = 0
          IFIRST = ICLFRS(ICLX)
-         DO 600 I = 1, ICLBCH(ICLX)
+         DO I = 1, ICLBCH(ICLX)
             NACTAO(I,1) = KAOSRT(IFIRST + I - 1)
-  600    CONTINUE
+         END DO
       ELSE 
          NSELCT(1) = ICLBCH(ICLX1)
          NSELCT(2) = ICLBCH(ICLX2)
          NSELCT(3) = 0
          NSELCT(4) = 0
          IFIRST = ICLFRS(ICLX1)
-         DO 610 I = 1, ICLBCH(ICLX1)
+         DO I = 1, ICLBCH(ICLX1)
             NACTAO(I,1) = KAOSRT(IFIRST + I - 1)
-  610    CONTINUE
+         END DO
          IFIRST = ICLFRS(ICLX2)
-         DO 620 I = 1, ICLBCH(ICLX2)
+         DO I = 1, ICLBCH(ICLX2)
             NACTAO(I,2) = KAOSRT(IFIRST + I - 1)
-  620    CONTINUE
+         END DO
 C
       END IF
 C

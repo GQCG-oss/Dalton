@@ -29,12 +29,11 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2sym.F,v 1.2 2001-02-12 18:17:55 vebjornb Exp $
+C$Id: eri2sym.F,v 1.3 2001-04-03 14:25:13 vebjornb Exp $
 C
 #include <single.h>
-C
 C  /* Deck erisym */
-      SUBROUTINE ERISYM(AO,SO,ICRB,IODDCC,IPNTUV,IPRINT)
+      SUBROUTINE ERISYM(AO,SO,IATOM,ICRB,IODDCC,IPNTUV,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
@@ -72,6 +71,9 @@ C
       CALL ERITRA(SMAT,MLTPS,ISTBLS)
       CALL ERITRA(TMAT,MLTPT,ISTBLT)
 C
+      IPARE = 0
+      IF (GDER.AND.ICRB.GT.0) IPARE = ISYMAX(ICRB,1)
+C
 C     Run over components
 C     ===================
 C
@@ -83,6 +85,7 @@ C
          IF (TKMPAB) MAXB = ICOMPA
       DO 300 ICOMPB = 1, MAXB
          ICMPAB = ICMPAB + 1
+         IODDAB = IODDCC(IPNTUV(ICMPAB,ICRB,1))
 C
          ICMPCD = 0
       DO 300 ICOMPC = 1, KHKTC
@@ -90,15 +93,7 @@ C
       DO 300 ICOMPD = 1, MAXD
          ICMPCD = ICMPCD + 1
 C
-         IODDAB = IODDCC(IPNTUV(ICMPAB,ICRB,1))
-         IF (BDER) THEN
-            JODDAB = IODDCC(IPNTUV(ICMPAB,0,1))
-         ELSE
-            JODDAB = IODDAB 
-         END IF
-         IODDCD = IODDCC(IPNTUV(ICMPCD,0,2))
-C
-         IF ((IODDAB.EQ.IODDCD).OR.(JODDAB.EQ.IODDCD)) THEN
+         IF (IODDAB.EQ. IODDCC(IPNTUV(ICMPCD,0,2))) THEN
             IF (IPRINT .GT. 15) THEN
                WRITE (LUPRI,'(1X,A,2I5)')
      &            ' AO integrals for components ',ICMPAB,ICMPCD
@@ -112,6 +107,11 @@ C
             IPARB  = ISYMAO(NHKTB,ICOMPB)
             IPARC  = ISYMAO(NHKTC,ICOMPC)
             IPARD  = ISYMAO(NHKTD,ICOMPD)
+            IF (GDER) THEN
+               IF (IATOM.EQ.2) IPARB = IBTXOR(IPARB,IPARE)
+               IF (IATOM.EQ.3) IPARC = IBTXOR(IPARC,IPARE)
+               IF (IATOM.EQ.4) IPARD = IBTXOR(IPARD,IPARE)
+            END IF
 C
 C           Transform T
 C

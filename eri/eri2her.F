@@ -29,10 +29,9 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2her.F,v 1.2 2001-02-12 18:17:54 vebjornb Exp $
+C$Id: eri2her.F,v 1.3 2001-04-03 14:25:12 vebjornb Exp $
 C
 #include <single.h>
-C
 C  /* Deck erigam */
       SUBROUTINE ERIGAM(RJ000,FACINT,ALPHA,COORPQ,WORK,LWORK,IPRINT)
 C
@@ -111,9 +110,9 @@ C
                INDADR(NODS) = I
             ELSE
                FACINT(I) = D0
-               do j = 0, jmax
-                    rj000(i,j) = d0
-               end do
+               DO J = 0, JMAX
+                  RJ000(I,J) = D0
+               END DO
             END IF
   600    CONTINUE
 C

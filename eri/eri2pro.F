@@ -1,7 +1,4 @@
-C
-C...   Copyright (c) 1997 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
+C C...   Copyright (c) 1997 by the authors of Dalton (see below).  C...   All Rights Reserved.  C...
 C...   The source code in this file is part of 
 C...   "Dalton, an ab initio electronic structure program, Release 1.0
 C...   (1997), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
@@ -29,8 +26,9 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2pro.F,v 1.1 2001-02-12 18:24:07 vebjornb Exp $
+C$Id: eri2pro.F,v 1.2 2001-04-03 14:25:13 vebjornb Exp $
 C
+#include <single.h>
 C  /* Deck eripro */
       SUBROUTINE ERIPRO(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,DOGDER,DOBDER,
      &                  IPRFCK,CCFBT,INDXBT,WORK,LWORK)
@@ -69,6 +67,7 @@ C
       END IF
 C
       THRSH  = MAX(THRS,1.00D-15)
+      NDMAT  = NDMT
 C
       GDER = DOGDER
       BDER = DOBDER 

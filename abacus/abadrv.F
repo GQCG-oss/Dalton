@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abadrv.F,v 1.4 2001-03-28 06:54:53 haettig Exp $
+C$Id: abadrv.F,v 1.5 2001-04-03 14:25:07 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -178,7 +178,9 @@ C     *********************************
 C     ***** Fast Multipole Method *****
 C     *********************************
 C
-CCH   CALL FMMDRV(WORK(KLAST),LWRK)
+      IF (.FALSE.) THEN
+         CALL FMMDRV(WORK(KLAST),LWRK)
+      END IF
 C
 C     *****************************************************************
 C     ***** Sort undifferentiated integrals as Dirac distribution *****

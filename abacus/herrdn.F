@@ -1,4 +1,4 @@
-C
+
 C...   Copyright (c) 1997 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
@@ -29,11 +29,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: herrdn.F,v 1.6 2001-03-28 07:33:46 ruud Exp $
+C$Id: herrdn.F,v 1.7 2001-04-03 14:25:08 vebjornb Exp $
 C
 #include <single.h>
 #ifdef REVISION_LOG
 $Log: not supported by cvs2svn $
+Revision 1.6  2001/03/28 07:33:46  ruud
+Added a relativistically contracted ANO basis set. Changed a couple of
+dimension and fixed a couple of typo's in the last cc_grad0.F.
+
 Revision 1.5  2001/03/28 06:54:54  haettig
 changes due to merge with Trygves version, most changes for FMM and
 symmetrization of one-electron derivatives integrals.

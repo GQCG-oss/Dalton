@@ -29,13 +29,12 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2car2.F,v 1.3 2001-02-13 18:35:03 vebjornb Exp $
+C$Id: eri2car2.F,v 1.4 2001-04-03 14:25:11 vebjornb Exp $
 C
 #include <single.h>
-C
 C  /* Deck cr2drv */
       SUBROUTINE CR2DRV(AOINT,HCINT,INDHER,IODDHC,IODD34,IODDCC,
-     &                  LMNPWR,IPNTUV,COOR34,EXP34,CSQ,NCENTR,
+     &                  LMNPWR,IPNTUV,COOR34,EXP34,CSQ,CCFBT,NCENTR,
      &                  NDER3,NDER4,NDIMD,WORK,LWORK,IPRINT)
 C
 C     A. Halkier & T. Helgaker 4/2 1999. Modified to do
@@ -49,7 +48,7 @@ C
      &          INDHER(0:JTOP,0:JTOP,0:JTOP),
      &          IODDHC(NRTOP), IODD34(NRTOP), IODDCC(NRTOP),
      &          LMNPWR(KCKMAX,NHKMAX,3), IPNTUV(KC2MAX,0:NRDER,2),
-     &          COOR34(NPP34,3), EXP34(NPP34,3), CSQ(*),
+     &          COOR34(NPP34,3), EXP34(NPP34,3), CSQ(*), CCFBT(*),
      &          NCENTR(NCCT,4),
      &          WORK(LWORK)
 #include <ericom.h>
@@ -67,19 +66,13 @@ C               |
 C               | ECOEF  | HPI    | P3     | P4
 C                        | EUV    | ETUV   | CCPRIM
 C
-         IF (NEWDER) THEN
-            JMXD3  = JMAX3  + NDER3
-            JMXD4  = JMAX4  + NDER4
-            JMXD34 = JMAX34 + NDER3 + NDER4 
-            KCKT34 = MAX(NPAIRS(JMAX3+1)*NPAIRS(JMXD4+1),
-     &                   NPAIRS(JMXD3+1)*NPAIRS(JMAX4+1))
-            KHC3 = NPAIRS(JMAX3+1)*NPAIRS(JMXD3+1)
-            KHC4 = NPAIRS(JMAX4+1)*NPAIRS(JMXD4+1)
-         ELSE
-            JMXD3  = JMAX3
-            JMXD4  = JMAX4
-            JMXD34 = JMAX34
-         END IF
+         JMXD3  = JMAX3  + NDER3
+         JMXD4  = JMAX4  + NDER4
+         JMXD34 = JMAX34 + NDER3 + NDER4 
+         KCKT34 = MAX(NPAIRS(JMAX3+1)*NPAIRS(JMXD4+1),
+     &                NPAIRS(JMXD3+1)*NPAIRS(JMAX4+1))
+         KHC3 = NPAIRS(JMAX3+1)*NPAIRS(JMXD3+1)
+         KHC4 = NPAIRS(JMAX4+1)*NPAIRS(JMXD4+1)
 C
          LCCONT = 0
          LCSINT = 0
@@ -98,8 +91,9 @@ C
          LCA4   = 0
          LCV4   = 0
          LC34   = 0
+         LCPINT = 0
 C
-         LFIRST = 6*KHKT12
+         LFIRST = KHKT12
 C
          IF (KHKT34 .GT. 1 .OR. MAXDER .GT.0) THEN
             IF (SPHR34) THEN
@@ -136,16 +130,19 @@ C              END IF
             END IF 
          END IF
 C
-         LTOTAL = LCCONT + MAX(
+         IF (GCON34) LCPINT = NPRF4*NCTF3*NCTF12*NPQBCX
+C
+         LTOTAL = LFIRST + LCCONT 
+     &                   + MAX(
      &                         LCSINT + LFCSNT + LFAONT + LC34,
-     &                         LECOEF + MAX(
-     &                                      LHPI + LP3 + LP4,
-     &                                      LEUV+LETUV+LCCPRM+LFIRST
+     &                         LECOEF + MAX(LHPI + LP3 + LP4,
+     &                                      LEUV+LETUV+LCCPRM+LCPINT
      &                                     )
      &                        )
          IF (LTOTAL.GT.LWORK) CALL STOPIT('CR2DRV',' ',LTOTAL,LWORK)
 C
-         KODDKC = 1
+         KFIRST = 1
+         KODDKC = KFIRST + LFIRST 
          KCCONT = KODDKC + 4*KC2MAX
          KCSINT = KCCONT + LCCONT
          KFCSNT = KCSINT + LCSINT
@@ -161,9 +158,9 @@ C
          KEUV   = KECOEF + LECOEF
          KETUV  = KEUV   + LEUV
          KCCPRM = KETUV  + LETUV
+         KCPINT = KCCPRM + LCCPRM
          KCCPDE = KCCPRM + LCCPRM
          KCCRDE = KCCPDE + LCCPRD
-         KFIRST = KCCRDE + LCCPRD
 C
          IF (IELCT2 .EQ. 1) THEN
             ICORCD = 1
@@ -173,29 +170,17 @@ C
             IEXPCD = 3
          END IF
 C
-         IF (NEWDER) THEN
-            CALL CR2TWO(AOINT,WORK(KFAONT),
-     &                  HCINT,INDHER,IODDHC,IODD34,IODDCC,WORK(KODDKC),
-     &                  WORK(KCCPDE),WORK(KCCRDE),WORK(KCCPRM),
-     &                  WORK(KFIRST),WORK(KCCONT),
-     &                  WORK(KCSINT),WORK(KFCSNT),
-     &                  WORK(KECOEF),WORK(KEUV),WORK(KETUV),
-     &                  LMNPWR,IPNTUV,COOR34,EXP34,
-     &                  CSQ,WORK(KCA3),WORK(KCV3),WORK(KCA4),WORK(KCV4),
-     &                  NCENTR,WORK(KHPI),WORK(KP3),WORK(KP4),
-     &                  NDER3,NDER4,NDIMD,IPRINT)
-         ELSE
-            CALL CR2TWX(AOINT,WORK(KFAONT),
-     &                  HCINT,INDHER,IODDHC,IODD34,IODDCC,WORK(KODDKC),
-     &                  WORK(KCCPDE),WORK(KCCRDE),WORK(KCCPRM),
-     &                  WORK(KFIRST),WORK(KCCONT),
-     &                  WORK(KCSINT),WORK(KFCSNT),
-     &                  WORK(KECOEF),WORK(KEUV),WORK(KETUV),
-     &                  LMNPWR,IPNTUV,COOR34,EXP34,
-     &                  CSQ,WORK(KCA3),WORK(KCV3),WORK(KCA4),WORK(KCV4),
-     &                  NCENTR,WORK(KHPI),WORK(KP3),WORK(KP4),
-     &                  NDIMD,IPRINT)
-         END IF
+         CALL CR2TWO(AOINT,WORK(KFAONT),
+     &               HCINT,INDHER,IODDHC,IODD34,IODDCC,WORK(KODDKC),
+     &               WORK(KCCPDE),WORK(KCCRDE),WORK(KCCPRM),
+     &               WORK(KFIRST),WORK(KCCONT),
+     &               WORK(KCSINT),WORK(KFCSNT),
+     &               WORK(KECOEF),WORK(KEUV),WORK(KETUV),
+     &               LMNPWR,IPNTUV,COOR34,EXP34,CSQ,
+     &               WORK(KCA3),WORK(KCV3),WORK(KCA4),WORK(KCV4),
+     &               NCENTR,CCFBT,WORK(KCPINT),
+     &               WORK(KHPI),WORK(KP3),WORK(KP4),
+     &               NDER3,NDER4,NDIMD,IPRINT)
 C
       RETURN
       END
@@ -205,8 +190,9 @@ C  /* Deck cr2two */
      &                  CCPDER,CCRDER,
      &                  CCPRIM,FRSTUV,CCONT,CSINT,FCSINT,
      &                  ECOEF,EUV,ETUV,LMNPWR,IPNTUV,
-     &                  COOR34,EXP34,CSQ,
-     &                  CSA3,CSV3,CSA4,CSV4,NCENTR,
+     &                  COOR34,EXP34,
+     &                  CSQ,CSA3,CSV3,CSA4,CSV4,NCENTR,
+     &                  CCFBT,CPINT,
      &                  HPI,P3,P4,
      &                  NDER3,NDER4,NDIMD,IPRINT)
 C
@@ -215,14 +201,14 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-      LOGICAL SAMMRY, FLEVEL, FRSTUV(KHKT12),
+      LOGICAL FLEVEL, FRSTUV(KHKT12),
      &        FAOINT(KHKT12,KHKT34), FCSINT(KHKT12,KHKT4),
      &        BDER3, BDER4
       DIMENSION AOINT(NCCT,KHKTAB,KHKTCD,NDIMD),
-     &          HCINT(NPP34,NCTF12,NTUV34,KHKT12),
+     &          HCINT(NCTF12,NPP34,NTUV34,KHKT12),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP), IODDKC(KC2MAX),
      &          IODDHC(NRTOP), IODD34(NRTOP), IODDCC(NRTOP),
-     &          CCPRIM(NPP34,NCTF12,KHKT12),
+     &          CCPRIM(NCTF12,NPP34,KHKT12),
      &          CCONT(NCCCC,KHKT12,KCKT34),
      &          CSINT(NCCCC,KHKT12,KHKT4),
      &          ECOEF(NPP34,0:JMXD3+JMXD4,0:JMXD3,0:JMXD4,3),
@@ -232,7 +218,8 @@ C
      &          HPI(NPP34), P3(NPP34,3), P4(NPP34,3),
      &          CSQ(NCSQ1,NCSQ2),  NCENTR(NCCT,4),
      &          CSA3(KHKT3,KCKT3), CSV3(NCCCC,KHKT3,KCKT3), 
-     &          CSA4(KHKT4,KCKT4), CSV4(NCCCC,KHKT4,KCKT4)
+     &          CSA4(KHKT4,KCKT4), CSV4(NCCCC,KHKT4,KCKT4),
+     &          CCFBT(*), CPINT(*)
 #include <ericom.h>
 #include <eriao.h>
 #include <hertop.h>
@@ -241,14 +228,11 @@ C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR2TWO','*',103)
 C
       IF (MAXDER.EQ.0 .AND. KHKT34 .EQ. 1) THEN
-         SAMMRY = .FALSE.
-         DO 20 ICMP12 = 1, KHKT12
+         DO ICMP12 = 1, KHKT12
             FRSTUV(ICMP12) = IODDHC(IPNTUV(ICMP12,0,IELCT1)).NE.0
-   20    CONTINUE
-         IODKC = 0
-         NDIM2 = 1
-         CALL CR2SEG(HCINT,AOINT,IODDCC,IPNTUV,IODKC,
-     &               SAMMRY,FRSTUV,NCCT,NDIM2,IPRINT)
+         END DO
+         CALL ERICT2(HCINT,AOINT,CCFBT(ICMAT3),CCFBT(ICMAT4),CPINT,
+     &               NCCT,1,IODDCC,IPNTUV,0,FRSTUV,IPRINT)
       ELSE
          NDER = MAX(NDER3,NDER4)
          IF (NDER.EQ.0) THEN
@@ -331,24 +315,20 @@ C                 ********************************
 C                 ***** Contracted Integrals *****
 C                 ********************************
 C
-                  SAMMRY = .FALSE.
                   IF (SPHR34) THEN
-                     NDIM2 = 1
-                     CALL CR2SEG(CCPRIM,CCONT(1,1,ICMP34),IODDCC,IPNTUV,
-     &                           IODDKC(ICMP34),SAMMRY,FRSTUV,NCCCC,
-     &                           NDIM2,IPRINT)
+                     CALL ERICT2(CCPRIM,CCONT(1,1,ICMP34),CCFBT(ICMAT3),
+     &                           CCFBT(ICMAT4),CPINT,NCCCC,1,IODDCC,
+     &                           IPNTUV,IODDKC(ICMP34),FRSTUV,IPRINT)
+                  ELSE IF (IELCT2.EQ.2) THEN
+                     CALL ERICT2(CCPRIM,AOINT(1,1,ICMP34,1),
+     &                           CCFBT(ICMAT3),CCFBT(ICMAT4),CPINT,
+     &                           NCCT,1,IODDCC,IPNTUV,IODDKC(ICMP34),
+     &                           FRSTUV,IPRINT)
                   ELSE
-                     IF (IELCT2.EQ.2) THEN
-                        NDIM2 = 1
-                        CALL CR2SEG(CCPRIM,AOINT(1,1,ICMP34,1),IODDCC,
-     &                              IPNTUV,IODDKC(ICMP34),SAMMRY,FRSTUV,
-     &                              NCCT,NDIM2,IPRINT)
-                     ELSE
-                        NDIM2 = KHKT34
-                        CALL CR2SEG(CCPRIM,AOINT(1,ICMP34,1,1),IODDCC,
-     &                              IPNTUV,IODDKC(ICMP34),SAMMRY,FRSTUV,
-     &                              NCCT,NDIM2,IPRINT)
-                     END IF
+                     CALL ERICT2(CCPRIM,AOINT(1,1,ICMP34,1),
+     &                           CCFBT(ICMAT3),CCFBT(ICMAT4),CPINT,
+     &                           NCCT,KHKT34,IODDCC,IPNTUV,
+     &                           IODDKC(ICMP34),FRSTUV,IPRINT)
                   END IF
   300          CONTINUE
   200       CONTINUE
@@ -370,12 +350,12 @@ C
                      IC3 = J3 - NHKT3
                      IC4 = J4 - NHKT4
                      IDER = IDER + 1
-                     IF (.NOT.BDER) THEN
-                        IODX = IODDCC(INDHER(IX3+IX4,IY3+IY4,IZ3+IZ4))
-                     ELSE
+                     IF (BDER) THEN
                         IODX = IODDCC(INDHER(IY3+IY4+IZ3+IZ4,
      &                                       IX3+IX4+IZ3+IZ4,
      &                                       IX3+IX4+IY3+IY4))
+                     ELSE
+                        IODX = IODDCC(INDHER(IX3+IX4,IY3+IY4,IZ3+IZ4))
                      END IF
                      BDER3 = BDER .AND. NDR3 .GT. 0 
                      BDER4 = BDER .AND. NDR4 .GT. 0 
@@ -417,188 +397,6 @@ C
       END IF
       RETURN
       END
-C  /* Deck cr2twx */
-      SUBROUTINE CR2TWX(AOINT,FAOINT,
-     &                  HCINT,INDHER,IODDHC,IODD34,IODDCC,IODDKC,
-     &                  CCPDER,CCRDER,
-     &                  CCPRIM,FRSTUV,CCONT,CSINT,FCSINT,
-     &                  ECOEF,EUV,ETUV,LMNPWR,IPNTUV,
-     &                  COOR34,EXP34,CSQ,
-     &                  CSA3,CSV3,CSA4,CSV4,NCENTR,
-     &                  HPI,P3,P4,
-     &                  NDIMD,IPRINT)
-C
-C     A. Halkier & T. Helgaker 4/2 1999. Modified to do
-C     derivative integrals as well, as determined by MAXDER.
-C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-      PARAMETER (D1 = 1.0D0)
-      INTEGER T, U, V
-      LOGICAL SAMMRY,  FLEVEL, FRSTUV(KHKT12,6),
-     &        FAOINT(KHKT12,KHKT34), FCSINT(KHKT12,KHKT4),BDER3,BDER4
-      DIMENSION AOINT(NCCT,KHKTAB,KHKTCD,NDIMD),
-     &          HCINT(NPP34,NCTF12,NTUV34,KHKT12),
-     &          INDHER(0:JTOP,0:JTOP,0:JTOP), IODDKC(KC2MAX,0:3),
-     &          IODDHC(NRTOP), IODD34(NRTOP), IODDCC(NRTOP),
-     &          CCPRIM(NPP34,NCTF12,KHKT12,NDIMD),
-     &          CCPDER(NPP34,NCTF12,KHKT12,3),
-     &          CCRDER(NPP34,NCTF12,KHKT12,3),
-     &          CCONT(NCCCC,KHKT12,KCKT34,NDIMD),
-     &          CSINT(NCCCC,KHKT12,KHKT4),
-     &          ECOEF(NPP34,0:JMXD3+JMXD4,0:JMXD3,0:JMXD4,3,MAXDER+1),
-     &          EUV(NPP34,2*MAXDER+1), ETUV(NPP34,0:3*MAXDER),
-     &          LMNPWR(KCKMAX,NHKMAX,3), IPNTUV(KC2MAX,0:NRDER,2),
-     &          COOR34(NPP34,3), EXP34(NPP34,3), 
-     &          HPI(NPP34), P3(NPP34,3), P4(NPP34,3),
-     &          CSQ(NCSQ1,NCSQ2), NCENTR(NCCT,4),
-     &          CSA3(KHKT3,KCKT3), CSV3(NCCCC,KHKT3,KCKT3), 
-     &          CSA4(KHKT4,KCKT4), CSV4(NCCCC,KHKT4,KCKT4)
-#include <ericom.h>
-#include <eriao.h>
-#include <hertop.h>
-#include <ibtfun.h>
-C
-      IF (IPRINT .GT. 5) CALL TITLER('Output from CR2TWX','*',103)
-C
-      IF (MAXDER.EQ.0 .AND. KHKT34 .EQ. 1) THEN
-         SAMMRY = .FALSE.
-         IODKC = 0
-         DO 20 ICMP12 = 1, KHKT12
-            FRSTUV(ICMP12,1) = IODDHC(IPNTUV(ICMP12,0,IELCT1)).NE.0
-   20    CONTINUE
-         NDIM2 = 1
-         CALL CR2SEG(HCINT,AOINT,IODDCC,IPNTUV,IODKC,
-     &               SAMMRY,FRSTUV,NCCT,NDIM2,IPRINT)
-      ELSE
-C
-C        Hermite-to-Cartesian expansion coefficients
-C
-         IRUTIN = 2
-         ISCAL1 = 0
-         ISCAL2 = 0
-         CALL EXPCFT(ECOEF,NPP34,JMXD3,JMXD4,COOR34,EXP34,I340,HPI,
-     &               P3,P4,IRUTIN,IELCT2,JMXD3,JMXD4,NCNT34,MAXDER,
-     &               ISCAL1,ISCAL2,IPRINT)
-C
-C        Run over components
-C
-         FLEVEL = .TRUE.
-         ICMP34 = 0
-         DO 100 ICOMP3 = 1, KCKT3
-            MAX4 = KCKT4
-            IF (TCMP34) MAX4 = ICOMP3
-            DO 200 ICOMP4 = 1, MAX4
-               ICMP34 = ICMP34 + 1
-C
-               L3 = LMNPWR(ICOMP3,NHKT3,1)
-               M3 = LMNPWR(ICOMP3,NHKT3,2)
-               N3 = LMNPWR(ICOMP3,NHKT3,3)
-               L4 = LMNPWR(ICOMP4,NHKT4,1)
-               M4 = LMNPWR(ICOMP4,NHKT4,2)
-               N4 = LMNPWR(ICOMP4,NHKT4,3)
-C
-C              *****************************************
-C              ***** Cartesian Primitive Integrals *****
-C              *****************************************
-C
-               IF (MAXDER .EQ. 0) THEN
-                  IODDKC(ICMP34,0) = IODD34(INDHER(L3+L4,M3+M4,N3+N4))
-                  CALL CR2UND(L3,M3,N3,L4,M4,N4,
-     &                        HCINT,INDHER,IODDHC,CCPRIM,
-     &                        FRSTUV,ECOEF,EUV,ETUV,IPNTUV,
-     &                        ICOMP3,ICOMP4,IPRINT)
-               ELSE IF (MAXDER .EQ. 1) THEN
-                  IODDKC(ICMP34,0) = IODD34(INDHER(L3+L4,M3+M4,N3+N4))
-                  IODDKC(ICMP34,1) = IODDCC(INDHER(L3+L4+1,M3+M4,N3+N4))
-                  IODDKC(ICMP34,2) = IODDCC(INDHER(L3+L4,M3+M4+1,N3+N4))
-                  IODDKC(ICMP34,3) = IODDCC(INDHER(L3+L4,M3+M4,N3+N4+1))
-                  CALL CR2DER(L3,M3,N3,L4,M4,N4,
-     &                        HCINT,INDHER,IODDHC,IODD34,CCPDER,CCRDER,
-     &                        FRSTUV(1,1),FRSTUV(1,4),ECOEF,EUV,ETUV,
-     &                        IPNTUV,ICOMP3,ICOMP4,IODDKC(ICMP34,0),
-     &                        IPRINT)
-                  CALL GABDER(CCPDER,CCRDER,CCPRIM(1,1,1,1),
-     &                        CCPRIM(1,1,1,4),EXP34,IODDCC,IPNTUV,
-     &                        ICMP34,IODDKC,FRSTUV(1,1),FRSTUV(1,4),
-     &                        IPRINT)
-               ENDIF
-C
-C              ********************************
-C              ***** Contracted Integrals *****
-C              ********************************
-C
-               DO 275 IDIMD = 1,NDIMD
-                  IF (MAXDER .EQ. 0) THEN
-                     IODKC = IODDKC(ICMP34,0)
-                  ELSE
-                     IODKC = IODDKC(ICMP34,MOD(IDIMD-1,3)+1) 
-                  END IF 
-                  SAMMRY = .FALSE.
-                  IF (SPHR34) THEN
-                     NDIM2 = 1
-                     CALL CR2SEG(CCPRIM(1,1,1,IDIMD),
-     &                           CCONT(1,1,ICMP34,IDIMD),IODDCC,IPNTUV,
-     &                           IODKC,SAMMRY,FRSTUV(1,IDIMD),
-     &                           NCCCC,NDIM2,IPRINT)
-                  ELSE
-                     IF (IELCT2.EQ.2) THEN
-                        NDIM2 = 1
-                        CALL CR2SEG(CCPRIM(1,1,1,IDIMD),
-     &                              AOINT(1,1,ICMP34,IDIMD),IODDCC,
-     &                              IPNTUV,IODKC,SAMMRY,
-     &                              FRSTUV(1,IDIMD),NCCT,NDIM2,IPRINT)
-                     ELSE
-                        NDIM2 = KHKT34
-                        CALL CR2SEG(CCPRIM(1,1,1,IDIMD),
-     &                              AOINT(1,ICMP34,1,IDIMD),IODDCC,
-     &                              IPNTUV,IODKC,SAMMRY,
-     &                              FRSTUV(1,IDIMD),NCCT,NDIM2,IPRINT)
-                     END IF
-                  END IF
-  275          CONTINUE
-  200       CONTINUE
-  100    CONTINUE
-C
-C        Spherical integrals
-C        ===================
-C
-         DO 110 IDIMD = 1,NDIMD
-            INDX = MOD(IDIMD-1,3)+1
-            IF (SPHR34) THEN
-               BDER3 = BDER .AND. NDR3 .GT. 0 
-               BDER4 = BDER .AND. NDR4 .GT. 0 
-               CALL CR2SPH(CCONT(1,1,1,IDIMD),CSINT,FCSINT,
-     &                     AOINT(1,1,1,IDIMD),FAOINT,FLEVEL,
-     &                     CSQ(KSQADR(NHKT3-1,0,0,0,0),1),
-     &                     CSQ(KSQADR(NHKT4-1,0,0,0,0),1),
-     &                     CSA3,CSA4,CSV3,CSV4,BDER3,BDER4,NCENTR,
-     &                     IODDCC,IPNTUV,IODDKC(1,INDX),INDX,0,IPRINT)
-            END IF
-  110    CONTINUE
-      END IF
-C
-C     *************************
-C     ***** Print Section *****
-C     *************************
-C
-      IF (IPRINT .GE. 15) THEN
-         CALL HEADER('Final spherical integrals - CR2TWX',-1)
-         DO 900 K = 1, NDIMD
-            INDX = MOD(K-1,3)+1
-            DO 910 I = 1, KHKTAB
-            DO 910 J = 1, KHKTCD
-            IF (IODDCC(IPNTUV(I,0,1)) .EQ. 
-     &          IODDCC(IPNTUV(J,INDX,2))) THEN
-               WRITE (LUPRI, '(/1X,A,3I3)') ' K,ICMPAB, ICMPCD ', K,I,J
-               CALL OUTPUT(AOINT(1,I,J,K),1,1,1,NCCCC,1,NCCCC,1,LUPRI)
-            END IF
-  910       CONTINUE
-  900    CONTINUE
-      END IF
-      RETURN
-      END
 C  /* Deck cr2und */
       SUBROUTINE CR2UND(L3,M3,N3,L4,M4,N4,
      &                  HCINT,INDHER,IODDHC,CCPRIM,FRSTUV,
@@ -616,10 +414,10 @@ C
 #include <maxaqn.h>
       INTEGER T, U, V
       LOGICAL FRSTUV(KHKT12)
-      DIMENSION HCINT(NPP34,NCTF12,NTUV34,KHKT12),
+      DIMENSION HCINT(NCTF12,NPP34,NTUV34,KHKT12),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP),
      &          IODDHC(NRTOP),
-     &          CCPRIM(NPP34,NCTF12,KHKT12),
+     &          CCPRIM(NCTF12,NPP34,KHKT12),
      &          ECOEF(NPP34,0:JMXD3+JMXD4,0:JMXD3,0:JMXD4,3),
      &          EUV(NPP34), ETUV(NPP34),
      &          IPNTUV(KC2MAX,0:NRDER,2)
@@ -648,377 +446,167 @@ C
          WRITE(LUPRI,'(1X,A,15X,3I5)')' V loop:',MINV,MAXV,INCV
       END IF
 C
-      DO 100 ICMP12 = 1, KHKT12
+      DO ICMP12 = 1, KHKT12
          FRSTUV(ICMP12) = .TRUE.
-  100 CONTINUE
+      END DO
 C
       DO 200 V = MINV, MAXV, INCV
       DO 200 U = MINU, MAXU, INCU
-         DO 210 I = 1, NPP34
+         DO I = 1, NPP34
             EUV(I) = ECOEF(I,V,N3,N4,3)*ECOEF(I,U,M3,M4,2)
-  210    CONTINUE
+         END DO
          DO 300 T = MINT, MAXT, INCT
-            DO 310 I = 1, NPP34
+            DO I = 1, NPP34
                ETUV(I) = ECOEF(I,T,L3,L4,1)*EUV(I)
-  310       CONTINUE
+            END DO
 C
             ITUV = INDHER(T,U,V)
             IODD = IODDHC(ITUV)
-            DO 400 ICMP12 = 1, KHKT12
+C
+            IF (NCTF12.GT.1) THEN
+               DO ICMP12 = 1, KHKT12
                IF (IODDHC(IPNTUV(ICMP12,0,IELCT1)) .EQ. IODD) THEN
                   IF (FRSTUV(ICMP12)) THEN
                      FRSTUV(ICMP12) = .FALSE.
-                     DO 410 J = 1, NCTF12
-                     DO 410 I = 1, NPP34
+                     DO J = 1, NPP34
+                     DO I = 1, NCTF12
                         CCPRIM(I,J,ICMP12) =
-     &                    ETUV(I)*HCINT(I,J,ITUV,ICMP12)
-  410                CONTINUE
+     &                    ETUV(J)*HCINT(I,J,ITUV,ICMP12)
+                     END DO
+                     END DO
                   ELSE
-                     DO 440 J = 1, NCTF12
-                     DO 440 I = 1, NPP34
+                     DO J = 1, NPP34
+                     DO I = 1, NCTF12
                         CCPRIM(I,J,ICMP12) = CCPRIM(I,J,ICMP12)
-     &                         + ETUV(I)*HCINT(I,J,ITUV,ICMP12)
-  440                CONTINUE
+     &                         + ETUV(J)*HCINT(I,J,ITUV,ICMP12)
+                     END DO 
+                     END DO
                   END IF
                END IF
-  400       CONTINUE
+               END DO
+            ELSE
+               DO ICMP12 = 1, KHKT12
+               IF (IODDHC(IPNTUV(ICMP12,0,IELCT1)) .EQ. IODD) THEN
+                  IF (FRSTUV(ICMP12)) THEN
+                     FRSTUV(ICMP12) = .FALSE.
+                     DO J = 1, NPP34
+                        CCPRIM(1,J,ICMP12) =
+     &                    ETUV(J)*HCINT(1,J,ITUV,ICMP12)
+                     END DO
+                  ELSE
+                     DO J = 1, NPP34
+                        CCPRIM(1,J,ICMP12) = CCPRIM(1,J,ICMP12)
+     &                         + ETUV(J)*HCINT(1,J,ITUV,ICMP12)
+                     END DO
+                  END IF
+               END IF
+               END DO
+            END IF
 C
   300    CONTINUE
   200 CONTINUE
 C
-      RETURN
-      END
-C  /* Deck cr2der */
-      SUBROUTINE CR2DER(L3,M3,N3,L4,M4,N4,
-     &                  HCINT,INDHER,IODDHC,IODD34,CCP,CCR,
-     &                  FIRSTR,FIRSTP,ECOEF,EUV,ETUV,IPNTUV,
-     &                  ICOMP3,ICOMP4,IOD340,IPRINT)
-C
-C     A. Halkier and T. Helgaker 4/2 - 1999. 
-C
-C     Calculate contraction of Hermite-integrals with 
-C     hermite/cartesian expansion coefficients for derivative 
-C     integrals (order given by MAXDER).
-C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-      INTEGER T, U, V, X, TUV(3), IOD12X(3), IOD34(0:3)
-      LOGICAL FIRSTR(KHKT12,3), FIRSTP(KHKT12,3)
-      DIMENSION HCINT(NPP34,NCTF12,NTUV34,KHKT12),
-     &          INDHER(0:JTOP,0:JTOP,0:JTOP),
-     &          IODDHC(NRTOP),IODD34(NRTOP),
-     &          CCP(NPP34,NCTF12,KHKT12,3),
-     &          CCR(NPP34,NCTF12,KHKT12,3),
-     &          ECOEF(NPP34,0:JMXD3+JMXD4,0:JMXD3,0:JMXD4,3,2),
-     &          EUV(NPP34,3), ETUV(NPP34,0:3),
-     &          IPNTUV(KC2MAX,0:NRDER,2)
-#include <ericom.h>
-#include <eriao.h>
-#include <hertop.h>
-#include <ibtfun.h>
-C
-      IF (IPRINT .GT. 5) CALL TITLER('Output from CR2DER','*',103)
-C
-      IOD12X(1) = IODDHC(INDHER(1,0,0))
-      IOD12X(2) = IODDHC(INDHER(0,1,0))
-      IOD12X(3) = IODDHC(INDHER(0,0,1))
-C
-      L34 = L3 + L4
-      M34 = M3 + M4
-      N34 = N3 + N4
-C
-      DO 100 ICMP12 = 1, KHKT12
-      DO 100 X = 1, 3
-         FIRSTP(ICMP12,X) = .TRUE.
-         FIRSTR(ICMP12,X) = .TRUE.
-  100 CONTINUE
-C
-      DO 200 V = 0, N34
-      DO 200 U = 0, M34
-         DO 220 I = 1, NPP34
-            EUV(I,1) = ECOEF(I,V,N3,N4,3,1)*ECOEF(I,U,M3,M4,2,1)
-            EUV(I,2) = ECOEF(I,V,N3,N4,3,1)*ECOEF(I,U,M3,M4,2,2)
-            EUV(I,3) = ECOEF(I,V,N3,N4,3,2)*ECOEF(I,U,M3,M4,2,1)
-  220    CONTINUE
-         DO 300 T = 0, L34
-C
-            ITUV   = INDHER(T,U,V)
-            TUV(1) = INDHER(T+1,U,V)
-            TUV(2) = INDHER(T,U+1,V)
-            TUV(3) = INDHER(T,U,V+1)
-C
-            IOD34(0) = IBTXOR(IOD340,IODD34(ITUV))
-            IOD34(1) = IBTXOR(IOD340,IODD34(TUV(1)))
-            IOD34(2) = IBTXOR(IOD340,IODD34(TUV(2)))
-            IOD34(3) = IBTXOR(IOD340,IODD34(TUV(3)))
-C
-C           Expansion coefficients
-C           ======================
-C
-            IF (IOD34(0).EQ.0) THEN
-               DO 400 I = 1, NPP34
-                  ETUV(I,0) = ECOEF(I,T,L3,L4,1,1)*EUV(I,1)
-  400          CONTINUE
-            END IF
-            IF (IOD34(1).EQ.0) THEN
-               DO 410 I = 1, NPP34
-                  ETUV(I,1) = ECOEF(I,T,L3,L4,1,2)*EUV(I,1)
-  410          CONTINUE
-            END IF
-            IF (IOD34(2).EQ.0) THEN
-               DO 420 I = 1, NPP34
-                  ETUV(I,2) = ECOEF(I,T,L3,L4,1,1)*EUV(I,2)
-  420          CONTINUE
-            END IF
-            IF (IOD34(3).EQ.0) THEN
-               DO 430 I = 1, NPP34
-                  ETUV(I,3) = ECOEF(I,T,L3,L4,1,1)*EUV(I,3)
-  430          CONTINUE
-            END IF
-C
-C           Cartesian integrals
-C           ===================
-C
-            IODHC  = IODDHC(ITUV)
-            DO 500 K = 1, KHKT12
-               IOD12 = IBTXOR(IODDHC(IPNTUV(K,0,IELCT1)),IODHC)
-C
-C              ***** P derivatives *****
-C
-               IF (IOD34(0).EQ.0) THEN
-                  DO 600 X = 1, 3
-                  IF (IOD12.EQ.IOD12X(X)) THEN
-                     ITUVX = TUV(X)
-                     IF (FIRSTP(K,X)) THEN
-                        FIRSTP(K,X) = .FALSE.
-                        DO 610 J = 1, NCTF12
-                        DO 610 I = 1, NPP34
-                           CCP(I,J,K,X) = ETUV(I,0)*HCINT(I,J,ITUVX,K)
-  610                   CONTINUE
-                     ELSE
-                        DO 620 J = 1, NCTF12
-                        DO 620 I = 1, NPP34
-                           CCP(I,J,K,X) = CCP(I,J,K,X)
-     &                                  + ETUV(I,0)*HCINT(I,J,ITUVX,K)
-  620                   CONTINUE
-                     END IF
-                  END IF
-  600             CONTINUE
-               END IF 
-C
-C              ***** R derivatives *****
-C
-               IF (IOD12.EQ.0) THEN
-                  DO 700 X = 1, 3
-                  IF (IOD34(X).EQ.0) THEN
-                     IF (FIRSTR(K,X)) THEN
-                        FIRSTR(K,X) = .FALSE.
-                        DO 710 J = 1, NCTF12
-                        DO 710 I = 1, NPP34
-                           CCR(I,J,K,X) = ETUV(I,X)*HCINT(I,J,ITUV,K)
-  710                   CONTINUE
-                     ELSE
-                        DO 720 J = 1, NCTF12
-                        DO 720 I = 1, NPP34
-                           CCR(I,J,K,X) = CCR(I,J,K,X)
-     &                                  + ETUV(I,X)*HCINT(I,J,ITUV,K)
-  720                   CONTINUE
-                     END IF
-                  END IF
-  700             CONTINUE
-               END IF
-C
-  500       CONTINUE
-  300    CONTINUE
-  200 CONTINUE
-C
-      RETURN
-      END
-C  /* Deck gabder */
-      SUBROUTINE GABDER(CCPDER,CCRDER,CCADER,CCBDER,EXP34,IODDCC,IPNTUV,
-     &                  ICMP34,IODDKC,FIRSTR,FIRSTP,IPRINT)
-C
-C     Asger Halkier and T. Helgaker 3/2 1999. Transform derivative
-C     integrals from P & R basis to A & B basis.
-C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-      PARAMETER (D1 = 1.0D0)
-      INTEGER X
-      LOGICAL FRST, FIRSTR(KHKT12,3), FIRSTP(KHKT12,3)
-      DIMENSION CCPDER(NPP34,NCTF12,KHKT12,3),
-     &          CCRDER(NPP34,NCTF12,KHKT12,3),
-     &          CCADER(NPP34,NCTF12,KHKT12,3),
-     &          CCBDER(NPP34,NCTF12,KHKT12,3),
-     &          EXP34(NPP34,3), IODDCC(NRTOP),
-     &          IPNTUV(KC2MAX,0:NRDER,2),
-     &          IODDKC(KC2MAX,0:3)
-#include <ericom.h>
-#include <eriao.h>
-#include <hertop.h>
-#include <ibtfun.h>
-C
-      IF (IPRINT .GT. 5) CALL TITLER('Output from GABDER','*',103)
-C
-      IF (IPRINT .GT. 25) THEN
-         CALL HEADER('CCPDER and CCRDER in GABDER',-1)
-         DO 800 X = 1,3
-            IODKC = IODDKC(ICMP34,X) 
-            DO 810 ICMP12 = 1, KHKT12
-            IF (IODDCC(IPNTUV(ICMP12,0,IELCT1)).EQ.IODKC) THEN
-               WRITE (LUPRI,'(2X,A,2I5)') ' X, ICMP12 ', X, ICMP12
-               CALL OUTPUT(CCPDER(1,1,ICMP12,X),
-     &                1,NPP34,1,NCTF12,NPP34,NCTF12,1,LUPRI)
-               CALL OUTPUT(CCRDER(1,1,ICMP12,X),
-     &                1,NPP34,1,NCTF12,NPP34,NCTF12,1,LUPRI)
-            END IF
-  810       CONTINUE
-  800    CONTINUE
-      END IF
-C
-      SGN = D1
-      IF (IELCT2.EQ.2) SGN = -D1
-C
-      IF (.TRUE.) THEN
-      DO 100 X = 1,3
-         IODKC = IODDKC(ICMP34,X) 
-         DO 110 ICMP12 = 1, KHKT12
-            FRST = .TRUE.
-            IF (IODDCC(IPNTUV(ICMP12,0,IELCT1)).EQ.IODKC) THEN
-               IF (.NOT.(FIRSTP(ICMP12,X).OR.FIRSTR(ICMP12,X))) THEN
-                  DO 120 J = 1, NCTF12
-                  DO 120 I = 1, NPP34
-                     CCRINT = CCRDER(I,J,ICMP12,X)
-                     CCPINT = SGN*CCPDER(I,J,ICMP12,X)
-                     CCADER(I,J,ICMP12,X) = EXP34(I,1)*CCPINT + CCRINT 
-                     CCBDER(I,J,ICMP12,X) = EXP34(I,2)*CCPINT - CCRINT 
-  120             CONTINUE
-                  FRST = .FALSE.
-               ELSE IF (.NOT.FIRSTR(ICMP12,X)) THEN
-                  DO 121 J = 1, NCTF12
-                  DO 121 I = 1, NPP34
-                     CCRINT = CCRDER(I,J,ICMP12,X)
-                     CCADER(I,J,ICMP12,X) =   CCRINT 
-                     CCBDER(I,J,ICMP12,X) = - CCRINT 
-  121             CONTINUE
-                  FRST = .FALSE.
-               ELSE IF (.NOT.FIRSTP(ICMP12,X)) THEN
-                  DO 122 J = 1, NCTF12
-                  DO 122 I = 1, NPP34
-                     CCPINT = SGN*CCPDER(I,J,ICMP12,X)
-                     CCADER(I,J,ICMP12,X) = EXP34(I,1)*CCPINT
-                     CCBDER(I,J,ICMP12,X) = EXP34(I,2)*CCPINT
-  122             CONTINUE
-                  FRST = .FALSE.
-               END IF
-            END IF
-            FIRSTP(ICMP12,X) = FRST
-            FIRSTR(ICMP12,X) = FRST
-  110    CONTINUE
-  100 CONTINUE
-C
-C     Another way of obtaining the B derivative...
-C
-      ELSE
-      DO 130 X = 1,3
-         IODKC = IODDKC(ICMP34,X) 
-         DO 140 ICMP12 = 1, KHKT12
-         IF (IODDCC(IPNTUV(ICMP12,0,IELCT1)).EQ.IODKC) THEN
-            DO 150 J = 1, NCTF12
-            DO 150 I = 1, NPP34
-               CCADER(I,J,ICMP12,X) = EXP34(I,1)*CCPDER(I,J,ICMP12,X)
-     *                                         + CCRDER(I,J,ICMP12,X)
-               CCBDER(I,J,ICMP12,X) = CCPDER(I,J,ICMP12,X)
-     *                              - CCADER(I,J,ICMP12,X)
-  150       CONTINUE
-         END IF
-  140    CONTINUE
-  130 CONTINUE
-      END IF
-C
-      IF (IPRINT .GT. 25) THEN
-         CALL HEADER('CCADER and CCBDER in GABDER',-1)
-         DO 900 X = 1,3
-            IODKC = IODDKC(ICMP34,X) 
-            DO 910 ICMP12 = 1, KHKT12
-            IF (IODDCC(IPNTUV(ICMP12,0,IELCT1)).EQ.IODKC) THEN
-               WRITE (LUPRI,'(2X,A,2I5,//)') ' X, ICMP12 ', X, ICMP12
-               CALL OUTPUT(CCADER(1,1,ICMP12,X),
-     &                1,NPP34,1,NCTF12,NPP34,NCTF12,1,LUPRI)
-               CALL OUTPUT(CCBDER(1,1,ICMP12,X),
-     &                1,NPP34,1,NCTF12,NPP34,NCTF12,1,LUPRI)
-            END IF
-  910       CONTINUE
-  900    CONTINUE
+      IF (IPRINT .GT. 50) THEN
+         CALL HEADER('CCPRIM - CR2UND',-1)
+         DO ICMP12 = 1, KHKT12
+            WRITE (LUPRI,'(1X,A,I5)') ' CCPRIM for ICMP12 =',ICMP12
+            CALL OUTPUT(CCPRIM(1,1,ICMP12),1,NCTF12,1,NPP34,
+     &                  NCTF12,NPP34,1,LUPRI)
+         END DO
       END IF
 C
       RETURN
       END
-C  /* Deck cr2seg */
-      SUBROUTINE CR2SEG(PRMINT,CNTINT,IODDCC,IPNTUV,IODKC,SAMMRY,
-     &                  FRSTUV,NDIM1,NDIM2,IPRINT)
+C  /* Deck erict2 */
+      SUBROUTINE ERICT2(PPINT,CCINT,CMAT3,CMAT4,CPINT,NDIM1,NDIM2,
+     &                  IODDCC,IPNTUV,IODKC,FRSTUV,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER (D0 = 0.0D0)
-      LOGICAL SAMMRY, FRSTUV(KHKT12)
-      DIMENSION PRMINT(NCCCC,NPRF34,KHKT12),
-     &          CNTINT(NDIM1,NDIM2,KHKT12),
-     &          IPNTUV(KC2MAX,0:NRDER,2), IODDCC(NRTOP)
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
+      LOGICAL FRSTUV(KHKT12)
+      DIMENSION CMAT3(NPRF3,NCTF3)
+      DIMENSION CMAT4(NPRF4,NCTF4)
+      DIMENSION PPINT(NCTF12*NPQBCX,NPRF34,KHKT12)
+      DIMENSION CCINT(NDIM1,NDIM2,KHKT12)
+      DIMENSION CPINT(NCTF3,NCTF12*NPQBCX,NPRF4)
+      DIMENSION IPNTUV(KC2MAX,0:NRDER,2), IODDCC(NRTOP)
 #include <hertop.h>
 #include <ericom.h>
 #include <eriao.h>
 C
-      IF (NPRF34.EQ.1 .AND. .NOT.SAMMRY) THEN
-         DO 100 ICMP12 = 1, KHKT12
+      NCC12 = NCTF12*NPQBCX
+C
+      IF (NPRF34.EQ.1 .AND. .NOT.GCON34) THEN
+         DO ICMP12 = 1, KHKT12
          IF (IODDCC(IPNTUV(ICMP12,0,IELCT1)) .EQ. IODKC) THEN
             IF (FRSTUV(ICMP12)) THEN
-               DO 200 J = 1, NCCCC
-                  CNTINT(J,1,ICMP12) = D0
-  200          CONTINUE
+               DO J = 1, NCCCC
+                  CCINT(J,1,ICMP12) = D0
+               END DO
             ELSE
-               DO 300 J = 1, NCCCC
-                  CNTINT(J,1,ICMP12) = PRMINT(J,1,ICMP12)
-  300          CONTINUE
+               DO J = 1, NCCCC
+                  CCINT(J,1,ICMP12) = PPINT(J,1,ICMP12)
+               END DO
             END IF
          END IF
-  100    CONTINUE
+         END DO
       ELSE
          DO 400 ICMP12 = 1, KHKT12
          IF (IODDCC(IPNTUV(ICMP12,0,IELCT1)) .EQ. IODKC) THEN
             IF (FRSTUV(ICMP12)) THEN
-               DO 500 J = 1, NCCCC
-                  CNTINT(J,1,ICMP12) = D0
-  500          CONTINUE
+               DO J = 1, NCCCC
+                  CCINT(J,1,ICMP12) = D0
+               END DO
             ELSE
-               DO 600 J = 1, NCCCC
-                  CNTINT(J,1,ICMP12) = PRMINT(J,1,ICMP12)
-     &                               + PRMINT(J,2,ICMP12)
-  600          CONTINUE
-               DO 700 I = 3, NPRF34
-               DO 700 J = 1, NCCCC
-                  CNTINT(J,1,ICMP12) = CNTINT(J,1,ICMP12)
-     &                               + PRMINT(J,I,ICMP12)
-  700          CONTINUE
+               IF (GCON34) THEN
+                  CALL DGEMM('T','T',NCTF3,NCC12*NPRF4,NPRF3,
+     &                       D1,CMAT3,NPRF3,
+     &                       PPINT(1,1,ICMP12),NCC12*NPRF4,
+     &                       D0,CPINT,NCTF3)
+                  CALL DGEMM('T','T',NCTF4,NCTF3*NCC12,NPRF4,
+     &                       D1,CMAT4,NPRF4,CPINT,NCTF3*NCC12,
+     &                       D0,CCINT(1,1,ICMP12),NCTF4)
+               ELSE
+                  DO J = 1, NCCCC
+                     CCINT(J,1,ICMP12) = PPINT(J,1,ICMP12)
+     &                                 + PPINT(J,2,ICMP12)
+                  END DO
+                  DO I = 3, NPRF34 
+                  DO J = 1, NCCCC
+                     CCINT(J,1,ICMP12) = CCINT(J,1,ICMP12)
+     &                                 + PPINT(J,I,ICMP12)
+                  END DO
+                  END DO
+               END IF
             END IF
          END IF
   400    CONTINUE
       END IF
 C
       IF (IPRINT .GT. 25) THEN
-         CALL HEADER('Output from CR2SEG',-1)
+         CALL HEADER('Output from ERICT2',-1)
          WRITE (LUPRI,'(2X,A,3I5)') 'NCCCC, NPRF34, NDIM2', 
      &                               NCCCC, NPRF34, NDIM2
+         WRITE (LUPRI,'(2X,A,2I5)') 'NPRF3,NCTF3',NPRF3,NCTF3
+         WRITE (LUPRI,'(2X,A,2I5)') 'NPRF4,NCTF4',NPRF4,NCTF4
+         WRITE (LUPRI,'(2X,A,2I5)') 'NCC12,KHKT12',NCC12,KHKT12
+         IF (GCON3) THEN
+            CALL HEADER('CMAT3 in ERICT2',-1)
+            CALL OUTPUT(CMAT3,1,NPRF3,1,NCTF3,NPRF3,NCTF3,1,LUPRI)
+         END IF
+         IF (GCON4) THEN
+            CALL HEADER('CMAT4 in ERICT2',-1)
+            CALL OUTPUT(CMAT4,1,NPRF4,1,NCTF4,NPRF4,NCTF4,1,LUPRI)
+         END IF
          DO 800 ICMP12 = 1, KHKT12
             IF (IODDCC(IPNTUV(ICMP12,0,IELCT1)) .EQ. IODKC) THEN
-               CALL HEADER('PRMINT in CR2SEG',-1)
+               CALL HEADER('PPINT in ERICT2',-1)
                WRITE (LUPRI,'(2X,A,I5)') 'ICMP12: ',ICMP12
-               CALL OUTPUT(PRMINT(1,1,ICMP12),1,NCCCC,1,NPRF34,
+               CALL OUTPUT(PPINT(1,1,ICMP12),1,NCCCC,1,NPRF34,
      &                     NCCCC,NPRF34,1,LUPRI)
-               CALL HEADER('CNTINT in CR2SEG',-1)
+               CALL HEADER('CCINT in ERICT2',-1)
                WRITE (LUPRI,'(2X,A,I5)') 'ICMP12: ',ICMP12
-               CALL OUTPUT(CNTINT(1,1,ICMP12),1,1,1,NCCCC,
+               CALL OUTPUT(CCINT(1,1,ICMP12),1,1,1,NCCCC,
      &                     1,NCCCC,1,LUPRI)
             END IF
   800    CONTINUE

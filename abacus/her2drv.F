@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: her2drv.F,v 1.3 2001-03-13 08:43:33 vebjornb Exp $
+C$Id: her2drv.F,v 1.4 2001-04-03 14:25:08 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck twoint */
@@ -2225,7 +2225,8 @@ C
          ELSE IF (LONDON) THEN
             IF (TKTIME) CALL GETTIM(TIMSTR,DUMTIM)
             CALL MG2OUT(SOINT,FIRST,LAST,THRESH,IPNTNO,IPNTRP,IPNTLG,
-     &                  NINDAB,NINDCD,IPRINT)
+C    &                  NINDAB,NINDCD,IPRINT)
+     &                  NINDAB,NINDCD,3000)
             IF (TKTIME) THEN
                CALL GETTIM(TIMEND,DUMTIM)
                TDSOUT = TDSOUT + TIMEND - TIMSTR

@@ -13,6 +13,7 @@
      &                NPRF1,  NPRF2, NPRF3, NPRF4, NPRF12, NPRF34,
      &                NCTF1,  NCTF2, NCTF3, NCTF4, NCTF12, NCTF34,
      &                GCON1,  GCON2, GCON3, GCON4, GCON12, GCON34,
+     &                ICMAT1, ICMAT2,ICMAT3,ICMAT4,
      &                NCNT12, NCNT34,
      &                NODS12, NODS34,KODS12, KODS34,
      &                NPPPP,  NPPCC, NCCPP, NCCCC, NPP12, NPP34,

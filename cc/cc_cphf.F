@@ -47,7 +47,7 @@ c /* deck cc_cphf */
       CHARACTER*(18) MSGDBG
       PARAMETER (MSGDBG = '[debug] CC_CPHF>  ')
       LOGICAL LOCDBG
-      PARAMETER (LOCDBG = .FALSE. )
+      PARAMETER (LOCDBG = .TRUE. )
       CHARACTER*8 FNGDVE, FNSOVE, FNREVE
       PARAMETER(FNGDVE='CCPHFRHS',FNSOVE='CCPHFSOL')
       PARAMETER(FNREVE='CCPHFRES')
@@ -283,7 +283,10 @@ C          --------------------------------------------------------
 
 
            IF (GDNORM.GT.THRLDPHF) THEN
+C
+             CALL SETSIR(WORK(KEND0),LWRK0)
 
+             IF (LOCDBG) WRITE (LUPRI,*) 'going to call ABARSP'
 C            -----------------------
 C            solve CPHF equation(s):
 C            -----------------------
@@ -294,6 +297,8 @@ C            -----------------------
      &                   WORK(KFRVAL),NFRVAL,NABATY,NABAOP,
      &                   LABEL(IVEC,1),LUGDVE,LUSOVE,LUREVE,THRLEQ,
      &                   MAXITE,IPRABA,MXRM,MXPHP,WORK(KEND0),LWRK0)
+
+             IF (LOCDBG) WRITE (LUPRI,*) 'returned from ABARSP'
 
 C            --------------------------------------------
 C            clean up `left overs' from ABARSP:

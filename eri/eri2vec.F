@@ -29,10 +29,9 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2vec.F,v 1.2 2001-02-12 18:17:55 vebjornb Exp $
+C$Id: eri2vec.F,v 1.3 2001-04-03 14:25:13 vebjornb Exp $
 C
 #include <single.h>
-C
 C  /* Deck eriexp */
       SUBROUTINE ERIEXP(EXPAB,EXPCD,ALPHA,FACPQ,RODPE1,RODPE2,IPNTPP,
      &                  IPRINT)
@@ -80,37 +79,40 @@ C
   150    CONTINUE
   100 CONTINUE
 C
-      DO 200 I = 1, NPRFCD
-      DO 200 PQ = 1, NPQBCS
+      DO I = 1, NPRFCD
+      DO PQ = 1, NPQBCS
          CD = IPNTPP(PQ,2) + I - 1
          EXPC = RODPE2(CD,1)
          EXPD = RODPE2(CD,2)
          QINV = D1/(EXPC + EXPD)
          EXPCQ = EXPC*QINV
          EXPDQ = EXPD*QINV
-         DO 250 RST = 1, MLTPZ
+         DO RST = 1, MLTPZ
             EXPCD(PQ,RST,I,1) = EXPCQ
             EXPCD(PQ,RST,I,2) = EXPDQ
             EXPCD(PQ,RST,I,3) = QINV
-  250    CONTINUE
-  200 CONTINUE
+         END DO
+      END DO
+      END DO
 C
       IJ = 0
-      DO 300 J = 1, NPRFCD
-      DO 300 I = 1, NPRFAB
+      DO J = 1, NPRFCD
+      DO I = 1, NPRFAB
          IJ = IJ + 1
-         DO 400 PQ = 1, NPQBCS
+         DO PQ = 1, NPQBCS
             PINV = EXPAB(PQ,1,I,3) 
             QINV = EXPCD(PQ,1,J,3) 
             ALFA = D2/(PINV+QINV)
             FACPQ(PQ,IJ) = SFAC*SQRT(PINV*QINV*ALFA)
             ALPHA(PQ,1,IJ) = -ALFA
-  400    CONTINUE
-         DO 500 RST = 2, MLTPZ
-         DO 500 PQ = 1, NPQBCS
+         END DO
+         DO RST = 2, MLTPZ
+         DO PQ = 1, NPQBCS
             ALPHA(PQ,RST,IJ) = ALPHA(PQ,1,IJ)
-  500    CONTINUE
-  300 CONTINUE
+         END DO
+         END DO
+      END DO
+      END DO
 C
       IF (IPRINT .GT. 25) THEN
          CALL HEADER('EXPAB in ERIEXP',-1)
@@ -144,24 +146,24 @@ C  /* Deck ericor */
 #include <symmet.h>
 #include <ibtfun.h>
 C
-      DO 100 IATOM = 1,4
+      DO IATOM = 1,4
 #if defined (VAR_CRY)
          CALL GATHER(NPQBCS,CORBCH(1,1),CORXBT,IPNTCR(1,IATOM))
          CALL GATHER(NPQBCS,CORBCH(1,2),CORYBT,IPNTCR(1,IATOM))
          CALL GATHER(NPQBCS,CORBCH(1,3),CORZBT,IPNTCR(1,IATOM))
 #else
-         DO 200 PQ = 1, NPQBCS
+         DO PQ = 1, NPQBCS
             CORBCH(PQ,1) = CORXBT(IPNTCR(PQ,IATOM))
             CORBCH(PQ,2) = CORYBT(IPNTCR(PQ,IATOM))
             CORBCH(PQ,3) = CORZBT(IPNTCR(PQ,IATOM))
-  200    CONTINUE
+         END DO
 #endif
-         DO 300 PQ = 1, NPQBCS
+         DO PQ = 1, NPQBCS
             COORTR(PQ,1,IATOM) = CORBCH(PQ,1)
             COORTR(PQ,2,IATOM) = CORBCH(PQ,2)
             COORTR(PQ,3,IATOM) = CORBCH(PQ,3)
-  300    CONTINUE
-  100 CONTINUE
+         END DO
+      END DO
 C
       IF (IPRINT .GT. 25) THEN
          CALL TITLER('Output from ERICOR','*',103)
@@ -201,21 +203,21 @@ C  /* Deck erisso */
 C
       RST = 0
       IT = 0
-      DO 300 T = 0, MAXOPR
+      DO T = 0, MAXOPR
       IF (IBTAND(T,ISTBLT) .EQ. 0) THEN
          IT = IT + 1
          XC0 = XPAR(T)
          YC0 = YPAR(T)
          ZC0 = ZPAR(T)
          IS = 0
-         DO 310 S = 0, MAXOPR
+         DO S = 0, MAXOPR
          IF (IBTAND(S,ISTBLS) .EQ. 0) THEN
             IS = IS + 1
             XD0 = XPAR(IBTXOR(S,T))
             YD0 = YPAR(IBTXOR(S,T))
             ZD0 = ZPAR(IBTXOR(S,T))
             IR = 0
-            DO 320 R = 0, MAXOPR
+            DO R = 0, MAXOPR
             IF (IBTAND(R,ISTBLR) .EQ. 0) THEN
                IR = IR + 1
                RST = RST + 1
@@ -238,11 +240,11 @@ C
                SGNX(RST,11) = YD0
                SGNX(RST,12) = ZD0
             END IF
-  320       CONTINUE
+            END DO
          END IF
-  310    CONTINUE
+         END DO
       END IF
-  300 CONTINUE
+      END DO
 C
       IF (IPRINT .GT. 25) THEN
          CALL TITLER('Output from ERISSO','*',103)
@@ -282,34 +284,38 @@ C
 C     Collect data 
 C     ============
 C
-      DO 100 RST = 1, MLTPZ
+      DO RST = 1, MLTPZ
          IR = NSOP(IOFRST+RST,1)
-         DO 110 I  = 1, NPRFAB
-         DO 110 PQ = 1, NPQBCS
+         DO I  = 1, NPRFAB
+         DO PQ = 1, NPQBCS
             RODAB(PQ,RST,I) = RODPF1(IR,IPNTPP(PQ,1) + I - 1)
-  110    CONTINUE
-  100 CONTINUE
-      DO 200 RST = 1, MLTPZ
+         END DO
+         END DO
+      END DO
+      DO RST = 1, MLTPZ
          IR = NSOP(IOFRST+RST,2)
-         DO 210 I  = 1, NPRFCD
-         DO 210 PQ = 1, NPQBCS
+         DO I  = 1, NPRFCD
+         DO PQ = 1, NPQBCS
             RODCD(PQ,RST,I) = RODPF2(IR,IPNTPP(PQ,2) + I - 1)
-  210    CONTINUE
-  200 CONTINUE
+         END DO
+         END DO
+      END DO
 C
 C     Preexponential and other overall factors
 C     ========================================
 C
       IJ = 0
-      DO 300 J = 1, NPRFCD
-      DO 300 I = 1, NPRFAB
+      DO J = 1, NPRFCD
+      DO I = 1, NPRFAB
          IJ = IJ + 1
-         DO 310 RST = 1, MLTPZ
-         DO 310 PQ  = 1, NPQBCS
+         DO RST = 1, MLTPZ
+         DO PQ  = 1, NPQBCS
             FACINT(PQ,RST,IJ) = 
      &         FACPQ(PQ,IJ)*RODAB(PQ,RST,I)*RODCD(PQ,RST,J)
-  310    CONTINUE
-  300 CONTINUE
+         END DO
+         END DO
+      END DO
+      END DO
 C
 C     Print
 C     =====
@@ -333,13 +339,14 @@ C  /* Deck ericrs */
 #include <ericom.h>
 #include <erisop.h>
 C
-      DO 100 X   = 1, 12
-      DO 100 RST = 1, MLTPZ
-         FAC = SGNX(IOFRST+RST,X)
-         DO 200 PQ  = 1, NPQBCS
-            COORAO(PQ,RST,X) = FAC*COORTR(PQ,X)
-  200    CONTINUE
-  100 CONTINUE
+      DO X = 1, 12
+         DO RST = 1, MLTPZ
+            FAC = SGNX(IOFRST+RST,X)
+            DO PQ = 1, NPQBCS
+               COORAO(PQ,RST,X) = FAC*COORTR(PQ,X)
+            END DO
+         END DO
+      END DO
 C
       IF (IPRINT .GT. 25) THEN
          CALL TITLER('Output from ERICRS','*',103)
@@ -375,40 +382,45 @@ C
 C     AB coordinates
 C     ==============
 C
-      DO 100 X = 1, 3
-      DO 100 K = 1, NPQBCX 
-         AX = COORAO(K,X,1)
-         BX = COORAO(K,X,2)
-         ABX = AX - BX
-         DO 150 I = 1, NPRFAB
-            COORAB(K,I,X,1) = ABX
-            COORAB(K,I,X,2) = EXPAB(K,I,1)*AX + EXPAB(K,I,2)*BX
-  150    CONTINUE
-  100 CONTINUE
+      DO X = 1, 3
+         DO K = 1, NPQBCX 
+            AX = COORAO(K,X,1)
+            BX = COORAO(K,X,2)
+            ABX = AX - BX
+            DO I = 1, NPRFAB
+               COORAB(K,I,X,1) = ABX
+               COORAB(K,I,X,2) = EXPAB(K,I,1)*AX + EXPAB(K,I,2)*BX
+            END DO
+         END DO
+      END DO
 C
 C     CD coordinates
 C     ==============
 C
-      DO 200 X = 1, 3
-      DO 200 K = 1, NPQBCX 
-         CX = COORAO(K,X,3)
-         DX = COORAO(K,X,4)
-         CDX = CX - DX
-         DO 250 I = 1, NPRFCD
-            COORCD(K,I,X,1) = CDX 
-            COORCD(K,I,X,2) = EXPCD(K,I,1)*CX + EXPCD(K,I,2)*DX
-  250    CONTINUE
-  200 CONTINUE
+      DO X = 1, 3
+         DO K = 1, NPQBCX 
+            CX = COORAO(K,X,3)
+            DX = COORAO(K,X,4)
+            CDX = CX - DX
+            DO I = 1, NPRFCD
+               COORCD(K,I,X,1) = CDX 
+               COORCD(K,I,X,2) = EXPCD(K,I,1)*CX + EXPCD(K,I,2)*DX
+            END DO
+         END DO
+      END DO
 C
 C     PQ coordinates
 C     ==============
 C
-      DO 300 X = 1, 3
-      DO 300 J = 1, NPRFCD
-      DO 300 I = 1, NPRFAB
-      DO 300 K = 1, NPQBCX 
-         COORPQ(K,I,J,X) = COORAB(K,I,X,2) - COORCD(K,J,X,2)
-  300 CONTINUE
+      DO X = 1, 3
+         DO J = 1, NPRFCD
+         DO I = 1, NPRFAB
+            DO K = 1, NPQBCX 
+               COORPQ(K,I,J,X) = COORAB(K,I,X,2) - COORCD(K,J,X,2)
+            END DO
+         END DO
+         END DO
+      END DO
 C
 C     Local symmetries
 C     ================
@@ -416,6 +428,10 @@ C
       CALL LOCSYM(COORAB,NPQBCX,NPRFAB,IAB0,IABXYZ)
       CALL LOCSYM(COORCD,NPQBCX,NPRFCD,ICD0,ICDXYZ)
       CALL LOCSYM(COORPQ,NPPX,1,IPQ0,IPQXYZ)
+      IF (BDER) THEN
+         CALL LOCSYB(COORAO(1,1,1),IAB0,IABXYZ)
+         CALL LOCSYB(COORAO(1,1,3),ICD0,ICDXYZ)
+      END IF
       IHHXYZ = IPQXYZ
       IHCXYZ = IBTAND(IPQXYZ,IABXYZ)
       ICHXYZ = IBTAND(IPQXYZ,ICDXYZ)
@@ -501,26 +517,50 @@ C
          DX = D0
          DY = D0
          DZ = D0
-         DO 100 I = 1, NINNER
+         DO I = 1, NINNER
             DX = MAX(DX,ABS(VECTOR(I,1,1)))
             DY = MAX(DY,ABS(VECTOR(I,1,2)))
             DZ = MAX(DZ,ABS(VECTOR(I,1,3)))
-  100    CONTINUE
+         END DO
          IF (DX .GT. THRSH) I0(1) = 0
          IF (DY .GT. THRSH) I0(2) = 0
          IF (DZ .GT. THRSH) I0(3) = 0
 #else
-         DO 100 X = 1, 3
+         DO X = 1, 3
             I0(X) = 1
-            DO 200 I = 1, NINNER
+            DO I = 1, NINNER
                IF (ABS(VECTOR(I,1,X)) .GT. THRSH) THEN
                   I0(X) = 0
-                  GO TO 210
+                  GO TO 100
                END IF
-  200       CONTINUE
-  210       CONTINUE
-  100    CONTINUE
+            END DO
+  100       CONTINUE
+         END DO
 #endif
+      END IF
+      IXYZ = I0(1) + 2*I0(2) + 4*I0(3)
+      RETURN
+      END
+C  /* Deck locsyb */
+      SUBROUTINE LOCSYB(COORAO,I0,IXYZ)
+#include <implicit.h>
+      INTEGER X
+      DIMENSION COORAO(NPQBCX,3), I0(3)
+#include <orgcom.h>
+#include <erithr.h>
+#include <cbieri.h>
+#include <ericom.h>
+C
+      IF (.NOT.NOLOCS) THEN
+         DO X = 1, 3
+            DO I = 1, NPQBCX
+               IF (ABS(COORAO(I,X)-ORIGIN(X)) .GT. THRSH) THEN
+                  I0(X) = 0
+                  GO TO 100
+               END IF
+            END DO
+  100       CONTINUE
+         END DO
       END IF
       IXYZ = I0(1) + 2*I0(2) + 4*I0(3)
       RETURN
@@ -546,7 +586,7 @@ C
          CALL TITLER('Output from ERICNT','*',103)
       END IF
 C
-      DO 100 PQ = 1, NPQBCS
+      DO PQ = 1, NPQBCS
          IA = NCNTBT(IPNTCR(PQ,1))
          IB = NCNTBT(IPNTCR(PQ,2))
          IC = NCNTBT(IPNTCR(PQ,3))
@@ -554,22 +594,83 @@ C
          ISTB = ISTBNU(IB)
          ISTC = ISTBNU(IC)
          ISTD = ISTBNU(ID)
-         DO 200 RST = 1, MLTPX
+         DO RST = 1, MLTPX
             NCENTR(RST,PQ,1) = NUCNUM(IA,1)
             NCENTR(RST,PQ,2) = NUCNUM(IB,IBTAXO(NSOQ(RST,1),ISTB)+1)
             NCENTR(RST,PQ,3) = NUCNUM(IC,IBTAXO(NSOQ(RST,2),ISTC)+1)
             NCENTR(RST,PQ,4) = NUCNUM(ID,IBTAXO(NSOQ(RST,3),ISTD)+1)
-  200    CONTINUE
-  100 CONTINUE
+         END DO
+      END DO
 C
       IF (IPRINT .GT. 10) THEN
-         DO 400 A = 1,4
+         DO A = 1,4
             WRITE (LUPRI,'(1X,A,I5)') ' NCENTR for orbital ',A
-            DO 500 PQ = 1, NPQBCS
+            DO PQ = 1, NPQBCS
                WRITE (LUPRI,'(2X,39I2)') 
      &            (NCENTR(RST,PQ,A),RST=1,MLTPX)
-  500       CONTINUE
-  400    CONTINUE
+            END DO
+         END DO
+      END IF
+C
+      RETURN
+      END
+C  /* Deck ericls */
+      SUBROUTINE ERICLS(FACINT,COORPQ,EXPAB,EXPCD,IPRINT)
+#include <implicit.h>
+#include <priunit.h>
+C
+C     tuh
+C
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <mxorb.h>
+#include <aovec.h>
+      PARAMETER (D0 = 0.0D0)
+      LOGICAL CLASIC 
+      DIMENSION FACINT(NPQBCX,NPRFAB,NPRFCD),
+     &          COORPQ(NPQBCX,NPRFAB,NPRFCD,3), 
+     &          EXPAB (NPQBCX,NPRFAB,3),
+     &          EXPCD (NPQBCX,NPRFCD,3)
+#include <cbieri.h>
+#include <odclss.h>
+#include <ericom.h>
+#include <hertop.h>
+#include <aobtch.h>
+#include <erisop.h>
+#include <erithr.h>
+#include <symmet.h>
+#include <clsfmm.h>
+C
+      IF (IPRINT .GT. 10) THEN
+         CALL TITLER('Output from ERICLS','*',103)
+      END IF
+C
+      FAC = ERFCIV(THRCLS)
+      NNCLS = 0
+      DO K  = 1, NPQBCX
+         CLASIC = .TRUE.
+         DO J = 1, NPRFCD
+         DO I = 1, NPRFAB
+            RPQ = SQRT(COORPQ(K,I,J,1)**2 + COORPQ(K,I,J,2)**2
+     &                                    + COORPQ(K,I,J,3)**2)
+            EPQ = FAC*(SQRT(EXPAB(K,I,3)) + SQRT(EXPCD(K,J,3)))
+            IF (RPQ .LE. EPQ) CLASIC = .FALSE. 
+         END DO
+         END DO
+         IF (CLASIC) THEN
+            NNCLS = NNCLS + 1
+            DO J = 1, NPRFCD
+            DO I = 1, NPRFAB
+               FACINT(K,I,J) = D0
+            END DO
+            END DO
+         END IF
+      END DO
+C
+      IF (IPRINT .GT. 25) THEN
+         CALL HEADER('FACINT in ERICLS',-1)
+         WRITE (LUPRI,'(2X,A,2I5)') ' NPQBCX, NNCLS ', NPQBCX, NNCLS
+         CALL OUTPUT(FACINT,1,NPQBCX,1,NPRFPQ,NPQBCX,NPRFPQ,1,LUPRI)
       END IF
 C
       RETURN

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: herdirect.F,v 1.2 2001-02-12 18:17:52 vebjornb Exp $
+C$Id: herdirect.F,v 1.3 2001-04-03 14:25:08 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -498,6 +498,7 @@ C
       ICHUNK = MAX(IVECLN/NDMT,1)
 #endif
 C
+      useeri = .false.
       IF (.NOT. USEERI) THEN
          CALL HRFCK1(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      &               ICEDIF,IFTHRS,WORK(KFREE),LFREE)

@@ -1,0 +1,280 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Coupled Cluster calculations: CC}
+\label{chap:ccgeneral}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+In this chapter the general structure of the input for the 
+coupled cluster program is described.
+
+The complete input for the coupled cluster program appears as
+sections in the input for the Sirius program, with the general
+input in \Sec{*CC INPUT}. 
+
+\section{General input for CC: \Sec{*CC INPUT}}\label{sec:ccgeneral}
+
+In this section keywords for the coupled
+cluster program are defined. In particular the coupled cluster 
+model(s) and other parameters common to all submodules are specified.
+
+\begin{description}
+\item[\Key{CCS   }] 
+        Run calculation for Coupled Cluster Singles (CCS) model. 
+%
+%\item[\Key{CC1A  }]   
+%        Run calculation for CC1A (?) model. 
+%
+%\item[\Key{CC1B  }]    
+%        Run calculation for CC1B (?) model. 
+%
+\item[\Key{CIS   }]    
+        Run calculation for CI Singles (CIS) method. 
+%
+\item[\Key{MP2   }]    
+        Run calculation for second-order M{\o}ller-Plesset 
+        perturbation theory (MP2) method. 
+%
+\item[\Key{CC2   }]    
+        Run calculation for CC2 model. 
+%
+%\item[\Key{CC(2) }]  
+%        Run calculation for CC(2) model. 
+%
+\item[\Key{CCD   }]    
+        Run calculation for Coupled Cluster Doubles (CCD) model. 
+%
+\item[\Key{CCSD  }]   
+        Run calculation for Coupled Cluster Singles and Doubles model.
+%
+%\item[\Key{CCR(A)}] 
+%        Run calculation for CCR(A) (?) model.
+%
+%\item[\Key{CCR(B)}]  
+%        Run calculation for CCR(A) (?) model.
+%
+%\item[\Key{CC(3) }]  
+%       Run calculation for CC(3) (?) model.
+
+\item[\Key{CCR(3)}] 
+        Run calculation for CCR(3) (?) model.
+%
+%\item[\Key{CCR(T)}] 
+%        Run calculation for CCR(T) (?) model.
+%
+\item[\Key{CC(T) }]  
+        Run calculation for CCSD(T) (Coupled Cluster Singles and 
+        Doubles with perturbational treatment of triples) model.
+%
+\item[\Key{CC3   }]     
+        Run calculation for CC3 model.
+%
+\item[\Key{PRINT }]  \verb| |\newline
+\verb|READ (LUCMD,'(I5)') IPRINT|
+
+       Set print parameter for coupled cluster program
+       (default is to take the value \verb+IPRUSR+, set in the general
+       input section of dalton).
+%
+\item[\Key{HERDIR}] 
+       Run coupled cluster program AO integral direct using HERMIT
+       (Default is to run the program only AO integral direct
+       if the \verb+DIRECT+ keyword was set in the general
+       input section of dalton. If \verb+HERDIR+ is not specified the ERI
+       program is used as integral generator.) 
+%
+\item[\Key{RESTAR}] 
+       Try to restart the calculation from the cluster amplitudes,
+       Lagrange multipliers, response amplitudes etc.\ stored on
+       disk.
+%
+\item[\Key{NSYM  }] \verb| |\newline
+       \verb|READ (LUCMD,'(I5)') MSYM2|
+
+       Set number of irreducibel representations. 
+       Due to difficulties to parse the number of irrep's from
+       the integral program to the coupled cluster input section,
+       this information must be specified in the coupled cluster
+       input section, if one of the options \verb+.FROIMP+ or
+       \verb+.NCCEXCI+ (see \verb+*CCEXCI+ subsection) are to be used.
+       Note that \verb+.NSYM+ has to be set before these keywords.
+ 
+\item[\Key{THRENR}] \verb| |\newline
+       \verb|READ (LUCMD,*) THRENR|
+
+       Set threshold for convergence of the ground state energy.
+ 
+\item[\Key{THRLEQ}] \verb| |\newline
+       \verb|READ (LUCMD,*) THRENR|
+
+       Set threshold for convergence of the response equations.
+ 
+\item[\Key{FROIMP}] \verb| |\newline
+      \verb|READ (LUCMD,*) (NRHFFR(I),I=1,MSYM)|\newline
+      \verb|READ (LUCMD,*) (NVIRFR(I),I=1,MSYM)|
+
+      Specify for each irreducible representation how
+      many orbitals should be frozen (deleted) for the coupled
+      cluster calculation. In calculation the first \verb+NRHFFR(I)+
+      orbitals will be kept frozen in symmetry class \verb+I+ and
+      the last \verb+NVIRFR(I)+ orbitals will be deleted form the 
+      orbital list.
+ 
+\item[\Key{FROEXP}]  \verb| |\newline
+    \verb|READ (LUCMD,*) (NRHFFR(I),I=1,MSYM)|\newline
+    \verb|DO ISYM = 1, MSYM|\newline
+    \verb|  IF (NRHFFR(ISYM.NE.0) THEN|\newline
+    \verb|    READ (LUCMD,*) (KFRRHF(J,ISYM),J=1,NRHFFR(ISYM))|\newline
+    \verb|  END IF|\newline
+    \verb|END DO|\newline
+    \verb|READ (LUCMD,*) (NVIRFR(I),I=1,MSYM)|\newline
+    \verb|DO ISYM = 1, MSYM|\newline
+    \verb|  IF (NVIRFR(ISYM.NE.0) THEN|\newline
+    \verb|    READ (LUCMD,*) (KFRVIR(J,ISYM),J=1,NVIRFR(ISYM))|\newline
+    \verb|  END IF|\newline
+    \verb|END DO|
+
+    Specify explicitly for each irreducible representation the
+    orbitals that should be frozen (deleted) for the coupled cluster
+    calculation.
+ 
+\item[\Key{NSIMLE}] \verb| |\newline
+  \verb|READ (LUCMD, *) NSIMLE|
+
+  Set the maximum number of response equations that should be 
+  solved simultaneously. Default is 0 which means that all
+  compatible equations (same equation type and symmetry class) 
+  are solved simultaneously.
+ 
+\item[\Key{MAXRED}] \verb| |\newline 
+  \verb|READ (LUCMD,'(I5)') MAXRED|
+
+  Maximum dimension of the reduced space for the 
+  solution of linear equations (default is \verb+MAXRED = 200+).
+ 
+\item[\Key{MAXITE}] \verb| |\newline
+  \verb|READ (LUCMD,'(I5)') MAXITE|
+
+  Maximum number of iterations for wave function optimization.
+  (default is \verb+MAXITE = 40+).
+ 
+\item[\Key{MXDIIS}] \verb| |\newline
+  \verb|READ (LUCMD,'(I5)') MXDIIS|
+
+  Maximum number of iterations for DIIS algorithm
+  before wave function information is discarded and a new DIIS 
+  sequence is started. 
+  (default is \verb+MXDIIS = 8+).
+ 
+\item[\Key{MXLRV}] \verb| |\newline
+  \verb|READ (LUCMD, *) MXLRV|
+
+  Maximum number of trial vectors in the solution of 
+  linear equations. If the number of trial vectors reaches this
+  value, all trial vectors and there transformations with the
+  Jacobian are skipped and the iterative procedure for the solution
+  linear (i.e. the response) equations is restarted from the current 
+  optimal solution. 
+ 
+\item[\Key{FIELD }] \verb| |\newline
+    \verb|READ (LUCMD,*) EFIELD|\newline
+    \verb|READ (LUCMD,'(1X,A8)') LFIELD|
+
+    Include external fields (operator labels \verb+EFIELD+)
+    of strength \verb+EFIELD+.
+ 
+\item[\Key{CCSTST}] 
+   Test option which allows to run CCS finite field as pseudo CC2
+   calculation. \verb+CCSTST+ disables all terms which depend on the
+   double excitation amplitudes or multipliers.
+%
+\item[\Key{DEBUG }]  
+   Test option: print additional debug output.
+%
+\item[\Key{NOCCIT}]
+   No iterations in the wave function optimization is carried out.
+%
+%\item[\Key{NEWCAU}] % unfinished  option !
+%   Solve Cauchy equations with different Cauchy order simultaneous. 
+%   (The algorithm behind this is still in the test phase...)
+%
+\item[\Key{IMSKIP}] 
+   Skip the calculation of some response intermediates
+   in a restarted run.
+    (which intermediates exactly?
+    is there any check if it is really a restarted calculation?
+    this questions applies also for all the other skip options
+    down here!) 
+%
+\item[\Key{M1SKIP}] 
+   Skip the calculation of the special zeroth-order Lagrange 
+   multipliers for ground-excited state transition moments,
+   the so-called $M$-vectors, in a restarted run.
+%
+\item[\Key{FRSKIP}] 
+   Skip the calculation of the F-matrix transformed ?-vectors
+   in a restarted run.
+%
+\item[\Key{R1SKIP}] 
+   Skip the calculation of the first-order amplitude responses
+   in a restarted run.
+%
+\item[\Key{L1SKIP}] 
+   Skip the calculation of the first-order responses of the 
+   ground-state Lagrange multipliers in a restarted run.
+%
+\item[\Key{RESKIP}] 
+   Skip the calculation of the first-order responses of the 
+   ground-state Lagrange multipliers in a restarted run.
+%
+\item[\Key{LESKIP}]  
+   Skip the calculation of left eigenvectors
+   in a restarted run.
+%
+\item[\Key{F1SKIP}] 
+   Skip the calculation of F-matrix transformed first-order
+   cluster amplitude responses in a restarted run.
+%
+\item[\Key{E0SKIP}] 
+   Skip the calculation of the $E0$-vectors (?)
+   in a restarted run.
+%
+\item[\Key{L0SKIP}]  
+   Skip the calculation of the zeroth-order ground-state Lagrange
+   multipliers in a restarted run.
+%
+\item[\Key{LISKIP}] 
+   Skip the calculation of ???
+   in a restarted run.
+%
+\item[\Key{B0SKIP}] 
+   Skip the calculation of the $B0$-vectors (?)
+   in a restarted run.
+%
+\item[\Key{O2SKIP}] 
+   Skip the calculation of right hand side vectors for the 
+   second-order cluster amplitude equations
+   in a restarted run.
+%
+\item[\Key{R2SKIP}] 
+   Skip the calculation of the 
+   second-order cluster amplitude equations
+   in a restarted run.
+%
+\item[\Key{X2SKIP}] 
+   Skip the calculation of the $\eta^{(2)}$ intermediates (needed
+   to build the right hand side vectors for the second-order 
+   ground state Lagrangian multiplier response equations) 
+   in a restarted run.
+%
+\item[\Key{F2SKIP}] 
+   Skip the calculation of F-matrix transformed second-order
+   cluster amplitude responses in a restarted run.
+%
+\item[\Key{L2SKIP}]  
+   Skip the calculation of the second-order responses of the 
+   ground-state Lagrange multipliers in a restarted run.
+\end{description}
+
+%All the special skip options for the restart of response calculations
+%would better be placed in a seperate input subsection.
+%(And the corresponding logical variables on a seperate 
+%common block.)

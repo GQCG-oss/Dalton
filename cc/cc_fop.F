@@ -452,6 +452,10 @@ C
      *               IDUMMY,.FALSE.)
          REWIND(LUGDVE)
          CALL WRITT(LUGDVE,NALLAI(1),WORK(KETAAI))
+CCH
+         RHSNORM = DDOT(NALLAI(1),WORK(KETAAI),1,WORK(KETAAI),1)
+         WRITE(LUPRI,*) 'CC_FOP> Norm of RHS vector:',RHSNORM
+CCH
 C
 C        CALL HEADER('RHS vectors, MP2', -1)
 C        CALL OUTPUT(WORK(KETAAI),1,NALLAI(1),1,1,NALLAI(1),1,1,LUPRI)
@@ -495,16 +499,23 @@ C
          FABRHS = .TRUE.
          NCONF  = 1
 C
-         CALL HEADER('Solving for orbital relaxation vector',-1)
+         IF (RHSNORM.GT.1.0D-12) THEN
 C
-         LABEL = 'ETAKAPPA'
+          CALL HEADER('Solving for orbital relaxation vector',-1)
 C
-         CALL ABARSP(CICLC,HFCLC,TRPCLC,OOTV,IOPSYM,EXCLC,WORK(KEXVAL),
+          LABEL = 'ETAKAPPA'
+C
+          CALL ABARSP(CICLC,HFCLC,TRPCLC,OOTV,IOPSYM,EXCLC,WORK(KEXVAL),
      *               NEXVAL,NABATY,NABAOP,LABEL,LUGDVE,LUSOVE,LUREVE,
      *               THRLEQ,MAXITE,IPRINT,MXRM,MXPHP,WORK(KWRK2),LWRK2)
 C
-         REWIND(LUSOVE)
-         CALL READT(LUSOVE,NALLAI(1),WORK(KSOLUT))
+          REWIND(LUSOVE)
+          CALL READT(LUSOVE,NALLAI(1),WORK(KSOLUT))
+C        
+         ELSE
+          CALL HEADER('Skipped solving for orbital relax. vector',-1)
+          CALL DZERO(WORK(KSOLUT),NALLAI(1)) 
+         END IF 
 C
 C        CALL HEADER('After ABARSP, MP2', -1)
 C        CALL OUTPUT(WORK(KSOLUT),1,NALLAI(1),1,1,NALLAI(1),1,1,LUPRI)

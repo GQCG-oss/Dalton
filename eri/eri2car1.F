@@ -29,28 +29,27 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2car1.F,v 1.2 2001-02-12 18:17:53 vebjornb Exp $
+C$Id: eri2car1.F,v 1.3 2001-04-03 14:25:11 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck cr1drv */
       SUBROUTINE CR1DRV(HERINT,HCINT,INDHER,IODDHH,IODDHC,INDHSQ,
-     &                  LMNPWR,IPNTUV,COOR12,EXP12,CSQ,
+     &                  LMNPWR,IPNTUV,COOR12,EXP12,CSQ,CCFBT,
      &                  WORK,LWORK,IPRINT)
 C
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
 C
-      LOGICAL DOREC, FRSTAO
+      LOGICAL DOREC, FRSTAO, CONTRA
       DIMENSION HERINT(*), HCINT(*),
      &          INDHER(*), INDHSQ(*), IODDHH(*), IODDHC(*),
      &          LMNPWR(*), IPNTUV(*), 
-     &          COOR12(NPP12,3), EXP12(NPP12,3), CSQ(*),
+     &          COOR12(NPP12,3), EXP12(NPP12,3), CSQ(*), CCFBT(*),
      &          WORK(LWORK)
 #include <cbieri.h>
 #include <ericom.h>
 #include <eriao.h>
-      COMMON /DHCINF/ IHCADR(10), IHCSYM(10)
 #include <ibtfun.h>
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR1DRV','*',103)
@@ -62,116 +61,119 @@ C
          IEXPAB = 3
       END IF
 C
-      IF (.TRUE.) THEN
+C     HCCONT  | HCSINT | LFCSNT | LFCINT
+C             |
+C             | ECOEF | HPI | P1 | P2
+C                     |
+C                     | EUV | ETUV | HCPRIM
 C
-C        Allocate CR1TWO
+      LCCONT = 0
+      LCSINT = 0
+      LFCSNT = 0
+      LFCINT = 0
+      LECOEF = 0
+      LHPI   = 0
+      LP1    = 0
+      LP2    = 0
+      LEUV   = 0
+      LETUV  = 0
+      LHCPRM = 0
+      LCPINT = 0
 C
-C        HCCONT  | HCSINT | LFCSNT | LFCINT
-C                |
-C                | ECOEF | HPI | P1 | P2
-C                        |
-C                        | EUV | ETUV | HCPRIM
-C
-         LCCONT = 0
-         LCSINT = 0
-         LFCSNT = 0
-         LFCINT = 0
-         LECOEF = 0
-         LHPI   = 0
-         LP1    = 0
-         LP2    = 0
-         LEUV   = 0
-         LETUV  = 0
-         LHCPRM = 0
-C
-         IF (KHKT12 .GT. 1) THEN
-            IF (SPHR12) THEN
-               LCCONT = NCCPP*NTUV34*KCKT12
-               LFCINT = NTUV34*KHKT12
-            END IF
-            IF (SPHR1 .AND. SPHR2) THEN
-               LCSINT = NCCPP*NTUV34*KHKT2
-               LFCSNT = NTUV34*KHKT2
-            END IF
-C
-            LECOEF = 3*NPP12*(JMAX12 + 1)*(JMAX1 + 1)*(JMAX2+1)
-            LHPI   =   NPP12
-            LP1    = 3*NPP12
-            LP2    = 3*NPP12
-C
-            LEUV   = NPP12
-            LETUV  = NPP12
-C
-            LHCPRM = NPPPP*NTUV34
+      IF (KHKT12 .GT. 1) THEN
+         IF (SPHR12) THEN
+            LCCONT = NCCPP*NTUV34*KCKT12
+            LFCINT = NTUV34*KHKT12
+         END IF
+         IF (SPHR1 .AND. SPHR2) THEN
+            LCSINT = NCCPP*NTUV34*KHKT2
+            LFCSNT = NTUV34*KHKT2
          END IF
 C
-         LFIRST = NTUV34
+         LECOEF = 3*NPP12*(JMAX12 + 1)*(JMAX1 + 1)*(JMAX2+1)
+         LHPI   =   NPP12
+         LP1    = 3*NPP12
+         LP2    = 3*NPP12
 C
-         LTOTAL = LCCONT
-     &          + MAX(
-     &                 LCSINT + LFCSNT + LFCINT,
-     &                 LECOEF + MAX(
-     &                              LHPI+LP1+LP2,
-     &                              LEUV+LETUV+LHCPRM+LFIRST
-     &                             )
-     &               )
-         IF (LTOTAL.GT.LWORK) CALL STOPIT('CR1DRV','CR1TWO',KLAST,LWORK)
+         LEUV   = NPP12
+         LETUV  = NPP12
 C
-         KODDKC = 1
-         KCCONT = KODDKC + KC2MAX
-         KCSINT = KCCONT + LCCONT
-         KFCSNT = KCSINT + LCSINT
-         KFCINT = KFCSNT + LFCSNT
-         KECOEF = KCCONT + LCCONT
-         KHPI   = KECOEF + LECOEF
-         KP1    = KHPI   + LHPI
-         KP2    = KP1    + LP1
-         KEUV   = KECOEF + LECOEF
-         KETUV  = KEUV   + LEUV
-         KHCPRM = KETUV  + LETUV
-         KFIRST = KHCPRM + LHCPRM
-C
-         CALL CR1TWO(HERINT,INDHER,INDHER,IODDHH,IODDHC,INDHSQ,
-     &               WORK(KECOEF),WORK(KEUV),WORK(KETUV),
-     &               LMNPWR,IPNTUV,WORK(KODDKC),
-     &               COOR12,EXP12,CSQ,
-     &               WORK(KHPI),WORK(KP1),WORK(KP2),
-     &               HCINT,WORK(KFCINT),WORK(KHCPRM),WORK(KFIRST),
-     &               WORK(KCCONT),WORK(KCSINT),WORK(KFCSNT),
-     &               IPRINT)
+         LHCPRM = NPPPP*NTUV34
       END IF
+C
+      IF (GCON12) LCPINT = NPP12
+C
+      LFIRST = NTUV34
+C
+      LTOTAL = LCCONT
+     &       + MAX(
+     &              LCSINT + LFCSNT + LFCINT,
+     &              LECOEF + MAX(
+     &                           LHPI+LP1+LP2,
+     &                           LEUV+LETUV+LHCPRM+LFIRST+LCPINT
+     &                          )
+     &            )
+      IF (LTOTAL.GT.LWORK) CALL STOPIT('CR1DRV','CR1TWO',KLAST,LWORK)
+C
+      KODDKC = 1
+      KCCONT = KODDKC + KC2MAX
+      KCSINT = KCCONT + LCCONT
+      KFCSNT = KCSINT + LCSINT
+      KFCINT = KFCSNT + LFCSNT
+      KECOEF = KCCONT + LCCONT
+      KHPI   = KECOEF + LECOEF
+      KP1    = KHPI   + LHPI
+      KP2    = KP1    + LP1
+      KEUV   = KECOEF + LECOEF
+      KETUV  = KEUV   + LEUV
+      KHCPRM = KETUV  + LETUV
+      KFIRST = KHCPRM + LHCPRM
+      KCPINT = KFIRST + LFIRST 
+C
+      CALL CR1TWO(HERINT,INDHER,INDHER,IODDHH,IODDHC,INDHSQ,
+     &            WORK(KECOEF),WORK(KEUV),WORK(KETUV),
+     &            LMNPWR,IPNTUV,WORK(KODDKC),
+     &            COOR12,EXP12,CSQ,CCFBT,
+     &            WORK(KHPI),WORK(KP1),WORK(KP2),
+     &            HCINT,WORK(KFCINT),WORK(KHCPRM),WORK(KFIRST),
+     &            WORK(KCCONT),WORK(KCSINT),WORK(KFCSNT),
+     &            WORK(KCPINT),IPRINT)
       RETURN
       END
 C  /* Deck cr1two */
       SUBROUTINE CR1TWO(HERINT,INDHER,INDHVC,IODDHH,IODDHC,INDHSQ,
      &                  ECOEF,EUV,ETUV,LMNPWR,IPNTUV,IODDKC,
-     &                  COOR12,EXP12,CSQ,HPI,P1,P2,
+     &                  COOR12,EXP12,CSQ,CCFBT,HPI,P1,P2,
      &                  HCINT,FCINT,HCPRIM,FRSTUV,HCCONT,
-     &                  HCSINT,FCSINT,IPRINT)
+     &                  HCSINT,FCSINT,CPINT,IPRINT)
 C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
 C
       INTEGER TUV
-      LOGICAL SAMMRY, FRSTUV(NTUV34),
+      LOGICAL CONTRA, FRSTUV(NTUV34),
      &        FCINT(NTUV34,KHKT12), FCSINT(NTUV34,KHKT2)
-C
-      COMMON /DHCINF/ IHCADR(10), IHCSYM(10)
 C
       DIMENSION HERINT(NPP12,NPRF34,NTUV),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP), INDHVC(0:*),
      &          IODDHH(NRTOP), IODDHC(NRTOP), INDHSQ(NRTOP),
-     &          HCINT(NCCPP,NTUV34,KHKT12),
+C
+     &          HCPRIM(NPP12,NPRF34,NTUV34),
+     &          HCCONT(NCCPP*NTUV34,KCKT12),
+     &          HCINT(NCCPP*NTUV34,KHKT12),
+C
      &          ECOEF(NPP12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2,3),
      &          ETUV(NPP12), EUV(NPP12),
      &          LMNPWR(KCKMAX,NHKMAX,3), IPNTUV(KC2MAX,0:NRDER,2),
      &          COOR12(NPP12,3), EXP12(NPP12,3), 
      &          HPI(NPP12), P1(NPP12,3), P2(NPP12,3),
      &          IODDKC(KC2MAX),
-     &          CSQ(NCSQ1,NCSQ2),
-     &          HCPRIM(NPP12,NPRF34,NTUV34),
-     &          HCCONT(NCCPP,NTUV34,KCKT12),
+C
+     &          CSQ(NCSQ1,NCSQ2), 
+C
+     &          CCFBT(*), CPINT(*),
+C
      &          HCSINT(NCCPP,NTUV34,KHKT2)
 C
 #include <ericom.h>
@@ -182,24 +184,19 @@ C
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR1TWO','*',103)
 C
-C     COMMON /DHCINF/
-C     ---------------
-C
-      IHCADR(1) = 1
-      IHCSYM(1) = 0
-C
 C     *********************************
 C     ***** Special Case: (ss|xy) *****
 C     *********************************
 C
+      CONTRA = GCON12 .OR. NPRF12.NE.1
+C
       IF (KHKT12 .EQ. 1) THEN
-         SAMMRY = .FALSE.
-         IODKC = 0
-         DO 10 TUV = 1, NTUV34
+         DO TUV = 1, NTUV34
             FRSTUV(TUV) = IODDHH(TUV) .NE. 0
-   10    CONTINUE
-         CALL CR1SEG(HERINT,HCINT,NPQBCX,NPRF12,NPRF34,
-     &               IODDHC,IODKC,SAMMRY,FRSTUV,IPRINT)
+         END DO
+C        if (.not.contra) call quit('fix .not.contra...')
+         CALL ERICT1(HERINT,HCINT,CCFBT(ICMAT1),CCFBT(ICMAT2),CPINT,
+     &               IODDHC,0,FRSTUV,IPRINT)
 C
 C     *********************************
 C     ***** General Case: (xy|zw) *****
@@ -246,28 +243,58 @@ C
                   L2 = LMNPWR(ICOMP2,NHKT2,1)
                   M2 = LMNPWR(ICOMP2,NHKT2,2)
                   N2 = LMNPWR(ICOMP2,NHKT2,3)
+C
                   IODDKC(ICMP12) = IODDHC(INDHER(L1+L2,M1+M2,N1+N2))
 C
-C                 Primitive integrals
-C                 ===================
+C                 contracted spherical harmonics
+C                 ==============================
 C
-                  CALL CR1UND(L1,M1,N1,L2,M2,N2,
-     &                        HERINT,INDHER,INDHVC,IODDHH,INDHSQ,
-     &                        ECOEF,EUV,ETUV,HCPRIM,FRSTUV,
-     &                        ICOMP1,ICOMP2,IPRINT)
+                  IF (CONTRA .AND. SPHR12) THEN
+                     CALL CR1UND(HERINT,HCPRIM,L1,M1,N1,L2,M2,N2,
+     &                           INDHER,INDHVC,IODDHH,INDHSQ,
+     &                           ECOEF,EUV,ETUV,FRSTUV,
+     &                           ICOMP1,ICOMP2,IPRINT)
+                     CALL ERICT1(HCPRIM,HCCONT(1,ICMP12),
+     &                           CCFBT(ICMAT1),CCFBT(ICMAT2),CPINT,
+     &                           IODDHC,IODDKC(ICMP12),FRSTUV,IPRINT)
 C
-C                 Contracted integrals
+C                 contracted Cartesians
+C                 =====================
+C
+                  ELSE IF (CONTRA) THEN
+                     CALL CR1UND(HERINT,HCPRIM,L1,M1,N1,L2,M2,N2,
+     &                           INDHER,INDHVC,IODDHH,INDHSQ,
+     &                           ECOEF,EUV,ETUV,FRSTUV,
+     &                           ICOMP1,ICOMP2,IPRINT)
+                     CALL ERICT1(HCPRIM,HCINT(1,ICMP12),
+     &                           CCFBT(ICMAT1),CCFBT(ICMAT2),CPINT,
+     &                           IODDHC,IODDKC(ICMP12),FRSTUV,IPRINT)
+C
+C                 primitive spherical harmonics
+C                 =============================
+C
+                  ELSE IF (SPHR12) THEN
+                     CALL CR1UND(HERINT,HCCONT(1,ICMP12),
+     &                           L1,M1,N1,L2,M2,N2,
+     &                           INDHER,INDHVC,IODDHH,INDHSQ,
+     &                           ECOEF,EUV,ETUV,FRSTUV,
+     &                           ICOMP1,ICOMP2,IPRINT)
+                     CALL ERICT1(HCCONT(1,ICMP12),HCCONT(1,ICMP12),
+     &                           CCFBT(ICMAT1),CCFBT(ICMAT2),CPINT,
+     &                           IODDHC,IODDKC(ICMP12),FRSTUV,IPRINT)
+C
+C                 primitive Cartesians
 C                 ====================
 C
-                  SAMMRY = .FALSE.
-                  IF (SPHR12) THEN
-                     CALL CR1SEG(HCPRIM,HCCONT(1,1,ICMP12),NPQBCX,
-     &                           NPRF12,NPRF34,IODDHC,IODDKC(ICMP12),
-     &                           SAMMRY,FRSTUV,IPRINT)
                   ELSE
-                     CALL CR1SEG(HCPRIM,HCINT(1,1,ICMP12),NPQBCX,NPRF12,
-     &                           NPRF34,IODDHC,IODDKC(ICMP12),SAMMRY,
-     &                           FRSTUV,IPRINT)
+                     CALL CR1UND(HERINT,HCINT(1,ICMP12),
+     &                           L1,M1,N1,L2,M2,N2,
+     &                           INDHER,INDHVC,IODDHH,INDHSQ,
+     &                           ECOEF,EUV,ETUV,FRSTUV,
+     &                           ICOMP1,ICOMP2,IPRINT)
+                     CALL ERICT1(HCINT(1,ICMP12),HCINT(1,ICMP12),
+     &                           CCFBT(ICMAT1),CCFBT(ICMAT2),CPINT,
+     &                           IODDHC,IODDKC(ICMP12),FRSTUV,IPRINT)
                   END IF
 C
   400          CONTINUE
@@ -311,13 +338,12 @@ C  /* Deck hcprint */
 #include <priunit.h>
       PARAMETER (NHCTYP = 1)
       INTEGER TUV
-      DIMENSION HCINT(NPQBCX,NPRF34,NCTF12,NTUV34,KHKT12,NHCTYP),
+      DIMENSION HCINT(NCTF12,NPQBCX,NPRF34,NTUV34,KHKT12,NHCTYP),
      &          IODDHC(NRTOP), IPNTUV(KC2MAX,0:NRDER,2)
 C
 #include <ericom.h>
 #include <eriao.h>
 #include <hertop.h>
-      COMMON /DHCINF/ IHCADR(10), IHCSYM(10)
 #include <ibtfun.h>
 C
 C     Print Hermite-Spherical integrals
@@ -346,8 +372,8 @@ C
      &               'Components:   ', ICOMP1,ICOMP2,
      &               'TUV:          ', TUV
                   CALL OUTPUT(HCINT(1,1,1,TUV,ICMP12,ITYPE),
-     &                        1,NPQBCX,1,NPRF34*NCTF12,
-     &                        NPQBCX,NPRF34*NCTF12,
+     &                        1,NCTF12*NPQBCX,1,NPRF34,
+     &                        NCTF12*NPQBCX,NPRF34,
      &                        1,LUPRI)
                END IF
   400          CONTINUE
@@ -357,9 +383,9 @@ C
       RETURN
       END
 C  /* Deck cr1und */
-      SUBROUTINE CR1UND(L1,M1,N1,L2,M2,N2,
-     &                  HERINT,INDHER,INDHVC,IODDHH,INDHSQ,
-     &                  ECOEF,EUV,ETUV,HCPRIM,FRSTUV,
+      SUBROUTINE CR1UND(HERINT,HCPRIM,L1,M1,N1,L2,M2,N2,
+     &                  INDHER,INDHVC,IODDHH,INDHSQ,
+     &                  ECOEF,EUV,ETUV,FRSTUV,
      &                  ICOMP1,ICOMP2,IPRINT)
 C
 C     T. Helgaker
@@ -397,8 +423,7 @@ C
       MINV = IBTAND(MAXV,I120(3))
 C
       IF (IPRINT .GT. 25) THEN
-         WRITE(LUPRI,'(/,1X,A,3I5/)')' ICOMP1, ICOMP2, ICMP12',
-     &                                 ICOMP1, ICOMP2, ICMP12
+         WRITE(LUPRI,'(/,1X,A,2I5/)')' ICOMP1, ICOMP2', ICOMP1,ICOMP2
          WRITE(LUPRI,'(1X,A,15X,3I5)')' T loop:',MINT,MAXT,INCT
          WRITE(LUPRI,'(1X,A,15X,3I5)')' U loop:',MINU,MAXU,INCU
          WRITE(LUPRI,'(1X,A,15X,3I5)')' V loop:',MINV,MAXV,INCV
@@ -451,80 +476,122 @@ C
 C
       RETURN
       END
-C  /* Deck cr1seg */
-      SUBROUTINE CR1SEG(PRMINT,CNTINT,NINNER,NPRIMS,NOUTER,
-     &                  IODDHC,IODKC,SAMMRY,FRSTUV,IPRINT)
+C  /* Deck erict1 */
+      SUBROUTINE ERICT1(PPINT,CCINT,CMAT1,CMAT2,CPINT,IODDHC,IODKC,
+     &                  FRSTUV,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER (D0 = 0.0D0)
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       INTEGER TUV
-      LOGICAL SAMMRY, FRSTUV(NTUV34)
-      DIMENSION PRMINT(NINNER,NPRIMS,NOUTER,NTUV34),
-     &          CNTINT(NINNER,NOUTER,NTUV34),
-     &          IODDHC(NRTOP)
+      LOGICAL FRSTUV(NTUV34)
+      DIMENSION CMAT1(NPRF1,NCTF1)
+      DIMENSION CMAT2(NPRF2,NCTF2)
+      DIMENSION PPINT(NPQBCX,NPRF12,NPRF34,NTUV34)
+      DIMENSION CPINT(NCTF1,NPQBCX,NPRF2)
+      DIMENSION CCINT(NCTF12*NPQBCX,NPRF34,NTUV34)
+      DIMENSION IODDHC(NRTOP)
 #include <hertop.h>
 #include <ericom.h>
 #include <eriao.h>
 C
-      IF (NPRIMS.EQ.1 .AND. .NOT.SAMMRY) THEN
+      IF (IPRINT .GT. 25) THEN
+         CALL HEADER('Output from ERICT1',-1)
+         CALL HEADER('CMAT1 in ERICT1',-1)
+         WRITE (LUPRI,'(2X,A,2I5)') 'NPRF1,NCTF1 ',NPRF1,NCTF1
+         CALL OUTPUT(CMAT1,1,NPRF1,1,NCTF1,NPRF1,NCTF1,1,LUPRI)
+         CALL HEADER('CMAT2 in ERICT1',-1)
+         WRITE (LUPRI,'(2X,A,2I5)') 'NPRF2,NCTF2 ',NPRF2,NCTF2
+         CALL OUTPUT(CMAT2,1,NPRF2,1,NCTF2,NPRF2,NCTF2,1,LUPRI)
+         WRITE (LUPRI,'(2X,A,2I5)') 'NPRF34,NTUV34',NPRF34,NTUV34
+      END IF
+C
+      IF (NPRF12.EQ.1 .AND. .NOT.GCON12) THEN
          DO 100 TUV = 1, NTUV34
-            IF (IODDHC(TUV) .EQ. IODKC) THEN
-               IF (FRSTUV(TUV)) THEN
-                  DO 200 K = 1, NOUTER
-                  DO 200 J = 1, NINNER
-                     CNTINT(J,K,TUV) = D0
-  200             CONTINUE
-               ELSE
-                  DO 300 K = 1, NOUTER
-                  DO 300 J = 1, NINNER
-                     CNTINT(J,K,TUV) = PRMINT(J,1,K,TUV)
-  300             CONTINUE
-               END IF
-            END IF
-  100    CONTINUE
-      ELSE
-         DO 400 TUV = 1, NTUV34
          IF (IODDHC(TUV) .EQ. IODKC) THEN
             IF (FRSTUV(TUV)) THEN
-               DO 500 K = 1, NOUTER
-               DO 500 J = 1, NINNER
-                  CNTINT(J,K,TUV) = D0
-  500          CONTINUE
+               DO K = 1, NPRF34 
+                 DO J = 1, NPQBCX
+                  CCINT(J,K,TUV) = D0
+                 END DO 
+               END DO
             ELSE
-               DO 600 K = 1, NOUTER
-                  DO 700 J = 1, NINNER
-                     CNTINT(J,K,TUV)=PRMINT(J,1,K,TUV)+PRMINT(J,2,K,TUV)
-  700             CONTINUE
-                  DO 800 I = 3, NPRIMS
-                  DO 800 J = 1, NINNER
-                     CNTINT(J,K,TUV)=CNTINT(J,K,TUV) + PRMINT(J,I,K,TUV)
-  800             CONTINUE
-  600          CONTINUE
+               DO K = 1, NPRF34
+                 DO J = 1, NPQBCX
+                  CCINT(J,K,TUV) = PPINT(J,1,K,TUV)
+                 END DO
+               END DO
             END IF
          END IF
-  400    CONTINUE
+  100    CONTINUE
+      ELSE
+         DO 200 TUV = 1, NTUV34
+         IF (IODDHC(TUV) .EQ. IODKC) THEN
+            IF (FRSTUV(TUV)) THEN
+               DO K = 1, NPRF34 
+                 DO I = 1, NCTF12*NPQBCX
+                  CCINT(I,K,TUV) = D0
+                 END DO 
+               END DO
+            ELSE
+               IF (GCON12) THEN
+                  DO K = 1, NPRF34
+                     CALL DGEMM('T','T',NCTF1,NPQBCX*NPRF2,NPRF1,
+     &                           D1,CMAT1,NPRF1,
+     &                           PPINT(1,1,K,TUV),NPQBCX*NPRF2,
+     &                           D0,CPINT,NCTF1)
+                     CALL DGEMM('T','T',NCTF2,NCTF1*NPQBCX,NPRF2,
+     &                           D1,CMAT2,NPRF2,
+     &                           CPINT,NCTF1*NPQBCX,
+     &                           D0,CCINT(1,K,TUV),NCTF2)
+                  END DO
+               ELSE
+                  DO K = 1, NPRF34
+                     DO J = 1, NPQBCX
+                        CCINT(J,K,TUV) = PPINT(J,1,K,TUV)
+     &                                 + PPINT(J,2,K,TUV)
+                     END DO
+                     DO I = 3, NPRF12 
+                       DO J = 1, NPQBCX
+                        CCINT(J,K,TUV) = CCINT(J,K,TUV) 
+     &                                 + PPINT(J,I,K,TUV)
+                       END DO 
+                     END DO
+                  END DO
+               END IF
+            END IF
+         END IF
+  200    CONTINUE
       END IF
 C
       IF (IPRINT .GT. 25) THEN
          CALL HEADER('Output from CR1SEG',-1)
-         WRITE (LUPRI,'(2X,A,3I5)') 
-     &         'NINNER, NPRIMS, NOUTER', NINNER, NPRIMS, NOUTER
-         DO 900 TUV = 1, NTUV34
-            IF (IODDHC(TUV) .EQ. IODKC) THEN
-               IF (.NOT.FRSTUV(TUV)) THEN
-                  CALL HEADER('PRMINT in CR1SEG',-1)
-                  WRITE (LUPRI,'(2X,A,I5)') 'TUV: ',TUV
-                  CALL OUTPUT(PRMINT(1,1,1,TUV),
-     &                        1,NINNER*NPRIMS,1,NOUTER,
-     &                        NINNER*NPRIMS,NOUTER,1,LUPRI)
-               END IF
-               CALL HEADER('CNTINT in CR1SEG',-1)
+         WRITE (LUPRI,'(2X,A,2I5)') 'NPRF1, NCTF1 ',NPRF1, NCTF1
+         WRITE (LUPRI,'(2X,A,2I5)') 'NPRF2, NCTF2 ',NPRF2, NCTF2
+         WRITE (LUPRI,'(2X,A,2I5)') 'NPRF34,NTUV34',NPRF34,NTUV34
+         WRITE (LUPRI,'(2X,A,2I5)') 'NPQBCX,NPRF12',NPQBCX,NPRF12
+         WRITE (LUPRI,'(2X,A,3L5)') 'GCON1, GCON2,',GCON1, GCON2, GCON12
+         IF (GCON1) THEN
+            CALL HEADER('CMAT1 in ERICT1',-1)
+            CALL OUTPUT(CMAT1,1,NPRF1,1,NCTF1,NPRF1,NCTF1,1,LUPRI)
+         END IF
+         IF (GCON2) THEN
+            CALL HEADER('CMAT2 in ERICT1',-1)
+            CALL OUTPUT(CMAT2,1,NPRF2,1,NCTF2,NPRF2,NCTF2,1,LUPRI)
+         END IF
+         DO TUV = 1, NTUV34 
+           IF (IODDHC(TUV) .EQ. IODKC) THEN
+            IF (.NOT.FRSTUV(TUV)) THEN
+               CALL HEADER('PPINT in CR1SEG',-1)
                WRITE (LUPRI,'(2X,A,I5)') 'TUV: ',TUV
-               CALL OUTPUT(CNTINT(1,1,TUV),
-     &                     1,NINNER,1,NOUTER,
-     &                     NINNER,NOUTER,1,LUPRI)
+               CALL OUTPUT(PPINT(1,1,1,TUV),1,NPQBCX*NPRF12,1,NPRF34,
+     &                     NPQBCX*NPRF12,NPRF34,1,LUPRI)
             END IF
-  900    CONTINUE
+            CALL HEADER('CCINT in CR1SEG',-1)
+            WRITE (LUPRI,'(2X,A,I5)') 'TUV: ',TUV
+            CALL OUTPUT(CCINT(1,1,TUV),1,NPQBCX,1,NPRF34,
+     &                  NPQBCX,NPRF34,1,LUPRI)
+           END IF 
+         END DO
       END IF
 C
       RETURN

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abarhs.F,v 1.2 2001-03-13 08:43:28 vebjornb Exp $
+C$Id: abarhs.F,v 1.3 2001-04-03 14:25:07 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -1479,7 +1479,7 @@ CKeinSPASmehr
 C
 C                 ***** Print right-hand side *****
 C
-                  IF (IPRMAX .GE. 05) THEN
+C                 IF (IPRMAX .GE. 05) THEN
                      WRITE (LUPRI,'(//A,I3,A,I2,A,I2,A)')
      &                 ' Differentiated Gradient for Atom',IATOM,
      &                 ', Coordinate',ICOOR,', and symmetry',ISYM,':'
@@ -1495,7 +1495,7 @@ C
                         PRFAC = 0.1D0
                      END IF
                      CALL PRKAP(NWOPPT,WORK(KGD+NCONST),PRFAC,LUPRI)
-                  END IF
+C                 END IF
 C
 C                 ***** Average orbital rotations if SUPSYM and sym 1 *****
 C
