@@ -748,6 +748,16 @@ C
 C
       THRCLS = THRS
 C
+CSPAS:6.5.2003 Write basis set on MOLDEN input file 
+C     *****************************************************
+C     ***** Write basis set data to MOLDEN input file *****
+C     *****************************************************
+C
+      CALL MOGTO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
+     &           NOINT,WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
+     &           CPRIMU,NRMPRI)
+CKeinSPASmehr 
+C
 C     ****************************************
 C     ***** Output on LUONEL *****************
 C     ****************************************
