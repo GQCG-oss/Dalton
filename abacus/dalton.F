@@ -3,17 +3,17 @@ C...   Copyright (c) 2001 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 1.2
-C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
-C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
-C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
-C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
-C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
-C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
-C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
-C...   and O. Vahtras"
-C...
+C...   "Dalton, a molecular electronic structure program, Release 2.0
+C...   (2005), written by C. Angeli, K. L. Bak,  V. Bakken, 
+C...   O. Christiansen, R. Cimiraglia, S. Coriani, P. Dahle,
+C...   E. K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
+C...   K. Hald, A. Halkier, H. Heiberg, T. Helgaker, H. Hettema, 
+C...   H. J. Aa. Jensen, D. Jonsson, P. Joergensen, S. Kirpekar, 
+C...   W. Klopper, R.Kobayashi, H. Koch, O. B. Lutnaes, K. V. Mikkelsen, 
+C...   P. Norman, J.Olsen, M. J. Packer, T. B. Pedersen, Z. Rinkevicius,
+C...   T. A. Ruden, K. Ruud, P. Salek, A. Sanchez de Meras, T. Saue, 
+C...   S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
+C...   P. R. Taylor, O. Vahtras, D. J. Wilson, H. Aagren. 
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
@@ -57,16 +57,18 @@ C
 C     If results obtained with this code are published, an appropriate
 C     citation would be:
 C
-C     "Dalton, a molecular electronic structure program, Release 1.2
-C     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
-C     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
-C     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
-C     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
-C     H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-C     H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
-C     T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
-C     B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
-C     and O. Vahtras"
+C...   "DALTON, a molecular electronic structure program, Release 2.0
+C...   (2005), see http://www.kjemi.uio.no/software/dalton/dalton.html"
+C
+C...   Authors: C. Angeli, K. L. Bak,  V. Bakken, O. Christiansen, 
+C...   R. Cimiraglia, S. Coriani, P. Dahle, E. K. Dalskov, 
+C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier, 
+C...   H. Heiberg, T. Helgaker, H. Hettema, H. J. Aa. Jensen, 
+C...   D. Jonsson, P. Joergensen, S. Kirpekar, W. Klopper, R.Kobayashi,
+C...   H. Koch, O. B. Lutnaes, K. V. Mikkelsen, P. Norman, J.Olsen,
+C...   M. J. Packer, T. B. Pedersen, Z. Rinkevicius T. A. Ruden, 
+C...   K. Ruud, P. Salek, A. Sanchez de Meras, T. Saue, S. P. A. Sauer,
+C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor. 
 C
 C     This note is not to be removed or altered.
 C
@@ -283,53 +285,93 @@ C
          CALL TITLER(' DALTON - An electronic structure program ',
      &               '*',111)
 C
-C        Changed format (WK/UniKA/04-11-2002).
-         WRITE (LUPRI,'(T10,A,//,T26,A,/,6(/T10,A),//,T26,A,//,
-     &        (T10,A))')
-     * ' This is output from DALTON (Release 2.0 rev. 0, Feb. 2005)',
-     *  ' Principal authors:',
-     *  ' Trygve Helgaker,       University of Oslo,           Norway ',
-     *  ' Hans Joergen Jensen,   SDU - Odense University,      Denmark',
-     *  ' Poul Joergensen,       Aarhus University,            Denmark',
-     *  ' Jeppe Olsen,           Aarhus University,            Denmark',
-     *  ' Kenneth Ruud,          University of Tromsoe,        Norway ',
-     *  ' Hans Aagren,           KTH Stockholm,                Sweden ',
-     *  ' Contributors:',
-     *  ' Celestino Angeli,      University of Ferrara,        Italy  ',
-     *  ' Keld L. Bak,           UNI-C,                        Denmark',
-     *  ' Vebjoern Bakken,       University of Oslo,           Norway ',
-     *  ' Ove Christiansen,      University of Lund,           Sweden ',
-     *  ' Renzo Cimiraglia,      University of Ferrara,        Italy  ',
-     *  ' Sonia Coriani,         University of Trieste,        Italy  ',
-     *  ' Paal Dahle,            University of Oslo,           Norway ',
-     *  ' Erik K. Dalskov,       UNI-C,                        Denmark',
-     *  ' Thomas Enevoldsen,     SDU - Odense University,      Denmark',
-     *  ' Berta Fernandez,       U. of Santiago de Compostela, Spain  ',
-     *  ' Christof Haettig,      Forschungszentrum Karlsruhe,  Germany',
-     *  ' Kasper Hald,           Aarhus University,            Denmark',
-     *  ' Asger Halkier,         Aarhus University,            Denmark',
-     *  ' Hinne Hettema,         University of Auckland,       NZ     ',
-     *  ' Dan Jonsson,           KTH Stockholm                 Sweden ',
-     *  ' Sheela Kirpekar,       SDU - Odense University,      Denmark',
-     *  ' Wim Klopper,           University of Karlsruhe,      Germany',
-     *  ' Rika Kobayashi,        Cambridge University,         England',
-     *  ' Henrik Koch,           University of Trondheim,      Norway ',
-     *  ' Ola B. Lutnaes,        University of Oslo,           Norway ',
-     *  ' Kurt V. Mikkelsen,     University of Copenhagen,     Denmark',
-     *  ' Patrick Norman,        University of Linkoeping,     Sweden ',
-     *  ' Thomas B. Pedersen,    U. of Santiago de Compostela, Spain  ',
-     *  ' Martin J. Packer,      University of Sheffield,      UK     ',
-     *  ' Zilvinas Rinkevicius   KTH Stockholm,                Sweden ',
-     *  ' Torgeir A. Ruden,      University of Oslo,           Norway ',
-     *  ' Pawel Salek,           KTH Stockholm,                Sweden ',
-     *  ' Alfredo Sanchez,       University of Valencia,       Spain  ',
-     *  ' Trond Saue,            University of Toulouse,       France ',
-     *  ' Stephan P. A. Sauer,   University of Copenhagen,     Denmark',
-     *  ' Bernd Schimmelpfennig, KTH Stockholm,                Sweden ',
-     *  ' K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark',
-     *  ' Peter R. Taylor,       University of Warwick,        UK     ',
-     *  ' Olav Vahtras,          KTH Stockholm,                Sweden ',
-     *  ' David J. Wilson,       University of Oslo,           Norway '
+         WRITE (LUPRI,'(T5,A,43(/T5,A))')
+     *  'This is output from DALTON (Release 2.0 rev. 0, Mar. 2005)',
+     &  ' ',
+     *  'Celestino Angeli,         University of Ferrara,'
+     &                      //'        Italy      ',
+     *  'Keld L. Bak,              UNI-C,                        '
+     &                      //'Denmark    ',
+     *  'Vebjoern Bakken,          University of Oslo,           '
+     &                      //'Norway     ',
+     *  'Ove Christiansen,         Aarhus University,            '
+     &                      //'Denmark    ',
+     *  'Renzo Cimiraglia,         University of Ferrara,        '
+     &                      //'Italy      ',
+     *  'Sonia Coriani,            University of Trieste,        '
+     &                      //'Italy      ',
+     *  'Paal Dahle,               University of Oslo,           '
+     &                      //'Norway     ',
+     *  'Erik K. Dalskov,          UNI-C,                        '
+     &                      //'Denmark    ',
+     *  'Thomas Enevoldsen,        SDU - Odense University,      '
+     &                      //'Denmark    ',
+     *  'Berta Fernandez,          U. of Santiago de Compostela, '
+     &                      //'Spain      ',
+     *  'Christof Haettig,         Forschungszentrum Karlsruhe,  '
+     &                      //'Germany    ',
+     *  'Kasper Hald,              Aarhus University,            '
+     &                      //'Denmark    ',
+     *  'Asger Halkier,            Aarhus University,            '
+     &                      //'Denmark    ',
+     *  'Hanne Heiberg,            University of Oslo,           '
+     &                      //'Norway     ',
+     *  'Trygve Helgaker,          University of Oslo,           '
+     &                      //'Norway     ',
+     *  'Hinne Hettema,            University of Auckland,       '
+     &                      //'New Zealand',
+     *  'Hans Joergen Aa. Jensen,  SDU - Odense University,      '
+     &                      //'Denmark    ',
+     *  'Dan Jonsson,              KTH Stockholm,                '
+     &                      //'Sweden     ',
+     *  'Poul Joergensen,          Aarhus University,            '
+     &                      //'Denmark    ',
+     *  'Sheela Kirpekar,          SDU - Odense University,      '
+     &                      //'Denmark    ',
+     *  'Wim Klopper,              University of Karlsruhe,      '
+     &                      //'Germany    ',
+     *  'Rika Kobayashi,           ANU Supercomputer Facility,   '
+     &                      //'Australia  ',
+     *  'Henrik Koch,              University of Trondheim,      '
+     &                      //'Norway     ',
+     *  'Ola B. Lutnaes,           University of Oslo,           '
+     &                      //'Norway     ',
+     *  'Kurt V. Mikkelsen,        University of Copenhagen,     '
+     &                      //'Denmark    ',
+     *  'Patrick Norman,           University of Linkoeping,     '
+     &                      //'Sweden     ',
+     *  'Jeppe Olsen,              Aarhus University,            '
+     &                      //'Denmark    ',
+     *  'Martin J. Packer,         University of Sheffield,      '
+     &                      //'UK         ',
+     *  'Thomas B. Pedersen,       University of Lund,           '
+     &                      //'Sweden     ',
+     *  'Zilvinas Rinkevicius,     KTH Stockholm,                '
+     &                      //'Sweden     ',
+     *  'Torgeir A. Ruden,         University of Oslo,           '
+     &                      //'Norway     ',
+     *  'Kenneth Ruud,             University of Tromsoe,        '
+     &                      //'Norway     ',
+     *  'Pawel Salek,              KTH Stockholm,                '
+     &                      //'Sweden     ',
+     *  'Alfredo Sanchez de Meras, University of Valencia,       '
+     &                      //'Spain      ',
+     *  'Trond Saue,               University of Strasbourg,     '
+     &                      //'France     ',
+     *  'Stephan P. A. Sauer,      University of Copenhagen,     '
+     &                      //'Denmark    ',
+     *  'Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  '
+     &                      //'Sweden     ',
+     *  'K. O. Sylvester-Hvid,     University of Copenhagen,     '
+     &                      //'Denmark    ',
+     *  'Peter R. Taylor,          University of Warwick,        '
+     &                      //'UK         ',
+     *  'Olav Vahtras,             KTH Stockholm,                '
+     &                      //'Sweden     ',
+     *  'David J. Wilson,          University of Oslo,           '
+     &                      //'Norway     ',
+     *  'Hans Aagren,              KTH Stockholm,                '
+     &                      //'Sweden     '
 C
 C        Changed format (WK/UniKA/04-11-2002).
          WRITE (LUPRI,'(/1X,69A1/)') ('-',I=1,69)
