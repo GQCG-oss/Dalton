@@ -7,15 +7,15 @@ c /* deck cc_tmcal */
 *    Purpose: Third moment calculations
 *    
 *    Written by: P.Joergensen and C.Haettig 1997
-*    Clean up  : S. Coriani 2000
+*    Clean up and new output style: S. Coriani 2001
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#include <priunit_dec.h>
-#include <ccorb_dec.h>
-#include <ccsdsym_dec.h>
+# include <priunit_dec.h>
+# include <ccorb_dec.h>
+# include <ccsdsym_dec.h>
 #else
-#include <implicit.h>
+# include <implicit.h>
 #endif
 #include <priunit.h>
 #include <ccorb.h>
@@ -32,11 +32,10 @@ c /* deck cc_tmcal */
       PARAMETER (LOCDBG = .FALSE.)
 
 * variables:
-      CHARACTER*8 LABELA, LABELB, LABELC,
-     *            LABELD, LABELE, LABELF 
-      CHARACTER*10 MODFIL
-      INTEGER ISYMB, ISYMC, ISYMA, ISYMD, ISYME, ISYMF,  ISYMABC
-      INTEGER IFREQ, INUM, IOPER, IDX, IOFFST, LWRK, IOPT
+      CHARACTER*8 LABELA, LABELB, LABELC,LABELD, LABELE, LABELF 
+      CHARACTER MODFIL*10, MODPRI*5
+      INTEGER ISYMB, ISYMC, ISYMA, ISYMD, ISYME, ISYMF, ISYMABC
+      INTEGER IFREQ, INUM, IOPER, IDX, IOFFST, LWRK, IOPTRD
       INTEGER K1VEC1, K1VEC2, K2VEC1, K2VEC2, IM11
       INTEGER IX3AC0F, IX3DF0F, IO3AC0F, IO3ACF0, IO3DF0F, IO3DFF0
       INTEGER NCCVAR1, NCCVAR2
@@ -44,11 +43,13 @@ c /* deck cc_tmcal */
 #if defined (SYS_CRAY)
       REAL HALF, FREQEX, FREQB, FREQC, EIGV, WRK(LWRK)
       REAL SMLM, SMCLM, SMRM, SMCRM
+      REAL ABCLM,DEFLM,ABCRM,DEFRM
       REAL X1, X2, Y1, Y2
       REAL DDOT, ZERO
 #else
       DOUBLE PRECISION HALF, FREQEX, FREQB, FREQC, EIGV, WRK(LWRK) 
       DOUBLE PRECISION SMLM, SMCLM, SMRM, SMCRM
+      DOUBLE PRECISION ABCLM,DEFLM,ABCRM,DEFRM,THREEPH
       DOUBLE PRECISION X1, X2, Y1, Y2
       DOUBLE PRECISION DDOT, ZERO
 #endif
@@ -59,17 +60,53 @@ c /* deck cc_tmcal */
       INTEGER IRHSR3
       INTEGER ILRMAMP
       INTEGER ICHI3
-
 * data:
       LOGICAL FIRSTCALL
       SAVE    FIRSTCALL
       DATA    FIRSTCALL /.TRUE./
+*---------------------------------------------------------------------*
+* print header for third order moments section
+*---------------------------------------------------------------------*
+      WRITE (LUPRI,'(7(/1X,2A),/)')
+     & '************************************',
+     &                               '*******************************',
+     & '*                                   ',
+     &                               '                              *',
+     & '*<<<<<<<< OUTPUT FROM COUPLED CLUSTER C',
+     &                                  'UBIC RESPONSE >>>>>>>>>>>>>*',
+     & '*                                   ',
+     &                               '                              *',
+     & '*<<<<<<<< CALCULATION OF THREE PHOTON TRANS',
+     &                                      'ITION STRENGTHS >>>>>>>*',
+     & '*                                   ',
+     &                               '                              *',
+     & '************************************',
+     &                               '*******************************'
 
-
+*---------------------------------------------------------------------*
+* print debug info
+*---------------------------------------------------------------------*
       IF (LOCDBG) THEN
         WRITE (LUPRI,*) 'DEBUG_CC_TMIND> NTMOP = ',NTMOPER
       END IF
-
+*---------------------------------------------------------------------*
+* set MODFIL, MODPRI, IOPTRD for calls to CC_RDRSP and print out
+*---------------------------------------------------------------------*
+      IF (CCS) THEN
+         MODFIL = 'CCS       '
+         MODPRI  = 'CCS  '
+         IOPTRD = 1
+      ELSE IF (CC2) THEN
+         MODFIL = 'CC2       '
+         MODPRI  = 'CC2  '
+         IOPTRD = 3
+      ELSE IF (CCSD) THEN
+         MODFIL = 'CCSD      '
+         MODPRI  = 'CCSD '
+         IOPTRD = 3
+      ELSE
+         CALL QUIT('Unknown coupled cluster model in CC_TMCAL')
+      END IF
 *---------------------------------------------------------------------*
 * find list entries for the required response vectors
 * and excitation vectors:
@@ -90,21 +127,15 @@ c /* deck cc_tmcal */
         ISYME  = ISYOPR(IETMOP(IOPER))
         ISYMF  = ISYOPR(IFTMOP(IOPER))
 
-        WRITE (LUPRI,*) 'LABELA:',LABELA
-        WRITE (LUPRI,*) 'LABELB:',LABELB
-        WRITE (LUPRI,*) 'LABELC:',LABELC
-        WRITE (LUPRI,*) 'LABELD:',LABELD
-        WRITE (LUPRI,*) 'LABELE:',LABELE
-        WRITE (LUPRI,*) 'LABELF:',LABELF
-
-        WRITE (LUPRI,*) 'ISYMA:', ISYMA
-        WRITE (LUPRI,*) 'ISYMB:', ISYMB
-        WRITE (LUPRI,*) 'ISYMC:', ISYMC
-        WRITE (LUPRI,*) 'ISYMD:', ISYMD
-        WRITE (LUPRI,*) 'ISYME:', ISYME
-        WRITE (LUPRI,*) 'ISYMF:', ISYMF
-
-        CALL FLSHFO(LUPRI)
+        IF (LOCDBG) THEN
+           WRITE (LUPRI,*) 'LABELA:',LABELA, ' ISYMA:', ISYMA
+           WRITE (LUPRI,*) 'LABELB:',LABELB, ' ISYMB:', ISYMB
+           WRITE (LUPRI,*) 'LABELC:',LABELC, ' ISYMC:', ISYMC
+           WRITE (LUPRI,*) 'LABELD:',LABELD, ' ISYMD:', ISYMD
+           WRITE (LUPRI,*) 'LABELE:',LABELE, ' ISYME:', ISYME
+           WRITE (LUPRI,*) 'LABELF:',LABELF, ' ISYMF:', ISYMF
+           CALL FLSHFO(LUPRI)
+        END IF
         
         ISYMABC = MULD2H(MULD2H(ISYMA,ISYMB),ISYMC)
         IF (ISYMABC .EQ. MULD2H(ISYMD,MULD2H(ISYME,ISYMF))) THEN
@@ -127,15 +158,15 @@ c /* deck cc_tmcal */
      &            LABELC,'(',FREQC, '),  ', LABELD,'(',FREQEX,'),  ',
      &            LABELE,'(',FREQB, '),  ', LABELF,'(',FREQC ,'),  '
               END IF
-*           request third order chi vectors:
+
+*    request third order chi vectors:
 
            IX3AC0F = ICHI3(LABELA,-FREQEX+FREQB+FREQC,ISYMA,
      &                  LABELB,-FREQB,ISYMB,LABELC,-FREQC,ISYMC)
            IX3DF0F = ICHI3(LABELD,-FREQEX+FREQB+FREQC,ISYMD,
      &                  LABELE,-FREQB,ISYME,LABELF,-FREQC,ISYMF)
 
-
-*           request third order rhs vectors
+*    request third order rhs vectors
 
            IO3AC0F = IRHSR3(LABELA,-FREQEX+FREQB+FREQC,ISYMA,
      &                  LABELB,-FREQB,ISYMB,LABELC,-FREQC,ISYMC)
@@ -146,16 +177,17 @@ c /* deck cc_tmcal */
            IO3DFF0 = IRHSR3(LABELD,+FREQEX-FREQB-FREQC,ISYMD,
      &                  LABELE,+FREQB,ISYME,LABELF,+FREQC,ISYMF)
 
-*           request M vectors for different excitation energies
+*    request M vectors for different excitation energies
 
              IOFFST = ISYOFE(ISYMABC) +  ITMSEL(IFREQ,2)
              EIGV   = EIGVAL(IOFFST)
              IM11   = ILRMAMP(IOFFST,EIGV,ISYMABC)
+*--------------------------------------------------------------*
+*            calculate left  moment M_of^ABC(-w1,-w2) contrib.
+*            previously called SMCLM
+*--------------------------------------------------------------*
 
-*            calculate left  moment ABC-w contribution
-
-             IOPT = 3
-             CALL CC_RDRSP('X3',IX3AC0F,ISYMABC,IOPT,MODFIL,
+             CALL CC_RDRSP('X3',IX3AC0F,ISYMABC,IOPTRD,MODFIL,
      *                     WRK(K1VEC1),WRK(K1VEC2))
              X1 = DDOT(NCCVAR1,WRK(K1VEC1),1,WRK(K1VEC1),1)
              IF (.NOT.CCS) THEN
@@ -163,28 +195,26 @@ c /* deck cc_tmcal */
              ELSE
                X2 = ZERO
              END IF
-             WRITE (LUPRI,*) ' norm^2 of X3 vector:',X1,X2
+             IF (LOCDBG)
+     &          WRITE (LUPRI,*) ' norm^2 of X3 vector:',X1,X2
 
-             IOPT = 3
-             CALL CC_RDRSP('RE',IOFFST,ISYMABC,IOPT,MODFIL,
+             CALL CC_RDRSP('RE',IOFFST,ISYMABC,IOPTRD,MODFIL,
      *                     WRK(K2VEC1),WRK(K2VEC2))
-             y1 = DDOT(NCCVAR1,WRK(K2VEC1),1,WRK(K2VEC1),1)
+             Y1 = DDOT(NCCVAR1,WRK(K2VEC1),1,WRK(K2VEC1),1)
              IF (.NOT.CCS) THEN
                Y2 = DDOT(NCCVAR2,WRK(K2VEC2),1,WRK(K2VEC2),1) 
              ELSE
                Y2 = ZERO
              END IF
-             WRITE (LUPRI,*) ' norm^2 of RE vector:',Y1,Y2
+             IF (LOCDBG)
+     &          WRITE (LUPRI,*) ' norm^2 of RE vector:',Y1,Y2
 
-             SMCLM = DDOT(NCCVAR1,WRK(K1VEC1),1,WRK(K2VEC1),1)
+             ABCLM = DDOT(NCCVAR1,WRK(K1VEC1),1,WRK(K2VEC1),1)
              IF (.NOT.CCS) THEN
-               SMCLM=SMCLM + DDOT(NCCVAR2,WRK(K1VEC2),1,WRK(K2VEC2),1) 
+               ABCLM=ABCLM + DDOT(NCCVAR2,WRK(K1VEC2),1,WRK(K2VEC2),1) 
              END IF
-             WRITE (LUPRI,*)' SMCLM1',SMCLM
 
-
-             IOPT = 3
-             CALL CC_RDRSP('M1',IM11,ISYMABC,IOPT,MODFIL,
+             CALL CC_RDRSP('M1',IM11,ISYMABC,IOPTRD,MODFIL,
      *                     WRK(K1VEC1),WRK(K1VEC2))
              X1 = DDOT(NCCVAR1,WRK(K1VEC1),1,WRK(K1VEC1),1)
              IF (.NOT.CCS) THEN
@@ -192,97 +222,124 @@ c /* deck cc_tmcal */
              ELSE
                X2 = ZERO
              END IF
-             WRITE (LUPRI,*) 'NORM^2 OF M1:',X1,X2,X1+X2
+             IF (LOCDBG)
+     &          WRITE (LUPRI,*) 'Norm^2 of M1:',X1,X2,X1+X2
 
-             IOPT = 3
-             CALL CC_RDRSP('O3',IO3AC0F,ISYMABC,IOPT,MODFIL,
+             CALL CC_RDRSP('O3',IO3AC0F,ISYMABC,IOPTRD,MODFIL,
      *                     WRK(K2VEC1),WRK(K2VEC2))
-             y1 = DDOT(NCCVAR1,WRK(K2VEC1),1,WRK(K2VEC1),1)
+             Y1 = DDOT(NCCVAR1,WRK(K2VEC1),1,WRK(K2VEC1),1)
              IF (.NOT.CCS) THEN
-               y2 = DDOT(NCCVAR2,WRK(K2VEC2),1,WRK(K2VEC2),1) 
+               Y2 = DDOT(NCCVAR2,WRK(K2VEC2),1,WRK(K2VEC2),1) 
              ELSE
-               y2 = ZERO
+               Y2 = ZERO
              END IF
-             WRITE (LUPRI,*) ' norm^2 of O3 vector:',y1,y2,y1+y2
+             IF (LOCDBG)
+     &          WRITE (LUPRI,*) ' Norm^2 of O3 vector:',y1,y2,y1+y2
 
              CALL CCLR_DIASCL(WRK(K2VEC2),HALF,ISYMABC)
 
-             SMCLM = SMCLM + DDOT(NCCVAR1,WRK(K1VEC1),1,WRK(K2VEC1),1)
+             ABCLM = ABCLM + DDOT(NCCVAR1,WRK(K1VEC1),1,WRK(K2VEC1),1)
              IF (.NOT.CCS) THEN
-               SMCLM=SMCLM + DDOT(NCCVAR2,WRK(K1VEC2),1,WRK(K2VEC2),1) 
+               ABCLM=ABCLM + DDOT(NCCVAR2,WRK(K1VEC2),1,WRK(K2VEC2),1) 
              END IF
 
-             WRITE (LUPRI,*) ' smclm2',smclm
-*            calculate right moment DEF+w contribution
+*--------------------------------------------------------------*
+*            calculate right moment M_fo^DEF(w1,w2) contribution
+*            previously called SMCRM
+*--------------------------------------------------------------*
 
-             IOPT = 3
-             CALL CC_RDRSP('LE',IOFFST,ISYMABC,IOPT,MODFIL,
+             CALL CC_RDRSP('LE',IOFFST,ISYMABC,IOPTRD,MODFIL,
      *                     WRK(K1VEC1),WRK(K1VEC2))
-             IOPT = 3
-             CALL CC_RDRSP('O3',IO3DFF0,ISYMABC,IOPT,MODFIL,
+             CALL CC_RDRSP('O3',IO3DFF0,ISYMABC,IOPTRD,MODFIL,
      *                     WRK(K2VEC1),WRK(K2VEC2))
              CALL CCLR_DIASCL(WRK(K2VEC2),HALF,ISYMABC)
 
-             SMCRM = DDOT(NCCVAR1,WRK(K1VEC1),1,WRK(K2VEC1),1)
+             DEFRM = DDOT(NCCVAR1,WRK(K1VEC1),1,WRK(K2VEC1),1)
              IF (.NOT.CCS) THEN
-               SMCRM=SMCRM + DDOT(NCCVAR2,WRK(K1VEC2),1,WRK(K2VEC2),1) 
+               DEFRM=DEFRM + DDOT(NCCVAR2,WRK(K1VEC2),1,WRK(K2VEC2),1) 
              END IF
 
-*            calculate left  moment DEF-w contribution
+*--------------------------------------------------------------*
+*            calculate left moment M_of^DEF(-w1,-w2) contrib.
+*            (previously SMLM)
+*--------------------------------------------------------------*
 
-             IOPT = 3
-             CALL CC_RDRSP('X3',IX3DF0F,ISYMABC,IOPT,MODFIL,
+             CALL CC_RDRSP('X3',IX3DF0F,ISYMABC,IOPTRD,MODFIL,
      *                     WRK(K1VEC1),WRK(K1VEC2))
 
-             IOPT = 3
-             CALL CC_RDRSP('RE',IOFFST,ISYMABC,IOPT,MODFIL,
+             CALL CC_RDRSP('RE',IOFFST,ISYMABC,IOPTRD,MODFIL,
      *                     WRK(K2VEC1),WRK(K2VEC2))
-             SMLM = DDOT(NCCVAR1,WRK(K1VEC1),1,WRK(K2VEC1),1)
+             DEFLM = DDOT(NCCVAR1,WRK(K1VEC1),1,WRK(K2VEC1),1)
              IF (.NOT.CCS) THEN
-               SMLM = SMLM + DDOT(NCCVAR2,WRK(K1VEC2),1,WRK(K2VEC2),1)
+               DEFLM = DEFLM + DDOT(NCCVAR2,WRK(K1VEC2),1,WRK(K2VEC2),1)
              END IF
 
-             IOPT = 3
-             CALL CC_RDRSP('M1',IM11,ISYMABC,IOPT,MODFIL,
+             CALL CC_RDRSP('M1',IM11,ISYMABC,IOPTRD,MODFIL,
      *                     WRK(K1VEC1),WRK(K1VEC2))
 
-             IOPT = 3
-             CALL CC_RDRSP('O3',IO3DF0F,ISYMABC,IOPT,MODFIL,
-     *                     WRK(K2VEC1),WRK(K2VEC2))
-             CALL CCLR_DIASCL(WRK(K2VEC2),HALF,ISYMABC)
-
-             SMLM = SMLM + DDOT(NCCVAR1,WRK(K1VEC1),1,WRK(K2VEC1),1)
-             IF (.NOT.CCS) THEN
-               SMLM = SMLM + DDOT(NCCVAR2,WRK(K1VEC2),1,WRK(K2VEC2),1)
-             END IF
-
-*            calculate right moment AB+w contribution 
-
-             IOPT = 3
-             CALL CC_RDRSP('LE',IOFFST,ISYMABC,IOPT,MODFIL,
-     *                     WRK(K1VEC1),WRK(K1VEC2))
-             IOPT = 3
-             CALL CC_RDRSP('O3',IO3ACF0,ISYMABC,IOPT,MODFIL,
+             CALL CC_RDRSP('O3',IO3DF0F,ISYMABC,IOPTRD,MODFIL,
      *                     WRK(K2VEC1),WRK(K2VEC2))
              CALL CCLR_DIASCL(WRK(K2VEC2),HALF,ISYMABC)
 
-             SMRM = DDOT(NCCVAR1,WRK(K1VEC1),1,WRK(K2VEC1),1) 
+             DEFLM = DEFLM + DDOT(NCCVAR1,WRK(K1VEC1),1,WRK(K2VEC1),1)
              IF (.NOT.CCS) THEN
-               SMRM = SMRM + DDOT(NCCVAR2,WRK(K1VEC2),1,WRK(K2VEC2),1)
+               DEFLM = DEFLM + DDOT(NCCVAR2,WRK(K1VEC2),1,WRK(K2VEC2),1)
              END IF
 
-             WRITE (LUPRI,*) ' ablmom',smclm,' cdrmom',smcrm
-             WRITE (LUPRI,*) ' cdlmom',smlm,' abrmom',smrm
-             WRITE (LUPRI,*) ' w moment product', smclm*smcrm
-             WRITE (LUPRI,*) ' -w moment product', smlm*smrm
-             WRITE (LUPRI,*) ' tot moment product',
-     &            0.5d0*(smclm*smcrm+smlm*smrm)
+*--------------------------------------------------------------*
+*            calculate right moment M_fo^ABC(w1,w2) contribution 
+*            (previously SMRM)
+*--------------------------------------------------------------*
+
+             CALL CC_RDRSP('LE',IOFFST,ISYMABC,IOPTRD,MODFIL,
+     *                     WRK(K1VEC1),WRK(K1VEC2))
+             CALL CC_RDRSP('O3',IO3ACF0,ISYMABC,IOPTRD,MODFIL,
+     *                     WRK(K2VEC1),WRK(K2VEC2))
+             CALL CCLR_DIASCL(WRK(K2VEC2),HALF,ISYMABC)
+
+             ABCRM = DDOT(NCCVAR1,WRK(K1VEC1),1,WRK(K2VEC1),1) 
+             IF (.NOT.CCS) THEN
+               ABCRM = ABCRM+DDOT(NCCVAR2,WRK(K1VEC2),1,WRK(K2VEC2),1)
+             END IF
+*--------------------------------------------------------------*
+*            Final three-photon transition strength:
+*--------------------------------------------------------------*
+              
+             THREEPH = HALF*(ABCLM*DEFRM+DEFLM*ABCRM)
+
+*--------------------------------------------------------------*
+* Write results on output
+*--------------------------------------------------------------*
+         WRITE(LUPRI,'(65("-"),/1x,a,f10.6,a,i1,a,i1)')
+     &  'For trans. to |f(',EIGV,')>, state nr. ',ITMSEL(IFREQ,2),
+     &                              ' of symm. ',ISYMABC
+         WRITE(LUPRI,'(/,3(1x,a5,a,a1,i1,a1))')
+     &     ' A:  ',LABELA,'(',ISYMA,')', '; B: ',LABELB,'(',ISYMB,')',
+     &     '; C: ',LABELC,'(',ISYMC,')' 
+         WRITE(LUPRI,'(3(1x,a5,a,a1,i1,a1))')
+     &     ' D:  ',LABELD,'(',ISYMD,')', '; E: ',LABELE,'(',ISYME,')',
+     &     '; F: ',LABELF,'(',ISYMF,')' 
+         WRITE(LUPRI,'(1x,a,f10.6,a,f10.6)')
+     &     ' Laser frequencies (au): w1 = ', FREQB, '; w2 = ', FREQC
+C         IF (LOCDBG) THEN
+         WRITE(LUPRI,'(2(/1x,a,f15.9,1x,a,f15.9))')
+     & ' M^ABC_of(-w1,-w2): ',ABCLM,' M^DEF_fo(w1,w2): ',DEFRM,
+     & ' M^DEF_of(-w1,-w2): ',DEFLM,' M^ABC_fo(w1,w2): ',ABCRM
+         WRITE(LUPRI,'(2(1x,a,f15.9,/))')
+     & ' M^ABC_of(-w1,-w2) x M^DEF_fo(w1,w2)   = ', abclm*defrm,
+     & '[M^DEF_of(-w1,-w2) x M^ABC_fo(w1,w2)]* = ', deflm*abcrm
+C         END IF
+        WRITE(LUPRI,'(1x,a5,a,/,1x,a5,a,f10.6,a1,f10.6,a,f15.9)')
+     &   MODPRI,'Transition strength for Third Order Moment: ',
+     &   MODPRI,'S^of_ABC,DEF(',FREQB,',',FREQC,') = ', THREEPH
+        WRITE(LUPRI,'(65("-"))')
+
+*--------------------------------------------------------------*
 
           END DO
         END IF
 
       END DO
-
 
       RETURN
       END
@@ -297,6 +354,8 @@ c /* deck cc_tmcal */
 *             chosen use all states specified in the excitation
 *             energy calculation is used
 *
+*    P. Joergensen, C. Haettig 1997
+*    Clean up, new output. Sonia 2001
 *=====================================================================*
 
 #if defined (IMPLICIT_NONE)
@@ -319,17 +378,18 @@ c /* deck cc_tmcal */
 
       INTEGER ISYM, IST, ISEL, I, ISAVE, JSEL, J, IOFF 
       INTEGER ISYMSV, ISTSV, JSTSV, ISTATE 
-C
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG = .FALSE.)
 
 #if defined (SYS_CRAY)
       REAL D3, BTMFRSV, CTMFRSV
 #else
       DOUBLE PRECISION D3, BTMFRSV, CTMFRSV
 #endif
-      PARAMETER ( D3 = 3.0d00 )
+      PARAMETER ( D3 = 3.0D00 )
 
 C
-C sort the selected states for which second order transition
+C sort the selected states for which third order transition
 C matrix elements are calculated
 C
       DO 50 ISYM = 1,NSYM
@@ -370,18 +430,21 @@ C
             IF ( ISYM .LT. NSYM ) THEN
                ITMSELX(ISYM+1) = ITMSELX(ISYM) + NTMSELX(ISYM)
             END IF
-            WRITE (LUPRI,*) 'SORT:',ITMSELX(ISYM),NTMSELX(ISYM),IST
+            IF (LOCDBG)
+     &      WRITE (LUPRI,*) 'SORT:',ITMSELX(ISYM),NTMSELX(ISYM),IST
  100     CONTINUE
-         WRITE (LUPRI,*) ' after sort of  symmetry '
-         WRITE (LUPRI,*) 'ntmsel',ntmsel
-         do 210 i = 1,ntmsel
-         WRITE (LUPRI,*) ' itmsel(i,1),itmsel(i,2),i'
-         WRITE (LUPRI,*)  itmsel(i,1),itmsel(i,2),i
- 210     continue     
-         do 211 i = 1,nsym
-         WRITE (LUPRI,*) ' itmselx(i),ntmselx(i),i'
-         WRITE (LUPRI,*) itmselx(i),ntmselx(i),i
- 211     continue
+         IF (LOCDBG) THEN
+           WRITE (LUPRI,*) ' after sort of  symmetry '
+           WRITE (LUPRI,*) 'ntmsel',ntmsel
+           do 210 i = 1,ntmsel
+             WRITE (LUPRI,*) ' itmsel(i,1),itmsel(i,2),i'
+             WRITE (LUPRI,*)  itmsel(i,1),itmsel(i,2),i
+ 210       continue     
+           do 211 i = 1,nsym
+             WRITE (LUPRI,*) ' itmselx(i),ntmselx(i),i'
+             WRITE (LUPRI,*) itmselx(i),ntmselx(i),i
+ 211       continue
+         END IF
 C
 C sort list according to state number
 C 
@@ -415,45 +478,51 @@ C
                END IF
  500        CONTINUE
  400     CONTINUE
-         WRITE (LUPRI,*) ' after sort of both symmetry and state'
-         WRITE (LUPRI,*) 'ntmsel',ntmsel
-         do 212 i = 1,ntmsel
-         WRITE (LUPRI,*) ' itmsel(i,1),itmsel(i,2),i'
-         WRITE (LUPRI,*) itmsel(i,1),itmsel(i,2),i
- 212     continue     
-         do 213 i = 1,nsym
-         WRITE (LUPRI,*) ' itmselx(i),ntmselx(i),i'
-         WRITE (LUPRI,*) itmselx(i),ntmselx(i),i
- 213     continue
+         IF (LOCDBG) THEN
+           WRITE (LUPRI,*) ' after sort of both symmetry and state'
+           WRITE (LUPRI,*) 'ntmsel',ntmsel
+           do 212 i = 1,ntmsel
+             WRITE (LUPRI,*) ' itmsel(i,1),itmsel(i,2),i'
+             WRITE (LUPRI,*) itmsel(i,1),itmsel(i,2),i
+ 212       continue     
+           do 213 i = 1,nsym
+             WRITE (LUPRI,*) ' itmselx(i),ntmselx(i),i'
+             WRITE (LUPRI,*) itmselx(i),ntmselx(i),i
+ 213       continue
+         END IF
 C
 C if .HALFFR not specified find frequencies for AOPERATOR
 C
          DO 550 ISYM = 1,NSYM
             IOFF = ITMSELX(ISYM)
-            WRITE (LUPRI,*) 'isym,ioff'
-            WRITE (LUPRI,*) isym,ioff
+            WRITE (LUPRI,*) 'isym, ioff', isym, ioff
             DO 560 I = 1,NTMSELX(ISYM)
                ISTSV = ITMSEL(IOFF+I,2)
-         WRITE (LUPRI,*) 'istsv,ioff,isym,i'
-         WRITE (LUPRI,*) istsv,ioff,isym,i
-         WRITE (LUPRI,*) ' isyofe(isym)'
-         WRITE (LUPRI,*) isyofe(isym)
-         WRITE (LUPRI,*) ' eigval(1)'
-         call flshfo(LUPRI)
-         WRITE (LUPRI,*) eigval(1)
-         call flshfo(LUPRI)
-         WRITE (LUPRI,*) ' eigval(isyofe(isym)+istsv)'
-         call flshfo(LUPRI)
-         WRITE (LUPRI,*) eigval(isyofe(isym)+istsv)
-         call flshfo(LUPRI)
                EXTMFR(IOFF+I) = EIGVAL(ISYOFE(ISYM)+ISTSV)
-         call flshfo(LUPRI)
-              WRITE (LUPRI,*) ' EXTMFR(IOFF+I) '
-         call flshfo(LUPRI)
-              WRITE (LUPRI,*) EXTMFR(IOFF+I) 
+
+               IF (LOCDBG) THEN
+                  WRITE (LUPRI,*) 'istsv,ioff,isym,i'
+                  WRITE (LUPRI,*) istsv,ioff,isym,i
+                  WRITE (LUPRI,*) ' isyofe(isym)'
+                  WRITE (LUPRI,*) isyofe(isym)
+                  WRITE (LUPRI,*) ' eigval(1)'
+                  call flshfo(LUPRI)
+                  WRITE (LUPRI,*) eigval(1)
+                  call flshfo(LUPRI)
+                  WRITE (LUPRI,*) ' eigval(isyofe(isym)+istsv)'
+                  call flshfo(LUPRI)
+                  WRITE (LUPRI,*) eigval(isyofe(isym)+istsv)
+                  call flshfo(LUPRI)
+                  WRITE (LUPRI,*) ' EXTMFR(IOFF+I) '
+                  call flshfo(LUPRI)
+                  WRITE (LUPRI,*) EXTMFR(IOFF+I) 
+                  call flshfo(LUPRI)
+               END IF
  560        CONTINUE
-         call flshfo(LUPRI)
-         WRITE (LUPRI,*) ' isym loop slut',isym
+         IF (LOCDBG) THEN
+            WRITE (LUPRI,*) ' isym loop slut',isym
+            call flshfo(LUPRI)
+         END IF
  550     CONTINUE
       END IF
 C
@@ -462,9 +531,6 @@ C then carry out calculations for all specified excited states
 C and use frequencies that are half the excitation energy
 C
       IF ( .NOT. SELTMST ) THEN
-         call flshfo(LUPRI)
-c        WRITE(LUPRI,*) ' jeg er 1'
-         call flshfo(LUPRI)
          ITMSELX(1) = 0 
          NTMSEL = 0
          DO 700 ISYM = 1,NSYM
@@ -474,19 +540,13 @@ c        WRITE(LUPRI,*) ' jeg er 1'
                ITMSEL(NTMSEL,2) = I
                NTMSELX(ISYM)    = NTMSELX(ISYM) + 1
  750        CONTINUE
-         call flshfo(LUPRI)
-c        WRITE(LUPRI,*) ' jeg er 2'
             ITMSELX(ISYM+1) = ITMSELX(ISYM) + NTMSELX(ISYM)
  700     CONTINUE
          THIRDFR = .TRUE.
-         call flshfo(LUPRI)
-c        WRITE(LUPRI,*) ' jeg er 3'
       END IF
 C 
 C
       IF (THIRDFR) THEN
-         call flshfo(LUPRI)
-c        WRITE(LUPRI,*) ' jeg er 4'
          DO 800  ISYM = 1,NSYM
             IOFF = ITMSELX(ISYM)
             DO 850 I = 1,NTMSELX(ISYM)
@@ -495,20 +555,17 @@ c        WRITE(LUPRI,*) ' jeg er 4'
                CTMFR(IOFF+I) = EIGVAL(ISYOFE(ISYM)+ISTATE)/ D3
                EXTMFR(IOFF+I) = EIGVAL(ISYOFE(ISYM)+ISTATE)
  850        CONTINUE
-         call flshfo(LUPRI)
-c        WRITE(LUPRI,*) ' jeg er 5'
  800     CONTINUE
-         call flshfo(LUPRI)
-c        WRITE(LUPRI,*) ' jeg er 6'
       END IF 
-c        call flshfo(LUPRI)
-c      WRITE(LUPRI,*) ' ' leaving sort'
-c        do i = 1,ntmsel
-c        WRITE(LUPRI,*) ' itmsel(i,1),itmsel(i,2),extmfr(i),i'
-c        call flshfo(LUPRI)
-c        WRITE(LUPRI,*) itmsel(i,1),itmsel(i,2),extmfr(i),i
-c        end do     
-c        call flshfo(LUPRI)
+         IF (LOCDBG) THEN
+           WRITE(LUPRI,*) ' leaving sort'
+           do i = 1,ntmsel
+           WRITE(LUPRI,*) ' itmsel(i,1),itmsel(i,2),extmfr(i),i'
+           call flshfo(LUPRI)
+           WRITE(LUPRI,*) itmsel(i,1),itmsel(i,2),extmfr(i),i
+           end do     
+           call flshfo(LUPRI)
+         END IF
                 
       RETURN
       END 
