@@ -54,7 +54,7 @@ C
 #include <eribuf.h>
 #include <ccfro.h>
 C
-      CHARACTER MODEL*5
+      CHARACTER MODEL*10
       CHARACTER NAME1*8
       CHARACTER NAME2*8
 C

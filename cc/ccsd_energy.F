@@ -29,7 +29,8 @@ C
 #include <ccslvinf.h>
 #include <ccfdgeo.h>
       LOGICAL LCONVG,RSPIM2,EX,LEXIST
-      CHARACTER*5 ETY0, ETY1, ETY2, MODEL*10
+      CHARACTER*5 ETY0, ETY1, ETY2
+      CHARACTER MODEL*10
 C
 C     -------------------------------------------------------------
 C     set model for which the current t-amplitudes were calculated:
@@ -912,7 +913,7 @@ C
 #include <iratdef.h>
       DIMENSION FCDIAG(*)
       DIMENSION T1AM(*),T2AM(*),WORK(*)
-      CHARACTER*5 ETY
+      CHARACTER ETY*5, MODEL*10
       LOGICAL LEXIST
 #include <ccorb.h>
 #include <ccsdsym.h>

@@ -49,7 +49,7 @@ C
 #include <cclr.h>
 #include <ccfro.h>
 C
-      CHARACTER MODEL*5
+      CHARACTER MODEL*10
       LOGICAL LOCDBG
       PARAMETER (LOCDBG=.FALSE.)
 C
@@ -316,7 +316,7 @@ C
 C
       ENDIF
 C
-      TIMONE = SECOND() - TIMONE
+C     TIMONE = SECOND() - TIMONE
 C
       KEND1 = KONINT
       LWRK1 = LWORK - KEND1
@@ -770,13 +770,13 @@ C-----------------------
 C     Write out timings.
 C-----------------------
 C
-  99  TIMTOT = SECOND() - TIMTOT
+  99  TIMETO = SECOND() - TIMETO
 C
       IF (IPRINT .GT. 3) THEN
          WRITE(LUPRI,*) ' '
          WRITE(LUPRI,*) 
      *         'Requested density dependent quantities calculated'
-         WRITE(LUPRI,*) 'Total time used in CC2_DEN:', TIMTOT
+         WRITE(LUPRI,*) 'Total time used in CC2_DEN:', TIMETO
       ENDIF
       IF (IPRINT .GT. 9) THEN
          WRITE(LUPRI,*) 'Time used for setting up 2 e- density:', TIMDEN
@@ -784,8 +784,8 @@ C
          WRITE(LUPRI,*) 'Time used for reading 2 e- AO-integrals:', TIRDAO
          WRITE(LUPRI,*) 'Time used for calculating 2 e- AO-integrals:',
      *              TIMHE2
-         WRITE(LUPRI,*) 'Time used for 1 e- density & intermediates:',
-     *              TIMONE
+C        WRITE(LUPRI,*) 'Time used for 1 e- density & intermediates:',
+C    *              TIMONE
       ENDIF
 C
 C----------------------------------------------

@@ -40,7 +40,7 @@ C
       DIMENSION WORK(LWORK)
       DIMENSION GRADH1(*), GRADFS(*)
       CHARACTER*8 LABEL
-      CHARACTER*5 MODEL
+      CHARACTER*10 MODEL
 C
 #include <ccorb.h>
 #include <infind.h>

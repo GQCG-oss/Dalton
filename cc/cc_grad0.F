@@ -40,7 +40,7 @@ C
       DIMENSION WORK(LWORK)
       DIMENSION GRADH1(*),GRADFS(*),GRADH2(*)
       CHARACTER*8 LABEL
-      CHARACTER*5 MODEL
+      CHARACTER*10 MODEL
       LOGICAL OLDDX, DIRSAV
 #include <ccorb.h>
 #include <infind.h>

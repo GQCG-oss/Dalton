@@ -3232,6 +3232,7 @@ C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
       CHARACTER MODEL*10
       DIMENSION ZKDIA(*), WORK(LWORK)
+      CHARACTER*10 MODEL
 #include <priunit.h>
 #include <maxorb.h>
 #include <ccorb.h>
@@ -3597,6 +3598,7 @@ C
       CHARACTER MODEL*10
       DIMENSION INDEXA(MXCORB)
       DIMENSION ETAAI(*), ZKDIA(*), WORK(LWORK)
+      CHARACTER*10 MODEL
 #include <ccorb.h>
 #include <infind.h>
 #include <blocks.h>
@@ -4808,7 +4810,7 @@ C
       DIMENSION IADR(MXCORB,MXDIST)
       DIMENSION WORK(LWORK)
       CHARACTER*8 LABEL
-      CHARACTER*5 MODEL
+      CHARACTER*10 MODEL
 #include <ccorb.h>
 #include <infind.h>
 #include <blocks.h>
@@ -5361,7 +5363,7 @@ C-------------------------------------------------
 C        Read orbital relaxation vector from disc.
 C-------------------------------------------------
 C
-         LUCCK = 0 
+         LUCCK = -6347
          CALL GPOPEN(LUCCK,'CCKABAR0','UNKNOWN',' ',
      *               'UNFORMATTED',IDUMMY,.FALSE.)
          REWIND(LUCCK)

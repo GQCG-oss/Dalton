@@ -37,7 +37,7 @@ C
       DIMENSION WORK(LWORK)
       DIMENSION GRADH2(*)
       CHARACTER*8 LABEL
-      CHARACTER*5 MODEL
+      CHARACTER*10 MODEL
       LOGICAL OLDDX
 #include <ccorb.h>
 #include <infind.h>

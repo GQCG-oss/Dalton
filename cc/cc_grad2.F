@@ -61,7 +61,7 @@ C
 #include <ccinftap.h>
 C
       LOGICAL LOCDBG 
-      PARAMETER( LOCDBG = .FALSE. )
+      PARAMETER( LOCDBG = .TRUE. )
       INTEGER INDEXA(MXCORB)
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
@@ -70,11 +70,15 @@ C
       INTEGER LWORK
       DIMENSION WORK(LWORK)
       LOGICAL LDERINT(8,3)
-      LOGICAL DIRINT, SYM1ONLY, LLTEST
-      CHARACTER*8 LABEL, LABELA, LABELB, LABELH
+      LOGICAL DIRINT, SYM1ONLY
+      CHARACTER*8 LABEL, LABELH
 C
       CHARACTER LSTRLX*(3), FILFCK*(8), MODEL*(10)
       LOGICAL LDOTHISATOM, LANYTHING, LEXPEC, LFOCK, LTWO, SQRINT
+C
+      CALL QENTER('CC_GRAD2')
+C
+      IF (LOCDBG) WRITE(LUPRI,*) 'WORK:',LWORK,WORK(1),WORK(LWORK)
 C
 C------------------------------------------
 C     Open file for effective Fock matrices 
@@ -1017,5 +1021,6 @@ CCH  switch of print of integrals
 CCH
 C
 C
+      CALL QEXIT('CC_GRAD2')
       RETURN
       END

@@ -980,7 +980,7 @@ C
 #include <eribuf.h>
 #include <cclr.h>
 C
-      CHARACTER MODEL*5,MODDUM*10
+      CHARACTER MODEL*10,MODDUM*10
       CHARACTER LLIST*(*),RLIST*(*)
 C
 C---------------------------------------------
@@ -1356,6 +1356,7 @@ C
 #include <ccsdinp.h>
       PARAMETER(ZERO = 0.0D0, XMONE = -1.0D0, ONE = 1.0D00)
       DIMENSION DIA(*), XL2AM(*), XR1AM(*), T2AM(*),WORK(LWORK)
+      CHARACTER*10 MODEL
 C
 C---------------------------------------------------------
 C     Assume ISYMR = ISYML and density is total symmetric.

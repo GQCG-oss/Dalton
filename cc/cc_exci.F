@@ -348,7 +348,7 @@ C
             NCCEXCI(ISYM,IMULT) = NCCVAR
          ENDIF
          NCCEXSAV(ISYM,IMULT) = NCCEXCI(ISYM,IMULT)
-         NCC(ISYM,IMULT) = NCCEXCI(ISYM,IMULT)
+C        NCC(ISYM,IMULT) = NCCEXCI(ISYM,IMULT)
 C
          IF (NCCEXCI(ISYMTR,IMULT).EQ.0) THEN
             WRITE (LUPRI,'(A)')
@@ -636,7 +636,7 @@ C
             ISTATE  = IOMINP(IOM,ISYMTR,IMULT)
 C
             NCCEXCI(ISYM,IMULT) = ISTATE
-            NCC(ISYM,IMULT) = ISTATE
+C           NCC(ISYM,IMULT) = ISTATE
             NSIDE = 1
 C
 C--------------------------------

@@ -40,7 +40,7 @@ C
 #include <ccfop.h>
 #include <ccfro.h>
 C
-      CHARACTER MODEL*5,MODDUM*10
+      CHARACTER MODEL*10,MODDUM*10
       CHARACTER LLIST*(*)
       LOGICAL NO
 C
@@ -2577,7 +2577,7 @@ C
 #include <cbieri.h>
 #include <eribuf.h>
 C
-      CHARACTER MODEL*5
+      CHARACTER MODEL*10
 C
       IF (IPRINT .GT. 10) THEN
          CALL AROUND( 'Calculate core contribution to density')
@@ -2655,6 +2655,7 @@ C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION INDEXA(MXCORB)
       DIMENSION AODEN(*), ZKAM(*), WORK(LWORK)
+      CHARACTER*10 MODEL
 #include <ccorb.h>
 #include <infind.h>
 #include <blocks.h>
