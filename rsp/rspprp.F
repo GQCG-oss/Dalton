@@ -967,6 +967,15 @@ C
       PARAMETER ( D2 = 2.0D0 , D0 = 0.0D0 )
       PARAMETER ( BIGLIM = 100000.0D0, SMLLIM = 0.01D0 )
 C
+      IPRORB = IPRONE
+      IF (NOCCT .GT. 12) IPRORB = MAX(IPRORB,2)
+C     hjaaj Mar 2003: default IPRRSP is 2, do not print individual
+C     contributions by default if more than 12 occupied orbitals.
+      IF (IPRRSP.GT.IPRORB) THEN
+         WRITE(LUPRI,'(/A/3A/)')
+     &      ' *** Individual non-zero orbital contributions',
+     &      ' *** to the expectation value for property ',PRPLBL,' :'
+      END IF
          ONEACT = D0
          ONEINA = D0
          ONESEC = D0
@@ -982,13 +991,21 @@ C
             IASHJ = IASH(JSYM)
             IF ( .NOT. TRPLET ) THEN
                DO 80 IINAC = 1,NISHI
-                  ONEINA = ONEINA + PRPMO(IORBI+IINAC,IORBI+IINAC) * D2
+                  TMP = PRPMO(IORBI+IINAC,IORBI+IINAC) * D2
+                  IF (IPRRSP.GT.IPRORB .AND. TMP .NE. D0)
+     &               WRITE(LUPRI,'(5X,A,2I3,A,I2,A,F15.8)')
+     &               'Inactive     ',IINAC,IINAC,' in sym',ISYM,' :',TMP
+                  ONEINA = ONEINA + TMP
  80            CONTINUE
             END IF
             DO 60 IA = 1,NASHI
                DO 70 JA = 1,NASHJ
-                  ONEACT = ONEACT + UDV(IASHI+IA,IASHJ+JA) *
+                  TMP = UDV(IASHI+IA,IASHJ+JA) *
      *                  PRPMO(IORBI+NISHI+IA,IORBJ+NISHJ+JA)
+                  IF (IPRRSP.GT.IPRORB .AND. TMP .NE. D0)
+     &               WRITE(LUPRI,'(5X,A,2I3,A,I2,A,F15.8)')
+     &               'Active-active',IA,JA,' in sym',ISYM,' :',TMP
+                  ONEACT = ONEACT + TMP
  70            CONTINUE
  60         CONTINUE
  50      CONTINUE
@@ -1001,26 +1018,26 @@ C
      *                                                       THEN
             IF (.NOT. SOPPA) THEN
                WRITE(LUPRI,'(3(/5X,2A,F15.8))')
-     *         PRPLBL,' INACTIVE PART:',ONEINA,
-     *         PRPLBL,' ACTIVE PART  :',ONEACT,
-     *         PRPLBL,' TOTAL        :',ONETOT
+     *         PRPLBL,' inactive part:',ONEINA,
+     *         PRPLBL,' active part  :',ONEACT,
+     *         PRPLBL,' total        :',ONETOT
             ELSE
                WRITE(LUPRI,'(3(/5X,2A,F15.8))')
-     *         PRPLBL,' HARTREE-FOCK PART:',ONEINA,
-     *         PRPLBL,' SECOND ORDER PART:',ONESEC,
-     *         PRPLBL,' TOTAL            :',ONETOT
+     *         PRPLBL,' Hartree-Fock part:',ONEINA,
+     *         PRPLBL,' second order part:',ONESEC,
+     *         PRPLBL,' total 2. order   :',ONETOT
             END IF
          ELSE
             IF (.NOT. SOPPA) THEN
                WRITE(LUPRI,'(3(/5X,2A,1P,D15.8))')
-     *         PRPLBL,' INACTIVE PART:',ONEINA,
-     *         PRPLBL,' ACTIVE PART  :',ONEACT,
-     *         PRPLBL,' TOTAL        :',ONETOT
+     *         PRPLBL,' inactive part:',ONEINA,
+     *         PRPLBL,' active part  :',ONEACT,
+     *         PRPLBL,' total        :',ONETOT
             ELSE
                WRITE(LUPRI,'(3(/5X,2A,1P,D15.8))')
-     *         PRPLBL,' HARTREE-FOCK PART:',ONEINA,
-     *         PRPLBL,' SECOND ORDER PART:',ONESEC,
-     *         PRPLBL,' TOTAL            :',ONETOT
+     *         PRPLBL,' Hartree-Fock part:',ONEINA,
+     *         PRPLBL,' second order part:',ONESEC,
+     *         PRPLBL,' total 2. order   :',ONETOT
             END IF
          END IF
       END IF
