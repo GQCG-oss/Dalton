@@ -805,7 +805,7 @@ C         geometry if not overridden with '**START' /Feb 2003 hjaaj
       WORD1 = WORD
 C
       CALL TITLER('Output from '//WRDSRC//' input processing for ABACUS'
-     &            ,'*',118)
+     &            ,'*',108)
 C
 C
 C     ***** Process input for COMMON  /ABAINF/  *****

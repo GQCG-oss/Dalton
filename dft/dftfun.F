@@ -1325,3 +1325,61 @@ C     CONSTANTS FOR WOP86
       P=5.0D0/3.0D0
       RETURN
       END
+C
+C     *************************
+C     ***** KT functional *****
+C     *************************
+C
+C  /* Deck ekt */
+      SUBROUTINE EKT(EK,RHO,RHO13,RHOGRD)
+#include <implicit.h>
+#include <pi.h>
+      PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
+     &           GAMMA = -0.006D0, DELTA = 0.1D0)
+      GAMBAR = D2**(D1/D3)*GAMMA
+      DLTBAR = D2**(D4/D3)*DELTA
+      EK = GAMBAR*(RHOGRD**2)/(RHO*RHO13 + DLTBAR) 
+      RETURN
+      END
+C  /* Deck gkt */
+      SUBROUTINE GKT(VK1,VK2,RHO,RHO13,RHOGRD)
+#include <implicit.h>
+#include <pi.h>
+      PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
+     &           GAMMA = -0.006D0, DELTA = 0.1D0)
+      GAMBAR = D2**(D1/D3)*GAMMA
+      DLTBAR = D2**(D4/D3)*DELTA
+      VK1 = -(D4/D3)*GAMBAR*(RHOGRD**2)*RHO13/(RHO*RHO13 + DLTBAR)**2
+      VK2 = D2*D2*GAMBAR/(RHO*RHO13 + DLTBAR)
+      RETURN
+      END
+C  /* Deck vkt */
+      SUBROUTINE VKT(VK1,RHO,RHO13,RHOGRD,RHOLAP)
+#include <implicit.h>
+#include <pi.h>
+      PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
+     &           GAMMA = -0.006D0, DELTA = 0.1D0)
+      GAMBAR = D2**(D1/D3)*GAMMA
+      DLTBAR = D2**(D4/D3)*DELTA
+      VK1 = (D4/D3)*GAMBAR*(RHOGRD**2)*RHO13/(RHO*RHO13 + DLTBAR)**2
+     &    - D2*GAMBAR*RHOLAP/(RHO*RHO13 + DLTBAR)
+      RETURN
+      END
+C  /* Deck v1kt */
+      SUBROUTINE V1KT(FR0,FZ0,FRR,FRZ,FZZ,RHO,RHO13,RHOGRD)
+#include <implicit.h>
+#include <pi.h>
+      PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
+     &           D8 = 8.0D0, D9 = 9.0D0,
+     &           GAMMA = -0.006D0, DELTA = 0.1D0)
+      GAMBAR = D2**(D1/D3)*GAMMA
+      DLTBAR = D2**(D4/D3)*DELTA
+      RHODLT = D1/(RHO*RHO13 + DLTBAR)
+      FR0 = -(D4/D3)*GAMBAR*(RHOGRD**2)*RHO13*(RHODLT**2)
+      FZ0 = D2*GAMBAR*RHODLT*RHOGRD
+      FRR = -(D4/D9)*GAMBAR*(RHOGRD**2)
+     &      *(RHO13/RHO - D8*RHO13*RHODLT)*(RHODLT**2)
+      FRZ = -(D8/D3)*GAMBAR*RHOGRD*RHO13*(RHODLT**2)
+      FZZ = D2*GAMBAR*RHODLT
+      RETURN
+      END

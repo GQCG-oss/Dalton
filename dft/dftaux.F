@@ -557,8 +557,8 @@ C
       END
 C /* Deck dftltr */
       SUBROUTINE DFTLTR(DTRMAT,EXCMAT,GAO,GAO1,C0,C1,C2,HES,RHO,RHO13,
-     &                  RHOGRD,RHG,WDRC,WVWN,WBCK,WLYP,DODRC,DOVWN,
-     &                  DOBCK,DOLYP,DOGGA,TRPLET,DOHES,DTGAO)
+     &                  RHOGRD,RHG,WDRC,WVWN,WBCK,WLYP,WKT,DODRC,DOVWN,
+     &                  DOBCK,DOLYP,DOKT,DOGGA,TRPLET,DOHES,DTGAO)
 C
 C     T. Helgaker sep 99/oct 00
 C
@@ -575,7 +575,7 @@ C
 #include <wrkrsp.h>
 C
       INTEGER A, B
-      LOGICAL DODRC, DOVWN, DOBCK, DOLYP, DOGGA, TRPLET, DOHES
+      LOGICAL DODRC, DOVWN, DOBCK, DOLYP, DOKT, DOGGA, TRPLET, DOHES
       DIMENSION DTRMAT(NBAST,NBAST),
      &          GAO(NBAST), GAO1(NBAST,3), 
      &          EXCMAT(NBAST,NBAST), 
@@ -694,9 +694,30 @@ C
 C
 C           ZNV, FZ0, FRR, FRZ, FZZ
 C
-            IF (DODRC) CALL V1DRC(VDRC0,FRRDRC,RHO,RHO13)
-            IF (DOBCK) CALL V1BCK(FR0BCK,FZ0BCK,FRRBCK,FRZBCK,
-     &                            FZZBCK,RHO,RHOGRD)
+            IF (DODRC) THEN
+               CALL V1DRC(VDRC0,FRRDRC,RHO,RHO13)
+            ELSE
+               VDRC0  = 0D0
+               FRRDRC = 0D0
+            END IF
+            IF (DOBCK) THEN
+               CALL V1BCK(FR0BCK,FZ0BCK,FRRBCK,FRZBCK,FZZBCK,RHO,RHOGRD)
+            ELSE
+               FR0BCK = 0D0
+               FZ0BCK = 0D0
+               FRRBCK = 0D0
+               FRZBCK = 0D0
+               FZZBCK = 0D0
+            END IF
+            IF (DOKT) THEN
+               CALL V1KT(FR0KT,FZ0KT,FRRKT,FRZKT,FZZKT,RHO,RHO13,RHOGRD)
+            ELSE
+               FR0KT = 0D0
+               FZ0KT = 0D0
+               FRRKT = 0D0
+               FRZKT = 0D0
+               FZZKT = 0D0
+            END IF
             IF (DOVWN) THEN
                IF (.NOT.TRPLET) THEN
                   CALL V1VWN(VVWN0,FRRVWN,RHO,RHO13)
@@ -734,11 +755,11 @@ C    &                    FZZLYP,RHO,RHOGRD)
             END IF
 C
             ZNV = D1/RHOGRD
-            FZ0 = ZNV*(WBCK*FZ0BCK + WLYP*FZ0LYP)
+            FZ0 = ZNV*(WBCK*FZ0BCK + WLYP*FZ0LYP + WKT*FZ0KT)
             FRR = WDRC*FRRDRC + WVWN*FRRVWN 
-     &          + WBCK*FRRBCK + WLYP*FRRLYP 
-            FRZ = WBCK*FRZBCK + WLYP*FRZLYP 
-            FZZ = WBCK*FZZBCK + WLYP*FZZLYP 
+     &          + WBCK*FRRBCK + WLYP*FRRLYP + WKT*FRRKT 
+            FRZ = WBCK*FRZBCK + WLYP*FRZLYP + WKT*FRZKT
+            FZZ = WBCK*FZZBCK + WLYP*FZZLYP + WKT*FZZKT
 C 
             RX = ZNV*RHG(1) 
             RY = ZNV*RHG(2)

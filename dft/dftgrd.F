@@ -215,6 +215,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <nuclei.h>
 #include <symmet.h>
 #include <ccom.h>
+#include <dftcom.h>
+#include <dftacb.h>
 
       DIMENSION WRKSP(4*NUM),
      &          ACCUM(IVECL),XMUIJN(IVECL),XMUIJ2(IVECL),
@@ -343,7 +345,7 @@ CTROND: define scaling factor for Bragg: set to one !!!!
          NDEG  = MULT(ISTBNU(IATOM))
          IF(NOORBT(IATOM)) GOTO 10
          IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 10
-         WRITE(LUPRI,'(A,A4)') '** Atom ',NAMN(IATOM)
+         IF (IPRINT.GT.2) WRITE(LUPRI,'(A,A4)') '** Atom ',NAMN(IATOM)
          MULA  = ISTBNU(IATOM)
          NDEG  = MULT(MULA)
          IPT   = 0
@@ -351,6 +353,13 @@ CTROND: define scaling factor for Bragg: set to one !!!!
          NDEX  = 1
          NTHIS = 0
          NTHAT = 0
+C  
+         IF (DFTASC) THEN
+            IF (ISYMOP.GT.0) THEN
+               CALL QUIT('DFTASC cannot handle degenerate atoms.')
+            END IF
+            IDFTAT(IATOM) = NTOTAL + 1
+         END IF
 C
 C     Radial quadrature 
 C     =================
@@ -360,7 +369,7 @@ C     Roland Lindh, Per-Aake Malmqvist and Laura Gagliardi
 C
 
 C        Grid spacing....
-         WRITE(LUPRI,'(A)') '* Grid spacing'
+         IF (IPRINT.GT.2) WRITE(LUPRI,'(A)') '* Grid spacing'
          H = DUMMY
          DO LL = 1,NHTYP
            L = LL-1
@@ -369,22 +378,23 @@ C        Grid spacing....
              HTMP = DISERR(RADERR,L)
              H = MIN(H,HTMP)
              IF(IPRINT.GE.3) THEN
-               WRITE(LUPRI,'(3X,A1,A,F6.3)')
+               IF (IPRINT.GT.2) WRITE(LUPRI,'(3X,A1,A,F6.3)')
      &        SPDCAR(L),'-orbitals --> ',HTMP
              ENDIF
            ENDIF
          ENDDO
          EPH = EXP(H)
-         WRITE(LUPRI,'(1X,A,F6.3)') 'Value chosen: ',H
+         IF (IPRINT.GT.2) WRITE(LUPRI,'(1X,A,F6.3)') 'Value chosen: ',H
 C...     Inner grid point
          AH = D2*MAX(AA(1,1,1,IATOM),AA(1,1,2,IATOM))
-         WRITE(LUPRI,*) 'AH = ',AH
-         WRITE(LUPRI,*) 'RADERR = ',RADERR
+         IF (IPRINT.GT.2) WRITE(LUPRI,*) 'AH = ',AH
+         IF (IPRINT.GT.2) WRITE(LUPRI,*) 'RADERR = ',RADERR
          RL = ((1.9D0+LOG(RADERR))/D3)-(LOG(AH)/D2)
          RL = EXP(RL)
-         WRITE(LUPRI,'(A,1P,E12.5)') '* Inner grid point:',RL
+         IF (IPRINT.GT.2) 
+     &      WRITE(LUPRI,'(A,1P,E12.5)') '* Inner grid point:',RL
 C...     Outer point
-         WRITE(LUPRI,'(A)') '* Outer point:'
+         IF (IPRINT.GT.2) WRITE(LUPRI,'(A)') '* Outer point:'
          RH = D0
          DO LL = 1,NHTYP
            L = LL-1
@@ -396,16 +406,16 @@ C...     Outer point
              RHTMP = OUTERR(AL,L,RADERR)           
              RH=MAX(RH,RHTMP)
              IF(IPRINT.GE.3) THEN
-               WRITE(LUPRI,'(3X,A1,A,F6.3)')
+               IF (IPRINT.GT.2) WRITE(LUPRI,'(3X,A1,A,F6.3)')
      &            SPDCAR(L),'-orbitals --> ',RHTMP
              ENDIF
            ENDIF
          ENDDO
-         WRITE(LUPRI,'(1X,A,F6.3)') 'Value chosen: ',RH
+         IF (IPRINT.GT.2) WRITE(LUPRI,'(1X,A,F6.3)') 'Value chosen: ',RH
          GRDC = RL/(EPH-D1)
-         WRITE(LUPRI,'(A,E12.5)') 'Constant c:',GRDC
+         IF (IPRINT.GT.2) WRITE(LUPRI,'(A,E12.5)') 'Constant c:',GRDC
          NR = NINT(LOG(D1+(RH/GRDC))/H)
-         WRITE(LUPRI,'(A,I5)') 'Number of points:',NR
+         IF (IPRINT.GT.2) WRITE(LUPRI,'(A,I5)') 'Number of points:',NR
          RADNDE(1) = RL
          RADWT(1)  = (RL+GRDC)*RL*RL*H
          DO IR = 2,NR
@@ -432,11 +442,12 @@ C
                IF (RNODE.GT.RBRAGG) SWITCH = .TRUE.
             END IF
             IF (NR*NANG.GT.IBIG) THEN
-               WRITE(LUPRI,*) 'Have:',IBIG,' need:',NR*NANG,NANG
+               IF (IPRINT.GT.2) 
+     &            WRITE(LUPRI,*) 'Have:',IBIG,' need:',NR*NANG,NANG
                CALL QUIT('Storage error in CONSTRUCT')
             END IF
             IF(IPRINT.GE.3) THEN
-              WRITE(LUPRI,'(A,I5,F16.8,I5,I5,5X,L1)') 
+              IF (IPRINT.GT.2) WRITE(LUPRI,'(A,I5,F16.8,I5,I5,5X,L1)') 
      &          '* Grid:',IR,RNODE,NANG,NSCHEME,SWITCH
             ENDIF
 C

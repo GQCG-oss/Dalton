@@ -1,2 +1,2 @@
-      COMMON /DFTERG/ EDFTX, EDFTC, EDFTY, 
-     &                WDFTX, WDFTC, WDFTL, WDFTB
+      COMMON /DFTERG/ EDFTX, EDFTC, EDFTY, EDFTK,
+     &                WDFTX, WDFTC, WDFTL, WDFTB, WDFTK

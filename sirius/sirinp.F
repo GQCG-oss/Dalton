@@ -2309,7 +2309,7 @@ C 13-May-1995 K.Ruud, added keyword .ELECTRONS.
 C 1999 Helgaker, DFT input added 
 C
 #include <implicit.h>
-      PARAMETER (NTABLE = 40)
+      PARAMETER (NTABLE = 42)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      *          REWORD*12
@@ -2348,7 +2348,8 @@ C
      *            '.ELECTR','.AUTOCC','.FC MVO','.HFXFAC','.LDA   ',
      *            '.BLYP  ','.B3LYP ','.FROMVX','.WAH   ','.DFTWEI',
      *            '.DFTAC ','.DFTHES','.DFTTHR','.DFTELS','.RADINT',
-     *            '.ANGINT','.ANGMIN','.NOPRUN','.VWN3  ','.VWNT5 '/
+     *            '.ANGINT','.ANGMIN','.NOPRUN','.VWN3  ','.VWNT5 ',
+     *            '.KT1   ','.KT2   '/
 C
 C     ***** PROCESS INPUT FOR RHFINP *****
 C
@@ -2368,7 +2369,8 @@ C
                   GO TO (101,102,103,104,105,106,107,108,109,110,
      &                   111,112,113,114,115,116,117,118,119,120,
      &                   121,122,123,124,125,126,127,128,129,130,
-     &                   131,132,133,134,135,136,137,138,139,140),II
+     &                   131,132,133,134,135,136,137,138,139,140,
+     &                   141,142),II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -2596,7 +2598,8 @@ C
  131  CONTINUE
       DFTASC = .TRUE.
       DFTPOT = .TRUE.
-      READ (LUCMD,*) DFTIPT, DFTBR1, DFTBR2
+      READ (LUCMD,*) DFTIPT
+C     READ (LUCMD,*) DFTIPT, DFTBR1, DFTBR2
       GO TO 100
  132  CONTINUE
       DFTHES = .TRUE.
@@ -2631,6 +2634,30 @@ C&&& NOPRUN: Turn off pruning of angular grid.
       GO TO 100
  140  CONTINUE
       DOVWNI = .FALSE.
+      GO TO 100
+ 141  CONTINUE
+      DFTTYP = 'KT1   '
+      DFTORD = .TRUE.
+      DFTADD = .TRUE.
+      DFTRUN = .TRUE.
+      WDFTX  = 1.00D0
+      WDFTB  = 0.00D0
+      WDFTL  = 0.00D0
+      WDFTC  = 1.00D0
+      WDFTK  = 1.00D0
+      HFXFAC = 0.00D0 
+      GO TO 100
+ 142  CONTINUE
+      DFTTYP = 'KT2   '
+      DFTORD = .TRUE.
+      DFTADD = .TRUE.
+      DFTRUN = .TRUE.
+      WDFTX  = 1.07173D0
+      WDFTB  = 0.00D0
+      WDFTL  = 0.00D0
+      WDFTC  = 0.576727D0
+      WDFTK  = 1.00D0
+      HFXFAC = 0.00D0 
       GO TO 100
 C
  2000 CONTINUE
@@ -4771,7 +4798,6 @@ C
          END IF
          WRITE (IWUNIT,'(4X,A,E10.2,I4)') ' DFT quadrature accuracy:',
      &        RADINT,ANGINT
-         WRITE(IWUNIT,*) ANGINT
          IF (DFTPOT) WRITE (IWUNIT,'(/,A)')
      &        ' Kohn-Sham matrix calculated from potential.'
          IF (DFTASC) THEN

@@ -641,6 +641,7 @@ C
 #include <abainf.h>
 #include <absorp.h>
 #include <infvar.h>
+#include <dftcom.h>
 C
       PARAMETER ( DM1 = -1.0D0 )
 C
@@ -742,6 +743,11 @@ C     READ IN GD VECTOR FROM LUGDVE
 C     
             CALL READT(LUGDVE,KZVAR,WRK(KGD))
 C     
+            IF (NABATY(IOP).EQ.-1) THEN
+                DFTIMG = .TRUE.
+            ELSE
+                DFTIMG = .FALSE.
+            END IF
             IF (NABATY(IOP).EQ.1) THEN
                CALL DCOPY(KZVAR,WRK(KGD),1,WRK(KGD+KZVAR),1)
                CALL DSCAL(KZVAR,DM1,WRK(KGD+KZVAR),1)
@@ -765,6 +771,7 @@ C
      *           .TRUE.,LABEL,BLANK,WRK(KGD),WRK(KREDGD),
      *           WRK(KREDE),WRK(KREDS),WRK(KIBTYP),WRK(KEIVAL),
      *           WRK(KRESID),WRK(KEIVEC),XINDX,WRK(KFREE),LFREE)
+            DFTIMG = .FALSE.
 C     
             DO IFREQ = 1,NFREQ,MXSIM
                NBX = MIN(MXSIM,(NFREQ+1-IFREQ))

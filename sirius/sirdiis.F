@@ -1506,6 +1506,7 @@ C
 #include <scbrhf.h>
 #include <infind.h>
 #include <infpri.h>
+#include <dftcom.h>
 C
       LOGICAL LSAVE4,LSAVE6
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
@@ -1602,6 +1603,7 @@ C
       KSAO  = KLAST
       KSCR1 = KSAO + NNBAST
       LSCR1 = LSCRA - KSCR1
+      IF (DFTASC) CALL GETHOM(FC)
       CALL ORTHO(CMO,SCRA(KSAO),SCRA(KSCR1),LSCR1)
       IF (SUPSYM) THEN
          KFREE = 1
@@ -1646,4 +1648,27 @@ C
       CALL QTRACE(LUW4)
       CALL QUIT('FCKEIG error, cannot handle orbitals '//
      &          'frozen with ".FREEZE"')
+      END
+C  /* Deck gethom */
+      SUBROUTINE GETHOM(FD)
+C find homo energy. tuh 16.05.03
+#include <implicit.h>
+      DIMENSION FD(*)
+      PARAMETER (DBIG = 1.D+12)
+#include <maxash.h>
+#include <maxorb.h>
+#include <mxcent.h>
+#include <inforb.h>
+#include <infind.h>
+#include <dftacb.h>
+C
+      EHOMO  = -DBIG
+      DO ISYM = 1,NSYM
+      IF (NORB(ISYM).GT.0) THEN
+         II = NOCC(ISYM)
+         EHOMOI = FD(IIORB(ISYM) + IROW(II) + II)
+         EHOMO = MAX(EHOMO,EHOMOI)
+      END IF
+      END DO
+      RETURN
       END

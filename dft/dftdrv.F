@@ -45,6 +45,7 @@ C     intialize DFTCOM common block
       WDFTC  = D0
       WDFTL  = D0
       WDFTB  = D0
+      WDFTK  = D0
       DFTHR0 = 1.0D-9
       DFTHRL = 1.0D-10
       DFTHRI = 1.0D-13 
@@ -66,8 +67,10 @@ c     LEBMIN is in the common block but is used only internall in dftgrd
       DOVWNI = .TRUE.
 C
       DFTIPT = 1.0D-20
-      DFTBR1 = 1.0D-20
-      DFTBR2 = 1.0D-20
+      DFTBR1 = 3.0D0 
+      DFTBR2 = 4.0D0 
+C
+      DFTIMG = .FALSE.
 C
       RETURN
       END
@@ -85,7 +88,7 @@ C
 C 
       PARAMETER (FACTHR = 1.0D-8) 
       LOGICAL MAKDEN, DOERG, DOGRD, DOLND, DOATR, DOHES, TRPLET, DOGGA,
-     &        DODRC, DOVWN, DOBCK, DOLYP
+     &        DODRC, DOVWN, DOBCK, DOLYP, DOKT
       DIMENSION DMAT(NBAST,NBAST,NDMAT), EXCMAT(NBAST,NBAST,NXCMAT),
      &          HES(*), WORK(LWORK)
 C
@@ -111,12 +114,14 @@ C
       FACVWN = WDFTC
       FACBCK = WDFTB
       FACLYP = WDFTL
+      FACKT  = WDFTK
 C
       DODRC = DABS(FACDRC) .GT. FACTHR
       DOVWN = DABS(FACVWN) .GT. FACTHR 
       DOBCK = DABS(FACBCK) .GT. FACTHR 
       DOLYP = DABS(FACLYP) .GT. FACTHR 
-      DOGGA = DOBCK .OR. DOLYP
+      DOKT  = DABS(FACKT)  .GT. FACTHR 
+      DOGGA = DOBCK .OR. DOLYP .OR. DOKT
 C
 C     Number of AOs and their addresses
 C
@@ -168,14 +173,14 @@ C
      &     DOLND,DOATR,WORK(KX),WORK(KY),WORK(KZ),WORK(KW),NBUF,
      &     WORK(KGSO),WORK(KCNT),WORK(KDST),WORK(KC0),WORK(KC1),
      &     WORK(KC2),WORK(KDGA),HES,DOHES,TRPLET,FACDRC,FACVWN,
-     &     FACBCK,FACLYP,DODRC,DOVWN,DOBCK,DOLYP,DOGGA,
-     &     WORK(KLST),LWRK,IPRINT)
+     &     FACBCK,FACLYP,FACKT,DODRC,DOVWN,DOBCK,DOLYP,DOGGA,
+     &     DOKT,WORK(KLST),LWRK,IPRINT)
 #else 
       CALL DFTDRV(DMAT(1,1,1),DMAT(1,1,2),EXCMAT,NXCMAT,DOERG,DOGRD,
      &     DOLND,DOATR,WORK(KX),WORK(KY),WORK(KZ),WORK(KW),NBUF,
      &     WORK(KGSO),WORK(KCNT),WORK(KDST),WORK(KC0),WORK(KC1),
      &     WORK(KC2),WORK(KDGA),HES,DOHES,TRPLET,FACDRC,FACVWN,
-     &     FACBCK,FACLYP,DODRC,DOVWN,DOBCK,DOLYP,DOGGA,
+     &     FACBCK,FACLYP,FACKT,DODRC,DOVWN,DOBCK,DOLYP,DOGGA,DOKT,
      &     WORK(KLST),LWRK,IPRINT)
 #endif
       RETURN
@@ -184,8 +189,8 @@ C /* Deck dftdrv */
       SUBROUTINE DFTDRV(DMAT,DTRMAT,EXCMAT,NXCMAT,DOERG,DOGRD,DOLND,
      &                  DOATR,CORX,CORY,CORZ,WEIGHT,NBUF,GSO,NCNT,DST,
      &                  C0,C1,C2,DMAGAO,HES,DOHES,TRPLET,FACDRC,FACVWN,
-     &                  FACBCK,FACLYP,DODRC,DOVWN,DOBCK,DOLYP,DOGGA,
-     &                  WORK,LWORK,IPRINT)
+     &                  FACBCK,FACLYP,FACKT,DODRC,DOVWN,DOBCK,DOLYP,
+     &                  DOGGA,DOKT,WORK,LWORK,IPRINT)
 C
 C     T. Helgaker sep 99 / feb 01
 C
@@ -200,6 +205,7 @@ C
 #include <inforb.h>
 #include <nuclei.h>
 #include <dfterg.h>
+#include <dftacb.h>
 #include <energy.h>
 #include <dftcom.h>
 #include <dftinf.h>
@@ -209,7 +215,7 @@ C
 #include <expopt.h>
 C
       INTEGER A, B
-      LOGICAL DOERG, DOGRD, DODRC, DOVWN, DOBCK, DOLYP, 
+      LOGICAL DOERG, DOGRD, DODRC, DOVWN, DOBCK, DOLYP, DOKT, 
      &        DOLND, DOATR, FROMVX, DOGGA, TRPLET, DOHES 
       DIMENSION CORX(NBUF), CORY(NBUF), CORZ(NBUF), WEIGHT(NBUF), 
      &          DMAT(NBAST,NBAST), DTRMAT(NBAST,NBAST),
@@ -229,6 +235,12 @@ C
 C     Calculate grid
 C
       IF (.NOT.GRDONE) THEN
+         IF (DFTASC) THEN
+            CALL DZERO(DFTCH0,NATOMS)
+            CALL DZERO(DFTDST,NATOMS)
+            CALL IZERO(IDFTAT,NATOMS)
+            EHOMO = D0
+         END IF 
          CALL DFTGRD(WORK,LWORK,1,.FALSE.)
          CALL CONDFT 
          GRDONE = .TRUE.
@@ -254,11 +266,13 @@ C
       ERGVWN = D0
       ERGBCK = D0
       ERGLYP = D0
+      ERGKT  = D0
 C
       ED = D0
       EV = D0
       EB = D0
       EL = D0
+      EK = D0
 C
       VD  = D0
       VV  = D0
@@ -266,6 +280,8 @@ C
       VB2 = D0 
       VL1 = D0 
       VL2 = D0 
+      VK1 = D0
+      VK2 = D0
 C
       LUQUAD = -1
 #if defined (VAR_MPI)
@@ -287,6 +303,11 @@ C      CALL GPOPEN(LUQUAD,'DALTON.QUAD','OLD','SEQUENTIAL',
 C     &            'UNFORMATTED',IDUMMY,.FALSE.)
       R2TOT = D0
       NPNTS = 0
+      ICENT = 0
+      IF (DFTASC) THEN
+         CALL DCOPY(NATOMS,DFTCH1,1,DFTCH0,1)
+         CALL DZERO(DFTCH1,NATOMS)
+      END IF
   100 CONTINUE
       READ(LUQUAD) NPOINT
       IF (NPOINT.GT.0) THEN
@@ -307,6 +328,12 @@ C
             WVWN = FACVWN*WGHT
             WBCK = FACBCK*WGHT
             WLYP = FACLYP*WGHT
+            WKT  = FACKT *WGHT
+C
+            IF (DFTASC) THEN
+               IPOINT = NPNTS - NPOINT + IPNT 
+               IF (IPOINT.EQ.IDFTAT(ICENT+1)) ICENT = ICENT + 1  
+            END IF
 C
 C           AOs
 C           ===
@@ -350,6 +377,7 @@ C              Number of electrons
 C              ===================
 C
                ELCTRN = ELCTRN + WGHT*RHO
+               IF (DFTASC) DFTCH1(ICENT) = DFTCH1(ICENT) + WGHT*RHO
 C
 C              Energy
 C              ======
@@ -359,10 +387,12 @@ C
                   IF (DOVWN) CALL EVWN(EV,RHO,RHO13)
                   IF (DOLYP) CALL ELYP(EL,RHO,RHO13,RHOGRD)
                   IF (DOBCK) CALL EBCK(EB,RHO,RHO13,RHOGRD)
+                  IF (DOKT)  CALL EKT (EK,RHO,RHO13,RHOGRD)
                   ERGDRC = ERGDRC + WDRC*ED
                   ERGVWN = ERGVWN + WVWN*EV
                   ERGBCK = ERGBCK + WBCK*EB 
                   ERGLYP = ERGLYP + WLYP*EL
+                  ERGKT  = ERGKT  + WKT *EK
                END IF
 C
 C              Exchange-correlation potential 
@@ -375,12 +405,19 @@ C
                      IF(DOBCK) CALL VBCK(VB1,RHO,RHO13,RHOGRD,RHOLAP,
      &                                   RHOGHG)
                      IF(DOLYP) CALL VLYP(VL1,RHO,RHO13,RHOGRD,RHOLAP)
+                     IF(DOKT)  CALL VKT (VK1,RHO,RHO13,RHOGRD,RHOLAP)
                   ELSE
                      IF (DOBCK) CALL GBCK(VB1,VB2,RHO,RHO13,RHOGRD)
                      IF (DOLYP) CALL GLYP(VL1,VL2,RHO,RHO13,RHOGRD)
+                     IF (DOKT)  CALL GKT (VK1,VK2,RHO,RHO13,RHOGRD)
                   END IF
-                  VXC = WDRC*VD + WVWN*VV + WBCK*VB1 + WLYP*VL1
-                  VXB = WBCK*VB2 + WLYP*VL2
+                  VXC = WDRC*VD + WVWN*VV + WBCK*VB1 + WLYP*VL1 
+     &                          + WKT*VK1
+                  VXB = WBCK*VB2 + WLYP*VL2 + WKT*VK2
+                  IF (DFTASC .AND. .NOT.(DOGRD.OR.DOLND)) THEN
+                     CALL DFTAC(VXC,CORX(IPNT),CORY(IPNT),CORZ(IPNT),
+     &                          WGHT)
+                  END IF
                END IF
 C
 C              Exchange-correlation contribution to Kohn-Sham matrix
@@ -422,8 +459,10 @@ C
                IF (DOATR) THEN
                   CALL DFTLTR(DTRMAT,EXCMAT,GSO(KSO0),GSO(KSO1),
      &                        C0,C1,C2,HES,RHO,RHO13,RHOGRD,RHG,
-     &                        WDRC,WVWN,WBCK,WLYP,DODRC,DOVWN,DOBCK,
-     &                        DOLYP,DOGGA,TRPLET,DOHES,DMAGAO)
+     &                        WDRC,WVWN,WBCK,WLYP,WKT,
+     &                        DODRC,DOVWN,DOBCK,
+     &                        DOLYP,DOKT,DOGGA,
+     &                        TRPLET,DOHES,DMAGAO)
                END IF
             END IF
 C
@@ -438,14 +477,14 @@ C
       CALL GPCLOSE(LUQUAD,'KEEP')
 C
 #if defined  (VAR_MPI)       
-      CALL UPDTENE(ELCTRN,ERGDRC,ERGVWN,ERGBCK,ERGLYP,EXCMAT,
+      CALL UPDTENE(ELCTRN,ERGDRC,ERGVWN,ERGBCK,ERGLYP,ERGKT,EXCMAT,
      &     NBAST,NXCMAT,WORK,LWORK)
 C     
       IF (DOGRD) CALL UPDTGRD(WORK,LWORK)
       IF (MYNUM.NE.0) RETURN
 #endif
       IF (DOERG) THEN
-         EDFTY = ERGDRC + ERGVWN + EXCTRO + ERGBCK + ERGLYP
+         EDFTY = ERGDRC + ERGVWN + EXCTRO + ERGBCK + ERGLYP + ERGKT
      &         - DP5*DDOT(NBAST*NBAST,DMAT,1,EXCMAT,1)
       END IF
       IF (DOERG) THEN
@@ -505,6 +544,11 @@ C
      &    ('Wrong number of electrons in DFTDRV. Calculation aborted.')
       END IF
 C
+      IF (DFTASC .AND. DOERG) THEN
+         WRITE (LUPRI,'(/2X,A)') ' Number of electrons on each atom:'
+         WRITE (LUPRI,'(/2X,5F12.6)') (DFTCH1(I),I=1,ICENT)
+      END IF
+C
 C     Print section
 C
       IF (IPRINT .GT. 2) THEN 
@@ -520,7 +564,7 @@ C
      &          ERGVWN, ERGLYP, ERGVWN + ERGLYP
             WRITE (LUPRI,'(2X,A,28X,F14.6)') 
      &          ' DFT exchange-correlation energy:', 
-     &          ERGDRC + ERGBCK + ERGVWN + ERGLYP
+     &          ERGDRC + ERGBCK + ERGVWN + ERGLYP + ERGKT
          END IF
       END IF
       IF (IPRINT .GT. 100) THEN
@@ -570,7 +614,10 @@ C
 #include <infinp.h>
 #include <inforb.h>
 #include <infvar.h>
+#include <dftcom.h>
 C
+C     IF (.not.trplet) return
+      IF (DFTIMG) RETURN
       DOPRNT = .FALSE.
       IPRINT = 2
 C
