@@ -1347,12 +1347,6 @@ C
      *        P, Q, R, S, PQST1, PQST, PQFIN, PQ,
      *        RS, RSMIN1, RSMIN, RSMAX,
      *        PAKK
-#if defined (VAR_STAR2)
-      INTEGER*2 ISORTB, IBIN2
-#endif
-#if defined (VAR_STAR4)
-      INTEGER*4 ISORTB, IBIN2
-#endif
       DIMENSION WORK(LWORK), IWORK(IRAT*LWORK), NCONTS(MXSHEL,MXAOVC,2)
       COMMON /PTRFIL/ LUSCR, LUDA, LUPSO
 #include <ccom.h>
