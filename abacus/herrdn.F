@@ -609,7 +609,7 @@ C******************************************************************************
      &   '                   current maximum number ',KATOM
         CALL QUIT('Too many atomic types in .mol input')
       END IF
-      IF (THRS .LT. THRMIN) THEN
+      IF (THRS .LT. THRMIN .AND. ABS(THRS) .GT. 0.0D0) THEN
          WRITE (LUPRI,'(/2X,A)') '*** WARNING from READIN ***'
          WRITE (LUPRI,'(2(/2X,A,1P,D12.2))')
      &      'Threshold for discarding integrals was',THRS,
