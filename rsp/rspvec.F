@@ -29,11 +29,14 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rspvec.F,v 1.5 2001-04-03 07:26:27 coriani Exp $
+C$Id: rspvec.F,v 1.6 2001-04-03 20:33:01 vebjornb Exp $
 C
 #include <single.h>
 #ifdef REVLOG
 $Log: not supported by cvs2svn $
+Revision 1.5  2001/04/03 07:26:27  coriani
+MCD in SOMOM, fixed DP5 and argument list in CALL GETGP. SC
+
 Revision 1.4  2001/03/29 08:06:45  hjj
 Declare MJWOP in LRHYP so compiler knows it is a vector! /HJAaJ.
 
@@ -169,8 +172,6 @@ C
 #include <infpri.h>
 #include <infspi.h>
 #include <inftap.h>
-C
-      LOGICAL OLDDX
 C
 C OPEN FILE FOR SOLUTION VECTORS
 C
@@ -1614,7 +1615,7 @@ C
      *          .AND. (NASMOP(MSYMA).GT.0) ) THEN
                NCEXC = 0
                DO I=1,MSYMC-1
-                  NCEXC = NCEXC + NSMCNV(MSYMC)
+                  NCEXC = NCEXC + NSMCNV(I)
                END DO
                DO 500 IC = 1,NSMCNV(MSYMC)
                   ICEXC = NCEXC + IC

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: hypinp.F,v 1.2 2001-02-12 18:17:56 vebjornb Exp $
+C$Id: hypinp.F,v 1.3 2001-04-03 20:33:01 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck hypinp */
@@ -929,7 +929,14 @@ C
                      INUM=INQRLR(ASMLB(IASYM,IAOP),BSMFR(IBFR),IASYM)
                   END DO
                   DO IBOP=1,NBSMOP(IBSYM)
-                     INUM=INQRLR(BSMLB(IBSYM,IBOP),-BSMFR(IBFR),IBSYM)
+C
+C It is the response vector Nb(-wf/2) which is needed, but since if
+C
+C     Nb(wf/2)  = ( Z Y* ) then Nb(-wf/2) = ( Y* Z )
+C
+C so we only compute linear response vectors with positive frequencies.
+C
+                     INUM=INQRLR(BSMLB(IBSYM,IBOP),BSMFR(IBFR),IBSYM)
                   END DO
                END DO            
                NBSMFR = NBSMFR + ICEXC
