@@ -13,7 +13,7 @@ and Z-matrix input\index{Z-matrix input} of the
 molecular coordinates. However, the Z-matrix input provided is only a
 convenient way of describing the molecular geometry, as the Z-matrix is
 converted to Cartesian coordinates, which are then used in the
-subsequent calculations. Note  that the Z-matrix input can only be
+subsequent calculations. Note that the Z-matrix input can only be
 used together with the basis set library.
 
 The program includes an extensive basis set
@@ -25,7 +25,7 @@ and the ``Not Quite van Duijneveldt'' (NQvD) basis
 sets\index{NQvD basis set}\index{basis set!NQvD}. The large number of
 different basis sets provided is in part
 related to the variety of molecular properties with very different
-basis set requirements that can be calculated with \siraba .
+basis set requirements that can be calculated with \dalton .
 Most of the basis sets have been downloaded from the EMSL basis set
 library service\index{EMSL basis set library service}\index{basis set!EMSL library}\newline
 (http://www.emsl.pnl.gov:2080/forms/basisform.html)~\cite{emslref}.
@@ -95,7 +95,8 @@ instead of the default, which is Spherical Gaussian basis
 functions\index{spherical basis function}\index{basis function!spherical}.
 \item[NONTYP] Number of atom types (number of atoms specified
 in separate blocks). For a Z-matrix input this will be the total
-number of atoms in the molecule.
+number of atoms in the molecule, the Z-matrix module will then
+extract the number of atom types.
 \item[KCHARG] The charge of the molecule\index{charge of molecule}.
 Will be used  by the program to determine the Hartree--Fock
 occupation\index{HF occupation}\index{Hartree--Fock occupation}. A zero
@@ -117,7 +118,7 @@ of symmetry in
 the program, it is recommended to use mirror planes as symmetry
 generating elements if possible.
 
-\item[ID3] A number in this place indicates that the
+\item[ID3] A non-blank character in this place indicates that the
 coordinates of the atoms will be read in
 {\AA}ngstr\"{o}m\index{{\AA}ngstr\"{o}m}, and not in
 atomic units which is the default.
@@ -180,7 +181,7 @@ standardized input file (including basis set) can be printed to
 the file \verb|DALTON.BAS| by using the keyword \Key{MOLPRI} in
 the \Sec{READIN} submodule.
 
-\siraba\ can only take advantage of point groups that are subgroups
+\dalton\ can only take advantage of point groups that are subgroups
 of D$_{2h}$. If symmetry higher than that is detected, the program
 will use the highest common subgroup of  the symmetry group
 detected and D$_{2h}$.
@@ -244,27 +245,31 @@ For tetrahedrane, the input would then look like
 
 The different lines are:
 \begin{description}
-\item[5] \verb|ZMATL, CHARGE, NUMBER, MAXL, NGRP(I)|
-{\tt (BN,A6,F4.0,24I5)}.
+\item[5] \verb|ZMATL, CHARGE, NUMBER, MAXLP1, (NGRP(I),I=1,MAXLP1)|
+{\tt (BN,A1,F9.0,25I5)}.
 \begin{description}
 \item[ZMATL] This field must be left blank when Cartesian
 coordinate input\index{Cartesian coordinate input} is used as the field
 is used for checking whether
 Cartesian coordinates or Z-matrix\index{Z-matrix
 input}\index{geometry!Z-matrix input} 
-input is being used. Characters
+input is being used. Any non-blank character
 placed in this field will tell the program to use Z-matrix input.
 \item[CHARGE] Charge of this atom\index{charge of atom} type.
 \item[NUMBER] Number of {\em symmetry-distinct}\index{symmetry-distinct atom} atoms of
 this type (or, if the symmetry detection routines are being used, all
 atoms of this kind).
-\item[MAXL] Maximum angular quantum number used in the
-basis set for this atom type ($s=1$, $p=2$, etc.). Not required if the
-basis set library is being used.
+\item[MAXLP1] Maximum angular quantum number + 1 used in the
+basis set for this atom type ($s=1$, $p=2$, etc.).
+Ignored if library basis sets are being used
+(\verb|BASIS| or \verb|ATOMBASIS| in first line),
+for \verb|ATOMBASIS| the basis set name starts here.
+Use \verb|MAXPL1 = 0| for point charges (and first line cannot be \verb|BASIS|).
 \item[NGRP(I)] Number of groups (blocks) of generally contracted
-functions of angular quantum number~{\tt I}. The loop is over MAXL. Not
-required if the basis set library is used. It is noteworthy that
-\siraba\ collects all basis functions into one such shell, and
+functions of angular quantum number~{\tt I-1}.
+Ignored if the basis set library is used. \newline
+It is noteworthy that
+\dalton\ collects all basis functions into one such shell, and
 evaluates all integrals arising from that 
 shell\index{shell of basis functions} simultaneously, and
 the memory requirements grow rapidly with the number of basis
@@ -348,33 +353,39 @@ contraction block: the $s$~basis here.
 \index{geometry!Z-matrix input}
 \index{Z-matrix input}
 
-The Z-matrix input provided with \siraba\ is very rudimentary, and
+The Z-matrix input provided with \dalton\ is very rudimentary, and
 common options like parameter representations of bond length and
 angles as well as dummy atoms are currently not provided. Furthermore,
 the Z-matrix input is not used in the program, but instead immediately
 converted to Cartesian coordinates which are then used in the
 subsequent calculation.
 Another restriction is that if Z-matrix input is used, one cannot
-punch ones own basis set, but must instead resort to basis sets
-provided with the basis set library.
+punch ones own basis set, but must instead resort to one of the basis sets
+provided with the basis set library (i.e. {\tt BASIS} in first line).
+Finally, you cannot explicitly specify higher symmetry in input line 4
+when using Z-matrix input,
+you can only request no symmetry ($C_1$) with {\tt SYMTXT = ' 0'}
+or specify that Dalton should detect the symmetry with {\tt SYMTXT = '  '}.
 
 The input format is free, with, once more,
-the restriction that the name of each atom must be of be given a space
+the restriction that the name of each atom must be given a space
 of 4 characters, and none of the other input variables needed must be
 placed in these positions.
 
-The program will use Z-matrix input\index{Z-matrix input} if there are
-any characters
-in the first 4 positions of line 6 in the molecule input, and it is
-important that these positions are kept blank if a Cartesian coordinate
-input is  used.
+The program will use Z-matrix input\index{Z-matrix input} if there is
+a non-blank character
+in the first position of line 6 in the molecule input, and it is
+important that this position is kept blank if a Cartesian coordinate
+input is  used. On the other hand, if you want to use Z-matrix input
+then at least the name of the atom in line 6 (the first atom)
+{\em must} start in the first position of line 6.
 
 A typical Z-matrix input could be:
 \begin{verbatim}
 BASIS
-6-31G(d,p)
+6-31G**
 Test input of ammonia
-6-31G(d,p) basis set
+6-31G** basis set
     4
 N   1 7.0
 H1  2 1 1.0116 1.0
@@ -387,23 +398,23 @@ line only the atom name, a running number and the charge of the
 atom\index{charge of atom}
 is given. The running number is only for
 ease of reference to a given atom, and is actually not used within the
-program, where any reference to an atom, is  the number of the
+program, where any reference to an atom, is the number of the
 atom consecutively in the input list.
 
 The second line consists of the atom name, a running number, the
 number of the atom to which this atom is bonded with a given bond
-length, and then finally the charge of this atom.
+length in {\AA}ngstr{\"o}ms, and then finally the charge of this atom.
 
 The third line is identical to the second, except that an extra atom
 number, to which the two first atoms on this line is bonded to with a
-given bond angle.
+given bond angle in degrees.
 
 On the fourth line yet another atom has been added, and the position
 of this atom relative to the three previous ones on this line is
 dependent upon on an extra number inserted just before the nuclear
 charge of this atom. If the next to last number is a 0, the
 position of this atom is given by the dihedral angle {\tt
-(A1,A2,A3,A4)}, where {\tt Ai} denotes atom {\tt i}. If, on the other
+(A1,A2,A3,A4)} in degrees, where {\tt Ai} denotes atom {\tt i}. If, on the other
 hand, this next to last number is $\pm 1$, the position of the fourth
 atom is given with respect to two angles, namely {\tt (A1,A2,A3)} and
 {\tt (A2,A3,A4)}. The sign is to be $+ 1$ if the triple product
@@ -415,9 +426,10 @@ is positive.
 \index{BASIS}
 \index{ATOMBASIS}
 
-The use of the basis set library supplied with \siraba\ is indicated
+The use of the basis set library supplied with \dalton\ is indicated
 by the word {\tt BASIS} or {\tt ATOMBASIS} on the first line of the
 molecular input.
+(If you want Z-matrix input you must use {\tt BASIS}.)
 
 If {\tt BASIS} is used, a common basis set is used for all atoms in
 the molecule, and the name of this basis set is given on the second line.
@@ -569,10 +581,10 @@ characters. If that happens, we recommend dumping a standard basis set
 to \verb|DALTON.BAS| using the keyword \Key{MOLPRI}, and then adding
 functions to this set.
 
-\section{The basis sets supplied with \siraba }
+\section{The basis sets supplied with \dalton }
 
 As mentioned above, all the basis sets supplied with this distribution
-of the \siraba\ program --- with the exception of the ANO,
+of the \dalton\ program --- with the exception of the ANO,
 sadlej\index{sadlej basis set}\index{ANO basis set}\index{NQvD basis set}\index{basis set!sadlej}\index{basis set!ANO}\index{basis set!NQvD}
 and NQvD basis sets --- have been obtained from the EMSL basis set
 library~\cite{emslref}. In a very few cases we have corrected the
@@ -590,7 +602,7 @@ the file, hopefully without having introduced any errors.
 %proper reference to be used when employing a given basis set in a
 %calculation. In the basis set directory, we have --- for the
 %convienence of the user --- supplied some files only containing basis
-%functions. Although not possible to use in the \siraba\ program, they
+%functions. Although not possible to use in the \dalton\ program, they
 %may be used when adding polarization functions using the {\tt
 %ATOMBASIS} keyword.
 
