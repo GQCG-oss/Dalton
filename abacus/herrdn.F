@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: herrdn.F,v 1.18 2002-02-08 12:25:38 ruud Exp $
+C$Id: herrdn.F,v 1.19 2002-02-10 16:58:07 ruud Exp $
 C
 #include <single.h>
 #ifdef REVISION_LOG
@@ -2177,6 +2177,11 @@ C******************************************************************************
 #include <mxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
+#if defined (SYS_T3D)
+      PARAMETER ( MAXPRD = 14 )
+#else
+      PARAMETER ( MAXPRD = 25 )
+#endif
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0, DP5 = 0.50D0,
      &           DP75 = 0.75D0)
 C
@@ -2187,6 +2192,7 @@ C
      &          SEG(KBLOCK),ALPHA(KPRIM,KBLOCK),
      &          CPRIM(KPRIM,KPRIM,KBLOCK)
       DIMENSION CONTC(IPRIMD,IORBD)
+      DIMENSION LPRIM(MAXPRD)
 #include <ccom.h>
 #include <nuclei.h>
 #include <primit.h>
@@ -2216,6 +2222,21 @@ C
                   KBCH = KBCH + 1
                   NCONT = NRC(KBCH)
 C
+C     Quick sort of primitive exponents if necessary
+C
+                  DO L1 = 1, NUC(KBCH)
+                     LPRIM(L1) = L1
+                  END DO
+                  DO L1 = 1, NUC(KBCH) - 1
+                     DO L2 = L1 + 1, NUC(KBCH)
+                        IF(ALPHA(L2,KBCH) .GT. ALPHA(L1,KBCH)) THEN
+                           IDUM = LPRIM(L2)
+                           LPRIM(L2) = LPRIM(L1)
+                           LPRIM(L1) = IDUM
+                        END IF
+                     END DO
+                  END DO
+C
 C     Core for setting up contraction matrix
 C
                   DO ICOMP = 1, NCOMP
@@ -2223,7 +2244,8 @@ C
                         IPR = IPR - NDEG*(NCOMP*NUC(KBCH) - 1)
                         IRB = IRB - NDEG*NCONT*NCOMP + 1
                      END IF
-                     DO L = 1, NUC(KBCH)
+                     DO LJ = 1, NUC(KBCH)
+                        L = LPRIM(LJ)
                         IF (L .GT. 1) IRB = IRB - NCONT*NCOMP*NDEG
      &                       - (NDEG - 1)
                         PRFA  = ((D2*PI)**(DP75))
