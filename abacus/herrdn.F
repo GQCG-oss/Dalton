@@ -3567,13 +3567,15 @@ C
                WRITE (LUPRI,'(1X,I3,12X,A,3X,F15.10,/)')
      *               ICRZ, CHRXYZ(-3), CORD(3,ICENT)
             END IF
-            ICRX = ICRX + 3
-            ICRY = ICRY + 3
-            ICRZ = ICRZ + 3
             WORK(ICRX) = CORD(1,ICENT)
             WORK(ICRY) = CORD(2,ICENT)
             WORK(ICRZ) = CORD(3,ICENT)
             WORK(KMASS + NATOMS) = DISOTP(NINT(CHARGE(ICENT)),1,'MASS')
+C-----------------(WK/UniKA/14-11-2003)
+            ICRX = ICRX + 3
+            ICRY = ICRY + 3
+            ICRZ = ICRZ + 3
+C--------------------------
             NATOMS = NATOMS + 1
          ELSE
             JATOM = 0
@@ -3588,8 +3590,11 @@ C
      *                        *CORD(2,ICENT)
                   WORK(ICRZ) = PT(IBTAND(ISYMAX(3,1),ISYMOP))
      *                        *CORD(3,ICENT)
-                  WORK(KMASS) = DISOTP(NINT(CHARGE(ICENT)),1,'MASS')
-                  WORK(KMASS) = DISOTP(NINT(CHARGE(ICENT)),1,'MASS')
+C-----------------(WK/UniKA/14-11-2003)
+C                 WORK(KMASS) = DISOTP(NINT(CHARGE(ICENT)),1,'MASS')
+                  WORK(KMASS + NATOMS) 
+     *                        = DISOTP(NINT(CHARGE(ICENT)),1,'MASS')
+C-------------------------------------------------------------------
                   NATOMS = NATOMS + 1
                   IF (IPREAD .GT. 0) THEN
                      WRITE (LUPRI,'(1X,I3,3X,A,I2,3X,A,3X,F15.10)')
