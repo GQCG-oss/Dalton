@@ -609,7 +609,7 @@ C******************************************************************************
      &   '                   current maximum number ',KATOM
         CALL QUIT('Too many atomic types in .mol input')
       END IF
-      IF (THRS .LT. THRMIN .AND. ABS(THRS) .GT. 0.0D0) THEN
+      IF (THRS .LT. THRMIN .AND. THRS .GT. 0.0D0) THEN
          WRITE (LUPRI,'(/2X,A)') '*** WARNING from READIN ***'
          WRITE (LUPRI,'(2(/2X,A,1P,D12.2))')
      &      'Threshold for discarding integrals was',THRS,
@@ -617,6 +617,8 @@ C******************************************************************************
          THRS = THRMIN
 C        note that her2drv.F has explicit THRESH = MAX(THRS,1.0D-15)
 C        - hjaaj, aug99
+      ELSE IF (THRS .LT. 0.0D0) THEN
+         THRS = THRMIN
       ENDIF
 C*****************************************************************************
 C Check if symmetry is to be added automatically
@@ -6101,7 +6103,7 @@ C
                CALL FREFRM(LINE,IPOS+IPOS2,IDUMMY,THRS,'REA',IERR)
             END IF
          ELSE
-            THRS = 0.0D0
+            THRS = -1.0D-15
          END IF
       ELSE
 C     
