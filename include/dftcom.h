@@ -1,9 +1,11 @@
 C     choose reasonably large MAXBLLEN- so that loop unrolling gives
 C     speedup but small compared with a cache size max block length
 C     MXBLLEN.
+      INTEGER MXBLLEN
       PARAMETER(MXBLLEN = 100)
 c
       CHARACTER*6 DFTTYP
+      REAL*8          HFXFAC, DFTHR0, DFTHRL, DFTHRI, DFTELS, RADINT
       INTEGER ANGINT, ANGMIN, LEBMIN
       LOGICAL DFTADD, GRDONE, DFTRUN, DFTPOT, DFTORD, DFTASC, DFTHES,
      &        DFTHRS, NOPRUN, DOVWN3, DFTEST, DOVWNI, DFTIMG

@@ -3,7 +3,16 @@ C     this common block contains general Sirius input read in sirius/sirinp.F
 C     (specified under **WAVE FUNCTION).  /hjaaj Oct 2003
 C     - SCF specific input is in scbrhf.h
 C     - orbital specifications are in inforb.h
+      INTEGER NFLAG, MAXRTS, MXFELT
       PARAMETER (NFLAG = 80, MAXRTS = 20, MXFELT = 20)
+      INTEGER         NFIELD, ISPIN,ISTATE,LSYM,NACTEL, MCTYPE,
+     *                LSOLMX,NLMSOL,NELMN1,NELMX1,NELMN3,NELMX3,
+     *                LROOTS,NROOTS,IROOT,
+     *                NOROT        ,IMOORD        ,
+     *                IORTO,ICI0,KDEL,ICHECK,NTIT,
+     *                MAXMAC,MAXMIC,MAXJT,MAXCIT,MAXUIT,MAXAPM,MAXABS,
+     *                ITRLVL,ITRFIN,JCHSYM,JCHORB,
+     *                NROOCI,ISTACI, MXCIMA, ICICNO,IMCCNO
       COMMON /INTINP/ NFIELD, ISPIN,ISTATE,LSYM,NACTEL, MCTYPE,
      *                LSOLMX,NLMSOL,NELMN1,NELMX1,NELMN3,NELMX3,
      *                LROOTS,NROOTS,IROOT(MAXRTS),
