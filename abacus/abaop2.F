@@ -118,6 +118,12 @@ C
             END IF
             GOTO 15
          END IF
+C
+C     If the line search ends up almost back at the previous point, we do
+C     not trust it and simply discard it.
+C
+         IF (CRDC .LT. 0.15D0) CRDC = 1.D0
+C
          DO 20 I = 1, ICRD
             STEP(I) = STEPOL(I)*(1.0D0-CRDC)
             GRAD(I) = GRADOL(I) + (GRAD(I)-GRADOL(I))*CRDC
