@@ -6070,7 +6070,7 @@ C
                      IWHERE = ISTP + J - 1
                      KASYM(J,I) = LINE(IWHERE:IWHERE)
                   END DO
-                  ISTART = ISTART + IEND + 2
+                  ISTART = ISTP + IEND
                END DO
             ELSE
                IF (NSYMOP .GT. 3) THEN
