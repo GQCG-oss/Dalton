@@ -520,7 +520,11 @@ C *** load localized molecular orbitals in CMO array
       END DO   
 
       DO I = 1 , NOC 
-         CALL VCLR(RI(1,1),1,NBA)
+C 
+C        (WK/UniKA/07-11-2003)
+C------> CALL VCLR(RI(1,1),1,NBA)
+         CALL DZERO(RI,NBA)
+C
          DO J = 1 , NOC  
             IIJ = ILIFQ(J)
             CALL DAXPY(NBA,B(J,I),CMO(IIJ+1),1,RI(1,1),1)
