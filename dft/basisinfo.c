@@ -1,5 +1,7 @@
 #define __CVERSION__
 /* Written by Elias Rudberg, KTH, Stockholm */
+#define _BSD_SOURCE 1
+
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
@@ -385,7 +387,9 @@ void getshellno_(const int *no, int *contr, int *L, real *x, real *y, real *z,
 int 
 get_shells(BasisInfoStruct* basisInfo)
 {
-  int nShells = 0;
+  int i, nShells = 0;
+  ShellSpecStruct* shellList;
+
   getshellscnt_(&nShells);
   if(nShells <= 0)
     {
@@ -395,13 +399,12 @@ get_shells(BasisInfoStruct* basisInfo)
   basisInfo->noOfShells = nShells;
   basisInfo->shellList = 
     (ShellSpecStruct*)malloc(nShells * sizeof(ShellSpecStruct));
-  ShellSpecStruct* shellList = basisInfo->shellList;
-  int i;
+  shellList = basisInfo->shellList;
   for(i = 0; i < nShells; i++)
     {
       const int MaxContr = MAX_NO_OF_CONTR_GAUSSIANS;
       int fShell = i+1; /* fortran shell number */
-      int contr, spd;
+      int contr, spd, kk;
       real x, y, z;
       real coeffList[MAX_NO_OF_CONTR_GAUSSIANS];
       real exponentList[MAX_NO_OF_CONTR_GAUSSIANS];
@@ -421,7 +424,6 @@ get_shells(BasisInfoStruct* basisInfo)
 	  return -1;
 	}
 
-      int kk;
       for(kk = 0; kk < contr; kk++)
 	{
 	  shellList[i].coeffList[kk] = coeffList[kk];
@@ -445,30 +447,30 @@ get_basis_funcs(BasisInfoStruct* basisInfo)
   /* and set startIndexInMatrix for each shell */
   int nShells = basisInfo->noOfShells;
   int count = 0;
-  int i;
+  int i, j, kk, nFunctions;
   ShellSpecStruct* currShell;
+  BasisFuncStruct* basisFuncList;
+
   for(i = 0; i < nShells; i++)
     {
       currShell = &basisInfo->shellList[i];
       currShell->startIndexInMatrix = count;
-      int nFunctions = 1 + currShell->shellType * 2;
+      nFunctions = 1 + currShell->shellType * 2;
       count += nFunctions;
       currShell->noOfBasisFuncs = nFunctions;
     }
   basisInfo->noOfBasisFuncs = count;
   basisInfo->basisFuncList = 
     (BasisFuncStruct*)malloc(count * sizeof(BasisFuncStruct));
-  BasisFuncStruct* basisFuncList = basisInfo->basisFuncList;
+  basisFuncList = basisInfo->basisFuncList;
   count = 0;
   for(i = 0; i < nShells; i++)
     {
       currShell = &basisInfo->shellList[i];
-      int nFunctions = currShell->noOfBasisFuncs;
-      int j;
+      nFunctions = currShell->noOfBasisFuncs;
       for(j = 0; j < nFunctions; j++)
 	{
 	  basisFuncList[count].noOfContr = currShell->noOfContr;
-	  int kk;
 	  for(kk = 0; kk < currShell->noOfContr; kk++)
 	    {
 	      basisFuncList[count].coeffList[kk] = currShell->coeffList[kk];
@@ -506,7 +508,7 @@ get_simple_primitives_all(BasisInfoStruct* basisInfo)
 
   /* create list of 'simple primitives' */
   int n = 0;
-  int i;
+  int i, nBytes;
   for(i = 0; i < nbast; i++)
     {
       BasisFuncStruct* currBasisFunc = &basisFuncList[i];
@@ -523,7 +525,7 @@ get_simple_primitives_all(BasisInfoStruct* basisInfo)
       currBasisFunc->simplePrimitiveIndex = n;
       n += noOfPrimitives;
     } /* END FOR i */
-  int nBytes = n * sizeof(DistributionSpecStruct);
+  nBytes = n * sizeof(DistributionSpecStruct);
   basisInfo->simplePrimitiveList = malloc(nBytes);
   memcpy(basisInfo->simplePrimitiveList, list, nBytes);
   free(list);
@@ -571,25 +573,9 @@ get_product_simple_prims(DistributionSpecStruct* primA,
 {
   /* use the Gaussian product rule */
   real sum = 0;
-  int k;
-  for(k = 0; k < 3; k++)
-    {
-      real temp = primA->centerCoords[k] - primB->centerCoords[k];
-      sum += temp * temp;
-    } /* END FOR k */
-  real CxCyCz = exp(-primA->exponent * primB->exponent * 
-		    sum / (primA->exponent + primB->exponent));
-  real AiAj = primA->coeff * primB->coeff;
-  real alphaNew = primA->exponent + primB->exponent;
   real newCenter[3];
-  for(k = 0; k < 3; k++)
-    {
-      newCenter[k] = 
-	(primA->exponent * primA->centerCoords[k] +
-	 primB->exponent * primB->centerCoords[k]) /
-	(primA->exponent + primB->exponent);
-    } /* END FOR k */
-
+  real CxCyCz, AiAj, alphaNew;
+  int k, l, m, nn;
   real poly0[K_MAX_DIM];
   real poly1[K_MAX_DIM];
   real poly2[K_MAX_DIM];
@@ -601,6 +587,24 @@ get_product_simple_prims(DistributionSpecStruct* primA,
   polydeg1struct polyDeg1;
   real* poly;
   int* degreePtr;
+
+  for(k = 0; k < 3; k++)
+    {
+      real temp = primA->centerCoords[k] - primB->centerCoords[k];
+      sum += temp * temp;
+    } /* END FOR k */
+  CxCyCz = exp(-primA->exponent * primB->exponent * 
+		    sum / (primA->exponent + primB->exponent));
+  AiAj = primA->coeff * primB->coeff;
+  alphaNew = primA->exponent + primB->exponent;
+  for(k = 0; k < 3; k++)
+    {
+      newCenter[k] = 
+	(primA->exponent * primA->centerCoords[k] +
+	 primB->exponent * primB->centerCoords[k]) /
+	(primA->exponent + primB->exponent);
+    } /* END FOR k */
+
   /* do product of polynomials */
   /* one coordinate at a time */
   for(k = 0; k < 3; k++)
@@ -614,7 +618,6 @@ get_product_simple_prims(DistributionSpecStruct* primA,
 	} /* END SWITCH k */
       tempPoly[0] = 1;
       tempPolyDegree = 0;
-      int m;
       for(m = 0; m < primA->monomialInts[k]; m++)
 	{
 	  polyDeg1.a0 = -primA->centerCoords[k];
@@ -648,7 +651,6 @@ get_product_simple_prims(DistributionSpecStruct* primA,
 	{
 	  tempPoly2[0] = tempPoly[m];
 	  tempPoly2Degree = 0;
-	  int l;
 	  for(l = 0; l < m; l++)
 	    {
 	      polyDeg1.a0 = newCenter[k];
@@ -671,7 +673,7 @@ get_product_simple_prims(DistributionSpecStruct* primA,
       *degreePtr = tempPoly2Degree;
     } /* END FOR k */
 
-  int nn = 0;
+  nn = 0;
   for(k = 0; k <= poly0degree; k++)
     {
       int l;
@@ -720,7 +722,7 @@ get_product_simple_primitives(BasisInfoStruct* basisInfoA, int iA,
 			      DistributionSpecStruct resultList[],
 			      int maxCount)
 {
-  //printf("entering get_product_simple_primitives\n");
+    /* printf("entering get_product_simple_primitives\n"); */
 
   BasisFuncStruct* basisFuncA = &basisInfoA->basisFuncList[iA];
   int nPrimsA = basisFuncA->noOfSimplePrimitives;
@@ -730,8 +732,8 @@ get_product_simple_primitives(BasisInfoStruct* basisInfoA, int iA,
   int Bstart = basisFuncB->simplePrimitiveIndex;
   int n = 0;
   int i;
-  //printf("nPrimsA = %i, nPrimsB = %i\n", nPrimsA, nPrimsB);
-  //printf("Astart = %i, Bstart = %i\n", Astart, Bstart);
+  /* printf("nPrimsA = %i, nPrimsB = %i\n", nPrimsA, nPrimsB); */
+  /* printf("Astart = %i, Bstart = %i\n", Astart, Bstart);     */
   for(i = 0; i < nPrimsA; i++)
     {
       DistributionSpecStruct* primA = 
