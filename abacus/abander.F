@@ -369,7 +369,6 @@ C  /* Deck numdr1 */
 #include <cbinum.h>
 #include <nuclei.h>
 #include <symmet.h>
-#include <frame.h>
 #include <exeinf.h>
 #include <abainf.h>
 #include <infpar.h>
@@ -704,7 +703,6 @@ C
 #include <nuclei.h>
 #include <numder.h>
 #include <molinp.h>
-#include <frame.h>
 #include <cbiwlk.h>
 #include <cbinum.h>
 #include <optinf.h>

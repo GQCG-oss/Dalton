@@ -32,11 +32,17 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abamolden.F,v 1.4 2001-06-06 15:17:28 vebjornb Exp $
+C$Id: abamolden.F,v 1.5 2001-06-11 07:52:19 hjj Exp $
 C
 C     Original: abamolden  alex a auer 5.2.99
 C
 C$Log: not supported by cvs2svn $
+CRevision 1.4  2001/06/06 15:17:28  vebjornb
+CSeveral bugfixes. In particular the molecular geometry is now correct
+Cwhether symmetry is used or not. Also fixed printing of MO coefficients
+Cfor systems with more than 100 orbitals (will now work for up to 9999
+Corbitals) - VB
+C
 CRevision 1.3  2001/05/31 06:38:01  vebjornb
 CUpdated copyright, authors and reference in all Fortran-files - VB
 C
@@ -194,7 +200,6 @@ C
 #include <symmet.h>
 #include <pgroup.h>
 #include <cbirea.h>
-#include <frame.h>
 #include <inftap.h>
 #include <chrxyz.h>
 #include <chrsgn.h>
