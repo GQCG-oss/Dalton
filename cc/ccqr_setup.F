@@ -77,7 +77,7 @@ c /* deck ccqr_setup */
       INTEGER IZETVA, IZETVB, IZETVC
       INTEGER ITAMPA, ITAMPB, ITAMPC
       INTEGER IKAPA,  IKAPB,  IKAPC
-      INTEGER IR2AB, IR2BC, IR2AC
+      INTEGER IR2AB, IR2BC, IR2AC, IETAA, IETAB, IETAC
       INTEGER IVEC, ITRAN, I, ISYSOP, IOPSOP, ISGNSOP, INUM
       INTEGER MXV0G, MXVAF, MXVAEA, MXVXE, MXVAB, MXV0FA, MXVR2
 
@@ -97,6 +97,7 @@ c /* deck ccqr_setup */
       INTEGER IL1ZETA
       INTEGER IR2TAMP
       INTEGER IROPER
+      INTEGER IETA1
 
 
 *---------------------------------------------------------------------*
@@ -206,6 +207,10 @@ c /* deck ccqr_setup */
      &                 LBLOPR(IOPERC),.FALSE.,SIGN*CQRFR(IFREQ),ISYML2)
          IR2BC=IR2TAMP(LBLOPR(IOPERB),.FALSE.,SIGN*BQRFR(IFREQ),ISYML1,
      &                 LBLOPR(IOPERC),.FALSE.,SIGN*CQRFR(IFREQ),ISYML2)
+
+         IETAA = IETA1(LBLOPR(IOPERA),.FALSE.,SIGN*AQRFR(IFREQ),ISYML)
+         IETAB = IETA1(LBLOPR(IOPERB),.FALSE.,SIGN*BQRFR(IFREQ),ISYML)
+         IETAC = IETA1(LBLOPR(IOPERC),.FALSE.,SIGN*CQRFR(IFREQ),ISYML)
         END IF
 
 *---------------------------------------------------------------------*
@@ -1770,7 +1775,7 @@ c /* deck ccqr_eadrv */
            CALL QUIT('Unkown coupled cluster model in CC_EADRV.')
         END IF
 
-        CALL CC_WARSP(LISTB, IFILE, ISYRES, IOPT, MODEL, DUMMY,
+        CALL CC_WARSP(LISTB, IFILE, ISYRES, IOPT, MODEL,DUMMY,
      &                WORK(KETA1),WORK(KETA2),WORK(KEND1),LEND1)
 
       ELSE IF (OPTION(1:4).EQ.'DOTP') THEN
@@ -1851,6 +1856,12 @@ c /* deck CC_DOTDRV */
 *
 *    Purpose: driver for a list of vector dot product calculations
 *
+*             some special LIST types are used for this routine:
+*
+*               LISTR = X1B  --  right hand side for L1 equations
+*               LISTR = X2B  --  right hand side for L2 equations
+*             
+*
 *    Written by Christof Haettig, April 1997.
 *
 *=====================================================================*
@@ -1876,7 +1887,7 @@ c /* deck CC_DOTDRV */
       CHARACTER*(19) MSGDBG
       PARAMETER (MSGDBG = '[debug] CC_DOTDRV> ')
       LOGICAL LOCDBG
-      PARAMETER (LOCDBG = .FALSE.)
+      PARAMETER (LOCDBG = .TRUE.)
 
       INTEGER LWORK, NDTRAN, MXVEC
 
@@ -1935,7 +1946,12 @@ c /* deck CC_DOTDRV */
 *---------------------------------------------------------------------*
       DO ITRAN = 1, NDTRAN
         IFILEL = IDTRAN(ITRAN)
-        ISYML  = ILSTSYM(LISTL,IFILEL)
+
+        IF (LISTL.EQ.'X2B') THEN
+          ISYML  = ILSTSYM('L2 ',IFILEL)
+        ELSE
+          ISYML  = ILSTSYM(LISTL,IFILEL)
+        END IF
 
         NTAMP = NT1AM(ISYML) + NT2AM(ISYML)
 
@@ -1956,7 +1972,6 @@ c /* deck CC_DOTDRV */
           NTAMP  = NT1AM(ISYML)
         END IF
 
-
         IF (LEND2 .LT. 0) THEN
           CALL QUIT('Insufficient work space in CC_DOTDRV.')
         END IF
@@ -1972,6 +1987,8 @@ c /* deck CC_DOTDRV */
           CALL CC_RDRSP(LISTL,IFILEL,ISYML,IOPT,MODEL,
      &                  WORK(KVECL1),WORK(KVECL2)     )
           CALL CCLR_DIASCL(WORK(KVECL2),0.5d0,ISYML)
+        ELSE IF (LISTL(1:3).EQ.'X2B') THEN
+          CALL CC_L2GD(WORK(KVECL1),IFILEL,WORK(KEND2),LEND2)
         ELSE
           IOPT = 3
           CALL CC_RDRSP(LISTL,IFILEL,ISYML,IOPT,MODEL,
@@ -1985,7 +2002,11 @@ c /* deck CC_DOTDRV */
         DO WHILE (IDDOTS(IVEC,ITRAN).NE.0 .AND. IVEC.LE.MXVEC)
 
           IFILER = IDDOTS(IVEC,ITRAN)
-          ISYMR  = ILSTSYM(LISTR,IFILER)
+          IF (LISTR.EQ.'X1B') THEN
+            ISYMR  = ILSTSYM('L1 ',IFILER)
+          ELSE
+            ISYMR  = ILSTSYM(LISTR,IFILER)
+          END IF
        
           IF (ISYMR.NE.ISYML) THEN
             WRITE (LUPRI,*) LISTL, IFILEL, ISYML
@@ -2003,7 +2024,7 @@ c /* deck CC_DOTDRV */
             CALL CC_RDRSP(LISTR,IFILER,ISYMR,IOPT,MODEL,
      &                    WORK(KVECR1),WORK(KVECR2)   )
             CALL CCLR_DIASCL(WORK(KVECR2),0.5d0,ISYMR)
-          ELSE IF (LISTR(1:2).EQ.'X1') THEN
+          ELSE IF (LISTR(1:3).EQ.'X1B') THEN
             CALL CC_LGD(WORK(KVECR1),LRZLBL(IFILER),ISYLRZ(IFILER),
      &              FRQLRZ(IFILER),LORXLRZ(IFILER),WORK(KEND2),LEND2)
           ELSE IF (LISTR(1:2).EQ.'XC') THEN
@@ -2028,6 +2049,14 @@ C    &                   DUMMY,WORK(KEND2),LEND2)
           END IF
 
           DCON1  = DDOT(NT1AM(ISYML),WORK(KVECL1),1,WORK(KVECR1),1)
+          IF (LOCDBG) THEN
+            WRITE(LUPRI,*) 'NORM^2(L1):',
+     &        DDOT(NT1AM(ISYML),WORK(KVECL1),1,WORK(KVECL1),1)
+            WRITE(LUPRI,*) 'NORM^2(R1):',
+     &        DDOT(NT1AM(ISYMR),WORK(KVECR1),1,WORK(KVECR1),1)
+            WRITE(LUPRI,*) '(L1|R1):',
+     &        DDOT(NT1AM(ISYMR),WORK(KVECL1),1,WORK(KVECR1),1)
+          END IF
           IF (CC2 .OR. MCC2 .OR. CCSD) THEN
            DCON2 = DDOT(NT2AM(ISYML),WORK(KVECL2),1,WORK(KVECR2),1)
           ELSE IF (CCS) THEN
