@@ -952,7 +952,7 @@ C
                IPLACE2 = IPLACE1 - 1
             END IF
          END IF
-C
+C     
          DO 2200 ICOOR1 = 1, NCOOR
          DO 2200 IGORDR = 1, NGORDR
             TMPSYM(ICOOR1) = TMPSYM(ICOOR1)
@@ -965,30 +965,33 @@ C
             RNORM2 = RNORM2 + (TMPSYM(ICOOR1))**2
  2300    CONTINUE
          IF (RNORM2 .LT. DTHR) GOTO 2700
-C
+C     
          DO 2350 ICOOR1 = 1, NCOOR
             TMPSYM(ICOOR1) = TMPSYM(ICOOR1)/SQRT(RNORM2)
  2350    CONTINUE
+C     
+C        *** Orthogonalize it. ***
+C     
+         EXIST = .FALSE.
+         CALL ORTSCP(TMPSYM,SYMCOR,ICRIRP,ISYMCO,IREP,IPL,IPRINT,EXIST)
+C     
+         IF (.NOT.EXIST) THEN
+            DO 2400 IPHASE = 1, 2
+            DO 2400 ICOO2  = 1, ISYMCO
+               EXIST = .TRUE.
+               PHASE = D1
+               IF (IPHASE.EQ.2) PHASE = -D1
+C     
+               DO 2500 ICOO1  = 1, NCOOR
+                  DIFF2 = (PHASE*TMPSYM(ICOO1)
+     &                  -        SYMCOR(ICOO1,ICOO2))**2 
 C
-         DO 2400 IPHASE = 1, 2
-         DO 2400 ICOO2  = 1, ISYMCO
-            EXIST = .TRUE.
-            PHASE = D1
-            IF (IPHASE.EQ.2) PHASE = -D1
+                  IF (DIFF2 .GT. DTHR) EXIST = .FALSE.
+ 2500          CONTINUE
 C
-            DO 2500 ICOO1  = 1, NCOOR
-               DIFF2 = (PHASE*TMPSYM(ICOO1)
-     &               -        SYMCOR(ICOO1,ICOO2))**2 
-C
-               IF (DIFF2 .GT. DTHR) EXIST = .FALSE.
- 2500       CONTINUE
-C
-C           *** If we already have a full set of coordinates. ***
-C
-            IF (ISYMCO.GE.NCOOR) EXIST=.TRUE.
-C
-            IF (EXIST) GOTO 2700
- 2400    CONTINUE
+ 2400       CONTINUE
+         END IF
+         IF (EXIST) GOTO 2700
 C
 C        *** We have now found a new symmetry coordinate, and find ***
 C        *** an adress for it.                                     ***
@@ -998,17 +1001,11 @@ C
 C        *** If the projection operator for the second row is used  ***
 C        *** then we need to put the symmetry coordinate 1 index on ***
 C
-         IF ((IREP.GT.N1DIME).AND.(IPL.EQ.2)) THEN
-            KSYMC = ISYMCO + 1
-         ELSE
-            KSYMC = ISYMCO
-         END IF
-C
-         ICRIRP(KSYMC,2) = IPL-1
-         ICRIRP(KSYMC,1) = IREP
-         DO 2600 ICOOR1 = 1, NCOOR
-            SYMCOR(ICOOR1,KSYMC) = TMPSYM(ICOOR1)
- 2600    CONTINUE
+         ICRIRP(ISYMCO,2) = IPL-1
+         ICRIRP(ISYMCO,1) = IREP
+         DO ICOOR1 = 1, NCOOR
+            SYMCOR(ICOOR1,ISYMCO) = TMPSYM(ICOOR1)
+         END DO
 C
 C        *** Using the shift function to create a partner function. ***
 C
@@ -1018,11 +1015,11 @@ C
             DO 2800 IGORDR = 1, NGORDR
             DO 2800 ICOO2  = 1, NCOOR
                CALL DZERO(TMPVEC,NCOOR)
-               DO 2900 ICOO1 = 1, NCOOR
+               DO ICOO1 = 1, NCOOR
                   TMPVEC(ICOO2) = TMPVEC(ICOO2)
      &                          + TRAMTX(ICOO1,ICOO2,IGORDR)
-     &                           *SYMCOR(ICOO1,KSYMC)
- 2900          CONTINUE
+     &                           *SYMCOR(ICOO1,ISYMCO)
+               END DO
 C
                TMPSYM(ICOO2) = TMPSYM(ICOO2)
      &                       + GRIREP(IGORDR,IPLACE2)
@@ -1030,44 +1027,42 @@ C
  2800       CONTINUE
 C
             RNORM2 = 0.0D0
-            DO 3100 ICOOR1 = 1, NCOOR
+            DO ICOOR1 = 1, NCOOR
                RNORM2 = RNORM2 + TMPSYM(ICOOR1)**2
- 3100       CONTINUE
+            END DO
 C
-C           *** Index for partner geometry. ***
+C           *** Normalizing partner geometry. ***
+C
+            DO ICOOR1 = 1, NCOOR
+               TMPSYM(ICOOR1) = TMPSYM(ICOOR1)/SQRT(RNORM2)
+            END DO
+C
+C           *** Orthogonalizing partner coordinate. ***
+C
+            CALL ORTSCP(TMPSYM,SYMCOR,ICRIRP,ISYMCO,IREP,IPL,IPRINT,
+     &                  EXIST)
 C
             ISYMCO = ISYMCO + 1
 C
-C           *** If the shift operator for the first row is used,  ***
-C           *** we need to put the symmetry coordinate in ISYMCO-1***
-C           *** In addition ICRIRP needs to show that it is first ***
-C           *** row (i.e. ICRIRP(is,2) = 0                        ***
+            ICRIRP(ISYMCO,1) = IREP
+            ICRIRP(ISYMCO,2) = 1
+            IF (IPL.EQ.2) ICRIRP(ISYMCO,2) = 0
 C
-            IF ((IREP.GT.N1DIME).AND.(IPL.EQ.2)) THEN
-               KSYMC = ISYMCO - 1
-               ICRIRP(KSYMC,2) = 0
-            ELSE
-               KSYMC = ISYMCO
-               ICRIRP(KSYMC,2) = 1
-            END IF
-C            
-            DO 3200 ICOOR1 = 1, NCOOR
-               SYMCOR(ICOOR1,KSYMC) = TMPSYM(ICOOR1)/SQRT(RNORM2)
- 3200       CONTINUE
-            ICRIRP(KSYMC,1) = IREP
+            DO ICOOR1 = 1, NCOOR
+               SYMCOR(ICOOR1,ISYMCO) = TMPSYM(ICOOR1)
+            END DO
+C     
          END IF
-C
+C     
  2700    CONTINUE
  2101 CONTINUE
  2100 CONTINUE
 C
-      CALL ORTSCP(SYMCOR,ICRIRP,IPRINT)
 C
       IF (N1DIME.LT.NIREP) THEN
          KTMPCR = 1
-         KNMFIR = KTMPCR + NCOOR**2
-         CALL SRTSCR(SYMCOR,WORK(KTMPCR),WORK(KNMFIR),ICRIRP,N1DIME,
-     &               IPRINT)
+         KICTMP = KTMPCR + NCOOR**2
+         CALL SRTSCR(SYMCOR,WORK(KTMPCR),ICRIRP,WORK(KICTMP),IPRINT)
       END IF
 C
       NUMTIM = (NCOOR-1)/10 + 1
@@ -1077,16 +1072,16 @@ C
          ISTRT = 10*(I-1) + 1
          IEND  =(ISTRT-1) + MIN(ILEFT,10)
          WRITE (LUPRI,'(A,I4,10I8)') 'Symmetry', 
-     &            (ICRIRP(ICOOR2,1),ICOOR2=ISTRT,IEND)
+     &        (ICRIRP(ICOOR2,1),ICOOR2=ISTRT,IEND)
          DO ICOOR1 = 1, NCOOR
             WRITE (LUPRI,'(A,10F8.4)') '      ',
-     &                (SYMCOR(ICOOR1,ICOOR2),ICOOR2=ISTRT,IEND)
+     &             (SYMCOR(ICOOR1,ICOOR2),ICOOR2=ISTRT,IEND)
          END DO
          WRITE (LUPRI,'(A)') '                             '
          WRITE (LUPRI,'(A)') '                             '
       END DO
       WRITE (LUPRI,'(A)') '                                '
-C
+C 
       IF (IPRINT .GT. 20) THEN
          WRITE (LUPRI,'(A)') '                                '
          WRITE (LUPRI,'(A)') 'Transformation matrices for the ' //
@@ -1109,25 +1104,28 @@ C
          END DO
       END IF
 C
-c         CALL DZERO(TMPSYM,NCOOR)
-c         DO 3300 ICOOR2 = 1, NCOOR
-c         DO 3300 ICOOR1 = 1, NCOOR
-c            TMPSYM(ICOOR1) = TMPSYM(ICOOR1) 
-c     &                     + TRAMTX(ICOOR1,ICOOR2,2)*SYMCOR(ICOOR2,7)
-c 3300    CONTINUE
-cC
-c         DO 3400 ICOOR1 = 1, NCOOR
-c            TMPSYM(ICOOR1) = (TMPSYM(ICOOR1)
-c     &                     - (GRIREP(2,3)*SYMCOR(ICOOR1,7) 
-c     &                     +  GRIREP(2,4)*SYMCOR(ICOOR1,8))) 
-c 3400    CONTINUE
-cC
-c         DO 3500 ICOOR1 = 1, NCOOR
-c            WRITE (LUPRI,'(12F8.4)') TMPSYM(ICOOR1)
-c 3500    CONTINUE
-C      END IF
-C
       IF (ISYMCO.LT.NCOOR) CALL QUIT('Unable to make enough sym. coor')
+C
+C     *** Orthogonality test for coordinates. ***
+C
+      ITEST = 0
+      DO ICOOR1 = 1, NCOOR
+      DO ICOOR2 = 1, ICOOR1-1
+         GCCNST = 0.0D0
+         DO ICOOR3 = 1, NCOOR
+            GCCNST = GCCNST + SYMCOR(ICOOR3,ICOOR1)
+     &                       *SYMCOR(ICOOR3,ICOOR2)
+         END DO
+C
+         IF (ABS(GCCNST) .GT. DTHR) THEN
+            ITEST = ITEST + 1
+            WRITE (LUPRI,'(5X,A,2I4)') 
+     &     'ERROR, Non orthogonal symmetry coordinates:', ICOOR1, ICOOR2
+         END IF
+      END DO
+      END DO
+      IF (ITEST.GT.0) CALL QUIT('Problems with symmetry coordinates,' //
+     &     'numerical differentiation. Please contact dalton admin.')
 C
       RETURN
       END
@@ -1865,70 +1863,74 @@ C
 C
 C
 C     /*Deck ortscp*/
-      SUBROUTINE ORTSCP(SYMCOR,ICRIRP,IPRINT)
+      SUBROUTINE ORTSCP(TRIAL,SYMCOR,ICRIRP,ISYMCO,KIREP,KIPL,IPRINT,
+     &                  EXIST)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DTHR = 1.0D-10)
 #include <trkoor.h>
-      DIMENSION SYMCOR(NCOOR,NCOOR), ICRIRP(NCOOR,2)
+      LOGICAL EXIST
+      DIMENSION TRIAL(NCOOR), SYMCOR(NCOOR,NCOOR), ICRIRP(NCOOR,2)
 C
-      DO 100 ICOOR1 = 1, NCOOR
-         IREP1 = ICRIRP(ICOOR1,1)
-C     
-         DO 200 ICOOR2 = 1, NCOOR
-            IREP2 = ICRIRP(ICOOR2,1)
+      DO  ICOOR = 1, ISYMCO
+         IREP = ICRIRP(ICOOR,1)
 C
-            IF ((IREP2 .EQ. IREP1) .AND. (ICOOR1 .NE. ICOOR2) .AND.
-     &          (ICRIRP(ICOOR1,2) .EQ. ICRIRP(ICOOR2,2))) THEN
+         IF ((IREP .EQ. KIREP) .AND. (ICRIRP(ICOOR,2).EQ.(KIPL-1))) THEN
 C
-               GCCNST = D0
-               DO 300 ICOOR3 = 1, NCOOR
-                  GCCNST = GCCNST + SYMCOR(ICOOR3,ICOOR1)
-     &                             *SYMCOR(ICOOR3,ICOOR2)
- 300           CONTINUE
-C
-               IF (ABS(GCCNST) .GT. DTHR) THEN
-C     
-                  DO 400 ICOOR3 = 1, NCOOR
-                     SYMCOR(ICOOR3,ICOOR1) = SYMCOR(ICOOR3,ICOOR1) 
-     &                              - GCCNST*SYMCOR(ICOOR3,ICOOR2)
- 400              CONTINUE
-C
-                  RLENGT = D0
-                  DO 500 ICOOR3 = 1, NCOOR
-                     RLENGT = RLENGT + SYMCOR(ICOOR3,ICOOR1)
-     &                                *SYMCOR(ICOOR3,ICOOR1)
- 500              CONTINUE
-                  RLENGT = SQRT(RLENGT)
-C
-                  RINV = D1/RLENGT
-                  DO 600 ICOOR3 = 1, NCOOR
-                     SYMCOR(ICOOR3,ICOOR1) = SYMCOR(ICOOR3,ICOOR1)*RINV
- 600              CONTINUE
-               END IF
-            END IF
- 200     CONTINUE
- 100  CONTINUE
-C
-      IF (IPRINT .GT. 20) THEN
-         NUMTIM = (NCOOR-1)/10 + 1
-         WRITE (LUPRI,'(A)') 'Orthoganlized symmetry coordinates'
-C
-         DO I = 1, NUMTIM
-            ILEFT = NCOOR - 10*(I-1)
-            ISTRT = 10*(I-1) + 1
-            IEND  =(ISTRT-1) + MIN(ILEFT,10)
-            WRITE (LUPRI,'(A,I4,10I8)') 'Symmetry', 
-     &                              (ICRIRP(ICOOR2,1),ICOOR2=ISTRT,IEND)
+            RLENGS = D0
             DO ICOOR1 = 1, NCOOR
-               WRITE (LUPRI,'(A,10F8.4)') '      ',
-     &                     (SYMCOR(ICOOR1,ICOOR2),ICOOR2=ISTRT,IEND)
+               RLENGS = RLENGS + SYMCOR(ICOOR1,ICOOR)**2
             END DO
-            WRITE (LUPRI,'(A)') '                             '
-            WRITE (LUPRI,'(A)') '                             '
+            RINVS = D1/RLENGS
+C
+            GCCNST = D0
+            DO ICOOR1 = 1, NCOOR
+               GCCNST = GCCNST + SYMCOR(ICOOR1,ICOOR)*TRIAL(ICOOR1)
+            END DO
+C
+            IF (ABS(GCCNST) .GT. DTHR) THEN
+C     
+               DO ICOOR1 = 1, NCOOR
+                  TRIAL(ICOOR1) = TRIAL(ICOOR1)
+     &                          - RINVS*GCCNST*SYMCOR(ICOOR1,ICOOR)
+               END DO
+C
+            END IF
+C
+C           *** Normalizing. ***
+C
+            RLENGT = D0
+            DO ICOOR1 = 1, NCOOR
+               RLENGT = RLENGT+ TRIAL(ICOOR1)**2
+            END DO
+            RLENGT = SQRT(RLENGT)
+            IF (RLENGT.GT.DTHR) THEN
+               RINV = D1/RLENGT
+               DO ICOOR1 = 1, NCOOR
+                  TRIAL(ICOOR1) = TRIAL(ICOOR1)*RINV
+               END DO
+            END IF
+         END IF
+      END DO
+C
+C     *** Has it become the zero vector?***
+C
+      RLENGT = D0
+      DO ICOOR1 = 1, NCOOR
+         RLENGT = RLENGT+ TRIAL(ICOOR1)**2
+      END DO
+      IF (RLENGT.LT.DTHR) EXIST = .TRUE.
+C
+C     *** Test printing. ***
+C
+      IF ((IPRINT .GT. 20) .AND. .NOT.EXIST) THEN
+         WRITE (LUPRI,'(A)') 'Orthoganlized symmetry coordinate:'
+C
+         WRITE (LUPRI,'(A,2I4)') 'Symmetry', KIREP, KIPL-1
+         DO I = 1, NCOOR
+            WRITE (LUPRI,'(10X,F8.4)') TRIAL(I)
          END DO
-         WRITE (LUPRI,'(A)') '                                '
       END IF
 C
       RETURN
@@ -1936,7 +1938,7 @@ C
 C
 C
 C     /* Deck srtscr */
-      SUBROUTINE SRTSCR(SYMCOR,TMPCOR,NMFIRP,ICRIRP,N1DIME,IPRINT)
+      SUBROUTINE SRTSCR(SYMCOR,TMPCOR,ICRIRP,ICTMP,IPRINT)
 C     ******************************************************************
 C     ***** This subroutine sorts the symmetry adapted coordinates *****
 C     ***** such that all the coordinates that transforms as 1.    *****
@@ -1949,38 +1951,11 @@ C
 #include <priunit.h>
 #include <mxcent.h>
 C
+#include <fcsym.h>
 #include <trkoor.h>
       DIMENSION SYMCOR(NCOOR,NCOOR), TMPCOR(NCOOR,NCOOR)
-      DIMENSION ICRIRP(NCOOR,2), NMFIRP(NCOOR)
+      DIMENSION ICRIRP(NCOOR,2), ICTMP(NCOOR,2)
       LOGICAL FND2D
-C
-      FND2D = .FALSE.
-C
-C     *** Finding some variables for the symmetry adapted coordinates. ***
-C
-      IIREP = 1
-      ICOMP = 1
-      KIREP = ICRIRP(1,1)
-      IF (ICRIRP(1,1).GT.N1DIME) THEN 
-         NST2D = 1 
-         FND2D = .TRUE.
-      END IF
-C
-      DO 100 IC = 2, NCOOR
-         IF (ICRIRP(IC,1).NE.KIREP) THEN
-            NMFIRP(IIREP) = ICOMP
-            ICOMP = 0
-            IIREP = IIREP + 1
-            KIREP = ICRIRP(IC,1)
-            IF ((KIREP.GT.N1DIME).AND.(.NOT.FND2D)) THEN
-               NST2D = IIREP
-               FND2D = .TRUE.
-            END IF
-         END IF
-         ICOMP = ICOMP + 1
- 100  CONTINUE
-      NUMIRP = IIREP
-      NMFIRP(IIREP) = ICOMP
 C
 C     *** Copying all the coordinates belonging to 1. dim ireps ***
 C     *** over to TMPCOR                                        ***
@@ -1989,6 +1964,8 @@ C
       DO 200 IC2 = 1, NCOOR
          IF (ICRIRP(IC2,1) .LE. N1DIME) THEN
             IC = IC + 1
+            ICTMP(IC,1) = ICRIRP(IC2,1)
+            ICTMP(IC,2) = 0
             DO 300 IC1 = 1, NCOOR
                TMPCOR(IC1,IC2) = SYMCOR(IC1,IC2)
  300        CONTINUE
@@ -1996,22 +1973,26 @@ C
  200  CONTINUE
       N1DCOR = IC
 C
-C     *** Sorting the rest of the coordinates according to the principle above. ***
+C     *** Sorting the rest of the coordinates according ***
+C     *** to the principle above.                       ***
 C
       IC = N1DCOR
       ITMPC = N1DCOR
-      DO 400 IIREP = NST2D, NUMIRP
+      DO 400 IIREP = N1DIME+1, NIREP
 C
-         ICST = IC
-         DO 500 ITIM  = 1, 2
-         DO 500 I = ITIM, NMFIRP(IIREP), 2
-            ITMPC = ITMPC + 1
-            ICRIRP(ITMPC,2) = ITIM-1
-            DO 600 ICIN = 1, NCOOR
-               TMPCOR(ICIN,ITMPC) = SYMCOR(ICIN,ICST+I)
- 600        CONTINUE
-            IC = IC + 1
- 500     CONTINUE
+         DO ITIM   = 0, 1
+         DO ICOOR1 = N1DCOR, NCOOR
+            IF ((ICRIRP(ICOOR1,1).EQ.IIREP).AND.
+     &          (ICRIRP(ICOOR1,2).EQ.ITIM )) THEN
+               IC = IC + 1
+               ICTMP(IC,1) = IIREP
+               ICTMP(IC,2) = ITIM
+               DO ICOOR2 = 1, NCOOR
+                  TMPCOR(ICOOR2,IC) = SYMCOR(ICOOR2,ICOOR1)
+               END DO
+            END IF
+         END DO
+         END DO
  400  CONTINUE
 C
 C     *** Test print ***
@@ -2025,10 +2006,13 @@ C
 C
 C     *** Assigning the new coordinate order to SYMCOR ***
 C
-      DO 800 IC2 = 1, NCOOR
-      DO 800 IC1 = 1, NCOOR
-         SYMCOR(IC1,IC2) = TMPCOR(IC1,IC2)
- 800  CONTINUE
+      DO IC2 = 1, NCOOR
+         ICRIRP(IC2,1) = ICTMP(IC2,1)
+         ICRIRP(IC2,2) = ICTMP(IC2,2)
+         DO IC1 = 1, NCOOR
+            SYMCOR(IC1,IC2) = TMPCOR(IC1,IC2)
+         END DO
+      END DO
 C
 C     *** Test print ***
 C

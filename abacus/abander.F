@@ -848,6 +848,7 @@ c#endif
 C
 C        *** Restoring property derivatives. ***
 C
+         write (lupri,*) 'er her dalalalalalala'
          IF (NRMCRD) THEN
             NPRPDR = NPRBKP
             NSPNSP = NSPNBK
@@ -1511,9 +1512,9 @@ C
 C        ********************************************
 C        *** Preliminary constants to derivatives ***
 C        ********************************************
-C
-         MXCOEF = INT(NMORDR/2) + 1
 C     
+         MXCOEF = INT(NMORDR/2) + 1
+C      
 C        ***********************************
 C        *** Calculating the derivatives ***
 C        ***********************************
@@ -1716,7 +1717,7 @@ C
 C        *** Test print. ***
          IF (IPRINT.GT.10) THEN
             WRITE (LUPRI,'(A, 12I5)') 'Component: ',
-     &                                          (INDSTP(I),I=1,IRSRDR+1)
+     &                                         (INDSTP(I),I=1,IRSRDR+1)
          END IF
       END IF
 C
@@ -2136,10 +2137,10 @@ C
 C     *** NOADSY -> If no automatic symmetry detection is requested ***
 C     ***           we need to use Huckel start-guess first time.   ***
 C
-      IF (ADSTBK) THEN
+c      IF (ADSTBK) THEN
          ADDSTO = .TRUE.
-         NOADSY = .FALSE.
-      END IF
+c         NOADSY = .FALSE.
+c      END IF
 C
 C     *** If there are possibilities for  new symmetry. ***
 C
@@ -5799,6 +5800,7 @@ C
 C     *** Transforming into the "old" set of cartesian ***
 C     *** coordinates.                                 ***
 C
+      iprint = 200
       KCRPRG = 1
       KTRAMT = KCRPRG + NCOOR1
       CALL TROCHS(EHESS,COOR,SEHESS,WORK(KCRPRG),WORK(KTRAMT),NCOOR1,
@@ -5807,6 +5809,7 @@ C
 C     *** Transforming into symmetry coordinates. ***
 C
       CALL TRSFC2(EHESS,SYMCOR,SEHESS,NCOOR1,NCOOR2,MXCOOR,IPRINT)
+      iprint = 0
 C
       RETURN
       END
@@ -5881,6 +5884,13 @@ C
 C
       CALL DGEMM('T','N',NCOOR2,NCOOR1,NCOOR1,D1,SYMCOR,NCOOR1,
      &           SCNDER,NSCNDR,D0,SSCNDR,NCOOR1)
+c      d = 0.0d0
+c      do i = 1, ncoor1
+c         d = d + SCNDER(1,i)*symcor(i,3)
+c         write (lupri,*) SCNDER(1,i), symcor(i,3)
+c      end do
+c      write (lupri,*) sscndr(3,1),d
+c      stop ' '
 C
       CALL DGEMM('N','N',NCOOR2,NCOOR2,NCOOR1,D1,SSCNDR,NCOOR1,
      &           SYMCOR,NCOOR1,D0,SCNDER,NSCNDR)
