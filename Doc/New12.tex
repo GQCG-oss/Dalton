@@ -124,6 +124,23 @@ single filename is given as arguments to the \dalton\ script, that is
 > ./dalton foo
 \end{verbatim}
 
+\item{\bf Basis set name changes:} The following basis sets
+have been renamed for consistency with the EMSL 
+basis set order form.
+\begin{center}
+\begin{tabular}{|l|l|}\hline
+Old & New \\\hline
+DunningDZ & DZ(Dunning)\\
+DunningTZ & TZ(Dunning)\\
+SVP(Dunning-Hay)+diffuse & SVP+Diffuse(Dunning-Hay) \\
+daug-cc-pVXZ & d-aug-cc-pVXZ \\
+taug-cc-pVXZ & t-aug-cc-pVXZ \\
+daug-cc-pCVXZ & d-aug-cc-pCVXZ \\
+taug-cc-pCVXZ & t-aug-cc-pCVXZ \\
+\hline
+\end{tabular}
+\end{center}
+
 \item{\bf Depricated features: PVM no longer supported:} The parallel
   version no longer supports PVM as a message passing
   interface. Currently Dalton will only correctly install a parallel
