@@ -75,6 +75,7 @@ C
 C
       INTEGER RHOTYP
       LOGICAL USEPSM, CSFEXP, TDM, NORHO2
+      CALL QENTER('RSPDM')
 C
 C     Treat NASHT .eq. 1 as a special case
 C
@@ -89,6 +90,22 @@ C           RHO1 = 1.0 both for ISPIN1 = 0 and ISPIN1 = 1
          END IF
          IF (.NOT. NORHO2)
      *   RHO2(1,1,1,1) = D0
+         GO TO 9999
+      ELSE IF (HSROHF) THEN
+         IF ( (ILSYM.EQ.IRSYM) .AND. (ABS(CL(1)-D1).LT.SMALL)
+     *                         .AND. (ABS(CR(1)-D1).LT.SMALL) ) THEN
+            CALL DUNIT(RHO1,NASHT)
+         ELSE
+            CALL DZERO(RHO1,N2ASHX)
+         END IF
+         IF (.NOT. NORHO2) THEN
+            DO I=1,NASHT
+               DO J=1,NASHT
+                  RHO2(I,I,J,J)=D1
+                  RHO2(I,J,J,I)=RHO2(I,J,J,I)-D1
+               END DO
+            END DO
+         END IF
          GO TO 9999
       END IF
 C
@@ -153,7 +170,8 @@ C
   240    CONTINUE
       END IF
 C
- 9999 RETURN
+ 9999 CONTINUE
+      CALL QEXIT('RSPDM')
 C     ... end of RSPDM.
       END
 C  /* Deck rsptdm */
@@ -191,6 +209,7 @@ C
       PARAMETER ( DM1 = -1.0D0 )
       LOGICAL  TDM, NORHO2
 C
+      CALL QENTER('RSPTDM')
       IF (SOPPA) THEN
          WRITE (LUPRI,*) 'RSPTDM FATAL ERROR: called in SOPPA calc.'
          CALL QUIT('RSPTDM FATAL ERROR: called in SOPPA calc.')
@@ -214,6 +233,7 @@ C
          CALL DSCAL(N2ASHX,       DM1,RHO1(1,1,ICSIM), 1)
  100  CONTINUE
 C
+      CALL QEXIT('RSPTDM')
       RETURN
 C     ... end of RSPTDM.
       END
