@@ -83,7 +83,7 @@ C
       PARAMETER (D0 = 0.0D0)
 C
       LOGICAL DIPOK, FNDLAB, MCSSYM
-      CHARACTER*8 LIPH, RTNLBL(2)
+      CHARACTER*8 RTNLBL(2)
       DIMENSION WORK(LWORK)
 C
 C Used from common blocks:
@@ -123,14 +123,13 @@ C
      &   'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
       IERROR = -1
       REWIND LUSIFC
-      LIPH = 'SIR IPH '
-      CALL MOLLB2(LIPH,RTNLBL,LUSIFC,IERROR)
+      CALL MOLLB2(LBSIFC,RTNLBL,LUSIFC,IERROR)
       IF (IERROR .LT. 0) THEN
-         WRITE (LUPRI,'(/A/3A)')
+        WRITE (LUPRI,'(/A/3A)')
      *      ' >>> FATAL ERROR (ABACUS.SETSIR)',
-     *      ' >>> label "', LIPH,
-     *      '" not found on SIRIUS interface file.'
-         CALL QUIT('"SIR IPH " label not found on SIRIUS interface.')
+     *      ' >>> label "', LBSIFC,
+     *      '" not found on SIRIFC, the SIRIUS interface file.'
+        CALL QUIT('"'//LBSIFC//'" label not found on SIRIFC file.')
       END IF
       READ (LUSIFC) EPOT,EMY,EACTIV,EMCSCF,ISTATE,ISPIN,NACTEL,LSYM
       POTNUC = EPOT
@@ -140,8 +139,6 @@ C
      *            NISH,NASH,NORB,NBAS,
      *            NELMN1, NELMX1, NELMN3, NELMX3, MCTYPE,
      *            NAS1, NAS2, NAS3
-      MWOPT = NWOPT
-      MWOPH = NWOPH
 C
       REWIND LUSIFC
       IF (FNDLAB('SIRFLAGS',LUSIFC)) THEN
@@ -155,6 +152,15 @@ C
 C     disable SUPSYM for ABACUS /921216-hjaaj
       MCSSYM = FLAG(17)
       FLAG(17) = .FALSE.
+C
+      IF (LBSIFC .EQ. 'CIRESPON') THEN
+         FLAG(4) = .TRUE.
+         NWOPT  = 0
+         NWOPH  = 0
+C        ... set CI flag for NSETUP
+      END IF
+      MWOPT = NWOPT
+      MWOPH = NWOPH
 C
 C   Read in necessary information if we are using external electric field.
 C
@@ -255,7 +261,7 @@ C
          CALL AVESE0
       END IF
       IF (IPRINT .GT. 5) THEN
-         CALL HEADER('Information from LUSIFC in SETSIR',-1)
+         CALL HEADER('Information from SIRIFC file in SETSIR',-1)
          WRITE (LUPRI,'(/A,I5)') ' NISHT  ', NISHT
          WRITE (LUPRI,'(A,8I5)') ' NISH() ', (NISH(I),I=1,NSYM)
          WRITE (LUPRI,'(A,8I5)') ' IISH() ', (IISH(I),I=1,NSYM)
@@ -340,15 +346,15 @@ C
       IF (MCSSYM) THEN
          WRITE (LUPRI,'(/,A,2(/A,I5,A,I5))')
      &      ' >>> (SETSIR) ERROR: super symmetry was used in SIRIUS',
-     &      ' NWOPT from SETUP:',NWOPT,' and NWOPT from LUSIFC:',MWOPT,
-     &      ' NWOPH from SETUP:',NWOPH,' and NWOPH from LUSIFC:',MWOPH
+     &      ' NWOPT from SETUP:',NWOPT,' and NWOPT from SIRIFC:',MWOPT,
+     &      ' NWOPH from SETUP:',NWOPH,' and NWOPH from SIRIFC:',MWOPH
          WRITE (LUPRI,'(/A/A)')
      &      ' ABACUS cannot continue because MC orbital gradient',
      &      ' may be non-zero without super symmetry averaging.'
       ELSE
          WRITE(LUPRI,'(/A,2(/A,I5,A,I5))') ' >>> (ABACUS.SETSIR) ERROR',
-     &      ' NWOPT from SETUP:',NWOPT,' and NWOPT from LUSIFC:',MWOPT,
-     &      ' NWOPH from SETUP:',NWOPH,' and NWOPH from LUSIFC:',MWOPH
+     &      ' NWOPT from SETUP:',NWOPT,' and NWOPT from SIRIFC:',MWOPT,
+     &      ' NWOPH from SETUP:',NWOPH,' and NWOPH from SIRIFC:',MWOPH
          WRITE(LUPRI,'(/A)') 'The JWOP array (with a zero vector):'
          CALL DZERO(WORK,NWOPT)
          CALL PRWOP(WORK,LUPRI)
@@ -426,7 +432,6 @@ C   INFOPT : ?
 C   INFTRA : ITRLVL,THRP,THRQ
 C   INFTAP : LUINP,LUINDX,...
 C   INFPRI : LUERR,...
-C   INFTAP : LUSIFC
 C
 #include <abainf.h>
 #include <infinp.h>
@@ -436,7 +441,6 @@ C
 #include <infdim.h>
 #include <infopt.h>
 #include <inftra.h>
-#include <inftap.h>
 #include <infpri.h>
 #include <inflin.h>
 #include <linaba.h>
