@@ -214,7 +214,7 @@ CTRL[15]=1
 ERROR[15]="NUMERICAL DIFFERENTIATION NOT COMPLETED"
 
 # Dipole moment second derivatives
-CRIT1=`$GREP "1 * 0?\.000000 * 0?\.000000 * 0?\.10951[0-9]" $log | wc -l`
+CRIT1=`$GREP "1 * (\-0|\-|0| )\.000000 * (\-0|\-|0| )\.000000 * 0?\.10951[0-9]" $log | wc -l`
 TEST[16]=`expr	$CRIT1`
 CTRL[16]=1
 ERROR[16]="DIPOLE MOMENT SECOND DERIVATIVES NOT CORRECT"
