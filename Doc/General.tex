@@ -850,13 +850,13 @@ associated with. See also the discussion in Sec.~\ref{sec:irc}.
 
 Specify the isotopic constitution\index{isotopic constitution} of the
 molecule under investigation.
-This is most interesting in dynamic walks\index{dynamics}, as well as
-when using mass-scaled atomic coordinates\index{mass-weighted
+This is most interesting in dynamic walks\index{dynamics}, 
+when using mass-scaled atomic coordinates,\index{mass-weighted
 coordinate}. Note that the internal structure of
 \aba\ uses Cartesian coordinates, and for vibrational analysis alone
 the keyword \Key{ISOTOP} in the \Sec{VIBANA} input section is to be
-preferred. Note also that for defining center of mass
-coordinates, there is a similar \verb|ISOTOP| keyword in the general
+used. Note also that for defining center of mass
+coordinates or for vibrational averaging, there is a similar \verb|.ISOTOP| keyword in the general
 input module, and this will become the only keyword for specifying
 isotopic substitutions in later versions of the program. The
 \Key{ISOTOP} keyword in this input module (\Sec{WALK}) is to become
@@ -905,10 +905,10 @@ localization of transition states. See also discussion in
 Section~\ref{sec:modfol}.
 
 \item[\Key{MOMENT}]\verb| |\newline
-\verb|      READ (LUCMD, *) NSTMOM|\newline
-\verb|      DO 265 IP = 1, NSTMOM|\newline
-\verb|         READ (LUCMD, *) ISTMOM(IP), STRMOM(IP)|\newline
-\verb|  265 CONTINUE|
+\verb|   READ (LUCMD, *) NSTMOM|\newline
+\verb|   DO IP = 1, NSTMOM|\newline
+\verb|      READ (LUCMD, *) ISTMOM(IP), STRMOM(IP)|\newline
+\verb|   END DO|
 
 Initial momentum for a dynamic walk\index{dynamics}\index{momentum}.
 Read one more line specifying
@@ -926,11 +926,15 @@ symmetric connection is used.
 step} step to update
 the geometry. This means that no trust region will be used.
 
+\item[\Key{NO CONTRIFUGAL FORCES}] Do not include contributions from
+centrifugal forces when calculating vibrationally averaged geometries
+at a finite temperature.
+
 \item[\Key{NOGRAD}]\verb| |\newline
 \verb|READ (LUCMD, *) NZEROG|\newline
 \verb|READ (LUCMD, *) (IZEROG(I), I = 1, NZEROG)|
 
- Set some gradient elements to zero.  Read
+ Set some gradient elements to set to zero.  Read
 one more line specifying how many elements to zero, then one
 or more lines listing their sequence numbers.
 
@@ -941,7 +945,12 @@ can also be done with the natural
 connection~\cite{joklbkrthpjtca90}. See the keyword \Key{NATCON}.
 
 \item[\Key{NOPRED}] No prediction of the energy of the wave function
-at updated geometry.
+at the updated geometry.
+
+\item[\Key{NORMAL}] Do the calculation of effective (vibrationally
+averaged) geometries in normal coordinates. This will restrict the
+calculation of the effective geometry to one isotopic species (by
+default the most abundant one).
 
 \item[\Key{NUMERI}] Do a numerical differentiation\index{numerical
 differentiation}, for instance when
@@ -956,7 +965,7 @@ more line containing print level. Default value is the value of
 \verb|IPRDEF| in the general input module.
 
 \item[\Key{RATLIM}]\verb| |\newline
-\verb|READ (LUCMD, *) RTMIN, RTRGOD, REJMIN, REJMAX|
+\verb|READ (LUCMD, *) RTRMIN, RTRGOD, REJMIN, REJMAX|
 
 Limits on ratios between predicted and
 observed energy change.  Read one more line specifying four
@@ -969,7 +978,7 @@ rejected\index{rejected geometry step}, and the trust
 region\index{trust radius} is
 reduced. This keyword is
 used in case of restarts to tell the program that when the program
-stopped, the last geometry was in fact rejected.
+was stopped, the last geometry was in fact rejected.
 
 \item[\Key{REPS}]\verb| |\newline
 \verb|READ (LUCMD, *) NREPS|\newline
@@ -983,11 +992,20 @@ only those symmetries previously defined to be true with the keyword
 keyword thus represents a subset of the \Key{REPS} of the general
 input module.
 
+\item[\Key{RESTART}] Tells the program that this is a restarted
+geometry optimization\index{restart, geometry optimization} and that
+information may therefore be available
+on the \verb|DALTON.WLK| file.
+
+\item[\Key{REUSE}] Use the property derivatives available on the file 
+\verb|DALTON.WLK| in a calculation of the harmonic contribution to the
+vibrational average. In this case, only a new force field will be calculated.
+
 \item[\Key{SCALE}]\verb| |\newline
-\verb|      READ (LUCMD, *) NUMNUC|\newline
-\verb|      DO 7000 INUC = 1, NUMNUC|\newline
-\verb|         READ (LUCMD, *) IATOM,(SCALCO(J,IATOM), J = 1, 3)|\newline
-\verb| 7000 CONTINUE|
+\verb| READ (LUCMD, *) NUMNUC|\newline
+\verb| DO INUC = 1, NUMNUC|\newline
+\verb|    READ (LUCMD, *) IATOM,(SCALCO(J,IATOM), J = 1, 3)|\newline
+\verb| END DO|
 
 Scale the atomic coordinates.  Read one more
 line specifying how many atoms to scale, then one line for
@@ -995,12 +1013,16 @@ each of these atoms~(*) specifying the atom number and scale
 factors for all three Cartesian coordinates. Default is no scaling of
 the atomic coordinates.
 
-\item[\Key{RESTART}] Tells the program that this is a restarted
-geometry optimization\index{restart, geometry optimization} and that
-information may therefore be available
-on the \verb|DALTON.WLK| file.
-
 \item[\Key{STRICT}] Strict mode following. Obsolete keyword. Do not use.
+
+\item[\Key{TEMPERATURES}]\verb| |\newline
+\verb|  READ (LUCMD, *) NTEMP|
+\verb|  READ (LUCMD, *) (TEMP(ITMP), ITMP=1,NTEMP)|
+
+Read a set of temperatures for which the
+effective (rovibrationally averaged) geometries are to be
+calculated. Read one more line containing the number of different
+temperatures, and another line containing the list of temperatures.
 
 \item[\Key{TOLERA}]\verb| |\newline
 \verb|READ (LUCMD, *) TOLST|
@@ -1021,9 +1043,16 @@ greater than zero. In dynamic walks\index{dynamics} the trust radius
 is by default put
 to 0.005, and in walks along an Intrinsic Reaction Coordinate
 (IRC)\index{intrinsic reaction coordinate}\index{IRC} the
-default trust radius is 0.020. For dynamical walks the default
+default trust radius is 0.02. For dynamical walks the default
 increment and decrement factor is changed to~2.0 and~0.8
 respectively.
+
+\item[\Key{VIBAVE}]
+Request the calculation of the harmonic contribution to the
+vibrational average of a molecular property.
+
+\item[\Key{VIBCNV}] Requests a vibrational analysis at the optimized
+geometry. Obsolete keyword. Do not use.
 
 \item[\Key{ZERGRD}]\verb| |\newline
 \verb|READ (LUCMD, *) ZERGRD|
