@@ -5320,7 +5320,7 @@ C
 #include <nuclei.h>
 #include <chrnos.h>
 
-      dimension sopr(1,nop,nop),pvodd(natoms)
+      dimension sopr(1,nop,nop),pvodd(mxcent)
       character*8 lab1, lab2
       character*3 prelab,num
       write(lupri,*) 'pvso,pvso2,pvpso,natoms'
