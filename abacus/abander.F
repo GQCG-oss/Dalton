@@ -654,6 +654,7 @@ C  /* Deck numdr1 */
 #include <taymol.h>
 #include <trkoor.h>
 #include <numder.h>
+#include <prpndr.h>
 #include <past.h>
 #include <gnrinf.h>
 #include <inftap.h>

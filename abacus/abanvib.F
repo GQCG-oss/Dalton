@@ -128,6 +128,7 @@ C  /* Deck nvbini */
 #include <mxcent.h>
 C
 #include <prpndr.h>
+#include <pvibav.h>
 #include <abainf.h>
 C     
 C     /PRPNDR/
