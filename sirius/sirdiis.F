@@ -154,8 +154,9 @@ C
       ICONV = 0
       IF (MXDGSS .GT. 1) THEN
          NINFO = NINFO + 1
-         WRITE (LUPRI,'(/A/A)') ' SRDIIS INFO: no DIIS iterations',
-     &'    because degenerate supersymmetries not implemented for DIIS'
+         WRITE (LUPRI,'(/A/A)')
+     &   ' SRDIIS INFO: no DIIS iterations because degenerate',
+     &   ' SRDIIS INFO: supersymmetries not implemented for DIIS'
          GO TO 9999
       END IF
 C
@@ -261,7 +262,7 @@ C       estimate quite big to be on the safe side /960627-hjaaj
          NINFO = NINFO + 1
          WRITE (LUPRI,'(/A,I5,A,I5/A)')
      &   ' SRDIIS INFO: MXERRV reduced from',MXERRV,' to',NEVC,
-     &   '              because of memory limitations.'
+     &   ' SRDIIS INFO: because of memory limitations.'
          MXERRV = NEVC
       END IF
 C
@@ -849,9 +850,8 @@ C
 C           remove entries with higher E and lower grd, if any
 C
             IF (J .GT. 0) THEN
-               NINFO = NINFO + 1
                WRITE(LUPRI,'(/A/A,I3,A)')
-     &   'INFO: SCF gradient has been lower than now,',
+     &   'Info: SCF gradient has been lower than now,',
      &   '      therefore',J,' old iterations are removed from DIIS.'
                K = 0
                DO J = 1, NEVC
@@ -917,9 +917,8 @@ c        IF (ITDIIS.GT.1 .AND.
 c    &       ( ABS(CVEC(INDEVC)) .LT. 0.2D0 .OR.
 c    &         ABS(CVEC(INDEVC)) .GT. 2.0D0 ) .AND.
 c    &       EMCDIF .LT. D0 .AND. GRDNRM .GT. GNRMSV) THEN
-             NINFO = NINFO + 1
              WRITE(LUPRI,'(1P/A,2(/A,G11.3),/A,I3,A)')
-     &       '!!! INFO: DIIS restarted because it was stalled ...',
+     &       '!!! Info: DIIS restarted because it was stalled ...',
      &       ' - energy changed by  ',EMCDIF,
      &       ' - gradient changed by',GRDNRM - GNRMSV,
      &       ' - or strange C vector coeff. for current index (=',
@@ -1561,7 +1560,7 @@ C
          CALL QUIT('DISRED: no solution to linear equations')
       END IF
  8500 FORMAT(/' (DISRED) Solution not obtained to linear equations'
-     *       /T11,'Check if matrix is singular, LINPACK DSP INFO =',I3)
+     *       /T11,'Check if matrix is singular, LINPACK DSP code =',I3)
 C
 C *** End of subroutine DISRED
 C
