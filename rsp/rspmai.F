@@ -945,6 +945,7 @@ C     Initialization of INFHSO for HSOINP
 C     Initialization of INFHYP
       DATA HYPCAL/.FALSE./
       DATA QRSPEC/.FALSE./,QRSHG/.FALSE./,QRPOCK/.FALSE./
+      DATA SOCOLL/.FALSE./,SSCOLL/.FALSE./
       DATA IPRHYP/2/
       DATA NBQRFR/1/ , BQRFR(1)/0.0D0/
       DATA NCQRFR/1/ , CQRFR(1)/0.0D0/
