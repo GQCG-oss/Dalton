@@ -4,6 +4,7 @@ DALTON_LIBS = \
 -Labacus -labacus	\
 -Lrsp -lrsp 		\
 -Lsirius -lsirius	\
+-labacus	\
 -Leri -leri		\
 -Lcc  -lcc		\
 -Ldft -ldft		\
