@@ -239,9 +239,11 @@ c       CALL CC_PRONELAO(WORK(K1INT),ISYMOPR)
 *----------------------------------------------------------------------*
       IF (LEXPEC .AND. ISYMOPR.EQ.1) THEN
 
+         ! with correlated density
          EXPVALUE(1,IDLST) = HALF * 
      &                DDOT(N2BST(ISYM0),WORK(K1INT),1,WORK(KAODSY),1)
 
+         ! with SCF density
          EXPVALUE(3,IDLST) = DDOT(N2BST(ISYM0),WORK(K1INT),1,AODENHF,1)
 
       END IF                                                
@@ -574,17 +576,20 @@ c      WRITE(LUPRI,*)'returned from CC_RDAOD...'
 *---------------------------------------------------------------------*
       IF (NSYM.EQ.1) THEN
         CALL DZERO(WORK(KAODEN),N2BST(ISYMPQ))
-        CALL CC_DENAO(WORK(KAODEN),D2GAI,D2GAB,D2GIJ,D2GIA,
-     *                XLAMDP,XLAMDH,WORK(KEND1),LWRK1,ISYMPQ)
+        CALL CC_DENAO(WORK(KAODEN),ISYMPQ,
+     *                D2GAI,D2GAB,D2GIJ,D2GIA,ISYMPQ,
+     *                XLAMDP,1,XLAMDH,1,WORK(KEND1),LWRK1)
                                                                    
         IF (I1DXORD.EQ.1) THEN
          CALL DZERO(WORK(KB1AODEN),N2BST(ISYPQ1))
-         CALL CC_DENAO(WORK(KB1AODEN),D2GAIB1,D2GABB1,D2GIJB1,D2GIAB1,
-     *                 XLAMDP,XLAMDH,WORK(KEND1),LWRK1,ISYPQ1)
+         CALL CC_DENAO(WORK(KB1AODEN),ISYPQ1,
+     *                 D2GAIB1,D2GABB1,D2GIJB1,D2GIAB1,ISYPQ1,
+     *                 XLAMDP,1,XLAMDH,1,WORK(KEND1),LWRK1)
 
          CALL DZERO(WORK(KB2AODEN),N2BST(ISYPQ1))
-         CALL CC_DENAO(WORK(KB2AODEN),D2GAIB2,D2GABB2,D2GIJB2,D2GIAB2,
-     *                 XLAMDP,XLAMDH,WORK(KEND1),LWRK1,ISYPQ1)
+         CALL CC_DENAO(WORK(KB2AODEN),ISYPQ1,
+     *                 D2GAIB2,D2GABB2,D2GIJB2,D2GIAB2,ISYPQ1,
+     *                 XLAMDP,1,XLAMDH,1,WORK(KEND1),LWRK1)
         END IF
       END IF
 
@@ -1548,11 +1553,11 @@ C  /* Deck ccefffockhlp2 */
       
       ! calculate HF density with alpha index transformed      
       CALL DZERO(B2DHFAO,N2BST(ISYRLX))
-      CALL CC_DHFAO(B2DHFAO,CMO,ISYM0,CMOHQ,ISYRLX,WORK,LWORK)
+      CALL CC_DHFAO(B2DHFAO,ISYRLX,CMO,ISYM0,CMOHQ,ISYRLX,WORK,LWORK)
 
       ! calculate HF density with beta index transformed      
       CALL DZERO(B1DHFAO,N2BST(ISYRLX))
-      CALL CC_DHFAO(B1DHFAO,CMOPQ,ISYRLX,CMO,ISYM0,WORK,LWORK)
+      CALL CC_DHFAO(B1DHFAO,ISYRLX,CMOPQ,ISYRLX,CMO,ISYM0,WORK,LWORK)
 
 
       ! set pointer for subblocks of kappa-bar-0
@@ -1564,19 +1569,17 @@ C  /* Deck ccefffockhlp2 */
 
       ! calculate zeta-kappa-bar-0 density with alpha index
       ! transformed with CMOHQ
-      ISDEN = 1
       CALL DZERO(B2KABAO,N2BST(ISYRLX))
-      CALL CC_DENAO(B2KABAO,KABAR(KOFDAI),KABAR(KOFDAB),
-     &              KABAR(KOFDIJ),KABAR(KOFDIA),
-     &              CMO,CMOHQ,WORK,LWORK,ISDEN)
+      CALL CC_DENAO(B2KABAO,ISYRLX,KABAR(KOFDAI),KABAR(KOFDAB),
+     &              KABAR(KOFDIJ),KABAR(KOFDIA),ISYM0,
+     &              CMO,1,CMOHQ,ISYRLX,WORK,LWORK)
 
       ! calculate zeta-kappa-bar-0 density with beta index
       ! transformed with CMOHQ
-      ISDEN = 1
       CALL DZERO(B1KABAO,N2BST(ISYRLX))
-      CALL CC_DENAO(B1KABAO,KABAR(KOFDAI),KABAR(KOFDAB),
-     &              KABAR(KOFDIJ),KABAR(KOFDIA),
-     &              CMOPQ,CMO,WORK,LWORK,ISDEN)
+      CALL CC_DENAO(B1KABAO,ISYRLX,KABAR(KOFDAI),KABAR(KOFDAB),
+     &              KABAR(KOFDIJ),KABAR(KOFDIA),ISYM0,
+     &              CMOPQ,ISYRLX,CMO,1,WORK,LWORK)
 
       IF (JATOM.EQ.IATOM .AND. LTWO) THEN
         
