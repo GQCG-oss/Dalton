@@ -7,7 +7,7 @@ c /* deck cc_smcal */
 *    Purpose: Second moment calculations
 *
 *    Written by: Poul Joergensen and Christof Haettig  1997
-*    Clean up  : Sonia Coriani 2000
+*    Clean up and new output: Sonia Coriani 2000,2001
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
@@ -33,28 +33,28 @@ c /* deck cc_smcal */
 
 * variables:
       CHARACTER*8 LABELA, LABELB, LABELC, LABELD
-      CHARACTER*10 MODFIL
+      CHARACTER MODFIL*10, MODPRI*5
       INTEGER ISYMB, ISYMC, ISYMA, ISYMD, ISYMAB
       INTEGER IFREQ, INUM, IOPER, IDX, IOFFST, LWRK, IM11, IOPT
       INTEGER IX2AB0F, IX2CD0F, IO2AB0F, IO2ABF0, IO2CD0F, IO2CDF0
       INTEGER K1VEC1, K1VEC2, K2VEC1, K2VEC2, NCCVAR1, NCCVAR2 
+      INTEGER KEND0,KTWOPH
 
 #if defined (SYS_CRAY)
       REAL WRK(LWRK)
-      REAL ZERO, FACTOR, FREQEX, FREQB, EIGV
-      REAL SMLM, SMCLM, SMRM, SMCRM
+      REAL ZERO, FACTOR, FREQEX, FREQB, EIGV, DP5
+      REAL ABLM, ABRM, CDLM, CDRM, TSM
       REAL X1, X2, Y1, Y2, TESTP1, TESTP2
       REAL DDOT
 #else
       DOUBLE PRECISION WRK(LWRK)
-      DOUBLE PRECISION ZERO, FACTOR, FREQEX, FREQB, EIGV
-      DOUBLE PRECISION SMLM, SMCLM, SMRM, SMCRM
+      DOUBLE PRECISION ZERO, FACTOR, FREQEX, FREQB, EIGV, DP5
+      DOUBLE PRECISION ABLM, ABRM, CDLM, CDRM, TSM
       DOUBLE PRECISION X1, X2, Y1, Y2, TESTP1, TESTP2
       DOUBLE PRECISION DDOT
 #endif
 
-      PARAMETER ( ZERO = 0.0D00, FACTOR = 0.5D00 )
-
+      PARAMETER ( ZERO = 0.0D00, FACTOR = 0.5D00, DP5 = 0.5D00)
 
 * external functions:
       INTEGER IRHSR2
@@ -64,16 +64,69 @@ c /* deck cc_smcal */
       LOGICAL FIRSTCALL
       SAVE    FIRSTCALL
       DATA    FIRSTCALL /.TRUE./
+*---------------------------------------------------------------------*
+* print header for second order moments section
+*---------------------------------------------------------------------*
+      WRITE (LUPRI,'(7(/1X,2A),/)')
+     & '************************************',
+     &                               '*******************************',
+     & '*                                   ',
+     &                               '                              *',
+     & '*<<<<<<<< OUTPUT FROM COUPLED CLUSTER Q',
+     &                                  'UADRATIC RESPONSE >>>>>>>>>*',
+     & '*                                   ',
+     &                               '                              *',
+     & '*<<<<<<<< CALCULATION OF TWO PHOTON TRANS',
+     &                                    'ITION STRENGTHS >>>>>>>>>*',
+     & '*                                   ',
+     &                               '                              *',
+     & '************************************',
+     &                               '*******************************'
 
-
+*---------------------------------------------------------------------*
       IF (LOCDBG) THEN
         WRITE (LUPRI,*) 'DEBUG_CC_SMCAL> NSMOP = ',NSMOPER
       END IF
-
+*---------------------------------------------------------------------*
+* set MODFIL, MODPRI, IOPT for calls to CC_RDRSP and print out
+*---------------------------------------------------------------------*
+      IF (CCS) THEN
+         MODFIL = 'CCS       '
+         MODPRI  = 'CCS  '
+         IOPT = 1
+      ELSE IF (CC2) THEN
+         MODFIL = 'CC2       '
+         MODPRI  = 'CC2  '
+         IOPT = 3
+      ELSE IF (CCSD) THEN
+         MODFIL = 'CCSD      '
+         MODPRI  = 'CCSD '
+         IOPT = 3
+      ELSE
+         CALL QUIT('Unknown coupled cluster model in CC_TMCAL')
+      END IF
+*---------------------------------------------------------------------*
+*     set length of result matrix (in fieri, Sonia)
+*---------------------------------------------------------------------*
+*      NTWOPH = NSMOPER * 
+*      KTWOPH = 1
+*      KEND0  = KTWOPH + 
+*      LWRK0  = LWRK - KEND0
 *---------------------------------------------------------------------*
 * find list entries for the required response vectors
 * and excitation vectors:
 *---------------------------------------------------------------------*
+
+      KEND0 = 1
+
+* +-------------------------------------------------------------------------------------------+
+* | SYM | STATE#| EXCIT.EN. |    A    |    B    |    C    |    D    | w (au) | S^of_AB,CD (w) |
+* +-------------------------------------------------------------------------------------------+
+*      WRITE(LUPRI,'(/1x,(70("-")))')
+*      WRITE(LUPRI,'(3(a))')
+*     & '| SYM | STATE#| EXCIT.EN. |    A    |    B    |',
+*     &                            '    C    |    D    |',
+*     &                            ' w (au) | S^of_AB,CD (w) |'
 
       DO IOPER = 1, NSMOPER
         LABELA = LBLOPR(IASMOP(IOPER))
@@ -86,24 +139,26 @@ c /* deck cc_smcal */
         ISYMC  = ISYOPR(ICSMOP(IOPER))
         ISYMD  = ISYOPR(IDSMOP(IOPER))
 
-        WRITE (LUPRI,*) 'LABELA:',LABELA
-        WRITE (LUPRI,*) 'LABELB:',LABELB
-        WRITE (LUPRI,*) 'LABELC:',LABELC
-        WRITE (LUPRI,*) 'LABELD:',LABELD
+        IF (LOCDBG) THEN
+           WRITE (LUPRI,*) 'LABELA:',LABELA
+           WRITE (LUPRI,*) 'LABELB:',LABELB
+           WRITE (LUPRI,*) 'LABELC:',LABELC
+           WRITE (LUPRI,*) 'LABELD:',LABELD
 
-        WRITE (LUPRI,*) 'ISYMA:', ISYMA
-        WRITE (LUPRI,*) 'ISYMB:', ISYMB
-        WRITE (LUPRI,*) 'ISYMC:', ISYMC
-        WRITE (LUPRI,*) 'ISYMD:', ISYMD
+           WRITE (LUPRI,*) 'ISYMA:', ISYMA
+           WRITE (LUPRI,*) 'ISYMB:', ISYMB
+           WRITE (LUPRI,*) 'ISYMC:', ISYMC
+           WRITE (LUPRI,*) 'ISYMD:', ISYMD
 
-        CALL FLSHFO(LUPRI)
+           CALL FLSHFO(LUPRI)
+        END IF
         
         IF (MULD2H(ISYMA,ISYMB).EQ.MULD2H(ISYMC,ISYMD)) THEN
       
           ISYMAB = MULD2H(ISYMA,ISYMB)
           NCCVAR1 = NT1AM(ISYMAB)
           NCCVAR2 = NT2AM(ISYMAB)
-          K1VEC1  = 1
+          K1VEC1  = KEND0
           K1VEC2  = K1VEC1 + NCCVAR1
           K2VEC1  = K1VEC2 + NCCVAR2
           K2VEC2  = K2VEC1 + NCCVAR1
@@ -118,16 +173,18 @@ c /* deck cc_smcal */
      &          LABELC,'(',FREQEX,'),  ', LABELD,'(',FREQB,'),  '
              END IF
 
-*           request second order chi vectors:
+*       request second order chi vectors (for left moments):
  
         IX2AB0F = ICHI2(LABELA,.FALSE.,-FREQEX+FREQB,ISYMA,
      &                  LABELB,.FALSE.,-FREQB,ISYMB)
-C       IX2CD0F = ICHI2(LABELC,.FALSE.,-FREQEX-FREQB,ISYMC,
-C    &                  LABELD,.FALSE.,+FREQB,ISYMD)
         IX2CD0F = ICHI2(LABELC,.FALSE.,-FREQEX+FREQB,ISYMC,
      &                  LABELD,.FALSE.,-FREQB,ISYMD)
+C
+C       IX2CD0F = ICHI2(LABELC,.FALSE.,-FREQEX-FREQB,ISYMC,
+C    &                  LABELD,.FALSE.,+FREQB,ISYMD)
+C
 
-*           request second-order rhs vectors
+*       request second-order rhs vectors (for both left and right mom):
 
         IO2AB0F =IRHSR2(LABELA,.FALSE.,-FREQEX+FREQB,ISYMA,
      &                  LABELB,.FALSE.,-FREQB,ISYMB)
@@ -138,15 +195,15 @@ C    &                  LABELD,.FALSE.,+FREQB,ISYMD)
         IO2CDF0 =IRHSR2(LABELC,.FALSE.,+FREQEX-FREQB,ISYMC,
      &                  LABELD,.FALSE.,+FREQB,ISYMD)
 
-*           request M vectors for different excitation energies
+*       request M vectors for different excitation energies (for left mom)
 
              IOFFST = ISYOFE(ISYMAB) +  ISMSEL(IFREQ,2)
              EIGV   = EIGVAL(IOFFST)
              IM11   = ILRMAMP(IOFFST,EIGV,ISYMAB)
 
-*            calculate left  moment AB-w contribution
-
-             IOPT = 3
+*--------------------------------------------------------------------*
+*            calculate left  moment M^AB_of(-w) contribution
+*--------------------------------------------------------------------*
              CALL CC_RDRSP('X2',IX2AB0F,ISYMAB,IOPT,MODFIL,
      &                     WRK(K1VEC1),WRK(K1VEC2))
              X1 = DDOT(NCCVAR1,WRK(K1VEC1),1,WRK(K1VEC1),1)
@@ -158,7 +215,6 @@ C    &                  LABELD,.FALSE.,+FREQB,ISYMD)
              IF (LOCDBG)
      &          WRITE (LUPRI,*) ' NORM^2 of X2 vector:',X1,X2,X1+X2
 
-             IOPT = 3
              CALL CC_RDRSP('RE',IOFFST,ISYMAB,IOPT,MODFIL,
      &                      WRK(K2VEC1),WRK(K2VEC2))
              Y1 = DDOT(NCCVAR1,WRK(K2VEC1),1,WRK(K2VEC1),1)
@@ -170,14 +226,13 @@ C    &                  LABELD,.FALSE.,+FREQB,ISYMD)
              IF (LOCDBG)
      &          WRITE (LUPRI,*) ' NORM^2 of RE vector:',Y1,Y2,Y1+Y2
 
-             SMCLM = DDOT(NCCVAR1,WRK(K1VEC1),1,WRK(K2VEC1),1)
+             ABLM = DDOT(NCCVAR1,WRK(K1VEC1),1,WRK(K2VEC1),1)
              IF (.NOT.CCS) THEN
-               SMCLM=SMCLM + DDOT(NCCVAR2,WRK(K1VEC2),1,WRK(K2VEC2),1)
+               ABLM=ABLM + DDOT(NCCVAR2,WRK(K1VEC2),1,WRK(K2VEC2),1)
              END IF
              IF (LOCDBG)
-     &          WRITE (LUPRI,*) ' SMCLM:',SMCLM
+     &          WRITE (LUPRI,*) ' ABLM',ABLM
 
-             IOPT = 3
              CALL CC_RDRSP('M1',IM11,ISYMAB,IOPT,MODFIL,
      &                      WRK(K1VEC1),WRK(K1VEC2))
              X1 = DDOT(NCCVAR1,WRK(K1VEC1),1,WRK(K1VEC1),1)
@@ -189,7 +244,6 @@ C    &                  LABELD,.FALSE.,+FREQB,ISYMD)
              IF (LOCDBG)
      &          WRITE (LUPRI,*) ' NORM^2 of M1 vector:',X1,X2,X1+X2
 
-             IOPT = 3
              CALL CC_RDRSP('O2',IO2AB0F,ISYMAB,IOPT,MODFIL,
      &                     WRK(K2VEC1),WRK(K2VEC2))
              Y1 = DDOT(NCCVAR1,WRK(K2VEC1),1,WRK(K2VEC1),1)
@@ -198,111 +252,116 @@ C    &                  LABELD,.FALSE.,+FREQB,ISYMD)
              ELSE
                Y2 = ZERO
              END IF
-             WRITE (LUPRI,*) ' norm of O2 vector:',y1,y2,y1+y2
+             IF (LOCDBG) 
+     &          WRITE (LUPRI,*) ' norm of O2 vector:',y1,y2,y1+y2
 
              CALL CCLR_DIASCL(WRK(K2VEC2),FACTOR,ISYMAB)
 
-cs
-             testp1 = ddot(nccvar1,wrk(k1vec1),1,wrk(k2vec1),1)
-             if (.not.ccs) then
-               testp2 = ddot(nccvar2,wrk(k1vec2),1,wrk(k2vec2),1)
-             else
-               testp2 = 0.0d0
-             end if
-             WRITE (LUPRI,*) ' product Mf*CSIab :', testp1 + testp2
-cs
-
-             SMCLM = SMCLM + DDOT(NCCVAR1,WRK(K1VEC1),1,WRK(K2VEC1),1)
+             ABLM = ABLM + DDOT(NCCVAR1,WRK(K1VEC1),1,WRK(K2VEC1),1)
              IF (.NOT.CCS) THEN
-               SMCLM=SMCLM + DDOT(NCCVAR2,WRK(K1VEC2),1,WRK(K2VEC2),1) 
+               ABLM=ABLM + DDOT(NCCVAR2,WRK(K1VEC2),1,WRK(K2VEC2),1) 
              END IF
-             WRITE (LUPRI,*) ' smclm:',smclm
-
-*            calculate right moment CD+w contribution
-
-             IOPT = 3
+             IF (LOCDBG)
+     &          WRITE (LUPRI,*) 'Left moment M^AB_of (-w) :', ABLM
+*--------------------------------------------------------------------*
+*            calculate right moment M^CD_fo(+w) contribution
+*--------------------------------------------------------------------*
              CALL CC_RDRSP('LE',IOFFST,ISYMAB,IOPT,MODFIL,
      *                     WRK(K1VEC1),WRK(K1VEC2))
-             IOPT = 3
              CALL CC_RDRSP('O2',IO2CDF0,ISYMAB,IOPT,MODFIL,
      *                     WRK(K2VEC1),WRK(K2VEC2))
              CALL CCLR_DIASCL(WRK(K2VEC2),FACTOR,ISYMAB)
 
-             SMCRM = DDOT(NCCVAR1,WRK(K1VEC1),1,WRK(K2VEC1),1)
+             CDRM = DDOT(NCCVAR1,WRK(K1VEC1),1,WRK(K2VEC1),1)
              IF (.NOT.CCS) THEN
-               SMCRM=SMCRM + DDOT(NCCVAR2,WRK(K1VEC2),1,WRK(K2VEC2),1) 
+               CDRM=CDRM + DDOT(NCCVAR2,WRK(K1VEC2),1,WRK(K2VEC2),1) 
              END IF
-
-*            calculate left  moment CD-w contribution
-
-             IOPT = 3
+             IF (LOCDBG) 
+     &           WRITE (LUPRI,*) 'Right moment M^CD_fo(w) :', CDRM
+*--------------------------------------------------------------------*
+*            calculate left  moment M^CD_of(-w) contribution
+*--------------------------------------------------------------------*
              CALL CC_RDRSP('X2',IX2CD0F,ISYMAB,IOPT,MODFIL,
      *                     WRK(K1VEC1),WRK(K1VEC2))
 
-             IOPT = 3
              CALL CC_RDRSP('RE',IOFFST,ISYMAB,IOPT,MODFIL,
      *                     WRK(K2VEC1),WRK(K2VEC2))
-             SMLM = DDOT(NCCVAR1,WRK(K1VEC1),1,WRK(K2VEC1),1)
+             CDLM = DDOT(NCCVAR1,WRK(K1VEC1),1,WRK(K2VEC1),1)
              IF (.NOT.CCS) THEN
-               SMLM = SMLM + DDOT(NCCVAR2,WRK(K1VEC2),1,WRK(K2VEC2),1)
+               CDLM = CDLM + DDOT(NCCVAR2,WRK(K1VEC2),1,WRK(K2VEC2),1)
              END IF
 
-             IOPT = 3
              CALL CC_RDRSP('M1',IM11,ISYMAB,IOPT,MODFIL,
      *                     WRK(K1VEC1),WRK(K1VEC2))
 
-             IOPT = 3
              CALL CC_RDRSP('O2',IO2CD0F,ISYMAB,IOPT,MODFIL,
      *                     WRK(K2VEC1),WRK(K2VEC2))
              CALL CCLR_DIASCL(WRK(K2VEC2),FACTOR,ISYMAB)
 
-             SMLM = SMLM + DDOT(NCCVAR1,WRK(K1VEC1),1,WRK(K2VEC1),1)
+             CDLM = CDLM + DDOT(NCCVAR1,WRK(K1VEC1),1,WRK(K2VEC1),1)
              IF (.NOT.CCS) THEN
-               SMLM = SMLM + DDOT(NCCVAR2,WRK(K1VEC2),1,WRK(K2VEC2),1)
+               CDLM = CDLM + DDOT(NCCVAR2,WRK(K1VEC2),1,WRK(K2VEC2),1)
              END IF
-
-*            calculate right moment AB+w contribution 
-
-             IOPT = 3
+             IF (LOCDBG) 
+     &          WRITE (LUPRI,*) 'Left moment M^CD_of (-w) :', CDLM
+*--------------------------------------------------------------------*
+*            calculate right moment M^AB_fo(+w) contribution 
+*--------------------------------------------------------------------*
              CALL CC_RDRSP('LE',IOFFST,ISYMAB,IOPT,MODFIL,
      *                     WRK(K1VEC1),WRK(K1VEC2))
-             IOPT = 3
              CALL CC_RDRSP('O2',IO2ABF0,ISYMAB,IOPT,MODFIL,
      *                     WRK(K2VEC1),WRK(K2VEC2))
              CALL CCLR_DIASCL(WRK(K2VEC2),FACTOR,ISYMAB)
 
-             SMRM = DDOT(NCCVAR1,WRK(K1VEC1),1,WRK(K2VEC1),1) 
+             ABRM = DDOT(NCCVAR1,WRK(K1VEC1),1,WRK(K2VEC1),1) 
              IF (.NOT.CCS) THEN
-               SMRM = SMRM + DDOT(NCCVAR2,WRK(K1VEC2),1,WRK(K2VEC2),1)
+               ABRM = ABRM + DDOT(NCCVAR2,WRK(K1VEC2),1,WRK(K2VEC2),1)
              END IF
+             IF (LOCDBG) 
+     &          WRITE (LUPRI,*) 'Right moment M^AB_fo (w) :', ABRM
+*--------------------------------------------------------------------*
+*             Total strength
+*--------------------------------------------------------------------*
 
+             TSM = DP5*(ABLM*CDRM+CDLM*ABRM)
 
-             WRITE(LUPRI,'(/A,/I4,3X,I5,3X,F16.6)')
-     *       ' SYM   STATE NUM   EXCITATION ENERGY',
-     *        ISYMAB, ISMSEL(IFREQ,2), EIGV
-             WRITE(LUPRI,'(/A,/8A)')
-     *       'OPERATOR LABELS. '
-     *       ,' A: ', LABELA,' B: ',LABELB,' C: ',LABELC,' D: ',LABELD
-             WRITE(LUPRI,'(/A,F12.6)')
-     *       ' LASER FREQUENCES   W: ', FREQB
-             WRITE(LUPRI,'(/A,/A)')
-     *       ' TRANSITION STRENGTH FOR SECOND ORDER MOMENT ' ,
-     *       ' TSM = 0.5*( ABLMOM * CDRMOM + CDLMOM * ABRMOM ) '
-
-             WRITE (LUPRI,*) ' TSM: ',0.5D0*(smclm*smcrm+smlm*smrm)
-             WRITE (LUPRI,*) ' ABLMOM',smclm,' CDRMOM',smcrm
-             WRITE (LUPRI,*) ' CDLMOM',smlm,' ABRMOM',smrm
-             WRITE (LUPRI,*) ' w moment product  (ablmom*cdlmom): ',
-     &            smclm*smcrm
-             WRITE (LUPRI,*) ' -w moment product (cdlmom*abrmom): ', 
-     &            smlm*smrm
+*--------------------------------------------------------------------*
+*      Write output
+*---------------------------------------------------------------------*
+         WRITE(LUPRI,'(1x,65("-"),/1x,a,f10.6,a,i1,a,i1)')
+     &  'For trans. to |f(',EIGV,')>, state nr.',ISMSEL(IFREQ,2),
+     &                              ' of symm. ',ISYMAB
+         WRITE(LUPRI,'(2(/1x,a5,a,a1,i1,a1,a6,a,a1,i1,a1))')
+     &     ' A : ',LABELA,'(',ISYMA,')', '; B : ',LABELB,'(',ISYMB,')',
+     &     ' C : ',LABELC,'(',ISYMC,')', '; D : ',LABELD,'(',ISYMD,')'
+         WRITE(LUPRI,'(/1x,a,f16.6)')
+     &     ' Laser frequency w (au) = ', FREQB
+         WRITE(LUPRI,'(2(/1x,a,f15.9,1x,a,f15.9))')
+     &       ' M^AB_of(-w): ', ablm,' M^CD_fo(w): ', cdrm,
+     &       ' M^CD_of(-w): ', cdlm,' M^AB_fo(w): ', abrm
+         WRITE(LUPRI,'(2(/1x,a,f15.9))')
+     &       ' M^AB_of(-w) x M^CD_fo(w)   = ', ablm*cdrm,
+     &       '[M^CD_of(-w) x M^AB_fo(w)]* = ', cdlm*abrm
+         WRITE(LUPRI,'(/1x,a5,a,/,1x,a5,a,f10.6,a,f15.9,/1x,65("-"))')
+     &     MODPRI,'Transition strength for Second Order Moment: ',
+     &     MODPRI,'S^of_AB,CD(',FREQB,') = ',TSM  
+*---------------------------------------------------------------------*
+*       WRITE(LUPRI,
+*     &'(/1x,a2,i1,a3,i5,a3,f8.4,a3,a,a3,a,a3,a,a3,a,f8.7,a3,f16.8,a2)')
+*     &'| ',ISYMAB,' | ',ISMSEL(IFREQ,2),' | ', EIGV, ' | ', 
+*     &     LABELA,' | ',LABELB,' | ',LABELC,' | ',LABELD,' | ',
+*     &      FREQB,' | ',TSM,' |'
 
           END DO
         END IF
-
       END DO
-
-
+*
+* It should look like this ......... Sonia
+* +-------------------------------------------------------------------------------------------+
+* | SYM | STATE#| EXCIT.EN. |    A    |    B    |    C    |    D    | w (au) | S^of_AB,CD (w) |
+* +-------------------------------------------------------------------------------------------+
+* |  1  |  345  | 0000.0000 | XDIPLEN | XDIPLEN | XDIPLEN | XDIPLEN | 0.0000 | 0000.000000000 |
+*
       RETURN
       END
 *=====================================================================*
@@ -342,13 +401,12 @@ cs
 C
 
 #if defined (SYS_CRAY)
-      REAL D2, BSMFRSV
+      REAL D2, DP5, BSMFRSV
 #else
-      DOUBLE PRECISION D2, BSMFRSV
+      DOUBLE PRECISION D2, DP5, BSMFRSV
 #endif
-      PARAMETER ( D2 = 2.0d00 )
+      PARAMETER ( D2  = 2.0D00, DP5 = 0.5D00 )
       PARAMETER ( LOCDBG = .FALSE. )
-
 C
 C sort the selected states for which second order transition
 C matrix elements are calculated
@@ -468,7 +526,8 @@ C
 
                 EXSMFR(IOFF+I) = EIGVAL(ISYOFE(ISYM)+ISTSV)
 
-                IF (LOCDBG) print*,'EXSMFR(IOFF+I) ', EXSMFR(IOFF+I)
+                IF (LOCDBG) 
+     &            WRITE(LUPRI,*) 'EXSMFR(IOFF+I) ', EXSMFR(IOFF+I)
 
  560        CONTINUE
  550     CONTINUE
@@ -499,7 +558,7 @@ C
             IOFF = ISMSELX(ISYM)
             DO 850 I = 1,NSMSELX(ISYM)
                ISTATE         = ISMSEL(IOFF+I,2)
-               BSMFR(IOFF+I)  = EIGVAL(ISYOFE(ISYM)+ISTATE)/ D2
+               BSMFR(IOFF+I)  = EIGVAL(ISYOFE(ISYM)+ISTATE)* DP5
                EXSMFR(IOFF+I) = EIGVAL(ISYOFE(ISYM)+ISTATE)
  850        CONTINUE
  800     CONTINUE
