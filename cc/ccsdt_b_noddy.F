@@ -425,12 +425,12 @@ C        --------------------------------------------------------
          END DO
 
          IF (LOCDBG) THEN
-           WRITE(LUPRI,*), 'CCSDT_BMAT_NODDY> RESULT VECTOR ON OUTPUT:'
-           WRITE(LUPRI,*), 'NORM^2 = ',
+           WRITE(LUPRI,*) 'CCSDT_BMAT_NODDY> RESULT VECTOR ON OUTPUT:'
+           WRITE(LUPRI,*) 'NORM^2 = ',
      &            DDOT(NT1AMX+NT2AMX,OMEGA1,1,OMEGA1,1)
            ! CALL CC_PRP(OMEGA1,OMEGA2,1,1,1)
-           WRITE(LUPRI,*), 'CCSDT_BMAT_NODDY> EFFECTIVE RESULT VECTOR:'
-           WRITE(LUPRI,*), 'NORM^2 = ',
+           WRITE(LUPRI,*) 'CCSDT_BMAT_NODDY> EFFECTIVE RESULT VECTOR:'
+           WRITE(LUPRI,*) 'NORM^2 = ',
      &            DDOT(NT1AMX+NT2AMX,OMEGA1EFF,1,OMEGA1EFF,1)
            ! CALL CC_PRP(OMEGA1EFF,OMEGA2EFF,1,1,1)
          END IF
