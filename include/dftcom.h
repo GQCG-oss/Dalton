@@ -1,9 +1,21 @@
+#if defined(__CVERSION__)
+extern struct common_dftcom {
+    real hfxfac, dfthr0, dfthrl, dfthri, dftels, radint;
+    int angint, angmin, lebmin,
+        dftadd, grdone, dftrun, dftpot, dftord, dftasc, dfthes,
+        dfthrs, noprun, dovwn3, dftest, dovwnI;
+} dftcom_;
+extern struct common_dftchr {
+    char dfttyp[6];
+} dftchr_;
+#else
+C
 C     choose reasonably large MAXBLLEN- so that loop unrolling gives
 C     speedup but small compared with a cache size max block length
 C     MXBLLEN.
       INTEGER MXBLLEN
-      PARAMETER(MXBLLEN = 100)
-c
+      PARAMETER (MXBLLEN=100)
+C
       CHARACTER*6 DFTTYP
       REAL*8          HFXFAC, HFXATT, HFXMU, DFTHR0, DFTHRL, DFTHRI, 
      &                DFTELS, RADINT
@@ -16,3 +28,5 @@ c
      &        DFTADD, GRDONE, DFTRUN, DFTPOT, DFTORD, DFTASC, DFTHES, 
      &        DFTHRS, NOPRUN, DOVWN3, DFTEST, DOVWNI, DFTIMG
       COMMON /DFTCHR/ DFTTYP 
+#endif
+

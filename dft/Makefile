@@ -23,7 +23,7 @@ FFILES = \
 # for the fun-tester.
 FUNFILES = \
 	fun-becke.c	\
-	fun-cam-b3lyp.c\
+	fun-cam-b3lyp.c \
 	fun-dirac.c	\
 	fun-gga.c	\
 	fun-lb94.c	\
@@ -41,6 +41,7 @@ FUNFILES = \
 	fun-pbe.c	\
 	fun-pw86x.c	\
 	fun-pw92.c	\
+	fun-pw92pe.c	\
 	fun-pwggaIIx.c	\
 	fun-pwggaIIc.c	\
 	fun-pwggaIIc2.c	\

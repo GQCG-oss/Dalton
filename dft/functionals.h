@@ -224,6 +224,7 @@ extern Functional PWggaIIcFunctional;
 extern Functional PWggaIIc2Functional;
 extern Functional P86cFunctional;
 extern Functional PW92Functional;
+extern Functional PW92peFunctional;
 extern Functional PW91clFunctional;
 extern Functional ExampleFunctional;
 extern Functional Example2Functional;
