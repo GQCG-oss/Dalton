@@ -1238,7 +1238,7 @@ C
      &               .FALSE.)
          JBUF = 0
       END IF
-      WRITE (IT) (X(I), I = 1, N)
+      WRITE (IT) X
       JBUF = JBUF + N + 1
       RETURN
       END
