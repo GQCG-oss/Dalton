@@ -6,9 +6,10 @@ c /* deck cc_mcdcal */
 *
 *    Purpose: drive final calculation of B terms for MCD
 *
-*    Sonia Coriani 1997
-*    Restructured 03.01.2000 by Sonia
-*    Calculation of LAO-B term introduced in spring 2000 by Sonia
+*    Sonia Coriani Fall 1997
+*    Restructured January 2000. Sonia
+*    Calculation of LAO-B term introduced in Spring 2000. Sonia
+*    New output style March 2001. Sonia
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
@@ -48,17 +49,19 @@ C#include <ccropr2.h>
       CHARACTER*(19) MSGDBG
       PARAMETER (MSGDBG = '[debug] CC_MCDCAL> ')
       LOGICAL LOCDBG
-      PARAMETER (LOCDBG = .FALSE.)
+      PARAMETER (LOCDBG = .TRUE.)
 #if defined (SYS_CRAY)
       REAL DDOT,DNRM2
       REAL ZERO, D05, TWO
       REAL FREQEX, XLEFTC, XRIGHTC, XRIGHTAB,XLEFTAB
       REAL BTERM_A,BTERM_S, XMAB_MC, XMC_MAB
+      REAL FORZADIP, SQRFORZA
 #else
       DOUBLE PRECISION DDOT,DNRM2
       DOUBLE PRECISION ZERO, D05, TWO, ONE
       DOUBLE PRECISION FREQEX,  XLEFTC, XRIGHTC, XRIGHTAB,XLEFTAB
-      DOUBLE PRECISION BTERM_A,BTERM_S, XMAB_MC, XMC_MAB
+      DOUBLE PRECISION BTERM_A,BTERM_S,XMAB_MC,XMC_MAB
+      DOUBLE PRECISION FORZADIP, SQRFORZA
 #endif
       PARAMETER (ZERO=0.0D00, D05=0.5D00, TWO=2.0D00, ONE=1.0D00)
 C      PARAMETER (DUMMY = -12345.67890)
@@ -146,10 +149,10 @@ C      PARAMETER (DUMMY = -12345.67890)
 *---------------------------------------------------------------------*
 * print some debug/info output
 *---------------------------------------------------------------------*
-
-      IF (LOCDBG) WRITE(LUPRI,*) MSGDBG, ' Workspace = ',LWORK
-      IF (LOCDBG) WRITE(LUPRI,*) MSGDBG, ' LUSEPL1 = ', LUSEPL1
-
+      IF (LOCDBG) THEN
+         WRITE(LUPRI,*) MSGDBG, ' Workspace = ',LWORK
+         WRITE(LUPRI,*) MSGDBG, ' LUSEPL1 = ', LUSEPL1
+      END IF
 *---------------------------------------------------------------------*
 * set IOPTRD for calls to CC_RDRSP 
 *---------------------------------------------------------------------*
@@ -403,40 +406,8 @@ C---------------------------------------------------------------------*
                IF (ISYMSF.EQ.ISYMC) THEN
  
 C------------------------------------------------------------------
-C           Calculate linear response residues.
-C------------------------------------------------------------------
-C
-C               WRITE(LUPRI,'(/1X,A)')
-C     *        '************* Summary of results *************'
-C               IF (IPRINT .EQ. 0) THEN
-C                  WRITE(LUPRI,'(/,1x,A,I3,/1X,A,I3,A,F16.8)')
-C     *    'Calculating LR residues for state nr.',ISTATF,
-C     *    'within symm: ',ISYMSF,' and with eigenvalue: ',FREQEX
-C
-C                  WRITE(LUPRI,'(/,1x,A,I3,/1X,A,I3,/1X,A,I3)')
-C     *     'Symmetry of A operator is ', ISYMA,
-C     *     'Symmetry of B operator is ', ISYMB,
-C     *     'Symmetry of C operator is ', ISYMC
-C
-C               ENDIF
-C
-C               XLEFTC  = ZERO
-C               XRIGHTC = ZERO
-C
-C               CALL CC_LRSD(LABELC,ISYMC,LABELC,ISYMC,IEXCIF,
-C     *                      XLEFTC,XRIGHTC,WORK(KEND0),LEND0)
-C 
-C              IF (LOCDBG) THEN
-C                  WRITE(LUPRI,'(/1X,A,A,/1X,A,F16.8,/1X,A,F16.8)')
-C     *            'For C operator ', LABELC, 
-C     *            'Left moment  = ', XLEFTC,
-C     *            'Right moment = ', XRIGHTC
-C              ENDIF
-C              CALL FLSHFO(LUPRI)
-C
-C------------------------------------------------------------------
 C           Calculate residues.
-C           - request indices vectors in the vector list
+C           - request indices of vectors in the vector list
 C------------------------------------------------------------------
 
                IZETA0 = 0
@@ -482,11 +453,13 @@ C------------------------------------------------------------------
                   IFTAMA = ITAMPA
 
                END IF
-C------------------------------------------------------------------
-C           Calculate linear response residues.
-C------------------------------------------------------------------
+*-----------------------------------------------------------------*
+*           Calculate linear response residues.                   *
+*-----------------------------------------------------------------*
                XLEFTC  = ZERO
                XRIGHTC = ZERO
+               FORZADIP = ZERO
+               SQRFORZA = ZERO
 
                NTAMPC = NT1AM(ISYMC) + NT2AM(ISYMC)
                IF (CCS) NTAMPC = NT1AM(ISYMC)
@@ -537,14 +510,20 @@ C------------------------------------------------------------------
                  XLEFTC = XLEFTC + 
      &                    DDOT(NTAMPC,WORK(KETAC_1),1,WORK(KRE_1),1)              
                ELSE
+                 !Unfinished 
+                 WRITE(LUPRI,*)'MCD: LUSE2N1=FALSE not yet implemented'
+                 CALL QUIT('MCD: LUSE2N1=FALSE not yet implemented')
                END IF
-               IF (LOCDBG) THEN
-                  WRITE(LUPRI,'(/1X,A,A,/1X,A,F16.8,/1X,A,F16.8)')
-     *            ' For C operator ', LABELC,
-     *            ' Left moment  = ', XLEFTC,
-     *            ' Right moment = ', XRIGHTC
+c
+c Dipole strength: S^of_C,C = 0.5(M^C_of M^C_fo+[M^C_of M^C_fo]^*)
+c
+               FORZADIP = XLEFTC*XRIGHTC
+c
+               IF (FORZADIP.GE.ZERO) THEN
+                  SQRFORZA = SQRT(FORZADIP)
+               ELSE 
+                  SQRFORZA = -SQRT(-FORZADIP)
                ENDIF
-               CALL FLSHFO(LUPRI)
 C------------------------------------------------------------------
 C           Calculate quadratic response residues.
 C------------------------------------------------------------------
@@ -601,17 +580,18 @@ c     &                        IZETA0,IOPERB,ITAMPA,IEXCIF,ITRAN,IVEC)
                  KEND1   = KO2AB_2 + NT2AM(ISYMC)
                  LEND1   = LWORK - KEND1
 
-c                 IF (LEND1.LE.0) THEN
-c                    WRITE(LUPRI,*)'Insuff. work sp. in  CC_MCDCAL (Mf)'
-c                    WRITE(LUPRI,*)'Need: ', KEND1,'Available: ', LWORK
-c                    CALL QUIT('Insufficient work space in CC_MCDCAL')
-c                 END IF
+                 IF (LEND1.LE.0) THEN
+                    WRITE(LUPRI,*)'Insuff. work sp. in  CC_MCDCAL (Mf)'
+                    WRITE(LUPRI,*)'Need: ', KEND1,'Available: ', LWORK
+                    CALL QUIT('Insufficient work space in CC_MCDCAL')
+                 END IF
 
                  CALL CC_RDRSP('M1 ',IM1F,ISYMC,IOPTRD,MODEL,
      &                          WORK(KM1F_1), WORK(KM1F_2))
 
                  CALL CC_RDRSP('O2 ',IO2AB,ISYMC,IOPTRD,MODEL,
      &                          WORK(KO2AB_1), WORK(KO2AB_2))
+                 CALL CCLR_DIASCL(WORK(KO2AB_2),D05,ISYMC)
                  DOTCON3 = DDOT(NTAMPC,WORK(KM1F_1),1,WORK(KO2AB_1),1)
 
               END IF 
@@ -806,7 +786,9 @@ c                 END IF
 *----------------------------------------------------------------------*
 * TOTAL LEFT TRANSITION M^AB{n<-f} * M^C{f<-n} = XMAB_MC
 *----------------------------------------------------------------------*
-
+              XLEFTAB = ZERO
+              XMAB_MC = ZERO
+c
               XLEFTAB = GCON + FACON1 + FACON2 + DOTCON5 +
      &                  DWFB0*(DOTCON1-DOTCON2) +
      &                  XE2CON1 + XE2CON2
@@ -819,11 +801,12 @@ c                 END IF
 
               XMAB_MC  = XLEFTAB * XRIGHTC 
 
+
 ************************************************************************
 *                     RIGHT PART                                       *
 ************************************************************************
 *----------------------------------------------------------------------*
-* First contribution: Ebar^fB(-w_f,0) * Xksi^A                          *
+* First contribution: Ebar^fB(-w_f,0) * Xksi^A                         *
 *----------------------------------------------------------------------*
                
               NTAMPA   = NT1AM(ISYMA) + NT2AM(ISYMA)
@@ -843,17 +826,14 @@ C             CALL CC_XKSI(WORK(KXKSIA_1),LABELA,ISYMA,DUMMY,
 C    *                     WORK(KEND1),LEND1)
 
               DOTCON5 = DDOT(NTAMPA,WORK(KXKSIA_1),1,WORK(KEL1B_1),1)
-
 * ---------------------------------------------------------------------*
 *  Second contribution: Ebar^f * A^A * T^B(0) 
 *                       computed as Eta^A(EL1) * T^B(0)
 * ---------------------------------------------------------------------*
-
              CALL CC_SETXE('Eta',WORK(KEATRAN),WORK(KEADOTS),NEATRAN,
      &                      MXVEC,IEXCIF,IOPERA,IKAPA,0,0,0,ITAMPB,
      &                      ITRAN,IVEC)
              EACON1 = WORK(KEACONS-1 + (ITRAN-1)*MXVEC + IVEC)
-
 *----------------------------------------------------------------------*
 * PDBS/Relax contribution to Right 2nd order moment
 *----------------------------------------------------------------------*
@@ -872,39 +852,72 @@ c     &                      WORK(KEND0),LEND0)
                ELSE
                  XE2CON3 = ZERO
                END IF
+*
 *----------------------------------------------------------------------*
-* TOTAL RIGHT TRANSITION M^C{n<-f} * M^AB{f<-n} = XMC_MAB
+* TOTAL RIGHT TRANSITION M^C{o<-f} * M^AB{f<-o} = XMC_MAB
 *----------------------------------------------------------------------*
+*
+              XRIGHTAB = ZERO
+              XMC_MAB  = ZERO
+
               XRIGHTAB = DOTCON5 + EACON1 + XE2CON3
               XMC_MAB  = XLEFTC*XRIGHTAB  
+*----------------------------------------------------------------------*
+* Debug information
+*----------------------------------------------------------------------*
+              IF (LOCDBG) THEN
+                 WRITE(LUPRI,'(/1X,A,A,2(/1X,A,F16.8))')
+     *           'For C operator ', LABELC,
+     *           ' Left  1st single moment = ', XLEFTC,
+     *           ' Right 1st single moment = ', XRIGHTC
+                 WRITE(LUPRI,'(1X,A,F16.8,A1,F16.8,A1)') 
+     *           ' Dipole Strength (a.u.)  = ',FORZADIP,'(',SQRFORZA,')'
+                 WRITE(LUPRI,'(/1X,A,A,A,A,3(/1X,A,F16.8))')
+     *           'For A, B operators ', LABELA,', ', LABELB,
+     *           ' Left  2nd residue AB    = ', XLEFTAB,
+     *           ' Right 2nd residue AB    = ', XRIGHTAB,
+     *           ' S^of_AB,AB              = ', XLEFTAB*XRIGHTAB
+                 CALL FLSHFO(LUPRI)
+              END IF
 *
 * ----------------------------------------------------------------------*
-*  combine various terms to get B
+*  combine various terms to get B term contribution
 * ----------------------------------------------------------------------*
-*   
+*
               BTERM_S = D05 * (XMAB_MC + XMC_MAB)
               BTERM_A = D05 * (XMAB_MC - XMC_MAB)
-
-              WRITE(LUPRI,'(/1X,A)') ' For the  operator triple'
-              WRITE(LUPRI,'(/1X,A2,A8,A8,A1,A8,A8,A1,A8,A8,A2,A1,
-     &                             F8.5,A1,F8.5,A1,F8.5,A1)') 
-     &        '<<',LABELA,CRLXA,';',LABELB,CRLXB,',',LABELC,CRLXC,'>>',
-     &                          '(',-FREQEX,',',ZERO,',',FREQEX,')'
-              WRITE(LUPRI,'(/1X,A,F16.5)') 
-     &                         ' M^(AB)_of * M^(C)_fo    = ', XMAB_MC
-              WRITE(LUPRI,'(/1X,A,F16.5)') 
-     &                         ' M^(C*)_of * M^(AB*)_fo  = ', XMC_MAB
-
+*
+* ----------------------------------------------------------------------*
+*  Write output
+*  Note: final result divided by 2 because of (mu = -0.5 L)
+* ----------------------------------------------------------------------*
+*
+         WRITE(LUPRI,'(1X,53("-"))')
+         WRITE(LUPRI,'(/1x,a,f9.5,a,i1)') 
+     &  'For transition |o> -> |f(',FREQEX,')>, of symm. ', ISYMC 
+         WRITE(LUPRI,'(3(/1x,a,a,a,a1,f9.5,a,i1))') 
+     &     ' A oper.: ',LABELA,CRLXA,'(',-FREQEX,'), symm. ',ISYMA,
+     &     ' B oper.: ',LABELB,CRLXB,'(',ZERO   ,'), symm. ',ISYMB,
+     &     ' C oper.: ',LABELC,CRLXC,'(',FREQEX ,'), symm. ',ISYMC
+C         WRITE(LUPRI,'(3(/1X,A,F16.8))') 
+C     &      ' S^of_C,C  = (Dipole strength (au))      = ', FORZADIP,
+C     &      ' S^of_AB,C = M^AB_of(0.0) x M^C_fo   = ', XMAB_MC,
+C     &      ' S^of_C,AB = M^C*_of x M^AB*_fo(0.0) = ', XMC_MAB
+         WRITE(LUPRI,'(3(/1X,A,F16.8))') 
+     &     ' Dipole strength (au) (C oper) = ',FORZADIP,
+     &     ' M^AB_of(0.0) x M^C_fo     = ',XMAB_MC,
+     &     ' M^C*_of x M^AB*_fo(0.0)   = ',XMC_MAB
+         IF (IPRINT.GT.5) THEN 
+            WRITE(LUPRI,'(/1X,A,F16.6,A,F16.8,A)')
+     &     ' B term contribution (au): ', D05*BTERM_A, ' (antisym) ', 
+     &                                    D05*BTERM_S, ' (symm)    '
+            WRITE(LUPRI,'(1X,69("-")')
+         ELSE
+            WRITE(LUPRI,'(/1X,A,F16.8,A)')
+     &     ' B term contribution (au): ', D05*BTERM_A, ' (antisym) ' 
+            WRITE(LUPRI,'(1X,53("-"))')
+         END IF
 * ---------------------------------------------------------------------*
-* Final result divided by 2 because of (mu = -0.5 L)
-* ---------------------------------------------------------------------*
-
-              WRITE(LUPRI,'(/1X,A)')'Total B term contribution (au) '
-              WRITE(LUPRI,'(/1X,A,F16.5)')'symmetric:     ', D05*BTERM_S 
-              WRITE(LUPRI,'(/1X,A,F16.5)')'antisymmetric: ', D05*BTERM_A 
-              WRITE(LUPRI,'(1X,A)')'---------------------------------- '
-* ---------------------------------------------------------------------*
-
            END IF
            END DO 
 
