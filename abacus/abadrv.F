@@ -53,7 +53,7 @@ C
 #include <dipole.h>
 #include <sigma.h>
 #include <cbilnr.h>
-#include <cbilrs.h>
+#include <cbiexc.h>
 #include <nuclei.h>
 #include <inftap.h>
 #include <taysol.h>
@@ -593,7 +593,7 @@ C
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <priunit.h>
-      PARAMETER (NDIR = 28, NTABLE = 52, D0 = 0.D0)
+      PARAMETER (NDIR = 28, NTABLE = 53, D0 = 0.D0)
       LOGICAL   POPULA, NOHESS, FCKEXP, GAGT
       LOGICAL   GRDINP
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
@@ -640,6 +640,7 @@ C
      &             '*QRPROP', '*AAT   ', '*TRPRSP',
      &             '*ABALNR'/
 cLig <> added CTOCD in the 51st position
+Caug04-hjaaj: disabled currently inactive .NACME
       DATA TABLE  /'.PRINT ', '.MOLGRA', '.SELECT',
      &             '.DIPGRA', '.POLARI', '.MOLHES',
      &             '.INPTES', '.VIBANA', '.RESTAR',
@@ -647,7 +648,7 @@ cLig <> added CTOCD in the 51st position
      &             '.NUMHES', '.POPANA', '.XXXXXX',
      &             '.EXCITA', '.SHIELD', '.VCD   ',
      &             '.MAGNET', '.SPIN-S', '.NMR   ',
-     &             '.NACME ', '.NOLOND', '.NOHESS',
+     &             'xNACME ', '.NOLOND', '.NOHESS',
      &             '.WRTINT', '.ECD   ', '.NODIFC',
      &             '.MOLGFA', '.SPIN-R', '.XXXXXX',
      &             '.PHASEO', '.NOMASV', '.NODARW',
@@ -657,7 +658,7 @@ cLig <> added CTOCD in the 51st position
      &             '.RAMAN ', '.QUADRU', '.NQCC  ',
      &             '.CAVORG', '.HYPER ', '.VERDET',
      &             '.MCD   ', '.SOPPA ', '.EXPGRA',
-     &             '.CTOCD '/
+     &             '.CTOCD ', '.D2DQ2 '/
       DATA RSTLBL /'ORTREL', 'DIPCTL', 'RESPON', 'RELAX ',
      &             'DIPREL', 'TROINV', 'CCRHS ', 'CCTRES',
      &             'CCRELA'/
@@ -772,6 +773,7 @@ C
       EXPFCK = .FALSE.
       ABASOP = .FALSE.
       CCPPA  = .FALSE.
+      DOD2DQ2 = .FALSE.
 C
 C     Initialize /NUCLEI/
 C
@@ -845,7 +847,7 @@ cLig <> added goto 151
      &                121,122,123,124,125,126,127,128,129,130,
      &                131,132,133,134,135,136,137,138,139,140,
      &                141,142,143,144,145,146,147,148,149,150,
-     &                151,152),I
+     &                151,152,153),I
             END IF
    99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1079,6 +1081,12 @@ cs
             NOLOND = .TRUE.
             CTOCD  = .TRUE.
          GOTO 100
+C .D2DQ2
+ 153     CONTINUE 
+            DOD2DQ2 = .TRUE.
+            MOLGRD  = .TRUE.
+            MOLHES  = .TRUE.
+         GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 999
       ELSE
@@ -1293,6 +1301,8 @@ cLig <<
      &               ' Vibrational circular dichroism (VCD)'
       IF (NACME)  WRITE (LUPRI,'(5X,A)')
      &   ' First-order non-adiabatic coupling matrix elements (NACMEs)'
+      IF (DOD2DQ2)  WRITE (LUPRI,'(5X,A)')
+     &   ' < d Psi/dQ | d Psi/dQ > (Q = nuclear coordinates)'
       IF (NOLOND) WRITE (LUPRI,'(5X,A)')
      &   ' London orbitals are NOT used'
       IF (DODRCT) WRITE (LUPRI,'(5X,A)')
@@ -1423,99 +1433,103 @@ cLig <<
       END IF
 cLig >> added the control to right CTOCD input
       IF ((CTOCD).AND.(.NOT.(MAGSUS .OR. SHIELD))) THEN
-         WRITE(LUPRI,'(2X,A,/,2X,A)')
+         WRITE(LUPRI,'(/A/A)')
      &      ' Inconsistent input - CTOCD-DZ method',
-     &      ' the .CTOCD option only works if the .MAGNET and/or',
+     &      ' the .CTOCD option only works if the .MAGNET and/or'//
      &      ' .SHIELD options are also used'
-         CALL QUIT('Inconsistent input in CABAINP')
+         CALL QUIT('Inconsistent input in ABAINP')
       ENDIF
 cLig <<
       IF (ABASOP) THEN
+         IERR = 0
          IF (MOLGRD) THEN
             WRITE(LUPRI,'(A)') ' Incompatible input. MOLGRD '//
      &                         'cannot be calculated with SOPPA'
-            CALL QUIT('Inconsistent input in ABACUS')
+            IERR = IERR + 1
          END IF
          IF (MOLHES) THEN
             WRITE(LUPRI,'(A)') ' Incompatible input. MOLHES '//
      &                         'cannot be calculated with SOPPA'
-            CALL QUIT('Inconsistent input in ABACUS')
+            IERR = IERR + 1
          END IF
          IF (DIPDER .AND. .NOT.POPULA) THEN
             WRITE(LUPRI,'(A)') ' Incompatible input. DIPDER '//
      &                         'cannot be calculated with SOPPA'
-            CALL QUIT('Inconsistent input in ABACUS')
+            IERR = IERR + 1
          END IF
          IF (HYPER)  THEN
             WRITE(LUPRI,'(A)') ' Incompatible input. HYPER '//
      &                         'cannot be calculated with SOPPA'
-            CALL QUIT('Inconsistent input in ABACUS')
+            IERR = IERR + 1
          END IF
          IF (QUADRU) THEN
             WRITE(LUPRI,'(A)') ' Incompatible input. QUADRU '//
      &                         'cannot be calculated with SOPPA'
-            CALL QUIT('Inconsistent input in ABACUS')
+            IERR = IERR + 1
          END IF
          IF (NQCC)   THEN
             WRITE(LUPRI,'(A)') ' Incompatible input. NQCC '//
      &                         'cannot be calculated with SOPPA'
-            CALL QUIT('Inconsistent input in ABACUS')
+            IERR = IERR + 1
          END IF
          IF (DOWALK) THEN
             WRITE(LUPRI,'(A)') ' Incompatible input. DOWALK '//
      &                         'cannot be calculated with SOPPA'
-            CALL QUIT('Inconsistent input in ABACUS')
+            IERR = IERR + 1
          END IF
          IF (VIB)    THEN
             WRITE(LUPRI,'(A)') ' Incompatible input. VIB '//
      &                         'cannot be calculated with SOPPA'
-            CALL QUIT('Inconsistent input in ABACUS')
+            IERR = IERR + 1
          END IF
          IF (POPULA) THEN
             WRITE(LUPRI,'(A)') ' Incompatible input. POPULA '//
      &                         'cannot be calculated with SOPPA'
-            CALL QUIT('Inconsistent input in ABACUS')
+            IERR = IERR + 1
          END IF
          IF (VCD)    THEN
             WRITE(LUPRI,'(A)') ' Incompatible input. VCD '//
      &                         'cannot be calculated with SOPPA'
-            CALL QUIT('Inconsistent input in ABACUS')
+            IERR = IERR + 1
          END IF
          IF (NACME)  THEN
             WRITE(LUPRI,'(A)') ' Incompatible input. NACME '//
      &                         'cannot be calculated with SOPPA'
-            CALL QUIT('Inconsistent input in ABACUS')
+            IERR = IERR + 1
          END IF
          IF (ECD)    THEN
             WRITE(LUPRI,'(A)') ' Incompatible input. ECD '//
      &                         'cannot be calculated with SOPPA'
-            CALL QUIT('Inconsistent input in ABACUS')
+            IERR = IERR + 1
          END IF
          IF (MCD)    THEN
             WRITE(LUPRI,'(A)') ' Incompatible input. MCD '//
      &                         'cannot be calculated with SOPPA'
-            CALL QUIT('Inconsistent input in ABACUS')
+            IERR = IERR + 1
          END IF
          IF (VERDET) THEN
             WRITE(LUPRI,'(A)') ' Incompatible input. VERDET '//
      &                         'cannot be calculated with SOPPA'
-            CALL QUIT('Inconsistent input in ABACUS')
+            IERR = IERR + 1
          END IF
          IF (VROA)   THEN
             WRITE(LUPRI,'(A)') ' Incompatible input. VROA '//
      &                         'cannot be calculated with SOPPA'
-            CALL QUIT('Inconsistent input in ABACUS')
+            IERR = IERR + 1
          END IF
          IF (RAMAN)  THEN
             WRITE(LUPRI,'(A)') ' Incompatible input. RAMAN '//
      &                         'cannot be calculated with SOPPA'
-            CALL QUIT('Inconsistent input in ABACUS')
+            IERR = IERR + 1
          END IF
          IF (DODRCT) THEN
             WRITE (LUPRI,'(2X,A,/,2X,A)')
      &      ' Inconsistent input - SOPPA calculations cannot yet',
      &      ' be carried out "directly" (using .DIRECT and .SOPPA).'
-            CALL QUIT('Direct SOPPA not yet implemented')
+            IERR = IERR + 1
+         END IF
+         IF (IERR .GT. 0) THEN
+            CALL QUIT('Inconsistent input in ABACUS for SOPPA')
          END IF
       END IF
 C

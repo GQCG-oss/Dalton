@@ -486,6 +486,7 @@ C
       LOGICAL DOSEL, SYMTST, DOTRPL
       DIMENSION REL(NOP,NOP), WORK(LWORK)
 C
+#include <abainf.h>
 #include <gdvec.h>
 #include <inflin.h>
 #include <spnout.h>
@@ -542,12 +543,18 @@ C
      &          IDORCI(IGDREC(JOP,LSYMPT,ITYPE),ITYPE).NE.0) GO TO 200
             CALL READDX(LURD,JREC,IRAT*NVARPT,WORK(KJVEC))
             REL(IOP,JOP) = DDOT(NVARPT,WORK(KIRHS),1,WORK(KJVEC),1)
-CHJ Sep 2001: calc. <0| d2/dx2 |0>
-            IF (IOP .EQ. 1) THEN
-               D2DQ2 = DDOT(NVARPT,WORK(KJVEC),1,WORK(KJVEC),1)
-               IF(IPRINT.GT.1)
-     &              WRITE (LUPRI,'(A,I5,A,1P,D15.7)')
-     &              ' <0| d2/dQ2 |0>, Q =',JOP,' :',D2DQ2
+CHJ Sep 2001: calc. -<0| d2/dx2 |0> as <d0/dQ | d0/dQ>
+            IF (DOD2DQ2 .AND. IOP.EQ.1 .AND. ITYPE.EQ.1) THEN
+C              ... the JOP loop and not the IOP loop has solution vectors,
+C                  but we only want this once, thus the IOP.eq.1 test
+C              ... MOLHES is for ITYPE.eq.1
+               JCOOR = IGDCOR(JOP,LSYMPT,ITYPE)
+               IF (JCOOR .GT. 0) THEN
+C              ... this is a nuclear coordinate
+                  D2DQ2 = DDOT(NVARPT,WORK(KJVEC),1,WORK(KJVEC),1)
+                  WRITE (LUPRI,'(A,I5,A,1P,D15.7)')
+     &              ' <d Psi/dQ| d Psi/dQ>, Q =',JCOOR,' :',D2DQ2
+            END IF
             END IF
 CHJ Sep 2001 end
 
