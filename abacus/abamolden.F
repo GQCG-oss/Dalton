@@ -29,11 +29,14 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abamolden.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: abamolden.F,v 1.2 2001-03-13 08:43:27 vebjornb Exp $
 C
 C     Original: abamolden  alex a auer 5.2.99
 C
 C$Log: not supported by cvs2svn $
+CRevision 1.1.1.1  2001/02/08 13:33:19  hjj
+C*** Dalton Master Version *** cvs started 8-Feb-2001.
+C
 CRevision 1.2  2001/02/01 19:15:52  vebjornb
 CMinor bugfixes incl. missing line in abaptr.F and optimization of eispack.F
 C
@@ -170,8 +173,6 @@ C
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <mxorb.h>
-#include <chrxyz.h>
-#include <chrsgn.h>
 
       CHARACTER*4 NAME
       CHARACTER*4 WORD
@@ -184,6 +185,8 @@ C
 #include <cbirea.h>
 #include <frame.h>
 #include <inftap.h>
+#include <chrxyz.h>
+#include <chrsgn.h>
 #include <chrnos.h>
 #include <ibtfun.h>
 
@@ -275,8 +278,6 @@ C           2 save orbital energies in ORVAL
 #include <mxcent.h>
 #include <mxorb.h>
 #include <aosotr.h>
-#include <chrsgn.h>
-
 #include <molde.h>
 #include <priunit.h>
 #include <cbieri.h>
@@ -286,6 +287,8 @@ C           2 save orbital energies in ORVAL
     
       LOGICAL WRTELEM,WRTZERO
       DIMENSION ORVAL(*), OCCUP(*)
+
+#include <chrsgn.h>
 
       IF (ITASK .EQ. 1) THEN
 

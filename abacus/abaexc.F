@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abaexc.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: abaexc.F,v 1.2 2001-03-13 08:43:26 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck excinp */
@@ -1062,11 +1062,11 @@ C
 #include <maxaqn.h>
 #include <symmet.h>
 #include <nuclei.h>
+      CHARACTER COORDI*21, CNBASE*2
+      DIMENSION NBASE(8),NSIGN(8), CSTRA(NCOOR,NCOOR)
 #include <chrxyz.h>
 #include <chrnos.h>
 #include <chrsgn.h>
-      CHARACTER COORDI*21, CNBASE*2
-      DIMENSION NBASE(8),NSIGN(8), CSTRA(NCOOR,NCOOR)
 C
       DO 400 ISYM = 0, MAXREP
       IF (NCRREP(ISYM,1) .GT. 0) THEN

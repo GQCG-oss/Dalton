@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abarhs.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: abarhs.F,v 1.2 2001-03-13 08:43:28 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -2315,9 +2315,9 @@ C  /* Deck ofabod */
 #include <abainf.h>
 #include <infinp.h>
 #include <nuclei.h>
-#include <chrxyz.h>
 #include <inforb.h>
 #include <efield.h>
+#include <chrxyz.h>
       NT(T) = NISHT + T
 C
 C     Read in MO's
@@ -3068,8 +3068,8 @@ C  /* Deck pfkbod */
      &           DFOCK(NORBT,NORBT,3),
      &           WRK1(NBAST,NBAST),
      &           WRK2(NBAST,NBAST)
-#include <chrxyz.h>
 #include <inforb.h>
+#include <chrxyz.h>
       NT(T) = NISHT + T
 C     ***************************************************************
 C     ***** Noddy subroutine to calculate the AO differentiated *****

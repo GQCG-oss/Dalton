@@ -29,11 +29,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abawalk.F,v 1.3 2001-02-23 15:34:23 ruud Exp $
+C$Id: abawalk.F,v 1.4 2001-03-13 08:43:30 vebjornb Exp $
 C
 #include <single.h>
 #ifdef REVLOG
 $Log: not supported by cvs2svn $
+Revision 1.3  2001/02/23 15:34:23  ruud
+Added temperature dependence and centrifugal distortions to the calculation of
+effective geometries and (indirectly) vibrational property averages, K.Ruud
+
 Revision 1.2  2001/02/12 18:17:50  vebjornb
 First commit after CC merge
 
@@ -64,6 +68,7 @@ C
 #include <nuclei.h>
 #include <cbiwlk.h>
 C
+      CHARACTER*42 WLKTYP(7)
       DATA TABLE /'.RESTAR', '.PRINT ', '.INDEX ', '.TRUST ',
      &            '.ANHARM', '.DISPLA', '.SCALE ', '.MODE  ',
      &            '.TOLERA', '.STRICT', '.NOPRED', '.MAXNUC',
@@ -74,8 +79,6 @@ C
      &            '.FRAGME', '.IMAGE ', '.ISOTOP', '.IRC   ',
      &            '.MAXTRU', '.NOORTH', '.NATCON', '.VIBAVE',
      &            '.NORMAL', '.ECKART', '.TEMPER', '.NO CEN'/
-C
-      CHARACTER*42 WLKTYP(7)
       DATA WLKTYP /'Level-shifted Newton walk (mode following)',
      *             'Gradient-extremal walk                    ',
      *             'Dynamic walk                              ',
@@ -3771,8 +3774,9 @@ C
 #include <sigma.h>
 #include <spinro.h>
 #include <nqcc.h>
-#include <chrsgn.h>
 #include <cbiwlk.h>
+C
+#include <chrsgn.h>
 C
       IF (MAGSUS) THEN
          DO I = 1, 3
@@ -7157,7 +7161,6 @@ C
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <mxorb.h>
-#include <chrsgn.h>
 #include <codata.h>
 C
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D2=2.0D0,DE3=1.0D3)
@@ -7182,6 +7185,8 @@ C
      &          ROAGLD(3,3,MXFR,MXCOOR),
      &          ROAAU(3,3,3,MXFR), ROAAP(3,3,3,MXFR),
      &          ROAAD(3,3,3,MXFR,MXCOOR)
+C
+#include <chrsgn.h>
 C
       FINAL = IPOINT .EQ. 2*NCART
       IF (IPOINT .EQ. 0) THEN

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abamag.F,v 1.1.1.1 2001-02-08 13:33:20 hjj Exp $
+C$Id: abamag.F,v 1.2 2001-03-13 08:43:26 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -611,8 +611,8 @@ C
 #include <quadru.h>
 #include <molgfa.h>
 #include <relcor.h>
-#include <chrxyz.h>
 #include <dipole.h>
+#include <chrxyz.h>
 C
       CALL QENTER('MAGAVE')
 C
@@ -1673,10 +1673,10 @@ C
 #include <inflin.h>
 #include <infdim.h>
 #include <inforb.h>
-#include <chrnos.h>
 #include <infvar.h>
 #include <gdvec.h>
 #include <abares.h>
+#include <chrnos.h>
 C
       HFCLC  = NASHT .LE. 1
       IF (HFCLC) NCONF = 1

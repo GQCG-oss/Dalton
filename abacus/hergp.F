@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: hergp.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: hergp.F,v 1.2 2001-03-13 08:43:37 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -1346,7 +1346,6 @@ C
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <mxorb.h>
-#include <chrxyz.h>
 #include <alphac.h>
       PARAMETER(D1 = 1.D0, D10E6 = 1.D6)
       LOGICAL DONE, CARTRA
@@ -1355,6 +1354,7 @@ C
 #include <abainf.h>
 #include <nuclei.h>
 #include <symmet.h>
+#include <chrxyz.h>
       CARTRA = .TRUE.
 C
 C     Atomic polar tensors (au)
@@ -1477,11 +1477,11 @@ C  /* Deck dp0pri */
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <mxorb.h>
-#include <chrxyz.h>
 #include <debye.h>
 #include <cbidip.h>
 #include <symmet.h>
       DIMENSION DIPOLE(3)
+#include <chrxyz.h>
       IF (NAXREP(0,1) .EQ. 0) THEN
          WRITE (LUPRI,'(20X,A)') ' All components zero by symmetry'
       ELSE

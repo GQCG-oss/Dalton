@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: hersym.F,v 1.2 2001-02-12 18:17:53 vebjornb Exp $
+C$Id: hersym.F,v 1.3 2001-03-13 08:43:50 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -703,7 +703,8 @@ ckr	    IF ((NINT(DRTAXS(4,I)) .GT. 2) .AND.
 	    J = J + 1
  110	 CONTINUE
 	 DO 120 I = 1, NINT(DRTAXS(1,0))
-	    IF (NINT(DRTAXS(4,I)) .EQ. 2) THEN
+	    IF ((NINT(DRTAXS(4,I)) .GT. 2) .AND.
+     &         (ABS(MOD(DRTAXS(4,I),2.0D0)) .GT. 1.0D-2)) THEN
 	       DO 125 K = 1, 4
 		  TMPARR(K,J) = DRTAXS(K,I)
  125	       CONTINUE

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abavib.F,v 1.2 2001-02-23 15:34:23 ruud Exp $
+C$Id: abavib.F,v 1.3 2001-03-13 08:43:29 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -857,11 +857,11 @@ C
 #include <cbiwlk.h>
 #include <gnrinf.h>
 C
+      LOGICAL  INTENS, NEWSPC, ACTIVE, CNTAIN, LINEAR
+      DIMENSION DMYLAB(3), DMYMOL(3), AATMOL(3), NUMODX(8)
       CHARACTER*1 CHRIMG(0:1)
       CHARACTER*5 IRPTXT
       DATA CHRIMG /' ','i'/
-      LOGICAL  INTENS, NEWSPC, ACTIVE, CNTAIN, LINEAR
-      DIMENSION DMYLAB(3), DMYMOL(3), AATMOL(3), NUMODX(8)
 C
 C     *********************************************
 C     ***** Diagonalize mass weighted Hessian *****

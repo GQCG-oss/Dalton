@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abadip.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: abadip.F,v 1.2 2001-03-13 08:43:25 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck dipinp */
@@ -218,8 +218,8 @@ C
 #include <infdim.h>
 #include <infinp.h>
 #include <inflin.h>
-#include <chrxyz.h>
       LOGICAL OLDDX
+#include <chrxyz.h>
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from DIPCT1','*',103)
 C
@@ -371,11 +371,11 @@ C  /* Deck polpri */
       CHARACTER*(*) SPC
       CHARACTER LAB(3)*2, CHRABC(3)*1
 #include <inirep.h>
-#include <chrxyz.h>
 #include <abainf.h>
 #include <inftap.h>
 #include <dorps.h>
 #include <symmet.h>
+#include <chrxyz.h>
       DATA CHRABC /'A','B','C'/
 C
       INERT = INDEX(SPC,'PRI') .NE. 0
@@ -476,7 +476,6 @@ C
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <mxorb.h>
-#include <chrxyz.h>
       PARAMETER (THIRD = 1.0D0/3.0D0)
       DIMENSION AMAT(3,MXCOOR), CMAT(3,MXCOOR)
       DIMENSION HELP1(3,3), HELP2(3,3), HELP3(3,3), CORR(3,3)
@@ -487,6 +486,7 @@ C
 #include <nuclei.h>
 #include <symmet.h>
 #include <cbisol.h>
+#include <chrxyz.h>
       ALL = DOSYM(ISYMAX(1,1)+1) .AND. DOSYM(ISYMAX(2,1)+1)
      &                           .AND. DOSYM(ISYMAX(3,1)+1)
       IF (ALL) THEN

@@ -29,11 +29,17 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: herrdn.F,v 1.3 2001-02-26 15:34:47 ruud Exp $
+C$Id: herrdn.F,v 1.4 2001-03-13 08:43:38 vebjornb Exp $
 C
 #include <single.h>
 #ifdef REVISION_LOG
 $Log: not supported by cvs2svn $
+Revision 1.3  2001/02/26 15:34:47  ruud
+Removed redundant and unused files from amfi directory
+
+Added Douglas-Kroll transformation. Currently puts rather high
+memory requirements that need to be fixed before release.
+
 Revision 1.2  2001/02/12 18:17:53  vebjornb
 First commit after CC merge
 
@@ -394,9 +400,9 @@ C
 #include <primit.h>
 #include <shells.h>
 #include <symmet.h>
-#include <chrsgn.h>
 #include <aosotr.h>
 #include <infpar.h>
+#include <chrsgn.h>
 C
 C     A SET variable has been replaced by RDINPC. This allows external control
 C     of READIN processing. The processing should be performed once every
@@ -2645,10 +2651,10 @@ C
 #include <symmet.h>
 #include <ccom.h>
 #include <cbirea.h>
-#include <chrxyz.h>
       CHARACTER*1 KASYM(3,3)
       CHARACTER*(*) CLASS
       DIMENSION IFXYZ(3),IS(0:7),IGEN(3)
+#include <chrxyz.h>
       DATA IS/0,1,1,2,1,2,2,3/
 #include <sdpre.h>
 #include <ibtfun.h>
@@ -3051,8 +3057,8 @@ C
 #include <pincom.h>
 #include <cbirea.h>
 #include <aosotr.h>
-#include <chrsgn.h>
       CHARACTER COMP(2)*1
+#include <chrsgn.h>
 C
 #include <ibtfun.h>
 C
@@ -3176,11 +3182,11 @@ C  /* Deck symnco */
 #include <maxmom.h>
 #include <mxorb.h>
 C
-#include <chrxyz.h>
 #include <cbirea.h>
 #include <nuclei.h>
 #include <symmet.h>
       DIMENSION WORK(LWORK)
+#include <chrxyz.h>
 #include <ibtfun.h>
       LENGTH = 48*NUCIND
       CALL IZERO(IPTCNT(1,0,1),LENGTH)
@@ -3287,8 +3293,6 @@ C
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <mxorb.h>
-#include <chrxyz.h>
-#include <chrsgn.h>
 C
       CHARACTER*4 NAME
       INTEGER NBASE(8), NSIGN(8)
@@ -3300,7 +3304,8 @@ C
 #include <cbirea.h>
 #include <frame.h>
 C
-C
+#include <chrxyz.h>
+#include <chrsgn.h>
 #include <chrnos.h>
 #include <ibtfun.h>
 C
@@ -3748,8 +3753,6 @@ C
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <mxorb.h>
-#include <chrxyz.h>
-#include <chrsgn.h>
 C
       INTEGER NBASE(8), NSIGN(8), NRTREP(0:7)
 C
@@ -3757,6 +3760,8 @@ C
 #include <nuclei.h>
 #include <symmet.h>
 #include <pgroup.h>
+#include <chrxyz.h>
+#include <chrsgn.h>
 C
 #include <ibtfun.h>
 C
@@ -4186,21 +4191,21 @@ C
       DIMENSION CHRN(MXCENT), COOO(MXCENT,3), IPRXYZ(MXCORB),
      &          INAMN(MXCORB), IGTO(MXCORB), RTITLE(24)
       DIMENSION NONT(KATOM), IQM(KATOM), JCO2(KANG,KATOM)
+#include <ccom.h>
+#include <shells.h>
+#include <symmet.h>
+#include <aosotr.h>
+#include <frame.h>
+#include <inftap.h>
+#include <nuclei.h>
+#include <sphtrm.h>
       DATA TABLE1 /'********','        ','        ','ISORDK  '/,
      &     TABLE2 /'********','        ','        ','SCFINP  '/,
      &     TABLE3 /'********','        ','        ','SYMINPUT'/,
      &     TABLE4 /'********','        ','        ','TESTDATA'/,
      &     TABLE5 /'********','        ','        ','SPHERICA'/
       DATA QPOL/6*DUMMY/, QQ/3*DUMMY/, JFXYZ/3*IDUMMY/
-#include <ccom.h>
-#include <shells.h>
-#include <symmet.h>
       DATA IPRXYZ/MXCORB*IDUMMY/
-#include <aosotr.h>
-#include <frame.h>
-#include <inftap.h>
-#include <nuclei.h>
-#include <sphtrm.h>
 #include <ibtfun.h>
 C
       CALL GETDAT(CDATE,CTIME)
@@ -4322,8 +4327,8 @@ C
 #include <primit.h>
 #include <shells.h>
 #include <symmet.h>
-#include <chrsgn.h>
 #include <aosotr.h>
+#include <chrsgn.h>
 C
       CALL HEADER('Test output from REAPRI',-1)
       WRITE(LUPRI,'(A,F12.6)') '  THRS  ', THRS
@@ -4875,8 +4880,8 @@ C
 #include <molinp.h>
       COMMON/CBZMAT/IZ(MXCENT,4),BL(MXCENT),ALP(MXCENT),BET(MXCENT)
       DIMENSION NONT(KATOM)
-      DATA FIRST /.TRUE./
       SAVE FIRST
+      DATA FIRST /.TRUE./
 C
       NUCIND = NUCIND + 1
       IF (NUCIND .GT. MXCENT) GOTO 5000

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abarint.F,v 1.1.1.1 2001-02-08 13:33:20 hjj Exp $
+C$Id: abarint.F,v 1.2 2001-03-13 08:43:29 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -269,10 +269,10 @@ C
       DIMENSION CRDRIN(MXRCRD), WILBMT(MXRCRD,MXCOOR)
       DIMENSION BMTRAN(MXRCRD,MXRCRD), TMPMAT(MX2CRD,MX2CRD)
       DIMENSION TMPMT2(MX2CRD,MX2CRD)
+      LOGICAL LOGDEL
       CHARACTER*4 CRDTXT
       CHARACTER*1 CHRIMG(0:1)
       DATA CHRIMG /' ','i'/
-      LOGICAL LOGDEL
 #include <ibtfun.h>
 C
       SXFAMU = SQRT(XFAMU)

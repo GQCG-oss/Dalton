@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: her2out.F,v 1.2 2001-02-12 18:17:52 vebjornb Exp $
+C$Id: her2out.F,v 1.3 2001-03-13 08:43:36 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck un2out */
@@ -1042,8 +1042,8 @@ C  /* Deck dr2pri */
 #include <priunit.h>
 #include <ibtpar.h>
       DIMENSION BUF(600), IBUF(600)
-#include <chrxyz.h>
       SAVE IATOM, ICOOR, IREPE
+#include <chrxyz.h>
 #include <ibtfun.h>
       WRITE(LUPRI,'(2X,A,I5,A/)')
      &   'Integral buffer #',NBUF + 1,' has been written.'

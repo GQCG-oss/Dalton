@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abatro.F,v 1.3 2001-03-07 10:20:35 vebjornb Exp $
+C$Id: abatro.F,v 1.4 2001-03-13 08:43:29 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck troinp */
@@ -1802,7 +1802,6 @@ C
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <mxorb.h>
-#include <chrxyz.h>
       PARAMETER (D1 = 1.D00)
 C
       LOGICAL OK, DONE
@@ -1812,6 +1811,7 @@ C
 #include <nuclei.h>
 #include <trkoor.h>
 #include <symmet.h>
+#include <chrxyz.h>
 #include <ibtfun.h>
 C
 C     (I) Set up TMAT for 6 trarot coordinates

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: herbas.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: herbas.F,v 1.2 2001-03-13 08:43:37 vebjornb Exp $
 C
 #include <single.h>
 C
@@ -67,8 +67,9 @@ C
      &                   ISET, DSM)
 #include <implicit.h>
 #include <priunit.h>
+#include <maxaqn.h>
       LOGICAL SEG
-      DIMENSION JCO(IQM), NUC(KAOVEC), NRC(KAOVEC), SEG(KAOVEC),
+      DIMENSION JCO(MXAQN), NUC(KAOVEC), NRC(KAOVEC), SEG(KAOVEC),
      +          ALPHA(KPRIM, KAOVEC), CPRIMU(KPRIM, KPRIM, KAOVEC), 
      +          CPRIM(KPRIM,KPRIM, KAOVEC)
 #include <cbirea.h>

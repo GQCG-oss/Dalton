@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abadrv.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: abadrv.F,v 1.2 2001-03-13 08:43:25 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -2235,12 +2235,12 @@ C  /* Deck susres */
       LOGICAL D12, D23
       DIMENSION WRK(3), IWRK(3), AXES(3,3), PVAL(6), DIASUS(3,3),
      &          PARSUS(3,3), PVAL1(6), PVAL2(6)
-      CHARACTER*6 ABC(3)
-      DATA ABC /'khi_aa','khi_bb','khi_cc'/
 #include <symmet.h>
 #include <suscpt.h>
 #include <abainf.h>
 #include <inftap.h>
+      CHARACTER*6 ABC(3)
+      DATA ABC /'khi_aa','khi_bb','khi_cc'/
       CALL TITLER('ABACUS - MAGNETIZABILITIES','*',124)
       IF (.NOT.NOLOND) THEN
 C

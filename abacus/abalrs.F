@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abalrs.F,v 1.1.1.1 2001-02-08 13:33:20 hjj Exp $
+C$Id: abalrs.F,v 1.2 2001-03-13 08:43:26 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck lrsinp */
@@ -331,8 +331,8 @@ C
 #include <nuclei.h>
 #include <inforb.h>
 #include <gdvec.h>
-#include <chrnos.h>
 #include <abares.h>
+#include <chrnos.h>
 C
 C     Open direct access files
 C

@@ -13,12 +13,3 @@ linux g77
 
   test cases rsp_lrso, rsp_lrso2, rsp_phosph, rsp_socorr and
   rsp_sreslrso do not work due to a problem with FASTIO
-
-
-
-------------------------------------------------------------------------
-SGI 32-bit & 64-bit
-------------------------------------------------------------------------
-
-  test case energy_solv gives an (incorrect) out of memory error in
-  WRSIFC

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abaptr.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: abaptr.F,v 1.2 2001-03-13 08:43:28 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -1564,7 +1564,6 @@ C
 #if defined (VAR_SPLITFILES)
 #include <2gbdef.h>
       CHARACTER*80 FNNAME, FNNM2
-#include <chrnos.h>
 #endif
 #if defined (VAR_64BITS)
       PARAMETER (IBIT08 = 65535, IFIELD = 16)
@@ -1585,6 +1584,7 @@ C     **  STATEMENT FUNCTIONS FOR PACKING, UNPACKING AND ADDRESSING  **
 C     *****************************************************************
 C
 #include <inftap.h>
+#include <chrnos.h>
 #include <ibtfun.h>
       IPART(I,J) = IBTAND(IBTSHR(I,IFIELD*(J-1)),IBIT08)
       ISHLL(I)   = IBTAND(I,IBIT08)

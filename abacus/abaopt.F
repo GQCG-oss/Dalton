@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abaopt.F,v 1.3 2001-03-07 10:20:35 vebjornb Exp $
+C$Id: abaopt.F,v 1.4 2001-03-13 08:43:27 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -7193,8 +7193,8 @@ C
 #include <gnrinf.h>
 #include <optinf.h>
 #include <infopt.h>
-      DATA FIRST /.TRUE./
       SAVE FIRST
+      DATA FIRST /.TRUE./
 C
 #if defined (VAR_MPI)
       IF (NODTOT .GT. 1 .AND. MYNUM .EQ. 0) THEN

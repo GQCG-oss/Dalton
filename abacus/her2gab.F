@@ -32,6 +32,9 @@ C
 C
 #ifdef REV_LOG
 $Log: not supported by cvs2svn $
+Revision 1.1.1.1  2001/02/08 13:33:19  hjj
+*** Dalton Master Version *** cvs started 8-Feb-2001.
+
 Revision 1.2  2001/01/31 17:51:20  vebjornb
 Parallel modifications from pdahle, MPI and PVM
 
@@ -1812,10 +1815,10 @@ C
 #include <nuclei.h>
 #include <blocks.h>
 #include <inftap.h>
-#include <chrxyz.h>
       LOGICAL FNDLAB,NOCONT
       CHARACTER GABLAB(3)*8,RTNLBL(2)*8
       DIMENSION WORK(*)
+#include <chrxyz.h>
       CALL QENTER('GABGEN')
 #include <memint.h>
       IF(ITYPE.EQ.0) THEN

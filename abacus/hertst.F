@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: hertst.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: hertst.F,v 1.2 2001-03-13 08:43:52 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck sochk2 */
@@ -207,25 +207,23 @@ C
       DIMENSION SOINT(ISODIM,ISODIM,3)
       DIMENSION ONEINT(IONDIM,IONDIM)
 C
-      DATA PRTHRS/1D-13/
-      CHARACTER COOR(3)
-      DATA COOR/'x','y','z'/
-C
 #include <sotabs.h>
 #include <cotabs.h>
 #include <shells.h>
 #include <primit.h>
 #include <xyzpow.h>
 C
-C
-      DIMENSION ICOOR1(3),ICOOR2(3)
-      DATA ICOOR1/2,3,1/,ICOOR2/3,1,2/
       DIMENSION JR(2),KR(2),JS(2),KS(2)
       DIMENSION JRSHL(2),KSSHL(2),KRSHL(2),JSSHL(2)
       DIMENSION JRCMP(2),KSCMP(2),KRCMP(2),JSCMP(2)
-C
       LOGICAL FIRST,LAST,DIFFER
       DIMENSION RENR1(2), RENR2(2), RENS1(2), RENS2(2)
+C
+      DIMENSION ICOOR1(3),ICOOR2(3)
+      CHARACTER COOR(3)
+      DATA ICOOR1/2,3,1/,ICOOR2/3,1,2/
+      DATA COOR/'x','y','z'/
+      DATA PRTHRS/1D-13/
 C
 #include <ibtfun.h>
 #include <sdpre.h>
@@ -424,6 +422,7 @@ C
 C Following implies max f:s, ie d derivatives.
 C
       DIMENSION IDIF(3,2,10)
+      DIMENSION JOFF(3)
       DATA IDIF/
 C s
      *         1,2,3,0,0,0,
@@ -438,7 +437,6 @@ C d
      *         4,7,8,0,2,0,
      *         5,8,9,0,3,2,
      *         6,9,10,0,0,3/
-      DIMENSION JOFF(3)
       DATA JOFF/0,1,4/
 C
 C Find index of last original shell
@@ -573,25 +571,24 @@ C
       DIMENSION SOINT(JCOMID,JCOMID,3)
       DIMENSION ERINT(KCOMAX)
 C
-      DATA PRTHRS/1D-13/
-      CHARACTER COOR(3)
-      DATA COOR/'x','y','z'/
-C
 #include <sotabs.h>
 #include <cotabs.h>
 #include <shells.h>
 #include <primit.h>
 #include <xyzpow.h>
 C
-C
+      CHARACTER COOR(3)
       DIMENSION ICOOR1(3),ICOOR2(3)
-      DATA ICOOR1/2,3,1/,ICOOR2/3,1,2/
       DIMENSION JR(2),KR(2),JS(2),KS(2)
       DIMENSION JRSHL(2),KSSHL(2),KRSHL(2),JSSHL(2)
       DIMENSION JRCMP(2),KSCMP(2),KRCMP(2),JSCMP(2)
 C
       LOGICAL FIRST,LAST,DIFFER
       DIMENSION RENR1(2), RENR2(2), RENS1(2), RENS2(2)
+C
+      DATA PRTHRS/1D-13/
+      DATA COOR/'x','y','z'/
+      DATA ICOOR1/2,3,1/,ICOOR2/3,1,2/
 C
 #include <ibtfun.h>
 #include <sdpre.h>

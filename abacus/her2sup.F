@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: her2sup.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: her2sup.F,v 1.2 2001-03-13 08:43:37 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -1907,6 +1907,7 @@ C
      B           LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
      C           NREC(255),IBATCH(255),IS(255),NBW,NWW,LSUP
       COMMON/CSPREA/THRQ,BUF(600),DUM4(4)
+#include <inftap.h>
 #if defined (VAR_SPLITFILES)
 #include <dummy.h>
 #include <iratdef.h>
@@ -1914,7 +1915,6 @@ C
       CHARACTER*80 FNNAME, FNNM2
 #include <chrnos.h>
 #endif
-#include <inftap.h>
 #include <ibtfun.h>
 C
       LBUF = 600

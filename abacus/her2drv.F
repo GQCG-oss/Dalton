@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: her2drv.F,v 1.2 2001-02-12 18:17:52 vebjornb Exp $
+C$Id: her2drv.F,v 1.3 2001-03-13 08:43:33 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck twoint */
@@ -1320,10 +1320,6 @@ C  /* Deck twoods */
 #include <iratdef.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#if defined (VAR_SPLITFILES)
-      CHARACTER*80 FNNAME, FNNM2
-#include <chrnos.h>
-#endif
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, NOCONT, SPNORB, FIRST,
      &        DDFOCK, DIRFCK, DISTRI, SQ12EL, LONDON, SUSCEP, ADISTR,
      &        SOFOCK, DIA2SO, ZFS2EL
@@ -1337,6 +1333,10 @@ C  /* Deck twoods */
 #include <blocks.h>
 #include <twosta.h>
 #include <drw2el.h>
+#if defined (VAR_SPLITFILES)
+      CHARACTER*80 FNNAME, FNNM2
+#include <chrnos.h>
+#endif
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from TWOODS','*',103)
       IF (FINDPT.OR.DPTINT) THEN
