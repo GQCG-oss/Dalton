@@ -1,20 +1,20 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Examples of coupled cluster calculations}\label{sec:ccexamples}
+\chapter{Examples of coupled cluster calculations}\label{sec:ccexamples}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-We collect in this Section a few examples of input files (DALTON.INP) 
+We collect in this Chapter a few examples of input files (DALTON.INP) 
 for calculations one might want to carry 
-out with the \cc modules of the Dalton program.
+out with the \cc\ modules of the Dalton program.
 Other examples may be found in the test suite. 
 
 It should be stressed that in difference to the \resp \ code,
 all the response modules in \cc \ can be used 
-simultaneously---assumed they are available for all 
+simultaneously---assuming they are available for all 
 chosen wavefunction model(s).
 For instance,  linear, quadratic and cubic response functions 
 can be obtained within the same calculation.
 
-\subsection{Multiple model energy calculations}
+\section{Multiple model energy calculations}
 %
 \cc\  allows for the calculation of the ground state energy
 of the given system using a variety of wavefunction models, listed in 
@@ -25,7 +25,7 @@ CCSD(T) ground state energies:
 %
 \begin{verbatim}
 **GENERAL
-.RUNSIR
+.RUN WAVE FUNCTION
 **WAVE FUNCTIONS
 .CC
 *CC INPUT
@@ -39,7 +39,7 @@ CCSD(T) (\Key{CC(T)}) is required. Therefore the
 keywords \Key{MP2} and \Key{CCSD}
 may also be omitted in the previous example.
 
-\subsection{First-order property calculation}
+\section{First-order property calculation}
 
 The following input exemplifies the calculation of all orbital-relaxed
 first-order one-electron properties available in \cc, for the hierarchy of 
@@ -47,7 +47,7 @@ wavefunction models SCF (indirectly obtained through CCS), MP2 and CCSD.
 For details, see Section~\ref{sec:ccfop}.
 \begin{verbatim}
 **GENERAL
-.RUNSIR
+.RUN WAVE FUNCTION
 **INTEGRALS
 .DIPLEN
 .SECMOM
@@ -66,7 +66,7 @@ For details, see Section~\ref{sec:ccfop}.
 *END OF INPUT
 \end{verbatim}
 
-\subsection{Static and frequency-dependent dipole polarizabilities and
+\section{Static and frequency-dependent dipole polarizabilities and
             corresponding dispersion coefficients} 
 
 The following input describes the calculation of the 
@@ -79,7 +79,7 @@ included in the same run.
 
 \begin{verbatim}
 **GENERAL
-.RUNSIR
+.RUN WAVE FUNCTION
 **INTEGRALS
 .DIPLEN
 **WAVE FUNCTIONS
@@ -101,7 +101,7 @@ ZDIPLEN ZDIPLEN
 *END OF INPUT
 \end{verbatim}
 
-\subsection{Static and frequency-dependent dipole hyperpolarizabilities 
+\section{Static and frequency-dependent dipole hyperpolarizabilities 
             and corresponding dispersion coefficients} 
 
 The previous input can be extended to include the 
@@ -110,12 +110,12 @@ $\beta_{zzz}(\omega_1,\omega_2)$ and
 $\gamma_{zzzz}(\omega_1,\omega_2,\omega_3)$, 
 for $\omega_1 = \omega_2 =(\omega_3 =) \ 0.00$ 
 and $\omega_1 = \omega_2 =(\omega_3 =) \ 0.072$ au. 
-The corresponding dispersion coefficients up to sixth are also calculated.
+The corresponding dispersion coefficients up to sixth order are also calculated.
 For other specific cases, see Sections~\ref{sec:ccqr} and \ref{sec:cccr}
 
 \begin{verbatim}
 **GENERAL
-.RUNSIR
+.RUN WAVE FUNCTION
 **INTEGRALS
 .DIPLEN
 **WAVE FUNCTIONS
@@ -156,12 +156,12 @@ ZDIPLEN ZDIPLEN ZDIPLEN ZDIPLEN
 Obviously, linear, quadratic and cubic response modules can be also 
 run separately. 
 
-\subsection{Excitation energies and oscillator strengths}
+\section{Excitation energies and oscillator strengths}
 This is an example for the calculation of singlet excitation energy and
 oscillator strength for a system with \verb+NSYM = 2+ (C$_s$).
 \begin{verbatim}
 **GENERAL
-.RUNSIR
+.RUN WAVE FUNCTION
 **INTEGRAL
 .DIPLEN
 **WAVE FUNCTIONS
@@ -183,14 +183,14 @@ of required triplet excited states for each symmetry class.
 Note however that linear residues are not available
 for triplet states (The \Sec{CCLRSD} sections should be removed).
 
-\subsection{Gradient calculation, geometry optimization}
+\section{Gradient calculation, geometry optimization}
 Available for CCS, CC2, MP2, CCSD using integral direct analytic gradient.
 
 \noindent For a single integral-direct gradient calculation:
 \begin{verbatim}
 **GENERAL
 .DIRECT
-.RUNSIR
+.RUN WAVE FUNCTION
 **INTEGRAL
 .DIPLEN
 .DEROVL
@@ -225,5 +225,5 @@ model in the list.
 *END OF
 \end{verbatim}
 
-\subsection{Excited state geometry optimization}
+\section{Excited state geometry optimization}
 

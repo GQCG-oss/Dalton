@@ -1,0 +1,110 @@
+\chapter{\label{chap:Relativity}Relativistic Effects}
+
+The following approaches to treat relativistic effects are available in DALTON:
+
+\begin{description}
+
+\item[ECP]\index{Effective core potentials} The Effective Core Potential approach of Pitzer and Winter~\cite{rmpnmwijqc40} is available 
+for single-point calculations by asking for ECP as the basis set for the chosen element. Analytical gradients and Hessians are under development. So far, only a limited 
+set of elments is covered by the basis set library. See the \verb|rsp_ecp| example in the 
+test-suite. The corresponding spin-orbit operators are not implemented.  	
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item R.~M.~Pitzer and N.~M.~Winter. \newblock {\em Int.~J. of Quantum Chem.}, {\bf 40}, \hspace{0.25em} 773 (1991)
+\item L.~E.~McMurchie and E.~R.~Davidson.  \newblock {\em J.~Comp.~Phys.}, {\bf 44},\hspace{0.25em} 289 (1981)
+\end{list}
+}}
+\end{center}
+
+
+\item[Douglas-Kroll]\index{Douglas--Kroll} The Douglas--Kroll scalar relatvistic one-electron integrals  
+are available by adding the \verb|.DOUGLAS-KROLL|   keyword
+\begin{verbatim}
+**DALTON INPUT
+.DOUGLAS-KROLL
+.RUN WAVE FUNCTIONS
+....
+\end{verbatim}
+
+See also the \verb|energy_douglaskroll| example in the test suite.
+
+  NOTE: Exact analytical gradients and hessians are not available 
+at the moment, the approximate gradient and Hessians does however give fairly accurate geometries.  For this approach, only basis sets should be used 
+where the contraction coefficients were optimized including the Douglas-Kroll 
+operators. DALTON currently provides:  DK-Pol (relativistic version of Sadlej's POL basis sets), raf-r for some heavy elements, and the relatvistically recontracted correlation-consistent basis sets of Dunning (cc-pVXZ-DK, X=D,T,Q,5). The combination with 
+property operators should be done with care, e.g. the standard magnetic property
+operators are not suitable in this case, see for instance Ref.~\cite{}.
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item M.~Douglas and N.~M.~Kroll. \newblock {\em Ann.~Phys.~(N.Y.)}, {\bf 82},\hspace{0.25em} 89 (1974)
+\item B.~A.~Hess. \newblock {\em Phys.~Rev.~{\bf A}}, {\bf 33},\hspace{0.25em} 3742 (1986)
+\end{list}
+}}
+\end{center}
+
+\item[Spin-orbit Mean-Field]\index{AMFI}\index{pin-orbit mean-field} The spin-orbit mean-field approach can be used 
+for either replacing the Breit-Pauli spin-orbit operator, or as an operator 
+with suitable relativistic corrections in combination with the Douglas-Kroll 
+approach. It is based on an effective one-electron operator, where the two-electron
+terms are summed in a way comparable to the Fock operator. As all multi-center 
+integrals are neglected, this scheme is very fast, avoids the storage of the 
+two-electron spin-orbit integrals, and can therefore be used for large systems. 
+
+\begin{verbatim}
+.....
+**INTEGRALS    
+.MNF-SO    replaces     .SPIN-ORBIT             
+.....
+\end{verbatim}
+
+For properties, the same substitution should be made, in the case of special 
+components, \verb|X1SPNORB| labels are replaced by \verb|X1MNF-SO| and so on, whereas the 
+two-electron terms will be skipped totally. For calculating phosphorescence with 
+the quadratic response scheme, \verb|.PHOSPHORESENCE| should be just resplaced by 
+\verb|.MNFPHO| which takes care of chosing the approriate integrals. 
+
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item B.~A.~Hess, C.~M.~Marian, U.~Wahlgren and O.~Gropen. \newblock {\em Chem.~Phys.~Lett.}, {\bf 251},\hspace{0.25em} 365 (1996)
+\end{list}
+}}
+\end{center}
+
+
+NOTE:  
+
+The choice between the Breit-Pauli or Douglas-Kroll mean-field operator 
+is done by (not) providing the .DOUGLAS-KROLL keyword. It is therefore 
+not possible to combine e.g. non-relatvistic wave-functions with the 
+Douglas-Kroll spin-orbit integrals. 
+
+
+In the present implementation, the mean-field approach works only for basis sets 
+with a generalized contraction scheme such as the ANO basis sets, raf-r, or cc-pVXZ(-DK).
+For other types of basis sets, the program might work without a crash, but it
+will most likely provide erroneous results.  
+
+
+
+\end{description}
+
+
+

@@ -191,6 +191,27 @@ induced by spin-orbit coupling
 have the keyword, {\tt .PHOSPHORESCENCE} under {\tt *QUADRATIC}, which sets
 $A$ to electric dipole operators and $B$ to spin-orbit operators.
 
+The residue of a quadratic response function can be used to identify
+the two-photon transition amplitudes. The input below refers to the
+calculation of the two-photon absorption from the ground state to the
+first 3 excited states in point symmetry group one. In the program
+output the two-photon transition matrix element is given as well as
+the two-photon transition probability relevant for an isotropic gas or
+liquid. The evaluation of the transition probabilities can be done based
+on the transition matrix elements although they, in principle, are
+connected with the imaginary part of the second
+hyperpolarizability. The absorption cross sections are evaluated
+assuming a monochromatic light source that is either linearly or
+circularly polarized.
+\begin{verbatim}
+**RESPONSE
+*QUADRATIC
+.TWO-PHOTON
+.ROOTS
+ 3 0 0 0
+*END OF
+\end{verbatim}
+
 Another special case of a residue of the quadratic response function 
 is the ${\cal{B}}(0\to f)$ term of magnetic circular dichroism (MCD).
 \begin{verbatim}
