@@ -1,5 +1,7 @@
 $McLean/Chandler VTZ
 
+$Elements supported
+$Na Mg Al Si P S Cl Ar 
 $
 $  REFERENCE
 $ A.D. MCLEAN AND G.S. CHANDLER, CHEM. PHYS. 72, 5639, (1980)                  
@@ -231,6 +233,3 @@ $ P-TYPE FUNCTIONS
       0.1454490  0.00000000  0.00000000  0.00000000  0.00000000  1.00000000
 
 
-$Elements supported
-
-$Na Mg Al Si P S Cl Ar 

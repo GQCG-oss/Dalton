@@ -1,3 +1,21 @@
+$cc-pVQZ-DK
+
+$Elements supported
+$ H He B C N O F Ne Al Si P S Cl Ar Ga Ge As Se Br Kr
+$
+$  REFERENCE
+$Elements                             References    
+$--------                             ----------    
+$ H     : T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).
+$ He    : D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 100, 2975 (1994).
+$ B - Ne: T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).
+$Al - Ar: D.E. Woon and T.H. Dunning, Jr.  J. Chem. Phys. 98, 1358 (1993).
+$Ga - Kr: A.K. Wilson, D.E. Woon, K.A. Peterson, T.H. Dunning, Jr.,
+$         J. Chem. Phys., 110, 7667 (1999).         
+$**               
+$Recontraction for use in Douglas-Kroll calculations:
+$W.A. de Jong, to be published.
+$     
 $  REFERENCE
 a 1
 $ HYDROGEN     (6s,3p,2d,1f) -> [4s,3p,2d,1f]                    
@@ -1041,5 +1059,3 @@ $ G-TYPE FUNCTIONS
     1    1    0
      0.739500000  1.00000000
 
-$Elements supported
-$ H He B C N O F Ne Al Si P S Cl Ar Ga Ge As Se Br Kr

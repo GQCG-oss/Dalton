@@ -1,4 +1,7 @@
-$cc-pVDZ_DK
+$cc-pVDZ-DK
+
+$Elements supported
+$ H He B C N O F Ne Al Si P S Cl Ar Ga Ge As Se Br Kr
 $  REFERENCE
 $Elements                             References                                
 $--------                             ----------                                
@@ -575,6 +578,3 @@ $ D-TYPE FUNCTIONS
       1.50752400  0.26061690  0.00000000
      0.503000000  0.00000000  1.00000000
 
-$Elements supported
- 
-$ H He B C N O F Ne Al Si P S Cl Ar Ga Ge As Se Br Kr
