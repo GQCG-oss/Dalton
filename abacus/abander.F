@@ -306,6 +306,7 @@ C     *******************************************************
 #include <priunit.h>
 #include <maxorb.h>
 C
+      PARAMETER (D0 = 0.0D0)
 #include <inforb.h>
 #include <gnrinf.h>
 #include <dftcom.h>
@@ -329,7 +330,7 @@ C
      &   (DMP2.AND..NOT.MCSCF) .OR. (DFTRUN.AND.NASHT.GT.0)) THEN
          NAORDR = 0
       ELSE IF (CCSD .OR. CCS .OR. CC2 .OR. MP2 .OR.
-     &         CCPT .OR. (DFTRUN .AND. NSYM.GT.1)) THEN
+     &         CCPT .OR. (DFTRUN .AND. (NSYM.GT.1.OR.HFXMU.NE.D0))) THEN
          NAORDR = 1
       ELSE
          NAORDR = 2

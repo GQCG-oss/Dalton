@@ -52,15 +52,8 @@ C
 #include <inforb.h>
       CHARACTER*4 KEY
       LOGICAL FOUND 
-C#include <ccom.h>
-C#include <symmet.h>
-C#include <symind.h>
-C#include <dftcom.h>
-C#include <cbires.h>
-C#include <dummy.h>
-C#include <abainf.h>
+#include <dftcom.h>
 #include "dftmolhes.h"
-C#include <inflin.h>
 C
       EXTERNAL DFTSTATHES
       LOGICAL DFT_ISGGA, DOKAPPA
@@ -69,6 +62,7 @@ C
       DOGGA = DFT_ISGGA()
       IF (IPRINT .GE. 5) CALL TITLER('Output from DFTMOLHES','*',103)
 C     
+      IF (HFXMU.NE.D0) CALL QUIT('DFTHES not implemented for CAMB3LYP.')
       KCMO   = 1 
       KDMAT  = KCMO   + NCMOT
       KV1MAT = KDMAT  + N2BASX
