@@ -768,11 +768,13 @@ C
          IF (WORD .EQ. 'NUCSHI ' .OR. WORD .EQ. 'NSTCGO ') THEN
             IOFF = 0
             DO 40 IATOM = 1, NUCDEP
-               DO 50 IDIR = 1, 3
-                  IOFF = IOFF + 1
-                  WRITE (LUPRI,1000) NAMDPX(IOFF),
-     &                 (WORK(KIVEC + IOFF + I*NROW - 1), I = 0, 2)
- 50            CONTINUE
+               WRITE (LUPRI,1000) NAMDEP(IOFF + 1),'x',
+     &               (WORK(KIVEC + IOFF + I*NROW    ), I = 0, 2)
+               WRITE (LUPRI,1000) NAMDEP(IOFF + 2),'y',
+     &               (WORK(KIVEC + IOFF + I*NROW + 1), I = 0, 2)
+               WRITE (LUPRI,1000) NAMDEP(IOFF + 1),'z',
+     &               (WORK(KIVEC + IOFF + I*NROW + 2), I = 0, 2)
+               IOFF = IOFF + 3
                WRITE (LUPRI,'()')
  40         CONTINUE
          END IF
@@ -793,7 +795,7 @@ C
       END IF
       CALL QEXIT('MAGAVE')
       RETURN
- 1000 FORMAT (1X,A6,F17.10,2F24.10)
+ 1000 FORMAT (1X,A6,1X,A1,' :',F17.10,2F24.10)
       END
 C  /* Deck get1pr */
       SUBROUTINE GET1PR(SINTMA,WORD,NCOMP,MTFORM,TRIMAT,WORK,LWORK,
@@ -2171,7 +2173,7 @@ cLig >> added include mxcent abainf and sigma
 cLig <<
       PARAMETER (FACTOR = 1.D6*ALPHA2)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0)
-      CHARACTER NAME*6, NAMEX(3)*6, SGN*3
+      CHARACTER NAME*6, NAMEX(3)*8, SGN*3
       INTEGER Z
       DIMENSION TMAT(3,3), DMAT(3,3), PMAT(3,3), SYM(3,3), ANTI(3,3),
      &          AXES(3,3), PVAL(6), WRK(3), IWRK(3), ABSP(3)
@@ -2279,36 +2281,36 @@ cLig <<
       CALL HEADER('Total shielding tensor (ppm):',1)
 csonia 04/10/95
       IF (LUCME.GT.0) THEN
-         WRITE (LUCME,'(A,A)') 'Chemical shielding for ',NAME
-         WRITE (LUCME,'(A)') 'Total shielding tensor (ppm):'
+         WRITE (LUCME,'(2A)') 'Chemical shielding for ',NAME
+         WRITE (LUCME,'(A)')  'Total shielding tensor (ppm):'
       END IF
 csonia 04/10/95
-      WRITE (LUPRI,'(18X,3(A,13X),/)') 'Bx', 'By', 'Bz'
+      WRITE (LUPRI,'(20X,3(A,13X),/)') 'Bx', 'By', 'Bz'
       DO 400 ICOOR = 1, 3
-         WRITE (LUPRI,'(2X,A6,3F15.8)')
+         WRITE (LUPRI,'(2X,A8,3F15.8)')
      &          NAMEX(ICOOR), (TMAT(K,ICOOR),K=1,3)
 csonia 04/10/95
-         IF (LUCME.GT.0) WRITE (LUCME,'(2X,A6,3D23.15)')
+         IF (LUCME.GT.0) WRITE (LUCME,'(2X,A8,1P,3D23.15)')
      &          NAMEX(ICOOR), (TMAT(K,ICOOR),K=1,3)
 csonia 04/10/95
   400 CONTINUE
 C
       CALL HEADER('Diamagnetic and paramagnetic contributions (ppm):',1)
-      WRITE (LUPRI,'(15X,3(A,9X),4X,3(A,9X),/)')
+      WRITE (LUPRI,'(17X,3(A,9X),3X,3(A,9X),/)')
      &    'Bx', 'By', 'Bz', 'Bx','By','Bz'
       DO 500 ICOOR = 1, 3
-         WRITE (LUPRI,'(2X,A6,3F11.4,4X,3F11.4)') NAMEX(ICOOR),
+         WRITE (LUPRI,'(2X,A8,3F11.4,3X,3F11.4)') NAMEX(ICOOR),
      &         (DMAT(K,ICOOR),K=1,3), (PMAT(K,ICOOR),K=1,3)
   500 CONTINUE
-      WRITE (LUPRI,'(/,1X,A,F14.6,8X,A,F14.6)')
+      WRITE (LUPRI,'(/1X,A,F14.6,8X,A,F14.6)')
      &          ' Diamagnetic contribution:',AVEDIA,
      &          ' Paramagnetic: ',AVEPAR
       CALL HEADER
      &   ('Antisymmetric and traceless symmetric parts (ppm):',1)
-      WRITE (LUPRI,'(15X,3(A,9X),4X,3(A,9X),/)')
+      WRITE (LUPRI,'(17X,3(A,9X),3X,3(A,9X),/)')
      &    'Bx', 'By', 'Bz', 'Bx','By','Bz'
       DO 600 ICOOR = 1, 3
-         WRITE (LUPRI,'(2X,A6,3F11.4,4X,3F11.4)') NAMEX(ICOOR),
+         WRITE (LUPRI,'(2X,A8,3F11.4,3X,3F11.4)') NAMEX(ICOOR),
      &         (ANTI(K,ICOOR),K=1,3), (SYM(K,ICOOR),K=1,3)
   600 CONTINUE
       CALL HEADER('Principal values and axes:',1)
@@ -2318,8 +2320,8 @@ C
          ELSE
             SGN = '  -'
          END IF
-         WRITE (LUPRI,'(2X,A,I1,2X,F12.6,A,F8.2,A,F7.2,A,3X,3F10.6)')
-     &      NAME,I,PVAL(I) + AVETOT,'  =',AVETOT,SGN,
+         WRITE (LUPRI,'(2X,A,2X,F12.6,A,F8.2,A,F7.2,A,3X,3F10.6)')
+     &      NAME,PVAL(I) + AVETOT,'  =',AVETOT,SGN,
      &      ABS(PVAL(I)),':', (AXES(J,I),J=1,3)
   700 CONTINUE
       RETURN
@@ -2536,17 +2538,17 @@ C
                CALL HEADER('FC contribution to spin-spin couplings',-1)
             END IF
             CALL HEADER('Isotropic couplings',-1)
-            CALL PRIDIS(NAMDPX,AVEISO(1,ITYP),NUCDEP)
+            CALL PRIDIS(NAMDEP,AVEISO(1,ITYP),NUCDEP)
             IF (ISPPRI .GT. 10 .AND. ITYP .EQ. 1) THEN
                CALL HEADER('Anisotropic couplings',-1)
-               CALL PRIDIS(NAMDPX,ANISO(1),NUCDEP)
+               CALL PRIDIS(NAMDEP,ANISO(1),NUCDEP)
                IF (ITYP .GT. 2) THEN
                   CALL HEADER('Asymmetric part of couplings',-1)
-                  CALL PRIDIS(NAMDPX,ASYM(1),NUCDEP)
+                  CALL PRIDIS(NAMDEP,ASYM(1),NUCDEP)
                   CALL HEADER('S-parameter of couplings',-1)
-                  CALL PRIDIS(NAMDPX,APAR(1),NUCDEP)
+                  CALL PRIDIS(NAMDEP,APAR(1),NUCDEP)
                   CALL HEADER('A-parameter of couplings',-1)
-                  CALL PRIDIS(NAMDPX,SPAR(1),NUCDEP)
+                  CALL PRIDIS(NAMDEP,SPAR(1),NUCDEP)
                END IF
             END IF
  70      CONTINUE
@@ -2709,17 +2711,17 @@ C
                CALL HEADER('FC contribution to spin-spin couplings',-1)
             END IF
             CALL HEADER('Isotropic couplings',-1)
-            CALL PRIDIS(NAMDPX,AVEISO(1,ITYP),NUCDEP)
+            CALL PRIDIS(NAMDEP,AVEISO(1,ITYP),NUCDEP)
             IF (ISPPRI .GT. 10 .AND. ITYP .EQ. 1) THEN
                CALL HEADER('Anisotropic couplings',-1)
-               CALL PRIDIS(NAMDPX,ANISO(1),NUCDEP)
+               CALL PRIDIS(NAMDEP,ANISO(1),NUCDEP)
                IF (ITYP .GT. 2) THEN
                   CALL HEADER('Asymmetric part of couplings',-1)
-                  CALL PRIDIS(NAMDPX,ASYM(1),NUCDEP)
+                  CALL PRIDIS(NAMDEP,ASYM(1),NUCDEP)
                   CALL HEADER('S-parameter of couplings',-1)
-                  CALL PRIDIS(NAMDPX,APAR(1),NUCDEP)
+                  CALL PRIDIS(NAMDEP,APAR(1),NUCDEP)
                   CALL HEADER('A-parameter of couplings',-1)
-                  CALL PRIDIS(NAMDPX,SPAR(1),NUCDEP)
+                  CALL PRIDIS(NAMDEP,SPAR(1),NUCDEP)
                END IF
             END IF
  70      CONTINUE

@@ -33,18 +33,11 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef UNDEF
-===========================================================================
-/* Comdeck geoana_log */
-950505-hjaaj:
- RADIUS: bug fix - made function double precision instead of real
-         (real values would not always be read correctly by geoan1)
-942508-kr: As P.Taylor pointed out, IPRINT never used, and thus removed from
-CBIANA.
-900207-hjaaj: check for non-existent atoms for .ANGLES and .DIHEDR
-in GEOANA.
-Idea: make angle output as in zmat???
-===========================================================================
+#ifdef REV_LOG
+c===========================================================================
+c942508-kr: As P.Taylor pointed out, IPRINT never used, and thus removed from
+cCBIANA.
+c===========================================================================
 #endif
 C  /* Deck anainp */
       SUBROUTINE ANAINP(WORD)
@@ -224,12 +217,14 @@ C
 #include <mxcent.h>
 #include <maxorb.h>
 #include <codata.h>
+#include <facang.h>
       PARAMETER (MAXANG = 20)
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, RADTDG = 180.D0/PI)
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       LOGICAL SKIP, DIF, PRINT, PUNCH
       COMMON /CBIANA/ IANG(3,MAXANG),IDIHED(4,MAXANG),NANG,NDIHED,
      *                SKIP
 C
+#include <gnrinf.h>
 #include <inftap.h>
 #include <nuclei.h>
 #include <symmet.h>
@@ -240,14 +235,9 @@ C
       DIMENSION VEC(3,NUCDEP,NUCDEP), DIST2(NUCDEP,NUCDEP), 
      &          IPAIRS(2,NUCDEP*NUCDEP)
       LOGICAL   BONDED(NUCDEP,NUCDEP)
-      CHARACTER*4 NUCNAM(4)
+      CHARACTER*6 NUCNAM(4)
       SAVE DIST, ANGLE, DIHED
-#if defined (SYS_CONVEX) || defined (SYS_HAL)
-      ARCCOS(ARG) = ACOSD(ARG)
-#else
-#include <facang.h>
       ARCCOS(ARG) = FACANG*ACOS(ARG)
-#endif
 #include <ibtfun.h>
       IPAK(I,J) = MAX(I,J)*(MAX(I,J)-1)/2 + MIN(I,J)
 C
@@ -292,6 +282,9 @@ C                       ... next IATOMA, only IATOMB .le. IATOMA needed
 C
 C     set up distance matrix
 C
+      DISTMX = D0
+      IDISTMX = 0
+      JDISTMX = 0
       IJ = 0
       DO 400 I = 1,NUCDEP
          DO 300 J = 1,I
@@ -301,27 +294,48 @@ C
             DISTAN = SQRT(DISTAN)
             DIST2(I,J) = DISTAN
             DIST2(J,I) = DISTAN
-            IF (DIF) THEN
-               DIST(IJ) = DISTAN - DIST(IJ)
-            ELSE
+            IF (.NOT.DIF) THEN
                DIST(IJ) = DISTAN
+            ELSE
+               DIST(IJ) = DISTAN - DIST(IJ)
+            END IF
+            IF (ABS(DIST(IJ)) .GT. DISTMX) THEN
+               DISTMX  = DIST(IJ)
+               IDISTMX = I
+               JDISTMX = J
             END IF
   300    CONTINUE
   400 CONTINUE
 C
       IF (PRINT) THEN
-         IF (DIF) THEN
-            CALL HEADER
+         IF (NUCDEP .LE. 12*(IPRUSR+1)) THEN
+Chjaaj Oct 2003: this output is only useful for small molecules ...
+            IF (DIF) THEN
+               CALL HEADER
      *        ('Differential interatomic separations (in Angstroms):',2)
-         ELSE
-            CALL HEADER('Interatomic separations (in Angstroms):',2)
+            ELSE
+               CALL HEADER('Interatomic separations (in Angstroms):',2)
+            END IF
+         CALL PRIDIS(NAMDEP,DIST,NUCDEP)
          END IF
-         CALL PRIDIS(NAMDPX,DIST,NUCDEP)
+         IF (DIF) THEN
+            WRITE(LUPRI,'(/A,F12.6,A/5A)')
+     &         '  Max differential change in interatomic separation is',
+     &         DISTMX,' Angstroms','  between atoms ',
+     &         NAMDEP(IDISTMX),' and ',NAMDEP(JDISTMX),'.'
+         ELSE
+            WRITE(LUPRI,'(/A,F10.4,A/5A)')
+     &         '  Max interatomic separation is',
+     &         DISTMX,' Angstroms','  between atoms ',
+     &         NAMDEP(IDISTMX),' and ',NAMDEP(JDISTMX),'.'
+         END IF
       END IF
 C
-      DO 10, J= 1,NUCDEP
+      IF (PRINT .AND. .NOT. DIF) THEN
+
+         DO 10 J= 1,NUCDEP
          RADJ = RADIUS(ICHARG(J))
-         DO 20, I= 1, J-1
+         DO 20 I= 1, J-1
             RADI = RADIUS(ICHARG(I))
             IF (RADI .LT. 0 .OR. RADJ .LT. 0) THEN
                IF (ICHARG(I).NE.0 .AND. ICHARG(J).NE.0) WRITE(LUPRI,*)
@@ -341,20 +355,19 @@ C
             END IF
  20      CONTINUE
          BONDED(J,J) = .FALSE.
- 10   CONTINUE
+ 10      CONTINUE
 C
-      IF (PRINT .AND. .NOT. DIF) THEN
          CALL HEADER('Bond distances (angstroms):',1)
-         WRITE (LUPRI,'(14X,A/14X,A)')
-     $     '    atom 1     atom 2                           distance',
-     $     '    ------     ------                           --------'
-         DO 500, I = 1, NUCDEP
-            DO 510, J = 1, I-1
+         WRITE (LUPRI,'(18X,A/18X,A)')
+     $     'atom 1     atom 2       distance',
+     $     '------     ------       --------'
+         DO 500 I = 1, NUCDEP
+            DO 510 J = 1, I-1
                IF (BONDED(I,J)) THEN
-                  NUCNAM(1) = NAMDPX(3*I)(1:4)
-                  NUCNAM(2) = NAMDPX(3*J)(1:4)
-                  WRITE(LUPRI,'(2X,A,4X,A4,7X,A4,22X,F13.6)')
-     $                 'bond distance:',
+                  NUCNAM(1) = NAMDEP(I)
+                  NUCNAM(2) = NAMDEP(J)
+                  WRITE(LUPRI,'(A,2X,A6,5X,A6,F15.6)')
+     $                 '  bond distance:',
      &                  NUCNAM(1), NUCNAM(2), DIST2(I,J)
                END IF
  510        CONTINUE
@@ -362,9 +375,9 @@ C
 C
       IF (NUCDEP .GT. 2 .AND. NANG .LE. 0) THEN
          CALL HEADER('Bond angles (degrees):',1)
-         WRITE (LUPRI,'(14X,A/14X,A)')
-     $   '    atom 1     atom 2     atom 3                   angle',
-     $   '    ------     ------     ------                   -----'
+         WRITE (LUPRI,'(18X,A/18X,A)')
+     $   'atom 1     atom 2     atom 3         angle',
+     $   '------     ------     ------         -----'
 C
          IJK = 0
          DO 40, I= 1,NUCDEP
@@ -372,13 +385,13 @@ C
                DO 60, K= J + 1, NUCDEP
                   IF (BONDED(I,J) .AND. BONDED(I,K)) THEN
                      IJK = IJK + 1
-                     NUCNAM(1) = NAMDPX(3*J)(1:4)
-                     NUCNAM(2) = NAMDPX(3*I)(1:4)
-                     NUCNAM(3) = NAMDPX(3*K)(1:4)
+                     NUCNAM(1) = NAMDEP(J)
+                     NUCNAM(2) = NAMDEP(I)
+                     NUCNAM(3) = NAMDEP(K)
                      ANG = VECANG(VEC(1,I,J),VEC(1,I,K))
-                     ANG = ANG*RADTDG
-                     WRITE(LUPRI,'(2X,A,7X, A4,7X, A4,7X,A4,11X,F13.3)')
-     *                  'bond angle:',NUCNAM(1),NUCNAM(2),NUCNAM(3),ANG
+                     ANG = ANG*FACANG
+                     WRITE(LUPRI,'(A,5X,A6,5X,A6,5X,A6,F14.3)')
+     *                 '  bond angle:',NUCNAM(1),NUCNAM(2),NUCNAM(3),ANG
                   END IF
  60            CONTINUE
  50         CONTINUE
@@ -401,7 +414,7 @@ C
       IF (NANG .GT. 0) THEN
          IF (PRINT) THEN
             CALL HEADER('Angles according to input list:',2)
-            WRITE (LUPRI,'(/A/A)')
+            WRITE (LUPRI,'(A/A)')
      *       '    atom 1     atom 2     atom 3         angle (degrees)',
      *       '    ------     ------     ------         ---------------'
          END IF
@@ -415,31 +428,31 @@ C
      &            ' *GEOANA input error for .ANGLES: non-existent atom'
                GO TO 1000
             END IF
-            NUCNAM(1) = NAMDPX(3*I1)(1:4)
-            NUCNAM(2) = NAMDPX(3*I2)(1:4)
-            NUCNAM(3) = NAMDPX(3*I3)(1:4)
+            NUCNAM(1) = NAMDEP(I1)
+            NUCNAM(2) = NAMDEP(I2)
+            NUCNAM(3) = NAMDEP(I3)
             IF (I1 .NE. I2 .AND. I2 .NE. I3) THEN
                ANG = VECANG(VEC(1,I2,I1),VEC(1,I2,I3))
-               ANG = ANG*RADTDG
-               IF (DIF) THEN
-                  ANGLE(I) = ANG - ANGLE(I)
-               ELSE
+               ANG = ANG*FACANG
+               IF (.NOT.DIF) THEN
                   ANGLE(I) = ANG
+               ELSE
+                  ANGLE(I) = ANG - ANGLE(I)
                END IF
-               IF (PRINT) WRITE (LUPRI,'(5X,A4,7X,A4,7X,A4,F20.3)')
+               IF (PRINT) WRITE (LUPRI,'(4X,A6,5X,A6,5X,A6,F20.3)')
      *            NUCNAM(1),NUCNAM(2),NUCNAM(3),ANGLE(I)
             ELSE
-               IF (PRINT) WRITE (LUPRI,'(5X,A4,7X,A4,7X,A4,10X,A)')
+               IF (PRINT) WRITE (LUPRI,'(4X,A6,5X,A6,5X,A6,10X,A)')
      *            NUCNAM(1),NUCNAM(2),NUCNAM(3),'undefined'
             END IF
  1000    CONTINUE
       END IF
 C
       IF (NDIHED .GT. 0) THEN
-          IF (PRINT) WRITE (LUPRI,'(//A,A/A,A)')
-     *       '    atom 1     atom 2     atom 3     atom 4',
+          IF (PRINT) WRITE (LUPRI,'(//A/A)')
+     *       '    atom 1     atom 2     atom 3     atom 4'//
      *       '    dihedral angle (degrees)',
-     *       '    ------     ------     ------     ------',
+     *       '    ------     ------     ------     ------'//
      *       '    ------------------------'
          DO 2000 I = 1,NDIHED
             I1 = IDIHED(1,I)
@@ -452,10 +465,10 @@ C
      &            ' *GEOANA input error for .DIHEDR: non-existent atom'
                GO TO 2000
             END IF
-            NUCNAM(1) = NAMDPX(3*I1)(1:4)
-            NUCNAM(2) = NAMDPX(3*I2)(1:4)
-            NUCNAM(3) = NAMDPX(3*I3)(1:4)
-            NUCNAM(4) = NAMDPX(3*I4)(1:4)
+            NUCNAM(1) = NAMDEP(I1)
+            NUCNAM(2) = NAMDEP(I2)
+            NUCNAM(3) = NAMDEP(I3)
+            NUCNAM(4) = NAMDEP(I4)
             X1 = VEC(2,I2,I1)*VEC(3,I2,I3) - VEC(2,I2,I3)*VEC(3,I2,I1)
             X2 = VEC(3,I2,I1)*VEC(1,I2,I3) - VEC(3,I2,I3)*VEC(1,I2,I1)
             X3 = VEC(1,I2,I1)*VEC(2,I2,I3) - VEC(1,I2,I3)*VEC(2,I2,I1)
@@ -473,15 +486,15 @@ C
                ANG = ANG / SQRT(DDD)
                IF (ABS(ANG) .GT. D1) ANG = SIGN(D1,ANG)
                ANG = SENSE*ARCCOS(ANG)
-               IF (DIF) THEN
-                  DIHED(I) = ANG - DIHED(I)
-               ELSE
+               IF (.NOT.DIF) THEN
                   DIHED(I) = ANG
+               ELSE
+                  DIHED(I) = ANG - DIHED(I)
                END IF
-               IF (PRINT) WRITE(LUPRI,'(5X,A4,7X,A4,7X,A4,7X,A4,F20.3)')
+               IF (PRINT) WRITE(LUPRI,'(4X,A6,5X,A6,5X,A6,5X,A6,F20.3)')
      *            NUCNAM(1),NUCNAM(2),NUCNAM(3),NUCNAM(4),DIHED(I)
             ELSE
-               IF (PRINT) WRITE(LUPRI,'(5X,A4,7X,A4,7X,A4,7X,A4,10X,A)')
+               IF (PRINT) WRITE(LUPRI,'(4X,A6,5X,A6,5X,A6,5X,A6,10X,A)')
      *            NUCNAM(1),NUCNAM(2),NUCNAM(3),NUCNAM(4),'undefined'
             END IF
  2000    CONTINUE
@@ -494,51 +507,45 @@ C
  8030 FORMAT(7(I4,I4,2X),:,' >')
       END
 C  /* Deck pridis */
-      SUBROUTINE PRIDIS (NAMEX,MATRIX,NROW)
+      SUBROUTINE PRIDIS (NAMDEP,DISMAT,NROW)
 C
 C 30-Jun-1985 Hans Jorgen Aa. Jensen
 C (based on OUTPAK by Nelson H.F. Beebe)
 C
-C Print bond distance matrix
+C Print bond distance matrix (or other matrix over atoms)
 C
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER (ZERO=0.D00, KCOL=6)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL)
-      REAL MATRIX(*)
-#else
-      DOUBLE PRECISION MATRIX(*)
-#endif
+      PARAMETER (KCOL=6)
+      CHARACTER*6 NAMDEP(*)
+      DIMENSION DISMAT(*)
       INTEGER BEGIN
-      CHARACTER*6 NAMEX(*)
 C
       LAST = MIN(NROW,KCOL)
-      NCOL = 1
       BEGIN = 1
  1050 NCOL = 1
-      WRITE (LUPRI,1000) (NAMEX(3*I)(1:4),I = BEGIN,LAST)
-      WRITE (LUPRI,'()')
+      WRITE (LUPRI,1000) (NAMDEP(I),I = BEGIN,LAST)
+      WRITE (LUPRI,1000) ('------' ,I = BEGIN,LAST)
       DO 40 K = BEGIN,NROW
          KTOTAL = (K*(K-1))/2 + BEGIN - 1
-         WRITE (LUPRI,2000) ' ',NAMEX(3*K)(1:4),
-     *      (MATRIX(KTOTAL+J),J = 1,NCOL)
+         WRITE (LUPRI,2000) NAMDEP(K),
+     *      (DISMAT(KTOTAL+J),J = 1,NCOL)
          IF (K .LT. (BEGIN+KCOL-1)) NCOL = NCOL + 1
    40 CONTINUE
       WRITE (LUPRI,'()')
       LAST = MIN(LAST+KCOL,NROW)
       BEGIN = BEGIN+NCOL
       IF (BEGIN.LE.NROW) GO TO 1050
-      WRITE (LUPRI,'()')
       RETURN
- 1000 FORMAT (8X,6(4X,A4,4X),(4X,A4,4X))
- 2000 FORMAT (A1,2X,A4,6F12.6)
+ 1000 FORMAT (8X,6(4X,A6,2X))
+ 2000 FORMAT (1X,A6,':',6F12.6)
       END
 C  /* Deck radius */
       FUNCTION RADIUS(NCHARGE)
 #include <implicit.h>
 #include <priunit.h>
-C     based on covalent radii and metallic radii. Returns -1 where
-C     data is inavailable
+C     Based on covalent radii and metallic radii in Angstrom.
+C     Returns -1 where data is inavailable
       DIMENSION RAD(100)
       DATA (RAD(I), I = 1, 100)/
      &        30.,  155.,  160.,  110.,
@@ -578,7 +585,8 @@ C  /* Deck vdwrad */
       FUNCTION VDWRAD(NCHARGE)
 #include <implicit.h>
 #include <priunit.h>
-C     based on van der Waals radii. Returns -1 where data is inavailable
+C     Based on van der Waals radii in Angstrom.
+C     Returns -1 where data is inavailable
       DIMENSION RAD(100)
       DATA (RAD(I), I = 1, 100)/
      &       110.,  220.,  122.,   63.,

@@ -33,12 +33,6 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef UNDEF
-/* Comdeck notes */
-===========================================================================
-950501-hjaaj: added CMMASS and VIBMAS
-===========================================================================
-#endif
 C  /* Deck zergrd */
       SUBROUTINE ZERGRD
 #include <implicit.h>
@@ -1341,8 +1335,8 @@ C  /* Deck pr2der */
       BEGIN= BEGIN+NCOL
       IF (BEGIN.LE.NROW) GO TO 51
       RETURN
- 1000 FORMAT (8X,6(3X,A6,3X),(3X,A6,3X))
- 2000 FORMAT (1X,A6,6F12.6)
+ 1000 FORMAT (10X,6(2X,A8,2X),(2X,A8,2X))
+ 2000 FORMAT (1X,A8,6F12.6)
       END
 C  /* Deck fcpri */
       SUBROUTINE FCPRI(AMAT,KEY,CSTRA,SCTRA)
@@ -1455,7 +1449,7 @@ C
          WRITE (LUPRI,'(/,23X,3(A,13X),/)')
      &               FIELD//'x', FIELD//'y', FIELD//'z'
          DO 400 ICOOR = 1, 3*NUCDEP
-            WRITE (LUPRI,'(8X,A6,3F15.8)') NAMDPX(ICOOR),
+            WRITE (LUPRI,'(6X,A8,3F15.8)') NAMDPX(ICOOR),
      &                              (FACTOR*CMAT(K,ICOOR),K=1,3)
             IF (MOD(ICOOR,3) .EQ. 0) WRITE (LUPRI,'()')
  400     CONTINUE
@@ -1604,8 +1598,8 @@ C
       ORIGIN(3) = ORIGIN(3)/TOTMAS
       IF (IPRINT .GE. 0) THEN
         WRITE (LUPRI,'(/23X,A,F12.6,A)') 'Total mass: ',TOTMAS,' amu'
-        WRITE (LUPRI,'( 23X,A,F8.3,A/)') 'Natural abundance:',ABUND,' %'
-        WRITE(LUPRI,'(//A,3F12.6)')
+        WRITE (LUPRI,'( 23X,A,F8.3,A)')  'Natural abundance:',ABUND,' %'
+        WRITE (LUPRI,'(/A,3F12.6)')
      &     ' Center-of-mass coordinates (A):',(ORIGIN(K),K=1,3)
       END IF
       RETURN

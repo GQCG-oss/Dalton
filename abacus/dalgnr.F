@@ -474,6 +474,7 @@ C
       CALL SIRINI
 C
       WRINDX = .TRUE.
+c     HJAAJ sep 2003: I think the next two lines are the wrong place ...
       IF (LUORDA .GT. 0) CALL DARMOV(LUORDA)
       IF (LUMINT .GT. 0) CALL DARMOV(LUMINT)
       CALL SIRCTL(ICONV,WORK(IWOFF+2),LMWORK)
@@ -597,7 +598,7 @@ C  /* Deck exedrv */
 #include <taymol.h>
       DIMENSION WORK(LMWORK), CORBKP(3*MXCENT)
       LOGICAL NEWWLK, EX
-      CHARACTER FILENM*12, WORD*7, NAVN*6
+      CHARACTER FILENM*12, WORD*7
       IWOFF = 0
       CALL QENTER('DALTON')
       CALL GETTIM(CSTR,WSTR)
@@ -646,22 +647,21 @@ C
                NUCDEP = NUCDEP + 1
                NATOMS = NATOMS + 1
                NCNTCV = NUCIND
-               NAVN(1:4) = 'cav '
                NCLINE(NUCIND) = 0
-               NAMEX(3*NUCIND)     = NAVN(1:4)//' z'
-               NAMEX(3*NUCIND - 1) = NAVN(1:4)//' y'
-               NAMEX(3*NUCIND - 2) = NAVN(1:4)//' x'
-               NAMDEP(NUCDEP)     = NAMEX(3*NUCIND)(1:4)//'  '
-               NAMDPX(3*NUCDEP-2) = NAMEX(3*NUCIND-2)
-               NAMDPX(3*NUCDEP-1) = NAMEX(3*NUCIND-1)
-               NAMDPX(3*NUCDEP  ) = NAMEX(3*NUCIND  )
+               NAMN(NUCIND)       = 'cav '
+               NAMEX(3*NUCIND-2)  = 'cav  x'
+               NAMEX(3*NUCIND-1)  = 'cav  y'
+               NAMEX(3*NUCIND)    = 'cav  z'
+               NAMDEP(NUCDEP)     = 'cavity'
+               NAMDPX(3*NUCDEP-2) = 'cavity x'
+               NAMDPX(3*NUCDEP-1) = 'cavity y'
+               NAMDPX(3*NUCDEP  ) = 'cavity z'
                IF (NUCDEP .GT. MXCENT) THEN
                   WRITE (LUPRI,'(//2A,/A,I5)')
      &         ' Too many atomic centers: MXCENT exceed in READIN for',
      &         ' solvent cavity,',' Current limit:',MXCENT
                   CALL QUIT('*** ERROR *** MXCENT exceeded in READIN')
                END IF
-               READ (NAVN,'(A4)') NAMN(NUCIND)
                CORD(1,NUCIND) = D0
                CORD(2,NUCIND) = D0
                CORD(3,NUCIND) = D0
@@ -912,22 +912,21 @@ C
             NUCDEP = NUCDEP + 1
             NATOMS = NATOMS + 1
             NCNTCV = NUCIND
-            NAVN(1:4) = 'cav '
             NCLINE(NUCIND) = 0
-            NAMEX(3*NUCIND)     = NAVN(1:4)//' z'
-            NAMEX(3*NUCIND - 1) = NAVN(1:4)//' y'
-            NAMEX(3*NUCIND - 2) = NAVN(1:4)//' x'
-            NAMDEP(NUCDEP)     = NAMEX(3*NUCIND)(1:4)//'  '
-            NAMDPX(3*NUCDEP-2) = NAMEX(3*NUCIND-2)
-            NAMDPX(3*NUCDEP-1) = NAMEX(3*NUCIND-1)
-            NAMDPX(3*NUCDEP  ) = NAMEX(3*NUCIND  )
+            NAMN(NUCIND)       = 'cav '
+            NAMEX(3*NUCIND-2)  = 'cav  x'
+            NAMEX(3*NUCIND-1)  = 'cav  y'
+            NAMEX(3*NUCIND)    = 'cav  z'
+            NAMDEP(NUCDEP)     = 'cavity'
+            NAMDPX(3*NUCDEP-2) = 'cavity x'
+            NAMDPX(3*NUCDEP-1) = 'cavity y'
+            NAMDPX(3*NUCDEP  ) = 'cavity z'
             IF (NUCDEP .GT. MXCENT) THEN
                WRITE (LUPRI,'(//2A,/A,I5)')
      &          ' Too many atomic centers: MXCENT exceed in READIN for',
      &          ' solvent cavity,',' Current limit:',MXCENT
                CALL QUIT('*** ERROR *** MXCENT exceeded in READIN')
             END IF
-            READ (NAVN,'(A4)') NAMN(NUCIND)
             CORD(1,NUCIND) = D0
             CORD(2,NUCIND) = D0
             CORD(3,NUCIND) = D0
@@ -1301,8 +1300,13 @@ C     ... default print level for statistics /hjaaj apr 2000
       END IF
 #endif
       CALL MOHEAD
-      IF (NEWTRA) WRITE(LUPRI,'(4X,A)')
-     &     'New integral transformation used'
+      IF (NEWTRA) THEN
+         WRITE(LUPRI,'(4X,A)')
+     &     '"New" integral transformation used'
+      ELSE
+         WRITE(LUPRI,'(4X,A)') '"Old" integral transformation used'//
+     &     ' (limited to max 255 basis functions)'
+      END IF
       IF (IVECLN .NE. 1) WRITE (LUPRI,'(4X,A,I5)')
      &     'Vector length used in this calculation (assuming vector'//
      &     'machine)',IVECLN

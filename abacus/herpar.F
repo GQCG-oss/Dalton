@@ -931,7 +931,6 @@ C
 #include <maxorb.h>
 #include <mtags.h>
       PARAMETER (D0 = 0.0D0)
-      CHARACTER*6 NAVN
       LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,FIRST
       DIMENSION WORK(*), ISYMDM(*), IFCTYP(*), JSTRSH(*), NPRIMS(*),
      &          NCONTS(*), IORBSH(*), JORBSH(*), KORBSH(*)
@@ -1093,22 +1092,21 @@ C
          NUCDEP = NUCDEP + 1
          NATOMS = NATOMS + 1
          NCNTCV = NUCIND
-         NAVN(1:4) = 'cav '
          NCLINE(NUCIND) = 0
-         NAMEX(3*NUCIND)     = NAVN(1:4)//' z'
-         NAMEX(3*NUCIND - 1) = NAVN(1:4)//' y'
-         NAMEX(3*NUCIND - 2) = NAVN(1:4)//' x'
-         NAMDEP(NUCDEP)     = NAMEX(3*NUCIND)(1:4)//'  '
-         NAMDPX(3*NUCDEP-2) = NAMEX(3*NUCIND-2)
-         NAMDPX(3*NUCDEP-1) = NAMEX(3*NUCIND-1)
-         NAMDPX(3*NUCDEP  ) = NAMEX(3*NUCIND  )
+         NAMN(NUCIND)       = 'cav '
+         NAMEX(3*NUCIND-2)  = 'cav  x'
+         NAMEX(3*NUCIND-1)  = 'cav  y'
+         NAMEX(3*NUCIND)    = 'cav  z'
+         NAMDEP(NUCDEP)     = 'cavity'
+         NAMDPX(3*NUCDEP-2) = 'cavity x'
+         NAMDPX(3*NUCDEP-1) = 'cavity y'
+         NAMDPX(3*NUCDEP  ) = 'cavity z'
          IF (NUCDEP .GT. MXCENT) THEN
             WRITE (LUPRI,'(//2A,/A,I5)')
      &         ' Too many atomic centers: MXCENT exceed in READIN for',
      &         ' solvent cavity,',' Current limit:',MXCENT
             CALL QUIT('*** ERROR *** MXCENT exceeded in READIN')
          END IF
-         READ (NAVN,'(A4)') NAMN(NUCIND)
          CORD(1,NUCIND) = D0
          CORD(2,NUCIND) = D0
          CORD(3,NUCIND) = D0

@@ -34,15 +34,10 @@ C
 #include <single.h>
 C
 #ifdef REVLOG
-===========================================================================
-Revision 1.2  2001/01/17 10:41:25  vebjornb
-Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
-
-961019-kruud: Added ROA changes from Gilbert Hangartner
-960417-hjaaj: Rudimentary initial implementation of .RESTART
-950601-vebjorn:
-  A flag for geometry convergence has been added in common block GNRINF.
-===========================================================================
+c961019-kruud: Added ROA changes from Gilbert Hangartner
+c960417-hjaaj: Rudimentary initial implementation of .RESTART
+c950601-vebjorn:
+c  A flag for geometry convergence has been added in common block GNRINF.
 #endif
 C  /* Deck wlkinp */
       SUBROUTINE WLKINP(WORD)
@@ -4145,7 +4140,7 @@ C
             DO IATOM = 1, NUCDEP
                WRITE (LUPRI,'(18X,3(A,13X),/)') 'Bx', 'By', 'Bz'
                DO ICOOR = 1, 3
-                  WRITE (LUPRI,'(2X,A6,3F15.8)')
+                  WRITE (LUPRI,'(2X,A,3F15.8)')
      &                 NAMDPX(3*(IATOM-1)+ICOOR), 
      &                 (SIGMA0(K,ICOOR,IATOM),K=1,3)
                END DO
@@ -4157,7 +4152,7 @@ C
             DO IATOM = 1, NUCDEP
                WRITE (LUPRI,'(18X,3(A,13X),/)') 'Bx', 'By', 'Bz'
                DO ICOOR = 1, 3
-                  WRITE (LUPRI,'(2X,A6,3F15.8)')
+                  WRITE (LUPRI,'(2X,A,3F15.8)')
      &                 NAMDPX(3*(IATOM-1)+ICOOR), 
      &                 (SRC0(K,ICOOR,IATOM),K=1,3)
                END DO
@@ -4180,7 +4175,7 @@ C
             WRITE (LUPRI,'(18X,3(A,13X),/)') 'XX', 'YY', 'ZZ'
             DO IATOM = 1, NUCDEP
                DO ICOOR = 1, 3
-                  WRITE (LUPRI,'(2X,A6,3F15.8)')
+                  WRITE (LUPRI,'(2X,A,3F15.8)')
      &                 NAMDPX(3*(IATOM-1)+ICOOR), 
      &                 (EFG0(K,ICOOR,IATOM),K=1,3)
                END DO
@@ -4241,7 +4236,7 @@ C
                DO IATOM = 1, NUCDEP
                   WRITE (LUPRI,'(18X,3(A,13X),/)') 'Bx', 'By', 'Bz'
                   DO ICOOR = 1, 3
-                     WRITE (LUPRI,'(2X,A6,3F15.8)')
+                     WRITE (LUPRI,'(2X,A,3F15.8)')
      &                    NAMDPX(3*(IATOM-1)+ICOOR), 
      &                    (TMAT(K,ICOOR,IATOM),K=1,3)
                   END DO
@@ -4253,7 +4248,7 @@ C
                DO IATOM = 1, NUCDEP
                   WRITE (LUPRI,'(18X,3(A,13X),/)') 'Bx', 'By', 'Bz'
                   DO ICOOR = 1, 3
-                     WRITE (LUPRI,'(2X,A6,3F15.8)')
+                     WRITE (LUPRI,'(2X,A,3F15.8)')
      &                    NAMDPX(3*(IATOM-1)+ICOOR), 
      &                    (GTRANT(K,ICOOR,IATOM),K=1,3)
                   END DO
@@ -4277,7 +4272,7 @@ C
                WRITE (LUPRI,'(18X,3(A,13X),/)') 'XX', 'YY', 'ZZ'
                DO IATOM = 1, NUCDEP
                   DO ICOOR = 1, 3
-                     WRITE (LUPRI,'(2X,A6,3F15.8)')
+                     WRITE (LUPRI,'(2X,A,3F15.8)')
      &                    NAMDPX(3*(IATOM-1)+ICOOR), 
      &                    (ELNQC(K,ICOOR,IATOM),K=1,3)
                   END DO
