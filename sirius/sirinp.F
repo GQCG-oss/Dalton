@@ -75,7 +75,7 @@ revision 1.2 2000/04/14 07:07:51 hjj
 2) changed many LUERR to LUPRI in SIRRDI
 =============================================================================
 960905-hjaaj
-RHFINP : new '.GRAM-S', old '.GRAM S' kept for compatibility
+SCFINP : new '.GRAM-S', old '.GRAM S' kept for compatibility
 951017 C*FM
 PRTINP : FM change format nb of determinantsi and CSF  info 
 Til Hans fra Hans Joergen, MANDAG 29. okt. har jeg aendret:
@@ -83,7 +83,7 @@ PRIINP : + .NOSUMM og .CANONI (for hvor egen skyld)
 GENINP : namlist til NMLSIR i stedet for INPUT (saa det er
          i overensstemmelse med manualen).
 901026-hjaaj:
--- indfoert common block SCBRHF options i SIRRDI, RHFINP
+-- indfoert common block SCBRHF options i SIRRDI, SCFINP
 -- OPTINP: FLAG(66) = .TRUE. when .DETERMINANTS
 -- indsat MOTECC-90 in-line documentation
 -- SIRRDI: check CORHOL calculations
@@ -510,7 +510,7 @@ C     ... do not converge to a specific state.
       MXCIMA = 20
       ICICNO = 0
 C
-C********** Default values section RHFINP *****
+C********** Default values section SCFINP *****
 C
       IOPRHF = 0
       DIRFCK = DIRCAL
@@ -534,7 +534,7 @@ C               ICHRG = ICHRGNU - (2*NISHT+NACTEL)
          AUTOCC = .FALSE.
       END IF
 C
-C********** Default value sections RHFINP and AUXINP *****
+C********** Default value sections SCFINP and AUXINP *****
 C           (default: use AOSUPMAT if available,
 C                     LUSUPM=-1 means do not use AOSUPMAT)
 C
@@ -1562,7 +1562,7 @@ C
 C  *GENERAL
 C  *HAMILTONIAN
 C  *OPTIMIZATION
-C  *HF INPUT                used to be *RHF CALCULATION
+C  *SCF INPUT               used to be *HF INPUT
 C  *MP2 INPUT               used to be *MP2 CALCULATION
 C  *CONFIGURATION INPUT     used to be *WAVE FUNCTION
 C  *CI INPUT                used to be *CI CALCULATION
@@ -1683,7 +1683,7 @@ C
 C
 C -- local variables and constants
 C
-      PARAMETER (NTBMOD = 21)
+      PARAMETER (NTBMOD = 22)
       CHARACTER WORD*7, PROMPT*1, PROMPX*2, TABMOD(NTBMOD)*7,
      *          REWORD*12, RWORD*7, TITLIN*80
       LOGICAL   ALLOPT, PTABMO
@@ -1697,7 +1697,7 @@ C
      *            '*CI VEC','*STEP C','*POPULA','*TRANSF','*SCF IN',
      *            '*UPDATE','*SOLVEN','*PRINT ','*AUXILL','*HF INP',
      *            '*MP2 IN','*HAMILT','*CC INP','*DFT IN','*NEVPT2',
-     *            '*END OF'/
+     *            '*DFT IN','*END OF'/
 C
 C
 C  ***************************************************
@@ -1716,7 +1716,7 @@ C
             IF (TABMOD(I) .EQ. WORD) THEN
                GO TO (1100,1200,1300,1400,1500,1600,1700,1800,1900,
      *                2500,2100,2200,2300,2400,2500,2600,2700,2800,
-     *                2500,2900,8000), I
+     *                2500,2900,3000,8000), I
             END IF
  920     CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 8000
@@ -1768,7 +1768,7 @@ C
        GO TO 910
  2400  CALL AUXINP(WORD,INPERR,ALLOPT)
        GO TO 910
- 2500  CALL RHFINP(WORD,INPERR,ALLOPT)
+ 2500  CALL SCFINP(WORD,INPERR,ALLOPT)
        GO TO 910
  2600  CALL MP2INP(WORD,INPERR,ALLOPT)
        GO TO 910
@@ -1782,6 +1782,8 @@ C
        END IF
        GOTO 910
  2900  CALL NEVPT2INP(WORD,INPERR,ALLOPT)
+       GO TO 910
+ 3000  CALL DFTINP(WORD,INPERR,ALLOPT)
        GO TO 910
 C  Here if "*END OF"
  8000  CONTINUE
@@ -1938,7 +1940,7 @@ C *** Option 5 >RESTAR< restart SIRIUS, LUIT1 must be available
         IREST = 1
       GO TO 100
 C
-C *** Option 6 >HARTRE<  Restricted, closed shell Hartree-Fock SCF
+C *** Option 6 >HARTRE<  Restricted Hartree-Fock SCF
   106 CONTINUE
          IF (.NOT.DORHF) THEN
 C           ... DORHF may also be set with .CC
@@ -2044,16 +2046,31 @@ C    Default: specified by integral program
        READ (LUCMD,*) (NBAS(I), I = 1,NSYM)
       GO TO 100
 C
-C *** Option 6 >HARTRE<  Restricted, closed shell Hartree-Fock SCF
+C *** Option 6 >DFT   <  Restricted Kohn-Sham DFT
   116 CONTINUE
-         IF (.NOT.DORHF) THEN
+         IF (DORHF) THEN
 C           ... DORHF may also be set with .CC
-            DODFT    = .TRUE.
-            DORHF    = .TRUE.
-            FLAG(21) = .TRUE.
-C           ... flag for QCHF -- quadratically convergent Hartree-Fock
-            NUMRUN = NUMRUN + 1
+            WRITE (LUPRI,*) 'Input error: both HF and DFT specified!'
+            INPERR = INPERR + 1
          END IF
+         DODFT    = .TRUE.
+         DORHF    = .TRUE.
+         FLAG(21) = .TRUE.
+C        ... flag for QCDFT -- quadratically convergent Hartree-Fock
+         NUMRUN = NUMRUN + 1
+ 1161    READ (LUCMD, '(A)') TITLIN
+         PROMPT = TITLIN(1:1)
+         IF (PROMPT .EQ. '#' .OR. PROMPT .EQ. '!') GO TO 1161
+         IF (PROMPT .EQ. '.' .OR. PROMPT .EQ. '*') THEN
+            INPERR = INPERR + 1
+            WRITE (LUPRI,'(/A/A//A)')
+     &      '--> Input error for line following .DFT',
+     &      '    expected functional specification but read:',
+     &      TITLIN
+            WORD = TITLIN(1:7)
+            GO TO 1101
+         END IF
+C TODO   CALL DFT_GETFUNC(TITLIN,INPERR)
       GO TO 100
 C
 C *** Option NEW NEVPT2
@@ -2325,8 +2342,8 @@ C
       END IF
       RETURN
       END
-C  /* Deck rhfinp */
-      SUBROUTINE RHFINP(WORD,INPERR,ALLOPT)
+C  /* Deck scfinp */
+      SUBROUTINE SCFINP(WORD,INPERR,ALLOPT)
 C
 C 8-May-1989 Hans Joergen Aa. Jensen
 C 13-May-1995 K.Ruud, added keyword .ELECTRONS.
@@ -2365,21 +2382,28 @@ C
       SAVE SET,ELECTR
       DATA SET,ELECTR /2*.FALSE./
 C
-      DATA TABLE /'.HF OCC','.THRESH','.FOCK I','.H1VIRT','.NOQCHF',
+      DATA TABLE /'.DOUBLY','.THRESH','.FOCK I','.H1VIRT','.NOQCSC',
      *            '.PRINT ','.OPEN S','.MAX MA','.MAX MI','.NONCAN',
      *            '.FROZEN','.DIRFOC','.NODIIS','.MAX DI','.C2DIIS',
-     *            '.MAX ER','.DDSCF ','.COREHO','.CORERE','XXXXXXX',
+     *            '.MAX ER','.DDSCF ','.COREHO','.CORERE','.HF OCC',
      *            '.ELECTR','.AUTOCC','.FC MVO','.HFXFAC','.LDA   ',
      *            '.BLYP  ','.B3LYP ','.FROMVX','.WAH   ','.DFTWEI',
      *            '.DFTAC ','.DFTHES','.DFTTHR','.DFTELS','.RADINT',
      *            '.ANGINT','.ANGMIN','.NOPRUN','.VWN3  ','.VWNT5 ',
      *            '.KT1   ','.KT2   '/
 C
-C     ***** PROCESS INPUT FOR RHFINP *****
+C     ***** PROCESS INPUT FOR SCFINP *****
 C
-      IF (SET .AND. WORD .EQ. '*HF INP') THEN
+      IF (WORD .EQ. '*HF INP') THEN
+         NWARN = NWARN + 1
+         WRITE (LUPRI,'(//A)')
+     &   'WARNING: obsolete "*HF INP" specified, please use "*SCF IN".'
+         WORD = '*SCF IN'
+      END IF
+      IF (SET .AND. WORD .EQ. '*SCF IN') THEN
          INPERR = INPERR + 1
-         WRITE(LUPRI,*)'Input error: *HF INP specified more than once'
+         WRITE(LUPRI,*)
+     &   ' Input error: *SCF INPUT specified more than once'
       END IF
       NODIIS = .FALSE.
       WORD1 = WORD
@@ -2415,15 +2439,15 @@ C
      *         ' one of the four characters ".*!#" for ',WORD1
          END IF
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT(' ILLEGAL KEYWORD IN RHFINP ')
+         CALL QUIT(' ILLEGAL KEYWORD IN SCFINP ')
 C
-C *** Option 1 >HF OCC<  Hartree-Fock occupancy for RHF and MP2 calc.
+C *** Option 1 >DOUBLY<  doubly occ. orb.s, for RHF and MP2 calc. or DFT
   101 READ(LUCMD,*) (NRHF(I),I=1,NSYM)
       IF (INIOCC .LT. 0) AUTOCC = .FALSE.
       IF (ELECTR) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,*)
-     &' .ELECTR must not be specified together with .HF OCC and .OPEN S'
+     &' .ELECTR must not be specified together with .DOUBLY and .OPEN S'
       END IF
       NRHFEL = 0
 C     ... AUTOCC may have been set true by .AUTOCC
@@ -2444,13 +2468,13 @@ C *** Option 4 >H1VIRT<  Virtual orbitals that diagonalize 1-el. H
       IF (FCVORB) THEN
          NINFO = NINFO + 1
          WRITE (LUPRI,*)
-     &'RHFINP INFO: more than one specification of .H1VIRT and .FC MVO'
+     &'SCFINP INFO: more than one specification of .H1VIRT and .FC MVO'
          WRITE (LUPRI,*) '.H1VIRT will be used.'
       END IF
       FCVORB = .TRUE.
       GO TO 100
 C
-C *** Option 5 >NOQCHF<  No quadratically convergent Hartree-Fock
+C *** Option 5 >NOQCSC<  No quadratically convergent SCF
   105 FLAG(21) = .FALSE.
       GO TO 100
 C
@@ -2466,7 +2490,7 @@ C     ... AUTOCC may have been set true by .AUTOCC
       IF (ELECTR) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,*)
-     &' .ELECTR must not be specified together with .HF OCC and .OPEN S'
+     &' .ELECTR must not be specified together with .DOUBLY and .OPEN S'
       END IF
       NRHFEL = 0
       INIOCC = 1
@@ -2523,21 +2547,25 @@ C
 C *** Option 19 >CORERE< core hole relaxation
   119 CORRLX = .TRUE.
       GO TO 100
-C *** Option 20 >XXXXXX<
+C *** Option 20 >HF OCC< (temp. for Dalton 2.0 -- Oct 2003/hjaaj)
   120 CONTINUE
-      GO TO 100
-C *** Option 21 >ELECTR< No. of electrons, for automagic det. of HF occ.
+         NWARN = NWARN + 1
+         WRITE(LUPRI,'(//A)')
+     &   'WARNING: ".HF OCC" is obsolete, please use ".DOUBLY OCCUPIED"'
+         GO TO 101
+c     GO TO 100
+C *** Option 21 >ELECTR< No. of electrons, for automagic det. of occ. orb.s
   121 READ(LUCMD,*) NRHFEL
       IF (INIOCC .EQ. 1) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,*)
-     &' .ELECTR must not be specified together with .HF OCC and .OPEN S'
+     &' .ELECTR must not be specified together with .DOUBLY and .OPEN S'
       END IF
       AUTOCC = .TRUE.
       ELECTR = .TRUE.
       IF (INIOCC .LT. 0) INIOCC = 0
       GO TO 100
-C *** Option 22 >AUTOCC< automatic determination of  HF occ. in DIIS,
+C *** Option 22 >AUTOCC< automatic determination of occ. orbs. in DIIS,
 C                        with given inital occ. from user input or file
   122 AUTOCC = .TRUE.
       IF (INIOCC .LT. 0) INIOCC = 0
@@ -2550,7 +2578,7 @@ C     Reference: C.W. Bauschlicher, JCP 72 (1980) 880.
       IF (FCVORB) THEN
          NINFO = NINFO + 1
          WRITE (LUPRI,*)
-     &'RHFINP INFO: more than one specification of .H1VIRT and .FC MVO'
+     &'SCFINP INFO: more than one specification of .H1VIRT and .FC MVO'
          WRITE (LUPRI,*) 'Last .FC MVO will be used.'
       END IF
       FCVORB = .TRUE.
@@ -2689,14 +2717,14 @@ C
       IF (CORHOL) THEN
          IF (IOPRHF .NE. 0) THEN
             INPERR = INPERR + 1
-            WRITE (LUPRI,*) 'RHFINP input error:'//
+            WRITE (LUPRI,*) 'SCFINP input error:'//
      &         ' .OPEN SHELL and .COREHOLE not compatible'
          END IF
          IOPRHF = JCHSYM
          NRHF(JCHSYM) = NRHF(JCHSYM) - 1
          IF (NRHF(JCHSYM) .LT. 0) THEN
             INPERR = INPERR + 1
-            WRITE (LUPRI,*) 'RHFINP input error:'//
+            WRITE (LUPRI,*) 'SCFINP input error:'//
      &         ' no HF OCCUPATION in core hole symmetry'
          END IF
          MXDIIS = 0

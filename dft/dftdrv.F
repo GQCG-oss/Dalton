@@ -32,6 +32,13 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
+      subroutine DFTINP(WORD,INPERR,ALLOPT)
+      INTEGER INPERR
+      CHARACTER*7 WORD
+      LOGICAL ALLOPT
+      call quit('DFTINP not implemented yet!')
+      return
+      end
 c     DFTINI
 C     intialize DFTCOM common block
       SUBROUTINE DFTINI
