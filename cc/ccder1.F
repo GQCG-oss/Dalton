@@ -42,10 +42,13 @@ c /* deck ccder1 */
       DOUBLE PRECISION WORK(LWORK)
 #endif
 
+
+      CALL QENTER('CCDER1')
 *---------------------------------------------------------------------*
 * check, if not the same integrals have been calculated the last time:
 *---------------------------------------------------------------------*
 C     IF (LABELOP .EQ. LAST_LABELOP) THEN
+C       CALL QEXIT('CCDER1')
 C       RETURN
 C     END IF
 
@@ -85,6 +88,7 @@ C     LAST_LABELOP = LABELOP
 *---------------------------------------------------------------------*
       CALL FLSHFO(LUPRI)
 
+      CALL QEXIT('CCDER1')
       RETURN
       END
 
@@ -112,6 +116,7 @@ C
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
 #include <priunit.h>
 #include <iratdef.h>
+#include <inftap.h>
 C
       PARAMETER (LBUF = 600)
 C
@@ -379,6 +384,8 @@ C
          CALL WCLOSE2(LUAODR(ISYM),NAME(ISYM),'KEEP')
       END DO
 C
+      CALL GPCLOSE(LU2DER,'DELETE')
+C
       RETURN
       END
 *======================================================================*
@@ -404,7 +411,7 @@ C
 #include <inftap.h>
 #include <ibtfun.h>
 C
-       CALL REWSPL(LU2DER)
+      CALL REWSPL(LU2DER)
 C
       IF (ITYPE.EQ.5) THEN
         CALL MOLLAB('AO2MGINT',LU2DER,LUPRI)
@@ -485,7 +492,7 @@ C
       ENDIF
 C
 C
-      CALL GPCLOSE(LU2DER,'DELETE')
+C
       RETURN
  
  2000 CALL QUIT('Error reading derivative integrals in CCSORTDER1')
@@ -749,6 +756,7 @@ c /* deck ccgeth2d */
       DOUBLE PRECISION BUF(NBUFS)
 #endif
 
+      CALL QENTER('CCGETH2D')
 *---------------------------------------------------------------------*
 * begin
 *---------------------------------------------------------------------*
@@ -809,14 +817,14 @@ C     IPRHER = IPRINT / 5
       IF      ( LABELOP(1:5).EQ.'1DHAM' ) THEN
          ITYPE  = 1
          ! open file for derivative integrals here...
-         LU2DER = 0
+         LU2DER = -1
          CALL GPOPEN(LU2DER,'AO2DRINT','UNKNOWN','SEQUENTIAL',
      &               'UNFORMATTED',IDUMMY,.FALSE.)
          REWIND (LU2DER)
       ELSE IF ( LABELOP(1:5).EQ.'dh/dB' ) THEN
          ITYPE  = 5
          ! file for derivative integrals will be opened in DR2WRT
-C        LU2DER = 0
+C        LU2DER = -1
 C        CALL GPOPEN(LU2DER,'AO2MGINT','UNKNOWN','SEQUENTIAL',
 C    &               'UNFORMATTED',IDUMMY,.FALSE.)
 C        REWIND (LU2DER)
@@ -899,6 +907,7 @@ C        REWIND (LU2DER)
 
       CALL FLSHFO(LUPRI)
 
+      CALL QEXIT('CCGETH2D')
       RETURN
       END
 *=====================================================================*
