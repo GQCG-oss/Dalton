@@ -48,7 +48,7 @@ cat > walk_vibave2.dal <<%EOF%
  4
 *LINRES
 .THRESH
-1.0D-6
+1.0D-7
 *RESPONSE
 .THRESH
 1.0D-6
@@ -58,7 +58,7 @@ cat > walk_vibave2.dal <<%EOF%
  4
 *LINRES
 .THRESH
-1.0D-6
+1.0D-7
 *RESPONSE
 .THRESH
 1.0D-6
@@ -222,16 +222,16 @@ CTRL[19]=1
 ERROR[19]="VIBRATIONALLY AVERAGED DIPOLE MOMENT NOT CORRECT"
 
 # Vibrationally averaged nuclear magnetic shielding constants for hydrogen
-CRIT1=`$GREP "Bxmx * 21\.4006853[0-9] * (0| )\.232[0-4]...[0-9] * 21\.63[2-3]....[0-9]" $log | wc -l`
-CRIT2=`$GREP "Bymy * 21\.4006853[0-9] * (0| )\.232[0-4]...[0-9] * 21\.63[2-3]....[0-9]" $log | wc -l`
-CRIT3=`$GREP "Bzmz * 44\.3849888[0-9] * (0| )\.44[1-2]....[0-9] * 44\.82[6-7]....[0-9]" $log | wc -l`
+CRIT1=`$GREP "Bxmx * 21\.4006844[0-9] * (0| )\.232[0-4]...[0-9] * 21\.632[6-8]...[0-9]" $log | wc -l`
+CRIT2=`$GREP "Bymy * 21\.4006844[0-9] * (0| )\.232[0-4]...[0-9] * 21\.632[6-8]...[0-9]" $log | wc -l`
+CRIT3=`$GREP "Bzmz * 44\.3849888[0-9] * (0| )\.441[2-4]...[0-9] * 44\.826[2-4]...[0-9]" $log | wc -l`
 TEST[20]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[20]=3
 ERROR[20]="VIBRATIONALLY AVERAGED NUCLEAR SHIELDING FOR HYDROGEN NOT CORRECT"
 
 # Vibrationally averaged nuclear magnetic shielding constants for fluorine
-CRIT1=`$GREP "Bxmx * 381\.4994583[0-9] * \-4\.2[6-9].....[0-9] * 377\.2[0-3].....[0-9]" $log | wc -l`
-CRIT2=`$GREP "Bymy * 381\.4994583[0-9] * \-4\.2[6-9].....[0-9] * 377\.2[0-3].....[0-9]" $log | wc -l`
+CRIT1=`$GREP "Bxmx * 381\.4994558[0-9] * \-4\.26[6-9]....[0-9] * 377\.23[0-3]....[0-9]" $log | wc -l`
+CRIT2=`$GREP "Bymy * 381\.4994558[0-9] * \-4\.26[6-9]....[0-9] * 377\.23[0-3]....[0-9]" $log | wc -l`
 CRIT3=`$GREP "Bzmz * 481\.7772347[0-9] * (0| )\.041[8-9]...[0-9] * 481\.8191[0-9]..[0-9]" $log | wc -l`
 TEST[21]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[21]=3

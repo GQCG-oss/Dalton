@@ -48,14 +48,14 @@ H         -0.2012451011           -1.7773969533            0.0000000000
 .HF
 *HF INPUT
 .THRESH
-1.0D-8
+1.0D-10
 **START
 .SHIELD
 .MAGNET
 .POLARI
 *LINRES
 .THRESH
-1.0D-6
+1.0D-7
 **PROPERTIES
 .PRINT
  0
@@ -64,7 +64,7 @@ H         -0.2012451011           -1.7773969533            0.0000000000
 .POLARI
 *LINRES
 .THRESH
-1.0D-6
+1.0D-7
 *END OF INPUT
 %EOF%
 #######################################################################
