@@ -215,14 +215,15 @@ Specification of which wave function calculation is to be performed.
   Note: you cannot specify both \quotekw{.HF} and \quotekw{.DFT} keywords.
 
 \item[\Key{DFT}]
-  \verb"READ (LUINP,'(A80)) LINE" \\
-  Restricted closed-shell, one open-shell  or high-spin spin-restricted Kohn-Sham
-  density functional theory\index{DFT}\index{Kohn--Sham}\index{open shell!DFT} calculation.
-  On the following line you must specify which functional to use.
-  The occupied orbitals, optimization control etc. are specified in the
-  \quotekw{*SCF INPUT} submodule shared with the \quotekw{.HF} option.
-  The DFT specific input options are collected in the \quotekw{*DFT INPUT} input submodule.
-  Note: you cannot specify both \quotekw{.HF} and \quotekw{.DFT} keywords.
+  \verb"READ (LUINP,'(A80)) LINE" \\ Restricted closed-shell, one
+  open-shell or high-spin spin-restricted Kohn-Sham density functional
+  theory\index{DFT}\index{Kohn--Sham}\index{open shell!DFT}
+  calculation.  On the following line you must specify which
+  functional to use.  The occupied orbitals, optimization control
+  etc. are specified in the \quotekw{*SCF INPUT} submodule shared with
+  the \quotekw{.HF} option.  The DFT specific input options are
+  collected in the \quotekw{*DFT INPUT} input submodule.  Note: you
+  cannot specify both \quotekw{.HF} and \quotekw{.DFT} keywords.
 
 \item[\Key{MP2}]
  \index{M{\o}ller-Plesset!second-order}\index{MP2}
@@ -616,41 +617,44 @@ To specify the parameters of the DFT integration.
 
 \subsection{\label{ref-dft}DFT functionals}
 
-Functionals in dalton can be divided into two groups: primitive and
+Functionals in dalton can be divided into two groups: generic and
 combined functionals. Combined functionals are a linear combination of
-primitive ones. One can always create own combined functionals by
+generic ones. One can always create own combined functionals by
 using \verb|GGAKey| general functional. 
 
-\subsubsection{Primitive functionals}
+\subsubsection{Generic functionals}
 \begin{description}
-\item[BECKE] Becke correction (Full becke functional is BECKE +
-  SLATER). Reference
+\item[BECKE] Becke exchange correction (Full Becke functional is BECKE +
+  SLATER) from \cite{dft:becke88}.
 
-\item[KT] 
+\item[KT] Keal and Tozer functional \cite{dft:kt}
 
-\item[LB94]
+\item[LB94] assymptotically correct functional of Leeuwen and
+Baerends\cite{dft:lb94}.
 
-\item[LYP] correlation functional by Lee, Yang and Parr.
+\item[LYP] correlation functional by Lee, Yang and Parr
+\cite{dft:lyp1,dft:lyp2}.
 
-\item[OPTX] exchange functional of Handy.
+\item[OPTX] exchange functional of Handy \cite{dft:optx}.
 
-\item[P86] correlation functional of Perdew.
+\item[P86] correlation functional of Perdew \cite{dft:p86}.
 
 \item[PBEx] exchange functional 
 
-\item[PW86x] Phys. Rev. B 33. 8800 (1986)
+\item[PW86x]Perdew and Wang exchange functional.\cite{dft:pw86x}.
 
-\item[PW91] correlation functional of Perdew and Wang, 91.
+\item[PW91] correlation functional of Perdew and Wang.\cite{dft:pw91}
 
-\item[PZ81] correlation functional of Perdew and Zunger.
+\item[PZ81] correlation functional of Perdew and Zunger \cite{dft:pz81}.
 
-\item[SLATER] Dirac-Slater exchange functional.
+\item[SLATER] Dirac-Slater exchange functional
+\cite{dft:hohenberg,dft:kohn,dft:slater3}.
 
 \item[VWN3] correlation functional Vosko, Wilk and Nusair (number
-  III).
+  III) \cite{dft:vwn}.
 
 \item[VWN5]  correlation functional Vosko, Wilk and Nusair (number
-  V -- the recommended one).
+  V -- the recommended one) \cite{dft:vwn}.
 
 \end{description}
 
@@ -666,12 +670,13 @@ using \verb|GGAKey| general functional.
  GGAKey hf=0.2 slater=0.8 becke=0.72 lyp=0.81 vwn3=0.19
 \end{verbatim}
 
-\item[BLYP]
+\item[BLYP] is a sum of Slater functional, Becke88 correction and LYP
+  correlation functional.
 
-\item[B3LYP] hybrid functional
+\item[B3LYP] hybrid functional \cite{dft:b3lyp}.
 
 \item[B3LYP-G] hybrid functional with VWN3 form used for correlation
-  -- this is the form used by Gaussian.
+  -- this is the form used by Gaussian quantum chemistry program.
 
 \item[BP86] Becke88 exchange functional and Perdew86 correlation
   functional.
@@ -680,7 +685,8 @@ using \verb|GGAKey| general functional.
 \item[B3P86] variant of \verb|B3LYP| with P86 used to get correlation.
 
 
-\item[CAMB3LYP] Coulomb Attenuated Method Functional of Yanai and Handy.
+\item[CAMB3LYP] Coulomb Attenuated Method Functional of Yanai and
+Handy\cite{dft:camb3lyp}.
 
 \item[KT1]
 
@@ -692,12 +698,13 @@ using \verb|GGAKey| general functional.
 
 \item[PBE0] a hybrid functional of Perdew, Burke and Ernzerhof with
   0.2 weight of exact exchange, 0.75 of \verb|PBEx| functional and
-  \verb|PW91c| correlation functional.
+  \verb|PW91c| correlation functional \ref{dft:pbe0}.
 
 \item[PBE] same as above but with exchange estimated exclusively by
-  \verb|PBEx| functional.
+  \verb|PBEx| functional \ref{dft:pbe}.
 
-\item[PW91] correlation functional of Perdew and Wang.
+\item[BPW91] is a sum of Slater functional, Becke88 correction and
+PW91 correlation functional.
 
 \end{description}
 
