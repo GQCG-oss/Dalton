@@ -1277,7 +1277,8 @@ C--------------------------------------
 C     Additional work space allocation.
 C--------------------------------------
 C
-      IF ((FROIMP) .AND. ((RELORB) .OR. ((CCFOP) .AND. (MP2)))) THEN
+      IF ((FROIMP.OR.FROEXP) .AND. 
+     *    (RELORB .OR. (CCFOP .AND. MP2))) THEN
 C
          KCMO  = KEND1
          KFRIN = KCMO  + NLAMDS
@@ -1432,7 +1433,7 @@ C              Calculate integrals (cJ|dk)
 C              needed for frozen core gradients.
 C-----------------------------------------------
 C
-               IF ((FROIMP) .AND.
+               IF ((FROIMP.OR.FROEXP) .AND.
      *             ((RELORB) .OR. ((CCFOP) .AND. (MP2)))) THEN
 C
                   CALL CC_FRCOIN(WORK(KFRIN),WORK(KXINT),WORK(KCMO),
@@ -1587,7 +1588,8 @@ C-------------------------------------
 C     Write integrals (cJ|dk) to disk.
 C-------------------------------------
 C
-      IF ((FROIMP) .AND. ((RELORB) .OR. ((CCFOP) .AND. (MP2)))) THEN
+      IF ((FROIMP.OR.FROEXP) 
+     &     .AND. ((RELORB) .OR. ((CCFOP) .AND. (MP2)))) THEN
          LUCJDK = 0
          CALL GPOPEN(LUCJDK,'INCJDK','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
