@@ -20,26 +20,30 @@ summarized below:
 The largest new extension to Dalton~2.0 is the addition of a complete
 Density Functional Theory (DFT) module. It contains 24 different
 exchange-correlation  functions (and in addition the
-Coulomb-Attenuated Method~\cite{??}), and is implemented for energies,
+Coulomb-Attenuating Method~\cite{tydptnchcpl393}), and is implemented for energies,
 linear and quadratic response functions (for both singlet and triplet
 perturbing operators) and geometric Hessians, nuclear shielding
 tensors, and magnizabilities as well as indirect spin--spin coupling
 constants. Energies and linear response properties are also available
 for spin-restricted, high-spin DFT ({\em vide infra\/}).
 
-\item{\bf Coulomb Attenuated Method:}
+\item{\bf Coulomb-Attenuating Method:} The new hybrid
+  exchange-correlation functional named CAM-B3LYP is
+  included~\cite{tydptnchcpl393}. This hybrid functional  combines the
+  hybrid qualities of B3LYP and the long-range correction presented by
+  Tawada {\it et al.\/}~\cite{ytttsytykhjcp120}.
 
 
 \item{\bf NEVPT2:} Dalton~2.0 allows for the calculation of
   second-order MP2 energy corrections to an MCSCF reference wave
   function. The approach used here, the ``n-electron valence space
-  second-order perturbation theory'' approach (NEVPT2), is similar to
-  CASPT2~\cite{??}, but is based on a two-electron zeroth-order
-  Hamiltonian (the Dyall Hamiltonian~\cite{??}) and thus rarely displays
-  problems with intruder states~\cite{??}.
+  second-order perturbation theory'' approach (NEVPT2)~\cite{carcsetljpmjcp114,carcjpmcpl350,carcjpmjcp117}, is similar to
+  CASPT2~\cite{kapamborjcp96}, but is based on a two-electron zeroth-order
+  Hamiltonian (the Dyall Hamiltonian~\cite{kgdjcp102}) and thus rarely displays
+  problems with intruder states.
 
 \item{\bf R12 methods:} The R12 approach for obtaining basis-set limit
-MP2 energies are available in a couple of  approximations~\cite{??}.
+MP2 energies are available in a couple of  approximations~\cite{wkccmsjcp116,ccmswkthcpc149}.
 
 \item{\bf Excited-state gradients:} Excited-state gradients are
   available for singlet excited states for a Hartree--Fock reference
@@ -61,7 +65,8 @@ MP2 energies are available in a couple of  approximations~\cite{??}.
   and analytical gradients are now available.
 
 \item{\bf Orbital exponent gradients:} Gradients of the orbital
-exponents can now be calculated for closed-shell molecular species~\cite{}.
+exponents can now be calculated for closed-shell molecular
+species~\cite{fjjcp115}. 
 
 \item{\bf New \mol\ input format:} There is now a new input structure
   for the \mol\ input file. The new format is keyword driven and
