@@ -49,7 +49,7 @@ C     tuh
 C
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
       IMPLICIT REAL (F,S), LOGICAL(D)
-      REAL ONE, TWO, GAMAC, GAMAD
+      REAL ONE, TWO
       PARAMETER (ONE = 1.00 E00, TWO = 2.00 E00)
 C
 C     Set r12int.h to real
@@ -58,7 +58,7 @@ C
 #endif
 #if !defined (SYS_CRAY) && !defined (SYS_T3D) && !defined (VAR_REAL) && !defined (SYS_T90)
       IMPLICIT DOUBLE PRECISION (F,S), LOGICAL(D)
-      DOUBLE PRECISION ONE, TWO, GAMAC, GAMAD
+      DOUBLE PRECISION ONE, TWO
       PARAMETER (ONE = 1.00 D00, TWO = 2.00 D00)
 C
 C     Set r12int.h to real
