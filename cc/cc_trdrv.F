@@ -341,7 +341,7 @@ C
          ELSE
 C
 C----------------------------------------
-C        For Triplet start at the
+C       For Triplet start at the
 C       beginning of the workspace.
 C----------------------------------------
 C
