@@ -1261,6 +1261,7 @@ C /* Deck erisdm */
 #include <eridst.h>
       DIMENSION IPNTCR(MAXBCH,4)
       DIMENSION INDXBT(MXSHEL*MXCONT,0:7)
+#include <symmet.h>
 #include <ericom.h>
 #include <aobtch.h>
 C
