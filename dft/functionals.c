@@ -67,18 +67,18 @@ Functional* available_functionals[] = {
     &VWNFunctional,
     &XAlphaFunctional,
     /* mixed functionals */
-    &LDAFunctional,
-    &LDAGaussFunctional,
-    &GGAKeyFunctional,
-    &BLYPFunctional,
     &B3LYPFunctional,
     &B3LYPGaussFunctional,
-    &BP86Functional,
     &B3P86Functional,
+    &BLYPFunctional,
+    &BP86Functional,
     &Camb3lypFunctional,
+    &GGAKeyFunctional,
     &KT1Functional,
     &KT2Functional,
     &KT3Functional,
+    &LDAFunctional,
+    &LDAGaussFunctional,
     &OLYPFunctional,
     NULL
 };
@@ -129,18 +129,6 @@ FSYM2(dft_isgga)(void)
     return selected_func->is_gga();
 }
 
-void
-dft_check_consistency()
-{
-#ifndef NO_BACKWARD_COMP
-/*  if(inforb_.nasht>1) {
-	fort_print(OPEN_ERR); fprintf(stderr, "%s\n\n", OPEN_ERR);
-	exit(1);
-    } 
-*/
-#endif
-}
-
 /* dftreport:
    report the data and check consistency of the input (FIXME: this should
    be done by a separate routine.  
@@ -153,7 +141,7 @@ dftreport_(void)
     if(selected_func->report)
         selected_func->report();
 
-    dft_check_consistency();
+    /* dft_check_consistency(); */
 }
 
 void
@@ -165,8 +153,8 @@ dftlistfuncs_(void)
         fort_print(available_functionals[i]->name);
 }
 
-double
-dftene_(real *rho, real *grad)
+real
+dftene_(const real *rho, const real *grad)
 {
     DftDensProp dp;
     dp.rhoa  = dp.rhob  = *rho  *0.5;
