@@ -18,7 +18,7 @@ fi
 #######################################################################
 cat > dpt_hbr_finm.info <<%EOF%
    dpt_hbr_finm
-   ---
+   ------------
    Molecule:       HBr in C2v
    Wave Function:  CCSD, CCSD(T) / AhlrichsVDZ (frozen core)
    Test Purpose:   Finite-field (-0.005) first-order DPT correction

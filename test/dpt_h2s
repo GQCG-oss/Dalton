@@ -18,7 +18,7 @@ fi
 #######################################################################
 cat > dpt_h2s.info <<%EOF%
    dpt_h2s
-   ---
+   -------
    Molecule:       H2S in C2v
    Wave Function:  CCS, CCSD / cc-pVDZ
    Test Purpose:   First-order relativistic corrections

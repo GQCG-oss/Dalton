@@ -18,7 +18,7 @@ fi
 #######################################################################
 cat > dpt_hbr.info <<%EOF%
    dpt_hbr
-   ---
+   -------
    Molecule:       HBr in C2v
    Wave Function:  CCS, CCSD / AhlrichsVDZ (frozen core)
    Test Purpose:   First-order relativistic corrections
