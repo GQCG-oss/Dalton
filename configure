@@ -912,9 +912,12 @@ case "$WHICH" in
 	      proc=''
 	  fi
 	  cpp="-DVAR_IFC $cpp"
-	  copt="-O3 $proc -ip -restrict -DRESTRICT=restrict"
 	  opt="-O3 $proc -ip -w"
 	  safe_opt="-O1 -w"
+          case $cc in
+              icc) copt="-O3 $proc -ip -restrict -DRESTRICT=restrict";;
+              gcc) copt="-O3 -malign-double -std=c99 -DRESTRICT=restrict";;
+          esac
       elif [ $F77 = 'pgf77' ]; then
 	  if [ $prc = 'i686' ]; then
 	      proc='-tp p6'
