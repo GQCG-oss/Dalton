@@ -200,14 +200,14 @@ CTRL[9]=6
 ERROR[9]="PARAMAGNETIC MAGNETIZABILITY TENSOR NOT CORRECT"
 
 # Shielding tensors (symmetry coordinates)
-CRIT1=`$GREP "O    y     6\.2416037[0-9]" $log | wc -l`
-CRIT2=`$GREP "H    y     1\.2326366[0-9]" $log | wc -l`
-CRIT3=`$GREP "H    z    \-0\.4551983[0-9]" $log | wc -l`
-CRIT4=`$GREP "O    x     6\.3579385[0-9]" $log | wc -l`
-CRIT5=`$GREP "H    x     0\.4635252[0-9]" $log | wc -l`
-CRIT6=`$GREP "O    z     6\.3270632[0-9]" $log | wc -l`
-CRIT7=`$GREP "H    y    \-0\.6177392[0-9]" $log | wc -l`
-CRIT8=`$GREP "H    z     0\.7771551[0-9]" $log | wc -l`
+CRIT1=`$GREP "O * y * 6\.2416037[0-9]" $log | wc -l`
+CRIT2=`$GREP "H * y * 1\.2326366[0-9]" $log | wc -l`
+CRIT3=`$GREP "H * z * (\-0|\-)\.4551983[0-9]" $log | wc -l`
+CRIT4=`$GREP "O * x * 6\.3579385[0-9]" $log | wc -l`
+CRIT5=`$GREP "H * x * (0| )\.4635252[0-9]" $log | wc -l`
+CRIT6=`$GREP "O * z * 6\.3270632[0-9]" $log | wc -l`
+CRIT7=`$GREP "H * y * (\-0|\-)\.6177392[0-9]" $log | wc -l`
+CRIT8=`$GREP "H * z * (0| )\.7771551[0-9]" $log | wc -l`
 TEST[10]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
 CTRL[10]=16
