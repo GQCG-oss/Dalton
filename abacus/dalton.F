@@ -322,6 +322,7 @@ C        Changed format (WK/UniKA/04-11-2002).
      *  ' Wim Klopper,           University of Karlsruhe,      Germany',
      *  ' Rika Kobayashi,        Cambridge University,         England',
      *  ' Henrik Koch,           University of Trondheim,      Norway ',
+     *  ' Ola B. Lutnaes,        University of Oslo,           Norway ',
      *  ' Kurt V. Mikkelsen,     University of Copenhagen,     Denmark',
      *  ' Patrick Norman,        University of Linkoeping,     Sweden ',
      *  ' Thomas B. Pedersen,    U. of Santiago de Compostela, Spain  ',
@@ -335,7 +336,8 @@ C        Changed format (WK/UniKA/04-11-2002).
      *  ' Bernd Schimmelpfennig, KTH Stockholm,                Sweden ',
      *  ' K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark',
      *  ' Peter R. Taylor,       University of Warwick,        UK     ',
-     *  ' Olav Vahtras,          KTH Stockholm,                Sweden '
+     *  ' Olav Vahtras,          KTH Stockholm,                Sweden ',
+     *  ' David J. Wilson,       University of Oslo,           Norway '
 C
 C        Changed format (WK/UniKA/04-11-2002).
          WRITE (LUPRI,'(/1X,69A1/)') ('-',I=1,69)
