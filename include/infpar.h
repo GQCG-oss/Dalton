@@ -1,5 +1,5 @@
 #if defined(__CVERSION__)
-#define MAXNOD 100
+#define MAXNOD 128
 #define MAXCL2 10000
 #define MAXTSK (MXSHEL*(MXSHEL+1)/2)
 #define NPARI  ((MAXNOD + 1) + 7)
@@ -20,7 +20,7 @@ C     NOTE: Integers  (MASTER,...)
 C           Logicals  (TIMING,...)
 C           Character (NODNAM,...) should NOT be sent to slaves
 C
-      PARAMETER (MAXNOD=100, MAXCL2=10000, MAXTSK=MXSHEL*(MXSHEL+1)/2)
+      PARAMETER (MAXNOD=128, MAXCL2=10000, MAXTSK=MXSHEL*(MXSHEL+1)/2)
       PARAMETER (NPARI = (MAXNOD + 1) + 7)
       LOGICAL SLAVE, TIMING, DEBUG, PARIO
       CHARACTER*20 NODNAM, MYNAME
