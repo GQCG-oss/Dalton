@@ -32,12 +32,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: dalton.F,v 1.6 2001-05-31 06:38:04 vebjornb Exp $
+C$Id: dalton.F,v 1.7 2001-06-20 13:15:36 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
 C
 $Log: not supported by cvs2svn $
+Revision 1.6  2001/05/31 06:38:04  vebjornb
+Updated copyright, authors and reference in all Fortran-files - VB
+
 Revision 1.5  2001/04/21 12:11:59  ruud
 Added the possibility of reusing property derivatives in vibrational average
 calculations. Fixed a bug in the temperature part, as well as in the Eckart
@@ -352,16 +355,23 @@ C
 C     Back to old version...   vb jan-01
 C
       CALL GPIOIN
-      CALL GPOPEN(LUPRI,'DALTON.OUT','NEW',' ','FORMATTED',
-     &            IDUMMY,.FALSE.)
-      CALL GPOPEN(LUCME,'DALTON.CM','NEW',' ','FORMATTED',
-     &            IDUMMY,.FALSE.)
-      CALL MEMINI(LUPRI,LUERR)
 #if defined (VAR_MPI)
       CALL MPIXINIT
 #else
       MYNUM = 0
 #endif
+      IF (MYNUM .EQ. 0) THEN
+         CALL GPOPEN(LUPRI,'DALTON.OUT','NEW',' ','FORMATTED',
+     &        IDUMMY,.FALSE.)
+         CALL GPOPEN(LUCME,'DALTON.CM','NEW',' ','FORMATTED',
+     &        IDUMMY,.FALSE.)
+C      ELSE
+C         CALL GPOPEN(LUPRI,'DALTON.OUT',' ',' ','FORMATTED',
+C     &        IDUMMY,.FALSE.)
+C         CALL GPOPEN(LUCME,'DALTON.CM',' ',' ','FORMATTED',
+C     &        IDUMMY,.FALSE.)
+      END IF
+      CALL MEMINI(LUPRI,LUERR)
 C
 C     *** End of old version ***
 C
