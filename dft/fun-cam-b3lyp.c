@@ -223,7 +223,7 @@ fun_a_third(real rho, real a, real ex, RGThirdDrv *f3, RGThirdDrv *res)
  * The expansion of the B-factor and its first derivative for small
  * values of a.
  * =================================================================== */
-static __inline__ real
+static real
 camb3lyp_b_energy_small(real a)
 {
     real res;
@@ -233,7 +233,7 @@ camb3lyp_b_energy_small(real a)
 }
 
 
-static __inline__ real
+static real
 camb3lyp_b_first_small(real a)
 {
     real res;
@@ -248,7 +248,7 @@ camb3lyp_b_first_small(real a)
  * =================================================================== */
 #define MAX_LARGE_COEFS 5
 static const real large_coefs[] = { 9, 60, 420, 3240, 27720 };
-static __inline__ real
+static real
 camb3lyp_b_energy_large(real a)
 {
     real res, ac, a2;
@@ -264,7 +264,7 @@ camb3lyp_b_energy_large(real a)
 
 
 static const real large_coefs1[] = { 4.5, 15, 70, 405 };
-static __inline__ real
+static real
 camb3lyp_b_first_large(real a)
 {
     real tmp;
@@ -287,7 +287,7 @@ camb3lyp_b_first_large(real a)
  * expression.
  * 8/3*a*(sqrt(%PI)*erf(1/(2*a))+2*a*(b-c))
  * =================================================================== */
-static __inline__ real
+static real
 camb3lyp_b_energy_medium(real a)
 {
     real b = exp(-1/(4*a*a))-1;
@@ -323,7 +323,7 @@ evaluate_series(int n, const real*coefs, real lambda)
     }
     return res;
 }
-static __inline__ real
+static real
 camb3lyp_b_second_medium(real a)
 {
     real t1, t2, t3, t4, t5, t6, t7;
@@ -347,7 +347,7 @@ camb3lyp_b_second_medium(real a)
              +16*(2.0*a*t7+2.0*(t3-2*t1*t5-1.5)+t6)/3.0)*BETA;
 }
 
-static __inline__ real
+static real
 camb3lyp_b_third_medium(real a)
 {
     real t1, t2, t3, t4, t5, t6, t7, t8;
@@ -374,7 +374,7 @@ camb3lyp_b_third_medium(real a)
          +(4*(-t2/a+t8*t2/2-4*a*t6)+2*a*t7+2*t8*t2-t5*t2/2));
 }
 
-static __inline__ real
+static real
 camb3lyp_b_fourth_medium(real a)
 {
     real t1, t2, t3, t4, t5, t6, t7, t8, t9;

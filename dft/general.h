@@ -14,7 +14,6 @@
 #endif
 
 /* define the basic floating-point variable type used by the Fortran code */
-typedef double real;
 
 #if !defined(__CVERSION)
 #define __CVERSION__
@@ -52,18 +51,12 @@ typedef double real;
 #define ELEMENTS(arr) (sizeof(arr)/sizeof(arr[0]))
 
 
-typedef struct Functional_ Functional;
 typedef struct FirstDrv_  FirstDrv;
 typedef struct SecondDrv_ SecondDrv;
 typedef struct ThirdDrv_  ThirdDrv;
 
-typedef struct FirstFuncDrv_  FirstFuncDrv;
-typedef struct SecondFuncDrv_ SecondFuncDrv;
-typedef struct ThirdFuncDrv_  ThirdFuncDrv;
-
 /* Density evaluators */
 typedef struct DftDensity_  DftDensity;
-typedef struct DftDensProp_ DftDensProp;
 typedef struct DftGrid_     DftGrid;
 
 typedef void (*DftDensEvaluator)(DftDensity* dens, FunDensProp* dp,

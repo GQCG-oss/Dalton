@@ -98,7 +98,7 @@ pbex_energy(const FunDensProp *dp)
     return res;
 }
 
-static __inline__ void
+static void
 pbex_first_helper(real rhoa, real grada, real *res)
 {
     real t1, t2, t3, t4;
@@ -133,7 +133,7 @@ pbex_first(FunFirstFuncDrv *ds, real factor, const FunDensProp *dp)
     ds->df0001 += factor*res[1];
 }
 
-static __inline__ void
+static void
 pbex_second_helper(real rhoa, real grada, real *res)
 {
     real t1, t2, t3, t4, t5, t6, t7, t8;
@@ -185,7 +185,7 @@ pbex_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
     ds->df0002 += factor*res[4];
 }
 
-static __inline__ void
+static void
 pbex_third_helper(real rhoa, real grada, real *res)
 {
     real t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;

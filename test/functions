@@ -19,9 +19,9 @@ fi
 
 # Prefer gawk - we know exactly what it can do.
 # awk on Sun does not support functions, need to use nawk for this
-if gawk '{print 1}'</dev/null>& /dev/null; then
+if gawk '{print 1}'</dev/null 2>&1 /dev/null; then
    AWK=gawk
-elif nawk '{print 1}'</dev/null>& /dev/null; then
+elif nawk '{print 1}'</dev/null 2>&1 /dev/null; then
    AWK=nawk
 else
    AWK=awk
