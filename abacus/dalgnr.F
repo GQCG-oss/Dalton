@@ -1084,6 +1084,7 @@ C
 C     Initialize /GNRINF/
 C
       SEGBAS = .TRUE.
+      SEGAUX = .TRUE.
       WALKIN = .FALSE.
       HRINPC = .FALSE.
       SRINPC = .FALSE.
