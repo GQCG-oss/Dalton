@@ -32,12 +32,12 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: sirtr1.F,v 1.4 2001-05-31 06:38:37 vebjornb Exp $
+C$Id: sirtr1.F,v 1.5 2001-06-29 17:31:30 hjj Exp $
 C
 #include <single.h>
 #ifdef UNDEF
 /* Comdeck sirtr1_log */
-900115: MAERKE goer noget ved PRINRM
+900115: TODO goer noget ved PRINRM
                   CALL PRINRM(DTV(1,ICSIM),NNASHX,LUPRI)
       END
 #endif
@@ -172,13 +172,13 @@ C
             DO 110 ICSIM = 1,NCSIM
                IF (P6FLAG(20) .OR. IPRLIN .GE. 20) THEN
                   WRITE (LUPRI,1010) ICSIM,NCSIM
-CMAERKE           CALL PRINRM(DTV(1,ICSIM),NNASHX,LUPRI)
+CTODO             CALL PRINRM(DTV(1,ICSIM),NNASHX,LUPRI)
                   CALL OUTPAK(DTV(1,ICSIM),NASHT,1,LUPRI)
                END IF
                IF (P6FLAG(27) .OR. IPRLIN .GE. 20) THEN
                   JPTV = KPTV + (ICSIM-1)*NNASHX*NNASHX
                   WRITE (LUPRI,1020) ICSIM,NCSIM
-CMAERKE           CALL PRINRM(WRK(JPTV),NNASHX*NNASHX,LUPRI)
+CTODO             CALL PRINRM(WRK(JPTV),NNASHX*NNASHX,LUPRI)
                   IF (P6FLAG(27) .OR. IPRLIN .GE. 27)
      &               CALL OUTPUT(WRK(JPTV),
      &                  1,NNASHX,1,NNASHX,NNASHX,NNASHX,-1,LUPRI)
@@ -332,6 +332,17 @@ C
 C
       DO 300 IOSIM = 1,NOSIM
          EMYX(IOSIM) = D0
+#ifdef TODO
+CHJAaJ TODO June 2001: the calculated EMYX is wrong;
+C only half of the one-index transformed contribution is
+C included in FXC (error found by Joern Thyssen).
+C Luckily it doesn't matter because the CREF component
+C is projected out of the sigma vector in the current
+C implementation !!!
+C
+C The correct is EMYX = sum(K) (HX1(K,K) + FXC(K,K))
+C        and not EMYX = sum(K) 2*FXC(K,K)
+C
          IF (JWOPSY.EQ.1) THEN
             DO 200 KW = 1,NISHT
                K = ISX(KW)
@@ -340,9 +351,10 @@ C
             EMYX(IOSIM) = EMYX(IOSIM)*D2
             IF (P6FLAG(11) .OR. IPRLIN.GE.11)
      &         WRITE (LUPRI,5010) IOSIM,EMYX(IOSIM)
-         END IF
-  300 CONTINUE
  5010 FORMAT(/' EMYX(',I2,') = ',F25.15)
+         END IF
+#endif
+  300 CONTINUE
       RETURN
       END
 C  /* Deck tr1den */
@@ -693,13 +705,13 @@ C
         IF (P6FLAG(24) .OR. IPRLIN .GE. 24) THEN
           IF (NISHT.GT.0) THEN
             WRITE (LUPRI,2010) IOSIM,NOSIM
-CMAERKE     CALL PRINRM(DXCAO(1,IOSIM),N2BASX,LUPRI)
+CTODO       CALL PRINRM(DXCAO(1,IOSIM),N2BASX,LUPRI)
             CALL OUTPUT(DXCAO(1,IOSIM),1,NBAST,1,NBAST,NBAST,NBAST,
      &         -1,LUPRI)
           END IF
           IF (NASHT.GT.0) THEN
             WRITE (LUPRI,2020) IOSIM,NOSIM
-CMAERKE     CALL PRINRM(DXVAO(1,IOSIM),N2BASX,LUPRI)
+CTODO       CALL PRINRM(DXVAO(1,IOSIM),N2BASX,LUPRI)
             CALL OUTPUT(DXVAO(1,IOSIM),1,NBAST,1,NBAST,NBAST,NBAST,
      &         -1,LUPRI)
           END IF
