@@ -1,5 +1,7 @@
 $NASA Ames ANO
 
+$Elements supported
+$H B C N O F Ne Al P Ti Fe Ni 
 $
 $  REFERENCE
 $ J. ALMLOF AND P.R. TAYLOR, J. CHEM. PHYS. 86, 4070 (1987).                   
@@ -672,8 +674,5 @@ $ F-TYPE FUNCTIONS
       0.2024000  0.09537100 -0.27656100
 
 
-$Elements supported
-
-$H B C N O F Ne Al P Ti Fe Ni 
 
 
