@@ -1,4 +1,4 @@
-\chapter{Molecular linear and non-linear response functions, RESPONSE}
+\chapter{Linear and non-linear response functions, RESPONSE}
 \label{ch:response}
 
 \section{Directives for evaluation of molecular response functions}\label{sec:rspinp}
@@ -31,7 +31,8 @@ In addition, SOPPA\index{SOPPA}\index{polarization propagator}
 (Second-Order Polarization Propagator 
 approximation) for the calculation of linear response
 \index{linear response}\index{response!linear}
-properties may be requested in this input section. The current
+properties and excitation energies with transition moments
+may be requested in this input section. The current
 implementation of the SOPPA method is described 
 in Ref.~\cite{mjpekdtehjajjojcp}. Note that a SOPPA calculation
 requires the keyword \Key{SOPPA}.
@@ -50,9 +51,10 @@ should follow another \Sec{*<something>} input group
 \begin{description}
 
 \item{\Key{RSPCI}}
-Configuration interaction\index{Configuration Interaction}\index{CI}
+Configuration interaction\index{Configuration Interaction!response}\index{CI!response}
 response calculation. 
-This is equivalent to a CI sum-over-states calculation of response properties,
+This is equivalent to a CI sum-over-states\index{response!CI sum-over-states}
+calculation of response properties,
 but of course calculated directly without diagonalization of the full
 CI Hamiltonian matrix.
 The final wave function from \Sec{*WAVE FUNCTIONS} must be \Key{CI}.
@@ -86,14 +88,18 @@ This keyword overrides a simultaneous specification of \Key{SOPPA}.
 Triplet flag. This option is set whenever triplet
 (spin-dependent)\index{triplet response}
 operators must be used in a response calculation
-\cite{jodlypjjcp91,ovhapjhjajthjojcp97}
+\cite{jodlypjjcp91,ovhapjhjajthjojcp97}.
+This flag forces triplet linear response for \Sec{LINEAR},
+both for second order properties and electronic excitations
+(without and with \Key{SINGLE RESIDUE}).
 
 \item{\Key{NOAVDI}}
 Do not use Fock type decoupling of the two-electron density matrix.
 Add $F^ID$ instead of $(F^I+F^A)D$ to $E^{[2]}$ approximate
-orbital diagonal. 
+orbital diagonal. Not recommended as the approximate orbital diagonal
+normally will become more different from the exact orbital diagonal.
 
-\item{\Key{INPTES}}
+\item{\Key{INPTEST}}
 Input test. For debugging purposes only. The program stops after the
 input section.
 
@@ -185,6 +191,10 @@ together with quadratic or cubic response.
 
 \begin{description}
 
+\item{\Key{TRIPLET}} Defines $A$ and $B$ to be triplet operators.
+Will also make a simultaneous \Sec{LINEAR} \Key{SINGLE RESIDUE} calculation to
+a calculation of triplet excitation energies and transition moments.
+
 \item{\Key{DIPLEN}}
 Sets $A$ and $B$ to dipole operators\index{dipole length}.
 
@@ -253,10 +263,10 @@ Default is 5.
 
 \subsection{Linear response excitation energies calculation: \Sec{LINEAR} with \Key{SINGLE RESIDUE}}
 
-Single residues\index{single residue} of the linear
+Single residues\index{single residue!linear response} of the linear
 response\index{linear response!single residue}\index{response!excitations} function is
 computed. Residues of a linear response function correspond to
-transition moments\index{transition moment} and the associated poles
+transition moments\index{transition moment!linear response} and the associated poles
 correspond to vertical electronic excitation energies.
 %\cite{jodlypjjcp91,pjhjajjojcp89}
 
@@ -269,6 +279,9 @@ together with quadratic or cubic response.
 
 \item{\Key{SINGLE RESIDUE}} Required to get excitation energies, without
 this keyword the linear response function will be evaluated.
+
+\item{\Key{TRIPLET}} Calculate triplet excitation energies and transition moments.
+Will also make a simultaneous linear response calculation of triplet symmetry.
 
 \item{\Key{ROOTS}}\\
 \verb|READ '*',(ROOTS(I) I=1,NSYM)|\\
@@ -295,10 +308,14 @@ Calculate transition moments for all quadrupole\index{quadrupole operator} opera
 
 \item{\Key{SPIN-O}}
 Calculate transition moments for all spin-orbit operators\index{spin-orbit}.
+Warning: this option implies \Key{TRIPLET} and
+forces the excitations to be of triplet symmetry,
+and all operators -- including
+e.g. \Key{DIPLEN} -- will be assumed by the program to be of triplet symmetry!!
 
 \item{\Key{PROPRT}}\\
 \verb|READ '(A)', LABEL|\\
-Calculate transition moments for a given operator with label; LABEL.
+Calculate either singlet or triplet transition moments for a given operator with label; LABEL.
 (The calculation of the operator must be specified to the integral
 module, see section \ref{ch:hermit}.)
 
@@ -307,12 +324,12 @@ module, see section \ref{ch:hermit}.)
 Sets print level for single residue linear response module. Default is 2.
 
 \item{\Key{MAXIT}}\\
-\verb|READ (LUCMDS,*) MAXITP|\\
+\verb|READ *, MAXITP|\\
 Maximum number of iterations for solving the linear response eigenvalue
 equation. Default is 60.
 
 \item{\Key{MAXITO}}\\
-\verb|READ (LUCMDS,*) MAXITO|\\
+\verb|READ *, MAXITO|\\
 Maximum number of iterations in the optimal orbital
 algorithm\index{optimal orbital trial vector}
 \cite{tuhjahjajpjjcp84}. 
@@ -325,7 +342,7 @@ specified is the same which was used \textit{last} in the previous
 response calculation.
 
 \item{\Key{THCPP}}\\
-\verb|READ *,|\\
+\verb|READ *, THCPP|\\
 Threshold for solving the single residue linear response eigenvalue equation. 
 Default is 1.0D-3; note that this number should be at least 10 times
 bigger than the final gradient norm in the SCF/MCSCF
@@ -341,7 +358,8 @@ CI trial vectors are obtained with Olsen algorithm.
 
 \subsection{Quadratic response calculation: \Sec{QUADRA}}
 
-Calculation of third-order properties as quadratic response
+Calculation of third order properties\index{properties!third order}
+ as quadratic response
 functions\index{quadratic response}\index{response!quadratic}.
 $A,B$, and $C$-named options refer to the operators in the quadratic
 response function 
@@ -350,18 +368,21 @@ $\langle\!\langle A;B,C \rangle\!\rangle_{\omega_b,\omega_c}$
 
 \begin{description}
 
-\item{\Key{SINGLE}}
-Computes the single residue\index{single residue} of the quadratic
-response function\index{quadratic response}\index{response!quadratic}.
-For the case of dipole operators this corresponds to two-photon
-transition
-moments\index{two-photon!transition moment}\index{transition moment}\index{transition moment!two-photon}.
+\item{\Key{SHG}}
+Only response functions connected with second harmonic
+generation\index{second harmonic generation}\index{response!second harmonic generation}\index{quadratic response!second harmonic generation}
+are computed, $\beta(-2\omega,\omega,\omega)$ .
+Can be specified together with \Key{POCKEL}.
+Frequencies must be specified with \Key{FREQUE}.
+Remember to specify operators as well, e.g. \Key{DIPLEN}.
 
-\item{\Key{DOUBLE}}
-Computes the double residue\index{double residue} of the quadratic
-response function\index{quadratic response}\index{response!quadratic}.
-Double residues of the quadratic repsonse function correspond to transition
-moments between excited states\index{transition moment!excited states}. 
+\item{\Key{POCKEL}}
+Only response functions connected with electro-optical
+Pockels effect\index{Pockels effect}\index{response!Pockels effect}\index{quadratic response|Pockels effect}
+$\beta(-\omega; \omega,0)$, are computed.
+Can be specified together with \Key{SHG}.
+Frequencies must be specified with \Key{FREQUE}.
+Remember to specify operators as well, e.g. \Key{DIPLEN}.
 
 \item{\Key{DIPLEN}}
 Sets $A$, $B$, and $C$ to dipole operators\index{dipole length}.
@@ -375,67 +396,42 @@ Sets $A$, $B$, and $C$ to the $y$ dipole operator\index{dipole length}.
 \item{\Key{DIPLNZ}}
 Sets $A$, $B$, and $C$ to the $z$ dipole operator\index{dipole length}.
 
-\item{\Key{KERR}}
-Only response functions connected to the Kerr effect\index{Kerr effect}, 
-$\beta(-\omega; \omega,0)$, are computed.
-
-\item{\Key{FREQUE}}\\
-\verb|READ *, NFREQ|\\
-\verb|READ *, FREQ(1:NFREQ)|\\
-Response equations are evaluated at given
-frequencies\index{frequency}. Two lines 
-following this option must contain 1) The number of frequencies, 2)
-Frequencies.  The double residue does not contain frequencies, for the
-single residue and the Kerr effect only the $B$-frequency is set,
-and in other cases both $B$ and $C$-frequencies are set.
-
-\item{\Key{PHOSPHORESCENCE}}
-Specifies a phosphoresence\index{phosphoresence} calculation, i.e.,
-the spin-orbit\index{spin-orbit} 
-induced singlet-triplet transition\index{singlet-triplet transition}. This keyword sets up the  
-calculation so that no further response input is required; the
-$A$ operator is set to the dipole operators\index{dipole length} and
-the $B$ operator  
-is set to the spin-orbit\index{spin-orbit}
-operators. \cite{ovhapjhjajthjojcp97,haovbmaqc27} 
-
-\item{\Key{MCDBTERM}}
-Specifies the calculation of all individual components to the 
-${\cal{B}}(0\to f)$ term of 
-MCD\index{magnetic circular dichroism}\index{B-term}\index{MCD}.
-This keyword sets up the calculation so that no further response input is required. 
-The $A$ operator is set equal to the $\alpha$ component of dipole 
-operator\index{dipole length} and
-the $B$ operator to the $\beta$ component of the angular momentum\index{angular momentum}
-operator. The resulting "mixed" two-photon transition moment to state $f$ 
-is then multiplied for the dipole-allowed one-photon transition moment 
-from state $f$ (for the $\gamma$ component, with $\alpha \neq \beta \neq \gamma$).
-\cite{Coriani:MCDRSP} 
-
 \item[\Key{APROP}, \Key{BPROP}, \Key{CPROP}]
 Specify the operators $A$, $B$, and $C$. The line following this
 option should be the label of the operator as it appears in the file
 AOPROPER.
 
 \item[\Key{ASPIN}, \Key{BSPIN}, \Key{CSPIN}]
-\index{quadratic response}\index{response!quadratic}
 Spin information for quadratic response calculations.
 The line following these options contains the spin
 rank\index{spin rank} of the operators 
 $A$, $B$, and $C$, respectively, 0 for singlet operators and 1 for triplet
-operators. If \Key{SINGLE} is specified, \Key{CSPIN} denotes the
-spin of the excited state. If \Key{DOUBLE} is specified,
-both \Key{BSPIN} and \Key{CSPIN} denote excited state spins.
+operators.
 In a triplet response calculations two of these operators are of rank one,
 and the remaining operator of rank zero.
 
+\item{\Key{FREQUE}}\\
+\verb|READ *, NFREQ|\\
+\verb|READ *, FREQ(1:NFREQ)|\\
+Response equations are evaluated at given
+frequencies\index{frequency!quadratic response}. Two lines 
+following this option must contain 1) The number of frequencies, 2)
+Frequencies.
+For the Kerr effect only the $B$-frequency is set,
+and in other cases both $B$ and $C$-frequencies are set.
+May not be used together with \Key{BFREQ} or \Key{CFREQ}.
+Default is one frequency of each type: zero (static).
 
 \item[\Key{BFREQ}, \Key{CFREQ}]
-The frequencies $\omega_b$ and $\omega_c$. Input as in
-\Sec{LINEAR}\Key{FREQUE}.
+Individual specification of the frequencies $\omega_b$ and $\omega_c$.
+Input as in \Key{FREQUE} above.
+May not be used for \Key{SHG} and \Key{POCKEL}.
+May not be used together with \Key{FREQUE}.
+Default is one frequency of each type: zero (static).
 
 \item{\Key{MAXIT}}
-Maximum number of iterations in this section.
+Maximum number of iterations for solving a linear response equation.
+Default is 60.
 
 \item{\Key{MAXITO}}
 Maximum number of iterations in the optimal
@@ -444,22 +440,139 @@ orbital\index{optimal orbital trial vector} algorithm
 Default is 5.
 
 \item{\Key{PRINT}}\\
-\verb|READ *,IPRINT|\\
+\verb|READ *,IPRHYP|\\
 Print level.
-
-\item{\Key{SHG}}
-Only response functions connected with second harmonic
-generation\index{second harmonic generation} 
-are computed, $\beta(-2\omega,\omega,\omega)$ .
 
 \item{\Key{THCLR}}
 Threshold for solving the linear response equations.
 Default is $10^{-3}$.
 
+\end{description}
+
+\subsection{Quadratic response calculation of second order transition moments:
+\Sec{QUADRA} with \Key{SINGLE RESIDUE}}
+
+%Calculation of third order properties as quadratic response
+%functions\index{quadratic response}\index{response!quadratic}.
+%$A, B$, and $C$-named options refer to the operators in the quadratic
+%response function 
+%$\langle\!\langle A;B,C \rangle\!\rangle_{\omega_b,\omega_c}$
+%\cite{ovhapjhjajthjojcp97,hhhjajpjjojcp97,haovhkpjthjcp98}
+
+\begin{description}
+
+\item{\Key{SINGLE RESIDUE}}
+Required to
+compute the single residue\index{single residue!quadratic response} of the quadratic
+response function\index{quadratic response!single residue}\index{response!quadratic, single residue}.
+For the case of dipole operators this corresponds to two-photon
+transition
+moments\index{two-photon!transition moment}\index{transition moment}\index{transition moment!two-photon}.
+
+\item{\Key{ROOTS}}\\
+\verb|READ '*',(ROOTS(I) I=1,NSYM)|\\
+Number of roots.  The line following this option contains the number
+of excited states\index{excited state!second order moment} per symmetry. Excitation
+energies\index{excitation energy!second order moment} are calculated for each state and if
+any operators are given, 
+symmetry-allowed second order transition moments\index{transition moment!second order} are
+calculated between the 
+reference state and the excited states.
+Remember to increase \Key{MAXRM} if many frequencies are specified.
+
+\item{\Key{PHOSPHORESCENCE}}
+Specifies a phosphoresence\index{phosphoresence} calculation, i.e.,
+the spin-orbit\index{spin-orbit} 
+induced singlet-triplet transition\index{singlet-triplet transition}. This keyword sets up the  
+calculation so that no further response input is required except \Key{ROOTS}; the
+$A$ operator is set to the dipole operators\index{dipole length} and
+the $B$ operator  
+is set to the spin-orbit\index{spin-orbit}
+operators. \cite{ovhapjhjajthjojcp97,haovbmaqc27} 
+The reference state {\em must} be a singlet spin state.
+
+\item{\Key{MCDBTERM}}
+Specifies the calculation of all individual components to the 
+${\cal{B}}(0\to f)$ term of magnetic circular dicrhoism
+(MCD)\index{magnetic circular dichroism}\index{B-term}\index{MCD}.
+This keyword sets up the calculation so that no further response input is required except \Key{ROOTS}. 
+The $A$ operator is set equal to the $\alpha$ component of dipole 
+operator\index{dipole length} and
+the $B$ operator to the $\beta$ component of the angular momentum\index{angular momentum}
+operator. The resulting "mixed" two-photon transition moment to state $f$ 
+is then multiplied for the dipole-allowed one-photon transition moment 
+from state $f$ (for the $\gamma$ component, with $\alpha \neq \beta \neq \gamma$).
+\cite{Coriani:MCDRSP} 
+
+\item{\Key{DIPLEN}}
+Sets $A$ and $B$ to $x, y, z$ dipole operators\index{dipole length}.
+
+\item{\Key{DIPLNX}}
+Sets $A$ and $B$ to the $x$ dipole operator\index{dipole length}.
+
+\item{\Key{DIPLNY}}
+Sets $A$ and $B$ to the $y$ dipole operator\index{dipole length}.
+
+\item{\Key{DIPLNZ}}
+Sets $A$ and $B$ to the $z$ dipole operator\index{dipole length}.
+
+\item{\Key{BFREQ}, \Key{FREQUE}}\\
+\verb|READ *, NFREQ|\\
+\verb|READ *, FREQ(1:NFREQ)|\\
+The frequencies $\omega_b$ in atomic units.
+Response equations are evaluated at given
+frequencies\index{frequency}. Two lines 
+following this option must contain 1) The number of frequencies, 2)
+Frequencies.
+
+\item{\Key{ISPABC}}\\
+\verb|READ *, ISPINA,ISPINB,ISPINC|\\
+Spin symmetry of $A$-operators (ISPINA), $B$-operators (ISPINB),
+and the excitation operator (ISPINC): "0" for singlet and "1" for triplet.
+Default is "0,0,0", i.e. all of singlet spin symmetry.
+Note: triplet operators are only implemented for singlet reference states.
+%hjaaj June 2001: .ASPIN etc. should be defined for .SINGLE
+%\item[\Key{ASPIN}, \Key{BSPIN}, \Key{CSPIN}]
+%\index{quadratic response}\index{response!quadratic}
+%Spin information for quadratic response calculations.
+%The line following these options contains the spin
+%rank\index{spin rank} of the operators 
+%$A$, $B$, and $C$, respectively, 0 for singlet operators and 1 for triplet
+%operators. If \Key{SINGLE} is specified, \Key{CSPIN} denotes the
+%spin of the excited state. If \Key{DOUBLE} is specified,
+%both \Key{BSPIN} and \Key{CSPIN} denote excited state spins.
+%In a triplet response calculations two of these operators are of rank one,
+%and the remaining operator of rank zero.
+
+\item[\Key{APROP}, \Key{BPROP}]
+Specify the operators $A$ and $B$, respectively. The line following this
+option should be the label of the operator as it appears in the file
+AOPROPER.
+
+\item{\Key{PRINT}}\\
+\verb|READ *,IPRSMO|\\
+Print level.
+
+\item{\Key{MAXITL}}
+Maximum number of iterations for linear equations in this section.
+Default is 60.
+
 \item{\Key{MAXITP}}
 Maximum number of iterations in solving the linear
 response\index{linear response}\index{response!linear} eigenvalue 
 equations.
+Default is 60.
+
+\item{\Key{MAXITO}}
+Maximum number of iterations in the optimal
+orbital\index{optimal orbital trial vector} algorithm 
+\cite{tuhjahjajpjjcp84}. 
+Default is 5.
+
+\item{\Key{THCLR}}
+\verb|READ *, THCLR|\\
+Threshold for solving the linear response equations.
+Default is $10^{-3}$.
 
 \item{\Key{THCPP}}\\
 \verb|READ *, THCPP|\\
@@ -468,6 +581,93 @@ Threshold for solving the linear response
 eigenvalue equation. Default is $10^{-3}$.
 
 \end{description}
+
+
+\subsection{Quadratic response calculation of transition moments between excited states:
+\Sec{QUADRA} with \Key{DOUBLE RESIDUE}}
+
+Calculation of third-order properties as quadratic response
+functions\index{quadratic response}\index{response!quadratic}.
+$A,B$, and $C$-named options refer to the operators in the quadratic
+response function 
+$\langle\!\langle A;B,C \rangle\!\rangle_{\omega_b,\omega_c}$
+\cite{ovhapjhjajthjojcp97,hhhjajpjjojcp97,haovhkpjthjcp98}
+
+\begin{description}
+
+\item{\Key{DOUBLE RESIDUE}}
+Computes the double residue\index{quadratic response!double residue}
+of the quadratic
+response function\index{double residue!quadratic response}\index{response!quadratic, double residue}.
+Double residues of the quadratic repsonse function correspond to transition
+moments between excited states\index{transition moment!between excited states},
+$\langle B \mid A \mid C \rangle$. 
+
+\item{\Key{DIPLEN}}
+Sets $A$ to dipole operators\index{dipole length}.
+
+\item{\Key{DIPLNX}}
+Sets $A$ to the $x$ dipole operator\index{dipole length}.
+
+\item{\Key{DIPLNY}}
+Sets $A$ to the $y$ dipole operator\index{dipole length}.
+
+\item{\Key{DIPLNZ}}
+Sets $A$ to the $z$ dipole operator\index{dipole length}.
+
+\item[\Key{PROPRT}]
+%hjaaj June 2001, ought to define as well: \item[\Key{APROP}]
+Specify another $A$ operator. The line following this
+option should be the label of the operator as it appears in the file
+AOPROPER. This option may be repeated for different property operators.
+
+\item{\Key{ISPABC}}\\
+\verb|READ *, ISPINA,ISPINB,ISPINC|\\
+Spin symmetry of $A$-operators (ISPINA)
+and the left and right excitation operators (ISPINB and ISPINC):
+"0" for singlet and "1" for triplet.
+Default is "0,0,0", i.e. all of singlet spin symmetry.
+Note: triplet operators are only implemented for singlet reference states.
+%hjaaj June 2001: .ASPIN etc. should be defined for .DOUBLE
+%\item[\Key{ASPIN}, \Key{BSPIN}, \Key{CSPIN}]
+%\index{quadratic response}\index{response!quadratic}
+%Spin information for quadratic response calculations.
+%The line following these options contains the spin
+%rank\index{spin rank} of the operators 
+%$A$, $B$, and $C$, respectively, 0 for singlet operators and 1 for triplet
+%operators. If \Key{SINGLE} is specified, \Key{CSPIN} denotes the
+%spin of the excited state. If \Key{DOUBLE} is specified,
+%both \Key{BSPIN} and \Key{CSPIN} denote excited state spins.
+%In a triplet response calculations two of these operators are of rank one,
+%and the remaining operator of rank zero.
+
+
+\item{\Key{PRINT}}\\
+\verb|READ *,IPRPP|\\
+Print level for solving linear response eigenvalue equations.
+
+\item{\Key{IPREXM}}\\
+\verb|READ *,IPREXM|\\
+Print level for special excited state transition moment routines.
+
+
+\item{\Key{THCPP}}\\
+\verb|READ *, THCPP|\\
+Threshold for solving the linear response
+eigenvalue equation. Default is $10^{-3}$.
+
+\item{\Key{MAXIT}}
+Maximum number of iterations for solving linear response
+eigenvalue equation in this section.
+
+\item{\Key{MAXITO}}
+Maximum number of iterations in the optimal
+orbital\index{optimal orbital trial vector} algorithm 
+\cite{tuhjahjajpjjcp84}. 
+Default is 5.
+
+\end{description}
+
 
 \subsection{Cubic response calculation: \Sec{CUBIC}}
 Calculation of fourth-order properties as cubic response functions\index{cubic response}\index{response!cubic}
@@ -484,10 +684,19 @@ option should be the label of the operator as it appears in the file
 AOPROPER.
 
 \item[\Key{BFREQ}, \Key{CFREQ}, \Key{DFREQ}]
-The frequencies\index{frequency} $\omega_b$, $\omega_c$ and $\omega_d$. Input as in
-\Sec{LINEAR}\Key{FREQUE}.
+The frequencies\index{frequency!cubic response}
+$\omega_b$, $\omega_c$, and $\omega_d$, respectively. Input as in
+\Key{FREQUE}.
 
-\item{\Key{THG}}
+\item{\Key{FREQUE}}\\
+\verb|READ *, NFREQ|\\
+\verb|READ *, FREQ(1:NFREQ)|\\
+Sets the frequencies\index{frequency!cubic response} whenever a optical process is specified.
+Can also be used for the residue calculation and it does then set 
+both $\omega_b$ and $\omega_c$ for the single residue and only
+$\omega_b$ for the double residue.
+
+\item{\Key{THG   }}
 Only response functions connected to the third harmonic
 generation\index{third harmonic generation} are
 computed, $\gamma(-3\omega;\omega,\omega,\omega)$ \cite{djpnylhajcp105}.
@@ -497,41 +706,92 @@ Only response functions connected to the static electric field-induced
 second harmonic generation\index{electric field!induced SHG} are computed,
 $\gamma(-2\omega;\omega,\omega,0)$.
 
-\item{\Key{DC-KER}}
+\item{\Key{DC-KERR}}
 Only response functions connected to the static electric field induced
 Kerr effect\index{electric field!induced Kerr} are computed,
 $\gamma(-\omega;\omega,0,0)$.
 
-\item{\Key{IDRI}}
+\item{\Key{IDRI  }}
 Only response functions connected to the intensity dependent 
 refractive\index{refractive index!intensity dependent} index are computed,
 $\gamma(-\omega;\omega,-\omega,\omega)$.
 
-\item{\Key{FREQUE}}\\
-\verb|READ *, NFREQ|\\
-\verb|READ *, FREQ(1:NFREQ)|\\
-Sets the frequencies\index{frequency} whenever a optical process is specified.
-Can also be used for the residue calculation and it does then set 
-both $\omega_b$ and $\omega_c$ for the single residue and only
-$\omega_b$ for the double residue.
+\item{\Key{DIPLEN}}
+Sets $A$, $B$, $C$, and $D$ to dipole operators\index{dipole length}.
 
-\item{\Key{OLDVEC}}
-Read the response vectors specified in the file CRINFO from
-file.
+\item{\Key{DIPLNX}}
+Sets $A$, $B$, $C$, and $D$ to the $x$ dipole operator\index{dipole length}.
+
+\item{\Key{DIPLNY}}
+Sets $A$, $B$, $C$, and $D$ to the $y$ dipole operator\index{dipole length}.
+
+\item{\Key{DIPLNZ}}
+Sets $A$, $B$, $C$ and $D$ to the $z$ dipole operator\index{dipole length}.
+
+\item{\Key{MAXIT }}
+Maximum nuber of iterations for solving linear equations, default value is 20.
+
+\item{\Key{MAXITO}}
+Maximum number of ORPCTL-microiterations, default value is 10.
+
+\item{\Key{PRINT}}
+Print flag for output, default value is 2. Timer information is printed
+out if printflag greater than 5. Response vectors printed out if
+printflag greater than 10.
+
+\item{\Key{THCLR}}
+Threshold for convergence of response vectors, default value is $10^{-4}$.
+
+\item{\Key{THRNRM}}
+Threshold for norm of property vector $X^{[1]}$ in order to solve the linear
+equation \\
+$\left( E^{[2]} - S^{[2]} \right)N^{X} = X^{[1]}$, default
+value is $10^{-9}$. 
+
+%hjaaj June 2001: is triplet tested ?? (was not listed in dalton1.1 manual)
+%item{\Key{ISABCD}}\\
+%verb|READ *, ISPINA,ISPINB,ISPINC,ISPIND|\\
+
+%hjaaj June 2001
+%\Key{INVEXP} is a programmers test option 
+
+\end{description}
+
+\subsection{Cubic response calculation of third-order transition moments:
+\Sec{CUBIC} with \Key{SINGLE RESIDUE}}
+Calculation of single residues\index{single residue!cubic response} of
+cubic response functions\index{cubic response!single residue}\index{response!cubic, single residue}
+\cite{pndjovhacpl242,djpnhajcp105,pndjhapdkrthhkcpl253}.
+$A,B$,$C$, and $D$-named options refer to the operators in the cubic
+response function 
+$\langle\!\langle A;B,C,D \rangle\!\rangle_{\omega_b,\omega_c,\omega_d}$
+
+\begin{description}
 
 \item{\Key{SINGLE}}
-Computes the single residue\index{single residue} of the cubic
-response function\index{cubic response}\index{response!cubic}.
+Computes the single residue\index{single residue!cubic response} of the cubic
+response function\index{cubic response!single residue}.
 In the case of dipole operators this corresponds to
 three-photon absorption\index{three-photon!absorption}.
 
-\item{\Key{DOUBLE}}
-Computes the double\index{double residue} residue of the cubic
-response function\index{cubic response}\index{response!cubic}.
-In the case of dipole operators this corresponds to excited
-state polarizabilities and two-photon transition
-moments\index{two-photon!transition moment!excited states}\index{excited state!polarizability} 
-between excited states \cite{djpnylhajcp105}.
+\item[\Key{APROP}, \Key{BPROP}, \Key{CPROP}]
+Specify the operators $A$, $B$, and $C$, respectively.
+The line following this
+option should be the label of the operator as it appears in the file
+AOPROPER.
+
+\item[\Key{BFREQ}, \Key{CFREQ}]
+The frequencies\index{frequency!cubic response single residue}
+$\omega_b$ and $\omega_c$, respectively. Input as in
+\Key{FREQUE}.
+
+\item{\Key{FREQUE}}\\
+\verb|READ *, NFREQ|\\
+\verb|READ *, FREQ(1:NFREQ)|\\
+Sets the frequencies\index{frequency!cubic response} whenever a optical process is specified.
+Can also be used for the residue calculation and it does then set 
+both $\omega_b$ and $\omega_c$ for the single residue and only
+$\omega_b$ for the double residue.
 
 \item{\Key{DIPLEN}}
 Sets $A$, $B$, $C$, and $D$ to dipole operators\index{dipole length}.
@@ -559,18 +819,12 @@ printflag greater than 10.
 \item{\Key{THCLR}}
 Threshold for convergence of response vectors, default value is $10^{-4}$.
 
-\item{\Key{THRNRM}}
-Threshold for norm of property vector $X^{[1]}$ in order to solve the linear
-equation \\
-$\left( E^{[2]} - S^{[2]} \right)N^{X} = X^{[1]}$, default
-value is $10^{-9}$. 
-
 \item{\Key{MAXITP}}
 Maximum number of iteration for solving eigenvalue equation, default
 value is 20.
 
 \item{\Key{ROOTS}}
-Number of roots to converge. \\
+Number of roots (excited states) to converge. \\
 \verb|READ (LUCMDS,*) (NTMCNV(J),J=1,NSYM)|\\
 
 \item{\Key{THCPP}}
@@ -578,7 +832,97 @@ Threshold for convergence of eigenvector, default value is $10^{-6}$.
 
 \end{description}
 
+
+\subsection{Cubic response calculation of second order moments 
+between excited states and excited state polarizabilities:
+\Sec{CUBIC} with \Key{DOUBLE RESIDUE}}
+Calculation of double residues\index{double residue!cubic response} of
+cubic response functions\index{cubic response!double residue}\index{response!cubic, double residue}
+\cite{pndjovhacpl242,djpnhajcp105,pndjhapdkrthhkcpl253}.
+$A,B$,$C$, and $D$-named options refer to the operators in the cubic
+response function 
+$\langle\!\langle A;B,C,D \rangle\!\rangle_{\omega_b,\omega_c,\omega_d}$.
+$C$ and $D$ refer to the left hand state and right hand state
+after the double residue has been taken.
+
+Excited state polarizabilites are only calculated if one or more of the keywords
+\Key{DIPLEN}, \Key{DIPLNX}, \Key{DIPLNY}, and \Key{DIPLNZ}
+are specified.
+Only singlet excitations and singlet property operators are implemented.
+
+\begin{description}
+
+\item{\Key{DOUBLE}}
+REQUIRED.
+Computes the double\index{double residue} residue of the cubic
+response function\index{cubic response}\index{response!cubic}.
+In the case of dipole operators this corresponds to excited
+state polarizabilities and two-photon transition
+moments\index{two-photon!transition moment!excited states}\index{excited state!polarizability} 
+between excited states \cite{djpnylhajcp105}.
+
+\item{\Key{ROOTS}}
+Number of roots (excited states) to converge for each spatial symmetry. \\
+\verb|READ (LUCMDS,*) (NTPCNV(J),J=1,NSYM)|\\
+Default: one of each symmetry.
+
+\item[\Key{APROP}, \Key{BPROP}]
+Specify the operators $A$ and $B$, respectively. The line following this
+option should be the label of the operator as it appears in the file
+AOPROPER. These two keywords can be repeated for different properties.
+
+\item[\Key{BFREQ}]
+The frequencies\index{frequency!cubic response}
+$\omega_b$. Input as in \Key{FREQUE}.
+Default only zero frequency (static).
+
+\item{\Key{FREQUE}}\\
+\verb|READ *, NFREQ|\\
+\verb|READ *, FREQ(1:NFREQ)|\\
+Sets the frequencies\index{frequency!cubic response} whenever a optical process is specified.
+Can also be used for the residue calculation and it does then set 
+both $\omega_b$ and $\omega_c$ for the single residue and only
+$\omega_b$ for the double residue.
+Default only zero frequency (static).
+
+\item{\Key{DIPLEN}}
+Sets $A$ and  $B$ to dipole operators\index{dipole length}.
+
+\item{\Key{DIPLNX}}
+Sets $A$ and $B$ to the $x$ dipole operator\index{dipole length}.
+
+\item{\Key{DIPLNY}}
+Sets $A$ and $B$ to the $y$ dipole operator\index{dipole length}.
+
+\item{\Key{DIPLNZ}}
+Sets $A$ and $B$ to the $z$ dipole operator\index{dipole length}.
+
+\item{\Key{MAXIT}}
+Maximum nuber of iterations for solving linear equations, default value is 60.
+
+\item{\Key{MAXITO}}
+Maximum number of ORPCTL-microiterations, default value is 10.
+
+\item{\Key{PRINT}}
+Print flag for output, default value is 2. Timer information is printed
+out if printflag greater than 5. Response vectors printed out if
+printflag greater than 10.
+
+\item{\Key{THCLR}}
+Threshold for convergence of response vectors, default value is $10^{-4}$.
+
+\item{\Key{MAXITP}}
+Maximum number of iteration for solving eigenvalue equation, default
+value is 20.
+
+\item{\Key{THCPP}}
+Threshold for convergence of eigenvector, default value is $10^{-6}$.
+
+\end{description}
+
+
 \subsection{Spherical multipole moments: \Sec{C6}}\index{multipole moment}
+%hjaaj: wrong name!
 
 \begin{description}
 
