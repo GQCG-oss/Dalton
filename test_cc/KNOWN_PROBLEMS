@@ -22,3 +22,12 @@ SGI 32-bit
 
   test cases alpha_deriv, verdet_h2, verdet_hf and verdet_hf_direct
   all quit with the message: "Reason: fatal i/o error in CC_RDRSP"
+
+
+
+------------------------------------------------------------------------
+SGI 64-bit
+------------------------------------------------------------------------
+
+  test case optco yields incorrect RSTAR energy, though it
+  eventually converges to the correct geometry

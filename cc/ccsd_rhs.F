@@ -4648,7 +4648,9 @@ C
             FAODER = 'AO2DIS'//CHRNOS(0)//CHRNOS(0)
             CALL GPOPEN(LUAORC(0),FAODER,'UNKNOWN','DIRECT',
      &           'UNFORMATTED',LRECL,OLDDX)
-                rewind(luaorc(0))
+C VB mar 2001:
+C     REWIND should not be performed on a file connected for direct I/O
+C                rewind(luaorc(0))
       END IF
 C
       ICOUNT = 0
