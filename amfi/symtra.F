@@ -200,13 +200,13 @@ cbs   determine indices of atomic integrals
       ipSCRY=ipC(2,ncent(irun))-1+laufalt
       ipSCRZ=ipC(3,ncent(irun))-1+laufalt
       if (indexi.gt.indexj) then 
-         Wrk(ipX+lauf-1)=coeff*Wrk(ipSCRX)
-         Wrk(ipY+lauf-1)=coeff*Wrk(ipSCRY)
-         Wrk(ipZ+lauf-1)=coeff*Wrk(ipSCRZ)
-      else 
          Wrk(ipX+lauf-1)=-coeff*Wrk(ipSCRX)
          Wrk(ipY+lauf-1)=-coeff*Wrk(ipSCRY)
          Wrk(ipZ+lauf-1)=-coeff*Wrk(ipSCRZ)
+      else 
+         Wrk(ipX+lauf-1)=coeff*Wrk(ipSCRX)
+         Wrk(ipY+lauf-1)=coeff*Wrk(ipSCRY)
+         Wrk(ipZ+lauf-1)=coeff*Wrk(ipSCRZ)
       endif 
 CBS
 CBS  the integrals are now on on the WRK array 
