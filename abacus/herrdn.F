@@ -580,7 +580,22 @@ C******************************************************************************
       CALL RDLINE(LUINFO)
       READ (MLINE(NMLINE),'(BN,A1,I4,I3,A2,10A1,D10.2,6I5)')
      &     CRT,NONTYP,KCHARG,SYMTXT,((KASYM(I,J),I=1,3),J=1,3),ID3,THRS
-      IF(NONTYP.GT.KATOM) GOTO 5000
+      IF (NONTYP.EQ.0) THEN
+        WRITE (LUPRI,'(/A/A//A)')
+     &    ' You have specified a molecule with zero atoms,',
+     &    ' thus all answers to all your input are zero!',
+     &    ' (or you made an input error in the .mol file)'
+        CALL QUIT('No atoms according to .mol input!')
+      ELSE IF (NONTYP.LT.0) THEN
+        WRITE (LUPRI,'(/A,I6)')
+     &    ' >>> READI1 error, no. of atomic types negative:',NONTYP
+        CALL QUIT('Negative number of atoms according to .mol input')
+      ELSE IF (NONTYP.GT.KATOM) THEN
+        WRITE (LUPRI,'(/A,I6/A,I6)')
+     &   ' >>> READI1 error, no. of atomic types    ',NONTYP,
+     &   '                   current maximum number ',KATOM
+        CALL QUIT('Too many atomic types in .mol input')
+      END IF
 C*****************************************************************************
 C Check integral threshold: THRS must be .gt. 0
 C       ( log(thrs*thrs) taken in oneint) (851005-hjaaj)
@@ -700,14 +715,6 @@ C
      &                        KANG)
 C
       RETURN
-C
-C       Error messages:
-C
- 5000 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
-     *   ' >>> READI1 error, no. of atomic types    ',NONTYP,
-     *   '                    current maximum number ',KATOM
-      CALL QUIT('Too many atomic types')
       END
 C  /* Deck baspar */
       SUBROUTINE BASPAR(NSYMOP)
@@ -851,7 +858,7 @@ C
            IF (ZMATL .NE. ' ') THEN
               ZMTTST = .TRUE.
               WRITE (LUPRI,'(/A)')
-     &        'Atoms and their geometry is read in Z-matrix format.'
+     &        'Atoms and their geometry are read in Z-matrix format.'
               IF (.NOT. BASIS) THEN
                  WRITE (LUPRI,'(/A)') '*** READI1 ERROR:'
                  CALL QUIT('Z-matrix only implemented with BASIS')
