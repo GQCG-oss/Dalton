@@ -272,7 +272,7 @@ For tetrahedrane, the input would then look like
 
 The different lines are:
 \begin{description}
-\item[5] This line keyword-driven. The general structure of the input is
+\item[5] This line is keyword-driven. The general structure of the input is
 \verb|Keyword=|. The input is case sensitive, but it will recognize
 the keywords whether specified with only three characters (minimum) or
 the full name (or any intermediate option). The order of the keywords
@@ -291,7 +291,8 @@ atoms of this kind).
   atoms in this block will be treated as point charges, that is,
   having only a charge but no basis functions attached to
   them. Effective core potentials (ECP)\index{effective core
-  potentials}\index{ECD} can also by used by specifying \verb|Basis=ECP|.
+  potentials}\index{ECD} can also by used by specifying
+  \verb|Basis=ECP|.
 \item[Blocks] \verb|(Integers)|. Maximum angular quantum number + 1 used in the
 basis set for this atom type ($s=1$, $p=2$, etc.).
 Ignored if library basis sets are being used (\verb|BASIS| or
@@ -330,7 +331,7 @@ integral\index{performance of integral program} calculation.
   Sec.~\ref{sec:auxbasis}. The keyword is only active when the keyword
   \Key{AUXBAS} has been specified in the  \Sec{*INTEGRALS} input section.
 \end{description}
-\item[6] \verb|NAME, X, Y, Z|
+\item[6] \verb|NAME X Y Z Isotope=18|
 \begin{description}
 \item[NAME] Atom name.  A different name should be used for
 each atom of the same type, although this is not required. Note that
@@ -340,6 +341,12 @@ program, and that no spaces are allowed in naming the atom.
 has been requested on line $4$ of the input).
 \item[Y] $y$-coordinate.
 \item[Z] $z$-coordinate.
+\item[Isotope=] Specify the atomic mass of the nucleus (closest
+  integer number). By default the mass of the most abundant isotope
+  of the element will be used. When automatic symmetry detection is
+  used, the program will distinguish between different nuclei if they
+  have different atomic mass number. A calculation of HDO would thus
+  be run in C$_s$ symmetry. 
 \end{description}
 The Cartesian coordinates may
 be given in free format.
