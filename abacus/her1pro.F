@@ -2350,14 +2350,19 @@ C  /* Deck sdtyp */
                IF (ISCOR1 .GT. 0) THEN
                   DO 400 ICOOR2 = 1, 3
                      ITYP = ITYP + 1
+                     IFIRST = ISCOR1/100
+                     ISECND = MOD(ISCOR1,100)/10
+                     ITHIRD = MOD(MOD(ISCOR1,100),10)
                      IF (INTTYP .EQ. 11) THEN
-                        LABINT(ITYP) = 'SD  '//CHRNOS(ISCOR1/10)
-     &                                       //CHRNOS(MOD(ISCOR1,10))
-     &                                       //' '//CHRXYZ(-ICOOR2)
+                        LABINT(ITYP) = 'SD '//CHRNOS(IFIRST)
+     &                                      //CHRNOS(ISECND)
+     &                                      //CHRNOS(ITHIRD)//' '
+     &                                      //CHRXYZ(-ICOOR2)
                      ELSE
-                        LABINT(ITYP) = 'SDC '//CHRNOS(ISCOR1/10)
-     &                                       //CHRNOS(MOD(ISCOR1,10))
-     &                                       //' '//CHRXYZ(-ICOOR2)
+                        LABINT(ITYP) = 'SDC'//CHRNOS(IFIRST)
+     &                                      //CHRNOS(ISECND)
+     &                                      //CHRNOS(ITHIRD)//' '
+     &                                      //CHRXYZ(-ICOOR2)
                      END IF
                      INTREP(ITYP) = IBTXOR(IREP,ISYMAX(ICOOR2,2))
                      ISCOOR = 3*(ISCOR1 - 1) + ICOOR2

@@ -1595,7 +1595,7 @@ C
          CALL GET1IN(DUMMY,'SPIN-DI',NCOMP,WORK,LWORK,SDLAB,
      &               ISDREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,
      &               INTPRI)
-         NREC = NREC + 9*NUCDEP
+         NREC = NREC + 6*NUCDEP
       END IF
       IF (DOFC) THEN
          NCOMP  = 0
