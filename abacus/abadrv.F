@@ -794,7 +794,7 @@ C     ... WRDSRC not found in input file;
 C         if WRDSRC .eq. '**START' we also try for '**PROPER'
 C         such that any '**PROPER' input will now also apply for initial
 C         geometry if not overridden with '**START' /Feb 2003 hjaaj
-         IF (WRDSRC .EQ. '**START') THEN
+         IF (WRDSRC .EQ. '**START' .AND. WORD1.NE.'**PROPE') THEN
             REWIND (LUCMD,IOSTAT=IOS)
             WORD1 = '**PROPE'
             GO TO 900
