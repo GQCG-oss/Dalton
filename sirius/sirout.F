@@ -384,7 +384,7 @@ CMAERKE-901025 write orbital energies for Hartree-Fock
       END IF
 #endif
       IF (NASHT .GT. 1 .AND. .NOT.(FLAG(3) .AND. MCTYPE.EQ.1) .AND.
-     *    .NOT.DOCINO) THEN
+     *    .NOT.(CICALC.AND.DOCINO) ) THEN
          KREL1 = KFREE
          CALL MEMGET('REAL',KUNO,N2ASHX,WRK,KFREE,LFREE)
          CALL MEMGET('REAL',KCINDX,LCINDX,WRK,KFREE,LFREE)
@@ -416,6 +416,12 @@ C
             CALL MOLLAB(TABLE(2),LUIT1,LUW4)
          END IF
          CALL READT(LUIT1,NCMOT,WRK(KCMO))
+       IF (CICALC .AND. DOCINO) THEN
+          CALL DZERO(WRK(KOCC),NORBT)
+C         ... we do not know the orbital occupation for CINO
+C             any more and cannot calculate them again 
+C             (CREF was not saved on file)
+       ELSE
          KREL1 = KFREE
          CALL MEMGET('REAL',KUNO,N2ASHX,WRK,KFREE,LFREE)
          CALL MEMGET('REAL',KCINDX,LCINDX,WRK,KFREE,LFREE)
@@ -428,6 +434,7 @@ C
 C        CALL GETNO(CVEC,ICSYM,OCCNO,UNO,CMO,ORDER,NATORB,NOAVER,
 C    *              MOISNO,INDXCI,WRK,KFRSAV,LFRSAV,LUPRI,IPRINT)
          CALL MEMREL('SIROUT.molden.GETNO',WRK,KFRSAV,KREL1,KFREE,LFREE)
+       END IF
          CALL MOMOS(1,WRK(KCMO),WRK(KOCC))
       END IF
 C     
@@ -471,7 +478,7 @@ C
 c      IF (P4FLAG(4) .AND. NCONF.GT.1 .AND. .NOT.DOCINO) THEN
 c--renzo modif
       IF (P4FLAG(4) .AND.((NCONF.eq.1.and.DONEVPT).or.(NCONF.gt.1)).AND.
-     $     .NOT.DOCINO) THEN
+     $     .NOT.(CICALC .AND. DOCINO)) THEN
          IF (LCINDX .GT. LFREE) THEN
             WRITE (LUW4,1077) LCINDX-LFREE
             GO TO 110

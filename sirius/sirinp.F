@@ -586,7 +586,7 @@ C
       FLAG(13) = .FALSE.
       KDEL   = 0
       THROVL = 1.0D-6
-      CMAXMO = 1.0D4
+      CMAXMO = 1.0D3
       FCVORB   = .FALSE.
 C
 C********** Default values section CIVINP *****
@@ -1281,7 +1281,7 @@ C
       IF ((DORHF .OR. DOMP2 .OR. DOCCSD) .AND. INIOCC .LE. 0) THEN
          INPERR = INPERR + 1
          WRITE (LUPRI,'(/A/A)')
-     &      ' Input error for SCF, MP2, or CC calculation:',
+     &      ' Input error for DFT, HF, MP2, or CC calculation:',
      &      ' Initial SCF occupation has not been defined.'
          INIOCC = 0
 C        ... set INIOCC = 0 for PRTINP
@@ -1800,7 +1800,8 @@ C *AUXILIARY (and misspelled *AUXILLIARY for backwards compatibility)
      &       'CC_INP error: NSYM from SIRIFC .ne. NSYM in this run')
        END IF
        GOTO 910
- 2900  CALL DFTINP(WORD,INPERR,ALLOPT)
+C2900  CALL DFTINP(WORD,INPERR,ALLOPT)  ! TODO when merge with qr-fast-dft
+ 2900  CALL SCFINP(WORD,INPERR,ALLOPT)
        GO TO 910
  3000  CALL NEVPT2INP(WORD,INPERR,ALLOPT)
        GO TO 910
@@ -2083,7 +2084,7 @@ C        ... no P-supermatrix for DFT
          PROMPT = TITLIN(1:1)
          IF (PROMPT .EQ. '#' .OR. PROMPT .EQ. '!') GO TO 1161
          IF (PROMPT .EQ. '.' .OR. PROMPT .EQ. '*') THEN
-            INPERR = INPERR + 1
+C todo      INPERR = INPERR + 1 ! remove comment when DFT_GETFUNC ready
             WRITE (LUPRI,'(/A/A//A)')
      &      '--> Input error for line following .DFT',
      &      '    expected functional specification but read:',

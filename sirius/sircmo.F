@@ -827,13 +827,14 @@ C
       WRITE(LUW4 ,3010) CMAX,CMAXMO
       IF (IPRI6.GT.0 .AND. LUPRI.NE.LUW4) WRITE(LUPRI,3010) CMAX,CMAXMO
  3010 FORMAT(/' *** ORTHO-FATAL ERROR ***',
-     *       /5X,'Largest molecular orbital coefficient    ',E20.6
-     *       /5X,'This number is larger than accepted limit',E20.6
-     *       /5X,'Significant loss of accuaracy is probable ',
-     *       /5X,'in transformation of two-electron integrals,'
-     *       /5X,'program stops here.',
-     *       /5X,'Modify basis set or increase ',
-     *           'limit with ".CMOMAX" in "*ORBIAL INPUT".')
+     *    /'Largest molecular orbital coefficient    ',1P,E20.6
+     *    /'This number is larger than accepted limit',E20.6
+     *    /'Significant loss of accuaracy is probable ',
+     *    /'in transformation of two-electron integrals,'
+     *    /'*** program stops here. ***   Your options:',
+     *    /'Modify basis set, decrease numerical linear dependency',
+     &    /'with ".AO DELETE", or take the chance and increase ',
+     *    /'limit with ".CMOMAX" in "*ORBITAL INPUT".')
       GO TO 5000
 C
 C

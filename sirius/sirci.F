@@ -211,7 +211,7 @@ C
       LA = LACIMX
       LB = 2*NCONF + LBCIMX
 C
-      MAXSIM = (LW2 - LA) / LB
+      MAXSIM = MIN(NCROOT, (LW2 - LA) / LB )
       IF (MAXSIM .LE. 0) THEN
          IF (.NOT. DISKH2) THEN
 C           ... try put H2AC on disk :
