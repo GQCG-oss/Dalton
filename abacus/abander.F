@@ -3775,7 +3775,7 @@ C
          KLAST  = KCSTRA + NCOOR**2
          CALL HEADER('Numerical fourth derivative of energy in ' //
      &                TEXT(1:LTXT) // 'coordinates',-1)
-         CALL PRIFDR(FDER,SYMCOR,FTMPDR,WORK(KSYMFD),NDIMF,NCOOR,LTXT,
+         CALL PRIFDR(FDER,SYMCOR,FTMPDR,WORK(KSYMFD),NDIMF,NDCOOR,LTXT,
      &               IPRINT,TEXT)
       END IF
 C
