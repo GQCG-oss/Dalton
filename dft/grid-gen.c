@@ -1194,13 +1194,16 @@ ggen_work_release(GridGenWork* ggw)
 static GridGenMolGrid*
 mgrid_new(int atom_cnt, const GridGenAtom* atoms)
 {
-    int i, j, index;
+    int i, j, index, paircnt;
     GridGenMolGrid* mg = dal_malloc(sizeof(GridGenMolGrid));
     mg->atom_cnt    = atom_cnt;
     mg->atom_coords = atoms;
     mg->atom_grids  = dal_malloc(atom_cnt*sizeof(GridGenAtomGrid*));
-    mg->rij  = dal_malloc(sizeof(real)*(atom_cnt*(atom_cnt-1))/2 );
-    mg->aij  = dal_malloc(sizeof(real)*(atom_cnt*(atom_cnt-1))/2 );
+    /* be careful with atoms (=no pairs): some systems (AIX) do not 
+     * like 0 allocations */
+    paircnt = (atom_cnt*(atom_cnt-1))/2;
+    mg->rij  = dal_malloc(sizeof(real)*(paircnt == 0 ? 1 : paircnt));
+    mg->aij  = dal_malloc(sizeof(real)*(paircnt == 0 ? 1 : paircnt));
     index =0;
     for(i=0; i<atom_cnt; i++) {
         mg->atom_grids[i] = agrid_new(atoms[i].icent, atoms[i].Z);
