@@ -72,6 +72,19 @@ C
       MASTER = 0
       NODTOT = NODTOT - 1
 C
+      IF (NODTOT .GT. MAXNOD) THEN
+        WRITE(LUPRI,'(/5X,A/12X,A,2(/5X,A20,I8))')
+     &  'ERROR: Number of MPI slave nodes allocated has exceeded',
+     &  'hardcoded limit. Reduce number of nodes or recompile program.',
+     &  'Allocated (NODTOT) :',NODTOT,'Limit (MAXNOD)     :',MAXNOD
+        WRITE(LUPRI,'(//4(/5X,A))')
+     &  'FOR RECOMPILATION:',
+     &  'Increase parameter MAXNOD in infpar.h and execute:',
+     &  '   make depend',
+     &  '   make'
+        CALL QUIT('MPI ERROR: Number of nodes requested is too large.')
+      ENDIF
+C
       DO I = 0, NODTOT
          NODEID(I) = I
       END DO
