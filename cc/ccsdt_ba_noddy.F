@@ -32,6 +32,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 *=====================================================================*
       SUBROUTINE CCSDT_BAMAT_NODDY(IOPTRES,LABELB,FREQB,ISYMB,
      &                             LISTC,IDLSTC,
@@ -74,16 +76,16 @@ C
 
 #if defined (SYS_CRAY)
       REAL DOTPROD(MXVEC,NXTRAN), FREQC, FREQE, FREQ, FREQB
-      REAL WORK(LWORK), SIXTH, TWO, DUMMY, TCON, DDOT
+      REAL WORK(LWORK), SIXTH, ONE, TWO, DUMMY, TCON, DDOT
       REAL OMEGA1(*), OMEGA2(*), FREQD
       REAL OMEGA1EFF(*), OMEGA2EFF(*)
 #else
       DOUBLE PRECISION DOTPROD(MXVEC,NXTRAN), FREQC, FREQE, FREQ, FREQB
-      DOUBLE PRECISION WORK(LWORK), SIXTH, TWO, DUMMY, TCON, DDOT
+      DOUBLE PRECISION WORK(LWORK), SIXTH, ONE, TWO, DUMMY, TCON, DDOT
       DOUBLE PRECISION OMEGA1(*), OMEGA2(*), FREQD
       DOUBLE PRECISION OMEGA1EFF(*), OMEGA2EFF(*)
 #endif
-      PARAMETER( SIXTH = 1.0D0/6.0D0, TWO = 2.0D0 )
+      PARAMETER( SIXTH = 1.0D0/6.0D0, ONE = 1.0D0, TWO = 2.0D0 )
 
       CHARACTER*10 MODEL
       INTEGER KFOCKB, KT3AM, KT2AMD, KT2AMC, KEND2, KEND1, KOMEGA1,
@@ -94,7 +96,7 @@ C
      &        KFOCKBD, KTC1AM, KLAMPD, KLAMHD, KPERTD, KTD1AM
       INTEGER IJ, NIJ, LUSIFC, INDEX, IDUMMY, ILSTSYM, ISYMC, LUFOCK, 
      &        IRREP, IERR, ILLL, IDEL, ISYDIS, IOPT, ISYMD, IVEC,
-     &        IDLSTE
+     &        IDLSTE, KFCKBUF
 
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J 
 
@@ -123,7 +125,8 @@ C
       KFOCKB_AO = KFOCKB    + NORBT*NORBT
       KFOCKBC   = KFOCKB_AO + NORBT*NORBT
       KFOCKBD   = KFOCKBC   + NORBT*NORBT
-      KEND1     = KFOCKBD   + NORBT*NORBT
+      KFCKBUF   = KFOCKBD   + NORBT*NORBT
+      KEND1     = KFCKBUF   + NORBT*NORBT
 
       KLAMPC  = KEND1
       KLAMHC  = KLAMPC + NLAMDT
@@ -188,7 +191,7 @@ C
      &                 WORK(KLAMH0),WORK(KLAMHC),WORK(KTC1AM),ISYMC)
 
       ISYMD = ILSTSYM(LISTD,IDLSTD)
-      IOPT = 2
+      IOPT = 1
       CALL CC_RDRSP(LISTD,IDLSTD,ISYMD,IOPT,MODEL,WORK(KTD1AM),DUMMY)
 
       CALL CCLR_LAMTRA(WORK(KLAMP0),WORK(KLAMPD),
@@ -245,7 +248,7 @@ C           ----------------------------
             LWRK2  = LWORK - KEND2
             IF (LWRK2 .LT. 0) THEN
                WRITE(LUPRI,*) 'Need : ',KEND2,'Available : ',LWORK
-               CALL QUIT('Insufficient space in CCSDT_XI3_NODDY')
+               CALL QUIT('Insufficient space in CCSDT_BAMAT_NODDY')
             ENDIF
  
 C           ---------------------------
@@ -281,11 +284,13 @@ C           ----------------------------------
       ISYMC = ILSTSYM(LISTC,IDLSTC)
       IOPT = 2
       CALL CC_RDRSP(LISTC,IDLSTC,ISYMC,IOPT,MODEL,DUMMY,WORK(KT3AM))
+      Call CCLR_DIASCL(WORK(KT3AM),TWO,ISYMC)
       CALL CC_T2SQ(WORK(KT3AM),WORK(KT2AMC),ISYMC)
 
       ISYMD = ILSTSYM(LISTD,IDLSTD)
       IOPT = 2
       CALL CC_RDRSP(LISTD,IDLSTD,ISYMD,IOPT,MODEL,DUMMY,WORK(KT3AM))
+      Call CCLR_DIASCL(WORK(KT3AM),TWO,ISYMD)
       CALL CC_T2SQ(WORK(KT3AM),WORK(KT2AMD),ISYMD)
 
 C     ---------------------------------
@@ -303,9 +308,10 @@ C     -------------------------------------------------
 C     calculate the first-order triples amplitudes T^C:
 C     -------------------------------------------------
       CALL CCSDT_T31_NODDY(WORK(KT3AM),LISTC,IDLSTC,FREQC,.FALSE.,
-     &                     WORK(KINT1SC),WORK(KINT2SC),
+     &                     .TRUE. ,WORK(KINT1SC),WORK(KINT2SC),
      &                     .FALSE.,WORK(KDUM),WORK(KDUM),
      &                     .FALSE.,WORK(KDUM),WORK(KDUM),
+     &                             WORK(KINT1SC),WORK(KINT2SC),
      &                     WORK(KLAMPC),WORK(KLAMHC),WORK(KPERTC),
      &                     WORK(KLAMP0),WORK(KLAMH0),WORK(KFOCK0),
      &                     WORK(KDUM),WORK(KFOCKD),
@@ -314,9 +320,13 @@ C     -------------------------------------------------
 C     --------------------------------------------------------------
 C     calculate one-index transf. property integrals: B^D = [B,T1^D]
 C     --------------------------------------------------------------
+      CALL DCOPY(NORBT*NORBT,WORK(KFOCKB_AO),1,WORK(KFCKBUF),1)
       CALL DCOPY(NORBT*NORBT,WORK(KFOCKB_AO),1,WORK(KFOCKBD),1)
-      CALL CC_FCKMO(WORK(KFOCKBD),WORK(KLAMPD),WORK(KLAMHD),
-     &              WORK(KEND2),LWRK2,ISYMB,ISYMD,ISYMD)
+      CALL CC_FCKMO(WORK(KFCKBUF),WORK(KLAMPD),WORK(KLAMH0),
+     &              WORK(KEND2),LWRK2,ISYMB,ISYMD,ISYM0)
+      CALL CC_FCKMO(WORK(KFOCKBD),WORK(KLAMP0),WORK(KLAMHD),
+     &              WORK(KEND2),LWRK2,ISYMB,ISYM0,ISYMD)
+      CALL DAXPY(NORBT*NORBT,ONE,WORK(KFCKBUF),1,WORK(KFOCKBD),1)
 
 C     ----------------------------------------------
 C     add triples contribution: <mu_3|[B^D,T3^C]|HF>
@@ -328,9 +338,10 @@ C     -------------------------------------------------
 C     calculate the first-order triples amplitudes T^D:
 C     -------------------------------------------------
       CALL CCSDT_T31_NODDY(WORK(KT3AM),LISTD,IDLSTD,FREQD,.FALSE.,
-     &                     WORK(KINT1SD),WORK(KINT2SD),
+     &                     .TRUE. ,WORK(KINT1SD),WORK(KINT2SD),
      &                     .FALSE.,WORK(KDUM),WORK(KDUM),
      &                     .FALSE.,WORK(KDUM),WORK(KDUM),
+     &                             WORK(KINT1SD),WORK(KINT2SD),
      &                     WORK(KLAMPD),WORK(KLAMHD),WORK(KPERTD),
      &                     WORK(KLAMP0),WORK(KLAMH0),WORK(KFOCK0),
      &                     WORK(KDUM),WORK(KFOCKD),
@@ -339,9 +350,13 @@ C     -------------------------------------------------
 C     --------------------------------------------------------------
 C     calculate one-index transf. property integrals: B^C = [B,T1^C]
 C     --------------------------------------------------------------
+      CALL DCOPY(NORBT*NORBT,WORK(KFOCKB_AO),1,WORK(KFCKBUF),1)
       CALL DCOPY(NORBT*NORBT,WORK(KFOCKB_AO),1,WORK(KFOCKBC),1)
-      CALL CC_FCKMO(WORK(KFOCKBC),WORK(KLAMPC),WORK(KLAMHC),
+      CALL CC_FCKMO(WORK(KFCKBUF),WORK(KLAMPC),WORK(KLAMH0),
      &              WORK(KEND2),LWRK2,ISYMB,ISYMC,ISYMC)
+      CALL CC_FCKMO(WORK(KFOCKBC),WORK(KLAMP0),WORK(KLAMHC),
+     &              WORK(KEND2),LWRK2,ISYMB,ISYMC,ISYMC)
+      CALL DAXPY(NORBT*NORBT,ONE,WORK(KFCKBUF),1,WORK(KFOCKBC),1)
 
 C     ----------------------------------------------
 C     add triples contribution: <mu_3|[B^C,T3^D]|HF>
@@ -412,8 +427,9 @@ C        --------------------------------------------------------
      &                               WORK(KLAMP0),WORK(KLAMH0),
      &                               WORK(KFOCK0),WORK(KFOCKD),
      &                               WORK(KSCR1),
-     &                               WORK(KXIAJB),WORK(KINT1T),
-     &                               WORK(KINT2T),WORK(KEND2),LWRK2)
+     &                               .FALSE.,WORK(KXIAJB),DUMMY,
+     &                               .FALSE.,WORK(KINT1T),WORK(KINT2T),
+     &                               WORK(KEND2),LWRK2)
           ELSE
             CALL QUIT('Unknown or illegal list in CCSDT_BAMAT_NODDY.')
           END IF

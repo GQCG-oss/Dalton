@@ -63,7 +63,7 @@ c/* Deck CC_GMATRIX */
 #  include <implicit.h>
 #endif
 #include <priunit.h>
-#include <maxorb.h>
+#include "maxorb.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -286,12 +286,14 @@ c/* Deck CC_GMAT */
       REAL DDOT, SECOND, FACT, XNORM, TIMTRN(NGTRAN)
       REAL DTIME, TIMALL, TIMFCK, TIMIO, TIMCCS, TIMRDAO
       REAL TIM21CD, TIM21SD, TIMDBL, TIMINT, TIMTRBT,CONVRT
+      REAL TIMTRIP
 #else
       DOUBLE PRECISION GCON(MXVEC,NGTRAN)
       DOUBLE PRECISION WORK(LWORK)
       DOUBLE PRECISION DDOT, SECOND, FACT, XNORM, TIMTRN(NGTRAN)
       DOUBLE PRECISION DTIME, TIMALL, TIMFCK, TIMIO, TIMCCS, TIMRDAO
       DOUBLE PRECISION TIM21CD, TIM21SD, TIMDBL, TIMINT, TIMTRBT,CONVRT
+      DOUBLE PRECISION TIMTRIP
 #endif
 
       INTEGER KT1AMP0, KT1AMPB(NGTRAN), KT1AMPC(NGTRAN), KCTR1(NGTRAN) 
@@ -320,7 +322,7 @@ c/* Deck CC_GMAT */
       INTEGER NTOSYM,ISYMD1,NTOT,ILLL,NUMDIS,IDEL,IDEL2, LENALL,IVEC
       INTEGER ISYDIS,ISYC4O,ISYX4O,IOPT,ADR,IERR,IADRDEL,LEN1,LEN2
       INTEGER ISYMI, ISYMJ, ISYMA, ISYMB, NAB, NBA, NIJ, NJI
-      INTEGER KDSRHF0,KDSRHFBC,ISYMXB,ISYMXC,ISYCTB,ISYCTC
+      INTEGER KDSRHF0,KDSRHFBC,ISYMXB,ISYMXC,ISYCTB,ISYCTC,IOPTWE
       INTEGER ITAIKJ(8,8), NTAIKJ(8), ICOUNT, ISYM, ISYMAIK
       INTEGER KXBIAJK, KEBIAJK, KZBIAJK, KCBIAJK, KXLMDHB, KXLMDPB
       INTEGER KXCIAJK, KECIAJK, KZCIAJK, KCCIAJK, KXLMDHC, KXLMDPC
@@ -339,14 +341,7 @@ c/* Deck CC_GMAT */
         CALL FLSHFO(LUPRI)
       END IF
       
-      IF (CCSDT) THEN
-        WRITE(LUPRI,'(/1x,a)') 'G matrix transformations not '
-     &          //'implemented for triples yet...'
-        CALL QUIT('Triples not implemented for G '//
-     &            'matrix transformations')
-      END IF
-
-      IF ( .NOT. (CCS .OR. CC2 .OR. CCSD) ) THEN
+      IF ( .NOT. (CCS .OR. CC2 .OR. CCSD .OR. CC3) ) THEN
         WRITE(LUPRI,'(/1x,a)') 'CC_GMAT called for a Coupled Cluster '
      &          //'method not implemented in CC_GMAT...'
         CALL QUIT('Unkown CC method in CC_GMAT.')
@@ -414,6 +409,7 @@ c/* Deck CC_GMAT */
       TIM21SD = ZERO
       TIMDBL  = ZERO
       TIMTRBT = ZERO
+      TIMTRIP = ZERO
 
 *---------------------------------------------------------------------*
 * flush print unit, set dummy work space address to minus a large numb.
@@ -1556,6 +1552,20 @@ C
          END IF ! (LDOUBL)
 
 *=====================================================================*
+* add CC3 corrections:
+*=====================================================================*
+         DTIME = SECOND()
+
+         IF (CCSDT) THEN
+            CALL CCSDT_GMAT_NODDY(LISTA,IDLSTA,LISTB,IDLSTB,
+     &                            LISTC,IDLSTC,
+     &                            WORK(KDELTA1(ITRAN)),WORK(KDELTA2),
+     &                            WORK(KEND1),LEND1)
+         END IF
+
+         TIMTRIP = TIMTRIP + SECOND() - DTIME
+
+*=====================================================================*
 * end CCSD part for DELTA2; save result vector on file or calculate
 * the required dot products:
 *=====================================================================*
@@ -1597,6 +1607,10 @@ C        ---------------------------------
          ELSE IF (CCSD) THEN
            IOPTW  = 3
            MODELW = 'CCSD      '
+         ELSE IF (CC3) THEN
+           IOPTW  = 3
+           IOPTWE = 24
+           MODELW = 'CC3       '
          ELSE
            CALL QUIT('Unkown coupled cluster model in CC_GMAT.')
          END IF
@@ -1630,6 +1644,10 @@ C
            DTIME = SECOND()
            CALL CC_WRRSP(LISTD,IFILE,ISYRES,IOPTW,MODELW,WORK(KDUM),
      &           WORK(KDELTA1(ITRAN)),WORK(KDELTA2),WORK(KEND1),LEND1)
+           IF (CCSDT) THEN
+             CALL CC_WRRSP(LISTD,IFILE,ISYRES,IOPTWE,MODELW,WORK(KDUM),
+     &             WORK(KDELTA1(ITRAN)),WORK(KDELTA2),WORK(KEND1),LEND1)
+           END IF
            TIMIO = TIMIO + SECOND() - DTIME
 
          ELSE IF (IOPTRES.EQ.4) THEN
@@ -1641,6 +1659,10 @@ C
            DTIME = SECOND()
            CALL CC_WARSP(LISTD,IFILE,ISYRES,IOPTW,MODELW,WORK(KDUM),
      &           WORK(KDELTA1(ITRAN)),WORK(KDELTA2),WORK(KEND1),LEND1)
+           IF (CCSDT) THEN
+             CALL CC_WARSP(LISTD,IFILE,ISYRES,IOPTWE,MODELW,WORK(KDUM),
+     &             WORK(KDELTA1(ITRAN)),WORK(KDELTA2),WORK(KEND1),LEND1)
+           END IF
            TIMIO = TIMIO + SECOND() - DTIME
 
          ELSE IF (IOPTRES.EQ.5) THEN
@@ -1726,6 +1748,7 @@ C
      &      'CCS part     ', TIMCCS*CONVRT,
      &      '21 CCSD part ', TIM21SD*CONVRT,
      &      'doubles part ', TIMDBL*CONVRT,
+     &      'triples part ', TIMTRIP*CONVRT,
      &      'I/O          ', TIMIO*CONVRT
 
           WRITE (LUPRI,'(1X,A1,50("="),A1,//)') '+','+'
@@ -4041,7 +4064,7 @@ c/* Deck CCG_TRANS13 */
 #include <ccsdsym.h>
 #include <ccorb.h>
  
-      CHARACTER MSGDBG*(21)
+      CHARACTER MSGDBG*(20)
       PARAMETER (MSGDBG='[debug] CCG_TRANS13> ')
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -4681,4 +4704,539 @@ c/* Deck CCG_LXD */
 
       RETURN
       END
+*---------------------------------------------------------------------*
+*=====================================================================*
+      SUBROUTINE CCSDT_GMAT_NODDY(LISTL,IDLSTL,LISTB,IDLSTB,
+     &                            LISTC,IDLSTC,
+     &                            OMEGA1,OMEGA2,WORK,LWORK)
+*---------------------------------------------------------------------*
+*
+*    Purpose: compute triples contribution to G matrix transformation
+*
+*  (G T^B T^C)^eff_1,2 = (G T^B T^C)_1,2(CCSD) 
+*                            + (G T^B T^C)_1,2(L_3)
+*        
+*     Written by Christof Haettig, April 2002 
+*     based on CCSDT_FMAT_NODDY
+*
+*=====================================================================*
+#if defined (IMPLICIT_NONE)
+      IMPLICIT NONE  
+#else
+#  include <implicit.h>
+#endif
+#include <priunit.h>
+#include <ccsdinp.h>
+#include <maxorb.h>
+#include <ccsdsym.h>
+#include <ccfield.h>
+#include <ccorb.h>
+
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG=.FALSE.)
+
+      INTEGER ISYM0
+      PARAMETER (ISYM0 = 1)
+
+      CHARACTER*3 LISTL, LISTB, LISTC
+      INTEGER LWORK, IDLSTL, IDLSTB, IDLSTC
+#if defined (SYS_CRAY)
+      REAL WORK(LWORK)
+      REAL OMEGA1(NT1AMX), OMEGA2(NT2AMX)
+      REAL DDOT, TWO
+#else
+      DOUBLE PRECISION WORK(LWORK)
+      DOUBLE PRECISION OMEGA1(NT1AMX), OMEGA2(NT2AMX)
+      DOUBLE PRECISION DDOT, TWO
+#endif
+      PARAMETER (TWO = 2.0D0)
+
+      CHARACTER*10 MODEL
+      INTEGER KXINT, KXIAJB, KYIAJB, KT1AMP0, KLAMP0, KLAMH0, KEND1,
+     &        KFOCK0, LWRK1, KLAMPB, KLAMHB, KLAMPC, KLAMHC, KT1AMPB,
+     &        KT1AMPC, KINT1T0, KINT2T0, KINT1SBC, KINT2SBC,
+     &        KBIOVVO, KBIOOVV, KBIOOOO, KBIVVVV,
+     &        KCIOVVO, KCIOOVV, KCIOOOO, KCIVVVV,
+     &        KBCIOVVO, KBCIOOVV, KBCIOOOO, KBCIVVVV,
+     &        KOME1, KOME2, KL1AM, KL2AM, KL3AM, KT2AM, KFOCKD,
+     &        KDUM, KRECNR, KSCR1
+      INTEGER ISYMD, ILLL, IDEL, ISYDIS, IDUMMY, IJ, NIJ, LUSIFC, INDEX,
+     &        ISYMC, ISYMB, LUFOCK, KEND2, LWRK2, IOPT, ILSTSYM, ISYML
+
+      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J 
+
+      CALL QENTER('CCSDT_GMAT_NODDY')
+
+      IF (DIRECT) CALL QUIT('CCSDT_GMAT_NODDY: DIRECT NOT IMPLEMENTED')
+
+*---------------------------------------------------------------------*
+*     Memory allocation:
+*---------------------------------------------------------------------*
+      KSCR1   = 1
+      KFOCKD  = KSCR1  + NT1AMX
+      KEND1   = KFOCKD + NORBT
+
+      KFOCK0  = KEND1
+      KEND1   = KFOCK0  + NORBT*NORBT
+
+      KT1AMP0 = KEND1
+      KLAMP0  = KT1AMP0 + NT1AMX
+      KLAMH0  = KLAMP0  + NLAMDT
+      KEND1   = KLAMH0  + NLAMDT
+
+      KT1AMPB = KEND1
+      KLAMPB  = KT1AMPB + NT1AMX
+      KLAMHB  = KLAMPB  + NLAMDT
+      KEND1   = KLAMHB  + NLAMDT
+
+      KT1AMPC = KEND1
+      KLAMPC  = KT1AMPC + NT1AMX
+      KLAMHC  = KLAMPC  + NLAMDT
+      KEND1   = KLAMHC  + NLAMDT
+
+      KXIAJB  = KEND1
+      KYIAJB  = KXIAJB  + NT1AMX*NT1AMX
+      KEND1   = KYIAJB  + NT1AMX*NT1AMX
+
+      KINT1T0 = KEND1
+      KINT2T0 = KINT1T0 + NT1AMX*NVIRT*NVIRT
+      KEND1   = KINT2T0 + NRHFT*NRHFT*NT1AMX
+
+      KBIOVVO = KEND1
+      KBIOOVV = KBIOVVO + NRHFT*NVIRT*NVIRT*NRHFT
+      KBIOOOO = KBIOOVV + NRHFT*NVIRT*NVIRT*NRHFT
+      KBIVVVV = KBIOOOO + NRHFT*NRHFT*NRHFT*NRHFT
+      KEND1   = KBIVVVV + NVIRT*NVIRT*NVIRT*NVIRT
+
+      KCIOVVO = KEND1
+      KCIOOVV = KCIOVVO + NRHFT*NVIRT*NVIRT*NRHFT
+      KCIOOOO = KCIOOVV + NRHFT*NVIRT*NVIRT*NRHFT
+      KCIVVVV = KCIOOOO + NRHFT*NRHFT*NRHFT*NRHFT
+      KEND1   = KCIVVVV + NVIRT*NVIRT*NVIRT*NVIRT
+
+      KBCIOVVO = KEND1
+      KBCIOOVV = KBCIOVVO + NRHFT*NVIRT*NVIRT*NRHFT
+      KBCIOOOO = KBCIOOVV + NRHFT*NVIRT*NVIRT*NRHFT
+      KBCIVVVV = KBCIOOOO + NRHFT*NRHFT*NRHFT*NRHFT
+      KEND1    = KBCIVVVV + NVIRT*NVIRT*NVIRT*NVIRT
+
+      KINT1SBC = KEND1
+      KINT2SBC = KINT1SBC + NT1AMX*NVIRT*NVIRT
+      KEND1    = KINT2SBC + NRHFT*NRHFT*NT1AMX
+
+      KOME1   = KEND1
+      KOME2   = KOME1  + NT1AMX
+      KEND1   = KOME2  + NT1AMX*NT1AMX
+
+      KL1AM   = KEND1
+      KL2AM   = KL1AM  + NT1AMX
+      KL3AM   = KL2AM  + NT1AMX*NT1AMX
+      KEND1   = KL3AM  + NT1AMX*NT1AMX*NT1AMX
+
+      LWRK1  = LWORK  - KEND1
+      IF (LWRK1 .LT. 0) THEN
+         CALL QUIT('Insufficient space in CCSDT_GMAT_NODDY')
+      ENDIF
+
+*---------------------------------------------------------------------*
+*     Read SCF orbital energies from file:
+*---------------------------------------------------------------------*
+      CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
+     &            .FALSE.)
+      REWIND LUSIFC
+      CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
+      READ (LUSIFC)
+      READ (LUSIFC) (WORK(KFOCKD+I-1), I=1,NORBT)
+      CALL GPCLOSE(LUSIFC,'KEEP')
+
+*---------------------------------------------------------------------*
+*     Get zeroth-order Lambda matrices:
+*---------------------------------------------------------------------*
+      IOPT   = 1
+      Call CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,WORK(KT1AMP0),WORK(KDUM))
+
+      Call LAMMAT(WORK(KLAMP0),WORK(KLAMH0),WORK(KT1AMP0),
+     &            WORK(KEND1),LWRK1)
+
+*---------------------------------------------------------------------*
+*     Get response  Lambda matrices:
+*---------------------------------------------------------------------*
+      ISYMB = ILSTSYM(LISTB,IDLSTB)
+      IOPT  = 1
+      Call CC_RDRSP(LISTB,IDLSTB,ISYMB,IOPT,MODEL,
+     &              WORK(KT1AMPB),WORK(KDUM))
+
+      CALL CCLR_LAMTRA(WORK(KLAMP0),WORK(KLAMPB),
+     &                 WORK(KLAMH0),WORK(KLAMHB),WORK(KT1AMPB),ISYMB)
+
+      ISYMC = ILSTSYM(LISTC,IDLSTC)
+      IOPT  = 1
+      Call CC_RDRSP(LISTC,IDLSTC,ISYMC,IOPT,MODEL,
+     &              WORK(KT1AMPC),WORK(KDUM))
+
+      CALL CCLR_LAMTRA(WORK(KLAMP0),WORK(KLAMPC),
+     &                 WORK(KLAMH0),WORK(KLAMHC),WORK(KT1AMPC),ISYMC)
+
+*---------------------------------------------------------------------*
+*     read zeroth-order AO Fock matrix from file: 
+*---------------------------------------------------------------------*
+      LUFOCK = 0
+      CALL GPOPEN(LUFOCK,'CC_FCKH','OLD',' ','UNFORMATTED',IDUMMY,
+     &            .FALSE.)
+      REWIND(LUFOCK)
+      READ(LUFOCK) (WORK(KFOCK0-1+I),I=1,N2BST(ISYM0))
+      CALL GPCLOSE(LUFOCK,'KEEP')
+
+      CALL CC_FCKMO(WORK(KFOCK0),WORK(KLAMP0),WORK(KLAMH0),
+     &              WORK(KEND1),LWRK1,ISYM0,ISYM0,ISYM0)      
+
+*---------------------------------------------------------------------*
+*     Compute integrals needed for the following contributions:
+*---------------------------------------------------------------------*
+
+      CALL DZERO(WORK(KBIOVVO),NRHFT*NVIRT*NVIRT*NRHFT)
+      CALL DZERO(WORK(KBIOOVV),NRHFT*NVIRT*NVIRT*NRHFT)
+      CALL DZERO(WORK(KBIOOOO),NRHFT*NRHFT*NRHFT*NRHFT)
+      CALL DZERO(WORK(KBIVVVV),NVIRT*NVIRT*NVIRT*NVIRT)
+
+      CALL DZERO(WORK(KCIOVVO),NRHFT*NVIRT*NVIRT*NRHFT)
+      CALL DZERO(WORK(KCIOOVV),NRHFT*NVIRT*NVIRT*NRHFT)
+      CALL DZERO(WORK(KCIOOOO),NRHFT*NRHFT*NRHFT*NRHFT)
+      CALL DZERO(WORK(KCIVVVV),NVIRT*NVIRT*NVIRT*NVIRT)
+
+      CALL DZERO(WORK(KBCIOVVO),NRHFT*NVIRT*NVIRT*NRHFT)
+      CALL DZERO(WORK(KBCIOOVV),NRHFT*NVIRT*NVIRT*NRHFT)
+      CALL DZERO(WORK(KBCIOOOO),NRHFT*NRHFT*NRHFT*NRHFT)
+      CALL DZERO(WORK(KBCIVVVV),NVIRT*NVIRT*NVIRT*NVIRT)
+
+      CALL DZERO(WORK(KXIAJB),NT1AMX*NT1AMX)
+      CALL DZERO(WORK(KYIAJB),NT1AMX*NT1AMX)
+
+      CALL DZERO(WORK(KINT1T0),NT1AMX*NVIRT*NVIRT)
+      CALL DZERO(WORK(KINT2T0),NRHFT*NRHFT*NT1AMX)
+
+      CALL DZERO(WORK(KINT1SBC),NT1AMX*NVIRT*NVIRT)
+      CALL DZERO(WORK(KINT2SBC),NRHFT*NRHFT*NT1AMX)
+
+      DO ISYMD = 1, NSYM
+         DO ILLL = 1,NBAS(ISYMD)
+            IDEL   = IBAS(ISYMD) + ILLL
+            ISYDIS = MULD2H(ISYMD,ISYMOP)
+ 
+C           ----------------------------
+C           Work space allocation no. 2.
+C           ----------------------------
+            KXINT  = KEND1
+            KEND2  = KXINT + NDISAO(ISYDIS)
+            LWRK2  = LWORK - KEND2
+            IF (LWRK2 .LT. 0) THEN
+               WRITE(LUPRI,*) 'Need : ',KEND2,'Available : ',LWORK
+               CALL QUIT('Insufficient space in CCSDT_GMAT_NODDY')
+            ENDIF
+ 
+C           ---------------------------
+C           Read in batch of integrals.
+C           ---------------------------
+            CALL CCRDAO(WORK(KXINT),IDEL,1,WORK(KEND2),LWRK2,
+     *                  WORK(KRECNR),DIRECT)
+ 
+C           ----------------------------------
+C           Calculate integrals needed in CC3:
+C           ----------------------------------
+            CALL CCSDT_TRAN1(WORK(KINT1T0),WORK(KINT2T0),
+     &                       WORK(KLAMP0),WORK(KLAMH0),
+     &                       WORK(KXINT),IDEL)
+
+            CALL CC3_TRAN2(WORK(KXIAJB),WORK(KYIAJB),
+     &                     WORK(KLAMP0),WORK(KLAMH0),
+     &                     WORK(KXINT),IDEL)
+
+            ! XINT1S = XINT1S + (C-barB K-barC|B D)
+            ! XINT2S = XINT2S + (C-barB K-barC|L J)
+            CALL CCSDT_TRAN3_R(WORK(KINT1SBC),WORK(KINT2SBC),
+     &                         WORK(KLAMP0),WORK(KLAMH0),
+     &                         WORK(KLAMPB),WORK(KLAMHC),
+     &                         WORK(KLAMP0),WORK(KLAMH0),
+     &                         WORK(KXINT),IDEL)
+
+            ! XINT1S = XINT1S + (C-barB K|B-barC D)
+            ! XINT2S = XINT2S + (C-barB K|L J-barC)
+            CALL CCSDT_TRAN3_R(WORK(KINT1SBC),WORK(KINT2SBC),
+     &                         WORK(KLAMP0),WORK(KLAMH0),
+     &                         WORK(KLAMPB),WORK(KLAMH0),
+     &                         WORK(KLAMPC),WORK(KLAMHC),
+     &                         WORK(KXINT),IDEL)
+
+            ! XINT1S = XINT1S + (C-barC K-barB|B D)
+            ! XINT2S = XINT2S + (C-barC K-barB|L J)
+            CALL CCSDT_TRAN3_R(WORK(KINT1SBC),WORK(KINT2SBC),
+     &                         WORK(KLAMP0),WORK(KLAMH0),
+     &                         WORK(KLAMPC),WORK(KLAMHB),
+     &                         WORK(KLAMP0),WORK(KLAMH0),
+     &                         WORK(KXINT),IDEL)
+
+            ! XINT1S = XINT1S + (C K-barB|B-barC D)
+            ! XINT2S = XINT2S + (C K-barB|L J-barC)
+            CALL CCSDT_TRAN3_R(WORK(KINT1SBC),WORK(KINT2SBC),
+     &                         WORK(KLAMP0),WORK(KLAMH0),
+     &                         WORK(KLAMP0),WORK(KLAMHB),
+     &                         WORK(KLAMPC),WORK(KLAMHC),
+     &                         WORK(KXINT),IDEL)
+
+            ! XINT1S = XINT1S + (C-barC K|B-barB D)
+            ! XINT2S = XINT2S + (C-barC K|L J-barB)
+            CALL CCSDT_TRAN3_R(WORK(KINT1SBC),WORK(KINT2SBC),
+     &                         WORK(KLAMP0),WORK(KLAMH0),
+     &                         WORK(KLAMPC),WORK(KLAMH0),
+     &                         WORK(KLAMPB),WORK(KLAMHB),
+     &                         WORK(KXINT),IDEL)
+
+            ! XINT1S = XINT1S + (C K-barC|B-barB D)
+            ! XINT2S = XINT2S + (C K-barC|L J-barB)
+            CALL CCSDT_TRAN3_R(WORK(KINT1SBC),WORK(KINT2SBC),
+     &                         WORK(KLAMP0),WORK(KLAMH0),
+     &                         WORK(KLAMP0),WORK(KLAMHC),
+     &                         WORK(KLAMPB),WORK(KLAMHB),
+     &                         WORK(KXINT),IDEL)
+
+C           ----------------------------------------------
+C             (OV|VO)-B  (OO|VV)-B  (OO|OO)-B  (VV|VV)-B
+C           ----------------------------------------------
+            CALL CCFOP_TRAN1_R(WORK(KBIOVVO),WORK(KBIOOVV),
+     &                         WORK(KBIOOOO),WORK(KBIVVVV),
+     &                         WORK(KLAMP0),WORK(KLAMH0),
+     &                         WORK(KLAMPB),WORK(KLAMHB),
+     &                         WORK(KLAMP0),WORK(KLAMH0),
+     &                         WORK(KXINT),IDEL)
+
+            CALL CCFOP_TRAN1_R(WORK(KBIOVVO),WORK(KBIOOVV),
+     &                         WORK(KBIOOOO),WORK(KBIVVVV),
+     &                         WORK(KLAMP0),WORK(KLAMH0),
+     &                         WORK(KLAMP0),WORK(KLAMH0),
+     &                         WORK(KLAMPB),WORK(KLAMHB),
+     &                         WORK(KXINT),IDEL)
+
+C           ----------------------------------------------
+C             (OV|VO)-C  (OO|VV)-C  (OO|OO)-C  (VV|VV)-C
+C           ----------------------------------------------
+            CALL CCFOP_TRAN1_R(WORK(KCIOVVO),WORK(KCIOOVV),
+     &                         WORK(KCIOOOO),WORK(KCIVVVV),
+     &                         WORK(KLAMP0),WORK(KLAMH0),
+     &                         WORK(KLAMPC),WORK(KLAMHC),
+     &                         WORK(KLAMP0),WORK(KLAMH0),
+     &                         WORK(KXINT),IDEL)
+
+            CALL CCFOP_TRAN1_R(WORK(KCIOVVO),WORK(KCIOOVV),
+     &                         WORK(KCIOOOO),WORK(KCIVVVV),
+     &                         WORK(KLAMP0),WORK(KLAMH0),
+     &                         WORK(KLAMP0),WORK(KLAMH0),
+     &                         WORK(KLAMPC),WORK(KLAMHC),
+     &                         WORK(KXINT),IDEL)
+
+C           ----------------------------------------------
+C           (OV|VO)-BC  (OO|VV)-BC  (OO|OO)-BC  (VV|VV)-BC
+C           ----------------------------------------------
+            CALL CCFOP_TRAN1_R(WORK(KBCIOVVO),WORK(KBCIOOVV),
+     &                         WORK(KBCIOOOO),WORK(KBCIVVVV),
+     &                         WORK(KLAMP0),WORK(KLAMH0),
+     &                         WORK(KLAMPB),WORK(KLAMHB),
+     &                         WORK(KLAMPC),WORK(KLAMHC),
+     &                         WORK(KXINT),IDEL)
+
+            CALL CCFOP_TRAN1_R(WORK(KBCIOVVO),WORK(KBCIOOVV),
+     &                         WORK(KBCIOOOO),WORK(KBCIVVVV),
+     &                         WORK(KLAMP0),WORK(KLAMH0),
+     &                         WORK(KLAMPC),WORK(KLAMHC),
+     &                         WORK(KLAMPB),WORK(KLAMHB),
+     &                         WORK(KXINT),IDEL)
+
+         END DO   
+      END DO  
+
+      if (locdbg) then
+        write(lupri,*) 'norm^2(OVVO-B):',
+     &    ddot(NRHFT*NVIRT*NVIRT*NRHFT,WORK(KBIOVVO),1,WORK(KBIOVVO),1)
+        write(lupri,*) 'norm^2(OOVV-B):',
+     &    ddot(NRHFT*NVIRT*NVIRT*NRHFT,WORK(KBIOOVV),1,WORK(KBIOOVV),1)
+        write(lupri,*) 'norm^2(OOOO-B):',
+     &    ddot(NRHFT*NRHFT*NRHFT*NRHFT,WORK(KBIOOOO),1,WORK(KBIOOOO),1)
+        write(lupri,*) 'norm^2(VVVV-B):',
+     &    ddot(NVIRT*NVIRT*NVIRT*NVIRT,WORK(KBIVVVV),1,WORK(KBIVVVV),1)
+        
+        write(lupri,*) 'norm^2(OVVO-C):',
+     &    ddot(NRHFT*NVIRT*NVIRT*NRHFT,WORK(KCIOVVO),1,WORK(KCIOVVO),1)
+        write(lupri,*) 'norm^2(OOVV-C):',
+     &    ddot(NRHFT*NVIRT*NVIRT*NRHFT,WORK(KCIOOVV),1,WORK(KCIOOVV),1)
+        write(lupri,*) 'norm^2(OOOO-C):',
+     &    ddot(NRHFT*NRHFT*NRHFT*NRHFT,WORK(KCIOOOO),1,WORK(KCIOOOO),1)
+        write(lupri,*) 'norm^2(VVVV-C):',
+     &    ddot(NVIRT*NVIRT*NVIRT*NVIRT,WORK(KCIVVVV),1,WORK(KCIVVVV),1)
+        
+        write(lupri,*) 'norm^2(OVVO-BC):',
+     &   ddot(NRHFT*NVIRT*NVIRT*NRHFT,WORK(KBCIOVVO),1,WORK(KBCIOVVO),1)
+        write(lupri,*) 'norm^2(OOVV-BC):',
+     &   ddot(NRHFT*NVIRT*NVIRT*NRHFT,WORK(KBCIOOVV),1,WORK(KBCIOOVV),1)
+        write(lupri,*) 'norm^2(OOOO-BC):',
+     &   ddot(NRHFT*NRHFT*NRHFT*NRHFT,WORK(KBCIOOOO),1,WORK(KBCIOOOO),1)
+        write(lupri,*) 'norm^2(VVVV-BC):',
+     &   ddot(NVIRT*NVIRT*NVIRT*NVIRT,WORK(KBCIVVVV),1,WORK(KBCIVVVV),1)
+        
+        write(lupri,*) 'norm^2(XIAJB):',
+     &      ddot(NT1AMX*NT1AMX,WORK(KXIAJB),1,WORK(KXIAJB),1)
+        write(lupri,*) 'norm^2(YIAJB):',
+     &      ddot(NT1AMX*NT1AMX,WORK(KYIAJB),1,WORK(KYIAJB),1)
+        
+        write(lupri,*) 'norm^2(INT1T0):',
+     &      ddot(NT1AMX*NVIRT*NVIRT,WORK(KINT1T0),1,WORK(KINT1T0),1)
+        write(lupri,*) 'norm^2(INT2T0):',
+     &      ddot(NRHFT*NRHFT*NT1AMX,WORK(KINT2T0),1,WORK(KINT2T0),1)
+        
+        write(lupri,*) 'norm^2(INT1SBC):',
+     &      ddot(NT1AMX*NVIRT*NVIRT,WORK(KINT1SBC),1,WORK(KINT1SBC),1)
+        write(lupri,*) 'norm^2(INT2SBC):',
+     &      ddot(NRHFT*NRHFT*NT1AMX,WORK(KINT2SBC),1,WORK(KINT2SBC),1)
+      end if
+
+*---------------------------------------------------------------------*
+*     Compute L^0_3 multipliers:
+*---------------------------------------------------------------------*
+      IF (LWRK1 .LT. NT2AMX) THEN
+         CALL QUIT('Insufficient space in CCSDT_GMAT_NODDY')
+      ENDIF
+
+      ISYML = ILSTSYM(LISTL,IDLSTL)
+
+      ! read left amplitudes from file and square up the doubles part
+      IOPT   = 3
+      Call CC_RDRSP(LISTL,IDLSTL,ISYML,IOPT,MODEL,
+     &              WORK(KL1AM),WORK(KEND1))
+      CALL CC_T2SQ(WORK(KEND1),WORK(KL2AM),ISYML)
+
+      IF (LISTL(1:3).EQ.'L0 ') THEN
+        CALL DZERO(WORK(KL3AM),NT1AMX*NT1AMX*NT1AMX)
+
+        CALL CCSDT_L3AM(WORK(KL3AM),WORK(KINT1T0),WORK(KINT2T0),
+     *                  WORK(KXIAJB),WORK(KFOCK0),WORK(KL1AM),
+     *                  WORK(KL2AM),WORK(KSCR1),WORK(KFOCKD),0.0D0)
+  
+        if (locdbg) then
+          write(lupri,*) 'norm^2(l3am):',
+     *      ddot(nt1amx*nt1amx*nt1amx,work(kl3am),1,work(kl3am),1)
+        end if
+
+      ELSE
+
+        CALL QUIT('CCSDT_GMAT_NODDY> LISTL NOT AVAILABLE:'//LISTL)
+      
+      END IF
+
+*---------------------------------------------------------------------*
+*     Compute contribution from  <L_3|[[H^BC,T^0_2],\tau_nu_1]|HF>
+*                          and   <L_3|[[H^B, T^C_2],\tau_nu_1]|HF>
+*                          and   <L_3|[[H^C, T^B_2],\tau_nu_1]|HF>
+*---------------------------------------------------------------------*
+      KT2AM  = KEND1
+      KEND1  = KT2AM + NT1AMX*NT1AMX
+      LWRK1  = LWORK  - KEND1
+      IF (LWRK1 .LT. NT2AMX) THEN
+         CALL QUIT('Insufficient space in CCSDT_GMAT_NODDY')
+      ENDIF
+
+      CALL DZERO(WORK(KOME1),NT1AMX)
+
+      ! read T^0 doubles amplitudes from file and square up 
+      IOPT   = 2
+      Call CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,WORK(KDUM),WORK(KEND1))
+      CALL CC_T2SQ(WORK(KEND1),WORK(KT2AM),ISYM0)
+
+      CALL CC3_L3_OMEGA1_NODDY(WORK(KOME1),WORK(KL3AM),
+     &                         WORK(KBCIOOOO),WORK(KBCIOVVO),
+     &                         WORK(KBCIOOVV),WORK(KBCIVVVV),
+     &                         WORK(KT2AM))
+
+      if (locdbg) then
+        write(lupri,*) 'norm^2(t2am)-0:',
+     &   ddot(nt1amx*nt1amx,work(kt2am),1,work(kt2am),1)
+        write(lupri,*) 'norm^2(l3am):',
+     *    ddot(nt1amx*nt1amx*nt1amx,work(kl3am),1,work(kl3am),1)
+        write(lupri,*) 'norm^2(ome1) after <l3|[[Hbc,T0],tau]|0>:',
+     &   ddot(nt1amx,work(kome1),1,work(kome1),1)
+      end if
+
+
+      ! read T^C doubles amplitudes from file and square up 
+      IOPT   = 2
+      Call CC_RDRSP(LISTC,IDLSTC,ISYMC,IOPT,MODEL,
+     &              WORK(KDUM),WORK(KEND1))
+      Call CCLR_DIASCL(WORK(KEND1),TWO,ISYMC)
+      CALL CC_T2SQ(WORK(KEND1),WORK(KT2AM),ISYMC)
+
+      CALL CC3_L3_OMEGA1_NODDY(WORK(KOME1),WORK(KL3AM),
+     &                         WORK(KBIOOOO),WORK(KBIOVVO),
+     &                         WORK(KBIOOVV),WORK(KBIVVVV),
+     &                         WORK(KT2AM))
+
+      if (locdbg) then
+        write(lupri,*) 'norm^2(t2am)-C:',
+     &   ddot(nt1amx*nt1amx,work(kt2am),1,work(kt2am),1)
+        write(lupri,*) 'norm^2(l3am):',
+     *    ddot(nt1amx*nt1amx*nt1amx,work(kl3am),1,work(kl3am),1)
+        write(lupri,*) 'norm^2(ome1) after <l3|[[Hb,T0],tau]|0>:',
+     &   ddot(nt1amx,work(kome1),1,work(kome1),1)
+      end if
+
+
+      ! read T^B doubles amplitudes from file and square up 
+      IOPT   = 2
+      Call CC_RDRSP(LISTB,IDLSTB,ISYMB,IOPT,MODEL,
+     &              WORK(KDUM),WORK(KEND1))
+      Call CCLR_DIASCL(WORK(KEND1),TWO,ISYMB)
+      CALL CC_T2SQ(WORK(KEND1),WORK(KT2AM),ISYMB)
+
+      CALL CC3_L3_OMEGA1_NODDY(WORK(KOME1),WORK(KL3AM),
+     &                         WORK(KCIOOOO),WORK(KCIOVVO),
+     &                         WORK(KCIOOVV),WORK(KCIVVVV),
+     &                         WORK(KT2AM))
+
+      if (locdbg) then
+        write(lupri,*) 'norm^2(t2am)-B:',
+     &   ddot(nt1amx*nt1amx,work(kt2am),1,work(kt2am),1)
+        write(lupri,*) 'norm^2(l3am):',
+     *    ddot(nt1amx*nt1amx*nt1amx,work(kl3am),1,work(kl3am),1)
+        write(lupri,*) 'norm^2(ome1) after <l3|[[Hc,T0],tau]|0>:',
+     &   ddot(nt1amx,work(kome1),1,work(kome1),1)
+      end if
+
+
+      DO I = 1,NT1AMX
+         OMEGA1(I) = OMEGA1(I) + WORK(KOME1+I-1)
+      END DO
+
+*---------------------------------------------------------------------*
+*     Compute contribution from  <L_3|[H^BC,\tau_nu_2]|HF>
+*---------------------------------------------------------------------*
+      CALL DZERO(WORK(KOME2),NT1AMX*NT1AMX)
+
+      CALL CC3_L3_OMEGA2_NODDY(WORK(KOME2),WORK(KL3AM),
+     *                         WORK(KINT1SBC),WORK(KINT2SBC))
+
+      DO I = 1,NT1AMX
+         DO J = 1,I
+            IJ = NT1AMX*(I-1) + J
+            NIJ = INDEX(I,J)
+            OMEGA2(NIJ) = OMEGA2(NIJ) + WORK(KOME2+IJ-1)
+         END DO
+      END DO
+
+      IF (LOCDBG) THEN
+       WRITE(LUPRI,*)'G matrix transformation after triples contrib:'
+        Call CC_PRP(OMEGA1,OMEGA2,1,1,1)
+      END IF
+
+      CALL QEXIT('CCSDT_GMAT_NODDY')
+
+      RETURN
+      END 
+*---------------------------------------------------------------------*
+*              END OF SUBROUTINE CCSDT_GMAT_NODDY                     *
 *---------------------------------------------------------------------*

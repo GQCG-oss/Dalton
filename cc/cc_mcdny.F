@@ -80,7 +80,7 @@ C#include <ccropr2.h>
       CHARACTER*(19) MSGDBG
       PARAMETER (MSGDBG = '[debug] CC_MCDCAL> ')
       LOGICAL LOCDBG
-      PARAMETER (LOCDBG = .TRUE.)
+      PARAMETER (LOCDBG = .FALSE.)
 #if defined (SYS_CRAY)
       REAL DDOT,DNRM2
       REAL ZERO, D05, TWO

@@ -152,6 +152,8 @@ c /* deck CC_SETXE */
       END DO
 
       IDOTS(IVEC,ITRAN) = IDOTVEC
+      IF (TYPE(1:3).EQ.'Eta') IXETRAN(4,ITRAN) = 0
+      IF (TYPE(1:3).EQ.'Xi ') IXETRAN(3,ITRAN) = 0
 
 *---------------------------------------------------------------------*
       IF (IVEC.GT.MXVEC .OR. ITRAN.GT.MXTRAN) THEN

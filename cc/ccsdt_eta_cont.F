@@ -1,12 +1,47 @@
+C
+C...   Copyright (c) 2001 by the authors of Dalton (see below).
+C...   All Rights Reserved.
+C...
+C...   The source code in this file is part of
+C...   "Dalton, a molecular electronic structure program, Release 1.2
+C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+C...   and O. Vahtras"
+C...
+C...   This source code is provided under a written licence and may be
+C...   used, copied, transmitted, or stored only in accord with that
+C...   written licence.
+C...
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
+C...   This means also that persons (e.g. post-docs) leaving the research
+C...   group of the licence holder may not take any part of Dalton,
+C...   including modified files, with him/her, unless that person has
+C...   obtained his/her own licence.
+C...
+C...   For questions concerning this copyright write to:
+C...      dalton-admin@kjemi.uio.no
+C...
+C...   For information on how to get a licence see:
+C...      http://www.kjemi.uio.no/software/dalton/dalton.html
+C
+#include <single.h>
+C
 *=====================================================================*
-      SUBROUTINE CCSDT_ETA_CONT(LISTL,LISTR,
+      SUBROUTINE CCSDT_ETA_CONT(LISTL,LISTR,NODDY,
      &                          IDOTS,DOTPROD,
      &                          NXETRAN,IXETRAN,MXVEC,
      &                          NLEFT,IEASTEND,
      &                          NDENS,IDXLVEC,IDXRVEC,
      &                          WORK,LWORK,
      &                          FNDELD,FNCKJD,FNDKBC,FNTOC,
-     &                          FN3VI,FNDKBC3,FN3FOP,FN3FOP2)
+     &                          FN3VI,FNDKBC3,FN3FOPX,FN3FOP2X)
 *---------------------------------------------------------------------*
 *
 *    Purpose: just a little driver to call the real routines...
@@ -32,12 +67,13 @@
       PARAMETER( ISYM0 = 1 )
 
       CHARACTER*3 LISTL, LISTR
+      LOGICAL NODDY
       INTEGER LWORK, MXVEC, NXETRAN, NLEFT, NDENS
       INTEGER IDOTS(MXVEC,NXETRAN), IEASTEND(2,NLEFT),
      &        IDXLVEC(NDENS), IDXRVEC(NDENS), 
      &        IXETRAN(MXDIM_XEVEC,NXETRAN)
       CHARACTER*(*) FNDELD, FNCKJD, FNDKBC, FNTOC, FN3VI, FNDKBC3
-      CHARACTER*(*) FN3FOP, FN3FOP2
+      CHARACTER*(*) FN3FOPX, FN3FOP2X
 
 #if defined (SYS_CRAY)
       REAL DOTPROD(MXVEC,NXETRAN), TRIPCON, CC_XIETA_DENCON
@@ -49,8 +85,8 @@
 
       CHARACTER MODEL*(10), LABELH*(8)
       LOGICAL SKIPXI, SKIPETA
-      INTEGER LUDELD, LUCKJD, LUDKBC, LUTOC, LU3VI, LUDKBC3, LU3FOP,
-     *        LU3FOP2, LUDEFF, LUFOCK,
+      INTEGER LUDELD, LUCKJD, LUDKBC, LUTOC, LU3VI, LUDKBC3, LU3FOPX,
+     *        LU3FOP2X, LUDEFF, LUFOCK,
      *        KLAMP0, KLAMH0, KFOCK0, KEND0, LWRK0, KT1AMP0, KEND1,
      *        LWRK1, IOPT, ILEFT, IDLSTL, IDENS, IDLSTR, ISYMR, ISYML,
      *        ISYDEN, KDAB, KDIJ, KDIA, IADRIJ, IADRAB, IADRIA, IOPER,
@@ -109,8 +145,8 @@
       LUTOC   = 0
       LU3VI   = 0
       LUDKBC3 = 0
-      LU3FOP  = 0
-      LU3FOP2 = 0
+      LU3FOPX = 0
+      LU3FOP2X= 0
  
       CALL WOPEN2(LUDELD,FNDELD,64,0)
       CALL WOPEN2(LUCKJD,FNCKJD,64,0)
@@ -118,30 +154,31 @@
       CALL WOPEN2(LUTOC,FNTOC,64,0)
       CALL WOPEN2(LU3VI,FN3VI,64,0)
       CALL WOPEN2(LUDKBC3,FNDKBC3,64,0)
-      CALL WOPEN2(LU3FOP,FN3FOP,64,0)
-      CALL WOPEN2(LU3FOP2,FN3FOP2,64,0)
+      CALL WOPEN2(LU3FOPX,FN3FOPX,64,0)
+      CALL WOPEN2(LU3FOP2X,FN3FOP2X,64,0)
 
       DO ILEFT = 1, NLEFT
         IDLSTL = IDXLVEC(IEASTEND(1,ILEFT))
 
         DO IDENS = IEASTEND(1,ILEFT), IEASTEND(2,ILEFT)
 
-          IF (IDXLVEC(IDENS).NE.IDLSTL) 
-     *      CALL QUIT('Loop error in CCSDT_ETA_CONT.')
+         IF (IDXLVEC(IDENS).NE.IDLSTL) 
+     *     CALL QUIT('Loop error in CCSDT_ETA_CONT.')
 
-          IDLSTR = IDXRVEC(IDENS)
-          ISYMR  = ILSTSYM(LISTR,IDLSTR)
-          ISYML  = ILSTSYM(LISTL,IDLSTL)
-          ISYDEN = MULD2H(ISYMR,ISYML)
-          
-          KDAB   = KEND0
-          KDIJ   = KDAB   + NMATAB(ISYDEN)
-          KDIA   = KDIJ   + NMATIJ(ISYDEN)
-          KEND1  = KDIA   + NT1AM(ISYDEN)
-          LWRK1  = LWORK  - KEND1
+         IDLSTR = IDXRVEC(IDENS)
+         ISYMR  = ILSTSYM(LISTR,IDLSTR)
+         ISYML  = ILSTSYM(LISTL,IDLSTL)
+         ISYDEN = MULD2H(ISYMR,ISYML)
+         
+         KDAB   = KEND0
+         KDIJ   = KDAB   + NMATAB(ISYDEN)
+         KDIA   = KDIJ   + NMATIJ(ISYDEN)
+         KEND1  = KDIA   + NT1AM(ISYDEN)
+         LWRK1  = LWORK  - KEND1
 
-          IF (LWRK1.LT.0) CALL QUIT('Out of memory in CCSDT_ETA_CONT')
+         IF (LWRK1.LT.0) CALL QUIT('Out of memory in CCSDT_ETA_CONT')
 
+         IF (LISTL.EQ.'L0 ') THEN
 C         --------------------
 C         Compute the density:
 C         --------------------
@@ -151,18 +188,48 @@ C         --------------------
      *                       WORK(KEND1),LWRK1,
      *                       LUDELD,FNDELD,LUCKJD,FNCKJD,LUDKBC,
      *                       FNDKBC,LUTOC,FNTOC,LU3VI,FN3VI,
-     *                       LUDKBC3,FNDKBC3,LU3FOP,FN3FOP,
-     *                       LU3FOP2,FN3FOP2)
+     *                       LUDKBC3,FNDKBC3,LU3FOPX,FN3FOPX,
+     *                       LU3FOP2X,FN3FOP2X)
+         ELSE
 
-          
-          IADRIJ = 1 + M2BST*(IDENS-1)
-          CALL PUTWA2(LUDEFF,FNDEFF,WORK(KDIJ),IADRIJ,NMATIJ(ISYDEN))
+           write(lupri,*)'before ADEN structure'
+           call FLSHFO(LUPRI)
+           IF (NODDY) THEN
+           write(lupri,*)'before ADEN_noddy'
+           call FLSHFO(LUPRI)
+             CALL CCSDT_ADEN_NODDY(LISTL,IDLSTL,LISTR,IDLSTR,
+     *                       WORK(KLAMP0),WORK(KLAMH0),WORK(KFOCK0),
+     *                       WORK(KDIJ),WORK(KDAB),WORK(KDIA),
+     *                       WORK(KEND1),LWRK1,
+     *                       LUDELD,FNDELD,LUCKJD,FNCKJD,LUDKBC,
+     *                       FNDKBC,LUTOC,FNTOC,LU3VI,FN3VI,
+     *                       LUDKBC3,FNDKBC3,LU3FOPX,FN3FOPX,
+     *                       LU3FOP2X,FN3FOP2X)
+           ELSE
+           write(lupri,*)'before cc3_ADEN'
+           call FLSHFO(LUPRI)
+             CALL CC3_ADEN(LISTL,IDLSTL,LISTR,IDLSTR,
+     *                      WORK(KLAMP0),WORK(KLAMH0),WORK(KFOCK0),
+     *                      WORK(KDIJ),WORK(KDAB),WORK(KDIA),
+     *                      WORK(KEND1),LWRK1,
+     *                      LUDELD,FNDELD,LUCKJD,FNCKJD,LUDKBC,
+     *                      FNDKBC,LUTOC,FNTOC,LU3VI,FN3VI,
+     *                      LUDKBC3,FNDKBC3,LU3FOPX,FN3FOPX,
+     *                      LU3FOP2X,FN3FOP2X)
 
-          IADRAB = IADRIJ + NMATIJ(ISYDEN)
-          CALL PUTWA2(LUDEFF,FNDEFF,WORK(KDAB),IADRAB,NMATAB(ISYDEN))
+           END IF
 
-          IADRIA = IADRAB + NMATAB(ISYDEN)
-          CALL PUTWA2(LUDEFF,FNDEFF,WORK(KDIA),IADRIA,NT1AM(ISYDEN))
+         END IF
+
+
+         IADRIJ = 1 + M2BST*(IDENS-1)
+         CALL PUTWA2(LUDEFF,FNDEFF,WORK(KDIJ),IADRIJ,NMATIJ(ISYDEN))
+
+         IADRAB = IADRIJ + NMATIJ(ISYDEN)
+         CALL PUTWA2(LUDEFF,FNDEFF,WORK(KDAB),IADRAB,NMATAB(ISYDEN))
+
+         IADRIA = IADRAB + NMATAB(ISYDEN)
+         CALL PUTWA2(LUDEFF,FNDEFF,WORK(KDIA),IADRIA,NT1AM(ISYDEN))
 
         END DO ! IDENS
 
@@ -174,8 +241,8 @@ C         --------------------
       CALL WCLOSE2(LUDKBC,FNDKBC,'KEEP')
       CALL WCLOSE2(LU3VI,FN3VI,'KEEP')
       CALL WCLOSE2(LUDKBC3,FNDKBC3,'KEEP')
-      CALL WCLOSE2(LU3FOP,FN3FOP,'KEEP')
-      CALL WCLOSE2(LU3FOP2,FN3FOP2,'KEEP')
+      CALL WCLOSE2(LU3FOPX,FN3FOPX,'KEEP')
+      CALL WCLOSE2(LU3FOP2X,FN3FOP2X,'KEEP')
 
 *---------------------------------------------------------------------*
 *     compute from the densities the polarizability contributions:
@@ -265,6 +332,7 @@ C
 #include <ccr1rsp.h>
 #include <ccinftap.h>
 #include <inftap.h>
+#include <ccexci.h>
 C
       LOGICAL LOCDBG, TOT_T3Y
       PARAMETER(LOCDBG = .FALSE., TOT_T3Y = .TRUE.)
@@ -325,6 +393,8 @@ C
      *        ISYMA, KDIA2, KDIA3, KDIA4, IMAT, ISCKBY, KTRVI8Y,
      *        ISCKDY
       INTEGER ISWTL(8,8), ISTLN(8,8), NIMFN(8)
+C
+      INTEGER ILSTSYM
  
 #if defined (SYS_CRAY)
       REAL XLAMDP(*), XLAMDH(*), FOCK0(*)
@@ -361,6 +431,11 @@ C------------------------------------------------------------
 
         IF (LORXLRT(IDLSTR)) 
      &   CALL QUIT('NO ORBITAL RELAXED PERTURBATION IN CCSDT_ETA_DEN')
+
+      ELSE IF (LISTR(1:3).EQ.'RE ') THEN
+        ISTAMY  = ILSTSYM(LISTR,IDLSTR)
+        FREQY  = EIGVAL(IDLSTR)
+        LABELY = '- none -'
 
       ELSE
         ! ups, probably higher-order response, not yet implemented here
@@ -698,7 +773,7 @@ C
      *                  NTOTOC(ISTAMY))
          ENDIF
 C
-         IF (IPRINT .GT. 55)
+         IF (LOCDBG)
      *      WRITE(LUPRI,*) 'Norm of CCSDT_OC-INT (Y transformed) ',
      *        DDOT(NTOTOC(ISTAMY),WORK(KINTOC),1,WORK(KINTOC),1)
 C
@@ -1059,8 +1134,8 @@ C                 Calculate the S(ci,bk,dj) matrix for B,D for T3-BAR:
 C                 ----------------------------------------------------
                   CALL DZERO(WORK(KSMAT2),NCKIJ(ISCKIJ))
  
-                  CALL CCFOP_SMAT(WORK(KL1AM),ISYCTR,WORK(KL2TP),ISYCTR,
-     *                            WORK(KTMAT),
+                  CALL CCFOP_SMAT(0.0D0,WORK(KL1AM),ISYCTR,WORK(KL2TP),
+     *                            ISYCTR,WORK(KTMAT),
      *                            WORK(KFCKBA),WORK(KXIAJB),ISYM0,
      *                            WORK(KTRVI14),WORK(KTRVI15),
      *                            WORK(KTRVI4),WORK(KTRVI5),
@@ -1079,8 +1154,8 @@ C                 Calculate the S(ci,bk,dj) matrix for D,B for T3-BAR:
 C                 ----------------------------------------------------
                   CALL DZERO(WORK(KSMAT4),NCKIJ(ISCKIJ))
 
-                  CALL CCFOP_SMAT(WORK(KL1AM),ISYCTR,WORK(KL2TP),ISYCTR,
-     *                            WORK(KTMAT),WORK(KFCKBA),
+                  CALL CCFOP_SMAT(0.0D0,WORK(KL1AM),ISYCTR,WORK(KL2TP),
+     *                            ISYCTR,WORK(KTMAT),WORK(KFCKBA),
      *                            WORK(KXIAJB),ISYM0,
      *                            WORK(KTRVI16),WORK(KTRVI17),
      *                            WORK(KTRVI11),WORK(KTRVI12),
@@ -1100,7 +1175,8 @@ C                 Calculate U(ci,jk) for fixed b,d for t3-bar.
 C                 ------------------------------------------------
                   CALL DZERO(WORK(KUMAT2),NCKIJ(ISCKIJ))
 
-                  CALL CCFOP_UMAT(WORK(KL1AM),ISYCTR,WORK(KL2TP),ISYCTR,
+                  CALL CCFOP_UMAT(0.0D0,WORK(KL1AM),ISYCTR,WORK(KL2TP),
+     *                            ISYCTR,
      *                            WORK(KXIAJB),ISYM0,WORK(KFCKBA),
      *                            WORK(KTRVI19),WORK(KTRVI7),
      *                            WORK(KTROC03),WORK(KTROC23),ISYM0,
@@ -1119,8 +1195,8 @@ C                 Calculate U(ci,jk) for fixed d,b for t3-bar.
 C                 ------------------------------------------------
                   CALL DZERO(WORK(KUMAT4),NCKIJ(ISCKIJ))
 
-                  CALL CCFOP_UMAT(WORK(KL1AM),ISYCTR,WORK(KL2TP),ISYCTR,
-     *                            WORK(KXIAJB),ISYM0,
+                  CALL CCFOP_UMAT(0.0D0,WORK(KL1AM),ISYCTR,WORK(KL2TP),
+     *                            ISYCTR,WORK(KXIAJB),ISYM0,
      *                            WORK(KFCKBA),WORK(KTRVI20),
      *                            WORK(KTRVI13),WORK(KTROC03),
      *                            WORK(KTROC23),ISYM0,
@@ -1139,10 +1215,6 @@ C                 -------------------------------------------
                   CALL CC3_T3BD(ISCKIJ,WORK(KSMAT2),WORK(KSMAT4),
      *                                 WORK(KUMAT2),WORK(KUMAT4),
      *                                 WORK(KTMAT),WORK(KINDSQ),LENSQ)
-COMMENT
-                  write(lupri,*)'t3bd multipliers in ccsdt_eta_cont'
-                  call print_t3bd(WORK(KTMAT),ISCKIJ,B,D,1)
-COMMENT
 C
 C                 -------------------------------------
 C                 Write T3-bar as T3^D(ai,bj,l) to disc
@@ -1219,7 +1291,7 @@ C
 C                 --------------------------------------------------
 C                 Calculate the S(ci,bk,dj) matrix for T3 for B,D.
 C                 --------------------------------------------------
-                  CALL CC3_SMAT(WORK(KT2TP),ISYM0,WORK(KTMAT),
+                  CALL CC3_SMAT(0.0D0,WORK(KT2TP),ISYM0,WORK(KTMAT),
      *                          WORK(KTRVI0),WORK(KTRVI2),
      *                          WORK(KTROC0),ISYM0,
      *                          WORK(KFOCKD),WORK(KDIAG),
@@ -1235,7 +1307,7 @@ C
 C                 --------------------------------------------------
 C                 Calculate the S(ci,bk,dj) matrix for T3 for D,B.
 C                 --------------------------------------------------
-                  CALL CC3_SMAT(WORK(KT2TP),ISYM0,WORK(KTMAT),
+                  CALL CC3_SMAT(0.0D0,WORK(KT2TP),ISYM0,WORK(KTMAT),
      *                          WORK(KTRVI8),WORK(KTRVI9),
      *                          WORK(KTROC0),ISYM0,
      *                          WORK(KFOCKD),WORK(KDIAG),
@@ -1251,7 +1323,7 @@ C
 C                 ---------------------------------
 C                 Calculate U(ci,jk) for fixed b,d.
 C                 ---------------------------------
-                  CALL CC3_UMAT(WORK(KT2TP),ISYM0,WORK(KTRVI1),
+                  CALL CC3_UMAT(0.0D0,WORK(KT2TP),ISYM0,WORK(KTRVI1),
      *                          WORK(KTROC02),ISYM0,WORK(KFOCKD),
      *                          WORK(KDIAG),WORK(KUMAT),WORK(KTMAT),
      *                          WORK(KEND4),LWRK4,WORK(KINDSQ),LENSQ,
@@ -1265,7 +1337,7 @@ C
 C                 ---------------------------------
 C                 Calculate U(ci,jk) for fixed d,b.
 C                 ---------------------------------
-                  CALL CC3_UMAT(WORK(KT2TP),ISYM0,WORK(KTRVI10),
+                  CALL CC3_UMAT(0.0D0,WORK(KT2TP),ISYM0,WORK(KTRVI10),
      *                          WORK(KTROC02),ISYM0,WORK(KFOCKD),
      *                          WORK(KDIAG),WORK(KUMAT3),WORK(KTMAT),
      *                          WORK(KEND4),LWRK4,WORK(KINDSQ),LENSQ,
@@ -1286,6 +1358,8 @@ C
 C                 ---------------------------------
 C                 Use the T3 in TMAT to calculate W
 C                 ---------------------------------
+                  IF (LISTR(1:3).EQ.'R1 ') THEN
+C
                   IF (LOCDBG) WRITE(LUPRI,*) 'Norm of TMAT:',
      *               DDOT(NCKIJ(ISCKIJ),WORK(KTMAT),1,WORK(KTMAT),1)
 
@@ -1307,7 +1381,9 @@ C                 ---------------------------------
 
                   IF (LOCDBG) WRITE(LUPRI,*) 'Norm of WMAT (WBD_T2):',
      *               DDOT(NCKIJ(ISWMAT),WORK(KWMAT),1,WORK(KWMAT),1)
-
+C
+                  END IF
+C
                   IF (TOT_T3Y) THEN
                      CALL WBD_GROUND(WORK(KT2B),ISTAMY,WORK(KTMAT),
      *                               WORK(KTRVI0),WORK(KTRVI8),
@@ -1386,7 +1462,7 @@ C              --------------------------------------------
                IADR = ISWTL(ISWMAT,ISYML) + NT2SQ(ISWMAT)*(L-1) + 1
                CALL GETWA2(LUWMAT,FNWMAT,WORK(KWMAT),IADR,NT2SQ(ISWMAT))
 
-               CALL CC_T2MOD(WORK(KWMAT),ISWMAT)
+               CALL CC_T2MOD(WORK(KWMAT),ISWMAT,HALF)
 
 C              --------------------------------------------
 C              Read response doubles amplitudes T2^y,DL:
@@ -1743,13 +1819,13 @@ C
       RETURN
       END
 *=====================================================================*
-      SUBROUTINE CC_T2MOD(T2AMP,ISYAMP)
+      SUBROUTINE CC_T2MOD(T2AMP,ISYAMP,FAC)
 *---------------------------------------------------------------------*
 *  
 *     Purpose: construct for a squared vector the following 
 *              combination in place:
 *
-*              T2-new(ai,bj) = T2-old(ai,bj) + 1/2 T2-old(bj,ai)
+*              T2-new(ai,bj) = T2-old(ai,bj) + FAC * T2-old(bj,ai)
 *
 *    Written by Christof Haettig, Mai 2002, Aarhus
 *             
@@ -1759,9 +1835,9 @@ C
 #include <ccorb.h>
 
 #if defined (SYS_CRAY)
-      REAL T2AMP(*), XAIBJ, XBJAI
+      REAL T2AMP(*), XAIBJ, XBJAI, FAC
 #else
-      DOUBLE PRECISION T2AMP(*), XAIBJ, XBJAI
+      DOUBLE PRECISION T2AMP(*), XAIBJ, XBJAI, FAC
 #endif
 
       INTEGER ISYMAI, ISYMBJ, NAI, NBJ, NAIBJ, NBJAI, NAIAI, ISYAMP
@@ -1782,8 +1858,8 @@ C
               XAIBJ = T2AMP(NAIBJ)
               XBJAI = T2AMP(NBJAI)
 
-              T2AMP(NAIBJ) = XAIBJ + 0.5D0 * XBJAI
-              T2AMP(NBJAI) = XBJAI + 0.5D0 * XAIBJ
+              T2AMP(NAIBJ) = XAIBJ + FAC * XBJAI
+              T2AMP(NBJAI) = XBJAI + FAC * XAIBJ
 
             END DO
           END DO
@@ -1799,13 +1875,13 @@ C
               XAIBJ = T2AMP(NAIBJ)
               XBJAI = T2AMP(NBJAI)
 
-              T2AMP(NAIBJ) = XAIBJ + 0.5D0 * XBJAI
-              T2AMP(NBJAI) = XBJAI + 0.5D0 * XAIBJ
+              T2AMP(NAIBJ) = XAIBJ + FAC * XBJAI
+              T2AMP(NBJAI) = XBJAI + FAC * XAIBJ
 
             END DO
 
             NAIAI = IT2SQ(ISYMAI,ISYMAI) + NT1AM(ISYMAI)*(NAI-1)+NAI
-            T2AMP(NAIAI) = 1.5D0 * T2AMP(NAIAI) 
+            T2AMP(NAIAI) = (1.0D0 + FAC) * T2AMP(NAIAI) 
 
           END DO
 
@@ -2169,16 +2245,22 @@ C     -------------------------------------------------------
 C     set start and end indeces for loop over left vectors in
 C     calculation of effective Eta densities:
 C     -------------------------------------------------------
-      NEALEFT       = 1
-      IEASTEND(1,1) = 1
-      IEASTEND(2,1) = 1
-      DO IEADEN = 2, NEADEN
-        IF (IDXL_EADEN(IEADEN-1).NE.IDXL_EADEN(IEADEN)) THEN
-          NEALEFT = NEALEFT + 1
-          IEASTEND(1,NEALEFT) = IEADEN
-        END IF
-        IEASTEND(2,NEALEFT) = IEADEN
-      END DO
+      IF (NEADEN.GE.1) THEN
+        NEALEFT       = 1
+        IEASTEND(1,1) = 1
+        IEASTEND(2,1) = 1
+        DO IEADEN = 2, NEADEN
+          IF (IDXL_EADEN(IEADEN-1).NE.IDXL_EADEN(IEADEN)) THEN
+            NEALEFT = NEALEFT + 1
+            IEASTEND(1,NEALEFT) = IEADEN
+          END IF
+          IEASTEND(2,NEALEFT) = IEADEN
+        END DO
+      ELSE
+        NEALEFT       = 0
+        IEASTEND(1,1) = 0
+        IEASTEND(2,1) = 0
+      END IF
 
       CALL QEXIT('CXIETADP')
       RETURN
@@ -2204,6 +2286,9 @@ C     -------------------------------------------------------
 #include <ccorb.h>
 #include <priunit.h>
 #include <dummy.h>
+
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG = .FALSE.)
 
       CHARACTER LABELH*(*), FNDEFF*(*)
       INTEGER IDENS, ISYHOP, LUDEFF, M2BST, LWORK
@@ -2269,6 +2354,28 @@ C     -------------------------------------------------------
      &    DDOT( NT1AM(ISYHOP),WORK(KDIA),1,WORK(KFOCKIA),1)  +
      &    DDOT(NMATIJ(ISYHOP),WORK(KDIJ),1,WORK(KFOCKIJ),1)  +
      &    DDOT(NMATAB(ISYHOP),WORK(KDAB),1,WORK(KFOCKAB),1)
+
+      IF (LOCDBG) THEN
+        WRITE(LUPRI,*) 'CC_XIETA_DENCON>', ISYHOP,LABELH
+        WRITE(LUPRI,*) 'NORM^2(DIJ):',
+     &    DDOT(NMATIJ(ISYHOP),WORK(KDIJ),1,WORK(KDIJ),1)
+        WRITE(LUPRI,*) 'NORM^2(DAB):',
+     &    DDOT(NMATAB(ISYHOP),WORK(KDAB),1,WORK(KDAB),1)
+        WRITE(LUPRI,*) 'NORM^2(DIA):',
+     &    DDOT(NT1AM(ISYHOP),WORK(KDIA),1,WORK(KDIA),1)
+        WRITE(LUPRI,*) 'NORM^2(FOCKIJ):',
+     &    DDOT(NMATIJ(ISYHOP),WORK(KFOCKIJ),1,WORK(KFOCKIJ),1)
+        WRITE(LUPRI,*) 'NORM^2(KFOCKAB):',
+     &    DDOT(NMATAB(ISYHOP),WORK(KFOCKAB),1,WORK(KFOCKAB),1)
+        WRITE(LUPRI,*) 'NORM^2(FOCKIA):',
+     &    DDOT(NT1AM(ISYHOP),WORK(KFOCKIA),1,WORK(KFOCKIA),1)
+        WRITE(LUPRI,*) 'DIA x FOCKIA:',
+     &    DDOT(NT1AM(ISYHOP),WORK(KDIA),1,WORK(KFOCKIA),1)
+        WRITE(LUPRI,*) 'DIJ x FOCKIJ:',
+     &    DDOT(NMATIJ(ISYHOP),WORK(KDIJ),1,WORK(KFOCKIJ),1)
+        WRITE(LUPRI,*) 'DAB x FOCKAB:',
+     &    DDOT(NMATAB(ISYHOP),WORK(KDAB),1,WORK(KFOCKAB),1)
+      END IF
 
       CALL QEXIT('CXIETDC')
       RETURN

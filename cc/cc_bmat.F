@@ -167,6 +167,7 @@ c/* Deck CC_BMAT */
 *
 *     Written by Christof Haettig, Januar/Februar 1997.
 *     BF terms rewritten in October 1998, Christof Haettig
+*     CC3 noddy version, April 2002, Christof Haettig
 *
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
@@ -192,7 +193,7 @@ c/* Deck CC_BMAT */
 #include "blocks.h"
 
 * local parameters:
-      CHARACTER MSGDBG*(17)
+      CHARACTER MSGDBG*(16)
       PARAMETER (MSGDBG='[debug] CC_BMAT> ')
 
       LOGICAL LOCDBG
@@ -280,7 +281,7 @@ c/* Deck CC_BMAT */
       INTEGER KBF0, LUBF0, KCBAR0, KDBAR0, KX4O, KSCR, KSCR2
       INTEGER KLAMDPB, KLAMDHB, KLAMDPA, KLAMDHA, IOPTW, IDUMMY
       INTEGER NBSRHF(8), IBSRHF(8,8), ICOUNT, ISYMAK, ISYBET
-      INTEGER IOPTTCME, IOPTWE
+      INTEGER IOPTTCME, IOPTWE, KTHETA1EFF, KTHETA2EFF
 
 * external functions:
       INTEGER ICCSET1
@@ -291,9 +292,9 @@ c/* Deck CC_BMAT */
       REAL DTIME, CONVRT, TIMALL, TIMTRN, TIMIO, TIMPRE
       REAL TIMA, TIMBF, TIMF, TIME, TIMI, TIMC, TIMD, TIMIM0
       REAL TIMINT, TIMRDAO, TIMTRBT, TIMIMA, TIMIMAB, TIMFCK
-      REAL DDOT, SECOND
+      REAL DDOT
 #else 
-      DOUBLE PRECISION DDOT, SECOND
+      DOUBLE PRECISION DDOT
       DOUBLE PRECISION DTIME, CONVRT, TIMALL, TIMTRN, TIMIO, TIMPRE
       DOUBLE PRECISION TIMA,TIMBF,TIMF,TIME,TIMI,TIMC,TIMD,TIMIM0
       DOUBLE PRECISION TIMINT, TIMRDAO, TIMTRBT, TIMIMA, TIMIMAB,TIMFCK
@@ -1892,6 +1893,25 @@ C
 
 
 *---------------------------------------------------------------------*
+* add CC3 contribution
+*---------------------------------------------------------------------*
+      IF (CCSDT) THEN
+         IF (IOPTRES.LT.5) THEN
+            KTHETA1EFF = KEND2
+            KTHETA2EFF = KTHETA1EFF + NT1AM(ISYMAB)
+            KEND2      = KTHETA2EFF + NT2AM(ISYMAB)
+            LWRK2      = LWORK - KEND2
+         END IF
+
+         CALL CCSDT_BMAT_NODDY(LISTA,IDLSTA,LISTB,IDLSTB,IOPTRES,
+     &                         WORK(KLAMP0),WORK(KLAMH0),
+     &                         WORK(KTHETA1),WORK(KTHETA2),
+     &                         WORK(KTHETA1EFF),WORK(KTHETA2EFF),
+     &                         IBDOTS,BCONS,FILBMA,ITRAN,
+     &                         NBTRAN,MXVEC,WORK(KEND2),LWRK2)
+
+      END IF
+*---------------------------------------------------------------------*
 * write result vector to output:
 *---------------------------------------------------------------------*
       DTIME = SECOND()
@@ -1934,10 +1954,20 @@ C
            CALL CC_WRRSP(FILBMA,IBTRAN(3,ITRAN),ISYMAB,IOPTW,MODELW,
      &                   WORK(KTHETA0),WORK(KTHETA1),WORK(KTHETA2),
      &                   WORK(KEND2),LWRK2)
+           IF (CCSDT) THEN
+             CALL CC_WRRSP(FILBMA,IBTRAN(3,ITRAN),ISYMAB,IOPTWE,MODELW,
+     &                     WORK(KTHETA0),WORK(KTHETA1EFF),
+     &                     WORK(KTHETA2EFF),WORK(KEND2),LWRK2)
+           END IF
          ELSE IF (IOPTRES.EQ.4) THEN
            CALL CC_WARSP(FILBMA,IBTRAN(3,ITRAN),ISYMAB,IOPTW,MODELW,
      &                   WORK(KTHETA0),WORK(KTHETA1),WORK(KTHETA2),
      &                   WORK(KEND2),LWRK2)
+           IF (CCSDT) THEN
+             CALL CC_WARSP(FILBMA,IBTRAN(3,ITRAN),ISYMAB,IOPTWE,MODELW,
+     &                     WORK(KTHETA0),WORK(KTHETA1EFF),
+     &                     WORK(KTHETA2EFF),WORK(KEND2),LWRK2)
+           END IF
          END IF
 
          IF (LOCDBG) THEN
@@ -2162,7 +2192,7 @@ c/* Deck CCBMAT2 */
       REAL YBARA(*), XBARA(*), FCK0OV(*), FCKC0(*) 
       REAL DUM, XNORM, DTIME
       REAL TIMIO, TIMBF, TIMA, TIME, TIMI, TIMC, TIMD
-      REAL DDOT, SECOND()
+      REAL DDOT
 #else
       DOUBLE PRECISION WORK(LWORK)
       DOUBLE PRECISION THETA1(*), THETA2(*), XLAMP0(*), XLAMH0(*)
@@ -2171,7 +2201,7 @@ c/* Deck CCBMAT2 */
       DOUBLE PRECISION YBARA(*), XBARA(*), FCK0OV(*), FCKC0(*)
       DOUBLE PRECISION FF, DUM, XNORM, DTIME
       DOUBLE PRECISION TIMIO, TIMBF, TIMA, TIME, TIMI, TIMC, TIMD
-      DOUBLE PRECISION DDOT, SECOND
+      DOUBLE PRECISION DDOT
 #endif
 
       CALL QENTER('CCBMAT2')
@@ -2994,7 +3024,7 @@ c/* Deck CCBINT1 */
 
       REAL FACTC, FACTD, DUMMY, XNORM
       REAL TIMFCK, TIMBF, TIMC, TIMD, DTIME
-      REAL DDOT, SECOND
+      REAL DDOT
 #else
       DOUBLE PRECISION WORK(LWORK)
       DOUBLE PRECISION XINT(*), BDRHF(*), DCRHF(*)
@@ -3003,7 +3033,7 @@ c/* Deck CCBINT1 */
 
       DOUBLE PRECISION FACTC, FACTR, DUMMY, XNORM
       DOUBLE PRECISION TIMFCK, TIMBF, TIMC, TIMD, DTIME
-      DOUBLE PRECISION DDOT, SECOND
+      DOUBLE PRECISION DDOT
 #endif
 
 
@@ -3305,12 +3335,12 @@ c/* Deck CCBINT3 */
       REAL WORK(LWORK)
       REAL XLAMP0(NLAMDT), XLAMH0(NLAMDT), XLIAJB(*)
       REAL TWO, XNORM, TIMFCK, TIMIO, TIME, DTIME
-      REAL DDOT, SECOND
+      REAL DDOT
 #else
       DOUBLE PRECISION WORK(LWORK)
       DOUBLE PRECISION XLAMP0(NLAMDT), XLAMH0(NLAMDT), XLIAJB(*)
       DOUBLE PRECISION TWO, XNORM, TIMFCK, TIMIO, TIME, DTIME
-      DOUBLE PRECISION DDOT, SECOND
+      DOUBLE PRECISION DDOT
 #endif
       PARAMETER (TWO = 2.0d0)
 
@@ -4705,7 +4735,7 @@ c /* deck CCDOTRSP */
 
         CALL CC_RDRSP(TYPE,IZETAV,ISYCTR,IOPT,MODEL,
      &                WORK(KZETA1),WORK(KZETA2))
-
+C
         IF (IOPT.EQ.1 .OR. IOPT.EQ.3) THEN
           CON1 = DDOT(NT1AM(ISYCTR),WORK(KZETA1),1,VEC1,1)
         ELSE
@@ -4824,7 +4854,7 @@ c/* Deck CC_BTST */
       KTHETA1 = IBTRAN(3,1)
       KTHETA2 = KTHETA1 + NT1AM(ISYMAB)
 
-      IF (NSYM.EQ.1 .AND. LOCDBG .AND. .TRUE.) THEN
+      IF (NSYM.EQ.1 .AND. LOCDBG) THEN
         KT1AMPB = KTHETA2 + NT2AM(ISYMAB)
         KT2AMPB = KT1AMPB + NT1AM(ISYMB)
         KT1AMPA = KT2AMPB + NT2AM(ISYMB)
@@ -5538,11 +5568,11 @@ C  /* Deck ccbpre1int */
 #if defined (SYS_CRAY)
       REAL WORK(LWORK), XLAMDP0(*), XLAMDH0(*)
       REAL TIMC, TIMD, TIMBF, TIMIO, DTIME
-      REAL TWO, ONE, ZERO, DDOT, SECOND, DUMMY(2)
+      REAL TWO, ONE, ZERO, DDOT, DUMMY(2)
 #else
       DOUBLE PRECISION WORK(LWORK), XLAMDP0(*), XLAMDH0(*)
       DOUBLE PRECISION TIMC, TIMD, TIMBF, TIMIO, DTIME
-      DOUBLE PRECISION TWO, ONE, ZERO, DDOT, SECOND, DUMMY(2)
+      DOUBLE PRECISION TWO, ONE, ZERO, DDOT, DUMMY(2)
 #endif
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C

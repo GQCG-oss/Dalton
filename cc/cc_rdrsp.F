@@ -1121,7 +1121,6 @@ Cold        LORXLST(IOP) = .FALSE.
         READ(LUSAVE,IOSTAT=IOS,ERR=993) NVEC, MODFIL, TYPE(1:3), 
      &      INDFIL(1), ISYFIL(1), FRQFIL(1)
 
-C       TYPE(3:3)  = '_'
         LABFIL(1)  = LABLST(1)
         LORXFIL(1) = LORXLST(1)
 
@@ -1143,7 +1142,7 @@ C       TYPE(3:3)  = '_'
      &        INDFIL(1), ISYFIL(1), FRQFIL(1), 
      &        INDFIL(2), ISYFIL(2), FRQFIL(2) 
 
-C       TYPE(3:3)  = '_'
+Cold    TYPE(3:3)  = '_'
         LABFIL(1)  = LABLST(1)
         LABFIL(2)  = LABLST(2)
         LORXFIL(1) = LORXLST(1)
@@ -1226,7 +1225,7 @@ C       TYPE(3:3)  = '_'
      &      LABFIL(1), ISYFIL(1), FRQFIL(1),
      &      LABFIL(2), ISYFIL(2), FRQFIL(2) 
 
-C       TYPE(3:3)  = '_'
+        TYPE(3:3)  = '_'
         INDFIL(1)  = 0
         INDFIL(2)  = 0
         LORXFIL(1) = LORXLST(1)
@@ -1263,7 +1262,7 @@ C       TYPE(3:3)  = '_'
      &      LABFIL(2), ISYFIL(2), FRQFIL(2),
      &      LABFIL(3), ISYFIL(3), FRQFIL(3) 
 
-C       TYPE(3:3)  = '_'
+        TYPE(3:3)  = '_'
         INDFIL(1)  = 0
         INDFIL(2)  = 0
         INDFIL(3)  = 0
@@ -1285,7 +1284,7 @@ C       TYPE(3:3)  = '_'
      &      LABFIL(4), ISYFIL(4), FRQFIL(4) 
 
 
-C       TYPE(3:3)  = '_'
+        TYPE(3:3)  = '_'
         INDFIL(1)  = 0
         INDFIL(2)  = 0
         INDFIL(3)  = 0

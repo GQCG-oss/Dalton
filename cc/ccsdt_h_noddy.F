@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 *=====================================================================*
       SUBROUTINE CCSDT_HMAT_NODDY(LISTL,IDLSTL,LISTB,IDLSTB,
      &                            LISTC,IDLSTC,LISTD,IDLSTD,
@@ -59,7 +61,7 @@ C
 #include <ccorb.h>
 
       LOGICAL LOCDBG
-      PARAMETER (LOCDBG=.true.)
+      PARAMETER (LOCDBG=.FALSE.)
 
       INTEGER ISYM0
       PARAMETER (ISYM0 = 1)

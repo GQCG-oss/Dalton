@@ -34,7 +34,7 @@ C
 #include <single.h>
 C
 C  /* Deck cceq_sol */
-      SUBROUTINE CCEQ_SOL(FRHO1,LUFR1,FRHO2,LUFR2,
+      SUBROUTINE CCEQ_SOL(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,
      *                    FC1AM,LUFC1,FC2AM,LUFC2,LIST,
      *                    LPROJECT,ISTATPRJ,
      *                    LINQCC,TRIPLET,ISIDE,ISTRVE,NVEC,NUPVEC,
@@ -199,7 +199,7 @@ C
          ENDIF                      
 C
          IST = NREDH - NUPVEC + 1
-         CALL CC_TRDRV(FRHO1,LUFR1,FRHO2,LUFR2,
+         CALL CC_TRDRV(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,
      *                 FC1AM,LUFC1,FC2AM,LUFC2,TRIPLET,
      *                 .FALSE.,IDUMMY,DUMMY,
      *                 ISIDE,IST,NUPVEC,WRK,LWRK)

@@ -131,7 +131,6 @@ c /* deck cc_hyppol */
 #else
       DOUBLE PRECISION SECOND
 #endif
-      CALL QENTER('CC_HYPPOL')
 
 *---------------------------------------------------------------------*
 * print header for hyperpolarizability section
@@ -153,7 +152,7 @@ c /* deck cc_hyppol */
      &                               '*******************************' 
 
 *---------------------------------------------------------------------*
-      IF (.NOT. (CCS .OR. CC2 .OR. CCSD) ) THEN
+      IF (.NOT. (CCS .OR. CC2 .OR. CCSD .OR. CC3) ) THEN
          CALL QUIT('CC_HYPPOL called for unknown Coupled Cluster.')
       END IF
 
@@ -662,7 +661,6 @@ C    &                 0,IOPERC,ITAMPA,ITAMPB,ITRAN,IVEC)
       CALL FLSHFO(LUPRI)
 
       IF (NQRDISP.EQ.0) THEN
-        CALL QEXIT('CC_HYPPOL')
         RETURN
       END IF
   
@@ -928,8 +926,6 @@ C    &                 0,IOPERC,ITAMPA,ITAMPB,ITRAN,IVEC)
      &  'in quadratic response section:', SECOND() - TIM0
 
       CALL FLSHFO(LUPRI)
-
-      CALL QEXIT('CC_HYPPOL')
 
       RETURN
       END
@@ -1632,6 +1628,8 @@ c /* deck ccqhypprt */
          CALL AROUND120( BLANKS//'FINAL CC2'//STRING(1:45)//BLANKS )
       ELSE IF (CCSD) THEN
          CALL AROUND120( BLANKS//'FINAL CCSD'//STRING(1:45)//BLANKS )
+      ELSE IF (CC3) THEN
+         CALL AROUND120( BLANKS//'FINAL CC3'//STRING(1:45)//BLANKS )
       ELSE
          CALL QUIT('CCQHYPPRT called for an unkown '//
      &             'Coupled Cluster model.')

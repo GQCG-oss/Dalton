@@ -34,7 +34,8 @@ C
 #include <single.h>
 C
 C  /* Deck cc3_triplet */
-      SUBROUTINE CC3_TRIPLET(OMEGA1,OMEGA2P,T2AM,C2AMP,C2AMM,FOCK,
+      SUBROUTINE CC3_TRIPLET(ECURR,ISYMTR,OMEGA1,OMEGA2P,T2AM,
+     *                       C2AMP,C2AMM,FOCK,
      *                       XLAMDP,XLAMDH,XLAMPC,XLAMHC,WORK,LWORK,
      *                       LUFR2,FRHO2,IV,ITR,C1AM)
 !
@@ -72,7 +73,7 @@ C  /* Deck cc3_triplet */
       INTEGER KYIAJB, KEND1, LWRK1, NTOSYM
       INTEGER ISYMD1, NTOT, ILLL, NUMDIS, IDEL2, IDEL, ISYMD
       INTEGER ISYDIS, KXINT, KEND2, LWRK2, LUFR2, KOME2, IV, ITR
-      INTEGER IJ, NIJ, KRECNR
+      INTEGER IJ, NIJ, KRECNR, ISYMTR
       INTEGER INDEXA(MXCORB)
 !
       INTEGER KOME22, IERRR1, IERRR2
@@ -90,7 +91,7 @@ C  /* Deck cc3_triplet */
       REAL XLAMHC(*), WORK(LWORK), C2AMP(*), C2AMM(*)
       REAL DDOT, RHO2N
       REAL SECOND
-      REAL XONE, XHALF
+      REAL XONE, XHALF, ECURR
       REAL C1AM(*)
 #else
       DOUBLE PRECISION ZERO, HALF, ONE, TWO, DTIME ! , TIMHER1, TIMHER2
@@ -98,7 +99,7 @@ C  /* Deck cc3_triplet */
       DOUBLE PRECISION FOCK(*), XLAMDP(*), XLAMDH(*), XLAMPC(*)
       DOUBLE PRECISION XLAMHC(*), WORK(LWORK), C2AMP(*), C2AMM(*)
       DOUBLE PRECISION DDOT, RHO2N
-      DOUBLE PRECISION XONE, XHALF
+      DOUBLE PRECISION XONE, XHALF, ECURR
       DOUBLE PRECISION C1AM(*)
       DOUBLE PRECISION SECOND
 #endif
@@ -118,7 +119,6 @@ C  /* Deck cc3_triplet */
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 #include <ccsdio.h>
-#include <cclr.h>
 !
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 !
@@ -628,7 +628,8 @@ C  /* Deck cc3_triplet */
       RETURN
       END
 C  /* Deck cc3_c3am */
-      SUBROUTINE CC33_C3AM(C3AM,XINT1S,XINT2S,XINT3S,XINT4S,XINT5S,
+      SUBROUTINE CC33_C3AM(ECURR,C3AM,
+     *                     XINT1S,XINT2S,XINT3S,XINT4S,XINT5S,
      *                     XINT6S,T2AM,C2AMP,C2AMM,SCR1,FOCKD)
 !
 !     Written by Kasper Hald Jan 2000.
@@ -639,7 +640,6 @@ C  /* Deck cc3_c3am */
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 !
       INTEGER NAI, NCK, NCJ, NBK, NBJ, NDI, NDJ, NDK
       INTEGER NBL, NAL, NCL, NAK, NAJ, NCI, NBI
@@ -649,7 +649,7 @@ C  /* Deck cc3_c3am */
       REAL XINT3S(NT1AMX,NVIRT,NVIRT), XINT4S(NT1AMX,NRHFT,NRHFT)
       REAL XINT5S(NT1AMX,NVIRT,NVIRT), XINT6S(NT1AMX,NRHFT,NRHFT)
       REAL C3AM(NT1AMX,NT1AMX,NT1AMX),SCR1(NT1AMX),FOCKD(*)
-      REAL T2AM(NT1AMX,NT1AMX), HALF, QUART, ONE
+      REAL T2AM(NT1AMX,NT1AMX), HALF, QUART, ONE, ECURR
       REAL AIBJCK, C2AMP(NT1AMX,NT1AMX), C2AMM(NT1AMX,NT1AMX)
 #else
       DOUBLE PRECISION XINT1S(NT1AMX,NVIRT,NVIRT)
@@ -661,7 +661,7 @@ C  /* Deck cc3_c3am */
       DOUBLE PRECISION C3AM(NT1AMX,NT1AMX,NT1AMX),SCR1(NT1AMX),FOCKD(*)
       DOUBLE PRECISION T2AM(NT1AMX,NT1AMX), HALF, QUART, AIBJCK
       DOUBLE PRECISION C2AMP(NT1AMX,NT1AMX), C2AMM(NT1AMX,NT1AMX)
-      DOUBLE PRECISION ONE
+      DOUBLE PRECISION ONE, ECURR
 #endif
 !
       PARAMETER (QUART = 0.25D00, HALF=0.5D00, ONE=1.0D00)
@@ -1377,7 +1377,6 @@ C  /* Deck cc33_transtemp */
 #include <maxorb.h>
 #include <maxash.h>
 #include <mxcent.h>
-#include <maxorb.h>
 #include <aovec.h>
 #include <iratdef.h>
 #include <eribuf.h>

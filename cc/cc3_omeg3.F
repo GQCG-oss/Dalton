@@ -34,8 +34,8 @@ C
 #include <single.h>
 C
 C  /* Deck cc3_omeg3 */
-      SUBROUTINE CC3_OMEG3(OMEGA1,OMEGA2P,OMEGA2M,T1AM,ISYMT1,T2TP,
-     *                     ISYMT2,FOCK,XLAMDP,XLAMDH,WORK,LWORK,
+      SUBROUTINE CC3_OMEG3(ECURR,OMEGA1,OMEGA2P,OMEGA2M,T1AM,ISYMT1,
+     *                     T2TP,ISYMT2,FOCK,XLAMDP,XLAMDH,WORK,LWORK,
      *                     LU3SRT,FN3SRT,LUTOC,FNTOC,LUCKJD,FNCKJD)
 C
 C     Routine to calculate triplet excitation
@@ -48,6 +48,7 @@ C     Ove Christiansen  Jan. 1996:
 C
 C
       IMPLICIT NONE
+C
 C
       INTEGER LWORK, ISYMTR, ISYMT1, ISYMT2, ISYRES, ISINT1, ISINT2
       INTEGER ISYMIM, KEND0, LWRK0, KEND1, LWRK1, KEND2, LWRK2
@@ -67,7 +68,7 @@ C
       REAL XT2TP, XIAJB, XINT, XTROC, XTROC0, XTROC1
       REAL XTRVI0, XTRVI, XTRVI1, XTRVI2, XTRVI3
       REAL XFD, XDIA, XSMAT, XQMAT, XTMAT, XRMAT, RHO1N
-      REAL RHO2N
+      REAL RHO2N, ECURR
       REAL DTIME, TITRAN, TISORT, TISMAT, TIQMAT, TICONT
       REAL TIOME1, TICONV, TICONO, DDOT, XMONE, ONE, MFACTOR
       REAL SECOND
@@ -77,12 +78,10 @@ C
       DOUBLE PRECISION XT2TP, XIAJB, XINT, XTROC, XTROC0, XTROC1
       DOUBLE PRECISION XTRVI0, XTRVI, XTRVI1, XTRVI2, XTRVI3
       DOUBLE PRECISION XFD, XDIA, XSMAT, XQMAT, XTMAT, XRMAT, RHO1N
-      DOUBLE PRECISION RHO2N
+      DOUBLE PRECISION RHO2N, ECURR
       DOUBLE PRECISION DTIME, TITRAN, TISORT, TISMAT, TIQMAT, TICONT
       DOUBLE PRECISION TIOME1, TICONV, TICONO, DDOT, XMONE, ONE, MFACTOR
-#if !defined (SYS_LINUX)
       DOUBLE PRECISION SECOND
-#endif
 #endif
       PARAMETER (XMONE = -1.0D0, ONE = 1.0D0)
 C
@@ -97,6 +96,7 @@ C
 C
       CHARACTER*(*) FN3SRT, FNTOC, FNCKJD
       CHARACTER*11 FNDELD, FNDKBC
+      CHARACTER CDUMMY*1
 C
       CALL QENTER('CC3_OMEG3')
 C
@@ -111,6 +111,8 @@ C     isymim is symmetry of S and Q intermediates.(t2*int2)
 C      (sym is for all index of S and Q (cbd,klj)
 C       thus cklj=b*d*isymim)
 C-------------------------------------------------------------
+C
+      CDUMMY = ' '
 C
       IPRCC = IPRINT
       ISYMTR = MULD2H(ISYMT1,ISYMT2)
@@ -155,7 +157,8 @@ C---------------------------------------------------------
 C     Transform and sort qmat integrals to smat integrals.
 C---------------------------------------------------------
 C
-      CALL CC3_SORT1(WORK,LWORK,2,ISINT2,LU3SRT,FN3SRT,LUDELD,FNDELD)
+      CALL CC3_SORT1(WORK,LWORK,2,ISINT2,LU3SRT,FN3SRT,LUDELD,FNDELD,
+     *               IDUMMY,CDUMMY,IDUMMY,CDUMMY,IDUMMY,CDUMMY)
       CALL CC3_SINT(XLAMDH,WORK,LWORK,ISINT2,LUDELD,FNDELD,
      *              LUDKBC,FNDKBC)
 C
@@ -580,7 +583,8 @@ C                 Calculate the S(ci,bk,dj) matrix.
 C--------------------------------------------------
 C
                   DTIME = SECOND()
-                  CALL CC3_SMAT(T2TP,ISYMT2,WORK(KTMAT),WORK(KTRVI0),
+                  CALL CC3_SMAT(ECURR,T2TP,ISYMT2,WORK(KTMAT),
+     *                          WORK(KTRVI0),
      *                          WORK(KTRVI2),WORK(KTROC0),ISINT2,
      *                          WORK(KFOCKD),WORK(KDIAG),
      *                          WORK(KSMAT),WORK(KEND4),LWRK4,
@@ -607,7 +611,7 @@ C                 Calculate Q(ci,jk) for fixed b,d.
 C--------------------------------------------------
 C
                   DTIME = SECOND()
-                  CALL CC3_QMAT(T2TP,ISYMT2,WORK(KTRVI3),
+                  CALL CC3_QMAT(ECURR,T2TP,ISYMT2,WORK(KTRVI3),
      *                          WORK(KTROC0),ISINT2,WORK(KFOCKD),
      *                          WORK(KDIAG),WORK(KQMAT),
      *                          WORK(KEND4),LWRK4,WORK(KINDSQ),LENSQ,
@@ -1941,7 +1945,8 @@ C
       RETURN
       END
 C  /* Deck cc3_omeg33 */
-      SUBROUTINE CC3_OMEG33(OMEGA1,OMEGA2P,OMEGA2M,T1AM,ISYMT1,T2TP,
+      SUBROUTINE CC3_OMEG33(ECURR,OMEGA1,OMEGA2P,OMEGA2M,
+     *                      T1AM,ISYMT1,T2TP,
      *                      ISYMT2,C2AMP,C2AMM,ISYMC2,ISYMT12,
      *                      FOCK,XLAMDP,XLAMDH,WORK,LWORK,LU3SRT,FN3SRT,
      *                      LU3VI,FN3VI,LU3VI2,FN3VI2,LUCKJD,FNCKJD,
@@ -1996,7 +2001,7 @@ C
       REAL XSMAT, XTMAT, XQMAT, XRMAT, XDIA, XFD
       REAL TITRAN, TISORT, TISMAT, TICONV, TICONO, TIIO, TIVINT, TIOME1
       REAL TIME1P, TIME2P,TIME3P, TIME1M, TIME2M, TSORTP, TSORTM
-      REAL XTIME, DTIME, DDOT, XMONE, FACTOR, ONE
+      REAL XTIME, DTIME, DDOT, XMONE, FACTOR, ONE, ECURR
       REAL SECOND
 #else
       DOUBLE PRECISION OMEGA1(*), OMEGA2P(*), OMEGA2M(*), T1AM(*)
@@ -2009,10 +2014,8 @@ C
       DOUBLE PRECISION TIVINT, TIOME1
       DOUBLE PRECISION TIME1P, TIME2P,TIME3P, TIME1M, TIME2M
       DOUBLE PRECISION TSORTP, TSORTM
-      DOUBLE PRECISION XTIME, DTIME, DDOT, XMONE, FACTOR, ONE
-#if !defined (SYS_LINUX)
+      DOUBLE PRECISION XTIME, DTIME, DDOT, XMONE, FACTOR, ONE, ECURR
       DOUBLE PRECISION SECOND
-#endif
 #endif
 C
       PARAMETER (XMONE = -1.0D0, ONE = 1.0D0)
@@ -3095,7 +3098,7 @@ C                 Calculate the part of the R3 matrix
 C-------------------------------------------------------
 C
                   DTIME = SECOND()
-                  CALL CC3_SMAT3(T2TP,ISYMT2,C2AMP,C2AMM,ISYMC2,
+                  CALL CC3_SMAT3(ECURR,T2TP,ISYMT2,C2AMP,C2AMM,ISYMC2,
      *                           WORK(KTMAT),WORK(KTRVI0),
      *                           WORK(KTRVI2),
      *                           WORK(KTRVI4),WORK(KTRVI5),
@@ -3108,7 +3111,7 @@ C
      *                           WORK(KINDEX),WORK(KINDEX2),
      *                           WORK(KINDSQ),LENSQ,ISYMB,B,ISYMD,D)
 C
-                  CALL CC3_SMAT3(T2TP,ISYMT2,C2AMP,C2AMM,ISYMC2,
+                  CALL CC3_SMAT3(ECURR,T2TP,ISYMT2,C2AMP,C2AMM,ISYMC2,
      *                           WORK(KTMAT),WORK(KTRVIB0),
      *                           WORK(KTRVIB2),
      *                           WORK(KTRVIB4),WORK(KTRVIB5),
@@ -3439,7 +3442,8 @@ C
 C
       END
 C  /* Deck cc3_smat3 */
-      SUBROUTINE CC3_SMAT3(T2TP,ISYMT2,C2AMP,C2AMM,ISYMC2,TMAT,TRVIR,
+      SUBROUTINE CC3_SMAT3(ECURR,T2TP,ISYMT2,C2AMP,C2AMM,ISYMC2,
+     *                     TMAT,TRVIR,
      *                     TRVIR2,TRVIR4,TRVIR5,TRVIR6,TRVIR7,TROCC,
      *                     TROCC2,TROCC3,TROCC4,TROCC5,ISYINT,ISYINT2,
      *                     FOCKD,DIAG,SMAT,WORK,LWORK,INDAJL,INDAJL2,
@@ -3490,7 +3494,7 @@ C
       REAL TROCC4(*), TROCC5(*)
       REAL TRVIR4(*),TRVIR5(*),TRVIR6(*),TRVIR7(*)
       REAL WORK(LWORK), ZERO, ONE, XMONE, TWO, HALF
-      REAL FACTOR, XMHALF, XDOT
+      REAL FACTOR, XMHALF, XDOT, ECURR
 #else
       DOUBLE PRECISION TRVIR(*),TRVIR2(*),TROCC(*),SMAT(*),FOCKD(*)
       DOUBLE PRECISION C2AMP(*), C2AMM(*), XSMAT, DDOT, EPSIBC
@@ -3498,7 +3502,7 @@ C
       DOUBLE PRECISION TROCC4(*), TROCC5(*)
       DOUBLE PRECISION TRVIR4(*),TRVIR5(*),TRVIR6(*),TRVIR7(*)
       DOUBLE PRECISION WORK(LWORK), ZERO, ONE, XMONE, TWO, HALF
-      DOUBLE PRECISION FACTOR, XMHALF, XDOT
+      DOUBLE PRECISION FACTOR, XMHALF, XDOT, ECURR
 #endif
 C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, XMONE = -1.0D0)
@@ -3508,7 +3512,6 @@ C
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
       LOGICAL LDEBUG
 C

@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 C  /* Deck ccsd_triple */
       SUBROUTINE CC_LHTR_NODDY(OMEGA1,OMEGA2,T1AM,T2AM,C1AM,C2AM,
      *                         XLAMDP,XLAMDH,WORK,LWORK,IOPT)
@@ -411,11 +413,11 @@ C
       CALL T3_LEFT3(WORK(KOME1),WORK(KIAJB),C2AM,WORK(KT3AM))
       endif
 C
-      DO I = 1, NT1AMX
-         IF (abs(work(kome1-1+i)) .gt. 1.0D-12) THEN
-            write(lupri,*) 'OMEGA1_NODDY_T3(',i,')',work(kome1-1+i)
-         ENDIF
-      ENDDO
+C     DO I = 1, NT1AMX
+C        IF (abs(work(kome1-1+i)) .gt. 1.0D-12) THEN
+C           write(lupri,*) 'OMEGA1_NODDY_T3(',i,')',work(kome1-1+i)
+C        ENDIF
+C     ENDDO
 C
       DO I = 1,NT1AMX
          OMEGA1(I) = OMEGA1(I) + WORK(KOME1+I-1)
@@ -428,10 +430,10 @@ C
       if (.true.) then
 COMMENT      CALL CCSDT_L3AM(WORK(KL3AM),WORK(KINT3S),WORK(KINT4S),
 COMMENT     *                WORK(KIAJB),WORK(KFOCK),C1AM,C2AM,
-COMMENT     *                WORK(KSCR1),WORK(KFOCKD))
+COMMENT     *                WORK(KSCR1),WORK(KFOCKD),0.0D0)
       CALL CCSDT_L3AM(WORK(KL3AM),WORK(KINT1T),WORK(KINT2T),
      *                WORK(KIAJB),WORK(KFOCK),C1AM,C2AM,
-     *                WORK(KSCR1),WORK(KFOCKD))
+     *                WORK(KSCR1),WORK(KFOCKD),0.0D0)
       endif
 C
       CALL DSCAL(nt1amx*nt1amx*nt1amx,-1.0D0,work(kl3am),1)
@@ -461,7 +463,7 @@ C
           CALL DZERO(WORK(KOME2),NT1AMX*NT1AMX)
           CALL DZERO(WORK(KOME22),NT1AMX*NT1AMX)
 C
-       write(lupri,*) 'Before cc3_l3_omega'
+C      write(lupri,*) 'Before cc3_l3_omega'
           CALL CC3_L3_OMEGA1_NODDY(WORK(KOME1),WORK(KL3AM),
      *                             WORK(KIOOOO),WORK(KIOVVO),
      *                             WORK(KIOOVV),WORK(KIVVVV),T2AM)
@@ -492,10 +494,10 @@ C            write(lupri,*) 'Omega2_total_noddy(',i,') = ',omega2(i)
 C         endif
 C      enddo
 C
-      XNORM = DDOT(NT1AMX,OMEGA1,1,OMEGA1,1)
-      write(lupri,*) 'Norm Omega1 at the end of noddy :',xnorm
-      XNORM = DDOT(NT2AM(1),OMEGA2,1,OMEGA2,1)
-      write(lupri,*) 'Norm Omega2 at the end of noddy :',xnorm
+C     XNORM = DDOT(NT1AMX,OMEGA1,1,OMEGA1,1)
+C     write(lupri,*) 'Norm Omega1 at the end of noddy :',xnorm
+C     XNORM = DDOT(NT2AM(1),OMEGA2,1,OMEGA2,1)
+C     write(lupri,*) 'Norm Omega2 at the end of noddy :',xnorm
 C
       RETURN
       END
@@ -532,6 +534,10 @@ C
      *                      NAI,',',NBJ,',',NCK,') = ',t3am(nai,nbj,nck)
                  else if (iopt .eq. 3) then
            write(lupri,1) 'L3am (^{',na,',',nb,',',nc,'}_{',ni,',',
+     *                                nj,',',nk,'}) -> (',
+     *                      NAI,',',NBJ,',',NCK,') = ',t3am(nai,nbj,nck)
+                 else if (iopt .eq. 4) then
+           write(lupri,1) 'T3^X (^{',na,',',nb,',',nc,'}_{',ni,',',
      *                                nj,',',nk,'}) -> (',
      *                      NAI,',',NBJ,',',NCK,') = ',t3am(nai,nbj,nck)
                  else
@@ -768,7 +774,7 @@ C
       END
 C  /* Deck ccsdt_l3am */
       SUBROUTINE CCSDT_L3AM(T3BAR,XINT1,XINT2,XIAJB,FOCK,T1AM,
-     *                      T2AM,SCR1,FOCKD)
+     *                      T2AM,SCR1,FOCKD,FREQ)
 C
 C
 C
@@ -967,7 +973,7 @@ C
   150             CONTINUE
 C
 C
-                  AIBJCK = AIBJCK/(SCR1(NAI) + SCR1(NBJ) + SCR1(NCK))
+                  AIBJCK = AIBJCK/(SCR1(NAI)+SCR1(NBJ)+SCR1(NCK)-FREQ)
 C
 COMMENT COMMENT
 COMMENT COMMENT
@@ -1385,6 +1391,10 @@ C
 C=====================================
 C     Write out all results
 C=====================================
+C     write(lupri,*) 'OMEGA2_NODDY '
+C     call output(OMEGA2,1,NT1AMX,1,NT1AMX,
+C    *            NT1AMX,NT1AMX,1,lupri)
+
 C
 C      write(lupri,*) '        '
 C      do nai = 1, nt1amx
@@ -1408,6 +1418,9 @@ C
 C     Calculate the doubles of the L3 part of CC3 left hand side singles
 C
 #include <implicit.h>
+
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG = .FALSE.)
 C
       INTEGER INDEX, NAI, NBJ, NBK, NAK, NCK, NCJ, NCI, NDJ, NDK, NDI
       INTEGER NBL, NCL, NAL, NAJ, NBI, AI
@@ -1448,6 +1461,11 @@ C-------------------------------------------
 C     4 occupied integrals in integrals
 C-------------------------------------------
 C
+COMMENT COMMENT COMMENT COMMENT 
+COMMENT COMMENT COMMENT COMMENT 
+C     call dzero(OMEGA1,nt1amx)
+COMMENT COMMENT COMMENT COMMENT 
+COMMENT COMMENT COMMENT COMMENT 
       if (.true.) then
       DO NA = 1, NVIRT
        DO NB = 1, NVIRT
@@ -1567,14 +1585,16 @@ C=====================================
 C     Write out all results
 C=====================================
 C
-      write(lupri,*) '        '
-      do nai = 1, nt1amx
-         if (abs(omega1(nai)) .gt. 1.0D-12) then
-            write(lupri,*) 'Omega1_noddy(',nai,')             = ',
-     *                      omega1(nai)
-         endif
-      enddo
-      write(lupri,*) '        '
+      if (locdbg) then
+       write(lupri,*) '        '
+       do nai = 1, nt1amx
+          if (abs(omega1(nai)) .gt. 1.0D-12) then
+             write(lupri,*) 'Omega1_noddy(',nai,')             = ',
+     *                       omega1(nai)
+          endif
+       enddo
+       write(lupri,*) '        '
+      end if
 C
       RETURN
       END
@@ -2095,7 +2115,7 @@ C---------------------------------------------------------
 C
       CALL CCSDT_L3AM(OMEGA3,WORK(KINT1T),WORK(KINT2T),
      *                WORK(KIAJB),FOCK,C1AM,C2AM,
-     *                WORK(KSCR1),WORK(KFOCKD))
+     *                WORK(KSCR1),WORK(KFOCKD),0.0D0)
 C
 C----------------------------------------
 C     Print norm of result vectors.

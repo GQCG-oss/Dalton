@@ -74,6 +74,7 @@ C  Christof Haettig, Jul 1997, excited state resp. eq. implemented
 C  Christof Haettig, Oct 1997, batching for Cauchy eq. implemented
 C  Christof Haettig, Feb 1998, second-order Cauchy eq. implemented
 C  Sonia Coriani,    Mar 2000, added PL1 to ELn/ERn special batching
+C  Christof Haettig, Apr 2002, small modifications for CC3
 C----------------------------------------------------------------------
 C
 #include <implicit.h>
@@ -97,7 +98,7 @@ C
 C
       CHARACTER LIST*(*)
 
-      INTEGER NSTAT, ORDER, MAXVEC, NVEC, ISIDE
+      INTEGER NSTAT, ORDER, MAXVEC, NVEC, ISIDE, NSIMLEBAK
       INTEGER ISYOF(8)
 
       LOGICAL LPROJ(MAXVEC)
@@ -181,6 +182,15 @@ C
          CALL QUIT('Model not CCS or CC2 or CCSD or CC3 in CC_SOLRSP')
       ENDIF
  
+C---------------------------------------------------------------------
+C        For CC3: switch batching OFF 
+C        (presently we can not solve CC3 equations simultaneously,
+C         because then we are not allowed to share the same reduced
+C         space for equations with different frequencies...)
+C---------------------------------------------------------------------
+      NSIMLEBAK = NSIMLE
+      IF (CCSDT) NSIMLE = 1
+
 C-------------------------------------------------------------
 C     Start loop structure - first loop over symmetry classes.
 C-------------------------------------------------------------
@@ -398,6 +408,12 @@ C                  END DO
                    LTAKE = ICAUE .EQ. ICAUS 
                  END IF
                END DO
+    
+               IF (LOCDBG) THEN
+                 WRITE(LUPRI,*) 'SOLVE FOR CAUCHY VECTORS:' 
+                 WRITE(LUPRI,*) 'VECTOR LIST :',LIST(1:3)
+                 WRITE(LUPRI,*) 'CAUCHY ORDER:',ICAUS
+               END IF
 
 *..................................................................... 
 *              standard batching for ground state response equations:
@@ -519,12 +535,16 @@ C---------------------------------------------
 C           Solve equations by call to solver.
 C---------------------------------------------
 C
-            CALL CCEQ_SOL(FRHO1,LUFR1,FRHO2,LUFR2,
+            IF (LINQCC .AND. CCSDT) ECURR = WORK(KEIVAL)
+C
+            CALL CCEQ_SOL(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,
      *                    FC1AM,LUFC1,FC2AM,LUFC2,LIST,
      *                    LPROJECT, ISTATPRJ,
      *                    LINQCC,TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
      *                    NREDH,WORK(KREDH),WORK(KEIVAL),
      *                    WORK(KSOLEQ),WORK(KWRK1),LWRK1)
+C
+            IF (LINQCC .AND. CCSDT) ECURR = 0.0D0
 C
 C---------------------------------------------------------
 C           Analysis of solution vectors and save on disk.
@@ -621,6 +641,11 @@ C
       ENDIF
 C
       END DO
+
+C---------------------------------------------------------------------
+C     For CC3 restore NSIMLE
+C---------------------------------------------------------------------
+      IF (CCSDT) NSIMLE = NSIMLEBAK
 
 C-------------------------------------------------------------
 C     finished

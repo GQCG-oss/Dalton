@@ -34,8 +34,8 @@ C
 #include <single.h>
 C
 C  /* Deck cc3_omeg */
-      SUBROUTINE CC3_OMEG(OMEGA1,OMEGA2,T1AM,ISYMT1,T2TP,ISYMT2,FOCK,
-     *                    XLAMDP,XLAMDH,WORK,LWORK,LU3SRT,FN3SRT,
+      SUBROUTINE CC3_OMEG(ECURR,OMEGA1,OMEGA2,T1AM,ISYMT1,T2TP,ISYMT2,
+     *                    FOCK,XLAMDP,XLAMDH,WORK,LWORK,LU3SRT,FN3SRT,
      *                    LUDELD,FNDELD,LUCKJD,FNCKJD,LUDKBC,FNDKBC,
      *                    LUTOC,FNTOC,LU3VI,FN3VI,LU3VI2,FN3VI2)
 C
@@ -720,7 +720,8 @@ C                 Calculate the S(ci,bk,dj) matrix.
 C--------------------------------------------------
 C
                   DTIME = SECOND()
-                  CALL CC3_SMAT(T2TP,ISYMT2,WORK(KTMAT),WORK(KTRVI0),
+                  CALL CC3_SMAT(ECURR,T2TP,ISYMT2,WORK(KTMAT),
+     *                          WORK(KTRVI0),
      *                          WORK(KTRVI2),WORK(KTROC0),ISINT2,
      *                          WORK(KFOCKD),WORK(KDIAG),
      *                          WORK(KSMAT),WORK(KEND4),LWRK4,
@@ -747,7 +748,7 @@ C                 Calculate Q(ci,jk) for fixed b,d.
 C--------------------------------------------------
 C
                   DTIME = SECOND()
-                  CALL CC3_QMAT(T2TP,ISYMT2,WORK(KTRVI3),
+                  CALL CC3_QMAT(ECURR,T2TP,ISYMT2,WORK(KTRVI3),
      *                          WORK(KTROC0),ISINT2,WORK(KFOCKD),
      *                          WORK(KDIAG),WORK(KQMAT),
      *                          WORK(KEND4),LWRK4,WORK(KINDSQ),LENSQ,
@@ -934,6 +935,8 @@ C     Henrik Koch and Alfredo Sanchez.         Dec 1994
 C
 C     Transform (ia|j delta) integrals to (ia|j k) and sort as (ij,k,a)
 C
+C     Kasper Hald, Summer 2002 -> generalisation to nonsymmetric lambda
+C
 #include <implicit.h>
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
@@ -1021,6 +1024,8 @@ C     Transform (ck|alpha d) integrals to (ck|a d)
 C
 C     Ove Christiansen 11-1-1996: ISYINT is symmetry of (ck|alpha d)
 C
+C     Kasper Hald, 01062002 : General symmetry of Lambda
+C
 #include <implicit.h>
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
@@ -1056,9 +1061,9 @@ C
       RETURN
       END
 C  /* Deck cc3_smat */
-      SUBROUTINE CC3_SMAT(T2TP,ISYMT2,TMAT,TRVIR,TRVIR2,TROCC,ISYINT,
-     *                    FOCKD,DIAG,SMAT,WORK,LWORK,INDAJL,INDSQ,LENSQ,
-     *                    ISYMB,B,ISYMC,C)
+      SUBROUTINE CC3_SMAT(ECURR,T2TP,ISYMT2,TMAT,TRVIR,TRVIR2,TROCC,
+     *                    ISYINT,FOCKD,DIAG,SMAT,WORK,LWORK,INDAJL,
+     *                    INDSQ,LENSQ,ISYMB,B,ISYMC,C)
 C
 C     Henrik Koch and Alfredo Sanchez.         Dec 1994
 C
@@ -1088,7 +1093,6 @@ C
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
       CALL QENTER('CC3_SMAT')
 C
@@ -1566,7 +1570,8 @@ C
       RETURN
       END
 C  /* Deck cc3_qmat */
-      SUBROUTINE CC3_QMAT(T2TP,ISYMT2,TRVIR,TROCC,ISYINT,FOCKD,DIAG,
+      SUBROUTINE CC3_QMAT(ECURR,T2TP,ISYMT2,TRVIR,TROCC,ISYINT,FOCKD,
+     *                    DIAG,
      *                    QMAT,WORK,LWORK,INDSQ,LENSQ,ISYMB,B,ISYMD,D)
 C
 C     Henrik Koch and Alfredo Sanchez.         Dec 1994
@@ -1592,7 +1597,6 @@ C
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
       CALL QENTER('CC3_QMAT')
 C
@@ -3296,6 +3300,8 @@ C
 C
       DIMENSION XLAMD(*),WORK(LWORK)
 C
+      CHARACTER*(*) FNDELD, FNDKBC
+C
 #include <priunit.h>
 #include <ccinftap.h>
 #include <ccorb.h>
@@ -3861,7 +3867,7 @@ C  /* Deck cc3_trocc */
 C
 C     Henrik Koch and Alfredo Sanchez.         Dec 1994
 C
-C     Transform (ia|j delta) integrals to (ia|j k) and sort as (ij,k,a)
+C     Transform (ai|j delta) integrals to (ai|j k) and sort as (ij,k,a)
 C
 C     Debugged for ISYINT .NE. 1 Ove Christiansen 11-1-1996
 C

@@ -31,9 +31,11 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 *=====================================================================*
       SUBROUTINE CCSDT_ETA_NODDY(LISTL,IDLSTL,IOPTRES,
-     &                           FOCKA,FOCKA_AO,FREQA,FOCK0,
+     &                           FOCKA,FOCKA_AO,FREQE,FOCK0,
      &                           OMEGA1,OMEGA2,
      &                           OMEGA1EFF,OMEGA2EFF,
      &                           IDOTS,DOTPROD,LISTDP,ITRAN,
@@ -55,6 +57,7 @@ C
 #else
 #  include <implicit.h>
 #endif
+#include <dummy.h>
 #include <priunit.h>
 #include <ccsdinp.h>
 #include <maxorb.h>
@@ -62,8 +65,9 @@ C
 #include <ccfield.h>
 #include <ccorb.h>
 
-      LOGICAL LOCDBG, FD_TEST
-      PARAMETER (LOCDBG=.true., FD_TEST=.false.)
+      LOGICAL LOCDBG, FD_TEST, DO_MMAT, XI_ONLY
+      PARAMETER (LOCDBG=.FALSE., FD_TEST=.false., DO_MMAT = .FALSE.,
+     &           XI_ONLY = .FALSE.)
 
       INTEGER ISYM0
       PARAMETER (ISYM0 = 1)
@@ -74,7 +78,7 @@ C
 
 #if defined (SYS_CRAY)
       REAL DOTPROD(MXVEC,NEATRAN), DDOT
-      REAL WORK(LWORK), FREQL, FREQA, FREQE, FREQC
+      REAL WORK(LWORK), FREQL, FREQE, FREQC
       REAL FOCKA_AO(NORBT,NORBT)
       REAL OMEGA1(*), OMEGA2(*), FOCKA(NORBT,NORBT)
       REAL OMEGA1EFF(*), OMEGA2EFF(*), FOCK0(NORBT,NORBT)
@@ -82,7 +86,7 @@ C
 #else
       DOUBLE PRECISION DOTPROD(MXVEC,NEATRAN), DDOT
       DOUBLE PRECISION FOCKA_AO(NORBT,NORBT)
-      DOUBLE PRECISION WORK(LWORK), FREQL, FREQA, FREQE, FREQC
+      DOUBLE PRECISION WORK(LWORK), FREQL, FREQE, FREQC
       DOUBLE PRECISION OMEGA1(*), OMEGA2(*), FOCKA(NORBT,NORBT)
       DOUBLE PRECISION OMEGA1EFF(*), OMEGA2EFF(*), FOCK0(NORBT,NORBT)
       DOUBLE PRECISION SIXTH, TWO, TCON, DCON, SCON
@@ -92,14 +96,14 @@ C
       CHARACTER*10 MODEL
       LOGICAL L2INCL
       INTEGER INDEX, LUSIFC, IOPT, ISYMD, ILLL, IDEL, ISYDIS, NIJ, IJ,
-     &        IVEC, IDLSTC, ISYMC, LUFOCK, IDUMMY, ILSTSYM, ISYML
+     &        IVEC, IDLSTC, ISYMC, LUFOCK, ILSTSYM, ISYML
       INTEGER KSCR1, KFOCKD, KEND1, KT1AMP0, KLAMP0, KLAMH0,
      &        KINT1T0, KINT2T0, KINT1S0, KINT2S0, KXIAJB, KYIAJB,
      &        K0IOVVO, K0IOOVV, K0IOOOO, K0IVVVV, KOME1, KOME2, KDUM,
      &        KXINT, KEND2, LWRK2, KL1AM, KL2AM, KL3AM, KT3AM, KT2AM,
      &        K3AM, KEND3, LWRK3, KINT1SC, KINT2SC, KLAMPC, KLAMHC,
      &        KFOCKC, LWRK1, KRECNR, KE3AM, KTC3AM, KTC1AM, KTC2AM,
-     &        KFDETA1, KFDETA2, KFDETA3, KEND4, LWRK4
+     &        KFDETA1, KFDETA2, KFDETA3, KEND4, LWRK4, KMMAT, KDIAM
 
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J 
 
@@ -145,6 +149,12 @@ C
       KOME1   = KEND1
       KOME2   = KOME1  + NT1AMX
       KEND1   = KOME2  + NT1AMX*NT1AMX
+
+      IF (DO_MMAT) THEN
+        KMMAT = KEND1
+        KDIAM = KMMAT + NRHFT*NRHFT*NT1AMX
+        KEND1 = KDIAM + NT1AMX
+      END IF
 
       LWRK1  = LWORK  - KEND1
       IF (LWRK1 .LT. 0) THEN
@@ -281,20 +291,25 @@ C           ----------------------------------
 *---------------------------------------------------------------------*
       IF (LISTL(1:3).EQ.'L0 ') THEN
 
-        FREQL = 0.0D0
-
         CALL DZERO(WORK(KL3AM),NT1AMX*NT1AMX*NT1AMX)
 
         ! remember that CCSDT_L3AM returns -L3 !!
         CALL CCSDT_L3AM(WORK(KL3AM),WORK(KINT1T0),WORK(KINT2T0),
      *                  WORK(KXIAJB),FOCK0,WORK(KL1AM),
-     *                  WORK(KL2AM),WORK(KSCR1),WORK(KFOCKD))
+     *                  WORK(KL2AM),WORK(KSCR1),WORK(KFOCKD),0.0D0)
 
         CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KL3AM),1)
 
-      ELSE
+      ELSE IF (LISTL(1:3).EQ.'L1 ' .OR. LISTL(1:3).EQ.'LE ') THEN
 
-        ! FREQL = ??
+        CALL CCSDT_TBAR31_NODDY(WORK(KL3AM),FREQL,LISTL,IDLSTL,
+     &                          WORK(KLAMP0),WORK(KLAMH0),
+     &                          FOCK0,WORK(KFOCKD),WORK(KSCR1),
+     &                          .FALSE.,WORK(KXIAJB),DUMMY,
+     &                          .FALSE.,WORK(KINT1T0),WORK(KINT2T0),
+     &                          WORK(KEND3),LWRK3)
+
+      ELSE
 
         CALL QUIT('CCSDT_ETA_NODDY> LISTL NOT AVAILABLE:'//LISTL)
       
@@ -332,6 +347,17 @@ C    &                            NT1AMX*NT1AMX,NT1AMX,1,LUPRI)
 
       CALL CCSDT_E2AM(WORK(KOME2),WORK(KL3AM),WORK(KT2AM),FOCKA)
 
+      IF (DO_MMAT) THEN
+        CALL DZERO(WORK(KMMAT),NT1AMX*NRHFT*NRHFT)
+        CALL CCSDT_E2AXM(WORK(KMMAT),WORK(KL3AM),WORK(KT2AM))
+        WRITE(LUPRI,*) 'M matrix:'
+        DO I = 1, NT1AMX
+          WRITE(LUPRI,*) 'outer index pair:',I
+          CALL OUTPUT(WORK(KMMAT+(I-1)*NRHFT*NRHFT),1,NRHFT,1,NRHFT,
+     &                NRHFT,NRHFT,1,LUPRI)
+        END DO
+      END IF
+
       DO I = 1,NT1AMX
          DO J = 1,I
             IJ = NT1AMX*(I-1) + J
@@ -368,7 +394,7 @@ C     END IF
      &                     WORK(KFDETA1),WORK(KFDETA2),WORK(KFDETA3),
      &                     FOCKA,FOCKA_AO,
      &                     WORK(KSCR1),WORK(KEND4),LWRK4)
-c
+ 
         WRITE(LUPRI,*) 'CCSDT_ETA_NODDY> my ETA1:'
         CALL OUTPUT(WORK(KOME1),1,NVIRT,1,NRHFT,
      &              NVIRT,NRHFT,1,LUPRI)
@@ -392,7 +418,7 @@ c
         WRITE(LUPRI,*) 'CCSDT_ETA_NODDY> finite difference Eta3:'
         CALL OUTPUT(WORK(KFDETA3),1,NT1AMX*NT1AMX,1,NT1AMX,
      &              NT1AMX*NT1AMX,NT1AMX,1,LUPRI)
-c
+ 
       END IF
 
 *---------------------------------------------------------------------*
@@ -407,11 +433,6 @@ c
 
       L2INCL = .TRUE.
       CALL CCSDT_E3AM(WORK(KE3AM),WORK(KL2AM),WORK(KL3AM),FOCKA,L2INCL)
-
-cch
-        WRITE(LUPRI,*) 'CCSDT_ETA_NODDY> norm^2(E3AM):',
-     &   DDOT(NT1AMX*NT1AMX*NT1AMX,WORK(KE3AM),1,WORK(KE3AM),1)
-cch
 
       IF (FD_TEST) THEN
         WRITE(LUPRI,*) 'CCSDT_ETA_NODDY> my Eta3:'
@@ -432,13 +453,13 @@ cch
 C       -----------------------------------------------------------
 C       Calculate -E_nu_3 = Eta^A_nu_3 / (eps_nu_3 + w)
 C       -----------------------------------------------------------
-        FREQE = FREQL + FREQA 
         CALL CCSDT_3AM(WORK(KE3AM),-FREQE,WORK(KSCR1),WORK(KFOCKD))
         CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0d0,WORK(KE3AM),1)
 
-        write(lupri,*) 'frequency for effective vector:',freqe
+        if (locdbg)
+     &    write(lupri,*) 'frequency for effective eta vector:',-freqe
 C       -----------------------------------------------------------
-C       Compute contribution from  <E_3|[[H^B,T^0_2],\tau_nu_1]|HF>
+C       Compute contribution from  <E_3|[[H,T^0_2],\tau_nu_1]|HF>
 C       to the effective Eta vector 
 C       -----------------------------------------------------------
         CALL DZERO(WORK(KOME1),NT1AMX)
@@ -449,7 +470,7 @@ C       -----------------------------------------------------------
      *                           WORK(KT2AM))
 
 C       -----------------------------------------------------------
-C       Compute contribution from  <E_3|[[H^0,T^B_2],\tau_nu_1]|HF>
+C       Compute contribution from  <E_3|[H,\tau_nu_2]|HF>
 C       to the effective Eta vector
 C       -----------------------------------------------------------
         CALL DZERO(WORK(KOME2),NT1AMX*NT1AMX)
@@ -482,8 +503,9 @@ C       -------------------------------------------------------------
         ! some intermediates no longer needed:
         KTC3AM  = KL3AM
 
-        KINT1SC = KINT1S0
-        KINT2SC = KINT2S0
+        KINT1SC = KEND3
+        KINT2SC = KINT1SC + NT1AMX*NVIRT*NVIRT
+        KEND3   = KINT2SC + NRHFT*NRHFT*NT1AMX
 
         KLAMPC  = KEND3
         KLAMHC  = KLAMPC + NLAMDT
@@ -508,9 +530,11 @@ C       -------------------------------------------------------------
           IF (LISTDP(1:3).EQ.'R1 ' .OR. LISTDP(1:3).EQ.'RE ') THEN
 
              CALL CCSDT_T31_NODDY(WORK(KTC3AM),LISTDP,IDLSTC,FREQC,
-     &                        WORK(KINT1SC),WORK(KINT2SC),
+     &                        XI_ONLY,
+     &                        .FALSE.,WORK(KINT1S0),WORK(KINT2S0),
      &                        .FALSE.,WORK(KINT1T0),WORK(KINT2T0),
      &                        .FALSE.,WORK(KXIAJB),WORK(KYIAJB),
+     &                                WORK(KINT1SC),WORK(KINT2SC),
      &                        WORK(KLAMPC),WORK(KLAMHC),WORK(KFOCKC),
      &                        WORK(KLAMP0),WORK(KLAMH0),FOCK0,
      &                        WORK(KDUM),WORK(KFOCKD),
@@ -538,6 +562,13 @@ C       -------------------------------------------------------------
      &               WORK(KTC1AM),WORK(KEND3))
           Call CCLR_DIASCL(WORK(KEND3),TWO,ISYMC)
           CALL CC_T2SQ(WORK(KEND3),WORK(KTC2AM),ISYMC)   
+
+          IF (DO_MMAT) THEN
+            CALL CCSDT_E2AXC(WORK(KMMAT),WORK(KTC2AM),
+     &                       WORK(KDIAM),FOCKA)
+          END IF
+
+
           DCON = 0.5D0*DDOT(NT1AMX*NT1AMX,WORK(KTC2AM),1,WORK(KOME2),1)
           SCON = DDOT(NT1AMX,WORK(KTC1AM),1,WORK(KOME1),1)
 
@@ -547,7 +578,6 @@ C       -------------------------------------------------------------
             WRITE(LUPRI,*) 'Eta(L3)_2    x T_2:',DCON
             WRITE(LUPRI,*) 'Eta_3        x T_3:',TCON
           END IF
-
 
           IVEC = IVEC + 1
 
@@ -743,6 +773,145 @@ Ctest
 *              END OF SUBROUTINE CCSDT_E2AM                           *
 *---------------------------------------------------------------------*
 *=====================================================================*
+      SUBROUTINE CCSDT_E2AXM(XMMAT,L3AM,T2AM)
+*---------------------------------------------------------------------*
+*
+*    Purpose: noddy code for M matrix intermediate use in the `real`
+*             code to compute the contraction Eta x R
+*
+*     Written by Christof Haettig, May 2002 
+*=====================================================================*
+#if defined (IMPLICIT_NONE)
+      IMPLICIT NONE  
+#else
+#  include <implicit.h>
+#endif
+#include <priunit.h>
+#include <ccsdinp.h>
+#include <maxorb.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+
+#if defined (SYS_CRAY)
+      REAL XMMAT(NRHFT,NRHFT,NT1AMX)
+      REAL L3AM(NT1AMX,NT1AMX,NT1AMX)
+      REAL T2AM(NT1AMX,NT1AMX)
+#else
+      DOUBLE PRECISION XMMAT(NRHFT,NRHFT,NT1AMX)
+      DOUBLE PRECISION L3AM(NT1AMX,NT1AMX,NT1AMX)
+      DOUBLE PRECISION T2AM(NT1AMX,NT1AMX)
+#endif
+
+      INTEGER NFN, NI, NE, NDL, NEI, NM, NEM
+
+      DO NFN = 1, NT1AMX
+       DO NI = 1, NRHFT
+        DO NM = 1, NRHFT
+         DO NE = 1, NVIRT
+          DO NDL = 1, NT1AMX
+            NEI = NVIRT*(NI-1) + NE
+            NEM = NVIRT*(NM-1) + NE
+
+            XMMAT(NI,NM,NFN) = XMMAT(NI,NM,NFN) +
+     &         L3AM(NDL,NEM,NFN) * T2AM(NDL,NEI)
+
+          END DO
+         END DO
+        END DO
+       END DO
+      END DO
+
+      RETURN
+      END 
+*---------------------------------------------------------------------*
+*              END OF SUBROUTINE CCSDT_E2AXM                          *
+*---------------------------------------------------------------------*
+*=====================================================================*
+      SUBROUTINE CCSDT_E2AXC(XMMAT,T2CAM,DIA,FOCKA)
+*---------------------------------------------------------------------*
+*
+*    Purpose: noddy code for M matrix intermediate used in the `real`
+*             code to compute the contraction Eta x R
+*
+*     Written by Christof Haettig, May 2002 
+*=====================================================================*
+#if defined (IMPLICIT_NONE)
+      IMPLICIT NONE  
+#else
+#  include <implicit.h>
+#endif
+#include <priunit.h>
+#include <ccsdinp.h>
+#include <maxorb.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+
+#if defined (SYS_CRAY)
+      REAL XMMAT(NRHFT,NRHFT,NT1AMX)
+      REAL T2CAM(NT1AMX,NT1AMX)
+      REAL FOCKA(NORBT,NORBT)
+      REAL DIA(NT1AMX), CONTRIB
+#else
+      DOUBLE PRECISION XMMAT(NRHFT,NRHFT,NT1AMX)
+      DOUBLE PRECISION T2CAM(NT1AMX,NT1AMX)
+      DOUBLE PRECISION FOCKA(NORBT,NORBT)
+      DOUBLE PRECISION DIA(NT1AMX), CONTRIB
+#endif
+
+      INTEGER NFN, NM, NI, NA, NAI, NAM
+
+      CALL DZERO(DIA,NT1AMX)
+      
+      WRITE(LUPRI,*) 'M complete matrix:'
+      CALL OUTPUT(XMMAT,1,NRHFT*NRHFT,1,NT1AMX,NRHFT*NRHFT,NT1AMX,
+     &            1,LUPRI)
+
+      WRITE(LUPRI,*) 'response amplitudes:'
+      CALL OUTPUT(T2CAM,1,NT1AMX,1,NT1AMX,NT1AMX,NT1AMX,
+     &            1,LUPRI)
+
+      DO NFN = 1, NT1AMX
+
+        DO NM = 1, NRHFT
+          DO NI = 1, NRHFT
+            DO NA = 1, NVIRT
+              NAI = NVIRT*(NI-1) + NA
+              NAM = NVIRT*(NM-1) + NA
+              DIA(NAI) = DIA(NAI) + 
+     &          XMMAT(NI,NM,NFN) * T2CAM(NAM,NFN)
+            END DO
+          END DO
+        END DO
+
+        write(lupri,*) 'NFN:',NFN
+        write(lupri,*) 'amplitudes:'
+        call output(t2cam(1,nfn),1,nvirt,1,nrhft,nvirt,nrhft,1,lupri)
+        write(lupri,*) 'm matrix:'
+        call output(xmmat(1,1,nfn),1,nrhft,1,nrhft,nrhft,nrhft,1,lupri)
+        write(lupri,*) 'density:'
+        call output(dia,1,nvirt,1,nrhft,nvirt,nrhft,1,lupri)
+
+      END DO
+
+      WRITE(LUPRI,*) 'CCSDT_E2AXC> Density:'
+      CALL OUTPUT(DIA,1,NVIRT,1,NRHFT,NVIRT,NRHFT,1,LUPRI)
+
+      CONTRIB = 0.0D0
+      DO NI = 1, NRHFT
+        DO NA = 1, NVIRT
+          NAI = NVIRT*(NI-1) + NA
+          CONTRIB = CONTRIB + DIA(NAI) * FOCKA(NI,NRHFT+NA)
+        END DO
+      END DO
+
+      WRITE(LUPRI,*) 'CCSDT_E2AXC> Contribution:',CONTRIB
+
+      RETURN
+      END 
+*---------------------------------------------------------------------*
+*              END OF SUBROUTINE CCSDT_E2AXC                          *
+*---------------------------------------------------------------------*
+*=====================================================================*
       SUBROUTINE CCSDT_E1AM(E1AM,L3AM,T3AM,FOCKA)
 *---------------------------------------------------------------------*
 *
@@ -764,7 +933,7 @@ Ctest
 #include <ccorb.h>
 
       LOGICAL LOCDBG
-      PARAMETER (LOCDBG = .TRUE.)
+      PARAMETER (LOCDBG = .FALSE.)
 
 #if defined (SYS_CRAY)
       REAL E1AM(NT1AMX), DDOT
@@ -1062,4 +1231,73 @@ C     WORK(KL3AM-1+13) = L3AM(13,1,1)
       END 
 *---------------------------------------------------------------------*
 *              END OF SUBROUTINE CCSDT_ETA_FD                         *
+*---------------------------------------------------------------------*
+*=====================================================================*
+      SUBROUTINE PRINT_E3AM_NODDY(E3AM)
+*---------------------------------------------------------------------*
+*
+*    Purpose: Print the E3AM triples vector obtained in CCSDT_E3AM 
+*             routine in such a way that it can directly be compared 
+*             to the printout from PRINT_PT3 routine.
+*
+*    THIS ROUTINE IS THUS USED FOR DEBUGGING PURPOSES AND SHOULD 
+*    NOT BE ROMEVED...
+*
+*    It probably can also be used (or modified ? ) to print the 
+*    other triples noddy vectors. 
+*             
+*        
+*     Written by Filip Pawlowski, 26-09-2002 
+*=====================================================================*
+#if defined (IMPLICIT_NONE)
+      IMPLICIT NONE
+#else
+#  include <implicit.h>
+#endif
+#include <priunit.h>
+#include <maxorb.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+C
+      INTEGER NAI, NBJ, NCK
+C
+#if defined (SYS_CRAY)
+      REAL E3AM(NT1AMX,NT1AMX,NT1AMX)
+#else
+      DOUBLE PRECISION E3AM(NT1AMX,NT1AMX,NT1AMX)
+#endif
+C
+      DO A = 1, NVIRT
+        DO B = 1, NVIRT
+          DO C = 1, NVIRT
+            DO I = 1, NRHFT
+              DO J = 1, NRHFT
+                DO K = 1, NRHFT
+C
+                 NAI = NVIRT*(I-1) + A
+                 NBJ = NVIRT*(J-1) + B
+                 NCK = NVIRT*(K-1) + C
+C
+                 IF (ABS(E3AM(NAI,NBJ,NCK)) .GT. 1.0D-12) THEN
+C
+                     WRITE(LUPRI,1) 'noddy T3AM(',A,',',B,',',
+     *                                            C,',',I,',',
+     *                                            J,',',K,') = ',
+     *               E3AM(NAI,NBJ,NCK)
+C
+                 END IF
+
+                END DO 
+              END DO 
+            END DO 
+          END DO 
+        END DO 
+      END DO 
+C
+    1 FORMAT(1X,A11,I3,A1,I3,A1,I3,A1,I3,A1,I3,A1,I3,A4,E20.10)
+C
+      RETURN
+      END
+*---------------------------------------------------------------------*
+*              END OF SUBROUTINE PRINT_E3AM                           *
 *---------------------------------------------------------------------*

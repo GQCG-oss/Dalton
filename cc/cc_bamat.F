@@ -145,14 +145,15 @@ c/* Deck CC_BAMAT */
       INTEGER KPERT, KOO, KOV, KVV, KAOO, KBOO, KAVV, KBVV, KSCR
       INTEGER KT1AMPA, KT1AMPB, KT1AMP0, KLAMDP0, KLAMDH0
       INTEGER KTHETA0, KTHETA1, KTHETA2, KT2AMPA, KT2AMPB
-      INTEGER IRREP, IERR, IERRB, IOPT, ISYM, LEN, ITRAN, IADRTH
+      INTEGER IRREP, IERR, IERRB, IOPT, ISYM, LEN, ITRAN, IADRTH,
+     &        KTHETA1EFF, KTHETA2EFF
 
 * external functions:
       INTEGER ILSTSYM
 #if defined (SYS_CRAY) 
-      REAL DDOT
+      REAL DDOT, FREQLST, FREQB
 #else 
-      DOUBLE PRECISION DDOT
+      DOUBLE PRECISION DDOT, FREQLST, FREQB
 #endif 
 
 *---------------------------------------------------------------------*
@@ -245,7 +246,7 @@ c/* Deck CC_BAMAT */
         ISYRES = MULD2H(MULD2H(ISYMTA,ISYMTB),MULD2H(ISYMT0,ISYMO))
 
 *---------------------------------------------------------------------*
-* allocate work space for the result vector:
+* allocate work space for the result vector(s):
 *---------------------------------------------------------------------*
         IF (CCS) THEN
           KTHETA1 = KEND1
@@ -255,6 +256,11 @@ c/* Deck CC_BAMAT */
           KTHETA1 = KEND1
           KTHETA2 = KTHETA1 + NT1AM(ISYRES)
           KEND2   = KTHETA2 + NT2AM(ISYRES)
+        END IF
+        IF (CCSDT .AND. IOPTRES.NE.5) THEN
+          KTHETA1EFF = KEND2
+          KTHETA2EFF = KTHETA1EFF + NT1AM(ISYRES)
+          KEND2      = KTHETA2EFF + NT2AM(ISYRES)
         END IF
 
         IF (LOCDBG) THEN
@@ -458,7 +464,6 @@ C     IF (.NOT. (CCS .OR. CC2 .OR. CCSTST) ) THEN
 *-----------------------------------------
 * second E1 & E2 contributions, T^A x F^B:
 *-----------------------------------------
-C     IF (.NOT. (CCS .OR. CC2 .OR. CCSTST) ) THEN
       IF (.NOT. (CCS .OR. CCSTST) ) THEN
         KT2AMPA = KEND2
         KEND3   = KT2AMPA + NT2SQ(ISYMTA)
@@ -493,7 +498,28 @@ C     IF (.NOT. (CCS .OR. CC2 .OR. CCSTST) ) THEN
           CALL FLSHFO(LUPRI)
         END IF
 
-      END IF ! (.NOT. (CCS .OR. CC2 .OR. CCSTST))
+      END IF ! (.NOT. (CCS .OR. CCSTST))
+
+*---------------------------------------------------------------------*
+* compute CC3 contributions:
+*---------------------------------------------------------------------*
+      IF (CCSDT) THEN
+
+         IF (IOPTRES.EQ.5) THEN
+           FREQB = 0.0D0
+         ELSE
+           FREQB = FREQLST(FILBAM,IBATRAN(4,ITRAN))
+         END IF
+
+         CALL CCSDT_BAMAT_NODDY(IOPTRES,LABEL,FREQB,ISYMO,
+     &                          LISTA,IDLSTA,
+     &                          LISTB,IDLSTB,
+     &                          WORK(KTHETA1),WORK(KTHETA2),
+     &                          WORK(KTHETA1EFF),WORK(KTHETA2EFF),
+     &                          IBDOTS,BCONS,FILBAM,ITRAN,
+     &                          NBATRAN,MXVEC,WORK(KEND2),LEND2)
+
+      END IF
 
 *---------------------------------------------------------------------*
 * write result vector to output:

@@ -1,3 +1,38 @@
+C
+C...   Copyright (c) 2001 by the authors of Dalton (see below).
+C...   All Rights Reserved.
+C...
+C...   The source code in this file is part of
+C...   "Dalton, a molecular electronic structure program, Release 1.2
+C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+C...   and O. Vahtras"
+C...
+C...   This source code is provided under a written licence and may be
+C...   used, copied, transmitted, or stored only in accord with that
+C...   written licence.
+C...
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
+C...   This means also that persons (e.g. post-docs) leaving the research
+C...   group of the licence holder may not take any part of Dalton,
+C...   including modified files, with him/her, unless that person has
+C...   obtained his/her own licence.
+C...
+C...   For questions concerning this copyright write to:
+C...      dalton-admin@kjemi.uio.no
+C...
+C...   For information on how to get a licence see:
+C...      http://www.kjemi.uio.no/software/dalton/dalton.html
+C
+#include <single.h>
+C
 C  /* Deck ccsdt_tran1_r */
       SUBROUTINE CCSDT_TRAN1_R(XINT1,XINT2,XLAMDP0,XLAMDH0,
      &                         XLAMDP1,XLAMDH1,AOINT,IDEL)
@@ -244,3 +279,142 @@ C
 C
       RETURN
       END
+*=====================================================================*
+      SUBROUTINE CCSDT_INTS0_NODDY(DO_INTXY,XIAJB,YIAJB,
+     &                             DO_INTS0,XINT1S,XINT2S,
+     &                             DO_INTT0,XINT1T,XINT2T,
+     &                             XLAMDP,XLAMDH,WORK,LWORK)
+*---------------------------------------------------------------------*
+*
+*    Purpose: compute some standard integrals for CC3
+*
+*             if (do_intxy) compute 
+*                 XIAJB  = 2(kc|ld) - (kd|lc)
+*                 YIAJB  =  (kc|ld)
+*
+*             if (do_ints0) compute 
+*                 XINT1S = (ck|bd) and 
+*                 XINT2S = (ck|lj)
+*
+*             if (do_intt0) compute 
+*                 XINT1T = (kc|bd) and 
+*                 XINT2T = (kc|lj)
+*
+* Written by Christof Haettig, November 2002, based on CCSDT_XI3_NODDY.
+*
+*=====================================================================*
+#if defined (IMPLICIT_NONE)
+      IMPLICIT NONE  
+#else
+#  include <implicit.h>
+#endif
+#include <priunit.h>
+#include <ccsdinp.h>
+#include <maxorb.h>
+#include <ccsdsym.h>
+#include <ccfield.h>
+#include <ccorb.h>
+
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG=.FALSE.)
+      INTEGER ISYM0
+      PARAMETER (ISYM0=1)
+
+      LOGICAL DO_INTXY, DO_INTS0, DO_INTT0
+      INTEGER LWORK
+#if defined (SYS_CRAY)
+      REAL WORK(LWORK)
+      REAL XINT1T(NT1AMX*NVIRT*NVIRT)
+      REAL XINT2T(NRHFT*NRHFT*NT1AMX)
+      REAL XINT1S(NT1AMX*NVIRT*NVIRT)
+      REAL XINT2S(NRHFT*NRHFT*NT1AMX)
+      REAL XIAJB(NT1AMX*NT1AMX)
+      REAL YIAJB(NT1AMX*NT1AMX)
+      REAL XLAMDP(*), XLAMDH(*)
+#else
+      DOUBLE PRECISION WORK(LWORK)
+      DOUBLE PRECISION XINT1T(NT1AMX*NVIRT*NVIRT)
+      DOUBLE PRECISION XINT2T(NRHFT*NRHFT*NT1AMX)
+      DOUBLE PRECISION XINT1S(NT1AMX*NVIRT*NVIRT)
+      DOUBLE PRECISION XINT2S(NRHFT*NRHFT*NT1AMX)
+      DOUBLE PRECISION XIAJB(NT1AMX*NT1AMX)
+      DOUBLE PRECISION YIAJB(NT1AMX*NT1AMX)
+      DOUBLE PRECISION XLAMDP(*), XLAMDH(*)
+#endif
+
+      INTEGER ISYMD, ILLL, IDEL, ISYDIS, KXINT, KEND1, LWRK1, KRECNR
+
+      CALL QENTER('CCSDT_INTS0_NODDY')
+
+      IF (DIRECT) 
+     &  CALL QUIT('DIRECT NOT IMPLEMENTED IN CCSDT_INTS0_NODDY')
+
+*---------------------------------------------------------------------*
+*     Loop over distributions of integrals:
+*---------------------------------------------------------------------*
+      IF (DO_INTS0) THEN
+        CALL DZERO(XINT1S,NT1AMX*NVIRT*NVIRT)
+        CALL DZERO(XINT2S,NT1AMX*NRHFT*NRHFT)
+      END IF
+      IF (DO_INTT0) THEN
+         CALL DZERO(XINT1T,NT1AMX*NVIRT*NVIRT)
+         CALL DZERO(XINT2T,NT1AMX*NRHFT*NRHFT)
+      END IF
+      IF (DO_INTXY) THEN
+         CALL DZERO(XIAJB,NT1AMX*NT1AMX)
+         CALL DZERO(YIAJB,NT1AMX*NT1AMX)
+      END IF
+
+      DO ISYMD = 1, NSYM
+         DO ILLL = 1,NBAS(ISYMD)
+            IDEL   = IBAS(ISYMD) + ILLL
+            ISYDIS = MULD2H(ISYMD,ISYM0)
+ 
+C           ----------------------------
+C           Work space allocation no. 2.
+C           ----------------------------
+            KXINT  = 1
+            KEND1  = KXINT + NDISAO(ISYDIS)
+            LWRK1  = LWORK - KEND1
+            IF (LWRK1 .LT. 0) THEN
+               WRITE(LUPRI,*) 'Need : ',KEND1,'Available : ',LWORK
+               CALL QUIT('Insufficient space in CCSDT_INTS0_NODDY')
+            ENDIF
+ 
+C           ---------------------------
+C           Read in batch of integrals.
+C           ---------------------------
+            CALL CCRDAO(WORK(KXINT),IDEL,1,WORK(KEND1),LWRK1,
+     *                  WORK(KRECNR),DIRECT)
+ 
+C           ----------------------------------
+C           Calculate integrals needed in CC3:
+C           ----------------------------------
+            IF (DO_INTT0) THEN
+               CALL CCSDT_TRAN1(XINT1T,XINT2T,XLAMDP,XLAMDH,
+     *                          WORK(KXINT),IDEL)
+            END IF
+
+            IF (DO_INTXY) THEN
+               CALL CC3_TRAN2(XIAJB,YIAJB,XLAMDP,XLAMDH,
+     *                        WORK(KXINT),IDEL)
+            END IF
+ 
+            IF (DO_INTS0) THEN
+              CALL CCSDT_TRAN3(XINT1S,XINT2S,XLAMDP,XLAMDH,
+     *                         WORK(KXINT),IDEL)
+            END IF
+ 
+         END DO   
+      END DO  
+*---------------------------------------------------------------------*
+*     End Loop over distributions of integrals.
+*---------------------------------------------------------------------*
+ 
+      CALL QEXIT('CCSDT_INTS0_NODDY')
+      RETURN
+      END
+
+*---------------------------------------------------------------------*
+*              END OF SUBROUTINE CCSDT_INTS0_NODDY                    *
+*---------------------------------------------------------------------*

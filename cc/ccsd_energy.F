@@ -115,7 +115,6 @@ C
       NEWGAM = .TRUE.
       CCPTSV = .FALSE.
       CCP3SV = .FALSE.
-      ECURR  = ZERO
       EX     = .FALSE.
 C
 C-------------------------------------------------
@@ -2050,6 +2049,7 @@ C
 #include <symsq.h>
 #include <ccisao.h>
 #include <r12int.h>
+#include <cc3t3d.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -2444,6 +2444,9 @@ C
          ICOUN5 = 0
          ICOUN6 = 0
          ICOUN7 = 0
+         ICOUN8 = 0
+         ICOUN9 = 0
+         ICOUN10 = 0
          DO 560 ISYMK = 1,NSYM
             ISYMIJ = MULD2H(ISYMK,ISYIJK)
             IMAIJK(ISYMIJ,ISYMK) = ICOUN1
@@ -2453,6 +2456,9 @@ C
             ID2AIG(ISYMIJ,ISYMK) = ICOUN5
             ID2ABG(ISYMIJ,ISYMK) = ICOUN6
             IMAABC(ISYMIJ,ISYMK) = ICOUN7
+            IMAABI(ISYMIJ,ISYMK) = ICOUN8
+            IMAIAB(ISYMIJ,ISYMK) = ICOUN9
+            IMAIAJ(ISYMIJ,ISYMK) = ICOUN10
             ICOUN1 = ICOUN1 + NMATIJ(ISYMIJ)*NRHF(ISYMK)
             ICOUN2 = ICOUN2 + NVIR(ISYMIJ)*NMATIJ(ISYMK)
             ICOUN3 = ICOUN3 + NMATIJ(ISYMIJ)*NVIR(ISYMK)
@@ -2460,6 +2466,9 @@ C
             ICOUN5 = ICOUN5 + NT1AM(ISYMIJ)*NBAS(ISYMK)
             ICOUN6 = ICOUN6 + NMATAB(ISYMIJ)*NBAS(ISYMK)
             ICOUN7 = ICOUN7 + NMATAB(ISYMIJ)*NVIR(ISYMK)
+            ICOUN8 = ICOUN8 + NMATAB(ISYMIJ)*NRHF(ISYMK)
+            ICOUN9 = ICOUN9 + NT1AM(ISYMIJ)*NVIR(ISYMK)
+            ICOUN10 = ICOUN10 + NRHF(ISYMIJ)*NT1AM(ISYMK)
   560    CONTINUE
          NMAIJK(ISYIJK) = ICOUN1
          NT2AIJ(ISYIJK) = ICOUN2
@@ -2468,6 +2477,9 @@ C
          ND2AIG(ISYIJK) = ICOUN5
          ND2ABG(ISYIJK) = ICOUN6
          NMAABC(ISYIJK) = ICOUN7
+         NMAABI(ISYIJK) = ICOUN8
+         NMAIAB(ISYIJK) = ICOUN9
+         NMAIAJ(ISYIJK) = ICOUN10
   550 CONTINUE
 C
       DO 570 ISIJKD = 1,NSYM
@@ -2476,10 +2488,9 @@ C
          ICOUN3 = 0
          ICOUN4 = 0
          ICOUN5 = 0
-C PJ
-C modified to contain I3VOOO
-C
          ICOUN6 = 0
+         ICOUN7 = 0
+         ICOUN8 = 0
 
 C
          DO 580 ISYMD = 1,NSYM
@@ -2489,16 +2500,18 @@ C
             I3OVIR(ISYIJK,ISYMD) = ICOUN3
             I3VDEL(ISYIJK,ISYMD) = ICOUN4
             I3VVIR(ISYIJK,ISYMD) = ICOUN5
-!PJ         
             I3VOOO(ISYIJK,ISYMD) = ICOUN6
+            IMAABCI(ISYIJK,ISYMD) = ICOUN7
+            IMAAB_CI(ISYIJK,ISYMD) = ICOUN8
 
             ICOUN1 = ICOUN1 + NMAIJK(ISYIJK)*NBAS(ISYMD)
             ICOUN2 = ICOUN2 + NMAIJK(ISYIJK)*NRHF(ISYMD)
             ICOUN3 = ICOUN3 + NMAIJK(ISYIJK)*NVIR(ISYMD)
             ICOUN4 = ICOUN4 + NMAABC(ISYIJK)*NBAS(ISYMD)
             ICOUN5 = ICOUN5 + NMAABC(ISYIJK)*NVIR(ISYMD)
-!PJ
             ICOUN6 = ICOUN6 + NVIR(ISYIJK)*NMAIJK(ISYMD)
+            ICOUN7 = ICOUN7 + NMAABC(ISYIJK)*NRHF(ISYMD)
+            ICOUN8 = ICOUN8 + NMATAB(ISYIJK)*NT1AM(ISYMD)
 C
   580    CONTINUE
          N3ODEL(ISIJKD) = ICOUN1
@@ -2506,8 +2519,9 @@ C
          N3OVIR(ISIJKD) = ICOUN3
          N3VDEL(ISIJKD) = ICOUN4
          N3VVIR(ISIJKD) = ICOUN5
-!PJ
          N3VOOO(ISIJKD) = ICOUN6
+         NMAABCI(ISIJKD) = ICOUN7
+         NMAAB_CI(ISIJKD) = ICOUN8
 
   570 CONTINUE
 C
@@ -2770,6 +2784,9 @@ C
          ICOUN6 = 0
          ICOUN7 = 0
          ICOUN8 = 0
+         ICOUN9 = 0
+         ICOUN10 = 0
+         ICOUN11 = 0
 C
          DO 1080 ISYMJ = 1, NSYM
 C
@@ -2784,6 +2801,9 @@ C
             IT2SP(ISYAIK,ISYMJ)  = ICOUN6
             ICDKAO(ISYAIK,ISYMJ) = ICOUN7
             ICDKVI(ISYAIK,ISYMJ) = ICOUN8
+            IMAJBAI(ISYAIK,ISYMJ)  = ICOUN9
+            IMAAOBCI(ISYAIK,ISYMJ)  = ICOUN10
+            IMAJBAIT(ISYAIK,ISYMJ)  = ICOUN11
 C
             ICOUN1 = ICOUN1 + NCKI(ISYAIK)*NRHF(ISYMJ)
             ICOUN2 = ICOUN2 + NCKI(ISYAIK)*NBAS(ISYMJ)
@@ -2793,10 +2813,14 @@ C
             ICOUN6 = ICOUN6 + NCKI(ISYAIK)*NVIR(ISYMJ)
             ICOUN7 = ICOUN7 + NCKASR(ISYAIK)*NBAS(ISYMJ)
             ICOUN8 = ICOUN8 + NCKASR(ISYAIK)*NVIR(ISYMJ)
+            ICOUN9 = ICOUN9 + NRHF(ISYAIK)*NCKATR(ISYMJ)
+            ICOUN10 = ICOUN10 + NVIR(ISYAIK)*NCKATR(ISYMJ)
+            ICOUN11 = ICOUN11 + NCKATR(ISYAIK)*NRHF(ISYMJ)
 C
  1080    CONTINUE
 C
          NCKIJ(JSAIKJ) = ICOUN1
+         NMAAOBCI(JSAIKJ) = ICOUN10
 C
  1070 CONTINUE
 C
@@ -2911,6 +2935,37 @@ C
  1510       CONTINUE
  1500    CONTINUE
  1490 CONTINUE
+C
+C------------------------------------------------------------
+C     set offset arrays ISWTL and ISTLN and dimensions NIMFN:
+C------------------------------------------------------------
+C
+      DO ISYMDL = 1, NSYM
+        IOFF = 0
+        DO ISYML = 1, NSYM
+          ISWMAT = MULD2H(ISYMDL,ISYML)
+          ISWTL(ISWMAT,ISYML) = IOFF
+          IOFF = IOFF + NT2SQ(ISWMAT)*NRHF(ISYML)
+        END DO
+      END DO
+
+      DO ISAIBJ = 1, NSYM
+        IOFF = 0
+        DO ISYMJ = 1, NSYM
+          ISAIB = MULD2H(ISAIBJ,ISYMJ)
+          ISTLN(ISAIB,ISYMJ) = IOFF
+          IOFF = IOFF + NCKATR(ISAIB)*NRHF(ISYMJ)
+        END DO
+      END DO
+
+      DO ISYM = 1, NSYM
+        ILEN = 0
+        DO ISYMFN = 1, NSYM
+          ISYMIM = MULD2H(ISYM,ISYMFN)
+          ILEN   = ILEN + NMATIJ(ISYMIM)*NT1AM(ISYMFN)
+        END DO
+        NIMFN(ISYM) = ILEN
+      END DO
 C
       IF (IPRINT .GT. 5) THEN
          CALL AROUND('Information from CCSDSYM')
@@ -3518,11 +3573,8 @@ C           for (ccpt and ccfop) = true  and iopt = 1
 C           and construct 2*C-E.
 C----------------------------------------------------------------------
 C
-!Sonia
-!            IF ((IOPT .EQ. 1) .AND. (CCPT .AND. CCFOP)) THEN
-!
             IF ((IOPT .EQ. 1) .AND.
-     &          (CCPT .AND. (CCFOP.OR.ETACCPT))) THEN
+     &          (CC3 .OR. (CCPT .AND. (CCFOP.OR.ETACCPT)))) THEN
 C
                DO ISYMB = 1,NSYM
 C
@@ -3662,8 +3714,8 @@ C           Sort integrals 2*(bk,c,del) - (ck,b,del)
 C           from (ck,b,del).
 C------------------------------------------------------------------------
 C
-            !IF ((IOPT .EQ. 1 .AND. (CCPT .AND. CCFOP)) 
-            IF ((IOPT .EQ. 1 .AND. (CCPT .AND. (CCFOP.OR.ETACCPT))) 
+            IF ((IOPT .EQ. 1 .AND. 
+     *           (CC3 .OR. (CCPT .AND. (CCFOP.OR.ETACCPT))) )
      *           .OR. (IOPT .EQ. 3)) THEN
 
 C

@@ -112,7 +112,7 @@ c /* deck ccfbtaf */
       INTEGER IT2DELA0(*), IT2DELAB(*), IADPQAMO(*)
 c
       INTEGER LUBFA,IBFA,LUBFQA,IBFQA,IADRMO
-      INTEGER LUBFZA,IBFZA(*),LUBFZQA,IBFZQA(*)    !not sure, maybe IBFZA(MXORB)
+      INTEGER LUBFZA,IBFZA(*),LUBFZQA,IBFZQA(*)    !not sure, maybe IBFZA(MAXORB)
 
 #if defined (SYS_CRAY)
       REAL XLAMDP0(*), XLAMDH0(*), XLAMDQP(*), XLAMDQH(*)

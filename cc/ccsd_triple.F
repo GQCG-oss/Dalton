@@ -80,28 +80,18 @@ C
       DOUBLE PRECISION XLAMDP(*),XLAMDH(*),WORK(LWORK)
 #endif
 C
-COMMENT COMMENT
-COMMENT COMMENT
 C#include <inforb.h>
 #include <ccorb.h>
-#include <khaldtemp.h>
-COMMENT COMMENT
-COMMENT COMMENT
 #include <infind.h>
 #include <iratdef.h>
-!SONIA: otherwise it does not have MAXSHL
 #include <blocks.h>
 #include <inftap.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 C#include <ccsdio.h>
-COMMENT COMMENT
-COMMENT COMMENT
 #include <mxcent.h>
 #include <eribuf.h>
 #include <ccfield.h>
-COMMENT COMMENT
-COMMENT COMMENT
 C
       INTEGER INDEX, KCMO, KSCR1, KFOCKD, KINT1, KINT2, KINT1T, KINT2T,
      &        KINT1S, KINT2S, KT3AM, KOME1, KOME2, KIAJB, KSIG2, KYIAJB,
@@ -122,23 +112,12 @@ C
          CALL QUIT('No symmetry in this part yet')
       ENDIF
 C
-C-------------------------------------------------
-C     Initialise NNBAST ... meaning get it from
-C     the sirius include/inforb.h to a cc block 
-C     (include/khaldtemp.h)
-C-------------------------------------------------
-C
-      CALL INIT_KHALD(NNBAST)
-C
 COMMENT COMMENT
 COMMENT COMMENT
-      write(lupri,*) 'NRHFT, NVIRT, NT1AM, NT2AM : ',
-     *                nrhft, nvirt, nt1amx, nt2am(isymop)
-      write(lupri,*) 'NNBAST                     : ',nnbast
       rho1n = ddot(nt1amx,t1am,1,t1am,1)
       write(lupri,*) 'Norm of incoming T1 = ',rho1n
       rho1n = ddot(nt1amx*nt1amx,t2am,1,t2am,1)
-      write(lupri,*) 'Norm of incoming T2 = ',rho1n
+      write(lupri,*) 'Norm of incoming T1 = ',rho1n
       fockn = ddot(n2bst(isymop),fock,1,fock,1)
       write(lupri,*) 'Norm of incoming F = ',fockn
 COMMENT COMMENT
@@ -148,15 +127,9 @@ C     Dynamic Allocation.
 C------------------------
 C
       KCMO   = 1
-      KSCR1  = KCMO   + NLAMDS
-COMMENT COMMENT
-COMMENT COMMENT CHANGED NLAMDT TO NLAMDS
-COMMENT COMMENT
+      KSCR1  = KCMO   + NLAMDT
       KFOCKD = KSCR1  + NT1AMX
-      KINT1  = KFOCKD + NORBTS
-COMMENT COMMENT
-COMMENT COMMENT CHANGED NORBT TO NORBTS
-COMMENT COMMENT
+      KINT1  = KFOCKD + NORBT
       KINT2  = KINT1  + NT1AMX*NVIRT*NVIRT
       KINT1T = KINT2  + NRHFT*NRHFT*NT1AMX
       KINT2T = KINT1T + NT1AMX*NVIRT*NVIRT
@@ -214,10 +187,7 @@ C
 C
       READ (LUSIFC)
       READ (LUSIFC)
-      READ (LUSIFC) (WORK(KCMO+I-1), I=1,NLAMDS)
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT  CHANGED NLAMDT TO NLAMDS
-COMMENT COMMENT COMMENT
+      READ (LUSIFC) (WORK(KCMO+I-1), I=1,NLAMDT)
 C
 C-------------------------------------
 C     Read canonical orbital energies.
@@ -227,22 +197,9 @@ C
 C
       CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
       READ (LUSIFC)
-      READ (LUSIFC) (WORK(KFOCKD+I-1), I=1,NORBTS)
-COMMENT COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT COMMENT CHANGED NORBT TO NORBTS
-COMMENT COMMENT COMMENT COMMENT
+      READ (LUSIFC) (WORK(KFOCKD+I-1), I=1,NORBT)
 C
       CALL GPCLOSE(LUSIFC,'KEEP')
-C
-C==================================================
-C     Get CMO and FOCKD correct for frozen core
-C==================================================
-C
-      CALL CMO_REORDER(WORK(KCMO),WORK(KEND1),LWRK1)
-C
-      IF (FROIMP .OR. FROEXP) THEN
-         CALL CCSD_DELFRO(WORK(KFOCKD),WORK(KEND1),LWRK1)
-      ENDIF
 C
 C=======================================================
 C     Get the one electron integrals from the fields
@@ -285,19 +242,27 @@ C
          fockn = ddot(n2bst(isymop),work(konep),1,work(konep),1)
          write(lupri,*) 'Norm ONEP in MO basis= ',I,fockn
 C
+COMMENT
           IF (IPRINT .GT. 50) THEN
+COMMENT
             CALL AROUND('OUTPUT OF STRENGTH ONEP')
             CALL OUTPUT(WORK(KONEP),1,NORBT,1,NORBT,NORBT,NORBT,
      *                  1,LUPRI)
+COMMENT
           ENDIF
+COMMENT
 C         should not be added, because FOCK already contains fields!!!
 C         CALL DAXPY(N2BST(ISYMOP),1.0D0,WORK(KONEP),1,FOCK,1)
-C
+COMMENT
           IF (IPRINT .GT. 50) THEN
+COMMENT
+C           CALL AROUND('OUTPUT OF FOCK+STRENGTH ONEP')
             CALL AROUND('OUTPUT OF FOCK')
             CALL OUTPUT(FOCK,1,NORBT,1,NORBT,NORBT,NORBT,
      *                  1,LUPRI)
+COMMENT
           ENDIF
+COMMENT
       ENDIF
 C
 C====================================================
@@ -410,22 +375,6 @@ C
   110    CONTINUE
   100 CONTINUE
 C
-COMMENT COMMENT
-COMMENT COMMENT
-      rho1n = ddot(nt1amx*nvirt*nvirt,work(kint1t),1,work(kint1t),1)
-      write(lupri,*) 'Norm of INT1T     : ',rho1n
-      rho1n = ddot(nt1amx*nrhft*nrhft,work(kint2t),1,work(kint2t),1)
-      write(lupri,*) 'Norm of INT2T     : ',rho1n
-      rho1n = ddot(nt1amx*nvirt*nvirt,work(kint1s),1,work(kint1s),1)
-      write(lupri,*) 'Norm of INT1S     : ',rho1n
-      rho1n = ddot(nt1amx*nrhft*nrhft,work(kint2s),1,work(kint2s),1)
-      write(lupri,*) 'Norm of INT2S     : ',rho1n
-      rho1n = ddot(nt1amx*nt1amx,work(kiajb),1,work(kiajb),1)
-      write(lupri,*) 'Norm of IAJB      : ',rho1n
-      rho1n = ddot(nt1amx*nt1amx,work(kyiajb),1,work(kyiajb),1)
-      write(lupri,*) 'Norm of Y-IAJB    : ',rho1n
-COMMENT COMMENT
-COMMENT COMMENT
 C-------------------------------------
 C     Calculate the triple amplitudes.
 C-------------------------------------
@@ -445,12 +394,6 @@ COMMENT COMMENT
          CALL GPCLOSE(LUSIFC,'KEEP')
 COMMENT COMMENT
 COMMENT COMMENT
-COMMENT
-COMMENT
-        rho1n = ddot(nt1amx*nt1amx*nt1amx,work(kt3am),1,work(kt3am),1)
-        write(lupri,*) 'Norm of T3    : ',rho1n
-COMMENT
-COMMENT
 C-----------------------------------------
 C     Calculate the triples corrections.
 C-----------------------------------------
@@ -486,12 +429,7 @@ C
       PARAMETER (TWO=2.0d0)
       DIMENSION T2AM(NT1AMX,NT1AMX),OMEGA2(NT1AMX,NT1AMX)
 #include <priunit.h>
-COMMENT COMMENT
-COMMENT COMMENT
-C#include <inforb.h>
-#include <ccorb.h>
-COMMENT COMMENT
-COMMENT COMMENT
+#include <inforb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 C
@@ -528,13 +466,7 @@ C
       DIMENSION XLAMDP(NBAST,NORBT), XLAMDH(NBAST,NORBT)
       DIMENSION AOINT(NNBAST,NBAST)
 #include <priunit.h>
-COMMENT COMMENT
-COMMENT COMMENT
-C#include <inforb.h>
-#include <ccorb.h>
-#include <khaldtemp.h>
-COMMENT COMMENT
-COMMENT COMMENT
+#include <inforb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 C
@@ -593,15 +525,9 @@ C
       PARAMETER (TWO = 2.0D0)
       DIMENSION XIAJB(NT1AMX,NT1AMX), AOINT(NNBAST,NBAST)
       DIMENSION YIAJB(NT1AMX,NT1AMX)
-      DIMENSION CMO(NBAST,NORBT)
+      DIMENSION CMO(NORBT,NORBT)
 #include <priunit.h>
-COMMENT COMMENT
-COMMENT COMMENT
-C#include <inforb.h>
-#include <ccorb.h>
-#include <khaldtemp.h>
-COMMENT COMMENT
-COMMENT COMMENT
+#include <inforb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 C
@@ -652,13 +578,7 @@ C
       DIMENSION YIAJB(NT1AMX,NT1AMX)
       DIMENSION XLAMDP(NBAST,NORBT), XLAMDH(NBAST,NORBT)
 #include <priunit.h>
-COMMENT COMMENT
-COMMENT COMMENT
-C#include <inforb.h>
-#include <ccorb.h>
-#include <khaldtemp.h>
-COMMENT COMMENT
-COMMENT COMMENT
+#include <inforb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 C
@@ -714,12 +634,7 @@ C
       DIMENSION FCKFIELD(NORBT,NORBT)
       DIMENSION T3AM2(NT1AMX,NT1AMX,NT1AMX)
 #include <priunit.h>
-COMMENT COMMENT
-COMMENT COMMENT
-C#include <inforb.h>
-#include <ccorb.h>
-COMMENT COMMENT
-COMMENT COMMENT
+#include <inforb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 #include <ccfield.h>
@@ -854,9 +769,9 @@ C
 COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
-      xnorm = ddot(nt1amx*nt1amx*nt1amx,t3am,1,t3am,1)
-      write(lupri,*) 'Norm of T3 (1st in routine) : ',xnorm
-      call flshfo(lupri)
+C     xnorm = ddot(nt1amx*nt1amx*nt1amx,t3am,1,t3am,1)
+C     write(lupri,*) 'Norm of T3 (1st in routine) : ',xnorm
+C     call flshfo(lupri)
 COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
@@ -974,9 +889,9 @@ C
 COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
-      xnorm = ddot(nt1amx*nt1amx*nt1amx,t3am,1,t3am,1)
-      write(lupri,*) 'Norm of T3 (2nd in routine) : ',xnorm
-      call flshfo(lupri)
+C     xnorm = ddot(nt1amx*nt1amx*nt1amx,t3am,1,t3am,1)
+C     write(lupri,*) 'Norm of T3 (2nd in routine) : ',xnorm
+C     call flshfo(lupri)
 COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
@@ -996,12 +911,7 @@ C
       DIMENSION OMEGA1(NT1AMX),XIAJB(NT1AMX,NT1AMX)
       DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX)
 #include <priunit.h>
-COMMENT COMMENT
-COMMENT COMMENT
-C#include <inforb.h>
-#include <ccorb.h>
-COMMENT COMMENT
-COMMENT COMMENT
+#include <inforb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 C
@@ -1042,12 +952,7 @@ C
       DIMENSION OMEGA2(NT1AMX,NT1AMX)
       DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX),FOCK(NORBT,NORBT)
 #include <priunit.h>
-COMMENT COMMENT
-COMMENT COMMENT
-C#include <inforb.h>
-#include <ccorb.h>
-COMMENT COMMENT
-COMMENT COMMENT
+#include <inforb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 C
@@ -1130,12 +1035,7 @@ C
       DIMENSION SIGMA2(NT1AMX,NT1AMX)
       DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX)
 #include <priunit.h>
-COMMENT COMMENT
-COMMENT COMMENT
-C#include <inforb.h>
-#include <ccorb.h>
-COMMENT COMMENT
-COMMENT COMMENT
+#include <inforb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 C
@@ -1215,13 +1115,7 @@ C
       DIMENSION XLAMDP(NBAST,NORBT), XLAMDH(NBAST,NORBT)
       DIMENSION AOINT(NNBAST,NBAST)
 #include <priunit.h>
-COMMENT COMMENT
-COMMENT COMMENT
-C#include <inforb.h>
-#include <ccorb.h>
-#include <khaldtemp.h>
-COMMENT COMMENT
-COMMENT COMMENT
+#include <inforb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 C
@@ -1268,19 +1162,6 @@ C
   120       CONTINUE
   110    CONTINUE
   100 CONTINUE
-C
-      RETURN
-      END
-C  /* Deck init_khald */
-      SUBROUTINE INIT_KHALD(NNBASTIN)
-C
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-C
-      INTEGER NNBASTIN
-C
-      NNBASTIN = NNBAST
 C
       RETURN
       END

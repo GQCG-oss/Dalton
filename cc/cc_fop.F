@@ -104,7 +104,8 @@ C
       CHARACTER*17 MODELPRI2
       CHARACTER*10 MODEL
       CHARACTER*8  LABEL, FNTOC, FN3VI2
-      CHARACTER*6  FN3VI, FN3FOP2, FNDPTIA2, FNDELD, FNCKJD
+      CHARACTER*7  FN3FOP2X
+      CHARACTER*6  FN3VI, FN3FOP2, FNDPTIA2, FNDELD, FNCKJD, FN3FOPX
       CHARACTER*5  ETY1, FN3FOP, FNDPTIA, FNDPTAB, FNDPTIJ, FNDKBC3
       CHARACTER*4  MODELPRI, FNDKBC
       CHARACTER*3  LIST
@@ -431,18 +432,24 @@ C
            LU3VI2  = 0
            LU3FOP  = 0
            LU3FOP2 = 0
+           LU3FOPX  = 0
+           LU3FOP2X = 0
 C
            FNTOC   = 'CCSDT_OC'
            FN3VI   = 'CC3_VI'
            FN3VI2  = 'CC3_VI12'
            FN3FOP  = 'PTFOP'
            FN3FOP2 = 'PTFOP2'
+           FN3FOPX  = 'PTFOPX'
+           FN3FOP2X = 'PTFOP2X'
 C
            CALL WOPEN2(LUTOC,FNTOC,64,0)
            CALL WOPEN2(LU3VI,FN3VI,64,0)
            CALL WOPEN2(LU3VI2,FN3VI2,64,0)
            CALL WOPEN2(LU3FOP,FN3FOP,64,0)
            CALL WOPEN2(LU3FOP2,FN3FOP2,64,0)
+           CALL WOPEN2(LU3FOPX,FN3FOPX,64,0)
+           CALL WOPEN2(LU3FOP2X,FN3FOP2X,64,0)
 C
 C--------------------------------------------------------------
 C     Calculate the (T) one electron densities.
@@ -451,8 +458,8 @@ C     are needed to calculate the KappaBAR orbital multiplier.
 C     Readin T2 again since it is destroyed by CCSDPT_DENS2
 C--------------------------------------------------------------
 C
-           ECURR2 = ECURR
-           ECURR  = ZERO
+C          ECURR2 = ECURR
+C          ECURR  = ZERO
 C
            if (.true.) then
 !
@@ -465,16 +472,18 @@ C
      *                       WORK(KWRK1),LWRK1,IDUMMY,CDUM,IDUMMY,CDUM,
      *                       IDUMMY,CDUM,LUTOC,FNTOC,LU3VI,FN3VI,
      *                       LU3VI2,FN3VI2,LU3FOP,FN3FOP,
-     *                       LU3FOP2,FN3FOP2)
+     *                       LU3FOP2,FN3FOP2,
+     *                       LU3FOPX,FN3FOPX,LU3FOP2X,FN3FOP2X)
            else
              CALL CCSDPT_DENS2(WORK(KT1AM),1,WORK(KT2AM),1,MODEL,
      *                       DUMMY,IDUMMY,DUMMY,IDUMMY,
      *                       WORK(KWRK1),LWRK1,IDUMMY,CDUM,IDUMMY,CDUM,
      *                       IDUMMY,CDUM,LUTOC,FNTOC,LU3VI,FN3VI,
      *                       LU3VI2,FN3VI2,LU3FOP,FN3FOP,
-     *                       LU3FOP2,FN3FOP2)
+     *                       LU3FOP2,FN3FOP2,
+     *                       LU3FOPX,FN3FOPX,LU3FOP2X,FN3FOP2X)
            end if
-           ECURR = ECURR2
+C          ECURR = ECURR2
 C
 C------------------------------------------------
 C          Close (integrals) files
@@ -485,6 +494,8 @@ C
            CALL WCLOSE2(LU3VI2,FN3VI2,'KEEP')
            CALL WCLOSE2(LU3FOP,FN3FOP,'KEEP')
            CALL WCLOSE2(LU3FOP2,FN3FOP2,'KEEP')
+           CALL WCLOSE2(LU3FOPX,FN3FOPX,'KEEP')
+           CALL WCLOSE2(LU3FOP2X,FN3FOP2X,'KEEP')
 C
 C-------------------------------------------
 C          Read in ground state T's again
@@ -620,6 +631,8 @@ C
             LUDKBC3 = 0
             LU3FOP  = 0
             LU3FOP2 = 0
+            LU3FOPX  = 0
+            LU3FOP2X = 0
 C
             FNDELD  = 'CKDELD'
             FNCKJD  = 'CKJDEL'
@@ -629,6 +642,8 @@ C
             FNDKBC3 = 'DKBC3'
             FN3FOP  = 'PTFOP'
             FN3FOP2 = 'PTFOP2'
+            FN3FOPX  = 'PTFOPX'
+            FN3FOP2X = 'PTFOP2X'
 C
             CALL WOPEN2(LUDELD,FNDELD,64,0)
             CALL WOPEN2(LUCKJD,FNCKJD,64,0)
@@ -638,13 +653,15 @@ C
             CALL WOPEN2(LUDKBC3,FNDKBC3,64,0)
             CALL WOPEN2(LU3FOP,FN3FOP,64,0)
             CALL WOPEN2(LU3FOP2,FN3FOP2,64,0)
+            CALL WOPEN2(LU3FOPX,FN3FOPX,64,0)
+            CALL WOPEN2(LU3FOP2X,FN3FOP2X,64,0)
 C
 C---------------------------------------------
 C           Calculate densities from triples
 C---------------------------------------------
 C
-            ECURR2 = ECURR
-            ECURR  = ZERO
+C           ECURR2 = ECURR
+C           ECURR  = ZERO
 
             CALL CCSDPT_DENS2(WORK(KT1AM),1,WORK(KT2AM),1,MODEL,
      *                        WORK(KL1AM),ISYMOP,WORK(KL2AM),ISYMOP,
@@ -652,7 +669,8 @@ C
      *                        LUCKJD,FNCKJD,LUDKBC,FNDKBC,
      *                        LUTOC,FNTOC,LU3VI,FN3VI,
      *                        LUDKBC3,FNDKBC3,LU3FOP,FN3FOP,
-     *                        LU3FOP2,FN3FOP2)
+     *                        LU3FOP2,FN3FOP2,
+     *                        LU3FOPX,FN3FOPX,LU3FOP2X,FN3FOP2X)
 C
             CALL WCLOSE2(LUDELD,FNDELD,'KEEP')
             CALL WCLOSE2(LUCKJD,FNCKJD,'KEEP')
@@ -662,8 +680,10 @@ C
             CALL WCLOSE2(LUDKBC3,FNDKBC3,'KEEP')
             CALL WCLOSE2(LU3FOP,FN3FOP,'KEEP')
             CALL WCLOSE2(LU3FOP2,FN3FOP2,'KEEP')
+            CALL WCLOSE2(LU3FOPX,FN3FOPX,'KEEP')
+            CALL WCLOSE2(LU3FOP2X,FN3FOP2X,'KEEP')
 C
-            ECURR = ECURR2
+C           ECURR = ECURR2
 C
             DTIME = SECOND()
 C

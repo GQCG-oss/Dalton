@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 *=====================================================================*
       SUBROUTINE CCSDT_BMAT_NODDY(LISTA,IDLSTA,LISTB,IDLSTB,IOPTRES,
      &                            XLAMDP0,XLAMDH0,
@@ -53,6 +55,7 @@ C
 #else
 #  include <implicit.h>
 #endif
+#include <dummy.h>
 #include <priunit.h>
 #include <ccsdinp.h>
 #include <maxorb.h>
@@ -71,18 +74,18 @@ C
 
 #if defined (SYS_CRAY)
       REAL FREQA, FREQB, FREQ, DDOT, TCON, FREQC
-      REAL DOTPROD(MXVEC,NBTRAN), WORK(LWORK), SIXTH
+      REAL DOTPROD(MXVEC,NBTRAN), WORK(LWORK), SIXTH, TWO
       REAL XLAMDP0(*), XLAMDH0(*)
       REAL OMEGA1(*), OMEGA2(*)
       REAL OMEGA1EFF(*), OMEGA2EFF(*)
 #else
       DOUBLE PRECISION FREQA, FREQB, FREQ, DDOT, TCON, FREQC
-      DOUBLE PRECISION DOTPROD(MXVEC,NBTRAN), WORK(LWORK), SIXTH
+      DOUBLE PRECISION DOTPROD(MXVEC,NBTRAN), WORK(LWORK), SIXTH, TWO
       DOUBLE PRECISION XLAMDP0(*), XLAMDH0(*)
       DOUBLE PRECISION OMEGA1(*), OMEGA2(*)
       DOUBLE PRECISION OMEGA1EFF(*), OMEGA2EFF(*)
 #endif
-      PARAMETER( SIXTH = 1.0D0/6.0D0 )
+      PARAMETER( SIXTH = 1.0D0/6.0D0, TWO = 2.0D0 )
 
       CHARACTER*10 MODEL
       INTEGER KSCR1, KFOCKD, KEND1, KINT1T0, KINT2T0, KINT1TA, KINT2TA,
@@ -91,7 +94,7 @@ C
      &        KLAMHB, KLAMPB, KLAMHA, KLAMPA, KT2AM, KDUM, KXIAJB,
      &        KYIAJB, KFOCK0, KOMEGA1, KOMEGA2, LWRK1, KXINT, KEND2,
      &        LWRK2, KB3AM, KLC3AM, KRECNR, KL1AM, KL2AM
-      INTEGER IJ, NIJ, LUSIFC, INDEX, IDUMMY, ILSTSYM, IOPT, LUFOCK,
+      INTEGER IJ, NIJ, LUSIFC, INDEX, ILSTSYM, IOPT, LUFOCK,
      &        ILLL, IDEL, ISYDIS, ISYMA, ISYMB, IVEC, ISYMC, IDLSTC,
      &        ISYMD
 
@@ -202,9 +205,10 @@ C
 *---------------------------------------------------------------------*
       IF (LISTA(1:3).EQ.'R1 ' .or. LISTA(1:3).EQ.'RE ') THEN
         CALL CCSDT_T31_NODDY(WORK(KTA3AM),LISTA,IDLSTA,FREQA,.FALSE.,
-     &                       WORK(KINT1SA),WORK(KINT2SA),
+     &                       .TRUE. ,WORK(KINT1SA),WORK(KINT2SA),
      &                       .FALSE.,WORK(KDUM),WORK(KDUM),
      &                       .FALSE.,WORK(KDUM),WORK(KDUM),
+     &                               WORK(KINT1SA),WORK(KINT2SA),
      &                       WORK(KLAMPA),WORK(KLAMHA),WORK(KFOCKA),
      &                       XLAMDP0,XLAMDH0,WORK(KFOCK0),
      &                       WORK(KDUM),WORK(KFOCKD),
@@ -219,9 +223,10 @@ C
 *---------------------------------------------------------------------*
       IF (LISTB(1:3).EQ.'R1 ' .or. LISTB(1:3).EQ.'RE ') THEN
         CALL CCSDT_T31_NODDY(WORK(KTB3AM),LISTB,IDLSTB,FREQB,.FALSE.,
-     &                       WORK(KINT1SB),WORK(KINT2SB),
+     &                       .TRUE. ,WORK(KINT1SB),WORK(KINT2SB),
      &                       .FALSE.,WORK(KDUM),WORK(KDUM),
      &                       .FALSE.,WORK(KDUM),WORK(KDUM),
+     &                               WORK(KINT1SB),WORK(KINT2SB),
      &                       WORK(KLAMPB),WORK(KLAMHB),WORK(KFOCKB),
      &                       XLAMDP0,XLAMDH0,WORK(KFOCK0),
      &                       WORK(KDUM),WORK(KFOCKD),
@@ -366,6 +371,7 @@ C           ----------------------------------
       IOPT  = 2
       Call CC_RDRSP(LISTB,IDLSTB,ISYMB,IOPT,MODEL,
      &              WORK(KDUM),WORK(KT2AM))
+      Call CCLR_DIASCL(WORK(KT2AM),TWO,ISYMB) 
       CALL CCSDT_B3AM(WORK(KB3AM),WORK(KT2AM),
      &                WORK(KINT1SA),WORK(KINT2SA))
 
@@ -374,6 +380,7 @@ C           ----------------------------------
       IOPT  = 2
       Call CC_RDRSP(LISTA,IDLSTA,ISYMA,IOPT,MODEL,
      &              WORK(KDUM),WORK(KT2AM))
+      Call CCLR_DIASCL(WORK(KT2AM),TWO,ISYMA) 
       CALL CCSDT_B3AM(WORK(KB3AM),WORK(KT2AM),
      &                WORK(KINT1SB),WORK(KINT2SB))
 
@@ -418,12 +425,12 @@ C        --------------------------------------------------------
          END DO
 
          IF (LOCDBG) THEN
-           WRITE(LUPRI,*) 'CCSDT_BMAT_NODDY> RESULT VECTOR ON OUTPUT:'
-           WRITE(LUPRI,*) 'NORM^2 = ',
+           WRITE(LUPRI,*), 'CCSDT_BMAT_NODDY> RESULT VECTOR ON OUTPUT:'
+           WRITE(LUPRI,*), 'NORM^2 = ',
      &            DDOT(NT1AMX+NT2AMX,OMEGA1,1,OMEGA1,1)
            ! CALL CC_PRP(OMEGA1,OMEGA2,1,1,1)
-           WRITE(LUPRI,*) 'CCSDT_BMAT_NODDY> EFFECTIVE RESULT VECTOR:'
-           WRITE(LUPRI,*) 'NORM^2 = ',
+           WRITE(LUPRI,*), 'CCSDT_BMAT_NODDY> EFFECTIVE RESULT VECTOR:'
+           WRITE(LUPRI,*), 'NORM^2 = ',
      &            DDOT(NT1AMX+NT2AMX,OMEGA1EFF,1,OMEGA1EFF,1)
            ! CALL CC_PRP(OMEGA1EFF,OMEGA2EFF,1,1,1)
          END IF
@@ -456,11 +463,12 @@ C        --------------------------------------------------------
           ELSE IF (LISTDP(1:3).EQ.'L1 ' .OR. LISTDP(1:3).EQ.'LE ') THEN
 
              CALL CCSDT_TBAR31_NODDY(WORK(KLC3AM),FREQC,LISTDP,IDLSTC,
-     &                               XLAMDP0,XLAMDH0,
-     &                               WORK(KFOCK0),WORK(KFOCKD),
-     &                               WORK(KSCR1),
-     &                               WORK(KXIAJB),WORK(KINT1T0),
-     &                               WORK(KINT2T0),WORK(KEND1),LWRK1)
+     &                             XLAMDP0,XLAMDH0,
+     &                             WORK(KFOCK0),WORK(KFOCKD),
+     &                             WORK(KSCR1),
+     &                             .FALSE.,WORK(KXIAJB),DUMMY,
+     &                             .FALSE.,WORK(KINT1T0),WORK(KINT2T0),
+     &                             WORK(KEND1),LWRK1)
           ELSE
             CALL QUIT('Unknown or illegal list in CCSDT_BMAT_NODDY.')
           END IF

@@ -1,10 +1,45 @@
+C
+C...   Copyright (c) 2001 by the authors of Dalton (see below).
+C...   All Rights Reserved.
+C...
+C...   The source code in this file is part of
+C...   "Dalton, a molecular electronic structure program, Release 1.2
+C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+C...   and O. Vahtras"
+C...
+C...   This source code is provided under a written licence and may be
+C...   used, copied, transmitted, or stored only in accord with that
+C...   written licence.
+C...
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
+C...   This means also that persons (e.g. post-docs) leaving the research
+C...   group of the licence holder may not take any part of Dalton,
+C...   including modified files, with him/her, unless that person has
+C...   obtained his/her own licence.
+C...
+C...   For questions concerning this copyright write to:
+C...      dalton-admin@kjemi.uio.no
+C...
+C...   For information on how to get a licence see:
+C...      http://www.kjemi.uio.no/software/dalton/dalton.html
+C
+#include <single.h>
+C
 *=====================================================================*
       SUBROUTINE CC3_ETASD(LISTL,IDLSTL,FOCKY,ISYFKY,
      *                     FREQ,FOCK0, ETA1,ETA2,ETA1EFF,
      *                     ETA2EFF,ISYRES,WORK,LWORK,LUDKBC,FNDKBC,
      *                     LUCKJD,FNCKJD, 
      *                     LUTOC,FNTOC,LU3VI,FN3VI,LUDKBC3,FNDKBC3,
-     *                     LU3FOP,FN3FOP,LU3FOP2,FN3FOP2)
+     *                     LU3FOPX,FN3FOPX,LU3FOP2X,FN3FOP2X)
 *---------------------------------------------------------------------*
 *
 *    Purpose: compute triples component of eta vector 
@@ -12,9 +47,17 @@
 *             
 *    ETA3 = ( <L2|[Y,tau3]|HF> + <L3|[Y^,tau3]|HF>)/ (w+epsiln(tau3))
 *
-*    ETA1(ai) = ETA1(ai) + < ETA3|[[H^,T2],tau(ai)]|HF>     
+*    ETA1EFF(ai) = ETA1(ai) + < ETA3|[[H^,T2],tau(ai)]|HF>     
 *
-*    ETA2(aibj) = ETA2(aibj) + < ETA3|[H^,tau(aibj)]|HF>     
+*    ETA2EFF(aibj) = ETA2(aibj) + < ETA3|[H^,tau(aibj)]|HF>     
+*
+*
+*    To these we add
+*
+*    ETA1EFF(ai) = ETA1EFF(ai) + <L3|[[X,tau_ai],T_3]|HF>
+*
+*    ETA2EFF(aibj) = ETA2EFF(aibj) + <L3|[[X,E_aiE_bj],T_2]|HF>
+*
 *
 *    Written by Poul Jorgensen and Filip Pawlowski, Fall 2002, Aarhus
 *            
@@ -34,15 +77,16 @@ C
       INTEGER ISYM0
       PARAMETER(ISYM0 = 1)
       CHARACTER LISTL*3, MODEL*10
-      CHARACTER*(*) FNCKJD, FNTOC, FN3VI, FNDKBC3, FN3FOP, FN3FOP2 
+      CHARACTER*(*) FNCKJD, FNTOC, FN3VI, FNDKBC3, FN3FOPX, FN3FOP2X 
       CHARACTER*(*)  FNDKBC
       CHARACTER*13 FN4V
       CHARACTER*11 FNDKBC4
+      CHARACTER*1 CDUMMY
       LOGICAL   LOCDBG
       INTEGER   LU4V
       INTEGER   IDLSTL, LWORK
       INTEGER   ISYFKY, ISYRES
-      INTEGER   LUCKJD, LUTOC, LU3VI, LUDKBC3, LU3FOP, LU3FOP2
+      INTEGER   LUCKJD, LUTOC, LU3VI, LUDKBC3, LU3FOPX, LU3FOP2X
       INTEGER   KLAMP0,KLAMH0,KFOCKD,KFCKBA,KT2TP,KL1AM,KL2TP
       INTEGER   KEND0,LWRK0,KT1AMP0,KEND1,LWRK1
       INTEGER   ISYCTR, ISYMC, ISYMK, KOFF1, KOFF2
@@ -62,6 +106,7 @@ C
       INTEGER   LUDKBC4, LUDKBC
       INTEGER   ISINT1, ISINT2, KRBJIA, KTROC, KTROC1, ISCKB1
       INTEGER   KTRVI, KTRVI1
+      INTEGER   KRAIJB,KFCKYCK,ISYMT2
 C
 C
 COMMENT COMENT
@@ -88,20 +133,16 @@ C
 C
       CALL QENTER('CC3_ETASD')
 C
-COMMENT COMMENT COMMENT COMMENT 
-COMMENT COMMENT COMMENT COMMENT 
-C       call dzero(eta1eff,nt1am(isyres))
-C       call dzero(eta2eff,nt2am(isyres))
-COMMENT COMMENT COMMENT COMMENT 
-COMMENT COMMENT COMMENT COMMENT 
 C
-      CALL DCOPY(NT1AM(ISYRES),ETA1,1,ETA1EFF,1)
-      CALL DCOPY(NT2AM(ISYRES),ETA2,1,ETA2EFF,1)
+C     CALL DCOPY(NT1AM(ISYRES),ETA1,1,ETA1EFF,1)
+C     CALL DCOPY(NT2AM(ISYRES),ETA2,1,ETA2EFF,1)
 C
 C----------------------------------------------------
 C     Initialise character strings and open files
 C----------------------------------------------------
 C
+      CDUMMY = ' '
+
       LU4V     = 0
 C
       FN4V     = 'CC3_ETASD_TMP'
@@ -138,11 +179,13 @@ C
       ISINT2 = 1
 C
       KRBJIA = 1
-      KLAMP0 = KRBJIA   + NT2SQ(ISYRES)
+      KRAIJB = KRBJIA   + NT2SQ(ISYRES)
+      KLAMP0 = KRAIJB   + NT2SQ(ISYRES)
       KLAMH0  = KLAMP0  + NLAMDT
       KFOCKD  = KLAMH0  + NLAMDT
       KFCKBA  = KFOCKD  + NORBTS
-      KT2TP   = KFCKBA  + NT1AMX 
+      KFCKYCK = KFCKBA  + NT1AMX 
+      KT2TP   = KFCKYCK + NT1AM(ISYFKY)
       KL1AM   = KT2TP   + NT2SQ(ISYM0)
       KL2TP   = KL1AM   + NT1AM(ISYCTR)
       KEND0   = KL2TP   + NT2SQ(ISYCTR)
@@ -153,6 +196,7 @@ C
       LWRK1   = LWORK   - KEND1
 
       CALL DZERO(WORK(KRBJIA),NT2SQ(ISYRES))
+      CALL DZERO(WORK(KRAIJB),NT2SQ(ISYRES))
 
 C
 C-------------------------------------
@@ -174,9 +218,9 @@ C
 C     With option IOPT = 2 it just calculates LUDKBC4.
 C-----------------------------------------------------------
 C
-      CALL CC3_TCME(WORK(KLAMP0),ISINT1,WORK(KEND1),LWRK1,LU3VI,FN3VI,
-     *              LUDKBC,FNDKBC,LU3FOP,FN3FOP,LU3FOP2,FN3FOP2,
-     *              LUDKBC3,FNDKBC3,LUDKBC4,FNDKBC4,2)
+      CALL CC3_TCME(WORK(KLAMP0),ISINT1,WORK(KEND1),LWRK1,IDUMMY,CDUMMY,
+     *              LUDKBC,FNDKBC,IDUMMY,CDUMMY,IDUMMY,CDUMMY,
+     *              IDUMMY,CDUMMY,LUDKBC4,FNDKBC4,2)
 
 
 C
@@ -190,15 +234,9 @@ C
       CALL CC_T2SQ(WORK(KT2TP),WORK(KEND0),ISYM0)
 
       CALL CC3_T2TP(WORK(KT2TP),WORK(KEND0),ISYM0)
-
-COMMENT COMMENT COMMENT 
-      write(lupri,*)'T2TP in the main code'
-      call output(work(kt2tp),1,ncki(1),1,nvir(1),ncki(1),nvir(1),1,
-     *            lupri)
-COMMENT COMMENT COMMENT 
- 
-      IF (LOCDBG) WRITE(LUPRI,*) 'Norm of T2TP ',
-     *    DDOT(NT2SQ(ISYM0),WORK(KT2TP),1,WORK(KT2TP),1)
+C
+C     IF (LOCDBG) WRITE(LUPRI,*) 'Norm of T2TP ',
+C    *    DDOT(NT2SQ(ISYM0),WORK(KT2TP),1,WORK(KT2TP),1)
 C
 C-------------------------------------
 C     Read L2 amplitudes 
@@ -212,8 +250,8 @@ C
 
       CALL CC3_T2TP(WORK(KL2TP),WORK(KEND0),ISYCTR)
 
-      IF (LOCDBG) WRITE(LUPRI,*) 'Norm of L2TP ',
-     *    DDOT(NT2SQ(ISYCTR),WORK(KL2TP),1,WORK(KL2TP),1)
+C     IF (LOCDBG) WRITE(LUPRI,*) 'Norm of L2TP ',
+C    *    DDOT(NT2SQ(ISYCTR),WORK(KL2TP),1,WORK(KL2TP),1)
 
 C
 C-------------------------------------
@@ -240,7 +278,7 @@ C
 COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT If we want to sum the T3 amplitudes
 COMMENT COMMENT COMMENT
-      if (.true.) then
+      if (.false.) then
          kx3am  = kend0
          kend0 = kx3am + nrhft*nrhft*nrhft*nvirt*nvirt*nvirt
          call dzero(work(kx3am),nrhft*nrhft*nrhft*nvirt*nvirt*nvirt)
@@ -251,10 +289,6 @@ COMMENT COMMENT COMMENT
             call quit('Insufficient space (T3) in CC3_etasd')
          END IF
       endif
-COMMENT COMMENT COMMENT
-!       write(lupri,*) 'WMAT after dzero'
-!       call print_pt3(work(kx3am),ISYFKY,4)
-COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
@@ -282,10 +316,40 @@ C
          ENDDO
       ENDDO
 
+C     IF (LOCDBG) THEN
+C        CALL AROUND('In CC3_ETASD: Fock MO matrix (sort)')
+C        CALL CC_PRFCKMO(WORK(KFCKBA),ISYM0) 
+C     ENDIF
+
+C-----------------------------------------------------
+C     Sort the FOCKY matrix
+C-----------------------------------------------------
+C
+      DO ISYMC = 1,NSYM
+
+         ISYMK = MULD2H(ISYMC,ISYFKY)
+
+         DO K = 1,NRHF(ISYMK)
+
+            DO C = 1,NVIR(ISYMC)
+
+               KOFF1 = IFCVIR(ISYMK,ISYMC) +
+     *                 NORB(ISYMK)*(C - 1) + K
+               KOFF2 = IT1AM(ISYMC,ISYMK)
+     *               + NVIR(ISYMC)*(K - 1) + C
+
+               WORK(KFCKYCK-1+KOFF2) = FOCKY(KOFF1)
+
+            ENDDO
+         ENDDO
+      ENDDO
+
       IF (LOCDBG) THEN
-         CALL AROUND('In CCSDT_ETA_DEN: Triples Fock MO matrix (sort)')
-         CALL CC_PRFCKMO(WORK(KFCKBA),ISYM0) 
+         CALL AROUND('In CC3_ETASD: FOCKY MO matrix (sort)')
+         CALL CC_PRFCKMO(WORK(KFCKYCK),ISYFKY)
       ENDIF
+
+
 C
 C--------------------------------------------------------------
 C     Calculate the normal g^0 integrals for
@@ -396,6 +460,15 @@ C
       CALL CCFOP_SORT(WORK(KTROC01),WORK(KTROC03),ISYM0,1)
  
       CALL CCFOP_SORT(WORK(KTROC21),WORK(KTROC23),ISYM0,1)
+
+C
+C-----------------------------------------------------
+C     Calculate <L3|[[X,tau_ai],T_3]|HF>
+C-----------------------------------------------------     
+C
+      CALL CC3_ETA_1(WORK(KFCKYCK),ISYFKY,ETA1EFF,ISYRES,
+     *                     WORK(KEND2),LWRK2)
+
 C
 C----------------------------
 C     Loop over D
@@ -510,7 +583,7 @@ C           -------------------------------------------
 C
             IOFF = ICKBD(ISYCKB,ISYMD) + NCKATR(ISYCKB)*(D - 1) + 1
             IF (NCKATR(ISYCKB) .GT. 0) THEN
-               CALL GETWA2(LU3FOP2,FN3FOP2,WORK(KTRVI4),IOFF,
+               CALL GETWA2(LU3FOP2X,FN3FOP2X,WORK(KTRVI4),IOFF,
      &                     NCKATR(ISYCKB))
             ENDIF
 C
@@ -559,7 +632,7 @@ C
 
             IOFF = ICKBD(ISYCKB,ISYMD) + NCKATR(ISYCKB)*(D - 1) + 1
             IF (NCKATR(ISYCKB) .GT. 0) THEN
-               CALL GETWA2(LU3FOP,FN3FOP,WORK(KTRVI6),IOFF,
+               CALL GETWA2(LU3FOPX,FN3FOPX,WORK(KTRVI6),IOFF,
      *                     NCKATR(ISYCKB))
             ENDIF
 
@@ -580,13 +653,6 @@ C
                ISWMAT  = MULD2H(ISCKIJ,ISYFKY)
                ISYCKD  = MULD2H(ISYM0,ISYMB)
 
-C              IF (LOCDBG) THEN
-C                 WRITE(LUPRI,*) 'In CC3_ETASDPJ: ISYMD :',ISYMD
-C                 WRITE(LUPRI,*) 'In CC3_ETASDPJ: ISYMB :',ISYMB
-C                 WRITE(LUPRI,*) 'In CC3_ETASDPJ: ISYALJ:',ISYALJ
-C                 WRITE(LUPRI,*) 'In CC3_ETASDPJ: ISCKIJ:',ISCKIJ
-C              ENDIF
-C
 C              Can use kend3 since we do not need the integrals anymore.
                KSMAT2  = KEND3
                KUMAT2  = KSMAT2  + NCKIJ(ISCKIJ)
@@ -634,10 +700,10 @@ C
                CALL CC3_DIAG(WORK(KDIAG), WORK(KFOCKD),ISCKIJ)
                CALL CC3_DIAG(WORK(KDIAGW),WORK(KFOCKD),ISWMAT)
 
-               IF (LOCDBG) THEN
-                 WRITE(LUPRI,*) 'Norm of DIA  ',
-     *              DDOT(NCKIJ(ISCKIJ),WORK(KDIAG),1,WORK(KDIAG),1)
-               END IF
+C              IF (LOCDBG) THEN
+C                WRITE(LUPRI,*) 'Norm of DIA  ',
+C    *              DDOT(NCKIJ(ISCKIJ),WORK(KDIAG),1,WORK(KDIAG),1)
+C              END IF
 C
 C              -----------------------
 C              Construct index arrays.
@@ -653,8 +719,6 @@ C
                DO B = 1,NVIR(ISYMB)
 C
                   CALL DZERO(WORK(KWMAT),NCKIJ(ISWMAT))
-C
-                  IF (LOCDBG) write(lupri,*) 'For B, D : ',B,D
 C
 C                 ----------------------------
 C                 Read and transform integrals 
@@ -677,7 +741,7 @@ C                 ------------------------------------
                   IOFF = ICKBD(ISYCKD,ISYMB) 
      *                 + NCKATR(ISYCKD)*(B-1) + 1
                   IF (NCKATR(ISYCKD) .GT. 0) THEN
-                     CALL GETWA2(LU3FOP2,FN3FOP2,WORK(KTRVI11),
+                     CALL GETWA2(LU3FOP2X,FN3FOP2X,WORK(KTRVI11),
      *                           IOFF,NCKATR(ISYCKD))
                   ENDIF
 
@@ -688,7 +752,7 @@ C                 ------------------------------------
                   IOFF = ICKBD(ISYCKD,ISYMB) 
      *                 + NCKATR(ISYCKD)*(B - 1) + 1
                   IF (NCKATR(ISYCKD) .GT. 0) THEN
-                     CALL GETWA2(LU3FOP,FN3FOP,WORK(KTRVI13),IOFF,
+                     CALL GETWA2(LU3FOPX,FN3FOPX,WORK(KTRVI13),IOFF,
      *                           NCKATR(ISYCKD))
                   ENDIF
 
@@ -708,8 +772,8 @@ C                 Calculate the S(ci,bk,dj) matrix for B,D for T3-BAR:
 C                 ----------------------------------------------------
                   CALL DZERO(WORK(KSMAT2),NCKIJ(ISCKIJ))
  
-                  CALL CCFOP_SMAT(WORK(KL1AM),ISYCTR,WORK(KL2TP),ISYCTR,
-     *                            WORK(KTMAT),
+                  CALL CCFOP_SMAT(0.0D0,WORK(KL1AM),ISYCTR,WORK(KL2TP),
+     *                            ISYCTR,WORK(KTMAT),
      *                            WORK(KFCKBA),WORK(KXIAJB),ISYM0,
      *                            WORK(KTRVI14),WORK(KTRVI15),
      *                            WORK(KTRVI4),WORK(KTRVI5),
@@ -728,8 +792,8 @@ C                 Calculate the S(ci,bk,dj) matrix for D,B for T3-BAR:
 C                 ----------------------------------------------------
                   CALL DZERO(WORK(KSMAT4),NCKIJ(ISCKIJ))
 
-                  CALL CCFOP_SMAT(WORK(KL1AM),ISYCTR,WORK(KL2TP),ISYCTR,
-     *                            WORK(KTMAT),WORK(KFCKBA),
+                  CALL CCFOP_SMAT(0.0D0,WORK(KL1AM),ISYCTR,WORK(KL2TP),
+     *                            ISYCTR,WORK(KTMAT),WORK(KFCKBA),
      *                            WORK(KXIAJB),ISYM0,
      *                            WORK(KTRVI16),WORK(KTRVI17),
      *                            WORK(KTRVI11),WORK(KTRVI12),
@@ -749,7 +813,8 @@ C                 Calculate U(ci,jk) for fixed b,d for t3-bar.
 C                 ------------------------------------------------
                   CALL DZERO(WORK(KUMAT2),NCKIJ(ISCKIJ))
 
-                  CALL CCFOP_UMAT(WORK(KL1AM),ISYCTR,WORK(KL2TP),ISYCTR,
+                  CALL CCFOP_UMAT(0.0D0,WORK(KL1AM),ISYCTR,WORK(KL2TP),
+     *                            ISYCTR,
      *                            WORK(KXIAJB),ISYM0,WORK(KFCKBA),
      *                            WORK(KTRVI19),WORK(KTRVI7),
      *                            WORK(KTROC03),WORK(KTROC23),ISYM0,
@@ -768,8 +833,8 @@ C                 Calculate U(ci,jk) for fixed d,b for t3-bar.
 C                 ------------------------------------------------
                   CALL DZERO(WORK(KUMAT4),NCKIJ(ISCKIJ))
 
-                  CALL CCFOP_UMAT(WORK(KL1AM),ISYCTR,WORK(KL2TP),ISYCTR,
-     *                            WORK(KXIAJB),ISYM0,
+                  CALL CCFOP_UMAT(0.0D0,WORK(KL1AM),ISYCTR,WORK(KL2TP),
+     *                            ISYCTR,WORK(KXIAJB),ISYM0,
      *                            WORK(KFCKBA),WORK(KTRVI20),
      *                            WORK(KTRVI13),WORK(KTROC03),
      *                            WORK(KTROC23),ISYM0,
@@ -790,15 +855,18 @@ C                 -------------------------------------------
      *                                 WORK(KTMAT),WORK(KINDSQ),LENSQ)
 C
 C                 -------------------------------------
-COMMENT
-C                 write(lupri,*)'t3bd multipliers in cc3_etasd'
-C                 call print_t3bd(WORK(KTMAT),ISCKIJ,B,D,1)
-COMMENT
 C
-COMMENT COMMENT COMMENT
-C      write(lupri,*) 'WMAT before contributions'
-C      call print_pt3(work(kx3am),ISYFKY,4)
-COMMENT COMMENT COMMENT
+C----------------------------------------------------------
+C                 Calculate <L3|[[X,E_aiE_bj],T_2]|HF>
+C----------------------------------------------------------
+C
+                  ISYMT2 = ISYM0
+C
+                  CALL CC3_ETA_2(WORK(KTMAT),ISCKIJ,WORK(KFCKYCK),
+     *                           ISYFKY,WORK(KT2TP),ISYMT2,ETA2EFF,
+     *                           ISYRES,WORK(KRAIJB),WORK(KINDSQ),
+     *                           LENSQ,WORK(KINDEX2),ISYALJ2,
+     *                           ISYMB,B,ISYMD,D,WORK(KEND4),LWRK4)
 C
 C    calculate     <L3|[Y^,tau3]|HF>
 C
@@ -812,18 +880,11 @@ C    calculate     <L2|[Y,tau3]|HF>
 C
                   CALL WBARBD_T2(B,ISYMB,D,ISYMD,WORK(KL2TP),ISYCTR,
      *                           FOCKY,ISYFKY,WORK(KWMAT),ISWMAT)
-COMMENT COMMENT COMMENT
+C
 COMMENT COMMENT COMMENT
 C       call sum_pt3(work(kwmat),isymb,b,isymd,d,
 C    *             iswmat,work(kx3am),4)
 COMMENT COMMENT COMMENT
-C      write(lupri,*) 'WMAT inside the loop in CC3_ETASD '
-C      call print_pt3(work(kx3am),ISYFKY,4)
-COMMENT COMMENT COMMENT
-COMMENT
-C                 write(lupri,*)'WMAT in cc3_etasd'
-C                 call print_t3bd(WORK(KWMAT),ISWMAT,B,D,1)
-COMMENT
 C
 C
 C------------------------------------------------
@@ -831,7 +892,7 @@ C     Divide by the energy difference and
 C     remove the forbidden elements
 C------------------------------------------------
 C
-                  CALL WBD_DIA(B,ISYMB,D,ISYMD,FREQ,
+                  CALL WBD_DIA(B,ISYMB,D,ISYMD,-FREQ,
      *                         ISWMAT,WORK(KWMAT),
      *                         WORK(KDIAGW),WORK(KFOCKD))
 C
@@ -844,9 +905,13 @@ C       call sum_pt3(work(kwmat),isymb,b,isymd,d,
 C    *             iswmat,work(kx3am),4)
 COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
-
-COMMENT   OURS
+C
                   ISYMIM = MULD2H(ISWMAT,ISYMBD)
+C
+C-----------------------------------------
+C Calculate <E_3|[[H,T^0_2],\tau_nu_1]|HF>
+C-----------------------------------------
+C
                   CALL CC3_W3_OMEGA1(ETA1EFF,ISYRES,WORK(KWMAT),
      *                               WORK(KTMAT),ISYMIM,
      *                               WORK(KOIOOOO),WORK(KOIOVVO),
@@ -855,8 +920,11 @@ COMMENT   OURS
      *                               WORK(KEND4),LWRK4,
      *                               LENSQW,WORK(KINDSQW),
      *                               ISYMB,B,ISYMD,D)
-
-
+C
+C-----------------------------------------
+C Calculate <E_3|[H,\tau_nu_2]|HF>
+C-----------------------------------------
+C
                   CALL CC3_W3_CY2V(ETA2EFF,ISYRES,WORK(KRBJIA),
      *                             WORK(KWMAT),ISWMAT,
      *                             WORK(KTMAT),WORK(KTRVI),WORK(KTRVI1),
@@ -875,27 +943,19 @@ COMMENT   OURS
       ENDDO          ! ISYMD 
 C------------------------------------------------------
 C     Accumulate RBJIA from <mu2|[H,W^BD(3)]|HF> ( Vccupied  cont ) 
-C     in XI2EFF 
+C     in ETA2EFF 
+C
+C     Accumulate RAIJB from <L3|[[X,E_aiE_bj],T_2]|HF> 
+C     in ETA2EFF
 C------------------------------------------------------
 C
       CALL CC3_RBJIA(ETA2EFF,ISYRES,WORK(KRBJIA))
+      CALL CC3_RBJIA(ETA2EFF,ISYRES,WORK(KRAIJB))
 C
 COMMENT COMMENT
-C      write(lupri,*) 'WMAT in CC3_ETASD divided by orb ener: '
+C      write(lupri,*) 'WMAT in CC3_ETASD : '
 C      call print_pt3(work(kx3am),ISYFKY,4)
 COMMENT COMMENT
-COMMENT COMMENT COMMENT COMMENT 
-COMMENT COMMENT COMMENT COMMENT 
-C       write(lupri,*) 'ETA1EFF just after cc3_w3_omega1'
-C       do i = 1,nt1am(isyres)
-C           write(lupri,*) i,ETA1EFF(i)
-C       end do
-COMMENT COMMENT COMMENT COMMENT 
-      write(lupri,*) 'ETA2EFF '
-      xnorm = ddot(nt2am(isyres),ETA2EFF,1,ETA2EFF,1)
-      write(lupri,*) 'ETA2EFF Norm =', xnorm
-C     call outpak(ETA2EFF,NT1AM(isyres),1,lupri)
-COMMENT COMMENT COMMENT COMMENT 
 C
 C-------------------------------
 C     Close and delete files
@@ -903,6 +963,20 @@ C-------------------------------
 C
       CALL WCLOSE2(LU4V,FN4V,'DELETE')
       CALL WCLOSE2(LUDKBC4,FNDKBC4,'DELETE')
+
+C
+C------------------------------------------
+C     Accumulate CCSD and CC3 contributions
+C------------------------------------------
+C
+      DO I = 1,NT2AM(ISYRES)
+         ETA2EFF(I) = ETA2EFF(I) + ETA2(I)
+      END DO
+C
+      DO I = 1,NT1AM(ISYRES)
+         ETA1EFF(I) = ETA1EFF(I) + ETA1(I)
+      END DO
+C
 
 C
 C-------------
@@ -1011,31 +1085,11 @@ C SYMMETRY BETWEEN BJ AND CK INTRODUCE A FACTOR TWO
 C DENOTE t3 IS CALCULATED WITH NEGATIVE SIGN
 C
 C WBD(a,i,k,j) = WBD(a,i,k,j) + sum (f)  focky(f,a)*tmatBD(f,i,k,j) 
-COMMENT COMMENT COMMENT 
-C                    write(lupri,*)'ISYMJ,J,ISYMK,K'
-C                    write(lupri,*)ISYMJ,J,ISYMK,K
-COMMENT COMMENT COMMENT 
-C                    write(lupri,*)'wrk(koffy v,v) matrix in real'
-C                    call output(WRK(KOFFY),1,NVIR(ISYMF),1,
-C    *                           NVIR(ISYMA),NVIR(ISYMF),
-C    *                           NVIR(ISYMA),1,LUPRI)
-COMMENT COMMENT COMMENT 
-C                    write(lupri,*)'tmat(kofft v,o) matrix in real'
-C                    call output(tmat(KOFFt),1,NVIR(ISYMF),1,
-C    *                           NRHF(ISYMI),NVIR(ISYMF),
-C    *                           NRHF(ISYMI),1,LUPRI)
-COMMENT COMMENT COMMENT 
-C                    call dzero(WMAT,NCKIJ(ISWMAT))
-COMMENT COMMENT COMMENT 
+C
                      CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI), 
      *                          NVIR(ISYMF),-ONE,WRK(KOFFY),NF,
      *                          TMAT(KOFFT),NF,ONE,WMAT(KOFFW),NA) 
-COMMENT COMMENT COMMENT 
-C                    write(lupri,*)'wmat(koffw v,o) matrix in real'
-C                    call output(Wmat(KOFFW),1,NVIR(ISYMA),1,
-C    *                           NRHF(ISYMI),NVIR(ISYMA),
-C    *                           NRHF(ISYMI),1,LUPRI)
-COMMENT COMMENT COMMENT 
+C
                   END DO
                END DO
             END DO
@@ -1193,13 +1247,6 @@ C       focky(j,B)*t2(ai,Dk) - focky(k,B)*t2(ai,Dj)
 C       focky(k,D)*t2(ai,Bj) - focky(j,D)*t2(ai,Bk) 
 C
       
-COMMENT COMMENT COMMENT 
-C     write(lupri,*)'focky matrix in T2 routine'
-C     call output(FOCKY,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
-C     do i = 1,norbt
-C        write(lupri,*) i,focky(i)
-C     enddo
-COMMENT COMMENT COMMENT 
 C
 C (1)   wmat(aikj) = wmat(aikj) +  focky(j,B)*t2(ai,Dk) 
 C
@@ -1636,13 +1683,8 @@ C
 C 1.1 + 1.2 omega contribution addomega
 C
          OMEGA1(NBI) = OMEGA1(NBI) 
-     *               + DDOT(NMAIJK(ISYOOO),XOOOO(KOFF1),1,WORK(KSCR1),1)
+     *               - DDOT(NMAIJK(ISYOOO),XOOOO(KOFF1),1,WORK(KSCR1),1)
       ENDDO
-C
-C     write(lupri,*)' First two contrib omega1 B,D:', IB,ID
-C     do i = 1, nt1am(isyres)
-C       write(lupri,*) i, omega1(i)
-C     end do
 C
 C-----------------------------------------
 C  Wed(anlo) * t(dl,em) * g(inmo)
@@ -1659,15 +1701,6 @@ C
       DO I = 1, LENGTH
          TMAT(I) = WMAT(INDSQ(I,2))
       END DO
-C
-COMMENT COMMENT COMMENT 
-C     write(lupri,*)' 1.3 contrib omega1,B,ISYMB,D,ISYMD:', 
-C    *                                   IB,ISYMIB,ID,ISYMID
-C     xnorm = ddot(length,tmat,1,tmat,1)
-C     write(lupri,*)'1.3 Norm of TMAT = ', xnorm
-COMMENT COMMENT COMMENT 
-C  t2t2(DlmB) =  T(lm)
-C
 C
 C -------------------------------
 C     Sort T^{DB}_{lm} as T_{lm}
@@ -1707,10 +1740,6 @@ C
             ENDDO
          ENDDO
       ENDDO
-COMMENT COMMENT COMMENT 
-C     xnorm = ddot(NMATIJ(ISYMLM),WORK(KMIMAT),1,WORK(KMIMAT),1)
-C     write(lupri,*)'1.3 Norm of T2 after sorting = ', xnorm
-COMMENT COMMENT COMMENT 
 C
 C       R(aonm) = sum_l ( TMAT(aonl) * T(lm) )
 C
@@ -1724,32 +1753,12 @@ C
          NL      =  MAX(1,NRHF(ISYML))
          NAON    =  MAX(1,NCKI(ISYAON))
 
-COMMENT COMMENT
-C        write(lupri,*)' TMAT(voo,o) in first mul'
-C        call output(TMAT(KOFFTM),1,NCKI(ISYAON),1,
-C    *              NRHF(ISYML),NCKI(ISYAON),NRHF(ISYML),1,
-C    *              LUPRI)
-COMMENT COMMENT
-C        write(lupri,*)' T2(o,o) in first mul'
-C        call output(WORK(KOFFTP),1,NRHF(ISYML),1,
-C    *              NRHF(ISYMM),NRHF(ISYML),NRHF(ISYMM),1,
-C    *              LUPRI)
-COMMENT COMMENT
-
+C
          CALL DGEMM('N','N',NCKI(ISYAON),NRHF(ISYMM),
      *               NRHF(ISYML),ONE,TMAT(KOFFTM),NAON,
      *               WORK(KOFFTP),NL,ZERO,WORK(KOFFRE),NAON) 
-COMMENT COMMENT
-C        write(lupri,*)' R(voo,o) in first mul'
-C        call output(WORK(KOFFRE),1,NCKI(ISYAON),1,
-C    *              NRHF(ISYMM),NCKI(ISYAON),NRHF(ISYMM),1,
-C    *              LUPRI)
-COMMENT COMMENT
+C
       END DO
-COMMENT COMMENT COMMENT 
-C     xnorm = ddot(N3VOOO(ISRMAT),WORK(KRMAT),1,WORK(KRMAT),1)
-C     write(lupri,*)'1.3 Norm of RMAT = ', xnorm
-COMMENT COMMENT COMMENT 
 C
 C  omega(ai) = sum_onm ( R(aonm) * G(onmi) )
 C       
@@ -1758,10 +1767,6 @@ C
         CALL CC3_SRTVOOO(WORK(KSORT),WORK(KRMAT),ISRMAT)
         CALL DCOPY(N3VOOO(ISRMAT),WORK(KSORT),1,WORK(KRMAT),1)
       ENDIF
-COMMENT COMMENT COMMENT 
-C     xnorm = ddot(N3VOOO(ISRMAT),WORK(KRMAT),1,WORK(KRMAT),1)
-C     write(lupri,*)'1.3 Norm of RMAT after sorting = ', xnorm
-COMMENT COMMENT COMMENT 
 C
 
       DO ISYMI = 1,NSYM
@@ -1773,37 +1778,13 @@ C
          NONM   = MAX(1,NMAIJK(ISONM))
          NA  = MAX(1,NVIR(ISYMA))
 
-COMMENT COMMENT
-C        write(lupri,*)' R(v,ooo) in second mul'
-C        call output(WORK(KOFFRE),1,NVIR(ISYMA),1,
-C    *              NMAIJK(ISONM),NVIR(ISYMA),NMAIJK(ISONM),1,
-C    *              LUPRI)
-COMMENT COMMENT
-C        write(lupri,*)' X(ooo,o) in second mul'
-C        call output(WORK(KOFFRE),1,NMAIJK(ISONM),1,
-C    *              NRHF(ISYMI),NMAIJK(ISONM),NRHF(ISYMI),1,
-C    *              LUPRI)
-COMMENT COMMENT
-C
 C
 C 1.3 omega contribution addomega
 C
-COMMENT COMMENT COMMENT 
-C       call dzero(omega1,nt1am(isyres))
-COMMENT COMMENT COMMENT 
          CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),
-     *               NMAIJK(ISONM),ONE,WORK(KOFFRE),NA,
+     *               NMAIJK(ISONM),-ONE,WORK(KOFFRE),NA,
      *               XOOOO(KOFFI),NONM,ONE,OMEGA1(KOFFAI),NA)
       END DO
-COMMENT COMMENT COMMENT 
-C     xnorm = ddot(NT1AM(ISYRES),OMEGA1,1,OMEGA1,1)
-C     write(lupri,*)'1.3 Norm of OMEGA1 = ', xnorm
-COMMENT COMMENT COMMENT 
-C
-C     write(lupri,*)' 1.3 contrib omega1,B,D:', IB,ID
-C     do i = 1, nt1am(isyres)
-C       write(lupri,*) i, omega1(i)
-C     end do
 C
 C=============================================
 C 2.     Calculate contribution from g_{vvvv}
@@ -2006,7 +1987,7 @@ C
 C 2.1 omega contribution addomega
 C
          CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NMATAB(ISYMCE),
-     *              ONE,WORK(KOFF1),NTOTCE,WORK(KOFF2),NTOTCE,
+     *              -ONE,WORK(KOFF1),NTOTCE,WORK(KOFF2),NTOTCE,
      *              ONE,OMEGA1(KOFF3),NTOTA)
       ENDDO
 C
@@ -2178,7 +2159,7 @@ C
 C 2.2 omega contribution addomega
 C
          CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NMATAB(ISYMCE),
-     *              ONE,XVVVV(KOFF1),NTOTCE,WORK(KOFF2),NTOTCE,
+     *              -ONE,XVVVV(KOFF1),NTOTCE,WORK(KOFF2),NTOTCE,
      *              ONE,OMEGA1(KOFF3),NTOTA)
       ENDDO
 C
@@ -2234,20 +2215,12 @@ C
             ENDDO
          ENDDO
       ENDDO
-COMMENT COMMENT COMMENT 
-C     xnorm = ddot(NMATAB(ISYMAE),WORK(KSCR2),1,WORK(KSCR2),1)
-C     write(lupri,*)'2.3 Norm of sorted XVVVV inti =', xnorm
-COMMENT COMMENT COMMENT 
 C
 C  t2w(ei) = t2tp(dlme) *  WBD(dlmi) 
 C
       DO I = 1, LENGTH
          TMAT(I) = WMAT(I)
       ENDDO
-COMMENT COMMENT COMMENT 
-C     xnorm = ddot(NCKIJ(ISWMAT),TMAT,1,TMAT,1)
-C     write(lupri,*)'2.3 Norm of TMAT =', xnorm
-COMMENT COMMENT COMMENT 
 C
       DO ISYMI = 1,NSYM
          ISYMDLM = MULD2H(ISWMAT,ISYMI)
@@ -2260,33 +2233,13 @@ C
          NTOTDLM = MAX(1,NCKI(ISYMDLM))
          NTOTE   = MAX(1,NVIR(ISYME))
 C
-COMMENT COMMENT COMMENT 
-C     write(lupri,*)'T2TP(voo,v) transposed '
-C     call output(T2TP(KOFF1),1,NCKI(ISYMDLM),1,NVIR(ISYME),
-C    *             NCKI(ISYMDLM),NVIR(ISYME),1,LUPRI)
-C
-C     write(lupri,*)'TMAT(voo,o) '
-C     call output(TMAT(KOFF2),1,NCKI(ISYMDLM),1,NRHF(ISYMI),
-C    *             NCKI(ISYMDLM),NRHF(ISYMI),1,LUPRI)
-COMMENT COMMENT COMMENT 
          CALL DGEMM('T','N',NVIR(ISYME),NRHF(ISYMI),
      *              NCKI(ISYMDLM),ONE,T2TP(KOFF1),NTOTDLM,
      *              TMAT(KOFF2),NTOTDLM,ONE,WORK(KOFF3),
      *              NTOTE)
 
-COMMENT COMMENT COMMENT 
-C     write(lupri,*)'T2W(v,o) '
-C     call output(WORK(KOFF3),1,NVIR(ISYME),1,NRHF(ISYMI),
-C    *             NVIR(ISYME),NRHF(ISYMI),1,LUPRI)
-COMMENT COMMENT COMMENT 
+C
       END DO
-COMMENT COMMENT COMMENT 
-C     xnorm = ddot(NT1AM(ISYMT2W),WORK(KT2W),1,WORK(KT2W),1)
-C     write(lupri,*)'2.3 Norm of T2W =', xnorm
-COMMENT COMMENT COMMENT 
-COMMENT COMMENT
-C      call dzero(omega1,nt1am(isyres))
-COMMENT COMMENT
 C
 C   eta (ai) = eta(ai) + gDB(ae) * t2w(ei)  
 C
@@ -2304,18 +2257,11 @@ C
 C 2.3 omega contribution addomega
 C
          CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),
-     *              NVIR(ISYME),ONE,WORK(KOFF1),NTOTA,
+     *              NVIR(ISYME),-ONE,WORK(KOFF1),NTOTA,
      *              WORK(KOFF2),NTOTE,ONE,OMEGA1(KOFF3),
      *              NTOTA)
       END DO
 C
-C     write(lupri,*)' 2. contrib omega1,B,ISYMB,D,ISYMD:', 
-C    *                                  IB,ISYMIB,ID,ISYMID
-C     do i = 1, nt1am(isyres)
-C       write(lupri,*) i, omega1(i)
-C     end do
-C
-
 C================================================
 C 3.  Calculate contributions from g_{ovvo}
 C     - L^{daf}_{lmn} t^{de}_{lm} g_{iefn} =
@@ -2416,16 +2362,8 @@ C
 C
 C 3.1 omega contribution addomega
 C
-      CALL DGEMV('T',NT1AM(ISYMEN),NRHF(ISYMI),ONE,WORK(KOFF1),
+      CALL DGEMV('T',NT1AM(ISYMEN),NRHF(ISYMI),-ONE,WORK(KOFF1),
      *           NTOTEN,WORK(KSCR1),1,ONE,OMEGA1(KOFF3),NTOTB)
-C
-C     write(lupri,*)' 3.1 contrib omega1,B,D:', IB,ID
-C     do i = 1, nt1am(isyres)
-C       write(lupri,*) i, omega1(i)
-C     end do
-C
-C     call flshfo(lupri)
-
 C
 C
 C--------------------------------
@@ -2548,17 +2486,10 @@ C
 C
 C 3.2 omega contribution addomega
 C
-            CALL DGEMV('T',NMATIJ(ISYMLM),NRHF(ISYMI),ONE,WORK(KOFF1),
+            CALL DGEMV('T',NMATIJ(ISYMLM),NRHF(ISYMI),-ONE,WORK(KOFF1),
      *                 NTOTIJ,WORK(KOFF2),1,ONE,OMEGA1(KOFF3),NTOTB)
 C
 C
-C     write(lupri,*)' 3.2 contrib omega1,B,D:', IB,ID
-C     do i = 1, nt1am(isyres)
-C       write(lupri,*) i, omega1(i)
-C     end do
-C
-C     call flshfo(lupri)
-
          ENDDO
       ENDDO
 C
@@ -2725,16 +2656,9 @@ C
 C 3.3 omega contribution addomega
 C
          CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NMAIJK(ISYMMLN),
-     *             -ONE,TMAT(KOFF1),NTOTA,WORK(KOFF2),NTOTMLN,
+     *              ONE,TMAT(KOFF1),NTOTA,WORK(KOFF2),NTOTMLN,
      *              ONE,OMEGA1(KOFF3),NTOTA)
       END DO
-C
-C     write(lupri,*)' 3. contrib omega1,B,D:', IB,ID
-C     do i = 1, nt1am(isyres)
-C       write(lupri,*) i, omega1(i)
-C     end do
-C
-C     call flshfo(lupri)
 C
 C================================================
 C 4.  Calculate contributions from g_{oovv}
@@ -2840,15 +2764,8 @@ C
 C
 C 4.1 omega contribution addomega
 C
-      CALL DGEMV('T',NT1AM(ISYMEN),NRHF(ISYMI),ONE,WORK(KOFF1),
+      CALL DGEMV('T',NT1AM(ISYMEN),NRHF(ISYMI),-ONE,WORK(KOFF1),
      *           NTOTEN,WORK(KSCR1),1,ONE,OMEGA1(KOFF3),NTOTB)
-C     write(lupri,*)' 4.1 contrib omega1,B,D:', IB,ID
-C     do i = 1, nt1am(isyres)
-C       write(lupri,*) i, omega1(i)
-C     end do
-C
-C     call flshfo(lupri)
-
 C
 C--------------------------------
 C     Second contribution
@@ -2999,15 +2916,9 @@ C
 C
 C 4.2 omega contribution addomega
 C
-            CALL DGEMV('T',NMATIJ(ISYMLM),NRHF(ISYMI),ONE,WORK(KOFF1),
+            CALL DGEMV('T',NMATIJ(ISYMLM),NRHF(ISYMI),-ONE,WORK(KOFF1),
      *                 NTOTIJ,WORK(KOFF2),1,ONE,OMEGA1(KOFF3),NTOTB)
 C
-C     write(lupri,*)' 4.2 contrib omega1,B,D:', IB,ID
-C     do i = 1, nt1am(isyres)
-C       write(lupri,*) i, omega1(i)
-C     end do
-C
-C     call flshfo(lupri)
 
          ENDDO
       ENDDO
@@ -3090,21 +3001,8 @@ C
             ENDDO
          ENDDO
       ENDDO
-COMMENT COMMENT COMMENT 
-C     write(lupri,*)'isymb,b,isymd,d'
-C     write(lupri,*)isymib,ib,isymid,id
-C     write(lupri,*)'t2tp(emlD) = tD(mle)'
-C     do isyme = 1,nsym
-C        ISYMML = MULD2H(ISYMEML,ISYME)
-C        koff1 = KSCR1 
-C    *         + IMAIJA(ISYMML,ISYME)
-C        call output(work(koff1),1,NMATIJ(ISYMML),1,nvir(isyme),
-C    *              NMATIJ(ISYMML),nvir(isyme),1,lupri)
-C     end do
-
-COMMENT COMMENT COMMENT 
 C
-
+C
 C  xoovv(Bine) =  xB(eni)
 C
 C
@@ -3139,17 +3037,6 @@ C
             ENDDO
          ENDDO
       ENDDO
-COMMENT COMMENT COMMENT 
-C     write(lupri,*)'xoovv(Bine) =  xB(eni)'
-C     do isymi = 1,nsym
-C        ISYMEN = MULD2H(ISYMENI,ISYMI)
-C        koff1 = KSCR2 
-C    *         + ICKI(ISYMEN,ISYMI)
-C        call output(work(koff1),1,NT1AM(ISYMEN),1,NRHF(ISYMI),
-C    *               NT1AM(ISYMEN),NRHF(ISYMI),1,LUPRI)
-C     end do
-COMMENT COMMENT COMMENT 
-
 C
 C                tD(mle) * xB(eni) = tdxB(mlni)
 C
@@ -3174,37 +3061,15 @@ C
 C
                NTOTML = MAX(1,NMATIJ(ISYMML))
                NTOTE  = MAX(1,NVIR(ISYME))
-COMMENT COMMENT COMMENT   
-C              write(lupri,*)'T^D(oo,v) in first mul'
-C              call output(WORK(KOFF1),1,NMATIJ(ISYMML),1,NVIR(ISYME),
-C    *                     NMATIJ(ISYMML),NVIR(ISYME),1,LUPRI)
 C
-C              write(lupri,*)'X^B(vo,o) in first mul'
-C              call output(WORK(KOFF2),1,NVIR(ISYME),1,NRHF(ISYMN),
-C    *                     NVIR(ISYME),NRHF(ISYMN),1,LUPRI)
-COMMENT COMMENT COMMENT   
                CALL DGEMM('N','N',NMATIJ(ISYMML),NRHF(ISYMN),
      *                     NVIR(ISYME),-ONE,WORK(KOFF1),
      *                     NTOTML,WORK(KOFF2),NTOTE,
      *                     ONE,WORK(KOFF3),NTOTML)
-COMMENT COMMENT COMMENT   
-C              write(lupri,*)'RES(ooo,o) in first mul'
-C              call output(WORK(KOFF3),1,NMATIJ(ISYMML),1,NRHF(ISYMN),
-C    *                     NMATIJ(ISYMML),NRHF(ISYMN),1,LUPRI)
-COMMENT COMMENT COMMENT   
+C
             END DO
          END DO
       END DO
-COMMENT COMMENT COMMENT   
-C     write(lupri,*)'tD(mle) * xB(eni) = tdxB(mlni)'
-C     do isymi = 1,nsym
-C        ISYMMLN = MULD2H(ISYMLNI,ISYMI)
-C        koff1 = KSCR3
-C    *         + I3ORHF(ISYMMLN,ISYMI)
-C        call output(WORK(koff1),1,NMAIJK(ISYMMLN),1,NRHF(ISYMI),
-C    *               NMAIJK(ISYMMLN),NRHF(ISYMI),1,LUPRI)
-C     end do
-
 C
 C omega1(ai) = omega1(ai) +  TMAT(amln) * tdxB(mlni)
 C
@@ -3221,37 +3086,12 @@ C
 C
 C 4.3 omega contribution addomega
 C
-COMMENT COMMENT COMMENT   
-C              call dzero(omega1,nt1am(isyres))
-COMMENT COMMENT COMMENT   
-C              write(lupri,*)'TMAT(v,ooo) in second mul'
-C              call output(TMAT(KOFF1),1,NVIR(ISYMA),1,NMAIJK(ISYMMLN),
-C    *                     NVIR(ISYMA),NMAIJK(ISYMMLN),1,LUPRI)
-C
-C              write(lupri,*)'RES(ooo,o) in second mul'
-C              call output(WORK(KOFF2),1,NMAIJK(ISYMMLN),1,NRHF(ISYMI),
-C    *                     NMAIJK(ISYMMLN),NRHF(ISYMI),1,LUPRI)
-COMMENT COMMENT COMMENT   
          CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),
-     *               NMAIJK(ISYMMLN),ONE,TMAT(KOFF1),
+     *               NMAIJK(ISYMMLN),-ONE,TMAT(KOFF1),
      *               NTOTA,WORK(KOFF2),NTOTMLN,
      *               ONE,OMEGA1(KOFF3),NTOTA)
-COMMENT COMMENT COMMENT   
-C              write(lupri,*)'OMEGA(v,o) in second mul'
-C              call output(OMEGA1(KOFF3),1,NVIR(ISYMA),1,NRHF(ISYMI),
-C    *                     NVIR(ISYMA),NRHF(ISYMI),1,LUPRI)
-COMMENT COMMENT COMMENT   
+C
       END DO
-C
-C     write(lupri,*)' 4. contrib omega1,B,D:', IB,ID
-C     do i = 1, nt1am(isyres)
-C       write(lupri,*) i, omega1(i)
-C     end do
-C
-C
-C     call flshfo(lupri)
-C
-
 C
 C================================================
 C 5.  Calculate contributions from g_{ovvo}
@@ -3500,18 +3340,9 @@ C
 C 5.1 + 5.2 omega contribution addomega
 C
          CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NMATIJ(ISYMMN),
-     *              ONE,WORK(KOFF1),NTOTMN,WORK(KOFF2),NTOTMN,
+     *              -ONE,WORK(KOFF1),NTOTMN,WORK(KOFF2),NTOTMN,
      *              ONE,OMEGA1(KOFF3),NTOTA)
       ENDDO
-C
-C     write(lupri,*)' 5.1 contrib omega1,B,D:', IB,ID
-C     do i = 1, nt1am(isyres)
-C       write(lupri,*) i, omega1(i)
-C     end do
-C
-C     call flshfo(lupri)
-C
-
 C
 C-------------------------------------
 C     Third contribution
@@ -3547,13 +3378,6 @@ C
          TMAT(I) = WMAT(I)
       ENDDO
 
-COMMENT COMMENT COMMENT 
-C     write(lupri,*)'T2TP before soring in 5.3'
-C     call output(t2tp,1,ncki(1),1,nvir(1),ncki(1),nvir(1),1,lupri)
-
-
-
-
 C
 C -------------------------------
 C     Sort T^{BD}_{mi} as T_{mi}
@@ -3583,10 +3407,7 @@ C
          ENDDO
 C
          KOFF3 = KSCR1 + IMATIJ(ISYMI,ISYMM)
-C        write(lupri,*)'T2TP(o,o) after sorting in 5.3'
-C        call output(WORK(KOFF3),1,NRHF(ISYMI),1,NRHF(ISYMM),
-C    *               NRHF(ISYMI),NRHF(ISYMM),1,LUPRI)
-
+C
       ENDDO
 C
 C - TMAT(fnil) *  t2tp(BlmD       xovvo(fnma)
@@ -3602,22 +3423,9 @@ C
          NTOTL   = MAX(1,NRHF(ISYML))
          NTOTFNI = MAX(1,NCKI(ISYMFNI))
 C
-COMMENT COMMENT COMMENT 
-C        write(lupri,*)'TMAT(voo,o) in first mul of 5.3'
-C        call output(TMAT(KOFF1),1,NCKI(ISYMFNI),1,NRHF(ISYML),
-C    *               NCKI(ISYMFNI),NRHF(ISYML),1,LUPRI)
-C
-C        write(lupri,*)'T2TP(o,o) in first mul of 5.3'
-C        call output(WORK(KOFF2),1,NRHF(ISYML),1,NRHF(ISYMM),
-C    *               NRHF(ISYML),NRHF(ISYMM),1,LUPRI)
-COMMENT COMMENT COMMENT 
          CALL DGEMM('N','N',NCKI(ISYMFNI),NRHF(ISYMM),NRHF(ISYML),
      *             -ONE,TMAT(KOFF1),NTOTFNI,WORK(KOFF2),NTOTL,
      *              ONE,WORK(KOFF3),NTOTFNI)
-COMMENT COMMENT COMMENT 
-C        write(lupri,*)'RES(voo,o) in first mul of 5.3'
-C        call output(WORK(KOFF3),1,NCKI(ISYMFNI),1,NRHF(ISYMM),
-C    *               NCKI(ISYMFNI),NRHF(ISYMM),1,LUPRI)
 C
       END DO
 C
@@ -3642,33 +3450,12 @@ C
 C
 C 5.3 omega contribution addomega
 C
-COMMENT COMMENT COMMENT 
-C        write(lupri,*)'INT(voo,v) in second mul of 5.3'
-C        call output(XOVVO(KOFF1),1,NCKI(ISYMFNM),1,NVIR(ISYMA),
-C    *               NCKI(ISYMFNM),NVIR(ISYMA),1,LUPRI)
-C
-C        write(lupri,*)'RES(voo,o) in second mul of 5.3'
-C        call output(WORK(KOFF2),1,NCKI(ISYMFNM),1,NRHF(ISYMI),
-C    *               NCKI(ISYMFNM),NRHF(ISYMI),1,LUPRI)
-COMMENT COMMENT COMMENT 
          CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NCKI(ISYMFNM),
-     *              ONE,XOVVO(KOFF1),NTOTFNM,WORK(KOFF2),NTOTFNM,
+     *              -ONE,XOVVO(KOFF1),NTOTFNM,WORK(KOFF2),NTOTFNM,
      *              ONE,OMEGA1(KOFF3),NTOTA)
-COMMENT COMMENT COMMENT 
-C        write(lupri,*)'OMEGA(v,o) in second mul of 5.3'
-C        call output(OMEGA1(KOFF3),1,NVIR(ISYMA),1,NRHF(ISYMI),
-C    *               NVIR(ISYMA),NRHF(ISYMI),1,LUPRI)
-COMMENT COMMENT COMMENT 
+C
       END DO
 C
-C     write(lupri,*)' 5. contrib omega1,B,D:', IB,ID
-C     do i = 1, nt1am(isyres)
-C       write(lupri,*) i, omega1(i)
-C     end do
-C
-C     call flshfo(lupri)
-C
-
 C================================================
 C 6.  Calculate contributions from g_{oovv}
 C     - L^{def}_{lni} t^{de}_{lm} g_{mnfa}
@@ -3912,7 +3699,7 @@ C
 C 6.1 + 6.2 omega contribution addomega
 C
          CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NMATIJ(ISYMMN),
-     *              ONE,WORK(KOFF1),NTOTMN,WORK(KOFF2),NTOTMN,
+     *              -ONE,WORK(KOFF1),NTOTMN,WORK(KOFF2),NTOTMN,
      *              ONE,OMEGA1(KOFF3),NTOTA)
       ENDDO
 C-----------------------------------------------
@@ -3947,10 +3734,6 @@ C
       DO I = 1, LENGTH
          TMAT(I) = WMAT(I)
       ENDDO
-COMMENT COMMENT COMMENT
-C     xnorm = ddot(length,TMAT,1,tmat,1)
-C     write(lupri,*)'6.3 Norm of TMAT = ', xnorm
-COMMENT COMMENT COMMENT
 C
 C -------------------------------
 C     Sort T^{BD}_{mi} as T_{mi}
@@ -3978,28 +3761,6 @@ C
             ENDDO
          ENDDO
       ENDDO
-COMMENT COMMENT COMMENT
-C     xnorm = ddot(NMATIJ(ISYMMI),WORK(KSCR1),1,WORK(KSCR1),1)
-C     write(lupri,*)'6.3 Norm of T2 after sorting = ', xnorm
-COMMENT COMMENT COMMENT
-C
-COMMENT COMMENT COMMENT 
-C     write(lupri,*)'TMAT'
-C     do isyml = 1,nsym
-C        ISYMFIN = MULD2H(ISCKIJ,ISYML)
-C        koff1 = ISAIKJ(ISYMFIN,ISYML) + 1
-C        call output(tmat(koff1),1,NCKI(ISYMFIN),1,NRHF(ISYML),
-C    *             NCKI(ISYMFIN),NRHF(ISYML),1,lupri)
-C     end do
-C
-C     write(lupri,*)'T^{BD}_{mi} as T_{mi}'
-C     do isymi = 1,nsym
-C        isymm = MULD2H(ISYMMI,ISYMI)
-C        koff1 = kscr1 + IMATIJ(ISYMM,ISYMI)
-C        call output(work(koff1),1,nrhf(isymm),1,nrhf(isymi),
-C    *               nrhf(isymm),nrhf(isymi),1,lupri)
-C     end do
-COMMENT COMMENT COMMENT 
 C
 C - TMAT(finl) * t2tp(BlmD)    xoovv(fmna)
 C
@@ -4019,47 +3780,14 @@ C
      *             -ONE,TMAT(KOFF1),NTOTFIN,WORK(KOFF2),NTOTL,
      *              ONE,WORK(KOFF3),NTOTFIN)
       END DO
-COMMENT COMMENT COMMENT
-C     xnorm = ddot(NCKIJ(ISYFINM),WORK(KSCR2),1,WORK(KSCR2),1)
-C     write(lupri,*)'6.3 Norm of WT2 = ', xnorm
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT 
-C     write(lupri,*)'result'
-C     do isyml = 1,nsym
-C        ISYMFIN = MULD2H(ISCKIJ,ISYML)
-C        ISYMM = MULD2H(ISYMLM,ISYML)
-C        koff1 = KSCR2 + ISAIKJ(ISYMFIN,ISYMM)
-C        call output(WORK(KOFF1),1,NCKI(ISYMFIN),1,NRHF(ISYMM),
-C    *               NCKI(ISYMFIN),NRHF(ISYMM),1,lupri)
-C     end do
-COMMENT COMMENT COMMENT 
 C
 C sort indices of result vedtor FINM as FMNI
 C
       IOPT = 4 
       CALL CC3_LSORT2(WORK(KSCR2),ISYFINM,WORK(KEND1),LWRK1,IOPT)
-COMMENT COMMENT COMMENT
-C     xnorm = ddot(NCKIJ(ISYFINM),WORK(KSCR2),1,WORK(KSCR2),1)
-C     write(lupri,*)'6.3 Norm of WT2 after sorting = ', xnorm
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT 
-C     write(lupri,*)'result sorted'
-C     do isyml = 1,nsym
-C        ISYMFIN = MULD2H(ISCKIJ,ISYML)
-C        ISYMM = MULD2H(ISYMLM,ISYML)
-C        koff1 = KSCR2 + ISAIKJ(ISYMFIN,ISYMM)
-C        call output(WORK(KOFF1),1,NCKI(ISYMFIN),1,NRHF(ISYMM),
-C    *               NCKI(ISYMFIN),NRHF(ISYMM),1,lupri)
-C     end do
-COMMENT COMMENT COMMENT 
-
 C
 C   omega(ai) = omega(ai) +  xoovv(fmna) * tt2(fmni)
 C
-
-COMMENT COMMENT
-C      call dzero(omega1,nt1am(isyres))
-COMMENT COMMENT
       DO ISYMI = 1,NSYM
          ISYMFMN = MULD2H(ISYFINM,ISYMI)
          ISYMA   = MULD2H(ISYRES,ISYMI)
@@ -4074,24 +3802,9 @@ C
 C 6.3 omega contribution addomega
 C
          CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NCKI(ISYMFMN),
-     *              ONE,XOOVV(KOFF1),NTOTFMN,WORK(KOFF2),NTOTFMN,
+     *              -ONE,XOOVV(KOFF1),NTOTFMN,WORK(KOFF2),NTOTFMN,
      *              ONE,OMEGA1(KOFF3),NTOTA)
       END DO
-COMMENT COMMENT COMMENT
-C     xnorm = ddot(NT1AM(ISYRES),OMEGA1,1,OMEGA1,1)
-C     write(lupri,*)'6.3 Norm of OMEGA1 = ', xnorm
-COMMENT COMMENT COMMENT
-C
-C     write(lupri,*)' 6. omega1 isymB,B,isymd,D:',isymib,IB,isymid,ID
-C     do i = 1, nt1am(isyres)
-C       write(lupri,*) i, omega1(i)
-C     end do
-C
-C
-C     call flshfo(lupri)
-C
-
-
 C
 C-------------------
 C     End.
@@ -4268,9 +3981,6 @@ C
       ENDIF
       CALL DZERO(WORK(KRMAT), NCKI(ISYAIJ))
       DO I = 1,LENGTH
-C        TMAT(I) =  TWO*WMAT(INDSQ(I,1))
-C    *           -      WMAT(INDSQ(I,2))
-C    *           -      WMAT(I)
 C
          TMAT(I) =  WMAT(INDSQ(I,1))
 C
@@ -4347,9 +4057,6 @@ C
       CALL DZERO(WORK(KRMAT), NCKI(ISYAIJ))
 C 
       DO I = 1,LENGTH
-C        TMAT(I) =  TWO*WMAT(I) 
-C    *             -    WMAT(INDSQ(I,5))
-C    *             -    WMAT(INDSQ(I,1))
 C
          TMAT(I) =  WMAT(I) 
 C
@@ -4412,9 +4119,6 @@ C
       ISBJIK = ISWMAT
 C
       DO I = 1,LENGTH
-C        TMAT(I) =  TWO*WMAT(INDSQ(I,3))
-C    *           -      WMAT(INDSQ(I,4))
-C    *           -      WMAT(I)
 C
          TMAT(I) =  WMAT(INDSQ(I,3))
 C
@@ -4574,11 +4278,6 @@ C---------------------------------------
 C
         DO I = 1,LENGTH
 C
-C          TMAT(I) =   TWO*WMAT(INDSQ(I,3))
-C    *               -     WMAT(INDSQ(I,4))
-C    *               -     WMAT(I) 
-C
-C
            TMAT(I) =   WMAT(INDSQ(I,3))
 C
         ENDDO
@@ -4670,11 +4369,6 @@ C
         LENGTH = NCKIJ(JSBIKL)
 C
         DO I = 1,LENGTH
-C
-C          TMAT(I) =   TWO*WMAT(INDSQ(I,1)) 
-C    *               -     WMAT(INDSQ(I,2))
-C    *               -     WMAT(INDSQ(I,4))
-C
 C
            TMAT(I) =   WMAT(INDSQ(I,1)) 
 C
@@ -4779,11 +4473,6 @@ C----------------------------------
 C
         DO I = 1,LENGTH
 C
-C          TMAT(I) =  TWO*WMAT(INDSQ(I,1))    
-C    *               -    WMAT(INDSQ(I,4)) 
-C    *               -    WMAT(I)
-C
-C
            TMAT(I) =  WMAT(INDSQ(I,1))    
 C
         ENDDO
@@ -4845,3 +4534,430 @@ C
 C
       RETURN
       END
+C
+C  /* Deck cc3_eta_2 */
+      SUBROUTINE CC3_ETA_2(TMAT,ISTMAT,FOCKYCK,ISYFKY,   
+     *                 T2TP,ISYMT2,ETA2EFF,ISYRES,RAIJB,
+     *                 INDSQ,LENSQ,INDAJLC,ISYAJL,
+     *                 ISYMIB,IB,ISYMID,ID,WRK,LWRK)
+C 
+C     Calculate:
+C
+C        tbar_mu3  <mu_3|[[X,E_aiE_bj],T_2]|HF> =
+C
+C         - sum_ckdl ( tbar(aiblck) t(ckdl) X(jd) + tbar(aidjck) t(ckdl) X(lb) )
+C
+C     Written by P. Jorgensen and F. Pawlowski, Spring 2002.
+C
+      IMPLICIT NONE
+C
+      INTEGER ISTMAT,ISYFKY,ISYMT2,ISYRES,ISYAJL,ISYMIB,ISYMID 
+      INTEGER ISYMB,ISYMC,ISYMDKL,ISYMKLJ,ISYRMAT,ISYMJ,ISYMD
+      INTEGER ISYMKL,ISYML,ISYMK,ISYMDK,ISYMLJ,ISYMKJ,ISYMBJ
+      INTEGER ISYMAI,ISYMDLK,ISYMDC,ISYMKB,ISYMDL,ISYAIJ
+      INTEGER IB,ID
+      INTEGER NTOTD,NTOTK,NTOTAI,NTOTKL,NTOTB,NTOTAIJ
+      INTEGER LENSQ,INDSQ(LENSQ,6),INDAJLC(*)
+      INTEGER KOFF,KOFF1,KOFF2,KOFF3
+      INTEGER KDKL,KKJL,KKLJ,KTMAT,KRMAT,KEND1,KT2KL,KKB
+      INTEGER LWRK,LWRK1
+
+#if defined (SYS_CRAY)
+      REAL TMAT(*),FOCKYCK(*),T2TP(*),ETA2EFF(*),RAIJB(*)
+      REAL WRK(*)
+      REAL ONE,XRMAT,DDOT
+#else
+      DOUBLE PRECISION TMAT(*),FOCKYCK(*),T2TP(*),ETA2EFF(*),RAIJB(*)
+      DOUBLE PRECISION WRK(*)
+      DOUBLE PRECISION ONE,XRMAT,DDOT
+#endif
+C
+#include <priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
+C
+      PARAMETER (ONE = 1.0D0)
+C
+      CALL QENTER('CC3_ETA_2')
+C
+C--------------------------
+C First contribution
+C--------------------------
+C
+C       -  tbar(aiblck) t(ckdl) X(jd) 
+C
+C       TMAT^BC(aikl) T2TP(dlkC) FOCKYCK(dj)
+C
+C                     T^C(dkl) FOCKYCK(dj)
+C
+C                        TF^C(kjl)
+C
+C       TMAT^BC(aikl) G^C(klj)                 
+C
+      B = IB
+      ISYMB = ISYMIB
+      C = ID
+      ISYMC = ISYMID
+C
+      ISYMDKL = MULD2H(ISYMT2,ISYMC)
+      ISYMKLJ = MULD2H(ISYMDKL,ISYFKY)
+      ISYRMAT = MULD2H(ISYRES,ISYMB)
+C
+      KDKL    = 1
+      KKJL    = KDKL   + NCKI(ISYMDKL)
+      KKLJ    = KKJL   + NMAJIK(ISYMKLJ)
+      KTMAT   = KKLJ   + NMAJIK(ISYMKLJ)
+      KRMAT   = KTMAT  + NCKIJ(ISTMAT)
+      KEND1   = KRMAT  + NCKI(ISYRMAT) 
+      LWRK1   = LWRK  - KEND1
+C
+      IF (LWRK1 .LT. 0) THEN
+         CALL QUIT('Not enough space in cc3_eta_2 (1. contribution)')
+      END IF
+C
+      CALL DZERO(WRK(KKJL),NMAJIK(ISYMKLJ))
+      CALL DZERO(WRK(KRMAT),NCKI(ISYRMAT))
+C
+C     T2TP(dlkC) put in WORK(dkl)
+C
+      KOFF = IT2SP(ISYMDKL,ISYMC) + NCKI(ISYMDKL)*(C - 1) + 1
+      CALL CC_GATHER(NCKI(ISYMDKL),WRK(KDKL),T2TP(KOFF),INDAJLC)
+C
+C         TF^C(kjl) =  T^C(dkl) FOCKYCK(dj)
+C
+      DO ISYMJ = 1,NSYM
+         ISYMD = MULD2H(ISYMJ,ISYFKY)
+         ISYMKL = MULD2H(ISYMDKL,ISYMD)
+         DO ISYML = 1,NSYM
+            ISYMK = MULD2H(ISYMKL,ISYML)
+            ISYMDK = MULD2H(ISYMD,ISYMK)
+            ISYMKJ = MULD2H(ISYMJ,ISYMK)
+            DO L = 1,NRHF(ISYML)
+C
+               KOFF1 = KDKL + ICKI(ISYMDK,ISYML)
+     *                      + NT1AM(ISYMDK)*(L-1)
+     *                      + IT1AM(ISYMD,ISYMK)
+               KOFF2 = IT1AM(ISYMD,ISYMJ) + 1     
+               KOFF3 = KKJL + ISJIK(ISYMKJ,ISYML)
+     *                      + NMATIJ(ISYMKJ)*(L-1)
+     *                      + IMATIJ(ISYMK,ISYMJ)
+C
+               NTOTD = MAX(1,NVIR(ISYMD))
+               NTOTK = MAX(1,NRHF(ISYMK))
+C
+               CALL DGEMM('T','N',NRHF(ISYMK),NRHF(ISYMJ),  
+     *                    NVIR(ISYMD),ONE,WRK(KOFF1),NTOTD,
+     *                    FOCKYCK(KOFF2),NTOTD,ONE,WRK(KOFF3),
+     *                    NTOTK)
+            END DO                    
+         END DO                       
+      END DO
+C
+C       G^C(klj) = TF^C(kjl)
+C
+      DO ISYMJ = 1,NSYM
+         DO ISYML = 1,NSYM
+            ISYMKJ = MULD2H(ISYMKLJ,ISYML)
+            ISYMK = MULD2H(ISYMKJ,ISYMJ)
+            ISYMKL = MULD2H(ISYMK,ISYML)
+            DO J = 1,NRHF(ISYMJ)
+               DO L = 1,NRHF(ISYML)
+                  DO K = 1,NRHF(ISYMK) 
+C
+                     KOFF1 = KKJL - 1 
+     *                            + ISJIK(ISYMKJ,ISYML)
+     *                            + NMATIJ(ISYMKJ)*(L-1)
+     *                            + IMATIJ(ISYMK,ISYMJ)
+     *                            + NRHF(ISYMK)*(J-1)
+     *                            + K 
+                     KOFF2 = KKLJ - 1
+     *                            + ISJIK(ISYMKL,ISYMJ)
+     *                            + NMATIJ(ISYMKL)*(J-1)
+     *                            + IMATIJ(ISYMK,ISYML)
+     *                            + NRHF(ISYMK)*(L-1)
+     *                            + K
+C
+                    WRK(KOFF2) = WRK(KOFF1)
+C
+                  END DO
+               END DO
+            END DO
+         END DO
+      END DO
+C
+      CALL DCOPY(LENSQ,TMAT,1,WRK(KTMAT),1)
+C
+C----------------------------------
+C     Symmetry sorting if symmetry.
+C----------------------------------
+C
+      IF (NSYM .GT. 1) THEN
+        CALL CC_GATHER(LENSQ,WRK(KTMAT),TMAT,INDSQ(1,6))
+      ENDIF
+C
+C----------------------------------
+C   ETA2EFF(aibj) =  ETA2EFF(aibj) +
+C
+C       RAIJB1 = TMAT^BC(aikl) G^C(klj)                 
+C----------------------------------
+C
+      DO  ISYMJ = 1,NSYM
+C
+         ISYMBJ = MULD2H(ISYMB,ISYMJ)
+         ISYMAI = MULD2H(ISYMBJ,ISYRES) 
+         ISYMKL = MULD2H(ISTMAT,ISYMAI)
+C
+         NTOTAI = MAX(NT1AM(ISYMAI),1)
+         NTOTKL = MAX(NMATIJ(ISYMKL),1)
+
+         KOFF1  = KTMAT + ISAIKL(ISYMAI,ISYMKL) 
+         KOFF2  = KKLJ  + ISJIK(ISYMKL,ISYMJ) 
+         KOFF3  = KRMAT + ISAIK(ISYMAI,ISYMJ)
+C
+         CALL DGEMM('N','N',NT1AM(ISYMAI),NRHF(ISYMJ),NMATIJ(ISYMKL),
+     *              ONE,WRK(KOFF1),NTOTAI,WRK(KOFF2),NTOTKL,
+     *              ONE,WRK(KOFF3),NTOTAI)
+C
+      END DO            
+C
+        IF (IPRINT .GT. 55) THEN
+           XRMAT = DDOT(NCKI(ISYRMAT),WRK(KRMAT),1,WRK(KRMAT),1)
+           WRITE(LUPRI,*) '1. In CC3_ETA_2: Norm of RMAT =  ',XRMAT
+        ENDIF
+C
+        CALL CC3_RACC(ETA2EFF,WRK(KRMAT),ISYMB,B,ISYRES)
+C
+C----------------------------------
+C Second contribution.
+C----------------------------------
+C
+C       TMAT^DC(aikj) T2TP(DlkC) FOCKYCK(bl)
+C
+C                     T^DC(kl) FOCKYCK(bl)
+C
+C       WORK^DC(aijk) G^DC(kb)                 
+C
+      D = IB
+      ISYMD = ISYMIB
+      C = ID
+      ISYMC = ISYMID
+C
+      ISYMDLK = MULD2H(ISYMT2,ISYMC)
+      ISYMDC = MULD2H(ISYMD,ISYMC)
+      ISYMKL = MULD2H(ISYMDC,ISYMT2)
+      ISYMKB = MULD2H(ISYMKL,ISYFKY)
+C
+      KT2KL  = 1
+      KKB   = KT2KL + NMATIJ(ISYMKL)
+      KTMAT = KKB   + NT1AM(ISYMKB)
+      KEND1 = KTMAT + NCKIJ(ISTMAT)
+      LWRK1 = LWRK  - KEND1
+C
+      IF (LWRK1 .LT. 0) THEN
+         CALL QUIT('Not enough space in cc3_eta_2 (2. contribution)')
+      END IF
+C
+      CALL DZERO(WRK(KKB),NT1AM(ISYMKB))
+C
+C -------------------------------
+C      T2TP(DlkC)  sorted as T^{DC}_{kl} equal T_{kl}
+C -------------------------------
+C
+      DO ISYML = 1,NSYM
+         ISYMK = MULD2H(ISYMKL,ISYML)
+         ISYMDL = MULD2H(ISYMDLK,ISYMK)
+         DO L = 1,NRHF(ISYML)
+            DO K = 1,NRHF(ISYMK)
+               KOFF1 = IT2SP(ISYMDLK,ISYMC)
+     *                  + NCKI(ISYMDLK)*(C-1)
+     *                  + ICKI(ISYMDL,ISYMK)
+     *                  + NT1AM(ISYMDL)*(K-1)
+     *                  + IT1AM(ISYMD,ISYML)
+     *                  + NVIR(ISYMD)*(L-1)
+     *                  + D
+               KOFF2 = IMATIJ(ISYMK,ISYML)
+     *                  + NRHF(ISYMK)*(L-1)
+     *                  + K
+               WRK(KT2KL-1+KOFF2) = T2TP(KOFF1)
+            ENDDO
+         ENDDO
+      ENDDO
+C
+C         TF^DC(kb) =  T^DC(kl) FOCKYCK(bl)
+C
+      DO ISYML = 1,NSYM
+         ISYMK = MULD2H(ISYMKL,ISYML)
+         ISYMB = MULD2H(ISYFKY,ISYML)
+C
+         KOFF1 = KT2KL + IMATIJ(ISYMK,ISYML)
+         KOFF2 = IT1AM(ISYMB,ISYML) + 1     
+         KOFF3 = KKB + IT1AMT(ISYMK,ISYMB)
+C
+         NTOTK = MAX(1,NRHF(ISYMK))
+         NTOTB = MAX(1,NVIR(ISYMB))
+C
+         CALL DGEMM('N','T',NRHF(ISYMK),NVIR(ISYMB),  
+     *              NRHF(ISYML),ONE,WRK(KOFF1),NTOTK,
+     *              FOCKYCK(KOFF2),NTOTB,ONE,WRK(KOFF3),
+     *              NTOTK)
+C
+      END DO                       
+C
+C     Sort TMAT^DC(aikj) as WORK^DC(aijk)
+C
+      DO I = 1, NCKIJ(ISTMAT)
+         WRK(KTMAT-1+I) = TMAT(INDSQ(I,3))
+      ENDDO
+C
+C----------------------------------
+C
+C   RAIJB1 = WORK^DC(aijk) TF^DC(kb)
+C
+C----------------------------------
+C
+      DO  ISYMB = 1,NSYM
+C
+         ISYMK = MULD2H(ISYMB,ISYMKB)
+         ISYAIJ = MULD2H(ISTMAT,ISYMK) 
+C
+         KOFF1  = KTMAT + ISAIKJ(ISYAIJ,ISYMK) 
+         KOFF2  = KKB  + IT1AMT(ISYMK,ISYMB) 
+         KOFF3  = IT2SP(ISYAIJ,ISYMB) + 1
+C
+         NTOTAIJ = MAX(NCKI(ISYAIJ),1)
+         NTOTK = MAX(NRHF(ISYMK),1)
+C
+         CALL DGEMM('N','N',NCKI(ISYAIJ),NVIR(ISYMB),NRHF(ISYMK),
+     *              ONE,WRK(KOFF1),NTOTAIJ,WRK(KOFF2),NTOTK,
+     *              ONE,RAIJB(KOFF3),NTOTAIJ)
+C
+      END DO            
+C
+        IF (IPRINT .GT. 55) THEN
+           XRMAT = DDOT(NT2SQ(ISYRES),RAIJB,1,RAIJB,1)
+           WRITE(LUPRI,*) '2. In CC3_ETA_2: Norm of RAIJB =  ',XRMAT
+        ENDIF
+C
+      CALL QEXIT('CC3_ETA_2')
+C
+      RETURN
+      END
+C
+C  /* Deck cc3_eta_1 */
+      SUBROUTINE CC3_ETA_1(FOCKYCK,ISYFKY,ETA1EFF,ISYRES,
+     *                     WRK,LWRK)
+C
+C---------------------------------------------------------------------
+C
+C     Calculate:
+C
+C     <L3|[[X,tau_ai],T_3]|HF> =
+C
+C       sum_l X(la) D^0(li) - sum_d X(id) D^0(ad)
+C
+C      where
+C      D^0(pq) = <L3|[E_pq,T_3]|HF>  ; p,q = a,b or i,j
+C
+C
+      IMPLICIT NONE
+C
+      CHARACTER FNDPTIJ*5, FNDPTAB*5
+      PARAMETER(FNDPTIJ = 'DPTIJ', FNDPTAB='DPTAB')
+C
+      INTEGER ISYFKY,ISYRES,ISYM0,ISYMI,ISYMA,ISYML,ISYMD
+      INTEGER KD0AB,KD0IJ,KEND1
+      INTEGER KOFF1,KOFF2,KOFF3
+      INTEGER NTOTL,NTOTA,NTOTD
+      INTEGER LWRK,LWRK1
+      INTEGER LUPTIJ, LUPTAB
+C
+#if defined (SYS_CRAY)
+      REAL FOCKYCK(*),ETA1EFF(*),WRK(*),ONE
+#else
+      DOUBLE PRECISION FOCKYCK(*),ETA1EFF(*),WRK(*),ONE
+#endif
+C
+#include <priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+C
+      PARAMETER (ONE = 1.0D0)
+C 
+      CALL QENTER('CC3_ETA_1')
+C
+      ISYM0 = 1
+C
+      KD0AB  = 1
+      KD0IJ  = KD0AB  + NMATAB(ISYM0)
+      KEND1  = KD0IJ  + NMATIJ(ISYM0)
+      LWRK1  = LWRK   - KEND1 
+C
+      IF (LWRK1 .LT. 0) THEN
+         CALL QUIT('Not enough space in cc3_eta_1')
+      END IF
+C
+      LUPTIJ = 0
+      LUPTAB = 0
+C
+      ! read intermediates from ground state density from file...
+C
+      CALL WOPEN2(LUPTIJ,FNDPTIJ,64,0)
+      CALL GETWA2(LUPTIJ,FNDPTIJ,WRK(KD0IJ),1,NMATIJ(ISYM0))
+      CALL WCLOSE2(LUPTIJ,FNDPTIJ,'KEEP')
+
+      CALL WOPEN2(LUPTAB,FNDPTAB,64,0)
+      CALL GETWA2(LUPTAB,FNDPTAB,WRK(KD0AB),1,NMATAB(ISYM0))
+      CALL WCLOSE2(LUPTAB,FNDPTAB,'KEEP')
+C
+C     ----------------------------------------------------------------
+C       sum_l     X(la)      D^0(li) 
+C             FOCKYCK(al) 
+C     ----------------------------------------------------------------
+C
+      DO ISYMI = 1, NSYM
+         ISYMA = MULD2H(ISYRES,ISYMI)
+         ISYML = MULD2H(ISYFKY,ISYMA)
+C
+         KOFF1   = IT1AM(ISYMA,ISYML) + 1
+         KOFF2   = KD0IJ + IMATIJ(ISYML,ISYMI)
+         KOFF3   = IT1AM(ISYMA,ISYMI) + 1
+C
+         NTOTL   = MAX(NRHF(ISYML),1)
+         NTOTA   = MAX(NVIR(ISYMA),1)
+C
+         CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NRHF(ISYML),
+     *               ONE,FOCKYCK(KOFF1),NTOTA,WRK(KOFF2),NTOTL,
+     *               ONE,ETA1EFF(KOFF3),NTOTA)
+C
+      END DO
+C
+C
+C     ----------------------------------------------------------------
+C     - sum_d     D^0(ad)    X(id)      
+C                          FOCKYCK(di) 
+C     ----------------------------------------------------------------
+C
+      DO ISYMI = 1, NSYM
+         ISYMA = MULD2H(ISYRES,ISYMI)
+         ISYMD = MULD2H(ISYFKY,ISYMI)
+C 
+         KOFF1   = KD0AB + IMATAB(ISYMA,ISYMD)
+         KOFF2   = IT1AM(ISYMD,ISYMI) + 1
+         KOFF3   = IT1AM(ISYMA,ISYMI) + 1
+C 
+         NTOTA   = MAX(NVIR(ISYMA),1)
+         NTOTD   = MAX(NVIR(ISYMD),1)
+C        
+         CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NVIR(ISYMD),
+     *               -ONE,WRK(KOFF1),NTOTA,FOCKYCK(KOFF2),NTOTD,
+     *               ONE,ETA1EFF(KOFF3),NTOTA)
+C
+      END DO
+C
+      CALL QEXIT('CC3_ETA_1')
+C
+      RETURN
+      END
+C
+

@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 C  /* Deck ccsdpt_eta */
       SUBROUTINE CCSDPT_ETA(OMEGA1,OMEGA2,T1AM,ISYMT1,T2TP,
      *                      ISYMT2,MODEL,WORK,LWORK,
@@ -711,7 +713,8 @@ C                 Calculate the S(ci,bk,dj) matrix for T3.
 C-------------------------------------------------------------
 C
                   DTIME = SECOND()
-                  CALL CC3_SMAT(T2TP,ISYMT2,WORK(KTMAT),WORK(KTRVI0),
+                  CALL CC3_SMAT(0.0D0,T2TP,ISYMT2,WORK(KTMAT),
+     *                          WORK(KTRVI0),
      *                          WORK(KTRVI2),WORK(KTROC0),ISINT2,
      *                          WORK(KFOCKD),WORK(KDIAG),
      *                          WORK(KSMAT),WORK(KEND4),LWRK4,
@@ -741,8 +744,8 @@ C
 C
                   CALL DZERO(WORK(KSMAT2),NCKIJ(ISCKIJ))
 C
-                  CALL CCFOP_SMAT(T1AM,ISYMT1,WORK(KT2TCME),ISYMT2,
-     *                            WORK(KTMAT),
+                  CALL CCFOP_SMAT(0.0D0,T1AM,ISYMT1,WORK(KT2TCME),
+     *                            ISYMT2,WORK(KTMAT),
      *                            WORK(KFCKBA),WORK(KXIAJB),ISINT1,
      *                            WORK(KTRVI0),WORK(KTRVI2),
      *                            WORK(KTRVI4),WORK(KTRVI5),
@@ -772,7 +775,7 @@ C                 Calculate Q(ci,jk) for fixed b,d.
 C--------------------------------------------------
 C
                   DTIME = SECOND()
-                  CALL CC3_QMAT(T2TP,ISYMT2,WORK(KTRVI3),
+                  CALL CC3_QMAT(0.0D0,T2TP,ISYMT2,WORK(KTRVI3),
      *                          WORK(KTROC0),ISINT2,WORK(KFOCKD),
      *                          WORK(KDIAG),WORK(KQMAT),
      *                          WORK(KEND4),LWRK4,WORK(KINDSQ),LENSQ,
@@ -795,8 +798,8 @@ C
 C
                   CALL DZERO(WORK(KQMAT2),NCKIJ(ISCKIJ))
 C
-                  CALL CCFOP_QMAT(T1AM,ISYMT1,WORK(KT2TCME),ISYMT2,
-     *                            WORK(KTMAT),WORK(KFCKBA),
+                  CALL CCFOP_QMAT(0.0D0,T1AM,ISYMT1,WORK(KT2TCME),
+     *                            ISYMT2,WORK(KTMAT),WORK(KFCKBA),
      *                            WORK(KXIAJB),ISINT1,WORK(KTRVI3),
      *                            WORK(KTRVI6),WORK(KTROC0),
      *                            WORK(KTROC2),ISINT2,WORK(KFOCKD),
@@ -1056,7 +1059,8 @@ C
 C
       END
 C  /* Deck ccfop_smat */
-      SUBROUTINE CCFOP_SMAT(T1AM,ISYMT1,T2TCME,ISYMT2,TMAT,FOCK,XIAJB,
+      SUBROUTINE CCFOP_SMAT(ECURR,T1AM,ISYMT1,T2TCME,ISYMT2,TMAT,FOCK,
+     *                      XIAJB,
      *                      ISINT1,TRVIR,TRVIR2,TRVIR4,TRVIR5,TROCC,
      *                      TROCC2,ISINT2,FOCKD,DIAG,SMAT,WORK,LWORK,
      *                      INDAJL,INDSQ,LENSQ,ISYMB,B,ISYMC,C)
@@ -1095,14 +1099,14 @@ C
       REAL TRVIR(*), TRVIR2(*), TROCC(*), FOCKD(*), DIAG(*)
       REAL SMAT(*), WORK(LWORK), XSMAT, EPSIBC, T2TCME(*)
       REAL TROCC2(*), TRVIR4(*), TRVIR5(*)
-      REAL ZERO, ONE, TWO, FOUR
+      REAL ZERO, ONE, TWO, FOUR, ECURR
       REAL DDOT, SECOND
 #else
       DOUBLE PRECISION T1AM(*), TMAT(*), XIAJB(*), FOCK(*)
       DOUBLE PRECISION TRVIR(*), TRVIR2(*), TROCC(*), FOCKD(*), DIAG(*)
       DOUBLE PRECISION SMAT(*), WORK(LWORK), XSMAT, EPSIBC, T2TCME(*)
       DOUBLE PRECISION TROCC2(*), TRVIR4(*), TRVIR5(*)
-      DOUBLE PRECISION ZERO, ONE, TWO, FOUR
+      DOUBLE PRECISION ZERO, ONE, TWO, FOUR, ECURR
       DOUBLE PRECISION DDOT, SECOND
 #endif
 C
@@ -1112,7 +1116,6 @@ C
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -1950,10 +1953,10 @@ C
       RETURN
       END
 C  /* Deck ccfop_qmat */
-      SUBROUTINE CCFOP_QMAT(T1AM,ISYMT1,T2TCME,ISYMT2,TMAT,FOCK,XIAJB,
-     *                      ISINT1,TRVIR3,TRVIR6,TROCC,TROCC2,ISINT2,
-     *                      FOCKD,DIAG,QMAT,WORK,LWORK,INDSQ,LENSQ,
-     *                      ISYMB,B,ISYMD,D)
+      SUBROUTINE CCFOP_QMAT(ECURR,T1AM,ISYMT1,T2TCME,ISYMT2,TMAT,FOCK,
+     *                      XIAJB,ISINT1,TRVIR3,TRVIR6,TROCC,TROCC2,
+     *                      ISINT2,FOCKD,DIAG,QMAT,WORK,LWORK,
+     *                      INDSQ,LENSQ,ISYMB,B,ISYMD,D)
 C
 C     Written by K. Hald, Fall 2001.
 C
@@ -1974,12 +1977,12 @@ C
 #if defined (SYS_CRAY)
       REAL T1AM(*), T2TCME(*), FOCK(*), XIAJB(*), TRVIR3(*)
       REAL TRVIR6(*), TROCC(*), TROCC2(*), FOCKD(*), DIAG(*)
-      REAL TMAT(*), QMAT(*), WORK(LWORK), EPSIBD
+      REAL TMAT(*), QMAT(*), WORK(LWORK), EPSIBD, ECURR
       REAL ZERO, ONE, TWO, FOUR, XQMAT, DDOT
 #else
       DOUBLE PRECISION T1AM(*), T2TCME(*), FOCK(*), XIAJB(*), TRVIR3(*)
       DOUBLE PRECISION TRVIR6(*), TROCC(*), TROCC2(*), FOCKD(*),DIAG(*)
-      DOUBLE PRECISION TMAT(*), QMAT(*), WORK(LWORK), EPSIBD
+      DOUBLE PRECISION TMAT(*), QMAT(*), WORK(LWORK), EPSIBD, ECURR
       DOUBLE PRECISION ZERO, ONE, TWO, FOUR, XQMAT, DDOT
 #endif
 C
@@ -1987,7 +1990,6 @@ C
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, FOUR = 4.0D0)
 C
@@ -2892,7 +2894,8 @@ C  /* Deck ccsdpt_dens2 */
      *                        L1AM,ISYML1,L2TP,ISYML2,WORK,LWORK,
      *                        LUDELD,FNDELD,LUCKJD,FNCKJD,LUDKBC,FNDKBC,
      *                        LUTOC,FNTOC,LU3VI,FN3VI,LUDKBC3,FNDKBC3,
-     *                        LU3FOP,FN3FOP,LU3FOP2,FN3FOP2)
+     *                        LU3FOP,FN3FOP,LU3FOP2,FN3FOP2,
+     *                        LU3FOPX,FN3FOPX,LU3FOP2X,FN3FOP2X)
 C
 C     Written by K. Hald, Fall 2001.
 C
@@ -2932,7 +2935,7 @@ C
       INTEGER KTRVI14, KTRVI15, KTRVI16, KTRVI17, KTRVI18, KTRVI19
       INTEGER KTRVI20, ISYTMP, KTROC01, KTROC21, KTROC03, KTROC23
       INTEGER LUDELD, LUCKJD, LUDKBC, LUTOC, LU3VI, LUDKBC3, LU3FOP
-      INTEGER LU3FOP2
+      INTEGER LU3FOP2, LU3FOPX, LU3FOP2X
 C
 #if defined (SYS_CRAY)
       REAL T1AM(*), T2TP(*)
@@ -2972,6 +2975,7 @@ C
       LOGICAL   C3LRSV, CC1ASV, CC1BSV, LDEBUG
       CHARACTER*(*) FNDELD, FNCKJD, FNDKBC, FNTOC, FN3VI, FNDKBC3
       CHARACTER*(*) FN3FOP, FN3FOP2
+      CHARACTER*(*) FN3FOPX, FN3FOP2X
       CHARACTER*5 FNDPTIA, FNDPTAB, FNDPTIJ, FNKAPAB, FNKAPIJ
       CHARACTER*6 FNDPTIA2
       CHARACTER*7 FNDIAJB, FNDAIJK, FNDIAJK
@@ -3550,7 +3554,7 @@ C
             IF (CC3) THEN
                IOFF = ICKBD(ISCKB2,ISYMD) + NCKATR(ISCKB2)*(D - 1) + 1
                IF (NCKATR(ISCKB2) .GT. 0) THEN
-                  CALL GETWA2(LU3FOP2,FN3FOP2,WORK(KTRVI4),IOFF,
+                  CALL GETWA2(LU3FOP2X,FN3FOP2X,WORK(KTRVI4),IOFF,
      &                        NCKATR(ISCKB2))
                ENDIF
             ELSE
@@ -3692,7 +3696,7 @@ C
             IF (CC3) THEN
                IOFF = ICKBD(ISYCKB,ISYMD) + NCKATR(ISYCKB)*(D - 1) + 1
                IF (NCKATR(ISYCKB) .GT. 0) THEN
-                  CALL GETWA2(LU3FOP,FN3FOP,WORK(KTRVI6),IOFF,
+                  CALL GETWA2(LU3FOPX,FN3FOPX,WORK(KTRVI6),IOFF,
      *                        NCKATR(ISYCKB))
                ENDIF
             ELSE
@@ -3924,7 +3928,7 @@ C
                         IOFF = ICKBD(ISYCKD,ISYMB) 
      *                       + NCKATR(ISYCKD)*(B-1) + 1
                         IF (NCKATR(ISYCKD) .GT. 0) THEN
-                           CALL GETWA2(LU3FOP2,FN3FOP2,WORK(KTRVI11),
+                           CALL GETWA2(LU3FOP2X,FN3FOP2X,WORK(KTRVI11),
      *                                 IOFF,NCKATR(ISYCKD))
                         ENDIF
                      ELSE
@@ -3949,8 +3953,8 @@ C
                         IOFF = ICKBD(ISYCKD,ISYMB) 
      *                       + NCKATR(ISYCKD)*(B - 1) + 1
                         IF (NCKATR(ISYCKD) .GT. 0) THEN
-                           CALL GETWA2(LU3FOP,FN3FOP,WORK(KTRVI13),IOFF,
-     *                                 NCKATR(ISYCKD))
+                           CALL GETWA2(LU3FOPX,FN3FOPX,WORK(KTRVI13),
+     *                                 IOFF,NCKATR(ISYCKD))
                         ENDIF
 C
                         IOFF = ICKAD(ISYCKD,ISYMB) 
@@ -3982,7 +3986,8 @@ C                 Calculate the S(ci,bk,dj) matrix for T3 for B,D.
 C-------------------------------------------------------------------
 C
                   DTIME = SECOND()
-                  CALL CC3_SMAT(T2TP,ISYMT2,WORK(KTMAT),WORK(KTRVI0),
+                  CALL CC3_SMAT(0.0D0,T2TP,ISYMT2,WORK(KTMAT),
+     *                          WORK(KTRVI0),
      *                          WORK(KTRVI2),WORK(KTROC0),ISINT2,
      *                          WORK(KFOCKD),WORK(KDIAG),
      *                          WORK(KSMAT),WORK(KEND4),LWRK4,
@@ -4005,7 +4010,8 @@ C                 Calculate the S(ci,bk,dj) matrix for T3 for D,B.
 C-------------------------------------------------------------------
 C
                   DTIME = SECOND()
-                  CALL CC3_SMAT(T2TP,ISYMT2,WORK(KTMAT),WORK(KTRVI8),
+                  CALL CC3_SMAT(0.0D0,T2TP,ISYMT2,WORK(KTMAT),
+     *                          WORK(KTRVI8),
      *                          WORK(KTRVI9),WORK(KTROC0),ISINT2,
      *                          WORK(KFOCKD),WORK(KDIAG),
      *                          WORK(KSMAT3),WORK(KEND4),LWRK4,
@@ -4032,7 +4038,7 @@ C
                   CALL DZERO(WORK(KSMAT2),NCKIJ(ISCKIJ))
 C
                   IF (CC3) THEN
-                     CALL CCFOP_SMAT(L1AM,ISYML1,L2TP,ISYML2,
+                     CALL CCFOP_SMAT(0.0D0,L1AM,ISYML1,L2TP,ISYML2,
      *                               WORK(KTMAT),
      *                               WORK(KFCKBA),WORK(KXIAJB),ISINT1,
      *                               WORK(KTRVI14),WORK(KTRVI15),
@@ -4047,8 +4053,8 @@ C
 C
                   ELSE
 C
-                     CALL CCFOP_SMAT(T1AM,ISYMT1,WORK(KT2TCME),ISYMT2,
-     *                               WORK(KTMAT),
+                     CALL CCFOP_SMAT(0.0D0,T1AM,ISYMT1,WORK(KT2TCME),
+     *                               ISYMT2,WORK(KTMAT),
      *                               WORK(KFCKBA),WORK(KXIAJB),ISINT1,
      *                               WORK(KTRVI0),WORK(KTRVI2),
      *                               WORK(KTRVI4),WORK(KTRVI5),
@@ -4081,7 +4087,7 @@ C
                      CALL DZERO(WORK(KSMAT4),NCKIJ(ISCKIJ))
 C
                      IF (CC3) THEN
-                        CALL CCFOP_SMAT(L1AM,ISYML1,L2TP,
+                        CALL CCFOP_SMAT(0.0D0,L1AM,ISYML1,L2TP,
      *                                  ISYML2,WORK(KTMAT),WORK(KFCKBA),
      *                                  WORK(KXIAJB),ISINT1,
      *                                  WORK(KTRVI16),WORK(KTRVI17),
@@ -4096,7 +4102,7 @@ C
 C
                      ELSE
 C
-                        CALL CCFOP_SMAT(T1AM,ISYMT1,WORK(KT2TCME),
+                        CALL CCFOP_SMAT(0.0D0,T1AM,ISYMT1,WORK(KT2TCME),
      *                                  ISYMT2,WORK(KTMAT),WORK(KFCKBA),
      *                                  WORK(KXIAJB),ISINT1,
      *                                  WORK(KTRVI8),WORK(KTRVI9),
@@ -4127,7 +4133,7 @@ C                 Calculate Q(ci,jk) for fixed b,d.
 C--------------------------------------------------
 C
                   DTIME = SECOND()
-                  CALL CC3_QMAT(T2TP,ISYMT2,WORK(KTRVI3),
+                  CALL CC3_QMAT(0.0D0,T2TP,ISYMT2,WORK(KTRVI3),
      *                          WORK(KTROC0),ISINT2,WORK(KFOCKD),
      *                          WORK(KDIAG),WORK(KQMAT),
      *                          WORK(KEND4),LWRK4,WORK(KINDSQ),LENSQ,
@@ -4153,7 +4159,7 @@ C
                   CALL DZERO(WORK(KQMAT2),NCKIJ(ISCKIJ))
 C
                   IF (CC3) THEN
-                     CALL CCFOP_QMAT(L1AM,ISYML1,L2TP,ISYML2,
+                     CALL CCFOP_QMAT(0.0D0,L1AM,ISYML1,L2TP,ISYML2,
      *                               WORK(KTMAT),WORK(KFCKBA),
      *                               WORK(KXIAJB),ISINT1,WORK(KTRVI18),
      *                               WORK(KTRVI6),WORK(KTROC01),
@@ -4165,8 +4171,8 @@ C
                      CALL DSCAL(NCKIJ(ISCKIJ),HALF,WORK(KQMAT2),1)
 C
                   ELSE
-                     CALL CCFOP_QMAT(T1AM,ISYMT1,WORK(KT2TCME),ISYMT2,
-     *                               WORK(KTMAT),WORK(KFCKBA),
+                     CALL CCFOP_QMAT(0.0D0,T1AM,ISYMT1,WORK(KT2TCME),
+     *                               ISYMT2,WORK(KTMAT),WORK(KFCKBA),
      *                               WORK(KXIAJB),ISINT1,WORK(KTRVI3),
      *                               WORK(KTRVI6),WORK(KTROC0),
      *                               WORK(KTROC2),ISINT2,WORK(KFOCKD),
@@ -4191,7 +4197,7 @@ C                 Calculate U(ci,jk) for fixed b,d.
 C--------------------------------------------------
 C
                   DTIME = SECOND()
-                  CALL CC3_UMAT(T2TP,ISYMT2,WORK(KTRVI1),
+                  CALL CC3_UMAT(0.0D0,T2TP,ISYMT2,WORK(KTRVI1),
      *                          WORK(KTROC02),ISINT2,WORK(KFOCKD),
      *                          WORK(KDIAG),WORK(KUMAT),WORK(KTMAT),
      *                          WORK(KEND4),LWRK4,WORK(KINDSQ),LENSQ,
@@ -4213,7 +4219,7 @@ C                 Calculate U(ci,jk) for fixed d,b.
 C--------------------------------------------------
 C
                   DTIME = SECOND()
-                  CALL CC3_UMAT(T2TP,ISYMT2,WORK(KTRVI10),
+                  CALL CC3_UMAT(0.0D0,T2TP,ISYMT2,WORK(KTRVI10),
      *                          WORK(KTROC02),ISINT2,WORK(KFOCKD),
      *                          WORK(KDIAG),WORK(KUMAT3),WORK(KTMAT),
      *                          WORK(KEND4),LWRK4,WORK(KINDSQ),LENSQ,
@@ -4239,7 +4245,7 @@ C
                   CALL DZERO(WORK(KUMAT2),NCKIJ(ISCKIJ))
 C
                   IF (CC3) THEN
-                     CALL CCFOP_UMAT(L1AM,ISYML1,L2TP,ISYML2,
+                     CALL CCFOP_UMAT(0.0D0,L1AM,ISYML1,L2TP,ISYML2,
      *                               WORK(KXIAJB),ISINT1,WORK(KFCKBA),
      *                               WORK(KTRVI19),WORK(KTRVI7),
      *                               WORK(KTROC03),WORK(KTROC23),ISINT2,
@@ -4251,7 +4257,8 @@ C
                      CALL DSCAL(NCKIJ(ISCKIJ),HALF,WORK(KUMAT2),1)
 C
                   ELSE
-                     CALL CCFOP_UMAT(T1AM,ISYMT1,WORK(KT2TCME),ISYMT2,
+                     CALL CCFOP_UMAT(0.0D0,T1AM,ISYMT1,WORK(KT2TCME),
+     *                               ISYMT2,
      *                               WORK(KXIAJB),ISINT1,WORK(KFCKBA),
      *                               WORK(KTRVI1),WORK(KTRVI7),
      *                               WORK(KTROC02),WORK(KTROC22),ISINT2,
@@ -4283,7 +4290,7 @@ C
                      CALL DZERO(WORK(KUMAT4),NCKIJ(ISCKIJ))
 C
                      IF (CC3) THEN
-                        CALL CCFOP_UMAT(L1AM,ISYML1,L2TP,ISYML2,
+                        CALL CCFOP_UMAT(0.0D0,L1AM,ISYML1,L2TP,ISYML2,
      *                                  WORK(KXIAJB),ISINT1,
      *                                  WORK(KFCKBA),WORK(KTRVI20),
      *                                  WORK(KTRVI13),WORK(KTROC03),
@@ -4296,7 +4303,7 @@ C
                      CALL DSCAL(NCKIJ(ISCKIJ),HALF,WORK(KUMAT4),1)
 C
                      ELSE
-                        CALL CCFOP_UMAT(T1AM,ISYMT1,WORK(KT2TCME),
+                        CALL CCFOP_UMAT(0.0D0,T1AM,ISYMT1,WORK(KT2TCME),
      *                                  ISYMT2,WORK(KXIAJB),ISINT1,
      *                                  WORK(KFCKBA),WORK(KTRVI10),
      *                                  WORK(KTRVI13),WORK(KTROC02),
@@ -6137,396 +6144,414 @@ C
 C
       RETURN
       END
-!C  /* DECK SUM_PT3 */
-!      SUBROUTINE SUM_PT3(SMAT,ISYMB,B,ISYMD,D,IAIKJ,T3SUM,IOPT)
-!C
-!C     Sum up the T3 amplitudes from the S-MAT alone (IOPT = 1).
-!C     Sum up the T3 amplitudes from the Q-MAT alone (IOPT = 2).
-!C     Sum up the T3 amplitudes from the U-MAT alone (IOPT = 3).
-!C
-!C     HOWEVER : PLEASE DO NOT REMOVE THIS ROUTINE
-!C
-!C     K. Hald, Fall 2001.
-!C
-!      IMPLICIT NONE
-!C
-!#include <priunit.h>
-!#include <ccsdsym.h>
-!#include <ccorb.h>
-!C
-!      INTEGER ISYMB, ISYMD, IAIKJ, IOPT
-!      INTEGER KOFF1, KOFF2, ISYMJ, ISYMK, ISYMA, ISYMI, ISYAIK, ISYMBJ
-!      INTEGER ISYMAI, ISYBJI, KOFF3, KOFF4, KOFF5, KOFF6, KOFF7, ISYAIJ
-!      INTEGER ISYMDJ, ISYMDK, ISYMBK, KH
-!C
-!#if defined (SYS_CRAY)
-!      REAL SMAT(*), FACT
-!      REAL t3sum(nvirt,nvirt,nvirt,nrhft,nrhft,nrhft), HALF
-!#else
-!      DOUBLE PRECISION SMAT(*), FACT
-!      DOUBLE PRECISION t3sum(nvirt,nvirt,nvirt,nrhft,nrhft,nrhft), HALF
-!#endif
-!C
-!      LOGICAL LDEBUG
-!C
-!      PARAMETER (HALF = 0.5D0)
-!C
-!      CALL QENTER('SUM_PT3')
-!C
-!      LDEBUG = .FALSE.
-!C
-!C
-!      IF (IOPT .EQ. 1) THEN
-!         FACT = HALF
-!      ELSE IF ((IOPT .EQ. 2) .OR. (IOPT .EQ. 3)) THEN
-!         FACT = 1.0D0
-!      ELSE
-!         CALL QUIT('Wrong IOPT in sum_pt3')
-!      ENDIF
-!C
-!      KOFF2 = 0
-!      DO KH = 1, ISYMB-1
-!        KOFF2 = KOFF2 + NVIR(KH)
-!      ENDDO
-!      KOFF3 = 0
-!      DO KH = 1, ISYMD-1
-!        KOFF3 = KOFF3 + NVIR(KH)
-!      ENDDO
-!C
-!      DO ISYMJ = 1, NSYM
-!         KOFF5 = 0
-!         DO KH = 1, ISYMJ-1
-!           KOFF5 = KOFF5 + NRHF(KH)
-!         ENDDO
-!         ISYAIK = MULD2H(ISYMJ,IAIKJ)
-!         ISYMBJ = MULD2H(ISYMB,ISYMJ)
-!         ISYMDJ = MULD2H(ISYMD,ISYMJ)
-!         DO ISYMK = 1, NSYM
-!            KOFF6 = 0
-!            DO KH = 1, ISYMK-1
-!              KOFF6 = KOFF6 + NRHF(KH)
-!            ENDDO
-!            ISYMAI = MULD2H(ISYAIK,ISYMK)
-!            ISYAIJ = MULD2H(ISYMAI,ISYMJ)
-!            ISYMBK = MULD2H(ISYMB,ISYMK)
-!            ISYMDK = MULD2H(ISYMD,ISYMK)
-!            DO ISYMA = 1, NSYM
-!C
-!               KOFF1 = 0
-!               DO KH = 1, ISYMA-1
-!                  KOFF1 = KOFF1 + NVIR(KH)
-!               ENDDO
-!C
-!               ISYMI  = MULD2H(ISYMAI,ISYMA)
-!C
-!               KOFF4 = 0
-!               DO KH = 1, ISYMI-1
-!                  KOFF4 = KOFF4 + NRHF(KH)
-!               ENDDO
-!               ISYBJI = MULD2H(ISYMBJ,ISYMI)
-!C
-!               DO I = 1, NRHF(ISYMI)
-!               DO J = 1, NRHF(ISYMJ)
-!               DO K = 1, NRHF(ISYMK)
-!               DO A = 1, NVIR(ISYMA)
-!C
-!               IF (IOPT .EQ. 1) THEN
-!                 KOFF7 = ISAIKJ(ISYAIK,ISYMJ)
-!     *                 + NCKI(ISYAIK)*(J - 1)
-!     *                 + ISAIK(ISYMAI,ISYMK) + NT1AM(ISYMAI)*(K-1)
-!     *                 + IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I-1) + A
-!               ELSE IF (IOPT .EQ. 2) THEN
-!                 KOFF7 = ISAIKJ(ISYAIJ,ISYMK)
-!     *                 + NCKI(ISYAIJ)*(K - 1)
-!     *                 + ISAIK(ISYMAI,ISYMJ) + NT1AM(ISYMAI)*(J-1)
-!     *                 + IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I-1) + A
-!               ELSE IF (IOPT .EQ. 3) THEN
-!                 KOFF7 = ISAIKJ(ISYAIK,ISYMJ)
-!     *                 + NCKI(ISYAIK)*(J - 1)
-!     *                 + ISAIK(ISYMAI,ISYMK) + NT1AM(ISYMAI)*(K-1)
-!     *                 + IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I-1) + A
-!               ENDIF
-!C
-!         IF (LDEBUG) THEN
-!            IF (ABS(SMAT(KOFF7)) .GT. 1.0d-12) THEN
-!              IF (IOPT .EQ. 1) THEN
-!                 WRITE(LUPRI,*) 'CONTRIBUTION FROM I = ',
-!     *                              KOFF7,' WITH SMAT = ',
-!     *                              SMAT(KOFF7)
-!              ELSE IF (IOPT .EQ. 2) THEN
-!                 WRITE(LUPRI,*) 'CONTRIBUTION FROM I = ',
-!     *                              KOFF7,' WITH QMAT = ',
-!     *                              SMAT(KOFF7)
-!              ELSE IF (IOPT .EQ. 3) THEN
-!                 WRITE(LUPRI,*) 'CONTRIBUTION FROM I = ',
-!     *                              KOFF7,' WITH UMAT = ',
-!     *                              SMAT(KOFF7)
-!              ENDIF
-!C
-!               WRITE(LUPRI,'(A,6I3)') ' A, B, D, I, J, K : ',A,B,D,I,J,K
-!               WRITE(LUPRI,*) 'KOFF1 = ',KOFF1,' KOFF2 = ',
-!     *                         KOFF2,'KOFF3 = ',KOFF3
-!               WRITE(LUPRI,*) 'KOFF4 = ',KOFF4,' KOFF5 = ',
-!     *                         KOFF5,'KOFF6 = ',KOFF6
-!            endif
-!         ENDIF
-!C
-!         T3SUM(A+KOFF1,B+KOFF2,D+KOFF3,I+KOFF4,J+KOFF5,K+KOFF6) = 
-!     *   T3SUM(A+KOFF1,B+KOFF2,D+KOFF3,I+KOFF4,J+KOFF5,K+KOFF6) +
-!     *   FACT*SMAT(KOFF7)
-!C
-!         T3SUM(A+KOFF1,D+KOFF3,B+KOFF2,I+KOFF4,K+KOFF6,J+KOFF5) = 
-!     *   T3SUM(A+KOFF1,D+KOFF3,B+KOFF2,I+KOFF4,K+KOFF6,J+KOFF5) +
-!     *   FACT*SMAT(KOFF7)
-!C
-!         T3SUM(B+KOFF2,A+KOFF1,D+KOFF3,J+KOFF5,I+KOFF4,K+KOFF6) = 
-!     *   T3SUM(B+KOFF2,A+KOFF1,D+KOFF3,J+KOFF5,I+KOFF4,K+KOFF6) +
-!     *   FACT*SMAT(KOFF7)
-!C
-!         T3SUM(B+KOFF2,D+KOFF4,A+KOFF1,J+KOFF5,K+KOFF6,I+KOFF4) = 
-!     *   T3SUM(B+KOFF2,D+KOFF4,A+KOFF1,J+KOFF5,K+KOFF6,I+KOFF4) +
-!     *   FACT*SMAT(KOFF7)
-!C
-!         T3SUM(D+KOFF3,A+KOFF1,B+KOFF2,K+KOFF6,I+KOFF4,J+KOFF5) = 
-!     *   T3SUM(D+KOFF3,A+KOFF1,B+KOFF2,K+KOFF6,I+KOFF4,J+KOFF5) +
-!     *   FACT*SMAT(KOFF7)
-!C
-!         T3SUM(D+KOFF3,B+KOFF2,A+KOFF1,K+KOFF6,J+KOFF5,I+KOFF4) = 
-!     *   T3SUM(D+KOFF3,B+KOFF2,A+KOFF1,K+KOFF6,J+KOFF5,I+KOFF4) +
-!     *   FACT*SMAT(KOFF7)
-!C
-!                 ENDDO
-!                 ENDDO
-!                 ENDDO
-!                 ENDDO
-!            ENDDO
-!C
-!         ENDDO
-!C
-!      ENDDO
-!C
-!      CALL QEXIT('SUM_PT3')
-!C
-!    1 FORMAT(1X,A8,I3,A1,I3,A1,I3,A1,I3,A1,I3,A1,I3,A4,E20.10)
-!      RETURN
-!      END
-!C  /* DECK PRINT_PT3 */
-!      SUBROUTINE PRINT_PT3(T3SUM,ISYMIM,IOPT)
-!C
-!C     Remove the forbidden T3 amplitudes and print.
-!C
-!C     HOWEVER : PLEASE DO NOT REMOVE THIS ROUTINE
-!C
-!C     K. Hald, Fall 2001.
-!C
-!      IMPLICIT NONE
-!C
-!#include <priunit.h>
-!#include <ccsdsym.h>
-!#include <ccorb.h>
-!C
-!      INTEGER ISYMIM, IOPT, KOFF1, KOFF2, KOFF3, KOFF4, KOFF5, KOFF6
-!      INTEGER ISYMA, ISYMB, ISYMAB, IAIKJ, ISYMC, ISYMI, ISYMJ, ISYMK
-!      INTEGER KH, ISYABC, ISYIJK, ISYMJK, ISYMAI, ISYMBC
-!C
-!#if defined (SYS_CRAY)
-!      REAL t3sum(nvirt,nvirt,nvirt,nrhft,nrhft,nrhft), zero
-!#else
-!      DOUBLE PRECISION t3sum(nvirt,nvirt,nvirt,nrhft,nrhft,nrhft), zero
-!#endif
-!C
-!      LOGICAL LDEBUG
-!C
-!      PARAMETER (ZERO = 0.0D0)
-!C
-!      CALL QENTER('PRINT_PT3')
-!C
-!      LDEBUG = .FALSE.
-!C
-!C--------------------------------------------------------------
-!C     Remove forbidden elements of the triples amplitudes.
-!C--------------------------------------------------------------
-!C
-!      DO ISYMA = 1, NSYM
-!         KOFF1 = 0
-!         DO KH = 1, ISYMA-1
-!            KOFF1 = KOFF1 + NVIR(KH)
-!         ENDDO
-!      DO ISYMI = 1, NSYM
-!         KOFF4 = 0
-!         DO KH = 1, ISYMI-1
-!            KOFF4 = KOFF4 + NRHF(KH)
-!         ENDDO
-!C
-!         ISYMAI = MULD2H(ISYMA,ISYMI)
-!         ISYMBC = MULD2H(ISYMAI,ISYMIM)
-!C
-!         DO ISYMB = 1, NSYM
-!            KOFF2 = 0
-!            DO KH = 1, ISYMB-1
-!               KOFF2 = KOFF2 + NVIR(KH)
-!            ENDDO
-!C
-!            ISYMC = MULD2H(ISYMBC,ISYMB)
-!               KOFF3 = 0
-!               DO KH = 1, ISYMC-1
-!                  KOFF3 = KOFF3 + NVIR(KH)
-!               ENDDO
-!C
-!            DO A = 1, NVIR(ISYMA)
-!            DO I = 1, NRHF(ISYMI)
-!C
-!               DO B = 1, NVIR(ISYMB)
-!               DO C = 1, NVIR(ISYMC)
-!C
-!         T3SUM(A+KOFF1,B+KOFF2,C+KOFF3,I+KOFF4,I+KOFF4,I+KOFF4) = ZERO
-!         T3SUM(A+KOFF1,C+KOFF3,B+KOFF2,I+KOFF4,I+KOFF4,I+KOFF4) = ZERO
-!         T3SUM(B+KOFF2,A+KOFF1,C+KOFF3,I+KOFF4,I+KOFF4,I+KOFF4) = ZERO
-!         T3SUM(B+KOFF2,C+KOFF3,A+KOFF1,I+KOFF4,I+KOFF4,I+KOFF4) = ZERO
-!         T3SUM(C+KOFF3,A+KOFF1,B+KOFF2,I+KOFF4,I+KOFF4,I+KOFF4) = ZERO
-!         T3SUM(C+KOFF3,B+KOFF2,A+KOFF1,I+KOFF4,I+KOFF4,I+KOFF4) = ZERO
-!C
-!               ENDDO ! C
-!               ENDDO ! B
-!            ENDDO    ! I
-!            ENDDO    ! A
-!         ENDDO       ! ISYMB
-!C
-!         DO ISYMJ = 1, NSYM
-!            KOFF5 = 0
-!            DO KH = 1, ISYMJ-1
-!               KOFF5 = KOFF5 + NRHF(KH)
-!            ENDDO
-!C
-!            ISYMK = MULD2H(ISYMBC,ISYMJ)
-!               KOFF6 = 0
-!               DO KH = 1, ISYMK-1
-!                  KOFF6 = KOFF6 + NRHF(KH)
-!               ENDDO
-!C
-!            DO A = 1,NVIR(ISYMA)
-!            DO I = 1,NRHF(ISYMI)
-!               DO J = 1,NRHF(ISYMJ)
-!               DO K = 1,NRHF(ISYMK)
-!C
-!         T3SUM(A+KOFF1,A+KOFF1,A+KOFF1,I+KOFF4,J+KOFF5,K+KOFF6) = ZERO
-!         T3SUM(A+KOFF1,A+KOFF1,A+KOFF1,I+KOFF4,K+KOFF6,J+KOFF5) = ZERO
-!         T3SUM(A+KOFF1,A+KOFF1,A+KOFF1,J+KOFF5,I+KOFF4,K+KOFF6) = ZERO
-!         T3SUM(A+KOFF1,A+KOFF1,A+KOFF1,J+KOFF5,K+KOFF6,I+KOFF4) = ZERO
-!         T3SUM(A+KOFF1,A+KOFF1,A+KOFF1,K+KOFF6,I+KOFF4,J+KOFF5) = ZERO
-!         T3SUM(A+KOFF1,A+KOFF1,A+KOFF1,K+KOFF6,J+KOFF5,I+KOFF4) = ZERO
-!C
-!               ENDDO ! K
-!               ENDDO ! J
-!            ENDDO    ! I
-!            ENDDO    ! A
-!         ENDDO
-!      ENDDO          ! ISYMI
-!      ENDDO          ! ISYMA
-!C
-!C----------------------------------------
-!C     Print the triples amplitudes.
-!C----------------------------------------
-!C
-!      DO ISYMA = 1, NSYM
-!C
-!         KOFF1 = 0
-!         DO KH = 1, ISYMA-1
-!           KOFF1 = KOFF1 + NVIR(KH)
-!         ENDDO
-!C
-!         DO ISYMB = 1, NSYM
-!C
-!             ISYMAB = MULD2H(ISYMA,ISYMB)
-!C
-!             KOFF2 = 0
-!             DO KH = 1, ISYMB-1
-!               KOFF2 = KOFF2 + NVIR(KH)
-!             ENDDO
-!C
-!            DO ISYMC = 1, NSYM
-!C
-!                ISYABC = MULD2H(ISYMAB,ISYMC)
-!                ISYIJK = MULD2H(ISYMIM,ISYABC)
-!C
-!                KOFF3 = 0
-!                DO KH = 1, ISYMC-1
-!                  KOFF3 = KOFF3 + NVIR(KH)
-!                ENDDO
-!C
-!                DO ISYMI = 1, NSYM
-!C
-!                KOFF4 = 0
-!                DO KH = 1, ISYMI-1
-!                  KOFF4 = KOFF4 + NRHF(KH)
-!                ENDDO
-!C
-!                ISYMJK = MULD2H(ISYIJK,ISYMI)
-!C
-!                DO ISYMJ = 1, NSYM
-!C
-!                KOFF5 = 0
-!                DO KH = 1, ISYMJ-1
-!                  KOFF5 = KOFF5 + NRHF(KH)
-!                ENDDO
-!C
-!                ISYMK = MULD2H(ISYMJK,ISYMJ)
-!C
-!                KOFF6 = 0
-!                DO KH = 1, ISYMK-1
-!                  KOFF6 = KOFF6 + NRHF(KH)
-!                ENDDO
-!C
-!                DO A = 1, NVIR(ISYMA)
-!                DO B = 1, NVIR(ISYMB)
-!                DO C = 1, NVIR(ISYMC)
-!                DO I = 1, NRHF(ISYMI)
-!                DO J = 1, NRHF(ISYMJ)
-!                DO K = 1, NRHF(ISYMK)
-!C
-!        IF (ABS(T3SUM(A+KOFF1,B+KOFF2,C+KOFF3,I+KOFF4,J+KOFF5,K+KOFF6)) 
-!     *                                    .GT. 1.0D-12) THEN
-!           IF (IOPT .EQ. 1) THEN
-!              write(lupri,1) 'T3AM(',a+koff1,',',b+koff2,',',
-!     *                               c+koff3,',',i+koff4,',',
-!     *                               j+koff5,',',k+koff6,') = ',
-!     *        T3SUM(A+KOFF1,B+KOFF2,C+KOFF3,I+KOFF4,J+KOFF5,K+KOFF6) 
-!C
-!           ELSE IF (IOPT .EQ. 2) THEN
-!              write(lupri,1) 'T3-BAR(',a+koff1,',',b+koff2,',',
-!     *                                 c+koff3,',',i+koff4,',',
-!     *                                 j+koff5,',',k+koff6,') = ',
-!     *        T3SUM(A+KOFF1,B+KOFF2,C+KOFF3,I+KOFF4,J+KOFF5,K+KOFF6)
-!C
-!           ELSE IF (IOPT .EQ. 3) THEN
-!              write(lupri,1) 'L3AM(',a+koff1,',',b+koff2,',',
-!     *                               c+koff3,',',i+koff4,',',
-!     *                               j+koff5,',',k+koff6,') = ',
-!     *        T3SUM(A+KOFF1,B+KOFF2,C+KOFF3,I+KOFF4,J+KOFF5,K+KOFF6) 
-!C
-!           ELSE
-!             CALL QUIT('Wrong IOPT in PRINT_PT3')
-!           ENDIF
-!        ENDIF
-!C
-!                ENDDO ! K
-!                ENDDO ! J
-!                ENDDO ! I
-!                ENDDO ! C
-!                ENDDO ! B
-!                ENDDO ! A
-!                ENDDO ! ISYMJ
-!                ENDDO ! ISYMI
-!                ENDDO ! ISYMC
-!         ENDDO        ! ISYMB
-!C
-!      ENDDO           ! ISYMA
-!C
-!      CALL QEXIT('PRINT_PT3')
-!C
-!    1 FORMAT(1X,A6,I3,A1,I3,A1,I3,A1,I3,A1,I3,A1,I3,A4,E20.10)
-!      RETURN
-!      END
+C  /* DECK SUM_PT3 */
+      SUBROUTINE SUM_PT3(SMAT,ISYMB,B,ISYMD,D,IAIKJ,T3SUM,IOPT)
+C
+C     Sum up the T3 amplitudes from the S-MAT alone (IOPT = 1).
+C     Sum up the T3 amplitudes from the Q-MAT alone (IOPT = 2).
+C     Sum up the T3 amplitudes from the U-MAT alone (IOPT = 3).
+C     Sum up the T3 amplitudes from the W-MAT alone (IOPT = 4).
+C
+C     HOWEVER : PLEASE DO NOT REMOVE THIS ROUTINE
+C
+C     K. Hald, Fall 2001.
+C
+      IMPLICIT NONE
+C
+#include <priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+C
+      INTEGER ISYMB, ISYMD, IAIKJ, IOPT
+      INTEGER KOFF1, KOFF2, ISYMJ, ISYMK, ISYMA, ISYMI, ISYAIK, ISYMBJ
+      INTEGER ISYMAI, ISYBJI, KOFF3, KOFF4, KOFF5, KOFF6, KOFF7, ISYAIJ
+      INTEGER ISYMDJ, ISYMDK, ISYMBK, KH
+C
+#if defined (SYS_CRAY)
+      REAL SMAT(*), FACT
+      REAL t3sum(nvirt,nvirt,nvirt,nrhft,nrhft,nrhft), HALF
+#else
+      DOUBLE PRECISION SMAT(*), FACT
+      DOUBLE PRECISION t3sum(nvirt,nvirt,nvirt,nrhft,nrhft,nrhft), HALF
+#endif
+C
+      LOGICAL LDEBUG
+C
+      PARAMETER (HALF = 0.5D0)
+C
+      CALL QENTER('SUM_PT3')
+C
+      LDEBUG = .FALSE.
+C
+C
+      IF (IOPT .EQ. 1) THEN
+         FACT = HALF
+      ELSE IF ((IOPT .EQ. 2) .OR. (IOPT .EQ. 3)) THEN
+         FACT = 1.0D0
+      ELSE IF (IOPT .EQ. 4) THEN
+         FACT = HALF
+      ELSE
+         CALL QUIT('Wrong IOPT in sum_pt3')
+      ENDIF
+C
+      KOFF2 = 0
+      DO KH = 1, ISYMB-1
+        KOFF2 = KOFF2 + NVIR(KH)
+      ENDDO
+      KOFF3 = 0
+      DO KH = 1, ISYMD-1
+        KOFF3 = KOFF3 + NVIR(KH)
+      ENDDO
+C
+      DO ISYMJ = 1, NSYM
+         KOFF5 = 0
+         DO KH = 1, ISYMJ-1
+           KOFF5 = KOFF5 + NRHF(KH)
+         ENDDO
+         ISYAIK = MULD2H(ISYMJ,IAIKJ)
+         ISYMBJ = MULD2H(ISYMB,ISYMJ)
+         ISYMDJ = MULD2H(ISYMD,ISYMJ)
+         DO ISYMK = 1, NSYM
+            KOFF6 = 0
+            DO KH = 1, ISYMK-1
+              KOFF6 = KOFF6 + NRHF(KH)
+            ENDDO
+            ISYMAI = MULD2H(ISYAIK,ISYMK)
+            ISYAIJ = MULD2H(ISYMAI,ISYMJ)
+            ISYMBK = MULD2H(ISYMB,ISYMK)
+            ISYMDK = MULD2H(ISYMD,ISYMK)
+            DO ISYMA = 1, NSYM
+C
+               KOFF1 = 0
+               DO KH = 1, ISYMA-1
+                  KOFF1 = KOFF1 + NVIR(KH)
+               ENDDO
+C
+               ISYMI  = MULD2H(ISYMAI,ISYMA)
+C
+               KOFF4 = 0
+               DO KH = 1, ISYMI-1
+                  KOFF4 = KOFF4 + NRHF(KH)
+               ENDDO
+               ISYBJI = MULD2H(ISYMBJ,ISYMI)
+C
+               DO I = 1, NRHF(ISYMI)
+               DO J = 1, NRHF(ISYMJ)
+               DO K = 1, NRHF(ISYMK)
+               DO A = 1, NVIR(ISYMA)
+C
+               IF (IOPT .EQ. 1) THEN
+                 KOFF7 = ISAIKJ(ISYAIK,ISYMJ)
+     *                 + NCKI(ISYAIK)*(J - 1)
+     *                 + ISAIK(ISYMAI,ISYMK) + NT1AM(ISYMAI)*(K-1)
+     *                 + IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I-1) + A
+               ELSE IF (IOPT .EQ. 2) THEN
+                 KOFF7 = ISAIKJ(ISYAIJ,ISYMK)
+     *                 + NCKI(ISYAIJ)*(K - 1)
+     *                 + ISAIK(ISYMAI,ISYMJ) + NT1AM(ISYMAI)*(J-1)
+     *                 + IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I-1) + A
+               ELSE IF (IOPT .EQ. 3) THEN
+                 KOFF7 = ISAIKJ(ISYAIK,ISYMJ)
+     *                 + NCKI(ISYAIK)*(J - 1)
+     *                 + ISAIK(ISYMAI,ISYMK) + NT1AM(ISYMAI)*(K-1)
+     *                 + IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I-1) + A
+               ELSE IF (IOPT .EQ. 4) THEN
+                 KOFF7 = ISAIKJ(ISYAIK,ISYMJ)
+     *                 + NCKI(ISYAIK)*(J - 1)
+     *                 + ISAIK(ISYMAI,ISYMK) + NT1AM(ISYMAI)*(K-1)
+     *                 + IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I-1) + A
+               ENDIF
+C
+         IF (LDEBUG) THEN
+            IF (ABS(SMAT(KOFF7)) .GT. 1.0d-12) THEN
+              IF (IOPT .EQ. 1) THEN
+                 WRITE(LUPRI,*) 'CONTRIBUTION FROM I = ',
+     *                              KOFF7,' WITH SMAT = ',
+     *                              SMAT(KOFF7)
+              ELSE IF (IOPT .EQ. 2) THEN
+                 WRITE(LUPRI,*) 'CONTRIBUTION FROM I = ',
+     *                              KOFF7,' WITH QMAT = ',
+     *                              SMAT(KOFF7)
+              ELSE IF (IOPT .EQ. 3) THEN
+                 WRITE(LUPRI,*) 'CONTRIBUTION FROM I = ',
+     *                              KOFF7,' WITH UMAT = ',
+     *                              SMAT(KOFF7)
+              ELSE IF (IOPT .EQ. 4) THEN
+                 WRITE(LUPRI,*) 'CONTRIBUTION FROM I = ',
+     *                              KOFF7,' WITH WMAT = ',
+     *                              SMAT(KOFF7)
+              ENDIF
+C
+               WRITE(LUPRI,'(A,6I3)') ' A, B, D, I, J, K : ',A,B,D,I,J,K
+               WRITE(LUPRI,*) 'KOFF1 = ',KOFF1,' KOFF2 = ',
+     *                         KOFF2,'KOFF3 = ',KOFF3
+               WRITE(LUPRI,*) 'KOFF4 = ',KOFF4,' KOFF5 = ',
+     *                         KOFF5,'KOFF6 = ',KOFF6
+            endif
+         ENDIF
+C
+         T3SUM(A+KOFF1,B+KOFF2,D+KOFF3,I+KOFF4,J+KOFF5,K+KOFF6) = 
+     *   T3SUM(A+KOFF1,B+KOFF2,D+KOFF3,I+KOFF4,J+KOFF5,K+KOFF6) +
+     *   FACT*SMAT(KOFF7)
+C
+         T3SUM(A+KOFF1,D+KOFF3,B+KOFF2,I+KOFF4,K+KOFF6,J+KOFF5) = 
+     *   T3SUM(A+KOFF1,D+KOFF3,B+KOFF2,I+KOFF4,K+KOFF6,J+KOFF5) +
+     *   FACT*SMAT(KOFF7)
+C
+         T3SUM(B+KOFF2,A+KOFF1,D+KOFF3,J+KOFF5,I+KOFF4,K+KOFF6) = 
+     *   T3SUM(B+KOFF2,A+KOFF1,D+KOFF3,J+KOFF5,I+KOFF4,K+KOFF6) +
+     *   FACT*SMAT(KOFF7)
+C
+         T3SUM(B+KOFF2,D+KOFF3,A+KOFF1,J+KOFF5,K+KOFF6,I+KOFF4) = 
+     *   T3SUM(B+KOFF2,D+KOFF3,A+KOFF1,J+KOFF5,K+KOFF6,I+KOFF4) +
+     *   FACT*SMAT(KOFF7)
+C
+         T3SUM(D+KOFF3,A+KOFF1,B+KOFF2,K+KOFF6,I+KOFF4,J+KOFF5) = 
+     *   T3SUM(D+KOFF3,A+KOFF1,B+KOFF2,K+KOFF6,I+KOFF4,J+KOFF5) +
+     *   FACT*SMAT(KOFF7)
+C
+         T3SUM(D+KOFF3,B+KOFF2,A+KOFF1,K+KOFF6,J+KOFF5,I+KOFF4) = 
+     *   T3SUM(D+KOFF3,B+KOFF2,A+KOFF1,K+KOFF6,J+KOFF5,I+KOFF4) +
+     *   FACT*SMAT(KOFF7)
+C
+                 ENDDO
+                 ENDDO
+                 ENDDO
+                 ENDDO
+            ENDDO
+C
+         ENDDO
+C
+      ENDDO
+C
+      CALL QEXIT('SUM_PT3')
+C
+    1 FORMAT(1X,A8,I3,A1,I3,A1,I3,A1,I3,A1,I3,A1,I3,A4,E20.10)
+      RETURN
+      END
+C  /* DECK PRINT_PT3 */
+      SUBROUTINE PRINT_PT3(T3SUM,ISYMIM,IOPT)
+C
+C     Remove the forbidden T3 amplitudes and print.
+C
+C     HOWEVER : PLEASE DO NOT REMOVE THIS ROUTINE
+C
+C     K. Hald, Fall 2001.
+C
+      IMPLICIT NONE
+C
+#include <priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+C
+      INTEGER ISYMIM, IOPT, KOFF1, KOFF2, KOFF3, KOFF4, KOFF5, KOFF6
+      INTEGER ISYMA, ISYMB, ISYMAB, IAIKJ, ISYMC, ISYMI, ISYMJ, ISYMK
+      INTEGER KH, ISYABC, ISYIJK, ISYMJK, ISYMAI, ISYMBC
+C
+#if defined (SYS_CRAY)
+      REAL t3sum(nvirt,nvirt,nvirt,nrhft,nrhft,nrhft), zero
+#else
+      DOUBLE PRECISION t3sum(nvirt,nvirt,nvirt,nrhft,nrhft,nrhft), zero
+#endif
+C
+      LOGICAL LDEBUG
+C
+      PARAMETER (ZERO = 0.0D0)
+C
+      CALL QENTER('PRINT_PT3')
+C
+      LDEBUG = .FALSE.
+C
+C--------------------------------------------------------------
+C     Remove forbidden elements of the triples amplitudes.
+C--------------------------------------------------------------
+C
+      DO ISYMA = 1, NSYM
+         KOFF1 = 0
+         DO KH = 1, ISYMA-1
+            KOFF1 = KOFF1 + NVIR(KH)
+         ENDDO
+      DO ISYMI = 1, NSYM
+         KOFF4 = 0
+         DO KH = 1, ISYMI-1
+            KOFF4 = KOFF4 + NRHF(KH)
+         ENDDO
+C
+         ISYMAI = MULD2H(ISYMA,ISYMI)
+         ISYMBC = MULD2H(ISYMAI,ISYMIM)
+C
+         DO ISYMB = 1, NSYM
+            KOFF2 = 0
+            DO KH = 1, ISYMB-1
+               KOFF2 = KOFF2 + NVIR(KH)
+            ENDDO
+C
+            ISYMC = MULD2H(ISYMBC,ISYMB)
+               KOFF3 = 0
+               DO KH = 1, ISYMC-1
+                  KOFF3 = KOFF3 + NVIR(KH)
+               ENDDO
+C
+            DO A = 1, NVIR(ISYMA)
+            DO I = 1, NRHF(ISYMI)
+C
+               DO B = 1, NVIR(ISYMB)
+               DO C = 1, NVIR(ISYMC)
+C
+         T3SUM(A+KOFF1,B+KOFF2,C+KOFF3,I+KOFF4,I+KOFF4,I+KOFF4) = ZERO
+         T3SUM(A+KOFF1,C+KOFF3,B+KOFF2,I+KOFF4,I+KOFF4,I+KOFF4) = ZERO
+         T3SUM(B+KOFF2,A+KOFF1,C+KOFF3,I+KOFF4,I+KOFF4,I+KOFF4) = ZERO
+         T3SUM(B+KOFF2,C+KOFF3,A+KOFF1,I+KOFF4,I+KOFF4,I+KOFF4) = ZERO
+         T3SUM(C+KOFF3,A+KOFF1,B+KOFF2,I+KOFF4,I+KOFF4,I+KOFF4) = ZERO
+         T3SUM(C+KOFF3,B+KOFF2,A+KOFF1,I+KOFF4,I+KOFF4,I+KOFF4) = ZERO
+C
+               ENDDO ! C
+               ENDDO ! B
+            ENDDO    ! I
+            ENDDO    ! A
+         ENDDO       ! ISYMB
+C
+         DO ISYMJ = 1, NSYM
+            KOFF5 = 0
+            DO KH = 1, ISYMJ-1
+               KOFF5 = KOFF5 + NRHF(KH)
+            ENDDO
+C
+            ISYMK = MULD2H(ISYMBC,ISYMJ)
+               KOFF6 = 0
+               DO KH = 1, ISYMK-1
+                  KOFF6 = KOFF6 + NRHF(KH)
+               ENDDO
+C
+            DO A = 1,NVIR(ISYMA)
+            DO I = 1,NRHF(ISYMI)
+               DO J = 1,NRHF(ISYMJ)
+               DO K = 1,NRHF(ISYMK)
+C
+         T3SUM(A+KOFF1,A+KOFF1,A+KOFF1,I+KOFF4,J+KOFF5,K+KOFF6) = ZERO
+         T3SUM(A+KOFF1,A+KOFF1,A+KOFF1,I+KOFF4,K+KOFF6,J+KOFF5) = ZERO
+         T3SUM(A+KOFF1,A+KOFF1,A+KOFF1,J+KOFF5,I+KOFF4,K+KOFF6) = ZERO
+         T3SUM(A+KOFF1,A+KOFF1,A+KOFF1,J+KOFF5,K+KOFF6,I+KOFF4) = ZERO
+         T3SUM(A+KOFF1,A+KOFF1,A+KOFF1,K+KOFF6,I+KOFF4,J+KOFF5) = ZERO
+         T3SUM(A+KOFF1,A+KOFF1,A+KOFF1,K+KOFF6,J+KOFF5,I+KOFF4) = ZERO
+C
+               ENDDO ! K
+               ENDDO ! J
+            ENDDO    ! I
+            ENDDO    ! A
+         ENDDO
+      ENDDO          ! ISYMI
+      ENDDO          ! ISYMA
+C
+C----------------------------------------
+C     Print the triples amplitudes.
+C----------------------------------------
+C
+      DO ISYMA = 1, NSYM
+C
+         KOFF1 = 0
+         DO KH = 1, ISYMA-1
+           KOFF1 = KOFF1 + NVIR(KH)
+         ENDDO
+C
+         DO ISYMB = 1, NSYM
+C
+             ISYMAB = MULD2H(ISYMA,ISYMB)
+C
+             KOFF2 = 0
+             DO KH = 1, ISYMB-1
+               KOFF2 = KOFF2 + NVIR(KH)
+             ENDDO
+C
+            DO ISYMC = 1, NSYM
+C
+                ISYABC = MULD2H(ISYMAB,ISYMC)
+                ISYIJK = MULD2H(ISYMIM,ISYABC)
+C
+                KOFF3 = 0
+                DO KH = 1, ISYMC-1
+                  KOFF3 = KOFF3 + NVIR(KH)
+                ENDDO
+C
+                DO ISYMI = 1, NSYM
+C
+                KOFF4 = 0
+                DO KH = 1, ISYMI-1
+                  KOFF4 = KOFF4 + NRHF(KH)
+                ENDDO
+C
+                ISYMJK = MULD2H(ISYIJK,ISYMI)
+C
+                DO ISYMJ = 1, NSYM
+C
+                KOFF5 = 0
+                DO KH = 1, ISYMJ-1
+                  KOFF5 = KOFF5 + NRHF(KH)
+                ENDDO
+C
+                ISYMK = MULD2H(ISYMJK,ISYMJ)
+C
+                KOFF6 = 0
+                DO KH = 1, ISYMK-1
+                  KOFF6 = KOFF6 + NRHF(KH)
+                ENDDO
+C
+                DO A = 1, NVIR(ISYMA)
+                DO B = 1, NVIR(ISYMB)
+                DO C = 1, NVIR(ISYMC)
+                DO I = 1, NRHF(ISYMI)
+                DO J = 1, NRHF(ISYMJ)
+                DO K = 1, NRHF(ISYMK)
+C
+        IF (ABS(T3SUM(A+KOFF1,B+KOFF2,C+KOFF3,I+KOFF4,J+KOFF5,K+KOFF6)) 
+     *                                    .GT. 1.0D-12) THEN
+           IF (IOPT .EQ. 1) THEN
+              write(lupri,1) 'T3AM(',a+koff1,',',b+koff2,',',
+     *                               c+koff3,',',i+koff4,',',
+     *                               j+koff5,',',k+koff6,') = ',
+     *        T3SUM(A+KOFF1,B+KOFF2,C+KOFF3,I+KOFF4,J+KOFF5,K+KOFF6) 
+C
+           ELSE IF (IOPT .EQ. 2) THEN
+              write(lupri,1) 'T3-BAR(',a+koff1,',',b+koff2,',',
+     *                                 c+koff3,',',i+koff4,',',
+     *                                 j+koff5,',',k+koff6,') = ',
+     *        T3SUM(A+KOFF1,B+KOFF2,C+KOFF3,I+KOFF4,J+KOFF5,K+KOFF6)
+C
+           ELSE IF (IOPT .EQ. 3) THEN
+              write(lupri,1) 'L3AM(',a+koff1,',',b+koff2,',',
+     *                               c+koff3,',',i+koff4,',',
+     *                               j+koff5,',',k+koff6,') = ',
+     *        T3SUM(A+KOFF1,B+KOFF2,C+KOFF3,I+KOFF4,J+KOFF5,K+KOFF6) 
+C
+           ELSE IF (IOPT .EQ. 4) THEN
+              write(lupri,1) 'WMAT(',a+koff1,',',b+koff2,',',
+     *                               c+koff3,',',i+koff4,',',
+     *                               j+koff5,',',k+koff6,') = ',
+     *        T3SUM(A+KOFF1,B+KOFF2,C+KOFF3,I+KOFF4,J+KOFF5,K+KOFF6) 
+C
+           ELSE
+             CALL QUIT('Wrong IOPT in PRINT_PT3')
+           ENDIF
+        ENDIF
+C
+                ENDDO ! K
+                ENDDO ! J
+                ENDDO ! I
+                ENDDO ! C
+                ENDDO ! B
+                ENDDO ! A
+                ENDDO ! ISYMJ
+                ENDDO ! ISYMI
+                ENDDO ! ISYMC
+         ENDDO        ! ISYMB
+C
+      ENDDO           ! ISYMA
+C
+      CALL QEXIT('PRINT_PT3')
+C
+    1 FORMAT(1X,A6,I3,A1,I3,A1,I3,A1,I3,A1,I3,A1,I3,A4,E20.10)
+      RETURN
+      END
 C  /* deck dens1to2 */
       SUBROUTINE DENS1TO2(DENS1,DENS2,ISYRES)
 C
@@ -6628,8 +6653,8 @@ C
       RETURN
       END
 C  /* Deck cc3_umat */
-      SUBROUTINE CC3_UMAT(T2TP,ISYMT2,TRVIR,TROCC,ISYINT,FOCKD,DIAG,
-     *                    UMAT,TMAT,WORK,LWORK,INDSQ,LENSQ,
+      SUBROUTINE CC3_UMAT(ECURR,T2TP,ISYMT2,TRVIR,TROCC,ISYINT,FOCKD,
+     *                    DIAG,UMAT,TMAT,WORK,LWORK,INDSQ,LENSQ,
      *                    ISYMB,B,ISYMD,D)
 C
 C     Written by K. Hald, Fall 2001.
@@ -6653,17 +6678,16 @@ C
 #if defined (SYS_CRAY)
       REAL T2TP(*), TRVIR(*), TROCC(*), FOCKD(*), DIAG(*)
       REAL UMAT(*), TMAT(*), WORK(LWORK), EPSIBD, XUMAT
-      DOUBLE PRECISION DDOT, ZERO, ONE
+      DOUBLE PRECISION DDOT, ZERO, ONE,ECURR
 #else
       DOUBLE PRECISION T2TP(*), TRVIR(*), TROCC(*), FOCKD(*), DIAG(*)
       DOUBLE PRECISION UMAT(*), TMAT(*), WORK(LWORK), EPSIBD, XUMAT
-      DOUBLE PRECISION DDOT, ZERO, ONE
+      DOUBLE PRECISION DDOT, ZERO, ONE,ECURR
 #endif
       LOGICAL LDEBUG
 C
 #include <priunit.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 #include <ccorb.h>
 #include <ccsdinp.h>
 C
@@ -6861,8 +6885,9 @@ C
       RETURN
       END
 C  /* Deck ccfop_umat */
-      SUBROUTINE CCFOP_UMAT(T1AM,ISYMT1,T2TCME,ISYMT2,XIAJB,ISINT1,FOCK,
-     *                      TRVIR,TRVIR7,TROCC,TROCC2,ISYINT,FOCKD,DIAG,
+      SUBROUTINE CCFOP_UMAT(ECURR,T1AM,ISYMT1,T2TCME,ISYMT2,XIAJB,
+     *                      ISINT1,FOCK,TRVIR,TRVIR7,TROCC,TROCC2,
+     *                      ISYINT,FOCKD,DIAG,
      *                      UMAT,TMAT,WORK,LWORK,INDSQ,LENSQ,
      *                      ISYMB,B,ISYMD,D)
 C
@@ -6890,18 +6915,17 @@ C
 #if defined (SYS_CRAY)
       REAL T1AM(*), T2TCME(*), XIAJB(*), TRVIR(*), TRVIR7(*)
       REAL TROCC(*), TROCC2(*), FOCK(*), FOCKD(*), DIAG(*)
-      REAL UMAT(*), TMAT(*), WORK(LWORK), EPSIBD, XUMAT
-      DOUBLE PRECISION DDOT, ZERO, ONE, TWO
+      REAL UMAT(*), TMAT(*), WORK(LWORK), EPSIBD, XUMAT, ECURR
+      REAL DDOT, ZERO, ONE, TWO
 #else
       DOUBLE PRECISION T1AM(*), T2TCME(*), XIAJB(*), TRVIR(*), TRVIR7(*)
       DOUBLE PRECISION TROCC(*), TROCC2(*), FOCK(*), FOCKD(*), DIAG(*)
       DOUBLE PRECISION UMAT(*), TMAT(*), WORK(LWORK), EPSIBD, XUMAT
-      DOUBLE PRECISION DDOT, ZERO, ONE, TWO
+      DOUBLE PRECISION DDOT, ZERO, ONE, TWO, ECURR
 #endif
 C
 #include <priunit.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 #include <ccorb.h>
 #include <ccsdinp.h>
 C

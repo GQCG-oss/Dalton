@@ -1026,12 +1026,13 @@ C          CALL CC_FOPTRIPLES(OMEGA1,DUMMY,DUMMY,T1AM,T2AM,
 C     *                       WORK(KLAMDP),WORK(KLAMDH),
 C     *                       WORK(KEND2),LWRK2)
 C         Original noddy part
+C         Used to calculate Finite difference CC3
 C       CALL CCSD_TRIPLE(OMEGA1,OMEGA2,T1AM,T2AM,WORK(KFOCK),
 C     *                    WORK(KLAMDP),WORK(KLAMDH),WORK(KEND2),
 C     *                    LWRK2)
 C
 C         Normal triples part
-         CALL CC3_OMEG(OMEGA1,OMEGA2,T1AM,ISYMTR,T2AM,ISYMTR,
+         CALL CC3_OMEG(0.0D0,OMEGA1,OMEGA2,T1AM,ISYMTR,T2AM,ISYMTR,
      *                 WORK(KFOCK),WORK(KLAMDP),WORK(KLAMDH),
      *                 WORK(KEND2),LWRK2,LU3SRT,FN3SRT,LUDELD,
      *                 FNDELD,LUCKJD,FNCKJD,LUDKBC,FNDKBC,

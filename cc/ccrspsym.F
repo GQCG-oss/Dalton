@@ -371,7 +371,9 @@ C          ----------------------------------------------------
 
 * linear response equations for t or M vectors 
 * required for linear response residues.
+* (one-photon transition moments)
       CALL CC_LRSIND
+      IF (CCOPA) CALL CC_OPAIND
 
 * response equations for t or N vectors
 * required for quadratic response second residues.
@@ -1354,6 +1356,135 @@ C
 C
       END
 *---------------------------------------------------------------------*
+c /* deck cc_opaind */
+*=====================================================================*
+       SUBROUTINE CC_OPAIND
+*---------------------------------------------------------------------*
+*
+*    Purpose: Control input and equations for calculation of 
+*             one-photon absorption strengths
+*
+*    Christof Haettig, December 2002, Friedrichstal
+*
+*=====================================================================*
+#include <implicit.h>
+#include <priunit.h>
+#include <ccorb.h>
+#include <cclrinf.h>
+#include <ccrspprp.h>
+#include <ccexci.h>  
+#include <ccopainf.h>  
+#include <ccsdinp.h>  
+#include <ccsdsym.h>  
+#include <cclr.h>  
+#include <ccroper.h>  
+
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG = .FALSE.)
+
+      CHARACTER*8 LABEL
+      LOGICAL TAKE_STATE
+      INTEGER ISYMO, INUM, ISTATE, ISYME, IOPER, IDX, IEX
+
+#if defined (SYS_CRAY)
+      REAL EIGV
+#else
+      DOUBLE PRECISION EIGV
+#endif
+* functions:
+      INTEGER IR1TAMP,ILRMAMP
+C
+      LOGICAL FIRSTCALL
+      SAVE    FIRSTCALL
+      DATA    FIRSTCALL /.TRUE./
+
+*------------------------------------------------------------------
+* test if operators are available and translate ILRSOP array
+* from the PRPLBL list to the new list maintained by IROPER:
+*------------------------------------------------------------------
+      IF (FIRSTCALL) THEN
+       IOPER = 1
+       DO WHILE (IOPER .LE. NLRSOP)
+        LABEL = PRPLBL(ILRSOP(IOPER))
+        IF (DEBUG) WRITE(LUPRI,'(/2X,2A)') 'CHECK OPERATOR: ',LABEL
+        IF (IROPER(LABEL,ISYMO) .LT. 0) THEN
+          WRITE(LUPRI,'(/2X,3A,/2X,2A)')
+     &     ' WARNING: THE OPERATOR WITH THE LABEL "',
+     &         LABEL,'" IS NOT AVAILABLE.',
+     &     ' CALCULATION OF TRANSITION MOMENTS IS CANCELED FOR THIS',
+     &     ' OPERATOR.'
+          DO IDX = IOPER, NLRSOP-1
+            ILRSOP(IDX) = ILRSOP(IDX+1)
+          END DO
+          NLRSOP = NLRSOP - 1
+        ELSE
+          IF(DEBUG)WRITE(LUPRI,'(/2X,3A)')'PUT: ',LABEL,' ON THE LIST.'
+          ILRSOP(IOPER) = IROPER(LABEL,ISYMO)
+          IOPER = IOPER + 1
+        END IF
+       END DO
+       FIRSTCALL = .FALSE.
+      END IF ! (FIRSTCALL)
+C
+      IF (LOCDBG) THEN
+         WRITE(LUPRI,'(/,A)') ' Updated list in CC_OPAIND:'
+         DO IOPER = 1, NLRSOP
+            WRITE(LUPRI,*) IOPER,ILRSOP(IOPER),' ',
+     *              LBLOPR(ILRSOP(IOPER)),ISYOPR(ILRSOP(IOPER))
+         ENDDO
+      ENDIF
+C
+C------------------------------------
+C     Fill in equations to be solved.
+C------------------------------------
+C
+      NXLRSST = 0
+C
+      DO ISYME = 1, NSYM
+       DO IEX = 1, NCCEXCI(ISYME,1)
+        ISTATE = ISYOFE(ISYME)+IEX
+        EIGV   = EIGVAL(ISTATE)
+ 
+        IF (SELLRS) THEN
+          ! check, if state has been requested
+          TAKE_STATE = .FALSE.
+          DO IDX = 1,NSELRS
+            IF (ISYME.EQ.ISELRSYM(IDX) .AND. IEX.EQ.ISELRSTA(IDX)) THEN
+              TAKE_STATE = .TRUE.
+            ENDIF 
+          END DO
+        ELSE
+          TAKE_STATE = .TRUE.
+        ENDIF
+
+        IF (TAKE_STATE) THEN
+          NXLRSST = NXLRSST + 1
+          IF (NXLRSST.GT.MXLRSST)  THEN
+            WRITE(LUPRI,*) 'NXLRSST =',NXLRSST,'MXLRSST= ',MXLRSST
+            CALL QUIT(' Too many states in CC_OPAIND')
+          ENDIF
+          ILRSST(NXLRSST) = ISTATE
+
+          IF (.NOT.CIS) THEN
+            DO IOPER = 1, NLRSOP
+              LABEL = LBLOPR(ILRSOP(IOPER))
+              ISYMO = ISYOPR(ILRSOP(IOPER))
+              IF (ISYME.EQ.ISYMO) THEN
+                IF (.NOT.LRS2N1) THEN
+                  INUM = IR1TAMP(LABEL,.FALSE.,-EIGV,ISYMO)
+                ELSE
+                  INUM = ILRMAMP(ISTATE,EIGV,ISYME)
+                ENDIF
+              ENDIF
+            END DO
+          ENDIF 
+        END IF ! (TAKE_STATE) 
+
+       END DO
+      END DO
+C
+      END
+*---------------------------------------------------------------------*
 c /* deck cc_lrsind */
 *=====================================================================*
        SUBROUTINE CC_LRSIND
@@ -2039,10 +2170,8 @@ c /* deck cc_qrind */
         LORXB   = LBQLRX(IOPER)
         LORXC   = LCQLRX(IOPER)
 
-        IF (LOCDBG) THEN
           WRITE(LUPRI,'(/2X,A,3(1X,A),A)')
      &     'CHECK TRIPLE:',LABELA, LABELB, LABELC
-        END IF
 
         IF ( IOPA.LT.0 .OR. IOPB.LT.0 .OR. IOPC.LT.0 ) THEN
           WRITE(LUPRI,'(/2X,7A,/2X,2A)')
@@ -2115,10 +2244,8 @@ c /* deck cc_qrind */
           END DO
           NQROPER = NQROPER - 1
         ELSE 
-          IF (LOCDBG) THEN
-            WRITE(LUPRI,'(/2X,A,3(1X,A),A)')
-     &       'PUT TRIPLE:',LABELA, LABELB, LABELC,' ON THE LIST.'
-          END IF
+          WRITE(LUPRI,'(/2X,A,3(1X,A),A)')
+     &     'PUT TRIPLE:',LABELA, LABELB, LABELC,' ON THE LIST.'
           IAQROP(IOPER) = IROPER(LABELA,ISYMA) 
           IBQROP(IOPER) = IROPER(LABELB,ISYMB)
           ICQROP(IOPER) = IROPER(LABELC,ISYMC)
@@ -3298,7 +3425,7 @@ c /* deck cc_smind */
 *    Purpose: Determine which vectors are needed in second moment
 *             calculations, flags are set for the following :
 *             chi vectors , second order rhs vectors,
-*             first order t and zeta response vectors, m vectors
+*             first order t and zeta respons vectors, m vectors
 *
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
@@ -3502,7 +3629,7 @@ c /* deck cc_tmind */
 *    Purpose: Determine which vectors are needed in third moment
 *             calculations, flags are set for the following :
 *             chi vectors , second order rhs vectors,
-*             first order t response vectors, m vectors
+*             first order t respons vectors, m vectors
 *
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
@@ -3788,11 +3915,9 @@ c /* deck cc_mcdind */
           IOPB   = IROPER(LABELB,ISYMB)
           IOPC   = IROPER(LABELC,ISYMC)
 
-          IF (LOCDBG) THEN
-            WRITE(LUPRI,'(/2X,A,3(1X,A),A)')
-     &       'CHECK TRIPLET:',LABELA, LABELB, LABELC
-            CALL FLSHFO(LUPRI)
-          END IF
+          WRITE(LUPRI,'(/2X,A,3(1X,A),A)')
+     &     'CHECK TRIPLET:',LABELA, LABELB, LABELC
+          CALL FLSHFO(LUPRI)
 
 
           IF ( (IOPA.LT.0) .OR. (IOPB.LT.0) .OR. (IOPC.LT.0) ) THEN
@@ -3860,10 +3985,9 @@ c /* deck cc_mcdind */
             END DO
             NMCDOPER = NMCDOPER - 1        !decrease # of triplets
           ELSE 
-            IF (LOCDBG) THEN
-              WRITE(LUPRI,'(/2X,A,3(1X,A),A)')
-     &        'PUT TRIPLET:',LABELA, LABELB, LABELC,' ONTO THE LIST.'
-            END IF
+            WRITE(LUPRI,'(/2X,A,3(1X,A),A)')
+     &      'PUT TRIPLET:',LABELA, LABELB, LABELC,' ONTO THE LIST.'
+
             IAMCDOP(IOPER) = IROPER(LABELA,ISYMA)
             IBMCDOP(IOPER) = IROPER(LABELB,ISYMB)
             ICMCDOP(IOPER) = IROPER(LABELC,ISYMC)
@@ -3882,8 +4006,7 @@ c /* deck cc_mcdind */
 *
       IF (SELMCDST) THEN
 
-*       check if all required states available, 
-*       if not remove them from the list:
+* check if all required states available, if not remove them from the list:
 
         IDXS = 1
         DO WHILE (IDXS .LE. NMCDST)
@@ -4681,7 +4804,7 @@ C
 *---------------------------------------------------------------------*
       INTEGER FUNCTION ILRMAMP(IEXCI,FRQNEW,ISYM)
 C
-C maintain the list of right caucy vectors.
+C maintain the list of transition moment lagrangian multipliers
 C
 C Ove Christiansen April 1997
 C

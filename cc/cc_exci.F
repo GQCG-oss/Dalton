@@ -91,7 +91,7 @@ C
       LOGICAL KAJ,LINQCC,RSPIM2,LTRIP(4),LRST1,LRST2,LPROJECT,TRIPLET
       DIMENSION WORK(LWORK),NCCEXSAV(8,3)
       CHARACTER MODEL*10,MODELP*10,MODEL1*10,CHSYM*4,FILEX*10,FILOLD*10
-      CHARACTER CDIP*1,CDUM*3
+      CHARACTER CDIP*1,CDUM*3, SPACE*32
       CHARACTER*8 FC1AM,FC2AM,FRHO1,FRHO2
       CHARACTER*(*) LIST
       PARAMETER (FC1AM='CCR_C1AM',FC2AM='CCR_C2AM')
@@ -496,7 +496,7 @@ C
      *                     WORK(KITRAN),WORK(KCONV),WORK(KRNORM),
      *                     WORK(KWRK1),LWRK1)
          ELSE
-           CALL CCEQ_SOL(FRHO1,LUFR1,FRHO2,LUFR2,
+           CALL CCEQ_SOL(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,
      *                   FC1AM,LUFC1,FC2AM,LUFC2,LIST,
      *                   LPROJECT, ISTATPRJ,
      *                   LINQCC,TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
@@ -644,19 +644,31 @@ C
                   WRITE(LUPRI,*)'Overlap square: ',XNORM(ILSTNR)
                   WRITE(LUPRI,*)'Tolerance:      ',TLOVLP
                  ENDIF
-                 WRITE(LUPRI,'(/,1X,A,F20.10)') 'Overlap between left '
-     *              //'and right vector: ',XNORM(ILSTNR)
+
+                 IF (NCCVAR.EQ.NT1AM(ISYMTR)) THEN
+                   SPACE  = 'singles space'
+                   NSPACE = 13
+                 ELSE
+                   SPACE  = 'singles and doubles space'
+                   NSPACE = 25
+                 END IF
+                 WRITE(LUPRI,'(/,1X,4A,F10.6)')'Overlap between left ',
+     *             'and right vector in ',SPACE(1:NSPACE),': ',
+     *              XNORM(ILSTNR)
+
                  IF (ABS(XNORM(ILSTNR)).LT.1.0D-10) THEN
-                    WRITE(LUPRI,*) 'Stop due to small overlap'
-                    CALL QUIT('CC_EXCI: Stop due to small overlap')
-                 ENDIF
-                 FAC = 1.0D0/XNORM(ILSTNR)
-                 CALL DSCAL(NCCVAR,FAC,WORK(KWRK2+(ICOUNT-1)*NCCVAR),1)
-                 XNORM(ILSTNR)=DDOT(NCCVAR,
+                  WRITE(LUPRI,*) 'Stop due to small overlap'
+                  CALL QUIT('CC_EXCI: Stop due to small overlap')
+                 ELSE
+                  FAC = 1.0D0/XNORM(ILSTNR)
+                  CALL DSCAL(NCCVAR,FAC,WORK(KWRK2+(ICOUNT-1)*NCCVAR),1)
+                  XNORM(ILSTNR)=DDOT(NCCVAR,
      *                              WORK(KWRK2+(ICOUNT-1)*NCCVAR),
      *                              1,WORK(KR1),1)
-                 WRITE(LUPRI,'(/,1X,A,F20.10)') 'Renormalized overlap '
-     *              //'left-right:       ',XNORM(ILSTNR)
+                  WRITE(LUPRI,'(1X,4A,F10.6,/)') 'Renormalized overlap',
+     *             ' left-right in ',SPACE(1:NSPACE),':       ',
+     *             XNORM(ILSTNR)
+                 ENDIF
                ELSE
                  EIGVAL(ILSTNR) = WORK(KEIVAL+ICOUNT-1)
                ENDIF
@@ -760,7 +772,7 @@ C---------------------------------------------
 C           Solve equations by call to solver.
 C---------------------------------------------
 C
-            CALL CCEQ_SOL(FRHO1,LUFR1,FRHO2,LUFR2,
+            CALL CCEQ_SOL(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,
      *                    FC1AM,LUFC1,FC2AM,LUFC2,LIST,
      *                    LPROJECT, ISTATPRJ,
      *                    LINQCC,TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
@@ -825,8 +837,10 @@ C           then take solution vectors and energy and start again.
 C           Else write out the analysis of the vectors.
 C----------------------------------------------------------------------
 C
-            KWRK2 = KWRK1 + NCCVAR
-            LWRK2 = LWORK - KWRK2
+            NVARPT = NCCVAR+ 2*NALLAI(ISYM)
+            KWRK2  = KWRK1 + NVARPT
+            LWRK2  = LWORK - KWRK2
+
             THRESH = 0.05
             MAXLIN = 100
             NSIMUL = MIN(NCCEXCI(ISYM,IMULT),LWRK2/NCCVAR -1 )
@@ -857,6 +871,19 @@ C-----------------------------------------------------------------
 C
                DO 610 J = 1,IOFF2
                   ICOUNT = ICOUNT + 1
+C                 -------------------------------
+C                 save vectors on standard files:
+C                 -------------------------------
+                  IF (TRIPLET) THEN
+                    ILSTNR = ITROFE(ISYM) + ICOUNT
+                  ELSE
+                    ILSTNR = ISYOFE(ISYM) + ICOUNT
+                  END IF
+                  IOPT = 3
+                  CALL CC_WRRSP(LIST,ILSTNR,ISYM,IOPT,MODEL,DUMMY,
+     *                       WORK(KWRK2+(ICOUNT-1)*NCCVAR),
+     *                       WORK(KWRK2+(ICOUNT-1)*NCCVAR+NT1AM(ISYM)),
+     *                       WORK(KWRK1),NVARPT)
 C
                   IF (ABS(ECURR1-ECURR).LE. TOLSC) THEN
 C
@@ -884,6 +911,18 @@ C
                        WORK(KEXCIS+(ICOUNT-1)) = WORK(KEIVAL+ICOUNT-1)
                        WORK(KT1PS+(ICOUNT-1)) = PT1
                     ENDIF
+
+C                   -------------------------------
+C                   save / check excitation energy:
+C                   -------------------------------
+                    IF ((LIST(1:2) .EQ. 'LE').AND.(.NOT.LHTR)) THEN
+                     IF(ABS(EIGVAL(ILSTNR)-WORK(KEIVAL+ICOUNT-1)).GT.TF)
+     &                 WRITE(LUPRI,'(////,1X,A,//)') 
+     &                   'Warning - Large difference between '//
+     &                   'left and right excitation energies'
+                    ELSE
+                     EIGVAL(ILSTNR) = WORK(KEIVAL+ICOUNT-1)
+                    END IF
 C
 C-----------------------------------------------------
 C                   Restart if not selfconsistent yet.
@@ -927,6 +966,21 @@ C-------------------------------
 C
          CALL CC_FILCL(FRHO1,LUFR1,FRHO2,LUFR2,
      *                 FC1AM,LUFC1,FC2AM,LUFC2)
+
+C-----------------------------------------------------------
+C        restore number of excitation within symmetry class:
+C-----------------------------------------------------------
+
+         NCCEXCI(ISYM,IMULT) = NCCEXSAV(ISYM,IMULT) 
+
+C--------------------------------------------------------------------
+C       Normalize Eigenvectors such that (RE|RE) = 1  and (LE|RE) = 1
+C       (at the moment only used for CC3, but should be used for
+C        all iterative models...)
+C--------------------------------------------------------------------
+        IF (LIST(1:2).EQ.'LE' .AND. (.NOT.LHTR)) THEN
+          CALL CCEXNORM(ISYM,IMULT,WORK,LWORK)
+        END IF
 C
 C====================================================================
 C--------------------------------------------------------------------
@@ -1170,8 +1224,32 @@ C
      *     ' +=============================================='
      *    //'===============================+'
 C
+      WRITE(LURES,'(//5X,A)') 'Total energies in Hartree:'
+       KEXCIS = KEXCI
+       KT1PS  = KT1P
+       DO ISYM = 1, NSYM
+        DO IMULT = 1, 3, 2
+         DO IEX = 1, NCCEXSAV(ISYM,IMULT)
+            ITST = 1
+            IF ( OMESC ) THEN
+               ITST = 0
+               DO IOM = 1, NOMINP(ISYM,IMULT)
+                  IF (IEX .EQ. IOMINP(IOM,ISYM,IMULT)) ITST = ITST + 1
+               END DO
+            ENDIF
+            IF (.NOT.(ITST.EQ.0.AND.CCSDT)) THEN
+               WRITE(LURES,9989) IEX,IMULT,REP(ISYM-1),
+     *            WORK(KEXCIS+IEX-1)+ECCGRS
+            END IF
+         END DO
+         KEXCIS = KEXCIS + NCCEXSAV(ISYM,IMULT)
+         KT1PS  = KT1PS + NCCEXSAV(ISYM,IMULT)
+        END DO
+       END DO
+
       ENDIF
 C
+ 9989 FORMAT(10X,I4,' ^',I1,A3,F20.10)
  9990 FORMAT(1X,'| ^',I1,A3,' | ',I4,'   | ',F13.7,
      *       '  | ',F13.5,'  | ',F13.3,'  | ',F6.2,'  |')
  9991 FORMAT(1X,'|       | ',I4,'   | ',F13.7,
@@ -1241,7 +1319,8 @@ C
 C
             DO 9300 ISYM = 1, NSYM
 C
-             DO 9310 IMULT = 1, 3, 2
+C            DO 9310 IMULT = 1, 3, 2
+             DO 9310 IMULT = 1, 1, 2
 C
                DO 9400 IEX = 1, NCCEXCI(ISYM,IMULT)
 C
@@ -1299,6 +1378,37 @@ C
             WRITE(LURES,'(A)')
      *        ' +=============================================='
      *       //'=====================+'
+C
+             KEXCPS  = KEXCP
+             KEXCPS2 = KEXCP2
+             KEXCPS3 = KEXCP3
+             KEXCPS4 = KEXCP4
+             WRITE(LURES,'(//5X,A)') 'Total energies in Hartree:'
+             DO ISYM = 1, NSYM
+C             DO IMULT = 1, 3, 2
+              DO IMULT = 1, 1, 2
+               DO IEX = 1, NCCEXCI(ISYM,IMULT)
+                  IF (CCP2)  OME = WORK(KEXCPS +IEX-1)
+                  IF (CCR3)  OME = WORK(KEXCPS +IEX-1)
+                  IF (CCRT)  OME = WORK(KEXCPS2+IEX-1)
+                  IF (CCR1A) OME = WORK(KEXCPS3+IEX-1)
+                  IF (CCR1B) OME = WORK(KEXCPS4+IEX-1)
+                  ITST = 0
+                  DO IOM = 1, NOMINP(ISYM,IMULT)
+                     IF (IEX .EQ. IOMINP(IOM,ISYM,IMULT)) ITST=ITST+1
+                  END DO
+                  IF (.NOT.(ITST.EQ.0 .AND. .NOT.CCP2)) THEN
+                     WRITE(LURES,9989) IEX,IMULT,REP(ISYM-1),
+     *                  OME+ECCGRS
+                  END IF
+               END DO
+               IF (CCP2)  KEXCPS  = KEXCPS  + NCCEXCI(ISYM,IMULT)
+               IF (CCR3)  KEXCPS  = KEXCPS  + NCCEXCI(ISYM,IMULT)
+               IF (CCRT)  KEXCPS2 = KEXCPS2 + NCCEXCI(ISYM,IMULT)
+               IF (CCR1A) KEXCPS3 = KEXCPS3 + NCCEXCI(ISYM,IMULT)
+               IF (CCR1B) KEXCPS4 = KEXCPS4 + NCCEXCI(ISYM,IMULT)
+              END DO
+             END DO
 C
             IF (CCR3)  CCR3  = .FALSE.
             IF (CCRT)  CCRT  = .FALSE.
@@ -2183,6 +2293,12 @@ C
       CALL QENTER('CC_ATRR')
       NCCVAR = NT1AM(ISYMV)
       IF (.NOT. CCS) NCCVAR = NCCVAR + NT2AM(ISYMV)
+
+      IF (CCS .OR. CC2 .OR. CCSD) THEN
+        ECURR = 0.0D0
+      ELSE
+        CALL QUIT('Entered for unkown model CC_ATRR')
+      END IF
 C
       NSIMTR = 1
       ISYMTR = ISYMV
@@ -2334,14 +2450,14 @@ C
       LRHO1 = NT1AM(ISYMTR)
 C
       IF (MYSIDE .EQ. 1) THEN
-         CALL CC_RHTR(FRHO1,LUFR1,FR2SD,LUFSD,
+         CALL CC_RHTR(ECURR,FRHO1,LUFR1,FR2SD,LUFSD,
      *                FC1AM,LUFC1,FC2AM,LUFC2,
      *                WORK(KRHO1),WORK(KRHO2),
      *                WORK(KC1AM),WORK(KC2AM),
      *                WORK(KEND1),LWRK1,NSIMTR,
      *                IVEC,ITR,LRHO1)
       ELSE IF (MYSIDE .EQ. -1) THEN
-         CALL CC_LHTR(FRHO1,LUFR1,FR2SD,LUFSD,
+         CALL CC_LHTR(ECURR,FRHO1,LUFR1,FR2SD,LUFSD,
      *                FC1AM,LUFC1,FC2AM,LUFC2,
      *                WORK(KRHO1),WORK(KRHO2),
      *                WORK(KC1AM),WORK(KC2AM),

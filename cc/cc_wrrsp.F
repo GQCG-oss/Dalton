@@ -573,7 +573,7 @@ C
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL
 
 *.....................................................................*
-* 'N2' and 'LBR' - zeroth order lagrangian multipliers and rhs.
+* 'N2' and 'BR' - zeroth order lagrangian multipliers and rhs.
 *.....................................................................*
       ELSE IF ((LIST(1:2).EQ.'N2').OR.(LIST(1:2).EQ.'BR')) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3),
@@ -710,13 +710,6 @@ C
       ELSE IF ((LIST(1:2).EQ.'M1').OR.(LIST(1:2).EQ.'FR')) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL,
      &    LISTI(1:3), ILRM(IDXLST), ISYLRM(IDXLST), FRQLRM(IDXLST)
-cch
-        write(lupri,*) 'write vector to file:'
-        write(lupri,*) 'type :',LISTI(1:3)
-        write(lupri,*) 'index:',ILRM(IDXLST)
-        write(lupri,*) 'symm.:',ISYLRM(IDXLST)
-        write(lupri,*) 'freq.:',FRQLRM(IDXLST)
-cch
 
 *.....................................................................*
 * 'PL1' - projected first-order response lagrangian multipliers:
@@ -970,7 +963,6 @@ C---------------------------------------------------------------------*
 
       IF (IOPT.NE.IAND(IOPT,1+2) .AND. IOPT.NE.IAND(IOPT,8+16))THEN
         WRITE(LUPRI,*) 'CC_WARSP> IOPT = ',IOPT
-        WRITE(LUPRI,*) 'CC_WARSP> implemented:',1,2,3,8,16,24
         CALL QUIT('IOPT not implemented in CC_WARSP.')
       END IF
 

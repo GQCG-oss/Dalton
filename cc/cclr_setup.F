@@ -70,7 +70,7 @@ c /* deck cclr_setup */
       CHARACTER*(20) MSGDBG
       PARAMETER (MSGDBG = '[debug] CCLR_SETUP> ')
       LOGICAL LOCDBG
-      PARAMETER (LOCDBG = .TRUE.)
+      PARAMETER (LOCDBG = .FALSE.)
 
       LOGICAL LADD
       INTEGER MXVEC, MXTRAN, MXSOP
@@ -194,7 +194,7 @@ c /* deck cclr_setup */
 *          in all cases we need Eta{A} x R1^B 
 *---------------------------------------------------------------------*
            IR1VECB = IR1TAMP(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
-           IEATA1A =   IETA1(LABELA,LORXA,SIGN*ALRFR(IFREQ),IDUM)
+C          IEATA1A =   IETA1(LABELA,LORXA,SIGN*ALRFR(IFREQ),IDUM)
            IF (LORXA) THEN
              IKAPA = IR1TAMP(LABELA,LORXA,SIGN*ALRFR(IFREQ),IDUM)
            ELSE
@@ -212,7 +212,7 @@ c /* deck cclr_setup */
 *             symmetric approach: add F * R1^A * R1^B + Eta{B} x R1^A
 *---------------------------------------------------------------------*
               IR1VECA = IR1TAMP(LABELA,LORXA,SIGN*ALRFR(IFREQ),IDUM)
-              IEATA1B =   IETA1(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
+C             IEATA1B =   IETA1(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
               IF (LORXB) THEN
                 IKAPB = IR1TAMP(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
               ELSE

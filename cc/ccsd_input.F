@@ -83,7 +83,7 @@ C
 #include <priunit.h>
 #include <dummy.h>
 C     Keywords have been added for R12 method (WK/UniKA/04-11-2002).
-      PARAMETER (NTABLE = 98)
+      PARAMETER (NTABLE = 100)
       LOGICAL   SET, NEWDEF, SIRFF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*(80) LINE
@@ -127,7 +127,7 @@ C
      &            '.RCSKIP','.FCSKIP','.LCSKIP','.CO2SKI','.CX2SKI',
      &            '.CR2SKI','.CF2SKI','.CL2SKI','*DERIVA','.N2SKIP',
      &            '.BRSKIP','.FREEZE','*CCSLV ','*R12   ','*R12 IN',
-     &            '.PAIRS ','.ETAPTI','.DKABAR'/
+     &            '.PAIRS ','.ETAPTI','.DKABAR','*CCOPA ','*NODDY '/
       DATA SET/.FALSE./
 C
       IF (SET) RETURN
@@ -236,6 +236,8 @@ C
 C
       CONNECTION = 'SYMMETR'
 C
+      CALL CC_NODINP(WORD,.TRUE.)
+C
       MSYMS = MSYM 
 C----------------------------------------------------------------
 C Initialize additional labels for CCSD(T)-gradient optimization
@@ -324,12 +326,12 @@ C
      *          WORD .EQ. '*CC    ')
       IF (NEWDEF) THEN
          WORD1 = WORD
-  100    CONTINUE
+ 1000    CONTINUE
             READ (LUCMD, '(A7)') WORD
 
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
-               GO TO 100
+               GO TO 1000
             ELSE IF (PROMPT .EQ. '.' .OR. PROMPT .EQ. '*') THEN
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
@@ -340,12 +342,12 @@ C
      *                47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,
      *                62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,
      *                77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,
-     *                92,93,94,94,95,96,97), I
+     *                92,93,94,95,96,97,98,99,100), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-                GO TO 100
+                GO TO 1000
                END IF
                IF (WORD(1:1) .EQ. '*') THEN
 cch
@@ -367,29 +369,29 @@ cch
 
     1          CONTINUE
                   SKIP = .TRUE.
-               GO TO 100
+               GO TO 1000
     2          CONTINUE
                   READ (LUCMD, '(I5)') IPRINT
-               GO TO 100
+               GO TO 1000
     3          CONTINUE
                   DIRECT = .TRUE.
-               GO TO 100
+               GO TO 1000
     4          CONTINUE
                   CCRSTR = .TRUE.
-               GO TO 100
+               GO TO 1000
     5          CONTINUE
                   CC3    = .TRUE.
                   CCSDT  = .TRUE.
-               GO TO 100
+               GO TO 1000
     6          CONTINUE
                   CALL CC_EXCINP(WORD,MSYM)
-               GO TO 100
+               GO TO 1000
     7          CONTINUE
                   CALL CC_LRSINP(WORD,MSYM)
-               GO TO 100
+               GO TO 1000
     8          CONTINUE
                   CCSTST = .TRUE.
-               GO TO 100
+               GO TO 1000
     9          CONTINUE
                   READ (LUCMD, '(I5)') MSYM2 
                   IF (((MSYM.LT.8).AND.(MSYM.GT.0))
@@ -398,117 +400,117 @@ cch
                   ELSE
                      MSYM  = MSYM2
                   ENDIF 
-               GO TO 100
+               GO TO 1000
    10          CONTINUE
                   READ (LUCMD, '(I5)') MAXRED
-               GO TO 100
+               GO TO 1000
    11          CONTINUE
                   CALL CC_EXGRIN(WORD,MSYM)
-               GO TO 100
+               GO TO 1000
    12          CONTINUE
                   R1SKIP = .TRUE. 
-               GO TO 100
+               GO TO 1000
    13          CONTINUE
                   L1SKIP = .TRUE. 
-               GO TO 100
+               GO TO 1000
    14          CONTINUE
                   RESKIP = .TRUE. 
-               GO TO 100
+               GO TO 1000
    15          CONTINUE
                   LESKIP = .TRUE. 
-               GO TO 100
+               GO TO 1000
    16          CONTINUE
                   F1SKIP = .TRUE.
-               GO TO 100
+               GO TO 1000
    17          CONTINUE
                   READ (LUCMD, '(I5)') MAXITE
-               GO TO 100
+               GO TO 1000
    18          CONTINUE
-               GO TO 100
+               GO TO 1000
    19          CONTINUE
                   E0SKIP = .TRUE.
-               GO TO 100
+               GO TO 1000
    20          CONTINUE
                   L0SKIP = .TRUE.
-               GO TO 100
+               GO TO 1000
    21          CONTINUE
                   LISKIP = .TRUE.
-               GO TO 100
+               GO TO 1000
    22          CONTINUE
                   CC2   = .TRUE.
-               GO TO 100
+               GO TO 1000
    23          CONTINUE
                   MP2   = .TRUE.
-               GO TO 100
+               GO TO 1000
    24          CONTINUE
                   CCP2  = .TRUE.
-               GO TO 100
+               GO TO 1000
    25          CONTINUE
                   CCSDT = .TRUE.
                   CC1B  = .TRUE.
-               GO TO 100
+               GO TO 1000
    26          CONTINUE
                   CCPT  = .TRUE.
-               GO TO 100
+               GO TO 1000
    27          CONTINUE
                   CCP3  = .TRUE.
-               GO TO 100
+               GO TO 1000
    28          CONTINUE
                   CCS   = .TRUE.
-               GO TO 100
+               GO TO 1000
    29          CONTINUE
                   LCOR  = .TRUE.
                   READ (LUCMD,*) (ICOR(ISYM),ISYM=1,MSYM)
-               GO TO 100
+               GO TO 1000
    30          CONTINUE
                   LSEC  = .TRUE.
                   READ (LUCMD,*) (ISEC(ISYM),ISYM=1,MSYM)
-               GO TO 100
+               GO TO 1000
    31          CONTINUE
                   CCD = .TRUE.
-               GO TO 100
+               GO TO 1000
    32          CONTINUE
                   CCSDT = .TRUE.
                   CC1A  = .TRUE.
-               GO TO 100
+               GO TO 1000
    33          CONTINUE
                   CIS = .TRUE.
-               GO TO 100
+               GO TO 1000
    34          CONTINUE
                   READ (LUCMD, *) THRENR
-               GO TO 100
+               GO TO 1000
    35          CONTINUE
                   NOCCIT = .TRUE.
-               GO TO 100
+               GO TO 1000
    36          CONTINUE
                   IMSKIP = .TRUE.
-               GO TO 100
+               GO TO 1000
    37          CONTINUE
                   M1SKIP = .TRUE.
-               GO TO 100
+               GO TO 1000
    38          CONTINUE
                   FRSKIP = .TRUE.
-               GO TO 100
+               GO TO 1000
    39          CONTINUE
                   READ (LUCMD, *) MINSCR
                   ITEST = ITEST + 1
-               GO TO 100
+               GO TO 1000
    40          CONTINUE
                   READ (LUCMD, *) MINMEM
                   ITEST = ITEST + 1
-               GO TO 100
+               GO TO 1000
    41          CONTINUE
                   B0SKIP = .TRUE.
-               GO TO 100
+               GO TO 1000
    42          CONTINUE
                   NEWCAU = .TRUE.
-               GO TO 100
+               GO TO 1000
    43          CONTINUE
                   T2TCOR = .FALSE.
-               GO TO 100
+               GO TO 1000
    44          CONTINUE
                   CALL CC_GRIN(WORD,MSYM)
-               GO TO 100
+               GO TO 1000
    45          CONTINUE
                   FROEXP = .TRUE.
                   IF (FROIMP) FROIMP = .FALSE.
@@ -537,38 +539,38 @@ cch
                         READ(LUCMD,*) (KFRVIR(J,ISYM),J=1,NVIRFR(ISYM))
                      END IF
   452             CONTINUE
-               GO TO 100
+               GO TO 1000
    46          CONTINUE
                   FROIMP = .TRUE.
                   IF (FROEXP) FROEXP = .FALSE.
                   IF (FREEZE) CALL QUIT(' Only one of FREEZE - FROEXP')
                   READ(LUCMD,*) (NRHFFR(I),I=1,MSYM)
                   READ(LUCMD,*) (NVIRFR(I),I=1,MSYM)
-               GO TO 100
+               GO TO 1000
    47          CONTINUE
                   READ(LUCMD,*) MXDIIS
-               GO TO 100
+               GO TO 1000
    48          CONTINUE
                   CCSD   = .TRUE.
-               GO TO 100
+               GO TO 1000
    49          CONTINUE
                   CCR1A  = .TRUE.
-               GO TO 100
+               GO TO 1000
    50          CONTINUE
                   CCR1B  = .TRUE.
-               GO TO 100
+               GO TO 1000
    51          CONTINUE
                   CALL CC_FOPINP(WORD)
-               GO TO 100
+               GO TO 1000
    52          CONTINUE
-               GO TO 100
+               GO TO 1000
    53          CONTINUE
                   CCR3   = .TRUE.
                   CCSD   = .TRUE.
-               GO TO 100
+               GO TO 1000
    54          CONTINUE
                   CCRT   = .TRUE.
-               GO TO 100
+               GO TO 1000
    55          CONTINUE
                   NFIELD = NFIELD + 1
                   IF (NFIELD .LE. MXFELT) THEN
@@ -585,132 +587,132 @@ cch
      *                         //'both Hartree Fock and CC input'
                     CALL QUIT('FF not allowed in both HF and CC input' )
                   ENDIF
-               GO TO 100
+               GO TO 1000
    56          CONTINUE
                   DEBUG = .TRUE.
-               GO TO 100
+               GO TO 1000
    57          CONTINUE
                   CALL CC_QR2RINP(WORD)
-               GO TO 100
+               GO TO 1000
    58          CONTINUE
                   HERDIR = .TRUE.
-               GO TO 100
+               GO TO 1000
    59          CONTINUE
                   READ (LUCMD, *) LBUF
-               GO TO 100
+               GO TO 1000
    60          CONTINUE
                   CALL CC_LRINP(WORD)
-               GO TO 100
+               GO TO 1000
    61          CONTINUE
                   CALL CC_EXLRINP(WORD)
-               GO TO 100
+               GO TO 1000
    62          CONTINUE
                   READ (LUCMD, *) NSIMLE
-               GO TO 100
+               GO TO 1000
    63          CONTINUE
                   READ (LUCMD, *) THRLEQ
-               GO TO 100
+               GO TO 1000
    64          CONTINUE
                   READ (LUCMD, *) MXLRV
-               GO TO 100
+               GO TO 1000
    65          CONTINUE
                   CALL CC_TMINP(WORD)
-               GO TO 100
+               GO TO 1000
    66          CONTINUE
                   CALL CC_SMINP(WORD)
-               GO TO 100
+               GO TO 1000
    67          CONTINUE
                   CALL CC_5RINP(WORD)
-               GO TO 100
+               GO TO 1000
    68          CONTINUE
                   CALL CC_4RINP(WORD)
-               GO TO 100
+               GO TO 1000
    69          CONTINUE
                   CALL CC_QRINP(WORD)
-               GO TO 100
+               GO TO 1000
    70          CONTINUE
                   CALL CC_CRINP(WORD)
-               GO TO 100
+               GO TO 1000
    71          CONTINUE
                   O2SKIP = .TRUE.
-               GO TO 100
+               GO TO 1000
    72          CONTINUE
                   R2SKIP = .TRUE.
-               GO TO 100
+               GO TO 1000
    73          CONTINUE
                   X2SKIP = .TRUE.
-               GO TO 100
+               GO TO 1000
    74          CONTINUE
                   F2SKIP = .TRUE.
-               GO TO 100
+               GO TO 1000
    75          CONTINUE
                   L2SKIP = .TRUE.
-               GO TO 100
+               GO TO 1000
    76          CONTINUE
                  CALL CC_MCDINP(WORD)
-               GO TO 100
+               GO TO 1000
    77          CONTINUE
                   ANAAOD = .TRUE.
-               GO TO 100
+               GO TO 1000
    78          CONTINUE
 C                '.PACK  ' 
                   LPACKINT = .TRUE.
                   READ (LUCMD, *) THRPCKINT
-               GO TO 100
+               GO TO 1000
    79          CONTINUE
 C                '.CONNEC' 
 c                 CONNECTION = 'SYMMETR' / 'NATURAL' 
                   READ (LUCMD, '(A7)') CONNECTION
-               GO TO 100
+               GO TO 1000
    80          CONTINUE
 C                '.THRLDP' 
                   READ (LUCMD, *) THRLDPHF
-               GO TO 100
+               GO TO 1000
    81          CONTINUE
 C              '.RCSKIP' 
                  RCSKIP = .TRUE.
-               GO TO 100
+               GO TO 1000
    82          CONTINUE
 C              '.FCSKIP' 
                  FCSKIP = .TRUE.
-               GO TO 100
+               GO TO 1000
    83          CONTINUE
 C              '.LCSKIP' 
                  LCSKIP = .TRUE.
-               GO TO 100
+               GO TO 1000
    84          CONTINUE
 C              '.CO2SKI' 
                  CO2SKIP = .TRUE.
-               GO TO 100
+               GO TO 1000
    85          CONTINUE
 C              '.CX2SKI' 
                  CX2SKIP = .TRUE.
-               GO TO 100
+               GO TO 1000
    86          CONTINUE
 C              '.CR2SKI' 
                  CR2SKIP = .TRUE.
-               GO TO 100
+               GO TO 1000
    87          CONTINUE
 C              '.CF2SKI' 
                  CF2SKIP = .TRUE.
-               GO TO 100
+               GO TO 1000
    88          CONTINUE
 C              '.CL2SKI' 
                  CL2SKIP = .TRUE.
-               GO TO 100
+               GO TO 1000
    89          CONTINUE
 C                '*DERIVA' 
                  CCDERI = .TRUE.
                  RELORB = .TRUE.
-               GO TO 100
+               GO TO 1000
    90          CONTINUE
 C                '.N2SKIP'
                   N2SKIP = .TRUE.
-               GO TO 100
+               GO TO 1000
    91          CONTINUE
 C                '.BRSKIP'
                   BRSKIP = .TRUE.
-               GO TO 100
+               GO TO 1000
    92          CONTINUE
 C                '.FREEZE'
                   FREEZE = .TRUE.
@@ -718,27 +720,37 @@ C                '.FREEZE'
      *            CALL QUIT(' Only one of FREEZE - FROEXP - FROIMP')
                   READ(LUCMD,*) NFC,NFV
                   FROIMP = .TRUE.
-               GO TO 100
+               GO TO 1000
    93          CONTINUE
 C                '*CCSLV '
                   CALL CC_SLVINP(WORD)
-               GO TO 100
+               GO TO 1000
    94          CONTINUE
+   95          CONTINUE
 C                '*R12   ' OR '*R12 IN'
                  CALL CC_R12IN(WORD)
-               GO TO 100
-   95          CONTINUE
+               GO TO 1000
+   96          CONTINUE
 C                '.PAIRS '
                  CCPAIR = .TRUE.
-               GO TO 100
-   96          CONTINUE
+               GO TO 1000
+   97          CONTINUE
 C                '.ETAPTI', extra integrals for CCSD(T) geopt
                   ETACCPT = .TRUE.
-               GO TO 100
-   97          CONTINUE
+               GO TO 1000
+   98          CONTINUE
 C                '.DKABAR', direct KappaBar calculation in nondir CC
                   DIRKAPB = .TRUE.
-               GO TO 100
+               GO TO 1000
+   99          CONTINUE
+C                '*CCOPA '
+                  CALL CC_OPAINP(WORD)
+               GO TO 1000
+  100          CONTINUE
+C                '*NODDY '
+                  CALL CC_NODINP(WORD,.FALSE.)
+               GO TO 1000
+
             ELSE
                WRITE (LUPRI,'(/3A,/)') ' Prompt "',WORD,
      *            '" not recognized in CC2INP.'
@@ -1093,7 +1105,7 @@ C=====================================================================*
 
       LOGICAL LSTVEC
       INTEGER NTABLE
-      PARAMETER (NTABLE = 19)
+      PARAMETER (NTABLE = 20)
 
       DIMENSION NSTAR(8)
 
@@ -1110,8 +1122,8 @@ C=====================================================================*
       DATA SET /.FALSE./
       DATA TABLE /'.NCCEXC','.R3DIIS','.FDJAC ','.FDEXCI','.JACEXP',
      *            '.JACTST','.LHTR  ','.NOSCOM','.STSD  ','.TOLSC ',
-     *            '.OMEINP','.STVEC ','.STOLD ','.XXXXXX','.THREXC',
-     *            '.CCSPIC','.CC2PIC','.CCSDPI','.MARGIN'/
+     *            '.OMEINP','.STVEC ','.STOLD ','.CCTREN','.THREXC',
+     *            '.CCSPIC','.CC2PIC','.CCSDPI','.MARGIN','.SQROVL'/
 
 *---------------------------------------------------------------------*
 * begin:
@@ -1144,12 +1156,14 @@ C
       MARGIN = .FALSE.
       XMARGIN = 1.0
 C
+      SQROVLP    = .FALSE.
+      CCSDTRENRM = .FALSE.
+C
       CALL IZERO(NCCEXCI,3*8)
       CALL IZERO(NOMINP,3*8)
 C
 C     Other initializations
 C
-      ECURR  = 0.0D0
       NSIDE  = 1
       STCCS  = .FALSE.
 C
@@ -1334,12 +1348,15 @@ C
 13          CONTINUE
                STOLD = .TRUE.
             GO TO 100
-C
-C--------------------
-C           .XXXXXX : unused label
-C--------------------
+C-----------------------------------------------------------------------
+C           .CCTREN : normalize right eigenvectors for triples methods
+C                     such that ( RE S+D+T | RE S+D+T ) = 1, default is
+C                     to normalize as ( RE S+D | RE S+D ) = 1
+C                     (see routine CCEXNORM)
+C-----------------------------------------------------------------------
 C
 14          CONTINUE
+               CCSDTRENRM = .TRUE.
             GO TO 100
 C
 C------------------------------------------------------------------------
@@ -1386,6 +1403,16 @@ C
                MARGIN = .TRUE.
                READ(LUCMD,*) XMARGIN
             GO TO 100
+C
+C----------------------------------------------------------------
+C           .SQROVL  Compute full overlap matrix for eigenvectors
+C                    (test option, see subroutine CCEXNORM)
+C----------------------------------------------------------------
+C
+20          CONTINUE
+               SQROVLP = .TRUE.
+            GO TO 100
+
 C
           ELSE
            WRITE (LUPRI,'(/,5A,/)') ' Prompt "',WORD,
@@ -1776,6 +1803,429 @@ C
 C
       RETURN
       END
+c/* deck cc_opainp */
+      SUBROUTINE CC_OPAINP(WORD)
+C---------------------------------------------------------------------*
+C
+C    Purpose: Read input one-photon absorption strenghts
+C
+C    Christof Haettig, Dec 2002
+C
+C=====================================================================*
+      IMPLICIT NONE
+#include <priunit.h>
+#include <ccsections.h>
+#include <ccrspprp.h>
+#include <ccopainf.h>
+
+* local parameters:
+      CHARACTER SECNAM*(8)
+      PARAMETER (SECNAM='CC_OPAINP')
+
+      INTEGER NTABLE
+      PARAMETER (NTABLE = 6)
+
+* variables:
+      LOGICAL SET
+      SAVE SET
+
+      CHARACTER WORD*(7)
+      CHARACTER LABEL*(8), LABHELP*(80)
+      CHARACTER TABLE(NTABLE)*(8)
+
+      INTEGER IXSYM, IXSTATE, IJUMP
+      INTEGER INDPRPCC
+
+* data:
+      DATA SET /.FALSE./
+      DATA TABLE / '.SELEXC','.NO2N+1','.OPERAT','.DIPLEN','.DIPVEL',
+     *             '.ANGMOM'/
+
+*--------------------------------------------------------------------*
+* begin:
+*---------------------------------------------------------------------*
+      IF (WORD(1:7) .NE. '*CCOPA') CALL 
+     &  QUIT('CC_OPAINP was call for wrong input section:'//WORD(1:7))
+
+      IF (SET) RETURN
+      SET = .TRUE.
+
+*---------------------------------------------------------------------*
+* initializations & defaults:
+*---------------------------------------------------------------------*
+      SELLRS = .FALSE.
+      LRS2N1 = .TRUE. 
+ 
+      NSELRS   = 0
+      NLRSOP   = 0
+ 
+*---------------------------------------------------------------------*
+* read input:
+*---------------------------------------------------------------------*
+
+100   CONTINUE
+
+! get new input line:
+        READ (LUCMD,'(A7)') WORD
+        DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
+          READ (LUCMD,'(A7)') WORD
+        END DO
+
+        IF (WORD(1:1) .EQ. '.') THEN
+
+c         table look up:
+          IJUMP = 1
+          DO WHILE ( IJUMP .LE. NTABLE .AND. TABLE(IJUMP) .NE. WORD)
+            IJUMP = IJUMP + 1
+          END DO
+
+c         jump to the appropiate input section:
+          IF (IJUMP .LE. NTABLE) THEN
+            GOTO (1,2,3,4,5,6), IJUMP
+            CALL QUIT('Illegal address in computed GOTO in CC_OPAINP.')
+
+C           ------------------------------
+C           .SELSTA: select excited states
+C           ------------------------------
+1           CONTINUE
+              SELLRS = .TRUE.
+              READ (LUCMD,'(A80)') LABHELP
+              DO WHILE (LABHELP(1:1).NE.'.' .AND. LABHELP(1:1).NE.'*')
+                IF (LABHELP(1:1).NE.'!') THEN
+                  READ(LABHELP,*) IXSYM,IXSTATE
+                  IF (NSELRS.LT.MXLRSST) THEN
+                   NSELRS = NSELRS + 1
+                   ISELRSYM(NSELRS) = IXSYM
+                   ISELRSTA(NSELRS) = IXSTATE
+                  ELSE
+                   WRITE(LUPRI,'(/2A,I5,/)')
+     &              ' NB. OF STATES SPECIFIED',
+     &              ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSST
+                   WRITE(LUPRI,'(A,2I5,/)')'IGNORE STATE',IXSYM,IXSTATE 
+                  END IF
+                END IF
+                READ (LUCMD,'(A80)') LABHELP
+              END DO
+              BACKSPACE(LUCMD)
+            GO TO 100
+
+C           -----------------------------
+C           .NO2N+1: do NOT use 2n+1 rule
+C           -----------------------------
+2           CONTINUE
+              LRS2N1 = .FALSE.
+            GO TO 100
+ 
+C           ------------------------
+C           .OPERAT: operator labels 
+C           ------------------------
+3           CONTINUE
+              READ (LUCMD,'(A)') LABEL
+              DO WHILE (LABEL(1:1).NE.'.' .AND. LABEL(1:1).NE.'*')
+                IF (LABEL(1:1).NE.'!') THEN
+                  IF (NLRSOP.LT.MXLRSO) THEN
+                    NLRSOP = NLRSOP + 1
+                    ILRSOP(NLRSOP) = INDPRPCC(LABEL)
+                  ELSE
+                    WRITE(LUPRI,'(/2A,I5,/)')
+     &               ' NB. OF OPERATOR DOUBLES SPECIFIED',
+     &               ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
+                    CALL QUIT('TO MANY OPERATORS IN CC_OPAINP.')
+                  END IF
+                END IF
+                READ (LUCMD,'(A)') LABEL
+              END DO
+              BACKSPACE(LUCMD)
+            GO TO 100
+ 
+C           -----------------------------------------------------
+C           .DIPLEN: calculate complete dipole transition vectors
+C                    in length gauge 
+C           -----------------------------------------------------
+4           CONTINUE
+              IF (NLRSOP+3 .GT. MXLRSO) THEN
+                WRITE(LUPRI,'(2(/,A,I5),/)')
+     &          ' NB. OF OPERATORS SPECIFIED         : ',NLRSOP+3,
+     &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
+                CALL QUIT('TO MANY OPERATORS IN CC_OPAINP.')
+              END IF
+              ILRSOP(NLRSOP+1) = INDPRPCC('XDIPLEN ')
+              ILRSOP(NLRSOP+2) = INDPRPCC('YDIPLEN ')
+              ILRSOP(NLRSOP+3) = INDPRPCC('ZDIPLEN ')
+              NLRSOP = NLRSOP + 3
+            GO TO 100
+
+C           -----------------------------------------------------
+C           .DIPVEL: calculate complete dipole transition vectors
+C                    in velocity gauge 
+C           -----------------------------------------------------
+5           CONTINUE
+              IF (NLRSOP+3 .GT. MXLRSO) THEN
+                WRITE(LUPRI,'(2(/,A,I5),/)')
+     &          ' NB. OF OPERATORS SPECIFIED         : ',NLRSOP+3,
+     &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
+                CALL QUIT('TO MANY OPERATORS IN CC_OPAINP.')
+              END IF
+              ILRSOP(NLRSOP+1) = INDPRPCC('XDIPVEL ')
+              ILRSOP(NLRSOP+2) = INDPRPCC('YDIPVEL ')
+              ILRSOP(NLRSOP+3) = INDPRPCC('ZDIPVEL ')
+              NLRSOP = NLRSOP + 3
+            GO TO 100
+
+C           ------------------------------------------------------
+C           .ANGMOM: calculate complete magnetic dipole transition 
+C                    vectors and if possible rotatory strenghts
+C           ------------------------------------------------------
+6           CONTINUE
+              IF (NLRSOP+3 .GT. MXLRSO) THEN
+                WRITE(LUPRI,'(2(/,A,I5),/)')
+     &          ' NB. OF OPERATORS SPECIFIED         : ',NLRSOP+3,
+     &          ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLRSO
+                CALL QUIT('TO MANY OPERATORS IN CC_OPAINP.')
+              END IF
+              ILRSOP(NLRSOP+1) = INDPRPCC('XANGMOM ')
+              ILRSOP(NLRSOP+2) = INDPRPCC('YANGMOM ')
+              ILRSOP(NLRSOP+3) = INDPRPCC('ZANGMOM ')
+              NLRSOP = NLRSOP + 3
+            GO TO 100
+C
+          ELSE
+           WRITE (LUPRI,'(/,5A,/)') ' Prompt "',WORD,
+     &             '" not recognized in ',SECNAM,'.'
+           CALL PRTAB(NTABLE,TABLE,SECNAM//' input keywords',LUPRI)
+           CALL QUIT('Illegal Keyword in '//SECNAM//'.')
+          END IF
+
+        ELSE IF (WORD(1:1) .NE. '*') THEN
+          WRITE (LUPRI,'(/,5A,/)') 'PROMPT "',WORD,
+     &         '" NOT RECOGNIZED IN ',SECNAM,'.'
+          CALL QUIT('Illegal prompt in '//SECNAM//'.')
+
+        ELSE IF (WORD(1:1) .EQ.'*') THEN
+          BACKSPACE (LUCMD)
+          GO TO 200
+        END IF
+
+
+200   CONTINUE
+*---------------------------------------------------------------------*
+* check, if any operator labels specified:
+* if not, use default: complete dipole (length) vector
+*---------------------------------------------------------------------*
+      IF (NLRSOP.EQ.0) THEN
+        IF (NLRSOP+3 .LE. MXLRSO) THEN
+          ILRSOP(NLRSOP+1) = INDPRPCC('XDIPLEN ')
+          ILRSOP(NLRSOP+2) = INDPRPCC('YDIPLEN ')
+          ILRSOP(NLRSOP+3) = INDPRPCC('ZDIPLEN ')
+          NLRSOP = NLRSOP + 3
+        END IF
+      END IF
+
+*---------------------------------------------------------------------*
+* set CCOPA flag and return:
+*---------------------------------------------------------------------*
+      CCOPA = .TRUE.
+
+      RETURN
+      END
+C=====================================================================*
+C                    END OF SUBROUTINE CC_OPAINP
+C=====================================================================*
+      SUBROUTINE CC_NODINP(WORD,INIT_ONLY)
+C---------------------------------------------------------------------*
+C
+C    Purpose: read flags for different CC3 noddy code options
+C
+C    Christof Haettig, Jan 2003
+C
+C=====================================================================*
+      IMPLICIT NONE
+#include <priunit.h>
+#include <ccnoddy.h>
+
+* local parameters:
+      CHARACTER SECNAM*(8)
+      PARAMETER (SECNAM='CC_NODINP')
+
+      INTEGER NTABLE
+      PARAMETER (NTABLE = 6)
+
+* variables:
+      LOGICAL SET
+      SAVE SET
+
+      LOGICAL INIT_ONLY
+      CHARACTER WORD*(7)
+      CHARACTER LABEL*(8), LABHELP*(80)
+      CHARACTER TABLE(NTABLE)*(8)
+      INTEGER IJUMP
+
+* data:
+      DATA SET /.FALSE./
+      DATA TABLE /'.XI    ','.XIDEN ','.ETA   ','.ETADEN','.FMAT  ',
+     *            '.ANGMOM'/
+
+*---------------------------------------------------------------------*
+* set defaults:
+*---------------------------------------------------------------------*
+      NODDY_XI  = .FALSE.
+      NODDY_ETA = .FALSE. 
+
+      NODDY_XI_ALTER  = .FALSE.
+      NODDY_ETA_ALTER = .FALSE. 
+
+      NODDY_FMAT    = .FALSE.
+      CCSDT_F_ALTER = .TRUE.
+ 
+      IF (INIT_ONLY) RETURN
+
+*--------------------------------------------------------------------*
+* begin:
+*---------------------------------------------------------------------*
+      IF (WORD(1:7) .NE. '*NODDY') CALL 
+     &  QUIT('CC_NODINP was call for wrong input section:'//WORD(1:7))
+
+      IF (SET) RETURN
+      SET = .TRUE.
+
+*---------------------------------------------------------------------*
+* read input:
+*---------------------------------------------------------------------*
+100   CONTINUE
+! get new input line:
+        READ (LUCMD,'(A7)') WORD
+        DO WHILE ( WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#' )
+          READ (LUCMD,'(A7)') WORD
+        END DO
+        IF (WORD(1:1) .EQ. '.') THEN
+
+c         table look up:
+          IJUMP = 1
+          DO WHILE ( IJUMP .LE. NTABLE .AND. TABLE(IJUMP) .NE. WORD)
+            IJUMP = IJUMP + 1
+          END DO
+
+c         jump to the appropiate input section:
+          IF (IJUMP .LE. NTABLE) THEN
+            GOTO (1,2,3,4,5,6), IJUMP
+            CALL QUIT('Illegal address in computed GOTO in CC_NODINP.')
+
+C           ----------------------------------------
+C           .XI    : use noddy code for Xksi vector:
+C           ----------------------------------------
+1           CONTINUE
+              NODDY_XI = .TRUE.
+            GO TO 100
+
+C           -------------------------------------
+C           .XIDEN : use noddy Xksi density code:
+C           -------------------------------------
+2           CONTINUE
+              NODDY_XI_ALTER = .TRUE.
+            GO TO 100
+ 
+C           ----------------------------------------
+C           .ETA   : use noddy code for Xksi vector:
+C           ----------------------------------------
+3           CONTINUE
+              NODDY_ETA = .TRUE.
+            GO TO 100
+ 
+C           ----------------------------------------
+C           .ETADEN: use noddy for Eta density code:
+C           ----------------------------------------
+4           CONTINUE
+              NODDY_ETA_ALTER = .TRUE.
+            GO TO 100
+
+C           -----------------------------------------------------
+C           .FMAT  : 
+C           -----------------------------------------------------
+5           CONTINUE
+              NODDY_FMAT = .TRUE.
+            GO TO 100
+
+C           ------------------------------------------------------
+C           .XXXXXX: 
+C           ------------------------------------------------------
+6           CONTINUE
+            GO TO 100
+C
+          ELSE
+           WRITE (LUPRI,'(/,5A,/)') ' Prompt "',WORD,
+     &             '" not recognized in ',SECNAM,'.'
+           CALL PRTAB(NTABLE,TABLE,SECNAM//' input keywords',LUPRI)
+           CALL QUIT('Illegal Keyword in '//SECNAM//'.')
+          END IF
+
+        ELSE IF (WORD(1:1) .NE. '*') THEN
+          WRITE (LUPRI,'(/,5A,/)') 'PROMPT "',WORD,
+     &         '" NOT RECOGNIZED IN ',SECNAM,'.'
+          CALL QUIT('Illegal prompt in '//SECNAM//'.')
+
+        ELSE IF (WORD(1:1) .EQ.'*') THEN
+          BACKSPACE (LUCMD)
+          GO TO 200
+        END IF
+
+200   CONTINUE
+*---------------------------------------------------------------------*
+* Check flags for consistency and print some output:
+*---------------------------------------------------------------------*
+      IF (NODDY_XI_ALTER)  NODDY_XI  = .TRUE.
+      IF (NODDY_ETA_ALTER) NODDY_ETA = .TRUE.
+
+      WRITE(LUPRI,*) 'The Triples section in the response will use '//
+     &               'the following modules:'
+
+      WRITE(LUPRI,*) '  in CC_XIETA:'
+
+      IF (NODDY_XI) THEN
+       WRITE(LUPRI,*) '    xi vector calculation: CCSDT_XI_NODDY'
+       IF (NODDY_XI_ALTER) THEN 
+         WRITE(LUPRI,*) '    xi contraction: CCSDT_XI_DEN_NODDY'
+       ELSE
+         WRITE(LUPRI,*) '    xi contraction: CCSDT_XI_NODDY'
+       END IF
+      ELSE
+       WRITE(LUPRI,*) '    xi vector calculation: CC3_XI'
+       WRITE(LUPRI,*) '    xi contraction: CC3_XI_DEN'
+      END IF
+
+      IF (NODDY_ETA) THEN
+       WRITE(LUPRI,*)'    eta vector calculation: CCSDT_ETA_NODDY'
+       WRITE(LUPRI,*)'    L A{O} transformation : CCSDT_ETA_NODDY'
+       IF (NODDY_ETA_ALTER) THEN 
+        WRITE(LUPRI,*)'    eta    contraction: CCSDT_ETA_DEN'
+        WRITE(LUPRI,*)'    L A{O} contraction: CCSDT_A_DEN_NODDY'
+       ELSE
+        WRITE(LUPRI,*)'    eta    contraction: CCSDT_ETA_NODDY'
+        WRITE(LUPRI,*)'    L A{O} contraction: CCSDT_ETA_NODDY'
+       END IF
+      ELSE
+       WRITE(LUPRI,*) '    eta vector calculation: CC3_ETASD'
+       WRITE(LUPRI,*) '    L A{O} transformation : CC3_ETASD'
+       WRITE(LUPRI,*) '    eta    contraction: CCSDT_ETA_DEN'
+       WRITE(LUPRI,*) '    L A{O} contraction: CCSDT_ETA_DEN'
+      END IF
+
+      WRITE(LUPRI,*) '  in CC_FMAT:'
+      IF (NODDY_FMAT) THEN
+       WRITE(LUPRI,*) '    F matrix transformation: CCSDT_FMAT_NODDY'
+       WRITE(LUPRI,*) '    F matrix contraction   : CCSDT_FMAT_NODDY'//
+     &                ' and CCSDT_FBC_NODDY'
+      ELSE
+       WRITE(LUPRI,*) '    F matrix transformation: CC3_FMAT'//
+     &  ' and CC3_FT3B and CC3_FMATSD'
+       WRITE(LUPRI,*) '    F matrix contraction   : CC3_FMAT'//
+     &  ' and CCSDT_FBMAT'
+      END IF
+
+      RETURN
+      END
+C=====================================================================*
+C                    END OF SUBROUTINE CC_OPAINP
+C=====================================================================*
 c/* deck cc_qr2rinp */
 C=====================================================================*
        SUBROUTINE CC_QR2RINP(WORD,MSYM)

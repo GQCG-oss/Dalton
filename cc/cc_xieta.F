@@ -33,9 +33,6 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-*---------------------------------------------------------------------*
-#define NODDY_XI   .TRUE.
-#define NODDY_ETA  .TRUE.
 *=====================================================================*
        SUBROUTINE CC_XIETA( IXETRAN, NXETRAN, IOPTRES, IORDER, LISTL, 
      &                      FILXI,   IXDOTS, XCONS, 
@@ -59,6 +56,7 @@ C
 #include "maxorb.h"
 #include "cclists.h"
 #include <ccsdinp.h>
+#include <ccnoddy.h>
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG=.FALSE.)
@@ -68,13 +66,14 @@ C
 
       CHARACTER*8 FN3VI2, FNTOC
       CHARACTER*4 FNDKBC
-      CHARACTER*5 FN3FOP, FNDKBC3
-      CHARACTER*6 FNDELD, FNCKJD, FN3VI, FN3FOP2
+      CHARACTER*5 FNDKBC3
+      CHARACTER*6 FNDELD, FNCKJD, FN3VI, FN3FOPX
+      CHARACTER*7 FN3FOP2X
 
       PARAMETER (FNDELD  = 'CKDELD'  , FNCKJD  = 'CKJDEL'  )
       PARAMETER (FNDKBC  = 'DKBC'    , FNTOC   = 'CCSDT_OC')
       PARAMETER (FN3VI   = 'CC3_VI'  , FN3VI2  = 'CC3_VI12')
-      PARAMETER (FN3FOP  = 'PTFOP'   , FN3FOP2 = 'PTFOP2'  )
+      PARAMETER (FN3FOPX = 'PTFOPX'  , FN3FOP2X= 'PTFOP2X' )
       PARAMETER (FNDKBC3 = 'DKBC3'   )
 
 
@@ -83,11 +82,6 @@ C
       INTEGER NXETRAN, LWORK
       INTEGER IXETRAN(MXDIM_XEVEC,NXETRAN)
       INTEGER IXDOTS(MXVEC,NXETRAN), IEDOTS(MXVEC,NXETRAN)
-COMMENT COMMENT
-COMMENT COMMENT
-      INTEGER KHCOUNT
-COMMENT COMMENT
-COMMENT COMMENT
       
 #if defined (SYS_CRAY) 
       REAL WORK(LWORK) 
@@ -259,13 +253,36 @@ COMMENT COMMENT
      &                        NEADEN,MXEADEN,
      &                        WORK(KIEASTEND),NEALEFT,MXEALEFT)
 
-        IF (NXIDEN.GT.0 .AND. (.NOT.NODDY_XI)) THEN
-          CALL QUIT('CCSDT XI densities not yet implemented...')
+        IF (NXIDEN.GT.0) THEN
+          IF (NODDY_XI .AND. NODDY_XI_ALTER) THEN
+            write(lupri,*) 'Invoke CCSDT_XI_CONT_NODDY...'
+
+            CALL CCSDT_XI_CONT_NODDY(FILXI,XCONS,
+     &                               WORK(KIDXL_XIDEN),NXIDEN,
+     &                               IXDOTS,IXETRAN,MXVEC,NXETRAN,
+     &                               WORK(KEND),LEND)
+
+          ELSEIF (.NOT.NODDY_XI) THEN
+            CALL CC3_XI_CONT(FILXI,XCONS,
+     &                           WORK(KIDXL_XIDEN),NXIDEN,
+     &                           IXDOTS,IXETRAN,MXVEC,NXETRAN,
+     &                           WORK(KEND),LEND)
+
+
+          END IF
         END IF
 
-        IF (NEADEN.GT.0 .AND. (.NOT.NODDY_ETA)) THEN
+        write(lupri,*)'before ccsdt_eta_cont'
+      write(lupri,*)'NODDY_ETA,ETA_ALTER',NODDY_ETA,NODDY_ETA_ALTER
+      call FLSHFO(LUPRI)
+        ! call CCSDT_ETA_CONT if NEADEN is nonzero and
+        ! none or both of the noddy flags is set:
+        !   none of the noddy flag set --> use true code
+        !   both of the noddy flag set --> use noddy density
+        IF (NEADEN.GT.0 .AND. 
+     &      (.NOT.(NODDY_ETA .AND. .NOT.NODDY_ETA_ALTER))) THEN
 
-          CALL CCSDT_ETA_CONT(LISTL,FILETA,
+          CALL CCSDT_ETA_CONT(LISTL,FILETA,NODDY_ETA_ALTER,
      &                        IEDOTS,ECONS,
      &                        NXETRAN,IXETRAN,MXVEC,
      &                        NEALEFT,WORK(KIEASTEND),
@@ -273,15 +290,8 @@ COMMENT COMMENT
      &                        WORK(KIDXL_EADEN),WORK(KIDXR_EADEN),
      &                        WORK(KEND),LEND,
      &                        FNDELD,FNCKJD,FNDKBC,FNTOC,
-     &                        FN3VI,FNDKBC3,FN3FOP,FN3FOP2)
+     &                        FN3VI,FNDKBC3,FN3FOPX,FN3FOP2X)
         END IF
-COMMENT COMMENT
-COMMENT COMMENT
-       do khcount = 1, IFIRST
-          write(lupri,*) 'ECONS(1,',khcount,') = ',econs(1,khcount)
-       enddo
-COMMENT COMMENT
-COMMENT COMMENT
       END IF
 
       CALL QEXIT('CC_XIETA')
@@ -432,6 +442,7 @@ c /* deck cc_xieta1 */
 #include <cclists.h>
 #include <chrxyz.h>
 #include <dummy.h>
+#include <ccnoddy.h>
 
 * local parameters:
       LOGICAL LOCDBG
@@ -449,8 +460,9 @@ c /* deck cc_xieta1 */
       CHARACTER*8 FILPQMO, FILPQ0, FILPQ1, FNDIM, FNCIM, FNTOC
       CHARACTER*8 FN3VI2
       CHARACTER*4 FNDKBC
-      CHARACTER*5 FN3FOP, FNDKBC3
-      CHARACTER*6 FNDELD, FNCKJD, FN3VI, FN3FOP2
+      CHARACTER*5 FNDKBC3
+      CHARACTER*6 FNDELD, FNCKJD, FN3VI, FN3FOPX
+      CHARACTER*7 FN3FOP2X
       PARAMETER (FN0IAJB = 'CCXIAJB0', FN0IABJ = 'CCXIABJ0')
       PARAMETER (FN1IAJB = 'CCXIAJB1', FN1IABJ = 'CCXIABJ1')
       PARAMETER (FN0IJBA = 'CCXIJBA0', FN0AIBJ = 'CCXAIBJ0')
@@ -465,7 +477,7 @@ c /* deck cc_xieta1 */
       PARAMETER (FNDELD  = 'CKDELD'  , FNCKJD  = 'CKJDEL'  )
       PARAMETER (FNDKBC  = 'DKBC'    , FNTOC   = 'CCSDT_OC')
       PARAMETER (FN3VI   = 'CC3_VI'  , FN3VI2  = 'CC3_VI12')
-      PARAMETER (FN3FOP  = 'PTFOP'   , FN3FOP2 = 'PTFOP2'  )
+      PARAMETER (FN3FOPX  = 'PTFOPX'   , FN3FOP2X = 'PTFOP2X'  )
       PARAMETER (FNDKBC3 = 'DKBC3'   )
 
 
@@ -548,7 +560,7 @@ c /* deck cc_xieta1 */
       INTEGER KKAPPA, KRMAT, IDXR, IERR, KDPKHF0, JCOOR, JSCOOR, ISCOOR
       INTEGER INUM, ISIGNH, IOPER1, IOPER2, ISYOP1, ISYOP2, IREAL
       INTEGER KRBIMOLD, KFOCK0MO, KXI1EFF, KXI2EFF, KETA1EFF,KETA2EFF
-      INTEGER LUDKBC3, LU3FOP, LU3FOP2
+      INTEGER LUDKBC3, LU3FOPX, LU3FOP2X
     
 
 * external functions:
@@ -2380,23 +2392,16 @@ C
         KEND1  = KEMAT2 + NMATIJ(ISYHOP)
         LWRK1  = LWORK - KEND1
         
+        ISYRES = ISYHOP ! symmetry of result vector
+
         IF (CCSD .AND. (LTWOEL.OR.LRELAX)) THEN
            KGAMMA = KEND1
            KEND1  = KGAMMA + NGAMMA(ISYHOP)
         END IF
         IF (CCSDT) THEN
            KFOCKBAO = KEND1
-COMMENT COMMENT
-COMMENT COMMENT The isyres has not been initialized ... maybe wrong!!!
-COMMENT COMMENT
-           ISYRES = ISYHOP
-COMMENT COMMENT
-COMMENT COMMENT
-COMMENT COMMENT
            KEND1    = KFOCKBAO + N2BST(ISYRES)
         END IF
-
-        ISYRES = ISYHOP ! symmetry of result vector
 
         KXI1  = KEND1
         KEND2 = KXI1 + NT1AM(ISYRES)
@@ -2443,7 +2448,9 @@ COMMENT COMMENT
      &             IT2DEL0, IT2DELB(1,ITRAN), IADRI0,
      &             LRELAX,  LTWOEL,  WORK(KEND2), LWRK2)
 
-        IF (CCSDT) THEN
+        SKIPXI = ( IXETRAN(3,ITRAN) .EQ. -1 )
+
+        IF (CCSDT .AND. (.NOT.SKIPXI)) THEN
 
           ! allocate extra memory for the 'effective' CC3 rhs vector
           KXI1EFF = KEND2
@@ -2483,7 +2490,10 @@ C
 C
             CALL DZERO(WORK(KXI2EFF),NT2AM(ISYRES))
 
-            CALL CC3_XI(WORK(KXI1),WORK(KXI2),
+C           ECURRSAV = ECURR
+C           ECURR    = 0.0d0
+
+            CALL CC3_XISD(WORK(KXI1),WORK(KXI2),
      *                  WORK(KXI1EFF),WORK(KXI2EFF),
      *                  ISYRES,
      *                  WORK(KFOCKB(ITRAN)),ISYHOP,FREQ,
@@ -2492,7 +2502,10 @@ C
      *                  LUCKJD,FNCKJD,LUDKBC,FNDKBC,LUDELD,FNDELD,
      *                  LUTOC,FNTOC,LU3VI,FN3VI,LU3VI2,FN3VI2,
      *                  WORK(KEND2),LWRK2)
+ 
+C           ECURR    = ECURRSAV
 C
+
             CALL WCLOSE2(LUDELD,FNDELD,'KEEP')
             CALL WCLOSE2(LUCKJD,FNCKJD,'KEEP')
             CALL WCLOSE2(LUTOC,FNTOC,'KEEP')
@@ -2500,7 +2513,12 @@ C
             CALL WCLOSE2(LU3VI,FN3VI,'KEEP')
             CALL WCLOSE2(LU3VI2,FN3VI2,'KEEP')
 C
-          ELSE
+          ELSE IF (NODDY_XI .AND. 
+     &               (.NOT.(IOPTRES.EQ.5 .AND. NODDY_XI_ALTER))) THEN
+            write(lupri,*) 'Invoke CCSDT_XI_NODDY...'
+            write(lupri,*) 'IOPTRES:',IOPTRES
+            write(lupri,*) 'NODDY_XI:',NODDY_XI
+            write(lupri,*) 'NODDY_XI_ALTER:',NODDY_XI_ALTER
             CALL CCSDT_XI_NODDY(IOPTRES,WORK(KXI1),WORK(KXI2),
      &                          WORK(KXI1EFF),WORK(KXI2EFF),
      &                          WORK(KFOCKB(ITRAN)),FREQ,
@@ -2668,15 +2686,10 @@ C
             IF (LWRK2 .LT. 0) THEN
               CALL QUIT('Insufficient work space in CC_XIETA. (1c)')
             END IF
-
-            ! check vector type find the associated frequency
-            IF (LISTL(1:2).EQ.'L0') THEN
-              IFILE = IXETRAN(4,ITRAN)
-              FREQ  = FRQX1(IFILE)
-            ELSE
-              CALL QUIT("Don't know how to get freq. in CC_XIETA.")
-            END IF
-
+C
+            CALL DZERO(WORK(KETA1EFF),NT1AM(ISYRES))
+            CALL DZERO(WORK(KETA2EFF),NT2AM(ISYRES))
+C
             ! find the associated frequency
             IF (IOPTRES.EQ.5) THEN
               FREQ  = 0.0D0
@@ -2700,16 +2713,16 @@ C             -----------
               LUTOC    = 0
               LU3VI    = 0
               LUDKBC3  = 0  
-              LU3FOP   = 0  
-              LU3FOP2  = 0  
+              LU3FOPX   = 0  
+              LU3FOP2X  = 0  
  
               CALL WOPEN2(LUDKBC,FNDKBC,64,0)
               CALL WOPEN2(LUCKJD,FNCKJD,64,0)
               CALL WOPEN2(LUTOC,FNTOC,64,0)
               CALL WOPEN2(LU3VI,FN3VI,64,0)
               CALL WOPEN2(LUDKBC3,FNDKBC3,64,0)
-              CALL WOPEN2(LU3FOP,FN3FOP,64,0)
-              CALL WOPEN2(LU3FOP2,FN3FOP2,64,0)
+              CALL WOPEN2(LU3FOPX,FN3FOPX,64,0)
+              CALL WOPEN2(LU3FOP2X,FN3FOP2X,64,0)
  
               CALL CC3_ETASD(LISTL,IDLSTL,WORK(KFOCKB(ITRAN)),
      *                       ISYHOP,FREQ,WORK(KFOCK0MO),
@@ -2717,11 +2730,8 @@ C             -----------
      *                       WORK(KETA2EFF),ISYRES,WORK(KEND2),LWRK2,
      *                       LUDKBC,FNDKBC,LUCKJD,FNCKJD,LUTOC,FNTOC,
      *                       LU3VI,FN3VI,LUDKBC3,FNDKBC3,
-     *                       LU3FOP,FN3FOP,LU3FOP2,FN3FOP2)
+     *                       LU3FOPX,FN3FOPX,LU3FOP2X,FN3FOP2X)
  
-COMMENT
-C      stop'after CC3_ETASD routine'
-COMMENT
 
 C             ------------
 C             Close files:
@@ -2732,10 +2742,15 @@ C             ------------
               CALL WCLOSE2(LUTOC,FNTOC,'KEEP')
               CALL WCLOSE2(LU3VI,FN3VI,'KEEP')
               CALL WCLOSE2(LUDKBC3,FNDKBC3,'KEEP')
-              CALL WCLOSE2(LU3FOP,FN3FOP,'KEEP')
-              CALL WCLOSE2(LU3FOP2,FN3FOP2,'KEEP')
+              CALL WCLOSE2(LU3FOPX,FN3FOPX,'KEEP')
+              CALL WCLOSE2(LU3FOP2X,FN3FOP2X,'KEEP')
  
-            ELSE
+            ELSE IF (NODDY_ETA .AND.
+     &                (.NOT.(IOPTRES.EQ.5 .AND. NODDY_ETA_ALTER))) THEN
+              write(lupri,*) 'Invoke CCSDT_ETA_NODDY...'
+              write(lupri,*) 'IOPTRES:',IOPTRES
+              write(lupri,*) 'NODDY_ETA:',NODDY_ETA
+              write(lupri,*) 'NODDY_ETA_ALTER:',NODDY_ETA_ALTER
 
               CALL CCSDT_ETA_NODDY(LISTL,IDLSTL,IOPTRES,
      &                             WORK(KFOCKB(ITRAN)),WORK(KFOCKBAO),
@@ -2744,6 +2759,7 @@ C             ------------
      &                             WORK(KETA1EFF),WORK(KETA2EFF),
      &                             IEDOTS,ECONS,FILETA,ITRAN,
      &                             NXETRAN,MXVEC,WORK(KEND2),LWRK2 )
+
             END IF
 
           END IF
@@ -2897,8 +2913,8 @@ C          END IF
         CALL FLSHFO(LUPRI)
       END IF
 
+      CALL FLSHFO(LUPRI)
       CALL QEXIT('CC_XIETA1')
-
       RETURN
       END
 *=====================================================================*
@@ -6235,7 +6251,6 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION CTR1(*),XLAMDH(*),YPS(*),YI(*)

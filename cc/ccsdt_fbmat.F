@@ -1,3 +1,38 @@
+C
+C...   Copyright (c) 2001 by the authors of Dalton (see below).
+C...   All Rights Reserved.
+C...
+C...   The source code in this file is part of
+C...   "Dalton, a molecular electronic structure program, Release 1.2
+C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+C...   and O. Vahtras"
+C...
+C...   This source code is provided under a written licence and may be
+C...   used, copied, transmitted, or stored only in accord with that
+C...   written licence.
+C...
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
+C...   This means also that persons (e.g. post-docs) leaving the research
+C...   group of the licence holder may not take any part of Dalton,
+C...   including modified files, with him/her, unless that person has
+C...   obtained his/her own licence.
+C...
+C...   For questions concerning this copyright write to:
+C...      dalton-admin@kjemi.uio.no
+C...
+C...   For information on how to get a licence see:
+C...      http://www.kjemi.uio.no/software/dalton/dalton.html
+C
+#include <single.h>
+C
 C    /* Deck cc3_xi */ 
       SUBROUTINE CCSDT_FBMAT(IBTRAN,IDOTS,DOTPROD,NBTRAN,MXVEC,
      *                       LISTL,LISTB,LISTC,FNCKJD,FNDKBC,FNDELD,
@@ -53,10 +88,13 @@ COMMENT COMENT
 COMMENT COMENT
 C
 #if defined (SYS_CRAY)
+      REAL DOTPROD(MXVEC,NBTRAN), WORK(LWORK)
+      REAL FREQB, FREQC, TCON
+      REAL XNORMVAL, DDOT, HALF, TWO
 #else
       DOUBLE PRECISION DOTPROD(MXVEC,NBTRAN), WORK(LWORK)
       DOUBLE PRECISION FREQB, FREQC, TCON
-      DOUBLE PRECISION XNORM, DDOT, HALF, TWO
+      DOUBLE PRECISION XNORMVAL, DDOT, HALF, TWO
 #endif
       CHARACTER*(*) FNCKJD, FNDKBC, FNDELD, FNTOC, FN3VI, FN3VI2
       CHARACTER*12 FN3SRTR, FNCKJDR, FNDELDR, FNDKBCR, FNDKBCR4
@@ -74,6 +112,7 @@ C
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccr1rsp.h>
+#include <ccexci.h>
 C
       PARAMETER(HALF = 0.5D0, TWO = 2.0D0)
       PARAMETER(FN3SRTR  = 'CCSDT_FBMAT1', FNCKJDR  = 'CCSDT_FBMAT2', 
@@ -170,9 +209,9 @@ C
       CALL CCSD_TCMEPK(WORK(KXIAJB),1.0D0,ISINT1,IOPTTCME)
 C
       IF ( IPRINT .GT. 55) THEN
-         XNORM = DDOT(NT2AM(ISINT1),WORK(KXIAJB),1,
+         XNORMVAL = DDOT(NT2AM(ISINT1),WORK(KXIAJB),1,
      *                WORK(KXIAJB),1)
-         WRITE(LUPRI,*) 'Norm of IAJB ',XNORM
+         WRITE(LUPRI,*) 'Norm of IAJB ',XNORMVAL
       ENDIF
 C
 C----------------------------------------------------------------
@@ -200,8 +239,8 @@ C
       CALL CC3_T2TP(WORK(KT2TP),WORK(KEND00),ISYMT2)
 C
       IF (IPRINT .GT. 55) THEN
-         XNORM = DDOT(NT2SQ(ISYMT2),WORK(KT2TP),1,WORK(KT2TP),1)
-         WRITE(LUPRI,*) 'Norm of T2TP ',XNORM
+         XNORMVAL = DDOT(NT2SQ(ISYMT2),WORK(KT2TP),1,WORK(KT2TP),1)
+         WRITE(LUPRI,*) 'Norm of T2TP ',XNORMVAL
       ENDIF
 C
 C--------------------------------------
@@ -252,15 +291,35 @@ C
          IDLSTB = IBTRAN(1,ITRAN)
          IDLSTC = IBTRAN(2,ITRAN)
 C
+         IF ( (LISTB(1:3).EQ.'RE ') .AND. (LISTC(1:3).EQ.'RE ') ) THEN
+            WRITE(LUPRI,*)'LISTB = ',LISTB
+            WRITE(LUPRI,*)'LISTC = ',LISTC
+            WRITE(LUPRI,*)'LISTB and LISTC equal RE not implemented !!!'
+            CALL QUIT('Not implemented in CCSDT_FBMAT.')
+         END IF
+C
          IF (LISTB(1:3).EQ.'R1 ') THEN
             ISYMRB = ISYLRT(IDLSTB)
             FREQB  = FRQLRT(IDLSTB)
             LABELB = LRTLBL(IDLSTB)
+         ELSE IF (LISTB(1:3).EQ.'RE ') THEN
+            ISYMRB = ILSTSYM(LISTB,IDLSTB)
+            FREQB  = EIGVAL(IDLSTB)
+            LABELB = '- none -'
+         ELSE 
+            CALL QUIT('Unkown list for LISTB in CCSDT_FBMAT.')
+         END IF
+C
+         IF (LISTC(1:3).EQ.'R1 ') THEN
             ISYMRC = ISYLRT(IDLSTC)
             FREQC  = FRQLRT(IDLSTC)
             LABELC = LRTLBL(IDLSTC)
+         ELSE IF (LISTC(1:3).EQ.'RE ') THEN
+            ISYMRC = ILSTSYM(LISTC,IDLSTC)
+            FREQC  = EIGVAL(IDLSTC)
+            LABELC = '- none -'
          ELSE
-            CALL QUIT('Unkown list in CCSDT_FBC_NODDY.')
+            CALL QUIT('Unkown list for LISTC in CCSDT_FBMAT.')
          END IF
 C
          ISYMW   = MULD2H(ISYMT3,ISYMRB)
@@ -302,10 +361,10 @@ C
          CALL CC3_T2TP(WORK(KT2B),WORK(KEND1),ISYMRB)
 C
          IF (IPRINT .GT. 55) THEN
-            XNORM = DDOT(NT1AM(ISYMRB),WORK(KT1B),1,WORK(KT1B),1)
-            WRITE(LUPRI,*) 'Norm of T1B  ',XNORM
-            XNORM = DDOT(NT2SQ(ISYMRB),WORK(KT2B),1,WORK(KT2B),1)
-            WRITE(LUPRI,*) 'Norm of T2B  ',XNORM
+            XNORMVAL = DDOT(NT1AM(ISYMRB),WORK(KT1B),1,WORK(KT1B),1)
+            WRITE(LUPRI,*) 'Norm of T1B  ',XNORMVAL
+            XNORMVAL = DDOT(NT2SQ(ISYMRB),WORK(KT2B),1,WORK(KT2B),1)
+            WRITE(LUPRI,*) 'Norm of T2B  ',XNORMVAL
          ENDIF
 C
 C        Integrals
@@ -340,22 +399,26 @@ C------------------------------------------
 C        Calculate the F^B matrix
 C------------------------------------------
 C
-         CALL CCPRPAO(LABELB,WORK(KFCKB),ISYFCKB,IRREP,IERR,
-     *                WORK(KEND1),LWRK1)
+         IF (LISTB(1:3).EQ.'R1 ') THEN
 C
-         IF (IERR.GT.0) THEN
-           CALL QUIT('CCSDT_FBMAT : error reading operator '//LABELB)
-         ELSE IF (IERR.LT.0) THEN
-           CALL DZERO(WORK(KFCKB),N2BST(ISYMRB))
-         END IF
+           CALL CCPRPAO(LABELB,WORK(KFCKB),ISYFCKB,IRREP,IERR,
+     *                  WORK(KEND1),LWRK1)
 C
-         CALL CC_FCKMO(WORK(KFCKB),WORK(KLAMDP),WORK(KLAMDH),
-     *                 WORK(KEND1),LWRK1,ISYMRB,ISYMOP,ISYMOP)
+           IF (IERR.GT.0) THEN
+             CALL QUIT('CCSDT_FBMAT : error reading operator '//LABELB)
+           ELSE IF (IERR.LT.0) THEN
+             CALL DZERO(WORK(KFCKB),N2BST(ISYMRB))
+           END IF
 C
-         IF (IPRINT .GT. 50) THEN
-            CALL AROUND( 'In CCSDT_FBMAT: Fock^B MO matrix' )
-            CALL CC_PRFCKMO(WORK(KFCKB),ISYFCKB)
-         ENDIF
+           CALL CC_FCKMO(WORK(KFCKB),WORK(KLAMDP),WORK(KLAMDH),
+     *                   WORK(KEND1),LWRK1,ISYMRB,ISYMOP,ISYMOP)
+C
+           IF (IPRINT .GT. 50) THEN
+              CALL AROUND( 'In CCSDT_FBMAT: Fock^B MO matrix' )
+              CALL CC_PRFCKMO(WORK(KFCKB),ISYFCKB)
+           ENDIF
+C
+        END IF
 C
 C---------------------------------------------
 C        Regain work space and create lam^C
@@ -475,9 +538,9 @@ C     Write out norms of Integrals.
 C----------------------------------
 C
          IF (IPRINT .GT. 55) THEN
-            XNORM = DDOT(NTOTOC(ISINT2),WORK(KINTOC),1,
+            XNORMVAL = DDOT(NTOTOC(ISINT2),WORK(KINTOC),1,
      *                   WORK(KINTOC),1)
-            WRITE(LUPRI,*) 'Norm of CCSDT_OC-INT ',XNORM
+            WRITE(LUPRI,*) 'Norm of CCSDT_OC-INT ',XNORMVAL
          ENDIF
 C
 C----------------------------------------------------------------------
@@ -498,9 +561,10 @@ C
          ENDIF
 C
          IF (IPRINT .GT. 55) THEN
-            XNORM = DDOT(NTOTOC(ISINTR2),WORK(KINTOC),1,
+            XNORMVAL = DDOT(NTOTOC(ISINTR2),WORK(KINTOC),1,
      *                   WORK(KINTOC),1)
-            WRITE(LUPRI,*) 'Norm of CCSDT_OC-INT (B transformed) ',XNORM
+            WRITE(LUPRI,*) 'Norm of CCSDT_OC-INT (B transformed) ',
+     *                      XNORMVAL
          ENDIF
 C
          CALL CC3_TROCC(WORK(KINTOC),WORK(KTROC0Y),WORK(KLAMDP),
@@ -517,21 +581,21 @@ C     Write out norms of arrays.
 C-------------------------------
 C
          IF (IPRINT .GT. 55) THEN
-            XNORM = DDOT(NTOTOC(ISINT2),WORK(KINTOC),1,
+            XNORMVAL = DDOT(NTOTOC(ISINT2),WORK(KINTOC),1,
      *                   WORK(KINTOC),1)
-            WRITE(LUPRI,*) 'Norm of CKJDEL-INT  ',XNORM
+            WRITE(LUPRI,*) 'Norm of CKJDEL-INT  ',XNORMVAL
          ENDIF
 C
          IF (IPRINT .GT. 55) THEN
-            XNORM = DDOT(NTRAOC(ISINT2),WORK(KTROC0),1,
+            XNORMVAL = DDOT(NTRAOC(ISINT2),WORK(KTROC0),1,
      *                   WORK(KTROC0),1)
-            WRITE(LUPRI,*) 'Norm of TROC0 ',XNORM
+            WRITE(LUPRI,*) 'Norm of TROC0 ',XNORMVAL
          ENDIF
 C
          IF (IPRINT .GT. 55) THEN
-            XNORM = DDOT(NTRAOC(ISINT2),WORK(KTROC02),1,
+            XNORMVAL = DDOT(NTRAOC(ISINT2),WORK(KTROC02),1,
      *                   WORK(KTROC02),1)
-            WRITE(LUPRI,*) 'Norm of TROC02 ',XNORM
+            WRITE(LUPRI,*) 'Norm of TROC02 ',XNORMVAL
          ENDIF
 C
 C------------------------
@@ -550,9 +614,9 @@ C     Write out norms of Integrals.
 C----------------------------------
 C
          IF (IPRINT .GT. 55) THEN
-            XNORM = DDOT(NTOTOC(ISYMOP),WORK(KINTOC),1,
+            XNORMVAL = DDOT(NTOTOC(ISYMOP),WORK(KINTOC),1,
      *                   WORK(KINTOC),1)
-            WRITE(LUPRI,*) 'Norm of CCSDT_OC-INT ',XNORM
+            WRITE(LUPRI,*) 'Norm of CCSDT_OC-INT ',XNORMVAL
          ENDIF
 C
 C----------------------------------------------------------------------
@@ -680,15 +744,15 @@ C
      *                           LWRK4,ISYMD,ISINT2)
 C
                IF (IPRINT .GT. 55) THEN
-                  XNORM = DDOT(NCKATR(ISCKB2),WORK(KTRVI0),1,
+                  XNORMVAL = DDOT(NCKATR(ISCKB2),WORK(KTRVI0),1,
      *                         WORK(KTRVI0),1)
-                  WRITE(LUPRI,*) 'Norm of TRVI0 ',XNORM
+                  WRITE(LUPRI,*) 'Norm of TRVI0 ',XNORMVAL
                ENDIF
 C
                IF (IPRINT .GT. 55) THEN
-                  XNORM = DDOT(NCKATR(ISCKB2),WORK(KTRVI2),1,
+                  XNORMVAL = DDOT(NCKATR(ISCKB2),WORK(KTRVI2),1,
      *                         WORK(KTRVI2),1)
-                  WRITE(LUPRI,*) 'Norm of TRVI2 ',XNORM
+                  WRITE(LUPRI,*) 'Norm of TRVI2 ',XNORMVAL
                ENDIF
 C
 C------------------------------------------------------
@@ -771,9 +835,9 @@ C
                   CALL CC3_DIAG(WORK(KDIAGW),WORK(KFOCKD),ISWMAT)
 C
                   IF (IPRINT .GT. 55) THEN
-                     XNORM = DDOT(NCKIJ(ISCKIJ),WORK(KDIAG),1,
+                     XNORMVAL = DDOT(NCKIJ(ISCKIJ),WORK(KDIAG),1,
      *                       WORK(KDIAG),1)
-                     WRITE(LUPRI,*) 'Norm of DIA  ',XNORM
+                     WRITE(LUPRI,*) 'Norm of DIA  ',XNORMVAL
                   ENDIF
 C
 C-------------------------------------
@@ -845,7 +909,7 @@ C------------------------------------------------------------------------
 C                 Calculate the S(ci,bk,dj) matrix for T3 for B,D.
 C-------------------------------------------------------------------
 C
-                     CALL CC3_SMAT(WORK(KT2TP),ISYMT2,
+                     CALL CC3_SMAT(0.0D0,WORK(KT2TP),ISYMT2,
      *                             WORK(KTMAT),WORK(KTRVI0),
      *                             WORK(KTRVI2),WORK(KTROC0),ISINT2,
      *                             WORK(KFOCKD),WORK(KDIAG),
@@ -866,16 +930,16 @@ COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
 C
                      IF (IPRINT .GT. 55) THEN
-                        XNORM = DDOT(NCKIJ(ISCKIJ),WORK(KSMAT),1,
+                        XNORMVAL = DDOT(NCKIJ(ISCKIJ),WORK(KSMAT),1,
      *                          WORK(KSMAT),1)
-                        WRITE(LUPRI,*) 'Norm of SMAT     ',XNORM
+                        WRITE(LUPRI,*) 'Norm of SMAT     ',XNORMVAL
                      ENDIF
 C
 C-------------------------------------------------------------------
 C                 Calculate the S(ci,bk,dj) matrix for T3 for D,B.
 C-------------------------------------------------------------------
 C
-                     CALL CC3_SMAT(WORK(KT2TP),ISYMT2,
+                     CALL CC3_SMAT(0.0D0,WORK(KT2TP),ISYMT2,
      *                             WORK(KTMAT),WORK(KTRVI8),
      *                             WORK(KTRVI9),WORK(KTROC0),ISINT2,
      *                             WORK(KFOCKD),WORK(KDIAG),
@@ -896,17 +960,18 @@ COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
 C
                      IF (IPRINT .GT. 55) THEN
-                        XNORM = DDOT(NCKIJ(ISCKIJ),WORK(KSMAT3),1,
+                        XNORMVAL = DDOT(NCKIJ(ISCKIJ),WORK(KSMAT3),1,
      *                          WORK(KSMAT3),1)
-                        WRITE(LUPRI,*) 'Norm of SMAT3    ',XNORM
+                        WRITE(LUPRI,*) 'Norm of SMAT3    ',XNORMVAL
                      ENDIF
 C
 C---------------------------------------------------------------------------
 C                 Calculate U(ci,jk) for fixed b,d.
 C--------------------------------------------------
 C
-                     CALL CC3_UMAT(WORK(KT2TP),ISYMT2,WORK(KTRVI3),
-     *                             WORK(KTROC02),ISINT2,WORK(KFOCKD),
+                     CALL CC3_UMAT(0.0D0,WORK(KT2TP),ISYMT2,
+     *                             WORK(KTRVI3),WORK(KTROC02),
+     *                             ISINT2,WORK(KFOCKD),
      *                             WORK(KDIAG),WORK(KUMAT),WORK(KTMAT),
      *                             WORK(KEND4),LWRK4,WORK(KINDSQ),LENSQ,
      *                             ISYMB,B,ISYMD,D)
@@ -924,17 +989,18 @@ COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
 C
                      IF (IPRINT .GT. 55) THEN
-                        XNORM = DDOT(NCKIJ(ISCKIJ),WORK(KUMAT),1,
+                        XNORMVAL = DDOT(NCKIJ(ISCKIJ),WORK(KUMAT),1,
      *                          WORK(KUMAT),1)
-                        WRITE(LUPRI,*) 'Norm of UMAT     ',XNORM
+                        WRITE(LUPRI,*) 'Norm of UMAT     ',XNORMVAL
                      ENDIF
 C
 C--------------------------------------------------
 C                 Calculate U(ci,jk) for fixed d,b.
 C--------------------------------------------------
 C
-                     CALL CC3_UMAT(WORK(KT2TP),ISYMT2,WORK(KTRVI10),
-     *                             WORK(KTROC02),ISINT2,WORK(KFOCKD),
+                     CALL CC3_UMAT(0.0D0,WORK(KT2TP),ISYMT2,
+     *                             WORK(KTRVI10),WORK(KTROC02),
+     *                             ISINT2,WORK(KFOCKD),
      *                             WORK(KDIAG),WORK(KUMAT3),WORK(KTMAT),
      *                             WORK(KEND4),LWRK4,WORK(KINDSQ),LENSQ,
      *                             ISYMD,D,ISYMB,B)
@@ -952,9 +1018,9 @@ COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
 C
                      IF (IPRINT .GT. 55) THEN
-                        XNORM = DDOT(NCKIJ(ISCKIJ),WORK(KUMAT),1,
+                        XNORMVAL = DDOT(NCKIJ(ISCKIJ),WORK(KUMAT),1,
      *                          WORK(KUMAT),1)
-                        WRITE(LUPRI,*) 'Norm of UMAT3    ',XNORM
+                        WRITE(LUPRI,*) 'Norm of UMAT3    ',XNORMVAL
                      ENDIF
 C
 C--------------------------------------------------
@@ -969,33 +1035,37 @@ C------------------------------------------------------
 C Based on T3 BD amplitudes calculate W BD intermediates
 C------------------------------------------------------
 C
+                    IF (LISTB(1:3).EQ.'R1 ') THEN
+C
 C------------------------------------------------------
 C     Calculate the  term <mu3|[Y,T3]|HF> virtual contribution 
 C     added in W^BD(KWMAT)
 C------------------------------------------------------
 C
-                     CALL WBD_V(WORK(KTMAT),ISCKIJ,WORK(KFCKB),ISYMRB,
-     *                               WORK(KWMAT), 
-     *                               ISWMAT,WORK(KEND4),LWRK4)  
+                       CALL WBD_V(WORK(KTMAT),ISCKIJ,WORK(KFCKB),ISYMRB,
+     *                            WORK(KWMAT), 
+     *                            ISWMAT,WORK(KEND4),LWRK4)  
 C
 C------------------------------------------------------
 C     Calculate the  term <mu3|[Y,T3]|HF> occupied contribution 
 C     added in W^BD(KWMAT)
 C------------------------------------------------------
 C
-                     CALL WBD_O(WORK(KTMAT),ISCKIJ,WORK(KFCKB),ISYMRB,
-     *                               WORK(KWMAT),
-     *                               ISWMAT,WORK(KEND4),LWRK4)
+                       CALL WBD_O(WORK(KTMAT),ISCKIJ,WORK(KFCKB),ISYMRB,
+     *                            WORK(KWMAT),
+     *                            ISWMAT,WORK(KEND4),LWRK4)
 C
 C------------------------------------------------------
 C     Calculate the  term <mu3|[[Y,T2],T2]|HF> 
 C     added in W^BD(KWMAT)
 C------------------------------------------------------
 C
-                     CALL WBD_T2(B,ISYMB,D,ISYMD,WORK(KT2TP),ISYMT2,
-     *                           WORK(KFCKB),ISYMRB,
-     *                           WORK(KINDSQW),LENSQW,WORK(KWMAT), 
-     *                           ISWMAT,WORK(KEND4),LWRK4) 
+                       CALL WBD_T2(B,ISYMB,D,ISYMD,WORK(KT2TP),ISYMT2,
+     *                             WORK(KFCKB),ISYMRB,
+     *                             WORK(KINDSQW),LENSQW,WORK(KWMAT), 
+     *                             ISWMAT,WORK(KEND4),LWRK4) 
+C
+                     END IF  
 C
 C------------------------------------------------------
 C     To get the entire T3^Y add the two terms
@@ -1020,6 +1090,10 @@ C     Divide by the energy difference and
 C     remove the forbidden elements
 C------------------------------------------------
 C
+COMMENT COMMENT COMMENT
+C      call sum_pt3(work(kwmat),isymb,b,isymd,d,
+C    *             isckij,work(kx3am),4)
+COMMENT COMMENT COMMENT
                      CALL WBD_DIA(B,ISYMB,D,ISYMD,FREQB, 
      *                            ISWMAT,WORK(KWMAT), 
      *                            WORK(KDIAGW),WORK(KFOCKD)) 
@@ -1032,6 +1106,10 @@ C     Calculate the  term <mu2|[H,W^BD(3)]|HF> ( Fock matrix cont )
 C     added in WORK(KOMEG2)
 C----------------------------------------------------------------------
 C
+COMMENT COMMENT COMMENT
+C      call sum_pt3(work(kwmat),isymb,b,isymd,d,
+C    *             isckij,work(kx3am),4)
+COMMENT COMMENT COMMENT
                      CALL CC3_CY2F(WORK(KOMEG2),ISYRES,WORK(KWMAT),
      *                             ISWMAT,WORK(KTMAT),WORK(KFCKC),
      *                             ISYFCKC,WORK(KINDSQW),LENSQW,
@@ -1069,7 +1147,7 @@ C
 C
 COMMENT COMMENT
 COMMENT COMMENT
-C      write(lupri,*) 'The summed W terms : '
+C      write(lupri,*) 'The summed W terms in ccsdt_fbmat: '
 C      call print_pt3(work(kx3am),1,4)
 C      write(lupri,*) 'The summed S terms : '
 C      call print_pt3(work(kx3am),1,1)
@@ -1085,8 +1163,8 @@ C
          CALL CC3_RBJIA(WORK(KOMEG2),ISYRES,WORK(KRBJIA))
 C
          IF (IPRINT .GT. 55) THEN
-            XNORM = DDOT(NT2AM(ISYRES),WORK(KOMEG2),1,WORK(KOMEG2),1)
-            WRITE(LUPRI,*) 'Norm of final WORK(KOMEG2) ',XNORM
+            XNORMVAL = DDOT(NT2AM(ISYRES),WORK(KOMEG2),1,WORK(KOMEG2),1)
+            WRITE(LUPRI,*) 'Norm of final WORK(KOMEG2) ',XNORMVAL
          ENDIF
 C
 C--------------------------------------------
@@ -1104,6 +1182,7 @@ C
      *                       + TCON
 C
          IF (IPRINT .GT. 11) THEN
+            write(lupri,*) 'LISTB, LISTC ', LISTB, LISTC
             WRITE(LUPRI,*) 'IVEC, ITRAN, Contribution: ',IVEC,ITRAN,TCON
          ENDIF
 C

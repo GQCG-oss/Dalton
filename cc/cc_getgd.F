@@ -65,6 +65,7 @@ C
 #include <ccsdio.h>
 #include <ccsdinp.h>
 #include <ccsections.h>
+#include <ccexgr.h>
 #include <cclrmrsp.h>
 #include <ccr1rsp.h>
 #include <ccr3rsp.h>
@@ -96,6 +97,16 @@ C     set symmetry of the gradient vector:
 C     ------------------------------------
       ISYMGD = ILSTSYM(LIST,ILSTNR)
 
+C     -------------------------------------------------
+C     set option for readin gradient vector:
+C          1 - read singles only (CCS,CIS)
+C          3 - read singles and doubles (CC2,CCSD)
+C         24 - read effective singles and doubles (CC3)
+C     -------------------------------------------------
+      IOPTRDG = 3
+      IF (CC3) IOPTRDG = 24
+      IF (CCS .OR. CIS) IOPTRDG = 1
+
 C     ---------------------------------------------------------------
 C     set the start addresses of the single and the double excitation 
 C     parts of the gradient vector and the total length of the vector
@@ -119,13 +130,12 @@ C----------------------------------------------------------------------
      *         ' and labels: ',(LBLR3T(ILSTNR,I),I=1,3),
      *         ' and symmetries: ',(ISYR3T(ILSTNR,I),I=1,3), ISYMGD
          END IF
-         IOPT  = 3
          IADR1 = 1
          IADR2 = IADR1 + NT1AM(ISYMGD)
          IDLSTO3  = IRHSR3(LBLR3T(ILSTNR,1),FRQR3T(ILSTNR,1),ISYM1,
      &                     LBLR3T(ILSTNR,2),FRQR3T(ILSTNR,2),ISYM2,
      &                     LBLR3T(ILSTNR,3),FRQR3T(ILSTNR,3),ISYM3)
-         CALL CC_RDRSP('O3',IDLSTO3,ISYMGD,IOPT,MODEL,
+         CALL CC_RDRSP('O3',IDLSTO3,ISYMGD,IOPTRDG,MODEL,
      &                 GD(IADR1),GD(IADR2))
          CALL CCLR_DIASCL(GD(IADR2),0.5d0,ISYMGD)
          NTAMP = NT1AM(ISYMGD) + NT2AM(ISYMGD)
@@ -155,43 +165,33 @@ C 'R1 ' first-order response t amplitudes:  --> 'O1 '
 C----------------------------------------------------------------------
       ELSE IF (LIST(1:2) .EQ. 'R1') THEN
 
-           IF (ISIDE.NE.1)
-     &        CALL QUIT('Mismatch ISIDE and LIST in CC_GETGD')
-           IF (IPRINT.GT.2) THEN
-              WRITE(LUPRI,'(/,1x,A)') 'Finding gradient for '
-              WRITE(LUPRI,'(1x,A,F10.6,A,A8,A,I3)')
-     *             'Frequency',FRQLRT(ILSTNR),
-     *             ' and label: ',LRTLBL(ILSTNR),
-     *             ' and symmetry: ', ISYMGD
-           ENDIF
+         IF (ISIDE.NE.1)
+     &      CALL QUIT('Mismatch ISIDE and LIST in CC_GETGD')
+         IF (IPRINT.GT.2) THEN
+            WRITE(LUPRI,'(/,1x,A)') 'Finding gradient for '
+            WRITE(LUPRI,'(1x,A,F10.6,A,A8,A,I3)')
+     *           'Frequency',FRQLRT(ILSTNR),
+     *           ' and label: ',LRTLBL(ILSTNR),
+     *           ' and symmetry: ', ISYMGD
+         ENDIF
 
-C          CALL CC_XKSI(GD,LRTLBL(ILSTNR),ISYLRT(ILSTNR),0,DUMMY,WORK,LWORK)
+         ILSTGD = IRHSR1(LRTLBL(ILSTNR),LORXLRT(ILSTNR),
+     &                   FRQLRT(ILSTNR),ISYM1)
 
-           ILSTGD = IRHSR1(LRTLBL(ILSTNR),LORXLRT(ILSTNR),
-     &                     FRQLRT(ILSTNR),ISYM1)
+         CALL CC_RDRSP('O1 ',ILSTGD,ISYMGD,IOPTRDG,MODEL,
+     &                  GD(IADR1),GD(IADR2))
 
-           IOPT = 3
-           IF (CCSDT) THEN
-             IOPT = 24
-             WRITE(LUPRI,*) 'Triples model... use:',IOPT
-           END IF
-    
-           CALL CC_RDRSP('O1 ',ILSTGD,ISYMGD,IOPT,MODEL,
-     &                    GD(IADR1),GD(IADR2))
-cch
-C          NTAMP = NT1AM(ISYMGD) + NT2AM(ISYMGD)
-C          write(lupri,*)'cc_getgd> RHS vector:',ISYMGD,NTAMP
-C          CALL OUTPUT(gd(iadr1),1,ntamp,1,1,ntamp,1,1,LUPRI)
-cch
-
-C SLV98, OC
          IF (CCSLV) THEN
+            ! SLV98, OC
+            IF (CCSDT) CALL QUIT('Solvent not implemented for triples')
             CALL CC_PTB(GD,LRTLBL(ILSTNR),ISYLRT(ILSTNR),
      *                  FRQLRT(ILSTNR),LORXLRT(ILSTNR),
      *                  WORK,LWORK)
          ENDIF
-C
-
+         IF (LOCDBG) THEN
+           WRITE(LUPRI,*)'CC_GETGD> RHS vector "O1":',ISYMGD,NTAMP
+           CALL OUTPUT(GD(IADR1),1,NTAMP,1,1,NTAMP,1,1,LUPRI)
+         END IF
 
 C----------------------------------------------------------------------
 C 'L3 ' third-order response Lagrangian multipliers: --> 'X3 ' + 'F3 '
@@ -256,10 +256,8 @@ C----------------------------------------------------------------------
       ELSE IF (LIST(1:2) .EQ. 'L0') THEN
          IF (ISIDE .NE.-1)
      &        CALL QUIT('Mismatch ISIDE and LIST in CC_GETGD')
+
          CALL CC_ETA(GD,WORK,LWORK)
-         NTAMP = NT1AM(ISYMOP) + NT2AM(ISYMOP)
-         IF ( CCS ) NTAMP = NT1AM(ISYMOP)
-         ISYMGD = ISYMOP
 
 C----------------------------------------------------------------------
 C 'N2 ' Lagrangian multipliers:
@@ -267,7 +265,7 @@ C----------------------------------------------------------------------
       ELSE IF (LIST(1:2) .EQ. 'N2') THEN
          IF (ISIDE .NE. -1)
      &        CALL QUIT('Mismatch ISIDE and LIST in CC_GETGD')
-         ISYMGD = MULD2H(ISYIN2(ILSTNR),ISYFN2(ILSTNR))
+
          IF (IPRINT .GT.2) THEN
             WRITE(LUPRI,'(/,1x,A)')
      *           'Finding gradient for '
@@ -277,10 +275,16 @@ C----------------------------------------------------------------------
      *             ' and symmetries: ',ISYIN2(ILSTNR),ISYFN2(ILSTNR),
      *             ISYMGD
          END IF
+
+         CALL CC_RDRSP('BR ',ILSTNR,ISYMGD,IOPTRDG,MODEL,
+     &                  GD(IADR1),GD(IADR2))
+
+         IF (LOCDBG) THEN
+           WRITE(LUPRI,*)'CC_GETGD> RHS vector "BR":',ISYMGD,NTAMP
+           CALL OUTPUT(GD(IADR1),1,NTAMP,1,1,NTAMP,1,1,LUPRI)
+         END IF
+
          CALL FLSHFO(LUPRI)
-         CALL CC_N2GD(GD,ILSTNR,WORK,LWORK)
-         NTAMP = NT1AM(ISYMGD) + NT2AM(ISYMGD)
-         IF ( CCS ) NTAMP = NT1AM(ISYMGD)
 
 C----------------------------------------------------------------------
 C 'M1 ' Lagrangian multipliers:
@@ -288,13 +292,23 @@ C----------------------------------------------------------------------
       ELSE IF (LIST(1:2) .EQ. 'M1') THEN
          IF (ISIDE .NE.-1)
      &        CALL QUIT('Mismatch ISIDE and LIST in CC_GETGD')
-         NTAMP = NT1AM(ISYLRM(ILSTNR)) + NT2AM(ISYLRM(ILSTNR))
-         IF ( CCS ) NTAMP = NT1AM(ISYLRM(ILSTNR))
-         ISYMGD = ISYLRM(ILSTNR)
-         IOPT = 3
-         K1 = 1
-         K2 = 1 + NT1AM(ISYLRM(ILSTNR))
-         CALL CC_RDRSP('FR',ILSTNR,ISYMGD,IOPT,MODEL,GD(K1),GD(K2))
+
+         IF (IPRINT .GT.2) THEN
+           WRITE(LUPRI,'(/,1x,A)') 'Finding gradient for M1'
+           WRITE(LUPRI,'(1x,A,F10.6,A,I3,A,I3)')
+     *       'Frequency ',FRQLRM(ILSTNR),' and state ',ILRM(ILSTNR),
+     *       ' and symmetry ',ISYLRM(ILSTNR)
+         END IF
+
+         CALL CC_RDRSP('FR ',ILSTNR,ISYMGD,IOPTRDG,MODEL,
+     &                 GD(IADR1),GD(IADR2))
+
+         IF (LOCDBG) THEN
+           WRITE(LUPRI,*)'CC_GETGD> RHS vector "FR":',ISYMGD,NTAMP
+           CALL OUTPUT(GD(IADR1),1,NTAMP,1,1,NTAMP,1,1,LUPRI)
+         END IF
+
+         CALL FLSHFO(LUPRI)
 
 C----------------------------------------------------------------------
 C 'E0 ' Lagrangian multipliers:
@@ -302,10 +316,23 @@ C----------------------------------------------------------------------
       ELSE IF (LIST(1:2) .EQ. 'E0') THEN
          IF (ISIDE .NE.-1)
      &        CALL QUIT('Mismatch ISIDE and LIST in CC_GETGD')
-         NTAMP = NT1AM(ISYMOP) + NT2AM(ISYMOP)
-         IF ( CCS ) NTAMP = NT1AM(ISYMOP)
-         ISYMGD = ISYMOP
-         CALL CC_XL(GD,ILSTNR,WORK,LWORK)
+
+         IF (IPRINT .GT.2) THEN
+           WRITE(LUPRI,'(/,1x,A)') 'Finding gradient for E0'
+           WRITE(LUPRI,'(1x,A,F10.6,A,I3,A,I3)')
+     *       'Frequency ',0.0D0,' and state ',IXGRST(ILSTNR),
+     *       ' and symmetry ',1
+         END IF
+
+         CALL CC_RDRSP('BE ',ILSTNR,ISYMGD,IOPTRDG,MODEL,
+     &                 GD(IADR1),GD(IADR2))
+
+         IF (LOCDBG) THEN
+           WRITE(LUPRI,*)'CC_GETGD> RHS vector "BE":',ISYMGD,NTAMP
+           CALL OUTPUT(GD(IADR1),1,NTAMP,1,1,NTAMP,1,1,LUPRI)
+         END IF
+
+         CALL FLSHFO(LUPRI)
 
 C----------------------------------------------------------------------
 C 'RC ' first-order right Cauchy vectors:
@@ -395,11 +422,10 @@ C----------------------------------------------------------------------
          IF (IPRINT .GT.2) THEN
             WRITE(LUPRI,'(/,1x,A)') 'Finding gradient for ER1 response:'
          END IF
-         IOPT  = 3
          IADR1 = 1
          IADR2 = IADR1 + NT1AM(ISYMGD)
          IDLSTEO1 = ILSTNR
-         CALL CC_RDRSP('EO1',IDLSTEO1,ISYMGD,IOPT,MODEL,
+         CALL CC_RDRSP('EO1',IDLSTEO1,ISYMGD,IOPTRDG,MODEL,
      &                 GD(IADR1),GD(IADR2))
          CALL CCLR_DIASCL(GD(IADR2),0.5d0,ISYMGD)
          NTAMP = NT1AM(ISYMGD) + NT2AM(ISYMGD)
@@ -415,11 +441,10 @@ C----------------------------------------------------------------------
          IF (IPRINT .GT.2) THEN
             WRITE(LUPRI,'(/,1x,A)') 'Finding gradient for ER2 response:'
          END IF
-         IOPT  = 3
          IADR1 = 1
          IADR2 = IADR1 + NT1AM(ISYMGD)
          IDLSTEO2 = ILSTNR
-         CALL CC_RDRSP('EO2',IDLSTEO2,ISYMGD,IOPT,MODEL,
+         CALL CC_RDRSP('EO2',IDLSTEO2,ISYMGD,IOPTRDG,MODEL,
      &                 GD(IADR1),GD(IADR2))
          CALL CCLR_DIASCL(GD(IADR2),0.5d0,ISYMGD)
          NTAMP = NT1AM(ISYMGD) + NT2AM(ISYMGD)
@@ -435,11 +460,10 @@ C----------------------------------------------------------------------
          IF (IPRINT .GT.2) THEN
             WRITE(LUPRI,'(/,1x,A)') 'Finding gradient for EL1 response:'
          END IF
-         IOPT  = 3
          IADR1 = 1
          IADR2 = IADR1 + NT1AM(ISYMGD)
          IDLSTEX1 = ILSTNR
-         CALL CC_RDRSP('EX1',IDLSTEX1,ISYMGD,IOPT,MODEL,
+         CALL CC_RDRSP('EX1',IDLSTEX1,ISYMGD,IOPTRDG,MODEL,
      &                 GD(IADR1),GD(IADR2))
 C        CALL CCLR_DIASCL(GD(IADR2),0.5d0,ISYMGD)
          NTAMP = NT1AM(ISYMGD) + NT2AM(ISYMGD)
@@ -455,17 +479,16 @@ C----------------------------------------------------------------------
          IF (IPRINT .GT.2) THEN
             WRITE(LUPRI,'(/,1x,A)') 'Finding gradient for EL2 response:'
          END IF
-         IOPT  = 3
          IADR1 = 1
          IADR2 = IADR1 + NT1AM(ISYMGD)
          IDLSTEX2 = ILSTNR
-         CALL CC_RDRSP('EX2',IDLSTEX2,ISYMGD,IOPT,MODEL,
+         CALL CC_RDRSP('EX2',IDLSTEX2,ISYMGD,IOPTRDG,MODEL,
      &                 GD(IADR1),GD(IADR2))
 C        CALL CCLR_DIASCL(GD(IADR2),0.5d0,ISYMGD)
          NTAMP = NT1AM(ISYMGD) + NT2AM(ISYMGD)
          IF ( CCS ) NTAMP = NT1AM(ISYMGD)
 C----------------------------------------------------------------------
-C 'PL1 ' projected 1st-order response Lagrang. multipls: --> 'X1 ' + 'F1 '
+C 'PL1 ' projected 1st-order respons Lagrang. multipls: --> 'X1 '+'F1 '
 C----------------------------------------------------------------------
 
       ELSE IF (LIST(1:3) .EQ. 'PL1') THEN
@@ -582,7 +605,7 @@ C
       ELSE
         ! if it is a simple unrelaxed one-electron perturbation
         ! calculate the ETA vector in CC_ETAC
-        CALL CC_ETAC(ISYMC,LBLC,GD,'L0',1,0,DUMMY,WORK,LWORK)
+        CALL CC_ETAC(ISYMC,LBLC,GD,'L0 ',1,0,DUMMY,WORK,LWORK)
       END IF
 C
       IF ( DEBUG ) THEN
@@ -1227,44 +1250,6 @@ c /* deck CC_LCGD */
 *---------------------------------------------------------------------*
 *              END OF SUBROUTINE CC_L2GD                              *
 *---------------------------------------------------------------------*
-*---------------------------------------------------------------------*
-c*DECK CC_XL 
-      SUBROUTINE CC_XL(GD,ILSTNR,WORK,LWORK)
-C
-C-----------------------------------------------------------------------------
-C
-C     Purpose: Calculate excited state left hand side of equation.
-C
-C     Written by Ove Christiansen April 1996
-C
-C-----------------------------------------------------------------------------
-C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccexgr.h>
-#include <ccexci.h>
-#include <ccsdio.h>
-#include <ccsdinp.h>
-C
-      PARAMETER( ONE = 1.0D00 , XMONE = -1.0D0)
-      DIMENSION GD(*),WORK(LWORK)
-      CHARACTER MODEL*10
-C
-      K1 = 1
-      K2 = 1 + NT1AMX
-      KEND1 = K2 + NT2AMX
-      LEND1 = LWORK - KEND1
-      IF (LEND1 .LE.0) CALL QUIT('Too little workspace in CC_XL')
-      IOPT = 3
-      write(LUPRI,*) 'ilstnr: ',ilstnr
-      CALL CC_RDRSP('BE',ILSTNR,ISYMOP,IOPT,MODEL,GD(K1),GD(K2)) 
-C
-      END
 c /* deck cc_fre  */
       SUBROUTINE CC_FRE(WORK,LWORK)
 C
@@ -1296,9 +1281,12 @@ C
 #include <leinf.h>
 C
       INCORE = .TRUE.
-      MODEL = 'CCSD     '
-      IF (CC2) MODEL = 'CC2      '
-      IF (CCS) MODEL = 'CCS      '
+      MODEL           = '----------'
+      IF (CC2)  MODEL = 'CC2       '
+      IF (CCS)  MODEL = 'CCS       '
+      IF (CCSD) MODEL = 'CCSD      '
+      IF (CC3)  MODEL = 'CC3       '
+      IF (MODEL(1:1).EQ.'-') CALL QUIT('Unkown model in CC_FRE.')
 C
       NTAMP = NT1AMX + NT2AMX
       IF (CCS) NTAMP = NT1AMX
@@ -1325,100 +1313,10 @@ CCH
          LWRK1 = LWORK - KEND1
          ILSTB = IL 
          IOPT = 3
-         CALL CC_WRRSP('BE',ILSTB,ISYMOP,IOPT,MODEL,DUMMY,
+         CALL CC_WRRSP('BE ',ILSTB,ISYMOP,IOPT,MODEL,DUMMY,
      &                 WORK(K1),WORK(K2),WORK(KEND1),LWRK1)
  1000 CONTINUE
 C
-      END
-c /* deck cc_lbr  */
-      SUBROUTINE CC_LBR(LIST,WORK,LWORK)
-C
-C     Ove Christiansen April-1997
-C
-C     Transform eigen-vectors with general F/B-matrix and write to file.
-C     Vec = L*B*R carried out as B matrix transformation.
-C
-C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccexci.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccn2rsp.h>
-C
-      PARAMETER( TOLFRQ=1.0D-08 )
-      PARAMETER( ONE = 1.0D00 , XMONE = -1.0D0)
-C
-      DIMENSION WORK(LWORK)
-      CHARACTER MODEL*10,RSLIST*2,LIST*2
-      LOGICAL INCORE
-C
-#include <leinf.h>
-C
-      INCORE = .TRUE.
-      MODEL = 'CCSD     '
-      IF (CC2) MODEL = 'CC2      '
-      IF (CCS) MODEL = 'CCS      '
-C
-C-------------------------------------
-C     Assume all required LBR's  = N2.
-C-------------------------------------
-C
-      DO 1000 ILN2 = 1, NQRN2
-
-        ISYML  = ISYIN2(ILN2)
-        ISYMR  = ISYFN2(ILN2)
-        ISYMLR = MULD2H(ISYML,ISYMR)
-
-        IL   = IIN2(ILN2)
-        IR   = IFN2(ILN2)
-
-CCH
-        CALL CC_FTRAN('LE ',IL,'RE ',IR,WORK,LWORK)
-CCH     CALL CC_FGL('LE',IL,'RE',IR,'--',0,.TRUE.,WORK,LWORK)
-CCH
-        K1    = 1
-        K2    = K1 + NT1AM(ISYMLR)
-        KEND1 = K2 + NT2AM(ISYMLR)
-        LWRK1 = LWORK - KEND1
-        IOPT  = 3
-        CALL CC_WRRSP(LIST,ILN2,ISYMLR,IOPT,MODEL,DUMMY,
-     &                WORK(K1),WORK(K2),WORK(KEND1),LWRK1)
-
- 1000 CONTINUE
-
-      END
-c /* deck CC_N2GD */
-      SUBROUTINE CC_N2GD(GD,ILSTNR,WORK,LWORK)
-c---------------------------------------------------------------------*
-c
-c    Purpose: Get rhs for N-vector equations.
-c    Ove Christiansen, April 1997.
-c
-c=====================================================================*
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <cclr.h>
-#include <ccsdsym.h>
-#include <ccn2rsp.h>
-
-      PARAMETER( ONE = 1.0D00 , XMONE = -1.0D0)
-      DIMENSION GD(*),WORK(LWORK)
-      CHARACTER MODEL*10
-C
-      ISYMGD = MULD2H(ISYIN2(ILSTNR),ISYFN2(ILSTNR))
-      K1 = 1
-      K2 = 1 + NT1AM(ISYMGD)
-      IOPT = 3
-      CALL CC_RDRSP('BR',ILSTNR,ISYMGD,IOPT,MODEL,GD(K1),GD(K2)) 
       END
 c /* deck CC_CR2GD */
 *=====================================================================*

@@ -88,7 +88,7 @@ c /* deck cc_famata */
 C#include <ccr1rsp.h>
 
 * local parameters:
-      CHARACTER MSGDBG*(16)
+      CHARACTER MSGDBG*(18)
       PARAMETER (MSGDBG='[debug] CC_FAMAT> ')
 #if defined (SYS_CRAY)
       REAL ONE, TWO, THREE
@@ -135,14 +135,7 @@ C#include <ccr1rsp.h>
 *---------------------------------------------------------------------*
 * begin:
 *---------------------------------------------------------------------*
-      IF (CCSDT) THEN
-        WRITE (LUPRI,'(/1x,a)') 'F{A} matrix transformations not '
-     &          //'implemented for triples yet...'
-        CALL QUIT('Triples not implemented for G '//
-     &       'matrix transformations')
-      END IF
-
-      IF ( .not. (CCS .or. CC2 .or. CCSD) ) THEN
+      IF ( .not. (CCS .or. CC2 .or. CCSD .or. CC3) ) THEN
         WRITE (LUPRI,'(/1x,a)') 'CC_FAMAT called for a Coupled Cluster '
      &          //'method not implemented in CC_FAMAT...'
         CALL QUIT('Unkown CC method in CC_FAMAT.')
@@ -192,7 +185,7 @@ C#include <ccr1rsp.h>
       KEND0   = KGAMMA1 + NT1AM(ISYRES)
       LEND0   = LWORK   - KEND0
 
-      KBTAOO  = KEND0 
+      KBTAOO  = KEND0
       KBTAVV  = KBTAOO  + NMATIJ(ISYTATB)
       KPERTA  = KBTAVV  + NMATAB(ISYTATB)
       KT1AMPB = KPERTA  + NT1AM(ISYMTA)
@@ -212,7 +205,7 @@ C#include <ccr1rsp.h>
 *---------------------------------------------------------------------*
 * for CCS and zeroth-order zeta vector all contributions vanish:
 *---------------------------------------------------------------------*
-      IF (CCS .AND. LISTC(1:2).EQ.'L0') GOTO 1000
+      IF (CCS .AND. LISTC(1:2).EQ.'L0') GOTO 9999
       
 *---------------------------------------------------------------------*
 * read singles parts for B response amplitudes and zeta vector:
@@ -322,7 +315,8 @@ C#include <ccr1rsp.h>
 *---------------------------------------------------------------------*
 * end of CCS part
 *---------------------------------------------------------------------*
-      IF (CCS) GOTO 1000
+      
+      If (CCS) GOTO 9999
 
 *=====================================================================*
 * CC2/CCSD part for the singles: <Zeta_2| [[A,T2B], tau_1] |HF>
@@ -453,7 +447,7 @@ C#include <ccr1rsp.h>
       KGAMMA1 = 1
       KGAMMA2 = KGAMMA1 + NT1AM(ISYRES)
       KEND0   = KGAMMA2 + NT2AM(ISYRES)
-      LEND0   = LWORK - KEND0
+      LEND0   = LWORK   - KEND0
 
       IF (KEND0 .GT. KCTR2) THEN
         CALL QUIT('memory organization mixed up in CC_FAMAT.')
@@ -537,8 +531,8 @@ C#include <ccr1rsp.h>
           KGAMMA2EFF = KGAMMA1EFF + NT1AM(ISYRES)
           KEND0      = KGAMMA2EFF + NT2AM(ISYRES)
         END IF
+        LEND0 = LWORK - KEND0
 
-        LEND0 = LWORK - KEND0 
         IF ( LEND0 .LT. 0 ) THEN
           CALL QUIT('Insufficient work space in CC_FAMAT.')
         END IF
@@ -566,8 +560,17 @@ C#include <ccr1rsp.h>
 *=====================================================================*
 * final section: depending on IOPTRES store vector in memory or on
 *                file or contract it with some other vectors:
+*
+*      the memory has to be organized as follows:
+*         kgamma1     singles result vector
+*         kgamma2     doubles result vector
+*         kgamma1eff  effective singles result vector for CC3
+*         kgamma2eff  effective doubles result vector for CC3
+*         kend0       start of unused work space
 *=====================================================================*
-1000  CONTINUE
+9999  CONTINUE 
+
+      LEND0 = LWORK - KEND0
 
       IF (CCS) THEN
          MODELW = 'CCS       '
@@ -678,7 +681,7 @@ C#include <ccr1rsp.h>
 #include <ccorb.h>
 
       LOGICAL LOCDBG
-      PARAMETER (LOCDBG=.false.)
+      PARAMETER (LOCDBG=.FALSE.)
 
       INTEGER ISYM0
       PARAMETER (ISYM0 = 1)
@@ -693,15 +696,15 @@ C#include <ccr1rsp.h>
       REAL WORK(LWORK), FREQL, FREQA, FREQB, FREQF, FREQC
       REAL OMEGA1(*), OMEGA2(*)
       REAL OMEGA1EFF(*), OMEGA2EFF(*)
-      REAL SIXTH, TWO, TCON, DCON, SCON
+      REAL SIXTH, ONE, TWO, TCON, DCON, SCON
 #else
       DOUBLE PRECISION DOTPROD(MXVEC,NFATRAN), DDOT
       DOUBLE PRECISION WORK(LWORK), FREQL, FREQA, FREQB, FREQE, FREQC
       DOUBLE PRECISION OMEGA1(*), OMEGA2(*)
       DOUBLE PRECISION OMEGA1EFF(*), OMEGA2EFF(*)
-      DOUBLE PRECISION SIXTH, TWO, TCON, DCON, SCON
+      DOUBLE PRECISION SIXTH, ONE, TWO, TCON, DCON, SCON
 #endif
-      PARAMETER(SIXTH=1.0D0/6.0D0, TWO=2.0D0)
+      PARAMETER(SIXTH=1.0D0/6.0D0, ONE=1.0D0, TWO=2.0D0)
 
       CHARACTER*10 MODEL
       LOGICAL L2INCL
@@ -714,7 +717,7 @@ C#include <ccr1rsp.h>
      &        KEND3, LWRK3, KINT1SC, KINT2SC, KLAMPC, KLAMHC,KFOCKAB,
      &        KFOCKC, LWRK1, KRECNR, KE3AM, KTC3AM, KTC1AM, KTC2AM,
      &        ISYMA, KINT1SB, KINT2SB, KLAMPB, KLAMHB, KFOCKB, ISYMB,
-     &        KFOCKA, KFOCKA_AO, KFOCK0, IRREP, ISYM, IERR
+     &        KFOCKA, KFOCKA_AO, KFOCK0, IRREP, ISYM, IERR, KFOCKAB1
 
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J 
 
@@ -723,6 +726,10 @@ C#include <ccr1rsp.h>
       IF (DIRECT) CALL QUIT('CCSDT_FAMAT_NODDY: DIRECT NOT IMPLEMENTED')
 
       IF (LOCDBG) THEN
+        WRITE(LUPRI,*) 'CCSDT_FAMAT_NODDY> left  vector:',LISTL,IDLSTL
+        WRITE(LUPRI,*) 'CCSDT_FAMAT_NODDY> right vector:',LISTB,IDLSTB
+        WRITE(LUPRI,*) 'CCSDT_FAMAT_NODDY> operator    :',LABELA
+        WRITE(LUPRI,*) 'CCSDT_FAMAT_NODDY> frequency   :',FREQA
         WRITE(LUPRI,*) 'CCSDT_FAMAT_NODDY> result vector on entry:'
         CALL CC_PRP(OMEGA1,OMEGA2,1,1,1)
       END IF
@@ -766,7 +773,8 @@ C#include <ccr1rsp.h>
       KOME2   = KOME1  + NT1AMX
       KEND1   = KOME2  + NT1AMX*NT1AMX
 
-      KFOCKAB = KEND1
+      KFOCKAB1= KEND1
+      KFOCKAB = KFOCKAB1+ NORBT*NORBT
       KEND1   = KFOCKAB + NORBT*NORBT
 
       LWRK1  = LWORK  - KEND1
@@ -911,6 +919,7 @@ C           ----------------------------------
       IOPT  = 2
       Call CC_RDRSP(LISTB,IDLSTB,ISYMB,IOPT,MODEL,
      &              WORK(KDUM),WORK(KEND3))
+      Call CCLR_DIASCL(WORK(KEND3),TWO,ISYMB) 
       CALL CC_T2SQ(WORK(KEND3),WORK(KT2AM),ISYMB)
 
       ! read L^0 multipliers from file and square up doubles part
@@ -921,9 +930,7 @@ C           ----------------------------------
       CALL CC_T2SQ(WORK(KT3AM),WORK(KL2AM),ISYM0)   
 
 *---------------------------------------------------------------------*
-*     Compute first-order response amplitudes and some integrals:
-*           XINT1SB =  (CK|BD)-bar
-*           XINT2SB =  (CK|LJ)-bar
+*     Compute first-order response amplitudes:
 *---------------------------------------------------------------------*
       KINT1SB = KEND3
       KINT2SB = KINT1SB + NT1AMX*NVIRT*NVIRT
@@ -940,9 +947,10 @@ C           ----------------------------------
       ENDIF
 
       CALL CCSDT_T31_NODDY(WORK(KT3AM),LISTB,IDLSTB,FREQB,.FALSE.,
-     &                     WORK(KINT1SB),WORK(KINT2SB),
+     &                     .FALSE.,WORK(KINT1S0),WORK(KINT2S0),
      &                     .FALSE.,WORK(KDUM),WORK(KDUM),
      &                     .FALSE.,WORK(KDUM),WORK(KDUM),
+     &                             WORK(KINT1SB),WORK(KINT2SB),
      &                     WORK(KLAMPB),WORK(KLAMHB),WORK(KFOCKB),
      &                     WORK(KLAMP0),WORK(KLAMH0),WORK(KFOCK0),
      &                     WORK(KDUM),WORK(KFOCKD),
@@ -1025,9 +1033,16 @@ C     END IF
 *     Compute [A,T^B_1] by AO-to-MO transformation of A with
 *     the response Lambda matrices:
 *---------------------------------------------------------------------*
+      CALL DCOPY(NORBT*NORBT,WORK(KFOCKA_AO),1,WORK(KFOCKAB1),1)
       CALL DCOPY(NORBT*NORBT,WORK(KFOCKA_AO),1,WORK(KFOCKAB),1)
-      CALL CC_FCKMO(WORK(KFOCKAB),WORK(KLAMPB),WORK(KLAMHB),
-     &              WORK(KEND3),LWRK3,ISYMA,ISYMB,ISYMB)
+
+      CALL CC_FCKMO(WORK(KFOCKAB1),WORK(KLAMPB),WORK(KLAMH0),
+     &              WORK(KEND3),LWRK3,ISYMA,ISYMB,ISYM0)
+
+      CALL CC_FCKMO(WORK(KFOCKAB),WORK(KLAMP0),WORK(KLAMHB),
+     &              WORK(KEND3),LWRK3,ISYMA,ISYM0,ISYMB)
+     
+      CALL DAXPY(NORBT*NORBT,ONE,WORK(KFOCKAB1),1,WORK(KFOCKAB),1)
 
 *---------------------------------------------------------------------*
 *     Compute triples result vector 
@@ -1132,9 +1147,11 @@ C       -------------------------------------------------------------
           IF (LISTDP(1:3).EQ.'R1 ' .OR. LISTDP(1:3).EQ.'RE ') THEN
 
              CALL CCSDT_T31_NODDY(WORK(KTC3AM),LISTDP,IDLSTC,FREQC,
-     &                        .FALSE.,WORK(KINT1SC),WORK(KINT2SC),
-     &                        .FALSE.,WORK(KINT1T0),WORK(KINT2T0),
-     &                        .FALSE.,WORK(KXIAJB),WORK(KYIAJB),
+     &                        .FALSE.,
+     &                        .FALSE.,WORK(KINT1S0),WORK(KINT2S0),
+     &                        .FALSE.,WORK(KDUM),WORK(KDUM),
+     &                        .FALSE.,WORK(KDUM),WORK(KDUM),
+     &                                WORK(KINT1SC),WORK(KINT2SC),
      &                        WORK(KLAMPC),WORK(KLAMHC),WORK(KFOCKC),
      &                        WORK(KLAMP0),WORK(KLAMH0),WORK(KFOCK0),
      &                        WORK(KDUM),WORK(KFOCKD),

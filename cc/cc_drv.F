@@ -287,7 +287,8 @@ C     flag for ground state zeroth-order Lagrange multiplier:
 C-----------------------------------------------------------------
       LTBAR0 = (CCLRSD.OR.CCLR.OR.CCQR.OR.CCCR.OR.CC4R.OR.
      &          CC5R.OR.CCQR2R.OR.CCEXGR.OR.CCSM.OR.CCTM.OR.
-     &          CCMCD.OR.CCEXLR.OR.MOLGRD.OR.CCSLV.OR.CCDERI)
+     &          CCMCD.OR.CCEXLR.OR.MOLGRD.OR.CCSLV.OR.CCDERI.OR.
+     &          CCOPA)
 
 C-----------------------------------------------------------------
 C     flag for kappa-bar-0 Lagrange multiplier:
@@ -322,7 +323,7 @@ C     flag for response calculation (-> execute CCRSPSYM routine):
 C-----------------------------------------------------------------
       LRSPSYM = (CCLRSD.OR.CCLR.OR.CCQR.OR.CCCR.OR.CC4R.OR.
      &           CC5R.OR.CCQR2R.OR.CCEXGR.OR.CCSM.OR.CCTM.OR.
-     &           CCMCD.OR.CCEXLR)
+     &           CCMCD.OR.CCEXLR.OR.CCOPA)
 
       RSPIM   = RSPIM .OR. LRSPSYM .OR. LTBAR0
 
@@ -585,7 +586,7 @@ C
                IF (CCSDPI.AND.CCSD) CALL CC_REDEIG(WORK,LWORK,OMPCCSD)
 C
                IF (LHTR.OR.CCLRSD.OR.CCQR2R.OR.LPTEXC.OR.CCP2.OR.
-     *             LLEFTEIG.OR.CCEXGR) THEN
+     *             LLEFTEIG.OR.CCEXGR.OR.CCOPA) THEN
                  IF ((I .LT. 17).AND.(.NOT.LESKIP)) THEN
                    CALL CC_EXCI(WORK,LWORK,'LE ')
                  ELSE
@@ -669,6 +670,15 @@ C
             CALL CC_LRESID(WORK,LWORK)  
            ELSE
             WRITE(LUPRI,*) 'Linear response residues'//
+     &         ' are not implemented for the requested model.'
+           END IF
+         END IF
+
+         IF (CCOPA) THEN 
+           IF (CCS .or. CC2 .or. CCSD .or. CC3) THEN
+            CALL CC_OPA(WORK,LWORK)  
+           ELSE
+            WRITE(LUPRI,*) 'One-photon absorption strengths'//
      &         ' are not implemented for the requested model.'
            END IF
          END IF
@@ -777,11 +787,11 @@ C--------------------------------------------
 C
          IF ( CCQR ) THEN
 C
-            IF (CCS .or. CC2 .or. CCSD) THEN
+            IF (CCS .or. CC2 .or. CCSD .or. CC3) THEN
                CALL CC_HYPPOL(WORK,LWORK)
             ELSE
-              WRITE(LUPRI,'(/,1X,A)') 'requested model not '//
-     &              'yet implemented'
+             WRITE(LUPRI,'(/,1X,2A)') 'first hyperpolarizabilities',
+     &        ' are not yet implemented for the requested model'
             ENDIF
 C
          ENDIF
@@ -858,7 +868,7 @@ C        *****  B,F,C,D... matrix test calls  *****
 C        ******************************************
 C--------------------------------------------------
 C
-         IF ( .TRUE. ) THEN
+         IF ( .FALSE. ) THEN
 C
             IF (CCS .or. CC2 .or. CCSD) THEN
 C              CALL CC_BTST(WORK,LWORK)

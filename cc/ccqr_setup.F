@@ -1577,7 +1577,7 @@ C            -----------------------
                 MODEL = 'CCSD      '
                 IOPT  = 3
              ELSE
-                CALL QUIT('Unkown coupled cluster model in CC_FADRV.')
+                CALL QUIT('Unkown coupled cluster model in CCQR_FADRV.')
              END IF
             
              CALL CC_WARSP(LISTC, IFILE, ISYRES, IOPT, MODEL,DUMMY,

@@ -336,7 +336,8 @@ C        Solve equations by call to solver.
 C------------------------------------------
 C
          write(LUPRI,*) 'exgr, irst:',irst
-         CALL CCEQ_SOL(FRHO1,LUFR1,FRHO2,LUFR2,
+         ECURR = 0.0D0
+         CALL CCEQ_SOL(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,
      *                 FC1AM,LUFC1,FC2AM,LUFC2,LIST,
      *                 LPROJECT,ISTATPRJ,
      *                 LINQCC,TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,

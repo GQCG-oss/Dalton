@@ -34,7 +34,7 @@ C
 #include <single.h>
 C
 c*DECK CC_TRDRV
-      SUBROUTINE CC_TRDRV(FRHO1,LUFR1,FRHO2,LUFR2,
+      SUBROUTINE CC_TRDRV(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,
      *                    FC1AM,LUFC1,FC2AM,LUFC2,TRIPLET,
      *                    CC3DIIS,ITRAN,FREQ,
      *                    ISIDE,IST,NSIM,WORK,LWORK)
@@ -427,21 +427,21 @@ C
 C
             LRHO1 = NT1AM(ISYMTR)
             IF (TRIPLET) THEN
-               CALL CC_RHTR3(FRHO1,LUFR1,FR2SD,LUFSD,
+               CALL CC_RHTR3(ECURR,FRHO1,LUFR1,FR2SD,LUFSD,
      *                      FC1AM,LUFC1,FC2AM,LUFC2,
      *                      WORK,LWORK,NSIMTR,
      *                      IVEC,ITR)
 C
             ELSE
                IF (ISIDE .EQ. 1) THEN
-                  CALL CC_RHTR(FRHO1,LUFR1,FR2SD,LUFSD,
+                  CALL CC_RHTR(ECURR,FRHO1,LUFR1,FR2SD,LUFSD,
      *                         FC1AM,LUFC1,FC2AM,LUFC2,
      *                         WORK(KRHO1),WORK(KRHO2),
      *                         WORK(KC1AM),WORK(KC2AM),
      *                         WORK(KEND1),LWRK1,NSIMTR,
      *                         IVEC,ITR,LRHO1)
                ELSE IF (ISIDE .EQ. -1) THEN
-                  CALL CC_LHTR(FRHO1,LUFR1,FR2SD,LUFSD,
+                  CALL CC_LHTR(ECURR,FRHO1,LUFR1,FR2SD,LUFSD,
      *                         FC1AM,LUFC1,FC2AM,LUFC2,
      *                         WORK(KRHO1),WORK(KRHO2),
      *                         WORK(KC1AM),WORK(KC2AM),

@@ -34,7 +34,7 @@ C
 #include <single.h>
 C
 C  /* Deck cc_lhtr */
-      SUBROUTINE CC_LHTR(FRHO1,LUFR1,FRHO2,LUFR2,
+      SUBROUTINE CC_LHTR(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,
      *                   FC1AM,LUFC1,FC2AM,LUFC2,
      *                   RHO1,RHO2,CTR1,CTR2,WORK,LWORK,
      *                   NSIMTR,IVEC,ITR,LRHO1)
@@ -64,8 +64,8 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
-#include <maxash.h>
 #include <maxorb.h>
+#include <maxash.h>
 #include <mxcent.h>
 #include <aovec.h>
 #include <iratdef.h>
@@ -88,8 +88,9 @@ C
 C
       CHARACTER*10 MODEL
       CHARACTER*8  FRHO2, FRHO1, FC2AM, FC1AM, FN3SRT, FNTOC
-      CHARACTER*6  CFIL, DFIL, PQFIL, FN3V, FNCKJD, FN3VI, FN3FOP2
-      CHARACTER*5  FNDKBC3, FN3FOP
+      CHARACTER*7  FN3FOP2X
+      CHARACTER*6  CFIL, DFIL, PQFIL, FN3V, FNCKJD, FN3VI, FN3FOPX
+      CHARACTER*5  FNDKBC3
       CHARACTER*4  FN4V, FNDKBC
       CHARACTER*1  LR
 C
@@ -242,8 +243,8 @@ C
          LUTOC   = 0
          LU3VI   = 0
          LUDKBC3 = 0
-         LU3FOP  = 0
-         LU3FOP2 = 0
+         LU3FOPX  = 0
+         LU3FOP2X = 0
 C
          FN3V    = 'ABCDEL'
          FN4V    = 'ABCD'
@@ -253,8 +254,8 @@ C
          FNTOC   = 'CCSDT_OC'
          FN3VI   = 'CC3_VI'
          FNDKBC3 = 'DKBC3'
-         FN3FOP  = 'PTFOP'
-         FN3FOP2 = 'PTFOP2'
+         FN3FOPX  = 'PTFOPX'
+         FN3FOP2X = 'PTFOP2X'
 C
          CALL WOPEN2(LU3V,FN3V,64,0)
          CALL WOPEN2(LU4V,FN4V,64,0)
@@ -264,8 +265,8 @@ C
          CALL WOPEN2(LUTOC,FNTOC,64,0)
          CALL WOPEN2(LU3VI,FN3VI,64,0)
          CALL WOPEN2(LUDKBC3,FNDKBC3,64,0)
-         CALL WOPEN2(LU3FOP,FN3FOP,64,0)
-         CALL WOPEN2(LU3FOP2,FN3FOP2,64,0)
+         CALL WOPEN2(LU3FOPX,FN3FOPX,64,0)
+         CALL WOPEN2(LU3FOP2X,FN3FOP2X,64,0)
 C
          CALL DZERO(WORK(KOVVO),NT2SQ(1))
          CALL DZERO(WORK(KOOVV),NT2SQ(1))
@@ -760,6 +761,7 @@ C
 C
                   CALL CC3_2O2V(WORK(KXINT),1,WORK(KDSRHF),1,
      *                          WORK(KOVVO),WORK(KOOVV),
+     *                          WORK(KLAMDP),1,WORK(KLAMDH),1,
      *                          WORK(KLAMDP),1,WORK(KLAMDH),1,1,
      *                          WORK(KEND3),LWRK3,IDEL,ISYMD)
                ENDIF
@@ -1623,9 +1625,13 @@ C
 C
          CALL DZERO(WORK(KOOOO),N3ORHF(1))
 C
+C        Since g^0 use lamH^0 twice in call
+C
+         IOPT = 3
          CALL CC3_INTSTORE(LUIN30,'CCINT3O',WORK(KOOOO),1,
-     *                     WORK(KLAMDP),ISYMOP,WORK(KLAMDH),ISYMOP,
-     *                     LU3V,FN3V,LU4V,FN4V,ISYMOP,WORK(KEND1),LWRK1)
+     *                     WORK(KLAMDH),ISYMOP,WORK(KLAMDH),ISYMOP,
+     *                     LU3V,FN3V,LU4V,FN4V,ISYMOP,
+     *                     WORK(KEND1),LWRK1,IOPT)
 C
          CALL CC3_SORT4O(WORK(KOOOO),1,WORK(KEND1),LWRK1)
 C
@@ -1655,11 +1661,16 @@ C-----------------------
 C        Calculate
 C-----------------------
 C
-         CALL CC3_T3_LHTR(RHO1(1,IV),WORK(KT1AM),ISYMOP,
+         ECURRSAV = ECURR 
+         ECURR    = 0.0d0 
+C
+         CALL CC3_T3_LHTR(0.0D0,RHO1(1,IV),WORK(KT1AM),ISYMOP,
      *                    WORK(KT2AM),ISYMOP,CTR2,ISYMTR,
      *                    WORK(KLAMDP),WORK(KLAMDH),
      *                    WORK(KEND2),LWRK2,LU3SRT,FN3SRT,
      *                    LUCKJD,FNCKJD)
+C
+         ECURR    = ECURRSAV 
 C
          IF (IPRINT .GT. 55) THEN
             RHO1N = DDOT(NT1AM(ISYRES),RHO1(1,IV),1,RHO1(1,IV),1)
@@ -1685,7 +1696,7 @@ C
 C
          CALL CC_T2SQ(WORK(KEND2),WORK(KT2AM),1)
 C
-         CALL CC3_L3_LHTR(CTR1(1,IV),ISYMTR,CTR2,ISYMTR,
+         CALL CC3_L3_LHTR(ECURR,CTR1(1,IV),ISYMTR,CTR2,ISYMTR,
      *                    WORK(KT2AM),ISYMOP,
      *                    RHO1(1,IV),RHO2,ISYRES,
      *                    WORK(KOOOO),WORK(KOVVO),WORK(KOOVV),
@@ -1693,7 +1704,7 @@ C
      *                    WORK(KEND2),LWRK2,
      *                    LUCKJD,FNCKJD,LUDKBC,FNDKBC,LUTOC,FNTOC,
      *                    LU3VI,FN3VI,LU4V,FN4V,LUDKBC3,FNDKBC3,
-     *                    LU3FOP,FN3FOP,LU3FOP2,FN3FOP2)
+     *                    LU3FOPX,FN3FOPX,LU3FOP2X,FN3FOP2X)
 C
          IF (IPRINT .GT. 55) THEN
             RHO1N = DDOT(NT1AM(ISYRES),RHO1(1,IV),1,RHO1(1,IV),1)
@@ -1778,8 +1789,8 @@ C
          CALL WCLOSE2(LUTOC,FNTOC,'KEEP')
          CALL WCLOSE2(LU3VI,FN3VI,'KEEP')
          CALL WCLOSE2(LUDKBC3,FNDKBC3,'KEEP')
-         CALL WCLOSE2(LU3FOP,FN3FOP,'KEEP')
-         CALL WCLOSE2(LU3FOP2,FN3FOP2,'KEEP')
+         CALL WCLOSE2(LU3FOPX,FN3FOPX,'KEEP')
+         CALL WCLOSE2(LU3FOP2X,FN3FOP2X,'KEEP')
 C
       ENDIF
 C

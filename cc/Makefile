@@ -43,7 +43,7 @@ ccrhs_ipm1.o   cctrbt2.o      cc_hfr1den.o   \
 cc_gim1.o      cc_bfbsort1.o  cc_int3o2.o    \
 cc_mcdny.o     ccsd_triple.o  \
 cc_slv.o       cc3_omeg3.o    cc3_t3int3.o   ccdiis_solv.o \
-cc_foppt.o     cc3_xi.o \
+cc_foppt.o     cc3_xisd.o \
 cc3_lhtr.o     ccetacor.o     cc_den2_pt.o \
 cc_den_pt2.o   ccpt_symmback.o     ccpt_resort_den.o \
 ccpt_btrden.o  \
@@ -54,8 +54,9 @@ ccsdt_f_noddy.o ccsdt_ints_noddy.o \
 ccsdt_g_noddy.o ccsdt_h_noddy.o \
 ccsdt_eta_noddy.o ccsdt_b_noddy.o ccsdt_ba_noddy.o \
 ccsdt_eta_cont.o cc3_fmat.o     ccsdt_fbmat.o  \
-cc3_etasd.o cc3_ft3b.o cc_foppt_sc.o \
-cc_r12.o       cc_mkrv.o
+cc3_etasd.o cc3_ft3b.o cc3_fmatsd.o cc3_xi_cont.o \
+cc3_init.o ccexnorm.o cc_opa.o ccsdt_aden_noddy.o cc3_aden.o \
+cc_foppt_sc.o cc_r12.o       cc_mkrv.o
   
 # cc_pckcr8.o    cc_pckutil.o   
 io : crayio.o

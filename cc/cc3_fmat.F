@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 C  /* Deck cc3_lhtr_l3 */
       SUBROUTINE CC3_FMAT(LISTL,IDLSTL,LISTB,IDLSTB,IOPTRES,
      *                    OMEGA1,OMEGA2,OMEGA1EFF,OMEGA2EFF,
@@ -38,7 +40,7 @@ C  /* Deck cc3_lhtr_l3 */
      *                    NFTRAN,MXVEC,WORK,LWORK,
      *                    LUCKJD,FNCKJD,LUDKBC,FNDKBC,LUTOC,FNTOC,
      *                    LU3VI,FN3VI,LUDKBC3,FNDKBC3,
-     *                    LU3FOP,FN3FOP,LU3FOP2,FN3FOP2)
+     *                    LU3FOPX,FN3FOPX,LU3FOP2X,FN3FOP2X)
 C
 C     Written by K. Hald, Spring 2002.
 C
@@ -46,7 +48,7 @@ C
       IMPLICIT NONE
 C
       INTEGER IDLSTL, IDLSTB, IOPTRES, ITRAN, NFTRAN, MXVEC, LWORK
-      INTEGER LUCKJD, LUDKBC, LUTOC, LU3VI, LUDKBC3, LU3FOP, LU3FOP2
+      INTEGER LUCKJD, LUDKBC, LUTOC, LU3VI, LUDKBC3, LU3FOPX, LU3FOP2X
       INTEGER IDOTS(MXVEC,NFTRAN)
       INTEGER LUDKBC4, LU4V, ISYMTR, ISINT1, ISINT2, ISYMIM
       INTEGER ISYMT1, ISYMT2, ISYML, ISYML1, ISYML2, KT1AM
@@ -102,8 +104,8 @@ C
 #include <iratdef.h>
 #include <ccinftap.h>
 C
-      CHARACTER*(*) FNCKJD, FNDKBC, FNTOC, FN3VI, FNDKBC3, FN3FOP
-      CHARACTER*(*) FN3FOP2
+      CHARACTER*(*) FNCKJD, FNDKBC, FNTOC, FN3VI, FNDKBC3, FN3FOPX
+      CHARACTER*(*) FN3FOP2X
       CHARACTER*1 CDUMMY
       CHARACTER*3 LISTL, LISTB, LISTDP
       CHARACTER*10 MODEL
@@ -205,7 +207,7 @@ C
 C
 COMMENT COMMENT
 COMMENT COMMENT
-      if (.true.) then
+      if (.false.) then
          kt3am  = kend0
          kend0  = kt3am + nt1amx*nt1amx*nt1amx
          lwrk0 = lwork - kend0
@@ -548,13 +550,13 @@ C
       IF (IPRINT .GT. 55) THEN
          XNORM = DDOT(NTRAOC(ISINT2),WORK(KTROC0),1,
      *                WORK(KTROC0),1)
-         WRITE(LUPRI,*) 'Norm of TROC0 CC3_L3_LHTR : ',XNORM
+         WRITE(LUPRI,*) 'Norm of TROC0 CC3_FMAT : ',XNORM
       ENDIF
 C
       IF (IPRINT .GT. 55) THEN
          XNORM = DDOT(NTRAOC(ISINT2),WORK(KTROC2),1,
      *                WORK(KTROC2),1)
-         WRITE(LUPRI,*) 'Norm of TROC2 CC3_L3_LHTR : ',XNORM
+         WRITE(LUPRI,*) 'Norm of TROC2 CC3_FMAT : ',XNORM
       ENDIF
 C
 C----------------------------
@@ -733,7 +735,7 @@ C------------------------------------------------------
 C
             IOFF = ICKBD(ISCKB2,ISYMD) + NCKATR(ISCKB2)*(D - 1) + 1
             IF (NCKATR(ISCKB2) .GT. 0) THEN
-               CALL GETWA2(LU3FOP2,FN3FOP2,WORK(KTRVI4),IOFF,
+               CALL GETWA2(LU3FOP2X,FN3FOP2X,WORK(KTRVI4),IOFF,
      &                     NCKATR(ISCKB2))
             ENDIF
 C
@@ -790,7 +792,7 @@ C
 C
             IF (LWRK3 .LT. NCKATR(ISYCKB)) THEN
                CALL QUIT('Insufficient space for allocation in '//
-     *                   'CC3_L3_LHTR  (TRVI3)')
+     *                   'CC3_FMAT  (TRVI3)')
             END IF
 C
 C           Can use kend3 since dont need the integrals anymore
@@ -803,13 +805,13 @@ C---------------------------------------------------------------
 C
             IOFF = ICKBD(ISYCKB,ISYMD) + NCKATR(ISYCKB)*(D - 1) + 1
             IF (NCKATR(ISYCKB) .GT. 0) THEN
-               CALL GETWA2(LU3FOP,FN3FOP,WORK(KTRVI6),IOFF,
+               CALL GETWA2(LU3FOPX,FN3FOPX,WORK(KTRVI6),IOFF,
      *                     NCKATR(ISYCKB))
             ENDIF
 C
             IF (LWRK3 .LT. NCKATR(ISYCKB)) THEN
                CALL QUIT('Insufficient space for allocation in '//
-     &                   'CC3_L3_LHTR (TRVI6)')
+     &                   'CC3_FMAT (TRVI6)')
             END IF
 C
 C           Can use kend3 since dont need the integrals anymore
@@ -900,8 +902,8 @@ C
 C
                   CALL DZERO(WORK(KSMAT),NCKIJ(ISCKIJ))
 C
-                  CALL CCFOP_SMAT(WORK(KL1AM),ISYML1,WORK(KL2TP),ISYML2,
-     *                            WORK(KTMAT),
+                  CALL CCFOP_SMAT(0.0D0,WORK(KL1AM),ISYML1,WORK(KL2TP),
+     *                            ISYML2,WORK(KTMAT),
      *                            WORK(KFCKBA),WORK(KXIAJB),ISINT1,
      *                            WORK(KTRVI0),WORK(KTRVI2),
      *                            WORK(KTRVI4),WORK(KTRVI5),
@@ -938,7 +940,20 @@ C
 C
                   CALL DZERO(WORK(KQMAT),NCKIJ(ISCKIJ))
 C
-                  CALL CCFOP_QMAT(WORK(KL1AM),ISYML1,WORK(KL2TP),ISYML2,
+                  ! g integrals
+c                 call dzero(WORK(KTRVI3),NCKATR(ISCKB2))
+                  ! L integrals
+c                 call dzero(WORK(KTRVI6),NCKATR(ISCKB2))
+C
+                  ! g integrals
+c                 call dzero(WORK(KTROC0),NTRAOC(ISINT2))
+c                 ! L integrals
+c                 call dzero(WORK(KTROC2),NTRAOC(ISINT2))
+c
+c                 call dzero(WORK(KXIAJB),NT2AM(ISYMOP))
+c                 call dzero(WORK(KFCKBA),NT1AM(1))
+                  CALL CCFOP_QMAT(0.0D0,WORK(KL1AM),ISYML1,
+     *                            WORK(KL2TP),ISYML2,
      *                            WORK(KTMAT),WORK(KFCKBA),
      *                            WORK(KXIAJB),ISINT1,WORK(KTRVI3),
      *                            WORK(KTRVI6),WORK(KTROC0),
@@ -952,8 +967,8 @@ C
                   CALL T3_FORBIDDEN(WORK(KQMAT),ISYMIM,ISYMB,B,ISYMD,D)
 COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
-C      call sum_pt3(work(kqmat),isymb,b,isymd,d,
-C     *             isckij,work(kt3am),2)
+c      call sum_pt3(work(kqmat),isymb,b,isymd,d,
+c    *             isckij,work(kt3am),2)
 COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
 C
@@ -1062,9 +1077,9 @@ C
 COMMENT COMMENT COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT COMMENT COMMENT
-C      write(lupri,*) 'L3 Amplitudes in cc3_fmat : '
+c      write(lupri,*) 'L3 Amplitudes in cc3_fmat : '
 C      call dscal(nt1amx*nt1amx*nt1amx,-1.0D0,work(kt3am),1)
-C      call print_pt3(work(kt3am),isckij,3)
+c      call print_pt3(work(kt3am),isckij,3)
 COMMENT COMMENT COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT COMMENT COMMENT
@@ -1080,6 +1095,35 @@ C
       CALL WCLOSE2(LUDELDR,FNDELDR,'DELETE')
       CALL WCLOSE2(LUDKBCR,FNDKBCR,'DELETE')
       CALL WCLOSE2(LUDKBCR4,FNDKBCR4,'DELETE')
+C
+COMMENT COMMENT COMMENT COMMENT 
+C       write(lupri,*) 'OMEGA1EFF in cc3_fmat before added'
+C       do i = 1,nt1am(isyres)
+C           write(lupri,*) i,OMEGA1EFF(i)
+C       end do
+COMMENT COMMENT COMMENT COMMENT 
+C     write(lupri,*) 'OMEGA2EFF in cc3_fmat before added'
+C     call outpak(OMEGA2EFF,NT2AM(isyres),1,lupri)
+COMMENT COMMENT COMMENT COMMENT 
+
+C     DO I = 1,NT1AM(ISYRES)
+C        OMEGA1EFF(I) = OMEGA1EFF(I) + OMEGA1(I)
+C     END DO
+C
+C     DO I = 1,NT2AM(ISYRES)
+C        OMEGA2EFF(I) = OMEGA2EFF(I) + OMEGA2(I)
+C     END DO
+COMMENT COMMENT COMMENT COMMENT 
+C       write(lupri,*) 'OMEGA1EFF in cc3_fmat after added'
+C       do i = 1,nt1am(isyres)
+C           write(lupri,*) i,OMEGA1EFF(i)
+C       end do
+COMMENT COMMENT COMMENT COMMENT 
+C     write(lupri,*) 'OMEGA2EFF in cc3_fmat after added'
+C     call outpak(OMEGA2EFF,NT2AM(isyres),1,lupri)
+COMMENT COMMENT COMMENT COMMENT 
+
+C
 C
 C-------------------
 C     Print timings.
@@ -1816,7 +1860,7 @@ C
 #include <distcl.h>
 #include <cbieri.h>
 #include <eribuf.h>
-#include <cclr.h>
+C#include <cclr.h>
 C
       INTEGER ISYMB, LWORK, LU3SRTR, LUCKJDR
       INTEGER KEND1, LWRK1, KEND2, LWRK2, KENDSV, LWRKSV
@@ -1941,7 +1985,7 @@ C
                ENDIF
 C
                ISYDIS = MULD2H(ISYMD,ISYMOP)
-               ISYAIK = MULD2H(ISYDIS,ISYMTR)
+               ISYAIK = MULD2H(ISYDIS,ISYMOP)
                ISYCKJ = ISYDIS
 C
 C------------------------------------------
@@ -2003,7 +2047,7 @@ C
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
-#include <cclr.h>
+C#include <cclr.h>
 C
       INTEGER ISYMT2, ISYINT, LWORK, LENSQ, ISYMB, ISYMC
       INTEGER INDSQ(LENSQ,6)
@@ -2011,6 +2055,8 @@ C
       INTEGER ISYMD, ISYAIJ, KOFF1, KOFF2, KOFF3, NTOAIJ, NVIRD
       INTEGER ISYAIL, ISYLKJ, ISYMJ, ISYMLK, ISYML, ISYMAI
       INTEGER ISYAIK, NTOTAI, NRHFL
+C
+      integer isymdkb
 C
 #if defined (SYS_CRAY)
       REAL T2TP(*), TRVIR(*), TRVIR2(*), TROCC(*)
@@ -2025,6 +2071,7 @@ C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
 C
       CALL QENTER('WBD_GROUND')
+
 C
 C--------------------------------
 C     First virtual contribution.

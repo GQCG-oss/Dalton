@@ -33,8 +33,6 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#define NODDY_CCSDT   .FALSE.
-#define CCSDT_F_ALTER .TRUE.
 *---------------------------------------------------------------------*
 c/* Deck CC_FMATRIX */
 *=====================================================================*
@@ -57,11 +55,10 @@ c/* Deck CC_FMATRIX */
 #  include <implicit.h>
 #endif
 #include <priunit.h>
-C<<<<<<< cc_fmat.F
 #include <ccsdinp.h>
 #include "maxorb.h"
 #include "ccsdio.h"
-C=======
+#include "ccnoddy.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -225,7 +222,7 @@ COMMENT COMMENT
      &                        WORK(KB2CON),NB2TRAN,MXLAMP,
      &                        LISTL,LISTR,FILFMA,MXBTRAN,MXBTRAN)
 
-         IF (NODDY_CCSDT) THEN
+         IF (NODDY_FMAT) THEN
              CALL CCSDT_FBC_NODDY(CCSDT_F_ALTER,
      &                            WORK(KB1TRAN),WORK(KB1DOTS),
      &                            WORK(KB1CON),NB1TRAN,MXLAMP,
@@ -245,8 +242,9 @@ C
      *                        WORK(KEND),LEND) 
          END IF
          IF (LISTR(1:3).NE.FILFMA(1:3)) THEN
-           IF (NODDY_CCSDT) THEN
-             CALL CCSDT_FBC_NODDY(WORK(KB2TRAN),WORK(KB2DOTS),
+           IF (NODDY_FMAT) THEN
+             CALL CCSDT_FBC_NODDY(CCSDT_F_ALTER,
+     &                            WORK(KB2TRAN),WORK(KB2DOTS),
      &                            WORK(KB2CON),NB2TRAN,MXLAMP,
      &                            LISTL,FILFMA,LISTR,WORK(KEND),LEND) 
            ELSE
@@ -275,6 +273,8 @@ C
 
       END IF
 
+      IF (LOCDBG) WRITE(LUPRI,*) 'Leave CC_FMATRIX...'
+
       CALL QEXIT('CC_FMATRIX')
 
       RETURN
@@ -302,10 +302,10 @@ c/* Deck CC_FTRAN */
 #  include <implicit.h>
 #endif
 #include <priunit.h>
-#include <maxorb.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
+#include "maxorb.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
 
       INTEGER LUFMAT
 
@@ -327,6 +327,10 @@ c/* Deck CC_FTRAN */
 #endif 
 
       CALL QENTER('CC_FTRAN')
+
+      IF (CCSDT.OR.CC3) CALL
+     &  QUIT('Triples not carried through in CC_FTRAN!')     
+
 
       NFTRAN      = 1
       IFTRAN(1,1) = IDLSTL
@@ -487,6 +491,7 @@ c/* Deck CC_FMATNEW */
 #include <aovec.h>
 #include <blocks.h>
 #include <ccslvinf.h>
+#include <ccnoddy.h>
 
 * local parameters:
       CHARACTER MSGDBG*(16)
@@ -508,12 +513,14 @@ c/* Deck CC_FMATNEW */
       INTEGER LUCBAR, LUDBAR, LUPQRR, LUPQR0, LUPQMO, LUFMAT, LUZDN
       INTEGER LUGIM
       INTEGER LUCKJD, LUDKBC, LUTOC, LU3VI, LUDKBC3, LU3FOP, LU3FOP2
+      INTEGER LU3VI2, LU3FOPX, LU3FOP2X
 
       CHARACTER*(8) BFFIL,  FNBFD,  CTFIL, DTFIL, FILFCK, FILRIM, FILO3
       CHARACTER*(8) RHOFIL,FIMFIL,FILMGD,FILXIM,FILYIM,FNBFI,FILZDN
       CHARACTER*(8) CBAFIL, DBAFIL, FNPQRR, FNPQR0, FNPQMO, FNBDZ0
-      CHARACTER*(8) GIMFIL, FNTOC
-      CHARACTER*(6) FNCKJD, FN3VI, FN3FOP2, FNDELD
+      CHARACTER*(8) GIMFIL, FNTOC, FN3VI2
+      CHARACTER*(7) FN3FOP2X
+      CHARACTER*(6) FNCKJD, FN3VI, FN3FOP2, FNDELD, FN3FOPX
       CHARACTER*(5) FNDKBC3, FN3FOP
       CHARACTER*(4) FNDKBC
       PARAMETER (BFFIL ='CCFM_BFI', FNBFD ='CCBFDENS',
@@ -530,7 +537,8 @@ c/* Deck CC_FMATNEW */
      &           FNDKBC='DKBC'    , FNTOC ='CCSDT_OC',
      &           FN3VI ='CC3_VI'  , FNDKBC3='DKBC3',
      &           FN3FOP='PTFOP'   , FN3FOP2='PTFOP2',
-     &           FNDELD='CKDELD'                      )
+     &           FN3FOPX='PTFOPX' , FN3FOP2X='PTFOP2X',
+     &           FNDELD='CKDELD'  , FN3VI2 = 'CC3_VI12' )
 
 
       CHARACTER*(*) LISTL, LISTR, FILFMA
@@ -549,6 +557,7 @@ c/* Deck CC_FMATNEW */
       REAL TIMPQ, TIMIML, TIMIM2, TIMPRE, TIMINT, TIMRDAO
       REAL TIMTRBT, TIMIM0, TIMTRN, TIMGZ, TIMFG
       REAL ZERO, ONE, TWO, HALF, FACT
+C     REAL ECURRSAV
 #else 
       DOUBLE PRECISION WORK(LWORK) 
       DOUBLE PRECISION FCONS(MXVEC,NFTRAN)
@@ -558,6 +567,7 @@ c/* Deck CC_FMATNEW */
       DOUBLE PRECISION TIMPQ, TIMIML, TIMIM2, TIMPRE, TIMINT, TIMRDAO
       DOUBLE PRECISION TIMTRBT, TIMIM0, TIMTRN, TIMGZ, TIMFG
       DOUBLE PRECISION ZERO, ONE, TWO, HALF, FACT
+C     DOUBLE PRECISION ECURRSAV
 #endif 
       PARAMETER (ZERO = 0.0d0, ONE = 1.0d0, TWO = 2.0d0, HALF = 0.5d0)
 
@@ -1986,44 +1996,62 @@ C          ----------------------------------------------
         
         IF (CCSDT) THEN
            IF ( IOPTRES.GE.0 .AND. IOPTRES.LE.4 ) THEN
+C
+             write(lupri,*)'inside memory allocation'
+C
              KTHETA1EFF = KEND2
              KTHETA2EFF = KTHETA1EFF + NT1AM(ISYRES)
              KEND2      = KTHETA2EFF + NT2AM(ISYRES)
              LWRK2      = LWORK - KEND2
+C
+             CALL DZERO(WORK(KTHETA1EFF),NT1AM(ISYRES))
+             CALL DZERO(WORK(KTHETA2EFF),NT2AM(ISYRES))
+C
              IF (LWRK2 .LE. NT1AM(ISYRES)) THEN
                CALL QUIT('Insufficient work space in CC_FMAT. (9)')
              END IF
            END IF
-
-
+C
 C          for final form with true code for partitioning:
-C          IF ( .NOT. NODDY_CCSDT ) THEN
+C          IF ( .NOT. NODDY_FMAT ) THEN
 
-           IF ( (.NOT. NODDY_CCSDT) .AND. (.NOT. IOPTRES.LT.5) ) THEN
-
+C
+C          IF ( (.NOT. NODDY_FMAT) .AND. (.NOT. IOPTRES.LT.5) ) THEN
+           IF ( (.NOT. NODDY_FMAT)) THEN 
+C
              IF (IOPTRES.LT.5) THEN
-
+C
+C----------------------------------------
+C Calculate <L_2|[[H,T^B_3],\tau_nu_1|HF>
+C----------------------------------------
+C
                CALL CC3_FT3B(LISTL,IDLSTL,LISTR,IDLSTR,IOPTRES,
      *                       WORK(KTHETA1),ISYRES,WORK(KEND2),LWRK2,
      *                       FNCKJD,FNDKBC,FNDELD,FNTOC)
-
+C
              END IF
 
              LUCKJD  = 0
              LUDKBC  = 0
              LUTOC   = 0
              LU3VI   = 0
+             LU3VI2   = 0
              LUDKBC3 = 0
              LU3FOP  = 0
              LU3FOP2 = 0
+             LU3FOPX  = 0
+             LU3FOP2X = 0
 C
              CALL WOPEN2(LUCKJD,FNCKJD,64,0)
              CALL WOPEN2(LUDKBC,FNDKBC,64,0)
              CALL WOPEN2(LUTOC,FNTOC,64,0)
              CALL WOPEN2(LU3VI,FN3VI,64,0)
+             CALL WOPEN2(LU3VI2,FN3VI2,64,0)
              CALL WOPEN2(LUDKBC3,FNDKBC3,64,0)
              CALL WOPEN2(LU3FOP,FN3FOP,64,0)
              CALL WOPEN2(LU3FOP2,FN3FOP2,64,0)
+             CALL WOPEN2(LU3FOPX,FN3FOPX,64,0)
+             CALL WOPEN2(LU3FOP2X,FN3FOP2X,64,0)
 C
 COMMENT COMMENT
 COMMENT COMMENT
@@ -2032,6 +2060,22 @@ COMMENT COMMENT            IFDOTS,  FCONS(MXVEC,NFTRAN)  FILFMA
 COMMENT COMMENT            ITRAN in CC3_FMAT at the moment!!!!!!!   
 COMMENT COMMENT
 COMMENT COMMENT
+C
+C---------------------------------------------
+C Calculate   <L_3|[[H^B,T^0_2],\tau_nu_1]|HF> 
+C           + <L_3|[[H^0,T^B_2],\tau_nu_1]|HF> 
+C and 
+C             <L_3|[H^B,\tau_nu_2]|HF>
+C---------------------------------------------
+C
+C bug fix ? please look at this at some time...
+C ECURR should be put on the call list at some time...
+C bug anyway, ECURR=0.0d0 is only working if LISTL=0.0d00
+C
+C 
+C            ECURRSAV = ECURR 
+C            ECURR    = 0.0d0 
+c bug fix ?
              CALL CC3_FMAT(LISTL,IDLSTL,LISTR,IDLSTR,IOPTRES,
      *                     WORK(KTHETA1),   WORK(KTHETA2),
      *                     WORK(KTHETA1EFF),WORK(KTHETA2EFF),
@@ -2039,35 +2083,68 @@ COMMENT COMMENT
      *                     NFTRAN,MXVEC,WORK(KEND2),LWRK2,
      *                     LUCKJD,FNCKJD,LUDKBC,FNDKBC,LUTOC,FNTOC,
      *                     LU3VI,FN3VI,LUDKBC3,FNDKBC3,
+     *                     LU3FOPX,FN3FOPX,LU3FOP2X,FN3FOP2X)
+C bug fix ? please look at this at some time...
+C             ECURR    = ECURRSAV 
+C
+COMMENT COMMENT COMMENT COMMENT 
+C       write(lupri,*) 'KTHETA1EFF just after CC3_FMAT'
+C       do i = 1,nt1am(isyres)
+C           write(lupri,*) i,WORK(KTHETA1EFF-1+i)
+C       end do
+COMMENT COMMENT COMMENT COMMENT 
+C     write(lupri,*) 'KTHETA2EFF just after CC3_FMAT'
+C     call outpak(WORK(KTHETA2EFF),NT1AM(isyres),1,lupri)
+COMMENT COMMENT COMMENT COMMENT 
+C
+C
+C------------------------------------------
+C Calculate <F_3|[[H,T^0_2],\tau_nu_1]|HF>
+C and       <F_3|[H,\tau_nu_2]|HF>
+C------------------------------------------
+C
+             IF (IOPTRES.LT.5) THEN
+               CALL CC3_FMATSD(LISTL,IDLSTL,LISTR,IDLSTR,
+     *                     WORK(KTHETA1),WORK(KTHETA2),WORK(KTHETA1EFF),
+     *                     WORK(KTHETA2EFF),ISYRES,WORK(KEND2),LWRK2,
+     *                     LUDKBC,FNDKBC,LUCKJD,FNCKJD,LUTOC,FNTOC,
+     *                     LU3VI,FN3VI,LU3VI2,FN3VI2,
      *                     LU3FOP,FN3FOP,LU3FOP2,FN3FOP2)
+             ENDIF
+COMMENT COMMENT COMMENT COMMENT 
+C       write(lupri,*) 'KTHETA1 just after CC3_FMATSD'
+C       do i = 1,nt1am(isyres)
+C           write(lupri,*) i,WORK(KTHETA1-1+i)
+C       end do
+COMMENT COMMENT COMMENT COMMENT 
+C     write(lupri,*) 'KTHETA2 just after CC3_FMATSD'
+C     call outpak(WORK(KTHETA2),NT1AM(isyres),1,lupri)
+COMMENT COMMENT COMMENT COMMENT 
 C
-C            call cc3_fmatsd(...)
-C
+
              CALL WCLOSE2(LUCKJD,FNCKJD,'KEEP')
              CALL WCLOSE2(LUDKBC,FNDKBC,'KEEP')
              CALL WCLOSE2(LUTOC,FNTOC,'KEEP')
              CALL WCLOSE2(LU3VI,FN3VI,'KEEP')
+             CALL WCLOSE2(LU3VI2,FN3VI2,'KEEP')
              CALL WCLOSE2(LUDKBC3,FNDKBC3,'KEEP')
              CALL WCLOSE2(LU3FOP,FN3FOP,'KEEP')
              CALL WCLOSE2(LU3FOP2,FN3FOP2,'KEEP')
-COMMENT
-COMMENT
+             CALL WCLOSE2(LU3FOPX,FN3FOPX,'KEEP')
+             CALL WCLOSE2(LU3FOP2X,FN3FOP2X,'KEEP')
+C
            else
-COMMENT
-COMMENT
-             write(lupri,*) 'Before CCSDT_FMAT_NODDY!!!!!!!'
-             write(lupri,*) 'IOPTRES, LISTL = ',IOPTRES, LISTL
+C
+             write(lupri,*) 'call ccsdt_fmat_noddy... lwrk2:',lwrk2
+C
              CALL CCSDT_FMAT_NODDY(LISTL,IDLSTL,LISTR,IDLSTR,
      &                             IOPTRES,CCSDT_F_ALTER,
      &                             WORK(KTHETA1),   WORK(KTHETA2),
      &                             WORK(KTHETA1EFF),WORK(KTHETA2EFF),
      &                             IFDOTS,FCONS,FILFMA,ITRAN,
      &                             NFTRAN,MXVEC,WORK(KEND2),LWRK2)
-COMMENT
-COMMENT
+C
            endif
-COMMENT
-COMMENT
 C
            IF (IPRINT .GT. 110) THEN
               CALL AROUND('Omega1 and Omega2 after  F(cc3) : ')
@@ -2118,6 +2195,16 @@ C
 
 *        write to a sequential file by a call to CC_WRRSP/CC_WARSP,
 *        use FILFMA as LIST type and IFTRAN(3,ITRAN) as index
+
+COMMENT COMMENT COMMENT COMMENT 
+C       write(lupri,*) 'KTHETA1EFF before writting to file'
+C       do i = 1,nt1am(isyres) 
+C           write(lupri,*) i,WORK(KTHETA1EFF-1+i)
+C       end do
+COMMENT COMMENT COMMENT COMMENT 
+C     write(lupri,*) 'KTHETA2EFF  before writting to file'
+C     call outpak(WORK(KTHETA2EFF),NT1AM(isyres),1,lupri)
+COMMENT COMMENT COMMENT COMMENT 
 
          IF (IOPTRES.EQ.3) THEN
            CALL CC_WRRSP(FILFMA,IFTRAN(3,ITRAN),ISYRES,IOPTW,MODELW,
@@ -4377,8 +4464,8 @@ c/* Deck CC_ZETADEN */
 #  include <implicit.h>
 #endif
 #include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
+#include "ccsdsym.h"
+#include "ccorb.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -4506,7 +4593,6 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION CTR1(*),XLAMDP(*),CHI(*),XI(*)
@@ -5055,9 +5141,9 @@ C
            CONT2   = B1CON(JVEC,JTRAN)
           ELSE
            ! R3=ITAMPC, R1=ITAMPB on a second list
-           CALL CC_SETF12(IB1TRAN,IB1DOTS,MXB1TRAN,MXB1VEC,
+           CALL CC_SETF12(IB2TRAN,IB2DOTS,MXB2TRAN,MXB2VEC,
      &                    ITAMPC,ITAMPB,IZETA,JTRAN,JVEC)
-           NB1TRAN = MAX(NB1TRAN,JTRAN)
+           NB2TRAN = MAX(NB2TRAN,JTRAN)
            MXVAB2  = MAX(MXVAB2,JVEC)
            CONT2   = B2CON(JVEC,JTRAN)
           END IF

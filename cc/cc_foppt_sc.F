@@ -31,12 +31,15 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 C  /* Deck ccsdpt_dens2_sc */
       SUBROUTINE CCSDPT_DENS2_SC(T1AM,ISYMT1,T2TP,ISYMT2,MODEL,
      *                        L1AM,ISYML1,L2TP,ISYML2,WORK,LWORK,
      *                        LUDELD,FNDELD,LUCKJD,FNCKJD,LUDKBC,FNDKBC,
      *                        LUTOC,FNTOC,LU3VI,FN3VI,LUDKBC3,FNDKBC3,
-     *                        LU3FOP,FN3FOP,LU3FOP2,FN3FOP2)
+     *                        LU3FOP,FN3FOP,LU3FOP2,FN3FOP2,
+     *                        LU3FOPX,FN3FOPX,LU3FOP2X,FN3FOP2X)
 C
 C     Written by K. Hald, Fall 2001.
 C     Modified (temporary) version for CCSD(T) gradients with symmetry. 
@@ -78,7 +81,7 @@ C
       INTEGER KTRVI14, KTRVI15, KTRVI16, KTRVI17, KTRVI18, KTRVI19
       INTEGER KTRVI20, ISYTMP, KTROC01, KTROC21, KTROC03, KTROC23
       INTEGER LUDELD, LUCKJD, LUDKBC, LUTOC, LU3VI, LUDKBC3, LU3FOP
-      INTEGER LU3FOP2
+      INTEGER LU3FOP2, LU3FOPX, LU3FOP2X
       integer KENDSV,NTOT
 C
 #if defined (SYS_CRAY)
@@ -118,8 +121,10 @@ C
 C
       LOGICAL   C3LRSV, CC1ASV, CC1BSV, LDEBUG
       logical locdbg
+      PARAMETER (locdbg = .FALSE.)
       CHARACTER*(*) FNDELD, FNCKJD, FNDKBC, FNTOC, FN3VI, FNDKBC3
       CHARACTER*(*) FN3FOP, FN3FOP2
+      CHARACTER*(*) FN3FOPX, FN3FOP2X
       CHARACTER*5 FNDPTIA, FNDPTAB, FNDPTIJ, FNKAPAB, FNKAPIJ
       CHARACTER*6 FNDPTIA2
       CHARACTER*7 FNDIAJB, FNDAIJK, FNDIAJK
@@ -131,7 +136,6 @@ C
       CALL QENTER('CCSDPT_DENS2')
 C
       LDEBUG = .FALSE.
-      locdbg = .true.
 C
 C-------------------------------------------------------------
 C     Set symmetry flags.
@@ -708,7 +712,7 @@ C
             IF (CC3) THEN
                IOFF = ICKBD(ISCKB2,ISYMD) + NCKATR(ISCKB2)*(D - 1) + 1
                IF (NCKATR(ISCKB2) .GT. 0) THEN
-                  CALL GETWA2(LU3FOP2,FN3FOP2,WORK(KTRVI4),IOFF,
+                  CALL GETWA2(LU3FOP2X,FN3FOP2X,WORK(KTRVI4),IOFF,
      &                        NCKATR(ISCKB2))
                ENDIF
             ELSE
@@ -850,7 +854,7 @@ C
             IF (CC3) THEN
                IOFF = ICKBD(ISYCKB,ISYMD) + NCKATR(ISYCKB)*(D - 1) + 1
                IF (NCKATR(ISYCKB) .GT. 0) THEN
-                  CALL GETWA2(LU3FOP,FN3FOP,WORK(KTRVI6),IOFF,
+                  CALL GETWA2(LU3FOPX,FN3FOPX,WORK(KTRVI6),IOFF,
      *                        NCKATR(ISYCKB))
                ENDIF
             ELSE
@@ -1082,7 +1086,7 @@ C
                         IOFF = ICKBD(ISYCKD,ISYMB) 
      *                       + NCKATR(ISYCKD)*(B-1) + 1
                         IF (NCKATR(ISYCKD) .GT. 0) THEN
-                           CALL GETWA2(LU3FOP2,FN3FOP2,WORK(KTRVI11),
+                           CALL GETWA2(LU3FOP2X,FN3FOP2X,WORK(KTRVI11),
      *                                 IOFF,NCKATR(ISYCKD))
                         ENDIF
                      ELSE
@@ -1107,8 +1111,8 @@ C
                         IOFF = ICKBD(ISYCKD,ISYMB) 
      *                       + NCKATR(ISYCKD)*(B - 1) + 1
                         IF (NCKATR(ISYCKD) .GT. 0) THEN
-                           CALL GETWA2(LU3FOP,FN3FOP,WORK(KTRVI13),IOFF,
-     *                                 NCKATR(ISYCKD))
+                           CALL GETWA2(LU3FOPX,FN3FOPX,WORK(KTRVI13),
+     *                                 IOFF,NCKATR(ISYCKD))
                         ENDIF
 C
                         IOFF = ICKAD(ISYCKD,ISYMB) 
@@ -1140,7 +1144,8 @@ C                 Calculate the S(ci,bk,dj) matrix for T3 for B,D.
 C-------------------------------------------------------------------
 C
                   DTIME = SECOND()
-                  CALL CC3_SMAT(T2TP,ISYMT2,WORK(KTMAT),WORK(KTRVI0),
+                  CALL CC3_SMAT(0.0D0,T2TP,ISYMT2,WORK(KTMAT),
+     *                          WORK(KTRVI0),
      *                          WORK(KTRVI2),WORK(KTROC0),ISINT2,
      *                          WORK(KFOCKD),WORK(KDIAG),
      *                          WORK(KSMAT),WORK(KEND4),LWRK4,
@@ -1163,7 +1168,8 @@ C                 Calculate the S(ci,bk,dj) matrix for T3 for D,B.
 C-------------------------------------------------------------------
 C
                   DTIME = SECOND()
-                  CALL CC3_SMAT(T2TP,ISYMT2,WORK(KTMAT),WORK(KTRVI8),
+                  CALL CC3_SMAT(0.0D0,T2TP,ISYMT2,WORK(KTMAT),
+     *                          WORK(KTRVI8),
      *                          WORK(KTRVI9),WORK(KTROC0),ISINT2,
      *                          WORK(KFOCKD),WORK(KDIAG),
      *                          WORK(KSMAT3),WORK(KEND4),LWRK4,
@@ -1190,7 +1196,7 @@ C
                   CALL DZERO(WORK(KSMAT2),NCKIJ(ISCKIJ))
 C
                   IF (CC3) THEN
-                     CALL CCFOP_SMAT(L1AM,ISYML1,L2TP,ISYML2,
+                     CALL CCFOP_SMAT(0.0D0,L1AM,ISYML1,L2TP,ISYML2,
      *                               WORK(KTMAT),
      *                               WORK(KFCKBA),WORK(KXIAJB),ISINT1,
      *                               WORK(KTRVI14),WORK(KTRVI15),
@@ -1205,8 +1211,8 @@ C
 C
                   ELSE
 C
-                     CALL CCFOP_SMAT(T1AM,ISYMT1,WORK(KT2TCME),ISYMT2,
-     *                               WORK(KTMAT),
+                     CALL CCFOP_SMAT(0.0D0,T1AM,ISYMT1,WORK(KT2TCME),
+     *                               ISYMT2,WORK(KTMAT),
      *                               WORK(KFCKBA),WORK(KXIAJB),ISINT1,
      *                               WORK(KTRVI0),WORK(KTRVI2),
      *                               WORK(KTRVI4),WORK(KTRVI5),
@@ -1239,7 +1245,7 @@ C
                      CALL DZERO(WORK(KSMAT4),NCKIJ(ISCKIJ))
 C
                      IF (CC3) THEN
-                        CALL CCFOP_SMAT(L1AM,ISYML1,L2TP,
+                        CALL CCFOP_SMAT(0.0D0,L1AM,ISYML1,L2TP,
      *                                  ISYML2,WORK(KTMAT),WORK(KFCKBA),
      *                                  WORK(KXIAJB),ISINT1,
      *                                  WORK(KTRVI16),WORK(KTRVI17),
@@ -1254,7 +1260,7 @@ C
 C
                      ELSE
 C
-                        CALL CCFOP_SMAT(T1AM,ISYMT1,WORK(KT2TCME),
+                        CALL CCFOP_SMAT(0.0D0,T1AM,ISYMT1,WORK(KT2TCME),
      *                                  ISYMT2,WORK(KTMAT),WORK(KFCKBA),
      *                                  WORK(KXIAJB),ISINT1,
      *                                  WORK(KTRVI8),WORK(KTRVI9),
@@ -1285,7 +1291,7 @@ C                 Calculate Q(ci,jk) for fixed b,d.
 C--------------------------------------------------
 C
                   DTIME = SECOND()
-                  CALL CC3_QMAT(T2TP,ISYMT2,WORK(KTRVI3),
+                  CALL CC3_QMAT(0.0D0,T2TP,ISYMT2,WORK(KTRVI3),
      *                          WORK(KTROC0),ISINT2,WORK(KFOCKD),
      *                          WORK(KDIAG),WORK(KQMAT),
      *                          WORK(KEND4),LWRK4,WORK(KINDSQ),LENSQ,
@@ -1311,7 +1317,7 @@ C
                   CALL DZERO(WORK(KQMAT2),NCKIJ(ISCKIJ))
 C
                   IF (CC3) THEN
-                     CALL CCFOP_QMAT(L1AM,ISYML1,L2TP,ISYML2,
+                     CALL CCFOP_QMAT(0.0D0,L1AM,ISYML1,L2TP,ISYML2,
      *                               WORK(KTMAT),WORK(KFCKBA),
      *                               WORK(KXIAJB),ISINT1,WORK(KTRVI18),
      *                               WORK(KTRVI6),WORK(KTROC01),
@@ -1323,7 +1329,8 @@ C
                      CALL DSCAL(NCKIJ(ISCKIJ),HALF,WORK(KQMAT2),1)
 C
                   ELSE
-                     CALL CCFOP_QMAT(T1AM,ISYMT1,WORK(KT2TCME),ISYMT2,
+                     CALL CCFOP_QMAT(0.0D0,T1AM,ISYMT1,
+     *                               WORK(KT2TCME),ISYMT2,
      *                               WORK(KTMAT),WORK(KFCKBA),
      *                               WORK(KXIAJB),ISINT1,WORK(KTRVI3),
      *                               WORK(KTRVI6),WORK(KTROC0),
@@ -1349,7 +1356,7 @@ C                 Calculate U(ci,jk) for fixed b,d.
 C--------------------------------------------------
 C
                   DTIME = SECOND()
-                  CALL CC3_UMAT(T2TP,ISYMT2,WORK(KTRVI1),
+                  CALL CC3_UMAT(0.0D0,T2TP,ISYMT2,WORK(KTRVI1),
      *                          WORK(KTROC02),ISINT2,WORK(KFOCKD),
      *                          WORK(KDIAG),WORK(KUMAT),WORK(KTMAT),
      *                          WORK(KEND4),LWRK4,WORK(KINDSQ),LENSQ,
@@ -1371,7 +1378,7 @@ C                 Calculate U(ci,jk) for fixed d,b.
 C--------------------------------------------------
 C
                   DTIME = SECOND()
-                  CALL CC3_UMAT(T2TP,ISYMT2,WORK(KTRVI10),
+                  CALL CC3_UMAT(0.0D0,T2TP,ISYMT2,WORK(KTRVI10),
      *                          WORK(KTROC02),ISINT2,WORK(KFOCKD),
      *                          WORK(KDIAG),WORK(KUMAT3),WORK(KTMAT),
      *                          WORK(KEND4),LWRK4,WORK(KINDSQ),LENSQ,
@@ -1397,7 +1404,7 @@ C
                   CALL DZERO(WORK(KUMAT2),NCKIJ(ISCKIJ))
 C
                   IF (CC3) THEN
-                     CALL CCFOP_UMAT(L1AM,ISYML1,L2TP,ISYML2,
+                     CALL CCFOP_UMAT(0.0D0,L1AM,ISYML1,L2TP,ISYML2,
      *                               WORK(KXIAJB),ISINT1,WORK(KFCKBA),
      *                               WORK(KTRVI19),WORK(KTRVI7),
      *                               WORK(KTROC03),WORK(KTROC23),ISINT2,
@@ -1409,7 +1416,8 @@ C
                      CALL DSCAL(NCKIJ(ISCKIJ),HALF,WORK(KUMAT2),1)
 C
                   ELSE
-                     CALL CCFOP_UMAT(T1AM,ISYMT1,WORK(KT2TCME),ISYMT2,
+                     CALL CCFOP_UMAT(0.0D0,T1AM,ISYMT1,WORK(KT2TCME),
+     *                               ISYMT2,
      *                               WORK(KXIAJB),ISINT1,WORK(KFCKBA),
      *                               WORK(KTRVI1),WORK(KTRVI7),
      *                               WORK(KTROC02),WORK(KTROC22),ISINT2,
@@ -1441,7 +1449,7 @@ C
                      CALL DZERO(WORK(KUMAT4),NCKIJ(ISCKIJ))
 C
                      IF (CC3) THEN
-                        CALL CCFOP_UMAT(L1AM,ISYML1,L2TP,ISYML2,
+                        CALL CCFOP_UMAT(0.0D0,L1AM,ISYML1,L2TP,ISYML2,
      *                                  WORK(KXIAJB),ISINT1,
      *                                  WORK(KFCKBA),WORK(KTRVI20),
      *                                  WORK(KTRVI13),WORK(KTROC03),
@@ -1454,7 +1462,7 @@ C
                      CALL DSCAL(NCKIJ(ISCKIJ),HALF,WORK(KUMAT4),1)
 C
                      ELSE
-                        CALL CCFOP_UMAT(T1AM,ISYMT1,WORK(KT2TCME),
+                        CALL CCFOP_UMAT(0.0D0,T1AM,ISYMT1,WORK(KT2TCME),
      *                                  ISYMT2,WORK(KXIAJB),ISINT1,
      *                                  WORK(KFCKBA),WORK(KTRVI10),
      *                                  WORK(KTRVI13),WORK(KTROC02),

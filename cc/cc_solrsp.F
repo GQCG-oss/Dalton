@@ -305,7 +305,7 @@ C       CALL CCEFFFOCK(I1DXORD,IOPREL,WORK,LWORK)
         WRITE (LUPRI,*) 'Warning: no 1-index transformed eff. Fock '
         WRITE (LUPRI,*) 'matrices calculated... '
         WRITE (LUPRI,*) 
-     *             'Relaxed second-order properties will be wrong!.'
+     *             'RELAXED second-order properties will be wrong!.'
       END IF
 
 C======================================================================
@@ -353,7 +353,7 @@ C======================================================================
          R1SKIP = .FALSE.
       END IF
 
-      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.1) THEN
+      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
          CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
      &                  IDUM, IDUM, RDUM, LDUM,
      &                  ISYLRT, LRTLBL, FRQLRT, IDUM,
@@ -401,7 +401,7 @@ C
       END IF 
 
 
-      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.1) THEN
+      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
          CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
      &                  IDUM, IDUM, RDUM, LDUM,
      &                  ISYLRT, LRTLBL, FRQLRT, IDUM,
@@ -428,7 +428,7 @@ C======================================================================
         L1SKIP = .FALSE.
       END IF
 
-      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.1) THEN
+      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
      &                 IDUM, IDUM, RDUM, LDUM,
      &                 ISYLRZ, LRZLBL, FRQLRZ, IDUM,
@@ -559,7 +559,7 @@ C======================================================================
         L1SKIP = .FALSE.
       END IF
 
-      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.1) THEN
+      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
      &                 ISYSPL1, ISTPL1, EIGPL1, LPRPL1,
      &                 ISYPL1,  LBLPL1, FRQPL1, IDUM,
@@ -594,7 +594,7 @@ C
               IFTRAN(3,IDXM) = IDXM
             END DO
 C
-C           all CC_FMATRIX to do the F * RE transformations:
+C           call CC_FMATRIX to do the F * RE transformations:
 C
             IOPT = 3
             CALL CC_FMATRIX(IFTRAN, NLRM, 'L0 ', 'RE ', IOPT, 'FR ',
@@ -608,7 +608,7 @@ C
         FRSKIP = .FALSE.
       END IF 
 
-      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.1) THEN
+      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
      &                 ISYLRM, ILRM, FRQLRM, LDUM,
      &                 IDUM,   IDUM, RDUM, IDUM,
@@ -633,7 +633,7 @@ C======================================================================
         M1SKIP = .FALSE.
       END IF
 
-      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.1) THEN
+      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
      &                 ISYLRM, ILRM, FRQLRM, LDUM,
      &                 IDUM,   IDUM, RDUM, IDUM,
@@ -649,9 +649,38 @@ C======================================================================
       ORDER = 0
       ISIDE = -1
 
-      CALL CC_LBR(LIST,WORK,LWORK)
+      IF ((.NOT.N2SKIP).AND.(.NOT.BRSKIP)) THEN
 
-      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.1) THEN
+         IF (NQRN2 .GT. 0) THEN
+
+            IF (NQRN2 .GT. MAXFDIM) THEN
+              WRITE (LUPRI,*)
+     &              'ERROR: Dimension MAXFDIM to small in CC_SOLRSP.'
+              CALL QUIT('Dimension MAXFDIM to small in CC_SOLRSP.')
+            END IF
+C
+C           set up list of 'F matrix' transformations:
+C
+            DO IDXF = 1, NQRN2
+              IFTRAN(1,IDXF) = IIN2(IDXF)
+              IFTRAN(2,IDXF) = IFN2(IDXF)
+              IFTRAN(3,IDXF) = IDXF
+            END DO
+C
+C           call CC_FMATRIX to do the LE * B * RE transformations:
+C
+            IOPT = 3
+            CALL CC_FMATRIX(IFTRAN, NQRN2, 'LE ', 'RE ', IOPT, LIST,
+     &                      IDUM, RDUM, 0, WORK, LWORK )
+
+         END IF
+
+      ELSE
+        WRITE (LUPRI,*) 'Skipped of LE x B x RE transformations'
+        BRSKIP = .FALSE.
+      END IF
+
+      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
      &                 ISYSN2, ISTN2, EIGN2, LDUM,
      &                 IDUM,   IDUM, RDUM, IDUM,
@@ -667,12 +696,17 @@ C======================================================================
       ORDER = 0
       ISIDE = -1
 
-      CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,
-     &               ISYSN2, ISTN2, EIGN2, LDUM,
-     &               IDUM,   IDUM, RDUM, IDUM,
-     &               ISYOFN2, NQRN2, MAXQRN2, WORK, LWORK)
+      IF ( .NOT. N2SKIP ) THEN
+        CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,
+     &                 ISYSN2, ISTN2, EIGN2, LDUM,
+     &                 IDUM,   IDUM, RDUM, IDUM,
+     &                 ISYOFN2, NQRN2, MAXQRN2, WORK, LWORK)
+      ELSE
+        WRITE (LUPRI,*) 'Skipped second-order N vector (N2) equations'
+        N2SKIP = .FALSE.
+      END IF
 
-      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.1) THEN
+      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
      &                 ISYSN2, ISTN2, EIGN2, LDUM,
      &                 IDUM,   IDUM, RDUM, IDUM,
@@ -753,7 +787,7 @@ C======================================================================
       END DO
       LRC1OPN = .FALSE.
 
-      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.1) THEN
+      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
        CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
      &                IDUM, IDUM, RDUM, LDUM,
      &                ISYLRC, LRCLBL, RDUM, ILRCAU,
@@ -837,7 +871,7 @@ C======================================================================
       END DO
       LLC1OPN = .FALSE.
 
-      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.1) THEN
+      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
      &                 IDUM, IDUM, RDUM, LDUM,
      &                 ISYLC1, LBLLC1, RDUM, ILC1CAU,
@@ -864,7 +898,7 @@ C======================================================================
         O2SKIP = .FALSE.
       END IF
 
-      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.1) THEN
+      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
      &                 IDUM, IDUM, RDUM, LDUM,
      &                 ISYO2, LBLO2, FRQO2, IDUM,
@@ -889,7 +923,7 @@ C======================================================================
         R2SKIP = .FALSE.
       END IF
 
-      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.1) THEN
+      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
      &                 IDUM, IDUM, RDUM, LDUM,
      &                 ISYR2T, LBLR2T, FRQR2T, IDUM,
@@ -955,7 +989,7 @@ C======================================================================
       END DO
       LCR2OPN = .FALSE.
 
-      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.1) THEN
+      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
      &                 IDUM, IDUM, RDUM, LDUM,
      &                 ISYCR2, LBLCR2, RDUM, ICR2CAU,
@@ -980,7 +1014,7 @@ C======================================================================
       END DO
       LCO2OPN = .FALSE.
 
-      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.1) THEN
+      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
      &                 IDUM, IDUM, RDUM, LDUM,
      &                 ISYCO2, LBLCO2, RDUM, ICO2CAU,
@@ -1062,7 +1096,7 @@ C==================================================================
         L2SKIP = .FALSE.
       END IF
 
-      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.1) THEN
+      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
      &                 IDUM, IDUM, RDUM, LDUM,
      &                 ISYL2, LBLL2, FRQL2, IDUM,
@@ -1163,7 +1197,7 @@ C======================================================================
       END DO
       LCL2OPN = .FALSE.
 
-      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.1) THEN
+      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
      &                 IDUM, IDUM, RDUM, LDUM,
      &                 ISYCL2, LBLCL2, RDUM, ICL2CAU,
@@ -1282,7 +1316,7 @@ C===================================================================
      &               ISYOER1, LBLER1, FRQER1, IDUM,
      &               ISYOFER1, NER1LBL, MAXER1LBL, WORK, LWORK)
 
-      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.1) THEN
+      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
      &                 ISYSER1, ISTER1, EIGER1, LPRER1,
      &                 ISYOER1, LBLER1, FRQER1, IDUM,
@@ -1338,7 +1372,7 @@ C===================================================================
      &               ISYOFEL1, NEL1LBL, MAXEL1LBL, WORK, LWORK)
 
 
-      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.1) THEN
+      IF (DEBUG .OR. LOCDBG. OR. IPRINT.GE.5) THEN
         CALL CC_TSTLST(LIST,NSTAT,ORDER,ISIDE,
      &                 ISYSEL1, ISTEL1, EIGEL1, LPREL1,
      &                 ISYOEL1, LBLEL1, FRQEL1, IDUM,
@@ -1372,7 +1406,7 @@ C---------------------------------------------------------------------
 C
 C     Test average values for freq = 0 and tot sym vectors.
 C 
-      IF (DEBUG .OR. (IPRINT.GE.5) .OR. CCSDT) THEN
+      IF (DEBUG .OR. (IPRINT.GE.5)) THEN
          DO ILSTNR = 1, NLRTLBL
 C
             ISYM = ISYLRT(ILSTNR)
@@ -1399,7 +1433,7 @@ C
          END DO
       ENDIF
 
-      IF (DEBUG .OR. (IPRINT.GE.5) .OR. CCSDT) THEN
+      IF (DEBUG .OR. (IPRINT.GE.5)) THEN
          DO ILSTNR = 1, NO1LBL
 C
             ISYM = ISYO1(ILSTNR)

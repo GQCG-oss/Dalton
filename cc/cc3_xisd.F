@@ -1,5 +1,40 @@
-C  /* Deck cc3_xi */ 
-                        SUBROUTINE CC3_XI(XI1,XI2,XI1EFF,XI2EFF,ISYRES,
+C
+C...   Copyright (c) 2001 by the authors of Dalton (see below).
+C...   All Rights Reserved.
+C...
+C...   The source code in this file is part of
+C...   "Dalton, a molecular electronic structure program, Release 1.2
+C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+C...   and O. Vahtras"
+C...
+C...   This source code is provided under a written licence and may be
+C...   used, copied, transmitted, or stored only in accord with that
+C...   written licence.
+C...
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
+C...   This means also that persons (e.g. post-docs) leaving the research
+C...   group of the licence holder may not take any part of Dalton,
+C...   including modified files, with him/her, unless that person has
+C...   obtained his/her own licence.
+C...
+C...   For questions concerning this copyright write to:
+C...      dalton-admin@kjemi.uio.no
+C...
+C...   For information on how to get a licence see:
+C...      http://www.kjemi.uio.no/software/dalton/dalton.html
+C
+#include <single.h>
+C
+C  /* Deck CC3_XISD */ 
+      SUBROUTINE CC3_XISD(XI1,XI2,XI1EFF,XI2EFF,ISYRES,
      *                  FOCKY,ISYFKY,FREQY,XLAMDP,XLAMDH,FOCK0,
      *                  LUCKJD,FNCKJD,LUDKBC,FNDKBC,LUDELD,FNDELD,
      *                  LUTOC,FNTOC,LU3VI,FN3VI,LU3VI2,FN3VI2,
@@ -90,7 +125,7 @@ C
      *          FNDELDR  = 'CC3_XI_TMP3', FNDKBCR  = 'CC3_XI_TMP4',
      *          FNDKBCR4 = 'CC3_XI_TMP5')
 C
-      CALL QENTER('CC3_XI')
+      CALL QENTER('CC3_XISD')
 C
 C--------------------------
 C     Save and set flags.
@@ -142,7 +177,7 @@ C
       CALL CC_RDRSP('R0',0,ISYMT2,IOPT,MODEL,DUMMY,WORK(KEND0))
       CALL CC_T2SQ(WORK(KEND0),WORK(KT2AM),ISYMT2)
       IF (LWORK .LT. NT2SQ(ISYMT2)) THEN
-         CALL QUIT('Not enough memory to construct T2TP in CC3_XI') 
+         CALL QUIT('Not enough memory to construct T2TP in CC3_XISD') 
       ENDIF
 C
       CALL DCOPY(NT2SQ(ISYMT2),WORK(KT2AM),1,WORK(KEND0),1)
@@ -181,7 +216,7 @@ C
 COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT If we want to sum the T3 amplitudes
 COMMENT COMMENT COMMENT
-      if (.false.) then
+      if (.FALSE.) then
          kx3am  = kend0
          kend0  = kx3am + nt1amx*nt1amx*nt1amx
          call dzero(work(kx3am),nt1amx*nt1amx*nt1amx)
@@ -193,7 +228,7 @@ COMMENT COMMENT COMMENT
       IF (LWRK0 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
          WRITE(LUPRI,*) 'Memory needed    : ',KEND0
-         CALL QUIT('Insufficient space in CC3_XI')
+         CALL QUIT('Insufficient space in CC3_XISD')
       END IF
 C
 C-----------------------------------------------------
@@ -218,7 +253,7 @@ C
      *              WORK(KEND0),LWRK0,1,1,1)
 C
       IF (IPRINT .GT. 50) THEN
-         CALL AROUND( 'In CC3_XI: T1 transformed Fock matrix' )
+         CALL AROUND( 'In CC3_XISD: T1 transformed Fock matrix' )
          CALL CC_PRFCKMO(WORK(KFCKBA),ISINT1)
       ENDIF
 C
@@ -246,7 +281,7 @@ C
       ENDDO
 C
       IF (IPRINT .GT. 50) THEN
-       CALL AROUND('In CC3_XI: T1 transf Fock  matrix (sort(ck))')
+       CALL AROUND('In CC3_XISD: T1 transf Fock  matrix (sort(ck))')
          CALL CC_PRFCKMO(WORK(KFCKBA),1)
       ENDIF
 C
@@ -276,7 +311,7 @@ C
       ENDDO
 C
       IF (IPRINT .GT. 50) THEN
-       CALL AROUND('In CC3_XI: T1^Y transf Fock matrix (sort(ck))')
+       CALL AROUND('In CC3_XISD: T1^Y transf Fock matrix (sort(ck))')
          CALL CC_PRFCKMO(WORK(KFCKY),1)
       ENDIF
 C
@@ -301,7 +336,7 @@ C
       IF (LWRK2 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
          WRITE(LUPRI,*) 'Memory needed    : ',KEND2
-         CALL QUIT('Insufficient space in CC3_XI')
+         CALL QUIT('Insufficient space in CC3_XISD')
       END IF
 C
 C------------------------
@@ -360,6 +395,7 @@ C     (ai|j k) sorted as (ij,k,a)
 C----------------------------------------------------------------------
 C
       CALL CCFOP_SORT(WORK(KTROC0),WORK(KTROC02),ISINT2,1)
+
 C
 C-------------------------------
 C     Write out norms of arrays.
@@ -467,7 +503,7 @@ C
          IF (LWRK4 .LT. 0) THEN
             WRITE(LUPRI,*) 'Memory available : ',LWORK
             WRITE(LUPRI,*) 'Memory needed    : ',KEND4
-            CALL QUIT('Insufficient space in CC3_XI')
+            CALL QUIT('Insufficient space in CC3_XISD')
          END IF
 C
 C---------------------
@@ -543,6 +579,7 @@ C
             IF (NCKA(ISCKB2) .GT. 0) THEN
                CALL GETWA2(LUDELD,FNDELD,WORK(KINTVI),IOFF,
      &                     NCKA(ISCKB2))
+
             ENDIF
 C
             CALL CCSDT_TRVIR(WORK(KINTVI),WORK(KTRVI3),XLAMDH,
@@ -563,12 +600,12 @@ C
 C
                IF (IPRINT .GT. 55) THEN
 C 
-                  WRITE(LUPRI,*) 'In CC3_XI: ISYMD :',ISYMD
-                  WRITE(LUPRI,*) 'In CC3_XI: ISYMB :',ISYMB
-                  WRITE(LUPRI,*) 'In CC3_XI: ISYALJ:',ISYALJ
-                  WRITE(LUPRI,*) 'In CC3_XI: ISYMBD:',ISYMBD
-                  WRITE(LUPRI,*) 'In CC3_XI: ISCKIJ:',ISCKIJ
-                  WRITE(LUPRI,*) 'In CC3_XI: ISWMAT:',ISWMAT
+                  WRITE(LUPRI,*) 'In CC3_XISD : ISYMD :',ISYMD
+                  WRITE(LUPRI,*) 'In CC3_XISD : ISYMB :',ISYMB
+                  WRITE(LUPRI,*) 'In CC3_XISD : ISYALJ:',ISYALJ
+                  WRITE(LUPRI,*) 'In CC3_XISD : ISYMBD:',ISYMBD
+                  WRITE(LUPRI,*) 'In CC3_XISD : ISCKIJ:',ISCKIJ
+                  WRITE(LUPRI,*) 'In CC3_XISD : ISWMAT:',ISWMAT
 C
                ENDIF
 C
@@ -599,7 +636,7 @@ C
                IF (LWRK5 .LT. 0) THEN
                   WRITE(LUPRI,*) 'Memory available : ',LWORK
                   WRITE(LUPRI,*) 'Memory needed    : ',KEND5
-                  CALL QUIT('Insufficient space in CC3_XI')
+                  CALL QUIT('Insufficient space in CC3_XISD ')
                END IF
 C
 C---------------------------------------------
@@ -675,7 +712,7 @@ C------------------------------------------------------------------------
 C                 Calculate the S(ci,bk,dj) matrix for T3 for B,D.
 C-------------------------------------------------------------------
 C
-                  CALL CC3_SMAT(WORK(KT2AM),ISYMT2,
+                  CALL CC3_SMAT(0.0D0,WORK(KT2AM),ISYMT2,
      *                          WORK(KTMAT),WORK(KTRVI0),
      *                          WORK(KTRVI2),WORK(KTROC0),ISINT2,
      *                          WORK(KFOCKD),WORK(KDIAG),
@@ -688,8 +725,8 @@ C
 COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
-C       call sum_pt3(work(ksmat),isymb,b,isymd,d,
-C     *             isckij,work(kx3am),1)
+C      call sum_pt3(work(ksmat),isymb,b,isymd,d,
+C    *             isckij,work(kx3am),1)
 cOMMENT COMMENT COMMENT
 cOMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
@@ -704,7 +741,7 @@ C-------------------------------------------------------------------
 C                 Calculate the S(ci,bk,dj) matrix for T3 for D,B.
 C-------------------------------------------------------------------
 C
-                  CALL CC3_SMAT(WORK(KT2AM),ISYMT2,
+                  CALL CC3_SMAT(0.0D0,WORK(KT2AM),ISYMT2,
      *                          WORK(KTMAT),WORK(KTRVI8),
      *                          WORK(KTRVI9),WORK(KTROC0),ISINT2,
      *                          WORK(KFOCKD),WORK(KDIAG),
@@ -717,8 +754,8 @@ C
 COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
-c      call sum_pt3(work(ksmat3),isymd,d,isymb,b,
-c     *             isckij,work(kx3am),1)
+C     call sum_pt3(work(ksmat3),isymd,d,isymb,b,
+C    *             isckij,work(kx3am),1)
 COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
@@ -733,7 +770,7 @@ C---------------------------------------------------------------------------
 C                 Calculate U(ci,jk) for fixed b,d.
 C--------------------------------------------------
 C
-                  CALL CC3_UMAT(WORK(KT2AM),ISYMT2,WORK(KTRVI3),
+                  CALL CC3_UMAT(0.0D0,WORK(KT2AM),ISYMT2,WORK(KTRVI3),
      *                          WORK(KTROC02),ISINT2,WORK(KFOCKD),
      *                          WORK(KDIAG),WORK(KUMAT),WORK(KTMAT),
      *                          WORK(KEND4),LWRK4,WORK(KINDSQ),LENSQ,
@@ -742,8 +779,8 @@ C
                   CALL T3_FORBIDDEN(WORK(KUMAT),ISYMT3,ISYMB,B,ISYMD,D)
 C
 COMMENT COMMENT COMMENT
-C       call sum_pt3(work(kumat),isymb,b,isymd,d,
-C     *             isckij,work(kx3am),3)
+C      call sum_pt3(work(kumat),isymb,b,isymd,d,
+C    *             isckij,work(kx3am),3)
 COMMENT COMMENT COMMENT
 C
                   IF (IPRINT .GT. 55) THEN
@@ -759,7 +796,7 @@ C--------------------------------------------------
 C                 Calculate U(ci,jk) for fixed d,b.
 C--------------------------------------------------
 C
-                  CALL CC3_UMAT(WORK(KT2AM),ISYMT2,WORK(KTRVI10),
+                  CALL CC3_UMAT(0.0D0,WORK(KT2AM),ISYMT2,WORK(KTRVI10),
      *                          WORK(KTROC02),ISINT2,WORK(KFOCKD),
      *                          WORK(KDIAG),WORK(KUMAT3),WORK(KTMAT),
      *                          WORK(KEND4),LWRK4,WORK(KINDSQ),LENSQ,
@@ -768,8 +805,8 @@ C
                   CALL T3_FORBIDDEN(WORK(KUMAT3),ISYMT3,ISYMD,D,ISYMB,B)
 C
 COMMENT COMMENT COMMENT
-C      call sum_pt3(work(kumat3),isymd,d,isymb,b,
-C     *             isckij,work(kx3am),3)
+C     call sum_pt3(work(kumat3),isymd,d,isymb,b,
+C    *             isckij,work(kx3am),3)
 COMMENT COMMENT COMMENT
 C
                   IF (IPRINT .GT. 55) THEN
@@ -796,6 +833,10 @@ C
                   CALL CC3_T3BD(ISCKIJ,WORK(KSMAT),WORK(KSMAT3),
      *                          WORK(KUMAT),WORK(KUMAT3),WORK(KTMAT),
      *                          WORK(KINDSQ),LENSQ)
+c
+c                  call sum_pt3(work(ktmat),isymb,b,isymd,d,
+c    *             1,work(kx3am),3)
+
 C
                   IF (IPRINT .GT. 55) THEN
                      XUMAT = DDOT(NCKIJ(ISCKIJ),WORK(KTMAT),1,
@@ -848,8 +889,8 @@ C
 C
 COMMENT COMMENT COMMENT
 COMMENT COMMENT COMMENT
-C       call sum_pt3(work(kwmat),isymb,b,isymd,d,
-C     *             iswmat,work(kx3am),1)
+C      call sum_pt3(work(kwmat),isymb,b,isymd,d,
+C    *             iswmat,work(kx3am),4)
 C       write(lupri,*) 'Total norm of WBD : ',
 C     *    ddot(nckij(iswmat),work(kwmat),1,work(kwmat),1)
 COMMENT COMMENT COMMENT
@@ -917,7 +958,8 @@ C
       END DO
 COMMENT COMMENT
 COMMENT COMMENT
-C      write(lupri,*) 'T3^W in CC3_XI : '
+C      write(lupri,*) 'TETAXKL in CC3_XISD  : '
+c      write(lupri,*) 'T30 in CC3_XISD  : '
 C      call print_pt3(work(kx3am),1,4)
 COMMENT COMMENT
 COMMENT COMMENT
@@ -957,7 +999,7 @@ C-------------
 C     End
 C-------------
 C
-      CALL QEXIT('CC3_XI')
+      CALL QEXIT('CC3_XISD ')
 C
       RETURN
 C
@@ -1855,7 +1897,6 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
       INTEGER ISYMB,ISYMC,ISWMAT,NB,NC 
 C
@@ -1912,7 +1953,6 @@ C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
-#include <cclr.h>
 C
       INTEGER iopt,lwrk,ai,nck,nbj,kckbj,kaikj,kbjki,index,ib,ic
       integer kckji

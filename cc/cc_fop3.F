@@ -31,6 +31,8 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#include <single.h>
+C
 C  /* Deck ccsd_triple */
       SUBROUTINE CC_FOPTRIPLES(OMEGA1,DENAB,DENIJ,T1AM,T2AM,
      *                         XLAMDP,XLAMDH,WORK,LWORK)
@@ -56,7 +58,6 @@ C
 #include <dummy.h>
 #include <maxorb.h>
 #include <maxash.h>
-#include <mxorb.h>
 #include <aovec.h>
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
@@ -1973,14 +1974,10 @@ C
 #endif
       PARAMETER (ONE = 1.0D0, TWO = 2.0D0)
 C
-#include <priunit_dec.h>
 #include <priunit.h>
-COMMENT COMMENT COMMENT
 C#include <inforb.h>
 #include <ccorb.h>
-COMMENT COMMENT COMMENT
 #include <ccsdinp.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
@@ -2232,14 +2229,10 @@ C
       LOGICAL LBARABCI, LBARAIJK, LDEBUG
       PARAMETER (ONE = 1.0D0, TWO = 2.0D0)
 C
-#include <priunit_dec.h>
 #include <priunit.h>
-COMMENT COMMENT COMMENT
 C#include <inforb.h>
 #include <ccorb.h>
-COMMENT COMMENT COMMENT
 #include <ccsdinp.h>
-#include <ccsdsym_dec.h>
 #include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J

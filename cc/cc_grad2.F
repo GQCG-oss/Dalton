@@ -95,7 +95,7 @@ C
 #include <ccinftap.h>
 C
       LOGICAL LOCDBG 
-      PARAMETER( LOCDBG = .TRUE. )
+      PARAMETER( LOCDBG = .FALSE. )
       INTEGER INDEXA(MXCORB)
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
