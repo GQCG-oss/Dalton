@@ -100,31 +100,31 @@ CTRL[1]=10
 ERROR[1]="ENERGIES NOT CORRECT"
 
 # CC2 polarizability derivatives
-CRIT1=`$GREP "XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM 03 \(relax\.\) (\-0| \-| 0|  )\.0000     ..27451713E-01" $log | wc -l`
-CRIT2=`$GREP "XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM 01 \(relax\.\) (\-0| \-| 0|  )\.0000     -2.1535480    " $log | wc -l`
-CRIT3=`$GREP "YDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   YDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM 03 \(relax\.\) (\-0| \-| 0|  )\.0000     -2.6435166    " $log | wc -l`
-CRIT4=`$GREP "YDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM 02 \(relax\.\) (\-0| \-| 0|  )\.0000     -2.7212291    " $log | wc -l`
-CRIT5=`$GREP "ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM 03 \(relax\.\) (\-0| \-| 0|  )\.0000     -4.8048950    " $log | wc -l`
+CRIT1=`$GREP "XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM003 \(relax\.\) (\-0| \-| 0|  )\.0000     ..27451713E-01" $log | wc -l`
+CRIT2=`$GREP "XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM001 \(relax\.\) (\-0| \-| 0|  )\.0000     -2.1535480    " $log | wc -l`
+CRIT3=`$GREP "YDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   YDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM003 \(relax\.\) (\-0| \-| 0|  )\.0000     -2.6435166    " $log | wc -l`
+CRIT4=`$GREP "YDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM002 \(relax\.\) (\-0| \-| 0|  )\.0000     -2.7212291    " $log | wc -l`
+CRIT5=`$GREP "ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM003 \(relax\.\) (\-0| \-| 0|  )\.0000     -4.8048950    " $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[2]=5
 ERROR[2]="CC2 POLARIZABILITY DERIVATIVES NOT CORRECT"
 
 # CCSD polarizability derivatives
-CRIT1=`$GREP "XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM 03 \(relax\.\) (\-0| \-| 0|  )\.0000     ..30424901E-01" $log | wc -l`
-CRIT2=`$GREP "XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM 01 \(relax\.\) (\-0| \-| 0|  )\.0000     -2.0968998    " $log | wc -l`
-CRIT3=`$GREP "YDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   YDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM 03 \(relax\.\) (\-0| \-| 0|  )\.0000     -2.0225476    " $log | wc -l`
-CRIT4=`$GREP "YDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM 02 \(relax\.\) (\-0| \-| 0|  )\.0000     -2.3642070    " $log | wc -l`
-CRIT5=`$GREP "ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM 03 \(relax\.\) (\-0| \-| 0|  )\.0000     -4.5457026    " $log | wc -l`
+CRIT1=`$GREP "XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM003 \(relax\.\) (\-0| \-| 0|  )\.0000     ..30424901E-01" $log | wc -l`
+CRIT2=`$GREP "XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM001 \(relax\.\) (\-0| \-| 0|  )\.0000     -2.0968998    " $log | wc -l`
+CRIT3=`$GREP "YDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   YDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM003 \(relax\.\) (\-0| \-| 0|  )\.0000     -2.0225476    " $log | wc -l`
+CRIT4=`$GREP "YDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM002 \(relax\.\) (\-0| \-| 0|  )\.0000     -2.3642070    " $log | wc -l`
+CRIT5=`$GREP "ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM003 \(relax\.\) (\-0| \-| 0|  )\.0000     -4.5457026    " $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[3]=5
 ERROR[3]="CCSD POLARIZABILITY DERIVATIVES NOT CORRECT"
 
 # symmetry of polarizability derivatives:
-CRIT1=`$GREP "ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM 01 \(relax\.\) (\-0| \-| 0|  )\.0000 " \
+CRIT1=`$GREP "ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM001 \(relax\.\) (\-0| \-| 0|  )\.0000 " \
 $log |  awk "\\\$11 < 1.0e-10 {print \\\$0}" | wc -l`
-CRIT2=`$GREP "XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   YDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM 02 \(relax\.\) (\-0| \-| 0|  )\.0000 " \
+CRIT2=`$GREP "XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   YDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM002 \(relax\.\) (\-0| \-| 0|  )\.0000 " \
 $log |  awk "\\\$11 < 1.0e-10 {print \\\$0}" | wc -l`
-CRIT3=`$GREP "XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM 03 \(relax\.\) (\-0| \-| 0|  )\.0000 " \
+CRIT3=`$GREP "XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   1DHAM003 \(relax\.\) (\-0| \-| 0|  )\.0000 " \
 $log | awk "\\\$11 < 1.0e-10 {print \\\$0}" | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=6

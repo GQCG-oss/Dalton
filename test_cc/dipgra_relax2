@@ -112,30 +112,30 @@ ERROR[1]="ENERGIES NOT CORRECT"
 
 
 # SCF relaxed polarizabilities & dipole gradients:
-CRIT1=`$GREP "<<XDIPLEN ,1DHAM 01>>\( ..000000\) =    ( -|-0)\.5487907" $log | wc -l`
-CRIT2=`$GREP "<<XDIPLEN ,1DHAM 04>>\( ..000000\) =     ( |0)\.2743954" $log | wc -l`
-CRIT3=`$GREP "<<XDIPLEN ,1DHAM 07>>\( ..000000\) =     ( |0)\.2743954" $log | wc -l`
-CRIT4=`$GREP "<<YDIPLEN ,1DHAM 02>>\( ..000000\) =    ( -|-0)\.0229924" $log | wc -l`
-CRIT5=`$GREP "<<YDIPLEN ,1DHAM 05>>\( ..000000\) =     ( |0)\.0114962" $log | wc -l`
-CRIT6=`$GREP "<<YDIPLEN ,1DHAM 06>>\( ..000000\) =    ( -|-0)\.2205986" $log | wc -l`
-CRIT7=`$GREP "<<YDIPLEN ,1DHAM 08>>\( ..000000\) =     ( |0)\.0114962" $log | wc -l`
-CRIT8=`$GREP "<<YDIPLEN ,1DHAM 09>>\( ..000000\) =     ( |0)\.2205986" $log | wc -l`
-CRIT9=`$GREP "<<ZDIPLEN ,1DHAM 03>>\( ..000000\) =     ( |0)\.0882858" $log | wc -l`
+CRIT1=`$GREP "<<XDIPLEN ,1DHAM001>>\( ..000000\) =    ( -|-0)\.5487907" $log | wc -l`
+CRIT2=`$GREP "<<XDIPLEN ,1DHAM004>>\( ..000000\) =     ( |0)\.2743954" $log | wc -l`
+CRIT3=`$GREP "<<XDIPLEN ,1DHAM007>>\( ..000000\) =     ( |0)\.2743954" $log | wc -l`
+CRIT4=`$GREP "<<YDIPLEN ,1DHAM002>>\( ..000000\) =    ( -|-0)\.0229924" $log | wc -l`
+CRIT5=`$GREP "<<YDIPLEN ,1DHAM005>>\( ..000000\) =     ( |0)\.0114962" $log | wc -l`
+CRIT6=`$GREP "<<YDIPLEN ,1DHAM006>>\( ..000000\) =    ( -|-0)\.2205986" $log | wc -l`
+CRIT7=`$GREP "<<YDIPLEN ,1DHAM008>>\( ..000000\) =     ( |0)\.0114962" $log | wc -l`
+CRIT8=`$GREP "<<YDIPLEN ,1DHAM009>>\( ..000000\) =     ( |0)\.2205986" $log | wc -l`
+CRIT9=`$GREP "<<ZDIPLEN ,1DHAM003>>\( ..000000\) =     ( |0)\.0882858" $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ \
               $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9` 
 CTRL[2]=9
 ERROR[2]="SCF DIPOLE GRADIENTS NOT CORRECT"
 
 # CCSD relaxed polarizabilities & dipole gradients:
-CRIT1=`$GREP "<<XDIPLEN ,1DHAM 01>>\( ..000000\) =     ( |0)\.5054997" $log | wc -l`
-CRIT2=`$GREP "<<XDIPLEN ,1DHAM 04>>\( ..000000\) =    ( -|-0)\.2527498" $log | wc -l`
-CRIT3=`$GREP "<<XDIPLEN ,1DHAM 07>>\( ..000000\) =    ( -|-0)\.2527498" $log | wc -l`
-CRIT4=`$GREP "<<YDIPLEN ,1DHAM 02>>\( ..000000\) =    ( -|-0)\.0845445" $log | wc -l`
-CRIT5=`$GREP "<<YDIPLEN ,1DHAM 05>>\( ..000000\) =     ( |0)\.0422722" $log | wc -l`
-CRIT6=`$GREP "<<YDIPLEN ,1DHAM 06>>\( ..000000\) =     ( |0)\.2475529" $log | wc -l`
-CRIT7=`$GREP "<<YDIPLEN ,1DHAM 08>>\( ..000000\) =     ( |0)\.0422722" $log | wc -l`
-CRIT8=`$GREP "<<YDIPLEN ,1DHAM 09>>\( ..000000\) =    ( -|-0)\.2475529" $log | wc -l`
-CRIT9=`$GREP "<<ZDIPLEN ,1DHAM 03>>\( ..000000\) =    ( -|-0)\.1750830" $log | wc -l`
+CRIT1=`$GREP "<<XDIPLEN ,1DHAM001>>\( ..000000\) =     ( |0)\.5054997" $log | wc -l`
+CRIT2=`$GREP "<<XDIPLEN ,1DHAM004>>\( ..000000\) =    ( -|-0)\.2527498" $log | wc -l`
+CRIT3=`$GREP "<<XDIPLEN ,1DHAM007>>\( ..000000\) =    ( -|-0)\.2527498" $log | wc -l`
+CRIT4=`$GREP "<<YDIPLEN ,1DHAM002>>\( ..000000\) =    ( -|-0)\.0845445" $log | wc -l`
+CRIT5=`$GREP "<<YDIPLEN ,1DHAM005>>\( ..000000\) =     ( |0)\.0422722" $log | wc -l`
+CRIT6=`$GREP "<<YDIPLEN ,1DHAM006>>\( ..000000\) =     ( |0)\.2475529" $log | wc -l`
+CRIT7=`$GREP "<<YDIPLEN ,1DHAM008>>\( ..000000\) =     ( |0)\.0422722" $log | wc -l`
+CRIT8=`$GREP "<<YDIPLEN ,1DHAM009>>\( ..000000\) =    ( -|-0)\.2475529" $log | wc -l`
+CRIT9=`$GREP "<<ZDIPLEN ,1DHAM003>>\( ..000000\) =    ( -|-0)\.1750830" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ \
               $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9` 
 CTRL[3]=9
