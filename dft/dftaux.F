@@ -1,0 +1,672 @@
+#include <single.h>
+C  /* Deck getrho */
+      SUBROUTINE GETRHO(DMAT,GSO,RHO,RHO13,DMAGAO,DFTHRI,IPRINT)
+C
+C     T. Helgaker feb 01
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <mxorb.h>
+#include <mxcent.h>
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0,
+     &           DP5 = 0.5D0, DP3 = D1/3.0D0)
+C
+      DIMENSION DMAT(NBAST,NBAST), GSO(NBAST,NTYPSO), DMAGAO(NBAST)
+C
+#include <dftinf.h>
+#include <symmet.h>
+#include <inforb.h>
+C
+C
+      IF (NOSYM) THEN
+         CALL DSYMV('U',NBAST,D1,DMAT,NBAST,GSO,1,D0,DMAGAO,1)
+      ELSE
+         CALL DZERO(DMAGAO,NBAST)
+         DO ISYM = 1, NSYM
+            ISTR = IBAS(ISYM) + 1
+            IEND = IBAS(ISYM) + NBAS(ISYM)
+            DO J = ISTR, IEND 
+               GSOJ = GSO(J,1)
+               IF (DABS(GSOJ).GT.DFTHRI) THEN
+                  DO I = ISTR, IEND 
+                     DMAGAO(I) = DMAGAO(I) + GSOJ*DMAT(I,J)
+                  END DO
+               END IF
+            END DO
+         END DO
+      END IF
+      RHO   = DDOT(NBAST,GSO,1,DMAGAO,1)
+      RHO13 = RHO**DP3
+      RETURN
+      END      
+C /* Deck dftrhh */
+      SUBROUTINE DFTRHH(DMAT,DMAGAO,GAO,GAO1,GAO2,RH,RHOLAP,RHOGHG)
+C
+C     T. Helgaker oct 2000
+C
+#include <implicit.h>
+      PARAMETER (D0 = 0.0D0, D2 = 2.0D0) 
+C
+#include <inforb.h>
+C
+      DIMENSION DMAT(NBAST,NBAST), DMAGAO(NBAST),RH(3),
+     &          GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6)
+C    GAO2 projected onto DMGAO
+      DIMENSION GAO2PR(6)
+C
+      RXX = D0
+      RXY = D0
+      RXZ = D0
+      RYY = D0
+      RYZ = D0
+      RZZ = D0
+      DO J = 1, NBAST
+         GJX  = GAO1(J,1)
+         GJY  = GAO1(J,2)
+         GJZ  = GAO1(J,3)
+         DGIX = DDOT(NBAST,DMAT(1,J),1,GAO1(1,1),1)
+         DGIY = DDOT(NBAST,DMAT(1,J),1,GAO1(1,2),1)
+         DGIZ = DDOT(NBAST,DMAT(1,J),1,GAO1(1,3),1)
+         RXX = RXX + D2*GJX*DGIX
+         RXY = RXY + DGIX*GJY + DGIY*GJX
+         RXZ = RXZ + DGIX*GJZ + DGIZ*GJX
+         RYY = RYY + D2*GJY*DGIY
+         RYZ = RYZ + DGIY*GJZ + DGIZ*GJY
+         RZZ = RZZ + D2*GJZ*DGIZ
+      END DO
+      CALL DGEMV('T',NBAST,6,D2,GAO2,NBAST,DMAGAO,1,0D0,GAO2PR,1)
+      RXX = RXX + GAO2PR(1)
+      RXY = RXY + GAO2PR(2)
+      RXZ = RXZ + GAO2PR(3)
+      RYY = RYY + GAO2PR(4)
+      RYZ = RYZ + GAO2PR(5)
+      RZZ = RZZ + GAO2PR(6)
+      RHOLAP = RXX + RYY + RZZ
+      RHOGHG = RH(1)*RXX*RH(1) + RH(2)*RYY*RH(2) + RH(3)*RZZ*RH(3)
+     &   + D2*(RH(1)*RXY*RH(2) + RH(1)*RXZ*RH(3) + RH(2)*RYZ*RH(3))
+      END
+C /* Deck dftksm */
+      SUBROUTINE DFTKSM(EXCMAT,GAO,GAO1,RH,VXC,VXB,DOGGA,FROMVX,DFTHRL)
+C
+C     T. Helgaker oct 2000
+C
+#include <implicit.h>
+      PARAMETER (D2 = 2.0D0)
+C
+      LOGICAL DOGGA, FROMVX
+      DIMENSION GAO(NBAST), GAO1(NBAST,3), EXCMAT(NBAST,NBAST),RH(3)
+C
+#include <inforb.h>
+#include <dftinf.h>
+C
+C     Exchange-correlation contribution to Kohn-Sham matrix
+C
+      IF (DOGGA .AND. .NOT.FROMVX) THEN
+         IF (NOSYM) THEN
+            FX = VXB*RH(1)
+            FY = VXB*RH(2)
+            FZ = VXB*RH(3)
+            DO J = 1, NBAST
+               FC = VXC*GAO(J)+FX*GAO1(J,1)+FY*GAO1(J,2)+FZ*GAO1(J,3)
+               IF (DABS(FC).GT.DFTHRL) THEN
+                  CALL DAXPY(NBAST,FC,GAO,1,EXCMAT(1,J),1)
+               END IF
+            END DO
+         ELSE
+            FX = VXB*RH(1)
+            FY = VXB*RH(2)
+            FZ = VXB*RH(3)
+            DO ISYM = 1, NSYM
+               ISTR = IBAS(ISYM) + 1
+               IEND = IBAS(ISYM) + NBAS(ISYM)
+               DO J = ISTR, IEND 
+                  FC = VXC*GAO(J)+FX*GAO1(J,1)+FY*GAO1(J,2)+FZ*GAO1(J,3)
+                  IF (DABS(FC).GT.DFTHRL) THEN
+                     DO I = ISTR, IEND 
+                        EXCMAT(I,J) = EXCMAT(I,J) + FC*GAO(I)
+                     END DO
+                  END IF
+               END DO
+            END DO
+         END IF
+      ELSE
+         DO ISYM = 1, NSYM
+            ISTR = IBAS(ISYM) + 1
+            IEND = IBAS(ISYM) + NBAS(ISYM)
+            DO J = ISTR, IEND 
+               GJ   = GAO(J)
+               GVXC = D2*VXC*GJ
+               IF (DABS(GVXC).GT.DFTHRL) THEN
+                  DO I = ISTR, J - 1
+                     EXCMAT(I,J) = EXCMAT(I,J) + GVXC*GAO(I)
+                  END DO
+                  EXCMAT(J,J) = EXCMAT(J,J) + VXC*GJ*GJ 
+               END IF
+            END DO
+         END DO
+      END IF
+      RETURN
+      END
+C /* Deck dftfrc */
+      SUBROUTINE DFTFRC(DMAT,GAO,GAO1,GAO2,VXC,VXB,RHX,RHY,RHZ,DOGGA)
+C
+C     Exchange-correlation contribution to molecular gradient
+C
+C     T. Helgaker sep 99/oct 00/feb 01
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <mxorb.h>
+#include <mxcent.h>
+C
+      PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
+C
+      LOGICAL DOGGA
+      DIMENSION DMAT(NBAST,NBAST), 
+     &          GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6)
+C
+#include <inforb.h>
+#include <energy.h>
+#include <symmet.h>
+#include <shells.h>
+C
+#include <ibtfun.h>
+C
+      V2 = D2*VXC
+      DO IX = 1, 3
+         IF (IX.EQ.1) THEN
+            K1 = 1
+            K2 = 2
+            K3 = 3
+         ELSE IF (IX.EQ.2) THEN
+            K1 = 2
+            K2 = 4
+            K3 = 5
+         ELSE
+            K1 = 3
+            K2 = 5
+            K3 = 6
+         END IF
+         DO IREPA = 0, MAXREP
+            ISTR = IBAS(IREPA+1) + 1
+            IEND = IBAS(IREPA+1) + NBAS(IREPA+1)
+            IRPAX = IBTXOR(IREPA,ISYMAX(IX,1))
+            IORBA = 0
+            DO ISHELA = 1, KMAX
+               ISCOOR = IPTCNT(3*(NCENT(ISHELA) - 1) + IX,0,1)
+               DO ICOMPA = 1, KHKT(ISHELA)
+                  IORBA = IORBA + 1
+                  IA = IPTSYM(IORBA,IREPA)
+                  KA = IPTSYM(IORBA,IRPAX)
+                  IF (KA.GT.0) THEN
+                     IF (DOGGA) THEN
+                        GA  = GAO1(KA,IX)
+                        GAX = RHX*GA
+                        GAY = RHY*GA
+                        GAZ = RHZ*GA
+                        GA2 = RHX*GAO2(KA,K1) + RHY*GAO2(KA,K2)
+     &                                        + RHZ*GAO2(KA,K3)
+                        GD = D0 
+                        GF = D0
+                        DO IB = ISTR, IEND 
+                           GD = GD + DMAT(IB,IA)*GAO(IB)
+                           GF = GF + DMAT(IB,IA)*(GAO(IB)*GA2
+     &                                          + GAO1(IB,1)*GAX
+     &                                          + GAO1(IB,2)*GAY
+     &                                          + GAO1(IB,3)*GAZ)
+                        END DO
+                        FRC = V2*GD*GA + VXB*GF
+                     ELSE
+                        GD = D0 
+                        DO IB = 1, ISTR, IEND 
+                           GD = GD + GAO(IB)*DMAT(IB,IA)
+                        END DO
+                        FRC = V2*GD*GAO1(KA,IX)
+                     END IF
+                     GRADFT(ISCOOR) = GRADFT(ISCOOR) - FRC 
+                  END IF
+               END DO
+            END DO
+         END DO
+      END DO
+C     IF (DOGGA) THEN
+C        DO 300 I = 1, NBAST
+C           GRHOX = D0 
+C           GRHOY = D0 
+C           GRHOZ = D0 
+C           DO 400 J = 1, NBAST
+C              GRHOX = GRHOX - DMAT(J,I)*
+C    &           (RHX*(GAO2(I,1)*GAO(J) + GAO1(I,1)*GAO1(J,1))
+C    &          + RHY*(GAO2(I,2)*GAO(J) + GAO1(I,1)*GAO1(J,2))
+C    &          + RHZ*(GAO2(I,3)*GAO(J) + GAO1(I,1)*GAO1(J,3)))
+C              GRHOY = GRHOY - DMAT(J,I)*
+C    &           (RHX*(GAO2(I,2)*GAO(J) + GAO1(I,2)*GAO1(J,1))
+C    &          + RHY*(GAO2(I,4)*GAO(J) + GAO1(I,2)*GAO1(J,2))
+C    &          + RHZ*(GAO2(I,5)*GAO(J) + GAO1(I,2)*GAO1(J,3)))
+C              GRHOZ = GRHOZ - DMAT(J,I)*
+C    &           (RHX*(GAO2(I,3)*GAO(J) + GAO1(I,3)*GAO1(J,1))
+C    &          + RHY*(GAO2(I,5)*GAO(J) + GAO1(I,3)*GAO1(J,2))
+C    &          + RHZ*(GAO2(I,6)*GAO(J) + GAO1(I,3)*GAO1(J,3)))
+C 400       CONTINUE 
+C           IX = 3*NCNT(I) - 2
+C           IY = IX + 1 
+C           IZ = IY + 1 
+C           GRADFT(IX) = GRADFT(IX) + VXB*GRHOX
+C           GRADFT(IY) = GRADFT(IY) + VXB*GRHOY
+C           GRADFT(IZ) = GRADFT(IZ) + VXB*GRHOZ
+C 300    CONTINUE 
+C     END IF
+      RETURN
+      END
+C /* Deck dftmag */
+      SUBROUTINE DFTMAG(EXCMAT,COORX,COORY,COORZ,GAO,GAO1,GAB1,
+     &                  GAB2,VXC,VXB,RHX,RHY,RHZ,DOGGA,FROMVX)
+C
+C     T. Helgaker sep 99/ oct 00 / feb 01
+C
+C     Exchange-correlation contribution to Kohn-Sham matrix
+C     differentiated with respect to magnetic field
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <maxaqn.h>
+#include <mxorb.h>
+C
+      PARAMETER (D2 = 2.0D0)
+C
+#include <inforb.h>
+#include <nuclei.h>
+#include <dfterg.h>
+#include <energy.h>
+#include <dftcom.h>
+#include <dftinf.h>
+#include <orgcom.h>
+#include <symmet.h>
+C
+      LOGICAL FROMVX, DOGGA
+      DIMENSION GAO(NBAST), GAO1(NBAST,3), 
+     &          GAB1(NBAST,3), GAB2(NBAST,3,3), 
+     &          EXCMAT(NBAST,NBAST,3)
+C
+      POX = COORX - ORIGIN(1)
+      POY = COORY - ORIGIN(2)
+      POZ = COORZ - ORIGIN(3)
+C
+      DO K = 1, 3
+         KSYM = ISYMAX(K,2) + 1
+         IF (K.EQ.1) THEN
+            KY = 2
+            KZ = 3
+            PY = POY
+            PZ = POZ
+            RY = RHY
+            RZ = RHZ
+         ELSE IF (K.EQ.2) THEN
+            KY = 3
+            KZ = 1
+            PY = POZ
+            PZ = POX
+            RY = RHZ
+            RZ = RHX
+         ELSE
+            KY = 1
+            KZ = 2
+            PY = POX
+            PZ = POY
+            RY = RHX
+            RZ = RHY
+         END IF 
+         IF (.NOT.(DOGGA .AND. .NOT.FROMVX)) THEN
+            G10Z = D2*VXC*PY
+            G10Y = D2*VXC*PZ
+            DO JSYM = 1, NSYM
+               ISYM = MULD2H(JSYM,KSYM) 
+               JSTR = IBAS(JSYM) + 1
+               JEND = IBAS(JSYM) + NBAS(JSYM)
+               ISTR = IBAS(ISYM) + 1
+               IEND = IBAS(ISYM) + NBAS(ISYM)
+               DO J = JSTR, JEND
+                  FYZ = G10Y*GAB1(J,KY) - G10Z*GAB1(J,KZ)
+                  DO I = ISTR, IEND
+                     EXCMAT(I,J,K) = EXCMAT(I,J,K) + FYZ*GAO(I)
+                  END DO
+               END DO
+            END DO
+         ELSE 
+            G10Z = D2*VXC*PY + VXB*RY
+            G10Y = D2*VXC*PZ + VXB*RZ
+            G21Z = VXB*PY*RHX
+            G21Y = VXB*PZ*RHX
+            G22Z = VXB*PY*RHY
+            G22Y = VXB*PZ*RHY
+            G23Z = VXB*PY*RHZ
+            G23Y = VXB*PZ*RHZ
+            IF (NOSYM) THEN
+               DO J = 1, NBAST
+                  FYZ = G10Y*GAB1(J,  KY) - G10Z*GAB1(J,  KZ)
+     &                + G21Y*GAB2(J,1,KY) - G21Z*GAB2(J,1,KZ)
+     &                + G22Y*GAB2(J,2,KY) - G22Z*GAB2(J,2,KZ)
+     &                + G23Y*GAB2(J,3,KY) - G23Z*GAB2(J,3,KZ)
+                  GD = VXB*(RHX*GAO1(J,1)+RHY*GAO1(J,2)+RHZ*GAO1(J,3))
+                  FY = PY*GD
+                  FZ = PZ*GD
+                  DO I = 1, NBAST 
+                     EXCMAT(I,J,K) = EXCMAT(I,J,K) + FYZ*GAO(I)
+     &                             + FY*GAB1(I,KZ) - FZ*GAB1(I,KY)
+                  END DO
+               END DO
+            ELSE
+               DO JSYM = 1, NSYM
+                  ISYM = MULD2H(JSYM,KSYM) 
+                  JSTR = IBAS(JSYM) + 1
+                  JEND = IBAS(JSYM) + NBAS(JSYM)
+                  ISTR = IBAS(ISYM) + 1
+                  IEND = IBAS(ISYM) + NBAS(ISYM)
+                  DO J = JSTR, JEND
+                     FYZ = G10Y*GAB1(J,  KY) - G10Z*GAB1(J,  KZ)
+     &                   + G21Y*GAB2(J,1,KY) - G21Z*GAB2(J,1,KZ)
+     &                   + G22Y*GAB2(J,2,KY) - G22Z*GAB2(J,2,KZ)
+     &                   + G23Y*GAB2(J,3,KY) - G23Z*GAB2(J,3,KZ)
+                     GD = VXB*(RHX*GAO1(J,1) + RHY*GAO1(J,2) 
+     &                                       + RHZ*GAO1(J,3))
+                     FY = PY*GD
+                     FZ = PZ*GD
+                     DO I = ISTR, IEND 
+                        EXCMAT(I,J,K) = EXCMAT(I,J,K) + FYZ*GAO(I)
+     &                                + FY*GAB1(I,KZ) - FZ*GAB1(I,KY)
+                     END DO
+                  END DO
+               END DO
+            END IF
+         END IF
+      END DO
+      RETURN
+      END
+C /* Deck dftltr */
+      SUBROUTINE DFTLTR(DTRMAT,EXCMAT,GAO,GAO1,C0,C1,C2,HES,RHO,RHO13,
+     &                  RHOGRD,RHG,WDRC,WVWN,WBCK,WLYP,DODRC,DOVWN,
+     &                  DOBCK,DOLYP,DOGGA,TRPLET,DOHES,DTGAO)
+C
+C     T. Helgaker sep 99/oct 00
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+C
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0)
+C
+#include <inforb.h>
+#include <nuclei.h>
+#include <dftinf.h>
+#include <dftcom.h>
+#include <wrkrsp.h>
+C
+      INTEGER A, B
+      LOGICAL DODRC, DOVWN, DOBCK, DOLYP, DOGGA, TRPLET, DOHES
+      DIMENSION DTRMAT(NBAST,NBAST),
+     &          GAO(NBAST), GAO1(NBAST,3), 
+     &          EXCMAT(NBAST,NBAST), 
+     &          C0(NORBT), C1(NORBT,3), C2(NORBT),
+     &          HES(NOCCT,NVIRT,NOCCT,NVIRT),RHG(3),DTGAO(NBAST)
+      DIMENSION B3(3)
+C
+      IF (DOHES .AND. .NOT.NOSYM) THEN
+         WRITE (LUPRI,'(2X,A,/A)') 
+     &      ' Symmetry not implemented for explicit Hessian in DFTLTR.',
+     &      ' Program aborted.'
+         CALL QUIT('Symmetry not implementd for DOHES in DFTLTR',-1)
+      END IF
+      IF (DOHES) THEN
+         B0 = D1
+      ELSE
+         CALL DGEMV('N',NBAST,NBAST,D1,DTRMAT,NBAST,GAO,1,D0,DTGAO,1)
+         B0 = DDOT(NBAST,DTGAO,1,GAO,1)
+      END IF
+C
+C     ***************
+C     ***** LDA *****
+C     ***************
+C
+      IF (.NOT.DOGGA) THEN
+         IF (DABS(B0).GT.DFTHRL) THEN 
+C
+C           Calculated VT
+C
+            IF (DODRC) THEN
+               CALL V1DRC(VDRC0,VDRC1,RHO,RHO13)
+            ELSE
+               VDRC0 = 0D0
+               VDRC1 = 0D0
+            ENDIF
+            IF (DOVWN) THEN 
+               IF (.NOT.TRPLET) THEN
+                  CALL V1VWN(VVWN0,FRRVWN,RHO,RHO13)
+               ELSE
+                  CALL VTVWN(FRRVWN,RHO,RHO13)
+                  FRRVWN = DP5*FRRVWN 
+               END IF
+            ELSE
+               VVWN0 = 0D0
+               FRRVWN = 0D0
+            END IF
+            VT = (WDRC*VDRC1 + WVWN*FRRVWN)*B0
+C
+C           Linear transformation
+C
+            IF (.NOT.DOHES) THEN
+               IF (NOSYM) THEN
+                  DO I = 1, NBAST
+                     GVI = VT*GAO(I)
+                     DO J = 1, I
+                        EXCMAT(J,I) = EXCMAT(J,I) + GVI*GAO(J)
+                     END DO
+                  END DO
+               ELSE
+                  DO ISYM = 1, NSYM
+                     ISTR = IBAS(ISYM) + 1
+                     IEND = IBAS(ISYM) + NBAS(ISYM)
+                     JSYM = MULD2H(ISYM,KSYMOP) 
+                     IF (ISYM.GE.JSYM) THEN
+                        JSTR = IBAS(JSYM) + 1
+                        JEND = IBAS(JSYM) + NBAS(JSYM)
+                        DO I = ISTR, IEND
+                           GVI = VT*GAO(I)
+                           DO J = JSTR, MIN(I,JEND) 
+                              EXCMAT(J,I) = EXCMAT(J,I) + GVI*GAO(J)
+                           END DO
+                        END DO
+                     END IF
+                  END DO
+               END IF
+C
+C           Explicit Hessian
+C
+            ELSE
+               CALL DGEMM('T','N',NORBT,1,NBAST,1.D0,
+     &                    DTRMAT,NBAST,
+     &                    GAO,NBAST,0.D0,
+     &                    C0,NORBT)
+               DO 300 B = NOCCT + 1, NORBT
+               DO 300 J = 1, NOCCT
+               DO 300 A = NOCCT + 1, NORBT
+               DO 300 I = 1, NOCCT
+                  IA = A - NOCCT
+                  IB = B - NOCCT
+                  HES(I,IA,J,IB) = HES(I,IA,J,IB) 
+     &                           + VT*C0(A)*C0(I)*C0(B)*C0(J)
+  300          CONTINUE
+            END IF
+         END IF
+      ELSE
+C
+C        ***************
+C        ***** GGA *****
+C        ***************
+C
+C        B0, BX=B3(1), BY=B3(2), BZ=B3(3), BMAX
+C
+         IF (DOHES) THEN
+            BMAX = D1
+         ELSE
+C           B3 = GAO1'*DTGAO
+            CALL DGEMV('T',NBAST,3,D1,GAO1,NBAST,DTGAO,1,D0,B3,1)
+C           DTGAO= DTRMAT'*GAO
+            CALL DGEMV('T',NBAST,NBAST,D1,DTRMAT,NBAST,GAO,1,D0,DTGAO,1)
+C           B3 = B3 + GAO1'*DTGAO
+            CALL DGEMV('T',NBAST,3,D1,GAO1,NBAST,DTGAO,1,D1,B3,1)
+            BMAX = MAX(DABS(B0),DABS(B3(1)),DABS(B3(2)),DABS(B3(3)))
+         END IF
+C
+         IF (BMAX.GT.DFTHRL) THEN
+C
+C           ZNV, FZ0, FRR, FRZ, FZZ
+C
+            IF (DODRC) CALL V1DRC(VDRC0,FRRDRC,RHO,RHO13)
+            IF (DOBCK) CALL V1BCK(FR0BCK,FZ0BCK,FRRBCK,FRZBCK,
+     &                            FZZBCK,RHO,RHOGRD)
+            IF (DOVWN) THEN
+               IF (.NOT.TRPLET) THEN
+                  CALL V1VWN(VVWN0,FRRVWN,RHO,RHO13)
+               ELSE
+                  CALL VTVWN(FRRVWN,RHO,RHO13)
+                  FRRVWN = DP5*FRRVWN 
+               END IF
+            END IF 
+            IF (DOLYP) THEN
+               RHOA = DP5*RHO
+               RHGA = (DP5*RHOGRD)**2
+C              CALL V1LYP(FR0LYP,FZ0LYP,FRRLYP,FRZLYP,
+C    &                    FZZLYP,RHO,RHOGRD)
+               CALL GLYPCO(DF1000,DF0100,DF0010,DF0001,
+     &                     DF00001,RHO,RHO13,RHOGRD,.TRUE.)
+               CALL VTLYP (DF2000,DF0200,DF1100,DF1010,
+     &                     DF0101,DF1001,DF0110,DF10001,
+     &                     DF01001,RHOA,RHOA,RHGA,RHGA,RHGA)
+               IF (.NOT.TRPLET) THEN
+                  FZ0LYP = DP5*(DF0010 + DF00001)*RHOGRD
+                  FRRLYP = DP5*(DF2000 + DF1100)
+                  FRZLYP = DP5*(DF1010 + DF1001+DF10001)*RHOGRD
+                  FZZLYP = FZ0LYP/RHOGRD 
+               ELSE
+                  FZ0LYP = DP5*(DF0010 - DF00001)*RHOGRD
+                  FRRLYP = DP5*(DF2000 - DF1100)
+                  FRZLYP = DP5*(DF1010 - DF1001)*RHOGRD
+                  FZZLYP = FZ0LYP/RHOGRD 
+               END IF
+            ELSE 
+               FZ0LYP = 0D0
+               FRRLYP = 0D0
+               FRZLYP = 0D0
+               FZZLYP = 0D0
+            END IF
+C
+            ZNV = D1/RHOGRD
+            FZ0 = ZNV*(WBCK*FZ0BCK + WLYP*FZ0LYP)
+            FRR = WDRC*FRRDRC + WVWN*FRRVWN 
+     &          + WBCK*FRRBCK + WLYP*FRRLYP 
+            FRZ = WBCK*FRZBCK + WLYP*FRZLYP 
+            FZZ = WBCK*FZZBCK + WLYP*FZZLYP 
+C 
+            RX = ZNV*RHG(1) 
+            RY = ZNV*RHG(2)
+            RZ = ZNV*RHG(3)
+C
+C           Linear transformation
+C
+            IF (.NOT.DOHES) THEN
+               BR = B3(1)*RX + B3(2)*RY + B3(3)*RZ
+               FAC0 = FRR*B0 + FRZ*BR
+               FACR = FRZ*B0 + FZZ*BR
+               IF (NOSYM) THEN
+                  DO I = 1, NBAST
+                     G0 = GAO(I)
+                     GX = GAO1(I,1)
+                     GY = GAO1(I,2)
+                     GZ = GAO1(I,3)
+                     DO J = 1, I 
+                        A0 = G0*GAO(J)
+                        AX = GX*GAO(J) + G0*GAO1(J,1)
+                        AY = GY*GAO(J) + G0*GAO1(J,2)
+                        AZ = GZ*GAO(J) + G0*GAO1(J,3)
+                        AR = AX*RX + AY*RY + AZ*RZ
+                        AB = AX*B3(1) + AY*B3(2) + AZ*B3(3) - AR*BR
+                        EXCMAT(J,I) = EXCMAT(J,I)+FAC0*A0+FACR*AR+FZ0*AB
+                     END DO
+                  END DO
+               ELSE
+                  DO ISYM = 1, NSYM
+                     ISTR = IBAS(ISYM) + 1
+                     IEND = IBAS(ISYM) + NBAS(ISYM)
+                     JSYM = MULD2H(ISYM,KSYMOP)
+                     IF (ISYM.GE.JSYM) THEN
+                        JSTR = IBAS(JSYM) + 1
+                        JEND = IBAS(JSYM) + NBAS(JSYM)
+                        DO I = ISTR, IEND
+                           G0 = GAO(I)
+                           GX = GAO1(I,1)
+                           GY = GAO1(I,2)
+                           GZ = GAO1(I,3)
+                           DO J = JSTR, MIN(I,JEND) 
+                              A0 = G0*GAO(J)
+                              AX = GX*GAO(J) + G0*GAO1(J,1)
+                              AY = GY*GAO(J) + G0*GAO1(J,2)
+                              AZ = GZ*GAO(J) + G0*GAO1(J,3)
+                              AR = AX*RX + AY*RY + AZ*RZ
+                              AB = AX*B3(1) + AY*B3(2) + AZ*B3(3) -AR*BR
+                              EXCMAT(J,I) = EXCMAT(J,I) + FAC0*A0 
+     &                                    + FACR*AR + FZ0*AB
+                           END DO
+                        END DO
+                     END IF
+                  END DO
+               END IF
+C
+C           Explicit Hessian
+C
+            ELSE
+               CALL DGEMM('T','N',NORBT,1,NBAST,1.D0,
+     &                    DTRMAT,NBAST,
+     &                    GAO,NBAST,0.D0,
+     &                    C0,NORBT)
+               CALL DGEMM('T','N',NORBT,3,NBAST,1.D0,
+     &                    DTRMAT,NBAST,
+     &                    GAO1,NBAST,0.D0,
+     &                    C1,NORBT)
+C
+               DO I = 1, NORBT
+                 C2(I) = RX*C1(I,1)+RY*C1(I,2)+RZ*C1(I,3)
+               END DO
+C
+               DO B = NOCCT + 1, NORBT 
+               DO J = 1, NOCCT 
+                 IB  = B - NOCCT
+                 GBJ = C0(B)*C0(J)
+                 PBJ = C2(B)*C0(J)   + C2(J)*C0(B)
+                 CBX = C0(B)*C1(J,1) + C1(B,1)*C0(J)
+                 CBY = C0(B)*C1(J,2) + C1(B,2)*C0(J) 
+                 CBZ = C0(B)*C1(J,3) + C1(B,3)*C0(J)
+                 DO A = NOCCT + 1, B
+                 DO I = 1, NOCCT
+                   IA  = A - NOCCT
+                   GAI = C0(A)*C0(I)
+                   PAI = C2(A)*C0(I) + C2(I)*C0(A)
+                   CAB = CBX*(C0(A)*C1(I,1) + C1(A,1)*C0(I))
+     &                 + CBY*(C0(A)*C1(I,2) + C1(A,2)*C0(I))
+     &                 + CBZ*(C0(A)*C1(I,3) + C1(A,3)*C0(I))
+                   HES(I,IA,J,IB) = HES(I,IA,J,IB) 
+     &                            + FRR*GAI*GBJ
+     &                            + FRZ*(PAI*GBJ + GAI*PBJ)
+     &                            + FZZ*PAI*PBJ
+     &                            + FZ0*(CAB - PAI*PBJ)
+                  END DO
+                  END DO
+               END DO
+               END DO
+            END IF
+         END IF
+      END IF
+      RETURN
+      END
