@@ -33,7 +33,7 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-c*DECK CC_LR    
+c*DECK CC_LR
        SUBROUTINE CC_LR(WORK,LWORK)
 C
 C----------------------------------------------------------------------
@@ -161,14 +161,14 @@ C
          MODELP = MODEL
       ENDIF
 C
-      CALL AROUND( 'Calculation of '//MODELP// 
+      CALL AROUND( 'Calculation of '//MODELP//
      *             ' linear response properties ')
 C
       IF (IPRINT.GT.10) WRITE(LUPRI,*) 'CC_LR Workspace:',LWORK
 C
       CALL FLSHFO(LUPRI)
 C
-      NLRPRP  = NLROP*NBLRFR 
+      NLRPRP  = NLROP*NBLRFR
 C
 C     --------------------------------------------------------------
 C     open AOPROPER file for GETGPV routine of the RSP program...
@@ -240,11 +240,11 @@ C
         LPDBSB = LPDBSOP(IOPERB)
 
         ISAPROP = ISAMA * ISAMB
-        
+
         IF (ISYMA.EQ.ISYMB) THEN
           DO IFREQ = 1, NBLRFR
           DO ISIGN = +1, -1, -2
-C           
+C
             IOFSGN = ((-ISIGN+1)/2) * NLRPRP
 C
             SIGN   = DBLE(ISIGN)
@@ -252,7 +252,7 @@ C
             FREQB  = SIGN * BLRFR(IFREQ)
 C
             IF (IPRINT .GT. 5 .OR. LOCDBG) THEN
-              WRITE(LUPRI,'(/,1x,A,F16.8,/,A,I2,/,3A,/,A,2L3,/,A,2L3)') 
+              WRITE(LUPRI,'(/,1x,A,F16.8,/,A,I2,/,3A,/,A,2L3,/,A,2L3)')
      *         'Calculating response property with frequency',FREQB,
      *         ' Operator symmetry = ',ISYMB,
      *         ' Labels = ',LABELA, LABELB,
@@ -312,10 +312,10 @@ C
                CALL CC_LAKSIB(LABELA,ISYMA,FREQA,LRLXA,
      *                        LABELB,ISYMB,FREQB,LRLXB,
      *                        WORK(KPRP2),WORK(KEND1),LEND1)
-     *                        
+     *
 C
             ENDIF
- 
+
 C-------------------------------------------------------------------
 C             construct the zeroth-order eff. CC Fock matrix in MO
 C             and initialize the 'eff.' sec. order connection matrix
@@ -328,7 +328,7 @@ C-------------------------------------------------------------------
                 CALL WOPEN2(LUFCK,FILFCKEFF,64,0)
                 CALL GETWA2(LUFCK,FILFCKEFF,WORK(KFOCK0),
      &                      IADRF,N2BST(ISYM0))
-                CALL WCLOSE2(LUFCK,FILFCKEFF,'KEEP')                  
+                CALL WCLOSE2(LUFCK,FILFCKEFF,'KEEP')
 
                 CALL RDONEL('OVERLAP ',.TRUE.,WORK(KEND1),NBAST)
                 CALL CCSD_SYMSQ(WORK(KEND1),ISYM0,WORK(KOVERLP))
@@ -363,7 +363,7 @@ C-------------------------------------------------------------------
                    CALL QUIT('Insufficient memory in CC_LR.')
                  END IF
 
-     
+
                  CALL CCRLXXIM(WORK(KXIMA),ISYMA,LABELA,LRLXA,LPDBSA,
      &                         FREQA,WORK(KCMO),WORK(KEND2),LWRK2)
 
@@ -402,9 +402,9 @@ C-------------------------------------------------------------------
                  CALL DCOPY(N2BST(ISYMB),WORK(KQTRP),1,WORK(KQMATP),1)
                  CALL DSCAL(N2BST(ISYMB),-HALF,WORK(KQMATP),1)
 
-                 RLXBCON = 
+                 RLXBCON =
      &                - DDOT(N2BST(ISYMA),WORK(KQMATH),1,WORK(KXIMA),1)
-     &                - DBLE(ISAMA) * 
+     &                - DBLE(ISAMA) *
      &                  DDOT(N2BST(ISYMA),WORK(KQMATP),1,WORK(KXIMA),1)
 
                  IF (LOCDBG) THEN
@@ -413,7 +413,7 @@ C-------------------------------------------------------------------
                    WRITE(LUPRI,*) 'transpose QMATH:'
                    CALL CC_PRONELAO(WORK(kqtrp),ISYMB)
                    WRITE(LUPRI,*) 'RLXBCON:',RLXBCON
-                 END IF 
+                 END IF
 
                  WORK(KPRP1) = WORK(KPRP1) + RLXBCON
 
@@ -470,7 +470,7 @@ C-------------------------------------------------------------------
                    CALL QUIT('Insufficient memory in CC_LR.')
                  END IF
 
-     
+
                  CALL CCRLXXIM(WORK(KXIMB),ISYMB,LABELB,LRLXB,LPDBSA,
      &                         FREQB,WORK(KCMO),WORK(KEND2),LWRK2)
 
@@ -510,9 +510,9 @@ C-------------------------------------------------------------------
                  CALL DCOPY(N2BST(ISYMB),WORK(KQTRP),1,WORK(KQMATP),1)
                  CALL DSCAL(N2BST(ISYMB),-HALF,WORK(KQMATP),1)
 
-                 RLXACON = 
+                 RLXACON =
      &                - DDOT(N2BST(ISYMB),WORK(KQMATH),1,WORK(KXIMB),1)
-     &                - DBLE(ISAMB) * 
+     &                - DBLE(ISAMB) *
      &                  DDOT(N2BST(ISYMB),WORK(KQMATP),1,WORK(KXIMB),1)
 
                  if (locdbg) then
@@ -521,7 +521,7 @@ C-------------------------------------------------------------------
                    WRITE(LUPRI,*) 'transpose QMATH:'
                    call cc_pronelao(work(KQTRP),isymb)
                    WRITE(LUPRI,*) 'RLXACON:',RLXACON
-                 end if 
+                 end if
 
                  WORK(KPRP1) = WORK(KPRP1) + RLXACON
 
@@ -562,7 +562,7 @@ C-------------------------------------------------------------------
      *                             INUM,WORK(KEND1),LEND1)
                 IF (INUM.LT.0) CALL QUIT('Operator error in CC_LR.')
                 IEXPV = IEXPECT(LABSOP,ISYSOP)
-                XSTAT = DBLE(ISGNSOP) * 
+                XSTAT = DBLE(ISGNSOP) *
      *                    ( EXPVALUE(1,IEXPV) + EXPVALUE(2,IEXPV) )
                 XNUCL = CC_NUCCON(LABSOP,ISYSOP)
 
@@ -571,11 +571,11 @@ C-------------------------------------------------------------------
                 IF (LOCDBG .OR. IPRINT.GT.1) THEN
                    WRITE (LUPRI,*) LABSOP,
      *                    EXPVALUE(1,IEXPV),EXPVALUE(2,IEXPV)
-                   WRITE (LUPRI,*) 
+                   WRITE (LUPRI,*)
      *                    'CC_LR>  contrib. of Fock^(eff,0) :',XREO
                 END IF
                 IF (LOCDBG) THEN
-                   WRITE (LUPRI,*) 
+                   WRITE (LUPRI,*)
      *                    'CC_LR>  [K^(A),R^(B)]+[K^(B),R^(A)] :'
                    CALL CC_PRONELAO(WORK(KR2EFF),1)
                    WRITE (LUPRI,*) 'CC_LR>  Fock^(eff,0) :'
@@ -587,14 +587,14 @@ C-------------------------------------------------------------------
                 XREO  = ZERO
               END IF
 
-              WORK(KPRP1) = WORK(KPRP1) + XREO + XSTAT - XNUCL 
+              WORK(KPRP1) = WORK(KPRP1) + XREO + XSTAT - XNUCL
 
               IF (LOCDBG .OR. IPRINT.GT.10) THEN
                  WRITE (LUPRI,*) 'CC_LR> RLXACON   = ',RLXACON
                  WRITE (LUPRI,*) 'CC_LR> RLXBCON   = ',RLXBCON
                  WRITE (LUPRI,*) 'CC_LR> XSTAT(CC) = ',XSTAT
                  WRITE (LUPRI,*) 'CC_LR> XNUCL     = ',XNUCL
-                 WRITE (LUPRI,*) 'CC_LR> XREO      = ',XREO 
+                 WRITE (LUPRI,*) 'CC_LR> XREO      = ',XREO
                  WRITE (LUPRI,*) 'CC_LR> PRP1      = ',WORK(KPRP1)
                  WRITE (LUPRI,*) 'CC_LR> PRP2      = ',WORK(KPRP2)
               END IF
@@ -643,14 +643,14 @@ C
                XRLXBA=DDOT(2*NALLAI(ISYMA),WORK(KAPPA1),1,WORK(KG1),1)
 
                WORK(KPRP) = XRLXAB
-      
+
                ERROR = XRLXBA - DBLE(ISAPROP) * XRLXAB
 
                IF (LOCDBG.OR.DABS(ERROR).GT.THRLEQ.OR.IPRINT.GT.1) THEN
                   WRITE (LUPRI,*)'CC_LR>', LABELA,FREQA,LABELB,FREQB
                   WRITE (LUPRI,*)'CC_LR> ',XRLXAB,XRLXBA,ERROR,THRLEQ
                   IF (ERROR.GT.THRLEQ) THEN
-                     WRITE (LUPRI,*) 
+                     WRITE (LUPRI,*)
      *                     'Warning: large errors in SCF second-',
      *                       'order property encountered!!!'
                   END IF
@@ -663,15 +663,15 @@ C
 
                LUFCK = 0
                IFOCK = IEFFFOCK(LABELA,ISYM,1)
-               IADRF = IADRFCK(2,IFOCK)          
+               IADRF = IADRFCK(2,IFOCK)
                CALL WOPEN2(LUFCK,FILFCKEFF,64,0)
                CALL GETWA2(LUFCK,FILFCKEFF,WORK(KFOCK1),
      &                     IADRF,N2BST(ISYMA))
-               CALL WCLOSE2(LUFCK,FILFCKEFF,'KEEP')   
+               CALL WCLOSE2(LUFCK,FILFCKEFF,'KEEP')
 
                CALL CC_HFR1DEN(WORK(KR1DEN),IOPERB,1,ISYMB,
      &                         WORK(KEND2),LWRK2)
- 
+
                XREOB = -TWO * DDOT(N2BST(ISYMA),WORK(KFOCK1),1,
      &                                          WORK(KR1DEN),1)
                IF (LOCDBG .OR. IPRINT.GT.1) THEN
@@ -689,7 +689,7 @@ C
                CALL WOPEN2(LUFCK,FILFCKEFF,64,0)
                CALL GETWA2(LUFCK,FILFCKEFF,WORK(KFOCK1),
      &                     IADRF,N2BST(ISYMB))
-               CALL WCLOSE2(LUFCK,FILFCKEFF,'KEEP')   
+               CALL WCLOSE2(LUFCK,FILFCKEFF,'KEEP')
 
                CALL CC_HFR1DEN(WORK(KR1DEN),IOPERA,1,ISYMA,
      &                         WORK(KEND2),LWRK2)
@@ -739,9 +739,9 @@ C------------------------------------
 C
       IF ( NSCF.GT.1 .AND. (LPRTSCF.OR.LOCDBG) ) THEN
 C
-        WRITE(LUPRI,'(//,1X,A)') 
+        WRITE(LUPRI,'(//,1X,A)')
      *    'SCF linear response properties in atomic units:'
-        WRITE(LUPRI,'(1X,A,/)') 
+        WRITE(LUPRI,'(1X,A,/)')
      *    '-----------------------------------------------'
 C
         DO IOPER  = 1,NLROP
@@ -765,10 +765,10 @@ C
                WRITE(LUPRI,'(1X,A2,A8,A1,A8,A3,F9.6,A,F15.8,A)') '<<',
      *           LABELA,',',LABELB,'>>(',BLRFR(IFREQ),') =',WORK(KPRP1),
      *           ' BY SYMMETRY !'
-              ENDIF  
+              ENDIF
            END DO
           END IF
-        END DO  
+        END DO
 C
         LPRTSCF = .FALSE.
 C
@@ -779,7 +779,7 @@ C        Output Linear response properties.
 C        IF DIPPOL put into polarizability tensor.
 C-------------------------------------------------
 C
-      KPOL2 = KEND1 
+      KPOL2 = KEND1
       KEND2 = KPOL2 + NBLRFR*3*3
       LEND2 = LWORK - KEND2
 C
@@ -789,7 +789,7 @@ C
 C
       WRITE(LUPRI,'(//,1X,A6,A)') MODELP(1:6),
      *  'linear response properties in atomic units:'
-      WRITE(LUPRI,'(1X,A,/)') 
+      WRITE(LUPRI,'(1X,A,/)')
      *  '-------------------------------------------------'
 C
       DO 4000 IOPER  = 1,NLROP
@@ -825,10 +825,10 @@ C
             IF (IPRINT.GT.11 .OR. ISAPROP.EQ.0) THEN
 
               IF (ISAPROP .EQ. 0) THEN
-                WRITE(LUPRI,'(/1X,A,/1X,A)') 
+                WRITE(LUPRI,'(/1X,A,/1X,A)')
      *           'Cannot determine if real or imaginary property...',
      *           'the non-symmetrized results for +/- w are:'
-              ELSE 
+              ELSE
                  WRITE(LUPRI,'(/1X,A)') 'non-symmetrized '//
      &                'results for +/-w:'
               ENDIF
@@ -848,13 +848,13 @@ C
      *            HALF*(WORK(KPRP1P)-WORK(KPRP1M))
 
               IF      (ISAPROP .EQ. +1) THEN
-                WRITE(LUPRI,'(1X,2A,/1X,2A)') 
+                WRITE(LUPRI,'(1X,2A,/1X,2A)')
      *            'the symmetric contribution corresponds to ',
      *            'the (real) physical result,',
      *            'the antisymmetric contribution is an artifact of ',
      *            'the non-symmetric CC parametrization.'
               ELSE IF (ISAPROP .EQ. -1) THEN
-                WRITE(LUPRI,'(1X,2A,/1X,2A)') 
+                WRITE(LUPRI,'(1X,2A,/1X,2A)')
      *            'the antisymmetric contribution corresponds to ',
      *            'the imaginary part of the physical result,',
      *            'the symmetric contribution is an artifact of ',
@@ -876,10 +876,10 @@ C
                   WRITE(LUPRI,'(1X,A2,A8,A1,A8,A3,F9.6,A,F15.8,A)')
      *            '<<',LABELA,',',LABELB,
      *            '>>(',BLRFR(IFREQ),') =',RESULT,' BY SYMMETRY !'
-                ENDIF  
+                ENDIF
               END IF
 
-            ENDIF  
+            ENDIF
             CALL CC_PRPC(RESULT,MODELP,2,
      *                   LABELA,LABELB,LABELA,LABELB,
      *                   BLRFR(IFREQ),BLRFR(IFREQ),BLRFR(IFREQ),ISYMAB)
@@ -914,9 +914,9 @@ C---------------------------------
 C
       IF (DIPPOL) THEN
          DO 9000 IFREQ = 1, NBLRFR
-            KPOLI = KPOL2 + 3*3*(IFREQ-1) 
+            KPOLI = KPOL2 + 3*3*(IFREQ-1)
             CALL DSCAL(9,XMONE,WORK(KPOLI),1)
-            CALL CC_POLPRI(WORK(KPOLI),BLRFR(IFREQ)) 
+            CALL CC_POLPRI(WORK(KPOLI),BLRFR(IFREQ))
  9000    CONTINUE
       ENDIF
 C
@@ -972,7 +972,7 @@ C
       KETA  = 1
       KEND1 = KETA  + NTAMPA
       LEND1 = LWORK - KEND1
- 
+
       KETA1 = KETA
       KETA2 = KETA1 + NT1AM(ISYMA)
 C
@@ -1006,7 +1006,7 @@ C
 C
       KR11 = KR1
       KR12 = KR1 + NT1AM(ISYMB)
-      ILSTNR = IR1TAMP(LABELB,LRLXB,FREQB,ISYMB) 
+      ILSTNR = IR1TAMP(LABELB,LRLXB,FREQB,ISYMB)
       IOPT   = 3
       CALL CC_RDRSP('R1 ',ILSTNR,ISYMB,IOPT,MODEL,WORK(KR11),
      *              WORK(KR12))
@@ -1023,13 +1023,13 @@ C
      *       DDOT(NT2AM(ISYMA),WORK(KETA+NT1AM(ISYMA)),1,
      *       WORK(KR1+NT1AM(ISYMA)),1)
       ENDIF
-C 
+C
 C------------------------------------
 C     Add to response function array.
 C------------------------------------
 C
       IF (IPRINT .GT. 2 ) THEN
-          WRITE(LUPRI,'(1X,A2,A8,A1,A8,A3,F10.6,A,F14.10)') 
+          WRITE(LUPRI,'(1X,A2,A8,A1,A8,A3,F10.6,A,F14.10)')
      *    '<<',LABELA,',',LABELB,'>>(',
      *    FREQB,') EtaA*tB cont. = ',EATBCN
       ENDIF
@@ -1093,7 +1093,7 @@ C------------------------------
 C
       KR11 = KR1
       KR12 = KR1 + NT1AM(ISYMB)
-      ILSTNR = IR1TAMP(LABELB,LRLXB,FREQB,ISYMB) 
+      ILSTNR = IR1TAMP(LABELB,LRLXB,FREQB,ISYMB)
       IOPT   = 3
       CALL CC_RDRSP('F1',ILSTNR,ISYMB,IOPT,MODEL,WORK(KR11),
      *              WORK(KR12))
@@ -1119,7 +1119,7 @@ C-----------------------------------------------------------
 C
       KR21 = KR2
       KR22 = KR2 + NT1AM(ISYMA)
-      ILSTNR = IR1TAMP(LABELA,LRLXA,FREQA,ISYMA) 
+      ILSTNR = IR1TAMP(LABELA,LRLXA,FREQA,ISYMA)
       IOPT   = 3
       CALL CC_RDRSP('R1',ILSTNR,ISYMA,IOPT,MODEL,WORK(KR21),
      *              WORK(KR22))
@@ -1137,9 +1137,9 @@ C
      *      WORK(KR2+NT1AM(ISYMA)),1)
       ENDIF
       IF (IPRINT .GT. 2 ) THEN
-         WRITE(LUPRI,'(1X,A2,A8,A1,A8,A3,F10.6,A,F14.10)') 
+         WRITE(LUPRI,'(1X,A2,A8,A1,A8,A3,F10.6,A,F14.10)')
      *   '<<',LABELA,',',LABELB,'>>(',
-     *   FREQB,') F*tA*tB cont. = ',FABCON 
+     *   FREQB,') F*tA*tB cont. = ',FABCON
       ENDIF
       PRP       = PRP       + FABCON
 C
@@ -1181,7 +1181,7 @@ C
       IF ( IPRINT .GT. 5 ) THEN
          CALL AROUND( 'IN CC_LAKSIB: Calculating polarizabilty '
      *                 //'contribution')
-         WRITE(LUPRI,'(/,1x,A,F16.8,/,A,I2,/,3A,/,A,2L3)') 
+         WRITE(LUPRI,'(/,1x,A,F16.8,/,A,I2,/,3A,/,A,2L3)')
      *   'Calculating response property with frequency',FREQB,
      *   ' Operator symmetry = ',ISYMB,
      *   ' Labels = ',LABELA, LABELB,
@@ -1199,7 +1199,7 @@ C
       IF (ISYMA .NE. ISYMB ) CALL QUIT('Symmetry mismatch in CC_LAKSIB')
 C
       KKSI = 1
-      KEND1 = KKSI + NTAMPA 
+      KEND1 = KKSI + NTAMPA
       LEND1 = LWORK - KEND1
 
       KKSI1 = KKSI
@@ -1235,7 +1235,7 @@ C
 C
       KR11 = KR1
       KR12 = KR1 + NT1AM(ISYMB)
-      ILSTNR = IL1ZETA(LABELB,LRLXB,FREQB,ISYMB) 
+      ILSTNR = IL1ZETA(LABELB,LRLXB,FREQB,ISYMB)
       IOPT   = 3
       CALL CC_RDRSP('L1',ILSTNR,ISYMB,IOPT,MODEL,WORK(KR11),
      *              WORK(KR12))
@@ -1247,22 +1247,22 @@ C
 C
       IF ( IPRINT .GT. 9 ) THEN
           WRITE(LUPRI,*) ' Singles contribution:',
-     *       DDOT(NT1AM(ISYMA),WORK(KKSI),1,WORK(KR1),1) 
+     *       DDOT(NT1AM(ISYMA),WORK(KKSI),1,WORK(KR1),1)
           IF (.NOT. CCS) WRITE(LUPRI,*) ' Doubles contribution:',
      *       DDOT(NT2AM(ISYMA),WORK(KKSI+NT1AM(ISYMA)),1,
      *       WORK(KR1+NT1AM(ISYMA)),1)
       ENDIF
       IF (IPRINT .GT. 2 ) THEN
-         WRITE(LUPRI,'(1X,A2,A8,A1,A8,A3,F10.6,A,F10.6)') 
+         WRITE(LUPRI,'(1X,A2,A8,A1,A8,A3,F10.6,A,F10.6)')
      *   '<<',LABELA,',',LABELB,'>>(',
-     *   FREQB,') LB*ksiA cont. = ',ABCON 
+     *   FREQB,') LB*ksiA cont. = ',ABCON
       ENDIF
       PRP  = PRP + ABCON
 C
    1  FORMAT(1x,A35,1X,E20.10)
       RETURN
       END
-c*DECK CC_POLPRI 
+c*DECK CC_POLPRI
       SUBROUTINE CC_POLPRI(POL,FRQ)
 C
 C----------------------------------------------------------------------
@@ -1355,31 +1355,31 @@ C
           ELSE IF (ITST2. EQ. 0) THEN
              WRITE(LUPRI,'(/,1X,A,/)')
      *          'Polarizability is diagonal with diagonal values:   '
-                WRITE(LUPRI,'(1X,A)') 
+                WRITE(LUPRI,'(1X,A)')
      *      '        a.u.          S.I. '
-                WRITE(LUPRI,'(1X,A,F10.6,3X,E15.6)') 
+                WRITE(LUPRI,'(1X,A,F10.6,3X,E15.6)')
      *          'XX  ',PVAL(1),PVAL(1)*DPOLAUTSI
-                WRITE(LUPRI,'(1X,A,F10.6,3X,E15.6)') 
+                WRITE(LUPRI,'(1X,A,F10.6,3X,E15.6)')
      *          'YY  ',PVAL(2),PVAL(2)*DPOLAUTSI
-                WRITE(LUPRI,'(1X,A,F10.6,3X,E15.6)') 
+                WRITE(LUPRI,'(1X,A,F10.6,3X,E15.6)')
      *          'ZZ  ',PVAL(3),PVAL(3)*DPOLAUTSI
           ENDIF
          ELSE
              WRITE(LUPRI,'(/,1X,A,/)')
      *           'Principal values of diagonalized Polarizability:'
-             WRITE(LUPRI,'(1X,A)') 
+             WRITE(LUPRI,'(1X,A)')
      *      '        a.u.          S.I. '
-             WRITE(LUPRI,'(1X,A,F10.6,3X,E15.6)') 
+             WRITE(LUPRI,'(1X,A,F10.6,3X,E15.6)')
      *          '1     ',PVAL(1),PVAL(1)*DPOLAUTSI
-             WRITE(LUPRI,'(1X,A,F10.6,3X,E15.6)') 
+             WRITE(LUPRI,'(1X,A,F10.6,3X,E15.6)')
      *          '2     ',PVAL(2),PVAL(2)*DPOLAUTSI
-             WRITE(LUPRI,'(1X,A,F10.6,3X,E15.6)') 
+             WRITE(LUPRI,'(1X,A,F10.6,3X,E15.6)')
      *          '3     ',PVAL(3),PVAL(3)*DPOLAUTSI
              WRITE(LUPRI,'(/,1X,A,/)')
      *           'Principal axis of diagonalized Polarizability:'
              CALL OUTPUT(POL,1,3,1,3,3,3,1,LUPRI)
          ENDIF
-         WRITE(LUPRI,'(/,1X,A,E18.8,A,/)') 
+         WRITE(LUPRI,'(/,1X,A,E18.8,A,/)')
      *      'Conversion factor (a.u. - S.I.):',DPOLAUTSI,' (C^2m^2J^-1)'
 C
       END
@@ -1465,13 +1465,13 @@ C
       ENDIF
       IF (CC3  ) THEN
          MODEL = 'CC3'
-         WRITE(LUPRI,'(/,1x,A)') 
+         WRITE(LUPRI,'(/,1x,A)')
      *    'CC3 Oscillator strengths not implemented yet'
          RETURN
       ENDIF
       IF (CC1A) THEN
          MODEL = 'CCSDT-1a'
-         WRITE(LUPRI,'(/,1x,A)') 
+         WRITE(LUPRI,'(/,1x,A)')
      *    'CC1A Oscillator strengths not implemented yet'
          RETURN
       ENDIF
@@ -1499,14 +1499,14 @@ C
       NBLRPRP = NLRSOP*NXLRSST
 C
       KOSCS    = 1
-      KOSCSF   = KOSCS  + NALRPRP 
-      KEND1    = KOSCSF + NBLRPRP 
+      KOSCSF   = KOSCS  + NALRPRP
+      KEND1    = KOSCSF + NBLRPRP
       LEND1    = LWORK  - KEND1
       CALL DZERO(WORK(KOSCS),NALRPRP)
       CALL DZERO(WORK(KOSCSF),NBLRPRP)
 C
 C----------------------------------------
-C     Calculate linear response residues. 
+C     Calculate linear response residues.
 C----------------------------------------
 C
       DO 1000 IRSD  = 1, NXLRSST
@@ -1516,8 +1516,8 @@ C
         EIGV   = EIGVAL(ISTATE)
         IF (IPRINT .GT. 5) THEN
           WRITE(LUPRI,'(/,1x,A,I3,/1X,A,I3,A,F16.8)')
-     *    'Calculating linear response residues for state',ISTSY, 
-     *    'of symmetry ',ISYME,' and with eigenvalue: ',EIGV  
+     *    'Calculating linear response residues for state',ISTSY,
+     *    'of symmetry ',ISYME,' and with eigenvalue: ',EIGV
         ENDIF
 C
         DO 2000 IOPER = 1, NLRSOP
@@ -1578,9 +1578,9 @@ C
           IF ((ISYME.EQ.ISYMA).AND.(ISYME.EQ.ISYMB)) THEN
             K1     = NLRSOP*(IRSD-1) + IOPER + KOSCS - 1
             WRITE(LUPRI,'(1X,I2,F15.6,2X,A1,A8,A6,1X,F15.8)')
-     *      ISTATE,EIGV,'<',LABELA,'|f> = ',WORK(K1)    
+     *      ISTATE,EIGV,'<',LABELA,'|f> = ',WORK(K1)
           ENDIF
-        END DO  
+        END DO
       END DO
 C
       WRITE(LUPRI,'(//,1X,A6,A)') MODELP(1:6),
@@ -1603,8 +1603,8 @@ C
             WRITE(LUPRI,'(1X,I2,F15.6,2X,A3,A8,A4,1X,F15.8)')
      *         ISTATE,EIGV,'<f|',LABELB,'> = ',WORK(K1)
           ENDIF
-        END DO  
-      END DO   
+        END DO
+      END DO
 
       WRITE(LUPRI,'(//,1X,A6,A)') MODELP(1:6),
      *  'linear response residue property in atomic units:'
@@ -1646,7 +1646,7 @@ C
               IF (LABELB(1:5).EQ.'ZDIPL') IADR2 = 3
               IF ((IADR1+IADR2).GE.2) THEN
                 IOSCS2 = 3*3*(ISTATE-1)+3*(IADR2-1)+IADR1+KOSCS2-1
-                WORK(IOSCS2) = RESIDUE     
+                WORK(IOSCS2) = RESIDUE
               ENDIF
             ENDIF
             IF (VELSTR) THEN
@@ -1660,7 +1660,7 @@ C
               IF (LABELB(1:5).EQ.'ZDIPV') IADR2 = 3
               IF ((IADR1+IADR2).GE.2) THEN
                 IOSCS2 = 3*3*(ISTATE-1)+3*(IADR2-1)+IADR1+KVELST-1
-                WORK(IOSCS2) = RESIDUE     
+                WORK(IOSCS2) = RESIDUE
               ENDIF
             ENDIF
           ELSE
@@ -1672,8 +1672,8 @@ C
      *                    LABELA,LABELB,LABELA,LABELB,
      *                    EIGV,EIGV,EIGV,ISYMEA)
           ENDIF
-        END DO  
-      END DO   
+        END DO
+      END DO
 
 C
 C--------------------------------------------------------
@@ -1706,14 +1706,14 @@ C
      *     ' +=============================================='
      *    //'===============================+'
 C
-         DO 9001 ISYM  = 1, NSYM  
+         DO 9001 ISYM  = 1, NSYM
           DO 9002 IEX   = 1, NCCEXCI(ISYM,1)
            ISTATE = ISYOFE(ISYM) + IEX
            EIGV   = EIGVAL(ISTATE)
            KOSCSI = KOSCS2 + 3*3*(ISTATE-1)
            KTRSI  = KTRS   + 3*3*(ISTATE-1)
            LCALC  = .FALSE.
-           LDIP   = .TRUE. 
+           LDIP   = .TRUE.
            DO IRSD  = 1, NXLRSST
              ISTATE = ILRSST(IRSD)
              ISYME  = ISYEXC(ISTATE)
@@ -1724,7 +1724,7 @@ C
      *                    IEX,ISYM,WORK(KEND2),LEND2,MODELP,LCALC,
      *                    LDIP,LUOSC)
  9002     CONTINUE
- 
+
           IF (.NOT.((ISYM .EQ. NSYM).OR.(NCCEXCI(ISYM,1).EQ.0))) THEN
              NREST = 0
              DO 9003 ISYM2 = ISYM+1,NSYM
@@ -1762,7 +1762,7 @@ C
      *     ' +=============================================='
      *    //'===============================+'
 C
-         DO 9005 ISYM  = 1, NSYM  
+         DO 9005 ISYM  = 1, NSYM
           DO 9006 IEX   = 1, NCCEXCI(ISYM,1)
            ISTATE = ISYOFE(ISYM) + IEX
            EIGV   = EIGVAL(ISTATE)
@@ -1780,7 +1780,7 @@ C
      *                    IEX,ISYM,WORK(KEND2),LEND2,MODELP,LCALC,
      *                    LDIP,LUOSC)
  9006     CONTINUE
- 
+
           IF (.NOT.((ISYM .EQ. NSYM).OR.(NCCEXCI(ISYM,1).EQ.0))) THEN
              NREST = 0
              DO 9007 ISYM2 = ISYM+1,NSYM
@@ -1851,7 +1851,7 @@ C
       KEND1 = KETA  + NTAMPA
       LEND1 = LWORK - KEND1
 C
-      KKSI  = KETA 
+      KKSI  = KETA
 C
       KR1   = KEND1
       KEND2 = KR1   + NTAMPB
@@ -1861,7 +1861,7 @@ C
      *      CALL QUIT('Insufficient space for allocation in CC_EATB')
 C
 C---------------------------------------------
-C     Calculate first contribution to residue. 
+C     Calculate first contribution to residue.
 C---------------------------------------------
 C
       CALL CC_ETAC(ISYMA,LABELA,WORK(KETA),'L0',1,0,
@@ -1891,7 +1891,7 @@ C
           WRITE(LUPRI,'(1X,A1,A8,A3,A,F10.6)')
      *    '<',LABELA,'|f>',' EtaA*RE cont. = ',EATBCN
       ENDIF
-      RES1       = EATBCN  + RES1      
+      RES1       = EATBCN  + RES1
 C
 C-------------------------------------
 C     Calculate F-matrix contribution.
@@ -1940,17 +1940,17 @@ C
         ENDIF
       ENDIF
 C
-      IF (.NOT.CIS) RES1       = EATBCN  + RES1      
+      IF (.NOT.CIS) RES1       = EATBCN  + RES1
 C
 C---------------------------------------------
-C     Calculate second contribution to residue. 
+C     Calculate second contribution to residue.
 C---------------------------------------------
 C
       CALL CC_XKSI(WORK(KETA),LABELB,ISYMB,0,DUMMY,WORK(KEND1),LEND1)
 C
       KR11   = KR1
       KR12   = KR1 + NT1AM(ISYMB)
-         
+
       CALL CC_RDRSP('LE',ISTATE,ISYMB,IOPT,MODEL,WORK(KR11),
      *              WORK(KR12))
       IF (IPRINT .GT. 40 ) THEN
@@ -1980,7 +1980,7 @@ C
 C
       RETURN
       END
-c*DECK CC_OSCPRI 
+c*DECK CC_OSCPRI
       SUBROUTINE CC_OSCPRI(TRS,OSC,EIGV,IEX,ISYM,WORK,LWORK,MODEL,LCALC,
      *                     LDIP,LUOSC)
 C
@@ -2022,14 +2022,14 @@ C------------------------------------------
 C     write out transition strength matrix.
 C------------------------------------------
 C
-      IF (LCALC) THEN 
+      IF (LCALC) THEN
 C
       WRITE(LUPRI,'(//,1X,A6,A,I3,A,I2,/,A7,A,F11.8,/)') MODEL(1:6),
      *    'Transition strength matrix for state nr.',IEX,
      *     ' of symmetry',ISYM,MODEL(1:6),'excitation energy:',EIGV
       IF (LDIP) THEN
         WRITE(LUPRI,'(1X,A)') 'Dipole gauge'
-      ELSE 
+      ELSE
         WRITE(LUPRI,'(1X,A)') 'Dipole gauge'
       ENDIF
       CALL OUTPUT(TRS,1,3,1,3,3,3,1,LUPRI)
@@ -2120,8 +2120,8 @@ C
 C----------------------------------------------------------------------
 C
 C     Purpose: Calculate first order property from first order response
-C              vectors to test these. 
-C              NOT MEANT to advocate this way of calculating 
+C              vectors to test these.
+C              NOT MEANT to advocate this way of calculating
 C              expectation values.
 C
 C     Written by Ove Christiansen 10-5-1996 / 2.0: 13-3-1997
@@ -2154,7 +2154,7 @@ C        Calculate response contribution to expectation value.
 C-------------------------------------------------------------
 C
       IF (.NOT.CCS) THEN
-         KETA   = 1 
+         KETA   = 1
          KWRK1  = KETA  + NT1AM(ISYMOP) + NT2AM(ISYMOP)
          LWRK1  = LWORK - KWRK1
          IF (LWRK1 .LT. 0 )
@@ -2170,7 +2170,7 @@ C
             CALL QUIT('ILLEGAL VALUE FOR IOPTTST IN CC_TSTAV.')
          END IF
          PROPRSP = DDOT(NT1AM(ISYMOP)+NT2AM(ISYMOP),WORK(KETA),1,VEC,1)
- 
+
          IF (LOCDBG) THEN
            write(lupri,*) 'Input vector:'
            call cc_prp(vec,vec(nt1am(isymop)+1),1,1,1)
@@ -2303,7 +2303,7 @@ C----------------------------------------------------------------------
 C
 C     Purpose: Calculate XKSI vector.
 C
-C     IOPTCC2 = 1 -- use for CC2 the CMO vector instead of the lambda 
+C     IOPTCC2 = 1 -- use for CC2 the CMO vector instead of the lambda
 C                    matrices to transform the Fock mat. in the E-term
 C
 C     SLV98,OC: Allow for input of integrals if
@@ -2357,11 +2357,11 @@ C
 C
       IF ( .NOT. CCS) THEN
 C
-         KT2AM = KEND1 
+         KT2AM = KEND1
          KEND2 = KT2AM + NT2SQ(1)
          LEND2 = LWORK - KEND2
 C
-         KT2PK = KEND2 
+         KT2PK = KEND2
          KEND3 = KT2PK + NT2AMX
          LEND3 = LWORK - KEND3
 C
@@ -2449,15 +2449,15 @@ C----------------------------------
 C        Calculate E contributions.
 C----------------------------------
 C
-         KEI1  = KEND2 
+         KEI1  = KEND2
          KEI2  = KEI1 + NEMAT1(ISYMPT)
-         KEND3 = KEI2 + NMATIJ(ISYMPT) 
+         KEND3 = KEI2 + NMATIJ(ISYMPT)
          LEND3 = LWORK - KEND3
 C
          IF (LEND3.LT. 0 )
      &        CALL QUIT(' TOO LITTLE WORKSPACE IN CC_XKSI-2')
-C      
-         FCKCON = .TRUE. 
+C
+         FCKCON = .TRUE.
          ETRAN  = .FALSE.
 C
          IF (CC2 .AND. IOPTCC2.EQ.1) THEN
@@ -2513,32 +2513,32 @@ C-----------------------------------------------------------------------
 C
 C     Purpose: Calculate ETAC vector.
 C
-C     Important note: Requires work space of dimension of 
+C     Important note: Requires work space of dimension of
 C             NT2AM + NT2SQ in addition to ETAC, so please take care.
 C
 C     eta(tau,nu)= (<HF| + Sum(mu)L(0 or 1)<mu|)
 C                         exp(-t)[C,tau,nu]exp(T)|HF>
 C
-C     LIST= 'L0' for zeroth order left amplitudes. 
+C     LIST= 'L0' for zeroth order left amplitudes.
 C                ISYML should be ISYMOP in this case.
 C           'L1' for first order left amplitudes, read in from file
-C                In this case the vector is found according to its list 
+C                In this case the vector is found according to its list
 C                number ILSTNR.
-C                 
+C
 C                For L1 HF contribution is skipped.
 C
 C     IOPTCC2 = 1 -- transform for CC2 the Fock matrix entering the
 C                    E term contribution with CMO vector instead with
 C                    Lambda matrices
 C
-C     C property integrals read according to LBLC 
+C     C property integrals read according to LBLC
 C
 C     SLV98,OC: Allow for input of integrals if
 C               LBLC.eq.'GIVE INT'
 C
 C
 C     Written by Ove Christiansen 20-6-1996/1-11-1996
-C     
+C
 C
 C-----------------------------------------------------------------------
 C
@@ -2644,11 +2644,11 @@ C
         READ(LUSIFC)
         READ(LUSIFC) (WORK(KCMO+I-1),I=1,NLAMDS)
         CALL GPCLOSE(LUSIFC,'KEEP')
-        CALL CMO_REORDER(WORK(KCMO),WORK(KEND21),LEND21)  
+        CALL CMO_REORDER(WORK(KCMO),WORK(KEND21),LEND21)
       END IF
 C
 C-------------------------------
-C     get AO property integrals. 
+C     get AO property integrals.
 C-------------------------------
 C
       CALL DZERO(WORK(KCTMO),N2BST(ISYMC))
@@ -2668,7 +2668,7 @@ C
       END IF
 C
 C-----------------------------------------------
-C     Make MO T1-transformed property integrals. 
+C     Make MO T1-transformed property integrals.
 C-----------------------------------------------
 C
       CALL CC_FCKMO(WORK(KCTMO),WORK(KLAMDP),WORK(KLAMDH),
@@ -2690,7 +2690,7 @@ C
                DO 120 I = 1,NRHF(ISYMI)
 C
                   KOFF1 = IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I - 1) + A
-                  KOFF2 = KCTMO + IFCVIR(ISYMI,ISYMA) 
+                  KOFF2 = KCTMO + IFCVIR(ISYMI,ISYMA)
      *                  + NORB(ISYMI)*(A - 1) + I - 1
 C
                   ETAC(KOFF1) = TWO*WORK(KOFF2)
@@ -2700,7 +2700,7 @@ C
 C
   100    CONTINUE
 C
-      ENDIF   
+      ENDIF
 C
       IF ( DEBUG ) THEN
          ETA1 = DDOT(NT1AM(ISYRES),ETAC(1),1,ETAC(1),1)
@@ -2712,7 +2712,7 @@ C------------------------
 C     IF CCS then return.
 C------------------------
 C
-      IF ( CCS .AND. (LIST .EQ. 'L0')) RETURN 
+      IF ( CCS .AND. (LIST .EQ. 'L0')) RETURN
 C
 C----------------------------------------------
 C     Read zero'th order amplitude multipliers.
@@ -2763,7 +2763,7 @@ C
             WRITE(LUPRI,1) 'CC_ETAC: XI  intermediate is:      ',XXI
          ENDIF
       ELSE
-         KEND3 = KEND2 
+         KEND3 = KEND2
          LEND3 = LEND2
       ENDIF
 C
@@ -2801,7 +2801,7 @@ C
          ENDIF
       ENDIF
 C
-      KEI1   = KEND2  
+      KEI1   = KEND2
       KEI2   = KEI1   + NEMAT1(ISYMC)
       KEND3  = KEI2   + NMATIJ(ISYMC)
       LEND3  = LWORK  - KEND3
@@ -2811,7 +2811,7 @@ C--------------------------------
 C     Put A into E matrix format.
 C--------------------------------
 C
-      FCKCON = .TRUE. 
+      FCKCON = .TRUE.
       ETRAN  = .FALSE.
       CALL CCRHS_EFCK(WORK(KEI1),WORK(KEI2),WORK(KLAMDH),
      *                WORK(KCTMO),WORK(KEND3),LEND3,FCKCON,
@@ -2858,7 +2858,7 @@ C
       IF (.NOT. CCS) THEN
 C
          IF (CC2 .AND. IOPTCC2.EQ.1) THEN
-           FCKCON = .TRUE. 
+           FCKCON = .TRUE.
            ETRAN  = .FALSE.
            CALL CCRHS_EFCK(WORK(KEI1),WORK(KEI2),WORK(KCMO),
      *             WORK(KFCKHF),WORK(KEND3),LEND3,FCKCON,ETRAN,ISYMC)
@@ -2888,9 +2888,9 @@ C
 C
       IF (IPRINT .GT. 5 ) THEN
          TIMEC = SECOND() - TIMEC
-         WRITE(LUPRI,9999) 'CC_ETA          ', TIMEC  
+         WRITE(LUPRI,9999) 'CC_ETA          ', TIMEC
       ENDIF
-C     
+C
    1  FORMAT(1x,A35,1X,E20.10)
 9999  FORMAT(1x,'Time used in',2x,A18,2x,': ',f10.2,' seconds')
 C
@@ -2899,7 +2899,7 @@ c /* Deck polsym */
       SUBROUTINE POLSYM(A,FACT)
 C
 #include <implicit.h>
-C      
+C
       DIMENSION A(3,3)
 C
       DO 10 I = 1, 3
@@ -2918,12 +2918,12 @@ c*DECK TNSRAN
 C
 C------------------------------------------------------------------------
 C
-C     Purpose: Analyse 3 by 3 tensot and 
+C     Purpose: Analyse 3 by 3 tensot and
 C
 C              1. calculate rotatinal invariants
 C                 alfa**2 = ((TNSRxx+TNSRyy+TNSRzz)**2)/9
 C                 beta**2 = [(TNSRxx-TNSRyy)**2 +
-C                           (TNSRxx-TNSRzz)**2 + 
+C                           (TNSRxx-TNSRzz)**2 +
 C                           (TNSRyy-TNSRzz)**2 +
 C                           +3(TNSRxy**2+TNSRxy**2+TNSRxy**2+
 C                            TNSRxy**2+TNSRxy**2+TNSRxy**2)]/2
@@ -2937,7 +2937,7 @@ C                                  c. Spherical symmetry.itst2 = 0
 C
 C              4. If not diagonal then diagonalize
 C
-C             
+C
 C     Written by Ove Christiansen 18-10-1996
 C
 C------------------------------------------------------------------------
@@ -2957,15 +2957,15 @@ C
       APAR   = 0.0D0
       APEN   = 0.0D0
       XKAPPA = 0.0D0
-      XX = TNSR(1,1) 
-      YX = TNSR(2,1)   
-      ZX = TNSR(3,1)   
-      XY = TNSR(1,2)   
-      YY = TNSR(2,2)   
-      ZY = TNSR(3,2)   
-      XZ = TNSR(1,3)   
-      YZ = TNSR(2,3)   
-      ZZ = TNSR(3,3)   
+      XX = TNSR(1,1)
+      YX = TNSR(2,1)
+      ZX = TNSR(3,1)
+      XY = TNSR(1,2)
+      YY = TNSR(2,2)
+      ZY = TNSR(3,2)
+      XZ = TNSR(1,3)
+      YZ = TNSR(2,3)
+      ZZ = TNSR(3,3)
 C
       ALFSQ  = (XX+YY+ZZ)**2/9.0D0
       BETSQ  = ((XX-YY)**2+(XX-ZZ)**2+(YY-ZZ)**2 +
@@ -2973,17 +2973,17 @@ C
 C
       IF ((ABS(XY-YX)+ABS(XZ-ZX)+ABS(YZ-ZY)).GT.THR) THEN
 C
-         WRITE(LUPRI,'(/,1X,A)') 
+         WRITE(LUPRI,'(/,1X,A)')
      *          'Tensor is not symmetric on input in TNSRAN'
-         WRITE(LUPRI,'(1X,A,/,1X,A)') 
-     * 'I will symmetrice it for you to get a real symmmetric ', 
+         WRITE(LUPRI,'(1X,A,/,1X,A)')
+     * 'I will symmetrice it for you to get a real symmmetric ',
      * 'tensor according to:  2*AlfaXY(om) = <<X,Y>>(om)+<<X,Y>>(-om)'
-         WRITE(LUPRI,'(1X,A)') 
+         WRITE(LUPRI,'(1X,A)')
      * '                                   = <<X,Y>>(om)+<<Y,X>>(om) '
          CALL POLSYM(TNSR,0.5D0)
          WRITE(LUPRI,'(1X,A)') 'Tensor is now: '
          CALL OUTPUT(TNSR,1,3,1,3,3,3,1,LUPRI)
-C        
+C
       ENDIF
 C
       D12 = (ABS(XY) .GT. THR )
@@ -3011,7 +3011,7 @@ C
 C------------------------------------------------
 C        determine number of equivalent elements.
 C------------------------------------------------
-C 
+C
          D1122 = (ABS(XX-YY) .LT. THR )
          D1133 = (ABS(XX-ZZ) .LT. THR )
          D2233 = (ABS(YY-ZZ) .LT. THR )
@@ -3023,36 +3023,36 @@ C
 C
          IF (ITST2 .EQ. 3) THEN
 C
-            IF (IPRINT .GT. 10) WRITE(LUPRI,'(/,1X,A,/)') 
-     *           'TNSRAN: Tensor is spherical symmetric.' 
-            APAR = ZZ 
-            APEN = XX 
+            IF (IPRINT .GT. 10) WRITE(LUPRI,'(/,1X,A,/)')
+     *           'TNSRAN: Tensor is spherical symmetric.'
+            APAR = ZZ
+            APEN = XX
             IPAR = 8
 C
          ELSE IF (ITST2 .EQ. 1) THEN
 C
-            IF (IPRINT .GT. 10) WRITE(LUPRI,'(/,1X,A,/)') 
+            IF (IPRINT .GT. 10) WRITE(LUPRI,'(/,1X,A,/)')
      *           'TNSRAN: Tensor has cylinder symmetry.'
             IF ( D1122 ) THEN
-               APAR = ZZ 
-               APEN = XX 
+               APAR = ZZ
+               APEN = XX
                IPAR = 3
             ENDIF
             IF ( D1133 ) THEN
-               APAR = YY 
-               APEN = XX 
+               APAR = YY
+               APEN = XX
                IPAR = 2
             ENDIF
             IF ( D2233 ) THEN
-               APAR = XX 
-               APEN = YY 
+               APAR = XX
+               APEN = YY
                IPAR = 1
             ENDIF
             XKAPPA = (APAR - APEN)/(3*SQRT(ALFSQ))
 C
          ELSE IF (ITST2 .EQ. 0) THEN
 C
-            IF (IPRINT .GT. 10) WRITE(LUPRI,'(/,1X,A,/)') 
+            IF (IPRINT .GT. 10) WRITE(LUPRI,'(/,1X,A,/)')
      *         'TNSRAN: Tensor is a diagonal asym. top.'
             IF (ABS(ZZ).LT.THR) IPAR=4
             IF (ABS(YY).LT.THR) IPAR=5
@@ -3060,8 +3060,8 @@ C
 C
          ENDIF
 C
-      ELSE 
-         IF (IPRINT .GT. 10) WRITE(LUPRI,'(/,1X,A,I2,A,/)') 
+      ELSE
+         IF (IPRINT .GT. 10) WRITE(LUPRI,'(/,1X,A,I2,A,/)')
      *        'TNSRAN: Tensor has ',ITST,
      *         ' out of diagonal elements'
 C
@@ -3184,7 +3184,7 @@ C-----------------------------------------------------------
 C
       KR21   = KR2
       KR22   = KR2 + NT1AM(ISYMA)
-      ILSTNR = IL1ZETA(LABELA,LRLXA,FREQA,ISYMA) 
+      ILSTNR = IL1ZETA(LABELA,LRLXA,FREQA,ISYMA)
       IOPT   = 3
       CALL CC_RDRSP('L1',ILSTNR,ISYMA,IOPT,MODEL,WORK(KR21),
      *              WORK(KR22))
@@ -3202,16 +3202,16 @@ C
      *      WORK(KR2+NT1AM(ISYMA)),1)
       ENDIF
       IF (IPRINT .GT. 2 ) THEN
-         WRITE(LUPRI,'(1X,A2,A8,A1,A8,A3,F10.6,A,F10.6)') 
+         WRITE(LUPRI,'(1X,A2,A8,A1,A8,A3,F10.6,A,F10.6)')
      *   '<<',LABELA,',',LABELB,'>>(',
-     *   FREQB,') LA*LB*P cont. = ',FABCON 
+     *   FREQB,') LA*LB*P cont. = ',FABCON
       ENDIF
       PRP       = PRP       - FABCON
 C
    1  FORMAT(1x,A35,1X,E20.10)
       RETURN
       END
-c*DECK CC_PRPC  
+c*DECK CC_PRPC
        SUBROUTINE CC_PRPC(PROP,LABEL,NORD,LABX,LABY,LABZ,LABU,
      *                   FRQY,FRQZ,FRQU,ISYMIN)
 C
@@ -3248,6 +3248,13 @@ C
 C
       LOGICAL EXIST,L1,L2,L3,L4,LI1,LI2
       PARAMETER (TOLFRQ=1.0D-08,ONE=1.0D0,XMONE=-1.0D0,TOLEXCI =1.0D-02)
+C
+      PARAMETER (ISYMEX=0, ISPINEX=0, IEX=0)
+C     ... hjaaj Oct 2003: make sure these three variables are defined
+C     for "WRITE(LUPRPC," below, otherwise they are undefined and
+C     may be bigger than 'I4' format, giving stars in output
+C     and illegal character when LUPRPC is read again in cc_drv.F
+C
       CHARACTER LABEL*10, LABX*8, LABY*8, LABZ*8, LABU*8
 C
 C--------------------------------------------------
@@ -3257,21 +3264,21 @@ C--------------------------------------------------
 C
       EXIST = .FALSE.
 C
-      IF (NOEONL .AND. (NORD.EQ.0)) THEN 
+      IF (NOEONL .AND. (NORD.EQ.0)) THEN
 C         if energy and NOEONList = true then skip addition to list.
         RETURN
-      ELSE 
+      ELSE
         IF (EXIST) THEN
            IPRPC = IHIT
         ELSE
            NPRPC = NPRPC + 1
            IPRPC = NPRPC
-        ENDIF 
-C 
+        ENDIF
+C
         WRITE(LUPRPC,
-     *   '(I5,I3,I4,X,A10,X,E22.16,4(1X,A8),3(1X,E22.16),3I4)') 
+     *   '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
      *   IPRPC,ISYMIN,NORD,LABEL,PROP,
      *   LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYMEX,ISPINEX,IEX
-      ENDIF 
+      ENDIF
 C
       END

@@ -40,34 +40,34 @@ C
 C     Ove Christiansen 14-11-1995
 C
 C
-C     Purpose: Driver routine for coupled cluster modules in 
+C     Purpose: Driver routine for coupled cluster modules in
 C              calculation of
-C              ground state energies, excitation energies, 
+C              ground state energies, excitation energies,
 C              oscilator strenghts,
 C              frequency dependent polarizabilities and first order
 C              properties without orbital relaxation.
 C
 C              Pass control to;
 C
-C              CCSD_ENERGY for (integral direct) calculation of 
+C              CCSD_ENERGY for (integral direct) calculation of
 C                          groundstate energies and amplitudes.
 C
-C              CC_EXCI     for (integral direct) calculation of 
-C                          excitation energies and amplitudes. 
+C              CC_EXCI     for (integral direct) calculation of
+C                          excitation energies and amplitudes.
 C
-C              CC_FOP      for integral direct calculation of first 
-C                          order properties. 
+C              CC_FOP      for integral direct calculation of first
+C                          order properties.
 C                          Also calculates the left amplitudes.
 C
-C              CC_EXGR     for (integral direct) calculation of excited 
-C                          state gradient properties. 
+C              CC_EXGR     for (integral direct) calculation of excited
+C                          state gradient properties.
 C                          Currently only first order properties.
 C
 C              CC_LR       control the calculation of polarizabilities.
-C                          Frequency dependent, without orbital 
+C                          Frequency dependent, without orbital
 C                          relaxation.
 C
-C              CC_LRESID   Control calculation of residues and 
+C              CC_LRESID   Control calculation of residues and
 C                          oscillator strenths.
 C
 C              CC_HYPPOL   calculation of quadratic response properties.
@@ -82,7 +82,7 @@ C              CC_TMCAL    calculation of third order moments
 C
 C              CC_MCDCAL   calculation of B terms in MCD
 C
-C     Loop over all models specified. The order is supposed 
+C     Loop over all models specified. The order is supposed
 C     to be the optimal one from a computational point of view.
 C     Energy calculations are restarted from the preceeding
 C     calculation. Excitation vectors is also saved
@@ -90,7 +90,7 @@ C     and the excitation energy calculation is restarted
 C     from preceeding model solution as well. Similar for
 C     response vectors in property calculations.
 C
-C     (ground state) geometry optimizations using the 
+C     (ground state) geometry optimizations using the
 C     analytic gradient are done for the first (i.e. lowest
 C     order) model specified in the input.
 C
@@ -216,13 +216,13 @@ C
 C---------------------------------
 C     Initialize energy variables.
 C---------------------------------
-C   
+C
       ECCGRS = 0.0D0
       OMECCX = 0.0D0
       ECCXST = 0.0D0
 C
 C----------------------------------------------------------------------*
-C     Save information on the number of states etc. for subsequent 
+C     Save information on the number of states etc. for subsequent
 C     calls in numerical differentiations.
 C----------------------------------------------------------------------*
 C
@@ -267,14 +267,14 @@ C
       IMOD   = 0
       LTCEXC = .FALSE.
 C
-      MMOD = 0 
+      MMOD = 0
       DO I = 0, NMODEL
         IF (LCCSAV(I)) MMOD = MMOD + 1
       END DO
- 
+
 C-----------------------------------------------------------------
 C     set flags controlling AO integral sort for non-direct runs
-C     and AO -> MO transformation to (ia|jb) etc. integrals 
+C     and AO -> MO transformation to (ia|jb) etc. integrals
 C-----------------------------------------------------------------
       LSORT  = .TRUE.
       INTTR  = .TRUE.
@@ -291,7 +291,7 @@ C-----------------------------------------------------------------
 C     flag for kappa-bar-0 Lagrange multiplier:
 C-----------------------------------------------------------------
       RELORB = MOLGRD .OR. CCDERI .OR. RELORB
-      
+
 C-----------------------------------------------------------------
 C     consistency check: no gradient for solvent...
 C-----------------------------------------------------------------
@@ -330,10 +330,10 @@ C-----------------------------------------------------------------
       LLEFTEIG = CCMCD .OR. CCSM .OR. CCTM .OR. CCEXLR
 
 C-----------------------------------------------------------------
-C     LPTEXC  - to control if any perturbative triples corrections 
+C     LPTEXC  - to control if any perturbative triples corrections
 C     to excitation energies and thus calculated left vectors.
 C-----------------------------------------------------------------
-C 
+C
       LPTEXC = .FALSE.
       IF (CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B) LPTEXC = .TRUE.
 C
@@ -367,7 +367,7 @@ C
          IF (I.EQ.5)  CC2    = LCCSAV(5)
          IF (I.EQ.6)  GOTO 100
          IF (I.EQ.7)  CCD    = LCCSAV(7)
-         IF (I.EQ.8)  GOTO 100 
+         IF (I.EQ.8)  GOTO 100
          IF (I.EQ.9)  CCSD   = LCCSAV(9)
          IF (I.EQ.10) CCPT   = LCCSAV(10)
          IF (I.EQ.11) CCRT   = LCCSAV(11)
@@ -392,7 +392,7 @@ C
          IMOD = IMOD + 1
 C
 C        -----------------------------------------------------------
-C        Save integral transformation (if not triples) and 
+C        Save integral transformation (if not triples) and
 C        restart from previous cc amplitudes and excitation vectors.
 C        -----------------------------------------------------------
          IF (IMOD.GT.1) THEN
@@ -401,19 +401,19 @@ C        -----------------------------------------------------------
      *           CCRSTR  = .TRUE.
          ENDIF
 
-         ! in geometry optimizations we can restart from the 
+         ! in geometry optimizations we can restart from the
          ! amplitudes of the previous points
          IF (MOLGRD) CCRSTR = .TRUE.
- 
+
          IF (I .GT. 9) INTTR = .TRUE.
 C
          IF ((I.GT.15).AND.(.NOT.CCSD)) THEN
             CCSDT  =  .TRUE.
          ENDIF
- 
+
 C        -----------------------------------------------------------
 C        in geometry optimization runs compute the gradient only
-C        for the first model 
+C        for the first model
 C        -----------------------------------------------------------
          IF (IMOD.GT.1 .AND. MOLGRD) GOTO 100
 C
@@ -591,7 +591,7 @@ C
                  ENDIF
                ENDIF
             ELSE
-               WRITE(LUPRI,'(/,1X,A)') 
+               WRITE(LUPRI,'(/,1X,A)')
      &              ' No MP2 and CCD excitation energies'
             ENDIF
 C
@@ -607,7 +607,7 @@ C------------------------------------------------
 C        The rest is not implemented for triples.
 C------------------------------------------------
 C
-         IF (I.GT.9 .AND. I.NE.16) GOTO 90 
+         IF (I.GT.9 .AND. I.NE.16) GOTO 90
 C
 C------------------------------------------------------------
 C        ****************************************************
@@ -632,7 +632,7 @@ C
             WRITE(LUPRI,*) 'Excited state gradient properties'//
      &         'are not implemented for the requested model.'
            END IF
-         ENDIF 
+         ENDIF
 C
 C---------------------------------------------------------------
 C        precalculate expectatation values & eff. Fock matrices:
@@ -652,8 +652,8 @@ C        ***** Solve CC-response equations.*****
 C        ***************************************
 C-----------------------------------------------
 C
-         IF (LRSPSYM) THEN 
-            CALL CC_SOLRSP(WORK,LWORK)  
+         IF (LRSPSYM) THEN
+            CALL CC_SOLRSP(WORK,LWORK)
          END IF
 C
 C-----------------------------------------------
@@ -662,9 +662,9 @@ C        ***** CC linear response residues *****
 C        ***************************************
 C-----------------------------------------------
 C
-         IF (CCLRSD) THEN 
+         IF (CCLRSD) THEN
            IF (CCS .or. CC2 .or. CCSD) THEN
-            CALL CC_LRESID(WORK,LWORK)  
+            CALL CC_LRESID(WORK,LWORK)
            ELSE
             WRITE(LUPRI,*) 'Linear response residues'//
      &         ' are not implemented for the requested model.'
@@ -672,9 +672,9 @@ C
          END IF
 
 #if defined CC_AARHUS
-         IF (CCOPA) THEN 
+         IF (CCOPA) THEN
            IF (CCS .or. CC2 .or. CCSD .or. CC3) THEN
-            CALL CC_OPA(WORK,LWORK)  
+            CALL CC_OPA(WORK,LWORK)
            ELSE
             WRITE(LUPRI,*) 'One-photon absorption strengths'//
      &         ' are not implemented for the requested model.'
@@ -703,9 +703,9 @@ C        ***** CC second-order transition moments  *****
 C        ***********************************************
 C-------------------------------------------------------
 C
-         IF (CCSM) THEN 
+         IF (CCSM) THEN
            IF (CCS .or. CC2 .or. CCSD) THEN
-            CALL CC_SMCAL(WORK,LWORK)  
+            CALL CC_SMCAL(WORK,LWORK)
            ELSE
             WRITE(LUPRI,*) 'second-order transition moments'//
      &         ' are not implemented for the requested model.'
@@ -718,9 +718,9 @@ C        ***** CC third-order transition moments  *****
 C        **********************************************
 C------------------------------------------------------
 C
-         IF (CCTM) THEN 
+         IF (CCTM) THEN
            IF (CCS .or. CC2 .or. CCSD) THEN
-            CALL CC_TMCAL(WORK,LWORK)  
+            CALL CC_TMCAL(WORK,LWORK)
            ELSE
             WRITE(LUPRI,*) 'third-order transition moments'//
      &         ' are not implemented for the requested model.'
@@ -750,7 +750,7 @@ C-----------------------------------------
 C
          IF ( CCLR .AND. NBLRFR.GT.0) THEN
 C
-           IF (CIS .OR. CCS .OR. CC2 .OR. CCSD .OR. (CC3.AND.CC3RSP)) 
+           IF (CIS .OR. CCS .OR. CC2 .OR. CCSD .OR. (CC3.AND.CC3RSP))
      &     THEN
               IF ((OLDLR .AND. .NOT.CC3) .OR. CIS) THEN
                 CALL CC_LR(WORK,LWORK)
@@ -758,7 +758,7 @@ C
                 CALL CC_SOP(WORK,LWORK)
               END IF
            ELSE
-              WRITE(LUPRI,'(/,1X,A)') 
+              WRITE(LUPRI,'(/,1X,A)')
      &             ' No polarizabilities for present model'
            ENDIF
 C
@@ -807,7 +807,7 @@ C
             IF (CCS .or. CC2 .or. CCSD) THEN
                CALL CC_2HYP(WORK,LWORK)
             ELSE
-              WRITE(LUPRI,'(/,1X,A)') 
+              WRITE(LUPRI,'(/,1X,A)')
      &              'requested model not yet implemented'
             ENDIF
 C
@@ -841,7 +841,7 @@ C
             IF (CCS .or. CC2 .or. CCSD) THEN
                CALL CC_4HYP(WORK,LWORK)
             ELSE
-              WRITE(LUPRI,'(/,1X,A)') 
+              WRITE(LUPRI,'(/,1X,A)')
      &              'requested model not yet implemented'
             ENDIF
 C
@@ -853,9 +853,9 @@ C        ***** CC excited state linear response *****
 C        ********************************************
 C----------------------------------------------------
 C
-         IF (CCEXLR) THEN 
+         IF (CCEXLR) THEN
            IF (CCS .or. CC2 .or. CCSD) THEN
-            CALL CC_EXLR(WORK,LWORK)  
+            CALL CC_EXLR(WORK,LWORK)
            ELSE
             WRITE(LUPRI,*) 'Excited state linear response'//
      &         ' is not implemented for the requested model.'
@@ -892,7 +892,7 @@ C              CALL CC_FBTST(WORK,LWORK)
 C              CALL CC_AATST(WORK,LWORK)
 C              CALL CC_BATST(WORK,LWORK)
             ELSE
-              WRITE(LUPRI,'(/,1X,A)') 
+              WRITE(LUPRI,'(/,1X,A)')
      &              'requested model not yet implemented'
             ENDIF
 C
@@ -907,7 +907,7 @@ C
 C-------------------------------------------------
 C        Close files used in triples calculations.
 C-------------------------------------------------
-C     
+C
 !SONIA SONIA SONIA
 !SONIA SONIA SONIA: take care. Closed files we need for geoopt????
 !SONIA SONIA SONIA
@@ -1072,14 +1072,14 @@ C
 C
 C-----------------------------------------------
 C           Save the list ("old prpc") on file.
-C           Count the number of properties in 
+C           Count the number of properties in
 C           each symmetry class
 C-----------------------------------------------
 C
          DO ISYM=1,8
             NPRPINSYM(ISYM) = 0
          ENDDO
-         LUPRPCO = 0  
+         LUPRPCO = 0
          CALL GPOPEN(LUPRPCO,'CC_PRPC_O','UNKNOWN',' ','FORMATTED',
      *        IDUMMY,.FALSE.)
          REWIND(LUPRPCO)
@@ -1087,13 +1087,13 @@ C
          NPRPCO = NPRPC
          DO I = 1, NPRPC
             READ(LUPRPC,
-     *           '(I5,I3,I4,X,A10,X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
-     *           IPRPC,ISYMIN,NORD,LABEL,PROP,
-     *           LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYEX,ISPEX,IEX
+     *         '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *         IPRPC,ISYMIN,NORD,LABEL,PROP,
+     *         LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYEX,ISPEX,IEX
             WRITE(LUPRPCO,
-     *           '(I5,I3,I4,X,A10,X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
-     *           IPRPC,ISYMIN,NORD,LABEL,PROP,
-     *           LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYEX,ISPEX,IEX
+     *         '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *         IPRPC,ISYMIN,NORD,LABEL,PROP,
+     *         LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYEX,ISPEX,IEX
             NPRPINSYM(ISYMIN) = NPRPINSYM(ISYMIN) + 1
          END DO
          CALL GPCLOSE(LUPRPCO,'KEEP')
@@ -1108,22 +1108,22 @@ C        *** For numerical differentiation of cc-properties, write the ***
 C        *** property to file.                                         ***
 C
          IF (NMRDRP.GT.0) THEN
-            KPRPC = 1 
+            KPRPC = 1
             KEND  = KPRPC + NPRPC
             LEND  = LWORK - KEND
             IF (LEND.LE.0)CALL QUIT('Too little workspace in cc_resume')
             REWIND(LUPRPC)
             DO I = 1, NPRPC
                READ(LUPRPC,
-     *            '(I5,I3,I4,X,A10,X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
-     *            IPRPC,ISYMIN,NORD,LABEL,WORK(KPRPC+I-1),
-     *            LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYEX,ISPEX,IEX
+     *          '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *          IPRPC,ISYMIN,NORD,LABEL,WORK(KPRPC+I-1),
+     *          LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYEX,ISPEX,IEX
             ENDDO
             CALL WRAVFL(WORK(KPRPC),NPRPC,1,1,'CC PROPER',IPRINT)
          END IF
       ENDIF
 C
-C     Writeout the list of properties to summary section of output file. 
+C     Writeout the list of properties to summary section of output file.
 C
       CALL FLSHFO(LUPRI)
       IF ((NPRPC.GT.0).AND.(IPRINT.GT.0)) THEN
@@ -1207,7 +1207,7 @@ C
 C
       END
 C  /* Deck cc_false */
-      SUBROUTINE CC_FDGD   
+      SUBROUTINE CC_FDGD
 C
 C     Ove Christiansen 13-2-1997
 C
@@ -1217,7 +1217,7 @@ C
 #include <priunit.h>
 #include <ccsdinp.h>
 #include <ccgr.h>
-#include <ccfdgeo.h> 
+#include <ccfdgeo.h>
 #include <infopt.h>
 C
       CALL QENTER('CC_FDGD')
@@ -1301,7 +1301,7 @@ C
       END
 
 *=====================================================================*
-      SUBROUTINE CC_WPRPC  
+      SUBROUTINE CC_WPRPC
 C
 C     Ove Christiansen Nov. 1999
 C
@@ -1320,7 +1320,7 @@ C
 C
       DO IROPER = 1,NRSOLBL
          WRITE(LUPRP,'(I3,A8,I3)') IROPER,LBLOPR(IROPER),ISYOPR(IROPER)
-      END DO 
+      END DO
 C
       CALL GPCLOSE(LUPRP,'KEEP')
 C
@@ -1345,10 +1345,10 @@ C
 C
 c     DIMENSION FRQ12(MXPRPC),FRQ22(MXPRPC),FRQ32(MXPRPC)
 c     DIMENSION PRPC2(MXPRPC)
-c     CHARACTER*8  LAB02(MXPRPC), LAB12(MXPRPC), LAB22(MXPRPC),       
+c     CHARACTER*8  LAB02(MXPRPC), LAB12(MXPRPC), LAB22(MXPRPC),
 c    *             LAB32(MXPRPC)
 c     CHARACTER*10 CPRPC2(MXPRPC)
-c     DIMENSION IOPRPC2(MXPRPC), ISAVSY2(MXPRPC) 
+c     DIMENSION IOPRPC2(MXPRPC), ISAVSY2(MXPRPC)
       PARAMETER (TOLPRPFD=1.0D-10,TOLE=1.0D-02)
 C
       CALL QENTER('CC_WPRPCREORDER')
@@ -1363,15 +1363,15 @@ C
       CALL GPOPEN(LUPRPCTMP,'CC_PRPC_TMP','UNKNOWN',' ','FORMATTED',
      *           IDUMMY,.FALSE.)
       REWIND(LUPRPCTMP)
-      REWIND(LUPRPC) 
+      REWIND(LUPRPC)
        DO I = 1, NPRPC
          READ(LUPRPC,
-     *     '(I5,I3,I4,X,A10,X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *     '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
      *     IPRPCI,ISYMINI,NORDI,LABELI,PROPI,
      *     LABXI,LABYI,LABZI,LABUI,FRQYI,FRQZI,FRQUI,
      *     ISYEXI,ISPEXI,IEXI
          WRITE(LUPRPCTMP,
-     *     '(I5,I3,I4,X,A10,X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *     '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
      *     IPRPCI,ISYMINI,NORDI,LABELI,PROPI,
      *     LABXI,LABYI,LABZI,LABUI,FRQYI,FRQZI,FRQUI,
      *     ISYEXI,ISPEXI,IEXI
@@ -1394,7 +1394,7 @@ C
       REWIND(LUPRPCO)
       DO 300 I = 1, NPRPC
        READ(LUPRPCO,
-     *    '(I5,I3,I4,X,A10,X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *    '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
      *    IPRPCI,ISYMINI,NORDI,LABELI,PROPI,
      *    LABXI,LABYI,LABZI,LABUI,FRQYI,FRQZI,FRQUI,
      *    ISYEXI,ISPEXI,IEXI
@@ -1405,28 +1405,28 @@ C
        REWIND(LUPRPCTMP)
        DO 400 J = 1, NPRPC
         READ(LUPRPCTMP,
-     *     '(I5,I3,I4,X,A10,X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *     '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
      *     IPRPCJ,ISYMINJ,NORDJ,LABELJ,PROPJ,
      *     LABXJ,LABYJ,LABZJ,LABUJ,FRQYJ,FRQZJ,FRQUJ,
      *     ISYEXJ,ISPEXJ,IEXJ
-        IF (LABELJ.EQ.LABELI) THEN 
-         IF (NORDI.EQ.NORDJ) THEN 
+        IF (LABELJ.EQ.LABELI) THEN
+         IF (NORDI.EQ.NORDJ) THEN
           IF ((LABXJ.EQ.LABXI).AND.
      *        (LABYJ.EQ.LABYI).AND.
      *        (LABZJ.EQ.LABZI).AND.
      *        (LABUJ.EQ.LABUI))  THEN
 C Take care with excitation energies !!!!
-           IF (  
+           IF (
      *         ((NORDI.GT.0).AND.
      *          ((ABS(FRQYJ-FRQYI).LT.TOLPRPFD).AND.
      *           (ABS(FRQZJ-FRQZI).LT.TOLPRPFD).AND.
      *           (ABS(FRQUJ-FRQUI).LT.TOLPRPFD))).OR.
-     *         ((NORDI.LE.0).AND.     
+     *         ((NORDI.LE.0).AND.
      *          ((ABS(FRQYJ-FRQYI).LT.TOLE).AND.
      *           (ABS(FRQZJ-FRQZI).LT.TOLE).AND.
      *           (ABS(FRQUJ-FRQUI).LT.TOLE)))) THEN
               WRITE(LUPRPC,
-     *          '(I5,I3,I4,X,A10,X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *          '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
      *          IPRPCI,ISYMINJ,NORDJ,LABELJ,PROPJ,
      *          LABXJ,LABYJ,LABZJ,LABUJ,FRQYJ,FRQZJ,FRQUJ,
      *          ISYEXJ,ISPEXJ,IEXJ
@@ -1436,7 +1436,7 @@ C Take care with excitation energies !!!!
          ENDIF
         ENDIF
  400   CONTINUE
- 300  CONTINUE 
+ 300  CONTINUE
 
       CALL GPCLOSE(LUPRPCTMP,'KEEP')
       CALL GPCLOSE(LUPRPCO,'KEEP')
@@ -1447,11 +1447,11 @@ C
 C
       SUBROUTINE PRPRPC(LU,IOPT,PROPIN)
 C
-C     Outputs the prpc to lupri the list of properties 
+C     Outputs the prpc to lupri the list of properties
 C     that is stored on the file opened with unit number LU
-C     NB: File should be open on entry 
+C     NB: File should be open on entry
 C     IF IOPT = 1 the properties on file is output.
-C     IF IOPT = 2 the properties in vector propin is output with 
+C     IF IOPT = 2 the properties in vector propin is output with
 C                 labels etc. comming from the prpc list.
 C
 #include <implicit.h>
@@ -1473,22 +1473,22 @@ C
       REWIND(LU)
       DO I = 1, NPRPC
        READ(LU,
-     *      '(I5,I3,I4,X,A10,X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
+     *      '(I5,I3,I4,1X,A10,1X,E22.16,4(1X,A8),3(1X,E22.16),3I4)')
      *      IPRPC,ISYMIN,NORD,LABEL,PROP,
      *      LABX,LABY,LABZ,LABU,FRQY,FRQZ,FRQU,ISYEX,ISPEX,IEX
        IF (I.NE.IPRPC) WRITE(LUPRI,*) ' PROBLEM OM PRPC LIST?'
        IF (IOPT.EQ.2) PROP = PROPIN(I)
        IF (STHELP.NE.LABEL) WRITE(LUPRI,'(/,1X,A10,A)') LABEL,
      *   ' properties :'
-       STHELP = LABEL    
+       STHELP = LABEL
        IF (NORD.EQ.0) THEN
          IF (LABX.EQ."Excita  ") THEN
           IF (IOPT.NE.2) THEN
             WRITE(LUPRI,'(1X,A,I3,I2,2(A,I1),A,I3,3(A,F18.10))')
      *      '#',I,ISYMIN,
      *       ' Sy: ',ISYEX,' Sp: ',ISPEX,' Exc:',IEX,
-     *       ' E_tot:',PROP,' w:',FRQZ,' E_grs:',FRQU 
-          ELSE 
+     *       ' E_tot:',PROP,' w:',FRQZ,' E_grs:',FRQU
+          ELSE
             WRITE(LUPRI,'(1X,A,I3,I2,2(A,I1),A,I3,1(A,F18.10))')
      *      '#',I,ISYMIN,
      *       ' Sy: ',ISYEX,' Sp: ',ISPEX,' Exc:',IEX,
@@ -1501,7 +1501,7 @@ C
        ENDIF
        IF (NORD.EQ.1) WRITE(LUPRI,'(1X,A,I3,I2,A,A8,A3,F20.12)')
      *  '#',I,ISYMIN,' <',LABX,'> = ',PROP
-       IF (NORD.EQ.-11) 
+       IF (NORD.EQ.-11)
      *   WRITE(LUPRI,'(1X,A,I3,I2,A,A8,A,I1,X,I1,I3,F9.6,A,F20.12)')
      *  '#',I,ISYMIN,' <',LABX,'>(',ISYEX,ISPEX,IEX,FRQY,') = ',PROP
        IF (NORD.EQ.2) WRITE(LUPRI,
