@@ -148,10 +148,8 @@ C        Delete old MO integrals and AOSUP integrals
          ELSE
             CALL GPINQ('AOSRTINT.DA','EXIST',FEXIST)
             IF (FEXIST) THEN
-               INQUIRE(FILE='AOSRTINT.DA',RECL=LREC)
-               CALL GPOPEN(LUINTM,'AOSRTINT.DA',
-     &              'UNKNOWN','DIRECT',' ',LREC,FEXIST)
-               CALL GPCLOSE(LUINTM,'DELETE')
+               CALL SYSTEM('rm -f AOSRTINT.DA*')
+               LUINTM = -1
             END IF
             CALL GPINQ('MOTWOINT','EXIST',FEXIST)
             IF (FEXIST) THEN
