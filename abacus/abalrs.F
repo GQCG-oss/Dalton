@@ -28,9 +28,6 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
-C
-C$Id: abalrs.F,v 1.2 2001-03-13 08:43:26 vebjornb Exp $
-C
 #include <single.h>
 C  /* Deck lrsinp */
       SUBROUTINE LRSINP(WORD)
@@ -332,6 +329,7 @@ C
 #include <inforb.h>
 #include <gdvec.h>
 #include <abares.h>
+#include <dftcom.h>
 #include <chrnos.h>
 C
 C     Open direct access files
@@ -367,6 +365,10 @@ C
                IF (IREC .GT. (3*NUCDEP + 3)) GOTO 10
                IF ((SPNSPN .AND. DOPSO) .OR. (ICOOR .LT. 0)) THEN
                   CALL READDX (LUGDI,IREC,IRAT*NVARPT,WORK)
+                  IF (DFTORD) THEN
+                     CALL DFTSOL(WORK,LWORK)
+                     GO TO 99 
+                  END IF 
                   DNORM = DNRM2(NVARPT,WORK,1)
                   IF (DNORM .GT. THRCLC/D10) THEN
                      NABAOP = NABAOP + 1
@@ -419,6 +421,7 @@ C                 solver
 C
                      CALL DSCAL(NVARPT,DP5,WORK,1)
                   END IF
+  99           CONTINUE
                   IREC2 = 2*IREC - 1
                   CALL WRITDX (LURDI,IREC2,IRAT*NVARPT,WORK)
                   IREC2 = 2*IREC
