@@ -168,7 +168,7 @@ c /* deck CC_SOP */
 
       TIMF = SECOND() - TIM1
 
-      WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
+      IF (NFTRAN.GT.0) WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
      & '>>> Time used for',NFTRAN,' F matrix transformations:',TIMF
       CALL FLSHFO(LUPRI)
 
@@ -188,8 +188,8 @@ c /* deck CC_SOP */
      &               MXVEC, WORK(KEND0), LEND0 )
 
       TIMXE = SECOND() - TIM1
-      WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') '>>> Time used for',
-     &  NXETRAN,' Xksi{O} and ETA{O} vector calculat.: ', TIMXE
+      IF (NXETRAN.GT.0) WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') 
+     & '>>> Time used for',NXETRAN,' O1/X1 vector calculation:',TIMXE
       CALL FLSHFO(LUPRI)
 
 *---------------------------------------------------------------------*
@@ -201,8 +201,8 @@ c /* deck CC_SOP */
      &              WORK(KXICONS),MXVEC,WORK(KEND0),LEND0)
 
       TIMXI = SECOND() - TIM1
-      WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') '>>> Time used for',
-     &  NXITRAN,' relaxation contribs.: ', TIMXI
+      IF (NXITRAN.GT.0) WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
+     & '>>> Time used for',NXITRAN,' relaxation contributions:',TIMXI
       CALL FLSHFO(LUPRI)
 
 *---------------------------------------------------------------------*
@@ -214,8 +214,8 @@ c /* deck CC_SOP */
      &               WORK(KRCONS),MXVEC,WORK(KEND0),LEND0)
 
       TIMR = SECOND() - TIM1
-      WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') '>>> Time used for',
-     &  NRTRAN,' 2. order reortho./relax. contribs.: ', TIMR
+      IF (NRTRAN.GT.0) WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') 
+     & '>>> Time used for',NRTRAN ,' 2. order relax. contrbs.:',TIMR
       CALL FLSHFO(LUPRI)
 
 *---------------------------------------------------------------------*

@@ -284,7 +284,7 @@ c /* deck cclr_setup */
 
               IF (INUM.LT.0) CALL QUIT('Operator error in CCLR_SETUP.')
 
-              IEXPV = IEXPECT(LABSOP,ISYOP,0)
+              IEXPV = IEXPECT(LABSOP,ISYOP,1)
               WSTAT = EXPVALUE(1,IEXPV) + EXPVALUE(2,IEXPV)
 
               WNUCL = CC_NUCCON(LABSOP,ISYOP)
@@ -337,14 +337,16 @@ c /* deck cclr_setup */
 * print the lists: 
 *---------------------------------------------------------------------*
 * general statistics:
-      WRITE(LUPRI,'(/,/3X,A,I3,A)') 'For the requested',NBSOP,
+      IF ((.NOT.LADD) .OR. LOCDBG) THEN
+       WRITE(LUPRI,'(/,/3X,A,I3,A)') 'For the requested',NBSOP,
      &      ' second-order properties'
-      WRITE(LUPRI,'((8X,A,I3,A))') 
+       WRITE(LUPRI,'((8X,A,I3,A))') 
      & ' - ',NFTRAN,' F matrix transformations with R1 vectors',
      & ' - ',NXETRAN,' ETA and XKSI vector calculations ',
      & ' - ',NXITRAN,' X intermediate calculations ',
      & ' - ',NRTRAN, ' 2. order reortho./relax. contributions' 
-      WRITE(LUPRI,'(3X,A,/,/)') 'will be performed.'
+       WRITE(LUPRI,'(3X,A,/,/)') 'will be performed.'
+      END IF
 
       IF (LOCDBG) THEN
 

@@ -82,7 +82,7 @@ C
      &            '.IMSKIP','.M1SKIP','.FRSKIP','.MINSCR','.MINMEM',
      &            '.B0SKIP','.NEWCAU','.NOT2TC','*CCGR  ','.FROEXP',
      &            '.FROIMP','.MXDIIS','.CCSD  ','.CCR(A)','.CCR(B)',
-     &            '*CCFOP ','.MCC2  ','.CCR(3)','.CCR(T)','.FIELD ',
+     &            '*CCFOP ','.XXXXXX','.CCR(3)','.CCR(T)','.FIELD ',
      &            '.DEBUG ','*CCQR2R','.HERDIR','.BUFLEN','*CCLR  ',
      &            '*CCEXLR','.NSIMLE','.THRLEQ','.MXLRV ','*CCTM  ',
      &            '*CCSM  ','*CC5R  ','*CC4R  ','*CCQR  ','*CCCR  ',
@@ -196,8 +196,6 @@ C
       KEEPAOIN  = .FALSE.
       LPACKINT  = .FALSE.
       THRPCKINT = 1.0D-15
-C
-ckr      IPRERI = 0
 C
       CONNECTION = 'SYMMETR'
 C
@@ -509,7 +507,6 @@ cch
                   CALL CC_FOPINP(WORD)
                GO TO 100
    52          CONTINUE
-                  MCC2   = .TRUE.
                GO TO 100
    53          CONTINUE
                   CCR3   = .TRUE.
@@ -2665,7 +2662,7 @@ C#endif
       CHARACTER TABLE(NTABLE)*(8)
 
       LOGICAL LRELAX
-      INTEGER IDX, IJUMP, ITST, IDIP(3)
+      INTEGER IDX, IJUMP, IDIP(3)
 
 * external function:
       INTEGER INDPRPCC
@@ -2673,8 +2670,8 @@ C#endif
 * data:
       DATA SET /.FALSE./
       DATA TABLE /'.RELAXE','.UNRELA','.FREQUE','.DIPOLE','.ALLDSP',
-     *            '.FTST  ','.ASYMSD','.DISPCF','.OPERAT','.AVERAG',
-     *            '.PRINT ','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/ 
+     *            '.OLD_LR','.ASYMSD','.DISPCF','.OPERAT','.AVERAG',
+     *            '.PRINT ','.STATIC','.XXXXXX','.XXXXXX','.XXXXXX'/ 
 
 *---------------------------------------------------------------------*
 * begin:
@@ -2698,12 +2695,12 @@ C
       NLROP  = 0
       NDIPFR = 0
       IPRSOP = IPRINT
-      FTST   = .FALSE.
       DIPPOL = .FALSE.
       ASYMSD = .FALSE.
       LRELAX = .FALSE.
       ICHANG = 0
-      ITST   = 0
+
+      OLDLR  = .FALSE.
 
 *---------------------------------------------------------------------*
 * read input:
@@ -2770,7 +2767,6 @@ C-----------------------------------
 C
 4           CONTINUE
               DIPPOL =.TRUE. 
-              ITST   = ITST + 1
               IF (NLROP+9 .GT. MXLROP) THEN
                 WRITE(LUPRI,'(2(/A,I5),/)') 
      &          ' NB. OF OPERATOR DOUBLES SPECIFIED  : ',NLROP+9,
@@ -2802,13 +2798,11 @@ C           --------------------------------------------------------
 
 C
 C           -----------------------------------
-C           Test F-matrix by finite difference.
+C           .OLD_LR : use old LR code^
 C           -----------------------------------
 C
- 
 6           CONTINUE
-              FTST   =.TRUE. 
-              ITST   = ITST + 1
+              OLDLR = .TRUE.
             GO TO 100
 
 C
@@ -2828,8 +2822,8 @@ C           ---------------------------------
 8           CONTINUE
               CAUCHY = .TRUE.
               READ (LUCMD,*) NLRDISP
-              IF (NLRDISP.LT.-2) THEN
-                CALL QUIT('NLRDISP .lt. -1 not allowed '//
+              IF (NLRDISP.LT.0) THEN
+                CALL QUIT('NLRDISP < 0 not allowed '//
      &                'for .DISPCF in *CCLR')
               END IF
             GO TO 100
@@ -2839,7 +2833,6 @@ C           .OPERAT : Operator set for Linear response.
 C           -------------------------------------------
  
 9           CONTINUE
-              ITST = ITST + 1
               READ (LUCMD,'(2A)') LABELA, LABELB
               DO WHILE (LABELA(1:1).NE.'.' .AND. LABELA(1:1).NE.'*')
                 IF (LABELA(1:1).NE.'!') THEN
@@ -2941,12 +2934,27 @@ C
 11           CONTINUE
                READ (LUCMD,*) IPRSOP
              GO TO 100
+C
+C-----------------------
+C           .STATIC
+C-----------------------
+C
+12          CONTINUE
+              IF (NBLRFR .GE. MBLRFR) THEN
+                WRITE(LUPRI,'(3(/A,I5),/)') 
+     &          ' NUMBER OF FREQUENCIES SPECIFIED         : ',NBLRFR,
+     &          ' IS ALREADY EQUAL TO THE MAXIMUM ALLOWED : ',MBLRFR,
+     &          ' THE .STATIC KEYWORD UNDER *CCLR WILL BE IGNORED...'
+              ELSE
+                NBLRFR = NBLRFR + 1
+                BLRFR(NBLRFR) = 0.0D0
+              END IF
+            GO TO 100
 C                                                                     
 C           -------------------------------------------------
 C           .XXXXXXX unused keywords
 C           -------------------------------------------------
 C
-12           CONTINUE
 13           CONTINUE
 14           CONTINUE
 15           CONTINUE
@@ -2977,7 +2985,7 @@ C-----------------------------------------------
 C check, if operators and frequencies specified:
 C-----------------------------------------------
 C
-      IF (NBLRFR.EQ.0) THEN
+      IF (NBLRFR.EQ.0 .AND. (.NOT.CAUCHY)) THEN
          NBLRFR   = 1
          BLRFR(1) = 0.0D0
       ENDIF
@@ -2997,7 +3005,7 @@ C-------------------------------------------------------------------
 C     Finally if we are to solve for anything at all, put CCLR true.
 C-------------------------------------------------------------------
 C
-      CCLR   = ((NLROP.GT.0).OR.(ITST.GT.0))
+      CCLR   = (NLROP.GT.0)
       IF (CCLR) RSPIM = .TRUE.
 C
       RETURN
@@ -3620,7 +3628,7 @@ C#include <ccrspprp.h>
       DATA TABLE /'.OPERAT','.DIPOLE','.PRINT ','.STATIC','.MIXFRE',
      &            '.THGFRE','.ESHGFR','.DFWMFR','.DCKERR','.USECHI',
      &            '.USEXKS','.EXPCOF','.AVERAG','.DISPCF','.ODDISP',
-     &            '.NO2NP1','.L2_BCD','.L2_BC_','.XXXXXX','.XXXXXX'/
+     &            '.NO2NP1','.L2 BCD','.L2 BC ','.XXXXXX','.XXXXXX'/
 
       INTEGER INDPRPCC
 
@@ -3870,6 +3878,24 @@ C                     (test option)
 C           -------------------------------------------------------
 10          CONTINUE
               L_USE_CHI2 = .TRUE.
+              IF (L_USE_XKS3) THEN
+                L_USE_XKS3 = .FALSE.
+                WRITE(LUPRI,*) '.USECHI and .USEXKS are incompatible'
+                WRITE(LUPRI,*) 'in the *CCCR section...'
+                WRITE(LUPRI,*) '.USEXKS is switched off'
+              END IF
+              IF (USE_LBCD) THEN
+                USE_LBCD = .FALSE.
+                WRITE(LUPRI,*) '.L2 BCD and .USECHI are incompatible'
+                WRITE(LUPRI,*) 'in the *CCCR section...'
+                WRITE(LUPRI,*) '.L2 BCD is switched off'
+              END IF
+              IF (USE_L2BC) THEN
+                USE_L2BC = .FALSE.
+                WRITE(LUPRI,*) '.L2 BC  and .USECHI are incompatible'
+                WRITE(LUPRI,*) 'in the *CCCR section...'
+                WRITE(LUPRI,*) '.L2 BC  is switched off'
+              END IF
             GO TO 100
 
 C           -------------------------------------------------------
@@ -3878,6 +3904,24 @@ C                     (test option)
 C           -------------------------------------------------------
 11          CONTINUE
               L_USE_XKS3 = .TRUE.
+              IF (L_USE_CHI2) THEN
+                L_USE_CHI2 = .FALSE.
+                WRITE(LUPRI,*) '.USECHI and .USEXKS are incompatible'
+                WRITE(LUPRI,*) 'in the *CCCR section...'
+                WRITE(LUPRI,*) '.USECHI is switched off'
+              END IF
+              IF (USE_LBCD) THEN
+                USE_LBCD = .FALSE.
+                WRITE(LUPRI,*) '.L2 BCD and .USEXKS are incompatible'
+                WRITE(LUPRI,*) 'in the *CCCR section...'
+                WRITE(LUPRI,*) '.L2 BCD is switched off'
+              END IF
+              IF (USE_L2BC) THEN
+                USE_L2BC = .FALSE.
+                WRITE(LUPRI,*) '.L2 BC  and .USEXKS are incompatible'
+                WRITE(LUPRI,*) 'in the *CCCR section...'
+                WRITE(LUPRI,*) '.L2 BC  is switched off'
+              END IF
             GO TO 100
 
 C           -----------------------------------------------------------
@@ -4097,18 +4141,42 @@ C           -----------------------------------------------------------
             GO TO 100
 
 C           -----------------------------------------------------------
-C           .L2_BCD: use L2(BC), L2(BD), L2(CD) vectors instead of 
+C           .L2BCD : use L2(BC), L2(BD), L2(CD) vectors instead of 
 C                        R2(AD), R2(AC), R2(AB) for freq.-dep. resp.
 C           -----------------------------------------------------------
 17          CONTINUE
               USE_LBCD = .TRUE.
+              IF (L_USE_XKS3) THEN
+                L_USE_XKS3 = .FALSE.
+                WRITE(LUPRI,*) '.L2 BCD and .USEXKS are incompatible'
+                WRITE(LUPRI,*) 'in the *CCCR section...'
+                WRITE(LUPRI,*) '.USEXKS is switched off'
+              END IF
+              IF (L_USE_CHI2) THEN
+                L_USE_CHI2 = .FALSE.
+                WRITE(LUPRI,*) '.L2 BCD and .USECHI are incompatible'
+                WRITE(LUPRI,*) 'in the *CCCR section...'
+                WRITE(LUPRI,*) '.USECHI is switched off'
+              END IF
             GO TO 100
 
 C           -----------------------------------------------------------
-C           .L2_BC_: use L2(BC) instead of R2(AD) for freq.-dep. resp.
+C           .L2BC  : use L2(BC) instead of R2(AD) for freq.-dep. resp.
 C           -----------------------------------------------------------
 18          CONTINUE
               USE_L2BC = .TRUE.
+              IF (L_USE_XKS3) THEN
+                L_USE_XKS3 = .FALSE.
+                WRITE(LUPRI,*) '.L2 BC  and .USEXKS are incompatible'
+                WRITE(LUPRI,*) 'in the *CCCR section...'
+                WRITE(LUPRI,*) '.USEXKS is switched off'
+              END IF
+              IF (L_USE_CHI2) THEN
+                L_USE_CHI2 = .FALSE.
+                WRITE(LUPRI,*) '.L2 BC  and .USECHI are incompatible'
+                WRITE(LUPRI,*) 'in the *CCCR section...'
+                WRITE(LUPRI,*) '.USECHI is switched off'
+              END IF
             GO TO 100
 
 C           -------------
@@ -5080,7 +5148,7 @@ C           ------------
             GO TO 100
 
 C           ------------------------------------------------------
-C           .ALLPOL: calculate polarizabilities for all states
+C           .ALLSTA: calculate polarizabilities for all states
 C           (default, if .SELSTA is not used)
 C           ------------------------------------------------------
 5           CONTINUE
@@ -5112,7 +5180,7 @@ C           --------------------------------------------------------
             GO TO 100
 
 C           -----------------------
-C           .USELEF : used left excited state response vectors
+C           .USELEF : use left excited state response vectors
 C                     (default is to use right excited state responses)
 C           -----------------------
 7           CONTINUE

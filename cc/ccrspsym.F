@@ -1118,9 +1118,9 @@ C       INUM=IETA1(LBLEL1(IVEC),.FALSE.,     FRQEL1(IVEC),ISYOEL1(IVEC))
        END IF
        
        IF (NER1LBL.GT.0) THEN
-         WRITE (LUPRI,'(/2A)') ' LIST OF REQUIRED FIRST-ORDER RIGHT',
+         WRITE (LUPRI,'(/3X,2A)')' LIST OF REQUIRED FIRST-ORDER RIGHT',
      &                 ' EIGENVECTOR RESPONSES:'
-         WRITE (LUPRI,'(/3x,69("-"),/3x,2A,/3x,69("-"))')
+         WRITE (LUPRI,'(3x,69("-"),/3x,2A,/3x,69("-"))')
      &      'IDX STATE/SYM   EXC. ENERGY    OPE',
      &                  'RATOR/SYM    FREQUENCY    SYM R  P'
          DO I = 1, NER1LBL
@@ -1134,7 +1134,7 @@ C       INUM=IETA1(LBLEL1(IVEC),.FALSE.,     FRQEL1(IVEC),ISYOEL1(IVEC))
        END IF
        
        IF (NER2LBL.GT.0) THEN
-         WRITE (LUPRI,'(/A)') ' LIST OF REQUIRED SECOND-ORDER RIGHT',
+         WRITE (LUPRI,'(/2A)') ' LIST OF REQUIRED SECOND-ORDER RIGHT',
      &               ' EIGENVECTOR RESPONSES:'
          DO I = 1, NER2LBL
           WRITE (LUPRI,'(I5,3X,2I3,2X,1P,D15.6,2(3X,A8,I3,2X,1P,
@@ -1147,14 +1147,14 @@ C       INUM=IETA1(LBLEL1(IVEC),.FALSE.,     FRQEL1(IVEC),ISYOEL1(IVEC))
        END IF
 
        IF (NEL1LBL.GT.0) THEN
-         WRITE (LUPRI,'(/A)') ' LIST OF REQUIRED FIRST-ORDER LEFT',
+         WRITE (LUPRI,'(/3X,2A)') ' LIST OF REQUIRED FIRST-ORDER LEFT',
      &                '  EIGENVECTOR RESPONSES:'
-         WRITE (LUPRI,'(/3x,69("-"),/3x,2A,/3x,69("-"))')
+         WRITE (LUPRI,'(3x,69("-"),/3x,2A,/3x,69("-"))')
      &     'IDX STATE/SYM   EXC. ENERGY    OPE',
      &                  'RATOR/SYM    FREQUENCY    SYM R  P'
          DO I = 1, NEL1LBL
           WRITE (LUPRI,'(I5,3X,I3,I3,2X,1P,D15.6,3X,A8,I3,2X,1P,
-     &           D15.6,I3,L3)')
+     &           D15.6,I3,2L3)')
      &          I, ISTEL1(I), ISYSEL1(I), EIGEL1(I),
      &             LBLEL1(I), ISYOEL1(I), FRQEL1(I), ILSTSYM('EL1',I),
      &             LORXEL1(I),LPREL1(I)
@@ -1163,7 +1163,7 @@ C       INUM=IETA1(LBLEL1(IVEC),.FALSE.,     FRQEL1(IVEC),ISYOEL1(IVEC))
        END IF
 
        IF (NEL2LBL.GT.0) THEN
-         WRITE (LUPRI,'(/A)') ' LIST OF REQUIRED SECOND-ORDER LEFT',
+         WRITE (LUPRI,'(/2A)') ' LIST OF REQUIRED SECOND-ORDER LEFT',
      &                '  EIGENVECTOR RESPONSES:'
          DO I = 1, NEL2LBL
           WRITE (LUPRI,'(I5,3X,2I3,2X,1P,D15.6,2(3X,A8,I3,2X,1P,
@@ -1791,7 +1791,7 @@ c /* deck cc_lrind */
         IF (ISYMA.EQ.ISYMB) THEN
 
           IF (DEBUG) THEN
-            WRITE(LUPRI,'(/2X,A,2(1X,A,L1))')
+            WRITE(LUPRI,'(/2X,A,2(1X,A,2L1))')
      &       'require linear responses for double:',
      &        LABELA, LRLXA, LPDBSA, LABELB, LRLXB, LPDBSB
           ENDIF
@@ -1894,7 +1894,6 @@ C
                 INUM  = ILRCAMP(LABELA,ICAUCH,ISYMA)
                 INUM  = ILRCAMP(LABELB,ICAUCH,ISYMB)
                 IF (ASYMSD) THEN
-                  WRITE (LUPRI,*) 'ask for left Cauchy equation...'
                   INUM  = ILC1AMP(LABELA,ICAUCH,ISYMA)
                   INUM  = ILC1AMP(LABELB,ICAUCH,ISYMB)
                 END IF
@@ -2499,31 +2498,57 @@ c /* deck cc_crind */
 *           request second-order chi vectors:
 
             IF (L_USE_CHI2) THEN
-              INUM = ICHI2(LABELA,.FALSE.,+FREQA,ISYMA,
-     &                     LABELB,.FALSE.,+FREQB,ISYMB)!A,B
-              INUM = ICHI2(LABELA,.FALSE.,+FREQA,ISYMA,
-     &                     LABELC,.FALSE.,+FREQC,ISYMC)!A,C
-              INUM = ICHI2(LABELA,.FALSE.,+FREQA,ISYMA,
-     &                     LABELD,.FALSE.,+FREQD,ISYMD)!A,D
-              INUM = ICHI2(LABELB,.FALSE.,+FREQB,ISYMB,
-     &                     LABELC,.FALSE.,+FREQC,ISYMC)!B,C
-              INUM = ICHI2(LABELB,.FALSE.,+FREQB,ISYMB,
-     &                     LABELD,.FALSE.,+FREQD,ISYMD)!B,D
-              INUM = ICHI2(LABELC,.FALSE.,+FREQC,ISYMC,
-     &                     LABELD,.FALSE.,+FREQD,ISYMD)!C,D
+c             INUM = ICHI2(LABELA,.FALSE.,+FREQA,ISYMA,
+c    &                     LABELB,.FALSE.,+FREQB,ISYMB)!A,B
+c             INUM = ICHI2(LABELA,.FALSE.,+FREQA,ISYMA,
+c    &                     LABELC,.FALSE.,+FREQC,ISYMC)!A,C
+c             INUM = ICHI2(LABELA,.FALSE.,+FREQA,ISYMA,
+c    &                     LABELD,.FALSE.,+FREQD,ISYMD)!A,D
+c             INUM = ICHI2(LABELB,.FALSE.,+FREQB,ISYMB,
+c    &                     LABELC,.FALSE.,+FREQC,ISYMC)!B,C
+c             INUM = ICHI2(LABELB,.FALSE.,+FREQB,ISYMB,
+c    &                     LABELD,.FALSE.,+FREQD,ISYMD)!B,D
+c             INUM = ICHI2(LABELC,.FALSE.,+FREQC,ISYMC,
+c    &                     LABELD,.FALSE.,+FREQD,ISYMD)!C,D
 
-              INUM = ICHI2(LABELA,.FALSE.,-FREQA,ISYMA,
-     &                     LABELB,.FALSE.,-FREQB,ISYMB)!A,B
-              INUM = ICHI2(LABELA,.FALSE.,-FREQA,ISYMA,
-     &                     LABELC,.FALSE.,-FREQC,ISYMC)!A,C
-              INUM = ICHI2(LABELA,.FALSE.,-FREQA,ISYMA,
-     &                     LABELD,.FALSE.,-FREQD,ISYMD)!A,D
-              INUM = ICHI2(LABELB,.FALSE.,-FREQB,ISYMB,
-     &                     LABELC,.FALSE.,-FREQC,ISYMC)!B,C
-              INUM = ICHI2(LABELB,.FALSE.,-FREQB,ISYMB,
-     &                     LABELD,.FALSE.,-FREQD,ISYMD)!B,D
-              INUM = ICHI2(LABELC,.FALSE.,-FREQC,ISYMC,
-     &                     LABELD,.FALSE.,-FREQD,ISYMD)!C,D
+c             INUM = ICHI2(LABELA,.FALSE.,-FREQA,ISYMA,
+c    &                     LABELB,.FALSE.,-FREQB,ISYMB)!A,B
+c             INUM = ICHI2(LABELA,.FALSE.,-FREQA,ISYMA,
+c    &                     LABELC,.FALSE.,-FREQC,ISYMC)!A,C
+c             INUM = ICHI2(LABELA,.FALSE.,-FREQA,ISYMA,
+c    &                     LABELD,.FALSE.,-FREQD,ISYMD)!A,D
+c             INUM = ICHI2(LABELB,.FALSE.,-FREQB,ISYMB,
+c    &                     LABELC,.FALSE.,-FREQC,ISYMC)!B,C
+c             INUM = ICHI2(LABELB,.FALSE.,-FREQB,ISYMB,
+c    &                     LABELD,.FALSE.,-FREQD,ISYMD)!B,D
+c             INUM = ICHI2(LABELC,.FALSE.,-FREQC,ISYMC,
+c    &                     LABELD,.FALSE.,-FREQD,ISYMD)!C,D
+
+              INUM = IL2ZETA(LABELA,+FREQA,ISYMA,
+     &                       LABELB,+FREQB,ISYMB)!A,B
+              INUM = IL2ZETA(LABELA,+FREQA,ISYMA,
+     &                       LABELC,+FREQC,ISYMC)!A,C
+              INUM = IL2ZETA(LABELA,+FREQA,ISYMA,
+     &                       LABELD,+FREQD,ISYMD)!A,D
+              INUM = IL2ZETA(LABELB,+FREQB,ISYMB,
+     &                       LABELC,+FREQC,ISYMC)!B,C
+              INUM = IL2ZETA(LABELB,+FREQB,ISYMB,
+     &                       LABELD,+FREQD,ISYMD)!B,D
+              INUM = IL2ZETA(LABELC,+FREQC,ISYMC,
+     &                       LABELD,+FREQD,ISYMD)!C,D
+
+              INUM = IL2ZETA(LABELA,-FREQA,ISYMA,
+     &                       LABELB,-FREQB,ISYMB)!A,B
+              INUM = IL2ZETA(LABELA,-FREQA,ISYMA,
+     &                       LABELC,-FREQC,ISYMC)!A,C
+              INUM = IL2ZETA(LABELA,-FREQA,ISYMA,
+     &                       LABELD,-FREQD,ISYMD)!A,D
+              INUM = IL2ZETA(LABELB,-FREQB,ISYMB,
+     &                       LABELC,-FREQC,ISYMC)!B,C
+              INUM = IL2ZETA(LABELB,-FREQB,ISYMB,
+     &                       LABELD,-FREQD,ISYMD)!B,D
+              INUM = IL2ZETA(LABELC,-FREQC,ISYMC,
+     &                       LABELD,-FREQD,ISYMD)!C,D
             END IF
 
 *           request third-order amplitude rhs vectors:
@@ -2538,13 +2563,13 @@ c /* deck cc_crind */
               INUM = IR3TAMP(LABELB,+FREQB,ISYMB, LABELC,+FREQC,ISYMC,
      &                      LABELD,+FREQD,ISYMD) ! B,C,D
 
-              INUM = IR3TAMP(LABELA,-FREQA,ISYMA, LABELB,+FREQB,ISYMB,
+              INUM = IR3TAMP(LABELA,-FREQA,ISYMA, LABELB,-FREQB,ISYMB,
      &                      LABELC,-FREQC,ISYMC) ! A,B,C
-              INUM = IR3TAMP(LABELA,-FREQA,ISYMA, LABELB,+FREQB,ISYMB,
+              INUM = IR3TAMP(LABELA,-FREQA,ISYMA, LABELB,-FREQB,ISYMB,
      &                      LABELD,-FREQD,ISYMD) ! A,B,D
-              INUM = IR3TAMP(LABELA,-FREQA,ISYMA, LABELC,+FREQC,ISYMC,
+              INUM = IR3TAMP(LABELA,-FREQA,ISYMA, LABELC,-FREQC,ISYMC,
      &                      LABELD,-FREQD,ISYMD) ! A,C,D
-              INUM = IR3TAMP(LABELB,-FREQB,ISYMB, LABELC,+FREQC,ISYMC,
+              INUM = IR3TAMP(LABELB,-FREQB,ISYMB, LABELC,-FREQC,ISYMC,
      &                      LABELD,-FREQD,ISYMD) ! B,C,D
             END IF
 
