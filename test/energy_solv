@@ -59,8 +59,8 @@ cat > energy_solv.dal <<'%EOF%'
 .MP2
 .MCSCF
 *ORBITAL INPUT
-.MODIAG   ! Huckel gives better start guess, but we must check somewhere
- H1DIAG   ! that the H1DIAG option works.
+.MOSTART   ! Huckel gives better start guess, but we must check somewhere
+ H1DIAG    ! that the H1DIAG option works.
 *SCF INP
 .DOUBLY OCCUPIED
  5 1 2 0
