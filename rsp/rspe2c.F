@@ -818,15 +818,15 @@ C
 #include <wrkrsp.h>
       IF (IPRRSP.GT.90) THEN
          DO 3000 ISIM = 1,NSIM
-            WRITE(LUPRI,*) ISIM,' ONE INDEX TRANSFORMED FOCK '//
-     &                          'CORE MATRIX'
-     *                     ,' BEFORE TOTALLY SYMMETRIC CONTRIBUTION'
-            CALL OUTPUT(FCONE(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT
-     *                  ,1,LUPRI)
+            WRITE(LUPRI,*) ISIM,
+     &           ' ONE INDEX TRANSFORMED FOCK CORE MATRIX',
+     *           ' BEFORE TOTALLY SYMMETRIC CONTRIBUTION'
+            CALL OUTPUT(FCONE(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT,
+     *                  1,LUPRI)
             IF (NASHT.GT.0) THEN
                WRITE(LUPRI,*) ISIM,
-     *                   ' ONE INDEX TRANSFORMED FOCK VALENCE MATRIX'
-     *                     ,' BEFORE TOTALLY SYMMETRIC CONTRIBUTION'
+     *           ' ONE INDEX TRANSFORMED FOCK VALENCE MATRIX',
+     *           ' BEFORE TOTALLY SYMMETRIC CONTRIBUTION'
                CALL OUTPUT(FVONE(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT
      *                     ,1,LUPRI)
             END IF
@@ -1926,11 +1926,11 @@ C
       IF (NNEG.GT.0) THEN
          NWARN = NWARN + 1
          WRITE(LUPRI,'(/A,/A,I5,A)')
-     *   '  ********* WARNING *********** ',
+     *   '  ********* WARNING ORBDIA *********** ',
      *   '  DIAGONAL ORBITAL HESSIAN HAS ',NNEG,'  NEGATIVE ELEMENTS'
       END IF
       IF (IPRRSP.GT.101) THEN
-         WRITE(LUPRI,*)' DIAGONAL  ORBITAL PART OF E(2) '
+         WRITE(LUPRI,*)' DIAGONAL ORBITAL PART OF E(2) '
          CALL OUTPUT(EODIA,1,KZWOPT,1,1,KZWOPT,1,1,LUPRI)
          WRITE(LUPRI,*)' DIAGONAL ORBITAL PART OF S(2)'
          CALL OUTPUT(SODIA,1,KZWOPT,1,1,KZWOPT,1,1,LUPRI)

@@ -33,14 +33,13 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef UNDEF
-===========================================================================
-/* Comdeck rev_log */
-921011-pj+hjaaj: EFPOLL added C6IFC test
-920722-Hinne Hettema + HJAaJ
-inserted Hinnes changes in EFPOLL,POLIM (DIFMAX test of convergence,
-changed print levels, new format for LURSP7, fixed CFREQ bug)
-===========================================================================
+#ifdef rev-log
+!===========================================================================
+!921011-pj+hjaaj: EFPOLL added C6IFC test
+!920722-Hinne Hettema + HJAaJ
+!inserted Hinnes changes in EFPOLL,POLIM (DIFMAX test of convergence,
+!changed print levels, new format for LURSP7, fixed CFREQ bug)
+!===========================================================================
 #endif
 C  /* Deck rspc6 */
       SUBROUTINE RSPC6(CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)

@@ -479,7 +479,7 @@ C all for now
 C
 C
          IF( IPRFX .GT. 300 ) THEN
-            WRITE(LUPRI,'(/A)') ' PARTIAL MATRICES IN  RSP2GR'
+            WRITE(LUPRI,'(/A)') ' PARTIAL MATRICES IN  RSPFXD'
             WRITE(LUPRI,'(A)')  ' ==========================='
             WRITE(LUPRI,'(//A)') ' Inactive fock matrix'
             CALL OUTPUT(FI,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)

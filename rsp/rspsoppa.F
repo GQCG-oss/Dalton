@@ -1061,7 +1061,7 @@ C
      &          IJSADR(NISHT,NISHT,NSYM), IJTADR(NISHT,NISHT,NSYM),
      &          IJ1ADR(NISHT,NISHT,NSYM), IJ2ADR(NISHT,NISHT,NSYM),
      &          IJ3ADR(NISHT,NISHT,NSYM)
-      DIMENSION DIAG(2),FC(2),WRK(2)
+      DIMENSION DIAG(*),FC(*),WRK(*)
 C
       KFRSAV = 1
       KFREE  = KFRSAV
@@ -1643,7 +1643,7 @@ C
       JRSP4 = 0
       CALL READST(LURSP4,LRSP4,SOPCL,JRSP4,.TRUE.)
       IF (LRSP4 .NE. KZCONF) CALL QUIT('Inconsistent record length '//
-     &     'on unit LURSP$ in SOPCLI')
+     &     'on unit LURSP4 in SOPCLI')
 #else
       CALL READT(LURSP4,KZCONF,SOPCL)
 #endif
