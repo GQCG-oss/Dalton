@@ -5987,7 +5987,7 @@ cbs   functions, the exponents and contraction coefficients
       Integer ibeginIRED(8),idelpersym(8) 
       dimension INOFT(Mxcart),INOFF(MxCart)
       stars='********************************************************'//
-     * '*********************'
+     * '********************'
       Llimit='MAX. L-VALUE:'
       chcharge=' CHARGE OF NUCLEUS:'
       Nofprim='NUMBER OF PRIMITIVE FUNCTIONS:' 
