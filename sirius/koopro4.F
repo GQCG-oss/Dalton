@@ -1212,7 +1212,7 @@ c-------------------------------------------------------------------
       ndoubs=0
       nsings=0
       nhits=0
-      nhitsd=0
+c     nhitsd=0
       mnext=1
       iconfi=1
       mcapos=0
@@ -1246,7 +1246,7 @@ c-------------------------------------------------------------------
             nfin=ninit+icomp(ninit)-1
             nedif=abs(ne(minit)-ne(ninit))
             znocalc=nedif.gt.4
-            if(znocalc)nhitsd=nhitsd+1
+c           if(znocalc)nhitsd=nhitsd+1
             if(.not.znocalc)znocalc=ndiff(ioccfe(nisht+1,mcap)
      $           ,ioccfe(nisht+1,ncap),nasht).gt.8
             if(znocalc)nhits=nhits+1
@@ -1985,7 +1985,7 @@ c---azzeramento
             nfin=ninit+icomp(ninit)-1
             nedif=abs(ne(minit)-ne(ninit))
             znocalc=nedif.gt.3
-            if(znocalc)nhitsd=nhitsd+1
+c           if(znocalc)nhitsd=nhitsd+1
             if(.not.znocalc)znocalc=ndiff(ioccfe(nisht+1,mcap)
      $           ,ioccfe(nisht+1,ncap),nasht).gt.6
             if(znocalc)goto 2
@@ -4361,7 +4361,6 @@ c----------------------------------------------------------------------
       dimension dbba(nasht,nasht,nasht,nasht,nasht,nasht),dab(nasht
      $     ,nasht,nasht,nasht),dbb(nasht,nasht,nasht,nasht),da(nasht
      $     ,nasht),db(nasht,nasht)
-      dbbat=v
       v=-dbba(i,j,k,l,m,n)
       if(k.eq.n)v=v+dbbt(i,j,l,m,dbb,db,nasht)
       if(m.eq.j)v=v+dab(n,l,k,i)
