@@ -280,7 +280,8 @@ do
               myprint "-----------------------------------------------------------"
           fi
           molfile=$item
-          dalfile=$item'__'$step
+	  cp $item'__'$step'.dal' $item'.dal'
+          dalfile=$item
           logfile=./$item'__'$step'_'$item.log
           checkfile=./$item'__'$step.check
           reffile=./$item'__'$step.ref
@@ -288,7 +289,7 @@ do
       else
           molfile=$item
           dalfile=$item
-          logfile=./$item.log
+          logfile=./$item'__'$step'_'$item.log
           checkfile=./$item.check
           reffile=./$item.ref
           moldenfile=./$item.molden
@@ -327,6 +328,9 @@ do
               grep -v '\*\*\**' | \
               grep -v 'OUTPUT FROM' | grep -v 'Version' | grep -v 'PID' | \
               grep -v '^$' | tee -a $listing
+          fi
+          if [ "$multi" -eq 1 ]; then
+	      cp $molfile'.log' $logfile
           fi
           myprint ""
           myprint "evaluate output file $logfile:"
