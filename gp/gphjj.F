@@ -53,16 +53,12 @@ C This subroutine may be a dummy routine.
 C
       IF (IUNIT .GE. 0) THEN
 C     ... do not try to flush unused units (e.g. LUPRI on a slave) /hjaaj
-#if defined (SYS_CONVEX) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_HPUX)
+#if  defined (SYS_AIX) || defined (SYS_CONVEX) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_HPUX)
 C
 C        Force transfer of all buffered output to the file or device
 C        associated with logical unit IUNIT.
 C
          CALL FLUSH(IUNIT)
-#endif
-#if defined (SYS_AIX)
-C        AIX XL FORTRAN version 2.3+
-         CALL flush_(IUNIT)
 #endif
       END IF
       RETURN
@@ -84,7 +80,7 @@ C
 #endif
 #if defined (SYS_CONVEX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_LINUX)
       CHARACTER*(24) FFDATE
-#if defined (SYS_LINUX)
+#if defined (SYS_LINUX) || defined(SYS_AIX)
       CALL FDATE(FFDATE)
 #else
       CHARACTER*(24) FDATE
@@ -96,13 +92,6 @@ C
 #if defined (SYS_HAL)
       CHARACTER*(24) FFDATE
       CALL FDATE(FFDATE)
-      CDATE  = FFDATE(9:10)//FFDATE(5:7)//FFDATE(23:24)//' '
-      CTIME  = FFDATE(12:19)
-#endif
-#if defined (SYS_AIX)
-C     AIX XL FORTRAN version 2.3+
-      CHARACTER*(24) FFDATE, fdate_
-      FFDATE = fdate_()
       CDATE  = FFDATE(9:10)//FFDATE(5:7)//FFDATE(23:24)//' '
       CTIME  = FFDATE(12:19)
 #endif
@@ -183,7 +172,7 @@ C
       TIMCPU = second1 - TCPU0
       TIMWAL = second2 - TWALL0
 #endif
-#if defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HAL) || (defined (SYS_LINUX) && defined (VAR_PGF77))
+#if defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HAL) || (defined (SYS_LINUX) && defined (VAR_PGF77))
 #if defined (SYS_IRIX) || defined (SYS_SUN)
 C...  SGI IRIX code
       external time
@@ -238,25 +227,6 @@ C
       TIMWAL = time8() - TWALL0
       TIMCPU = second() - TCPU0
 #endif
-#if defined (SYS_AIX)
-C 900521-hjaaj timer for IBM AIX operating system
-C 941013-hjaaj: and for Intel PARAGON
-      integer*4 itime(4),times,iwall
-      logical first
-      save    TWALL0,TCPU0
-      data    first /.true./
-C
-      if (first) then
-         first = .false.
-         iwall = times(itime)
-         TWALL0 = dfloat (iwall) * 0.01d0
-         TCPU0  = dfloat (itime(1) + itime(2)) * 0.01d0
-      end if
-      iwall = times(itime)
-C     iwall = elapsed time, itime(1:2) = system and user time
-      TIMWAL = dfloat (iwall) * 0.01d0 - TWALL0
-      TIMCPU = dfloat (itime(1) + itime(2)) * 0.01d0 - TCPU0
-#endif
 #if !defined (SYS_DEC) && !defined (SYS_CRAY) && !defined (SYS_CONVEX) && !defined (SYS_AIX) && !defined (SYS_HPUX) && !defined (SYS_IRIX) && !defined (SYS_NEC) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HAL) && !defined (SYS_T90)
       PARAMETER (D0 = 0.0D0)
       logical first
@@ -285,25 +255,14 @@ C
       REAL*4 ECPU, ESYST, ETCPU
       REAL*4 SCPU, SSYST, STCPU
       REAL*4 PCPU, PSYST, PTCPU
-#ifdef SYS_AIX
-      integer*4 itime(4),times,iwall
-#else
       REAL*4 ETIME,TARRAY(2)
-#endif
       REAL*8 CPUE, CPUA, TIOE, TIOA
       SAVE   SCPU, SSYST, STCPU
       SAVE   PCPU, PSYST, PTCPU
 C
-#ifdef SYS_AIX
-      iwall  = times(itime)
-C     iwall  = elapsed time, itime(1:2) = system and user time
-      SCPU   = dfloat (itime(1)) * 0.01d0
-      SSYST  = dfloat (itime(2)) * 0.01d0
-#else
       STCPU  = ETIME(TARRAY)
       SCPU   = TARRAY(1)
       SSYST  = TARRAY(2)
-#endif
       PCPU   = SCPU
       PSYST  = SSYST
       PTCPU  = STCPU
@@ -312,16 +271,9 @@ C
 C     ----- entry timing -----
 C
       ENTRY TIMING(CPUA,CPUE,TIOA,TIOE)
-#ifdef SYS_AIX
-      iwall  = times(itime)
-C     iwall  = elapsed time, itime(1:2) = system and user time
-      ECPU   = dfloat (itime(1)) * 0.01d0
-      ESYST  = dfloat (itime(2)) * 0.01d0
-#else
       ETCPU  = ETIME(TARRAY)
       ECPU   = TARRAY(1)
       ESYST  = TARRAY(2)
-#endif
       CPUA   = ECPU - SCPU
       CPUE   = ECPU - PCPU
       PCPU   = ECPU
@@ -464,24 +416,13 @@ C     &     CTIME(1:2),':',CTIME(3:4),':',CTIME(5:6)
 #if defined (SYS_LINUX)
       WRITE (LUPRIN,'(T6,2A)') 'Date and time (Linux)  : ',FDATE()
 #endif
-#if defined (SYS_LINUX) || defined (SYS_UNIX) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN)
+#if defined (SYS_AIX) || (SYS_LINUX) || defined (SYS_UNIX) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN)
       CALL HOSTNM(HSTNAM)
       WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
 #endif
 #if defined (SYS_HAL)
       IRET = HOSTNM(HSTNAM)
       WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
-#endif
-#if defined (SYS_AIX)
-C 930414-hjaaj: apparent error IBM's xlf library routines:
-C    when 'T6' then column 1-5 not blanked but contains text
-C    from a previous print statement!
-C     AIX XL FORTRAN version 2.3+
-      WRITE (LUPRIN,'(2A)') '     Date and time (IBM-AIX): ',fdate_()
-C     WRITE (LUPRIN,'(T6,2A)') 'Date and time (IBM-AIX): ',fdate_()
-      CALL hostnm_(HSTNAM)
-      WRITE (LUPRIN,'(2A)') '     Host name              : ',HSTNAM
-C     WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
 #endif
 C
       RETURN
@@ -1744,16 +1685,7 @@ C
 C  /* Deck second */
 #if !defined (SYS_CRAY) && !defined (VAR_SECSEC) && !defined (SYS_T90) && !defined (VAR_G77)
       FUNCTION SECOND ()
-#if defined (SYS_AIX)
-#include <implicit.h>
-C 900521-hjaaj timer for IBM AIX operating system
-C 941013-hjaaj and for Intel Paragon
-      integer*4 itime(4),times,idum
-      idum = times(itime)
-C     idum = elapsed time, itime(1:2) = system and user time
-      second = dfloat (itime(1) + itime(2)) * 0.01d0
-#endif
-#if defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_DEC) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_HAL) || (defined (SYS_LINUX) && defined (VAR_PGF77))
+#if defined(SYS_AIX) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_DEC) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_HAL) || (defined (SYS_LINUX) && defined (VAR_PGF77))
 #include <implicit.h>
       real*4 etime,tarray(2)
 #if !defined (SYS_T3D)

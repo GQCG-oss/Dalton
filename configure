@@ -696,12 +696,13 @@ case $WHICH in
                         cpp="-WF,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=$memsiz',-D'INSTALL_BASDIR=\"$basdir\"',-D$parop"
 		      fi
 		      set_parallel_def $mesp
+                      copt="$copt -DVAR_MPI"
 		   fi
-		   inc='-WF,-I../include'
+		   inc='-I../include'
                    cpp=${cpp}",-DIMPLICIT_NONE"
             esac
-            copt="-I../include -DSYS_AIX -D_LARGE_FILES -qlonglong"
-            opt='-O3 -qstrict -qarch=auto -qtune=auto -qmaxmem=-1 -bmaxdata:0x40000000 -bmaxstack:0x10000000';;
+            copt="$copt -I../include -DSYS_AIX -D_LARGE_FILES -qlonglong -O3 -qarch=auto -qtune=auto"
+            opt='-O3 -qstrict -qarch=auto -qtune=auto -qmaxmem=-1 -bmaxdata:0x40000000 -bmaxstack:0x10000000 -qextname';;
     iris4d) case $opsys in
                IRIX64) opt='-O2 -64 -mips4 -G 0 -woff 2290 -OPT:Olimit=0'
                        copt='-O2 -64 -mips4 -G 0 -OPT:Olimit=0';;

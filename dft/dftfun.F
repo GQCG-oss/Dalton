@@ -260,7 +260,7 @@ C
       VB1   = (D1 - BBB)*ALPHA*B*AAA
       RETURN
       END
-/* Deck vbck */
+c /* Deck vbck */
       SUBROUTINE VBCK(VA,RHO,RHO13,RHOGRD,RHOLAP,RHOGHG)
 #include <implicit.h>
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0, 
@@ -451,7 +451,7 @@ C
       U     = 4.0D0*XF
       RETURN
       END
-/* Deck vlyp */
+c /* Deck vlyp */
       SUBROUTINE VLYP(VA,RHO,RHO13,RHOGRD,RHOLAP)
 C
 C     Lee

@@ -527,14 +527,11 @@ C  /* Deck getname */
 #include <implicit.h>
       CHARACTER*(20) HSTNAM
 C
-#if defined (SYS_LINUX) || defined (SYS_UNIX) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN)
+#if defined (SYS_LINUX) || defined (SYS_UNIX) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_AIX)
       CALL HOSTNM(HSTNAM)
 #endif
 #if defined (SYS_HAL)
       IRET = HOSTNM(HSTNAM)
-#endif
-#if defined (SYS_AIX)
-      CALL hostnm_(HSTNAM)
 #endif
 C
       RETURN
