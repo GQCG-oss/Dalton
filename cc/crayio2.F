@@ -234,7 +234,7 @@ c/* Deck WCLOSEALL */
 C
       DO LUNIT = 1, 99
 
-         IF (IUNCRAY(IUN) .NE. 0) THEN
+         IF (IUNCRAY(LUNIT) .NE. 0) THEN
 
            IF (DEBUG) WRITE(LUPRI,*) 'WCLOSEALL> close unit ',LUNIT
 
