@@ -14,7 +14,7 @@ pre: $(F_CPPS)
 ftnchek: pre
 	ftnchek $(CHEKFLAGS) *.i > gp.ftnchek
 
-all: libgp.a
+all: libgp.a mpi_dummy.o
 
 libgp.a: $(F_OBJS)
 	$(AR) $(ARFLAGS) $@ $?
