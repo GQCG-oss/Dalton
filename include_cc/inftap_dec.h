@@ -1,0 +1,10 @@
+      INTEGER         LUCME, LUMOL, LUPROP, LUSOL, LUINTA,
+     &                LUONEL, LUSUPM, LUTLM, LUDA1, LUITMP,
+     &                LU2DER, LUDASP, LURDR, LURDI, LUGDR, LUGDI,
+     &                LUGDT, LURDT, LUDFCK, LUSFDA, LUFDC, LUWLK,
+     &                LUPAO, LUPAS, LUNR1, LUNR3, LUNR5,
+     &                LUINTR, LUMOLDEN
+      INTEGER         LUAHSO, LUCRV1, LUCRV2, LUXYVE, LUCRVE, LUQRVE,
+     &                LURSP3, LURSP4, LURSP5, LUMHSO
+      INTEGER         LUINTM, LUIT1, LUIT2, LUIT3, LUIT5, LUINF,
+     &                LUH2AC, LUSIFC, LBINTM, LBINTD, LBONEL, LBINFO

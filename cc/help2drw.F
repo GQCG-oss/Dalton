@@ -1,0 +1,2337 @@
+C  /* Deck cc_grad */
+      SUBROUTINE CC_GRAD(GRADH1,GRADFS,WORK,LWORK)
+C
+C     Written by Asger Halkier & Christof Haettig May/June 1998.
+C     Revised January 1999 to interface with new integral program.
+C
+C     Version: 1.1
+C
+C     Purpose: To calculate various contributions to the gradient
+C              using the Coupled Cluster density matrices!
+C
+C     January 1999: Compute only the one electron part and the
+C                   reorthonormalization parts and do the heavy
+C                   derivative two electron part separately later.
+C
+C     Current models: CCS, MP2, CCD, CCSD
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <maxorb.h>
+#include <maxash.h>
+#include <mxorb.h>
+#include <mxcent.h>
+#include <maxaqn.h>
+#include <aovec.h>
+#include <iratdef.h>
+#include <nuclei.h>
+#include <symmet.h>
+#include <chrnos.h>
+      PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
+      PARAMETER (FOUR = 4.0D0)
+      DIMENSION INDEXA(MXCORB)
+      DIMENSION WORK(LWORK)
+      DIMENSION GRADH1(*), GRADFS(*)
+      CHARACTER*8 LABEL, NAME(8)
+      CHARACTER*5 MODEL
+C
+      DATA NAME  /'CCAOIN_1','CCAOIN_2','CCAOIN_3','CCAOIN_4',
+     *            'CCAOIN_5','CCAOIN_6','CCAOIN_7','CCAOIN_8'/
+#include <ccorb.h>
+#include <infind.h>
+#include <blocks.h>
+#include <ccfield.h>
+#include <ccsdinp.h>
+#include <ccsdsym.h>
+#include <ccsdio.h>
+#include <inftap.h>
+#include <distcl.h>
+#include <cbieri.h>
+#include <eribuf.h>
+#include <cclr.h>
+#include <ccfro.h>
+C
+C-----------------------------------------
+C     Initialization of result
+C-----------------------------------------
+C
+      CALL DZERO(GRADH1,MXCOOR)
+      CALL DZERO(GRADFS,MXCOOR)
+C
+C-----------------------------------------
+C     Initialization of timing parameters.
+C-----------------------------------------
+C
+      TIMTOT = ZERO
+      TIMTOT = SECOND()
+      TIMDEN = ZERO
+      TIMDAO = ZERO
+      TIRDAO = ZERO
+      TIMHE2 = ZERO
+      TIMONE = ZERO
+      TIMREO = ZERO
+      TIMONE = SECOND()
+C
+C----------------------------------------------------
+C     Both zeta- and t-vectors are totally symmetric.
+C----------------------------------------------------
+C
+      ISYMTR = 1
+      ISYMOP = 1
+C
+      IF (CCSD) THEN
+C
+C-----------------------------------
+C     Initial work space allocation.
+C-----------------------------------
+C
+         N2BSTM = 0
+         DO ISYM = 1, NSYM
+           N2BSTM = MAX(N2BSTM,N2BST(ISYM))
+         END DO
+
+         KFCKEF = 1
+         KAODSY = KFCKEF + N2BST(1)
+         KAODEN = KAODSY + N2BSTM
+         KZ2AM  = KAODEN + N2BSTM
+         KT2AM  = KZ2AM  + NT2SQ(1)
+         KT2AMT = KT2AM  + NT2AMX
+         KLAMDP = KT2AMT + NT2AMX
+         KLAMDH = KLAMDP + NLAMDT
+         KT1AM  = KLAMDH + NLAMDT
+         KZ1AM  = KT1AM  + NT1AMX
+         KEND1  = KZ1AM  + NT1AMX
+         LWRK1  = LWORK  - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
+            CALL QUIT('Insufficient memory for first allocation in CC_GRAD')
+         ENDIF
+C
+C----------------------------------------
+C     Read zero'th order zeta amplitudes.
+C----------------------------------------
+C
+         LULAM = 0
+         CALL GPOPEN(LULAM,'CCSAV_LAM','OLD',' ','UNFORMATTED',
+     *               IDUMMY,.FALSE.)
+         REWIND(LULAM)
+         READ(LULAM) NVEDUM, MODDUM
+         READ(LULAM) (WORK(KZ1AM + I - 1), I = 1,NT1AMX)
+         READ(LULAM) (WORK(KZ2AM + I - 1), I = 1,NT2AMX)
+         CALL GPCLOSE(LULAM,'KEEP')
+C
+C--------------------------------
+C     Square up zeta2 amplitudes.
+C--------------------------------
+C
+         CALL DCOPY(NT2AMX,WORK(KZ2AM),1,WORK(KT2AM),1)
+         CALL CC_T2SQ(WORK(KT2AM),WORK(KZ2AM),1)
+C
+C-------------------------------------------
+C     Read zero'th order cluster amplitudes.
+C-------------------------------------------
+C
+         LUTAM = 0
+         CALL GPOPEN(LUTAM,'CCSD_TAM','OLD',' ','UNFORMATTED',
+     *               IDUMMY,.FALSE.)
+         REWIND(LUTAM)
+         READ(LUTAM) (WORK(KT1AM + I - 1), I = 1,NT1AMX)
+         READ(LUTAM) (WORK(KT2AM + I - 1), I = 1,NT2AMX)
+         CALL GPCLOSE(LUTAM,'KEEP')
+C
+C------------------------------------------------
+C     Zero out single vectors in CCD-calculation.
+C------------------------------------------------
+C
+         IF (CCD) THEN
+            CALL DZERO(WORK(KT1AM),NT1AMX)
+            CALL DZERO(WORK(KZ1AM),NT1AMX)
+         ENDIF
+C
+C----------------------------------
+C     Calculate the lamda matrices.
+C----------------------------------
+C
+         CALL LAMMAT(WORK(KLAMDP),WORK(KLAMDH),WORK(KT1AM),WORK(KEND1),
+     *               LWRK1)
+C
+C---------------------------------------
+C     Set up 2C-E of cluster amplitudes.
+C---------------------------------------
+C
+         ISYOPE = 1
+C
+         CALL DCOPY(NT2AMX,WORK(KT2AM),1,WORK(KT2AMT),1)
+         CALL CCSD_TCMEPK(WORK(KT2AMT),1.0D0,ISYOPE)
+C
+C-------------------------------
+C     Work space allocation one.
+C     Note that D(ai) = ZETA(ai)
+C     and both D(ia) and h(ia) 
+C     are stored transposed!
+C-------------------------------
+C
+         LENBAR = 2*NT1AMX + NMATIJ(1) + NMATAB(1) + 2*NT1FRO(1)
+     *          + 2*NCOFRO(1)
+C
+         KONEAI = KZ1AM
+         KONEAB = KONEAI + NT1AMX
+         KONEIJ = KONEAB + NMATAB(1)
+         KONEIA = KONEIJ + NMATIJ(1)
+         KXMAT  = KONEIA + NT1AMX
+         KYMAT  = KXMAT  + NMATIJ(1)
+         KMINT  = KYMAT  + NMATAB(1)
+         KONINT = KMINT  + N3ORHF(1)
+         KMIRES = KONINT + N2BST(ISYMOP)
+         KD1ABT = KMIRES + N3ORHF(1)
+         KD1IJT = KD1ABT + NMATAB(1)
+         KKABAR = KD1IJT + NMATIJ(1)
+         KDHFAO = KKABAR + LENBAR
+         KKABAO = KDHFAO + N2BST(1)
+         KCMO   = KKABAO + N2BST(1)
+         KEND1  = KCMO   + NLAMDS
+         LWRK1  = LWORK  - KEND1
+C
+         IF (FROIMP) THEN
+            KCMOF = KEND1
+            KEND1 = KCMOF + NLAMDS
+            LWRK1 = LWORK - KEND1
+         ENDIF
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
+            CALL QUIT('Insufficient memory for allocation 1 CC_GRAD')
+         ENDIF
+C
+         IF (FROIMP) THEN
+C
+C----------------------------------------------
+C           Get the FULL MO coefficient matrix.
+C----------------------------------------------
+C
+            CALL CMO_ALL(WORK(KCMOF),WORK(KEND1),LWRK1)
+C
+         ENDIF
+C
+C------------------------------------------------------
+C     Initialize remaining one electron density arrays.
+C------------------------------------------------------
+C
+         CALL DZERO(WORK(KONEAB),NMATAB(1))
+         CALL DZERO(WORK(KONEIJ),NMATIJ(1))
+         CALL DZERO(WORK(KONEIA),NT1AMX)
+C
+C--------------------------------------------------------
+C     Calculate X-intermediate of zeta- and t-amplitudes.
+C--------------------------------------------------------
+C
+         CALL CC_XI(WORK(KXMAT),WORK(KZ2AM),ISYMTR,WORK(KT2AM),ISYMOP,
+     *                WORK(KEND1),LWRK1)
+C
+C--------------------------------------------------------
+C     Calculate Y-intermediate of zeta- and t-amplitudes.
+C--------------------------------------------------------
+C
+         CALL CC_YI(WORK(KYMAT),WORK(KZ2AM),ISYMTR,WORK(KT2AM),ISYMOP,
+     *              WORK(KEND1),LWRK1)
+C
+C--------------------------------------------------------------
+C     Construct three remaining blocks of one electron density.
+C--------------------------------------------------------------
+C
+         CALL DCOPY(NMATAB(1),WORK(KYMAT),1,WORK(KONEAB),1)
+         CALL CC_EITR(WORK(KONEAB),WORK(KONEIJ),WORK(KEND1),LWRK1,1)
+         CALL DIJGEN(WORK(KONEIJ),WORK(KXMAT))
+         CALL DIAGEN(WORK(KONEIA),WORK(KT2AMT),WORK(KONEAI))
+C
+C---------------------------------
+C     Set up transposed densities.
+C---------------------------------
+C
+         CALL DCOPY(NMATAB(1),WORK(KONEAB),1,WORK(KD1ABT),1)
+         CALL DCOPY(NMATIJ(1),WORK(KONEIJ),1,WORK(KD1IJT),1)
+         CALL CC_EITR(WORK(KD1ABT),WORK(KD1IJT),WORK(KEND1),LWRK1,1)
+C
+C----------------------------------------------
+C     Read orbital relaxation vector from disc.
+C----------------------------------------------
+C
+         CALL DZERO(WORK(KKABAR),LENBAR)
+C
+         LUCCK = 0
+         CALL GPOPEN(LUCCK,'CCKABAR0','OLD',' ','UNFORMATTED',
+     *               IDUMMY,.FALSE.)
+         REWIND(LUCCK)
+         READ(LUCCK) (WORK(KKABAR+I-1), I = 1,LENBAR)
+         CALL GPCLOSE(LUCCK,'KEEP')
+C
+C----------------------------------------------------------
+C     Read MO-coefficients from interface file and reorder.
+C----------------------------------------------------------
+C
+         LUSIFC = 0
+         CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
+     *               IDUMMY,.FALSE.)
+         REWIND LUSIFC
+         CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
+         READ (LUSIFC)
+         READ (LUSIFC)
+         READ (LUSIFC) (WORK(KCMO+I-1), I=1,NLAMDS)
+         CALL GPCLOSE (LUSIFC,'KEEP')
+C
+         CALL CMO_REORDER(WORK(KCMO),WORK(KEND1),LWRK1)
+C
+C--------------------------------------------------------------
+C     Calculate ao-transformed zeta-kappa-bar-0 and HF density.
+C--------------------------------------------------------------
+C
+         KOFDIJ = KKABAR
+         KOFDAB = KOFDIJ + NMATIJ(1)
+         KOFDAI = KOFDAB + NMATAB(1)
+         KOFDIA = KOFDAI + NT1AMX
+C
+         ISDEN = 1
+         CALL DZERO(WORK(KKABAO),N2BST(1))
+         CALL CC_DENAO(WORK(KKABAO),WORK(KOFDAI),WORK(KOFDAB),
+     *                 WORK(KOFDIJ),WORK(KOFDIA),WORK(KCMO),
+     *                 WORK(KCMO),WORK(KEND1),LWRK1,ISDEN)
+C
+         CALL CCS_D1AO(WORK(KDHFAO),WORK(KEND1),LWRK1)
+         IF (FROIMP .OR. FROEXP) THEN
+           MODEL = 'DUMMY'
+           CALL CC_FCD1AO(WORK(KDHFAO),WORK(KEND1),LWRK1,MODEL)
+         ENDIF
+C
+C------------------------------------------------------------
+C        Add orbital relaxation for effective density matrix.
+C------------------------------------------------------------
+C
+         CALL DCOPY(N2BST(1),WORK(KKABAO),1,WORK(KAODEN),1)
+C
+C------------------------------------------------------
+C        Add frozen core contributions to AO densities.
+C------------------------------------------------------
+C
+         IF (FROIMP) THEN
+C
+            KOFFAI = KKABAR + NMATIJ(1) + NMATAB(1) + 2*NT1AMX
+            KOFFIA = KOFFAI + NT1FRO(1)
+            KOFFIJ = KOFFIA + NT1FRO(1)
+            KOFFJI = KOFFIJ + NCOFRO(1)
+C
+            ISDEN = 1
+            ICON  = 1
+            CALL CC_D1FCB(WORK(KAODEN),WORK(KOFFIJ),WORK(KOFFJI),
+     *                    WORK(KOFFAI),WORK(KOFFIA),WORK(KEND1),
+     *                    LWRK1,ISDEN,ICON)
+C
+            ISDEN = 1
+            ICON  = 2
+            CALL CC_D1FCB(WORK(KKABAO),WORK(KOFFIJ),WORK(KOFFJI),
+     *                    WORK(KOFFAI),WORK(KOFFIA),WORK(KEND1),
+     *                    LWRK1,ISDEN,ICON)
+C
+         ENDIF
+C
+C------------------------------------------------------------
+C     Backtransform the one electron density to AO-basis.
+C     We thus have the entire effective one-electron density.
+C------------------------------------------------------------
+C
+         ISDEN = 1
+         CALL CC_DENAO(WORK(KAODEN),WORK(KONEAI),WORK(KONEAB),
+     *                 WORK(KONEIJ),WORK(KONEIA),WORK(KLAMDP),
+     *                 WORK(KLAMDH),WORK(KEND1),LWRK1,ISDEN)
+C
+C--------------------------------------------------------
+C     Calculate M-intermediate of zeta- and t-amplitudes.
+C--------------------------------------------------------
+C
+         CALL CC_MI(WORK(KMINT),WORK(KZ2AM),ISYMTR,WORK(KT2AM),ISYMOP,
+     *              WORK(KEND1),LWRK1)
+C
+C--------------------------------------------------------
+C     Calculate resorted M-intermediate M(imjk)->M(mkij). 
+C--------------------------------------------------------
+C
+         CALL CC_MIRS(WORK(KMIRES),WORK(KMINT))
+C
+      ELSE IF (MP2) THEN
+C
+C---------------------------------
+C     First work space allocation.
+C---------------------------------
+C
+         N2BSTM = 0
+         DO ISYM = 1, NSYM
+           N2BSTM = MAX(N2BSTM,N2BST(ISYM))
+         END DO
+C
+         LENBAR = 2*NT1AMX + NMATIJ(1) + NMATAB(1) + 2*NCOFRO(1)
+     *          + 2*NT1FRO(1)
+C
+         KFCKEF = 1
+         KAODSY = KFCKEF + N2BST(1)
+         KAODEN = KAODSY + N2BSTM
+         KONEAI = KAODEN + N2BSTM
+         KONEAB = KONEAI + NT1AMX
+         KONEIJ = KONEAB + NMATAB(1)
+         KONEIA = KONEIJ + NMATIJ(1)
+         KCMO   = KONEIA + NT1AMX
+         KKABAR = KCMO   + NLAMDS
+         KDHFAO = KKABAR + LENBAR
+         KKABAO = KDHFAO + N2BST(1)
+         KLAMDH = KKABAO + N2BST(1)
+         KLAMDP = KLAMDH + NLAMDT
+         KEND1  = KLAMDP + NLAMDT
+         LWRK1  = LWORK  - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
+            CALL QUIT('Insufficient memory for work allocation in CC_GRAD')
+         ENDIF
+C
+C--------------------------
+C        Initialize arrays.
+C--------------------------
+C
+         CALL DZERO(WORK(KONEAI),NT1AMX)
+         CALL DZERO(WORK(KONEAB),NMATAB(1))
+         CALL DZERO(WORK(KONEIJ),NMATIJ(1))
+         CALL DZERO(WORK(KONEIA),NT1AMX)
+         CALL DZERO(WORK(KKABAR),LENBAR)
+C
+C-----------------------------------------------------------
+C        Calculate correlated part of MO coefficient matrix.
+C-----------------------------------------------------------
+C
+         CALL LAMMAT(WORK(KLAMDP),WORK(KLAMDH),WORK(KONEAI),
+     *               WORK(KEND1),LWRK1)
+         CALL DZERO(WORK(KONEAI),NT1AMX)
+C
+C-------------------------------------------------
+C        Read orbital relaxation vector from disc.
+C-------------------------------------------------
+C
+         CALL GPOPEN(LUCCK,'CCKABAR0','OLD',' ','UNFORMATTED',
+     *               IDUMMY,.FALSE.)
+         REWIND(LUCCK)
+         READ(LUCCK) (WORK(KKABAR+I-1), I = 1,LENBAR)
+         CALL GPCLOSE(LUCCK,'KEEP')
+C
+C----------------------------------------------------------------
+C        Set up the relaxation (correlation) part of the density.
+C----------------------------------------------------------------
+C
+         CALL DCOPY(NMATIJ(1),WORK(KKABAR),1,WORK(KONEIJ),1)
+         CALL DCOPY(NMATAB(1),WORK(KKABAR+NMATIJ(1)),1,WORK(KONEAB),1)
+         CALL DCOPY(NT1AMX,WORK(KKABAR+NMATIJ(1)+NMATAB(1)),1,
+     *              WORK(KONEAI),1)
+         CALL DCOPY(NT1AMX,WORK(KONEAI),1,WORK(KONEIA),1)
+C
+C-------------------------------------
+C        Add the Hartree-Fock density.
+C-------------------------------------
+C
+         DO 80 ISYM = 1,NSYM
+            DO 85 I = 1,NRHF(ISYM)
+               NII = IMATIJ(ISYM,ISYM) + NRHF(ISYM)*(I - 1) + I
+               WORK(KONEIJ + NII - 1) = WORK(KONEIJ + NII - 1) + TWO
+   85       CONTINUE
+   80    CONTINUE
+C
+C--------------------------------------
+C        Transform density to AO basis.
+C--------------------------------------
+C
+         CALL DZERO(WORK(KAODEN),N2BST(1))
+C
+         ISDEN = 1
+         CALL CC_DENAO(WORK(KAODEN),WORK(KONEAI),WORK(KONEAB),
+     *                 WORK(KONEIJ),WORK(KONEIA),WORK(KLAMDP),
+     *                 WORK(KLAMDH),WORK(KEND1),LWRK1,ISDEN)
+C
+C--------------------------------------------------------------
+C     Calculate ao-transformed zeta-kappa-bar-0 and HF density.
+C--------------------------------------------------------------
+C
+         KOFDIJ = KKABAR
+         KOFDAB = KOFDIJ + NMATIJ(1)
+         KOFDAI = KOFDAB + NMATAB(1)
+         KOFDIA = KOFDAI + NT1AMX
+C
+         ISDEN = 1
+         CALL DZERO(WORK(KKABAO),N2BST(1))
+         CALL CC_DENAO(WORK(KKABAO),WORK(KOFDAI),WORK(KOFDAB),
+     *                 WORK(KOFDIJ),WORK(KOFDIA),WORK(KLAMDP),
+     *                 WORK(KLAMDH),WORK(KEND1),LWRK1,ISDEN)
+C
+         CALL CCS_D1AO(WORK(KDHFAO),WORK(KEND1),LWRK1)
+         IF (FROIMP .OR. FROEXP) THEN
+           MODEL = 'DUMMY'
+           CALL CC_FCD1AO(WORK(KDHFAO),WORK(KEND1),LWRK1,MODEL)
+         ENDIF
+C
+C-------------------------------------------
+C        Get the FULL MO coefficient matrix.
+C-------------------------------------------
+C
+         CALL CMO_ALL(WORK(KCMO),WORK(KEND1),LWRK1)
+C
+C------------------------------------------------------
+C        Add frozen core contributions to AO densities.
+C------------------------------------------------------
+C
+         IF (FROIMP) THEN
+C
+            KOFFAI = KKABAR + NMATIJ(1) + NMATAB(1) + 2*NT1AMX
+            KOFFIA = KOFFAI + NT1FRO(1)
+            KOFFIJ = KOFFIA + NT1FRO(1)
+            KOFFJI = KOFFIJ + NCOFRO(1)
+C
+            ISDEN = 1
+            ICON  = 1
+            CALL CC_D1FCB(WORK(KAODEN),WORK(KOFFIJ),WORK(KOFFJI),
+     *                    WORK(KOFFAI),WORK(KOFFIA),WORK(KEND1),
+     *                    LWRK1,ISDEN,ICON)
+C
+            ISDEN = 1
+            ICON  = 2
+            CALL CC_D1FCB(WORK(KKABAO),WORK(KOFFIJ),WORK(KOFFJI),
+     *                    WORK(KOFFAI),WORK(KOFFIA),WORK(KEND1),
+     *                    LWRK1,ISDEN,ICON)
+C
+         ENDIF
+C
+C----------------------------------
+C        Work space allocation two.
+C----------------------------------
+C
+         KT2AM = KEND1
+         KZ2AM = KT2AM + NT2AMX
+         KSKOD = KZ2AM + NT2AMX
+         KEND1 = KSKOD + NT1AMX
+         LWRK1 = LWORK - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
+            CALL QUIT('Insufficient memory for work allocation in CC_GRAD')
+         ENDIF
+C
+C----------------------------------------
+C     Read zero'th order zeta amplitudes.
+C----------------------------------------
+C
+         CALL GPOPEN(LULAM,'CCSAV_LAM','OLD',' ','UNFORMATTED',
+     *               IDUMMY,.FALSE.)
+         REWIND(LULAM)
+         READ(LULAM) NVEDUM, MODDUM
+         READ(LULAM) (WORK(KSKOD + I - 1), I = 1,NT1AMX)
+         READ(LULAM) (WORK(KZ2AM + I - 1), I = 1,NT2AMX)
+         CALL GPCLOSE(LULAM,'KEEP')
+C
+C-------------------------------------------
+C     Read zero'th order cluster amplitudes.
+C-------------------------------------------
+C
+         CALL GPOPEN(LUTAM,'CCSD_TAM','OLD',' ','UNFORMATTED',
+     *               IDUMMY,.FALSE.)
+         REWIND(LUTAM)
+         READ(LUTAM) (WORK(KSKOD + I - 1), I = 1,NT1AMX)
+         READ(LUTAM) (WORK(KT2AM + I - 1), I = 1,NT2AMX)
+         CALL GPCLOSE(LUTAM,'KEEP')
+C
+C-----------------------------------------------------------------------
+C        Set up special modified amplitudes needed in the integral loop.
+C        (By doing it this way, we only need one packed vector in core
+C        along with the integral distribution in the delta loop.)
+C-----------------------------------------------------------------------
+C
+         ISYOPE = 1
+         CALL CCSD_TCMEPK(WORK(KT2AM),1.0D0,ISYOPE)
+         CALL DSCAL(NT2AMX,TWO,WORK(KT2AM),1)
+         CALL DAXPY(NT2AMX,ONE,WORK(KZ2AM),1,WORK(KT2AM),1)
+C
+         KEND1 = KSKOD
+         LWRK1 = LWORK - KEND1
+C
+      ELSE IF (CCS) THEN
+C
+C---------------------------------
+C     First work space allocation.
+C---------------------------------
+C
+         N2BSTM = 0
+         DO ISYM = 1, NSYM
+           N2BSTM = MAX(N2BSTM,N2BST(ISYM))
+         END DO
+
+         KFCKEF = 1
+         KAODSY = KFCKEF + N2BST(1)
+         KAODEN = KAODSY + N2BSTM
+         KCMO   = KAODEN + N2BSTM
+         KEND1  = KCMO   + NLAMDS
+         LWRK1  = LWORK  - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
+            CALL QUIT('Insufficient memory for work allocation in CC_GRAD')
+         ENDIF
+C
+         CALL CCS_D1AO(WORK(KAODEN),WORK(KEND1),LWRK1)
+         IF (FROIMP .OR. FROEXP) THEN
+           MODEL = 'DUMMY'
+           CALL CC_FCD1AO(WORK(KAODEN),WORK(KEND1),LWRK1,MODEL)
+         ENDIF
+C
+C-------------------------------------------
+C        Get the FULL MO coefficient matrix.
+C-------------------------------------------
+C
+         CALL CMO_ALL(WORK(KCMO),WORK(KEND1),LWRK1)
+C
+      ENDIF
+C
+C------------------------------------------------------
+C     Loop over symmetry distinct atoms and contract
+C     1-electron density with h^(1) integrals (IATOM =
+C     0 for zeroth-order effective Fock matrix/energy).
+C------------------------------------------------------
+C
+      DO IATOM = 0, NUCIND
+C
+        MAXCOMP = 3
+        IF (IATOM .EQ. 0) MAXCOMP = 1
+C
+        DO ICOOR  = 1, MAXCOMP
+C
+           ICORSY = 1
+C
+           IF (IATOM .GT. 0) THEN
+              ISCOOR = IPTCNT(3*(IATOM-1)+ICOOR,ICORSY-1,1)
+           ELSE
+              ISCOOR = 1
+           ENDIF
+C
+           IF (ISCOOR .GT. 0) THEN
+              K1DHAM = KEND1
+              KEND2  = K1DHAM + N2BST(ICORSY)
+              LWRK2  = LWORK - KEND2
+C
+              IF (LWRK2 .LE. 0) THEN
+                 CALL QUIT('Insufficient work space in CC_GRAD.')
+              END IF
+C
+              IF (IATOM .EQ. 0) THEN
+C
+C----------------------------------------------------
+C                Test: calculate energy contribution.
+C----------------------------------------------------
+C
+                 CALL CCRHS_ONEAO(WORK(K1DHAM),WORK(KEND2),LWRK2)
+                 ECCSD1 = DDOT(N2BST(1),WORK(K1DHAM),1,WORK(KAODEN),1)
+
+C-------------------------------------------------------------------
+C                Calculate zeroth-order effective Fock matrix contr.
+C-------------------------------------------------------------------
+C
+                 DO ISYMA = 1, NSYM
+                   KOFF1 = IAODIS(ISYMA,ISYMA)
+                   CALL TRSREC(NBAS(ISYMA),NBAS(ISYMA),
+     &                     WORK(KAODEN+KOFF1),WORK(KAODSY+KOFF1))
+                 END DO
+                 CALL DAXPY(N2BST(1),ONE,WORK(KAODEN),1,WORK(KAODSY),1) 
+C
+                 DO ISYMA = 1, NSYM
+C
+                   NBASA = MAX(NBAS(ISYMA),1)
+C
+                   KOFF1 = KAODSY + IAODIS(ISYMA,ISYMA)
+                   KOFF2 = K1DHAM + IAODIS(ISYMA,ISYMA)
+                   KOFF3 = KFCKEF + IAODIS(ISYMA,ISYMA)
+C
+                   CALL DGEMM('N','N',NBAS(ISYMA),NBAS(ISYMA),
+     &                         NBAS(ISYMA),HALF,WORK(KOFF1),NBASA,
+     &                         WORK(KOFF2),NBASA,ZERO,
+     &                         WORK(KOFF3),NBASA)
+C
+                 END DO
+C
+C--------------------------------------------------------
+C                Test trace of the effective Fock matrix:
+C--------------------------------------------------------
+C
+                 FTRACE = ZERO
+                 DO ISYM = 1, NSYM
+                   KOFF1 = KFCKEF + IAODIS(ISYM,ISYM)
+                   DO I = 1, NBAS(ISYM)
+                     FTRACE = FTRACE + WORK(KOFF1+NBAS(ISYM)*(I-1)+I-1) 
+                   END DO
+                 END DO
+                 IF (IPRINT .GT. 10) THEN
+                    WRITE(LUPRI,*)'Trace of 1el cont. to eff. Fock:',FTRACE
+                 ENDIF
+C
+              ELSE
+C
+                 LABEL = '1DHAM '//CHRNOS(ISCOOR/10)
+     &                           //CHRNOS(MOD(ISCOOR,10))
+C
+                 CALL CCPRPAO(LABEL,WORK(K1DHAM),IRREP,ISYM,IERR,
+     &                        WORK(KEND1),LWRK1)
+C
+                 IF (IERR.NE.0 .OR. IRREP.NE.ICORSY) THEN
+                    CALL QUIT('CC_DERIV: error while reading '
+     &                           //LABEL//' integrals.')
+                 END IF
+C
+C------------------------------------------------
+C                Calculate gradient contribution:
+C------------------------------------------------
+C
+                 GRADH1(ISCOOR) = DDOT(N2BST(1),WORK(K1DHAM),1,
+     *                                 WORK(KAODEN),1)
+C
+              ENDIF
+C
+              IF (IPRINT .GT. 10) THEN
+                WRITE (LUPRI,*) 'IATOM :', IATOM
+                WRITE (LUPRI,*) 'ICOOR :', ICOOR
+                WRITE (LUPRI,*) 'ICORSY:', ICORSY
+                WRITE (LUPRI,*) 'ISCOOR:', ISCOOR
+                WRITE (LUPRI,*) 'GRADH1 :', GRADH1(ISCOOR)
+              END IF
+           END IF
+        END DO
+      END DO
+C
+      TIMONE = SECOND() - TIMONE
+      CALL FLSHFO(LUPRI)
+C
+C-----------------------------------
+C     Start the loop over integrals.
+C-----------------------------------
+C
+      ECCSD2 = ZERO
+C
+      KEND1A = KEND1
+      LWRK1A = LWRK1
+C
+      KCCFB1 = KEND1
+      KINDXB = KCCFB1 + MXPRIM*MXCONT
+      KEND1  = KINDXB + (8*MXSHEL*MXCONT + 1)/IRAT
+      LWRK1  = LWORK  - KEND1
+      IF (DIRECT) THEN
+         NTOSYM = 1
+         DTIME  = SECOND()
+         CALL ERIDI1(KODCL1,KODCL2,KODBC1,KODBC2,KRDBC1,KRDBC2,
+     *               KODPP1,KODPP2,KRDPP1,KRDPP2,
+     *               KFREE,LFREE,KEND1,WORK(KCCFB1),WORK(KINDXB),
+     *               WORK(KEND1),LWRK1,IPRERI)
+         KEND1  = KFREE
+         LWRK1  = LFREE
+         DTIME  = SECOND() - DTIME
+         TIMHE2 = TIMHE2 + DTIME
+      ELSE
+         NTOSYM = NSYM
+      ENDIF
+C
+      KENDSV = KEND1
+      LWRKSV = LWRK1
+C
+      ICDEL1 = 0
+      DO 100 ISYMD1 = 1,NTOSYM
+C
+         IF (DIRECT) THEN
+            NTOT = MXCALL
+         ELSE
+            NTOT = NBAS(ISYMD1)
+         ENDIF
+C
+         DO 110 ILLL = 1,NTOT
+C
+C---------------------------------------------
+C           If direct calculate the integrals.
+C---------------------------------------------
+C
+            IF (DIRECT) THEN
+C
+               KEND1 = KENDSV
+               LWRK1 = LWRKSV
+C
+               DTIME  = SECOND()
+               CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0,
+     *                     WORK(KODCL1),WORK(KODCL2),
+     *                     WORK(KODBC1),WORK(KODBC2),
+     *                     WORK(KRDBC1),WORK(KRDBC2),
+     *                     WORK(KODPP1),WORK(KODPP2),
+     *                     WORK(KRDPP1),WORK(KRDPP2),
+     *                     WORK(KCCFB1),WORK(KINDXB),
+     *                     WORK(KEND1), LWRK1,IPRERI)
+               DTIME  = SECOND() - DTIME
+               TIMHE2 = TIMHE2 + DTIME
+C
+               KRECNR = KEND1
+               KEND1  = KRECNR + (NBUFX(0) - 1)/IRAT + 1
+               LWRK1  = LWORK  - KEND1
+               IF (LWRK1 .LT. 0) THEN
+                  CALL QUIT('Insufficient core in CC_GRAD')
+               END IF
+C
+            ELSE
+               NUMDIS = 1
+            ENDIF
+C
+C-----------------------------------------------------
+C           Loop over number of distributions in disk.
+C-----------------------------------------------------
+C
+            DO 120 IDEL2 = 1,NUMDIS
+C
+               IF (DIRECT) THEN
+                  IDEL  = INDEXA(IDEL2)
+                  ISYMD = ISAO(IDEL)
+               ELSE
+                  IDEL  = IBAS(ISYMD1) + ILLL
+                  ISYMD = ISYMD1
+               ENDIF
+C
+C----------------------------------------
+C              Work space allocation two.
+C----------------------------------------
+C
+               ISYDEN = ISYMD
+C
+               IF (CCSD) THEN
+                  KD2IJG = KEND1
+                  KD2AIG = KD2IJG + ND2IJG(ISYDEN)
+                  KD2IAG = KD2AIG + ND2AIG(ISYDEN)
+                  KD2ABG = KD2IAG + ND2AIG(ISYDEN)
+                  KEND2  = KD2ABG + ND2ABG(ISYDEN)
+                  LWRK2  = LWORK  - KEND2
+               ELSE IF (MP2) THEN
+                  KD2IJG = KEND1
+                  KD2IAG = KD2IJG + NF2IJG(ISYDEN)
+                  KEND2  = KD2IAG + ND2AIG(ISYDEN)
+                  LWRK2  = LWORK  - KEND2
+               ELSE IF (CCS) THEN
+                  KD2IJG = KEND1
+                  KEND2  = KD2IJG + NF2IJG(ISYDEN)
+                  LWRK2  = LWORK  - KEND2
+               ENDIF
+C
+               IF (LWRK2 .LT. 0) THEN
+                  WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:',KEND2
+                  CALL QUIT('Insufficient space for allocation 2 in CC_GRAD')
+               ENDIF
+C
+C-----------------------------------------------------
+C              Initialize two electron density arrays.
+C-----------------------------------------------------
+C
+               CALL DZERO(WORK(KD2IJG),NF2IJG(ISYDEN))
+               IF (.NOT. CCS) THEN
+                  CALL DZERO(WORK(KD2IAG),ND2AIG(ISYDEN))
+                  IF (CCSD) THEN
+                     CALL DZERO(WORK(KD2AIG),ND2AIG(ISYDEN))
+                     CALL DZERO(WORK(KD2ABG),ND2ABG(ISYDEN))
+                     CALL DZERO(WORK(KD2IJG),ND2IJG(ISYDEN))
+                  ENDIF
+               ENDIF
+C
+C-------------------------------------------------------------------
+C              Calculate the two electron density d(pq,gamma;delta).
+C-------------------------------------------------------------------
+C
+               AUTIME = SECOND()
+C
+               IF (CCSD) THEN
+C
+                  CALL CC_DEN2(WORK(KD2IJG),WORK(KD2AIG),WORK(KD2IAG),
+     *                         WORK(KD2ABG),WORK(KZ2AM),WORK(KT2AM),
+     *                         WORK(KT2AMT),WORK(KMINT),WORK(KXMAT),
+     *                         WORK(KYMAT),WORK(KONEAB),WORK(KONEAI),
+     *                         WORK(KONEIA),WORK(KMIRES),WORK(KLAMDH),
+     *                         WORK(KLAMDP),WORK(KEND2),LWRK2,IDEL,
+     *                         ISYMD)
+C
+               ELSE IF (MP2) THEN
+C
+                  CALL CCS_DEN2(WORK(KD2IJG),WORK(KCMO),WORK(KEND2),
+     *                          LWRK2,IDEL,ISYMD)
+                  CALL MP2_DEN2(WORK(KD2IAG),WORK(KT2AM),WORK(KLAMDH),
+     *                          WORK(KEND2),LWRK2,IDEL,ISYMD)
+C
+               ELSE IF (CCS) THEN
+C
+                  CALL CCS_DEN2(WORK(KD2IJG),WORK(KCMO),WORK(KEND2),
+     *                          LWRK2,IDEL,ISYMD)
+C
+               ENDIF
+C
+               AUTIME = SECOND() - AUTIME
+               TIMDEN = TIMDEN + AUTIME
+C
+C------------------------------------------
+C              Work space allocation three.
+C------------------------------------------
+C
+               ISYDIS = MULD2H(ISYMD,ISYMOP)
+C
+               KXINT  = KEND2
+               KEND3  = KXINT  + NDISAO(ISYDIS)
+               LWRK3  = LWORK  - KEND3
+C
+               IF (LWRK3 .LT. 0) THEN
+                  WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:',KEND3
+                  CALL QUIT('Insufficient space for allocation 3 in CC_GRAD')
+               ENDIF
+C
+C--------------------------------------------
+C              Read AO integral distribution.
+C--------------------------------------------
+C
+               AUTIME = SECOND()
+               CALL CCRDAO(WORK(KXINT),IDEL,IDEL2,WORK(KEND3),LWRK3,
+     *                     WORK(KRECNR),DIRECT)
+               AUTIME = SECOND() - AUTIME
+               TIRDAO = TIRDAO + AUTIME
+C
+C------------------------------------------------------
+C              Start loop over second AO-index (gamma).
+C------------------------------------------------------
+C
+               DO 130 ISYMG = 1, NSYM
+                  DO 140 G = 1, NBAS(ISYMG)
+C
+C-----------------------------------------------------------
+C                    Set addresses for 2-electron densities.
+C-----------------------------------------------------------
+C
+                     AUTIME = SECOND()
+C
+                     ISYMPQ = MULD2H(ISYMG,ISYDEN)
+C
+                     IF (CCSD) THEN
+                        KD2GIJ = KD2IJG + ID2IJG(ISYMPQ,ISYMG)
+     *                         + NMATIJ(ISYMPQ)*(G - 1) 
+                        KD2GAI = KD2AIG + ID2AIG(ISYMPQ,ISYMG)
+     *                         + NT1AM(ISYMPQ)*(G - 1)
+                        KD2GAB = KD2ABG + ID2ABG(ISYMPQ,ISYMG)
+     *                         + NMATAB(ISYMPQ)*(G - 1)
+                        KD2GIA = KD2IAG + ID2AIG(ISYMPQ,ISYMG)
+     *                         + NT1AM(ISYMPQ)*(G - 1)
+                     ELSE IF (MP2) THEN
+                        KD2GIJ = KD2IJG + IF2IJG(ISYMPQ,ISYMG)
+     *                         + NFROIJ(ISYMPQ)*(G - 1)
+                        KD2GIA = KD2IAG + ID2AIG(ISYMPQ,ISYMG)
+     *                         + NT1AM(ISYMPQ)*(G - 1)
+                     ELSE IF (CCS) THEN
+                        KD2GIJ = KD2IJG + IF2IJG(ISYMPQ,ISYMG)
+     *                         + NFROIJ(ISYMPQ)*(G - 1)
+                        KLAMDH = KEND3
+                     ENDIF
+C
+C-------------------------------------------------------------
+C                    Calculate frozen core contributions to d.
+C-------------------------------------------------------------
+C
+                     CALL DZERO(WORK(KAODEN),N2BST(ISYMPQ))
+C
+                     IF ((CCSD) .AND. (FROIMP)) THEN
+C
+                        KFD2IJ = KEND3
+                        KFD2JI = KFD2IJ + NCOFRO(ISYMPQ)
+                        KFD2AI = KFD2JI + NCOFRO(ISYMPQ)
+                        KFD2IA = KFD2AI + NT1FRO(ISYMPQ)
+                        KFD2II = KFD2IA + NT1FRO(ISYMPQ)
+                        KEND3  = KFD2II + NFROFR(ISYMPQ)
+                        LWRK3  = LWORK  - KEND3
+C
+                        IF (LWRK3 .LT. 0) THEN
+                           WRITE(LUPRI,*) 'Available:', LWORK
+                           WRITE(LUPRI,*) 'Needed:', KEND3
+                           CALL QUIT('Insufficient work space in CC_GRAD')
+                        ENDIF
+C
+                        CALL DZERO(WORK(KFD2IJ),NCOFRO(ISYMPQ))
+                        CALL DZERO(WORK(KFD2JI),NCOFRO(ISYMPQ))
+                        CALL DZERO(WORK(KFD2AI),NT1FRO(ISYMPQ))
+                        CALL DZERO(WORK(KFD2IA),NT1FRO(ISYMPQ))
+                        CALL DZERO(WORK(KFD2II),NFROFR(ISYMPQ))
+C
+                        CALL CC_FD2BL(WORK(KFD2II),WORK(KFD2IJ),
+     *                                WORK(KFD2JI),WORK(KFD2AI),
+     *                                WORK(KFD2IA),WORK(KONEIJ),
+     *                                WORK(KONEAB),WORK(KONEAI),
+     *                                WORK(KONEIA),WORK(KCMOF),
+     *                                WORK(KLAMDH),WORK(KLAMDP),
+     *                                WORK(KEND3),LWRK3,IDEL,
+     *                                ISYMD,G,ISYMG)
+C
+                        CALL CC_FD2AO(WORK(KAODEN),WORK(KFD2II),
+     *                                WORK(KFD2IJ),WORK(KFD2JI),
+     *                                WORK(KFD2AI),WORK(KFD2IA),
+     *                                WORK(KCMOF),WORK(KLAMDH),
+     *                                WORK(KLAMDP),WORK(KEND3),LWRK3,
+     *                                ISYMPQ)
+C
+                        CALL CC_D2GAF(WORK(KD2GIJ),WORK(KD2GAB),
+     *                                WORK(KD2GAI),WORK(KD2GIA),
+     *                                WORK(KONEIJ),WORK(KONEAB),
+     *                                WORK(KONEAI),WORK(KONEIA),
+     *                                WORK(KCMOF),IDEL,ISYMD,G,ISYMG)
+C
+                     ENDIF
+C
+C
+C-----------------------------------------------
+C                    Work space allocation four.
+C-----------------------------------------------
+C
+                     KINTAO = KEND3
+                     KEND4  = KINTAO + N2BST(ISYMPQ)
+                     LWRK4  = LWORK  - KEND4
+C
+                     IF (LWRK4 .LT. 0) THEN
+                        WRITE(LUPRI,*) 'Available:', LWORK
+                        WRITE(LUPRI,*) 'Needed:', KEND4
+                        CALL QUIT('Insufficient work space in CC_GRAD')
+                     ENDIF
+C
+C-------------------------------------------------------
+C                    Square up AO-integral distribution.
+C-------------------------------------------------------
+C
+                     KOFFIN = KXINT + IDSAOG(ISYMG,ISYDIS)
+     *                      + NNBST(ISYMPQ)*(G - 1)
+C
+                     CALL CCSD_SYMSQ(WORK(KOFFIN),ISYMPQ,WORK(KINTAO))
+C
+C------------------------------------------------------------
+C                    Backtransform density fully to AO basis.
+C------------------------------------------------------------
+C
+                     AUTIM1 = SECOND()
+                     IF (CCSD) THEN
+C
+                        CALL CC_DENAO(WORK(KAODEN),WORK(KD2GAI),
+     *                                WORK(KD2GAB),
+     *                                WORK(KD2GIJ),WORK(KD2GIA),
+     *                                WORK(KLAMDP),WORK(KLAMDH),
+     *                                WORK(KEND4),LWRK4,ISYMPQ)
+C
+                     ELSE
+C
+                        CALL CCMP_DAO(WORK(KAODEN),WORK(KD2GIJ),
+     *                                WORK(KD2GIA),WORK(KCMO),
+     *                                WORK(KLAMDH),WORK(KEND4),
+     *                                LWRK4,ISYMPQ)
+C
+                     ENDIF
+                     AUTIME = SECOND() - AUTIME
+                     TIMDAO = TIMDAO + AUTIME
+C
+C--------------------------------------------------------
+C                    Add relaxation terms to set up 
+C                    effective density. We thus have the
+C                    entire effective 2-electron density.
+C--------------------------------------------------------
+C
+                     IF (.NOT. CCS) THEN
+C
+                       ICON = 2
+C
+                       CALL CC_D2EFF(WORK(KAODEN),G,ISYMG,IDEL,ISYMD,
+     *                               WORK(KKABAO),WORK(KDHFAO),ICON)
+C
+                       CALL CC_D2EFF(WORK(KAODEN),G,ISYMG,IDEL,ISYMD,
+     *                               WORK(KDHFAO),WORK(KKABAO),ICON)
+C
+                     ENDIF
+C
+C-----------------------------------------------------------
+C                    calculate the 2 e- density contribution
+C                    to the zeroth-order energy.
+C-----------------------------------------------------------
+C
+                     ECCSD2 = ECCSD2 + HALF*DDOT(N2BST(ISYMPQ),
+     *                        WORK(KAODEN),1,WORK(KINTAO),1)
+C
+C--------------------------------------------------------------
+C                    calculate the 2 e- density contribution to
+C                    the zeroth-order effective Fock matrix.
+C--------------------------------------------------------------
+C
+                      DO ISYMP = 1, NSYM
+C
+                         ISYMQ = MULD2H(ISYMP,ISYMPQ)
+C
+                         KOFF1 = IAODIS(ISYMP,ISYMQ)
+                         KOFF2 = IAODIS(ISYMQ,ISYMP)
+C
+                         CALL TRSREC(NBAS(ISYMP),NBAS(ISYMQ),
+     &                        WORK(KAODEN+KOFF1),WORK(KAODSY+KOFF2))
+C
+                      END DO
+C
+                      CALL DAXPY(N2BST(ISYMPQ),ONE,WORK(KAODEN),1,
+     &                           WORK(KAODSY),1) 
+C
+                      DO ISYMP = 1, NSYM
+C
+                         ISYMQ = MULD2H(ISYMP,ISYMPQ)
+C 
+                         NBASP = MAX(NBAS(ISYMP),1)
+                         NBASQ = MAX(NBAS(ISYMQ),1)
+C
+                         KOFF1 = KAODSY + IAODIS(ISYMP,ISYMQ)
+                         KOFF2 = KINTAO + IAODIS(ISYMQ,ISYMP)
+                         KOFF3 = KFCKEF + IAODIS(ISYMP,ISYMP)
+C                             
+                         CALL DGEMM('N','N',NBAS(ISYMP),
+     &                              NBAS(ISYMP),NBAS(ISYMQ),
+     &                              HALF,WORK(KOFF1),NBASP,
+     &                              WORK(KOFF2),NBASQ,ONE,
+     &                              WORK(KOFF3),NBASP)
+C
+                      END DO
+C
+  140             CONTINUE
+  130          CONTINUE
+  120       CONTINUE
+  110    CONTINUE
+  100 CONTINUE
+C
+C------------------------------
+C        Remove integral files.
+C------------------------------
+C
+      IF (KEEPAOTWO.LT.2) THEN
+         IF (LUINTA.LE.0) THEN
+             LUINTA = 0
+             CALL GPOPEN(LUINTA,'AOTWOINT','UNKNOWN',' ','UNFORMATTED',
+     *               IDUMMY,.FALSE.)
+         ENDIF
+         CALL GPCLOSE(LUINTA,'DELETE')
+      END IF
+C
+      TIMREO = SECOND()
+C
+C---------------------------------------------
+C     Test trace of the effective Fock matrix:
+C---------------------------------------------
+C
+      FTRACE = ZERO
+      DO ISYM = 1, NSYM
+         KOFF1 = KFCKEF + IAODIS(ISYM,ISYM)
+         DO I = 1, NBAS(ISYM)
+            FTRACE = FTRACE + WORK(KOFF1+NBAS(ISYM)*(I-1)+I-1) 
+         END DO
+      END DO
+C
+C------------------------------------------------------
+C     Transform effective Fock matrix to contravariant.
+C
+C     $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+C     NOTE: Change this, so S^(0) is read in from disc.
+C     $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+C
+C------------------------------------------------------
+C
+      KEFFCO = KEND1A
+      KCMODE = KEFFCO + N2BST(1)
+      KEND2  = KCMODE + N2BST(1)
+      LWRK2  = LWORK  - KEND2
+C
+      IF (LWRK2 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND2
+         CALL QUIT('Insufficient memory for initial allocation in CC_GRAD')
+      ENDIF
+C
+      CALL DZERO(WORK(KCMODE),N2BST(1))
+      CALL DCOPY(N2BST(1),WORK(KFCKEF),1,WORK(KEFFCO),1)
+C
+      IF ((CCSD) .AND. (FROIMP)) THEN
+         CALL DCOPY(NLAMDS,WORK(KCMOF),1,WORK(KCMO),1)
+      ENDIF
+C
+      DO ISYM = 1,NSYM
+C
+         NTOT  = MAX(NBAS(ISYM),1)
+C
+         KOFF1 = KCMO   + ILVISI(ISYM)
+         KOFF2 = KCMODE + IAODIS(ISYM,ISYM)
+C
+         CALL DGEMM('N','T',NBAS(ISYM),NBAS(ISYM),NVIRS(ISYM),ONE,
+     *              WORK(KOFF1),NTOT,WORK(KOFF1),NTOT,ONE,
+     *              WORK(KOFF2),NTOT)
+C
+         KOFF3 = KCMO   + ILRHSI(ISYM)
+         KOFF4 = KCMODE + IAODIS(ISYM,ISYM)
+C
+         CALL DGEMM('N','T',NBAS(ISYM),NBAS(ISYM),NRHFS(ISYM),ONE,
+     *              WORK(KOFF3),NTOT,WORK(KOFF3),NTOT,ONE,
+     *              WORK(KOFF4),NTOT)
+C
+      END DO
+      DO ISYM = 1,NSYM
+C
+         NTOT  = MAX(NBAS(ISYM),1)
+C
+         KOFF5 = KEFFCO + IAODIS(ISYM,ISYM)
+         KOFF6 = KCMODE + IAODIS(ISYM,ISYM)
+         KOFF7 = KFCKEF + IAODIS(ISYM,ISYM)
+C
+         CALL DGEMM('N','N',NBAS(ISYM),NBAS(ISYM),NBAS(ISYM),ONE,
+     *              WORK(KOFF5),NTOT,WORK(KOFF6),NTOT,ZERO,
+     *              WORK(KOFF7),NTOT)
+C
+      END DO
+C
+C--------------------------------------------------------------
+C     calculate reorthonormalization contributions to gradient.
+C--------------------------------------------------------------
+C
+      DO IATOM = 1, NUCIND
+        DO ICOOR  = 1, 3
+C
+           ICORSY = 1
+           ISCOOR = IPTCNT(3*(IATOM-1)+ICOOR,ICORSY-1,1)
+C
+           IF (ISCOOR .GT. 0) THEN
+C
+              K1DOVL = KEND1A
+              KEND2  = K1DOVL + N2BST(ICORSY)
+              LWRK2  = LWORK - KEND2
+C
+              IF (LWRK2 .LE. 0) THEN
+                 CALL QUIT('Insufficient work space in CC_GRAD.')
+              END IF
+C
+              LABEL = '1DOVL '//CHRNOS(ISCOOR/10)
+     &                        //CHRNOS(MOD(ISCOOR,10))
+C
+              CALL CCPRPAO(LABEL,WORK(K1DOVL),IRREP,ISYM,IERR,
+     &                     WORK(KEND2),LWRK2)
+C
+              IF (IERR.NE.0 .OR. IRREP.NE.ICORSY) THEN
+                 CALL QUIT('CC_DERIV: error while reading '
+     &                        //LABEL//' integrals.')
+              ENDIF
+C
+              GRADFS(ISCOOR) = DDOT(N2BST(1),WORK(K1DOVL),1,
+     *                              WORK(KFCKEF),1)
+C
+              IF (IPRINT .GT. 10) THEN
+                WRITE (LUPRI,*) 'IATOM :', IATOM
+                WRITE (LUPRI,*) 'ICOOR :', ICOOR
+                WRITE (LUPRI,*) 'ICORSY:', ICORSY
+                WRITE (LUPRI,*) 'ISCOOR:', ISCOOR
+                WRITE (LUPRI,*) 'GRADFS:', GRADFS(ISCOOR)
+              END IF
+           END IF
+        END DO
+      END DO
+C
+C---------------------------------------------------
+C     Read in potential energy and write out energy.
+C---------------------------------------------------
+C
+      CALL GPOPEN(LUSIFC.'SIRIFC','OLD',' ','UNFORMATTED',
+     *            IDUMMY,.FALSE.)
+      REWIND LUSIFC
+C
+      CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
+      READ (LUSIFC) POTNUC
+      CALL GPCLOSE (LUSIFC,'KEEP')
+C
+      ECCSD = ECCSD1 + ECCSD2 + POTNUC
+C
+      WRITE(LUPRI,*) ' '
+      IF (IPRINT .GT. 10) THEN
+         WRITE(LUPRI,*) 'Coupled Cluster energy constructed'
+         WRITE(LUPRI,*) 'from density matrices:'
+         IF (CCS)  WRITE(LUPRI,*) 'CCS-energy:',  ECCSD
+         IF (MP2)  WRITE(LUPRI,*) 'MP2-energy:',  ECCSD
+         IF (CCD)  WRITE(LUPRI,*) 'CCD-energy:',  ECCSD
+         IF (CCSD) WRITE(LUPRI,*) 'CCSD-energy:', ECCSD
+         WRITE(LUPRI,*) 'H1 energy, ECCSD1 = ',ECCSD1
+         WRITE(LUPRI,*) 'H2 energy, ECCSD2 = ',ECCSD2
+         WRITE(LUPRI,*) 'Nuc. Pot. energy  = ',POTNUC
+         WRITE(LUPRI,*) 'FTRACE            = ',FTRACE
+C
+         FNORM = DDOT(N2BST(1),WORK(KFCKEF),1,WORK(KFCKEF),1)
+C
+         WRITE(LUPRI,*) 'Norm^2 of the zeroth-order eff. Fock matrix:',
+     &               FNORM
+      ENDIF
+C
+      TIMREO = SECOND() - TIMREO
+C
+C
+C-----------------------
+C     Write out timings.
+C-----------------------
+C
+  99  TIMTOT = SECOND() - TIMTOT
+C
+      IF (IPRINT .GT. 3) THEN
+         WRITE(LUPRI,*) ' '
+         WRITE(LUPRI,*) 'One electron and reorthonormalization gradient'//
+     *              ' calculation completed'
+         WRITE(LUPRI,*) 'Total time used in CC_GRAD:', TIMTOT
+      ENDIF
+      IF (IPRINT .GT. 9) THEN
+         WRITE(LUPRI,*) 'Time used for setting up d(pq,ga,de):', TIMDEN
+         WRITE(LUPRI,*) 'Time used for full AO backtransformation:', TIMDAO
+         WRITE(LUPRI,*) 'Time used for reading 2 e- AO-integrals:', TIRDAO
+         WRITE(LUPRI,*) 'Time used for calculating 2 e- AO-integrals:',
+     *              TIMHE2
+         WRITE(LUPRI,*) 'Time used for 1 e- part & intermediates:',
+     *              TIMONE
+         WRITE(LUPRI,*) 'Time used for reorthonormalization part:', TIMREO
+      ENDIF
+      CALL FLSHFO(LUPRI)
+C
+      RETURN
+      END
+C  /* Deck cc_grad2e */
+      SUBROUTINE CC_GRAD2E(GRADH2,WORK,LWORK)
+C
+C     Written by Asger Halkier january 1999.
+C
+C     Version: 1.0
+C
+C     Purpose: To calculate the contribution to the gradient
+C              from the derivative two-electron integrals 
+C              using the Coupled Cluster density matrices and
+C              the new integral program!
+C
+C     Current models: CCS, MP2, CCD, CCSD
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <maxorb.h>
+#include <maxash.h>
+#include <mxorb.h>
+#include <mxcent.h>
+#include <maxaqn.h>
+#include <aovec.h>
+#include <iratdef.h>
+#include <nuclei.h>
+#include <symmet.h>
+#include <chrnos.h>
+#include <eridst.h>
+      PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
+      PARAMETER (FOUR = 4.0D0)
+      DIMENSION INDEXA(MXCORB)
+      DIMENSION IADR(MXCORB,MXDIST)
+      DIMENSION WORK(LWORK)
+      DIMENSION GRADH2(*)
+      CHARACTER*8 LABEL
+      CHARACTER*5 MODEL
+      LOGICAL OLDDX
+#include <ccorb.h>
+#include <infind.h>
+#include <blocks.h>
+#include <ccfield.h>
+#include <ccsdinp.h>
+#include <ccsdsym.h>
+#include <ccsdio.h>
+#include <distcl.h>
+#include <cbieri.h>
+#include <eribuf.h>
+#include <cclr.h>
+#include <ccfro.h>
+C
+C------------------------------
+C     Initialization of result.
+C------------------------------
+C
+      IF (IPRINT .GT. 9) CALL AROUND('Entering CC_GRAD2E')
+      CALL FLSHFO(LUPRI)
+C
+      CALL DZERO(GRADH2,MXCOOR)
+C
+C-----------------------------------------
+C     Initialization of timing parameters.
+C-----------------------------------------
+C
+      TIMTOT = ZERO
+      TIMTOT = SECOND()
+      TIMDEN = ZERO
+      TIMDAO = ZERO
+      TIRDAO = ZERO
+      TIMHE2 = ZERO
+      TIMONE = ZERO
+      TIMONE = SECOND()
+C
+C----------------------------------------------------
+C     Both zeta- and t-vectors are totally symmetric.
+C----------------------------------------------------
+C
+      ISYMTR = 1
+      ISYMOP = 1
+C
+      IF (CCSD) THEN
+C
+C-----------------------------------
+C     Initial work space allocation.
+C-----------------------------------
+C
+         N2BSTM = 0
+         DO ISYM = 1, NSYM
+           N2BSTM = MAX(N2BSTM,N2BST(ISYM))
+         END DO
+
+         KFCKEF = 1
+         KAODSY = KFCKEF + N2BST(1)
+         KAODEN = KAODSY + N2BSTM
+         KZ2AM  = KAODEN + N2BSTM
+         KT2AM  = KZ2AM  + NT2SQ(1)
+         KT2AMT = KT2AM  + NT2AMX
+         KLAMDP = KT2AMT + NT2AMX
+         KLAMDH = KLAMDP + NLAMDT
+         KT1AM  = KLAMDH + NLAMDT
+         KZ1AM  = KT1AM  + NT1AMX
+         KEND1  = KZ1AM  + NT1AMX
+         LWRK1  = LWORK  - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
+            CALL QUIT(
+     *         'Insufficient core for first allocation in CC_GRAD2E')
+         ENDIF
+C
+C----------------------------------------
+C     Read zero'th order zeta amplitudes.
+C----------------------------------------
+C
+         LULAM = 0
+         CALL GPOPEN(LULAM,'CCSAV_LAM','OLD',' ','UNFORMATTED',
+     *               IDUMMY,.FALSE.)
+         REWIND(LULAM)
+         READ(LULAM) NVEDUM, MODDUM
+         READ(LULAM) (WORK(KZ1AM + I - 1), I = 1,NT1AMX)
+         READ(LULAM) (WORK(KZ2AM + I - 1), I = 1,NT2AMX)
+         CALL GPCLOSE(LULAM,'KEEP')
+C
+C--------------------------------
+C     Square up zeta2 amplitudes.
+C--------------------------------
+C
+         CALL DCOPY(NT2AMX,WORK(KZ2AM),1,WORK(KT2AM),1)
+         CALL CC_T2SQ(WORK(KT2AM),WORK(KZ2AM),1)
+C
+C-------------------------------------------
+C     Read zero'th order cluster amplitudes.
+C-------------------------------------------
+C
+         LUTAM = 0
+         CALL GPOPEN(LUTAM,'CCSD_TAM','OLD',' ','UNFORMATTED',
+     *               IDUMMY,.FALSE.)
+         REWIND(LUTAM)
+         READ(LUTAM) (WORK(KT1AM + I - 1), I = 1,NT1AMX)
+         READ(LUTAM) (WORK(KT2AM + I - 1), I = 1,NT2AMX)
+         CALL GPCLOSE(LUTAM,'KEEP')
+C
+C------------------------------------------------
+C     Zero out single vectors in CCD-calculation.
+C------------------------------------------------
+C
+         IF (CCD) THEN
+            CALL DZERO(WORK(KT1AM),NT1AMX)
+            CALL DZERO(WORK(KZ1AM),NT1AMX)
+         ENDIF
+C
+C----------------------------------
+C     Calculate the lamda matrices.
+C----------------------------------
+C
+         CALL LAMMAT(WORK(KLAMDP),WORK(KLAMDH),WORK(KT1AM),WORK(KEND1),
+     *               LWRK1)
+C
+C---------------------------------------
+C     Set up 2C-E of cluster amplitudes.
+C---------------------------------------
+C
+         ISYOPE = 1
+C
+         CALL DCOPY(NT2AMX,WORK(KT2AM),1,WORK(KT2AMT),1)
+         CALL CCSD_TCMEPK(WORK(KT2AMT),1.0D0,ISYOPE)
+C
+C-------------------------------
+C     Work space allocation one.
+C     Note that D(ai) = ZETA(ai)
+C     and both D(ia) and h(ia) 
+C     are stored transposed!
+C-------------------------------
+C
+         LENBAR = 2*NT1AMX + NMATIJ(1) + NMATAB(1) + 2*NT1FRO(1)
+     *          + 2*NCOFRO(1)
+C
+         KONEAI = KZ1AM
+         KONEAB = KONEAI + NT1AMX
+         KONEIJ = KONEAB + NMATAB(1)
+         KONEIA = KONEIJ + NMATIJ(1)
+         KXMAT  = KONEIA + NT1AMX
+         KYMAT  = KXMAT  + NMATIJ(1)
+         KMINT  = KYMAT  + NMATAB(1)
+         KONINT = KMINT  + N3ORHF(1)
+         KMIRES = KONINT + N2BST(ISYMOP)
+         KD1ABT = KMIRES + N3ORHF(1)
+         KD1IJT = KD1ABT + NMATAB(1)
+         KKABAR = KD1IJT + NMATIJ(1)
+         KDHFAO = KKABAR + LENBAR
+         KKABAO = KDHFAO + N2BST(1)
+         KCMO   = KKABAO + N2BST(1)
+         KEND1  = KCMO   + NLAMDS
+         LWRK1  = LWORK  - KEND1
+C
+         IF (FROIMP) THEN
+            KCMOF = KEND1
+            KEND1 = KCMOF + NLAMDS
+            LWRK1 = LWORK - KEND1
+         ENDIF
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
+            CALL QUIT('Insufficient memory for allocation 1 CC_GRAD2E')
+         ENDIF
+C
+         IF (FROIMP) THEN
+C
+C----------------------------------------------
+C           Get the FULL MO coefficient matrix.
+C----------------------------------------------
+C
+            CALL CMO_ALL(WORK(KCMOF),WORK(KEND1),LWRK1)
+C
+         ENDIF
+C
+C------------------------------------------------------
+C     Initialize remaining one electron density arrays.
+C------------------------------------------------------
+C
+         CALL DZERO(WORK(KONEAB),NMATAB(1))
+         CALL DZERO(WORK(KONEIJ),NMATIJ(1))
+         CALL DZERO(WORK(KONEIA),NT1AMX)
+C
+C--------------------------------------------------------
+C     Calculate X-intermediate of zeta- and t-amplitudes.
+C--------------------------------------------------------
+C
+         CALL CC_XI(WORK(KXMAT),WORK(KZ2AM),ISYMTR,WORK(KT2AM),ISYMOP,
+     *                WORK(KEND1),LWRK1)
+C
+C--------------------------------------------------------
+C     Calculate Y-intermediate of zeta- and t-amplitudes.
+C--------------------------------------------------------
+C
+         CALL CC_YI(WORK(KYMAT),WORK(KZ2AM),ISYMTR,WORK(KT2AM),ISYMOP,
+     *              WORK(KEND1),LWRK1)
+C
+C--------------------------------------------------------------
+C     Construct three remaining blocks of one electron density.
+C--------------------------------------------------------------
+C
+         CALL DCOPY(NMATAB(1),WORK(KYMAT),1,WORK(KONEAB),1)
+         CALL CC_EITR(WORK(KONEAB),WORK(KONEIJ),WORK(KEND1),LWRK1,1)
+         CALL DIJGEN(WORK(KONEIJ),WORK(KXMAT))
+         CALL DIAGEN(WORK(KONEIA),WORK(KT2AMT),WORK(KONEAI))
+C
+C---------------------------------
+C     Set up transposed densities.
+C---------------------------------
+C
+         CALL DCOPY(NMATAB(1),WORK(KONEAB),1,WORK(KD1ABT),1)
+         CALL DCOPY(NMATIJ(1),WORK(KONEIJ),1,WORK(KD1IJT),1)
+         CALL CC_EITR(WORK(KD1ABT),WORK(KD1IJT),WORK(KEND1),LWRK1,1)
+C
+C----------------------------------------------
+C     Read orbital relaxation vector from disc.
+C----------------------------------------------
+C
+         CALL DZERO(WORK(KKABAR),LENBAR)
+C
+         LUCCK = 0
+         CALL GPOPEN(LUCCK,'CCKABAR0','OLD',' ','UNFORMATTED',
+     *              IDUMMY,.FALSE.)
+         REWIND(LUCCK)
+         READ(LUCCK) (WORK(KKABAR+I-1), I = 1,LENBAR)
+         CALL GPCLOSE(LUCCK,'KEEP')
+C
+C----------------------------------------------------------
+C     Read MO-coefficients from interface file and reorder.
+C----------------------------------------------------------
+C
+         LUSIFC = 0
+         CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
+     *               IDUMMY,.FALSE.)
+         REWIND LUSIFC
+         CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
+         READ (LUSIFC)
+         READ (LUSIFC)
+         READ (LUSIFC) (WORK(KCMO+I-1), I=1,NLAMDS)
+         CALL GPCLOSE (LUSIFC,'KEEP')
+C
+         CALL CMO_REORDER(WORK(KCMO),WORK(KEND1),LWRK1)
+C
+C--------------------------------------------------------------
+C     Calculate ao-transformed zeta-kappa-bar-0 and HF density.
+C--------------------------------------------------------------
+C
+         KOFDIJ = KKABAR
+         KOFDAB = KOFDIJ + NMATIJ(1)
+         KOFDAI = KOFDAB + NMATAB(1)
+         KOFDIA = KOFDAI + NT1AMX
+C
+         ISDEN = 1
+         CALL DZERO(WORK(KKABAO),N2BST(1))
+         CALL CC_DENAO(WORK(KKABAO),WORK(KOFDAI),WORK(KOFDAB),
+     *                 WORK(KOFDIJ),WORK(KOFDIA),WORK(KCMO),
+     *                 WORK(KCMO),WORK(KEND1),LWRK1,ISDEN)
+C
+         CALL CCS_D1AO(WORK(KDHFAO),WORK(KEND1),LWRK1)
+         IF (FROIMP .OR. FROEXP) THEN
+           MODEL = 'DUMMY'
+           CALL CC_FCD1AO(WORK(KDHFAO),WORK(KEND1),LWRK1,MODEL)
+         ENDIF
+C
+C------------------------------------------------------------
+C        Add orbital relaxation for effective density matrix.
+C------------------------------------------------------------
+C
+         CALL DCOPY(N2BST(1),WORK(KKABAO),1,WORK(KAODEN),1)
+C
+C------------------------------------------------------
+C        Add frozen core contributions to AO densities.
+C------------------------------------------------------
+C
+         IF (FROIMP) THEN
+C
+            KOFFAI = KKABAR + NMATIJ(1) + NMATAB(1) + 2*NT1AMX
+            KOFFIA = KOFFAI + NT1FRO(1)
+            KOFFIJ = KOFFIA + NT1FRO(1)
+            KOFFJI = KOFFIJ + NCOFRO(1)
+C
+            ISDEN = 1
+            ICON  = 1
+            CALL CC_D1FCB(WORK(KAODEN),WORK(KOFFIJ),WORK(KOFFJI),
+     *                    WORK(KOFFAI),WORK(KOFFIA),WORK(KEND1),
+     *                    LWRK1,ISDEN,ICON)
+C
+            ISDEN = 1
+            ICON  = 2
+            CALL CC_D1FCB(WORK(KKABAO),WORK(KOFFIJ),WORK(KOFFJI),
+     *                    WORK(KOFFAI),WORK(KOFFIA),WORK(KEND1),
+     *                    LWRK1,ISDEN,ICON)
+C
+         ENDIF
+C
+C------------------------------------------------------------
+C     Backtransform the one electron density to AO-basis.
+C     We thus have the entire effective one-electron density.
+C------------------------------------------------------------
+C
+         ISDEN = 1
+         CALL CC_DENAO(WORK(KAODEN),WORK(KONEAI),WORK(KONEAB),
+     *                 WORK(KONEIJ),WORK(KONEIA),WORK(KLAMDP),
+     *                 WORK(KLAMDH),WORK(KEND1),LWRK1,ISDEN)
+C
+C--------------------------------------------------------
+C     Calculate M-intermediate of zeta- and t-amplitudes.
+C--------------------------------------------------------
+C
+         CALL CC_MI(WORK(KMINT),WORK(KZ2AM),ISYMTR,WORK(KT2AM),ISYMOP,
+     *              WORK(KEND1),LWRK1)
+C
+C--------------------------------------------------------
+C     Calculate resorted M-intermediate M(imjk)->M(mkij). 
+C--------------------------------------------------------
+C
+         CALL CC_MIRS(WORK(KMIRES),WORK(KMINT))
+C
+      ELSE IF (MP2) THEN
+C
+C---------------------------------
+C     First work space allocation.
+C---------------------------------
+C
+         N2BSTM = 0
+         DO ISYM = 1, NSYM
+           N2BSTM = MAX(N2BSTM,N2BST(ISYM))
+         END DO
+C
+         LENBAR = 2*NT1AMX + NMATIJ(1) + NMATAB(1) + 2*NCOFRO(1)
+     *          + 2*NT1FRO(1)
+C
+         KFCKEF = 1
+         KAODSY = KFCKEF + N2BST(1)
+         KAODEN = KAODSY + N2BSTM
+         KONEAI = KAODEN + N2BSTM
+         KONEAB = KONEAI + NT1AMX
+         KONEIJ = KONEAB + NMATAB(1)
+         KONEIA = KONEIJ + NMATIJ(1)
+         KCMO   = KONEIA + NT1AMX
+         KKABAR = KCMO   + NLAMDS
+         KDHFAO = KKABAR + LENBAR
+         KKABAO = KDHFAO + N2BST(1)
+         KLAMDH = KKABAO + N2BST(1)
+         KLAMDP = KLAMDH + NLAMDT
+         KEND1  = KLAMDP + NLAMDT
+         LWRK1  = LWORK  - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
+            CALL QUIT('Insufficient memory for work allocation in CC_GRAD2E')
+         ENDIF
+C
+C--------------------------
+C        Initialize arrays.
+C--------------------------
+C
+         CALL DZERO(WORK(KONEAI),NT1AMX)
+         CALL DZERO(WORK(KONEAB),NMATAB(1))
+         CALL DZERO(WORK(KONEIJ),NMATIJ(1))
+         CALL DZERO(WORK(KONEIA),NT1AMX)
+         CALL DZERO(WORK(KKABAR),LENBAR)
+C
+C-----------------------------------------------------------
+C        Calculate correlated part of MO coefficient matrix.
+C-----------------------------------------------------------
+C
+         CALL LAMMAT(WORK(KLAMDP),WORK(KLAMDH),WORK(KONEAI),
+     *               WORK(KEND1),LWRK1)
+         CALL DZERO(WORK(KONEAI),NT1AMX)
+C
+C-------------------------------------------------
+C        Read orbital relaxation vector from disc.
+C-------------------------------------------------
+C
+         CALL GPOPEN(LUCCK,'CCKABAR0','OLD',' ','UNFORMATTED',
+     *               IDUMMY,.FALSE.)
+         REWIND(LUCCK)
+         READ(LUCCK) (WORK(KKABAR+I-1), I = 1,LENBAR)
+         CALL GPCLOSE(LUCCK,'KEEP')
+C
+C----------------------------------------------------------------
+C        Set up the relaxation (correlation) part of the density.
+C----------------------------------------------------------------
+C
+         CALL DCOPY(NMATIJ(1),WORK(KKABAR),1,WORK(KONEIJ),1)
+         CALL DCOPY(NMATAB(1),WORK(KKABAR+NMATIJ(1)),1,WORK(KONEAB),1)
+         CALL DCOPY(NT1AMX,WORK(KKABAR+NMATIJ(1)+NMATAB(1)),1,
+     *              WORK(KONEAI),1)
+         CALL DCOPY(NT1AMX,WORK(KONEAI),1,WORK(KONEIA),1)
+C
+C-------------------------------------
+C        Add the Hartree-Fock density.
+C-------------------------------------
+C
+         DO 80 ISYM = 1,NSYM
+            DO 85 I = 1,NRHF(ISYM)
+               NII = IMATIJ(ISYM,ISYM) + NRHF(ISYM)*(I - 1) + I
+               WORK(KONEIJ + NII - 1) = WORK(KONEIJ + NII - 1) + TWO
+   85       CONTINUE
+   80    CONTINUE
+C
+C--------------------------------------
+C        Transform density to AO basis.
+C--------------------------------------
+C
+         CALL DZERO(WORK(KAODEN),N2BST(1))
+C
+         ISDEN = 1
+         CALL CC_DENAO(WORK(KAODEN),WORK(KONEAI),WORK(KONEAB),
+     *                 WORK(KONEIJ),WORK(KONEIA),WORK(KLAMDP),
+     *                 WORK(KLAMDH),WORK(KEND1),LWRK1,ISDEN)
+C
+C--------------------------------------------------------------
+C     Calculate ao-transformed zeta-kappa-bar-0 and HF density.
+C--------------------------------------------------------------
+C
+         KOFDIJ = KKABAR
+         KOFDAB = KOFDIJ + NMATIJ(1)
+         KOFDAI = KOFDAB + NMATAB(1)
+         KOFDIA = KOFDAI + NT1AMX
+C
+         ISDEN = 1
+         CALL DZERO(WORK(KKABAO),N2BST(1))
+         CALL CC_DENAO(WORK(KKABAO),WORK(KOFDAI),WORK(KOFDAB),
+     *                 WORK(KOFDIJ),WORK(KOFDIA),WORK(KLAMDP),
+     *                 WORK(KLAMDH),WORK(KEND1),LWRK1,ISDEN)
+C
+         CALL CCS_D1AO(WORK(KDHFAO),WORK(KEND1),LWRK1)
+         IF (FROIMP .OR. FROEXP) THEN
+           MODEL = 'DUMMY'
+           CALL CC_FCD1AO(WORK(KDHFAO),WORK(KEND1),LWRK1,MODEL)
+         ENDIF
+C
+C-------------------------------------------
+C        Get the FULL MO coefficient matrix.
+C-------------------------------------------
+C
+         CALL CMO_ALL(WORK(KCMO),WORK(KEND1),LWRK1)
+C
+C------------------------------------------------------
+C        Add frozen core contributions to AO densities.
+C------------------------------------------------------
+C
+         IF (FROIMP) THEN
+C
+            KOFFAI = KKABAR + NMATIJ(1) + NMATAB(1) + 2*NT1AMX
+            KOFFIA = KOFFAI + NT1FRO(1)
+            KOFFIJ = KOFFIA + NT1FRO(1)
+            KOFFJI = KOFFIJ + NCOFRO(1)
+C
+            ISDEN = 1
+            ICON  = 1
+            CALL CC_D1FCB(WORK(KAODEN),WORK(KOFFIJ),WORK(KOFFJI),
+     *                    WORK(KOFFAI),WORK(KOFFIA),WORK(KEND1),
+     *                    LWRK1,ISDEN,ICON)
+C
+            ISDEN = 1
+            ICON  = 2
+            CALL CC_D1FCB(WORK(KKABAO),WORK(KOFFIJ),WORK(KOFFJI),
+     *                    WORK(KOFFAI),WORK(KOFFIA),WORK(KEND1),
+     *                    LWRK1,ISDEN,ICON)
+C
+         ENDIF
+C
+C----------------------------------
+C        Work space allocation two.
+C----------------------------------
+C
+         KT2AM = KEND1
+         KZ2AM = KT2AM + NT2AMX
+         KSKOD = KZ2AM + NT2AMX
+         KEND1 = KSKOD + NT1AMX
+         LWRK1 = LWORK - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
+            CALL QUIT(
+     *        'Insufficient memory for work allocation in CC_GRAD2E')
+         ENDIF
+C
+C----------------------------------------
+C     Read zero'th order zeta amplitudes.
+C----------------------------------------
+C
+         CALL GPOPEN(LULAM,'CCSAV_LAM','OLD',' ','UNFORMATTED',
+     *               IDUMMY,.FALSE.)
+         REWIND(LULAM)
+         READ(LULAM) NVEDUM, MODDUM
+         READ(LULAM) (WORK(KSKOD + I - 1), I = 1,NT1AMX)
+         READ(LULAM) (WORK(KZ2AM + I - 1), I = 1,NT2AMX)
+         CALL GPCLOSE(LULAM,'KEEP')
+C
+C-------------------------------------------
+C     Read zero'th order cluster amplitudes.
+C-------------------------------------------
+C
+         CALL GPOPEN(LUTAM,'CCSD_TAM','OLD',' ','UNFORMATTED',
+     *               IDUMMY,.FALSE.)
+         REWIND(LUTAM)
+         READ(LUTAM) (WORK(KSKOD + I - 1), I = 1,NT1AMX)
+         READ(LUTAM) (WORK(KT2AM + I - 1), I = 1,NT2AMX)
+         CALL GPCLOSE(LUTAM,'KEEP')
+C
+C-----------------------------------------------------------------------
+C        Set up special modified amplitudes needed in the integral loop.
+C        (By doing it this way, we only need one packed vector in core
+C        along with the integral distribution in the delta loop.)
+C-----------------------------------------------------------------------
+C
+         ISYOPE = 1
+         CALL CCSD_TCMEPK(WORK(KT2AM),1.0D0,ISYOPE)
+         CALL DSCAL(NT2AMX,TWO,WORK(KT2AM),1)
+         CALL DAXPY(NT2AMX,ONE,WORK(KZ2AM),1,WORK(KT2AM),1)
+C
+         KEND1 = KSKOD
+         LWRK1 = LWORK - KEND1
+C
+      ELSE IF (CCS) THEN
+C
+C---------------------------------
+C     First work space allocation.
+C---------------------------------
+C
+         N2BSTM = 0
+         DO ISYM = 1, NSYM
+           N2BSTM = MAX(N2BSTM,N2BST(ISYM))
+         END DO
+
+         KFCKEF = 1
+         KAODSY = KFCKEF + N2BST(1)
+         KAODEN = KAODSY + N2BSTM
+         KCMO   = KAODEN + N2BSTM
+         KEND1  = KCMO   + NLAMDS
+         LWRK1  = LWORK  - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
+            CALL QUIT(
+     *        'Insufficient memory for work allocation in CC_GRAD2E')
+         ENDIF
+C
+         CALL CCS_D1AO(WORK(KAODEN),WORK(KEND1),LWRK1)
+         IF (FROIMP .OR. FROEXP) THEN
+           MODEL = 'DUMMY'
+           CALL CC_FCD1AO(WORK(KAODEN),WORK(KEND1),LWRK1,MODEL)
+         ENDIF
+C
+C-------------------------------------------
+C        Get the FULL MO coefficient matrix.
+C-------------------------------------------
+C
+         CALL CMO_ALL(WORK(KCMO),WORK(KEND1),LWRK1)
+C
+      ENDIF
+C
+C-----------------------------------------
+C     Test: calculate energy contribution.
+C-----------------------------------------
+C
+      IF (.TRUE.) THEN
+         KTEST1 = KEND1
+         KENDTS = KEND1 + N2BST(1)
+         LWRKTS = LWORK - KENDTS
+         CALL CCRHS_ONEAO(WORK(KTEST),WORK(KENDTS),LWRKTS)
+         ECCSD1 = DDOT(N2BST(1),WORK(KTEST),1,WORK(KAODEN),1)
+      ENDIF
+C
+      TIMONE = SECOND() - TIMONE
+      CALL FLSHFO(LUPRI)
+C
+C-----------------------------------
+C     Start the loop over integrals.
+C-----------------------------------
+C
+      ECCSD2 = ZERO
+      DIRECT = .TRUE.
+C
+      KEND1A = KEND1
+      LWRK1A = LWRK1
+C
+      KCCFB1 = KEND1
+      KINDXB = KCCFB1 + MXPRIM*MXCONT
+      KEND1  = KINDXB + (8*MXSHEL*MXCONT + 1)/IRAT
+      LWRK1  = LWORK  - KEND1
+C
+      NTOSYM = 1
+      DTIME  = SECOND()
+      CALL ERIDI1(KODCL1,KODCL2,KODBC1,KODBC2,KRDBC1,KRDBC2,
+     *            KODPP1,KODPP2,KRDPP1,KRDPP2,
+     *            KFREE,LFREE,KEND1,WORK(KCCFB1),WORK(KINDXB),
+     *            WORK(KEND1),LWRK1,IPRERI)
+      KEND1  = KFREE
+      LWRK1  = LFREE
+      DTIME  = SECOND() - DTIME
+      TIMHE2 = TIMHE2 + DTIME
+C
+      KENDSV = KEND1
+      LWRKSV = LWRK1
+C
+      ICDEL1 = 0
+      NTOT   = MXCALL
+C
+      DO 100 ILLL = 1,NTOT
+C
+C---------------------------------------------------------------
+C        Determine which delta's to be calculated in this round.
+C---------------------------------------------------------------
+C
+         KEND1 = KENDSV
+         LWRK1 = LWRKSV
+C
+         DTIME  = SECOND()
+         CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0,
+     *               WORK(KODCL1),WORK(KODCL2),
+     *               WORK(KODBC1),WORK(KODBC2),
+     *               WORK(KRDBC1),WORK(KRDBC2),
+     *               WORK(KODPP1),WORK(KODPP2),
+     *               WORK(KRDPP1),WORK(KRDPP2),
+     *               WORK(KCCFB1),WORK(KINDXB),
+     *               WORK(KEND1), LWRK1,IPRERI)
+         DTIME  = SECOND() - DTIME
+         TIMHE2 = TIMHE2 + DTIME
+C
+         KRECNR = KEND1
+         KEND1  = KRECNR + (NBUFX(0) - 1)/IRAT + 1
+         LWRK1  = LWORK  - KEND1
+         IF (LWRK1 .LT. 0) THEN
+            CALL QUIT('Insufficient core in CC_GRAD2E')
+         END IF
+C
+C-------------------------------------------------------
+C        Open file for effective two electron densities.
+C-------------------------------------------------------
+C
+         LDECH = N2BSTM*2 + 1
+         LUDE = 0
+         CALL GPOPEN(LUDE,'CCTWDEN','UNKNOWN','DIRECT','UNFORMATTED',
+     *               LDECH,OLDDX)
+C
+C------------------------------------------------
+C        Loop over number of delta distributions.
+C------------------------------------------------
+C
+         DO 110 IDEL2 = 1,NUMDIS
+C
+            IDEL  = INDEXA(IDEL2)
+            ISYMD = ISAO(IDEL)
+C
+C-------------------------------------
+C           Work space allocation two.
+C-------------------------------------
+C
+            ISYDEN = ISYMD
+C
+            IF (CCSD) THEN
+               KD2IJG = KEND1
+               KD2AIG = KD2IJG + ND2IJG(ISYDEN)
+               KD2IAG = KD2AIG + ND2AIG(ISYDEN)
+               KD2ABG = KD2IAG + ND2AIG(ISYDEN)
+               KEND2  = KD2ABG + ND2ABG(ISYDEN)
+               LWRK2  = LWORK  - KEND2
+            ELSE IF (MP2) THEN
+               KD2IJG = KEND1
+               KD2IAG = KD2IJG + NF2IJG(ISYDEN)
+               KEND2  = KD2IAG + ND2AIG(ISYDEN)
+               LWRK2  = LWORK  - KEND2
+            ELSE IF (CCS) THEN
+               KD2IJG = KEND1
+               KEND2  = KD2IJG + NF2IJG(ISYDEN)
+               LWRK2  = LWORK  - KEND2
+            ENDIF
+C
+            IF (LWRK2 .LT. 0) THEN
+               WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:',KEND2
+               CALL QUIT(
+     *          'Insufficient core for allocation 2 in CC_GRAD2E')
+            ENDIF
+C
+C--------------------------------------------------
+C           Initialize two electron density arrays.
+C--------------------------------------------------
+C
+            AUTIME = SECOND()
+C
+            CALL DZERO(WORK(KD2IJG),NF2IJG(ISYDEN))
+            IF (.NOT. CCS) THEN
+               CALL DZERO(WORK(KD2IAG),ND2AIG(ISYDEN))
+               IF (CCSD) THEN
+                  CALL DZERO(WORK(KD2AIG),ND2AIG(ISYDEN))
+                  CALL DZERO(WORK(KD2ABG),ND2ABG(ISYDEN))
+                  CALL DZERO(WORK(KD2IJG),ND2IJG(ISYDEN))
+               ENDIF
+            ENDIF
+C
+C----------------------------------------------------------------
+C           Calculate the two electron density d(pq,gamma;delta).
+C----------------------------------------------------------------
+C
+            IF (CCSD) THEN
+               CALL CC_DEN2(WORK(KD2IJG),WORK(KD2AIG),WORK(KD2IAG),
+     *                      WORK(KD2ABG),WORK(KZ2AM),WORK(KT2AM),
+     *                      WORK(KT2AMT),WORK(KMINT),WORK(KXMAT),
+     *                      WORK(KYMAT),WORK(KONEAB),WORK(KONEAI),
+     *                      WORK(KONEIA),WORK(KMIRES),WORK(KLAMDH),
+     *                      WORK(KLAMDP),WORK(KEND2),LWRK2,IDEL,
+     *                      ISYMD)
+            ELSE IF (MP2) THEN
+               CALL CCS_DEN2(WORK(KD2IJG),WORK(KCMO),WORK(KEND2),
+     *                       LWRK2,IDEL,ISYMD)
+               CALL MP2_DEN2(WORK(KD2IAG),WORK(KT2AM),WORK(KLAMDH),
+     *                       WORK(KEND2),LWRK2,IDEL,ISYMD)
+            ELSE IF (CCS) THEN
+               CALL CCS_DEN2(WORK(KD2IJG),WORK(KCMO),WORK(KEND2),
+     *                       LWRK2,IDEL,ISYMD)
+            ENDIF
+            AUTIME = SECOND() - AUTIME
+            TIMDEN = TIMDEN + AUTIME
+C
+C---------------------------------------------------
+C           Start loop over second AO-index (gamma).
+C---------------------------------------------------
+C
+            DO 120 ISYMG = 1, NSYM
+               DO 130 G  = 1, NBAS(ISYMG)
+C
+                  IGAM   = G + IBAS(ISYMG)
+                  ISYMPQ = MULD2H(ISYMG,ISYDEN)
+C
+C--------------------------------------------------------
+C                 Set addresses for 2-electron densities.
+C--------------------------------------------------------
+C
+                  AUTIME = SECOND()
+                  IF (CCSD) THEN
+                     KD2GIJ = KD2IJG + ID2IJG(ISYMPQ,ISYMG)
+     *                      + NMATIJ(ISYMPQ)*(G - 1) 
+                     KD2GAI = KD2AIG + ID2AIG(ISYMPQ,ISYMG)
+     *                      + NT1AM(ISYMPQ)*(G - 1)
+                     KD2GAB = KD2ABG + ID2ABG(ISYMPQ,ISYMG)
+     *                      + NMATAB(ISYMPQ)*(G - 1)
+                     KD2GIA = KD2IAG + ID2AIG(ISYMPQ,ISYMG)
+     *                      + NT1AM(ISYMPQ)*(G - 1)
+                  ELSE IF (MP2) THEN
+                     KD2GIJ = KD2IJG + IF2IJG(ISYMPQ,ISYMG)
+     *                      + NFROIJ(ISYMPQ)*(G - 1)
+                     KD2GIA = KD2IAG + ID2AIG(ISYMPQ,ISYMG)
+     *                      + NT1AM(ISYMPQ)*(G - 1)
+                  ELSE IF (CCS) THEN
+                     KD2GIJ = KD2IJG + IF2IJG(ISYMPQ,ISYMG)
+     *                      + NFROIJ(ISYMPQ)*(G - 1)
+                     KLAMDH = KEND3
+                  ENDIF
+C
+C----------------------------------------------------------
+C                 Calculate frozen core contributions to d.
+C----------------------------------------------------------
+C
+                  CALL DZERO(WORK(KAODEN),N2BST(ISYMPQ))
+C
+                  IF ((CCSD) .AND. (FROIMP)) THEN
+C
+                     KFD2IJ = KEND2
+                     KFD2JI = KFD2IJ + NCOFRO(ISYMPQ)
+                     KFD2AI = KFD2JI + NCOFRO(ISYMPQ)
+                     KFD2IA = KFD2AI + NT1FRO(ISYMPQ)
+                     KFD2II = KFD2IA + NT1FRO(ISYMPQ)
+                     KEND3  = KFD2II + NFROFR(ISYMPQ)
+                     LWRK3  = LWORK  - KEND3
+C
+                     IF (LWRK3 .LT. 0) THEN
+                        WRITE(LUPRI,*) 'Available:', LWORK
+                        WRITE(LUPRI,*) 'Needed:', KEND3
+                        CALL QUIT('Insufficient work space in CC_GRAD2E')
+                     ENDIF
+C
+                     CALL DZERO(WORK(KFD2IJ),NCOFRO(ISYMPQ))
+                     CALL DZERO(WORK(KFD2JI),NCOFRO(ISYMPQ))
+                     CALL DZERO(WORK(KFD2AI),NT1FRO(ISYMPQ))
+                     CALL DZERO(WORK(KFD2IA),NT1FRO(ISYMPQ))
+                     CALL DZERO(WORK(KFD2II),NFROFR(ISYMPQ))
+C
+                     CALL CC_FD2BL(WORK(KFD2II),WORK(KFD2IJ),
+     *                             WORK(KFD2JI),WORK(KFD2AI),
+     *                             WORK(KFD2IA),WORK(KONEIJ),
+     *                             WORK(KONEAB),WORK(KONEAI),
+     *                             WORK(KONEIA),WORK(KCMOF),
+     *                             WORK(KLAMDH),WORK(KLAMDP),
+     *                             WORK(KEND3),LWRK3,IDEL,
+     *                             ISYMD,G,ISYMG)
+C
+                     CALL CC_FD2AO(WORK(KAODEN),WORK(KFD2II),
+     *                             WORK(KFD2IJ),WORK(KFD2JI),
+     *                             WORK(KFD2AI),WORK(KFD2IA),
+     *                             WORK(KCMOF),WORK(KLAMDH),
+     *                             WORK(KLAMDP),WORK(KEND3),LWRK3,
+     *                             ISYMPQ)
+C
+                     CALL CC_D2GAF(WORK(KD2GIJ),WORK(KD2GAB),
+     *                             WORK(KD2GAI),WORK(KD2GIA),
+     *                             WORK(KONEIJ),WORK(KONEAB),
+     *                             WORK(KONEAI),WORK(KONEIA),
+     *                             WORK(KCMOF),IDEL,ISYMD,G,ISYMG)
+C
+                     KEND4 = KEND3
+                     LWRK4 = LWRK3
+C
+                  ELSE
+C
+                     KEND4 = KEND2
+                     LWRK4 = LWRK2
+                     IF (CCS) KLAMDH = KEND4
+C
+                  ENDIF
+                  AUTIME = SECOND() - AUTIME
+                  TIMDEN = TIMDEN + AUTIME
+C
+C---------------------------------------------------------
+C                 Backtransform density fully to AO basis.
+C---------------------------------------------------------
+C
+                  AUTIM1 = SECOND()
+                  IF (CCSD) THEN
+                     CALL CC_DENAO(WORK(KAODEN),WORK(KD2GAI),
+     *                             WORK(KD2GAB),
+     *                             WORK(KD2GIJ),WORK(KD2GIA),
+     *                             WORK(KLAMDP),WORK(KLAMDH),
+     *                             WORK(KEND4),LWRK4,ISYMPQ)
+                  ELSE
+                     CALL CCMP_DAO(WORK(KAODEN),WORK(KD2GIJ),
+     *                             WORK(KD2GIA),WORK(KCMO),
+     *                             WORK(KLAMDH),WORK(KEND4),
+     *                             LWRK4,ISYMPQ)
+                  ENDIF
+C
+C-----------------------------------------------------
+C                 Add relaxation terms to set up 
+C                 effective density. We thus have the
+C                 entire effective 2-electron density.
+C-----------------------------------------------------
+C
+                  IF (.NOT. CCS) THEN
+                     ICON = 2
+                     CALL CC_D2EFF(WORK(KAODEN),G,ISYMG,IDEL,ISYMD,
+     *                             WORK(KKABAO),WORK(KDHFAO),ICON)
+                     CALL CC_D2EFF(WORK(KAODEN),G,ISYMG,IDEL,ISYMD,
+     *                             WORK(KDHFAO),WORK(KKABAO),ICON)
+                  ENDIF
+                  AUTIM1 = SECOND() - AUTIM1
+                  TIMDAO = TIMDAO + AUTIM1
+C
+C-----------------------------------------------------
+C                 Write effective density to disc for 
+C                 subsequent use in integral program,
+C                 which performs the contraction of
+C                 the density with the 2 e- integrals.
+C-----------------------------------------------------
+C
+                  AUTIME = SECOND()
+                  NDAD   = NBAST*(IDEL2 - 1) + IGAM
+                  NDENEL = N2BST(ISYMPQ)
+                  CALL DUMP2DEN(LUDE,WORK(KAODEN),NDENEL,NDAD)
+                  AUTIME = SECOND() - AUTIME
+                  TIRDAO = TIRDAO + AUTIME
+C
+  130          CONTINUE
+  120       CONTINUE
+  110    CONTINUE
+C
+C------------------------------------------------
+C        Loop over number of delta distributions.
+C------------------------------------------------
+C
+         DO 140 IDEL2 = 1,NUMDIS
+C
+            IDEL   = INDEXA(IDEL2)
+            ISYMD  = ISAO(IDEL)
+            ISYDEN = ISYMD
+C
+C---------------------------------
+C           Work space allocation.
+C---------------------------------
+C
+            ISYDIS = MULD2H(ISYMD,ISYMOP)
+C
+            KXINT  = KEND1
+            KEND2  = KXINT  + NDISAO(ISYDIS)
+            LWRK2  = LWORK  - KEND2
+C
+            IF (LWRK2 .LT. 0) THEN
+               WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:',KEND2
+               CALL QUIT('Insufficient core for allocation in CC_GRAD2E')
+            ENDIF
+C
+C-----------------------------------------
+C           Read AO integral distribution.
+C-----------------------------------------
+C
+            AUTIME = SECOND()
+            CALL CCRDAO(WORK(KXINT),IDEL,IDEL2,WORK(KEND2),LWRK2,
+     *                  WORK(KRECNR),DIRECT)
+            AUTIME = SECOND() - AUTIME
+            TIRDAO = TIRDAO + AUTIME
+C
+C---------------------------------------------------
+C           Start loop over second AO-index (gamma).
+C---------------------------------------------------
+C
+            DO 150 ISYMG = 1, NSYM
+               DO 160 G  = 1, NBAS(ISYMG)
+C
+                  IGAM   = G + IBAS(ISYMG)
+                  ISYMPQ = MULD2H(ISYMG,ISYDEN)
+C
+C--------------------------------------------
+C                 Work space allocation four.
+C--------------------------------------------
+C
+                  KINTAO = KEND2
+                  KEND3  = KINTAO + N2BST(ISYMPQ)
+                  KCHE3  = KEND3  + N2BST(ISYMPQ)
+                  LWRK3  = LWORK  - KCHE3
+C
+                  IF (LWRK3 .LT. 0) THEN
+                     WRITE(LUPRI,*) 'Available:', LWORK
+                     WRITE(LUPRI,*) 'Needed:', KCHE3
+                     CALL QUIT('Insufficient work space in CC_GRAD2E')
+                  ENDIF
+C
+C----------------------------------------------------
+C                 Square up AO-integral distribution.
+C----------------------------------------------------
+C
+                  KOFFIN = KXINT + IDSAOG(ISYMG,ISYDIS)
+     *                   + NNBST(ISYMPQ)*(G - 1)
+C
+                  CALL CCSD_SYMSQ(WORK(KOFFIN),ISYMPQ,WORK(KINTAO))
+C
+C----------------------------------------------
+C                 Read density block from disc.
+C----------------------------------------------
+C
+                  AUTIME = SECOND()
+                  NDAD   = NBAST*(IDEL2 - 1) + IGAM
+                  NDENEL = N2BST(ISYMPQ)
+                  CALL RETR2DEN(LUDE,WORK(KEND3),NDENEL,NDAD)
+                  AUTIME = SECOND() - AUTIME
+                  TIRDAO = TIRDAO + AUTIME
+C
+C--------------------------------------------------------
+C                 calculate the 2 e- density contribution
+C                 to the zeroth-order energy.
+C--------------------------------------------------------
+C
+                  ECCSD2 = ECCSD2 + HALF*DDOT(N2BST(ISYMPQ),
+     *                     WORK(KEND3),1,WORK(KINTAO),1)
+C
+  160          CONTINUE
+  150       CONTINUE
+  140    CONTINUE
+C
+C---------------------------------------------------------
+C        Close file with effective two electron densities.
+C---------------------------------------------------------
+C
+         CALL GPCLOSE(LUDE,'DELETE')
+C
+  100 CONTINUE
+c test
+      write(LUPRI,*) 'eccsd1:', eccsd1
+      write(LUPRI,*) 'eccsd2:', eccsd2
+C
+C-----------------------
+C     Write out timings.
+C-----------------------
+C
+  99  TIMTOT = SECOND() - TIMTOT
+C
+      IF (IPRINT .GT. 3) THEN
+         WRITE(LUPRI,*) ' '
+         WRITE(LUPRI,*) 'Two electron derivative gradient'//
+     *              ' calculation completed'
+         WRITE(LUPRI,*) 'Total time used in CC_GRAD2E:', TIMTOT
+      ENDIF
+      IF (IPRINT .GT. 9) THEN
+         WRITE(LUPRI,*) 'Time used for setting up d(pq,ga,de):', TIMDEN
+         WRITE(LUPRI,*) 'Time used for full AO backtransformation:', TIMDAO
+         WRITE(LUPRI,*) 'Time used for reading and writing d and I:',TIRDAO
+         WRITE(LUPRI,*) 'Time used for calculating 2 e- AO-integrals:',
+     *              TIMHE2
+         WRITE(LUPRI,*) 'Time used for 1 e- density & intermediates:',
+     *              TIMONE
+      ENDIF
+C
+      RETURN
+  165 CALL QUIT('Error reading CCTWODEN')
+      END

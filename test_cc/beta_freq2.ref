@@ -1,0 +1,1609 @@
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+               This is output from DALTON (Prerelease 1.1, September 1999)
+
+                          Principal authors:
+
+            Trygve Helgaker,     University of Oslo,        Norway 
+            Hans Joergen Jensen, SDU - Odense University,   Denmark
+            Poul Joergensen,     Aarhus University,         Denmark
+            Jeppe Olsen,         Aarhus University,         Denmark
+            Kenneth Ruud,        San Diego Superc. Center,  USA    
+            Hans Aagren,         KTH Stockholm,             Sweden 
+
+                          Contributors:
+
+            Keld L. Bak,         UNI-C,                     Denmark
+            Vebjoern Bakken,     University of Oslo,        Norway 
+            Ove Christiansen,    University of Lund,        Sweden 
+            Paal Dahle,          University of Oslo,        Norway 
+            Erik K. Dalskov,     UNI-C,                     Denmark
+            Thomas Enevoldsen,   SDU - Odense University,   Denmark
+            Berta Fernandez,     U.of Santiago de Compostela,Spain 
+            Hanne Heiberg,       University of Oslo,        Norway 
+            Hinne Hettema,       University of Auckland,    NZ     
+            Dan Jonsson,         San Diego Superc. Center,  USA    
+            Sheela Kirpekar,     SDU - Odense University,   Denmark
+            Rika Kobayashi,      Cambridge University,      England
+            Henrik Koch,         SDU - Odense University,   Denmark
+            Kurt V.Mikkelsen,    University of Copenhagen,  Denmark
+            Patrick Norman,      University of Linkoeping,  Sweden 
+            Martin J. Packer,    University of Sheffield,   UK     
+            Torgeir A. Ruden,    University of Oslo,        Norway 
+            Trond Saue,          University of Toulouse,    France 
+            Stephan P. A. Sauer, University of Copenhagen,  Denmark
+            Bernd Schimmelpfennig,KTH Stockholm,            Sweden 
+            Peter R.Taylor,      San Diego Superc. Center,  USA    
+            Olav Vahtras,        PDC, Stockholm,            Sweden 
+------------------------------------------------------------------------
+
+
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF wave functions. The authors accept no
+     responsibility for the performance of the code or for the
+     correctness of the results.
+      
+     The code (in whole or part) is provided under a license and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+     See licence agreement for further information.
+      
+     If results obtained with this code are published, an
+     appropriate citation would be:
+      
+     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,
+     H. Aagren, T. Andersen, K.L. Bak, V. Bakken, O. Christiansen
+     P. Dahle, E.K. Dalskov, T. Enevoldsen, B. Fernandez,
+     H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+     H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T. Saue,
+     S.P.A. Sauer, B. Schimmelpfennig, P.R. Taylor, and O. Vahtras:
+     "Dalton release 1.1 (1999), an electronic structure program"
+
+ 
+     Date and time (IRIX)   : Thu Nov 23 14:37:04 2000
+     Host name              : odin                                    
+
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+
+
+ Default print level:        0
+
+    Integral sections will be executed
+    Wave function sections will be executed
+    Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+
+ The following one-electron property integrals are calculated:
+
+          - overlap integrals
+          - dipole length integrals
+
+ In this run  precalculated two-electron integrals are transformed
+ to P-supermatrix elements.
+
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  Hydrogen flourid                                                        
+  small test basis                                                        
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 1
+
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: Cs 
+
+   * The point group was generated by:
+
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   Oxz
+   -----+----------
+     E  |  E 
+    Oxz | Oxz   E 
+
+   * Character table
+
+        |  E   Oxz
+   -----+----------
+    A'  |   1    1
+    A"  |   1   -1
+
+   * Direct product table
+
+        | A'   A" 
+   -----+----------
+    A'  | A' 
+    A"  | A"   A' 
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    2
+
+  Basis set used is "6-31G**" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  F           1       9      27      14      [10s4p1d|3s2p1d]                             
+  H           1       1       7       5      [4s1p|2s1p]                                  
+  ----------------------------------------------------------------------
+  total:      2      10      34      19
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+  Threshold for integrals:  1.00D-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  6
+
+
+   1   F        x      0.0000000000
+   2            y      0.0000000000
+   3            z      1.7632000000
+
+   4   H        x      0.0000000000
+   5            y      0.0000000000
+   6            z      0.0000000000
+
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:   4  2
+
+
+  Symmetry 1
+
+   1   F     x    1
+   2   F     z    3
+   3   H     x    4
+   4   H     z    6
+
+
+  Symmetry 2
+
+   5   F     y    2
+   6   H     y    5
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            F           H   
+
+   F       0.000000
+   H       0.933045    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H          F                              0.933045
+
+
+  Nuclear repulsion energy :    5.104355716878
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:         14   5
+
+
+  Symmetry  A' ( 1)
+
+    1     F        1s         1
+    2     F        1s         2
+    3     F        1s         3
+    4     F        2px        4
+    5     F        2pz        6
+    6     F        2px        7
+    7     F        2pz        9
+    8     F        3d0       12
+    9     F        3d1+      13
+   10     F        3d2+      14
+   11     H        1s        15
+   12     H        1s        16
+   13     H        2px       17
+   14     H        2pz       19
+
+
+  Symmetry  A" ( 2)
+
+   15     F        2py        5
+   16     F        2py        8
+   17     F        3d2-      10
+   18     F        3d1-      11
+   19     H        2py       18
+
+  Symmetries of electric field:  A' (1)  A" (2)  A' (1)
+
+  Symmetries of magnetic field:  A" (2)  A' (1)  A" (2)
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in ONEDRV is   0.01 seconds
+
+
+ >>> Time used in OVERLA is   0.01 seconds
+
+
+ >>> Time used in DIPLEN is   0.00 seconds
+
+
+
+ ************************************************************************
+ ************************** Output from TWOINT **************************
+ ************************************************************************
+
+
+ Number of two-electron integrals written:      4125 (22.7%)
+ Kilobytes written:                               51
+
+
+
+ >>> Time used in TWOINT is   0.05 seconds
+
+
+
+ ***********************************************************************
+ ************************* Output from FORMSUP *************************
+ ***********************************************************************
+
+  NOSYM :  F
+ OLDSUP :  F
+
+ Threshold for discarding integrals :  1.00D-15
+
+ >>> Time used in FRMSUP is   0.01 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.12 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
+
+- End of Integral Section
+@@     Starting Wave-Function Section -
+
+ ************************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
+ ************************************************************************
+
+ 
+     Date and time (IRIX)   : Thu Nov 23 14:37:04 2000
+     Host name              : odin                                    
+
+ Title     :   first hyperpolarizability for the HF molecule             
+               for CCS and CCSD wavefunctions compute:                   
+               - ZZZ, XXZ, XZX, ZXX components                           
+               - static and for two non-zero frequencies                 
+               - use explicitly that X and Y directions degnerated       
+
+ Title lines from integral program:
+     Hydrogen flourid                                                        
+     small test basis                                                        
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4 =   2 is   5
+
+      (Integral direct) CC calculation.
+
+
+     This is a combination run starting with
+
+               a RHF calculation
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         10
+     Number of electrons in active shells      0
+     Number of active orbitals                 0
+     Total number of orbitals                 19
+
+     Spin multiplicity                         1
+     Total number of symmetries                2
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1   2
+                                       --  --
+     Total number of orbitals          14   5
+     Number of basis functions         14   5
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from Huckel guess.               
+      -- Initial occupation of symmetries is : --
+
+     Occupied HF orbitals               4   1
+
+     Maximum number of Fock  iterations       0
+     Maximum number of DIIS  iterations      30
+     Maximum number of QC-HF iterations      15
+     Threshold for HF convergence      1.00D-12
+
+
+ Changes of defaults for CC:
+ ---------------------------
+
+
+ Quadratic response properties calculated
+  
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ Automatic occupation of symmetries with  10 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    HF occupation
+ -----------------------------------------------------------------------------
+   1    -99.551360609618   4.65D+00  -9.96D+01    4  1
+   2    -99.960190098542   1.12D+00  -4.09D-01    4  1
+   3   -100.002096206594   4.01D-01  -4.19D-02    4  1
+   4   -100.008746939608   5.69D-02  -6.65D-03    4  1
+   5   -100.008919812605   1.43D-03  -1.73D-04    4  1
+   6   -100.008919917735   1.59D-04  -1.05D-07    4  1
+   7   -100.008919920754   4.43D-05  -3.02D-09    4  1
+   8   -100.008919920979   5.20D-06  -2.25D-10    4  1
+   9   -100.008919920982   3.29D-07  -2.44D-12    4  1
+  10   -100.008919920982   3.60D-08  -8.53D-14    4  1
+  11   -100.008919920982   3.19D-09  -5.68D-14    4  1
+  12   -100.008919920982   2.83D-10   2.84D-14    4  1
+  13   -100.008919920982   1.32D-11  -5.68D-14    4  1
+  14   -100.008919920982   1.69D-12   5.68D-14    4  1
+  15   -100.008919920982   1.87D-13  -9.95D-14    4  1
+ DIIS converged in  15 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    4    1
+
+ Hartree-Fock orbital energies, symmetry 1
+
+       -26.27306679    -1.57292660    -0.73710507    -0.62549530     0.21639317
+         1.01969776     1.48848731     1.53899981     1.89379535
+
+ Hartree-Fock orbital energies, symmetry 2
+
+        -0.62549530     1.48848731     1.89379535     2.15801855     3.02038756
+
+    E(LUMO) :     0.21639317 au (symmetry 1)
+  - E(HOMO) :    -0.62549530 au (symmetry 1)
+  ------------------------------------------
+    gap     :     0.84188847 au
+1
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+
+     Final    HF energy:         -100.008919920982
+     Nuclear repulsion:             5.104355716878
+     Electronic energy:          -105.113275637860
+
+     Final gradient norm:           0.000000000000
+
+ 
+     Date and time (IRIX)   : Thu Nov 23 14:37:04 2000
+     Host name              : odin                                    
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3        4
+   1  F   1s     0.9955  -0.2308  -0.0555   0.0000
+   2  F   1s     0.0212   0.5025   0.1234   0.0000
+   3  F   1s    -0.0052   0.5082   0.2358   0.0000
+   4  F   2px    0.0000   0.0000   0.0000   0.6587
+   5  F   2pz   -0.0013  -0.0602   0.5496   0.0000
+   6  F   2px    0.0000   0.0000   0.0000   0.4859
+   7  F   2pz    0.0009  -0.0224   0.3522   0.0000
+   8  F   3d0    0.0000   0.0008  -0.0137   0.0000
+   9  F   3d1+   0.0000   0.0000   0.0000  -0.0129
+  10  F   3d2+   0.0000   0.0000   0.0000   0.0000
+  11  H   1s     0.0001   0.1311  -0.2709   0.0000
+  12  H   1s     0.0013   0.0073  -0.1255   0.0000
+  13  H   2px    0.0000   0.0000   0.0000   0.0198
+  14  H   2pz   -0.0006   0.0312  -0.0288   0.0000
+
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1
+   1  F   2py    0.6587
+   2  F   2py    0.4859
+   3  F   3d2-   0.0000
+   4  F   3d1-  -0.0129
+   5  H   2py    0.0198
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.11 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
+
+ 
+     Date and time (IRIX)   : Thu Nov 23 14:37:04 2000
+     Host name              : odin                                    
+
+@@- End of Wave-Function Section
+     Starting Coupled Cluster -
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                    START OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+
+                         +------------------------+
+                         ! Information from CCORB !
+                         +------------------------+
+
+   NBAS   :      14       5
+   IBAS   :       0      14
+   NRHF   :       4       1
+   NVIR   :      10       4
+   NRHFS  :       4       1
+   NVIRS  :      10       4
+   NRHFFR :       0       0
+   NVIRFR :       0       0
+   NORBTS :      19
+   NORBT  :      19
+   N2BAST :     221
+   N2BASX :     361
+   NNBASX :     190
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :        44
+          Number of t2 amplitudes                 :      1341
+          Total number of amplitudes in ccsd      :      1385
+
+
+
+          CCS CALC. - NO WAVEFUNCTION OPTIMIZATION
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER RESPONSE  >>>>>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                     +-------------------------------+
+                     ! Coupled Cluster model is: CCS !
+                     +-------------------------------+
+
+  
+
+ UNSORTED LIST OF REQUIRED OPERATORS:
+    1   ZDIPLEN     1    1  F    0
+    2   XDIPLEN     1    1  F    0
+    3   HAM0        1    1  T    0
+
+  CHECK TRIPLE: ZDIPLEN  ZDIPLEN  ZDIPLEN 
+
+  PUT TRIPLE: ZDIPLEN  ZDIPLEN  ZDIPLEN  ON THE LIST.
+
+  CHECK TRIPLE: XDIPLEN  XDIPLEN  ZDIPLEN 
+
+  PUT TRIPLE: XDIPLEN  XDIPLEN  ZDIPLEN  ON THE LIST.
+
+  CHECK TRIPLE: XDIPLEN  ZDIPLEN  XDIPLEN 
+
+  PUT TRIPLE: XDIPLEN  ZDIPLEN  XDIPLEN  ON THE LIST.
+
+  CHECK TRIPLE: XDIPLEN  XDIPLEN  ZDIPLEN 
+
+  PUT TRIPLE: XDIPLEN  XDIPLEN  ZDIPLEN  ON THE LIST.
+
+ LIST OF REQUIRED PROPERTY OPERATORS:
+    1   HAM0        1    1  T
+    2   XDIPLEN     1    1  F
+    3   ZDIPLEN     1    1  F
+
+ LIST OF REQUIRED EXPECTATION VALUES:
+
+ LIST OF REQUIRED EFFECTIVE FOCK MATRICES:
+
+ LIST OF REQUIRED FIRST ORDER XI VECTORS:
+    1   XDIPLEN   F    1     0.000000D+00
+    2   ZDIPLEN   F    1     0.000000D+00
+
+ LIST OF REQUIRED FIRST ORDER T VECTORS:
+    1   XDIPLEN   F    1    -1.312497D-01
+    2   XDIPLEN   F    1    -8.564540D-02
+    3   XDIPLEN   F    1    -6.562487D-02
+    4   XDIPLEN   F    1    -4.282270D-02
+    5   XDIPLEN   F    1     0.000000D+00
+    6   XDIPLEN   F    1     4.282270D-02
+    7   XDIPLEN   F    1     6.562487D-02
+    8   XDIPLEN   F    1     8.564540D-02
+    9   XDIPLEN   F    1     1.312497D-01
+   10   ZDIPLEN   F    1    -1.312497D-01
+   11   ZDIPLEN   F    1    -8.564540D-02
+   12   ZDIPLEN   F    1    -6.562487D-02
+   13   ZDIPLEN   F    1    -4.282270D-02
+   14   ZDIPLEN   F    1     0.000000D+00
+   15   ZDIPLEN   F    1     4.282270D-02
+   16   ZDIPLEN   F    1     6.562487D-02
+   17   ZDIPLEN   F    1     8.564540D-02
+   18   ZDIPLEN   F    1     1.312497D-01
+
+ LIST OF REQUIRED FIRST ORDER ETA VECTORS:
+    1   XDIPLEN   F    1     0.000000D+00
+    2   ZDIPLEN   F    1     0.000000D+00
+
+ LIST OF REQUIRED FIRST ORDER ZETA VECTORS:
+    1   XDIPLEN   F    1    -1.312497D-01
+    2   XDIPLEN   F    1    -8.564540D-02
+    3   XDIPLEN   F    1    -6.562487D-02
+    4   XDIPLEN   F    1    -4.282270D-02
+    5   XDIPLEN   F    1     0.000000D+00
+    6   XDIPLEN   F    1     4.282270D-02
+    7   XDIPLEN   F    1     6.562487D-02
+    8   XDIPLEN   F    1     8.564540D-02
+    9   XDIPLEN   F    1     1.312497D-01
+   10   ZDIPLEN   F    1    -1.312497D-01
+   11   ZDIPLEN   F    1    -8.564540D-02
+   12   ZDIPLEN   F    1    -6.562487D-02
+   13   ZDIPLEN   F    1    -4.282270D-02
+   14   ZDIPLEN   F    1     0.000000D+00
+   15   ZDIPLEN   F    1     4.282270D-02
+   16   ZDIPLEN   F    1     6.562487D-02
+   17   ZDIPLEN   F    1     8.564540D-02
+   18   ZDIPLEN   F    1     1.312497D-01
+      
+
+    *******************************************************************
+    *          SOLVING COUPLED CLUSTER RESPONSE EQUATIONS             *
+    *******************************************************************
+
+
+
+ +======================================================================+
+ !                     RHS & ETA VECTORS TO COMPUTE:                    !
+ +======================================================================+
+ | TYPE | # VEC. |  NEEDED FOR:                                         |
+ +----------------------------------------------------------------------+
+ |  O1  |    2   |  first-order amplitude equations                     |
+ |  X1  |    2   |  first-order multipliers equations                   |
+ +======================================================================+
+
+
+
+ +======================================================================+
+ !                       LINEAR EQUATIONS TO SOLVE:                     !
+ +======================================================================+
+ | TYPE | # VEC. |  EQUATION:                                           |
+ +----------------------------------------------------------------------+
+ |  R1  |   18   |  first-order amplitude response                      |
+ |  L1  |   18   |  first-order multiplier response                     |
+ +======================================================================+
+
+
+
+ +======================================================================+
+ !                F MATRIX TRANSFORMATIONS TO COMPUTE:                  !
+ +======================================================================+
+ | TYPE | # VEC. |  TRANSFORMED:                                        |
+ +----------------------------------------------------------------------+
+ |  F1  |   18   |  first-order amplitude response (R1) vector          |
+ +======================================================================+
+
+
+
+ Entered CC_CPHF.
+ Warning: no 1-index transformed eff. Fock 
+ matrices calculated... 
+ Relaxed second-order properties will be wrong!.
+
+ -------------------------------------------------------------------
+ |          OUTPUT FROM AMPLITUDE RHS VECTOR SECTION               |
+ -------------------------------------------------------------------
+
+
+
+   For the requested  2 1th.-order amplitude rhs vectors "O1 ".
+         -   0 D matrix transformations 
+         -   0 C matrix transformations 
+         -   0 B matrix transformations 
+         -   0 C{O} matrix transformations 
+         -   0 B{O} matrix transformations 
+         -   0 A{O} matrix transformations 
+         -   2Xi{O} vector calculations    
+   will be performed.
+
+
+     R1  start vector nr.  1 of symmetry  1 generated from gradient
+     R1  start vector nr.  2 of symmetry  1 generated from gradient
+     R1  start vector nr.  3 of symmetry  1 generated from gradient
+     R1  start vector nr.  4 of symmetry  1 generated from gradient
+     R1  start vector nr.  5 of symmetry  1 generated from gradient
+     R1  start vector nr.  6 of symmetry  1 generated from gradient
+     R1  start vector nr.  7 of symmetry  1 generated from gradient
+
+ (CCORT) new  b-vector no.  1
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 7.89592D-24
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from  1 to  0
+     R1  start vector nr.  8 of symmetry  1 generated from gradient
+
+ (CCORT) new  b-vector no.  1
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.54130D-22
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from  1 to  0
+     R1  start vector nr.  9 of symmetry  1 generated from gradient
+     R1  start vector nr. 10 of symmetry  1 generated from gradient
+     R1  start vector nr. 11 of symmetry  1 generated from gradient
+     R1  start vector nr. 12 of symmetry  1 generated from gradient
+     R1  start vector nr. 13 of symmetry  1 generated from gradient
+     R1  start vector nr. 14 of symmetry  1 generated from gradient
+     R1  start vector nr. 15 of symmetry  1 generated from gradient
+     R1  start vector nr. 16 of symmetry  1 generated from gradient
+
+ (CCORT) new  b-vector no.  1
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 5.69139D-24
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from  1 to  0
+     R1  start vector nr. 17 of symmetry  1 generated from gradient
+
+ (CCORT) new  b-vector no.  1
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.08261D-22
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from  1 to  0
+     R1  start vector nr. 18 of symmetry  1 generated from gradient
+
+ (CCORT) new  b-vector no.  1
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 9.69624D-21
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from  1 to  0
+
+ (CCORT) new  b-vector no.  7
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 2.75749D-24
+
+ (CCORT) new  b-vector no.  8
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 5.78562D-23
+
+ (CCORT) new  b-vector no.  9
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 6.57739D-21
+
+ (CCORT) new  b-vector no. 16
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 8.01912D-24
+
+ (CCORT) new  b-vector no. 17
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.53154D-22
+  After Gram Smidt orthonormalization
+           -5 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 18 to 13
+
+ (CCORT) new  b-vector no.  5
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.92999D-29
+
+ (CCORT) new  b-vector no.  6
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 3.06907D-28
+
+ (CCORT) new  b-vector no.  7
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.00463D-27
+
+ (CCORT) new  b-vector no.  8
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 2.44208D-27
+
+ (CCORT) new  b-vector no.  9
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.39808D-26
+
+ (CCORT) new  b-vector no. 16
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 2.56718D-23
+
+ (CCORT) new  b-vector no. 17
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 4.94894D-22
+  After Gram Smidt orthonormalization
+           -7 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 18 to 11
+
+ (CCORT) new  b-vector no.  6
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.09144D-21
+
+ (CCORT) new  b-vector no.  8
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.27305D-28
+
+ (CCORT) new  b-vector no.  9
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 2.89741D-26
+  After Gram Smidt orthonormalization
+           -3 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from  9 to  6
+     L1  start vector nr.  1 of symmetry  1 generated from gradient
+     L1  start vector nr.  2 of symmetry  1 generated from gradient
+     L1  start vector nr.  3 of symmetry  1 generated from gradient
+     L1  start vector nr.  4 of symmetry  1 generated from gradient
+     L1  start vector nr.  5 of symmetry  1 generated from gradient
+     L1  start vector nr.  6 of symmetry  1 generated from gradient
+     L1  start vector nr.  7 of symmetry  1 generated from gradient
+     L1  start vector nr.  8 of symmetry  1 generated from gradient
+
+ (CCORT) new  b-vector no.  1
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.25505D-21
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from  1 to  0
+     L1  start vector nr.  9 of symmetry  1 generated from gradient
+     L1  start vector nr. 10 of symmetry  1 generated from gradient
+     L1  start vector nr. 11 of symmetry  1 generated from gradient
+     L1  start vector nr. 12 of symmetry  1 generated from gradient
+     L1  start vector nr. 13 of symmetry  1 generated from gradient
+     L1  start vector nr. 14 of symmetry  1 generated from gradient
+     L1  start vector nr. 15 of symmetry  1 generated from gradient
+     L1  start vector nr. 16 of symmetry  1 generated from gradient
+     L1  start vector nr. 17 of symmetry  1 generated from gradient
+
+ (CCORT) new  b-vector no.  1
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.43158D-22
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from  1 to  0
+     L1  start vector nr. 18 of symmetry  1 generated from gradient
+
+ (CCORT) new  b-vector no.  8
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 9.39996D-25
+
+ (CCORT) new  b-vector no.  9
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.03523D-21
+
+ (CCORT) new  b-vector no. 17
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 2.02454D-21
+  After Gram Smidt orthonormalization
+           -3 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 18 to 15
+
+ (CCORT) new  b-vector no.  3
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 6.82754D-32
+
+ (CCORT) new  b-vector no.  4
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 8.64455D-33
+
+ (CCORT) new  b-vector no.  5
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.72775D-32
+
+ (CCORT) new  b-vector no.  6
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 3.54887D-31
+
+ (CCORT) new  b-vector no.  7
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 7.60194D-31
+
+ (CCORT) new  b-vector no.  8
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 3.50202D-30
+
+ (CCORT) new  b-vector no.  9
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 6.02036D-30
+
+ (CCORT) new  b-vector no. 16
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.01915D-23
+
+ (CCORT) new  b-vector no. 17
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.65846D-22
+  After Gram Smidt orthonormalization
+           -9 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 18 to  9
+
+ Solution of CC response equations completed.
+
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<< OUTPUT FROM COUPLED CLUSTER QUADRATIC RESPONSE >>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<     CALCULATION OF CC HYPERPOLARIZABILITIES    >>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+   For the requested 20 quadratic response functions 
+         -  16 G matrix transformations 
+         -  41 B matrix transformations 
+         -   0 F matrix transformations 
+         -  19 F{O} matrix transformations 
+         -  32 ETA{O} vector calculations 
+         -   0 Xksi{O2} x L1 and Eta{O2} x R1 dot products
+         -   0 X1 x R2 dot products 
+   will be performed.
+
+
+ +--------------------------------------------------+
+ | total time for  16 G transforms.:      0.01 secs.|
+ +--------------------------------------------------+
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.00      |
+ |  % of time used in CCTRBT       :      0.00      |
+ |  % of time used in CCG_21CD     :      0.00      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in CCS part     :      1.00      |
+ |  % of time used in 21 CCSD part :      0.00      |
+ |  % of time used in doubles part :      0.00      |
+ |  % of time used in I/O          :      0.00      |
+ +==================================================+
+
+
+
+>>> Time used for   16 G matrix transformations:        0.01 seconds.
+ +--------------------------------------------------+
+ | total time for  41 B transforms.:      0.20 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:     24.88      |
+ |  % of time used in Fock interm. :     26.80      |
+ |  % of time used in ERI          :      0.06      |
+ |  % of time used in CCRDAO       :      0.82      |
+ |  % of time used in (**|k del)   :      0.00      |
+ |  % of time used in singles part :      0.00      |
+ |  % of time used in A term       :      0.00      |
+ |  % of time used in BF term      :      0.00      |
+ |  % of time used in F term       :      2.30      |
+ |  % of time used in E term       :      0.00      |
+ |  % of time used in C term       :      0.00      |
+ |  % of time used in D term       :      0.00      |
+ |  % of time used in I/O          :     15.68      |
+ +==================================================+
+
+
+
+>>> Time used for   41 B matrix transformations:        0.20 seconds.
+
+>>> Time used for   19 F{O} matrix transform.:          0.02 seconds.
+
+>>> Time used for   32 ETA{O} vector calculat.:         0.15 seconds.
+
+>>> Time used for    0 Xksi{O} and Eta{O2} vector calculat.:         0.00 seconds.
+
+>>> Total time for  20 quadratic response func.:        0.39 seconds.
+
+
++-------------------------------------------------------------------------------
+
+
+-------+
+!                FINAL CCS RESULTS FOR THE FIRST HYPERPOLARIZABILITIES                 !
++-------------------------------------------------------------------------------
+-------+
+
+
+  A operator                  B operator                  C operator                     property 
+------------------------------------------------------------------------------------------------------
+
+ ZDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000      16.573260    
+                   -0.0856                      0.0428                      0.0428      17.018281    
+                   -0.1312                      0.0656                      0.0656      17.649155    
+                    0.0000                      0.0428                     -0.0428      16.719527    
+                    0.0000                      0.0656                     -0.0656      16.920032    
+
+ XDIPLEN  (unrel.)  0.0000   XDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000     0.67555332    
+                   -0.0856                      0.0428                      0.0428     0.73211923    
+                   -0.1312                      0.0656                      0.0656     0.81667946    
+                    0.0000                      0.0428                     -0.0428     0.68270530    
+                    0.0000                      0.0656                     -0.0656     0.69257999    
+
+ XDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000   XDIPLEN  (unrel.)  0.0000     0.67555332    
+                   -0.0856                      0.0428                      0.0428     0.73211923    
+                   -0.1312                      0.0656                      0.0656     0.81667946    
+                    0.0000                      0.0428                     -0.0428     0.68270530    
+                    0.0000                      0.0656                     -0.0656     0.69257999    
+
+ XDIPLEN  (unrel.)  0.0000   XDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000     0.67555332    
+                   -0.0856                      0.0428                      0.0428     0.73211923    
+                   -0.1312                      0.0656                      0.0656     0.81667946    
+                    0.0000                      0.0428                     -0.0428     0.68270530    
+                    0.0000                      0.0656                     -0.0656     0.69257999    
+
+
+------------------------------------------------------------------------------------------------------
+
+
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :        44
+          Number of t2 amplitudes                 :      1341
+          Total number of amplitudes in ccsd      :      1385
+
+ Iter.  1: Coupled cluster MP2   energy :    -100.1936626104501000
+ Iter.  1: Coupled cluster CCSD  energy :    -100.1943060937370500
+ Iter.  2: Coupled cluster CCSD  energy :    -100.1971586187658000
+ Iter.  3: Coupled cluster CCSD  energy :    -100.1977954797600300
+ Iter.  4: Coupled cluster CCSD  energy :    -100.1977971019989900
+ Iter.  5: Coupled cluster CCSD  energy :    -100.1977935971736600
+ Iter.  6: Coupled cluster CCSD  energy :    -100.1977919096364100
+ Iter.  7: Coupled cluster CCSD  energy :    -100.1977908787496700
+ Iter.  8: Coupled cluster CCSD  energy :    -100.1977909429051300
+ Iter.  9: Coupled cluster CCSD  energy :    -100.1977909398039100
+
+ CCSD  energy converged to within   0.10D-07 is   -100.197790940
+
+
+
+
+
+         +-------------------------------------------------------+
+         ! Final results from the Coupled Cluster energy program !
+         +-------------------------------------------------------+
+
+
+
+            Total SCF   energy:                  -100.0089199210
+
+            Total MP2   energy:                  -100.1936626105
+
+            Total CCSD  energy:                  -100.1977909398
+
+
+
+
+              +---------------------------------------------+
+              ! Calculating singlet intermediates for CCLR  !
+              +---------------------------------------------+
+
+
+
+            E-intermediates calculated 
+            Fock-intermediate calculated 
+            Gamma-intermediate calculated 
+            BF-intermediate calculated 
+            C-intermediate calculated 
+            D-intermediate calculated 
+
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER RESPONSE  >>>>>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                     +--------------------------------+
+                     ! Coupled Cluster model is: CCSD !
+                     +--------------------------------+
+
+     Start vector generated from gradient
+
+
+ Analysis of the undifferentiated Lagrangian multipliers: 
+ --------------------------------------------------------
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :               0.3110 %
+
+          Double Excitation Contribution :              99.6890 %
+
+          ||T1||/||T2||                  :               0.0559
+
+          Tau1 diagnostic                :               0.0070
+
+          Norm of Total Amplitude Vector :               0.3993
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   1   |   1       3     |       21          |              |   -0.013143  |
+ +-----------------------------------------------------------------------------+
+ | 1 1 1 1 |   3   1   4   2 |       33       11 |          539 |    0.040956  |
+ | 1 1 1 1 |   4   6   3   2 |       24       16 |          292 |   -0.044931  |
+ | 1 1 1 1 |   3   6   4   2 |       33       16 |          544 |    0.063489  |
+ | 1 1 1 1 |   1   1   3   3 |       21       21 |          231 |   -0.072951  |
+ | 1 1 1 1 |   2   1   3   3 |       22       21 |          252 |    0.060123  |
+ | 1 1 1 1 |   3   1   4   3 |       33       21 |          549 |   -0.062626  |
+ | 1 1 1 1 |   2   2   3   3 |       22       22 |          253 |   -0.083988  |
+ | 1 1 1 1 |   3   2   4   3 |       33       22 |          550 |    0.059509  |
+ | 1 1 1 1 |   5   2   4   3 |       35       22 |          617 |    0.043321  |
+ | 1 1 1 1 |   4   4   3   3 |       24       24 |          300 |   -0.056136  |
+ | 1 1 1 1 |   3   4   4   3 |       33       24 |          552 |    0.081902  |
+ | 1 1 1 1 |   3   3   4   4 |       33       33 |          561 |   -0.091974  |
+ | 2 1 2 1 |   1   1   1   2 |       41       11 |          831 |    0.040956  |
+ | 2 1 2 1 |   1   6   1   2 |       41       16 |          836 |    0.063489  |
+ | 2 1 2 1 |   1   1   1   3 |       41       21 |          841 |   -0.062626  |
+ | 2 1 2 1 |   1   2   1   3 |       41       22 |          842 |    0.059509  |
+ | 2 1 2 1 |   2   2   1   3 |       42       22 |          883 |    0.043321  |
+ | 2 1 2 1 |   1   4   1   3 |       41       24 |          844 |    0.081902  |
+ | 2 1 2 1 |   1   3   1   4 |       41       33 |          853 |   -0.114781  |
+ | 2 1 2 1 |   3   7   1   4 |       43       37 |          940 |   -0.057570  |
+ | 2 2 2 2 |   1   1   1   1 |       41       41 |          861 |   -0.091974  |
+ | 1 2 2 1 |   7   3   1   4 |       23       15 |         1258 |    0.057570  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.3187
+
+
+          Printed all single excitations greater than 0.011153
+
+
+          Printed all double excitations greater than 0.039938
+  
+
+ UNSORTED LIST OF REQUIRED OPERATORS:
+    1   ZDIPLEN     1    1  F    0
+    2   XDIPLEN     1    1  F    0
+    3   HAM0        1    1  T    0
+
+ LIST OF REQUIRED PROPERTY OPERATORS:
+    1   HAM0        1    1  T
+    2   XDIPLEN     1    1  F
+    3   ZDIPLEN     1    1  F
+
+ LIST OF REQUIRED EXPECTATION VALUES:
+
+ LIST OF REQUIRED EFFECTIVE FOCK MATRICES:
+
+ LIST OF REQUIRED FIRST ORDER XI VECTORS:
+    1   XDIPLEN   F    1     0.000000D+00
+    2   ZDIPLEN   F    1     0.000000D+00
+
+ LIST OF REQUIRED FIRST ORDER T VECTORS:
+    1   XDIPLEN   F    1    -1.312497D-01
+    2   XDIPLEN   F    1    -8.564540D-02
+    3   XDIPLEN   F    1    -6.562487D-02
+    4   XDIPLEN   F    1    -4.282270D-02
+    5   XDIPLEN   F    1     0.000000D+00
+    6   XDIPLEN   F    1     4.282270D-02
+    7   XDIPLEN   F    1     6.562487D-02
+    8   XDIPLEN   F    1     8.564540D-02
+    9   XDIPLEN   F    1     1.312497D-01
+   10   ZDIPLEN   F    1    -1.312497D-01
+   11   ZDIPLEN   F    1    -8.564540D-02
+   12   ZDIPLEN   F    1    -6.562487D-02
+   13   ZDIPLEN   F    1    -4.282270D-02
+   14   ZDIPLEN   F    1     0.000000D+00
+   15   ZDIPLEN   F    1     4.282270D-02
+   16   ZDIPLEN   F    1     6.562487D-02
+   17   ZDIPLEN   F    1     8.564540D-02
+   18   ZDIPLEN   F    1     1.312497D-01
+
+ LIST OF REQUIRED FIRST ORDER ETA VECTORS:
+    1   XDIPLEN   F    1     0.000000D+00
+    2   ZDIPLEN   F    1     0.000000D+00
+
+ LIST OF REQUIRED FIRST ORDER ZETA VECTORS:
+    1   XDIPLEN   F    1    -1.312497D-01
+    2   XDIPLEN   F    1    -8.564540D-02
+    3   XDIPLEN   F    1    -6.562487D-02
+    4   XDIPLEN   F    1    -4.282270D-02
+    5   XDIPLEN   F    1     0.000000D+00
+    6   XDIPLEN   F    1     4.282270D-02
+    7   XDIPLEN   F    1     6.562487D-02
+    8   XDIPLEN   F    1     8.564540D-02
+    9   XDIPLEN   F    1     1.312497D-01
+   10   ZDIPLEN   F    1    -1.312497D-01
+   11   ZDIPLEN   F    1    -8.564540D-02
+   12   ZDIPLEN   F    1    -6.562487D-02
+   13   ZDIPLEN   F    1    -4.282270D-02
+   14   ZDIPLEN   F    1     0.000000D+00
+   15   ZDIPLEN   F    1     4.282270D-02
+   16   ZDIPLEN   F    1     6.562487D-02
+   17   ZDIPLEN   F    1     8.564540D-02
+   18   ZDIPLEN   F    1     1.312497D-01
+      
+
+    *******************************************************************
+    *          SOLVING COUPLED CLUSTER RESPONSE EQUATIONS             *
+    *******************************************************************
+
+
+
+ +======================================================================+
+ !                     RHS & ETA VECTORS TO COMPUTE:                    !
+ +======================================================================+
+ | TYPE | # VEC. |  NEEDED FOR:                                         |
+ +----------------------------------------------------------------------+
+ |  O1  |    2   |  first-order amplitude equations                     |
+ |  X1  |    2   |  first-order multipliers equations                   |
+ +======================================================================+
+
+
+
+ +======================================================================+
+ !                       LINEAR EQUATIONS TO SOLVE:                     !
+ +======================================================================+
+ | TYPE | # VEC. |  EQUATION:                                           |
+ +----------------------------------------------------------------------+
+ |  R1  |   18   |  first-order amplitude response                      |
+ |  L1  |   18   |  first-order multiplier response                     |
+ +======================================================================+
+
+
+
+ +======================================================================+
+ !                F MATRIX TRANSFORMATIONS TO COMPUTE:                  !
+ +======================================================================+
+ | TYPE | # VEC. |  TRANSFORMED:                                        |
+ +----------------------------------------------------------------------+
+ |  F1  |   18   |  first-order amplitude response (R1) vector          |
+ +======================================================================+
+
+
+
+ Warning: no 1-index transformed eff. Fock 
+ matrices calculated... 
+ Relaxed second-order properties will be wrong!.
+
+ -------------------------------------------------------------------
+ |          OUTPUT FROM AMPLITUDE RHS VECTOR SECTION               |
+ -------------------------------------------------------------------
+
+
+
+   For the requested  2 1th.-order amplitude rhs vectors "O1 ".
+         -   0 D matrix transformations 
+         -   0 C matrix transformations 
+         -   0 B matrix transformations 
+         -   0 C{O} matrix transformations 
+         -   0 B{O} matrix transformations 
+         -   0 A{O} matrix transformations 
+         -   2Xi{O} vector calculations    
+   will be performed.
+
+
+     R1  start vector nr.  1 of symmetry  1 generated from gradient
+     R1  start vector nr.  2 of symmetry  1 generated from gradient
+     R1  start vector nr.  3 of symmetry  1 generated from gradient
+     R1  start vector nr.  4 of symmetry  1 generated from gradient
+     R1  start vector nr.  5 of symmetry  1 generated from gradient
+     R1  start vector nr.  6 of symmetry  1 generated from gradient
+     R1  start vector nr.  7 of symmetry  1 generated from gradient
+
+ (CCORT) new  b-vector no.  1
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 2.12022D-23
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from  1 to  0
+     R1  start vector nr.  8 of symmetry  1 generated from gradient
+
+ (CCORT) new  b-vector no.  1
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 4.12017D-22
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from  1 to  0
+     R1  start vector nr.  9 of symmetry  1 generated from gradient
+     R1  start vector nr. 10 of symmetry  1 generated from gradient
+     R1  start vector nr. 11 of symmetry  1 generated from gradient
+     R1  start vector nr. 12 of symmetry  1 generated from gradient
+     R1  start vector nr. 13 of symmetry  1 generated from gradient
+     R1  start vector nr. 14 of symmetry  1 generated from gradient
+     R1  start vector nr. 15 of symmetry  1 generated from gradient
+     R1  start vector nr. 16 of symmetry  1 generated from gradient
+
+ (CCORT) new  b-vector no.  1
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 9.47005D-24
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from  1 to  0
+     R1  start vector nr. 17 of symmetry  1 generated from gradient
+
+ (CCORT) new  b-vector no.  1
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.80081D-22
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from  1 to  0
+     R1  start vector nr. 18 of symmetry  1 generated from gradient
+
+ (CCORT) new  b-vector no.  7
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 7.85746D-23
+
+ (CCORT) new  b-vector no.  8
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.52548D-21
+
+ (CCORT) new  b-vector no. 16
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.67320D-23
+
+ (CCORT) new  b-vector no. 17
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 3.18807D-22
+  After Gram Smidt orthonormalization
+           -4 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 18 to 14
+
+ (CCORT) new  b-vector no.  8
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 3.54154D-23
+
+ (CCORT) new  b-vector no. 16
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 3.10481D-21
+
+ (CCORT) new  b-vector no. 18
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 2.29198D-21
+  After Gram Smidt orthonormalization
+           -3 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 18 to 15
+
+ (CCORT) new  b-vector no.  8
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 7.31087D-22
+
+ (CCORT) new  b-vector no. 17
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 6.94800D-23
+  After Gram Smidt orthonormalization
+           -2 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 18 to 16
+
+ (CCORT) new  b-vector no. 17
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.49953D-21
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 18 to 17
+     L1  start vector nr.  1 of symmetry  1 generated from gradient
+     L1  start vector nr.  2 of symmetry  1 generated from gradient
+     L1  start vector nr.  3 of symmetry  1 generated from gradient
+     L1  start vector nr.  4 of symmetry  1 generated from gradient
+     L1  start vector nr.  5 of symmetry  1 generated from gradient
+     L1  start vector nr.  6 of symmetry  1 generated from gradient
+     L1  start vector nr.  7 of symmetry  1 generated from gradient
+     L1  start vector nr.  8 of symmetry  1 generated from gradient
+
+ (CCORT) new  b-vector no.  1
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 5.82221D-21
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from  1 to  0
+     L1  start vector nr.  9 of symmetry  1 generated from gradient
+     L1  start vector nr. 10 of symmetry  1 generated from gradient
+     L1  start vector nr. 11 of symmetry  1 generated from gradient
+     L1  start vector nr. 12 of symmetry  1 generated from gradient
+     L1  start vector nr. 13 of symmetry  1 generated from gradient
+     L1  start vector nr. 14 of symmetry  1 generated from gradient
+     L1  start vector nr. 15 of symmetry  1 generated from gradient
+     L1  start vector nr. 16 of symmetry  1 generated from gradient
+     L1  start vector nr. 17 of symmetry  1 generated from gradient
+
+ (CCORT) new  b-vector no.  1
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 7.24329D-22
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from  1 to  0
+     L1  start vector nr. 18 of symmetry  1 generated from gradient
+
+ (CCORT) new  b-vector no.  9
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 9.91092D-21
+
+ (CCORT) new  b-vector no. 17
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 6.07708D-21
+  After Gram Smidt orthonormalization
+           -2 vectors with norm le:  1.0000000000000000E-35 REMOVED
+
+ (CCORT)  trial vectors reduced from 18 to 16
+
+ Solution of CC response equations completed.
+
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<< OUTPUT FROM COUPLED CLUSTER QUADRATIC RESPONSE >>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<     CALCULATION OF CC HYPERPOLARIZABILITIES    >>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+   For the requested 20 quadratic response functions 
+         -  16 G matrix transformations 
+         -  41 B matrix transformations 
+         -   0 F matrix transformations 
+         -  19 F{O} matrix transformations 
+         -  32 ETA{O} vector calculations 
+         -   0 Xksi{O2} x L1 and Eta{O2} x R1 dot products
+         -   0 X1 x R2 dot products 
+   will be performed.
+
+
+ +--------------------------------------------------+
+ | total time for  16 G transforms.:      0.83 secs.|
+ +--------------------------------------------------+
+ |  % of time used in ERI          :      0.01      |
+ |  % of time used in CCRDAO       :      0.19      |
+ |  % of time used in CCTRBT       :      3.08      |
+ |  % of time used in CCG_21CD     :     36.95      |
+ |  % of time used in Fock interm. :      0.34      |
+ |  % of time used in CCS part     :      0.22      |
+ |  % of time used in 21 CCSD part :     32.34      |
+ |  % of time used in doubles part :     20.65      |
+ |  % of time used in I/O          :      2.75      |
+ +==================================================+
+
+
+
+>>> Time used for   16 G matrix transformations:        0.83 seconds.
+ +--------------------------------------------------+
+ | total time for  41 B transforms.:      2.70 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      3.51      |
+ |  % of time used in Fock interm. :      0.14      |
+ |  % of time used in ERI          :      0.00      |
+ |  % of time used in CCRDAO       :      0.06      |
+ |  % of time used in (**|k del)   :      0.30      |
+ |  % of time used in singles part :      1.50      |
+ |  % of time used in A term       :     12.22      |
+ |  % of time used in BF term      :      9.98      |
+ |  % of time used in F term       :     13.69      |
+ |  % of time used in E term       :      4.12      |
+ |  % of time used in C term       :     18.55      |
+ |  % of time used in D term       :     20.96      |
+ |  % of time used in I/O          :     10.61      |
+ +==================================================+
+
+
+
+>>> Time used for   41 B matrix transformations:        2.70 seconds.
+
+>>> Time used for   19 F{O} matrix transform.:          0.11 seconds.
+
+>>> Time used for   32 ETA{O} vector calculat.:         0.31 seconds.
+
+>>> Time used for    0 Xksi{O} and Eta{O2} vector calculat.:         0.00 seconds.
+
+>>> Total time for  20 quadratic response func.:        3.95 seconds.
+
+
++-------------------------------------------------------------------------------
+
+
+--------+
+!                FINAL CCSD RESULTS FOR THE FIRST HYPERPOLARIZABILITIES                 !
++-------------------------------------------------------------------------------
+--------+
+
+
+  A operator                  B operator                  C operator                     property 
+------------------------------------------------------------------------------------------------------
+
+ ZDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000      15.380852    
+                   -0.0856                      0.0428                      0.0428      15.848010    
+                   -0.1312                      0.0656                      0.0656      16.513959    
+                    0.0000                      0.0428                     -0.0428      15.534156    
+                    0.0000                      0.0656                     -0.0656      15.744688    
+
+ XDIPLEN  (unrel.)  0.0000   XDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000     0.90273802    
+                   -0.0856                      0.0428                      0.0428     0.99056647    
+                   -0.1312                      0.0656                      0.0656      1.1247353    
+                    0.0000                      0.0428                     -0.0428     0.91468809    
+                    0.0000                      0.0656                     -0.0656     0.93126751    
+
+ XDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000   XDIPLEN  (unrel.)  0.0000     0.90273802    
+                   -0.0856                      0.0428                      0.0428     0.99056647    
+                   -0.1312                      0.0656                      0.0656      1.1247353    
+                    0.0000                      0.0428                     -0.0428     0.91468809    
+                    0.0000                      0.0656                     -0.0656     0.93126751    
+
+ XDIPLEN  (unrel.)  0.0000   XDIPLEN  (unrel.)  0.0000   ZDIPLEN  (unrel.)  0.0000     0.90273802    
+                   -0.0856                      0.0428                      0.0428     0.99056647    
+                   -0.1312                      0.0656                      0.0656      1.1247353    
+                    0.0000                      0.0428                     -0.0428     0.91468809    
+                    0.0000                      0.0656                     -0.0656     0.93126751    
+
+
+------------------------------------------------------------------------------------------------------
+
+
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                   SUMMARY OF COUPLED CLUSTER CALCULATION                    *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+                                                                                
+            Total SCF   energy:                  -100.0089199210                
+                                                                                
+                                                                                
+            Total SCF   energy:                  -100.0089199210                
+            Total MP2   energy:                  -100.1936626105                
+            Total CCSD  energy:                  -100.1977909398                
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                      END OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+ WARNING: Tried to close a non-existent or already closed file
+ Unit number was:  10
+
+ WARNING: Tried to close a non-existent or already closed file
+ Unit number was:  11
+
+- End of Coupled Cluster
+ >>>> Total CPU  time used in DALTON:  52.55 seconds
+ >>>> Total wall time used in DALTON:  1 minute   7 seconds
+
+ 
+     Date and time (IRIX)   : Thu Nov 23 14:38:11 2000
+     Host name              : odin                                    

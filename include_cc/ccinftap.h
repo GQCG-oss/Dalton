@@ -1,0 +1,6 @@
+      CHARACTER       FNTOC*8, FN3VI*6, FN3VI2*8, FN3SRT*8,
+     &                FNDELD*6, FNDKBC*4, FNCKJD*6
+      COMMON /CC_TAP/ LUIAJB, LUCKJD, LU3VI2, LUDKBC, LU3VI, LUDELD,
+     &                LUTOC, LU3SRT, LUBFDN, LURES, LULAM, LUCSOL, 
+     &                LUCTLM, FNTOC, FN3VI,
+     &                FN3VI2, FN3SRT, FNDELD, FNDKBC, FNCKJD

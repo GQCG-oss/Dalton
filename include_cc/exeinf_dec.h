@@ -1,0 +1,3 @@
+
+      INTEGER IPTRAB, NASTXP
+     

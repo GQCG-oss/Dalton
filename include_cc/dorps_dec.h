@@ -1,0 +1,3 @@
+
+      INTEGER NDORL, NDCORD
+     

@@ -1,0 +1,179 @@
+#!/bin/ksh
+#########################################################################
+#
+# Shell script for running DALTON (CC) test suite
+#
+# by Christof Haettig and Kasper Hald, Sep. 2000
+#
+#
+# Usage: TEST ["dalton parameter list"] [-dalton dalton-script] testcase
+#
+#
+#########################################################################
+
+#########################################################################
+# define `short', `long' all test suites
+#########################################################################
+SHORT="2dar cc2drw2e cc2refop cc2rf dpt dpt1 field \
+       fop1 fop2 alpha alpha3 beta beta2 beta_freq beta_freq2 \
+       exlr_ccsd exlr_ccsd_2 gamma_ccs gamma_ccsd gamma_direct \
+       gamma_freq gamma_freq2 hyp4_ccsd oddisp oddisp2 \
+       threephot triples triples_direct triples_direri \
+       triplet triplet3 twophot twophotb twophot_c2v twophot_cc2_cs \
+       twophot_ccs_cs twophot_ccsd_cs twophot_direct \
+       alpha_relax dipgra_relax dipgra_relaxb dipgra_relax2 alpha_deriv \
+       triplet_cc3 freeze1 exgr1 solvh2smini optmp2fh grdhf grdn2h2"
+LONG="alpha2 triplet2 grdn2 optn2h2 optco"
+ALL="$SHORT $LONG"
+
+#########################################################################
+# function usage(): print usage information 
+#########################################################################
+usage() {
+ cat << %EOF%
+usage: $0 [-param "option list"] [-h|-help|--help] [-keep] [-reftest] 
+          [-dalton dalton-script] [-list listing-file] testcase
+
+       -keep    : keep *.mol *.dal *.log files
+       -reftest : test reference files; do not run any calculations
+       -h | -help | --help   : show this help description
+       -param "option list"  : pass "option list" to dalton script
+       -list listing-file    : write output into listing-file
+       -dalton dalton-script : use dalton-script instead of default dalton
+
+       where testcase might be one of the following:
+          short                -- run all short test cases
+          long                 -- run all long cases
+          all                  -- run all test cases in the test suite
+          <case1 [case2] ...>  -- run only the specified test case(s)
+%EOF%
+exit 1
+}
+
+#########################################################################
+# function mypring(string): print to stdout and $listing
+#########################################################################
+myprint(){
+ echo "$1";
+ echo "$1" >> $listing;
+}
+
+#########################################################################
+#########################################################################
+# start with real work:
+#########################################################################
+#########################################################################
+
+#########################################################################
+# set defaults and evaluate parameters
+#########################################################################
+help=""
+keep="false"
+DALTON=dalton
+paramlist=""
+reftest=""
+listing="LISTING"
+
+while [ -n "`echo $1 | grep '-'`" ]; do
+   case $1 in
+     "-h" | "-help" | "--help" ) help="true" ; break;;
+     "-dalton" )  shift; DALTON=$1; shift;;
+     "-list" ) shift; listing=$1; shift;;
+     "-keep" ) keep="true"; shift;;
+     "-param" ) shift; paramlist="$1"; shift;;
+     "-reftest" ) reftest="true" shift;;
+     * ) usage;;
+   esac
+done
+if [ $help ]; then
+  usage
+fi
+
+#########################################################################
+# set list of test cases:
+#########################################################################
+testcase=$*
+if   [ "$testcase" = "short" ]; then
+  testcase=$SHORT
+elif [ "$testcase" = "long"  ]; then
+  testcase=$LONG
+elif [ "$testcase" = "all"  ]; then
+  testcase=$ALL
+fi
+
+
+
+#########################################################################
+# check file for test listing:
+#########################################################################
+if [  -s $listing ]; then
+   echo "$listing already exists... should it be deleted first? (y/n)"
+   read answer
+   if [ "$answer" = "yes"  -o  "$answer" = "y" ]; then
+     echo > $listing
+   fi
+fi
+
+myprint "####################################################################"
+myprint "# DALTON-CC test suite:"
+myprint "####################################################################"
+myprint "dalton script         : $DALTON"
+myprint "parameter list passed : $paramlist"
+myprint "test listing          : $listing"
+myprint "test cases            : $testcase"
+
+
+#########################################################################
+# loop over test cases:
+#########################################################################
+passedall="ALL TESTS ENDED PROPERLY!"
+problems=""
+for item in ${testcase}
+do
+  myprint "##################################################################"
+  myprint "start now with test $item:"
+  myprint "--------------------------"
+  chmod +x $item
+  $item
+  rm -f $item.log
+  chmod +x $item.check
+
+  if [ "$reftest" = "true" ]; then
+      myprint ""
+      myprint "evaluate reference output file $item.ref:"
+      myprint "-----------------------------------------"
+      checkout=`$item.check $item.ref | tee -a $listing`
+  else
+    $DALTON $paramlist -ext log $item $item | \
+      grep -v '\*\*\**' | \
+      grep -v 'OUTPUT FROM' | grep -v 'Version' | grep -v 'PID' | \
+      grep -v '^$' | tee -a $listing
+      myprint ""
+      myprint "evaluate output file $item.log:"
+      myprint "-------------------------------"
+      checkout=`$item.check $item.log | tee -a $listing`
+  fi
+  echo $checkout
+  passed=`echo $checkout | grep "TEST ENDED PROPERLY"`
+  if [ -n "$passed" ]; then
+    if [ "$keep" = "false" ]; then
+      rm -f $item.dal $item.mol $item.check $item.log
+    fi
+  else
+    passedall="THERE IS A PROBLEM IN TEST CASE"
+    problems="$problems $item"
+  fi
+done
+
+#########################################################################
+# final result:
+#########################################################################
+
+myprint "##################################################################"
+myprint "Summary : "
+echo $passedall | tee -a $listing
+echo $problems | tee -a $listing
+
+
+exit 0
+

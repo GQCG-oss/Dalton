@@ -1,0 +1,4836 @@
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+               This is output from DALTON (Prerelease 1.1, September 1999)
+
+                          Principal authors:
+
+            Trygve Helgaker,     University of Oslo,        Norway 
+            Hans Joergen Jensen, SDU - Odense University,   Denmark
+            Poul Joergensen,     Aarhus University,         Denmark
+            Jeppe Olsen,         Aarhus University,         Denmark
+            Kenneth Ruud,        San Diego Superc. Center,  USA    
+            Hans Aagren,         KTH Stockholm,             Sweden 
+
+                          Contributors:
+
+            Keld L. Bak,         UNI-C,                     Denmark
+            Vebjoern Bakken,     University of Oslo,        Norway 
+            Ove Christiansen,    University of Lund,        Sweden 
+            Paal Dahle,          University of Oslo,        Norway 
+            Erik K. Dalskov,     UNI-C,                     Denmark
+            Thomas Enevoldsen,   SDU - Odense University,   Denmark
+            Berta Fernandez,     U.of Santiago de Compostela,Spain 
+            Hanne Heiberg,       University of Oslo,        Norway 
+            Hinne Hettema,       University of Auckland,    NZ     
+            Dan Jonsson,         San Diego Superc. Center,  USA    
+            Sheela Kirpekar,     SDU - Odense University,   Denmark
+            Rika Kobayashi,      Cambridge University,      England
+            Henrik Koch,         SDU - Odense University,   Denmark
+            Kurt V.Mikkelsen,    University of Copenhagen,  Denmark
+            Patrick Norman,      University of Linkoeping,  Sweden 
+            Martin J. Packer,    University of Sheffield,   UK     
+            Torgeir A. Ruden,    University of Oslo,        Norway 
+            Trond Saue,          University of Toulouse,    France 
+            Stephan P. A. Sauer, University of Copenhagen,  Denmark
+            Bernd Schimmelpfennig,KTH Stockholm,            Sweden 
+            Peter R.Taylor,      San Diego Superc. Center,  USA    
+            Olav Vahtras,        PDC, Stockholm,            Sweden 
+------------------------------------------------------------------------
+
+
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF wave functions. The authors accept no
+     responsibility for the performance of the code or for the
+     correctness of the results.
+      
+     The code (in whole or part) is provided under a license and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+     See licence agreement for further information.
+      
+     If results obtained with this code are published, an
+     appropriate citation would be:
+      
+     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,
+     H. Aagren, T. Andersen, K.L. Bak, V. Bakken, O. Christiansen
+     P. Dahle, E.K. Dalskov, T. Enevoldsen, B. Fernandez,
+     H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+     H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T. Saue,
+     S.P.A. Sauer, B. Schimmelpfennig, P.R. Taylor, and O. Vahtras:
+     "Dalton release 1.1 (1999), an electronic structure program"
+
+ 
+     Host name              : inthaettig                              
+
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+
+
+ Default print level:        0
+
+    Integral sections will be executed
+    Wave function sections will be executed
+    Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+
+ The following one-electron property integrals are calculated:
+
+          - overlap integrals
+          - dipole length integrals
+          - traceless quadrupole moment integrals
+          - electronic angular momentum around the origin
+          - Dipole gradient integrals
+          - Geometrical derivatives of overlap integrals
+          - Geometrical derivatives of one-electron Hamiltonian integrals
+
+ In this run  precalculated two-electron integrals are transformed
+ to P-supermatrix elements.
+
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  test job                                                                
+  He, 6-31G* basis set                                                    
+
+  *** WARNING from READIN ***
+
+  Threshold for discarding integrals was    1.00D-25
+  Threshold is reset to minimum value       1.00D-15
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    2
+
+  Basis set used is "6-31G*" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  He          1       2       7       5      [4s1p|2s1p]                                  
+  H           1       1       4       2      [4s|2s]                                      
+  ----------------------------------------------------------------------
+  total:      2       3      11       7
+  ----------------------------------------------------------------------
+  Threshold for integrals:  1.00D-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  6
+
+
+   1   He       x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
+
+   4   H        x      0.0000000000
+   5            y      0.0000000000
+   6            z      2.0000000000
+
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            He          H   
+
+   He      0.000000
+   H       1.058354    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H          He                             1.058354
+
+
+  Nuclear repulsion energy :    1.000000000000
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in ONEDRV is   -nan seconds
+
+
+ >>> Time used in OVERLA is   -nan seconds
+
+
+ >>> Time used in DIPLEN is   -nan seconds
+
+
+ >>> Time used in THETAT is   0.00 seconds
+
+
+ >>> Time used in ANGMOM is   -nan seconds
+
+
+ >>> Time used in DPLGRA is   -nan seconds
+
+
+ >>> Time used in DEROVL is   -nan seconds
+
+
+ >>> Time used in DERHAM is   -nan seconds
+
+
+
+ ************************************************************************
+ ************************** Output from TWOINT **************************
+ ************************************************************************
+
+
+ Number of two-electron integrals written:       168 (41.4%)
+ Kilobytes written:                                8
+
+
+
+ >>> Time used in TWOINT is   0.00 seconds
+
+
+
+ ***********************************************************************
+ ************************* Output from FORMSUP *************************
+ ***********************************************************************
+
+  NOSYM :  F
+ OLDSUP :  F
+
+ Threshold for discarding integrals :  1.00D-15
+
+ >>> Time used in FRMSUP is   -nan seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.07 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
+
+- End of Integral Section
+@@     Starting Wave-Function Section -
+
+ ************************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
+ ************************************************************************
+
+ 
+     Host name              : inthaettig                              
+
+ Title lines from integral program:
+     test job                                                                
+     He, 6-31G* basis set                                                    
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4 =   2 is   5
+
+      (Integral direct) CC calculation.
+
+
+     This is a combination run starting with
+
+               a RHF calculation
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons          2
+     Number of electrons in active shells      0
+     Number of active orbitals                 0
+     Total number of orbitals                  7
+
+     Spin multiplicity                         1
+     Total number of symmetries                1
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1
+                                       --
+     Total number of orbitals           7
+     Number of basis functions          7
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from Huckel guess.               
+      -- Initial occupation of symmetries is : --
+
+     Occupied HF orbitals               1
+
+     Maximum number of Fock  iterations       0
+     Maximum number of DIIS  iterations      30
+     Maximum number of QC-HF iterations      15
+     Threshold for HF convergence      1.00D-14
+
+
+ Changes of defaults for CC:
+ ---------------------------
+
+
+ Linear response properties calculated
+
+ Dipole moment calculated
+  
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =    6
+
+ Automatic occupation of symmetries with   2 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    HF occupation
+ -----------------------------------------------------------------------------
+   1     -2.699930402553   1.42D+00  -2.70D+00    1
+   2     -2.894165308181   2.04D-01  -1.94D-01    1
+   3     -2.897471138073   3.60D-02  -3.31D-03    1
+   4     -2.897608095040   1.93D-03  -1.37D-04    1
+   5     -2.897608546562   1.03D-04  -4.52D-07    1
+   6     -2.897608547815   2.52D-06  -1.25D-09    1
+   7     -2.897608547815   7.05D-07  -7.30D-13    1
+   8     -2.897608547815   2.59D-10  -5.86D-14    1
+   9     -2.897608547815   5.19D-15   0.00D+00    1
+ DIIS converged in   9 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :    2
+ Orbital occupations :    1
+
+ Hartree-Fock orbital energies, symmetry 1
+
+        -1.45501489    -0.37139986     0.45783941     1.06768122     1.67888231
+         1.67888231
+
+    E(LUMO) :    -0.37139986 au (symmetry 1)
+  - E(HOMO) :    -1.45501489 au (symmetry 1)
+  ------------------------------------------
+    gap     :     1.08361503 au
+1
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+
+     Final    HF energy:           -2.897608547815
+     Nuclear repulsion:             1.000000000000
+     Electronic energy:            -3.897608547815
+
+     Final gradient norm:           0.000000000000
+
+ 
+     Host name              : inthaettig                              
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1
+   1  He  1s     0.5913
+   2  He  1s     0.4441
+   3  He  2px    0.0000
+   4  He  2py    0.0000
+   5  He  2pz    0.0385
+   6  H   1s     0.1382
+   7  H   1s     0.0298
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.10 seconds
+ >>>> Total wall time used in SIRIUS :      1.00 seconds
+
+ 
+     Host name              : inthaettig                              
+
+@@- End of Wave-Function Section
+     Starting Coupled Cluster -
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                    START OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+
+                         +------------------------+
+                         ! Information from CCORB !
+                         +------------------------+
+
+   NBAS   :       7
+   IBAS   :       0
+   NRHF   :       1
+   NVIR   :       6
+   NRHFS  :       1
+   NVIRS  :       6
+   NRHFFR :       0
+   NVIRFR :       0
+   NORBTS :       7
+   NORBT  :       7
+   N2BAST :      49
+   N2BASX :      49
+   NNBASX :      28
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :         6
+          Number of t2 amplitudes                 :        21
+          Total number of amplitudes in ccsd      :        27
+
+ Iter.  1: Coupled cluster MP2   energy :      -2.9257584190112440
+ Iter.  1: Coupled cluster CCSD  energy :      -2.9315962988014650
+ Iter.  2: Coupled cluster CCSD  energy :      -2.9336180803610900
+ Iter.  3: Coupled cluster CCSD  energy :      -2.9336506168220990
+ Iter.  4: Coupled cluster CCSD  energy :      -2.9336509029480000
+ Iter.  5: Coupled cluster CCSD  energy :      -2.9336492597904180
+ Iter.  6: Coupled cluster CCSD  energy :      -2.9336492604501440
+ Iter.  7: Coupled cluster CCSD  energy :      -2.9336492821030400
+ Iter.  8: Coupled cluster CCSD  energy :      -2.9336492803974570
+ Iter.  9: Coupled cluster CCSD  energy :      -2.9336492804353540
+ Iter. 10: Coupled cluster CCSD  energy :      -2.9336492804625290
+ Iter. 11: Coupled cluster CCSD  energy :      -2.9336492804709610
+ Iter. 12: Coupled cluster CCSD  energy :      -2.9336492804723700
+ Iter. 13: Coupled cluster CCSD  energy :      -2.9336492804724040
+
+ CCSD  energy converged to within   0.10D-11 is     -2.933649280
+
+
+
+
+
+         +-------------------------------------------------------+
+         ! Final results from the Coupled Cluster energy program !
+         +-------------------------------------------------------+
+
+
+
+            Total SCF   energy:                    -2.8976085478
+
+            Total MP2   energy:                    -2.9257584190
+
+            Total CCSD  energy:                    -2.9336492805
+
+
+
+
+              +---------------------------------------------+
+              ! Calculating singlet intermediates for CCLR  !
+              +---------------------------------------------+
+
+
+
+            E-intermediates calculated 
+            Fock-intermediate calculated 
+            Gamma-intermediate calculated 
+            BF-intermediate calculated 
+            C-intermediate calculated 
+            D-intermediate calculated 
+
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER RESPONSE  >>>>>>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<<<    CALCULATION OF FIRST ORDER PROPERTIES    >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                     +--------------------------------+
+                     ! Coupled Cluster model is: CCSD !
+                     +--------------------------------+
+
+     Start vector generated from gradient
+
+
+ Analysis of the undifferentiated Lagrangian multipliers: 
+ --------------------------------------------------------
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :               1.8066 %
+
+          Double Excitation Contribution :              98.1934 %
+
+          ||T1||/||T2||                  :               0.1356
+
+          Tau1 diagnostic                :               0.0183
+
+          Norm of Total Amplitude Vector :               0.1923
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   1   |   1       1     |        1          |              |    0.024830  |
+ | 1   1   |   2       1     |        2          |              |    0.005902  |
+ +-----------------------------------------------------------------------------+
+ | 1 1 1 1 |   1   1   1   1 |        1        1 |            1 |   -0.101022  |
+ | 1 1 1 1 |   3   1   1   1 |        3        1 |            4 |   -0.066530  |
+ | 1 1 1 1 |   3   3   1   1 |        3        3 |            6 |   -0.097923  |
+ | 1 1 1 1 |   4   4   1   1 |        4        4 |           10 |   -0.060797  |
+ | 1 1 1 1 |   5   5   1   1 |        5        5 |           15 |   -0.060797  |
+ | 1 1 1 1 |   6   6   1   1 |        6        6 |           21 |   -0.050213  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.1865
+
+
+          Printed all single excitations greater than 0.005376
+
+
+          Printed all double excitations greater than 0.039637
+
+
+              Constructing right-hand-side for CCSD-kappa-0
+              ---------------------------------------------
+
+
+
+                  Solving for orbital relaxation vector
+                  -------------------------------------
+
+
+ *** MICROITERATIONS STOPPED DUE TO LINEAR DEPENDENCE BETWEEN NEW TRIAL VECTORS
+
+ *** REQUESTED    1 SOLUTION VECTORS NOT CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00000000D-12
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:    4)
+ RSP solution vector no.    1; norm of residual 1.25982532D-02
+
+ *** RSPCTL WARNING-MICROITERATIONS STOPPED BECAUSE
+     OF LINEAR DEPENDENCE BETWEEN NEW TRIAL VECTORS
+  
+   Equations converged to residual less than:  0.000000
+
+
+                       +---------------------------+
+                       ! CCSD  Natural Occupations !
+                       +---------------------------+
+
+  
+   Symmetry block number:  1
+   ---------------------
+  
+   1.97841390   0.01526813   0.00237610   0.00186895   0.00186895
+   0.00019839   0.00000559
+  
+   Sum in this symmetry class:   2.000000
+  
+  
+   Total Sum of natural occupation numbers:   2.000000
+  
+   Dynamical correlation move: 0.021586 electrons
+  
+
+
+          +------------------------------------------------------+
+          !   Relaxed CCSD First-order one-electron properties:  !
+          +------------------------------------------------------+
+
+
+
+                        +--------------------------+
+                        !  Electric Dipole Moment  !
+                        +--------------------------+
+
+
+
+                      Total Molecular Dipole Moment
+                      -----------------------------
+
+                               au             Debye
+
+                    x      0.00000000      0.00000000
+                    y      0.00000000      0.00000000
+                    z      1.59921742      4.06484285
+
+                        1 a.u. =   2.54177 Debye 
+
+
+
+
+ UNSORTED LIST OF REQUIRED OPERATORS:
+    1   XDIPLEN     1    1  F    0
+    2   YDIPLEN     1    1  F    0
+    3   ZDIPLEN     1    1  F    0
+    4   1DHAM 01    1    1  T    1
+    5   1DHAM 02    1    1  T    1
+    6   1DHAM 03    1    1  T    1
+    7   1DHAM 04    1    1  T    2
+    8   1DHAM 05    1    1  T    2
+    9   1DHAM 06    1    1  T    2
+   10   HAM0        1    1  T    0
+ DEBUG_CC_MCDIND> NMCDOPER =            0
+WARNING: integrals for operator with label 02 DPG X are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+WARNING: integrals for operator with label 05 DPG X are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+WARNING: integrals for operator with label 01 DPG Y are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+WARNING: integrals for operator with label 04 DPG Y are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+
+ LIST OF REQUIRED PROPERTY OPERATORS:
+    1   1DHAM 01    1    1  T
+    2   1DHAM 02    1    1  T
+    3   1DHAM 03    1    1  T
+    4   1DHAM 04    1    1  T
+    5   1DHAM 05    1    1  T
+    6   1DHAM 06    1    1  T
+    7   HAM0        1    1  T
+    8   XDIPLEN     1    1  F
+    9   YDIPLEN     1    1  F
+   10   ZDIPLEN     1    1  F
+   11   01 DPG X    1   -1  F
+   12   02 DPG X    1   -1  F
+   13   03 DPG X    1   -1  F
+   14   04 DPG X    1   -1  F
+   15   05 DPG X    1   -1  F
+   16   06 DPG X    1   -1  F
+   17   01 DPG Y    1   -1  F
+   18   02 DPG Y    1   -1  F
+   19   03 DPG Y    1   -1  F
+   20   04 DPG Y    1   -1  F
+   21   05 DPG Y    1   -1  F
+   22   06 DPG Y    1   -1  F
+   23   01 DPG Z    1   -1  F
+   24   02 DPG Z    1   -1  F
+   25   03 DPG Z    1   -1  F
+   26   04 DPG Z    1   -1  F
+   27   05 DPG Z    1   -1  F
+   28   06 DPG Z    1   -1  F
+
+ LIST OF REQUIRED EXPECTATION VALUES:
+    1   HAM0        1
+    2   1DHAM 01    1
+    3   1DHAM 02    1
+    4   1DHAM 03    1
+    5   1DHAM 04    1
+    6   1DHAM 05    1
+    7   1DHAM 06    1
+    8   XDIPLEN     1
+    9   YDIPLEN     1
+   10   ZDIPLEN     1
+   11   01 DPG X    1
+   12   02 DPG X    1
+   13   03 DPG X    1
+   14   04 DPG X    1
+   15   05 DPG X    1
+   16   06 DPG X    1
+   17   01 DPG Y    1
+   18   02 DPG Y    1
+   19   03 DPG Y    1
+   20   04 DPG Y    1
+   21   05 DPG Y    1
+   22   06 DPG Y    1
+   23   01 DPG Z    1
+   24   02 DPG Z    1
+   25   03 DPG Z    1
+   26   04 DPG Z    1
+   27   05 DPG Z    1
+   28   06 DPG Z    1
+
+ LIST OF REQUIRED EFFECTIVE FOCK MATRICES:
+    1   HAM0        1
+    2   1DHAM 01    1
+    3   1DHAM 02    1
+    4   1DHAM 03    1
+    5   1DHAM 04    1
+    6   1DHAM 05    1
+    7   1DHAM 06    1
+    8   XDIPLEN     1
+    9   YDIPLEN     1
+   10   ZDIPLEN     1
+   11   01 DPG X    1
+   12   02 DPG X    1
+   13   03 DPG X    1
+   14   04 DPG X    1
+   15   05 DPG X    1
+   16   06 DPG X    1
+   17   01 DPG Y    1
+   18   02 DPG Y    1
+   19   03 DPG Y    1
+   20   04 DPG Y    1
+   21   05 DPG Y    1
+   22   06 DPG Y    1
+   23   01 DPG Z    1
+   24   02 DPG Z    1
+   25   03 DPG Z    1
+   26   04 DPG Z    1
+   27   05 DPG Z    1
+   28   06 DPG Z    1
+
+ LIST OF REQUIRED 1-IDX-TRAN EFF. FOCK M.:
+    1   HAM0     R1     1
+    2   HAM0     R1     2
+    3   HAM0     R1     3
+    4   HAM0     R1     4
+    5   HAM0     R1     5
+    6   HAM0     R1     6
+    7   HAM0     R1     7
+    8   HAM0     R1     8
+    9   HAM0     R1     9
+
+ LIST OF REQUIRED FIRST ORDER XI VECTORS:
+    1   1DHAM 01  T    1     0.000000D+00
+    2   1DHAM 02  T    1     0.000000D+00
+    3   1DHAM 03  T    1     0.000000D+00
+    4   1DHAM 04  T    1     0.000000D+00
+    5   1DHAM 05  T    1     0.000000D+00
+    6   1DHAM 06  T    1     0.000000D+00
+    7   XDIPLEN   T    1     0.000000D+00
+    8   YDIPLEN   T    1     0.000000D+00
+    9   ZDIPLEN   T    1     0.000000D+00
+
+ LIST OF REQUIRED FIRST ORDER T VECTORS:
+    1   1DHAM 01  T    1     0.000000D+00
+    2   1DHAM 02  T    1     0.000000D+00
+    3   1DHAM 03  T    1     0.000000D+00
+    4   1DHAM 04  T    1     0.000000D+00
+    5   1DHAM 05  T    1     0.000000D+00
+    6   1DHAM 06  T    1     0.000000D+00
+    7   XDIPLEN   T    1     0.000000D+00
+    8   YDIPLEN   T    1     0.000000D+00
+    9   ZDIPLEN   T    1     0.000000D+00
+
+ LIST OF REQUIRED FIRST ORDER ETA VECTORS:
+    1   1DHAM 01  T    1     0.000000D+00
+    2   1DHAM 02  T    1     0.000000D+00
+    3   1DHAM 03  T    1     0.000000D+00
+    4   1DHAM 04  T    1     0.000000D+00
+    5   1DHAM 05  T    1     0.000000D+00
+    6   1DHAM 06  T    1     0.000000D+00
+    7   XDIPLEN   T    1     0.000000D+00
+    8   YDIPLEN   T    1     0.000000D+00
+    9   ZDIPLEN   T    1     0.000000D+00
+
+ LIST OF REQUIRED FIRST ORDER ZETA VECTORS:
+    1   1DHAM 01  T    1     0.000000D+00
+    2   1DHAM 02  T    1     0.000000D+00
+    3   1DHAM 03  T    1     0.000000D+00
+    4   1DHAM 04  T    1     0.000000D+00
+    5   1DHAM 05  T    1     0.000000D+00
+    6   1DHAM 06  T    1     0.000000D+00
+    7   XDIPLEN   T    1     0.000000D+00
+    8   YDIPLEN   T    1     0.000000D+00
+    9   ZDIPLEN   T    1     0.000000D+00
+WARNING: integrals for operator with label 02 DPG X are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+WARNING: integrals for operator with label 05 DPG X are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+WARNING: integrals for operator with label 01 DPG Y are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+WARNING: integrals for operator with label 04 DPG Y are smaller than   1.0000000D-12
+WARNING: irrep symmetry can not be determined.
+ rewind lu2der in DR2WRT!
+ rewind lu2der in DR2WRT!
+      
+
+    *******************************************************************
+    *          SOLVING COUPLED CLUSTER RESPONSE EQUATIONS             *
+    *******************************************************************
+
+
+
+ +======================================================================+
+ !                     RHS & ETA VECTORS TO COMPUTE:                    !
+ +======================================================================+
+ | TYPE | # VEC. |  NEEDED FOR:                                         |
+ +----------------------------------------------------------------------+
+ |  O1  |    9   |  first-order amplitude equations                     |
+ |  X1  |    9   |  first-order multipliers equations                   |
+ +======================================================================+
+
+
+
+ +======================================================================+
+ !                       LINEAR EQUATIONS TO SOLVE:                     !
+ +======================================================================+
+ | TYPE | # VEC. |  EQUATION:                                           |
+ +----------------------------------------------------------------------+
+ |  R1  |    9   |  first-order amplitude response                      |
+ |  L1  |    9   |  first-order multiplier response                     |
+ +======================================================================+
+
+
+
+ +======================================================================+
+ !                F MATRIX TRANSFORMATIONS TO COMPUTE:                  !
+ +======================================================================+
+ | TYPE | # VEC. |  TRANSFORMED:                                        |
+ +----------------------------------------------------------------------+
+ |  F1  |    9   |  first-order amplitude response (R1) vector          |
+ +======================================================================+
+
+
+
+
+ -------------------------------------------------------------------
+ |                   OUTPUT FROM CPHF SECTION                      |
+ -------------------------------------------------------------------
+
+
+ -------------------------------------------------------------------
+ |          OUTPUT FROM AMPLITUDE RHS VECTOR SECTION               |
+ -------------------------------------------------------------------
+
+
+
+   For the requested  9 1th.-order amplitude rhs vectors "O1 ".
+         -   0 D matrix transformations 
+         -   0 C matrix transformations 
+         -   0 B matrix transformations 
+         -   0 C{O} matrix transformations 
+         -   0 B{O} matrix transformations 
+         -   0 A{O} matrix transformations 
+         -   9Xi{O} vector calculations    
+   will be performed.
+
+
+
+ Work space in CC_XIETA:        9899543
+ FILXI  = O1 
+ FILETA = X1 
+ NXETRAN, MXVEC:           9           0
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> scratch space estimates:
+ CC_XIETA> fixed (MSCRATCH0)   :         1016
+ CC_XIETA> per simult. transf. :          196
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> batching statistics:
+ CC_XIETA> NBATCH :            3
+ CC_XIETA> ISTART :            1           4           7
+ CC_XIETA> IEND   :            3           6           9
+ WORK(0) =   0.0000000000000000E+000
+ orbital relaxation vector:           1  1DHAM 01
+
+               Column   1
+       4       0.02954521
+      10      -0.02954521
+ CC_XIETA> memory alloc. for AO section:
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 01           1
+ CC_XIETA> IOPER,IRELAX,IDLSTL=           1           1           0
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> KEND1, LWRK1:        1094     9898449
+ orbital relaxation vector:           2  1DHAM 02
+
+               Column   1
+       5       0.02954521
+      11      -0.02954521
+ CC_XIETA> memory alloc. for AO section:
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 02           1
+ CC_XIETA> IOPER,IRELAX,IDLSTL=           2           2           0
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> KEND1, LWRK1:        1822     9897721
+ orbital relaxation vector:           3  1DHAM 03
+
+               Column   1
+       1      -0.17203487
+       2      -0.13728309
+       3       0.07105008
+       6       0.03221831
+       7       0.17203487
+       8       0.13728309
+       9      -0.07105008
+      12      -0.03221831
+ CC_XIETA> memory alloc. for AO section:
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 03           1
+ CC_XIETA> IOPER,IRELAX,IDLSTL=           3           3           0
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> KEND1, LWRK1:        2550     9896993
+ Initialize now integral program:
+ LLTWOEL =  T
+ LABELH  = 1DHAM 03
+ rewind lu2der in DR2WRT!
+ CC_XIETA> after integral evaluation for ILLL:           1
+ CC_XIETA> KEND3, LWRK3:        2586     9896957
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> IOPER         =            1
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 01           1
+ CC_XIETA> IATOM,ICOOR   =            1           1
+ Norm^2 of undifferentiated integrals:   10.89582229234300     
+ Norm^2 of derivative integrals (packed):  2.7180596479856494E-002
+ ITRAN      :           1
+ IOPER      :           1
+ LABELH     :1DHAM 01
+ IRELAX     :           1
+ LZEROIMDONE: F
+ LZERO      : T
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :         721         728
+ CC_XIETA> IOPER         =            2
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 02           1
+ CC_XIETA> IATOM,ICOOR   =            1           2
+ Norm^2 of undifferentiated integrals:   10.89582229234300     
+ Norm^2 of derivative integrals (packed):  2.7180596479856494E-002
+ ITRAN      :           2
+ IOPER      :           2
+ LABELH     :1DHAM 02
+ IRELAX     :           2
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        1486        1493
+ CC_XIETA> IOPER         =            3
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 03           1
+ CC_XIETA> IATOM,ICOOR   =            1           3
+ Norm^2 of undifferentiated integrals:   10.89582229234300     
+ Norm^2 of derivative integrals (packed):   1.116357456343139     
+ ITRAN      :           3
+ IOPER      :           3
+ LABELH     :1DHAM 03
+ IRELAX     :           3
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        2214        2221
+ CC_XIETA> after integral evaluation for ILLL:           2
+ CC_XIETA> KEND3, LWRK3:        2586     9896957
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> IOPER         =            1
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 01           1
+ CC_XIETA> IATOM,ICOOR   =            1           1
+ Norm^2 of undifferentiated integrals:   7.704936770333117     
+ Norm^2 of derivative integrals (packed):  3.1708132333314665E-002
+ ITRAN      :           1
+ IOPER      :           1
+ LABELH     :1DHAM 01
+ IRELAX     :           1
+ LZEROIMDONE: F
+ LZERO      : T
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :         721         728
+ CC_XIETA> IOPER         =            2
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 02           1
+ CC_XIETA> IATOM,ICOOR   =            1           2
+ Norm^2 of undifferentiated integrals:   7.704936770333117     
+ Norm^2 of derivative integrals (packed):  3.1708132333314665E-002
+ ITRAN      :           2
+ IOPER      :           2
+ LABELH     :1DHAM 02
+ IRELAX     :           2
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        1486        1493
+ CC_XIETA> IOPER         =            3
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 03           1
+ CC_XIETA> IATOM,ICOOR   =            1           3
+ Norm^2 of undifferentiated integrals:   7.704936770333117     
+ Norm^2 of derivative integrals (packed):   1.326680617301991     
+ ITRAN      :           3
+ IOPER      :           3
+ LABELH     :1DHAM 03
+ IRELAX     :           3
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        2214        2221
+ CC_XIETA> after integral evaluation for ILLL:           3
+ CC_XIETA> KEND3, LWRK3:        2586     9896957
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> IOPER         =            1
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 01           1
+ CC_XIETA> IATOM,ICOOR   =            1           1
+ Norm^2 of undifferentiated integrals:   5.216865004811122     
+ Norm^2 of derivative integrals (packed):  0.1444054147944462     
+ ITRAN      :           1
+ IOPER      :           1
+ LABELH     :1DHAM 01
+ IRELAX     :           1
+ LZEROIMDONE: F
+ LZERO      : T
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :         721         728
+ CC_XIETA> IOPER         =            2
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 02           1
+ CC_XIETA> IATOM,ICOOR   =            1           2
+ Norm^2 of undifferentiated integrals:   5.216865004811122     
+ Norm^2 of derivative integrals (packed):  1.1921055710220072E-002
+ ITRAN      :           2
+ IOPER      :           2
+ LABELH     :1DHAM 02
+ IRELAX     :           2
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        1486        1493
+ CC_XIETA> IOPER         =            3
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 03           1
+ CC_XIETA> IATOM,ICOOR   =            1           3
+ Norm^2 of undifferentiated integrals:   5.216865004811122     
+ Norm^2 of derivative integrals (packed):  0.2943925421834779     
+ ITRAN      :           3
+ IOPER      :           3
+ LABELH     :1DHAM 03
+ IRELAX     :           3
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        2214        2221
+ CC_XIETA> after integral evaluation for ILLL:           4
+ CC_XIETA> KEND3, LWRK3:        2586     9896957
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> IOPER         =            1
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 01           1
+ CC_XIETA> IATOM,ICOOR   =            1           1
+ Norm^2 of undifferentiated integrals:   5.216865004811122     
+ Norm^2 of derivative integrals (packed):  1.1921055710220072E-002
+ ITRAN      :           1
+ IOPER      :           1
+ LABELH     :1DHAM 01
+ IRELAX     :           1
+ LZEROIMDONE: F
+ LZERO      : T
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :         721         728
+ CC_XIETA> IOPER         =            2
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 02           1
+ CC_XIETA> IATOM,ICOOR   =            1           2
+ Norm^2 of undifferentiated integrals:   5.216865004811122     
+ Norm^2 of derivative integrals (packed):  0.1444054147944462     
+ ITRAN      :           2
+ IOPER      :           2
+ LABELH     :1DHAM 02
+ IRELAX     :           2
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        1486        1493
+ CC_XIETA> IOPER         =            3
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 03           1
+ CC_XIETA> IATOM,ICOOR   =            1           3
+ Norm^2 of undifferentiated integrals:   5.216865004811122     
+ Norm^2 of derivative integrals (packed):  0.2943925421834779     
+ ITRAN      :           3
+ IOPER      :           3
+ LABELH     :1DHAM 03
+ IRELAX     :           3
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        2214        2221
+ CC_XIETA> after integral evaluation for ILLL:           5
+ CC_XIETA> KEND3, LWRK3:        2586     9896957
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> IOPER         =            1
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 01           1
+ CC_XIETA> IATOM,ICOOR   =            1           1
+ Norm^2 of undifferentiated integrals:   5.878815760584202     
+ Norm^2 of derivative integrals (packed):  1.8858214185767938E-002
+ ITRAN      :           1
+ IOPER      :           1
+ LABELH     :1DHAM 01
+ IRELAX     :           1
+ LZEROIMDONE: F
+ LZERO      : T
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :         721         728
+ CC_XIETA> IOPER         =            2
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 02           1
+ CC_XIETA> IATOM,ICOOR   =            1           2
+ Norm^2 of undifferentiated integrals:   5.878815760584202     
+ Norm^2 of derivative integrals (packed):  1.8858214185767938E-002
+ ITRAN      :           2
+ IOPER      :           2
+ LABELH     :1DHAM 02
+ IRELAX     :           2
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        1486        1493
+ CC_XIETA> IOPER         =            3
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 03           1
+ CC_XIETA> IATOM,ICOOR   =            1           3
+ Norm^2 of undifferentiated integrals:   5.878815760584202     
+ Norm^2 of derivative integrals (packed):   1.204064212634778     
+ ITRAN      :           3
+ IOPER      :           3
+ LABELH     :1DHAM 03
+ IRELAX     :           3
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        2214        2221
+ CC_XIETA> after integral evaluation for ILLL:           6
+ CC_XIETA> KEND3, LWRK3:        2586     9896957
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> IOPER         =            1
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 01           1
+ CC_XIETA> IATOM,ICOOR   =            1           1
+ Norm^2 of undifferentiated integrals:   5.610250768447377     
+ Norm^2 of derivative integrals (packed):  0.1238724354585878     
+ ITRAN      :           1
+ IOPER      :           1
+ LABELH     :1DHAM 01
+ IRELAX     :           1
+ LZEROIMDONE: F
+ LZERO      : T
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :         721         728
+ CC_XIETA> IOPER         =            2
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 02           1
+ CC_XIETA> IATOM,ICOOR   =            1           2
+ Norm^2 of undifferentiated integrals:   5.610250768447377     
+ Norm^2 of derivative integrals (packed):  0.1238724354585878     
+ ITRAN      :           2
+ IOPER      :           2
+ LABELH     :1DHAM 02
+ IRELAX     :           2
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        1486        1493
+ CC_XIETA> IOPER         =            3
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 03           1
+ CC_XIETA> IATOM,ICOOR   =            1           3
+ Norm^2 of undifferentiated integrals:   5.610250768447377     
+ Norm^2 of derivative integrals (packed):   2.554500767961159     
+ ITRAN      :           3
+ IOPER      :           3
+ LABELH     :1DHAM 03
+ IRELAX     :           3
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        2214        2221
+ CC_XIETA> after integral evaluation for ILLL:           7
+ CC_XIETA> KEND3, LWRK3:        2586     9896957
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> IOPER         =            1
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 01           1
+ CC_XIETA> IATOM,ICOOR   =            1           1
+ Norm^2 of undifferentiated integrals:   4.709897223393233     
+ Norm^2 of derivative integrals (packed):  6.0613102557198495E-002
+ ITRAN      :           1
+ IOPER      :           1
+ LABELH     :1DHAM 01
+ IRELAX     :           1
+ LZEROIMDONE: F
+ LZERO      : T
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :         721         728
+ CC_XIETA> IOPER         =            2
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 02           1
+ CC_XIETA> IATOM,ICOOR   =            1           2
+ Norm^2 of undifferentiated integrals:   4.709897223393233     
+ Norm^2 of derivative integrals (packed):  6.0613102557198495E-002
+ ITRAN      :           2
+ IOPER      :           2
+ LABELH     :1DHAM 02
+ IRELAX     :           2
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        1486        1493
+ CC_XIETA> IOPER         =            3
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 03           1
+ CC_XIETA> IATOM,ICOOR   =            1           3
+ Norm^2 of undifferentiated integrals:   4.709897223393233     
+ Norm^2 of derivative integrals (packed):  0.9822241289793089     
+ ITRAN      :           3
+ IOPER      :           3
+ LABELH     :1DHAM 03
+ IRELAX     :           3
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        2214        2221
+ CC_XIETA> after loop over AO
+ CC_XIETA> IOPER, IRELAX =            1           1
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 01           1
+ CC_XIETA> SKIPXI        =  F
+ WORK(0) =   0.0000000000000000E+000
+ Final result of CC_XIETA:
+ operator label:      1DHAM 01
+ output file type:    O1 
+ index of output file:           1
+ two-electron contr.:  T
+ relax/reorth. contr.: T
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       4       0.00119311
+  
+
+
+                   +-----------------------------------+
+                   ! double excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(ai,bj):            1           1
+
+               Column   1     Column   2     Column   3     Column   4
+       4      -0.02325393    -0.01249367    -0.00498662     0.00000000
+       6       0.00000000     0.00000000     0.00000000     0.00334548
+
+               Column   5     Column   6
+  
+ WORK(0) =   0.0000000000000000E+000
+ SKIPETA: F
+ IDLSTL :           0
+ IXETRAN(4,ITRAN):           0
+ Final result of CC_XIETA:
+ operator label:      1DHAM 01
+ output file type:    X1 
+ index of output file:           1
+ two-electron contr.:  T
+ relax/reorth. contr.: T
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       4       0.00173321
+  
+
+
+                   +-----------------------------------+
+                   ! double excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(ai,bj):            1           1
+
+               Column   1     Column   2     Column   3     Column   4
+       4      -0.04595809    -0.02470129    -0.00986204     0.00000000
+       6       0.00000000     0.00000000     0.00000000     0.00661209
+
+               Column   5     Column   6
+  
+ CC_XIETA> IOPER, IRELAX =            2           2
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 02           1
+ CC_XIETA> SKIPXI        =  F
+ WORK(0) =   0.0000000000000000E+000
+ Final result of CC_XIETA:
+ operator label:      1DHAM 02
+ output file type:    O1 
+ index of output file:           2
+ two-electron contr.:  T
+ relax/reorth. contr.: T
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       5       0.00119311
+  
+
+
+                   +-----------------------------------+
+                   ! double excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(ai,bj):            1           1
+
+               Column   1     Column   2     Column   3     Column   4
+       5      -0.02325393    -0.01249367    -0.00498662     0.00000000
+
+               Column   5     Column   6
+       6       0.00334548     0.00000000
+  
+ WORK(0) =   0.0000000000000000E+000
+ SKIPETA: F
+ IDLSTL :           0
+ IXETRAN(4,ITRAN):           0
+ Final result of CC_XIETA:
+ operator label:      1DHAM 02
+ output file type:    X1 
+ index of output file:           2
+ two-electron contr.:  T
+ relax/reorth. contr.: T
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       5       0.00173321
+  
+
+
+                   +-----------------------------------+
+                   ! double excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(ai,bj):            1           1
+
+               Column   1     Column   2     Column   3     Column   4
+       5      -0.04595809    -0.02470129    -0.00986204     0.00000000
+
+               Column   5     Column   6
+       6       0.00661209     0.00000000
+  
+ CC_XIETA> IOPER, IRELAX =            3           3
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 03           1
+ CC_XIETA> SKIPXI        =  F
+ WORK(0) =   0.0000000000000000E+000
+ Final result of CC_XIETA:
+ operator label:      1DHAM 03
+ output file type:    O1 
+ index of output file:           3
+ two-electron contr.:  T
+ relax/reorth. contr.: T
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       1       0.00837677
+       2       0.00439598
+       3       0.00029565
+       6      -0.00431409
+  
+
+
+                   +-----------------------------------+
+                   ! double excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(ai,bj):            1           1
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.00751671
+       2       0.05195828     0.02822955
+       3      -0.00266301     0.02246628    -0.01722029
+       4       0.00000000     0.00000000     0.00000000    -0.00635237
+       6       0.00533438     0.02723381     0.00731900     0.00000000
+
+               Column   5     Column   6
+       5      -0.00635237
+       6       0.00000000    -0.01267529
+  
+ WORK(0) =   0.0000000000000000E+000
+ SKIPETA: F
+ IDLSTL :           0
+ IXETRAN(4,ITRAN):           0
+ Final result of CC_XIETA:
+ operator label:      1DHAM 03
+ output file type:    X1 
+ index of output file:           3
+ two-electron contr.:  T
+ relax/reorth. contr.: T
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       1       0.01812606
+       2       0.01051727
+       3       0.00122211
+       6      -0.00801883
+  
+
+
+                   +-----------------------------------+
+                   ! double excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(ai,bj):            1           1
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.03017051
+       2       0.10292558     0.11171429
+       3      -0.00525888     0.04443346    -0.06811318
+       4       0.00000000     0.00000000     0.00000000    -0.02512619
+       6       0.01040673     0.05381757     0.01447373     0.00000000
+
+               Column   5     Column   6
+       5      -0.02512619
+       6       0.00000000    -0.05010493
+  
+ orbital relaxation vector:           4  1DHAM 04
+
+               Column   1
+       4      -0.02954521
+      10       0.02954521
+ CC_XIETA> memory alloc. for AO section:
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 04           1
+ CC_XIETA> IOPER,IRELAX,IDLSTL=           4           4           0
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> KEND1, LWRK1:        1094     9898449
+ orbital relaxation vector:           5  1DHAM 05
+
+               Column   1
+       5      -0.02954521
+      11       0.02954521
+ CC_XIETA> memory alloc. for AO section:
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 05           1
+ CC_XIETA> IOPER,IRELAX,IDLSTL=           5           5           0
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> KEND1, LWRK1:        1822     9897721
+ orbital relaxation vector:           6  1DHAM 06
+
+               Column   1
+       1       0.17203487
+       2       0.13728309
+       3      -0.07105008
+       6      -0.03221831
+       7      -0.17203487
+       8      -0.13728309
+       9       0.07105008
+      12       0.03221831
+ CC_XIETA> memory alloc. for AO section:
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 06           1
+ CC_XIETA> IOPER,IRELAX,IDLSTL=           6           6           0
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> KEND1, LWRK1:        2550     9896993
+ Initialize now integral program:
+ LLTWOEL =  T
+ LABELH  = 1DHAM 06
+ rewind lu2der in DR2WRT!
+ CC_XIETA> after integral evaluation for ILLL:           1
+ CC_XIETA> KEND3, LWRK3:        2586     9896957
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> IOPER         =            4
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 04           1
+ CC_XIETA> IATOM,ICOOR   =            2           1
+ Norm^2 of undifferentiated integrals:   10.89582229234300     
+ Norm^2 of derivative integrals (packed):  2.7180596479856494E-002
+ ITRAN      :           4
+ IOPER      :           4
+ LABELH     :1DHAM 04
+ IRELAX     :           4
+ LZEROIMDONE: F
+ LZERO      : T
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :         721         728
+ CC_XIETA> IOPER         =            5
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 05           1
+ CC_XIETA> IATOM,ICOOR   =            2           2
+ Norm^2 of undifferentiated integrals:   10.89582229234300     
+ Norm^2 of derivative integrals (packed):  2.7180596479856494E-002
+ ITRAN      :           5
+ IOPER      :           5
+ LABELH     :1DHAM 05
+ IRELAX     :           5
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        1486        1493
+ CC_XIETA> IOPER         =            6
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 06           1
+ CC_XIETA> IATOM,ICOOR   =            2           3
+ Norm^2 of undifferentiated integrals:   10.89582229234300     
+ Norm^2 of derivative integrals (packed):   1.116357456343139     
+ ITRAN      :           6
+ IOPER      :           6
+ LABELH     :1DHAM 06
+ IRELAX     :           6
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        2214        2221
+ CC_XIETA> after integral evaluation for ILLL:           2
+ CC_XIETA> KEND3, LWRK3:        2586     9896957
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> IOPER         =            4
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 04           1
+ CC_XIETA> IATOM,ICOOR   =            2           1
+ Norm^2 of undifferentiated integrals:   7.704936770333117     
+ Norm^2 of derivative integrals (packed):  3.1708132333314665E-002
+ ITRAN      :           4
+ IOPER      :           4
+ LABELH     :1DHAM 04
+ IRELAX     :           4
+ LZEROIMDONE: F
+ LZERO      : T
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :         721         728
+ CC_XIETA> IOPER         =            5
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 05           1
+ CC_XIETA> IATOM,ICOOR   =            2           2
+ Norm^2 of undifferentiated integrals:   7.704936770333117     
+ Norm^2 of derivative integrals (packed):  3.1708132333314665E-002
+ ITRAN      :           5
+ IOPER      :           5
+ LABELH     :1DHAM 05
+ IRELAX     :           5
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        1486        1493
+ CC_XIETA> IOPER         =            6
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 06           1
+ CC_XIETA> IATOM,ICOOR   =            2           3
+ Norm^2 of undifferentiated integrals:   7.704936770333117     
+ Norm^2 of derivative integrals (packed):   1.326680617301991     
+ ITRAN      :           6
+ IOPER      :           6
+ LABELH     :1DHAM 06
+ IRELAX     :           6
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        2214        2221
+ CC_XIETA> after integral evaluation for ILLL:           3
+ CC_XIETA> KEND3, LWRK3:        2586     9896957
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> IOPER         =            4
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 04           1
+ CC_XIETA> IATOM,ICOOR   =            2           1
+ Norm^2 of undifferentiated integrals:   5.216865004811122     
+ Norm^2 of derivative integrals (packed):  0.1444054147944462     
+ ITRAN      :           4
+ IOPER      :           4
+ LABELH     :1DHAM 04
+ IRELAX     :           4
+ LZEROIMDONE: F
+ LZERO      : T
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :         721         728
+ CC_XIETA> IOPER         =            5
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 05           1
+ CC_XIETA> IATOM,ICOOR   =            2           2
+ Norm^2 of undifferentiated integrals:   5.216865004811122     
+ Norm^2 of derivative integrals (packed):  1.1921055710220072E-002
+ ITRAN      :           5
+ IOPER      :           5
+ LABELH     :1DHAM 05
+ IRELAX     :           5
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        1486        1493
+ CC_XIETA> IOPER         =            6
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 06           1
+ CC_XIETA> IATOM,ICOOR   =            2           3
+ Norm^2 of undifferentiated integrals:   5.216865004811122     
+ Norm^2 of derivative integrals (packed):  0.2943925421834779     
+ ITRAN      :           6
+ IOPER      :           6
+ LABELH     :1DHAM 06
+ IRELAX     :           6
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        2214        2221
+ CC_XIETA> after integral evaluation for ILLL:           4
+ CC_XIETA> KEND3, LWRK3:        2586     9896957
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> IOPER         =            4
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 04           1
+ CC_XIETA> IATOM,ICOOR   =            2           1
+ Norm^2 of undifferentiated integrals:   5.216865004811122     
+ Norm^2 of derivative integrals (packed):  1.1921055710220072E-002
+ ITRAN      :           4
+ IOPER      :           4
+ LABELH     :1DHAM 04
+ IRELAX     :           4
+ LZEROIMDONE: F
+ LZERO      : T
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :         721         728
+ CC_XIETA> IOPER         =            5
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 05           1
+ CC_XIETA> IATOM,ICOOR   =            2           2
+ Norm^2 of undifferentiated integrals:   5.216865004811122     
+ Norm^2 of derivative integrals (packed):  0.1444054147944462     
+ ITRAN      :           5
+ IOPER      :           5
+ LABELH     :1DHAM 05
+ IRELAX     :           5
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        1486        1493
+ CC_XIETA> IOPER         =            6
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 06           1
+ CC_XIETA> IATOM,ICOOR   =            2           3
+ Norm^2 of undifferentiated integrals:   5.216865004811122     
+ Norm^2 of derivative integrals (packed):  0.2943925421834779     
+ ITRAN      :           6
+ IOPER      :           6
+ LABELH     :1DHAM 06
+ IRELAX     :           6
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        2214        2221
+ CC_XIETA> after integral evaluation for ILLL:           5
+ CC_XIETA> KEND3, LWRK3:        2586     9896957
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> IOPER         =            4
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 04           1
+ CC_XIETA> IATOM,ICOOR   =            2           1
+ Norm^2 of undifferentiated integrals:   5.878815760584202     
+ Norm^2 of derivative integrals (packed):  1.8858214185767938E-002
+ ITRAN      :           4
+ IOPER      :           4
+ LABELH     :1DHAM 04
+ IRELAX     :           4
+ LZEROIMDONE: F
+ LZERO      : T
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :         721         728
+ CC_XIETA> IOPER         =            5
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 05           1
+ CC_XIETA> IATOM,ICOOR   =            2           2
+ Norm^2 of undifferentiated integrals:   5.878815760584202     
+ Norm^2 of derivative integrals (packed):  1.8858214185767938E-002
+ ITRAN      :           5
+ IOPER      :           5
+ LABELH     :1DHAM 05
+ IRELAX     :           5
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        1486        1493
+ CC_XIETA> IOPER         =            6
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 06           1
+ CC_XIETA> IATOM,ICOOR   =            2           3
+ Norm^2 of undifferentiated integrals:   5.878815760584202     
+ Norm^2 of derivative integrals (packed):   1.204064212634778     
+ ITRAN      :           6
+ IOPER      :           6
+ LABELH     :1DHAM 06
+ IRELAX     :           6
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        2214        2221
+ CC_XIETA> after integral evaluation for ILLL:           6
+ CC_XIETA> KEND3, LWRK3:        2586     9896957
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> IOPER         =            4
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 04           1
+ CC_XIETA> IATOM,ICOOR   =            2           1
+ Norm^2 of undifferentiated integrals:   5.610250768447377     
+ Norm^2 of derivative integrals (packed):  0.1238724354585878     
+ ITRAN      :           4
+ IOPER      :           4
+ LABELH     :1DHAM 04
+ IRELAX     :           4
+ LZEROIMDONE: F
+ LZERO      : T
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :         721         728
+ CC_XIETA> IOPER         =            5
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 05           1
+ CC_XIETA> IATOM,ICOOR   =            2           2
+ Norm^2 of undifferentiated integrals:   5.610250768447377     
+ Norm^2 of derivative integrals (packed):  0.1238724354585878     
+ ITRAN      :           5
+ IOPER      :           5
+ LABELH     :1DHAM 05
+ IRELAX     :           5
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        1486        1493
+ CC_XIETA> IOPER         =            6
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 06           1
+ CC_XIETA> IATOM,ICOOR   =            2           3
+ Norm^2 of undifferentiated integrals:   5.610250768447377     
+ Norm^2 of derivative integrals (packed):   2.554500767961159     
+ ITRAN      :           6
+ IOPER      :           6
+ LABELH     :1DHAM 06
+ IRELAX     :           6
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        2214        2221
+ CC_XIETA> after integral evaluation for ILLL:           7
+ CC_XIETA> KEND3, LWRK3:        2586     9896957
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> IOPER         =            4
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 04           1
+ CC_XIETA> IATOM,ICOOR   =            2           1
+ Norm^2 of undifferentiated integrals:   4.709897223393233     
+ Norm^2 of derivative integrals (packed):  6.0613102557198495E-002
+ ITRAN      :           4
+ IOPER      :           4
+ LABELH     :1DHAM 04
+ IRELAX     :           4
+ LZEROIMDONE: F
+ LZERO      : T
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :         721         728
+ CC_XIETA> IOPER         =            5
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 05           1
+ CC_XIETA> IATOM,ICOOR   =            2           2
+ Norm^2 of undifferentiated integrals:   4.709897223393233     
+ Norm^2 of derivative integrals (packed):  6.0613102557198495E-002
+ ITRAN      :           5
+ IOPER      :           5
+ LABELH     :1DHAM 05
+ IRELAX     :           5
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        1486        1493
+ CC_XIETA> IOPER         =            6
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 06           1
+ CC_XIETA> IATOM,ICOOR   =            2           3
+ Norm^2 of undifferentiated integrals:   4.709897223393233     
+ Norm^2 of derivative integrals (packed):  0.9822241289793089     
+ ITRAN      :           6
+ IOPER      :           6
+ LABELH     :1DHAM 06
+ IRELAX     :           6
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        2214        2221
+ CC_XIETA> after loop over AO
+ CC_XIETA> IOPER, IRELAX =            4           4
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 04           1
+ CC_XIETA> SKIPXI        =  F
+ WORK(0) =   0.0000000000000000E+000
+ Final result of CC_XIETA:
+ operator label:      1DHAM 04
+ output file type:    O1 
+ index of output file:           4
+ two-electron contr.:  T
+ relax/reorth. contr.: T
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       4      -0.00119311
+  
+
+
+                   +-----------------------------------+
+                   ! double excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(ai,bj):            1           1
+
+               Column   1     Column   2     Column   3     Column   4
+       4       0.02325393     0.01249367     0.00498662     0.00000000
+       6       0.00000000     0.00000000     0.00000000    -0.00334548
+
+               Column   5     Column   6
+  
+ WORK(0) =   0.0000000000000000E+000
+ SKIPETA: F
+ IDLSTL :           0
+ IXETRAN(4,ITRAN):           0
+ Final result of CC_XIETA:
+ operator label:      1DHAM 04
+ output file type:    X1 
+ index of output file:           4
+ two-electron contr.:  T
+ relax/reorth. contr.: T
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       4      -0.00173321
+  
+
+
+                   +-----------------------------------+
+                   ! double excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(ai,bj):            1           1
+
+               Column   1     Column   2     Column   3     Column   4
+       4       0.04595809     0.02470129     0.00986204     0.00000000
+       6       0.00000000     0.00000000     0.00000000    -0.00661209
+
+               Column   5     Column   6
+  
+ CC_XIETA> IOPER, IRELAX =            5           5
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 05           1
+ CC_XIETA> SKIPXI        =  F
+ WORK(0) =   0.0000000000000000E+000
+ Final result of CC_XIETA:
+ operator label:      1DHAM 05
+ output file type:    O1 
+ index of output file:           5
+ two-electron contr.:  T
+ relax/reorth. contr.: T
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       5      -0.00119311
+  
+
+
+                   +-----------------------------------+
+                   ! double excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(ai,bj):            1           1
+
+               Column   1     Column   2     Column   3     Column   4
+       5       0.02325393     0.01249367     0.00498662     0.00000000
+
+               Column   5     Column   6
+       6      -0.00334548     0.00000000
+  
+ WORK(0) =   0.0000000000000000E+000
+ SKIPETA: F
+ IDLSTL :           0
+ IXETRAN(4,ITRAN):           0
+ Final result of CC_XIETA:
+ operator label:      1DHAM 05
+ output file type:    X1 
+ index of output file:           5
+ two-electron contr.:  T
+ relax/reorth. contr.: T
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       5      -0.00173321
+  
+
+
+                   +-----------------------------------+
+                   ! double excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(ai,bj):            1           1
+
+               Column   1     Column   2     Column   3     Column   4
+       5       0.04595809     0.02470129     0.00986204     0.00000000
+
+               Column   5     Column   6
+       6      -0.00661209     0.00000000
+  
+ CC_XIETA> IOPER, IRELAX =            6           6
+ CC_XIETA> LTWOEL,LRELAX =  T T
+ CC_XIETA> LABELH,ISYHOP = 1DHAM 06           1
+ CC_XIETA> SKIPXI        =  F
+ WORK(0) =   0.0000000000000000E+000
+ Final result of CC_XIETA:
+ operator label:      1DHAM 06
+ output file type:    O1 
+ index of output file:           6
+ two-electron contr.:  T
+ relax/reorth. contr.: T
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       1      -0.00837677
+       2      -0.00439598
+       3      -0.00029565
+       6       0.00431409
+  
+
+
+                   +-----------------------------------+
+                   ! double excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(ai,bj):            1           1
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.00751671
+       2      -0.05195828    -0.02822955
+       3       0.00266301    -0.02246628     0.01722029
+       4       0.00000000     0.00000000     0.00000000     0.00635237
+       6      -0.00533438    -0.02723381    -0.00731900     0.00000000
+
+               Column   5     Column   6
+       5       0.00635237
+       6       0.00000000     0.01267529
+  
+ WORK(0) =   0.0000000000000000E+000
+ SKIPETA: F
+ IDLSTL :           0
+ IXETRAN(4,ITRAN):           0
+ Final result of CC_XIETA:
+ operator label:      1DHAM 06
+ output file type:    X1 
+ index of output file:           6
+ two-electron contr.:  T
+ relax/reorth. contr.: T
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       1      -0.01812606
+       2      -0.01051727
+       3      -0.00122211
+       6       0.00801883
+  
+
+
+                   +-----------------------------------+
+                   ! double excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(ai,bj):            1           1
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.03017051
+       2      -0.10292558    -0.11171429
+       3       0.00525888    -0.04443346     0.06811318
+       4       0.00000000     0.00000000     0.00000000     0.02512619
+       6      -0.01040673    -0.05381757    -0.01447373     0.00000000
+
+               Column   5     Column   6
+       5       0.02512619
+       6       0.00000000     0.05010493
+  
+ orbital relaxation vector:           7  XDIPLEN 
+
+               Column   1
+       4       0.18088831
+      10      -0.18088831
+ CC_XIETA> memory alloc. for AO section:
+ CC_XIETA> LABELH,ISYHOP = XDIPLEN            1
+ CC_XIETA> IOPER,IRELAX,IDLSTL=           8           7           0
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> KEND1, LWRK1:        1094     9898449
+ orbital relaxation vector:           8  YDIPLEN 
+
+               Column   1
+       5       0.18088831
+      11      -0.18088831
+ CC_XIETA> memory alloc. for AO section:
+ CC_XIETA> LABELH,ISYHOP = YDIPLEN            1
+ CC_XIETA> IOPER,IRELAX,IDLSTL=           9           8           0
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> KEND1, LWRK1:        1822     9897721
+ orbital relaxation vector:           9  ZDIPLEN 
+
+               Column   1
+       1       0.71862777
+       2       0.14529587
+       3      -0.09970661
+       6       0.08902576
+       7      -0.71862777
+       8      -0.14529587
+       9       0.09970661
+      12      -0.08902576
+ CC_XIETA> memory alloc. for AO section:
+ CC_XIETA> LABELH,ISYHOP = ZDIPLEN            1
+ CC_XIETA> IOPER,IRELAX,IDLSTL=          10           9           0
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> KEND1, LWRK1:        2550     9896993
+ Initialize now integral program:
+ LLTWOEL =  F
+ LABELH  = ZDIPLEN 
+ CC_XIETA> after integral evaluation for ILLL:           1
+ CC_XIETA> KEND3, LWRK3:        2586     9896957
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> IOPER         =            8
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = XDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           7
+ IOPER      :           8
+ LABELH     :XDIPLEN 
+ IRELAX     :           7
+ LZEROIMDONE: F
+ LZERO      : T
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :         721         728
+ CC_XIETA> IOPER         =            9
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = YDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           8
+ IOPER      :           9
+ LABELH     :YDIPLEN 
+ IRELAX     :           8
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        1486        1493
+ CC_XIETA> IOPER         =           10
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = ZDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           9
+ IOPER      :          10
+ LABELH     :ZDIPLEN 
+ IRELAX     :           9
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        2214        2221
+ CC_XIETA> after integral evaluation for ILLL:           2
+ CC_XIETA> KEND3, LWRK3:        2586     9896957
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> IOPER         =            8
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = XDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           7
+ IOPER      :           8
+ LABELH     :XDIPLEN 
+ IRELAX     :           7
+ LZEROIMDONE: F
+ LZERO      : T
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :         721         728
+ CC_XIETA> IOPER         =            9
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = YDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           8
+ IOPER      :           9
+ LABELH     :YDIPLEN 
+ IRELAX     :           8
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        1486        1493
+ CC_XIETA> IOPER         =           10
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = ZDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           9
+ IOPER      :          10
+ LABELH     :ZDIPLEN 
+ IRELAX     :           9
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        2214        2221
+ CC_XIETA> after integral evaluation for ILLL:           3
+ CC_XIETA> KEND3, LWRK3:        2586     9896957
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> IOPER         =            8
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = XDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           7
+ IOPER      :           8
+ LABELH     :XDIPLEN 
+ IRELAX     :           7
+ LZEROIMDONE: F
+ LZERO      : T
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :         721         728
+ CC_XIETA> IOPER         =            9
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = YDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           8
+ IOPER      :           9
+ LABELH     :YDIPLEN 
+ IRELAX     :           8
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        1486        1493
+ CC_XIETA> IOPER         =           10
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = ZDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           9
+ IOPER      :          10
+ LABELH     :ZDIPLEN 
+ IRELAX     :           9
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        2214        2221
+ CC_XIETA> after integral evaluation for ILLL:           4
+ CC_XIETA> KEND3, LWRK3:        2586     9896957
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> IOPER         =            8
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = XDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           7
+ IOPER      :           8
+ LABELH     :XDIPLEN 
+ IRELAX     :           7
+ LZEROIMDONE: F
+ LZERO      : T
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :         721         728
+ CC_XIETA> IOPER         =            9
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = YDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           8
+ IOPER      :           9
+ LABELH     :YDIPLEN 
+ IRELAX     :           8
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        1486        1493
+ CC_XIETA> IOPER         =           10
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = ZDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           9
+ IOPER      :          10
+ LABELH     :ZDIPLEN 
+ IRELAX     :           9
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        2214        2221
+ CC_XIETA> after integral evaluation for ILLL:           5
+ CC_XIETA> KEND3, LWRK3:        2586     9896957
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> IOPER         =            8
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = XDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           7
+ IOPER      :           8
+ LABELH     :XDIPLEN 
+ IRELAX     :           7
+ LZEROIMDONE: F
+ LZERO      : T
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :         721         728
+ CC_XIETA> IOPER         =            9
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = YDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           8
+ IOPER      :           9
+ LABELH     :YDIPLEN 
+ IRELAX     :           8
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        1486        1493
+ CC_XIETA> IOPER         =           10
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = ZDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           9
+ IOPER      :          10
+ LABELH     :ZDIPLEN 
+ IRELAX     :           9
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        2214        2221
+ CC_XIETA> after integral evaluation for ILLL:           6
+ CC_XIETA> KEND3, LWRK3:        2586     9896957
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> IOPER         =            8
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = XDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           7
+ IOPER      :           8
+ LABELH     :XDIPLEN 
+ IRELAX     :           7
+ LZEROIMDONE: F
+ LZERO      : T
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :         721         728
+ CC_XIETA> IOPER         =            9
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = YDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           8
+ IOPER      :           9
+ LABELH     :YDIPLEN 
+ IRELAX     :           8
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        1486        1493
+ CC_XIETA> IOPER         =           10
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = ZDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           9
+ IOPER      :          10
+ LABELH     :ZDIPLEN 
+ IRELAX     :           9
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        2214        2221
+ CC_XIETA> after integral evaluation for ILLL:           7
+ CC_XIETA> KEND3, LWRK3:        2586     9896957
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> IOPER         =            8
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = XDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           7
+ IOPER      :           8
+ LABELH     :XDIPLEN 
+ IRELAX     :           7
+ LZEROIMDONE: F
+ LZERO      : T
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :         721         728
+ CC_XIETA> IOPER         =            9
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = YDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           8
+ IOPER      :           9
+ LABELH     :YDIPLEN 
+ IRELAX     :           8
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        1486        1493
+ CC_XIETA> IOPER         =           10
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = ZDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           9
+ IOPER      :          10
+ LABELH     :ZDIPLEN 
+ IRELAX     :           9
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        2214        2221
+ CC_XIETA> after loop over AO
+ CC_XIETA> IOPER, IRELAX =            8           7
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = XDIPLEN            1
+ CC_XIETA> SKIPXI        =  F
+ WORK(0) =   0.0000000000000000E+000
+ Final result of CC_XIETA:
+ operator label:      XDIPLEN 
+ output file type:    O1 
+ index of output file:           7
+ two-electron contr.:  F
+ relax/reorth. contr.: T
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       4      -0.00853111
+  
+
+
+                   +-----------------------------------+
+                   ! double excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(ai,bj):            1           1
+
+               Column   1     Column   2     Column   3     Column   4
+       4       0.00455338     0.00917184    -0.03641262     0.00000000
+       6       0.00000000     0.00000000     0.00000000    -0.00097312
+
+               Column   5     Column   6
+  
+ WORK(0) =   0.0000000000000000E+000
+ SKIPETA: F
+ IDLSTL :           0
+ IXETRAN(4,ITRAN):           0
+ Final result of CC_XIETA:
+ operator label:      XDIPLEN 
+ output file type:    X1 
+ index of output file:           7
+ two-electron contr.:  F
+ relax/reorth. contr.: T
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       4      -0.01721371
+  
+
+
+                   +-----------------------------------+
+                   ! double excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(ai,bj):            1           1
+
+               Column   1     Column   2     Column   3     Column   4
+       4       0.00878174     0.01808577    -0.07201331     0.00000000
+       6       0.00000000     0.00000000     0.00000000    -0.00189393
+
+               Column   5     Column   6
+  
+ CC_XIETA> IOPER, IRELAX =            9           8
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = YDIPLEN            1
+ CC_XIETA> SKIPXI        =  F
+ WORK(0) =   0.0000000000000000E+000
+ Final result of CC_XIETA:
+ operator label:      YDIPLEN 
+ output file type:    O1 
+ index of output file:           8
+ two-electron contr.:  F
+ relax/reorth. contr.: T
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       5      -0.00853111
+  
+
+
+                   +-----------------------------------+
+                   ! double excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(ai,bj):            1           1
+
+               Column   1     Column   2     Column   3     Column   4
+       5       0.00455338     0.00917184    -0.03641262     0.00000000
+
+               Column   5     Column   6
+       6      -0.00097312     0.00000000
+  
+ WORK(0) =   0.0000000000000000E+000
+ SKIPETA: F
+ IDLSTL :           0
+ IXETRAN(4,ITRAN):           0
+ Final result of CC_XIETA:
+ operator label:      YDIPLEN 
+ output file type:    X1 
+ index of output file:           8
+ two-electron contr.:  F
+ relax/reorth. contr.: T
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       5      -0.01721371
+  
+
+
+                   +-----------------------------------+
+                   ! double excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(ai,bj):            1           1
+
+               Column   1     Column   2     Column   3     Column   4
+       5       0.00878174     0.01808577    -0.07201331     0.00000000
+
+               Column   5     Column   6
+       6      -0.00189393     0.00000000
+  
+ CC_XIETA> IOPER, IRELAX =           10           9
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = ZDIPLEN            1
+ CC_XIETA> SKIPXI        =  F
+ WORK(0) =   0.0000000000000000E+000
+ Final result of CC_XIETA:
+ operator label:      ZDIPLEN 
+ output file type:    O1 
+ index of output file:           9
+ two-electron contr.:  F
+ relax/reorth. contr.: T
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       1      -0.00668441
+       2      -0.00255922
+       3      -0.01528052
+       6      -0.02069146
+  
+
+
+                   +-----------------------------------+
+                   ! double excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(ai,bj):            1           1
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.24252342
+       2      -0.13391271    -0.05662542
+       3      -0.19364523    -0.04845221     0.08272405
+       4       0.00000000     0.00000000     0.00000000     0.04284359
+       6       0.06343702     0.02078418     0.00676264     0.00000000
+
+               Column   5     Column   6
+       5       0.04284359
+       6       0.00000000     0.04163954
+  
+ WORK(0) =   0.0000000000000000E+000
+ SKIPETA: F
+ IDLSTL :           0
+ IXETRAN(4,ITRAN):           0
+ Final result of CC_XIETA:
+ operator label:      ZDIPLEN 
+ output file type:    X1 
+ index of output file:           9
+ two-electron contr.:  F
+ relax/reorth. contr.: T
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       1      -0.02936184
+       2      -0.00999908
+       3      -0.03758761
+       6      -0.04073135
+  
+
+
+                   +-----------------------------------+
+                   ! double excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(ai,bj):            1           1
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.95962822
+       2      -0.26494828    -0.22400844
+       3      -0.38337282    -0.09591967     0.32720696
+       4       0.00000000     0.00000000     0.00000000     0.16946369
+       6       0.12494146     0.04098457     0.01342928     0.00000000
+
+               Column   5     Column   6
+       5       0.16946369
+       6       0.00000000     0.16484968
+  
+ CC_XIETA ended successfully (?) ... return now.
+     R1  start vector nr.  1 of symmetry  1 generated from gradient
+     R1  start vector nr.  2 of symmetry  1 generated from gradient
+     R1  start vector nr.  3 of symmetry  1 generated from gradient
+     R1  start vector nr.  4 of symmetry  1 generated from gradient
+
+ (CCORT) new  b-vector no.  1
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 4.23705D-33
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000007E-035 REMOVED
+
+ (CCORT)  trial vectors reduced from  1 to  0
+     R1  start vector nr.  5 of symmetry  1 generated from gradient
+
+ (CCORT) new  b-vector no.  1
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 5.77779D-33
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000007E-035 REMOVED
+
+ (CCORT)  trial vectors reduced from  1 to  0
+     R1  start vector nr.  6 of symmetry  1 generated from gradient
+
+ (CCORT) new  b-vector no.  1
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 6.84739D-32
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000007E-035 REMOVED
+
+ (CCORT)  trial vectors reduced from  1 to  0
+     R1  start vector nr.  7 of symmetry  1 generated from gradient
+     R1  start vector nr.  8 of symmetry  1 generated from gradient
+     R1  start vector nr.  9 of symmetry  1 generated from gradient
+
+ (CCORT) new  b-vector no.  4
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 9.62155D-30
+
+ (CCORT) new  b-vector no.  5
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 9.54346D-30
+
+ (CCORT) new  b-vector no.  6
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.54937D-31
+  After Gram Smidt orthonormalization
+           -3 vectors with norm le:  1.0000000000000007E-035 REMOVED
+
+ (CCORT)  trial vectors reduced from  9 to  6
+
+ (CCORT) new  b-vector no.  4
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 2.34687D-33
+
+ (CCORT) new  b-vector no.  5
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 2.20836D-32
+
+ (CCORT) new  b-vector no.  6
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 5.36167D-30
+
+ (CCORT) new  b-vector no.  7
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 3.47788D-33
+
+ (CCORT) new  b-vector no.  8
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.24764D-32
+  After Gram Smidt orthonormalization
+           -5 vectors with norm le:  1.0000000000000007E-035 REMOVED
+
+ (CCORT)  trial vectors reduced from  9 to  4
+
+ (CCORT) new  b-vector no.  2
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.22534D-27
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000007E-035 REMOVED
+
+ (CCORT)  trial vectors reduced from  3 to  2
+
+ (CCORT) new  b-vector no.  2
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 6.06278D-25
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000007E-035 REMOVED
+
+ (CCORT)  trial vectors reduced from  3 to  2
+
+ (CCORT) new  b-vector no.  2
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 7.75520D-23
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000007E-035 REMOVED
+
+ (CCORT)  trial vectors reduced from  3 to  2
+ Batching over F matrix transformations:
+ nb. of batches needed:           1
+ Batch No.:           1
+ start at :           1
+ # transf.:           9
+
+
+                            +-----------------+
+                            ! ENTERED CC_FMAT !
+                            +-----------------+
+
+ [debug] CC_FMAT>LISTL : L0 
+ [debug] CC_FMAT>LISTR : R1 
+ [debug] CC_FMAT>FILFMA: F1 
+ [debug] CC_FMAT>NFTRAN:            9
+ [debug] CC_FMAT>IOPTRES:           3
+
+List of response vector for left intermediates:
+
+         0    5
+
+List of response vector for right intermediates:
+
+         1    2
+
+         2    2
+
+         3    2
+
+         4    2
+
+         5    2
+
+         6    2
+
+         7    2
+
+         8    2
+
+         9    2
+
+List of vector pairs for 2. order intermediates:
+
+         0    5    1    2
+
+         0    5    2    2
+
+         0    5    3    2
+
+         0    5    4    2
+
+         0    5    5    2
+
+         0    5    6    2
+
+         0    5    7    2
+
+         0    5    8    2
+
+         0    5    9    2
+ [debug] CC_FMAT>scratch space estimate MSCRATCH:        1057
+ [debug] CC_FMAT>one batch only... will be done in core.
+ [debug] CC_FMAT>memory for intermediates:         2385
+ [debug] CC_FMAT>remaining scratch space:      9932688
+ [debug] CC_FMAT>norm of T1AMP0:  1.8876482674509072E-004
+ [debug] CC_FMAT>norm of XLAMP0:   11.95033038502134     
+ [debug] CC_FMAT>norm of XLAMH0:   11.93944767008432     
+ [debug] CC_FMAT>norm of DENS0:  0.3199680197609245     
+ [debug] CC_FMAT>norm of FOCK0:   28.02239825971279     
+ [debug] CC_FMAT>allocated work space for intermediates:
+ [debug] CC_FMAT>KRHO2 :         294         441         588         735
+          882        1029        1176        1323        1470
+ [debug] CC_FMAT>KLAMP :         301         448         595         742
+          889        1036        1183        1330        1477
+ [debug] CC_FMAT>KLAMH :         350         497         644         791
+          938        1085        1232        1379        1526
+ [debug] CC_FMAT>KDENS :   -99999999   -99999999   -99999999   -99999999
+    -99999999   -99999999   -99999999   -99999999   -99999999
+ [debug] CC_FMAT>KFOCK :   -99999999   -99999999   -99999999   -99999999
+    -99999999   -99999999   -99999999   -99999999   -99999999
+ [debug] CC_FMAT>KRIM  :         252         399         546         693
+          840         987        1134        1281        1428
+ [debug] CC_FMAT>KRHO1 :        1673        1791        1909        2027
+         2145        2263        2381        2499        2617
+ [debug] CC_FMAT>KZDEN :    99999999    99999999    99999999    99999999
+     99999999    99999999    99999999    99999999    99999999
+ [debug] CC_FMAT>KFIM  :        1686        1804        1922        2040
+         2158        2276        2394        2512        2630
+ [debug] CC_FMAT>KGIM  :    99999999    99999999    99999999    99999999
+     99999999    99999999    99999999    99999999    99999999
+ [debug] CC_FMAT>KMGDL :        1679        1797        1915        2033
+         2151        2269        2387        2505        2623
+ [debug] CC_FMAT>KLAMPA:        1575        1693        1811        1929
+         2047        2165        2283        2401        2519
+ [debug] CC_FMAT>KLAMHA:        1624        1742        1860        1978
+         2096        2214        2332        2450        2568
+ [debug] CC_FMAT>KEND1:        2637
+ [debug] CC_FMAT>           1-th. batch out of            1
+ [debug] CC_FMAT>IR:           1 --            9
+ [debug] CC_FMAT>I2:           1 --            9
+ [debug] CC_FMAT>           1-th. batch out of            1
+ [debug] CC_FMAT>IR:           1 --            9
+ [debug] CC_FMAT>I2:           1 --            9
+ [debug] CC_FMAT>           1-th. batch out of            1
+ [debug] CC_FMAT>IR:           1 --            9
+ [debug] CC_FMAT>I2:           1 --            9
+ [debug] CC_FMAT>           1-th. batch out of            1
+ [debug] CC_FMAT>IR:           1 --            9
+ [debug] CC_FMAT>I2:           1 --            9
+ [debug] CC_FMAT>           1-th. batch out of            1
+ [debug] CC_FMAT>IR:           1 --            9
+ [debug] CC_FMAT>I2:           1 --            9
+ [debug] CC_FMAT>           1-th. batch out of            1
+ [debug] CC_FMAT>IR:           1 --            9
+ [debug] CC_FMAT>I2:           1 --            9
+ [debug] CC_FMAT>           1-th. batch out of            1
+ [debug] CC_FMAT>IR:           1 --            9
+ [debug] CC_FMAT>I2:           1 --            9
+ [debug] CC_FMAT>Loop over AO-integrals completed 
+  & AO intermediates saved on file.
+ [debug] CC_FMAT>recover work space: KEND1,LWRK1=         252     9934821
+ [debug] CC_FMAT>norm of XLAMH0:   11.93944767008432     
+ [debug] CC_FMAT>F matrix transformation for ITRAN,           1
+ [debug] CC_FMAT>IADRTH:           1
+ [debug] CC_FMAT>LISTL,IDLSTL:L0            0
+ [debug] CC_FMAT>LISTR,IDLSTR:R1            1
+ [debug] CC_FMAT>ISYCTR,ISYAMP,ISYRES:           1           1           1
+ [debug] CC_FMAT>IINTL,IINTR,IINT2:           1           1           1
+ [debug] CC_FMAT>norm of THETA1 after <HF| contrib.:  1.5101657888630246E-008
+ Theta1 after 21GMO contribution:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       4    -1.228888D-04
+  
+ restored X and Y intermediates:
+
+
+                           +--------------------+
+                           ! EI1 -intermediate  !
+                           +--------------------+
+
+  
+ ISYMA,ISYMB =            1           1
+  
+
+               Column   1     Column   2     Column   3     Column   4
+       1     0.000000D+00   0.000000D+00   0.000000D+00  -4.525176D-04
+       2     0.000000D+00   0.000000D+00   0.000000D+00  -2.005965D-04
+       3     0.000000D+00   0.000000D+00   0.000000D+00  -7.841395D-05
+       4    -9.056171D-04  -2.362568D-04  -6.282512D-04   0.000000D+00
+       6     0.000000D+00   0.000000D+00   0.000000D+00   3.588066D-05
+
+               Column   5     Column   6
+       4     0.000000D+00  -2.532507D-04
+
+
+                           +--------------------+
+                           ! EI2 -intermediate  !
+                           +--------------------+
+
+  
+ ISYMI,ISYMJ =            1           1
+  
+
+     Zero matrix.
+           23CCFM_XIM           1           1           1
+           24CCFM_YIM          36          36           1
+ Rho1 read from file:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       4    -5.733518D-21
+  
+ result vector after Rho1 was added:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       4    -1.228888D-04
+  
+ [debug] CC_FMAT>norm of THETA1 before CCFMAT2:  8.7344471885069392E-009
+ [debug] CC_FMAT>norm of THETA2 before CCFMAT2:  0.0000000000000000E+000
+ result vector before entering CCFMAT2:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       4    -9.345826D-05
+  
+ Write L0  * B * R1  transformation as F1  type vector to file.
+ index of inp. left  vector:           0
+ index of inp. right vector:           1
+ index of     result vector:           1
+ norm^2 of result vector:  1.7630460895684566E-008
+ [debug] CC_FMAT>F matrix transformation for ITRAN,           2
+ [debug] CC_FMAT>IADRTH:           1
+ [debug] CC_FMAT>LISTL,IDLSTL:L0            0
+ [debug] CC_FMAT>LISTR,IDLSTR:R1            2
+ [debug] CC_FMAT>ISYCTR,ISYAMP,ISYRES:           1           1           1
+ [debug] CC_FMAT>IINTL,IINTR,IINT2:           1           2           2
+ [debug] CC_FMAT>norm of THETA1 after <HF| contrib.:  1.5101657888630253E-008
+ Theta1 after 21GMO contribution:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       5    -1.228888D-04
+  
+ restored X and Y intermediates:
+
+
+                           +--------------------+
+                           ! EI1 -intermediate  !
+                           +--------------------+
+
+  
+ ISYMA,ISYMB =            1           1
+  
+
+               Column   1     Column   2     Column   3     Column   4
+       5    -9.056171D-04  -2.362568D-04  -6.282512D-04   0.000000D+00
+
+               Column   5     Column   6
+       1    -4.525176D-04   0.000000D+00
+       2    -2.005965D-04   0.000000D+00
+       3    -7.841395D-05   0.000000D+00
+       5     0.000000D+00  -2.532507D-04
+       6     3.588066D-05   0.000000D+00
+
+
+                           +--------------------+
+                           ! EI2 -intermediate  !
+                           +--------------------+
+
+  
+ ISYMI,ISYMJ =            1           1
+  
+
+     Zero matrix.
+           23CCFM_XIM           1           1           2
+           24CCFM_YIM          36          36           2
+ Rho1 read from file:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       5    -5.736885D-22
+  
+ result vector after Rho1 was added:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       5    -1.228888D-04
+  
+ [debug] CC_FMAT>norm of THETA1 before CCFMAT2:  8.7344471885069446E-009
+ [debug] CC_FMAT>norm of THETA2 before CCFMAT2:  0.0000000000000000E+000
+ result vector before entering CCFMAT2:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       5    -9.345826D-05
+  
+ Write L0  * B * R1  transformation as F1  type vector to file.
+ index of inp. left  vector:           0
+ index of inp. right vector:           2
+ index of     result vector:           2
+ norm^2 of result vector:  1.7630460895684572E-008
+ [debug] CC_FMAT>F matrix transformation for ITRAN,           3
+ [debug] CC_FMAT>IADRTH:           1
+ [debug] CC_FMAT>LISTL,IDLSTL:L0            0
+ [debug] CC_FMAT>LISTR,IDLSTR:R1            3
+ [debug] CC_FMAT>ISYCTR,ISYAMP,ISYRES:           1           1           1
+ [debug] CC_FMAT>IINTL,IINTR,IINT2:           1           3           3
+ [debug] CC_FMAT>norm of THETA1 after <HF| contrib.:  1.2384991945356836E-006
+ Theta1 after 21GMO contribution:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       1    -6.573713D-04
+       2    -1.204689D-04
+       3    -8.898583D-04
+       6     1.262680D-06
+  
+ restored X and Y intermediates:
+
+
+                           +--------------------+
+                           ! EI1 -intermediate  !
+                           +--------------------+
+
+  
+ ISYMA,ISYMB =            1           1
+  
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.00121892     0.00055002     0.00037637     0.00000000
+       2       0.00301526     0.00090874     0.00197533     0.00000000
+       3      -0.00051442     0.00008296    -0.00094765     0.00000000
+       4       0.00000000     0.00000000     0.00000000    -0.00014830
+       6       0.00050176     0.00011981     0.00039723     0.00000000
+
+               Column   5     Column   6
+       1       0.00000000     0.00073961
+       2       0.00000000     0.00126435
+       3       0.00000000     0.00016704
+       5      -0.00014830     0.00000000
+       6       0.00000000     0.00000466
+
+
+                           +--------------------+
+                           ! EI2 -intermediate  !
+                           +--------------------+
+
+  
+ ISYMI,ISYMJ =            1           1
+  
+
+               Column   1
+       1     8.880784D-04
+           23CCFM_XIM           1           1           3
+           24CCFM_YIM          36          36           3
+ Rho1 read from file:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       1    -3.237442D-19
+       2    -7.544470D-20
+       3    -1.423224D-19
+       6     5.020726D-20
+  
+ result vector after Rho1 was added:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       1    -6.573713D-04
+       2    -1.204689D-04
+       3    -8.898583D-04
+       6     1.262680D-06
+  
+ [debug] CC_FMAT>norm of THETA1 before CCFMAT2:  5.5781701624678126E-007
+ [debug] CC_FMAT>norm of THETA2 before CCFMAT2:  0.0000000000000000E+000
+ result vector before entering CCFMAT2:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       1    -3.676567D-04
+       2    -2.615774D-05
+       3    -6.495627D-04
+       6     5.443648D-06
+  
+ Write L0  * B * R1  transformation as F1  type vector to file.
+ index of inp. left  vector:           0
+ index of inp. right vector:           3
+ index of     result vector:           3
+ norm^2 of result vector:  3.5978248253370007E-006
+ [debug] CC_FMAT>F matrix transformation for ITRAN,           4
+ [debug] CC_FMAT>IADRTH:           1
+ [debug] CC_FMAT>LISTL,IDLSTL:L0            0
+ [debug] CC_FMAT>LISTR,IDLSTR:R1            4
+ [debug] CC_FMAT>ISYCTR,ISYAMP,ISYRES:           1           1           1
+ [debug] CC_FMAT>IINTL,IINTR,IINT2:           1           4           4
+ [debug] CC_FMAT>norm of THETA1 after <HF| contrib.:  1.5101657888630240E-008
+ Theta1 after 21GMO contribution:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       4     1.228888D-04
+  
+ restored X and Y intermediates:
+
+
+                           +--------------------+
+                           ! EI1 -intermediate  !
+                           +--------------------+
+
+  
+ ISYMA,ISYMB =            1           1
+  
+
+               Column   1     Column   2     Column   3     Column   4
+       1     0.000000D+00   0.000000D+00   0.000000D+00   4.525176D-04
+       2     0.000000D+00   0.000000D+00   0.000000D+00   2.005965D-04
+       3     0.000000D+00   0.000000D+00   0.000000D+00   7.841395D-05
+       4     9.056171D-04   2.362568D-04   6.282512D-04   0.000000D+00
+       6     0.000000D+00   0.000000D+00   0.000000D+00  -3.588066D-05
+
+               Column   5     Column   6
+       4     0.000000D+00   2.532507D-04
+
+
+                           +--------------------+
+                           ! EI2 -intermediate  !
+                           +--------------------+
+
+  
+ ISYMI,ISYMJ =            1           1
+  
+
+     Zero matrix.
+           23CCFM_XIM           1           1           4
+           24CCFM_YIM          36          36           4
+ Rho1 read from file:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       4    -4.223008D-20
+  
+ result vector after Rho1 was added:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       4     1.228888D-04
+  
+ [debug] CC_FMAT>norm of THETA1 before CCFMAT2:  8.7344471885069161E-009
+ [debug] CC_FMAT>norm of THETA2 before CCFMAT2:  0.0000000000000000E+000
+ result vector before entering CCFMAT2:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       4     9.345826D-05
+  
+ Write L0  * B * R1  transformation as F1  type vector to file.
+ index of inp. left  vector:           0
+ index of inp. right vector:           4
+ index of     result vector:           4
+ norm^2 of result vector:  1.7630460895684541E-008
+ [debug] CC_FMAT>F matrix transformation for ITRAN,           5
+ [debug] CC_FMAT>IADRTH:           1
+ [debug] CC_FMAT>LISTL,IDLSTL:L0            0
+ [debug] CC_FMAT>LISTR,IDLSTR:R1            5
+ [debug] CC_FMAT>ISYCTR,ISYAMP,ISYRES:           1           1           1
+ [debug] CC_FMAT>IINTL,IINTR,IINT2:           1           5           5
+ [debug] CC_FMAT>norm of THETA1 after <HF| contrib.:  1.5101657888630246E-008
+ Theta1 after 21GMO contribution:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       5     1.228888D-04
+  
+ restored X and Y intermediates:
+
+
+                           +--------------------+
+                           ! EI1 -intermediate  !
+                           +--------------------+
+
+  
+ ISYMA,ISYMB =            1           1
+  
+
+               Column   1     Column   2     Column   3     Column   4
+       5     9.056171D-04   2.362568D-04   6.282512D-04   0.000000D+00
+
+               Column   5     Column   6
+       1     4.525176D-04   0.000000D+00
+       2     2.005965D-04   0.000000D+00
+       3     7.841395D-05   0.000000D+00
+       5     0.000000D+00   2.532507D-04
+       6    -3.588066D-05   0.000000D+00
+
+
+                           +--------------------+
+                           ! EI2 -intermediate  !
+                           +--------------------+
+
+  
+ ISYMI,ISYMJ =            1           1
+  
+
+     Zero matrix.
+           23CCFM_XIM           1           1           5
+           24CCFM_YIM          36          36           5
+ Rho1 read from file:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       5    -3.691342D-20
+  
+ result vector after Rho1 was added:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       5     1.228888D-04
+  
+ [debug] CC_FMAT>norm of THETA1 before CCFMAT2:  8.7344471885069268E-009
+ [debug] CC_FMAT>norm of THETA2 before CCFMAT2:  0.0000000000000000E+000
+ result vector before entering CCFMAT2:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       5     9.345826D-05
+  
+ Write L0  * B * R1  transformation as F1  type vector to file.
+ index of inp. left  vector:           0
+ index of inp. right vector:           5
+ index of     result vector:           5
+ norm^2 of result vector:  1.7630460895684559E-008
+ [debug] CC_FMAT>F matrix transformation for ITRAN,           6
+ [debug] CC_FMAT>IADRTH:           1
+ [debug] CC_FMAT>LISTL,IDLSTL:L0            0
+ [debug] CC_FMAT>LISTR,IDLSTR:R1            6
+ [debug] CC_FMAT>ISYCTR,ISYAMP,ISYRES:           1           1           1
+ [debug] CC_FMAT>IINTL,IINTR,IINT2:           1           6           6
+ [debug] CC_FMAT>norm of THETA1 after <HF| contrib.:  1.2384991945356831E-006
+ Theta1 after 21GMO contribution:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       1     6.573713D-04
+       2     1.204689D-04
+       3     8.898583D-04
+       6    -1.262680D-06
+  
+ restored X and Y intermediates:
+
+
+                           +--------------------+
+                           ! EI1 -intermediate  !
+                           +--------------------+
+
+  
+ ISYMA,ISYMB =            1           1
+  
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.00121892    -0.00055002    -0.00037637     0.00000000
+       2      -0.00301526    -0.00090874    -0.00197533     0.00000000
+       3       0.00051442    -0.00008296     0.00094765     0.00000000
+       4       0.00000000     0.00000000     0.00000000     0.00014830
+       6      -0.00050176    -0.00011981    -0.00039723     0.00000000
+
+               Column   5     Column   6
+       1       0.00000000    -0.00073961
+       2       0.00000000    -0.00126435
+       3       0.00000000    -0.00016704
+       5       0.00014830     0.00000000
+       6       0.00000000    -0.00000466
+
+
+                           +--------------------+
+                           ! EI2 -intermediate  !
+                           +--------------------+
+
+  
+ ISYMI,ISYMJ =            1           1
+  
+
+               Column   1
+       1    -8.880784D-04
+           23CCFM_XIM           1           1           6
+           24CCFM_YIM          36          36           6
+ Rho1 read from file:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       2     4.839272D-20
+       3     3.388806D-19
+       6     7.471158D-20
+  
+ result vector after Rho1 was added:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       1     6.573713D-04
+       2     1.204689D-04
+       3     8.898583D-04
+       6    -1.262680D-06
+  
+ [debug] CC_FMAT>norm of THETA1 before CCFMAT2:  5.5781701624678099E-007
+ [debug] CC_FMAT>norm of THETA2 before CCFMAT2:  0.0000000000000000E+000
+ result vector before entering CCFMAT2:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       1     3.676567D-04
+       2     2.615774D-05
+       3     6.495627D-04
+       6    -5.443648D-06
+  
+ Write L0  * B * R1  transformation as F1  type vector to file.
+ index of inp. left  vector:           0
+ index of inp. right vector:           6
+ index of     result vector:           6
+ norm^2 of result vector:  3.5978248253369989E-006
+ [debug] CC_FMAT>F matrix transformation for ITRAN,           7
+ [debug] CC_FMAT>IADRTH:           1
+ [debug] CC_FMAT>LISTL,IDLSTL:L0            0
+ [debug] CC_FMAT>LISTR,IDLSTR:R1            7
+ [debug] CC_FMAT>ISYCTR,ISYAMP,ISYRES:           1           1           1
+ [debug] CC_FMAT>IINTL,IINTR,IINT2:           1           7           7
+ [debug] CC_FMAT>norm of THETA1 after <HF| contrib.:  8.7672050991896455E-007
+ Theta1 after 21GMO contribution:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       4     9.363335D-04
+  
+ restored X and Y intermediates:
+
+
+                           +--------------------+
+                           ! EI1 -intermediate  !
+                           +--------------------+
+
+  
+ ISYMA,ISYMB =            1           1
+  
+
+               Column   1     Column   2     Column   3     Column   4
+       1     0.000000D+00   0.000000D+00   0.000000D+00   7.624872D-05
+       2     0.000000D+00   0.000000D+00   0.000000D+00   1.408150D-04
+       3     0.000000D+00   0.000000D+00   0.000000D+00  -5.004553D-04
+       4    -3.662250D-04   4.804415D-05  -7.177101D-04   0.000000D+00
+       6     0.000000D+00   0.000000D+00   0.000000D+00  -1.053924D-05
+
+               Column   5     Column   6
+       4     0.000000D+00   6.677081D-05
+
+
+                           +--------------------+
+                           ! EI2 -intermediate  !
+                           +--------------------+
+
+  
+ ISYMI,ISYMJ =            1           1
+  
+
+     Zero matrix.
+           23CCFM_XIM           1           1           7
+           24CCFM_YIM          36          36           7
+ Rho1 read from file:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       4    -2.559229D-20
+  
+ result vector after Rho1 was added:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       4     9.363335D-04
+  
+ [debug] CC_FMAT>norm of THETA1 before CCFMAT2:  5.0707472314899817E-007
+ [debug] CC_FMAT>norm of THETA2 before CCFMAT2:  0.0000000000000000E+000
+ result vector before entering CCFMAT2:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       4     7.120918D-04
+  
+ Write L0  * B * R1  transformation as F1  type vector to file.
+ index of inp. left  vector:           0
+ index of inp. right vector:           7
+ index of     result vector:           7
+ norm^2 of result vector:  9.5585978721821814E-007
+ [debug] CC_FMAT>F matrix transformation for ITRAN,           8
+ [debug] CC_FMAT>IADRTH:           1
+ [debug] CC_FMAT>LISTL,IDLSTL:L0            0
+ [debug] CC_FMAT>LISTR,IDLSTR:R1            8
+ [debug] CC_FMAT>ISYCTR,ISYAMP,ISYRES:           1           1           1
+ [debug] CC_FMAT>IINTL,IINTR,IINT2:           1           8           8
+ [debug] CC_FMAT>norm of THETA1 after <HF| contrib.:  8.7672050991896455E-007
+ Theta1 after 21GMO contribution:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       5     9.363335D-04
+  
+ restored X and Y intermediates:
+
+
+                           +--------------------+
+                           ! EI1 -intermediate  !
+                           +--------------------+
+
+  
+ ISYMA,ISYMB =            1           1
+  
+
+               Column   1     Column   2     Column   3     Column   4
+       5    -3.662250D-04   4.804415D-05  -7.177101D-04   0.000000D+00
+
+               Column   5     Column   6
+       1     7.624872D-05   0.000000D+00
+       2     1.408150D-04   0.000000D+00
+       3    -5.004553D-04   0.000000D+00
+       5     0.000000D+00   6.677081D-05
+       6    -1.053924D-05   0.000000D+00
+
+
+                           +--------------------+
+                           ! EI2 -intermediate  !
+                           +--------------------+
+
+  
+ ISYMI,ISYMJ =            1           1
+  
+
+     Zero matrix.
+           23CCFM_XIM           1           1           8
+           24CCFM_YIM          36          36           8
+ Rho1 read from file:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       5    -4.403623D-20
+  
+ result vector after Rho1 was added:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       5     9.363335D-04
+  
+ [debug] CC_FMAT>norm of THETA1 before CCFMAT2:  5.0707472314899862E-007
+ [debug] CC_FMAT>norm of THETA2 before CCFMAT2:  0.0000000000000000E+000
+ result vector before entering CCFMAT2:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       5     7.120918D-04
+  
+ Write L0  * B * R1  transformation as F1  type vector to file.
+ index of inp. left  vector:           0
+ index of inp. right vector:           8
+ index of     result vector:           8
+ norm^2 of result vector:  9.5585978721821832E-007
+ [debug] CC_FMAT>F matrix transformation for ITRAN,           9
+ [debug] CC_FMAT>IADRTH:           1
+ [debug] CC_FMAT>LISTL,IDLSTL:L0            0
+ [debug] CC_FMAT>LISTR,IDLSTR:R1            9
+ [debug] CC_FMAT>ISYCTR,ISYAMP,ISYRES:           1           1           1
+ [debug] CC_FMAT>IINTL,IINTR,IINT2:           1           9           9
+ [debug] CC_FMAT>norm of THETA1 after <HF| contrib.:  3.9899917051056235E-004
+ Theta1 after 21GMO contribution:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       1      -0.01471049
+       2      -0.00698776
+       3      -0.01023404
+       6      -0.00538853
+  
+ restored X and Y intermediates:
+
+
+                           +--------------------+
+                           ! EI1 -intermediate  !
+                           +--------------------+
+
+  
+ ISYMA,ISYMB =            1           1
+  
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.03584926    -0.00830089    -0.02771844     0.00000000
+       2      -0.00727823    -0.00182734    -0.00539293     0.00000000
+       3      -0.00646912    -0.00246985    -0.00158712     0.00000000
+       4       0.00000000     0.00000000     0.00000000     0.00119247
+       6       0.00100930     0.00046403     0.00038831     0.00000000
+
+               Column   5     Column   6
+       1       0.00000000    -0.00924686
+       2       0.00000000    -0.00209103
+       3       0.00000000    -0.00285999
+       5       0.00119247     0.00000000
+       6       0.00000000     0.00109496
+
+
+                           +--------------------+
+                           ! EI2 -intermediate  !
+                           +--------------------+
+
+  
+ ISYMI,ISYMJ =            1           1
+  
+
+               Column   1
+       1      -0.03578384
+           23CCFM_XIM           1           1           9
+           24CCFM_YIM          36          36           9
+ Rho1 read from file:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       1    -8.339235D-19
+       2    -5.966098D-19
+       3     1.408717D-18
+       6    -2.290201D-19
+  
+ result vector after Rho1 was added:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       1      -0.01471049
+       2      -0.00698776
+       3      -0.01023404
+       6      -0.00538853
+  
+ [debug] CC_FMAT>norm of THETA1 before CCFMAT2:  1.3393646300809603E-004
+ [debug] CC_FMAT>norm of THETA2 before CCFMAT2:  0.0000000000000000E+000
+ result vector before entering CCFMAT2:
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       1      -0.00750296
+       2      -0.00323661
+       3      -0.00693422
+       6      -0.00436842
+  
+ Write L0  * B * R1  transformation as F1  type vector to file.
+ index of inp. left  vector:           0
+ index of inp. right vector:           9
+ index of     result vector:           9
+ norm^2 of result vector:  5.5452543588392089E-004
+     L1  start vector nr.  1 of symmetry  1 generated from gradient
+     L1  start vector nr.  2 of symmetry  1 generated from gradient
+     L1  start vector nr.  3 of symmetry  1 generated from gradient
+     L1  start vector nr.  4 of symmetry  1 generated from gradient
+
+ (CCORT) new  b-vector no.  1
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 4.93038D-32
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000007E-035 REMOVED
+
+ (CCORT)  trial vectors reduced from  1 to  0
+     L1  start vector nr.  5 of symmetry  1 generated from gradient
+
+ (CCORT) new  b-vector no.  1
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 4.93038D-32
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000007E-035 REMOVED
+
+ (CCORT)  trial vectors reduced from  1 to  0
+     L1  start vector nr.  6 of symmetry  1 generated from gradient
+
+ (CCORT) new  b-vector no.  1
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.02149D-31
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000007E-035 REMOVED
+
+ (CCORT)  trial vectors reduced from  1 to  0
+     L1  start vector nr.  7 of symmetry  1 generated from gradient
+     L1  start vector nr.  8 of symmetry  1 generated from gradient
+     L1  start vector nr.  9 of symmetry  1 generated from gradient
+
+ (CCORT) new  b-vector no.  4
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.33079D-29
+
+ (CCORT) new  b-vector no.  5
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.33079D-29
+
+ (CCORT) new  b-vector no.  6
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.39387D-30
+  After Gram Smidt orthonormalization
+           -3 vectors with norm le:  1.0000000000000007E-035 REMOVED
+
+ (CCORT)  trial vectors reduced from  9 to  6
+
+ (CCORT) new  b-vector no.  4
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.19248D-33
+
+ (CCORT) new  b-vector no.  5
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.19248D-33
+
+ (CCORT) new  b-vector no.  6
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.06130D-28
+
+ (CCORT) new  b-vector no.  7
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 4.11453D-33
+
+ (CCORT) new  b-vector no.  8
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 4.11453D-33
+  After Gram Smidt orthonormalization
+           -5 vectors with norm le:  1.0000000000000007E-035 REMOVED
+
+ (CCORT)  trial vectors reduced from  9 to  4
+
+ (CCORT) new  b-vector no.  2
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 3.85847D-26
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000007E-035 REMOVED
+
+ (CCORT)  trial vectors reduced from  3 to  2
+
+ (CCORT) new  b-vector no.  2
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 1.36819D-23
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000007E-035 REMOVED
+
+ (CCORT)  trial vectors reduced from  3 to  2
+
+ (CCORT) new  b-vector no.  2
+ is removed because of linear dependence;
+ norm of vector after Gram-Schmidt's orthogonalization 2.25280D-21
+  After Gram Smidt orthonormalization
+           -1 vectors with norm le:  1.0000000000000007E-035 REMOVED
+
+ (CCORT)  trial vectors reduced from  3 to  2
+
+ Solution of CC response equations completed.
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER LINEAR RESPONSE >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+         +-------------------------------------------------------+
+         ! Calculation of CCSD       linear response properties  !
+         +-------------------------------------------------------+
+
+
+
+ SCF linear response properties in atomic units:
+ -----------------------------------------------
+
+ <<XDIPLEN ,XDIPLEN >>( 0.000000) =     0.35604359
+ <<YDIPLEN ,YDIPLEN >>( 0.000000) =     0.35604359
+ <<ZDIPLEN ,ZDIPLEN >>( 0.000000) =     2.01844108
+ <<XDIPLEN ,1DHAM 01>>( 0.000000) =     0.18068528
+ <<XDIPLEN ,1DHAM 02>>( 0.000000) =     0.00000000
+ <<XDIPLEN ,1DHAM 03>>( 0.000000) =     0.00000000
+ <<XDIPLEN ,1DHAM 04>>( 0.000000) =     0.81931472
+ <<XDIPLEN ,1DHAM 05>>( 0.000000) =     0.00000000
+ <<XDIPLEN ,1DHAM 06>>( 0.000000) =     0.00000000
+ <<YDIPLEN ,1DHAM 01>>( 0.000000) =     0.00000000
+ <<YDIPLEN ,1DHAM 02>>( 0.000000) =     0.18068528
+ <<YDIPLEN ,1DHAM 03>>( 0.000000) =     0.00000000
+ <<YDIPLEN ,1DHAM 04>>( 0.000000) =     0.00000000
+ <<YDIPLEN ,1DHAM 05>>( 0.000000) =     0.81931472
+ <<YDIPLEN ,1DHAM 06>>( 0.000000) =     0.00000000
+ <<ZDIPLEN ,1DHAM 01>>( 0.000000) =     0.00000000
+ <<ZDIPLEN ,1DHAM 02>>( 0.000000) =     0.00000000
+ <<ZDIPLEN ,1DHAM 03>>( 0.000000) =    -0.21573461
+ <<ZDIPLEN ,1DHAM 04>>( 0.000000) =     0.00000000
+ <<ZDIPLEN ,1DHAM 05>>( 0.000000) =     0.00000000
+ <<ZDIPLEN ,1DHAM 06>>( 0.000000) =     1.21573461
+
+
+ CCSD  linear response properties in atomic units:
+ -------------------------------------------------
+
+ <<XDIPLEN ,XDIPLEN >>( 0.000000) =    -0.34574812
+ <<YDIPLEN ,YDIPLEN >>( 0.000000) =    -0.34574812
+ <<ZDIPLEN ,ZDIPLEN >>( 0.000000) =    -2.40772178
+ <<XDIPLEN ,1DHAM 01>>( 0.000000) =    -0.20039129
+ <<XDIPLEN ,1DHAM 02>>( 0.000000) =     0.00000000
+ <<XDIPLEN ,1DHAM 03>>( 0.000000) =     0.00000000
+ <<XDIPLEN ,1DHAM 04>>( 0.000000) =    -0.79960871
+ <<XDIPLEN ,1DHAM 05>>( 0.000000) =     0.00000000
+ <<XDIPLEN ,1DHAM 06>>( 0.000000) =     0.00000000
+ <<YDIPLEN ,1DHAM 01>>( 0.000000) =     0.00000000
+ <<YDIPLEN ,1DHAM 02>>( 0.000000) =    -0.20039129
+ <<YDIPLEN ,1DHAM 03>>( 0.000000) =     0.00000000
+ <<YDIPLEN ,1DHAM 04>>( 0.000000) =     0.00000000
+ <<YDIPLEN ,1DHAM 05>>( 0.000000) =    -0.79960871
+ <<YDIPLEN ,1DHAM 06>>( 0.000000) =     0.00000000
+ <<ZDIPLEN ,1DHAM 01>>( 0.000000) =     0.00000000
+ <<ZDIPLEN ,1DHAM 02>>( 0.000000) =     0.00000000
+ <<ZDIPLEN ,1DHAM 03>>( 0.000000) =     0.20566824
+ <<ZDIPLEN ,1DHAM 04>>( 0.000000) =     0.00000000
+ <<ZDIPLEN ,1DHAM 05>>( 0.000000) =     0.00000000
+ <<ZDIPLEN ,1DHAM 06>>( 0.000000) =    -1.20566824
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<  OUTPUT FROM COUPLED CLUSTER LINEAR RESPONSE   >>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<     CALCULATION OF SECOND ORDER PROPERTIES     >>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+   For the requested 21 second-order properties
+         -   0 F matrix transformations with R1 vectors
+         -   3 ETA and XKSI vector calculations 
+         -   9 X intermediate calculations 
+         -   6 2. order reortho./relax. contributions
+   will be performed.
+
+
+ Batching over F matrix transformations:
+ nb. of batches needed:           0
+
+>>> Time used for    0 F matrix transformations:        0.00 seconds.
+
+ Work space in CC_XIETA:        9964130
+ FILXI  = L1 
+ FILETA = R1 
+ NXETRAN, MXVEC:           3           9
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> scratch space estimates:
+ CC_XIETA> fixed (MSCRATCH0)   :         1016
+ CC_XIETA> per simult. transf. :          196
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> batching statistics:
+ CC_XIETA> NBATCH :            1
+ CC_XIETA> ISTART :            1
+ CC_XIETA> IEND   :            3
+ WORK(0) =   0.0000000000000000E+000
+ orbital relaxation vector:           7  XDIPLEN 
+
+               Column   1
+       4       0.18088831
+      10      -0.18088831
+ CC_XIETA> memory alloc. for AO section:
+ CC_XIETA> LABELH,ISYHOP = XDIPLEN            1
+ CC_XIETA> IOPER,IRELAX,IDLSTL=           8           7           0
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> KEND1, LWRK1:        1094     9963036
+ orbital relaxation vector:           8  YDIPLEN 
+
+               Column   1
+       5       0.18088831
+      11      -0.18088831
+ CC_XIETA> memory alloc. for AO section:
+ CC_XIETA> LABELH,ISYHOP = YDIPLEN            1
+ CC_XIETA> IOPER,IRELAX,IDLSTL=           9           8           0
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> KEND1, LWRK1:        1822     9962308
+ orbital relaxation vector:           9  ZDIPLEN 
+
+               Column   1
+       1       0.71862777
+       2       0.14529587
+       3      -0.09970661
+       6       0.08902576
+       7      -0.71862777
+       8      -0.14529587
+       9       0.09970661
+      12      -0.08902576
+ CC_XIETA> memory alloc. for AO section:
+ CC_XIETA> LABELH,ISYHOP = ZDIPLEN            1
+ CC_XIETA> IOPER,IRELAX,IDLSTL=          10           9           0
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> KEND1, LWRK1:        2550     9961580
+ Initialize now integral program:
+ LLTWOEL =  F
+ LABELH  = ZDIPLEN 
+ CC_XIETA> after integral evaluation for ILLL:           1
+ CC_XIETA> KEND3, LWRK3:        2586     9961544
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> IOPER         =            8
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = XDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           1
+ IOPER      :           8
+ LABELH     :XDIPLEN 
+ IRELAX     :           7
+ LZEROIMDONE: F
+ LZERO      : T
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :         721         728
+ CC_XIETA> IOPER         =            9
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = YDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           2
+ IOPER      :           9
+ LABELH     :YDIPLEN 
+ IRELAX     :           8
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        1486        1493
+ CC_XIETA> IOPER         =           10
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = ZDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           3
+ IOPER      :          10
+ LABELH     :ZDIPLEN 
+ IRELAX     :           9
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        2214        2221
+ CC_XIETA> after integral evaluation for ILLL:           2
+ CC_XIETA> KEND3, LWRK3:        2586     9961544
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> IOPER         =            8
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = XDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           1
+ IOPER      :           8
+ LABELH     :XDIPLEN 
+ IRELAX     :           7
+ LZEROIMDONE: F
+ LZERO      : T
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :         721         728
+ CC_XIETA> IOPER         =            9
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = YDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           2
+ IOPER      :           9
+ LABELH     :YDIPLEN 
+ IRELAX     :           8
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        1486        1493
+ CC_XIETA> IOPER         =           10
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = ZDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           3
+ IOPER      :          10
+ LABELH     :ZDIPLEN 
+ IRELAX     :           9
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        2214        2221
+ CC_XIETA> after integral evaluation for ILLL:           3
+ CC_XIETA> KEND3, LWRK3:        2586     9961544
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> IOPER         =            8
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = XDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           1
+ IOPER      :           8
+ LABELH     :XDIPLEN 
+ IRELAX     :           7
+ LZEROIMDONE: F
+ LZERO      : T
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :         721         728
+ CC_XIETA> IOPER         =            9
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = YDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           2
+ IOPER      :           9
+ LABELH     :YDIPLEN 
+ IRELAX     :           8
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        1486        1493
+ CC_XIETA> IOPER         =           10
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = ZDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           3
+ IOPER      :          10
+ LABELH     :ZDIPLEN 
+ IRELAX     :           9
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        2214        2221
+ CC_XIETA> after integral evaluation for ILLL:           4
+ CC_XIETA> KEND3, LWRK3:        2586     9961544
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> IOPER         =            8
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = XDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           1
+ IOPER      :           8
+ LABELH     :XDIPLEN 
+ IRELAX     :           7
+ LZEROIMDONE: F
+ LZERO      : T
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :         721         728
+ CC_XIETA> IOPER         =            9
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = YDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           2
+ IOPER      :           9
+ LABELH     :YDIPLEN 
+ IRELAX     :           8
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        1486        1493
+ CC_XIETA> IOPER         =           10
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = ZDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           3
+ IOPER      :          10
+ LABELH     :ZDIPLEN 
+ IRELAX     :           9
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        2214        2221
+ CC_XIETA> after integral evaluation for ILLL:           5
+ CC_XIETA> KEND3, LWRK3:        2586     9961544
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> IOPER         =            8
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = XDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           1
+ IOPER      :           8
+ LABELH     :XDIPLEN 
+ IRELAX     :           7
+ LZEROIMDONE: F
+ LZERO      : T
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :         721         728
+ CC_XIETA> IOPER         =            9
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = YDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           2
+ IOPER      :           9
+ LABELH     :YDIPLEN 
+ IRELAX     :           8
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        1486        1493
+ CC_XIETA> IOPER         =           10
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = ZDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           3
+ IOPER      :          10
+ LABELH     :ZDIPLEN 
+ IRELAX     :           9
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        2214        2221
+ CC_XIETA> after integral evaluation for ILLL:           6
+ CC_XIETA> KEND3, LWRK3:        2586     9961544
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> IOPER         =            8
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = XDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           1
+ IOPER      :           8
+ LABELH     :XDIPLEN 
+ IRELAX     :           7
+ LZEROIMDONE: F
+ LZERO      : T
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :         721         728
+ CC_XIETA> IOPER         =            9
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = YDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           2
+ IOPER      :           9
+ LABELH     :YDIPLEN 
+ IRELAX     :           8
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        1486        1493
+ CC_XIETA> IOPER         =           10
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = ZDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           3
+ IOPER      :          10
+ LABELH     :ZDIPLEN 
+ IRELAX     :           9
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        2214        2221
+ CC_XIETA> after integral evaluation for ILLL:           7
+ CC_XIETA> KEND3, LWRK3:        2586     9961544
+ WORK(0) =   0.0000000000000000E+000
+ CC_XIETA> IOPER         =            8
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = XDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           1
+ IOPER      :           8
+ LABELH     :XDIPLEN 
+ IRELAX     :           7
+ LZEROIMDONE: F
+ LZERO      : T
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :         721         728
+ CC_XIETA> IOPER         =            9
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = YDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           2
+ IOPER      :           9
+ LABELH     :YDIPLEN 
+ IRELAX     :           8
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        1486        1493
+ CC_XIETA> IOPER         =           10
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = ZDIPLEN            1
+ CC_XIETA> IATOM,ICOOR   =            0           3
+ ITRAN      :           3
+ IOPER      :          10
+ LABELH     :ZDIPLEN 
+ IRELAX     :           9
+ LZEROIMDONE: T
+ LZERO      : F
+ LRELAX     : T
+ LNEWXI     : T
+ KG0IM :         322         329
+ KG0IM :        2214        2221
+ CC_XIETA> after loop over AO
+ CC_XIETA> IOPER, IRELAX =            8           7
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = XDIPLEN            1
+ CC_XIETA> SKIPXI        =  F
+ WORK(0) =   0.0000000000000000E+000
+ XCONS:           1           1 -6.9306397540021658E-004          50
+ XCONS:           2           1  3.9448355727016153E-005          50
+ XCONS:           3           1  0.0000000000000000E+000          50
+ XCONS:           4           1  0.0000000000000000E+000          50
+ XCONS:           5           1 -3.9448355727016153E-005          50
+ XCONS:           6           1  0.0000000000000000E+000          50
+ XCONS:           7           1  0.0000000000000000E+000          50
+ Final result of CC_XIETA:
+ operator label:      XDIPLEN 
+ output file type:    L1 
+ index of output file:           9
+ two-electron contr.:  F
+ relax/reorth. contr.: T
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       4      -0.00853111
+  
+
+
+                   +-----------------------------------+
+                   ! double excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(ai,bj):            1           1
+
+               Column   1     Column   2     Column   3     Column   4
+       4       0.00455338     0.00917184    -0.03641262     0.00000000
+       6       0.00000000     0.00000000     0.00000000    -0.00097312
+
+               Column   5     Column   6
+  
+ WORK(0) =   0.0000000000000000E+000
+ SKIPETA: F
+ IDLSTL :           0
+ IXETRAN(4,ITRAN):           0
+ ECONS:           1           1 -6.9608079300679453E-004           3
+ ECONS:           2           1  3.9844297008597929E-005           3
+ ECONS:           3           1  0.0000000000000000E+000           3
+ ECONS:           4           1  0.0000000000000000E+000           3
+ ECONS:           5           1 -3.9844297008597929E-005           3
+ ECONS:           6           1  0.0000000000000000E+000           3
+ ECONS:           7           1  0.0000000000000000E+000           3
+ Final result of CC_XIETA:
+ operator label:      XDIPLEN 
+ output file type:    R1 
+ index of output file:           9
+ two-electron contr.:  F
+ relax/reorth. contr.: T
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       4      -0.01721371
+  
+
+
+                   +-----------------------------------+
+                   ! double excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(ai,bj):            1           1
+
+               Column   1     Column   2     Column   3     Column   4
+       4       0.00878174     0.01808577    -0.07201331     0.00000000
+       6       0.00000000     0.00000000     0.00000000    -0.00189393
+
+               Column   5     Column   6
+  
+ CC_XIETA> IOPER, IRELAX =            9           8
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = YDIPLEN            1
+ CC_XIETA> SKIPXI        =  F
+ WORK(0) =   0.0000000000000000E+000
+ XCONS:           1           2 -6.9306397540021658E-004           1
+ XCONS:           2           2  0.0000000000000000E+000           1
+ XCONS:           3           2  3.9448355727016153E-005           1
+ XCONS:           4           2  0.0000000000000000E+000           1
+ XCONS:           5           2  0.0000000000000000E+000           1
+ XCONS:           6           2 -3.9448355727016153E-005           1
+ XCONS:           7           2  0.0000000000000000E+000           1
+ Final result of CC_XIETA:
+ operator label:      YDIPLEN 
+ output file type:    L1 
+ index of output file:           9
+ two-electron contr.:  F
+ relax/reorth. contr.: T
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       5      -0.00853111
+  
+
+
+                   +-----------------------------------+
+                   ! double excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(ai,bj):            1           1
+
+               Column   1     Column   2     Column   3     Column   4
+       5       0.00455338     0.00917184    -0.03641262     0.00000000
+
+               Column   5     Column   6
+       6      -0.00097312     0.00000000
+  
+ WORK(0) =   0.0000000000000000E+000
+ SKIPETA: F
+ IDLSTL :           0
+ IXETRAN(4,ITRAN):           0
+ ECONS:           1           2 -6.9608079300679453E-004           3
+ ECONS:           2           2  0.0000000000000000E+000           3
+ ECONS:           3           2  3.9844297008597920E-005           3
+ ECONS:           4           2  0.0000000000000000E+000           3
+ ECONS:           5           2  0.0000000000000000E+000           3
+ ECONS:           6           2 -3.9844297008597923E-005           3
+ ECONS:           7           2  0.0000000000000000E+000           3
+ Final result of CC_XIETA:
+ operator label:      YDIPLEN 
+ output file type:    R1 
+ index of output file:           9
+ two-electron contr.:  F
+ relax/reorth. contr.: T
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       5      -0.01721371
+  
+
+
+                   +-----------------------------------+
+                   ! double excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(ai,bj):            1           1
+
+               Column   1     Column   2     Column   3     Column   4
+       5       0.00878174     0.01808577    -0.07201331     0.00000000
+
+               Column   5     Column   6
+       6      -0.00189393     0.00000000
+  
+ CC_XIETA> IOPER, IRELAX =           10           9
+ CC_XIETA> LTWOEL,LRELAX =  F T
+ CC_XIETA> LABELH,ISYHOP = ZDIPLEN            1
+ CC_XIETA> SKIPXI        =  F
+ WORK(0) =   0.0000000000000000E+000
+ XCONS:           1           3 -0.1990309375087424                1
+ XCONS:           2           3  0.0000000000000000E+000           1
+ XCONS:           3           3  0.0000000000000000E+000           1
+ XCONS:           4           3  1.1914805087146416E-002           1
+ XCONS:           5           3  0.0000000000000000E+000           1
+ XCONS:           6           3  0.0000000000000000E+000           1
+ XCONS:           7           3 -1.1914805087146418E-002           1
+ Final result of CC_XIETA:
+ operator label:      ZDIPLEN 
+ output file type:    L1 
+ index of output file:           9
+ two-electron contr.:  F
+ relax/reorth. contr.: T
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       1      -0.00668441
+       2      -0.00255922
+       3      -0.01528052
+       6      -0.02069146
+  
+
+
+                   +-----------------------------------+
+                   ! double excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(ai,bj):            1           1
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.48504684
+       2      -0.13391271    -0.11325085
+       3      -0.19364523    -0.04845221     0.16544810
+       4       0.00000000     0.00000000     0.00000000     0.08568718
+       6       0.06343702     0.02078418     0.00676264     0.00000000
+
+               Column   5     Column   6
+       5       0.08568718
+       6       0.00000000     0.08327907
+  
+ WORK(0) =   0.0000000000000000E+000
+ SKIPETA: F
+ IDLSTL :           0
+ IXETRAN(4,ITRAN):           0
+ ECONS:           1           3 -0.1996184670032288                3
+ ECONS:           2           3  0.0000000000000000E+000           3
+ ECONS:           3           3  0.0000000000000000E+000           3
+ ECONS:           4           3  1.1950091322477654E-002           3
+ ECONS:           5           3  0.0000000000000000E+000           3
+ ECONS:           6           3  0.0000000000000000E+000           3
+ ECONS:           7           3 -1.1950091322477654E-002           3
+ Final result of CC_XIETA:
+ operator label:      ZDIPLEN 
+ output file type:    R1 
+ index of output file:           9
+ two-electron contr.:  F
+ relax/reorth. contr.: T
+
+
+                   +-----------------------------------+
+                   ! single excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(a,i):            1           1
+
+               Column   1
+       1      -0.02936184
+       2      -0.00999908
+       3      -0.03758761
+       6      -0.04073135
+  
+
+
+                   +-----------------------------------+
+                   ! double excitation part of vector  !
+                   +-----------------------------------+
+
+ Symmetry block number(ai,bj):            1           1
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -1.91925643
+       2      -0.26494828    -0.44801688
+       3      -0.38337282    -0.09591967     0.65441393
+       4       0.00000000     0.00000000     0.00000000     0.33892737
+       6       0.12494146     0.04098457     0.01342928     0.00000000
+
+               Column   5     Column   6
+       5       0.33892737
+       6       0.00000000     0.32969936
+  
+ CC_XIETA ended successfully (?) ... return now.
+
+>>> Time used for    3 Xksi{O} and ETA{O} vector calculat.:         0.00 seconds.
+
+>>> Time used for    9 relaxation contribs.:         0.00 seconds.
+ CCREO2CON> IVEC =            1
+ CCREO2CON>  2.2862838955419726E-002
+ CCREO2CON> IVEC =            2
+ CCREO2CON>  0.0000000000000000E+000
+ CCREO2CON> IVEC =            3
+ CCREO2CON>  0.0000000000000000E+000
+ CCREO2CON> IVEC =            1
+ CCREO2CON>  0.0000000000000000E+000
+ CCREO2CON> IVEC =            2
+ CCREO2CON>  2.2862838955419726E-002
+ CCREO2CON> IVEC =            3
+ CCREO2CON>  0.0000000000000000E+000
+ CCREO2CON> IVEC =            1
+ CCREO2CON>  0.0000000000000000E+000
+ CCREO2CON> IVEC =            2
+ CCREO2CON>  0.0000000000000000E+000
+ CCREO2CON> IVEC =            3
+ CCREO2CON>  -1.137339347043844     
+ CCREO2CON> IVEC =            1
+ CCREO2CON> -2.2862838955419726E-002
+ CCREO2CON> IVEC =            2
+ CCREO2CON>  0.0000000000000000E+000
+ CCREO2CON> IVEC =            3
+ CCREO2CON>  0.0000000000000000E+000
+ CCREO2CON> IVEC =            1
+ CCREO2CON>  0.0000000000000000E+000
+ CCREO2CON> IVEC =            2
+ CCREO2CON> -2.2862838955419726E-002
+ CCREO2CON> IVEC =            3
+ CCREO2CON>  0.0000000000000000E+000
+ CCREO2CON> IVEC =            1
+ CCREO2CON>  0.0000000000000000E+000
+ CCREO2CON> IVEC =            2
+ CCREO2CON>  0.0000000000000000E+000
+ CCREO2CON> IVEC =            3
+ CCREO2CON>   1.137339347043844     
+
+>>> Time used for    6 2. order reortho./relax. contribs.:         0.00 seconds.
+
+
+   For the requested 21 second-order properties
+         -   0 F matrix transformations with R1 vectors
+         -   3 ETA and XKSI vector calculations 
+         -   9 X intermediate calculations 
+         -   6 2. order reortho./relax. contributions
+   will be performed.
+
+
+
+>>> Total time for  21 quadratic response func.:        0.00 seconds.
+
+
+     +---------------------------------------------------------------+
+     !      FINAL CCSD RESULTS FOR THE SECOND-ORDER PROPERTIES       !
+     +---------------------------------------------------------------+
+
+
+  A operator                  B operator                     property 
+------------------------------------------------------------------------
+
+ XDIPLEN  (relax.)  0.0000   XDIPLEN  (relax.)  0.0000     0.34574812    
+
+ YDIPLEN  (relax.)  0.0000   YDIPLEN  (relax.)  0.0000     0.34574812    
+
+ ZDIPLEN  (relax.)  0.0000   ZDIPLEN  (relax.)  0.0000      2.4077218    
+
+ XDIPLEN  (relax.)  0.0000   1DHAM 01 (relax.)  0.0000     0.20039129    
+
+ XDIPLEN  (relax.)  0.0000   1DHAM 02 (relax.)  0.0000     0.00000000E+00
+
+ XDIPLEN  (relax.)  0.0000   1DHAM 03 (relax.)  0.0000     0.00000000E+00
+
+ XDIPLEN  (relax.)  0.0000   1DHAM 04 (relax.)  0.0000     0.79960871    
+
+ XDIPLEN  (relax.)  0.0000   1DHAM 05 (relax.)  0.0000     0.00000000E+00
+
+ XDIPLEN  (relax.)  0.0000   1DHAM 06 (relax.)  0.0000     0.00000000E+00
+
+ YDIPLEN  (relax.)  0.0000   1DHAM 01 (relax.)  0.0000     0.00000000E+00
+
+ YDIPLEN  (relax.)  0.0000   1DHAM 02 (relax.)  0.0000     0.20039129    
+
+ YDIPLEN  (relax.)  0.0000   1DHAM 03 (relax.)  0.0000     0.00000000E+00
+
+ YDIPLEN  (relax.)  0.0000   1DHAM 04 (relax.)  0.0000     0.00000000E+00
+
+ YDIPLEN  (relax.)  0.0000   1DHAM 05 (relax.)  0.0000     0.79960871    
+
+ YDIPLEN  (relax.)  0.0000   1DHAM 06 (relax.)  0.0000     0.00000000E+00
+
+ ZDIPLEN  (relax.)  0.0000   1DHAM 01 (relax.)  0.0000     0.00000000E+00
+
+ ZDIPLEN  (relax.)  0.0000   1DHAM 02 (relax.)  0.0000     0.00000000E+00
+
+ ZDIPLEN  (relax.)  0.0000   1DHAM 03 (relax.)  0.0000    -0.20566824    
+
+ ZDIPLEN  (relax.)  0.0000   1DHAM 04 (relax.)  0.0000     0.00000000E+00
+
+ ZDIPLEN  (relax.)  0.0000   1DHAM 05 (relax.)  0.0000     0.00000000E+00
+
+ ZDIPLEN  (relax.)  0.0000   1DHAM 06 (relax.)  0.0000      1.2056682    
+------------------------------------------------------------------------
+
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                   SUMMARY OF COUPLED CLUSTER CALCULATION                    *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+                                                                                
+                                                                                
+            Total SCF   energy:                    -2.8976085478                
+            Total MP2   energy:                    -2.9257584190                
+            Total CCSD  energy:                    -2.9336492805                
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                      END OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+ WARNING: Tried to close a non-existent or already closed file
+ Unit number was:  10
+
+ WARNING: Tried to close a non-existent or already closed file
+ Unit number was:  27
+
+- End of Coupled Cluster
+ >>>> Total CPU  time used in DALTON:   2.68 seconds
+ >>>> Total wall time used in DALTON:   7.00 seconds
+
+ 
+     Host name              : inthaettig                              

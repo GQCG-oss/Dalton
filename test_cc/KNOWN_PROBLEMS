@@ -1,0 +1,10 @@
+
+all architectures:
+  test cases dpt and dpt1 fail because of a wrong factor of 2
+  in the integrals used to compute DPTTWO
+
+
+DEC:
+  test case field doesn't yet work, because the .PACK flag
+  is not yet implemented for DEC
+
