@@ -1408,13 +1408,14 @@ C
       IF(NASHT .LT.0 .OR.NASHT .GT.MAXASH) CALL ERRINP(10,INPERR)
       IF(DORHF .AND. AUTOCC .AND. MCTYPE .GT. 0) THEN
          INPERR = INPERR + 1
-         WRITE (LUPRI,'(/A)') ' HF occupation must be specified when '//
-     *         'SCF followed by CI or MCSCF'
+         WRITE (LUPRI,'(/A)') 'INPUT ERROR: HF occupation must be '//
+     &         'specified when SCF followed by CI or MCSCF'
       END IF
       IF(NOCCT .LT.1 .OR. NOCCT .GT.MAXOCC) THEN
          INPERR = INPERR + 1
-         WRITE(LUPRI,'(/A,I5/A,I5)') 'Number of occ. orbitals  :',NOCCT,
-     *      'is .lt. 1 or .gt. MAXOCC :',MAXOCC
+         WRITE(LUPRI,'(/A,I5/A,I5)') 
+     &      'SIRIUS INPUT ERROR: Number of occ. orbitals  :',NOCCT,
+     &      'is .lt. 1 or .gt. MAXOCC :',MAXOCC
       END IF
       IF(NSSHT .LT.0 .OR.NSSHT .GT.MXCORB) CALL ERRINP(11,INPERR)
 C
@@ -1427,9 +1428,9 @@ C
          WRITE (LUPRI,3101) NERROR
       END IF
  3101 FORMAT(/' SIRRDI input error, NFRO is larger than NISH for',
-     *        I2,' symmetries.',
-     *       /' (Only inactive orbitals can be frozen with ".FROZEN",',
-     *        ' use ".FREEZE")')
+     &        I2,' symmetries.',
+     &       /' (Only inactive orbitals can be frozen with ".FROZEN",',
+     &        ' use ".FREEZE")')
 C
 C Population analysis (flag(6)) requires natural/canonical orbitals
 C
@@ -1565,7 +1566,7 @@ C
       WRITE(LUW4,9000) INPERR
       IF (LUPRI.NE.LUW4) WRITE(LUPRI,9000) INPERR
  9000 FORMAT(//20X,I5,' errors occured in SIRIUS input processing.'
-     *        /20X,'Check error file for information about errors.'
+     *        /20X,'Check output above for information about errors.'
      *        /20X,'Program cannot continue.'
      *        /20X,'Correct error(s) and be welcome back')
       CALL QTRACE(LUPRI)
