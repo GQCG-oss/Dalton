@@ -1,7 +1,7 @@
 % checked with "ispell" sep.2003 /hjaaj
-\chapter{\label{chap:inpref} Molecular wave functions, {\sir}}
+\chapter{\label{chap:sirius-inpref} Molecular wave functions, {\sir}}
 
-\section{\label{sec:ref-notes} General notes for the {\sir} input reference
+\section{\label{sec:sirius-ref-notes} General notes for the {\sir} input reference
 manual}
 
 {\sir} is the part of the code that computes the wave function.
@@ -129,10 +129,10 @@ Section~\ref{ref-optinp} \Sec{OPTIMIZATION}
 Section~\ref{ref-stpinp} \Sec{STEP CONTROL}
 
 \noindent
-The next three groups have special input only relevant for the
+The next five groups have special input only relevant for the
 respective calculation types:
 
-Section~\ref{ref-cicinp} \Sec{CI INPUT}
+Section~\ref{ref-rhfinp} \Sec{SCF INPUT}
 
 Section~\ref{ref-rhfinp} \Sec{DFT INPUT}
 
@@ -140,7 +140,7 @@ Section~\ref{ref-mp2inp} \Sec{MP2 INPUT}
 
 Section~\ref{ref-nevpt2inp} \Sec{NEVPT2 INPUT}
 
-Section~\ref{ref-rhfinp} \Sec{SCF INPUT}
+Section~\ref{ref-cicinp} \Sec{CI INPUT}
 
 \noindent
 The next section is used to select some types of analysis of the final
@@ -179,7 +179,6 @@ with two stars, for example
    **END OF DALTON INPUT
 \end{verbatim} \end{inputex}
 or
-
 \begin{inputex} \begin{verbatim}
    **MOLORB
    ... formatted molecular orbitals coefficients
@@ -228,7 +227,7 @@ Specification of which wave function calculation is to be performed.
 \item[\Key{MP2}]
  \index{M{\o}ller-Plesset!second-order}\index{MP2}
   M{\o}ller-Plesset second-order perturbation theory calculation.
-  Requires \quotekw{.HF} or previously calculated canonical Hartree-Fock orbitals.
+  Requires \quotekw{.HF} or previously calculated canonical Hartree--Fock orbitals.
 
 \item[(\quotekw{.FC MVO} in \quotekw{*SCF INPUT}]
   Calculation of modified virtual SCF orbitals based on the
@@ -502,8 +501,8 @@ To specify the configuration part in MCSCF and CI calculations.
   Required.\\
   \kw{READ (LUINP,*) NACTEL} \\
   Number of active electrons\index{active electrons} (the number of
-  electrons to be distributed
-  in the active orbitals).  The total number of electrons is this number
+  electrons to be distributed in the active orbitals).
+  The total number of electrons is this number
   plus two times the total number of inactive orbitals.
 
 \item[\Key{INACTIVE ORBITALS}]
@@ -679,7 +678,7 @@ The MP2 module expects canonical Hartree--Fock orbitals. The MP2 module will
 check the orbitals and exits if the Fock matrix has off-diagonal non-negligible
 elements.
 If starting from saved canonical Hartree--Fock orbitals from a previous calculations,
-although not Hartree-Fock calculation will be done
+although no Hartree--Fock calculation will be done
 the number of occupied Hartree--Fock orbitals in each symmetry must anyway be
 specified with the \quotekw{.DOUBLY OCCUPIED} under \quotekw{*SCF INPUT}.
 
@@ -760,21 +759,22 @@ orbitals).
 Single configuration cases with more than one open shell\index{open shell}
 are handled by the general \Sec{CONFIGURATION INPUT} section, although
 high-spin restricted open-shell Hartree--Fock calculations can be done
-using this module described here.
+using the \quotekw{.HSROHF} described here.
 
 \begin{description}
 \item[\Key{AUTOCCUPATION}]
-  Default for SCF\index{SCF}\index{HF}\index{Hartree--Fock} and
-  MP2\index{MP2}\index{M{\o}ller-Plesset!second-order} calculations
-  starting from H\"{u}ckel or H1DIAG
+  Default for SCF calculations starting from H\"{u}ckel or H1DIAG
   starting orbitals\index{starting orbitals}\index{H\"{u}ckel}.
 
-  Allow the Hartree--Fock occupation\index{Hartree--Fock occupation}\index{HF occupation} to
+  Allow the distribution of the Hartree--Fock occupation numbers over
+  symmetries\index{Hartree--Fock occupation}\index{HF occupation} to
   change based on changes in orbital ordering during DIIS\index{DIIS} optimization.
+  This keyword is incompatible with \quotekw{.HSROHF} and \quotekw{.COREHOLE}, or
+  if the HF calculation is followed by CI or MCSCF..
 
-\item[\Key{EDIIS}]
-  Use a from Kudin et al. slightly modified (E)DIIS-scheme.
-  Keys associated with DIIS are also valid for EDIIS (e.g. MXDIIS etc.)
+%\item[\Key{EDIIS}]
+%  Use a from Kudin {\it et al.} slightly modified (E)DIIS-scheme.
+%  Keys associated with DIIS are also valid for EDIIS (e.g. MXDIIS etc.)
 
 \item[\Key{C2DIIS}]
   Use Harrell Sellers' C2-DIIS algorithm instead of Pulay's C1-DIIS algorithm
@@ -823,13 +823,12 @@ using this module described here.
 
 \item[\Key{ELECTRONS}]
   \kw{READ (LUINP,*) NRHFEL} \\
-  Number of electrons in the molecule\index{electrons in molecule}. By
-  default, this number will be
-  determined on the basis of the nuclear charges and the total charge
-  of the molecule\index{charge of molecule} as specified in the
-  \verb|MOLECULE.INP| file. The
-  keyword is incompatible with the keywords \quotekw{.DOUBLY OCCUPIED}
-  and \quotekw{.OPEN SHELL}.
+  Number of electrons in the molecule\index{electrons in molecule}.
+  By default, this number will be determined on the basis of the nuclear
+  charges and the total charge of the molecule\index{charge of molecule}
+  as specified in the \verb|MOLECULE.INP| file.
+  The keyword is incompatible with the keywords \quotekw{.DOUBLY OCCUPIED},
+  \quotekw{.OPEN SHELL}, and \quotekw{.HSROHF}.
 
 \item[\Key{FC MVO}]
   \kw{READ (LUINP,*) (NMVO(I), I = 1,NSYM)} \\
@@ -861,9 +860,10 @@ using this module described here.
 
 \item[\Key{HSROHF}]
     \kw{READ (LUINP,*) (NROHF(I),I=1,NSYM)} \\
-Number of singly occupied orbitals in each irreducible representation
-    of the molecular point group. Only the high-spin state of these
-    singly-occupied orbitals will be made and used in the calculations.
+  High spin restricted open-shell Hartree--Fock. Specify the number of
+  singly occupied orbitals in each irreducible representation
+  of the molecular point group. Only the high-spin state of these
+  singly-occupied orbitals will be made and used in the calculations.
 
 \item[\Key{MAX DIIS ITERATIONS}]
   \kw{READ (LUINP,*) MXDIIS} \\
@@ -889,16 +889,18 @@ Number of singly occupied orbitals in each irreducible representation
   Do not use DIIS algorithms\index{DIIS} (default: use DIIS algorithm).
 
 \item[\Key{NONCANONICAL}]
-  No transformation to canonical orbitals\index{canonical orbital}
+  No transformation to canonical orbitals\index{canonical orbital}.
 
 \item[\Key{NOQCSCF}]
-  No quadratically convergent SCF\index{SCF!quadratic convergent} iterations
+  No quadratically convergent SCF\index{SCF!no quadratically convergent} iterations.
+  Default is to switch to QCSCF if DIIS doesn't converge.
 
 \item[\Key{OPEN SHELL}]
   Default = no open shell\\
   \kw{READ (LUINP,*) IOPRHF} \\
   Symmetry of the open shell in a one open shell\index{open shell!HF}\index{HF!open shell}
-  calculation.
+  calculation. See also \quotekw{.HSROHF} for high-spin ROHF with more than one
+  singly occupied orbital.
 
 \item[\Key{PRINT}]
   \kw{READ (LUINP,*) IPRRHF} \\
@@ -907,8 +909,15 @@ Number of singly occupied orbitals in each irreducible representation
 
 \item[\Key{SHIFT}] 
   \kw{READ (LUINP,*) SHFTLVL} \\
-Value of level-shift parameter. The default value is 0.0D0 (no level
-  shift).
+  Initial value of level-shift parameter in DIIS iterations. 
+  The default value is 0.0D0 (no level shift).
+  May be tried if convergence problems in DIIS. The value is added
+  to the diagonal of the occupied part of the Fock matrix before
+  Roothaan diagonalization, reducing the mixing of occupied and
+  virtual orbitals (step restriction).
+  NOTE that the value should thus be negative.  The DIIS routines
+  will automatically invoke level-shifting (step restriction) if
+  DIIS seems to be stalling.
 
 \item[\Key{THRESH}]
   Default = 1.0D-06\\
@@ -1016,7 +1025,6 @@ the orbital has already been moved to the open shell orbital. Only
 the main peak can be obtained in SCF calculations, for shake-up
 energies MCSCF must be used.
 
-
 \pagebreak[3]
 \subsection{\label{ref-optinp}\Sec{OPTIMIZATION}}
 
@@ -1112,6 +1120,14 @@ Some of the options also affect a QC-HF optimization.
   Activate TRACI option (default : program decides).\\
   Modified TRACI option where all orbitals, also active orbitals, are
   transformed to Fock type orbitals in each iteration.
+
+\item[\Key{FROZEN CORE ORBITALS}]
+  \kw{READ (LUINP,*) (NFRO(I),I=1,NSYM)} \\
+  Frozen orbitals : Number of inactive (doubly occupied) orbitals to be frozen
+  in each symmetry (the first NFRO(I) in symmetry I) in MCSCF.\index{frozen orbitals!MCSCF}
+  Active orbitals and specific inactive orbitals can be frozen with \quotekw{.FREEZE}
+  under \Sec{ORBITAL INPUT}.
+  Frozen orbitals in SCF are specified in the \Sec{SCF INPUT} input module.
 
 \item[\Key{MAX CI}]
   \kw{READ (LUINP,*) MAXCIT} \\
@@ -1312,8 +1328,8 @@ excited singlet\index{excited state} states which often have lower lying triplet
 
 {\bf Purpose:}
 
-To define an initial set of molecular orbitals\index{molecular orbital}
-and to control the use of supersymmetry\index{supersymmetry}, frozen
+To define an initial set of molecular orbitals\index{molecular orbital!initial set}
+and to control the use of super symmetry\index{supersymmetry}, frozen
 orbitals\index{frozen orbitals}, deletion of orbitals\index{delete orbitals},
 reordering and punching of orbitals.
 
@@ -1335,17 +1351,22 @@ reordering and punching of orbitals.
 \item[\Key{CMOMAX}]
   \kw{READ (LUINP,*) CMAXMO} \\
   Abort calculation if the absolute value of any initial MO coefficient is
-  greater than CMAXMO (default : CMAXMO = 10**3).  Large MO coefficients
+  greater than CMAXMO (default : CMAXMO = $10^3$).  Large MO coefficients
   can cause significant loss of accuracy in the two-electron integral
   transformation.
 
 \item[\Key{DELETE}]
   \kw{READ (LUINP,*) (NDEL(I),I = 1,NSYM) } \\
-  Delete orbitals\index{delete orbitals}. The delete starts from the
-  last orbital of the symmetry and counts downward.
+  Delete orbitals\index{deleted orbitals}, i.e. number of molecular orbitals
+  in symmetry \quotekw{I} is number of basis functions in symmetry \quotekw{I} minus
+  \quotekw{NDEL(I)}. \\
+  Only for use with \quotekw{.MOSTART} options \quotekw{FORM12} or \quotekw{FORM18}, 
+  it cannot be used with \quotekw{H1DIAG} or \quotekw{HUCKEL}, and the other
+  restart options as \quotekw{NEWORB} reads this information from file and this
+  will overwrite what ever was specified here.
 
 \item[\Key{FREEZE}]
-  Default: no frozen orbitals
+  Default: no frozen orbitals.
 \begin{verbatim}
   READ (LUINP,*) (NNOR(ISYM), ISYM = 1,NSYM)
   DO ISYM = 1,NSYM
@@ -1356,38 +1377,41 @@ reordering and punching of orbitals.
   END DO
 \end{verbatim}
   where \kw{INOROT} = orbital numbers of the orbitals to be
-          frozen\index{frozen orbitals}
-          (not rotated) in symmetry \quotekw{ISYM}
+          frozen\index{frozen orbitals!MCSCF and SCF} (not rotated)
+          in symmetry \quotekw{ISYM} both in SCF and MCSCF
           after any reordering (counting from 1 in each symmetry).\\
   Must be specified after all options reducing the number of orbitals.
-
-\item[\Key{FROZEN CORE ORBITALS}]
-  \kw{READ (LUINP,*) (NFRO(I),I=1,NSYM)} \\
-  Frozen orbitals : Inactive orbitals to be frozen.
+  Frozen occupied orbitals in SCF only can be specified in the \Sec{SCF INPUT} input module
+  and frozen inactive orbitals in MCSCF only can be specified in the \Sec{OPTIMIZATION}
+  input module.
 
 \item[\Key{GRAM-SCHMIDT ORTHONORMALIZATION}]
   Default.\\
   Gram--Schmidt orthonormalization\index{orthonormalization!Gram--Schmidt} of input orbitals.
 
 \item[\Key{LOCALIZATION}]
-Specify that the orbitals should be localized.
-   \kw{READ (LUINP,'(1X,A6)') REWORD} \\
-Two options for localization of the orbitals are available:
-\begin{description}
-\item[{\tt BOYLOC\ }] Use the Boys localization scheme~\cite{}.
-\item[{\tt PIPLOC\ }] Use the Pipek-Mezey localization scheme~\cite{}.
-\end{description}
+  \kw{READ (LUINP,'(1X,A6)') REWORD} \\
+  Specify that the doubly occupied (inactive) orbitals should be localized after SCF 
+  or MCSCF is converged.
+  One option for localization of the orbitals is currently available:
+  %Two options for localization of the orbitals are available:
+  \begin{description}
+  \item[{\tt BOYLOC\ }] Use the Boys localization scheme~\cite{Boyloc}.
+  %\item[{\tt PIPLOC\ }] Use the Pipek-Mezey localization scheme~\cite{}.
+  % aug 04: PIPLOC is not implemented yet.
+  \end{description}
 
-%\begin{description}
 \item[\Key{MOSTART}]
    Molecular orbital input\index{molecular orbital}\\
    \kw{READ (LUINP,'(1X,A6)') RWORD} \\
    where RWORD is one of the following:
    \begin{description}
    \item[{\tt FORM12\ }] Formatted input (6F12.8)  supplied after
-        \Sec{*MOLORB} or \Sec{*NATORB} keyword
+        \Sec{*MOLORB} or \Sec{*NATORB} keyword. Use also \quotekw{.DELETE}
+        if orbitals were deleted.
    \item[{\tt FORM18\ }] Formatted input (4F18.14) supplied after
-        \Sec{*MOLORB} or \Sec{*NATORB} keyword
+        \Sec{*MOLORB} or \Sec{*NATORB} keyword. Use also \quotekw{.DELETE}
+        if orbitals were deleted.
    \item[{\tt H1DIAG\ }] Start orbitals that diagonalize
         one-electron Hamiltonian matrix (default
         for molecules containing elements with a nuclear larger than 36).
@@ -1468,23 +1492,23 @@ For example if orbitals 1 and 5 in symmetry 1 should change place, specify
 
 \noindent{\bf Comments:}
 
-{\sir} can identify "super
-symmetry"\index{supersymmetry}, {\it i.e.\/} of irreps of the true point
+If \quotekw{\Key{SUPSYM}} is specified, then
+{\sir} automatically identifies "super symmetry"\index{super symmetry!orbitals},
+{\it i.e.\/} it assigns orbitals to the irreps of the true point
 group of the molecule\index{symmetry!group} which is a
-"supergroup" of the Abelian group used in the calculation.
-Degenerate orbitals will be averaged and the "super
-symmetry"\index{supersymmetry} will be enforced in the orbitals.
-The use of "super symmetry" can  be activated with the
-\quotekw{\Key{SUPSYM}} keyword.
-%, for example in finite field
-%calculations where the field lowers the symmetry.
-%%\ifabacus
-%For
-%\aba\ and \resp\ calculations, the "super symmetry" is deactivated
-%unless explicitly enforced with \Key{SUPSYM}.
-%%\fi
-The initial
-orbitals must be symmetry orbitals, and the super symmetry
+"super group" of the Abelian group used in the calculation.
+Degenerate orbitals will be averaged and the "super symmetry"
+will be enforced in the orbitals.
+Note that "super symmetry" can only be used
+in the RHF, MP2, MCSCF, and RESPONS modules, and should
+not be invoked if other modules are used,
+for example, if \Sec{*PROPERTIES} (\aba) is invoked.
+%hj aug 04: it should be OK for closed shell cases, also for CC ???
+% it is only for spatially degenerate states that elements
+% of the orbital gradient may be non-zero, right ???
+Also, it cannot be used
+in finite field calculations where the field lowers the symmetry.
+The initial orbitals must be symmetry orbitals, and the super symmetry
 analysis is performed on the kinetic energy matrix in this basis.
 The \quotekw{.THRSSY} option is used to define when the kinetic
 energy matrix element between two orbitals is considered to be
@@ -1497,10 +1521,8 @@ geometry deviates slightly from a higher symmetry point group, for
 example because too few digits has been used in the input of the
 nuclear geometry. If the program stops because the super symmetry
 analysis fails with a degeneracy error, you might consider to use
-more digits in the nuclear coordinates, to change \kw{THRSSY}.
-%, or
-%to disable super symmetry with \quotekw{.NOSUPSYM}.  
-The value of
+more digits in the nuclear coordinates, to change \kw{THRSSY}, or
+to disable super symmetry by not using \quotekw{.SUPSYM}.  The value of
 \kw{THRSSY} should be sufficiently small to avoid accidental
 degeneracies and sufficiently large to ignore small errors in
 geometry and numerical round-off errors.
@@ -1527,9 +1549,10 @@ Requires a set of natural orbitals\index{natural orbital} and their occupation.
 \item[\Key{ALL}]
   Do all options.
 
-\item[\Key{DIPMOM}]
-  Calculate dipole moments. Note that this requires that the dipole
-  length integrals are available on the file \verb|AOPROPER|.\index{dipole moment}
+%\item[\Key{DIPMOM}]
+%  Calculate dipole moments. Note that this requires that the dipole
+%  length integrals are available on the file \verb|AOONEINT|.\index{dipole moment}
+%Aug 04: not working as far as I know /hjaaj
 
 \item[\Key{GROSSALL}]
   Do all gross population analysis. Note that this requires that the dipole
@@ -1552,9 +1575,10 @@ Requires a set of natural orbitals\index{natural orbital} and their occupation.
   \kw{READ (LUINP,*) IPRMUL} \\
   Print level for population analysis.
 
-\item[\Key{QUADRP}]
-  Calculate quadrupole moments. Note that this requires that the quadrupole
-  length integrals are available on the file \verb|AOPROPER|\index{quadrupole moment}
+%\item[\Key{QUADRP}]
+%  Calculate quadrupole moments. Note that this requires that the quadrupole
+%  integrals are available on the file \verb|AOONEINT|\index{quadrupole moment}
+%Aug 04: not working as far as I know /hjaaj
 
 \item[\Key{VIRIAL}]\index{virial analysis}
   Do virial analysis.
@@ -1671,9 +1695,9 @@ will activate this model.
   \kw{READ (LUINP,*) EPSOL, EPPN}\\
   Enter static and optical dielectric constant\index{dielectric constant} of solvent for calculation
   of the initial state defining inertial polarization\index{inertial
-  polarization}. Note that the optical dielectric constant in this
-  only will take effect in case there is a calculation of response
-  properties, in which this is an alternative input to the use of the
+  polarization}. Note that the optical dielectric constant specified here
+  only will be used in case there is a calculation of response
+  properties, for which this is an alternative input to the use of the
   keywork \Key{INERSFINAL}.
 
 \item[\Key{INERSFINAL}]
@@ -1681,9 +1705,12 @@ will activate this model.
   Enter static and optical dielectric\index{dielectric constant} constants of solvent
   for calculation of the final state with inertial polarization
   from a previous calculation with \quotekw{\Key{INERSINITIAL}}\index{final polarization}. 
-  This keyword should also be used to specify the
-  static and optical dielectric constants for non-equilibrium
-  solvation linear, quadratic or cubic response functions, see also Sec.~\ref{sec:solvnoneqrsp}.
+  This can for example be used to optimize an excited electronic state
+  with inertial polarization from a previous ground state calculation.
+  This keyword an  also be used to specify the static and optical dielectric constants
+  for non-equilibrium solvation linear, quadratic, or cubic response functions,
+  see also Sec.~\ref{sec:solvnoneqrsp}, but this is usually easier done with
+  \quotekw{.INERSINITIAL} (requires only one \dalton\ calculation instead of two).
 
 \item[\Key{MAX L}]
   Required, no defaults.\\
