@@ -87,7 +87,7 @@ C
                   RUNERI = .FALSE.
                GO TO 100
     2          CONTINUE
-                  READ (LUCMD, '(3I5)') IPRERI, IPRNT1, IPRNT2
+                  READ (LUCMD,*) IPRERI, IPRNT1, IPRNT2
                   IPRSUM = IPRNT1 + IPRNT2
                   IF (IPRERI .EQ. IPRDEF .AND. IPRSUM .EQ. 0) THEN
                      ICHANG = ICHANG - 1
@@ -100,7 +100,7 @@ C
                   RTNERI = .TRUE.
                GO TO 100
     5          CONTINUE
-                  READ (LUCMD,'(I5)') IAOBCH
+                  READ (LUCMD,*) IAOBCH
                GO TO 100
     6          CONTINUE
                   PMSAB = .FALSE.
@@ -134,23 +134,23 @@ C
                GO TO 100
    16          CONTINUE
                   EXTPRI = .TRUE.
-                  READ (LUCMD,'(2I5)') IPROD1, IPROD2
+                  READ (LUCMD,*) IPROD1, IPROD2
                GO TO 100
    17          CONTINUE
-                  READ (LUCMD,'(  I5)') NSELCT(1)
-                  READ (LUCMD,'(15I5)') (NACTAO(I,1),I=1,NSELCT(1))
+                  READ (LUCMD,*) NSELCT(1)
+                  READ (LUCMD,*) (NACTAO(I,1),I=1,NSELCT(1))
                GO TO 100
    18          CONTINUE
-                  READ (LUCMD,'(  I5)') NSELCT(2)
-                  READ (LUCMD,'(15I5)') (NACTAO(I,2),I=1,NSELCT(2))
+                  READ (LUCMD,*) NSELCT(2)
+                  READ (LUCMD,*) (NACTAO(I,2),I=1,NSELCT(2))
                GO TO 100
    19          CONTINUE
-                  READ (LUCMD,'(  I5)') NSELCT(3)
-                  READ (LUCMD,'(15I5)') (NACTAO(I,3),I=1,NSELCT(3))
+                  READ (LUCMD,*) NSELCT(3)
+                  READ (LUCMD,*) (NACTAO(I,3),I=1,NSELCT(3))
                GO TO 100
    20          CONTINUE
-                  READ (LUCMD,'(  I5)') NSELCT(4)
-                  READ (LUCMD,'(15I5)') (NACTAO(I,4),I=1,NSELCT(4))
+                  READ (LUCMD,*) NSELCT(4)
+                  READ (LUCMD,*) (NACTAO(I,4),I=1,NSELCT(4))
                GO TO 100
    21          CONTINUE
                   INTPRI = .TRUE.
@@ -166,16 +166,16 @@ C
                   LBFINP = MAX(1,LBFINP)
                GO TO 100
    25          CONTINUE
-                  READ (LUCMD,'(I5)') MAXDST
+                  READ (LUCMD,*) MAXDST
                GO TO 100
    26          CONTINUE
                   DISTST = .TRUE.
                GO TO 100
    27          CONTINUE
-                  READ (LUCMD,'(I5)') MXBCH
+                  READ (LUCMD,*) MXBCH
                GO TO 100
    28          CONTINUE
-                  READ (LUCMD,'(I5)') NSPMAX
+                  READ (LUCMD,*) NSPMAX
                GO TO 100
    29          CONTINUE
                   NOLOCS = .TRUE. 
@@ -274,7 +274,7 @@ C
                IF (NSELCT(1).EQ.0) THEN
                   WRITE (LUPRI,'(/,A,/A)')
      &            ' Distributions specified but no active '//
-     &            ' orbitals for electron. Use .DISTR1.',
+     &            ' orbitals for electron. Use .SELCT1.',
      &            ' Calculation cannot proceed.'
                   CALL QUIT('Inconsistent input in ER2INP.')
                END IF
