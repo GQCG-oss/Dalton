@@ -4,7 +4,7 @@
 C-----------------------------------------------------------------------
 C
 C     This program calculates the second order correction to the energy
-C     using the n-electron valence state perturbation thoery (NEVPT)
+C     using the n-electron valence state perturbation theory (NEVPT)
 C     in the partially contracted (PC) ad strongly contracted (SC)
 C     variants using the Dyall's Hamiltonian for the definition of the
 C     zero order energies. All equations are based on the spin free
@@ -22,7 +22,7 @@ C        Chem. Phys. Lett., 350, 297-305, (2001)
 C        Introduction of the formalism based on the "Koopmans' operators"
 C     4) C. Angeli, R. Cimiraglia, J-P Malrieu,
 C        J. Chem. Phys., 117, 10525-10533, (2002)
-C        Spin free versione of NEVPT
+C        Spin free version of NEVPT
 C
 C-----------------------------------------------------------------------
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
@@ -53,7 +53,7 @@ C
 C     Generalized Koopmans matrices
 C 
 C     gkp1a = generalized Koopmans matrix for alpha electronic affinities
-C     gkm1a = generalized Koopmans matrix for alpha ionizzation potentials
+C     gkm1a = generalized Koopmans matrix for alpha ionization potentials
 C     gkp2aa= generalized Koopmans matrix for alpha double EA 
 C     ......
 C     gk0pa = A matrix used for the 0' class (see report)
@@ -4413,7 +4413,7 @@ c--+Sum(a,b=1,nact)(<ia|ib>-0.5*<ia|bi>)*da(b,a)
 c--and analogously for eps(r)
 
 C
-C     One-electron contributions to orbtial energies
+C     One-electron contributions to orbital energies
 C
 c------ Core
       do i=1,ncore
