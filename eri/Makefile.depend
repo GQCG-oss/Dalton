@@ -25,22 +25,22 @@ eri2car1.o : eri2car1.F \
   ../include/ericom.h  ../include/hertop.h \
   ../include/ibtfun.h  ../include/implicit.h \
   ../include/iratdef.h  ../include/maxaqn.h \
-  ../include/priunit.h  ../include/single.h \
-  ../include/r12int.h
+  ../include/priunit.h  ../include/r12int.h \
+  ../include/single.h
 
 
 eri2car2.o : eri2car2.F \
   ../include/eriao.h  ../include/ericom.h \
   ../include/hertop.h  ../include/ibtfun.h \
   ../include/implicit.h  ../include/maxaqn.h \
-  ../include/priunit.h  ../include/single.h \
-  ../include/r12int.h
+  ../include/priunit.h  ../include/r12int.h \
+  ../include/single.h
 
 
 eri2cft.o : eri2cft.F \
   ../include/ibtfun.h  ../include/implicit.h \
-  ../include/priunit.h  ../include/sdpre.h \
-  ../include/single.h   ../include/r12int.h
+  ../include/priunit.h  ../include/r12int.h \
+  ../include/sdpre.h  ../include/single.h
 
 
 eri2dis.o : eri2dis.F \
@@ -56,7 +56,8 @@ eri2dis.o : eri2dis.F \
   ../include/maxash.h  ../include/maxorb.h \
   ../include/mxcent.h  ../include/nuclei.h \
   ../include/odbtch.h  ../include/odclss.h \
-  ../include/priunit.h  ../include/single.h \
+  ../include/priunit.h  ../include/r12int.h \
+  ../include/shells.h  ../include/single.h \
   ../include/symmet.h
 
 
@@ -76,9 +77,9 @@ eri2drv.o : eri2drv.F \
   ../include/maxaqn.h  ../include/maxorb.h \
   ../include/mxcent.h  ../include/nuclei.h \
   ../include/odbtch.h  ../include/odclss.h \
-  ../include/priunit.h  ../include/single.h \
-  ../include/sphtrm.h  ../include/symmet.h \
-  ../include/r12int.h
+  ../include/priunit.h  ../include/r12int.h \
+  ../include/single.h  ../include/sphtrm.h \
+  ../include/symmet.h
 
 
 eri2fck.o : eri2fck.F \
@@ -112,8 +113,8 @@ eri2odb.o : eri2odb.F \
   ../include/maxaqn.h  ../include/maxorb.h \
   ../include/mxcent.h  ../include/odbtch.h \
   ../include/odclss.h  ../include/priunit.h \
-  ../include/single.h  ../include/symmet.h \
-  ../include/r12int.h
+  ../include/r12int.h  ../include/shells.h \
+  ../include/single.h  ../include/symmet.h
 
 
 eri2out.o : eri2out.F \
@@ -144,8 +145,9 @@ eri2par.o : eri2par.F \
   ../include/memint.h  ../include/molinp.h \
   ../include/mtags.h  ../include/mxcent.h \
   ../include/odclss.h  ../include/priunit.h \
-  ../include/single.h  ../include/siripc.h \
-  ../include/symmet.h  ../include/veclen.h
+  ../include/r12int.h  ../include/single.h \
+  ../include/siripc.h  ../include/symmet.h \
+  ../include/veclen.h
 
 
 eri2pro.o : eri2pro.F \
@@ -158,6 +160,15 @@ eri2pro.o : eri2pro.F \
   ../include/maxorb.h  ../include/mxcent.h \
   ../include/odbtch.h  ../include/priunit.h \
   ../include/single.h  ../include/symmet.h
+
+
+eri2r12.o : eri2r12.F \
+  ../include/eriao.h  ../include/ericom.h \
+  ../include/hertop.h  ../include/ibtfun.h \
+  ../include/implicit.h  ../include/iratdef.h \
+  ../include/maxaqn.h  ../include/pi.h \
+  ../include/priunit.h  ../include/r12int.h \
+  ../include/sdpre.h  ../include/single.h
 
 
 eri2sph.o : eri2sph.F \
@@ -187,16 +198,8 @@ eri2vec.o : eri2vec.F \
   ../include/maxorb.h  ../include/mxcent.h \
   ../include/nuclei.h  ../include/odclss.h \
   ../include/orgcom.h  ../include/priunit.h \
-  ../include/single.h  ../include/symmet.h \
-  ../include/r12int.h
-
-
-eri2r12.o : eri2r12.F \
-  ../include/implicit.h ../include/ericom.h \
-  ../include/priunit.h  ../include/hertop.h \
-  ../include/r12int.h   ../include/sdpre.h \
-  ../include/single.h   ../include/ibtfun.h \
-  ../include/maxaqn.h
+  ../include/r12int.h  ../include/single.h \
+  ../include/symmet.h
 
 
 eriprg.o : eriprg.F \

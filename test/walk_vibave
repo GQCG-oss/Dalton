@@ -186,8 +186,8 @@ TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[8]=6
 ERROR[8]="INITIAL MAGNETIZABILITIES NOT CORRECT"
 
-# Initial g-factor
-CRIT1=`$GREP "Isotropic g\-factor * \: * (0| )\.4503330[0-9]" $log | wc -l`
+# Initial g-tensor
+CRIT1=`$GREP "Isotropic g\-tensor * \: * (0| )\.4503330[0-9]" $log | wc -l`
 CRIT2=`$GREP "Nuclear contribution * \: * (0| )\.98513150" $log | wc -l`
 CRIT3=`$GREP "Electronic contribution * \: * (\-0| \-)\.1077988[0-9]" $log | wc -l`
 CRIT4=`$GREP "Parallel component\: * (0| )\.4139216[0-9]" $log | wc -l`
@@ -195,7 +195,7 @@ CRIT5=`$GREP "Perpendicular component\: * (0| )\.4685387[0-9]" $log | wc -l`
 CRIT6=`$GREP "Anisotropy\: * (\-0| \-)\.0546170[0-9]" $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[9]=6
-ERROR[9]="INITIAL G-FACTOR NOT CORRECT"
+ERROR[9]="INITIAL G-TENSOR NOT CORRECT"
 
 # Initial shielding tensor
 CRIT1=`$GREP "N * x * 290\.4388[0-9][0-9][0-9][0-9] * (\-0| \-)\.000000[0-9][0-9] * (\-0|\-|0| )\.00000000" $log | wc -l`

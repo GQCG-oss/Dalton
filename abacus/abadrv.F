@@ -1240,7 +1240,7 @@ C
       IF (OPTROT) WRITE (LUPRI,'(5X,A)')
      &            ' Optical rotation strengths'
       IF (SPINRO) WRITE(LUPRI,'(5X,A)') ' Spin-rotation constants'
-      IF (MOLGFA) WRITE(LUPRI,'(5X,A)') ' Molecular g-factor'
+      IF (MOLGFA) WRITE(LUPRI,'(5X,A)') ' Molecular g-tensor'
       IF (.NOT. MASSVE) WRITE(LUPRI,'(5X,A)')
      &     ' No mass-velocity correction calculated'
       IF (.NOT. DARWIN) WRITE(LUPRI,'(5X,A)')

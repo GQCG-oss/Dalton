@@ -419,7 +419,7 @@ Point group: C1
       Geometry optimization
       Nuclear magnetic shieldings
       Magnetic susceptibilities
-      Molecular g-factor
+      Molecular g-tensor
 
 
  Default print level:        0
@@ -713,7 +713,7 @@ Point group: C1
 
 
  *****************************************************************************
- ************************ ABACUS - MOLECULAR g-FACTOR ************************
+ ************************ ABACUS - MOLECULAR g-TENSOR ************************
  *****************************************************************************
 
 
@@ -728,20 +728,20 @@ Point group: C1
    IC    9.791514          1.000000   -0.000000    0.000000
 
 
-  Molecular g-factor
+  Molecular g-tensor
   ------------------
 
-  Isotropic g-factor       :   0.45033304
+  Isotropic g-tensor       :   0.45033304
   Nuclear contribution     :   0.98513150
   Electronic contribution  :  -0.10779888
   Parallel component:          0.41392167
   Perpendicular component:     0.46853873
   Anisotropy:                 -0.05461705
 
-  Molecular g-factor is cylindrical.
+  Molecular g-tensor is cylindrical.
 
 
-  Molecular g-factor in principal axis system (a.u.):
+  Molecular g-tensor in principal axis system (a.u.):
   ---------------------------------------------------
 
    A        0.46853876  0.00000000 -0.00000001
@@ -1457,7 +1457,7 @@ Point group: C1
       Geometry optimization
       Nuclear magnetic shieldings
       Magnetic susceptibilities
-      Molecular g-factor
+      Molecular g-tensor
 
 
  Default print level:        0
@@ -1671,7 +1671,7 @@ Point group: C1
 
 
  *****************************************************************************
- ************************ ABACUS - MOLECULAR g-FACTOR ************************
+ ************************ ABACUS - MOLECULAR g-TENSOR ************************
  *****************************************************************************
 
 
@@ -1686,10 +1686,10 @@ Point group: C1
    IC    9.795831          0.999670   -0.000630    0.025678
 
 
-  Molecular g-factor
+  Molecular g-tensor
   ------------------
 
-  Isotropic g-factor       :   0.45011242
+  Isotropic g-tensor       :   0.45011242
   Nuclear contribution     :   0.98512528
   Diamagnetic contribution :  -0.42701286
   Electronic contribution  :  -0.10800000
@@ -1698,7 +1698,7 @@ Point group: C1
 
 
 
-  Molecular g-factor in principal axis system (a.u.):
+  Molecular g-tensor in principal axis system (a.u.):
   ---------------------------------------------------
 
    A        0.47352046 -0.00017813 -0.00007278
@@ -2338,7 +2338,7 @@ Point group: C1
       Geometry optimization
       Nuclear magnetic shieldings
       Magnetic susceptibilities
-      Molecular g-factor
+      Molecular g-tensor
 
 
  Default print level:        0
@@ -2552,7 +2552,7 @@ Point group: C1
 
 
  *****************************************************************************
- ************************ ABACUS - MOLECULAR g-FACTOR ************************
+ ************************ ABACUS - MOLECULAR g-TENSOR ************************
  *****************************************************************************
 
 
@@ -2567,10 +2567,10 @@ Point group: C1
    IC    9.795831          0.999670   -0.000630   -0.025678
 
 
-  Molecular g-factor
+  Molecular g-tensor
   ------------------
 
-  Isotropic g-factor       :   0.45011242
+  Isotropic g-tensor       :   0.45011242
   Nuclear contribution     :   0.98512528
   Diamagnetic contribution :  -0.42701286
   Electronic contribution  :  -0.10800000
@@ -2579,7 +2579,7 @@ Point group: C1
 
 
 
-  Molecular g-factor in principal axis system (a.u.):
+  Molecular g-tensor in principal axis system (a.u.):
   ---------------------------------------------------
 
    A        0.47352046  0.00017813  0.00007278
@@ -3220,7 +3220,7 @@ Point group: C1
       Geometry optimization
       Nuclear magnetic shieldings
       Magnetic susceptibilities
-      Molecular g-factor
+      Molecular g-tensor
 
 
  Default print level:        0
@@ -3432,7 +3432,7 @@ Point group: C1
 
 
  *****************************************************************************
- ************************ ABACUS - MOLECULAR g-FACTOR ************************
+ ************************ ABACUS - MOLECULAR g-TENSOR ************************
  *****************************************************************************
 
 
@@ -3447,10 +3447,10 @@ Point group: C1
    IC    9.795875          0.999654    0.026307   -0.000000
 
 
-  Molecular g-factor
+  Molecular g-tensor
   ------------------
 
-  Isotropic g-factor       :   0.45011240
+  Isotropic g-tensor       :   0.45011240
   Nuclear contribution     :   0.98512521
   Diamagnetic contribution :  -0.42701181
   Electronic contribution  :  -0.10800100
@@ -3459,7 +3459,7 @@ Point group: C1
 
 
 
-  Molecular g-factor in principal axis system (a.u.):
+  Molecular g-tensor in principal axis system (a.u.):
   ---------------------------------------------------
 
    A        0.47324584 -0.00000000  0.00000000
@@ -4048,7 +4048,7 @@ Point group: C1
       Geometry optimization
       Nuclear magnetic shieldings
       Magnetic susceptibilities
-      Molecular g-factor
+      Molecular g-tensor
 
 
  Default print level:        0
@@ -4260,7 +4260,7 @@ Point group: C1
 
 
  *****************************************************************************
- ************************ ABACUS - MOLECULAR g-FACTOR ************************
+ ************************ ABACUS - MOLECULAR g-TENSOR ************************
  *****************************************************************************
 
 
@@ -4275,10 +4275,10 @@ Point group: C1
    IC    9.795788          0.999686   -0.025049    0.000000
 
 
-  Molecular g-factor
+  Molecular g-tensor
   ------------------
 
-  Isotropic g-factor       :   0.45011246
+  Isotropic g-tensor       :   0.45011246
   Nuclear contribution     :   0.98512536
   Diamagnetic contribution :  -0.42701391
   Electronic contribution  :  -0.10799899
@@ -4287,7 +4287,7 @@ Point group: C1
 
 
 
-  Molecular g-factor in principal axis system (a.u.):
+  Molecular g-tensor in principal axis system (a.u.):
   ---------------------------------------------------
 
    A        0.47378846 -0.00000000  0.00010250
@@ -4872,7 +4872,7 @@ Point group: C1
       Geometry optimization
       Nuclear magnetic shieldings
       Magnetic susceptibilities
-      Molecular g-factor
+      Molecular g-tensor
 
 
  Default print level:        0
@@ -5088,7 +5088,7 @@ Point group: C1
 
 
  *****************************************************************************
- ************************ ABACUS - MOLECULAR g-FACTOR ************************
+ ************************ ABACUS - MOLECULAR g-TENSOR ************************
  *****************************************************************************
 
 
@@ -5103,20 +5103,20 @@ Point group: C1
    IC   10.087608          1.000000   -0.000000   -0.000000
 
 
-  Molecular g-factor
+  Molecular g-tensor
   ------------------
 
-  Isotropic g-factor       :   0.43904653
+  Isotropic g-tensor       :   0.43904653
   Nuclear contribution     :   0.98516028
   Electronic contribution  :  -0.11225929
   Parallel component:          0.40535913
   Perpendicular component:     0.45589024
   Anisotropy:                 -0.05053111
 
-  Molecular g-factor is cylindrical.
+  Molecular g-tensor is cylindrical.
 
 
-  Molecular g-factor in principal axis system (a.u.):
+  Molecular g-tensor in principal axis system (a.u.):
   ---------------------------------------------------
 
    A        0.45589029  0.00000000 -0.00000001
@@ -5693,7 +5693,7 @@ Point group: C1
       Geometry optimization
       Nuclear magnetic shieldings
       Magnetic susceptibilities
-      Molecular g-factor
+      Molecular g-tensor
 
 
  Default print level:        0
@@ -5909,7 +5909,7 @@ Point group: C1
 
 
  *****************************************************************************
- ************************ ABACUS - MOLECULAR g-FACTOR ************************
+ ************************ ABACUS - MOLECULAR g-TENSOR ************************
  *****************************************************************************
 
 
@@ -5924,20 +5924,20 @@ Point group: C1
    IC    9.499830          1.000000   -0.000000    0.000000
 
 
-  Molecular g-factor
+  Molecular g-tensor
   ------------------
 
-  Isotropic g-factor       :   0.46149264
+  Isotropic g-tensor       :   0.46149264
   Nuclear contribution     :   0.98510184
   Electronic contribution  :  -0.10349286
   Parallel component:          0.42251733
   Perpendicular component:     0.48098030
   Anisotropy:                 -0.05846298
 
-  Molecular g-factor is cylindrical.
+  Molecular g-tensor is cylindrical.
 
 
-  Molecular g-factor in principal axis system (a.u.):
+  Molecular g-tensor in principal axis system (a.u.):
   ---------------------------------------------------
 
    A        0.48098028  0.00000000 -0.00000000
@@ -6517,7 +6517,7 @@ Point group: C1
       Geometry optimization
       Nuclear magnetic shieldings
       Magnetic susceptibilities
-      Molecular g-factor
+      Molecular g-tensor
 
 
  Default print level:        0
@@ -6731,7 +6731,7 @@ Point group: C1
 
 
  *****************************************************************************
- ************************ ABACUS - MOLECULAR g-FACTOR ************************
+ ************************ ABACUS - MOLECULAR g-TENSOR ************************
  *****************************************************************************
 
 
@@ -6746,10 +6746,10 @@ Point group: C1
    IC    9.795188          0.999787    0.000630    0.020648
 
 
-  Molecular g-factor
+  Molecular g-tensor
   ------------------
 
-  Isotropic g-factor       :   0.45024207
+  Isotropic g-tensor       :   0.45024207
   Nuclear contribution     :   0.98512550
   Diamagnetic contribution :  -0.42702416
   Electronic contribution  :  -0.10785927
@@ -6758,7 +6758,7 @@ Point group: C1
 
 
 
-  Molecular g-factor in principal axis system (a.u.):
+  Molecular g-tensor in principal axis system (a.u.):
   ---------------------------------------------------
 
    A        0.46425441 -0.00011070  0.00386608
@@ -7398,7 +7398,7 @@ Point group: C1
       Geometry optimization
       Nuclear magnetic shieldings
       Magnetic susceptibilities
-      Molecular g-factor
+      Molecular g-tensor
 
 
  Default print level:        0
@@ -7612,7 +7612,7 @@ Point group: C1
 
 
  *****************************************************************************
- ************************ ABACUS - MOLECULAR g-FACTOR ************************
+ ************************ ABACUS - MOLECULAR g-TENSOR ************************
  *****************************************************************************
 
 
@@ -7627,10 +7627,10 @@ Point group: C1
    IC    9.795188          0.999787    0.000631   -0.020648
 
 
-  Molecular g-factor
+  Molecular g-tensor
   ------------------
 
-  Isotropic g-factor       :   0.45024207
+  Isotropic g-tensor       :   0.45024207
   Nuclear contribution     :   0.98512550
   Diamagnetic contribution :  -0.42702416
   Electronic contribution  :  -0.10785927
@@ -7639,7 +7639,7 @@ Point group: C1
 
 
 
-  Molecular g-factor in principal axis system (a.u.):
+  Molecular g-tensor in principal axis system (a.u.):
   ---------------------------------------------------
 
    A        0.46425442  0.00011070 -0.00386597
@@ -8284,7 +8284,7 @@ Point group: C1
       Geometry optimization
       Nuclear magnetic shieldings
       Magnetic susceptibilities
-      Molecular g-factor
+      Molecular g-tensor
 
 
  Default print level:        0
@@ -8498,7 +8498,7 @@ Point group: C1
 
 
  *****************************************************************************
- ************************ ABACUS - MOLECULAR g-FACTOR ************************
+ ************************ ABACUS - MOLECULAR g-TENSOR ************************
  *****************************************************************************
 
 
@@ -8513,10 +8513,10 @@ Point group: C1
    IC    9.795154          0.999800    0.020018    0.000000
 
 
-  Molecular g-factor
+  Molecular g-tensor
   ------------------
 
-  Isotropic g-factor       :   0.45024179
+  Isotropic g-tensor       :   0.45024179
   Nuclear contribution     :   0.98512556
   Diamagnetic contribution :  -0.42702317
   Electronic contribution  :  -0.10786060
@@ -8525,7 +8525,7 @@ Point group: C1
 
 
 
-  Molecular g-factor in principal axis system (a.u.):
+  Molecular g-tensor in principal axis system (a.u.):
   ---------------------------------------------------
 
    A        0.46410890 -0.00000000  0.00544359
@@ -9109,7 +9109,7 @@ Point group: C1
       Geometry optimization
       Nuclear magnetic shieldings
       Magnetic susceptibilities
-      Molecular g-factor
+      Molecular g-tensor
 
 
  Default print level:        0
@@ -9321,7 +9321,7 @@ Point group: C1
 
 
  *****************************************************************************
- ************************ ABACUS - MOLECULAR g-FACTOR ************************
+ ************************ ABACUS - MOLECULAR g-TENSOR ************************
  *****************************************************************************
 
 
@@ -9336,10 +9336,10 @@ Point group: C1
    IC    9.795222          0.999774   -0.021278   -0.000000
 
 
-  Molecular g-factor
+  Molecular g-tensor
   ------------------
 
-  Isotropic g-factor       :   0.45024233
+  Isotropic g-tensor       :   0.45024233
   Nuclear contribution     :   0.98512544
   Diamagnetic contribution :  -0.42702515
   Electronic contribution  :  -0.10785796
@@ -9348,7 +9348,7 @@ Point group: C1
 
 
 
-  Molecular g-factor in principal axis system (a.u.):
+  Molecular g-tensor in principal axis system (a.u.):
   ---------------------------------------------------
 
    A        0.46440104 -0.00000000 -0.00000008
@@ -9937,7 +9937,7 @@ Point group: C1
       Geometry optimization
       Nuclear magnetic shieldings
       Magnetic susceptibilities
-      Molecular g-factor
+      Molecular g-tensor
 
 
  Default print level:        0
@@ -10153,7 +10153,7 @@ Point group: C1
 
 
  *****************************************************************************
- ************************ ABACUS - MOLECULAR g-FACTOR ************************
+ ************************ ABACUS - MOLECULAR g-TENSOR ************************
  *****************************************************************************
 
 
@@ -10168,20 +10168,20 @@ Point group: C1
    IC    9.899254          1.000000   -0.000000   -0.000000
 
 
-  Molecular g-factor
+  Molecular g-tensor
   ------------------
 
-  Isotropic g-factor       :   0.45366362
+  Isotropic g-tensor       :   0.45366362
   Nuclear contribution     :   0.98605352
   Electronic contribution  :  -0.10839709
   Parallel component:          0.41388107
   Perpendicular component:     0.47355489
   Anisotropy:                 -0.05967383
 
-  Molecular g-factor is cylindrical.
+  Molecular g-tensor is cylindrical.
 
 
-  Molecular g-factor in principal axis system (a.u.):
+  Molecular g-tensor in principal axis system (a.u.):
   ---------------------------------------------------
 
    A        0.47355493 -0.00000000 -0.00000001
@@ -10757,7 +10757,7 @@ Point group: C1
       Geometry optimization
       Nuclear magnetic shieldings
       Magnetic susceptibilities
-      Molecular g-factor
+      Molecular g-tensor
 
 
  Default print level:        0
@@ -10971,7 +10971,7 @@ Point group: C1
 
 
  *****************************************************************************
- ************************ ABACUS - MOLECULAR g-FACTOR ************************
+ ************************ ABACUS - MOLECULAR g-TENSOR ************************
  *****************************************************************************
 
 
@@ -10986,20 +10986,20 @@ Point group: C1
    IC    9.684363          1.000000   -0.000000    0.000000
 
 
-  Molecular g-factor
+  Molecular g-tensor
   ------------------
 
-  Isotropic g-factor       :   0.44738108
+  Isotropic g-tensor       :   0.44738108
   Nuclear contribution     :   0.98419833
   Electronic contribution  :  -0.10698702
   Parallel component:          0.41405283
   Perpendicular component:     0.46404521
   Anisotropy:                 -0.04999237
 
-  Molecular g-factor is cylindrical.
+  Molecular g-tensor is cylindrical.
 
 
-  Molecular g-factor in principal axis system (a.u.):
+  Molecular g-tensor in principal axis system (a.u.):
   ---------------------------------------------------
 
    A        0.46404524  0.00000000 -0.00000001

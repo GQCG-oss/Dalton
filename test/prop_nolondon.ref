@@ -749,7 +749,7 @@ Point group: C2v
 
 
  *****************************************************************************
- ************************ ABACUS - MOLECULAR g-FACTOR ************************
+ ************************ ABACUS - MOLECULAR g-TENSOR ************************
  *****************************************************************************
 
 
@@ -764,10 +764,10 @@ Point group: C2v
    IC    6.333827          1.000000    0.000000    0.000000
 
 
-  Molecular g-factor
+  Molecular g-tensor
   ------------------
 
-  Isotropic g-factor       :   0.72231062
+  Isotropic g-tensor       :   0.72231062
   Nuclear contribution     :   0.97453340
   Diamagnetic contribution :   0.00000000
   Electronic contribution  :  -0.25222278
@@ -776,7 +776,7 @@ Point group: C2v
 
 
 
-  Molecular g-factor in principal axis system (a.u.):
+  Molecular g-tensor in principal axis system (a.u.):
   ---------------------------------------------------
 
    A        0.71053998 -0.00000000  0.00000000

@@ -69,13 +69,16 @@ dftfun.o : dftfun.F \
 
 
 dftgrd.o : dftgrd.F \
+  ../include/aovec.h  ../include/ccom.h \
   ../include/chrnos.h  ../include/dftcom.h \
-  ../include/dummy.h  ../include/ibtfun.h \
-  ../include/implicit.h  ../include/infpar.h \
-  ../include/maxaqn.h  ../include/maxorb.h \
+  ./dftwrk.h  ../include/dummy.h \
+  ../include/ibtfun.h  ../include/implicit.h \
+  ../include/infpar.h  ../include/maxaqn.h \
+  ../include/maxorb.h  ../include/memint.h \
   ../include/mxcent.h  ../include/nuclei.h \
+  ../include/pi.h  ../include/primit.h \
   ../include/priunit.h  ../include/sdpre.h \
-  ../include/single.h  ../include/symmet.h
+  ../include/shells.h  ../include/symmet.h
 
 
 dftpar.o : dftpar.F \
@@ -93,5 +96,8 @@ dftpar.o : dftpar.F \
   ../include/single.h  ../include/sphtrm.h \
   ../include/symmet.h  ../include/wrkrsp.h \
   ../include/xyzpow.h
+
+
+Lebedev-Laikov.o : Lebedev-Laikov.F
 
 

@@ -2722,7 +2722,7 @@ Point group: C2v
       Vibrational analysis
       Nuclear magnetic shieldings
       Magnetic susceptibilities
-      Molecular g-factor
+      Molecular g-tensor
 
 
  Default print level:        0
@@ -3014,7 +3014,7 @@ Point group: C2v
 
 
  *****************************************************************************
- ************************ ABACUS - MOLECULAR g-FACTOR ************************
+ ************************ ABACUS - MOLECULAR g-TENSOR ************************
  *****************************************************************************
 
 
@@ -3029,10 +3029,10 @@ Point group: C2v
    IC  153.501431          0.000000    0.000000    1.000000
 
 
-  Molecular g-factor
+  Molecular g-tensor
   ------------------
 
-  Isotropic g-factor       :  -1.01340788
+  Isotropic g-tensor       :  -1.01340788
   Nuclear contribution     :   0.50379835
   Diamagnetic contribution :  -0.12123226
   Electronic contribution  :  -1.39597397
@@ -3041,7 +3041,7 @@ Point group: C2v
 
 
 
-  Molecular g-factor in principal axis system (a.u.):
+  Molecular g-tensor in principal axis system (a.u.):
   ---------------------------------------------------
 
    A       -2.75130582  0.00000000  0.00000000

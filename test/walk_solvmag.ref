@@ -1793,7 +1793,7 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
 
       Nuclear magnetic shieldings
       Magnetic susceptibilities
-      Molecular g-factor
+      Molecular g-tensor
 
 
  Default print level:        0
@@ -1953,7 +1953,7 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
 
 
  *****************************************************************************
- ************************ ABACUS - MOLECULAR g-FACTOR ************************
+ ************************ ABACUS - MOLECULAR g-TENSOR ************************
  *****************************************************************************
 
 
@@ -1968,20 +1968,20 @@ WLKMOL INFO: Center of solvent cavity moved to (0,0,0)
    IC   69.099991          0.804120   -0.594467    0.000000
 
 
-  Molecular g-factor
+  Molecular g-tensor
   ------------------
 
-  Isotropic g-factor       :   0.05555891
+  Isotropic g-tensor       :   0.05555891
   Nuclear contribution     :   0.74928287
   Electronic contribution  :  -0.68998959
   Parallel component:          0.27841014
   Perpendicular component:    -0.05586671
   Anisotropy:                  0.33427685
 
-  Molecular g-factor is cylindrical.
+  Molecular g-tensor is cylindrical.
 
 
-  Molecular g-factor in principal axis system (a.u.):
+  Molecular g-tensor in principal axis system (a.u.):
   ---------------------------------------------------
 
    A        0.27841014  0.00000000  0.00000000

@@ -813,7 +813,7 @@ Point group: C2v
  Cubic Response double residue calculation
  -----------------------------------------
 
- Cubic response two-photon absorbtion TPAMP=T
+ Cubic response two-photon absorption TPAMP=T
  Excited state polarizability requested TPALP=T
 
  Print level                                    : IPRTPA =    2
