@@ -610,7 +610,7 @@ fi
 if [ $WHICH = "nec" ]; then
     pdpackextras=""
 else
-    pdpackextras="linpack.o eispack.o"
+    pdpackextras="linpack.o eispack.o gp_zblas.o"
 fi
 if [ "$blas3" != "true" ] ; then
     pdpackextras="$pdpackextras gp_dblas3.o"

@@ -2,7 +2,7 @@ include ../Makefile.config
 
 all :	libpdpack.a
 
-OBJS = arhpack.o fastio_g07.o linextra.o printpkg.o jacobi.o
+OBJS = arhpack.o fastio_g07.o linextra.o printpkg.o jacobi.o gp_zblas.o
 
 libpdpack.a: $(OBJS) $(PDPACK_EXTRAS)
 	 $(AR) $(ARFLAGS) $@ $?

@@ -321,11 +321,15 @@ C     ****************************************
 C
       CALL GETTIM(TIMSTR,TIMDUM)
       IF (ABALNR) THEN
+C
+C     Added an extra dimension to keep complex numbers in case of
+C     absorption, panor+kr-02
+C
          KPOLDD = KLAST
-         KPOLDQ = KPOLDD + 9*MXFR
-         KPOLDL = KPOLDQ + 27*MXFR
-         KPOLDA = KPOLDL + 9*MXFR
-         KLST1  = KPOLDA + 9*MXFR
+         KPOLDQ = KPOLDD + 2*9*MXFR
+         KPOLDL = KPOLDQ + 2*27*MXFR
+         KPOLDA = KPOLDL + 2*9*MXFR
+         KLST1  = KPOLDA + 2*9*MXFR
          LWRK1  = LWORK - KLST1 + 1
          IF (.NOT. PASLNR) THEN
             CALL LNRABA(WORK(KPOLDD),WORK(KPOLDQ),WORK(KPOLDL),
@@ -598,6 +602,7 @@ C
 #include <inftap.h>
 #include <cbiwlk.h>
 #include <dftcom.h>
+#include <cbilnr.h>
 C
 C Common blocks used for SOPPA :
 C use from COMMON /INFDIM/ :  NCONMA,NWOPMA,NVARMA
@@ -631,7 +636,7 @@ C
      &             '.WRTINT', '.ECD   ', '.NODIFC',
      &             '.MOLGFA', '.SPIN-R', '.XXXXXX',
      &             '.PHASEO', '.NOMASV', '.NODARW',
-     &             '.ABALNR', '.VROA  ', 'XXXXXXX',
+     &             '.ALPHA ', '.VROA  ', 'XXXXXXX',
      &             'XXXXXXX', '.HELLMA', '.NOCMC ',
      &             '.EXPFCK', '.GAUGEO', '.DIPORG',
      &	           '.RAMAN ', '.QUADRU', '.NQCC  ',
@@ -722,6 +727,7 @@ C
       HYPER  = .FALSE.
       VERDET = .FALSE.
       MCD    = .FALSE.
+      ABA_ALPHA = .FALSE.
       OPTROT = .FALSE.
       LINCPL = .FALSE.
       SKIPAB = .FALSE.
@@ -893,6 +899,7 @@ C
          GO TO 100
   110    CONTINUE
             OPTROT = .TRUE.
+            ABALNR = .TRUE.
          GO TO 100
   111    CONTINUE
             VIB    = .TRUE.
@@ -985,10 +992,12 @@ C
             DARWIN = .FALSE.
          GOTO 100
   134    CONTINUE
+            ABA_ALPHA = .TRUE.
             ABALNR = .TRUE.
          GOTO 100
   135    CONTINUE
             VROA   = .TRUE.
+            ABALNR = .TRUE.
          GOTO 100
   136    CONTINUE
          GOTO 100
@@ -1249,6 +1258,8 @@ C
          WRITE (LUPRI,'(A)') ' Analyze the gradient in normal '//
      &        'coordinates read from Hessian on file'
       END IF
+      IF (ABA_ALPHA) WRITE (LUPRI,'(5X,A)')
+     &            ' Dynamic electric dipole polarizability'
       IF (ECD)    WRITE (LUPRI,'(5X,A)')
      &            ' Electronic circular dichroism'
       IF (MCD)    WRITE (LUPRI,'(5X,A)')

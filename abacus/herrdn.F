@@ -1685,6 +1685,9 @@ C
      &                 JCO(1,1,1),NUC(1,1),NRC(1,1),SEG(1,1),
      &                 WORK(KIPCON),KATOM,KANG,KBLOCK,
      &                 KPRIM,CPRIMU,NRMPRI,KASYM,NSYMOP)
+      CALL MOGTO(NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),NUC(1,1),
+     &           NRC(1,1),SEG(1,1),KATOM,KANG,KBLOCK,KPRIM,
+     &           CPRIMU,NRMPRI)
       IF (IPREAD .GE. 2) THEN
 C*****************************************************************************
 C        Print information about large component basis

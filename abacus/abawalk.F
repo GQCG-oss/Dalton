@@ -1197,7 +1197,7 @@ C
      &                  DIPM0,DIPGF,SUSTO0,SUSTF,GFAC0,GFACF,QUAD0,
      &                  QUADF,QUADT,SIGMA0,SIGMAF,SIGMAT,CSTRA,SCTRA,
      &                  SRC0,SRCF,POLAR0,POLARF,POLDD,ROAAFD,ROAAD,
-     &                  EFG0,EFGF,SPNTOT,SSJ0,SSJF,POLDL,POLDA,ROAGND,
+     &                  EFG0,EFGF,SPNTOT,SSJ0,SSJF,POLDA,POLDL,ROAGND,
      &                  ROAGLD,ROAGNU,ROAGLU,ERGMOL,ESTART,WORK,LWORK,
      &                  NCART,NCRTOT,NUMMOD,IPOINT,IPRWLK)
          ELSE IF (.NOT.(VROA .OR. RAMAN)) THEN
@@ -2338,7 +2338,8 @@ C
      &          GFAC0(3,3), GFACF(3,3,NCART), QUAD0(3,3), 
      &          QUADF(3,3,NCART), SIGMA0(3,3,MXCENT), 
      &          SIGMAF(3,3,MXCENT,NCART), SRC0(3,3,MXCENT), 
-     &          SRCF(3,3,MXCENT,NCART), POLAR0(3,3), POLARF(3,3,NCART),
+     &          SRCF(3,3,MXCENT,NCART), POLAR0(3,3),
+     &          POLARF(3,3,NCART),
      &          EFG0(3,3,MXCENT), EFGF(3,3,MXCENT,NCART), 
      &          SSJ0(MXCOOR,MXCOOR), SSJF(MXCOOR,MXCOOR,NCART)
 C
@@ -3798,11 +3799,12 @@ C
      &          SIGMAF(3,3,MXCENT,NCART), SRC0(3,3,MXCENT), 
      &          SRCF(3,3,MXCENT,NCART), TMAT(3,3,MXCENT), CSTRA(*), 
      &          SCTRA(*), POLAR0(3,3), POLARF(3,3,NCART), 
-     &          POLDD(3,3,MXFR), ALFA0(3,3,MXFR), ALFAF(3,3,MXFR,NCART),
+     &          POLDD(2,3,3,MXFR), ALFA0(3,3,MXFR), 
+     &          ALFAF(3,3,MXFR,NCART),
      &          EFG0(3,3,MXCENT), EFGF(3,3,MXCENT,NCART), 
      &          SPNTOT(MXCOOR,MXCOOR), SSJ0(MXCOOR,MXCOOR), 
-     &          SSJF(MXCOOR,MXCOOR,NCART), ROANL(3,3,MXFR), 
-     &          ROALO(3,3,MXFR), ROANL0(3,3,MXFR), ROALO0(3,3,MXFR),
+     &          SSJF(MXCOOR,MXCOOR,NCART), ROANL(2,3,3,MXFR), 
+     &          ROALO(2,3,3,MXFR), ROANL0(3,3,MXFR), ROALO0(3,3,MXFR),
      &          ROANLF(3,3,MXFR,MXCOOR), ROALOF(3,3,MXFR,MXCOOR),
      &          WORK(LWORK)
 C
@@ -3875,11 +3877,11 @@ C
          IF (SHIELD) CALL DCOPY(9*MXCENT,TMAT,1,SIGMA0,1)
          IF (SPINRO) CALL DCOPY(9*MXCENT,GTRANT,1,SRC0,1)
          IF (POLAR)  CALL DCOPY(9,POLARS,1,POLAR0,1)
-         IF (ALFA)   CALL DCOPY(9*MXFR,POLDD,1,ALFA0,1)
+         IF (ALFA)   CALL DCOPY(9*MXFR,POLDD,2,ALFA0,1)
          IF (NQCC)   CALL DCOPY(9*MXCENT,ELNQC,1,EFG0,1)
          IF (SPNSPN) CALL DCOPY(MXCOOR*MXCOOR,SPNTOT,1,SSJ0,1)
-         IF (OPTROT) CALL DCOPY(9*MXFR,ROANL,1,ROANL0,1)
-         IF (OPTROT) CALL DCOPY(9*MXFR,ROALO,1,ROALO0,1)
+         IF (OPTROT) CALL DCOPY(9*MXFR,ROANL,2,ROANL0,1)
+         IF (OPTROT) CALL DCOPY(9*MXFR,ROALO,2,ROALO0,1)
 C
 C     Should we transform the normal coordinates to an Eckart frame?
 C
@@ -3951,7 +3953,7 @@ C
                   DO ICOOR = 1, 3
                      DO JCOOR = 1, 3
                         ALFAF(ICOOR,JCOOR,IFRQR,I) = 
-     &                       (POLDD(ICOOR,JCOOR,IFRQR)
+     &                       (POLDD(1,ICOOR,JCOOR,IFRQR)
      &                       - ALFA0(ICOOR,JCOOR,IFRQR))/DISPLC**2
                      END DO
                   END DO
@@ -3981,10 +3983,10 @@ C
                DO ICOOR = 1, 3
                   DO JCOOR = 1, 3
                      ROANLF(ICOOR,JCOOR,IFRQ,I) = 
-     &                      (ROANL(ICOOR,JCOOR,IFRQ)
+     &                      (ROANL(1,ICOOR,JCOOR,IFRQ)
      &                    - ROANL0(ICOOR,JCOOR,IFRQ))/DISPLC**2
                      ROALOF(ICOOR,JCOOR,IFRQ,I) = 
-     &                      (ROALO(ICOOR,JCOOR,IFRQ)
+     &                      (ROALO(1,ICOOR,JCOOR,IFRQ)
      &                     - ROALO0(ICOOR,JCOOR,IFRQ))/DISPLC**2
                   END DO
                END DO
@@ -4065,7 +4067,7 @@ C
                      DO JCOOR = 1, 3
                         ALFAF(ICOOR,JCOOR,IFRQR,I) = 
      &                       ALFAF(ICOOR,JCOOR,IFRQR,I) +
-     &                       (POLDD(ICOOR,JCOOR,IFRQR) 
+     &                       (POLDD(1,ICOOR,JCOOR,IFRQR) 
      &                       - ALFA0(ICOOR,JCOOR,IFRQR))/DISPLC**2
                      END DO
                   END DO
@@ -4098,11 +4100,11 @@ C
                   DO JCOOR = 1, 3
                      ROANLF(ICOOR,JCOOR,IFRQ,I) = 
      &                    ROANLF(ICOOR,JCOOR,IFRQ,I) +
-     &                    (ROANL(ICOOR,JCOOR,IFRQ)
+     &                    (ROANL(1,ICOOR,JCOOR,IFRQ)
      &                    - ROANL0(ICOOR,JCOOR,IFRQ))/DISPLC**2
                      ROALOF(ICOOR,JCOOR,IFRQ,I) =
      &                    ROALOF(ICOOR,JCOOR,IFRQ,I) +
-     &                    (ROALO(ICOOR,JCOOR,IFRQ)
+     &                    (ROALO(1,ICOOR,JCOOR,IFRQ)
      &                    - ROALO0(ICOOR,JCOOR,IFRQ))/DISPLC**2
                   END DO
                END DO
@@ -4266,7 +4268,7 @@ C
                DO IFRQR = 1, NFRVAL
                   WRITE (LUPRI,'(/1X,A,F8.5)') 'Frequency:   ',
      &                 FRVAL(IFRQR)
-                  CALL POLPRI(POLDD(1,1,IFRQR),'   ',-2)
+                  CALL POLPRI(POLDD(1,1,1,IFRQR),'   ',-2)
                END DO
             END IF
             IF (NQCC) THEN
@@ -4292,18 +4294,18 @@ C
                DO IFRQR = 1, NFRVAL
                WRITE (LUPRI,'(/1X,A,F8.5)') 'Frequency:   ',FRVAL(IFRQR)
                WRITE(LUPRI,9009) 'Bx','By','Bz'
-               WRITE(LUPRI,9008) 'Ex',(ROALO(1,JDIP,IFRQR), JDIP=1,3)
-               WRITE(LUPRI,9008) 'Ey',(ROALO(2,JDIP,IFRQR), JDIP=1,3)
-               WRITE(LUPRI,9008) 'Ez',(ROALO(3,JDIP,IFRQR), JDIP=1,3)
+               WRITE(LUPRI,9008) 'Ex',(ROALO(1,1,JDIP,IFRQR), JDIP=1,3)
+               WRITE(LUPRI,9008) 'Ey',(ROALO(1,2,JDIP,IFRQR), JDIP=1,3)
+               WRITE(LUPRI,9008) 'Ez',(ROALO(1,3,JDIP,IFRQR), JDIP=1,3)
                END DO
                CALL HEADER('No-London orbital G matrix at effective '//
      &                  'geometry',1)
                DO IFRQR = 1, NFRVAL
                WRITE (LUPRI,'(/1X,A,F8.5)') 'Frequency:   ',FRVAL(IFRQR)
                WRITE(LUPRI,9009) 'Bx','By','Bz'
-               WRITE(LUPRI,9008) 'Ex',(ROANL(1,JDIP,IFRQR), JDIP=1,3)
-               WRITE(LUPRI,9008) 'Ey',(ROANL(2,JDIP,IFRQR), JDIP=1,3)
-               WRITE(LUPRI,9008) 'Ez',(ROANL(3,JDIP,IFRQR), JDIP=1,3)
+               WRITE(LUPRI,9008) 'Ex',(ROANL(1,1,JDIP,IFRQR), JDIP=1,3)
+               WRITE(LUPRI,9008) 'Ey',(ROANL(1,2,JDIP,IFRQR), JDIP=1,3)
+               WRITE(LUPRI,9008) 'Ez',(ROANL(1,3,JDIP,IFRQR), JDIP=1,3)
                END DO
             END IF
          END IF
@@ -7232,23 +7234,23 @@ C
 #include <nuclei.h>
 #include <symmet.h>
 C
-      DIMENSION ROAAFU(3,3,MXFR),  ROAAFP(3,3,MXFR),
+      DIMENSION ROAAFU(3,3,MXFR),  ROAAFP(2,3,3,MXFR),
      &          ROAAFD(3,3,MXFR,MXCOOR),
-     &          ROAGNU(3,3,MXFR),  ROAGNP(3,3,MXFR),
+     &          ROAGNU(3,3,MXFR),  ROAGNP(2,3,3,MXFR),
      &          ROAGND(3,3,MXFR,MXCOOR),
-     &          ROAGLU(3,3,MXFR),  ROAGLP(3,3,MXFR),
+     &          ROAGLU(3,3,MXFR),  ROAGLP(2,3,3,MXFR),
      &          ROAGLD(3,3,MXFR,MXCOOR),
-     &          ROAAU(3,3,3,MXFR), ROAAP(3,3,3,MXFR),
+     &          ROAAU(3,3,3,MXFR), ROAAP(2,3,3,3,MXFR),
      &          ROAAD(3,3,3,MXFR,MXCOOR)
 C
 #include <chrsgn.h>
 C
       FINAL = IPOINT .EQ. 2*NCART
       IF (IPOINT .EQ. 0) THEN
-         CALL DCOPY (9*MXFR,ROAAFP,1,ROAAFU,1)
-         CALL DCOPY (9*MXFR,ROAGNP,1,ROAGNU,1)
-         CALL DCOPY (9*MXFR,ROAGLP,1,ROAGLU,1)
-         CALL DCOPY (27*MXFR,ROAAP,1,ROAAU,1)
+         CALL DCOPY (9*MXFR,ROAAFP,2,ROAAFU,1)
+         CALL DCOPY (9*MXFR,ROAGNP,2,ROAGNU,1)
+         CALL DCOPY (9*MXFR,ROAGLP,2,ROAGLU,1)
+         CALL DCOPY (27*MXFR,ROAAP,2,ROAAU,1)
          CALL DZERO(ROAAFD, 9*MXFR*MXCOOR)
          CALL DZERO(ROAGND, 9*MXFR*MXCOOR)
          CALL DZERO(ROAGLD, 9*MXFR*MXCOOR)
@@ -7259,25 +7261,26 @@ C
             DO 100 I = 1, 3
             DO 100 J = 1, 3
             DO 100 F = 1, NFRVAL
-               ROAAFD(I,J,F,X) = (ROAAFP(I,J,F) - ROAAFU(I,J,F))/DISPLC
-               ROAGND(I,J,F,X) = (ROAGNP(I,J,F) - ROAGNU(I,J,F))/DISPLC
-               ROAGLD(I,J,F,X) = (ROAGLP(I,J,F) - ROAGLU(I,J,F))/DISPLC
+               ROAAFD(I,J,F,X) =(ROAAFP(1,I,J,F) - ROAAFU(I,J,F))/DISPLC
+               ROAGND(I,J,F,X) =(ROAGNP(1,I,J,F) - ROAGNU(I,J,F))/DISPLC
+               ROAGLD(I,J,F,X) =(ROAGLP(1,I,J,F) - ROAGLU(I,J,F))/DISPLC
             DO 100 K = 1, 3
-               ROAAD(I,J,K,F,X)=(ROAAP(I,J,K,F) - ROAAU(I,J,K,F))/DISPLC
+               ROAAD(I,J,K,F,X)=
+     &              (ROAAP(1,I,J,K,F) - ROAAU(I,J,K,F))/DISPLC
   100       CONTINUE
          ELSE
             DO 200 I = 1, 3
             DO 200 J = 1, 3
             DO 200 F = 1, NFRVAL
                ROAAFD(I,J,F,X) = DP5*
-     &            (ROAAFD(I,J,F,X)-(ROAAFP(I,J,F)-ROAAFU(I,J,F))/DISPLC)
+     &          (ROAAFD(I,J,F,X)-(ROAAFP(1,I,J,F)-ROAAFU(I,J,F))/DISPLC)
                ROAGND(I,J,F,X) = DP5*
-     &            (ROAGND(I,J,F,X)-(ROAGNP(I,J,F)-ROAGNU(I,J,F))/DISPLC)
+     &          (ROAGND(I,J,F,X)-(ROAGNP(1,I,J,F)-ROAGNU(I,J,F))/DISPLC)
                ROAGLD(I,J,F,X) = DP5*
-     &            (ROAGLD(I,J,F,X)-(ROAGLP(I,J,F)-ROAGLU(I,J,F))/DISPLC)
+     &          (ROAGLD(I,J,F,X)-(ROAGLP(1,I,J,F)-ROAGLU(I,J,F))/DISPLC)
             DO 200 K = 1, 3
                ROAAD(I,J,K,F,X) = DP5*
-     &         (ROAAD(I,J,K,F,X)-(ROAAP(I,J,K,F)-ROAAU(I,J,K,F))/DISPLC)
+     &       (ROAAD(I,J,K,F,X)-(ROAAP(1,I,J,K,F)-ROAAU(I,J,K,F))/DISPLC)
   200       CONTINUE
          END IF
       END IF

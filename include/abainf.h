@@ -14,7 +14,7 @@ C
      &        DARWIN, ABALNR, VROA,   NOCMC,  EXPFCK,
      &        RAMAN,  QUADRU, NQCC,   HYPER,  VERDET,
      &        MCD,    HELFEY, LINCPL, ABASOP, SKIPAB,
-     &        EXPGRD
+     &        ABA_ALPHA, EXPGRD
       COMMON /ABAINF/ NTCSY(8), NSCSY(8), IPRDEF, NWNABA, 
      &                MOLGRD, MOLHES, DIPDER, POLAR,  TSTINP,
      &                VIB,    RESTAR, DOWALK, GDALL,  CCSD,
@@ -25,4 +25,4 @@ C
      &                DARWIN, ABALNR, VROA,   NOCMC,  EXPFCK,
      &                RAMAN,  QUADRU, NQCC,   HYPER,  VERDET,
      &                MCD,    HELFEY, LINCPL, ABASOP, SKIPAB,
-     &                EXPGRD
+     &                ABA_ALPHA, EXPGRD

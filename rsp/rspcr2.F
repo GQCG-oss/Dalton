@@ -251,12 +251,6 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
-C VECTOR TO STORE NPPCNV(8)
-      DIMENSION NKEEP(8)
-C
-C Used from common blocks:
-C   INFRSP : LURSP*
-C
 #include <maxorb.h>
 #include <inforb.h>
 #include <infvar.h>

@@ -92,7 +92,7 @@ cat > prop_exci.dal <<'%EOF%'
 .MP2
 **PROPERTIES
 .SOPPA
-.ABALNR
+.ALPHA
 .EXCITA
 *EXCITA
 .DIPSTR
@@ -100,7 +100,6 @@ cat > prop_exci.dal <<'%EOF%'
 .NEXCITA
     5    5    5    5    0    0    0    0
 *ABALNR
-.ALFA
 .FREQUE
 3
 0.0 0.05 0.1

@@ -50,51 +50,85 @@ C
 #include <inftmo.h>
 #include <infcr.h>
 C
+C     Keep the accumulated number of ROOTS for three-photon calcs
+C
+      IDOFF = 0
+C
       DO 200 IDSYM = 1,NSYM
       DO 300 ICSYM = 1,NSYM
       DO 400 IBSYM = 1,NSYM
          IASYM = MULD2H(IDSYM,MULD2H(ICSYM,IBSYM))
          IF ( (NTMCNV(IDSYM).GT.0) .AND. (NCTMOP(ICSYM).GT.0) .AND.
-     *       (NBTMOP(IBSYM).GT.0) .AND. (NATMOP(IASYM).GT.0) ) THEN
-            DO 450 IDFR = 1,NTMCNV(IDSYM)
-               INUM = INCRLR('EXCITLAB',EXCIT2(IDSYM,IDFR),IDSYM)
- 450        CONTINUE
-            DO 500 ICOP = 1,NCTMOP(ICSYM)
-            DO 600 ICFR = 1,NCTMFR
-               INUM = INCRLR(CTMLB(ICSYM,ICOP),-CTMFR(ICFR),ICSYM)
- 600        CONTINUE
- 500        CONTINUE
-            DO 700 IBOP = 1,NBTMOP(IBSYM)
-            DO 800 IBFR = 1,NBTMFR
-               INUM = INCRLR(BTMLB(IBSYM,IBOP),-BTMFR(IBFR),IBSYM)
- 800        CONTINUE
- 700        CONTINUE
-            DO 900  IDFR = 1,NTMCNV(IDSYM)
-            DO 1000 ICFR = 1,NCTMFR
-            DO 1100 IBFR = 1,NBTMFR
+     &       (NBTMOP(IBSYM).GT.0) .AND. (NATMOP(IASYM).GT.0) ) THEN
 C
-C  If harmonic generation is specified we only accept an equal
-C  number of b,c frequencies
+C     If three-photon absorption is specified we only compute
+C     linear response functions and excitation vectors for certain 
+C     frequencies
+C 
+            IF (THREEPHOTON) THEN
+               DO IDFR = 1,NTMCNV(IDSYM)
+                  BTMFR(IDFR+IDOFF) = EXCIT2(IDSYM,IDFR)/3
+                  CTMFR(IDFR+IDOFF) = EXCIT2(IDSYM,IDFR)/3
+                  ATMFR = EXCIT2(IDSYM,IDFR) - 
+     &                 CTMFR(IDFR+IDOFF) - BTMFR(IDFR+IDOFF)
+                  INUM = INCRLR('EXCITLAB',EXCIT2(IDSYM,IDFR),IDSYM)
+                  DO ICOP = 1,NCTMOP(ICSYM)
+                     INUM = INCRLR(CTMLB(ICSYM,ICOP),-CTMFR(IDFR+IDOFF),
+     &                    ICSYM)
+                  END DO
+                  DO IBOP = 1,NBTMOP(IBSYM)
+                     INUM = INCRLR(BTMLB(IBSYM,IBOP),-BTMFR(IDFR+IDOFF),
+     &                    IBSYM)
+                  END DO
+                  DO IAOP = 1,NATMOP(IASYM)
+                     INUM = INCRLR(ATMLB(IASYM,IAOP),ATMFR,IASYM)
+                  END DO
+               END DO
+            ELSE
 C
-               IF (CTMOHG) THEN
-                  IF (NBTMFR.NE.NCTMFR) THEN
-                      WRITE (LUPRI,'(2(/A))')
+C     The general case
+C
+               DO 450 IDFR = 1,NTMCNV(IDSYM)
+                  INUM = INCRLR('EXCITLAB',EXCIT2(IDSYM,IDFR),IDSYM)
+ 450           CONTINUE
+               DO 500 ICOP = 1,NCTMOP(ICSYM)
+               DO 600 ICFR = 1,NCTMFR
+                  INUM = INCRLR(CTMLB(ICSYM,ICOP),-CTMFR(ICFR),ICSYM)
+ 600           CONTINUE
+ 500           CONTINUE
+               DO 700 IBOP = 1,NBTMOP(IBSYM)
+               DO 800 IBFR = 1,NBTMFR
+                  INUM = INCRLR(BTMLB(IBSYM,IBOP),-BTMFR(IBFR),IBSYM)
+ 800           CONTINUE
+ 700           CONTINUE
+               DO 900  IDFR = 1,NTMCNV(IDSYM)
+               DO 1000 ICFR = 1,NCTMFR
+               DO 1100 IBFR = 1,NBTMFR
+C
+C     If harmonic generation is specified we only accept an equal
+C     number of b,c frequencies
+C
+                  IF (CTMOHG) THEN
+                     IF (NBTMFR.NE.NCTMFR) THEN
+                        WRITE (LUPRI,'(2(/A))')
      * '*** ERROR -- If harmonic generation is specified we only',
      * '             accept an equal number of b,c frequencies.'
                       CALL QUIT('wrong frequencies')
-                   END IF
-                  IF (IBFR.NE.ICFR) GO TO 1100
-               END IF
-               ATMFR = EXCIT2(IDSYM,IDFR) - CTMFR(ICFR) - BTMFR(IBFR)
-               DO 1200 IAOP = 1,NATMOP(IASYM)
-                  INUM = INCRLR(ATMLB(IASYM,IAOP),ATMFR,IASYM)
- 1200          CONTINUE
- 1100       CONTINUE
- 1000       CONTINUE
- 900        CONTINUE
+                     END IF
+                     IF (IBFR.NE.ICFR) GO TO 1100
+                  END IF
+                  ATMFR = EXCIT2(IDSYM,IDFR) - CTMFR(ICFR) - BTMFR(IBFR)
+                  DO 1200 IAOP = 1,NATMOP(IASYM)
+                     INUM = INCRLR(ATMLB(IASYM,IAOP),ATMFR,IASYM)
+ 1200             CONTINUE
+ 1100          CONTINUE
+ 1000          CONTINUE
+ 900           CONTINUE
+            END IF
          END IF
  400  CONTINUE
  300  CONTINUE
+      IDOFF = IDOFF + NTMCNV(IDSYM)
  200  CONTINUE
       RETURN
       END
@@ -105,6 +139,8 @@ C TWO-INDEX LINEAR RESPONSE EQUATIONS THAT NEED TO BE SOLVED
 C IN A SECOND HYPERPOLARIZABILITY CALCULATION
 C
 #include <implicit.h>
+C
+      PARAMETER ( ZERO = 1.0D-10 )
 C
 #include <infcr.h>
 #include <inforb.h>
@@ -133,6 +169,15 @@ C
                DO 220 ICFR = 1,NCTMFR
                DO 120 IBFR = 1,NBTMFR
                   DTMFR = EXCIT2(IDSYM,IDFR)
+C
+C     If three photon absorption calculation only certain frequencies
+C     are considered.
+C
+                  IF (THREEPHOTON .AND. 
+     &                ( (ABS(DTMFR-3*BTMFR(IBFR)).GT.ZERO) 
+     &                  .OR.
+     &                  (ABS(DTMFR-3*CTMFR(ICFR)).GT.ZERO) ) 
+     &               ) GOTO 120
 C
 C  If harmonic generation is specified we only need two index
 C  response vectors with equal B and C frequencies.

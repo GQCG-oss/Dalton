@@ -834,8 +834,8 @@ C
             INQUIRE(FILE=FILENM(1:FILELN),EXIST=FEXST,IOSTAT=IOS)
             IF (.NOT. FEXST) GOTO 9007
             IF (FORMLN .EQ. 1) THEN
-               FORMLN = 9
-               FORMF(1:FORMLN)='FORMATTED'
+               FORMLN = 11
+               FORMF(1:FORMLN)='UNFORMATTED'
             END IF
             IF (IPRERR.gt.1) write (LUERR,*) 'GPOPEN seq OLD ',LUNIT,
      &         ' ',FILENM(1:FILELN),' ',FORMF(1:FORMLN)

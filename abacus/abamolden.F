@@ -68,7 +68,7 @@ C
       RETURN
       END
       SUBROUTINE MOGTO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
-     &           NOINT,IPCON,KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI)
+     &                 KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI)
 
 #include <implicit.h>
 #include <maxorb.h>

@@ -2520,12 +2520,14 @@ C
                            IF ( ISPINA.EQ.0 ) THEN
                               IAFRNU = NEXLB2
      *                          + INQRLR(LBLPP(MSYMA,IAOP),CEXMBE,MSYMA)
+                           LABEL = QRLBL(IAFRNU-NEXLB2)
+                           FREQA  = QRFREQ(IAFRNU-NEXLB2)
                            ELSE
                               IAFRNU = NEXLB2 + NLRLBL
      *                          + INQRTR(LBLPP(MSYMA,IAOP),CEXMBE,MSYMA)
+                           LABEL = TRLBL(IAFRNU-NEXLB2)
+                           FREQA  = TRFREQ(IAFRNU-NEXLB2)
                            END IF
-                           LABEL = QRLBL(IAFRNU-NEXLB2)
-                           FREQA  = QRFREQ(IAFRNU-NEXLB2)
                            CALL REARSP(LURSP,KLEN,WRK(1+MZYVAR(MSYMA)),
      &                          LABEL,BLANK,FREQA,D0,MSYMA,0,THCLR,
      &                          FOUND,CONV,ANTSYM)

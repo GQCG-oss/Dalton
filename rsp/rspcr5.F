@@ -108,15 +108,15 @@ C
      &           ' Number of basis functions/orbitals in this calc.: ',
      &           NBAST,NORBT
             WRITE (LUPRI,'(/A)') ' Calculation will be stopped'
-            CALL QUIT('Inconsistent energy found on response '//
-     &                'vector file')
+            CALL QUIT('Inconsistent orbital description found '//
+     &                'on response vector file')
       ELSE
          IF (ABS(EMCX - EMCSCF) .GT. THRZER) THEN
             IF ((OPTNEW .AND. ITRNMR .GT. 0) .OR. 
      &          (OPTWLK .AND. ITERNR .GT. 0)) THEN
                USOLVD = .TRUE.
                WRITE (LUPRI,'(/A)') ' Converged vectors from previous'//
-     &              ' geometry used as starting vectors'
+     &            ' geometry used are read and used as starting vectors'
             ELSE
                WRITE (LUPRI,'(/A,2(/A,F20.10))')
      &              ' Molecular energy found on response'//
@@ -162,29 +162,5 @@ C
 C
  199  CONTINUE
       IF (USOLVD) CONV = .FALSE.
-      RETURN
- 200  END
-      SUBROUTINE CR0IND(LU)
-C
-C Purpose: Open RSPVEC
-C
-#include <implicit.h>
-#include <dummy.h>
-#include <infcr.h>
-C
-      CHARACTER*8 LAB1,LAB2,BLANK
-      LOGICAL     EX
-C
-      CALL GPINQ('RSPVEC','EXIST',EX) 
-      IF (.NOT.EX) THEN 
-         CALL GPOPEN(LU,'RSPVEC','NEW',' ','UNFORMATTED',IDUMMY,
-     &               .FALSE.)
-         WRITE (LU) 'EOFLABEL'
-         RETURN
-      ELSE
-         CALL GPOPEN(LU,'RSPVEC','OLD',' ','UNFORMATTED',IDUMMY,
-     &               .FALSE.)
-      END IF
-C
-      RETURN
+ 200  RETURN
       END

@@ -51,7 +51,7 @@ C
 #include <inftap.h>
 C
       LOGICAL NEWDEF
-      PARAMETER ( NTABLE = 19)
+      PARAMETER ( NTABLE = 20)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL
 C
@@ -59,7 +59,7 @@ C
      *            '.APROP ', '.ROOTS ', '.MAXITP', '.THCPP ', 
      *            '.MAXIT ', '.THCLR ', '.MAXITO', '.PRINT ', 
      *            '.NOHG  ', '.DIPLEN', '.DIPLNX', '.DIPLNY', 
-     *            '.DIPLNZ', '.SINGLE', '.FREQUE'/
+     *            '.DIPLNZ', '.SINGLE', '.FREQUE', '.THREE-'/
 C
 C READ IN  INPUT
 C
@@ -80,7 +80,7 @@ C
                DO I=1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,
-     &                      15,16,17,18,19), I
+     &                      15,16,17,18,19,20), I
                   END IF
                END DO
                IF (WORD .EQ. '.OPTION') THEN
@@ -207,6 +207,21 @@ C
                      CTMFR(J)=BTMFR(J)
                   END DO
                GO TO 100         
+ 20            CONTINUE
+                  THREEPHOTON = .TRUE.
+                  LABEL='XDIPLEN'
+                  ATMOP( INDPRP(LABEL)) = .TRUE.
+                  BTMOP( INDPRP(LABEL)) = .TRUE.
+                  CTMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='YDIPLEN'
+                  ATMOP( INDPRP(LABEL)) = .TRUE.
+                  BTMOP( INDPRP(LABEL)) = .TRUE.
+                  CTMOP( INDPRP(LABEL)) = .TRUE.
+                  LABEL='ZDIPLEN'
+                  ATMOP( INDPRP(LABEL)) = .TRUE.
+                  BTMOP( INDPRP(LABEL)) = .TRUE.
+                  CTMOP( INDPRP(LABEL)) = .TRUE.
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -233,12 +248,38 @@ C
          IF (NCTMTO .EQ. 0) WRITE (LUPRI,'(/A)')
      *      ' *CRTMO input ignored because no C operators requested.'
       END IF
+C
+C If three-photon calculation then we assume that the frequencies of the 
+C photons match the excitation. At this point we set the frequencies
+C to dummy values, later they become half of the excitation energies.
+C
+      IF (THREEPHOTON) THEN
+         NBTMFR = ISUM(NSYM,NTMCNV,1)
+         NCTMFR = NBTMFR
+         IF (NBTMFR .EQ. 0) THEN
+            WRITE (LUPRI,'(/2A)')
+     *      ' Input ignored because no excited states specified.',
+     *      ' Use the .ROOTS keyword.'
+            WRITE(LUPRI,'(/A)') ' <<<<<<< End of DALTON >>>>>>>'
+            CALL QUIT('***** End of DALTON *****')
+         END IF
+         DO J=1,NBTMFR
+            BTMFR(J)=1.0D0
+            CTMFR(J)=1.0D0
+         END DO
+      END IF
+C
       NTMCAL = MIN(NATMTO,NBTMTO,NCTMTO,NBTMFR,NCTMFR)
       IF  (NTMCAL.GT.0)  THEN
          CALL HEADER('Cubic Response single residue calculation',0)
          WRITE (LUPRI,'(A,L1)')
      *      ' Third moments calculated : TOMOM='
      *      ,TOMOM
+         IF (THREEPHOTON) THEN
+            WRITE(LUPRI,'(A,L1,/)')
+     *      ' Three-photon transition process computed  : THREEPHOTON ='
+     *      ,THREEPHOTON
+         END IF
          WRITE(LUPRI,'(/A,I5)')
      *      ' Print level                                    : IPRTMO ='
      *      ,IPRTMO

@@ -47,6 +47,7 @@ OBJS = \
 	rsptpa2.o	\
 	rsptpa3.o	\
 	rspvec.o	\
+	absorp.o	\
 	x2expl.o
 
 all: librsp.a

@@ -100,7 +100,7 @@ C
 #include <priunit.h>
 #include <infsop.h>
 C
-      LOGICAL CICLC,HFCLC,TRPCLC,EXCLC, OOTV, OLDDX, FLAGSV
+      LOGICAL CICLC,HFCLC,TRPCLC,EXCLC,OOTV,FLAGSV,EX
 C
       CALL QENTER('ABARSP')
       TIMRSP = SECOND()
@@ -167,8 +167,6 @@ C
      *   ,' CONSEQUENTLY THE CALCULATION MUST STOP'
          CALL QUIT('ABARSP: INCORRECT SPECIFICATION OF CICLC AND HFCLC')
       ENDIF
-C
-C DEFINE VARIABLES: assegna gli argomenti di chiamata alle variabili
 C
       KSYMOP = IOPSYM
       OPTORB = OOTV
@@ -367,10 +365,24 @@ C
       END IF
 C
       CALL FLSHFO(LUPRI)
+C
+C Open RSPVEC for response vectors, existing vectors may exist for restart
+C
+      CALL GPINQ('RSPVEC','EXIST',EX)
+      IF (.NOT.EX) THEN
+         CALL GPOPEN(LURSP,'RSPVEC','NEW',' ','UNFORMATTED',IDUMMY,
+     &        .FALSE.)
+         WRITE (LURSP) 'EOFLABEL'
+      ELSE
+         CALL GPOPEN(LURSP,'RSPVEC','OLD',' ','UNFORMATTED',IDUMMY,
+     &        .FALSE.)
+      END IF
+C
+C Open files for trial and sigma vectors
+C
       CALL GPOPEN(LURSP3,' ','UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
       CALL GPOPEN(LURSP4,' ','UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
       CALL GPOPEN(LURSP5,' ','UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
-      CALL CR0IND(LURSP)
 C
 cs
 C      IF (NEXVAL.EQ.0) THEN
@@ -432,7 +444,7 @@ C
            IF (IPRRSP .GT. 0) TIMLR = SECOND()
            CALL RSPLLE(LUGDVE,LUSOVE,LUREVE,NABAOP,NABATY,LABEL,
      *                 WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KFC),WRK(KFV),
-     *                 WRK(KFCAC),WRK(KH2AC),WRK(KINDX),
+     *                 WRK(KFCAC),WRK(KH2AC),WRK(KINDX),WRK(KFOCK),
      *                 WRK(KWRK1),LWRK1)
            IF (IPRRSP .GT. 0) THEN
               TIMLR = SECOND() - TIMLR
@@ -449,9 +461,9 @@ C
 C
   100 CONTINUE
 C
-      CALL GPCLOSE(LURSP3,'DELETE')
+      CALL GPCLOSE(LURSP3,'KEEP')
       CALL GPCLOSE(LURSP4,'DELETE')
-      CALL GPCLOSE(LURSP5,'DELETE')
+      CALL GPCLOSE(LURSP5,'KEEP')
       CALL GPCLOSE(LURSP,'KEEP')
       IF (LUSOL.GT.0) CALL GPCLOSE(LUSOL,'KEEP')
 C
@@ -603,7 +615,7 @@ C
       END
 C  /* Deck rsplle */
       SUBROUTINE RSPLLE(LUGDVE,LUSOVE,LUREVE,NABAOP,NABATY,LABEL,CMO,
-     *                  UDV,PV,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
+     *                  UDV,PV,FC,FV,FCAC,H2AC,XINDX,FOCK,WRK,LWRK)
 C
 #include <implicit.h>
 #include <iratdef.h>
@@ -612,9 +624,10 @@ C
 C
       CHARACTER*8 BLANK, LABEL
       PARAMETER (BLANK = '        ')
+      LOGICAL RESFLG(8)
       DIMENSION NABATY(*)
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)
-      DIMENSION XINDX(*),WRK(LWRK)
+      DIMENSION XINDX(*),FOCK(*),WRK(LWRK)
 C
 #include <priunit.h>
 #include <gdvec.h>
@@ -626,139 +639,166 @@ C
 #include <infdim.h>
 #include <inforb.h>
 #include <abainf.h>
+#include <absorp.h>
+#include <infvar.h>
 C
       PARAMETER ( DM1 = -1.0D0 )
+C
+C     Save flag to control that RESPONANT is only called once
+C     for each symmetry
+C
+      SAVE RESFLG
+      DATA RESFLG/.FALSE.,.FALSE.,.FALSE.,.FALSE.,
+     &            .FALSE.,.FALSE.,.FALSE.,.FALSE./
 C
 C DETERMINE SECOND ORDER MOLECULAR PROPERTIES
 C
       CALL QENTER('RSPLLE')
 C
-      KREDE  = 1
-      KREDS  = KREDE  + MAXRM*MAXRM
-      KIBTYP = KREDS  + MAXRM*MAXRM
-      KEIVAL = KIBTYP + MAXRM
-      KRESID = KEIVAL + MAXRM
-      KEIVEC = KRESID + MAXRM
-      KREDGD = KEIVEC + MAXRM*MAXRM
-      KGD    = KREDGD + MAXRM*NFREQ
-      KWRK1  = KGD    + KZYVAR
-      LWRK1  = LWRK   - KWRK1
+      KFREE = 1
+      LFREE = LWRK
+      CALL MEMGET('REAL',KREDE,MAXRM*MAXRM,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KREDS,MAXRM*MAXRM,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KREDZ,2*MAXRM*MAXRM,WRK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBTYP,MAXRM,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIVAL,MAXRM,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KRESID,MAXRM,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIVEC,2*MXFREQ*MAXRM,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KREDGD,MAXRM,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KREDZGD,2*MAXRM,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGD,KZYVAR,WRK,KFREE,LFREE)
 C
-      IF (LWRK1.LT.3*KZYVAR) THEN
-         WRITE (LUPRI,9100) LWRK1,3*KZYVAR
-         CALL QTRACE(LUPRI)
-         CALL QUIT('RSPLLE, INSUFFICIENT SPACE TO SOLVE '//
-     &             'LINEAR EQUATIONS')
-      ENDIF
- 9100 FORMAT(/' RSPLLE, work space too small for 3 (z,y)-vectors',
-     *       /'         had:',I10,', need more than:',I10)
+      IF (ABSORP) THEN
 C
-C WORK SPACE FOR RSPEVE AND RSPRES
+C     Finite lifetime of the excited states,
+C     corresponds to complex response including absorption
+C     in the system
 C
-C WORK SPACE EACH TIME RSPRES IS CALLED
-      MWRK   = KZYVAR
-      IF (.NOT. RSPCI ) MWRK = MWRK + NCREF +  LACIMX
-C Work space for each residual vector
-      MRES   = MAX(NORBT*NORBT,2*N2ASHX) + KZYVAR
-C NUMBER OF SIMULTANEOUS VECTORS
-      MXFREQ = (LWRK1-MWRK)/MRES
-      MXFREQ = MIN(NFREQ,MXFREQ)
-      IF (MXFREQ .LE. 0) THEN
-         WRITE(LUPRI,*) 'RSPLLE: insufficient memory for RSPRES'
-         WRITE(LUPRI,*) ' had:',LWRK1,' need more than:',MWRK+MRES
-         CALL QUIT('RSPLLE: insufficient memory for RSPRES')
-      END IF
-C
-      KWRKE  = KWRK1
-      KBVECS = KWRKE + KZYVAR
-C
-      KZRED  = 0
-      KZYRED = 0
-      THCRSP = THCLR
-      IPRRSP = IPRLR
-      MAXIT  = MAXITL
-C
-C     Call RSPCTL to solve linear set of response equations
-C
-      DO 600 IOP = 1,NABAOP
-         IF (IPRLR .GE. 0)
-     &   WRITE (LUPRI,'(//A,I3,/A,I3,A,I3/A,(T25,5F10.6))')
-     &   ' RSPLLE -- linear response calculation for symmetry',KSYMOP,
-     &   ' RSPLLE -- operator no.',IOP,' out of',NABAOP,
-     &   ' RSPLLE -- frequencies :',(FREQ(I),I=1,NFREQ)
-         IF (ABASOP .AND. IPRLR .GE. 0)
-     &      WRITE (LUPRI,'(/A/A,I8,/A,I8,/A,I8)')
-     &         '  SOPPA calculation:'
-     &        ,'  p-h variables.            - KZWOPT :',KZWOPT
-     &        ,'  2p-2h variables.          - KZCONF :',KZCONF
-     &        ,'  Total number of variables - KZVAR  :',KZVAR
-C
-C READ IN GD VECTOR FROM LUGDVE
-C
-         CALL READT(LUGDVE,KZVAR,WRK(KGD))
-C
-         IF (NABATY(IOP).EQ.1) THEN
-            CALL DCOPY(KZVAR,WRK(KGD),1,WRK(KGD+KZVAR),1)
-            CALL DSCAL(KZVAR,DM1,WRK(KGD+KZVAR),1)
-         ELSE IF (NABATY(IOP).EQ.-1) THEN
-            CALL DCOPY(KZVAR,WRK(KGD),1,WRK(KGD+KZVAR),1)
-         ELSE
-            WRITE(LUPRI,'(/2A,I5,A,I5)')
-     *       ' NABATY(IOP) NOT AN ALLOWED VALUE'
-     *      ,' IOP=',IOP,'  NABATY(IOP)=',NABATY(IOP)
-          CALL QUIT(' RSPLLE: INCORRECT NABATY(IOP)')
+         IF (.NOT.RESFLG(KSYMOP)) THEN
+            CALL RESONANT(WRK(KREDE),WRK(KREDS),WRK(KIBTYP),
+     &           WRK(KEIVAL),WRK(KRESID),WRK(KEIVEC),CMO,UDV,PV,
+     &           FOCK,FC,FV,FCAC,H2AC,XINDX,WRK(KFREE),LFREE)
+            RESFLG(KSYMOP) = .TRUE.
          END IF
-         DO 300 I = 1,NFREQ
-            WRK(KEIVAL-1+I) = FREQ(I)
-  300    CONTINUE
-         KEXSIM = NFREQ
-         KEXCNV = NFREQ
 C
-         CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
-     *               .TRUE.,LABEL,BLANK,WRK(KGD),WRK(KREDGD),
-     *               WRK(KREDE),WRK(KREDS),WRK(KIBTYP),WRK(KEIVAL),
-     *               WRK(KRESID),WRK(KEIVEC),XINDX,WRK(KWRK1),LWRK1)
-
-C        CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
-C                    LINEQ,GD,REDGD,REDE,REDS,
-C    *               IBTYP,EIVAL,EIVEC,XINDX,WRK,LWRK)
+         CALL ABSCTL(KOPER,LABEL,WRK(KREDE),WRK(KREDS),
+     &        WRK(KREDZ),WRK(KREDGD),WRK(KREDZGD),
+     &        WRK(KEIVEC),WRK(KIBTYP),
+     &        CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,XINDX,
+     &        WRK(KFREE),LFREE)
 C
-         DO 700 IFREQ = 1,NFREQ,MXFREQ
-            NBX = MIN(MXFREQ,(NFREQ+1-IFREQ))
-            IBOFF = IFREQ - 1
-            CALL RSPEVE(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
-     *                  WRK(KBVECS),WRK(KWRKE),NBX,IBOFF)
-C           CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
-            DO 750 IVEC = 1,NBX
-               IBV    = (IVEC-1)*KZYVAR + KBVECS
-               CALL WRITT(LUSOVE,KZYVAR,WRK(IBV))
-               IF (IPRLR .GE. 2) THEN
-                  WRITE (LUPRI,'(/A,I5)') ' EIGENVECTOR NUMBER ',
-     &                                   IFREQ-1+IVEC
-ctec              CALL RSPPRC(WRK(IBV),KZCONF,KZVAR,LUPRI)
-                  CALL RSPPRO(WRK(IBV+KZCONF),KZVAR,LUPRI)
-ctec better output from rspanc
-                  CALL RSPANC(WRK(IBV),KZCONF,KZVAR,
-     *                        MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
-               END IF
-               antsym = 1.0d0
-               CALL WRTRSP(LURSP,KZYVAR,WRK(IBV),LABEL,
-     &                     BLANK,WRK(KEIVAL-1+IVEC),D0,KSYMOP,0,
-     &                     WRK(KRESID-1+IVEC),ANTSYM)
-  750       CONTINUE
-ctec residual vector
-            CALL RSPRES(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
-     *                  WRK(KGD),WRK(KWRK1),XINDX,LWRK1,UDV,NBX,IBOFF)
-            DO 760 IVEC = 1,NBX
-               IBV    = (IVEC-1)*KZYVAR + KWRK1
-               CALL DSCAL(KZYVAR,DM1,WRK(IBV),1)
-               CALL WRITT(LUREVE,KZYVAR,WRK(IBV))
-  760       CONTINUE
-ctecend
-  700    CONTINUE
-  600 CONTINUE
+      ELSE
 C
-C *** end of RSPLLE --
+C     Infinite lifetime of the excited states,
+C     corresponds to the "regular" real response
+C
+         IF (LFREE.LT.3*KZYVAR) THEN
+            WRITE (LUPRI,9100) LFREE,3*KZYVAR
+            CALL QTRACE(LUPRI)
+            CALL QUIT('RSPLLE, INSUFFICIENT SPACE TO SOLVE '//
+     &           'LINEAR EQUATIONS')
+         ENDIF
+ 9100    FORMAT(/' RSPLLE, work space too small for 3 (z,y)-vectors',
+     &        /'         had:',I10,', need more than:',I10)
+C     WORK SPACE FOR RSPEVE AND RSPRES
+C     WORK SPACE EACH TIME RSPRES IS CALLED
+         MWRK   = KZYVAR
+         IF (.NOT. RSPCI ) MWRK = MWRK + NCREF +  LACIMX
+C     Work space for each residual vector
+         MRES   = MAX(NORBT*NORBT,2*N2ASHX) + KZYVAR
+C     NUMBER OF SIMULTANEOUS VECTORS
+         MXSIM = (LFREE-MWRK)/MRES
+         MXSIM = MIN(NFREQ,MXSIM)
+         IF (MXSIM .LE. 0) THEN
+            WRITE(LUPRI,*) 'RSPLLE: insufficient memory for RSPRES'
+            WRITE(LUPRI,*) ' had:',LFREE,' need more than:',MWRK+MRES
+            CALL QUIT('RSPLLE: insufficient memory for RSPRES')
+         END IF
+C     
+         KWRKE  = KFREE
+         KBVECS = KWRKE + KZYVAR
+C     
+         KZRED  = 0
+         KZYRED = 0
+         THCRSP = THCLR
+         IPRRSP = IPRLR
+         MAXIT  = MAXITL
+C     
+         DO IOP = 1,NABAOP
+            IF (IPRLR .GE. 0)
+     &           WRITE (LUPRI,'(//A,I3,/A,I3,A,I3/A,(T25,5F10.6))')
+     &           ' RSPLLE -- linear response calculation for symmetry',
+     &           KSYMOP,
+     &           ' RSPLLE -- operator no.',IOP,' out of',NABAOP,
+     &           ' RSPLLE -- frequencies :',(FREQ(I),I=1,NFREQ)
+            IF (ABASOP .AND. IPRLR .GE. 0)
+     &           WRITE (LUPRI,'(/A/A,I8,/A,I8,/A,I8)')
+     &           '  SOPPA calculation:'
+     &           ,'  p-h variables.            - KZWOPT :',KZWOPT
+     &           ,'  2p-2h variables.          - KZCONF :',KZCONF
+     &           ,'  Total number of variables - KZVAR  :',KZVAR
+C     
+C     READ IN GD VECTOR FROM LUGDVE
+C     
+            CALL READT(LUGDVE,KZVAR,WRK(KGD))
+C     
+            IF (NABATY(IOP).EQ.1) THEN
+               CALL DCOPY(KZVAR,WRK(KGD),1,WRK(KGD+KZVAR),1)
+               CALL DSCAL(KZVAR,DM1,WRK(KGD+KZVAR),1)
+            ELSE IF (NABATY(IOP).EQ.-1) THEN
+               CALL DCOPY(KZVAR,WRK(KGD),1,WRK(KGD+KZVAR),1)
+            ELSE
+               WRITE(LUPRI,'(/2A,I5,A,I5)')
+     *              ' NABATY(IOP) NOT AN ALLOWED VALUE'
+     *              ,' IOP=',IOP,'  NABATY(IOP)=',NABATY(IOP)
+               CALL QUIT(' RSPLLE: INCORRECT NABATY(IOP)')
+            END IF
+            DO I = 1,NFREQ
+               WRK(KEIVAL-1+I) = FREQ(I)
+            END DO
+            KEXSIM = NFREQ
+            KEXCNV = NFREQ
+C     
+C     Call RSPCTL to solve linear set of response equations
+C     
+            CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
+     *           .TRUE.,LABEL,BLANK,WRK(KGD),WRK(KREDGD),
+     *           WRK(KREDE),WRK(KREDS),WRK(KIBTYP),WRK(KEIVAL),
+     *           WRK(KRESID),WRK(KEIVEC),XINDX,WRK(KFREE),LFREE)
+C     
+            DO IFREQ = 1,NFREQ,MXSIM
+               NBX = MIN(MXSIM,(NFREQ+1-IFREQ))
+               IBOFF = IFREQ - 1
+               CALL RSPEVE(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
+     *              WRK(KBVECS),WRK(KWRKE),NBX,IBOFF)
+               DO IVEC = 1,NBX
+                  IBV    = (IVEC-1)*KZYVAR + KBVECS
+                  CALL WRITT(LUSOVE,KZYVAR,WRK(IBV))
+                  IF (IPRLR .GE. 2) THEN
+                     WRITE (LUPRI,'(/A,I5)') ' EIGENVECTOR NUMBER ',
+     &                    IFREQ-1+IVEC
+                     CALL RSPPRO(WRK(IBV+KZCONF),KZVAR,LUPRI)
+                     CALL RSPANC(WRK(IBV),KZCONF,KZVAR,
+     *                    MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
+                  END IF
+                  NATSYM = 1.0D0
+                  CALL WRTRSP(LURSP,KZYVAR,WRK(IBV),LABEL,
+     &                 BLANK,WRK(KEIVAL-1+IVEC),D0,KSYMOP,0,
+     &                 WRK(KRESID-1+IVEC),ANTSYM)
+               END DO
+               CALL RSPRES(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
+     *              WRK(KGD),WRK(KFREE),XINDX,LFREE,UDV,NBX,IBOFF)
+               DO IVEC = 1,NBX
+                  IBV    = (IVEC-1)*KZYVAR + KFREE
+                  CALL DSCAL(KZYVAR,DM1,WRK(IBV),1)
+                  CALL WRITT(LUREVE,KZYVAR,WRK(IBV))
+               END DO
+            END DO
+C
+C     End loop over B operators
+C
+         END DO
+      END IF
 C
       CALL QEXIT('RSPLLE')
       RETURN

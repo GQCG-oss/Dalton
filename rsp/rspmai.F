@@ -119,8 +119,9 @@ C
 #include <infsop.h>
 #include <gnrinf.h>
 #include <infinp.h>
+#include <absorp.h>
 C
-      LOGICAL SAVLR, DORESP, FLAGSV
+      LOGICAL SAVLR, DORESP, FLAGSV, EX
 C
       TIMRSP = SECOND()
       CALL GETTIM(CSTR,WSTR)
@@ -199,7 +200,7 @@ C
      &      ' because cubic or quadratic response has been requested.'
          END IF
       END IF
-      DORESP = DORESP .OR. ESRCAL .OR. I.GT.0
+      DORESP = DORESP .OR. ESRCAL .OR. ABSORP .OR. I.GT.0
 C
 C     PERFORM INTEGRAL TRANSFORMATION
 C
@@ -353,10 +354,18 @@ C     CALL MIXS0(CMO,UDV,WRK,LWRK)
       CALL FLSHFO(LUPRI)
       IF (.NOT.DORESP) GO TO 9999
 C
-C     Open some temporary units
-C     =========================
+C Open RSPVEC for response vectors, existing file may exist for restart
 C
-      CALL CR0IND(LURSP)
+      CALL GPINQ('RSPVEC','EXIST',EX)
+      IF (.NOT.EX) THEN
+         CALL GPOPEN(LURSP,'RSPVEC','NEW',' ','UNFORMATTED',IDUMMY,
+     &        .FALSE.)
+         WRITE (LURSP) 'EOFLABEL'
+      ELSE
+         CALL GPOPEN(LURSP,'RSPVEC','OLD',' ','UNFORMATTED',IDUMMY,
+     &        .FALSE.)
+      END IF
+C Open files for trial and sigma vectors
       CALL GPOPEN(LURSP3,' ','UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
       CALL GPOPEN(LURSP4,' ','UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
       CALL GPOPEN(LURSP5,' ','UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
@@ -376,6 +385,16 @@ C
      *               WRK(KFC),WRK(KFV),WRK(KFCAC),WRK(KH2AC),
      *               WRK(KINDX),WRK(KWRK1),LWRK1)
          CALL FLSHFO(LUPRI)
+      END IF
+C
+C     Calculate response properties with absorption
+C     =============================================
+C
+      IF (ABSORP) THEN
+         CALL ABSCALC(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KFOCK),
+     *                WRK(KFC),WRK(KFV),WRK(KFCAC),WRK(KH2AC),
+     *                WRK(KINDX),WRK(KWRK1),LWRK1)
+         GO TO 9999
       END IF
 C
 C     Calculate cubic response properties (fourth order)
@@ -517,7 +536,7 @@ C <<< GENERAL INPUT FOR RESPONSE >>>
 C
 #include <implicit.h>
 #include <dummy.h>
-      PARAMETER ( NTABLE = 7)
+      PARAMETER ( NTABLE = 8 )
 C
 #include <priunit.h>
 #include <infpri.h>
@@ -534,11 +553,12 @@ C
 #include <inftpa.h>
 #include <maxorb.h>
 #include <infinp.h>
+#include <absorp.h>
 C
       CHARACTER WORD*7, PROMPT*1, TABLE(NTABLE)*7
 C
       DATA TABLE /'*END OF', '**RESPO', '*LINEAR', '*QUADRA',
-     *            '*CUBIC ', '*C6    ', '*ESR   '/
+     *            '*CUBIC ', '*C6    ', '*ESR   ', '*ABSORP'/
 C
 C     Include block data RSPINF which initializes /INFRSP/
 C
@@ -578,7 +598,7 @@ C     end of this input module
       IF (PROMPT .EQ. '*') THEN
          DO I=1, NTABLE
             IF (WORD .EQ. TABLE(I)) THEN
-               GO TO (1,2,3,4,5,6,7), I
+               GO TO (1,2,3,4,5,6,7,8), I
             END IF
          END DO
 C
@@ -605,6 +625,8 @@ C
       GO TO 200
  7    CALL ESRINP(WORD)
       GO TO 200
+ 8    CALL ABSORP_INPUT(WORD)
+      GO TO 200
 C
  1    CONTINUE
       IPRRSP = MAX(IPRPP,IPRLR,IPRC6)
@@ -612,7 +634,7 @@ C
       IPRRSP = MAX(IPRRSP,IPRESR)
       IPRRSP = MAX(IPRRSP,IPRCR)
       IPRRSP = MAX(IPRRSP,IPRTMO)
-      IPRRSP = MAX(IPRRSP,IPRTPA)
+      IPRRSP = MAX(IPRRSP,IPRTPA,IPRABS)
 C
 C     We arrive at 2100 if no input file found. We return.
 C
@@ -871,6 +893,7 @@ C
 #include <inftpa.h>
 #include <mxcent.h>
 #include <elweak.h>
+#include <absorp.h>
 C
 C     Initialization of RSPINP
       DATA INPTES/.FALSE./, AVDIA /.TRUE./
@@ -959,6 +982,8 @@ C  Initializing INFTPA
       DATA NBTPFR/1/
       DATA BTPFR(1)/0.0D0/
       DATA IPRTPA/2/
+C  Initializing ABSORP
+      DATA ABSORP/.FALSE./
       END
 C  /* Deck ppinp */
       SUBROUTINE PPINP(WORD)
@@ -1343,7 +1368,7 @@ C
       LOGICAL NEWDEF, SPNDEF
       PARAMETER ( NTABLE = 39 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-      CHARACTER*8 LABEL,PSOLAB
+      CHARACTER*8 LABEL
 C
       DATA TABLE /'.DIPLEN', '.DIPLNX', '.DIPLNY', '.DIPLNZ',
      *            '.DIPVEL', '.DIPVLX', '.DIPVLY', '.DIPVLZ',
@@ -3771,16 +3796,16 @@ C
 #include <infpri.h>
 #include <infrsp.h>
 C
-      PARAMETER ( NTABLE = 2 )
+      PARAMETER ( NTABLE = 3 )
       CHARACTER WORD*7, STRING*7, TABLE(NTABLE)*7
       PARAMETER ( STRING = '*CUBIC ' )
-      DATA TABLE /'.SINGLE', '.DOUBLE'/
+      DATA TABLE /'.SINGLE', '.DOUBLE','.THREE-'/
 C
   100 READ (LUCMD, '(A7)',END=2100) WORD
       IF (WORD(1:1).EQ.'*') GO TO 11
       DO I = 1, NTABLE
          IF (WORD .EQ. TABLE(I)) THEN
-            GO TO (1,2), I
+            GO TO (1,2,3), I
          END IF
       END DO
       GO TO 100
@@ -3807,6 +3832,14 @@ C
  120  READ (LUCMD, '(A7)',END=2100) WORD
       IF (WORD .NE. STRING) GO TO 120
       CALL TPAINP(WORD)
+      RETURN
+C
+C Three-photon absorption calculation
+C
+ 3    REWIND (LUCMD,IOSTAT=IOS)
+ 130  READ (LUCMD, '(A7)',END=2100) WORD
+      IF (WORD .NE. STRING) GO TO 130
+      CALL TMOINP(WORD)
       RETURN
 C
  2100 CALL QUIT('**END OF not found in DALTON input after *CUBIC ')

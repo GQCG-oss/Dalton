@@ -54,7 +54,7 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*)
       DIMENSION XINDX(*),WRK(*)
 C
-      PARAMETER ( D0 = 0.0D0 )
+      PARAMETER ( D0 = 0.0D0, ZERO = 1.0D-10 )
 C
 #include <priunit.h>
 #include <infrsp.h>
@@ -104,6 +104,13 @@ C
 C
       DO 700 IBOP = 1,NBTMOP(ISYMB)
       DO 750 IBFR = 1,NBTMFR
+C
+C     If three photon absorption or harmonic generation calculation 
+C     only certain frequencies are considered.
+C
+      IF ( THREEPHOTON .AND.
+     &     ( (ABS(EXCIT2(ISYMD,ID)-3*BTMFR(IBFR)).GT.ZERO) .OR.
+     &       (ABS(EXCIT2(ISYMD,ID)-3*CTMFR(ICFR)).GT.ZERO) ) ) GOTO 750
 C
       IF (CTMOHG) THEN
          IF (IBFR.NE.ICFR) GO TO 750

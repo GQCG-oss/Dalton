@@ -78,9 +78,8 @@ cat > walk_polar2.dal <<'%EOF%'
 .POLARI
 .VIBANA
 .POPANA
-.ABALNR
+.ALPHA
 *ABALNR
-.ALFA
 .FREQUE
  3
  0.0 0.0592 0.096
