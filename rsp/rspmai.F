@@ -1854,9 +1854,9 @@ C
      *            '.QUADMO', '.QUADXX', '.QUADXY', '.QUADXZ',
      *            '.QUADYY', '.QUADYZ', '.QUADZZ', '.PROPRT',
      *            '.C6SPH ', '.C8SPH ', '.MAX IT', '.THCC6 ',
-     *            '.MAXITO', '.PRINT ', '.MAXMOM', '.THCMOM',
-     *            '.FREQUE', '.PADE  ', '.GSLEGN', '.NGRID ',
-     *            '.C6CALC', '.C10SPH', '.C6ATM ', '.C8ATM ',
+     *            '.MAXITO', '.PRINT ', '.MAXMOM', '.XXXXXX',
+     *            '.FREQUE', '.XXXXXX', '.GSLEGN', '.NGRID ',
+     *            '.XXXXXX', '.C10SPH', '.C6ATM ', '.C8ATM ',
      *            '.C10ATM', '.C6LMO ', '.C8LMO ', '.C10LMO',
      *            '.RESTC6'/
 C
@@ -2001,7 +2001,6 @@ C     .C8SPH
                   READ (LUCMD,*) MAXMOM
                GO TO 100
    28          CONTINUE
-                  READ (LUCMD,*) THCMOM
                GO TO 100
    29          CONTINUE
                   READ (LUCMD,*) NCFREQ
@@ -2018,7 +2017,6 @@ C     .C8SPH
                   END IF
                GO TO 100
    30          CONTINUE
-                  PADE  =.TRUE.
                GO TO 100
    31          CONTINUE
                   GSLEGN  =.TRUE.
@@ -2157,7 +2155,7 @@ C     .C10LMO
       END IF
       IF (NC6TOT .GT. 0) THEN
          CALL HEADER('CHANGES OF DEFAULTS IN C6INP:',0)
-         IF (MAXITC.NE.20) WRITE(LUPRI,'(/A,I6)')
+         IF (MAXITC.NE.60) WRITE(LUPRI,'(/A,I6)')
      *      ' MAXIMUM NUMBER OF ITERATIONS. MAXITC =',MAXITC
          IF (THCC6.NE.1.0D-3) WRITE(LUPRI,'(/A,1P,D13.6)')
      *      ' THRESHOLD FOR CONVERGENCE. THCC6 =',THCC6

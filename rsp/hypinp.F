@@ -56,7 +56,7 @@ C
 C
       DATA TABLE /'.BPROP ', '.BFREQ ', '.CPROP ', '.CFREQ ',
      *            '.APROP ', '.MAX IT', '.THCLR ', '.MAXITO',
-     *            '.PRINT ', '.DIPLEN', '.E3TEST', '.DIROIT',
+     *            '.PRINT ', '.DIPLEN', '.E3TEST', '.NODOIT',
      *            '.ISPABC', '.A2TEST', '.X2TEST', '.REFCHK',
      *            '.TSTJEP', '.SHG   ', '.POCKEL', '.OPTREF',
      *            '.FREQUE', '.DIPLNX', '.DIPLNY', '.DIPLNZ',
@@ -593,7 +593,7 @@ C
       DATA TABLE /'.BPROP ', '.BFREQ ', '.APROP ', '.ROOTS ',
      *            '.MAXITP', '.THCLR ', '.MAXITL', '.THCPP ',
      *            '.MAXITO', '.PRINT ', '.DIPLEN', '.E3TEST',
-     *            '.ISPABC', '.DIROIT', '.X2TEST', '.A2TEST',
+     *            '.ISPABC', '.NODOIT', '.X2TEST', '.A2TEST',
      *            '.DIPLNX', '.DIPLNY', '.DIPLNZ', '.FREQUE',
      *            '.SINGLE', '.PHOSPH', '.MNFPHO', '.TWO-PH',
      *            '.MCDBTE'/
