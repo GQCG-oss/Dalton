@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2vec.F,v 1.3 2001-04-03 14:25:13 vebjornb Exp $
+C$Id: eri2vec.F,v 1.4 2001-04-09 07:12:00 helgaker Exp $
 C
 #include <single.h>
 C  /* Deck eriexp */
@@ -567,6 +567,9 @@ C
       END
 C  /* Deck ericnt */
       SUBROUTINE ERICNT(NCENTR,IPNTCR,IPRINT)
+C
+C     tuh
+C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
@@ -574,7 +577,7 @@ C  /* Deck ericnt */
 #include <mxorb.h>
 #include <aovec.h>
       INTEGER RST, PQ, A
-      DIMENSION NCENTR(MLTPX,NPQBCS,4), IPNTCR(MAXBCH,4)
+      DIMENSION NCENTR(MLTPZ,NPQBCS,4), IPNTCR(MAXBCH,4)
 #include <nuclei.h>
 #include <aobtch.h>
 #include <ericom.h>
@@ -594,24 +597,21 @@ C
          ISTB = ISTBNU(IB)
          ISTC = ISTBNU(IC)
          ISTD = ISTBNU(ID)
-         DO RST = 1, MLTPX
+         DO RST = 1, MLTPZ
             NCENTR(RST,PQ,1) = NUCNUM(IA,1)
             NCENTR(RST,PQ,2) = NUCNUM(IB,IBTAXO(NSOQ(RST,1),ISTB)+1)
             NCENTR(RST,PQ,3) = NUCNUM(IC,IBTAXO(NSOQ(RST,2),ISTC)+1)
             NCENTR(RST,PQ,4) = NUCNUM(ID,IBTAXO(NSOQ(RST,3),ISTD)+1)
          END DO
       END DO
-C
       IF (IPRINT .GT. 10) THEN
-         DO A = 1,4
+         DO A = 1, 4
             WRITE (LUPRI,'(1X,A,I5)') ' NCENTR for orbital ',A
             DO PQ = 1, NPQBCS
-               WRITE (LUPRI,'(2X,39I2)') 
-     &            (NCENTR(RST,PQ,A),RST=1,MLTPX)
+               WRITE (LUPRI,'(2X,39I2)') (NCENTR(RST,PQ,A),RST=1,MLTPZ)
             END DO
          END DO
       END IF
-C
       RETURN
       END
 C  /* Deck ericls */

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2car2.F,v 1.4 2001-04-03 14:25:11 vebjornb Exp $
+C$Id: eri2car2.F,v 1.5 2001-04-09 07:11:59 helgaker Exp $
 C
 #include <single.h>
 C  /* Deck cr2drv */
@@ -49,7 +49,7 @@ C
      &          IODDHC(NRTOP), IODD34(NRTOP), IODDCC(NRTOP),
      &          LMNPWR(KCKMAX,NHKMAX,3), IPNTUV(KC2MAX,0:NRDER,2),
      &          COOR34(NPP34,3), EXP34(NPP34,3), CSQ(*), CCFBT(*),
-     &          NCENTR(NCCT,4),
+     &          NCENTR(NPQBCX,2),
      &          WORK(LWORK)
 #include <ericom.h>
 #include <eriao.h>
@@ -216,7 +216,7 @@ C
      &          LMNPWR(KCKMAX,NHKMAX,3), IPNTUV(KC2MAX,0:NRDER,2),
      &          COOR34(NPP34,3), EXP34(NPP34,3), 
      &          HPI(NPP34), P3(NPP34,3), P4(NPP34,3),
-     &          CSQ(NCSQ1,NCSQ2),  NCENTR(NCCT,4),
+     &          CSQ(NCSQ1,NCSQ2),  NCENTR(NPQBCX,2),
      &          CSA3(KHKT3,KCKT3), CSV3(NCCCC,KHKT3,KCKT3), 
      &          CSA4(KHKT4,KCKT4), CSV4(NCCCC,KHKT4,KCKT4),
      &          CCFBT(*), CPINT(*)

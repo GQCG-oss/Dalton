@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2drv.F,v 1.4 2001-04-06 07:00:56 helgaker Exp $
+C$Id: eri2drv.F,v 1.5 2001-04-09 07:11:59 helgaker Exp $
 C
 #include <single.h>
 C  /* Deck er2inp */
@@ -1402,7 +1402,7 @@ C
       NCCS2 = MAX(NCCS2,NCCS)
 C
       IF (BDER) THEN
-         LCENTR = (4*NCCT - 1)/IRAT + 1
+         LCENTR = (4*NPQBCX - 1)/IRAT + 1
       ELSE
          LCENTR = 0
       END IF
@@ -1463,7 +1463,7 @@ C  /* Deck odcpas */
      &          RODPP1(NODPP1,NRTPP), RODPP2(NODPP2,NRTPP),
      &          ROD1(NPQBCS,NPRFAB,3),
      &          ROD2(NPQBCS,NPRFCD,3),
-     &          NCENTR(NCCT,4),
+     &          NCENTR(NPQBCX,4),
      &          FMAT(*), DMAT(*), IFCTYP(*), D2MAT(*), ID2MAT(*),
      &          BUF(*), IBUF(*),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP),
@@ -1568,7 +1568,7 @@ C  /* Deck erint0 */
      &          RODPP1(NODPP1,NRTPP), RODPP2(NODPP2,NRTPP),
      &          ROD1(NPQBCS,NPRFAB,3),
      &          ROD2(NPQBCS,NPRFCD,3),
-     &          NCENTR(NCCT,4),
+     &          NCENTR(NPQBCX,4),
      &          FACINT(NPPX), COORAO(NPQBCX,3,4),
      &          COORTR(NPQBCS,3,4), 
      &          COORAB(NPPAB,3,2), 
@@ -1839,7 +1839,7 @@ C  /* Deck erints */
      &          EXPAB(NPPAB,3), EXPCD(NPPCD,3), 
      &          ALPHA(NPPX), FACPQ(NPPS),
      &          COORPQ(NPPX,3),
-     &          CSQ(*), NCENTR(NCCS,MLTPX,4)
+     &          CSQ(*), NCENTR(NPQBCS,MLTPZ,4)
 #include <cbieri.h>
 #include <odclss.h>
 #include <ericom.h>
@@ -1957,8 +1957,7 @@ C
      &                  COORCD,EXPCD,CSQ,CCFBT,NCENTR(1,IOFRST+1,3),
      &                  NDER3,NDER4,NDIMD1,WRKCR2,LWKCR2,IPRINT)
             CALL ERIBUN(AOINT(1,IOFRST+1,1,1),AOINT(1,IOFRST+1,1,7),
-     &                  COORAO,IODDHR(1,ICCXYZ),IPNTUV,WRKCR2,LWKCR2,
-     &                  IPRINT)
+     &                  COORAO,IODDHR(1,ICCXYZ),IPNTUV,IPRINT)
 C
             IF (IPRINT.GT.5) CALL HEADER('C derivatives',1)
 C

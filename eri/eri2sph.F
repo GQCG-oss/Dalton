@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2sph.F,v 1.3 2001-04-03 14:25:13 vebjornb Exp $
+C$Id: eri2sph.F,v 1.4 2001-04-09 07:12:00 helgaker Exp $
 C
 #include <single.h>
 C  /* Deck cr1sph */
@@ -219,7 +219,7 @@ C
      &          CSQ3(NCSQ1,NCSQ2), CSQ4(NCSQ1,NCSQ2),
      &          CSA3(KHKT3,KCKT3), CSA4(KHKT4,KCKT4),
      &          CSV3(NCCCC,KHKT3,KCKT3), CSV4(NCCCC,KHKT4,KCKT4),
-     &          IODDCC(NRTOP), NCENTR(NCCT,2),
+     &          IODDCC(NRTOP), NCENTR(NPQBCX,2),
      &          IPNTUV(KC2MAX,0:NRDER,2),
      &          IODDKC(KC2MAX)
 #include <ericom.h>
@@ -229,7 +229,7 @@ C
 C
       IF (BDER3.OR.BDER4) THEN
          CALL CR2SVC(CSQ3,CSA3,CSV3,NCENTR(1,1),NCENTR(1,2),
-     &               NCCCC,KHKT3,KCKT3)
+     &               KHKT3,KCKT3)
          CALL CR2SPX(CCONT,CSINT,FCSINT,AOINT,FAOINT,FLEVEL,
      &               CSA3,CSQ4,CSV3,CSV4,BDER3,BDER4,
      &               IODDCC,IPNTUV,IODDKC,INDX,IODX,IPRINT)
@@ -241,23 +241,26 @@ C
       RETURN
       END
 C  /* Deck cr2svc */
-      SUBROUTINE CR2SVC(CSQ,CSA,CSV,NCNT1,NCNT2,NCCCC,KHKTX,KCKTX)
+      SUBROUTINE CR2SVC(CSQ,CSA,CSV,NCNT1,NCNT2,KHKTX,KCKTX)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
       PARAMETER (D0 = 0.0D0)
       DIMENSION CSQ(NCSQ1,NCSQ2), CSA(KHKTX,KCKTX), 
-     &          CSV(NCCCC,KHKTX,KCKTX), NCNT1(*), NCNT2(*) 
+     &          CSV(NCTFPQ,NPQBCX,KHKTX,KCKTX), 
+     &          NCNT1(NPQBCX), NCNT2(NPQBCX)
 #include <ericom.h>
 #include <nuclei.h>
       IADR = 1
       DO ICMP = 1, KCKTX
       DO IKMP = 1, KHKTX
          CSQM = D0
-         DO I = 1, NCCCC
+         DO I = 1, NPQBCX
             CSQI = CSQ(IADR,NCNT2(I)) - CSQ(IADR,NCNT1(I))
             CSQM = MAX(CSQM,ABS(CSQI)) 
-            CSV(I,IKMP,ICMP) = CSQI 
+            DO J = 1, NCTFPQ
+               CSV(J,I,IKMP,ICMP) = CSQI 
+            END DO
          END DO
          CSA(IKMP,ICMP) = CSQM
          IADR = IADR + 1
@@ -541,8 +544,7 @@ C
       RETURN
       END
 C  /* Deck eribun */
-      SUBROUTINE ERIBUN(AOINT,AOINT0,COORAO,IODDCC,IPNTUV,R,LWORK,
-     &                  IPRINT)
+      SUBROUTINE ERIBUN(AOINT,AOINT0,COORAO,IODDCC,IPNTUV,IPRINT)
 C
 C     T. Helgaker
 C
@@ -550,8 +552,8 @@ C
 #include <priunit.h>
       PARAMETER (DP5 = 0.5D0)
       DIMENSION AOINT(NCCT,KHKTAB,KHKTCD,6), AOINT0(NCCT,KHKTAB,KHKTCD), 
-     &          COORAO(NCCT,3,4),
-     &          R(NCCT,6), IODDCC(NRTOP), IPNTUV(KC2MAX,0:NRDER,2)
+     &          COORAO(NPQBCX,3,4),
+     &          IODDCC(NRTOP), IPNTUV(KC2MAX,0:NRDER,2)
 
 #include <ericom.h>
 #include <orgcom.h>
@@ -564,8 +566,49 @@ C
 C
       DO IAB = 1, KHKTAB 
       DO ICD = 1, KHKTCD 
-         IF (IODDCC(IPNTUV(IAB,0,1)).EQ.IODDCC(IPNTUV(ICD,0,2))) THEN
-            DO I = 1, NCCT
+      IF (IODDCC(IPNTUV(IAB,0,1)).EQ.IODDCC(IPNTUV(ICD,0,2))) THEN
+         IF (GCONAB .OR. GCONCD) THEN
+            INT1 = 0
+            DO N = 1, NPQBCX
+               AX = COORAO(N,1,1) - ORIGIN(1) 
+               AY = COORAO(N,2,1) - ORIGIN(2) 
+               AZ = COORAO(N,3,1) - ORIGIN(3) 
+               BX = COORAO(N,1,2) - ORIGIN(1)
+               BY = COORAO(N,2,2) - ORIGIN(2)
+               BZ = COORAO(N,3,2) - ORIGIN(3)
+               CX = COORAO(N,1,3) - ORIGIN(1) 
+               CY = COORAO(N,2,3) - ORIGIN(2) 
+               CZ = COORAO(N,3,3) - ORIGIN(3) 
+               DX = COORAO(N,1,4) - ORIGIN(1)
+               DY = COORAO(N,2,4) - ORIGIN(2)
+               DZ = COORAO(N,3,4) - ORIGIN(3)
+               ABX = AY*BZ - AZ*BY
+               ABY = AZ*BX - AX*BZ
+               ABZ = AX*BY - AY*BX
+               CDX = CY*DZ - CZ*DY
+               CDY = CZ*DX - CX*DZ
+               CDZ = CX*DY - CY*DX
+               DO I = 1, NCTFA
+               DO J = 1, NCTFB
+               DO K = 1, NCTFC
+               DO L = 1, NCTFD
+                  INT1 = INT1 + 1
+                  INT2 = (I - 1)*NCTFB + J + (K - 1)*NCTFAB*NCTFD
+     &                 + (L - 1)*NCTFAB + (N - 1)*NCTFPQ
+                  AO = DP5*AOINT0(INT1,IAB,ICD)
+                  AOINT(INT2,IAB,ICD,1) = ABX*AO 
+                  AOINT(INT2,IAB,ICD,2) = ABY*AO 
+                  AOINT(INT2,IAB,ICD,3) = ABZ*AO 
+                  AOINT(INT1,IAB,ICD,4) = CDX*AO 
+                  AOINT(INT1,IAB,ICD,5) = CDY*AO 
+                  AOINT(INT1,IAB,ICD,6) = CDZ*AO 
+               END DO
+               END DO
+               END DO
+               END DO
+            END DO
+          ELSE
+            DO I = 1, NCCX
                AO = DP5*AOINT0(I,IAB,ICD)
                AX = COORAO(I,1,1) - ORIGIN(1) 
                AY = COORAO(I,2,1) - ORIGIN(2) 
@@ -586,7 +629,8 @@ C
                AOINT(I,IAB,ICD,5) = (CZ*DX - CX*DZ)*AO 
                AOINT(I,IAB,ICD,6) = (CX*DY - CY*DX)*AO 
             END DO
-         END IF
+          END IF
+      END IF
       END DO
       END DO
       IF (IPRINT .GE. 15) THEN
