@@ -1,12 +1,16 @@
-WRKDIR=`pwd`
-export WRKDIR
+WRKDIR=`pwd` ; export WRKDIR
+# always search for basis sets in job work directory
+# (before standard dalton basis library, predefined in dalton.x)
+BASDIR=$WRKDIR ; export BASDIR
 #
 paramlist="$*"
+
 # default extensions
 OUTEXT="out"
 DALEXT="dal"
 MOLEXT="mol"
-#deafult values for options
+
+#default values for options
 optd=0
 optD=1
 optf=0
@@ -20,18 +24,19 @@ frl=rel
 #
 usage (){
 	  echo
-	  echo "Usage:    dalton [-b directory] [-d] [-D] [-ext log | -o file] [-f dalmol] [-m mem | -M mem]"
+	  echo "Usage:    dalton [-b directory] [-d] [-D] [-ext log | -o file] [-f dalmol] [-M mb | -m mem]"
 	  echo  "[-N num] [-lam file] [-o file] [-t directory] [-w directory] dal{.$DALEXT} mol{.$MOLEXT}"
 	  echo
 	  echo 'Options:'
-	  echo ' -b dir    change directory where basis sets are searched for to dir'
-	  echo ' -d        delete TMPDIR before calculation starts'
-	  echo ' -D        do not delete TMPDIR after calculation stops'
+	  echo ' -b dir    prepend dir to directory list for basis set searches.'
+	  echo '           Current directory and dalton basis library are included automatically.'
+	  echo ' -d        delete job scratch directory before calculation starts'
+	  echo ' -D        do not delete job scratch directory after calculation stops'
 	  echo ' -ext log  change output extension from ".out" to ".log"'
 	  echo ' -o file   redirect output from program to this file in WRKDIR'
           echo ' -f dalmol copy dalmol.tar.gz file from WRKDIR to TMPDIR before calculation starts'
+	  echo ' -M mb     set scratch memory to mb Megabytes'
 	  echo ' -m mem    set scratch memory to mem double precision words'
-	  echo ' -M mem    set scratch memory to mem Megabytes'
 	  echo ' -N num    use MPI version with num nodes'
 	  echo ' -lam file call "lamboot file" and "wipe file" before and after mpirun'
           echo ' -t dir    change TMPDIR to dir. Default: ' $TMPDIR
@@ -64,7 +69,7 @@ backup () {
 #
 while [ -n "`echo $1 | grep '^-'`" ]; do
     case $1 in
-      -b ) BASDIR=$2; export BASDIR; shift;;
+      -b ) BASDIR="$2:$BASDIR"; export BASDIR; shift;;
       -d ) optd=1;;
       -D ) optD=0;;
       -ext ) OUTEXT=$2; shift;;
@@ -74,9 +79,10 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -m ) WRKMEM=$2; export WRKMEM; shift;;
       -M ) let WRKMEM=$2*128000; export WRKMEM; shift;;
       -o ) OUTFIL=$2; export OUTFIL; opto=1; shift;;
+#          OUTFIL and WRKDIR are read from environment inside dalton.x
       -t ) TMPDIR=$2; shift;;
       -w ) WRKDIR=`pwd`/$2; shift;;
-      * ) usage; exit 1;;
+       * ) usage; exit 1;;
    esac
    shift
 done
@@ -86,21 +92,23 @@ if [ -z "$1" ]; then
    usage
    exit 1
 fi
+#  remove .dal, if added by user
 dalfil=${1%\.$DALEXT}
 if [ -z "$2" ]; then
-#  remove .mol, if added by user
-   molfil=`basename $1 .mol`
-   dalfil=$molfil
+#  only one common input file;
+   molfil=$dalfil
    outnam=$molfil
+   input_files="input file: $dalfil.$DALEXT"
 else
-#  remove .mol and .dal, if added by user
-   molfil=`basename $2 .mol`
-   dalfil=`basename $1 .dal`
+#  two input files;
+#  remove .mol, if added by user
+   molfil=${2%\.$MOLEXT}
    if [ "$molfil" = "$dalfil" ]; then
       outnam=$molfil
    else
       outnam=${dalfil}_${molfil}
    fi
+   input_files="input files: $dalfil.$DALEXT and $molfil.$MOLEXT"
 fi
 #
 export TMPDIR
@@ -115,10 +123,10 @@ echo;
 echo "   Invocation: $0 $paramlist"
 echo; echo "   `date`"
 echo;
-echo "   Calculation: $outnam  (input files: $dalfil.dal and $molfil.mol)"
+echo "   Calculation: $outnam  ($input_files)"
 echo "   PID        : $$"
 echo "   Input dir  : $WRKDIR"
-echo "   Scratch dir: $TMPDIR/$outnam"
+echo "   Scratch dir: $SCRATCHDIR"
 #echo "  Work memory: $WRKMEM"
 echo;
 #
@@ -126,17 +134,17 @@ if [ ! -d "$TMPDIR" ]; then
    mkdir -p $TMPDIR
 fi
 
-    SCRATCHDIR=$TMPDIR/$2;
+SCRATCHDIR=$TMPDIR/$outnam
 
 ierr=0
 if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
    if [ $optd -eq 1 ] ; then
-      rm -rf $TMPDIR/$outnam
+      rm -rf $SCRATCHDIR
    fi
-   if [ ! -d "$TMPDIR/$outnam" ]; then
-      mkdir -p $TMPDIR/$outnam
+   if [ ! -d "$SCRATCHDIR" ]; then
+      mkdir -p $SCRATCHDIR
    fi
-   cd $TMPDIR/$outnam
+   cd $SCRATCHDIR
    if [ -s $WRKDIR/$dalfil.$DALEXT -a -r $WRKDIR/$dalfil.$DALEXT ]; then
       cp $WRKDIR/$dalfil.$DALEXT DALTON.INP
    else
@@ -184,11 +192,11 @@ if [ $optn -gt 1 ] ; then
 #           tar-file for restart possibilities.
          fi
       else
-	 echo "$DALMPI does not exist or is not executeable"
+	 echo "$DALMPI does not exist or is not executable"
 	 exit 1
       fi
    else
-      echo "$MPIRUN does not exist or is not executeable"
+      echo "$MPIRUN does not exist or is not executable"
       exit 1
    fi
 else
@@ -201,12 +209,17 @@ else
 #        tar-file for restart possibilities.
       fi
    else
-      echo "$DALTON does not exist or is not executeable"
+      echo "$DALTON does not exist or is not executable"
       exit 1
    fi
 fi
 
-filelist="SIRIUS.RST RESULTS.RSP RSPVEC SIRIFC DALTON.NCA UNIT1 UNIT2 DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp"
+#
+# filelist is list of files which will be saved in $outnam.tar.gz
+# for subsequent calculations
+#
+
+filelist="DALTON.ERR SIRIUS.RST RESULTS.RSP RSPVEC SIRIFC DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp"
 
 for i in $filelist ; do
    if [ -s $i -a -r $i ] ; then
@@ -229,36 +242,76 @@ else
     echo "$outnam.tar.gz has not been created and has thus not been copied to $WRKDIR"
 fi
 
-   backup -v $WRKDIR/$outnam.$OUTEXT
-   if [ $opto -eq 1 ] ; then
-      if [ -s $WRKDIR/$OUTFIL -a -r $WRKDIR/$OUTFIL ]; then
-         echo "Output is in $WRKDIR/$OUTFIL as requested in input."
-      else
-         echo "$WRKDIR/$OUTFIL has not been created from the present run"
-         if [ $optD -eq 1 ] ; then
-            echo "$TMPDIR/$outnam is therefore not deleted by this script."
-         fi
-         exit 2
-      fi
+if [ -s DALTON.ERR -a -r DALTON.ERR ]; then
+  if [ `grep -c -i WARNING DALTON.ERR` -gt 0 ] ; then
+   echo; echo "WARNINGS have been issued by Dalton, output from 'grep -n -i WARNING DALTON.ERR' :"   grep -n -i WARNING DALTON.ERR
+  fi
+  if [ `grep -c INFO DALTON.ERR` -gt 0 ] ; then
+   echo; echo "INFO messages have been issued by Dalton, output from 'grep -n INFO DALTON.ERR' :"
+   grep -n INFO DALTON.ERR
+  fi
+fi
+
+if [ $opto -eq 1 ] ; then
+   if [ -s $WRKDIR/$OUTFIL -a -r $WRKDIR/$OUTFIL ]; then
+      echo "Output is in $WRKDIR/$OUTFIL as requested in input."
    else
-      if [ -s DALTON.OUT -a -r DALTON.OUT ]; then
-         cp DALTON.OUT $WRKDIR/$outnam.$OUTEXT
-      else
-         echo "DALTON.OUT has not been created from the present run."
-         if [ $optD -eq 1 ] ; then
-            echo "$TMPDIR/$outnam is therefore not deleted by this script."
-         fi
-         echo "List of created files in $TMPDIR/$outnam :"
-         ls -sltr
-         exit 2
+      echo "$WRKDIR/$OUTFIL has not been created from the present run"
+      if [ $optD -eq 1 ] ; then
+         echo "$SCRATCHDIR is therefore not deleted by this script."
       fi
+      exit 2
    fi
+else
+   if [ -s DALTON.OUT -a -r DALTON.OUT ]; then
+      OUTFIL=$outnam.$OUTEXT
+      backup -v $WRKDIR/$OUTFIL
+      cp DALTON.OUT $WRKDIR/$OUTFIL
+   else
+      echo "DALTON.OUT has not been created from the present run."
+      if [ $optD -eq 1 ] ; then
+         echo "$SCRATCHDIR is therefore not deleted by this script."
+      fi
+      echo "List of created files in $SCRATCHDIR :"
+      ls -sltr
+      exit 2
+   fi
+fi
+
 cd $WRKDIR
+
+# check if error exit, warnings, or info messages
+
+NERR=`grep -c ERROR $OUTFIL`
+if [ $ierr -ne 0 -o $NERR -gt 0 ] ; then
+   echo; echo "WARNING for ERROR  (Dalton program stopped with exit code $ierr)"
+   if [ $optD -eq 1 ] ; then
+      echo "- THEREFORE scratch directory $SCRATCHDIR is not deleted"
+      echo "  by this script so you may restart the calculation, if possible"
+      echo "  ( $SCRATCHDIR may be deleted by your queueing system )"
+      echo "- REMEMBER to delete $SCRATCHDIR yourself !!!"; echo
+      optD=0
+   fi
+   [ $NERR -gt 0 ] && ( echo "Output from 'grep -n ERROR' :"; grep -n ERROR $OUTFIL )
+fi
+
+if [ `grep -c -i WARNING $OUTFIL` -gt 0 ] ; then
+   echo; echo "WARNINGS have been issued by Dalton, output from 'grep -n -i WARNING' :"
+   grep -n -i WARNING $OUTFIL
+fi
+
+if [ `grep -c INFO $OUTFIL` -gt 0 ] ; then
+   echo; echo "INFO messages have been issued by Dalton, output from 'grep -n INFO' :"
+   grep -n INFO $OUTFIL
+fi
+
+
+
 if [ $optD -eq 1 ] ; then
-   rm -rf $TMPDIR/$outnam
+   rm -rf $SCRATCHDIR
 fi
 
 if [ $ierr -ne 0 ]; then
    exit $ierr
 fi
-# last line of dalton script
+# last line of dalton job script
