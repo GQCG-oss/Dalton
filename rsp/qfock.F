@@ -186,7 +186,7 @@ CCCC     ELSE IF ("triplet Fock matrix") THEN
 C           only exchange !triplet not implemented for DIRFCK yet
 CCCC        IFCTYP(I) = IX + 2
          ELSE IF (IX .EQ. 20) THEN
-C           Only exchange if antisymmetric matrix
+C           Only exchange if antisymmetric density matrix
             IFCTYP(I) = IX + 2
          ELSE
 C           Coulomb+exchange

@@ -411,6 +411,8 @@ C
       CALL FLSHFO(LURSPRES)
 C
 C If dipole operators only, store result in GAMMA(A,B,C,D)
+C     (hjaaj Oct 2001: note that
+C      gamma = <<mu; -mu, -mu, -mu>> = - <<r; r, r, r>> )
 C
       IF (DIPLEN) THEN
          GAMFLG = .TRUE.

@@ -42,7 +42,7 @@ Polish
 960301-hjaaj: modify MULSP for ISPINA=ISPINB=ISPINC=1
 930705-hjaaj: lowered IPRRSP from 5 to 2 in QRVEC for print of lr sym.
 910411-hjaaj: RSPPRC and RSPPRO use wrong symmetries in QRSMO,
-QRHYP, and QREXM (it uses the last KSYMOP from QRLRVE). MAERKE
+QRHYP, and QREXM (it uses the last KSYMOP from QRLRVE). TODO
 ===========================================================================
 #endif
 C  /* Deck qrcalc */
@@ -109,6 +109,7 @@ C
          CALL LRHYP(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,
      *                 XINDX,WRK(KVECB),WRK(KVECC),WRK(KMJWOP),
      *                 WRK(KWRK1),LWRK1)
+         CALL FLSHFO(LUPRI)
          IF (SSCOLL) THEN
             KFC1 = KWRK1
             KFC2 = KFC1 + MXCOOR**2
@@ -147,6 +148,7 @@ C
       IF (EXMOM) CALL QREXM(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,
      *                 XINDX,WRK(KVECB),WRK(KVECC),WRK(KMJWOP),
      *                 WRK(KWRK1),LWRK1)
+      CALL FLSHFO(LUPRI)
       CALL QEXIT('QRCALC')
       RETURN
       END
@@ -273,6 +275,7 @@ C        ... FIND EXCITATION ENERGIES AND TRANSITION MOMENTS
 C
          CALL QRPPVE(CMO,UDV,PV,FC,FV,FCAC,H2AC,XINDX,IOFFSP,
      *               WRK,LWRK)
+         CALL FLSHFO(LUPRI)
  100  CONTINUE
 C
 C RESTORE INFORMATION ABOUT NUMBER OF EXCITATIONS BETWEEN
@@ -517,12 +520,12 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
                IF ( TRPLET ) THEN
                   WRITE(LUPRI,'(/A,I5,3X,A,I5,/A,1P,D14.6)')
      *            '@ QRPPVE: TRIPLET EXCITATION VECTOR',ISIM-1+IVEC,
-     *            ' SYMMETRY',KSYMOP,'@ EXCITATION ENERGY',
+     *            ' SYMMETRY',KSYMOP,'@ Triplet excitation energy',
      *            EXCITA(KSYMOP,ISIM-1+IVEC,ISPN)
                ELSE
                   WRITE(LUPRI,'(/A,I5,3X,A,I5,/A,1P,D14.6)')
      *            '@ QRPPVE: SINGLET EXCITATION VECTOR',ISIM-1+IVEC,
-     *            ' SYMMETRY',KSYMOP,'@ EXCITATION ENERGY',
+     *            ' SYMMETRY',KSYMOP,'@ Singlet excitation energy',
      *            EXCITA(KSYMOP,ISIM-1+IVEC,ISPN)
                END IF
             END IF
@@ -723,7 +726,7 @@ C           CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
 C
             JBVECS = KBVECS
             DO 560 JFREQ = IFREQ,IFREQ-1+NBX
-CMAERKE        IF (IPRRSP.GE.5) THEN
+CTODO        IF (IPRRSP.GE.5) THEN
                   WRITE(LUPRI,'(/A,3X,A,3X,A,2X,D12.6,/A,I5)')
      *            ' QRLRVE: SINGLET SOLUTION   LABEL',LRLAB(ILRLAB),
      *            ' FREQUENCY ',WRK(KEIVAL-1+JFREQ),
@@ -737,7 +740,7 @@ CMAERKE        IF (IPRRSP.GE.5) THEN
      &              '@QRLRVE:  << ', LRLAB(JLRLAB),' ; '
      &              ,LRLAB(ILRLAB),' >> (',WRK(KEIVAL-1+JFREQ),'):',VAL
                END DO
-CMAERKE        END IF
+CTODO        END IF
                IF (IPRRSP.GT.100) THEN
                   WRITE (LUPRI,*) 'Column 1 = Z, Column 2 = Y'
                   CALL OUTPUT(WRK(JBVECS),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
@@ -835,14 +838,14 @@ C
                            WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') 
      &                      ' Response label ',LABEL,' with frequency ',
      &                          FREQC, ' and symmetry',MSYMC,
-     &                          ' not found on file LURSP'
+     &                          ' not found on file RSPVEC'
                           CALL QUIT('Response vector not found on file')
                         ELSE
                            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
      &                      ' @WARNING>>>>'//
      &                      ' Response label ',LABEL,' with frequency ',
      &                          FREQC, ' and symmetry',MSYMC,
-     &                          ' not converged on file LURSP'
+     &                          ' not converged on file RSPVEC'
                         END IF
                      END IF
                      IF (FREQC .LT. D0) THEN
@@ -919,7 +922,7 @@ C
      &                                ' Response label ',LABEL,
      &                                ' with frequency ',FREQB,
      &                                ' and symmetry',MSYMB,
-     &                                ' not found on file LURSP'
+     &                                ' not found on file RSPVEC'
                                  CALL QUIT('Response vector not '//
      &                                'found on file')
                               ELSE
@@ -928,7 +931,7 @@ C
      &                                ' Response label ',LABEL,
      &                                ' with frequency ',FREQB,
      &                                ' and symmetry',MSYMB,
-     &                                ' not converged on file LURSP'
+     &                                ' not converged on file RSPVEC'
                               END IF
                            END IF
                            IF (FREQB .LT. D0) THEN
@@ -998,7 +1001,7 @@ C                          ... E[3] term is zero for CI
      &                                     AQRLB(MSYMA,IAOP),
      &                                   ' with frequency ',FREQA,
      &                                   ' and symmetry',MSYMA,
-     &                                   ' not found on file LURSP'
+     &                                   ' not found on file RSPVEC'
                                     CALL QUIT('Response vector not '//
      &                                   'found on file')
                                     ELSE
@@ -1008,7 +1011,7 @@ C                          ... E[3] term is zero for CI
      &                                     AQRLB(MSYMA,IAOP),
      &                                   ' with frequency ',FREQA,
      &                                   ' and symmetry',MSYMA,
-     &                                   ' not converged on file LURSP'
+     &                                   ' not converged on file RSPVEC'
                                     END IF
                                  END IF
                                  IF (FREQA .LT. D0) THEN
@@ -1148,7 +1151,7 @@ C
      &                                   ' Response label ',LABEL,
      &                                   ' with frequency ',FREQA,
      &                                   ' and symmetry',MSYMA,
-     &                                   ' not found on file LURSP'
+     &                                   ' not found on file RSPVEC'
                                     CALL QUIT('Response vector not '//
      &                                   'found on file')
                                     ELSE
@@ -1157,7 +1160,7 @@ C
      &                                   ' Response label ',LABEL,
      &                                   ' with frequency ',FREQA,
      &                                   ' and symmetry',MSYMA,
-     &                                   ' not converged on file LURSP'
+     &                                   ' not converged on file RSPVEC'
                                     END IF
                                  END IF
                                  IF (FREQA .LT. D0) THEN
@@ -1220,7 +1223,7 @@ C
      &                                   ' Response label ',LABEL,
      &                                   ' with frequency ',FREQA,
      &                                   ' and symmetry',MSYMA,
-     &                                   ' not found on file LURSP'
+     &                                   ' not found on file RSPVEC'
                                     CALL QUIT('Response vector not '//
      &                                   'found on file')
                                  ELSE
@@ -1229,7 +1232,7 @@ C
      &                                   ' Response label ',LABEL,
      &                                   ' with frequency ',FREQA,
      &                                   ' and symmetry',MSYMA,
-     &                                   ' not converged on file LURSP'
+     &                                   ' not converged on file RSPVEC'
                                  END IF
                               END IF
                               IF (FREQA .LT. D0) THEN
@@ -1283,7 +1286,7 @@ C
      &                                   ' Response label ',LABEL,
      &                                   ' with frequency ',FREQA,
      &                                   ' and symmetry',MSYMA,
-     &                                   ' not found on file LURSP'
+     &                                   ' not found on file RSPVEC'
                                     CALL QUIT('Response vector not '//
      &                                   'found on file')
                                  ELSE
@@ -1292,7 +1295,7 @@ C
      &                                   ' Response label ',LABEL,
      &                                   ' with frequency ',FREQA,
      &                                   ' and symmetry',MSYMA,
-     &                                   ' not converged on file LURSP'
+     &                                   ' not converged on file RSPVEC'
                                  END IF
                               END IF
                               IF (FREQA .LT. D0) THEN
@@ -1357,7 +1360,7 @@ C
      &                                   ' Response label ',LABEL,
      &                                   ' with frequency ',FREQA,
      &                                   ' and symmetry',MSYMA,
-     &                                   ' not found on file LURSP'
+     &                                   ' not found on file RSPVEC'
                                     CALL QUIT('Response vector not '//
      &                                   'found on file')
                                  ELSE
@@ -1366,7 +1369,7 @@ C
      &                                   ' Response label ',LABEL,
      &                                   ' with frequency ',FREQA,
      &                                   ' and symmetry',MSYMA,
-     &                                   ' not converged on file LURSP'
+     &                                   ' not converged on file RSPVEC'
                                  END IF
                               END IF
                               IF (FREQA .LT. D0) THEN
@@ -1419,7 +1422,7 @@ C
      &                                   ' Response label ',LABEL,
      &                                   ' with frequency ',FREQA,
      &                                   ' and symmetry',MSYMA,
-     &                                   ' not found on file LURSP'
+     &                                   ' not found on file RSPVEC'
                                     CALL QUIT('Response vector not '//
      &                                   'found on file')
                                  ELSE
@@ -1428,7 +1431,7 @@ C
      &                                   ' Response label ',LABEL,
      &                                   ' with frequency ',FREQA,
      &                                   ' and symmetry',MSYMA,
-     &                                   ' not converged on file LURSP'
+     &                                   ' not converged on file RSPVEC'
                                  END IF
                               END IF
                               IF (FREQA .LT. D0) THEN
@@ -1531,6 +1534,8 @@ C
      &              '@ B-freq =',BQRFR(IBFR),'  C-freq =',CQRFR(ICFR),
      &                   '     beta(',ALABP,';',BLABP,',',CLABP,')',
      &                        ' =',-HYPVAL(IAOP)
+C      hjaaj Oct 2001: note that
+C            beta = <<mu; -mu, -mu>> = -<<r; r, r>>
                               END IF
 C
                               IF (IPRRSP.GE.3 .OR. .NOT.DIPLEN) THEN
@@ -1675,7 +1680,7 @@ C
      &                       ' Response label ','EXCITLAB',
      &                       ' with frequency ',FREQC,
      &                       ' and symmetry',MSYMC,
-     &                    ' not found on file LURSP'
+     &                    ' not found on file RSPVEC'
                         CALL QUIT('Response vector not found on file')
                      ELSE
                         WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
@@ -1683,7 +1688,7 @@ C
      &                       ' Response label ','EXCITLAB',
      &                       ' with frequency ',FREQC,
      &                       ' and symmetry',MSYMC,
-     &                    ' not converged on file LURSP'
+     &                    ' not converged on file RSPVEC'
                      END IF
                   END IF
                   IF (FREQC .LT. D0) THEN
@@ -1741,7 +1746,7 @@ C
      &                             ' Response label ',LABEL,
      &                             ' with frequency ',FREQB,
      &                             ' and symmetry',MSYMB,
-     &                             ' not found on file LURSP'
+     &                             ' not found on file RSPVEC'
                               CALL QUIT('Response vector not '//
      &                             'found on file')
                            ELSE
@@ -1750,7 +1755,7 @@ C
      &                             ' Response label ',LABEL,
      &                             ' with frequency ',FREQB,
      &                             ' and symmetry',MSYMB,
-     &                             ' not converged on file LURSP'
+     &                             ' not converged on file RSPVEC'
                            END IF
                         END IF
                         IF (FREQB .LT. D0) THEN
@@ -1821,7 +1826,7 @@ C
      &                                   ' Response label ',LABEL,
      &                                   ' with frequency ',FREQA,
      &                                   ' and symmetry',MSYMA,
-     &                                   ' not found on file LURSP'
+     &                                   ' not found on file RSPVEC'
                                     CALL QUIT('Response vector not '//
      &                                   'found on file')
                                  ELSE
@@ -1830,7 +1835,7 @@ C
      &                                   ' Response label ',LABEL,
      &                                   ' with frequency ',FREQA,
      &                                   ' and symmetry',MSYMA,
-     &                                   ' not converged on file LURSP'
+     &                                   ' not converged on file RSPVEC'
                                  END IF
                               END IF
                               IF (FREQA .LT. D0) THEN
@@ -1886,7 +1891,7 @@ C
      &                                   ' Response label ',LABEL,
      &                                   ' with frequency ',FREQA,
      &                                   ' and symmetry',MSYMA,
-     &                                   ' not found on file LURSP'
+     &                                   ' not found on file RSPVEC'
                                     CALL QUIT('Response vector not '//
      &                                   'found on file')
                                  ELSE
@@ -1895,7 +1900,7 @@ C
      &                                   ' Response label ',LABEL,
      &                                   ' with frequency ',FREQA,
      &                                   ' and symmetry',MSYMA,
-     &                                   ' not converged on file LURSP'
+     &                                   ' not converged on file RSPVEC'
                                  END IF
                               END IF
                               IF (FREQA .LT. D0) THEN
@@ -1957,7 +1962,7 @@ C
      &                                   ' Response label ',LABEL,
      &                                   ' with frequency ',FREQA,
      &                                   ' and symmetry',MSYMA,
-     &                                   ' not found on file LURSP'
+     &                                   ' not found on file RSPVEC'
                                     CALL QUIT('Response vector not '//
      &                                   'found on file')
                                  ELSE
@@ -1966,7 +1971,7 @@ C
      &                                   ' Response label ',LABEL,
      &                                   ' with frequency ',FREQA,
      &                                   ' and symmetry',MSYMA,
-     &                                   ' not converged on file LURSP'
+     &                                   ' not converged on file RSPVEC'
                                  END IF
                               END IF
                               IF (FREQA .LT. D0) THEN
@@ -1999,7 +2004,7 @@ C
      &                                   ' Response label ',LABEL,
      &                                   ' with frequency ',FREQA,
      &                                   ' and symmetry',MSYMA,
-     &                                   ' not found on file LURSP'
+     &                                   ' not found on file RSPVEC'
                                     CALL QUIT('Response vector not '//
      &                                   'found on file')
                                  ELSE
@@ -2008,7 +2013,7 @@ C
      &                                   ' Response label ',LABEL,
      &                                   ' with frequency ',FREQA,
      &                                   ' and symmetry',MSYMA,
-     &                                   ' not converged on file LURSP'
+     &                                   ' not converged on file RSPVEC'
                                  END IF
                               END IF
                               IF (FREQA .LT. D0) THEN
@@ -2390,7 +2395,7 @@ C
 #include <inftap.h>
 #include <inflr.h>
 C
-CMAERKEHJ-910405: exchange 400 and 900 loop
+CTODO? HJ-910405: exchange 400 and 900 loop
 C In 900 loop, if NGPPP(MSYMC).GT.0 calculate <0/C/i> moments
 C Calculate oscillator strengths,
 C    if DIPVEL then divide by frequency
@@ -2429,7 +2434,7 @@ C
      &                       ' Response label ','EXCITLAB',
      &                       ' with frequency ',FREQC,
      &                       ' and symmetry',MSYMC,
-     &                       ' not found on file LURSP'
+     &                       ' not found on file RSPVEC'
                         CALL QUIT('Response vector not '//
      &                       'found on file')
                      ELSE
@@ -2438,7 +2443,7 @@ C
      &                       ' Response label ','EXCITLAB',
      &                       ' with frequency ',FREQC,
      &                       ' and symmetry',MSYMC,
-     &                       ' not converged on file LURSP'
+     &                       ' not converged on file RSPVEC'
                      END IF
                   END IF
                   IF (FREQC .LT. D0) THEN
@@ -2487,7 +2492,7 @@ C
      &                          ' Response label ','EXCITLAB',
      &                          ' with frequency ',FREQB,
      &                          ' and symmetry',MSYMB,
-     &                          ' not found on file LURSP'
+     &                          ' not found on file RSPVEC'
                            CALL QUIT('Response vector not '//
      &                          'found on file')
                         ELSE
@@ -2496,7 +2501,7 @@ C
      &                          ' Response label ','EXCITLAB',
      &                          ' with frequency ',FREQB,
      &                          ' and symmetry',MSYMB,
-     &                          ' not converged on file LURSP'
+     &                          ' not converged on file RSPVEC'
                         END IF
                      END IF
                      IF (FREQB .LT. D0) THEN
@@ -2596,7 +2601,7 @@ C
      &                                ' Response label ',LABEL,
      &                                ' with frequency ',FREQA,
      &                                ' and symmetry',MSYMA,
-     &                                ' not found on file LURSP'
+     &                                ' not found on file RSPVEC'
                                  CALL QUIT('Response vector not '//
      &                                'found on file')
                               ELSE
@@ -2605,7 +2610,7 @@ C
      &                                ' Response label ',LABEL,
      &                                ' with frequency ',FREQA,
      &                                ' and symmetry',MSYMA,
-     &                                ' not converged on file LURSP'
+     &                                ' not converged on file RSPVEC'
                               END IF
                            END IF
                            IF (FREQA .LT. D0) THEN
@@ -2900,7 +2905,7 @@ C           CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
 C
             JBVECS = KBVECS
             DO 560 JFREQ = IFREQ,IFREQ-1+NBX
-               IF (IPRRSP.GE.5) THEN
+               IF (IPRRSP.GE.3) THEN
                   WRITE(LUPRI,'(/A,3X,A,3X,A,1P,D14.6,/A,I5)')
      *            '@QRTRVE: TRIPLET SOLUTION   LABEL',LRLAB(ILRLAB),
      *            ' FREQUENCY ',WRK(KEIVAL-1+JFREQ),
@@ -3165,6 +3170,18 @@ C
      &     'F U N C T I O N   <<<<<<<<'
       CALL PRSYMB(LUPRI,'=',70,1)
 C
+      WRITE (LUPRI,'(/A/A//A/A,1P,D10.2)')
+     &   ' The -<<A;B>>(omega_b) functions from vectors generated',
+     &   ' in a *QUADRA calculation of <<A;B,C>>(omega_b,omega_c)',
+     &   ' Note: the accuracy of off-diagonal elements will be linear',
+     &   ' in the convergence threshold THCLR =',THCLR
+      IF (ISPINA .NE. ISPINB) THEN
+         WRITE (LUPRI,'(/A/A,2I4)')
+     &   ' All zero because spin symmetry of A and B is different.',
+     &   ' ISPINA and ISPINB : ',ISPINA,ISPINB
+         GO TO 9999
+      END IF
+C
       DO ISYM = 1,NSYM
 C
          IF ((NAQROP(ISYM).GT.0) .AND. (NBQROP(ISYM).GT.0)) THEN
@@ -3189,14 +3206,14 @@ C
                      WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') 
      &                    ' Response label ',BQRLB(KSYMOP,IBOP),
      &                    ' with frequency ',FRQ, ' and symmetry',
-     &                    KSYMOP,' not found on file LURSP'
+     &                    KSYMOP,' not found on file RSPVEC'
                      CALL QUIT('Response vector not found on file')
                   ELSE
                      WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
      &                    ' @WARNING>>>>'//
      &                    ' Response label ',BQRLB(KSYMOP,IBOP),
      &                    ' with frequency ',FRQ, ' and symmetry',
-     &                    KSYMOP,' not converged on file LURSP'
+     &                    KSYMOP,' not converged on file RSPVEC'
                   END IF
                END IF
 C
@@ -3204,11 +3221,9 @@ C     Print out response vector
 C
                IF (IPRRSP.GT.10) THEN
                   WRITE(LUPRI,'(/A,3X,A,3X,A,2X,D12.6,/A,I5)')
-     *                 ' LRHYP: SOLUTION VECTOR  LABEL',
+     *                 ' LRHYP: B solution vector;  LABEL',
      *                 BQRLB(ISYM,IBOP),' FREQUENCY ',FRQ,
      *                 ' SYMMETRY',ISYM
-                  WRITE (LUPRI,'(/A)')
-     *                 ' SOLUTION VECTOR OF LINEAR EQUATIONS'
                   CALL RSPPRC(VECB,MZCONF(ISYM),MZVAR(ISYM),LUPRI)
                   CALL RSPPRW(VECB(1+MZCONF(ISYM)),MJWOP,
      *                 MZWOPT(ISYM),ISYM,MZVAR(ISYM),LUPRI)
@@ -3226,11 +3241,9 @@ C     Print out gradient
 C
                   IF (IPRRSP.GT.10) THEN
                      WRITE(LUPRI,'(/A,3X,A,3X,A,2X,D12.6,/A,I5)')
-     *                    ' LRHYP: GRADIENT VECTOR  LABEL',
+     *                    ' LRHYP: A gradient vector;  LABEL',
      *                    AQRLB(ISYM,IAOP),' FREQUENCY ',-FRQ,
      *                    ' SYMMETRY',ISYM
-                     WRITE (LUPRI,'(/A)')
-     *                    ' GRADIENT VECTOR'
                      CALL RSPPRC(VECA,MZCONF(ISYM),MZVAR(ISYM),LUPRI)
                      CALL RSPPRW(VECA(1+MZCONF(ISYM)),MJWOP,
      *                    MZWOPT(ISYM),ISYM,MZVAR(ISYM),LUPRI)
@@ -3240,19 +3253,26 @@ C     Compute linear response value
 C
                   VAL = DDOT(KZYVAR,VECA,1,VECB,1)
 C
-                  WRITE(LUPRI,'(/A,2(/A,A10,I4,F10.6),/,/A,F20.12)')
-     &                 ' Linear response function in a.u.',
-     &                 ' A operator, symmetry, frequency: ',
-     &                 AQRLB(ISYM,IAOP),ISYM,-FRQ,
-     &                 ' B operator, symmetry, frequency: ',
-     &                 BQRLB(ISYM,IBOP),ISYM, FRQ,
-     &                 ' Value of linear response: ',VAL
+                  IF (ISPINA .EQ. 0) THEN
+                     WRITE(LUPRI,'(/A)')
+     &               '@ Singlet linear response function in a.u.'
+                  ELSE
+                     WRITE(LUPRI,'(/A)')
+     &               '@ Triplet linear response function in a.u.'
+                  END IF
+                  WRITE(LUPRI,'(2(/A,A10,I4,F10.6),/,/A,F20.12)')
+     &               '@ A operator, symmetry, frequency: ',
+     &               AQRLB(ISYM,IAOP),ISYM,-FRQ,
+     &               '@ B operator, symmetry, frequency: ',
+     &               BQRLB(ISYM,IBOP),ISYM, FRQ,
+     &               '@ Value of linear response -<<A;B>(omega): ',VAL
                END DO
             END DO
             END DO
          END IF
       END DO
 C
+ 9999 CONTINUE
       RETURN
       END
 C  /* Deck sodist */

@@ -441,7 +441,7 @@ C
       CALL MEMGET('INTE',KICDTR,N2ORBX,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KH2X  ,LH2XT ,WRK,KFREE,LFREE)
 C
-C     Open auxilliary DA file
+C     Open auxiliary DA file
 C
       IF (ICTOIT .EQ. 3) THEN
          IDAXO = -1
@@ -898,7 +898,7 @@ C
       CALL MEMGET('INTE',KICDTR,N2ORBX,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KH2X  ,LH2XT ,WRK,KFREE,LFREE)
 C
-C     Open auxilliary DA file
+C     Open auxiliary DA file
 C
       IF (ICTOIT .EQ. 3) THEN
          IDAXX = -1

@@ -606,7 +606,7 @@ C
 C           zero density matrix, do nothing !
             IFCTYP(I) = 0
          ELSE IF (IX .EQ. 20) THEN
-C           Only exchange if antisymmetric matrix
+C           Only exchange if antisymmetric density matrix
             IFCTYP(I) = IX + 2
          ELSE IF (TRPLET) THEN
 C           only exchange

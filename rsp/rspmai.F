@@ -224,6 +224,12 @@ C
          IF (SOPPA.OR.HYPCAL.OR.SOMOM.OR.EXMOM.OR.
      &       CRCAL.OR.TOMOM.OR.TPAMP) THEN
             JTRLVL = -10
+C  TODO hjaaj:  When NEWTRA and USEDRC, all integrals are
+C           stored and calculated twice, both as Mulliken
+C           and Dirac; but only occ-occ Dirac distributions
+C           are needed in rspoli.F (if .not. NEWTRA then
+C           only occ-occ Dirac dist. are saved on DRCINT).
+C           hjaaj Nov 2001
          ELSE
             JTRLVL = -4
          END IF
@@ -1669,7 +1675,6 @@ C PV from spin-orbit 2 el
       END IF
   300 CONTINUE
       NLRTOT = 0
-      write(lupri,*) ichang
       IF (ICHANG .GT. 0) THEN
          DO 500 I = 1,NPRLBL
             IF (LLROP(I)) NLRTOT = NLRTOT + 1

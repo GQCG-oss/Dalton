@@ -560,6 +560,7 @@ C  /* Deck solgdt */
       SUBROUTINE SOLGDT(CREF,CMO,INDXCI,DV,G,ESOLT,ERLM,WRK,
      &                  LFREE,NHCREF,KREFSY)
 C
+C   Based on SOLGRD:
 C   Copyright 29-Nov-1986 Hans Joergen Aa. Jensen
 C
 C   Purpose:  calculate MCSCF energy and gradient contribution
@@ -988,5 +989,5 @@ C
       FIRST = .FALSE.
       CALL QEXIT('SOLGDT')
       RETURN
-C     end of solgrd.
+C     end of solgdt.
       END

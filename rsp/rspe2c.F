@@ -1381,7 +1381,7 @@ C
 #if defined (VAR_SPLITFILES)
                   CALL READST(LURSP3,LRSP3,WRK(ISTBO),JRSP3,.TRUE.)
                   IF (LRSP3 .NE. KZYWOP) CALL QUIT('Inconsistent '//
-     &                 'record length on unit LURSP in LRST')
+     &                 'record length on unit LURSP3 in LRST')
                   CALL READST(LURSP5,LRSP5,WRK(ISTEO),JRSP5,.TRUE.)
                      IF (LRSP5 .NE. KZYVAR) CALL QUIT('Inconsistent '//
      &                    'record length on unit LURSP5 in LRST (3)')
@@ -1680,6 +1680,18 @@ C
       KWRK1 = KGP   + KZYVAR
       IF (KWRK1 .GT. LWRK) CALL ERRWRK('LRSOPR',-(KWRK1-1),LWRK)
 C
+      CALL HEADER('Final output of second order properties from'//
+     &            ' linear response',-1)
+      IF (TRPLET) THEN
+         WRITE (LUPRI,'(/A)') '@ Spin symmetry of operators: triplet'
+      ELSE
+         WRITE (LUPRI,'(/A)') '@ Spin symmetry of operators: singlet'
+      END IF
+      WRITE (LUPRI,'(/A/A)')
+     &   ' Note that minus the linear response function:'//
+     &   ' - << A; B >>(omega) is printed.',
+     &   ' The results are of quadratic accuracy using Sellers formula.'
+C
       DO 100 IOP = 1,NOP
          IF (SOPRSY) THEN
             JST = 1
@@ -1715,10 +1727,10 @@ C
       DO 500 IFREQ = 1,NFREQ
          IF ( FREQ(IFREQ).LT.DTOL ) THEN
             WRITE(LUPRI,'(/A/)')
-     *           '@FREQUENCY INDEPENDENT SECOND ORDER PROPERTIES'
+     *      '@ FREQUENCY INDEPENDENT SECOND ORDER PROPERTIES'
          ELSE
             WRITE(LUPRI,'(/A/,5(/A,1P,D15.7),/)')
-     *  '@FREQUENCY DEPENDENT SECOND ORDER PROPERTIES WITH FREQUENCY :',
+     * '@ FREQUENCY DEPENDENT SECOND ORDER PROPERTIES WITH FREQUENCY :',
      *      '@    a.u.:',FREQ(IFREQ),
      *      '     cm-1:',XTKAYS*FREQ(IFREQ),
      *      '     e.V.:',XTEV*FREQ(IFREQ),
@@ -1740,14 +1752,14 @@ C
 c ach
             DO 600 JOP = JST,NOP
                XPROP = SOPR(IFREQ,IOP,JOP)
-               WRITE(LUPRI,'(A,A,3X,A,1P,D20.12)')
-     *         '@',LBLLR(KSYMOP,IOP), LBLLR(KSYMOP,JOP),XPROP
+               WRITE(LUPRI,'(5A,1P,D20.12)')
+     * '@ -<< ',LBLLR(KSYMOP,IOP),' ; ',LBLLR(KSYMOP,JOP),' >> =',XPROP
                IF (SOPW4) THEN
                   CALL GETGPV(LBLLR(KSYMOP,JOP),FC,CMO,UDV,PV,XINDX,
      *                        ANTSYM,WRK(KGP),LWRKGP)
                   W4TERM = DDOT(KZYVAR,WRK(KGP),1,WRK(KISOL),1)
                   WRITE(LUPRI,'(A,1P,D20.12)')
-     &            '@SOPPA W4(E) term  ',W4TERM
+     &            '@ SOPPA W4(E) term  ',W4TERM
                END IF
  600        CONTINUE
  400     CONTINUE
@@ -3412,7 +3424,7 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
                   GO TO 600
                END IF
                IF (IPRRSP.GT.0) WRITE(LUPRI,'(/A,A)')
-     *            '@Transition operator type:    ',LBLPP(KSYMOP,IOP)
+     *            '@ Transition operator type:    ',LBLPP(KSYMOP,IOP)
                IF (IPRRSP.GT.11) WRITE(LUPRI,'(A,I4,A,L4)')
      *              ' Operator symmetry:',KSYMOP,'; triplet = ',TRPLET
                DO 550 INUM = 1,NBX
@@ -3420,7 +3432,7 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
      *                        WRK(KBVECS+(INUM-1)*KZYVAR),1)
                   IF (IPRRSP.GT.0) WRITE(LUPRI,751)
      &               (ISIM-1+INUM),XMOM, WRK(KEIVAL-1+ISIM-1+INUM)*XTEV
- 751              FORMAT('@STATE NO:',I5,' *TRANSITION MOMENT:'
+ 751              FORMAT('@ STATE NO:',I5,' *TRANSITION MOMENT:'
      *                 ,1P,G16.8,' *ENERGY(eV):',1P,G16.8)
                   IF ( LBLPP(KSYMOP,IOP) .EQ. 'XDIPLEN ' .OR.
      *                 LBLPP(KSYMOP,IOP) .EQ. 'YDIPLEN ' .OR.
@@ -3466,26 +3478,26 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
  600        CONTINUE
          END IF
          WRITE (LUPRI,'(/,3(/A,I3))')
-     *   '@REFERENCE  STATE    SYMMETRY',IREFSY,
-     *   '@EXCITATION OPERATOR SYMMETRY',KSYMOP,
-     *   '@EXCITED    STATE    SYMMETRY',KSYMST
+     *   '@ Reference  state    symmetry',IREFSY,
+     *   '@ Excitation operator symmetry',KSYMOP,
+     *   '@ Excited    state    symmetry',KSYMST
          DO 555 INUM = 1,NBX
             WRITE(LUPRI,'(/A,I5,//A,1P,G16.8,A,3(/A1,19X,G16.8,A),
      *                   //A,T21,G16.8,A)')
-     *      '@State no:',(ISIM-1+INUM),
-     *      '@Excitation energy :',WRK(KEIVAL-1+ISIM-1+INUM),' au',
+     *      '@ State no:',(ISIM-1+INUM),
+     *      '@ Excitation energy :',WRK(KEIVAL-1+ISIM-1+INUM),' au',
      *      '@',WRK(KEIVAL-1+ISIM-1+INUM)*XTEV,  ' eV',
      *      '@',WRK(KEIVAL-1+ISIM-1+INUM)*XTKAYS,' cm-1',
      *      ' ',WRK(KEIVAL-1+ISIM-1+INUM)*XKJMOL,' kJ / mol',
-     *      '@Total energy :',WRK(KEIVAL-1+ISIM-1+INUM)+EMCSCF,' au'
+     *      '@ Total energy :',WRK(KEIVAL-1+ISIM-1+INUM)+EMCSCF,' au'
             IF (SOPPA) THEN
               TXNRM = DNORM2(KZCONF,WRK(KBVECS+(INUM-1)*KZYVAR),1)
               TYNRM = DNORM2(KZCONF,WRK(KBVECS+(INUM-1)*KZYVAR+KZVAR),1)
               T2P2HN = D100*(TXNRM*TXNRM + TYNRM*TYNRM)
               TPHNRM = D100 - T2P2HN
               WRITE(LUPRI,'(2(/A,F8.2,A))')
-     &        '@SOPPA  p-h  weight in excitation operator:',TPHNRM,' %',
-     &        '@SOPPA 2p-2h weight in excitation operator:',T2P2HN,' %'
+     &       '@ SOPPA  p-h  weight in excitation operator:',TPHNRM,' %',
+     &       '@ SOPPA 2p-2h weight in excitation operator:',T2P2HN,' %'
             END IF
             IF ( NGPPP(KSYMOP) .GT. 0 ) THEN
                JOP = 0
@@ -3495,18 +3507,18 @@ C                 ... skip HDO
 C
                   JOP = JOP + 1
                   WRITE(LUPRI,'(/A,A)')
-     *               '@Operator type:    ',LBLPP(KSYMOP,IOP)
+     *               '@ Operator type:    ',LBLPP(KSYMOP,IOP)
 C
                   IF ( LBLPP(KSYMOP,IOP)(2:8) .EQ. 'DIPLEN ' ) THEN
                      WRITE(LUPRI,'(A,1P,G16.8)')
-     *                  '@Oscillator strength (LENGTH)   :',
+     *                  '@ Oscillator strength (LENGTH)   :',
      *                  OSCSTR(INUM,JOP)
                      WRITE(LUPRI,'(A,1P,G16.8)')
      *                  ' Transition moment   (LENGTH)   :',
      *                  TRSMOM(INUM,JOP)
                   ELSE IF ( LBLPP(KSYMOP,IOP)(2:8) .EQ. 'DIPVEL ' ) THEN
                      WRITE(LUPRI,'(A,1P,G16.8)')
-     *                  '@Oscillator strength (VELOCITY) :',
+     *                  '@ Oscillator strength (VELOCITY) :',
      *                  OSCSTR(INUM,JOP)
                      WRITE(LUPRI,'(A,1P,G16.8)')
      *                  ' Transition moment   (VELOCITY) :',
@@ -3514,7 +3526,7 @@ C
                   ELSE IF ( LBLPP(KSYMOP,IOP)(1:5) .EQ. 'COS K' .OR.
      &                      LBLPP(KSYMOP,IOP)(1:5) .EQ. 'SIN K' ) THEN
                      WRITE(LUPRI,'(A,1P,G16.8)')
-     *                  '@Generalized oscillator strength:',
+     *                  '@ Generalized oscillator strength:',
      *                  OSCSTR(INUM,JOP)
                      IF ( LBLPP(KSYMOP,IOP)(1:5) .EQ. 'COS K' ) THEN
                         WRITE(LUPRI,'(A,1P,G16.8)')
@@ -3528,7 +3540,7 @@ C
                   ELSE IF (LBLPP(KSYMOP,IOP)(3:8).EQ.'SPNORB' .OR.
      &                     LBLPP(KSYMOP,IOP)(3:8).EQ.'MNF-SO') THEN
                      WRITE(LUPRI,'(3A,1P,G16.8,A)')
-     *                  '@Spin-orbit coupling constant (',
+     *                  '@ Spin-orbit coupling constant (',
      *                    LBLPP(KSYMOP,IOP),') :',
      *               TRSMOM(INUM,JOP)*XTKAYS,' cm-1'
                      WRITE(LUPRI,'(A,1P,G16.8,A)')
@@ -3536,7 +3548,7 @@ C
      *               TRSMOM(INUM,JOP),' au'
                   ELSE
                      WRITE(LUPRI,'(A,1P,G16.8)')
-     *                  '@Transition moment              :',
+     *                  '@ Transition moment              :',
      *                  TRSMOM(INUM,JOP)
                   END IF
   545          CONTINUE
@@ -3770,9 +3782,9 @@ C    *                  XINDX,LWRK,UDV,NBX,IBOFF)
          KVECB = 1
          KWRK1 = KVECB + KZYVAR
          LWRK1 = LWRK - KWRK1
-         WRITE (LUPRI,'(/A)') '@WARNING>>>>> Linear response function'//
+         WRITE (LUPRI,'(/A)')'@ WARNING>>>>> Linear response function'//
      &        ' calculated using presolved response vectors',
-     &        '@WARNING>>>>> These results will not have quadratic '//
+     &        '@ WARNING>>>>> These results will not have quadratic '//
      &        'accuracy'
          CALL LRNSL(CMO,UDV,PV,FC,XINDX,WRK(KVECB),
      &              WRK(KWRK1),LWRK1)
@@ -5247,12 +5259,12 @@ C
                   VAL = DDOT(KZYVAR,WRK(KVECA),1,VECB,1)
 C
                   WRITE(LUPRI,'(/A,2(/A,A10,I4,F10.6),/,/A,F20.12)')
-     &                    ' Linear response function in a.u.',
-     &                    ' A operator, symmetry, frequency: ',
-     &                    LBLLR(KSYMOP,IOPA),KSYMOP,-FREQ(IFREQ),
-     &                    ' B operator, symmetry, frequency: ',
-     &                    LBLLR(KSYMOP,IOPB),KSYMOP, FREQ(IFREQ),
-     &                    ' Value of linear response: ',VAL
+     &                ' Linear response function in a.u.',
+     &                ' A operator, symmetry, frequency: ',
+     &                LBLLR(KSYMOP,IOPA),KSYMOP,-FREQ(IFREQ),
+     &                ' B operator, symmetry, frequency: ',
+     &                LBLLR(KSYMOP,IOPB),KSYMOP, FREQ(IFREQ),
+     &                ' Value of linear response -<<A;B>(omega): ',VAL
                END DO
             END DO
          END DO

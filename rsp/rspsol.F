@@ -147,6 +147,7 @@ C
       END IF
       IF (IREFSY.EQ.KSYMST .AND. NASHT.GT.1 .AND. KZCONF.NE.NCREF)
      &   THEN
+C
 Chj-May2000: it is not so quick to implement triplet solvent response
 C  with CSF's because RSPSLV calls sirius routines, and all the Sirius
 C  routines are using CSF's if that was used in Sirius.
@@ -207,7 +208,8 @@ C
 C        CALL RSPTDM(NCSIM,ILRESY,IRSYM,NCLREF,NCRDIM,CLREF,
 C    *                 CR, RHO1,RHO2, ISPIN1,ISPIN2,TDM,NORHO2,
 C    *                 XNDXCI,WORK,KFREE,LFREE)
-C |OR> har - tegn skaler taethed med -
+C |OR> has minus sign, scale density with minus
+         CALL DSCAL(NCSIM*N2ASHX,DM1,WRK(KDVT),1)
          IF (TRPLET) THEN
             JSPIN1 = 1
             JSPIN2 = 0
@@ -218,10 +220,7 @@ C |OR> har - tegn skaler taethed med -
 C        CALL RSPTDM(NCSIM,ILRESY,IRSYM,NCLREF,NCRDIM,CLREF,
 C    *                 CR, RHO1,RHO2, ISPIN1,ISPIN2,TDM,NORHO2,
 C    *                 XNDXCI,WORK,KFREE,LFREE)
-C |OR> har - tegn skaler taethed med -
-         END IF
-         CALL DSCAL(NCSIM*N2ASHX,DM1,WRK(KDVT),1)
-         IF (TRPLET) THEN
+C |OR> has minus sign, scale density with minus
             CALL DSCAL(NCSIM*N2ASHX,DM1,WRK(KDVTTR),1)
          END IF
       END IF
@@ -846,7 +845,7 @@ C
             CALL DZERO(WRK(KURXLM),N2ORBX)
             CALL ONEXH1(WRK(JUBO),WRK(KURLM),WRK(KURXLM))
 C           CALL DGETSP(NORBT,WRK(KURXLM),WRK(KRXLM))
-C           MAERKE: what if LSYMPT .ne. 1 ???
+C           TODO: what if LSYMPT .ne. 1 ???
 C           900720: I think OK, i.e. that only RLM of sym 1
 C           such that RXLM is of sym LSYMPT is needed.
 C           CALL TR1UH1(UBOVEC,H1,H1X,IH1SYM)

@@ -56,7 +56,7 @@ C
      *            '.DPROP ', '.DFREQ ', '.APROP ', '.MAXIT ',
      *            '.THCLR ', '.MAXITO', '.PRINT ', '.FREQUE',
      *            '.ISABCD', '.INVEXP', '.THG   ', '.DC-SHG',
-     *            '.DC-KER', '.IDRI  ', '.XXXXXX', '.THRNRM',
+     *            '.DC-KER', '.IDRI  ', 'xXXXXXX', '.THRNRM',
      *            '.DIPLEN', '.DIPLNX', '.DIPLNY', '.DIPLNZ'/
 C
 C  Set BCDFRQ = .TRUE. if frequencies specified for each operator
@@ -184,6 +184,8 @@ C
                   READ (LUCMD,*) ISPINA,ISPINB,ISPINC,ISPIND
                GO TO 100
  14            CONTINUE
+C                 test option: construct Hessian explicitly
+C                 and solve linear equations by matrix inversion
                   INVEXP = .TRUE.
                GO TO 100
  15            CONTINUE
