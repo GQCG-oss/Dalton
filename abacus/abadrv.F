@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abadrv.F,v 1.8 2001-05-31 06:38:00 vebjornb Exp $
+C$Id: abadrv.F,v 1.9 2001-06-08 11:43:06 hjj Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -1723,29 +1723,27 @@ C
 C     Energy
 C
          CALL HEADER('Molecular wave function and energy',-1)
-csonia 04/10/1995
-         WRITE (LUCME,'(A)') 'Molecular wave function and energy'
-csonia 04/10/1995                                                             
          CALL MOLCHR(ICHRGE)
          WRITE (LUPRI,'(3(5X,A,I3)/)')
      *        'Spin multiplicity',ISPIN,
      *        'State number     ',ISTATE,
      *        'Total charge     ',ICHRGE
-c     sonia 04/10/1995
-         WRITE (LUCME,'(3(5X,A,I3)/)')
-     *        'Spin multiplicity',ISPIN,
-     *        'State number     ',ISTATE,
-     *        'Total charge     ',ICHRGE
-csonia 04/10/1995                                                             
          WRITE (LUPRI,'(/T6,A,F17.10,A/T6,A,F17.8,A/T6,A,F17.4,A//)')
      *        'Total energy     ',       EMCSCF,' au (Hartrees)',
      *        '                 ',  XTEV*EMCSCF,' eV',
      *        '                 ',XKJMOL*EMCSCF,' kJ/mol'
 csonia 04/10/95
-         WRITE (LUCME,'(/T6,A,D24.15,A/T6,A,F17.8,A/T6,A,F17.4,A//)')
+         IF (LUCME.GT.0) THEN
+            WRITE (LUCME,'(A)') 'Molecular wave function and energy'
+            WRITE (LUCME,'(3(5X,A,I3)/)')
+     *        'Spin multiplicity',ISPIN,
+     *        'State number     ',ISTATE,
+     *        'Total charge     ',ICHRGE
+            WRITE (LUCME,'(/T6,A,D24.15,A/T6,A,F17.8,A/T6,A,F17.4,A//)')
      *        'Total energy     ',       EMCSCF,' au (Hartrees)',
      *        '                 ',  XTEV*EMCSCF,' eV',
      *        '                 ',XKJMOL*EMCSCF,' kJ/mol'
+         END IF
 csonia 04/10/95
 C
 C     Relativistic corrections, K.Ruud, Dec.-93
@@ -2408,7 +2406,8 @@ C
 C
       CALL HEADER('Total magnetizability tensor (au)',-1)
 csonia 04/10/1995
-        WRITE (LUCME,'(A)') 'Total magnetizability tensor (au)'
+      IF (LUCME.GT.0)
+     &  WRITE (LUCME,'(A)') 'Total magnetizability tensor (au)'
 csonia 04/10/1995                                                              
       CALL DSCAL(9,-D1,SUSTOT,1)
       CALL POLPRI(SUSTOT,'   ',-2)

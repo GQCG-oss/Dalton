@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abadip.F,v 1.3 2001-05-31 06:38:00 vebjornb Exp $
+C$Id: abadip.F,v 1.4 2001-06-08 11:43:06 hjj Exp $
 C
 #include <single.h>
 C  /* Deck dipinp */
@@ -453,10 +453,12 @@ C
             END IF
   300    CONTINUE
 csonia 04/10/95
-         DO I = 1, NCOMP
+         IF (LUCME.GT.0) THEN
+            DO I = 1, NCOMP
                WRITE (LUCME, '(1X,A2,1X,3D23.15)') LAB(I),
      &                  (FAC*AMAT(IND(I),IND(J)),J=1,NCOMP)
-         END DO
+            END DO
+         END IF
 csonia 04/10/95
       ELSE
          WRITE (LUPRI,'(2X,A)') ' Polarizabilities not calculated - '//

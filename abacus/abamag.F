@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abamag.F,v 1.6 2001-05-31 06:38:01 vebjornb Exp $
+C$Id: abamag.F,v 1.7 2001-06-08 11:43:06 hjj Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -2044,9 +2044,6 @@ C
       SPAR = ABS(ANIS)*SQRT(D1 + (ASYM**2)/D3)
 C
       CALL TITLER('Chemical shielding for '//NAME//':','=',1)
-csonia 04/10/95
-       write (LUCME,'(a,a)') 'Chemical shielding for ',NAME
-csonia 04/10/95                                                                 
       WRITE (LUPRI,'(3(/,1X,A,F12.4,A),/,2(/,1X,A,F12.4,A))')
      &   ' Shielding constant:',AVETOT,' ppm',
      &   ' Anisotropy:        ',ANIS,  ' ppm',
@@ -2055,14 +2052,17 @@ csonia 04/10/95
      &   ' A parameter:       ',APAR,  ' ppm'
       CALL HEADER('Total shielding tensor (ppm):',1)
 csonia 04/10/95
-       write (LUCME,'(a)') 'Total shielding tensor (ppm):'
+      IF (LUCME.GT.0) THEN
+         WRITE (LUCME,'(A,A)') 'Chemical shielding for ',NAME
+         WRITE (LUCME,'(A)') 'Total shielding tensor (ppm):'
+      END IF
 csonia 04/10/95  
       WRITE (LUPRI,'(18X,3(A,13X),/)') 'Bx', 'By', 'Bz'
       DO 400 ICOOR = 1, 3
          WRITE (LUPRI,'(2X,A6,3F15.8)')
      &          NAMEX(ICOOR), (TMAT(K,ICOOR),K=1,3)
 csonia 04/10/95
-       write (LUCME,'(2X,A6,3D23.15)')
+         IF (LUCME.GT.0) WRITE (LUCME,'(2X,A6,3D23.15)')
      &          NAMEX(ICOOR), (TMAT(K,ICOOR),K=1,3)
 csonia 04/10/95
   400 CONTINUE

@@ -628,7 +628,7 @@ C  /* Deck exedrv */
          CALL TITLER('Commencing geometry optimization using .WALK',
      &   '*',111)
  10      CONTINUE
-            REWIND (LUCME)
+            IF (LUCME.GT.0) REWIND (LUCME)
             SOLVNT = .FALSE.
             WRITE (LUPRI,'(//5X,A,I5,A//)')
      &      '@@>>>>>>>>>> Geometry walk iteration number:',ITERNR,
