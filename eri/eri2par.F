@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2par.F,v 1.4 2001-04-04 14:19:10 vebjornb Exp $
+C$Id: eri2par.F,v 1.5 2001-04-09 13:00:42 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck pardrv */
@@ -689,6 +689,7 @@ C
                MAXADD = MEMADD
             END IF
             NOTMEM = .TRUE.
+         END IF
 #endif
 #if defined (VAR_PVM)
          CALL PVMXRECV(-1,MTAG7)
