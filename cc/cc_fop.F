@@ -317,7 +317,7 @@ C
               IOPT = 3
               CALL CC_RDRSP('L0',0,1,IOPT,MODEL,WORK(KLAM),WORK(KLAM2))
 
-              XLNCCCU = DDOT(LETOT,WORK(KWRK2),1,WORK(KWRK2),1)
+              XLNCCCU = DDOT(NT1AMX+NT2AMX,WORK(KLAM),1,WORK(KLAM),1)
               IF (ABS(XLNCCPR-XLNCCCU).LT.CVGLSOL) LSLLCVG = .TRUE.
               IF (IPRINT.GT.2) THEN
                 WRITE(LUPRI,*)
