@@ -359,7 +359,7 @@ else
       fi
    fi
    if [ -s molden.inp -a -r molden.inp ]; then
-      cp molden.inp $WRKDIR/$1_$2.$OUTEXT
+      cp molden.inp $WRKDIR/$1_$2.molden
    fi
 fi
 cd $WRKDIR
