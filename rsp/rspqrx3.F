@@ -506,10 +506,6 @@ C
       LORB   = ( MZWOPT(IGRSYM) .GT. 0 )
       LORBB  = ( MZWOPT(ISYMB) .GT. 0 )
       LORBC  = ( MZWOPT(ISYMC) .GT. 0 )
-      print *,'isymst irefsy',isymst,irefsy
-      print *,'mzconf',mzconf
-      print *,'lorb b c' ,lorb,lorbb,lorbc
-      print *,'lcon b c' ,lcon,lconb,lconc
 C
 C     Case 1:
 C     =======
