@@ -75,7 +75,7 @@ C
       DATA TABLE /'.SKIP  ','.PRINT ','.DIRECT','.RESTAR','.CC3   ',
      &            '*CCEXCI','*CCLRSD','.CCSTST','.NSYM  ','.MAXRED',
      &            '*CCEXGR','.R1SKIP','.L1SKIP','.RESKIP','.LESKIP',
-     &            '.F1SKIP','.MAXITE','.XXXXXX','.E0SKIP','.L0SKIP',
+     &            '.F1SKIP','.MAX IT','.XXXXXX','.E0SKIP','.L0SKIP',
      &            '.LISKIP','.CC2   ','.MP2   ','.CC(2) ','.CC1B  ',
      &            '.CC(T) ','.CC(3) ','.CCS   ','.FCORE ','.FSECON',
      &            '.CCD   ','.CC1A  ','.CIS   ','.THRENR','.NOCCIT',
