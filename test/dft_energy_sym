@@ -60,8 +60,8 @@ else
    GREP="egrep"
 fi
 
-# Energy
-CRIT1=`$GREP "SCF energy * \: * \-151\.4639384123....." $log | wc -l`
+# Energy                          -151.463939352995794
+CRIT1=`$GREP "SCF energy * \: * \-151\.46393935...." $log | wc -l`
 TEST[1]=`expr	$CRIT1`
 CTRL[1]=1
 ERROR[1]="DFT/B3LYP ENERGY NOT CORRECT"

@@ -63,8 +63,8 @@ else
    GREP="egrep"
 fi
 
-#                                    -92.114493330518
-CRIT1=`$GREP "Final * HF energy\: * \-92\.1144933....." $log | wc -l`
+#                                     -92.114499819476 
+CRIT1=`$GREP "Final * HF energy\: * \-92\.1144998....." $log | wc -l`
 TEST[1]=`expr	$CRIT1`
 CTRL[1]=1
 ERROR[1]="DFT/BLYP ENERGY NOT CORRECT"
