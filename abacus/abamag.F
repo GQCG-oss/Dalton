@@ -1278,9 +1278,9 @@ C
       IF (ICHANG .GT. 0) THEN
          CALL HEADER('Changes of defaults for SPIN-S:',0)
          IF (ABUND .NE. 1.0D0) THEN
-            WRITE (LUPRI,'(A,E9.2)')
+            WRITE (LUPRI,'(A,F8.3,A)')
      &            ' Spin-spin couplings printed for atoms with '//
-     &            'abundance greater than :', ABUND
+     &            'abundance greater than :', ABUND,' %'
          END IF
          IF (ISPPRI .NE. 0) THEN
             WRITE (LUPRI,'(A,I5)')
@@ -2614,12 +2614,12 @@ C
                         NA1    = NINT(DISOTP(NZ1,ISOTPS(IATOM1),'A'))
                         NA2    = NINT(DISOTP(NZ2,ISOTPS(IATOM2),'A'))
                         FACTOR = AUTOHZ*GVAL1*GVAL2
-                        WRITE(LUPRI,'(/,2X,A,I3,3X,A,F8.3,3X,A,F10.6)')
-     &                       'Mass number atom 1: ',NA1, 'abundance: ',
-     &                       ABUND1,'g factor: ',GVAL1
-                        WRITE(LUPRI,'(2X,A,I3,3X,A,F8.3,3X,A,F10.6)')
-     &                       'Mass number atom 2: ',NA2, 'abundance: ',
-     &                       ABUND2,'g factor: ',GVAL2
+                        WRITE(LUPRI,'(/2X,A,I5,A,F8.3,A,F10.6)')
+     &                     'Mass number atom 1:',NA1,';   Abundance:',
+     &                     ABUND1,' %;   g factor: ',GVAL1
+                        WRITE(LUPRI,'(2X,A,I5,A,F8.3,A,F10.6)')
+     &                     'Mass number atom 2:',NA2,';   Abundance:',
+     &                     ABUND2,' %;   g factor: ',GVAL2
                         AVETOT = AVEISO(IATIJ,1)*FACTOR
                         ANIS   = ANISO(IATIJ)*FACTOR
                         ASYMM  = ASYM(IATIJ)
@@ -2800,16 +2800,14 @@ C
                               NA1    = NINT(DISOTP(NZ1,ISO1,'A'))
                               NA2    = NINT(DISOTP(NZ2,ISO2,'A'))
                               FACTOR = AUTOHZ*GVAL1*GVAL2
-                              WRITE(LUPRI,
-     &                              '(/,2X,A,I3,3X,A,F8.3,3X,A,F10.6)')
-     &                              'Mass number atom 1: ',NA1,
-     &                              'abundance: ',ABUND1,'g factor: ',
-     &                              GVAL1
-                              WRITE(LUPRI,
-     &                              '(2X,A,I3,3X,A,F8.3,3X,A,F10.6)')
-     &                              'Mass number atom 2: ',NA2,
-     &                              'abundance: ',ABUND2,'g factor: ',
-     &                              GVAL2
+                              WRITE(LUPRI,'(/2X,A,I5,A,F8.3,A,F10.6)')
+     &                           'Mass number atom 1:',NA1,
+     &                           ';   Abundance:',ABUND1,
+     &                           ' %;   g factor: ',GVAL1
+                              WRITE(LUPRI,'(2X,A,I5,A,F8.3,A,F10.6)')
+     &                           'Mass number atom 2:',NA2,
+     &                           ';   Abundance:',ABUND2,
+     &                           ' %;   g factor: ',GVAL2
                               AVETOT = AVEISO(IATIJ,1)*FACTOR
                               ANIS   = ANISO(IATIJ)*FACTOR
                               ASYMM  = ASYM(IATIJ)
