@@ -1129,23 +1129,22 @@ C
   90     CONTINUE
       END IF
       ISMMAX = 1
-      DO 100 ISYM = 1,NSYM
-         I = ISMMAX
-         DO 200 ISRT = I,NLRLBL
-            IF ( ISYMQR(ISRT).EQ.ISYM) THEN
-                IQR   = ISYMQR(ISRT)
-                FRVAL  = QRFREQ(ISRT)
-                LABEL = QRLBL(ISRT)
-                ISYMQR(ISRT) = ISYMQR(ISMMAX)
-                QRFREQ(ISRT) = QRFREQ(ISMMAX)
-                QRLBL(ISRT)  = QRLBL(ISMMAX)
-                ISYMQR(ISMMAX) = IQR
-                QRFREQ(ISMMAX) = FRVAL
-                QRLBL(ISMMAX)  = LABEL
-                ISMMAX = ISMMAX + 1
+      DO ISYM = 1,NSYM
+         DO ISRT = 1, NLRLBL
+            IF (ISRT.GE.ISMMAX .AND. ISYMQR(ISRT).EQ.ISYM) THEN
+               IQR   = ISYMQR(ISRT)
+               FRVAL = QRFREQ(ISRT)
+               LABEL = QRLBL(ISRT)
+               ISYMQR(ISRT) = ISYMQR(ISMMAX)
+               QRFREQ(ISRT) = QRFREQ(ISMMAX)
+               QRLBL(ISRT)  = QRLBL(ISMMAX)
+               ISYMQR(ISMMAX) = IQR
+               QRFREQ(ISMMAX) = FRVAL
+               QRLBL(ISMMAX)  = LABEL
+               ISMMAX = ISMMAX + 1
             END IF
- 200     CONTINUE
- 100  CONTINUE
+         END DO
+      END DO
       ITOTOP = 0
       DO 300 ISYM = 1,NSYM
          INUMOP = 0

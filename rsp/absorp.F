@@ -107,7 +107,7 @@ C
                GOTO 100
  2             CONTINUE
                READ (LUCMD,*) NFREQ_ALPHA
-                  IF (NBCRFR.LE.MXFREQ) THEN
+                  IF (NFREQ_ALPHA.LE.MXFREQ) THEN
                      READ (LUCMD,*) (FREQ_ALPHA(J),J=1,NFREQ_ALPHA)
                   ELSE
                      WRITE (LUPRI,'(3(/,A,I5),/)')
