@@ -652,6 +652,16 @@ Test Purpose:     Geometry optimization (1st order) using numerical
                   gradients
 
 
+geoopt_parallel
+---------------
+Molecule:         Acrolein
+Wave Function:    SCF / 3-21G
+Test Purpose:     Parallel second order transition state optimization
+                  in redundant internal coordinates. The partitioned
+                  rational function method controls the steps and
+                  Baker's convergence criteria are used
+
+
 geoopt_preopt
 -------------
 Molecule:         H2O
@@ -753,6 +763,14 @@ prop_nucquad
 Molecule:         ClO2
 Wave Function:    MCSCF (CAS) / cc-pVTZ
 Test Purpose:     Nuclear quadrupole coupling constants
+
+
+prop_parallel
+-------------
+Molecule:         C2H4O
+Wave Function:    SCF / DZ
+Test Purpose:     Parallel calculation checking vibrational analysis
+                  and IR and VCD spectral properties
 
 
 prop_roa
@@ -932,6 +950,14 @@ rsp_mnfphosph
 Molecule:         C2H4
 Wave Function:    MCSCF (CAS) / ANO (Atombasis)
 Test Purpose:     Atomic mean field (AMFI) spin-orbit and phosphorescence
+
+
+rsp_parallel
+------------
+Molecule:         H2O
+Wave Function:    SCF / ANO (Atombasis)
+Test Purpose:     Parallel calculation of non-equilibrium solvation
+                  first hyperpolarizabilities
 
 
 rsp_phosph

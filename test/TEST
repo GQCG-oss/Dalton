@@ -54,7 +54,7 @@ LONGCC="cc_geoopt2"
 #
 LONG="$LONG $LONGCC"
 #
-PARALLEL="energy_parallel"
+PARALLEL="energy_parallel geoopt_parallel prop_parallel rsp_parallel"
 #
 ALL="$SHORT $MEDIUM $LONG"
 #
@@ -159,6 +159,9 @@ elif [ "$testcase" = "long" ]; then
   testcase=$LONG
 elif [ "$testcase" = "parallel" ]; then
   testcase=$PARALLEL
+  if [ "$paramlist" = "" ]; then
+    paramlist="-N 3"
+  fi
 elif [ "$testcase" = "all" ]; then
   testcase=$ALL
 elif [ "$testcase" = "allcc" ]; then
