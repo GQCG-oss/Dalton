@@ -101,8 +101,8 @@ C
 C     CPU time statistics
 C
       CALL GETTIM(T2INT,DUMTIM)
-      CALL DELSTA(-1,IDUM)
-      CALL REDSTA(-1,IDUM,IDUM,IDUM,IDUM)
+      CALL DELSTA(-1,0)
+      CALL REDSTA(-1,0,0,0,0)
       IF (TKTIME) THEN
          TR000  = D0
          THERI  = D0
@@ -250,8 +250,8 @@ C
       IF ((JPRINT .GT. 2 .AND. .NOT. SLAVE)  .OR.
      &    (JPRINT .GT. 5 .AND. SLAVE) ) THEN
          CALL TWOPER
-         CALL REDSTA(1,IDUM,IDUM,IDUM,IDUM)
-         CALL DELSTA(1,IDUM)
+         CALL REDSTA(1,0,0,0,0)
+         CALL DELSTA(1,0)
       END IF
       CALL QEXIT('TWOINT')
       RETURN
