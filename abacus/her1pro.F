@@ -52,7 +52,7 @@ C
 #include <symmet.h>
 #include <r12int.h>
 C
-      LOGICAL TRIANG, PROPRI, TOFILE, DOINT(2,2)
+      LOGICAL TRIANG, PROPRI, TOFILE, DOINT(2,2),resetcharges
       CHARACTER WORD*7, LABINT(3*MXCOOR)*8
       DIMENSION WORK(LWORK)
 C
@@ -178,8 +178,7 @@ C
 #include <maxorb.h>
 #include <iratdef.h>
 #include <efield.h>
-cLig <> changed NTABLE from 74 to 76
-      PARAMETER (NTABLE = 76)
+      PARAMETER (NTABLE = 79)
       PARAMETER (D2 = 2.D0)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, PROPRI, SQUARE,
@@ -197,6 +196,7 @@ C
 #include <cbihr1.h>
 #include <elweak.h>
 #include <orgcom.h>
+#include <gtensor.h>
 C
 cLig <> added RAGMO and RPSO
       DATA TABLE /'OVERLAP', 'DIPLEN ', 'DIPVEL ', 'QUADRUP',
@@ -217,12 +217,18 @@ cLig <> added RAGMO and RPSO
      &            'SOMAGMO', 'DEROVLP', 'DERHAMI', 'ELGDIAN',
      &            'ELGDIAL', 'DPTOVL ', 'DPTPO1 ', 'DPTPO2 ',
      &            'XDDXR3 ', 'PVPINT ', 'POTENER', 'PVIOLA ',
-     &            'SPHMOML', 'QDBINT ', 'RANGMO ', 'RPSO   '/
+     &            'SPHMOML', 'QDBINT ', 'SOSCALE', 'ELGDSCA',
+     &            'ANGECC ', 'RANGMO ', 'RPSO   '/
+      LOGICAL   RGAUGE, RCHRG
+      DIMENSION GAGSAV(3)
 C
 #include <ibtfun.h>
 C
       CALL QENTER('PR1IN1')
       CALL MEMGET('REAL',KATOM,NUCDEP,WORK,KFREE,LFREE)
+      RCHRG  = .FALSE.
+      RGAUGE = .FALSE. 
+      CALL MEMGET('REAL',KCHRG,NUCIND,WORK,KFREE,LFREE) 
 C
 C     **************************
 C     ***** Integral types *****
@@ -238,7 +244,8 @@ cLig <> added goto 75 and 76 for RANGMO and RPSO
      &             19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,
      &             34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
      &             49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,
-     &             64,65,66,67,68,69,70,71,72,73,74,75,76), I
+     &             64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,
+     &             79), I
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -1730,12 +1737,94 @@ C
          END IF
          ANTI      = .TRUE.
       GOTO 200
+c
+C     Scaled Spin-orbit integrals
+C     --------------------------
+C
+ 75   CONTINUE
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &      ' Calculation of SCALED  one-electron spin-orbit integrals.'
+         INTTYP = 5
+         NOPTYP = 3
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         LABINT(1) = 'X1SPNSCA'
+         LABINT(2) = 'Y1SPNSCA'
+         LABINT(3) = 'Z1SPNSCA'
+         INTREP(1) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         ANTI = .TRUE.
+C        Scale charges
+         CALL HEADER('SO integrals use charges:',0)
+         CALL SCACHRG(WORK(KCHRG)) 
+         RCHRG = .TRUE.
+      GO TO 200
+C
+C     SCALED Diamagnetic one-electron spin-orbit integrals (No-London)
+C     ---------------------------------------------------------------
+C
+ 76   CONTINUE
+         INTTYP = 61
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &        ' Calculation of SCALED diamagn. 1-el SO without'//
+     &        ' London contribution'
+         NOPTYP = 9
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         LABINT(1) = 'D-SSO XX'
+         LABINT(2) = 'D-SSO XY'
+         LABINT(3) = 'D-SSO XZ'
+         LABINT(4) = 'D-SSO YX'
+         LABINT(5) = 'D-SSO YY'
+         LABINT(6) = 'D-SSO YZ'
+         LABINT(7) = 'D-SSO ZX'
+         LABINT(8) = 'D-SSO ZY'
+         LABINT(9) = 'D-SSO ZZ'
+         INTREP(1) = 0
+         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(4) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(5) = 0
+         INTREP(6) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(7) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(8) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(9) = 0
+         ANTI      = .FALSE.
+C        Scale charges
+         CALL HEADER('GAUGE SO integrals use charges:',0)
+         CALL SCACHRG(WORK(KCHRG))
+         RCHRG = .TRUE.
+      GOTO 200
+C
+C     Electronic angular momentum around the electonic center of charge
+C     -----------------------------------------------------------------
+C
+ 77   CONTINUE
+         IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
+     &    ' Calculation of angular momentum around the center of charge'
+         INTTYP = 18
+         NOPTYP = 3
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL SETECC
+         CALL DCOPY(3,GAGORG,1,GAGSAV,1)
+         CALL DCOPY(3,ECCORG,1,GAGORG,1)
+         RGAUGE=.TRUE.
+         LABINT(1) = 'XANGECC '
+         LABINT(2) = 'YANGECC '
+         LABINT(3) = 'ZANGECC '
+         INTREP(1) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         ANTI = .TRUE.
+      GO TO 200
 cLig >>
 C
 C     (r-r')l' integrals
 C     ------------------
 C
- 75   CONTINUE
+ 78   CONTINUE
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      'Calculation of (r-r_go)l_go integrals for the '/
      &   /'determination of magnetizability in analytcal way'
@@ -1769,7 +1858,7 @@ C
 C     (r-r')l'/|r-R_I|**3 integrals
 C     ----------------------------
 C
- 76   CONTINUE
+ 79   CONTINUE
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      'Calculation of (r-r_go)l_I integrals for the '/
      &   /'determination of nuclear shielding in analitcal way'
@@ -1963,8 +2052,60 @@ C
  1020       CONTINUE
          END IF
       END IF
+C     Reset gauge origin and nuclear charges 
+      IF (RCHRG)  CALL DCOPY(NUCIND,WORK(KCHRG),1,CHARGE,1)
+      IF (RGAUGE) CALL DCOPY(3,GAGSAV,1,GAGORG,1)
+ 9999 CONTINUE
       CALL QEXIT('PR1IN1')
       RETURN
+      END
+c  /* Deck SCACHRG */
+       SUBROUTINE SCACHRG(SVCHRG)
+#include <implicit.h>
+#include <mxcent.h>
+#include <nuclei.h>
+#include <priunit.h>
+#include <elements.h>
+      DIMENSION SVCHRG(*)
+C      
+      PARAMETER (CHGLi = 3D0, CHGF  = 9D0,  CHGNa = 11D0, CHGCl = 17D0,
+     &     CHGSc = 21D0, CHGZn = 30D0, CHGY  = 39D0, CHGCd = 48D0,
+     &     CHGLa = 57D0, CHGHg = 80D0)       
+C
+C     Scale charges 
+C
+      CALL DCOPY(NUCIND,CHARGE,1,SVCHRG,1)
+C     Charges printout 
+      WRITE(LUPRI,'(A)') ' Atom       Scaled charge'
+      DO I = 1, NUCIND
+         CHG = CHARGE(I)
+c     scaling according to Koseki et al, J.Phys.Chem 1995, 99, 12764
+         IF(CHG.GE.CHGLi.AND.CHG.LE.CHGF) THEN
+            VLE = CHG - 2D0
+            FAC = 0.40 + 0.05*VLE
+         ELSE IF(CHG.GE.CHGNa.AND.CHG.LE.CHGCl) THEN
+            VLE = CHG - 10D0
+            FAC = 0.925 - 0.0125*VLE
+c     scaling according to Koseki et al, J. Pys. Chem. A 1998, 102, 10430  
+c     first-row transition metals  
+         ELSE IF(CHG.GE.CHGSc.AND.CHG.LE.CHGZn) THEN
+            VLE = CHG - 20D0
+            FAC = 0.385 + 0.025*VLE
+c      second-row transition metals 
+          ELSE IF(CHG.GE.CHGY.AND.CHG.LE.CHGCd) THEN
+            VLE = CHG - 38D0
+            FAC = 4.680 + 0.060*VLE 
+c      third-row transition metals
+          ELSE IF(CHG.GE.CHGY.AND.CHG.LE.CHGCd) THEN
+            VLE = CHG - 56D0
+            FAC = 13.960 + 0.140*VLE
+         ELSE
+            FAC = 1D0
+         END IF
+         IND=NINT(CHARGE(I))
+         CHARGE(I) = CHARGE(I)*FAC
+         WRITE(LUPRI,'(A4,11X,F5.2)')ELEMENTS(IND),CHARGE(I)
+      END DO
       END
 C  /* Deck ioden */
       FUNCTION IODEN(I)

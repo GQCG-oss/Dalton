@@ -2,9 +2,9 @@
 C-----------------------------------------------------------------------
 C
 C     This program calculates the second order correction to the energy
-C     using the n-electron valence state perturbation theory (NEVPT)
+C     using the n-electron valence state perturbation thoery (NEVPT)
 C     in the partially contracted (PC) ad strongly contracted (SC)
-C     variants using Dyall's Hamiltonian for the definition of the
+C     variants using the Dyall's Hamiltonian for the definition of the
 C     zero order energies. All the equations are based on the spin free
 C     formulation of NEVPT.
 C
@@ -399,6 +399,11 @@ C
 #if !defined(VAR_G77)
       allocate (istr(NAEL))
       allocate (jstr(NBEL))
+#else
+      i_istr=ialloi4(istr,NAEL)
+      i_jstr=ialloi4(jstr,NBEL)
+#endif
+#if !defined(VAR_G77)
       do id=1,ncf
          read(LUN98) dum,(istr(i),i=1,nael),(jstr(i),i=1,nbel)
          do ia=1,nael
@@ -410,8 +415,6 @@ c            jstr(ib)=jstr(ib)
             if (jstr(ib).gt.lfermi) ntothp=ntothp+1 
          enddo
 #else
-      i_istr=ialloi4(istr,NAEL)
-      i_jstr=ialloi4(jstr,NBEL)
       do id=1,ncf
          read(LUN98) dum,(istr(i_istr+i-1),i=1,nael),(jstr(i_jstr+i-1),i
      $        =1,nbel)
@@ -1982,8 +1985,7 @@ c---azzeramento
             nfin=ninit+icomp(ninit)-1
             nedif=abs(ne(minit)-ne(ninit))
             znocalc=nedif.gt.3
-Chj         if(znocalc)nhitsd=nhitsd+1
-Chj nhitsd not defined before here
+            if(znocalc)nhitsd=nhitsd+1
             if(.not.znocalc)znocalc=ndiff(ioccfe(nisht+1,mcap)
      $           ,ioccfe(nisht+1,ncap),nasht).gt.6
             if(znocalc)goto 2
@@ -4359,6 +4361,7 @@ c----------------------------------------------------------------------
       dimension dbba(nasht,nasht,nasht,nasht,nasht,nasht),dab(nasht
      $     ,nasht,nasht,nasht),dbb(nasht,nasht,nasht,nasht),da(nasht
      $     ,nasht),db(nasht,nasht)
+      dbbat=v
       v=-dbba(i,j,k,l,m,n)
       if(k.eq.n)v=v+dbbt(i,j,l,m,dbb,db,nasht)
       if(m.eq.j)v=v+dab(n,l,k,i)

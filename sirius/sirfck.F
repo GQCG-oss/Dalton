@@ -40,7 +40,6 @@ C
 C     March 1997 - tsaue Screening
 C     921201-hjaaj; partly based on GETFCK
 C     written by Henrik Koch and Trygve Helgaker 22-November-1991.
-C     DFT modifications T. Helgaker
 C
 C PURPOSE : Driver routine for the calculation of the two-electron
 C           part of the fock matrices from AO integrals.
@@ -112,10 +111,10 @@ C           CALL SETHER(IPRHER,NEWGEO,WORK,LWORK)
          IF (NSYM.GT.1 .AND. DFTADD) THEN
 C           HERFCK destroys DMAT when called with symmetry
             KDMAT = 1
-            KLAST = KDMAT + N2BASX
+            KLAST = KDMAT + N2BASX*NDMAT
             LWRK  = LWORK - KLAST + 1
             IF (KLAST.GT.LWORK) CALL STOPIT('SIRFCK','DMAT',KLAST,LWORK)
-            CALL DCOPY(N2BASX,DMAT,1,WRK(KDMAT),1)
+            CALL DCOPY(N2BASX*NDMAT,DMAT,1,WRK(KDMAT),1)
             CALL HERFCK(FMAT,WRK(KDMAT),NDMAT,ISYMDM,IFCTYP,IPRFCK,
      &                  WRK(KLAST),LWRK)
          ELSE
@@ -128,14 +127,6 @@ C           HERFCK destroys DMAT when called with symmetry
 C     ... not DIRECT
          CALL SIRFCK2(LUINTA,'AOTWOINT',
      &                FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,WRK,LWORK)
-      END IF
-C
-C     Add DFT contribution
-C
-      IF (DFTADD) THEN
-         IF (NDMAT.GT.1) CALL QUIT('DFTADD and NDMAT.gt.1')
-         CALL DFTEXC(DMAT,1,FMAT,1,.FALSE.,.TRUE.,.FALSE.,.FALSE.,
-     &        .FALSE.,.FALSE.,DUMMY,.FALSE.,WRK,LWORK,IPRFCK)
       END IF
 C
 #if defined (VAR_OLDCODE)
@@ -208,7 +199,6 @@ C
 #include <infinp.h>
 #include <inforb.h>
 #include <infpri.h>
-#include <dftcom.h>
 C
 C
 #include <memint.h>

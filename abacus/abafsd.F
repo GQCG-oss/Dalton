@@ -1,3 +1,4 @@
+c -*-mode:fortran; fortran-continuation-string: "&" -*-
 C
 C...   Copyright (c) 2001 by the authors of Dalton (see below).
 C...   All Rights Reserved.
@@ -185,7 +186,9 @@ C
 C        DFT contribution
 C
          IF (DFTADD .AND. IATOM .EQ. 0 .AND. .NOT.NOLOND) THEN
-            CALL DFTLND(FCD(1,1),FCD(1,2),FCD(1,3),WORK,LWORK,IPRINT)
+            CALL DFT_london(FCD(1,1),FCD(1,2),FCD(1,3),WORK,LWORK,
+     &           IPRINT)
+c            CALL DFTLND(FCD(1,1),FCD(1,2),FCD(1,3),WORK,LWORK,IPRINT)
          END IF
 C
          IF (IATOM .GT. 0) THEN

@@ -1542,7 +1542,7 @@ C
 CTROND      IF (DIRFCK .OR. DDFOCK .OR. EXPECT) THEN
 CTROND         CALL SKLFCK(FMAT,DUMMY,WORK,LWORK,JPRINT,DIRFCK,DDFOCK,EXPECT,
 CTROND     &               PERTUR,NODV,MAXDER,LONDON,NDMAT,ISYMDM,IFCTYP,
-CTROND     &               IATOM)
+CTROND     &               IATOM,.FALSE.)
 CTROND      END IF
 C
 C     <<<<< Print Section - Gradient and Hessian Elements >>>>>

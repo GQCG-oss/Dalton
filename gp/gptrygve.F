@@ -223,7 +223,11 @@ C
       CALL TSTAMP('  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---',
      &   LUPRIN)
       WRITE (LUPRIN,'(/2A/)') ' Reason: ',TEXT
-#if defined (SYS_CRAY) || defined (SYS_UNIX) || defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_DEC) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_T90)
+#if defined (SYS_CRAY) || defined (SYS_UNIX) || defined (SYS_AIX)  \
+ || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_NEC)  \
+ || defined (SYS_DEC)  || defined (SYS_T3D)  || defined (SYS_LINUX)\
+ || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL)   \
+ || defined (SYS_T90)
 C     Write to stderr
       WRITE (0,'(/A/1X,A)')
      *   '  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---',TEXT
@@ -1151,6 +1155,26 @@ C
 C end of GPCLOSE
 C
       END
+C  /* Deck lmnval */
+      SUBROUTINE LMNVAL(NHKTA,KHKTA,LVALUE,MVALUE,NVALUE)
+C
+C     tuh March 87
+C
+#include <implicit.h>
+#include <maxmom.h>
+#include <xyzpow.h>
+      DIMENSION LVALUE(KHKTA), MVALUE(KHKTA), NVALUE(KHKTA)
+#include <ibtfun.h>
+C
+      ICOMP = 0
+      DO 100 I = 1, KHKTA
+         ICOMP = ICOMP + 1
+         LVALUE(ICOMP) = NHKTA - ISTEP(I)
+         MVALUE(ICOMP) = MVAL(I)
+         NVALUE(ICOMP) = NVAL(I)
+  100 CONTINUE
+      RETURN
+      END
 C  /* Deck gpinq */
       SUBROUTINE GPINQ(FILENM,TASK,VALUE)
 C
@@ -1334,3 +1358,4 @@ C
       CALL QUIT('ERROR (DAINTF) No more available file numbers')
 C
       END
+C  /* Deck lmnval */

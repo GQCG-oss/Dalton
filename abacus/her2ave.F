@@ -38,16 +38,16 @@ C  /* Deck intexp */
      &                  NINDCD,NCCINT,NINTYP,WORK,LWORK,ISYMR,ISYMS,
      &                  ISYMT,ICORBA,ICORBB,ICORBC,ICORBD,THRESH,SYMFAC,
      &                  IPRINT,NOPMAT,NODV,EXPECT,LONDON,SUSCEP,DIA2SO,
-     &                  ZFS2EL,DDFOCK,IXPAB,IXPCD)
+     &                  ZFS2EL,DDFOCK,SPNORB,IXPAB,IXPCD,IFCTYP)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
       LOGICAL NOPMAT, NODV, LONDON, SUSCEP, DDFOCK, EXPECT, DIA2SO,
-     &        ZFS2EL
+     &        ZFS2EL, SPNORB
       DIMENSION PSO(*), PSA(*), DMAT(*), AOINT(NCCINT,NINTYP),
      &          ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBD),
      &          WORK(LWORK), NINDAB(*), NINDCD(*), FT(*), FV(*),
-     &          HESSEE(*), IXPAB(*), IXPCD(*)
+     &          HESSEE(*), IXPAB(*), IXPCD(*), IFCTYP(*)
 #include <twocom.h>
 #include <twosta.h>
 C
@@ -79,7 +79,7 @@ C
      &            ICORBA,ICORBB,ICORBC,ICORBD,THRESH,
      &            SYMFAC,IPRINT,NOPMAT,NODV,NUCABQ,NUCCDQ,
      &            NINDAB,NINDCD,EXPECT,LONDON,SUSCEP,DIA2SO,ZFS2EL,
-     &            DDFOCK,IXPAB,IXPCD)
+     &            DDFOCK,SPNORB,IXPAB,IXPCD,IFCTYP)
       LWTOT  = LWTOT - KLAST
       RETURN
       END
@@ -89,7 +89,7 @@ C  /* Deck intex1 */
      &                  ISYMR,ISYMS,ISYMT,ICORBA,ICORBB,ICORBC,ICORBD,
      &                  THRESH,SYMFAC,IPRINT,NOPMAT,NODV,NUCABQ,NUCCDQ,
      &                  NINDAB,NINDCD,EXPECT,LONDON,SUSCEP,DIA2SO,
-     &                  ZFS2EL,DDFOCK,IXPAB,IXPCD)
+     &                  ZFS2EL,DDFOCK,SPNORB,IXPAB,IXPCD,IFCTYP)
 C
 C     Calculates expectation values and Fock matrices
 C     of differentiated integrals
@@ -101,11 +101,12 @@ C
 #include <maxorb.h>
 #include <mxcent.h>
       PARAMETER (DP25 = 0.25 D00, DP5 = 0.5 D00,
-     &           D1 = 1.0 D00, D2 = 2.0 D00, ZERADD = 1.D-15,
+     &           D1 = 1.0 D00, D1P5 = 1.5 D00, D2 = 2.0 D00, 
+     &           ZERADD = 1.D-15,
      &           D0 = 0.0 D00, DP125 = 0.125D00, D3=3.0D0, D4=4.0D0)
       INTEGER A, B, C, D, X, Y, Z, Y2, Z2
       LOGICAL NODER, DCMPAB, DCMPCD, NOPMAT, NODV, DV, SUSCEP, DDFOCK,
-     &        EXPECT, LONDON, DIA2SO, ZFS2EL
+     &        EXPECT, LONDON, DIA2SO, ZFS2EL, SPNORB
 #include <nuclei.h>
       DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBD),
      &          DERIV(NINTYP), PSO(*), PSA(*),
@@ -117,13 +118,15 @@ C
      &          FT(NBASIS,NBASIS,*), FV(NBASIS,NBASIS,*), DINT(12),
      &          NCART(12), PINT(NCCINT,3), QINT(NCCINT,3),
      &          DIFAB(3), DIFCD(3), HESSEE(*),
-     &          IXPAB(NUCA*NUCB,2), IXPCD(NUCC*NUCD,2)
+     &          IXPAB(NUCA*NUCB,2), IXPCD(NUCC*NUCD,2),
+     &          IFCTYP(NDMAT)
 #include <twocom.h>
 #include <dftcom.h>
 #include <symmet.h>
 #include <expcom.h>
 #include <expopt.h>
 #include <dirprt.h>
+#include <infinp.h>
 #include <esg.h>
 #include <ibtfun.h>
       XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
@@ -232,7 +235,7 @@ C
       END IF
 C
       SFAC = SYMFAC
-      IF (.NOT.SHABAB.AND..NOT.DIA2SO) SFAC = D2*SFAC
+      IF (.NOT.SHABAB.AND..NOT.(DIA2SO.OR.SPNORB)) SFAC = D2*SFAC
       IF (.NOT.SHAEQB) SFAC = D2*SFAC
       IF (.NOT.SHCEQD) SFAC = D2*SFAC
 C
@@ -331,7 +334,8 @@ C                       ***********************************
 C                       ***** Geometrical distortions *****
 C                       ***********************************
 C
-                        IF (.NOT.(LONDON .OR. DIA2SO .OR. ZFS2EL)) THEN
+                        IF (.NOT.(LONDON .OR. DIA2SO .OR. ZFS2EL
+     &                      .OR. SPNORB)) THEN
 C
 C                          Expectation values
 C                          ==================
@@ -354,6 +358,11 @@ C
                                  PVAL = DP5*FAB*FCD*FCABCD*(DTAB*DTCD
      &                                - DP25*(DTAC*DTBD + DTAD*DTBC)
      &                                + PAOVAL)
+                              ELSE IF (HSROHF) THEN
+                                 PVAL = DP5*FAB*FCD*FCABCD*
+     &                                 (DTAB*DTCD
+     &                                - DP25*(DTAC*DTBD + DVAC*DVBD
+     &                                      + DTAD*DTBC + DVAD*DVBC))
                               ELSE
                                  PVAL = DP5*FAB*FCD*FCABCD*
      &                                  (DTAB*DTCD - DVAB*DVCD
@@ -569,6 +578,51 @@ C
      &                               (DINT(I),I=1,NCARTZ)
                               END IF
                            END IF
+C
+C                          Spin-orbit Fock matrices
+C                          ========================
+C
+                        ELSE IF (SPNORB) THEN
+                           FACTOR = DP25*FAB*FCD*FCABCD
+                           DO N = 1, NDMAT 
+                           IF (IFCTYP(N).NE.0) THEN
+C
+C                             Coulomb contribution
+C
+                              DTOTAB = DMAT(A,B,N) + DMAT(B,A,N)
+                              DTOTCD = DMAT(D,C,N) - DMAT(C,D,N)
+                              AOC = FACTOR*AOINT(INT,ABS(IFCTYP(N)))
+C
+C                                triplet case
+C
+                              IF (IFCTYP(N).LT.0) THEN 
+                                 FT(A,B,N) = FT(A,B,N) + DTOTCD*AOC*D2
+                                 FT(B,A,N) = FT(B,A,N) + DTOTCD*AOC*D2
+                                 FT(C,D,N) = FT(C,D,N) + DTOTAB*AOC 
+                                 FT(D,C,N) = FT(D,C,N) - DTOTAB*AOC 
+C
+C                                singlet case
+C
+                              ELSE
+                                 FT(A,B,N) = FT(A,B,N) + DTOTCD*AOC
+                                 FT(B,A,N) = FT(B,A,N) + DTOTCD*AOC
+                                 FT(C,D,N) = FT(C,D,N) + DTOTAB*AOC*D2
+                                 FT(D,C,N) = FT(D,C,N) - DTOTAB*AOC*D2
+                              END IF
+C
+C                             exchange contribution
+C
+                              AOX = D1P5*HFXFAC*AOC
+                              FT(A,D,N) = FT(A,D,N) - DMAT(B,C,N)*AOX
+                              FT(D,A,N) = FT(D,A,N) + DMAT(C,B,N)*AOX
+                              FT(A,C,N) = FT(A,C,N) + DMAT(B,D,N)*AOX
+                              FT(C,A,N) = FT(C,A,N) - DMAT(D,B,N)*AOX
+                              FT(B,D,N) = FT(B,D,N) - DMAT(A,C,N)*AOX
+                              FT(D,B,N) = FT(D,B,N) + DMAT(C,A,N)*AOX
+                              FT(B,C,N) = FT(B,C,N) + DMAT(A,D,N)*AOX
+                              FT(C,B,N) = FT(C,B,N) - DMAT(D,A,N)*AOX
+                           END IF
+                           END DO
                         ELSE IF (DIA2SO) THEN
 C
 C                          Expectation values of diamagnetic spin-orbit
@@ -628,7 +682,7 @@ C    &                           (AOINT(INT,I),I=1,NINTYP)
                            END IF
                         ELSE
 C
-C                          Expectation values of diamagnetic spin-orbit
+C                          Expectation values of spin-spin coupling
 C                          ============================================
 C
                            IF (NOPMAT) THEN
@@ -636,18 +690,11 @@ C
                            ELSE
                               PAOVAL = PAO(IORBA,IORBB,IORBC,IORBD)
                            ENDIF
-                           IF (NODV) THEN
-                              PVAL = DP5*FAB*FCD*FCABCD*PAOVAL
-                           ELSE
-                              PVAL = DP5*FAB*FCD*FCABCD*(
-     &                           D2*DTCD*DVAB + D4*DTAB*DVCD 
-     &                         - D3*DP5*(
-     &                              DTBC*DVAD + DTBD*DVAC
-     &                            + DTAD*DVBC + DTAC*DVBD
-     &                              )
-     &                           + PAOVAL
-     &                           )     
+                           IF (.NOT.NODV) THEN
+                              PAOVAL = DP5*(DVAB*DVCD 
+     &                           - DP5*(DVAD*DVBC+DVAC*DVBD))
                            END IF
+                           PVAL = DP5*FAB*FCD*FCABCD*PAOVAL
                            IF (ABS(PVAL) .GT. THRSH) THEN
                               NODER = .FALSE.
                               DO 899 I = 1, NINTYP
@@ -1223,70 +1270,23 @@ C
       GC2(IX,IX) = GC2(IX,IX) + DERIV(5) + DERIV(9)
       GC2(IY,IY) = GC2(IY,IY) + DERIV(1) + DERIV(9)
       GC2(IZ,IZ) = GC2(IZ,IZ) + DERIV(1) + DERIV(5)
-      GC2(IX,IY) = GC2(IX,IY) + DERIV(2)
-      GC2(IX,IZ) = GC2(IX,IZ) + DERIV(3)
-      GC2(IY,IX) = GC2(IY,IX) + DERIV(4)
-      GC2(IY,IZ) = GC2(IY,IZ) + DERIV(6)
-      GC2(IZ,IX) = GC2(IZ,IX) + DERIV(7)
-      GC2(IZ,IY) = GC2(IZ,IY) + DERIV(8)
+      IF (ISYMAX(IX,1).EQ.ISYMAX(IY,1)) THEN
+         GC2(IX,IY) = GC2(IX,IY) + DERIV(2)
+         GC2(IY,IX) = GC2(IY,IX) + DERIV(4)
+      END IF
+      IF (ISYMAX(IX,1).EQ.ISYMAX(IZ,1)) THEN
+         GC2(IX,IZ) = GC2(IX,IZ) + DERIV(3)
+         GC2(IZ,IX) = GC2(IZ,IX) + DERIV(7)
+      END IF
+      IF (ISYMAX(IY,1).EQ.ISYMAX(IZ,1)) THEN
+         GC2(IY,IZ) = GC2(IY,IZ) + DERIV(6)
+         GC2(IZ,IY) = GC2(IZ,IY) + DERIV(8)
+      END IF
       IF (IPRINT .GT. 05) THEN
          WRITE (LUPRI, 1000)
          WRITE (LUPRI, 4000) (DERIV(I),I = 1, 9)
          WRITE(LUPRI,'(/A)') ' Unfinished two-electron spin-orbit '//
      &                       'contributions'
-         CALL OUTPUT(GC2,1,3,1,3,3,3,1,LUPRI)
-      END IF
-      RETURN
- 1000 FORMAT (//,1X,' <<<<<<<<<< Subroutine SO2OUT >>>>>>>>',/)
- 4000 FORMAT (2X,'DERIV        ',4E15.6,/(15X,4E15.6))
-      END
-C  /* Deck zfsout */
-      SUBROUTINE ZFSOUT(DERIV,IPRINT)
-C
-C     K.Ruud, September 2000
-C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>      
-      PARAMETER (D2 = 2.0 D00)
-      DIMENSION DERIV(*)
-#include <symmet.h>
-#include <gtensor.h>
-C
-      IF (IPRINT .GT. 5) THEN
-         CALL HEADER('Subroutine SO2OUT',-1)
-      END IF
-      IX = 1 !IPTAX(1,1)
-      IY = 2 !IPTAX(2,1)
-      IZ = 3 !IPTAX(3,1)
-      ZFS(IX,IX) = ZFS(IX,IX) + D2*(DERIV(1) + DERIV(7) + D2*DERIV(13))
-     &                        -    (DERIV(4) + DERIV(10)+ D2*DERIV(17))
-     &                        -    (DERIV(6) + DERIV(12)+ D2*DERIV(21))
-      ZFS(IY,IY) = ZFS(IY,IY) + D2*(DERIV(4) + DERIV(10)+ D2*DERIV(17))
-     &                        -    (DERIV(1) + DERIV(7) + D2*DERIV(13))
-     &                        -    (DERIV(6) + DERIV(12)+ D2*DERIV(21))
-      ZFS(IZ,IZ) = ZFS(IZ,IZ) + D2*(DERIV(6) + DERIV(12)+ D2*DERIV(21))
-     &                        -    (DERIV(4) + DERIV(10)+ D2*DERIV(17))
-     &                        -    (DERIV(1) + DERIV(7) + D2*DERIV(13))
-      ZFS(IX,IY) = ZFS(IX,IY) + DERIV(2) + DERIV(8) + DERIV(14)
-     &                        + DERIV(16)
-      ZFS(IY,IX) = ZFS(IY,IX) + DERIV(2) + DERIV(8) + DERIV(14)
-     &                        + DERIV(16)
-      ZFS(IX,IZ) = ZFS(IX,IZ) + DERIV(3) + DERIV(9) + DERIV(15)
-     &                        + DERIV(19)
-      ZFS(IZ,IX) = ZFS(IZ,IX) + DERIV(3) + DERIV(9) + DERIV(15)
-     &                        + DERIV(19)
-      ZFS(IY,IZ) = ZFS(IY,IZ) + DERIV(5) + DERIV(11) + DERIV(18)
-     &                        + DERIV(20)
-      ZFS(IZ,IY) = ZFS(IZ,IY) + DERIV(5) + DERIV(11) + DERIV(18)
-     &                        + DERIV(20)
-      IF (IPRINT .GT. 05) THEN
-         WRITE (LUPRI, 1000)
-         WRITE (LUPRI, 4000) (DERIV(I),I = 1, 9)
-         WRITE(LUPRI,'(/A)') ' Unfinished two-electron zero-field '//
-     &                       'splittings'
          CALL OUTPUT(GC2,1,3,1,3,3,3,1,LUPRI)
       END IF
       RETURN
@@ -1406,6 +1406,59 @@ C
       END IF
       RETURN
  1000 FORMAT (//,1X,' <<<<<<<<<< Subroutine LNDOUT >>>>>>>>',/)
+ 4000 FORMAT (2X,'DERIV        ',4E15.6,/(15X,4E15.6))
+      END
+C  /* Deck zfsout */
+      SUBROUTINE ZFSOUT(DERIV,IPRINT)
+C
+C     K.Ruud, September 2000
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <maxaqn.h>      
+      DIMENSION DERIV(*)
+#include <symmet.h>
+#include <zfs.h>
+      PARAMETER (D2=2.0D0)
+C
+      IF (IPRINT .GT. 5) THEN
+         CALL HEADER('Subroutine ZFSOUT',-1)
+      END IF
+      IX = 1 !IPTAX(1,1)
+      IY = 2 !IPTAX(2,1)
+      IZ = 3 !IPTAX(3,1)
+      ZFS(IX,IX) = ZFS(IX,IX) + DERIV(1) + DERIV(7) + D2*DERIV(13) 
+      ZFS(IY,IY) = ZFS(IY,IY) + DERIV(4) + DERIV(10)+ D2*DERIV(17) 
+      ZFS(IZ,IZ) = ZFS(IZ,IZ) + DERIV(6) + DERIV(12)+ D2*DERIV(21) 
+      IF (ISYMAX(IZ,2).EQ.0) THEN
+         ZFS(IX,IY) = ZFS(IX,IY) + DERIV(2) + DERIV(8) + DERIV(14)
+     &                        + DERIV(16)
+         ZFS(IY,IX) = ZFS(IY,IX) + DERIV(2) + DERIV(8) + DERIV(14)
+     &                        + DERIV(16)
+      END IF
+      IF (ISYMAX(IY,2).EQ.0) THEN
+         ZFS(IX,IZ) = ZFS(IX,IZ) + DERIV(3) + DERIV(9) + DERIV(15)
+     &                        + DERIV(19)
+         ZFS(IZ,IX) = ZFS(IZ,IX) + DERIV(3) + DERIV(9) + DERIV(15)
+     &                        + DERIV(19)
+      END IF
+      IF (ISYMAX(IX,2).EQ.0) THEN
+         ZFS(IY,IZ) = ZFS(IY,IZ) + DERIV(5) + DERIV(11) + DERIV(18)
+     &                        + DERIV(20)
+         ZFS(IZ,IY) = ZFS(IZ,IY) + DERIV(5) + DERIV(11) + DERIV(18)
+     &                        + DERIV(20)
+      END IF
+      IF (IPRINT .GT. 05) THEN
+         WRITE (LUPRI, 1000)
+         WRITE (LUPRI, 4000) (DERIV(I),I = 1, 9)
+         WRITE(LUPRI,'(/A)') ' Unfinished two-electron zero-field '//
+     &                       'splittings'
+         CALL OUTPUT(ZFS,1,3,1,3,3,3,1,LUPRI)
+      END IF
+      RETURN
+ 1000 FORMAT (//,1X,' <<<<<<<<<< Subroutine SO2OUT >>>>>>>>',/)
  4000 FORMAT (2X,'DERIV        ',4E15.6,/(15X,4E15.6))
       END
 C  /* Deck pblock */

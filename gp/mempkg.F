@@ -93,6 +93,8 @@ C
 Chj1  CALL QENTER('MEMGET  ')
       IF (TYPE(1:4) .EQ. 'REAL') THEN
          LREAL = LENGTH
+      ELSE IF (TYPE(1:4) .EQ. 'COMP') THEN
+         LREAL = 2*LENGTH
       ELSE IF (TYPE(1:4) .EQ. 'INTE') THEN
          LREAL = (LENGTH-1)/IRAT + 1
       ELSE IF (TYPE(1:4) .EQ. 'LOGI') THEN

@@ -1,10 +1,14 @@
-      LOGICAL GCALC, G_ALL, ECC, MNFSO 
+      LOGICAL GCALC, G_ALL, ECC, MNFSO, TEST_AMFI, ADDSO
       LOGICAL DOALL, DORMC, DOGC1, DOGC2, DOOZSO1, DOOZSO2, DOOZSO
-      REAL*8 REFSPIN
+      LOGICAL SCALED_CHARGES
+      DOUBLE PRECISION REFSPIN, GRELMC
       CHARACTER*80 G_LINE
-      DIMENSION GTENSOR(3,3), GC1(3,3), GC2(3,3), 
-     &          GOZSO1(3,3), GOZSO2(3,3), GOZSO(3,3), ZFS(3,3)
+      DOUBLE PRECISION GTENSOR(3,3), GC1(3,3), GC2(3,3), 
+     &          GOZSO1(3,3), GOZSO2(3,3), GOZSO(3,3), ECCORG(3)
       COMMON /GMODULE/GTENSOR, REFSPIN, GRELMC, GC1, GC2,
-     &                GOZSO1, GOZSO2, ZFS,
-     &                DOALL,  DORMC,  DOGC1, DOGC2, DOOZSO1, DOOZSO2,
-     &                DOOZSO, GCALC,  G_ALL, ECC,   MNFSO,   G_LINE
+     &                GOZSO1, GOZSO2, ECCORG,
+     &                DOALL, DORMC, DOGC1, DOGC2, DOOZSO1, DOOZSO2,
+     &                DOOZSO,
+     &                G_LINE, 
+     &                GCALC, G_ALL, ECC, MNFSO, TEST_AMFI, ADDSO,
+     &                SCALED_CHARGES

@@ -448,7 +448,7 @@ C       keep vectors until GRDNRM fallen a factor 100
       ITNOCC = 0
       NEWOCC = 0
       NOSCIL = 0
-      DODIFDEN = .NOT. FLAG(49) .AND. .NOT. FLAG(16) .AND. .NOT.DFTRUN
+      DODIFDEN = .NOT. FLAG(49) .AND. .NOT. FLAG(16) .AND. .NOT.DODFT
 Chjaaj: DIFDEN does not work with solvent
 C       because FC_sol is added to the old FC matrix, but not the new!
 Ctuh:   DIFDEN does not work with DFT either   
@@ -570,7 +570,9 @@ C           .. subtract DCOVLP*FVAO_previous to get DCOVLP*FCAO_previous
          END IF
          EMY = DDOT(NNBAST,DAOSAV,1,H1AO,1)
      &       + DDOT(NNBAST,DAOSAV,1,FAOSAV(1,INDEVC,1),1) * DP5
-     &       + EDFTY
+         IF(DODFT) CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
+     &                  FAOSAV(1,INDEVC,1),FAOSAV(1,INDEVC,2),
+     &                  WRK(KFREE),LFREE)
 C
          IF (ONLYFC) THEN
             EACTIV = D0
@@ -1469,6 +1471,90 @@ C
       CALL MEMREL('DISRED',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('DISRED')
       RETURN
+      END
+c /* DFT_ADD_KS */
+      SUBROUTINE DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,FCAO,FVAO,
+     &                      WRK,LWRK)
+c     TMP1 is of NNBASX size, TMP2 is of N2BASX size.  They are passed
+c     because they are available but they could as well be allocated
+c     here.
+#include <implicit.h>
+c
+#include <inforb.h>
+#include <dfterg.h>
+#include <priunit.h>
+c
+      PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
+c
+      DIMENSION DCAO(N2BASX*NDMAT),FCAO(N2BASX),FVAO(N2BASX)
+      DIMENSION WRK(LWRK)
+      LOGICAL ONLYFC
+c
+      KTMP1 = 1
+      KTMP2 = KTMP1 + NNBASX
+      KLST  = KTMP2 + N2BASX
+      LFREE = LWRK  - KLST +1
+      IF(LFREE.LT.0) CALL STOPIT('ADDKS1','SIRDIIS',KLST,LFREE)
+      IF(ONLYFC) THEN
+         CALL DZERO(WRK(KTMP2),N2BASX)
+         CALL DFTKSMb(DCAO,WRK(KTMP2),EDFTY,WRK(KLST),LFREE,IPRFCK)
+         CALL DGETSP(NBAST,WRK(KTMP2),WRK(KTMP1))
+         IF (NSYM .GT. 1) THEN
+            KKOHN = KLST
+            KLST  = KKOHN + NNBAST
+            IF (KLST.GT.LWRK) CALL STOPIT('ADDKS','SIRDIIS',KLST,LWRK)
+            CALL PKSYM1(WRK(KTMP1),WRK(KKOHN),NBAS,NSYM,1)
+            CALL DAXPY(NNBAST,1D0,WRK(KKOHN),1,FCAO,1)
+         ELSE
+            CALL DAXPY(NNBAST,1D0,WRK(KTMP1),1,FCAO,1)
+         END IF 
+      ELSE
+C     memory allocation
+         stop "TODO"
+         KDENA = KLST
+         KKSMA = KDENA +N2BASX*2
+         KKSPA = KKSMA +N2BASX*2
+         KKSPB = KKSPA +NNBAST
+         KFREE = KKSPB +NNBAST
+         IF (KFREE.GT.LFREE) CALL STOPIT('ADDKS1','SIRDIIS',KFREE,LFREE)
+         CALL DZERO(WRK(KDENA),N2BASX*2)
+         CALL DZERO(WRK(KKSMA),N2BASX*2)
+         CALL DZERO(WRK(KKSPA),NNBAST)
+         CALL DZERO(WRK(KKSPB),NNBAST)
+C     Kohn-Sham contribution evaluation
+         IF (NISHT .GT. 0) THEN
+            CALL DAXPY(N2BASX,DP5,DCAO,1,WRK(KDENA),1)
+            CALL DAXPY(N2BASX,DP5,DCAO,1,WRK(KDENA+N2BASX),1)
+         END IF
+         CALL DAXPY(N2BASX,1D0,DCAO(1+N2BASX),1,WRK(KDENA),1)     
+c         CALL OUTPUT(WRK(KDENA),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+c         CALL OUTPUT(WRK(KDENA+N2BASX),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)  
+         CALL dft_kohn_shamab(WRK(KDENA),WRK(KKSMA),WRK(KFREE),LFREE,1)
+C     packing
+         CALL DGETSP(NBAST,WRK(KKSMA),WRK(KTMP1))
+         IF (NSYM .GT. 1) THEN
+            CALL PKSYM1(WRK(KTMP1),WRK(KKSPA),NBAS,NSYM,1)
+         ELSE
+            CALL DAXPY(NNBAST,D1,WRK(KTMP1),1,WRK(KKSPA),1)
+         END IF  
+         CALL DGETSP(NBAST,WRK(KKSMA+N2BASX),WRK(KTMP1))
+         IF (NSYM .GT. 1) THEN
+            CALL PKSYM1(WRK(KTMP1),WRK(KKSPB),NBAS,NSYM,1)
+         ELSE
+            CALL DAXPY(NNBAST,D1,WRK(KTMP1),1,WRK(KKSPB),1)
+         END IF  
+c     WRITE(LUPRI,'(/A)') 'ksma: '
+c     CALL OUTPKB(WRK(KKSPA),NORB,NSYM,1,LUPRI)
+c     WRITE(LUPRI,'(/A)') 'ksmB: '
+c     CALL OUTPKB(WRK(KKSPB),NORB,NSYM,1,LUPRI)
+c
+         CALL DAXPY(NNBAST,DP5,WRK(KKSPA),1,FCAO,1)
+         CALL DAXPY(NNBAST,DP5,WRK(KKSPB),1,FCAO,1)
+c     
+         CALL DAXPY(NNBAST,-DP5,WRK(KKSPA),1,FVAO,1)
+         CALL DAXPY(NNBAST, DP5,WRK(KKSPB),1,FVAO,1)
+      END IF
+      EMY = EMY+EDFTY
       END
 C  /* Deck fckeig */
       SUBROUTINE FCKEIG(CMO,FC,SHFTLVL,SCRA,LSCRA,IPRDIS)

@@ -31,12 +31,7 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C VERSION : $Revision: 1.18 $
-C DATE    : $Date: 2003-10-26 13:25:37 $
-C FILE    : gphjj.F
-C
-#include "single.h"
+#include <single.h>
 C
 C  /* Deck flshfo */
       SUBROUTINE FLSHFO (IUNIT)
@@ -58,9 +53,10 @@ C This subroutine may be a dummy routine.
 C
       IF (IUNIT .GE. 0) THEN
 C     ... do not try to flush unused units (e.g. LUPRI on a slave) /hjaaj
-#if  defined (SYS_AIX) || defined (SYS_IRIX) || defined (SYS_NEC) \
-  || defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) \
-  || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_HPUX) || defined (SYS_SX)
+#if  defined (SYS_AIX)  || defined (SYS_IRIX) || defined (SYS_NEC)  \
+  || defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_LINUX) \
+  || defined (SYS_SUN)  || defined (SYS_HAL) || defined (SYS_T90)   \
+  || defined (SYS_HPUX) || defined (SYS_SX)
 C
 C        Force transfer of all buffered output to the file or device
 C        associated with logical unit IUNIT.
@@ -158,11 +154,12 @@ C
       TIMCPU = second1 - TCPU0
       TIMWAL = second2 - TWALL0
 #else
-#if defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) \
- || defined (SYS_HAL) || (defined (SYS_LINUX) && defined (VAR_PGF77)) || defined(VAR_ABSOFT) \
+#if defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) \
+ || defined (SYS_SUN) || defined (SYS_HAL) \
+ || (defined (SYS_LINUX) && defined (VAR_PGF77)) || defined(VAR_ABSOFT) \
  || defined (SYS_DEC) || defined (SYS_SX)
-#if defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_DEC) || defined (SYS_SX) \
- || defined (SYS_AIX)
+#if defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_DEC) \
+ || defined (SYS_SX)  || defined (SYS_AIX)
 C...  SGI IRIX  etc. code
       external time
 C     IRIX: otherwise "subroutine time", an intrinsic fu. will be used
@@ -408,7 +405,9 @@ C      WRITE (LUPRIN,'(T6,2A)') 'Date and time (HP-UX)  : ',FDATE()
 #if defined (SYS_LINUX)
       WRITE (LUPRIN,'(T6,2A)') 'Date and time (Linux)  : ',FDATE()
 #endif
-#if defined (SYS_LINUX) || defined (SYS_UNIX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN)
+#if defined (SYS_LINUX) || defined (SYS_UNIX) || defined (SYS_HPUX)\
+ || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC)   \
+ || defined (SYS_SUN)
       CALL HOSTNM(HSTNAM)
       WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
 #endif
@@ -579,7 +578,10 @@ C Written 4-Dec-1983 hjaaj
 C
 #include "implicit.h"
 #include "priunit.h"
-#if !defined (VAR_SECSEC) && !defined (SYS_CRAY) && !defined (SYS_AIX) && !defined (SYS_IRIX) && !defined (SYS_NEC) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HPUX) && !defined (SYS_HAL) && !defined (SYS_T90)
+#if !defined (VAR_SECSEC) && !defined (SYS_CRAY) && !defined (SYS_AIX) \
+  && !defined (SYS_IRIX) && !defined (SYS_NEC) && !defined (SYS_T3D)   \
+  && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HPUX) \
+  && !defined (SYS_HAL) && !defined (SYS_T90)
       INTEGER A,B,C
       SAVE    A,B,C
       DATA    A/1/,B/0/,C/0/
@@ -1755,7 +1757,7 @@ C  /* Deck second */
 #if defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) \
  || defined (SYS_NEC) || defined (SYS_DEC)  || defined (SYS_SUN)  \
  || defined (SYS_T3D) || defined (SYS_HAL)  || defined (SYS_SX)   \
- || (defined (SYS_LINUX) && defined (VAR_PGF77))||(defined (SYS_LINUX) && defined (VAR_IFC))
+ || (defined (SYS_LINUX) && (defined(VAR_PGF77)||defined(VAR_IFC)))
 #include "implicit.h"
       real*4 etime,tarray(2)
 #if !defined (SYS_T3D)

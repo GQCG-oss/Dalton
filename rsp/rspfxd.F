@@ -55,6 +55,7 @@ C
 C Used from common blocks:
 C  ?
 C
+#include <dftcom.h>
 #include <maxorb.h>
 #include <maxash.h>
 #include <priunit.h>
@@ -90,6 +91,8 @@ C     Put up the structure for reading the (transformed) integrals:
 C     IEND < 0 flags the completeness of the distributions
 C
       CALL QENTER('RSPFXD')
+      KWRK = KFREE
+      LWRK = LFREE
       ID1 = 1
       ID2 = N2ASHX*N2ASHX + 1
       CALL DZERO(H2,N2ORBX)
@@ -123,8 +126,8 @@ C
       END IF
       IDIST = 0
       IPERCD = 1
-      KWRK = KFREE
-      LWRK = LFREE
+C
+      CALL MEMGET('REAL',KFIRST,1,WRK,KWRK,LWRK)
       IF (IKLVL.EQ.0) THEN
          CALL MEMGET('REAL',KFI,N2ORBX,WRK,KWRK,LWRK)
          CALL DZERO(WRK(KFI),N2ORBX)
@@ -505,11 +508,11 @@ C and for the fact that we calculated 2 times FA
 C
       IF (IKLVL.EQ.0) THEN
          CALL DAXPY(N2ORBX,DH,WRK(KFI),1,FI,1)
-         CALL DSCAL(N2ORBX,DH*DH,FA,1)
+         IF (NASHT.GT.0) CALL DSCAL(N2ORBX,DH*DH,FA,1)
          CALL DSCAL(NORBT*NASHT,DH,QA,1)
          CALL DSCAL(NORBT*NASHT,DH,QB,1)
       ELSE
-         CALL DSCAL(NORBT*NORBT,DH,FA,1)
+         IF (NASHT.GT.0) CALL DSCAL(NORBT*NORBT,DH,FA,1)
       END IF
 C
 C Set DISTYP for the cases we may have ci-gradients
@@ -547,7 +550,8 @@ C
             CALL PRIAC2(H2AX(1,2),NASHT,LUPRI)
          END IF
       END IF
-C
+c
+      CALL MEMREL('RSPFXD',WRK,KFIRST,KFIRST,KWRK,LWRK)
       CALL QEXIT('RSPFXD')
       RETURN
       END
@@ -745,6 +749,7 @@ C
 C
       PARAMETER ( D2= 2.0D0, DM1 = -1.0D0 )
 C
+#include <dftcom.h>
 #include <maxorb.h>
 #include <maxash.h>
 #include <priunit.h>
@@ -826,8 +831,8 @@ C
          END IF
          IPST = IORB(IPSYM) + 1
          IF(NORBP .GT. 0) THEN
-            CALL DAXPY(NORBP,DM1,H2X (IPST,IC),1,
-     *                           FI(IPST,ID),1)
+            CALL DAXPY(NORBP,-HFXFAC,H2X(IPST,IC),1,
+     *                               FI(IPST,ID),1)
             IF (IPRRSP.GT.300) THEN
                WRITE(LUPRI,'(/A)') 'FIXAD1: FI after case 3)'
                CALL OUTPUT(FI,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
@@ -849,8 +854,8 @@ C
          END IF
          IQST  =   IORB(IQSYM) + 1
          IF( NORBQ .GT. 0) THEN
-            CALL DAXPY(NORBQ,DM1,H2X(ID,IQST),NORBT,
-     *                            FI(IC,IQST),NORBT)
+            CALL DAXPY(NORBQ,-HFXFAC,H2X(ID,IQST),NORBT,
+     *                               FI(IC,IQST),NORBT)
             IF (IPRRSP.GT.300) THEN
                WRITE(LUPRI,'(/A)') 'FIXAD1: FI after case 2)'
                CALL OUTPUT(FI,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
@@ -947,6 +952,7 @@ C
 #include <inforb.h>
 #include <infpri.h>
 #include <infspi.h>
+#include <dftcom.h>
 C
       DIMENSION FI(NORBT,NORBT),H2X (NORBT,NORBT)
       DIMENSION ZYMAT(NORBT,NORBT)
@@ -1058,7 +1064,7 @@ C
          NORBQ=NORB(IQSYM)
          IPST=IORB(IPSYM)+1
          IQST=IORB(IQSYM)+1
-         CALL DGEMM('N','N',NORBP,NORBQ,1,1.D0,
+         CALL DGEMM('N','N',NORBP,NORBQ,1,HFXFAC,
      &              H2X(IPST,IC),NORBT,
      &              ZYMAT(ID,IQST),NORBT,1.D0,
      &              FI(IPST,IQST),NORBT)
@@ -1078,7 +1084,7 @@ C
          NISHK=NISH(IKSYM)
          IPST=IORB(IPSYM)+1
          IKST=IORB(IKSYM)+1
-         CALL DGEMM('N','N',NORBP,1,NISHK,-1.D0,
+         CALL DGEMM('N','N',NORBP,1,NISHK,-HFXFAC,
      &              H2X(IPST,IKST),NORBT,
      &              ZYMAT(IKST,IC),NORBT,1.D0,
      &              FI(IPST,ID),NORBT)
@@ -1102,7 +1108,7 @@ C
          NORBQ=NORB(IQSYM)
          IPST=IORB(IPSYM)+1
          IQST=IORB(IQSYM)+1
-         CALL DGEMM('N','N',NORBP,NORBQ,1,-1.D0,
+         CALL DGEMM('N','N',NORBP,NORBQ,1,-HFXFAC,
      &              ZYMAT(IPST,IC),NORBT,
      &              H2X(ID,IQST),NORBT,1.D0,
      &              FI(IPST,IQST),NORBT)
@@ -1122,7 +1128,7 @@ C
          NORBQ=NORB(IQSYM)
          IKST=IORB(IKSYM)+1
          IQST=IORB(IQSYM)+1
-         CALL DGEMM('N','N',1,NORBQ,NISHK,1.D0,
+         CALL DGEMM('N','N',1,NORBQ,NISHK,HFXFAC,
      &              ZYMAT(ID,IKST),NORBT,
      &              H2X(IKST,IQST),NORBT,1.D0,
      &              FI(IC,IQST),NORBT)
@@ -1394,6 +1400,7 @@ C
 #include <inforb.h>
 #include <infpri.h>
 #include <infspi.h>
+#include <dftcom.h>
 C
       DIMENSION FA(NORBT,NORBT),H2X (NORBT,NORBT)
       DIMENSION ZYMAT(NORBT,NORBT)

@@ -723,7 +723,7 @@ C
 #endif
       CALL SKLFCK(FMAT,DUMMY,WORK(KFREE),LFREE,IPRINT,.TRUE.,
      &            .FALSE.,.FALSE.,.FALSE.,NODV,MAXDER,.FALSE.,
-     &            NDMAT,ISYMDM,IFCTYP,0)
+     &            NDMAT,ISYMDM,IFCTYP,0,.FALSE.)
 C
 C------------------------------------------------------
 C     Write out densities and associated fock matrices.

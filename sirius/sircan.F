@@ -104,7 +104,7 @@ C Step 1: Get CI index information (CINDX)
 C         Read molecular orbitals (CMO) from disk
 C         Read CI-vector (CREF) from disk
 C
-      IF (NASHT .GT. 1)
+      IF (NASHT .GT. 1 .AND. .NOT. HSROHF)
      *   CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KFREE),LFREE,0)
       CALL READMO (CMO,9,DUMMY,1)
       CALL RDCREF (CREF)
@@ -413,10 +413,15 @@ C
 C     Calculate active density matrix DV (in MAKDV).
 C     Average DV if SUPSYM
 C
-      IF (NASHT .GT. 1) THEN
+      IF (NASHT .GT. 1 .AND. .NOT. HSROHF) THEN
          CALL MAKDV(CVECS(1,ICREF),WRK(KDV),INDXCI,WRK(KWRK1),LWRK1)
 C        CALL MAKDV(CREF,DV,INDXCI,WRK,LFREE)
          IF (SUPSYM) CALL AVEDV(WRK(KDV))
+      ELSE IF (HSROHF) THEN
+         DO I = 1, NASHT
+            II = KDV + I*(I+1)/2 - 1
+            WRK(II) = D1
+         END DO 
       ELSE IF (NASHT .EQ. 1) THEN
          WRK(KDV) = NACTEL
          IF (GETOCC) AOCC(1) = WRK(KDV)
@@ -819,6 +824,12 @@ C
       CALL MEMGET('WORK',KWRK1,LWRK1 ,WRK,KFREE,LFREE)
       IF (NASHT .EQ. 1) THEN
          WRK(KDV) = D1
+      ELSE IF (HSROHF) THEN
+         CALL DZERO(WRK(KDV),NNASHX)
+         DO I = 1, NASHT
+            II = KDV + I*(I+1)/2 - 1
+            WRK(II) = D1
+         END DO 
       ELSE IF (NASHT .GT. 1) THEN
          LSYMSV = LSYM
          LSYM   = ICSYM

@@ -78,6 +78,6 @@ clean :
 tags:;          $(RM) -f tags ; etags  *.F
 
 depend: 
-	../tools/check_depend $(INCLUDE_DIR) > Makefile.depend
+	../tools/check_depend $(INCLUDES) > Makefile.depend
 
 include Makefile.depend

@@ -92,7 +92,7 @@ C
          DTIM = SECOND()
       END IF
       LFREE  = LFRSAV
-      IF (NASHT .GT. 1) THEN
+      IF (NASHT .GT. 1 .AND. .NOT. HSROHF) THEN
          LUSTR = -9999
          IF( FLAG(26) ) THEN
           IF (IFIRST .EQ. 1 .OR. LUSTR .LT. 0) 
@@ -284,7 +284,7 @@ C CI information (NEWCI forced false).
 C Note that change of symmetry will not change CI information.
 C
       NEWCI = CHCKCI(NOSYM,IPRCIX,LUPRI)
-      IF (NASHT .LE. 1) THEN
+      IF (NASHT .LE. 1 .OR. HSROHF) THEN
          NEWCI = .FALSE.
       ELSE
          NOCSF = FLAG(27)
@@ -364,7 +364,7 @@ C
          END IF
       END IF
 C
-      IF (NASHT .GT. 1) THEN
+      IF (NASHT .GT. 1 .AND. .NOT. HSROHF) THEN
          IF (ICSF .EQ. 0) THEN
 C           ... do not use CSF expansion
             NCONF  = NDTASM(ICSYM)
@@ -386,7 +386,9 @@ C                  symmetries or triplet in ABACUS and RESPONSE
 C     ... NASHT .le. 1 (Hartree-Fock)
          IF (NASHT .EQ. 1) THEN
             JCSYM = IOPRHF
-         ELSE
+         ELSE IF (HSROHF) THEN
+            JCSYM = LSYM
+         ELSE 
             JCSYM = 1
          END IF
          IF (ICSYM .EQ. JCSYM) THEN
@@ -484,7 +486,7 @@ C            for reference symmetry in this version). /980820-hjaaj
          ICSF = 1
       END IF
 C
-      IF (NASHT .GT. 1) THEN
+      IF (NASHT .GT. 1 .AND. .NOT. HSROHF) THEN
          IF (ICSF .EQ. 0) THEN
 C           ... do not use CSF expansion
             NCONF  = NDTASM(ICSYM)
@@ -504,7 +506,9 @@ C                  symmetries in ABACUS and RESPONSE
 C     ... NASHT .le. 1 (Hartree-Fock)
          IF (NASHT .EQ. 1) THEN
             JCSYM = IOPRHF
-         ELSE
+         ELSE IF (HSROHF) THEN
+            JCSYM = LSYM
+         ELSE 
             JCSYM = 1
          END IF
          IF (ICSYM .EQ. JCSYM) THEN
@@ -556,7 +560,7 @@ C If not first call (NEWCI false) check if CI specification has
 C changed, if yes then reset NEWCI to true.
 C Note that Hartree-Fock (i.e. nasht .le. 1) will not change
 C CI information.
-      IF (NASHT .LE. 1) THEN
+      IF (NASHT .LE. 1 .OR. HSROHF) THEN
          IF (NASHT .NE. MASHT) THEN
             CHCKCI = .TRUE.
 C           force SETCI2 to quit if HF follows MCSCF,

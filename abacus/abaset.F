@@ -557,7 +557,8 @@ C
 C     Test for inconsistencies:
 C
       NUMERR = 0
-      IF ((NASHT.GT.1 .OR. H2MO) .AND. .NOT.FLAG(14)) THEN
+      IF (((NASHT.GT.1 .OR. H2MO) .AND. .NOT.FLAG(14)) 
+     &      .AND. .NOT. HSROHF) THEN
          WRITE (LUPRI,1020)
          WRITE (LUERR,1020)
          NUMERR = NUMERR + 1
@@ -572,7 +573,7 @@ C
          WRITE (LUERR,1620) NCONF,NCONFX
          NUMERR = NUMERR + 1
       END IF
-      IF (NASHT.GT.1 .AND. FLAG(21)) THEN
+      IF (NASHT.GT.1 .AND. (FLAG(21) .AND. .NOT. HSROHF)) THEN
          WRITE (LUPRI,1730)
          WRITE (LUERR,1730)
          NUMERR = NUMERR + 1

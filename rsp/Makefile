@@ -1,3 +1,5 @@
+all: librsp.a
+
 include ../Makefile.config
 
 all: librsp.a
@@ -6,8 +8,6 @@ F_OBJS = \
 	deq27.o		\
 	expone.o	\
 	fone.o		\
-	hsoal2.o	\
-	hsoprp.o	\
 	hypinp.o	\
 	lagrang.o	\
 	qfock.o		\
@@ -30,6 +30,8 @@ F_OBJS = \
 	rspesg_lag.o    \
 	rspesg_gp.o     \
 	rspfxd.o	\
+	rsphso.o	\
+	rspg.o		\
 	rspmai.o	\
 	rspmc1.o	\
 	rspmc2.o	\
@@ -53,6 +55,7 @@ F_OBJS = \
 	rsptpa3.o	\
 	rspvec.o	\
 	absorp.o	\
+	rspzfs.o	\
 	x2expl.o
 
 F_CPPS = $(F_OBJS:.o=.i)
@@ -69,6 +72,6 @@ clean :
 	$(RM) -f *.o *~ *.lst *.i *.L i.*.f v.i.*.f *.a
 
 depend:
-	../tools/check_depend $(INCLUDE_DIR) > Makefile.depend
+	../tools/check_depend $(INCLUDES) > Makefile.depend
 
 include Makefile.depend

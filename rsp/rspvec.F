@@ -229,11 +229,7 @@ C SOLVE THE EIGENVALUE PROBLEM
 C
       IOFFSP = 0
       IF ( SOMOM .OR. ( EXMOM .AND. (ISPINC .EQ. ISPINB) ) ) THEN
-         IF (ISPINC.EQ.0) THEN
-            TRPLET = .FALSE.
-         ELSE
-            TRPLET = .TRUE.
-         END IF
+         TRPLET = ISPINC.NE.0
       ELSE
          TRPLET = .FALSE.
       END IF
@@ -758,6 +754,23 @@ C
  9999 CALL QEXIT('QRLRVE')
       RETURN
       END
+      SUBROUTINE RIOERR(FOUND,LABEL,FREQ,MSYM)
+#include <implicit.h>
+#include <priunit.h>
+      LOGICAL FOUND, CONV
+      CHARACTER*8 LABEL
+      IF (.NOT. FOUND) THEN
+         WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') 
+     &        ' Response label ',LABEL,' with frequency ',
+     &        FREQC, ' and symmetry',MSYMC, ' not found on file LURSP'
+         CALL QUIT('Response vector not found on file')
+      ELSE
+         WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
+     &        ' @WARNING>>>>'//
+     &        ' Response label ',LABEL,' with frequency ', FREQC,
+     &        ' and symmetry',MSYMC,' not converged on file LURSP'
+      END IF
+      END
 C  /* Deck qrhyp */
       SUBROUTINE QRHYP(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,
      *                 XINDX,VECB,VECC,MJWOP,SPNFC1,SPNFC2,SPNFC,SPNSD1,
@@ -766,6 +779,7 @@ C
 #include <implicit.h>
 #include <dummy.h>
 #include <iratdef.h>
+#include <dftcom.h>
 #include <mxcent.h>
 C
 C PURPOSE:
@@ -774,7 +788,7 @@ C PROPERTIES
 C
       CHARACTER*1 ALABP, BLABP, CLABP
       CHARACTER*8 BLANK, LABEL
-      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FCAC(*),H2AC(*)
+      DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),VECB(*),VECC(*),WRK(*)
       DIMENSION SPNFC1(*), SPNFC2(*), SPNFC(*), SPNSD1(*), SPNSD2(*),
      &          SPNSD(*), SPNSU1(*), SPNSU2(*), SPNSU(*)
@@ -800,7 +814,7 @@ C
 C     Local variables:
 C
       DIMENSION HYPVAL(MXQROP), MJWOP(2,MAXWOP,8)
-      LOGICAL   DIPLEN, DOCAL, FOUND, CONV
+      LOGICAL   DIPLEN, DOCAL, FOUND, CONV, DFTADX
 C
       CALL QENTER('QRHYP')
       IF (SOCOLL) CALL SOINIT
@@ -820,11 +834,13 @@ C
                DO 500 ICOP = 1,NCQROP(MSYMC)
                   DO 600 ICFR = 1,NCQRFR
                      IF ( ISPINC.EQ.1 ) THEN
-                        ICFRNU = NEXLB2 +
-     *                           INQRTR(CQRLB(MSYMC,ICOP),
-     *                                           CQRFR(ICFR),MSYMC)
-                        FREQC = TRFREQ(ICFRNU-NEXLB2-NLRLBL)
-                        LABEL = TRLBL(ICFRNU-NEXLB2)
+C                       ICFRNU = NEXLB2 +
+C    *                           INQRTR(CQRLB(MSYMC,ICOP),
+C    *                                           CQRFR(ICFR),MSYMC)
+C                       FREQC = TRFREQ(ICFRNU-NEXLB2-NLRLBL)
+C                       LABEL = TRLBL(ICFRNU-NEXLB2)
+                        FREQC=CQRFR(ICFR)
+                        LABEL=CQRLB(MSYMC,ICOP)
                      ELSE
                         ICFRNU = NEXLB2 + INQRLR(CQRLB(MSYMC,ICOP),
      *                                           CQRFR(ICFR),MSYMC)
@@ -833,21 +849,8 @@ C
                      END IF
                      CALL REARSP(LURSP,KLEN,VECC,LABEL,BLANK,FREQC,D0,
      &                           MSYMC,0,THCLR,FOUND,CONV,ANTSYM)
-                     IF (.NOT. (FOUND .AND. CONV)) THEN
-                        IF (.NOT. FOUND) THEN
-                           WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') 
-     &                      ' Response label ',LABEL,' with frequency ',
-     &                          FREQC, ' and symmetry',MSYMC,
-     &                          ' not found on file RSPVEC'
-                          CALL QUIT('Response vector not found on file')
-                        ELSE
-                           WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
-     &                      ' @WARNING>>>>'//
-     &                      ' Response label ',LABEL,' with frequency ',
-     &                          FREQC, ' and symmetry',MSYMC,
-     &                          ' not converged on file RSPVEC'
-                        END IF
-                     END IF
+                     IF (.NOT. (FOUND .AND. CONV))
+     &                    CALL RIOERR(FOUND,LABEL, FREQC, MSYMC)
                      IF (FREQC .LT. D0) THEN
                         CALL DSWAP(KLEN/2,VECC,1,VECC(1+KLEN/2),1)
                         IF (ANTSYM .LT. 0.0D0)
@@ -860,8 +863,10 @@ C
                            WRITE(LUPRI,'(/A,3X,A,3X,A,2X,
      *                                    D12.6,/A,I5)')
      *                      ' QRHYP: SOLUTION VECTOR  LABEL',
-     *                      TRLBL(ICFRNU-NEXLB2-NLRLBL),
-     *                      ' FREQUENCY ',TRFREQ(ICFRNU-NEXLB2-NLRLBL),
+C    *                      TRLBL(ICFRNU-NEXLB2-NLRLBL),
+     *                      LABEL,
+C    *                      ' FREQUENCY ',TRFREQ(ICFRNU-NEXLB2-NLRLBL),
+     *                      ' FREQUENCY ',FREQC,
      *                      ' SYMMETRY',MSYMC
                         ELSE
                            WRITE(LUPRI,'(/A)') ' SINGLET VECTOR '
@@ -895,6 +900,11 @@ C
                                  IF (ABS(DIFFRQ).LE.THRFRQ)
      &                                 GO TO 805
                               ENDIF
+                              IF (QROPRF) THEN
+                                 DIFFRQ = BQRFR(IBFR) + CQRFR(ICFR)
+                                 IF (ABS(DIFFRQ).LE.THRFRQ)
+     &                                 GO TO 805
+                              ENDIF
                               GO TO 800
                            ENDIF
 C
@@ -903,8 +913,10 @@ C
                               IBFRNU = NEXLB2 +
      *                                 INQRTR(BQRLB(MSYMB,IBOP),
      *                                              BQRFR(IBFR),MSYMB)
-                              FREQB = TRFREQ(IBFRNU-NEXLB2-NLRLBL)
-                              LABEL = TRLBL(IBFRNU-NEXLB2)
+!                             FREQB = TRFREQ(IBFRNU-NEXLB2-NLRLBL)
+!                             LABEL = TRLBL(IBFRNU-NEXLB2)
+                              FREQB=BQRFR(IBFR)
+                              LABEL=BQRLB(MSYMB,IBOP)
                            ELSE
                               IBFRNU = NEXLB2 +
      *                                 INQRLR(BQRLB(MSYMB,IBOP),
@@ -916,24 +928,8 @@ C
                            CALL REARSP(LURSP,KLEN,VECB,LABEL,BLANK,
      &                                 FREQB,D0,MSYMB,0,THCLR,
      &                                 FOUND,CONV,ANTSYM)
-                           IF (.NOT. (FOUND .AND. CONV)) THEN
-                              IF (.NOT. FOUND) THEN
-                                 WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') 
-     &                                ' Response label ',LABEL,
-     &                                ' with frequency ',FREQB,
-     &                                ' and symmetry',MSYMB,
-     &                                ' not found on file RSPVEC'
-                                 CALL QUIT('Response vector not '//
-     &                                'found on file')
-                              ELSE
-                                 WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
-     &                                ' @WARNING>>>>'//
-     &                                ' Response label ',LABEL,
-     &                                ' with frequency ',FREQB,
-     &                                ' and symmetry',MSYMB,
-     &                                ' not converged on file RSPVEC'
-                              END IF
-                           END IF
+                           IF (.NOT. (FOUND .AND. CONV))
+     &                          CALL RIOERR(FOUND,LABEL, FREQB, MSYMB)
                            IF (FREQB .LT. D0) THEN
                               CALL DSWAP(KLEN/2,VECB,1,VECB(1+KLEN/2),1)
                               IF (ANTSYM .LT. D0)
@@ -946,9 +942,11 @@ C
                                  WRITE(LUPRI,'(/A,3X,A,3X,A,2X,
      *                                        D12.6,/A,I5)')
      *                           ' QRHYP: SOLUTION VECTOR  LABEL',
-     *                             TRLBL(IBFRNU-NEXLB2-NLRLBL),
+C    *                             TRLBL(IBFRNU-NEXLB2-NLRLBL),
+     *                           LABEL,
      *                           ' FREQUENCY ',
-     *                             TRFREQ(IBFRNU-NEXLB2-NLRLBL),
+C    *                             TRFREQ(IBFRNU-NEXLB2-NLRLBL),
+     *                           FREQB,
      *                           ' SYMMETRY',MSYMB
                               ELSE
                                  WRITE(LUPRI,'(/A)') ' SINGLET VECTOR '
@@ -990,30 +988,14 @@ C                          ... E[3] term is zero for CI
                                  LX3WRK = LWRK  - KX3WRK + 1
                                  IF (LX3WRK.LT.0)
      *                             CALL ERRWRK('QRHYP E3',KX3WRK-1,LWRK)
-                                 FREQA  = QRFREQ(IAFTST-NEXLB2)
+C                                FREQA  = QRFREQ(IAFTST-NEXLB2)
+                                 FREQA = BPCFR
                                  CALL REARSP(LURSP,KLEN,WRK(KAVEC),
      &                                AQRLB(MSYMA,IAOP),BLANK,FREQA,D0,
      &                                MSYMA,0,THCLR,FOUND,CONV,ANTSYM)
-                                 IF (.NOT. (FOUND .AND. CONV)) THEN
-                                    IF (.NOT. FOUND) THEN
-                                    WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') 
-     &                                   ' Response label ',
-     &                                     AQRLB(MSYMA,IAOP),
-     &                                   ' with frequency ',FREQA,
-     &                                   ' and symmetry',MSYMA,
-     &                                   ' not found on file RSPVEC'
-                                    CALL QUIT('Response vector not '//
-     &                                   'found on file')
-                                    ELSE
-                                    WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
-     &                                   ' @WARNING>>>>'//
-     &                                   ' Response label ',
-     &                                     AQRLB(MSYMA,IAOP),
-     &                                   ' with frequency ',FREQA,
-     &                                   ' and symmetry',MSYMA,
-     &                                   ' not converged on file RSPVEC'
-                                    END IF
-                                 END IF
+                                 IF (.NOT. (FOUND .AND. CONV))
+     &                              CALL RIOERR(FOUND,AQRLB(MSYMA,IAOP),
+     &                                          FREQA,MSYMA)
                                  IF (FREQA .LT. D0) THEN
                                     CALL DSWAP(KLEN/2,WRK(KAVEC),1,
      &                                         WRK(KAVEC+KLEN/2),1)
@@ -1121,7 +1103,7 @@ C
      *                            VECB,VECC,E3TEST,WRK(KAVEC),
      *                            -FREQB,-FREQC,XINDX,
      *                           UDV,PV,MJWOP,WRK(KX3WRK),LX3WRK,
-     &                           CMO,FC)
+     &                           CMO,FC,FV)
                               IF (E3TEST) THEN
                                  CALL DCOPY(MZYVAR(MSYMA),WRK(KX3WRK),1,
      *                                      WRK(1),1)
@@ -1141,28 +1123,13 @@ C
      *                                    AQRLB(MSYMA,IAOP),BPCFR,MSYMA)
                                     LABEL = TRLBL(IAFRNU-NEXLB2)
                                  ENDIF
-                                 FREQA  = QRFREQ(IAFRNU-NEXLB2)
+C                                FREQA  = QRFREQ(IAFRNU-NEXLB2)
+                                 FREQA = BPCFR
                                  CALL REARSP(LURSP,KLEN,WRK(KAVEC),
      &                                LABEL,BLANK,FREQA,D0,MSYMA,0,
      &                                THCLR,FOUND,CONV,ANTSYM)
-                                 IF (.NOT. (FOUND .AND. CONV)) THEN
-                                    IF (.NOT. FOUND) THEN
-                                    WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') 
-     &                                   ' Response label ',LABEL,
-     &                                   ' with frequency ',FREQA,
-     &                                   ' and symmetry',MSYMA,
-     &                                   ' not found on file RSPVEC'
-                                    CALL QUIT('Response vector not '//
-     &                                   'found on file')
-                                    ELSE
-                                    WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
-     &                                   ' @WARNING>>>>'//
-     &                                   ' Response label ',LABEL,
-     &                                   ' with frequency ',FREQA,
-     &                                   ' and symmetry',MSYMA,
-     &                                   ' not converged on file RSPVEC'
-                                    END IF
-                                 END IF
+                                 IF (.NOT. (FOUND .AND. CONV))
+     &                             CALL RIOERR(FOUND,LABEL,FREQA,MSYMA)
                                  IF (FREQA .LT. D0) THEN
                                     CALL DSWAP(KLEN/2,WRK(KAVEC),1,
      &                                         WRK(KAVEC+KLEN/2),1)
@@ -1200,6 +1167,14 @@ C
                                     WRITE(LUPRI,'(/A,2F20.8)')
      *                              '   E3  CONTRIBUTION TO HYPVAL',
      *                              HYPVAL(IAOP),HYPVAL(IAOP)
+                                    IF (DFTADX) THEN
+                                       IF (E3TEST.AND.IAOP.EQ.1) THEN
+                                          HYPVAL(1)=HYPVAL(1)+QRDFT
+                                       WRITE(LUPRI,'(/A,2F20.8)')
+     *                              '   DFT CONTRIBUTION TO HYPVAL',
+     *                                  QRDFT,HYPVAL(1)
+                                       END IF
+                                    END IF
                                  END IF
                                  CALL FLSHFO(LUPRI)
   910                         CONTINUE
@@ -1217,24 +1192,8 @@ C
                               CALL REARSP(LURSP,KLEN,WRK(KAVEC),
      &                             LABEL,BLANK,FREQA,D0,MSYMA,0,
      &                             THCLR,FOUND,CONV,ANTSYM)
-                              IF (.NOT. (FOUND .AND. CONV)) THEN
-                                 IF (.NOT. FOUND) THEN
-                                    WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') 
-     &                                   ' Response label ',LABEL,
-     &                                   ' with frequency ',FREQA,
-     &                                   ' and symmetry',MSYMA,
-     &                                   ' not found on file RSPVEC'
-                                    CALL QUIT('Response vector not '//
-     &                                   'found on file')
-                                 ELSE
-                                    WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
-     &                                   ' @WARNING>>>>'//
-     &                                   ' Response label ',LABEL,
-     &                                   ' with frequency ',FREQA,
-     &                                   ' and symmetry',MSYMA,
-     &                                   ' not converged on file RSPVEC'
-                                 END IF
-                              END IF
+                              IF (.NOT. (FOUND .AND. CONV))
+     &                          CALL RIOERR(FOUND,LABEL,FREQA,MSYMA)
                               IF (FREQA .LT. D0) THEN
                                  CALL DSWAP(KLEN/2,WRK(KAVEC),1,
      &                                      WRK(KAVEC+KLEN/2),1)
@@ -1276,28 +1235,13 @@ C
      *                                 AQRLB(MSYMA,IAOP),BPCFR,MSYMA)
                                  LABEL = TRLBL(IAFRNU-NEXLB2)
                               ENDIF
-                              FREQA  = QRFREQ(IAFRNU-NEXLB2)
+C                             FREQA  = QRFREQ(IAFRNU-NEXLB2)
+                              FREQA = BPCFR
                               CALL REARSP(LURSP,KLEN,WRK(KAVEC),
      &                             LABEL,BLANK,FREQA,D0,MSYMA,0,
      &                             THCLR,FOUND,CONV,ANTSYM)
-                              IF (.NOT. (FOUND .OR. CONV)) THEN
-                                 IF (.NOT. FOUND) THEN
-                                    WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') 
-     &                                   ' Response label ',LABEL,
-     &                                   ' with frequency ',FREQA,
-     &                                   ' and symmetry',MSYMA,
-     &                                   ' not found on file RSPVEC'
-                                    CALL QUIT('Response vector not '//
-     &                                   'found on file')
-                                 ELSE
-                                    WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
-     &                                   ' @WARNING>>>>'//
-     &                                   ' Response label ',LABEL,
-     &                                   ' with frequency ',FREQA,
-     &                                   ' and symmetry',MSYMA,
-     &                                   ' not converged on file RSPVEC'
-                                 END IF
-                              END IF
+                              IF (.NOT. (FOUND .OR. CONV))
+     &                             CALL RIOERR(FOUND,LABEL,FREQA,MSYMA)
                               IF (FREQA .LT. D0) THEN
                                  CALL DSWAP(KLEN/2,WRK(KAVEC),1,
      &                                      WRK(KAVEC+KLEN/2),1)
@@ -1354,24 +1298,8 @@ C
                               CALL REARSP(LURSP,KLEN,WRK(KAVEC),
      &                             LABEL,BLANK,FREQA,D0,MSYMA,0,
      &                             THCLR,FOUND,CONV,ANTSYM)
-                              IF (.NOT. (FOUND .AND. CONV)) THEN
-                                 IF (.NOT. FOUND) THEN
-                                    WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') 
-     &                                   ' Response label ',LABEL,
-     &                                   ' with frequency ',FREQA,
-     &                                   ' and symmetry',MSYMA,
-     &                                   ' not found on file RSPVEC'
-                                    CALL QUIT('Response vector not '//
-     &                                   'found on file')
-                                 ELSE
-                                    WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
-     &                                   ' @WARNING>>>>'//
-     &                                   ' Response label ',LABEL,
-     &                                   ' with frequency ',FREQA,
-     &                                   ' and symmetry',MSYMA,
-     &                                   ' not converged on file RSPVEC'
-                                 END IF
-                              END IF
+                              IF (.NOT. (FOUND .AND. CONV))
+     &                             CALL RIOERR(FOUND,LABEL,FREQA,MSYMA)
                               IF (FREQA .LT. D0) THEN
                                  CALL DSWAP(KLEN/2,WRK(KAVEC),1,
      &                                      WRK(KAVEC+KLEN/2),1)
@@ -1412,28 +1340,13 @@ C
      *                                 AQRLB(MSYMA,IAOP),BPCFR,MSYMA)
                                  LABEL = TRLBL(IAFRNU-NEXLB2)
                               ENDIF
-                              FREQA  = QRFREQ(IAFRNU-NEXLB2)
+C                             FREQA  = QRFREQ(IAFRNU-NEXLB2)
+                              FREQA  = BPCFR
                               CALL REARSP(LURSP,KLEN,WRK(KAVEC),
      &                             LABEL,BLANK,FREQA,D0,MSYMA,0,
      &                             THCLR,FOUND,CONV,ANTSYM)
-                              IF (.NOT. (FOUND .AND. CONV)) THEN
-                                 IF (.NOT. FOUND) THEN
-                                    WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') 
-     &                                   ' Response label ',LABEL,
-     &                                   ' with frequency ',FREQA,
-     &                                   ' and symmetry',MSYMA,
-     &                                   ' not found on file RSPVEC'
-                                    CALL QUIT('Response vector not '//
-     &                                   'found on file')
-                                 ELSE
-                                    WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
-     &                                   ' @WARNING>>>>'//
-     &                                   ' Response label ',LABEL,
-     &                                   ' with frequency ',FREQA,
-     &                                   ' and symmetry',MSYMA,
-     &                                   ' not converged on file RSPVEC'
-                                 END IF
-                              END IF
+                              IF (.NOT. (FOUND .AND. CONV))
+     &                             CALL RIOERR(FOUND,LABEL,FREQA,MSYMA)
                               IF (FREQA .LT. D0) THEN
                                  CALL DSWAP(KLEN/2,WRK(KAVEC),1,
      &                                      WRK(KAVEC+KLEN/2),1)
@@ -1611,7 +1524,7 @@ C
       PARAMETER (BLANK = '        ')
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, D4D3 = 4.0D0/3.0D0,
      &            IMXEXC=20, D30 = 30.0D0)
-      PARAMETER ( DP5 = 0.5D0 )
+      PARAMETER ( DP5 = 0.5D0 , D3 = 3.0D0)
       DIMENSION RESSOM(3,3,IMXEXC,8), RESFRE(IMXEXC,8)
 C
 #include <iratdef.h>
@@ -1674,23 +1587,8 @@ C
                   FREQC = EXCITA(MSYMC,IC,ISPINC+1)
                   CALL REARSP(LURSP,KLEN,VECC,'EXCITLAB',BLANK,
      &                        FREQC,D0,MSYMC,IC,THCPP,FOUND,CONV,ANTSYM)
-                  IF (.NOT. (FOUND .AND. CONV)) THEN
-                     IF (.NOT. FOUND) then
-                        WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') 
-     &                       ' Response label ','EXCITLAB',
-     &                       ' with frequency ',FREQC,
-     &                       ' and symmetry',MSYMC,
-     &                    ' not found on file RSPVEC'
-                        CALL QUIT('Response vector not found on file')
-                     ELSE
-                        WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
-     &                       ' @WARNING>>>>'//
-     &                       ' Response label ','EXCITLAB',
-     &                       ' with frequency ',FREQC,
-     &                       ' and symmetry',MSYMC,
-     &                    ' not converged on file RSPVEC'
-                     END IF
-                  END IF
+                  IF (.NOT. (FOUND .AND. CONV))
+     &                 CALL RIOERR(FOUND,'EXCITLAB',FREQC,MSYMC)
                   IF (FREQC .LT. D0) THEN
                      CALL DSWAP(KLEN/2,VECC,1,VECC(1+KLEN/2),1)
                      IF (ANTSYM .LT. D0) CALL DSCAL(KLEN,ANTSYM,VECC,1)
@@ -1723,8 +1621,10 @@ C
                            IBFRNU = NEXLB2 + NLRLBL +
      *                              INQRTR(BSMLB(MSYMB,IBOP),
      *                                            -BSMFR(IBFR),MSYMB)
-                           LABEL  = TRLBL(IBFRNU-NEXLB2-NLRLBL)
-                           FREQB  = TRFREQ(IBFRNU-NEXLB2-NLRLBL)
+C                          LABEL  = TRLBL(IBFRNU-NEXLB2)
+                           LABEL=BSMLB(MSYMB,IBOP)
+C                          FREQB  = TRFREQ(IBFRNU-NEXLB2-NLRLBL)
+                           FREQB=BSMFR(IBFR)
                         ELSE
                            IBFRNU = NEXLB2 + INQRLR(BSMLB(MSYMB,IBOP),
      *                                            -BSMFR(IBFR),MSYMB)
@@ -1740,24 +1640,8 @@ C
                         CALL REARSP(LURSP,KLEN,VECB,LABEL,BLANK,
      &                              FREQB,D0,MSYMB,0,THCLR,FOUND,
      &                              CONV,ANTSYM)
-                        IF (.NOT. (FOUND .AND. CONV)) THEN
-                           IF (.NOT. FOUND) THEN
-                              WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') 
-     &                             ' Response label ',LABEL,
-     &                             ' with frequency ',FREQB,
-     &                             ' and symmetry',MSYMB,
-     &                             ' not found on file RSPVEC'
-                              CALL QUIT('Response vector not '//
-     &                             'found on file')
-                           ELSE
-                              WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
-     &                             ' @WARNING>>>>'//
-     &                             ' Response label ',LABEL,
-     &                             ' with frequency ',FREQB,
-     &                             ' and symmetry',MSYMB,
-     &                             ' not converged on file RSPVEC'
-                           END IF
-                        END IF
+                        IF (.NOT. (FOUND .AND. CONV))
+     &                       CALL RIOERR(FOUND,LABEL,FREQB,MSYMB)
                         IF (FREQB .LT. D0) THEN
                            CALL DSWAP(KLEN/2,VECB,1,VECB(1+KLEN/2),1)
                            IF (ANTSYM .LT. D0) CALL DSCAL(KLEN,ANTSYM,
@@ -1771,7 +1655,8 @@ C
      *                                     D12.6,/A,I5)')
      *                        ' QRSMO: SOLUTION VECTOR  LABEL',
      *                          TRLBL(IBFRNU-NEXLB2-NLRLBL),
-     *                      ' FREQUENCY ',TRFREQ(IBFRNU-NEXLB2-NLRLBL),
+C    *                      ' FREQUENCY ',TRFREQ(IBFRNU-NEXLB2-NLRLBL),
+     *                      ' FREQUENCY ',FREQB,
      *                        ' SYMMETRY',MSYMB
                            ELSE
                               WRITE(LUPRI,'(/A)') ' SINGLET VECTOR '
@@ -1820,24 +1705,8 @@ C
                               CALL REARSP(LURSP,KLEN,WRK(KAVEC),
      &                             LABEL,BLANK,FREQA,D0,MSYMA,0,
      &                             THCLR,FOUND,CONV,ANTSYM)
-                              IF (.NOT. (FOUND .AND. CONV)) THEN
-                                 IF (.NOT. FOUND) THEN
-                                    WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') 
-     &                                   ' Response label ',LABEL,
-     &                                   ' with frequency ',FREQA,
-     &                                   ' and symmetry',MSYMA,
-     &                                   ' not found on file RSPVEC'
-                                    CALL QUIT('Response vector not '//
-     &                                   'found on file')
-                                 ELSE
-                                    WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
-     &                                   ' @WARNING>>>>'//
-     &                                   ' Response label ',LABEL,
-     &                                   ' with frequency ',FREQA,
-     &                                   ' and symmetry',MSYMA,
-     &                                   ' not converged on file RSPVEC'
-                                 END IF
-                              END IF
+                              IF (.NOT. (FOUND .AND. CONV))
+     &                             CALL RIOERR(FOUND,LABEL,FREQA,MSYMA)
                               IF (FREQA .LT. D0) THEN
                                  CALL DSWAP(KLEN/2,WRK(KAVEC),1,
      &                                      WRK(KAVEC+KLEN/2),1)
@@ -1855,7 +1724,7 @@ C
      *                         E3TEST,WRK(KAVEC),
      *                         BSMFR(IBFR),-EXCITA(MSYMC,IC,ISPINC+1),
      *                         XINDX,UDV,PV,MJWOP,
-     *                         WRK(KX3WRK),LX3WRK,CMO,FC)
+     *                         WRK(KX3WRK),LX3WRK,CMO,FC,FV)
                            IF (E3TEST) THEN
                               CALL DCOPY(MZYVAR(MSYMA),WRK(KX3WRK),1,
      *                                   WRK(1),1)
@@ -1885,24 +1754,8 @@ C
      &                             WRK(1+MZYVAR(MSYMA)),LABEL,BLANK,
      &                             FREQA,D0,MSYMA,0,THCLR,FOUND,
      &                             CONV,ANTSYM)
-                              IF (.NOT. (FOUND .AND. CONV)) THEN
-                                 IF (.NOT. FOUND) THEN
-                                    WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') 
-     &                                   ' Response label ',LABEL,
-     &                                   ' with frequency ',FREQA,
-     &                                   ' and symmetry',MSYMA,
-     &                                   ' not found on file RSPVEC'
-                                    CALL QUIT('Response vector not '//
-     &                                   'found on file')
-                                 ELSE
-                                    WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
-     &                                   ' @WARNING>>>>'//
-     &                                   ' Response label ',LABEL,
-     &                                   ' with frequency ',FREQA,
-     &                                   ' and symmetry',MSYMA,
-     &                                   ' not converged on file RSPVEC'
-                                 END IF
-                              END IF
+                              IF (.NOT. (FOUND .AND. CONV))
+     &                             CALL RIOERR(FOUND,LABEL,FREQA,MSYMA)
                               IF (FREQA .LT. D0) THEN
                                  CALL DSWAP(KLEN/2,WRK(1+MZYVAR(MSYMA)),
      &                                1,WRK(1+MZYVAR(MSYMA)+KLEN/2),1)
@@ -1956,24 +1809,8 @@ C
                               CALL REARSP(LURSP,KLEN,WRK(KAVEC),
      &                             LABEL,BLANK,FREQA,D0,MSYMA,0,
      &                             THCLR,FOUND,CONV,ANTSYM)
-                              IF (.NOT. (FOUND .AND. CONV)) THEN
-                                 IF (.NOT. FOUND) THEN
-                                    WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') 
-     &                                   ' Response label ',LABEL,
-     &                                   ' with frequency ',FREQA,
-     &                                   ' and symmetry',MSYMA,
-     &                                   ' not found on file RSPVEC'
-                                    CALL QUIT('Response vector not '//
-     &                                   'found on file')
-                                 ELSE
-                                    WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
-     &                                   ' @WARNING>>>>'//
-     &                                   ' Response label ',LABEL,
-     &                                   ' with frequency ',FREQA,
-     &                                   ' and symmetry',MSYMA,
-     &                                   ' not converged on file RSPVEC'
-                                 END IF
-                              END IF
+                              IF (.NOT. (FOUND .AND. CONV))
+     &                             CALL RIOERR(FOUND,LABEL,FREQA,MSYMA)
                               IF (FREQA .LT. D0) THEN
                                  CALL DSWAP(KLEN/2,WRK(KAVEC),1,
      &                                      WRK(KAVEC+KLEN/2),1)
@@ -1998,24 +1835,8 @@ C
                               CALL REARSP(LURSP,KLEN,WRK(KAVEC),
      &                             LABEL,BLANK,FREQA,D0,MSYMA,0,
      &                             THCLR,FOUND,CONV,ANTSYM)
-                              IF (.NOT. (FOUND .AND. CONV)) THEN
-                                 IF (.NOT. FOUND) THEN
-                                    WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') 
-     &                                   ' Response label ',LABEL,
-     &                                   ' with frequency ',FREQA,
-     &                                   ' and symmetry',MSYMA,
-     &                                   ' not found on file RSPVEC'
-                                    CALL QUIT('Response vector not '//
-     &                                   'found on file')
-                                 ELSE
-                                    WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
-     &                                   ' @WARNING>>>>'//
-     &                                   ' Response label ',LABEL,
-     &                                   ' with frequency ',FREQA,
-     &                                   ' and symmetry',MSYMA,
-     &                                   ' not converged on file RSPVEC'
-                                 END IF
-                              END IF
+                              IF (.NOT. (FOUND .AND. CONV))
+     &                             CALL RIOERR(FOUND,LABEL,FREQA,MSYMA)
                               IF (FREQA .LT. D0) THEN
                                  CALL DSWAP(KLEN/2,WRK(KAVEC),1,
      &                                      WRK(KAVEC+KLEN/2),1)
@@ -2258,11 +2079,13 @@ C ---------------------------------------------------------------endofmcd-------
                    END IF
                END DO
                IF (PHOSPH) WRITE(LUPRI,'(1P,2(/A,G12.5,A))')
-     &           ' Total transition      rate     (H_SO)', RATE, ' s-1',
-     &           ' Total phosphorescence lifetime (H_SO)', D1/RATE, ' s'
+     &         ' Total transtion       rate     (H_SO)',RATE/D3,' s-1',
+     &           ' Total phosphorescence lifetime (H_SO)', D3/RATE, ' s'
                IF (MNFPHO) WRITE(LUPRI,'(1P,2(/A,G12.5,A))')
-     &           ' Total transition      rate     (AMFI)', RATEA,' s-1',
-     &           ' Total phosphorescence lifetime (AMFI)', D1/RATEA,' s'
+     &         ' Total transtion       rate     (AMFI)',RATEA/D3,' s-1',
+     &           ' Total phosphorescence lifetime (AMFI)', D3/RATEA,' s'
+               WRITE(LUPRI,'(/A)') 
+     &        '   (Triplet->singlet transition, high-temperature limit)'
             END DO
          END IF
  300  CONTINUE
@@ -2558,7 +2381,7 @@ C
      *                      EXCITA(MSYMB,IB,ISPINB+1),
      *                     -EXCITA(MSYMC,IC,ISPINC+1),
      *                      XINDX,UDV,PV,MJWOP,
-     *                      WRK(KX3WRK),LX3WRK,CMO,FC)
+     *                      WRK(KX3WRK),LX3WRK,CMO,FC,FV)
                         IF (E3TEST) THEN
                            CALL DCOPY(MZYVAR(MSYMA),WRK(KX3WRK),1,WRK,1)
                         END IF
@@ -2595,24 +2418,8 @@ C
                            CALL REARSP(LURSP,KLEN,WRK(1+MZYVAR(MSYMA)),
      &                          LABEL,BLANK,FREQA,D0,MSYMA,0,THCLR,
      &                          FOUND,CONV,ANTSYM)
-                           IF (.NOT. (FOUND .AND. CONV)) THEN
-                              IF (.NOT. FOUND) THEN
-                                 WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') 
-     &                                ' Response label ',LABEL,
-     &                                ' with frequency ',FREQA,
-     &                                ' and symmetry',MSYMA,
-     &                                ' not found on file RSPVEC'
-                                 CALL QUIT('Response vector not '//
-     &                                'found on file')
-                              ELSE
-                                 WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
-     &                                ' @WARNING>>>>'//
-     &                                ' Response label ',LABEL,
-     &                                ' with frequency ',FREQA,
-     &                                ' and symmetry',MSYMA,
-     &                                ' not converged on file RSPVEC'
-                              END IF
-                           END IF
+                           IF (.NOT. (FOUND .AND. CONV))
+     &                          CALL RIOERR(FOUND,LABEL,FREQA,MSYMA)
                            IF (FREQA .LT. D0) THEN
                               CALL DSWAP(KLEN/2,WRK(1+MZYVAR(MSYMA)),1,
      &                             WRK(1+MZYVAR(MSYMA)+KLEN/2),1)
@@ -3201,21 +3008,8 @@ C
                FRQ = BQRFR(IBFR)
                CALL REARSP(LURSP,KLEN,VECB,BQRLB(KSYMOP,IBOP),BLANK,
      &                     FRQ,D0,KSYMOP,0,THCLR,FOUND,CONV,ANTSYM)
-               IF (.NOT. (FOUND .AND. CONV)) THEN
-                  IF (.NOT. FOUND) THEN
-                     WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') 
-     &                    ' Response label ',BQRLB(KSYMOP,IBOP),
-     &                    ' with frequency ',FRQ, ' and symmetry',
-     &                    KSYMOP,' not found on file RSPVEC'
-                     CALL QUIT('Response vector not found on file')
-                  ELSE
-                     WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
-     &                    ' @WARNING>>>>'//
-     &                    ' Response label ',BQRLB(KSYMOP,IBOP),
-     &                    ' with frequency ',FRQ, ' and symmetry',
-     &                    KSYMOP,' not converged on file RSPVEC'
-                  END IF
-               END IF
+               IF (.NOT. (FOUND .AND. CONV))
+     &              CALL RIOERR(FOUND,BQRLB(KSYMOP,IBOP),FRQ,KSYMOP)
 C
 C     Print out response vector
 C

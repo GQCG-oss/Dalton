@@ -59,7 +59,7 @@ C
 #include <ccnoddy.h>
 
       LOGICAL LOCDBG
-      PARAMETER (LOCDBG = .FALSE.)
+      PARAMETER (LOCDBG=.FALSE.)
  
       INTEGER MAXXETRAN, MXVEC
       PARAMETER (MAXXETRAN = 100)

@@ -206,11 +206,7 @@ C
       IF (DO1) THEN
          LABEL = WORD
          LABEL(2:2) = '1'
-         KSYMP = -1
-         CALL PRPGET (LABEL,CMO,WRK(KH1),KSYMP,ANTSYM,
-     &                WRK(KWRK1),LWRK1,IPRHSO)
-         IF (KSYMP .NE. KSYMOP) CALL QUIT(
-     &      'ERROR: unexpected symmetry of property matrix')
+         CALL PRPGET (LABEL,CMO,WRK(KH1),ANTSYM,WRK(KWRK1),LWRK1)
       END IF
 C
 C Print atomic and molecular property integrals, if desired

@@ -549,10 +549,6 @@ C
       IF (IPRINT .GE. 20) THEN
          CALL TITLER('Output from EFODC','*',103)
          JMAXAB = (JMAXA + 1)*(JMAXB + 1)
-c$$$            DO 40 M = 0, JMAXM
-c$$$               WRITE(LUPRI,'(/A/)') ' '
-c$$$               WRITE(LUPRI,'(10X,I2,A)')
-c$$$     &              M, '.order moment'
          M = 1
                CALL AROUND('ODC in EFODC - x component')
                CALL OUTPUT(ODC(0,0,0,0,M,1),1,JMAXAB,1,JMAXT,JMAXAB,
@@ -563,7 +559,6 @@ c$$$     &              M, '.order moment'
                CALL AROUND('ODC in EFODC - z component')
                CALL OUTPUT(ODC(0,0,0,0,M,3),1,JMAXAB,1,JMAXT,JMAXAB,
      &                     JMAXT,1,LUPRI)
-c$$$ 40      CONTINUE
       END IF
       RETURN
       END

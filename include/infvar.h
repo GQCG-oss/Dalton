@@ -12,10 +12,6 @@
       INTEGER*4 JWOP
 #endif
 C     MAXWOP = maximum number of rotations (dimension of JWOP)
-#if defined (VAR_ABASMALL)
-      PARAMETER ( MAXWOP = 5 000 )
-#else
-      PARAMETER ( MAXWOP = 110 000 )
-#endif
+      PARAMETER ( MAXWOP = 110000 )
       COMMON /INFVAR/ JWOP(2,MAXWOP),
      *                NCONF,NWOPT,NVAR,JWOPSY,NWOP(8),NWOPH,NVARH,NCDETS

@@ -1,3 +1,18 @@
+#if defined(__CVERSION__)
+#define MAXNOD 100
+#define MAXCL2 10000
+#define MAXTSK (MXSHEL*(MXSHEL+1)/2)
+#define NPARI  ((MAXNOD + 1) + 7)
+extern struct common_infpar {
+    int nodtot, nodeid[MAXNOD+1], ncode,  iprpar, mtottk, ntask,  
+	nfmat,  ndegdi, master, mynum,  mytid,  timing,   slave,
+	debug;
+    char nodnam[MAXNOD][20], myname[20];
+} infpar_;
+extern struct common_parioc {
+    int pario;
+} parioc_;
+#else
 C
 C     Parameters NPARI must be updated after changes (for parallelization)
 C
@@ -16,3 +31,4 @@ C
      &                TIMING, SLAVE,  DEBUG,
      &                NODNAM, MYNAME
       COMMON /PARIOC/ PARIO
+#endif

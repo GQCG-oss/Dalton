@@ -278,13 +278,13 @@ C                  ^- not CI        ^- not RHF      ^- not only grad
          NUMERR = NUMERR + 1
       END IF
       IF (NASHT.GT.1 .AND. FLAG(21) .AND.
-     *    .NOT.(DOCI .OR. DOCINO .OR. DOMC) )THEN
+     *    .NOT.(DOCI .OR. DOCINO .OR. DOMC .OR. HSROHF) )THEN
          WRITE (LUW4,1730)
          IF (LUPRI.NE.LUW4) WRITE (LUPRI,1730)
          WRITE (LUERR,1730)
          NUMERR = NUMERR + 1
       END IF
-      IF (NASHT.EQ.1 .AND. NACTEL.NE.1) THEN
+      IF (NASHT.EQ.1 .AND. NACTEL.NE.1 .AND. .NOT. HSROHF) THEN
          WRITE (LUW4,1731)
          IF (LUPRI.NE.LUW4) WRITE (LUPRI,1731)
          WRITE (LUERR,1731)

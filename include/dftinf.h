@@ -1,3 +1,2 @@
-      LOGICAL NOSYM
       COMMON /DFTINF/ NDER, NTYPSO, NSO0, NSO1, NSO2, NSOB, NOSB1,
-     &                KSO0, KSO1, KSO2, KSOB, KSOB1, NOSYM
+     &                KSO0, KSO1, KSO2, KSOB, KSOB1

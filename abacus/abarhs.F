@@ -464,7 +464,7 @@ C
      &          HESFS1(*)
       LOGICAL   DERIV(3), NOORBI, LONDON, DOSFD, DOREAL, DOIMAG,
      &          DOBRHS, DOPRHS, ANTI, DDFOCK, PERTUR, DOTD, FEXIST,
-     &          NOBLK, OLDDX, FOUND, PANTI, DIA2SO
+     &          NOBLK, OLDDX, FOUND, PANTI, DIA2SO, ZFS2EL
 C
 C Used from common blocks:
 C   CBIRHS : *
@@ -745,10 +745,11 @@ C
                         ANTI =   .FALSE.
                         PANTI =  .FALSE.
                         DIA2SO = .FALSE.
+                        ZFS2EL = .FALSE.
                         IF (IPRPTR .GE. 3)
      &                  CALL TIMER('START ',TIMSTR,TIMEND)
                         CALL PTRAN(NODPTR,WORK(KLAST),LWRK,IPRPTR,ANTI,
-     &                             PANTI,DIA2SO)
+     &                             PANTI,DIA2SO,ZFS2EL)
                         IF (IPRPTR .GE. 3)
      &                  CALL TIMER('PTRAN ',TIMSTR,TIMEND)
                         IF (IPRPTR .GE. 3)
@@ -778,7 +779,7 @@ C
                         IF (IPRPTR .GE. 3)
      &                  CALL TIMER('START ',TIMSTR,TIMEND)
                         CALL PTRAN(NODPTR,WORK(KLAST),LWRK,IPRPTR,ANTI,
-     &                             PANTI,DIA2SO)
+     &                             PANTI,DIA2SO,ZFS2EL)
                         IF (IPRPTR .GE. 3)
      &                  CALL TIMER('PTRAN ',TIMSTR,TIMEND)
                         IF (IPRPTR .GE. 3)
@@ -892,7 +893,7 @@ C                END IF
                   CALL SKLFCK(WORK(KFMAT),DUMMY,WORK(KLAST),LWRK,
      &            IPRINT,.FALSE.,
      &            DDFOCK,.FALSE.,PERTUR,NODV,MAXDIF,LONDON,NDMAT,
-     &            ISYMDM,IFCTYP,IATOM)
+     &            ISYMDM,IFCTYP,IATOM,.FALSE.)
                ENDIF
 
 C

@@ -684,8 +684,9 @@ C     ***** DFT contribution to gradient *****
 C     ****************************************
 C
       IF (PROPTY .AND. DFTRUN) THEN
-         CALL DFTEXC(DENMAT,1,FOCMAT,1,.TRUE.,.FALSE.,.TRUE.,.FALSE.,
-     &               .FALSE.,.FALSE.,DUMMY,.FALSE.,WORK,LWORK,1)
+         CALL DFTMOLGRAD(WORK,LWORK,1)
+C        CALL HEADER('GRADFT in DFT_MOLGRAD ',-1)
+C        CALL OUTPUT(GRADFT,1,3,1,NATOMS,3,NATOMS,1,LUPRI)
       END IF
 C
 C     *************************

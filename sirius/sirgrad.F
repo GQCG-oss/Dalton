@@ -517,10 +517,22 @@ C        DCAO zero matrix, only FVAO contribution
          IOFFAO = 1+N2BASX
 C        ... off-set to FVAO,DVAO in FCAO,DCAO
       END IF
+      IF (DFTADD .AND. (NASHT .EQ. 1)) THEN
+C
+C This gives the exchange part of the active Fock matrix
+C we need only the difference between Fa and Q which is negative
+C of the exchange part
+C
+         IFCTYP(2)=12
+      END IF
+      IF (HSROHF) THEN
+         IFCTYP(2)=12
+      END IF  
+
       CALL DZERO(FCAO,NDMAT*N2BASX)
 CKR   This line read NDMAT instead of NFMAT, 150997
       IF (NFMAT .GT. 0) THEN
-      IF (LUSUPM .NE. -1 .AND. .NOT. DFTRUN) THEN
+      IF (LUSUPM .NE. -1 .AND. (.NOT. (HSROHF .OR. DFTRUN))) THEN
          CALL RDSUPM(NFMAT,FCAO(IOFFAO),DCAO(IOFFAO),WRK(KFREE),LFREE)
       ELSE
          CALL SIRFCK(FCAO(IOFFAO),DCAO(IOFFAO),NFMAT,ISYMDM,IFCTYP,

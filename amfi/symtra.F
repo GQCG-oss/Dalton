@@ -45,7 +45,7 @@ cbs
 #include <dummy.h>
 #include <priunit.h>
 #include <para.h>
-      parameter(maxorbs=500)
+      parameter(maxorbs=700)
       parameter(maxcent=40)
       character*8 xa,ya,za,xa2
       character*3 END                     
@@ -272,7 +272,7 @@ CBS
       enddo   
       if (lauf.ne.numboffunct3) CALL QUIT('error in numbering ')
 *
-      IPRINT=5
+COV   IPRINT=5
       IF (PROPRI .OR. IPRINT .GT. 4) THEN
          CALL AROUND('Integrals of operator: '//XA(4))
          CALL OUTPAK(WRK(IPX),NUMBOFFUNCT,1,LUPRI)

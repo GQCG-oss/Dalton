@@ -239,7 +239,6 @@ C
       SAVE DIST, ANGLE, DIHED
       ARCCOS(ARG) = FACANG*ACOS(ARG)
 #include <ibtfun.h>
-      IPAK(I,J) = MAX(I,J)*(MAX(I,J)-1)/2 + MIN(I,J)
 C
       NBONDS = 0
       IF (NUCDEP .EQ. 1) RETURN

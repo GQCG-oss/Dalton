@@ -444,6 +444,7 @@ C
 #include "inftap.h"
 #include "gtensor.h"
 #include "r12int.h"
+#include "zfs.h"
       DIMENSION FMAT(NBASIS,NBASIS,*)
 #if defined (VAR_VECTOR)
 C NECgh Dimensioning TFMAT adapted to always odd first dimension
@@ -473,6 +474,10 @@ C
       IF (DIA2SO) THEN
          IF (.NOT. NOPV) CALL REWSPL(LUPAO)
          CALL DZERO(GC2,9)
+      END IF
+      IF (ZFS2EL) THEN
+         IF (.NOT. NOPV) CALL REWSPL(LUPAO)
+         CALL DZERO(ZFS,9)
       END IF
 C
 C     For direct contributions: some parameters
@@ -1447,8 +1452,9 @@ C
 C
 C     Number of two-electron densities elements
 C
-#ifndef olavv
-      IF ((EXPECT .OR. SUSCEP) .AND..NOT.NOPV) THEN
+C
+      IF ((EXPECT .OR. SUSCEP .OR. DIA2SO .OR. ZFS2EL) 
+     &     .AND..NOT .NOPV) THEN
 #if defined (VAR_SPLITFILES)
          READ (LUPAO,END=414) NPMAT
          GOTO 415
@@ -1511,35 +1517,20 @@ C
 #else
          READ (LUPAO) NPMAT
 #endif
-#else /* olavv */
-      IF ((EXPECT .OR. SUSCEP .OR. DIA2SO) .AND..NOT.NOPV) THEN
-#endif /* olavv */
          IF (SUSCEP) THEN
-#ifdef olavv
-            READ (LUPAO) NPMAT
-#endif /* olavv */
             READ (LUPAS) NPMATA
             IF (NPMAT .NE. NPMATA) THEN
                WRITE (LUPRI,'(1X,A,I5,A,I5)')
      &         ' Error in TWOODS: NPMAT = ',NPMAT,', NPMATA = ',NPMATA
                CALL QUIT('Program aborted due to error in TWOODS')
             END IF
-#ifdef olavv
-         ELSE IF (DIA2SO) THEN
-            READ (LUPAO) NPMAT
-            NPMATA = 0
-#endif /* olavv */
          ELSE
-#ifdef olavv
-            READ (LUPAO) NPMAT
-#endif /* olavv */
             NPMATA = 0
          END IF
       ELSE
          NPMAT  = 0
          NPMATA = 0
       END IF
-C
       NODCAB = NODSYM(MAXOPR,MULA,MULB)
       NODCCD = NODSYM(MAXOPR,MULC,MULD)
 C
@@ -1712,6 +1703,8 @@ C
             READ (LUPAS) (PSA(I),I=1,NPMAT)
          ELSEIF (DIA2SO) THEN
             READ (LUPAO) (PSO(I),I=1,NPMAT)
+         ELSEIF (ZFS2EL) THEN   
+            READ (LUPAO) (PSO(I),I=1,NPMAT)
          END IF
       END IF
 C
@@ -1768,6 +1761,10 @@ C
          NCFTYP = 3
       ELSE IF (MAXDER .EQ. 2) THEN
          NCFTYP = 6
+      ELSE IF (FINDPT .OR. DPTINT) THEN
+         NCFTYP = 6
+      ELSE IF (DIA2SO) THEN
+         NCFTYP = 9
       END IF
       IF (FINDPT .OR. DPTINT) NCFTYP = 6
       IF (DIA2SO) NCFTYP = 9
@@ -2508,13 +2505,31 @@ C        b) Spin-orbit integrals
 C
          ELSE IF (SPNORB) THEN
             IF (TKTIME) CALL GETTIM(TIMSTR,DUMTIM)
-            CALL SPOSYM(SOINT,AOINT,NCCINT,HKABCD,ISYMR,ISYMT,ISYMTS,
+            IF (.NOT. DDFOCK) THEN
+               CALL SPOSYM(SOINT,AOINT,NCCINT,HKABCD,ISYMR,ISYMT,ISYMTS,
      &                  IPNTAO,IPNTOP,SQ12EL,SOP000,IPRINT)
+            END IF
             IF (TKTIME) THEN
                CALL GETTIM(TIMEND,DUMTIM)
                TSPOSY = TSPOSY + TIMEND - TIMSTR
             END IF
             SOP000 = .FALSE.
+            IF (DDFOCK) THEN
+               IF (TKTIME) CALL GETTIM(TIMSTR,DUMTIM)
+               IADRT = 1
+               IADRA = 4
+               CALL INTEXP(HESSEE,AOINT,DMAT,NDMAT,PSO,PSA,
+     &                     FMAT(1,1,IADRT),FMAT(1,1,IADRA),NINDAB,
+     &                     NINDCD,NCCINT,NINTYP,WORK,LWORK,ISYMR,ISYMS,
+     &                     ISYMT,ICORBA,ICORBB,ICORBC,ICORBD,THRESH,
+     &                     HKABCD,IPRINT,NOPV,NODV,EXPECT,LONDON,SUSCEP,
+     &                     DIA2SO,ZFS2EL,DDFOCK,SPNORB,IXPAB,IXPCD,
+     &                     IFCTYP)
+               IF (TKTIME) THEN
+                  CALL GETTIM(TIMEND,DUMTIM)
+                  TINTEX = TINTEX + TIMEND - TIMSTR
+               END IF
+            END IF
 C
 C        c) First derivative integrals
 C
@@ -2552,7 +2567,8 @@ C
      &                     NINDCD,NCCINT,NINTYP,WORK,LWORK,ISYMR,ISYMS,
      &                     ISYMT,ICORBA,ICORBB,ICORBC,ICORBD,THRESH,
      &                     HKABCD,IPRINT,NOPV,NODV,EXPECT,LONDON,SUSCEP,
-     &                     DIA2SO,ZFS2EL,DDFOCK,IXPAB,IXPCD)
+     &                     DIA2SO,ZFS2EL,DDFOCK,SPNORB,IXPAB,IXPCD,
+     &                     IFCTYP)
                IF (TKTIME) THEN
                   CALL GETTIM(TIMEND,DUMTIM)
                   TINTEX = TINTEX + TIMEND - TIMSTR
@@ -2576,7 +2592,7 @@ C
      &                  NINTYP,WORK,LWORK,ISYMR,ISYMS,ISYMT,ICORBA,
      &                  ICORBB,ICORBC,ICORBD,THRESH,HKABCD,IPRINT,
      &                  NOPV,NODV,EXPECT,LONDON,SUSCEP,DIA2SO,ZFS2EL,
-     &                  DDFOCK,IXPAB,IXPCD)
+     &                  DDFOCK,SPNORB,IXPAB,IXPCD,IFCTYP)
             IF (TKTIME) THEN
                CALL GETTIM(TIMEND,DUMTIM)
                TINTEX = TINTEX + TIMEND - TIMSTR
@@ -2606,7 +2622,7 @@ C
      &                  NINTYP,WORK,LWORK,ISYMR,ISYMS,ISYMT,ICORBA,
      &                  ICORBB,ICORBC,ICORBD,THRESH,HKABCD,IPRINT,
      &                  NOPV,NODV,EXPECT,LONDON,SUSCEP,DIA2SO,ZFS2EL,
-     &                  DDFOCK,IXPAB,IXPCD)
+     &                  DDFOCK,SPNORB,IXPAB,IXPCD,IFCTYP)
             IF (TKTIME) THEN
                CALL GETTIM(TIMEND,DUMTIM)
                TINTEX = TINTEX + TIMEND - TIMSTR
@@ -2622,7 +2638,7 @@ C
      &                  NINTYP,WORK,LWORK,ISYMR,ISYMS,ISYMT,ICORBA,
      &                  ICORBB,ICORBC,ICORBD,THRESH,HKABCD,IPRINT,
      &                  NOPV,NODV,EXPECT,LONDON,SUSCEP,DIA2SO,ZFS2EL,
-     &                  DDFOCK,IXPAB,IXPCD)
+     &                  DDFOCK,SPNORB,IXPAB,IXPCD,IFCTYP)
             IF (TKTIME) THEN
                CALL GETTIM(TIMEND,DUMTIM)
                TINTEX = TINTEX + TIMEND - TIMSTR
@@ -4268,21 +4284,10 @@ C
 C
 C     Spin-orbit integrals
 C
-      ELSE IF (ITYPE .EQ. -2) THEN
-#ifndef olavv
-         IRPXYZ = IBTXOR(ISYMAX(1,1),IBTXOR(ISYMAX(2,1),ISYMAX(3,1)))
-         DO 300 ICOOR = 1, 3
-            DOPREP(IBTXOR(ISYMAX(ICOOR,1),IRPXYZ)) = .TRUE.
-  300    CONTINUE
-#else /* olavv */
-C        IRPXYZ = IBTXOR(ISYMAX(1,1),IBTXOR(ISYMAX(2,1),ISYMAX(3,1)))
-C        DO 300 ICOOR = 1, 3
-C           DOPREP(IBTXOR(ISYMAX(ICOOR,1),IRPXYZ)) = .TRUE.
-C 300    CONTINUE
+      ELSE IF (ITYPE .EQ. -2 .OR. ITYPE .EQ. -20) THEN
          DOPREP(ISYMAX(1,2)) = .TRUE.
          DOPREP(ISYMAX(2,2)) = .TRUE.
          DOPREP(ISYMAX(3,2)) = .TRUE.
-#endif /* olavv */
 C
 C     Direct calculation of Fock matrix in AO basis
 C
@@ -4460,10 +4465,11 @@ C
 C     f) Spin-orbit integrals
 C     =======================
 C
-      ELSE IF (ITYPE .EQ. -2) THEN
+      ELSE IF (ITYPE .EQ. -2 .OR. ITYPE .EQ. -20) THEN
          SPNORB = .TRUE.
          SQ12EL = .TRUE.
          MAXDER = 1
+         IF (ITYPE.EQ.-20) DDFOCK = .TRUE.
 C
 C     g) Integral distributions
 C     =========================
@@ -4524,7 +4530,7 @@ C
       ELSE IF (ITYPE .EQ. 11) THEN
          MAXDER = 2
          ZFS2EL = .TRUE.
-         SQ12EL = .TRUE.
+         SQ12EL = .FALSE.
 C
 C     x) Error
 C     ========
@@ -4551,7 +4557,7 @@ C
          WRITE (LUPRI,'(A,L5)') ' SOFOCK ', SOFOCK
          WRITE (LUPRI,'(A,L5)') ' SPNORB ', SPNORB
          WRITE (LUPRI,'(A,L5)') ' DIA2SO ', DIA2SO
-         WRITE (LUPRI,'(A,L5)') ' ZFS2EL ', DIA2SO
+         WRITE (LUPRI,'(A,L5)') ' ZFS2EL ', ZFS2EL
          WRITE (LUPRI,'(A,L5)') ' LONDON ', LONDON
          WRITE (LUPRI,'(A,L5)') ' SUSCEP ', SUSCEP
          WRITE (LUPRI,'(A,L5)') ' DISTRI ', DISTRI

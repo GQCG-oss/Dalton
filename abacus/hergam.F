@@ -198,23 +198,3 @@ C
   100 CONTINUE
       RETURN
       END
-C  /* Deck lmnval */
-      SUBROUTINE LMNVAL(NHKTA,KHKTA,LVALUE,MVALUE,NVALUE)
-C
-C     tuh March 87
-C
-#include <implicit.h>
-#include <maxmom.h>
-#include <xyzpow.h>
-      DIMENSION LVALUE(KHKTA), MVALUE(KHKTA), NVALUE(KHKTA)
-#include <ibtfun.h>
-C
-      ICOMP = 0
-      DO 100 I = 1, KHKTA
-         ICOMP = ICOMP + 1
-         LVALUE(ICOMP) = NHKTA - ISTEP(I)
-         MVALUE(ICOMP) = MVAL(I)
-         NVALUE(ICOMP) = NVAL(I)
-  100 CONTINUE
-      RETURN
-      END

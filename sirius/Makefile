@@ -35,12 +35,12 @@ libsirius.a : $(F_OBJS)
 # sirtra.o has to be compiled without less optimization under HP-UX
 
 sirtra.o: sirtra.F
-	$(F77) $(INCLUDE_DIR) $(CPP_FLAGS) $(SAFEOPTFLAGS) -c $*.F
+	$(F77) $(INCLUDES) $(CPPFLAGS) $(SAFEFFLAGS) -c sirtra.F
 
 clean : 
 	$(RM) -f *.o *~ *.lst *.i *.L i.*.f v.i.*.f *.a
 
 depend:
-	../tools/check_depend $(INCLUDE_DIR) > Makefile.depend
+	../tools/check_depend $(INCLUDES) > Makefile.depend
 
 include Makefile.depend

@@ -522,6 +522,8 @@ C
       MAXFCK = 0
       MXHFMA = 15
       MXHFMI = 12
+      HSROHF = .FALSE.
+      CALL IZERO(NROHF,8)
 C 960625-hjaaj: NISHT and NACTEL used in MOLCHR in
 C               ICHRG = ICHRGNU - (2*NISHT+NACTEL)
       NISHT  = 0
@@ -530,6 +532,7 @@ C               ICHRG = ICHRGNU - (2*NISHT+NACTEL)
       NACTEL = -1
       NRHFEL = ICHRG - KCHARG
       INIOCC = -1
+      DIISMETHOD = DIMDIIS
       IF (NRHFEL .GT. 0) THEN
          AUTOCC = .TRUE.
       ELSE
@@ -847,7 +850,16 @@ C
             NASH(LSYM) = 1
             NASHT  = 1
             NACTEL = 1
-         ELSE
+         ELSE IF (HSROHF) THEN
+            LSYM = 1
+            DO ISYM = 2, NSYM
+               IF (MOD(NROHF(ISYM),2).EQ.1) LSYM = MULD2H(LSYM,ISYM)
+            END DO
+            NASHT = ISUM(NSYM,NROHF,1)
+            ISPIN = NASHT+1
+            NACTEL = NASHT
+            CALL ICOPY(8,NROHF,1,NASH,1)
+         ELSE  
             LSYM   = 1
             ISPIN  = 1
             NASHT  = 0
@@ -911,6 +923,7 @@ C        ... include (ii/aa) and (ia/ia) for orbital diagonal
 C        ... exclude (ii/aa) and (ia/ia) for orbital diagonal
             ITRLVL = 3
          END IF
+	 IF (DONEVPT) ITRLVL=4
       END IF
 C
 C     Set print parameters in /INFTRA/ for TRACTL
@@ -1267,7 +1280,16 @@ C
             NASH(LSYM) = 1
             NASHT  = 1
             NACTEL = 1
-         ELSE
+         ELSE IF (HSROHF) THEN
+            LSYM = 1
+            DO ISYM = 2, NSYM
+               IF (MOD(NROHF(ISYM),2).EQ.1) LSYM = MULD2H(LSYM,ISYM)
+            END DO
+            NASHT = ISUM(NSYM,NROHF,1)
+            ISPIN = NASHT+1
+            NACTEL = NASHT
+            CALL ICOPY(8,NROHF,1,NASH,1)
+         ELSE 
             LSYM   = 1
             ISPIN  = 1
             NASHT  = 0
@@ -1801,8 +1823,7 @@ C *AUXILIARY (and misspelled *AUXILLIARY for backwards compatibility)
      &       'CC_INP error: NSYM from SIRIFC .ne. NSYM in this run')
        END IF
        GOTO 910
-C2900  CALL DFTINP(WORD,INPERR,ALLOPT)  ! TODO when merge with qr-fast-dft
- 2900  CALL SCFINP(WORD,INPERR,ALLOPT)
+ 2900  CALL DFTINP(WORD,INPERR,ALLOPT)
        GO TO 910
  3000  CALL NEVPT2INP(WORD,INPERR,ALLOPT)
        GO TO 910
@@ -2093,7 +2114,7 @@ C todo      INPERR = INPERR + 1 ! remove comment when DFT_GETFUNC ready
             WORD = TITLIN(1:7)
             GO TO 1101
          END IF
-C TODO   CALL DFT_GETFUNC(TITLIN,INPERR)
+         CALL DFTgetFunc(TITLIN,INPERR)
       GO TO 100
 C
 C *** Option NEW NEVPT2
@@ -2373,7 +2394,7 @@ C 13-May-1995 K.Ruud, added keyword .ELECTRONS.
 C 1999 Helgaker, DFT input added 
 C
 #include <implicit.h>
-      PARAMETER (NTABLE = 42)
+      PARAMETER (NTABLE = 25)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      *          REWORD*12
@@ -2401,19 +2422,16 @@ C
 #include <dfterg.h>
 #include <dftacb.h>
 C
-      LOGICAL NODIIS,SET,ELECTR
+      LOGICAL NODIIS,SET,ELECTR, LDUMMY
       SAVE SET,ELECTR
       DATA SET,ELECTR /2*.FALSE./
+      CHARACTER*80 LINE
 C
       DATA TABLE /'.DOUBLY','.THRESH','.FOCK I','.H1VIRT','.NOQCSC',
      *            '.PRINT ','.OPEN S','.MAX MA','.MAX MI','.NONCAN',
      *            '.FROZEN','.DIRFOC','.NODIIS','.MAX DI','.C2DIIS',
-     *            '.MAX ER','XXXXXXX','.COREHO','.CORERE','.HF OCC',
-     *            '.ELECTR','.AUTOCC','.FC MVO','.HFXFAC','.LDA   ',
-     *            '.BLYP  ','.B3LYP ','.FROMVX','.WAH   ','.DFTWEI',
-     *            '.DFTAC ','.DFTHES','.DFTTHR','.DFTELS','.RADINT',
-     *            '.ANGINT','.ANGMIN','.NOPRUN','.VWN3  ','.VWNT5 ',
-     *            '.KT1   ','.KT2   '/
+     *            '.MAX ER','.DDSCF ','.COREHO','.CORERE','.HF OCC',
+     *            '.ELECTR','.AUTOCC','.FC MVO','.HSROHF','.EDIIS '/
 C
 C     ***** PROCESS INPUT FOR SCFINP *****
 C
@@ -2439,9 +2457,7 @@ C
                IF (TABLE(II) .EQ. WORD) THEN
                   GO TO (101,102,103,104,105,106,107,108,109,110,
      &                   111,112,113,114,115,116,117,118,119,120,
-     &                   121,122,123,124,125,126,127,128,129,130,
-     &                   131,132,133,134,135,136,137,138,139,140,
-     &                   141,142),II
+     &                   121,122,123,124,125),II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -2550,7 +2566,7 @@ C *** Option 14 >MAX DI< Max. number of DIIS iterations
       GO TO 100
 C
 C *** Option 15 >C2DIIS< Use Sellers C2-DIIS algorithm for DIIS
-  115 FLAG(22) = .TRUE.
+  115 DIISMETHOD = DIMC2DIIS
       GO TO 100
 C
 C *** Option 16 >MAX ER< Max. number of DIIS error vectors
@@ -2605,133 +2621,12 @@ C     Reference: C.W. Bauschlicher, JCP 72 (1980) 880.
       END IF
       FCVORB = .TRUE.
       GO TO 100
-C
-C     DFT input
-C
-  124 CONTINUE
-      READ(LUCMD,*) HFXFAC
-      DFTADD = .TRUE.
-      DFTRUN = .TRUE.
-      GO TO 100
-C
-  125 CONTINUE
-      DFTTYP = 'LDA   '
-      DFTADD = .TRUE.
-      DFTRUN = .TRUE.
-      WDFTX  = D1
-      WDFTB  = D0
-      WDFTC  = D1
-      WDFTL  = D0
-      HFXFAC = D0
-      GO TO 100
-  126 CONTINUE
-      DFTTYP = 'BLYP  '
-      DFTADD = .TRUE.
-      DFTRUN = .TRUE.
-      WDFTX  = D1
-      WDFTB  = D1
-      WDFTC  = D0
-      WDFTL  = D1
-      HFXFAC = D0
-      GO TO 100
-  127 CONTINUE
-      DFTTYP = 'B3LYP '
-      DFTADD = .TRUE.
-      DFTRUN = .TRUE.
-      WDFTX  = 0.80D0
-      WDFTB  = 0.72D0
-      WDFTL  = 0.81D0
-      WDFTC  = D1 - WDFTL
-      HFXFAC = D1 - WDFTX
-      GO TO 100
-  128 CONTINUE
-      DFTPOT = .TRUE.
-      GO TO 100
-  129 CONTINUE
-      DFTTYP = 'WAH   '
-      DFTORD = .TRUE.
-      DFTADD = .TRUE.
-      DFTRUN = .TRUE.
-      WDFTX  = 0.95D0
-      WDFTB  = 0.72D0
-      WDFTL  = 0.81D0
-      WDFTC  = D1 - WDFTL
-      HFXFAC = D1 - WDFTX
-      GO TO 100
-  130 CONTINUE
-      DFTTYP = 'OWN   '
-      DFTADD = .TRUE.
-      DFTRUN = .TRUE.
-      WDFTX  = 0.95D0
-      WDFTB  = 0.72D0
-      WDFTL  = 0.81D0
-      READ(LUCMD,*) WDFTX
-      WDFTC  = D1 - WDFTL
-      HFXFAC = D1 - WDFTX
-      GO TO 100
- 131  CONTINUE
-      DFTASC = .TRUE.
-      DFTPOT = .TRUE.
-      READ (LUCMD,*) DFTIPT
-C     READ (LUCMD,*) DFTIPT, DFTBR1, DFTBR2
-      GO TO 100
- 132  CONTINUE
-      DFTHES = .TRUE.
-      GO TO 100
- 133  CONTINUE
-      DFTHRS = .TRUE.
-      READ (LUCMD,*) DFTHR0, DFTHRL, DFTHRI
-      GO TO 100
- 134  CONTINUE
-      READ (LUCMD,*) DFTELS 
-      GOTO 100
-C&&& RADINT: Give relative precision of the radial integration
- 135  CONTINUE
-      READ (LUCMD,*) RADINT
-      GO TO 100
-C&&& ANGINT: Give precision of the angular integration.
-C            The integration is exact for spherical harmonics up to
-C            order ANGINT
- 136  CONTINUE
-      READ(LUCMD,*) ANGINT
-      GO TO 100
-C&&& ANGMIN: Set minimum order of Lebedev scheme after pruning
- 137  CONTINUE
-      READ(LUCMD,*) ANGMIN
-      GO TO 100
-C&&& NOPRUN: Turn off pruning of angular grid.
- 138  CONTINUE
-      NOPRUN = .TRUE.
-      GO TO 100
- 139  CONTINUE
-      DOVWN3 = .TRUE.
-      GO TO 100
- 140  CONTINUE
-      DOVWNI = .FALSE.
-      GO TO 100
- 141  CONTINUE
-      DFTTYP = 'KT1   '
-      DFTORD = .TRUE.
-      DFTADD = .TRUE.
-      DFTRUN = .TRUE.
-      WDFTX  = 1.00D0
-      WDFTB  = 0.00D0
-      WDFTL  = 0.00D0
-      WDFTC  = 1.00D0
-      WDFTK  = 1.00D0
-      HFXFAC = 0.00D0 
-      GO TO 100
- 142  CONTINUE
-      DFTTYP = 'KT2   '
-      DFTORD = .TRUE.
-      DFTADD = .TRUE.
-      DFTRUN = .TRUE.
-      WDFTX  = 1.07173D0
-      WDFTB  = 0.00D0
-      WDFTL  = 0.00D0
-      WDFTC  = 0.576727D0
-      WDFTK  = 1.00D0
-      HFXFAC = 0.00D0 
+C High spin orbitals input
+ 124  HSROHF = .TRUE.
+      READ(LUCMD,*) (NROHF(I),I=1,NSYM)
+C *** Option 20 >.EDIIS< ediis method enabled.
+ 125  WRITE(0,*) "EDIIS method enabled"
+      DIISMETHOD = DIMEDIIS
       GO TO 100
 C
  2000 CONTINUE
@@ -4565,7 +4460,6 @@ C
 #include <infpri.h>
 #include <huckel.h>
 #include <gnrinf.h>
-#include <dftcom.h>
 #include <dfterg.h>
 #include <dftacb.h>
 C
@@ -4690,6 +4584,9 @@ C     formulation of NEVPT.
      *      'Type: complete active space calculation (CAS).'
             IF (LUCME.GT.0) WRITE(LUCME,'(A/)')
      *      'Type: complete active space calculation (CAS).'
+           IF ( DONEVPT ) then
+              WRITE (IWUNIT,1050) ' NEVPT2 calculation.'
+           ENDIF
          END IF
       ELSE IF ( DOMP2 ) THEN
          WRITE (IWUNIT,1050) ' Moller-Plesset PT2 calculation.'
@@ -4702,6 +4599,10 @@ C     formulation of NEVPT.
      *            'Restricted, closed shell Hartree-Fock calculation.'
                IF (LUCME.GT.0) WRITE(LUCME,'(A/)')
      *            'Restricted, closed shell Hartree-Fock calculation.'
+            ELSE IF (HSROHF) THEN
+                WRITE(IWUNIT,1050)
+     *         'Restricted, high spin open shell Hartree-Fock'//
+     *         ' calculation.'
             ELSE
                WRITE(IWUNIT,1050)
      *            'Restricted, one open shell Hartree-Fock calculation.'
@@ -4857,48 +4758,8 @@ C
 C
 C     DFT run
 C
-      IF (DFTRUN) THEN
-         WRITE (IWUNIT,'(/,4X,2A)')
-     &        ' This is a DFT calculation of type: ',DFTTYP
-         WRITE (IWUNIT,'(/,4X,A,3F12.6)')
-     &        ' Dirac, Becke, and HF exchange weights:',
-     &          WDFTX,WDFTB,HFXFAC
-         WRITE (IWUNIT,'(4X,A,2F12.6)')
-     &        ' WVN and LYP correlation weights:      ',
-     &          WDFTC, WDFTL
-         IF (DOVWN3) WRITE (IWUNIT,'(/,A)')
-     &        ' The VWN3 functional is used in place of VWN5.'
-         IF (.NOT.DOVWNI) WRITE (IWUNIT,'(/,A)')
-     &        ' For triplet VWN, form V is used in place of form I.'
-         IF (DFTHRS) THEN
-            WRITE (IWUNIT,'(4X,A,17X,3D12.2)')
-     &        ' Redefined thresholds:', DFTHR0, DFTHRL, DFTHRI 
-         ELSE
-            WRITE (IWUNIT,'(4X,A,17X,3D12.2)')
-     &        ' Default thresholds:  ', DFTHR0, DFTHRL, DFTHRI 
-         END IF
-         IF (DFTHRS) THEN
-            WRITE (IWUNIT,'(4X,A,17X,3D12.2)')
-     &        ' Redefined threshold for number of electrons: ', DFTELS 
-         ELSE
-            WRITE (IWUNIT,'(4X,A,17X,3D12.2)')
-     &        ' Default threshold for number of electrons:   ', DFTELS 
-         END IF
-         WRITE (IWUNIT,'(4X,A,E10.2,I4)') ' DFT quadrature accuracy:',
-     &        RADINT,ANGINT
-         IF (DFTPOT) WRITE (IWUNIT,'(/,A)')
-     &        ' Kohn-Sham matrix calculated from potential.'
-         IF (DFTASC) THEN
-            WRITE (IWUNIT,'(/,4X,A)') ' Asymptotic correction applied'
-            WRITE (IWUNIT,'(10X,A,F10.5)')
-     &        ' Ionization potential used: ', DFTIPT      
-            WRITE (IWUNIT,'(10X,A,2F10.5)')
-     &        ' Radius factors:            ', DFTBR1, DFTBR2      
-         END IF 
-         IF (DFTHES) THEN
-            WRITE (IWUNIT,'(/,4X,A)') 
-     &        ' DFT electronic Hessian constructed.'
-         END IF
+      IF (DODFT) THEN
+         CALL DFTREPORT
       END IF
 C
 C ***** Orbital specifications *****
@@ -4919,7 +4780,8 @@ C
          WRITE(IWUNIT,1400) (NSSH(I),I=1,NSYM)
       ELSE IF (.NOT.AUTOCC) THEN
          WRITE(IWUNIT,1550) (NRHF(I),I=1,NSYM)
-         IF (IOPRHF .NE. 0) WRITE (IWUNIT,1555) (NASH(I),I=1,NSYM)
+         IF (IOPRHF .NE. 0 .OR. HSROHF) 
+     *            WRITE (IWUNIT,1555) (NASH(I),I=1,NSYM)
          WRITE(IWUNIT,1400) (NSSH(I),I=1,NSYM)
       END IF
       WRITE(IWUNIT,1450) (NORB(I),I=1,NSYM)

@@ -368,10 +368,10 @@ Point group: D2
  ************************************************************************
 
 
- >>> Time used in ONEDRV is   0.00 seconds
+ >>> Time used in ONEDRV is   0.01 seconds
 
 
- >>> Time used in OVERLA is   0.01 seconds
+ >>> Time used in OVERLA is   0.00 seconds
 
 
  Number of two-electron integrals written:        3690 ( 25.1% )

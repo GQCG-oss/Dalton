@@ -1,0 +1,116 @@
+#!/bin/sh
+# test function definitions for dalton
+
+# check_gen_input:
+# generate several input and description files.
+# $1 - test name
+# $2 - test info.
+# $3 - molecule file.
+# $4 - dalton file.
+# $5 - list of test check routines.
+check_gen_input() {
+    if [ "$5" = "" ]; then echo "empty test check file. Test $1 broken."; fi
+    echo "$2" > $1.info
+    echo "$3" > $1.mol
+    echo "$4" > $1.dal
+    cat >"$1.check" <<'%EOF%'
+#!/bin/sh
+log=$1
+ERRLIST=""
+. functions || { echo "current dir is not the test dir" ; exit 1; }
+%EOF%
+
+    echo "$5" >> "$1.check"
+    cat >>"$1.check" <<'%EOF%'
+if [ "$ERRLIST" = "" ]; then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo "Failed tests: $ERRLIST"
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+%EOF%
+}
+
+# miscellaneous tests listed here.
+
+# check_hf_energy:
+# $1 - expected energy
+# $2 - max deviation
+check_hf_energy() {
+[ "$2" = "" ] &&  echo "not enough parameters to check_hf_energy."
+awk '/Final    HF energy:/{s=($4<'$1-$2'||$4>'$1+$2'); exit 0;} END{exit (s?1:0)}' $log || ERRLIST="$ERRLIST; HF energy"
+}
+
+# check_dipole:
+# $1 - expected dipole moment
+# $2 - max deviation
+check_dipole() {
+[ "$2" = "" ] &&  echo "not enough parameters to check_dipole."
+awk '/Dipole moment$/{getline; getline;getline;s=($1<'$1-$2'||$1>'$1+$2'); exit 0;}END{exit (s?1:0)}' $log || ERRLIST="$ERRLIST; Dipole moment"
+}
+
+# check_dip_components:
+# check components of the first dipole moment encountered in the 
+# log file.
+# $1 - x component
+# $2 - y component
+# $3 - z component
+# $4 - max deviation
+check_dip_components() {
+[ "$4" = "" ] &&  echo "not enough parameters to check_dip_components."
+awk 'function e(a,b,r){return(a-b>r||a-b<-r)}
+/Dipole moment components/{
+for(i=0;i<5;i++)getline; 
+if (s=e($3,'$1,$4')) exit 1;getline;
+if (s=e($3,'$2,$4')) exit 1;getline;
+if (s=e($3,'$3,$4')) exit 1;exit 0}
+END{exit (s?1:0)}' $log || ERRLIST="$ERRLIST; Dipole moment"
+}
+
+# check_polarizability:
+# check linear response polarizability
+# $1 - value of X component
+# $2 - value of Y component
+# $3 - value of Z component
+# $4 - max deviation.
+check_polarizabilities() {
+[ "$4" = "" ] &&  echo "not enough parameters to check_polarizabilities."
+awk 'function e(a,b,r){return(a-b>r||a-b<-r)} BEGIN {s=0}
+/^@XDIPLEN/ {if(!e($3,'$1,$4'))s++}
+/^@YDIPLEN/ {if(!e($3,'$2,$4'))s++}
+/^@ZDIPLEN/ {if(!e($3,'$3,$4'))s++}
+END{exit (s==3?0:1) }' $log || ERRLIST="$ERRLIST; Polarizabilities"
+}
+
+# check_hyperpolarizability:
+# check quadratic response/hyperpolarizability
+# $1 - value of frequency B
+# $2 - value of frequency C
+# $3 - combinations of operators, eg. 'X;Y,Y'
+# $4 - expected value
+# $5 - max deviation.
+check_hyperpolarizabilities() {
+[ "$5" = "" ] &&  echo "not enough parameters to check_hyperpolarizabilities."
+awk 'function e(a,b,r){return(a-b>r||a-b<-r)} BEGIN {s=0}
+/^@ B-freq/ && $4=='$1' && $7=='$2' && $8=="beta('$3')"{if(!e($10,'$4,$5'))s++}
+END{exit (s==1?0:1) }' $log || ERRLIST="$ERRLIST; Hyperpolarizabilities"
+}
+
+# check_general_lr:
+# check linear response property P=<<X,Y>>
+# $1 - label of X
+# $2 - label of Y
+# $3 - expected value of P
+# $4 - max deviation.
+check_general_lr() {
+[ "$4" = "" ] &&  echo "not enough parameters to check_general_lr."
+awk 'function e(a,b,r){return(a-b>r||a-b<-r)} BEGIN {s=0}
+/^@'$1'.*'$2'/ { value=substr($0,21)
+                 gsub("D","E",value);
+                 if(!e(value,'$3','$4')) s++; 
+                 else { print substr($0,21) " " '$3'; }
+               }
+END{exit (s==1?0:1) }' $log || ERRLIST="$ERRLIST; Linear response"
+}

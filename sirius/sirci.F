@@ -65,9 +65,9 @@ C
       CALL MEMGET('REAL',KECI  ,NCROOT,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KICROO,NCROOT,WORK,KFREE,LFREE)
 C
-      IF (NASHT .GT. 1)
-     *   CALL GETCIX(WORK(KCINDX),LSYM,LSYM,WORK(KFREE),LFREE,0)
-      CALL READMO(WORK(KCMO),9,WORK(KFREE),LFREE)
+      IF (NASHT .GT. 1 .AND. .NOT. HSROHF)
+     *   CALL GETCIX(WORK(KCINDX),LSYM,LSYM,WORK(KW1),LW1,0)
+      CALL READMO(WORK(KCMO),9,WORK(KW1),LW1)
 C
       CALL CICTL(ICIST,NCROOT,MXCIMA,THRCIX,WORK(KCMO),WORK(KCINDX),
      *           WORK(KECI),ICONV,WORK(KICROO),WORK(KFREE),LFREE)
@@ -254,7 +254,11 @@ C
       JCONV  = NCROOT
       TIMITR = SECOND()
       IF (.NOT. FLAG(14)) THEN
+	 IF (DONEVPT) THEN
+         CALL TRACTL(4,CMO,WRK,LWRK ,MWORK)
+	 ELSE
          CALL TRACTL(0,CMO,WRK,LWRK ,MWORK)
+	 ENDIF
 C        CALL TRACTL(ITRLVL,CMO,WRK,LWRK ,MWORK)
          FLAG(14) = .TRUE.
       END IF
@@ -969,6 +973,7 @@ C Output:
 C  SCVECS; will start at WRK(1) on output; followed by
 C
 #include <implicit.h>
+#include <infvar.h>
       DIMENSION BCVECS(NCONF,*), FCAC(*), H2AC(*)
       DIMENSION INDXCI(*),WRK(LFREE)
 C
@@ -981,7 +986,6 @@ C   INFVAR : NCONF
 C CBGETDIS : DISTYP,IADINT,IADH2
 C
 #include <maxorb.h>
-#include <infvar.h>
 #include <cbgetdis.h>
 C
       CALL QENTER('CILIN ')
@@ -1562,6 +1566,7 @@ C Scratch:
 C  CPREV(*),    scratch array for old vectors on LUCVEC
 C
 #include <implicit.h>
+#include <infvar.h>
       DIMENSION KCROOT(*), CVEC(NCONF,*), CPREV(*)
 C
       PARAMETER ( THRRND=1.D-2, THRTT=1.D-4, D1=1.0D0 )
@@ -1571,7 +1576,6 @@ C   INFVAR : NCONF
 C
 #include <maxorb.h>
 #include <priunit.h>
-#include <infvar.h>
 #include <infpri.h>
 C
 C
@@ -1836,6 +1840,7 @@ C         dimension: NCONF and NREDCI*(NREDCI+1)/2, rsp.
 C  WRK, real scratch array for BIG and JBIG in JACO, dim: 2*NREDCI
 C
 #include <implicit.h>
+#include <infvar.h>
       DIMENSION CVECS(*), SVECS(NCONF,*)
       DIMENSION REDCI(*), EVEC(NREDCI,*),EVAL(*), WRK(LWRK)
 C
@@ -1845,7 +1850,6 @@ C   INFIND : IROW(*)
 C
 #include <maxash.h>
 #include <maxorb.h>
-#include <infvar.h>
 #include <infinp.h>
 #include <infind.h>
 #include <inftap.h>

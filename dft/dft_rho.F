@@ -1,0 +1,456 @@
+C
+C...   Copyright (c) 2001 by the authors of Dalton (see below).
+C...   All Rights Reserved.
+C...
+C...   The source code in this file is part of
+C...   "Dalton, a molecular electronic structure program, Release 1.2
+C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+C...   and O. Vahtras"
+C...
+C...   This source code is provided under a written licence and may be
+C...   used, copied, transmitted, or stored only in accord with that
+C...   written licence.
+C...
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
+C...   This means also that persons (e.g. post-docs) leaving the research
+C...   group of the licence holder may not take any part of Dalton,
+C...   including modified files, with him/her, unless that person has
+C...   obtained his/her own licence.
+C...
+C...   For questions concerning this copyright write to:
+C...      dalton-admin@kjemi.uio.no
+C...
+C...   For information on how to get a licence see:
+C...      http://www.kjemi.uio.no/software/dalton/dalton.html
+C
+#include <single.h>
+C
+C  /* Deck getrho */
+      SUBROUTINE GETRHO(DMAT,GSO,RHO,DMAGAO,DFTHRI)
+C
+C     T. Helgaker feb 01
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <maxorb.h>
+#include <mxcent.h>
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0,
+     &           DP5 = 0.5D0)
+C
+      DIMENSION DMAT(NBAST,NBAST), GSO(NBAST,NTYPSO), DMAGAO(NBAST)
+C
+#include <dftinf.h>
+#include <symmet.h>
+#include <inforb.h>
+C
+C
+      IF (NSYM.EQ.1) THEN
+         CALL DSYMV('U',NBAST,D1,DMAT,NBAST,GSO,1,D0,DMAGAO,1)
+      ELSE
+         CALL DZERO(DMAGAO,NBAST)
+         DO ISYM = 1, NSYM
+            ISTR = IBAS(ISYM) + 1
+            IEND = IBAS(ISYM) + NBAS(ISYM)
+            DO J = ISTR, IEND 
+               GSOJ = GSO(J,1)
+               IF (DABS(GSOJ).GT.DFTHRI) THEN
+                  DO I = ISTR, IEND 
+                     DMAGAO(I) = DMAGAO(I) + GSOJ*DMAT(I,J)
+                  END DO
+               END IF
+            END DO
+         END DO
+      END IF
+      RHO   = DDOT(NBAST,GSO,1,DMAGAO,1)
+      RETURN
+      END      
+C /* Deck dftrhh */
+      SUBROUTINE DFTRHH(DMAT,DMAGAO,GAO,GAO1,GAO2,RH,RHOLAP,RHOGHG)
+C
+C     T. Helgaker oct 2000
+C
+#include <implicit.h>
+      PARAMETER (D0 = 0.0D0, D2 = 2.0D0) 
+C
+#include <inforb.h>
+C
+      DIMENSION DMAT(NBAST,NBAST), DMAGAO(NBAST),RH(3),
+     &          GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6)
+C    GAO2 projected onto DMGAO
+      DIMENSION GAO2PR(6)
+C
+      RXX = D0
+      RXY = D0
+      RXZ = D0
+      RYY = D0
+      RYZ = D0
+      RZZ = D0
+      DO J = 1, NBAST
+         GJX  = GAO1(J,1)
+         GJY  = GAO1(J,2)
+         GJZ  = GAO1(J,3)
+         DGIX = DDOT(NBAST,DMAT(1,J),1,GAO1(1,1),1)
+         DGIY = DDOT(NBAST,DMAT(1,J),1,GAO1(1,2),1)
+         DGIZ = DDOT(NBAST,DMAT(1,J),1,GAO1(1,3),1)
+         RXX = RXX + D2*GJX*DGIX
+         RXY = RXY + DGIX*GJY + DGIY*GJX
+         RXZ = RXZ + DGIX*GJZ + DGIZ*GJX
+         RYY = RYY + D2*GJY*DGIY
+         RYZ = RYZ + DGIY*GJZ + DGIZ*GJY
+         RZZ = RZZ + D2*GJZ*DGIZ
+      END DO
+      CALL DGEMV('T',NBAST,6,D2,GAO2,NBAST,DMAGAO,1,0D0,GAO2PR,1)
+      RXX = RXX + GAO2PR(1)
+      RXY = RXY + GAO2PR(2)
+      RXZ = RXZ + GAO2PR(3)
+      RYY = RYY + GAO2PR(4)
+      RYZ = RYZ + GAO2PR(5)
+      RZZ = RZZ + GAO2PR(6)
+      RHOLAP = RXX + RYY + RZZ
+      RHOGHG = RH(1)*RXX*RH(1) + RH(2)*RYY*RH(2) + RH(3)*RZZ*RH(3)
+     &   + D2*(RH(1)*RXY*RH(2) + RH(1)*RXZ*RH(3) + RH(2)*RYZ*RH(3))
+      END
+c
+c ===================================================================
+c BLOCKED VERSION OF PROPERTY EVALUATION ROUTINES
+c Written by Pawel Salek, closely based on the above.
+c ===================================================================
+      SUBROUTINE getrho_blocked_lda(DMAT,GAO,NBLOCKS,IBLOCKS,LDAIB,
+     &                              TMP,NVCLEN,RHO)
+c     computes  <o|dmat|o'>
+c     i.e rho_a where dmat is a density matrix.
+#include <implicit.h>
+#include <inforb.h>
+#include <dftinf.h>
+#include <maxorb.h>
+#include <shells.h>
+      DIMENSION DMAT(NBAST,NBAST), GAO(NVCLEN,NBAST,NTYPSO)
+      DIMENSION NBLOCKS(NSYM), IBLOCKS(2,LDAIB,NSYM), RHO(NVCLEN)
+      DIMENSION TMP(NVCLEN,NBAST)
+#include <priunit.h>
+c
+      CALL zeroorbs(TMP,NBLOCKS,IBLOCKS,LDAIB,NVCLEN)
+c      CALL DZERO(TMP,NVCLEN*NBAST)
+      DO ISYM=1,NSYM
+c         print *, "symmetry ", ISYM, " Has ", NBLOCKS(ISYM)," BLOCKS"
+         DO IBL=1, NBLOCKS(ISYM)
+c         print *,"block ", IBL,IBLOCKS(1,IBL,ISYM),IBLOCKS(2,IBL,ISYM)
+         DO IDX=IBLOCKS(1,IBL,ISYM), IBLOCKS(2,IBL,ISYM)
+            DO JBL=1, NBLOCKS(ISYM)
+            JTOP = MIN(IBLOCKS(2,JBL,ISYM),IDX-1)
+            DO JDX=IBLOCKS(1,JBL,ISYM), JTOP
+               DO K = 1, NVCLEN
+                  TMP(K,JDX) = TMP(K,JDX) + 2*GAO(K,IDX,1)*DMAT(IDX,JDX)
+               END DO
+            END DO
+            END DO
+            DO K = 1, NVCLEN
+               TMP(K,IDX) = TMP(K,IDX) + GAO(K,IDX,1)*DMAT(IDX,IDX)
+            END DO
+         END DO
+         END DO
+      END DO
+      call dzero(RHO, NVCLEN)
+      DO ISYM=1,NSYM
+         DO IBL=1, NBLOCKS(ISYM)
+         DO IDX=IBLOCKS(1,IBL,ISYM), IBLOCKS(2,IBL,ISYM)
+            DO K = 1, NVCLEN
+               RHO(K) = RHO(K) + GAO(K,IDX,1)*TMP(K,IDX)
+            END DO
+         END DO
+         END DO
+      END DO
+      END
+c      getexp_blocked_lda does almost the same thing as getrho
+c     but it does not use the simplification that the DMAT is symmetric.
+      SUBROUTINE getexp_blocked_lda(IDSYM,DMAT,GAO,NBLOCKS,IBLOCKS,
+     &                              LDAIB,TMP,NVCLEN,RHO)
+#include <implicit.h>
+#include <inforb.h>
+#include <dftinf.h>
+      DIMENSION DMAT(NBAST,NBAST), GAO(NVCLEN,NBAST,NTYPSO)
+      DIMENSION NBLOCKS(NSYM), IBLOCKS(2,LDAIB,NSYM), RHO(NVCLEN)
+      DIMENSION TMP(NVCLEN,NBAST)
+#include <priunit.h>
+c
+      CALL zeroorbs(TMP,NBLOCKS,IBLOCKS,LDAIB,NVCLEN)
+c     CALL DZERO(TMP,NVCLEN*NBAST)
+      DO ISYM = 1, NSYM
+      DO IBL=1, NBLOCKS(ISYM)
+      DO IDX=IBLOCKS(1,IBL,ISYM), IBLOCKS(2,IBL,ISYM)
+         JSYM = MULD2H(ISYM,IDSYM)
+         DO JBL=1, NBLOCKS(JSYM)
+         DO JDX=IBLOCKS(1,JBL,JSYM), IBLOCKS(2,JBL,JSYM)
+            DO K = 1, NVCLEN
+               TMP(K,JDX) = TMP(K,JDX) + GAO(K,IDX,1)*DMAT(IDX,JDX)
+            END DO
+         END DO
+         END DO
+      END DO
+      END DO
+      END DO
+      DO K = 1, NVCLEN
+         RHO(K) = 0D0
+      END DO
+      DO ISYM = 1, NSYM
+      DO IBL=1, NBLOCKS(ISYM)
+      DO IDX=IBLOCKS(1,IBL,ISYM), IBLOCKS(2,IBL,ISYM)
+         DO K = 1, NVCLEN
+            RHO(K) = RHO(K) + GAO(K,IDX,1)*TMP(K,IDX)
+         END DO
+      END DO
+      END DO
+      END DO
+      END
+      SUBROUTINE getrho_blocked_gga(DMAT,GAO,NBLOCKS,IBLOCKS,LDAIB,
+     &                              TMP,NVCLEN,RHO,GRAD)
+c     computes  <o|dmat|o'>
+c     i.e rho_a where dmat is a density matrix (it can be a total
+c     density end then one will get total density, or it can be an
+c     alpha/beta density.
+c     assert(NTYPSO>=NRHO)
+#include <implicit.h>
+#include <inforb.h>
+#include <dftinf.h>
+      DIMENSION DMAT(NBAST,NBAST), GAO(NVCLEN,NBAST,NTYPSO)
+      DIMENSION NBLOCKS(NSYM),IBLOCKS(2,LDAIB,NSYM)
+      DIMENSION RHO(NVCLEN), GRAD(3,NVCLEN),TMP(NVCLEN,NBAST)
+#include <priunit.h>
+c
+      CALL zeroorbs(TMP,NBLOCKS,IBLOCKS,LDAIB,NVCLEN)
+c      CALL DZERO(TMP,NVCLEN*NBAST)
+      DO ISYM = 1, NSYM
+      DO IBL=1, NBLOCKS(ISYM)
+      DO IDX=IBLOCKS(1,IBL,ISYM), IBLOCKS(2,IBL,ISYM)
+         DO JBL=1, NBLOCKS(ISYM)
+         DO JDX=IBLOCKS(1,JBL,ISYM), IBLOCKS(2,JBL,ISYM)
+            DO K = 1, NVCLEN
+               TMP(K,JDX) = TMP(K,JDX) + GAO(K,IDX,1)*DMAT(IDX,JDX)
+            END DO
+         END DO
+         END DO
+      END DO
+      END DO
+      END DO
+      call dzero(RHO, NVCLEN)
+      call dzero(GRAD, 3*NVCLEN)
+      DO ISYM = 1, NSYM
+      DO IBL=1, NBLOCKS(ISYM)
+      DO IDX=IBLOCKS(1,IBL,ISYM), IBLOCKS(2,IBL,ISYM)
+         DO K = 1, NVCLEN
+            RHO(K)    = RHO(K)    + GAO(K,IDX,1)*TMP(K,IDX)
+            GRAD(1,K) = GRAD(1,K) + 2*GAO(K,IDX,2)*TMP(K,IDX)
+            GRAD(2,K) = GRAD(2,K) + 2*GAO(K,IDX,3)*TMP(K,IDX)
+            GRAD(3,K) = GRAD(3,K) + 2*GAO(K,IDX,4)*TMP(K,IDX)
+         END DO
+      END DO
+      END DO
+      END DO
+      END
+c
+      SUBROUTINE getexp_blocked_gga(IDSYM,DMAT,GAO,NBLOCKS,IBLOCKS,
+     &                              LDAIB,TMP,NVCLEN,GRAD)
+c     very similar to getrho_blocked_gga but the computed values
+c     are symmetrized i.e it computes <o|dmat|o'> + <o'|dmat|o>
+c     GRAD(1,:) contains rho.
+c     GRAD(2:4,:) contains gradient components.
+c     assert(NTYPSO>=NRHO)
+#include <implicit.h>
+#include <inforb.h>
+#include <dftinf.h>
+      DIMENSION DMAT(NBAST,NBAST), GAO(NVCLEN,NBAST,NTYPSO)
+      DIMENSION NBLOCKS(NSYM),IBLOCKS(2,LDAIB,NSYM), GRAD(4,NVCLEN)
+      DIMENSION TMP(NVCLEN,NBAST)
+#include <priunit.h>
+c
+      CALL zeroorbs(TMP,NBLOCKS,IBLOCKS,LDAIB,NVCLEN)
+c      CALL DZERO(TMP,NVCLEN*NBAST)
+      DO ISYM = 1, NSYM
+      DO IBL=1, NBLOCKS(ISYM)
+      DO IDX=IBLOCKS(1,IBL,ISYM), IBLOCKS(2,IBL,ISYM)
+         JSYM = MULD2H(ISYM,IDSYM)
+         DO JBL=1, NBLOCKS(JSYM)
+         DO JDX=IBLOCKS(1,JBL,JSYM), IBLOCKS(2,JBL,JSYM)
+            DO K = 1, NVCLEN
+               TMP(K,JDX) = TMP(K,JDX) +
+     &              GAO(K,IDX,1)*DMAT(IDX,JDX) +
+     &              GAO(K,IDX,1)*DMAT(JDX,IDX)
+            END DO
+         END DO
+         END DO
+      END DO
+      END DO
+      END DO
+      call dzero(GRAD, 4*NVCLEN)
+      DO ISYM = 1, NSYM
+      DO IBL=1, NBLOCKS(ISYM)
+      DO IDX=IBLOCKS(1,IBL,ISYM), IBLOCKS(2,IBL,ISYM)
+         DO K = 1, NVCLEN
+            GRAD(1,K) = GRAD(1,K) + GAO(K,IDX,1)*TMP(K,IDX)*0.5
+            GRAD(2,K) = GRAD(2,K) + GAO(K,IDX,2)*TMP(K,IDX)
+            GRAD(3,K) = GRAD(3,K) + GAO(K,IDX,3)*TMP(K,IDX)
+            GRAD(4,K) = GRAD(4,K) + GAO(K,IDX,4)*TMP(K,IDX)
+         END DO
+      END DO
+      END DO
+      END DO
+      END
+c
+      SUBROUTINE GETBLOCKS(X,Y,Z,CELLSZ,RSHEL2,NBLCNT,IBLCKS)
+c     get blocks of active SHELLS in cube of CELLSZ size centered at
+C     (X,Y,Z).
+c
+c     RSHEL2 - precomputed shell extents (squared).
+C     NBLCNT (output) - number of active blocks
+c     IBLCKS (output) - pairs of (startindex, stopindex)
+c     
+c     symmetry handling takes some effort.
+c
+#include <implicit.h>
+#include <mxcent.h>
+#include <nuclei.h>
+#include <aovec.h>
+#include <maxorb.h>
+#include <primit.h>
+#include <shells.h>
+#include <dftcom.h>
+#include <inforb.h>
+#include <maxaqn.h>
+#include <symmet.h>
+      DIMENSION RSHEL2(KMAX), IBLCKS(2,NBAST)
+      DIMENSION  ISSS(KMAX)
+#include <ibtfun.h>
+#if 0
+      NBLCNT = 1
+      IBLCKS(1,1) = 1
+      IBLCKS(2,1) = KMAX
+      RETURN
+#endif
+      ISHLEN = 0
+      NBLCNT = 0
+      IPREV = -1111
+c     rcell2 should have a prefactor of 0.25
+      RCELL2 = CELLSZ*CELLSZ
+      DO 10 ISHELA=1,KMAX
+         ICENT = NCENT(ISHELA)
+         MULCNT = ISTBNU(ICENT)
+c        
+c        try different symmetry equivalent atoms:
+c        
+         DO ISYMOP = 0, MAXOPR         
+            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+               CORX = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+               CORY = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+               CORZ = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+               PX = X-CORX
+               PY = Y-CORY
+               PZ = Z-CORZ
+               DST2 = MAX(PX*PX,PY*PY,PZ*PZ)
+c              RSHEL2(ISHELA)
+               IF(DST2.LE.RSHEL2(ISHELA)+RCELL2) THEN
+c                 accepted...
+                  IF(ISHELA.NE.IPREV+1) THEN
+                     NBLCNT = NBLCNT + 1
+                     IBLCKS(1,NBLCNT) = ISHELA
+                  END IF
+                  IPREV = ISHELA
+                  IBLCKS(2,NBLCNT) = ISHELA
+                  ISSS(ISHELA) = ISYMOP
+c
+c                 since this shell has been accepted, there is
+c                 no reason to try other symmetry-dependent
+c                 atoms.
+c         print "('shell',2I3,' at ',3F6.2,' rad. ',F6.2,' accepted')",
+c     &        ISHELA,ICENT,CORD(1,ICENT),CORD(2,ICENT),CORD(3,ICENT),
+c     &        SQRT(RSHEL2(ISHELA))
+                  GO TO 10
+               END IF
+            END IF
+         END DO
+c         print "('shell',2I3,' at ',3F6.2,' rad. ',F6.2,' rejected')",
+c     &        ISHELA,ICENT,CORD(1,ICENT),CORD(2,ICENT),CORD(3,ICENT),
+c     &        SQRT(RSHEL2(ISHELA))
+ 10   END DO
+c      print "('cell at:',3F15.5,' blocks:',I3)", X,Y,Z,NBLCNT
+c      print "(8('[',2I3,']'))", ((IBLCKS(I,J),I=1,2),J=1,NBLCNT)
+      END
+c
+      SUBROUTINE GTEXTS(RSHEL2)
+c     get squared extents of all shells as defined by specified
+c     threshold.
+#include <implicit.h>
+#include <aovec.h>
+#include <maxorb.h>
+#include <primit.h>
+#include <shells.h>
+#include <priunit.h>
+#include <dftcom.h>
+cdebug below
+#include <mxcent.h>
+#include <nuclei.h>
+      DIMENSION RSHEL2(KMAX)
+      THLOG = LOG(DFTHRI)
+c     factor 4 works for c20h22-2
+      DO ISHELA=1,KMAX
+         JSTA = JSTRT(ISHELA)
+         RSHEL2(ISHELA) =  0D0
+         NUMCFA = NUMCF(ISHELA)
+         DO IAOS = JSTA+1, JSTA + NUCO(ISHELA)
+            IF(ABS(PRICCF(IAOS,NUMCFA)).GT.0D0) THEN
+               R = (LOG(ABS(PRICCF(IAOS,NUMCFA)))-THLOG)/PRIEXP(IAOS)
+               IF(RSHEL2(ISHELA).LT.R) RSHEL2(ISHELA) = R
+            END IF
+         END DO
+      END DO
+      END
+c
+c     transform shell block indices to orbital block indices.
+c     IORIDX contains preprocessed information about
+c     where given shell begins and ends in given symmetry.
+
+      SUBROUTINE SHLTOORB(NSHLBL,shlblock,NORBBL,orbblock,IORIDX)
+#include <implicit.h>
+#include <inforb.h>
+      INTEGER SHLBLOCK(2,NSHLBL), ORBBLOCK(2,NSHLBL,NSYM)
+      INTEGER IORIDX(2,KMAX,NSYM), NORBBL(NSYM)
+#include <maxorb.h>
+#include <shells.h>
+#include <mxcent.h>
+#include <nuclei.h>
+      ILO = 0
+      IHI = 0
+      DO ISYM = 1, NSYM
+         NORBBL(ISYM) = 0
+         DO I = 1, NSHLBL
+            DO ISHELL = SHLBLOCK(1,I), SHLBLOCK(2,I)
+               ILO = IORIDX(1,ISHELL,ISYM)
+               IF(ILO.NE.0) GO TO 10
+            END DO
+ 10         continue
+            DO ISHELL = SHLBLOCK(2,I), SHLBLOCK(1,I),-1
+               IHI = IORIDX(2,ISHELL,ISYM)
+               IF(IHI.GT.0) GO TO 20
+            END DO
+ 20         continue
+#if 0
+            print '(I2,":shell ",2I4," translated to orbital ",2I4)',
+     &           ISYM, SHLBLOCK(1,I), SHLBLOCK(2,I),ILO,IHI
+#endif
+            IF(ILO.LE.IHI) THEN
+               NORBBL(ISYM) = NORBBL(ISYM) + 1
+               INI = NORBBL(ISYM)
+               ORBBLOCK(1,INI,ISYM) = ILO
+               ORBBLOCK(2,INI,ISYM) = IHI
+            END IF
+         END DO
+      END DO
+      END

@@ -1,0 +1,67 @@
+#!/bin/sh
+
+. functions || { echo "current dir is not the test dir" ; exit 1; }
+
+info="
+   dft_qr_nosym
+   ------------------
+   Molecule:         H2O
+   Wave Functions:   DFT B3LYP / aug-cc-pVDZ
+   Test Purpose:     DFT B3LYP hyperpolarizability test w/ symmetry.
+"
+
+molecule="BASIS
+aug-cc-pVDZ
+Water
+aug-cc-pVDZ basis
+    2    0  X  Z
+        8.    1
+O      .0000   -.2249  0.0000000000
+        1.    2
+H    -1.4523    .8996   .0000000000
+H     1.4523    .8996   .0000000000
+"
+
+dalton="**DALTON INPUT
+.RUN RESPONSE
+.DIRECT
+**INTEGRAL
+.NOSUP
+**WAVE FUNCTIONS
+.HF
+*HF INPUT
+.B3LYP
+.THRESHOLD
+1e-12
+.GRID TYPE
+ADAPT GC2 SSF
+.RADINT
+1e-10
+**RESPONSE
+*QUADRATIC
+.DIPLEN
+.THCLR
+1e-8
+.BFREQ
+2
+0 0.1
+*END OF INPUT
+"
+
+test="
+check_hf_energy -76.407512126030 1e-10
+check_hyperpolarizabilities 0.0 0.0 'X;Y,X'  -16.49830674 1e-6
+check_hyperpolarizabilities 0.0 0.0 'Y;X,X'  -16.49830674 1e-6
+check_hyperpolarizabilities 0.0 0.0 'Y;Y,Y'   -6.45363408 1e-6
+check_hyperpolarizabilities 0.0 0.0 'Y;Z,Z'   -2.44301820 1e-6
+check_hyperpolarizabilities 0.0 0.0 'Z;Z,Y'   -2.44301820 1e-6
+check_hyperpolarizabilities 0.1 0.0 'X;X,Y'  -18.32903362 1e-6
+check_hyperpolarizabilities 0.1 0.0 'X;Y,X'  -18.50413917 1e-6
+check_hyperpolarizabilities 0.1 0.0 'Y;X,X'  -18.50413917 1e-6
+check_hyperpolarizabilities 0.1 0.0 'Y;Y,Y'   -7.97631337 1e-6
+check_hyperpolarizabilities 0.1 0.0 'Y;Z,Z'   -2.74794500 1e-6
+check_hyperpolarizabilities 0.1 0.0 'Z;Y,Z'   -2.74794500 1e-6
+check_hyperpolarizabilities 0.1 0.0 'Z;Z,Y'   -7.98200130 1e-6
+"
+
+check_gen_input "$0" "$info" "$molecule" "$dalton" "$test"

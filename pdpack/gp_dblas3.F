@@ -1,4 +1,3 @@
-#ifndef SYS_T3D
       SUBROUTINE DGEMM ( TRANSA, TRANSB, M, N, K, ALPHA, A, LDA, B, LDB,
      $                   BETA, C, LDC )
 *     .. Scalar Arguments ..
@@ -1960,4 +1959,3 @@
 *     End of DTRSM .
 *
       END
-#endif

@@ -97,9 +97,9 @@ ERROR[3]="HF ENERGY NOT CORRECT"
 CRIT1=`$GREP "O * (0| )\.0000000000 * (0| )\.0000000000 * (0| )\.0000000000" $log | wc -l`
 CRIT2=`$GREP "H1 * 1\.4300000000 * (0| )\.0000000000 * (0| )\.8000000000" $log | wc -l`
 CRIT3=`$GREP "H2 * \-1\.4300000000 * (0| )\.0000000000 * (0| )\.8000000000" $log | wc -l`
-TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[4]=3
-ERROR[4]="GEOMETRY NOT CORRECT"
+TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[2]=3
+ERROR[2]="GEOMETRY NOT CORRECT"
 
 # Gradient
 # O          0.0000000000            0.0000000000            0.1642104624
@@ -131,8 +131,8 @@ CRIT7=`$GREP "6 * \-76\.369895 * (\-0|0| |\-)\.000000 * (0| )\.000012 * 0 * (0| 
 CRIT8=`$GREP "7 * \-76\.369895 * (\-0|0| |\-)\.000000 * (0| )\.000001 * 0 * (0| )\.000000\* * (0| )\.500000 * 0 " $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
-CTRL[7]=8
-ERROR[7]="OPTIMIZATION STEPS NOT CORRECT"
+CTRL[5]=8
+ERROR[5]="OPTIMIZATION STEPS NOT CORRECT"
 
 # Final energy
 CRIT1=`$GREP "Energy at final geometry is * \: * \-76\.369895 a\.u\." $log | wc -l`
@@ -143,7 +143,7 @@ CTRL[8]=3
 ERROR[8]="FINAL ENERGY NOT CORRECT"
 
 PASSED=1
-for i in 1 2 3 4 5 6 7 8 
+for i in 1 2 3 4 5 6
 do 
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo ${ERROR[i]}

@@ -138,15 +138,15 @@ CTRL[7]=3
 ERROR[7]="SHIELDINGS H2 NOT CORRECT"
 
 # Spin spin 
-CRIT1=`$GREP "Isotropic coupling * \: * \-2\.5081 Hz" $log | wc -l`
-CRIT2=`$GREP "Anisotropic coupling * \: * \-36\.6354 Hz" $log | wc -l`
+CRIT1=`$GREP "Isotropic coupling * \: * \-2\.6215 Hz" $log | wc -l`
+CRIT2=`$GREP "Anisotropic coupling * \: * \-36\.7740 Hz" $log | wc -l`
 CRIT3=`$GREP "Asymmetry * \: * (\-0| \-)\.0891" $log | wc -l`
-CRIT4=`$GREP "S parameter * \: * 36\.6838 Hz" $log | wc -l`
-CRIT5=`$GREP "A parameter * \: * 6\.1938 Hz" $log | wc -l`
+CRIT4=`$GREP "S parameter * \: * 36\.8226 Hz" $log | wc -l`
+CRIT5=`$GREP "A parameter * \: * 6\.2015 Hz" $log | wc -l`
 CRIT6=`$GREP "Isotropic DSO contribution\: * \-7\.1975 Hz" $log | wc -l`
 CRIT7=`$GREP "Isotropic PSO contribution\: * 7\.6125 Hz" $log | wc -l`
-CRIT8=`$GREP "Isotropic SD contribution \: * (0| )\.7577 Hz" $log | wc -l`
-CRIT9=`$GREP "Isotropic FC contribution \: * \-3\.6808 Hz" $log | wc -l`
+CRIT8=`$GREP "Isotropic SD contribution \: * (0| )\.7621 Hz" $log | wc -l`
+CRIT9=`$GREP "Isotropic FC contribution \: * \-3\.7986 Hz" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9`
 CTRL[8]=9

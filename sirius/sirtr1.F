@@ -679,7 +679,7 @@ C
 #include <infdim.h>
 #include <inftap.h>
 #include <infpri.h>
-#include <dftcom.h>
+#include <infinp.h>
 C
 #if defined (VAR_DEBUG)
 #include <idbg.h>
@@ -774,7 +774,7 @@ C ***** of the inactive Fock matrix above).
 C
       IF (NDMAT .GT. 0) THEN
          CALL DZERO(FXCAO,NDMAT*N2BASX)
-      IF (LUSUPM .NE. -1 .AND. .NOT.DFTRUN) THEN
+      IF (LUSUPM .NE. -1 .AND. .NOT.DODFT) THEN
          CALL RDSUPM(NDMAT,FXCAO,DXCAO,WRK(KFREE),LFREE)
 C        CALL RDSUPM(NSIM,FMAT,DMAT,WORK,LFREE)
       ELSE
@@ -782,15 +782,12 @@ C        CALL RDSUPM(NSIM,FMAT,DMAT,WORK,LFREE)
             ISYMDM(IDMAT) = JWOPSY
             IFCTYP(IDMAT) = 13
   400    CONTINUE
-         DFTADX = DFTADD
-         DFTADD = .FALSE.
          CALL SIRFCK(FXCAO,DXCAO,NDMAT,ISYMDM,IFCTYP,
      *               AODRCT,WRK(KFREE),LFREE)
 C        ... if (AODRCT) construct Fock matrix directly
 C            else construct Fock matrix from LUINTA
 C            ISYMDM : symmetry of density matrix (DUNP)
 C            IFCTYP = 13 : singlet Fock matrix and DUNP symmetric
-         DFTADD = DFTADX
       END IF
       END IF
 #ifdef FOR_THE_FUTURE
@@ -798,9 +795,9 @@ C
 C add DFT contribution in AO BASIS
 C
       call quit(' sss ')
-      IF (DFTADD) THEN
+      IF (DODFT) THEN
          IF (NASHT.GT.0) CALL QUIT('TR1FCY: open shell DFT not yet')
-         DFTIMG = .FALSE.
+c           TODO         DFTIMG = .FALSE.
 C           DXCAO contains effective
             CALL DFTATR_new_in_ao(NDMAT,FXCAO,DXCAO,CMO,.FALSE.,
      &                    JWOPSY,WRK(KFREE),LFREE)
@@ -888,14 +885,14 @@ C
 C
 C     add DFT contribution in MO BASIS
 C
-      IF (DFTADD) THEN
+      IF (DODFT) THEN
          IF (NASHT.GT.0) CALL QUIT('TR1FCY: open shell DFT not yet')
-         DFTIMG = .FALSE.
+c        TODO         DFTIMG = .FALSE.
          ksymop = jwopsy
-         CALL DFTATR(FXC(1,1),CMO,UBO(1,1),.false.,
-     &               JWOPSY,WRK(KFREE),LFREE)
-c-rsp    CALL DFTATR(FCONE(1,1,IOSIM),CMO,ZYMAT(1,IOSIM),TRPLET,
-c-rsp&               KSYMOP,WRK(KWRK0),LFREE)
+         call dft_lin_respf(fxc(1,1),cmo,ubo(1,1),.FALSE.,
+&                           jwopsy,wrk(kfree),lfree)
+c         CALL DFTATR(FXC(1,1),CMO,UBO(1,1),.false.,
+c     &               JWOPSY,WRK(KFREE),LFREE)
       END IF      
 #endif
  5900 CONTINUE

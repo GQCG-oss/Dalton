@@ -158,10 +158,10 @@ if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
       exit 1
    fi
    if [ $optf -eq 1 ] ; then
-      if [ -s $WRKDIR/SIRIUS.RST -a -r $WRKDIR/SIRIUS.RST ]; then
-         cp $WRKDIR/SIRIUS.RST SIRIUS.RST
+      if [ -s $WRKDIR/$1_$2.RST -a -r $WRKDIR/$1_$2.RST ]; then
+         cp $WRKDIR/$1_$2.RST SIRIUS.RST
       else
-         echo "$WRKDIR/SIRIUS.RST does not exist or is not readable"
+         echo "$WRKDIR/$1_$2.RST does not exist or is not readable"
          exit 1
       fi
       if [ -s $WRKDIR/RESULTS.RSP -a -r $WRKDIR/RESULTS.RSP ]; then
@@ -246,8 +246,7 @@ if [ $optn -gt 1 ] ; then
    fi
 else
    if [ -s $DALTON -a -x $DALTON ]; then
-      cp $DALTON ./dalton.x
-      ./dalton.x
+      $DALTON
    else
       echo "$DALTON does not exist or is not executeable"
       exit 1
@@ -256,7 +255,7 @@ fi
 
 if [ $optF -eq 1 ] ; then
    if [ -s SIRIUS.RST -a -r SIRIUS.RST ]; then
-      cp SIRIUS.RST $WRKDIR/SIRIUS.RST
+      cp SIRIUS.RST $WRKDIR/$1_$2.RST
    else
       echo "SIRIUS.RST does not exist or is not readable"
    fi

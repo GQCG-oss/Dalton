@@ -265,7 +265,7 @@ C
 C
       WRITE(IOUT,'(//A,1P,G10.4,A,G10.4/A)')
      &'  Printout of coefficients in interval  ',XMIN,' to ',XMAX,
-     &'  =============================================================='
+     &'  ============================================================='
 C. Loop over configurations and CSF's for given configuration
       ICNF = 0
       ICSF = 0

@@ -51,7 +51,7 @@ C
           was reset if .LT. 0 --- should have been .LE. 0.
           Second was that if LASTAD() was -1, the whole write of
           the P block was skipped --- must write zero block.  We
-          need to look at compression for this.  Also, HJJ's comment
+          need to look at compression for this.  Also, HJJ:s comment
           of 890529 should be looked at closely.
   *** hj_comments
   900508: Corrected error in PSRT. IPQRS set to 0 at 1000
@@ -64,7 +64,8 @@ C
 ===========================================================================
 #endif
 C  /* Deck ptran */
-      SUBROUTINE PTRAN(NODPTR,WORK,LWORK,JPRINT,ANTI,PANTI,DIA2SO)
+      SUBROUTINE PTRAN(NODPTR,WORK,LWORK,JPRINT,ANTI,PANTI,
+     &                 DIA2SO,ZFS2EL)
 C
 C            ******      M O L E C U L E - P T R A N      ******
 C
@@ -78,7 +79,7 @@ C
 #include <iratdef.h>
 #include <maxorb.h>
 #include <priunit.h>
-      LOGICAL NODPTR, ANTI, PANTI, DIA2SO
+      LOGICAL NODPTR, ANTI, PANTI, DIA2SO, ZFS2EL
       DIMENSION WORK(LWORK)
 C
       COMMON /PTRFIL/ LUSCR, LUDA, LUPSO
@@ -178,8 +179,9 @@ C
       LWRK = LWORK  - ILCMT
       CALL PT1TRA (WORK(ILCM1+1), WORK(ILCM2+1), WORK(ISCM2+1),
      &             WORK(ISCM3+1), WORK(ILCM3+1), WORK(ILCM4+1),
-     &             WORK(ISCM1+1), WORK(KWRK),LWRK,ANTI,PANTI,DIA2SO)
-C     CALL PT1TRA (CMO,PV,P2,P4V,IBUF,BUF,IT,ANTI,PANTI,DIA2SO)
+     &             WORK(ISCM1+1), WORK(KWRK),LWRK,ANTI,PANTI,
+     &             DIA2SO,ZFS2EL)
+C     CALL PT1TRA (CMO,PV,P2,P4V,IBUF,BUF,IT,ANTI,PANTI,DIA2SO,ZFS2EL)
 C
       TIMNEW = SECOND()
       TIME = TIMNEW - TIMOLD
@@ -266,7 +268,8 @@ C
 C
 C     Test densities
 C
-      IF (NODPTR) CALL PTRTST(WORK,LWORK,ANTI,PANTI,DIA2SO,IPRINT)
+      IF (NODPTR) CALL PTRTST(WORK,LWORK,ANTI,PANTI,DIA2SO,ZFS2EL,
+     &                        IPRINT)
 C
 C     ***********************************
 C     ***** Transformation complete *****
@@ -485,7 +488,7 @@ C
       END
 C  /* Deck pt1tra */
       SUBROUTINE PT1TRA(CMO,PV,P2,P4V,IBUF,BUF,IT,WORK,LWORK,ANTI,
-     &                  PANTI,DIA2SO)
+     &                  PANTI,DIA2SO,ZFS2EL)
 C
 C....    FIRST HALF-TRANSFORMATION OF AN MCSCF 2-MATRIX.
 C....    THE LAST TWO 2-MATRIX INDICES, V AND X, ARE TRANSFORMED TO
@@ -509,7 +512,7 @@ C
       PARAMETER (DHALF=0.5D0, D0=0.0D0, D1=1.0D0)
       PARAMETER (D2 = 2.D0)
 C
-      LOGICAL ANTI, PANTI, DIA2SO, FOUND
+      LOGICAL ANTI, PANTI, DIA2SO, ZFS2EL, FOUND
       INTEGER T, U, V, X, TU, VX, TUVX, SIGMA, SIGMB, ALPHA, ALPHAP,
      *        IBUF(1), IT(1)
       DIMENSION JDUM(10)
@@ -551,8 +554,8 @@ C
       CALL RDSIFC('CMO',FOUND,CMO,WORK,LWORK)
       IF (.NOT.FOUND)
      &     CALL QUIT('PT1TRA error: CMO not found on SIRIFC')
-      IF (ANTI.OR.DIA2SO) THEN
-         CALL MAKPVM(PV,WORK,LWORK,ANTI,PANTI,DIA2SO,IPRINT)
+      IF (ANTI.OR.DIA2SO.OR.ZFS2EL) THEN
+         CALL MAKPVM(PV,WORK,LWORK,ANTI,PANTI,DIA2SO,ZFS2EL,IPRINT)
       ELSE
          CALL RDSIFC('PV',FOUND,PV,WORK,LWORK)
          IF (.NOT.FOUND)
@@ -1993,7 +1996,7 @@ C
       IPQRST = IPQRSF + 1
       IF (IPQRSF .LT. ITOP) GOTO 1000
 #if defined (VAR_SPLITFILES)
-      IF (ANTI) THEN
+      IF (ANTI.OR.PANTI) THEN
          LUPAS = LUPMAT
       ELSE
          LUPAO = LUPMAT
@@ -2043,14 +2046,14 @@ C
       RETURN
       END
 C  /* Deck ptrtst */
-      SUBROUTINE PTRTST(WORK,LWORK,ANTI,PANTI,DIA2SO,IPRINT)
+      SUBROUTINE PTRTST(WORK,LWORK,ANTI,PANTI,DIA2SO,ZFS2L,IPRINT)
 C
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
       PARAMETER (MAXBUF = 682)
 C
-      LOGICAL ANTI, PANTI, DIA2SO
+      LOGICAL ANTI, PANTI, DIA2SO, ZFS2EL
       DIMENSION WORK(LWORK)
 #include <inforb.h>
 C
@@ -2067,7 +2070,8 @@ C
 C
 C     Noddy transformation of densities to AO basis
 C
-      CALL PTRNOD(WORK(KPVAO),WORK(KLAST),LWRK,ANTI,PANTI,DIA2SO,IPRINT)
+      CALL PTRNOD(WORK(KPVAO),WORK(KLAST),LWRK,ANTI,PANTI,DIA2SO,
+     &            ZFS2EL,IPRINT)
 C
 C     Comparison with transformed integrals
 C
@@ -2078,11 +2082,11 @@ C
       RETURN
       END
 C  /* Deck ptrnod */
-      SUBROUTINE PTRNOD(PVAO,WORK,LWORK,ANTI,PANTI,DIA2SO,IPRINT)
+      SUBROUTINE PTRNOD(PVAO,WORK,LWORK,ANTI,PANTI,DIA2SO,ZFS2EL,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
-      LOGICAL ANTI, PANTI, DIA2SO, FOUND
+      LOGICAL ANTI, PANTI, DIA2SO, ZFS2EL, FOUND
       DIMENSION PVAO(N2BASX,N2BASX), WORK(LWORK)
       COMMON /PTRFIL/ LUSCR, LUDA, LUPSO
 #include <inftap.h>
@@ -2092,7 +2096,7 @@ C
       REWIND LUSIFC
       CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
       READ (LUSIFC)
-      READ (LUSIFC) (IDUM, I = 1,8), NCMOT,NNASHX,NNASHY
+      READ (LUSIFC) (IDUM, I = 1,9), NCMOT,NNASHX,NNASHY
 C
       KCMO  = 1
       KTRA  = KCMO  + NCMOT
@@ -2104,24 +2108,25 @@ C
 C
       CALL RDSIFC('CMO',FOUND,WORK(KCMO),WORK(KLAST),LWRK)
       IF (.NOT.FOUND) CALL QUIT('PTRNOD error: CMO not found on SIRIFC')
-      IF (ANTI .OR. DIA2SO) THEN
+      IF (ANTI .OR. DIA2SO .OR. ZFS2EL) THEN
          CALL MAKPVM(WORK(KPV),WORK(KLAST),LWRK,ANTI,PANTI,DIA2SO,
-     &      IPRINT)
+     &      ZFS2EL, IPRINT)
       ELSE
          CALL RDSIFC('PV',FOUND,WORK(KPV),WORK(KLAST),LWRK)
          IF (.NOT.FOUND)
      &        CALL QUIT('PTRNOD error: PV not found on SIRIFC')
       END IF
       CALL PTRNO1(WORK(KPV),WORK(KPVMO),PVAO,WORK(KCMO),
-     &            WORK(KTRA),ANTI,PANTI,DIA2SO,IPRINT)
+     &            WORK(KTRA),ANTI,PANTI,DIA2SO,ZFS2EL,IPRINT)
       CALL QEXIT('PTRNOD')
       RETURN
       END
 C  /* Deck ptrno1 */
-      SUBROUTINE PTRNO1(PV,PVMO,PVAO,CMO,TRA,ANTI,PANTI,DIA2SO,IPRINT)
+      SUBROUTINE PTRNO1(PV,PVMO,PVAO,CMO,TRA,ANTI,PANTI,DIA2SO,ZFS2EL,
+     &                  IPRINT)
 #include <implicit.h>
 #include <priunit.h>
-      LOGICAL ANTI, PANTI, DIA2SO
+      LOGICAL ANTI, PANTI, DIA2SO, ZFS2EL
       INTEGER T, U, V, X, TU, VX
       DIMENSION PV(NNASHX,NNASHX), CMO(NCMOT),
      &          PVMO(NASHT,NASHT,NASHT,NASHT),
@@ -2153,7 +2158,7 @@ C
 		     PVMO(T,U,X,V) = - PV(TU,VX)
 		  ELSE
 		     PVMO(U,T,V,X) = PV(TU,VX)
-		     PVMO(T,U,V,X) = PV(TU,VX)
+		     PVMO(T,U,X,V) = PV(TU,VX)
 		  END IF
 	       END IF
   200    CONTINUE
@@ -2273,10 +2278,10 @@ C
       RETURN
       END
 C  /* Deck makpvm */
-      SUBROUTINE MAKPVM(PV,WORK,LWORK,ANTI,PANTI,DIA2SO,IPRINT)
+      SUBROUTINE MAKPVM(PV,WORK,LWORK,ANTI,PANTI,DIA2SO,ZFS2EL,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
-      LOGICAL ANTI, PANTI, DIA2SO
+      LOGICAL ANTI, PANTI, DIA2SO, ZFS2EL
       DIMENSION PV(*), WORK(LWORK)
 #include <inflin.h>
 #include <infdim.h>
@@ -2292,6 +2297,9 @@ C  /* Deck makpvm */
       IF (DIA2SO) THEN
          CALL MAKPV2(PV,WORK(KCINDX),WORK(KCREF),WORK(KUDV),WORK(KPVSQ),
      &               WORK(KWRK),LWRK,PANTI,IPRINT)
+      ELSE IF (ZFS2EL) THEN
+         CALL MAKPVQ(PV,WORK(KCINDX),WORK(KCREF),WORK(KUDV),WORK(KPVSQ),
+     &            WORK(KWRK),LWRK,IPRINT)
       ELSE
          CALL MAKPV1(PV,WORK(KCINDX),WORK(KCREF),WORK(KUDV),WORK(KPVSQ),
      &               WORK(KWRK),LWRK,ANTI,IPRINT)
@@ -2513,9 +2521,10 @@ C
       RETURN
       END
 C  /* Deck makpv3 */
-      SUBROUTINE MAKPV3(PV,XINDX,CREF,DV,PVSQ,WORK,LWORK,ANTI,IPRINT)
+      SUBROUTINE MAKPVQ(PV,XINDX,CREF,DV,PVSQ,WORK,LWORK,ANTI,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
+#include <maxorb.h>
 #include <iratdef.h>
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
       PARAMETER (DM1=-1.0D0, DP25=0.25D0)
@@ -2528,6 +2537,7 @@ C  /* Deck makpv3 */
 #include <infdim.h>
 #include <inforb.h>
 #include <inftap.h>
+#include <infinp.h>
 C
       CALL QENTER('MAKPV3')
 C
@@ -2543,10 +2553,25 @@ C
       READ (LUSIFC)
       CALL READI(LUSIFC,IRAT*NCONRF,CREF)
 C
-      CALL GETCIX(XINDX,LSYMRF,LSYMRF,WORK,LWORK,0)
+      IF (.NOT. HSROHF) CALL GETCIX(XINDX,LSYMRF,LSYMRF,WORK,LWORK,0)
 C
-C Create density d(p,q,r,s) = 0.5* d--(p,q,r,s) 
-C                           + 0.25*(d++(p,s,r,q) - d--(p,s,r,q))
+C Create 2-eletron quintet spin density 2sz1*sz2 - sx1*sx2 - sy1sy2
+C (zero component of tensor product of rank 2)
+C spherical descripiton: 2s(0)*s(0) + s(1)s(-1) + s(-1)s(1)
+C                                   - s(+)s(-)/2 - s(-)s(+)/2
+C 
+C The first term is a standard call to RSPDM
+C
+C     2sz1*sz2 -> 0.5d--(p,q,r,s)
+C
+C In evaluating the last two terms with RSPDM we use
+C
+C     pa qb rb sa + pb qa ra sb - E(p,s)d(r,q)
+C   = - pa sa rb qb - pb sb ra qa
+C and
+C     aabb + bbaa = [ (aa+bb)(aa+bb) - (aa-bb)(aa-bb) ] / 2
+C 
+C     d(p,q,r,s) = 0.5* d--(p,q,r,s) 
 C
       KFREE=1
       LFREE=LWORK
@@ -2556,13 +2581,22 @@ C
       ISPIN2 = 0
       NVAR   = 1
       CALL RSPDM(LSYMRF,LSYMRF,NCONRF,NCONRF,CREF,CREF,DV,PVSQ,
-     &           ISPIN1,ISPIN2,.FALSE.,.FALSE.,XINDX,PVSQ,NVAR,
-     &           LWORK)
+     &           ISPIN1,ISPIN2,.FALSE.,.FALSE.,XINDX,WORK,KFREE,
+     &           LFREE)
+
       ISPIN1 = 1
       ISPIN2 = 1
-      CALL RSPDM(LSYMRF,LSYMRF,NCONRF,NCONRF,CREF,CREF,DV,PVSQ,
-     &           ISPIN1,ISPIN2,.FALSE.,.FALSE.,XINDX,WORK(KPVTMP),NVAR,
-     &           LWORK)
+      CALL RSPDM(LSYMRF,LSYMRF,NCONRF,NCONRF,CREF,CREF,DV,WORK(KPVTMP),
+     &           ISPIN1,ISPIN2,.FALSE.,.FALSE.,XINDX,WORK,KFREE,
+     &           LFREE)
+      IF (IPRINT.GT.20) THEN
+         CALL HEADER('MAKPVQ: singlet density',-1)
+         CALL OUTPUT(PVSQ,1,N2ASHX,1,N2ASHX,N2ASHX,N2ASHX,1,LUPRI)
+         CALL HEADER('MAKPVQ: triplet density',-1)
+         CALL OUTPUT(WORK(KPVTMP),1,N2ASHX,1,N2ASHX,N2ASHX,N2ASHX,1,
+     &      LUPRI)
+      END IF
+
       CALL DAXPY(N4,DM1,WORK(KPVTMP),1,PVSQ,1)
       CALL DSCAL(N4,DP25,PVSQ,1)
 ckr      PVSQ=RESHAPE(PVSQ,(/NASHT,NASHT,NASHT,NASHT/),ORDER=(/1,4,3,2/))
@@ -2573,8 +2607,6 @@ ckr      PVSQ=RESHAPE(PVSQ,(/NASHT,NASHT,NASHT,NASHT/),ORDER=(/1,4,3,2/))
       END IF
       CALL MEMREL('MAKPV3',WORK,1,1,KFREE,LFREE)
 C
-      SGN = D1
-      IF (ANTI) SGN = - 1
       TU = 0
       DO 100 T = 1, NASHT
       DO 100 U = 1, T
@@ -2583,13 +2615,29 @@ C
          DO 200 V = 1, NASHT
          DO 200 X = 1, V
             VX = VX + 1
-            PV(TU,VX) = DP5*(PVSQ(T,U,V,X) + SGN*PVSQ(T,U,X,V))
+            PV(TU,VX) = DP5*(PVSQ(T,U,V,X) + PVSQ(T,U,X,V))
   200    CONTINUE
   100 CONTINUE
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('PV matrix MAKPVM',-1)
          CALL OUTPUT(PV,1,NNASHX,1,NNASHX,NNASHX,NNASHX,1,LUPRI)
       END IF
-      CALL QEXIT('MAKPV3')
+      CALL QEXIT('MAKPVQ')
       RETURN
+      END
+      SUBROUTINE PERM24(N,P,Q)
+#include <implicit.h>
+      DIMENSION P(N,N,N,N), Q(N,N,N,N)
+      INTEGER IP(4)
+      DO I=1,N
+      DO J=1,N
+      DO K=1,N
+      DO L=1,N
+         Q(I,L,K,J) = P(I,J,K,L)
+      END DO
+      END DO
+      END DO
+      END DO
+      N4=N*N*N*N
+      CALL DCOPY(N4,Q,1,P,1)
       END

@@ -280,6 +280,7 @@ C
 #include <nuclei.h>
 #include <gnrinf.h>
 #include <infpar.h>
+#include <infinp.h>
 #include <taymol.h>
 #include <taysol.h>
 #include <energy.h>
@@ -287,7 +288,7 @@ C
 #include <esg.h>
 C
       PARAMETER (MXDMAT = 2*MXCOOR)
-      LOGICAL DDFOCK, NOBLK
+      LOGICAL DDFOCK, NOBLK, ZFS2EL
       INTEGER IFCTYP(MXDMAT), ISYMDM(MXDMAT)
 C
 C     Control routine for calculation of expectation values
@@ -322,10 +323,15 @@ C
 C     No active orbitals
 C
       IF (NASHT .EQ. 0) NODV = .TRUE.
-      IF (NASHT .LT. 2) THEN
+      IF (NASHT .LT. 2 .OR. HSROHF) THEN
          RUNPTR = .FALSE.
          RUNSOR = .FALSE.
          NOPV   = .TRUE.
+         IF (HSROHF .AND. (DIPDER .OR. MOLHES)) THEN
+            WRITE(LUPRI,'(/A)') ' Dipole gradients and molecular '//
+     &           'not implmented for high-spin restricted open-shell HF'
+            CALL QUIT('Option not available for HSROHF in TWOEXP')
+         END IF 
       END IF
 C
 C     *******************************************************
@@ -358,12 +364,14 @@ C
       ANTI = .FALSE.
       PANTI = .FALSE.
       DIA2SO = .FALSE.
+      ZFS2EL = .FALSE.
 C
 C     Transformation to AO basis
 C
       IF (RUNPTR) THEN
          IF (IPRPTR .GE. 2) CALL TIMER('START ',TIMSTR,TIMEND)
-         CALL PTRAN(NODPTR,WORK(KLAST),LWRK,IPRPTR,ANTI,PANTI,DIA2SO)
+         CALL PTRAN(NODPTR,WORK(KLAST),LWRK,IPRPTR,ANTI,PANTI,DIA2SO,
+     &              ZFS2EL)
          IF (IPRPTR .GE. 2) CALL TIMER('PTRAN ',TIMSTR,TIMEND)
       END IF
 C
@@ -529,7 +537,7 @@ CTROND
             CALL SKLFCK(WORK(KFMAT),WORK(KHESEE),WORK(KLAST),LWRK,
      &                  IPRINT,.FALSE.,
      &                  DDFOCK,.TRUE.,.FALSE.,NODV,MAXDIF,.FALSE.,NDMAT,
-     &                  ISYMDM,IFCTYP,0)
+     &                  ISYMDM,IFCTYP,0,.FALSE.)
          END IF
 C
 C     <<<<< Print Section - Gradient and Hessian Elements >>>>>

@@ -106,7 +106,6 @@ C
 #include <exeinf.h>
 #include <inftap.h>
 #include <huckel.h>
-#include <dftcom.h>
 #include <r12int.h>
 #include <nuclei.h>
 C
@@ -169,15 +168,6 @@ C
          CALL TIMER('SORTAO',TIMSTR,TIMEND)
          CALL FLSHFO(LUPRI)
       END IF
-C
-C     ***********************************
-C     ***** Grid for DFT quadrature *****
-C     ***********************************
-C
-      IF (DFTRUN .AND. .NOT.GRDONE) THEN
-         CALL DFTGRD(WORK,LWORK,1,.FALSE.)
-         GRDONE = .TRUE.
-      END IF 
 C
 C     ******************************
 C     ***** End of Calculation *****

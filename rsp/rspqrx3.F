@@ -1,3 +1,7 @@
+C DFTQRCS - strict MxM DFT formulas.
+c#define DFTQRC DFTQRCS
+C DFTQRCF - optimized MxV DFT formulas. Pick the one you like.
+#define DFTQRC DFTQRCF
 C
 C...   Copyright (c) 2001 by the authors of Dalton (see below).
 C...   All Rights Reserved.
@@ -45,7 +49,7 @@ C===========================================================================
 C  /* Deck t3drv */
       SUBROUTINE T3DRV(NSIM,ISYMA,ISYMB,ISYMC,VECB,VECC,ATEST,VECA,
      *                  OMEGAB,OMEGAC,XINDX,UDV,PV,MJWOP,WRK,LWRK,
-     *                  CMO,FC)
+     *                  CMO,FC,FV)
 C
 C     Purpose:
 C     Compute E[3] times two vectors
@@ -173,7 +177,8 @@ C     Compute ( E3(jkl) + E3(jlk) ) N(l) N(k)
 C
       CALL E3INIT(VECB,VECC,VECA,ATEST,IBEQC,
      *            WRK(KE3),XINDX,UDV,PV,WRK(KS3),LWRKE,
-     *            KZYVA,KZYVB,KZYVC,ISYMA,ISYMB,ISYMC,CMO,FC,MJWOP)
+     *            KZYVA,KZYVB,KZYVC,ISYMA,ISYMB,ISYMC,
+     *            ISPINA,ISPINB,ISPINC,CMO,FC,FV,MJWOP)
 C
 C     Compute S3(jlk) N(l) N(k)
 C
@@ -214,10 +219,35 @@ C
       CALL QEXIT('T3DRV')
       RETURN
       END
+C  /* Deck dft3drv */
+      SUBROUTINE DFT3DRV(VECB, VECC,FI,ZYMB,ZYMC,
+     &                   KZYVA,KZYVB,KZYVC,
+     &                   ISYMA,ISYMB,ISYMC,
+     &                   ISPINA,ISPINB,ISPINC,
+     &                   CMO,MJWOP,WRK,LFREE,ADDFOCK)
+#include <implicit.h>
+#include <infvar.h>
+#include <inforb.h>
+#include <maxorb.h>
+#include <infinp.h>
+#include <dftcom.h>
+      DIMENSION VECB(*),VECC(*),ZYMB(*),ZYMC(*),WRK(*),CMO(*)
+      DIMENSION FI(NORBT,NORBT), MJWOP(2,MAXWOP,8)
+      LOGICAL ADDFOCK
+c     unpack response vectors.
+      NSIM = 1
+      CALL GTZYMT(NSIM,VECB,KZYVB,ISYMB,ZYMB,MJWOP)
+      CALL GTZYMT(NSIM,VECC,KZYVC,ISYMC,ZYMC,MJWOP)
+c     compute dft contribution
+      CALL DFTQRC(FI,CMO,ZYMB,ISYMB,ISPINB,ZYMC,ISYMC,ISPINC,ADDFOCK,
+     &            WRK,LFREE)
+c     pack stuff back.
+      END
 C  /* Deck e3init */
       SUBROUTINE E3INIT(VECB,VECC,VECA,ATEST,IBEQC,
      *                  ETRS,XINDX,UDV,PV,WRK,LWRK,KZYVA,KZYVB,KZYVC,
-     *                  ISYMA,ISYMB,ISYMC,CMO,FC,MJWOP)
+     *                  ISYMA,ISYMB,ISYMC,ISPINA,ISPINB,ISPINC,CMO,FC,
+     *                  FV,MJWOP)
 C
 C
 #include <implicit.h>
@@ -234,47 +264,116 @@ C
 #include <inftpa.h>
 #include <inftmo.h>
 #include <infinp.h>
+#include <priunit.h>
+#include <infpp.h>
+#include <infsmo.h>
+#include <infhyp.h>
 #include <esg.h>
 C
-      LOGICAL   ATEST
+      LOGICAL   ATEST, TRPLETSAVE, DFTSAV, ADDFOCK
       DIMENSION VECB(*),VECC(*),VECA(*)
       DIMENSION ETRS(KZYVA)
       DIMENSION XINDX(*)
       DIMENSION UDV(*), MJWOP(2,MAXWOP,8)
       DIMENSION PV(*)
       DIMENSION WRK(*)
-      DIMENSION CMO(*),FC(*)
+      DIMENSION CMO(*),FC(*), FV(*)
 C
 C     Initialise variables and layout some workspace
 C
       CALL QENTER('E3INIT')
       KFREE = 1
       LFREE = LWRK
-      CALL MEMGET('REAL',KDEN1,NASHT*NASHT,WRK,KFREE,LFREE)
-      IF (TRPFLG) THEN
-         CALL MEMGET('REAL',KDEN2,2*N2ASHX*N2ASHX,WRK,KFREE,LFREE)
-      ELSE
-         CALL MEMGET('REAL',KDEN2,N2ASHX*N2ASHX,WRK,KFREE,LFREE)
-      END IF
-      CALL MEMGET('REAL',KFI,NORBT*NORBT,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KZYMB,NORBT*NORBT,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KZYMC,NORBT*NORBT,WRK,KFREE,LFREE)
-C
-      IF (DIROIT.AND.TDHF.AND.(CRCAL.OR.TOMOM.OR.TPAMP.OR.ESG)) THEN
-         CALL C3FOCK(IBEQC,WRK(KFI),VECB,VECC,
-     *              WRK(KZYMB),WRK(KZYMC),
-     *              KZYVB,KZYVC,
-     *              ISYMA,ISYMB,ISYMC,
-     *              CMO,FC,MJWOP,WRK(KFREE),LFREE)
-         KDUM = KFREE
-         CALL DZERO(WRK(KDUM),NORBT*NORBT)
-         CALL ORBEX(ISYMA,1,KZYVA,WRK(KFI),WRK(KDUM),WRK(KDUM),
-     *              WRK(KDUM),ETRS,D1,WRK(KDUM),MJWOP)
+      CALL MEMGET('REAL',KFC,NORBT*NORBT,WRK,KFREE,LFREE)
+      IF (NASHT.GT.0) THEN
+         CALL MEMGET('REAL',KFO,NORBT*NORBT,WRK,KFREE,LFREE)
       ELSE
+         CALL MEMGET('REAL',KFO,0,WRK,KFREE,LFREE)
+      END IF
+C
+C Zero Q matrix for ORBEX (and FO for closed shell)
+C
+      CALL MEMGET('REAL',KDUM,N2ORBX,WRK,KFREE,LFREE)
+      CALL DZERO(WRK(KDUM),N2ORBX)
+      IF (NASHT.EQ.0) KFO=KDUM
+C
+C Fock matrices
+C
+      IF (TDHF) THEN
+         IF (CRCAL.OR.TOMOM.OR.TPAMP.OR.ESG) THEN
+            CALL C3FOCK(IBEQC,WRK(KFC),VECB,VECC,
+     *                 WRK(KZYMB),WRK(KZYMC),
+     *                 KZYVB,KZYVC,
+     *                 ISYMA,ISYMB,ISYMC,
+     *                 CMO,FC,MJWOP,WRK(KFREE),LFREE)
+         ELSE IF (HYPCAL.OR.SOMOM.OR.EXMOM) THEN
+            DFTSAV=DODFT
+            DODFT=.FALSE.
+            CALL Q3FOCK(
+     &         VECB,VECC,
+     &         KZYVB,KZYVC, ISYMB,ISYMC, ISPINB,ISPINC,
+     &         CMO, MJWOP, FC, FV,
+     &         WRK(KFC),WRK(KFO),
+     &         WRK(KFREE),LFREE
+     &         )
+            DODFT=DFTSAV
+         END IF
+C
+         TRPLETSAVE=TRPLET
+         TRPLET=MOD(ISPINA+ISPINB+ISPINC,2).NE.0
+         CALL ORBEX(
+     &         ISYMA,1,KZYVA,WRK(KFC),WRK(KFO),WRK(KDUM),WRK(KDUM),
+     &         ETRS,D1,UDV,MJWOP
+     &         )  
+         TRPLET=TRPLETSAVE
+C
+C Special consideration, ingoing FC does contain the DFT contribution
+C which is transformed in Q3FOCK as [k,k,FC] so the corresponding
+C contribution must be skipped in DFT3DRV
+C
+         ADDFOCK=.FALSE.
+C
+      ELSE
+         ADDFOCK=.TRUE.
+         CALL MEMGET('REAL',KDEN1,NASHT*NASHT,WRK,KFREE,LFREE)
+         IF (TRPFLG) THEN
+            CALL MEMGET('REAL',KDEN2,2*N2ASHX*N2ASHX,WRK,KFREE,LFREE)
+         ELSE
+            CALL MEMGET('REAL',KDEN2,N2ASHX*N2ASHX,WRK,KFREE,LFREE)
+         END IF
          CALL E3DRV(VECB, VECC, VECA, ATEST, IBEQC,
-     *              ETRS,XINDX,WRK(KFI),WRK(KZYMB),WRK(KZYMC),
+     *              ETRS,XINDX,WRK(KFC),WRK(KZYMB),WRK(KZYMC),
      *              WRK(KDEN1),WRK(KDEN2),UDV,PV,WRK(KFREE),LFREE,
      *              KZYVA,KZYVB,KZYVC,ISYMA,ISYMB,ISYMC,CMO,FC,MJWOP)
+      END IF
+C
+C DFT contribution
+C
+      IF(DODFT) THEN
+         CALL DZERO(WRK(KFC),N2ORBX)
+         CALL DFT3DRV(VECB,VECC,WRK(KFC),WRK(KZYMB),WRK(KZYMC),
+     *                   KZYVA,KZYVB,KZYVC,
+     *                   ISYMA,ISYMB,ISYMC,
+     *                   ISPINA,ISPINB,ISPINC,
+     *                   CMO,MJWOP,WRK(KFREE),LFREE,ADDFOCK)
+         IF (E3TEST) THEN
+            E3 = -DDOT(KZYVA,ETRS,1,VECA,1)
+         END IF
+         TRPLETSAVE=TRPLET
+         TRPLET=MOD(ISPINA+ISPINB+ISPINC,2).NE.0
+         CALL ORBEX(ISYMA,1,KZYVA,WRK(KFC),WRK(KDUM),WRK(KDUM),
+     &        WRK(KDUM),ETRS,D1,WRK(KDUM1),MJWOP)
+         TRPLET=TRPLETSAVE
+         IF (E3TEST) THEN
+            E3TOT = -DDOT(KZYVA,ETRS,1,VECA,1)
+            E3DFT = E3TOT - E3
+            WRITE(LUPRI,'(/A,2F20.8)')
+     *         '   COU CONTRIBUTION TO HYPVAL',E3,E3
+            WRITE(LUPRI,'(/A,2F20.8)')
+     *         '   DFT CONTRIBUTION TO HYPVAL',E3DFT,E3TOT
+         END IF
       END IF
 C
       IF (FLAG(16)) THEN
@@ -346,6 +445,7 @@ C
 C
       LOGICAL   ATEST, LCON, LORB, LREFST
       LOGICAL   TDM, NORHO2, LREF
+      LOGICAL   LORBB, LORBC, LCONB, LCONC
 C
 C     Initialise variables and layout some workspace
 C
@@ -390,9 +490,31 @@ C
          CALL OUTPUT(WRK(KH1),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
       END IF
 C
+C Gradient flags
+C
+
+      ISYMST = MULD2H(IGRSYM,IREFSY)
+      IF ( ISYMST .EQ. IREFSY ) THEN
+         LCON = ( MZCONF(IGRSYM) .GT. 1 )
+         LCONB = ( MZCONF(ISYMB) .GT. 1 )
+         LCONC = ( MZCONF(ISYMC) .GT. 1 )
+      ELSE
+         LCON = ( MZCONF(IGRSYM) .GT. 0 )
+         LCONB = ( MZCONF(ISYMB) .GT. 0 )
+         LCONC = ( MZCONF(ISYMC) .GT. 0 )
+      END IF
+      LORB   = ( MZWOPT(IGRSYM) .GT. 0 )
+      LORBB  = ( MZWOPT(ISYMB) .GT. 0 )
+      LORBC  = ( MZWOPT(ISYMC) .GT. 0 )
+      print *,'isymst irefsy',isymst,irefsy
+      print *,'mzconf',mzconf
+      print *,'lorb b c' ,lorb,lorbb,lorbc
+      print *,'lcon b c' ,lcon,lconb,lconc
+C
 C     Case 1:
 C     =======
-      IF ( MZWOPT(ISYMB) .EQ. 0 ) GO TO 3000
+C     IF ( MZWOPT(ISYMB) .EQ. 0 ) GO TO 3000
+      IF (.NOT. LORBB) GO TO 3000
 C     Transform the integrals with kappa(1)
 C
       NSIM = 1
@@ -407,7 +529,8 @@ C
 C     CALL OITH1(LSYOIT,OITMAT,H1,H1X,IH1SYM)
       CALL DCOPY(N2ORBX,WRK(KH1X),1,FI,1)
 C
-      IF (MZCONF(ISYMC) .EQ. 0) GO TO 2000
+C     IF (MZCONF(ISYMC) .EQ. 0) GO TO 2000
+      IF (.NOT.LCONC) GO TO 2000
 C
 C     Construct the density matrix <02L|..|0> + <0|..|02R>
 C
@@ -440,13 +563,6 @@ C     Make the gradient
 C
       ISYMV  = ISYMC
       INTSYM = ISYMB
-      ISYMST = MULD2H(IGRSYM,IREFSY)
-      IF ( ISYMST .EQ. IREFSY ) THEN
-         LCON = ( MZCONF(IGRSYM) .GT. 1 )
-      ELSE
-         LCON = ( MZCONF(IGRSYM) .GT. 0 )
-      END IF
-      LORB   = ( MZWOPT(IGRSYM) .GT. 0 )
       LREFST = .FALSE.
       NZYVEC = MZYVAR(ISYMC)
       NZCVEC = MZCONF(ISYMC)
@@ -489,7 +605,8 @@ C
 C
 C     Case 2:
 C     =======
- 2000 IF ((MZWOPT(ISYMC) .EQ. 0).OR.(MZWOPT(ISYMB) .EQ. 0)) THEN
+C2000 IF ((MZWOPT(ISYMC) .EQ. 0).OR.(MZWOPT(ISYMB) .EQ. 0)) THEN
+ 2000 IF (.NOT.LORBC .OR. .NOT.LORBB) THEN
          IF (.NOT.DIROIT) CALL OITCLO(IDAX1,'DELETE')
          GO TO 3000
       END IF
@@ -525,13 +642,6 @@ C     Make the gradient
 C
       ISYMV  = IREFSY
       INTSYM = MULD2H(ISYMB,ISYMC)
-      ISYMST = MULD2H(IGRSYM,IREFSY)
-      IF ( ISYMST .EQ. IREFSY ) THEN
-         LCON = ( MZCONF(IGRSYM) .GT. 1 )
-      ELSE
-         LCON = ( MZCONF(IGRSYM) .GT. 0 )
-      END IF
-      LORB   = ( MZWOPT(IGRSYM) .GT. 0 )
       LREFST = .TRUE.
       NZYVEC = MZCONF(1)
       NZCVEC = MZCONF(1)
@@ -581,7 +691,8 @@ C
 C
 C     Case 3:
 C     =======
-3000  IF ( MZWOPT(ISYMC) .EQ. 0 ) GO TO 5000
+C3000  IF ( MZWOPT(ISYMC) .EQ. 0 ) GO TO 5000
+3000  IF ( .NOT. LORBC ) GO TO 5000
       IF ( IBEQC .EQ. 1 .AND. .NOT.E3TEST) THEN
          CALL DSCAL(KZYVA,D2,ETRS,1)
          IF (ATEST .OR. IPRRSP .GT. 100) THEN
@@ -629,7 +740,8 @@ C
 C     CALL OITH1(LSYOIT,OITMAT,H1,H1X,IH1SYM)
       CALL DCOPY(N2ORBX,WRK(KH1X),1,FI,1)
 C
-      IF (MZCONF(ISYMB) .EQ. 0) GO TO 4000
+C     IF (MZCONF(ISYMB) .EQ. 0) GO TO 4000
+      IF (.NOT.LCONB) GO TO 4000
 C
 C     Construct the density matrix <01L|..|0> + <0|..|01R>
 C
@@ -662,13 +774,6 @@ C     Make the gradient
 C
       ISYMV  = ISYMB
       INTSYM = ISYMC
-      ISYMST = MULD2H(IGRSYM,IREFSY)
-      IF ( ISYMST .EQ. IREFSY ) THEN
-         LCON = ( MZCONF(IGRSYM) .GT. 1 )
-      ELSE
-         LCON = ( MZCONF(IGRSYM) .GT. 0 )
-      END IF
-      LORB   = ( MZWOPT(IGRSYM) .GT. 0 )
       LREFST = .FALSE.
       NZYVEC = MZYVAR(ISYMB)
       NZCVEC = MZCONF(ISYMB)
@@ -711,7 +816,8 @@ C
 C
 C      Case 4:
 C      =======
- 4000 IF ((MZWOPT(ISYMB) .EQ. 0).OR.(MZWOPT(ISYMC) .EQ. 0 )) THEN
+C4000 IF ((MZWOPT(ISYMB) .EQ. 0).OR.(MZWOPT(ISYMC) .EQ. 0 )) THEN
+ 4000 IF (.NOT.LORBB .OR. .NOT.LORBC) THEN
          IF (.NOT.DIROIT) CALL OITCLO(IDAX2,'DELETE')
          GO TO 5000
       END IF
@@ -742,13 +848,6 @@ C     Make the gradient
 C
       ISYMV  = IREFSY
       INTSYM = MULD2H(ISYMB,ISYMC)
-      ISYMST = MULD2H(IGRSYM,IREFSY)
-      IF ( ISYMST .EQ. IREFSY ) THEN
-         LCON = ( MZCONF(IGRSYM) .GT. 1 )
-      ELSE
-         LCON = ( MZCONF(IGRSYM) .GT. 0 )
-      END IF
-      LORB   = ( MZWOPT(IGRSYM) .GT. 0 )
       LREFST = .TRUE.
       NZYVEC = MZCONF(1)
       NZCVEC = MZCONF(1)
@@ -796,7 +895,8 @@ C
 C
 C     Case 5:
 C     =======
-5000  IF (MZCONF(ISYMB) .EQ. 0 .OR. MZCONF(ISYMC) .EQ. 0) GO TO 6000
+C5000  IF (MZCONF(ISYMB) .EQ. 0 .OR. MZCONF(ISYMC) .EQ. 0) GO TO 6000
+5000  IF (.NOT.LCONB .OR. .NOT.LCONC) GO TO 6000
 C
       CALL DCOPY(N2ORBX,WRK(KH1),1,FI,1)
 C
@@ -995,6 +1095,7 @@ C
 C
 C INFINP : DIRFCK
 C
+#include <dftcom.h>
 #include <maxorb.h>
 #include <maxash.h>
 #include <priunit.h>
@@ -1024,7 +1125,7 @@ C
       DIMENSION NEEDED(6)
       DATA NEEDED /1,1,1,0,0,0/
 C
-      LOGICAL LCON, LORB, LREFST, HSORUN
+      LOGICAL LCON, LORB, LREFST, HSORUN, DFTSAV, ADDFOCK
 C
       CALL QENTER('RSP2GR')
 C
@@ -1070,8 +1171,17 @@ C
      *            LCON,LORB,IPRRSP,IGRSPI,ISPIN1,ISPIN2,
      *            IKLVL,ZYMAT1,ISYM1,ZYMAT2,ISYM2)
          ELSE IF (DIRFCK) THEN
+            DFTSAV = DFTADD
+            DFTADD = .FALSE.
+c
+c     note that QFOCK returns complete FOCK/Kohn-Sham matrix, including
+c     DFT contribution, as opposed to RSPFXD/RSPFX which return electronic
+c     part only (w/o DFT contribution). If this is the case (i.e. .NOT.DIRFCK) 
+c     we add the DFT contribution to KS matrix later in DFTQRC.
+c
             CALL QFOCK(1,ISYM1,ISYM2,IGRSPI,ISPIN1,ISPIN2,
      &                 ZYMAT1,ZYMAT2,FC,CMO,FI,WRKO,KFREE,LFREE)
+            DFTADD = DFTSAV
          ELSE
             CALL RSPFXD (FI,FA,QA,QB,H2AX,
      *            IDAX,INTSYM, ISYMDN,DEN1,DEN2,
@@ -1248,38 +1358,38 @@ C
          CALL OUTPUT(H2X,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
       END IF
 C
-         IF (IPQTYP .LE. 3) THEN
-            CALL FIXADD(INTSYM,IP,IQ,IPQTYP,IPQSYM,IPSYM,IQSYM,
-     *                 FI,H2X )
+      IF (IPQTYP .LE. 3) THEN
+         CALL FIXADD(INTSYM,IP,IQ,IPQTYP,IPQSYM,IPSYM,IQSYM,
+     *        FI,H2X )
+      END IF
+      IF ((IPQTYP .NE. 1) .AND. LORB) THEN
+         CALL FAXADD(IFCKSY,INTSYM,IP,IQ,IPQTYP,IPQSYM,IPSYM,
+     *        IQSYM,FA,H2X,DEN1 )
+      END IF
+      IF ( (IPQTYP .EQ. 4) ) THEN
+         ISWIP = ISW( IP ) - NISHT
+         ISWIQ = ISW( IQ ) - NISHT
+         IF (LORB) THEN
+            CALL QXADD(IFCKSY,INTSYM,ISWIP,ISWIQ,IP,IQ,IPQTYP,
+     *           IPQSYM,IPSYM,IQSYM,
+     *           QA,QB,H2X,DEN2,PVDEN)
          END IF
-         IF ((IPQTYP .NE. 1) .AND. LORB) THEN
-            CALL FAXADD(IFCKSY,INTSYM,IP,IQ,IPQTYP,IPQSYM,IPSYM,
-     *                 IQSYM,FA,H2X,DEN1 )
+C     
+C     Store (xy|uv) in H2ACX for use in configuration part of lt.
+C     
+         IF ( LCON ) THEN
+            IF ( IPRFX .GT. 200) THEN
+               WRITE(LUPRI,'(//A,/A,2(/A,I5),/A)' )
+     *              'Storing in H2AX :',
+     *              '=================',
+     *              'ISWIP = ',ISWIP,
+     *              'ISWIQ = ',ISWIQ,
+     *              '================='
+            END IF
+            IUVSYM = MULD2H(IPQSYM, INTSYM)
+            CALL DSH2AX(H2AX(1,1,ISWIP,ISWIQ),H2X,IUVSYM)
          END IF
-         IF ( (IPQTYP .EQ. 4) ) THEN
-            ISWIP = ISW( IP ) - NISHT
-            ISWIQ = ISW( IQ ) - NISHT
-            IF (LORB) THEN
-               CALL QXADD(IFCKSY,INTSYM,ISWIP,ISWIQ,IP,IQ,IPQTYP,
-     *                IPQSYM,IPSYM,IQSYM,
-     *                QA,QB,H2X,DEN2,PVDEN)
-            END IF
-C
-C           Store (xy|uv) in H2ACX for use in configuration part of lt.
-C
-            IF ( LCON ) THEN
-               IF ( IPRFX .GT. 200) THEN
-                  WRITE(LUPRI,'(//A,/A,2(/A,I5),/A)' )
-     *            'Storing in H2AX :',
-     *            '=================',
-     *            'ISWIP = ',ISWIP,
-     *            'ISWIQ = ',ISWIQ,
-     *            '================='
-               END IF
-               IUVSYM = MULD2H(IPQSYM, INTSYM)
-               CALL DSH2AX(H2AX(1,1,ISWIP,ISWIQ),H2X,IUVSYM)
-            END IF
-C
+C     
          IF( IPRFX .GT. 200 ) THEN
             WRITE(LUPRI,'(/A)') ' PARTIAL MATRICES IN  RSP2GR'
             WRITE(LUPRI,'(A)')  ' ==========================='
@@ -2707,7 +2817,7 @@ C
       LWRKF   = LWRK - KFREE + 1
       IF (LWRKF.LT.0) CALL ERRWRK('X2INIT',KFREE-1,LWRK)
 C
-      IF (IPRRSP .GT. 50 ) THEN
+      IF (IPRRSP .GT. 50) THEN
          WRITE(LUPRI,'(//A)')  ' Characteristics of X2 gradient'
          WRITE(LUPRI,'(A)')    ' =============================='
          WRITE(LUPRI,'(A,I8)') ' Gradient symmetry :',IGRSYM
@@ -2817,7 +2927,11 @@ C     ======
       IF (MZWOPT(ISYMV) .EQ. 0 ) GOTO 2000
 C
       ISPIN = MULSP(ISPINV,IOPSPI)
-      IF (ISPIN.NE.IGRSPI) CALL QUIT('X2DRV: SPIN ERROR')
+      IF (ISPIN.NE.IGRSPI) THEN
+         WRITE(LUPRI,*) "FOUND: ", ISPIN, " Expected:", IGRSPI
+         WRITE(LUPRI,*) "parameters: ", ispinv, iopspi
+         CALL QUIT('X2DRV: SPIN ERROR')
+      ENDIF
 C
 C     Transform the operator
 C
@@ -3860,4 +3974,87 @@ C        CALL UTHV(U,PRPAO,V,ISYM,JSYM,NBASI,NBASJ,PRPMO,WRK)
       END IF
 C
       RETURN
+      END
+      SUBROUTINE QRGP(WORD,GP,CMO,XINDX,ANTSYM,WORK,LWORK)
+#include <implicit.h>
+      CHARACTER*8 WORD
+      DIMENSION GP(*), CMO(*), XINDX(*), WORK(LWORK)
+#include <inforb.h>
+#include <infrsp.h>
+#include <infvar.h>
+#include <inflr.h>
+#include <wrkrsp.h>
+#include <priunit.h>
+#include <qrinf.h>
+#include <inflin.h>
+      LOGICAL LREFST, LORB, LCON, TRPSAVE
+      PARAMETER (D1     = 1.0D0)
+C
+      CALL QENTER('QRGP')
+C
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
+C
+C Operator
+C
+      CALL MEMGET('REAL',KOP,N2ORBX,WORK,KFREE,LFREE)
+      CALL PRPGET(WORD,CMO,WORK(KOP),ANTSYM,WORK(KFREE),LFREE)
+      IOPSYM=KSYMOP
+      IOPSPI=LRRANK(INDPRP(WORD))
+C
+C Density 
+C
+      IGRSYM=KSYMOP
+      IF (TRPLET) THEN
+         IGRSPI=1
+      ELSE
+         IGRSPI=0
+      END IF
+      CALL MEMGET('REAL',KD,N2ASHX,WORK,KFREE,LFREE)
+      IF (TDHF) THEN
+         IF (NASHT.EQ.1) THEN
+            WORK(KD)=D1
+         END IF
+      ELSE
+         CALL MEMGET('REAL',KP,1,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KCREF,MZCONF(1),WORK,KFREE,LFREE)
+         CALL GETREF(WORK(KCREF),MZCONF(1))
+         CALL RSPDM(IREFSY,IREFSY,MZCONF(1),MZCONF(1),
+     &   WORK(KCREF),WORK(KCREF),
+     &   WORK(KD),WORK(KP),IGRSPI,IOPSPI,.FALSE.,.TRUE.,XINDX,WORK,
+     &   KFREE,LFREE)
+      END IF
+C
+C Gradient
+C
+      LGP    = KZYVAR
+      IGPSYM = IGRSYM
+      IDSYM  = 1
+      LREFST = .TRUE.
+      LORB   = KZWOPT.GT.0
+      IF (IGRSYM.EQ.1) THEN
+         LCON   = KZCONF.GT.1
+      ELSE
+         LCON   = KZCONF.GT.0
+      END IF
+      CALL MEMGET('INTE',KMJWOP,2*MAXWOP*8,WORK,KFREE,LFREE)
+      CALL SETZY(WORK(KMJWOP))
+      CALL DZERO(GP,LGP)
+      TRPSAVE=TRPLET
+      CALL RSP1GR(1,LGP,IOPSYM,IOPSPI,IGRSYM,IGRSPI,
+     &   IGPSYM,GP,
+     &   WORK(KCREF),MZCONF(1),MZCONF(1),D1,IDSYM,WORK(KD),WORK(KOP),
+     &   XINDX,WORK(KMJWOP),WORK(KFREE),LFREE,LORB,LCON,.TRUE.)
+      TRPLET=TRPSAVE
+#ifdef DEBUG
+      CALL HEADER('QRGP:Operator '//WORD,0)
+      CALL OUTPUT(WORK(KOP),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
+      CALL HEADER('QRGP:One electron density',0)
+      CALL OUTPUT(WORK(KD),1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
+      CALL HEADER('QRGP:Property vector',0)
+      CALL OUTPUT(GP,1,LGP/2,1,2,LGP/2,2,1,LUPRI)
+#endif
+      CALL MEMREL('QRGP',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL QEXIT('QRGP')
       END

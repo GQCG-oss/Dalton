@@ -492,7 +492,8 @@ C
 #include <wrkrsp.h>
 C
       CALL QENTER('GETGPV')
-      IF (WORD(3:8).EQ.'SPNORB' .OR. WORD(3:8) .EQ. 'MNF-SO') THEN
+      IF (WORD(3:8).EQ.'SPNORB' .OR. WORD(3:8) .EQ. 'MNF-SO' .OR. 
+     &   WORD(3:8).EQ.'SPNSCA') THEN
          KGP   = 1
          KWRK1 = KGP + KZYVAR
          LWRK1 = LWRK + 1 - KWRK1
@@ -856,23 +857,16 @@ C
                   GP(KZVAR+KZCONF+IG) = GP(KZVAR+KZCONF +IG)
      *               +PRPMO(K,IORBL+NISHL+IX)*UDV(NWL,IASHL+IX)
  740           CONTINUE
-               GP(KZVAR+KZCONF+IG) = GP(KZVAR+KZCONF +IG)
-     *            -DDOT(NASHK,PRPMO(IORBK+NISHK+1,L),1,
-     *                        UDV(IASHK+1,NWK),1)
-               DO 750 IX = 1,NASHK
-                  GP(KZCONF+IG) = GP(KZCONF+IG)
-     *                +PRPMO(L,IORBK+NISHK+IX)*UDV(NWK,IASHK+IX)
- 750           CONTINUE
             ELSE
                NWK = ISW(K) - NISHT
-               GP(KZVAR+KZCONF+IG) = GP(KZVAR+KZCONF+ IG)
-     *            -DDOT(NASHK,PRPMO(IORBK+NISHK+1,L),1,
-     *                     UDV(IASHK+1,NWK),1)
-               DO 760 IX = 1,NASHK
-                  GP(KZCONF+IG) = GP(KZCONF+IG)
-     *              +PRPMO(L,IORBK+NISHK+IX)*UDV(NWK,IASHK+IX)
- 760           CONTINUE
             ENDIF
+            GP(KZVAR+KZCONF+IG) = GP(KZVAR+KZCONF+ IG)
+     *           -DDOT(NASHK,PRPMO(IORBK+NISHK+1,L),1,
+     *                 UDV(IASHK+1,NWK),1)
+            DO 750 IX = 1,NASHK
+               GP(KZCONF+IG) = GP(KZCONF+IG)
+     *              +PRPMO(L,IORBK+NISHK+IX)*UDV(NWK,IASHK+IX)
+ 750        CONTINUE
          ENDIF
  1400 CONTINUE
 C

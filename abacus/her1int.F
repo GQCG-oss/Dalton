@@ -6227,7 +6227,7 @@ C
 #include <onecom.h>
 #include <lmns.h>
       INT = 0
-C$$$
+C
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
          MVALA = MVALUA(ICOMPA)
@@ -6263,39 +6263,6 @@ C
          SHLINT(INT,3) = SHLINT(INT,3) - D2INV*( DX2*SY0*SZ1
      $                                         + SX0*DY2*SZ1
      $                                         + SX0*SY0*DZ21)
-C
-C       Nuclear attraction
-C
-c$$$         MAXT = LVALA + LVALB
-c$$$         MAXU = MVALA + MVALB
-c$$$         MAXV = NVALA + NVALB
-c$$$         IADRAV = 1
-c$$$         DO 200 IV = 0, MAXV + 1
-c$$$            IADRAU = IADRAV
-c$$$            EV = ODC(NVALA,NVALB,IV,0,0,3)
-c$$$            FV = ODC(NVALA,NVALB,IV,0,1,3)
-c$$$            IUMAX = MAXU + 1
-c$$$            IF (IV .GT. MAXV) IUMAX = MAXU
-c$$$            DO 300 IU = 0, IUMAX
-c$$$               EU = ODC(MVALA,MVALB,IU,0,0,2)
-c$$$               FU = ODC(MVALA,MVALB,IU,0,1,2)
-c$$$               ITMAX = MAXT + 1
-c$$$               IF ((IU .GT. MAXU) .OR. (IV .GT. MAXV)) ITMAX = MAXT
-c$$$               DO 400 IT = 0, ITMAX
-c$$$                  ET = ODC(LVALA,LVALB,IT,0,0,1)
-c$$$                  FT = ODC(LVALA,LVALB,IT,0,1,1)
-c$$$                  FX = FT*EU*EV
-c$$$                  FY = ET*FU*EV
-c$$$                  FZ = ET*EU*FV
-c$$$                  ATUV = -D2INV*AHGTF(IADRAU + IT)
-c$$$                  SHLINT(INT,1)=SHLINT(INT,1)+ATUV*FX
-c$$$                  SHLINT(INT,2)=SHLINT(INT,2)+ATUV*FY
-c$$$                  SHLINT(INT,3)=SHLINT(INT,3)+ATUV*FZ
-c$$$ 400           CONTINUE
-c$$$               IADRAU = IADRAU + ISTEPU
-c$$$ 300        CONTINUE
-c$$$            IADRAV = IADRAV + ISTEPV
-c$$$ 200     CONTINUE
  100  CONTINUE
       RETURN
       END

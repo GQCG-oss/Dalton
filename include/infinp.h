@@ -1,3 +1,4 @@
+c  -*- mode:fortran; fortran-continuation-string: "&" -*-
 C     this common block contains general Sirius input read in sirius/sirinp.F
 C     (specified under **WAVE FUNCTION).  /hjaaj Oct 2003
 C     - SCF specific input is in scbrhf.h
@@ -13,11 +14,19 @@ C     - orbital specifications are in inforb.h
      *                NROOCI,ISTACI, MXCIMA, ICICNO,IMCCNO
       LOGICAL FLAG,  DORHF, DOMP2, DOCINO,DOCI,  DOMC,  DORSP,FCVORB,
      &        LNOROT,LMOORD,DIRFCK,CORHOL,CORRLX,RESPHP,JOLSEN,ABAIPH,
-     &        INERSI,INERSF,SUPSYM,DODFT, DONEVPT
+     &        INERSI,INERSF,SUPSYM,DODFT, DONEVPT,HSROHF
       COMMON /LOGINP/ FLAG(NFLAG), DORHF,DOMP2,DOCINO,DOCI,DOMC,DORSP,
      &                FCVORB,LNOROT,LMOORD,DIRFCK,CORHOL,CORRLX,RESPHP,
-     &                JOLSEN,ABAIPH,INERSI,INERSF,DODFT,DONEVPT
+     &                JOLSEN,ABAIPH,INERSI,INERSF,DODFT,DONEVPT,HSROHF
       EQUIVALENCE (SUPSYM,FLAG(17))
+#if defined (SYS_CRAY)
+      REAL             SPIN,POTNUC, EPSOL,EPSTAT,EPPN,RSOL,
+#else
+      DOUBLE PRECISION SPIN,POTNUC, EPSOL,EPSTAT,EPPN,RSOL,
+#endif
+     &                THRGRD, THRPWF, THRRHF, THRCI, THRMC, THRCGR,
+     &                EFIELD, TITMOL, CMAXMO, THROVL,
+     &                THRSSY
       COMMON /RELINP/ SPIN,POTNUC, EPSOL,EPSTAT,EPPN,RSOL(3),
      &                THRGRD, THRPWF, THRCI, THRMC, THRCGR,
      &                EFIELD(MXFELT), TITMOL(12,2), CMAXMO, THROVL,

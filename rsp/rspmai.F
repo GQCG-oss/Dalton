@@ -122,6 +122,7 @@ C
 #include "absorp.h"
 #include "esg.h"
 #include "numder.h"
+#include "gtensor.h"
 C
       LOGICAL SAVLR, DORESP, FLAGSV, EX
 C
@@ -170,6 +171,18 @@ C
 C
 C     ORGANIZE CALCULATION FOR EACH PERTURBATION OPERATOR
 C
+      IF (DFT_SO) THEN
+         KCMO  = 1
+         KLST  = KCMO   + NCMOT
+         LFREE = LWRK-KLST
+         IF (KLST.GT.LWRK) CALL ERRWRK('RSPDRV 0',KLST-1,LWRK)
+         REWIND LUSIFC
+         CALL MOLLAB(LBSIFC,LUSIFC,LUPRI)
+         READ (LUSIFC)
+         READ (LUSIFC)
+         CALL READT (LUSIFC,NCMOT,WRK(KCMO))
+         CALL DFTSOI(WRK(KCMO),WRK(KLST),LFREE,IPRONE)
+      END IF
       KWSYM = 1
       LWSYM = LWRK  - KWSYM
       IF (LWSYM.LT.0) CALL ERRWRK('RSPDRV 2',KWSYM,LWRK)
@@ -202,7 +215,7 @@ C
      &      ' because cubic or quadratic response has been requested.'
          END IF
       END IF
-      DORESP = DORESP .OR. ESRCAL .OR. ABSORP .OR. I.GT.0
+      DORESP = DORESP .OR. ESRCAL .OR. ABSORP .OR. GCALC .OR. I.GT.0
 C
 C     PERFORM INTEGRAL TRANSFORMATION
 C
@@ -351,6 +364,9 @@ C
          WRK(KUDV) = D1
          WRK(KPVX) = D0
          IF (TRPLET) WRK(KPVX+1) = D0
+      ELSE IF (DORESP .AND. TDHF .AND. HSROHF) THEN
+         CALL DUNIT(WRK(KUDV),NASHT)
+         CALL DZERO(WRK(KPVX),LPVMAT)
       END IF
 C
 C     Calculate expectation value properties (first order)
@@ -361,6 +377,7 @@ C     CALL MIXS0(CMO,UDV,WRK,LWRK)
 C
       CALL AVEPRP(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KTOT),LFREE)
       CALL FLSHFO(LUPRI)
+      CALL ZFSDRV(WRK,LWRK)
 C
       IF (.NOT.DORESP) GO TO 9999
 C
@@ -395,6 +412,49 @@ C
      *               WRK(KFC),WRK(KFV),WRK(KFCAC),WRK(KH2AC),
      *               WRK(KINDX),WRK(KWRK1),LWRK1)
          CALL FLSHFO(LUPRI)
+      END IF
+      IF (GCALC) THEN
+         CALL GDRV(WRK,LWRK)
+      END IF
+C
+C     Calculate response properties with absorption
+C     =============================================
+C
+      IF (ABSORP) THEN
+         CALL ABSCALC(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KFOCK),
+     *                WRK(KFC),WRK(KFV),WRK(KFCAC),WRK(KH2AC),
+     *                WRK(KINDX),WRK(KWRK1),LWRK1)
+         GO TO 9999
+      END IF
+C
+C     Calculate response properties with absorption
+C     =============================================
+C
+      IF (ABSORP) THEN
+         CALL ABSCALC(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KFOCK),
+     *                WRK(KFC),WRK(KFV),WRK(KFCAC),WRK(KH2AC),
+     *                WRK(KINDX),WRK(KWRK1),LWRK1)
+         GO TO 9999
+      END IF
+C
+C     Calculate response properties with absorption
+C     =============================================
+C
+      IF (ABSORP) THEN
+         CALL ABSCALC(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KFOCK),
+     *                WRK(KFC),WRK(KFV),WRK(KFCAC),WRK(KH2AC),
+     *                WRK(KINDX),WRK(KWRK1),LWRK1)
+         GO TO 9999
+      END IF
+C
+C     Calculate response properties with absorption
+C     =============================================
+C
+      IF (ABSORP) THEN
+         CALL ABSCALC(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KFOCK),
+     *                WRK(KFC),WRK(KFV),WRK(KFCAC),WRK(KH2AC),
+     *                WRK(KINDX),WRK(KWRK1),LWRK1)
+         GO TO 9999
       END IF
 C
 C     Calculate response properties with absorption
@@ -556,7 +616,7 @@ C <<< GENERAL INPUT FOR RESPONSE >>>
 C
 #include "implicit.h"
 #include "dummy.h"
-      PARAMETER ( NTABLE = 9 )
+      PARAMETER ( NTABLE = 10 )
 C
 #include "priunit.h"
 #include "infpri.h"
@@ -579,7 +639,7 @@ C
 C
       DATA TABLE /'*END OF', '**RESPO', '*LINEAR', '*QUADRA',
      *            '*CUBIC ', '*C6    ', '*ESR   ', '*ABSORP',
-     *            '*ESG   '/
+     *            '*SPIN-O', '*ESG   '/
 C
 C     Include block data RSPINF which initializes /INFRSP/
 C
@@ -619,7 +679,7 @@ C     end of this input module
       IF (PROMPT .EQ. '*') THEN
          DO I=1, NTABLE
             IF (WORD .EQ. TABLE(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9), I
+               GO TO (1,2,3,4,5,6,7,8,9,10), I
             END IF
          END DO
 C
@@ -648,7 +708,9 @@ C
       GO TO 200
  8    CALL ABSORP_INPUT(WORD)
       GO TO 200
- 9    CALL ESGINP(WORD)
+ 9    CALL HSOINP(WORD)
+      GO TO 200
+ 10   CALL ESGINP(WORD)
       GO TO 200
 C
  1    CONTINUE
@@ -690,7 +752,7 @@ C
 #include "inftap.h"
 C
       LOGICAL NEWDEF, SET
-      PARAMETER ( NTABLE = 20 )
+      PARAMETER ( NTABLE = 21 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
       SAVE TABLE, SET
@@ -701,7 +763,7 @@ C
      *            '.OPTORB', '.MAXPHP', '.PHPRES',
      *            '.MAXRM ', '.QRREST', '.PROPAV',
      *            '.HIRPA ', '.SOPW4 ', '.SOPPA(',
-     *            '.NODOIT', '.PROP2A'/
+     *            '.NODOIT', '.DFT-SO', '.PROP2A'/
       DATA SET /.FALSE./
 C
       IF (.NOT.SET) THEN
@@ -724,7 +786,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,
-     *                    11,12,13,14,15,16,17,18,19,20), I
+     *                      11,12,13,14,15,16,17,18,19,20,21), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -802,8 +864,12 @@ C
    19          CONTINUE
                   DIROIT = .FALSE.
                GO TO 100
+ 20            CONTINUE
+c              compute DFT_SO integrals
+               DFT_SO = .TRUE.
+               GO TO 100
 C              .PROP2Average
-   20          CONTINUE
+ 21            CONTINUE
                   N2AVTOT = N2AVTOT + 1
                   IF ( N2AVTOT .GT. MAX2AV ) THEN
                      WRITE(LUPRI,'(/2A,I5)')
@@ -982,7 +1048,7 @@ C     Initialization of INFHSO for HSOINP
 C     Initialization of INFHYP
       DATA HYPCAL/.FALSE./
       DATA QRSPEC/.FALSE./,QRSHG/.FALSE./,QRPOCK/.FALSE./
-      DATA SOCOLL/.FALSE./,SSCOLL/.FALSE./
+      DATA QROPRF/.FALSE./,SOCOLL/.FALSE./,SSCOLL/.FALSE./
       DATA IPRHYP/2/
       DATA NBQRFR/1/ , BQRFR(1)/0.0D0/
       DATA NCQRFR/1/ , CQRFR(1)/0.0D0/
@@ -1034,7 +1100,7 @@ C Read input options for PP = "Polarization Propagator" excitation energies
 C                           = "Linear Response Single Residue"
 C
 #include "implicit.h"
-      LOGICAL NEWDEF, SPNDEF
+      LOGICAL NEWDEF
       PARAMETER ( NTABLE = 49 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL
@@ -1068,7 +1134,6 @@ C
      *            '.SINGLE', '.DOUBLE', '.THCLR ', '.MAXITL',
      *            '.TRIPLE', '.NSIMUL', '.NSTART'/
 C
-      DATA SPNDEF/.FALSE./
 C
 C READ IN  INPUT
 C
@@ -1176,25 +1241,21 @@ C
                LPPOP( INDPRP('Z SPNORB')) = .TRUE.
                DOSO1 = .TRUE.
                DOSO2 = .TRUE.
-               SPNDEF = .TRUE.
                GO TO 100
  21            CONTINUE
                LPPOP( INDPRP('X SPNORB')) = .TRUE.
                DOSO1 = .TRUE.
                DOSO2 = .TRUE.
-               SPNDEF = .TRUE.
                GO TO 100
  22            CONTINUE
                LPPOP( INDPRP('Y SPNORB')) = .TRUE.
                DOSO1 = .TRUE.
                DOSO2 = .TRUE.
-               SPNDEF = .TRUE.
                GO TO 100
  23            CONTINUE
                LPPOP( INDPRP('Z SPNORB')) = .TRUE.
                DOSO1 = .TRUE.
                DOSO2 = .TRUE.
-               SPNDEF = .TRUE.
                GO TO 100
  24            CONTINUE
                READ(LUCMD,'( A )')LABEL
@@ -1323,12 +1384,6 @@ C
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSOL
          END IF
-         IF (SPNDEF) THEN
-            TRPLET = .TRUE.
-            TRPFLG = .TRUE.
-            WRITE(LUPRI,'(A,/)')
-     *      ' Spin orbit matrix elements requested'
-         END IF
          WRITE(LUPRI,'(A,I4)')
      *      ' Print level                                    : IPRPP  ='
      *       ,IPRPP
@@ -1430,7 +1485,6 @@ C
      *            '.MAXOCK', '.SOPRSY', '.RESTLR', '.DIROIT',
      *            '.TRIPLE', '.PV PSO', '.PV SO ', '.PV SO2'/
 C
-      DATA SPNDEF/.FALSE./
 C
 C
 C READ IN  INPUT
@@ -1533,28 +1587,24 @@ C
                   LLROP( INDPRP('Z SPNORB')) = .TRUE.
                   DOSO1 = .TRUE.
                   DOSO2 = .TRUE.
-                  SPNDEF = .TRUE.
                GO TO 100
  21            CONTINUE
                   LLROP( INDPRP('X SPNORB')) = .TRUE.
                   DOSO1 = .TRUE.
                   DOSO2 = .TRUE.
-                  SPNDEF = .TRUE.
                GO TO 100
  22            CONTINUE
                   LLROP( INDPRP('Y SPNORB')) = .TRUE.
                   DOSO1 = .TRUE.
                   DOSO2 = .TRUE.
-                  SPNDEF = .TRUE.
                GO TO 100
  23            CONTINUE
                   LLROP( INDPRP('Z SPNORB')) = .TRUE.
                   DOSO1 = .TRUE.
                   DOSO2 = .TRUE.
-                  SPNDEF = .TRUE.
                GO TO 100
  24            CONTINUE
-                  READ(LUCMD,'( A )')LABEL
+                  READ(LUCMD,'(BN,A,I8)')LABEL,IRANK
                   LLROP( INDPRP(LABEL)) = .TRUE.
                GO TO 100
  25            CONTINUE
@@ -1705,13 +1755,6 @@ C PV from spin-orbit 2 el
             WRITE(LUPRI,'(A,F8.4)')
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSOL
-         END IF
-         IF (SPNDEF) THEN
-            TRPLET = .TRUE.
-            TRPFLG = .TRUE.
-            WRITE(LUPRI,'(A,L1,/)')
-     *      ' Spin orbit calculation requested               : TRPFLG ='
-     *      ,TRPFLG
          END IF
          WRITE(LUPRI,'(A,I4)')
      *      ' Print level                                    : IPRLR  ='
@@ -2254,6 +2297,7 @@ C
 #include "indcr.h"
 #include "inftmo.h"
 #include "inftpa.h"
+#include "gtensor.h"
 C
       LOGICAL FNDLAB,FNDLB2,TRIMAT,TOFILE
 C
@@ -2493,6 +2537,18 @@ C
             ELSE IF (LABEL(2:7) .EQ. 'DIPVEL') THEN
                TRIMAT = .TRUE.
                PRPWRD = 'DIPVEL '
+            ELSE IF (LABEL(3:8) .EQ. 'SPNORB') THEN
+               TRIMAT = .TRUE.
+               PRPWRD = 'SPNORB'
+            ELSE IF (LABEL(3:8) .EQ. 'MNF-SO') THEN
+               TRIMAT = .TRUE.
+               PRPWRD = 'MNF-SO'
+            ELSE IF (LABEL(3:8) .EQ. 'SPNSCA') THEN
+               TRIMAT = .TRUE.
+               PRPWRD = 'SOSCALE'
+            ELSE IF (LABEL(2:7) .EQ. 'ANGECC') THEN
+               TRIMAT = .TRUE.
+               PRPWRD = 'ANGECC'
             ELSE
                KSYMPT = 0
                WRITE(LUPRI,'(/3A)') '@ RSPSYM ERROR: PROPERTY LABEL ',
@@ -3379,7 +3435,7 @@ C      subroutine has been called before RSPMC).
 C
 C     Find out if TDHF or not :
 C
-      TDHF = (NASHT.EQ.0 .OR. (NASHT.EQ.1 .AND. NACTEL.EQ.1))
+      TDHF = (NASHT.EQ.0 .OR. (NASHT.EQ.1 .AND. NACTEL.EQ.1) .OR.HSROHF)
 C
 C     If any triplet operators, then we must use determinants
 C     in RESPONSE also for the reference symmetry, even if
@@ -3436,6 +3492,12 @@ C
      *   ' -- inactive part     :',EMY,
      *   ' --   active part     :',EACTIV,
      *   ' -- nuclear repulsion :',POTNUC
+      ELSE IF (HSROHF) THEN
+         WRITE (LUPRI,'(//,(A,F25.15))')
+     *   ' high-spin open-shell SCF energy:',EMCSCF,
+     *   ' -- inactive part               :',EMY,
+     *   ' --   active part               :',EACTIV,
+     *   ' -- nuclear repulsion           :',POTNUC
       ELSE
          WRITE (LUPRI,'(//,(A,F25.15))')
      *   ' MCSCF energy         :',EMCSCF,
@@ -3530,11 +3592,15 @@ C        read and unpack DV
          CALL DSPTSI(NASHT,WRK,UDV)
          IF (.NOT.RSPCI) THEN
             CALL READT (LUSIFC,N2ORBT,FOCK)
-            CALL READT (LUSIFC,NNASHY,PV)
+            IF (HSROHF) THEN
+               READ (LUSIFC)
+            ELSE
+               CALL READT (LUSIFC,NNASHY,PV)
+            END IF
             CALL READT (LUSIFC,NNORBT,FC)
             CALL READT (LUSIFC,NNORBT,FV)
          END IF
-         IF ( IPRRSP.GT.110 ) THEN
+         IF ( IPRRSP.GT.110 .AND. .NOT. TDHF) THEN
             CALL GETREF(WRK,NCONRF)
             WRITE(LUPRI,'(/A)')
      &           ' **** RSPMC **** REFERENCE CONFIGURATION'
@@ -3650,10 +3716,12 @@ C
 #include "inforb.h"
 #include "infrsp.h"
 #include "inftap.h"
+#include "maxorb.h"
+#include "infinp.h"
 C
       IF (LCREF .EQ. 1) THEN
          CREF(1) = 1.0D0
-      ELSE IF (LCREF .EQ. 0 .AND. NASHT .LE. 1) THEN
+      ELSE IF (LCREF .EQ. 0 .AND. (NASHT .LE. 1 .OR. HSROHF)) THEN
 C        ... Hartree-Fock case ....
       ELSE
          REWIND LUSIFC

@@ -55,7 +55,7 @@
    CALL PUTWA(UNIT, SOURCE, ADDR, COUNT, IERR) 
 
    Currently the I/O is syncronous and unbuffered */
-
+#define _BSD_SOURCE 1
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -92,7 +92,7 @@
 #endif
 
 /* for some machines we have to add an underscore to the routine names:  */
-#if defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_AIX) || defined (SYS_SUN)
+#if defined(SYS_AIX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_LINUX) ||  defined (SYS_SUN) || defined(SYS_HPUX)
 #define WOPEN wopen_
 #define WCLOSE wclose_
 #define GETWA getwa_

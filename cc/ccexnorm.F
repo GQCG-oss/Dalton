@@ -471,8 +471,6 @@ c         -----------------------------------------------------------
         dlr = ovlpdlr(iovlp)
         tlr = ovlptlr(iovlp)
         xnrmlr = slr + dlr + tlr
-
-        xnorm(ilstnr) = xnrmlr
        
         if (ipass.eq.1) then
           write(lupri,'("| ",i4,"|",2(i4,3x,"|"),f11.5,'//
@@ -493,8 +491,7 @@ c         ---------------------------------------------------
      &                  work(k1amp),work(k2amp))
           
           call dscal(nccvar,one/dsqrt(xnrmrr),work(k1amp),1)
-          xnorm(ilstnr) = xnorm(ilstnr)/dsqrt(xnrmrr)
-
+          
           iopt = 3
           call cc_wrrsp('RE ',ilstnr,isym,iopt,model,dummy,
      &                  work(k1amp),work(k2amp),work(kwrk1),lwrk1)
@@ -520,7 +517,6 @@ c         --------------------------------------------------
      &                    work(k1amp),work(k2amp))
             
             call dscal(nccvar,dsqrt(xnrmrr)/xnrmlr,work(k1amp),1)
-            xnorm(ilstnr) = xnorm(ilstnr)*dsqrt(xnrmrr)/xnrmlr
             
             iopt = 3
             call cc_wrrsp('LE ',ilstnr,isym,iopt,model,dummy,

@@ -1,3 +1,4 @@
+c     -*- mode: fortran; fortran-continuation-string: "&" -*-
       LOGICAL TESTIN, OPTWLK, RNHERM, RNSIRI, RNABAC, GEOCNV,
      &        HRINPC, SRINPC, RDINPC, RDMLIN, PARCAL, DIRCAL,
      &        WRINDX, WLKREJ, WALKIN, RNRESP, USRIPR, SEGBAS,

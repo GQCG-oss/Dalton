@@ -138,29 +138,8 @@ C
          LUERR = 0
       END IF
       LMWORK = 0
-#if defined (SYS_AIX) || defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_DEC)
-C
-C     Dynamic memory allocation; check for WRKMEM in environment
-C     The T3D thingie might work for DEC_ALPHA as well? Try it out, kr-dec96
-C
-      WRKMEM = '                    '
-#if defined (SYS_T3D) || defined (SYS_T90)
-      CALL PXFGETENV('WRKMEM',6,WRKMEM,LWRKMM,IERR)
-#else
-      CALL GETENV('WRKMEM',WRKMEM)
-#endif
-      READ(WRKMEM, '(I20)', ERR=10) LMWORK
-      GOTO 20
-   10    WRITE(LUERR,'(/3A)')
-     &   ' DALTON: WRKMEM conversion error; WRKMEM = "',WRKMEM,'"'
-         LMWORK = 0
-   20 CONTINUE
-#if defined (SYS_T3D) || defined (SYS_T90)
-      CALL PXFGETENV ('BASDIR',6,BASDIR,LBASDR,IERR)
-#else
-      CALL GETENV ('BASDIR',BASDIR)
-#endif
-#endif
+c     70 must be in sync with GNRCHR common block
+      CALL GETMMBAS(LMWORK,BASDIR,IDUMMY)
 C
 C     Either default memory size,
 C
@@ -500,5 +479,35 @@ C
          CALL PVMXEXIT
       END IF
 #endif
-      STOP '*** End of DALTON calculation ***'
+      END
+      SUBROUTINE GETMMBAS(LMWORK,BASDIR,LBASDR)
+#include <implicit.h>
+      CHARACTER*70 BASDIR
+#if defined(SYS_AIX)||defined(SYS_CRAY)||defined(SYS_IRIX)||defined(SYS_NEC)||defined(SYS_CONVEX)||defined(SYS_T3D)||defined(SYS_SUN)||defined (SYS_LINUX)||defined(SYS_HPUX)||defined(SYS_HAL)||defined(SYS_T90)||defined(SYS_DEC)
+      CHARACTER*20 WRKMEM
+#if defined (VAR_MPI)
+      INCLUDE 'mpif.h'
+#endif
+C
+C     Dynamic memory allocation; check for WRKMEM in environment
+C     The T3D thingie might work for DEC_ALPHA as well? Try it out, kr-dec96
+C
+      WRKMEM = '                    '
+#if defined (SYS_T3D) || defined (SYS_T90)
+      CALL PXFGETENV('WRKMEM',6,WRKMEM,LWRKMM,IERR)
+      CALL PXFGETENV ('BASDIR',6,BASDIR,LBASDR,IERR)
+#else
+      CALL GETENV('WRKMEM',WRKMEM)
+      CALL GETENV ('BASDIR',BASDIR)
+#endif
+      READ(WRKMEM, '(I20)', ERR=10) LMWORK
+      GOTO 20
+   10    WRITE(LUERR,'(/3A)')
+     &   ' DALTON: WRKMEM conversion error; WRKMEM = "',WRKMEM,'"'
+         LMWORK = 0
+   20 CONTINUE
+#if defined(VAR_MPI)
+      CALL MPI_BCAST(LMWORK,1,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
+#endif /* defined(VAR_MPI) */
+#endif
       END

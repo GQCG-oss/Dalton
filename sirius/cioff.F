@@ -35,7 +35,6 @@ C
 C
 C  /* Deck cioff */
       SUBROUTINE CIOFF(IREFSM,ICORHC,XNDXCI,NTEST)
-c
 c Generate offset arrays for CI vector with symmetry IREFSM
 c ICORHC = 1 => store in C arrays
 c ICORHC = 2 => store in HC arrays

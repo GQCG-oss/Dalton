@@ -1473,21 +1473,21 @@ C
  5040 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
      *  ' >>> BASPRO error, # of shells when adding Huckel orbitals',
-     &     KMAX,
+     &     ISHEL,
      *  '                   current maximum number                 ',
      &     MXSHEL
         CALL QUIT('BASPRO: Too many shells')
  5050 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
      *  ' >>> BASPRO error, # of contracted bf. after adding Huckel '//
-     &     'orbitals',NBASIS,
+     &     'orbitals',IORBD,
      *  '                   current maximum number                  '//
      &     '        ',MXCORB
         CALL QUIT('BASPRO: Too many contracted basis functions')
  5060 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
      *  ' >>> BASPRO error, n# of primitive bf after adding Huckel '//
-     &     'orbitals',NPBAS,
+     &     'orbitals',IPRIMD,
      *  '                   current maximum number                 '//
      &     '        ',MXPRIM
         CALL QUIT('BASPRO: Too many primitives')
@@ -3671,7 +3671,7 @@ C
      &            CMXYZ,AIMOM,BIMOM,CIMOM,LINEAR,NATOMS,NCOOR,IPREAD)
 C
       IF (IPREAD .GT. 0) THEN
-         WRITE(LUPRI,'(A,F18.12)')'  Nuclear repulsion energy :',
+         WRITE(LUPRI,'(//A,F18.12)')'  Nuclear repulsion energy :',
      &                               POTNUC
       END IF
       RETURN

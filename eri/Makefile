@@ -1,6 +1,7 @@
+all : liberi.a
+
 include ../Makefile.config
 
-all : liberi.a
 
 F_OBJS =  eri2cft.o        eri2her.o     eri2sym.o \
 eri2aob.o     eri2dis.o     eri2odb.o     eri2vec.o \
@@ -26,6 +27,6 @@ clean :
 	$(RM) -f *.o *~ *.lst *.i *.L i.*.f v.i.*.f *.a
 
 depend:
-	../tools/check_depend $(INCLUDE_DIR) > Makefile.depend
+	../tools/check_depend $(INCLUDES) > Makefile.depend
 
 include Makefile.depend

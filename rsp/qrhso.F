@@ -32,6 +32,12 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
+#if defined (VAR_DEBUG)
+#define DEBUG .TRUE.
+#else
+#define DEBUG .FALSE.
+#endif
+
 C
 #ifdef REV_LOG
 C=======================================================================
@@ -111,6 +117,8 @@ C
       COMMON /ACALL/ACALL
       ACALL = .FALSE.
       DATA HSOLBL/'X SPNORB','Y SPNORB','Z SPNORB'/
+
+      IPRHSO=IPRRSP
 C
 C If expicit one-electron part go normal way
 C
@@ -121,6 +129,18 @@ C
      *           VEC,UDV,OPMAT,DEN1,
      *           XINDX,CMO,MJWOP,WRK,LWRK)
          CALL DSCAL(KZYVR,HSOFAC,X2TRS,1)
+         RETURN
+      END IF
+C
+C Everything from AO integrals
+C
+      IF (TDHF) THEN
+         CALL X2HSOAO(
+     &      OPLBL,CMO,MJWOP,
+     &      KZYV,ISYMV,ISPINV,VEC,
+     &      KZYVR,IGRSYM,IGRSPI,X2TRS,
+     &      WRK,LWRK)
+         CALL DSCAL(KZYVR,-HSOFAC,X2TRS,1)
          RETURN
       END IF
       IF (OPLBL(2:2).EQ.'2') THEN
@@ -450,6 +470,20 @@ C
      *                 GRVEC,A2TRS,VEC,UDV,OPMAT,XINDX,CMO,MJWOP,
      *                 WRK,LWRK)
          CALL DSCAL(KZYVR,HSOFAC,A2TRS,1)
+         RETURN
+      END IF
+C
+C Everything from AO integrals
+C
+      IF (TDHF) THEN
+         CALL X2HSOAO(
+     &      OPLBL,CMO,MJWOP,
+     &      KZYV,ISYMV,ISPINV,VEC,
+     &      KZYVR,IGRSYM,IGRSPI,A2TRS,
+     &      WRK,LWRK)
+         CALL DSCAL(KZYVR,-HSOFAC/2,A2TRS,1)
+         CALL DSWAP(MZVAR(IGRSYM),A2TRS,1,
+     *           A2TRS(MZVAR(IGRSYM)+1),1)
          RETURN
       END IF
       IF (OPLBL(2:2).EQ.'2') THEN
@@ -1154,4 +1188,188 @@ C  /* Deck ipset */
       INFDEN(3) = K
       INFDEN(4) = L
       RETURN
+      END
+C
+C /* Deck x2hsoao */
+C
+      SUBROUTINE X2HSOAO(
+     &   OPLBL,CMO,MJWOP,
+     &   LVEC,VECSYM,VECSPIN,
+     &   VEC,
+     &   LGR,GRSYM,GRSPIN,
+     &   GR,
+     &   WORK,LWORK
+     &   )
+C
+C Built gradient of one-index transformed spin-orbit operator
+C from AO integrals (single determinant)
+C
+#include <implicit.h>
+C
+C Input
+C
+      CHARACTER*8 OPLBL
+      DIMENSION CMO(*)
+      INTEGER MJWOP(*)
+      INTEGER LVEC, VECSYM, VECSPIN
+      DIMENSION VEC(*)
+      INTEGER LGR, GRSYM, GRSPIN
+C
+C Output
+C
+c      REAL(DOUBLE) GR
+C
+C Work
+C
+      INTEGER LWORK
+      DIMENSION WORK(LWORK)
+#include <inforb.h>
+#include <priunit.h>
+#include <infrsp.h>
+C
+C Local
+C
+      INTEGER KFREE,LFREE,KAO,KMO,KS,KD,KD1,KD2,KF,KF1,KF2
+      LOGICAL TRIPLET(2)
+      PARAMETER (D1 = 1.0D0)
+C
+      CALL QENTER('X2HSOAO')
+      KFREE=1
+      LFREE=LWORK
+      CALL MEMGET('REAL',KAO,N2BASX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KMO,N2ORBX,WORK,KFREE,LFREE)
+C
+C Unpack vectors
+C
+      CALL DZERO(WORK(KMO),N2ORBX)
+      CALL GTZYMT(1,VEC,LVEC,VECSYM,WORK(KMO),MJWOP)
+C
+C Ao-tranformed kappa
+C
+      CALL DZERO(WORK(KAO),N2BASX)
+      CALL MOTOAO(WORK(KMO),WORK(KAO),CMO,VECSYM)
+      CALL MEMREL('MOTOAO',WORK,KMO,KMO,KFREE,LFREE)
+      IF (DEBUG) THEN
+         CALL MAOPRI(WORK(KAO),'X2HSOAO:kappa(ao)')
+      END IF
+C
+C Get overlap
+C
+      CALL MEMGET('REAL',KS,N2BASX,WORK,KFREE,LFREE)
+      CALL GET_H1(WORK(KS),'OVERLAP')
+C
+C Allocate densities and Fock
+C
+      CALL MEMGET('REAL',KF,2*N2BASX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KD,2*N2BASX,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KF),2*N2BASX)
+      CALL DZERO(WORK(KD),2*N2BASX)
+      KD1=KD
+      KD2=KD+N2BASX
+      KF1=KF
+      KF2=KF+N2BASX
+C
+C Transform density 
+C
+      CALL GTDMSO(WORK(KFREE),CMO,WORK(KD1),WORK(KFREE),WORK(KFREE))
+      CALL D_K(NBAST,WORK(KAO),WORK(KD1),WORK(KD2),WORK(KS))
+      IF (DEBUG) THEN
+         CALL MAOPRI(WORK(KD1),'X2HSOAO:Density 1')
+         CALL MAOPRI(WORK(KD2),'X2HSOAO:Density 2')
+      END IF
+C
+C One-electron
+C
+      IF (OPLBL(2:2).EQ.' ') THEN
+         CALL GET_P(OPLBL(1:1)//'1'//OPLBL(3:8),WORK(KF1))
+      END IF
+C
+C Build fock
+C
+      TRIPLET(1) = GRSPIN.NE.VECSPIN
+      TRIPLET(2) = GRSPIN.EQ.1
+      CALL GETFMATX(OPLBL,TRIPLET,WORK(KF),WORK(KD),2)
+      IF (DEBUG) THEN
+         CALL MAOPRI(WORK(KF1),'X2HSOAO:Fock 1')
+         CALL MAOPRI(WORK(KF2),'X2HSOAO:Fock 2')
+      END IF
+C
+C Final transform (adds [k,f1] to f2
+C
+      CALL F_K(NBAST,WORK(KAO),WORK(KF1),WORK(KF2),WORK(KS))
+      IF (DEBUG) THEN
+         CALL MAOPRI(WORK(KF2),'X2HSOAO:Final fock')
+      END IF
+C
+C Mo basis (add to one-electron in input)
+C
+      CALL DZERO(WORK(KF1),N2ORBX)
+      CALL AOTOMO(WORK(KF2),WORK(KF1),CMO,GRSYM)
+      IF (DEBUG) THEN
+         CALL MAOPRI(WORK(KF1),'X2HSOAO:Final fock (mo)')
+      END IF
+C
+C Final gradient
+C
+      TRPLET=GRSPIN.EQ.VECSPIN
+      CALL ORBEX(GRSYM,1,LGR,
+     &   WORK(KF1),WORK(KFREE),WORK(KFREE),WORK(KFREE),
+     &   GR,D1,WORK(KFREE),MJWOP)
+      IF (DEBUG) THEN
+         CALL OUTPUT(GR,1,LGR/2,1,2,LGR/2,2,1,LUPRI)
+      END IF
+      CALL MEMREL('X2HSOAO',WORK,1,1,KFREE,LFREE)
+      CALL QEXIT('X2HSOAO')
+      END
+C
+C /* Deck get_p */
+C
+      SUBROUTINE GET_P(LABEL,P)
+C
+C Simplified PRPGET
+C
+#include <implicit.h>
+      CHARACTER*8 LABEL
+      DIMENSION P(*)
+C
+C External
+C
+#include <inforb.h>
+#include <inftap.h>
+#include <dummy.h>
+      LOGICAL FNDLB2, CLOSED
+      EXTERNAL FNDLB2
+C
+C Local
+C
+      DIMENSION TMP(N2BASX)
+      CHARACTER*8 RTNLBL(2)
+C
+      CALL QENTER('GET_P')
+C
+C Leave AOPROPER in the same state (open/closed)
+C
+      CLOSED=LUPROP.LT.0
+      IF (CLOSED) THEN
+         CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ','UNFORMATTED',IDUMMY,
+     &   .FALSE.)
+      END IF
+      REWIND LUPROP
+      IF ( FNDLB2(LABEL,RTNLBL,LUPROP)) THEN
+         IF (RTNLBL(2).EQ.'SQUARE  ') THEN
+            CALL READT(LUPROP,N2BASX,P)
+         ELSE IF (RTNLBL(2).EQ.'SYMMETRI') THEN
+            CALL READT(LUPROP,NNBASX,TMP)
+            CALL DSPTSI(NBAST,TMP,P)
+         ELSE IF (RTNLBL(2).EQ.'ANTISYMM') THEN
+            CALL READT(LUPROP,NNBASX,TMP)
+            CALL DAPTGE(NBAST,TMP,P)
+         ELSE
+            CALL QUIT('Error: No antisymmetry label on LUPROP')
+         END IF
+      ELSE
+         CALL QUIT('GET_P: '//LABEL//' not found on LUPROP')
+      END IF
+      IF (CLOSED) CALL GPCLOSE(LUPROP,'KEEP')
+      CALL QEXIT('GET_P')
       END

@@ -107,7 +107,7 @@ C
       SUBROUTINE MELTWO(H1,DEN1,DEN2,OVLAP,ISYMDN,IDAX,IOPSYM,
      *                  ISPIN1,ISPIN2,ISPIN3,IKLVL,
      *                  ZYMAT1,ISYM1,ZYMAT2,ISYM2,ZYMAT3,ISYM3,
-     *                  RES,WRK,LWRK)
+     *                  RES,CMO,WRK,LWRK)
 C
 C Calculation of the two-electron matrix element <L|K|R>.
 C The generalized hamiltonian K can be one-index transformed 0, 1 or 2
@@ -131,6 +131,7 @@ C
       DIMENSION DEN1(NASHDI,NASHDI),DEN2(N2ASHX,N2ASHX)
       DIMENSION ZYMAT1(NORBT,NORBT),ZYMAT2(NORBT,NORBT)
       DIMENSION ZYMAT3(NORBT,NORBT)
+      DIMENSION CMO(*)
 C
       LOGICAL LCON,LORB
 C
@@ -210,7 +211,8 @@ C
      *                  IDAX,INTSYM,ISYMDN,DEN1,DEN2,WRK(KPVD),
      *                  WRK(KH2),WRK(KH2X),WRK(KFREE),KONE,LFREE,
      *                  LCON,LORB,IPRRSP,IGRSPI,ISPIN1,ISPIN2,ISPIN3,
-     *                  IKLVL,ZYMAT1,ISYM1,ZYMAT2,ISYM2,ZYMAT3,ISYM3)
+     *                  IKLVL,ZYMAT1,ISYM1,ZYMAT2,ISYM2,ZYMAT3,ISYM3,
+     $                  CMO)
       ELSE
          CALL RSPFX(WRK(KFI),WRK(KFA),WRK(KQA),WRK(KQB),WRK(KH2AX),IDAX,
      *              INTSYM,ISYMDN,DEN1,DEN2,WRK(KPVD),WRK(KH2X),

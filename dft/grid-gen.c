@@ -1,0 +1,1720 @@
+/* -*-mode:c; c-style:bsd; c-basic-offset:4;indent-tabs-mode:nil; -*- */
+/* Adaptive grid generation code.
+   Zilvinas Rinkevicus: single atom integration.
+   Pawel Salek        : all the rest.
+   2002.10.10-10.14
+*/
+/* define USE_PTHREADS if you want to use multithreaded grid generation.
+ * It allows to take an advantage of SMP architectures.
+ */
+#if !defined(SYS_AIX)
+/* for an yet unknown reason, MT-grid generation has a terrible
+   performance on regatta/AIX.
+*/
+/* #define USE_PTHREADS */
+#endif /* !defined(SYS_AIX) */
+
+#define __CVERSION__
+#if !defined(SYS_DEC)
+/* XOPEN compliance is missing on old Tru64 4.0E Alphas and pow() prototype
+ * is not specified. */
+#define _XOPEN_SOURCE          500
+#define _XOPEN_SOURCE_EXTENDED 1
+#endif
+#include <assert.h>
+#include <limits.h>
+#include <ctype.h>
+#include <stdio.h>
+#include <math.h>
+#include <string.h>
+#include <strings.h>
+#include <stdlib.h>
+#include <time.h>
+#include <sys/times.h>
+#include <unistd.h>
+
+#include "grid-gen.h"
+
+static const real CELL_SIZE = 4.0; /* common screening for cubes/cells */
+static void create_cubes(const char* fname, int point_cnt, real cell_size,
+                         void* work, int worksz);
+
+void*
+dal_malloc(size_t sz)
+{
+    void* res = malloc(sz);
+    if(!res) {
+        fprintf(stderr, "dal_malloc(sz=%d bytes) failed.\n", sz);
+        exit(1);
+    }
+    return res;
+}
+
+extern void nucbas_(int*, real* , const int*);
+extern void radlmg_(real*rad, real* wght, int *nr, real* raderr,
+                    const int*maxrad, int *nucorb, real *aa, const int *);
+extern void get_no_atoms_(int* atom_cnt);
+extern void get_atom_by_icent_(const int* icent, real* charge, int *cnt,
+                               int *mult, real *x, real *y, real *z);
+
+/* generate a list of atoms from Dalton common block data, taking into
+   account symmetries in the molecule.
+   The list of atoms is accessed in two modes:
+   - grid is generated only for symmetry-independent atoms...
+   - ... but all atoms need to be taken into account when performing
+   the space partitioning.
+*/
+GridGenAtom*
+grid_gen_atom_new(int* atom_cnt)
+{
+    int nat = 0, icent, i, mult;
+    real x[8], y[8], z[8], charge;
+    GridGenAtom* atoms;
+
+    get_no_atoms_(atom_cnt);
+    atoms = dal_malloc(*atom_cnt*sizeof(GridGenAtom));
+    
+    icent = 0;
+    do {
+        int cnt;
+        icent++;
+        get_atom_by_icent_(&icent, &charge, &cnt, &mult, x,y,z);
+        for(i=0; i<cnt; i++) {
+            atoms[nat].x = x[i];
+            atoms[nat].y = y[i];
+            atoms[nat].z = z[i];
+            atoms[nat].icent = icent-1;
+            atoms[nat].Z = charge;
+            atoms[nat].mult = mult;
+            nat++;
+        }
+    } while(nat<*atom_cnt);
+    return atoms;
+}
+/* ------------------------------------------------------------------- */
+/* Internal data structures used by the grid generator.                */
+/* ------------------------------------------------------------------- */
+struct GridGenAtomGrid_ {
+    int uniq_no;  /* number of the atom, before the symmetry multiplication */
+    int Z;        /* frequently used. */
+    int* leb_ang; /* leb_gen index associated with each radial point */
+    real* rad;    /* radial points array. */
+    real* wght;   /* radial points weights */
+    int pnt;      /* number of radial points for this atom*/
+    int *relevant_atoms; /* array of atoms relevant for partitioning *
+                          * the grid centered at given atom. */
+    int rel_at_cnt;      /* count of relevant atoms. */
+};  
+
+struct GridGenMolGrid_ {
+    int atom_cnt;                  /* number of atoms grid is generated for*/
+    const GridGenAtom* atom_coords;/* array with atom data */
+    GridGenAtomGrid**   atom_grids;/* array of atom grids */
+    real* rij;  /* triangular array of inverse distances between atoms */
+    real* aij;  /* triangular array of of.... */
+    FILE* fl;   /* the stream grid is being saved to */
+    int total_points; /* total number of generated points */
+    int off; /* thread number. 0 in serial. */
+    int nt;  /* total number of threads. 1 in serial. */
+};
+
+/* work data - per thread */
+struct GridGenWork_ {
+    real* rj;   /* temp array for confocal elliptical coordinates */
+    real* p_kg; /* unormalized weights evaluated for given gridpoint/atom */
+    real* vec;  /* temporary buffer */
+    real* x;  /* x coord */
+    real* y;  /* y coord */
+    real* z;  /* z coord */
+    real* wg; /* weigths */ 
+};
+typedef struct GridGenWork_ GridGenWork;
+
+void dzero_(real*arr, const int* cnt);
+static int verbose=0;
+/* include_selected partitioning points to selected partitioning scheme:
+   Becke or SSF. The function is supposed to update weights wg.
+*/
+static void
+include_partitioning_becke1(GridGenMolGrid* mg, int catom, int point_cnt,
+                            GridGenWork *ggw, int idx, int verbose);
+static void
+include_partitioning_becke2(GridGenMolGrid* mg, int catom, int point_cnt,
+                            GridGenWork *ggw, int idx, int verbose);
+static void
+include_partitioning_ssf  (GridGenMolGrid* mg, int catom, int point_cnt,
+                           GridGenWork *ggw, int idx, int verbose);
+static void gen_gc2_quad (GridGenAtomGrid* grid, real thrl);
+static void gen_lmg_quad(GridGenAtomGrid* grid, real thrl);
+
+/* Trond Saue:
+    The below data gives atomic radii in Angstroms and stems from table I of 
+    J.C.Slater: "Atomic Radii in Crystals"
+    J.Chem.Phys. 41(1964) 3199-3204
+    Values for elements marked with an asterisk has been
+    guessed/interpolated
+*/
+static const real bragg_radii[] = {
+/*       H      He*   */
+       0.35,  0.35,  
+/*       Li     Be     B      C      N      O      F      Ne*  */
+       1.45,  1.05,  0.85,  0.70,  0.65,  0.60,  0.50,  0.45,  
+/*       Na     Mg     Al     Si     P      S      Cl     Ar*  */
+       1.80,  1.50,  1.25,  1.10,  1.00,  1.00,  1.00,  1.00,  
+/*      K      Ca     Sc     Ti     V      Cr     Mn     Fe     Co   */
+       2.20,  1.80,  1.60,  1.40,  1.35,  1.40,  1.40,  1.40,  1.35,  
+/*      Ni     Cu     Zn     Ga     Ge     As     Se     Br     Kr*  */
+       1.35,  1.35,  1.35,  1.30,  1.25,  1.15,  1.15,  1.15,  1.10,  
+/*      Rb     Sr     Y      Zr     Nb     Mo     Tc     Ru     Rh  */
+       2.35,  2.00,  1.80,  1.55,  1.45,  1.45,  1.35,  1.30,  1.35,  
+/*      Pd     Ag     Cd     In     Sn     Sb     Te     I      Xe*  */
+       1.40,  1.60,  1.55,  1.55,  1.45,  1.45,  1.40,  1.40,  1.40,  
+/*      Cs     Ba     La      */
+       2.60,  2.15,  1.95,  
+/*      Ce     Pr     Nd     Pm     Sm     Eu     Gd  */
+       1.85,  1.85,  1.85,  1.85,  1.85,  1.85,  1.80,  
+/*      Tb     Dy     Ho     Er     Tm     Yb     Lu  */
+       1.75,  1.75,  1.75,  1.75,  1.75,  1.75,  1.75,  
+/*      Hf     Ta     W      Re     Os     Ir     Pt     Au     Hg  */
+       1.55,  1.45,  1.35,  1.30,  1.30,  1.35,  1.35,  1.35,  1.50,  
+/*      Tl     Pb*    Bi     Po     At*    Rn*  */
+       1.90,  1.75,  1.60,  1.90,  1.50,  1.50,  
+/*      Fr*    Ra     Ac       */
+       2.15,  2.15,  1.95,  
+/*     rad(U): 1.75 --> 1.37D0  */
+/*      Th     Pa     U      Np     Pu     Am     Cm*       */
+       1.80,  1.80,  1.37,  1.75,  1.75,  1.75,  1.75,  
+/*      Bk*    Cf*    Es*    Fm*    Md*    No*    Lw*  */
+       1.75,  1.75,  1.75,  1.75,  1.75,  1.75,  1.75
+    };
+    
+
+/* ------------------------------------------------------------------- */
+/* The grid generator configuration data with defaults.                */
+/* ------------------------------------------------------------------- */
+/* include_selected_partitioning scales the atomic grid centered at
+ * atom no 'catom'.
+ */
+struct partitioning_scheme_t {
+    char *name;
+    void (*partition)
+    (GridGenMolGrid* mg, int catom, int point_cnt,
+     GridGenWork *ggw, int idx, int verbose);
+};
+static struct partitioning_scheme_t partitioning_becke1 =
+{ "Becke partitioning with atomic radius correction", 
+  include_partitioning_becke1 };
+static struct partitioning_scheme_t partitioning_becke2 =
+{ "Original Becke partitioning", include_partitioning_becke2 };
+static struct partitioning_scheme_t partitioning_ssf =
+{ "SSF partitioning", include_partitioning_ssf };
+
+static struct partitioning_scheme_t *selected_partitioning =
+&partitioning_becke1;
+
+struct radial_scheme_t {
+    char *name;
+    void (*gen_quad)(GridGenAtomGrid*, real thrl);
+};
+static struct radial_scheme_t quad_lmg = { "LMG scheme",                            gen_lmg_quad };
+static struct radial_scheme_t quad_gc2 = { "Gauss-Chebychev scheme of second kind", gen_gc2_quad };
+
+static struct radial_scheme_t *radial_quad = &quad_lmg;
+
+int dftgrid_adaptive = 0;    
+
+/* ------------------------------------------------------------------- */
+/*              The angular grid generation interface                  */
+/* ------------------------------------------------------------------- */
+
+/* routines for generation of Lebedev grid */
+void ld0026_(real* x, real* y, real* z, real* w, int *pnt);
+void ld0038_(real* x, real* y, real* z, real* w, int *pnt);
+void ld0050_(real* x, real* y, real* z, real* w, int *pnt);
+void ld0074_(real* x, real* y, real* z, real* w, int *pnt);
+void ld0086_(real* x, real* y, real* z, real* w, int *pnt);
+void ld0110_(real* x, real* y, real* z, real* w, int *pnt);
+void ld0146_(real* x, real* y, real* z, real* w, int *pnt);
+void ld0170_(real* x, real* y, real* z, real* w, int *pnt);
+void ld0194_(real* x, real* y, real* z, real* w, int *pnt);
+void ld0230_(real* x, real* y, real* z, real* w, int *pnt);
+void ld0266_(real* x, real* y, real* z, real* w, int *pnt);
+void ld0302_(real* x, real* y, real* z, real* w, int *pnt);
+void ld0350_(real* x, real* y, real* z, real* w, int *pnt);
+void ld0434_(real* x, real* y, real* z, real* w, int *pnt);
+void ld0590_(real* x, real* y, real* z, real* w, int *pnt);
+void ld0770_(real* x, real* y, real* z, real* w, int *pnt);
+void ld0974_(real* x, real* y, real* z, real* w, int *pnt);
+void ld1202_(real* x, real* y, real* z, real* w, int *pnt);
+void ld1454_(real* x, real* y, real* z, real* w, int *pnt);
+
+struct leb_gen_{
+  int point_cnt, poly_type;
+  void (*func)(real* x, real* y, real* z, real* w, int *pnt);
+};
+
+/* some of the point type values were guessed but since it was only used
+   for ANGMIN -> quadrature mapping type, the accuracy is not really relevant.
+   Anyone, who would rely on particular mapping here would be crazy.
+   The true values can be found in literature.
+*/
+
+struct leb_gen_ leb_gen[] = {
+ /* {  26,  0, ld0026_}, CONSIDER disconnecting */
+ {  38,  0, ld0038_},
+ {  50, 9, ld0050_},
+ /* {  74, 12, ld0074_},* point type guessed; consider DISCONNECTING */
+ {  86, 11, ld0086_},
+ { 110, 15, ld0110_},
+ { 146, 17, ld0146_},
+ { 170, 19, ld0170_},
+ { 194, 21, ld0194_},
+ /* { 230, 22, ld0230_}, point type guessed; consider DISCONNECTING */
+ /* { 266, 22, ld0266_}, point type guessed; consider DISCONNECTING */
+ { 302, 23, ld0302_},
+ { 350, 29, ld0350_},
+ { 434, 31, ld0434_}, 
+ { 590, 35, ld0590_},
+ { 770, 41, ld0770_},
+ { 974, 47, ld0974_},
+ {1202, 53, ld1202_},
+ {1454, 59, ld1454_},
+};  
+
+/* get_leb_from_point returns index to leb_gen array that points to
+   the entry having at least iang points.
+*/
+int get_leb_from_point(int iang);
+
+/* get_leb_from_type returns index to leb_gen array that points to
+   the entry contructing polyhedra of at least given order.
+*/
+int get_leb_from_type(int poly_type);
+/* get_leb_from_point returns index to leb_gen array that points to
+   the entry having at least iang points.
+*/
+int
+get_leb_from_point(int iang)
+{
+    int i;
+    for(i=ELEMENTS(leb_gen)-1; i>=0; i--)
+        if(leb_gen[i].point_cnt<iang) return i;
+    return 0;
+}
+
+/* get_leb_from_type returns index to leb_gen array that points to
+   the entry contructing polyhedra of at least given order.
+*/
+int
+get_leb_from_type(int poly_type)
+{
+    int i;
+    for(i=ELEMENTS(leb_gen)-1; i>=0; i--)
+        if(leb_gen[i].poly_type<poly_type) return i;
+    return 0;
+}
+
+/* ------------------------------------------------------------------- */
+/* the integrator/grid generator itself                                */
+/* ------------------------------------------------------------------- */
+void
+grid_gen_set_part_scheme(GridGenPartScheme scheme)
+{
+    switch(scheme) {
+    case GRID_PART_BECKE:
+        selected_partitioning = &partitioning_becke1;
+        break;
+    case GRID_PART_BECKE2:
+        selected_partitioning = &partitioning_becke2;
+        break;
+    case GRID_PART_SSF: 
+        selected_partitioning = &partitioning_ssf;
+        break;
+    }
+}
+
+/* grid_gen_set_rad_quad:
+   set radial quadrature.
+*/
+void
+grid_gen_set_rad_quad(GridGenQuad scheme)
+{
+    switch(scheme) {
+    default:
+    case GRID_RAD_GC2: radial_quad = &quad_gc2; break;
+    case GRID_RAD_LMG: radial_quad = &quad_lmg; break;
+    }
+}
+                                                           
+/* max number of points per atom per angular shell */
+#define MAX_PT_PER_SHELL (leb_gen[ELEMENTS(leb_gen)-1].point_cnt)
+
+/* include_partitioning_weights:
+   scale weights
+*/
+#define IDX(arr,i,j) arr[(i)*MAX_PT_PER_SHELL +(j)]
+static void
+gridgen_compute_rjs(GridGenWork *ggw, GridGenMolGrid* mg,
+                    int point_cnt, int idx)
+{
+    int atno, ptno;
+
+    for(atno=0; atno<mg->atom_cnt; atno++) {
+        for(ptno=0; ptno<point_cnt; ptno++) {
+            real dx = mg->atom_coords[atno].x - ggw->x[idx+ptno];
+            real dy = mg->atom_coords[atno].y - ggw->y[idx+ptno];
+            real dz = mg->atom_coords[atno].z - ggw->z[idx+ptno];
+      
+            assert(atno>=0 && atno<mg->atom_cnt);
+            assert(ptno>=0 && ptno<MAX_PT_PER_SHELL);
+            ggw->IDX(rj,atno,ptno)   = sqrt(dx*dx + dy*dy + dz*dz);
+            ggw->IDX(p_kg,atno,ptno) = 1.0; 
+        }
+    }
+}
+/* include_partitioning_becke:
+   multiply current sphere/shell generated for specified atom by space
+   partitioning weights as described by Becke.
+   The computed weights are somehow redundant: unnormalized
+   weights p_kg are computed for all atoms, althougth only one is 
+   needed at this stage. The algorithm should probably be restructured
+   to avoid this.
+*/
+#define HARDNESS1 11
+static void
+include_partitioning_becke1(GridGenMolGrid* mg, int atom, int point_cnt,
+                            GridGenWork *ggw, int idx, int verbose)
+{
+    int atno, atno2, ptno, h, isign=-1;
+    real mu, mu2, g_mu, apasc;
+    real xpasc[HARDNESS1], facult[HARDNESS1];
+    /* compute confocal ellipical coordinates for the batch of points to
+     * be processed. */
+
+    if(mg->atom_cnt==1)
+        return;
+    facult[0] = 1;
+    for(h=1; h<HARDNESS1; h++)
+        facult[h] = facult[h-1]*h;
+
+    for(h=HARDNESS1-1; h>=0; h--) {
+        isign = -isign;
+        xpasc[h] = isign*facult[HARDNESS1-1]/
+            ((2*h+1)*facult[h]*facult[HARDNESS1-1-h]);
+    }
+    xpasc[0] = 1;
+    apasc = 0;
+    for(h=0; h<HARDNESS1; h++) apasc += xpasc[h];
+    apasc = 0.5/apasc;
+
+    gridgen_compute_rjs(ggw, mg, point_cnt, idx);
+
+    if(verbose)printf("Computing cell functions for atom %d\n", atom);
+    for(atno=1; atno<mg->atom_cnt; atno++) {
+        for(atno2=0; atno2<atno; atno2++) {
+            real dist = mg->rij[atno2+(atno*(atno-1))/2];
+            for(ptno=0; ptno<point_cnt; ptno++) {
+                mu    =(ggw->IDX(rj,atno,ptno)-ggw->IDX(rj,atno2,ptno))*dist;
+                mu2 = mu*mu;
+                g_mu = 0;
+                for(h=0; h<HARDNESS1; h++) {
+                    g_mu += xpasc[h]*mu;
+                    mu *= mu2;
+                }
+                ggw->IDX(p_kg,atno,ptno)  *= 0.5-apasc*g_mu;
+                ggw->IDX(p_kg,atno2,ptno) *= 0.5+apasc*g_mu;
+            }
+        }
+    }
+    /* compute weight normalization factors */
+    dzero_(ggw->vec, &point_cnt);
+    for(atno=0; atno<mg->atom_cnt; atno++)
+        for(ptno=0; ptno<point_cnt; ptno++)
+            ggw->vec[ptno] += ggw->IDX(p_kg,atno,ptno); 
+
+    /*
+     *   Apply the computed weights
+     */
+    for(ptno=0; ptno<point_cnt; ptno++)
+        ggw->wg[idx+ptno] *= ggw->IDX(p_kg,atom,ptno)/ggw->vec[ptno];
+}
+
+#define HARDNESS2 3
+static void
+include_partitioning_becke2(GridGenMolGrid* mg, int atom, int point_cnt,
+                            GridGenWork *ggw, int idx, int verbose)
+{
+    int atno, atno2, ptno, h;
+    real mu, g_mu;
+    /* compute confocal ellipical coordinates for the batch of points to
+     * be processed. */
+
+    if(mg->atom_cnt==1)
+        return;
+    gridgen_compute_rjs(ggw, mg, point_cnt, idx);
+
+    if(verbose)printf("Computing cell functions for atom %d\n", atom);
+    for(atno=1; atno<mg->atom_cnt; atno++) {
+        for(atno2=0; atno2<atno; atno2++) {
+            real dist = mg->rij[atno2+(atno*(atno-1))/2];
+            real bfac = mg->aij[atno2+(atno*(atno-1))/2];
+            for(ptno=0; ptno<point_cnt; ptno++) {
+                mu    =(ggw->IDX(rj,atno,ptno)-ggw->IDX(rj,atno2,ptno))*dist;
+                mu   += bfac*(1-mu*mu);
+                if(mu<-1) mu= -1; /* numerical error correction, needed? */
+                if(mu>1)  mu=  1; /* numerical error correction, needed? */
+                for(g_mu = mu, h=0; h<HARDNESS2; h++)
+                    g_mu = 0.5*g_mu*(3.0-g_mu*g_mu);
+                ggw->IDX(p_kg,atno,ptno)  *= 0.5*(1.0-g_mu);
+                ggw->IDX(p_kg,atno2,ptno) *= 0.5*(1.0+g_mu);
+            }
+        }
+    }
+    /* compute weight normalization factors */
+    dzero_(ggw->vec, &point_cnt);
+    for(atno=0; atno<mg->atom_cnt; atno++)
+        for(ptno=0; ptno<point_cnt; ptno++)
+            ggw->vec[ptno] += ggw->IDX(p_kg,atno,ptno); 
+
+    /*
+     *   Apply the computed weights
+     */
+    for(ptno=0; ptno<point_cnt; ptno++)
+        ggw->wg[idx+ptno] *= ggw->IDX(p_kg,atom,ptno)/ggw->vec[ptno];
+}
+
+/* include_partitioning_ssf:
+   multiply current sphere/shell by space partitioning weights as
+   described in SSF article.
+   FIXME: compute relevant atoms only once.
+*/
+static void
+include_partitioning_ssf(GridGenMolGrid* mg, int atom, int point_cnt,
+                         GridGenWork *ggw, int idx, int verbose)
+{
+    /* the article says 0.64 but that value is a bullshit. try 0.54 */
+    static const real SSF_CUTOFF = 0.64;
+    int atno, ptno;
+    real mu, g_mu, pr, rx, ry, rz;
+    int * relevant_atoms = dal_malloc(sizeof(int)*mg->atom_cnt);
+    int atomi=0, ati, ati2, rel_atom_cnt = 0;
+
+    rx = ggw->x[idx] - mg->atom_coords[atom].x;
+    ry = ggw->y[idx] - mg->atom_coords[atom].y;
+    rz = ggw->z[idx] - mg->atom_coords[atom].z;
+    pr = sqrt(rx*rx+ry*ry+rz*rz); /* radius of the sphere */
+
+    /* find relevant atoms for 'atom':
+     * separate loops for atoms below and above */
+
+    for(atno=0; atno<atom; atno++) {
+        real dist = mg->rij[atno+(atom*(atom-1))/2];
+        if(2*pr*dist>1-SSF_CUTOFF)
+            relevant_atoms[rel_atom_cnt++] = atno;
+    }
+    atomi = rel_atom_cnt;
+    relevant_atoms[rel_atom_cnt++] = atom;
+    for(atno=atom+1; atno<mg->atom_cnt; atno++) {
+        real dist = mg->rij[atom+(atno*(atno-1))/2];
+        if(2*pr*dist>1-SSF_CUTOFF)
+            relevant_atoms[rel_atom_cnt++] = atno;
+    }
+
+    if(rel_atom_cnt==1) {
+        free(relevant_atoms);
+        return;
+    }
+           
+    /* compute confocal ellipical coordinates for the batch of points to
+     * be processed. */
+    for(ati=0; ati<rel_atom_cnt; ati++) {
+        atno = relevant_atoms[ati];
+        for(ptno=0; ptno<point_cnt; ptno++) {
+            real dx = mg->atom_coords[atno].x-ggw->x[ptno+idx];
+            real dy = mg->atom_coords[atno].y-ggw->y[ptno+idx];
+            real dz = mg->atom_coords[atno].z-ggw->z[ptno+idx];
+      
+            assert(atno>=0 && atno<mg->atom_cnt);
+            assert(ptno>=0 && ptno<MAX_PT_PER_SHELL);
+            ggw->IDX(rj,ati,ptno)  = sqrt(dx*dx + dy*dy + dz*dz);
+            ggw->IDX(p_kg,ati,ptno) = 1.0; 
+        }
+    }
+
+    if(verbose)printf("Computing cell functions for atom %d\n", atom);
+    for(ati=1; ati<rel_atom_cnt; ati++) {
+        atno = relevant_atoms[ati];
+        for(ati2=0; ati2<ati; ati2++) {
+            int atno2 = relevant_atoms[ati2];
+            real mu2;
+            real dist = mg->rij[atno2+(atno*(atno-1))/2];
+            for(ptno=0; ptno<point_cnt; ptno++) {
+                mu    =(ggw->IDX(rj,ati,ptno)-ggw->IDX(rj,ati2,ptno))*dist;
+                if(mu<=-SSF_CUTOFF) 
+                    g_mu = -1;
+                else if(mu>=SSF_CUTOFF)
+                    g_mu = 1;
+                else {
+                    mu /= SSF_CUTOFF; mu2=mu*mu;
+                    g_mu  = 0.0625*mu*(35+mu2*(-35+mu2*(21-5*mu2)));
+                }
+                ggw->IDX(p_kg,ati,ptno)  *= 0.5*(1.0-g_mu);
+                ggw->IDX(p_kg,ati2,ptno) *= 0.5*(1.0+g_mu);
+            }
+        }
+    }
+    /* compute weight normalization factors */
+    dzero_(ggw->vec, &point_cnt);
+    for(ati=0; ati<rel_atom_cnt; ati++)
+        for(ptno=0; ptno<point_cnt; ptno++)
+            ggw->vec[ptno] += ggw->IDX(p_kg,ati,ptno); 
+
+    /*
+     *   Apply the computed weights
+     */
+    for(ptno=0; ptno<point_cnt; ptno++)
+        ggw->wg[idx+ptno] *= ggw->IDX(p_kg,atomi,ptno)/ggw->vec[ptno];
+
+    free(relevant_atoms);
+}
+
+/* ===================================================================
+ *             GRID MEMORY HANDLING AND GENERAL GLUE.
+ * =================================================================== */
+
+/* atom grid init */
+GridGenAtomGrid*
+grid_gen_agrid_new(int uniq_no, int Z)
+{
+    GridGenAtomGrid* grid = dal_malloc(sizeof(GridGenAtomGrid));
+    grid->uniq_no = uniq_no;
+    grid->Z       = Z;
+    grid->pnt     = 0;
+    grid->leb_ang = NULL;
+    grid->rad     = NULL;
+    grid->wght    = NULL;
+    grid->relevant_atoms = NULL;
+    grid->rel_at_cnt = 0;
+    return grid;
+}
+
+void
+grid_gen_agrid_set_size(GridGenAtomGrid* grid, unsigned cnt)
+{
+    grid->pnt = cnt;
+    assert(grid->pnt>0);
+    if(grid->leb_ang) free(grid->leb_ang);
+    if(grid->rad)     free(grid->rad);
+    if(grid->wght)    free(grid->wght);
+    grid->leb_ang = calloc(grid->pnt, sizeof(real));
+    grid->rad     = calloc(grid->pnt, sizeof(real));
+    grid->wght    = calloc(grid->pnt, sizeof(real));
+}
+
+
+/* destroy atomic grid */
+void
+grid_gen_agrid_free(GridGenAtomGrid* grid)
+{
+    free(grid->leb_ang);
+    free(grid->rad);
+    free(grid->wght);
+    if(grid->relevant_atoms) {
+        free(grid->relevant_atoms);
+        grid->relevant_atoms = NULL;
+    }
+    free(grid);
+}
+
+GridGenMolGrid*
+mol_grid_new(int atom_cnt, const GridGenAtom* atoms)
+{
+    int i, j, index;
+    GridGenMolGrid* mg = dal_malloc(sizeof(GridGenMolGrid));
+    mg->atom_cnt    = atom_cnt;
+    mg->atom_coords = atoms;
+    mg->atom_grids  = dal_malloc(atom_cnt*sizeof(GridGenAtomGrid*));
+    mg->rij  = dal_malloc(sizeof(real)*(atom_cnt*(atom_cnt-1))/2 );
+    mg->aij  = dal_malloc(sizeof(real)*(atom_cnt*(atom_cnt-1))/2 );
+    index =0;
+    for(i=0; i<atom_cnt; i++) {
+        mg->atom_grids[i] = grid_gen_agrid_new(atoms[i].icent, atoms[i].Z);
+        for(j=0; j<i; j++) {
+            real chi = bragg_radii[atoms[i].Z-1]/bragg_radii[atoms[j].Z-1];
+            real temp = (chi-1)/(chi+1);
+            real dx = atoms[i].x - atoms[j].x;
+            real dy = atoms[i].y - atoms[j].y;
+            real dz = atoms[i].z - atoms[j].z;
+            temp = temp/(temp*temp-1);
+            if(temp>0.5) temp = 0.5;
+            else if(temp<-0.5) temp = -0.5;
+            mg->rij[index] = 1.0/sqrt(dx*dx + dy*dy + dz*dz);
+            mg->aij[index++] = temp;
+        }
+    }
+    return mg;
+}
+
+void
+mol_grid_free(GridGenMolGrid* mg)
+{
+    int i;
+    free(mg->rij);
+    free(mg->aij);
+    for(i=0; i< mg->atom_cnt; i++)
+        grid_gen_agrid_free(mg->atom_grids[i]);
+    free(mg->atom_grids);
+}
+
+static void
+grid_gen_work_init(GridGenWork* ggw, GridGenMolGrid* mg, int mxshells)
+{
+    ggw->rj   = dal_malloc(sizeof(real)*mg->atom_cnt*MAX_PT_PER_SHELL);
+    ggw->p_kg = dal_malloc(sizeof(real)*mg->atom_cnt*MAX_PT_PER_SHELL);
+    ggw->vec  = dal_malloc(sizeof(real)*mg->atom_cnt*MAX_PT_PER_SHELL);
+    ggw->x    = dal_malloc(MAX_PT_PER_SHELL*mxshells*sizeof(real));
+    ggw->y    = dal_malloc(MAX_PT_PER_SHELL*mxshells*sizeof(real));
+    ggw->z    = dal_malloc(MAX_PT_PER_SHELL*mxshells*sizeof(real));
+    ggw->wg   = dal_malloc(MAX_PT_PER_SHELL*mxshells*sizeof(real));  
+}
+
+static void
+grid_gen_work_release(GridGenWork* ggw)
+{
+    free(ggw->rj);
+    free(ggw->p_kg);
+    free(ggw->vec);
+    free(ggw->x);
+    free(ggw->y);
+    free(ggw->z);
+    free(ggw->wg); 
+}
+            
+/* set_radial_grid:
+   precompute radial grid for all the atoms in the molecule.
+*/
+static void
+set_radial_grid(GridGenMolGrid* grd, real thrl)
+{
+    int atom;
+    for(atom=0; atom<grd->atom_cnt; atom++) {
+        radial_quad->gen_quad(grd->atom_grids[atom], thrl);
+    }
+}
+
+/* ===================================================================
+ *             RADIAL QUADRATURES
+ * the quadratore has to fill in grid->pnt with number of points
+ * and set grid->rad.
+ * =================================================================== */
+
+/* gc2_rad_cnt:
+ * determinates number of radial points to be used for
+ * Gauss-Chebyshev quadrature of second kind needed to integrate atom
+ * of specified Z number to specified threshold thrl.
+ * the ordinary weights are multiplied by r^2
+ */
+static int
+gc2_rad_cnt(int Z, real thrl)
+{
+    static const int MIN_RAD_PT = 20;
+    int ta=1, ri;
+    real nr=-5.0*(3*log10(thrl)-ta+8);
+    ri = rint(nr); 
+    return ri>MIN_RAD_PT ? ri : MIN_RAD_PT;
+}
+
+/* gc2_quad:
+   Gauss-Chebyshev quadrature of second kind that we use to generate
+   the radial grid. Requested number of points is in grid->pnt.
+   The grid->rad and grid->wght arrays are filled in.
+*/
+static void 
+gen_gc2_quad(GridGenAtomGrid* grid, real thrl)
+{
+    /* constants */
+    const real pi_2 = 2.0/M_PI;  
+    const real rfac = 1.0/log(2.0);
+    const real sfac = 2.0/3.0;
+    real n_one, n_pi, wfac;
+    /* variables */
+    real x = 0.0, angl = 0.0, w = 0.0;
+    int i;
+
+    grid_gen_agrid_set_size(grid, gc2_rad_cnt(grid->Z,thrl));
+    n_one = grid->pnt+1.0;
+    n_pi  = M_PI/n_one;
+    wfac = 16.0/(3*n_one);
+    /* radial points */ 
+    for (i=0; i<grid->pnt; i++) {
+        real sinangl, sinangl2;
+        x = (grid->pnt-1-2*i)/n_one;
+        angl = n_pi*(i+1);
+        sinangl = sin(angl); 
+        sinangl2 = sinangl*sinangl;
+        x += pi_2*(1.0+sfac*sinangl2)*cos(angl)*sinangl;
+        grid->rad[i] = rfac*log(2.0/(1-x));
+        w = wfac*sinangl2*sinangl2;
+        grid->wght[i] = w*rfac/(1.0-x)*grid->rad[i]*grid->rad[i];
+        /* transformation factor accumulated in weight */
+    }
+}
+/* gen_lmg_quad:
+ *  As proposed by Roland Lindh, Per-Aake Malmqvist and Laura
+ *  Gagliardi. */
+void get_maxl_nucind_(int *maxl, int*nucind);
+
+static void
+gen_lmg_quad(GridGenAtomGrid* grid, real thrl)
+{
+    static const int MAXRAD = 2000;
+    int *nucorb, maxl, nucind;
+    real *aa;
+
+    grid_gen_agrid_set_size(grid, MAXRAD); 
+    get_maxl_nucind_(&maxl, &nucind);
+    nucorb = dal_malloc(2*maxl*nucind*sizeof(int));
+    aa     = dal_malloc(4*maxl*nucind*sizeof(real));
+    if(!nucorb|| !aa) {
+        fprintf(stderr,"no enough memory. in gen_lmg_quad.\n");
+        exit(1);
+    }
+    nucbas_(nucorb, aa, &ONEI); 
+    radlmg_(grid->rad, grid->wght, &grid->pnt, &thrl, &MAXRAD,
+            nucorb+2*grid->uniq_no*maxl, aa+4*grid->uniq_no*maxl,
+            &ZEROI);
+
+    free(nucorb);
+    free(aa);
+    grid->rad  = realloc(grid->rad,  grid->pnt*sizeof(real));
+    grid->wght = realloc(grid->wght, grid->pnt*sizeof(real));
+}
+
+/* ===================================================================
+ *             ADAPTIVE SCHEME PROCEDURES
+ * =================================================================== */
+/* find_opt_ang:
+   determine optimal L orders of the lebedev scheme for given atom and
+   radius rad using an adaptive scheme to achieve accuracy thrl for given
+   generating function func.
+*/
+static real
+integrate_trial(GridGenMolGrid* mgrid, int atom, real rad,
+                GridGeneratingFunc func, void* arg, int i,
+                GridGenWork *ggw, int verb)
+{
+    int tpt, j;
+    real sang2 = 0.0;
+    real fact = 4*M_PI;
+
+    leb_gen[i].func(ggw->x, ggw->y, ggw->z, ggw->wg, &tpt);
+    for(j=0; j<leb_gen[i].point_cnt; j++) {
+        ggw->x[j] = ggw->x[j]*rad + mgrid->atom_coords[atom].x;
+        ggw->y[j] = ggw->y[j]*rad + mgrid->atom_coords[atom].y;
+        ggw->z[j] = ggw->z[j]*rad + mgrid->atom_coords[atom].z;
+    }
+    selected_partitioning->partition(mgrid, atom, leb_gen[i].point_cnt, 
+                                     ggw, 0, verb);
+    for(j=0;j<leb_gen[i].point_cnt;j++)
+        sang2 += func(ggw->x[j],ggw->y[j],ggw->z[j], arg)*ggw->wg[j]*fact; 
+
+    return sang2;
+}
+
+static int
+find_opt_ang(GridGenMolGrid* mgrid, int atom, real rad, real thrl, 
+             int first, GridGeneratingFunc func, void* arg, int verb)
+{
+    unsigned i = 0;
+    int next;
+    real sang1 = 0.0, sang2, firsts, nexts;
+    GridGenWork ggw;
+
+    grid_gen_work_init(&ggw, mgrid, 1);
+    firsts = integrate_trial(mgrid, atom, rad, func, arg, first,
+                             &ggw, verb);
+    next = (first == ELEMENTS(leb_gen)-1) ? first-1 : first+1;
+    nexts = integrate_trial(mgrid, atom, rad, func, arg, next,
+                            &ggw, verb);
+    if(fabs(firsts-nexts)>thrl) {
+        if(first>next) { sang2 = firsts; i = first; }
+        else           { sang2 = nexts;  i = next; }
+        if(i<ELEMENTS(leb_gen)) {
+    do {
+        sang1 = sang2;
+                sang2 = integrate_trial(mgrid, atom, rad, func, arg, i,
+                                        &ggw, verb);
+                i++;
+            } while (fabs(sang2-sang1)>thrl && i<ELEMENTS(leb_gen));
+        }
+        if(i>=ELEMENTS(leb_gen)) i = ELEMENTS(leb_gen)-1;
+    } else {
+        if(first>next) { sang2 = nexts; i = next; }
+        else           { sang2 = firsts; i = first; }
+        if(i>=0) {
+            do {
+                sang1 = sang2;
+                sang2 = integrate_trial(mgrid, atom, rad, func, arg, i,
+                                        &ggw, verb);
+                i--;
+            } while (fabs(sang2-sang1)>thrl && i>=0);
+        }
+        if(i<0) i = 0;
+    }
+    grid_gen_work_release(&ggw);
+    return i; 
+}
+
+/* set_ang_adaptive:
+   computes adaptively the angular points for a set of radial points
+   obtained from radial integration scheme.
+   The only thing altered is grid->leb_ang vector.
+*/
+static void
+set_ang_adaptive(GridGenMolGrid* mgrid, real thrl, 
+                 GridGeneratingFunc func, void* arg)
+{
+    int atom, i = 0, last = 0;
+
+    for(atom=0; atom<mgrid->atom_cnt; atom++) {
+        GridGenAtomGrid* grid = mgrid->atom_grids[atom];
+        real sum = 0;
+        for(i=0; i<grid->pnt; i++) sum += grid->wght[i];
+        /* optimization of angular part for given atom */
+        for (i=0; i<grid->pnt; i+=2) {
+            real thrl0 = thrl*sum/grid->wght[i];
+            last = find_opt_ang(mgrid, atom, grid->rad[i],
+                                thrl0, last, func, arg, i==0 && verbose);
+            grid->leb_ang[i]= last;
+        }
+        for (i=2; i<grid->pnt; i+=2)
+            grid->leb_ang[i-1] = (grid->leb_ang[i-2]+grid->leb_ang[i])/2;
+        if(grid->pnt%2 == 1)
+            grid->leb_ang[grid->pnt-1] = grid->leb_ang[grid->pnt-2];
+    }
+}
+
+/* set_ang_adaptive:
+   computes the angular points for a set of radial points
+   obtained from radial integration scheme.
+   The only thing altered is grid->leb_ang vector.
+*/
+static void
+set_ang_fixed(GridGenMolGrid* mgrid, real thrl, int minang, int maxang)
+{
+    static const real BOHR = 0.529177249;
+    int atom, i = 0;
+
+    for(atom=0; atom<mgrid->atom_cnt; atom++) {
+        GridGenAtomGrid* grid = mgrid->atom_grids[atom];
+        real rbragg = bragg_radii[grid->Z-1]/(5.0*BOHR);
+        int current_ang;
+        for (i=0; i<grid->pnt; i++) {
+            if(grid->rad[i]<rbragg) {
+                /* prune */
+                int iang = 
+                    (double)leb_gen[maxang].point_cnt*grid->rad[i]/rbragg;
+                current_ang = get_leb_from_point(iang);
+                if(current_ang<minang) current_ang = minang;
+            } else current_ang = maxang;
+            grid->leb_ang[i] = current_ang;
+        }
+    }
+}
+
+/* integrate:
+   does the heavy-lifting: uses the precomputed orders of the lebedev
+   angular grids to generate the grid weights and drives the function
+   func through them.
+*/
+real
+integrate(GridGenMolGrid* mgrid, GridGeneratingFunc func)
+{
+    int atom, ptno, j = 0, ind = 0;
+    int tpt;
+    real sang = 0.0, s = 0.0; 
+    GridGenWork ggw;
+
+    grid_gen_work_init(&ggw, mgrid, 1);
+
+    for(atom=0; atom<mgrid->atom_cnt; atom++) {
+        GridGenAtomGrid* grid = mgrid->atom_grids[atom];
+        for (ptno=0; ptno<grid->pnt; ptno++) {
+            real fact = 4*M_PI;
+            real rad = grid->rad[ptno];
+            sang = 0.0;
+            ind = grid->leb_ang[ptno]; 
+            leb_gen[ind].func(ggw.x, ggw.y, ggw.z, ggw.wg, &tpt);
+
+            for(j=0; j<leb_gen[ind].point_cnt; j++) {
+                ggw.x[j] = ggw.x[j]*rad + mgrid->atom_coords[atom].x;
+                ggw.y[j] = ggw.y[j]*rad + mgrid->atom_coords[atom].y;
+                ggw.z[j] = ggw.z[j]*rad + mgrid->atom_coords[atom].z;
+            }
+            selected_partitioning->partition(mgrid, atom, leb_gen[ind].point_cnt, 
+                                             &ggw, 0, ptno==0 && verbose);
+            /* degeneracy multiplication here */
+            for(j=0; j<leb_gen[ind].point_cnt; j++)
+                sang += func(ggw.x[j],ggw.y[j],ggw.z[j], NULL)*ggw.wg[j]*fact;
+          
+            s += grid->wght[ptno]*sang; 
+        }
+    }
+    grid_gen_work_release(&ggw);
+    return s;
+}
+static int
+compress_grid(int point_cnt, real* x, real* y, real *z, real* wg)
+{
+    int i, dest=0;
+
+    for(i=0; i<point_cnt; i++) {
+        x [dest] = x [i];
+        y [dest] = y [i];
+        z [dest] = z [i];
+        wg[dest] = wg[i];
+        if(fabs(wg[i]) >1e-14)
+            dest++;
+/*
+        else fort_print("skipping [%7.4f,%7.4f,%7.4f]: %g",
+        x[i], y[i], z[i], wg[i]); */
+    }
+    /* printf("Compression factor: %f\n", 
+       (float)(point_cnt-dest)/(float)point_cnt); */
+    return dest;
+}
+#if defined(USE_PTHREADS)
+#include <pthread.h>
+pthread_mutex_t grid_mutex = PTHREAD_MUTEX_INITIALIZER;
+static void
+mol_grid_lock(GridGenMolGrid* mgrid)
+{
+    pthread_mutex_lock(&grid_mutex);
+}
+static void
+mol_grid_unlock(GridGenMolGrid* mgrid)
+{
+    pthread_mutex_unlock(&grid_mutex);
+}
+static int
+mol_grid_get_num_threads(void)
+{ return 4; }
+#else
+#define mol_grid_lock(mgrid)
+#define mol_grid_unlock(mgrid)
+#endif
+
+
+static void*
+grid_gen_save_stream(GridGenMolGrid* mgrid)
+{
+    int atom, ptno, j, idx, cnt;
+    int tpt, off = mgrid->off, done;
+    GridGenWork ggw;
+
+    mol_grid_unlock(mgrid); /* off has been copied, can unlock */
+
+    j=0;
+    for(atom=off; atom<mgrid->atom_cnt; atom+=mgrid->nt) {
+        if(mgrid->atom_grids[atom]->pnt>j) 
+            j = mgrid->atom_grids[atom]->pnt;
+    }
+    if(j==0) return NULL; /* this thread has got nothing to do */
+    grid_gen_work_init(&ggw, mgrid, j);
+    
+    for(atom=off, done=0; atom<mgrid->atom_cnt; 
+        atom+=mgrid->atom_coords[atom].mult, done++) {
+        GridGenAtomGrid* grid = mgrid->atom_grids[atom];
+        int mult = mgrid->atom_coords[atom].mult;
+        if(done%mgrid->nt != 0) /* do every mt symmetry-independent atom */
+            continue; 
+        idx = 0;
+        for (ptno=0; ptno<grid->pnt; ptno++) {
+            real fact = 4*M_PI*grid->wght[ptno]*mult;
+            real rad = grid->rad[ptno];
+            int ind = grid->leb_ang[ptno]; 
+            leb_gen[ind].func(ggw.x+idx, ggw.y+idx, ggw.z+idx, ggw.wg+idx,
+                              &tpt);
+
+            for(j=idx; j<idx+leb_gen[ind].point_cnt; j++) {
+                ggw.x[j] = ggw.x[j]*rad + mgrid->atom_coords[atom].x;
+                ggw.y[j] = ggw.y[j]*rad + mgrid->atom_coords[atom].y;
+                ggw.z[j] = ggw.z[j]*rad + mgrid->atom_coords[atom].z;
+                ggw.wg[j] *= fact;
+            }
+            selected_partitioning->partition(mgrid, atom, leb_gen[ind].point_cnt,
+                                             &ggw, idx, 0);
+            idx += leb_gen[ind].point_cnt;
+        }
+        /* degeneracy multiplication here */
+        cnt = compress_grid(idx, ggw.x, ggw.y, ggw.z, ggw.wg);
+
+        fort_print("Atom: %4d*%d points=%5d compressed from %5d (%3d radial)", 
+                   atom+1, mult, cnt, idx, grid->pnt);
+        if(cnt>0) {
+            mol_grid_lock(mgrid);
+            fwrite(&cnt,sizeof(int), 1,  mgrid->fl);
+            fwrite(ggw.x, sizeof(real), cnt, mgrid->fl);
+            fwrite(ggw.y, sizeof(real), cnt, mgrid->fl);
+            fwrite(ggw.z, sizeof(real), cnt, mgrid->fl);
+            fwrite(ggw.wg,sizeof(real), cnt, mgrid->fl);
+            mgrid->total_points += cnt;
+            mol_grid_unlock(mgrid);
+        }
+    }
+    grid_gen_work_release(&ggw);
+    return NULL;
+}
+
+int
+grid_gen_save(const char* filename, GridGenMolGrid* mgrid)
+{
+    if( (mgrid->fl = fopen(filename,"wb"))==NULL) {
+        fprintf(stderr,"ERROR: Cannot open grid file '%s' for writing.\n",
+                filename);
+        return 0;
+    }
+    mgrid->total_points = 0;
+#if defined(USE_PTHREADS)
+    mgrid->nt = mol_grid_get_num_threads();
+    { int i;
+    pthread_t *ptid = dal_malloc(mgrid->nt*sizeof(pthread_t));
+    for(i=0; i<mgrid->nt; i++) {
+        mol_grid_lock(mgrid);
+        mgrid->off = i;
+        pthread_create(&ptid[i], NULL, 
+                       (void *(*)(void *))grid_gen_save_stream, mgrid);
+    }
+    for(i=0; i<mgrid->nt; i++) 
+        pthread_join(ptid[i], NULL);
+    }
+#else
+    mgrid->nt = 1; mgrid->off = 0;
+    grid_gen_save_stream(mgrid);
+#endif
+    fclose(mgrid->fl);
+
+    return mgrid->total_points;
+}
+
+
+/* grid_gen_generate:
+   returns number of grid points.
+*/
+int
+grid_gen_generate(const char* filename, int atom_cnt, 
+                  const GridGenAtom* atom_arr, real threshold,
+                  GridGeneratingFunc generating_function, void* arg,
+                  int minang, int maxang, real* work, int *lwork)
+{
+    int res;
+    struct tms starttm, endtm; clock_t utm;
+    GridGenMolGrid* mgrid =  mol_grid_new(atom_cnt, atom_arr);
+    fort_print("Grid Type         : %s", dftgrid_adaptive 
+               ? "adaptive" : "fixed");
+    fort_print("Radial Quadrature : %s", radial_quad->name);
+    fort_print("Space partitioning: %s", selected_partitioning->name);
+
+    times(&starttm);
+    set_radial_grid(mgrid, threshold);
+    if(dftgrid_adaptive && generating_function)
+        set_ang_adaptive(mgrid, threshold, generating_function, arg);
+    else
+        set_ang_fixed(mgrid, threshold, get_leb_from_type(minang), 
+                      get_leb_from_type(maxang));
+
+    fort_print("Radial integration threshold: %g", threshold);
+    res = grid_gen_save(filename, mgrid);
+    mol_grid_free(mgrid);
+
+    create_cubes(filename, res, CELL_SIZE,
+                 work, *lwork*sizeof(real));
+
+    times(&endtm);
+    utm = endtm.tms_utime-starttm.tms_utime;
+
+    fort_print("Number of grid points: %8d Grid generation time: %9.1f s\n", 
+               res, utm/(double)sysconf(_SC_CLK_TCK));
+    return res;
+}
+
+/* =================================================================== */
+/* fixed grid generator                                                */
+/* =================================================================== */
+
+
+/* ------------------------------------------------------------------- */
+/* the dft grid input routines.                                        */
+/* choose different types of grid:                                     */
+/* The syntax is:                                                      */
+/* ((ADAPT|FIXED) | (GC2|MALMQUIST) | (SSF|BECKE))*                    */
+/* Sets                                                                */
+/* dftgrid_adaptive                                                    */
+/* radial_quad                                                         */
+/* selected_partitioning                                               */
+/* ------------------------------------------------------------------- */
+static int
+get_word(const char *line, int st, int max_len)
+{
+    int res;
+    for(res=st; res<max_len && isalnum(line[res]); res++)
+        ;
+    if(res>=max_len) res = 0;
+    return res;
+}
+
+static int
+skip_spaces(const char *line, int st, int max_len)
+{
+    int res;
+    for(res=st; res<max_len && isspace(line[res]); res++)
+        ;
+    return res;
+}
+
+void
+dftgridinput_(const char *line, int line_len)
+{
+    static const char* keywords[] = {
+        "ADAPT","FIXED", "GC2","LMG", "SSF","BECKE","BECKE2"
+    };
+    int st, en, i;
+    for(st=0; (en=get_word(line, st, line_len)) != 0; 
+        st=skip_spaces(line, en, line_len)) {
+        for(i=0; i<ELEMENTS(keywords); i++) {
+            if(strncasecmp(keywords[i], line+st, en-st)==0)
+                break;
+        }
+        switch(i) {
+        case 0: dftgrid_adaptive = 1; break;
+        case 1: dftgrid_adaptive = 0; break;
+        case 2: radial_quad = &quad_gc2; break;
+        case 3: radial_quad = &quad_lmg; break;
+        case 4: selected_partitioning=&partitioning_ssf;break;
+        case 5: 
+            selected_partitioning = &partitioning_becke1; break;
+        case 6: 
+            selected_partitioning = &partitioning_becke2; break;
+        default: fort_print("GRIDGEN: Unknown DFTGRID TYPE option ignored.");
+            /* FIXME: should I quit here? */
+        }
+    }
+}
+
+/* =================================================================== */
+/* linear grid generator                                               */
+/* =================================================================== */
+/*the bucketing scheme. first shot: nlog n. Load up all grid points,
+  assign them [nx,ny,nz] tuples.  sort the tuples to collect the ones
+  sharing same cube. Within each cube select one that is closest to
+  the center. Save cubes.
+*/
+typedef unsigned GridPointKey; 
+#define KEY_BITS (sizeof(GridPointKey)*CHAR_BIT)
+
+struct point_key_t {
+    GridPointKey key; /* unique identificator of the box */
+    unsigned     index;
+};
+
+/* assume currently constant amounts of bits per coordinate */
+static int
+comp_point_key(const void* a, const void* b)
+{
+    return ((struct point_key_t*)a)->key-((struct point_key_t*)b)->key;
+}
+
+void gtexts_(real* r2);
+void getblocks_(real *X,real *Y, real *Z, real *CELLSZ, real RSHEL2[],
+                int *NBLCNT, int (*IBLCKS)[2]);
+static void
+create_cubes(const char* fname, int point_cnt, real cell_size,
+	     void* work, int worksz)
+{
+    GridPointKey mask;
+    int cnt, idx = 0, i;
+    real *rshel2 = dal_malloc(ishell_cnt_()*sizeof(real));
+    real *x = work;
+    real *y = x + point_cnt;
+    real *z = y + point_cnt;
+    real *w = z + point_cnt;
+    int nblocks, (*shlblocks)[2] = malloc(2*ishell_cnt_()*sizeof(int));
+    int bpc = KEY_BITS/3; /* bits per coordinate */
+    real fac;
+    real minx, maxx, miny, maxy, minz, maxz;
+    FILE *f;
+    struct point_key_t * keys = 
+      dal_malloc(point_cnt*sizeof(struct point_key_t));
+
+    minx = miny = minz = +1e20;
+    maxx = maxy = maxz = -1e20;
+
+    if( !keys ) { 
+      fprintf(stderr, "Cannot sort grid this way: not enough memory.\n");
+      quit("no mem in create_subes: 1");
+    }
+    if(worksz<4*point_cnt*sizeof(real)) { 
+      fprintf(stderr, "Cannot sort grid this way: not enough memory.\n"
+	      "worksz=%d needed size=%d\n", worksz, 
+	      point_cnt*sizeof(struct point_key_t));
+      quit("no mem in create_subes: 2");
+    }
+    f = fopen(fname,"rb");
+    if(!f) {
+        fprintf(stderr,"Internal error, cannot find the grid file.\n");
+        exit(1);
+    }
+    gtexts_(rshel2);
+    while(fread(&cnt, sizeof(cnt), 1, f)==1) {
+        assert(cnt+idx<=point_cnt);
+        fread(x+idx, sizeof(real), cnt, f);
+        fread(y+idx, sizeof(real), cnt, f);
+        fread(z+idx, sizeof(real), cnt, f);
+        fread(w+idx, sizeof(real), cnt, f);
+        for(i=0; i<cnt; i++) {
+            if(x[idx+i]<minx)      minx = x[idx+i];
+            else if(x[idx+i]>maxx) maxx = x[idx+i];
+            if(y[idx+i]<miny)      miny = y[idx+i];
+            else if(y[idx+i]>maxy) maxy = y[idx+i];
+            if(z[idx+i]<minz)      minz = z[idx+i];
+            else if(z[idx+i]>maxz) maxz = z[idx+i];
+        }
+        idx += cnt;
+    }
+    fclose(f);
+        
+    if( (1<<bpc) < (maxx-minx)/cell_size) fputs("ERROR: x\n", stderr);       
+    if( (1<<bpc) < (maxy-miny)/cell_size) fputs("ERROR: y\n", stderr);       
+    if( (1<<bpc) < (maxz-minz)/cell_size) fputs("ERROR: z\n", stderr);       
+
+    fac = 1/cell_size;
+    for(i=0; i<point_cnt; i++) {
+        int ix = (x[i]-minx)*fac;
+        int iy = (y[i]-miny)*fac;
+        int iz = (z[i]-minz)*fac;
+        if(ix<0) ix = 0; /* correct numerical error, if any */
+        if(iy<0) iy = 0; /* correct numerical error, if any */
+        if(iz<0) iz = 0; /* correct numerical error, if any */
+        keys[i].key = (ix<<(bpc*2)) | (iy<<bpc) | iz;
+        keys[i].index = i;
+    }
+
+    qsort(keys, point_cnt, sizeof(struct point_key_t), comp_point_key);
+    if((f = fopen(fname,"wb")) == NULL) {
+        fprintf(stderr,"Internal error, cannot save sorted grid file.\n");
+        exit(1);
+    }
+    mask = ~((-1)<<bpc);
+    for(idx=0; idx<point_cnt; idx += cnt) {
+        int closest = 0, i;
+        unsigned tmp;
+        real mindist = 4*cell_size, maxdist = 0;
+        GridPointKey key = keys[idx].key;
+        real cx = minx + (((key >> (bpc*2)) & mask)+0.5)*cell_size;
+        real cy = miny + (((key >> bpc)     & mask)+0.5)*cell_size;
+        real cz = minz + (((key)            & mask)+0.5)*cell_size;
+        real sx = 0, sy = 0, sz = 0;
+        for(cnt=0; idx+cnt<point_cnt && keys[idx+cnt].key == key; cnt++) {
+            real dx = x[keys[idx+cnt].index]-cx;
+            real dy = y[keys[idx+cnt].index]-cy;
+            real dz = z[keys[idx+cnt].index]-cz;
+            real dist2 = dx*dx + dy*dy + dz*dz;
+            if(dist2<mindist) { mindist=dist2; closest = cnt; }
+            if(dist2>maxdist) { maxdist=dist2; }
+            sx += dx; sy += dy; sz += dz;
+        }
+#if 1
+        tmp = keys[idx].index;
+        keys[idx].index = keys[idx+closest].index;
+        keys[idx+closest].index = tmp;
+#endif
+        getblocks_(&cx, &cy, &cz, &cell_size, rshel2, &nblocks, shlblocks);
+        if(0 && nblocks>0) {
+        printf("box [%5.1f,%5.1f,%5.1f] nt=%5d "
+               "%f <r<%f [%5.1f,%5.1f,%5.1f] %d\n",
+               cx, cy, cz, cnt, sqrt(mindist), sqrt(maxdist),
+               sx/cnt, sy/cnt, sz/cnt, nblocks);
+        for(i=0; i<nblocks; i++)
+            printf("(%d,%d)",shlblocks[i][0], shlblocks[i][1]);
+        puts("");
+        }
+        if(nblocks==0) continue;
+        if(fwrite(&cnt, sizeof(cnt), 1, f)!=1) {
+            fprintf(stderr, "'too short write' error to %s\n", fname);
+            exit(1);
+        }
+        fwrite(&nblocks, sizeof(int), 1, f);
+        fwrite(shlblocks, sizeof(int), nblocks*2, f);
+        for(i=0; i<cnt; i++) {
+            fwrite(x+keys[idx+i].index, sizeof(real), 1, f);
+            fwrite(y+keys[idx+i].index, sizeof(real), 1, f);
+            fwrite(z+keys[idx+i].index, sizeof(real), 1, f);
+        }
+        for(i=0; i<cnt; i++) fwrite(w+keys[idx+i].index, sizeof(real), 1, f);
+    }
+    fclose(f);
+    free(keys);
+    free(rshel2);
+    free(shlblocks);
+}
+
+/* =================================================================== */
+/* Grid I/O routines.
+ *
+ * Used by integrator to fetch data. The routines are located here
+ * since the grid file format is an internal implementation issue of
+ * the grid generator: it may contain not only grid positions and
+ * weights but also other metadata.
+ * 
+ * Two routines are provided. One is designed for blocked approach,
+ * the other one is a plain point-by-point grid reader.
+ */
+/* private definition */
+struct DftGridReader_ {
+    FILE *f;
+};
+void get_grid_paras_(int *grdone, real *radint, int *angmin, int *angint);
+void set_grid_done_(void);
+
+DftGridReader*
+grid_open(int nbast, real *work, int *lwork)
+{
+    DftGridReader *res = dal_malloc(sizeof(DftGridReader));
+    int grdone, angmin, angint;
+    real radint;
+
+    get_grid_paras_(&grdone, &radint, &angmin, &angint);
+    if(!grdone) {
+        int atom_cnt, pnt_cnt;
+        int lwrk = *lwork - nbast;
+        GridGenAtom* atoms = grid_gen_atom_new(&atom_cnt);
+        struct RhoEvalData dt; /* = { grid, work, lwork, dmat, dmgao}; */
+        dt.grid =  NULL; dt.work = work+nbast; dt.lwork = &lwrk;
+        dt.dmat =  NULL; dt.dmagao = work;
+
+        /* NO adaptive scheme at the moment */
+        if(dftgrid_adaptive) exit(1);
+
+        pnt_cnt = grid_gen_generate("DALTON.QUAD", atom_cnt, atoms,
+                                    radint, NULL, &dt,
+                                    angmin, angint, work, lwork);
+        free(atoms);
+	set_grid_done_();
+    }
+ 
+    if( (res->f=fopen("DALTON.QUAD", "rb")) == NULL) {
+	perror("DFT quadrature grid file DALTON.QUAD not found.");
+	free(res);
+	abort();
+    }
+    return res;
+}
+
+/** grid_getchunk_blocked() reads grid data also with screening
+    information if only nblocks and shlblocks are provided.
+ */
+int
+grid_getchunk_blocked(DftGridReader* rawgrid, int maxlen,
+                      int *nblocks, int *shlblocks, 
+                      real (*coor)[3], real *weight)
+{
+    int sz = 0, i, rc, bl_cnt;
+    FILE *f = rawgrid->f;
+
+    if(fread(&sz, sizeof(int), 1, f) <1)
+        return -1; /* end of file */
+    if(sz>maxlen) {
+        fprintf(stderr,
+                "grid_getchunk: too long vector length in file: %d > %d\n"
+                "Calculation will stop.\n", sz, maxlen);
+        quit("grid_getchunk: too long vector length in file: %d > %d\n"
+                "Calculation will stop.\n", sz, maxlen);
+        return -1; /* stop this! */
+    }
+
+    if(fread(&bl_cnt, sizeof(unsigned), 1, f) <1) {
+        puts("OCNT reading error."); return -1;
+    }
+    if(nblocks) *nblocks = bl_cnt;
+
+    if(shlblocks) {
+        rc = fread(shlblocks, sizeof(int), bl_cnt*2, f);
+    } else {
+        int buf, cnt;
+        for(cnt=0; cnt<bl_cnt*2; cnt+=rc) {
+            rc=fread(&buf, sizeof(int), 1, f);
+            if( rc < 1)
+                break;
+        }
+    }
+    if(rc<1) {
+        fprintf(stderr,
+                "IBLOCKS reading error: failed to read %d blocks.\n",
+                *nblocks);
+        return -1; 
+    }
+
+    if(fread(coor,   sizeof(real), 3*sz, f) < sz) { puts("XYZ");return -1;}
+    if(fread(weight, sizeof(real), sz, f) < sz) { puts("W");return -1;}
+    return sz;
+}
+
+
+void
+grid_close(DftGridReader *rawgrid)
+{
+    fclose(rawgrid->f);
+    free(rawgrid);
+}
+
+/* ------------------------------------------------------------------- */
+/*                     FORTRAN INTERFACE                               */
+/* ------------------------------------------------------------------- */
+static DftGridReader *grid = NULL;
+void
+opnqua_(int *nbast, real *work, int *lwork)
+{
+    grid = grid_open(*nbast, work, lwork);
+}
+
+void
+clsqua_(void)
+{
+    grid_close(grid);
+    grid = NULL;
+}
+
+void
+reaqua_(int *nshell, int *shell_blocks, int *buf_sz, 
+        real (*coor)[3], real *weight, int *nlen)
+{
+    *nlen = grid_getchunk_blocked(grid, *buf_sz, nshell, shell_blocks,
+                                  coor, weight);
+}
+
+/* ------------------------------------------------------------------- */
+/* self test routines of the integrator/grid generator                 */
+/* ------------------------------------------------------------------- */
+
+#if defined(GRID_GEN_TEST) && GRID_GEN_TEST == 1
+static const TestMolecule* test_molecule = NULL;
+typedef struct TestMolecule_ TestMolecule;
+struct TestMolecule_ {
+    const GridGenAtom* atoms;
+    const real* overlaps;
+    int atom_cnt;
+};
+
+
+const static GridGenAtom hydrogen1_atoms[] = {
+    { 0.0, 0.0, 0.0, 1}  /* single H atom at (0,0,1) */
+};
+const static real hydrogen1_overlaps[] = { 1 };
+
+const static GridGenAtom hydrogen2_atoms[] = {
+    { 0.0, 0.0, 0.0, 1}, /* single H atom at (0,0,1) */
+    { 0.0, 0.0, 1.0, 1}  /* single H atom at (0,0,2) */
+};
+
+const static real hydrogen2_overlaps[] = {
+    0.53726234893, 0.53726234893
+};
+const static TestMolecule test_molecules[] = { 
+    { hydrogen1_atoms, hydrogen1_overlaps, ELEMENTS(hydrogen1_atoms) },
+    { hydrogen2_atoms, hydrogen2_overlaps, ELEMENTS(hydrogen2_atoms) }
+};
+
+/* ------------------------------------------------------------------- */
+/* ------------------------------------------------------------------- */
+/* Test functions needed for testing the integrator/grid generator     */
+/* ------------------------------------------------------------------- */
+
+/* wave function evaluator;
+ * does not include overlaps, this should be fixed. */
+static void
+get_rho_grad(real x, real y, real z, real* rho, real* grad)
+{
+    const static real COEF=1.99990037505132565043;
+    const static real  ALPHA=0.62341234;
+    real val = 0, gradx=0, grady=0, gradz=0;
+    int i;
+    val = 0;
+    for(i=0; i<test_molecule->atom_cnt; i++) {
+        real dx = x-test_molecule->atoms[i].x, 
+            dy  = y-test_molecule->atoms[i].y,
+            dz  = z-test_molecule->atoms[i].z;
+        real r2 = dx*dx+dy*dy+dz*dz;
+        real ao = test_molecule->overlaps[i]*exp(-ALPHA*r2);
+        val  += ao;
+        if(grad) {
+            real fact = 4*test_molecule->overlaps[i]*ALPHA*exp(-ALPHA*r2)/COEF;
+            gradx -= dx*fact;       
+            grady -= dy*fact;       
+            gradz -= dz*fact;       
+        }
+    }
+    val /= COEF;
+    *rho = val*2*val;
+
+    if(grad) {
+        gradx *= 2*val;
+        grady *= 2*val;
+        gradz *= 2*val;
+        /* printf("grad: (%g,%g,%g)\n", gradx, grady, gradz); */
+        *grad = sqrt(gradx*gradx + grady*grady + gradz*gradz);
+    }
+}
+
+static real
+norm3(real x, real y, real z)
+{
+    const static real  ALPHA=0.62341234;
+    real r2 = x*x + y*y+ z*z;
+    real norm= exp(-2*ALPHA*r2);
+    return norm;
+}
+
+static real
+rho(real x, real y, real z)
+{
+    real rho;
+    get_rho_grad(x,y,z, &rho, NULL);
+    return rho;
+}
+
+
+/* dirac3:
+   single atom: -.76151426465514650000
+*/
+static real
+dirac3(real x, real y, real z)
+{
+    const real PREF= -3.0/4.0*pow(6/M_PI, 1.0/3.0);
+    real rhoa;
+    get_rho_grad(x,y,z, &rhoa, NULL);
+    rhoa *= 0.5;
+    return PREF*2*(pow(rhoa,4.0/3.0));
+}
+
+static real
+becke3(real x, real y, real z)
+{
+    real rhoa, grada;
+    real xa,asha, ea;
+    const static real BETA=0.0042;
+
+    get_rho_grad(x,y,z, &rhoa, &grada);
+    rhoa *= 0.5; grada *=0.5;
+    if(rhoa<1e-10) return 0;
+
+    xa = grada*pow(rhoa,-1.0/3.0)/rhoa;
+    asha = asinh(xa);
+    ea  = -2*grada*xa*BETA/(1+6*xa*BETA*asha);
+    return ea;
+}
+
+static real
+lyp3(real x, real y, real z)
+{
+    const real A = 0.04918, B = 0.132, C = 0.2533, D = 0.349;
+    const real CF = 0.3*pow(3*M_PI*M_PI,2.0/3.0);
+
+    real rho, rhom13, denom, omega, delta, ret, ngrad2, ngrada2, ngradb2;
+    real rho2, t1, t2, t3, t4, t5, t6;
+    real rhoa = 0.0, rhob = 0.0, grada = 0.0, gradb = 0.0;
+
+    get_rho_grad(x,y,z, &rhoa, &grada);
+    if(rhoa<1e-10) return 0;
+    rhob=rhoa;
+    gradb=grada;
+
+    rho = rhoa+rhob;
+    rho2 = rho*rho;
+    ngrad2  = (grada+gradb)*(grada+gradb);
+    ngrada2 = grada*grada;
+    ngradb2 = gradb*gradb;
+    rhom13 = pow(rho,-1.0/3.0);
+    denom = 1+D*rhom13;
+    omega = exp(-C*rhom13)/denom*pow(rho,-11.0/3.0);
+    delta = rhom13*(C + D/denom);
+    t1 =  pow(2.0,11.0/3.0)*CF*(pow(rhoa,8.0/3.0) +pow(rhob,8.0/3.0));
+    t2 =  (47.0 - 7.0*delta)*ngrad2/18.0;
+    t3 = -(2.5 -delta/18.0)*(ngrada2+ngradb2);
+    t4 =  (11.0-delta)/9.0*(rhoa*ngrada2 + rhob*ngradb2)/rho;
+    t5 = -2.0/3.0*rho2*ngrad2;
+    t6 = ((2.0/3.0*rho2-rhoa*rhoa)*ngradb2 +
+          (2.0/3.0*rho2-rhob*rhob)*ngrada2);
+    ret = -A*(4*rhoa*rhob/(denom*rho)
+              +B*omega*(rhoa*rhob*(t1+t2+t3+t4)+t5+t6));
+    return ret;
+}
+
+/* ------------------------------------------------------------------- */
+/* main test driver                                                    */
+/* ------------------------------------------------------------------- */
+int
+main(int argc, char* argv[])
+{
+    int i, arg, no;
+    real THRESHOLD = 1e-3;
+    const static struct ff {
+        GGFunc func;
+        char * name;
+    } functions_to_try[] = {
+        /*{ norm3, "Norm" }, */
+        { dirac3,"Dirac " },
+        { becke3,"Becke " },
+        { rho,   "charge" }
+        /* { lyp3,  "LYP" } */
+    };
+    include_selected_partitioning = include_partitioning_becke1; 
+
+    if(argc<=1) {
+        fprintf(stderr, "No arguments specified.\n"
+                "\t-v    : increase verbosity level.\n"
+                "\t-t THR: specify new threshold level.\n"
+                "\t-b    : use Becke partitioning (default).\n"
+                "\t-s    : use SSF partitioning.\n"
+                "\tnumber: molecule to run.\n");
+        return 1;
+    }
+    for(arg=1; arg<argc; arg++) {
+        if(strcmp(argv[arg], "-v")==0)
+            { verbose++; puts("Verbose++"); }
+        else if(strcmp(argv[arg], "-t")==0) {
+            THRESHOLD = atof(argv[++arg]);
+            printf("Threshold set to: %g\n", THRESHOLD);
+        } else if(strcmp(argv[arg], "-b")==0) {
+            include_selected_partitioning = include_partitioning_becke1; 
+            puts("Becke partitioning"); 
+        } else if(strcmp(argv[arg], "-s")==0) {
+            include_selected_partitioning = include_partitioning_ssf; 
+            puts("SSF partitioning"); 
+        } else if( (no=atoi(argv[arg]))>0 && 
+                  no<= ELEMENTS(test_molecules)) {
+            GridGenMolGrid* mgrid;
+            printf("Testing molecule: %d\n", no);
+            no--;
+            test_molecule = &test_molecules[no];
+            mgrid = 
+                mol_grid_new(test_molecule->atom_cnt, test_molecule->atoms, 
+                             THRESHOLD);
+            
+            for(i=0; i< ELEMENTS(functions_to_try); i++) {
+                if(verbose)
+                    printf("%5s: Number of radial grid points: %d\n", 
+                           functions_to_try[i].name,
+                           mgrid->atom_grids[0]->pnt);
+                set_radial_grid(mgrid);
+                set_ang(mgrid, THRESHOLD, functions_to_try[i].func);
+                /* integration */
+                printf("%5s: Integrated function         : %20.15f\n",
+                       functions_to_try[i].name,
+                       integrate(mgrid, functions_to_try[i].func));
+            }
+            mol_grid_free(mgrid);
+        }
+    }
+    return 0;
+}
+#endif /* defined(GRID_GEN_TEST) && GRID_GEN_TEST == 1 */

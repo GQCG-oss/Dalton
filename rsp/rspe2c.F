@@ -39,7 +39,7 @@ Revision 1.2  2001/01/17 10:41:29  vebjornb
 Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
 
 Revision 1.3  2000/05/24 19:00:24  hjj
-new GETREF and CREF allocation (fix of triplet problem for CSF's)
+new GETREF and CREF allocation (fix of triplet problem for CSF:s)
 Do not read S(2) CI diagonal but use ilicit that itit is D1
 
 961011-hjaaj
@@ -1665,6 +1665,7 @@ C
 #include <wrkrsp.h>
 #include <infpri.h>
 #include <mxcent.h>
+#include <gtensor.h>
 #include <elweak.h>
 C
       DIMENSION FC(*),CMO(*),UDV(*),PV(*),XINDX(*),WRK(*)
@@ -1760,6 +1761,9 @@ c ach
                   W4TERM = DDOT(KZYVAR,WRK(KGP),1,WRK(KISOL),1)
                   WRITE(LUPRI,'(A,1P,D20.12)')
      &            '@ SOPPA W4(E) term  ',W4TERM
+               END IF
+               IF (GCALC) THEN
+                  CALL GOZHSO(IOP,JOP,XPROP)
                END IF
  600        CONTINUE
  400     CONTINUE
@@ -3538,7 +3542,8 @@ C
      *                  TRSMOM(INUM,JOP)
                      END IF
                   ELSE IF (LBLPP(KSYMOP,IOP)(3:8).EQ.'SPNORB' .OR.
-     &                     LBLPP(KSYMOP,IOP)(3:8).EQ.'MNF-SO') THEN
+     &                     LBLPP(KSYMOP,IOP)(3:8).EQ.'MNF-SO' .OR.
+     &                     LBLPP(KSYMOP,IOP)(3:8).EQ.'SPNSCA') THEN
                      WRITE(LUPRI,'(3A,1P,G16.8,A)')
      *                  '@ Spin-orbit coupling constant (',
      *                    LBLPP(KSYMOP,IOP),') :',
@@ -5219,56 +5224,39 @@ C
 C
       KVECA = 1
 C
-      IF (NGPLR(KSYMOP).GT.0) THEN
+      IF (NGPLR(KSYMOP).LE.0) RETURN
 C
 C     Define variables that depend on symmetry
 C
-         DO IOPA = 1, NGPLR(KSYMOP)
-            CALL GETGPV(LBLLR(KSYMOP,IOPA),FC,CMO,UDV,PV,XINDX,
-     *                  ANTSYM,WRK(KVECA),LWRK)
+      DO IOPA = 1, NGPLR(KSYMOP)
+         CALL GETGPV(LBLLR(KSYMOP,IOPA),FC,CMO,UDV,PV,XINDX,
+     *               ANTSYM,WRK(KVECA),LWRK)
 C
 C     Loop over solution vectors
 C
-            DO IFREQ = 1, NFREQ
-               DO IOPB = 1, NGPLR(KSYMOP)
-                  CALL REARSP(LURSP,KLEN,VECB,LBLLR(KSYMOP,IOPB),
-     &                        BLANK,FREQ(IFREQ),D0,KSYMOP,0,THCLR,
-     &                        FOUND,CONV,ANTSYM)
-                  IF (.NOT. (FOUND .AND. CONV)) THEN
-                     IF (.NOT. FOUND) THEN
-                        WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)')
-     &                      ' Response label ',LBLLR(KSYMOP,IOPB),
-     &                      ' with frequency ',FREQ(IFREQ),
-     &                      ' and symmetry',KSYMOP,
-     &                      ' not found on file LURSP'
-                        CALL QUIT('Response vector not '//
-     &                            'found on file')
-                     ELSE
-                        WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)')
-     &                      ' Response label ',LBLLR(KSYMOP,IOPB),
-     &                      ' with frequency ',FREQ(IFREQ),
-     &                      ' and symmetry',KSYMOP,
-     &                      ' not converged on file LURSP'
-                        CALL QUIT('Only non-converged response '//
-     &                            'vector not found on file')
-                     END IF
-                  END IF
+         DO IFREQ = 1, NFREQ
+            DO IOPB = 1, NGPLR(KSYMOP)
+               CALL REARSP(LURSP,KLEN,VECB,LBLLR(KSYMOP,IOPB),
+     &                     BLANK,FREQ(IFREQ),D0,KSYMOP,0,THCLR,
+     &                     FOUND,CONV,ANTSYM)
+               IF (.NOT. (FOUND .AND. CONV))
+     &              CALL RIOERR(FOUND, LBLLR(KSYMOP,IOPB),
+     &                          FREQ(IFREQ),KSYMOP)
 C
 C     Compute linear response value
 C
-                  VAL = DDOT(KZYVAR,WRK(KVECA),1,VECB,1)
-C
-                  WRITE(LUPRI,'(/A,2(/A,A10,I4,F10.6),/,/A,F20.12)')
-     &                ' Linear response function in a.u.',
-     &                ' A operator, symmetry, frequency: ',
-     &                LBLLR(KSYMOP,IOPA),KSYMOP,-FREQ(IFREQ),
-     &                ' B operator, symmetry, frequency: ',
+               VAL = DDOT(KZYVAR,WRK(KVECA),1,VECB,1)
+C              
+               WRITE(LUPRI,'(/A,2(/A,A10,I4,F10.6),/,/A,F20.12)')
+     &              ' Linear response function in a.u.',
+     &              ' A operator, symmetry, frequency: ',
+     &              LBLLR(KSYMOP,IOPA),KSYMOP,-FREQ(IFREQ),
+     &              ' B operator, symmetry, frequency: ',
      &                LBLLR(KSYMOP,IOPB),KSYMOP, FREQ(IFREQ),
-     &                ' Value of linear response -<<A;B>(omega): ',VAL
-               END DO
+     &              ' Value of linear response -<<A;B>(omega): ',VAL
             END DO
          END DO
-      END IF
+      END DO
 C
       RETURN
       END

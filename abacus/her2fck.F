@@ -511,7 +511,7 @@ C
 C  /* Deck sklfck */
       SUBROUTINE SKLFCK(FMAT,HESSEE,WORK,LWORK,IPRINT,DIRFCK,DDFOCK,
      &                  EXPECT,PERTUR,NODV,MAXDER,LONDON,NDMAT,ISYMDM,
-     &                  IFCTYP,IATOME)
+     &                  IFCTYP,IATOME,SPNORB)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
@@ -521,7 +521,7 @@ C  /* Deck sklfck */
 #include <iratdef.h>
 #include <nuclei.h>
 #include <inforb.h>
-      LOGICAL DIRFCK, DDFOCK, NODV, EXPECT, LONDON, PERTUR
+      LOGICAL DIRFCK, DDFOCK, NODV, EXPECT, LONDON, PERTUR, SPNORB
       DIMENSION FMAT(N2BASX,*), WORK(LWORK), HESSEE(*), ISYMDM(*),
      &          IFCTYP(NDMAT)
 #include <abainf.h>
@@ -644,7 +644,7 @@ C
 C     London Fock matrics
 C     ===================
 C
-      IF (DDFOCK .AND. LONDON) THEN
+      IF ((DDFOCK .AND. LONDON) .OR. SPNORB) THEN
          KSKLTN = 1
          KFAC   = KSKLTN + 3*N2BASX
          KINDEX = KFAC   + NBAST*(MAXREP + 1)
@@ -653,18 +653,20 @@ C
          IF (KLAST .GT. LWORK) CALL STOPIT('SKLFCK','LND',KLAST,LWORK)
 C
          CALL SKLOND(FMAT(1,1),WORK(KSKLTN),WORK(KFAC),WORK(KINDEX),
-     &               WORK(KPOINT),IPRINT)
+     &               WORK(KPOINT),NDMAT,IFCTYP,ISYMDM,SPNORB,IPRINT)
          IF (.NOT.NODV) THEN
             CALL SKLOND(FMAT(1,4),WORK(KSKLTN),WORK(KFAC),WORK(KINDEX),
-     &                  WORK(KPOINT),IPRINT)
+     &                  WORK(KPOINT),NDMAT,IFCTYP,ISYMDM,SPNORB,IPRINT)
          END IF
 C
          NTYPE = 3
          IF (.NOT.NODV) NTYPE = 6
-         DO 510 N = 1, NTYPE
-            CALL DGETAP(NBAST,FMAT(1,N),WORK(KSKLTN))
-            CALL DCOPY(NNBASX,WORK(KSKLTN),1,FMAT(1,N),1)
-  510    CONTINUE
+         IF (.NOT.SPNORB) THEN
+            DO 510 N = 1, NTYPE
+               CALL DGETAP(NBAST,FMAT(1,N),WORK(KSKLTN))
+               CALL DCOPY(NNBASX,WORK(KSKLTN),1,FMAT(1,N),1)
+  510       CONTINUE
+         END IF
       END IF
       CALL QEXIT('SKLFCK')
       RETURN
@@ -1177,7 +1179,8 @@ C
       RETURN
       END
 C  /* Deck sklond */
-      SUBROUTINE SKLOND(FMAT,SKLTON,FACTOR,INDEX,IPOINT,IPRINT)
+      SUBROUTINE SKLOND(FMAT,SKLTON,FACTOR,INDEX,IPOINT,NDMAT,
+     &                  IFCTYP,ISYMDM,SPNORB,IPRINT)
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -1187,10 +1190,12 @@ C
 #include <nuclei.h>
 #include <symmet.h>
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
+      LOGICAL SPNORB
       INTEGER A, B, AP, BP, X
       DIMENSION FMAT(NBASIS,NBASIS,3), SKLTON(NBASIS,NBASIS,3),
      &          INDEX(KMAX,0:MAXREP,*), FACTOR(NBASIS,0:MAXREP),
-     &          IPOINT(NBASIS,0:MAXREP)
+     &          IPOINT(NBASIS,0:MAXREP), IFCTYP(NDMAT), ISYMDM(NDMAT),
+     &          ISYMFC(3)
 #include <pincom.h>
 #include <shells.h>
 #include <ibtfun.h>
@@ -1198,9 +1203,21 @@ C
 C
       IF (IPRINT .GT. 5) CALL HEADER('Subroutine SKLOND',-1)
 C
+      IF (SPNORB) THEN
+         NFMAT=NDMAT
+         DO I=1,NFMAT
+            X=ABS(IFCTYP(I))
+            ISYMFC(I)=IBTXOR(ISYMAX(X,2),ISYMDM(I))
+         END DO
+      ELSE
+         NFMAT=3
+         ISYMFC(1)=ISYMAX(1,2)
+         ISYMFC(2)=ISYMAX(2,2)
+         ISYMFC(3)=ISYMAX(3,2)
+      END IF
       IF (IPRINT .GT. 5) THEN
          CALL HEADER("Input skeleton Fock matrices in SKLOND",1)
-         DO 100 X = 1, 3
+         DO 100 X = 1, NFMAT
             CALL OUTPUT(FMAT(1,1,X),1,NBASIS,1,NBASIS,
      &                                NBASIS,NBASIS,1,LUPRI)
   100    CONTINUE
@@ -1209,7 +1226,8 @@ C
 C     Form symmetric skeleton Fock matrix
 C     ===================================
 C
-      DO 200 X = 1, 3
+      IF (.NOT.SPNORB) THEN
+      DO 200 X = 1, NFMAT
          DO 210 I = 1, NBASIS
          DO 210 J = 1, I
             FMATIJ = DP5*(FMAT(I,J,X) - FMAT(J,I,X))
@@ -1219,10 +1237,11 @@ C
   200 CONTINUE
       IF (IPRINT .GT. 5) THEN
          CALL HEADER("Symmetric skeleton Fock matrix in SKLOND",1)
-         DO 300 X = 1, 3
+         DO 300 X = 1, NFMAT
             CALL OUTPUT(FMAT(1,1,X),1,NBASIS,1,NBASIS,NBASIS,NBASIS,
      &                              1,LUPRI)
   300    CONTINUE
+      END IF
       END IF
 C
 C     Form AO Fock matrix from symmetric skeleton matrix
@@ -1269,10 +1288,10 @@ C
 C
 C        Construct full matrix from skeleton
 C
-         CALL DCOPY(3*(NBASIS**2),FMAT,1,SKLTON,1)
+         CALL DCOPY(NFMAT*(NBASIS**2),FMAT,1,SKLTON,1)
          DO 600 ISYMOP = 1, MAXREP
-            DO 610 X = 1, 3
-               FP = PT(IBTAND(ISYMOP,ISYMAX(X,2)))
+            DO 610 X = 1, NFMAT
+               FP = PT(IBTAND(ISYMOP,ISYMFC(X)))
                DO 620 A = 1, NBASIS
                   AP = IPOINT(A,ISYMOP)
                   FA = FACTOR(A,ISYMOP)
@@ -1286,10 +1305,10 @@ C
   600    CONTINUE
 C
          FAC = D1/SDPRE(MAXREP + 1)
-         CALL DSCAL(3*(NBASIS**2),FAC,FMAT,1)
+         CALL DSCAL(NFMAT*(NBASIS**2),FAC,FMAT,1)
          IF (IPRINT .GT. 5) THEN
             CALL HEADER("AO Fock matrices in SKLOND",1)
-            DO 700 X = 1, 3
+            DO 700 X = 1, NFMAT
                CALL OUTPUT(FMAT(1,1,X),1,NBASIS,1,NBASIS,
      &                                   NBASIS,NBASIS,1,LUPRI)
   700       CONTINUE
@@ -1298,8 +1317,8 @@ C
 C        Transformation to symmetry basis
 C        ================================
 C
-         CALL DCOPY(3*(NBASIS**2),FMAT,1,SKLTON,1)
-         CALL DZERO(FMAT,3*NBASIS*NBASIS)
+         CALL DCOPY(NFMAT*(NBASIS**2),FMAT,1,SKLTON,1)
+         CALL DZERO(FMAT,NFMAT*NBASIS*NBASIS)
          ISTRA = 1
          DO 800 IREPA = 0, MAXREP
             NORBA = NAOS(IREPA+1)
@@ -1330,8 +1349,8 @@ C
                         IF (IBTAND(ISYMB,MULB) .EQ. 0) THEN
                            INDB = INDB + KHKTB
                            FAB  = FA*PT(IBTAND(ISYMB,IVARB))
-                           DO 860 X = 1, 3
-                           IF (IBTXOR(IREPA,IREPB).EQ.ISYMAX(X,2)) THEN
+                           DO 860 X = 1, NFMAT
+                           IF (IBTXOR(IREPA,IREPB).EQ.ISYMFC(X)) THEN
                               FMAT(I,J,X) = FMAT(I,J,X)
      &                                    + FAB*SKLTON(INDA,INDB,X)
                            END IF
@@ -1348,7 +1367,7 @@ C
   800    CONTINUE
          IF (IPRINT .GT. 5) THEN
             CALL HEADER("SO Fock matrix in SKLOND",1)
-            DO 900 X = 1, 3
+            DO 900 X = 1, NFMAT
                CALL OUTPUT(FMAT(1,1,X),1,NBASIS,1,NBASIS,
      &                                   NBASIS,NBASIS,1,LUPRI)
   900       CONTINUE

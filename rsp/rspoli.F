@@ -120,13 +120,14 @@ CSONIA SONIA SONIA
 C
 C -- local constants
 C
-      PARAMETER ( DP5 = 0.5D0, D2 = 2.0D0 )
+      PARAMETER ( D1 = 1D0, DP5 = 0.5D0, D2 = 2.0D0 )
       PARAMETER ( MXFMAT = 100 )
-      LOGICAL DFTADX
+      LOGICAL DFTADX, ROKS
       DIMENSION ISYMDM(MXFMAT), IFCTYP(MXFMAT)
       DIMENSION NEEDMU(6),NEEDDI(6)
       DATA NEEDMU /1,1,1,0,0,0/
       DATA NEEDDI /1,1,1,0,0,0/
+      ROKS = NASHT.GT.0 .AND. DFTADD
 C
       IF (SOPPA) THEN
          IF (DIRFCK) THEN
@@ -137,6 +138,11 @@ C        exclude virt-virt contributions to B(2) matrix
 C        for .OPTORB iterations from ORPCTL
          IF (NOSIM .GT. 0 .AND. KZCONF .GT. 0) NEEDMU(6) = 1
       ENDIF
+      IF(ROKS.AND..NOT.TDHF) THEN
+         CALL QUIT('RSPOLI: ROKS not implemented for '
+     &        //   'MO-integral method')
+      END IF
+
 C
 C ALLOCATE WORK SPACE FOR DVT and PVTD and SOPPA
 C
@@ -547,13 +553,14 @@ C     ... for FXVAO
 C
       CALL MEMGET('REAL',KFXCAO,NFMAT*N2BASX,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KDXCAO,NFMAT*N2BASX,WRK,KFREE,LFREE)
-      IF (NISHT .GT. 0) THEN
+      IF (NASHT .GT. 0) THEN
          KFXVAO = KFXCAO + NOSIM*N2BASX
          KDXVAO = KDXCAO + NOSIM*N2BASX
       ELSE
          KFXVAO = KFXCAO
          KDXVAO = KDXCAO
       END IF
+
 C
 C Construct NOSIM Inactive and Active density matrices according to eq.27
 C CP, 119, 227 (1988).
@@ -566,7 +573,7 @@ C
       DO 1400 IOSIM = 1,NOSIM
          CALL DEQ27(CMO,ZYMAT(1,IOSIM),UDV,WRK(KDXCAO+JOFFAO),
      *              WRK(KDXVAO+JOFFAO),WRK(KFREE),LFREE)
-         JOFFAO = JOFFAO + N2BASX
+        JOFFAO = JOFFAO + N2BASX     
  1400 CONTINUE
       IF (NISHT .GT. 0)
      &   CALL DSCAL(NOSIM*N2BASX,D2,WRK(KDXCAO),1)
@@ -578,6 +585,10 @@ C
          CALL QUIT( 'RSPOLI ERROR: NFMAT .gt. MXFMAT')
       END IF
       JDXCAO = KDXCAO
+      IF (ROKS .OR. HSROHF) THEN
+         CALL DAXPY(NOSIM*N2BASX,D1,WRK(KDXVAO),1,WRK(KDXCAO),1)
+         CALL DSCAL(NOSIM*N2BASX,-D1,WRK(KDXVAO),1)
+      END IF
       DO I = 1,NFMAT
 C
 C     Changed ISYMDM() from 1 to JWOPSY by hint from hjj, kr-may-95
@@ -617,12 +628,27 @@ C           Coulomb+exchange
          END IF
          JDXCAO = JDXCAO + N2BASX
       END DO
+C     Change IFCTYP for all Fa matrices 
+      IF (ROKS.OR.HSROHF) THEN
+      DO 1443 I=1,NFMAT/2
+          IFCTYP(NOSIM+I)=10*(IFCTYP(NOSIM+I)/10) + 2    
+ 1443 CONTINUE   
+      END IF  
       DFTADX = DFTADD
       DFTADD = .FALSE.
       CALL SIRFCK(WRK(KFXCAO),WRK(KDXCAO),NFMAT,ISYMDM,IFCTYP,
      &            DIRFCK,WRK(KFREE),LFREE)
       DFTADD = DFTADX
+      IF (ROKS.OR.HSROHF) THEN
 C
+C Calculated matrices are (FC+FV,-FV(exch)=FV-Q)
+C Input fock matrices (form SIRIFC) are of the form
+C (FC+Q,FV-Q), where Q=FV(coul) + 2*FV(exch)
+C adapt to this form (which works in RSPORB)
+C 
+C FC+Q 
+         CALL DAXPY(NOSIM*N2BASX,-D1,WRK(KFXVAO),1,WRK(KFXCAO),1)
+      END IF
 C ***** Transform FXCAO and FXVAO to MO basis and add to FCONE
 C ***** and FVONE, resp. (the one-index transformations of FCONE
 C ***** and FVONE are added after this routine).
@@ -662,15 +688,17 @@ C From here the code is as before DIRFCK
 C
 C add DFT contribution 
 C
-      IF (DFTADD) THEN
+      IF (DODFT) THEN
          DO IOSIM = 1, NOSIM
-           IF (DFTHES) THEN
-              CALL DFTATX(FCONE(1,1,IOSIM),CMO,ZYMAT(1,IOSIM),TRPLET,
-     &                    WRK(KWRK0),LFREE)
-           ELSE
-              CALL DFTATR(FCONE(1,1,IOSIM),CMO,ZYMAT(1,IOSIM),TRPLET,
-     &                    KSYMOP,WRK(KWRK0),LFREE)
-           END IF
+            if(NASHT.GT.0) THEN
+               call dft_lin_respab(fcone(1,1,iosim),fvone(1,1,iosim),
+     &                   cmo,zymat(1,iosim),trplet,wrk(kwrk0),lfree)
+            ELSE
+               call dft_lin_respf(fcone(1,1,iosim),cmo,zymat(1,iosim),
+     &                           trplet, ksymop,wrk(kwrk0),lfree)
+c              CALL DFTATR(FCONE(1,1,IOSIM),CMO,ZYMAT(1,IOSIM),TRPLET,
+c     &                    KSYMOP,WRK(KWRK0),LFREE)
+            ENDIF
          END DO
       END IF
 C

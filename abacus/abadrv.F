@@ -642,7 +642,7 @@ cLig <> added CTOCD in the 51st position
      &             '.EXCITA', '.SHIELD', '.VCD   ',
      &             '.MAGNET', '.SPIN-S', '.NMR   ',
      &             '.NACME ', '.NOLOND', '.NOHESS',
-     &             '.WRTINT', '.ECD   ', '.SYMCON',
+     &             '.WRTINT', '.ECD   ', '.NODIFC',
      &             '.MOLGFA', '.SPIN-R', '.XXXXXX',
      &             '.PHASEO', '.NOMASV', '.NODARW',
      &             '.ALPHA ', '.VROA  ', 'XXXXXXX',

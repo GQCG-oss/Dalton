@@ -50,7 +50,7 @@ C
 #include <inftap.h>
 C
       LOGICAL NEWDEF, BCFREQ, COMFREQ, NXTLAB
-      PARAMETER ( NTABLE = 28, ZERO = 0.0D0 , THRFRQ = 1.0D-14 )
+      PARAMETER ( NTABLE = 29, ZERO = 0.0D0 , THRFRQ = 1.0D-14 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL, LABFND, RTNLBL(2)
 C
@@ -58,9 +58,10 @@ C
      *            '.APROP ', '.MAXIT ', '.THCLR ', '.MAXITO',
      *            '.PRINT ', '.DIPLEN', '.E3TEST', '.DIROIT',
      *            '.ISPABC', '.A2TEST', '.X2TEST', '.REFCHK',
-     *            '.TSTJEP', '.SHG   ', '.POCKEL', '.FREQUE',
-     *            '.DIPLNX', '.DIPLNY', '.DIPLNZ', '.ASPIN ',
-     *            '.BSPIN ', '.CSPIN ', '.SOSHIE', '.SOSPIN'/
+     *            '.TSTJEP', '.SHG   ', '.POCKEL', '.OPTREF',
+     *            '.FREQUE', '.DIPLNX', '.DIPLNY', '.DIPLNZ',
+     *            '.ASPIN ', '.BSPIN ', '.CSPIN ', '.SOSHIE',
+     *            '.SOSPIN'/
 C
 C READ quadratic response INPUT
 C
@@ -81,7 +82,7 @@ C
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,
      *                    14,15,16,17,18,19,20,21,22,23,24,
-     *                    25,26,27,28),I
+     *                    25,26,27,28,29),I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -334,6 +335,10 @@ C
                   QRPOCK = .TRUE.
                GO TO 100
    20          CONTINUE
+                  QRSPEC = .TRUE.
+                  QROPRF = .TRUE.
+               GO TO 100
+   21          CONTINUE
                   COMFREQ = .TRUE.
                   READ (LUCMD,*) NBQRFR
                   IF (NBQRFR.LE.MBQRFR) THEN
@@ -352,37 +357,37 @@ C
                      CQRFR(J) = BQRFR(J)
                   END DO
                GO TO 100
-   21          CONTINUE
+   22          CONTINUE
                   LABEL='XDIPLEN'
                   AQROP( INDPRP(LABEL)) = .TRUE.
                   BQROP( INDPRP(LABEL)) = .TRUE.
                   CQROP( INDPRP(LABEL)) = .TRUE.
                GO TO 100
-   22          CONTINUE
+   23          CONTINUE
                   LABEL='YDIPLEN'
                   AQROP( INDPRP(LABEL)) = .TRUE.
                   BQROP( INDPRP(LABEL)) = .TRUE.
                   CQROP( INDPRP(LABEL)) = .TRUE.
                GO TO 100
-   23          CONTINUE
+   24          CONTINUE
                   LABEL='ZDIPLEN'
                   AQROP( INDPRP(LABEL)) = .TRUE.
                   BQROP( INDPRP(LABEL)) = .TRUE.
                   CQROP( INDPRP(LABEL)) = .TRUE.
                GO TO 100
-   24          CONTINUE
+   25          CONTINUE
                READ(LUCMD,*)ISPINA
                GO TO 100
-   25          CONTINUE
+   26          CONTINUE
                READ(LUCMD,*)ISPINB
                GO TO 100
-   26          CONTINUE
+   27          CONTINUE
                READ(LUCMD,*)ISPINC
                GO TO 100
- 27            CONTINUE
+ 28            CONTINUE
                   SOCOLL = .TRUE.
                GO TO 100
- 28            CONTINUE
+ 29            CONTINUE
                   SSCOLL = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
@@ -414,7 +419,7 @@ C
      &  ' ERROR : inconsistent quadratic response input as',
      &  ' .BFREQ and/or .CFREQ  has been specified together with'//
      &     ' .SHG and/or .POCKEL',
-     &  ' Use only .FREQUE with .SHG and/or .POCKEL !!!!!'
+     &  ' Use only .FREQUE with .SHG, .POCKEL or .OPTREF!'
                CALL QUIT('Inconsistent input for quadratic response')
             END IF
             NCQRFR = 0
@@ -434,6 +439,16 @@ C
 C                     IFR.EQ.JFR has already been included under QRPOCK
                      NCQRFR = NCQRFR + 1
                      CQRFR(NCQRFR) = BQRFR(IFR)
+                  END IF
+               END DO
+            ENDIF
+C
+            IF (QROPRF) THEN
+               DO IFR=1,NBQRFR
+                  IF (IFR.NE.JFR) THEN
+C                     IFR.EQ.JFR has already been included under QRPOCK
+                     NCQRFR = NCQRFR + 1
+                     CQRFR(NCQRFR) = -BQRFR(IFR)
                   END IF
                END DO
             ENDIF
@@ -512,6 +527,11 @@ C
             WRITE (LUPRI,'(/A,L2)')
      *      ' Electro-optical Pockels effect                 : POCKEL='
      &      ,QRPOCK
+         END IF
+         IF (QROPRF) THEN
+            WRITE (LUPRI,'(A,L2)')
+     *      ' Optical refractivity calculation               : OPTREF='
+     *      ,QROPRF
          END IF
          WRITE(LUPRI,'(/A,I4)')
      *      ' Print level                                    : IPRHYP ='
@@ -1049,6 +1069,15 @@ C
                         ENDDO
                        END IF
                   ENDDO
+C
+C  If optical refractivity we need to solve linear response equations for 0.
+C
+                     IF (QROPRF) THEN
+                        DO IAOP=1,NAQROP(IASYM)
+                           INUM = INQRLR(AQRLB(IASYM,IAOP),
+     &                                   0D0,IASYM)
+                        ENDDO
+                     ENDIF
                ELSE
                   DO 1000 ICFR = 1,NCQRFR
                      DO 1100 IBFR = 1,NBQRFR

@@ -318,14 +318,15 @@ C
 #include "infesr.h"
 #include "rspprp.h"
 #include "infpri.h"
+#include "zfs.h"
 C
       LOGICAL NEWDEF
-      PARAMETER ( NTABLE = 6 )
+      PARAMETER ( NTABLE = 7 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL
 C
       DATA TABLE /'.TRPPRP', '.SNGPRP', '.MAXIT ', '.THCESR',
-     *            '.PRINT ', 'XXXXXXX'/
+     *            '.PRINT ', '.G-TENS', '.ZFS   '/
 C
       NEWDEF = (WORD .EQ. '*ESR   ')
       ICHANG = 0
@@ -340,7 +341,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6), I
+                     GO TO (1,2,3,4,5,6,7), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -369,6 +370,10 @@ C
                   READ (LUCMD,*) IPRESR
                GO TO 100
     6          CONTINUE
+                  CALL GINP(WORD) !?
+               GO TO 100
+    7          CONTINUE
+                  ZFSCAL = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300

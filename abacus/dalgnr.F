@@ -613,11 +613,11 @@ C  /* Deck exedrv */
             WRITE (LUPRI,'(//5X,A,I5,A//)')
      &      '@@>>>>>>>>>> Geometry walk iteration number:',ITERNR,
      &       ' <<<<<<<<<<'
-            CALL EXEHER(WORK,LMWORK,IWOFF,WRKDLM)
+            CALL EXEHER(WORK,LMWORK,0,WRKDLM)
             WLKREJ = .FALSE.
             NEWGEO = .TRUE.
-            CALL EXESIR(WORK,LMWORK,IWOFF,WRKDLM)
-            IF (DOCCSD) CALL EXECC(WORK,LMWORK,IWOFF,WRKDLM)
+            CALL EXESIR(WORK,LMWORK,0,WRKDLM)
+            IF (DOCCSD) CALL EXECC(WORK,LMWORK,0,WRKDLM)
 C
 C     If this is a solvent run, update information for abacus
 C     Add cavity center if solvent model (921014-kvm/hjaaj)
@@ -650,7 +650,7 @@ C
                CORD(3,NUCIND) = D0
                ISTBNU(NUCIND) = 7
                CHARGE(NUCIND) = D0
-               CALL NUCPRO(WORK(IWOFF + 2),LMWORK)
+               CALL NUCPRO(WORK(2),LMWORK)
             END IF
 C
             IF (WLKREJ) THEN
@@ -664,7 +664,7 @@ C
                CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ',' ',IDUMMY,
      &                     .FALSE.)
                CALL WLKDRV(DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
-     &                     WORK(IWOFF + 2),LMWORK)
+     &                     WORK(2),LMWORK)
                CALL GPCLOSE(LUSIFC,'KEEP')
                REJECT = .FALSE.
                RDINPC = .FALSE.
@@ -707,7 +707,6 @@ C
 C           *** Walk to make numerical derivatives. ***
 C
             IF (NMWALK) THEN
-               IWOTMP = IWOFF
                CALL NMDINI(IPRINT)
                CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',
      &                     IDUMMY,.FALSE.)
@@ -716,8 +715,7 @@ C
                IF (WORD .NE. '**NMDDR') GOTO 1100
                CALL NMDINP(WORD,IPRINT)
                CALL GPCLOSE(LUCMD,'KEEP')
-               CALL NUMDRV(WORK,LMWORK,IWOFF,IPRINT,WRKDLM)
-               IWOFF = IWOTMP
+               CALL NUMDRV(WORK,LMWORK,0,IPRINT,WRKDLM)
                GEOCNV = .TRUE.
 c#if defined (VAR_MPI)
 c               IF (NODTOT .GT. 1 .AND. MYNUM .EQ. 0) THEN
@@ -745,9 +743,9 @@ C
                   END IF
                END IF
                IF (ITERNR .EQ. 0) THEN
-                  CALL ABAINP('**START',WORK(IWOFF + 2),LMWORK)
+                  CALL ABAINP('**START',WORK(2),LMWORK)
                ELSE
-                  CALL ABAINP('**PROPE',WORK(IWOFF + 2),LMWORK)
+                  CALL ABAINP('**PROPE',WORK(2),LMWORK)
                END IF
                IF (NEWWLK) THEN
                   NEWWLK = .FALSE.
@@ -774,9 +772,9 @@ C     We may have more DOSYM under **START than under **PROPE
                   CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
                   READ (LUSIFC) POTNUC,EMY,EACTIV,ERGMOL
                   CALL WLKDRV(DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
-     &                        WORK(IWOFF + 2),LMWORK)
+     &                        WORK(2),LMWORK)
                ELSE
-                  CALL EXEABA(WORK,LMWORK,IWOFF,WRKDLM)
+                  CALL EXEABA(WORK,LMWORK,0,WRKDLM)
                END IF
                IF (.NOT. USRIPR .AND. ((IWKTYP .EQ. 3) 
      &              .OR. (IWKTYP .EQ. 6))) THEN
@@ -846,8 +844,8 @@ C
                CALL EXEHER(WORK,LMWORK,IWOFF,WRKDLM)
                CALL EXESIR(WORK,LMWORK,IWOFF,WRKDLM)
             END IF
-            CALL ABAINP('**FINAL',WORK(IWOFF + 2),LMWORK)
-            CALL EXEABA(WORK,LMWORK,IWOFF,WRKDLM)
+            CALL ABAINP('**FINAL',WORK(2),LMWORK)
+            CALL EXEABA(WORK,LMWORK,0,WRKDLM)
 C
 C     We also check to see if we have requested a RESPONSE calculations
 C     
@@ -862,10 +860,10 @@ C
             IF (WORD .EQ. '**RESPO') THEN
                REWIND (LUCMD)
                RNRESP = .TRUE.
-               CALL SETSIR(WORK(IWOFF + 2),LMWORK)
+               CALL SETSIR(WORK(2),LMWORK)
                IF (LUSIFC.GT.0) CALL GPCLOSE(LUSIFC,'KEEP')
                CALL GPCLOSE(LUCMD,'KEEP')
-               CALL RSPDRV(WORK(IWOFF + 2),LMWORK)
+               CALL RSPDRV(WORK(2),LMWORK)
             ELSE
                GOTO 133
             END IF
@@ -915,19 +913,19 @@ C
             CORD(3,NUCIND) = D0
             ISTBNU(NUCIND) = 7
             CHARGE(NUCIND) = D0
-            CALL NUCPRO(WORK(IWOFF + 2),LMWORK)
+            CALL NUCPRO(WORK(2),LMWORK)
          END IF
          WRINDX = .TRUE.
          IF (RNRESP) THEN
             IF (.NOT. RNSIRI) THEN
-               CALL SETSIR(WORK(IWOFF + 2),LMWORK)
+               CALL SETSIR(WORK(2),LMWORK)
                IF (LUSIFC.GT.0) CALL GPCLOSE(LUSIFC,'KEEP')
             END IF
-            CALL RSPDRV(WORK(IWOFF + 2),LMWORK)
+            CALL RSPDRV(WORK(2),LMWORK)
          END IF
 C
          IF (RNABAC) THEN
-            CALL ABAINP('**PROPE',WORK(IWOFF + 2),LMWORK)
+            CALL ABAINP('**PROPE',WORK(2),LMWORK)
             CALL WLKINI
             IF (WALKIN) THEN
 C
@@ -949,10 +947,10 @@ C
 C     We finally punch information for Gamess-US graphic packages
 C     corrected for IWOFF ne 0 990831-ekd
 C
-      IKIND = IWOFF + 2
+      IKIND = 2
       IKOL  = IKIND + MXCENT
       KLAST = IKOL + MXCENT
-      KLEFT = IWOFF + 2 + LMWORK - KLAST
+      KLEFT = 2 + LMWORK - KLAST
 C
       CALL MOLPLT(WORK(IKIND),WORK(IKOL),WORK(KLAST),KLEFT)
       CALL PLTORB(WORK(IKIND),LMWORK)

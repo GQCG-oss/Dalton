@@ -212,6 +212,16 @@ C           ... this is one open shell RHF; reset wave function def.
             END IF
             IF (NASH(ISYM) .NE. NASHSV(ISYM)) RHFWOP = .FALSE.
    10    CONTINUE
+         IF (HSROHF) THEN
+            LSYM = 1
+            DO ISYM = 2, NSYM
+               IF (MOD(NROHF(ISYM),2).EQ.1) LSYM = MULD2H(LSYM,ISYM)
+            END DO
+            NASHT = ISUM(NSYM,NROHF,1)
+            ISPIN = NASHT+1
+            NACTEL = NASHT
+            CALL ICOPY(8,NROHF,1,NASH,1)
+         END IF
          IF (LSYMSV .NE. LSYM  ) RHFWOP = .FALSE.
          IF (ISPISV .NE. ISPIN ) RHFWOP = .FALSE.
          IF (NACTSV .NE. NACTEL) RHFWOP = .FALSE.

@@ -1,0 +1,45 @@
+#!/bin/sh
+
+. functions || { echo "current dir is not the test dir" ; exit 1; }
+
+info="
+   dft_open_b3lyp
+   ------------------
+   Molecule:         BeH
+   Wave Functions:   DFT B3LYP / AhlrichsVTZ
+   Test Purpose:     DFT B3LYP properties test w/o symmetry.
+"
+
+molecule="BASIS
+AhlrichsVTZ
+BeH AhlrichsVDZ
+--------
+    2    0
+        4.    1
+Be   .0000     .0000     .0000
+        1.    1
+H1    1.41421356237309504880 1.41421356237309504880    .0000
+"
+
+dalton="**DALTON INPUT
+.RUN PROPERTIES
+.DIRECT
+**INTEGRALS
+.NOSUP
+**WAVE FUNCTIONS
+.HF
+*HF INPUT
+.B3LYP
+.THRESHOLD
+1e-10
+*END OF INPUT
+"
+
+test="
+check_hf_energy -15.119460110474 1e-13
+check_dipole    0.450734 0
+check_dip_components -0.81009740 -0.81009740 0 0
+"
+
+check_gen_input "$0" "$info" "$molecule" "$dalton" "$test"
+

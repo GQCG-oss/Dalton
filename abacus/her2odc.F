@@ -930,8 +930,14 @@ C     Space allocation for R12 method (WK/UniKA/15-11-2002).
          MAXDIF = 2
       ELSE IF (DIA2UP .OR. EL2CD) THEN
          MAXDIF = 1
-      ELSE IF (LONDON .OR. ZFS2EL) THEN
+      ELSE IF (LONDON) THEN 
          MAXDIF = MAXDER
+      ELSE IF (ZFS2EL) THEN
+         IF (ITYPE .EQ. 12) THEN
+            MAXDIF = MAXDER
+         ELSE
+            MAXDIF = 0
+         END IF
       ELSE IF (ONECEN) THEN
          MAXDIF = 0
       ELSE
