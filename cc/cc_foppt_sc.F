@@ -118,8 +118,8 @@ C
 #endif
 C
       LOGICAL   C3LRSV, CC1ASV, CC1BSV, LDEBUG
-      logical locdbg
-      PARAMETER (locdbg = .FALSE.)
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG = .FALSE.)
       CHARACTER*(*) FNDELD, FNCKJD, FNDKBC, FNTOC, FN3VI, FNDKBC3
       CHARACTER*(*) FN3FOP, FN3FOP2
       CHARACTER*(*) FN3FOPX, FN3FOP2X
@@ -131,7 +131,7 @@ C
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
-      CALL QENTER('CCSDPT_DENS2')
+      CALL QENTER('CCSDPT_DENS2_SC')
 C
       LDEBUG = .FALSE.
 C
@@ -1810,7 +1810,7 @@ C
 C--------------------------------------------
 C     Resort the densities occ1 and occ2
 C--------------------------------------------
-      IF (IPRINT.GT.55) THEN
+      IF ((IPRINT.GT.55).or.(locdbg)) THEN
         RHO2N = ddot(nckij(isyres),work(kocc1),1,work(kocc1),1)
         WRITE(lupri,*) 'Norm of Occ1 (before cc3_lsort1) : ',rho2n
         RHO2N = ddot(nckij(isyres),work(kocc2),1,work(kocc2),1)
@@ -1821,7 +1821,7 @@ C
 C
             CALL CC3_LSORT1(WORK(KOCC2),ISYRES,WORK(KEND4),LWRK4,3)
 C
-      IF (IPRINT.GT.55) THEN
+      IF ((IPRINT.GT.55).or.(locdbg)) THEN
         rho2n = ddot(nckij(isyres),work(kocc1),1,work(kocc1),1)
         write(lupri,*) 'Norm of Occ1 (after  cc3_lsort1) : ',rho2n
         rho2n = ddot(nckij(isyres),work(kocc2),1,work(kocc2),1)
@@ -1900,7 +1900,7 @@ C----------------------------------------------------------
 C      Add the 1e- to the d_{iajk} for j=k and for i=k
 C----------------------------------------------------------
 C
-      IF ((IPRINT .GT. 55)) THEN
+      IF ((IPRINT .GT. 55).or.locdbg) THEN
          RHO1N = DDOT(NCKIJ(ISYRES),WORK(KOCC1),1,WORK(KOCC1),1)
          WRITE(LUPRI,*) 'Norm of OCC1 (iajk) (before dens1to2) =',RHO1N
       ENDIF
@@ -1909,7 +1909,7 @@ C
          CALL DENS1TO2(WORK(KOMG1),WORK(KOCC1),ISYRES)
       ENDIF
 C
-      IF ((IPRINT .GT. 55)) THEN
+      IF ((IPRINT .GT. 55).or.locdbg) THEN
          RHO1N = DDOT(NCKIJ(ISYRES),WORK(KOCC1),1,WORK(KOCC1),1)
          WRITE(LUPRI,*) 'Norm of OCC1 (iajk) (after dens1to2)  =',RHO1N
       ENDIF
@@ -1970,7 +1970,7 @@ C-----------------------------------------
 C     Store the d_{aijk} as jkia
 C-----------------------------------------
 C
-      IF ((IPRINT .GT. 55)) THEN
+      IF ((IPRINT .GT. 55).or.locdbg) THEN
          RHO1N = DDOT(NCKIJ(ISYRES),WORK(KOCC2),1,WORK(KOCC2),1)
          WRITE(LUPRI,*) 'Norm of OCC2 (aijk) = ',RHO1N
       ENDIF
@@ -1984,7 +1984,7 @@ C------------------------------------------
 C     Store kappabar_{aa} and kappabar_{ii}
 C------------------------------------------
 C
-         IF ((IPRINT .GT. 55)) THEN
+         IF ((IPRINT .GT. 55).or.locdbg) THEN
             RHO1N = DDOT(NRHFT,WORK(KKAPII),1,WORK(KKAPII),1)
             WRITE(LUPRI,*) 'Norm of KAPII : ',RHO1N
             RHO1N = DDOT(NVIRT,WORK(KKAPAA),1,WORK(KKAPAA),1)
@@ -2022,10 +2022,17 @@ C     and backtransform last index to delta
 C----------------------------------------------------------
 C
       IF ((.NOT. CC3) .AND. RELORB) THEN
-         CALL SYMMBACK(MODEL,LUIAJK,FNDIAJK,LUAIJK,FNDAIJK,
+         if (.false.) then
+            CALL SYMMBACK(MODEL,LUIAJK,FNDIAJK,LUAIJK,FNDAIJK,
      *                 LUABI1,FNDABI1,LUABI3,FNDABI3,
      *                 LUPTIAJB,FNDIAJB,
      *                 ISYRES,WORK(KEND4),LWRK4)
+         else
+            CALL SYMMBACK_1(MODEL,LUIAJK,FNDIAJK,LUAIJK,FNDAIJK,
+     *                 LUABI1,FNDABI1,LUABI3,FNDABI3,
+     *                 LUPTIAJB,FNDIAJB,
+     *                 ISYRES,WORK(KEND4),LWRK4)
+         end if
       ENDIF
 C
 C---------------------------------------
@@ -2069,7 +2076,7 @@ C-------------
 C     End
 C-------------
 C
-      CALL QEXIT('CCSDPT_DENS2')
+      CALL QEXIT('CCSDPT_DENS2_SC')
 C
       RETURN
 C

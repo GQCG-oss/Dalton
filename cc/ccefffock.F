@@ -1014,7 +1014,8 @@ C
         INQUIRE(UNIT=42,EXIST=LEX)
         IF (LEX) CLOSE(42,STATUS='DELETE')             
         IF (IOPREL .EQ. 2) THEN
-           DPTINT = .TRUE.
+C          DPTINT = .TRUE.
+           BPH2OO = .TRUE.
         ENDIF
         IF (DAR2EL) THEN
            DO2DAR = .TRUE.
@@ -1831,6 +1832,7 @@ C
         IF (DAR2EL) DO2DAR = .FALSE.
         IF (IOPREL .EQ. 2) THEN
            DPTINT = .FALSE.
+           BPH2OO = .FALSE.
         ENDIF
       END IF
 C

@@ -2247,6 +2247,7 @@ C
 C        COMPUTE (I'A|R12|JB) INTEGRALS
 C     
  1095    CONTINUE
+         COMBSS = .NOT. R12HYB
          R12TRA = .TRUE.
          IF (R12EOR) THEN
             R12EIN = .TRUE.

@@ -196,6 +196,12 @@ C
             END IF
             FACTOR(ICOOR) = D1 
          END DO
+      ELSE IF (BPH2OO) THEN
+         ICOOR = ICOOR + 1
+         IOFFHC(ICOOR) = IDHC(1)
+         JODDIF(ICOOR) = 0
+         IOFFCC(ICOOR) = 1 
+         FACTOR(ICOOR) = D1 
       ELSE
          DORDER(1) = IDERIV .GE. 1
          DORDER(2) = IDERIV .EQ. 2
@@ -318,7 +324,8 @@ C                      | CSINT
 C
          LSSINT = NO1234*NHCMAX*KHKT34
          LCCPRM = NCCPP*NHCMAX
-         IF ((KHKT34 .EQ. 1) .AND. (.NOT. (FINDPT.OR.DPTINT))) THEN
+         IF ((KHKT34 .EQ. 1) .AND. 
+     &       (.NOT.(FINDPT.OR.DPTINT.OR.BPH2OO))) THEN
             LETUV = 0
          ELSE
             LETUV  = NCCPP
@@ -377,7 +384,7 @@ C  /* Deck c2hin1 */
 C
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER (D0 = 0.0D0, DP25 = 0.25D0)
+      PARAMETER (D0 = 0.0D0, DP125 = 0.125D0)
 #include <maxaqn.h>
 #include <maxorb.h>
       INTEGER T, U, V
@@ -400,15 +407,18 @@ C
 #include <codata.h>
 #include <drw2el.h>
 #include <expopt.h>
-      DIMENSION INCDPT(3,3), ITYDPT(3,3), INCEXP(3,0:3)
+      DIMENSION INCDPT(3,3), INCHOO(3,3), ITYDPT(3,3), ITYHOO(3,3), 
+     &          INCEXP(3,0:3)
       DATA INCDPT/2, 0, 0, 0, 2, 0, 0, 0, 2/
+      DATA INCHOO/1, 0, 0, 0, 1, 0, 0, 0, 1/
       DATA ITYDPT/5, 1, 1, 1, 5, 1, 1, 1, 5/
+      DATA ITYHOO/3, 1, 1, 1, 3, 1, 1, 1, 3/
       DATA INCEXP/0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2/
 #include <ibtfun.h>
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from C2HIN1','*',103)
-      IF (FINDPT) ECOFAC = DPTFAC * DP25 * ALPHAC ** 2
-      IF (DPTINT) ECOFAC = DP25 * ALPHAC ** 2
+      IF (FINDPT) ECOFAC = DPTFAC * DP125 * ALPHAC ** 2
+      IF (DPTINT) ECOFAC = DP125 * ALPHAC ** 2
       IF (NO2DPT) ECOFAC = D0
 C
       INCRMT = I340X + 1
@@ -433,7 +443,7 @@ C
                JODD34 = IODD34(ICMP34,1)
                CALL DZERO(CCPRIM,NHCCMP*NCCPP)
                IF ((KHKT34 .EQ. 1).AND.
-     &             (.NOT.(FINDPT.OR.DPTINT.OR.EXPGRA))) THEN
+     &             (.NOT.(FINDPT.OR.DPTINT.OR.EXPGRA.OR.BPH2OO))) THEN
                   ICCTYP = 1
                   DO 200 ICOOR = 1, NCOOR
                      IODDIF= JODDIF(ICOOR)
@@ -540,6 +550,48 @@ C                          ===================
   301                   CONTINUE
   333                CONTINUE
                      END IF
+C
+C                 Orbital-orbital interaction 
+C                 ===========================
+C
+C                 tuh & wk 07.04.03
+C
+                  ELSE IF (BPH2OO) THEN
+                     DO ICOOR = 1, 3
+                        MAXT = L3 + L4 + INCHOO(1,ICOOR)
+                        MAXU = M3 + M4 + INCHOO(2,ICOOR)
+                        MAXV = N3 + N4 + INCHOO(3,ICOOR)
+                        MINT = IBTAND(MAXT,INCRMT - 1)
+                        MINU = IBTAND(MAXU,INCRMU - 1)
+                        MINV = IBTAND(MAXV,INCRMV - 1)
+                        DO V = MINV, MAXV, INCRMV
+                        DO U = MINU, MAXU, INCRMU
+                        DO T = MINT, MAXT, INCRMT
+                           DO I = 1, NUC34
+                              ECOEFI=COEF34(I,T,L3,L4,1,ITYHOO(1,ICOOR))
+     &                              *COEF34(I,U,M3,M4,2,ITYHOO(2,ICOOR))
+     &                              *COEF34(I,V,N3,N4,3,ITYHOO(3,ICOOR))
+                              IJ = I
+                              DO J = 1, NORB12
+                                 ETUV(IJ) = ECOEFI
+                                 IJ = IJ + NUC34
+                              END DO
+                           END DO
+                           ITUV = INDHER(T,U,V)
+                           ICCTYP = 1
+                           DO I = 1, KHKT12
+                              IF (IODD12(I,2) .EQ. JODD34) THEN
+                                 DO J = 1, NCCPP
+                                    CCPRIM(J,ICCTYP) = CCPRIM(J,ICCTYP)
+     &                                 + ETUV(J)*HCINT(J,ITUV,I,ICOOR)
+                                 END DO
+                                 ICCTYP = ICCTYP + 1
+                              END IF
+                           END DO
+                        END DO
+                        END DO
+                        END DO
+                     END DO
 C
 C                 Exponent gradient
 C                 =================

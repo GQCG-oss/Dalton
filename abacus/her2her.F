@@ -81,6 +81,7 @@ C     Modified for r12 integrals (WK/UniKA/15-11-2002).
 #include <implicit.h>
 #include <priunit.h>
 #include <r12int.h>
+#include <drw2el.h>
 #include <maxaqn.h>
       LOGICAL NOINT, ONECEN
 #include <twosta.h>
@@ -164,7 +165,7 @@ C
             CALL HERI(HERINT,WORK,LWORK,RJ000,PQX,PQY,PQZ,INDHER,JMAX,
      &             MAXDER,NUABCD,NTUV,IPQ0X,IPQ0Y,IPQ0Z,IODDHR,IPRINT)
 C
-            IF (R12INT .OR. U12INT) THEN
+            IF (R12INT .OR. U12INT .OR. BPH2OO) THEN
 C
 C              Calculate Hermite integrals Q(t,u,v) over r12 from
 C              R(t,u,v) integrals over 1/r12 (WK/UniKA/14-11-2002).

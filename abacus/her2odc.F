@@ -922,12 +922,11 @@ C     Space allocation for R12 method (WK/UniKA/15-11-2002).
          KBOVRP = KAOVRP + NUC12
          KLAST  = KBOVRP + NUC12
          IF (KLAST .GT. LWORK) CALL STOPIT('EXCOEF',' ',KLAST,LWORK)
-         LWTOT  = LWTOT + KLAST
          MWTOT  = MAX(MWTOT,LWTOT + KLAST)
       END IF
       IF (EXPGRA) THEN
          MAXDIF = 2
-      ELSE IF (SPNORB) THEN
+      ELSE IF (SPNORB .OR. BPH2OO) THEN
          MAXDIF = 1
       ELSE IF (FINDPT.OR.DPTINT) THEN
          MAXDIF = 2
@@ -989,7 +988,7 @@ C     ***** Calculate undifferentiated expansion coefficients *****
 C     *************************************************************
 C
       IF ((.NOT. (UNDIFF .AND. (LA+LB .EQ. 0))) .OR. FINDPT
-     *    .OR. DPTINT .OR. U12INT) THEN
+     *    .OR. DPTINT .OR. U12INT .OR. BPH2OO) THEN
 C
          DO 100 I = 1, NUC12
             HEXPPI(I) = SIGN*DP5/EXP12(I,1)
@@ -1073,6 +1072,11 @@ C
          CALL DER1AB(COEF12(1,0,0,0,3,1),COEF12(1,0,0,0,3,2),
      &               NUC12,MXUC12,JMAX1,JMAX2,
      &               EXP12(1,2),EXP12(1,3),LA,LB,'EZ  ',I120Z,IPRINT)
+C
+C     ********************************************************
+C     ***** Expansion coefficients for exponent gradient *****
+C     ********************************************************
+C
       ELSE IF (EXPGRA) THEN
          CALL DEREXP(COEF12(1,0,0,0,1,1),
      &               COEF12(1,0,0,0,1,2),COEF12(1,0,0,0,1,3),
@@ -1961,7 +1965,7 @@ C
          DOCOMP(1) = ICD0X .EQ. 0
          DOCOMP(2) = ICD0Y .EQ. 0
          DOCOMP(3) = ICD0Z .EQ. 0
-         IF (SPNORB .OR. DIA2SO) THEN
+         IF (SPNORB .OR. DIA2SO .OR. BPH2OO) THEN
             MAXDIF = 1
          ELSE IF (FINDPT .OR. DPTINT) THEN
             MAXDIF = 2

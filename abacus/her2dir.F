@@ -77,6 +77,7 @@ C
 #include <expcom.h>
 #include <dirprt.h>
 #include <derzer.h>
+#include <drw2el.h>
       COMMON /DEODIR/ DEOVEC(54)
       COMMON /DETDIR/ DETVEC(36)
       COMMON /DHODIR/ DHOVEC(18)
@@ -162,6 +163,13 @@ C
          DC102  = .TRUE.
          DC2H2  = .TRUE.
          NINTYP = 4
+         NTOTAL = NINTYP*NCCINT
+         GO TO 900
+      ELSE IF (BPH2OO) THEN
+         ATYPE  = 'BPOO'
+         DPATH1 = .TRUE.
+         DC2H1  = .TRUE.
+         NINTYP = 1
          NTOTAL = NINTYP*NCCINT
          GO TO 900
 C

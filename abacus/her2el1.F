@@ -197,12 +197,62 @@ C
          LWTOT  = LWTOT - KLAST
       END IF
 C
+C     Orbit-orbit differentiated integrals
+C     ====================================
+C
+      IF (BPH2OO) THEN
+C
+C        Work space usage in C10INT:
+C
+C        HCCONT  | HCPRIM | ETUV
+C                |        | SCR1 | SCR2
+C                |
+C                | HCSINT
+C
+         LETUV  = NU1234
+         LHCPRM = 3*NU1234*NTUV34
+         LCCONT = 0
+         LCSINT = 0
+         IF (SPHR12) LCCONT = 3*NCCPP*NTUV34*KCKT12
+         IF (SPHR1 .AND. SPHR2) LCSINT = NCCPP*NTUV34*KHKT2
+         LODD12 = (2*KCKT12 + 1)/IRAT
+C
+         KODD12 = 1
+         KCCONT = KODD12 + LODD12
+         KHCPRM = KCCONT + LCCONT
+         KCSINT = KCCONT + LCCONT
+         KETUV  = KHCPRM + LHCPRM
+         KSCR1  = KHCPRM + LHCPRM
+         KSCR2  = KSCR1  + LSCR1
+C
+         LNGTH1 = LCCONT + LHCPRM + LETUV
+         LNGTH2 = LCCONT + LHCPRM + LSCR1 + LSCR2
+         LNGTH3 = LCCONT + LCSINT
+         KLAST  = MAX(LNGTH1,LNGTH2,LNGTH3)
+C
+         IF (KLAST.GT.LWORK) CALL STOPIT('C1DRIV','C10INT',KLAST,LWORK)
+         MWC1DR = MAX(MWC1DR,KLAST)
+         LWTOT  = LWTOT + KLAST
+         MWTOT  = MAX(MWTOT,LWTOT)
+C
+         IF (TKTIME) TIMSTR = SECOND()
+         CALL COOINT(HERINT,INDHER,INDHER,IODDHR,INDHSQ,HCINT,
+     &               WORK(KCSINT),WORK(KCCONT),WORK(KETUV),WORK(KHCPRM),
+     &               COEF12,CONT1,CONT2,WORK(KSCR1),WORK(KSCR2),IPRINT,
+     &               LMNV12,IODD12,WORK(KODD12),NPCO1,NPCO2,NUCS12,
+     &               NPNT12,NRED12)
+         IF (TKTIME) TC10IN = TC10IN + SECOND() - TIMSTR
+         LWTOT  = LWTOT - KLAST
+      END IF
+C
 C     Print Hermite-Spherical integrals
 C     =================================
 C
       IF (IPRINT .GE. 20) THEN
          IF (DPTINT) THEN
             MHCINT = 2
+         ELSE IF (BPH2OO) THEN
+            MHCINT = 3
          ELSE
             MHCINT = NHCINT
          END IF
@@ -218,6 +268,7 @@ C
             MTUV34 = KTUV34
             IF (DC10 .AND. IHCINT .EQ. 1) MTUV34 = NTUV34
             IF (DPTINT .AND. IHCINT .EQ. 2) MTUV34 = LTUV34
+            IF (BPH2OO) MTUV34 = NTUV34
             ICMP12 = 0
             DO 610 ICOMP1 = 1, KHKT1
                MAX2 = KHKT2
@@ -264,7 +315,7 @@ C     TUH
 C
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER (D0 = 0.0D0, DP25=25D-2)
+      PARAMETER (D0 = 0.0D0, DP125=125D-3)
 #include <maxaqn.h>
       INTEGER T, U, V, TUV
 #include <twoao.h>
@@ -289,8 +340,8 @@ C
 #include <ibtfun.h>
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from C10INT','*',103)
-      IF (DPTINT) ECOFAC = DP25 * ALPHAC ** 2
-      IF (FINDPT) ECOFAC = DPTFAC * DP25 * ALPHAC ** 2
+      IF (DPTINT) ECOFAC = DP125 * ALPHAC ** 2
+      IF (FINDPT) ECOFAC = DPTFAC * DP125 * ALPHAC ** 2
       IF (NO2DPT) ECOFAC = D0
 C
 C     COMMON /DHCINF/
@@ -743,6 +794,256 @@ C
  1120 FORMAT (1X,'JOFFEX    ',(7I7))
  1130 FORMAT (1X,'JOFFEY    ',(7I7))
  1140 FORMAT (1X,'JOFFEZ    ',(7I7))
+      END
+C  /* Deck cooint */
+      SUBROUTINE COOINT(HERINT,INDHER,INDHVC,IODDHR,INDHSQ,HCINT,
+     &                  HCSINT,HCCONT,ETUV,HCPRIM,COEF12,CONT1,CONT2,
+     &                  SCR1,SCR2,IPRINT,LMNV12,IODD12,KODD12,
+     &                  NPCO1,NPCO2,NUCS12,NPNT12,NRED12)
+C
+C     TUH & WK 07.04.03
+C
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER (D0 = 0.0D0, DP5=0.5D0)
+#include <maxaqn.h>
+      INTEGER T, U, V, TUV
+#include <twoao.h>
+#include <hertop.h>
+#include <sphtrm.h>
+#include <drw2el.h>
+#include <codata.h>
+      COMMON /DHCINF/ IHCADR(10), IHCSYM(10)
+      DIMENSION HERINT(NU1234,*), INDHER(0:JTOP,0:JTOP,0:JTOP),
+     &          INDHVC(0:*), IODDHR(*), INDHSQ(*),
+     &          COEF12(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2,3,*),
+     &          ETUV(NU1234), HCPRIM(NU1234,NTUV34,3),
+     &          HCCONT(NCCPP,NTUV34,KCKT12,*),
+     &          HCINT (NCCPP,NTUV34,KHKT12,*),
+     &          HCSINT(*), SCR1(*), SCR2(*), CONT1(*), CONT2(*),
+     &          LMNV12(KCKMX,5,2), IODD12(KCKT12,2),KODD12(KCKT12,2),
+     &          NPCO1(*), NPCO2(*), NUCS12(*), NPNT12(*), NRED12(*)
+C
+#include <ibtfun.h>
+C
+      IF (IPRINT .GT. 5) CALL TITLER('Output from COOINT','*',103)
+      ECOFAC = DP5*ALPHAC**2
+C
+C     COMMON /DHCINF/
+C     ---------------
+C
+      IHCADR(1) = 1
+      IHCADR(2) = 2 
+      IHCADR(3) = 3 
+      IHCSYM(1) = IBTAND(IHRSYM,1)
+      IHCSYM(2) = IBTAND(IHRSYM,2)
+      IHCSYM(3) = IBTAND(IHRSYM,4)
+C
+      INCRMT = I120X + 1
+      INCRMU = I120Y + 1
+      INCRMV = I120Z + 1
+      ICMP12 = 0
+      DO 100 ICOMP1 = 1,KCKT1
+         L1 = LMNV12(ICOMP1,1,1)
+         M1 = LMNV12(ICOMP1,2,1)
+         N1 = LMNV12(ICOMP1,3,1)
+         MAX2 = KCKT2
+         IF (DIAC12) MAX2 = ICOMP1
+         DO 200 ICOMP2 = 1,MAX2
+            ICMP12 = ICMP12 + 1
+            L2 = LMNV12(ICOMP2,1,2)
+            M2 = LMNV12(ICOMP2,2,2)
+            N2 = LMNV12(ICOMP2,3,2)
+            MAXT0 = L1 + L2
+            MAXU0 = M1 + M2
+            MAXV0 = N1 + N2
+            CALL DZERO(HCPRIM,3*NTUV34*NU1234)
+C
+C           Ex contribution 
+C
+            MAXT = MAXT0 + 1 
+            MAXU = MAXU0 
+            MAXV = MAXV0 
+            MINT = IBTAND(MAXT,INCRMT - 1)
+            MINU = IBTAND(MAXU,INCRMU - 1)
+            MINV = IBTAND(MAXV,INCRMV - 1)
+            DO V = MINV, MAXV, INCRMV
+            DO U = MINU, MAXU, INCRMU
+            DO T = MINT, MAXT, INCRMT
+               DO I = 1, NUC12
+                  ECOEFI = ECOFAC*COEF12(I,T,L1,L2,1,2)
+     &                           *COEF12(I,U,M1,M2,2,1)
+     &                           *COEF12(I,V,N1,N2,3,1)
+                  IJ = (I - 1)*NUC34
+                  DO J = 1, NUC34
+                     ETUV(IJ + J) = ECOEFI
+                  END DO
+               END DO
+C
+               DO TUV = 1, NTUV34
+                  IF (IODDHR(INDHER(T,U,V)) .EQ. IODDHR(TUV)) THEN
+                     IADR1=INDHVC(INDHSQ(INDHER(T,U+2,V))+INDHSQ(TUV))
+                     IADR2=INDHVC(INDHSQ(INDHER(T,U,V+2))+INDHSQ(TUV))
+                     DO I = 1, NU1234
+                        HCPRIM(I,TUV,1) = HCPRIM(I,TUV,1) + ETUV(I)
+     &                        *(HERINT(I,IADR1) + HERINT(I,IADR2))
+                     END DO
+                  END IF
+                  IF (IODDHR(INDHER(T+1,U+1,V)) .EQ. IODDHR(TUV)) THEN
+                     IADR=INDHVC(INDHSQ(INDHER(T+1,U+1,V))+INDHSQ(TUV))
+                     DO I = 1, NU1234
+                        HCPRIM(I,TUV,2) = HCPRIM(I,TUV,2) - ETUV(I)
+     &                                   *HERINT(I,IADR)
+                     END DO
+                  END IF
+                  IF (IODDHR(INDHER(T+1,U,V+1)) .EQ. IODDHR(TUV)) THEN
+                     IADR=INDHVC(INDHSQ(INDHER(T+1,U,V+1))+INDHSQ(TUV))
+                     DO I = 1, NU1234
+                        HCPRIM(I,TUV,3) = HCPRIM(I,TUV,3) - ETUV(I)
+     &                                   *HERINT(I,IADR)
+                     END DO
+                  END IF
+               END DO
+            END DO
+            END DO
+            END DO
+C
+C           Ey contribution
+C
+            MAXT = MAXT0 
+            MAXU = MAXU0 + 1 
+            MAXV = MAXV0 
+            MINT = IBTAND(MAXT,INCRMT - 1)
+            MINU = IBTAND(MAXU,INCRMU - 1)
+            MINV = IBTAND(MAXV,INCRMV - 1)
+            DO V = MINV, MAXV, INCRMV
+            DO U = MINU, MAXU, INCRMU
+            DO T = MINT, MAXT, INCRMT
+               DO I = 1, NUC12
+                  ECOEFI = ECOFAC*COEF12(I,T,L1,L2,1,1)
+     &                           *COEF12(I,U,M1,M2,2,2)
+     &                           *COEF12(I,V,N1,N2,3,1)
+                  IJ = (I - 1)*NUC34
+                  DO J = 1, NUC34
+                     ETUV(IJ + J) = ECOEFI
+                  END DO
+               END DO
+C
+               DO TUV = 1, NTUV34
+                  IF (IODDHR(INDHER(T,U,V)) .EQ. IODDHR(TUV)) THEN
+                     IADR1=INDHVC(INDHSQ(INDHER(T+2,U,V))+INDHSQ(TUV))
+                     IADR2=INDHVC(INDHSQ(INDHER(T,U,V+2))+INDHSQ(TUV))
+                     DO I = 1, NU1234
+                        HCPRIM(I,TUV,2) = HCPRIM(I,TUV,2) + ETUV(I)
+     &                        *(HERINT(I,IADR1) + HERINT(I,IADR2))
+                     END DO
+                  END IF
+                  IF (IODDHR(INDHER(T+1,U+1,V)) .EQ. IODDHR(TUV)) THEN
+                     IADR=INDHVC(INDHSQ(INDHER(T+1,U+1,V))+INDHSQ(TUV))
+                     DO I = 1, NU1234
+                        HCPRIM(I,TUV,1) = HCPRIM(I,TUV,1) - ETUV(I)
+     &                                   *HERINT(I,IADR)
+                     END DO
+                  END IF
+                  IF (IODDHR(INDHER(T,U+1,V+1)) .EQ. IODDHR(TUV)) THEN
+                     IADR=INDHVC(INDHSQ(INDHER(T,U+1,V+1))+INDHSQ(TUV))
+                     DO I = 1, NU1234
+                        HCPRIM(I,TUV,3) = HCPRIM(I,TUV,3) - ETUV(I)
+     &                                   *HERINT(I,IADR)
+                     END DO
+                  END IF
+               END DO
+            END DO
+            END DO
+            END DO
+C
+C           Ez contribution
+C
+            MAXT = MAXT0 
+            MAXU = MAXU0
+            MAXV = MAXV0 + 1
+            MINT = IBTAND(MAXT,INCRMT - 1)
+            MINU = IBTAND(MAXU,INCRMU - 1)
+            MINV = IBTAND(MAXV,INCRMV - 1)
+            DO V = MINV, MAXV, INCRMV
+            DO U = MINU, MAXU, INCRMU
+            DO T = MINT, MAXT, INCRMT
+               DO I = 1, NUC12
+                  ECOEFI = ECOFAC*COEF12(I,T,L1,L2,1,1)
+     &                           *COEF12(I,U,M1,M2,2,1)
+     &                           *COEF12(I,V,N1,N2,3,2)
+                  IJ = (I - 1)*NUC34
+                  DO J = 1, NUC34
+                     ETUV(IJ + J) = ECOEFI
+                  END DO
+               END DO
+C
+               DO TUV = 1, NTUV34
+                  IF (IODDHR(INDHER(T,U,V)) .EQ. IODDHR(TUV)) THEN
+                     IADR1=INDHVC(INDHSQ(INDHER(T+2,U,V))+INDHSQ(TUV))
+                     IADR2=INDHVC(INDHSQ(INDHER(T,U+2,V))+INDHSQ(TUV))
+                     DO I = 1, NU1234
+                        HCPRIM(I,TUV,3) = HCPRIM(I,TUV,3) + ETUV(I)
+     &                        *(HERINT(I,IADR1) + HERINT(I,IADR2))
+                     END DO
+                  END IF
+                  IF (IODDHR(INDHER(T+1,U,V+1)) .EQ. IODDHR(TUV)) THEN
+                     IADR=INDHVC(INDHSQ(INDHER(T+1,U,V+1))+INDHSQ(TUV))
+                     DO I = 1, NU1234
+                        HCPRIM(I,TUV,1) = HCPRIM(I,TUV,1) - ETUV(I)
+     &                                   *HERINT(I,IADR)
+                     END DO
+                  END IF
+                  IF (IODDHR(INDHER(T,U+1,V+1)) .EQ. IODDHR(TUV)) THEN
+                     IADR=INDHVC(INDHSQ(INDHER(T,U+1,V+1))+INDHSQ(TUV))
+                     DO I = 1, NU1234
+                        HCPRIM(I,TUV,2) = HCPRIM(I,TUV,2) - ETUV(I)
+     &                                   *HERINT(I,IADR)
+                     END DO
+                  END IF
+               END DO
+            END DO
+            END DO
+            END DO
+C
+C           Contracted integrals
+C           ====================
+C
+            IF (SPHR12) THEN
+               DO IX = 1, 3
+                  JODD12 = IBTXOR(IODD12(ICMP12,1),IHCSYM(IX))
+                  CALL C1CONT(HCPRIM(1,1,IX),HCCONT(1,1,ICMP12,IX),
+     &                        CONT1,CONT2,
+     &                        SCR1,SCR2,IODDHR,JODD12,NTUV34,
+     &                        NPCO1,NPCO2,NUCS12,NPNT12,NRED12)
+               END DO
+            ELSE
+               DO IX = 1, 3
+                  JODD12 = IBTXOR(IODD12(ICMP12,1),IHCSYM(IX))
+                  CALL C1CONT(HCPRIM(1,1,IX),HCINT(1,1,ICMP12,IX),
+     &                        CONT1,CONT2,
+     &                        SCR1,SCR2,IODDHR,JODD12,NTUV34,
+     &                        NPCO1,NPCO2,NUCS12,NPNT12,NRED12)
+               END DO
+            END IF
+  200    CONTINUE
+  100    CONTINUE
+C
+C        Spherical integrals
+C        ===================
+C
+         IF (SPHR12) THEN
+            DO IX = 1, 3
+               DO I = 1, KCKT12
+                  KODD12(I,1) = IBTXOR(IODD12(I,1),IHCSYM(IX))
+                  KODD12(I,2) = IBTXOR(IODD12(I,2),IHCSYM(IX))
+               END DO
+               CALL C1SPHR(HCCONT(1,1,1,IX),HCINT(1,1,1,IX),HCSINT,
+     &                     CSP(ISPADR(NHKT1)),CSP(ISPADR(NHKT2)),
+     &                     IODDHR,KODD12,NTUV34,IPRINT)
+            END DO
+         END IF
+      RETURN
       END
 C  /* Deck c1cont */
       SUBROUTINE C1CONT(HCPRIM,HCCNT,CONT1,CONT2,SCR1,SCR2,IODDHR,

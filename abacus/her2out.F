@@ -1277,6 +1277,7 @@ C
      &          IDSORB(NDIST), IORBDS(NBASIS), IORBSH(*)
 #include <twocom.h>
 #include <symmet.h>
+#include <drw2el.h>
 C
 #include <ibtfun.h>
 #include <sdpre.h>
@@ -1369,7 +1370,11 @@ C
                        INDC = IPTSYM(NSTRNC + IC,IREPC)
                        INDD = IPTSYM(NSTRND + ID,IREPD)
                        INDCD  = MAX(INDC,INDD)*IBIT1 + INDC + INDD
-                       BUF (ICOUNT,IDIST) = SOINT
+                       IF (BPH2OO.AND.INDD.GT.INDC) THEN 
+                          BUF (ICOUNT,IDIST) = -SOINT
+                       ELSE
+                          BUF (ICOUNT,IDIST) = SOINT
+                       END IF
                        IBUF(ICOUNT,1,IDIST) = INDAB*(IBIT2 + 1) + INDCD
                        IF (ICOUNT.EQ.LBUF) THEN
                           NBUFCL = NBUFCL + 1
@@ -1402,7 +1407,11 @@ C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                        INDC = IPTSYM(NSTRNC + IC,IREPC)
                        INDD = IPTSYM(NSTRND + ID,IREPD)
                        INDCD  = MAX(INDC,INDD)*IBIT1 + INDC + INDD
-                       BUF (ICOUNT,IDIST) = SOINT
+                       IF (BPH2OO.AND.INDD.GT.INDC) THEN 
+                          BUF (ICOUNT,IDIST) = -SOINT
+                       ELSE
+                          BUF (ICOUNT,IDIST) = SOINT
+                       END IF
                        IBUF(ICOUNT,1,IDIST) = INDAB
                        IBUF(ICOUNT,2,IDIST) = INDCD
                        IF (ICOUNT.EQ.LBUF) THEN
@@ -1444,7 +1453,11 @@ C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                        INDC = IPTSYM(NSTRNC + IC,IREPC)
                        INDD = IPTSYM(NSTRND + ID,IREPD)
                        INDCD  = MAX(INDC,INDD)*IBIT1 + INDC + INDD
-                       BUF (ICOUNT,IDIST) = SOINT
+                       IF (BPH2OO.AND.INDD.GT.INDC) THEN 
+                          BUF (ICOUNT,IDIST) = -SOINT
+                       ELSE
+                          BUF (ICOUNT,IDIST) = SOINT
+                       END IF
                        IBUF(ICOUNT,1,IDIST) = INDAB*(IBIT2 + 1) + INDCD
                        IF (ICOUNT.EQ.LBUF) THEN
                           CALL UN2WRN(BUF(1,IDIST),IBUF(1,1,IDIST),
@@ -1460,7 +1473,11 @@ C     &                                NIBUF,ICOUNT,0,NBITS,INDA,IPRINT)
                        INDC = IPTSYM(NSTRNC + IC,IREPC)
                        INDD = IPTSYM(NSTRND + ID,IREPD)
                        INDCD  = MAX(INDC,INDD)*IBIT1 + INDC + INDD
-                       BUF (ICOUNT,IDIST) = SOINT
+                       IF (BPH2OO.AND.INDD.GT.INDC) THEN 
+                          BUF (ICOUNT,IDIST) = -SOINT
+                       ELSE
+                          BUF (ICOUNT,IDIST) = SOINT
+                       END IF
                        IBUF(ICOUNT,1,IDIST) = INDAB
                        IBUF(ICOUNT,2,IDIST) = INDCD
                        IF (ICOUNT.EQ.LBUF) THEN
@@ -1502,8 +1519,7 @@ C
       RETURN
       END
 C  /* Deck un2wrn */
-      SUBROUTINE UN2WRN(BUF,IBUF,ICOUNT,ITYPE,INDA,
-     &                  IPRINT)
+      SUBROUTINE UN2WRN(BUF,IBUF,ICOUNT,ITYPE,INDA,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
@@ -1513,6 +1529,7 @@ C  /* Deck un2wrn */
 #include <ibtpar.h>
 #include <eribuf.h>
       DIMENSION BUF(LBUF), IBUF(LBUF,NIBUF)
+#include <drw2el.h>
 #include <twosta.h>
 #include <inftap.h>
 #include <nuclei.h>
@@ -1535,6 +1552,7 @@ c        NBUFX(0) = 0
          WRITE (LUAORC(0),REC=NBUFX(0)) BUF,IBUF,ICOUNT
 C
          IF (IPRINT .GE. 6) THEN
+C        if (bph2oo) then
             WRITE (LUPRI,'(2X,A,I5,A/)')
      &         'Integral buffer #',NBUFX(0),' has been written.'
             IBIT1 = 2**NBITS - 1
@@ -1564,9 +1582,10 @@ C
          END IF
 C
          IF (IPRINT .GE. 6) THEN
+C        if (bph2oo) then
             IF (ICOUNT .GT. 0) THEN
                WRITE (LUPRI,'(2X,A,I5,A/)')
-     &            'Integral buffer #',NBUFX(0)+1,' has been written.'
+     &            'Integral buffer #',NBUFX(0),' has been written.'
                IBIT1 = 2**NBITS - 1
                DO 200 INT = 1, ICOUNT
                   IF (NIBUF .EQ. 1) THEN

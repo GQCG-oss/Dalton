@@ -3003,7 +3003,7 @@ C=====================================================================*
       PARAMETER (SECNAM='CC_FOPINP')
 
       INTEGER NTABLE
-      PARAMETER (NTABLE = 11)
+      PARAMETER (NTABLE = 13)
 
 * variables:
       LOGICAL SET
@@ -3022,7 +3022,7 @@ C=====================================================================*
       DATA SET /.FALSE./
       DATA TABLE /'.DIPMOM','.QUADRU','.NQCC  ','.TSTDEN','.ALLONE',
      *            '.NONREL','.RELCOR','.OPERAT','.SECMOM','.2ELDAR',
-     *            '.DPTECO'/
+     *            '.DPTECO','.BPH2OO','.BPH2SS'/
 
 *---------------------------------------------------------------------*
 * begin:
@@ -3044,6 +3044,7 @@ C
       NAFOP  = 0
       DAR2EL = .FALSE.
       DPTECO = .FALSE.
+      BP2EOO = .FALSE.
 C
 *---------------------------------------------------------------------*
 * read input:
@@ -3069,7 +3070,7 @@ c         table look up:
 c         jump to the appropiate input section:
           IF (IJUMP .LE. NTABLE) THEN
             ICHANG = ICHANG + 1
-            GOTO (1,2,3,4,5,6,7,8,9,10,11), IJUMP
+            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13), IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_FOPINP.')
       
 C
@@ -3188,7 +3189,7 @@ C
             GO TO 100
 C
 C-------------------------------------------------
-C           Relativistic two-electron Darwin term.
+C           Relativistic DPT
 C-------------------------------------------------
 C
 
@@ -3196,6 +3197,27 @@ C
                DPTECO = .TRUE.
             GO TO 100
 C
+C
+C-------------------------------------------------
+C           Breit-Pauli Orbit-Orbit
+C-------------------------------------------------
+C
+
+12         CONTINUE
+               BP2EOO = .TRUE.
+            GO TO 100
+C
+C
+C
+C-------------------------------------------------
+C           Breit-Pauli Spin-Spin = -2 Darwin2E
+C-------------------------------------------------
+C
+
+13         CONTINUE
+               DAR2EL = .TRUE.
+            GO TO 100
+
           ELSE
            WRITE (LUPRI,'(/5A,/)') ' Prompt "',WORD,
      &             '" not recognized in ',SECNAM,'.'
@@ -3222,7 +3244,7 @@ C     Finally if we are to calculate anything at all, put CCFOP true.
 C--------------------------------------------------------------------
 C
       CCFOP   = (DIPMOM.OR.QUADRU.OR.NQCC.OR.TSTDEN.OR.RELCOR.OR.
-     *           SECMOM.OR.DAR2EL.OR.DPTECO.OR.(NAFOP.GT.0))
+     *           SECMOM.OR.DAR2EL.OR.DPTECO.OR.BP2EOO.OR.(NAFOP.GT.0))
 C
       IF (CCFOP) RSPIM = .TRUE.
 C

@@ -50,10 +50,13 @@ C
 #include <implicit.h>
 #include <maxaqn.h>
 #include <priunit.h>
+#include <drw2el.h>
+#include <codata.h>
 #include <inftap.h>
 C
 #include <ccom.h>
 C
+      PARAMETER (DP5 = 0.5D0)
       DIMENSION BUF(600), IBUF(600), STHMAT(NNBASX,*)
       CHARACTER*8 LAB123(3), TITLES, TITLEH, TITLET
       DATA LAB123/'********','        ','        '/
@@ -64,8 +67,11 @@ C
       INDEX2(IJ) = IJ - INDEX1(IJ)*(INDEX1(IJ)-1)/2
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from WRTUND','*',103)
+C
       DO 100 ITYPE = 1, 3
          IF (ITYPE .EQ. 1) THEN
+            IF (FINDPT) WRITE (LUPRI,'(/A)') 
+     &      ' Metric is changed by direct perturbation theory (DPT) '
             IF (IPRINT .GE. 5) WRITE (LUPRI,'(/A)') ' Overlap matrix'
             WRITE (LUONEL) LAB123, TITLES
          ELSE IF (ITYPE .EQ. 2) THEN
@@ -83,6 +89,8 @@ C
             DO 300 IB = 1, IA
                IAB = IAB + 1
                AINT = STHMAT(IAB,ITYPE)
+               IF (ITYPE .EQ. 1 .AND. FINDPT)
+     *         AINT = AINT + DPTFAC * DP5 * ALPHAC**2 * STHMAT(IAB,3)
                IF (ABS(AINT) .GT. THRS) THEN
                   ICOUNT = ICOUNT + 1
                   BUF(ICOUNT) = AINT

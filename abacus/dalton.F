@@ -325,7 +325,7 @@ C        Changed format (WK/UniKA/04-11-2002).
      *  ' Hans Joergen Jensen,   SDU - Odense University,      Denmark',
      *  ' Poul Joergensen,       Aarhus University,            Denmark',
      *  ' Jeppe Olsen,           Aarhus University,            Denmark',
-     *  ' Kenneth Ruud,          San Diego Superc. Center,     USA    ',
+     *  ' Kenneth Ruud,          University of Tromsoe,        Norway ',
      *  ' Hans Aagren,           KTH Stockholm,                Sweden ',
      *  ' Contributors:',
      *  ' Alexander A. Auer,     University of Mainz,          Germany',
@@ -342,23 +342,24 @@ C        Changed format (WK/UniKA/04-11-2002).
      *  ' Asger Halkier,         Aarhus University,            Denmark',
      *  ' Hanne Heiberg,         University of Oslo,           Norway ',
      *  ' Hinne Hettema,         University of Auckland,       NZ     ',
-     *  ' Dan Jonsson,           San Diego Superc. Center,     USA    ',
+     *  ' Dan Jonsson,           KTH Stockholm                 Sweden ',
      *  ' Sheela Kirpekar,       SDU - Odense University,      Denmark',
+     *  ' Wim Klopper,           University of Karlsruhe,      Germany',
      *  ' Rika Kobayashi,        Cambridge University,         England',
-     *  ' Henrik Koch,           SDU - Odense University,      Denmark',
-     *  ' Kurt V.Mikkelsen,      University of Copenhagen,     Denmark',
+     *  ' Henrik Koch,           University of Trondheim,      Norway ',
+     *  ' Kurt V. Mikkelsen,     University of Copenhagen,     Denmark',
      *  ' Patrick Norman,        University of Linkoeping,     Sweden ',
      *  ' Thomas B. Pedersen,    U. of Santiago de Compostela, Spain  ',
      *  ' Martin J. Packer,      University of Sheffield,      UK     ',
      *  ' Torgeir A. Ruden,      University of Oslo,           Norway ',
+     *  ' Pawel Salek,           KTH Stockholm,                Sweden ',
      *  ' Alfredo Sanchez,       University of Valencia,       Spain  ',
      *  ' Trond Saue,            University of Toulouse,       France ',
      *  ' Stephan P. A. Sauer,   University of Copenhagen,     Denmark',
      *  ' Bernd Schimmelpfennig, KTH Stockholm,                Sweden ',
      *  ' K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark',
-     *  ' Peter R.Taylor,        San Diego Superc. Center,     USA    ',
+     *  ' Peter R. Taylor,       University of Warwick,        UK     ',
      *  ' Olav Vahtras,          PDC, Stockholm,               Sweden '
-C    *  ' Wim Klopper,           University of Karlsruhe,      Germany',
 C
 C        Changed format (WK/UniKA/04-11-2002).
          WRITE (LUPRI,'(/1X,69A1/)') ('-',I=1,69)
@@ -384,13 +385,11 @@ C        Changed format (WK/UniKA/04-11-2002).
      &'J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,',
      &'O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,',
      &'T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,',
-     &'H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar,',
+     &'H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, W. Klopper,',
      &'R. Kobayashi, H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,'
-     &,'T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, ' //
-     &'S. P. A. Sauer,',
-     &'B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,',
-     &'and O. Vahtras"'
-C    &'H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, W. Klopper,',
+     &,'T. B. Pedersen, T. A. Ruden, P. Salek, A. Sanchez, T. Saue, ',
+     &'S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, ',
+     &'P. R. Taylor and O. Vahtras"'
 C
 C     Stamp date and time and hostname to output
 C

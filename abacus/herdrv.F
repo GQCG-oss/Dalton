@@ -209,10 +209,12 @@ C
 #include <ccom.h>
 #include <inftra.h>
 #include <inftap.h>
+#include <infinp.h>
 #include <cbisor.h>
 #include <ecpinf.h>
 #include <elweak.h>
 #include <r12int.h>
+#include <codata.h>
 C     Keywords '.R12INT', '.R12EIN' and '.MULBAS' have been added (WK/UniKA/04-11-2002).
       DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',
      &             '*SUPINT', '*ER2INT', '*SORINT'/
@@ -240,7 +242,7 @@ C     Keywords '.R12INT', '.R12EIN' and '.MULBAS' have been added (WK/UniKA/04-1
      &             '.SOMAGM', '.DEROVL', '.DERHAM', '.ELGDIA', 
      &             '.ELGDIL', '.MNF-SO', '.DPTOVL', '.DPTPOT', 
      &             '.XDDXR3', '.AD2DAR', '.PVIOLA', '.WEINBG', 
-     &             '.XXXXXX', '.FNPROP', '.PVP   ', '.1ELPOT',
+     &             '.FINDPT', '.FNPROP', '.PVP   ', '.1ELPOT',
      &             '.QDBINT', '.QDBTST', '.R12   ', '.R12EXP',
      &             '.AUXBAS', '.NOTV12', '.R12INT', '.U12INT',
      &             '.U21INT', '.DCCR12'/
@@ -753,6 +755,15 @@ C&&& Nuclear model
             BGWEIN = D1 - D4*BGWEIN
             GOTO 100   
  197     CONTINUE
+            IF (DIRCAL) CALL QUIT('No direct calculation with FINDPT')
+            ONEPRP = .TRUE. 
+            DPTPOT = .TRUE.
+            FINDPT = .TRUE.
+            READ (LUCMD, *) DPTFAC
+            NFIELD = NFIELD + 1
+            IF (NFIELD .GT. MXFELT) CALL QUIT('Too many finite fields')
+            EFIELD(NFIELD) = DPTFAC * ALPHAC**2
+            LFIELD(NFIELD) = 'DERXXPVP'
             GOTO 100 
  198     CONTINUE
             READ (LUCMD, *) X10FNP
@@ -867,6 +878,10 @@ C           Integrals are computed for DIRCCR12 program (WK/UniKA/25-11-2002).
       IF (AD2DAR) WRITE (LUPRI,'(/A/A,F18.14/)')
      &    ' Two-electron Darwin integrals are added to standard',
      &    ' repulsion integrals with perturbation parameter:',DARFAC
+      IF (FINDPT) WRITE (LUPRI,'(/A/A,F18.14/A,F18.14,A/)')
+     &    ' A direct relativistic perturbation is added to',
+     &    ' Hamiltonian and metric with perturbation parameter:',DPTFAC,
+     &    ' (perturbation parameter * c^{-2} = ',DPTFAC*ALPHAC**2,')'
       IF (ONEPRP) THEN
          WRITE (LUPRI,'(/A)')
      &  ' The following one-electron property integrals are calculated:'
@@ -1656,6 +1671,7 @@ C
 #include <cbisor.h>
 #include <efield.h>
 #include <r12int.h>
+#include <drw2el.h>
 C
       DIMENSION   RLMORI(3)
       CHARACTER*8 LABELT(3), LABELS(6)

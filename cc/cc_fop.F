@@ -317,12 +317,16 @@ C        Set logicals for CCSD(T)
 C--------------------------------
          
          LCCPTSV = .FALSE.
+
          IF (CCPT) THEN
             LCCPTSV = .TRUE.
             CCPT = .FALSE.
             CCSD = .TRUE.
             ETASAV = ETADSC
             ETADSC = .TRUE.
+            !
+            !Sonia: define here FIRST_ETADC (IGRDCCPT)
+            !
          END IF
 
          CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,
@@ -457,6 +461,11 @@ C     Calculate the (T) one electron densities.
 C     If (RELORB) calculate also the (T) two-electron densities that
 C     are needed to calculate the KappaBAR orbital multiplier.
 C     Readin T2 again since it is destroyed by CCSDPT_DENS2
+C
+C     OBS: we are calculating here the tbar_3 contributions to 
+C          the densities as well as t_3 ones. As we don't have
+C          tbar_3 and t_3 on file we need to regenerate them, so
+C          we need the integrals according to eqs. (53) and (15)
 C--------------------------------------------------------------
 C
 C          ECURR2 = ECURR
@@ -464,7 +473,7 @@ C          ECURR  = ZERO
 C
            if (.true.) then
 !
-!Sonia: CCSDPT_DENS2 does not work for CCSD(TO Gradient
+!Sonia: CCSDPT_DENS2 does not work for CCSD(T) Gradient
 !       with symmetry. Used old version ftb
 !
              write(lupri,*) 'Sonia: I am entering CCSDPT_DENS2_SC'
@@ -674,6 +683,8 @@ C---------------------------------------------
 C
 C           ECURR2 = ECURR
 C           ECURR  = ZERO
+
+!SOnia: replace?
 
             CALL CCSDPT_DENS2(WORK(KT1AM),1,WORK(KT2AM),1,MODEL,
      *                        WORK(KL1AM),ISYMOP,WORK(KL2AM),ISYMOP,
@@ -1102,7 +1113,7 @@ C
       ENDIF
 C
       IF (.NOT.(CCSLV.OR.DIPMOM.OR.QUADRU.OR.NQCC.OR.
-     *    RELCOR.OR.SECMOM.OR.TSTDEN.OR.(NAFOP.GT.0))) GOTO 47
+     *    RELCOR.OR.DPTECO.OR.SECMOM.OR.TSTDEN.OR.(NAFOP.GT.0))) GOTO 47
 C
 C----------------------------------------------------------
 C     Calculate one electron AO-density and CC nat.occ.num.
@@ -1845,7 +1856,15 @@ C
          RESONE = ZERO
          REORTH = ZERO
          IGROPT = 2
-         CALL CC_GRAD(RESONE,REORTH,WORK(KWRK4),LWRK4,IGROPT)
+         !
+         ! Need to update this as well for CCSD(T)
+         !
+         if (.false.) then
+            CALL CC_GRAD(RESONE,REORTH,WORK(KWRK4),LWRK4,IGROPT)
+         else
+            CALL CC_GRAD_1(RESONE,REORTH,WORK(KWRK4),LWRK4,IGROPT)
+         end if
+         !
          REORTH = ALPHA2*REORTH
          WRITE(LUPRI,*) ' '
          WRITE(LUPRI,136) 'DPTONE:', DPTONE
@@ -1867,7 +1886,11 @@ C
          DAR2SA = DAR2EL
          IF (DAR2EL) DAR2EL = .FALSE.
          IOPREL = 2
-         CALL CC_2EEXP(WORK(KWRK4),LWRK4,IOPREL)
+         if (.false.) then
+            CALL CC_2EEXP(WORK(KWRK4),LWRK4,IOPREL)
+         else
+            CALL CC_2EEXP_2(WORK(KWRK4),LWRK4,IOPREL)
+         end if
          DAR2EL = DAR2SA
 C
          WRITE(LUPRI,*) ' '
@@ -1879,6 +1902,32 @@ C
          WRITE(LUPRI,139) '--------------------------------'
 C
       ENDIF
+C
+C
+C------------------------------------------------------------
+C        Calculate the orbit-orbit two electron Hamiltonian
+C        expectation value
+C------------------------------------------------------------
+C
+      IF (BP2EOO) THEN
+         CALL AROUND(' Breit-Pauli 2e- Orbit-Orbit corrections')
+         DAR2SA = DAR2EL
+         IF (DAR2EL) DAR2EL = .FALSE.
+         IOPREL = 3
+         if (.false.) then
+            CALL CC_2EEXP(WORK(KWRK3),LWRK3,IOPREL)
+         else
+            write(lupri,*)'CC_FOP: CALLINH 2EEXP2, IOPREL =', IOPREL
+            CALL CC_2EEXP_2(WORK(KWRK3),LWRK3,IOPREL)
+         end if
+         DAR2EL = DAR2SA
+C
+         WRITE(LUPRI,*) ' '
+         WRITE(LUPRI,136) 'BP2EOO:', WORK(KWRK3)
+         WRITE(LUPRI,138) '-------'
+         WRITE(LUPRI,*) ' '
+
+      END IF
 C
 C=========================================================================
 C     Standard scalar relativistic corrections to the ground-state energy.
@@ -2008,7 +2057,13 @@ C
          ELSE
             IOPREL = 0
          ENDIF
-         CALL CC_2EEXP(WORK(KWRK3),LWRK3,IOPREL)
+!sonia
+         if (.false.) then
+            CALL CC_2EEXP(WORK(KWRK3),LWRK3,IOPREL)
+         else
+            CALL CC_2EEXP_2(WORK(KWRK3),LWRK3,IOPREL)
+         end if
+!
       ENDIF
 C
 C--------------------------------------------------------------

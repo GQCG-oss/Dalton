@@ -1208,31 +1208,36 @@ C /* Deck erisds */
 #include <maxorb.h>
 #include <eridst.h>
       DIMENSION IPNTCR(MAXBCH,4)
-      DIMENSION INDXBT(MXSHEL*MXCONT,0:7)
+      DIMENSION INDXBT(MXSHEL*MXCONT,0:7),IPNRPS(8)
+#include <symmet.h>
 #include <ericom.h>
 #include <aobtch.h>
-      IANEW = 0
+C
+      CALL GETREP(NREPS,IPNRPS,NHKTA,KHKTA,ISTBLA)
       IDIST = 0
-      NIJKL = 0
-      DO N = 1, NPQBCS
-         NA = KNDXBT(IPNTCR(N,1)) - 1
-         DO I = 1, NCTFA
-         DO J = 1, NCTFB
-         DO K = 1, NCTFC
-         DO L = 1, NCTFD
-            NIJKL = NIJKL + 1
-            IAOLD = IANEW
-            IANEW = INDXBT(NA + I,IRPDST)
-            IF (IAOLD. NE. IANEW) THEN
-               IDIST = IDIST + 1
-               NCCDST(IDIST) = 1
-               NCCFST(IDIST) = NIJKL 
-            ELSE
-               NCCDST(IDIST) = NCCDST(IDIST) + 1
-            END IF
-         END DO
-         END DO
-         END DO
+      DO IREP = 1, NREPS
+         IANEW = 0
+         NIJKL = 0
+         DO N = 1, NPQBCS
+            NA = KNDXBT(IPNTCR(N,1)) - 1
+            DO I = 1, NCTFA
+            DO J = 1, NCTFB
+            DO K = 1, NCTFC
+            DO L = 1, NCTFD
+               NIJKL = NIJKL + 1
+               IAOLD = IANEW
+               IANEW = INDXBT(NA + I,IPNRPS(IREP))
+               IF (IAOLD. NE. IANEW) THEN
+                  IDIST = IDIST + 1
+                  NCCDST(IDIST) = 1
+                  NCCFST(IDIST) = NIJKL 
+               ELSE
+                  NCCDST(IDIST) = NCCDST(IDIST) + 1
+               END IF
+            END DO
+            END DO
+            END DO
+            END DO
          END DO
       END DO
       NDST = IDIST

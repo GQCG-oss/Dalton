@@ -1339,9 +1339,9 @@ C--------------------------------------
 C     Additional work space allocation.
 C--------------------------------------
 C
-      IF ((FROIMP .OR. FROEXP) .AND. ((R12TRA .AND. .NOT. R12INT
-     *    .AND. .NOT. R12EIN .AND. .NOT. U12INT) .OR.
-     *    (RELORB .OR. MP2))) THEN
+      IF ((FROIMP .OR. FROEXP) .AND. (.NOT. R12INT
+     *    .AND. .NOT. R12EIN .AND. .NOT. U12INT) .AND.
+     *    (R12TRA .OR. RELORB .OR. MP2)) THEN
 C        Not needed for R12 integrals (WK/UniKA/04-11-2002).
 !     *    (RELORB .OR. (CCFOP .AND. MP2))) THEN
 !     Sonia: remove "FOP" condition to be able to do gradients MP2
@@ -1502,9 +1502,9 @@ C
 C             Modified for R12 method (WK/UniKA/04-11-2002).
 C             Modified (RELORB .OR. (CCFOP .AND. MP2)) for MP2 frozen-core gradients
 C             Sonia
-              IF ((FROIMP .OR. FROEXP) .AND. ((R12TRA .AND. .NOT. R12INT
-     *             .AND. .NOT. R12EIN .AND. .NOT. U12INT) .OR.
-     *              (RELORB .OR. (MP2)))) THEN
+              IF ((FROIMP .OR. FROEXP) .AND. (.NOT. R12INT
+     *            .AND. .NOT. R12EIN .AND. .NOT. U12INT) .AND.
+     *            (R12TRA .OR. RELORB .OR. MP2)) THEN
 C
                   CALL CC_FRCOIN(WORK(KFRIN),WORK(KXINT),WORK(KCMO),
      *                           WORK(KEND2),LWRK2,IDEL,ISYMD)
@@ -1658,7 +1658,7 @@ C
          CALL CC_PRFCKAO(WORK(KFCKHF),1)
       ENDIF                  
 C
-      IF (ANAAOD) THEN
+cwmk  IF (ANAAOD) THEN
         CALL AROUND('Analysis of integral distributions')
 C
         WRITE(LUPRI,'(10X,/,A,D10.5)') 'Thereshold in analysis : ',
@@ -1670,7 +1670,7 @@ C
         WRITE(LUPRI,'(10X,A,I7)')'Total number smaller than thr.  : ',
      *                        ICOUNT1
 C
-        IF (IPRINT .GT. 45) THEN
+cwmk    IF (IPRINT .GT. 45) THEN
           CALL AROUND('(ia|jb) integral vector')
           IF (U12INT .OR. R12SQR) THEN
 C           Output of non-Hermitean integrals (WK/UniKA/04-11-2002).
@@ -1689,8 +1689,8 @@ C           Output of non-Hermitean integrals (WK/UniKA/04-11-2002).
               CALL OUTPAK(XAIBJ(KOFF),NTOTAI,1,LUPRI)
   251       CONTINUE
           END IF
-        ENDIF
-      END IF
+cwmk    ENDIF
+cwmk  END IF
 C
 C-------------------------------------
 C     Write integrals (cJ|dk) to disk.
@@ -1698,9 +1698,9 @@ C-------------------------------------
 C
 C     Modified for R12 method (WK/UniKA/04-11-2002).
 C     Modified for MP2 frozen-core geometry opt. Sonia 2002
-      IF ((FROIMP .OR. FROEXP) .AND. ((R12TRA .AND. .NOT. R12INT
-     *    .AND. .NOT. R12EIN .AND. .NOT. U12INT) .OR.
-     *    (RELORB .OR. MP2))) THEN
+      IF ((FROIMP .OR. FROEXP) .AND. (.NOT. R12INT
+     *    .AND. .NOT. R12EIN .AND. .NOT. U12INT) .AND.
+     *    (R12TRA .OR. RELORB .OR. MP2)) THEN
 C
          LUCJDK = 0
          CALL GPOPEN(LUCJDK,'INCJDK','UNKNOWN',' ','UNFORMATTED',IDUMMY,
