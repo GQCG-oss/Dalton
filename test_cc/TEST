@@ -24,7 +24,7 @@ LIH1s1p_tmom_no2np1 HF_631G_pol HF_631G_asym_pol LIH_431G_tmom \
 LIH_431G_tmom_no2np1 HF_ccpVDZ_pol HF_ccpVDZ_asym_pol HF_ccpVDZ_tmom \
 HF_ccpVDZ_tmom_no2np1 cc3_hyp cc3_findiff cc3_hyp_HF631g \
 LIH1s1p_noddy_pol HF_631G_2hyp_noddy HF_631G_2hyp \
-tmom_fdif twophot3_noddy twophot3 h2o_resid_noddy h2o_resid"
+tmom_fdif twophot3_noddy twophot3 h2o_resid_noddy h2o_resid LIH_431G_cauchy_12"
 
 ALL="$SHORT $MEDIUM $LONG $CC3"
 #

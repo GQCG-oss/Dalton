@@ -236,8 +236,6 @@ C--------------------------------------------------
 C
       IF (CC3) THEN
 C
-         LU3V    = 0
-         LU4V    = 0
          LU3SRT  = 0
          LUCKJD  = 0
          LUDKBC  = 0
@@ -246,9 +244,9 @@ C
          LUDKBC3 = 0
          LU3FOPX  = 0
          LU3FOP2X = 0
+         LU3V    = 0
+         LU4V    = 0
 C
-         FN3V    = 'ABCDEL'
-         FN4V    = 'ABCD'
          FN3SRT  = 'CC3_SORT'
          FNCKJD  = 'CKJDEL'
          FNDKBC  = 'DKBC'
@@ -257,9 +255,9 @@ C
          FNDKBC3 = 'DKBC3'
          FN3FOPX  = 'PTFOPX'
          FN3FOP2X = 'PTFOP2X'
+         FN3V    = 'ABCDEL'
+         FN4V    = 'ABCD'
 C
-         CALL WOPEN2(LU3V,FN3V,64,0)
-         CALL WOPEN2(LU4V,FN4V,64,0)
          CALL WOPEN2(LU3SRT,FN3SRT,64,0)
          CALL WOPEN2(LUCKJD,FNCKJD,64,0)
          CALL WOPEN2(LUDKBC,FNDKBC,64,0)
@@ -268,6 +266,10 @@ C
          CALL WOPEN2(LUDKBC3,FNDKBC3,64,0)
          CALL WOPEN2(LU3FOPX,FN3FOPX,64,0)
          CALL WOPEN2(LU3FOP2X,FN3FOP2X,64,0)
+         IF (LVVVV) THEN
+            CALL WOPEN2(LU4V,FN4V,64,0)
+            CALL WOPEN2(LU3V,FN3V,64,0)
+         END IF
 C
          CALL DZERO(WORK(KOVVO),NT2SQ(1))
          CALL DZERO(WORK(KOOVV),NT2SQ(1))
@@ -756,9 +758,11 @@ C              Integrals with 3 virtual indices are stored on disc
 C--------------------------------------------------------------------
 C
                IF (CC3) THEN
-                  CALL CC3_INTDEL(WORK(KXINT),1,LU3V,FN3V,WORK(KLAMDP),
-     *                            1,WORK(KLAMDH),1,1,
-     *                            WORK(KEND3),LWRK3,IDEL,ISYMD)
+                  IF (LVVVV) THEN
+                   CALL CC3_INTDEL(WORK(KXINT),1,LU3V,FN3V,WORK(KLAMDP),
+     *                             1,WORK(KLAMDH),1,1,
+     *                             WORK(KEND3),LWRK3,IDEL,ISYMD)
+                  END IF
 C
                   CALL CC3_2O2V(WORK(KXINT),1,WORK(KDSRHF),1,
      *                          WORK(KOVVO),WORK(KOOVV),
@@ -1628,7 +1632,11 @@ C
 C
 C        Since g^0 use lamH^0 twice in call
 C
-         IOPT = 3
+         IF (LVVVV) THEN
+            IOPT = 3
+         ELSE
+            IOPT = 1
+         END IF
          CALL CC3_INTSTORE(LUIN30,'CCINT3O',WORK(KOOOO),1,
      *                     WORK(KLAMDH),ISYMOP,WORK(KLAMDH),ISYMOP,
      *                     LU3V,FN3V,LU4V,FN4V,ISYMOP,
@@ -1779,8 +1787,10 @@ C----------------------------------------
 C
       IF (CC3) THEN
 C
-         CALL WCLOSE2(LU3V,FN3V,'KEEP')
-         CALL WCLOSE2(LU4V,FN4V,'DELETE')
+         IF (LVVVV) THEN
+            CALL WCLOSE2(LU4V,FN4V,'DELETE')
+            CALL WCLOSE2(LU3V,FN3V,'KEEP')
+         END IF
 C
          CALL WCLOSE2(LU3SRT,FN3SRT,'KEEP')
          CALL WCLOSE2(LUCKJD,FNCKJD,'KEEP')

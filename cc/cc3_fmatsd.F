@@ -93,9 +93,13 @@ C
       INTEGER   LU4V
       INTEGER   LUCKJD, LUTOC, LU3VI, LU3VI2, LU3FOP, LU3FOP2
       INTEGER   LUDKBC, LUDKBC4
-COMMENT COMENT
+C
+      INTEGER ISYMN1,ISYMN2,KN2MAT,KINDSQN,LENSQN,ISGEI,ISFEI,KGEI,KFEI
+      INTEGER IADR
+      INTEGER KEND2,LWRK2
+C
       INTEGER kx3am
-COMMENT COMENT
+C
 
       CHARACTER LISTL*3,LISTY*3,MODEL*10
       CHARACTER*(*) FNCKJD, FNTOC, FN3VI, FN3VI2, FN3FOP, FN3FOP2 
@@ -103,8 +107,12 @@ COMMENT COMENT
       CHARACTER*14 FN4V
       CHARACTER*11 FNDKBC4
       CHARACTER*1 CDUMMY
-      
-
+C
+      CHARACTER*6 FNGEI,FNFEI
+      CHARACTER*5 FNN1
+      PARAMETER( FNGEI = 'N1_GEI' , FNFEI = 'N1_FEI' , FNN1 = 'N1MAT' )
+      INTEGER LUGEI,LUFEI,LUN1
+C
       LOGICAL   LOCDBG
 
 #if defined (SYS_CRAY)
@@ -133,14 +141,24 @@ C
 C
       FN4V     = 'CC3_FMATSD_TMP'
 C
-      CALL WOPEN2(LU4V,FN4V,64,0)
+      IF (LVVVV) THEN
+         CALL WOPEN2(LU4V,FN4V,64,0)
+      END IF
 C
       LUDKBC4 = 0
       FNDKBC4 = 'CC3_L3_TMP1'
 C
       CALL WOPEN2(LUDKBC4,FNDKBC4,64,0)
-
-
+C
+      IF (.NOT.LVVVV) THEN
+         !Open files for N1MAT intermediates
+         LUGEI = 0
+         LUFEI = 0
+         LUN1  = 0
+         CALL WOPEN2(LUGEI,FNGEI,64,0)
+         CALL WOPEN2(LUFEI,FNFEI,64,0)
+         CALL WOPEN2(LUN1,FNN1,64,0)
+      END IF
 C
 C------------------------------------------------------------
 C     some initializations:
@@ -185,8 +203,20 @@ C     Symmetry of integrals in contraction:
 C
       ISINT1 = 1
       ISINT2 = 1
+      ISYFCKY = MULD2H(ISYMOP,ISYMY)
+      ISYMIM = MULD2H(ISYFCKY,ISYMT2)
+      IF (.NOT.LVVVV) THEN
+         !Symmetries for N1 and N2 intermediates
+         ISYMN1 = MULD2H(ISYMIM,ISYM0)
+         ISYMN2 = MULD2H(ISYMIM,ISYM0)
+      END IF
 C
-      KRBJIA = 1
+      IF (LVVVV) THEN
+         KRBJIA = 1
+      ELSE
+         KN2MAT = 1
+         KRBJIA = KN2MAT + NCKIJ(ISYMN2)
+      END IF
       KLAMP0 = KRBJIA   + NT2SQ(ISYRES)
       KLAMH0  = KLAMP0  + NLAMDT
       KFOCKD  = KLAMH0  + NLAMDT
@@ -195,12 +225,25 @@ C
       KEND0   = KL2TP   + NT2SQ(ISYCTR)
       LWRK0   = LWORK   - KEND0
 C
+      IF (.NOT.LVVVV) THEN
+         KINDSQN = KEND0
+         KEND0  = KINDSQN + (6*NCKIJ(ISYMN2) - 1)/IRAT + 1
+         LWRK0  = LWORK - KEND0
+      END IF
+C
       KT1AMP0 = KEND0
       KEND1   = KT1AMP0 + NT1AMX
       LWRK1   = LWORK   - KEND1
 
       CALL DZERO(WORK(KRBJIA),NT2SQ(ISYRES))
-
+C
+      IF (.NOT.LVVVV) THEN
+         CALL DZERO(WORK(KN2MAT),NCKIJ(ISYMN2))
+C
+         !index array for N2
+         LENSQN = NCKIJ(ISYMN2)
+         CALL CC3_INDSQ(WORK(KINDSQN),LENSQN,ISYMN2)
+      END IF
 C
 C-------------------------------------
 C     Read in lamdap and lamdh
@@ -326,7 +369,6 @@ C-----------------------------
 C
       ISINT1Y = MULD2H(ISYMY,ISINT1)
       ISINT2Y = MULD2H(ISYMY,ISINT2)
-      ISYFCKY = MULD2H(ISYMOP,ISYMY)
 
       KTROC    = KEND0
       KTROC1   = KTROC    + NTRAOC(ISINT2)
@@ -454,30 +496,44 @@ C
          ISCKB2 = MULD2H(ISYMD,ISYM0)
          ISCKB2Y = MULD2H(ISYMD,ISINT2Y)
 C
-C        IF (LOCDBG) WRITE(LUPRI,*) 'In CC3_FMATSD: ISYCKB :',ISYCKB
+         IF (.NOT.LVVVV) THEN
+            !Symmetry of arrays needed to construct N1MAT
+            ISGEI  = MULD2H(ISYMN1,ISYMD)
+            ISFEI  = MULD2H(ISYMN1,ISYMD)
+         END IF
 C
-         KVVVV = KEND0
-         KEND0 = KVVVV +  NMAABC(ISCKB2)
-         LWRK0 = LWORK - KEND0
-
          KTRVI  = KEND0
          KTRVI1 = KTRVI  + NCKATR(ISCKB1)
-         KEND0  = KTRVI1 + NCKATR(ISCKB1)
-         LWRK0  = LWORK - KEND0
-
-         KVGDKCB  = KEND0
+         KEND1  = KTRVI1 + NCKATR(ISCKB1)
+         LWRK1  = LWORK - KEND1
+C
+         IF (LVVVV) THEN
+            KVVVV = KEND1
+            KEND1 = KVVVV +  NMAABC(ISCKB2)
+            LWRK1 = LWORK - KEND1
+         END IF
+C
+         IF (.NOT.LVVVV) THEN
+            !Arrays needed to construct N1MAT
+            KGEI  = KEND1
+            KFEI  = KGEI  + NCKATR(ISGEI)
+            KEND1 = KFEI  + NCKATR(ISFEI)
+            LWRK1 = LWORK - KEND1
+         END IF
+C
+         KVGDKCB  = KEND1
          KVGDKBC  = KVGDKCB  + NCKATR(ISCKB2Y)
          KVLDKCB  = KVGDKBC  + NCKATR(ISCKB2Y)
          KVLDKBC  = KVLDKCB  + NCKATR(ISCKB2Y)
-         KEND0    = KVLDKBC  + NCKATR(ISCKB2Y)
-         LWRK0    = LWORK    - KEND0
+         KEND1    = KVLDKBC  + NCKATR(ISCKB2Y)
+         LWRK1    = LWORK    - KEND1
 
-         KINTVI   = KEND0
+         KINTVI   = KEND1
          KEND1    = KINTVI + NCKATR(ISCKB2Y)
          LWRK1    = LWORK  - KEND1
 C
          IF (LWRK1 .LT. NCKATR(ISCKB2Y)) THEN
-            WRITE(LUPRI,*) 'Memory available : ',LWRK0
+            WRITE(LUPRI,*) 'Memory available : ',LWRK1
             WRITE(LUPRI,*) 'Memory needed    : ',NCKATR(ISCKB2Y)
             CALL QUIT('Insufficient space in CC3_FMATSD')
          END IF
@@ -486,16 +542,27 @@ C
 
          DO D = 1,NVIR(ISYMD)
 C
+            IF (.NOT.LVVVV) THEN
+               CALL DZERO(WORK(KGEI),NCKATR(ISGEI))
+               CALL DZERO(WORK(KFEI),NCKATR(ISFEI))
+            END IF
+
+C
+            IF (LVVVV) THEN
+
+C
 C--------------------------------------------
-C           Read in g^0_{vvvv} for a given D
+C              Read in g^0_{vvvv} for a given D
 C--------------------------------------------
 C
-            IF (NMAABC(ISCKB2) .GT. 0) THEN
-               IOFF = I3VVIR(ISCKB2,ISYMD)
-     *              + NMAABC(ISCKB2)*(D-1)
-     *              + 1
-               CALL GETWA2(LU4V,FN4V,WORK(KVVVV),IOFF,NMAABC(ISCKB2))
-            ENDIF
+               IF (NMAABC(ISCKB2) .GT. 0) THEN
+                  IOFF = I3VVIR(ISCKB2,ISYMD)
+     *                 + NMAABC(ISCKB2)*(D-1)
+     *                 + 1
+                  CALL GETWA2(LU4V,FN4V,WORK(KVVVV),IOFF,NMAABC(ISCKB2))
+               ENDIF
+C
+            END IF
 
 C
 C------------------------------------------------------------
@@ -612,24 +679,23 @@ C
             DO ISYMB = 1,NSYM
 
                ISYMBD  = MULD2H(ISYMD,ISYMB)
-               ISYMIM = MULD2H(ISYFCKY,ISYMT2)
                ISWMAT  = MULD2H(ISYMIM,ISYMBD)
                ISYALJB = MULD2H(ISYMT2,ISYMB)
                ISYALJC = MULD2H(ISYMT2,ISYMD)
 
 C              Can use kend3 since we do not need the integrals anymore.
-               KDIAGW   = KEND0
+               KDIAGW   = KEND1
                KINDSQW  = KDIAGW  + NCKIJ(ISWMAT)
                KINDEXB  = KINDSQW + (6*NCKIJ(ISWMAT) - 1)/IRAT + 1
                KINDEXC  = KINDEXB + (NCKI(ISYALJB) - 1)/IRAT + 1
                KTMAT    = KINDEXC + (NCKI(ISYALJC) - 1)/IRAT + 1
                KWMAT    = KTMAT   + NCKIJ(ISWMAT)
-               KEND1    = KWMAT   + NCKIJ(ISWMAT)
-               LWRK1    = LWORK   - KEND1
+               KEND2    = KWMAT   + NCKIJ(ISWMAT)
+               LWRK2    = LWORK   - KEND2
 
-               IF (LWRK1 .LT. 0) THEN
+               IF (LWRK2 .LT. 0) THEN
                   WRITE(LUPRI,*) 'Memory available : ',LWORK
-                  WRITE(LUPRI,*) 'Memory needed    : ',KEND1
+                  WRITE(LUPRI,*) 'Memory needed    : ',KEND2
                   CALL QUIT('Insufficient space in CC3_FMATSD')
                END IF
 C
@@ -666,7 +732,7 @@ C
      *                             ISYFCKY,WORK(KVLDKBC),WORK(KVLDKCB),
      *                             WORK(KVGDKBC),WORK(KVGDKCB),
      *                             WORK(KTROCCL),WORK(KTROCCG),
-     *                             ISINT2Y,WORK(KEND1),LWRK1,
+     *                             ISINT2Y,WORK(KEND2),LWRK2,
      *                             WORK(KINDEXB),WORK(KINDEXC),
      *                             WORK(KINDSQW),LENSQW,ISYMB,B,ISYMD,D)
 C
@@ -687,30 +753,67 @@ C
 C
                   CALL T3_FORBIDDEN(WORK(KWMAT),ISYMIM,ISYMB,B,ISYMD,D)
 C
-                  CALL CC3_W3_OMEGA1(OMEGA1EFF,ISYRES,WORK(KWMAT),
-     *                               WORK(KTMAT),ISYMIM,
-     *                               WORK(KOIOOOO),WORK(KOIOVVO),
-     *                               WORK(KOIOOVV),WORK(KVVVV),ISYM0,
-     *                               WORK(KT2TP),ISYM0,
-     *                               WORK(KEND1),LWRK1,
-     *                               LENSQW,WORK(KINDSQW),
-     *                               ISYMB,B,ISYMD,D,.TRUE.)
 C
                   CALL CC3_W3_CY2V(OMEGA2EFF,ISYRES,WORK(KRBJIA),
      *                             WORK(KWMAT),ISWMAT,
      *                             WORK(KTMAT),WORK(KTRVI),WORK(KTRVI1),
-     *                             ISINT1,WORK(KEND1),LWRK1,
+     *                             ISINT1,WORK(KEND2),LWRK2,
      *                             WORK(KINDSQW),LENSQW,
      *                             ISYMB,B,ISYMD,D,.TRUE.)
 C
                   CALL CC3_W3_CY2O(OMEGA2EFF,ISYRES,WORK(KWMAT),ISWMAT,
      *                             WORK(KTMAT),WORK(KTROC),WORK(KTROC1),
-     *                             ISINT1,WORK(KEND1),LWRK1,
+     *                             ISINT1,WORK(KEND2),LWRK2,
      *                             WORK(KINDSQW),LENSQW,ISYMB,B,ISYMD,D,
      *                             .TRUE.)
+C
+                  IF (LVVVV) THEN
+                    CALL CC3_W3_OMEGA1(OMEGA1EFF,ISYRES,WORK(KWMAT),
+     *                                 WORK(KTMAT),ISYMIM,
+     *                                 WORK(KOIOOOO),WORK(KOIOVVO),
+     *                                 WORK(KOIOOVV),WORK(KVVVV),ISYM0,
+     *                                 WORK(KT2TP),ISYM0,
+     *                                 WORK(KEND2),LWRK2,
+     *                                 LENSQW,WORK(KINDSQW),
+     *                                 ISYMB,B,ISYMD,D,.TRUE.)
+                   ELSE
+                     CALL DSCAL(NCKIJ(ISWMAT),-1.0D0,WORK(KWMAT),1)
+
+                     !Construct N1 and N2 intermediates
+                     CALL WT2_N1N2(WORK(KWMAT),ISYMIM,
+     *                       WORK(KT2TP),ISYM0,
+     *                       WORK(KGEI),WORK(KFEI),
+     *                       ISYMN1,
+     *                       WORK(KN2MAT),ISYMN2,
+     *                       B,ISYMB,D,ISYMD,
+     *                       WORK(KINDSQW),LENSQW,
+     *                       WORK(KINDSQN),LENSQN,
+     *                       WORK(KEND2),LWRK2,
+     *                       .TRUE.)
+
+                   END IF
+
 
                ENDDO   ! B
             ENDDO      ! ISYMB
+C
+            IF (.NOT.LVVVV) THEN
+C
+C              ----------------------------------------------------------
+C              Put KGEI(ge,i)^F and KFEI(fe,i)^G (which are intermediates
+C              for N1MAT(fge,i) ) to files (for fixed F=D and G=D).
+C              ----------------------------------------------------------
+
+               !Put KGEI to file as (gei,F)   (fixed F corresponds to D)
+               IADR = ICKBD(ISGEI,ISYMD) + NCKATR(ISGEI)*(D-1) + 1
+               CALL PUTWA2(LUGEI,FNGEI,WORK(KGEI),IADR,NCKATR(ISGEI))
+C
+               !Put KFEI to file as (fei,G)   (fixed G corresponds to D)
+               IADR = ICKBD(ISFEI,ISYMD) + NCKATR(ISFEI)*(D-1) + 1
+               CALL PUTWA2(LUFEI,FNFEI,WORK(KFEI),IADR,NCKATR(ISFEI))
+C
+            END IF
+
          ENDDO       ! D
       ENDDO          ! ISYMD 
 C
@@ -728,17 +831,49 @@ C------------------------------------------------------
 C
       CALL CC3_RBJIA(OMEGA2EFF,ISYRES,WORK(KRBJIA))
 C
-COMMENT COMMENT COMMENT COMMENT 
+      IF (.NOT.LVVVV) THEN
+C
+         !Read (gei,F) and (fei,G) intermediates from files
+         !add them and put the result to a file as (fge,I)
+         CALL N1_RESORT(ISYMN1,LUN1,FNN1,LUGEI,FNGEI,LUFEI,FNFEI,
+     *                  WORK(KEND0),LWRK0,.FALSE.)
+C
+         !Calculate <T3|[[H,T2],tau_ai]|HF> except VVVV contribution
+         CALL N1N2_G(LUN1,FNN1,
+     *                     ISYMN1,
+     *                     WORK(KN2MAT),ISYMN2,
+     *                     WORK(KOIOVVO),WORK(KOIOOVV),
+     *                     WORK(KOIOOOO),ISYM0,
+     *                     OMEGA1EFF,ISYRES,
+     *                     WORK(KINDSQN),LENSQN,
+     *                     WORK(KEND0),LWRK0)
+C
+         !Calculate VVVV contribution to <T3|[[H,T2],tau_ai]|HF>
+         IOPT = 0 !normal Lambda matrices used in backtransformation
+         CALL  N1_GV4(IOPT,
+     *                LUN1,FNN1,
+     *                ISYMN1,
+     *                WORK(KLAMP0),1,
+     *                WORK(KLAMP0),1,
+     *                WORK(KLAMH0),1,
+     *                WORK(KLAMH0),1,
+     *                OMEGA1EFF,ISYRES,
+     *                WORK(KEND0),LWRK0)
+C
+      END IF
+
+C
+C
 C       write(lupri,*) 'OMEGA1EFF inside cc3_fmatsd'
 C       do i = 1,nt1am(isyres)
 C           write(lupri,*) i,OMEGA1EFF(i)
 C       end do
-COMMENT COMMENT COMMENT COMMENT 
+C
 C     write(lupri,*) 'OMEGA2EFF inside cc3_fmatsd'
 C     XNORMVAL = ddot(nt2am(isyres),OMEGA2EFF,1,OMEGA2EFF,1)
 C     write(lupri,*) 'OMEGA2EFF Norm =', XNORMVAL
 C     call outpak(OMEGA2EFF,NT1AM(isyres),1,lupri)
-COMMENT COMMENT COMMENT COMMENT 
+C
 C
       DO I = 1,NT1AM(ISYRES)
          OMEGA1EFF(I) = OMEGA1EFF(I) + OMEGA1(I)
@@ -752,9 +887,18 @@ C-------------------------------
 C     Close and delete files
 C-------------------------------
 C
-      CALL WCLOSE2(LU4V,FN4V,'DELETE')
+      IF (LVVVV) THEN
+         CALL WCLOSE2(LU4V,FN4V,'DELETE')
+      END IF
+C
       CALL WCLOSE2(LUDKBC4,FNDKBC4,'DELETE')
-
+C
+      IF (.NOT.LVVVV) THEN
+         !Close files for N1MAT intermediates
+         CALL WCLOSE2(LUGEI,FNGEI,'DELETE')
+         CALL WCLOSE2(LUFEI,FNFEI,'DELETE')
+         CALL WCLOSE2(LUN1,FNN1,'DELETE')
+      END IF
 C
 C-------------
 C     End

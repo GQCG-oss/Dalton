@@ -35,7 +35,8 @@ C
 C
 C  /* Deck CC3_XISD */ 
       SUBROUTINE CC3_XISD(XI1,XI2,XI1EFF,XI2EFF,ISYRES,
-     *                  FOCKY,ISYFKY,FREQY,XLAMDP,XLAMDH,FOCK0,
+     *                  FOCKY,ISYFKY,FREQY,ICAU,LCAUCHY,LABELB,
+     *                  XLAMDP,XLAMDH,FOCK0,
      *                  LUCKJD,FNCKJD,LUDKBC,FNDKBC,LUDELD,FNDELD,
      *                  LUTOC,FNTOC,LU3VI,FN3VI,LU3VI2,FN3VI2,
      *                  WORK,LWORK)
@@ -58,7 +59,12 @@ C     Generalized to calculate the entire T3^Y and
 C     calculate the contributions for F.
 C     add ( -<mu3 | [[H,T1^Y],T2] | HF> -<mu3| [H,T2^Y] |HF> )
 C
+C
+C     Filip Pawlowski, Spring 2004, Aarhus, generalized to treat Cauchy vectors.
+C
       IMPLICIT NONE
+C
+      LOGICAL LCAUCHY
 C
       INTEGER ISYRES, ISINT1, ISINT2, ISYMT3, ISYMW
       INTEGER ISYFKY, ISYMT2, IOPT, KFOCKD, KOMG1
@@ -83,7 +89,18 @@ C
       INTEGER LU3SRTR, LUCKJDR, LUDELDR, LUDKBCR, LUDKBCR4
       INTEGER ISCKB2Y, ISCKD2Y, KTROC0Y, KTRVI0Y, KTRVI8Y
 C
-      INTEGER kx3am
+      INTEGER ICAU
+C
+      integer kx3am
+C
+      INTEGER IDLSTB,ISYMBB,NCAU,KC1,KC2,MCAU,IDLSTBM,KOCCC1,ISYMBBD
+      INTEGER KVIRDC1,ISYMBBB,KVIRBC1,KOFFOCC,KOFFINTD,KOFFINTB
+C
+      INTEGER ISYMLSTB
+C
+Cfunctions
+      INTEGER ILRCAMP
+
 C
 #if defined (SYS_CRAY)
       REAL XI1(*), XI2(*), XI1EFF(*), XI2EFF(*) 
@@ -103,12 +120,15 @@ C
       DOUBLE PRECISION XXI1EFF, XXI2EFF 
       DOUBLE PRECISION FREQB, TWO
 #endif
-      CHARACTER*11 FN3SRTR, FNCKJDR, FNDELDR, FNDKBCR, FNDKBCR4
       CHARACTER*10 MODEL
       CHARACTER FNCKJD*8, FNDKBC*8, FNDELD*8
       CHARACTER FNTOC*8, FN3VI2*8, LABELB*8
       CHARACTER FN3VI*6
       CHARACTER CDUMMY*1
+      CHARACTER*16 FNCKJDR,FNDKBCR
+      CHARACTER*13 FN3SRTR,FNDELDR
+C
+      PARAMETER(FN3SRTR  = 'CC3_XISD_TMP1', FNDELDR  = 'CC3_XISD_TMP2')
 C
 #include <priunit.h>
 #include <dummy.h>
@@ -119,13 +139,36 @@ C
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccr1rsp.h>
+#include <ccrc1rsp.h>
 C
       PARAMETER(TWO = 2.0D0, CDUMMY = ' ')
-      PARAMETER(FN3SRTR  = 'CC3_XI_TMP1', FNCKJDR  = 'CC3_XI_TMP2', 
-     *          FNDELDR  = 'CC3_XI_TMP3', FNDKBCR  = 'CC3_XI_TMP4',
-     *          FNDKBCR4 = 'CC3_XI_TMP5')
 C
       CALL QENTER('CC3_XISD')
+C
+      !Check value of ICAU
+      IF (LCAUCHY .AND. ICAU.LT.-1) THEN
+         WRITE(LUPRI,*)'ICAU = ', ICAU
+         WRITE(LUPRI,*)'No CC3 cauchy implementation for ICAU.LT.-1'
+         CALL QUIT('Illegal value of ICAU in CC3_XISD')
+      END IF
+C
+      !Set variables associated with cauchy vectors
+      IF (LCAUCHY .AND. ICAU.GE.0) THEN
+         ISYMLSTB = 1
+         IDLSTB  = ILRCAMP(LABELB,ICAU,ISYMLSTB)
+         ISYMBB  = ISYLRC(IDLSTB)
+c        FREQB  = ZERO
+         LABELB = LRCLBL(IDLSTB)
+         NCAU   = ILRCAU(IDLSTB)
+C
+         !Check symmetry
+         IF (ISYMBB .NE. ISYFKY) THEN
+          WRITE(LUPRI,*)'Symmetry of the perturbation operator: ',ISYFKY
+          WRITE(LUPRI,*)'Symmetry of the Cauchy vector:         ',ISYMBB
+          CALL QUIT('Symmetry inconsistency in CC3_XISD (Cauchy vec)')
+         END IF
+C
+      END IF !LCAUCHY
 C
 C--------------------------
 C     Save and set flags.
@@ -166,6 +209,19 @@ C
       KEND0  = KFCKY  + N2BST(ISYFKY)
       LWRK0  = LWORK  - KEND0
 C
+      IF (LCAUCHY) THEN
+         KC1   = KEND0
+         KC2   = KC1   + (NCAU+1)*NT1AM(ISYMBB)
+         KEND0 = KC2   + (NCAU+1)*NT2SQ(ISYMBB)
+         LWRK0 = LWORK - KEND0
+      END IF
+C
+      IF (LWRK0.LT.0) THEN
+         WRITE(LUPRI,*)'Memory available :',LWORK
+         WRITE(LUPRI,*)'Memory needed    :',KEND0
+         CALL QUIT('Insufficient memory in CC3_XISD(c1)')
+      END IF
+C
       CALL DZERO(WORK(KRBJIA),NT2SQ(ISYRES))
       CALL DZERO(XI1EFF,NT1AM(ISYRES))
 C
@@ -187,6 +243,82 @@ C
          XT2TP = DDOT(NT2SQ(ISYMT2),WORK(KT2AM),1,WORK(KT2AM),1)
          WRITE(LUPRI,*) 'Norm of T2TP ',XT2TP
       ENDIF
+C
+C
+      IF (LCAUCHY .AND. ICAU.GE.0) THEN
+C
+         IF (LWRK0.LT.NT2SQ(ISYMBB)) THEN
+            WRITE(LUPRI,*)'Memory available :',LWRK0
+            WRITE(LUPRI,*)'Memory needed    :',NT2SQ(ISYMBB)
+            CALL QUIT('Insufficient memory in CC3_XISD(c2)')
+         END IF
+C
+C--------------------------------------------------------------------------
+C        Loop over cauchy vectors in order to
+C        1) get C1 and C2 cauchy vectors
+C        2) get C1-transformed integrals needed in <mu3|[[H^0,C1],T2^0]|HF>
+C--------------------------------------------------------------------------
+C
+         DO MCAU = 0, NCAU
+C
+            !Open temporary files
+            LU3SRTR  = 0
+            LUDELDR  = 0
+            CALL WOPEN2(LU3SRTR,FN3SRTR,64,0)
+            CALL WOPEN2(LUDELDR,FNDELDR,64,0)
+C
+            !Get the list for current MCAU
+            IDLSTBM = ILRCAMP(LABELB,MCAU,ISYMBB)
+C
+            !Consistency check
+            IF (MCAU.EQ.NCAU .AND. IDLSTBM.NE.IDLSTB) THEN
+               CALL QUIT('Inconsistency in Cauchy loop in CC3_XISD')
+            END IF
+C
+            !Read in C1 and C2 Cauchy vectors for each MCAU
+            IOPT = 3
+            KOFF1 = KC1 + MCAU*NT1AM(ISYMBB)
+            KOFF2 = KC2 + MCAU*NT2SQ(ISYMBB)
+            CALL CC_RDRSP('RC ',IDLSTBM,ISYMBB,IOPT,MODEL,WORK(KOFF1),
+     *                    WORK(KOFF2))
+            CALL CCLR_DIASCL(WORK(KOFF2),TWO,ISYMBB)
+            CALL CC_T2SQ(WORK(KOFF2),WORK(KEND0),ISYMBB)
+            CALL CC3_T2TP(WORK(KOFF2),WORK(KEND0),ISYMBB)
+C
+            !Generate file names for C1-transformed integrals
+            CALL GET_FILENAME(FNCKJDR,FNDKBCR,MCAU)
+C
+            !Open the files for C1-transformed integrals
+            LUCKJDR  = 0
+            LUDKBCR  = 0
+            CALL WOPEN2(LUCKJDR,FNCKJDR,64,0)
+            CALL WOPEN2(LUDKBCR,FNDKBCR,64,0)
+C
+            !Construct C1-transformed integrals and store on file
+            CALL CC3_BARINT(WORK(KOFF1),ISYMBB,XLAMDP,
+     *                      XLAMDH,WORK(KEND0),LWRK0,
+     *                      LU3SRTR,FN3SRTR,LUCKJDR,FNCKJDR)
+C
+            CALL CC3_SORT1(WORK(KEND0),LWRK0,2,ISYMBB,LU3SRTR,FN3SRTR,
+     *                     LUDELDR,FNDELDR,IDUMMY,CDUMMY,IDUMMY,CDUMMY,
+     *                     IDUMMY,CDUMMY)
+C
+            CALL CC3_SINT(XLAMDH,WORK(KEND0),LWRK0,ISYMBB,
+     *                    LUDELDR,FNDELDR,LUDKBCR,FNDKBCR)
+
+C
+            !Close the files for C1-transformed integrals
+            CALL WCLOSE2(LUCKJDR,FNCKJDR,'KEEP')
+            CALL WCLOSE2(LUDKBCR,FNDKBCR,'KEEP')
+C
+            !Close and delete temporary files
+            CALL WCLOSE2(LU3SRTR,FN3SRTR,'DELETE')
+            CALL WCLOSE2(LUDELDR,FNDELDR,'DELETE')
+C
+         END DO !MCAU
+C
+      END IF!LCAUCHY
+
 C
 C---------------------------------------------------------
 C     Read canonical orbital energies.
@@ -213,18 +345,14 @@ C
       IF (FROIMP .OR. FROEXP)
      *   CALL CCSD_DELFRO(WORK(KFOCKD),WORK(KEND0),LWRK0)
 C
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT If we want to sum the T3 amplitudes
-COMMENT COMMENT COMMENT
-      if (.FALSE.) then
+C If we want to sum the T3 amplitudes
+      if (.false.) then
          kx3am  = kend0
          kend0  = kx3am + nt1amx*nt1amx*nt1amx
          call dzero(work(kx3am),nt1amx*nt1amx*nt1amx)
          lwrk0 = lwork - kend0
       endif
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
+C
       IF (LWRK0 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
          WRITE(LUPRI,*) 'Memory needed    : ',KEND0
@@ -350,7 +478,6 @@ C
       ISYOPE = ISINT1
       IOPTTCME = 1
       CALL CCSD_TCMEPK(WORK(KXIAJB),1.0D0,ISYOPE,IOPTTCME)
-
 C
 C
       IF ( IPRINT .GT. 55) THEN
@@ -461,6 +588,47 @@ C
       CALL CCSDT_SRTOC2(WORK(KTROC),WORK(KTROC1),ISINT1,
      *                  WORK(KEND2),LWRK2)
 C
+      IF (LCAUCHY .AND. ICAU.GE.0) THEN
+C
+         !allocate space for ALL C1-transformed occupied integrals 
+         KOCCC1 = KEND1
+         KEND1  = KOCCC1 + (NCAU+1)*NTRAOC(ISYMBB)
+         LWRK1  = LWORK  - KEND1
+C     
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available : ',LWORK
+            WRITE(LUPRI,*) 'Memory needed    : ',KEND1
+            CALL QUIT('Insufficient space in CC3_XISD(c3)')
+         END IF
+C
+         DO MCAU = 0,NCAU
+C
+C--------------------------------------------------------------
+C          Read in C1-transformed occupied integrals for each MCAU
+C-------------------------------------------------------------
+C
+            !Generate file name for C1-transformed integrals
+            !(FNDKBCR is not needed here)
+            CALL GET_FILENAME(FNCKJDR,FNDKBCR,MCAU)
+C
+            !Open the file for C1-transformed integrals
+            LUCKJDR  = 0
+            CALL WOPEN2(LUCKJDR,FNCKJDR,64,0)
+C
+            !Get the offset for a given MCAU
+            KOFF1 = KOCCC1 + MCAU*NTRAOC(ISYMBB)
+C
+            !Read in the integrals
+            CALL INTOCC_T3X(LUCKJDR,FNCKJDR,XLAMDP,ISYMBB,
+     *                      WORK(KOFF1),WORK(KEND1),LWRK1)
+C
+            !Close and delete the file for C1-transformed occupied integrals
+            CALL WCLOSE2(LUCKJDR,FNCKJDR,'DELETE')
+C
+         END DO !MCAU
+C
+      END IF !LCAUCHY
+C
 C
 C----------------------------
 C     General loop structure.
@@ -483,6 +651,24 @@ C
 C--------------------------
 C        Memory allocation.
 C--------------------------
+C
+         IF (LCAUCHY .AND. ICAU.GE.0) THEN
+C
+            !get symmetry of C1-transformed virtual integrals with fixed D
+            ISYMBBD = MULD2H(ISYMBB,ISYMD)
+C
+            !allocation for ALL C1-transformed virtual integrals with fixed D
+            KVIRDC1 = KEND1
+            KEND1   = KVIRDC1 + (NCAU+1)*NCKATR(ISYMBBD)
+            LWRK1   = LWORK  - KEND1
+C     
+            IF (LWRK1 .LT. 0) THEN
+               WRITE(LUPRI,*) 'Memory available : ',LWORK
+               WRITE(LUPRI,*) 'Memory needed    : ',KEND1
+               CALL QUIT('Insufficient space in CC3_XISD(c4)')
+            END IF
+C
+         END IF !LCAUCHY
 C
          KTRVI  = KEND1
          KTRVI1 = KTRVI  + NCKATR(ISCKB1)
@@ -585,6 +771,41 @@ C
             CALL CCSDT_TRVIR(WORK(KINTVI),WORK(KTRVI3),XLAMDH,
      *                       ISYMD,D,ISINT2,WORK(KEND4),LWRK4)
 C
+
+            IF (LCAUCHY .AND. ICAU.GE.0) THEN
+C
+               DO MCAU = 0, NCAU
+C
+C---------------------------------------------------------------------------
+C                 Read in C1-transformed virt int with fixed D for each MCAU
+C---------------------------------------------------------------------------
+C
+                  !Generate file names for C1-transformed integrals
+                  !(FNCKJDR is not needed here)
+                  CALL GET_FILENAME(FNCKJDR,FNDKBCR,MCAU)
+C
+                  !Open the files for C1-transformed integrals
+                  LUDKBCR  = 0
+                  CALL WOPEN2(LUDKBCR,FNDKBCR,64,0)
+C
+                  !Get the offset for a given MCAU
+                  KOFF1 = KVIRDC1 + MCAU*NCKATR(ISYMBBD)
+C
+                  !Read in the integrals
+                  IOFF = ICKBD(ISYMBBD,ISYMD)+NCKATR(ISYMBBD)*(D-1)+1
+                  IF (NCKATR(ISYMBBD) .GT. 0) THEN
+                     CALL GETWA2(LUDKBCR,FNDKBCR,WORK(KOFF1),IOFF,
+     &                           NCKATR(ISYMBBD))
+                  ENDIF
+C
+                  !Close the file for C1-transformed virtual integrals
+                  !(and keep it: it will be needed in B-loop)
+                  CALL WCLOSE2(LUDKBCR,FNDKBCR,'KEEP')
+C
+               END DO !MCAU
+C
+            END IF!LCAUCHY
+C
 C--------------------------------------------------------
 C
             DO ISYMB = 1,NSYM
@@ -609,7 +830,27 @@ C
 C
                ENDIF
 C
-C              Can use kend3 since we do not need the integrals anymore.
+               !We can use KEND3 since we do not need KINTVI array from D-loop
+               !anymore
+C
+               IF (LCAUCHY .AND. ICAU.GE.0) THEN
+C
+                  !get symmetry of C1-transformed virt int with fixed B
+                  ISYMBBB = MULD2H(ISYMBB,ISYMB)
+C
+                  !allocation for ALL C1-transformed virt int with fixed B
+                  KVIRBC1 = KEND3
+                  KEND3   = KVIRBC1 + (NCAU+1)*NCKATR(ISYMBBB)
+                  LWRK3   = LWORK  - KEND3
+C     
+                  IF (LWRK3 .LT. 0) THEN
+                     WRITE(LUPRI,*) 'Memory available : ',LWORK
+                     WRITE(LUPRI,*) 'Memory needed    : ',KEND3
+                     CALL QUIT('Insufficient space in CC3_XISD(c5)')
+                  END IF
+C
+               END IF !LCAUCHY
+C
                KSMAT   = KEND3
                KSMAT3  = KSMAT   + NCKIJ(ISCKIJ)
                KUMAT   = KSMAT3  + NCKIJ(ISCKIJ)
@@ -699,14 +940,59 @@ C----------------------------------------------------------
 C           Read virtual integrals used in second U
 C----------------------------------------------------------
 C
-                 IOFF = ICKAD(ISCKD2,ISYMB) + NCKA(ISCKD2)*(B - 1) + 1
-                 IF (NCKA(ISCKD2) .GT. 0) THEN
-                    CALL GETWA2(LUDELD,FNDELD,WORK(KINTVI),IOFF,
-     *                          NCKA(ISCKD2))
-                 ENDIF
+                  IOFF = ICKAD(ISCKD2,ISYMB) + NCKA(ISCKD2)*(B - 1) + 1
+                  IF (NCKA(ISCKD2) .GT. 0) THEN
+                     CALL GETWA2(LUDELD,FNDELD,WORK(KINTVI),IOFF,
+     *                           NCKA(ISCKD2))
+                  ENDIF
 C
-                 CALL CCSDT_TRVIR(WORK(KINTVI),WORK(KTRVI10),XLAMDH,
-     *                            ISYMB,B,ISINT2,WORK(KEND5),LWRK5)
+                  CALL CCSDT_TRVIR(WORK(KINTVI),WORK(KTRVI10),XLAMDH,
+     *                             ISYMB,B,ISINT2,WORK(KEND5),LWRK5)
+C
+C
+                  IF (LCAUCHY .AND. ICAU.GE.0) THEN
+C
+                     DO MCAU = 0, NCAU
+C
+C---------------------------------------------------------------------------
+C                    Read in C1-transformed virt int with fixed B for each MCAU
+C---------------------------------------------------------------------------
+C
+                        !Generate file names for C1-transformed integrals
+                        !(FNCKJDR is not needed here)
+                        CALL GET_FILENAME(FNCKJDR,FNDKBCR,MCAU)
+C
+                        !Open the files for C1-transformed integrals
+                        LUDKBCR  = 0
+                        CALL WOPEN2(LUDKBCR,FNDKBCR,64,0)
+C
+                        !Get the offset for a given MCAU
+                        KOFF1 = KVIRBC1 + MCAU*NCKATR(ISYMBBB)
+C
+                        !Read in the integrals
+                        IOFF = ICKBD(ISYMBBB,ISYMB)
+     *                       +NCKATR(ISYMBBB)*(B-1)+1
+                        IF (NCKATR(ISYMBBB) .GT. 0) THEN
+                           CALL GETWA2(LUDKBCR,FNDKBCR,WORK(KOFF1),IOFF,
+     &                                 NCKATR(ISYMBBB))
+                        ENDIF
+C
+                        !Close and keep the file for C1-transformed virt int
+                        !...or delte it if you don't need it anymore
+
+                        IF (      (ISYMD.EQ.NSYM) .AND. (ISYMB.EQ.NSYM)
+     *                      .AND. (D.EQ.NVIR(ISYMD)) 
+     *                      .AND. (B.EQ.NVIR(ISYMB))) THEN
+C
+                               CALL WCLOSE2(LUDKBCR,FNDKBCR,'DELETE')
+                        ELSE
+                               CALL WCLOSE2(LUDKBCR,FNDKBCR,'KEEP')
+                        END IF
+C
+                     END DO !MCAU
+C
+                  END IF!LCAUCHY
+
 C
 C------------------------------------------------------------------------
 C                 Calculate the S(ci,bk,dj) matrix for T3 for B,D.
@@ -722,14 +1008,8 @@ C
 C
                   CALL T3_FORBIDDEN(WORK(KSMAT),ISYMT3,ISYMB,B,ISYMD,D)
 C
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
-C      call sum_pt3(work(ksmat),isymb,b,isymd,d,
-C    *             isckij,work(kx3am),1)
-cOMMENT COMMENT COMMENT
-cOMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
+c      call sum_pt3(work(ksmat),isymb,b,isymd,d,
+c    *             isckij,work(kx3am),1)
 C
                   IF (IPRINT .GT. 55) THEN
                      XSMAT = DDOT(NCKIJ(ISCKIJ),WORK(KSMAT),1,
@@ -751,14 +1031,8 @@ C
 C
                   CALL T3_FORBIDDEN(WORK(KSMAT3),ISYMT3,ISYMD,D,ISYMB,B)
 C
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
-C     call sum_pt3(work(ksmat3),isymd,d,isymb,b,
-C    *             isckij,work(kx3am),1)
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
+c     call sum_pt3(work(ksmat3),isymd,d,isymb,b,
+c    *             isckij,work(kx3am),1)
 C
                   IF (IPRINT .GT. 55) THEN
                      XSMAT = DDOT(NCKIJ(ISCKIJ),WORK(KSMAT3),1,
@@ -778,10 +1052,8 @@ C
 C
                   CALL T3_FORBIDDEN(WORK(KUMAT),ISYMT3,ISYMB,B,ISYMD,D)
 C
-COMMENT COMMENT COMMENT
-C      call sum_pt3(work(kumat),isymb,b,isymd,d,
-C    *             isckij,work(kx3am),3)
-COMMENT COMMENT COMMENT
+c      call sum_pt3(work(kumat),isymb,b,isymd,d,
+c    *             isckij,work(kx3am),3)
 C
                   IF (IPRINT .GT. 55) THEN
                      XUMAT = DDOT(NCKIJ(ISCKIJ),WORK(KUMAT),1,
@@ -804,10 +1076,8 @@ C
 C
                   CALL T3_FORBIDDEN(WORK(KUMAT3),ISYMT3,ISYMD,D,ISYMB,B)
 C
-COMMENT COMMENT COMMENT
-C     call sum_pt3(work(kumat3),isymd,d,isymb,b,
-C    *             isckij,work(kx3am),3)
-COMMENT COMMENT COMMENT
+c     call sum_pt3(work(kumat3),isymd,d,isymb,b,
+c    *             isckij,work(kx3am),3)
 C
                   IF (IPRINT .GT. 55) THEN
                      XUMAT = DDOT(NCKIJ(ISCKIJ),WORK(KUMAT3),1,
@@ -820,11 +1090,13 @@ C-------------------------------------------------
 C     Calculate the term <mu2|[V,T3]|HF>
 C-------------------------------------------------
 C
-                  CALL CCFOP_ONEL(XI2EFF,WORK(KRMAT1),WORK(KRMAT2),
-     *                            WORK(KFCKY),WORK(KSMAT),WORK(KTMAT),
-     *                            ISYMT3,ISYFKY,WORK(KINDSQ),
-     *                            LENSQ,WORK(KEND4),LWRK4,
-     *                            ISYMB,B,ISYMD,D)
+                  IF (.NOT.(LCAUCHY .AND. (ICAU.GE.0))) THEN
+                    CALL CCFOP_ONEL(XI2EFF,WORK(KRMAT1),WORK(KRMAT2),
+     *                              WORK(KFCKY),WORK(KSMAT),WORK(KTMAT),
+     *                              ISYMT3,ISYFKY,WORK(KINDSQ),
+     *                              LENSQ,WORK(KEND4),LWRK4,
+     *                              ISYMB,B,ISYMD,D)
+                  END IF
 C
 C--------------------------------------------------
 C Sum up S and U intermediates to get T3 BD amplitudes
@@ -877,25 +1149,78 @@ C
      *                        WORK(KINDSQW),LENSQW,WORK(KWMAT), 
      *                        ISWMAT,WORK(KEND4),LWRK4) 
 C
-C------------------------------------------------
-C     Divide by the energy difference and
-C     remove the forbidden elements
-C------------------------------------------------
+*                    call sum_pt3(work(kwmat),isymb,b,isymd,d,
+*    *                            iswmat,work(kx3am),4)
 C
+C
+                  IF (LCAUCHY .AND. ICAU.GE.0) THEN
+C
+                     DO MCAU = 0, NCAU
+C
+                        !Get offset for C2 vec for a given MCAU
+                        KOFF2 = KC2 + MCAU*NT2SQ(ISYMBB)
+C
+                        !Calculate <mu3|[H^0,C2]|HF> cont to C3 cauchy vec
+                        CALL WBD_GROUND(WORK(KOFF2),ISYMBB,WORK(KTMAT),
+     *                               WORK(KTRVI0),WORK(KTRVI8),
+     *                               WORK(KTROC0),ISINT2,WORK(KWMAT),
+     *                               WORK(KEND4),LWRK4,
+     *                               WORK(KINDSQW),LENSQW,
+     *                               ISYMB,B,ISYMD,D)
+
+C
+                        !Get offset for C1-trans occ int for a given MCAU
+                        KOFFOCC  = KOCCC1 + MCAU*NTRAOC(ISYMBB)
+C
+                        !Get offset for C1-trans virt int with fixed D for MCAU
+                        KOFFINTD = KVIRDC1 + MCAU*NCKATR(ISYMBBD)  
+                        !Get offset for C1-trans virt int with fixed B for MCAU
+                        KOFFINTB = KVIRBC1 + MCAU*NCKATR(ISYMBBB)
+C
+                        
+                        !Calculate <mu3|[[H^0,C1],T2^0]|HF>
+                        CALL WBD_GROUND(WORK(KT2AM),ISYMT2,WORK(KTMAT),
+     *                               WORK(KOFFINTD),WORK(KOFFINTB),
+     *                               WORK(KOFFOCC),ISYMBB,WORK(KWMAT),
+     *                               WORK(KEND4),LWRK4,
+     *                               WORK(KINDSQW),LENSQW,
+     *                               ISYMB,B,ISYMD,D)
+C
+*                    call sum_pt3(work(kwmat),isymb,b,isymd,d,
+*    *                            iswmat,work(kx3am),4)
+
+                        !Divide by the energy difference 
+                        !and remove the forbidden elements
+                        CALL WBD_DIA(B,ISYMB,D,ISYMD,FREQY, 
+     *                               ISWMAT,WORK(KWMAT), 
+     *                               WORK(KDIAGW),WORK(KFOCKD)) 
+C
+                        CALL T3_FORBIDDEN(WORK(KWMAT),ISYFKY,ISYMB,B,
+     *                                    ISYMD,D) 
+C
+                     END DO !MCAU
+C
+                     !trun the sign C_T  <-  -C_T
+                     CALL DSCAL(NCKIJ(ISWMAT),-1.0D0,WORK(KWMAT),1)
+C
+                  END IF !LCAUCHY
+C
+
+*                    call sum_pt3(work(kwmat),isymb,b,isymd,d,
+*    *                            iswmat,work(kx3am),4)
+
+                  !Divide by the energy difference and
+                  !remove the forbidden elements
                   CALL WBD_DIA(B,ISYMB,D,ISYMD,FREQY, 
      *                         ISWMAT,WORK(KWMAT), 
      *                         WORK(KDIAGW),WORK(KFOCKD)) 
 C
-                  CALL T3_FORBIDDEN(WORK(KWMAT),ISYFKY,ISYMB,B,ISYMD,D) 
+                  CALL T3_FORBIDDEN(WORK(KWMAT),ISYFKY,ISYMB,B,
+     *                              ISYMD,D) 
 C
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
-C      call sum_pt3(work(kwmat),isymb,b,isymd,d,
-C    *             iswmat,work(kx3am),4)
-C       write(lupri,*) 'Total norm of WBD : ',
-C     *    ddot(nckij(iswmat),work(kwmat),1,work(kwmat),1)
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
+*                    call sum_pt3(work(kwmat),isymb,b,isymd,d,
+*    *                            iswmat,work(kx3am),4)
+C
 C------------------------------------------------------
 C     Calculate the  term <mu1|[H,W^BD(3)]|HF> 
 C     added in XI1EFF 
@@ -906,6 +1231,7 @@ C
      *                         ISINT1,WORK(KINDSQW),LENSQW,
      *                         WORK(KEND4),LWRK4,
      *                         ISYMB,B,ISYMD,D)
+
 C
 C------------------------------------------------------
 C     Calculate the  term <mu2|[H,W^BD(3)]|HF> ( Fock matrix cont ) 
@@ -944,7 +1270,9 @@ C--------------------------------------
 C     Accumulate RMAT2 in XI2EFF
 C--------------------------------------
 C
-                  CALL CC3_RACC(XI2EFF,WORK(KRMAT2),ISYMB,B,ISYRES)
+                  IF (.NOT.(LCAUCHY .AND. (ICAU.GE.0))) THEN
+                    CALL CC3_RACC(XI2EFF,WORK(KRMAT2),ISYMB,B,ISYRES)
+                  END IF
 c
                END DO 
             END DO
@@ -953,17 +1281,15 @@ C--------------------------------------
 C     Accumulate RMAT1 in XI2EFF
 C--------------------------------------
 C
-            CALL CC3_RACC(XI2EFF,WORK(KRMAT1),ISYMD,D,ISYRES)
+            IF (.NOT.(LCAUCHY .AND. (ICAU.GE.0))) THEN
+              CALL CC3_RACC(XI2EFF,WORK(KRMAT1),ISYMD,D,ISYRES)
+            END IF
 C
          END DO
       END DO
-COMMENT COMMENT
-COMMENT COMMENT
-C      write(lupri,*) 'TETAXKL in CC3_XISD  : '
-c      write(lupri,*) 'T30 in CC3_XISD  : '
-C      call print_pt3(work(kx3am),1,4)
-COMMENT COMMENT
-COMMENT COMMENT
+*      write(lupri,*) 'TETAXKL in CC3_XISD  : '
+*      write(lupri,*) 'C3 in CC3_XISD, ncau = ',ncau
+*      call print_pt3(work(kx3am),1,4)
 C
 C
 C------------------------------------------------------
@@ -996,11 +1322,26 @@ C
       DO I = 1,NT1AM(ISYRES)
          XI1EFF(I) = XI1EFF(I) + XI1(I)
       END DO
+
+*     write(lupri,*)'xi1 at end of CC3_XISD'
+*     call PRINT_MATAI(XI1,ISYRES)
+C
+*     write(lupri,*)'xi1eff at end of CC3_XISD'
+*     call PRINT_MATAI(XI1eff,ISYRES)
 C
       IF (IPRINT .GT. 55) THEN
          XXI1EFF = DDOT(NT1AM(ISYRES),XI1EFF,1,XI1EFF,1)
          WRITE(LUPRI,*) 'Norm of XI1EFF final, xi1eff + xi1  ',XXI1EFF
       ENDIF
+C
+C---------------------------------------------------------------------
+C     It might have happened that 'CC3_CAUINT_V*' files have not been
+C     deleted up there. Do it now!
+C---------------------------------------------------------------------
+C
+      IF (LCAUCHY .AND. ICAU.GE.0) THEN
+         CALL DELETE_FILE('CC3_CAUINT_V*')
+      END IF
 C
 C-------------
 C     End
@@ -3224,3 +3565,102 @@ C
 C
       RETURN
       END
+C
+C    /* Deck get_filename */
+      SUBROUTINE GET_FILENAME(FNCKJDR,FNDKBCR,MCAU)
+*
+************************************************************
+*     Based on MCAU value get the name of the files for C1-transformed
+*     integrals in CC3 Cauchy vector calculations
+*
+*     Currently MCAU may not be larger than 999
+*
+*     Filip Pawlowski, 11-May-2004, Aarhus
+************************************************************
+*
+      IMPLICIT NONE
+C
+#include <priunit.h>
+C
+      LOGICAL LCDBG
+      PARAMETER (LCDBG = .FALSE.)
+C
+      INTEGER MCAU
+      INTEGER UNITS,TENTH,HUNDREDS
+      CHARACTER*(*) FNCKJDR,FNDKBCR
+      CHARACTER*3  NFIL
+C
+      CALL QENTER('GETFN')
+C
+      !Convert MCAU to character string NFIL
+      IF ((MCAU.GE.0) .AND. (MCAU.LE.9)) THEN
+C
+         NFIL = '_'//'_'//CHAR(MCAU+48)
+C
+      ELSE IF ((MCAU.GE.10) .AND. (MCAU.LE.99)) THEN
+C
+         TENTH = DINT(AINT(DFLOAT(MCAU)/10.0D0))
+         UNITS = MCAU - TENTH*10
+         NFIL = '_'//CHAR(TENTH+48)//CHAR(UNITS+48)
+C
+      ELSE IF ((MCAU.GE.100) .AND. (MCAU.LE.999)) THEN
+C
+         HUNDREDS = DINT(AINT(DFLOAT(MCAU)/100.0D0))
+         TENTH    = DINT(AINT(DFLOAT(MCAU-HUNDREDS*100)/10.0D0))
+         UNITS    = MCAU - HUNDREDS*100 - TENTH*10
+         NFIL = CHAR(HUNDREDS+48)//CHAR(TENTH+48)//CHAR(UNITS+48)
+C
+      ELSE
+         WRITE(LUPRI,*)'MCAU = ', MCAU
+         CALL QUIT('Case not implemented in GET_FILENAME')
+      END IF
+C
+      !Generate file name for C1-transformed integrals
+      FNCKJDR = 'CC3_CAUINT_O_'//NFIL
+      FNDKBCR = 'CC3_CAUINT_V_'//NFIL
+C
+      IF (LCDBG) THEN
+         WRITE(LUPRI,*)'MCAU = ',MCAU
+         WRITE(LUPRI,*)'FNCKJDR = ',FNCKJDR
+         WRITE(LUPRI,*)'FNDKBCR = ',FNDKBCR
+         WRITE(LUPRI,*)' '
+      END IF
+C
+      !End
+      CALL QEXIT('GETFN')
+C
+      RETURN
+      END
+C  /* Deck delete_file */
+      SUBROUTINE DELETE_FILE(FILENAME)
+*
+************************************************
+*     Delete file with name FILENAME
+*
+*     Filip Pawlowski, Aarhus, 16-Apr-2004
+************************************************
+*
+      IMPLICIT NONE
+C
+      INTEGER ILEN,INFO
+      CHARACTER*(*)  FILENAME
+      CHARACTER*(80) COMMAND
+C
+      !Determine length of the filename 
+      !(cannot be larger than 74 due to the way COMMAND is declared)
+      ILEN = MIN(LEN(FILENAME),74)
+C
+      !Generate the command to delete the file
+      WRITE(COMMAND,'(2A)') 'rm -f ', FILENAME(1:ILEN)
+C
+      !Execute the command
+#if defined (SYS_CRAY)
+      CALL INFO = ISHELL(COMMAND)
+#else
+      CALL SYSTEM(COMMAND)
+#endif
+
+      RETURN
+      END
+
+

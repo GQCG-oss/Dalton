@@ -99,6 +99,9 @@ C
 C
       CALL WOPEN2(LUDELD,FNDELD,64,0)
       CALL WOPEN2(LUDKBC,FNDKBC,64,0)
+c
+*     write(lupri,*)'t1am in cc3_lhtr'
+*     call print_matai(t1am,1)
 C
 C-------------------------------------------------------------
 C     Set symmetry flags.
@@ -1442,15 +1445,20 @@ C
 #include <ccinftap.h>
 #include <second.h>
 C
+      CHARACTER*6 FNGEI,FNFEI
+      CHARACTER*5 FNN1
+      PARAMETER( FNGEI = 'N1_GEI' , FNFEI = 'N1_FEI' , FNN1 = 'N1MAT' )
+      INTEGER LUGEI,LUFEI,LUN1
+C
       INTEGER ISYML1, ISYML2, ISYMT2, ISYRES, LWORK
       INTEGER ISYMTR, ISINT1, ISINT2, ISYMIM, KFOCKD, KCMO, KFCKBA
       INTEGER KEND0, LWRK0, KEND1, LWRK1, KEND2, LWRK2, ISYMC, ISYMK
-      INTEGER KOFF1, KOFF2, KTROC0, KTROC2, KXIAJB, KINTOC, LUFCK
+      INTEGER KOFF1, KOFF2, KXIAJB, KINTOC, LUFCK
       INTEGER LENGTH, ISYOPE, IOPTTCME, IOFF, ISYMD, ISAIJ1, ISYCKB
-      INTEGER ISCKB2, KTRVI0, KTRVI2, KTRVI3, KTRVI4, KTRVI5, KTRVI6
-      INTEGER KRMAT1, KEND3, LWRK3, KEND4, LWRK4, KINTVI
-      INTEGER ISYMB, ISYALJ, ISAIJ2, ISYMBD, ISCKIJ, KSMAT, KQMAT
-      INTEGER KDIAG, LENSQ, KINDSQ, KINDEX, KTMAT, KRMAT2
+      INTEGER ISCKB2
+      INTEGER KRMAT1, KEND3, LWRK3, KEND4, LWRK4
+      INTEGER ISYMB, ISYALJ, ISAIJ2, ISYMBD, ISCKIJ
+      INTEGER KDIAG, LENSQ, KINDSQ,  KTMAT
       INTEGER ISCKB1, KTRVI, KTRVI1, KTROC, KTROC1, KVVVV
       INTEGER LUDKBC4, LUCKJD
       INTEGER LUDKBC, LUTOC, LU3VI, LU4V, LUDKBC3, LU3FOPX, LU3FOP2X
@@ -1460,22 +1468,29 @@ C
       INTEGER KW3BXVDL1,KW3BXVDL2,ISYALJBL1,ISYALJDL1,KWMAT,KINDEXBL1
       INTEGER KINDEXDL1
 C
-      INTEGER ISYMN1,ISYMN2,KN1MAT,KN2MAT,KINDSQN,LENSQN
+      INTEGER ISYMN1,ISYMN2,KN2MAT,KINDSQN,LENSQN
+C
+      INTEGER ISGEI,ISFEI,KGEI,KFEI,IADR
+      INTEGER IOPT
+c
+      integer kx3am
+c
+
 c
       integer isymi,isymfge,isymanm
 C
 #if defined (SYS_CRAY)
       REAL L1AM(*), L2TP(*), T2TP(*), OMEGA1(*), OMEGA2(*), XINT4O(*)
       REAL XOVVO(*), XOOVV(*), XLAMDP(*), XLAMDH(*), WORK(LWORK)
-      REAL TITRAN, TISORT, TISMAT, TIQMAT, TICONT, TIOME1
-      REAL DTIME, XL2TP, XIAJB, XINT, XTROC0, XTRVI, XSMAT
+      REAL TITRAN, TISORT,  TICONT, TIOME1
+      REAL DTIME, XL2TP, XIAJB, XINT, XTROC0, XTRVI
       REAL RHO1N, RHO2N, XDIA, DDOT, HALF, ONE, ECURR
 #else
       DOUBLE PRECISION L1AM(*), L2TP(*), T2TP(*)
       DOUBLE PRECISION OMEGA1(*), OMEGA2(*), XINT4O(*)
       DOUBLE PRECISION XOVVO(*),XOOVV(*),XLAMDP(*),XLAMDH(*),WORK(LWORK)
-      DOUBLE PRECISION TITRAN, TISORT, TISMAT, TIQMAT, TICONT, TIOME1
-      DOUBLE PRECISION DTIME, XL2TP, XIAJB, XINT, XTROC0, XTRVI, XSMAT
+      DOUBLE PRECISION TITRAN, TISORT,  TICONT, TIOME1
+      DOUBLE PRECISION DTIME, XL2TP, XIAJB, XINT, XTROC0, XTRVI
       DOUBLE PRECISION RHO1N, RHO2N, XDIA, DDOT, HALF, ONE, ECURR
 #endif
 C
@@ -1516,6 +1531,16 @@ C
 C
       CALL WOPEN2(LUDKBC4,FNDKBC4,64,0)
 C
+      IF (.NOT.LVVVV) THEN
+         !Open files for N1MAT intermediates
+         LUGEI = 0
+         LUFEI = 0
+         LUN1  = 0
+         CALL WOPEN2(LUGEI,FNGEI,64,0)
+         CALL WOPEN2(LUFEI,FNFEI,64,0)
+         CALL WOPEN2(LUN1,FNN1,64,0)
+      END IF
+C
 C-------------------------------------------------------------
 C     Set symmetry flags.
 C
@@ -1540,8 +1565,6 @@ C--------------------
 C
       TITRAN = 0.0D0
       TISORT = 0.0D0
-      TISMAT = 0.0D0
-      TIQMAT = 0.0D0
       TICONT = 0.0D0
       TIOME1 = 0.0D0
 C
@@ -1590,22 +1613,29 @@ C---------------------------------------------------------
 C     Read canonical orbital energies and MO coefficients.
 C---------------------------------------------------------
 C
-      !Symmetries for N1 and N2 intermediates
-      ISYMN1 = MULD2H(ISYMIM,ISYMT2)
-      ISYMN2 = MULD2H(ISYMIM,ISYMT2)
-
-      KN1MAT = 1
-      KN2MAT = KN1MAT + NMAABCI(ISYMN1)
-      KRBJIA = KN2MAT + NCKIJ(ISYMN2)
+      IF (.NOT.LVVVV) THEN
+         !Symmetries for N1 and N2 intermediates
+         ISYMN1 = MULD2H(ISYMIM,ISYMT2)
+         ISYMN2 = MULD2H(ISYMIM,ISYMT2)
+      END IF
+C
+      IF (LVVVV) THEN
+         KRBJIA = 1
+      ELSE 
+         KN2MAT = 1
+         KRBJIA = KN2MAT + NCKIJ(ISYMN2)
+      END IF
       KFOCKD = KRBJIA + NT2SQ(ISYRES)
       KCMO   = KFOCKD + NORBTS
       KFCKBA = KCMO   + NLAMDS
       KEND0  = KFCKBA + N2BST(ISYMOP)
       LWRK0  = LWORK  - KEND0
     
-      KINDSQN = KEND0
-      KEND0  = KINDSQN + (6*NCKIJ(ISYMN2) - 1)/IRAT + 1
-      LWRK0  = LWORK - KEND0 
+      IF (.NOT.LVVVV) THEN
+         KINDSQN = KEND0
+         KEND0  = KINDSQN + (6*NCKIJ(ISYMN2) - 1)/IRAT + 1
+         LWRK0  = LWORK - KEND0 
+      END IF
 C
       IF (LWRK0 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
@@ -1614,12 +1644,14 @@ C
       END IF
 C
       CALL DZERO(WORK(KRBJIA),NT2SQ(ISYRES))
-      CALL DZERO(WORK(KN1MAT),NMAABCI(ISYMN1))
-      CALL DZERO(WORK(KN2MAT),NCKIJ(ISYMN2))
 C
-      !index array for N2
-      LENSQN = NCKIJ(ISYMN2)
-      CALL CC3_INDSQ(WORK(KINDSQN),LENSQN,ISYMN2)
+      IF (.NOT.LVVVV) THEN
+         CALL DZERO(WORK(KN2MAT),NCKIJ(ISYMN2))
+C
+         !index array for N2
+         LENSQN = NCKIJ(ISYMN2)
+         CALL CC3_INDSQ(WORK(KINDSQN),LENSQN,ISYMN2)
+      END IF
 C
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
@@ -1698,6 +1730,26 @@ C
          CALL CC_PRFCKMO(WORK(KFCKBA),ISYMOP)
       ENDIF
 C
+C----------------------------------------
+C     If we want to sum the T3 amplitudes
+C----------------------------------------
+C
+      if (.false.) then
+         kx3am  = kend0
+         kend0 = kx3am + nrhft*nrhft*nrhft*nvirt*nvirt*nvirt
+         call dzero(work(kx3am),nrhft*nrhft*nrhft*nvirt*nvirt*nvirt)
+         lwrk0 = lwork - kend0
+         if (lwrk0 .lt. 0) then
+            write(lupri,*) 'Memory available : ',lwork
+            write(lupri,*) 'Memory needed    : ',kend0
+            call quit('Insufficient space (T3) in CC3_LHTR')
+         END IF
+      endif
+C
+C      write(lupri,*) 'WBMAT after dzero'
+C      call print_pt3(work(kx3am),ISYML1,4)
+
+C
 C-----------------------------
 C     Read occupied integrals.
 C-----------------------------
@@ -1705,10 +1757,8 @@ C
 C     Memory allocation.
 C
       KTROC  = KEND0
-      KTROC0 = KTROC  + NTRAOC(ISINT2)
-      KTROC1 = KTROC0 + NTRAOC(ISINT2)
-      KTROC2 = KTROC1 + NTRAOC(ISINT2)
-      KXIAJB = KTROC2 + NTRAOC(ISINT2)
+      KTROC1 = KTROC  + NTRAOC(ISINT2)
+      KXIAJB = KTROC1 + NTRAOC(ISINT2)
       KEND1  = KXIAJB + NT2AM(ISYMOP)
       LWRK1  = LWORK  - KEND1
 C
@@ -1762,46 +1812,6 @@ C
 C
       CALL CC3_LSORT1(WORK(KTROC),ISINT2,WORK(KEND2),LWRK2,5)
 C
-C------------------------------------------------------------
-C     Read in integrals used in L3 and transform.
-C------------------------------------------------------------
-C
-      IOFF = 1
-      IF (NTOTOC(ISINT2) .GT. 0) THEN
-         CALL GETWA2(LUTOC,FNTOC,WORK(KINTOC),IOFF,NTOTOC(ISINT2))
-      ENDIF
-C
-      CALL CC3_TROCC(WORK(KINTOC),WORK(KTROC0),XLAMDH,
-     *                 WORK(KEND2),LWRK2,ISINT2)
-C
-C-----------------------------------------------------------
-C     Construct 2*C-E of the integrals.
-C-----------------------------------------------------------
-C
-      CALL CCSDT_TCMEOCC(WORK(KTROC0),WORK(KTROC2),ISINT2)
-C
-C-------------------------------
-C     Write out norms of arrays.
-C-------------------------------
-C
-      IF (IPRINT .GT. 55) THEN
-         XINT  = DDOT(NTOTOC(ISINT2),WORK(KINTOC),1,
-     *                WORK(KINTOC),1)
-         WRITE(LUPRI,*) 'Norm of CKJDEL-INT  ',XINT
-      ENDIF
-C
-      IF (IPRINT .GT. 55) THEN
-         XTROC0 = DDOT(NTRAOC(ISINT2),WORK(KTROC0),1,
-     *                WORK(KTROC0),1)
-         WRITE(LUPRI,*) 'Norm of TROC0 CC3_L3_LHTR : ',XTROC0
-      ENDIF
-C
-      IF (IPRINT .GT. 55) THEN
-         XTROC0 = DDOT(NTRAOC(ISINT2),WORK(KTROC2),1,
-     *                WORK(KTROC2),1)
-         WRITE(LUPRI,*) 'Norm of TROC2 CC3_L3_LHTR : ',XTROC0
-      ENDIF
-C
 C     -----------------------------------------------------------------
 C     Occupied integrals needed for t3bar0 constructed in terms of WMAT
 C     -----------------------------------------------------------------
@@ -1828,6 +1838,12 @@ C
          ISCKB1 = MULD2H(ISINT1,ISYMD)
          ISCKB2 = MULD2H(ISINT2,ISYMD)
 C
+         IF (.NOT.LVVVV) THEN
+            !Symmetry of arrays needed to construct N1MAT
+            ISGEI  = MULD2H(ISYMN1,ISYMD)
+            ISFEI  = MULD2H(ISYMN1,ISYMD)
+         END IF
+C
          IF (IPRINT .GT. 55) THEN
 C
             WRITE(LUPRI,*) 'In CC3_LHTR_L3: ISAIJ1 :',ISAIJ1
@@ -1842,19 +1858,18 @@ C--------------------------
 C
          KTRVI  = KEND1
          KTRVI1 = KTRVI  + NCKATR(ISCKB1)
-         KTRVI2 = KTRVI1 + NCKATR(ISCKB1)
-         KRMAT1 = KTRVI2 + NCKATR(ISCKB2)
+         KRMAT1 = KTRVI1 + NCKATR(ISCKB1)
          KEND2  = KRMAT1 + NCKI(ISAIJ1)
          LWRK2  = LWORK  - KEND2
 C
-         KTRVI0  = KEND2
-         KTRVI3  = KTRVI0  + NCKATR(ISCKB2)
-         KTRVI4  = KTRVI3  + NCKATR(ISCKB2)
-         KTRVI5  = KTRVI4  + NCKATR(ISCKB2)
-         KTRVI6  = KTRVI5  + NCKATR(ISCKB2)
-         KVVVV   = KTRVI6  + NCKATR(ISCKB2)
-         KEND3   = KVVVV   + NMAABC(ISCKB2)
-         LWRK3   = LWORK  - KEND3
+         IF (LVVVV) THEN
+            KVVVV   = KEND2
+            KEND3   = KVVVV   + NMAABC(ISCKB2)
+            LWRK3   = LWORK  - KEND3
+         ELSE
+           KEND3    = KEND2
+           LWRK3    = LWORK  - KEND3
+         END IF
 C
          KW3BXVDG1  = KEND3
          KW3BXVDG2  = KW3BXVDG1  + NCKATR(ISCKB2)
@@ -1863,8 +1878,15 @@ C
          KEND3     = KW3BXVDL2  + NCKATR(ISCKB2)
          LWRK3     = LWORK     - KEND3
 C
-         KINTVI = KEND3
-         KEND4  = KINTVI + MAX(NCKA(ISYMD),NCKA(ISCKB2))
+         IF (.NOT.LVVVV) THEN
+            !Arrays needed to construct N1MAT
+            KGEI  = KEND3
+            KFEI  = KGEI  + NCKATR(ISGEI)
+            KEND3 = KFEI  + NCKATR(ISFEI)
+            LWRK3 = LWORK - KEND3
+         END IF
+C
+         KEND4  = KEND3
          LWRK4  = LWORK  - KEND4
 C
          IF (LWRK4 .LT. 0) THEN
@@ -1884,17 +1906,25 @@ C           Initialize the R1 matrix.
 C------------------------------------
 C
             CALL DZERO(WORK(KRMAT1),NCKI(ISAIJ1))
+            IF (.NOT.LVVVV) THEN
+               CALL DZERO(WORK(KGEI),NCKATR(ISGEI))
+               CALL DZERO(WORK(KFEI),NCKATR(ISFEI))
+            END IF
 C
-C--------------------------------------------
-C           Read in g_{vvvv} for a given D
-C--------------------------------------------
+            IF (LVVVV) THEN
 C
-            IF (NMAABC(ISCKB2) .GT. 0) THEN
-               IOFF = I3VVIR(ISCKB2,ISYMD)
-     *              + NMAABC(ISCKB2)*(D-1)
-     *              + 1
-               CALL GETWA2(LU4V,FN4V,WORK(KVVVV),IOFF,NMAABC(ISCKB2))
-            ENDIF
+C              ---------------------------------
+C              Read in g_{vvvv} for a given D
+C              ---------------------------------
+C
+               IF (NMAABC(ISCKB2) .GT. 0) THEN
+                  IOFF = I3VVIR(ISCKB2,ISYMD)
+     *                 + NMAABC(ISCKB2)*(D-1)
+     *                 + 1
+                  CALL GETWA2(LU4V,FN4V,WORK(KVVVV),IOFF,NMAABC(ISCKB2))
+               ENDIF
+C
+            END IF
 C
 C------------------------------------------------------------
 C           Read and transform integrals used in contraction.
@@ -1933,113 +1963,6 @@ C
 C
             DTIME  = SECOND() - DTIME
             TISORT = TISORT   + DTIME
-C
-C-----------------------------------------------
-C           Integrals used in L3am.
-C-----------------------------------------------
-C
-            IOFF = ICKBD(ISCKB2,ISYMD) + NCKATR(ISCKB2)*(D - 1) + 1
-            IF (NCKATR(ISCKB2) .GT. 0) THEN
-               CALL GETWA2(LUDKBC3,FNDKBC3,WORK(KTRVI0),IOFF,
-     &                     NCKATR(ISCKB2))
-            ENDIF
-C
-            CALL CCSDT_SRVIR3(WORK(KTRVI0),WORK(KEND4),ISYMD,D,ISINT2)
-C
-C------------------------------------------------------
-C           Read 2*C-E of integral used for L3
-C------------------------------------------------------
-C
-            IOFF = ICKBD(ISCKB2,ISYMD) + NCKATR(ISCKB2)*(D - 1) + 1
-            IF (NCKATR(ISCKB2) .GT. 0) THEN
-               CALL GETWA2(LU3FOP2X,FN3FOP2X,WORK(KTRVI4),IOFF,
-     &                     NCKATR(ISCKB2))
-            ENDIF
-C
-C-----------------------------------------------------------
-C           Sort the integrals for s3am and for t3-bar
-C-----------------------------------------------------------
-C
-            DTIME = SECOND()
-            CALL CCSDT_SRTVIR(WORK(KTRVI0),WORK(KTRVI2),WORK(KEND4),
-     *                        LWRK4,ISYMD,ISINT2)
-C
-            CALL CCSDT_SRTVIR(WORK(KTRVI4),WORK(KTRVI5),WORK(KEND4),
-     *                        LWRK4,ISYMD,ISINT2)
-C
-            DTIME  = SECOND() - DTIME
-            TISORT = TISORT   + DTIME
-C
-            IF (IPRINT .GT. 55) THEN
-               XTRVI = DDOT(NCKATR(ISCKB2),WORK(KTRVI0),1,
-     *                      WORK(KTRVI0),1)
-               WRITE(LUPRI,*) 'Norm of TRVI0 ',XTRVI
-            ENDIF
-C
-            IF (IPRINT .GT. 55) THEN
-               XTRVI = DDOT(NCKATR(ISCKB2),WORK(KTRVI2),1,
-     *                      WORK(KTRVI2),1)
-               WRITE(LUPRI,*) 'Norm of TRVI2 ',XTRVI
-            ENDIF
-C
-            IF (IPRINT .GT. 55) THEN
-               XTRVI = DDOT(NCKATR(ISCKB2),WORK(KTRVI4),1,
-     *                      WORK(KTRVI4),1)
-               WRITE(LUPRI,*) 'Norm of TRVI4 ',XTRVI
-            ENDIF
-C
-            IF (IPRINT .GT. 55) THEN
-               XTRVI = DDOT(NCKATR(ISCKB2),WORK(KTRVI5),1,
-     *                      WORK(KTRVI5),1)
-               WRITE(LUPRI,*) 'Norm of TRVI5 ',XTRVI
-            ENDIF
-C
-C------------------------------------------------------
-C           Calculate virtual integrals used in q3am.
-C------------------------------------------------------
-C
-            IOFF = ICKAD(ISYCKB,ISYMD) + NCKA(ISYCKB)*(D - 1) + 1
-            IF (NCKA(ISYCKB) .GT. 0) THEN
-               CALL GETWA2(LU3VI,FN3VI,WORK(KINTVI),IOFF,
-     &                     NCKA(ISYCKB))
-            ENDIF
-C
-            CALL CCSDT_TRVIR(WORK(KINTVI),WORK(KTRVI3),XLAMDP,
-     *                       ISYMD,D,ISYMOP,WORK(KEND4),LWRK4)
-C
-            IF (LWRK3 .LT. NCKATR(ISYCKB)) THEN
-               CALL QUIT('Insufficient space for allocation in '//
-     &                   'CC3_L3_LHTR  (TRVI3)')
-            END IF
-C
-C           Can use kend3 since dont need the integrals anymore
-            DTIME = SECOND()
-            CALL CCSDT_SRVIR3(WORK(KTRVI3),WORK(KEND3),ISYMD,D,ISINT2)
-C
-C---------------------------------------------------------------
-C           Read virtual integrals used in q3am/u3am for t3-bar.
-C---------------------------------------------------------------
-C
-            IOFF = ICKBD(ISYCKB,ISYMD) + NCKATR(ISYCKB)*(D - 1) + 1
-            IF (NCKATR(ISYCKB) .GT. 0) THEN
-               CALL GETWA2(LU3FOPX,FN3FOPX,WORK(KTRVI6),IOFF,
-     &                     NCKATR(ISYCKB))
-            ENDIF
-C
-            IF (LWRK3 .LT. NCKATR(ISYCKB)) THEN
-               CALL QUIT('Insufficient space for allocation in '//
-     &                   'CC3_L3_LHTR (TRVI6)')
-            END IF
-C
-C           Can use kend3 since dont need the integrals anymore
-            DTIME = SECOND()
-            CALL CCSDT_SRVIR3(WORK(KTRVI6),WORK(KEND4),ISYMD,D,ISINT2)
-C
-            IF (IPRINT .GT. 55) THEN
-               XTRVI = DDOT(NCKATR(ISCKB2),WORK(KTRVI6),1,
-     *                      WORK(KTRVI6),1)
-               WRITE(LUPRI,*) 'Norm of TRVI6 ',XTRVI
-            ENDIF
 C
 C           ------------------------------------------------------
 C           Integrals needed to construct t3bar0 in terms of WMAT
@@ -2081,14 +2004,10 @@ C
                ENDIF
 C
 C              Can use kend3 since we do not need the integrals anymore.
-               KSMAT   = KEND3
-               KQMAT   = KSMAT   + NCKIJ(ISCKIJ)
-               KDIAG   = KQMAT   + NCKIJ(ISCKIJ)
+               KDIAG   = KEND3
                KINDSQ  = KDIAG   + NCKIJ(ISCKIJ)
-               KINDEX  = KINDSQ  + (6*NCKIJ(ISCKIJ) - 1)/IRAT + 1
-               KTMAT   = KINDEX  + (NCKI(ISYALJ) - 1)/IRAT + 1
-               KRMAT2  = KTMAT   + NCKIJ(ISCKIJ)
-               KEND4   = KRMAT2  + NCKI(ISAIJ2)
+               KTMAT   = KINDSQ  + (6*NCKIJ(ISCKIJ) - 1)/IRAT + 1
+               KEND4   = KTMAT   + NCKIJ(ISCKIJ)
                LWRK4   = LWORK   - KEND4
 C
                KWMAT   = KEND4
@@ -2125,84 +2044,12 @@ C-------------------------------------
 C
                LENSQ = NCKIJ(ISCKIJ)
                CALL CC3_INDSQ(WORK(KINDSQ),LENSQ,ISCKIJ)
-               CALL CC3_INDEX(WORK(KINDEX),ISYALJ)
 C
                !Get indeces for t3bar0 constructed in terms of WMAT
                CALL CC3_INDEX(WORK(KINDEXBL1),ISYALJBL1)
                CALL CC3_INDEX(WORK(KINDEXDL1),ISYALJDL1)
 C
                DO B = 1,NVIR(ISYMB)
-C
-C-----------------------------------------
-C                 Initialize the R2 matrix.
-C-----------------------------------------
-C
-                  CALL DZERO(WORK(KRMAT2),NCKI(ISAIJ2))
-C
-C---------------------------------------------------------------------------
-C                 Calculate the S(ci,bk,dj) matrix for for B,D for L3
-C                 Scale the smat with a half since have a factor
-C                 of two in the routine.
-C---------------------------------------------------------------------------
-C
-                  DTIME = SECOND()
-C
-                  CALL DZERO(WORK(KSMAT),NCKIJ(ISCKIJ))
-C
-                  CALL CCFOP_SMAT(ECURR,L1AM,ISYML1,L2TP,ISYML2,
-     *                            WORK(KTMAT),
-     *                            WORK(KFCKBA),WORK(KXIAJB),ISINT1,
-     *                            WORK(KTRVI0),WORK(KTRVI2),
-     *                            WORK(KTRVI4),WORK(KTRVI5),
-     *                            WORK(KTROC0),WORK(KTROC2),
-     *                            ISINT2,WORK(KFOCKD),WORK(KDIAG),
-     *                            WORK(KSMAT),WORK(KEND4),LWRK4,
-     *                            WORK(KINDEX),WORK(KINDSQ),LENSQ,
-     *                            ISYMB,B,ISYMD,D)
-C
-                  CALL DSCAL(NCKIJ(ISCKIJ),HALF,WORK(KSMAT),1)
-C
-                  CALL T3_FORBIDDEN(WORK(KSMAT),ISYMIM,ISYMB,B,ISYMD,D)
-C
-                  DTIME  = SECOND() - DTIME
-                  TISMAT = TISMAT   + DTIME
-C
-                  IF (IPRINT .GT. 55) THEN
-                     XSMAT = DDOT(NCKIJ(ISCKIJ),WORK(KSMAT),1,
-     *                       WORK(KSMAT),1)
-                     WRITE(LUPRI,*) 'Norm of SMAT-L3    ',XSMAT
-                  ENDIF
-C
-C-------------------------------------------------------------------
-C                 Calculate Q(ci,jk) for fixed b,d for t3-bar.
-C-------------------------------------------------------------------
-C
-                  DTIME = SECOND()
-C
-                  CALL DZERO(WORK(KQMAT),NCKIJ(ISCKIJ))
-C
-                  CALL CCFOP_QMAT(ECURR,L1AM,ISYML1,L2TP,ISYML2,
-     *                            WORK(KTMAT),WORK(KFCKBA),
-     *                            WORK(KXIAJB),ISINT1,WORK(KTRVI3),
-     *                            WORK(KTRVI6),WORK(KTROC0),
-     *                            WORK(KTROC2),ISINT2,WORK(KFOCKD),
-     *                            WORK(KDIAG),WORK(KQMAT),
-     *                            WORK(KEND4),LWRK4,WORK(KINDSQ),
-     *                            LENSQ,ISYMB,B,ISYMD,D)
-C
-                  CALL DSCAL(NCKIJ(ISCKIJ),HALF,WORK(KQMAT),1)
-C
-                  CALL T3_FORBIDDEN(WORK(KQMAT),ISYMIM,ISYMB,B,ISYMD,D)
-C
-                  DTIME  = SECOND() - DTIME
-                  TIQMAT = TIQMAT   + DTIME
-C
-                  IF (IPRINT .GT. 55) THEN
-                     XSMAT = DDOT(NCKIJ(ISCKIJ),WORK(KQMAT),1,
-     *                       WORK(KQMAT),1)
-                     WRITE(LUPRI,*) 'Norm of QMAT-L3  ',XSMAT
-                  ENDIF
-
 C
 C                 --------------------------------------------------
 C                 Calculate t3bar0 in terms of W intermediate
@@ -2233,17 +2080,13 @@ C
      *                         WORK(KDIAG),WORK(KFOCKD))
                   CALL T3_FORBIDDEN(WORK(KWMAT),ISYMIM,ISYMB,B,ISYMD,D)
 
+*       call sum_pt3(work(KWMAT),isymb,b,isymd,d,
+*    *             1,work(kx3am),4)
 C
 C-----------------------------------------------------------------------
 C                 Calculate the contributions to omega2
 C-----------------------------------------------------------------------
 C
-*                 CALL CCFOP_CONVIR(WORK(KRMAT2),WORK(KSMAT),
-*    *                              WORK(KQMAT),WORK(KTMAT),ISYMIM,
-*    *                              WORK(KTRVI),WORK(KTRVI1),ISINT1,
-*    *                              WORK(KEND4),LWRK4,WORK(KINDSQ),
-*    *                              LENSQ,ISYMB,B,ISYMD,D)
-c
                   CALL CC3_W3_CY2V(OMEGA2,ISYRES,WORK(KRBJIA),
      *                             WORK(KWMAT),ISCKIJ,
      *                             WORK(KTMAT),WORK(KTRVI),WORK(KTRVI1),
@@ -2251,55 +2094,42 @@ c
      *                             WORK(KINDSQ),LENSQ,
      *                             ISYMB,B,ISYMD,D,.TRUE.)
 C
-*                 CALL CCFOP_CONOCC(OMEGA2,WORK(KRMAT1),
-*    *                              WORK(KRMAT2),WORK(KSMAT),
-*    *                              WORK(KTMAT),ISYMIM,
-*    *                              WORK(KTROC),WORK(KTROC1),ISINT1,
-*    *                              WORK(KEND4),LWRK4,WORK(KINDSQ),
-*    *                              LENSQ,ISYMB,B,ISYMD,D)
-C
                   CALL CC3_W3_CY2O(OMEGA2,ISYRES,WORK(KWMAT),ISCKIJ,
      *                             WORK(KTMAT),WORK(KTROC),WORK(KTROC1),
      *                             ISINT1,WORK(KEND4),LWRK4,
      *                             WORK(KINDSQ),LENSQ,ISYMB,B,ISYMD,D,
      *                             .TRUE.)
 C
-                  CALL DSCAL(NCKIJ(ISCKIJ),-ONE,WORK(KSMAT),1)
-                  CALL DSCAL(NCKIJ(ISCKIJ),-ONE,WORK(KQMAT),1)
-C
 C------------------------------------------------------------------------
 C                 Calculate the L3 contribution to omega1
 C------------------------------------------------------------------------
 C
-*                 CALL CC3_L3_OMEGA1(OMEGA1,ISYRES,WORK(KSMAT),
-*    *                               WORK(KQMAT),WORK(KTMAT),ISYMIM,
-*    *                               XINT4O,XOVVO,XOOVV,WORK(KVVVV),1,
-*    *                               T2TP,ISYMT2,WORK(KEND4),LWRK4,
-*    *                               LENSQ,WORK(KINDSQ),ISYMB,B,ISYMD,D)
-c
-                  if (.false.) then
-                  CALL CC3_W3_OMEGA1(OMEGA1,ISYRES,WORK(KWMAT),
-     *                               WORK(KTMAT),ISYMIM,
-     *                               XINT4O,XOVVO,
-     *                               XOOVV,WORK(KVVVV),1,
-     *                               T2TP,ISYMT2,
-     *                               WORK(KEND4),LWRK4,
-     *                               LENSQ,WORK(KINDSQ),
-     *                               ISYMB,B,ISYMD,D,.TRUE.)
-                  else
-                  CALL DSCAL(NCKIJ(ISCKIJ),-ONE,WORK(KWMAT),1)
+                  IF (LVVVV) THEN
+                     CALL CC3_W3_OMEGA1(OMEGA1,ISYRES,WORK(KWMAT),
+     *                                  WORK(KTMAT),ISYMIM,
+     *                                  XINT4O,XOVVO,
+     *                                  XOOVV,WORK(KVVVV),1,
+     *                                  T2TP,ISYMT2,
+     *                                  WORK(KEND4),LWRK4,
+     *                                  LENSQ,WORK(KINDSQ),
+     *                                  ISYMB,B,ISYMD,D,.TRUE.)
+                  ELSE
+                     CALL DSCAL(NCKIJ(ISCKIJ),-ONE,WORK(KWMAT),1)
 
-                  !Construct N1 and N2 intermediates
-                  CALL WT2_N1N2(WORK(KWMAT),ISYMIM,
-     *                    T2TP,ISYMT2,
-     *                    WORK(KN1MAT),ISYMN1,
-     *                    WORK(KN2MAT),ISYMN2,
-     *                    B,ISYMB,D,ISYMD,
-     *                    WORK(KINDSQ),LENSQ,
-     *                    WORK(KINDSQN),LENSQN,
-     *                    WORK(KEND4),LWRK4)
-c
-                  end if
+                     !Construct N1 and N2 intermediates
+                     CALL WT2_N1N2(WORK(KWMAT),ISYMIM,
+     *                       T2TP,ISYMT2,
+     *                       WORK(KGEI),WORK(KFEI),
+     *                       ISYMN1,
+     *                       WORK(KN2MAT),ISYMN2,
+     *                       B,ISYMB,D,ISYMD,
+     *                       WORK(KINDSQ),LENSQ,
+     *                       WORK(KINDSQN),LENSQN,
+     *                       WORK(KEND4),LWRK4,
+     *                       .TRUE.)
+
+C
+                  END IF
 C
                   IF (IPRINT .GT. 55) THEN
                      RHO2N = DDOT(NT1AM(ISYRES),OMEGA1,1,OMEGA1,1)
@@ -2307,44 +2137,37 @@ C
      *                               RHO2N
                   ENDIF
 C
-C-------------------------------------------
-C                 Accumulate R2 in Omega2
-C-------------------------------------------
-C
-*                 CALL CC3_RACC(OMEGA2,WORK(KRMAT2),ISYMB,B,
-*    *                          ISYRES)
-C
-                  IF (IPRINT .GT. 55) THEN
-                     RHO2N = DDOT(NT2AM(ISYRES),OMEGA2,1,OMEGA2,1)
-                     WRITE(LUPRI,*) 'Norm of Rho22-after CC3_RACC',RHO2N
-                  ENDIF
-C
-                  IF (IPRINT .GT. 220) THEN
-                     CALL AROUND('After CC3_RACC: ')
-                     CALL CC_PRP(DUMMY,OMEGA2,ISYRES,0,1)
-                  ENDIF
+C              ----------
+C              End B loop
+C              ----------
 C
                ENDDO   ! B
             ENDDO      ! ISYMB
+
+            IF (.NOT.LVVVV) THEN
 C
-C---------------------------------------
-C           Accumulate R1 in Omega2.
-C---------------------------------------
+C              ----------------------------------------------------------
+C              Put KGEI(ge,i)^F and KFEI(fe,i)^G (which are intermediates
+C              for N1MAT(fge,i) ) to files (for fixed F=D and G=D).
+C              ----------------------------------------------------------
+
+               !Put KGEI to file as (gei,F)   (fixed F corresponds to D)
+               IADR = ICKBD(ISGEI,ISYMD) + NCKATR(ISGEI)*(D-1) + 1
+               CALL PUTWA2(LUGEI,FNGEI,WORK(KGEI),IADR,NCKATR(ISGEI))
 C
-*           CALL CC3_RACC(OMEGA2,WORK(KRMAT1),ISYMD,D,ISYRES)
+               !Put KFEI to file as (fei,G)   (fixed G corresponds to D)
+               IADR = ICKBD(ISFEI,ISYMD) + NCKATR(ISFEI)*(D-1) + 1
+               CALL PUTWA2(LUFEI,FNFEI,WORK(KFEI),IADR,NCKATR(ISFEI))
 C
-            IF (IPRINT .GT. 55) THEN
-               RHO2N = DDOT(NT2AM(ISYRES),OMEGA2,1,OMEGA2,1)
-               WRITE(LUPRI,*) 'Norm of Rho22-after CC3_RACC-2',RHO2N
-            ENDIF
+            END IF
 C
-            IF (IPRINT .GT. 220) THEN
-               CALL AROUND('After CC3_RACC-2: ')
-               CALL CC_PRP(DUMMY,OMEGA2,ISYRES,0,1)
-            ENDIF
+C          -----------
+C           End D loop
+C          -----------
 C
          ENDDO       ! D
       ENDDO          ! ISYMD
+
 C
 C------------------------------------------------------
 C     Accumulate RBJIA from <mu2|[H,W^BD(3)]|HF> ( Vccupied  cont ) 
@@ -2353,22 +2176,46 @@ C------------------------------------------------------
 C
       CALL CC3_RBJIA(OMEGA2,ISYRES,WORK(KRBJIA))
 C
-      !Calculate <T3|[[H,T2],tau_ai]|HF> except VVVV contribution
-      CALL N1N2_G(WORK(KN1MAT),ISYMN1,
-     *                  WORK(KN2MAT),ISYMN2,
-     *                  XOVVO,XOOVV,XINT4O,1,
-     *                  OMEGA1,ISYRES,
-     *                  WORK(KINDSQN),LENSQN,
-     *                  WORK(KEND0),LWRK0)
+      IF (IPRINT .GT. 55) THEN
+         RHO2N = DDOT(NT2AM(ISYRES),OMEGA2,1,OMEGA2,1)
+         WRITE(LUPRI,*) 'Norm of Rho22-after CC3_RACC-2',RHO2N
+      ENDIF
 C
-      !Calculate VVVV contribution to <T3|[[H,T2],tau_ai]|HF>
-      CALL  N1_GV4(WORK(KN1MAT),ISYMN1,
-     *                  XLAMDP,1, 
-     *                  XLAMDP,1, 
-     *                  XLAMDH,1, 
-     *                  XLAMDH,1, 
-     *                  OMEGA1,ISYRES,
-     *                  WORK(KEND0),LWRK0)
+      IF (IPRINT .GT. 220) THEN
+         CALL AROUND('After CC3_RACC-2: ')
+         CALL CC_PRP(DUMMY,OMEGA2,ISYRES,0,1)
+      ENDIF
+C
+C
+      IF (.NOT.LVVVV) THEN
+C
+         !Read (gei,F) and (fei,G) intermediates from files
+         !add them and put the result to a file as (fge,I)
+         CALL N1_RESORT(ISYMN1,LUN1,FNN1,LUGEI,FNGEI,LUFEI,FNFEI,
+     *                  WORK(KEND0),LWRK0,.FALSE.)
+C
+         !Calculate <T3|[[H,T2],tau_ai]|HF> except VVVV contribution
+         CALL N1N2_G(LUN1,FNN1,
+     *                     ISYMN1,
+     *                     WORK(KN2MAT),ISYMN2,
+     *                     XOVVO,XOOVV,XINT4O,1,
+     *                     OMEGA1,ISYRES,
+     *                     WORK(KINDSQN),LENSQN,
+     *                     WORK(KEND0),LWRK0)
+C
+         !Calculate VVVV contribution to <T3|[[H,T2],tau_ai]|HF>
+         IOPT = 0 !normal Lambda matrices used in backtransformation
+         CALL  N1_GV4(IOPT,
+     *                LUN1,FNN1,
+     *                ISYMN1,
+     *                XLAMDP,1, 
+     *                XLAMDP,1, 
+     *                XLAMDH,1, 
+     *                XLAMDH,1, 
+     *                OMEGA1,ISYRES,
+     *                WORK(KEND0),LWRK0)
+C
+      END IF
 C
 C-------------------------------
 C     Close and delete files
@@ -2377,12 +2224,23 @@ C
 *     write(lupri,*)'Omega1 (final) isyres', isyres
 *     call PRINT_MATAI(OMEGA1,ISYRES)
 
+*      write(lupri,*) 't3barx  in CC3_LHTR'
+*      call print_pt3(work(kx3am),1,4)
+
+
 
       CALL WCLOSE2(LUDKBC4,FNDKBC4,'DELETE')
 C
       CALL WCLOSE2(LU3FOP,FN3FOP,'KEEP')
       CALL WCLOSE2(LU3FOP2,FN3FOP2,'KEEP')
       CALL WCLOSE2(LU3VI2,FN3VI2,'KEEP')
+C
+      IF (.NOT.LVVVV) THEN
+         !Close files for N1MAT intermediates
+         CALL WCLOSE2(LUGEI,FNGEI,'DELETE')
+         CALL WCLOSE2(LUFEI,FNFEI,'DELETE')
+         CALL WCLOSE2(LUN1,FNN1,'DELETE')
+      END IF
 C
 C-------------------
 C     Print timings.
@@ -2393,8 +2251,6 @@ C
          WRITE(LUPRI,*)
          WRITE(LUPRI,1) 'CC3_TRAN  : ',TITRAN
          WRITE(LUPRI,1) 'CC3_SORT  : ',TISORT
-         WRITE(LUPRI,1) 'CC3_SMAT  : ',TISMAT
-         WRITE(LUPRI,1) 'CC3_QMAT  : ',TIQMAT
          WRITE(LUPRI,1) 'CC3_OME1  : ',TIOME1
          WRITE(LUPRI,*)
       END IF
@@ -5290,7 +5146,9 @@ C
       RETURN
       END
 C  /* Deck n1_gv4 */
-      SUBROUTINE N1_GV4(N1MAT,ISYMN1,   !  N_fige
+      SUBROUTINE N1_GV4(IOPT,!0 - normal transformation; 1 - one-index trans.
+     *                  LUN1,FNN1,      !  file containing (fge,i)
+     *                  ISYMN1,         !  symmetry of N1(fge,i)
      *                  XLAMP1,ISLAMP1, !  LAM^{p}_{al f} 
      *                  XLAMP2,ISLAMP2, !  LAM^{p}_{gam g}
      *                  XLAMH1,ISLAMH1, !  LAM^{h}_{del e}
@@ -5343,6 +5201,46 @@ C  /* Deck n1_gv4 */
 *    and finally "beta" index is transformed to "a" MO index,        *
 *    such that the result vector, omega_ai, is obtained.             *
 *                                                                    *
+*====================================================================*
+* NB !!!                                                             *
+* ======                                                             *
+*                                                                    *
+*  N_fige intermediate is actually sitting on file as (fge,i)        *
+*  and is read in for each "I" as (fg,e).                            *
+*                                                                    *
+*====================================================================*
+*                                                                    *
+* IOPT:                                                              *
+* =====                                                              *
+*                                                                    *
+*  IOPT = 0 : Use normal MO Lambda matrices to backtransform, i.e.:  *
+*                                                                    *
+*         N_fige -->  N_{al i ga de}                                 *
+*                                                                    *
+*         N1_2AORHF routine is thus called once                      *
+*         and XLAMP1 and XLAMP2 matrices are the same.               *
+*                                                                    *
+*                                                                    *
+*  IOPT = 1 : Use normal T1-Lambda matrices to backtransform, i.e.:  *
+*                                                                    *
+*         N_fige -->  N_{al- i ga de} + N_{al i ga- de}              *
+*                                                                    *
+*         ("-" means one-index backtransformed AO index)             *
+*                                                                    *
+*         N1_2AORHF routine is thus called twice, the second time    *
+*         with XLAMP1 and XLAMP2 matrices interchanged               *
+*         (XLAMP1 and XLAMP2 matrices are NOT the same anymore).     *
+*                                                                    *
+*  NOTE that with IOPT = 1 also double one-index backtransformation: *
+*  ****                                                              *
+*                                                                    *
+*         N_fige -->  N_{al- i ga~ de} + N_{al~ i ga- de}            *
+*                                                                    *
+*       may be carried out ("~" is in general a transformation       *
+*       different from "-").                                         *
+*       You decide about that by appropriate choice of XLAMP1 and    *
+*       XLAMP2, which are passed to this routine.                    *
+*                                                                    *
 **********************************************************************
 *  F. Pawlowski, 17-Mar-2004, Aarhus.                                *
 **********************************************************************
@@ -5365,6 +5263,9 @@ C
 #include <cbieri.h>
 #include <eribuf.h>
 C
+      CHARACTER*(*) FNN1
+      INTEGER       LUN1
+C
       INTEGER ISYMN1,ISLAMP1,ISLAMP2,ISLAMH1,ISLAMH2,ISOMEGA1,LWORK
       INTEGER KCCFB1,KINDXB,KEND1,LWRK1
       INTEGER KODCL1,KODCL2,KODBC1,KODBC2,KRDBC1,KRDBC2
@@ -5373,20 +5274,28 @@ C
       INTEGER KRECNR,NUMDIS,IDEL2,IDEL,ISYMD
       INTEGER ISTMP,ISN12AORHF,KXINT,KN1MAT2AORHF,KEND2,LWRK2
       INTEGER INDEXA(MXCORB),ISYDIS
+C
+      INTEGER IOPT
 c
       integer isymi,isymalbe
 C
 #if defined (SYS_CRAY)
-      REAL N1MAT(*),XLAMP1(*),XLAMP2(*),XLAMH1(*),XLAMH2(*)
+      REAL XLAMP1(*),XLAMP2(*),XLAMH1(*),XLAMH2(*)
       REAL OMEGA1(*),WORK(LWORK)
       real ddot
 #else
-      DOUBLE PRECISION N1MAT(*),XLAMP1(*),XLAMP2(*),XLAMH1(*),XLAMH2(*)
+      DOUBLE PRECISION XLAMP1(*),XLAMP2(*),XLAMH1(*),XLAMH2(*)
       DOUBLE PRECISION OMEGA1(*),WORK(LWORK)
       double precision ddot
 #endif
 C
       CALL QENTER('NGV4')
+C
+      !Initial check of IOPT
+      IF (IOPT .GT. 1) THEN
+         WRITE(LUPRI,*) 'IOPT = ',IOPT
+         CALL QUIT('Illegal value of IOPT in N1_GV4')
+      END IF
 C
       !Because of direct/non-direct logical switches we need to
       !initialise kend1 
@@ -5526,15 +5435,16 @@ C
                CALL CCRDAO(WORK(KXINT),IDEL,IDEL2,WORK(KEND2),LWRK2,
      *                     WORK(KRECNR),DIRECT)
 C
-C-------------------------------------------------------------------------------
-C              Backtransform N_fige to N_{alpha i gamma delta} (delta is fixed!)
-C-------------------------------------------------------------------------------
-C
-               CALL N1_2AORHF(N1MAT,ISYMN1,XLAMP1,ISLAMP1,
-     *                        XLAMP2,ISLAMP2,XLAMH1,ISLAMH1,
+C-------------------------------------------------------------------------------C              Backtransform N_fige to N_{alpha i gamma delta} (delta is fixed!)C-------------------------------------------------------------------------------C
+               CALL N1_2AORHF(ISYMN1,
+     *                        LUN1,FNN1,
+     *                        XLAMP1,ISLAMP1,
+     *                        XLAMP2,ISLAMP2,
+     *                        XLAMH1,ISLAMH1,
      *                        WORK(KN1MAT2AORHF),ISN12AORHF,
-     *                        ISYMD,IDEL,WORK(KEND2),LWRK2)
-
+     *                        ISYMD,IDEL,   
+     *                        WORK(KEND2),LWRK2,
+     *                        IOPT)
 C
 C------------------------------------------------------------------
 C              Contract N^{del}_{al,i,gam} with g^{del}_{al,be,gam}
@@ -5564,13 +5474,121 @@ C
       RETURN
       END
 C  /* Deck n1_2aorhf */
-      SUBROUTINE N1_2AORHF(N1MAT,ISYMN1,!  N_fige
+      SUBROUTINE N1_2AORHF(ISYMN1,        !  symmetry of N
+     *                     LUN1,FNN1,     !  file containing N(fge,i)
      *                     XLAMP1,ISLAMP1,!  LAM^{p}_{al f} 
      *                     XLAMP2,ISLAMP2,!  LAM^{p}_{gam g}
      *                     XLAMH1,ISLAMH1,!  LAM^{h}_{del e}
      *                     N1MAT2AORHF,ISN12AORHF, !  N_{alpha,i,gamma}
-     *                     ISYDEL,IDEL,      !  delta: fixed AO index
-     *                     WORK,LWORK)
+     *                     ISYDEL,IDEL,   !  delta: fixed AO index
+     *                     WORK,LWORK,
+     *                     IOPT) !0 - normal transformation; 1 - one-index trans
+*
+************************************************************************
+*     Backtransform N_fige to N_{alpha i gamma delta} (delta is fixed!)
+*
+*     This is just a little driver; the real stuff is done in 
+*     N1_2AORHF_1 routine, which is called from here.
+*
+*     IOPT = 0 : do normal back transformation with MO Lambda matrices
+*     IOPT = 1 : do (double) one-index back transformation with T1 matrices
+*
+*     FP, 28-Apr-2004, Aarhus.
+************************************************************************
+*
+      IMPLICIT NONE
+C
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+C
+      CHARACTER*(*) FNN1
+      INTEGER       LUN1
+C
+      INTEGER ISYMN1,ISLAMP1,ISLAMP2,ISLAMH1,ISN12AORHF,ISYDEL,IDEL
+      INTEGER IOPT,LWORK
+      INTEGER ISYMI,ISFGE,KFGE,KEND1,LWRK1,IADR
+C
+#if defined (SYS_CRAY)
+      REAL XLAMP1(*),XLAMP2(*),XLAMH1(*)
+      REAL N1MAT2AORHF(*),WORK(LWORK)
+#else
+      DOUBLE PRECISION XLAMP1(*),XLAMP2(*),XLAMH1(*)
+      DOUBLE PRECISION N1MAT2AORHF(*),WORK(LWORK)
+#endif
+C
+      CALL QENTER('N1AO')
+C
+      !Initial check of IOPT
+      IF ((IOPT.GT.1) .OR. (IOPT.LT.0)) THEN
+         WRITE(LUPRI,*) 'IOPT = ',IOPT
+         CALL QUIT('Illegal value of IOPT in N1_2AORHF')
+      END IF
+C
+      DO ISYMI = 1,NSYM
+C
+          ISFGE = MULD2H(ISYMN1,ISYMI)
+C
+          KFGE   = 1 !an array used to read in N1MAT(fge,I) from file
+          KEND1  = KFGE + NMAABC(ISFGE)
+          LWRK1  = LWORK  - KEND1
+C
+          IF (LWRK1 .LT. 0) THEN
+             WRITE(LUPRI,*) 'Memory available: ', LWORK
+             WRITE(LUPRI,*) 'Memory needed   : ', KEND1
+             CALL QUIT('Insufficient memory in N1_2AORHF (xx)')
+          END IF
+C
+          DO I = 1,NRHF(ISYMI)
+C
+            CALL DZERO(WORK(KFGE),NMAABC(ISFGE))
+C
+            IF (NMAABC(ISFGE).GT.0) THEN
+               !Read in KFGE(fg,e) array from file
+               IADR = IMAABCI(ISFGE,ISYMI) + NMAABC(ISFGE)*(I-1) + 1 
+               CALL GETWA2(LUN1,FNN1,WORK(KFGE),IADR,NMAABC(ISFGE))
+            END IF
+C     
+            !Backtransform N_fige to N_{alpha i gamma delta}
+            CALL N1_2AORHF_1(WORK(KFGE),ISYMN1,XLAMP1,ISLAMP1,
+     *                     XLAMP2,ISLAMP2,XLAMH1,ISLAMH1,
+     *                     N1MAT2AORHF,ISN12AORHF,
+     *                     ISYDEL,IDEL,ISYMI,I,
+     *                     WORK(KEND1),LWRK1)
+C
+            IF (IOPT.EQ.1) THEN !do one-index backtransformation 
+                                !with T1.  Note that XLAMP1 and XLAMP2 
+                                !are interchanged
+C
+               !Backtransform N_fige to N_{alpha i gamma delta}
+               CALL N1_2AORHF_1(WORK(KFGE),ISYMN1,XLAMP2,ISLAMP2,
+     *                        XLAMP1,ISLAMP1,XLAMH1,ISLAMH1,
+     *                        N1MAT2AORHF,ISN12AORHF,
+     *                        ISYDEL,IDEL,ISYMI,I,
+     *                        WORK(KEND1),LWRK1)
+            END IF
+C
+         END DO !I
+      END DO !ISYMI
+C
+C----------
+C     End.
+C----------
+C
+      CALL QEXIT('N1AO')
+C
+      RETURN
+      END
+C  /* Deck n1_2aorhf_1 */
+      SUBROUTINE N1_2AORHF_1(N1FGE,         !an array containing (fge,I)
+     *                       ISYMN1,        !  symmetry of N1(fge,i)
+     *                       XLAMP1,ISLAMP1,!  LAM^{p}_{al f} 
+     *                       XLAMP2,ISLAMP2,!  LAM^{p}_{gam g}
+     *                       XLAMH1,ISLAMH1,!  LAM^{h}_{del e}
+     *                       N1MAT2AORHF,ISN12AORHF, !  N_{alpha,i,gamma}
+     *                       ISYDEL,IDEL,   !  delta: fixed AO index
+     *                       ISYMI,I,       !fixed occupied "I" index   
+     *                       WORK,LWORK)
 *
 **********************************************************************
 *                                                                    *
@@ -5593,7 +5611,10 @@ C  /* Deck n1_2aorhf */
 *--------------------------------------------------------------------*
 *                                                                    *
 * NOTE: Since "i" MO index is not backtransformed, "i" is our GENERAL*
-* ====  LOOP index in this routine.                                  *
+* ====  LOOP index in this routine and it comes from OUTSIDE.        *
+*                                                                    *
+*       N_fige is actually read in from LUN1 file (outside), where it*
+*       is sitting as (fge,i) (remember that "i" is fixed from outside)*
 *                                                                    *
 **********************************************************************
 *  F. Pawlowski, 16-Mar-2004, Aarhus.                                *
@@ -5612,21 +5633,25 @@ C
       INTEGER ISYMG,ISYMF,ISYGAM,ISYAL,ISFGAM,ISALGAM,KFGAM,KEND2,LWRK2
       INTEGER NF,NGAM,NAL,ISYDEL
 C
+      INTEGER IADR
+C
 #if defined (SYS_CRAY)
-      REAL N1MAT(*),XLAMP1(*),XLAMP2(*),XLAMH1(*)
+      REAL XLAMP1(*),XLAMP2(*),XLAMH1(*)
       REAL N1MAT2AORHF(*),WORK(LWORK)
+      REAL N1FGE(*)
       REAL ONE
       real ddot
 #else
-      DOUBLE PRECISION N1MAT(*),XLAMP1(*),XLAMP2(*),XLAMH1(*)
+      DOUBLE PRECISION XLAMP1(*),XLAMP2(*),XLAMH1(*)
       DOUBLE PRECISION N1MAT2AORHF(*),WORK(LWORK)
+      DOUBLE PRECISION N1FGE(*)
       DOUBLE PRECISION ONE
       double precision ddot
 #endif
 C
       PARAMETER (ONE = 1.0D0)
 C
-      CALL QENTER('N1AO')
+      CALL QENTER('N1AO_1')
 C
       !Initial symmetry check
       ISTEMP = MULD2H(ISLAMP1,ISLAMP2)
@@ -5652,172 +5677,139 @@ C       sum_fge LAM^{h}_{del e} N_fige --> N_{fig del}
 C
 C      calculated as:
 C
-C       N1MAT(fge,i)  *   XLAMH1(del e) 
+C       N1MAT(fge,i)  *   XLAMH1(del e) !N1MAT(fge,i) sitting on file
 C            |           
 C            |loop over i
 C            V           
-C       N1MAT(fg,e)   *   XLAMH1(del e) --> KFGDEL(fg,del)
+C       N1FGE(fg,e)    *   XLAMH1(del e) --> KFGDEL(fg,del)
 C
 C     -------------------------------------------------------
 C
       ISYME = MULD2H(ISLAMH1,ISYDEL) !because: XLAMH1(del e)
       ISFGI = MULD2H(ISYMN1,ISYME)   !because: N_fige
 C
-C     -----------------------
-C     General loop index "i"
-C     -----------------------
-C     
-      DO ISYMI = 1,NSYM !It is our GLOBAL LOOP in this routine
-
-*     write(lupri,*)'================================'
-*     write(lupri,*)'ENTERED ISYMI LOOP, ISYMI ',isymi
-*     write(lupri,*)'================================'
+      ISFG    = MULD2H(ISFGI,ISYMI)
+      ISFGE   = MULD2H(ISFG,ISYME)
+      ISFGDEL = MULD2H(ISFG,ISYDEL) 
 C
-         ISFG    = MULD2H(ISFGI,ISYMI)
-         ISFGE   = MULD2H(ISFG,ISYME)
-         ISFGDEL = MULD2H(ISFG,ISYDEL) 
+      KFGDEL = 1
+      KEND1  = KFGDEL + NMATAB(ISFG)
+      LWRK1  = LWORK  - KEND1
 C
-         KFGDEL = 1
-*        KEND1  = KFGDEL + ND2ABG(ISFGDEL)
-         KEND1  = KFGDEL + NMATAB(ISFG)
-         LWRK1  = LWORK  - KEND1
-         IF (LWRK1 .LT. 0) THEN
+      IF (LWRK1 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Memory available: ', LWORK
+         WRITE(LUPRI,*) 'Memory needed   : ', KEND1
+         CALL QUIT('Insufficient memory in N1_2AORHF (1)')
+      END IF
+C
+      CALL DZERO(WORK(KFGDEL),NMATAB(ISFG))
+C
+      !multiply N1FGE(fg,e)   *   XLAMH1(del e) --> KFGDEL(fg,del)
+      KOFF1 = IMAABC(ISFG,ISYME)
+     *      + 1
+      KOFF2 = IGLMVI(ISYDEL,ISYME)
+     *      + IDEL-IBAS(ISYDEL)
+      KOFF3 = KFGDEL
+C
+      NFG  = MAX(NMATAB(ISFG),1)
+*     NDEL = MAX(NBAS(ISYDEL),1)
+      NDEL = NBAS(ISYDEL)
+C
+      CALL DGEMV('N',NMATAB(ISFG),NVIR(ISYME),ONE,
+     *           N1FGE(KOFF1),NFG,XLAMH1(KOFF2),NDEL,
+     *           ONE,WORK(KOFF3),1)
+C
+C     -------------------------------------------------------
+C      So now we have our temporary result KFGDEL(fg,del).
+C      We will now backtransform "g" index using XLAMP2(gam g):
+C
+C      KFGDEL(fg,del)    *    XLAMP2(gam g)
+C          |
+C          |loop over del
+C          V
+C      KFGDEL(f,g)       *    XLAMP2(gam g)  -->  KFGAM(f,gam)
+C
+C     -------------------------------------------------------
+C
+      DO ISYMG = 1,NSYM !"g" is summation index for this multiplication
+                        !but we will stay within this loop till the
+                        !end of the routine (otherwise I would have to
+                        !loop over "gamma" in the very next contraction)
+C
+         !the symmetries necessary for this and the NEXT contraction
+         ISYMF     = MULD2H(ISFG,ISYMG)
+         ISYGAM    = MULD2H(ISLAMP2,ISYMG)!because: XLAMP2(gam g)
+         ISYAL     = MULD2H(ISLAMP1,ISYMF)!because: XLAMP1(al  f)
+         ISFGAM    = MULD2H(ISYMF,ISYGAM)
+         ISALGAM   = MULD2H(ISYAL,ISYGAM)
+C
+         KFGAM  = KEND1 !we still need KFGDEL, that's why KEND1
+         KEND2  = KFGAM + NEMAT1(ISFGAM)
+C
+         LWRK2 = LWORK - KEND2!for fixed "i" we loop over ISYMG and 
+                              !we don't want memory to pile up; 
+                              !that's why KEND2
+         IF (LWRK2 .LT. 0) THEN
             WRITE(LUPRI,*) 'Memory available: ', LWORK
-            WRITE(LUPRI,*) 'Memory needed   : ', KEND1
-            CALL QUIT('Insufficient memory in N1_2AORHF (1)')
+            WRITE(LUPRI,*) 'Memory needed   : ', KEND2
+            CALL QUIT('Insufficient memory in N1_2AORHF (2)')
          END IF
 C
-         DO I = 1,NRHF(ISYMI) !It is our GLOBAL LOOP in this routine
+         CALL DZERO(WORK(KFGAM),NEMAT1(ISFGAM))
 C
-*           CALL DZERO(WORK(KFGDEL),ND2ABG(ISFGDEL))!hope it's correct place?
-            CALL DZERO(WORK(KFGDEL),NMATAB(ISFG))!hope it's correct place?
+         !multiply KFGDEL(f,g) * XLAMP2(gam g) --> KFGAM(f,gam)
+         KOFF1 = KFGDEL
+     *         + IMATAB(ISYMF,ISYMG)
+         KOFF2 = IGLMVI(ISYGAM,ISYMG)
+     *         + 1
+         KOFF3 = KFGAM
 C
-            !multiply N1MAT(fg,e)   *   XLAMH1(del e) --> KFGDEL(fg,del)
-            KOFF1 = IMAABCI(ISFGE,ISYMI)
-     *            + NMAABC(ISFGE)*(I-1)
-     *            + IMAABC(ISFG,ISYME)
-     *            + 1
-*           KOFF2 = IGLMVI(ISYDEL,ISYME)
-*    *            + 1
-            KOFF2 = IGLMVI(ISYDEL,ISYME)
-     *            + IDEL-IBAS(ISYDEL)
-*    *            + IDEL
-*    *            + NBAS(ISYDEL)
-            KOFF3 = KFGDEL
-C    *            + ID2ABG(ISFG,ISYDEL) !Is this line necessary?
+         NF   = MAX(NVIR(ISYMF),1)
+         NGAM = MAX(NBAS(ISYGAM),1)
 C
-            NFG  = MAX(NMATAB(ISFG),1)
-*           NDEL = MAX(NBAS(ISYDEL),1)
-            NDEL = NBAS(ISYDEL)
-*
-*           CALL DGEMM('N','T',NMATAB(ISFG),NBAS(ISYDEL),NVIR(ISYME),
-*    *                 ONE,N1MAT(KOFF1),NFG,XLAMH1(KOFF2),NDEL,
-*    *                 ONE,WORK(KOFF3),NFG)
-            CALL DGEMV('N',NMATAB(ISFG),NVIR(ISYME),ONE,
-     *                 N1MAT(KOFF1),NFG,XLAMH1(KOFF2),NDEL,
-     *                 ONE,WORK(KOFF3),1)
+         CALL DGEMM('N','T',NVIR(ISYMF),NBAS(ISYGAM),
+     *              NVIR(ISYMG),
+     *              ONE,WORK(KOFF1),NF,XLAMP2(KOFF2),NGAM,
+     *              ONE,WORK(KOFF3),NF)
 C
-C           -------------------------------------------------------
-C            So now we have our temporary result KFGDEL(fg,del).
-C            We will now backtransform "g" index using XLAMP2(gam g):
+C        -------------------------------------------------------
+C         So now we have our temporary result KFGAM(f,gam).
+C         What remains is to backtransform "f" index using 
+C         XLAMP1(al  f) and put the result to the final storage
+C         N1MAT2AORHF(al gam,i):
 C
-C            KFGDEL(fg,del)    *    XLAMP2(gam g)
-C                |
-C                |loop over del
-C                V
-C            KFGDEL(f,g)       *    XLAMP2(gam g)  -->  KFGAM(f,gam)
+C         XLAMP1(al f) * KFGAM(f,gam)  -->  N1MAT2AORHF(al gam,i)
 C
-C           -------------------------------------------------------
+C         We are still inside "i" loop so addressing the
+C         final storage N1MAT2AORHF(al gam,i) is straightforward.
+C        -------------------------------------------------------
 C
-            DO ISYMG = 1,NSYM !"g" is summation index for this multiplication
-                              !but we will stay within this loop till the
-                              !end of the routine (otherwise I would have to
-                              !loop over "gamma" in the very next contraction)
-
-c
-*     write(lupri,*)'ENTERED ISYMG LOOP, ISYMG ',isymg
-
+         !All symmetries have been determined after entering ISYMG loop
 C
-               !the symmetries necessary for this and the NEXT contraction
-               ISYMF     = MULD2H(ISFG,ISYMG)
-               ISYGAM    = MULD2H(ISLAMP2,ISYMG)!because: XLAMP2(gam g)
-               ISYAL     = MULD2H(ISLAMP1,ISYMF)!because: XLAMP1(al  f)
-               ISFGAM    = MULD2H(ISYMF,ISYGAM)
-               ISALGAM   = MULD2H(ISYAL,ISYGAM)
+         !XLAMP1(al f) * KFGAM(f,gam) --> N1MAT2AORHF(al gam,i)
+         KOFF1 = IGLMVI(ISYAL,ISYMF)
+     *         + 1
+         KOFF2 = KFGAM
+         KOFF3 = IDSRHFSQ(ISALGAM,ISYMI)
+     *         + N2BST(ISALGAM)*(I-1)
+     *         + IAODIS(ISYAL,ISYGAM)
+     *         + 1
 C
-               KFGAM  = KEND1 !we still need KFGDEL, that's why KEND1
-               KEND2  = KFGAM + NEMAT1(ISFGAM)
+         NAL = MAX(NBAS(ISYAL),1)
+         NF  = MAX(NVIR(ISYMF),1)
 C
-               LWRK2 = LWORK - KEND2!for fixed "i" we loop over ISYMG and 
-                                    !we don't want memory to pile up; 
-                                    !that's why KEND2
-               IF (LWRK2 .LT. 0) THEN
-                  WRITE(LUPRI,*) 'Memory available: ', LWORK
-                  WRITE(LUPRI,*) 'Memory needed   : ', KEND2
-                  CALL QUIT('Insufficient memory in N1_2AORHF (2)')
-               END IF
+         CALL DGEMM('N','N',NBAS(ISYAL),NBAS(ISYGAM),
+     *              NVIR(ISYMF),
+     *              ONE,XLAMP1(KOFF1),NAL,WORK(KOFF2),NF,
+     *              ONE,N1MAT2AORHF(KOFF3),NAL)
 C
-               CALL DZERO(WORK(KFGAM),NEMAT1(ISFGAM))!hope it's right place?
-C
-               !multiply KFGDEL(f,g) * XLAMP2(gam g) --> KFGAM(f,gam)
-               KOFF1 = KFGDEL
-C    *               + ID2ABG(ISFG,ISYDEL) !Is this line necessary?
-*    *               + NMATAB(ISFG)*(IDEL-1)
-     *               + IMATAB(ISYMF,ISYMG)
-               KOFF2 = IGLMVI(ISYGAM,ISYMG)
-     *               + 1
-               KOFF3 = KFGAM
-C    *               + IEMAT1(ISYMF,ISYGAM)  !Is this line necessary?
-C
-               NF   = MAX(NVIR(ISYMF),1)
-               NGAM = MAX(NBAS(ISYGAM),1)
-C
-               CALL DGEMM('N','T',NVIR(ISYMF),NBAS(ISYGAM),
-     *                    NVIR(ISYMG),
-     *                    ONE,WORK(KOFF1),NF,XLAMP2(KOFF2),NGAM,
-     *                    ONE,WORK(KOFF3),NF)
-C
-C              -------------------------------------------------------
-C               So now we have our temporary result KFGAM(f,gam).
-C               What remains is to backtransform "f" index using 
-C               XLAMP1(al  f) and put the result to the final storage
-C               N1MAT2AORHF(al gam,i):
-C
-C               XLAMP1(al f) * KFGAM(f,gam)  -->  N1MAT2AORHF(al gam,i)
-C
-C               We are still inside "i" loop so addressing the
-C               final storage N1MAT2AORHF(al gam,i) is straightforward.
-C              -------------------------------------------------------
-C
-               !All symmetries have been determined after entering ISYMG loop
-C
-               !XLAMP1(al f) * KFGAM(f,gam) --> N1MAT2AORHF(al gam,i)
-               KOFF1 = IGLMVI(ISYAL,ISYMF)
-     *               + 1
-               KOFF2 = KFGAM
-C    *               + IEMAT1(ISYMF,ISYGAM)   !Is this line necessary?
-               KOFF3 = IDSRHFSQ(ISALGAM,ISYMI)
-     *               + N2BST(ISALGAM)*(I-1)
-     *               + IAODIS(ISYAL,ISYGAM)
-     *               + 1
-C
-               NAL = MAX(NBAS(ISYAL),1)
-               NF  = MAX(NVIR(ISYMF),1)
-C
-               CALL DGEMM('N','N',NBAS(ISYAL),NBAS(ISYGAM),
-     *                    NVIR(ISYMF),
-     *                    ONE,XLAMP1(KOFF1),NAL,WORK(KOFF2),NF,
-     *                    ONE,N1MAT2AORHF(KOFF3),NAL)
-C
-            END DO !ISYMG
-         END DO !I
-      END DO !ISYMI
+      END DO !ISYMG
 C
 C----------
 C     End.
 C----------
 C
-      CALL QEXIT('N1AO')
+      CALL QEXIT('N1AO_1')
 C
       RETURN
       END
@@ -6024,10 +6016,11 @@ C
       END
 C
 C  /* Deck n1n2_g */
-      SUBROUTINE N1N2_G(N1MAT,ISYMN1,! --> N_fige
+      SUBROUTINE N1N2_G(LUN1,FNN1,   ! file containing (fge,i)
+     *                  ISYMN1,      ! symmetry of N1(fge,i)
      *                  N2MAT,ISYMN2,! --> N_anmo
-     *                  XOVVO,XOOVV,XOOOO,ISINT,
-     *                  OMEGA1,ISOMEGA1,
+     *                  XOVVO,XOOVV,XOOOO,ISINT, !integrals
+     *                  OMEGA1,ISOMEGA1, !result array
      *                  INDSQ,LENSQ,! index associated with N2MAT
      *                  WORK,LWORK)
 *
@@ -6057,7 +6050,8 @@ C  /* Deck n1n2_g */
 *                                                                    *
 * omega_ai <--  - sum_efn g_iefn N_fnae - sum_efn g_infe N_anfe      *
 *                                                                    *
-*                                                                    *
+*      N1(fge,i) IS SITTING ON LUN1 FILE !!!!                        *
+*      ==================================                            *
 *                                                                    *
 *--------------------------------------------------------------------*
 *                                                                    *
@@ -6084,6 +6078,9 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 C
+      CHARACTER*(*) FNN1
+      INTEGER       LUN1
+C     
       INTEGER ISYMN1,ISYMN2,ISINT,ISOMEGA1,LENSQ,INDSQ(LENSQ,6),LWORK
       INTEGER ISFNM,ISYMA,ISYMI,KOFF1,KOFF2,KOFF3,NFNM,NA
       INTEGER ISFMNI,KFMNI,KEND1,LWRK1
@@ -6095,13 +6092,19 @@ C
       INTEGER ISFMN,NFMN,IO
 C
       INTEGER ISAONM,ISIONM,KAONM,ISONM,NONM
+C
+      INTEGER ISFAE,ISFEA,ISFEI,KFAE,KFEA,KFEI
+      INTEGER ISYME,ISFA,ISYMF,ISFE,ISFNI,ISFN,NFE
+C
+      INTEGER ISAFE,KAFE,ISAF,ISFIN,ISFI
+      INTEGER IADR
 #if defined (SYS_CRAY)
-      REAL N1MAT(*),N2MAT(*),XOVVO(*),XOOVV(*),XOOOO(*),OMEGA1(*)
+      REAL N2MAT(*),XOVVO(*),XOOVV(*),XOOOO(*),OMEGA1(*)
       REAL WORK(LWORK)
       REAL ONE
 #else
       
-      DOUBLE PRECISION N1MAT(*),N2MAT(*),XOVVO(*),XOOVV(*),XOOOO(*)
+      DOUBLE PRECISION N2MAT(*),XOVVO(*),XOOVV(*),XOOOO(*)
       DOUBLE PRECISION OMEGA1(*)
       DOUBLE PRECISION WORK(LWORK)
       DOUBLE PRECISION ONE
@@ -6287,147 +6290,264 @@ C      Calculate the first contribution from N1MAT (N_fige):
 C
 C       - sum_efn g_iefn N_fnae --> omega_ai
 C
-C      calculated as:
+C      calculated as (for fixed N):
 C
-C        -  N1MAT(fae,n)    *       XOVVO(fni,e)  
+C        -  N1MAT(fae,N)    *       XOVVO(fNi,e)  
 C               |                       |         
-C               | <-- CALL FBACI        |         
 C               |                       |         
-C               V                       | <-- CALL SORT_T2_ABIJ
-C        -  KAFEN(afe,n)                |
+C               |                       |         
+C               V                       |                      
+C        -  KFAE(fa,e)                  |
 C               |                       |
-C               | <-- CALL FA_BCI       |
+C               |                       |
 C               |                       |
 C               V                       V
-C        - KAFEN(a,fen)     *       KFENI(fen,i)  -->  OMEGA1(a,i)
+C        - KFEA(fe,a)        *       KFEI(fe,i)   -->  OMEGA1(a,i)
 C
 C     -------------------------------------------------------
 C
       ISFAEN = ISYMN1
-      ISAFEN = ISFAEN
       ISFNIE = ISINT
-      ISFENI = ISFNIE
 C
-      KAFEN = 1
-      KFENI = KAFEN + NMAABCI(ISAFEN)
-      KEND1 = KFENI + NT2SQ(ISFENI)
-      LWRK1 = LWORK - KEND1
-      IF (LWRK1 .LT. 0) THEN
-         WRITE(LUPRI,*) 'Memory available: ', LWORK
-         WRITE(LUPRI,*) 'Memory needed   : ', KEND1
-         CALL QUIT('Insufficient memory in N1N2_G (3)')
-      END IF
+      DO ISYMN = 1,NSYM
+         ISFAE = MULD2H(ISFAEN,ISYMN)
+         ISFEA = ISFAE
+         ISFEI = MULD2H(ISFNIE,ISYMN)
 C
-      CALL DZERO(WORK(KAFEN),NMAABCI(ISAFEN))
+         !Allocations below are used to calculate this and the next 
+         !contribution
 C
-      !Sort N1MAT(fae,n) to KAFEN(afe,n)
-      CALL FBACI(WORK(KAFEN),N1MAT,ISAFEN)
+         KFAE  = 1
+         KEND1 = KFAE + NMAABC(ISFAE)
+         LWRK1 = LWORK - KEND1
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available: ', LWORK
+            WRITE(LUPRI,*) 'Memory needed   : ', KEND1
+            CALL QUIT('Insufficient memory in N1N2_G (3)')
+         END IF
 C
-      !If symmetry sort KAFEN(afe,n) to KAFEN(a,fen)
-      IF (NSYM .GT. 1) THEN
-         IF (LWRK1 .LT. NMAABCI(ISAFEN)) THEN
-            WRITE(LUPRI,*) 'Memory available: ', LWRK1
-            WRITE(LUPRI,*) 'Memory needed   : ', NMAABCI(ISAFEN)
+         KFEA  = KEND1
+         KEND1 = KFEA + NMAABC(ISFEA)
+C
+         KFEI  = KEND1
+         KEND1 = KFEI + NCKATR(ISFEI)
+         LWRK1 = LWORK - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available: ', LWORK
+            WRITE(LUPRI,*) 'Memory needed   : ', KEND1
             CALL QUIT('Insufficient memory in N1N2_G (4)')
          END IF
 C
-         IOPT = 2
-         CALL FA_BCI(WORK(KEND1),WORK(KAFEN),ISAFEN,IOPT)
-         CALL DCOPY(NMAABCI(ISAFEN),WORK(KEND1),1,WORK(KAFEN),1)
-      END IF
+         DO N = 1,NRHF(ISYMN)
 C
-      !Sort XOVVO(fni,e) to KFENI(fen,i)
-      CALL SORT_T2_ABIJ(WORK(KFENI),XOVVO,ISFENI)
+            CALL DZERO(WORK(KFEA),NMAABC(ISFEA))
+            CALL DZERO(WORK(KFAE),NMAABC(ISFAE))
 C
-      !Multiply:   - KAFEN(a,fen)   *   KFENI(fen,i)  -->  OMEGA1(a,i)
-      DO ISFEN = 1,NSYM
-         ISYMA = MULD2H(ISAFEN,ISFEN)
-         ISYMI = MULD2H(ISFENI,ISFEN)
+            !Get KFAE(fae)^N from file
+            IF (NMAABC(ISFAE).GT.0) THEN
+              IADR = IMAABCI(ISFAE,ISYMN) + NMAABC(ISFAE)*(N-1) + 1
+              CALL GETWA2(LUN1,FNN1,WORK(KFAE),IADR,NMAABC(ISFAE))
+            END IF
 C
-         KOFF1 = KAFEN
-     *         + IMAAOBCI(ISYMA,ISFEN)
-         KOFF2 = KFENI
-     *         + IMAJBAIT(ISFEN,ISYMI)
-         KOFF3 = IT1AM(ISYMA,ISYMI)
-     *         + 1
+            !Sort KFAE(fa,e) to KFEA(fe,a)
+            DO ISYME = 1,NSYM
+               ISFA = MULD2H(ISFAE,ISYME)
+               DO ISYMA = 1,NSYM
+                  ISYMF = MULD2H(ISFA,ISYMA)
+                  ISFE  = MULD2H(ISYMF,ISYME)
+                  DO E = 1,NVIR(ISYME)
+                     DO A = 1,NVIR(ISYMA)
+                        DO F = 1,NVIR(ISYMF)
 C
-         NA   = MAX(NVIR(ISYMA),1)
-         NFEN = MAX(NMAABI(ISFEN),1)
+                           KOFF1 = KFAE 
+     *                           + IMAABC(ISFA,ISYME)
+     *                           + NMATAB(ISFA)*(E-1)
+     *                           + IMATAB(ISYMF,ISYMA)
+     *                           + NVIR(ISYMF)*(A-1)
+     *                           + F-1
+                           KOFF2 = KFEA 
+     *                           + IMAABC(ISFE,ISYMA)
+     *                           + NMATAB(ISFE)*(A-1)
+     *                           + IMATAB(ISYMF,ISYME)
+     *                           + NVIR(ISYMF)*(E-1)
+     *                           + F-1
 C
+                           WORK(KOFF2) = WORK(KOFF1)
 C
-Caddomega 3
+                        END DO!F
+                     END DO!A
+                  END DO!E
+               END DO!ISYMA
+            END DO!ISYME
 C
-         CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NMAABI(ISFEN),
-     *              -ONE,WORK(KOFF1),NA,WORK(KOFF2),NFEN,
-     *              ONE,OMEGA1(KOFF3),NA)
+            !Sort XOVVO(fNi,e) to KFEI(fe,i)
+            DO ISYMI = 1,NSYM
+               ISFE = MULD2H(ISFEI,ISYMI)
+               DO ISYME = 1,NSYM
+                  ISYMF = MULD2H(ISFE,ISYME)
+                  ISFNI = MULD2H(ISFNIE,ISYME)
+                  ISFN  = MULD2H(ISFNI,ISYMI)
+                  DO I = 1,NRHF(ISYMI)
+                     DO E = 1,NVIR(ISYME)
+                        DO F = 1,NVIR(ISYMF)
 C
-      END DO !ISFEN
+                           KOFF1 = IT2SP(ISFNI,ISYME)
+     *                           + NCKI(ISFNI)*(E-1)
+     *                           + ICKI(ISFN,ISYMI)
+     *                           + NT1AM(ISFN)*(I-1)
+     *                           + IT1AM(ISYMF,ISYMN)
+     *                           + NVIR(ISYMF)*(N-1)
+     *                           + F
 C
-C     -------------------------------------------------------
-C      Calculate the second contribution from N1MAT (N_fige):
+                           KOFF2 = KFEI 
+     *                           + IMAABI(ISFE,ISYMI)
+     *                           + NMATAB(ISFE)*(I-1)
+     *                           + IMATAB(ISYMF,ISYME)
+     *                           + NVIR(ISYMF)*(E-1)
+     *                           + F-1
 C
-C       - sum_efn g_infe N_anfe --> omega_ai
+                           WORK(KOFF2) = XOVVO(KOFF1)
 C
-C      calculated as:
+                        END DO!F
+                     END DO!E
+                  END DO!I
+               END DO!ISYME
+            END DO!ISYMI
 C
-C        -  N1MAT(afe,n)    *       XOOVV(fin,e)  
-C               |                       |         
-C               |                       |
-C               | <-- CALL FA_BCI       | <-- CALL SORT_T2_ABJI
-C               |                       |
-C               V                       V
-C        - KAFEN(a,fen)     *       KFENI(fen,i)  -->  OMEGA1(a,i)
+            !Multiply:   - KFEA(fe,a)   *   KFEI(fe,i)   -->   OMEGA1(a,i)
+            DO ISFE = 1,NSYM
+               ISYMA = MULD2H(ISFEA,ISFE)
+               ISYMI = MULD2H(ISFEI,ISFE)
 C
-C     -------------------------------------------------------
+               KOFF1 = KFEA
+     *               + IMAABC(ISFE,ISYMA)
+               KOFF2 = KFEI
+     *               + IMAABI(ISFE,ISYMI)
+               KOFF3 = IT1AM(ISYMA,ISYMI)
+     *               + 1
 C
-      ISAFEN = ISYMN1
-      ISFINE = ISINT
-      ISFENI = ISFINE
+               NFE   = MAX(NMATAB(ISFE),1)
+               NA    = MAX(NVIR(ISYMA),1)
 C
-      KAFEN = 1
-      KFENI = KAFEN + NMAABCI(ISAFEN)
-      KEND1 = KFENI + NT2SQ(ISFENI)
-      LWRK1 = LWORK - KEND1
-      IF (LWRK1 .LT. 0) THEN
-         WRITE(LUPRI,*) 'Memory available: ', LWORK
-         WRITE(LUPRI,*) 'Memory needed   : ', KEND1
-         CALL QUIT('Insufficient memory in N1N2_G (5)')
-      END IF
+Caddomega3
+               CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NMATAB(ISFE),
+     *                    -ONE,WORK(KOFF1),NFE,WORK(KOFF2),NFE,
+     *                    ONE,OMEGA1(KOFF3),NA)
 C
-      !If symmetry sort N1MAT(afe,n) to KAFEN(a,fen)
-      IF (NSYM .GT. 1) THEN
-         IOPT = 2
-         CALL FA_BCI(WORK(KAFEN),N1MAT,ISYMN1,IOPT)
-      ELSE
-         CALL DCOPY(NMAABCI(ISAFEN),N1MAT,1,WORK(KAFEN),1)
-      END IF
+            END DO!ISFE
+
 C
-      !Sort XOOVV(fin,e) to  KFENI(fen,i)
-      CALL SORT_T2_ABJI(WORK(KFENI),XOOVV,ISFENI)
+C           -------------------------------------------------------
+C            Calculate the second contribution from N1MAT (N_fige):
 C
-      !Multiply:   - KAFEN(a,fen)   *   KFENI(fen,i)  -->  OMEGA1(a,i)
-      DO ISFEN = 1,NSYM
-         ISYMA = MULD2H(ISAFEN,ISFEN)
-         ISYMI = MULD2H(ISFENI,ISFEN)
+C             - sum_efn g_infe N_anfe --> omega_ai
 C
-         KOFF1 = KAFEN
-     *         + IMAAOBCI(ISYMA,ISFEN)
-         KOFF2 = KFENI
-     *         + IMAJBAIT(ISFEN,ISYMI)
-         KOFF3 = IT1AM(ISYMA,ISYMI)
-     *         + 1
+C            calculated as:
 C
-         NA   = MAX(NVIR(ISYMA),1)
-         NFEN = MAX(NMAABI(ISFEN),1)
+C              -  KAFE(af,e)    *       XOOVV(fiN,e)  
+C                     |                       |         
+C                     |                       |
+C                     |                       |                    
+C                     |                       |
+C                     V                       V
+C              - KFEA(fe,a)     *       KFEI(fe,i)  -->  OMEGA1(a,i)
 C
+C           -------------------------------------------------------
 C
-Caddomega 4
+            !Just change the name of KFAE array and ISFAE symmetry...
+            ISAFE = ISFAE
+            KAFE  = KFAE
 C
-         CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NMAABI(ISFEN),
-     *              -ONE,WORK(KOFF1),NA,WORK(KOFF2),NFEN,
-     *              ONE,OMEGA1(KOFF3),NA)
+            !sort KAFE(af,e) to KFEA(fe,a)
+            DO ISYME = 1,NSYM
+               ISAF = MULD2H(ISAFE,ISYME)
+               DO ISYMF = 1,NSYM
+                  ISYMA = MULD2H(ISAF,ISYMF)
+                  ISFE  = MULD2H(ISYMF,ISYME)
+                  DO E = 1,NVIR(ISYME)
+                     DO F = 1,NVIR(ISYMF)
+                        DO A = 1,NVIR(ISYMA)
 C
-      END DO !ISFEN
+                           KOFF1 = KAFE
+     *                           + IMAABC(ISAF,ISYME)
+     *                           + NMATAB(ISAF)*(E-1)
+     *                           + IMATAB(ISYMA,ISYMF)
+     *                           + NVIR(ISYMA)*(F-1)
+     *                           + A-1
+                           KOFF2 = KFEA
+     *                           + IMAABC(ISFE,ISYMA)
+     *                           + NMATAB(ISFE)*(A-1)
+     *                           + IMATAB(ISYMF,ISYME)
+     *                           + NVIR(ISYMF)*(E-1)
+     *                           + F-1
+C
+                           WORK(KOFF2) = WORK(KOFF1)
+C
+                        END DO!F
+                     END DO!A
+                  END DO!E
+               END DO!ISYMA
+            END DO!ISYME
+C
+            !Sort XOOVV(fiN,e) to KFEI(fe,i)
+            DO ISYMI = 1,NSYM
+               ISFE = MULD2H(ISFEI,ISYMI)
+               DO ISYME = 1,NSYM
+                  ISYMF = MULD2H(ISFE,ISYME)
+                  ISFIN = MULD2H(ISFNIE,ISYME)
+                  ISFI  = MULD2H(ISFIN,ISYMN)
+                  DO I = 1,NRHF(ISYMI)
+                     DO E = 1,NVIR(ISYME)
+                        DO F = 1,NVIR(ISYMF)
+C
+                           KOFF1 = IT2SP(ISFIN,ISYME)
+     *                           + NCKI(ISFIN)*(E-1)
+     *                           + ICKI(ISFI,ISYMN)
+     *                           + NT1AM(ISFI)*(N-1)
+     *                           + IT1AM(ISYMF,ISYMI)
+     *                           + NVIR(ISYMF)*(I-1)
+     *                           + F
+C
+                           KOFF2 = KFEI
+     *                           + IMAABI(ISFE,ISYMI)
+     *                           + NMATAB(ISFE)*(I-1)
+     *                           + IMATAB(ISYMF,ISYME)
+     *                           + NVIR(ISYMF)*(E-1)
+     *                           + F-1
+C
+                           WORK(KOFF2) = XOOVV(KOFF1)
+C
+                        END DO!F
+                     END DO!E
+                  END DO!I
+               END DO!ISYME
+            END DO!ISYMI
+C
+            !Multiply:   - KFEA(fe,a)   *   KFEI(fe,i)   -->   OMEGA1(a,i)
+            DO ISFE = 1,NSYM
+               ISYMA = MULD2H(ISFEA,ISFE)
+               ISYMI = MULD2H(ISFEI,ISFE)
+C
+               KOFF1 = KFEA
+     *               + IMAABC(ISFE,ISYMA)
+               KOFF2 = KFEI
+     *               + IMAABI(ISFE,ISYMI)
+               KOFF3 = IT1AM(ISYMA,ISYMI)
+     *               + 1
+C
+               NFE   = MAX(NMATAB(ISFE),1)
+               NA    = MAX(NVIR(ISYMA),1)
+C
+Caddomega4
+               CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NMATAB(ISFE),
+     *                    -ONE,WORK(KOFF1),NFE,WORK(KOFF2),NFE,
+     *                    ONE,OMEGA1(KOFF3),NA)
+C
+            END DO!ISFE
+C
+         END DO !N
+      END DO !ISYMN
 C
 C----------
 C     End.
@@ -6583,12 +6703,15 @@ C
 C  /* Deck wt2_n1n2 */
       SUBROUTINE WT2_N1N2(WMAT,ISWMAT,!ISWMAT: total sysmetry of T3 (6 indeces)
      *                    T2TP,ISYMT2,
-     *                    N1MAT,ISYMN1,! --> N_fige
+     *                    N1GEI,N1FEI, ! OUTPUT arrays: (ge,i)^F and (fe,i)^G
+     *                    ISYMN1,      ! symmetry of  N_fige
      *                    N2MAT,ISYMN2,! --> N_anmo
      *                    IB,ISYMIB,ID,ISYMID,
      *                    INDSQ,LENSQ,! index associated with WMAT
      *                    INDSQN,LENSQN,! index associated with N2MAT
-     *                    WORK,LWORK)
+     *                    WORK,LWORK,
+     *                    W3X)! .false.=>WMAT contains "complete" TMAT,
+                              ! .true.=>WMAT contains W intermediate.
 *
 **********************************************************************
 *                                                                    *
@@ -6600,25 +6723,43 @@ C  /* Deck wt2_n1n2 */
 *                                                                    *
 * tbar maybe either zero- or first-order, BUT:                       *
 *   IT IS ALWAYS ASSUMED TO BE SITTING AS W INTERMEDIATE !!!         *
-* (use GET_T3BAR0_BD_WLIKE routine to get tbar0 in terms of W).      *
+*                                                                    *
+*   THEREFORE we introduced W3X flag:                                *
+*                                                                    *
+*      - W3X = .TRUE. : W intermediate is sitting in WMAT array      *
+*                       and ALL the contributions to N_fige          *
+*                       and N_anmo in the expressions below          *
+*                       are calculated;                              *
+*                                                                    *
+*      - W3X = .FALSE. : "complete" T (obtained from the call to     *
+*                        GET_T3BAR0_BD) is sitting in WMAT array     *
+*                        and ONLY ONE contribution to N_fige         *
+*                        and ONLY ONE contribution to N_anmo         *
+*                        is calculated; these contributions are      *
+*                        marked by (*) in the expressions below.     *
 *                                                                    *
 *--------------------------------------------------------------------*
 *                                                                    *
 * N_fige is calculated as:                                           *
 * ======                                                             *
 *                                                                    *
-* N_fige = sum_dlm (W^fg(dlmi) + W^df(gmil) + W^dg(fiml)) t^{de}_{lm}*
+* N_fige = sum_dlm (W^df(gmil) + W^gf(dlim) + W^dg(fiml)(*) ) t^{de}_{lm}*
 *                                                                    *
-* It is stored as:                                                   *
+* It is stored in two separate intermediates:                        *
 *                                                                    *
-*    N1MAT(fge,i)                                                    *
+*    N1GEI(ge,i)^F = sum_dlm (W^df(gmil) + W^gf(dlim)) t^{de}_{lm}   *
+* and                                                                *
+*    N1FEI(fe,i)^G = sum_dlm W^dg(fiml)(*)  ) t^{de}_{lm}            *
+*                                                                    *
+* This is done to avoid storage of whole N_fige array (which has     *
+* size VVVO) in memory.                                              *
 *                                                                    *
 *--------------------------------------------------------------------*
 *                                                                    *
 * N_anmo is calculated as:                                           *
 * ======                                                             *
 *                                                                    *
-* N_anmo = sum_dle (W^ae(dlon) + W^da(eonl) + W^de(anol)) t^{de}_{lm}*
+* N_anmo = sum_dle (W^ae(dlon)(*)  + W^da(eonl) + W^de(anol)) t^{de}_{lm}*
 *                                                                    *
 * It is stored as:                                                   *
 *                                                                    *
@@ -6632,6 +6773,8 @@ C  /* Deck wt2_n1n2 */
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+C
+      LOGICAL W3X
 C
       INTEGER ISWMAT,ISYMT2,ISYMN1,ISYMN2,IB,ISYMIB,ID,ISYMID,LENSQ
       INTEGER INDSQ(LENSQ,6),LWORK
@@ -6652,18 +6795,25 @@ C
       INTEGER ISYMDA,ISEONL,ISELON,ISELM,KELON,KELM,ISEL,NEL
       INTEGER ISYMDE,ISANOL,ISANOM,KLM,ISANO,NANO,NL
       INTEGER IO
+C
+      INTEGER KEI,KGIE,KDLMI
+      INTEGER ISGEI,ISGE,IADR
+C
+      INTEGER ISFEI,KFIE,ISFE
 c
       integer isymano
 C
 #if defined (SYS_CRAY)
-      REAL WMAT(*),T2TP(*),N1MAT(*),N2MAT(*)
+      REAL WMAT(*),T2TP(*),N2MAT(*)
       REAL WORK(LWORK)
       REAL ONE
+      REAL N1GEI(*),N1FEI(*)
 #else
       
-      DOUBLE PRECISION WMAT(*),T2TP(*),N1MAT(*),N2MAT(*)
+      DOUBLE PRECISION WMAT(*),T2TP(*),N2MAT(*)
       DOUBLE PRECISION WORK(LWORK)
       DOUBLE PRECISION ONE
+      DOUBLE PRECISION N1GEI(*),N1FEI(*)
 #endif
 C
       PARAMETER (ONE = 1.0D0)
@@ -6683,141 +6833,26 @@ C
          CALL QUIT('Symmetry mismatch in WT2_N1N2')
       END IF
 C
-C     ----------------------------------------------
-C      Calculate the first contribution to N_fige:
-C      
-C      sum_dlm W^fg(dlmi) * t^{de}_{lm}  --> N_fige
+C     -------------------------------------------------------
+C     Sort T2TP(Dlm,e) to KLME(lm,e) and keep it in memory.
+C     It will be needed for both first and third contribution
+C     to N_fige.
+C     -------------------------------------------------------
 C
-C      calculated as:
-C
-C      T2TP(dlm,e) * WMAT^FG(dlm,i) --> KTMP(e,i)
-C
-C      KTMP(e,i) --> N1MAT(FGe,i)
-C     ----------------------------------------------
-C
-      F      = IB
-      G      = ID
-C
-      ISYMF  = ISYMIB
-      ISYMG  = ISYMID
-      ISYMFG = MULD2H(ISYMF,ISYMG)
-      ISDLMI = MULD2H(ISWMAT,ISYMFG)
-      ISYMEI = MULD2H(ISYMT2,ISDLMI)
-C
-      KTMP  = 1
-      KEND1 = KTMP  + NT1AM(ISYMEI) !temporary storage
-      LWRK1 = LWORK - KEND1
-      IF (LWRK1 .LT. 0) THEN
-         WRITE(LUPRI,*)'Memory available: ', LWORK
-         WRITE(LUPRI,*)'Memory needed:    ', KEND1
-         CALL QUIT('Insufficient memory in WT2_N1N2 (1)')
-      END IF
-C
-      CALL DZERO(WORK(KTMP),NT1AM(ISYMEI))
-C
-      DO ISDLM = 1,NSYM
-         ISYME = MULD2H(ISYMT2,ISDLM)
-         ISYMI = MULD2H(ISDLMI,ISDLM)
-C
-         KOFF1 = IT2SP(ISDLM,ISYME)
-     *         + 1
-         KOFF2 = ISAIKJ(ISDLM,ISYMI)
-     *         + 1
-         KOFF3 = KTMP + IT1AM(ISYME,ISYMI)
-C
-         NDLM = MAX(NMAIJA(ISDLM),1)
-         NE   = MAX(NVIR(ISYME),1)
-C
-         CALL DGEMM('T','N',NVIR(ISYME),NRHF(ISYMI),NMAIJA(ISDLM),
-     *              ONE,T2TP(KOFF1),NDLM,WMAT(KOFF2),NDLM,
-     *              ONE,WORK(KOFF3),NE)
-C
-      END DO !ISDLM
-C
-      !Put KTMP(e,i) to N(FGe,i)
-      DO ISYMI = 1,NSYM
-         ISYME = MULD2H(ISYMEI,ISYMI)
-         ISFGE = MULD2H(ISYMFG,ISYME)
-         DO I = 1,NRHF(ISYMI)
-            DO E = 1,NVIR(ISYME)
-C              
-               KOFF1 = KTMP + IT1AM(ISYME,ISYMI)
-     *                      + NVIR(ISYME)*(I-1)
-     *                      + E-1
-C              
-               KOFF2 = IMAABCI(ISFGE,ISYMI)
-     *               + NMAABC(ISFGE)*(I-1)
-     *               + IMAABC(ISYMFG,ISYME)
-     *               + NMATAB(ISYMFG)*(E-1)
-     *               + IMATAB(ISYMF,ISYMG)
-     *               + NVIR(ISYMF)*(G-1)
-     *               + F
-C
-               N1MAT(KOFF2) = N1MAT(KOFF2) + WORK(KOFF1)
-            END DO
-         END DO
-      END DO
-C
-C     ----------------------------------------------
-C      Calculate the second contribution to N_fige:
-C      
-C      sum_dlm W^df(gmil) * t^{de}_{lm}  --> N_fige
-C
-C      calculated as:
-C
-C      WMAT^DF(gmi,l)       T2TP(Dlm,e)
-C           |                    |
-C           | indsq(4)           |
-C           V                    |
-C       KGILM(gil,m)             |
-C           |                    |
-C           | indsq(6)           |
-C           V                    V
-C       KGILM(gi,lm)  *   KLME(lm,e) --> KTMP(gi,e)
-C
-C       KTMP(gi,e) --> N1MAT(Fge,i)
-C     ----------------------------------------------
+      !Nomenclature for D is the same as in the first and third
+      !contribution to N_fige:
+      ISYMD  = ISYMIB 
+      ISLME  = MULD2H(ISYMT2,ISYMD)
 C
       D = IB
-      F = ID
-C
-      ISYMD  = ISYMIB
-      ISYMF  = ISYMID
-      ISYMDF = MULD2H(ISYMD,ISYMF)
-      ISGMIL = MULD2H(ISWMAT,ISYMDF)
-      ISGILM = ISGMIL
-      ISLME  = MULD2H(ISYMT2,ISYMD)
-      ISGIE  = MULD2H(ISGILM,ISLME)
 C
       KLME  = 1
       KEND1 = KLME  + NCKI(ISLME) !we want to keep that array...
-C
-      KGILM = KEND1
-      KTMP  = KGILM + NCKIJ(ISGILM)
-      KEND2 = KTMP  + NCKATR(ISGIE)
-      LWRK2 = LWORK - KEND2
-      IF (LWRK2 .LT. 0) THEN
+      LWRK1 = LWORK - KEND1
+      IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available: ', LWORK
-         WRITE(LUPRI,*) 'Memory needed   : ', KEND2
-         CALL QUIT('Insufficient memory in WT2_N1N2 (2)')
-      END IF
-C
-      CALL DZERO(WORK(KTMP),NCKATR(ISGIE))
-C
-      !Sort WMAT^DF(gmi,l) to KGILM(gil,m)
-      DO I = 1,NCKIJ(ISGMIL)
-         WORK(KGILM+I-1) = WMAT(INDSQ(I,4))
-      END DO
-C
-      !If symmetry, sort KGILM(gil,m) to KGILM(gi,lm)
-      IF (NSYM .GT. 1) THEN
-        IF (LWRK2 .LT. NCKIJ(ISGILM)) THEN
-           WRITE(LUPRI,*) 'Memory available: ', LWRK2
-           WRITE(LUPRI,*) 'Memory needed   : ', NCKIJ(ISGILM)
-           CALL QUIT('Insufficient memory in WT2_N1N2 (3)')
-        END IF
-        CALL CC_GATHER(NCKIJ(ISGILM),WORK(KEND2),WORK(KGILM),INDSQ(1,6))
-        CALL DCOPY(NCKIJ(ISGILM),WORK(KEND2),1,WORK(KGILM),1)
+         WRITE(LUPRI,*) 'Memory needed   : ', KEND1
+         CALL QUIT('Insufficient memory in WT2_N1N2 (0)')
       END IF
 C
       !Sort T2TP(Dlm,e) to KLME(lm,e)
@@ -6853,62 +6888,211 @@ C
          END DO !ISYMM
       END DO !ISYME
 C
-      !Multiply KGILM(gi,lm)  *   KLME(lm,e) --> KTMP(gi,e)
-      DO ISLM = 1,NSYM
-         ISGI  = MULD2H(ISGILM,ISLM)
-         ISYME = MULD2H(ISLME,ISLM)
-C
-         KOFF1 = KGILM
-     *         + ISAIKL(ISGI,ISLM)
-         KOFF2 = KLME
-     *         + IMAIJA(ISLM,ISYME)
-         KOFF3 = KTMP
-     *         + ICKATR(ISGI,ISYME)
-C
-         NGI   = MAX(NT1AM(ISGI),1)
-         NLM   = MAX(NMATIJ(ISLM),1)
-C
-         CALL DGEMM('N','N',NT1AM(ISGI),NVIR(ISYME),NMATIJ(ISLM),
-     *              ONE,WORK(KOFF1),NGI,WORK(KOFF2),NLM,
-     *              ONE,WORK(KOFF3),NGI)
-C
-      END DO ! ISLM
-C
-      !Put  KTMP(gi,e) to N1MAT(Fge,i)
-      ISFGEI = MULD2H(ISGIE,ISYMF)
-      DO ISYMI = 1,NSYM
-         ISFGE = MULD2H(ISFGEI,ISYMI)
-         DO ISYME = 1,NSYM
-            ISFG = MULD2H(ISFGE,ISYME)
-            ISYMG = MULD2H(ISFG,ISYMF)
-            ISGI  = MULD2H(ISYMG,ISYMI)
-            DO I = 1,NRHF(ISYMI)
-               DO E = 1,NVIR(ISYME)
-                  DO G = 1,NVIR(ISYMG)
-C
-                     KOFF1 = KTMP
-     *                     + ICKATR(ISGI,ISYME)
-     *                     + NT1AM(ISGI)*(E-1)
-     *                     + IT1AM(ISYMG,ISYMI)
-     *                     + NVIR(ISYMG)*(I-1)
-     *                     + G-1
-                     KOFF2 = IMAABCI(ISFGE,ISYMI)
-     *                     + NMAABC(ISFGE)*(I-1)
-     *                     + IMAABC(ISFG,ISYME)
-     *                     + NMATAB(ISFG)*(E-1)
-     *                     + IMATAB(ISYMF,ISYMG)
-     *                     + NVIR(ISYMF)*(G-1)
-     *                     + F
-C
-                     N1MAT(KOFF2) = N1MAT(KOFF2) + WORK(KOFF1)
-C
-                  END DO !G
-               END DO !E
-            END DO !I
-         END DO !ISYME
-      END DO !ISYMI
-                  
 
+C
+C     ----------------------------------------------------
+      IF (W3X) THEN !Calculate ALL contributions to N_fige
+C     ----------------------------------------------------
+C
+
+C
+C        ----------------------------------------------
+C         Calculate the first contribution to N_fige:
+C         
+C         sum_dlm W^df(gmil) * t^{de}_{lm}  --> N_fige
+C
+C         calculated as:
+C
+C         WMAT^DF(gmi,l)       T2TP(Dlm,e)
+C              |                    |
+C              | indsq(4)           |
+C              V                    |
+C          KGILM(gil,m)             |(has been sorted above)
+C              |                    |
+C              | indsq(6)           |
+C              V                    V
+C          KGILM(gi,lm)  *   KLME(lm,e) --> KGIE(gi,e)
+C
+C          KGIE(gi,e) + KEI(e,i) --> N1GEI(ge,i)^F
+C        ----------------------------------------------
+C
+         D = IB
+         F = ID
+C
+         ISYMD  = ISYMIB
+         ISYMF  = ISYMID
+         ISYMDF = MULD2H(ISYMD,ISYMF)
+         ISGMIL = MULD2H(ISWMAT,ISYMDF)
+         ISGILM = ISGMIL
+         ISLME  = MULD2H(ISYMT2,ISYMD)
+         ISGIE  = MULD2H(ISGILM,ISLME)
+         ISGEI  = ISGIE
+C
+         KGILM = KEND1 !we want to keep KLME; that's why we start with KEND1
+         KGIE  = KGILM + NCKIJ(ISGILM)
+         KEND2 = KGIE  + NCKATR(ISGIE)
+         LWRK2 = LWORK - KEND2
+         IF (LWRK2 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available: ', LWORK
+            WRITE(LUPRI,*) 'Memory needed   : ', KEND2
+            CALL QUIT('Insufficient memory in WT2_N1N2 (1)')
+         END IF
+C
+         CALL DZERO(WORK(KGIE),NCKATR(ISGIE))
+C
+         !Sort WMAT^DF(gmi,l) to KGILM(gil,m)
+         DO I = 1,NCKIJ(ISGMIL)
+            WORK(KGILM+I-1) = WMAT(INDSQ(I,4))
+         END DO
+C
+         !If symmetry, sort KGILM(gil,m) to KGILM(gi,lm)
+         IF (NSYM .GT. 1) THEN
+           IF (LWRK2 .LT. NCKIJ(ISGILM)) THEN
+              WRITE(LUPRI,*) 'Memory available: ', LWRK2
+              WRITE(LUPRI,*) 'Memory needed   : ', NCKIJ(ISGILM)
+              CALL QUIT('Insufficient memory in WT2_N1N2 (2)')
+           END IF
+           CALL CC_GATHER(NCKIJ(ISGILM),WORK(KEND2),WORK(KGILM),
+     *                    INDSQ(1,6))
+           CALL DCOPY(NCKIJ(ISGILM),WORK(KEND2),1,WORK(KGILM),1)
+         END IF
+C
+         !Multiply KGILM(gi,lm)  *   KLME(lm,e) --> KGIE(gi,e)
+         DO ISLM = 1,NSYM
+            ISGI  = MULD2H(ISGILM,ISLM)
+            ISYME = MULD2H(ISLME,ISLM)
+C
+            KOFF1 = KGILM
+     *            + ISAIKL(ISGI,ISLM)
+            KOFF2 = KLME
+     *            + IMAIJA(ISLM,ISYME)
+            KOFF3 = KGIE
+     *            + ICKATR(ISGI,ISYME)
+C
+            NGI   = MAX(NT1AM(ISGI),1)
+            NLM   = MAX(NMATIJ(ISLM),1)
+C
+            CALL DGEMM('N','N',NT1AM(ISGI),NVIR(ISYME),NMATIJ(ISLM),
+     *                 ONE,WORK(KOFF1),NGI,WORK(KOFF2),NLM,
+     *                 ONE,WORK(KOFF3),NGI)
+C
+         END DO ! ISLM
+C
+C        ----------------------------------------------
+C         Calculate the second contribution to N_fige:
+C         
+C         sum_dlm W^gf(dlim) * t^{de}_{lm}  --> N_fige
+C                     |
+C                     | indsq(3)
+C                     V
+C                   KDLMI(dlm,i)
+C
+C         T2TP(dlm,e) * KDLMI(dlm,i) --> KEI(e,i)
+C
+C        ----------------------------------------------
+C
+         F      = ID
+         G      = IB
+C
+         ISYMF  = ISYMID
+         ISYMG  = ISYMIB
+         ISYMFG = MULD2H(ISYMF,ISYMG)
+         ISDLMI = MULD2H(ISWMAT,ISYMFG)
+         ISYMEI = MULD2H(ISYMT2,ISDLMI)
+C
+         KEI  = KEND2
+         KEND2 = KEI  + NT1AM(ISYMEI) 
+         LWRK2 = LWORK - KEND2
+         IF (LWRK2 .LT. 0) THEN
+            WRITE(LUPRI,*)'Memory available: ', LWORK
+            WRITE(LUPRI,*)'Memory needed:    ', KEND2
+            CALL QUIT('Insufficient memory in WT2_N1N2 (3)')
+         END IF
+C
+         KDLMI = KEND2
+         KEND2 = KDLMI + NCKIJ(ISDLMI)!temporary storage
+         LWRK2 = LWORK - KEND2
+         IF (LWRK2 .LT. 0) THEN
+            WRITE(LUPRI,*)'Memory available: ', LWORK
+            WRITE(LUPRI,*)'Memory needed:    ', KEND2
+            CALL QUIT('Insufficient memory in WT2_N1N2 (3x)')
+         END IF
+C
+         CALL DZERO(WORK(KEI),NT1AM(ISYMEI))
+C
+         !Sort WMAT^GF(dli,m) to KDLMI(dlm,i)
+         DO I = 1,NCKIJ(ISDLMI)
+            WORK(KDLMI+I-1) = WMAT(INDSQ(I,3))
+         END DO
+C
+         !Multiply T2TP(dlm,e) * KDLMI(dlm,i) --> KEI(e,i)
+         DO ISDLM = 1,NSYM
+            ISYME = MULD2H(ISYMT2,ISDLM)
+            ISYMI = MULD2H(ISDLMI,ISDLM)
+C
+            KOFF1 = IT2SP(ISDLM,ISYME)
+     *            + 1
+            KOFF2 = ISAIKJ(ISDLM,ISYMI)
+     *            + KDLMI
+            KOFF3 = KEI + IT1AM(ISYME,ISYMI)
+C
+            NDLM = MAX(NMAIJA(ISDLM),1)
+            NE   = MAX(NVIR(ISYME),1)
+C
+            CALL DGEMM('T','N',NVIR(ISYME),NRHF(ISYMI),NMAIJA(ISDLM),
+     *                 ONE,T2TP(KOFF1),NDLM,WORK(KOFF2),NDLM,
+     *                 ONE,WORK(KOFF3),NE)
+C
+         END DO !ISDLM
+C
+         !Put  KGIE(gi,e) and KEI(e,i) together to N1GEI(ge,i)^F
+         ISFGEI = MULD2H(ISGIE,ISYMF)
+         DO ISYMI = 1,NSYM
+            ISFGE = MULD2H(ISFGEI,ISYMI)
+            DO ISYME = 1,NSYM
+               ISFG = MULD2H(ISFGE,ISYME)
+               ISYMG = MULD2H(ISFG,ISYMF)
+               ISGI  = MULD2H(ISYMG,ISYMI)
+               ISGE  = MULD2H(ISYMG,ISYME)
+               DO I = 1,NRHF(ISYMI)
+                  DO E = 1,NVIR(ISYME)
+                     DO G = 1,NVIR(ISYMG)
+C
+                        KOFF1 = KGIE
+     *                        + ICKATR(ISGI,ISYME)
+     *                        + NT1AM(ISGI)*(E-1)
+     *                        + IT1AM(ISYMG,ISYMI)
+     *                        + NVIR(ISYMG)*(I-1)
+     *                        + G-1
+                        KOFF2 = KEI
+     *                        + IT1AM(ISYME,ISYMI)
+     *                        + NVIR(ISYME)*(I-1)
+     *                        + E-1
+                        KOFF3 = IMAABI(ISGE,ISYMI)
+     *                        + NMATAB(ISGE)*(I-1)
+     *                        + IMATAB(ISYMG,ISYME)
+     *                        + NVIR(ISYMG)*(E-1)
+     *                        + G
+C
+                        IF ((ISYMG.EQ.ISYMIB) .AND. (G.EQ.IB)) THEN
+C
+                          N1GEI(KOFF3) = N1GEI(KOFF3) + WORK(KOFF1)
+     *                                                + WORK(KOFF2)
+                        ELSE
+C
+                          N1GEI(KOFF3) = N1GEI(KOFF3)  + WORK(KOFF1)
+                        END IF
+C
+                     END DO !G
+                  END DO !E
+               END DO !I
+            END DO !ISYME
+         END DO !ISYMI
+C
+C     ----------------------------
+      END IF !W3X
+C     ----------------------------
+C
 
 C
 C     ----------------------------------------------
@@ -6926,9 +7110,9 @@ C       KFILM(fil,m)             |  <-- use already existing KLME array
 C           |                    |
 C           | indsq(6)           |
 C           V                    V
-C       KFILM(fi,lm)  *   KLME(lm,e) --> KTMP(fi,e)
+C       KFILM(fi,lm)  *   KLME(lm,e) --> KFIE(fi,e)
 C
-C       KTMP(fi,e) --> N1MAT(fGe,i)
+C       KFIE(fi,e) --> N1FEI(fe,i)^G
 C     ----------------------------------------------
 C
 
@@ -6942,18 +7126,20 @@ C
       ISFILM = ISFIML
       ISLME  = MULD2H(ISYMT2,ISYMD)
       ISFIE  = MULD2H(ISFILM,ISLME)
+      ISFEI  = ISFIE
 C
       KFILM = KEND1 !want to keep KLME; the rest is useless
-      KTMP  = KFILM + NCKIJ(ISFIML)
-      KEND2 = KTMP  + NCKATR(ISFIE)
+      KFIE  = KFILM + NCKIJ(ISFIML)
+      KEND2 = KFIE  + NCKATR(ISFIE)
       LWRK2 = LWORK - KEND2
+C
       IF (LWRK2 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available: ', LWORK
          WRITE(LUPRI,*) 'Memory needed   : ', KEND2
          CALL QUIT('Insufficient memory in WT2_N1N2 (4)')
       END IF
 C
-      CALL DZERO(WORK(KTMP),NCKATR(ISFIE))
+      CALL DZERO(WORK(KFIE),NCKATR(ISFIE))
 C
       !Sort WMAT^DG(fim,l) to KFILM(fil,m)
       DO I = 1,NCKIJ(ISFIML)
@@ -6971,7 +7157,7 @@ C
         CALL DCOPY(NCKIJ(ISFILM),WORK(KEND2),1,WORK(KFILM),1)
       END IF
 C
-      !Multiply KFILM(fi,lm)   *   KLME(lm,e) --> KTMP(fi,e)
+      !Multiply KFILM(fi,lm)   *   KLME(lm,e) --> KFIE(fi,e)
       DO ISLM = 1,NSYM
          ISFI  = MULD2H(ISFILM,ISLM)
          ISYME = MULD2H(ISLME,ISLM)
@@ -6980,7 +7166,7 @@ C
      *         + ISAIKL(ISFI,ISLM)
          KOFF2 = KLME
      *         + IMAIJA(ISLM,ISYME)
-         KOFF3 = KTMP
+         KOFF3 = KFIE
      *         + ICKATR(ISFI,ISYME)
 C
          NFI   = MAX(NT1AM(ISFI),1)
@@ -6992,10 +7178,11 @@ C
 C
       END DO !  ISLM
 C
-      !Put KTMP(fi,e) to N1MAT(fGe,i)
+      !Put KFIE(fi,e) to N1FEI(fe,i)^G
       ISFGEI = MULD2H(ISFIE,ISYMG)
       DO ISYMI = 1,NSYM
          ISFGE = MULD2H(ISFGEI,ISYMI)
+         ISFE  = MULD2H(ISFGE,ISYMG)
          DO ISYME = 1,NSYM
             ISFG  = MULD2H(ISFGE,ISYME)
             ISYMF = MULD2H(ISFG,ISYMG)
@@ -7004,28 +7191,27 @@ C
                DO E = 1,NVIR(ISYME)
                   DO F = 1,NVIR(ISYMF)
 C
-                     KOFF1 = KTMP
+                     KOFF1 = KFIE
      *                     + ICKATR(ISFI,ISYME)
      *                     + NT1AM(ISFI)*(E-1)
      *                     + IT1AM(ISYMF,ISYMI)
      *                     + NVIR(ISYMF)*(I-1)
      *                     + F-1
 C
-                     KOFF2 = IMAABCI(ISFGE,ISYMI)
-     *                     + NMAABC(ISFGE)*(I-1)
-     *                     + IMAABC(ISFG,ISYME)
-     *                     + NMATAB(ISFG)*(E-1)
-     *                     + IMATAB(ISYMF,ISYMG)
-     *                     + NVIR(ISYMF)*(G-1)
+                     KOFF2 = IMAABI(ISFE,ISYMI)
+     *                     + NMATAB(ISFE)*(I-1)
+     *                     + IMATAB(ISYMF,ISYME)
+     *                     + NVIR(ISYMF)*(E-1)
      *                     + F
 C
-                     N1MAT(KOFF2) = N1MAT(KOFF2) + WORK(KOFF1)
+                     N1FEI(KOFF2) = N1FEI(KOFF2) + WORK(KOFF1)
 C
                   END DO !F
                END DO !E
             END DO !I
          END DO !ISYME
       END DO !ISYMI
+C
 
 
 *--------------------------------------------------------------------*
@@ -7108,11 +7294,6 @@ C
      *              ONE,WORK(KOFF3),NON)
 C
       END DO ! ISDL
-c
-*     write(lupri,*)'ktmp(on,m) in wt2_n1n2 ib,id ',ib,id
-*     call output(work(ktmp),1,nmatij(1),1,nrhf(1),
-*    *            nmatij(1),nrhf(1),
-*    *            1,lupri)
 C
       !Put  KTMP(on,m) to N2MAT(Anm,o)
       ISANMO = MULD2H(ISONM,ISYMA)
@@ -7148,227 +7329,422 @@ C
          END DO !ISYMM 
       END DO !ISYMO 
 C
-C     ----------------------------------------------
-C      Calculate the second contribution to N_anmo:
-C      
-C      sum_dle W^da(eonl) * t^{ed}_{ml}  --> N_anmo
-C
-C      calculated as:
-C
-C      WMAT^DA(eon,l)       T2TP(eml,D)
-C           |                    |
-C           | indsq(2)           |                     
-C           V                    |
-C       KELON(elo,n)             | <-- CALL SORT_T2_AJI                 
-C           |                    |
-C           | indsq(6)           |                     
-C           V                    V
-C       KELON(el,on)  *   KELM(el,m) --> KTMP(on,m)
-C
-C       KTMP(on,m) --> N2MAT(Anm,o)
-C     ----------------------------------------------
-
-      D = IB
-      A = ID
-C
-      ISYMD  = ISYMIB
-      ISYMA  = ISYMID
-      ISYMDA = MULD2H(ISYMD,ISYMA)
-      ISEONL = MULD2H(ISWMAT,ISYMDA)
-      ISELON = ISEONL
-      ISELM  = MULD2H(ISYMT2,ISYMD)
-      ISONM  = MULD2H(ISELON,ISELM)
-C
-      KELON = 1
-      KELM  = KELON + NCKIJ(ISELON)
-      KTMP  = KELM  + NCKI(ISELM)
-      KEND1 = KTMP  + NMAIJK(ISONM)
-      LWRK1 = LWORK - KEND1
-      IF (LWRK1 .LT. 0) THEN
-         WRITE(LUPRI,*) 'Memory available: ', LWORK
-         WRITE(LUPRI,*) 'Memory needed   : ', KEND1
-         CALL QUIT('Insufficient memory in WT2_N1N2 (7)')
-      END IF
-C
-      CALL DZERO(WORK(KTMP),NMAIJK(ISONM))
-C
-      !Sort WMAT^DA(eon,l) to KELON(elo,n)
-      DO I = 1,NCKIJ(ISEONL)
-         WORK(KELON+I-1) = WMAT(INDSQ(I,2))
-      END DO
-C
-      !If symmetry sort KELON(elo,n)  to  KELON(el,on)
-C
-      IF (NSYM .GT. 1) THEN
-        IF (LWRK1 .LT. NCKIJ(ISELON)) THEN
-           WRITE(LUPRI,*) 'Memory available: ', LWRK1
-           WRITE(LUPRI,*) 'Memory needed   : ', NCKIJ(ISELON)
-           CALL QUIT('Insufficient memory in WT2_N1N2 (8)')
-        END IF
-        CALL CC_GATHER(NCKIJ(ISELON),WORK(KEND1),WORK(KELON),INDSQ(1,6))
-        CALL DCOPY(NCKIJ(ISELON),WORK(KEND1),1,WORK(KELON),1)
-      END IF 
-C
-      !Sort T2TP(eml,D) to KELM(el,m)
-      CALL SORT_T2_AJI(WORK(KELM),ISYMD,D,T2TP,ISYMT2)
-C
-      !Multiply KELON(el,on)   *   KELM(el,m) --> KTMP(on,m)
-C
-      DO ISEL = 1,NSYM
-         ISON  = MULD2H(ISELON,ISEL)
-         ISYMM = MULD2H(ISELM,ISEL)
-C
-         KOFF1 = KELON
-     *         + ISAIKL(ISEL,ISON)
-         KOFF2 = KELM
-     *         + ICKI(ISEL,ISYMM)
-         KOFF3 = KTMP
-     *         + IMAIJK(ISON,ISYMM)
-C
-         NEL   = MAX(NT1AM(ISEL),1)
-         NON   = MAX(NMATIJ(ISON),1)
-C
-         CALL DGEMM('T','N',NMATIJ(ISON),NRHF(ISYMM),NT1AM(ISEL),
-     *              ONE,WORK(KOFF1),NEL,WORK(KOFF2),NEL,
-     *              ONE,WORK(KOFF3),NON)
-C
-      END DO ! ISEL
-c
-*     write(lupri,*)'ktmp(on,m) in wt2_n1n2 ib,id ',ib,id
-*     call output(work(ktmp),1,nmatij(1),1,nrhf(1),
-*    *            nmatij(1),nrhf(1),
-*    *            1,lupri)
-C
-      !Put  KTMP(on,m) to N2MAT(Anm,o)
-      ISANMO = MULD2H(ISONM,ISYMA)
-      DO ISYMO = 1,NSYM
-         ISANM = MULD2H(ISANMO,ISYMO)
-         DO ISYMM = 1,NSYM
-            ISAN  = MULD2H(ISANM,ISYMM)
-            ISYMN = MULD2H(ISAN,ISYMA)
-            ISON  = MULD2H(ISYMO,ISYMN)
-            DO IO = 1,NRHF(ISYMO)
-               DO M = 1,NRHF(ISYMM)
-                  DO N = 1,NRHF(ISYMN)
-C
-                     KOFF1 = KTMP
-     *                     + IMAIJK(ISON,ISYMM)
-     *                     + NMATIJ(ISON)*(M-1)
-     *                     + IMATIJ(ISYMO,ISYMN)
-     *                     + NRHF(ISYMO)*(N-1)
-     *                     + IO-1
-                     KOFF2 = ISAIKJ(ISANM,ISYMO)
-     *                     + NCKI(ISANM)*(IO-1)
-     *                     + ISAIK(ISAN,ISYMM)
-     *                     + NT1AM(ISAN)*(M-1)
-     *                     + IT1AM(ISYMA,ISYMN)
-     *                     + NVIR(ISYMA)*(N-1)
-     *                     + A
-C
-                     N2MAT(KOFF2) = N2MAT(KOFF2) + WORK(KOFF1)
-C
-                  END DO !N
-               END DO !M 
-            END DO !IO 
-         END DO !ISYMM 
-      END DO !ISYMO 
-C
-C     ----------------------------------------------
-C      Calculate the third contribution to N_anmo:
-C      
-C      sum_dle W^de(anol) * t^{de}_{lm}  --> N_anmo
-C
-C      calculated as:
-C
-C      WMAT^DE(ano,l)       T2TP(Dlm,E)
-C                                |
-C                                | <-- CALL SORT_T2_IJ
-C                                V
-C      WMAT^DE(ano,l)   *   KLM(l,m) --> KTMP(ano,m)
-C
-C
-C                    indsq(3)
-C       KTMP(ano,m) ----------> N2MAT(anm,o)
-C     ----------------------------------------------
-
-      D = IB
-      E = ID
-C
-      ISYMD  = ISYMIB
-      ISYME  = ISYMID
-      ISYMDE = MULD2H(ISYMD,ISYME)
-      ISANOL = MULD2H(ISWMAT,ISYMDE)
-      ISLM   = MULD2H(ISYMT2,ISYMDE)
-      ISANOM = MULD2H(ISANOL,ISLM)
-      ISANMO = ISANOM
-C
-*     KLM   = 1
-*     KTMP  = KLM  + NMATIJ(ISLM)
-*     KEND1 = KTMP + NCKIJ(ISANOM)
-
-      KTMP  = 1
-      KLM   = KTMP + NCKIJ(ISANOM)
-      KEND1 = KLM  + NMATIJ(ISLM)
-      LWRK1 = LWORK - KEND1
-      IF (LWRK1 .LT. 0) THEN
-         WRITE(LUPRI,*) 'Memory available: ', LWORK
-         WRITE(LUPRI,*) 'Memory needed   : ', KEND1
-         CALL QUIT('Insufficient memory in WT2_N1N2 (9)')
-      END IF
-C
-      CALL DZERO(WORK(KTMP),NCKIJ(ISANOM))
-C
-      !Sort T2TP(Dlm,E) to KLM(l,m)
-      CALL SORT_T2_IJ(WORK(KLM),ISYMD,D,ISYME,E,T2TP,ISYMT2)
-C
-      !Multiply WMAT^DE(ano,l)   *   KLM(l,m) --> KTMP(ano,m)
-C
-      DO ISYML = 1,NSYM
-         ISANO = MULD2H(ISANOL,ISYML)
-         ISYMM = MULD2H(ISLM,ISYML)
-C
-         KOFF1 = ISAIKJ(ISANO,ISYML)
-     *         + 1
-         KOFF2 = KLM
-     *         + IMATIJ(ISYML,ISYMM)
-         KOFF3 = KTMP
-     *         + ISAIKJ(ISANO,ISYMM)
-C
-         NANO = MAX(NCKI(ISANO),1)
-         NL   = MAX(NRHF(ISYML),1)
-C
-         CALL DGEMM('N','N',NCKI(ISANO),NRHF(ISYMM),NRHF(ISYML),
-     *              ONE,WMAT(KOFF1),NANO,WORK(KOFF2),NL,
-     *              ONE,WORK(KOFF3),NANO)
-C
-      END DO ! ISYML
-c
-*     write(lupri,*)'ktmp(ano,m) in wt2_n1n2 ib,id ',ib,id
-*     call output(work(ktmp),1,ncki(1),1,nrhf(1),
-*    *            ncki(1),nrhf(1),
-*    *            1,lupri)
-c
-*     write(lupri,*)'KTMP(ano,m) '
-*     do isymm = 1,nsym
-*        isymano = muld2h(isymn2,isymm)
-*     write(lupri,*)'isymano,isymm ',isymano,isymm
-*     call output(WORK(KTMP),1,NCKI(isymano),1,NRHF(isymm),
-*    *    NCKI(isymano),NRHF(isymm),
-*    *            1,lupri)
-*     write(lupri,*)'==============================================='
-*     end do
 
 C
-      !Put KTMP(ano,m) to N2MAT(anm,o)
-      DO I = 1,NCKIJ(ISANOM)
-         N2MAT(I) = N2MAT(I) + WORK(INDSQN(I,3))
-      END DO
+C     ----------------------------------------------------
+      IF (W3X) THEN !Calculate ALL contributions to N_anmo
+C     ----------------------------------------------------
+C
+
+C
+C        ----------------------------------------------
+C         Calculate the second contribution to N_anmo:
+C         
+C         sum_dle W^da(eonl) * t^{ed}_{ml}  --> N_anmo
+C
+C         calculated as:
+C
+C         WMAT^DA(eon,l)       T2TP(eml,D)
+C              |                    |
+C              | indsq(2)           |                     
+C              V                    |
+C          KELON(elo,n)             | <-- CALL SORT_T2_AJI                 
+C              |                    |
+C              | indsq(6)           |                     
+C              V                    V
+C          KELON(el,on)  *   KELM(el,m) --> KTMP(on,m)
+C
+C          KTMP(on,m) --> N2MAT(Anm,o)
+C        ----------------------------------------------
+
+         D = IB
+         A = ID
+C
+         ISYMD  = ISYMIB
+         ISYMA  = ISYMID
+         ISYMDA = MULD2H(ISYMD,ISYMA)
+         ISEONL = MULD2H(ISWMAT,ISYMDA)
+         ISELON = ISEONL
+         ISELM  = MULD2H(ISYMT2,ISYMD)
+         ISONM  = MULD2H(ISELON,ISELM)
+C
+         KELON = 1
+         KELM  = KELON + NCKIJ(ISELON)
+         KTMP  = KELM  + NCKI(ISELM)
+         KEND1 = KTMP  + NMAIJK(ISONM)
+         LWRK1 = LWORK - KEND1
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available: ', LWORK
+            WRITE(LUPRI,*) 'Memory needed   : ', KEND1
+            CALL QUIT('Insufficient memory in WT2_N1N2 (7)')
+         END IF
+C
+         CALL DZERO(WORK(KTMP),NMAIJK(ISONM))
+C
+         !Sort WMAT^DA(eon,l) to KELON(elo,n)
+         DO I = 1,NCKIJ(ISEONL)
+            WORK(KELON+I-1) = WMAT(INDSQ(I,2))
+         END DO
+C
+         !If symmetry sort KELON(elo,n)  to  KELON(el,on)
+C
+         IF (NSYM .GT. 1) THEN
+           IF (LWRK1 .LT. NCKIJ(ISELON)) THEN
+              WRITE(LUPRI,*) 'Memory available: ', LWRK1
+              WRITE(LUPRI,*) 'Memory needed   : ', NCKIJ(ISELON)
+              CALL QUIT('Insufficient memory in WT2_N1N2 (8)')
+           END IF
+           CALL CC_GATHER(NCKIJ(ISELON),WORK(KEND1),WORK(KELON),
+     *                    INDSQ(1,6))
+           CALL DCOPY(NCKIJ(ISELON),WORK(KEND1),1,WORK(KELON),1)
+         END IF 
+C
+         !Sort T2TP(eml,D) to KELM(el,m)
+         CALL SORT_T2_AJI(WORK(KELM),ISYMD,D,T2TP,ISYMT2)
+C
+         !Multiply KELON(el,on)   *   KELM(el,m) --> KTMP(on,m)
+C
+         DO ISEL = 1,NSYM
+            ISON  = MULD2H(ISELON,ISEL)
+            ISYMM = MULD2H(ISELM,ISEL)
+C
+            KOFF1 = KELON
+     *            + ISAIKL(ISEL,ISON)
+            KOFF2 = KELM
+     *            + ICKI(ISEL,ISYMM)
+            KOFF3 = KTMP
+     *            + IMAIJK(ISON,ISYMM)
+C
+            NEL   = MAX(NT1AM(ISEL),1)
+            NON   = MAX(NMATIJ(ISON),1)
+C
+            CALL DGEMM('T','N',NMATIJ(ISON),NRHF(ISYMM),NT1AM(ISEL),
+     *                 ONE,WORK(KOFF1),NEL,WORK(KOFF2),NEL,
+     *                 ONE,WORK(KOFF3),NON)
+C
+         END DO ! ISEL
+C
+         !Put  KTMP(on,m) to N2MAT(Anm,o)
+         ISANMO = MULD2H(ISONM,ISYMA)
+         DO ISYMO = 1,NSYM
+            ISANM = MULD2H(ISANMO,ISYMO)
+            DO ISYMM = 1,NSYM
+               ISAN  = MULD2H(ISANM,ISYMM)
+               ISYMN = MULD2H(ISAN,ISYMA)
+               ISON  = MULD2H(ISYMO,ISYMN)
+               DO IO = 1,NRHF(ISYMO)
+                  DO M = 1,NRHF(ISYMM)
+                     DO N = 1,NRHF(ISYMN)
+C
+                        KOFF1 = KTMP
+     *                        + IMAIJK(ISON,ISYMM)
+     *                        + NMATIJ(ISON)*(M-1)
+     *                        + IMATIJ(ISYMO,ISYMN)
+     *                        + NRHF(ISYMO)*(N-1)
+     *                        + IO-1
+                        KOFF2 = ISAIKJ(ISANM,ISYMO)
+     *                        + NCKI(ISANM)*(IO-1)
+     *                        + ISAIK(ISAN,ISYMM)
+     *                        + NT1AM(ISAN)*(M-1)
+     *                        + IT1AM(ISYMA,ISYMN)
+     *                        + NVIR(ISYMA)*(N-1)
+     *                        + A
+C
+                        N2MAT(KOFF2) = N2MAT(KOFF2) + WORK(KOFF1)
+C
+                     END DO !N
+                  END DO !M 
+               END DO !IO 
+            END DO !ISYMM 
+         END DO !ISYMO 
+C
+C        ----------------------------------------------
+C         Calculate the third contribution to N_anmo:
+C         
+C         sum_dle W^de(anol) * t^{de}_{lm}  --> N_anmo
+C
+C         calculated as:
+C
+C         WMAT^DE(ano,l)       T2TP(Dlm,E)
+C                                   |
+C                                   | <-- CALL SORT_T2_IJ
+C                                   V
+C         WMAT^DE(ano,l)   *   KLM(l,m) --> KTMP(ano,m)
+C
+C
+C                       indsq(3)
+C          KTMP(ano,m) ----------> N2MAT(anm,o)
+C        ----------------------------------------------
+
+         D = IB
+         E = ID
+C
+         ISYMD  = ISYMIB
+         ISYME  = ISYMID
+         ISYMDE = MULD2H(ISYMD,ISYME)
+         ISANOL = MULD2H(ISWMAT,ISYMDE)
+         ISLM   = MULD2H(ISYMT2,ISYMDE)
+         ISANOM = MULD2H(ISANOL,ISLM)
+         ISANMO = ISANOM
+C
+         KTMP  = 1
+         KLM   = KTMP + NCKIJ(ISANOM)
+         KEND1 = KLM  + NMATIJ(ISLM)
+         LWRK1 = LWORK - KEND1
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Memory available: ', LWORK
+            WRITE(LUPRI,*) 'Memory needed   : ', KEND1
+            CALL QUIT('Insufficient memory in WT2_N1N2 (9)')
+         END IF
+C
+         CALL DZERO(WORK(KTMP),NCKIJ(ISANOM))
+C
+         !Sort T2TP(Dlm,E) to KLM(l,m)
+         CALL SORT_T2_IJ(WORK(KLM),ISYMD,D,ISYME,E,T2TP,ISYMT2)
+C
+         !Multiply WMAT^DE(ano,l)   *   KLM(l,m) --> KTMP(ano,m)
+C
+         DO ISYML = 1,NSYM
+            ISANO = MULD2H(ISANOL,ISYML)
+            ISYMM = MULD2H(ISLM,ISYML)
+C
+            KOFF1 = ISAIKJ(ISANO,ISYML)
+     *            + 1
+            KOFF2 = KLM
+     *            + IMATIJ(ISYML,ISYMM)
+            KOFF3 = KTMP
+     *            + ISAIKJ(ISANO,ISYMM)
+C
+            NANO = MAX(NCKI(ISANO),1)
+            NL   = MAX(NRHF(ISYML),1)
+C
+            CALL DGEMM('N','N',NCKI(ISANO),NRHF(ISYMM),NRHF(ISYML),
+     *                 ONE,WMAT(KOFF1),NANO,WORK(KOFF2),NL,
+     *                 ONE,WORK(KOFF3),NANO)
+C
+         END DO ! ISYML
+C
+         !Put KTMP(ano,m) to N2MAT(anm,o)
+         DO I = 1,NCKIJ(ISANOM)
+            N2MAT(I) = N2MAT(I) + WORK(INDSQN(I,3))
+         END DO
+C
+C     ----------------------------
+      END IF !W3X
+C     ----------------------------
+C
+
 C
 C----------
 C     End.
 C----------
 C
       CALL QEXIT('WTN')
+C
+      RETURN
+      END
+C
+C  /* Deck n1_resort */
+      SUBROUTINE N1_RESORT(ISYMN1,LUN1,FNN1,LUGEI,FNGEI,LUFEI,FNFEI,
+     *                     WORK,LWORK,SKIPGEI)
+*
+**********************************************************************
+*                                                                    *
+*     Read in (gei,F) array  from file LUGEI and (fei,G) array  from *
+*     file LUFEI, sum them up and put to LUN1 file as (fge,i) array  *
+*                                                                    *
+*     If SKIPGEI = .true. then skip the contribution from LUGEI file.*
+*                                                                    *
+*--------------------------------------------------------------------*
+*                                                                    *
+* F. Pawlowski, 20-Apr-2004, Aarhus.                                 *
+**********************************************************************
+*
+      IMPLICIT NONE
+C
+#include<ccorb.h>
+#include<ccsdsym.h>
+#include<priunit.h>
+C
+      LOGICAL SKIPGEI
+C
+      CHARACTER*(*) FNGEI,FNFEI
+      CHARACTER*(*) FNN1
+      INTEGER   LUGEI,LUFEI,LUN1
+C
+      INTEGER ISYMN1,LWORK
+      INTEGER ISYMI,ISFGE,KFGE,KEND1,LWRK1
+      INTEGER ISYMF,ISGE,KGE,KEND2,LWRK2
+      INTEGER IADR,ISGEI,ISYME,ISYMG,ISFG,KOFF1,KOFF2
+C
+      INTEGER ISFE,ISFEI,KFE
+C
+#if defined (SYS_CRAY)
+      REAL WORK(LWORK)
+#else
+      DOUBLE PRECISION WORK(LWORK)
+#endif
+C
+      CALL QENTER('N1RSRT')
+C
+      DO ISYMI = 1,NSYM !"I" is general loop index in this routine
+         ISFGE = MULD2H(ISYMN1,ISYMI)
+C
+         KFGE  = 1
+         KEND1 = KFGE + NMAABC(ISFGE)
+         LWRK1 = LWORK - KEND1
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*)'Memory available: ',LWORK
+            WRITE(LUPRI,*)'Memory needed:    ',KEND1
+            CALL QUIT('Insufficient memory in N1_RESORT (1)')
+         END IF
+C
+         DO I = 1,NRHF(ISYMI)
+C
+            CALL DZERO(WORK(KFGE),NMAABC(ISFGE))
+C
+C           ----------------------
+            IF (.NOT.SKIPGEI) THEN
+C           ----------------------
+C
+
+C
+C              ----------------------------------------------------
+C              Read in (gei,F) from file LUGEI and put to KFGE(fge) 
+C              array for fixed I
+C              ----------------------------------------------------
+C
+               DO ISYMF = 1,NSYM
+                  ISGE  = MULD2H(ISFGE,ISYMF)
+                  ISGEI = MULD2H(ISGE,ISYMI)
+C
+                  KGE   = KEND1
+                  KEND2 = KGE + NMATAB(ISGE)
+                  LWRK2 = LWORK - KEND2
+                  IF (LWRK2 .LT. 0) THEN
+                     WRITE(LUPRI,*)'Memory available: ',LWORK
+                     WRITE(LUPRI,*)'Memory needed:    ',KEND2
+                     CALL QUIT('Insufficient memory in N1_RESORT (2)')
+                  END IF
+C
+                  DO F = 1,NVIR(ISYMF)
+C
+                     CALL DZERO(WORK(KGE),NMATAB(ISGE))
+C
+                     !Read in (ge)^FI
+                     IADR = ICKBD(ISGEI,ISYMF) + NCKATR(ISGEI)*(F-1) 
+     *                    + IMAABI(ISGE,ISYMI) + NMATAB(ISGE)*(I-1) + 1
+                     CALL GETWA2(LUGEI,FNGEI,WORK(KGE),IADR,
+     *                           NMATAB(ISGE))
+C
+                     !Sort (ge)^FI to (fge)^I
+                     DO ISYME = 1,NSYM
+                        ISYMG = MULD2H(ISGE,ISYME)
+                        ISFG  = MULD2H(ISYMF,ISYMG)
+C
+                        DO E = 1,NVIR(ISYME)
+                           DO G = 1,NVIR(ISYMG)
+                              KOFF1 = KGE
+     *                              + IMATAB(ISYMG,ISYME)
+     *                              + NVIR(ISYMG)*(E-1)
+     *                              + G-1
+                              KOFF2 = KFGE
+     *                              + IMAABC(ISFG,ISYME)
+     *                              + NMATAB(ISFG)*(E-1)
+     *                              + IMATAB(ISYMF,ISYMG)
+     *                              + NVIR(ISYMF)*(G-1)
+     *                              + F-1
+C
+                              WORK(KOFF2) = WORK(KOFF2) + WORK(KOFF1)
+C
+                           END DO !G
+                        END DO !E
+                     END DO !ISYME
+C
+                  END DO !F
+               END DO !ISYMF
+C
+C           ----------------------
+            END IF !.NOT.SKIPGEI
+C           ----------------------
+C
+
+C
+C           ----------------------------------------------------
+C           Read in (fei,G) from file LUFEI and put to KFGE(fge) 
+C           array for fixed I
+C           ----------------------------------------------------
+C
+            DO ISYMG = 1,NSYM
+               ISFE  = MULD2H(ISFGE,ISYMG)
+               ISFEI = MULD2H(ISFE,ISYMI)
+C
+               KFE   = KEND1
+               KEND2 = KFE + NMATAB(ISFE)
+               LWRK2 = LWORK - KEND2
+               IF (LWRK2 .LT. 0) THEN
+                  WRITE(LUPRI,*)'Memory available: ',LWORK
+                  WRITE(LUPRI,*)'Memory needed:    ',KEND2
+                  CALL QUIT('Insufficient memory in N1_RESORT (3)')
+               END IF
+C
+               DO G = 1,NVIR(ISYMG)
+C
+                  CALL DZERO(WORK(KFE),NMATAB(ISFE))
+C
+                  !Read in (fe)^GI
+                  IADR = ICKBD(ISFEI,ISYMG) + NCKATR(ISFEI)*(G-1) 
+     *                 + IMAABI(ISFE,ISYMI) + NMATAB(ISFE)*(I-1) + 1
+                  CALL GETWA2(LUFEI,FNFEI,WORK(KFE),IADR,NMATAB(ISFE))
+C
+                  !Sort (fe)^GI to (fge)^I
+                  DO ISYME = 1,NSYM
+                     ISYMF = MULD2H(ISFE,ISYME)
+                     ISFG  = MULD2H(ISYMF,ISYMG)
+C
+                     DO E = 1,NVIR(ISYME)
+                        DO F = 1,NVIR(ISYMF)
+                           KOFF1 = KFE
+     *                           + IMATAB(ISYMF,ISYME)
+     *                           + NVIR(ISYMF)*(E-1)
+     *                           + F-1
+                           KOFF2 = KFGE
+     *                           + IMAABC(ISFG,ISYME)
+     *                           + NMATAB(ISFG)*(E-1)
+     *                           + IMATAB(ISYMF,ISYMG)
+     *                           + NVIR(ISYMF)*(G-1)
+     *                           + F-1
+C
+                           WORK(KOFF2) = WORK(KOFF2) + WORK(KOFF1)
+C
+                        END DO !F
+                     END DO !E
+                  END DO !ISYME
+C
+               END DO !G
+            END DO !ISYMG
+C
+                  
+C
+C           -----------------------------------
+C           Put (fge)^I to LUN1 file as (fge,i)
+C           -----------------------------------
+C
+            IADR = IMAABCI(ISFGE,ISYMI) + NMAABC(ISFGE)*(I-1) + 1
+            CALL PUTWA2(LUN1,FNN1,WORK(KFGE),IADR,NMAABC(ISFGE))
+C
+C        -----------------
+C        End general loop.
+C        -----------------
+C
+         END DO !I
+      END DO !ISYMI
+C
+C----------
+C     End.
+C----------
+C
+      CALL QEXIT('N1RSRT')
 C
       RETURN
       END

@@ -2526,12 +2526,15 @@ C
           ! list number for the vector with Cauchy order decreased by 1
           IFILE = ILRCAMP(LABELH,ICAU,ISYRES)
 
+
           ! initialize the SD part of the vector with C(n-1)
           IOPT = 3
           CALL CC_RDRSP(FILXI,IFILE,ISYRES,IOPT,MODEL,
      &                  WORK(KXI1),WORK(KXI2))
           CALL CCLR_DIASCL(WORK(KXI2),TWO,ISYRES)
+
         END IF
+
 
         IF (CCSDT .AND. (.NOT.SKIPXI)) THEN
 #if !defined CC_AARHUS
@@ -2555,6 +2558,7 @@ C
             FREQ  = FREQLST(FILXI,IFILE)
           END IF
 
+C
           IF (IOPTRES.NE.5 .AND. (.NOT.NODDY_XI)) THEN
 C           -----------
 C           Open files:
@@ -2579,7 +2583,8 @@ C
             CALL CC3_XISD(WORK(KXI1),WORK(KXI2),
      *                  WORK(KXI1EFF),WORK(KXI2EFF),
      *                  ISYRES,
-     *                  WORK(KFOCKB(ITRAN)),ISYHOP,FREQ,
+     *                  WORK(KFOCKB(ITRAN)),ISYHOP,
+     *                  FREQ,ICAU,LCAUCHY,LABELH,
      *                  WORK(KLAMP0),WORK(KLAMH0), 
      *                  WORK(KFOCK0MO),
      *                  LUCKJD,FNCKJD,LUDKBC,FNDKBC,LUDELD,FNDELD,
@@ -2595,6 +2600,7 @@ C
 C
           ELSE IF (NODDY_XI .AND. 
      &               (.NOT.(IOPTRES.EQ.5 .AND. NODDY_XI_ALTER))) THEN
+C
             CALL CCSDT_XI_NODDY(IOPTRES,WORK(KXI1),WORK(KXI2),
      &                          WORK(KXI1EFF),WORK(KXI2EFF),
      &                          LABELH,WORK(KFOCKB(ITRAN)),
@@ -2603,7 +2609,7 @@ C
      &                          IXDOTS,XCONS,FILXI,ITRAN,
      &                          NXETRAN,MXVEC,WORK(KEND2),LWRK2)
           END IF
-
+c
 #endif
         END IF
 

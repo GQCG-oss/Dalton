@@ -83,11 +83,7 @@ C     Functions :
 C
       INTEGER ILSTSYM
 C
-COMMENT COMENT
-COMMENT COMENT
-      INTEGER kx3am
-COMMENT COMENT
-COMMENT COMENT
+      integer kx3am
 C
 #if defined (SYS_CRAY)
       REAL WORK(LWORK)
@@ -278,9 +274,7 @@ C--------------------------------------
 C
 C
       CALL GET_ORBEN(WORK(KFOCKD),WORK(KEND01),LWRK01)
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT If we want to sum the T3 amplitudes
-COMMENT COMMENT COMMENT
+C If we want to sum the T3 amplitudes
       if (.false.) then
          kx3am  = kend00
          kend00 = kx3am + nt1amx*nt1amx*nt1amx
@@ -292,9 +286,6 @@ COMMENT COMMENT COMMENT
             call quit('Insufficient space (T3) in CC3_FT3B')
          END IF
       endif
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
 C
 C determining R1 labels
 C
@@ -645,6 +636,7 @@ C------------------------------------------------------
 C
 
                   IF (LISTB(1:3).EQ.'R1 ') THEN
+
                      CALL GET_T3X_BD(ISYMRB,WORK(KWMAT),ISWMAT,
      *                               WORK(KTMAT),ISCKIJ,WORK(KFCKB),
      *                               ISYMRB,WORK(KT2TP),ISYMT2,
@@ -655,6 +647,7 @@ C
      *                               ISINTR2,FREQB,WORK(KDIAGW),
      *                               WORK(KFOCKD),WORK(KINDSQW),LENSQW,
      *                               B,ISYMB,D,ISYMD,WORK(KEND4),LWRK4)
+
                   END IF
 C
                   IF (LISTB(1:3).EQ.'RE ') THEN
@@ -690,10 +683,8 @@ C----------------------------------------------------------------------
 C     Calculate the  term <L2|[H,E_ai],W^BD(3)]]|HF> 
 C----------------------------------------------------------------------
 C 
-COMMENT COMMENT COMMENT
-c      call sum_pt3(work(kwmat),isymb,b,isymd,d,
-c    *             iswmat,work(kx3am),4)
-COMMENT COMMENT COMMENT
+*      call sum_pt3(work(kwmat),isymb,b,isymd,d,
+*    *             iswmat,work(kx3am),4)
 C
                   CALL T3_ONEL1W(OMEGA1,WORK(KWMAT),WORK(KTMAT),
      *                           ISWMAT,WORK(KXIAJB),WORK(KXAIJB),
@@ -721,22 +712,15 @@ C
          END DO        ! D
       END DO           ! ISYMD
 C
-COMMENT COMMENT COMMENT COMMENT 
-COMMENT COMMENT COMMENT COMMENT 
-C     write(lupri,*)'omega1 '
-C     do i = 1,nt1am(isyres)
-C        write(lupri,*) i , OMEGA1(i)
-C     end do
-COMMENT COMMENT COMMENT COMMENT 
-COMMENT COMMENT COMMENT COMMENT 
-COMMENT COMMENT
-COMMENT COMMENT
-c      write(lupri,*) 'cont to t3x in CC3_FT3B'
-c      call print_pt3(work(kx3am),1,4)
-C      write(lupri,*) 'The summed S terms : '
-C      call print_pt3(work(kx3am),1,1)
-COMMENT COMMENT
-COMMENT COMMENT
+*     write(lupri,*)'omega1 '
+*     do i = 1,nt1am(isyres)
+*        write(lupri,*) i , OMEGA1(i)
+*     end do
+*
+*      write(lupri,*) 'cont to t3x in CC3_FT3B'
+*      call print_pt3(work(kx3am),1,4)
+*      write(lupri,*) 'The summed S terms : '
+*      call print_pt3(work(kx3am),1,1)
 C
 C--------------------------------
 C     Close files

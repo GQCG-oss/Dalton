@@ -1904,7 +1904,7 @@ C------------------------
 C              Allocation 
 C------------------------
 C
-cfp memory leakage fix.
+cfp memory problem fix.
                !reuse KEND1 since stuff from B-loop is not needed any more
                KEBAIBJ = KEND1
                KEBJAI  = KEBAIBJ + NT2SQ(ISAIBJ)

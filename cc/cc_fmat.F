@@ -233,7 +233,8 @@ COMMENT COMMENT
              FN3VI  = 'CC3_VI'
              FN3VI2 = 'CC3_VI12'
 
-             IF (LISTR(1:3).EQ.'R1 '.OR.LISTR(1:3).EQ.'RE ') THEN
+             IF (LISTR(1:3).EQ.'R1 '.OR.LISTR(1:3).EQ.'RE '
+     *           .OR.LISTR(1:3).EQ.'RC ') THEN
                 CALL CCSDT_FBMAT(WORK(KB1TRAN),WORK(KB1DOTS),
      *                        WORK(KB1CON),NB1TRAN,MXLAMP,
      *                        LISTL,LISTR,FILFMA,FNCKJD,FNDKBC,
@@ -264,7 +265,8 @@ COMMENT COMMENT
              FN3VI  = 'CC3_VI'
              FN3VI2 = 'CC3_VI12'
 
-             IF (FILFMA(1:3).EQ.'R1 '.OR.FILFMA(1:3).EQ.'RE ') THEN
+             IF (FILFMA(1:3).EQ.'R1 '.OR.FILFMA(1:3).EQ.'RE '
+     *           .OR.FILFMA(1:3).EQ.'RC ') THEN
                 CALL CCSDT_FBMAT(WORK(KB2TRAN),WORK(KB2DOTS),
      *                        WORK(KB2CON),NB2TRAN,MXLAMP,
      *                        LISTL,FILFMA,LISTR,FNCKJD,FNDKBC,

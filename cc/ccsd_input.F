@@ -129,7 +129,7 @@ CSPAS 22.10.2003 keyword .SOPPA(CCSD) added at position 52
      &            '.CR2SKI','.CF2SKI','.CL2SKI','*DERIVA','.N2SKIP',
      &            '.BRSKIP','.FREEZE','*CCSLV ','*R12   ','*R12 IN',
      &            '.PAIRS ','.ETAPTI','.DKABAR','*CCOPA ','*NODDY ',
-     &            '.NOEONL','.DIRDER','*CCTPA ','.XXXXXX','.XXXXXX',
+     &            '.NOEONL','.DIRDER','*CCTPA ','.INT4V','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
@@ -181,6 +181,8 @@ C
       CCTPA  = .FALSE.
       CCEXLR = .FALSE.
       CCDERI = .FALSE.
+
+      LVVVV  = .FALSE.
 
       L0SKIP = .FALSE.
 
@@ -782,6 +784,9 @@ C                 '.CCTPA ' two-photon absorption strengths
                   CALL CC_OPAINP(WORD)
                GO TO 1000
  104           CONTINUE
+C                 '.INT4V ' use VVVV integrals in CC3 left transformation
+                  LVVVV = .TRUE.
+               GO TO 1000
  105           CONTINUE
  106           CONTINUE
  107           CONTINUE

@@ -78,12 +78,9 @@ C
       INTEGER LU3SRTR, LUCKJDR, LUDELDR, LUDKBCR, LUDKBCR4
       INTEGER ISINTR1
       INTEGER KTROC3, KTROC4, ISCKBR, KTRVI7, KTRVI8
-COMMENT COMMENT
-COMMENT COMMENT
+c
       integer kt3am
-COMMENT COMMENT
-COMMENT COMMENT
-C
+c
 C     Functions : 
       INTEGER ILSTSYM
 C
@@ -202,16 +199,12 @@ C
       KEND0   = KLAMDH + NLAMDT
       LWRK0   = LWORK  - KEND0
 C
-COMMENT COMMENT
-COMMENT COMMENT
       if (.false.) then
          kt3am  = kend0
          kend0  = kt3am + nt1amx*nt1amx*nt1amx
          lwrk0 = lwork - kend0
          call dzero(work(kt3am),nt1amx*nt1amx*nt1amx)
       endif
-COMMENT COMMENT
-COMMENT COMMENT
 C
       IF (LWRK0 .LT. 0) THEN
          WRITE(LUPRI,*) 'Memory available : ',LWORK
@@ -1171,6 +1164,10 @@ C     Otherwise we calculate the ordinary (lambda^{(0)}) integrals.
 C
 C     DO_LAMC can only be TRUE if DO_LAMB is TRUE !!!
 C
+C     IF LVVVV = .TRUE. calculate VVVV integrals and store them on LU4V file.
+C     (LVVVV is sitting in a common block in the ccsdinp.h file and defined 
+C     through the input).)
+C
       IMPLICIT NONE
 C
 #include <priunit.h>
@@ -1297,7 +1294,9 @@ C
       FN3V   = 'CC3_INT_TMP2'
 C
       CALL WOPEN2(LUIN3O,FNIN3O,64,0)
-      CALL WOPEN2(LU3V,FN3V,64,0)
+      IF (LVVVV) THEN
+         CALL WOPEN2(LU3V,FN3V,64,0)
+      END IF
 C
       IF (DO_LAMB) THEN
          LUIN3O2 = 0   
@@ -1543,21 +1542,23 @@ C              Calculate integrals for CC3.
 C              Integrals with 3 virtual indices are stored on disc
 C--------------------------------------------------------------------
 C
-               DTIME = SECOND()
-               IF (.NOT. DO_LAMB) THEN
-                 CALL CC3_INTDEL(WORK(KXINT),1,LU3V,FN3V,WORK(KLAMDP),
-     *                           1,WORK(KLAMDH),1,1,
-     *                           WORK(KEND3),LWRK3,IDEL,ISYMD)
-               ELSE
-                 CALL CC3_INTDEL2(WORK(KXINT),ISYMOP,LU3V,FN3V,
-     *                            WORK(KLAMPC),ISYMC2,
-     *                            WORK(KLAMDH),ISYMOP,
-     *                            WORK(KLAMPB),ISYMB2,
-     *                            WORK(KLAMHB),ISYMB2,
-     *                            ISYINT,WORK(KEND3),LWRK3,IDEL,ISYMD)
-               ENDIF
-               DTIME = SECOND() - DTIME
-               TIMEINTDEL = TIMEINTDEL + DTIME
+               IF (LVVVV) THEN
+                 DTIME = SECOND()
+                 IF (.NOT. DO_LAMB) THEN
+                   CALL CC3_INTDEL(WORK(KXINT),1,LU3V,FN3V,WORK(KLAMDP),
+     *                             1,WORK(KLAMDH),1,1,
+     *                             WORK(KEND3),LWRK3,IDEL,ISYMD)
+                 ELSE
+                   CALL CC3_INTDEL2(WORK(KXINT),ISYMOP,LU3V,FN3V,
+     *                              WORK(KLAMPC),ISYMC2,
+     *                              WORK(KLAMDH),ISYMOP,
+     *                              WORK(KLAMPB),ISYMB2,
+     *                              WORK(KLAMHB),ISYMB2,
+     *                              ISYINT,WORK(KEND3),LWRK3,IDEL,ISYMD)
+                 ENDIF
+                 DTIME = SECOND() - DTIME
+                 TIMEINTDEL = TIMEINTDEL + DTIME
+               END IF
 C
                DTIME = SECOND()
                CALL CC3_2O2V(WORK(KXINT),ISYMOP,WORK(KDSRHF),ISYMOP,
@@ -1598,7 +1599,11 @@ C
 C
 C     for DO_LAMB lamH^B is in KLAMHB otherwise lamH^0
 C
-      IOPT = 3
+      IF (LVVVV) THEN
+         IOPT = 3
+      ELSE
+         IOPT = 1
+      END IF
       CALL CC3_INTSTORE(LUIN3O,FNIN3O,XOOOO,ISYINT,
      *                  WORK(KLAMHB),ISYMB2,WORK(KLAMDH),ISYMOP,
      *                  LU3V,FN3V,LU4V,FN4V,ISYINT,
@@ -1631,7 +1636,9 @@ C     Delete intermediate files.
 C-------------------------------
 C
       CALL WCLOSE2(LUIN3O,FNIN3O,'DELETE')
-      CALL WCLOSE2(LU3V,FN3V,'DELETE')
+      IF (LVVVV) THEN
+         CALL WCLOSE2(LU3V,FN3V,'DELETE')
+      END IF
       IF (DO_LAMB) THEN
          CALL WCLOSE2(LUIN3O2,FNIN3O2,'DELETE')
       ENDIF
@@ -2167,9 +2174,11 @@ C
 C
       ENDDO
 C
+
       DO I = 1,LENGTH
          WMAT(I) = WMAT(I) + WORK(INDSQ(I,3))
       ENDDO
+
 C
       IF (IPRINT .GT. 55) THEN
          XNORM = DDOT(NCKIJ(JSAIKJ),WMAT,1,WMAT,1)

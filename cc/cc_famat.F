@@ -1095,8 +1095,6 @@ ctest
 *---------------------------------------------------------------------*
       CALL DZERO(WORK(KOME2),NT1AMX*NT1AMX)
 
-cqf This is the counterpart of (6) in notes if L0 is used and after 
-cqf contraction in CCDOTRSP_NODDY (result in DOTPROD).
       CALL CCSDT_E2AM(WORK(KOME2),WORK(KL3AM),WORK(KT2AM),WORK(KFOCKA))
 
       DO I = 1,NT1AMX
@@ -1416,11 +1414,6 @@ C     -------------------------
       PARAMETER (FNINTER='CCFADENINTER', FNR2TP = 'CCFADEN_R2TP',
      *           FNDEFF ='CCFADEN_DEFF')
 
-      CHARACTER*11 FN3SRTR, FNCKJDR, FNDELDR, FNDKBCR, FNDKBCR4
-      PARAMETER(FN3SRTR  = 'CCSDTFADEN1', FNCKJDR  = 'CCSDTFADEN2',
-     *          FNDELDR  = 'CCSDTFADEN3', FNDKBCR  = 'CCSDTFADEN4',
-     *          FNDKBCR4 = 'CCSDTFADEN5')
-
 * input/output:
       CHARACTER*3 LISTL, LISTO, LISTB, LISTC, LSTR_INTER(*)
       CHARACTER*(*) FNDELD, FNCKJD, FNDKBC, FNTOC, FN3VI, FNDKBC3
@@ -1445,8 +1438,8 @@ C     -------------------------
       LOGICAL LPDBSA, CALL_ETA_FA_DEN, NEED_L1AM, NEED_L2TP,
      &        NEED_T2TP, NEED_R2TP
       INTEGER ISYM, ILEN, ISYMFN, ISYMIM, NIMFN(8)
-      INTEGER LUFOCK, LUINTER, LUR2TP, LU3SRTR, LUCKJDR, LUDELDR,
-     &        LUDKBCR, LUDKBCR4, LUDELD, LUDKBC, LUTOC, LU3VI,
+      INTEGER LUFOCK, LUINTER, LUR2TP,
+     &        LUDELD, LUDKBC, LUTOC, LU3VI,
      &        LUDKBC3, LU3FOPX, LU3FOP2X, LUDEFF, LUCKJD
       INTEGER KEND1, KT1AM, KLAMP0, KLAMH0, KFOCK0, KT2TP, KL1AM,
      &        KL2TP, IOPT, IDLSTL, ISYML, KEND2, LWRK2, IADRINT,
@@ -1537,18 +1530,6 @@ C     -------------------------
 *---------------------------------------------------------------------*
       LUINTER = 0
       CALL WOPEN2(LUINTER,FNINTER,64,0)
-
-      LU3SRTR  = 0
-      LUCKJDR  = 0
-      LUDELDR  = 0
-      LUDKBCR  = 0
-      LUDKBCR4 = 0
- 
-      CALL WOPEN2(LU3SRTR,FN3SRTR,64,0)
-      CALL WOPEN2(LUCKJDR,FNCKJDR,64,0)
-      CALL WOPEN2(LUDELDR,FNDELDR,64,0)
-      CALL WOPEN2(LUDKBCR,FNDKBCR,64,0)
-      CALL WOPEN2(LUDKBCR4,FNDKBCR4,64,0)
 
       LUDELD  = 0
       LUCKJD  = 0
@@ -1729,6 +1710,7 @@ c       ------------------------------------------------------
           !frequency of LISTL is handled inside
           CALL CCSDT_ETA_FA_DEN(LISTL,IDLSTL,ISYML,
      *                          LISTR,IDLSTR,ISYMR,FREQR,LABELR,
+     *                          .FALSE.,0,
      *                          WORK(KLAMP0),WORK(KLAMH0),WORK(KFOCK0),
      *                          WORK(KT2TP),WORK(KL2TP),WORK(KL1AM),
      *                          ISYETA,WORK(KDAB),WORK(KDIJ),
@@ -1739,9 +1721,7 @@ c       ------------------------------------------------------
      *                          LUDKBC,  FNDKBC,  LUTOC,  FNTOC,
      *                          LU3VI,   FN3VI,   LUDKBC3,FNDKBC3,
      *                          LU3FOPX, FN3FOPX, LU3FOP2X,FN3FOP2X,
-     *                          LU3SRTR, FN3SRTR, LUCKJDR,FNCKJDR,
-     *                          LUDELDR, FNDELDR, LUDKBCR,FNDKBCR,
-     *                          LUDKBCR4,FNDKBCR4,LUR2TP, FNR2TP  )
+     *                          LUR2TP, FNR2TP  )
 C
 
         ELSE IF (  LISTL.EQ.'L0 '.AND.
@@ -1842,12 +1822,6 @@ c       -------------------------------------------------
       CALL WCLOSE2(LUDKBC3,FNDKBC3,'KEEP')
       CALL WCLOSE2(LU3FOPX,FN3FOPX,'KEEP')
       CALL WCLOSE2(LU3FOP2X,FN3FOP2X,'KEEP') 
-
-      CALL WCLOSE2(LU3SRTR,FN3SRTR,'DELETE')
-      CALL WCLOSE2(LUCKJDR,FNCKJDR,'DELETE')
-      CALL WCLOSE2(LUDELDR,FNDELDR,'DELETE')
-      CALL WCLOSE2(LUDKBCR,FNDKBCR,'DELETE')
-      CALL WCLOSE2(LUDKBCR4,FNDKBCR4,'DELETE')
 
 *---------------------------------------------------------------------*
 *     now compute the F{A} densities from the intermediates:
