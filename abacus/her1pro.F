@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: her1pro.F,v 1.7 2001-03-28 11:45:35 vebjornb Exp $
+C$Id: her1pro.F,v 1.8 2001-04-26 08:10:14 helgaker Exp $
 C
 #include <single.h>
 C  /* Deck pr1int */
@@ -52,7 +52,17 @@ C
       CHARACTER WORD*7, LABINT(3*MXCOOR)*8
       DIMENSION WORK(LWORK)
 C
+C     MAXTYP is needed for allocation of INTREP AND INTADR
+C     The actual number of elements in these arrays is later
+C     tested for in NTYPTS.
+C
       MAXTYP = 3*MXCOOR
+C
+C     For DSO integrals the following number of elements are
+C     needed. NTYPTS is therefore not called.
+C
+      IF (WORD .EQ. 'DSO    ') MAXTYP = (3*NUCDEP)**2
+C
       NCOMP    = 0
       TOFILE   = .TRUE.
       DOINT(1,1) = .TRUE.
@@ -82,7 +92,12 @@ C
          DOINT(2,2) = .FALSE.
       END IF
 C
-      KINTRP = 1
+      KLBINT = 1
+      IF (WORD .EQ. 'DSO    ') THEN
+         KINTRP = KLBINT +  (3*NUCDEP)**2
+      ELSE
+         KINTRP = KLBINT +  3*MXCOOR
+      END IF
       KINTAD = KINTRP + (MAXTYP + 1)/IRAT
       IF (WORD .EQ. 'ELFGRDC' .OR. WORD .EQ. 'ELFGRDS') THEN
          KLAST = KINTAD + 9*NUCIND*(MAXREP + 1)
@@ -92,7 +107,7 @@ C
       IF (KLAST .GT. LWORK) CALL STOPIT('PR1INT',' ',KLAST,LWORK)
       LWRK   = LWORK - KLAST + 1
       CALL PR1IN1(WORK(KLAST),LWRK,WORK(KINTRP),WORK(KINTAD),
-     &            LABINT,WORD,IORDER,NPQUAD,TRIANG,
+     &            WORK(KLBINT),WORD,IORDER,NPQUAD,TRIANG,
      &            PROPRI,IPRINT,DUMMY,NCOMP,TOFILE,'TRIANG',
      &            DOINT)
       IF (ADDSTO .AND. WORD .EQ. 'OVERLAP') THEN
@@ -198,6 +213,7 @@ C
       TRASPH = .FALSE.
       SQUARE = .FALSE.
       SOLVNT = .FALSE.
+      call flush(2)
       DO 100 I = 1, NTABLE
          IF (TABLE(I) .EQ. WORD) THEN
             GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,
@@ -2273,6 +2289,8 @@ C  /* Deck sdtyp */
 C  /* Deck dsotyp */
       SUBROUTINE DSOTYP(NOPTYP,INTREP,LABINT,INTADR,DOATOM,NATOM,TRIANG)
 C
+C     helgaker
+C
 C     Note: Integrals are obtained by numerical integration
 C           (Gaussian quadrature) of field integrals according to
 C           O. Matsuoka and T. Aoyama, JCP 73 , 5718 (1980).
@@ -2284,9 +2302,9 @@ C
 #include <mxcent.h>
 #include <mxorb.h>
       PARAMETER (D1 = 1.0D0)
-      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+      DIMENSION INTREP(*), INTADR(*)
       LOGICAL DOATOM(NUCIND), TRIANG, SAME
-      CHARACTER LABINT(9*MXCENT)*8
+      CHARACTER LABINT(*)*8
 #include <nuclei.h>
 #include <symmet.h>
 #include <chrnos.h>
@@ -2297,7 +2315,10 @@ C
       ELSE
          NOPTYP = 9*NATOM*NATOM
       END IF
-      CALL NTYPTS(NOPTYP)
+C
+C     no check since the allocations of INTADR and INTREP are exact!
+C
+C     CALL NTYPTS(NOPTYP)
 C
       ITYP = 0
 C

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abamag.F,v 1.3 2001-03-18 12:35:10 vebjornb Exp $
+C$Id: abamag.F,v 1.4 2001-04-26 08:10:13 helgaker Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -394,11 +394,14 @@ C
 C
 #include <ibtfun.h>
 C
+      MAXTYP = 3*MXCOOR
+      IF (WORD .EQ. 'DSO    ') MAXTYP = (3*NUCDEP)**2
       CALL QENTER('MAGDRV')
       KSTHMA = 1
       KEXPVA = KSTHMA + NNBASX*NCOMP
-      KINTRP = KEXPVA + NCOMP
-      KINTAD = KINTRP + (9*MXCENT + 1)/IRAT
+      KLBINT = KEXPVA + NCOMP
+      KINTRP = KLBINT + MAXTYP 
+      KINTAD = KLBINT + (9*MXCENT + 1)/IRAT
       KOVERL = KINTAD + (9*MXCENT + 1)/IRAT
       KFMOVL = KOVERL + 6*NNBASX
       KLAST  = KFMOVL + 6
@@ -407,14 +410,14 @@ C
       CALL MAGDR1(SPNDSO,WORK(KSTHMA),DENMAT,FOCMAT,
      &            WORK(KEXPVA),WORK(KLAST),LWRK,IPRINT,NODC,NODV,
      &            NNBASX,NNBAST,NBAST,WORD,WORK(KINTRP),WORK(KINTAD),
-     &            WORK(KOVERL),WORK(KFMOVL),NCOMP)
+     &            WORK(KLBINT),WORK(KOVERL),WORK(KFMOVL),NCOMP)
       CALL QEXIT('MAGDRV')
       RETURN
       END
 C  /* Deck magdr1 */
       SUBROUTINE MAGDR1(SPNDSO,STHMAT,DENMAT,FOCMAT,EXPVAL,WORK,LWORK,
      &                  IPRINT,NODC,NODV,NNBASX,NNBAST,NBAST,WORD,
-     &                  INTREP,INTADR,OVERLP,FMOVL,NCOMP)
+     &                  INTREP,INTADR,LABINT,OVERLP,FMOVL,NCOMP)
 C
 C     K.Ruud, April 1992
 C
@@ -434,9 +437,9 @@ C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       INTEGER TMAT
       LOGICAL NODC, NODV
-      CHARACTER WORD*7, LABINT(9*MXCENT)*8
+      CHARACTER WORD*7, LABINT(*)*8
       DIMENSION STHMAT(NNBASX,NCOMP), SPNDSO(*),
-     &          DENMAT(NNBASX), INTREP(9*MXCENT), INTADR(9*MXCENT),
+     &          DENMAT(NNBASX), INTREP(*), INTADR(*),
      &          FOCMAT(NNBASX), EXPVAL(NCOMP), OVERLP(NNBASX,6),
      &          FMOVL(6),WORK(LWORK)
 #include <abainf.h>
@@ -789,12 +792,14 @@ C
 #include <mxcent.h>
 #include <maxmom.h>
 #include <cbiher.h>
+#include <nuclei.h>
 C
       LOGICAL TOFILE, TRIMAT, DOINT(2,2)
       CHARACTER WORD*7, MTFORM*6, LABINT(3*MXCOOR)*8
       DIMENSION WORK(LWORK), SINTMA(*)
 C
       MAXTYP = 3*MXCOOR
+      IF (WORD .EQ. 'DSO    ') MAXTYP = (3*NUCDEP)**2
       TOFILE    = .FALSE.
       TRIANG    = TRIMAT
       PROPRI    = IPRINT .GT. 5
