@@ -26,7 +26,8 @@
 # machine libraries
 # For Red Hat 7.0 the shipped compiler (gcc-g77-2.96-54) does not 
 # work properly ... test and issue warning. kh010302
-# Darwin (OS X) support added 151202 tuh 
+# Darwin (OS X) g77 support added 151202 tuh 
+# Darwin (OS X) Absoft f77 support added 030503 tuh 
 #
 
 # set the target def 
@@ -164,7 +165,8 @@ case $WHICH in
               complist='pgf77 g77'
               ccmplist='pgcc gcc';;
     darwin)   liblist='libatlas.a libblas.a'
-              complist='g77'
+              complist='g77 f77'
+#                       f77 is the Absoft v8.0 compiler
               ccmplist='gcc';;
     hal)      liblist='libblas.a'
               complist='frt'
@@ -908,14 +910,26 @@ case $WHICH in
             else       
               cpp="-DSYS_LINUX -DVAR_MFDS -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
               set_parallel_def $mesp
-            fi 
-            cpp="-DVAR_G77 $cpp"
-            copt="-mcpu=7450"
-            copt="$copt -O3 -ffast-math -fexpensive-optimizations -funroll-loops"
-            opt="$copt -fno-second-underscore -fno-globals -Wno-globals"
-            def='linux.x'
-            inc='-I../include'
-            cpp=${cpp}" -DIMPLICIT_NONE";;
+            fi
+            if [ "$F77" = g77 ]; then
+               cpp="-DVAR_G77 $cpp"
+               copt="-mcpu=7450"
+               copt="$copt -O3 -ffast-math -fexpensive-optimizations -funroll-loops"
+               opt="$copt -fno-second-underscore -fno-globals -Wno-globals"
+               def='linux.x'
+               inc='-I../include'
+               cpp=${cpp}" -DIMPLICIT_NONE"
+            else
+               cpp="-D SYS_LINUX -D VAR_ABSOFT -D NO_F90 -D 'INSTALL_WRKMEM=$memsiz' -D IMPLICIT_NONE"
+               copt="-mcpu=7450"
+               copt="$copt -O3 -ffast-math -fexpensive-optimizations -funroll-loops -std=c99"
+               opt="-N11 -N15 -f -N22 -N116 -s -w -N3 -O"
+               def='linux.x'
+               inc='-I../include'
+               LIB="-llapack -lblas -lf90math -lu77 -X -u -X _inidat_ -X -u -X _qbdinit_ -X -u -X _rspinf_ \
+-X -u -X _oitbd_ -X -u -X _bdjep_ -X -u -X _bdtra_ -X -u -X _sbdorb_ -X -u -X _sbdtap_ \
+-X -u -X _sbdgetd_ -X -u -X _sbdtra_ -X -u -X _sbddim_ -Lsirius -lsirius"
+            fi;;
     hal) if [ "$mesp" = "dummy" ]; then
                 cpp="-DSYS_HAL -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -Wp,-P"
             else
@@ -1098,6 +1112,40 @@ $tab\$(CC) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(CFLAGS) -c \$*.c
 .F.i:
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) -E \$*.F > \$*.i
 EOF
+elif [ $WHICH = 'darwin' ]; then
+if [ "$F77" = g77 ]; then
+cat <<EOF>> Makefile.config
+#
+# Suffix rules
+#
+.SUFFIXES : .F .o .c .i
+
+.F.o:
+$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F 
+
+.c.o:
+$tab\$(CC) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(CFLAGS) -c \$*.c 
+
+.F.i:
+$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) -E \$*.F > \$*.i
+EOF
+else
+cat <<EOF>> Makefile.config
+#
+# Suffix rules
+#
+.SUFFIXES : .F .o .c .i
+
+.F.o:
+$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F 
+
+.c.o:
+$tab\$(CC) \$(INCLUDE_DIR) -DSYS_LINUX \$(CFLAGS) -c \$*.c 
+
+.F.i:
+$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) -E \$*.F > \$*.i
+EOF
+fi
 else cat <<EOF>> Makefile.config
 #
 # Suffix rules
