@@ -1,11 +1,20 @@
-      SUBROUTINE DEXPDRV(DMAT,IPRINT,WORK,LFREE)
+      SUBROUTINE DFTEXPGRAD(WORK,LFREE,IPRINT)
 #include <implicit.h>
 #include <dummy.h>
+#include <inforb.h>
+#include <priunit.h>
       EXTERNAL DEXPGC
-      CALL DFTINT(DMAT,1,0,.FALSE.,WORK,LFREE,
-     &            DEXPGC,DMAT,ELE)
-      IF(IPRFCK.GE.0) WRITE(LUPRI,'(A,F20.14)')
+      DIMENSION WORK(LFREE)
+      KDMAT = 1
+      KLAST = KDMAT + N2BASX
+      LWRK  = LWORK - KLAST +1
+      IF(KLAST.GT.LWORK) CALL QUIT('NOMEM IN DFTEXPGRAD')
+      CALL DFTDNS(WORK(KDMAT),WORK(KLAST),LWRK,0)
+      CALL DFTINT(WORK(KDMAT),1,0,.FALSE.,WORK(KLAST),LFREE,
+     &            DEXPGC,WORK(KDMAT),ELE)
+      IF(IPRINT.GE.0) WRITE(LUPRI,'(A,F20.14)')
      &     'Orbital gradient integration, electrons:', ELE
+      print *, "finished..."
       END
 
 C /* Deck dftexp */
@@ -22,6 +31,7 @@ C /* Deck dftexp */
       EXTERNAL DFT_ISGGA
       DIMENSION VX(5)
 C     
+      RETURN
       DOGGA = DFT_ISGGA()
 c     
       DO I= 1, NBLEN
@@ -29,13 +39,14 @@ c
          CALL DFTPTF0(RHOA(I),GRDNRM,WGHT(I),VX)
          VXC = D2*VX(1)
          VXB = D2*VX(2)/GRDNRM
-         CALL DFTEXP(DMAT,GAO(I,1,1),GAO(I,1,2),NBLEN,
+         CALL DFTEXP(DMAT,GAO(I,1,1),GAO(I,1,2),
+     &               NBLEN,NBLCNT,NBLOCKS,LDAIB,
      &               VXC,VXB,
      &               GRADA(1,I),GRADA(2,I),GRADA(3,I),
      &               COORD(1,I),COORD(2,I),COORD(3,I),DOGGA)
       END DO
       END
-      SUBROUTINE DFTEXP(DMAT,GAO,GAO1,NGSTRIDE,NBLCNT,NBLOCKS,LDAIB,
+      SUBROUTINE DFTEXP(DMAT,GAO,GAO1,NBLEN,NBLCNT,NBLOCKS,LDAIB,
      &                  VXC,VXB,RHX,RHY,RHZ,
      &                  CORPX,CORPY,CORPZ,DOGGA)
 C
@@ -56,7 +67,7 @@ C
 C
       LOGICAL DOGGA 
       DIMENSION DMAT(NBAST,NBAST), 
-     &          GAO(NGSTRIDE,NBAST), GAO1(NGSTRIDE,NBAST,3),
+     &          GAO(NBLEN,NBAST), GAO1(NBLEN,NBAST,3),
      &          NBLCNT(8),NBLOCKS(2,LDAIB,8)
       DIMENSION GA10(MXAQN), GB00VC(MXAQN), 
      &          GA11(MXAQN), GB00VB(MXAQN), GB01VB(MXAQN)
