@@ -1188,7 +1188,7 @@ C
       INQUIRE (FILE = STRING(1:IEND), EXIST = EXST)
       IF (EXST) THEN
          CALL GPOPEN(LUBAS,STRING(1:IEND),'OLD',' ','FORMATTED',IDUMMY,
-     &               .FALSE.)
+     &               .TRUE.)
          RETURN
       ELSE
          GO TO 10

@@ -832,7 +832,7 @@ C     This better be a file with a name, and it better exist
 C
             IF (FILELN .EQ. 1) GOTO 9005
             IF (FILENM(FILELN-3:FILELN-3) .NE. '#' .AND.
-     &           MYNUM .GT. 0 .AND. FILENM(1:3) .NE. BASDIR(1:3) 
+     &           MYNUM .GT. 0 .AND. .NOT. OLDDX
      &           .AND. FILENM(FILELN-5:FILELN) .NE. 'NUMCAL') THEN
 C
 C     The last test will not be necessary anymore when we get

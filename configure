@@ -319,7 +319,7 @@ if [ "$answer" = "y" ]; then
 #
         if [ "$WHICH" = "rs6000" -o "$WHICH" = "darwin" ]; then
             complist="mpxlf mpif77 $complist"
-            ccmplist="mpcc  mpicc  $complist"
+            ccmplist="mpcc  mpicc  $ccmplist"
             parlib='no'
         elif [ "$WHICH" = "cray_t3e" ]; then
             parlib='no'
@@ -969,8 +969,20 @@ case "$WHICH" in
             fi
             set_parallel_def $mesp
           fi
-          case $F77 in
-          [ei]fc|ifort|mpif77)
+          # if we have mpif77, we need to find backend compiler to set the right options
+          F77_be=$F77
+          if [ "$F77" = mpif77 ]; then
+              if mpif77 -V 2>&1 | grep -q Intel 2> /dev/null; then
+                  F77_be=ifort
+              elif mpif77 -v 2>&1 | grep -q 'gcc version' 2> /dev/null; then
+                  F77_be=g77
+              else
+                  # wild guess.
+                  F77_be=pgf77
+              fi
+          fi
+          case $F77_be in
+          [ei]fc|ifort)
              if  grep -q sse2 /proc/cpuinfo 2>/dev/null; then
                  proc='-xW'
              elif [ $prc = 'i686' ]; then

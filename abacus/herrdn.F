@@ -379,22 +379,24 @@ C
       IF (IPREAD .GT.  0) THEN
          CALL TITLER('Output from READIN input processing','*',118)
       END IF
-      IF (LUCMD .LE. 0) THEN
-         CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
-     &               .FALSE.)
-         CMDOPN = .TRUE.
-      ELSE
-         CMDOPN = .FALSE.
-      END IF
-      REWIND(LUCMD)
-      READ (LUCMD,'(A6)') KEYWRD
-      IF (KEYWRD .EQ. 'INTGRL' .OR. KEYWRD .EQ. 'BASIS ' .OR. 
-     &    KEYWRD .EQ. 'ATOMBA') LUMLCL = LUCMD
-      IF (CMDOPN) CALL GPCLOSE(LUCMD,'KEEP')
-      IF (ITERNR .EQ. 0 .AND. ITRNMR .EQ. 0 .AND. IPRE .EQ. 0) THEN
-         LUINFO = LUMLCL
-      ELSE
-         LUINFO = -1
+      IF(MYNUM.EQ.0) THEN
+         IF (LUCMD .LE. 0) THEN
+            CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
+     &           .FALSE.)
+            CMDOPN = .TRUE.
+         ELSE
+            CMDOPN = .FALSE.
+         END IF
+         REWIND(LUCMD)
+         READ (LUCMD,'(A6)') KEYWRD
+         IF (KEYWRD .EQ. 'INTGRL' .OR. KEYWRD .EQ. 'BASIS ' .OR. 
+     &        KEYWRD .EQ. 'ATOMBA') LUMLCL = LUCMD
+         IF (CMDOPN) CALL GPCLOSE(LUCMD,'KEEP')
+         IF (ITERNR .EQ. 0 .AND. ITRNMR .EQ. 0 .AND. IPRE .EQ. 0) THEN
+            LUINFO = LUMLCL
+         ELSE
+            LUINFO = -1
+         END IF
       END IF
 C
 C Only the master in a parallel calc. reads the input file. The
