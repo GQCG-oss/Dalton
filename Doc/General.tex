@@ -51,10 +51,9 @@ Chapter~\ref{ch:hermit} and the Chapter~\ref{ch:eri}\index{one-electron integral
 \item[\Key{ITERATION}]\verb| |\newline
 \verb|READ (LUCMD, '(I5)') ITERNR|
 
-Tells the program at which iteration to start the geometry
-optimization using the \Sec{*WALK} module\index{iteration
-  number}. Note that this will {\em not} 
-affect which molecule
+Tells the program at which iteration to start the geometry optimization
+using the \Sec{*WALK} module\index{iteration number!geometry, start}.
+Note that this will {\em not} affect which molecule
 input file that is going to be read, as this has to be handled by the
 shell script\index{shell script}. It only determines what number the
 output of the predicted molecular geometry will be, as well as where to start 
@@ -64,7 +63,7 @@ calculation (\verb|DALTON.IRC|) or a dynamical trajectory walk (\verb|DALTON.TRJ
 \item[\Key{MAX IT}]\verb| |\newline
 \verb|READ (LUCMD, '(I5)') ITERMX|
 
-Change the maximum number of geometry iterations\index{iteration number}\index{geometry iteration}\index{geometry optimization!number of iterations}\index{convergence!geometry}
+Change the maximum number of geometry iterations\index{iteration number!geometry, max}\index{geometry iterations!max}\index{geometry optimization!max number of iterations}\index{convergence!geometry, max iterations}
 that can be done. Default
 is~20. This number has to be increased in Intrinsic Reaction Coordinate
 (IRC)\index{IRC}\index{intrinsic reaction coordinate} or dynamical
@@ -304,7 +303,7 @@ minimizations.
 \newline
 \verb|READ (LUCMD,*) ICONDI|
 
-Set the number of convergence criteria\index{convergence!criteria}
+Set the number of convergence criteria\index{convergence!geometry, criteria}
 that should be fulfilled before
 convergence occurs. There are three different convergence thresholds,
 one for the energy\index{energy change}, one for the gradient
@@ -358,7 +357,7 @@ functions. Default is $1.0\cdot 10^{-3}$ a.u.
 \verb|READ(LUCMD,*) THRERG|
 
 Set the convergence threshold for the energy. This is one of the three
-convergence thresholds\index{convergence!criteria} (the keywords
+convergence thresholds\index{convergence!geometry, criteria} (the keywords
 \Key{GRADIE} and \Key{STEP T}
 control the other two). Default value is the maximum of $1.0\cdot
 10^{-6}$ and two times the threshold for the wave function gradient.
@@ -707,7 +706,7 @@ Hessian).
 \newline
 \verb|READ(LUCMD,*) THRSTP|
 
-Set the convergence\index{convergence!criteria} threshold for the step
+Set the convergence\index{convergence!geometry, criteria} threshold for the step
 norm. This is one of the
 three convergence thresholds (the keywords \Key{ENERGY} and
 \Key{GRADIE} control the other two). Default value is $1.0\cdot

@@ -228,7 +228,7 @@ Specification of which wave function calculation is to be performed.
   M{\o}ller-Plesset second-order perturbation theory calculation.
   Requires \quotekw{.HF} or previously calculated canonical Hartree-Fock orbitals.
 
-\item[(\quotekw{.FC MVO} in \quotekw{*SCF INPUT}}]
+\item[(\quotekw{.FC MVO} in \quotekw{*SCF INPUT}]
   Calculation of modified virtual SCF orbitals based on the
   potential determined by the keyword (see comments below).
   The occupied SCF orbitals are not modified.
@@ -713,17 +713,19 @@ are handled by the general \Sec{CONFIGURATION INPUT} section.
 
 \item[\Key{MAX DIIS ITERATIONS}]
   \kw{READ (LUINP,*) MXDIIS} \\
-  Maximum number of DIIS iterations\index{DIIS!iteration} (default = 30).
+  Maximum number of DIIS iterations\index{iteration number!DIIS, max}\index{DIIS!max iterations} (default = 30).
 
 \item[\Key{MAX ERROR VECTORS}]
   \kw{READ (LUINP,*) MXEVC} \\
-  Maximum number of DIIS error vectors\index{DIIS!error vector}
+  Maximum number of DIIS error vectors\index{DIIS!error vectors, max}
   (default = 10, if there is sufficient memory available to hold these
   vectors in memory).
 
 \item[\Key{MAX MACRO ITERATIONS}]
   \kw{READ (LUINP,*) MXHFMA} \\
-  Maximum number of QCSCF macro\index{SCF!quadratic convergent} iterations (default = 15).
+  Maximum number of QCSCF macro\index{iteration number!QCSCF macro, max}
+ iterations (default = 15).
+
 
 \item[\Key{MAX MICRO ITERATIONS}]
   \kw{READ (LUINP,*) MXHFMI} \\
@@ -1052,6 +1054,7 @@ Some of the options also affect a QC-HF optimization.
 \item[\Key{MAX MACRO ITERATIONS}]
   \kw{READ (LUINP,*) MAXMAC} \\
   maximum number of macro iterations in MCSCF optimization (default = 15).
+\index{iteration number!MCSCF macro, max}
 
 \item[\Key{MAX MICRO ITERATIONS}]
   \kw{READ (LUINP,*) MAXJT} \\
