@@ -4,7 +4,7 @@ struct common_priunt {
 };
 extern struct common_priunt priunt_;
 #else
-#include <linesep.h>
+C     FILE: priunit.h
       INTEGER LUCMD, LUPRI, LUERR , LUW4, NINFO, NWARN, IPRERR
       COMMON /PRIUNT/ LUCMD, LUPRI, LUERR, LUW4, NINFO, NWARN, IPRERR
 #endif
