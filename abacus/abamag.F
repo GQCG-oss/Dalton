@@ -2111,6 +2111,7 @@ C  /* Deck shiana */
      &                  IPRINT)
 #include <implicit.h>
 #include <priunit.h>
+#include <thrzer.h>
 #include <inftap.h>
 #include <codata.h>
       PARAMETER (FACTOR = 1.D6*ALPHA2)
@@ -2158,9 +2159,15 @@ C
  320  CONTINUE
 C
       SPAN  = PVAL(IZ) - PVAL(IX)
-      SKEW  = D3*(AVETOT - PVAL(IY))/SPAN
-      ANIS2 = PVAL(IZ) - (PVAL(IX) + PVAL(IY))/D2
-      ASYM2 = (PVAL(IY) - PVAL(IX))/(PVAL(IZ) - AVETOT)
+      IF (SPAN .LE. THRZER) THEN
+         SKEW  = D0
+         ANIS2 = D0
+         ASYM2 = D0
+      ELSE
+         SKEW  = D3*(AVETOT - PVAL(IY))/SPAN
+         ANIS2 = PVAL(IZ) - (PVAL(IX) + PVAL(IY))/D2
+         ASYM2 = (PVAL(IY) - PVAL(IX))/(PVAL(IZ) - AVETOT)
+      END IF
 C
 C
       DO 110 I = 1, 3
