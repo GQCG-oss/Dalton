@@ -53,9 +53,10 @@ c
       DIMENSION RADWT(NRADPT), RADNDE(NRADPT)
       CHARACTER SPDCAR*1
 c     
-C     Grid spacing....
+C     Grid spacing to H and inner grid point to AH
       IF(IPRINT.GE.3)WRITE(LUPRI,'(A)') '* Grid spacing'
-      H = DUMMY
+      H  = DUMMY
+      AH = 0D0
       DO LL = 1,NHTYP
          L = LL-1
          NBAS=NUCORB(LL,1)+NUCORB(LL,2)
@@ -67,11 +68,13 @@ C     Grid spacing....
      &              SPDCAR(L),'-orbitals --> ',HTMP
             ENDIF
          ENDIF
+c        AH = MAX(AA(1,LL,1),AA(1,LL,2)) 
+         AH = MAX(AH,AA(1,LL,1))
       ENDDO
       EPH = EXP(H)
       IF(IPRINT.GE.3)WRITE(LUPRI,'(1X,A,F6.3)') 'Value chosen: ',H
-C...  Inner grid point
-      AH = D2*MAX(AA(1,1,1),AA(1,1,2))
+C...  Inner grid point AA->R transformation.
+      AH = D2*AH
       IF(IPRINT.GE.3)WRITE(LUPRI,*) 'AH = ',AH
       RL = ((1.9D0+LOG(RADERR))/D3)-(LOG(AH)/D2)
       RL = EXP(RL)

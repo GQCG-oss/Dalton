@@ -38,7 +38,7 @@ C  /* Deck dftinp */
 #include <dftcom.h>
 #include <priunit.h>
       PARAMETER ( NTABLE = 9 )
-      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7, LINE*80
       LOGICAL ALLOPT
       DATA TABLE /'.PRINT ','.DFTELS','.DFTTHR','.RADINT','.ANGINT',
      &            '.ANGMIN','.NOPRUN','.GRID T','.DFTAC '/

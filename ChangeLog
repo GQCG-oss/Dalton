@@ -1,3 +1,9 @@
+2004-02-06  Pawel Salek 
+
+	* dft/dft_grid.F: do not assume s-functions are tightest in LMG
+	radial scheme.
+	* dft/dft_inp.F: declare LINE to fix .GRID TYPE processing.
+
 2004-01-31  Pawel Salek 
 
 	* dft/{general.[hc],integrator.c,prop-eval.c,quad-fast.c}:
