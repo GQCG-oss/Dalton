@@ -4,41 +4,46 @@
     ***********  DALTON - An electronic structure program  ***********
     ******************************************************************
 
-               This is output from DALTON (Prerelease 1.1, September 1999)
+               This is output from DALTON (Release 1.2, April 2001)
 
                           Principal authors:
 
-            Trygve Helgaker,     University of Oslo,        Norway 
-            Hans Joergen Jensen, SDU - Odense University,   Denmark
-            Poul Joergensen,     Aarhus University,         Denmark
-            Jeppe Olsen,         Aarhus University,         Denmark
-            Kenneth Ruud,        San Diego Superc. Center,  USA    
-            Hans Aagren,         KTH Stockholm,             Sweden 
+            Trygve Helgaker,       University of Oslo,         Norway 
+            Hans Joergen Jensen,   SDU - Odense University,    Denmark
+            Poul Joergensen,       Aarhus University,          Denmark
+            Jeppe Olsen,           Aarhus University,          Denmark
+            Kenneth Ruud,          San Diego Superc. Center,   USA    
+            Hans Aagren,           KTH Stockholm,              Sweden 
 
                           Contributors:
 
-            Keld L. Bak,         UNI-C,                     Denmark
-            Vebjoern Bakken,     University of Oslo,        Norway 
-            Ove Christiansen,    University of Lund,        Sweden 
-            Paal Dahle,          University of Oslo,        Norway 
-            Erik K. Dalskov,     UNI-C,                     Denmark
-            Thomas Enevoldsen,   SDU - Odense University,   Denmark
-            Berta Fernandez,     U.of Santiago de Compostela,Spain 
-            Hanne Heiberg,       University of Oslo,        Norway 
-            Hinne Hettema,       University of Auckland,    NZ     
-            Dan Jonsson,         San Diego Superc. Center,  USA    
-            Sheela Kirpekar,     SDU - Odense University,   Denmark
-            Rika Kobayashi,      Cambridge University,      England
-            Henrik Koch,         SDU - Odense University,   Denmark
-            Kurt V.Mikkelsen,    University of Copenhagen,  Denmark
-            Patrick Norman,      University of Linkoeping,  Sweden 
-            Martin J. Packer,    University of Sheffield,   UK     
-            Torgeir A. Ruden,    University of Oslo,        Norway 
-            Trond Saue,          University of Toulouse,    France 
-            Stephan P. A. Sauer, University of Copenhagen,  Denmark
-            Bernd Schimmelpfennig,KTH Stockholm,            Sweden 
-            Peter R.Taylor,      San Diego Superc. Center,  USA    
-            Olav Vahtras,        PDC, Stockholm,            Sweden 
+            Keld L. Bak,           UNI-C,                      Denmark
+            Vebjoern Bakken,       University of Oslo,         Norway 
+            Ove Christiansen,      University of Lund,         Sweden 
+            Sonia Coriani,         University of Trieste,      Italy  
+            Paal Dahle,            University of Oslo,         Norway 
+            Erik K. Dalskov,       UNI-C,                      Denmark
+            Thomas Enevoldsen,     SDU - Odense University,    Denmark
+            Berta Fernandez,       U.of Santiago de Compostela,Spain  
+            Christof Haettig,      Forschungszentrum Karlsruhe,Germany
+            Kasper Hald,           Aarhus University,          Denmark
+            Asger Halkier,         Aarhus University,          Denmark
+            Hanne Heiberg,         University of Oslo,         Norway 
+            Hinne Hettema,         University of Auckland,     NZ     
+            Dan Jonsson,           San Diego Superc. Center,   USA    
+            Sheela Kirpekar,       SDU - Odense University,    Denmark
+            Rika Kobayashi,        Cambridge University,       England
+            Henrik Koch,           SDU - Odense University,    Denmark
+            Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
+            Patrick Norman,        University of Linkoeping,   Sweden 
+            Martin J. Packer,      University of Sheffield,    UK     
+            Torgeir A. Ruden,      University of Oslo,         Norway 
+            Trond Saue,            University of Toulouse,     France 
+            Stephan P. A. Sauer,   University of Copenhagen,   Denmark
+            Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
+            K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
+            Peter R.Taylor,        San Diego Superc. Center,   USA    
+            Olav Vahtras,          PDC, Stockholm,             Sweden 
 ------------------------------------------------------------------------
 
 
@@ -59,28 +64,26 @@
      appropriate citation would be:
       
      T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,
-     H. Aagren, T. Andersen, K.L. Bak, V. Bakken, O. Christiansen
-     P. Dahle, E.K. Dalskov, T. Enevoldsen, B. Fernandez,
-     H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-     H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T. Saue,
-     S.P.A. Sauer, B. Schimmelpfennig, P.R. Taylor, and O. Vahtras:
-     "Dalton release 1.1 (1999), an electronic structure program"
+     H. Aagren, K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,
+     P. Dahle, E.K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
+     K. Hald, A. Halkier, H. Heiberg, H. Hettema, D. Jonsson,
+     S. Kirpekar, R. Kobayashi, H. Koch, K.V. Mikkelsen, P. Norman,
+     M.J. Packer, T.A. Ruden, T. Saue, S.P.A. Sauer, B. Schimmelpfennig,
+     K. O. Sylvester-Hvid, P.R. Taylor, and O. Vahtras:
+     "Dalton release 1.2 (2001), an electronic structure program"
 
  
-     Date and time (IRIX)   : Thu Nov 23 13:29:24 2000
-     Host name              : odin                                    
-
+     Date and time (Linux)  : Fri Apr  6 13:52:07 2001
+     Host name              : pauli.uio.no                            
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
-
-
 
 
  Default print level:        0
 
 
 
- Chosen parameters for MINIMI:
+ Chosen parameters for OPTIMI:
  -----------------------------
 
  Default 1st order method will be used:   BFGS update.
@@ -89,14 +92,36 @@
  The model Hessian parameters of Roland Lindh will be used.
 
 
+ Threshold for symmetry-break set to       :      0.10D-02
  Trust region method will be used to control step (default).
 
 
 
           >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-          >>>>>>>>>> 1st Order Geometry Minimization >>>>>>>>>>
+          >>>>>>>>>> 1st Order Geometry Optimization >>>>>>>>>>
           >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:       -9
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated:
+          - overlap integrals
+          - dipole length integrals
+          - Geometrical derivatives of overlap integrals
+          - Geometrical derivatives of one-electron Hamiltonian integrals
+
+ In this run  precalculated two-electron integrals are transformed
+ to P-supermatrix elements.
     Starting in Integral Section -
 
 
@@ -106,16 +131,13 @@
  *************************************************************************
 
 
-
  Default print level:        1
 
  * Nuclear model: Point charge
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
-
  The following one-electron property integrals are calculated:
-
           - overlap integrals
           - dipole length integrals
           - Geometrical derivatives of overlap integrals
@@ -123,7 +145,6 @@
 
  In this run  precalculated two-electron integrals are transformed
  to P-supermatrix elements.
-
 
 
  *************************************************************************
@@ -139,22 +160,49 @@
     001  ( A1)                                                            
 
 
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 2
+
+
+
                       SYMGRP:Point group information
                       ------------------------------
 
-Point group: C1 
+Point group: C2v
+
+   * The point group was generated by:
+
+      Reflection in the xz-plane
+      Reflection in the yz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E 
+    C2z | C2z   E 
+    Oxz | Oxz  Oyz   E 
+    Oyz | Oyz  Oxz  C2z   E 
 
    * Character table
 
-        |  E 
-   -----+-----
-    A   |   1
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B2  |   1   -1   -1    1
+    B1  |   1   -1    1   -1
+    A2  |   1    1   -1   -1
 
    * Direct product table
 
-        | A  
-   -----+-----
-    A   | A  
+        | A1   B2   B1   A2 
+   -----+--------------------
+    A1  | A1 
+    B2  | B2   A1 
+    B1  | B1   A2   A1 
+    A2  | A2   B1   B2   A1 
 
 
   Atoms and basis sets
@@ -163,16 +211,17 @@ Point group: C1
   Number of atom types:     2
   Total number of atoms:    4
 
+  Basis set used is "cc-pVDZ" from the basis set library.
+
   label    atoms   charge   prim    cont     basis   
   ----------------------------------------------------------------------
-  N           1       7      39      14      [19s5p1d|3s2p1d]                             
-  N           1       7      39      14      [19s5p1d|3s2p1d]                             
-  H           1       1       8       5      [5s1p|2s1p]                                  
-  H           1       1       8       5      [5s1p|2s1p]                                  
+  N           2       7      26      14      [9s4p1d|3s2p1d]                              
+  H           2       1       7       5      [4s1p|2s1p]                                  
   ----------------------------------------------------------------------
-  total:      4      16      94      38
+  total:      4      16      66      38
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
+
   Threshold for integrals:  1.00D-15
 
 
@@ -182,33 +231,67 @@ Point group: C1
   Total number of coordinates: 12
 
 
-   1   N        x     -1.1798400000
+   1   N    1   x      1.1798400000
    2            y      0.0000000000
    3            z     -0.1261620000
 
-   4   N        x      1.1798400000
+   4   N    2   x     -1.1798400000
    5            y      0.0000000000
    6            z     -0.1261620000
 
-   7   H        x     -1.9234220000
+   7   H    1   x      1.9234220000
    8            y      0.0000000000
    9            z      1.7529437000
 
-  10   H        x      1.9234220000
+  10   H    2   x     -1.9234220000
   11            y      0.0000000000
   12            z      1.7529437000
 
 
 
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:   4  2  4  2
+
+
+  Symmetry 1
+
+   1   N     x    [  1  -   4 ]/2
+   2   N     z    [  3  +   6 ]/2
+   3   H     x    [  7  -  10 ]/2
+   4   H     z    [  9  +  12 ]/2
+
+
+  Symmetry 2
+
+   5   N     y    [  2  +   5 ]/2
+   6   H     y    [  8  +  11 ]/2
+
+
+  Symmetry 3
+
+   7   N     x    [  1  +   4 ]/2
+   8   N     z    [  3  -   6 ]/2
+   9   H     x    [  7  +  10 ]/2
+  10   H     z    [  9  -  12 ]/2
+
+
+  Symmetry 4
+
+  11   N     y    [  2  -   5 ]/2
+  12   H     y    [  8  -  11 ]/2
+
+
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            N           N           H           H   
+            N  1        N  2        H  1        H  2
 
-   N       0.000000
-   N       1.248689    0.000000
-   H       1.069403    1.919774    0.000000
-   H       1.919774    1.069403    2.035662    0.000000
+   N  1    0.000000
+   N  2    1.248689    0.000000
+   H  1    1.069403    1.919774    0.000000
+   H  2    1.919774    1.069403    2.035662    0.000000
 
 
 
@@ -218,9 +301,9 @@ Point group: C1
 
                   atom 1     atom 2                           distance
                   ------     ------                           --------
-  bond distance:    N          N                              1.248689
-  bond distance:    H          N                              1.069403
-  bond distance:    H          N                              1.069403
+  bond distance:    N  2       N  1                           1.248689
+  bond distance:    H  1       N  1                           1.069403
+  bond distance:    H  2       N  2                           1.069403
 
 
   Bond angles (degrees):
@@ -228,11 +311,75 @@ Point group: C1
 
                   atom 1     atom 2     atom 3                   angle
                   ------     ------     ------                   -----
-  bond angle:       N          N          H                    111.589
-  bond angle:       N          N          H                    111.589
+  bond angle:       N  2       N  1       H  1                 111.589
+  bond angle:       N  1       N  2       H  2                 111.589
 
 
   Nuclear repulsion energy :   31.812197210209
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:         14   5  14   5
+
+
+  Symmetry  A1 ( 1)
+
+    1     N        1s         1  +   2
+    2     N        1s         3  +   4
+    3     N        1s         5  +   6
+    4     N        2px        7  -   8
+    5     N        2pz       11  +  12
+    6     N        2px       13  -  14
+    7     N        2pz       17  +  18
+    8     N        3d0       23  +  24
+    9     N        3d1+      25  -  26
+   10     N        3d2+      27  +  28
+   11     H        1s        29  +  30
+   12     H        1s        31  +  32
+   13     H        2px       33  -  34
+   14     H        2pz       37  +  38
+
+
+  Symmetry  B2 ( 2)
+
+   15     N        2py        9  +  10
+   16     N        2py       15  +  16
+   17     N        3d2-      19  -  20
+   18     N        3d1-      21  +  22
+   19     H        2py       35  +  36
+
+
+  Symmetry  B1 ( 3)
+
+   20     N        1s         1  -   2
+   21     N        1s         3  -   4
+   22     N        1s         5  -   6
+   23     N        2px        7  +   8
+   24     N        2pz       11  -  12
+   25     N        2px       13  +  14
+   26     N        2pz       17  -  18
+   27     N        3d0       23  -  24
+   28     N        3d1+      25  +  26
+   29     N        3d2+      27  -  28
+   30     H        1s        29  -  30
+   31     H        1s        31  -  32
+   32     H        2px       33  +  34
+   33     H        2pz       37  -  38
+
+
+  Symmetry  A2 ( 4)
+
+   34     N        2py        9  -  10
+   35     N        2py       15  -  16
+   36     N        3d2-      19  +  20
+   37     N        3d1-      21  -  22
+   38     H        2py       35  -  36
+
+  Symmetries of electric field:  B1 (3)  B2 (2)  A1 (1)
+
+  Symmetries of magnetic field:  B2 (2)  B1 (3)  A2 (4)
 
 
  ************************************************************************
@@ -240,67 +387,51 @@ Point group: C1
  ************************************************************************
 
 
- >>> Time used in ONEDRV is   0.04 seconds
+ >>> Time used in ONEDRV is   0.02 seconds
 
 
- >>> Time used in OVERLA is   0.03 seconds
+ >>> Time used in OVERLA is   0.01 seconds
 
 
- >>> Time used in DIPLEN is   0.02 seconds
+ >>> Time used in DIPLEN is   0.01 seconds
 
 
- >>> Time used in DEROVL is   0.04 seconds
+ >>> Time used in DEROVL is   0.01 seconds
 
 
- >>> Time used in DERHAM is   0.12 seconds
+ >>> Time used in DERHAM is   0.06 seconds
 
 
-
- ************************************************************************
- ************************** Output from TWOINT **************************
- ************************************************************************
-
-
- Number of two-electron integrals written:    123241 (44.8%)
- Kilobytes written:                             1485
+ Number of two-electron integrals written:       62733 ( 22.8% )
+ Megabytes written:                              0.721
 
 
 
- >>> Time used in TWOINT is   3.54 seconds
+ >>> Time used in TWOINT is   0.52 seconds
 
 
+ >>> Time used in FRMSUP is   0.30 seconds
 
- ***********************************************************************
- ************************* Output from FORMSUP *************************
- ***********************************************************************
-
-  NOSYM :  F
- OLDSUP :  F
-
- Threshold for discarding integrals :  1.00D-15
-
- >>> Time used in FRMSUP is   0.12 seconds
-
- >>>> Total CPU  time used in HERMIT:   3.94 seconds
- >>>> Total wall time used in HERMIT:   4.00 seconds
+ >>>> Total CPU  time used in HERMIT:   1.61 seconds
+ >>>> Total wall time used in HERMIT:   2.00 seconds
 
 - End of Integral Section
-@@     Starting Wave-Function Section -
+     Starting Wave Function Section -
 
  ************************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
  ************************************************************************
 
  
-     Date and time (IRIX)   : Thu Nov 23 13:29:28 2000
-     Host name              : odin                                    
+     Date and time (Linux)  : Fri Apr  6 13:52:10 2001
+     Host name              : pauli.uio.no                            
 
  Title lines from integral program:
        Cis-diazine CCSD geometry optimisation (cc-dzp basis)                 
        001  ( A1)                                                            
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4 =   2 is   5
+ Print level on unit LUW4  =   2 is   5
 
       (Integral direct) CC calculation.
 
@@ -321,21 +452,21 @@ Point group: C1
      Total number of orbitals                 38
 
      Spin multiplicity                         1
-     Total number of symmetries                1
+     Total number of symmetries                4
      Reference state symmetry                  1
 
      Orbital specifications
      ======================
-     Abelian symmetry species           1
-                                       --
-     Total number of orbitals          38
-     Number of basis functions         38
+     Abelian symmetry species           1   2   3   4
+                                       --  --  --  --
+     Total number of orbitals          14   5  14   5
+     Number of basis functions         14   5  14   5
 
       ** Automatic occupation of RHF orbitals **
-      -- Initial occupation of symmetries is determined from Huckel guess.               
+      -- Initial occupation of symmetries is determined from Huckel guess.                    
       -- Initial occupation of symmetries is : --
 
-     Occupied HF orbitals               8
+     Occupied HF orbitals               4   1   3   0
 
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
@@ -357,22 +488,22 @@ Point group: C1
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-   1   -109.499147528550   4.62D+00  -1.09D+02    8
-   2   -109.967090326251   5.05D-01  -4.68D-01    8
-   3   -109.990314463395   1.53D-01  -2.32D-02    8
-   4   -109.993216580454   6.19D-02  -2.90D-03    8
-   5   -109.993610435297   1.08D-02  -3.94D-04    8
-   6   -109.993633106566   3.01D-03  -2.27D-05    8
-   7   -109.993634854974   4.14D-04  -1.75D-06    8
-   8   -109.993634882867   8.96D-05  -2.79D-08    8
-   9   -109.993634884048   1.94D-05  -1.18D-09    8
-  10   -109.993634884098   2.36D-06  -5.04D-11    8
-  11   -109.993634884099   4.08D-07  -8.24D-13    8
-  12   -109.993634884098   6.80D-08   3.41D-13    8
-  13   -109.993634884099   7.29D-09  -4.83D-13    8
-  14   -109.993634884099   1.16D-09   3.13D-13    8
-  15   -109.993634884099   1.39D-10  -5.68D-14    8
-  16   -109.993634884099   3.57D-11  -1.71D-13    8
+   1   -109.479011166409   4.26D+00  -1.09D+02    4  1  3  0
+   2   -109.957453690612   6.44D-01  -4.78D-01    4  1  3  0
+   3   -109.988485648991   2.47D-01  -3.10D-02    4  1  3  0
+   4   -109.992909859349   6.63D-02  -4.42D-03    4  1  3  0
+   5   -109.993603157001   1.34D-02  -6.93D-04    4  1  3  0
+   6   -109.993632500959   3.39D-03  -2.93D-05    4  1  3  0
+   7   -109.993634844604   4.73D-04  -2.34D-06    4  1  3  0
+   8   -109.993634882978   8.54D-05  -3.84D-08    4  1  3  0
+   9   -109.993634884042   1.94D-05  -1.06D-09    4  1  3  0
+  10   -109.993634884098   2.76D-06  -5.54D-11    4  1  3  0
+  11   -109.993634884099   4.09D-07  -1.09D-12    4  1  3  0
+  12   -109.993634884099   7.09D-08  -6.39D-14    4  1  3  0
+  13   -109.993634884099   7.20D-09  -7.11D-15    4  1  3  0
+  14   -109.993634884099   1.26D-09   4.97D-14    4  1  3  0
+  15   -109.993634884099   1.12D-10  -6.39D-14    4  1  3  0
+  16   -109.993634884099   1.71D-11  -9.24D-14    4  1  3  0
  DIIS converged in  16 iterations !
 
 
@@ -381,19 +512,31 @@ Point group: C1
  Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   16
- Orbital occupations :    8
+ Orbital occupations :    4    1    3    0
 
  Hartree-Fock orbital energies, symmetry 1
 
-       -15.64077501   -15.63950580    -1.34842961    -0.91100105    -0.73738407
-        -0.56652952    -0.51025954    -0.40510590     0.13372839     0.15630820
-         0.23615970     0.56771476     0.69196098
+       -15.64077501    -1.34842961    -0.73738407    -0.56652952     0.15630820
+         0.69196098     0.86962809     0.96752494     1.19889348
 
-    E(LUMO) :     0.13372839 au (symmetry 1)
-  - E(HOMO) :    -0.40510590 au (symmetry 1)
+ Hartree-Fock orbital energies, symmetry 2
+
+        -0.51025954     0.93883933     1.38224495     1.80797064     2.26040470
+
+ Hartree-Fock orbital energies, symmetry 3
+
+       -15.63950580    -0.91100105    -0.40510590     0.23615970     0.56771476
+         0.83505910     1.00586791     1.18825403
+
+ Hartree-Fock orbital energies, symmetry 4
+
+         0.13372839     1.05558064     1.52755799     2.59216485     2.86225524
+
+    E(LUMO) :     0.13372839 au (symmetry 4)
+  - E(HOMO) :    -0.40510590 au (symmetry 3)
   ------------------------------------------
     gap     :     0.53883429 au
-1
+
 
                     >>> FINAL RESULTS FROM SIRIUS <<<
 
@@ -404,104 +547,67 @@ Point group: C1
      Nuclear repulsion:            31.812197210209
      Electronic energy:          -141.805832094308
 
-     Final gradient norm:           0.000000000036
+     Final gradient norm:           0.000000000017
 
  
-     Date and time (IRIX)   : Thu Nov 23 13:29:29 2000
-     Host name              : odin                                    
+     Date and time (Linux)  : Fri Apr  6 13:52:10 2001
+     Host name              : pauli.uio.no                            
 
      Molecular orbitals for symmetry species   1
 
- Orbital          1        2        3        4        5        6        7
-   1  N   1s     0.7074   0.7076  -0.0059  -0.0013  -0.0057   0.0041   0.0000
-   2  N   1s     0.0019   0.0025   0.6379  -0.5848  -0.0587  -0.1863   0.0000
-   3  N   1s    -0.0014  -0.0034  -0.1459   0.0390   0.0176  -0.1208   0.0000
-   4  N   2px    0.0013   0.0018   0.2332   0.2159  -0.3637   0.5236   0.0000
-   5  N   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.5907
-   6  N   2pz    0.0019   0.0019   0.0535  -0.1137   0.4042   0.3646   0.0000
-   7  N   2px   -0.0011  -0.0019  -0.0691  -0.0382   0.0810  -0.0427   0.0000
-   8  N   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0253
-   9  N   2pz   -0.0014  -0.0017  -0.0146   0.0428  -0.0664  -0.0013   0.0000
-  10  N   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0237
-  11  N   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0081
-  12  N   3d0    0.0002   0.0000  -0.0068  -0.0078   0.0146  -0.0008   0.0000
-  13  N   3d1+   0.0000   0.0000   0.0038   0.0054   0.0042   0.0154   0.0000
-  14  N   3d2+   0.0000   0.0004   0.0117   0.0052  -0.0076   0.0102   0.0000
-  15  N   1s     0.7074  -0.7076  -0.0059   0.0013  -0.0057   0.0041   0.0000
-  16  N   1s     0.0019  -0.0025   0.6379   0.5848  -0.0587  -0.1863   0.0000
-  17  N   1s    -0.0014   0.0034  -0.1459  -0.0390   0.0176  -0.1208   0.0000
-  18  N   2px   -0.0013   0.0018  -0.2332   0.2159   0.3637  -0.5236   0.0000
-  19  N   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.5907
-  20  N   2pz    0.0019  -0.0019   0.0535   0.1137   0.4042   0.3646   0.0000
-  21  N   2px    0.0011  -0.0019   0.0691  -0.0382  -0.0810   0.0427   0.0000
-  22  N   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0253
-  23  N   2pz   -0.0014   0.0017  -0.0146  -0.0428  -0.0664  -0.0013   0.0000
-  24  N   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000  -0.0237
-  25  N   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0081
-  26  N   3d0    0.0002   0.0000  -0.0068   0.0078   0.0146  -0.0008   0.0000
-  27  N   3d1+   0.0000   0.0000  -0.0038   0.0054  -0.0042  -0.0154   0.0000
-  28  N   3d2+   0.0000  -0.0004   0.0117  -0.0052  -0.0076   0.0102   0.0000
-  29  H   1s    -0.0003   0.0000   0.1561  -0.3755   0.4446  -0.0009   0.0000
-  30  H   1s     0.0008   0.0004  -0.0816   0.1523  -0.1520  -0.0196   0.0000
-  31  H   2px    0.0000  -0.0002   0.0102  -0.0095   0.0110   0.0127   0.0000
-  32  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0137
-  33  H   2pz    0.0005   0.0005  -0.0175   0.0283  -0.0249   0.0049   0.0000
-  34  H   1s    -0.0003   0.0000   0.1561   0.3755   0.4446  -0.0009   0.0000
-  35  H   1s     0.0008  -0.0004  -0.0816  -0.1523  -0.1520  -0.0196   0.0000
-  36  H   2px    0.0000  -0.0002  -0.0102  -0.0095  -0.0110  -0.0127   0.0000
-  37  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0137
-  38  H   2pz    0.0005  -0.0005  -0.0175  -0.0283  -0.0249   0.0049   0.0000
+ Orbital          1        2        3        4
+   1  N   1s     0.7074  -0.0059  -0.0057  -0.0041
+   2  N   1s     0.0019   0.6379  -0.0587   0.1863
+   3  N   1s    -0.0014  -0.1459   0.0176   0.1208
+   4  N   2px   -0.0013  -0.2332   0.3637   0.5236
+   5  N   2pz    0.0019   0.0535   0.4042  -0.3646
+   6  N   2px    0.0011   0.0691  -0.0810  -0.0427
+   7  N   2pz   -0.0014  -0.0146  -0.0664   0.0013
+   8  N   3d0    0.0003  -0.0118   0.0253   0.0014
+   9  N   3d1+   0.0001  -0.0065  -0.0072   0.0266
+  10  N   3d2+   0.0000   0.0203  -0.0131  -0.0176
+  11  H   1s    -0.0003   0.1561   0.4446   0.0009
+  12  H   1s     0.0008  -0.0816  -0.1520   0.0196
+  13  H   2px    0.0000  -0.0102  -0.0110   0.0127
+  14  H   2pz    0.0005  -0.0175  -0.0249  -0.0049
 
- Orbital          8
-   1  N   1s    -0.0047
-   2  N   1s    -0.2890
-   3  N   1s    -0.0666
-   4  N   2px    0.1304
-   5  N   2py    0.0000
-   6  N   2pz    0.5346
-   7  N   2px    0.0728
-   8  N   2py    0.0000
-   9  N   2pz    0.0287
-  10  N   3d2-   0.0000
-  11  N   3d1-   0.0000
-  12  N   3d0    0.0091
-  13  N   3d1+  -0.0067
-  14  N   3d2+   0.0037
-  15  N   1s     0.0047
-  16  N   1s     0.2890
-  17  N   1s     0.0666
-  18  N   2px    0.1304
-  19  N   2py    0.0000
-  20  N   2pz   -0.5346
-  21  N   2px    0.0728
-  22  N   2py    0.0000
-  23  N   2pz   -0.0287
-  24  N   3d2-   0.0000
-  25  N   3d1-   0.0000
-  26  N   3d0   -0.0091
-  27  N   3d1+  -0.0067
-  28  N   3d2+  -0.0037
-  29  H   1s     0.4438
-  30  H   1s    -0.0816
-  31  H   2px    0.0094
-  32  H   2py    0.0000
-  33  H   2pz   -0.0105
-  34  H   1s    -0.4438
-  35  H   1s     0.0816
-  36  H   2px    0.0094
-  37  H   2py    0.0000
-  38  H   2pz    0.0105
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1
+   1  N   2py    0.5907
+   2  N   2py    0.0253
+   3  N   3d2-  -0.0410
+   4  N   3d1-   0.0140
+   5  H   2py    0.0137
+
+     Molecular orbitals for symmetry species   3
+
+ Orbital          1        2        3
+   1  N   1s     0.7076   0.0013  -0.0047
+   2  N   1s     0.0025   0.5848  -0.2890
+   3  N   1s    -0.0034  -0.0390  -0.0666
+   4  N   2px   -0.0018   0.2159  -0.1304
+   5  N   2pz    0.0019   0.1137   0.5346
+   6  N   2px    0.0019  -0.0382  -0.0728
+   7  N   2pz   -0.0017  -0.0428   0.0287
+   8  N   3d0    0.0000   0.0134   0.0157
+   9  N   3d1+   0.0001   0.0094   0.0117
+  10  N   3d2+   0.0007  -0.0090   0.0064
+  11  H   1s     0.0000   0.3755   0.4438
+  12  H   1s     0.0004  -0.1523  -0.0816
+  13  H   2px    0.0002  -0.0095  -0.0094
+  14  H   2pz    0.0005  -0.0283  -0.0105
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.85 seconds
- >>>> Total wall time used in SIRIUS :      1.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.10 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (IRIX)   : Thu Nov 23 13:29:29 2000
-     Host name              : odin                                    
+     Date and time (Linux)  : Fri Apr  6 13:52:10 2001
+     Host name              : pauli.uio.no                            
 
-@@- End of Wave-Function Section
+- End of Wave Function Section
      Starting Coupled Cluster -
 
   
@@ -522,17 +628,17 @@ Point group: C1
                          ! Information from CCORB !
                          +------------------------+
 
-   NBAS   :      38
-   IBAS   :       0
-   NRHF   :       8
-   NVIR   :      30
-   NRHFS  :       8
-   NVIRS  :      30
-   NRHFFR :       0
-   NVIRFR :       0
+   NBAS   :      14       5      14       5
+   IBAS   :       0      14      19      33
+   NRHF   :       4       1       3       0
+   NVIR   :      10       4      11       5
+   NRHFS  :       4       1       3       0
+   NVIRS  :      10       4      11       5
+   NRHFFR :       0       0       0       0
+   NVIRFR :       0       0       0       0
    NORBTS :      38
    NORBT  :      38
-   N2BAST :    1444
+   N2BAST :     442
    N2BASX :    1444
    NNBASX :     741
    
@@ -550,26 +656,26 @@ Point group: C1
              -----------------------------------------
 
 
-          Number of t1 amplitudes                 :       240
-          Number of t2 amplitudes                 :     28920
-          Total number of amplitudes in ccsd      :     29160
+          Number of t1 amplitudes                 :        77
+          Number of t2 amplitudes                 :      7970
+          Total number of amplitudes in ccsd      :      8047
 
- Iter.  1: Coupled cluster MP2   energy :    -110.3325686854949900
- Iter.  1: Coupled cluster CCSD  energy :    -110.3366541853792500
- Iter.  2: Coupled cluster CCSD  energy :    -110.3479288713104700
- Iter.  3: Coupled cluster CCSD  energy :    -110.3507266590112900
- Iter.  4: Coupled cluster CCSD  energy :    -110.3506992235965400
- Iter.  5: Coupled cluster CCSD  energy :    -110.3507543859892800
- Iter.  6: Coupled cluster CCSD  energy :    -110.3507464768373000
- Iter.  7: Coupled cluster CCSD  energy :    -110.3507419146728500
- Iter.  8: Coupled cluster CCSD  energy :    -110.3507420764361800
- Iter.  9: Coupled cluster CCSD  energy :    -110.3507417887617200
- Iter. 10: Coupled cluster CCSD  energy :    -110.3507418556605000
- Iter. 11: Coupled cluster CCSD  energy :    -110.3507418036331000
- Iter. 12: Coupled cluster CCSD  energy :    -110.3507417983196700
- Iter. 13: Coupled cluster CCSD  energy :    -110.3507418102226000
- Iter. 14: Coupled cluster CCSD  energy :    -110.3507418022290200
- Iter. 15: Coupled cluster CCSD  energy :    -110.3507418022542500
+ Iter.  1: Coupled cluster MP2   energy :    -110.3325686854922000
+ Iter.  1: Coupled cluster CCSD  energy :    -110.3366541853791000
+ Iter.  2: Coupled cluster CCSD  energy :    -110.3479288713095000
+ Iter.  3: Coupled cluster CCSD  energy :    -110.3507266590106000
+ Iter.  4: Coupled cluster CCSD  energy :    -110.3506992235965000
+ Iter.  5: Coupled cluster CCSD  energy :    -110.3507543859877000
+ Iter.  6: Coupled cluster CCSD  energy :    -110.3507464768369000
+ Iter.  7: Coupled cluster CCSD  energy :    -110.3507419146730000
+ Iter.  8: Coupled cluster CCSD  energy :    -110.3507420764353000
+ Iter.  9: Coupled cluster CCSD  energy :    -110.3507417887616000
+ Iter. 10: Coupled cluster CCSD  energy :    -110.3507418556603000
+ Iter. 11: Coupled cluster CCSD  energy :    -110.3507418036329000
+ Iter. 12: Coupled cluster CCSD  energy :    -110.3507417983192000
+ Iter. 13: Coupled cluster CCSD  energy :    -110.3507418102225000
+ Iter. 14: Coupled cluster CCSD  energy :    -110.3507418022288000
+ Iter. 15: Coupled cluster CCSD  energy :    -110.3507418022549000
 
  CCSD  energy converged to within   0.10D-09 is   -110.350741802
 
@@ -636,9 +742,6 @@ Point group: C1
  *******************************************************************************
 
 
- WARNING: Tried to close a non-existent or already closed file
- Unit number was:  10
-
 - End of Coupled Cluster
      Starting Coupled Cluster -
 
@@ -670,52 +773,12 @@ Point group: C1
 
  CC_GETSAV> IOPT =           33
  Vector nr.  1 of symmetry  1 NOT found on file.
-     Start vector generated from gradient
-
-
- Analysis of the undifferentiated Lagrangian multipliers: 
- --------------------------------------------------------
-
-
-          CC_PRAM:Overall Contribution of the Different Components
-          --------------------------------------------------------
-
-
-
-          Single Excitation Contribution :               1.2223 %
-
-          Double Excitation Contribution :              98.7777 %
-
-          ||T1||/||T2||                  :               0.1112
-
-          Tau1 diagnostic                :               0.0183
-
-          Norm of Total Amplitude Vector :               0.6603
-
-
- +=============================================================================+
- | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
- |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
- +=============================================================================+
- | 1   1   |   8       7     |      188          |              |   -0.045325  |
- | 1   1   |   3       8     |      213          |              |   -0.034230  |
- +-----------------------------------------------------------------------------+
- | 1 1 1 1 |   1   1   7   7 |      181      181 |        16471 |   -0.287574  |
- +=============================================================================+
-
-
-          Norm of Printed Amplitude Vector :             0.2931
-
-
-          Printed all single excitations greater than 0.022112
-
-
-          Printed all double excitations greater than 0.198774
 
 
               Constructing right-hand-side for CCSD-kappa-0
               ---------------------------------------------
 
+ CC_FOP> Norm of RHS vector:  4.8574536785615630E-004
 
 
                   Solving for orbital relaxation vector
@@ -736,17 +799,24 @@ Point group: C1
                             Molecular gradient
                             ------------------
 
- N          0.0059711547            0.0000000000           -0.0140490636
- N         -0.0059711547            0.0000000000           -0.0140490636
- H         -0.0047311787            0.0000000000            0.0140490636
- H          0.0047311787            0.0000000000            0.0140490636
+                         N    x    -0.0119423094
+                         N    z    -0.0280981271
+                         H    x     0.0094623575
+                         H    z     0.0280981271
+
+
+
+ N    1    -0.0059711547            0.0000000000           -0.0140490636
+ N    2     0.0059711547            0.0000000000           -0.0140490636
+ H    1     0.0047311787            0.0000000000            0.0140490636
+ H    2    -0.0047311787            0.0000000000            0.0140490636
 
 
 
 
-                   Molecular gradient norm:  9.06E-04
+                   Molecular gradient norm:  1.81E-03
 
->>> Total time used in gradient section:       62.93 seconds.
+>>> Total time used in gradient section:       12.97 seconds.
   
 
  *******************************************************************************
@@ -777,15 +847,24 @@ Point group: C1
  *******************************************************************************
 
 
- WARNING: Tried to close a non-existent or already closed file
- Unit number was:  18
-
 - End of Coupled Cluster
 
 
        :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-       ::::::::::::::: Minimization Control Center :::::::::::::::
+       ::::::::::::::: Optimization Control Center :::::::::::::::
        :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+
+
+                            Next geometry (au)
+                            ------------------
+
+ N    1     1.1806862695            0.0000000000           -0.1109925092
+ N    2    -1.1806862695            0.0000000000           -0.1109925092
+ H    1     1.9232391934            0.0000000000            1.7377742092
+ H    2    -1.9232391934            0.0000000000            1.7377742092
+
+
 
 
 
@@ -793,17 +872,12 @@ Point group: C1
                          ------------------------
 
  Iteration number               :       0
- End of minimization            :       F 
+ End of optimization            :       F 
  Energy at this geometry is     :    -110.350742
  Norm of gradient               :       0.030093
- Total Hessian index            :       0
-
-
-                            Change in geometry
-                            ------------------
-
- Updated trust radius           :       0.500000
  Norm of step                   :       0.046340
+ Updated trust radius           :       0.500000
+ Total Hessian index            :       0
 
 
     Starting in Integral Section -
@@ -815,16 +889,13 @@ Point group: C1
  *************************************************************************
 
 
-
  Default print level:       -1
 
  * Nuclear model: Point charge
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
-
  The following one-electron property integrals are calculated:
-
           - overlap integrals
           - dipole length integrals
           - Geometrical derivatives of overlap integrals
@@ -833,62 +904,51 @@ Point group: C1
  In this run  precalculated two-electron integrals are transformed
  to P-supermatrix elements.
 
-
- >>> Time used in ONEDRV is   0.04 seconds
+ >>> Time used in ONEDRV is   0.01 seconds
 
 
  >>> Time used in OVERLA is   0.01 seconds
 
 
- >>> Time used in DIPLEN is   0.01 seconds
+ >>> Time used in DIPLEN is   0.00 seconds
 
 
- >>> Time used in DEROVL is   0.04 seconds
+ >>> Time used in DEROVL is   0.01 seconds
 
 
- >>> Time used in DERHAM is   0.12 seconds
+ >>> Time used in DERHAM is   0.06 seconds
 
 
- Number of two-electron integrals written:    136363 (49.6%)
- Kilobytes written:                             1643
-
-
-
- >>> Time used in TWOINT is   3.69 seconds
+ Number of two-electron integrals written:       62733 ( 22.8% )
+ Megabytes written:                              0.721
 
 
 
- ***********************************************************************
- ************************* Output from FORMSUP *************************
- ***********************************************************************
+ >>> Time used in TWOINT is   0.54 seconds
 
-  NOSYM :  F
- OLDSUP :  F
 
- Threshold for discarding integrals :  1.00D-15
+ >>> Time used in FRMSUP is   0.03 seconds
 
- >>> Time used in FRMSUP is   0.14 seconds
-
- >>>> Total CPU  time used in HERMIT:   4.06 seconds
- >>>> Total wall time used in HERMIT:   4.00 seconds
+ >>>> Total CPU  time used in HERMIT:   1.34 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
-@@     Starting Wave-Function Section -
+     Starting Wave Function Section -
 
  ************************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
  ************************************************************************
 
  
-     Date and time (IRIX)   : Thu Nov 23 13:31:47 2000
-     Host name              : odin                                    
+     Date and time (Linux)  : Fri Apr  6 13:52:47 2001
+     Host name              : pauli.uio.no                            
 
  Title lines from integral program:
        Cis-diazine CCSD geometry optimisation (cc-dzp basis)                 
        001  ( A1)                                                            
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4 =   2 is   5
+ Print level on unit LUW4  =   2 is   5
 
       (Integral direct) CC calculation.
 
@@ -909,24 +969,24 @@ Point group: C1
      Total number of orbitals                 38
 
      Spin multiplicity                         1
-     Total number of symmetries                1
+     Total number of symmetries                4
      Reference state symmetry                  1
 
      Orbital specifications
      ======================
-     Abelian symmetry species           1
-                                       --
-     Occupied HF orbitals               8
-     Secondary orbitals                30
-     Total number of orbitals          38
-     Number of basis functions         38
+     Abelian symmetry species           1   2   3   4
+                                       --  --  --  --
+     Occupied HF orbitals               4   1   3   0
+     Secondary orbitals                10   4  11   5
+     Total number of orbitals          14   5  14   5
+     Number of basis functions         14   5  14   5
 
      Optimization information
      ========================
      Number of configurations              1
-     Number of orbital rotations         240
+     Number of orbital rotations          77
      ---------------------------------------
-     Total number of variables           241
+     Total number of variables            78
 
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
@@ -953,12 +1013,12 @@ Point group: C1
     5     -109.995228559650    1.74915D-04   -8.49D-08
     6     -109.995228563722    4.23039D-05   -4.07D-09
     7     -109.995228564011    6.77299D-06   -2.89D-10
-    8     -109.995228564018    9.78208D-07   -7.67D-12
-    9     -109.995228564018    1.54937D-07   -1.42D-13
-   10     -109.995228564018    2.43007D-08    1.14D-13
-   11     -109.995228564018    4.39093D-09    1.14D-13
-   12     -109.995228564018    7.08643D-10    2.84D-14
-   13     -109.995228564018    6.21445D-11   -1.71D-13
+    8     -109.995228564018    9.78208D-07   -7.68D-12
+    9     -109.995228564018    1.54937D-07   -3.20D-14
+   10     -109.995228564018    2.43006D-08   -3.55D-15
+   11     -109.995228564018    4.39135D-09   -3.20D-14
+   12     -109.995228564019    7.08713D-10   -3.20D-14
+   13     -109.995228564018    6.21016D-11    2.49D-14
  DIIS converged in  13 iterations !
 
 
@@ -967,19 +1027,31 @@ Point group: C1
  Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   16
- Orbital occupations :    8
+ Orbital occupations :    4    1    3    0
 
  Hartree-Fock orbital energies, symmetry 1
 
-       -15.63878280   -15.63752116    -1.34866739    -0.91692789    -0.74168138
-        -0.56613449    -0.50947433    -0.40620562     0.13340854     0.15953422
-         0.23684640     0.56845329     0.69955018
+       -15.63878280    -1.34866739    -0.74168138    -0.56613449     0.15953422
+         0.69955018     0.87141725     0.96638234     1.19942044
 
-    E(LUMO) :     0.13340854 au (symmetry 1)
-  - E(HOMO) :    -0.40620562 au (symmetry 1)
+ Hartree-Fock orbital energies, symmetry 2
+
+        -0.50947433     0.93997561     1.38335294     1.80827126     2.27255283
+
+ Hartree-Fock orbital energies, symmetry 3
+
+       -15.63752116    -0.91692789    -0.40620562     0.23684640     0.56845329
+         0.84541694     1.00683646     1.18824263
+
+ Hartree-Fock orbital energies, symmetry 4
+
+         0.13340854     1.05613349     1.53076293     2.60296647     2.86286480
+
+    E(LUMO) :     0.13340854 au (symmetry 4)
+  - E(HOMO) :    -0.40620562 au (symmetry 3)
   ------------------------------------------
     gap     :     0.53961416 au
-1
+
 
                     >>> FINAL RESULTS FROM SIRIUS <<<
 
@@ -987,107 +1059,70 @@ Point group: C1
      Spatial symmetry:            1
 
      Final    HF energy:         -109.995228564018
-     Nuclear repulsion:            31.912734739022
-     Electronic energy:          -141.907963303040
+     Nuclear repulsion:            31.912734739043
+     Electronic energy:          -141.907963303062
 
      Final gradient norm:           0.000000000062
 
  
-     Date and time (IRIX)   : Thu Nov 23 13:31:48 2000
-     Host name              : odin                                    
+     Date and time (Linux)  : Fri Apr  6 13:52:47 2001
+     Host name              : pauli.uio.no                            
 
      Molecular orbitals for symmetry species   1
 
- Orbital          1        2        3        4        5        6        7
-   1  N   1s     0.7074   0.7076  -0.0062  -0.0011  -0.0058   0.0040   0.0000
-   2  N   1s     0.0020   0.0025   0.6367  -0.5820  -0.0607  -0.1861   0.0000
-   3  N   1s    -0.0014  -0.0034  -0.1462   0.0444   0.0150  -0.1197   0.0000
-   4  N   2px    0.0013   0.0018   0.2309   0.2150  -0.3671   0.5213   0.0000
-   5  N   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.5901
-   6  N   2pz    0.0019   0.0020   0.0554  -0.1180   0.4038   0.3668   0.0000
-   7  N   2px   -0.0011  -0.0018  -0.0680  -0.0384   0.0826  -0.0420   0.0000
-   8  N   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0259
-   9  N   2pz   -0.0014  -0.0017  -0.0158   0.0460  -0.0684  -0.0013   0.0000
-  10  N   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0236
-  11  N   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0082
-  12  N   3d0    0.0002   0.0000  -0.0067  -0.0079   0.0147  -0.0007   0.0000
-  13  N   3d1+  -0.0001   0.0000   0.0038   0.0055   0.0039   0.0154   0.0000
-  14  N   3d2+   0.0000   0.0004   0.0116   0.0052  -0.0076   0.0101   0.0000
-  15  N   1s     0.7074  -0.7076  -0.0062   0.0011  -0.0058   0.0040   0.0000
-  16  N   1s     0.0020  -0.0025   0.6367   0.5820  -0.0607  -0.1861   0.0000
-  17  N   1s    -0.0014   0.0034  -0.1462  -0.0444   0.0150  -0.1197   0.0000
-  18  N   2px   -0.0013   0.0018  -0.2309   0.2150   0.3671  -0.5213   0.0000
-  19  N   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.5901
-  20  N   2pz    0.0019  -0.0020   0.0554   0.1180   0.4038   0.3668   0.0000
-  21  N   2px    0.0011  -0.0018   0.0680  -0.0384  -0.0826   0.0420   0.0000
-  22  N   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0259
-  23  N   2pz   -0.0014   0.0017  -0.0158  -0.0460  -0.0684  -0.0013   0.0000
-  24  N   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000  -0.0236
-  25  N   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0082
-  26  N   3d0    0.0002   0.0000  -0.0067   0.0079   0.0147  -0.0007   0.0000
-  27  N   3d1+   0.0001   0.0000  -0.0038   0.0055  -0.0039  -0.0154   0.0000
-  28  N   3d2+   0.0000  -0.0004   0.0116  -0.0052  -0.0076   0.0101   0.0000
-  29  H   1s    -0.0004  -0.0001   0.1622  -0.3843   0.4479  -0.0009   0.0000
-  30  H   1s     0.0008   0.0004  -0.0846   0.1573  -0.1552  -0.0199   0.0000
-  31  H   2px    0.0000  -0.0002   0.0106  -0.0098   0.0109   0.0129   0.0000
-  32  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0140
-  33  H   2pz    0.0005   0.0006  -0.0180   0.0286  -0.0248   0.0051   0.0000
-  34  H   1s    -0.0004   0.0001   0.1622   0.3843   0.4479  -0.0009   0.0000
-  35  H   1s     0.0008  -0.0004  -0.0846  -0.1573  -0.1552  -0.0199   0.0000
-  36  H   2px    0.0000  -0.0002  -0.0106  -0.0098  -0.0109  -0.0129   0.0000
-  37  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0140
-  38  H   2pz    0.0005  -0.0006  -0.0180  -0.0286  -0.0248   0.0051   0.0000
+ Orbital          1        2        3        4
+   1  N   1s     0.7074  -0.0062  -0.0058  -0.0040
+   2  N   1s     0.0020   0.6367  -0.0607   0.1861
+   3  N   1s    -0.0014  -0.1462   0.0150   0.1197
+   4  N   2px   -0.0013  -0.2309   0.3671   0.5213
+   5  N   2pz    0.0019   0.0554   0.4038  -0.3668
+   6  N   2px    0.0011   0.0680  -0.0826  -0.0420
+   7  N   2pz   -0.0014  -0.0158  -0.0684   0.0013
+   8  N   3d0    0.0003  -0.0117   0.0254   0.0012
+   9  N   3d1+   0.0001  -0.0066  -0.0068   0.0267
+  10  N   3d2+   0.0000   0.0202  -0.0132  -0.0175
+  11  H   1s    -0.0004   0.1622   0.4479   0.0009
+  12  H   1s     0.0008  -0.0846  -0.1552   0.0199
+  13  H   2px    0.0000  -0.0106  -0.0109   0.0129
+  14  H   2pz    0.0005  -0.0180  -0.0248  -0.0051
 
- Orbital          8
-   1  N   1s    -0.0047
-   2  N   1s    -0.2912
-   3  N   1s    -0.0690
-   4  N   2px    0.1310
-   5  N   2py    0.0000
-   6  N   2pz    0.5376
-   7  N   2px    0.0734
-   8  N   2py    0.0000
-   9  N   2pz    0.0274
-  10  N   3d2-   0.0000
-  11  N   3d1-   0.0000
-  12  N   3d0    0.0092
-  13  N   3d1+  -0.0068
-  14  N   3d2+   0.0037
-  15  N   1s     0.0047
-  16  N   1s     0.2912
-  17  N   1s     0.0690
-  18  N   2px    0.1310
-  19  N   2py    0.0000
-  20  N   2pz   -0.5376
-  21  N   2px    0.0734
-  22  N   2py    0.0000
-  23  N   2pz   -0.0274
-  24  N   3d2-   0.0000
-  25  N   3d1-   0.0000
-  26  N   3d0   -0.0092
-  27  N   3d1+  -0.0068
-  28  N   3d2+  -0.0037
-  29  H   1s     0.4403
-  30  H   1s    -0.0852
-  31  H   2px    0.0094
-  32  H   2py    0.0000
-  33  H   2pz   -0.0098
-  34  H   1s    -0.4403
-  35  H   1s     0.0852
-  36  H   2px    0.0094
-  37  H   2py    0.0000
-  38  H   2pz    0.0098
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1
+   1  N   2py    0.5901
+   2  N   2py    0.0259
+   3  N   3d2-  -0.0408
+   4  N   3d1-   0.0142
+   5  H   2py    0.0140
+
+     Molecular orbitals for symmetry species   3
+
+ Orbital          1        2        3
+   1  N   1s     0.7076   0.0011  -0.0047
+   2  N   1s     0.0025   0.5820  -0.2912
+   3  N   1s    -0.0034  -0.0444  -0.0690
+   4  N   2px   -0.0018   0.2150  -0.1310
+   5  N   2pz    0.0020   0.1180   0.5376
+   6  N   2px    0.0018  -0.0384  -0.0734
+   7  N   2pz   -0.0017  -0.0460   0.0274
+   8  N   3d0    0.0000   0.0136   0.0160
+   9  N   3d1+   0.0001   0.0096   0.0117
+  10  N   3d2+   0.0007  -0.0090   0.0063
+  11  H   1s    -0.0001   0.3843   0.4403
+  12  H   1s     0.0004  -0.1573  -0.0852
+  13  H   2px    0.0002  -0.0098  -0.0094
+  14  H   2pz    0.0006  -0.0286  -0.0098
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.69 seconds
- >>>> Total wall time used in SIRIUS :      1.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.06 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (IRIX)   : Thu Nov 23 13:31:48 2000
-     Host name              : odin                                    
+     Date and time (Linux)  : Fri Apr  6 13:52:47 2001
+     Host name              : pauli.uio.no                            
 
-@@- End of Wave-Function Section
+- End of Wave Function Section
      Starting Coupled Cluster -
 
   
@@ -1108,17 +1143,17 @@ Point group: C1
                          ! Information from CCORB !
                          +------------------------+
 
-   NBAS   :      38
-   IBAS   :       0
-   NRHF   :       8
-   NVIR   :      30
-   NRHFS  :       8
-   NVIRS  :      30
-   NRHFFR :       0
-   NVIRFR :       0
+   NBAS   :      14       5      14       5
+   IBAS   :       0      14      19      33
+   NRHF   :       4       1       3       0
+   NVIR   :      10       4      11       5
+   NRHFS  :       4       1       3       0
+   NVIRS  :      10       4      11       5
+   NRHFFR :       0       0       0       0
+   NVIRFR :       0       0       0       0
    NORBTS :      38
    NORBT  :      38
-   N2BAST :    1444
+   N2BAST :     442
    N2BASX :    1444
    NNBASX :     741
    
@@ -1136,25 +1171,25 @@ Point group: C1
              -----------------------------------------
 
 
-          Number of t1 amplitudes                 :       240
-          Number of t2 amplitudes                 :     28920
-          Total number of amplitudes in ccsd      :     29160
+          Number of t1 amplitudes                 :        77
+          Number of t2 amplitudes                 :      7970
+          Total number of amplitudes in ccsd      :      8047
 
- Iter.  1: Coupled cluster RSTAR energy :    -110.3521116857946100
- Iter.  1: Coupled cluster CCSD  energy :    -110.3514490306955300
- Iter.  2: Coupled cluster CCSD  energy :    -110.3514016478757600
- Iter.  3: Coupled cluster CCSD  energy :    -110.3513390800552000
- Iter.  4: Coupled cluster CCSD  energy :    -110.3513248117396900
- Iter.  5: Coupled cluster CCSD  energy :    -110.3513227350012000
- Iter.  6: Coupled cluster CCSD  energy :    -110.3513236979010700
- Iter.  7: Coupled cluster CCSD  energy :    -110.3513238444589000
- Iter.  8: Coupled cluster CCSD  energy :    -110.3513239578441600
- Iter.  9: Coupled cluster CCSD  energy :    -110.3513239335576400
- Iter. 10: Coupled cluster CCSD  energy :    -110.3513239521895300
- Iter. 11: Coupled cluster CCSD  energy :    -110.3513239496904500
- Iter. 12: Coupled cluster CCSD  energy :    -110.3513239519490400
- Iter. 13: Coupled cluster CCSD  energy :    -110.3513239528193600
- Iter. 14: Coupled cluster CCSD  energy :    -110.3513239527661800
+ Iter.  1: Coupled cluster RSTAR energy :    -110.3521116857934000
+ Iter.  1: Coupled cluster CCSD  energy :    -110.3514490306960000
+ Iter.  2: Coupled cluster CCSD  energy :    -110.3514016478753000
+ Iter.  3: Coupled cluster CCSD  energy :    -110.3513390800549000
+ Iter.  4: Coupled cluster CCSD  energy :    -110.3513248117396000
+ Iter.  5: Coupled cluster CCSD  energy :    -110.3513227350006000
+ Iter.  6: Coupled cluster CCSD  energy :    -110.3513236979019000
+ Iter.  7: Coupled cluster CCSD  energy :    -110.3513238444595000
+ Iter.  8: Coupled cluster CCSD  energy :    -110.3513239578443000
+ Iter.  9: Coupled cluster CCSD  energy :    -110.3513239335581000
+ Iter. 10: Coupled cluster CCSD  energy :    -110.3513239521890000
+ Iter. 11: Coupled cluster CCSD  energy :    -110.3513239496902000
+ Iter. 12: Coupled cluster CCSD  energy :    -110.3513239519490000
+ Iter. 13: Coupled cluster CCSD  energy :    -110.3513239528183000
+ Iter. 14: Coupled cluster CCSD  energy :    -110.3513239527651000
 
  CCSD  energy converged to within   0.10D-09 is   -110.351323953
 
@@ -1221,23 +1256,9 @@ Point group: C1
  *******************************************************************************
 
 
- WARNING: Tried to close a non-existent or already closed file
- Unit number was:  10
-
 - End of Coupled Cluster
  Trust radius increased due to good ratio.
  Updated trust radius   0.50000
-
-
-                         New internal coordinates
-                         ------------------------
-
-
-               Column   1     Column   2     Column   3     Column   4
-       1       2.36137254     1.99231605     1.99231605     3.61279555
-
-               Column   5     Column   6     Column   7     Column   8
-       1       3.61279555     1.95272234     1.95272234     0.00000000
      Starting Coupled Cluster -
 
   
@@ -1271,54 +1292,17 @@ Point group: C1
  Start vector is a CCSD      L0  vector
 
 
- Analysis of the undifferentiated Lagrangian multipliers: 
- --------------------------------------------------------
-
-
-          CC_PRAM:Overall Contribution of the Different Components
-          --------------------------------------------------------
-
-
-
-          Single Excitation Contribution :               1.2110 %
-
-          Double Excitation Contribution :              98.7890 %
-
-          ||T1||/||T2||                  :               0.1107
-
-          Tau1 diagnostic                :               0.0181
-
-          Norm of Total Amplitude Vector :               0.6583
-
-
- +=============================================================================+
- | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
- |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
- +=============================================================================+
- | 1   1   |   8       7     |      188          |              |   -0.045605  |
- | 1   1   |   3       8     |      213          |              |   -0.033368  |
- +-----------------------------------------------------------------------------+
- | 1 1 1 1 |   1   1   7   7 |      181      181 |        16471 |   -0.288351  |
- +=============================================================================+
-
-
-          Norm of Printed Amplitude Vector :             0.2938
-
-
-          Printed all single excitations greater than 0.022009
-
-
-          Printed all double excitations greater than 0.198785
-
-
               Constructing right-hand-side for CCSD-kappa-0
               ---------------------------------------------
 
+ CC_FOP> Norm of RHS vector:  4.7874976429539293E-004
 
 
                   Solving for orbital relaxation vector
                   -------------------------------------
 
+
+ Converged vectors from previous geometry used as starting vectors
   
    Equations converged to residual less than:  0.000000
   
@@ -1334,17 +1318,24 @@ Point group: C1
                             Molecular gradient
                             ------------------
 
- N          0.0022697237            0.0000000000           -0.0047159784
- N         -0.0022697237            0.0000000000           -0.0047159784
- H         -0.0021891461            0.0000000000            0.0047159784
- H          0.0021891461            0.0000000000            0.0047159784
+                         N    x    -0.0045394475
+                         N    z    -0.0094319567
+                         H    x     0.0043782921
+                         H    z     0.0094319567
+
+
+
+ N    1    -0.0022697237            0.0000000000           -0.0047159784
+ N    2     0.0022697237            0.0000000000           -0.0047159784
+ H    1     0.0021891461            0.0000000000            0.0047159784
+ H    2    -0.0021891461            0.0000000000            0.0047159784
 
 
 
 
-                   Molecular gradient norm:  1.09E-04
+                   Molecular gradient norm:  2.18E-04
 
->>> Total time used in gradient section:       62.62 seconds.
+>>> Total time used in gradient section:       12.89 seconds.
   
 
  *******************************************************************************
@@ -1375,15 +1366,24 @@ Point group: C1
  *******************************************************************************
 
 
- WARNING: Tried to close a non-existent or already closed file
- Unit number was:  18
-
 - End of Coupled Cluster
 
 
        :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-       ::::::::::::::: Minimization Control Center :::::::::::::::
+       ::::::::::::::: Optimization Control Center :::::::::::::::
        :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+
+
+                            Next geometry (au)
+                            ------------------
+
+ N    1     1.1809413495            0.0000000000           -0.1043948282
+ N    2    -1.1809413495            0.0000000000           -0.1043948282
+ H    1     1.9148634888            0.0000000000            1.7311765282
+ H    2    -1.9148634888            0.0000000000            1.7311765282
+
+
 
 
 
@@ -1391,33 +1391,15 @@ Point group: C1
                          ------------------------
 
  Iteration number               :       1
- End of minimization            :       F 
+ End of optimization            :       F 
  Energy at this geometry is     :    -110.351324
  Energy change from last geom.  :      -0.000582
- Predicted change               :      -0.000432
- Ratio, actual/predicted change :       1.347095
  Norm of gradient               :       0.010433
+ Norm of step                   :       0.029329
+ Updated trust radius           :       0.500000
  Total Hessian index            :       0
 
 
-                            Change in geometry
-                            ------------------
-
- Updated trust radius           :       0.500000
- Norm of step                   :       0.029329
-
-
-
-
-                         New internal coordinates
-                         ------------------------
-
-
-               Column   1     Column   2     Column   3     Column   4
-       1       2.36137254     1.99231605     1.99231605     3.61279555
-
-               Column   5     Column   6     Column   7     Column   8
-       1       3.61279555     1.95272234     1.95272234     0.00000000
     Starting in Integral Section -
 
 
@@ -1427,16 +1409,13 @@ Point group: C1
  *************************************************************************
 
 
-
  Default print level:       -1
 
  * Nuclear model: Point charge
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
-
  The following one-electron property integrals are calculated:
-
           - overlap integrals
           - dipole length integrals
           - Geometrical derivatives of overlap integrals
@@ -1445,62 +1424,51 @@ Point group: C1
  In this run  precalculated two-electron integrals are transformed
  to P-supermatrix elements.
 
-
- >>> Time used in ONEDRV is   0.04 seconds
+ >>> Time used in ONEDRV is   0.01 seconds
 
 
  >>> Time used in OVERLA is   0.01 seconds
 
 
- >>> Time used in DIPLEN is   0.01 seconds
+ >>> Time used in DIPLEN is   0.00 seconds
 
 
- >>> Time used in DEROVL is   0.04 seconds
+ >>> Time used in DEROVL is   0.01 seconds
 
 
- >>> Time used in DERHAM is   0.12 seconds
+ >>> Time used in DERHAM is   0.06 seconds
 
 
- Number of two-electron integrals written:    134919 (49.1%)
- Kilobytes written:                             1621
-
-
-
- >>> Time used in TWOINT is   3.68 seconds
+ Number of two-electron integrals written:       62733 ( 22.8% )
+ Megabytes written:                              0.721
 
 
 
- ***********************************************************************
- ************************* Output from FORMSUP *************************
- ***********************************************************************
+ >>> Time used in TWOINT is   0.54 seconds
 
-  NOSYM :  F
- OLDSUP :  F
 
- Threshold for discarding integrals :  1.00D-15
+ >>> Time used in FRMSUP is   0.03 seconds
 
- >>> Time used in FRMSUP is   0.13 seconds
-
- >>>> Total CPU  time used in HERMIT:   4.05 seconds
- >>>> Total wall time used in HERMIT:   4.00 seconds
+ >>>> Total CPU  time used in HERMIT:   1.34 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
-@@     Starting Wave-Function Section -
+     Starting Wave Function Section -
 
  ************************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
  ************************************************************************
 
  
-     Date and time (IRIX)   : Thu Nov 23 13:34:01 2000
-     Host name              : odin                                    
+     Date and time (Linux)  : Fri Apr  6 13:53:21 2001
+     Host name              : pauli.uio.no                            
 
  Title lines from integral program:
        Cis-diazine CCSD geometry optimisation (cc-dzp basis)                 
        001  ( A1)                                                            
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4 =   2 is   5
+ Print level on unit LUW4  =   2 is   5
 
       (Integral direct) CC calculation.
 
@@ -1521,24 +1489,24 @@ Point group: C1
      Total number of orbitals                 38
 
      Spin multiplicity                         1
-     Total number of symmetries                1
+     Total number of symmetries                4
      Reference state symmetry                  1
 
      Orbital specifications
      ======================
-     Abelian symmetry species           1
-                                       --
-     Occupied HF orbitals               8
-     Secondary orbitals                30
-     Total number of orbitals          38
-     Number of basis functions         38
+     Abelian symmetry species           1   2   3   4
+                                       --  --  --  --
+     Occupied HF orbitals               4   1   3   0
+     Secondary orbitals                10   4  11   5
+     Total number of orbitals          14   5  14   5
+     Number of basis functions         14   5  14   5
 
      Optimization information
      ========================
      Number of configurations              1
-     Number of orbital rotations         240
+     Number of orbital rotations          77
      ---------------------------------------
-     Total number of variables           241
+     Total number of variables            78
 
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
@@ -1559,18 +1527,18 @@ Point group: C1
  Iter      Total energy        Error norm    Delta(E)
  ----------------------------------------------------
     1     -109.995833028242    1.99640D-02   -1.10D+02
-    2     -109.995864897105    4.43263D-03   -3.19D-05
+    2     -109.995864897106    4.43263D-03   -3.19D-05
     3     -109.995867282151    1.04200D-03   -2.39D-06
     4     -109.995867480889    3.38834D-04   -1.99D-07
-    5     -109.995867501466    8.32833D-05   -2.06D-08
-    6     -109.995867502392    2.10874D-05   -9.26D-10
-    7     -109.995867502462    3.57047D-06   -7.00D-11
-    8     -109.995867502465    5.70526D-07   -2.64D-12
-    9     -109.995867502465    9.73961D-08   -3.98D-13
-   10     -109.995867502465    1.83651D-08    2.27D-13
-   11     -109.995867502465    2.37711D-09   -2.27D-13
-   12     -109.995867502464    3.56150D-10    5.12D-13
-   13     -109.995867502465    3.81198D-11   -5.12D-13
+    5     -109.995867501467    8.32833D-05   -2.06D-08
+    6     -109.995867502392    2.10874D-05   -9.25D-10
+    7     -109.995867502463    3.57047D-06   -7.09D-11
+    8     -109.995867502465    5.70526D-07   -2.13D-12
+    9     -109.995867502465    9.73961D-08   -5.33D-14
+   10     -109.995867502465    1.83650D-08   -5.33D-14
+   11     -109.995867502465    2.37701D-09    6.04D-14
+   12     -109.995867502465    3.56114D-10    3.55D-15
+   13     -109.995867502465    3.81932D-11   -5.33D-14
  DIIS converged in  13 iterations !
 
 
@@ -1579,19 +1547,31 @@ Point group: C1
  Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   16
- Orbital occupations :    8
+ Orbital occupations :    4    1    3    0
 
  Hartree-Fock orbital energies, symmetry 1
 
-       -15.63772703   -15.63646787    -1.34936874    -0.91987311    -0.74408087
-        -0.56604642    -0.50927281    -0.40711710     0.13329536     0.16092464
-         0.23758523     0.56870684     0.70412538
+       -15.63772703    -1.34936874    -0.74408087    -0.56604642     0.16092464
+         0.70412538     0.87268416     0.96552804     1.19956836
 
-    E(LUMO) :     0.13329536 au (symmetry 1)
-  - E(HOMO) :    -0.40711710 au (symmetry 1)
+ Hartree-Fock orbital energies, symmetry 2
+
+        -0.50927281     0.94041872     1.38362057     1.80820841     2.27952655
+
+ Hartree-Fock orbital energies, symmetry 3
+
+       -15.63646787    -0.91987311    -0.40711710     0.23758523     0.56870684
+         0.85161536     1.00650170     1.18784263
+
+ Hartree-Fock orbital energies, symmetry 4
+
+         0.13329536     1.05642787     1.53236217     2.60938924     2.86302286
+
+    E(LUMO) :     0.13329536 au (symmetry 4)
+  - E(HOMO) :    -0.40711710 au (symmetry 3)
   ------------------------------------------
     gap     :     0.54041246 au
-1
+
 
                     >>> FINAL RESULTS FROM SIRIUS <<<
 
@@ -1599,107 +1579,70 @@ Point group: C1
      Spatial symmetry:            1
 
      Final    HF energy:         -109.995867502465
-     Nuclear repulsion:            31.979115275841
-     Electronic energy:          -141.974982778306
+     Nuclear repulsion:            31.979115275891
+     Electronic energy:          -141.974982778356
 
      Final gradient norm:           0.000000000038
 
  
-     Date and time (IRIX)   : Thu Nov 23 13:34:02 2000
-     Host name              : odin                                    
+     Date and time (Linux)  : Fri Apr  6 13:53:22 2001
+     Host name              : pauli.uio.no                            
 
      Molecular orbitals for symmetry species   1
 
- Orbital          1        2        3        4        5        6        7
-   1  N   1s     0.7074   0.7076  -0.0064  -0.0009  -0.0058   0.0040   0.0000
-   2  N   1s     0.0021   0.0026   0.6359  -0.5807  -0.0627  -0.1862   0.0000
-   3  N   1s    -0.0014  -0.0034  -0.1465   0.0474   0.0133  -0.1194   0.0000
-   4  N   2px    0.0013   0.0018   0.2298   0.2144  -0.3674   0.5216   0.0000
-   5  N   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.5898
-   6  N   2pz    0.0019   0.0020   0.0566  -0.1204   0.4047   0.3660   0.0000
-   7  N   2px   -0.0011  -0.0018  -0.0676  -0.0383   0.0831  -0.0419   0.0000
-   8  N   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0261
-   9  N   2pz   -0.0014  -0.0017  -0.0166   0.0477  -0.0696  -0.0011   0.0000
-  10  N   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0235
-  11  N   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0082
-  12  N   3d0    0.0002   0.0000  -0.0067  -0.0079   0.0148  -0.0007   0.0000
-  13  N   3d1+  -0.0001  -0.0001   0.0038   0.0056   0.0039   0.0154   0.0000
-  14  N   3d2+   0.0000   0.0004   0.0116   0.0052  -0.0077   0.0101   0.0000
-  15  N   1s     0.7074  -0.7076  -0.0064   0.0009  -0.0058   0.0040   0.0000
-  16  N   1s     0.0021  -0.0026   0.6359   0.5807  -0.0627  -0.1862   0.0000
-  17  N   1s    -0.0014   0.0034  -0.1465  -0.0474   0.0133  -0.1194   0.0000
-  18  N   2px   -0.0013   0.0018  -0.2298   0.2144   0.3674  -0.5216   0.0000
-  19  N   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.5898
-  20  N   2pz    0.0019  -0.0020   0.0566   0.1204   0.4047   0.3660   0.0000
-  21  N   2px    0.0011  -0.0018   0.0676  -0.0383  -0.0831   0.0419   0.0000
-  22  N   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0261
-  23  N   2pz   -0.0014   0.0017  -0.0166  -0.0477  -0.0696  -0.0011   0.0000
-  24  N   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000  -0.0235
-  25  N   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0082
-  26  N   3d0    0.0002   0.0000  -0.0067   0.0079   0.0148  -0.0007   0.0000
-  27  N   3d1+   0.0001  -0.0001  -0.0038   0.0056  -0.0039  -0.0154   0.0000
-  28  N   3d2+   0.0000  -0.0004   0.0116  -0.0052  -0.0077   0.0101   0.0000
-  29  H   1s    -0.0004  -0.0001   0.1659  -0.3888   0.4495  -0.0013   0.0000
-  30  H   1s     0.0008   0.0005  -0.0865   0.1598  -0.1569  -0.0201   0.0000
-  31  H   2px    0.0000  -0.0002   0.0108  -0.0098   0.0108   0.0131   0.0000
-  32  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0141
-  33  H   2pz    0.0005   0.0006  -0.0183   0.0289  -0.0248   0.0052   0.0000
-  34  H   1s    -0.0004   0.0001   0.1659   0.3888   0.4495  -0.0013   0.0000
-  35  H   1s     0.0008  -0.0005  -0.0865  -0.1598  -0.1569  -0.0201   0.0000
-  36  H   2px    0.0000  -0.0002  -0.0108  -0.0098  -0.0108  -0.0131   0.0000
-  37  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0141
-  38  H   2pz    0.0005  -0.0006  -0.0183  -0.0289  -0.0248   0.0052   0.0000
+ Orbital          1        2        3        4
+   1  N   1s     0.7074  -0.0064  -0.0058  -0.0040
+   2  N   1s     0.0021   0.6359  -0.0627   0.1862
+   3  N   1s    -0.0014  -0.1465   0.0133   0.1194
+   4  N   2px   -0.0013  -0.2298   0.3674   0.5216
+   5  N   2pz    0.0019   0.0566   0.4047  -0.3660
+   6  N   2px    0.0011   0.0676  -0.0831  -0.0419
+   7  N   2pz   -0.0014  -0.0166  -0.0696   0.0011
+   8  N   3d0    0.0003  -0.0116   0.0256   0.0011
+   9  N   3d1+   0.0001  -0.0066  -0.0067   0.0267
+  10  N   3d2+   0.0000   0.0201  -0.0133  -0.0174
+  11  H   1s    -0.0004   0.1659   0.4495   0.0013
+  12  H   1s     0.0008  -0.0865  -0.1569   0.0201
+  13  H   2px    0.0000  -0.0108  -0.0108   0.0131
+  14  H   2pz    0.0005  -0.0183  -0.0248  -0.0052
 
- Orbital          8
-   1  N   1s    -0.0047
-   2  N   1s    -0.2921
-   3  N   1s    -0.0702
-   4  N   2px    0.1319
-   5  N   2py    0.0000
-   6  N   2pz    0.5390
-   7  N   2px    0.0734
-   8  N   2py    0.0000
-   9  N   2pz    0.0265
-  10  N   3d2-   0.0000
-  11  N   3d1-   0.0000
-  12  N   3d0    0.0093
-  13  N   3d1+  -0.0068
-  14  N   3d2+   0.0036
-  15  N   1s     0.0047
-  16  N   1s     0.2921
-  17  N   1s     0.0702
-  18  N   2px    0.1319
-  19  N   2py    0.0000
-  20  N   2pz   -0.5390
-  21  N   2px    0.0734
-  22  N   2py    0.0000
-  23  N   2pz   -0.0265
-  24  N   3d2-   0.0000
-  25  N   3d1-   0.0000
-  26  N   3d0   -0.0093
-  27  N   3d1+  -0.0068
-  28  N   3d2+  -0.0036
-  29  H   1s     0.4389
-  30  H   1s    -0.0873
-  31  H   2px    0.0093
-  32  H   2py    0.0000
-  33  H   2pz   -0.0095
-  34  H   1s    -0.4389
-  35  H   1s     0.0873
-  36  H   2px    0.0093
-  37  H   2py    0.0000
-  38  H   2pz    0.0095
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1
+   1  N   2py    0.5898
+   2  N   2py    0.0261
+   3  N   3d2-  -0.0408
+   4  N   3d1-   0.0143
+   5  H   2py    0.0141
+
+     Molecular orbitals for symmetry species   3
+
+ Orbital          1        2        3
+   1  N   1s     0.7076   0.0009  -0.0047
+   2  N   1s     0.0026   0.5807  -0.2921
+   3  N   1s    -0.0034  -0.0474  -0.0702
+   4  N   2px   -0.0018   0.2144  -0.1319
+   5  N   2pz    0.0020   0.1204   0.5390
+   6  N   2px    0.0018  -0.0383  -0.0734
+   7  N   2pz   -0.0017  -0.0477   0.0265
+   8  N   3d0    0.0000   0.0137   0.0162
+   9  N   3d1+   0.0001   0.0097   0.0117
+  10  N   3d2+   0.0007  -0.0091   0.0063
+  11  H   1s    -0.0001   0.3888   0.4389
+  12  H   1s     0.0005  -0.1598  -0.0873
+  13  H   2px    0.0002  -0.0098  -0.0093
+  14  H   2pz    0.0006  -0.0289  -0.0095
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.68 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.06 seconds
  >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
-     Date and time (IRIX)   : Thu Nov 23 13:34:02 2000
-     Host name              : odin                                    
+     Date and time (Linux)  : Fri Apr  6 13:53:22 2001
+     Host name              : pauli.uio.no                            
 
-@@- End of Wave-Function Section
+- End of Wave Function Section
      Starting Coupled Cluster -
 
   
@@ -1720,17 +1663,17 @@ Point group: C1
                          ! Information from CCORB !
                          +------------------------+
 
-   NBAS   :      38
-   IBAS   :       0
-   NRHF   :       8
-   NVIR   :      30
-   NRHFS  :       8
-   NVIRS  :      30
-   NRHFFR :       0
-   NVIRFR :       0
+   NBAS   :      14       5      14       5
+   IBAS   :       0      14      19      33
+   NRHF   :       4       1       3       0
+   NVIR   :      10       4      11       5
+   NRHFS  :       4       1       3       0
+   NVIRS  :      10       4      11       5
+   NRHFFR :       0       0       0       0
+   NVIRFR :       0       0       0       0
    NORBTS :      38
    NORBT  :      38
-   N2BAST :    1444
+   N2BAST :     442
    N2BASX :    1444
    NNBASX :     741
    
@@ -1748,25 +1691,25 @@ Point group: C1
              -----------------------------------------
 
 
-          Number of t1 amplitudes                 :       240
-          Number of t2 amplitudes                 :     28920
-          Total number of amplitudes in ccsd      :     29160
+          Number of t1 amplitudes                 :        77
+          Number of t2 amplitudes                 :      7970
+          Total number of amplitudes in ccsd      :      8047
 
- Iter.  1: Coupled cluster RSTAR energy :    -110.3518691872293300
- Iter.  1: Coupled cluster CCSD  energy :    -110.3514737159748900
- Iter.  2: Coupled cluster CCSD  energy :    -110.3514489124421100
- Iter.  3: Coupled cluster CCSD  energy :    -110.3514095600950400
- Iter.  4: Coupled cluster CCSD  energy :    -110.3514017531551400
- Iter.  5: Coupled cluster CCSD  energy :    -110.3514001375565200
- Iter.  6: Coupled cluster CCSD  energy :    -110.3514007962736800
- Iter.  7: Coupled cluster CCSD  energy :    -110.3514008789900900
- Iter.  8: Coupled cluster CCSD  energy :    -110.3514009284162400
- Iter.  9: Coupled cluster CCSD  energy :    -110.3514009204221200
- Iter. 10: Coupled cluster CCSD  energy :    -110.3514009238063800
- Iter. 11: Coupled cluster CCSD  energy :    -110.3514009231513700
- Iter. 12: Coupled cluster CCSD  energy :    -110.3514009244755700
- Iter. 13: Coupled cluster CCSD  energy :    -110.3514009247393400
- Iter. 14: Coupled cluster CCSD  energy :    -110.3514009247341400
+ Iter.  1: Coupled cluster RSTAR energy :    -110.3518691872300000
+ Iter.  1: Coupled cluster CCSD  energy :    -110.3514737159740000
+ Iter.  2: Coupled cluster CCSD  energy :    -110.3514489124406000
+ Iter.  3: Coupled cluster CCSD  energy :    -110.3514095600951000
+ Iter.  4: Coupled cluster CCSD  energy :    -110.3514017531544000
+ Iter.  5: Coupled cluster CCSD  energy :    -110.3514001375553000
+ Iter.  6: Coupled cluster CCSD  energy :    -110.3514007962731000
+ Iter.  7: Coupled cluster CCSD  energy :    -110.3514008789892000
+ Iter.  8: Coupled cluster CCSD  energy :    -110.3514009284159000
+ Iter.  9: Coupled cluster CCSD  energy :    -110.3514009204219000
+ Iter. 10: Coupled cluster CCSD  energy :    -110.3514009238057000
+ Iter. 11: Coupled cluster CCSD  energy :    -110.3514009231504000
+ Iter. 12: Coupled cluster CCSD  energy :    -110.3514009244748000
+ Iter. 13: Coupled cluster CCSD  energy :    -110.3514009247398000
+ Iter. 14: Coupled cluster CCSD  energy :    -110.3514009247326000
 
  CCSD  energy converged to within   0.10D-09 is   -110.351400925
 
@@ -1833,9 +1776,6 @@ Point group: C1
  *******************************************************************************
 
 
- WARNING: Tried to close a non-existent or already closed file
- Unit number was:  10
-
 - End of Coupled Cluster
  Trust radius increased due to good ratio.
  Updated trust radius   0.50000
@@ -1872,54 +1812,17 @@ Point group: C1
  Start vector is a CCSD      L0  vector
 
 
- Analysis of the undifferentiated Lagrangian multipliers: 
- --------------------------------------------------------
-
-
-          CC_PRAM:Overall Contribution of the Different Components
-          --------------------------------------------------------
-
-
-
-          Single Excitation Contribution :               1.2003 %
-
-          Double Excitation Contribution :              98.7997 %
-
-          ||T1||/||T2||                  :               0.1102
-
-          Tau1 diagnostic                :               0.0180
-
-          Norm of Total Amplitude Vector :               0.6571
-
-
- +=============================================================================+
- | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
- |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
- +=============================================================================+
- | 1   1   |   8       7     |      188          |              |   -0.045717  |
- | 1   1   |   3       8     |      213          |              |   -0.032634  |
- +-----------------------------------------------------------------------------+
- | 1 1 1 1 |   1   1   7   7 |      181      181 |        16471 |   -0.288602  |
- +=============================================================================+
-
-
-          Norm of Printed Amplitude Vector :             0.2940
-
-
-          Printed all single excitations greater than 0.021912
-
-
-          Printed all double excitations greater than 0.198796
-
-
               Constructing right-hand-side for CCSD-kappa-0
               ---------------------------------------------
 
+ CC_FOP> Norm of RHS vector:  4.7457254637980633E-004
 
 
                   Solving for orbital relaxation vector
                   -------------------------------------
 
+
+ Converged vectors from previous geometry used as starting vectors
   
    Equations converged to residual less than:  0.000000
   
@@ -1935,17 +1838,24 @@ Point group: C1
                             Molecular gradient
                             ------------------
 
- N          0.0005111837            0.0000000000            0.0004234110
- N         -0.0005111837            0.0000000000            0.0004234110
- H         -0.0000574018            0.0000000000           -0.0004234110
- H          0.0000574018            0.0000000000           -0.0004234110
+                         N    x    -0.0010223673
+                         N    z     0.0008468220
+                         H    x     0.0001148036
+                         H    z    -0.0008468220
+
+
+
+ N    1    -0.0005111837            0.0000000000            0.0004234110
+ N    2     0.0005111837            0.0000000000            0.0004234110
+ H    1     0.0000574018            0.0000000000           -0.0004234110
+ H    2    -0.0000574018            0.0000000000           -0.0004234110
 
 
 
 
-                   Molecular gradient norm:  1.25E-06
+                   Molecular gradient norm:  2.49E-06
 
->>> Total time used in gradient section:       62.51 seconds.
+>>> Total time used in gradient section:       13.15 seconds.
   
 
  *******************************************************************************
@@ -1976,15 +1886,24 @@ Point group: C1
  *******************************************************************************
 
 
- WARNING: Tried to close a non-existent or already closed file
- Unit number was:  18
-
 - End of Coupled Cluster
 
 
        :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-       ::::::::::::::: Minimization Control Center :::::::::::::::
+       ::::::::::::::: Optimization Control Center :::::::::::::::
        :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+
+
+                            Next geometry (au)
+                            ------------------
+
+ N    1     1.1811682708            0.0000000000           -0.1051899206
+ N    2    -1.1811682708            0.0000000000           -0.1051899206
+ H    1     1.9135474684            0.0000000000            1.7319716206
+ H    2    -1.9135474684            0.0000000000            1.7319716206
+
+
 
 
 
@@ -1992,33 +1911,15 @@ Point group: C1
                          ------------------------
 
  Iteration number               :       2
- End of minimization            :       F 
+ End of optimization            :       F 
  Energy at this geometry is     :    -110.351401
  Energy change from last geom.  :      -0.000077
- Predicted change               :      -0.000081
- Ratio, actual/predicted change :       0.948589
  Norm of gradient               :       0.001116
+ Norm of step                   :       0.001991
+ Updated trust radius           :       0.500000
  Total Hessian index            :       0
 
 
-                            Change in geometry
-                            ------------------
-
- Updated trust radius           :       0.500000
- Norm of step                   :       0.001991
-
-
-
-
-                         New internal coordinates
-                         ------------------------
-
-
-               Column   1     Column   2     Column   3     Column   4
-       1       2.36188270     1.97685708     1.97685708     3.59907346
-
-               Column   5     Column   6     Column   7     Column   8
-       1       3.59907346     1.95115879     1.95115879     0.00000000
     Starting in Integral Section -
 
 
@@ -2028,16 +1929,13 @@ Point group: C1
  *************************************************************************
 
 
-
  Default print level:       -1
 
  * Nuclear model: Point charge
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
-
  The following one-electron property integrals are calculated:
-
           - overlap integrals
           - dipole length integrals
           - Geometrical derivatives of overlap integrals
@@ -2046,62 +1944,51 @@ Point group: C1
  In this run  precalculated two-electron integrals are transformed
  to P-supermatrix elements.
 
-
- >>> Time used in ONEDRV is   0.04 seconds
+ >>> Time used in ONEDRV is   0.01 seconds
 
 
  >>> Time used in OVERLA is   0.01 seconds
 
 
- >>> Time used in DIPLEN is   0.01 seconds
+ >>> Time used in DIPLEN is   0.00 seconds
 
 
- >>> Time used in DEROVL is   0.04 seconds
+ >>> Time used in DEROVL is   0.01 seconds
 
 
- >>> Time used in DERHAM is   0.12 seconds
+ >>> Time used in DERHAM is   0.11 seconds
 
 
- Number of two-electron integrals written:    126070 (45.9%)
- Kilobytes written:                             1521
-
-
-
- >>> Time used in TWOINT is   3.68 seconds
+ Number of two-electron integrals written:       62733 ( 22.8% )
+ Megabytes written:                              0.721
 
 
 
- ***********************************************************************
- ************************* Output from FORMSUP *************************
- ***********************************************************************
+ >>> Time used in TWOINT is   0.54 seconds
 
-  NOSYM :  F
- OLDSUP :  F
 
- Threshold for discarding integrals :  1.00D-15
+ >>> Time used in FRMSUP is   0.03 seconds
 
- >>> Time used in FRMSUP is   0.12 seconds
-
- >>>> Total CPU  time used in HERMIT:   4.04 seconds
- >>>> Total wall time used in HERMIT:   4.00 seconds
+ >>>> Total CPU  time used in HERMIT:   1.42 seconds
+ >>>> Total wall time used in HERMIT:   2.00 seconds
 
 - End of Integral Section
-@@     Starting Wave-Function Section -
+     Starting Wave Function Section -
 
  ************************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
  ************************************************************************
 
  
-     Date and time (IRIX)   : Thu Nov 23 13:36:11 2000
-     Host name              : odin                                    
+     Date and time (Linux)  : Fri Apr  6 13:53:56 2001
+     Host name              : pauli.uio.no                            
 
  Title lines from integral program:
        Cis-diazine CCSD geometry optimisation (cc-dzp basis)                 
        001  ( A1)                                                            
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4 =   2 is   5
+ Print level on unit LUW4  =   2 is   5
 
       (Integral direct) CC calculation.
 
@@ -2122,24 +2009,24 @@ Point group: C1
      Total number of orbitals                 38
 
      Spin multiplicity                         1
-     Total number of symmetries                1
+     Total number of symmetries                4
      Reference state symmetry                  1
 
      Orbital specifications
      ======================
-     Abelian symmetry species           1
-                                       --
-     Occupied HF orbitals               8
-     Secondary orbitals                30
-     Total number of orbitals          38
-     Number of basis functions         38
+     Abelian symmetry species           1   2   3   4
+                                       --  --  --  --
+     Occupied HF orbitals               4   1   3   0
+     Secondary orbitals                10   4  11   5
+     Total number of orbitals          14   5  14   5
+     Number of basis functions         14   5  14   5
 
      Optimization information
      ========================
      Number of configurations              1
-     Number of orbital rotations         240
+     Number of orbital rotations          77
      ---------------------------------------
-     Total number of variables           241
+     Total number of variables            78
 
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
@@ -2164,13 +2051,13 @@ Point group: C1
     3     -109.995805015950    1.48374D-04   -2.45D-08
     4     -109.995805018276    4.43996D-05   -2.33D-09
     5     -109.995805018565    9.80949D-06   -2.89D-10
-    6     -109.995805018584    2.22790D-06   -1.95D-11
-    7     -109.995805018585    2.01711D-07   -7.39D-13
-    8     -109.995805018585    3.11783D-08    2.84D-14
-    9     -109.995805018585    5.81116D-09   -8.53D-14
-   10     -109.995805018585    8.23587D-10    5.68D-14
-   11     -109.995805018585    1.52224D-10    3.41D-13
-   12     -109.995805018585    3.13654D-11   -3.98D-13
+    6     -109.995805018584    2.22790D-06   -1.96D-11
+    7     -109.995805018585    2.01711D-07   -6.79D-13
+    8     -109.995805018585    3.11783D-08   -2.49D-14
+    9     -109.995805018585    5.81108D-09   -5.33D-14
+   10     -109.995805018585    8.23591D-10    3.55D-15
+   11     -109.995805018585    1.52240D-10   -8.17D-14
+   12     -109.995805018585    3.14065D-11    6.04D-14
  DIIS converged in  12 iterations !
 
 
@@ -2179,19 +2066,31 @@ Point group: C1
  Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   16
- Orbital occupations :    8
+ Orbital occupations :    4    1    3    0
 
  Hartree-Fock orbital energies, symmetry 1
 
-       -15.63784058   -15.63658265    -1.34926136    -0.91967375    -0.74386530
-        -0.56601105    -0.50921736    -0.40723449     0.13321242     0.16077711
-         0.23760961     0.56843811     0.70393870
+       -15.63784058    -1.34926136    -0.74386530    -0.56601105     0.16077711
+         0.70393870     0.87281401     0.96553105     1.19949539
 
-    E(LUMO) :     0.13321242 au (symmetry 1)
-  - E(HOMO) :    -0.40723449 au (symmetry 1)
+ Hartree-Fock orbital energies, symmetry 2
+
+        -0.50921736     0.94043196     1.38350333     1.80803721     2.27929683
+
+ Hartree-Fock orbital energies, symmetry 3
+
+       -15.63658265    -0.91967375    -0.40723449     0.23760961     0.56843811
+         0.85128511     1.00621306     1.18761176
+
+ Hartree-Fock orbital energies, symmetry 4
+
+         0.13321242     1.05639154     1.53215631     2.60902654     2.86261381
+
+    E(LUMO) :     0.13321242 au (symmetry 4)
+  - E(HOMO) :    -0.40723449 au (symmetry 3)
   ------------------------------------------
     gap     :     0.54044691 au
-1
+
 
                     >>> FINAL RESULTS FROM SIRIUS <<<
 
@@ -2199,107 +2098,70 @@ Point group: C1
      Spatial symmetry:            1
 
      Final    HF energy:         -109.995805018585
-     Nuclear repulsion:            31.972204905744
-     Electronic energy:          -141.968009924329
+     Nuclear repulsion:            31.972204905780
+     Electronic energy:          -141.968009924365
 
      Final gradient norm:           0.000000000031
 
  
-     Date and time (IRIX)   : Thu Nov 23 13:36:12 2000
-     Host name              : odin                                    
+     Date and time (Linux)  : Fri Apr  6 13:53:56 2001
+     Host name              : pauli.uio.no                            
 
      Molecular orbitals for symmetry species   1
 
- Orbital          1        2        3        4        5        6        7
-   1  N   1s     0.7074   0.7076  -0.0064  -0.0009  -0.0058   0.0040   0.0000
-   2  N   1s     0.0021   0.0026   0.6359  -0.5809  -0.0629  -0.1863   0.0000
-   3  N   1s    -0.0014  -0.0034  -0.1464   0.0472   0.0133  -0.1194   0.0000
-   4  N   2px    0.0013   0.0018   0.2298   0.2143  -0.3670   0.5220   0.0000
-   5  N   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.5898
-   6  N   2pz    0.0019   0.0020   0.0566  -0.1203   0.4049   0.3655   0.0000
-   7  N   2px   -0.0011  -0.0018  -0.0676  -0.0382   0.0830  -0.0419   0.0000
-   8  N   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0261
-   9  N   2pz   -0.0014  -0.0017  -0.0166   0.0476  -0.0695  -0.0011   0.0000
-  10  N   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0236
-  11  N   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0082
-  12  N   3d0    0.0002   0.0000  -0.0067  -0.0079   0.0148  -0.0007   0.0000
-  13  N   3d1+  -0.0001  -0.0001   0.0038   0.0056   0.0039   0.0154   0.0000
-  14  N   3d2+   0.0000   0.0004   0.0116   0.0052  -0.0077   0.0101   0.0000
-  15  N   1s     0.7074  -0.7076  -0.0064   0.0009  -0.0058   0.0040   0.0000
-  16  N   1s     0.0021  -0.0026   0.6359   0.5809  -0.0629  -0.1863   0.0000
-  17  N   1s    -0.0014   0.0034  -0.1464  -0.0472   0.0133  -0.1194   0.0000
-  18  N   2px   -0.0013   0.0018  -0.2298   0.2143   0.3670  -0.5220   0.0000
-  19  N   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.5898
-  20  N   2pz    0.0019  -0.0020   0.0566   0.1203   0.4049   0.3655   0.0000
-  21  N   2px    0.0011  -0.0018   0.0676  -0.0382  -0.0830   0.0419   0.0000
-  22  N   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0261
-  23  N   2pz   -0.0014   0.0017  -0.0166  -0.0476  -0.0695  -0.0011   0.0000
-  24  N   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000  -0.0236
-  25  N   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0082
-  26  N   3d0    0.0002   0.0000  -0.0067   0.0079   0.0148  -0.0007   0.0000
-  27  N   3d1+   0.0001  -0.0001  -0.0038   0.0056  -0.0039  -0.0154   0.0000
-  28  N   3d2+   0.0000  -0.0004   0.0116  -0.0052  -0.0077   0.0101   0.0000
-  29  H   1s    -0.0004  -0.0001   0.1658  -0.3885   0.4494  -0.0013   0.0000
-  30  H   1s     0.0008   0.0005  -0.0865   0.1597  -0.1568  -0.0201   0.0000
-  31  H   2px    0.0000  -0.0002   0.0108  -0.0098   0.0108   0.0131   0.0000
-  32  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0141
-  33  H   2pz    0.0005   0.0006  -0.0183   0.0288  -0.0248   0.0051   0.0000
-  34  H   1s    -0.0004   0.0001   0.1658   0.3885   0.4494  -0.0013   0.0000
-  35  H   1s     0.0008  -0.0005  -0.0865  -0.1597  -0.1568  -0.0201   0.0000
-  36  H   2px    0.0000  -0.0002  -0.0108  -0.0098  -0.0108  -0.0131   0.0000
-  37  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0141
-  38  H   2pz    0.0005  -0.0006  -0.0183  -0.0288  -0.0248   0.0051   0.0000
+ Orbital          1        2        3        4
+   1  N   1s     0.7074  -0.0064  -0.0058  -0.0040
+   2  N   1s     0.0021   0.6359  -0.0629   0.1863
+   3  N   1s    -0.0014  -0.1464   0.0133   0.1194
+   4  N   2px   -0.0013  -0.2298   0.3670   0.5220
+   5  N   2pz    0.0019   0.0566   0.4049  -0.3655
+   6  N   2px    0.0011   0.0676  -0.0830  -0.0419
+   7  N   2pz   -0.0014  -0.0166  -0.0695   0.0011
+   8  N   3d0    0.0003  -0.0116   0.0256   0.0012
+   9  N   3d1+   0.0001  -0.0066  -0.0067   0.0267
+  10  N   3d2+   0.0000   0.0201  -0.0133  -0.0175
+  11  H   1s    -0.0004   0.1658   0.4494   0.0013
+  12  H   1s     0.0008  -0.0865  -0.1568   0.0201
+  13  H   2px    0.0000  -0.0108  -0.0108   0.0131
+  14  H   2pz    0.0005  -0.0183  -0.0248  -0.0051
 
- Orbital          8
-   1  N   1s    -0.0047
-   2  N   1s    -0.2920
-   3  N   1s    -0.0702
-   4  N   2px    0.1319
-   5  N   2py    0.0000
-   6  N   2pz    0.5389
-   7  N   2px    0.0733
-   8  N   2py    0.0000
-   9  N   2pz    0.0264
-  10  N   3d2-   0.0000
-  11  N   3d1-   0.0000
-  12  N   3d0    0.0093
-  13  N   3d1+  -0.0068
-  14  N   3d2+   0.0036
-  15  N   1s     0.0047
-  16  N   1s     0.2920
-  17  N   1s     0.0702
-  18  N   2px    0.1319
-  19  N   2py    0.0000
-  20  N   2pz   -0.5389
-  21  N   2px    0.0733
-  22  N   2py    0.0000
-  23  N   2pz   -0.0264
-  24  N   3d2-   0.0000
-  25  N   3d1-   0.0000
-  26  N   3d0   -0.0093
-  27  N   3d1+  -0.0068
-  28  N   3d2+  -0.0036
-  29  H   1s     0.4391
-  30  H   1s    -0.0873
-  31  H   2px    0.0093
-  32  H   2py    0.0000
-  33  H   2pz   -0.0095
-  34  H   1s    -0.4391
-  35  H   1s     0.0873
-  36  H   2px    0.0093
-  37  H   2py    0.0000
-  38  H   2pz    0.0095
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1
+   1  N   2py    0.5898
+   2  N   2py    0.0261
+   3  N   3d2-  -0.0408
+   4  N   3d1-   0.0143
+   5  H   2py    0.0141
+
+     Molecular orbitals for symmetry species   3
+
+ Orbital          1        2        3
+   1  N   1s     0.7076   0.0009  -0.0047
+   2  N   1s     0.0026   0.5809  -0.2920
+   3  N   1s    -0.0034  -0.0472  -0.0702
+   4  N   2px   -0.0018   0.2143  -0.1319
+   5  N   2pz    0.0020   0.1203   0.5389
+   6  N   2px    0.0018  -0.0382  -0.0733
+   7  N   2pz   -0.0017  -0.0476   0.0264
+   8  N   3d0    0.0000   0.0137   0.0162
+   9  N   3d1+   0.0001   0.0097   0.0117
+  10  N   3d2+   0.0007  -0.0091   0.0063
+  11  H   1s    -0.0001   0.3885   0.4391
+  12  H   1s     0.0005  -0.1597  -0.0873
+  13  H   2px    0.0002  -0.0098  -0.0093
+  14  H   2pz    0.0006  -0.0288  -0.0095
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.60 seconds
- >>>> Total wall time used in SIRIUS :      1.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.06 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (IRIX)   : Thu Nov 23 13:36:12 2000
-     Host name              : odin                                    
+     Date and time (Linux)  : Fri Apr  6 13:53:56 2001
+     Host name              : pauli.uio.no                            
 
-@@- End of Wave-Function Section
+- End of Wave Function Section
      Starting Coupled Cluster -
 
   
@@ -2320,17 +2182,17 @@ Point group: C1
                          ! Information from CCORB !
                          +------------------------+
 
-   NBAS   :      38
-   IBAS   :       0
-   NRHF   :       8
-   NVIR   :      30
-   NRHFS  :       8
-   NVIRS  :      30
-   NRHFFR :       0
-   NVIRFR :       0
+   NBAS   :      14       5      14       5
+   IBAS   :       0      14      19      33
+   NRHF   :       4       1       3       0
+   NVIR   :      10       4      11       5
+   NRHFS  :       4       1       3       0
+   NVIRS  :      10       4      11       5
+   NRHFFR :       0       0       0       0
+   NVIRFR :       0       0       0       0
    NORBTS :      38
    NORBT  :      38
-   N2BAST :    1444
+   N2BAST :     442
    N2BASX :    1444
    NNBASX :     741
    
@@ -2348,23 +2210,23 @@ Point group: C1
              -----------------------------------------
 
 
-          Number of t1 amplitudes                 :       240
-          Number of t2 amplitudes                 :     28920
-          Total number of amplitudes in ccsd      :     29160
+          Number of t1 amplitudes                 :        77
+          Number of t2 amplitudes                 :      7970
+          Total number of amplitudes in ccsd      :      8047
 
- Iter.  1: Coupled cluster RSTAR energy :    -110.3513457150716000
- Iter.  1: Coupled cluster CCSD  energy :    -110.3513964234381900
- Iter.  2: Coupled cluster CCSD  energy :    -110.3513981688506800
- Iter.  3: Coupled cluster CCSD  energy :    -110.3514010042664200
- Iter.  4: Coupled cluster CCSD  energy :    -110.3514020147317900
- Iter.  5: Coupled cluster CCSD  energy :    -110.3514020133062400
- Iter.  6: Coupled cluster CCSD  energy :    -110.3514020453524200
- Iter.  7: Coupled cluster CCSD  energy :    -110.3514020180898700
- Iter.  8: Coupled cluster CCSD  energy :    -110.3514020099303400
- Iter.  9: Coupled cluster CCSD  energy :    -110.3514020097615100
- Iter. 10: Coupled cluster CCSD  energy :    -110.3514020081573500
- Iter. 11: Coupled cluster CCSD  energy :    -110.3514020077762600
- Iter. 12: Coupled cluster CCSD  energy :    -110.3514020077938700
+ Iter.  1: Coupled cluster RSTAR energy :    -110.3513457150713000
+ Iter.  1: Coupled cluster CCSD  energy :    -110.3513964234372000
+ Iter.  2: Coupled cluster CCSD  energy :    -110.3513981688509000
+ Iter.  3: Coupled cluster CCSD  energy :    -110.3514010042666000
+ Iter.  4: Coupled cluster CCSD  energy :    -110.3514020147312000
+ Iter.  5: Coupled cluster CCSD  energy :    -110.3514020133060000
+ Iter.  6: Coupled cluster CCSD  energy :    -110.3514020453531000
+ Iter.  7: Coupled cluster CCSD  energy :    -110.3514020180905000
+ Iter.  8: Coupled cluster CCSD  energy :    -110.3514020099306000
+ Iter.  9: Coupled cluster CCSD  energy :    -110.3514020097590000
+ Iter. 10: Coupled cluster CCSD  energy :    -110.3514020081568000
+ Iter. 11: Coupled cluster CCSD  energy :    -110.3514020077770000
+ Iter. 12: Coupled cluster CCSD  energy :    -110.3514020077943000
 
  CCSD  energy converged to within   0.10D-09 is   -110.351402008
 
@@ -2431,9 +2293,6 @@ Point group: C1
  *******************************************************************************
 
 
- WARNING: Tried to close a non-existent or already closed file
- Unit number was:  10
-
 - End of Coupled Cluster
  Trust radius increased due to good ratio.
  Updated trust radius   0.50000
@@ -2470,54 +2329,17 @@ Point group: C1
  Start vector is a CCSD      L0  vector
 
 
- Analysis of the undifferentiated Lagrangian multipliers: 
- --------------------------------------------------------
-
-
-          CC_PRAM:Overall Contribution of the Different Components
-          --------------------------------------------------------
-
-
-
-          Single Excitation Contribution :               1.2003 %
-
-          Double Excitation Contribution :              98.7997 %
-
-          ||T1||/||T2||                  :               0.1102
-
-          Tau1 diagnostic                :               0.0180
-
-          Norm of Total Amplitude Vector :               0.6573
-
-
- +=============================================================================+
- | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
- |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
- +=============================================================================+
- | 1   1   |   8       7     |      188          |              |   -0.045730  |
- | 1   1   |   3       8     |      213          |              |   -0.032626  |
- +-----------------------------------------------------------------------------+
- | 1 1 1 1 |   1   1   7   7 |      181      181 |        16471 |   -0.288701  |
- +=============================================================================+
-
-
-          Norm of Printed Amplitude Vector :             0.2941
-
-
-          Printed all single excitations greater than 0.021911
-
-
-          Printed all double excitations greater than 0.198796
-
-
               Constructing right-hand-side for CCSD-kappa-0
               ---------------------------------------------
 
+ CC_FOP> Norm of RHS vector:  4.7538492035877313E-004
 
 
                   Solving for orbital relaxation vector
                   -------------------------------------
 
+
+ Converged vectors from previous geometry used as starting vectors
   
    Equations converged to residual less than:  0.000000
   
@@ -2533,17 +2355,24 @@ Point group: C1
                             Molecular gradient
                             ------------------
 
- N          0.0003053382            0.0000000000            0.0000380126
- N         -0.0003053382            0.0000000000            0.0000380126
- H         -0.0000671828            0.0000000000           -0.0000380126
- H          0.0000671828            0.0000000000           -0.0000380126
+                         N    x    -0.0006106764
+                         N    z     0.0000760251
+                         H    x     0.0001343656
+                         H    z    -0.0000760251
+
+
+
+ N    1    -0.0003053382            0.0000000000            0.0000380126
+ N    2     0.0003053382            0.0000000000            0.0000380126
+ H    1     0.0000671828            0.0000000000           -0.0000380126
+ H    2    -0.0000671828            0.0000000000           -0.0000380126
 
 
 
 
-                   Molecular gradient norm:  2.01E-07
+                   Molecular gradient norm:  4.03E-07
 
->>> Total time used in gradient section:       62.64 seconds.
+>>> Total time used in gradient section:       12.90 seconds.
   
 
  *******************************************************************************
@@ -2574,15 +2403,24 @@ Point group: C1
  *******************************************************************************
 
 
- WARNING: Tried to close a non-existent or already closed file
- Unit number was:  18
-
 - End of Coupled Cluster
 
 
        :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-       ::::::::::::::: Minimization Control Center :::::::::::::::
+       ::::::::::::::: Optimization Control Center :::::::::::::::
        :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+
+
+                            Next geometry (au)
+                            ------------------
+
+ N    1     1.1813598017            0.0000000000           -0.1054333371
+ N    2    -1.1813598017            0.0000000000           -0.1054333371
+ H    1     1.9126167647            0.0000000000            1.7322150371
+ H    2    -1.9126167647            0.0000000000            1.7322150371
+
+
 
 
 
@@ -2590,33 +2428,15 @@ Point group: C1
                          ------------------------
 
  Iteration number               :       3
- End of minimization            :       F 
+ End of optimization            :       F 
  Energy at this geometry is     :    -110.351402
  Energy change from last geom.  :      -0.000001
- Predicted change               :      -0.000001
- Ratio, actual/predicted change :       1.252321
  Norm of gradient               :       0.000449
+ Norm of step                   :       0.001102
+ Updated trust radius           :       0.500000
  Total Hessian index            :       0
 
 
-                            Change in geometry
-                            ------------------
-
- Updated trust radius           :       0.500000
- Norm of step                   :       0.001102
-
-
-
-
-                         New internal coordinates
-                         ------------------------
-
-
-               Column   1     Column   2     Column   3     Column   4
-       1       2.36233654     1.97776182     1.97776182     3.59894818
-
-               Column   5     Column   6     Column   7     Column   8
-       1       3.59894818     1.95013590     1.95013590     0.00000000
     Starting in Integral Section -
 
 
@@ -2626,16 +2446,13 @@ Point group: C1
  *************************************************************************
 
 
-
  Default print level:       -1
 
  * Nuclear model: Point charge
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
-
  The following one-electron property integrals are calculated:
-
           - overlap integrals
           - dipole length integrals
           - Geometrical derivatives of overlap integrals
@@ -2644,62 +2461,51 @@ Point group: C1
  In this run  precalculated two-electron integrals are transformed
  to P-supermatrix elements.
 
+ >>> Time used in ONEDRV is   0.01 seconds
 
- >>> Time used in ONEDRV is   0.04 seconds
 
-
- >>> Time used in OVERLA is   0.01 seconds
+ >>> Time used in OVERLA is   0.00 seconds
 
 
  >>> Time used in DIPLEN is   0.01 seconds
 
 
- >>> Time used in DEROVL is   0.04 seconds
+ >>> Time used in DEROVL is   0.01 seconds
 
 
- >>> Time used in DERHAM is   0.12 seconds
+ >>> Time used in DERHAM is   0.05 seconds
 
 
- Number of two-electron integrals written:    128339 (46.7%)
- Kilobytes written:                             1542
-
-
-
- >>> Time used in TWOINT is   3.67 seconds
+ Number of two-electron integrals written:       62733 ( 22.8% )
+ Megabytes written:                              0.721
 
 
 
- ***********************************************************************
- ************************* Output from FORMSUP *************************
- ***********************************************************************
+ >>> Time used in TWOINT is   0.53 seconds
 
-  NOSYM :  F
- OLDSUP :  F
 
- Threshold for discarding integrals :  1.00D-15
+ >>> Time used in FRMSUP is   0.03 seconds
 
- >>> Time used in FRMSUP is   0.12 seconds
-
- >>>> Total CPU  time used in HERMIT:   4.04 seconds
- >>>> Total wall time used in HERMIT:   4.00 seconds
+ >>>> Total CPU  time used in HERMIT:   1.35 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
-@@     Starting Wave-Function Section -
+     Starting Wave Function Section -
 
  ************************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
  ************************************************************************
 
  
-     Date and time (IRIX)   : Thu Nov 23 13:38:17 2000
-     Host name              : odin                                    
+     Date and time (Linux)  : Fri Apr  6 13:54:28 2001
+     Host name              : pauli.uio.no                            
 
  Title lines from integral program:
        Cis-diazine CCSD geometry optimisation (cc-dzp basis)                 
        001  ( A1)                                                            
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4 =   2 is   5
+ Print level on unit LUW4  =   2 is   5
 
       (Integral direct) CC calculation.
 
@@ -2720,24 +2526,24 @@ Point group: C1
      Total number of orbitals                 38
 
      Spin multiplicity                         1
-     Total number of symmetries                1
+     Total number of symmetries                4
      Reference state symmetry                  1
 
      Orbital specifications
      ======================
-     Abelian symmetry species           1
-                                       --
-     Occupied HF orbitals               8
-     Secondary orbitals                30
-     Total number of orbitals          38
-     Number of basis functions         38
+     Abelian symmetry species           1   2   3   4
+                                       --  --  --  --
+     Occupied HF orbitals               4   1   3   0
+     Secondary orbitals                10   4  11   5
+     Total number of orbitals          14   5  14   5
+     Number of basis functions         14   5  14   5
 
      Optimization information
      ========================
      Number of configurations              1
-     Number of orbital rotations         240
+     Number of orbital rotations          77
      ---------------------------------------
-     Total number of variables           241
+     Total number of variables            78
 
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
@@ -2760,14 +2566,14 @@ Point group: C1
     1     -109.995779444524    1.04210D-03   -1.10D+02
     2     -109.995779529743    2.73706D-04   -8.52D-08
     3     -109.995779536344    8.81046D-05   -6.60D-09
-    4     -109.995779536954    1.57577D-05   -6.10D-10
-    5     -109.995779536991    3.18462D-06   -3.69D-11
-    6     -109.995779536993    7.58942D-07   -1.88D-12
-    7     -109.995779536993    9.76593D-08    4.55D-13
-    8     -109.995779536993    1.68338D-08   -6.82D-13
-    9     -109.995779536993    3.38829D-09    3.41D-13
-   10     -109.995779536993    6.48588D-10    2.27D-13
-   11     -109.995779536993    9.39751D-11   -1.71D-13
+    4     -109.995779536955    1.57577D-05   -6.10D-10
+    5     -109.995779536992    3.18462D-06   -3.70D-11
+    6     -109.995779536993    7.58942D-07   -1.79D-12
+    7     -109.995779536994    9.76593D-08   -1.74D-13
+    8     -109.995779536994    1.68338D-08   -3.55D-15
+    9     -109.995779536993    3.38844D-09    5.33D-14
+   10     -109.995779536993    6.48722D-10   -3.20D-14
+   11     -109.995779536994    9.39152D-11   -3.20D-14
  DIIS converged in  11 iterations !
 
 
@@ -2776,127 +2582,102 @@ Point group: C1
  Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   16
- Orbital occupations :    8
+ Orbital occupations :    4    1    3    0
 
  Hartree-Fock orbital energies, symmetry 1
 
-       -15.63788119   -15.63662436    -1.34918460    -0.91966545    -0.74380101
-        -0.56597574    -0.50915726    -0.40734425     0.13314128     0.16073781
-         0.23763945     0.56825209     0.70397578
+       -15.63788119    -1.34918460    -0.74380101    -0.56597574     0.16073781
+         0.70397578     0.87295093     0.96550744     1.19945828
 
-    E(LUMO) :     0.13314128 au (symmetry 1)
-  - E(HOMO) :    -0.40734425 au (symmetry 1)
+ Hartree-Fock orbital energies, symmetry 2
+
+        -0.50915726     0.94046677     1.38344976     1.80791616     2.27939540
+
+ Hartree-Fock orbital energies, symmetry 3
+
+       -15.63662436    -0.91966545    -0.40734425     0.23763945     0.56825209
+         0.85127024     1.00603217     1.18744059
+
+ Hartree-Fock orbital energies, symmetry 4
+
+         0.13314128     1.05637430     1.53208264     2.60898818     2.86232766
+
+    E(LUMO) :     0.13314128 au (symmetry 4)
+  - E(HOMO) :    -0.40734425 au (symmetry 3)
   ------------------------------------------
     gap     :     0.54048553 au
-1
+
 
                     >>> FINAL RESULTS FROM SIRIUS <<<
 
      Spin multiplicity:           1
      Spatial symmetry:            1
 
-     Final    HF energy:         -109.995779536993
-     Nuclear repulsion:            31.969254997000
-     Electronic energy:          -141.965034533993
+     Final    HF energy:         -109.995779536994
+     Nuclear repulsion:            31.969254997043
+     Electronic energy:          -141.965034534036
 
      Final gradient norm:           0.000000000094
 
  
-     Date and time (IRIX)   : Thu Nov 23 13:38:18 2000
-     Host name              : odin                                    
+     Date and time (Linux)  : Fri Apr  6 13:54:28 2001
+     Host name              : pauli.uio.no                            
 
      Molecular orbitals for symmetry species   1
 
- Orbital          1        2        3        4        5        6        7
-   1  N   1s     0.7074   0.7076  -0.0064  -0.0009  -0.0058   0.0040   0.0000
-   2  N   1s     0.0021   0.0026   0.6359  -0.5810  -0.0630  -0.1864   0.0000
-   3  N   1s    -0.0014  -0.0034  -0.1464   0.0473   0.0133  -0.1194   0.0000
-   4  N   2px    0.0013   0.0018   0.2297   0.2143  -0.3668   0.5222   0.0000
-   5  N   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.5898
-   6  N   2pz    0.0019   0.0020   0.0566  -0.1204   0.4050   0.3652   0.0000
-   7  N   2px   -0.0011  -0.0018  -0.0675  -0.0382   0.0829  -0.0419   0.0000
-   8  N   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0262
-   9  N   2pz   -0.0014  -0.0017  -0.0166   0.0476  -0.0695  -0.0010   0.0000
-  10  N   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0235
-  11  N   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0082
-  12  N   3d0    0.0002   0.0000  -0.0067  -0.0079   0.0148  -0.0007   0.0000
-  13  N   3d1+  -0.0001  -0.0001   0.0038   0.0056   0.0039   0.0154   0.0000
-  14  N   3d2+   0.0000   0.0004   0.0116   0.0052  -0.0077   0.0101   0.0000
-  15  N   1s     0.7074  -0.7076  -0.0064   0.0009  -0.0058   0.0040   0.0000
-  16  N   1s     0.0021  -0.0026   0.6359   0.5810  -0.0630  -0.1864   0.0000
-  17  N   1s    -0.0014   0.0034  -0.1464  -0.0473   0.0133  -0.1194   0.0000
-  18  N   2px   -0.0013   0.0018  -0.2297   0.2143   0.3668  -0.5222   0.0000
-  19  N   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.5898
-  20  N   2pz    0.0019  -0.0020   0.0566   0.1204   0.4050   0.3652   0.0000
-  21  N   2px    0.0011  -0.0018   0.0675  -0.0382  -0.0829   0.0419   0.0000
-  22  N   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0262
-  23  N   2pz   -0.0014   0.0017  -0.0166  -0.0476  -0.0695  -0.0010   0.0000
-  24  N   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000  -0.0235
-  25  N   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0082
-  26  N   3d0    0.0002   0.0000  -0.0067   0.0079   0.0148  -0.0007   0.0000
-  27  N   3d1+   0.0001  -0.0001  -0.0038   0.0056  -0.0039  -0.0154   0.0000
-  28  N   3d2+   0.0000  -0.0004   0.0116  -0.0052  -0.0077   0.0101   0.0000
-  29  H   1s    -0.0004  -0.0001   0.1659  -0.3884   0.4494  -0.0013   0.0000
-  30  H   1s     0.0008   0.0005  -0.0865   0.1596  -0.1568  -0.0202   0.0000
-  31  H   2px    0.0000  -0.0002   0.0108  -0.0098   0.0108   0.0131   0.0000
-  32  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0141
-  33  H   2pz    0.0005   0.0006  -0.0183   0.0289  -0.0247   0.0051   0.0000
-  34  H   1s    -0.0004   0.0001   0.1659   0.3884   0.4494  -0.0013   0.0000
-  35  H   1s     0.0008  -0.0005  -0.0865  -0.1596  -0.1568  -0.0202   0.0000
-  36  H   2px    0.0000  -0.0002  -0.0108  -0.0098  -0.0108  -0.0131   0.0000
-  37  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0141
-  38  H   2pz    0.0005  -0.0006  -0.0183  -0.0289  -0.0247   0.0051   0.0000
+ Orbital          1        2        3        4
+   1  N   1s     0.7074  -0.0064  -0.0058  -0.0040
+   2  N   1s     0.0021   0.6359  -0.0630   0.1864
+   3  N   1s    -0.0014  -0.1464   0.0133   0.1194
+   4  N   2px   -0.0013  -0.2297   0.3668   0.5222
+   5  N   2pz    0.0019   0.0566   0.4050  -0.3652
+   6  N   2px    0.0011   0.0675  -0.0829  -0.0419
+   7  N   2pz   -0.0014  -0.0166  -0.0695   0.0010
+   8  N   3d0    0.0003  -0.0116   0.0256   0.0012
+   9  N   3d1+   0.0001  -0.0066  -0.0067   0.0267
+  10  N   3d2+   0.0000   0.0201  -0.0133  -0.0175
+  11  H   1s    -0.0004   0.1659   0.4494   0.0013
+  12  H   1s     0.0008  -0.0865  -0.1568   0.0202
+  13  H   2px    0.0000  -0.0108  -0.0108   0.0131
+  14  H   2pz    0.0005  -0.0183  -0.0247  -0.0051
 
- Orbital          8
-   1  N   1s    -0.0047
-   2  N   1s    -0.2920
-   3  N   1s    -0.0703
-   4  N   2px    0.1319
-   5  N   2py    0.0000
-   6  N   2pz    0.5389
-   7  N   2px    0.0732
-   8  N   2py    0.0000
-   9  N   2pz    0.0264
-  10  N   3d2-   0.0000
-  11  N   3d1-   0.0000
-  12  N   3d0    0.0093
-  13  N   3d1+  -0.0067
-  14  N   3d2+   0.0036
-  15  N   1s     0.0047
-  16  N   1s     0.2920
-  17  N   1s     0.0703
-  18  N   2px    0.1319
-  19  N   2py    0.0000
-  20  N   2pz   -0.5389
-  21  N   2px    0.0732
-  22  N   2py    0.0000
-  23  N   2pz   -0.0264
-  24  N   3d2-   0.0000
-  25  N   3d1-   0.0000
-  26  N   3d0   -0.0093
-  27  N   3d1+  -0.0067
-  28  N   3d2+  -0.0036
-  29  H   1s     0.4392
-  30  H   1s    -0.0874
-  31  H   2px    0.0093
-  32  H   2py    0.0000
-  33  H   2pz   -0.0095
-  34  H   1s    -0.4392
-  35  H   1s     0.0874
-  36  H   2px    0.0093
-  37  H   2py    0.0000
-  38  H   2pz    0.0095
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1
+   1  N   2py    0.5898
+   2  N   2py    0.0262
+   3  N   3d2-  -0.0408
+   4  N   3d1-   0.0143
+   5  H   2py    0.0141
+
+     Molecular orbitals for symmetry species   3
+
+ Orbital          1        2        3
+   1  N   1s     0.7076   0.0009  -0.0047
+   2  N   1s     0.0026   0.5810  -0.2920
+   3  N   1s    -0.0034  -0.0473  -0.0703
+   4  N   2px   -0.0018   0.2143  -0.1319
+   5  N   2pz    0.0020   0.1204   0.5389
+   6  N   2px    0.0018  -0.0382  -0.0732
+   7  N   2pz   -0.0017  -0.0476   0.0264
+   8  N   3d0    0.0000   0.0138   0.0162
+   9  N   3d1+   0.0001   0.0097   0.0117
+  10  N   3d2+   0.0007  -0.0091   0.0063
+  11  H   1s    -0.0001   0.3884   0.4392
+  12  H   1s     0.0005  -0.1596  -0.0874
+  13  H   2px    0.0002  -0.0098  -0.0093
+  14  H   2pz    0.0006  -0.0289  -0.0095
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.56 seconds
- >>>> Total wall time used in SIRIUS :      1.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.06 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (IRIX)   : Thu Nov 23 13:38:18 2000
-     Host name              : odin                                    
+     Date and time (Linux)  : Fri Apr  6 13:54:28 2001
+     Host name              : pauli.uio.no                            
 
-@@- End of Wave-Function Section
+- End of Wave Function Section
      Starting Coupled Cluster -
 
   
@@ -2917,17 +2698,17 @@ Point group: C1
                          ! Information from CCORB !
                          +------------------------+
 
-   NBAS   :      38
-   IBAS   :       0
-   NRHF   :       8
-   NVIR   :      30
-   NRHFS  :       8
-   NVIRS  :      30
-   NRHFFR :       0
-   NVIRFR :       0
+   NBAS   :      14       5      14       5
+   IBAS   :       0      14      19      33
+   NRHF   :       4       1       3       0
+   NVIR   :      10       4      11       5
+   NRHFS  :       4       1       3       0
+   NVIRS  :      10       4      11       5
+   NRHFFR :       0       0       0       0
+   NVIRFR :       0       0       0       0
    NORBTS :      38
    NORBT  :      38
-   N2BAST :    1444
+   N2BAST :     442
    N2BASX :    1444
    NNBASX :     741
    
@@ -2945,20 +2726,20 @@ Point group: C1
              -----------------------------------------
 
 
-          Number of t1 amplitudes                 :       240
-          Number of t2 amplitudes                 :     28920
-          Total number of amplitudes in ccsd      :     29160
+          Number of t1 amplitudes                 :        77
+          Number of t2 amplitudes                 :      7970
+          Total number of amplitudes in ccsd      :      8047
 
- Iter.  1: Coupled cluster RSTAR energy :    -110.3513802902040100
- Iter.  1: Coupled cluster CCSD  energy :    -110.3514007526999900
- Iter.  2: Coupled cluster CCSD  energy :    -110.3514009629443100
- Iter.  3: Coupled cluster CCSD  energy :    -110.3514018213906200
- Iter.  4: Coupled cluster CCSD  energy :    -110.3514022032340300
- Iter.  5: Coupled cluster CCSD  energy :    -110.3514021450592800
- Iter.  6: Coupled cluster CCSD  energy :    -110.3514021721276900
- Iter.  7: Coupled cluster CCSD  energy :    -110.3514021648232300
- Iter.  8: Coupled cluster CCSD  energy :    -110.3514021607127500
- Iter.  9: Coupled cluster CCSD  energy :    -110.3514021606379700
+ Iter.  1: Coupled cluster RSTAR energy :    -110.3513802902048000
+ Iter.  1: Coupled cluster CCSD  energy :    -110.3514007526998000
+ Iter.  2: Coupled cluster CCSD  energy :    -110.3514009629448000
+ Iter.  3: Coupled cluster CCSD  energy :    -110.3514018213906000
+ Iter.  4: Coupled cluster CCSD  energy :    -110.3514022032339000
+ Iter.  5: Coupled cluster CCSD  energy :    -110.3514021450598000
+ Iter.  6: Coupled cluster CCSD  energy :    -110.3514021721280000
+ Iter.  7: Coupled cluster CCSD  energy :    -110.3514021648227000
+ Iter.  8: Coupled cluster CCSD  energy :    -110.3514021607147000
+ Iter.  9: Coupled cluster CCSD  energy :    -110.3514021606374000
 
  CCSD  energy converged to within   0.10D-09 is   -110.351402161
 
@@ -3025,9 +2806,6 @@ Point group: C1
  *******************************************************************************
 
 
- WARNING: Tried to close a non-existent or already closed file
- Unit number was:  10
-
 - End of Coupled Cluster
  Trust radius increased due to good ratio.
  Updated trust radius   0.50000
@@ -3064,54 +2842,17 @@ Point group: C1
  Start vector is a CCSD      L0  vector
 
 
- Analysis of the undifferentiated Lagrangian multipliers: 
- --------------------------------------------------------
-
-
-          CC_PRAM:Overall Contribution of the Different Components
-          --------------------------------------------------------
-
-
-
-          Single Excitation Contribution :               1.2000 %
-
-          Double Excitation Contribution :              98.8000 %
-
-          ||T1||/||T2||                  :               0.1102
-
-          Tau1 diagnostic                :               0.0180
-
-          Norm of Total Amplitude Vector :               0.6573
-
-
- +=============================================================================+
- | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
- |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
- +=============================================================================+
- | 1   1   |   8       7     |      188          |              |   -0.045746  |
- | 1   1   |   3       8     |      213          |              |   -0.032601  |
- +-----------------------------------------------------------------------------+
- | 1 1 1 1 |   1   1   7   7 |      181      181 |        16471 |   -0.288794  |
- +=============================================================================+
-
-
-          Norm of Printed Amplitude Vector :             0.2942
-
-
-          Printed all single excitations greater than 0.021909
-
-
-          Printed all double excitations greater than 0.198796
-
-
               Constructing right-hand-side for CCSD-kappa-0
               ---------------------------------------------
 
+ CC_FOP> Norm of RHS vector:  4.7585242077576364E-004
 
 
                   Solving for orbital relaxation vector
                   -------------------------------------
 
+
+ Converged vectors from previous geometry used as starting vectors
   
    Equations converged to residual less than:  0.000000
   
@@ -3127,17 +2868,24 @@ Point group: C1
                             Molecular gradient
                             ------------------
 
- N          0.0000521668            0.0000000000           -0.0000171451
- N         -0.0000521668            0.0000000000           -0.0000171451
- H         -0.0000115226            0.0000000000            0.0000171451
- H          0.0000115226            0.0000000000            0.0000171451
+                         N    x    -0.0001043336
+                         N    z    -0.0000342903
+                         H    x     0.0000230451
+                         H    z     0.0000342903
+
+
+
+ N    1    -0.0000521668            0.0000000000           -0.0000171451
+ N    2     0.0000521668            0.0000000000           -0.0000171451
+ H    1     0.0000115226            0.0000000000            0.0000171451
+ H    2    -0.0000115226            0.0000000000            0.0000171451
 
 
 
 
-                   Molecular gradient norm:  6.88E-09
+                   Molecular gradient norm:  1.38E-08
 
->>> Total time used in gradient section:       62.58 seconds.
+>>> Total time used in gradient section:       13.28 seconds.
   
 
  *******************************************************************************
@@ -3168,15 +2916,24 @@ Point group: C1
  *******************************************************************************
 
 
- WARNING: Tried to close a non-existent or already closed file
- Unit number was:  18
-
 - End of Coupled Cluster
 
 
        :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-       ::::::::::::::: Minimization Control Center :::::::::::::::
+       ::::::::::::::: Optimization Control Center :::::::::::::::
        :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+
+
+                            Next geometry (au)
+                            ------------------
+
+ N    1     1.1813908627            0.0000000000           -0.1054290531
+ N    2    -1.1813908627            0.0000000000           -0.1054290531
+ H    1     1.9125271300            0.0000000000            1.7322107531
+ H    2    -1.9125271300            0.0000000000            1.7322107531
+
+
 
 
 
@@ -3184,33 +2941,15 @@ Point group: C1
                          ------------------------
 
  Iteration number               :       4
- End of minimization            :       F 
+ End of optimization            :       F 
  Energy at this geometry is     :    -110.351402
  Energy change from last geom.  :       0.000000
- Predicted change               :       0.000000
- Ratio, actual/predicted change :       1.095541
  Norm of gradient               :       0.000083
+ Norm of step                   :       0.000146
+ Updated trust radius           :       0.500000
  Total Hessian index            :       0
 
 
-                            Change in geometry
-                            ------------------
-
- Updated trust radius           :       0.500000
- Norm of step                   :       0.000146
-
-
-
-
-                         New internal coordinates
-                         ------------------------
-
-
-               Column   1     Column   2     Column   3     Column   4
-       1       2.36271960     1.97779885     1.97779885     3.59856118
-
-               Column   5     Column   6     Column   7     Column   8
-       1       3.59856118     1.94951767     1.94951767     0.00000000
     Starting in Integral Section -
 
 
@@ -3220,16 +2959,13 @@ Point group: C1
  *************************************************************************
 
 
-
  Default print level:       -1
 
  * Nuclear model: Point charge
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
-
  The following one-electron property integrals are calculated:
-
           - overlap integrals
           - dipole length integrals
           - Geometrical derivatives of overlap integrals
@@ -3238,62 +2974,51 @@ Point group: C1
  In this run  precalculated two-electron integrals are transformed
  to P-supermatrix elements.
 
-
- >>> Time used in ONEDRV is   0.04 seconds
+ >>> Time used in ONEDRV is   0.01 seconds
 
 
  >>> Time used in OVERLA is   0.01 seconds
 
 
- >>> Time used in DIPLEN is   0.01 seconds
+ >>> Time used in DIPLEN is   0.00 seconds
 
 
- >>> Time used in DEROVL is   0.04 seconds
+ >>> Time used in DEROVL is   0.01 seconds
 
 
- >>> Time used in DERHAM is   0.12 seconds
+ >>> Time used in DERHAM is   0.06 seconds
 
 
- Number of two-electron integrals written:    138255 (50.3%)
- Kilobytes written:                             1665
-
-
-
- >>> Time used in TWOINT is   3.69 seconds
+ Number of two-electron integrals written:       62733 ( 22.8% )
+ Megabytes written:                              0.721
 
 
 
- ***********************************************************************
- ************************* Output from FORMSUP *************************
- ***********************************************************************
+ >>> Time used in TWOINT is   0.54 seconds
 
-  NOSYM :  F
- OLDSUP :  F
 
- Threshold for discarding integrals :  1.00D-15
+ >>> Time used in FRMSUP is   0.03 seconds
 
- >>> Time used in FRMSUP is   0.13 seconds
-
- >>>> Total CPU  time used in HERMIT:   4.06 seconds
- >>>> Total wall time used in HERMIT:   4.00 seconds
+ >>>> Total CPU  time used in HERMIT:   1.34 seconds
+ >>>> Total wall time used in HERMIT:   2.00 seconds
 
 - End of Integral Section
-@@     Starting Wave-Function Section -
+     Starting Wave Function Section -
 
  ************************************************************************
  *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
  ************************************************************************
 
  
-     Date and time (IRIX)   : Thu Nov 23 13:40:18 2000
-     Host name              : odin                                    
+     Date and time (Linux)  : Fri Apr  6 13:54:59 2001
+     Host name              : pauli.uio.no                            
 
  Title lines from integral program:
        Cis-diazine CCSD geometry optimisation (cc-dzp basis)                 
        001  ( A1)                                                            
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4 =   2 is   5
+ Print level on unit LUW4  =   2 is   5
 
       (Integral direct) CC calculation.
 
@@ -3314,24 +3039,24 @@ Point group: C1
      Total number of orbitals                 38
 
      Spin multiplicity                         1
-     Total number of symmetries                1
+     Total number of symmetries                4
      Reference state symmetry                  1
 
      Orbital specifications
      ======================
-     Abelian symmetry species           1
-                                       --
-     Occupied HF orbitals               8
-     Secondary orbitals                30
-     Total number of orbitals          38
-     Number of basis functions         38
+     Abelian symmetry species           1   2   3   4
+                                       --  --  --  --
+     Occupied HF orbitals               4   1   3   0
+     Secondary orbitals                10   4  11   5
+     Total number of orbitals          14   5  14   5
+     Number of basis functions         14   5  14   5
 
      Optimization information
      ========================
      Number of configurations              1
-     Number of orbital rotations         240
+     Number of orbital rotations          77
      ---------------------------------------
-     Total number of variables           241
+     Total number of variables            78
 
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
@@ -3351,16 +3076,16 @@ Point group: C1
 
  Iter      Total energy        Error norm    Delta(E)
  ----------------------------------------------------
-    1     -109.995777666050    1.38572D-04   -1.10D+02
-    2     -109.995777667629    3.54909D-05   -1.58D-09
-    3     -109.995777667756    1.21408D-05   -1.27D-10
-    4     -109.995777667768    1.85933D-06   -1.15D-11
-    5     -109.995777667768    4.07221D-07   -1.42D-13
-    6     -109.995777667768    8.08422D-08   -5.12D-13
-    7     -109.995777667768    1.45568D-08    1.71D-13
-    8     -109.995777667769    2.92054D-09   -3.98D-13
-    9     -109.995777667768    5.65161D-10    3.69D-13
-   10     -109.995777667768    9.22004D-11    1.42D-13
+    1     -109.995777666051    1.38572D-04   -1.10D+02
+    2     -109.995777667630    3.54909D-05   -1.58D-09
+    3     -109.995777667757    1.21408D-05   -1.27D-10
+    4     -109.995777667768    1.85933D-06   -1.13D-11
+    5     -109.995777667768    4.07221D-07   -5.61D-13
+    6     -109.995777667768    8.08423D-08    6.39D-14
+    7     -109.995777667768    1.45568D-08    3.55D-14
+    8     -109.995777667768    2.92050D-09    9.24D-14
+    9     -109.995777667768    5.65092D-10   -7.82D-14
+   10     -109.995777667768    9.22176D-11   -2.13D-14
  DIIS converged in  10 iterations !
 
 
@@ -3369,19 +3094,31 @@ Point group: C1
  Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   16
- Orbital occupations :    8
+ Orbital occupations :    4    1    3    0
 
  Hartree-Fock orbital energies, symmetry 1
 
-       -15.63788302   -15.63662637    -1.34917102    -0.91967883    -0.74380014
-        -0.56596922    -0.50914572    -0.40736067     0.13312964     0.16073999
-         0.23764293     0.56822683     0.70399579
+       -15.63788302    -1.34917102    -0.74380014    -0.56596922     0.16073999
+         0.70399579     0.87297305     0.96550266     1.19945557
 
-    E(LUMO) :     0.13312964 au (symmetry 1)
-  - E(HOMO) :    -0.40736067 au (symmetry 1)
+ Hartree-Fock orbital energies, symmetry 2
+
+        -0.50914572     0.94047483     1.38344732     1.80790018     2.27943239
+
+ Hartree-Fock orbital energies, symmetry 3
+
+       -15.63662637    -0.91967883    -0.40736067     0.23764293     0.56822683
+         0.85128647     1.00601379     1.18741756
+
+ Hartree-Fock orbital energies, symmetry 4
+
+         0.13312964     1.05637252     1.53208032     2.60900049     2.86228889
+
+    E(LUMO) :     0.13312964 au (symmetry 4)
+  - E(HOMO) :    -0.40736067 au (symmetry 3)
   ------------------------------------------
     gap     :     0.54049031 au
-1
+
 
                     >>> FINAL RESULTS FROM SIRIUS <<<
 
@@ -3389,107 +3126,70 @@ Point group: C1
      Spatial symmetry:            1
 
      Final    HF energy:         -109.995777667768
-     Nuclear repulsion:            31.968969362586
-     Electronic energy:          -141.964747030355
+     Nuclear repulsion:            31.968969362627
+     Electronic energy:          -141.964747030396
 
      Final gradient norm:           0.000000000092
 
  
-     Date and time (IRIX)   : Thu Nov 23 13:40:19 2000
-     Host name              : odin                                    
+     Date and time (Linux)  : Fri Apr  6 13:54:59 2001
+     Host name              : pauli.uio.no                            
 
      Molecular orbitals for symmetry species   1
 
- Orbital          1        2        3        4        5        6        7
-   1  N   1s     0.7074   0.7076  -0.0064  -0.0009  -0.0058   0.0040   0.0000
-   2  N   1s     0.0021   0.0026   0.6359  -0.5810  -0.0630  -0.1864   0.0000
-   3  N   1s    -0.0014  -0.0034  -0.1464   0.0473   0.0133  -0.1194   0.0000
-   4  N   2px    0.0013   0.0018   0.2297   0.2143  -0.3668   0.5222   0.0000
-   5  N   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.5898
-   6  N   2pz    0.0019   0.0020   0.0566  -0.1204   0.4051   0.3652   0.0000
-   7  N   2px   -0.0011  -0.0018  -0.0675  -0.0382   0.0829  -0.0419   0.0000
-   8  N   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0262
-   9  N   2pz   -0.0014  -0.0017  -0.0166   0.0476  -0.0696  -0.0010   0.0000
-  10  N   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0235
-  11  N   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0082
-  12  N   3d0    0.0002   0.0000  -0.0067  -0.0079   0.0148  -0.0007   0.0000
-  13  N   3d1+  -0.0001  -0.0001   0.0038   0.0056   0.0039   0.0154   0.0000
-  14  N   3d2+   0.0000   0.0004   0.0116   0.0052  -0.0077   0.0101   0.0000
-  15  N   1s     0.7074  -0.7076  -0.0064   0.0009  -0.0058   0.0040   0.0000
-  16  N   1s     0.0021  -0.0026   0.6359   0.5810  -0.0630  -0.1864   0.0000
-  17  N   1s    -0.0014   0.0034  -0.1464  -0.0473   0.0133  -0.1194   0.0000
-  18  N   2px   -0.0013   0.0018  -0.2297   0.2143   0.3668  -0.5222   0.0000
-  19  N   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.5898
-  20  N   2pz    0.0019  -0.0020   0.0566   0.1204   0.4051   0.3652   0.0000
-  21  N   2px    0.0011  -0.0018   0.0675  -0.0382  -0.0829   0.0419   0.0000
-  22  N   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0262
-  23  N   2pz   -0.0014   0.0017  -0.0166  -0.0476  -0.0696  -0.0010   0.0000
-  24  N   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000  -0.0235
-  25  N   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0082
-  26  N   3d0    0.0002   0.0000  -0.0067   0.0079   0.0148  -0.0007   0.0000
-  27  N   3d1+   0.0001  -0.0001  -0.0038   0.0056  -0.0039  -0.0154   0.0000
-  28  N   3d2+   0.0000  -0.0004   0.0116  -0.0052  -0.0077   0.0101   0.0000
-  29  H   1s    -0.0004  -0.0001   0.1659  -0.3885   0.4494  -0.0013   0.0000
-  30  H   1s     0.0008   0.0005  -0.0865   0.1596  -0.1568  -0.0202   0.0000
-  31  H   2px    0.0000  -0.0002   0.0108  -0.0098   0.0108   0.0131   0.0000
-  32  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0142
-  33  H   2pz    0.0005   0.0006  -0.0183   0.0289  -0.0247   0.0051   0.0000
-  34  H   1s    -0.0004   0.0001   0.1659   0.3885   0.4494  -0.0013   0.0000
-  35  H   1s     0.0008  -0.0005  -0.0865  -0.1596  -0.1568  -0.0202   0.0000
-  36  H   2px    0.0000  -0.0002  -0.0108  -0.0098  -0.0108  -0.0131   0.0000
-  37  H   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0142
-  38  H   2pz    0.0005  -0.0006  -0.0183  -0.0289  -0.0247   0.0051   0.0000
+ Orbital          1        2        3        4
+   1  N   1s     0.7074  -0.0064  -0.0058  -0.0040
+   2  N   1s     0.0021   0.6359  -0.0630   0.1864
+   3  N   1s    -0.0014  -0.1464   0.0133   0.1194
+   4  N   2px   -0.0013  -0.2297   0.3668   0.5222
+   5  N   2pz    0.0019   0.0566   0.4051  -0.3652
+   6  N   2px    0.0011   0.0675  -0.0829  -0.0419
+   7  N   2pz   -0.0014  -0.0166  -0.0696   0.0010
+   8  N   3d0    0.0003  -0.0116   0.0256   0.0012
+   9  N   3d1+   0.0001  -0.0066  -0.0067   0.0267
+  10  N   3d2+   0.0000   0.0201  -0.0133  -0.0175
+  11  H   1s    -0.0004   0.1659   0.4494   0.0013
+  12  H   1s     0.0008  -0.0865  -0.1568   0.0202
+  13  H   2px    0.0000  -0.0108  -0.0108   0.0131
+  14  H   2pz    0.0005  -0.0183  -0.0247  -0.0051
 
- Orbital          8
-   1  N   1s    -0.0047
-   2  N   1s    -0.2920
-   3  N   1s    -0.0703
-   4  N   2px    0.1319
-   5  N   2py    0.0000
-   6  N   2pz    0.5389
-   7  N   2px    0.0732
-   8  N   2py    0.0000
-   9  N   2pz    0.0263
-  10  N   3d2-   0.0000
-  11  N   3d1-   0.0000
-  12  N   3d0    0.0093
-  13  N   3d1+  -0.0067
-  14  N   3d2+   0.0036
-  15  N   1s     0.0047
-  16  N   1s     0.2920
-  17  N   1s     0.0703
-  18  N   2px    0.1319
-  19  N   2py    0.0000
-  20  N   2pz   -0.5389
-  21  N   2px    0.0732
-  22  N   2py    0.0000
-  23  N   2pz   -0.0263
-  24  N   3d2-   0.0000
-  25  N   3d1-   0.0000
-  26  N   3d0   -0.0093
-  27  N   3d1+  -0.0067
-  28  N   3d2+  -0.0036
-  29  H   1s     0.4392
-  30  H   1s    -0.0874
-  31  H   2px    0.0093
-  32  H   2py    0.0000
-  33  H   2pz   -0.0095
-  34  H   1s    -0.4392
-  35  H   1s     0.0874
-  36  H   2px    0.0093
-  37  H   2py    0.0000
-  38  H   2pz    0.0095
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1
+   1  N   2py    0.5898
+   2  N   2py    0.0262
+   3  N   3d2-  -0.0408
+   4  N   3d1-   0.0143
+   5  H   2py    0.0142
+
+     Molecular orbitals for symmetry species   3
+
+ Orbital          1        2        3
+   1  N   1s     0.7076   0.0009  -0.0047
+   2  N   1s     0.0026   0.5810  -0.2920
+   3  N   1s    -0.0034  -0.0473  -0.0703
+   4  N   2px   -0.0018   0.2143  -0.1319
+   5  N   2pz    0.0020   0.1204   0.5389
+   6  N   2px    0.0018  -0.0382  -0.0732
+   7  N   2pz   -0.0017  -0.0476   0.0263
+   8  N   3d0    0.0000   0.0138   0.0162
+   9  N   3d1+   0.0001   0.0097   0.0117
+  10  N   3d2+   0.0007  -0.0091   0.0063
+  11  H   1s    -0.0001   0.3885   0.4392
+  12  H   1s     0.0005  -0.1596  -0.0874
+  13  H   2px    0.0002  -0.0098  -0.0093
+  14  H   2pz    0.0006  -0.0289  -0.0095
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.55 seconds
- >>>> Total wall time used in SIRIUS :      1.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.05 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (IRIX)   : Thu Nov 23 13:40:19 2000
-     Host name              : odin                                    
+     Date and time (Linux)  : Fri Apr  6 13:54:59 2001
+     Host name              : pauli.uio.no                            
 
-@@- End of Wave-Function Section
+- End of Wave Function Section
      Starting Coupled Cluster -
 
   
@@ -3510,17 +3210,17 @@ Point group: C1
                          ! Information from CCORB !
                          +------------------------+
 
-   NBAS   :      38
-   IBAS   :       0
-   NRHF   :       8
-   NVIR   :      30
-   NRHFS  :       8
-   NVIRS  :      30
-   NRHFFR :       0
-   NVIRFR :       0
+   NBAS   :      14       5      14       5
+   IBAS   :       0      14      19      33
+   NRHF   :       4       1       3       0
+   NVIR   :      10       4      11       5
+   NRHFS  :       4       1       3       0
+   NVIRS  :      10       4      11       5
+   NRHFFR :       0       0       0       0
+   NVIRFR :       0       0       0       0
    NORBTS :      38
    NORBT  :      38
-   N2BAST :    1444
+   N2BAST :     442
    N2BASX :    1444
    NNBASX :     741
    
@@ -3538,20 +3238,20 @@ Point group: C1
              -----------------------------------------
 
 
-          Number of t1 amplitudes                 :       240
-          Number of t2 amplitudes                 :     28920
-          Total number of amplitudes in ccsd      :     29160
+          Number of t1 amplitudes                 :        77
+          Number of t2 amplitudes                 :      7970
+          Total number of amplitudes in ccsd      :      8047
 
- Iter.  1: Coupled cluster RSTAR energy :    -110.3514007240819400
- Iter.  1: Coupled cluster CCSD  energy :    -110.3514021787752900
- Iter.  2: Coupled cluster CCSD  energy :    -110.3514021038345300
- Iter.  3: Coupled cluster CCSD  energy :    -110.3514021478120400
- Iter.  4: Coupled cluster CCSD  energy :    -110.3514021704295500
- Iter.  5: Coupled cluster CCSD  energy :    -110.3514021586859400
- Iter.  6: Coupled cluster CCSD  energy :    -110.3514021637555100
- Iter.  7: Coupled cluster CCSD  energy :    -110.3514021631961000
- Iter.  8: Coupled cluster CCSD  energy :    -110.3514021629034400
- Iter.  9: Coupled cluster CCSD  energy :    -110.3514021628082700
+ Iter.  1: Coupled cluster RSTAR energy :    -110.3514007240818000
+ Iter.  1: Coupled cluster CCSD  energy :    -110.3514021787743000
+ Iter.  2: Coupled cluster CCSD  energy :    -110.3514021038330000
+ Iter.  3: Coupled cluster CCSD  energy :    -110.3514021478129000
+ Iter.  4: Coupled cluster CCSD  energy :    -110.3514021704302000
+ Iter.  5: Coupled cluster CCSD  energy :    -110.3514021586859000
+ Iter.  6: Coupled cluster CCSD  energy :    -110.3514021637545000
+ Iter.  7: Coupled cluster CCSD  energy :    -110.3514021631964000
+ Iter.  8: Coupled cluster CCSD  energy :    -110.3514021629028000
+ Iter.  9: Coupled cluster CCSD  energy :    -110.3514021628079000
 
  CCSD  energy converged to within   0.10D-09 is   -110.351402163
 
@@ -3618,12 +3318,9 @@ Point group: C1
  *******************************************************************************
 
 
- WARNING: Tried to close a non-existent or already closed file
- Unit number was:  10
-
 - End of Coupled Cluster
- Trust radius set equal to norm of step.
- Updated trust radius   0.00015
+ Trust radius squarely increased due to very good ratio.
+ Updated trust radius   0.50000
      Starting Coupled Cluster -
 
   
@@ -3657,54 +3354,17 @@ Point group: C1
  Start vector is a CCSD      L0  vector
 
 
- Analysis of the undifferentiated Lagrangian multipliers: 
- --------------------------------------------------------
-
-
-          CC_PRAM:Overall Contribution of the Different Components
-          --------------------------------------------------------
-
-
-
-          Single Excitation Contribution :               1.2000 %
-
-          Double Excitation Contribution :              98.8000 %
-
-          ||T1||/||T2||                  :               0.1102
-
-          Tau1 diagnostic                :               0.0180
-
-          Norm of Total Amplitude Vector :               0.6573
-
-
- +=============================================================================+
- | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
- |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
- +=============================================================================+
- | 1   1   |   8       7     |      188          |              |   -0.045749  |
- | 1   1   |   3       8     |      213          |              |   -0.032597  |
- +-----------------------------------------------------------------------------+
- | 1 1 1 1 |   1   1   7   7 |      181      181 |        16471 |   -0.288811  |
- +=============================================================================+
-
-
-          Norm of Printed Amplitude Vector :             0.2942
-
-
-          Printed all single excitations greater than 0.021909
-
-
-          Printed all double excitations greater than 0.198796
-
-
               Constructing right-hand-side for CCSD-kappa-0
               ---------------------------------------------
 
+ CC_FOP> Norm of RHS vector:  4.7591082872641852E-004
 
 
                   Solving for orbital relaxation vector
                   -------------------------------------
 
+
+ Converged vectors from previous geometry used as starting vectors
   
    Equations converged to residual less than:  0.000000
   
@@ -3720,17 +3380,24 @@ Point group: C1
                             Molecular gradient
                             ------------------
 
- N          0.0000037726            0.0000000000           -0.0000025941
- N         -0.0000037726            0.0000000000           -0.0000025941
- H         -0.0000005792            0.0000000000            0.0000025941
- H          0.0000005792            0.0000000000            0.0000025941
+                         N    x    -0.0000075452
+                         N    z    -0.0000051883
+                         H    x     0.0000011583
+                         H    z     0.0000051883
+
+
+
+ N    1    -0.0000037726            0.0000000000           -0.0000025941
+ N    2     0.0000037726            0.0000000000           -0.0000025941
+ H    1     0.0000005792            0.0000000000            0.0000025941
+ H    2    -0.0000005792            0.0000000000            0.0000025941
 
 
 
 
-                   Molecular gradient norm:  5.61E-11
+                   Molecular gradient norm:  1.12E-10
 
->>> Total time used in gradient section:       62.63 seconds.
+>>> Total time used in gradient section:       13.26 seconds.
   
 
  *******************************************************************************
@@ -3761,15 +3428,24 @@ Point group: C1
  *******************************************************************************
 
 
- WARNING: Tried to close a non-existent or already closed file
- Unit number was:  18
-
 - End of Coupled Cluster
 
 
        :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-       ::::::::::::::: Minimization Control Center :::::::::::::::
+       ::::::::::::::: Optimization Control Center :::::::::::::::
        :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+
+
+                           Final geometry (au)
+                           -------------------
+
+ N    1     1.1813908627            0.0000000000           -0.1054290531
+ N    2    -1.1813908627            0.0000000000           -0.1054290531
+ H    1     1.9125271300            0.0000000000            1.7322107531
+ H    2    -1.9125271300            0.0000000000            1.7322107531
+
+
 
 
 
@@ -3777,39 +3453,21 @@ Point group: C1
                          ------------------------
 
  Iteration number               :       5
- End of minimization            :       T 
+ End of optimization            :       T 
  Energy at this geometry is     :    -110.351402
  Energy change from last geom.  :       0.000000
- Predicted change               :       0.000000
- Ratio, actual/predicted change :       0.775085
  Norm of gradient               :       0.000007
+ Norm of step                   :       0.000011
+ Updated trust radius           :       0.500000
  Total Hessian index            :       0
 
 
-                            Change in geometry
-                            ------------------
-
- Updated trust radius           :       0.000146
- Norm of step                   :       0.000011
-
-
-
-
-                         New internal coordinates
-                         ------------------------
-
-
-               Column   1     Column   2     Column   3     Column   4
-       1       2.36278173     1.97774627     1.97774627     3.59850644
-
-               Column   5     Column   6     Column   7     Column   8
-       1       3.59850644     1.94946257     1.94946257     0.00000000
       Starting Static Property Section -
 
 
  
-     Date and time (IRIX)   : Thu Nov 23 13:42:08 2000
-     Host name              : odin                                    
+     Date and time (Linux)  : Fri Apr  6 13:55:27 2001
+     Host name              : pauli.uio.no                            
 
 
  ***************************************************************************
@@ -3818,18 +3476,18 @@ Point group: C1
 
 
  
-     Date and time (IRIX)   : Thu Nov 23 13:42:08 2000
-     Host name              : odin                                    
+     Date and time (Linux)  : Fri Apr  6 13:55:27 2001
+     Host name              : pauli.uio.no                            
 
 
 
                          Molecular geometry (au)
                          -----------------------
 
- N         -1.1813908627            0.0000000000           -0.1054290531
- N          1.1813908627            0.0000000000           -0.1054290531
- H         -1.9125271301            0.0000000000            1.7322107531
- H          1.9125271301            0.0000000000            1.7322107531
+ N    1     1.1813908627            0.0000000000           -0.1054290531
+ N    2    -1.1813908627            0.0000000000           -0.1054290531
+ H    1     1.9125271300            0.0000000000            1.7322107531
+ H    2    -1.9125271300            0.0000000000            1.7322107531
 
 
 
@@ -3842,8 +3500,8 @@ Point group: C1
 
 
      Total energy       -109.9957776678 au (Hartrees)
-                         -2993.13866445 eV
-                           -288793.9103 kJ/mol
+                         -2993.13727850 eV
+                           -288793.8732 kJ/mol
 
 
 
@@ -3873,8 +3531,6 @@ Point group: C1
 
                                au             Debye
 
-                    x      0.00000000      0.00000000
-                    y      0.00000000      0.00000000
                     z      1.20467897      3.06201687
 
                         1 a.u. =   2.54177 Debye 
@@ -3886,12 +3542,12 @@ Point group: C1
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            N           N           H           H   
+            N  1        N  2        H  1        H  2
 
-   N       0.000000
-   N       1.250330    0.000000
-   H       1.046578    1.904248    0.000000
-   H       1.904248    1.046578    2.024132    0.000000
+   N  1    0.000000
+   N  2    1.250330    0.000000
+   H  1    1.046578    1.904248    0.000000
+   H  2    1.904248    1.046578    2.024132    0.000000
 
 
 
@@ -3901,9 +3557,9 @@ Point group: C1
 
                   atom 1     atom 2                           distance
                   ------     ------                           --------
-  bond distance:    N          N                              1.250330
-  bond distance:    H          N                              1.046578
-  bond distance:    H          N                              1.046578
+  bond distance:    N  2       N  1                           1.250330
+  bond distance:    H  1       N  1                           1.046578
+  bond distance:    H  2       N  2                           1.046578
 
 
   Bond angles (degrees):
@@ -3911,8 +3567,8 @@ Point group: C1
 
                   atom 1     atom 2     atom 3                   angle
                   ------     ------     ------                   -----
-  bond angle:       N          N          H                    111.696
-  bond angle:       N          N          H                    111.696
+  bond angle:       N  2       N  1       H  1                 111.696
+  bond angle:       N  1       N  2       H  2                 111.696
 
 
 
@@ -3924,14 +3580,14 @@ Point group: C1
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.18 seconds
+ >>>> Total CPU  time used in ABACUS:   0.07 seconds
  >>>> Total wall time used in ABACUS:   0.00 seconds
 
 - End of Static Property Section
 
 
      <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-     <<<<<<<<<<<<<<<<<<<<  End of Minimization  <<<<<<<<<<<<<<<<<<<<
+     <<<<<<<<<<<<<<<<<<<<  End of Optimization  <<<<<<<<<<<<<<<<<<<<
      <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 
@@ -3939,10 +3595,10 @@ Point group: C1
                               Final geometry
                               --------------
 
- N         -1.1813908627            0.0000000000           -0.1054290531
- N          1.1813908627            0.0000000000           -0.1054290531
- H         -1.9125271301            0.0000000000            1.7322107531
- H          1.9125271301            0.0000000000            1.7322107531
+ N    1     1.1813908627            0.0000000000           -0.1054290531
+ N    2    -1.1813908627            0.0000000000           -0.1054290531
+ H    1     1.9125271300            0.0000000000            1.7322107531
+ H    2    -1.9125271300            0.0000000000            1.7322107531
 
 
 
@@ -3953,19 +3609,19 @@ Point group: C1
    2  -110.351401  -0.000077   0.001116    0    0.001991*   0.500000   0 
    3  -110.351402  -0.000001   0.000449    0    0.001102*   0.500000   0 
    4  -110.351402   0.000000   0.000083    0    0.000146*   0.500000   0 
-   5  -110.351402   0.000000   0.000007    0    0.000011*   0.000146   0 
+   5  -110.351402   0.000000   0.000007    0    0.000011*   0.500000   0 
 
  *) Newton step taken.
 
  Geometry converged in            6 iterations!
 
  Energy at final geometry is       :    -110.351402 a.u.
- Energy change during minimization :      -0.000660 a.u.
+ Energy change during optimization :      -0.000660 a.u.
                                              -1.734 kJ/mol
 
- >>>> Total CPU  time used in DALTON: 12 minutes 26 seconds
- >>>> Total wall time used in DALTON: 12 minutes 44 seconds
+ >>>> Total CPU  time used in DALTON:  2 minutes 59 seconds
+ >>>> Total wall time used in DALTON:  3 minutes 20 seconds
 
  
-     Date and time (IRIX)   : Thu Nov 23 13:42:08 2000
-     Host name              : odin                                    
+     Date and time (Linux)  : Fri Apr  6 13:55:27 2001
+     Host name              : pauli.uio.no                            
