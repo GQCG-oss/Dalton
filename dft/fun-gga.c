@@ -39,12 +39,20 @@ static int  b3lyp_read(const char* conf_line);
 static int  b3lypgauss_read(const char* conf_line);
 static int  bp86_read(const char* conf_line);
 static int  b3p86_read(const char* conf_line);
+static int  kt1_read(const char* conf_line);
+static int  kt2_read(const char* conf_line);
+static int  kt3_read(const char* conf_line);
+static int  olyp_read(const char* conf_line);
 
 static int  gga_isgga(void);
 static int  xalpha_read(const char* conf_line);
 static int  gga_key_read(const char* conf_line);
 static int  blyp_read(const char* conf_line);
 static int  b3lyp_read(const char* conf_line);
+static int  kt1_read(const char* conf_line);
+static int  kt2_read(const char* conf_line);
+static int  kt3_read(const char* conf_line);
+static int  olyp_read(const char* conf_line);
 static void gga_report(void);
 static real gga_energy(const DftDensProp* dp);
 static void gga_first(FirstFuncDrv *ds,   real factor, const DftDensProp* dp);
@@ -148,6 +156,50 @@ Functional B3P86Functional = {
     b3p86_read,
     gga_report,
     gga_energy, 
+    gga_first,
+    gga_second,
+    gga_third
+};
+
+Functional KT1Functional = {
+    "KT1",      /* name */
+    gga_isgga,     /* gga-corrected */
+    kt1_read,
+    gga_report,
+    gga_energy,
+    gga_first,
+    gga_second,
+    gga_third
+};
+
+Functional KT2Functional = {
+    "KT2",      /* name */
+    gga_isgga,     /* gga-corrected */
+    kt2_read,
+    gga_report,
+    gga_energy,
+    gga_first,
+    gga_second,
+    gga_third
+};
+
+Functional KT3Functional = {
+    "KT3",      /* name */
+     gga_isgga,     /* gga-corrected */
+     kt3_read,
+     gga_report,
+     gga_energy,
+     gga_first,
+     gga_second,
+     gga_third
+};
+
+Functional OLYPFunctional = {
+    "OLYP",      /* name */
+    gga_isgga,     /* gga-corrected */
+    olyp_read,
+    gga_report,
+    gga_energy,
     gga_first,
     gga_second,
     gga_third
@@ -278,7 +330,7 @@ bp86_read(const char* conf_line)
 {
     gga_fun_list = add_functional(gga_fun_list, &DiracFunctional, 1.0);
     gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional, 1.0);
-    gga_fun_list = add_functional(gga_fun_list, &P86cFunctional,   1.0);
+    gga_fun_list = add_functional(gga_fun_list, &P86cFunctional,  1.0);
     dft_set_hf_weight(0);
     return 1;
 }
@@ -289,9 +341,56 @@ b3p86_read(const char* conf_line)
     static const real lypw = 0.81, dirw = 0.8;
     gga_fun_list = add_functional(gga_fun_list, &DiracFunctional,  dirw);
     gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional,  0.72);
-    gga_fun_list = add_functional(gga_fun_list, &P86cFunctional,    lypw);
+    gga_fun_list = add_functional(gga_fun_list, &P86cFunctional,   lypw);
     gga_fun_list = add_functional(gga_fun_list, &VWNFunctional,    1-lypw);
     dft_set_hf_weight(1-dirw);
+    return 1;
+}
+
+static int
+kt1_read(const char* conf_line)
+{
+    static const real ktgam = -0.006;
+    gga_fun_list = add_functional(gga_fun_list, &DiracFunctional, 1.0);
+    gga_fun_list = add_functional(gga_fun_list, &KTFunctional,    ktgam);
+    gga_fun_list = add_functional(gga_fun_list, &VWNFunctional,   1.0);
+    dft_set_hf_weight(0);
+    return 1;
+}
+
+static int
+kt2_read(const char* conf_line)
+{   
+    static const real dirw = 1.07173, vwnw = 0.576727; 
+    static const real ktgam = -0.006;
+    gga_fun_list = add_functional(gga_fun_list, &DiracFunctional, dirw);
+    gga_fun_list = add_functional(gga_fun_list, &KTFunctional,    ktgam);
+    gga_fun_list = add_functional(gga_fun_list, &VWNFunctional,   vwnw);
+    dft_set_hf_weight(0);
+    return 1;
+}
+
+static int
+kt3_read(const char* conf_line)
+{
+    static const real dirw = 1.092, lypw = 0.864409, optw = -0.925452;
+    static const real ktgam = -0.004;
+    gga_fun_list = add_functional(gga_fun_list, &DiracFunctional, dirw);
+    gga_fun_list = add_functional(gga_fun_list, &KTFunctional,    ktgam);
+    gga_fun_list = add_functional(gga_fun_list, &LYPFunctional,   lypw);
+    gga_fun_list = add_functional(gga_fun_list, &OPTXFunctional, optw);
+    dft_set_hf_weight(0);
+    return 1;
+}
+
+static int
+olyp_read(const char* conf_line)
+{
+    static const real optkw = -1.43169, dirw = 1.05151;
+    gga_fun_list = add_functional(gga_fun_list, &DiracFunctional, dirw);
+    gga_fun_list = add_functional(gga_fun_list, &OPTXFunctional, optkw);
+    gga_fun_list = add_functional(gga_fun_list, &LYPFunctional,   1.0);
+    dft_set_hf_weight(0);
     return 1;
 }
 
@@ -387,3 +486,5 @@ gga_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
     for(lst=gga_fun_list; lst; lst=lst->next) 
         lst->func->third(ds, factor*lst->weight, dp);
 }
+
+

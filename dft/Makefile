@@ -46,6 +46,8 @@ FUNFILES = \
 	fun-pwggaIIc2.c	\
 	fun-pw91cl.c	\
 	fun-pz81.c	\
+	fun-kt.c	\
+	fun-optx.c	\
 	fun-vwn.c
 
 CFILES =\
@@ -79,5 +81,9 @@ libdft.a: $(OBJS) Makefile
 
 fun-tester: fun-tester.c functionals.c $(FUNFILES)
 	$(CC) -g -O -I../include -DNO_BACKWARD_COMP $^ -o $@  -lm
+
+fun4-tester: fun4-tester.c functionals.c $(FUNFILES)
+	$(CC) -g -O -I../include -DNO_BACKWARD_COMP $^ -o $@  -lm
+
 
 include Makefile.depend

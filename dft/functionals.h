@@ -234,6 +234,8 @@ extern Functional Example6Functional;
 extern Functional Example7Functional;
 extern Functional Example8Functional;
 extern Functional Example9Functional;
+extern Functional KTFunctional;
+extern Functional OPTXFunctional;
 
 /* mixed functionals */
 extern Functional LDAFunctional;
@@ -244,6 +246,10 @@ extern Functional B3LYPFunctional;
 extern Functional B3LYPGaussFunctional;
 extern Functional BP86Functional;
 extern Functional B3P86Functional;
+extern Functional KT1Functional;
+extern Functional KT2Functional;
+extern Functional KT3Functional;
+extern Functional OLYPFunctional;
 
 /* the list of the functionals */
 extern Functional* available_functionals[];

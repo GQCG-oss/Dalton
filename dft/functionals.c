@@ -64,6 +64,8 @@ Functional* available_functionals[] = {
     &PWggaIIcFunctional,
     &PWggaIIc2Functional,
     &PW91clFunctional,
+    &KTFunctional,
+    &OPTXFunctional,
     /* mixed functionals */
     &LDAFunctional,
     &LDAGaussFunctional,
@@ -73,6 +75,10 @@ Functional* available_functionals[] = {
     &B3LYPGaussFunctional,
     &BP86Functional,
     &B3P86Functional,
+    &KT1Functional,
+    &KT2Functional,
+    &KT3Functional,
+    &OLYPFunctional,
     NULL
 };
 Functional* selected_func = &LDAFunctional;
