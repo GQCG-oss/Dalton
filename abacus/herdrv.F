@@ -2539,7 +2539,6 @@ C
             END  IF
          END IF
       END IF
-      CALL HERPRP(WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR))
 C
 C     Determine number of different integrals in R12 method (WK/UniKA/19-11-2002).
       NOPP12 = 0
