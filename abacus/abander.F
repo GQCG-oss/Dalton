@@ -6163,7 +6163,6 @@ C
 C     *** If property derivative is calculated, we need to save ***
 C     *** the transformation matrix in the property-file.       ***
 C
-      write (lupri,*) 'Dette er en test', CNMPRP
       IF (CNMPRP) THEN
          NDIM3  = 1
          PRPTXT = 'CART-TRAN'

@@ -1098,7 +1098,7 @@ C
 C        *** For numerical differentiation of cc-properties, write the ***
 C        *** property to file.                                         ***
 C
-         IF (NMDPRP.GT.0) THEN
+         IF (NMRDRP.GT.0) THEN
             KPRPC = 1 
             KEND  = KPRPC + NPRPC
             LEND  = LWORK - KEND
