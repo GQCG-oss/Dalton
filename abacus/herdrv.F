@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: herdrv.F,v 1.19 2001-10-30 11:41:08 hjj Exp $
+C$Id: herdrv.F,v 1.20 2002-02-22 08:51:49 ruud Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -189,7 +189,7 @@ C
 #include <mxorb.h>
 #include <maxaqn.h>
 #include <efield.h>
-      PARAMETER (NDIR = 7, NTABLE = 100)
+      PARAMETER (NDIR = 7, NTABLE = 102)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, D10 = 1.0D1)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -237,7 +237,8 @@ C
      &             '.SOMAGM', '.DEROVL', '.DERHAM', '.ELGDIA', 
      &             '.ELGDIL', '.MNF-SO', '.DPTOVL', '.DPTPOT', 
      &             '.XDDXR3', '.AD2DAR', '.PVIOLA', '.WEINBG', 
-     &             '.ISOTOP', '.FNPROP', '.PVP   ', '.1ELPOT'/
+     &             '.ISOTOP', '.FNPROP', '.PVP   ', '.1ELPOT',
+     &             '.QDBINT', '.QDBTST'/
 C
 C     Check if input has been processed earlier.
 C
@@ -298,7 +299,8 @@ C
      &                161,162,163,164,165,166,167,168,169,170,
      &                171,172,173,174,175,176,177,178,179,180,
      &                181,182,183,184,185,186,187,188,189,190,
-     &                191,192,193,194,195,196,197,198,199,200), I
+     &                191,192,193,194,195,196,197,198,199,200,
+     &                201,202), I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -761,6 +763,26 @@ C&&& Nuclear model
             POTENE = .TRUE.
             ONEPRP = .TRUE.
             GO TO 100
+ 201     CONTINUE
+            READ (LUCMD,'(A7)') FIELD3
+            IF (.NOT. ((FIELD3 .EQ. 'XX-FGRD')
+     &          .OR.   (FIELD3 .EQ. 'XY-FGRD')
+     &          .OR.   (FIELD3 .EQ. 'XZ-FGRD')
+     &          .OR.   (FIELD3 .EQ. 'YY-FGRD')
+     &          .OR.   (FIELD3 .EQ. 'YZ-FGRD')
+     &          .OR.   (FIELD3 .EQ. 'ZZ-FGRD'))) THEN
+               WRITE (LUPRI,'(/,3A,/)') ' Field direction "',FIELD1,
+     &               '" illegal'
+               CALL QUIT('Illegal field direction for QDBINT integrals')
+            END IF
+            QDBINT = .TRUE.
+            ONEPRP = .TRUE.
+            GOTO 100
+ 202     CONTINUE
+         QDBTST = .TRUE.
+         THETA  = .TRUE.
+         ONEPRP = .TRUE.
+         GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 299
       ELSE
@@ -989,6 +1011,17 @@ C&&& Nuclear model
             WRITE (LUPRI,'(12X,A,A1,A)')
      &         'Electric field applied in ',FIELD2(1:1),'-direction'
          END IF
+         IF (QDBINT) THEN
+            WRITE (LUPRI,'(10X,A)')
+     &         '- First order magnetic derivative of electric '//
+     &         'field gradient'
+            WRITE (LUPRI,'(12X,A,A1,A)')
+     &         'Electric field gradient applied in ',FIELD3(1:2),
+     &         '-direction'
+         END IF
+         IF (QDBTST) WRITE (LUPRI,'(10X,A)') 
+     &           'Magnetic-field derivative integrals of electric '//
+     &           'field gradients will be tested'
          IF (DEROVL) WRITE (LUPRI,'(10X,A)')
      &        '- Geometrical derivatives of overlap integrals'
          IF (DERHAM) WRITE (LUPRI,'(10X,A)')
@@ -2305,7 +2338,28 @@ C
                CALL TIMER('CM2 ',TIMSTR,TIMEND)
             END IF
 C
-C           ****  First geometricl derivative of dipole integrals  ****
+C           ****  Second order magnetic derivative of electric field  ****
+C
+            IF (QDBINT) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('QDBINT ',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('QDBINT',TIMSTR,TIMEND)
+            END IF
+C
+C           ***** Test of London contribution to angular momentum *****
+C
+            IF (QDBTST) THEN
+               LABELT(1) = FIELD3(1:2)//'-QDB X'
+               LABELT(2) = FIELD3(1:2)//'-QDB Y'
+               LABELT(3) = FIELD3(1:2)//'-QDB Z'
+               LABELS(1) = FIELD3(1:2)//'THETA '
+               CALL MG1TST(WORK,LWORK,IPRONE,LABELS,LABELT,ORIGIN,
+     &                     '    ')
+               CALL FLSHFO(LUPRI)
+            END IF
+C
+C           ****  First geometrical derivative of dipole integrals  ****
 C
             IF (DPLGRA) THEN
                CALL TIMER('START ',TIMSTR,TIMEND)
@@ -2314,7 +2368,7 @@ C
                CALL TIMER('DPLGRA',TIMSTR,TIMEND)
             END IF
 C
-C           ****  First geometricl derivative of quadrupole integrals  ****
+C           ****  First geometrical derivative of quadrupole integrals  ****
 C
             IF (QUAGRA) THEN
                CALL TIMER('START ',TIMSTR,TIMEND)
@@ -2323,7 +2377,7 @@ C
                CALL TIMER('QUAGRA',TIMSTR,TIMEND)
             END IF
 C
-C           ****  First geometricl derivative of octupole integrals  ****
+C           ****  First geometrical derivative of octupole integrals  ****
 C
             IF (OCTGRA) THEN
                CALL TIMER('START ',TIMSTR,TIMEND)
@@ -2832,6 +2886,7 @@ CTSAUE
       DARWIN = .FALSE.
       CM1    = .FALSE.
       CM2    = .FALSE.
+      QDBINT = .FALSE.
       SQHDOL = .FALSE.
       SQHDOR = .FALSE.
       S1ELE  = .FALSE.

@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: her1int.F,v 1.8 2001-10-09 16:40:41 vebjornb Exp $
+C$Id: her1int.F,v 1.9 2002-02-22 08:51:48 ruud Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -437,6 +437,11 @@ C
          JMAXM  = 0
          DONUC1 = .FALSE.
          DOMOM1 = .FALSE.               
+      ELSE IF (INTTYP .EQ.65) THEN
+         JMAXD = 0
+         JMAXM = 3
+         DONUC1 = .FALSE.
+         DOMOM1 = .TRUE.
       ELSE IF (INTTYP .EQ.70) THEN
          JMAXD  = 3
          JMAXM  = 0
@@ -1014,6 +1019,7 @@ C
       IF (INTTYP .EQ. 43) JMAXA = JMAXA + 2
       IF (INTTYP .EQ. 46) JMAXA = JMAXA + 1
       IF (INTTYP .EQ. 47) JMAXA = JMAXA + 2
+      IF (INTTYP .EQ. 65) JMAXA = JMAXA + 2
       JMAXB  = NHKTB - 1
       JMAXT  = JMAXA + JMAXB + JMAXD + JMAXM
 C
@@ -1707,6 +1713,13 @@ C        ------------------------
 C
          ELSE IF (INTTYP .EQ. 64) THEN
             CALL POTINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT)
+C
+C        Electric field contribution to magnetic moment
+C        ----------------------------------------------
+C
+         ELSE IF (INTTYP .EQ. 65) THEN
+            CALL QDBINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &                  EXPPI,DIFABX,DIFABY,DIFABZ)
 C
 C        Geometrical derivative of one-electron Hamiltonian
 C        --------------------------------------------------
@@ -2452,7 +2465,6 @@ C
 #include <onecom.h>
 #include <lmns.h>
       INT = 0
-      EXPPIH = EXPPI/D2
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
          MVALA = MVALUA(ICOMPA)
@@ -2516,7 +2528,6 @@ C
 #include <orgcom.h>
 #include <lmns.h>
       INT = 0
-      EXPPIH = EXPPI/D2
       ADX = CORAX - DIPORG(1)
       ADY = CORAY - DIPORG(2)
       ADZ = CORAZ - DIPORG(3)
@@ -2591,7 +2602,6 @@ C
 #include <orgcom.h>
 #include <lmns.h>
       INT = 0
-      EXPPIH = EXPPI/D2
       ADX = CORAX - DIPORG(1)
       ADY = CORAY - DIPORG(2)
       ADZ = CORAZ - DIPORG(3)
@@ -2679,6 +2689,114 @@ C
          SHLINT(INT,6) = SHLINT(INT,6) - (D2*DIFABX*DIFABY*DPLXY -
      &                   DIFABY*DIFABY*DPLXX -
      &                   DIFABX*DIFABX*DPLYY)*D4INV
+ 100  CONTINUE
+      RETURN
+      END
+C  /* Deck qdbint */
+      SUBROUTINE QDBINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &                  EXPPI,DIFABX,DIFABY,DIFABZ)
+C
+C     K. Ruud, February.-02.
+C     Based on CM1INT
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <efield.h>
+      PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D2I = 1.0D0/D2, D1P5 = 1.5D0)
+      DIMENSION SHLINT(KCKTAB,6)
+      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
+#include <onecom.h>
+#include <orgcom.h>
+#include <lmns.h>
+      INT = 0
+      ADX = CORAX - DIPORG(1)
+      ADY = CORAY - DIPORG(2)
+      ADZ = CORAZ - DIPORG(3)
+      DO 100 ICOMPA = 1, KCKTA
+         LVALA = LVALUA(ICOMPA)
+         MVALA = MVALUA(ICOMPA)
+         NVALA = NVALUA(ICOMPA)
+C
+      DO 100 ICOMPB = 1,KCKTB
+         LVALB = LVALUB(ICOMPB)
+         MVALB = MVALUB(ICOMPB)
+         NVALB = NVALUB(ICOMPB)
+C
+         INT = INT + 1
+C
+         SX0 = SHGTF*ODC(LVALA,LVALB,0,0,0,1)
+         SY0 = SHGTF*ODC(MVALA,MVALB,0,0,0,2)
+         SZ0 = SHGTF*ODC(NVALA,NVALB,0,0,0,3)
+         SX1 = SHGTF*ODC(LVALA,LVALB,0,0,1,1)
+         SY1 = SHGTF*ODC(MVALA,MVALB,0,0,1,2)
+         SZ1 = SHGTF*ODC(NVALA,NVALB,0,0,1,3)
+         DX1 = SHGTF*(ODC(LVALA + 1,LVALB,0,0,0,1) +
+     &           ADX* ODC(LVALA    ,LVALB,0,0,0,1))
+         DY1 = SHGTF*(ODC(MVALA + 1,MVALB,0,0,0,2) +
+     &           ADY* ODC(MVALA    ,MVALB,0,0,0,2))
+         DZ1 = SHGTF*(ODC(NVALA + 1,NVALB,0,0,0,3) +
+     &           ADZ* ODC(NVALA    ,NVALB,0,0,0,3))
+         DX2 = SHGTF*(ODC(LVALA + 2,LVALB,0,0,0,1) +
+     &        D2*ADX* ODC(LVALA + 1,LVALB,0,0,0,1) + 
+     &        ADX*ADX*ODC(LVALA    ,LVALB,0,0,0,1))
+         DY2 = SHGTF*(ODC(MVALA + 2,MVALB,0,0,0,2) +
+     &        D2*ADY* ODC(MVALA + 1,MVALB,0,0,0,2) +
+     &        ADY*ADY*ODC(MVALA    ,MVALB,0,0,0,2))
+         DZ2 = SHGTF*(ODC(NVALA + 2,NVALB,0,0,0,3) +
+     &        D2*ADZ* ODC(NVALA + 1,NVALB,0,0,0,3) +
+     &        ADZ*ADZ*ODC(NVALA    ,NVALB,0,0,0,3))
+         SDX2 = SHGTF*(ODC(LVALA + 1,LVALB,0,0,1,1) +
+     &            ADX* ODC(LVALA    ,LVALB,0,0,1,1))
+         SDY2 = SHGTF*(ODC(MVALA + 1,MVALB,0,0,1,2) +
+     &            ADY* ODC(MVALA    ,MVALB,0,0,1,2))
+         SDZ2 = SHGTF*(ODC(NVALA + 1,NVALB,0,0,1,3) +
+     &            ADZ* ODC(NVALA    ,NVALB,0,0,1,3))
+         DX3 = SHGTF*(ODC(LVALA + 2,LVALB,0,0,1,1) +
+     &        D2*ADX* ODC(LVALA + 1,LVALB,0,0,1,1) +
+     &        ADX*ADX*ODC(LVALA    ,LVALB,0,0,1,1))
+         DY3 = SHGTF*(ODC(MVALA + 2,MVALB,0,0,1,2) +
+     &        D2*ADY* ODC(MVALA + 1,MVALB,0,0,1,2) +
+     &        ADY*ADY*ODC(MVALA    ,MVALB,0,0,1,2))
+         DZ3 = SHGTF*(ODC(NVALA + 2,NVALB,0,0,1,3) +
+     &        D2*ADZ* ODC(NVALA + 1,NVALB,0,0,1,3) +
+     &        ADZ*ADZ*ODC(NVALA    ,NVALB,0,0,1,3))
+C
+         IF (FIELD3 .EQ. 'XX-FGRD' .OR. FIELD3 .EQ. 'YY-FGRD' .OR.
+     &       FIELD3 .EQ. 'ZZ-FGRD') THEN
+            XR2 = D2I*(DX3*SY0*SZ0 + SX1*DY2*SZ0 + SX1*SY0*DZ2)
+            YR2 = D2I*(DX2*SY1*SZ0 + SX0*DY3*SZ0 + SX0*SY1*DZ2)
+            ZR2 = D2I*(DX2*SY0*SZ1 + SX0*DY2*SZ1 + SX0*SY0*DZ3)
+            IF (FIELD3 .EQ. 'XX-FGRD') THEN
+               DPLX = - XR2 + D1P5*DX3*SY0*SZ0
+               DPLY = - YR2 + D1P5*DX2*SY1*SZ0
+               DPLZ = - ZR2 + D1P5*DX2*SY0*SZ1
+            ELSE IF (FIELD3 .EQ. 'YY-FGRD') THEN
+               DPLX = - XR2 + D1P5*SX1*DY2*SZ0
+               DPLY = - YR2 + D1P5*SX0*DY3*SZ0
+               DPLZ = - ZR2 + D1P5*SX0*DY2*SZ1
+            ELSE
+               DPLX = - XR2 + D1P5*SX1*SY0*DZ2
+               DPLY = - YR2 + D1P5*SX0*SY1*DZ2
+               DPLZ = - ZR2 + D1P5*SX0*SY0*DZ3
+            END IF
+         ELSE IF (FIELD3 .EQ. 'XY-FGRD') THEN
+            DPLX = D1P5*SDX2*DY1*SZ0
+            DPLY = D1P5*DX1*SDY2*SZ0
+            DPLZ = D1P5*DX1*DY1*SZ1
+         ELSE IF (FIELD3 .EQ. 'XZ-FGRD') THEN
+            DPLX = D1P5*SDX2*SY0*SZ1
+            DPLY = D1P5*DX1*SY1*DZ1
+            DPLZ = D1P5*DX1*SY0*SDZ2
+         ELSE IF (FIELD3 .EQ. 'YZ-FGRD') THEN
+            DPLX = D1P5*SX1*DY1*DZ1
+            DPLY = D1P5*SX0*SDY2*DZ1
+            DPLZ = D1P5*SX0*SY1*SDZ2
+         END IF
+C
+         SHLINT(INT,1) = SHLINT(INT,1) - D2I*(DIFABY*DPLZ - DIFABZ*DPLY)
+         SHLINT(INT,2) = SHLINT(INT,2) - D2I*(DIFABZ*DPLX - DIFABX*DPLZ)
+         SHLINT(INT,3) = SHLINT(INT,3) - D2I*(DIFABX*DPLY - DIFABY*DPLX)
  100  CONTINUE
       RETURN
       END
@@ -3700,7 +3818,6 @@ C
 #include <onecom.h>
 #include <lmns.h>
       INT = 0
-      EXPPIH = EXPPI/D2
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
          MVALA = MVALUA(ICOMPA)

@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: hertst.F,v 1.3 2001-05-31 06:38:09 vebjornb Exp $
+C$Id: hertst.F,v 1.4 2002-02-22 08:51:49 ruud Exp $
 C
 #include <single.h>
 C  /* Deck sochk2 */
@@ -838,6 +838,7 @@ C
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
 C
+      CALL DZERO(TSTVEC,NBASIS*NBASIS)
       CALL TSTDAT(NONTYP,NONTVC,IQM,JCO,ICOUNT,NCOUNT,NDIFNU)
 C
       IF (WHATIN .EQ. 'S1ML' .OR. WHATIN .EQ. 'S1MR') THEN
@@ -856,7 +857,7 @@ C
      &            'Label ', LABELT(I), ' not found on file AOPROPER'
             CALL QUIT('Error in magnetic properties test')
          END IF
-         CALL READI(LUPROP,NCOUN2*IRAT,AUXVEC)
+         CALL READT(LUPROP,NCOUN2,AUXVEC)
          IF (WHATIN .EQ. 'S1ML' .OR. WHATIN .EQ. 'S1MR') THEN
             DO 11 I1 = 1, NCOUNT
                DO 11 I2 = 1, NCOUNT
@@ -883,7 +884,7 @@ C
      &           'Label ', LABEL, ' not found on file AOPROPER'
             CALL QUIT('Error in magnetic properties test')
          END IF
-         CALL READI(LUPROP,ICOUN2*IRAT,AUXVEC)
+         CALL READT(LUPROP,ICOUN2,AUXVEC)
       END IF
 C
 C     Calculation of the new integrals

@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: herrdn.F,v 1.19 2002-02-10 16:58:07 ruud Exp $
+C$Id: herrdn.F,v 1.20 2002-02-22 08:51:49 ruud Exp $
 C
 #include <single.h>
 #ifdef REVISION_LOG
@@ -421,8 +421,7 @@ C
       KIQM   = KNONT  +  KATOM
       KBLCK  = KIQM   +  KATOM*2
       KJCO   = KBLCK  +  KATOM*2
-      KJCO2  = KJCO   +  KATOM*KANG*2
-      KNUC   = KJCO2  +  KATOM*KANG
+      KNUC   = KJCO   +  KATOM*KANG*2
       KNRC   = KNUC   +  KBLOCK*2
       KSEG   = KNRC   +  KBLOCK*2
       KA     = KSEG   +  KBLOCK*2
@@ -438,7 +437,7 @@ C     ***** Read input file and process data *****
 C     ********************************************
 C
       CALL READI1(LUINFO,WORK(KLAST),LWRK,WORK(KNONT),WORK(KIQM),
-     &            WORK(KBLCK),WORK(KJCO),WORK(KJCO2),WORK(KNUC),
+     &            WORK(KBLCK),WORK(KJCO),WORK(KNUC),
      &            WORK(KNRC),WORK(KSEG),WORK(KA),
      &            WORK(KC),WORK(KCC),KATOM,KANG,KBLOCK,KPRIM,KAOVEC,
      &            HERMIT)
@@ -462,7 +461,7 @@ C5030 CONTINUE
       CALL QUIT('Wrong keyword. Expecting FINISH')
       END
 C  /* Deck readi1 */
-      SUBROUTINE READI1(LUINFO,WORK,LWORK,NONT,IQM,NBLCK,JCO,JCO2,NUC,
+      SUBROUTINE READI1(LUINFO,WORK,LWORK,NONT,IQM,NBLCK,JCO,NUC,
      &           NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,
      &           KPRIM,KAOVEC,HERMIT)
 C******************************************************************************
@@ -513,7 +512,7 @@ C******************************************************************************
 #include <cbirea.h>
       LOGICAL SEG,HERMIT,DOOWN,ZMAT
       DIMENSION NONT(KATOM),IQM(KATOM,2),NBLCK(KATOM,2),
-     &          JCO(KANG,KATOM,2),JCO2(KANG,KATOM),
+     &          JCO(KANG,KATOM,2),
      &          NUC(KBLOCK,2),NRC(KBLOCK,2),SEG(KBLOCK,2),
      &          ALPHA(KPRIM,KBLOCK,2),
      &          CPRIM(KPRIM,KPRIM,KBLOCK,2),
@@ -697,7 +696,7 @@ C     ****************************************
 C     ***** Output on LUONEL *****************
 C     ****************************************
 C
-      IF (HERMIT) CALL WRONEL(TITLE,NONTYP,NONT,IQM,IFXYZ,KATOM,JCO2,
+      IF (HERMIT) CALL WRONEL(TITLE,NONTYP,NONT,IQM,IFXYZ,KATOM,JCO,
      &                        KANG)
 C
       RETURN
@@ -4195,7 +4194,7 @@ C
       DIMENSION QPOL(6), QQ(3), IFXYZ(3), JFXYZ(3)
       DIMENSION CHRN(MXCENT), COOO(MXCENT,3),
      &          INAMN(MXCORB), IGTO(MXCORB), RTITLE(24)
-      DIMENSION NONT(KATOM), IQM(KATOM), JCO2(KANG,KATOM)
+      DIMENSION NONT(KATOM), IQM(KATOM), JCO2(KANG,KATOM,2)
 #include <ccom.h>
 #include <shells.h>
 #include <symmet.h>
@@ -4293,7 +4292,7 @@ C     Information for testing magnetic integrals
 C
       WRITE (LUONEL) TABLE4
       WRITE (LUONEL) NONTYP, (NONT(I), I = 1, NONTYP),
-     &               (IQM(I), (JCO2(I,J),J=1,IQM(I)), I = 1, NONTYP),
+     &               (IQM(I), (JCO2(J,I,1),J=1,IQM(I)), I = 1, NONTYP),
      &               (IDUMMY,I=1,5)
 C
 C     5 - SPHERICA

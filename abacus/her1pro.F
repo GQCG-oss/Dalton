@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: her1pro.F,v 1.13 2001-10-01 13:22:12 vebjornb Exp $
+C$Id: her1pro.F,v 1.14 2002-02-22 08:51:49 ruud Exp $
 C
 #include <single.h>
 C  /* Deck pr1int */
@@ -166,7 +166,7 @@ C
 #include <mxorb.h>
 #include <iratdef.h>
 #include <efield.h>
-      PARAMETER (NTABLE = 73)
+      PARAMETER (NTABLE = 74)
       PARAMETER (D2 = 2.D0)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, PROPRI, SQUARE,
@@ -203,7 +203,7 @@ C
      &            'SOMAGMO', 'DEROVLP', 'DERHAMI', 'ELGDIAN',
      &            'ELGDIAL', 'DPTOVL ', 'DPTPO1 ', 'DPTPO2 ',
      &            'XDDXR3 ', 'PVPINT ', 'POTENER', 'PVIOLA ',
-     &            'SPHMOML'/
+     &            'SPHMOML', 'QDBINT '/
 C
 #include <ibtfun.h>
 C
@@ -224,7 +224,7 @@ C
      &             19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,
      &             34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
      &             49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,
-     &             64,65,66,67,68,69,70,71,72,73), I
+     &             64,65,66,67,68,69,70,71,72,73,74), I
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -1683,6 +1683,40 @@ C
          ANTI = .FALSE.
       GO TO 200
 C
+C     First order magnetic field derivatives of electric field gradient
+C     -----------------------------------------------------------------
+C
+ 74   CONTINUE
+         INTTYP = 65
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &     ' Calculation of first magnetic derivative of electric '//
+     &     'field gradient'
+         NOPTYP  = 3
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         LABINT(1) = FIELD3(1:2)//'-QDB X'
+         LABINT(2) = FIELD3(1:2)//'-QDB Y'
+         LABINT(3) = FIELD3(1:2)//'-QDB Z'
+         IF (FIELD3(1:2) .EQ. 'XX' .OR. FIELD3(1:2) .EQ. 'YY' .OR.
+     &       FIELD3(1:2) .EQ. 'ZZ') THEN
+            INTREP(1) = ISYMAX(1,2)
+            INTREP(2) = ISYMAX(2,2)
+            INTREP(3) = ISYMAX(3,2)
+         ELSE 
+            IF (FIELD3(1:2) .EQ. 'XY') THEN
+               IRP = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+            ELSE IF (FIELD3(1:2) .EQ. 'XZ') THEN
+               IRP = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+            ELSE
+               IRP = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+            END IF
+            INTREP(1) = IBTXOR(ISYMAX(1,2),IRP)
+            INTREP(2) = IBTXOR(ISYMAX(2,2),IRP)
+            INTREP(3) = IBTXOR(ISYMAX(3,2),IRP)
+         END IF
+         ANTI      = .TRUE.
+      GOTO 200
+C
 C
   200 CONTINUE
 C
@@ -1816,7 +1850,8 @@ C
      &                       .OR.(INTTYP .EQ. 10).OR.(INTTYP .EQ. 11)
      &                       .OR.(INTTYP .EQ. 13).OR.(INTTYP .EQ. 17)
      &                       .OR.(INTTYP .EQ. 18).OR.(INTTYP .EQ. 42)
-     &                       .OR.(INTTYP .EQ. 20)) THEN
+     &                       .OR.(INTTYP .EQ. 20).OR.(INTTYP .EQ. 65))
+     &                       THEN
             IADR = KSOINT
             DO 1010 ICOMP = 1, NCOMP
                IF (TRIANG) THEN
