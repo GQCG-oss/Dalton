@@ -235,7 +235,7 @@ fi
 if [ "$reftest" = "true" ]; then
    testdir=`pwd`
 else
-   testdir="`date +'%Y-%m-%dT%H:%M'`-testjob"
+   testdir="`date +'%Y-%m-%dT%H_%M'`-testjob"
    mkdir $testdir
    cp functions $testdir
    cd $testdir
