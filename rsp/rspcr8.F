@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: rspcr8.F,v 1.5 2001-10-10 10:27:19 hjj Exp $
+C$Id: rspcr8.F,v 1.6 2001-10-24 14:29:32 hjj Exp $
 C
 #include <single.h>
 C
@@ -536,7 +536,7 @@ C
      &              ZYMBC(IOCC1+1,IOCC2+1),NORBT,
      &              ZYMD(IOCC2+1,IVIR3+1),NORBT,1.D0,
      &              ZYMBCD(IOCC1+1,IVIR3+1),NORBT)
-         IF (NVIR1*NOCC3*NOCC2 .NE. 0)
+         IF (NVIR1*NOCC3*NVIR2 .NE. 0)
      &   CALL DGEMM('N','N',NVIR1,NOCC3,NVIR2,1.D0,
      &              ZYMBC(IVIR1+1,IVIR2+1),NORBT,
      &              ZYMD(IVIR2+1,IOCC3+1),NORBT,1.D0,
