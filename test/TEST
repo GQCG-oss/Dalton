@@ -285,7 +285,7 @@ do
       passed=`echo $checkout | grep "TEST ENDED PROPERLY"`
       if [ -n "$passed" ]; then
         if [ "$keep" = "false" ]; then
-          rm -f $dalfile.dal $checkfile $logfile
+          rm -f $dalfile.dal $checkfile $logfile $item.info
         fi
       else
         trouble=`expr $trouble \+ 1`
