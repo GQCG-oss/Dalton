@@ -185,7 +185,6 @@ C
 C
 C        DFT contribution
 C
-         write(lupri,*) 'djw: abafsd: dftadd',dftadd
          IF (DFTADD) THEN
             IF (IATOM.GT.0) THEN
                CALL DZERO(FDFTD,3*N2BASX)
