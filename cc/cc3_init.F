@@ -1881,7 +1881,7 @@ C  /* Deck get_m3bar_bd */
 *
 ***********************************************************************
 *                                                                     *
-*     Construct the triples part of the Mbar auxillary vector (used in*
+*     Construct the triples part of the Mbar auxilary vector (used in *
 *     the calculation of the transition moments) fixed B an D using W *
 *     intermediates                                                   *
 *                                                                     *

@@ -100,7 +100,7 @@ C
   200 CONTINUE
 C  
 C     Compute (ak|bl) = Sum_c X(ac)*(ck|bl) + Sum_d X(bd)*(ak|dl)
-C     The sum over c runs over the auxilliary basis only
+C     The sum over c runs over the auxiliary basis only
 C
       DO 301 ISYMKA = 1, NSYM
          ISYMLB = ISYMKA
