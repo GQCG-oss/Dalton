@@ -105,32 +105,32 @@ fi
 #        2-elec. Darwin term:      -0.004790726
 #        2-elec. Darwin term:      -0.004790367
 
-CRIT1=`$GREP "Total first-order DPT correction:     \-0\.09112119" $log | wc -l`
+CRIT1=`$GREP "Total first-order DPT correction: * (\-0|\-)\.09112119...." $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="CCS first-order DPT correction not correct"
 
-CRIT2=`$GREP "Total first-order DPT correction:     \-0\.09120918" $log | wc -l`
+CRIT2=`$GREP "Total first-order DPT correction: * (\-0|\-)\.09120918" $log | wc -l`
 TEST[2]=`expr   $CRIT2`
 CTRL[2]=1
 ERROR[2]="CCSD first-order DPT correction not correct"
 
-CRIT3=`$GREP "Total first-order DPT correction:     \-0\.09121505" $log | wc -l`
+CRIT3=`$GREP "Total first-order DPT correction: * (\-0|\-)\.09121505" $log | wc -l`
 TEST[3]=`expr   $CRIT3`
 CTRL[3]=1
 ERROR[3]="CCSD(T) first-order DPT correction not correct"
 
-CRIT4=`$GREP "2-elec. Darwin term:      \-0\.00501478" $log | wc -l`
+CRIT4=`$GREP "2-elec. Darwin term: * (\-0|\-)\.00501478" $log | wc -l`
 TEST[4]=`expr   $CRIT4`
 CTRL[4]=1
 ERROR[4]="CCS 2-elec. Darwin term not correct"
 
-CRIT5=`$GREP "2-elec. Darwin term:      \-0\.00479072" $log | wc -l`
+CRIT5=`$GREP "2-elec. Darwin term: * (\-0|\-)\.00479072" $log | wc -l`
 TEST[5]=`expr   $CRIT5`
 CTRL[5]=1
 ERROR[5]="CCSD 2-elec. Darwin term not correct"
 
-CRIT6=`$GREP "2-elec. Darwin term:      \-0\.00479036" $log | wc -l`
+CRIT6=`$GREP "2-elec. Darwin term: * (\-0|\-)\.00479036" $log | wc -l`
 TEST[6]=`expr   $CRIT6`
 CTRL[6]=1
 ERROR[6]="CCSD(T) 2-elec. Darwin term not correct"

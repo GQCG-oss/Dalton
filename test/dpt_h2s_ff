@@ -133,7 +133,7 @@ TEST[2]=`expr   $CRIT2`
 CTRL[2]=1
 ERROR[2]="CCSD first-order DPT correction not correct"
 
-CRIT3=`$GREP "DPTFLD:     \-0\.1061402" $log | wc -l`
+CRIT3=`$GREP "DPTFLD: * (\-0|\-).1061402" $log | wc -l`
 TEST[3]=`expr   $CRIT3`
 CTRL[3]=2
 ERROR[3]="DPT correction to finite field not correct for CCSD"
@@ -143,7 +143,7 @@ TEST[4]=`expr   $CRIT4`
 CTRL[4]=1
 ERROR[4]="CCSD(T) first-order DPT correction not correct"
 
-CRIT5=`$GREP "DPTFLD:     \-0\.1061410" $log | wc -l`
+CRIT5=`$GREP "DPTFLD: * (\-0|\-)\.1061410" $log | wc -l`
 TEST[5]=`expr   $CRIT5`
 CTRL[5]=2
 ERROR[5]="DPT correction to finite field not correct for CCSD(T)"
