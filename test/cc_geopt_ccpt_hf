@@ -55,12 +55,10 @@ cat > cc_geopt_ccpt_hf.dal <<%EOF%
 .TITLE
    test case for CCSD(T) geometry optimization
 .CC
-*HF INP
+*SCF INPUT
 .THRESH
  1.0D-10
-*ORBITAL INPUT
-.NOSUPSYM
-*CC INP
+*CC INPUT
 .CC(T)
 .THRENR
  1.0d-08
