@@ -3,11 +3,13 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# rsp_lrso
 #*# --------
 #*# Molecule:         O2
 #*# Wave Function:    MCSCF (CAS)
 #*# Test Purpose:     Linear response spin-orbit
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT

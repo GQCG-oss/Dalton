@@ -3,12 +3,14 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# geoopt_cartsad
 #*# --------------
 #*# Molecule:         C2H6
 #*# Wave Function:    SCF
 #*# Test Purpose:     Second order saddle point optimization in
 #*#                   Cartesian coordinates
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT

@@ -1,5 +1,5 @@
 C
-C$Id: fastio_g07.F,v 1.1.1.1 2001-02-08 13:33:30 hjj Exp $
+C$Id: fastio_g07.F,v 1.2 2001-03-01 12:41:45 vebjornb Exp $
 C
 #ifdef UNDEF
 /* Comdeck notes */
@@ -56,7 +56,7 @@ C*  ADDR    CURRENT DISK ADDRESS OF EACH LOGICAL UNIT.                 *
 C*  OPEN    FLAG TO SIGNIFY THAT THE FILE IS OPENED.                   *
 C*  ID      CHARACTER STRING IDENTIFYING THE ENTRY POINT USED.         *
 C*  ASYNC   FLAG FOR ASYNCRONOUS I/O FOR EACH LOGICAL UNIT.            *
-C*  LUPRI      LOGICAL UNIT NUMBER OF PRINT UNIT.                         *
+C*  LUPRI   LOGICAL UNIT NUMBER OF PRINT UNIT.                         *
 C*  ERRFIX  CHARACTER STRING SPECIFYING ERROR HANDLING MODE,           *
 C*          CAN BE: 'HARD', 'FIRM', 'SOFT' OR 'NONE'.                  *
 C*  NERR    ERROR COUNTER (IF ERRFIX='FIRM').                          *

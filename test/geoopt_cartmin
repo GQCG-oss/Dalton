@@ -3,6 +3,7 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# geoopt_cartmin
 #*# --------------
 #*# Molecule:         C6H5CHO
@@ -11,6 +12,7 @@
 #*#                   Hessian is calculated, then updated using the
 #*#                   PSB-formula. The rational function method determines
 #*#                   the step and Baker's convergence criteria are used
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT

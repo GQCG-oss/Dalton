@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: herdrv.F,v 1.3 2001-02-26 15:34:47 ruud Exp $
+C$Id: herdrv.F,v 1.4 2001-03-01 12:41:44 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -2729,6 +2729,7 @@ C/* Deck herini */
 #include <cbiher.h>      
 #include <ecpinf.h>
 #include <drw2el.h>
+#include <orgcom.h>
 C
 C     Initialize effective core potential parameters
 C
@@ -2843,8 +2844,8 @@ CTSAUE
       FINDPT = .FALSE.
       DPTINT = .FALSE.
       NO2DPT = .FALSE.
-      DPTFAC = D0
-      DARFAC = D0
+      DPTFAC = 0.D0
+      DARFAC = 0.D0
       S4CENT = .FALSE.
       DPTOVL = .FALSE.
       DPTPOT = .FALSE.

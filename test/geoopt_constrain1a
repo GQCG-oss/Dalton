@@ -3,6 +3,7 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# geoopt_constrain1a
 #*# ------------------
 #*# Molecule:         C2H6
@@ -11,6 +12,7 @@
 #*#                   redundant internal coordinates is performed. This is
 #*#                   needed to get the coordinate numbers required for
 #*#                   constraints
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT
@@ -80,12 +82,12 @@ ERROR[2]="SYMMETRY NOT CORRECT"
 # Geometry
 CRIT1=`$GREP "1 * 6\.00000000 * 0\.92859362 * 0\.00000000 * 0\.00000000" $log | wc -l`
 CRIT2=`$GREP "2 * 6\.00000000 * \-0\.92859362 * 0\.00000000 * 0\.00000000" $log | wc -l`
-CRIT3=`$GREP "3 * 1\.00000000 * 1\.29360255 * 1\.02706529 * 0\.00000000" $log | wc -l`
-CRIT4=`$GREP "4 * 1\.00000000 * \-1\.29360255 * \-1\.02706529 * 0\.00000000" $log | wc -l`
-CRIT5=`$GREP "5 * 1\.00000000 * 1\.29360255 * \-0\.51353266 * 0\.88946467" $log | wc -l`
-CRIT6=`$GREP "6 * 1\.00000000 * 1\.29360255 * \-0\.51353266 * \-0\.88946467" $log | wc -l`
-CRIT7=`$GREP "7 * 1\.00000000 * \-1\.29360255 * 0\.51353266 * 0\.88946467" $log | wc -l`
-CRIT8=`$GREP "8 * 1\.00000000 * \-1\.29360255 * 0\.51353266 * \-0\.88946467" $log | wc -l`
+CRIT3=`$GREP "3 * 1\.00000000 * 1\.29360255 * (\-| )1\.02706529 * 0\.00000000" $log | wc -l`
+CRIT4=`$GREP "4 * 1\.00000000 * \-1\.29360255 * (\-| )1\.02706529 * 0\.00000000" $log | wc -l`
+CRIT5=`$GREP "5 * 1\.00000000 * 1\.29360255 * (\-| )0\.5135326[6-7] * 0\.8894646[6-7]" $log | wc -l`
+CRIT6=`$GREP "6 * 1\.00000000 * 1\.29360255 * (\-| )0\.5135326[6-7] * \-0\.8894646[6-7]" $log | wc -l`
+CRIT7=`$GREP "7 * 1\.00000000 * \-1\.29360255 * (\-| )0\.5135326[6-7] * 0\.8894646[6-7]" $log | wc -l`
+CRIT8=`$GREP "8 * 1\.00000000 * \-1\.29360255 * (\-| )0\.5135326[6-7] * \-0\.8894646[6-7]" $log | wc -l`
 TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
 CTRL[3]=8
@@ -123,15 +125,15 @@ CTRL[5]=12
 ERROR[5]="ANGLES NOT DETERMINED CORRECTLY"
 
 # Dihedral angles
-CRIT1=`$GREP "26 * Dihedral angle * 3 * 1 * 2 * 4 * 180\.000 deg\." $log | wc -l`
-CRIT2=`$GREP "27 * Dihedral angle * 3 * 1 * 2 * 7 * \-60\.000 deg\." $log | wc -l`
-CRIT3=`$GREP "28 * Dihedral angle * 3 * 1 * 2 * 8 * 60\.000 deg\." $log | wc -l`
-CRIT4=`$GREP "29 * Dihedral angle * 4 * 2 * 1 * 5 * \-60\.000 deg\." $log | wc -l`
-CRIT5=`$GREP "30 * Dihedral angle * 4 * 2 * 1 * 6 * 60\.000 deg\." $log | wc -l`
-CRIT6=`$GREP "31 * Dihedral angle * 5 * 1 * 2 * 7 * 60\.000 deg\." $log | wc -l`
-CRIT7=`$GREP "32 * Dihedral angle * 5 * 1 * 2 * 8 * 180\.000 deg\." $log | wc -l`
-CRIT8=`$GREP "33 * Dihedral angle * 6 * 1 * 2 * 7 * 180\.000 deg\." $log | wc -l`
-CRIT9=`$GREP "34 * Dihedral angle * 6 * 1 * 2 * 8 * \-60\.000 deg\." $log | wc -l`
+CRIT1=`$GREP "26 * Dihedral angle * 3 * 1 * 2 * 4 * (\-| )180\.000 deg\." $log | wc -l`
+CRIT2=`$GREP "27 * Dihedral angle * 3 * 1 * 2 * 7 * (\-| )60\.000 deg\." $log | wc -l`
+CRIT3=`$GREP "28 * Dihedral angle * 3 * 1 * 2 * 8 * (\-| )60\.000 deg\." $log | wc -l`
+CRIT4=`$GREP "29 * Dihedral angle * 4 * 2 * 1 * 5 * (\-| )60\.000 deg\." $log | wc -l`
+CRIT5=`$GREP "30 * Dihedral angle * 4 * 2 * 1 * 6 * (\-| )60\.000 deg\." $log | wc -l`
+CRIT6=`$GREP "31 * Dihedral angle * 5 * 1 * 2 * 7 * (\-| )60\.000 deg\." $log | wc -l`
+CRIT7=`$GREP "32 * Dihedral angle * 5 * 1 * 2 * 8 * (\-| )180\.000 deg\." $log | wc -l`
+CRIT8=`$GREP "33 * Dihedral angle * 6 * 1 * 2 * 7 * (\-| )180\.000 deg\." $log | wc -l`
+CRIT9=`$GREP "34 * Dihedral angle * 6 * 1 * 2 * 8 * (\-| )60\.000 deg\." $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9`
 CTRL[6]=9

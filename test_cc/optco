@@ -1,5 +1,6 @@
+
 #######################################################################
-#  INTEGRAL INPUT
+#  MOLECULE INPUT
 #######################################################################
 cat > optco.mol <<%EOF%
 INTGRL
@@ -181,8 +182,7 @@ CRIT8=`$GREP "Norm of step * : * ( |0)\.013088" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8` 
 #        expr 1 + 0 + 3 + 1 + 1 + 1 + 1 + 1
 CTRL[1]=9
-ERROR[1]="INITIAL ITERATION IS ALLREADY NOT CORRECT"
-
+ERROR[1]="INITIAL ITERATION NOT CORRECT"
 
 # SCF, MP2 and CCSD energies of 1 iteration:
 CRIT1=`$GREP "Final    HF energy: *-112\.75326688" $log | wc -l`
@@ -195,8 +195,7 @@ CRIT8=`$GREP "Norm of step * : * ( |0)\.000038" $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8` 
 #        expr 1 + 6 + 1 + 1 + 2 + 1 + 1
 CTRL[2]=13
-ERROR[2]="FIRST ITERATION IS ALLREADY NOT CORRECT"
-
+ERROR[2]="FIRST ITERATION IS NOT CORRECT"
 
 # SCF, MP2 and CCSD energies of 2 iteration:
 CRIT1=`$GREP "Final    HF energy: *-112\.75326977" $log | wc -l`
@@ -219,7 +218,6 @@ TEST[4]=`expr $CRIT1 \+ $CRIT2 + $CRIT3`
 #        expr 4 + 4 + 1
 CTRL[4]=9
 ERROR[4]="FINAL SUMMARY IS NOT CORRECT"
-
 
 PASSED=1
 for i in 1 2 3 4

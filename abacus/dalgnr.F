@@ -886,7 +886,7 @@ C     ... not OPTWLK and not OPTNEW, i.e. not geometry optimization
          NEWGEO = .TRUE.
          IF (RNHERM) CALL EXEHER(WORK,LMWORK,IWOFF,WRKDLM)
          IF (RNSIRI) CALL EXESIR(WORK,LMWORK,IWOFF,WRKDLM)
-         IF (DOCCSD)            CALL EXECC(WORK,LMWORK,IWOFF,WRKDLM)
+         IF (DOCCSD) CALL EXECC(WORK,LMWORK,IWOFF,WRKDLM)
 C
 C     If this is a solvent run, update information for abacus
 C     Add cavity center if solvent model (921014-kvm/hjaaj)

@@ -3,12 +3,14 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# walk_solvmag
 #*# ------------
 #*# Molecule:         CH3F
 #*# Wave Function:    SCF
 #*# Test Purpose:     Geometry walk and shielding and magnetizability for a 
 #*#                   solvated molecule (equilibrium solvation)
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT
@@ -175,7 +177,7 @@ CTRL[6]=6
 ERROR[6]="GEOMETRY STEP NOT CORRECT"
 
 # Second energy
-CRIT1=`$GREP "Final * HF energy\: * \-139\.0893073502[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-139\.089307350[2-3][0-9][0-9]" $log | wc -l`
 TEST[7]=`expr	$CRIT1`
 CTRL[7]=1
 ERROR[7]="SECOND ENERGY NOT CORRECT"
