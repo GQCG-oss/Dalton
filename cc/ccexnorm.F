@@ -318,6 +318,9 @@ c         -----------------------------------------------------------
        if (iovlp.ne.novlp) call quit('error in CCEXNORM.')
   
        if (ccsdt) then
+#if !defined CC_AARHUS
+          CALL QUIT('No triples (yet) in CCEXNORM.')
+#else
          if (ipass.eq.1 .and. (.not.ccsdtrenrm)) then
            continue 
          else
@@ -336,6 +339,7 @@ c         -----------------------------------------------------------
      &                         work,lwork)
            END IF
          end if
+#endif
        end if
 
        if (ipass.eq.1) then
@@ -538,6 +542,7 @@ c         --------------------------------------------------
 *---------------------------------------------------------------------*
 *              end of subroutine ccexnorm                             *
 *---------------------------------------------------------------------*
+#if defined CC_AARHUS
 *=====================================================================*
       subroutine ccovlp_noddy(listl,listr,overlap,
      &                        ilstnrst,ilstnrnd,istartend,
@@ -1986,3 +1991,4 @@ C
 C
       RETURN
       END
+#endif

@@ -504,6 +504,9 @@ C     IF (.NOT. (CCS .OR. CC2 .OR. CCSTST) ) THEN
 * compute CC3 contributions:
 *---------------------------------------------------------------------*
       IF (CCSDT) THEN
+#if !defined CC_AARHUS
+         CALL QUIT('No triples (yet) in CC_BAMAT.')
+#else
 
          IF (IOPTRES.EQ.5) THEN
            FREQB = 0.0D0
@@ -519,6 +522,7 @@ C     IF (.NOT. (CCS .OR. CC2 .OR. CCSTST) ) THEN
      &                          IBDOTS,BCONS,FILBAM,ITRAN,
      &                          NBATRAN,MXVEC,WORK(KEND2),LEND2)
 
+#endif
       END IF
 
 *---------------------------------------------------------------------*

@@ -1053,6 +1053,15 @@ C
       DIRSAV = DIRECT
       DIRECT = .TRUE.
 C
+      IF (LOCDBG) THEN
+        write(lupri,*)'ONE : ', KFCKEF,WORK(KFCKEF)
+        FNORM = DDOT(N2BST(1),WORK(KFCKEF),1,WORK(KFCKEF),1)
+        WRITE(LUPRI,*)
+     &    'Norm^2 of the eff. Fock matrix before transformation:',FNORM
+        CALL OUTPUT(WORK(KFCKEF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      END IF
+
+
       KEND1A = KEND1
       LWRK1A = LWRK1
 
@@ -1546,6 +1555,14 @@ C
   130          CONTINUE
   120       CONTINUE
   110    CONTINUE
+
+      IF (LOCDBG) THEN
+        write(lupri,*)'Index ILLD : ', ILLD
+        FNORM = DDOT(N2BST(1),WORK(KFCKEF),1,WORK(KFCKEF),1)
+        WRITE(LUPRI,*)
+     &    'Norm^2 of the eff. Fock matrix before transformation:',FNORM
+      END IF
+
               
 C------------------------------------------------------------
 C   Derivative-two-electron-integral contribution to gradient
@@ -1701,10 +1718,11 @@ C
       END DO
 
       IF (LOCDBG) THEN
+        write(lupri,*)'First in eff Fock matrix : ', KFCKEF,WORK(KFCKEF)
         FNORM = DDOT(N2BST(1),WORK(KFCKEF),1,WORK(KFCKEF),1)
         WRITE(LUPRI,*) 
      &    'Norm^2 of the eff. Fock matrix before transformation:',FNORM
-        ! CALL OUTPUT(WORK(KFCKEF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+        CALL OUTPUT(WORK(KFCKEF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
       END IF
 C
 C------------------------------------------------------

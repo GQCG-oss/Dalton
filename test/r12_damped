@@ -93,7 +93,7 @@ fi
 #                       ! Improved MP2-R12 method !
 #             MP2-R12/A   correlation energy =   -0.258319361
 #             MP2-R12/B   correlation energy =   -0.243280497
-CRIT1=`$GREP "MP2-R12/B   correlation energy =   \-0\.24328049" $log | wc -l`
+CRIT1=`$GREP "MP2-R12/B   correlation energy =   (-0| -)\.24328049" $log | wc -l`
 TEST[1]=`expr	$CRIT1`
 CTRL[1]=1
 ERROR[1]="MP2-R12/B ENERGY NOT CORRECT"

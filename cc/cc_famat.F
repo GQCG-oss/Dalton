@@ -528,6 +528,9 @@ C#include <ccr1rsp.h>
 * CC3 part:
 *=====================================================================*
       IF (CCSDT) THEN
+#if !defined CC_AARHUS
+        CALL QUIT('No triples (yet) in CC_FAMAT.')
+#else
         IF (IOPTRES.LT.5) THEN
           KGAMMA1EFF = KEND0
           KGAMMA2EFF = KGAMMA1EFF + NT1AM(ISYRES)
@@ -562,6 +565,7 @@ C#include <ccr1rsp.h>
 
         END IF
 
+#endif
       END IF
 
 *=====================================================================*
@@ -656,6 +660,7 @@ C#include <ccr1rsp.h>
 *=====================================================================*
 *                  END OF SUBROUTINE CC_FAMAT                         *
 *=====================================================================*
+#if defined CC_AARHUS
 *=====================================================================*
       SUBROUTINE CCSDT_FAMAT_NODDY(LISTL,IDLSTL,LISTB,IDLSTB,IOPTRES,
      &                             LABELA,FREQA,
@@ -2029,3 +2034,4 @@ C     ----------------------------------------------------------------
 *---------------------------------------------------------------------*
 *              END OF SUBROUTINE CCSDT_FA_DEN1                        *
 *---------------------------------------------------------------------*
+#endif

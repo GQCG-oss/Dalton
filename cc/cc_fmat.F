@@ -182,6 +182,9 @@ COMMENT COMMENT
 *               F matrix contractions 
 *---------------------------------------------------------------------*
       IF (IOPTRES.EQ.5 .AND. CCSDT .AND. CCSDT_F_ALTER) THEN
+#if !defined CC_AARHUS
+         CALL QUIT('No triples (yet) in CC_FMATRIX')
+#else
          MXRAMP  = MAX(NFTRAN,MXVEC)
          MXLAMP  = NFTRAN
          MXBTRAN = MXRAMP*MXRAMP
@@ -271,6 +274,7 @@ C
      &                        WORK(KB2CON),NB2TRAN,MXLAMP,
      &                        LISTL,LISTR,FILFMA,MXBTRAN,MXBTRAN)
 
+#endif
       END IF
 
       IF (LOCDBG) WRITE(LUPRI,*) 'Leave CC_FMATRIX...'
@@ -1993,6 +1997,9 @@ C          ----------------------------------------------
         
         
         IF (CCSDT) THEN
+#if !defined CC_AARHUS
+           CALL QUIT('No triples (yet) in CC_FMATNEW')
+#else
 
            ! allocate memory for effective rhs vector
            IF ( IOPTRES.GE.0 .AND. IOPTRES.LE.4 ) THEN
@@ -2134,6 +2141,7 @@ C            ------------------------------------------
               CALL CC_PRP(WORK(KTHETA1),WORK(KTHETA2),1,1,1)
            ENDIF
 
+#endif
         END IF
 
 

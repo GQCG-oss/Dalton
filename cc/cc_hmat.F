@@ -347,6 +347,9 @@ c/* Deck CC_HMAT */
 * add CC3 contributions:
 *---------------------------------------------------------------------*
         IF (CCSDT) THEN
+#if !defined CC_AARHUS
+          CALL QUIT('No triples (yet) in CC_HMAT.')
+#else
           ! allocate and initialize doubles result vector:
           KEPSI1 = KSTART
           KEPSI2 = KEPSI1 + NT1AM(ISYRES)
@@ -363,6 +366,7 @@ c/* Deck CC_HMAT */
      &                          LISTB,ITAMPB,LISTC,ITAMPC,
      &                          WORK(KEPSI1),WORK(KEPSI2),
      &                          WORK(KEND0),LEND0)
+#endif
         END IF
 *=====================================================================*
 * store result vectors:
@@ -1172,6 +1176,7 @@ C
       RETURN
       END
 *=====================================================================*
+#if defined CC_AARHUS
 *=====================================================================*
       SUBROUTINE CCSDT_HMAT_NODDY(LISTL,IDLSTL,LISTB,IDLSTB,
      &                            LISTC,IDLSTC,LISTD,IDLSTD,
@@ -1647,3 +1652,4 @@ C           ----------------------------------------------
 *---------------------------------------------------------------------*
 *              END OF SUBROUTINE CCSDT_HMAT_NODDY                     *
 *---------------------------------------------------------------------*
+#endif

@@ -34,6 +34,7 @@ cat > LIH_431G_tmom_no2np1.dal <<%EOF%
 **GENERAL
 .RUNSIRIUS
 **INTEGRAL
+.NOSUP
 .DIPLEN
 .DIPVEL
 .ANGMOM
@@ -45,6 +46,7 @@ cat > LIH_431G_tmom_no2np1.dal <<%EOF%
  1.0D-12
 .NODIIS
 *ORBITAL INPUT
+.NOSUPSYM
 *CC INP
 .NSIMLE
   1

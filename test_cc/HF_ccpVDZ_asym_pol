@@ -33,6 +33,7 @@ cat > HF_ccpVDZ_asym_pol.dal <<%EOF%
 **GENERAL
 .RUNSIRIUS
 **INTEGRAL
+.NOSUP
 .DIPLEN
 .THETA
 *END OF GENERAL
@@ -43,6 +44,7 @@ cat > HF_ccpVDZ_asym_pol.dal <<%EOF%
  1.0D-12
 .NODIIS
 *ORBITAL INPUT
+.NOSUPSYM
 .MOSTART
 .H1DIAG
 *CC INP

@@ -129,6 +129,12 @@ C
       LOGICAL   LCCSAV(0:NMODEL), LTCEXC, LPTEXC
       LOGICAL   LTBAR0, LRSPSYM, LLEFTEIG
       LOGICAL   MOLGRD, LSORT
+      LOGICAL   CC3RSP
+#if defined CC_AARHUS
+      PARAMETER (CC3RSP = .TRUE.)
+#else
+      PARAMETER (CC3RSP = .FALSE.)
+#endif
       DIMENSION WORK(LWORK)
       CHARACTER FILPQIM*(6), FILXYM*(6)
       PARAMETER (FILPQIM = 'CCPQ00', FILXYM = 'CC_XYM')
@@ -665,6 +671,7 @@ C
            END IF
          END IF
 
+#if defined CC_AARHUS
          IF (CCOPA) THEN 
            IF (CCS .or. CC2 .or. CCSD .or. CC3) THEN
             CALL CC_OPA(WORK,LWORK)  
@@ -673,6 +680,7 @@ C
      &         ' are not implemented for the requested model.'
            END IF
          END IF
+#endif
 C
 C--------------------------------------------------------
 C        ************************************************
@@ -742,16 +750,17 @@ C-----------------------------------------
 C
          IF ( CCLR .AND. NBLRFR.GT.0) THEN
 C
-            IF (((.NOT. MP2).OR.CCP2).AND.(.NOT.CCD)) THEN
-               IF ((OLDLR .AND. .NOT.CCSDT) .OR. CIS) THEN
-                 CALL CC_LR(WORK,LWORK)
-               ELSE
-                 CALL CC_SOP(WORK,LWORK)
-               END IF
-            ELSE
-               WRITE(LUPRI,'(/,1X,A)') 
-     &              ' No MP2 and CCD Polarizabilities '
-            ENDIF
+           IF (CIS .OR. CCS .OR. CC2 .OR. CCSD .OR. (CC3.AND.CC3RSP)) 
+     &     THEN
+              IF ((OLDLR .AND. .NOT.CC3) .OR. CIS) THEN
+                CALL CC_LR(WORK,LWORK)
+              ELSE
+                CALL CC_SOP(WORK,LWORK)
+              END IF
+           ELSE
+              WRITE(LUPRI,'(/,1X,A)') 
+     &             ' No polarizabilities for present model'
+           ENDIF
 C
          ENDIF
 C
@@ -778,7 +787,7 @@ C--------------------------------------------
 C
          IF ( CCQR ) THEN
 C
-            IF (CCS .or. CC2 .or. CCSD .or. CC3) THEN
+            IF (CCS .or. CC2 .or. CCSD .or. (CC3.AND.CC3RSP)) THEN
                CALL CC_HYPPOL(WORK,LWORK)
             ELSE
              WRITE(LUPRI,'(/,1X,2A)') 'first hyperpolarizabilities',

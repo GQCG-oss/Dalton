@@ -188,10 +188,10 @@ C     Open files
 C
       IF (LUINTR.EQ.0) CALL GPOPEN(LUINTR,'AOTWODIS','UNKNOWN',' ',
      &     'UNFORMATTED',IDUMMY,.FALSE.)
-#if defined (SYS_CRAY) || defined (SYS_T90)
+#if defined (SYS_CRAY) || defined (SYS_T90) || (defined (SYS_AIX) && defined (VAR_INT64)) 
       LRECL = LBFINP + LBFINP + 1
 #endif
-#if defined (SYS_AIX) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_LINUX)
+#if (defined (SYS_AIX) && !defined (VAR_INT64)) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_LINUX)
       IF (NBASIS .LE. 255) THEN
          LRECL = 2*LBFINP + LBFINP + 1
       ELSE

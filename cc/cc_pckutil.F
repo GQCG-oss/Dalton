@@ -50,11 +50,7 @@ C
 C     Christof Haettig, August 1998
 C
 *---------------------------------------------------------------------*
-C#if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-C#else
-C#  include <implicit.h>
-C#endif
 C
 #include <priunit.h>
 C
@@ -91,7 +87,7 @@ C
       PARAMETER (IT1 = 1) 
       PARAMETER (IB1 = 8) 
       PARAMETER (IW1 = 2, IW2 = 1) 
-#elif defined (SYS_AIX) || (SYS_IRIX) || (SYS_SUN) || (SYS_HPUX)
+#elif (defined (SYS_AIX) && !defined (VAR_INT64)) || (SYS_IRIX) || (SYS_SUN) || (SYS_HPUX)
       PARAMETER (IT1 = 4) 
       PARAMETER (IB1 = 1) 
       PARAMETER (IW1 = 1, IW2 = 2) 
@@ -154,11 +150,13 @@ C
          DO L = 1, MBYTE
            BUFPCK(NBYTE+L) = L1BYTE(OFF+L)
          END DO
-#elif defined (SYS_AIX) || (SYS_IRIX) || (SYS_SUN) || (SYS_HPUX)
+#elif (defined SYS_AIX && !defined VAR_INT64) || (SYS_IRIX) || (SYS_SUN) || (SYS_HPUX)
          OFF = MBYTE + 1
          DO L = 1, MBYTE
            BUFPCK(NBYTE+L) = L1BYTE(OFF-L)
          END DO
+#else
+         CALL QUIT('PCKR8 not implemented for this operating system.')
 #endif
 C
 #else
@@ -195,11 +193,7 @@ C
 C     Christof Haettig, August 1998
 C
 *---------------------------------------------------------------------*
-C#if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-C#else
-C#  include <implicit.h>
-C#endif
 C
 #include <priunit.h>      
 C
@@ -236,7 +230,7 @@ C
       PARAMETER (IT1 = 1) 
       PARAMETER (IB1 = 8) 
       PARAMETER (IW1 = 2, IW2 = 1) 
-#elif defined (SYS_AIX) || (SYS_IRIX) || (SYS_SUN) || (SYS_HPUX)
+#elif (defined SYS_AIX && !defined VAR_INT64) || (SYS_IRIX) || (SYS_SUN) || (SYS_HPUX)
       PARAMETER (IT1 = 4) 
       PARAMETER (IB1 = 1) 
       PARAMETER (IW1 = 1, IW2 = 2) 
@@ -284,11 +278,13 @@ C
          DO L = 1, KBYTE
            L1BYTE(OFF+L) = BUFPCK(MBYTE+L) 
          END DO
-#elif defined (SYS_AIX) || (SYS_IRIX) || (SYS_SUN) || (SYS_HPUX)
+#elif (defined SYS_AIX && !defined VAR_INT64) || (SYS_IRIX) || (SYS_SUN) || (SYS_HPUX)
          DO L = 1, KBYTE
            L1BYTE(L) = BUFPCK(MBYTE+1-L)
          END DO
          MBYTE = MBYTE - KBYTE
+#else
+         CALL QUIT('UNPCKR8 not implemented for this operating system.')
 #endif
 C
          IF (LOCDBG) CALL R8BITREP(R8WORD)
@@ -327,7 +323,7 @@ C     RETURN
       END
 *=====================================================================*
 C  /* Deck initpckr8 */
-      SUBROUTINE INITPCKR8(THRESHOLD,IPCKTABLE)
+      SUBROUTINE INITPCKR8(THRESHOLD,IPCKTABLE,ENABLED)
 *=====================================================================*
 C
 C     Purpose: initialize exponent table for packing/unpacking
@@ -336,11 +332,7 @@ C
 C     Christof Haettig, August 1998
 C
 *---------------------------------------------------------------------*
-C#if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-C#else
-C#  include <implicit.h>
-C#endif
 C
 #include <priunit.h>
 C
@@ -348,6 +340,7 @@ C
       PARAMETER (LOCDBG = .FALSE.)
 C
       INTEGER IPCKTABLE(0:255)
+      LOGICAL ENABLED
 C
 #if defined (SYS_CRAY)
       REAL THRESHOLD, ZERO, ERRMAX(8)
@@ -372,10 +365,13 @@ C
 C
       INTEGER IW1, IW2, L
 C
+#undef NOPACKING
 #if defined (SYS_LINUX) || (SYS_DEC)
       PARAMETER (IW1 = 2, IW2 = 1) 
-#elif defined (SYS_AIX) || (SYS_IRIX) || (SYS_SUN) || (SYS_HPUX)
+#elif (defined SYS_AIX && !defined VAR_INT64) || (SYS_IRIX) || (SYS_SUN) || (SYS_HPUX)
       PARAMETER (IW1 = 1, IW2 = 2) 
+#else
+# define NOPACKING
 #endif
 C
 #if defined (SYS_LINUX) || defined (SYS_AIX) || (SYS_IRIX) || (SYS_SUN) || (SYS_HPUX) || (SYS_DEC)
@@ -389,8 +385,19 @@ C
      &             z'00000FF0', z'00000000',
      &             z'0000000F', z'00000000'/
 #else
-      CALL QUIT('INITPCKR8 not implemented for this operating system.')
+# define NOPACKING
 #endif
+C
+C---------------------------------------------------------------
+C     check if packing can be used on this archicture:
+C---------------------------------------------------------------
+C
+#if defined NOPACKING
+      ENABLED = .FALSE.
+      RETURN
+#else
+      ENABLED = .TRUE.
+#endif     
 C
 C---------------------------------------------------------------
 C     save packing accuracy on common block
@@ -465,11 +472,7 @@ C
 C     Christof Haettig, August 1998
 C
 *---------------------------------------------------------------------*
-C#if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-C#else
-C#  include <implicit.h>
-C#endif
 C
 #include <priunit.h>
 C
@@ -509,11 +512,7 @@ C
 C     Christof Haettig, August 1998
 C
 *---------------------------------------------------------------------*
-C#if defined (IMPLICIT_NONE)
       IMPLICIT NONE
-C#else
-C#  include <implicit.h>
-C#endif
 C
 #include <priunit.h>      
 C

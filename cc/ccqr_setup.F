@@ -1666,6 +1666,9 @@ C    &                  LISTL,  IZETAV, WORK,  LWORK   )
 * add triples contributions for contractions (IOPTRES=5):
 *---------------------------------------------------------------------*
       IF (CCSDT .AND. IOPTRES.EQ.5 .AND. (.NOT.NODDY_FAMAT)) THEN
+#if !defined CC_AARHUS
+        CALL QUIT('No triples (yet) in CCQR_FADRV.')
+#else
 
         MXFADEN = NFATRAN*MXVEC
         MXINTER = 2*MXFADEN
@@ -1706,6 +1709,7 @@ C    &                  LISTL,  IZETAV, WORK,  LWORK   )
      &                    WORK(KIADR_INTER),WORK(KIADR_FADEN),
      &                    WORK(KEND1),LWRK1)
 
+#endif
       END IF
 
 *---------------------------------------------------------------------*

@@ -338,7 +338,11 @@ C
 #if (defined (SYS_IRIX) && defined(NO_F90)) || defined (SYS_NEC)
       LRECL  = NELEM
 #else
+#ifdef VAR_INT64
+      LRECL  = 8*NELEM
+#else 
       LRECL  = 4*NELEM
+#endif
 #endif
 C
       IF (STATUS .EQ. 'NEW') THEN
@@ -440,7 +444,11 @@ C
       LRECL = LRECL/8
 #else
 #if !defined (SYS_NEC) && !defined (SYS_IRIX)
+#ifdef VAR_INT64
+      LRECL = LRECL/8
+#else
       LRECL = LRECL/4
+#endif
 #endif
 #endif
       IRECPF = I2GB/LRECL
@@ -521,7 +529,11 @@ C
       LRECL = LRECL/8
 #else
 #if !defined (SYS_NEC) && !defined (SYS_IRIX)
+#ifdef VAR_INT64
+      LRECL = LRECL/8
+#else
       LRECL = LRECL/4
+#endif
 #endif
 #endif
       IRECPF = I2GB/LRECL

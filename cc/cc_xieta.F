@@ -232,6 +232,9 @@ C
 *     in CC_XIETA_DENPREP.
 *---------------------------------------------------------------------*
       IF (IOPTRES.EQ.5 .AND. CCSDT) THEN
+#if !defined CC_AARHUS
+        CALL QUIT('No triples (yet) in CC_XIETA')
+#else
 
         MXXIDEN  = MXVEC
         MXEALEFT = NXETRAN
@@ -292,6 +295,7 @@ C
      &                        FNDELD,FNCKJD,FNDKBC,FNTOC,
      &                        FN3VI,FNDKBC3,FN3FOPX,FN3FOP2X)
         END IF
+#endif
       END IF
 
       CALL QEXIT('CC_XIETA')
@@ -2461,6 +2465,9 @@ C
         SKIPXI = ( IXETRAN(3,ITRAN) .EQ. -1 )
 
         IF (CCSDT .AND. (.NOT.SKIPXI)) THEN
+#if !defined CC_AARHUS
+          CALL QUIT('No triples (yet) in CC_XIETA')
+#else
 
           ! allocate extra memory for the 'effective' CC3 rhs vector
           KXI1EFF = KEND2
@@ -2534,6 +2541,7 @@ C
      &                          NXETRAN,MXVEC,WORK(KEND2),LWRK2)
           END IF
 
+#endif
         END IF
 
 *---------------------------------------------------------------------*
@@ -2684,6 +2692,9 @@ C
 
    
           IF (CCSDT) THEN
+#if !defined CC_AARHUS
+            CALL QUIT('No triples (yet) in CC_XIETA')
+#else
             ! allocate extra memory for the 'effective' CC3 rhs vector
             KETA1EFF = KEND2
             KETA2EFF = KETA1EFF + NT1AM(ISYRES)
@@ -2764,6 +2775,7 @@ C             ------------
 
             END IF
 
+#endif
           END IF
 
 

@@ -34,9 +34,11 @@
 
 /* 
    this version of CC was generated from version used 1998/99 on
-   jensen by a merge with the version used on Linux PCs Christof
-
+   jensen by a merge with the version used on Linux PCs
    Christof Haettig, April 1999
+
+   fixed for 64 bit mode on IBM AIX with VAR_INT64 and SYS_AIX set
+   Christof Haettig, Mar 19 2003
 */
 
 /* Simulate the cray 64 bit word addressable I/O routines and
@@ -73,6 +75,14 @@
 #define off64_t off_t
 #endif
 
+/* define here the integer type, which has the same lengths
+   as the integers used under fortran */
+#if defined (VAR_INT64) && defined (SYS_AIX)
+#define INTEGER long
+#else
+#define INTEGER int
+#endif
+
 #if defined (SYS_FUJITSU)
 #ifdef __uxp__
 #define L_XTND SEEK_END
@@ -94,22 +104,22 @@
 #define PUTWA putwa
 #endif
 
-static int first_call = 1;   /* need to do stuff on the first call */
+static INTEGER first_call = 1;   /* need to do stuff on the first call */
 
 static struct w_file {
   int fds;                     /* file descriptor */
   long long length;            /* file length in bytes */
   long long position;          /* current file position in bytes a la lseek */
   char *path;                  /* file name */
-  int stats;                   /* boolean flag to collect statistics */
+  INTEGER stats;                   /* boolean flag to collect statistics */
   double words_write;          /* total no. of words written */
   double words_read;           /* total no. of words read */
   double time_write;           /* total wall time writing */
   double time_read;            /* total wall time reading */
-  int n_read;                  /* no. of read requests */
-  int n_write;                 /* no. of write reqeusts */
-  int seek_read;               /* no. of seeks on read */
-  int seek_write;              /* no. of seeks on write */
+  INTEGER n_read;                  /* no. of read requests */
+  INTEGER n_write;                 /* no. of write reqeusts */
+  INTEGER seek_read;               /* no. of seeks on read */
+  INTEGER seek_write;              /* no. of seeks on write */
 } file_array[max_file];
 
 void walltm_(ai)
@@ -124,8 +134,8 @@ void walltm_(ai)
   *ai = (double) tp.tv_sec + ((double) tp.tv_usec) * 1.0e-6;
 }
 
-static int CheckUnit(unit)
-     int unit;
+static INTEGER CheckUnit(unit)
+     INTEGER unit;
 {
   if ( (unit < 0) || (unit >= max_file) )
     return -1;
@@ -136,8 +146,8 @@ static int CheckUnit(unit)
   return 0;
 }
 
-static int CheckAddr(addr)
-     int addr;
+static INTEGER CheckAddr(addr)
+     INTEGER addr;
 {
   if (addr <= 0)
     return -4;
@@ -145,8 +155,8 @@ static int CheckAddr(addr)
     return 0;
 }
 
-static int CheckCount(count)
-     int count;
+static INTEGER CheckCount(count)
+     INTEGER count;
 {
   if (count < 0)
     return -4;
@@ -170,7 +180,7 @@ void InitFileStats(file)
 
 void PrintFileStats(unit, file)
      struct w_file *file;
-     int unit;
+     INTEGER unit;
 {
   double ave_read=0.0e0, ave_write=0.0e0;
   double rate_read=0.0e0, rate_write=0.0e0;
@@ -195,11 +205,11 @@ void PrintFileStats(unit, file)
   (void) fprintf(stderr,"CRAYIO: oper :  #req.  :  #seek  :   #words  :");
   (void) fprintf(stderr," #w/#req : time(s) :  MW/s \n");
   (void) fprintf(stderr,"CRAYIO: read : %7d : %7d : %9d : %7d : %7.1f : %6.3f\n",
-		 file->n_read, file->seek_read, (int) file->words_read, 
-		 (int) ave_read, file->time_read, rate_read);
+		 file->n_read, file->seek_read, (INTEGER) file->words_read, 
+		 (INTEGER) ave_read, file->time_read, rate_read);
   (void) fprintf(stderr,"CRAYIO:write : %7d : %7d : %9d : %7d : %7.1f : %6.3f\n",
-		 file->n_write, file->seek_write, (int) file->words_write, 
-		 (int) ave_write, file->time_write, rate_write);
+		 file->n_write, file->seek_write, (INTEGER) file->words_write, 
+		 (INTEGER) ave_write, file->time_write, rate_write);
 }
 
 void InitFileData(file)
@@ -214,7 +224,7 @@ void InitFileData(file)
 void FirstCall()
      /* Initialization on first call to anything */
 {
-  int i;
+  INTEGER i;
 
   for (i=0; i<max_file; i++) {
 
@@ -227,7 +237,7 @@ void FirstCall()
 }
 
 void WCLOSE(unit, ierr)
-     int *unit, *ierr;
+     INTEGER *unit, *ierr;
 {
   struct w_file *file;
 
@@ -251,12 +261,12 @@ void WCLOSE(unit, ierr)
 
 /* ARGSUSED */
 void WOPEN(unit, name, lennam, blocks, stats, ierr)
-     int *unit, *lennam, *blocks, *stats, *ierr;
+     INTEGER *unit, *lennam, *blocks, *stats, *ierr;
      char *name;
 {
   struct w_file *file;
 
-  *ierr = (int) 0;
+  *ierr = (INTEGER) 0;
 
   if (first_call)
     FirstCall();
@@ -271,13 +281,13 @@ void WOPEN(unit, name, lennam, blocks, stats, ierr)
   file->stats = *stats;
 
   if (*lennam > 0) {
-    file->path = malloc((unsigned) (*lennam + 1));
-    (void) strncpy(file->path,name,(int) *lennam);
+    file->path = malloc((size_t) (*lennam + 1));
+    (void) strncpy(file->path,name,(INTEGER) *lennam);
     /* file->path[*lennam] = NULL; */
     file->path[*lennam] = 0;
     }
   else {
-    file->path = malloc((unsigned) 8);
+    file->path = malloc((size_t) 8);
     (void) sprintf(file->path,"fort.%.2d",*unit);
   }
   if (( file->fds = open(file->path, (O_RDWR|O_CREAT), 0660))
@@ -286,13 +296,13 @@ void WOPEN(unit, name, lennam, blocks, stats, ierr)
     return;
   }
 
-  file->length = lseek64(file->fds, (off64_t) 0, (int) SEEK_END);
-  file->position = lseek64(file->fds, (off64_t) 0, (int) SEEK_SET);
+  file->length = lseek64(file->fds, (off64_t) 0, SEEK_END);
+  file->position = lseek64(file->fds, (off64_t) 0, SEEK_SET);
 
 }
 
 void GETWA(unit, result, addr, count, ierr)
-     int *unit, *addr, *count, *ierr;
+     INTEGER *unit, *addr, *count, *ierr;
      double *result;
 {
   long nbytes, con2;
@@ -360,7 +370,7 @@ void GETWA(unit, result, addr, count, ierr)
 }
   
 void PUTWA(unit, source, addr, count, ierr)
-     int *unit, *addr, *count, *ierr;
+     INTEGER *unit, *addr, *count, *ierr;
      double *source;
 {
   size_t nbytes,con2;

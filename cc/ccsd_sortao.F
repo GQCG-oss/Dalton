@@ -47,7 +47,7 @@ C
 C
       PARAMETER (LBUF = 600)
 C
-      LOGICAL FIRST
+      LOGICAL FIRST, ENABLED
       DIMENSION WORK(LWORK)
 C
       CHARACTER*8 NAME(8)
@@ -142,7 +142,14 @@ C
       IF (LPACKINT) THEN
          DTIME = SECOND()
 
-         CALL INITPCKR8(THRPCKINT,IPCKTABINT)
+         CALL INITPCKR8(THRPCKINT,IPCKTABINT,ENABLED)
+
+         IF (.NOT.ENABLED) THEN
+           WRITE(LUPRI,'(A)') 
+     &     'packing routines not enabled for this architecture...',
+     &     '...the integral packing is switched off...'
+           LPACKINT = .FALSE.
+         END IF
 
          NTOTPCK  = 0
          NTOTINT  = 0

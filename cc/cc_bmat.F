@@ -1897,6 +1897,9 @@ C
 * add CC3 contribution
 *---------------------------------------------------------------------*
       IF (CCSDT) THEN
+#if !defined CC_AARHUS
+         CALL QUIT('No triples (yet) in CC_BMAT')
+#else
          IF (IOPTRES.LT.5) THEN
             KTHETA1EFF = KEND2
             KTHETA2EFF = KTHETA1EFF + NT1AM(ISYMAB)
@@ -1911,6 +1914,7 @@ C
      &                         IBDOTS,BCONS,FILBMA,ITRAN,
      &                         NBTRAN,MXVEC,WORK(KEND2),LWRK2)
 
+#endif
       END IF
 *---------------------------------------------------------------------*
 * write result vector to output:

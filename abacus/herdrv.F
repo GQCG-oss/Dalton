@@ -2910,7 +2910,11 @@ CTSAUE
         ONEPRP = .FALSE.
         DIPVEL = .FALSE.
         DIRAC  = .FALSE.
+C#ifdef VAR_INT64
+C        SUPMAT = .FALSE.
+C#else
         SUPMAT = .NOT. DIRCAL .AND. .NOT. RNINTS
+C#endif
       ENDIF
       SKIP   = .FALSE.
       TSTINP = .FALSE.

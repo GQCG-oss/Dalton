@@ -60,6 +60,7 @@ cat > cc_fop_cc3.dal <<%EOF%
 .THRESH
  1.0D-10
 *ORBITAL INPUT
+.NOSUPSYM
 *CC INP
 .CC3
 .PRINT

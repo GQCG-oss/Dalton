@@ -1155,6 +1155,7 @@ C
             WRITE (LUPRI,*)
      &      'RDSUPM ERROR, no "TWOELSUP" or "PSUPMAT " label on LUSUPM'
             WRITE (LUPRI,*) 'Dump of all labels on LUSUPM:'
+            write(lupri,*)'FNSUPM,LUSUPM = ', FNSUPM,LUSUPM
             CALL REWSPL(LUSUPM)
             CALL DMPLAB(LUSUPM,LUPRI)
             CALL QUIT('RDSUPM ERROR, no proper label on LUSUPM')

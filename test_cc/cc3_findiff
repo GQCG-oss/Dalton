@@ -33,6 +33,7 @@ cat > cc3_findiff.dal <<%EOF%
 **GENERAL
 .RUNSIRIUS
 **INTEGRAL
+.NOSUP
 .DIPLEN
 *END OF GENERAL
 **WAVE FUNCTION
@@ -42,6 +43,7 @@ cat > cc3_findiff.dal <<%EOF%
  1.0D-12
 .NODIIS
 *ORBITAL INPUT
+.NOSUPSYM
 .MOSTART
 .H1DIAG
 *CC INP

@@ -1569,6 +1569,9 @@ C
          DTIME = SECOND()
 
          IF (CCSDT) THEN
+#if !defined CC_AARHUS
+            CALL QUIT('No triples (yet) in CC_GMAT.')
+#else
             IF (NODDY_GMAT) THEN
                CALL CCSDT_GMAT_NODDY(LISTA,IDLSTA,LISTB,IDLSTB,
      &                               LISTC,IDLSTC,
@@ -1606,6 +1609,7 @@ C
 
 
             END IF
+#endif
          END IF
 
          TIMTRIP = TIMTRIP + SECOND() - DTIME
@@ -4750,6 +4754,7 @@ c/* Deck CCG_LXD */
       RETURN
       END
 *---------------------------------------------------------------------*
+#if defined CC_AARHUS
 *=====================================================================*
       SUBROUTINE CCSDT_GMAT_NODDY(LISTL,IDLSTL,LISTB,IDLSTB,
      &                            LISTC,IDLSTC,
@@ -5288,3 +5293,4 @@ C           ----------------------------------------------
 *---------------------------------------------------------------------*
 *              END OF SUBROUTINE CCSDT_GMAT_NODDY                     *
 *---------------------------------------------------------------------*
+#endif
