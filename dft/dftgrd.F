@@ -1117,7 +1117,7 @@ C
         FAC   = FAC*(2*I+1)
       ENDDO
       EXPL = (2*L+1)/D2
-      A = SQRTPI*FAC/TOLEN
+      A = SQRT(PI)*FAC/TOLEN
       ALN = LOG(A)
       RLN = LOG(RD)
       U = 35.0D0
