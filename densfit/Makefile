@@ -1,9 +1,8 @@
+all : libdensfit.a
 
 include ../Makefile.config
 
-all : libdensfit.a
-
-F_OBJS =  df_dirac.o df_dofit.o
+F_OBJS =  df_dirac.o dposv.o denfit_noddy.o #df_dofit.o
 
 F_CPPS = $(F_OBJS:.o=.i)
 
@@ -21,3 +20,4 @@ clean :
 depend:
 	        ../tools/check_depend $(INCLUDES) > Makefile.depend
 
+include Makefile.depend

@@ -306,6 +306,7 @@ C     ... parameter MAXPRD is in cbirea.h
       INPTST = TSTINP
       BASIS  = .FALSE.
       ATOMBA = .FALSE.
+*     ATOMDF = .FALSE.
       OLDNRM = .FALSE.
       WRTLIN  = .FALSE.
       TOLLRN = 0.0D0
@@ -364,6 +365,7 @@ C
 #include <aosotr.h>
 #include <infpar.h>
 #include <chrsgn.h>
+#include <huckel.h>
 C
 C     A SET variable has been replaced by RDINPC. This allows external control
 C     of READIN processing. The processing should be performed once every
@@ -388,6 +390,9 @@ C
      &                IDUMMY,.FALSE.)
       END IF
 C
+      ATOMDF  = .FALSE.
+      NODDYDF = .FALSE.
+C
       IF (.NOT.SLAVE) REWIND(LUINFO)
       NMLINE = 0
       CALL RDLINE(LUINFO)
@@ -396,6 +401,13 @@ C
          BASIS = .TRUE.
       ELSE IF (KEYWRD .EQ. 'ATOMBA') THEN
          ATOMBA = .TRUE.
+      ELSE IF (KEYWRD .EQ. 'ATOMDF') THEN
+         ATOMDF = .TRUE.
+         ATOMBA = .TRUE.
+      ELSE IF (KEYWRD .EQ. 'NDDYDF') THEN
+         NODDYDF = .TRUE.
+         ATOMDF  = .TRUE.
+         ATOMBA  = .TRUE.
       ELSE IF (KEYWRD .NE. 'INTGRL') THEN
          GOTO 5010
       END IF
@@ -403,6 +415,13 @@ C
 C     ********************************************
 C     ***** Allocate memory **********************
 C     ********************************************
+C
+      KSETS = 1
+      IF (ATOMDF) THEN
+         KSETS = 3
+      ELSE IF (DOHUCKEL .OR. DIRAC) THEN
+         KSETS = 2
+      END IF
 C
       KATOM  = MXCENT
       KANG   = MXAQN
@@ -412,15 +431,15 @@ C
       KCMAT  = KPRIM*KPRIM
       KNONT  = 1
       KIQM   = KNONT  +  KATOM
-      KBLCK  = KIQM   +  KATOM*2
-      KJCO   = KBLCK  +  KATOM*2
-      KNUC   = KJCO   +  KATOM*KANG*2
-      KNRC   = KNUC   +  KBLOCK*2
-      KSEG   = KNRC   +  KBLOCK*2
-      KA     = KSEG   +  KBLOCK*2
-      KC     = KA     +  KBLOCK*KPRIM*2
-      KCC    = KC     +  KBLOCK*KCMAT*2
-      KLAST  = KCC    +  KBLOCK*KCMAT*2
+      KBLCK  = KIQM   +  KATOM*KSETS
+      KJCO   = KBLCK  +  KATOM*KSETS
+      KNUC   = KJCO   +  KATOM*KANG*KSETS
+      KNRC   = KNUC   +  KBLOCK*KSETS
+      KSEG   = KNRC   +  KBLOCK*KSETS
+      KA     = KSEG   +  KBLOCK*KSETS
+      KC     = KA     +  KBLOCK*KPRIM*KSETS
+      KCC    = KC     +  KBLOCK*KCMAT*KSETS
+      KLAST  = KCC    +  KBLOCK*KCMAT*KSETS
 C     WRITE(LUPRI,'(A,2I16)') 'KLAST, LWORK',KLAST,LWORK
       IF(KLAST.GT.LWORK) GOTO 5020
       LWRK   = LWORK  -  KLAST + 1
@@ -439,6 +458,9 @@ C     READ (MLINE(NMLINE),'(A6)') KEYWRD
 C     IF (KEYWRD .NE. 'FINISH') GOTO 5030
       IF (IPREAD .GT. 20) CALL REAPRI
       IF (NEWFILE) CALL GPCLOSE(LUINFO,'KEEP')
+C
+      IF (NODDYDF) CALL DENFIT_NODDY_INT
+C
       RETURN
 C
 C Error messages:
@@ -501,12 +523,12 @@ C******************************************************************************
 #include <clsfmm.h>
 #include <cbirea.h>
       LOGICAL SEG,HERMIT,DOOWN,ZMAT
-      DIMENSION NONT(KATOM),IQM(KATOM,2),NBLCK(KATOM,2),
-     &          JCO(KANG,KATOM,2),
-     &          NUC(KBLOCK,2),NRC(KBLOCK,2),SEG(KBLOCK,2),
-     &          ALPHA(KPRIM,KBLOCK,2),
-     &          CPRIM(KPRIM,KPRIM,KBLOCK,2),
-     &          CPRIMU(KPRIM,KPRIM,KBLOCK,2), WORK(LWORK)
+      DIMENSION NONT(KATOM),IQM(KATOM,3),NBLCK(KATOM,3),
+     &          JCO(KANG,KATOM,3),
+     &          NUC(KBLOCK,3),NRC(KBLOCK,3),SEG(KBLOCK,3),
+     &          ALPHA(KPRIM,KBLOCK,3),
+     &          CPRIM(KPRIM,KPRIM,KBLOCK,3),
+     &          CPRIMU(KPRIM,KPRIM,KBLOCK,3), WORK(LWORK)
 C
 C       Local variables
 C
@@ -819,13 +841,13 @@ C*****************************************************************************
 #include <cbirea.h>
       DIMENSION WORK(LWORK)
       LOGICAL SEG,ANG,NOORBI,ZMTTST, ADDSYM
-      DIMENSION NONT(KATOM),IQM(KATOM,2),JCO(KANG,KATOM,2),
-     &          NBLCK(KATOM,2),NUC(KBLOCK,2),NRC(KBLOCK,2),
-     &          SEG(KBLOCK,2),
-     &          ALPHA(KPRIM,KBLOCK,2),CPRIM(KPRIM,KPRIM,KBLOCK,2),
-     &          CPRIMU(KPRIM,KPRIM,KBLOCK,2)
-      CHARACTER SPDCAR*1,BSET*5,ZMATL*4, BASNAMSAVE*80
-      DIMENSION IBLOCK(2)
+      DIMENSION NONT(KATOM),IQM(KATOM,3),JCO(KANG,KATOM,3),
+     &          NBLCK(KATOM,3),NUC(KBLOCK,3),NRC(KBLOCK,3),
+     &          SEG(KBLOCK,3),
+     &          ALPHA(KPRIM,KBLOCK,3),CPRIM(KPRIM,KPRIM,KBLOCK,3),
+     &          CPRIMU(KPRIM,KPRIM,KBLOCK,3)
+      CHARACTER SPDCAR*1,BSET*5,ZMATL*4, BSNM*80, BASNAMSAVE*80
+      DIMENSION IBLOCK(3)
 #include <molinp.h>
 #include <ccom.h>
 #include <nuclei.h>
@@ -843,7 +865,8 @@ C     MBSIP = basis-set identifier (WK/UniKA/04-11-2002).
       NHTYP  = 0
       IBLOCK(1) = 1
       IBLOCK(2) = 1
-      CALL IZERO(IQM,KATOM*2)
+      IBLOCK(3) = 1
+      CALL IZERO(IQM,KATOM*3)
 C
 C     Initialize NSETS and BSET for Dalton,
 C     if (DIRAC) these will be modified below:
@@ -851,7 +874,11 @@ C     NSETS = 1 for Large, = 2 for "Large" and "Small"
 C     and BSET will change to "Large" or "Small".
 C
       NSETS = 1
-      IF (DOHUCKEL) NSETS = 2
+      IF (ATOMDF) THEN
+         NSETS = 3
+      ELSE IF (DOHUCKEL .OR. DIRAC) THEN
+         NSETS = 2
+      END IF
 C     If (DOHUCKEL) use second set for atomic orbitals for Huckel guess
       BSET = 'Basis'
       MBSI = 1
@@ -984,6 +1011,7 @@ Chj - apr00: this has been fixed with normalized spherical GTO's from SPHCOM
          ENDIF
          IF (DOHUCKEL .AND. NINT(Q) .GT. MXQHUCK) THEN
             NSETS = 1
+            IF (ATOMDF) NSETS = 3
             DOHUCKEL = .FALSE.
             NINFO = NINFO + 1
             WRITE (LUPRI,'(/A,I3)')
@@ -1020,6 +1048,9 @@ C        MBSI has been added (WK/UniKA/04-11-2002).
          CALL CNTINP(LUINFO,NONT(I),Q,NSYMOP,ANG,MBSI)
 C
          DO 300 J = 1,NSETS
+          IF (J.EQ.1 .OR. (J.EQ.2 .AND. DOHUCKEL) 
+     &               .OR. (J.EQ.2 .AND. DIRAC) 
+     &               .OR. (J.EQ.3 .AND. ATOMDF) ) THEN
 C
 C         Construct basis set for center of mass centers if requested
 C         ===========================================================
@@ -1046,9 +1077,10 @@ C
 C         Get basis set from basis set library
 C         ===================================
 C
-           ELSE IF ((BASIS .OR. ATOMBA .OR.
-     &               (DOHUCKEL .AND. J .EQ. 2))
-     &              .AND. .NOT. DIRAC) THEN
+           ELSE IF ((BASIS .OR. ATOMBA 
+     &               .OR. (DOHUCKEL .AND. J .EQ. 2 )
+     &               .OR. (ATOMDF .AND. J .EQ. 3 )) 
+     &               .AND. .NOT. DIRAC) THEN
               IF (BASIS) THEN
 C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
                  BASNAM = MULNAM(MBSI)
@@ -1062,17 +1094,51 @@ C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
                        WRITE (LUPRI,*) 'Format is "Basis=?"'
                        CALL QUIT('Incorrect input for basis set name')
                     ELSE
-                       BASNAM = MLINE(NMLINE-NONT(I))((IPOS+IPOS2):)
+                       IF (ATOMDF) THEN
+                         IPOS3 = INDEX(MLINE(NMLINE-NONT(I)),'Aux')
+                         IF (IPOS3 .NE. 0) THEN
+                           IPOS4 = INDEX(MLINE(NMLINE-NONT(I))(IPOS3:), 
+     &                                                             '=')
+                           IF (IPOS4 .EQ. 0 .OR. (IPOS4 .GT. 11)) THEN
+                              WRITE (LUPRI,*) 'Incorrect input for '//
+     &                             'auxilliary basis set name'
+                              WRITE (LUPRI,*) 'Format is "Aux=?"'
+                              CALL QUIT('Incorrect input for '//
+     &                             'auxilliary basis set name')
+                           ELSE
+                             AUXNAM = MLINE(NMLINE-NONT(I))
+     &                                                ((IPOS3+IPOS4):)
+                             BASNAM = MLINE(NMLINE-NONT(I))((IPOS+IPOS2)
+     &                                                       :IPOS3-1)
+                           ENDIF
+                         ELSE
+                           WRITE (LUPRI,'(A,I4)') 'No auxilliary ' //
+     &                          'basis set given for atom kind # ', I
+                           CALL QUIT('Incorrect input for '//
+     &                          'auxilliary basis set name')
+                         ENDIF
+                       ELSE
+                         BASNAM = MLINE(NMLINE-NONT(I))((IPOS+IPOS2):)
+                       ENDIF
                     END IF
                  ELSE
                     WRITE (LUPRI,'(A,I4)') 'No basis set given '//
      &                   'for atom kind # ', I
+                    CALL QUIT('Incorrect input for '//
+     &                   'basis set name')
                  END IF
                  DO ILEN = 1, LEN(BASNAM)
                     IF (BASNAM(ILEN:ILEN) .NE. ' ') GO TO 33
                  END DO
  33              CONTINUE
                  BASNAM = BASNAM(ILEN:)
+                 IF (ATOMDF) THEN
+                   DO IAUX = 1, LEN(AUXNAM)
+                      IF (AUXNAM(IAUX:IAUX) .NE. ' ') GO TO 34
+                   END DO
+ 34                CONTINUE
+                   AUXNAM = AUXNAM(IAUX:)
+                 ENDIF
                  IF (INPTST .OR. IPREAD .GT. 1) THEN
                     IF (DOHUCKEL .AND. J.EQ.2) THEN
                        WRITE (LUPRI,'(/A,I3)')
@@ -1090,6 +1156,11 @@ C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
      &                 ' For atomic type no.',I,
      &                 ' the effective core potential basis set ',
      &                 BASNAM,
+     &                 ' from the basis set library will be used.'
+                    ELSE IF (ATOMDF) THEN
+                       WRITE (LUPRI,'(/A,I3,A/5X,A/A)')
+     &                 ' For atomic type no.',I,' the auxilliary ' //
+     &                 'basis set',AUXNAM,
      &                 ' from the basis set library will be used.'
                     ELSE
                        WRITE (LUPRI,'(/A,I3,A/5X,A/A)')
@@ -1135,12 +1206,23 @@ C     after J=2: reading Huckel basis (if DOHUCKEL)
                        CALL QUIT('Too many ECP atoms of this type')
                     END IF
                  END IF
+C
+                 IF (ATOMDF .AND. (J .EQ. 3)) THEN
+                    BASNAMSAVE = BASNAM
+                    BASNAM     = AUXNAM
+                 END IF
+C
                  CALL BASLIB(IQM(I,J),JCO(1,I,J),NUC(IBLOCK(J),J),
      &                  NRC(IBLOCK(J),J),SEG(IBLOCK(J),J),
      &                  ALPHA(1,IBLOCK(J),J),
      &                  CPRIM(1,1,IBLOCK(J),J),
      &                  CPRIMU(1,1,IBLOCK(J),J),
-     &                  NBLOCK,KAOVEC,KPRIM,Q,QEFF,DSM)
+     &                  NBLOCK,KAOVEC,KPRIM,Q,QEFF,J,DSM)
+C
+                 IF (ATOMDF .AND. (J .EQ. 3)) THEN
+                    BASNAM     = BASNAMSAVE
+                 END IF
+C
               END IF
               BASNAM = BASNAMSAVE
 C
@@ -1176,6 +1258,8 @@ C
                NHTYP     = MAX(NHTYP,IQM(I,J))
                IF(NHTYP.GT.MXSPD) GOTO 5000
             ENDIF
+C
+          ENDIF !The main check at the begining of the 300-loop
  300     CONTINUE
 C
          DO 400 K = 1,NONT(I)
@@ -1428,11 +1512,11 @@ C
 #include <cbirea.h>
       DIMENSION WORK(LWORK)
       LOGICAL SEG,DOOWN
-      DIMENSION NONT(KATOM),IQM(KATOM,2),JCO(KANG,KATOM,2),
-     &          NBLCK(KATOM,2),NUC(KBLOCK,2),NRC(KBLOCK,2),
-     &          SEG(KBLOCK,2),
-     &          ALPHA(KPRIM,KBLOCK,2),CPRIM(KPRIM,KPRIM,KBLOCK,2),
-     &          CPRIMU(KPRIM,KPRIM,KBLOCK,2)
+      DIMENSION NONT(KATOM),IQM(KATOM,3),JCO(KANG,KATOM,3),
+     &          NBLCK(KATOM,3),NUC(KBLOCK,3),NRC(KBLOCK,3),
+     &          SEG(KBLOCK,3),
+     &          ALPHA(KPRIM,KBLOCK,3),CPRIM(KPRIM,KPRIM,KBLOCK,3),
+     &          CPRIMU(KPRIM,KPRIM,KBLOCK,3)
       CHARACTER*1 SPDCAR
 #include <ccom.h>
 #include <nuclei.h>
@@ -1549,6 +1633,36 @@ C
          NPSHEL  = IPRIM
          NPSML   = IPRIMD - NPLRG
       END IF
+C*****************************************************************************
+C       Process orbital data for auxilliary basis (density fitting)
+C*****************************************************************************
+      IF (ATOMDF) THEN
+         LCOMP = 3
+         CALL ORBPRO(NONTYP,NONT,IQM(1,3),NBLCK(1,3),JCO(1,1,3),
+     &               NUC(1,3),NRC(1,3),SEG(1,3),
+     &               ALPHA(1,1,3),CPRIM(1,1,1,3),CPRIMU(1,1,1,3),
+     &               KATOM,KANG,KBLOCK,KPRIM,
+     &               ISHELL,IPRIM,IPRIMD,IORB,IORBD,LCOMP)
+         NAUXSH = ISHELL - NSMLSH - NLRGSH -1
+         NAUX   = IORBD  - NLARGE - NSMALL
+         NORBAUX  = IORB
+         NPAUX  = IPRIMD - NPLRG - NPSML-1
+         NPAUXSH  = IPRIM - NPSHEL - NPLSH -1
+         KMAXAUX   = NAUXSH
+         NBASISAUX = NAUX
+         NPBASAUX  = NPAUX
+         KMAXTOT = ISHELL
+      ELSE
+         NAUXSH = 0
+         NAUX   = 0 
+         NORBAUX  = 0
+         NPAUX  = 0 
+         NPAUXSH  = 0 
+         KMAXAUX   = 0 
+         NBASISAUX = 0 
+         NPBASAUX  = 0 
+         KMAXTOT = KMAX  
+      END IF
 CNECgh980808
       NODD = 1 - MOD(NBASIS,2)
 C
@@ -1629,10 +1743,10 @@ C*****************************************************************************
 #include <cbirea.h>
       DIMENSION WORK(LWORK)
       LOGICAL SEG,HERMIT,NRMPRI
-      DIMENSION NONT(KATOM),IQM(KATOM,2),JCO(KANG,KATOM,2),
-     &          NBLCK(KATOM,2),NUC(KBLOCK,2),NRC(KBLOCK,2),
-     &          SEG(KBLOCK,2),
-     &          ALPHA(KPRIM,KBLOCK,2),CPRIM(KPRIM,KPRIM,KBLOCK,2)
+      DIMENSION NONT(KATOM),IQM(KATOM,3),JCO(KANG,KATOM,3),
+     &          NBLCK(KATOM,3),NUC(KBLOCK,3),NRC(KBLOCK,3),
+     &          SEG(KBLOCK,3),
+     &          ALPHA(KPRIM,KBLOCK,3),CPRIM(KPRIM,KPRIM,KBLOCK,3)
       CHARACTER SPDCAR*1,TSTRING*(6*MXQN+3),TSTRI2*(6*MXQN+3),
      &          KASYM(3,3)*1
 #include <molde.h>
@@ -1681,6 +1795,7 @@ C           Output for multiple basis sets (WK/UniKA/04-11-2002).
      &      BASNAM(1:ILEN),'" from the basis set library.'
           END IF
          END IF
+ 
          IF (LMULBS) THEN
 C         Output for multiple basis sets (WK/UniKA/04-11-2002).
           WRITE (LUPRI,'(A)')
@@ -1762,6 +1877,7 @@ C                 Output for multiple basis sets (WK/UniKA/04-11-2002).
    20    CONTINUE
          IBLOCK = IBLOCK + NBLCK(I,1)
          IBLCKS = IBLCKS + NBLCK(I,2)
+         !FILIP : do sth with blocks here
   100 CONTINUE
       IF (IPREAD .GT. 0) THEN
          IF(DIRAC) THEN
@@ -1803,6 +1919,17 @@ C           Output for multiple basis sets (WK/UniKA/04-11-2002).
          WRITE (LUPRI,'(/A,1P,D10.2)')
      &      '  Threshold for integrals:',THRS
       END IF
+C
+         IF (ATOMDF) THEN
+            DO ILEN = LEN(AUXNAM),1,-1
+              IF (AUXNAM(ILEN:ILEN) .NE. ' ') GO TO 44
+            END DO
+ 44         CONTINUE
+            WRITE (LUPRI,*)
+            WRITE (LUPRI,*)
+            WRITE (LUPRI,'(3A/)') '  Density fitting basis is "',
+     &      AUXNAM(1:ILEN),'" from the basis set library.'
+         END IF
 C
 C     ******************************************
 C     ***** Printing of atomic coordinates *****
@@ -2290,24 +2417,30 @@ C  /* Deck nrmorb */
 #include <pi.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0,
      &           DP25 = 0.25D0, DP5 = 0.5D0, DP75 = 0.75D0,
-     &           THRMIN = 1.D-17)
+     &           THRMIN = 1.D-17, EXPMIN = 1.D-10)
       CHARACTER*1 SPDCAR
       DIMENSION ALPHA(KPRIM), CPRIM(KPRIM,KPRIM), CPRIMU(KPRIM,KPRIM)
 C
       PIPPI = (DP5/PI)**DP75
-      DO 100 N = 1, NRCIJ
-         SUM = D0
-         DO 200 L = 1, NUCIJ
-         DO 200 M = 1, NUCIJ
-            T = D2*SQRT(ALPHA(L)*ALPHA(M))/(ALPHA(L)+ALPHA(M))
-            SUM = SUM + CPRIMU(L,N)*CPRIMU(M,N)*(T**(I + DP5))
-  200    CONTINUE
-         IF (SQRT(SUM) .LT. THRMIN) GOTO 1000
-         SUM=D1/SQRT(SUM)
-         DO 300 L=1, NUCIJ
+      IF (NUCIJ.EQ.1 .AND. ABS(ALPHA(1)).LE.EXPMIN) THEN
+         CPRIM (1,1) = D1 
+         CPRIMU(1,1) = D1 
+      ELSE 
+         DO N = 1, NRCIJ
+            SUM = D0
+            DO L = 1, NUCIJ
+            DO M = 1, NUCIJ
+               T = D2*SQRT(ALPHA(L)*ALPHA(M))/(ALPHA(L)+ALPHA(M))
+               SUM = SUM + CPRIMU(L,N)*CPRIMU(M,N)*(T**(I + DP5))
+            END DO
+            END DO
+            IF (SQRT(SUM) .LT. THRMIN) GOTO 1000
+            SUM=D1/SQRT(SUM)
+            DO L=1, NUCIJ
             CPRIM(L,N)=CPRIMU(L,N)*SUM*(D4*ALPHA(L))**(DP5*I+DP25)*PIPPI
-  300    CONTINUE
-  100 CONTINUE
+            END DO
+         END DO
+      END IF
       RETURN
  1000 CONTINUE
         WRITE (LUPRI,'(/1X,A,2(I3,A),A1,A/A,2I4)')
@@ -2352,6 +2485,7 @@ C
 C
 C
 #include <ibtfun.h>
+      IFSTSHAUX = 0
       ICENT  = 0
       IBLOCK = 0
       DO 10 I = 1,NONTYP
@@ -2371,6 +2505,11 @@ C
                   DO 50 KK = 1, NCONT
                      KKK = KKK + 1
                      ISHELL = ISHELL + 1
+                     !set the pointer to the first shell for density-fitting
+                     !auxilliary basis
+                     IF ( (LCOMP.EQ.3) .AND. (IFSTSHAUX.EQ.0) ) THEN
+                        IFSTSHAUX = ISHELL
+                     END IF
 C*****************************************************************************
 C     Data on the AO-block associated with a given shell(ISHELL):
 C       NUCO    - number of uncontracted functions
@@ -2414,6 +2553,8 @@ C                    Basis-set identifier (WK/UniKa/04-11-2002).
                      IORBD = IORBD + NCOMP*NDEG
                      IF (.NOT. SEGM(ISHELL) .AND. LCOMP .EQ. 1)
      &                         SEGBAS = .FALSE.
+                     IF (.NOT. SEGM(ISHELL) .AND. LCOMP .EQ. 3)
+     &                         SEGAUX = .FALSE.
    50             CONTINUE
                   DO 60 L = 1, NUC(KBCH)
                      IPRIM = IPRIM + 1
@@ -2441,6 +2582,52 @@ C
    20    CONTINUE
          IBLOCK = IBLOCK + NBLCK(I)
    10 CONTINUE
+C
+      !Add exp(0) function (needed in 2- and 3-index integrals)
+      !as an extra "0" class
+      IF (LCOMP .EQ. 3) THEN
+         ISHELL = ISHELL + 1
+         NUCO  (ISHELL) = 1
+         NRCO  (ISHELL) = 1
+         JSTRT (ISHELL) = IPRIM 
+         NSTRT (ISHELL) = IORB
+         KSTRT (ISHELL) = IORBD
+         NCENT (ISHELL) = 0
+         NUMCF (ISHELL) = 0
+         NUMCFT(ISHELL) = 0
+         NBCH  (ISHELL) = 0
+         SHARE (ISHELL) = .FALSE.
+*        ISTBAO(ISHELL) = ISTBNU(ICENT)
+         NHKT  (ISHELL) = 1
+         KHKT  (ISHELL) = 1
+         SPHR  (ISHELL) = .FALSE.
+         KCKT  (ISHELL) = 1
+         SEGM  (ISHELL) = .FALSE.
+         LCLASS(ISHELL) = 0
+         CENT(ISHELL,1,1) = 0.0D0
+         CENT(ISHELL,2,1) = 0.0D0
+         CENT(ISHELL,3,1) = 0.0D0
+C        Basis-set identifier (WK/UniKa/04-11-2002).
+*        MBSID(ISHELL) = MULBSI(ICENT)
+*        IORB  = IORB  + NCOMP
+*        IORBD = IORBD + NCOMP*NDEG
+         IPRIM = IPRIM + 1
+C*****************************************************************************
+C       PRIEXP  - exponent of primitive shell
+C       CCO     - unnormalized contraction coefficient
+C       PRICCF  - normalized contraction coefficient
+C       PRICRX  - x-coordinate of center
+C       PRICRY  - y-coordiante of center
+C       PRICRZ  - z-coordinate of center
+C*****************************************************************************
+        PRIEXP(IPRIM) = 0.0D0
+        PRICCF(IPRIM,1) = 1.0D0
+        PRICRX(IPRIM) = 0.0d0
+        PRICRY(IPRIM) = 0.0d0
+        PRICRZ(IPRIM) = 0.0d0
+        IPRSHL(IPRIM) = ISHELL
+        IPRIMD = IPRIMD + 1
+      END IF
 C
       RETURN
 C
@@ -5345,13 +5532,13 @@ C
       COMMON/CBZMAT/IZ(MXCENT,4),BL(MXCENT),ALP(MXCENT),BET(MXCENT)
       DIMENSION A(MXCENT),B(MXCENT),CZ(MXCENT,3),D(MXCENT)
       DIMENSION U1(3),U2(3),U3(3),U4(3),VJ(3),VP(3),V3(3)
-      DIMENSION NONT(KATOM),IQM(KATOM,2),JCO(KANG,KATOM,2),
-     &          NBLCK(KATOM,2),NUC(KBLOCK,2),NRC(KBLOCK,2),
-     &          SEG(KBLOCK,2),
-     &          ALPHA(KPRIM,KBLOCK,2),CPRIM(KPRIM,KPRIM,KBLOCK,2),
-     &          CPRIMU(KPRIM,KPRIM,KBLOCK,2), CHNON(MXCENT)
+      DIMENSION NONT(KATOM),IQM(KATOM,3),JCO(KANG,KATOM,3),
+     &          NBLCK(KATOM,3),NUC(KBLOCK,3),NRC(KBLOCK,3),
+     &          SEG(KBLOCK,3),
+     &          ALPHA(KPRIM,KBLOCK,3),CPRIM(KPRIM,KPRIM,KBLOCK,3),
+     &          CPRIMU(KPRIM,KPRIM,KBLOCK,3), CHNON(MXCENT)
       CHARACTER SPDCAR*1, NAVNK*4, CRT*1
-      DIMENSION IBLOCK(2)
+      DIMENSION IBLOCK(3)
 #include <nuclei.h>
 #include <gnrinf.h>
 #include <ccom.h>
@@ -5583,6 +5770,7 @@ C     define atom number in IZATOM /hjaaj Mar 2004
       NHTYP = 0
       IBLOCK(1) = 1
       IBLOCK(2) = 1
+      IBLOCK(3) = 1
       IATOM = 1
       NSETS = 1
       IF (DOHUCKEL) NSETS = 2

@@ -455,7 +455,11 @@ C  /* Deck pickao */
 C
       DO J = 1, 4
       DO I = 1, NAOBCH
-         ACTVBT(I,J) = .TRUE.
+         IF (KCLSBT(I).EQ.1) THEN
+             ACTVBT(I,J) = .TRUE.
+          ELSE
+             ACTVBT(I,J) = .FALSE.
+          ENDIF
       END DO
       END DO
 C

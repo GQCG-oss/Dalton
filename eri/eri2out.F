@@ -276,6 +276,24 @@ C
          CALL ERIWRT(0,NINTS,NCOUNT,BIN,IBIN,LBIN,BUF(1,1,0),
      &               IBUF(1,1,1,0),IPRINT)
 C
+C     Cauchy-Schwartz integrals 
+C     =========================
+C
+      ELSE IF (DGABAB) THEN
+C
+C        collect integrals and labels
+C
+         CALL ERICSO(SO,ITYPE,INDORB,IPNTCR,IODDCC,IPNTUV,BIN,IBIN,
+     &               NINTS,LBIN,NIBUF,INDXBT,NBITS,IPRINT)
+C
+C        write integrals
+C
+C        ERIWRT must be modified to write out these integrals 
+C
+C        CALL ERIWRT(0,NINTS,NCOUNT,BIN,IBIN,LBIN,BUF(1,1,0),
+C    &               IBUF(1,1,1,0),IPRINT)
+C
+C
 C     Undifferentiated integrals (all)
 C     ================================
 C

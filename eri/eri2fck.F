@@ -319,7 +319,8 @@ C
 C     Construct Fock matrix contribution
 C     ==================================
 C
-      CALL FOKDI1(FMAT,DMAT,NDMT,IFCTYP,BIN,IBIN,LBIN,INT,IPRINT)
+      CALL FOKDI1(FMAT,DMAT,NDMT,IFCTYP,BIN,IBIN,LBIN,INT,
+     &            ABS(IFITDM),IPRINT)
 C
       RETURN
       END
@@ -544,7 +545,7 @@ C
       END
 C  /* Deck fokdi1 */
       SUBROUTINE FOKDI1(FMAT,DMAT,NDMT,IFCTYP,BUF,IBUF,
-     &                  LBIN,LENGTH,IPRINT)
+     &                  LBIN,LENGTH,IFIT_DMAT,IPRINT)
 C
 C     Henrik Koch and Trygve Helgaker 18-NOV-1991.
 C
@@ -580,8 +581,17 @@ C NECgh980505  FAC = DP5
              WRITE(LUPRI,*) '*** WARNING!!! This value for IFCTYP is '//
      &               'probably not correctly implemented! ***'
          END IF
-	 CALL FCKCON(FMAT,DMAT,NDMT,I,BUF,IBUF,LBIN,LBIN,LENGTH,IX,
-     &               IY,FAC)
+         IF (IFIT_DMAT.EQ.0) THEN
+C...........Ordinary Fock matrix with exact density
+            CALL FCKCON(FMAT,DMAT,NDMT,I,BUF,IBUF,LBIN,LBIN,LENGTH,IX,
+     &                  IY,FAC)
+         ELSE
+C...........Construction of special Fock matrix for density fitting
+C...........The multiplication factor should be one in this case.
+            FAC = D1
+            CALL DF_FCKCON (FMAT,DMAT,FMAT,DMAT,NDMT,I,BUF,IBUF,LBIN,
+     &                      LBIN,LENGTH,IX,IY,FAC,IFIT_DMAT)
+         ENDIF
       END DO
       RETURN
       END

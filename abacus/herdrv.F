@@ -208,7 +208,7 @@ C
 C     NTABLE has been increased from 102 to 105 (WK/UniKA/04-11-2002).
 cLig <> changed NTABLE from 111 to 112
 C     NTABLE has been increased 114 (WK/UniKA/09-03-2004).
-      PARAMETER (NDIR = 7, NTABLE = 123)
+      PARAMETER (NDIR = 8, NTABLE = 123)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, D10 = 1.0D1)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -232,10 +232,11 @@ C
 #include <elweak.h>
 #include <r12int.h>
 #include <codata.h>
+#include <denfit.h>
 C     Keywords '.R12INT', '.R12EIN' and '.MULBAS' have been added (WK/UniKA/04-11-2002).
 cLig <> added RANGMO and RPSO
       DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',
-     &             '*SUPINT', '*ER2INT', '*SORINT'/
+     &             '*SUPINT', '*ER2INT', '*SORINT', '*DENFIT'/
       DATA TABLE  /'.PRINT ', '.INPTES', '.NOSUP ', '.SPIN-O',
      &             '.DIPLEN', '.NO HAM', '.SOTEST', '.DIPVEL',
      &             '.QUADRU', '.PHASEO', '.SECMOM', '.SUPONL',
@@ -281,6 +282,8 @@ C
 C     *** Initialize ***
 C
       CALL HERINI
+      !Initialize defaults for density fitting
+      CALL DFIINI
 C
 C     If WESTA - calculate integrals for WESTA program
 C
@@ -1291,7 +1294,7 @@ C
          IF (WORD(1:2) .EQ. '**') GO TO 1
          DO 310 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7), I
+               GO TO (1,2,3,4,5,6,7,8), I
             END IF
   310    CONTINUE
          WRITE (LUPRI,'(/3A/)') ' Directory ',WORD,' nonexistent.'
@@ -1314,6 +1317,9 @@ C
     6   CALL ER2INP(WORD)
       GO TO 301
     7   CALL SRTINP(WORD)
+      GO TO 301
+        !Density-fitting input keywords
+    8   CALL DFIINP(WORD)
       GO TO 301
 C
     1 CONTINUE

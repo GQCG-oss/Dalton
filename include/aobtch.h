@@ -3,7 +3,7 @@
      &                CORXBT(MXSHEL), CORYBT(MXSHEL), CORZBT(MXSHEL),
      &                NHKTBT(MXSHEL), KCKTBT(MXSHEL), KHKTBT(MXSHEL),
      &                NPRFBT(MXSHEL), NCTFBT(MXSHEL), ISTBBT(MXSHEL),
-     &                MULTBT(MXSHEL), NCNTBT(MXSHEL),
+     &                MULTBT(MXSHEL), NCNTBT(MXSHEL), KCLSBT(MXSHEL),
      &                KNDXBT(MXSHEL), KCMTBT(MXSHEL),
      &                KEXPBT(MXSHEL), KCCFBT(MXSHEL),
      &                KAOSRT(MXSHEL),

@@ -53,7 +53,7 @@ C     Number of basis functions
 C
       NBASE  = 0
       DO K = 0, MAXREP
-      DO I = 1, KMAX
+      DO I = 1, KMAXTOT
          IF (IBTAND(K,ISTBAO(I)).EQ.0) NBASE = NBASE + KHKT(I)
       END DO
       END DO
@@ -61,7 +61,7 @@ C
       NODD = 1 - MOD(NBASE,2)
 C
       NGAB = 0
-      DO I = 1, KMAX
+      DO I = 1, KMAXTOT
          NGAB = NGAB + MULT(ISTBAO(I))*NUCO(I)
       END DO
 C
@@ -72,12 +72,15 @@ C
 C
 C     AO batches
 C
-      NB = 0
-      NC = 0
-      DO ISHELL = 1, KMAX
-         IF (NB.NE.NBCH(ISHELL) .OR. NC.NE.NCENT(ISHELL)) THEN
+      NB = -1
+      NC = -1
+      ND = -1
+      DO ISHELL = 1, KMAXTOT
+         IF (NB.NE.NBCH(ISHELL) .OR. NC.NE.NCENT(ISHELL) .OR.
+     &       ND.NE.LCLASS(ISHELL) ) THEN
             NB = NBCH(ISHELL)
             NC = NCENT(ISHELL)
+            ND = LCLASS(ISHELL)
             CALL AOBCH(NB,ISHELL,CCFBT,INDXBT,WORK,LWORK,IPRINT)
          END IF
          DO IREPA = 0, MAXREP
@@ -94,15 +97,15 @@ C
          CALL HEADER('Common block AOBTCH in SETAOB',-1)
          WRITE (LUPRI,'(1X,A,I3)') ' Number of batches NAOBCH:',NAOBCH
          CALL HEADER(
-     &       '   #  NORB   NHKT KCKT KHKT   NPRF NCTF KCMT  '//
-     &       ' NCNT   ISTB MULT',1)
+     &       '   #  NORB NHKT KCKT KHKT NPRF NCTF KCMT'//
+     &       ' NCNT KCLS ISTB MULT',1)
          DO I = 1, NAOBCH
-            WRITE (LUPRI,'(1X,2I5,2X,3I5,2X,3I5,2X,I5,2X,2I5)')
+            WRITE (LUPRI,'(1X,12I5)')
      &          I,
      &          NORBBT(I),
      &          NHKTBT(I), KCKTBT(I), KHKTBT(I),
      &          NPRFBT(I), NCTFBT(I), KCMTBT(I),
-     &          NCNTBT(I),
+     &          NCNTBT(I), KCLSBT(I),
      &          ISTBBT(I), MULTBT(I)
          END DO
       END IF
@@ -326,6 +329,7 @@ C
          ISTBBT(IBATCH) = ISTBAO(ISHELL)
          MULTBT(IBATCH) = MULT(ISTBAO(ISHELL))
          NCNTBT(IBATCH) = NCENT(ISHELL)
+         KCLSBT(IBATCH) = LCLASS(ISHELL)
          NORBBT(IBATCH) = NDIMC(IMAT)*KHKT(ISHELL)*MULT(ISTBAO(ISHELL))
 C        Basis-set identifier (WK/UniKA/04-11-2002).
          MBIDBT(IBATCH) = MBSID(ISHELL)
@@ -427,30 +431,36 @@ C  /* Deck aobtgt */
 C
 C     Sorts by...
 C
-C     ... angular momentum
+C     ... class
 C
-      AOBTGT = NHKTBT(IAO) .GT. NHKTBT(JAO)
-      IF (NHKTBT(IAO) .EQ. NHKTBT(JAO)) THEN
+C     AOBTGT = KCLSBT(IAO) .GT. KCLSBT(JAO)
+C     IF (KCLSBT(IAO) .EQ. KCLSBT(JAO)) THEN
 C
-C        ... number of primitives
+C        ... angular momentum
 C
-         AOBTGT = NPRFBT(IAO) .LT. NPRFBT(JAO)
-         IF (NPRFBT(IAO) .EQ. NPRFBT(JAO)) THEN
+         AOBTGT = NHKTBT(IAO) .GT. NHKTBT(JAO)
+         IF (NHKTBT(IAO) .EQ. NHKTBT(JAO)) THEN
 C
-C           ... number of contracted
+C           ... number of primitives
 C
-            AOBTGT = NCTFBT(IAO) .GT. NCTFBT(IAO)
-            IF (NCTFBT(IAO) .EQ. NCTFBT(JAO)) THEN
+            AOBTGT = NPRFBT(IAO) .LT. NPRFBT(JAO)
+            IF (NPRFBT(IAO) .EQ. NPRFBT(JAO)) THEN
 C
-C              ... multiplicity
+C              ... number of contracted
 C
-               AOBTGT = ISTBBT(IAO) .GT. ISTBBT(JAO)
-               IF (ISTBBT(IAO) .EQ. ISTBBT(JAO)) THEN
-                   AOBTGT = NCNTBT(IAO) .GT. NCNTBT(JAO)
+               AOBTGT = NCTFBT(IAO) .GT. NCTFBT(IAO)
+               IF (NCTFBT(IAO) .EQ. NCTFBT(JAO)) THEN
+C
+C                 ... multiplicity
+C
+                  AOBTGT = ISTBBT(IAO) .GT. ISTBBT(JAO)
+                  IF (ISTBBT(IAO) .EQ. ISTBBT(JAO)) THEN
+                      AOBTGT = NCNTBT(IAO) .GT. NCNTBT(JAO)
+                  END IF
                END IF
             END IF
          END IF
-      END IF
+C     END IF
 C
       RETURN
       END

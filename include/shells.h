@@ -9,5 +9,6 @@ c     see abacus/herrdn.F for description.
      &                SEGM(MXSHEL),     LCLASS(MXSHEL),
      &                IPTSHL(MXSHEL),   NUMCFT(MXSHEL), SPHR(MXSHEL),
      &                MBSID(MXSHEL), KMAX, NLRGSH, NSMLSH, NORBS,
-     &                MBIDBT(MXSHEL)
+     &                MBIDBT(MXSHEL), 
+     &                NAUXSH, KMAXAUX, NORBAUX, KMAXTOT, IFSTSHAUX
 C     MBSID and MBIDBT have been added for multiple basis sets (WK/UniKA/31-10-2002).

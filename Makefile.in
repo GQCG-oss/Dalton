@@ -6,6 +6,7 @@ DALTON_LIBS = \
 -Lsirius -lsirius	\
 -labacus	\
 -Leri -leri		\
+-Ldensfit -ldensfit	\
 -Lcc  -lcc		\
 -Ldft -ldft		\
 -Lgp -lgp		\
@@ -28,7 +29,7 @@ OBJSMEM = abacus/linux_mem_allo.o
 #     Most common build of Dalton
 #
 dalton.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
-	PD_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
+	DFIT_OBJ PD_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
 	echo "---------------> Linking sequential dalton.x ..."
 	$(F77) $(FFLAGS) \
 	-o $(INSTALLDIR)/dalton.x $(OBJPRG) $(OBJSIO) $(OBJSLAVE) \
@@ -37,7 +38,7 @@ dalton.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
 #       Linux version of the program
 #
 linux.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
-	PD_OBJ MEM_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
+	DFIT_OBJ PD_OBJ MEM_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
 	echo "---------------> Linking sequential dalton.x ..."
 	$(F77) $(FFLAGS) \
 	-o $(INSTALLDIR)/dalton.x $(OBJPRG) $(OBJSIO) $(OBJSMEM) \
@@ -65,7 +66,7 @@ parallel.x: dalton.x
 #       First build master, then slave
 #
 dalpvm.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
-	PD_OBJ MEM_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
+	DFIT_OBJ PD_OBJ MEM_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
 	$(F77) $(FFLAGS) \
 	-o $(INSTALLDIR)/dalpvm.x $(OBJPRG) $(OBJSIO) $(OBJSMEM) \
 	$(OBJSLAVE) $(OBJSAMFI) $(LIBS) \
@@ -79,20 +80,20 @@ dalpvm.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
 #	OBJSEIS
 #
 cray.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ \
-	ERI_OBJ PD_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
+	DFIT_OBJ ERI_OBJ PD_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
 	$(F77) $(FFLAGS) -o $(INSTALLDIR)/dalton.x $(OBJPRG) \
 	$(OBJSLAVE) $(OBJSAMFI) $(LIBS) $(DALTON_LIBS)
 #
 #	This is a proper build for the Cray-T3D
 #
 t3d.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
-	PD_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
+	DFIT_OBJ PD_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
 	$(F77) $(FFLAGS) $(MPI_LIB_PATH) $(MPI_LIB) \
 	-o $(INSTALLDIR)/dalpar.x $(OBJPRG) $(OBJSLAVE) \
 	$(LIBS) $(OBJSAMFI) $(DALTON_LIBS)
 
 t90.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
-	PD_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
+	DFIT_OBJ PD_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
 	$(F77) $(FFLAGS) $(MPI_LIB_PATH) $(MPI_LIB) \
 	-o $(INSTALLDIR)/dalpar.x $(OBJPRG) (IO_OBJS) $(OBJSLAVE) \
 	$(LIBS) $(OBJSAMFI) $(DALTON_LIBS)
@@ -100,34 +101,36 @@ t90.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
 #	Update all dependencies
 #
 depend :
-	cd abacus && $(MAKE) depend
-	cd amfi   && $(MAKE) depend
-	cd cc     && $(MAKE) depend
-	cd dft    && $(MAKE) depend
-	cd eri    && $(MAKE) depend
-	cd gp     && $(MAKE) depend
-	cd pdpack && $(MAKE) depend
-	cd rsp    && $(MAKE) depend
-	cd sirius && $(MAKE) depend
+	cd abacus  && $(MAKE) depend
+	cd amfi    && $(MAKE) depend
+	cd cc      && $(MAKE) depend
+	cd dft     && $(MAKE) depend
+	cd eri     && $(MAKE) depend
+	cd densfit && $(MAKE) depend
+	cd gp      && $(MAKE) depend
+	cd pdpack  && $(MAKE) depend
+	cd rsp     && $(MAKE) depend
+	cd sirius  && $(MAKE) depend
 #
 #	Make it a bit cleaner, remover all .o/.lst/*.f -files
 #
 clean :
-	cd abacus && $(MAKE) clean
-	cd amfi   && $(MAKE) clean
-	cd cc     && $(MAKE) clean
-	cd dft    && $(MAKE) clean
-	cd eri    && $(MAKE) clean
-	cd gp     && $(MAKE) clean
-	cd pdpack && $(MAKE) clean
-	cd rsp    && $(MAKE) clean
-	cd sirius && $(MAKE) clean
+	cd abacus  && $(MAKE) clean
+	cd amfi    && $(MAKE) clean
+	cd cc      && $(MAKE) clean
+	cd dft     && $(MAKE) clean
+	cd eri     && $(MAKE) clean
+	cd densfit && $(MAKE) clean
+	cd gp      && $(MAKE) clean
+	cd pdpack  && $(MAKE) clean
+	cd rsp     && $(MAKE) clean
+	cd sirius  && $(MAKE) clean
 	$(RM) -f *~
 #
 #	We remove the entire source code as well if we do not plan to debug
 #
 veryclean :
-	$(RM) -rf abacus sirius rsp gp include eri pdpack cc dft
+	$(RM) -rf abacus sirius rsp gp include eri densfit pdpack cc dft
 
 MAIN_OBJ :
 	cd abacus && $(MAKE) main
@@ -153,6 +156,9 @@ NODE_OBJ :
 
 ERI_OBJ	:
 	cd eri && $(MAKE) all
+
+DFIT_OBJ	:
+	cd densfit && $(MAKE) all
 
 CC_OBJ	:
 	cd cc && $(MAKE) all
@@ -181,6 +187,7 @@ pre :
 	cd cc     && $(MAKE) pre
 	cd dft    && $(MAKE) pre
 	cd eri    && $(MAKE) pre
+	cd densfit && $(MAKE) pre
 	cd gp     && $(MAKE) pre
 	cd pdpack && $(MAKE) pre
 	cd rsp    && $(MAKE) pre

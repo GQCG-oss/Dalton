@@ -51,7 +51,7 @@ C
 #include <gnrinf.h>
       DATA TABLE /'.SKIP  ', '.PRINT ', '.TIME  ', '.RETURN', '.AOBTCH',
      &            '.NOPSAB', '.NOPSCD', '.NOPS12', '.OFFCNT', '.NO12GS',
-     &            '.NEWCR1', '.NONCAN', '.WRITEA', '.NOWRIT', '.XXXXXX',
+     &            '.NEWCR1', '.NONCAN', '.WRITEA', '.NOWRIT', '.GABAB ',
      &            '.EXTPRI', '.SELCT1', '.SELCT2', '.SELCT3', '.SELCT4',
      &            '.INTPRI', '.DISTRI', '.INTSKI', '.BUFFER', '.MAXDIS',
      &            '.DISTST', '.MXBCH ', '.NSPMAX', '.NOLOCS', '.GRDZER',
@@ -130,6 +130,7 @@ C
                   NOWRIT = .TRUE.
                GO TO 100
    15          CONTINUE
+                  DGABAB = .TRUE.
                GO TO 100
    16          CONTINUE
                   EXTPRI = .TRUE.
@@ -250,6 +251,8 @@ C
      &         ' Integrals not screened before write.'
             IF (NOWRIT) WRITE (LUPRI,'(A)')
      &         ' Integrals will not be written to file.'
+            IF (DGABAB) WRITE (LUPRI,'(A)')
+     &         ' Only gabab integrals are calculated.' 
             IF (NOLOCS) WRITE (LUPRI,'(A)')
      &         ' No use of local symmetry.'
             IF (GRDZER) WRITE (LUPRI,'(A)')
@@ -337,6 +340,7 @@ C
       OLDCR1 = .TRUE.
       CANIND = .TRUE.
       WRTSCR = .TRUE.
+      DGABAB = .FALSE.
       NOWRIT = .FALSE.
       EXTPRI = .FALSE.
       INTPRI = .FALSE.
@@ -374,7 +378,8 @@ C  /* Deck er2int */
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <dummy.h>
-      DIMENSION CCFBT(*), INDXBT(*), WORK(LWORK)
+      DIMENSION CCFBT(*), INDXBT(*), WORK(LWORK), CSMAT(NBAST,NBAST)
+      LOGICAL WRTINT_SAVE
 #include <ccom.h>
 #include <cbieri.h>
 #include <ericom.h>
@@ -383,11 +388,12 @@ C  /* Deck er2int */
 #include <aobtch.h>
 #include <odbtch.h>
 #include <symmet.h>
+#include <inforb.h>
 C
       IPRINT = IPRERI
       THRSH  = MAX(THRS,1.00D-15)
 C
-      CALL ER2INI
+C     CALL ER2INI
 C
 C     Memory
 C
@@ -438,6 +444,29 @@ C
 C
       KLAST = KFREE
       LWRK  = LFREE
+C
+C     Cauchy-Schwarz factors
+C
+      IF (.TRUE.) THEN
+         DGABAB = .TRUE.
+         WRTINT_SAVE = WRTINT
+         WRTINT = .FALSE.
+         CALL ODCDRV(WORK(KODCL1),WORK(KODCL2),
+     &               WORK(KODBC1),WORK(KODBC2),
+     &               WORK(KRDBC1),WORK(KRDBC2),
+     &               WORK(KODPP1),WORK(KODPP2),
+     &               WORK(KRDPP1),WORK(KRDPP2),
+     &               CSMAT,DUMMY,1,IDUMMY,DUMMY,IDUMMY,
+     &               CCFBT,INDXBT,WORK(KLAST),LWRK,IPRINT)
+C
+         IF (IPRINT.GT.5) THEN
+            CALL HEADER('Cauchy-Schwarz matrix in ER2INT',-1)
+            CALL OUTPUT(CSMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         END IF
+         CALL CSMEXT(CSMAT)
+         DGABAB = .FALSE.
+         WRTINT = WRTINT_SAVE
+      END IF
 C
 C     Calculate integrals
 C     ===================
@@ -555,6 +584,10 @@ C
          NBITS = 16
       END IF
 #endif
+      IF (DGABAB) THEN
+         NIBUF = 1
+         NBITS = 16
+      END IF
 C
 C     Dimensions for CSQ
 C     ==================
@@ -580,7 +613,7 @@ C
       KCOUNT = KCSQ   + NCSQ1*NCSQ2
       KLAST  = KCOUNT + (NDISTR*NCORS - 1)/IRAT + 1
 C
-      IF (KLAST .GT. LWORK) CALL STOPIT('ODCDRV','HERPRP',KLAST,LWORK)     
+      IF (KLAST .GT. LWORK) CALL STOPIT('ODCDRV','HERPRP',KLAST,LWORK)
       LWRK   = LWORK - KLAST + 1
 C
       IF (SLAVE) THEN
@@ -655,6 +688,7 @@ C  /* Deck odcdr1 */
 #include <hertop.h>
 #include <symmet.h>
 #include <r12int.h>
+#include <denfit.h> 
 #include <iratdef.h> 
       DIMENSION IODCL1(NODCL1,NITCL), IODCL2(NODCL2,NITCL),
      &          IODBC1(NODBC1,NITBC), IODBC2(NODBC2,NITBC),
@@ -896,10 +930,12 @@ C
 C
 C        Sum of basis-set identifiers for a and b (WK/UniKA/04-11-2002).
          MBSMAB = IODCL1(IODAB,21) + IODCL1(IODAB,22)
+         MINCD = 1
+         IF (DGABAB) MINCD = IODAB
          MAXCD = NODCL2
-         IF (ODTR12) MAXCD = IODAB
+         IF (ODTR12.OR.DGABAB) MAXCD = IODAB
 C
-         DO 1918 IODCD = 1, MAXCD
+         DO 1918 IODCD = MINCD, MAXCD
          IF (ONEAUX .AND. MBSMAX .EQ. 5) THEN
             IF (.NOT. (R12HYB .AND. COMBSS)) THEN
                IF (IODCL2(IODCD,21) + IODCL2(IODCD,22) .NE. 2) GOTO 1918
@@ -935,6 +971,12 @@ C
             NPRFCD = IODCL2(IODCD,11)
             NCTFCD = IODCL2(IODCD,12)
             NCNTCD = IODCL2(IODCD,13)
+Cfp+tuh
+C To avoid artificialy many contributions from the same atom in DensFit
+C when running diatom scheme
+         IF (DIATOM .AND. IFITDM.EQ.-2 .AND. NCNTCD.EQ.2) GO TO 1917
+         IF (DIATOM .AND. IFITDM.EQ. 2 .AND. NCNTCD.EQ.1) GO TO 1917
+C
             NGTOCD = IODCL2(IODCD,14)
             NPRFC  = IODCL2(IODCD,15)
             NPRFD  = IODCL2(IODCD,16)
@@ -1150,6 +1192,7 @@ C
      &                     CCFBT,INDXBT,NCOUNT,CSQ,WORK(KLAST),
      &                     LWRK,IPRINT)
             END IF
+ 1917       CONTINUE
          END IF
          END IF
  1918    CONTINUE
@@ -1261,12 +1304,14 @@ C
       MINJ = KODSCD
       MAXJ = KODSCD + NODTCD - 1
 C
-      DIAGPQ = ODTR12 .AND. IODAB.EQ.IODCD
+      DIAGPQ = (ODTR12.OR.DGABAB) .AND. IODAB.EQ.IODCD
       DIACLS = DIAGPQ .AND. .NOT.EXPERI
 C
+      KTYPE = 1
+      IF (DGABAB) KTYPE = 2
       NTYPE = 1
       IF (DIACLS) NTYPE = 2
-      DO ITYPE = 1, NTYPE
+      DO ITYPE = KTYPE, NTYPE
 C
          DO I = MINI, MAXI
          SCRAB = SCRNAB(I)
@@ -1829,6 +1874,13 @@ C
             CALL ERIFOK(WORK(KSOINT),IPNTCR,IODDHR(1,ICCXYZ),IPNTUV,
      &                  FMAT,DMAT,NDMT,IFCTYP,CCFBT,INDXBT,
      &                  WORK(LSTOUT),LWKOUT,IPRINT)
+         END IF
+C
+C        Add to Cauchy-Schwarz matrix
+C
+         IF (DGABAB) THEN
+            CALL ERICSM(WORK(KSOINT),FMAT,IPNTCR,INDXBT,WORK(LSTOUT),
+     &                  LWKOUT,IPRINT)
          END IF
 C
 C     ********************************

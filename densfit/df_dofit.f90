@@ -198,8 +198,8 @@ use densfit_common
 !
 ! Perform the fit
 !
-  call dposv ( 'L', n_fit, 1, work_matrix, n_fit, &
-               fit_coefficients, n_fit, info )
+!  call dposv ( 'L', n_fit, 1, work_matrix, n_fit, &
+!              fit_coefficients, n_fit, info )
 !
   deallocate ( work_matrix )
 ! 

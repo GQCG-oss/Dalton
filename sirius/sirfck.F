@@ -70,10 +70,12 @@ C
 C     DIRECT = .TRUE.   Direct calculation using hermit.
 C              .FALSE.  Read integrals from AOTWOINT.
 #include <implicit.h>
+#include <cbirea.h>
       LOGICAL   DIRECT
       DIMENSION FMAT(N2BASX,NDMAT), DMAT(N2BASX,NDMAT)
       DIMENSION ISYMDM(NDMAT), IFCTYP(NDMAT), MBAS(8)
       DIMENSION WRK(*)
+      DIMENSION DFCOEFF(NBAST) !denisty-fitting coefficients
 C
 #include <dummy.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, DMP5 = -0.5D0)
@@ -116,10 +118,21 @@ C           HERFCK destroys DMAT when called with symmetry
             LWRK  = LWORK - KLAST + 1
             IF (KLAST.GT.LWORK) CALL STOPIT('SIRFCK','DMAT',KLAST,LWORK)
             CALL DCOPY(N2BASX*NDMAT,DMAT,1,WRK(KDMAT),1)
-            CALL HERFCK(FMAT,WRK(KDMAT),NDMAT,ISYMDM,IFCTYP,IPRFCK,
-     &                  WRK(KLAST),LWRK)
+            if (atomdf) then
+              call dens_fit(fmat,wrk(kdmat),ndmat,ISYMDM,IFCTYP,IPRFCK,
+     &                    WRK(KLAST),LWRK)
+            else
+              CALL HERFCK(FMAT,WRK(KDMAT),NDMAT,ISYMDM,IFCTYP,IPRFCK,
+     &                    WRK(KLAST),LWRK)
+            end if
          ELSE
-            CALL HERFCK(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,IPRFCK,WRK,LWORK)
+            if (atomdf) then
+              call dens_fit(fmat,dmat,ndmat,ISYMDM,IFCTYP,IPRFCK,
+     &                      wrk,lwork)
+            else
+              CALL HERFCK(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,IPRFCK,
+     &                      WRK,LWORK)
+            end if
          END IF
          DO I = 1,NDMAT
             ISYMDM(I) = ISYMDM(I) + 1
@@ -128,8 +141,40 @@ C           HERFCK destroys DMAT when called with symmetry
          IF (HFXMU .NE. D0) CALL QUIT(
      &       'SIRFCK2: nonzero HFXMU requires .DIRECT calculation.') 
 C     ... not DIRECT
-         CALL SIRFCK2(LUINTA,'AOTWOINT',
-     &                FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,WRK,LWORK)
+         if (atomdf) then
+           call dens_fit(fmat,dmat,ndmat,ISYMDM,IFCTYP,IPRFCK,wrk,lwork)
+         else
+           CALL SIRFCK2(LUINTA,'AOTWOINT',
+     &                  FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,WRK,LWORK)
+         end if
+      END IF
+C
+      IF (NODDYDF) THEN
+         IF (IFCTYP(1).NE.11) THEN
+            WRITE(LUPRI,*)'IFCTYP(1) = ',IFCTYP(1)
+            WRITE(LUPRI,*)'DenFit noddy code works only for Coulomb'
+            CALL QUIT('Ooops... Probably trying to calculate exchange '
+     &                //'with density-fitting noddy code.')
+         END IF
+         IF (NDMAT.GT.1) THEN
+            WRITE(LUPRI,*)'NDMAT = ',NDMAT
+            WRITE(LUPRI,*)'DenFit noddy code works only for NDMAT=1'
+            CALL QUIT('Illegal NDMAT value in DenFit noddy code')
+         END IF
+C
+         call dzero(FMAT(1,1),N2BASX)
+C
+         !debugging tool... Simulates real J_ab (no DenFit)
+*        call jab_noddy(nbast,dmat(1,1),fmat(1,1))
+C
+         !calculate density-fitting coefficeints...
+         CALL DENFIT_COEFFS_NODDY(NBAST,NBAST,DMAT(1,1),DFCOEFF)
+c
+         WRITE (LUPRI,'(//,1X,A,I3)') ' Noddy fitting coeffs'
+         CALL OUTPUT(DFCOEFF,1,NBAST,1,1,NBAST,1,1,LUPRI)
+c
+         !...and use them to build the (fitted) Fock matrix
+         CALL JAB_DENFIT_NODDY(NBAST,NBAST,DFCOEFF,FMAT(1,1))
       END IF
 C
 #if defined (VAR_OLDCODE)
