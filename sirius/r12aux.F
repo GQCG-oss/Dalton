@@ -247,6 +247,9 @@ C
   111 FORMAT(10I5)
   112 FORMAT(4E30.20)
       END
+#ifdef NOT_USED
+ hjaaj Oct 2003: disabled this unused test code
+   IF it is ever activated again, note that NEF labels have a new format!
 C  /* Deck dsori*/  
       SUBROUTINE DSORI(WORK,LWORK,UU,ZZ,NBAST,NOCCT)
 #include <implicit.h>
@@ -345,6 +348,7 @@ C  /* Deck dsori2*/
       ENDDO
       RETURN
       END
+#endif  /*  NOT_USED */
 C  /* Deck auxort */
       SUBROUTINE AUXORT(CMO,AUX,SCRA,LSCRA)
 #include <implicit.h>
