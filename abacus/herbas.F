@@ -187,7 +187,7 @@ C           ...  Ga, Ge, As, Se, Br, Kr
             BASTMP(1:8) = BASNAM(1:8)
             ISTART = 9
          ELSE
-            ISTART = INDEX(BASNAM,' ')           
+            ISTART = INDEX(BASNAM,' ')         
             BASTMP = BASNAM(1:ISTART - 1)
          END IF
       END IF
@@ -205,7 +205,7 @@ C
          POLFUN = .TRUE.
          IPOLST = IPOLST + 3
       END IF
-C      
+C    
 C Finds the right element in the file. 
 C
       IF (NQVD) THEN
@@ -217,7 +217,7 @@ C
 C Finds the number of primitives and columns of contraction coeffecients
 C
          CALL FINPOS ( NEWEL, INTEXP, INTORB, LUBAS)
-C     
+C   
  10      CONTINUE
          IF ( .NOT. NEWEL) THEN
             NBLOCK = NBLOCK + 1
@@ -225,7 +225,7 @@ C
                CALL QUIT('Too many AO blocks'//
      &            ' for available memory; increase WRKMEM')
             END IF
-C     
+C   
 C Setting ALPHA, CPRIMU AND CPRIM to zero. 
 C
             CALL DZERO(ALPHA(1, NBLOCK), KPRIM)
@@ -250,8 +250,8 @@ Chj-aug99: if (UNCONT) force uncontracted
      +                     KPRIM,IAUG,DSM,BASNAM,POLFUN,IPOLST,LUBAS)
             END IF
             IF (INTEXP.GT.KPRIM) GOTO 5010
-            IF (INTORB.GT.KPRIM) GOTO 5020            
-C     
+            IF (INTORB.GT.KPRIM) GOTO 5020          
+C   
 C Checking if the matrix, with the contraction-coeffecients, is segmented 
 C
             SEGEJ  = .TRUE.
@@ -317,7 +317,7 @@ C
             GOTO 33
          END IF
          IF (INTEXP.GT.KPRIM) GOTO 5010
-         IF (INTORB.GT.KPRIM) GOTO 5020            
+         IF (INTORB.GT.KPRIM) GOTO 5020          
          IF (FOUND) THEN
             SEGEJ  = .TRUE.
             CALL SEGORB( SEGEJ, INTEXP, INTORB, CPRIMU(1,1,NBLOCK),
@@ -349,8 +349,6 @@ C
       BASNAM = BASSAV
       CALL GPCLOSE(LUBAS,'KEEP')
       RETURN
- 1000 CONTINUE
-      WRITE (LUPRI,'(/A,I4)') 'Error in closing file. Errorcode: ',IOERR
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
      *  ' >>> GTOINP error,'//
@@ -427,7 +425,7 @@ C
             CALL CHBLANK(BLANK, STRING)
             IF (.NOT. BLANK) THEN
 C
-C We have found a line with a primitive and coeffecients               
+C We have found a line with a primitive and coeffecients             
 C
                J = J + 1
 C
@@ -447,27 +445,27 @@ C                 skip contiuation lines for contraction coeff.
                   CPRIMU(J,J,NBLOCK) = 1.0D0
                   GOTO 20
                ELSE
-C     
+C   
 C     Getting the format for the read statement right.
-C     
+C   
                   IF (NUMLIN .EQ. 1) THEN
                      KNTORB = INTORB
                   ELSE
                      KNTORB = CONEOR
                   END IF
-C     
+C   
 C     Reading the first line with exponents and contraction- coeffecients
 C
                   READ (STRING, '(F16.9, 6F12.9)')
      +                 ALPHA(J, NBLOCK), (CPRIMU(J,I,NBLOCK),
      +                 I = 1, KNTORB)
-C     
+C   
 C     If there are more lines with contraction-coeffecients, 
 C     they will be read here.
 C
                   DO 100 I = 2, NUMLIN
                      NUMNUM = CONEOR + (I-1)*CONORB
-C     
+C   
 C Getting the format for the read-stat right.
 C
                      KNTORB = MIN0(NUMNUM, INTORB)
@@ -482,14 +480,14 @@ C
                      IF (SIGN .EQ. ' ') THEN
                         CALL CHBLANK(BLANK, STRING)
                         IF (.NOT. BLANK) THEN
-C     
+C   
 C     We now have a line with contraction-coeffecients.
-C     
+C   
                            READ (STRING,'(F16.9,6F12.9)') 
      &                          (CPRIMU(J,M,NBLOCK),
      +                          M = CONEOR + (I-2)*CONORB +1, KNTORB)
                         END IF
-C     
+C   
 C     Blank line read the next one
 C
                      ELSE
@@ -503,10 +501,10 @@ C
 C blank line, read the next one.
 C
                GOTO 20
-            END IF         
+            END IF       
          ELSE
 C
-C Found a line with nothing sensible in it       
+C Found a line with nothing sensible in it     
 C
             GOTO 20
          END IF
@@ -516,7 +514,7 @@ C        For uncontracted basis sets, update INTORB.
 C
          IF ( INTORB .LE. 0 ) INTORB = INTEXP
 C
-C     
+C   
 C Read all of the primitives, and the coeffecients
 C If this is some kind of augmented basis set, we augment it here, kr-96
 C
@@ -700,7 +698,7 @@ C/* Deck conlin */
 C
       SUBROUTINE CONLIN(INTORB, NUMLIN, DSM)
 #include <implicit.h>
-C      
+C    
 C This is the parameters for the number of contraction-coeffecients
 C on 1. and 2. line.
 C
@@ -725,7 +723,7 @@ C
 C********************************************************
 C* This are the subroutines that  reads  the primitives *
 C* and the contracted coeffecients from file.           *
-C*********************************************************      
+C*********************************************************    
 C* This is the subroutine that searches through the file *
 C* and finds the element in question.                    *
 C*********************************************************
@@ -776,7 +774,7 @@ C
             END IF
          ELSE 
             GOTO 20
-         END IF   
+         END IF 
       ELSE
          LSTR=1
          DO J = 140,1,-1
@@ -953,7 +951,7 @@ C
                   END IF
                END IF
                IF (ISPRIM.GT.KPRIM) GOTO 5010
-               IF (ISCONT.GT.KPRIM) GOTO 5020            
+               IF (ISCONT.GT.KPRIM) GOTO 5020          
 C
 C Checking if the matrix, with the contraction-coeffecients, is segmented 
 C
@@ -993,7 +991,7 @@ C
             END IF
          ELSE 
             GOTO 20
-         END IF   
+         END IF 
       ELSE
          LSTR=1
          DO J = 140,1,-1
@@ -1032,7 +1030,7 @@ C
      *  '                   current maximum number              ',KPRIM
         CALL QUIT('Too many contracted functions')
       END 
-C               
+C             
 C
 C*********************************************************	
 C* This is the subroutine that finds out wheter it is a  *
@@ -1084,7 +1082,7 @@ C If STRING is a blank line, then BLANK will return as .TRUE.
             READ (STRING, '(BN,2I5)') INTEXP, INTORB
             RETURN
          END IF
-      ELSE IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN  
+      ELSE IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN
          NEWEL = .TRUE.
          RETURN
       ELSE 
