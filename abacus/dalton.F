@@ -32,97 +32,10 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: dalton.F,v 1.11 2001-10-01 13:22:12 vebjornb Exp $
+C$Id: dalton.F,v 1.12 2001-11-13 19:32:45 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
-C
-$Log: not supported by cvs2svn $
-Revision 1.10  2001/06/22 19:44:28  vebjornb
-FILNAM has to declared even for non-parallel code, caused compilation error
-with pgf77 - VB
-
-Revision 1.9  2001/06/22 13:19:40  hjj
-1) Initialize MPI at top with MPIXINIT so we know if master or slave
-   before LUERR is used.
-2) Only open LUERR with name for Master, use LUERR=0 for slaves.
-3) Do not call GPIOIN a second time, this destroys LUERR again!
-4) Open LUPRI as DALTON.OUTxx where xx is node number on slaves.
-5) Do not open LUCME on slaves (I have inserted tests for LUCME.gt.0
-   everywhere before prints to LUCME)
-/hjaaj
-
-Revision 1.7  2001/06/20 13:15:36  vebjornb
-Only master opens DALTON.OUT, not the slaves - VB
-
-Revision 1.6  2001/05/31 06:38:04  vebjornb
-Updated copyright, authors and reference in all Fortran-files - VB
-
-Revision 1.5  2001/04/21 12:11:59  ruud
-Added the possibility of reusing property derivatives in vibrational average
-calculations. Fixed a bug in the temperature part, as well as in the Eckart
-transformations. Fixed huge memory use in herrdn.F. Added SYS_SUN in
-cc/crayio.c and modified a couple of the test cases for accuracy on our
-old HP.
-
-Revision 1.4  2001/04/06 17:21:41  vebjornb
-MPI bugfixes from Patrick - VB
-
-Revision 1.3  2001/02/21 13:22:54  vebjornb
-- Converted 50 Dalton (non-CC) test jobs to the automatic testing system
-- Added Perl-script maketest in tools-directory, should help in setting
-  up automatic test jobs
-- Several minor bug-fixes in coupled-cluster code with regards to
-  file units and initialization of variables
-- Minor changes in configure script
-- Tidied up the printing of the author-list
-
-Revision 1.2  2001/02/12 18:17:51  vebjornb
-First commit after CC merge
-
-Revision 1.2  2001/01/31 17:51:20  vebjornb
-Parallel modifications from pdahle, MPI and PVM
-
-Revision 1.1.1.1  2001/01/15 13:53:48  vebjornb
-Dalton 1.2
-
-Revision 1.12  2000/05/15 09:07:43  hjj
-bugfix: IPRUSR was not initialized. Removed unused var.s. (Found w. ftnchek)
-
-Revision 1.10  2000/05/08 08:20:48  hjj
-(1) changed release time to 2000
-(2) changed T.Andersen to T.A. Ruden in recommended reference
-(3) make sure LUSIFC is only closed if it has been opened
-(4) make sure LUSUPM only opened if not already opened
-(5) polished some output
-
-Revision 1.9  2000/05/03 10:38:24  hjj
-inserted maxorb.h now needed for molde.h
-
-Revision 1.8  2000/05/02 12:29:57  hjj
-removed second call of GPIOIN which redefined LUERR defined in an open above
-
-Revision 1.7  2000/05/01 11:59:28  hjj
-removed save and restore of obsolete KAVER,KSYM(4)
-
-revision 1.6 2000/04/14 12:43:40 hjj
-removed save and restore of obsolete LVLCDK
-----------------------------
-revision 1.5 2000/04/14 11:47:08 hjj
-now no parameters to CALL SIRINI /hjaaj
-----------------------------
-revision 1.4 2000/04/14 09:17:35 hjj
-implemented .RUN AL for running hermit, sirius, respons, and abacus
-in a single point (as specified in manual but never implemented!!)
-----------------------------
-revision 1.3 2000/04/14 09:08:21 hjj
-new option .PRIERR under **DALTON for the general DALTON.ERR print level
-----------------------------
-revision 1.2 2000/04/14 hjj
-1) removed obsolete RNALL option
-2) print INFO in ERI requested but not used
-3) removed save and restore of NWARN and NINFO as they now are in priunit.h
-=============================================================================
 /* Comdeck log */
 010131-vebjornb: Old dalton.F split into dalton.F (program) and
                  dalgnr.F (subroutines).
@@ -401,10 +314,10 @@ C
 C         
          CALL TITLER(' DALTON - An electronic structure program ',
      &               '*',111)
-C     
-         WRITE (LUPRI,'(T15,A,//,T26,A,/,6(/T12,A),//,T26,A,//,
+C
+         WRITE (LUPRI,'(T12,A,//,T26,A,/,6(/T12,A),//,T26,A,//,
      &        (T12,A))')
-     *   ' This is output from DALTON (Release 1.2, June 2001)',
+     *   ' This is output from DALTON (Release 2.0, ? 2001)',
      *    ' Principal authors:',
      *    ' Trygve Helgaker,       University of Oslo,         Norway ',
      *    ' Hans Joergen Jensen,   SDU - Odense University,    Denmark',

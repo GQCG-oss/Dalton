@@ -75,6 +75,7 @@ if [ -z "$1" ]; then
 	    fi ;;
 	OSF1 ) ARCH="-dec-alpha";;
  	HP-UX ) ARCH="-hp";;
+ 	SunOS ) ARCH="-sun";;
     * ) $ECHO "Error: No architecture specified.\nPlease enter architecture on command line as 'configure -architecture'\n\nThe following architectures are allowed:\n    $arclist"
         exit;;
     esac
@@ -156,7 +157,7 @@ case $WHICH in
     paragon)  liblist='libmath.a libblas.a'
               complist='if77 if90 f77 f90'
               ccmplist='cc';;
-    linux)    liblist='libblas.a'
+    linux)    liblist='libatlas.a libblas.a'
               complist='pgf77 g77'
               ccmplist='pgcc gcc';;
     hal)      liblist='libblas.a'
@@ -417,6 +418,7 @@ for testdir in $dirlist; do
     for testlib in $liblist; do
       if test -f $testdir/$testlib; then
          case $testlib in
+	    libatlas.a) LIB='-lf77blas -latlas'; blas3='true';;
 	    libessl.a) LIB='-lessl'
       	               blas3="true";;
 	    libesslp2.a) LIB='-lesslp2'
@@ -785,15 +787,15 @@ case $WHICH in
             opt='-fast -fpe3 -warn nouncalled';;
     sun4) if [ "$mesp" = "dummy" ]; then
            if [ $split = 'true' ] ; then
-              cpp="-DSYS_SUN -DNO_F90 -DVAR_SPLITFILES -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR= \"$basdir\"'"
+              cpp="-DSYS_SUN -DNO_F90 -DVAR_SPLITFILES -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
 	   else
-              cpp="-DSYS_SUN -DNO_F90 -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR= \"$basdir\"'"
+              cpp="-DSYS_SUN -DNO_F90 -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
 	   fi
           else
 	     if [ $split = 'true' ] ; then
-              cpp="-DSYS_SUN -DNO_F90 -DVAR_SPLITFILES -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR= \"$basdir\"' -D$parop"
+              cpp="-DSYS_SUN -DNO_F90 -DVAR_SPLITFILES -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
 	     else
-              cpp="-DSYS_SUN -DNO_F90 -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR= \"$basdir\"' -D$parop"
+              cpp="-DSYS_SUN -DNO_F90 -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
 	     fi
 	     set_parallel_def $mesp
               fi
@@ -878,16 +880,14 @@ case $WHICH in
                           $ECHO "Dalton does NOT run correct with the gcc-g77 2.96.54 compiler"
                      fi
                   fi
-                  if [ $prc = 'i686' ]; then
-                      proc=pentiumpro
-                  elif [ $prc = 'i586' ]; then
-                      proc=pentium
-                  else
-                      proc=486
-                  fi
                   cpp="-DVAR_G77 $cpp"
-                  copt='-malign-double'
-                  opt="-O3 -m$proc -ffast-math -fexpensive-optimizations -malign-double -funroll-loops -fno-globals -Wno-globals"
+		  if [ "$prc" = alpha ]; then
+			copt="-mieee"; 
+		  else 
+			copt="-mcpu=$prc -malign-double" 
+		  fi
+		  copt="$copt -O3 -ffast-math -fexpensive-optimizations -funroll-loops"
+                  opt="$copt -fno-globals -Wno-globals"
               fi
               if [ "$mesp" = "dummy" ]; then
                   def='linux.x'

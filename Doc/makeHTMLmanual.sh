@@ -7,8 +7,8 @@ export HTMLDIR
 #
 # Run latex2html
 #
-latex2html -transparent -font_size 11pt -no_antialias \
-    -address "Dalton Manual - Release 1.2" -dir $HTMLDIR Master.tex
+latex2html -transparent -font_size 11pt -no_antialias -local_icons \
+    -address "Dalton Manual - Release 1.2.1" -dir $HTMLDIR Master.tex
 #
 # Post-processing
 #

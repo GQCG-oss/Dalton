@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: hersym.F,v 1.4 2001-05-31 06:38:09 vebjornb Exp $
+C$Id: hersym.F,v 1.5 2001-11-13 19:32:46 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -145,7 +145,7 @@ C	 END IF
             TEXT = 'Original Coordinates                    '
             CALL PRNARR(TEXT, MXCENT, ATMARR)
          END IF
-         CALL SRTATM(MXCENT, ATMARR)
+         CALL SRTATM(MXCENT, ATMARR, .TRUE.)
 	 IF (.NOT. NOMOVE) THEN
  	    CALL CNTRML(MXCENT, ATMARR)
  	 END IF
@@ -454,7 +454,7 @@ C :::::::::::::::::::::::::::::::::::::::::::::
 #include <mxsymm.h>
          DIMENSION ATMARR(5,0:MXM), V1(3), V2(3)
          N = NINT(ATMARR(1,0))
-         CALL SRTATM(MXM, ATMARR)
+         CALL SRTATM(MXM, ATMARR, .TRUE.)
          I = 1
  100     CONTINUE
          IF (I .LT. N) THEN
@@ -491,19 +491,19 @@ C ::: Subtracting two position yields a zero vector for duplicate atoms. :::
          RETURN
       END
 C  /* Deck srtatm */
-      SUBROUTINE SRTATM(IUPPER, ARR)
+      SUBROUTINE SRTATM(IUPPER, ARR, USENRM)
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 C ::                                                                      ::
 C ::       Sorts atoms after atom number and distance from origo.         ::
 C ::       Rotational axes are sorted after order, the norm doesn't       ::
-C ::       matter for these (though it is still used as criterion).       ::
+C ::       matter for these (USENRM turns on and off the norm criteria).  ::
 C ::       The method used is bubble sorting.                             ::
 C ::                                                                      ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include <implicit.h>
          DIMENSION ARR(5,0:IUPPER)
          DIMENSION ATM1(3), ATM2(3)
-         LOGICAL SORTED
+         LOGICAL USENRM, SORTED
          N = NINT(ARR(1,0))
          I = 1
          SORTED = .FALSE.
@@ -518,7 +518,7 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
                ATM2(2)=ARR(2,J+1)
                ATM2(3)=ARR(3,J+1)
                IF ((NINT(ARR(4,J+1)) .GT. NINT(ARR(4,J))) .OR.
-     &        ((NINT(ARR(4,J+1)) .EQ. NINT(ARR(4,J))) .AND.
+     &        ((NINT(ARR(4,J+1)) .EQ. NINT(ARR(4,J))) .AND. USENRM .AND.
      &        ((ATM1(1)*ATM1(1)+ATM1(2)*ATM1(2)+ATM1(3)*ATM1(3)).LT.
      &        (ATM2(1)*ATM2(1)+ATM2(2)*ATM2(2)+ATM2(3)*ATM2(3)))))THEN
                   DO 300 K = 1, 5
@@ -1054,7 +1054,7 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include <priunit.h>
          DIMENSION ORGARR(5,0:MXM), ATMARR(5,0:2*MXM), ROTVEC(3)
          LOGICAL PROPER,EQL
-         DIMENSION VROT(3), V1(3), V2(3), V3(3), V4(3)
+         DIMENSION VROT(3), V1(3), V2(3)
          DIMENSION IUSED(2*MXCENT)
 	 IORDR = IORDER
          IF (.NOT. PROPER) IORDR = 2*IORDER
@@ -1472,7 +1472,7 @@ C ::: The easiest case is when the atoms define the only possible axis. :::
             GOTO 100
          END IF
          CALL DLDPAX(MAXAXS, DRTAXS)
-         CALL SRTATM(MAXAXS, DRTAXS)
+         CALL SRTATM(MAXAXS, DRTAXS, .FALSE.)
          RETURN
       END
 C  /* Deck fndima */
@@ -1676,7 +1676,7 @@ C ::: The rest must be diagonal/undecided. :::
                   DMRARR(4,I) = 0.0D0
                END IF
  300        CONTINUE
-            CALL SRTATM(MAXMIR, DMRARR)
+            CALL SRTATM(MAXMIR, DMRARR, .FALSE.)
          END IF
          RETURN
       END

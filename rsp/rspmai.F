@@ -32,56 +32,11 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: rspmai.F,v 1.11 2001-08-14 08:00:01 hjj Exp $
+C$Id: rspmai.F,v 1.12 2001-11-13 19:32:48 vebjornb Exp $
 C
 #include <single.h>
 #ifdef REVISIONLOG
 /* Comdeck revision_log */
-$Log: not supported by cvs2svn $
-Revision 1.10  2001/06/22 13:11:19  hjj
-New option .TRIPLET for linear response, more logical than that
-you must specify .TRPFLG under **RESPONSE.
-Set TRPFLG true if triplet operators for *QUADRA .DOUBLE
-(earlier .TRPFLG had to be set under **RESPONSE as well). /hjaaj
-
-Revision 1.9  2001/06/22 11:51:22  hjj
-1) stop if HIRPA and RSPCI (incompatible)
-2) removed unused OLDVEC initialization (was in infcr.h)
-3) output changes
-4) Consistency checks in PPINP: stop if *LINEAR .DOUBLE or *QUADRA .SINGLE
-/hjaaj
-
-Revision 1.8  2001/05/31 06:38:29  vebjornb
-Updated copyright, authors and reference in all Fortran-files - VB
-
-Revision 1.7  2001/05/14 09:09:39  hjj
-changed RSPMC to fix CSF and triplet problems without destroying CIRESPONS option./hjaaj
-
-Revision 1.6  2001/05/13 14:50:30  ruud
-Fixes to solve CSF and triplet operator problems
-
-Revision 1.5  2001/05/04 08:52:39  hjj
-Revised RSPMC such that RESPONS now also works for CSF in Sirius and triplet
-response with solvent. Changed LUERR to LUPRI. /HJAaJ
-
-Revision 1.4  2001/05/03 13:14:05  hjj
-- bugfix: define MZCONF(1) properly for cref vector in qr and cr calculations
-  with no totally symmetric perturbations /hjaaj
-  (previous bugfix did not cover when TDHF and when triplet perturbations)
-
-Revision 1.3  2001/03/08 13:49:36  hjj
-- bugfix: define MZCONF(1) for cref vector qr and cr calculations
-  (was undefined if no totally symmetric perturbations!)
-
-Revision 1.2  2001/02/12 18:17:56  vebjornb
-First commit after CC merge
-
-Revision 1.3  2001/01/30 14:11:20  kenneth
-AMFI integrals now stored on AOPROPER instead AOPROPER_MF
-
-Revision 1.1.1.1  2001/01/15 13:53:41  vebjornb
-Dalton 1.2
-
 Revision 1.7  2000/05/24 19:01:23  hjj
 polish; fixing FNDLB2 parameter lists (ftnchek)
 

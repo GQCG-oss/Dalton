@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abaopt.F,v 1.10 2001-10-01 13:22:10 vebjornb Exp $
+C$Id: abaopt.F,v 1.11 2001-11-13 19:32:44 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -4979,7 +4979,7 @@ C
                EVEC(I,J) = EVCTMP(I+(J-1)*NCRDHS)
  92         CONTINUE
  90      CONTINUE
-         IF ((EVAL(1) .LT. D0) .AND. INDTOT .GT. 0)
+         IF ((EVAL(1) .LT. -THRIND) .AND. INDTOT .GT. 0)
      &        INDTOT = INDTOT - 1
          DO 95 I = 1, NCRDHS
             IF (ABS(EVAL(I)) .LE. 1.0D-6) EVAL(I) = EVAL(I) + 1.0D5
@@ -5183,6 +5183,7 @@ C
             CALL HEADER('Scaled RF-Step',-1) 
             CALL OUTPUT(STEP,1,1,1,ICRD,1,NCRD,1,LUPRI)
          END IF
+         STPNRM = SQRT(DDOT(ICRD,STEP,1,STEP,1))
       END IF
       ICNT = 1
       FAC = 1.0D0
@@ -7130,43 +7131,41 @@ C
      &            .FALSE.)
       READ(LUHES,*) IDIM
       READ(LUHES,*)
+      ICRD = 3*NUCDEP
+      IF (IDIM .NE. ICRD) THEN
+         IERR = -2
+         RETURN
+      END IF
+      CALL DZERO(TMPMT4,MXCOOR*MXCOOR)
+      DO 100 J = 1, ICRD
+         DO 110 I = 1, ICRD
+            READ(LUHES,*) TMPMT4(I,J)
+ 110     CONTINUE
+         READ(LUHES,*)
+ 100  CONTINUE
+      IF (MAXREP .GT. 0) THEN
+         CALL TRACOR(TMPMT2,TMPMT3,1,ICRD,0)
+         CALL DGEMM('T','N',ICRD,ICRD,ICRD,1.D0,
+     &        TMPMT3,ICRD,
+     &        TMPMT4,MXCOOR,0.D0,
+     &        TMPMT1,MXCOOR)
+         CALL DZERO(HESMOL,MXCOOR*MXCOOR)
+         CALL DGEMM('N','N',ICRD,ICRD,ICRD,1.D0,
+     &        TMPMT1,MXCOOR,
+     &        TMPMT3,ICRD,0.D0,
+     &        HESMOL,MXCOOR)
+      ELSE
+         DO 150 J = 1, ICRD
+            DO 160 I = 1, ICRD
+               HESMOL(I,J) = TMPMT4(I,J)
+ 160        CONTINUE
+ 150     CONTINUE
+      END IF
       IF (REDINT .OR. DELINT) THEN
-         ICRD = 3*NUCDEP
-         IF (IDIM .NE. ICRD) THEN
-            IERR = -2
-            RETURN
-         END IF
-         CALL DZERO(TMPMT4,MXCOOR*MXCOOR)
-         DO 100 J = 1, ICRD
-            DO 110 I = 1, ICRD
-               READ(LUHES,*) TMPMT4(I,J)
- 110        CONTINUE
-            READ(LUHES,*)
- 100     CONTINUE
-         IF (MAXREP .GT. 0) THEN
-            CALL TRACOR(TMPMT2,TMPMT3,1,ICRD,IPRINT)
-            CALL DGEMM('T','N',ICRD,ICRD,ICRD,1.D0,
-     &                 TMPMT3,ICRD,
-     &                 TMPMT4,MXCOOR,0.D0,
-     &                 TMPMT1,MXCOOR)
-            CALL DZERO(HESMOL,MXCOOR*MXCOOR)
-            CALL DGEMM('N','N',ICRD,ICRD,ICRD,1.D0,
-     &                 TMPMT1,MXCOOR,
-     &                 TMPMT3,ICRD,0.D0,
-     &                 HESMOL,MXCOOR)
-         ELSE
-            DO 150 J = 1, ICRD
-               DO 160 I = 1, ICRD
-                  HESMOL(I,J) = TMPMT4(I,J)
- 160           CONTINUE
- 150        CONTINUE
-         END IF
-         IF (REDINT .OR. DELINT) THEN
-            CALL DZERO(HESINT,MXRCRD*MXRCRD)
-            CALL HX2HQ(MXRCRD,MX2CRD,ATMARR,TMPMT1,TMPMT2,TMPMT3,
-     &           TMPMT4,GRADINT,HESSINT,WILBMT,BMTINV,BMTRAN,
-     &           WORK,LWORK)
-         END IF
+         CALL DZERO(HESINT,MXRCRD*MXRCRD)
+         CALL HX2HQ(MXRCRD,MX2CRD,ATMARR,TMPMT1,TMPMT2,TMPMT3,
+     &        TMPMT4,GRADINT,HESSINT,WILBMT,BMTINV,BMTRAN,
+     &        WORK,LWORK)
       END IF
       CALL GPCLOSE(LUHES,'KEEP')
       RETURN

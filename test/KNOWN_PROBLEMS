@@ -20,17 +20,35 @@ DEC alpha
 
   due to problems in ERI the following test cases do not work correctly:
 
-	cc_energy_triplesdirect		cc_geoopt_mp2
-	cc_energy_triplesdirect2	cc_grad2
-	cc_energy_triplesdirect3	cc_grad3
-	cc_geoopt			cc_rsp_gammadirect
-	cc_geoopt2			cc_rsp_twophotdirect
+	cc_energy_triplesdirect		
+	cc_energy_triplesdirect2	
+	cc_energy_triplesdirect3	
+				
+  Also, the following geometry optimization tests fail:
+
+        walk_gradex
+        walk_image
+        walk_modeflw
+
+  Some of the tests appear to be sensitive to the compilation flags but
+  give expected results when dalton is compiled with the default flags:
+  walk_vibave, geoopt_symbrk, prop_nucquad, rsp_esr, rsp_mnfphosph
+  and geoopt_prop3
 
 
 
 ------------------------------------------------------------------------
-linux g77
+Linux g77
 ------------------------------------------------------------------------
 
   test case energy_douglaskroll gives an energy that is slightly wrong
-  and the test therefore fails
+  and the test fails
+
+
+
+------------------------------------------------------------------------
+SUN
+------------------------------------------------------------------------
+
+  test case cc_energy_field does not work because certain I/O routines
+  have not been implemented for this platform yet

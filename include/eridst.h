@@ -2,7 +2,8 @@ C
 C
       PARAMETER (MXDIST = 100)
       COMMON /ERIDST/ NDISTR, MLTDST, KHKDST, NACDST, IRPDST,
-     &                MAXCML, NTCLAS,
+     &                MAXCML, NTCLAS, NDST,   LPNBCH,
      &                INDDST(MXDIST), IACDST(MXDIST),
      &                INDXDS(MXSHEL), NCLASS(MXSHEL), MCLASS(MXSHEL),
-     &                KCLASS(MXSHEL), KLAOBT(MXSHEL), LUINTD(MXCOOR)
+     &                KCLASS(MXSHEL), KLAOBT(MXSHEL), LUINTD(MXCOOR),
+     &                NCCDST(MXDIST), NCCFST(MXDIST)

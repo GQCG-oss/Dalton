@@ -880,27 +880,28 @@ herpar.o : herpar.F \
   ../include/taysol.h  ../include/twocom.h
 herrdn.o : herrdn.F \
   ../include/abainf.h  ../include/aosotr.h \
-  ../include/aovec.h  ../include/cbiher.h \
-  ../include/cbirea.h  ../include/cbisol.h \
-  ../include/ccom.h  ../include/chrnos.h \
-  ../include/chrsgn.h  ../include/chrxyz.h \
-  ../include/clsfmm.h  ../include/codata.h \
-  ../include/dgroup.h  ../include/dummy.h \
-  ../include/ecpinf.h  ../include/frame.h \
-  ../include/gnrinf.h  ../include/huckel.h \
-  ../include/ibtfun.h  ../include/implicit.h \
-  ../include/infpar.h  ../include/inftap.h \
-  ../include/maxaqn.h  ../include/maxmom.h \
-  ../include/maxorb.h  ../include/molde.h \
-  ../include/molinp.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/mxsymm.h \
-  ../include/nuclei.h  ../include/numder.h \
-  ../include/pgroup.h  ../include/pi.h \
-  ../include/pincom.h  ../include/primit.h \
-  ../include/priunit.h  ../include/sdpre.h \
-  ../include/shells.h  ../include/single.h \
-  ../include/sphtrm.h  ../include/symmet.h \
-  ../include/thrzer.h  ../include/veclen.h
+  ../include/aovec.h  ../include/cbieri.h \
+  ../include/cbiher.h  ../include/cbirea.h \
+  ../include/cbisol.h  ../include/ccom.h \
+  ../include/chrnos.h  ../include/chrsgn.h \
+  ../include/chrxyz.h  ../include/clsfmm.h \
+  ../include/codata.h  ../include/dgroup.h \
+  ../include/dummy.h  ../include/ecpinf.h \
+  ../include/frame.h  ../include/gnrinf.h \
+  ../include/huckel.h  ../include/ibtfun.h \
+  ../include/implicit.h  ../include/infpar.h \
+  ../include/inftap.h  ../include/maxaqn.h \
+  ../include/maxmom.h  ../include/maxorb.h \
+  ../include/molde.h  ../include/molinp.h \
+  ../include/mxcent.h  ../include/mxorb.h \
+  ../include/mxsymm.h  ../include/nuclei.h \
+  ../include/numder.h  ../include/pgroup.h \
+  ../include/pi.h  ../include/pincom.h \
+  ../include/primit.h  ../include/priunit.h \
+  ../include/sdpre.h  ../include/shells.h \
+  ../include/single.h  ../include/sphtrm.h \
+  ../include/symmet.h  ../include/thrzer.h \
+  ../include/veclen.h
 hersol.o : hersol.F \
   ../include/cbisol.h  ../include/chrnos.h \
   ../include/dummy.h  ../include/ibtfun.h \

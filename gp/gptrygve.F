@@ -32,46 +32,11 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: gptrygve.F,v 1.7 2001-08-21 09:46:24 vebjornb Exp $
+C$Id: gptrygve.F,v 1.8 2001-11-13 19:32:47 vebjornb Exp $
 C
 #include <single.h>
 C
 #ifdef REV_LOG
-$Log: not supported by cvs2svn $
-Revision 1.6.2.1  2001/07/19 11:09:11  vebjornb
-Changes communicated by Jørn Amundsen to make IO work properly on SGI
-with MIPS Fortran 90 compiler - VB
-
-Revision 1.6  2001/06/08 11:23:04  hjj
-write also file name to output if error in OPENDX /hjaaj
-
-Revision 1.5  2001/05/31 06:38:26  vebjornb
-Updated copyright, authors and reference in all Fortran-files - VB
-
-Revision 1.4  2001/05/02 18:20:45  ruud
-Changes to make IRC work/kr/
-
-Revision 1.3  2001/03/26 09:37:06  ruud
-Various small bug fixes, among them now allowing for more than 100
-geometry perturbations with natural connection, a OPTORB problem is rsp,
-and inconsistent record length in non-direct response calculations.
-
-In addition, added temperature dependence to the harmonic vibrational average
-and the possibility of reusing property derivatives. In this connection changed
-the name of some ABACUS interface files. K.Ruud
-
-Revision 1.2  2001/02/13 18:35:03  vebjornb
-Lots of minor bug-fixes + CC documentation
-
-Revision 1.1.1.1  2001/02/08 13:33:12  hjj
-*** Dalton Master Version *** cvs started 8-Feb-2001.
-
-Revision 1.2  2001/01/31 17:51:22  vebjornb
-Parallel modifications from pdahle, MPI and PVM
-
-Revision 1.1.1.1  2001/01/15 13:53:53  vebjornb
-Dalton 1.2
-
 Revision 1.5-1.9  2000/05/02  hjj
 (1) changed QUIT so that it calls TSTAMP, prints total cpu and elapsed time,
     and stops with STOP 100

@@ -173,7 +173,7 @@
 \contentsline {subsection}{\numberline {25.1.8}Cubic response calculation of third-order transition moments: {\normalfont \ttfamily {*CUBIC}} with {\normalfont \ttfamily {.SINGLE RESIDUE}}}{248}
 \contentsline {subsection}{\numberline {25.1.9}Cubic response calculation of second order moments between excited states and excited state polarizabilities: {\normalfont \ttfamily {*CUBIC}} with {\normalfont \ttfamily {.DOUBLE RESIDUE}}}{249}
 \contentsline {subsection}{\numberline {25.1.10}Spherical multipole moments: {\normalfont \ttfamily {*C6}}}{250}
-\contentsline {subsection}{\numberline {25.1.11}Hyperfine Coupling Elements: {\normalfont \ttfamily {*ESR}}}{250}
+\contentsline {subsection}{\numberline {25.1.11}Hyperfine Coupling Elements: {\normalfont \ttfamily {*ESR}}}{251}
 \contentsline {chapter}{\numberline {26}Coupled Cluster calculations, CC}{252}
 \contentsline {section}{\numberline {26.1}General input for CC: {\normalfont \ttfamily {*CC INPUT}}}{254}
 \contentsline {section}{\numberline {26.2}Ground state first-order properties: {\normalfont \ttfamily {*CCFOP}}}{259}

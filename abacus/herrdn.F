@@ -32,79 +32,10 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: herrdn.F,v 1.15 2001-10-01 13:22:13 vebjornb Exp $
+C$Id: herrdn.F,v 1.16 2001-11-13 19:32:45 vebjornb Exp $
 C
 #include <single.h>
 #ifdef REVISION_LOG
-$Log: not supported by cvs2svn $
-Revision 1.14  2001/06/08 11:35:42  hjj
-1) removed unused ORBINX
-2) only write to LUCME if LUCME.gt.0 (slaves should never write to LUCME)
-3) write correct IGTO(*) instead of dummy IPRXYZ(*) to LUONEL   /hjaaj/
-
-Revision 1.13  2001/06/07 20:20:06  vebjornb
-Moved several FLUSH statements inside IF..END IF print level tests.
-This to avoid problems when running parallel jobs with slaves not having
-access to a DALTON.OUT (LUPRI < 0) - VB
-
-Revision 1.12  2001/05/31 06:38:08  vebjornb
-Updated copyright, authors and reference in all Fortran-files - VB
-
-Revision 1.11  2001/05/25 14:48:04  ruud
-Removed a little bit of redundant code and keyword\kr\
-
-Revision 1.10  2001/04/28 16:07:46  ruud
-Removed a print to unit 6 (now LUPRI), and fixed a nasty little bug
-appearing in some Douglas-Kroll calculations
-
-Revision 1.9  2001/04/21 14:28:16  vebjornb
-Removed all ASSIGN statements, and replaced them with explicit FORMAT labels.
-The ASSIGNs caused trouble when compiling on 64-bit HP - VB
-
-Revision 1.8  2001/04/21 12:11:59  ruud
-Added the possibility of reusing property derivatives in vibrational average
-calculations. Fixed a bug in the temperature part, as well as in the Eckart
-transformations. Fixed huge memory use in herrdn.F. Added SYS_SUN in
-cc/crayio.c and modified a couple of the test cases for accuracy on our
-old HP.
-
-Revision 1.7  2001/04/03 14:25:08  vebjornb
-Changes to ERI (symmetry and general contraction) tuh
-
-Revision 1.6  2001/03/28 07:33:46  ruud
-Added a relativistically contracted ANO basis set. Changed a couple of
-dimension and fixed a couple of typo's in the last cc_grad0.F.
-
-Revision 1.5  2001/03/28 06:54:54  haettig
-changes due to merge with Trygves version, most changes for FMM and
-symmetrization of one-electron derivatives integrals.
-
-Revision 1.4  2001/03/13 08:43:38  vebjornb
-- Reshuffled include statements and a couple of common blocks to
-  more in line with ANSI Fortran (only ABACUS files)
-- Updated one of the test jobs
-
-Revision 1.3  2001/02/26 15:34:47  ruud
-Removed redundant and unused files from amfi directory
-
-Added Douglas-Kroll transformation. Currently puts rather high
-memory requirements that need to be fixed before release.
-
-Revision 1.2  2001/02/12 18:17:53  vebjornb
-First commit after CC merge
-
-Revision 1.4  2001/02/02 15:33:14  kenneth
-Added ECP modules supplied by panor and bernds
-
-Revision 1.3  2001/01/31 17:51:21  vebjornb
-Parallel modifications from pdahle, MPI and PVM
-
-Revision 1.2  2001/01/20 19:21:14  vebjornb
-Fixed double and triple augmentation of cc basis sets + a few other minor bugs
-
-Revision 1.1.1.1  2001/01/15 13:53:52  vebjornb
-Dalton 1.2
-
 Revision 1.9  2000/05/03 10:58:51  hjj
 include maxorb.h now needed for molde.h
 
@@ -699,6 +630,7 @@ C     note: SPHINP will read additional input lines if DOOWN true
 C*****************************************************************************
       DOCART = CRT .EQ. 'C' .OR. CRT .EQ. 'c'
       DOOWN  = CRT. EQ. 'X'
+      CALL CRTEST(DOCART)
       CALL SPHINP(LUINFO,WORK,LWORK,DOOWN,MXSPD)
 C
 C     ************************************************
@@ -5555,5 +5487,20 @@ C
  1010 FORMAT(/2X,A4,3X,A4,3X,A10)
  1040 FORMAT(20X,3F20.10)
  1050 FORMAT(F20.10,3F20.10)
+      RETURN
+      END
+C  /* Deck crtest */
+      SUBROUTINE CRTEST(DOCART)
+#include <implicit.h>
+#include <priunit.h>
+      LOGICAL DOCART
+#include <cbieri.h>
+C
+      IF (RUNERI.AND.DOCART) THEN
+         RUNERI = .FALSE.
+         WRITE (LUPRI,'(1X,2A)')
+     &   ' WARNING: Only spherical-harmonic basis implemented in ERI.',
+     &   ' TWOINT is used instead.'
+      END IF
       RETURN
       END

@@ -121,7 +121,7 @@ C
 #include <eribuf.h>
 C
       PARAMETER(NMODEL = 18)
-      LOGICAL   LCCSAV(0:NMODEL),LTCEXC,LPTEXC, EX
+      LOGICAL   LCCSAV(0:NMODEL), LTCEXC, LPTEXC
       LOGICAL   LTBAR0, LRSPSYM, LLEFTEIG
       LOGICAL   MOLGRD, LSORT
       DIMENSION WORK(LWORK)
@@ -434,7 +434,12 @@ C        SLV98,OC
 C+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 C
          NSLV = MAX(1,NCCSLV)
-         DO 9999 ISLV =1, NSLV
+C
+C     Dummy assignment to avoid weird bug on SUN.
+C     This should only be a temporary solution - VB
+C
+         NN = NSLV + NCCSLV
+         DO 9999 ISLV = 1, NSLV
 C
           LMAXCU = LMAXCC(ISLV)
           NLMCU  = (LMAXCU+1)*(LMAXCU+1)
@@ -871,8 +876,8 @@ C
         ELSE
           CALL GPCLOSE(LUINTA,'KEEP')
         END IF
-      ENDI F
-    
+      END IF
+
       DO I = 1, 8
         IF (LUAOIN(I) .GT. 0) THEN
           IF ((.NOT.KEEPAOIN).OR.MOLGRD) THEN

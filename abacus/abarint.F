@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abarint.F,v 1.4 2001-05-31 06:38:02 vebjornb Exp $
+C$Id: abarint.F,v 1.5 2001-11-13 19:32:45 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -3004,7 +3004,7 @@ C
             CALL DSWAP(1,GRDDIA(I),1,GRDDIA(JMIN),1)
          END IF
  30   CONTINUE
-      IF (RATFUN .AND. (.NOT. SADDLE) .AND. (EVAL(1) .LT. D0)
+      IF (RATFUN .AND. (.NOT. SADDLE) .AND. (EVAL(1) .LT. -THRIND)
      &     .AND. INDTOT .GT. 0) INDTOT = INDTOT - 1
       DO 40 I = 1, NCRDHS
          IF (ABS((ABS(EVAL(I)) - 1.0D5)) .LT. 1.0D-3)

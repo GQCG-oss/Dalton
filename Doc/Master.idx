@@ -517,7 +517,7 @@
 \indexentry{ISOTOP@{\normalfont  \ttfamily  {.ISOTOP}}}{62}
 \indexentry{VIBANA@{\normalfont  \ttfamily  {*VIBANA}}}{62}
 \indexentry{methane}{62}
-\indexentry{IR intensity}{62}
+\indexentry{IR intensity}{63}
 \indexentry{dipole gradient}{63}
 \indexentry{APT}{63}
 \indexentry{atomic polar tensor}{63}
@@ -806,8 +806,8 @@
 \indexentry{linear response}{93}
 \indexentry{response!linear}{93}
 \indexentry{polarizability}{93}
-\indexentry{SOPPA}{93}
-\indexentry{SOPPA@{\normalfont  \ttfamily  {.SOPPA}}}{93}
+\indexentry{SOPPA}{94}
+\indexentry{SOPPA@{\normalfont  \ttfamily  {.SOPPA}}}{94}
 \indexentry{*RESPONSE@{\normalfont  \ttfamily  {**RESPONSE}}}{94}
 \indexentry{MP2@{\normalfont  \ttfamily  {.MP2}}}{94}
 \indexentry{*WAVE FUNCTIONS@{\normalfont  \ttfamily  {**WAVE FUNCTIONS}}}{94}
@@ -822,10 +822,10 @@
 \indexentry{first hyperpolarizability}{95}
 \indexentry{frequency}{95}
 \indexentry{two-photon!amplitude}{95}
-\indexentry{two-photon!amplitude}{95}
+\indexentry{two-photon!amplitude}{96}
 \indexentry{phosphoresence}{96}
-\indexentry{two-photon!transition moment}{96}
-\indexentry{transition moment!two-photon}{96}
+\indexentry{two-photon!transition moment}{97}
+\indexentry{transition moment!two-photon}{97}
 \indexentry{residue}{97}
 \indexentry{double residue}{97}
 \indexentry{transition moment}{97}
@@ -965,10 +965,9 @@
 \indexentry{*RESPONSE@{\normalfont  \ttfamily  {**RESPONSE}}}{119}
 \indexentry{*WAVE FUNCTIONS@{\normalfont  \ttfamily  {**WAVE FUNCTIONS}}}{120}
 \indexentry{\sc  cc}{121}
-\indexentry{\sc  response}{121}
 \indexentry{\sc  cc}{121}
 \indexentry{\sc  cc}{121}
-\indexentry{CC(T)@{\normalfont  \ttfamily  {.CC(T)}}}{122}
+\indexentry{CC(T)@{\normalfont  \ttfamily  {.CC(T)}}}{121}
 \indexentry{MP2@{\normalfont  \ttfamily  {.MP2}}}{122}
 \indexentry{CCSD@{\normalfont  \ttfamily  {.CCSD}}}{122}
 \indexentry{\sc  cc}{122}
@@ -1600,6 +1599,7 @@
 \indexentry{NUCPOT@{\normalfont  \ttfamily  {.NUCPOT}}}{157}
 \indexentry{potential energy!at nucleus}{157}
 \indexentry{OCTGRA@{\normalfont  \ttfamily  {.OCTGRA}}}{157}
+\indexentry{THIRDM@{\normalfont  \ttfamily  {.THIRDM}}}{157}
 \indexentry{PHASEO@{\normalfont  \ttfamily  {.PHASEO}}}{158}
 \indexentry{POINTS@{\normalfont  \ttfamily  {.POINTS}}}{158}
 \indexentry{Gaussian quadrature}{158}
@@ -1614,6 +1614,8 @@
 \indexentry{quadrupole moment}{158}
 \indexentry{THETA@{\normalfont  \ttfamily  {.THETA}}}{158}
 \indexentry{QUAGRA@{\normalfont  \ttfamily  {.QUAGRA}}}{158}
+\indexentry{SECMOM@{\normalfont  \ttfamily  {.SECMOM}}}{158}
+\indexentry{QUADRU@{\normalfont  \ttfamily  {.QUADRU}}}{158}
 \indexentry{QUASUM@{\normalfont  \ttfamily  {.QUASUM}}}{159}
 \indexentry{ROTSTR@{\normalfont  \ttfamily  {.ROTSTR}}}{159}
 \indexentry{S1MAG@{\normalfont  \ttfamily  {.S1MAG}}}{159}
@@ -1629,8 +1631,8 @@
 \indexentry{S1MAG@{\normalfont  \ttfamily  {.S1MAG}}}{159}
 \indexentry{S1MLT@{\normalfont  \ttfamily  {.S1MLT}}}{159}
 \indexentry{S1MAGL@{\normalfont  \ttfamily  {.S1MAGL}}}{159}
-\indexentry{S1MRT@{\normalfont  \ttfamily  {.S1MRT}}}{159}
-\indexentry{S1MAGR@{\normalfont  \ttfamily  {.S1MAGR}}}{159}
+\indexentry{S1MRT@{\normalfont  \ttfamily  {.S1MRT}}}{160}
+\indexentry{S1MAGR@{\normalfont  \ttfamily  {.S1MAGR}}}{160}
 \indexentry{S2MAG@{\normalfont  \ttfamily  {.S2MAG}}}{160}
 \indexentry{overlap!magnetic field derivative}{160}
 \indexentry{London orbitals}{160}
@@ -1645,7 +1647,7 @@
 \indexentry{multipole integral}{160}
 \indexentry{second-moment}{160}
 \indexentry{SELECT@{\normalfont  \ttfamily  {.SELECT}}}{160}
-\indexentry{diamagnetic spin-orbit}{160}
+\indexentry{diamagnetic spin-orbit}{161}
 \indexentry{SOFIEL@{\normalfont  \ttfamily  {.SOFIEL}}}{161}
 \indexentry{SOMAGM@{\normalfont  \ttfamily  {.SOMAGM}}}{161}
 \indexentry{integral sort}{161}
@@ -1661,8 +1663,8 @@
 \indexentry{CARMOM@{\normalfont  \ttfamily  {.CARMOM}}}{161}
 \indexentry{SPIN-O@{\normalfont  \ttfamily  {.SPIN-O}}}{161}
 \indexentry{spatial spin-orbit}{161}
-\indexentry{SQHDOR@{\normalfont  \ttfamily  {.SQHDOR}}}{161}
-\indexentry{overlap!half-differentiated}{161}
+\indexentry{SQHDOR@{\normalfont  \ttfamily  {.SQHDOR}}}{162}
+\indexentry{overlap!half-differentiated}{162}
 \indexentry{SUPONL@{\normalfont  \ttfamily  {.SUPONL}}}{162}
 \indexentry{two-electron integral}{162}
 \indexentry{supermatrix}{162}
@@ -1671,7 +1673,7 @@
 \indexentry{gauge origin}{162}
 \indexentry{GAUGEO@{\normalfont  \ttfamily  {.GAUGEO}}}{162}
 \indexentry{THETA@{\normalfont  \ttfamily  {.THETA}}}{162}
-\indexentry{quadrupole moment traceless}{162}
+\indexentry{quadrupole moment!traceless}{162}
 \indexentry{THIRDM@{\normalfont  \ttfamily  {.THIRDM}}}{162}
 \indexentry{multipole integral}{162}
 \indexentry{third-moment}{162}
@@ -1681,7 +1683,7 @@
 \indexentry{cavity!origin}{162}
 \indexentry{center of mass}{162}
 \indexentry{NOT ALLRLM@{\normalfont  \ttfamily  {.NOT ALLRLM}}}{162}
-\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{162}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{163}
 \indexentry{*INTEGRALS@{\normalfont  \ttfamily  {**INTEGRALS}}}{163}
 \indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{163}
 \indexentry{SOLVEN@{\normalfont  \ttfamily  {.SOLVEN}}}{163}
@@ -1712,13 +1714,11 @@
 \indexentry{PRESORT@{\normalfont  \ttfamily  {.PRESORT}}}{164}
 \indexentry{TRANSFORMATION@{\normalfont  \ttfamily  {*TRANSFORMATION}}}{164}
 \indexentry{*WAVE FUNCTIONS@{\normalfont  \ttfamily  {**WAVE FUNCTIONS}}}{164}
-\indexentry{COMND@{\normalfont  \ttfamily  {.COMND}}}{164}
 \indexentry{DELAO@{\normalfont  \ttfamily  {.DELAO}}}{164}
 \indexentry{INTSYM@{\normalfont  \ttfamily  {.INTSYM}}}{164}
-\indexentry{IO PRI@{\normalfont  \ttfamily  {.IO PRI}}}{165}
+\indexentry{IO PRI@{\normalfont  \ttfamily  {.IO PRI}}}{164}
 \indexentry{KEEP@{\normalfont  \ttfamily  {.KEEP}}}{165}
 \indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{165}
-\indexentry{SORST@{\normalfont  \ttfamily  {.SORST}}}{165}
 \indexentry{THRQ@{\normalfont  \ttfamily  {.THRQ}}}{165}
 \indexentry{SUPINT@{\normalfont  \ttfamily  {*SUPINT}}}{165}
 \indexentry{supermatrix}{165}
@@ -2952,7 +2952,6 @@
 \indexentry{*RESPONSE@{\normalfont  \ttfamily  {**RESPONSE}}}{237}
 \indexentry{*RESPONSE@{\normalfont  \ttfamily  {**RESPONSE}}}{237}
 \indexentry{*RESPONSE@{\normalfont  \ttfamily  {**RESPONSE}}}{238}
-\indexentry{*<something>@{\normalfont  \ttfamily  {**<something>}}}{238}
 \indexentry{*END OF INPUT@{\normalfont  \ttfamily  {**END OF INPUT}}}{238}
 \indexentry{RSPCI@{\normalfont  \ttfamily  {.RSPCI}}}{238}
 \indexentry{Configuration Interaction!response}{238}
@@ -3105,12 +3104,12 @@
 \indexentry{frequency!quadratic response}{243}
 \indexentry{BFREQ@{\normalfont  \ttfamily  {.BFREQ}}}{243}
 \indexentry{CFREQ@{\normalfont  \ttfamily  {.CFREQ}}}{243}
-\indexentry{BFREQ@{\normalfont  \ttfamily  {.BFREQ}}}{243}
-\indexentry{CFREQ@{\normalfont  \ttfamily  {.CFREQ}}}{243}
-\indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}}{243}
-\indexentry{SHG@{\normalfont  \ttfamily  {.SHG}}}{243}
-\indexentry{POCKEL@{\normalfont  \ttfamily  {.POCKEL}}}{243}
-\indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}}{243}
+\indexentry{BFREQ@{\normalfont  \ttfamily  {.BFREQ}}}{244}
+\indexentry{CFREQ@{\normalfont  \ttfamily  {.CFREQ}}}{244}
+\indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}}{244}
+\indexentry{SHG@{\normalfont  \ttfamily  {.SHG}}}{244}
+\indexentry{POCKEL@{\normalfont  \ttfamily  {.POCKEL}}}{244}
+\indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}}{244}
 \indexentry{MAXIT@{\normalfont  \ttfamily  {.MAXIT}}}{244}
 \indexentry{MAXITO@{\normalfont  \ttfamily  {.MAXITO}}}{244}
 \indexentry{optimal orbital trial vector}{244}
@@ -3144,8 +3143,8 @@
 \indexentry{ROOTS@{\normalfont  \ttfamily  {.ROOTS}}}{244}
 \indexentry{dipole length}{244}
 \indexentry{angular momentum}{244}
-\indexentry{DIPLEN@{\normalfont  \ttfamily  {.DIPLEN}}}{244}
-\indexentry{dipole length}{244}
+\indexentry{DIPLEN@{\normalfont  \ttfamily  {.DIPLEN}}}{245}
+\indexentry{dipole length}{245}
 \indexentry{DIPLNX@{\normalfont  \ttfamily  {.DIPLNX}}}{245}
 \indexentry{dipole length}{245}
 \indexentry{DIPLNY@{\normalfont  \ttfamily  {.DIPLNY}}}{245}
@@ -3166,9 +3165,9 @@
 \indexentry{MAXITO@{\normalfont  \ttfamily  {.MAXITO}}}{245}
 \indexentry{optimal orbital trial vector}{245}
 \indexentry{THCLR@{\normalfont  \ttfamily  {.THCLR}}}{245}
-\indexentry{THCPP@{\normalfont  \ttfamily  {.THCPP}}}{245}
-\indexentry{linear response}{245}
-\indexentry{response!linear}{245}
+\indexentry{THCPP@{\normalfont  \ttfamily  {.THCPP}}}{246}
+\indexentry{linear response}{246}
+\indexentry{response!linear}{246}
 \indexentry{QUADRA@{\normalfont  \ttfamily  {*QUADRA}}}{246}
 \indexentry{DOUBLE RESIDUE@{\normalfont  \ttfamily  {.DOUBLE RESIDUE}}}{246}
 \indexentry{quadratic response}{246}
@@ -3190,8 +3189,8 @@
 \indexentry{ISPABC@{\normalfont  \ttfamily  {.ISPABC}}}{246}
 \indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{246}
 \indexentry{IPREXM@{\normalfont  \ttfamily  {.IPREXM}}}{246}
-\indexentry{THCPP@{\normalfont  \ttfamily  {.THCPP}}}{246}
-\indexentry{MAXIT@{\normalfont  \ttfamily  {.MAXIT}}}{246}
+\indexentry{THCPP@{\normalfont  \ttfamily  {.THCPP}}}{247}
+\indexentry{MAXIT@{\normalfont  \ttfamily  {.MAXIT}}}{247}
 \indexentry{MAXITO@{\normalfont  \ttfamily  {.MAXITO}}}{247}
 \indexentry{optimal orbital trial vector}{247}
 \indexentry{CUBIC@{\normalfont  \ttfamily  {*CUBIC}}}{247}
@@ -3222,10 +3221,10 @@
 \indexentry{dipole length}{247}
 \indexentry{DIPLNY@{\normalfont  \ttfamily  {.DIPLNY}}}{247}
 \indexentry{dipole length}{247}
-\indexentry{DIPLNZ@{\normalfont  \ttfamily  {.DIPLNZ}}}{247}
-\indexentry{dipole length}{247}
-\indexentry{MAXIT @{\normalfont  \ttfamily  {.MAXIT }}}{247}
-\indexentry{MAXITO@{\normalfont  \ttfamily  {.MAXITO}}}{247}
+\indexentry{DIPLNZ@{\normalfont  \ttfamily  {.DIPLNZ}}}{248}
+\indexentry{dipole length}{248}
+\indexentry{MAXIT @{\normalfont  \ttfamily  {.MAXIT }}}{248}
+\indexentry{MAXITO@{\normalfont  \ttfamily  {.MAXITO}}}{248}
 \indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{248}
 \indexentry{THCLR@{\normalfont  \ttfamily  {.THCLR}}}{248}
 \indexentry{THRNRM@{\normalfont  \ttfamily  {.THRNRM}}}{248}
@@ -3256,9 +3255,9 @@
 \indexentry{DIPLNZ@{\normalfont  \ttfamily  {.DIPLNZ}}}{248}
 \indexentry{dipole length}{248}
 \indexentry{MAXIT@{\normalfont  \ttfamily  {.MAXIT}}}{248}
-\indexentry{MAXITO@{\normalfont  \ttfamily  {.MAXITO}}}{248}
-\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{248}
-\indexentry{THCLR@{\normalfont  \ttfamily  {.THCLR}}}{248}
+\indexentry{MAXITO@{\normalfont  \ttfamily  {.MAXITO}}}{249}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{249}
+\indexentry{THCLR@{\normalfont  \ttfamily  {.THCLR}}}{249}
 \indexentry{MAXITP@{\normalfont  \ttfamily  {.MAXITP}}}{249}
 \indexentry{ROOTS@{\normalfont  \ttfamily  {.ROOTS}}}{249}
 \indexentry{THCPP@{\normalfont  \ttfamily  {.THCPP}}}{249}
@@ -3283,10 +3282,10 @@
 \indexentry{BFREQ@{\normalfont  \ttfamily  {.BFREQ}}}{249}
 \indexentry{frequency!cubic response}{249}
 \indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}}{249}
-\indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}}{249}
-\indexentry{frequency!cubic response}{249}
-\indexentry{DIPLEN@{\normalfont  \ttfamily  {.DIPLEN}}}{249}
-\indexentry{dipole length}{249}
+\indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}}{250}
+\indexentry{frequency!cubic response}{250}
+\indexentry{DIPLEN@{\normalfont  \ttfamily  {.DIPLEN}}}{250}
+\indexentry{dipole length}{250}
 \indexentry{DIPLNX@{\normalfont  \ttfamily  {.DIPLNX}}}{250}
 \indexentry{dipole length}{250}
 \indexentry{DIPLNY@{\normalfont  \ttfamily  {.DIPLNY}}}{250}
@@ -3323,11 +3322,11 @@
 \indexentry{C6SPH@{\normalfont  \ttfamily  {.C6SPH}}}{250}
 \indexentry{linear molecule}{250}
 \indexentry{multipole moment}{250}
-\indexentry{ESR@{\normalfont  \ttfamily  {*ESR}}}{250}
-\indexentry{ESR}{250}
-\indexentry{hyperfine coupling}{250}
-\indexentry{restricted-unrestricted method}{250}
-\indexentry{MAXIT@{\normalfont  \ttfamily  {.MAXIT}}}{250}
+\indexentry{ESR@{\normalfont  \ttfamily  {*ESR}}}{251}
+\indexentry{ESR}{251}
+\indexentry{hyperfine coupling}{251}
+\indexentry{restricted-unrestricted method}{251}
+\indexentry{MAXIT@{\normalfont  \ttfamily  {.MAXIT}}}{251}
 \indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{251}
 \indexentry{SNGPRP@{\normalfont  \ttfamily  {.SNGPRP}}}{251}
 \indexentry{THCESR@{\normalfont  \ttfamily  {.THCESR}}}{251}
@@ -3591,9 +3590,11 @@
 \indexentry{MARGIN@{\normalfont  \ttfamily  {.MARGIN}}}{269}
 \indexentry{NCCEXC@{\normalfont  \ttfamily  {.NCCEXC}}}{269}
 \indexentry{NOSCOM@{\normalfont  \ttfamily  {.NOSCOM}}}{269}
-\indexentry{OMEINP@{\normalfont  \ttfamily  {.OMEINP}}}{270}
+\indexentry{OMEINP@{\normalfont  \ttfamily  {.OMEINP}}}{269}
 \indexentry{THREXC@{\normalfont  \ttfamily  {.THREXC}}}{270}
 \indexentry{TOLSC@{\normalfont  \ttfamily  {.TOLSC}}}{270}
+\indexentry{R3DIIS@{\normalfont  \ttfamily  {.R3DIIS}}}{270}
+\indexentry{R3DIIS@{\normalfont  \ttfamily  {.R3DIIS}}}{270}
 \indexentry{CCLRSD@{\normalfont  \ttfamily  {*CCLRSD}}}{271}
 \indexentry{linear response!Coupled Cluster}{271}
 \indexentry{response!linear}{271}
