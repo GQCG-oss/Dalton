@@ -160,8 +160,6 @@ C djw Feb 2005
 C notation changed from 'd' to 'd-' for consistency with EMSL
       ELSE
          IF (BASNAM(3:10) .EQ. 'aug-cc-p') THEN
-            write(lupri,*) 'cc basis'
-            call flshfo(lupri)
             BASTMP(1:79) = BASNAM(3:80)
             IF (BASNAM(1:2) .EQ. 'd-') THEN
                IAUG = 1
@@ -192,8 +190,6 @@ C notation changed from 'd' to 'd-' for consistency with EMSL
             END IF
 C for backward compatibility the old notation is retained
          ELSE IF (BASNAM(2:9) .EQ. 'aug-cc-p') THEN
-            write(lupri,*) 'cc basis'
-            call flshfo(lupri)
             BASTMP(1:79) = BASNAM(2:80) 
             IF (BASNAM(1:1) .EQ. 'd') THEN
                IAUG = 1
