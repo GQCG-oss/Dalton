@@ -32,12 +32,18 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: rspmai.F,v 1.10 2001-06-22 13:11:19 hjj Exp $
+C$Id: rspmai.F,v 1.11 2001-08-14 08:00:01 hjj Exp $
 C
 #include <single.h>
 #ifdef REVISIONLOG
 /* Comdeck revision_log */
 $Log: not supported by cvs2svn $
+Revision 1.10  2001/06/22 13:11:19  hjj
+New option .TRIPLET for linear response, more logical than that
+you must specify .TRPFLG under **RESPONSE.
+Set TRPFLG true if triplet operators for *QUADRA .DOUBLE
+(earlier .TRPFLG had to be set under **RESPONSE as well). /hjaaj
+
 Revision 1.9  2001/06/22 11:51:22  hjj
 1) stop if HIRPA and RSPCI (incompatible)
 2) removed unused OLDVEC initialization (was in infcr.h)
@@ -3414,7 +3420,7 @@ C
       IF (.NOT.TDHF .OR. MCONF .GT. 1 .OR. MCONRF .GT. 1) THEN
 C     ... abacus sets NCONRF=0 when "ABAHF" true.
          NUMERR = NUMERR + 1
-         WRITE(LUPRI,'(A/A,I5/A,I5A,L5)')
+         WRITE(LUPRI,'(A/A,I5/A,I5,A,L5)')
      *  '@ *** FATAL ERROR IN RSPMC ***',
      *  '@ TOTAL NUMBER OF REFERENCE CONFIGURATIONS FROM SIRINP:',
      *  MCONRF,'@ AND FROM SIRIFC',MCONF,';  TDHF flag is',TDHF
