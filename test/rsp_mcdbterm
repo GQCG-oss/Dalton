@@ -72,11 +72,12 @@ cat > rsp_mcdbterm.dal <<%EOF%
 echo '#!/bin/ksh
 log=$1
 #
-if [ `uname` = IRIX64 ]; then
-   GREP="egrep"
-else
+if [ `uname` = Linux ]; then
    GREP="egrep -a"
+else
+   GREP="egrep"
 fi
+
 #
 # SCF energy
 CRIT1=`$GREP "Hartree\-Fock total energy \: * \-1\.22513194[0-9][0-9]" $log | wc -l`
