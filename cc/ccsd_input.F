@@ -102,7 +102,7 @@ C
 #include <cbieri.h>
 #include <ccroper.h>
 #include <cch2d.h>
-      PARAMETER (NTABLE = 100)
+      PARAMETER (NTABLE = 101)
       LOGICAL   SET, NEWDEF, SIRFF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*(80) LINE
@@ -127,7 +127,8 @@ C
      &            '.RCSKIP','.FCSKIP','.LCSKIP','.CO2SKI','.CX2SKI',
      &            '.CR2SKI','.CF2SKI','.CL2SKI','*DERIVA','.N2SKIP',
      &            '.BRSKIP','.FREEZE','*CCSLV ','*R12   ','*R12 IN',
-     &            '.PAIRS ','.ETAPTI','.DKABAR','*CCOPA ','*NODDY '/
+     &            '.PAIRS ','.ETAPTI','.DKABAR','*CCOPA ','*NODDY ',
+     &            '.NOEONL'/
       DATA SET/.FALSE./
 C
       IF (SET) RETURN
@@ -221,6 +222,7 @@ C
       MXLRV    = MAXRED - 1
       MXDIIS   = 8
       MAXITE   = 40
+      NOEONL   = .FALSE.
       THRLEQ   = 1.0D-05
       THRENR   = 1.0D-08
       THRLDPHF = 1.0D-13
@@ -341,7 +343,7 @@ C
      *                47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,
      *                62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,
      *                77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,
-     *                92,93,94,95,96,97,98,99,100), I
+     *                92,93,94,95,96,97,98,99,100,101), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -750,7 +752,9 @@ C                '*CCOPA '
 C                '*NODDY '
                   CALL CC_NODINP(WORD,.FALSE.)
                GO TO 1000
-
+ 101           CONTINUE
+                  NOEONL = .TRUE.
+               GO TO 1000
             ELSE
                WRITE (LUPRI,'(/3A,/)') ' Prompt "',WORD,
      *            '" not recognized in CC2INP.'

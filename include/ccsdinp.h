@@ -2,7 +2,7 @@
      &        FROIMP, FROEXP, NOCCIT,
      &        CCSAVE, STOLD,  JACEXP, LHTR,
      &        DEBUG,  CCSTST, ANAAOD,
-     &        HERDIR, FREEZE, KEEPAOIN
+     &        HERDIR, FREEZE, KEEPAOIN, NOEONL
 
       LOGICAL ETACCPT, DIRKAPB
 
@@ -21,7 +21,7 @@
      &                   MXDIIS, MXLRV,
      &                   ICHANG, IPRINT, KEEPAOTWO, HERDIR,
      &                   ETACCPT, DIRKAPB,
-     &                   FREEZE, KEEPAOIN 
+     &                   FREEZE, KEEPAOIN, NOEONL  
 
       COMMON /CCMODELS/ CCS,  CIS,  MP2,  CC2,   CC1A,  CC1B,
      &                  MCC2, CCP2, CCD,  CCSD,  CC3,   CCPT,
