@@ -1,6 +1,14 @@
+      INTEGER MAXLLR
       PARAMETER ( MAXLLR = 60 )
       LOGICAL LLROP, SOPRSY, LQRGP
       CHARACTER*8 LBLLR
+#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
+      REAL
+#else
+      DOUBLE PRECISION
+#endif
+     * THCLR, THRNRM
+      INTEGER IPRLR, MAXITL, NGPLR, LRRANK
       COMMON /INFLR/  THCLR, THRNRM,  IPRLR,  MAXITL, NGPLR(8),
      *                LLROP(MAXLLR), SOPRSY, LRRANK(MAXLLR), LQRGP
       COMMON /CHRLR/  LBLLR(8,MAXLLR)
