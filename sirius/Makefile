@@ -22,10 +22,11 @@ newtrahso.o       sirntra.o         intsort.o
 libsirius.a : $(OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 
-#sircino.o snglet.o
+# sirtra.o has to be compiled without less optimization under HP-UX
 
 sirtra.o: sirtra.F
 	$(F77) $(INCLUDE_DIR) $(CPP_FLAGS) $(SAFEOPTFLAGS) -c $*.F
+
 clean : 
 	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a
 
