@@ -14,7 +14,7 @@ molecular coordinates. However, the Z-matrix input provided is only a
 convenient way of describing the molecular geometry, as the Z-matrix is
 converted to Cartesian coordinates, which are then used in the
 subsequent calculations. Note that the Z-matrix input can only be
-used together with the basis set library.
+used together with the basis set library (\quotekw{BASIS} in first line).
 
 The program includes an extensive basis set
 library\index{basis set!library},  and
@@ -246,16 +246,9 @@ For tetrahedrane, the input would then look like
 
 The different lines are:
 \begin{description}
-\item[5] \verb|ZMATL, CHARGE, NUMBER, MAXLP1, (NGRP(I),I=1,MAXLP1)|{\tt (BN,A1,F9.0,25I5)}.
+\item[5] \verb| CHARGE, NUMBER, MAXLP1, (NGRP(I),I=1,MAXLP1)|{\tt (F10.0,25I5)}.
 \begin{description}
-\item[ZMATL] This field must be left blank when Cartesian
-coordinate input\index{Cartesian coordinate input} is used as the field
-is used for checking whether
-Cartesian coordinates or Z-matrix\index{Z-matrix
-input}\index{geometry!Z-matrix input} 
-input is being used. Any non-blank character
-placed in this field will tell the program to use Z-matrix input.
-\item[CHARGE] Charge of this atom\index{charge of atom} type.
+\item[CHARGE] Charge of this atom\index{charge of atom} or point charge.
 \item[NUMBER] Number of {\em symmetry-distinct}\index{symmetry-distinct atom} atoms of
 this type (or, if the symmetry detection routines are being used, all
 atoms of this kind).
@@ -353,9 +346,9 @@ contraction block: the $s$~basis here.
 \index{geometry!Z-matrix input}
 \index{Z-matrix input}
 
-The Z-matrix input provided with \dalton\ is very rudimentary, and
+The Z-matrix input provided with \dalton\ is quite rudimentary, and
 common options like parameter representations of bond length and
-angles as well as dummy atoms are currently not provided. Furthermore,
+angles as well as dummy atoms are not provided. Furthermore,
 the Z-matrix input is not used in the program, but instead immediately
 converted to Cartesian coordinates which are then used in the
 subsequent calculation.
@@ -373,27 +366,28 @@ of 4 characters, and none of the other input variables needed must be
 placed in these positions.
 
 The program will use Z-matrix input\index{Z-matrix input} if there is
-a non-blank character
-in the first position of line 6 in the molecule input, and it is
-important that this position is kept blank if a Cartesian coordinate
-input is  used. On the other hand, if you want to use Z-matrix input
-then at least the name of the atom in line 6 (the first atom)
-{\em must} start in the first position of line 6.
+the word \quotekw{ZMAT} 
+in the first four position of line 6 in the molecule input.
+The following {\tt NONTYP} lines contain the Z-matrix specification
+for the {\tt NONTYP} atoms.
 
 A typical Z-matrix input could be:
 \begin{verbatim}
 BASIS
 6-31G**
-Test input of ammonia
-6-31G** basis set
+   Test Z-matrix input of ammonia
+   6-31G** basis set
     4
+ZMAT
 N   1 7.0
 H1  2 1 1.0116 1.0
 H2  3 1 1.0116 2 106.7 1.0
 H3  4 1 1.0116 2 106.7 3 106.7 1 1.0
 \end{verbatim}
 The five first lines should be familiar by now, and will be discussed
-no further here. The Z-matrix input starts on line 6, and on the first
+no further here. 
+The special 6'th line tells that this is Z-matrix input.
+The Z-matrix input starts on line 7, and on this first Z-matrix
 line only the atom name, a running number and the charge of the
 atom\index{charge of atom}
 is given. The running number is only for
@@ -401,15 +395,15 @@ ease of reference to a given atom, and is actually not used within the
 program, where any reference to an atom, is the number of the
 atom consecutively in the input list.
 
-The second line consists of the atom name, a running number, the
+The second Z-matrix line consists of the atom name, a running number, the
 number of the atom to which this atom is bonded with a given bond
 length in {\AA}ngstr{\"o}ms, and then finally the charge of this atom.
 
-The third line is identical to the second, except that an extra atom
+The third Z-matrix line is identical to the second, except that an extra atom
 number, to which the two first atoms on this line is bonded to with a
 given bond angle in degrees.
 
-On the fourth line yet another atom has been added, and the position
+On the fourth Z-matrix line yet another atom has been added, and the position
 of this atom relative to the three previous ones on this line is
 dependent upon on an extra number inserted just before the nuclear
 charge of this atom. If the next to last number is a 0, the

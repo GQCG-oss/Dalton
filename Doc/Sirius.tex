@@ -1324,17 +1324,25 @@ reordering and punching of orbitals.
    \item[{\tt SIRIFC\ }] Input from {\sir} interface file ("SIRIFC")
    \end{description}
 
-\item[\Key{NOSUPSYM}]
-  Deactivate automatic identification of "super
-  symmetry"\index{supersymmetry} (see
-  comments). This is automatically enforced in case of \aba\ or
-  \resp\ calculations.
+%Oct 2003 hjaaj: now NOSUPSYM always default,
+% SUPSYM must be activated explicitly with .SUPSYM
+%\item[\Key{NOSUPSYM}]
+%  Deactivate automatic identification of "super
+%  symmetry"\index{supersymmetry} (see
+%  comments). This is automatically enforced in case of \aba\ or
+%  \resp\ calculations.
 
 \item[\Key{PUNCHINPUTORBITALS}]
-  Punch input orbitals with label \Sec{*MOLORB}, Format (4F18.14)
+  Punch input orbitals with label \Sec{*MOLORB}, Format (4F18.14).
+  These orbitals may e.g. be transferred to another computer and
+  read there with \quotekw{.MOSTART} followed by \quotekw{ FORM18} on
+  next line from this input section.
 
 \item[\Key{PUNCHOUTPUTORBITALS}]
-  Punch final orbitals with label \Sec{*MOLORB}, Format (4F18.14)
+  Punch final orbitals with label \Sec{*MOLORB}, Format (4F18.14).
+  These orbitals may e.g. be transferred to another computer and
+  read there with \quotekw{.MOSTART} followed by \quotekw{ FORM18} on
+  next line from this input section.
 
 \item[\Key{REORDER}]
 Default: no reordering.
@@ -1356,7 +1364,7 @@ For example if orbitals 1 and 5 in symmetry 1 should change place, specify
   Reordering of molecular orbitals (see comments).
 
 \item[\Key{SUPSYM}]
-  Default.\\
+  Default is NOSUPSYM.\\
   Enforce automatic identification of "super
   symmetry"\index{supersymmetry} (see comments).
 
