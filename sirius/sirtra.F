@@ -280,7 +280,7 @@ C
       RETURN
       END
 C  /* Deck sorta */
-      SUBROUTINE SORTA(LUDA,RINT,IINT,SCR,ISCR,MEMSX,MEMTX)
+      SUBROUTINE SORTA(LUDA,RINT,IINT,SCR,ISCR,MEMSX,MEMTX,IT)
 C
 C....   THIS SUBROUTINE PERFORMS A SORT OF THE AO INTEGRAL FILE PRIOR
 C....    TO THE FIRST HALF OF THE TWO-ELECTRON TRANSFORMATION. THE
@@ -305,16 +305,17 @@ C....       MEMT --    **   *    **    TRANSFORMATION AREA
 C
 #include <implicit.h>
       DIMENSION IINT(*),ISCR(*),SCR(*),RINT(*)
+      INTEGER   IT(*)
 #include <iratdef.h>
 #include <dummy.h>
 C
       PARAMETER (IBUFL = 500)
-      DIMENSION IBUF(IBUFL)
+      INTEGER   IBUF(IBUFL), NAOS(8)
 C
       LOGICAL FEXIST, OLDDX
 C
 #include <priunit.h>
-#include <inttra.h>
+#include "inttra.h"
 #include <inftra.h>
 #include <inftap.h>
 #include <ibtdef.h>
@@ -413,6 +414,8 @@ C     AND DIRECT ACCESS FILE FOR SORTED AO INTEGRALS
 C
       CALL GPOPEN(LUINTA,'AOTWOINT','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
+      CALL MOLLAB('BASINFO ',LUINTA,LUPRI)
+      READ (LUINTA) NSYMAO, (NAOS(I),I=1,8),LBUFAO,NIBUFAO,NBITSAO
 C
       CALL GPINQ('AOSRTINT.DA','EXIST',FEXIST)
       IF (FEXIST) THEN
@@ -433,8 +436,8 @@ C
 C
 C....   AO INTEGRAL FILE SPEC; MOLECULE FORMAT
 C
-      LRINT  = IRAT*600
-      LENINT = LRINT + 600 + 1
+      LRINT  = IRAT*LBUFAO
+      LENINT = LRINT + LBUFAO + 1
 C
 C....    BEGIN THE LOOP OVER PASSES THROUGH AO INTEGRAL FILE
 C
@@ -632,7 +635,7 @@ C
       END
 C  /* Deck sortb */
       SUBROUTINE SORTB(ITRLVL,LUHALF,LUDA2,RINT,IINT,SCR,ISCR,MEMSX,
-     &                 MEMTX)
+     &                 MEMTX,IT)
 C
 C....    THIS ROUTINE SORTS HALF-TRANSFORMED INTEGRALS FOR THE SECOND
 C....    HALF-TRANSFORMATION. AS IN *SORTA*, THE SORT IS OF MULTI-PASS
@@ -652,11 +655,12 @@ C
       PARAMETER (IBUFL = 500)
 #include <iratdef.h>
       DIMENSION IINT(*),ISCR(*),SCR(*),RINT(*),IBUF(IBUFL)
+      INTEGER   IT(*)
       LOGICAL FEXIST
 #include <lbmxsq.h>
 C
 #include <priunit.h>
-#include <inttra.h>
+#include "inttra.h"
 #include <inftra.h>
 #include <inftap.h>
 #include <ibtdef.h>
@@ -917,7 +921,7 @@ C
 C  /* Deck tracd */
 #include <vdir.h>
       SUBROUTINE TRACD(ITRLVL,LUHALF,LUDA,CMOT,BUF,IBUF,OUTB,IOUTB,PQCD,
-     &                 PQRD,TRI)
+     &                 PQRD,TRI,ITSMO,ITSAO,ITSX,IT)
 C
 C Revisions
 C   26-Jul-1984 Hans Joergen Aa. Jensen
@@ -940,11 +944,12 @@ C
 #include <implicit.h>
       DIMENSION CMOT(*),BUF(*),IBUF(*),OUTB(*),IOUTB(*),
      *          PQCD(MORBT,*),PQRD(*),TRI(*)
+      INTEGER   ITSMO(*), ITSAO(*), ITSX(*), IT(*)
 #include <iratdef.h>
 #include <lbmxsq.h>
 C
 #include <priunit.h>
-#include <inttra.h>
+#include "inttra.h"
 #include <inftra.h>
 #include <inftap.h>
 C
@@ -1289,7 +1294,7 @@ C
 C  /* Deck traab */
 #include <vdir.h>
       SUBROUTINE TRAAB(ITRLVL,LUDA2,CMOT,BUF,IBUF,OUTB,IOUTB,ABCD,PBCD,
-     &                 TRI)
+     &                 TRI,ITSMO,ITSAO,ITSW,ITSX,IT)
 C
 C Revised for SIRIUS fall 1983, see below.
 C Revisions:
@@ -1330,11 +1335,12 @@ C
 #include <implicit.h>
       DIMENSION CMOT(*),BUF(*),IBUF(*),OUTB(*),IOUTB(*),
      *          ABCD(MORBT,*),PBCD(*),TRI(*)
+      INTEGER   ITSMO(*), ITSAO(*), ITSW(*), ITSX(*), IT(*)
 #include <iratdef.h>
 C
 #include <priunit.h>
 #include <inforb.h>
-#include <inttra.h>
+#include "inttra.h"
 #include <inftra.h>
 #include <inftap.h>
 C
@@ -1755,9 +1761,81 @@ C  /* Deck tractl */
       SUBROUTINE TRACTL(KTRLVL,CMO,WORK,KWORK)
 C
 C Revisions
+C   050125-hjaaj: new TRACTL_1 for dynamic allocation
+C
+C Input:
+C  KTRLVL, abs(KTRLVL) is transformation level, DELDA = (KTRLVL.lt.0)
+C  CMO,   mo coefficients
+C  WORK,  work array
+C  KWORK, actual length of work array
+C
+#include <implicit.h>
+#include <dummy.h>
+      DIMENSION CMO(*), WORK(KWORK)
+#include <iratdef.h>
+#include <thrzer.h>
+#include <lbmxsq.h>
+C
+C Used from common blocks:
+C
+#include <priunit.h>
+#include <inforb.h>
+#include <exeinf.h>
+#include "inttra.h"
+#include <inftra.h>
+#include <inftap.h>
+#include <gnrinf.h>
+C
+      DIMENSION MFRO(8)
+      LOGICAL VFIRST, FOPEN, DELDA, FEXIST
+      SAVE VFIRST, IPRTRA_SAVE, LDBUF, LRBUF, ITRSAV
+      DATA VFIRST /.TRUE./
+C
+C     VFIRST is is used to control setting of print level, see below.
+C
+C     MAKE SURE BLOCK DATA MODULE FOR INFTRA IS INCLUDED :
+C
+      EXTERNAL BDTRA
+C
+      IF (VFIRST) THEN
+C        if SIRIUS has been called, IPRTRA_SAVE will have value
+C        from SIRIUS in all TRACTL calls, if SIRIUS has
+C        not been called before ABACUS is called, then
+C        the value specified in RHSINP for DERTRA is
+C        used. This makes sure that the SIRIUS value is
+C        always used if it has been defined, and the a
+C        value is defined otherwise.
+C
+         IPRTRA_SAVE = IPRTRA
+         VFIRST = .FALSE.
+      ELSE
+         IPRTRA = IPRTRA_SAVE
+      END IF
+C
+C
+      IF (NEWTRA) THEN
+         CALL N_TRACTL(KTRLVL,CMO,WORK,KWORK)
+      ELSE
+         KFRSAV = 1
+         KFREE  = 1
+         LFREE  = KWORK
+         CALL MEMGET('INTE',KITSMO,NORBT,WORK,KFREE,LFREE)
+         CALL MEMGET('INTE',KITSAO,NORBT,WORK,KFREE,LFREE)
+         CALL MEMGET('INTE',KITSW ,NORBT,WORK,KFREE,LFREE)
+         CALL MEMGET('INTE',KITSX ,NORBT,WORK,KFREE,LFREE)
+         CALL MEMGET('INTE',KIT   ,NORBT+1,WORK,KFREE,LFREE)
+         CALL TRACTL_1(KTRLVL,CMO,WORK(KITSMO),WORK(KITSAO),
+     &        WORK(KITSW),WORK(KITSX),WORK(KIT),WORK(KFREE),LFREE)
+         CALL MEMREL('TRACTL_1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      END IF
+      RETURN
+      END
+C  /* Deck tractl_1 */
+      SUBROUTINE TRACTL_1(KTRLVL,CMO,ITSMO,ITSAO,ITSW,ITSX,IT,
+     &                    WORK,KWORK)
+C
+C Revisions
 C   18-Apr-1984 hjaaj / 4-Dec-1983 hjaaj
-C   10-Jul-1984 hjaaj
-C    5-Sep-1984 hjaaj
 C   13-Dec-1984 hjaaj (ITRLVL=3 option)
 C   28-Aug-1986 hjaaj (test on LTRI, ITRLVL=4 option)
 C   18-May-1987 hjaaj (ITRLVL=5 option)
@@ -1766,6 +1844,8 @@ C   10-Feb-1989 hjaaj (ITRLVL=10, full integral transf.)
 C   890615-hjaaj disabled if (first) for orb.spec., so it can be used
 C                in combination runs.
 C   900801-hjaaj: added CMO to LUINTM
+C   050125-hjaaj: TRACTL divided in TRACTL and TRACTL_1 for dynamic allocation
+C                 of IT, ITSMO, ITSAO, ITSW, ITSX
 C
 C Input:
 C  KTRLVL, abs(KTRLVL) is transformation level, DELDA = (KTRLVL.lt.0)
@@ -1787,11 +1867,13 @@ C          SORTB (BIN SORT OF INTEGRALS (PQ/CD))
 C          TRAAB (TRANSFORMATION OF (PQ/CD) INTO (AB/CD))
 C          MOLLAB
 C
+C  Based on:
 C     CASSCF:TRANSFORMATION SECTION.CONTROL ROUTINE
 C      ********** RELEASE 79 04 20 **********
 C
 #include <implicit.h>
 #include <dummy.h>
+      INTEGER   ITSMO(*), ITSAO(*), ITSW(*), ITSX(*), IT(*)
       DIMENSION CMO(*), WORK(KWORK)
 #include <iratdef.h>
 #include <thrzer.h>
@@ -1806,49 +1888,22 @@ C
 #include <inforb.h>
 #include <exeinf.h>
 #include "infdim.h"
-#include <inttra.h>
+#include "inttra.h"
 #include <inftra.h>
 #include <inftap.h>
 #include <gnrinf.h>
 #include <cbgetdis.h>
 C
       DIMENSION MFRO(8)
-      LOGICAL VFIRST, FOPEN, DELDA, FEXIST
-      SAVE VFIRST, LDBUF, LRBUF, ITRSAV
-      DATA VFIRST /.TRUE./
+      LOGICAL FOPEN, DELDA, FEXIST
+      SAVE LDBUF, LRBUF, ITRSAV
 C
-C     VFIRST is is used to control setting of print level,
-C     see below.
-C
-C     MAKE SURE BLOCK DATA MODULE FOR INFTRA IS INCLUDED :
-C
-      EXTERNAL BDTRA
-C
-      IF (VFIRST) THEN
-C        if SIRIUS has been called, IPTRAB will have value
-C        from SIRIUS in all TRACTL calls, if SIRIUS has
-C        not been called before ABACUS is called, then
-C        the value specified in RHSINP for DERTRA is
-C        used. This makes sure that the SIRIUS value is
-C        always used if it has been defined, and the a
-C        value is defined otherwise.
-C
-         IPTRAB = IPRTRA
-         VFIRST = .FALSE.
-      ELSE
-         IPRTRA = IPTRAB
-      END IF
-C
-      IF (NEWTRA) THEN
-         CALL N_TRACTL(KTRLVL,CMO,WORK,KWORK)
-         RETURN
-      END IF
-      CALL QENTER('TRACTL')
+      CALL QENTER('TRACTL_1')
       ITRLVL = ABS(KTRLVL)
       DELDA  = (KTRLVL .LT. 0)
       IF (IPRTRA .GT. 5) THEN
-         WRITE(LUPRI,*) 'TRACTL(KTRLVL,CMO,WORK,KWORK,MWORK)'
-         WRITE(LUPRI,*) '==================================='
+         WRITE(LUPRI,*) 'TRACTL_1(KTRLVL,CMO,WORK,KWORK,MWORK)'
+         WRITE(LUPRI,*) '====================================='
          WRITE(LUPRI,*) 'KTRLVL = ', KTRLVL
          WRITE(LUPRI,*) 'KWORK  = ', KWORK
          WRITE(LUPRI,*) 'MWORK  = ', MWORK
@@ -1874,7 +1929,7 @@ C        ... force new integral sort and transformation
       END IF
       LWORK = MIN(KWORK,MWORK)
       IF (JTER.EQ.1) WRITE(LUPRI,903) LWORK
-  903 FORMAT(/,' WORKING AREA IN TRANSFORMATION SECTION ',I10)
+  903 FORMAT(/' WORKING AREA IN TRANSFORMATION SECTION ',I10)
 C     ***** SET THRESHOLDS *****
 C     *********** THRP: THRESHOLD USED IN TRACD AND TRAAB
 C     *********** THRQ: THRESHOLD USED IN SORTA FOR INTEGRALS (PQ/RS)
@@ -1923,9 +1978,9 @@ C
  1000 FORMAT(/,' TRANSFORMATION SECTION: PARAMETER =',I4)
       IF (ITRLVL.GT.5 .AND. ITRLVL .NE. 10) THEN
          WRITE (LUPRI,'(//A)')
-     1      ' TRACTL, parameter outside valid range'
+     1      ' TRACTL_1, parameter outside valid range'
          CALL QTRACE(LUPRI)
-         CALL QUIT('ERROR, INVALID TRANSFORMATION PARAMETER (TRACTL)')
+         CALL QUIT('ERROR, INVALID TRANSFORMATION PARAMETER (TRACTL_1)')
       END IF
 C
 C     ***** Assign INTTRA from INFORB *****
@@ -1939,7 +1994,7 @@ C     Note: index on LUITM are wrong if MFRO(ISYM) .ne. 0 !!
          MBAS(ISYM) = NBAS(ISYM)
     5 CONTINUE
 C
-C     If first call of TRACTL set up orbital information in /INTTRA/
+C     If first call of TRACTL_1 set up orbital information in /INTTRA/
 C        ... 890615 - hjaaj: in new combination runs
 C            (e.g. RHF-MP2-CI) number of active orbitals will change
 C            therefore we now must recalculate this information
@@ -1967,11 +2022,11 @@ C
 CHJ-S-841208
          IF (MORBT.GT.255 .OR. MBAST.GT.255) THEN
             WRITE (LUPRI,*)
-     *         'TRACTL-ERROR; TRACTL is limited to 255 orbitals'
+     *         'TRACTL_1-ERROR; TRACTL_1 is limited to 255 orbitals'
             WRITE (LUPRI,*)
      *         'NORBT =',MORBT,', NBAST =',MBAST
             CALL QTRACE(LUPRI)
-            CALL QUIT('TRACTL: TOO MANY ORBITALS')
+            CALL QUIT('TRACTL_1: TOO MANY ORBITALS')
          END IF
 CHJ-E-841208
          NMBASX=MBAST*(MBAST+1)/2
@@ -2005,7 +2060,7 @@ C        ***** COMPUTE SYMMETRY INDEX ITSAO and ITSMO *****
    25       CONTINUE
    30    CONTINUE
 C
-C        MCMOT   : SIZE OF THE MO-SPACE
+C        MCMOT : SIZE OF THE MO-SPACE
 C        NNOCX : NUMBER OF OCCUPIED PAIRS
 C        MAXCHA: MAXIMUM NUMBER OF DA CHAINS
 C        LDAMAX: MAXIMUM SIZE OF DA RECORDS
@@ -2152,9 +2207,9 @@ C
             WRITE(LUPRI,'(/A,6I9)')
      *      ' LW1, LW2, ..., LW6 :',LW1,LW2,LW3,LW4,LW5,LW6
             CALL QTRACE(LUPRI)
-            CALL QUIT('TRACTL: INSUFFICIENT SPACE FOR TRACD')
+            CALL QUIT('TRACTL_1: INSUFFICIENT SPACE FOR TRACD')
          END IF
- 9030    FORMAT(/' TRACTL, not enough work space for TRACD,',
+ 9030    FORMAT(/' TRACTL_1, not enough work space for TRACD,',
      *          /'         work space increased to',I10/)
  9000    FORMAT(/' WORK SPACE IN TRACD,',I10,', IS MUCH TOO SMALL.')
       END IF
@@ -2217,9 +2272,9 @@ C     971201-hjaaj: code moved to here (was too late)
 C        LSRTAO .ne. 0 should cover all situations where
 C        it is possible that MO integrals already exist
 C        on LUINTM. NOTE: this requires that SIROPI has been
-C        called before first call to TRACTL !!!!!!
+C        called before first call to TRACTL_1 !!!!!!
 C        SIROPI will set LSRTAO = -1 if LUINTM exists with
-C        a 'MOLTWOEL' label. Whenever TRACTL has performed
+C        a 'MOLTWOEL' label. Whenever TRACTL_1 has performed
 C        a transformation LSRTAO will be = +1.
 C     
 C   
@@ -2237,7 +2292,7 @@ C           and subtract from input CMO matrix
             I = IDAMAX(NCMOT,WORK,1)
             IF (ABS(WORK(I)) .LE. THRZER) THEN
                IF (IPRTRA.GE.0) WRITE (LUPRI,'(/A/A)')
-     *            ' TRACTL: Integral transformation abandoned,',
+     *            ' TRACTL_1: Integral transformation abandoned,',
      *            ' the required MO integrals are already available.'
                LBINTM = LBINT1
                GO TO 9999
@@ -2288,8 +2343,8 @@ C        Now done by deleting the file, just in case it has been split
 C        K.Ruud, April 19 2000
 C
          CALL SORTA(LUDA,WORK,WORK,WORK(KWORK1),WORK(KWORK1),
-     *              LWORK1,LTRI)
-C        CALL SORTA(RINT,IINT,SCR,ISCR,MEMSX,MEMTX)
+     *              LWORK1,LTRI,IT)
+C        CALL SORTA(RINT,IINT,SCR,ISCR,MEMSX,MEMTX,IT)
          DFIN = SECOND()
          DTIM = DFIN - DST
          DST  = DFIN
@@ -2307,11 +2362,11 @@ C
          LTRIPQ = NPQ*NMBASX
          LBUF = (IRAT + 1)*LDABUF + 2
          IF (LTRI .LT. LTRIPQ) THEN
-C           This will only happen if TRACTL is called with (much) less
+C           This will only happen if TRACTL_1 is called with (much) less
 C           work space than was available when SORTA was called.
             LTRI = KWORK - LW6 + 1
             IF (LTRI .LT. LTRIPQ)
-     *      CALL ERRWRK('TRACTL.TRACD, too large chains',LTRIPQ,LTRI)
+     *      CALL ERRWRK('TRACTL_1.TRACD, too large chains',LTRIPQ,LTRI)
          END IF
          IF (LUDA .LE. 0) CALL GPOPEN(LUDA,'AOSRTINT.DA','OLD',
      &                                'DIRECT','UNFORMATTED',LBUF,OLDDX)
@@ -2337,7 +2392,8 @@ C
 C     ***** CALLING SEQUENCE FOR FIRST TRANSFORMATION STEP *****
 C
       CALL TRACD(ITRLVL,LUHALF,LUDA,WORK(LW1),WORK(LW2),WORK(LW2),
-     *           WORK(LW3),WORK(LW3),WORK(LW4),WORK(LW5),WORK(LW6))
+     &           WORK(LW3),WORK(LW3),WORK(LW4),WORK(LW5),WORK(LW6),
+     &           ITSMO,ITSAO,ITSX,IT)
       DFIN = SECOND()
       DTIM = DFIN - DST
       DST  = DFIN
@@ -2365,7 +2421,7 @@ C
 C     ***** CALLING SEQUENCE FOR SECOND SORT *****
 C
       CALL SORTB(ITRLVL,LUHALF,LUDA2,WORK,WORK,WORK(KWORK1),
-     1           WORK(KWORK1),LWORK1,LTRI)
+     1           WORK(KWORK1),LWORK1,LTRI,IT)
       CALL GPCLOSE(LUHALF,'DELETE')
       DFIN = SECOND()
       DTIM = DFIN - DST
@@ -2398,7 +2454,8 @@ C 860731-hjaaj: done
       WRITE (LUINTM) (CMO(I),I=1,NCMOT)
 C
       CALL TRAAB(ITRLVL,LUDA2,WORK(LW1),WORK(LW2),WORK(LW2),
-     *           WORK(LW3),WORK(LW3),WORK(LW4),WORK(LW5),WORK(LW6))
+     &           WORK(LW3),WORK(LW3),WORK(LW4),WORK(LW5),WORK(LW6),
+     &           ITSMO,ITSAO,ITSW,ITSX,IT)
       IF (LPQCD.GT.0) CALL GPCLOSE(LUDA2,'DELETE')
 C
       DFIN = SECOND()
@@ -2406,7 +2463,7 @@ C
       IF (IPRTRA .GT. 0) WRITE (LUPRI,49) DTIM
    49 FORMAT(' TOTAL TIME IN TRACD,SORTB,TRAAB',F10.2)
 C
-C set JTER to 2 to suppress printing on next call of TRACTL/hj-840710
+C set JTER to 2 to suppress printing on next call of TRACTL_1/hj-840710
       IF (IPRTRA .LT. 10) JTER = 2
 C
 C
@@ -2427,11 +2484,11 @@ C           ... all active-active distributions
          CALL DRCCTL(LVLDRC,CMO,WORK,LWORK)
          CALL FLSHFO(LUPRI)
       END IF
-      CALL QEXIT('TRACTL')
+      CALL QEXIT('TRACTL_1')
       RETURN
 C
 C
-C     End of TRACTL
+C     End of TRACTL_1
 C
       END
 C  /* Deck bdtra */
@@ -2439,7 +2496,7 @@ C  /* Deck bdtra */
 C
 C     Define MUL in /INTTRA/
 C
-#include <inttra.h>
+#include "inttra.h"
 C
 C
 C     MULTIPLICATION TABLE FOR SYMMETRIES
