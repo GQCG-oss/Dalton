@@ -1124,22 +1124,26 @@ options selects individual contributions
 The following are utility options for modifying the default calculational
 procedure.
 \begin{description}
-%  \item{\Key{ZERO}}
-%  \verb|READ(LUCMD,'(A80)')G_LINE |\\
-%  This option is mainly for linear molecules in a $\Sigma$ state.
-%  Specifying e.g. "ZZ" on the input line instructs the program
-%  to skip the calculation of the paramagnetic contribution to $g_{zz}$.
+  \item{\Key{ADD-SO}}
+  Adds the 1- and 2-electron spin-orbit operators. This 
+  option may be used when one is not interested in the individual
+  1- and 2-electron contribution to the paramagnetic g-tensor,
+  since it reduces the number of response equations to be solved.
    \item{\Key{MEAN-FIELD}}
    Uses the approximate atomic mean field (AMFI) spin-orbit operator
    for evaluating the paramagnetic contributions.
+%   \item{\Key{OWN-OT}} Calculates separately the spin-own-orbit and
+%   spin-other-orbit contributions to the 2-electron spin-orbit
+%   operator contribution to the g tensor. 
    \item{\Key{SCALED}}
    Uses the approximate 1-electron spin-orbit operator with scaled nuclear
-   charges taken from Ref.~\cite{} for evaluating the paramagnetic contributions.
-%  \item{\Key{ADD-SO}}
-%  Adds the 1- and 2-electron spin-orbit operators. This 
-%  option may be used when one is not interested in the individual
-%  1- and 2-electron contribution to the paramagnetic g-tensor,
-%  since it reduces the number of response equations to be solved.
+   charges taken from Ref.~\cite{skmwsmsgjpca102} for evaluating the paramagnetic contributions.
+%\item{\Key{TEST A}} 
+  \item{\Key{ZERO}}
+  \verb|READ(LUCMD,'(A80)')G_LINE |\\
+  This option is mainly for linear molecules in a $\Sigma$ state.
+  Specifying e.g. "ZZ" on the input line instructs the program
+  to skip the calculation of the paramagnetic contribution to $g_{zz}$.
 \end{description}
 
 
