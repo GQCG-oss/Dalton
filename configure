@@ -257,6 +257,13 @@ elif [ $WHICH = 'hp' ]; then
          fi
        fi
     fi
+elif [ $WHICH = 'rs6000' ]; then
+    get_yes_or_no "Is this a 64-bit architecture?"
+    if [ "$answer" = "y" ]; then
+	bit='64'
+    else
+	bit='32'
+    fi
 fi
 
 #
@@ -790,8 +797,13 @@ case "$WHICH" in
 		       cpp=${cpp}",-DNO_F90"
 		   fi
             esac
-            copt="$copt -I../include -DSYS_AIX -D_LARGE_FILES -qlanglvl=stdc99 -DRESTRICT=restrict -O3 -qarch=auto -qtune=auto"
-            opt='-O3 -qstrict -qarch=auto -qtune=auto -qmaxmem=-1 -bmaxdata:0x80000000 -bmaxstack:0x10000000 -qextname';;
+	    if [ $bit = '32' ]; then
+		copt="$copt -I../include -DSYS_AIX -D_LARGE_FILES -qlanglvl=stdc99 -DRESTRICT=restrict -O3 -qarch=auto -qtune=auto"
+		opt='-O3 -qstrict -qarch=auto -qtune=auto -qmaxmem=-1 -bmaxdata:0x80000000 -bmaxstack:0x10000000 -qextname'
+	    else
+		copt="$copt -I../include -DSYS_AIX -D_LARGE_FILES -qlanglvl=stdc99 -DRESTRICT=restrict -O3 -qarch=auto -qtune=auto -q64"
+		opt='-O3 -qstrict -qarch=auto -qtune=auto -qmaxmem=-1 -bmaxdata:0x80000000 -bmaxstack:0x10000000 -qextname -q64'
+	    fi;;
     iris4d) case $opsys in
                IRIX64) opt='-O2 -64 -mips4 -G 0 -woff 2290 -OPT:Olimit=0'
                        copt='-O2 -64 -mips4 -G 0 -OPT:Olimit=0';;
@@ -1080,6 +1092,12 @@ case "$WHICH" in
             LIB="$LIB -L/usr/ucblib -lucb"
 esac
 
+if [ "$WHICH" = "rs6000" -a "$bit" = "64" ]; then
+    arcommand="ar -X 64"
+else
+    arcommand="ar"
+fi
+
 # for safe compilers, set safe_opt to opt
 if [ -z "$safe_opt" ]; then safe_opt="$opt"; fi
 
@@ -1099,7 +1117,7 @@ LIBS          = $LIB $ldflags
 INSTALLDIR    = $INSTALL_DIR
 PDPACK_EXTRAS = $pdpackextras
 GP_EXTRAS     = $gpextras
-AR            = ar
+AR            = $arcommand
 ARFLAGS       = rvs
 # flags for ftnchek on Dalton /hjaaj
 CHEKFLAGS  = -nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet \
