@@ -99,7 +99,7 @@ C
 C
 C     Test on the number of electrons
 C   
-      WRITE(2,*) ' node ', mynum,' knows of ', electrons
+D     WRITE(2,*) ' node ', mynum,' knows of ', electrons
       CALL  DFTINTCOLLECT(ELECTRONS)
 #ifdef VAR_MPI
       CHECKELS = MYNUM.EQ.0
@@ -109,7 +109,7 @@ C
       ELCTRX = FLOAT(2*NISHT + NASHT)
       ERROR  = ELECTRONS - ELCTRX
       IF (CHECKELS.AND.ABS(ERROR) .GT. DFTELS) THEN
-         print *,"ERROR=",ERROR,ELECTRONS
+D        print *,"ERROR=",ERROR,ELECTRONS
          WRITE (LUPRI,'(4(/2X,A,F14.6),/2X,A)')
      &   ' Number of electrons from numerical integration:',ELECTRONS,
      &   ' Number of electrons from orbital occupations:  ',ELCTRX,
