@@ -54,28 +54,18 @@ C     order:
 C           T1AM(*), OMEGA1(*), OMEGA2(*), T2AM(*), SCR(*), WRK(*).
 C
 C
-#if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#else
-#  include <implicit.h>
-#endif
 #include <priunit.h>
 #include <dummy.h>
 #include <maxorb.h>
-#include <maxash.h>
-#include <aovec.h>
-C#include <inforb.h>
 #include <ccorb.h>
-#include <infind.h>
-#include <iratdef.h>
-#include <blocks.h>
 #include <inftap.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
-C#include <ccsdio.h>
-#include <mxcent.h>
-#include <eribuf.h>
 #include <ccfield.h>
+C
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG = .FALSE.)
 
 #if defined (SYS_CRAY)
       REAL ZERO, HALF, ONE, TWO
@@ -84,55 +74,36 @@ C#include <ccsdio.h>
 #endif
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
-      INTEGER INDEXA(MXCORB), LWORK
+      INTEGER LWORK
 #if defined (SYS_CRAY)
       REAL OMEGA1(*),OMEGA2(*),T1AM(*),T2AM(*),FOCK(*)
       REAL XLAMDP(*),XLAMDH(*),WORK(LWORK)
+      REAL DDOT, FF
 #else
       DOUBLE PRECISION OMEGA1(*),OMEGA2(*),T1AM(*),T2AM(*),FOCK(*)
       DOUBLE PRECISION XLAMDP(*),XLAMDH(*),WORK(LWORK)
+      DOUBLE PRECISION DDOT, FF
 #endif
 C
-C
-      INTEGER INDEX, KCMO, KSCR1, KFOCKD, KINT1, KINT2, KINT1T, KINT2T,
-     &        KINT1S, KINT2S, KT3AM, KOME1, KOME2, KIAJB, KSIG2, KYIAJB,
-     &        KEND1, LWRK1, KT3AM2, KONEP, KONEP2, KEND2, NTOSYM,
-     &        ISYMD1, NTOT, ILLL, NUMDIS, IDEL2, ISYMD, KXINT, LWRK2,
-     &        IJ, NIJ, ISYDIS, KRECNR, IDEL
-#if defined (SYS_CRAY)
-      REAL RHO1N, DDOT, FOCKN,  TIMRDAO, XNORM, DTIME, FF,
-     &     TIMHER1, TIMHER2, SECOND
-#else
-      DOUBLE PRECISION RHO1N, DDOT, FOCKN,  TIMRDAO, XNORM, DTIME, FF,
-     &     TIMHER1, TIMHER2, SECOND
-#endif
+      INTEGER INDEX, KSCR1, KFOCKD, KINT1T, KINT2T,
+     &        KINT1S, KINT2S, KT3AM, KOME1, KOME2, KIAJB, KYIAJB,
+     &        KEND1, LWRK1, KT3AM2, KONEP, KEND2, 
+     &        ISYMD1, ILLL, ISYMD, KXINT, LWRK2,
+     &        IJ, NIJ, ISYDIS, IDEL
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
-      IF (NSYM .NE. 1) THEN
-         CALL QUIT('No symmetry in this part yet')
-      ENDIF
+      IF (DIRECT) CALL QUIT('Direct not implemented in CCSD_TRIPLE')
+
+      IF (NSYM.NE.1) CALL QUIT('No symmetry in CCSD_TRIPLE')
 C
-COMMENT COMMENT
-COMMENT COMMENT
-      rho1n = ddot(nt1amx,t1am,1,t1am,1)
-      write(lupri,*) 'Norm of incoming T1 = ',rho1n
-      rho1n = ddot(nt1amx*nt1amx,t2am,1,t2am,1)
-      write(lupri,*) 'Norm of incoming T1 = ',rho1n
-      fockn = ddot(n2bst(isymop),fock,1,fock,1)
-      write(lupri,*) 'Norm of incoming F = ',fockn
-COMMENT COMMENT
-COMMENT COMMENT
 C------------------------
 C     Dynamic Allocation.
 C------------------------
 C
-      KCMO   = 1
-      KSCR1  = KCMO   + NLAMDT
+      KSCR1  = 1
       KFOCKD = KSCR1  + NT1AMX
-      KINT1  = KFOCKD + NORBT
-      KINT2  = KINT1  + NT1AMX*NVIRT*NVIRT
-      KINT1T = KINT2  + NRHFT*NRHFT*NT1AMX
+      KINT1T = KFOCKD + NORBT
       KINT2T = KINT1T + NT1AMX*NVIRT*NVIRT
       KINT1S = KINT2T + NRHFT*NRHFT*NT1AMX
       KINT2S = KINT1S + NT1AMX*NVIRT*NVIRT
@@ -140,17 +111,16 @@ C
       KOME1  = KT3AM  + NT1AMX*NT1AMX*NT1AMX
       KOME2  = KOME1  + NT1AMX
       KIAJB  = KOME2  + NT1AMX*NT1AMX
-      KSIG2  = KOME2  + NT1AMX*NT1AMX
-      KYIAJB = KSIG2  + NT1AMX*NT1AMX
+      KYIAJB = KIAJB  + NT1AMX*NT1AMX
       KEND1  = KYIAJB + NT1AMX*NT1AMX
+C
+      IF ((NONHF) .AND. (NFIELD .GT. 0)) THEN
+         KONEP  = KEND1
+         KT3AM2 = KONEP + N2BST(ISYMOP)
+         KEND1  = KT3AM2 + NT1AMX*NT1AMX*NT1AMX
+      ENDIF
+C
       LWRK1  = LWORK  - KEND1
-C
-C     IF ((NONHF) .AND. (NFIELD .GT. 0)) THEN
-         KT3AM2 = KEND1
-         KEND1  = KT3AM2  + NT1AMX*NT1AMX*NT1AMX
-         LWRK1  = LWORK  - KEND1
-C     ENDIF
-C
       IF (LWRK1 .LT. 0) THEN
          CALL QUIT('Insufficient space in CCSD_TRIPLE')
       ENDIF
@@ -159,240 +129,113 @@ C--------------------------------
 C     Initialize integral arrays.
 C--------------------------------
 C
-      CALL DZERO(WORK(KINT1),NT1AMX*NVIRT*NVIRT)
-      CALL DZERO(WORK(KINT2),NT1AMX*NRHFT*NRHFT)
       CALL DZERO(WORK(KINT1T),NT1AMX*NVIRT*NVIRT)
       CALL DZERO(WORK(KINT2T),NT1AMX*NRHFT*NRHFT)
       CALL DZERO(WORK(KINT1S),NT1AMX*NVIRT*NVIRT)
       CALL DZERO(WORK(KINT2S),NT1AMX*NRHFT*NRHFT)
-      CALL DZERO(WORK(KT3AM),NT1AMX*NT1AMX*NT1AMX)
       CALL DZERO(WORK(KOME1),NT1AMX)
       CALL DZERO(WORK(KOME2),NT1AMX*NT1AMX)
       CALL DZERO(WORK(KIAJB),NT1AMX*NT1AMX)
       CALL DZERO(WORK(KYIAJB),NT1AMX*NT1AMX)
-      CALL DZERO(WORK(KSIG2),NT1AMX*NT1AMX)
 C
-      IF ((NONHF) .AND. (NFIELD .GT. 0)) THEN
-         CALL DZERO(WORK(KT3AM2),NT1AMX*NT1AMX*NT1AMX)
-      ENDIF
-C
-C----------------------------------------------
-C     Read MO-coefficients from interface file.
-C----------------------------------------------
+C--------------------------------------------------------
+C     Read canonical orbital energies from interface file
+C--------------------------------------------------------
 C
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUSIFC
-C
-      CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
-C
-      READ (LUSIFC)
-      READ (LUSIFC)
-      READ (LUSIFC) (WORK(KCMO+I-1), I=1,NLAMDT)
-C
-C-------------------------------------
-C     Read canonical orbital energies.
-C-------------------------------------
-C
-      REWIND LUSIFC
-C
       CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
       READ (LUSIFC)
       READ (LUSIFC) (WORK(KFOCKD+I-1), I=1,NORBT)
-C
       CALL GPCLOSE(LUSIFC,'KEEP')
 C
 C=======================================================
-C     Get the one electron integrals from the fields
+C     Get the one electron integrals for the fields
 C=======================================================
 C
       IF ((NONHF) .AND. NFIELD .GT. 0) THEN
-C
-         KONEP = KEND1
-         KEND1 = KONEP + N2BST(ISYMOP)
-         LWRK1 = LWORK - KEND1
-C
          CALL DZERO(WORK(KONEP),N2BST(ISYMOP))
-C
          DO I = 1, NFIELD
-C
-            KONEP2 = KEND1
-            KEND2  = KONEP2 + N2BST(ISYMOP)
-            LWRK2  = LWORK - KEND2
-C
-            IF (LWRK2 .LT. N2BST(ISYMOP)) THEN
-               CALL QUIT('Exceeded workmemory in CC_FOP3 (Field)')
-            ENDIF
-C
-            CALL DZERO(WORK(KONEP2),N2BST(ISYMOP))
             FF = EFIELD(I)
-            CALL CC_ONEP(WORK(KONEP2),WORK(KEND2),LWRK2,FF,1,LFIELD(I))
-C
-            CALL DAXPY(N2BST(ISYMOP),1.0D0,WORK(KONEP2),1,WORK(KONEP),1)
-            fockn = ddot(n2bst(isymop),work(konep),1,work(konep),1)
-            write(lupri,*) 'Norm ONEP after adding field = ',I,fockn
+            CALL CC_ONEP(WORK(KONEP),WORK(KEND1),LWRK1,FF,1,LFIELD(I))
          ENDDO
-C
-         IF (IPRINT .GT. 50) THEN
-            CALL AROUND( 'FOP3 : Usual AO matrix from field(s)' )
-            CALL CC_PRFCKAO(WORK(KONEP),ISYMOP)
-         ENDIF
-C
          CALL CC_FCKMO(WORK(KONEP),XLAMDP,XLAMDH,
      *                 WORK(KEND1),LWRK1,1,1,1)
-         fockn = ddot(n2bst(isymop),work(konep),1,work(konep),1)
-         write(lupri,*) 'Norm ONEP in MO basis= ',I,fockn
-C
-COMMENT
-          IF (IPRINT .GT. 50) THEN
-COMMENT
-            CALL AROUND('OUTPUT OF STRENGTH ONEP')
-            CALL OUTPUT(WORK(KONEP),1,NORBT,1,NORBT,NORBT,NORBT,
-     *                  1,LUPRI)
-COMMENT
-          ENDIF
-COMMENT
-C         should not be added, because FOCK already contains fields!!!
-C         CALL DAXPY(N2BST(ISYMOP),1.0D0,WORK(KONEP),1,FOCK,1)
-COMMENT
-          IF (IPRINT .GT. 50) THEN
-COMMENT
-C           CALL AROUND('OUTPUT OF FOCK+STRENGTH ONEP')
-            CALL AROUND('OUTPUT OF FOCK')
-            CALL OUTPUT(FOCK,1,NORBT,1,NORBT,NORBT,NORBT,
-     *                  1,LUPRI)
-COMMENT
-          ENDIF
-COMMENT
       ENDIF
 C
 C====================================================
 C     Start the loop over distributions of integrals.
 C====================================================
 C
-      IF (DIRECT) THEN
-         NTOSYM = 1
-         DTIME  = SECOND()
-c        CALL HERDI1(WORK(KEND1),LWRK1,IPRINT)
-         CALL QUIT('Direct not implemented')
-         DTIME  = SECOND() - DTIME
-         TIMHER1 = TIMHER1 + DTIME
-      ELSE
-         NTOSYM = NSYM
-      ENDIF
+      DO ISYMD1 = 1,NSYM
 C
-      DO 100 ISYMD1 = 1,NTOSYM
+         DO ILLL = 1, NBAS(ISYMD1)
 C
-         IF (DIRECT) THEN
-            NTOT = MAXSHL
-         ELSE
-            NTOT = NBAS(ISYMD1)
-         ENDIF
+            IDEL  = IBAS(ISYMD1) + ILLL
+            ISYMD = ISYMD1
 C
-         DO 110 ILLL = 1,NTOT
+            ISYDIS = MULD2H(ISYMD,ISYMOP)
 C
-C-----------------------------------------------------------------
-C           If direct calculate the integrals and transposed t2am.
-C-----------------------------------------------------------------
+C           ----------------------------
+C           Work space allocation no. 2.
+C           ----------------------------
+            KXINT  = KEND1
+            KEND2  = KXINT + NDISAO(ISYDIS)
+            LWRK2  = LWORK - KEND2
 C
-            IF (DIRECT) THEN
-               DTIME  = SECOND()
-c              CALL HERDI2(WORK(KEND1),LWRK1,INDEXA,ILLL,NUMDIS,IPRINT)
-               CALL QUIT('Direct not implemented')
-               DTIME  = SECOND() - DTIME
-               TIMHER2 = TIMHER2 + DTIME
-COMMENT COMMENT
-               KRECNR = KEND1
-               KEND1  = KRECNR + (NBUFX(0) - 1)/IRAT + 1
-               LWRK1  = LWORK  - KEND1
-               IF (LWRK1 .LT. 0) THEN
-                  CALL QUIT('Insufficient core in CC_FOP3')
-               END IF
-COMMENT COMMENT
-            ELSE
-               NUMDIS = 1
+            IF (LWRK2 .LT. 0) THEN
+               WRITE(LUPRI,*) 'Need : ',KEND2,'Available : ',LWORK
+               CALL QUIT('Insufficient space in CCSD_TRIPLE')
             ENDIF
 C
-C-----------------------------------------------------
-C           Loop over number of distributions in disk.
-C-----------------------------------------------------
+C           ---------------------------
+C           Read in batch of integrals.
+C           ---------------------------
+            CALL CCRDAO(WORK(KXINT),IDEL,1,WORK(KEND2),LWRK2,
+     *                  IDUMMY,DIRECT)
 C
-            DO 120 IDEL2 = 1,NUMDIS
+C           --------------------------
+C           Calculate integrals needed
+C           --------------------------
+            CALL CCSDT_TRAN1(WORK(KINT1T),WORK(KINT2T),XLAMDP,
+     *                       XLAMDH,WORK(KXINT),IDEL)
 C
-               IF (DIRECT) THEN
-                  IDEL  = INDEXA(IDEL2)
-                  ISYMD = ISAO(IDEL)
-               ELSE
-                  IDEL  = IBAS(ISYMD1) + ILLL
-                  ISYMD = ISYMD1
-               ENDIF
+            CALL CC3_TRAN2(WORK(KIAJB),WORK(KYIAJB),XLAMDP,
+     *                       XLAMDH,WORK(KXINT),IDEL)
 C
-               ISYDIS = MULD2H(ISYMD,ISYMOP)
+            CALL CCSDT_TRAN3(WORK(KINT1S),WORK(KINT2S),XLAMDP,
+     *                       XLAMDH,WORK(KXINT),IDEL)
 C
-C------------------------------------------
-C              Work space allocation no. 2.
-C------------------------------------------
+         END DO
+      END DO
 C
-               KXINT  = KEND1
-               KEND2  = KXINT + NDISAO(ISYDIS)
-               LWRK2  = LWORK - KEND2
-C
-               IF (LWRK2 .LT. 0) THEN
-                  WRITE(LUPRI,*) 'Need : ',KEND2,'Available : ',LWORK
-                  CALL QUIT('Insufficient space in CCSD_TRIPLE')
-               ENDIF
-C
-C
-C-----------------------------------------
-C              Read in batch of integrals.
-C-----------------------------------------
-C
-               DTIME   = SECOND()
-               CALL CCRDAO(WORK(KXINT),IDEL,IDEL2,WORK(KEND2),LWRK2,
-     *                     WORK(KRECNR),DIRECT)
-               DTIME   = SECOND() - DTIME
-               TIMRDAO = TIMRDAO  + DTIME
-C
-C----------------------------------------------------
-C              Calculate integrals needed in CCSD[T].
-C----------------------------------------------------
-C
-c              CALL CCSDT_TRAN1(WORK(KINT1),WORK(KINT2),WORK(KCMO),
-c    *                          WORK(KCMO),WORK(KXINT),IDEL)
-C
-               CALL CCSDT_TRAN1(WORK(KINT1T),WORK(KINT2T),XLAMDP,
-     *                          XLAMDH,WORK(KXINT),IDEL)
-C
-C               CALL CCSDT_TRAN2(WORK(KIAJB),WORK(KYIAJB),WORK(KCMO),
-C     *                          WORK(KXINT),IDEL)
-C
-               CALL CC3_TRAN2(WORK(KIAJB),WORK(KYIAJB),XLAMDP,
-     *                          XLAMDH,WORK(KXINT),IDEL)
-C
-               CALL CCSDT_TRAN3(WORK(KINT1S),WORK(KINT2S),XLAMDP,
-     *                          XLAMDH,WORK(KXINT),IDEL)
-C
-  120       CONTINUE
-  110    CONTINUE
-  100 CONTINUE
+      IF (LOCDBG) THEN
+        WRITE(LUPRI,*) 'CCSD_TRIPLE> norm2(xiajb):',
+     &     DDOT(NT1AMX*NT1AMX,WORK(KIAJB),1,WORK(KIAJB),1)
+        WRITE(LUPRI,*) 'CCSD_TRIPLE> norm2(int1t):',
+     &     DDOT(NT1AMX*NVIRT*NVIRT,WORK(KINT1T),1,WORK(KINT1T),1)
+        WRITE(LUPRI,*) 'CCSD_TRIPLE> norm2(int2t):',
+     &     DDOT(NT1AMX*NRHFT*NRHFT,WORK(KINT2T),1,WORK(KINT2T),1)
+      END IF
 C
 C-------------------------------------
 C     Calculate the triple amplitudes.
 C-------------------------------------
 C
-      CALL CCSDT_T3AM(WORK(KT3AM),WORK(KINT1S),WORK(KINT2S),T2AM,
-     *                WORK(KSCR1),WORK(KFOCKD),WORK(KT3AM2),WORK(KONEP))
-C
+      CALL CCSDT_T03AM(WORK(KT3AM),WORK(KINT1S),WORK(KINT2S),T2AM,
+     *               WORK(KSCR1),WORK(KFOCKD),WORK(KONEP),WORK(KT3AM2))
+
 COMMENT COMMENT
 COMMENT COMMENT
-         LUSIFC = 0
-         CALL GPOPEN(LUSIFC,'T3AMFD','UNKNOWN',' ','FORMATTED',IDUMMY,
-     &               .FALSE.)
-         REWIND LUSIFC
-         DO I = 1, NT1AMX*NT1AMX*NT1AMX
-           WRITE (LUSIFC,*) -WORK(KT3AM-1+I)
-         END DO
-         CALL GPCLOSE(LUSIFC,'KEEP')
+C        LUSIFC = 0
+C        CALL GPOPEN(LUSIFC,'T3AMFD','UNKNOWN',' ','FORMATTED',IDUMMY,
+C    &               .FALSE.)
+C        REWIND LUSIFC
+C        DO I = 1, NT1AMX*NT1AMX*NT1AMX
+C          WRITE (LUSIFC,*) -WORK(KT3AM-1+I)
+C        END DO
+C        CALL GPCLOSE(LUSIFC,'KEEP')
 COMMENT COMMENT
 COMMENT COMMENT
 C-----------------------------------------
@@ -407,9 +250,6 @@ C
       DO 300 I = 1,NT1AMX
          OMEGA1(I) = OMEGA1(I) + WORK(KOME1+I-1)
   300 CONTINUE
-COMMENT      ENERT1 = ddot(nt1amx,t1am,1,work(kome1),1)
-COMMENT      write(LUPRI,*) 'The E5(ST) contribution :',ENERT1
-COMMENT      CALL ECCSDT(T2AM,WORK(KOME2))
 
 C
       DO 310 I = 1,NT1AMX
@@ -419,41 +259,6 @@ C
             OMEGA2(NIJ) = OMEGA2(NIJ) + WORK(KOME2+IJ-1)
   320    CONTINUE
   310 CONTINUE
-C
-      RETURN
-      END
-      SUBROUTINE ECCSDT(T2AM,OMEGA2)
-C
-C
-C
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-      PARAMETER (TWO=2.0d0)
-      DIMENSION T2AM(NT1AMX,NT1AMX),OMEGA2(NT1AMX,NT1AMX)
-C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
-C
-      ENERGY = 0.0d0
-      DO 100 I = 1,NRHFT
-         DO 110 A = 1,NVIRT
-            NAI = NVIRT*(I-1) + A
-            DO 120 J = 1,NRHFT
-               NAJ = NVIRT*(J-1) + A
-               DO 130 B = 1,NVIRT
-                  NBJ = NVIRT*(J-1) + B
-                  NBI = NVIRT*(I-1) + B
-                  DELTA = OMEGA2(NAI,NBJ)
-     *                   *(TWO*T2AM(NAI,NBJ) - T2AM(NAJ,NBI))
-                  ENERGY = ENERGY + DELTA
-  130          CONTINUE
-  120       CONTINUE
-  110    CONTINUE
-  100 CONTINUE
-C
-      WRITE(LUPRI,*) 'Energy contribution E4(TT) :',ENERGY
 C
       RETURN
       END
@@ -624,287 +429,6 @@ C
 C
       RETURN
       END
-C  /* Deck ccsdt_t3am */
-      SUBROUTINE CCSDT_T3AM(T3AM,XINT1,XINT2,T2AM,SCR1,FOCKD,
-     *                      T3AM2,FCKFIELD)
-C
-C
-C
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-#include <ccfield.h>
-
-      DIMENSION XINT1(NT1AMX,NVIRT,NVIRT), XINT2(NT1AMX,NRHFT,NRHFT)
-      DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX),SCR1(NT1AMX),FOCKD(NORBT)
-      DIMENSION T2AM(NT1AMX,NT1AMX)
-      DIMENSION FCKFIELD(NORBT,NORBT)
-      DIMENSION T3AM2(NT1AMX,NT1AMX,NT1AMX)
-C
-      LOGICAL NONCONV, ITERATIVE
-C
-      PARAMETER (HALF = 0.5D0)
-C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
-C
-      DO 50 I = 1,NRHFT
-         DO 60 A = 1,NVIRT
-            NAI = NVIRT*(I-1) + A
-            SCR1(NAI) = FOCKD(NRHFT+A) - FOCKD(I)
-   60    CONTINUE
-   50 CONTINUE
-C
-      ITERATIVE = ((NONHF) .AND. (NFIELD .GT. 0))
-      NONCONV   = .TRUE.
-      MAXITE    = 0
-C
-      IF (ITERATIVE) CALL DZERO(T3AM2,NT1AMX*NT1AMX*NT1AMX)
-C
-C     write(lupri,*)  'fockd:',fockd
-C     write(lupri,*)  'scr1:',scr1
-C     xnorm = ddot(nt1amx*nt1amx*nt1amx,t3am,1,t3am,1)
-C     write(lupri,*) 'Norm of T3 (1st in routine) : ',xnorm
-C
-      DO WHILE (NONCONV)
-
-      CALL DZERO(T3AM,NT1AMX*NT1AMX*NT1AMX)
-
-      DO 100 NCK = 1,NT1AMX
-C
-         DO 110 J = 1,NRHFT
-            DO 120 B = 1,NVIRT
-C
-               NBJ = NVIRT*(J-1) + B
-C
-               DO 130 NAI = 1,NT1AMX
-C
-                  AIBJCK = 0.0D0
-                  DO 140 D = 1,NVIRT
-C
-                     NDJ = NVIRT*(J-1) + D
-C
-                     AIBJCK = AIBJCK + XINT1(NCK,B,D)*T2AM(NDJ,NAI)
-C
-  140             CONTINUE
-C
-                  DO 150 L = 1,NRHFT
-C
-                     NBL = NVIRT*(L-1) + B
-C
-                     AIBJCK = AIBJCK - XINT2(NCK,L,J)*T2AM(NBL,NAI)
-C
-  150             CONTINUE
-C
-                  IF (ITERATIVE) THEN
-                     DO D = 1, NVIRT
-                        NDJ = NVIRT*(J-1) + D
-                        DO L = 1, NRHFT
-                           NBL = NVIRT*(L-1) + B
-COMMENT COMMENT
-COMMENT COMMENT
-                           AIBJCK = AIBJCK
-     *                            - T2AM(NAI,NBL)
-     *                             *T2AM(NCK,NDJ)
-     *                             *FCKFIELD(L,NRHFT+D)
-COMMENT COMMENT
-                        ENDDO
-                     ENDDO
-                  ENDIF
-C
-                  AIBJCK = AIBJCK/(SCR1(NAI) + SCR1(NBJ) + SCR1(NCK))
-cch
-C                 if (dabs(aibjck).gt.1.0d0) then
-C                   write(lupri,*)nai,nbj,nck,
-C    &                   aibjck,scr1(nai),scr1(nbj),scr1(nck)
-C                 end if
-cch
-C
-                  T3AM(NAI,NBJ,NCK) = T3AM(NAI,NBJ,NCK) + AIBJCK
-                  T3AM(NAI,NCK,NBJ) = T3AM(NAI,NCK,NBJ) + AIBJCK
-                  T3AM(NBJ,NAI,NCK) = T3AM(NBJ,NAI,NCK) + AIBJCK
-                  T3AM(NCK,NAI,NBJ) = T3AM(NCK,NAI,NBJ) + AIBJCK
-                  T3AM(NBJ,NCK,NAI) = T3AM(NBJ,NCK,NAI) + AIBJCK
-                  T3AM(NCK,NBJ,NAI) = T3AM(NCK,NBJ,NAI) + AIBJCK
-C
-  130          CONTINUE
-  120       CONTINUE
-  110    CONTINUE
-  100 CONTINUE
-C----------------------------------------
-C     Remove the forbidden elements.
-C----------------------------------------
-C
-         do a = 1, nvirt
-         do i = 1, nrhft
-            nai = nvirt*(i-1) + a
-            do b = 1, nvirt
-               nbi = nvirt*(i-1) + b
-               do c = 1, nvirt
-                  nci = nvirt*(i-1) + c
-C
-                  t3am(nai,nbi,nci) = 0.0D0
-                  t3am(nai,nci,nbi) = 0.0D0
-                  t3am(nbi,nai,nci) = 0.0D0
-                  t3am(nbi,nci,nai) = 0.0D0
-                  t3am(nci,nai,nbi) = 0.0D0
-                  t3am(nci,nbi,nai) = 0.0D0
-               enddo
-            enddo
-C
-            do j = 1, nrhft
-               naj = nvirt*(j-1) + a
-               do k = 1, nrhft
-                  nak = nvirt*(k-1) + a
-C
-                  t3am(nai,naj,nak) = 0.0D0
-                  t3am(nai,nak,naj) = 0.0D0
-                  t3am(naj,nai,nak) = 0.0D0
-                  t3am(naj,nak,nai) = 0.0D0
-                  t3am(nak,nai,naj) = 0.0D0
-                  t3am(nak,naj,nai) = 0.0D0
-               enddo
-            enddo
-C
-         enddo
-         enddo
-C
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
-C     xnorm = ddot(nt1amx*nt1amx*nt1amx,t3am,1,t3am,1)
-C     write(lupri,*) 'Norm of T3 (1st in routine) : ',xnorm
-C     call flshfo(lupri)
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
-C==================================================
-C     Term dependent on T3
-C==================================================
-C
-C     write(lupri,*) 'NONHF, NFIELD : ',nonhf,nfield
-C
-      IF (ITERATIVE) THEN
-C
-         DO NCK = 1, NT1AMX
-            DO J = 1, NRHFT
-               DO B = 1, NVIRT
-                  NBJ = NVIRT*(J-1) + B
-                  DO NAI = 1, NT1AMX
-C
-                     AIBJCK = 0.0D0
-C
-                     DO D = 1, NVIRT
-                        NDJ = NVIRT*(J-1) + D
-COMMENT COMMENT
-COMMENT COMMENT      Original MINUS
-COMMENT COMMENT
-                        AIBJCK = AIBJCK
-     *                         - HALF*T3AM2(NAI,NDJ,NCK)
-     *                               *FCKFIELD(NRHFT+B,NRHFT+D)
-COMMENT COMMENT
-COMMENT COMMENT
-                     ENDDO
-C
-                     DO L = 1, NRHFT
-                        NBL = NVIRT*(L-1) + B
-COMMENT COMMENT
-COMMENT COMMENT      Original PLUS
-COMMENT COMMENT
-                        AIBJCK = AIBJCK
-     *                         + HALF*T3AM2(NAI,NBL,NCK)
-     *                            *FCKFIELD(L,J)
-COMMENT COMMENT
-COMMENT COMMENT
-                     ENDDO
-C
-                     AIBJCK = AIBJCK/(SCR1(NAI) + SCR1(NBJ) + SCR1(NCK))
-C
-                     T3AM(NAI,NBJ,NCK) = T3AM(NAI,NBJ,NCK) + AIBJCK
-                     T3AM(NAI,NCK,NBJ) = T3AM(NAI,NCK,NBJ) + AIBJCK
-                     T3AM(NBJ,NAI,NCK) = T3AM(NBJ,NAI,NCK) + AIBJCK
-                     T3AM(NCK,NAI,NBJ) = T3AM(NCK,NAI,NBJ) + AIBJCK
-                     T3AM(NBJ,NCK,NAI) = T3AM(NBJ,NCK,NAI) + AIBJCK
-                     T3AM(NCK,NBJ,NAI) = T3AM(NCK,NBJ,NAI) + AIBJCK
-C
-                  ENDDO
-               ENDDO
-            ENDDO
-         ENDDO
-C
-C----------------------------------------------
-C     Remove the forbidden elements (again).
-C----------------------------------------------
-C
-         do a = 1, nvirt
-         do i = 1, nrhft
-            nai = nvirt*(i-1) + a
-            do b = 1, nvirt
-               nbi = nvirt*(i-1) + b
-               do c = 1, nvirt
-                  nci = nvirt*(i-1) + c
-C
-                  t3am(nai,nbi,nci) = 0.0D0
-                  t3am(nai,nci,nbi) = 0.0D0
-                  t3am(nbi,nai,nci) = 0.0D0
-                  t3am(nbi,nci,nai) = 0.0D0
-                  t3am(nci,nai,nbi) = 0.0D0
-                  t3am(nci,nbi,nai) = 0.0D0
-               enddo
-            enddo
-C
-            do j = 1, nrhft
-               naj = nvirt*(j-1) + a
-               do k = 1, nrhft
-                  nak = nvirt*(k-1) + a
-C
-                  t3am(nai,naj,nak) = 0.0D0
-                  t3am(nai,nak,naj) = 0.0D0
-                  t3am(naj,nai,nak) = 0.0D0
-                  t3am(naj,nak,nai) = 0.0D0
-                  t3am(nak,nai,naj) = 0.0D0
-                  t3am(nak,naj,nai) = 0.0D0
-               enddo
-            enddo
-C
-         enddo
-         enddo
-      ENDIF
-C
-      IF (ITERATIVE) THEN
-        CALL DAXPY(NT1AMX*NT1AMX*NT1AMX,-1.0D0,T3AM,1,T3AM2,1)
-        XNORM1 = DDOT(NT1AMX*NT1AMX*NT1AMX,T3AM2,1,T3AM2,1)
-        XNORM = SQRT(XNORM1)
-        write(lupri,*) 'Norm for iteration ',maxite+1,xnorm
-        IF (XNORM .LT. 1.0D-14) THEN
-           NONCONV = .FALSE.
-        ELSE
-           CALL DCOPY(NT1AMX*NT1AMX*NT1AMX,T3AM,1,T3AM2,1)
-           MAXITE = MAXITE + 1
-           IF (MAXITE .GT. 30) THEN
-            CALL QUIT('MAX ITERATIONS EXCEEDED in CCSDT_T3AM')
-           ENDIF
-        ENDIF
-      ELSE
-        NONCONV = .FALSE.
-      END IF
-C
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
-C     xnorm = ddot(nt1amx*nt1amx*nt1amx,t3am,1,t3am,1)
-C     write(lupri,*) 'Norm of T3 (2nd in routine) : ',xnorm
-C     call flshfo(lupri)
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
-C
-      ENDDO   ! Do while
-C
-C
-      RETURN
-      END
 C  /* Deck ccsdt_omega1 */
       SUBROUTINE CCSDT_OMEGA1(OMEGA1,XIAJB,T3AM)
 C
@@ -1028,88 +552,6 @@ C
 C
       RETURN
       END
-C  /* Deck ccsdt_sigma2 */
-      SUBROUTINE CCSDT_SIGMA2(SIGMA2,XIAJB,YIAJB,T1AM,T3AM)
-C
-C
-C
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-      PARAMETER (TWO = 2.0D0)
-      DIMENSION T1AM(NT1AMX)
-      DIMENSION XIAJB(NT1AMX,NT1AMX), YIAJB(NT1AMX,NT1AMX)
-      DIMENSION SIGMA2(NT1AMX,NT1AMX)
-      DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX)
-C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
-C
-      DO 100 I = 1,NRHFT
-         DO 110 A = 1,NVIRT
-            NAI = NVIRT*(I-1) + A
-C
-            DO 120 J = 1,NRHFT
-               DO 130 B = 1,NVIRT
-                  NBJ = NVIRT*(J-1) + B
-C
-                  DO 140 K = 1,NRHFT
-                     NBK = NVIRT*(K-1) + B
-                     NAK = NVIRT*(K-1) + A
-                     DO 150 C = 1,NVIRT
-C
-                        NCK = NVIRT*(K-1) + C
-                        NCJ = NVIRT*(J-1) + C
-                        NCI = NVIRT*(I-1) + C
-C
-C
-                        DO 160 D = 1,NVIRT
-C
-                           NDI = NVIRT*(I-1) + D
-                           NDK = NVIRT*(K-1) + D
-                           NDJ = NVIRT*(J-1) + D
-C
-                           DO 170 L = 1,NRHFT
-C
-                              NCL = NVIRT*(L-1) + C
-                              NDL = NVIRT*(L-1) + D
-                              NAL = NVIRT*(L-1) + A
-                              NBL = NVIRT*(L-1) + B
-C
-                   SIGMA2(NAI,NBJ) = SIGMA2(NAI,NBJ)
-     *         + T3AM(NAI,NBJ,NCK)*T1AM(NDL)*XIAJB(NDL,NCK)
-     *         - T3AM(NAI,NDJ,NCK)*T1AM(NBL)*XIAJB(NDL,NCK)
-     *         - T3AM(NAI,NBL,NCK)*T1AM(NDJ)*XIAJB(NDL,NCK)
-     *         - T3AM(NAI,NCJ,NBK)*T1AM(NDL)*XIAJB(NDL,NCK)
-     *         + T3AM(NBL,NCJ,NAK)*T1AM(NDI)*YIAJB(NDK,NCL)
-     *         + T3AM(NBK,NDJ,NCI)*T1AM(NAL)*YIAJB(NDK,NCL)
-C
-  170                      CONTINUE
-C
-  160                   CONTINUE
-C
-  150                CONTINUE
-  140             CONTINUE
-C
-  130          CONTINUE
-  120       CONTINUE
-C
-  110    CONTINUE
-  100 CONTINUE
-C
-      DO 200 NAI = 1,NT1AMX
-         DO 210 NBJ = 1,NAI
-C
-            ZAIBJ = SIGMA2(NAI,NBJ) + SIGMA2(NBJ,NAI)
-            SIGMA2(NAI,NBJ) = ZAIBJ
-            SIGMA2(NBJ,NAI) = ZAIBJ
-C
-  210    CONTINUE
-  200 CONTINUE
-C
-      RETURN
-      END
 C  /* Deck ccsdt_tran3 */
       SUBROUTINE CCSDT_TRAN3(XINT1,XINT2,XLAMDP,XLAMDH,AOINT,IDEL)
 C
@@ -1170,3 +612,430 @@ C
 C
       RETURN
       END
+*---------------------------------------------------------------------*
+C  /* Deck ccsdt_t03am */
+*=====================================================================*
+      SUBROUTINE CCSDT_T03AM(T3AM,XINT1S,XINT2S,T2AM,SCR1,FOCKD,
+     *                       FCKFLD,T3AM2)
+*---------------------------------------------------------------------*
+*
+*     Purpose: compute zero-order triples cluster amplitudes
+*
+*---------------------------------------------------------------------*
+      IMPLICIT NONE
+#include <priunit.h>
+#include <ccsdinp.h>
+#include <ccsdsym.h>
+#include <ccfield.h>
+#include <maxorb.h>
+#include <ccorb.h>
+
+#if defined (SYS_CRAY)
+      REAL XINT1S(NT1AMX,NVIRT,NVIRT)
+      REAL XINT2S(NT1AMX,NRHFT,NRHFT)
+      REAL T3AM(NT1AMX,NT1AMX,NT1AMX),SCR1(NT1AMX),FOCKD(NORBT)
+      REAL T2AM(NT1AMX,NT1AMX),T3AM2(NT1AMX,NT1AMX,NT1AMX)
+      REAL FCKFLD(NORBT,NORBT)
+#else
+      DOUBLE PRECISION XINT1S(NT1AMX,NVIRT,NVIRT) 
+      DOUBLE PRECISION XINT2S(NT1AMX,NRHFT,NRHFT)
+      DOUBLE PRECISION T3AM(NT1AMX,NT1AMX,NT1AMX),SCR1(NT1AMX)
+      DOUBLE PRECISION T2AM(NT1AMX,NT1AMX),T3AM2(NT1AMX,NT1AMX,NT1AMX)
+      DOUBLE PRECISION FCKFLD(NORBT,NORBT),FOCKD(NORBT)
+#endif
+ 
+      CALL DZERO(T3AM,NT1AMX*NT1AMX*NT1AMX)
+
+      CALL CCSDT_T3AM_R(T3AM,0.0D0,XINT1S,XINT2S,T2AM,SCR1,FOCKD,
+     *                  NONHF,FCKFLD,.FALSE.)
+
+      CALL CCSDT_3AM(T3AM,0.0D0,SCR1,FOCKD,NONHF,FCKFLD,.FALSE.,T3AM2)
+
+      RETURN
+      END
+*---------------------------------------------------------------------*
+*              END OF SUBROUTINE CCSDT_T3AM_R                         *
+*---------------------------------------------------------------------*
+*---------------------------------------------------------------------*
+C  /* Deck ccsdt_t3am_r */
+*=====================================================================*
+      SUBROUTINE CCSDT_T3AM_R(T3AM,FREQ,XINT1,XINT2,T2AM,SCR1,FOCKD,
+     *                        FCKINCL,FCKFLD,DIVIDE)
+*---------------------------------------------------------------------*
+*
+*     Purpose: compute contributions to triples part of the coupled
+*              cluster vector function (but without <mu_3|[F,T3]|HF>)
+*
+*         FCKINCL=.true.: include external field contribution
+*                           <mu_3|[[V,T2],T2]|HF>
+*
+*---------------------------------------------------------------------*
+#include <implicit.h>
+#include <priunit.h>
+#include <inforb.h>
+#include <ccsdinp.h>
+#include <ccsdsym.h>
+      DIMENSION XINT1(NT1AMX,NVIRT,NVIRT), XINT2(NT1AMX,NRHFT,NRHFT)
+      DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX),SCR1(NT1AMX),FOCKD(NORBT)
+      DIMENSION T2AM(NT1AMX,NT1AMX)
+      DIMENSION FCKFLD(NORBT,NORBT)
+C 
+      LOGICAL DIVIDE, FCKINCL
+C
+      PARAMETER (HALF = 0.5D0)
+C
+      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+C
+      DO 50 I = 1,NRHFT
+         DO 60 A = 1,NVIRT
+            NAI = NVIRT*(I-1) + A
+            SCR1(NAI) = FOCKD(NRHFT+A) - FOCKD(I)
+   60    CONTINUE
+   50 CONTINUE
+C
+      DO 100 NCK = 1,NT1AMX
+C
+         DO 110 J = 1,NRHFT
+            DO 120 B = 1,NVIRT
+C
+               NBJ = NVIRT*(J-1) + B
+C
+               DO 130 NAI = 1,NT1AMX
+C
+                  AIBJCK = 0.0D0
+                  DO 140 D = 1,NVIRT
+C
+                     NDJ = NVIRT*(J-1) + D
+C
+                     AIBJCK = AIBJCK + XINT1(NCK,B,D)*T2AM(NDJ,NAI)
+C
+  140             CONTINUE
+C
+                  DO 150 L = 1,NRHFT
+C
+                     NBL = NVIRT*(L-1) + B
+C
+                     AIBJCK = AIBJCK - XINT2(NCK,L,J)*T2AM(NBL,NAI)
+C
+  150             CONTINUE
+C
+                  IF (FCKINCL) THEN
+                     DO D = 1, NVIRT
+                        NDJ = NVIRT*(J-1) + D
+                        DO L = 1, NRHFT
+                           NBL = NVIRT*(L-1) + B
+                           AIBJCK = AIBJCK
+     *                            - T2AM(NAI,NBL)
+     *                             *T2AM(NCK,NDJ)
+     *                             *FCKFLD(L,NRHFT+D)
+                        ENDDO
+                     ENDDO
+                  ENDIF
+
+                  IF (DIVIDE) THEN
+                   AIBJCK = AIBJCK/(SCR1(NAI)+SCR1(NBJ)+SCR1(NCK)-FREQ)
+                  END IF
+C
+                  T3AM(NAI,NBJ,NCK) = T3AM(NAI,NBJ,NCK) + AIBJCK
+                  T3AM(NAI,NCK,NBJ) = T3AM(NAI,NCK,NBJ) + AIBJCK
+                  T3AM(NBJ,NAI,NCK) = T3AM(NBJ,NAI,NCK) + AIBJCK
+                  T3AM(NCK,NAI,NBJ) = T3AM(NCK,NAI,NBJ) + AIBJCK
+                  T3AM(NBJ,NCK,NAI) = T3AM(NBJ,NCK,NAI) + AIBJCK
+                  T3AM(NCK,NBJ,NAI) = T3AM(NCK,NBJ,NAI) + AIBJCK
+C
+  130          CONTINUE
+  120       CONTINUE
+  110    CONTINUE
+  100 CONTINUE
+
+C----------------------------------------
+C     Remove the forbidden elements.
+C----------------------------------------
+  
+      CALL CCSDT_CLEAN_T3(T3AM,NT1AMX,NVIRT,NRHFT)
+ 
+      RETURN
+      END
+*---------------------------------------------------------------------*
+*              END OF SUBROUTINE CCSDT_T3AM_R                         *
+*---------------------------------------------------------------------*
+*=====================================================================*
+      SUBROUTINE CCSDT_3AM(T3AM,FREQ,SCR1,FOCKD,
+     &                     NONHF,FIELD,TRANS,T3AM2)
+*---------------------------------------------------------------------*
+*
+*    Purpose: solve triples equations
+*
+*        NONHF=.FALSE.  canonical case:
+*                 divide triples vector by orbital energy 
+*                 differences and a frequency
+*
+*                 T_nu_3 = T_nu_3 / (eps_nu_3 - freq)
+*
+*                 FOCKD diagonal of Fock matrix (eps_i)
+*                 FIELD, T3AM2 are not used in this case 
+*
+*        NONHF=.TRUE.  non-canonical case (external fields):
+*                      solve triples equations iteratively
+*               
+*                  0 = R_nu_3 - (eps_nu_3-freq) T_nu_3 - [V,T]_nu_3
+*
+*                  --> T3AM on input  R_nu_3 
+*                           on output T_nu_3 
+*                      FOCKD diagonal of Fock matrix
+*                      FIELD the potential V
+*                      T3AM2 scratch array for triples
+*                      TRANS flag, if set use V transposed
+*                            (needed for "left" equations)
+*        
+*     Written by Christof Haettig, April 2002 
+*=====================================================================*
+      IMPLICIT NONE  
+#include <priunit.h>
+#include <ccsdinp.h>
+#include <maxorb.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+#include <dummy.h>
+
+      LOGICAL NONHF, TRANS, LOCDBG
+      PARAMETER ( LOCDBG = .FALSE. )
+
+#if defined (SYS_CRAY)
+      REAL FOCKD(NORBT), SCR1(NT1AMX)
+      REAL T3AM(NT1AMX,NT1AMX,NT1AMX), FREQ
+      REAL AIBJCK, DDOT, XNORM, HALF
+      REAL T3AM2(NT1AMX,NT1AMX,NT1AMX), FIELD(NORBT,NORBT)
+#else
+      DOUBLE PRECISION FOCKD(NORBT), SCR1(NT1AMX)
+      DOUBLE PRECISION T3AM(NT1AMX,NT1AMX,NT1AMX), FREQ
+      DOUBLE PRECISION T3AM2(NT1AMX,NT1AMX,NT1AMX), FIELD(NORBT,NORBT)
+      DOUBLE PRECISION AIBJCK, DDOT, XNORM, HALF
+#endif
+      PARAMETER ( HALF = 0.5D0 )
+
+      LOGICAL NONCONV
+      INTEGER NI, NA, NAI, NBJ, NCK, NDJ, NBL,
+     &        LUTEMP, MAXITE
+
+      DO NI = 1,NRHFT
+         DO NA = 1,NVIRT
+            NAI = NVIRT*(NI-1) + NA
+            SCR1(NAI) = FOCKD(NRHFT+NA) - FOCKD(NI)
+         END DO
+      END DO
+ 
+      DO NCK = 1, NT1AMX
+        DO NBJ = 1, NT1AMX
+          DO NAI = 1, NT1AMX
+            T3AM(NAI,NBJ,NCK) = T3AM(NAI,NBJ,NCK) /
+     &         (SCR1(NAI) + SCR1(NBJ) + SCR1(NCK) - FREQ)
+          END DO
+        END DO
+      END DO
+
+      CALL CCSDT_CLEAN_T3(T3AM,NT1AMX,NVIRT,NRHFT)
+
+      IF (NONHF) THEN
+         LUTEMP = 0
+         CALL GPOPEN(LUTEMP,'CC3AMTMP','UNKNOWN',' ','UNFORMATTED',
+     &               IDUMMY,.FALSE.)
+         REWIND LUTEMP
+         WRITE (LUTEMP) (((T3AM(NAI,NBJ,NCK),NAI=1,NT1AMX),
+     &                    NBJ=1,NT1AMX),NCK=1,NT1AMX)
+
+         CALL DCOPY(NT1AMX*NT1AMX*NT1AMX,T3AM,1,T3AM2,1)
+
+         MAXITE  = 1
+         NONCONV = .TRUE.
+
+         DO WHILE (NONCONV)
+
+           DO NCK = 1, NT1AMX
+            DO J = 1, NRHFT
+             DO B = 1, NVIRT
+              NBJ = NVIRT*(J-1) + B
+              DO NAI = 1, NT1AMX
+                AIBJCK = 0.0D0
+                IF (TRANS) THEN
+                  DO D = 1, NVIRT
+                    NDJ = NVIRT*(J-1) + D
+                    AIBJCK = AIBJCK - HALF*T3AM2(NAI,NDJ,NCK)
+     *                           *FIELD(NRHFT+D,NRHFT+B)
+                  ENDDO
+                  DO L = 1, NRHFT
+                    NBL = NVIRT*(L-1) + B
+                    AIBJCK = AIBJCK + HALF*T3AM2(NAI,NBL,NCK)
+     *                        *FIELD(J,L)
+                  ENDDO
+                ELSE 
+                  DO D = 1, NVIRT
+                    NDJ = NVIRT*(J-1) + D
+                    AIBJCK = AIBJCK - HALF*T3AM2(NAI,NDJ,NCK)
+     *                           *FIELD(NRHFT+B,NRHFT+D)
+                  ENDDO
+                  DO L = 1, NRHFT
+                    NBL = NVIRT*(L-1) + B
+                    AIBJCK = AIBJCK + HALF*T3AM2(NAI,NBL,NCK)
+     *                        *FIELD(L,J)
+                  ENDDO
+                END IF
+                AIBJCK = AIBJCK/(SCR1(NAI)+SCR1(NBJ)+SCR1(NCK)-FREQ)
+                T3AM(NAI,NBJ,NCK) = T3AM(NAI,NBJ,NCK) + AIBJCK
+                T3AM(NAI,NCK,NBJ) = T3AM(NAI,NCK,NBJ) + AIBJCK
+                T3AM(NBJ,NAI,NCK) = T3AM(NBJ,NAI,NCK) + AIBJCK
+                T3AM(NCK,NAI,NBJ) = T3AM(NCK,NAI,NBJ) + AIBJCK
+                T3AM(NBJ,NCK,NAI) = T3AM(NBJ,NCK,NAI) + AIBJCK
+                T3AM(NCK,NBJ,NAI) = T3AM(NCK,NBJ,NAI) + AIBJCK
+              ENDDO
+             ENDDO
+            ENDDO
+           ENDDO
+
+           CALL CCSDT_CLEAN_T3(T3AM,NT1AMX,NVIRT,NRHFT)
+
+           CALL DAXPY(NT1AMX*NT1AMX*NT1AMX,-1.0D0,T3AM,1,T3AM2,1)
+           XNORM = DSQRT(DDOT(NT1AMX*NT1AMX*NT1AMX,T3AM2,1,T3AM2,1))
+
+           IF (LOCDBG.OR.DEBUG) 
+     &       WRITE(LUPRI,*)'CCSDT_3AM> Norm for iteration ',maxite,xnorm
+           IF (XNORM .LT. 1.0D-14) THEN
+             NONCONV = .FALSE.
+             IF (LOCDBG.OR.DEBUG) WRITE(LUPRI,*)
+     &         'CCSDT_3AM> converged in iteration',maxite
+           ELSE
+             CALL DCOPY(NT1AMX*NT1AMX*NT1AMX,T3AM,1,T3AM2,1)
+             IF(LOCDBG.OR.DEBUG)WRITE(LUPRI,*)'present norm of t3am:',
+     &        DSQRT(DDOT(NT1AMX*NT1AMX*NT1AMX,T3AM,1,T3AM,1)) 
+             MAXITE = MAXITE + 1
+             IF (MAXITE .GT. 30)
+     &            CALL QUIT('MAX ITERATIONS EXCEEDED in CCSDT_3AM')
+             REWIND LUTEMP
+             READ (LUTEMP) (((T3AM(NAI,NBJ,NCK),NAI=1,NT1AMX),
+     &                        NBJ=1,NT1AMX),NCK=1,NT1AMX)
+           ENDIF
+
+         ENDDO
+
+         CALL GPCLOSE(LUTEMP,'KEEP')
+      END IF
+
+      RETURN
+      END 
+*---------------------------------------------------------------------*
+*              END OF SUBROUTINE CCSDT_3AM                            *
+*---------------------------------------------------------------------*
+*=====================================================================*
+      SUBROUTINE CCSDT_CLEAN_T3(T3AM,NT1AMX,NVIRT,NRHFT)
+*---------------------------------------------------------------------*
+*     Purpose: remove forbidden elements in a triples vector
+*---------------------------------------------------------------------*
+      IMPLICIT NONE  
+
+      INTEGER NT1AMX, NVIRT, NRHFT
+
+#if defined (SYS_CRAY)
+      REAL T3AM(NT1AMX,NT1AMX,NT1AMX)
+#else
+      DOUBLE PRECISION T3AM(NT1AMX,NT1AMX,NT1AMX)
+#endif
+
+      INTEGER NA, NI, NAI, NB, NBI, NC, NCI, NJ, NAJ, NK, NAK
+    
+      DO NA = 1, NVIRT
+       DO NI = 1, NRHFT
+         NAI = NVIRT*(NI-1) + NA
+         DO NB = 1, NVIRT
+            NBI = NVIRT*(NI-1) + NB
+            DO NC = 1, NVIRT
+               NCI = NVIRT*(NI-1) + NC
+               T3AM(NAI,NBI,NCI) = 0.0d0
+               T3AM(NAI,NCI,NBI) = 0.0d0
+               T3AM(NBI,NAI,NCI) = 0.0d0
+               T3AM(NBI,NCI,NAI) = 0.0d0
+               T3AM(NCI,NAI,NBI) = 0.0d0
+               T3AM(NCI,NBI,NAI) = 0.0d0
+            ENDDO
+         ENDDO
+         DO NJ = 1, NRHFT
+            NAJ = NVIRT*(NJ-1) + NA
+            DO NK = 1, NRHFT
+               NAK = NVIRT*(NK-1) + NA
+               T3AM(NAI,NAJ,NAK) = 0.0d0
+               T3AM(NAI,NAK,NAJ) = 0.0d0
+               T3AM(NAJ,NAI,NAK) = 0.0d0
+               T3AM(NAJ,NAK,NAI) = 0.0d0
+               T3AM(NAK,NAI,NAJ) = 0.0d0
+               T3AM(NAK,NAJ,NAI) = 0.0d0
+            ENDDO
+         ENDDO
+       ENDDO
+      ENDDO
+ 
+      RETURN
+      END
+*---------------------------------------------------------------------*
+*              END OF SUBROUTINE CCSDT_CLEAN_T3                       *
+*---------------------------------------------------------------------*
+*=====================================================================*
+      SUBROUTINE PRINT_PT3_NODDY(T3AM)
+*---------------------------------------------------------------------*
+*
+*    Purpose: Print a T3AM triples vector from a noddy code routine
+*             in such a way that it can directly be compared 
+*             to the printout from PRINT_PT3 routine.
+*
+*     Written by Filip Pawlowski, 26-09-2002 
+*=====================================================================*
+#if defined (IMPLICIT_NONE)
+      IMPLICIT NONE
+#else
+#  include <implicit.h>
+#endif
+#include <priunit.h>
+#include <maxorb.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+C
+      INTEGER NAI, NBJ, NCK
+C
+#if defined (SYS_CRAY)
+      REAL T3AM(NT1AMX,NT1AMX,NT1AMX)
+#else
+      DOUBLE PRECISION T3AM(NT1AMX,NT1AMX,NT1AMX)
+#endif
+C
+      DO A = 1, NVIRT
+        DO B = 1, NVIRT
+          DO C = 1, NVIRT
+            DO I = 1, NRHFT
+              DO J = 1, NRHFT
+                DO K = 1, NRHFT
+C
+                 NAI = NVIRT*(I-1) + A
+                 NBJ = NVIRT*(J-1) + B
+                 NCK = NVIRT*(K-1) + C
+C
+                 IF (ABS(T3AM(NAI,NBJ,NCK)) .GT. 1.0D-12) THEN
+C
+                     WRITE(LUPRI,1) 'noddy T3AM(',A,',',B,',',
+     *                                            C,',',I,',',
+     *                                            J,',',K,') = ',
+     *               T3AM(NAI,NBJ,NCK)
+C
+                 END IF
+
+                END DO 
+              END DO 
+            END DO 
+          END DO 
+        END DO 
+      END DO 
+C
+    1 FORMAT(1X,A11,I3,A1,I3,A1,I3,A1,I3,A1,I3,A1,I3,A4,E20.10)
+C
+      RETURN
+      END
+*---------------------------------------------------------------------*
+*              END OF SUBROUTINE PRINT_PT3_NODDY                      *
+*---------------------------------------------------------------------*

@@ -1198,6 +1198,7 @@ C
 #include <ccsdsym.h>
 #include <ccfield.h>
 #include <ccorb.h>
+#include <dummy.h>
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG=.false.)
@@ -1552,9 +1553,10 @@ C           ----------------------------------------------
       IF (LISTL(1:3).EQ.'L0 ') THEN
         CALL DZERO(WORK(KL3AM),NT1AMX*NT1AMX*NT1AMX)
 
-        CALL CCSDT_L3AM(WORK(KL3AM),WORK(KINT1T0),WORK(KINT2T0),
+        CALL CCSDT_L03AM(WORK(KL3AM),WORK(KINT1T0),WORK(KINT2T0),
      *                  WORK(KXIAJB),WORK(KFOCK0),WORK(KL1AM),
-     *                  WORK(KL2AM),WORK(KSCR1),WORK(KFOCKD),0.0D0)
+     *                  WORK(KL2AM),WORK(KSCR1),WORK(KFOCKD),
+     *                  DUMMY,DUMMY)
 
       ELSE
 

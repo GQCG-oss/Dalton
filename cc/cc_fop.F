@@ -96,6 +96,7 @@ C
 #include <ccfro.h>
 #include <ccinftap.h>
 #include <ccslvinf.h>
+#include <ccnoddy.h>
 C
       LOGICAL CC1BSV,CC1ASV,FASAVE,CICLC,HFCLC, DAR2SA,
      *        TRPCLC,OOTV, EXCLC, RLORBS, LPROJECT, EX, TRIPLET,
@@ -527,6 +528,17 @@ C        Calculate extra contributions from CC3
 C-----------------------------------------------------
 C
          IF (CC3) THEN
+
+           IF (NODDY_DEN) THEN
+
+c            --------------------------------------------------------
+c            call simple noddy routine (needed f.x. for finite diff.)
+c            --------------------------------------------------------
+             CALL CCSDT_XI_CONT_NODDY('L0 ',DUMMY,1,1,
+     &                                IDUMMY,IDUMMY,0,0,
+     &                                .TRUE.,WORK,LWORK)
+
+           ELSE 
 C
 C------------------------------------------------------
 C     Start from workspace before call to solver
@@ -697,6 +709,8 @@ C
             CALL CC_T2SQ(WORK(KWRK1),WORK(KT2AM),1)
             DTIME = SECOND() - DTIME
             TIMT2SQ = TIMT2SQ + DTIME
+C
+          END IF ! NODDY DEN
 C
          ENDIF   ! CC3
 C
@@ -1418,6 +1432,11 @@ C
          IF (IASGER .GT. 0) THEN
             CALL HEADER('Electronic contribution to dipole moment',-1)
             CALL DP0PRI(DIPME)
+            IF (IASGER.GT.1) THEN
+              ! print with all digits for finite difference calc.
+              WRITE(LUPRI,'(1x,a,3g18.10//)') 
+     *           'Electronic dipole moment (au):',DIPME
+            ENDIF
          ENDIF
          IF (CCPT .AND. (.NOT. RELORB)) THEN
             CALL HEADER('Total Molecular Dipole Moment (unrelaxed)',

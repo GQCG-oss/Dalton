@@ -1997,8 +1997,6 @@ C          ----------------------------------------------
         IF (CCSDT) THEN
            IF ( IOPTRES.GE.0 .AND. IOPTRES.LE.4 ) THEN
 C
-             write(lupri,*)'inside memory allocation'
-C
              KTHETA1EFF = KEND2
              KTHETA2EFF = KTHETA1EFF + NT1AM(ISYRES)
              KEND2      = KTHETA2EFF + NT2AM(ISYRES)
@@ -2134,8 +2132,6 @@ C
              CALL WCLOSE2(LU3FOP2X,FN3FOP2X,'KEEP')
 C
            else
-C
-             write(lupri,*) 'call ccsdt_fmat_noddy... lwrk2:',lwrk2
 C
              CALL CCSDT_FMAT_NODDY(LISTL,IDLSTL,LISTR,IDLSTR,
      &                             IOPTRES,CCSDT_F_ALTER,

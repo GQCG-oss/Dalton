@@ -62,18 +62,6 @@ C
 #include <mxcent.h>
 #include <aovec.h>
 #include <iratdef.h>
-      PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
-      PARAMETER (XMHALF = -0.5D0, XMONE= -1.0D0 )
-C
-      LOGICAL FCKCON,CC1BSA,ETRAN
-C
-      DIMENSION INDEXA(MXCORB)
-      DIMENSION OMEGA1(*),OMEGA2(*),T1AM(*),T2AM(*),WORK(LWORK)
-C
-      CHARACTER CFIL*6,DFIL*6, FN3SRT*8, FNDELD*6
-      CHARACTER FNCKJD*6, FNDKBC*4, FNTOC*8, FN3VI*6, FN3VI2*8
-C
-C
 #include <ccorb.h>
 #include <ccisao.h>
 #include <blocks.h>
@@ -85,6 +73,19 @@ C
 #include <distcl.h>
 #include <cbieri.h>
 #include <eribuf.h>
+#include <ccnoddy.h>
+C
+      PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
+      PARAMETER (XMHALF = -0.5D0, XMONE= -1.0D0 )
+C
+      LOGICAL FCKCON,CC1BSA,ETRAN
+C
+      DIMENSION INDEXA(MXCORB)
+      DIMENSION OMEGA1(*),OMEGA2(*),T1AM(*),T2AM(*),WORK(LWORK)
+C
+      CHARACTER CFIL*6,DFIL*6, FN3SRT*8, FNDELD*6
+      CHARACTER FNCKJD*6, FNDKBC*4, FNTOC*8, FN3VI*6, FN3VI2*8
+C
 C
       CALL QENTER('CCRHSN')
 C
@@ -1018,29 +1019,28 @@ C     Add connected triples corrections to the vector function.
 C--------------------------------------------------------------
 C
       IF (CCSDT) THEN
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
-C         Unrelaxed noddy
+
+         IF (NODDY_OMEGA) THEN
+C          Unrelaxed noddy
 C          CALL CC_FOPTRIPLES(OMEGA1,DUMMY,DUMMY,T1AM,T2AM,
-C     *                       WORK(KLAMDP),WORK(KLAMDH),
-C     *                       WORK(KEND2),LWRK2)
-C         Original noddy part
-C         Used to calculate Finite difference CC3
-C       CALL CCSD_TRIPLE(OMEGA1,OMEGA2,T1AM,T2AM,WORK(KFOCK),
-C     *                    WORK(KLAMDP),WORK(KLAMDH),WORK(KEND2),
-C     *                    LWRK2)
-C
-C         Normal triples part
-         CALL CC3_OMEG(0.0D0,OMEGA1,OMEGA2,T1AM,ISYMTR,T2AM,ISYMTR,
-     *                 WORK(KFOCK),WORK(KLAMDP),WORK(KLAMDH),
-     *                 WORK(KEND2),LWRK2,LU3SRT,FN3SRT,LUDELD,
-     *                 FNDELD,LUCKJD,FNCKJD,LUDKBC,FNDKBC,
-     *                 LUTOC,FNTOC,LU3VI,FN3VI,LU3VI2,FN3VI2)
+C    *                        WORK(KLAMDP),WORK(KLAMDH),
+C    *                        WORK(KEND2),LWRK2)
+C          Original noddy part
+C          Used to calculate Finite difference CC3
+           CALL CCSD_TRIPLE(OMEGA1,OMEGA2,T1AM,T2AM,WORK(KFOCK),
+     *                      WORK(KLAMDP),WORK(KLAMDH),WORK(KEND2),
+     *                      LWRK2)
+         ELSE
+ 
+C          Normal triples part
+           CALL CC3_OMEG(0.0D0,OMEGA1,OMEGA2,T1AM,ISYMTR,T2AM,ISYMTR,
+     *                   WORK(KFOCK),WORK(KLAMDP),WORK(KLAMDH),
+     *                   WORK(KEND2),LWRK2,LU3SRT,FN3SRT,LUDELD,
+     *                   FNDELD,LUCKJD,FNCKJD,LUDKBC,FNDKBC,
+     *                   LUTOC,FNTOC,LU3VI,FN3VI,LU3VI2,FN3VI2)
+        
+         END IF
 C 
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
 C
 C----------------------------------------
 C        Reconstruct full square of T2AM.

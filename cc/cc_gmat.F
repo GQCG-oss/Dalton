@@ -4731,6 +4731,7 @@ c/* Deck CCG_LXD */
 #include <ccsdsym.h>
 #include <ccfield.h>
 #include <ccorb.h>
+#include <dummy.h>
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG=.FALSE.)
@@ -5115,9 +5116,12 @@ C           ----------------------------------------------
       IF (LISTL(1:3).EQ.'L0 ') THEN
         CALL DZERO(WORK(KL3AM),NT1AMX*NT1AMX*NT1AMX)
 
-        CALL CCSDT_L3AM(WORK(KL3AM),WORK(KINT1T0),WORK(KINT2T0),
-     *                  WORK(KXIAJB),WORK(KFOCK0),WORK(KL1AM),
-     *                  WORK(KL2AM),WORK(KSCR1),WORK(KFOCKD),0.0D0)
+        CALL CCSDT_L03AM(WORK(KL3AM),WORK(KINT1T0),WORK(KINT2T0),
+     *                   WORK(KXIAJB),WORK(KFOCK0),WORK(KL1AM),
+     *                   WORK(KL2AM),WORK(KSCR1),WORK(KFOCKD),
+     *                   DUMMY,DUMMY)
+
+        CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0D0,WORK(KL3AM),1)
   
         if (locdbg) then
           write(lupri,*) 'norm^2(l3am):',

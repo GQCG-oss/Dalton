@@ -33,10 +33,8 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-*---------------------------------------------------------------------*
-#define NODDY_OVLP   .FALSE.
 *=====================================================================*
-      subroutine ccexnorm(isym,imult,work,lwork)
+      subroutine ccexnorm(isym,imult,threig,work,lwork)
 *---------------------------------------------------------------------*
 *
 *    Purpose: normalize left and right eigenvectors such that
@@ -57,38 +55,48 @@ C
 #include <dummy.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+#include <ccnoddy.h>
 
       logical locdbg
-      parameter (locdbg = .true.)
+      parameter (locdbg = .false.)
       integer mxovlp
       parameter (mxovlp = maxexci*maxexci)
+      character fndeg*10
+      parameter (fndeg='CCDEGEN_LE')
  
       integer isym, imult, lwork, istartend(maxexci,2)
 
 #if defined (SYS_CRAY) 
+      real threig
       real work(lwork), overlap(mxovlp)
       real ovlpslr(mxovlp), ovlpdlr(mxovlp), 
      &     ovlptlr(mxovlp), ovlpsrr(mxovlp), 
      &     ovlpdrr(mxovlp), ovlptrr(mxovlp)
+      real seigr(maxexci), seigi(maxexci)
       real srr, drr, trr, xnrmrr, slr, dlr, tlr, xnrmlr
-      real one, xhund, tlovlp
+      real zero, one, xhund, tlovlp, xnrm, fac, xerror
+      real tiny
 #else 
+      double precision threig
       double precision work(lwork), overlap(mxovlp)
       double precision ovlpslr(mxovlp), ovlpdlr(mxovlp), 
      &                 ovlptlr(mxovlp), ovlpsrr(mxovlp), 
      &                 ovlpdrr(mxovlp), ovlptrr(mxovlp)
+      double precision seigr(maxexci), seigi(maxexci)
       double precision srr, drr, trr, xnrmrr, slr, dlr, tlr, xnrmlr
-      double precision one, xhund, tlovlp
+      double precision zero, one, xhund, tlovlp, xnrm, fac, xerror
+      double precision tiny, xnrmr, xnrml
 #endif 
-      parameter ( one = 1.0d0, xhund = 100.0d0, tlovlp = 0.5d0)
+      parameter ( one = 1.0d0, xhund = 100.0d0, tlovlp = 0.5d0,
+     &            zero = 0.0d0, tiny = 1.0d-10 )
 
       character listl*3, listr*3, model*10
-      logical triplet
-      integer novlp, ilstnrst, ilstnrnd, ileft,
+      logical triplet, degeneracy
+      integer novlp, ilstnrst, ilstnrnd, ileft, ncctot, iadrij,
      &        kl1am, kl2am, kr1am, kr2am, kwrk1, lwrk1, iopt, ipass,
-     &        isyml, imull, isymr, imulr, iright, iovlp, istate,
+     &        iright, iovlp, istate,
      &        nccvar, nccvars, nccvard, nst, ioff, k1amp, k2amp,
-     &        ilstnr, nleft
+     &        ilstnr, nleft, idxr, idxl, ndeg, matz, ierr, ludeg
 
       integer ilstsym
 #if defined (SYS_CRAY) 
@@ -99,52 +107,174 @@ C
 
       call qenter('ccexnorm')
 
-*     ----------------------------------------------------------------
-*     build list of overlap matrix elements to be computed:
-*     ----------------------------------------------------------------
-      novlp = 0
-      
-C     do isym = 1, nsym
-C       do imult = 1, 3, 2
-          if      (imult.eq.1) then
-             triplet = .false.
-          else if (imult.eq.3) then
-             triplet = .true.
-          else
-             call quit('Illegal multiplicity in CCEXNORM.')
-          end if
+*---------------------------------------------------------------------*
+* some initializations:
+*---------------------------------------------------------------------*
+      if      (imult.eq.1) then
+         triplet = .false.
+      else if (imult.eq.3) then
+         triplet = .true.
+      else
+         call quit('Illegal multiplicity in CCEXNORM.')
+      end if
 
-          if (triplet .and. nccexci(isym,imult).gt.0) then
-             call quit('Triplet not yet implemented in CCEXNORM.')
-          end if
+      if (triplet .and. nccexci(isym,imult).gt.0) then
+         call quit('Triplet not yet implemented in CCEXNORM.')
+      end if
 
-          if (triplet) then
-            ilstnrst = itrofe(isym) + 1
-            ilstnrnd = itrofe(isym) + nccexci(isym,imult)
-          else
-            ilstnrst = isyofe(isym) + 1
-            ilstnrnd = isyofe(isym) + nccexci(isym,imult)
-          end if
+      ! set index of first and last vector in symmetry class
+      if (triplet) then
+        ilstnrst = itrofe(isym) + 1
+        ilstnrnd = itrofe(isym) + nccexci(isym,imult)
+      else
+        ilstnrst = isyofe(isym) + 1
+        ilstnrnd = isyofe(isym) + nccexci(isym,imult)
+      end if
 
-          do ileft = ilstnrst, ilstnrnd
-            if (sqrovlp) then
-              istartend(ileft,1) = ilstnrst
-              istartend(ileft,2) = ilstnrnd
-              novlp              = novlp + nccexci(isym,imult)
-            else
-              istartend(ileft,1) = ileft
-              istartend(ileft,2) = ileft
-              novlp              = novlp + 1
-            end if
+      ! work space allocation for two singles (and doubles) vectors
+      nccvars = nt1am(isym)
+      nccvard = nt2am(isym)
+      if (triplet) nccvard = nccvard + nt2ama(isym)
+      ncctot  = nccvars 
+      if (.not.ccs) ncctot = ncctot + nccvard
+
+      kl1am = 1
+      kwrk1 = kl1am + nccvars
+      if (.not.ccs) then
+        kl2am = kl1am + nccvars
+        kwrk1 = kl2am + nccvard
+      end if
+
+      kr1am = kwrk1
+      kwrk1 = kr1am + nccvars
+      if (.not.ccs) then
+        kr2am = kr1am + nccvars
+        kwrk1 = kr2am + nccvard
+      end if
+
+      lwrk1 = lwork - kwrk1
+      if (lwrk1.lt.0) call quit('out of memory in CCEXNORM (1)')
+
+*---------------------------------------------------------------------*
+* check for degeneracies within this symmetry class and try to get
+* the correct matching of left and right eigenvectors
+*---------------------------------------------------------------------*
+      ileft = ilstnrst
+      do while (ileft .lt. ilstnrnd)
+
+        ! check if state is degenerate
+        ndeg = 1 
+        do while (abs(eigval(ileft)-eigval(ileft+ndeg)).lt.threig) 
+           ndeg = ndeg + 1
+        end do
+
+        if (ndeg.gt.1) then
+          write(lupri,'(//1x,a)') 'Found a degeneracy between:'
+          write(lupri,'(1x,a)')   '---------------------------'
+          write(lupri,'(1x,a)')   'State  Excitation Energy'
+
+          ludeg = 0
+          call wopen2(ludeg,fndeg,64,0) 
+
+c         ---------------------------------------------------
+c         set up (LE|RE) overlap matrix, which is used as the
+c         transformation matrix:
+c         ---------------------------------------------------
+          iadrij = 0
+          do idxl = ileft, ileft-1+ndeg
+            write(lupri,'(1x,i3,f15.8)') idxl,eigval(idxl)
+
+            iopt = 3
+            call cc_rdrsp('LE ',idxl,isym,iopt,model,
+     &                    work(kl1am),work(kl2am))
+            xnrml = dsqrt(ddot(ncctot,work(kl1am),1,work(kl1am),1))
+
+            iadrij = (idxl-ileft)*ncctot + 1
+            call putwa2(ludeg,fndeg,work(kl1am),iadrij,ncctot)
+
+            xnrm = zero
+            do idxr = ileft, ileft-1+ndeg
+              iopt  = 3
+              call cc_rdrsp('RE ',idxr,isym,iopt,model,
+     &                      work(kr1am),work(kr2am))
+              xnrmr = dsqrt(ddot(ncctot,work(kr1am),1,work(kr1am),1))
+              iovlp = (idxl-ileft)*ndeg+(idxr-ileft+1)
+              ovlpslr(iovlp)=ddot(ncctot,work(kl1am),1,work(kr1am),1)/
+     &                         (xnrml*xnrmr)
+              xnrm = xnrm + ovlpslr(iovlp)*ovlpslr(iovlp)
+            end do
+            fac   = one/dsqrt(xnrm)
+            iovlp = (idxl-ileft)*ndeg+1
+            call dscal(ndeg,fac,ovlpslr(iovlp),1)
           end do
-    
-          if (locdbg) then
-            write(lupri,*) 'isym,imult,nccexci,novlp:',
-     &                      isym,imult,nccexci(isym,imult),novlp
-          end if
 
-C       end do
-C     end do
+          ! check if matrix is orthogonal:
+          call dgemm('n','t',ndeg,ndeg,ndeg,
+     &               one,ovlpslr,ndeg,ovlpslr,ndeg,
+     &               zero,ovlpdlr,ndeg)
+          xerror = zero
+          do idxl = ileft, ileft-1+ndeg
+            do idxr = ileft, ileft-1+ndeg
+              iovlp = (idxl-ileft)*ndeg+(idxr-ileft+1)
+              if (idxl.eq.idxr) xerror=xerror+abs(ovlpdlr(iovlp)-one)
+              if (idxl.ne.idxr) xerror=xerror+abs(ovlpdlr(iovlp)-zero)
+            end do
+          end do
+
+          ! some print out
+          write(lupri,'(//,1x,a)') 
+     &      'transformation matrix computed from (LE|RE) overlap:'
+          call output(ovlpslr,1,ndeg,1,ndeg,ndeg,ndeg,1,lupri)
+          write(lupri,'(/,1x,a,f20.10)') 
+     &      'deviation from orthogonality:',xerror
+
+c         -----------------------------------------------------------
+c         transform the left eigenvector to match right eigenvectors:
+c                     LE(j)' = sum_i LE(i) (LE(i)|RE(j))
+c         -----------------------------------------------------------
+          do idxl = ileft, ileft-1+ndeg
+            call dzero(work(kl1am),ncctot)
+            do idxr = ileft, ileft-1+ndeg
+              iovlp = (idxr-ileft)*ndeg+(idxl-ileft+1)
+              if (abs(ovlpslr(iovlp)).gt.tiny) then
+                iadrij = (idxr-ileft)*ncctot + 1
+                call getwa2(ludeg,fndeg,work(kr1am),iadrij,ncctot)
+                call daxpy(ncctot,ovlpslr(iovlp),
+     &                     work(kr1am),1,work(kl1am),1)
+              end if
+            end do
+            iopt = 3
+            call cc_wrrsp('LE ',idxl,isym,iopt,model,dummy,
+     &                    work(kl1am),work(kl2am),work(kwrk1),lwrk1)
+          end do
+
+          call wclose2(ludeg,fndeg,'DELETE')
+
+        end if
+
+        ileft = ileft + ndeg
+      end do
+      
+*---------------------------------------------------------------------*
+* build list of overlap matrix elements to be computed:
+*---------------------------------------------------------------------*
+      novlp = 0
+      do ileft = ilstnrst, ilstnrnd
+        if (sqrovlp) then
+          istartend(ileft,1) = ilstnrst
+          istartend(ileft,2) = ilstnrnd
+          novlp              = novlp + nccexci(isym,imult)
+        else
+          istartend(ileft,1) = ileft
+          istartend(ileft,2) = ileft
+          novlp              = novlp + 1
+        end if
+      end do
+    
+      if (locdbg) then
+        write(lupri,*) 'isym,imult,nccexci,novlp:',
+     &                  isym,imult,nccexci(isym,imult),novlp
+      end if
 
 *     ----------------------------------------------------------------
 *     compute overlap matrices: singles and doubles part is done here,
@@ -165,54 +295,21 @@ C     end do
 
        iovlp = 0
        do ileft = ilstnrst, ilstnrnd
-        isyml = ilstsym(listl,ileft)
-        imull = imulte(ileft)
-
-        if (locdbg) then
-          write(lupri,*) 'ileft,isyml,imull:',ileft,isyml,imull
-        end if
-
-        nccvars = nt1am(isyml)
-        nccvard = nt2am(isyml)
-        if (imull.eq.3) nccvard = nccvard + nt2ama(isyml)
-
-        kl1am = 1
-        kwrk1 = kl1am + nt1am(isyml)
-        if (.not.ccs) then
-          kl2am = kl1am + nt1am(isyml)
-          kwrk1 = kl2am + nccvard
-        end if
-
-        kr1am = kwrk1
-        kwrk1 = kr1am + nt1am(isyml)
-        if (.not.ccs) then
-          kr2am = kr1am + nt1am(isyml)
-          kwrk1 = kr2am + nccvard
-        end if
-
-        lwrk1 = lwork - kwrk1
-        if (lwrk1.lt.0) call quit('out of memory in CCEXNORM (1)')
-
         iopt    = 3
-        call cc_rdrsp(listl,ileft,isyml,iopt,model,
+        call cc_rdrsp(listl,ileft,isym,iopt,model,
      &                work(kl1am),work(kl2am))
 
         do iright = istartend(ileft,1), istartend(ileft,2)
           iovlp = iovlp + 1
-          isymr = ilstsym(listr,iright)
-          imulr = imulte(iright)
-          if (isymr.eq.isyml .and. imulr.eq.imull) then
-            iopt  = 3
-            call cc_rdrsp(listr,iright,isymr,iopt,model,
-     &                    work(kr1am),work(kr2am))
-            ovlpslr(iovlp) = ddot(nccvars,work(kl1am),1,work(kr1am),1)
-            if (.not.ccs) ovlpdlr(iovlp) = 
-     &                       ddot(nccvard,work(kl2am),1,work(kr2am),1)
-          end if
+          iopt  = 3
+          call cc_rdrsp(listr,iright,isym,iopt,model,
+     &                  work(kr1am),work(kr2am))
+          ovlpslr(iovlp) = ddot(nccvars,work(kl1am),1,work(kr1am),1)
+          if (.not.ccs) ovlpdlr(iovlp) = 
+     &                     ddot(nccvard,work(kl2am),1,work(kr2am),1)
           if (locdbg) then
-            write(lupri,*) 'ileft,iright,iovlp:',ileft,iright,iovlp
-            write(lupri,*) 'listl,listr,isyml,isymr:',listl(1:3),
-     &                     listr(1:3),isyml,isymr
+            write(lupri,*) 'listl,listr,ileft,iright,iovlp:',
+     &                      listl,listr,ileft,iright,iovlp
             write(lupri,*) 'norm^2 (S|S), (D|D):',
      &          ovlpslr(iovlp),ovlpdlr(iovlp)
           end if
@@ -227,23 +324,17 @@ C     end do
            if (locdbg) write(lupri,*)'entering overlap calc'
            IF (NODDY_OVLP) THEN 
               if (locdbg) write(lupri,*)'noddy overlap'
-              call ccovlpt_noddy(listl,listr,ovlptlr,
+              call ccovlp_noddy(listl,listr,ovlptlr,
      &                           ilstnrst,ilstnrnd,istartend,
      &                           work,lwork)
            ELSE 
+              if (listl.eq.'RE ') call quit('error in CCEXNORM: '//
+     &           '(RE|RE) overlap for not yet available for triples')
               if (locdbg) write(lupri,*)'non-noddy overlap'
-              CALL cc3_lr_ovlp(listl,listr,ovlptlr,
+              call cc3_lr_ovlp(listl,listr,ovlptlr,
      &                         ilstnrst,ilstnrnd,istartend,
      &                         work,lwork)
-          END IF
-          if (locdbg) then
-            nleft = ilstnrnd-ilstnrst+1
-            write(lupri,*)'listl,listr,nleft'
-            write(lupri,*)listl,listr,nleft
-            write(lupri,*)'ovlptlr(1,nleft):',(ovlptlr(i),i =1,nleft)
-            write(lupri,*)'istartend(nleft,1):',(istartend(nleft,1))
-            write(lupri,*)'istartend(nleft,2):',(istartend(nleft,2))
-          end if
+           END IF
          end if
        end if
 
@@ -255,9 +346,9 @@ C     end do
 
       end do
 
-*     ----------------------------------------------------------------
-*     print overlap matrices for all symmetries/multiplicities:
-*     ----------------------------------------------------------------
+*     --------------------------------
+*     print computed overlap matrices:
+*     --------------------------------
       if (sqrovlp) then
         do ipass = 1, 2
          write(lupri,*)
@@ -276,42 +367,38 @@ C     end do
          end if
 
          iovlp = 1
-C        do isym = 1, nsym
-C         do imult = 1, 3, 2
-           nst = nccexci(isym,imult)
-           write(lupri,*) 'overlap matrices for isym,imult:',isym,imult
-           write(lupri,*) 'single excitation contribution:'
-           if (ipass.eq.1) then 
-             call output(ovlpsrr(iovlp),1,nst,1,nst,nst,nst,1,lupri)
-           else
-             call output(ovlpslr(iovlp),1,nst,1,nst,nst,nst,1,lupri)
-           end if
+         nst = nccexci(isym,imult)
+         write(lupri,*) 'overlap matrices for isym,imult:',isym,imult
+         write(lupri,*) 'single excitation contribution:'
+         if (ipass.eq.1) then 
+           call output(ovlpsrr(iovlp),1,nst,1,nst,nst,nst,1,lupri)
+         else
+           call output(ovlpslr(iovlp),1,nst,1,nst,nst,nst,1,lupri)
+         end if
         
-           if (.not.ccs) then
-            write(lupri,*) 'double excitation contribution:'
-            if (ipass.eq.1) then 
-              call output(ovlpdrr(iovlp),1,nst,1,nst,nst,nst,1,lupri)
-            else
-              call output(ovlpdlr(iovlp),1,nst,1,nst,nst,nst,1,lupri)
-            end if
-           end if
+         if (.not.ccs) then
+          write(lupri,*) 'double excitation contribution:'
+          if (ipass.eq.1) then 
+            call output(ovlpdrr(iovlp),1,nst,1,nst,nst,nst,1,lupri)
+          else
+            call output(ovlpdlr(iovlp),1,nst,1,nst,nst,nst,1,lupri)
+          end if
+         end if
         
-           if (ccsdt) then
-            write(lupri,*) 'triple excitation contribution:'
-            if (ipass.eq.1) then 
-              call output(ovlptrr(iovlp),1,nst,1,nst,nst,nst,1,lupri)
-            else
-              call output(ovlptlr(iovlp),1,nst,1,nst,nst,nst,1,lupri)
-            end if
-           end if
+         if (ccsdt) then
+          write(lupri,*) 'triple excitation contribution:'
+          if (ipass.eq.1) then 
+            call output(ovlptrr(iovlp),1,nst,1,nst,nst,nst,1,lupri)
+          else
+            call output(ovlptlr(iovlp),1,nst,1,nst,nst,nst,1,lupri)
+          end if
+         end if
 
-           write(lupri,*) 'total overlap matrix:'
-           call output(overlap(iovlp),1,nst,1,nst,nst,nst,1,lupri)
+         write(lupri,*) 'total overlap matrix:'
+         call output(overlap(iovlp),1,nst,1,nst,nst,nst,1,lupri)
 
-           iovlp = iovlp + nst*nst
-          end do
-C        end do
-C       end do
+         iovlp = iovlp + nst*nst
+        end do
         write(lupri,*)
       end if
 
@@ -343,102 +430,97 @@ C       end do
        end if
 
        ioff = 0
-C      do isym = 1, nsym
-C       do imult = 1, 3, 2
-         do istate = 1, nccexci(isym,imult)
+       do istate = 1, nccexci(isym,imult)
 
-          nccvar  = nt1am(isym)
-          nccvard = nt2am(isym)
-          if (imult.eq.3) nccvard = nccvard + nt2ama(isym)
-          if (.not.(ccs.or.cis)) nccvar  = nccvar + nccvard
+        nccvar  = nt1am(isym)
+        nccvard = nt2am(isym)
+        if (imult.eq.3) nccvard = nccvard + nt2ama(isym)
+        if (.not.(ccs.or.cis)) nccvar  = nccvar + nccvard
+        
+        k1amp = 1
+        kwrk1 = k1amp + nt1am(isym)
+        if (.not.ccs) then
+          k2amp = k1amp + nt1am(isym)
+          kwrk1 = k2amp + nccvard
+        end if
+        lwrk1 = lwork - kwrk1
+        if (lwrk1.lt.0) call quit('out of memory in CCEXNORM (2)')
+
+        if (sqrovlp) then
+          iovlp = ioff + nccexci(isym,imult)*(istate-1)+istate
+        else
+          iovlp = ioff + istate 
+        end if
+       
+        if (imult.eq.3) then
+          ilstnr = itrofe(isym) + istate
+        else
+          ilstnr = isyofe(isym) + istate
+        end if
           
-          k1amp = 1
-          kwrk1 = k1amp + nt1am(isym)
-          if (.not.ccs) then
-            k2amp = k1amp + nt1am(isym)
-            kwrk1 = k2amp + nccvard
-          end if
-          lwrk1 = lwork - kwrk1
-          if (lwrk1.lt.0) call quit('out of memory in CCEXNORM (2)')
+        srr = ovlpsrr(iovlp)
+        drr = ovlpdrr(iovlp)
+        trr = ovlptrr(iovlp)
+        xnrmrr = srr + drr + trr
 
-          if (sqrovlp) then
-            iovlp = ioff + nccexci(isym,imult)*(istate-1)+istate
-          else
-            iovlp = ioff + istate 
-          end if
+        slr = ovlpslr(iovlp)
+        dlr = ovlpdlr(iovlp)
+        tlr = ovlptlr(iovlp)
+        xnrmlr = slr + dlr + tlr
        
-          if (imult.eq.3) then
-            ilstnr = itrofe(isym) + istate
-          else
-            ilstnr = isyofe(isym) + istate
-          end if
-            
-          srr = ovlpsrr(iovlp)
-          drr = ovlpdrr(iovlp)
-          trr = ovlptrr(iovlp)
-          xnrmrr = srr + drr + trr
+        if (ipass.eq.1) then
+          write(lupri,'("| ",i4,"|",2(i4,3x,"|"),f11.5,'//
+     &                '" |",3(1x,f8.4,2x,"|"))')
+     &     isym,imult,istate,eigval(ilstnr)*xtev,
+     &     xhund*srr/xnrmrr,xhund*drr/xnrmrr,xhund*trr/xnrmrr
+        else
+          write(lupri,'("| ",i4,"|",2(i4,3x,"|"),f11.5,'//
+     &                '" |",3(1x,f8.4,2x,"|"))')
+     &     isym,imult,istate,eigval(ilstnr)*xtev,
+     &     xhund*slr/xnrmlr,xhund*dlr/xnrmlr,xhund*tlr/xnrmlr
 
-          slr = ovlpslr(iovlp)
-          dlr = ovlpdlr(iovlp)
-          tlr = ovlptlr(iovlp)
-          xnrmlr = slr + dlr + tlr
-       
-          if (ipass.eq.1) then
-            write(lupri,'("| ",i4,"|",2(i4,3x,"|"),f11.5,'//
-     &                  '" |",3(1x,f8.4,2x,"|"))')
-     &       isym,imult,istate,eigval(ilstnr)*xtev,
-     &       xhund*srr/xnrmrr,xhund*drr/xnrmrr,xhund*trr/xnrmrr
+c         ---------------------------------------------------
+c         renormalize right eigenvectors such that (RE|RE)=1:
+c         ---------------------------------------------------
+          iopt = 3
+          call cc_rdrsp('RE ',ilstnr,isym,iopt,model,
+     &                  work(k1amp),work(k2amp))
+          
+          call dscal(nccvar,one/dsqrt(xnrmrr),work(k1amp),1)
+          
+          iopt = 3
+          call cc_wrrsp('RE ',ilstnr,isym,iopt,model,dummy,
+     &                  work(k1amp),work(k2amp),work(kwrk1),lwrk1)
+          
+c         --------------------------------------------------
+c         renormalize left eigenvectors such that (LE|RE)=1:
+c         (but first check if this  can be done)
+c         --------------------------------------------------
+          if (abs(xnrmlr).lt.tlovlp) then
+           write(lupri,*)'SERIOUS WARNING !!!!!!!!!!!!!!!!!!!!'
+           write(lupri,*)'Overlap is less than tolerance.'
+           write(lupri,*)' - You may encounter serious problems.'
+           write(lupri,*)'Symmetry    : ',isym
+           write(lupri,*)'Multiplicity: ',imult
+           write(lupri,*)'State       : ',istate
+           write(lupri,*)'Overlap     : ',xnrmlr
+           write(lupri,*)'Tolerance   : ',tlovlp
+           write(lupri,*)'Left eigenvector will not be normalized!!'
+           write(lupri,*)'(Transition) properties will be wrong!!!!'
           else
-            write(lupri,'("| ",i4,"|",2(i4,3x,"|"),f11.5,'//
-     &                  '" |",3(1x,f8.4,2x,"|"))')
-     &       isym,imult,istate,eigval(ilstnr)*xtev,
-     &       xhund*slr/xnrmlr,xhund*dlr/xnrmlr,xhund*tlr/xnrmlr
-
-c           ---------------------------------------------------
-c           renormalize right eigenvectors such that (RE|RE)=1:
-c           ---------------------------------------------------
             iopt = 3
-            call cc_rdrsp('RE ',ilstnr,isym,iopt,model,
+            call cc_rdrsp('LE ',ilstnr,isym,iopt,model,
      &                    work(k1amp),work(k2amp))
             
-            call dscal(nccvar,one/dsqrt(xnrmrr),work(k1amp),1)
+            call dscal(nccvar,dsqrt(xnrmrr)/xnrmlr,work(k1amp),1)
             
             iopt = 3
-            call cc_wrrsp('RE ',ilstnr,isym,iopt,model,dummy,
+            call cc_wrrsp('LE ',ilstnr,isym,iopt,model,dummy,
      &                    work(k1amp),work(k2amp),work(kwrk1),lwrk1)
-            
-c           --------------------------------------------------
-c           renormalize left eigenvectors such that (LE|RE)=1:
-c           (but first check if this  can be done)
-c           --------------------------------------------------
-            if (abs(xnrmlr).lt.tlovlp) then
-             write(lupri,*)'SERIOUS WARNING !!!!!!!!!!!!!!!!!!!!'
-             write(lupri,*)'Overlap is less than tolerance.'
-             write(lupri,*)' - You may encounter serious problems.'
-             write(lupri,*)'Symmetry    : ',isym
-             write(lupri,*)'Multiplicity: ',imult
-             write(lupri,*)'State       : ',istate
-             write(lupri,*)'Overlap     : ',xnrmlr
-             write(lupri,*)'Tolerance   : ',tlovlp
-             write(lupri,*)'Left eigenvector will not be normalized!!'
-             write(lupri,*)'(Transition) properties will be wrong!!!!'
-            else
-              iopt = 3
-              call cc_rdrsp('LE ',ilstnr,isym,iopt,model,
-     &                      work(k1amp),work(k2amp))
-              
-              call dscal(nccvar,dsqrt(xnrmrr)/xnrmlr,work(k1amp),1)
-              
-              iopt = 3
-              call cc_wrrsp('LE ',ilstnr,isym,iopt,model,dummy,
-     &                      work(k1amp),work(k2amp),work(kwrk1),lwrk1)
-            endif
+          endif
 
-          end if
-
-         end do
-C       end do
-C      end do
+        end if
+       end do
 
        write(lupri,'("+",70("="),"+",//)')
 
@@ -450,12 +532,12 @@ C      end do
       end
 
 *---------------------------------------------------------------------*
-*              END OF SUBROUTINE CCEXNORM                             *
+*              end of subroutine ccexnorm                             *
 *---------------------------------------------------------------------*
 *=====================================================================*
-      subroutine ccovlpt_noddy(listl,listr,overlap,
-     &                         ilstnrst,ilstnrnd,istartend,
-     &                         work,lwork)     
+      subroutine ccovlp_noddy(listl,listr,overlap,
+     &                        ilstnrst,ilstnrnd,istartend,
+     &                        work,lwork)     
 *---------------------------------------------------------------------*
 *
 *    Purpose: compute overlap (L|R) between two triples vectors
@@ -567,7 +649,7 @@ C      end do
 
       lwrk1 = lwork - kwrk1
       if (lwrk1 .lt. 0) then
-         call quit('Insufficient space in CCOVLPT_NODDY')
+         call quit('Insufficient space in ccovlp_noddy')
       endif 
 
 *---------------------------------------------------------------------*
@@ -632,7 +714,7 @@ C           ----------------------------
             lwrk2  = lwork - kwrk2
             if (lwrk2 .lt. 0) then
                write(lupri,*) 'Need : ',kwrk2,'Available : ',lwork
-               call quit('Insufficient space in CCOVLPT_NODDY')
+               call quit('Insufficient space in ccovlp_noddy')
             endif
  
 C           ---------------------------
@@ -794,46 +876,17 @@ C           ----------------------------------
             
             end if
 
-            write(lupri,*)'l3am in noddy:'
-            call PRINT_E3AM_NODDY(work(kl3am))
-            write(lupri,*)'r3am in noddy:'
-            call PRINT_E3AM_NODDY(work(kr3am))
             tcon = - sixth * ddot(nt3amp,work(kl3am),1,work(kr3am),1)
             
-cch
-c           xcon(1) = 0.0d0
-c           xcon(2) = 0.0d0
-c           xcon(3) = 0.0d0
-c           do idxai = 1, nt1amx
-c             do idxbj = 1, nt1amx
-c               do idxck = 1, nt1amx
-c                 if      (idxai.eq.idxbj .and. idxai.eq.idxck) then
-c                   idiag = 3
-c                 else if (idxai.eq.idxbj .or. idxai.ne.idxck .or. 
-c    &                     idxbj.eq.idxck) then
-c                   idiag = 2
-c                 else
-c                   idiag = 1
-c                 end if
-
-c                 idxt3 = ((idxai-1)*nt1amx+idxbj-1)*nt1amx + idxck
-c                 xcon(idiag) = xcon(idiag) + 
-c    &               work(kl3am-1+idxt3)*work(kr3am-1+idxt3)
-
-c               end do
-c             end do
-c           end do
-cch
-
             iovlp = iovlp + 1
             overlap(iovlp) = overlap(iovlp) + tcon
 
             if (locdbg) then
               write(lupri,*) 'iovlp:',iovlp
               write(lupri,*) 'xcon:',xcon
-              write(lupri,*) 'ccovlpt_noddy> norm^2(R3):',
+              write(lupri,*) 'ccovlp_noddy> norm^2(R3):',
      &          sixth*ddot(nt3amp,work(kr3am),1,work(kr3am),1)
-              write(lupri,*) 'ccovlpt_noddy> norm^2(L3):',
+              write(lupri,*) 'ccovlp_noddy> norm^2(L3):',
      &          sixth*ddot(nt3amp,work(kl3am),1,work(kl3am),1)
               write(lupri,*) 'tcon,overlap:',tcon,overlap(iovlp)
             end if
@@ -849,7 +902,7 @@ cch
       end
 
 *---------------------------------------------------------------------*
-*              END OF SUBROUTINE CCOVLPT_NODDY                        *
+*              end of subroutine ccovlp_noddy                         *
 *---------------------------------------------------------------------*
 C  /* Deck cc3_lr_ovlp */
       subroutine cc3_lr_ovlp(listl,listr,overlap,
@@ -945,11 +998,11 @@ C
         isyml   = ilstsym(listl,ileft)
         imull   = imulte(ileft)
 
-C       if (locdbg) then
+        if (locdbg) then
           write(lupri,*) 'ileft,isyml,imull:',ileft,isyml,imull
           write(lupri,*) 'istart,iend:',istartend(ileft,1), 
      &                                  istartend(ileft,2)
-C       end if
+        end if
 C
         do iright = istartend(ileft,1), istartend(ileft,2)
           isymr   = ilstsym(listr,iright)
@@ -960,13 +1013,12 @@ C
           end if
 
           if (isymr.eq.isyml .and. imulr.eq.imull) then
-
-C
-            tcon = d0
-            CALL EB3_E3_OVLP(LISTL,ILEFT,ISYML,LISTR,IRIGHT,ISYMR,
-     *                       LU3VI,FN3VI,LU3VI2,FN3VI2,LU3FOP,FN3FOP,
-     *                       LU3FOP2,FN3FOP2,LUCKJD,FNCKJD,LUTOC,FNTOC,
-     *                       LUDKBC,FNDKBC,TCON,WORK,LWORK)
+ 
+            tcon = 0.0d0
+            call eb3_e3_ovlp(listl,ileft,isyml,listr,iright,isymr,
+     *                       lu3vi,fn3vi,lu3vi2,fn3vi2,lu3fop,fn3fop,
+     *                       lu3fop2,fn3fop2,luckjd,fnckjd,lutoc,fntoc,
+     *                       ludkbc,fndkbc,tcon,work,lwork)
  
 
             iovlp = iovlp + 1
@@ -1676,8 +1728,6 @@ C
 C
                      XDIANORM = DDOT(NCKIJ(ISWEMAT),WORK(KWEMAT),1,
      *                               WORK(KWEBMAT),1)
-                     write(lupri,*)'isymb,b,isymc,c',isymb,b,isymc,c
-                     write(lupri,*)'dianorm',xdianorm
 C                    
                      TCON = TCON + D3*XDIANORM
 C
@@ -1829,9 +1879,6 @@ C
                      XOFFDIA = DDOT(NT2SQ(ISAIBJ),WORK(KEBAIBJ),1,
      *                            WORK(KEAIBJ),1)
 C
-                     write(lupri,*)'isymb,b,isymc,c',isymb,b,isymc,c
-                     write(lupri,*)'offdia',xoffdia
-
                      TCON = TCON + D6*XOFFDIA
 C
                   END IF

@@ -539,7 +539,6 @@ C
 C
 C           Read in L(c1^h k1^p | delta b2^h) integrals
 C
-               write(lupri,*) 'READ 1:',IOFF,NCKA(ISYCKB)
                CALL GETWA2(LU3FOP,FN3FOP,WORK(KINTVI),IOFF,
      &                        NCKA(ISYCKB))
             ENDIF

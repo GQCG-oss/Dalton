@@ -22,7 +22,7 @@ LONG="alpha2 mcdlaodir_c2h4tw mcdlaodir_ch2o mcdlaodir_h2o2 triplet2"
 CC3="LIH1s1p_pol LIH1s1p_asym_pol CARBON_pol CARBON_asym_pol LIH1s1p_tmom \
 LIH1s1p_tmom_no2np1 HF_631G_pol HF_631G_asym_pol LIH_431G_tmom \
 LIH_431G_tmom_no2np1 HF_ccpVDZ_pol HF_ccpVDZ_asym_pol HF_ccpVDZ_tmom \
-HF_ccpVDZ_tmom_no2np1"
+HF_ccpVDZ_tmom_no2np1 cc3_hyp cc3_findiff"
 
 ALL="$SHORT $MEDIUM $LONG $CC3"
 #

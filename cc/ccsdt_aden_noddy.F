@@ -133,7 +133,7 @@ C
         XNORM = DDOT(NT1AMX*NT1AMX*NT1AMX,WORK(KWBAR),1,WORK(KWBAR),1)
         WRITE(LUPRI,*) 'CCSDT_ADEN_NODDY> Wbar^Y:',XNORM
         WRITE(LUPRI,*) 'CCSDT_ADEN_NODDY> LISTL,IDLSTL:',LISTL,IDLSTL
-        CALL PRINT_E3AM_NODDY(WORK(KWBAR))
+        CALL PRINT_PT3_NODDY(WORK(KWBAR))
 
         IF (HAVETB3T3) THEN
          ! accumulate Tbar^Y amplitudes in WORK and print
@@ -150,7 +150,7 @@ C
          END DO
          WRITE(LUPRI,*) 'CCSDT_ADEN_NODDY> Tbar^Y:'
          WRITE(LUPRI,*) 'CCSDT_ADEN_NODDY> LISTL,IDLSTL:',LISTL,IDLSTL
-         CALL PRINT_E3AM_NODDY(WORK(KTBAR3))
+         CALL PRINT_PT3_NODDY(WORK(KTBAR3))
         END IF
       END IF
 
@@ -179,10 +179,10 @@ C
       IF (LOCDBG) THEN
         WRITE(LUPRI,*) 'CCSDT_ADEN_NODDY> W^Y:'
         WRITE(LUPRI,*) 'CCSDT_ADEN_NODDY> LISTR,IDLSTR:',LISTR,IDLSTR
-        CALL PRINT_E3AM_NODDY(WORK(KWYINT))
+        CALL PRINT_PT3_NODDY(WORK(KWYINT))
         WRITE(LUPRI,*) 'CCSDT_ADEN_NODDY> Theta^Y:'
         WRITE(LUPRI,*) 'CCSDT_ADEN_NODDY> LISTR,IDLSTR:',LISTR,IDLSTR
-        CALL PRINT_E3AM_NODDY(WORK(KTHETA))
+        CALL PRINT_PT3_NODDY(WORK(KTHETA))
 
         IF (HAVETB3T3) THEN
          ! accumulate T^Y amplitudes in WORK and print
@@ -201,7 +201,7 @@ C
          END DO
          WRITE(LUPRI,*) 'CCSDT_ADEN_NODDY> T^Y:'
          WRITE(LUPRI,*) 'CCSDT_ADEN_NODDY> LISTR,IDLSTR:',LISTR,IDLSTR
-         CALL PRINT_E3AM_NODDY(WORK(KTAMP3))
+         CALL PRINT_PT3_NODDY(WORK(KTAMP3))
         END IF
       END IF
 
@@ -379,18 +379,9 @@ C
       IF (LWRK2.LT.0)
      &  CALL QUIT('Out of memory in CCSDT_ADEN_NODDY (3c)')
 
-careful
-      call dzero(DIJ,NRHFT*NRHFT)
-careful
-      write(lupri,*)'dij before noddy'
-      call output(DIJ,1,NRHFT,1,NRHFT,NRHFT,NRHFT,1,lupri)
-c
       CALL CCSDT_ADENOCC_NODDY(DAB,DIJ,DIA,WORK(KWBAR),WORK(KTHETA),
      &                         WORK(KL2AMP),WORK(KWTILDE),
      &                         WORK(KTHVIRT),WORK(KSWAP))
-c
-      write(lupri,*)'dij after noddy'
-      call output(DIJ,1,NRHFT,1,NRHFT,NRHFT,NRHFT,1,lupri)
 
 *---------------------------------------------------------------------*
 * add the one-index transformed zeroth-order density to DIA:
@@ -863,39 +854,20 @@ c          ------------------------------------------------
             DO A = 1, NVIRT
              DO E = 1, NVIRT
               DO D = 1, NVIRT
-CAREFUL
                THVIRT(D,E,A,N) = THETA(D,L,A,N,E,M)+ THETA(E,M,D,L,A,N)
-CAREFUL
               END DO
              END DO
             END DO
            END DO
-          write(lupri,*)'noddy THVIRT l,m ',l,m
-          call print_t3jk(THVIRT,1,l,m,1)
-          write(lupri,*)'noddy WTILDE l,m ',l,m
-          call print_t3jk(WTILDE,1,l,m,1)
         
 
 c          --------------------------------------------
 c          D(ij) += WTILDE^LM(de,fj) * THVIRT^LM(de,fi)
 c          --------------------------------------------
-         write(lupri,*)'THLM(vvv,o) in noddy'
-         call output(THVIRT,1,NVIRT*NVIRT*NVIRT,1,NRHFT,
-     *               NVIRT*NVIRT*NVIRT,NRHFT,1,lupri)
-         write(lupri,*)'WLM(vvv,o) in noddy'
-         call output(WTILDE,1,NVIRT*NVIRT*NVIRT,1,NRHFT,
-     *               NVIRT*NVIRT*NVIRT,NRHFT,1,lupri)
-
-c
            CALL DGEMM('T','N',NRHFT,NRHFT,NVIRT*NVIRT*NVIRT,
      &                       -HALF,THVIRT,NVIRT*NVIRT*NVIRT,
      &                             WTILDE,NVIRT*NVIRT*NVIRT,
      &                         ONE,DIJ,NRHFT)
-C
-         write(lupri,*)'DIJ(o,o) in noddy'
-         call output(DIJ,1,NRHFT,1,NRHFT,
-     *               NRHFT,NRHFT,1,lupri)
-
 
 c          --------------------------------------------
 c          add THVIRT^LM(de,an) += theta(dl,em,a-bar n)
@@ -910,9 +882,6 @@ c          --------------------------------------------
             END DO
            END DO
         
-c         write(lupri,*)'noddy THVIRT l,m ',l,m
-c         call print_t3jk(THVIRT,1,l,m,1)
-
 c          --------------------------------------------
 c          D(ab) += WTILDE^LM(de,an) * THVIRT^LM(de,bn)
 c          --------------------------------------------

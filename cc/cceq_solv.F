@@ -194,8 +194,8 @@ C--------------------------------
 C
          IF (IPRLE .GT. 5) THEN
             WRITE (LUPRI,*)
-     *      ' >>> Call CC_TRDRV with TRIPLET flag set to:',
-     *      TRIPLET
+     *      ' >>> Call CC_TRDRV with TRIPLET and ECURR set to:',
+     *      TRIPLET, ECURR
          ENDIF                      
 C
          IST = NREDH - NUPVEC + 1
@@ -652,6 +652,7 @@ C  Calculate converged solutions to the LED sets of linear
 C  equations in RD starting with equation number LEDST
 C
 #include <implicit.h>
+#include <priunit.h>
 #include <cclr.h>
 #include <leinf.h>
 C
@@ -1437,7 +1438,7 @@ C
          CALL RGORD(MAXRED,NREDH,EIVAL,WRK,SOLEQ)
 C
          ICPLX = 0
-         DO 3000 I=1,NREDH
+         DO 3000 I=1,NVEC
             IF (WRK(I) .NE. D0) THEN
                ICPLX = ICPLX + 1
                WRITE(LUPRI,'(I10,1P,2D15.8,A/)') I,EIVAL(I),WRK(I),
@@ -1447,17 +1448,17 @@ C
 C
          IF (IPRLE .GE.1 .OR. ICPLX .GT. 0) THEN
             WRITE (LUPRI,'(/A)') ' REDUCED EIGENVALUES real part:'
-            CALL OUTPUT(EIVAL,1,NREDH,1,1,NREDH,MAXRED,1,LUPRI)
+            CALL OUTPUT(EIVAL,1,NVEC,1,1,NREDH,MAXRED,1,LUPRI)
          ENDIF
 C
          IF (IPRLE .GE.11 .OR. ICPLX .GT. 0) THEN
             WRITE (LUPRI,'(/A)') ' REDUCED EIGENVALUES imaginary part:'
-            CALL OUTPUT(WRK,1,NREDH,1,1,NREDH,MAXRED,1,LUPRI)
+            CALL OUTPUT(WRK,1,NVEC,1,1,NREDH,MAXRED,1,LUPRI)
          END IF
 C
          IF (IPRLE .GE. 15) THEN
             WRITE (LUPRI,'(/A)') ' REDUCED EIGENVECTORS :'
-            CALL OUTPUT(SOLEQ,1,NREDH,1,NREDH,MAXRED,MAXRED,1,LUPRI)
+            CALL OUTPUT(SOLEQ,1,NVEC,1,NVEC,MAXRED,MAXRED,1,LUPRI)
          END IF
 C
          IF (ICPLX .GT. 0)
@@ -1467,7 +1468,7 @@ C
 C
       IF (IPRLE.GE.15 ) THEN
          WRITE(LUPRI,'(/A)')' *** REDUCED HESSIAN MATRIX ***'
-         CALL OUTPUT(REDH,1,NREDH,1,NREDH,MAXRED,MAXRED,1,LUPRI)
+         CALL OUTPUT(REDH,1,NVEC,1,NVEC,MAXRED,MAXRED,1,LUPRI)
       END IF
 C
 C *** End of subroutine CCRED

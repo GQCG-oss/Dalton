@@ -342,7 +342,7 @@ C
       DOUBLE PRECISION XLAMDP(*), XLAMDH(*)
 #endif
 
-      INTEGER ISYMD, ILLL, IDEL, ISYDIS, KXINT, KEND1, LWRK1, KRECNR
+      INTEGER ISYMD, ILLL, IDEL, ISYDIS, KXINT, KEND1, LWRK1, IRECNR
 
       CALL QENTER('CCSDT_INTS0_NODDY')
 
@@ -385,7 +385,7 @@ C           ---------------------------
 C           Read in batch of integrals.
 C           ---------------------------
             CALL CCRDAO(WORK(KXINT),IDEL,1,WORK(KEND1),LWRK1,
-     *                  WORK(KRECNR),DIRECT)
+     *                  IRECNR,DIRECT)
  
 C           ----------------------------------
 C           Calculate integrals needed in CC3:

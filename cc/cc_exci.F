@@ -89,6 +89,8 @@ C
 #include <ccinftap.h>
 C
       LOGICAL KAJ,LINQCC,RSPIM2,LTRIP(4),LRST1,LRST2,LPROJECT,TRIPLET
+      LOGICAL LOCDBG
+      PARAMETER(LOCDBG=.FALSE.)
       DIMENSION WORK(LWORK),NCCEXSAV(8,3)
       CHARACTER MODEL*10,MODELP*10,MODEL1*10,CHSYM*4,FILEX*10,FILOLD*10
       CHARACTER CDIP*1,CDUM*3, SPACE*32
@@ -98,6 +100,7 @@ C
       PARAMETER (FRHO1='CCR_RHO1',FRHO2='CCR_RHO2')
       PARAMETER (TWO = 2.0D00,TF=1.0D-04, TLOVLP = 0.5D0 )
       PARAMETER (XMONE = -1.0D00 , THRLDP = 1.0D-20)
+      PARAMETER (THRDEGEN = 1.0D-8)
 C
 #include <leinf.h>
 C
@@ -368,10 +371,10 @@ C
          IF (ISYM .GT. 1) WRITE(LUPRI,'(//A)')
      *     ' ***********************************************'
      *    //'********************************'
-         WRITE (LUPRI,'(A,/)')     ' --------------------------'
-         WRITE (LUPRI,'(//,A,I5)') ' Symmetry class Nr.: ',ISYM
-         WRITE (LUPRI,'(//,A,I5)') ' Multiplicity      : ',IMULT
-         WRITE (LUPRI,'(A,/)')     ' --------------------------'
+         WRITE (LUPRI,'(/A)')   ' --------------------------'
+         WRITE (LUPRI,'(A,I5)') ' Symmetry class Nr.: ',ISYM
+         WRITE (LUPRI,'(A,I5)') ' Multiplicity      : ',IMULT
+         WRITE (LUPRI,'(A,/)')  ' --------------------------'
          WRITE (LUPRI,'(A,I10)')
      *   ' Length of Excitation vectors in this class is:',NCCVAR
 C
@@ -503,7 +506,11 @@ C
      *                   NREDH,WORK(KREDH),WORK(KEIVAL),
      *                   WORK(KSOLEQ),WORK(KWRK1),LWRK1)
          END IF
-C
+
+         ! test eigenvector: in case of degeneracies orthogonalize
+         ! eigenvectors to the same eigenvalue
+         CALL CCTSTSOL(WORK(KSOLEQ),WORK(KEIVAL),THRDEGEN,NREDH,NSIMR)
+ 
          IF ( STSD.AND.KAJ ) THEN
             CCSDT = .TRUE.
          ENDIF
@@ -574,17 +581,12 @@ C
             CALL CCCONV(LUFC1,FC1AM,LUFC2,FC2AM,TRIPLET,NREDH, 
      *                  IOFF1,IOFF2,WORK(KSOLEQ),
      *                  WORK(KWRK2),WORK(KWRK1))
-            IF (DEBUG) THEN
-               WRITE(LUPRI,*) 'After CCCONV '
-               WRITE(LUPRI,*) 'IOFF1,IOFF2,NREDH',IOFF1,IOFF2,NREDH
-               WRITE(LUPRI,*) 'KWRK1,KWRK2',KWRK1,KWRK2
-               WRITE(LUPRI,*) 'LWRK1,LWRK2',LWRK1,LWRK2
-               X1  = DDOT(LETOT,WORK(KWRK1),1,WORK(KWRK1),1)
-               WRITE(LUPRI,*) 'norm KWRK1:',X1
-               X2  = DDOT(LETOT,WORK(KWRK2),1,WORK(KWRK2),1)
-               WRITE(LUPRI,*) 'norm KWRK2:',X2
-            ENDIF
-C
+
+            IF (LOCDBG) THEN
+               WRITE(LUPRI,*) 'Overlap matrix for solution vectors:'
+               CALL PROVLP(WORK(KWRK2),NCCVAR,IOFF2,
+     *                     WORK(KWRK2+IOFF2*NCCVAR),LUPRI)
+            END IF
             IF ( IPRINT .GT. 30 ) THEN
                CALL AROUND('CC_EXCI: VECTORS IN MO BASIS' )
                CALL OUTPUT(WORK(KWRK2),1,NCCVAR,1,NCCEXCI(ISYM,IMULT),
@@ -599,91 +601,41 @@ C
                  ILSTNR = ISYOFE(ISYM) + ICOUNT
                END IF
 
-               WRITE(LUPRI,'(//1X,A,I2)')
-     *'Analysis of the Coupled Cluster Excitation Vector Number : ',
-     * ICOUNT
-            WRITE(LUPRI,'(1X,A)')
-     *'-------------------------------------------------------------'
-            WRITE(LUPRI,'(/10X,A,23X,F10.4,A)')
-     *   'Excitation Energy :  ',WORK(KEIVAL+ICOUNT-1)*XTEV,
-     *   ' eV'
+               WRITE(LUPRI,'(//1X,2A,I3)') 'Analysis of the Coupled ',
+     *          'Cluster Excitation Vector Number :', ICOUNT
+               WRITE(LUPRI,'(1X,2A)') '-----------------------------',
+     *                             '--------------------------------'
+               WRITE(LUPRI,'(/10X,A,23X,F10.4,A)')
+     *          'Excitation Energy :  ',WORK(KEIVAL+ICOUNT-1)*XTEV,' eV'
                WORK(KEXCIS+(ICOUNT-1)) = WORK(KEIVAL+ICOUNT-1)
                IF (TRIPLET) THEN
-                 KCAM1 = KWRK2 + (ICOUNT-1)*NCCVAR
+                 KCAM1 = KWRK2 + (J-1)*NCCVAR
                  KCAMP = KCAM1 + NT1AM(ISYMTR)
                  KCAMM = KCAMP + NT2AM(ISYMTR)
                  CALL CC_PRAM3(WORK(KCAM1), WORK(KCAMP), WORK(KCAMM),
      *                         WORK(KT1PS+(ICOUNT-1)),PTP,PTM,ISYMTR)
                ELSE
-                 CALL CC_PRAM(WORK(KWRK2 + (ICOUNT-1)*NCCVAR),
+                 CALL CC_PRAM(WORK(KWRK2+(J-1)*NCCVAR),
      *                        WORK(KT1PS+(ICOUNT-1)),ISYMTR)
                END IF
                CALL FLSHFO(LUPRI)
-C
-C-------------------------------------------------------------
-C              Save vectors.
-C              IF left vectors then check and calculate norms.
-C-------------------------------------------------------------
-C
-               IF ((LIST(1:2) .EQ. 'LE').AND.(.NOT.LHTR)) THEN
-                  IF (ABS(EIGVAL(ILSTNR)-WORK(KEIVAL+ICOUNT-1)).GT.TF)
-     *            WRITE(LUPRI,'(////,1X,A,//)') 'Warning - Large differ'
-     *            //'ence between left and right excitation energies'
-                 KR1 = KWRK1
-                 KR2 = KWRK1 + NT1AM(ISYMTR)
-                 IOPT = 3
-                 CALL CC_RDRSP('RE',ILSTNR,ISYMTR,IOPT,MODEL,
-     *                         WORK(KR1),WORK(KR2))
-                 XNORM(ILSTNR)=DDOT(NCCVAR,
-     *                              WORK(KWRK2+(ICOUNT-1)*NCCVAR),
-     *                              1,WORK(KR1),1)
-                 IF (ABS(XNORM(ILSTNR)).LT.TLOVLP) THEN
-                  WRITE(LUPRI,*)'SERIOUS WARNING !!!!!!!!!!!!!!!!!!!!'
-                  WRITE(LUPRI,*)'Overlap square is less than tolerance.'
-                  WRITE(LUPRI,*)' - You may encounter serious problems.'
-                  WRITE(LUPRI,*)'Overlap square: ',XNORM(ILSTNR)
-                  WRITE(LUPRI,*)'Tolerance:      ',TLOVLP
-                 ENDIF
-
-                 IF (NCCVAR.EQ.NT1AM(ISYMTR)) THEN
-                   SPACE  = 'singles space'
-                   NSPACE = 13
-                 ELSE
-                   SPACE  = 'singles and doubles space'
-                   NSPACE = 25
-                 END IF
-                 WRITE(LUPRI,'(/,1X,4A,F10.6)')'Overlap between left ',
-     *             'and right vector in ',SPACE(1:NSPACE),': ',
-     *              XNORM(ILSTNR)
-
-                 IF (ABS(XNORM(ILSTNR)).LT.1.0D-10) THEN
-                  WRITE(LUPRI,*) 'Stop due to small overlap'
-                  CALL QUIT('CC_EXCI: Stop due to small overlap')
-                 ELSE
-                  FAC = 1.0D0/XNORM(ILSTNR)
-                  CALL DSCAL(NCCVAR,FAC,WORK(KWRK2+(ICOUNT-1)*NCCVAR),1)
-                  XNORM(ILSTNR)=DDOT(NCCVAR,
-     *                              WORK(KWRK2+(ICOUNT-1)*NCCVAR),
-     *                              1,WORK(KR1),1)
-                  WRITE(LUPRI,'(1X,4A,F10.6,/)') 'Renormalized overlap',
-     *             ' left-right in ',SPACE(1:NSPACE),':       ',
-     *             XNORM(ILSTNR)
-                 ENDIF
-               ELSE
+ 
+C              -----------------------------------------------------
+C              Save solution vectors on file and excitation energies
+C              in the result array EIGVAL:
+C              (if we compute both left and right eigenvector, 
+C               don't overwrite with left eigenvalues the right ones)
+C              -----------------------------------------------------
+               IOPT = 3
+               CALL CC_WRRSP(LIST,ILSTNR,ISYM,IOPT,MODEL,DUMMY,
+     *                       WORK(KWRK2+(J-1)*NCCVAR),
+     *                       WORK(KWRK2+(J-1)*NCCVAR+NT1AM(ISYM)),
+     *                       WORK(KWRK1),NVARPT)
+ 
+               IF (LIST(1:2).EQ.'RE'.OR.LHTR) THEN
                  EIGVAL(ILSTNR) = WORK(KEIVAL+ICOUNT-1)
                ENDIF
-C
-C              print *,'norm of solution written to file:',
-C    *           ddot(nccvar,work(kwrk2+(icount-1)*nccvar),1,
-C    *                       work(kwrk2+(icount-1)*nccvar),1)
-C
-               IOPT = 3
-               CALL CC_WRRSP(LIST,ILSTNR,ISYM,IOPT,MODEL,
-     *                       DUMMY,
-     *                       WORK(KWRK2+(ICOUNT-1)*NCCVAR),
-     *                       WORK(KWRK2+(ICOUNT-1)*NCCVAR+NT1AM(ISYM)),
-     *                       WORK(KWRK1),NVARPT)
-C
+
   510       CONTINUE
             IOFF1 = IOFF1 + NSIMUL
   500    CONTINUE
@@ -973,13 +925,39 @@ C-----------------------------------------------------------
 
          NCCEXCI(ISYM,IMULT) = NCCEXSAV(ISYM,IMULT) 
 
-C--------------------------------------------------------------------
-C       Normalize Eigenvectors such that (RE|RE) = 1  and (LE|RE) = 1
-C       (at the moment only used for CC3, but should be used for
-C        all iterative models...)
-C--------------------------------------------------------------------
+C---------------------------------------------------------------------
+C        First, check if left and right eigenvalues agree. Then
+C        normalize Eigenvectors such that (RE|RE) = 1  and (LE|RE) = 1
+C---------------------------------------------------------------------
         IF (LIST(1:2).EQ.'LE' .AND. (.NOT.LHTR)) THEN
-          CALL CCEXNORM(ISYM,IMULT,WORK,LWORK)
+         ! set threshold within which left and right eigenvalues
+         ! should agree, else complain 
+         THREIG = 10 * THREXC
+         IF (OMESC.AND.CCSDT.AND.(.NOT.CCSDT_DIIS)) THREIG = TOLSC
+
+         DO ICOUNT = 1, NCCEXCI(ISYM,IMULT)
+           IF (TRIPLET) THEN
+             ILSTNR = ITROFE(ISYM) + ICOUNT
+           ELSE
+             ILSTNR = ISYOFE(ISYM) + ICOUNT
+           END IF
+           IF(ABS(EIGVAL(ILSTNR)-WORK(KEXCIS+ICOUNT-1)).GT.THREIG)THEN
+             WRITE(LUPRI,'(//,1X,A)') 'Warning - Large differ'
+     *           //'ence between left and right excitation energies'
+             WRITE(LUPRI,'(1X,A,I5)') 'Symmetry class:',ISYM
+             WRITE(LUPRI,'(1X,A,I5)') 'Multiplicity  :',IMULT
+             WRITE(LUPRI,'(1X,A,I5)') 'State number  :',ICOUNT
+             WRITE(LUPRI,'(1X,A,2F20.10)') 'Eigenvalues   :',
+     *         EIGVAL(ILSTNR),WORK(KEXCIS+ICOUNT-1)
+             WRITE(LUPRI,'(1X,A,2F20.10)') 'Diff/Threshold:',
+     *         EIGVAL(ILSTNR)-WORK(KEXCIS+ICOUNT-1),THREIG
+             WRITE(LUPRI,'(1X,A,//)') 
+     *         'Warning - Check your input and output carefully!!'
+           END IF
+         END DO
+
+         CALL CCEXNORM(ISYM,IMULT,THREIG,WORK,LWORK)
+
         END IF
 C
 C====================================================================
@@ -2671,3 +2649,60 @@ C
       CALL QEXIT('CC_REDEIG')
 C
       END
+*=====================================================================*
+      subroutine cctstsol(solvec,eigval,thrld,nred,nvec)
+*---------------------------------------------------------------------*
+*     Purpose: test for degenerate eigenvalues/vectors.
+*              for degenerate solutions orthogonalize eigenvectors
+*              all eigenvectors are normalized to one
+*
+*     Written by Christof Haettig, Februar 2003, Aarhus
+*---------------------------------------------------------------------*
+      implicit none
+#include <priunit.h>
+#include <cclr.h>
+
+      logical locdbg
+      parameter (locdbg = .false.)
+
+      integer ivec, jvec, ndeg, nvec, nred
+#if defined (SYS_CRAY) 
+      real fac, ddot, thrld, solvec(maxred,*), eigval(*)
+#else
+      double precision fac, ddot, thrld, solvec(maxred,*), eigval(*)
+#endif
+
+      if (locdbg) then
+        write(lupri,*) 'Matrix with solution vectors in reduced space:'
+        call output(solvec,1,maxred,1,maxred,maxred,maxred,1,lupri)
+      end if
+
+      do ivec = 1, nvec
+        ndeg = 1
+        do jvec = 1, nvec
+          if (ivec.ne.jvec. and. 
+     &          abs(eigval(ivec)-eigval(jvec)).lt.thrld) then
+            ndeg = ndeg+1
+            fac = -ddot(nred,solvec(1,jvec),1,solvec(1,ivec),1)
+            call daxpy(nred,fac,solvec(1,jvec),1,solvec(1,ivec),1)
+          end if
+        end do
+        if (ndeg.gt.1) then
+          write(lupri,'(/1x,a,i3,f20.10)') 
+     &     'degenerate eigenvector found:',ivec,eigval(ivec)
+          write(lupri,'(1x,a,i2,1x,a,/)') 
+     &     'eigenvector was orthogonalized against ',ndeg-1,
+     &     'degenerate vectors'
+        end if
+        fac = dsqrt(ddot(nred,solvec(1,ivec),1,solvec(1,ivec),1))
+        if (dabs(fac-1.0d0).gt.1.0d-14) then
+          call dscal(nred,1.0d0/fac,solvec(1,ivec),1)
+          write(lupri,'(/1x,a,i3,f16.8,a,g16.8)')
+     &      'eigenvector for state',ivec,eigval(ivec),
+     &      'has been renormalized... scaling factor:',fac
+        end if
+      end do
+ 
+      return
+      end 
+*=====================================================================*

@@ -85,6 +85,7 @@ C
 #include <cclr.h>
 #include <eribuf.h>
 #include <ccslvinf.h>
+#include <ccnoddy.h>
 C
       CHARACTER*10 MODEL
       CHARACTER*8  FRHO2, FRHO1, FC2AM, FC1AM, FN3SRT, FNTOC
@@ -1661,23 +1662,22 @@ C-----------------------
 C        Calculate
 C-----------------------
 C
-         ECURRSAV = ECURR 
-         ECURR    = 0.0d0 
-C
-         CALL CC3_T3_LHTR(0.0D0,RHO1(1,IV),WORK(KT1AM),ISYMOP,
+         IF (.NOT.NODDY_LHTR) THEN
+
+          CALL CC3_T3_LHTR(0.0D0,RHO1(1,IV),WORK(KT1AM),ISYMOP,
      *                    WORK(KT2AM),ISYMOP,CTR2,ISYMTR,
      *                    WORK(KLAMDP),WORK(KLAMDH),
      *                    WORK(KEND2),LWRK2,LU3SRT,FN3SRT,
      *                    LUCKJD,FNCKJD)
-C
-         ECURR    = ECURRSAV 
-C
-         IF (IPRINT .GT. 55) THEN
+ 
+          IF (IPRINT .GT. 55) THEN
             RHO1N = DDOT(NT1AM(ISYRES),RHO1(1,IV),1,RHO1(1,IV),1)
             RHO2N = DDOT(NT2AM(ISYRES),RHO2,1,RHO2,1)
             WRITE(LUPRI,1) 'Norm of RHO1 after CC3_T3_LHTR :', RHO1N
             WRITE(LUPRI,1) 'Norm of RHO2 after CC3_T3_LHTR :', RHO2N
-         ENDIF
+          ENDIF
+
+         END IF
 C
 C----------------------------------------------------------------
 C        L2 and T2 are destroyed by CC3_T3_LHTR. 
@@ -1696,7 +1696,8 @@ C
 C
          CALL CC_T2SQ(WORK(KEND2),WORK(KT2AM),1)
 C
-         CALL CC3_L3_LHTR(ECURR,CTR1(1,IV),ISYMTR,CTR2,ISYMTR,
+         IF (.NOT.NODDY_LHTR) THEN
+          CALL CC3_L3_LHTR(ECURR,CTR1(1,IV),ISYMTR,CTR2,ISYMTR,
      *                    WORK(KT2AM),ISYMOP,
      *                    RHO1(1,IV),RHO2,ISYRES,
      *                    WORK(KOOOO),WORK(KOVVO),WORK(KOOVV),
@@ -1705,6 +1706,15 @@ C
      *                    LUCKJD,FNCKJD,LUDKBC,FNDKBC,LUTOC,FNTOC,
      *                    LU3VI,FN3VI,LU4V,FN4V,LUDKBC3,FNDKBC3,
      *                    LU3FOPX,FN3FOPX,LU3FOP2X,FN3FOP2X)
+         END IF
+C
+         IF (NODDY_LHTR) THEN
+             IF (DEBUG) CALL AROUND('Before CC_LHTR_NODDY')
+             CALL CC_LHTR_NODDY(ECURR,RHO1(1,IV),RHO2,WORK(KT1AM),
+     *                          WORK(KT2AM),CTR1(1,IV),CTR2,
+     *                          WORK(KLAMDP),WORK(KLAMDH),
+     *                          WORK(KEND2),LWRK2,0)
+         ENDIF 
 C
          IF (IPRINT .GT. 55) THEN
             RHO1N = DDOT(NT1AM(ISYRES),RHO1(1,IV),1,RHO1(1,IV),1)
@@ -1712,18 +1722,7 @@ C
             WRITE(LUPRI,1) 'Norm of RHO1 after CC3_L3_LHTR :', RHO1N
             WRITE(LUPRI,1) 'Norm of RHO2 after CC3_L3_LHTR :', RHO2N
          ENDIF
-COMMENT COMMENT
-COMMENT COMMENT
-C         else
-C            call around('Before CC_LHTR_NODDY')
-C            CALL CC_LHTR_NODDY(RHO1(1,IV),RHO2,WORK(KT1AM),
-C     *                         WORK(KT2AM),CTR1(1,IV),CTR2,
-C     *                         WORK(KLAMDP),WORK(KLAMDH),
-C     *                         WORK(KEND2),LWRK2,0)
-C         endif
-COMMENT COMMENT
-COMMENT COMMENT
-C
+
       ENDIF
 C--------------------------------------------------------------------
 C     Print out result vectors - zero out single vectors in CCD-calc.

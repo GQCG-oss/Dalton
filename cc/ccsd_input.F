@@ -1191,7 +1191,7 @@ c         table look up:
 c         jump to the appropiate input section:
           IF (IJUMP .LE. NTABLE) THEN
             ICHANG = ICHANG + 1
-            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19),
+            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20),
      *              IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_EXCINP.')
       
@@ -2048,7 +2048,7 @@ C=====================================================================*
       PARAMETER (SECNAM='CC_NODINP')
 
       INTEGER NTABLE
-      PARAMETER (NTABLE = 6)
+      PARAMETER (NTABLE = 12)
 
 * variables:
       LOGICAL SET
@@ -2063,11 +2063,17 @@ C=====================================================================*
 * data:
       DATA SET /.FALSE./
       DATA TABLE /'.XI    ','.XIDEN ','.ETA   ','.ETADEN','.FMAT  ',
-     *            '.ANGMOM'/
+     *            '.FNOALT','.OVLP  ','.OMEGA ','.LHTR  ','.RHTR  ',
+     *            '.FOPDEN','.FINDIF'/
 
 *---------------------------------------------------------------------*
 * set defaults:
 *---------------------------------------------------------------------*
+      NODDY_OMEGA = .FALSE.
+      NODDY_RHTR  = .FALSE.
+      NODDY_LHTR  = .FALSE.
+      NODDY_DEN   = .FALSE.
+
       NODDY_XI  = .FALSE.
       NODDY_ETA = .FALSE. 
 
@@ -2076,6 +2082,8 @@ C=====================================================================*
 
       NODDY_FMAT    = .FALSE.
       CCSDT_F_ALTER = .TRUE.
+
+      NODDY_OVLP = .FALSE.
  
       IF (INIT_ONLY) RETURN
 
@@ -2107,48 +2115,103 @@ c         table look up:
 
 c         jump to the appropiate input section:
           IF (IJUMP .LE. NTABLE) THEN
-            GOTO (1,2,3,4,5,6), IJUMP
+            GOTO (1,2,3,4,5,6,7,8,9,10,11,12), IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_NODINP.')
 
-C           ----------------------------------------
-C           .XI    : use noddy code for Xksi vector:
-C           ----------------------------------------
+C           ---------------------------------------
+C           .XI    : use noddy code for Xksi vector
+C           ---------------------------------------
 1           CONTINUE
               NODDY_XI = .TRUE.
             GO TO 100
 
-C           -------------------------------------
-C           .XIDEN : use noddy Xksi density code:
-C           -------------------------------------
+C           ------------------------------------
+C           .XIDEN : use noddy Xksi density code
+C           ------------------------------------
 2           CONTINUE
               NODDY_XI_ALTER = .TRUE.
             GO TO 100
  
-C           ----------------------------------------
-C           .ETA   : use noddy code for Xksi vector:
-C           ----------------------------------------
+C           ---------------------------------------
+C           .ETA   : use noddy code for Xksi vector
+C           ---------------------------------------
 3           CONTINUE
               NODDY_ETA = .TRUE.
             GO TO 100
  
-C           ----------------------------------------
-C           .ETADEN: use noddy for Eta density code:
-C           ----------------------------------------
+C           ---------------------------------------
+C           .ETADEN: use noddy for Eta density code
+C           ---------------------------------------
 4           CONTINUE
               NODDY_ETA_ALTER = .TRUE.
             GO TO 100
 
-C           -----------------------------------------------------
-C           .FMAT  : 
-C           -----------------------------------------------------
+C           ------------------------------------------------------
+C           .FMAT  : use noddy version for F matrix transformation
+C           ------------------------------------------------------
 5           CONTINUE
               NODDY_FMAT = .TRUE.
             GO TO 100
 
 C           ------------------------------------------------------
-C           .XXXXXX: 
+C           .FNOALT: don't use alternative noddy code for F matrix
+C                    which does triples as B matrix contraction
 C           ------------------------------------------------------
 6           CONTINUE
+              NODDY_FMAT    = .TRUE.
+              CCSDT_F_ALTER = .FALSE.
+            GO TO 100
+
+C           -------------------------------------------------------
+C           .OVLP  : use noddy code for (LE|RE) and (RE|RE) overlap
+C           -------------------------------------------------------
+7           CONTINUE
+              NODDY_OVLP = .TRUE.
+            GO TO 100
+
+C           -------------------------------------------
+C           .OMEGA : use noddy code for vector function
+C           -------------------------------------------
+8           CONTINUE
+              NODDY_OMEGA = .TRUE.
+            GO TO 100
+
+C           --------------------------------------------------------
+C           .LHTR  : use noddy code for jacobian left transformation
+C           --------------------------------------------------------
+9           CONTINUE
+              NODDY_LHTR  = .TRUE.
+            GO TO 100
+
+C           ---------------------------------------------------------
+C           .RHTR  : use noddy code for jacobian right transformation
+C           ---------------------------------------------------------
+10          CONTINUE
+              NODDY_RHTR  = .TRUE.
+            GO TO 100
+C
+C           ------------------------------------------------
+C           .FOPDEN: use noddy code for ground state density
+C           ------------------------------------------------
+11          CONTINUE
+              NODDY_DEN  = .TRUE.
+            GO TO 100
+C
+C           --------------------------------------------------------
+C           .FINDIF: set flags appropriate for CC3 finite difference
+C                    calculations
+C           --------------------------------------------------------
+12          CONTINUE
+              NODDY_OMEGA  = .TRUE.
+              NODDY_RHTR   = .TRUE.
+              NODDY_LHTR   = .TRUE.
+              NODDY_DEN    = .TRUE.
+              NODDY_ETA    = .TRUE.
+              NODDY_XI     = .TRUE.
+              NODDY_FMAT   = .TRUE.
+
+              NODDY_XI_ALTER  = .FALSE.
+              NODDY_ETA_ALTER = .FALSE. 
             GO TO 100
 C
           ELSE
@@ -2178,7 +2241,43 @@ C
       WRITE(LUPRI,*) 'The Triples section in the response will use '//
      &               'the following modules:'
 
-      WRITE(LUPRI,*) '  in CC_XIETA:'
+      WRITE(LUPRI,'(/1x,a)') ' in CCRHSN:'
+      IF (NODDY_OMEGA) THEN
+       WRITE(LUPRI,*) 'vector function calculation: CCSD_TRIPLE'
+      ELSE
+       WRITE(LUPRI,*) 'vector function calculation: CC3_OMEG'
+      END IF
+
+      WRITE(LUPRI,'(/1x,a)') ' in CC_RHTR:'
+      IF (NODDY_RHTR) THEN
+       WRITE(LUPRI,*) '    A right transformation : CC_RHTR_NODDY'
+      ELSE
+       WRITE(LUPRI,*) '    A right transformation : CC3_OMEG'
+      END IF
+
+      WRITE(LUPRI,'(/1x,a)') ' in CC_LHTR:'
+      IF (NODDY_LHTR) THEN
+       WRITE(LUPRI,*) '    A left transformation  : CC_LHTR_NODDY'
+      ELSE
+       WRITE(LUPRI,*) '    A left transformation  : CC3_T3/L3_LHTR'
+      END IF
+
+      WRITE(LUPRI,'(/1x,a)') ' in CC_FOP:'
+      IF (NODDY_DEN) THEN
+       WRITE(LUPRI,*) '   for one-electron density: CCSDT_XI_CONT_NODDY'
+      ELSE
+       WRITE(LUPRI,*) '   for one-electron density: CCSDPT_DENS2'
+      END IF
+
+      WRITE(LUPRI,'(/1x,a)') ' in CCEXNORM:'
+      IF (NODDY_OVLP) THEN
+       WRITE(LUPRI,*) '   for (LE|RE) overlapp    : CCOVLPT_NODDY '
+      ELSE
+       WRITE(LUPRI,*) '   for (LE|RE) overlapp    : CC3_LR_OVLP'
+      END IF
+
+
+      WRITE(LUPRI,'(/1x,a)') ' in CC_XIETA:'
 
       IF (NODDY_XI) THEN
        WRITE(LUPRI,*) '    xi vector calculation: CCSDT_XI_NODDY'
@@ -2209,7 +2308,7 @@ C
        WRITE(LUPRI,*) '    L A{O} contraction: CCSDT_ETA_DEN'
       END IF
 
-      WRITE(LUPRI,*) '  in CC_FMAT:'
+      WRITE(LUPRI,'(/1x,a)') ' in CC_FMAT:'
       IF (NODDY_FMAT) THEN
        WRITE(LUPRI,*) '    F matrix transformation: CCSDT_FMAT_NODDY'
        WRITE(LUPRI,*) '    F matrix contraction   : CCSDT_FMAT_NODDY'//
@@ -2220,6 +2319,7 @@ C
        WRITE(LUPRI,*) '    F matrix contraction   : CC3_FMAT'//
      &  ' and CCSDT_FBMAT'
       END IF
+
 
       RETURN
       END

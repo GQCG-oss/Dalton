@@ -1,26 +1,25 @@
-
+ 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > HF_ccpVDZ_tmom_no2np1.info <<%EOF%
-   HF_ccpVDZ_tmom_no2np1
+cat > cc3_findiff.info <<%EOF%
+   cc3_findiff
    -----------
    Molecule:         HF
-   Thoery Level:     CC3 / cc-pVDZ
-   Test Purpose:     Transition moment between the ground and an
-                     excited state; non-totally symmetric operator.
-                     (NOT exploiting 2n+1 rule!)
+   Thoery Level:     CC3 / 6-31G
+   Test Purpose:     CC3 energy, dipole moment and polarizability
+                     within an (unrelaxed) finite electric field
 %EOF%
 
 #######################################################################
 #  INTEGRAL INPUT
 #######################################################################
-cat > HF_ccpVDZ_tmom_no2np1.mol <<%EOF%
+cat > cc3_findiff.mol <<%EOF%
 BASIS
-cc-pVDZ
-CCSD(T) unrelaxed FOP
-Dum di dum di da
-    2    2  X  Y  Z   1.00D-15
+6-31G
+CC3 polarizability
+HF molecule
+    2    0  X  Y  Z   1.00D-15
         9.0   1    2    1    1
 F     0.0000000000000000   0.000000000   0.08729478
         1.0   1    1    1
@@ -30,13 +29,11 @@ H     0.0000000000000000   0.000000000  -1.64558444
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > HF_ccpVDZ_tmom_no2np1.dal <<%EOF%
+cat > cc3_findiff.dal <<%EOF%
 **GENERAL
 .RUNSIRIUS
 **INTEGRAL
 .DIPLEN
-.DIPVEL
-.ANGMOM
 *END OF GENERAL
 **WAVE FUNCTION
 .CC
@@ -48,27 +45,26 @@ cat > HF_ccpVDZ_tmom_no2np1.dal <<%EOF%
 .MOSTART
 .H1DIAG
 *CC INP
+.FIELD
+ 0.0002
+ ZDIPLEN
 .CC3
 .PRINT
- 1
+ 11
 .THRENR
-5.0D-9
+1.0D-12
 .THRLEQ
-5.0D-9
+1.0D-12
 .MAX IT
  100
-*CCEXCI
-.THREXC
- 5.0D-9
-.TOLSC
- 5.0D-9
-.NCCEXCI
- 0 1 0 0
- 0 0 0 0
-*CCOPA
+*CCFOP
+.NONREL
+.DIPMOM
+*CCLR
 .OPERATOR
-XDIPLEN
-.NO2N+1
+ZDIPLEN ZDIPLEN
+*NODDY
+.FINDIF
 *END OF
 %EOF%
 #######################################################################
@@ -90,26 +86,25 @@ else
 fi
 
 # SCF, MP2 and CC3 energies:
-CRIT1=`$GREP "Total SCF   energy: * -100\.0194112620" $log | wc -l`
-CRIT2=`$GREP "Total MP2   energy: * -100\.2231931820" $log | wc -l`
-CRIT3=`$GREP "Total CC3   energy: * -100\.2301803943" $log | wc -l`
-TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
-CTRL[1]=6
-ERROR[1]="ENERGIES NOT CORRECT"
+CRIT1=`$GREP "Total SCF   energy: * -99\.9834089624" $log | wc -l`
+CRIT3=`$GREP "Total CC3   energy: * -100\.1153427053" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT3` 
+CTRL[1]=4
+ERROR[1]="ENERGIES IN FIELD NOT CORRECT"
 
-
-# CC3 transiton moments :
-CRIT1=`$GREP  "     \| XDIPLEN   \|     ( .|.0)\.19931936 \|     ( .|.0)\.39224922 \|       ( |0)\.07818286    \|" $log | wc -l`
-  
-TEST[2]=$CRIT1
+# CC3 dipole moment in field :
+# Electronic dipole moment (au):  0.0000000000E+00  0.0000000000E+00 -0.5557075135E-04
+CRIT1=`$GREP  "Electronic dipole moment" $log | $GREP "(-0| -)\.55570751..E-04" | wc -l`
+TEST[2]=`expr $CRIT1`
 CTRL[2]=1
-ERROR[2]="CC3 TRANSITION MOMENT NOT CORRECT"
+ERROR[2]="CC3 DIPOLE MOMEN IN FIELD NOT CORRECT"
 
-# CC3 excitation energies:
-CRIT1=`$GREP  " \| \^1B1  \|    1   \|     ( |0)\.3979860  \|      10\.82975  \|     87347\.823  \|  95\.51  \|" $log | wc -l`
-TEST[3]=$CRIT1
+
+# CC3 polarizability in field:
+CRIT1=`$GREP  "ZDIPLEN  \(unrel\.\)  ( |0)\.0000   ZDIPLEN  \(unrel\.\)  ( |0)\.0000 *  4.002049301" $log | wc -l`
+TEST[3]=`expr $CRIT1`
 CTRL[3]=1
-ERROR[3]="CC3 EXCITATION ENERGIES NOT CORRECT"
+ERROR[3]="CC3 POLARIZABILITY IN FIELD NOT CORRECT"
 
 PASSED=1
 for i in 1 2 3
@@ -129,5 +124,5 @@ else
   exit 1
 fi
 
-' > HF_ccpVDZ_tmom_no2np1.check
+' > cc3_findiff.check
 #######################################################################

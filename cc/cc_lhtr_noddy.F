@@ -33,13 +33,12 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-C  /* Deck ccsd_triple */
-      SUBROUTINE CC_LHTR_NODDY(OMEGA1,OMEGA2,T1AM,T2AM,C1AM,C2AM,
+*---------------------------------------------------------------------*
+C  /* Deck cc_lhtr_noddy */
+*---------------------------------------------------------------------*
+      SUBROUTINE CC_LHTR_NODDY(FREQ,OMEGA1,OMEGA2,T1AM,T2AM,C1AM,C2AM,
      *                         XLAMDP,XLAMDH,WORK,LWORK,IOPT)
-C
-C     Written by Henrik Koch 19-Sep-1994
-C
-C     Version 1.0
+*=====================================================================*
 C
 C     Purpose:
 C
@@ -57,6 +56,7 @@ C     IOPT = 0 No storage of T3, L3
 C     IOPT = 1 Store T3 and L3 in 'T3AMPL' and 'L3AMPL'
 C
 C
+*---------------------------------------------------------------------*
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
@@ -72,6 +72,11 @@ C
 #include <ccsdio.h>
 #include <mxcent.h>
 #include <eribuf.h>
+#include <ccfield.h>
+C
+      LOGICAL LOCDBG
+      PARAMETER(LOCDBG = .FALSE.)
+C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION INDEXA(MXCORB)
@@ -88,100 +93,83 @@ C------------------------
 C     Dynamic Allocation.
 C------------------------
 C
-      KCMO   = 1
-      KSCR1  = KCMO   + NLAMDT
+      KSCR1  = 1
       KFOCK  = KSCR1  + NT1AMX
       KFOCKD = KFOCK  + N2BST(ISYMOP)
-      KINT1  = KFOCKD + NORBT
-      KINT2  = KINT1  + NT1AMX*NVIRT*NVIRT
-      KINT1T = KINT2  + NRHFT*NRHFT*NT1AMX
-      KINT2T = KINT1T + NT1AMX*NVIRT*NVIRT
-      KINT1S = KINT2T + NRHFT*NRHFT*NT1AMX
+      KEND1  = KFOCKD + NORBT
+
+      IF ((NONHF) .AND. (NFIELD .GT. 0)) THEN
+         KONEP  = KEND1
+         KEND1  = KONEP + N2BST(ISYMOP)
+         LWRK1  = LWORK  - KEND1
+      ENDIF
+
+      KINT1S = KEND1
       KINT2S = KINT1S + NT1AMX*NVIRT*NVIRT
-      KINT3S = KINT2S + NRHFT*NRHFT*NT1AMX
-      KINT4S = KINT3S + NT1AMX*NVIRT*NVIRT
-      KT3AM  = KINT4S + NRHFT*NRHFT*NT1AMX
-      KL3AM  = KT3AM  + NT1AMX*NT1AMX*NT1AMX
-      KOME1  = KL3AM  + NT1AMX*NT1AMX*NT1AMX
-      KOME2  = KOME1  + NT1AMX
-      KOME22 = KOME2  + NT1AMX*NT1AMX
-      KIAJB  = KOME22 + NT1AMX*NT1AMX
-      KSIG2  = KIAJB  + NT1AMX*NT1AMX
-      KYIAJB = KSIG2  + NT1AMX*NT1AMX
-      KEND1  = KYIAJB + NT1AMX*NT1AMX
-      LWRK1  = LWORK  - KEND1
-C
-C     New Integrals.
+      KEND1  = KINT2S + NRHFT*NRHFT*NT1AMX
+
       KIOVVO = KEND1
       KIOOVV = KIOVVO + NRHFT*NVIRT*NVIRT*NRHFT
       KIOOOO = KIOOVV + NRHFT*NRHFT*NVIRT*NVIRT
       KIVVVV = KIOOOO + NRHFT*NRHFT*NRHFT*NRHFT
       KEND1  = KIVVVV + NVIRT*NVIRT*NVIRT*NVIRT
+
+      KL3AM  = KEND1
+      KEND1  = KL3AM  + NT1AMX*NT1AMX*NT1AMX
+
+      ! what is above has to be kept until the end...
+      ! everything below might be overwritten in CC_LHPART_NODDY
+      KEND1A  = KEND1
+      LWRK1A  = LWORK  - KEND1A  
+
+      KINT1T = KEND1 
+      KINT2T = KINT1T + NT1AMX*NVIRT*NVIRT
+      KEND1  = KINT2T + NRHFT*NRHFT*NT1AMX
+
+      KT3AM  = KEND1 
+      KEND1  = KT3AM  + NT1AMX*NT1AMX*NT1AMX
+
+      KOME1  = KEND1 
+      KOME2  = KOME1  + NT1AMX
+      KEND1  = KOME2  + NT1AMX*NT1AMX
+
+      KIAJB  = KEND1 
+      KYIAJB = KIAJB  + NT1AMX*NT1AMX
+      KEND1  = KYIAJB + NT1AMX*NT1AMX
+
       LWRK1  = LWORK  - KEND1
-C
-COMMENT COMMENT
-COMMENT COMMENT
-      ktmat = kend1
-      kend1 = ktmat + nvirt*nrhft*nrhft*nrhft
-      lwrk1 = lwork - kend1
-      call dzero(work(ktmat),nvirt*nrhft*nrhft*nrhft)
-COMMENT COMMENT
-COMMENT COMMENT
-C
       IF (LWRK1 .LT. 0) THEN
-         CALL QUIT('Insufficient space in CCSD_TRIPLE')
+         CALL QUIT('Insufficient space in CC_LHTR_NODDY')
       ENDIF
 C
 C--------------------------------
 C     Initialize integral arrays.
 C--------------------------------
 C
-      CALL DZERO(WORK(KINT1),NT1AMX*NVIRT*NVIRT)
-      CALL DZERO(WORK(KINT2),NT1AMX*NRHFT*NRHFT)
       CALL DZERO(WORK(KINT1T),NT1AMX*NVIRT*NVIRT)
       CALL DZERO(WORK(KINT2T),NT1AMX*NRHFT*NRHFT)
       CALL DZERO(WORK(KINT1S),NT1AMX*NVIRT*NVIRT)
       CALL DZERO(WORK(KINT2S),NT1AMX*NRHFT*NRHFT)
-      CALL DZERO(WORK(KINT3S),NT1AMX*NVIRT*NVIRT)
-      CALL DZERO(WORK(KINT4S),NT1AMX*NRHFT*NRHFT)
       CALL DZERO(WORK(KT3AM),NT1AMX*NT1AMX*NT1AMX)
       CALL DZERO(WORK(KL3AM),NT1AMX*NT1AMX*NT1AMX)
-      CALL DZERO(WORK(KOME1),NT1AMX)
-      CALL DZERO(WORK(KOME2),NT1AMX*NT1AMX)
-      CALL DZERO(WORK(KOME22),NT1AMX*NT1AMX)
       CALL DZERO(WORK(KIAJB),NT1AMX*NT1AMX)
       CALL DZERO(WORK(KYIAJB),NT1AMX*NT1AMX)
-      CALL DZERO(WORK(KSIG2),NT1AMX*NT1AMX)
 C
       CALL DZERO(WORK(KIOVVO),NRHFT*NVIRT*NVIRT*NRHFT)
       CALL DZERO(WORK(KIOOVV),NRHFT*NVIRT*NVIRT*NRHFT)
       CALL DZERO(WORK(KIOOOO),NRHFT*NRHFT*NRHFT*NRHFT)
       CALL DZERO(WORK(KIVVVV),NVIRT*NVIRT*NVIRT*NVIRT)
 C
-C----------------------------------------------
-C     Read MO-coefficients from interface file.
-C----------------------------------------------
-C
-      CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
-      REWIND LUSIFC
-C
-      CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
-C
-      READ (LUSIFC)
-      READ (LUSIFC)
-      READ (LUSIFC) (WORK(KCMO+I-1), I=1,NLAMDT)
-C
 C-------------------------------------
 C     Read canonical orbital energies.
 C-------------------------------------
 C
+      CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
+     &            .FALSE.)
       REWIND LUSIFC
-C
       CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
       READ (LUSIFC)
       READ (LUSIFC) (WORK(KFOCKD+I-1), I=1,NORBT)
-C
       CALL GPCLOSE(LUSIFC,'KEEP')
 C
 C--------------------------------------------------
@@ -189,28 +177,28 @@ C     Read in AO fock matrix and transform to MO
 C--------------------------------------------------
 C
       LUFCK = 0
-C     The T1 transformed density is used to calculate this AO fock matrix.
       CALL GPOPEN(LUFCK,'CC_FCKH','OLD',' ','UNFORMATTED',
      *            IDUMMY,.FALSE.)
-C     The CMO transformed density is used to calculate this AO fock matrix.
-C      CALL GPOPEN(LUFCK,'CC_FCKREF','OLD',' ','UNFORMATTED',
-C     *            IDUMMY,.FALSE.)
 C
       REWIND(LUFCK)
       READ(LUFCK)(WORK(KFOCK + I-1),I = 1,N2BST(ISYMOP))
       CALL GPCLOSE(LUFCK,'KEEP' )
 C
-      IF (IPRINT .GT. 50) THEN
-         CALL AROUND( 'NODDY : Usual Fock AO matrix' )
-         CALL CC_PRFCKAO(WORK(KFOCK),ISYMOP)
-      ENDIF
-C
       CALL CC_FCKMO(WORK(KFOCK),XLAMDP,XLAMDH,
      *              WORK(KEND1),LWRK1,1,1,1)
 C
-      IF (IPRINT .GT. 50) THEN
-         CALL AROUND('OUTPUT OF FOCK')
-         CALL OUTPUT(WORK(KFOCK),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
+C---------------------------------------------------
+C     Get the one electron integrals from the fields
+C---------------------------------------------------
+C
+      IF ((NONHF) .AND. NFIELD .GT. 0) THEN
+         CALL DZERO(WORK(KONEP),N2BST(ISYMOP))
+         DO I = 1, NFIELD
+            FF = EFIELD(I)
+            CALL CC_ONEP(WORK(KONEP),WORK(KEND1),LWRK1,FF,1,LFIELD(I))
+         ENDDO
+         CALL CC_FCKMO(WORK(KONEP),XLAMDP,XLAMDH,
+     *                 WORK(KEND1),LWRK1,1,1,1)
       ENDIF
 C
 C====================================================
@@ -239,7 +227,7 @@ C
          DO 110 ILLL = 1,NTOT
 C
 C-----------------------------------------------------------------
-C           If direct calculate the integrals and transposed t2am.
+C           If direct calculate the integrals 
 C-----------------------------------------------------------------
 C
             IF (DIRECT) THEN
@@ -248,14 +236,12 @@ c              CALL HERDI2(WORK(KEND1),LWRK1,INDEXA,ILLL,NUMDIS,IPRINT)
                CALL QUIT('Direct not implemented')
                DTIME  = SECOND() - DTIME
                TIMHER2 = TIMHER2 + DTIME
-COMMENT COMMENT
                KRECNR = KEND1
                KEND1  = KRECNR + (NBUFX(0) - 1)/IRAT + 1
                LWRK1  = LWORK  - KEND1
                IF (LWRK1 .LT. 0) THEN
                   CALL QUIT('Insufficient core in CC_FOP3')
                END IF
-COMMENT COMMENT
             ELSE
                NUMDIS = 1
             ENDIF
@@ -304,23 +290,14 @@ C----------------------------------------------------
 C              Calculate integrals needed in CCSD[T].
 C----------------------------------------------------
 C
-c              CALL CCSDT_TRAN1(WORK(KINT1),WORK(KINT2),WORK(KCMO),
-c    *                          WORK(KCMO),WORK(KXINT),IDEL)
-C
                CALL CCSDT_TRAN1(WORK(KINT1T),WORK(KINT2T),XLAMDP,
      *                          XLAMDH,WORK(KXINT),IDEL)
-C
-C               CALL CCSDT_TRAN2(WORK(KIAJB),WORK(KYIAJB),WORK(KCMO),
-C     *                          WORK(KXINT),IDEL)
 C
                CALL CC3_TRAN2(WORK(KIAJB),WORK(KYIAJB),XLAMDP,
      *                          XLAMDH,WORK(KXINT),IDEL)
 C
                CALL CCSDT_TRAN3(WORK(KINT1S),WORK(KINT2S),XLAMDP,
      *                          XLAMDH,WORK(KXINT),IDEL)
-C
-               CALL CC3_TRAN3(WORK(KINT3S),WORK(KINT4S),XLAMDP,
-     *                        XLAMDH,WORK(KXINT),IDEL)
 C
                CALL CCFOP_TRAN1(WORK(KIOVVO),WORK(KIOOVV),
      *                          WORK(KIOOOO),WORK(KIVVVV),
@@ -329,49 +306,16 @@ C
   110    CONTINUE
   100 CONTINUE
 C
-COMMENT COMMENT
-COMMENT COMMENT
-C      CALL KHTCME1S(work(kint1s),work(kint3s),work(kint2s),work(kint4s))
-C      CALL DCOPY(nt1amx*nvirt*nvirt,work(kint1s),1,work(kint3s),1)
-C      CALL DCOPY(nt1amx*nrhft*nrhft,work(kint2s),1,work(kint4s),1)
-CC
-CC
-CC
-CC
-CC
-C      CALL KHTCME1T(work(kint1t),work(kint3s),work(kint2t),work(kint4s))
-CC
-C      CALL DCOPY(nt1amx*nvirt*nvirt,work(kint1s),1,work(kint3s),1)
-C      CALL DCOPY(nt1amx*nrhft*nrhft,work(kint2s),1,work(kint4s),1)
-CC
-CC
-CC
-CC
-      if (.false.) then
-         call new_int_output(work(kiovvo),work(kioovv),work(kioooo),
-     *                        work(kivvvv))
-C
-         xnorm = ddot(NRHFT*NVIRT*NVIRT*NRHFT,work(kiovvo),1,
-     *                work(kiovvo),1)
-         write(lupri,*) 'Norm of xovvo in noddy : ',xnorm
-         xnorm = ddot(NRHFT*NVIRT*NVIRT*NRHFT,work(kioovv),1,
-     *                work(kioovv),1)
-         write(lupri,*) 'Norm of xoovv in noddy : ',xnorm
-      endif
-COMMENT COMMENT
-COMMENT COMMENT
 C-------------------------------------
 C     Calculate the T3 amplitudes.
 C-------------------------------------
 C
-      if (.true.) then
-      CALL CCSDT_T3AM(WORK(KT3AM),WORK(KINT1S),WORK(KINT2S),T2AM,
-     *                WORK(KSCR1),WORK(KFOCKD),WORK(KL3AM),DUMMY)
-      endif
+      CALL CCSDT_T03AM(WORK(KT3AM),WORK(KINT1S),WORK(KINT2S),T2AM,
+     *                WORK(KSCR1),WORK(KFOCKD),WORK(KONEP),WORK(KL3AM))
 
-      CALL DSCAL(nt1amx*nt1amx*nt1amx,-1.0D0,work(kt3am),1)
+      CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0d0,WORK(KT3AM),1)
 C
-      IF (IOPT .EQ. 1) THEN
+      IF (IOPT .EQ. 1 .OR. (NONHF .AND. NFIELD.GT.0)) THEN
          LUSIFC = 0
          CALL GPOPEN(LUSIFC,'T3AMPL','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
@@ -379,60 +323,48 @@ C
          WRITE (LUSIFC) (WORK(KT3AM-1+I), I=1,NT1AMX*NT1AMX*NT1AMX)
          CALL GPCLOSE(LUSIFC,'KEEP')
       ENDIF
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
-      if (.false.) then
-         call temppr(work(KT3AM),1)
-      endif
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
 C
 C------------------------------------
 C     Calculate the CC3 corrections.
 C------------------------------------
 C
-      if (.true.) then
+      CALL DZERO(WORK(KOME1),NT1AMX)
+C
       CALL T3_LEFT1(WORK(KOME1),WORK(KYIAJB),WORK(KIAJB),
      *              C2AM,WORK(KT3AM))
-      endif
 C
-      if (.true.) then
       CALL T3_LEFT2(WORK(KOME1),WORK(KYIAJB),WORK(KIAJB),
      *              C2AM,WORK(KT3AM))
-      endif
-C
-      if (.true.) then
-C
-C     L instead of g
 C
       CALL T3_LEFT3(WORK(KOME1),WORK(KIAJB),C2AM,WORK(KT3AM))
-      endif
-C
-C     DO I = 1, NT1AMX
-C        IF (abs(work(kome1-1+i)) .gt. 1.0D-12) THEN
-C           write(lupri,*) 'OMEGA1_NODDY_T3(',i,')',work(kome1-1+i)
-C        ENDIF
-C     ENDDO
 C
       DO I = 1,NT1AMX
          OMEGA1(I) = OMEGA1(I) + WORK(KOME1+I-1)
       ENDDO
 C
-C-------------------------------------
-C     Calculate the L3 amplitudes.
-C-------------------------------------
+C---------------------------------------------------------------
+C     Calculate rhs vector for triples left amplitude equations:
+C---------------------------------------------------------------
 C
-      if (.true.) then
-COMMENT      CALL CCSDT_L3AM(WORK(KL3AM),WORK(KINT3S),WORK(KINT4S),
-COMMENT     *                WORK(KIAJB),WORK(KFOCK),C1AM,C2AM,
-COMMENT     *                WORK(KSCR1),WORK(KFOCKD),0.0D0)
-      CALL CCSDT_L3AM(WORK(KL3AM),WORK(KINT1T),WORK(KINT2T),
-     *                WORK(KIAJB),WORK(KFOCK),C1AM,C2AM,
-     *                WORK(KSCR1),WORK(KFOCKD),0.0D0)
-      endif
+      CALL DZERO(WORK(KL3AM),NT1AMX*NT1AMX*NT1AMX)
+
+      CALL CCSDT_L3AM_R(WORK(KL3AM),FREQ,WORK(KINT1T),WORK(KINT2T),
+     *                  WORK(KIAJB),WORK(KFOCK),C1AM,C2AM,
+     *                  WORK(KSCR1),WORK(KFOCKD),.FALSE.)
 C
-      CALL DSCAL(nt1amx*nt1amx*nt1amx,-1.0D0,work(kl3am),1)
+C----------------------------------------------------------
+C     Solve triples equations and partition solution vector
+C     into the singles and doubles results vectors:
+C----------------------------------------------------------
 C
+      CALL CC_LHPART_NODDY(OMEGA1,OMEGA2,WORK(KL3AM),FREQ,
+     &                     WORK(KFOCKD),WORK(KONEP),
+     &                     WORK(KIOOOO),WORK(KIOVVO),
+     &                     WORK(KIOOVV),WORK(KIVVVV),
+     &                     T2AM,WORK(KINT1S),WORK(KINT2S),
+     &                     WORK(KEND1A),LWRK1A)
+
+
       IF (IOPT .EQ. 1) THEN
          LUSIFC = 0
          CALL GPOPEN(LUSIFC,'L3AMPL','UNKNOWN',' ','UNFORMATTED',IDUMMY,
@@ -441,122 +373,23 @@ C
          WRITE (LUSIFC) (WORK(KL3AM-1+I), I=1,NT1AMX*NT1AMX*NT1AMX)
          CALL GPCLOSE(LUSIFC,'KEEP')
       ENDIF
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
-      if (.false.) then
-         call temppr(work(KL3AM),3)
-      endif
-COMMENT COMMENT COMMENT
-COMMENT COMMENT COMMENT
-C
-C----------------------------------------------------------
-C         Calculate the contributions to Omega2 from L3
-C         The result is written out inside the routine.
-C----------------------------------------------------------
-C
-          CALL DZERO(WORK(KOME1),NT1AMX)
-          CALL DZERO(WORK(KOME2),NT1AMX*NT1AMX)
-          CALL DZERO(WORK(KOME22),NT1AMX*NT1AMX)
-C
-C      write(lupri,*) 'Before cc3_l3_omega'
-          CALL CC3_L3_OMEGA1_NODDY(WORK(KOME1),WORK(KL3AM),
-     *                             WORK(KIOOOO),WORK(KIOVVO),
-     *                             WORK(KIOOVV),WORK(KIVVVV),T2AM)
-C
-          CALL CC3_L3_OMEGA2_NODDY(WORK(KOME2),WORK(KL3AM),
-     *                             WORK(KINT1S),WORK(KINT2S))
-C
-      DO 300 I = 1,NT1AMX
-         OMEGA1(I) = OMEGA1(I) + WORK(KOME1+I-1)
-  300 CONTINUE
-C
-      DO I = 1,NT1AMX
-         DO J = 1,I
-            IJ = NT1AMX*(I-1) + J
-            NIJ = INDEX(I,J)
-            OMEGA2(NIJ) = OMEGA2(NIJ) + WORK(KOME2+IJ-1)
-         ENDDO
-      ENDDO
-C
-C      do i = 1, nt1amx
-C         if (abs(omega1(i)) .gt. 1.0D-12) then
-C            write(lupri,*) 'Omega1_total_noddy(',i,') = ',omega1(i)
-C         endif
-C      enddo
-C      do i = 1, nt2am(1)
-C         if (abs(omega2(i)) .gt. 1.0D-12) then
-C            write(lupri,*) 'Omega2_total_noddy(',i,') = ',omega2(i)
-C         endif
-C      enddo
-C
-C     XNORM = DDOT(NT1AMX,OMEGA1,1,OMEGA1,1)
-C     write(lupri,*) 'Norm Omega1 at the end of noddy :',xnorm
-C     XNORM = DDOT(NT2AM(1),OMEGA2,1,OMEGA2,1)
-C     write(lupri,*) 'Norm Omega2 at the end of noddy :',xnorm
-C
+
+      IF (LOCDBG) THEN
+        WRITE(LUPRI,*) 'Result vector after CC_LHTR_NODDY:'
+        CALL CC_PRP(OMEGA1,OMEGA2,1,1,1)
+      END IF
+ 
       RETURN
       END
-C  /* Deck temppr */
-      SUBROUTINE TEMPPR(T3AM,IOPT)
-C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-      DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX)
-C
-      CALL AROUND('ENTERED TEMPPR')
-      WRITE(LUPRI,*) 'IOPT  = ',IOPT
-C
-      DO NA = 1,NVIRT
-      DO NB = 1,NVIRT
-      DO NC = 1,NVIRT
-         DO NI = 1,NRHFT
-         NAI = NVIRT*(NI-1) + NA
-            DO NJ = 1,NRHFT
-               NBJ = NVIRT*(NJ-1) + NB
-               DO NK = 1,NRHFT
-                  NCK = NVIRT*(NK-1) + NC
-C
-               if (abs(t3am(nai,nbj,nck)) .gt. 1.0D-12) then
-                 if (iopt .eq. 1) then
-           write(lupri,1) 't3am (^{',na,',',nb,',',nc,'}_{',ni,',',
-     *                                nj,',',nk,'}) -> (',
-     *                      NAI,',',NBJ,',',NCK,') = ',t3am(nai,nbj,nck)
-                 else if (iopt .eq. 2) then
-           write(lupri,1) 't3bar(^{',na,',',nb,',',nc,'}_{',ni,',',
-     *                                nj,',',nk,'}) -> (',
-     *                      NAI,',',NBJ,',',NCK,') = ',t3am(nai,nbj,nck)
-                 else if (iopt .eq. 3) then
-           write(lupri,1) 'L3am (^{',na,',',nb,',',nc,'}_{',ni,',',
-     *                                nj,',',nk,'}) -> (',
-     *                      NAI,',',NBJ,',',NCK,') = ',t3am(nai,nbj,nck)
-                 else if (iopt .eq. 4) then
-           write(lupri,1) 'T3^X (^{',na,',',nb,',',nc,'}_{',ni,',',
-     *                                nj,',',nk,'}) -> (',
-     *                      NAI,',',NBJ,',',NCK,') = ',t3am(nai,nbj,nck)
-                 else
-           call quit('Wrong IOPT in temppr')
-                 endif
-               endif
-C
-               ENDDO
-            ENDDO
-         ENDDO
-      ENDDO
-      ENDDO
-      ENDDO
-C
-   1  FORMAT(1x,A8,I3,A1,I3,A1,I3,A3,I3,A1,I3,A1,I3,A7,I3,A1,I3,A1,I3,
-     *       A4,E20.10)
-C
-      RETURN
-      END
+*---------------------------------------------------------------------*
 C  /* Deck t3_left1 */
+*---------------------------------------------------------------------*
       SUBROUTINE T3_LEFT1(OMEGA1,YIAJB,XIAJB,C2AM,T3AM)
+*=====================================================================*
 C
 C
 C
+*---------------------------------------------------------------------*
 #include <implicit.h>
 #include <priunit.h>
 #include <inforb.h>
@@ -601,11 +434,15 @@ C
 C
       RETURN
       END
+*---------------------------------------------------------------------*
 C  /* Deck t3_left2 */
+*---------------------------------------------------------------------*
       SUBROUTINE T3_LEFT2(OMEGA1,YIAJB,XIAJB,C2AM,T3AM)
+*=====================================================================*
 C
 C
 C
+*---------------------------------------------------------------------*
 #include <implicit.h>
 #include <priunit.h>
 #include <inforb.h>
@@ -650,12 +487,16 @@ C
 C
       RETURN
       END
+*---------------------------------------------------------------------*
 C  /* Deck t3_left3 */
+*---------------------------------------------------------------------*
       SUBROUTINE T3_LEFT3(OMEGA1,XIAJB,C2AM,T3AM)
+*=====================================================================*
 C
 C     Note : XIAJB is L and not g.
 C
 C
+*---------------------------------------------------------------------*
 #include <implicit.h>
 #include <priunit.h>
 #include <inforb.h>
@@ -684,18 +525,6 @@ C
               OMEGA1(NAI) = OMEGA1(NAI)
      *                    + (T3AM(NDL,NEM,NFN)-T3AM(NDL,NEN,NFM))
      *                    * C2AM(NEM,NDL)*XIAJB(NFN,NAI)
-COMMENT COMMENT
-COMMENT COMMENT
-C      if (abs((T3AM(NDL,NEM,NFN)-T3AM(NDL,NEN,NFM))
-C     *        *C2AM(NEM,NDL)*XIAJB(NFN,NAI)) .gt. 1.0D-12) then
-C          write(lupri,'(A,8i3)') 'Contri from A,I,D,L,E,M,F,N : ',
-C     *                                        a,i,d,l,e,m,f,n
-C          write(lupri,*) 'T3AM, T3AM2, C2AM, INT : ',
-C     *            T3AM(NDL,NEM,NFN),T3AM(NDL,NEN,NFM),
-C     *            C2AM(NEM,NDL),XIAJB(NFN,NAI)
-C      endif
-COMMENT COMMENT
-COMMENT COMMENT
             ENDDO
             ENDDO
           ENDDO
@@ -707,94 +536,98 @@ COMMENT COMMENT
 C
       RETURN
       END
-C  /* Deck cc3_tran3 */
-      SUBROUTINE CC3_TRAN3(XINT1,XINT2,XLAMDP,XLAMDH,AOINT,IDEL)
-C
-C
-C
-#include <implicit.h>
+*---------------------------------------------------------------------*
+C  /* Deck ccsdt_l03am */
+*=====================================================================*
+      SUBROUTINE CCSDT_L03AM(L3AM,XINT1T,XINT2T,XIAJB,FOCK,
+     *                       L1AM,L2AM,SCR1,FOCKD,FCKFLD,L3AM2)
+*---------------------------------------------------------------------*
+*
+*     Purpose: compute zero-order triples lagrangian multipliers
+*
+*---------------------------------------------------------------------*
+      IMPLICIT NONE
 #include <priunit.h>
-#include <inforb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
-      DIMENSION XINT1(NT1AMX,NVIRT,NVIRT), XINT2(NT1AMX,NRHFT,NRHFT)
-      DIMENSION XLAMDP(NBAST,NORBT), XLAMDH(NBAST,NORBT)
-      DIMENSION AOINT(NNBAST,NBAST)
-C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
-C
-      DO 100 G = 1,NBAST
-         DO 110 IB = 1,NBAST
-            DO 120 A = 1,NBAST
-               NAB = INDEX(A,IB)
-C
-               if (aoint(nab,g) .eq. 0.0d0) goto 120
-               DO 200 D = 1,NVIRT
-                  DO 210 B = 1,NVIRT
-                     DO 220 K = 1,NRHFT
-                        DO 230 C = 1,NVIRT
-C
-                           NCK = NVIRT*(K-1) + C
-C
-                           XINT1(NCK,B,D) = XINT1(NCK,B,D)
-     *               + AOINT(NAB,G)*XLAMDP(A,NRHFT+C)*XLAMDH(IB,K)
-     *                      *XLAMDP(G,NRHFT+B)*XLAMDH(IDEL,NRHFT+D)
-C
-  230                   CONTINUE
-  220                CONTINUE
-  210             CONTINUE
-  200          CONTINUE
-C
-               DO 300 J = 1,NRHFT
-                  DO 310 L = 1,NRHFT
-                     DO 320 K = 1,NRHFT
-                        DO 330 C = 1,NVIRT
-C
-                           NCK = NVIRT*(K-1) + C
-C
-                           XINT2(NCK,L,J) = XINT2(NCK,L,J)
-     *                  + AOINT(NAB,G)*XLAMDP(A,NRHFT+C)*XLAMDH(IB,K)
-     *                                *XLAMDP(G,L)*XLAMDH(IDEL,J)
-C
-  330                   CONTINUE
-  320                CONTINUE
-  310             CONTINUE
-  300          CONTINUE
-C
-  120       CONTINUE
-  110    CONTINUE
-  100 CONTINUE
-C
+#include <ccfield.h>
+#include <maxorb.h>
+#include <ccorb.h>
+
+#if defined (SYS_CRAY)
+      REAL XINT1T(*), XINT2T(*), XIAJB(*), FOCK(*)
+      REAL L3AM(*), L2AM(*), L1AM(*), L3AM2(*)
+      REAL SCR1(*), FOCKD(*), FCKFLD(*)
+#else
+      DOUBLE PRECISION XINT1T(*), XINT2T(*), XIAJB(*), FOCK(*)
+      DOUBLE PRECISION L3AM(*), L2AM(*), L1AM(*), L3AM2(*)
+      DOUBLE PRECISION SCR1(*), FOCKD(*), FCKFLD(*)
+#endif
+ 
+      CALL DZERO(L3AM,NT1AMX*NT1AMX*NT1AMX)
+
+      CALL CCSDT_L3AM_R(L3AM,0.0D0,XINT1T,XINT2T,XIAJB,FOCK,
+     *                  L1AM,L2AM,SCR1,FOCKD,.FALSE.)
+
+      CALL CCSDT_3AM(L3AM,0.0D0,SCR1,FOCKD,NONHF,FCKFLD,.TRUE.,L3AM2)
+
       RETURN
       END
-C  /* Deck ccsdt_l3am */
-      SUBROUTINE CCSDT_L3AM(T3BAR,XINT1,XINT2,XIAJB,FOCK,T1AM,
-     *                      T2AM,SCR1,FOCKD,FREQ)
-C
-C
-C
-#include <implicit.h>
+*---------------------------------------------------------------------*
+*              END OF SUBROUTINE CCSDT_L03AM                          *
+*---------------------------------------------------------------------*
+*---------------------------------------------------------------------*
+C  /* Deck ccsdt_l3am_r */
+*=====================================================================*
+      SUBROUTINE CCSDT_L3AM_R(T3BAR,FREQ,XINT1,XINT2,XIAJB,FOCK,T1AM,
+     *                        T2AM,SCR1,FOCKD,DIVIDE)
+*---------------------------------------------------------------------*
+*
+*     Purpose: compute contributions to left triples amplitudes
+*
+*---------------------------------------------------------------------*
+      IMPLICIT NONE
 #include <priunit.h>
-#include <inforb.h>
+#include <maxorb.h>
+#include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+#include <ccfield.h>
 C
+#if defined (SYS_CRAY) 
+      REAL XINT1(NT1AMX,NVIRT,NVIRT)
+      REAL XINT2(NT1AMX,NRHFT,NRHFT)
+      REAL XIAJB(NT1AMX,NT1AMX), FOCK(NORBT,NORBT)
+      REAL T3BAR(NT1AMX,NT1AMX,NT1AMX), SCR1(NT1AMX)
+      REAL T1AM(NT1AMX), T2AM(NT1AMX,NT1AMX), FOCKD(*)
+      REAL AIBJCK, FREQ, TWO
+#else
+      DOUBLE PRECISION XINT1(NT1AMX,NVIRT,NVIRT)
+      DOUBLE PRECISION XINT2(NT1AMX,NRHFT,NRHFT) 
+      DOUBLE PRECISION XIAJB(NT1AMX,NT1AMX), FOCK(NORBT,NORBT)
+      DOUBLE PRECISION T3BAR(NT1AMX,NT1AMX,NT1AMX), SCR1(NT1AMX)
+      DOUBLE PRECISION T1AM(NT1AMX), T2AM(NT1AMX,NT1AMX), FOCKD(*)
+      DOUBLE PRECISION AIBJCK, FREQ, TWO
+#endif
+ 
       PARAMETER (TWO = 2.0D0)
+
+      LOGICAL DIVIDE
+ 
+      INTEGER NI, NA, NAI, NK, NC, NCK, NJ, NCJ, NBJ, NBK, NBI, NCI,
+     &        NAJ, NAK, ND, NDI, NDJ, NDK, NL, NAL, NBL, NB
 C
-      DIMENSION XINT1(NT1AMX, NVIRT,NVIRT), XINT2(NT1AMX, NRHFT,NRHFT)
-      DIMENSION XIAJB(NT1AMX, NT1AMX), FOCK(NORBT,NORBT)
-      DIMENSION T3BAR(NT1AMX, NT1AMX,NT1AMX), SCR1(NT1AMX), FOCKD(*)
-      DIMENSION T1AM(NT1AMX), T2AM(NT1AMX,NT1AMX)
-      LOGICAL LDBG1, LDBG2
+      ! we can just divide by orbital energy denominators if we
+      ! have non-HF external fields
+      IF (DIVIDE .AND. NONHF) 
+     &    CALL QUIT('NONHF Problem in CCSDT_L3AM_R!')
 C
-      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
-C
-      DO 50 NI = 1,NRHFT
-         DO 60 NA = 1,NVIRT
+      DO NI = 1,NRHFT
+         DO NA = 1,NVIRT
             NAI = NVIRT*(NI-1) + NA
             SCR1(NAI) = FOCKD(NRHFT+NA) - FOCKD(NI)
-   60    CONTINUE
-   50 CONTINUE
+         END DO
+      END DO
 C
       DO 100 NK = 1,NRHFT
       DO 105 NC = 1,NVIRT
@@ -819,55 +652,17 @@ C
 C
                   AIBJCK = 0.0D0
 C
-          if (.true.) then
-C     T1* = TWO T1 => Factor of two
+C                 T1* = TWO T1 => Factor of two
                   AIBJCK = AIBJCK + XIAJB(NBJ,NCK)*T1AM(NAI)
-COMMENT COMMENT
-COMMENT COMMENT
-C            if (abs(XIAJB(NBJ,NCK)*T1AM(NAI)) .gt. 1.0D-10) then
-C               write(lupri,*) 'Contribution from 1.st term : ',
-C     *                             XIAJB(NBJ,NCK)*T1AM(NAI)
-C               write(lupri,*) 'With NAI, NBJ, NCK : ',NAI,NBJ,NCK
-C            endif
-COMMENT COMMENT
-COMMENT COMMENT
-          endif
 C
-          if (.true.) then
-C     T1* = TWO T1 => Factor of two
+C                 T1* = TWO T1 => Factor of two
                   AIBJCK = AIBJCK - XIAJB(NBJ,NCI)*T1AM(NAK)
-COMMENT COMMENT
-COMMENT COMMENT
-C             if (abs(XIAJB(NBJ,NCK)*T1AM(NAI)) .gt. 1.0D-10) then
-C                write(lupri,*) 'Contribution from 2.nd term : ',
-C     *                              XIAJB(NBJ,NCK)*T1AM(NAI)
-C                write(lupri,*) 'With NAI, NBJ, NCK : ',NAI,NBJ,NCK
-C           endif
-COMMENT COMMENT
-COMMENT COMMENT
-          endif
 C
-          if (.true.) then
                   AIBJCK = AIBJCK + FOCK(NK,NRHFT+NC)*
      *                           T2AM(NAI,NBJ)
-          endif
 C
-          if (.true.) then
                   AIBJCK = AIBJCK - FOCK(NJ,NRHFT+NC)*
      *                           T2AM(NAI,NBK)
-          endif
-COMMENT COMMENT
-COMMENT COMMENT
-C       if (abs(FOCK(NK,NRHFT+NC)*T2AM(NAI,NBJ)) .gt. 1.0D-12) then
-C           write(lupri,*) 'Fock-1 : Fock, L2 : ',
-C     *              FOCK(NK,NRHFT+NC),T2AM(NAI,NBJ)
-C       endif
-C       if (abs(FOCK(NJ,NRHFT+NC)*T2AM(NAI,NBK)) .gt. 1.0D-12) then
-C           write(lupri,*) 'Fock-2 : Fock, L2 : ',
-C     *              FOCK(NJ,NRHFT+NC),T2AM(NAI,NBK)
-C       endif
-COMMENT COMMENT
-COMMENT COMMENT
 C
                   DO 140 ND = 1,NVIRT
 C
@@ -875,46 +670,13 @@ C
                      NDJ = NVIRT*(NJ-1) + ND
                      NDK = NVIRT*(NK-1) + ND
 C
-          if (.true.) then
                      AIBJCK = AIBJCK + 
      *                        (TWO*XINT1(NCK,ND,NB)-XINT1(NBK,ND,NC))*
      *                        T2AM(NDJ,NAI)
-COMMENT     *                        (TWO*XINT1(NCK,NB,ND)-XINT1(NBK,NC,ND))*
-COMMENT     *                        T2AM(NDJ,NAI)
 C
-COMMENT COMMENT
-COMMENT COMMENT
-C              if (abs((TWO*XINT1(NCK,NB,ND)-XINT1(NBK,NC,ND))*
-C     *                        T2AM(NDJ,NAI) .gt. 1.0D-10)) then
-C                   write(lupri,*) 'Contribution from 5.th term :',
-C     *                    TWO*(TWO*XINT1(NCK,NB,ND)-XINT1(NBK,NC,ND))*
-C     *                        T2AM(NDJ,NAI)
-C                   write(lupri,*) '2*XINT1, XINT1, T2AM ',
-C     *                    TWO*XINT1(NCK,NB,ND),XINT1(NBK,NC,ND),
-C     *                        T2AM(NDJ,NAI)
-C              endif
-COMMENT COMMENT
-COMMENT COMMENT
-          endif
-C
-          if (.true.) then
                      AIBJCK = AIBJCK - 
      *                        XINT1(NBI,ND,NC)*
      *                        T2AM(NDK,NAJ)
-COMMENT     *                        XINT1(NBI,NC,ND)*
-COMMENT     *                        T2AM(NDK,NAJ)
-COMMENT COMMENT
-COMMENT COMMENT
-C              if (abs(XINT1(NBI,NC,ND)*
-C     *                        T2AM(NDK,NAJ))
-C     *                          .gt. 1.0D-10) then
-C                   write(lupri,*) 'Contribution from 6.th term :',
-C     *                        TWO*XINT1(NBI,NC,ND)*
-C     *                        T2AM(NDK,NAJ)
-C              endif
-COMMENT COMMENT
-COMMENT COMMENT
-          endif
 C
   140             CONTINUE
 C
@@ -923,69 +685,20 @@ C
                      NAL = NVIRT*(NL-1) + NA
                      NBL = NVIRT*(NL-1) + NB
 C
-          if (.true.) then
                      AIBJCK = AIBJCK - 
      *                        (TWO*XINT2(NCK,NJ,NL)-XINT2(NCJ,NK,NL))*
      *                        T2AM(NBL,NAI)
-COMMENT     *                        (TWO*XINT2(NCK,NL,NJ)-XINT2(NCJ,NL,NK))*
-COMMENT     *                        T2AM(NBL,NAI)
-COMMENT COMMENT
-COMMENT COMMENT
-C         if (abs(TWO*
-C     *           (TWO*XINT2(NCK,NL,NJ)-XINT2(NCJ,NL,NK))*
-C     *           T2AM(NBL,NAI)) .gt. 1.0D-10) then
-CC
-C            write(lupri,*) 'Contribution from L_occ term :',TWO*
-C     *                 (TWO*XINT2(NCK,NL,NJ)-XINT2(NCJ,NL,NK))*
-C     *                 T2AM(NBL,NAI)
-C            write(lupri,*) 'T2AM, L : ',
-C     *                 T2AM(NBL,NAI),
-C     *                 (TWO*XINT2(NCK,NL,NJ)-XINT2(NCJ,NL,NK))
-C         endif
-COMMENT COMMENT
-COMMENT COMMENT
-          endif
 C
-          if (.true.) then
                      AIBJCK = AIBJCK + 
      *                        XINT2(NCJ,NI,NL)*
      *                        T2AM(NBK,NAL)
-COMMENT     *                        XINT2(NCJ,NL,NI)*
-COMMENT     *                        T2AM(NBK,NAL)
-COMMENT COMMENT
-COMMENT COMMENT
-C         if (abs(XINT2(NCJ,NL,NI)*T2AM(NBK,NAL)) .gt. 1.0D-12) then
-CC
-C            write(lupri,*) 'Contribution from g_occ term :',
-C     *                 XINT2(NCJ,NL,NI)*T2AM(NBK,NAL)
-C            write(lupri,*) 'T2AM, g : ',
-C     *                 T2AM(NBL,NAI),XINT2(NCJ,NL,NI)
-C         endif
-COMMENT COMMENT
-COMMENT COMMENT
-          endif
 C
   150             CONTINUE
 C
+                  IF (DIVIDE) THEN
+                    AIBJCK = AIBJCK/(SCR1(NAI)+SCR1(NBJ)+SCR1(NCK)-FREQ)
+                  END IF
 C
-                  AIBJCK = AIBJCK/(SCR1(NAI)+SCR1(NBJ)+SCR1(NCK)-FREQ)
-C
-COMMENT COMMENT
-COMMENT COMMENT
-C       if (abs(aibjck).gt.(1.0D-10/(scr1(nai)+scr1(nbj)+scr1(nck)))) 
-C     *                                                              then
-C          write(lupri,'(1X,A,I3,I3,I3,I3,I3,I3)') 
-C     *                  'Contribution for A,B,C,I,J,K = ',
-C     *                                 NA,NB,NC,NI,NJ,NK
-C          write(lupri,'(A,3I3,e20.10)') 'NAI,NBJ,NCK,AIBJCK = ',
-C     *                                   NAI,NBJ,NCK,AIBJCK
-CC          write(lupri,*) 'SCR1(NAI),SCR1(NBJ),SCR1(NCK), SUM = ',
-CC     *                    SCR1(NAI),SCR1(NBJ),SCR1(NCK),
-CC     *                    SCR1(NAI)+SCR1(NBJ)+SCR1(NCK)
-CC          write(lupri,*) '       '
-C       endif
-COMMENT COMMENT
-COMMENT COMMENT
                   T3BAR(NAI,NBJ,NCK) = T3BAR(NAI,NBJ,NCK) + AIBJCK
                   T3BAR(NAI,NCK,NBJ) = T3BAR(NAI,NCK,NBJ) + AIBJCK
                   T3BAR(NBJ,NAI,NCK) = T3BAR(NBJ,NAI,NCK) + AIBJCK
@@ -1004,278 +717,136 @@ C------------------------------------------------------
 C     Get rid of amplitudes that are not allowed.
 C------------------------------------------------------
 C
-      do a = 1, nvirt
-      do i = 1, nrhft
-         nai = nvirt*(i-1) + a
-         do b = 1, nvirt
-            nbi = nvirt*(i-1) + b
-            do c = 1, nvirt
-               nci = nvirt*(i-1) + c
-C
-               t3bar(nai,nbi,nci) = 0.0D0
-               t3bar(nai,nci,nbi) = 0.0D0
-               t3bar(nbi,nai,nci) = 0.0D0
-               t3bar(nbi,nci,nai) = 0.0D0
-               t3bar(nci,nai,nbi) = 0.0D0
-               t3bar(nci,nbi,nai) = 0.0D0
-            enddo
-         enddo
-C
-         do j = 1, nrhft
-            naj = nvirt*(j-1) + a
-            do k = 1, nrhft
-               nak = nvirt*(k-1) + a
-C
-               t3bar(nai,naj,nak) = 0.0D0
-               t3bar(nai,nak,naj) = 0.0D0
-               t3bar(naj,nai,nak) = 0.0D0
-               t3bar(naj,nak,nai) = 0.0D0
-               t3bar(nak,nai,naj) = 0.0D0
-               t3bar(nak,naj,nai) = 0.0D0
-            enddo
-         enddo
-C
-      enddo
-      enddo
+      CALL CCSDT_CLEAN_T3(T3BAR,NT1AMX,NVIRT,NRHFT) 
 C
       RETURN
       END
-C  /* Deck khtcme */
-      SUBROUTINE KHTCME1S(XINT1,XINT3,XINT2,XINT4)
-C
-C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
+*---------------------------------------------------------------------*
+*              END OF SUBROUTINE CCSDT_L3AM_R                         *
+*---------------------------------------------------------------------*
+C  /* Deck cc_lhpart_noddy */
+*=====================================================================*
+      SUBROUTINE CC_LHPART_NODDY(OMEGA1,OMEGA2,L3AM,FREQ,
+     &                           FOCKD,FIELD,
+     &                           XOOOO,XOVVO,XOOVV,XVVVV,
+     &                           T2AM,XINT1S,XINT2S,
+     &                           WORK,LWORK)
+*---------------------------------------------------------------------*
+*
+*     Purpose: solve 'left' triples equations and partition the
+*              triples solution vector into an effective lhs vector
+*
+*              Note: in case of non-HF external fields zero-order
+*              cluster amplitudes must be available on file 'T3AMPL'
+*
+*---------------------------------------------------------------------*
+      IMPLICIT NONE
+#include <dummy.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
-      DIMENSION XINT1(NT1AMX,NVIRT,NVIRT)
-      DIMENSION XINT3(NT1AMX,NVIRT,NVIRT)
-      DIMENSION XINT2(NT1AMX,NRHFT,NRHFT)
-      DIMENSION XINT4(NT1AMX,NRHFT,NRHFT)
-C
-      PARAMETER (TWO = 2.0D0)
-C
-      do nc = 1, nvirt
-         do nk = 1, nrhft
-            nck = nvirt*(nk-1) + nc
-            do nb = 1, nvirt
-               nbk = nvirt*(nk-1) + nb
-               do nd = 1, nvirt
-C
-               if (abs(xint1(nck,nb,nd)) .gt. 1.0D-12) then
-                  write(lupri,*) 'g-S(',nck,nb,nd,') = ',
-     *                     xint1(nck,nb,nd)
-               endif
-               enddo
-            enddo
-         enddo
-      enddo
-      write(lupri,*) '           '
-C
-      do nc = 1, nvirt
-         do nk = 1, nrhft
-            nck = nvirt*(nk-1) + nc
-            do nb = 1, nvirt
-               nbk = nvirt*(nk-1) + nb
-               do nd = 1, nvirt
-C
-               xint3(nck,nb,nd) = two*xint1(nck,nb,nd)
-     *                        -     xint1(nbk,nc,nd)
-C
-               enddo
-            enddo
-         enddo
-      enddo
-      do nc = 1, nvirt
-         do nk = 1, nrhft
-            nck = nvirt*(nk-1) + nc
-            do nb = 1, nvirt
-               nbk = nvirt*(nk-1) + nb
-               do nd = 1, nvirt
-C
-               if (abs(xint3(nck,nb,nd)) .gt. 1.0D-12) then
-                  write(lupri,*) 'L-S(',nck,nb,nd,') = ',
-     *                     xint3(nck,nb,nd)
-               endif
-               enddo
-            enddo
-         enddo
-      enddo
-      write(lupri,*) '           '
-C
-C     XINT2, XINT4
-C
-      do nc = 1, nvirt
-         do nk = 1, nrhft
-            nck = nvirt*(nk-1) + nc
-            do nl = 1, nrhft
-               do nm = 1, nrhft
-C
-               if (abs(xint2(nck,nl,nm)) .gt. 1.0D-12) then
-                  write(lupri,*) 'g-2S(',nck,nl,nm,') = ',
-     *                     xint2(nck,nl,nm)
-               endif
-               enddo
-            enddo
-         enddo
-      enddo
-      write(lupri,*) '           '
-      do nc = 1, nvirt
-         do nk = 1, nrhft
-            nck = nvirt*(nk-1) + nc
-            do nl = 1, nrhft
-               do nm = 1, nrhft
-                  ncm = nvirt*(nm-1) + nc
-C
-                  xint4(nck,nl,nm) = two*xint2(nck,nl,nm)
-     *                             -     xint2(ncm,nl,nk)
-               enddo
-            enddo
-         enddo
-      enddo
-      do nc = 1, nvirt
-         do nk = 1, nrhft
-            nck = nvirt*(nk-1) + nc
-            do nl = 1, nrhft
-               do nm = 1, nrhft
-C
-               if (abs(xint4(nck,nl,nm)) .gt. 1.0D-12) then
-                  write(lupri,*) 'L-2S(',nck,nl,nm,') = ',
-     *                     xint4(nck,nl,nm)
-               endif
-               enddo
-            enddo
-         enddo
-      enddo
-      write(lupri,*) '           '
-C
-      RETURN
-      END
-C  /* Deck khtcme */
-      SUBROUTINE KHTCME1T(XINT1,XINT3,XINT2,XINT4)
-C
-C
-#include <implicit.h>
-#include <priunit.h>
+#include <ccfield.h>
+#include <maxorb.h>
 #include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-      DIMENSION XINT1(NT1AMX,NVIRT,NVIRT)
-      DIMENSION XINT3(NT1AMX,NVIRT,NVIRT)
-      DIMENSION XINT2(NT1AMX,NRHFT,NRHFT)
-      DIMENSION XINT4(NT1AMX,NRHFT,NRHFT)
-C
-      PARAMETER (TWO = 2.0D0)
-C
-C
-C     XINT1, XINT3
-C
-      do nc = 1, nvirt
-         do nk = 1, nrhft
-            nck = nvirt*(nk-1) + nc
-            do nb = 1, nvirt
-               nbk = nvirt*(nk-1) + nb
-               do nd = 1, nvirt
-C
-               if (abs(xint1(nck,nb,nd)) .gt. 1.0D-12) then
-                  write(lupri,*) 'g-1T(',nck,nb,nd,') = ',
-     *                     xint1(nck,nb,nd)
-               endif
-C
-               enddo
-            enddo
-         enddo
-      enddo
-      write(lupri,*) '           '
-C
-      do nc = 1, nvirt
-         do nk = 1, nrhft
-            nck = nvirt*(nk-1) + nc
-            do nb = 1, nvirt
-               nbk = nvirt*(nk-1) + nb
-               do nd = 1, nvirt
-               ndk = nvirt*(nk-1) + nd
-C
-               xint3(nck,nb,nd) = two*xint1(nck,nb,nd)
-     *                        -     xint1(ndk,nb,nc)
-C
-               enddo
-            enddo
-         enddo
-      enddo
-      do nc = 1, nvirt
-         do nk = 1, nrhft
-            nck = nvirt*(nk-1) + nc
-            do nb = 1, nvirt
-               nbk = nvirt*(nk-1) + nb
-               do nd = 1, nvirt
-C
-               if (abs(xint3(nck,nb,nd)) .gt. 1.0D-12) then
-                  write(lupri,*) 'L-1T(',nck,nb,nd,') = ',
-     *                     xint3(nck,nb,nd)
-               endif
-C
-               enddo
-            enddo
-         enddo
-      enddo
-      write(lupri,*) '           '
-C
-C     XINT2, XINT4
-C
-      do nc = 1, nvirt
-         do nk = 1, nrhft
-            nck = nvirt*(nk-1) + nc
-            do nl = 1, nrhft
-               ncl = nvirt*(nl-1) + nc
-               do nm = 1, nrhft
-                  ncm = nvirt*(nm-1) + nc
-C
-               if (abs(xint2(nck,nl,nm)) .gt. 1.0D-12) then
-                  write(lupri,*) 'g-2T(',nck,nl,nm,') = ',
-     *                     xint2(nck,nl,nm)
-               endif
-C
-               enddo
-            enddo
-         enddo
-      enddo
-      write(lupri,*) '              '
-      do nc = 1, nvirt
-         do nk = 1, nrhft
-            nck = nvirt*(nk-1) + nc
-            do nl = 1, nrhft
-               ncl = nvirt*(nl-1) + nc
-               do nm = 1, nrhft
-                  ncm = nvirt*(nm-1) + nc
-C
-                  xint4(nck,nl,nm) = two*xint2(nck,nl,nm)
-     *                             -     xint2(ncl,nk,nm)
-C
-               enddo
-            enddo
-         enddo
-      enddo
-      do nc = 1, nvirt
-         do nk = 1, nrhft
-            nck = nvirt*(nk-1) + nc
-            do nl = 1, nrhft
-               do nm = 1, nrhft
-C
-               if (abs(xint4(nck,nl,nm)) .gt. 1.0D-12) then
-                  write(lupri,*) 'L-2T(',nck,nl,nm,') = ',
-     *                     xint4(nck,nl,nm)
-               endif
-C
-               enddo
-            enddo
-         enddo
-      enddo
-      write(lupri,*) '              '
-C
+
+#if defined (SYS_CRAY)
+      REAL OMEGA1(*), OMEGA2(*), L3AM(*), FREQ, FOCKD(*)
+      REAL FIELD(*), T2AM(*), XINT1S(*), XINT2S(*), WORK(*)
+      REAL XOOOO(*), XOVVO(*), XOOVV(*), XVVVV(*)
+#else
+      DOUBLE PRECISION OMEGA1(*), OMEGA2(*), L3AM(*), FREQ, FOCKD(*)
+      DOUBLE PRECISION FIELD(*), T2AM(*), XINT1S(*), XINT2S(*), WORK(*)
+      DOUBLE PRECISION XOOOO(*), XOVVO(*), XOOVV(*), XVVVV(*)
+#endif
+
+      LOGICAL TRANSPOSE
+      INTEGER LWORK, KSCR1, KEND1, KL3SCR, LWRK1, KOME1, KOME2, KT03AM,
+     &        LUTEMP, IJ, NIJ, INDEX
+ 
+      INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
+
+      CALL QENTER('CCLPARTN')
+
+*---------------------------------------------------------------------*
+*     Solve triples equations:
+*---------------------------------------------------------------------*
+      KSCR1 = 1
+      KEND1 = KSCR1 + NT1AMX
+      IF (NONHF) THEN
+         KL3SCR = KEND1
+         KEND1  = KL3SCR + NT1AMX*NT1AMX*NT1AMX
+      END IF
+ 
+      LWRK1 = LWORK - KEND1
+      IF (LWRK1 .LT. 0) THEN
+         CALL QUIT('Insufficient space in CC_LHPART_NODDY (1)')
+      ENDIF
+
+      TRANSPOSE = .TRUE.
+      CALL CCSDT_3AM(L3AM,FREQ,WORK(KSCR1),FOCKD,
+     *               NONHF,FIELD,TRANSPOSE,WORK(KL3SCR))
+
+      CALL DSCAL(NT1AMX*NT1AMX*NT1AMX,-1.0d0,L3AM,1)
+ 
+*---------------------------------------------------------------------*
+*     Add contribution to singles doubles result vectors:
+*---------------------------------------------------------------------*
+      KOME1 = 1
+      KOME2 = KOME1 + NT1AMX
+      KEND1 = KOME2 + NT1AMX*NT1AMX
+
+      IF (NONHF) THEN
+         KT03AM = KEND1
+         KEND1  = KT03AM + NT1AMX*NT1AMX*NT1AMX
+      END IF
+ 
+      LWRK1 = LWORK - KEND1
+      IF (LWRK1 .LT. 0) THEN
+         CALL QUIT('Insufficient space in CC_LHPART_NODDY (2)')
+      ENDIF
+
+      CALL DZERO(WORK(KOME1),NT1AMX)
+      CALL DZERO(WORK(KOME2),NT1AMX*NT1AMX)
+ 
+      CALL CC3_L3_OMEGA1_NODDY(WORK(KOME1),L3AM,
+     *                         XOOOO,XOVVO,XOOVV,XVVVV,T2AM)
+ 
+      CALL CC3_L3_OMEGA2_NODDY(WORK(KOME2),L3AM,XINT1S,XINT2S)
+
+c     ------------------------------------------
+c     contributions from non-HF external fields:
+c     ------------------------------------------
+      IF (NONHF) THEN
+         LUTEMP = 0
+         CALL GPOPEN(LUTEMP,'T3AMPL','UNKNOWN',' ','UNFORMATTED',
+     &               IDUMMY,.FALSE.)
+         REWIND LUTEMP
+         READ (LUTEMP) (WORK(KT03AM-1+I),I=1,NT1AMX*NT1AMX*NT1AMX)
+         CALL GPCLOSE(LUTEMP,'KEEP')
+
+         CALL CCSDT_E1AM(WORK(KOME1),L3AM,WORK(KT03AM),FIELD)
+
+         CALL CCSDT_E2AM(WORK(KOME2),L3AM,T2AM,FIELD)
+      ENDIF
+ 
+
+      DO I = 1,NT1AMX
+         OMEGA1(I) = OMEGA1(I) + WORK(KOME1+I-1)
+      END DO  
+ 
+      DO I = 1,NT1AMX
+         DO J = 1,I
+            IJ = NT1AMX*(I-1) + J
+            NIJ = INDEX(I,J)
+            OMEGA2(NIJ) = OMEGA2(NIJ) + WORK(KOME2+IJ-1)
+         ENDDO
+      ENDDO
+
+      CALL QEXIT('CCLPARTN')
       RETURN
       END
+*---------------------------------------------------------------------*
+*              END OF SUBROUTINE CC_LHPART_NODDY                      *
+*---------------------------------------------------------------------*
 C  /* Deck cc3__l3_omega */
       SUBROUTINE CC3_L3_OMEGA2_NODDY(OMEGA2,L3AM,XINT1,XINT2)
 C
@@ -1339,11 +910,9 @@ C
                            NDK = NVIRT*(NK-1) + ND
                            NDI = NVIRT*(NI-1) + ND
 C
-                if (.true.) then
                            OMEGA2(NBJ,NAI) = OMEGA2(NBJ,NAI) +
      *              L3AM(NBJ,NCI,NDK)*XINT1(NDK,NC,NA)
 C
-                endif
 C
                         ENDDO
 C
@@ -1353,10 +922,8 @@ C
                            NCL = NVIRT*(NL-1) + NC
                            NAL = NVIRT*(NL-1) + NA
 C
-                 if (.true.) then
                            OMEGA2(NBJ,NAI) = OMEGA2(NBJ,NAI)
      *                     - L3AM(NBJ,NAK,NCL)*XINT2(NCL,NI,NK)
-                 endif
 C
                         ENDDO
 C
@@ -1382,25 +949,6 @@ C
 C
          ENDDO
       ENDDO
-C
-C=====================================
-C     Write out all results
-C=====================================
-C     write(lupri,*) 'OMEGA2_NODDY '
-C     call output(OMEGA2,1,NT1AMX,1,NT1AMX,
-C    *            NT1AMX,NT1AMX,1,lupri)
-
-C
-C      write(lupri,*) '        '
-C      do nai = 1, nt1amx
-C         do nbj = 1, nt1amx
-C            if (abs(omega2(nai,nbj)) .gt. 1.0D-12) then
-C               write(lupri,*) 'Omega2_noddy(',nai,nbj,') = ',
-C     *                         omega2(nai,nbj)
-C            endif
-C         enddo
-C      enddo
-C      write(lupri,*) '        '
 C
       RETURN
       END
@@ -1456,11 +1004,6 @@ C-------------------------------------------
 C     4 occupied integrals in integrals
 C-------------------------------------------
 C
-COMMENT COMMENT COMMENT COMMENT 
-COMMENT COMMENT COMMENT COMMENT 
-C     call dzero(OMEGA1,nt1amx)
-COMMENT COMMENT COMMENT COMMENT 
-COMMENT COMMENT COMMENT COMMENT 
       if (.true.) then
       DO NA = 1, NVIRT
        DO NB = 1, NVIRT
@@ -1542,29 +1085,21 @@ C
               NCL = NVIRT*(NL-1) + NC
               NDL = NVIRT*(NL-1) + ND
 C
-              if (.true.) then
 C - L3^{daf}_{lmn} * t^{de}_{lm} * g_{iefn}
               OMEGA1(NAI) = OMEGA1(NAI)
      *       - L3AM(NBJ,NAK,NDL)*T2AM(NBJ,NCK)*XOVVO(NI,NC,ND,NL)
-              endif
 C
-              if (.true.) then
 C - L3^{daf}_{lnm} * t^{de}_{lm} * g_{infe}
               OMEGA1(NAI) = OMEGA1(NAI)
      *       - L3AM(NBJ,NAL,NDK)*T2AM(NBJ,NCK)*XOOVV(NI,NL,ND,NC)
-              endif
 C
-              if (.true.) then
 C - L3^{def}_{lin} * t^{de}_{lm} * g_{mafn}
               OMEGA1(NAI) = OMEGA1(NAI)
      *       - L3AM(NBJ,NCI,NDL)*T2AM(NBJ,NCK)*XOVVO(NK,NA,ND,NL)
-              endif
 C
-              if (.true.) then
 C - L3^{def}_{lni} * t^{de}_{lm} * g_{mnfa}
               OMEGA1(NAI) = OMEGA1(NAI)
      *       - L3AM(NBJ,NCL,NDI)*T2AM(NBJ,NCK)*XOOVV(NK,NL,ND,NA)
-              endif
 C
              ENDDO
             ENDDO
@@ -1620,12 +1155,6 @@ C
 C----------------------------------------
 C     Calculate integrals :
 C----------------------------------------
-COMMENT COMMENT
-COMMENT COMMENT
-      write(lupri,*) 'Noddy integral code : NBAST, NRHFT, NVIRT : ',
-     *                                      nbast, nrhft, nvirt
-COMMENT COMMENT
-COMMENT COMMENT
 C
       DO 100 G = 1,NBAST
          DO 110 IB = 1,NBAST
@@ -1642,15 +1171,6 @@ C
                            XINT1(NK,NC,ND,NL) = XINT1(NK,NC,ND,NL)
      *                  + AOINT(NAB,G)*XLAMDP(A,NK)*XLAMDH(IB,NRHFT+NC)
      *                         *XLAMDP(G,NRHFT+ND)*XLAMDH(IDEL,NL)
-COMMENT
-COMMENT
-C       if (abs(AOINT(NAB,G)*XLAMDP(A,NK)*XLAMDH(IB,NRHFT+NC)*
-C     *         XLAMDP(G,NRHFT+ND)*XLAMDH(IDEL,NL)) .gt. 1.0D-12) then
-C              write(lupri,'(A,4I3,A,e20.10)') 
-C     *         'Contri to xint1(',nk,nc,nd,nl,') = ',xint1(nk,nc,nd,nl)
-C       endif
-COMMENT
-COMMENT
 C
                         ENDDO
                      ENDDO
@@ -1665,15 +1185,6 @@ C
                               XINT2(NK,NL,NC,ND) = XINT2(NK,NL,NC,ND)
      *                  + AOINT(NAB,G)*XLAMDP(A,NK)*XLAMDH(IB,NL)
      *                         *XLAMDP(G,NRHFT+NC)*XLAMDH(IDEL,NRHFT+ND)
-COMMENT
-COMMENT
-C       if (abs(AOINT(NAB,G)*XLAMDP(A,NK)*XLAMDH(IB,NL)*
-C     *      XLAMDP(G,NRHFT+NC)*XLAMDH(IDEL,NRHFT+ND)) .gt. 1.0D-12) then
-C              write(lupri,'(A,4I3,A,e20.10)') 
-C     *         'Contri to xint2(',nk,nl,nc,nd,') -> ',xint2(nk,nl,nc,nd)
-C       endif
-COMMENT
-COMMENT
 C
                         ENDDO
                      ENDDO
@@ -1689,24 +1200,6 @@ C
      *                  + AOINT(NAB,G)*XLAMDP(A,NK)*XLAMDH(IB,NL)
      *                         *XLAMDP(G,NM)*XLAMDH(IDEL,NN)
 C
-COMMENT
-COMMENT
-C       if (abs(AOINT(NAB,G)*XLAMDP(A,NK)*XLAMDH(IB,NL)*
-C     *      XLAMDP(G,NM)*XLAMDH(IDEL,NN)) .gt. 1.0D-12) then
-C              write(lupri,'(A,8I4)') 'A, IB, G, IDEL : ',
-C     *                                a, ib, g, idel
-C              write(lupri,'(A,8I4)') 'K, L, M, N     : ',
-C     *                               nk,nl,nm,nn
-C              write(lupri,'(A,3e20.10)') '3. AOINT, LAM1, LAM2 : ',
-C     *              AOINT(NAB,G),XLAMDP(A,NK),XLAMDH(IB,NL)
-C              write(lupri,'(A,3e20.10)') '3. Cont, LAM3, LAM4  : ',
-C     *                   AOINT(NAB,G)*XLAMDP(A,NK)*XLAMDH(IB,NL)
-C     *                         *XLAMDP(G,NM)*XLAMDH(IDEL,NN),
-C     *                          XLAMDP(G,NM),XLAMDH(IDEL,NN)
-C              write(lupri,*) '     '
-C       endif
-COMMENT
-COMMENT
                         ENDDO
                      ENDDO
                   ENDDO
@@ -1721,24 +1214,6 @@ C
      *           + AOINT(NAB,G)*XLAMDP(A,NRHFT+NC)*XLAMDH(IB,NRHFT+ND)
      *                         *XLAMDP(G,NRHFT+NE)*XLAMDH(IDEL,NRHFT+NF)
 C
-COMMENT
-COMMENT
-C
-C       if (abs(AOINT(NAB,G)*XLAMDP(A,NRHFT+NC)*XLAMDH(IB,NRHFT+ND)*
-C     *      XLAMDP(G,NRHFT+NE)*XLAMDH(IDEL,NRHFT+NF)) .gt. 1.0D-12) then
-C              write(lupri,*) 'NAB, G, A, IB, IDEL',NAB,G,A,IB,IDEL
-C              write(lupri,'(A,4I3,A,3e18.10)') 
-C     *         'Contri to xint4(',nc,nd,ne,nf,') : ',
-C     *               AOINT(NAB,G),XLAMDP(A,NRHFT+NC),XLAMDH(IB,NRHFT+ND)
-C              write(lupri,'(A,3e18.10)') 
-C     *         'Contri to xint4 continued     : ',
-C     *               XLAMDP(G,NRHFT+NE),XLAMDH(IDEL,NRHFT+NF),
-C     *               AOINT(NAB,G)*XLAMDP(A,NRHFT+NC)*XLAMDH(IB,NRHFT+ND)
-C     *              *XLAMDP(G,NRHFT+NE)*XLAMDH(IDEL,NRHFT+NF)
-C              write(lupri,*) '       '
-C       endif
-COMMENT
-COMMENT
                         ENDDO
                      ENDDO
                   ENDDO
@@ -1747,84 +1222,6 @@ C
   120       CONTINUE
   110    CONTINUE
   100 CONTINUE
-C
-      RETURN
-      END
-C  /* Deck new_int_output */
-      SUBROUTINE NEW_INT_OUTPUT(XINT1,XINT2,XINT3,XINT4)
-C
-#include <implicit.h>
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-      DIMENSION XINT1(NRHFT,NVIRT,NVIRT,NRHFT)
-      DIMENSION XINT2(NRHFT,NRHFT,NVIRT,NVIRT)
-      DIMENSION XINT3(NRHFT,NRHFT,NRHFT,NRHFT)
-      DIMENSION XINT4(NVIRT,NVIRT,NVIRT,NVIRT)
-C
-      CALL AROUND('ENTERED NEW_INT_OUTPUT')
-C
-      DO NK = 1,NRHFT
-         DO NC = 1,NVIRT
-            DO ND = 1,NVIRT
-               DO NL = 1,NRHFT
-                  if (abs(xint1(nk,nc,nd,nl)) .gt. 1.0D-12) then
-               write(lupri,1) 'g-ovvo(',nk,',',nc,',',nd,',',nl,') = ',
-     *                 xint1(nk,nc,nd,nl)
-                  endif
-               ENDDO
-            ENDDO
-         ENDDO
-      ENDDO
-C
-      write(lupri,*) '       '
-C
-      DO NK = 1,NRHFT
-         DO NL = 1,NRHFT
-            DO NC = 1,NVIRT
-               DO ND = 1,NVIRT
-                  if (abs(xint2(nk,nl,nc,nd)) .gt. 1.0D-12) then
-               write(lupri,1) 'g-oovv(',nk,',',nl,',',nc,',',nd,') = ',
-     *                 xint2(nk,nl,nc,nd)
-                  endif
-               ENDDO
-            ENDDO
-         ENDDO
-      ENDDO
-C
-      write(lupri,*) '       '
-C
-      DO NK = 1,NRHFT
-         DO NL = 1,NRHFT
-            DO NM = 1,NRHFT
-               DO NN = 1,NRHFT
-                  if (abs(xint3(nk,nl,nm,nn)) .gt. 1.0D-12) then
-               write(lupri,1) 'g-oooo(',nk,',',nl,',',nm,',',nn,') = ',
-     *                 xint3(nk,nl,nm,nn)
-                  endif
-               ENDDO
-            ENDDO
-         ENDDO
-      ENDDO
-C
-      write(lupri,*) '       '
-C
-      DO NC = 1,NVIRT
-         DO ND = 1,NVIRT
-            DO NE = 1,NVIRT
-               DO NF = 1,NVIRT
-                  if (abs(xint4(nc,nd,ne,nf)) .gt. 1.0D-12) then
-               write(lupri,1) 'g-vvvv(',nc,',',nd,',',ne,',',nf,') = ',
-     *                 xint4(nc,nd,ne,nf)
-                  endif
-               ENDDO
-            ENDDO
-         ENDDO
-      ENDDO
-C
-      write(lupri,*) '       '
-C
-   1  FORMAT(1x,A,I3,A,I3,A,I3,A,I3,A,E20.10)
 C
       RETURN
       END
@@ -1867,6 +1264,7 @@ C
       DIMENSION C1AM(*), C2AM(*), C3AM(*)
       DIMENSION XLAMDP(*),XLAMDH(*), FOCK(*), WORK(LWORK)
 C
+#include <ccfield.h>
 #include <inforb.h>
 #include <infind.h>
 #include <blocks.h>
@@ -1903,8 +1301,8 @@ C
       KINT4S = KINT3S + NT1AMX*NVIRT*NVIRT
       KOME1  = KINT4S + NRHFT*NRHFT*NT1AMX
       KOME2  = KOME1  + NT1AMX
-      KOME22 = KOME2  + NT1AMX*NT1AMX
-      KIAJB  = KOME22 + NT1AMX*NT1AMX
+      KOME3  = KOME2  + NT1AMX*NT1AMX
+      KIAJB  = KOME3  + NT1AMX*NT1AMX*NT1AMX
       KYIAJB = KIAJB  + NT1AMX*NT1AMX
       KEND1  = KYIAJB + NT1AMX*NT1AMX
       LWRK1  = LWORK  - KEND1
@@ -1916,6 +1314,13 @@ C     New Integrals.
       KIVVVV = KIOOOO + NRHFT*NRHFT*NRHFT*NRHFT
       KEND1  = KIVVVV + NVIRT*NVIRT*NVIRT*NVIRT
       LWRK1  = LWORK  - KEND1
+C
+      IF ((NONHF) .AND. (NFIELD .GT. 0)) THEN
+         KONEP  = KEND1
+         KT3SCR = KONEP  + NORBT*NORBT
+         KEND1  = KT3SCR + NT1AMX*NT1AMX*NT1AMX
+         LWRK1  = LWORK  - KEND1
+      ENDIF
 C
 C
       IF (LWRK1 .LT. 0) THEN
@@ -1936,7 +1341,7 @@ C
       CALL DZERO(WORK(KINT4S),NT1AMX*NRHFT*NRHFT)
       CALL DZERO(WORK(KOME1),NT1AMX)
       CALL DZERO(WORK(KOME2),NT1AMX*NT1AMX)
-      CALL DZERO(WORK(KOME22),NT1AMX*NT1AMX)
+      CALL DZERO(WORK(KOME3),NT1AMX*NT1AMX*NT1AMX)
       CALL DZERO(WORK(KIAJB),NT1AMX*NT1AMX)
       CALL DZERO(WORK(KYIAJB),NT1AMX*NT1AMX)
 C
@@ -1944,6 +1349,20 @@ C
       CALL DZERO(WORK(KIOOVV),NRHFT*NVIRT*NVIRT*NRHFT)
       CALL DZERO(WORK(KIOOOO),NRHFT*NRHFT*NRHFT*NRHFT)
       CALL DZERO(WORK(KIVVVV),NVIRT*NVIRT*NVIRT*NVIRT)
+C
+C=======================================================
+C     Get the one electron integrals from the fields
+C=======================================================
+C
+      IF ((NONHF) .AND. NFIELD .GT. 0) THEN
+         CALL DZERO(WORK(KONEP),N2BST(ISYMOP))
+         DO I = 1, NFIELD
+            FF = EFIELD(I)
+            CALL CC_ONEP(WORK(KONEP),WORK(KEND1),LWRK1,FF,1,LFIELD(I))
+         ENDDO
+         CALL CC_FCKMO(WORK(KONEP),XLAMDP,XLAMDH,
+     *                 WORK(KEND1),LWRK1,1,1,1)
+      ENDIF
 C
 C====================================================
 C     Start the loop over distributions of integrals.
@@ -2073,44 +1492,55 @@ C         Calculate the contributions to Omega2 from C3
 C         The result is written out inside the routine.
 C----------------------------------------------------------
 C
-          CALL DZERO(WORK(KOME1),NT1AMX)
-          CALL DZERO(WORK(KOME2),NT1AMX*NT1AMX)
-          CALL DZERO(WORK(KOME22),NT1AMX*NT1AMX)
+      CALL DZERO(WORK(KOME1),NT1AMX)
+      CALL DZERO(WORK(KOME2),NT1AMX*NT1AMX)
+      CALL DZERO(WORK(KOME3),NT1AMX*NT1AMX*NT1AMX)
  
-          CALL CC3_L3_OMEGA1_NODDY(WORK(KOME1),C3AM,
-     *                             WORK(KIOOOO),WORK(KIOVVO),
-     *                             WORK(KIOOVV),WORK(KIVVVV),T2AM)
+      CALL CC3_L3_OMEGA1_NODDY(WORK(KOME1),C3AM,
+     *                         WORK(KIOOOO),WORK(KIOVVO),
+     *                         WORK(KIOOVV),WORK(KIVVVV),T2AM)
  
-          CALL CC3_L3_OMEGA2_NODDY(WORK(KOME2),C3AM,
-     *                             WORK(KINT1S),WORK(KINT2S))
+      CALL CC3_L3_OMEGA2_NODDY(WORK(KOME2),C3AM,
+     *                         WORK(KINT1S),WORK(KINT2S))
+
+      IF (NONHF .AND. NFIELD.GT.0) THEN
+         CALL CCSDT_E1AM(WORK(KOME1),C3AM,T3AM,WORK(KONEP))
+
+         CALL CCSDT_E2AM(WORK(KOME2),C3AM,T2AM,WORK(KONEP))
+      ENDIF
  
       DO 300 I = 1,NT1AMX
          OMEGA1(I) = OMEGA1(I) + WORK(KOME1+I-1)
   300 CONTINUE
-C
-C     DO I = 1,NT1AMX
-C        DO J = 1,I
-C           IJ = NT1AMX*(I-1) + J
-C           NIJ = INDEX(I,J)
-C           OMEGA2(NIJ) = OMEGA2(NIJ) + WORK(KOME2+IJ-1)
-C        ENDDO
-C     ENDDO
 
       CALL DAXPY(NT1AMX*NT1AMX,1.0D0,WORK(KOME2),1,OMEGA2,1)
 C
 C---------------------------------------------------------
 C     Calculate the contributions to omega3 from C1, C2
 C---------------------------------------------------------
-      do i = 1, nrhft
-         work(kfockd-1+i) = 0.0D0
-      enddo
-      do i = 1, nvirt
-         work(kfockd-1+nrhft+i) = 1.0D0/3.0D0
-      enddo
+      DO I = 1, NRHFT
+         WORK(KFOCKD-1+I) = 0.0d0
+      ENDDO
+      DO I = 1, NVIRT
+         WORK(KFOCKD-1+NRHFT+I) = 1.0d0/3.0d0
+      ENDDO
 C
-      CALL CCSDT_L3AM(OMEGA3,WORK(KINT1T),WORK(KINT2T),
+C     for non-HF external fields the above trick for the 
+C     orbital energies does solve all problems...
+C     --> change to CCSDT_L3AM_R
+      IF (NONHF) CALL QUIT('fix me!')
+C
+      CALL CCSDT_L03AM(WORK(KOME3),WORK(KINT1T),WORK(KINT2T),
      *                WORK(KIAJB),FOCK,C1AM,C2AM,
-     *                WORK(KSCR1),WORK(KFOCKD),0.0D0)
+     *                WORK(KSCR1),WORK(KFOCKD),
+     *                WORK(KONEP),WORK(KT3SCR))
+
+      IF (NONHF .AND. NFIELD.GT.0) THEN
+          L2INCL = .TRUE.
+          CALL CCSDT_E3AM(WORK(KOME3),C2AM,C3AM,WORK(KONEP),L2INCL)
+      END IF
+
+      CALL DAXPY(NT1AMX*NT1AMX*NT1AMX,1.0D0,WORK(KOME3),1,OMEGA3,1)
 C
 C----------------------------------------
 C     Print norm of result vectors.
@@ -2118,8 +1548,10 @@ C----------------------------------------
 C
       XNORM = DDOT(NT1AMX,OMEGA1,1,OMEGA1,1)
       write(lupri,*) 'Norm Omega1 at the end of noddy :',xnorm
-      XNORM = DDOT(NT2AM(1),OMEGA2,1,OMEGA2,1)
+      XNORM = DDOT(NT1AMX**2,OMEGA2,1,OMEGA2,1)
       write(lupri,*) 'Norm Omega2 at the end of noddy :',xnorm
+      XNORM = DDOT(NT1AMX**3,OMEGA3,1,OMEGA3,1)
+      write(lupri,*) 'Norm Omega3 at the end of noddy :',xnorm
 C
       RETURN
       END

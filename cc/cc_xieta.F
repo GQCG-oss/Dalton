@@ -255,11 +255,11 @@ C
 
         IF (NXIDEN.GT.0) THEN
           IF (NODDY_XI .AND. NODDY_XI_ALTER) THEN
-            write(lupri,*) 'Invoke CCSDT_XI_CONT_NODDY...'
 
             CALL CCSDT_XI_CONT_NODDY(FILXI,XCONS,
      &                               WORK(KIDXL_XIDEN),NXIDEN,
      &                               IXDOTS,IXETRAN,MXVEC,NXETRAN,
+     &                               .FALSE.,
      &                               WORK(KEND),LEND)
 
           ELSEIF (.NOT.NODDY_XI) THEN
@@ -272,15 +272,15 @@ C
           END IF
         END IF
 
-        write(lupri,*)'before ccsdt_eta_cont'
-      write(lupri,*)'NODDY_ETA,ETA_ALTER',NODDY_ETA,NODDY_ETA_ALTER
-      call FLSHFO(LUPRI)
         ! call CCSDT_ETA_CONT if NEADEN is nonzero and
         ! none or both of the noddy flags is set:
         !   none of the noddy flag set --> use true code
         !   both of the noddy flag set --> use noddy density
         IF (NEADEN.GT.0 .AND. 
      &      (.NOT.(NODDY_ETA .AND. .NOT.NODDY_ETA_ALTER))) THEN
+
+          IF (LOCDBG) WRITE(LUPRI,*)
+     &     'call CCSDT_ETA_CONT... NODD_ETA_ALTER = ',NODDY_ETA_ALTER
 
           CALL CCSDT_ETA_CONT(LISTL,FILETA,NODDY_ETA_ALTER,
      &                        IEDOTS,ECONS,
@@ -2515,10 +2515,6 @@ C
 C
           ELSE IF (NODDY_XI .AND. 
      &               (.NOT.(IOPTRES.EQ.5 .AND. NODDY_XI_ALTER))) THEN
-            write(lupri,*) 'Invoke CCSDT_XI_NODDY...'
-            write(lupri,*) 'IOPTRES:',IOPTRES
-            write(lupri,*) 'NODDY_XI:',NODDY_XI
-            write(lupri,*) 'NODDY_XI_ALTER:',NODDY_XI_ALTER
             CALL CCSDT_XI_NODDY(IOPTRES,WORK(KXI1),WORK(KXI2),
      &                          WORK(KXI1EFF),WORK(KXI2EFF),
      &                          WORK(KFOCKB(ITRAN)),FREQ,
@@ -2747,10 +2743,6 @@ C             ------------
  
             ELSE IF (NODDY_ETA .AND.
      &                (.NOT.(IOPTRES.EQ.5 .AND. NODDY_ETA_ALTER))) THEN
-              write(lupri,*) 'Invoke CCSDT_ETA_NODDY...'
-              write(lupri,*) 'IOPTRES:',IOPTRES
-              write(lupri,*) 'NODDY_ETA:',NODDY_ETA
-              write(lupri,*) 'NODDY_ETA_ALTER:',NODDY_ETA_ALTER
 
               CALL CCSDT_ETA_NODDY(LISTL,IDLSTL,IOPTRES,
      &                             WORK(KFOCKB(ITRAN)),WORK(KFOCKBAO),

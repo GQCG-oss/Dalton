@@ -1,23 +1,3 @@
-cc_1idx_d2eff.o : cc_1idx_d2eff.F \
-  ../include/ccorb.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/single.h
-cc_1idxtran.o : cc_1idxtran.F \
-  ../include/ccorb.h  ../include/ccsdsym.h \
-  ../include/priunit.h  ../include/single.h
-cc_21i2.o : cc_21i2.F \
-  ../include/ccorb.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/priunit.h \
-  ../include/single.h
-cc_21i3.o : cc_21i3.F \
-  ../include/ccorb.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/priunit.h \
-  ../include/single.h
-cc_2hyp.o : cc_2hyp.F \
-  ../include/cccperm.h  ../include/cccrinf.h \
-  ../include/ccorb.h  ../include/ccr1rsp.h \
-  ../include/ccrc1rsp.h  ../include/ccroper.h \
-  ../include/ccsdinp.h  ../include/implicit.h \
-  ../include/priunit.h  ../include/single.h
 cc2_refop.o : cc2_refop.F \
   ../include/aovec.h  ../include/blocks.h \
   ../include/cbieri.h  ../include/ccfield.h \
@@ -30,23 +10,15 @@ cc2_refop.o : cc2_refop.F \
   ../include/iratdef.h  ../include/maxash.h \
   ../include/maxorb.h  ../include/mxcent.h \
   ../include/priunit.h  ../include/single.h
-cc3_adenocc.o : cc3_adenocc.F \
-  ../include/ccinftap.h  ../include/ccl1rsp.h \
+cc3_aden.o : cc3_aden.F \
   ../include/cclr.h  ../include/ccorb.h \
-  ../include/ccr1rsp.h  ../include/ccsdinp.h \
-  ../include/ccsdsym.h  ../include/dummy.h \
-  ../include/iratdef.h  ../include/priunit.h \
-  ../include/single.h
-cc3_asym_pol_xi.o : cc3_asym_pol_xi.F \
-  ../include/cc3t3d.h  ../include/ccexci.h \
-  ../include/ccfield.h  ../include/ccinftap.h \
-  ../include/ccl1rsp.h  ../include/cclists.h \
-  ../include/cclrmrsp.h  ../include/ccorb.h \
-  ../include/ccr1rsp.h  ../include/ccroper.h \
   ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/dummy.h  ../include/inftap.h \
-  ../include/iratdef.h  ../include/maxorb.h \
-  ../include/priunit.h  ../include/single.h
+  ../include/dummy.h  ../include/priunit.h \
+  ../include/single.h  ../include/ccinftap.h \
+  ../include/ccl1rsp.h  ../include/ccorb.h \
+  ../include/ccr1rsp.h  ../include/ccsdsym.h \
+  ../include/dummy.h  ../include/iratdef.h \
+  ../include/priunit.h
 cc3_etasd.o : cc3_etasd.F \
   ../include/ccinftap.h  ../include/ccorb.h \
   ../include/ccsdinp.h  ../include/ccsdsym.h \
@@ -78,12 +50,6 @@ cc3_ft3b.o : cc3_ft3b.F \
   ../include/dummy.h  ../include/inftap.h \
   ../include/iratdef.h  ../include/priunit.h \
   ../include/single.h
-cc_3hyp.o : cc_3hyp.F \
-  ../include/cc4perm.h  ../include/cc4rinf.h \
-  ../include/ccorb.h  ../include/ccr1rsp.h \
-  ../include/ccroper.h  ../include/ccsdinp.h \
-  ../include/implicit.h  ../include/priunit.h \
-  ../include/single.h
 cc3_init.o : cc3_init.F \
   ../include/ccl1rsp.h  ../include/ccorb.h \
   ../include/ccr1rsp.h  ../include/ccsdinp.h \
@@ -96,26 +62,26 @@ cc3_lhtr.o : cc3_lhtr.F \
   ../include/dummy.h  ../include/inftap.h \
   ../include/iratdef.h  ../include/priunit.h \
   ../include/single.h
-cc3_omeg3.o : cc3_omeg3.F \
-  ../include/ccinftap.h  ../include/ccorb.h \
-  ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/dummy.h  ../include/implicit.h \
-  ../include/inftap.h  ../include/iratdef.h \
-  ../include/priunit.h  ../include/single.h
 cc3_omeg.o : cc3_omeg.F \
   ../include/ccinftap.h  ../include/ccorb.h \
   ../include/ccsdinp.h  ../include/ccsdsym.h \
   ../include/dummy.h  ../include/implicit.h \
   ../include/inftap.h  ../include/iratdef.h \
   ../include/priunit.h  ../include/single.h
-cc3_t3int3.o : cc3_t3int3.F \
+cc3_omeg3.o : cc3_omeg3.F \
   ../include/ccinftap.h  ../include/ccorb.h \
   ../include/ccsdinp.h  ../include/ccsdsym.h \
+  ../include/dummy.h  ../include/implicit.h \
+  ../include/inftap.h  ../include/iratdef.h \
   ../include/priunit.h  ../include/single.h
 cc3_t3int.o : cc3_t3int.F \
   ../include/ccinftap.h  ../include/ccorb.h \
   ../include/ccsdsym.h  ../include/implicit.h \
   ../include/single.h
+cc3_t3int3.o : cc3_t3int3.F \
+  ../include/ccinftap.h  ../include/ccorb.h \
+  ../include/ccsdinp.h  ../include/ccsdsym.h \
+  ../include/priunit.h  ../include/single.h
 cc3_trip.o : cc3_trip.F \
   ../include/aovec.h  ../include/blocks.h \
   ../include/ccorb.h  ../include/ccsdinp.h \
@@ -125,22 +91,58 @@ cc3_trip.o : cc3_trip.F \
   ../include/iratdef.h  ../include/maxash.h \
   ../include/maxorb.h  ../include/mxcent.h \
   ../include/priunit.h  ../include/single.h
-cc3_xi.o : cc3_xi.F \
+cc3_xi_cont.o : cc3_xi_cont.F \
+  ../include/cc3t3d.h  ../include/ccexci.h \
+  ../include/ccfield.h  ../include/ccinftap.h \
+  ../include/ccl1rsp.h  ../include/cclists.h \
+  ../include/cclrmrsp.h  ../include/ccorb.h \
+  ../include/ccr1rsp.h  ../include/ccroper.h \
+  ../include/ccsdinp.h  ../include/ccsdsym.h \
+  ../include/dummy.h  ../include/inftap.h \
+  ../include/iratdef.h  ../include/maxorb.h \
+  ../include/priunit.h  ../include/single.h
+cc3_xisd.o : cc3_xisd.F \
   ../include/ccinftap.h  ../include/ccorb.h \
   ../include/ccr1rsp.h  ../include/ccsdinp.h \
   ../include/ccsdsym.h  ../include/dummy.h \
   ../include/inftap.h  ../include/iratdef.h \
   ../include/priunit.h  ../include/single.h
-cc_4hyp.o : cc_4hyp.F \
-  ../include/cc5perm.h  ../include/cc5rinf.h \
-  ../include/cclists.h  ../include/ccorb.h \
+cc_1idx_d2eff.o : cc_1idx_d2eff.F \
+  ../include/implicit.h  ../include/ccorb.h \
+  ../include/ccsdsym.h  ../include/single.h
+cc_1idxtran.o : cc_1idxtran.F \
+  ../include/ccorb.h  ../include/ccsdsym.h \
+  ../include/priunit.h  ../include/single.h
+cc_21i2.o : cc_21i2.F \
+  ../include/implicit.h  ../include/ccorb.h \
+  ../include/ccsdsym.h  ../include/implicit.h \
+  ../include/priunit.h  ../include/single.h
+cc_21i3.o : cc_21i3.F \
+  ../include/implicit.h  ../include/ccorb.h \
+  ../include/ccsdsym.h  ../include/priunit.h \
+  ../include/single.h
+cc_2hyp.o : cc_2hyp.F \
+  ../include/implicit.h  ../include/cccperm.h \
+  ../include/cccrinf.h  ../include/ccorb.h \
+  ../include/ccr1rsp.h  ../include/ccrc1rsp.h \
+  ../include/ccroper.h  ../include/ccsdinp.h \
+  ../include/priunit.h  ../include/single.h
+cc_3hyp.o : cc_3hyp.F \
+  ../include/implicit.h  ../include/cc4perm.h \
+  ../include/cc4rinf.h  ../include/ccorb.h \
   ../include/ccr1rsp.h  ../include/ccroper.h \
-  ../include/ccsdinp.h  ../include/implicit.h \
+  ../include/ccsdinp.h  ../include/priunit.h \
+  ../include/single.h
+cc_4hyp.o : cc_4hyp.F \
+  ../include/implicit.h  ../include/cc5perm.h \
+  ../include/cc5rinf.h  ../include/cclists.h \
+  ../include/ccorb.h  ../include/ccr1rsp.h \
+  ../include/ccroper.h  ../include/ccsdinp.h \
   ../include/priunit.h  ../include/single.h
 cc_aamat.o : cc_aamat.F \
-  ../include/cclists.h  ../include/ccorb.h \
-  ../include/ccroper.h  ../include/ccsdinp.h \
-  ../include/ccsdsym.h  ../include/implicit.h \
+  ../include/implicit.h  ../include/cclists.h \
+  ../include/ccorb.h  ../include/ccroper.h \
+  ../include/ccsdinp.h  ../include/ccsdsym.h \
   ../include/priunit.h  ../include/single.h
 cc_aodens3.o : cc_aodens3.F \
   ../include/ccorb.h  ../include/ccsdinp.h \
@@ -152,55 +154,57 @@ cc_aofock2.o : cc_aofock2.F \
   ../include/implicit.h  ../include/maxorb.h \
   ../include/single.h  ../include/symsq.h
 cc_bamat.o : cc_bamat.F \
-  ../include/cclists.h  ../include/ccorb.h \
-  ../include/ccroper.h  ../include/ccsdinp.h \
-  ../include/ccsdsym.h  ../include/implicit.h \
+  ../include/implicit.h  ../include/cclists.h \
+  ../include/ccorb.h  ../include/ccroper.h \
+  ../include/ccsdinp.h  ../include/ccsdsym.h \
   ../include/priunit.h  ../include/single.h
 cc_batst.o : cc_batst.F \
-  ../include/ccorb.h  ../include/ccsdinp.h \
-  ../include/ccsdsym.h  ../include/implicit.h \
+  ../include/implicit.h  ../include/ccorb.h \
+  ../include/ccsdinp.h  ../include/ccsdsym.h \
   ../include/priunit.h  ../include/single.h
 cc_bfbsort1.o : cc_bfbsort1.F \
-  ../include/ccorb.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/maxorb.h \
+  ../include/implicit.h  ../include/ccorb.h \
+  ../include/ccsdsym.h  ../include/maxorb.h \
   ../include/single.h  ../include/symsq.h
 cc_bfden.o : cc_bfden.F \
-  ../include/ccinftap.h  ../include/ccorb.h \
-  ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/iratdef.h \
-  ../include/maxorb.h  ../include/priunit.h \
-  ../include/single.h  ../include/symsq.h
+  ../include/implicit.h  ../include/ccinftap.h \
+  ../include/ccorb.h  ../include/ccsdinp.h \
+  ../include/ccsdsym.h  ../include/implicit.h \
+  ../include/iratdef.h  ../include/maxorb.h \
+  ../include/priunit.h  ../include/single.h \
+  ../include/symsq.h
 cc_bfif1.o : cc_bfif1.F \
-  ../include/ccorb.h  ../include/ccsdsym.h \
-  ../include/dummy.h  ../include/implicit.h \
+  ../include/implicit.h  ../include/ccorb.h \
+  ../include/ccsdsym.h  ../include/dummy.h \
   ../include/maxorb.h  ../include/priunit.h \
   ../include/single.h
 cc_bmat.o : cc_bmat.F \
-  ../include/aovec.h  ../include/blocks.h \
-  ../include/cbieri.h  ../include/ccfield.h \
-  ../include/cciccset.h  ../include/ccisao.h \
-  ../include/cclr.h  ../include/ccorb.h \
-  ../include/ccsdinp.h  ../include/ccsdio.h \
-  ../include/ccsdsym.h  ../include/distcl.h \
-  ../include/dummy.h  ../include/eribuf.h \
-  ../include/implicit.h  ../include/iratdef.h \
-  ../include/leinf.h  ../include/maxorb.h \
-  ../include/mxcent.h  ../include/priunit.h \
+  ../include/implicit.h  ../include/aovec.h \
+  ../include/blocks.h  ../include/cbieri.h \
+  ../include/ccfield.h  ../include/cciccset.h \
+  ../include/ccisao.h  ../include/cclr.h \
+  ../include/ccorb.h  ../include/ccsdinp.h \
+  ../include/ccsdio.h  ../include/ccsdsym.h \
+  ../include/distcl.h  ../include/dummy.h \
+  ../include/eribuf.h  ../include/implicit.h \
+  ../include/iratdef.h  ../include/leinf.h \
+  ../include/maxorb.h  ../include/mxcent.h \
+  ../include/priunit.h  ../include/second.h \
   ../include/single.h  ../include/symsq.h
 cc_cauchy.o : cc_cauchy.F \
-  ../include/cclc1rsp.h  ../include/cclrinf.h \
-  ../include/ccorb.h  ../include/ccrc1rsp.h \
-  ../include/ccroper.h  ../include/ccsdinp.h \
-  ../include/ccsdsym.h  ../include/dummy.h \
-  ../include/implicit.h  ../include/priunit.h \
+  ../include/implicit.h  ../include/cclc1rsp.h \
+  ../include/cclrinf.h  ../include/ccorb.h \
+  ../include/ccrc1rsp.h  ../include/ccroper.h \
+  ../include/ccsdinp.h  ../include/ccsdsym.h \
+  ../include/dummy.h  ../include/priunit.h \
   ../include/single.h
 cc_cmat.o : cc_cmat.F \
-  ../include/aovec.h  ../include/blocks.h \
-  ../include/cbieri.h  ../include/ccfield.h \
-  ../include/cciccset.h  ../include/ccisao.h \
-  ../include/ccorb.h  ../include/ccsdinp.h \
-  ../include/ccsdsym.h  ../include/distcl.h \
-  ../include/eribuf.h  ../include/implicit.h \
+  ../include/implicit.h  ../include/aovec.h \
+  ../include/blocks.h  ../include/cbieri.h \
+  ../include/ccfield.h  ../include/cciccset.h \
+  ../include/ccisao.h  ../include/ccorb.h \
+  ../include/ccsdinp.h  ../include/ccsdsym.h \
+  ../include/distcl.h  ../include/eribuf.h \
   ../include/iratdef.h  ../include/maxorb.h \
   ../include/mxcent.h  ../include/priunit.h \
   ../include/single.h
@@ -214,21 +218,8 @@ cc_cphf.o : cc_cphf.F \
   ../include/infvar.h  ../include/iratdef.h \
   ../include/maxorb.h  ../include/priunit.h \
   ../include/single.h
-cccr_aa.o : cccr_aa.F \
-  ../include/ccorb.h  ../include/ccsdinp.h \
-  ../include/ccsdsym.h  ../include/implicit.h \
-  ../include/priunit.h  ../include/single.h
 cc_cray.o : cc_cray.F \
   ../include/single.h
-cccr_setup.o : cccr_setup.F \
-  ../include/cccperm.h  ../include/cccrinf.h \
-  ../include/ccorb.h  ../include/ccroper.h \
-  ../include/implicit.h  ../include/priunit.h \
-  ../include/single.h
-cccr_util.o : cccr_util.F \
-  ../include/cciccset.h  ../include/ccorb.h \
-  ../include/ccsdsym.h  ../include/implicit.h \
-  ../include/priunit.h  ../include/single.h
 cc_d1ao.o : cc_d1ao.F \
   ../include/aovec.h  ../include/blocks.h \
   ../include/cbieri.h  ../include/ccfop.h \
@@ -241,21 +232,22 @@ cc_d1ao.o : cc_d1ao.F \
   ../include/iratdef.h  ../include/maxash.h \
   ../include/maxorb.h  ../include/mxcent.h \
   ../include/priunit.h  ../include/single.h
+cc_den.o : cc_den.F \
+  ../include/implicit.h  ../include/aovec.h \
+  ../include/blocks.h  ../include/cbieri.h \
+  ../include/ccfield.h  ../include/ccfro.h \
+  ../include/ccinftap.h  ../include/ccorb.h \
+  ../include/ccsdinp.h  ../include/ccsdio.h \
+  ../include/ccsdsym.h  ../include/distcl.h \
+  ../include/dummy.h  ../include/eribuf.h \
+  ../include/implicit.h  ../include/infind.h \
+  ../include/inftap.h  ../include/iratdef.h \
+  ../include/maxash.h  ../include/maxorb.h \
+  ../include/mxcent.h  ../include/priunit.h \
+  ../include/single.h
 cc_den2_pt.o : cc_den2_pt.F \
   ../include/ccorb.h  ../include/ccsdinp.h \
   ../include/ccsdsym.h  ../include/implicit.h \
-  ../include/priunit.h  ../include/single.h
-cc_den.o : cc_den.F \
-  ../include/aovec.h  ../include/blocks.h \
-  ../include/cbieri.h  ../include/ccfield.h \
-  ../include/ccfro.h  ../include/ccinftap.h \
-  ../include/ccorb.h  ../include/ccsdinp.h \
-  ../include/ccsdio.h  ../include/ccsdsym.h \
-  ../include/distcl.h  ../include/dummy.h \
-  ../include/eribuf.h  ../include/implicit.h \
-  ../include/infind.h  ../include/inftap.h \
-  ../include/iratdef.h  ../include/maxash.h \
-  ../include/maxorb.h  ../include/mxcent.h \
   ../include/priunit.h  ../include/single.h
 cc_den_pt2.o : cc_den_pt2.F \
   ../include/aovec.h  ../include/blocks.h \
@@ -269,34 +261,17 @@ cc_den_pt2.o : cc_den_pt2.F \
   ../include/iratdef.h  ../include/maxash.h \
   ../include/maxorb.h  ../include/mxcent.h \
   ../include/priunit.h  ../include/single.h
-ccder1.o : ccder1.F \
-  ../include/aovec.h  ../include/cch2d.h \
-  ../include/ccorb.h  ../include/ccsdinp.h \
-  ../include/ccsdsym.h  ../include/dummy.h \
-  ../include/ibtfun.h  ../include/ibtpar.h \
-  ../include/implicit.h  ../include/inftap.h \
-  ../include/iratdef.h  ../include/maxaqn.h \
-  ../include/maxorb.h  ../include/mxcent.h \
-  ../include/nodint.h  ../include/nuclei.h \
-  ../include/priunit.h  ../include/single.h
 cc_dhfao.o : cc_dhfao.F \
   ../include/cclr.h  ../include/ccorb.h \
   ../include/ccsdsym.h  ../include/implicit.h \
   ../include/priunit.h  ../include/single.h
-ccdiis_solv.o : ccdiis_solv.F \
-  ../include/ccexci.h  ../include/ccfro.h \
-  ../include/cclr.h  ../include/ccorb.h \
-  ../include/ccrc1rsp.h  ../include/ccsdinp.h \
-  ../include/ccsdsym.h  ../include/implicit.h \
-  ../include/inftap.h  ../include/leinf.h \
-  ../include/priunit.h  ../include/single.h
 cc_dmat.o : cc_dmat.F \
-  ../include/aovec.h  ../include/blocks.h \
-  ../include/cbieri.h  ../include/ccfield.h \
-  ../include/cciccset.h  ../include/ccisao.h \
-  ../include/ccorb.h  ../include/ccsdinp.h \
-  ../include/ccsdsym.h  ../include/distcl.h \
-  ../include/eribuf.h  ../include/implicit.h \
+  ../include/implicit.h  ../include/aovec.h \
+  ../include/blocks.h  ../include/cbieri.h \
+  ../include/ccfield.h  ../include/cciccset.h \
+  ../include/ccisao.h  ../include/ccorb.h \
+  ../include/ccsdinp.h  ../include/ccsdsym.h \
+  ../include/distcl.h  ../include/eribuf.h \
   ../include/iratdef.h  ../include/maxorb.h \
   ../include/mxcent.h  ../include/priunit.h \
   ../include/single.h
@@ -321,60 +296,23 @@ cc_e1aim.o : cc_e1aim.F \
   ../include/ccsdsym.h  ../include/implicit.h \
   ../include/priunit.h  ../include/single.h
 cc_e21con.o : cc_e21con.F \
-  ../include/ccorb.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/maxorb.h \
+  ../include/implicit.h  ../include/ccorb.h \
+  ../include/ccsdsym.h  ../include/maxorb.h \
   ../include/priunit.h  ../include/single.h
 cc_e22con.o : cc_e22con.F \
-  ../include/ccorb.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/maxorb.h \
+  ../include/implicit.h  ../include/ccorb.h \
+  ../include/ccsdsym.h  ../include/maxorb.h \
   ../include/single.h
 cc_effckmo.o : cc_effckmo.F \
   ../include/ccorb.h  ../include/ccsdsym.h \
   ../include/priunit.h  ../include/single.h
-ccefffock.o : ccefffock.F \
-  ../include/aovec.h  ../include/blocks.h \
-  ../include/cbieri.h  ../include/cc1dxfck.h \
-  ../include/ccexpfck.h  ../include/ccfield.h \
-  ../include/ccfop.h  ../include/ccfro.h \
-  ../include/cclr.h  ../include/ccorb.h \
-  ../include/ccr1rsp.h  ../include/ccroper.h \
-  ../include/ccropr2.h  ../include/ccsdinp.h \
-  ../include/ccsdio.h  ../include/ccsdsym.h \
-  ../include/chrxyz.h  ../include/distcl.h \
-  ../include/drw2el.h  ../include/dummy.h \
-  ../include/eribuf.h  ../include/implicit.h \
-  ../include/infind.h  ../include/inftap.h \
-  ../include/iratdef.h  ../include/maxaqn.h \
-  ../include/maxash.h  ../include/maxorb.h \
-  ../include/mxcent.h  ../include/nuclei.h \
-  ../include/priunit.h  ../include/single.h \
-  ../include/symmet.h
-cceq_solv.o : cceq_solv.F \
-  ../include/ccexci.h  ../include/ccfro.h \
-  ../include/ccinf.h  ../include/cclr.h \
-  ../include/ccorb.h  ../include/ccrc1rsp.h \
-  ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/ibndxdef.h  ../include/implicit.h \
-  ../include/leinf.h  ../include/priunit.h \
-  ../include/single.h
-ccetacor.o : ccetacor.F \
-  ../include/aovec.h  ../include/blocks.h \
-  ../include/cbieri.h  ../include/ccfield.h \
-  ../include/ccfro.h  ../include/ccinftap.h \
-  ../include/ccorb.h  ../include/ccsdinp.h \
-  ../include/ccsdio.h  ../include/ccsdsym.h \
-  ../include/distcl.h  ../include/dummy.h \
-  ../include/eribuf.h  ../include/implicit.h \
-  ../include/infind.h  ../include/inftap.h \
-  ../include/iratdef.h  ../include/maxash.h \
-  ../include/maxorb.h  ../include/mxcent.h \
-  ../include/priunit.h  ../include/single.h
-cc_etadrv1.o : cc_etadrv1.F \
-  ../include/cclists.h  ../include/ccorb.h \
-  ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/dummy.h  ../include/implicit.h \
-  ../include/priunit.h  ../include/single.h
 cc_etadrv.o : cc_etadrv.F \
+  ../include/implicit.h  ../include/ccorb.h \
+  ../include/ccsdinp.h  ../include/ccsdsym.h \
+  ../include/dummy.h  ../include/priunit.h \
+  ../include/single.h
+cc_etadrv1.o : cc_etadrv1.F \
+  ../include/implicit.h  ../include/cclists.h \
   ../include/ccorb.h  ../include/ccsdinp.h \
   ../include/ccsdsym.h  ../include/dummy.h \
   ../include/implicit.h  ../include/priunit.h \
@@ -383,7 +321,7 @@ cc_exci.o : cc_exci.F \
   ../include/ccexci.h  ../include/ccexgr.h \
   ../include/ccfdgeo.h  ../include/ccfro.h \
   ../include/ccgr.h  ../include/ccinftap.h \
-  ../include/cclres.h  ../include/cclr.h \
+  ../include/cclr.h  ../include/cclres.h \
   ../include/ccorb.h  ../include/ccsdinp.h \
   ../include/ccsdio.h  ../include/ccsdsym.h \
   ../include/ccsections.h  ../include/codata.h \
@@ -410,105 +348,54 @@ cc_exgr.o : cc_exgr.F \
   ../include/maxorb.h  ../include/mxcent.h \
   ../include/nqcc.h  ../include/priunit.h \
   ../include/quadru.h  ../include/single.h
-ccexlr.o : ccexlr.F \
-  ../include/ccel1rsp.h  ../include/ccer1rsp.h \
-  ../include/ccexci.h  ../include/ccexlrinf.h \
-  ../include/ccn2rsp.h  ../include/cco2rsp.h \
-  ../include/ccorb.h  ../include/ccr1rsp.h \
-  ../include/ccroper.h  ../include/ccsdinp.h \
-  ../include/ccsdsym.h  ../include/implicit.h \
-  ../include/priunit.h  ../include/single.h
-ccexnorm.o : ccexnorm.F \
-  ../include/cc3t3d.h  ../include/ccexci.h \
-  ../include/ccexcinf.h  ../include/ccfield.h \
-  ../include/ccinftap.h  ../include/ccorb.h \
-  ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/codata.h  ../include/dummy.h \
-  ../include/inftap.h  ../include/iratdef.h \
-  ../include/maxorb.h  ../include/priunit.h \
-  ../include/single.h
-ccexpfck.o : ccexpfck.F \
-  ../include/cc1dxfck.h  ../include/ccexpfck.h \
-  ../include/ccfield.h  ../include/ccfro.h \
-  ../include/ccorb.h  ../include/ccr1rsp.h \
-  ../include/ccroper.h  ../include/ccropr2.h \
-  ../include/ccsdsym.h  ../include/ccsections.h \
-  ../include/chrnos.h  ../include/chrxyz.h \
-  ../include/implicit.h  ../include/maxaqn.h \
-  ../include/maxorb.h  ../include/mxcent.h \
-  ../include/nuclei.h  ../include/priunit.h \
-  ../include/single.h  ../include/symmet.h
 cc_f1inact.o : cc_f1inact.F \
   ../include/ccexpfck.h  ../include/ccorb.h \
   ../include/ccsdsym.h  ../include/priunit.h \
   ../include/single.h
 cc_famat.o : cc_famat.F \
-  ../include/cbieri.h  ../include/ccfield.h \
-  ../include/ccisao.h  ../include/ccorb.h \
-  ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/distcl.h  ../include/eribuf.h \
-  ../include/implicit.h  ../include/iratdef.h \
-  ../include/maxorb.h  ../include/mxcent.h \
-  ../include/priunit.h  ../include/single.h
-ccfbint1.o : ccfbint1.F \
+  ../include/implicit.h  ../include/cbieri.h \
+  ../include/ccfield.h  ../include/ccisao.h \
   ../include/ccorb.h  ../include/ccsdinp.h \
-  ../include/ccsdsym.h  ../include/maxorb.h \
-  ../include/priunit.h  ../include/single.h
-ccfbint2.o : ccfbint2.F \
-  ../include/ccfield.h  ../include/ccorb.h \
-  ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/maxorb.h  ../include/priunit.h \
-  ../include/single.h
-ccfbtaao1.o : ccfbtaao1.F \
-  ../include/ccisao.h  ../include/ccorb.h \
-  ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/maxorb.h \
-  ../include/priunit.h  ../include/single.h
-ccfbtaao2.o : ccfbtaao2.F \
-  ../include/ccisao.h  ../include/ccorb.h \
-  ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/maxorb.h \
-  ../include/priunit.h  ../include/single.h
-cc_fbta.o : cc_fbta.F \
-  ../include/aovec.h  ../include/blocks.h \
-  ../include/ccfield.h  ../include/ccfro.h \
-  ../include/ccisao.h  ../include/ccorb.h \
-  ../include/ccr1rsp.h  ../include/ccroper.h \
-  ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/chrxyz.h  ../include/distcl.h \
+  ../include/ccsdsym.h  ../include/distcl.h \
   ../include/dummy.h  ../include/eribuf.h \
-  ../include/implicit.h  ../include/iratdef.h \
+  ../include/iratdef.h  ../include/maxorb.h \
+  ../include/mxcent.h  ../include/priunit.h \
+  ../include/single.h
+cc_fbta.o : cc_fbta.F \
+  ../include/implicit.h  ../include/aovec.h \
+  ../include/blocks.h  ../include/ccfield.h \
+  ../include/ccfro.h  ../include/ccisao.h \
+  ../include/ccorb.h  ../include/ccr1rsp.h \
+  ../include/ccroper.h  ../include/ccsdinp.h \
+  ../include/ccsdsym.h  ../include/chrxyz.h \
+  ../include/distcl.h  ../include/dummy.h \
+  ../include/eribuf.h  ../include/iratdef.h \
   ../include/maxaqn.h  ../include/maxorb.h \
   ../include/mxcent.h  ../include/nuclei.h \
   ../include/priunit.h  ../include/single.h \
   ../include/symmet.h
-ccfbtaf.o : ccfbtaf.F \
-  ../include/ccisao.h  ../include/ccorb.h \
-  ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/maxorb.h \
-  ../include/priunit.h  ../include/single.h
 cc_fbtst.o : cc_fbtst.F \
-  ../include/ccfro.h  ../include/cco1rsp.h \
-  ../include/ccorb.h  ../include/ccr1rsp.h \
-  ../include/ccroper.h  ../include/ccsdinp.h \
-  ../include/ccsdsym.h  ../include/ccx1rsp.h \
-  ../include/implicit.h  ../include/maxorb.h \
-  ../include/priunit.h  ../include/single.h
-cc_fckrlx1.o : cc_fckrlx1.F \
-  ../include/ccorb.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/priunit.h \
-  ../include/single.h
-cc_fdaa.o : cc_fdaa.F \
-  ../include/aovec.h  ../include/ccfro.h \
-  ../include/cclists.h  ../include/cclr.h \
+  ../include/implicit.h  ../include/ccfro.h \
   ../include/cco1rsp.h  ../include/ccorb.h \
   ../include/ccr1rsp.h  ../include/ccroper.h \
-  ../include/ccsdinp.h  ../include/ccsdio.h \
-  ../include/ccsdsym.h  ../include/ccx1rsp.h \
-  ../include/dummy.h  ../include/implicit.h \
-  ../include/iratdef.h  ../include/leinf.h \
-  ../include/maxorb.h  ../include/priunit.h \
+  ../include/ccsdinp.h  ../include/ccsdsym.h \
+  ../include/ccx1rsp.h  ../include/maxorb.h \
+  ../include/priunit.h  ../include/single.h
+cc_fckrlx1.o : cc_fckrlx1.F \
+  ../include/implicit.h  ../include/ccorb.h \
+  ../include/ccsdsym.h  ../include/priunit.h \
   ../include/single.h
+cc_fdaa.o : cc_fdaa.F \
+  ../include/implicit.h  ../include/aovec.h \
+  ../include/ccfro.h  ../include/cclists.h \
+  ../include/cclr.h  ../include/cco1rsp.h \
+  ../include/ccorb.h  ../include/ccr1rsp.h \
+  ../include/ccroper.h  ../include/ccsdinp.h \
+  ../include/ccsdio.h  ../include/ccsdsym.h \
+  ../include/ccx1rsp.h  ../include/dummy.h \
+  ../include/implicit.h  ../include/iratdef.h \
+  ../include/leinf.h  ../include/maxorb.h \
+  ../include/priunit.h  ../include/single.h
 cc_fdba.o : cc_fdba.F \
   ../include/aovec.h  ../include/ccfro.h \
   ../include/cclr.h  ../include/ccorb.h \
@@ -544,17 +431,18 @@ cc_fdfb.o : cc_fdfb.F \
   ../include/leinf.h  ../include/maxorb.h \
   ../include/priunit.h  ../include/single.h
 cc_fmat.o : cc_fmat.F \
-  ../include/aovec.h  ../include/blocks.h \
-  ../include/cbieri.h  ../include/ccfield.h \
-  ../include/cciccset.h  ../include/ccisao.h \
-  ../include/ccnoddy.h  ../include/ccorb.h \
-  ../include/ccsdinp.h  ../include/ccsdio.h \
-  ../include/ccsdsym.h  ../include/ccsections.h \
-  ../include/ccslvinf.h  ../include/distcl.h \
-  ../include/dummy.h  ../include/eribuf.h \
-  ../include/implicit.h  ../include/iratdef.h \
-  ../include/maxorb.h  ../include/mxcent.h \
-  ../include/priunit.h  ../include/single.h
+  ../include/implicit.h  ../include/aovec.h \
+  ../include/blocks.h  ../include/cbieri.h \
+  ../include/ccfield.h  ../include/cciccset.h \
+  ../include/ccisao.h  ../include/ccnoddy.h \
+  ../include/ccorb.h  ../include/ccsdinp.h \
+  ../include/ccsdio.h  ../include/ccsdsym.h \
+  ../include/ccsections.h  ../include/ccslvinf.h \
+  ../include/distcl.h  ../include/dummy.h \
+  ../include/eribuf.h  ../include/implicit.h \
+  ../include/iratdef.h  ../include/maxorb.h \
+  ../include/mxcent.h  ../include/priunit.h \
+  ../include/single.h
 cc_fmattst.o : cc_fmattst.F \
   ../include/aovec.h  ../include/blocks.h \
   ../include/cbieri.h  ../include/ccfield.h \
@@ -567,11 +455,33 @@ cc_fmattst.o : cc_fmattst.F \
   ../include/iratdef.h  ../include/maxash.h \
   ../include/maxorb.h  ../include/mxcent.h \
   ../include/priunit.h  ../include/single.h
-ccfndop.o : ccfndop.F \
+cc_fop.o : cc_fop.F \
+  ../include/abainf.h  ../include/aovec.h \
+  ../include/blocks.h  ../include/cbieri.h \
+  ../include/cbiher.h  ../include/ccfdgeo.h \
+  ../include/ccfield.h  ../include/ccfop.h \
+  ../include/ccfro.h  ../include/ccinftap.h \
+  ../include/cclr.h  ../include/ccnoddy.h \
   ../include/ccorb.h  ../include/ccroper.h \
-  ../include/ccropr2.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/priunit.h \
-  ../include/single.h
+  ../include/ccrspprp.h  ../include/ccsdinp.h \
+  ../include/ccsdio.h  ../include/ccsdsym.h \
+  ../include/ccsections.h  ../include/ccslvinf.h \
+  ../include/chrnos.h  ../include/chrxyz.h \
+  ../include/codata.h  ../include/dipole.h \
+  ../include/distcl.h  ../include/drw2el.h \
+  ../include/dummy.h  ../include/eribuf.h \
+  ../include/eridst.h  ../include/exeinf.h \
+  ../include/grdccpt.h  ../include/ibtfun.h \
+  ../include/implicit.h  ../include/infind.h \
+  ../include/inftap.h  ../include/inftra.h \
+  ../include/infvar.h  ../include/iratdef.h \
+  ../include/leinf.h  ../include/maxaqn.h \
+  ../include/maxash.h  ../include/maxmom.h \
+  ../include/maxorb.h  ../include/mxcent.h \
+  ../include/nqcc.h  ../include/nuclei.h \
+  ../include/orgcom.h  ../include/priunit.h \
+  ../include/quadru.h  ../include/single.h \
+  ../include/symmet.h
 cc_fop3.o : cc_fop3.F \
   ../include/aovec.h  ../include/blocks.h \
   ../include/ccfield.h  ../include/ccfop.h \
@@ -583,45 +493,20 @@ cc_fop3.o : cc_fop3.F \
   ../include/khaldtemp.h  ../include/maxash.h \
   ../include/maxorb.h  ../include/mxcent.h \
   ../include/priunit.h  ../include/single.h
-cc_fop.o : cc_fop.F \
-  ../include/abainf.h  ../include/aovec.h \
-  ../include/blocks.h  ../include/cbieri.h \
-  ../include/cbiher.h  ../include/ccfdgeo.h \
-  ../include/ccfield.h  ../include/ccfop.h \
-  ../include/ccfro.h  ../include/ccinftap.h \
-  ../include/cclr.h  ../include/ccorb.h \
-  ../include/ccroper.h  ../include/ccrspprp.h \
-  ../include/ccsdinp.h  ../include/ccsdio.h \
-  ../include/ccsdsym.h  ../include/ccsections.h \
-  ../include/ccslvinf.h  ../include/chrnos.h \
-  ../include/chrxyz.h  ../include/codata.h \
-  ../include/dipole.h  ../include/distcl.h \
-  ../include/drw2el.h  ../include/dummy.h \
-  ../include/eribuf.h  ../include/eridst.h \
-  ../include/exeinf.h  ../include/grdccpt.h \
-  ../include/ibtfun.h  ../include/implicit.h \
-  ../include/infind.h  ../include/inftap.h \
-  ../include/inftra.h  ../include/infvar.h \
-  ../include/iratdef.h  ../include/leinf.h \
-  ../include/maxaqn.h  ../include/maxash.h \
-  ../include/maxmom.h  ../include/maxorb.h \
-  ../include/mxcent.h  ../include/nqcc.h \
-  ../include/nuclei.h  ../include/orgcom.h \
-  ../include/priunit.h  ../include/quadru.h \
-  ../include/single.h  ../include/symmet.h
 cc_foppt.o : cc_foppt.F \
   ../include/ccfop.h  ../include/ccinftap.h \
   ../include/ccorb.h  ../include/ccsdinp.h \
   ../include/ccsdsym.h  ../include/dummy.h \
   ../include/implicit.h  ../include/inftap.h \
   ../include/iratdef.h  ../include/priunit.h \
-  ../include/single.h
+  ../include/second.h  ../include/single.h
 cc_foppt_sc.o : cc_foppt_sc.F \
   ../include/ccfop.h  ../include/ccinftap.h \
   ../include/ccorb.h  ../include/ccsdinp.h \
   ../include/ccsdsym.h  ../include/dummy.h \
   ../include/inftap.h  ../include/iratdef.h \
-  ../include/priunit.h  ../include/single.h
+  ../include/priunit.h  ../include/second.h \
+  ../include/single.h
 cc_fropro.o : cc_fropro.F \
   ../include/ccfro.h  ../include/ccisao.h \
   ../include/ccorb.h  ../include/ccsdinp.h \
@@ -631,65 +516,66 @@ cc_fropro.o : cc_fropro.F \
   ../include/r12int.h  ../include/single.h \
   ../include/symsq.h
 cc_ftst.o : cc_ftst.F \
-  ../include/aovec.h  ../include/blocks.h \
-  ../include/cbieri.h  ../include/ccfield.h \
-  ../include/ccinftap.h  ../include/ccisao.h \
-  ../include/cclr.h  ../include/ccorb.h \
-  ../include/ccroper.h  ../include/ccsdinp.h \
-  ../include/ccsdio.h  ../include/ccsdsym.h \
-  ../include/distcl.h  ../include/dummy.h \
-  ../include/eribuf.h  ../include/implicit.h \
-  ../include/iratdef.h  ../include/leinf.h \
-  ../include/maxash.h  ../include/maxorb.h \
-  ../include/mxcent.h  ../include/priunit.h \
-  ../include/single.h
-cc_getgd.o : cc_getgd.F \
-  ../include/cccl2rsp.h  ../include/cccr2rsp.h \
-  ../include/ccexci.h  ../include/ccexgr.h \
-  ../include/ccl1rsp.h  ../include/ccl2rsp.h \
-  ../include/ccl3rsp.h  ../include/cclc1rsp.h \
-  ../include/cclr.h  ../include/cclrmrsp.h \
-  ../include/ccn2rsp.h  ../include/cco2rsp.h \
-  ../include/ccorb.h  ../include/ccpl1rsp.h \
-  ../include/ccr1rsp.h  ../include/ccr2rsp.h \
-  ../include/ccr3rsp.h  ../include/ccrc1rsp.h \
-  ../include/ccroper.h  ../include/ccsdinp.h \
-  ../include/ccsdio.h  ../include/ccsdsym.h \
-  ../include/ccsections.h  ../include/ccx2rsp.h \
-  ../include/ccx3rsp.h  ../include/dummy.h \
-  ../include/implicit.h  ../include/iratdef.h \
-  ../include/leinf.h  ../include/maxorb.h \
-  ../include/priunit.h  ../include/single.h
-cc_getgp.o : cc_getgp.F \
-  ../include/ccexpfck.h  ../include/ccfro.h \
+  ../include/implicit.h  ../include/aovec.h \
+  ../include/blocks.h  ../include/cbieri.h \
+  ../include/ccfield.h  ../include/ccinftap.h \
+  ../include/ccisao.h  ../include/cclr.h \
   ../include/ccorb.h  ../include/ccroper.h \
-  ../include/ccsdsym.h  ../include/dummy.h \
-  ../include/implicit.h  ../include/priunit.h \
-  ../include/single.h
+  ../include/ccsdinp.h  ../include/ccsdio.h \
+  ../include/ccsdsym.h  ../include/distcl.h \
+  ../include/dummy.h  ../include/eribuf.h \
+  ../include/implicit.h  ../include/iratdef.h \
+  ../include/leinf.h  ../include/maxash.h \
+  ../include/maxorb.h  ../include/mxcent.h \
+  ../include/priunit.h  ../include/single.h
 cc_get_lambda1.o : cc_get_lambda1.F \
-  ../include/ccfro.h  ../include/ccorb.h \
-  ../include/ccroper.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/priunit.h \
+  ../include/implicit.h  ../include/ccfro.h \
+  ../include/ccorb.h  ../include/ccroper.h \
+  ../include/ccsdsym.h  ../include/priunit.h \
   ../include/single.h
 cc_get_rmat.o : cc_get_rmat.F \
-  ../include/ccorb.h  ../include/ccroper.h \
-  ../include/ccropr2.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/priunit.h \
+  ../include/implicit.h  ../include/ccorb.h \
+  ../include/ccroper.h  ../include/ccropr2.h \
+  ../include/ccsdsym.h  ../include/priunit.h \
+  ../include/single.h
+cc_getgd.o : cc_getgd.F \
+  ../include/implicit.h  ../include/cccl2rsp.h \
+  ../include/cccr2rsp.h  ../include/ccexci.h \
+  ../include/ccexgr.h  ../include/ccl1rsp.h \
+  ../include/ccl2rsp.h  ../include/ccl3rsp.h \
+  ../include/cclc1rsp.h  ../include/cclr.h \
+  ../include/cclrmrsp.h  ../include/ccn2rsp.h \
+  ../include/cco2rsp.h  ../include/ccorb.h \
+  ../include/ccpl1rsp.h  ../include/ccr1rsp.h \
+  ../include/ccr2rsp.h  ../include/ccr3rsp.h \
+  ../include/ccrc1rsp.h  ../include/ccroper.h \
+  ../include/ccsdinp.h  ../include/ccsdio.h \
+  ../include/ccsdsym.h  ../include/ccsections.h \
+  ../include/ccx2rsp.h  ../include/ccx3rsp.h \
+  ../include/dummy.h  ../include/implicit.h \
+  ../include/iratdef.h  ../include/leinf.h \
+  ../include/maxorb.h  ../include/priunit.h \
+  ../include/single.h
+cc_getgp.o : cc_getgp.F \
+  ../include/implicit.h  ../include/ccexpfck.h \
+  ../include/ccfro.h  ../include/ccorb.h \
+  ../include/ccroper.h  ../include/ccsdsym.h \
+  ../include/dummy.h  ../include/priunit.h \
   ../include/single.h
 cc_gim1.o : cc_gim1.F \
   ../include/ccorb.h  ../include/ccsdsym.h \
   ../include/implicit.h  ../include/single.h
 cc_gmat.o : cc_gmat.F \
-  ../include/aovec.h  ../include/blocks.h \
-  ../include/cbieri.h  ../include/ccfield.h \
-  ../include/ccinftap.h  ../include/ccisao.h \
-  ../include/ccorb.h  ../include/ccsdinp.h \
-  ../include/ccsdsym.h  ../include/distcl.h \
-  ../include/eribuf.h  ../include/implicit.h \
-  ../include/iratdef.h  ../include/maxorb.h \
-  ../include/mxcent.h  ../include/priunit.h \
-  ../include/single.h
-cc_grad0.o : cc_grad0.F \
+  ../include/implicit.h  ../include/aovec.h \
+  ../include/blocks.h  ../include/cbieri.h \
+  ../include/ccfield.h  ../include/ccinftap.h \
+  ../include/ccisao.h  ../include/ccorb.h \
+  ../include/ccsdinp.h  ../include/ccsdsym.h \
+  ../include/distcl.h  ../include/dummy.h \
+  ../include/eribuf.h  ../include/iratdef.h \
+  ../include/maxorb.h  ../include/mxcent.h \
+  ../include/priunit.h  ../include/single.h
+cc_grad.o : cc_grad.F \
   ../include/aovec.h  ../include/blocks.h \
   ../include/cbieri.h  ../include/ccfield.h \
   ../include/ccfro.h  ../include/ccinftap.h \
@@ -697,14 +583,14 @@ cc_grad0.o : cc_grad0.F \
   ../include/ccsdinp.h  ../include/ccsdio.h \
   ../include/ccsdsym.h  ../include/chrnos.h \
   ../include/distcl.h  ../include/dummy.h \
-  ../include/eribuf.h  ../include/eridst.h \
-  ../include/implicit.h  ../include/infind.h \
-  ../include/inftap.h  ../include/iratdef.h \
-  ../include/maxaqn.h  ../include/maxash.h \
-  ../include/maxorb.h  ../include/mxcent.h \
-  ../include/nuclei.h  ../include/priunit.h \
-  ../include/single.h  ../include/symmet.h
-cc_grad2e.o : cc_grad2e.F \
+  ../include/eribuf.h  ../include/implicit.h \
+  ../include/infind.h  ../include/inftap.h \
+  ../include/iratdef.h  ../include/maxaqn.h \
+  ../include/maxash.h  ../include/maxorb.h \
+  ../include/mxcent.h  ../include/nuclei.h \
+  ../include/priunit.h  ../include/single.h \
+  ../include/symmet.h
+cc_grad0.o : cc_grad0.F \
   ../include/aovec.h  ../include/blocks.h \
   ../include/cbieri.h  ../include/ccfield.h \
   ../include/ccfro.h  ../include/ccinftap.h \
@@ -737,7 +623,7 @@ cc_grad2.o : cc_grad2.F \
   ../include/maxorb.h  ../include/mxcent.h \
   ../include/nuclei.h  ../include/priunit.h \
   ../include/single.h  ../include/symmet.h
-cc_grad.o : cc_grad.F \
+cc_grad2e.o : cc_grad2e.F \
   ../include/aovec.h  ../include/blocks.h \
   ../include/cbieri.h  ../include/ccfield.h \
   ../include/ccfro.h  ../include/ccinftap.h \
@@ -745,58 +631,58 @@ cc_grad.o : cc_grad.F \
   ../include/ccsdinp.h  ../include/ccsdio.h \
   ../include/ccsdsym.h  ../include/chrnos.h \
   ../include/distcl.h  ../include/dummy.h \
-  ../include/eribuf.h  ../include/implicit.h \
-  ../include/infind.h  ../include/inftap.h \
-  ../include/iratdef.h  ../include/maxaqn.h \
-  ../include/maxash.h  ../include/maxorb.h \
-  ../include/mxcent.h  ../include/nuclei.h \
-  ../include/priunit.h  ../include/single.h \
-  ../include/symmet.h
-cc_gradient.o : cc_gradient.F \
-  ../include/abainf.h  ../include/cbinuc.h \
-  ../include/cch2d.h  ../include/ccorb.h \
-  ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/dorps.h  ../include/energy.h \
-  ../include/implicit.h  ../include/maxaqn.h \
+  ../include/eribuf.h  ../include/eridst.h \
+  ../include/implicit.h  ../include/infind.h \
+  ../include/inftap.h  ../include/iratdef.h \
+  ../include/maxaqn.h  ../include/maxash.h \
   ../include/maxorb.h  ../include/mxcent.h \
   ../include/nuclei.h  ../include/priunit.h \
-  ../include/single.h  ../include/symmet.h \
-  ../include/taymol.h
+  ../include/single.h  ../include/symmet.h
+cc_gradient.o : cc_gradient.F \
+  ../include/implicit.h  ../include/abainf.h \
+  ../include/cbinuc.h  ../include/cch2d.h \
+  ../include/ccorb.h  ../include/ccsdinp.h \
+  ../include/ccsdsym.h  ../include/dorps.h \
+  ../include/energy.h  ../include/implicit.h \
+  ../include/maxaqn.h  ../include/maxorb.h \
+  ../include/mxcent.h  ../include/nuclei.h \
+  ../include/priunit.h  ../include/single.h \
+  ../include/symmet.h  ../include/taymol.h
 cc_hfr1den.o : cc_hfr1den.F \
-  ../include/ccfro.h  ../include/ccorb.h \
-  ../include/ccroper.h  ../include/ccsdsym.h \
-  ../include/dummy.h  ../include/implicit.h \
+  ../include/implicit.h  ../include/ccfro.h \
+  ../include/ccorb.h  ../include/ccroper.h \
+  ../include/ccsdsym.h  ../include/dummy.h \
   ../include/inftap.h  ../include/priunit.h \
   ../include/single.h
 cc_hmat.o : cc_hmat.F \
-  ../include/aovec.h  ../include/ccfield.h \
-  ../include/cclr.h  ../include/ccorb.h \
-  ../include/ccqrinf.h  ../include/ccsdinp.h \
-  ../include/ccsdio.h  ../include/ccsdsym.h \
-  ../include/dummy.h  ../include/implicit.h \
-  ../include/iratdef.h  ../include/leinf.h \
-  ../include/maxorb.h  ../include/priunit.h \
-  ../include/single.h
+  ../include/implicit.h  ../include/aovec.h \
+  ../include/ccfield.h  ../include/cclr.h \
+  ../include/ccorb.h  ../include/ccqrinf.h \
+  ../include/ccsdinp.h  ../include/ccsdio.h \
+  ../include/ccsdsym.h  ../include/dummy.h \
+  ../include/implicit.h  ../include/iratdef.h \
+  ../include/leinf.h  ../include/maxorb.h \
+  ../include/priunit.h  ../include/single.h
 cc_hpqta.o : cc_hpqta.F \
   ../include/ccorb.h  ../include/ccsdinp.h \
   ../include/ccsdsym.h  ../include/dummy.h \
   ../include/implicit.h  ../include/iratdef.h \
   ../include/priunit.h  ../include/single.h
 cc_hyppol.o : cc_hyppol.F \
-  ../include/cclists.h  ../include/ccorb.h \
-  ../include/ccqrinf.h  ../include/ccr1rsp.h \
-  ../include/ccrc1rsp.h  ../include/ccroper.h \
-  ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/priunit.h \
+  ../include/implicit.h  ../include/cclists.h \
+  ../include/ccorb.h  ../include/ccqrinf.h \
+  ../include/ccr1rsp.h  ../include/ccrc1rsp.h \
+  ../include/ccroper.h  ../include/ccsdinp.h \
+  ../include/ccsdsym.h  ../include/priunit.h \
   ../include/single.h
 cc_iajb.o : cc_iajb.F \
-  ../include/ccisao.h  ../include/ccorb.h \
-  ../include/ccsdsym.h  ../include/implicit.h \
+  ../include/implicit.h  ../include/ccisao.h \
+  ../include/ccorb.h  ../include/ccsdsym.h \
   ../include/maxorb.h  ../include/priunit.h \
   ../include/single.h
 cc_ijcb.o : cc_ijcb.F \
-  ../include/ccisao.h  ../include/ccorb.h \
-  ../include/ccsdsym.h  ../include/implicit.h \
+  ../include/implicit.h  ../include/ccisao.h \
+  ../include/ccorb.h  ../include/ccsdsym.h \
   ../include/maxorb.h  ../include/priunit.h \
   ../include/single.h
 cc_int3o1.o : cc_int3o1.F \
@@ -808,23 +694,26 @@ cc_int3o2.o : cc_int3o2.F \
   ../include/ccsdinp.h  ../include/ccsdsym.h \
   ../include/implicit.h  ../include/single.h
 cc_int4o.o : cc_int4o.F \
-  ../include/ccorb.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/maxorb.h \
-  ../include/single.h
-cckappasq.o : cckappasq.F \
-  ../include/ccfro.h  ../include/ccorb.h \
-  ../include/ccsdsym.h  ../include/priunit.h \
+  ../include/implicit.h  ../include/ccorb.h \
+  ../include/ccsdsym.h  ../include/maxorb.h \
   ../include/single.h
 cc_lambdaq.o : cc_lambdaq.F \
-  ../include/ccfro.h  ../include/ccorb.h \
-  ../include/ccsdsym.h  ../include/dummy.h \
-  ../include/implicit.h  ../include/inftap.h \
+  ../include/implicit.h  ../include/ccfro.h \
+  ../include/ccorb.h  ../include/ccsdsym.h \
+  ../include/dummy.h  ../include/inftap.h \
   ../include/priunit.h  ../include/single.h
 cc_lamtra.o : cc_lamtra.F \
   ../include/cclr.h  ../include/ccorb.h \
   ../include/ccsdinp.h  ../include/ccsdsym.h \
   ../include/implicit.h  ../include/iratdef.h \
   ../include/single.h
+cc_landf.o : cc_landf.F \
+  ../include/ccfield.h  ../include/ccinftap.h \
+  ../include/cclr.h  ../include/ccorb.h \
+  ../include/ccsdinp.h  ../include/ccsdsym.h \
+  ../include/dummy.h  ../include/implicit.h \
+  ../include/iratdef.h  ../include/leinf.h \
+  ../include/priunit.h  ../include/single.h
 cc_landf2.o : cc_landf2.F \
   ../include/cclr.h  ../include/ccorb.h \
   ../include/ccsdio.h  ../include/ccsdsym.h \
@@ -834,40 +723,33 @@ cc_landf3.o : cc_landf3.F \
   ../include/cclr.h  ../include/ccorb.h \
   ../include/ccsdsym.h  ../include/implicit.h \
   ../include/priunit.h  ../include/single.h
-cc_landf.o : cc_landf.F \
-  ../include/ccfield.h  ../include/ccinftap.h \
-  ../include/cclr.h  ../include/ccorb.h \
-  ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/dummy.h  ../include/implicit.h \
-  ../include/iratdef.h  ../include/leinf.h \
-  ../include/priunit.h  ../include/single.h
 cc_lhtr.o : cc_lhtr.F \
   ../include/aovec.h  ../include/blocks.h \
   ../include/cbieri.h  ../include/ccfield.h \
   ../include/ccinftap.h  ../include/cclr.h \
-  ../include/ccorb.h  ../include/ccsdinp.h \
-  ../include/ccsdio.h  ../include/ccsdsym.h \
-  ../include/ccsections.h  ../include/ccslvinf.h \
-  ../include/distcl.h  ../include/dummy.h \
-  ../include/eribuf.h  ../include/implicit.h \
-  ../include/infind.h  ../include/iratdef.h \
-  ../include/maxash.h  ../include/maxorb.h \
-  ../include/mxcent.h  ../include/priunit.h \
-  ../include/single.h
-cc_lhtr_noddy.o : cc_lhtr_noddy.F \
-  ../include/aovec.h  ../include/blocks.h \
-  ../include/ccorb.h  ../include/ccsdinp.h \
-  ../include/ccsdio.h  ../include/ccsdsym.h \
+  ../include/ccnoddy.h  ../include/ccorb.h \
+  ../include/ccsdinp.h  ../include/ccsdio.h \
+  ../include/ccsdsym.h  ../include/ccsections.h \
+  ../include/ccslvinf.h  ../include/distcl.h \
   ../include/dummy.h  ../include/eribuf.h \
   ../include/implicit.h  ../include/infind.h \
-  ../include/inforb.h  ../include/inftap.h \
-  ../include/maxash.h  ../include/maxorb.h \
-  ../include/mxcent.h  ../include/priunit.h \
-  ../include/single.h
+  ../include/iratdef.h  ../include/maxash.h \
+  ../include/maxorb.h  ../include/mxcent.h \
+  ../include/priunit.h  ../include/single.h
+cc_lhtr_noddy.o : cc_lhtr_noddy.F \
+  ../include/aovec.h  ../include/blocks.h \
+  ../include/ccfield.h  ../include/ccorb.h \
+  ../include/ccsdinp.h  ../include/ccsdio.h \
+  ../include/ccsdsym.h  ../include/dummy.h \
+  ../include/eribuf.h  ../include/implicit.h \
+  ../include/infind.h  ../include/inforb.h \
+  ../include/inftap.h  ../include/maxash.h \
+  ../include/maxorb.h  ../include/mxcent.h \
+  ../include/priunit.h  ../include/single.h
 cc_lr.o : cc_lr.F \
   ../include/ccexci.h  ../include/ccexpfck.h \
   ../include/ccfro.h  ../include/ccinftap.h \
-  ../include/cclres.h  ../include/cclr.h \
+  ../include/cclr.h  ../include/cclres.h \
   ../include/cclrinf.h  ../include/ccorb.h \
   ../include/ccr1rsp.h  ../include/ccroper.h \
   ../include/ccrspprp.h  ../include/ccsdinp.h \
@@ -880,19 +762,449 @@ cc_lr.o : cc_lr.F \
   ../include/mxcent.h  ../include/pgroup.h \
   ../include/priunit.h  ../include/prpc.h \
   ../include/single.h  ../include/symmet.h
-cclr_fa.o : cclr_fa.F \
-  ../include/cbieri.h  ../include/ccisao.h \
+cc_maomao.o : cc_maomao.F \
+  ../include/implicit.h  ../include/ccorb.h \
+  ../include/ccsdsym.h  ../include/priunit.h \
+  ../include/single.h
+cc_mcdny.o : cc_mcdny.F \
+  ../include/implicit.h  ../include/ccel1rsp.h \
+  ../include/ccer1rsp.h  ../include/ccexci.h \
+  ../include/cclists.h  ../include/cclrmrsp.h \
+  ../include/ccmcdinf.h  ../include/cco1rsp.h \
+  ../include/cco2rsp.h  ../include/ccorb.h \
+  ../include/ccpl1rsp.h  ../include/ccr1rsp.h \
+  ../include/ccroper.h  ../include/ccsdinp.h \
+  ../include/ccsdsym.h  ../include/ccx1rsp.h \
+  ../include/dummy.h  ../include/priunit.h \
+  ../include/single.h
+cc_mkrv.o : cc_mkrv.F \
   ../include/ccorb.h  ../include/ccsdinp.h \
-  ../include/ccsdsym.h  ../include/distcl.h \
+  ../include/ccsdsym.h  ../include/implicit.h \
+  ../include/priunit.h  ../include/r12int.h \
+  ../include/single.h
+cc_mmommo.o : cc_mmommo.F \
+  ../include/implicit.h  ../include/ccorb.h \
+  ../include/ccsdsym.h  ../include/priunit.h \
+  ../include/single.h
+cc_mofcon2.o : cc_mofcon2.F \
+  ../include/ccorb.h  ../include/ccsdsym.h \
+  ../include/implicit.h  ../include/maxorb.h \
+  ../include/priunit.h  ../include/single.h \
+  ../include/symsq.h
+cc_nuccon.o : cc_nuccon.F \
+  ../include/implicit.h  ../include/ccorb.h \
+  ../include/ccsdsym.h  ../include/dipole.h \
+  ../include/maxaqn.h  ../include/maxorb.h \
+  ../include/mxcent.h  ../include/nuclei.h \
+  ../include/priunit.h  ../include/single.h \
+  ../include/symmet.h
+cc_opa.o : cc_opa.F \
+  ../include/ccexci.h  ../include/cclists.h \
+  ../include/ccopainf.h  ../include/ccroper.h \
+  ../include/ccsdinp.h  ../include/codata.h \
+  ../include/dummy.h  ../include/pgroup.h \
+  ../include/priunit.h  ../include/single.h
+cc_pckutil.o : cc_pckutil.F \
+  ../include/priunit.h  ../include/single.h
+cc_pqi.o : cc_pqi.F \
+  ../include/implicit.h  ../include/ccorb.h \
+  ../include/ccsdinp.h  ../include/ccsdsym.h \
+  ../include/iratdef.h  ../include/maxorb.h \
+  ../include/priunit.h  ../include/single.h
+cc_qaos.o : cc_qaos.F \
+  ../include/implicit.h  ../include/ccorb.h \
+  ../include/ccsdsym.h  ../include/dummy.h \
+  ../include/priunit.h  ../include/single.h
+cc_qmat.o : cc_qmat.F \
+  ../include/implicit.h  ../include/ccfro.h \
+  ../include/ccorb.h  ../include/ccsdsym.h \
+  ../include/priunit.h  ../include/single.h
+cc_qr2rs.o : cc_qr2rs.F \
+  ../include/ccexci.h  ../include/ccinftap.h \
+  ../include/cclr.h  ../include/cclres.h \
+  ../include/cclrinf.h  ../include/ccorb.h \
+  ../include/ccqr2r.h  ../include/ccroper.h \
+  ../include/ccsdinp.h  ../include/ccsdio.h \
+  ../include/ccsdsym.h  ../include/dummy.h \
+  ../include/implicit.h  ../include/iratdef.h \
+  ../include/leinf.h  ../include/maxaqn.h \
+  ../include/maxorb.h  ../include/mxcent.h \
+  ../include/priunit.h  ../include/single.h \
+  ../include/symmet.h
+cc_r12.o : cc_r12.F \
+  ../include/ccfdgeo.h  ../include/ccfro.h \
+  ../include/cclr.h  ../include/ccorb.h \
+  ../include/ccsdinp.h  ../include/ccsdio.h \
+  ../include/ccsdsym.h  ../include/implicit.h \
+  ../include/iratdef.h  ../include/maxorb.h \
+  ../include/priunit.h  ../include/r12int.h \
+  ../include/single.h
+cc_rdaod.o : cc_rdaod.F \
+  ../include/cbieri.h  ../include/ccisao.h \
+  ../include/ccorb.h  ../include/ccsdsym.h \
+  ../include/chrnos.h  ../include/dummy.h \
+  ../include/eribuf.h  ../include/ibtfun.h \
+  ../include/ibtpar.h  ../include/implicit.h \
+  ../include/infind.h  ../include/inftap.h \
+  ../include/iratdef.h  ../include/maxash.h \
+  ../include/maxorb.h  ../include/mxcent.h \
+  ../include/nuclei.h  ../include/priunit.h \
+  ../include/single.h
+cc_rdrsp.o : cc_rdrsp.F \
+  ../include/implicit.h  ../include/cccl2rsp.h \
+  ../include/ccco2rsp.h  ../include/cccr2rsp.h \
+  ../include/cccx2rsp.h  ../include/ccel1rsp.h \
+  ../include/ccel2rsp.h  ../include/ccer1rsp.h \
+  ../include/ccer2rsp.h  ../include/ccexci.h \
+  ../include/ccfro.h  ../include/ccisao.h \
+  ../include/ccl1rsp.h  ../include/ccl2rsp.h \
+  ../include/ccl3rsp.h  ../include/ccl4rsp.h \
+  ../include/cclc1rsp.h  ../include/cclrmrsp.h \
+  ../include/ccn2rsp.h  ../include/cco1rsp.h \
+  ../include/cco2rsp.h  ../include/cco3rsp.h \
+  ../include/cco4rsp.h  ../include/ccorb.h \
+  ../include/ccpl1rsp.h  ../include/ccr1rsp.h \
+  ../include/ccr2rsp.h  ../include/ccr3rsp.h \
+  ../include/ccr4rsp.h  ../include/ccrc1rsp.h \
+  ../include/ccsdinp.h  ../include/ccsdsym.h \
+  ../include/ccx1rsp.h  ../include/ccx2rsp.h \
+  ../include/ccx3rsp.h  ../include/ccx4rsp.h \
+  ../include/dummy.h  ../include/implicit.h \
+  ../include/inftap.h  ../include/maxorb.h \
+  ../include/priunit.h  ../include/single.h
+cc_rhtr.o : cc_rhtr.F \
+  ../include/aovec.h  ../include/blocks.h \
+  ../include/cbieri.h  ../include/ccfield.h \
+  ../include/ccisao.h  ../include/cclr.h \
+  ../include/ccnoddy.h  ../include/ccorb.h \
+  ../include/ccsdinp.h  ../include/ccsdio.h \
+  ../include/ccsdsym.h  ../include/ccsections.h \
+  ../include/ccslvinf.h  ../include/distcl.h \
+  ../include/dummy.h  ../include/eribuf.h \
+  ../include/implicit.h  ../include/iratdef.h \
+  ../include/maxash.h  ../include/maxorb.h \
+  ../include/mxcent.h  ../include/priunit.h \
+  ../include/single.h
+cc_rhtr3.o : cc_rhtr3.F \
+  ../include/aovec.h  ../include/blocks.h \
+  ../include/cbieri.h  ../include/ccfield.h \
+  ../include/ccisao.h  ../include/cclr.h \
+  ../include/ccorb.h  ../include/ccsdinp.h \
+  ../include/ccsdio.h  ../include/ccsdsym.h \
+  ../include/distcl.h  ../include/dummy.h \
+  ../include/eribuf.h  ../include/iratdef.h \
+  ../include/maxorb.h  ../include/mxcent.h \
+  ../include/priunit.h  ../include/second.h \
+  ../include/single.h
+cc_rhtr_noddy.o : cc_rhtr_noddy.F \
+  ../include/ccfield.h  ../include/ccorb.h \
+  ../include/ccsdinp.h  ../include/ccsdsym.h \
+  ../include/dummy.h  ../include/maxorb.h \
+  ../include/priunit.h
+cc_setdorps.o : cc_setdorps.F \
+  ../include/implicit.h  ../include/abainf.h \
+  ../include/cbinuc.h  ../include/cch2d.h \
+  ../include/ccorb.h  ../include/chrnos.h \
+  ../include/dorps.h  ../include/exeinf.h \
+  ../include/maxaqn.h  ../include/maxorb.h \
+  ../include/mxcent.h  ../include/nuclei.h \
+  ../include/priunit.h  ../include/single.h \
+  ../include/symmet.h
+cc_setfa.o : cc_setfa.F \
+  ../include/priunit.h  ../include/single.h
+cc_setfb12.o : cc_setfb12.F \
+  ../include/priunit.h  ../include/single.h
+cc_setxe.o : cc_setxe.F \
+  ../include/cclists.h  ../include/priunit.h \
+  ../include/single.h
+cc_slv.o : cc_slv.F \
+  ../include/ccfdgeo.h  ../include/ccfield.h \
+  ../include/ccinftap.h  ../include/ccorb.h \
+  ../include/ccsdinp.h  ../include/ccsdio.h \
+  ../include/ccsdsym.h  ../include/ccslvinf.h \
+  ../include/dummy.h  ../include/exeinf.h \
+  ../include/implicit.h  ../include/iratdef.h \
+  ../include/maxorb.h  ../include/mxcent.h \
+  ../include/priunit.h  ../include/single.h \
+  ../include/thrzer.h
+cc_smcal.o : cc_smcal.F \
+  ../include/implicit.h  ../include/ccexci.h \
+  ../include/cclr.h  ../include/ccorb.h \
+  ../include/ccroper.h  ../include/ccrspprp.h \
+  ../include/ccsdinp.h  ../include/ccsdsym.h \
+  ../include/ccsm.h  ../include/ccsminf.h \
+  ../include/implicit.h  ../include/priunit.h \
+  ../include/single.h
+cc_soldrv.o : cc_soldrv.F \
+  ../include/ccfro.h  ../include/cclr.h \
+  ../include/ccorb.h  ../include/ccsdinp.h \
+  ../include/ccsdio.h  ../include/ccsdsym.h \
+  ../include/dummy.h  ../include/implicit.h \
+  ../include/iratdef.h  ../include/leinf.h \
+  ../include/maxorb.h  ../include/priunit.h \
+  ../include/single.h
+cc_solrsp.o : cc_solrsp.F \
+  ../include/cccl2rsp.h  ../include/ccco2rsp.h \
+  ../include/cccr2rsp.h  ../include/cccx2rsp.h \
+  ../include/ccel1rsp.h  ../include/ccel2rsp.h \
+  ../include/ccer1rsp.h  ../include/ccer2rsp.h \
+  ../include/ccl1rsp.h  ../include/ccl2rsp.h \
+  ../include/ccl3rsp.h  ../include/ccl4rsp.h \
+  ../include/cclc1rsp.h  ../include/cclr.h \
+  ../include/cclrmrsp.h  ../include/ccn2rsp.h \
+  ../include/cco1rsp.h  ../include/cco2rsp.h \
+  ../include/cco3rsp.h  ../include/cco4rsp.h \
+  ../include/ccorb.h  ../include/ccpl1rsp.h \
+  ../include/ccr1rsp.h  ../include/ccr2rsp.h \
+  ../include/ccr3rsp.h  ../include/ccr4rsp.h \
+  ../include/ccrc1rsp.h  ../include/ccsdinp.h \
+  ../include/ccsdio.h  ../include/ccsdsym.h \
+  ../include/ccsections.h  ../include/ccslvinf.h \
+  ../include/ccx1rsp.h  ../include/ccx2rsp.h \
+  ../include/ccx3rsp.h  ../include/ccx4rsp.h \
+  ../include/dummy.h  ../include/implicit.h \
+  ../include/iratdef.h  ../include/leinf.h \
+  ../include/maxorb.h  ../include/priunit.h \
+  ../include/single.h
+cc_sop.o : cc_sop.F \
+  ../include/implicit.h  ../include/cclists.h \
+  ../include/cclrinf.h  ../include/ccorb.h \
+  ../include/ccr1rsp.h  ../include/ccrc1rsp.h \
+  ../include/ccroper.h  ../include/ccsdinp.h \
+  ../include/ccsdsym.h  ../include/priunit.h \
+  ../include/single.h
+cc_sort4o.o : cc_sort4o.F \
+  ../include/implicit.h  ../include/ccorb.h \
+  ../include/ccsdsym.h  ../include/maxorb.h \
+  ../include/single.h
+cc_sortz2.o : cc_sortz2.F \
+  ../include/implicit.h  ../include/ccorb.h \
+  ../include/ccsdsym.h  ../include/maxorb.h \
+  ../include/single.h
+cc_tmcal.o : cc_tmcal.F \
+  ../include/implicit.h  ../include/ccexci.h \
+  ../include/cclr.h  ../include/ccorb.h \
+  ../include/ccroper.h  ../include/ccrspprp.h \
+  ../include/ccsdinp.h  ../include/ccsdsym.h \
+  ../include/cctm.h  ../include/cctminf.h \
+  ../include/implicit.h  ../include/priunit.h \
+  ../include/single.h
+cc_trdrv.o : cc_trdrv.F \
+  ../include/aovec.h  ../include/ccfield.h \
+  ../include/ccisao.h  ../include/cclr.h \
+  ../include/ccorb.h  ../include/ccsdinp.h \
+  ../include/ccsdio.h  ../include/ccsdsym.h \
+  ../include/implicit.h  ../include/leinf.h \
+  ../include/maxash.h  ../include/maxorb.h \
+  ../include/priunit.h  ../include/single.h
+cc_util.o : cc_util.F \
+  ../include/implicit.h  ../include/ccisao.h \
+  ../include/cclr.h  ../include/ccorb.h \
+  ../include/ccsdinp.h  ../include/ccsdio.h \
+  ../include/ccsdsym.h  ../include/dummy.h \
+  ../include/implicit.h  ../include/inftap.h \
+  ../include/iratdef.h  ../include/maxorb.h \
+  ../include/priunit.h  ../include/single.h \
+  ../include/symsq.h
+cc_wrrsp.o : cc_wrrsp.F \
+  ../include/cccl2rsp.h  ../include/ccco2rsp.h \
+  ../include/cccr2rsp.h  ../include/cccx2rsp.h \
+  ../include/ccel1rsp.h  ../include/ccel2rsp.h \
+  ../include/ccer1rsp.h  ../include/ccer2rsp.h \
+  ../include/ccexci.h  ../include/ccfro.h \
+  ../include/ccl1rsp.h  ../include/ccl2rsp.h \
+  ../include/ccl3rsp.h  ../include/ccl4rsp.h \
+  ../include/cclc1rsp.h  ../include/cclrmrsp.h \
+  ../include/ccn2rsp.h  ../include/cco1rsp.h \
+  ../include/cco2rsp.h  ../include/cco3rsp.h \
+  ../include/cco4rsp.h  ../include/ccorb.h \
+  ../include/ccpl1rsp.h  ../include/ccr1rsp.h \
+  ../include/ccr2rsp.h  ../include/ccr3rsp.h \
+  ../include/ccr4rsp.h  ../include/ccrc1rsp.h \
+  ../include/ccsdsym.h  ../include/ccx1rsp.h \
+  ../include/ccx2rsp.h  ../include/ccx3rsp.h \
+  ../include/ccx4rsp.h  ../include/dummy.h \
+  ../include/implicit.h  ../include/priunit.h \
+  ../include/single.h
+cc_xetst.o : cc_xetst.F \
+  ../include/implicit.h  ../include/aovec.h \
+  ../include/ccfield.h  ../include/ccfro.h \
+  ../include/ccinftap.h  ../include/cclists.h \
+  ../include/cclr.h  ../include/cco1rsp.h \
+  ../include/ccorb.h  ../include/ccr1rsp.h \
+  ../include/ccroper.h  ../include/ccsdinp.h \
+  ../include/ccsdio.h  ../include/ccsdsym.h \
+  ../include/ccx1rsp.h  ../include/dummy.h \
+  ../include/implicit.h  ../include/inftap.h \
+  ../include/iratdef.h  ../include/leinf.h \
+  ../include/maxorb.h  ../include/priunit.h \
+  ../include/single.h
+cc_xieta.o : cc_xieta.F \
+  ../include/implicit.h  ../include/aovec.h \
+  ../include/blocks.h  ../include/ccfield.h \
+  ../include/ccfro.h  ../include/ccisao.h \
+  ../include/cclists.h  ../include/ccnoddy.h \
+  ../include/cco1rsp.h  ../include/ccorb.h \
+  ../include/ccr1rsp.h  ../include/ccroper.h \
+  ../include/ccsdinp.h  ../include/ccsdsym.h \
+  ../include/ccx1rsp.h  ../include/chrxyz.h \
+  ../include/distcl.h  ../include/dummy.h \
   ../include/eribuf.h  ../include/implicit.h \
+  ../include/inftap.h  ../include/iratdef.h \
+  ../include/maxaqn.h  ../include/maxorb.h \
+  ../include/mxcent.h  ../include/nuclei.h \
+  ../include/priunit.h  ../include/single.h \
+  ../include/symmet.h
+cc_zkjam.o : cc_zkjam.F \
+  ../include/implicit.h  ../include/ccorb.h \
+  ../include/ccsdsym.h  ../include/maxorb.h \
+  ../include/single.h
+cccr_aa.o : cccr_aa.F \
+  ../include/implicit.h  ../include/ccorb.h \
+  ../include/ccsdinp.h  ../include/ccsdsym.h \
+  ../include/priunit.h  ../include/single.h
+cccr_setup.o : cccr_setup.F \
+  ../include/implicit.h  ../include/cccperm.h \
+  ../include/cccrinf.h  ../include/ccorb.h \
+  ../include/ccroper.h  ../include/priunit.h \
+  ../include/single.h
+cccr_util.o : cccr_util.F \
+  ../include/implicit.h  ../include/cciccset.h \
+  ../include/ccorb.h  ../include/ccsdsym.h \
+  ../include/priunit.h  ../include/single.h
+ccder1.o : ccder1.F \
+  ../include/implicit.h  ../include/aovec.h \
+  ../include/cch2d.h  ../include/ccorb.h \
+  ../include/ccsdinp.h  ../include/ccsdsym.h \
+  ../include/dummy.h  ../include/ibtfun.h \
+  ../include/ibtpar.h  ../include/implicit.h \
+  ../include/inftap.h  ../include/iratdef.h \
+  ../include/maxaqn.h  ../include/maxorb.h \
+  ../include/mxcent.h  ../include/nodint.h \
+  ../include/nuclei.h  ../include/priunit.h \
+  ../include/single.h
+ccdiis_solv.o : ccdiis_solv.F \
+  ../include/ccexci.h  ../include/ccfro.h \
+  ../include/cclr.h  ../include/ccorb.h \
+  ../include/ccrc1rsp.h  ../include/ccsdinp.h \
+  ../include/ccsdsym.h  ../include/implicit.h \
+  ../include/inftap.h  ../include/leinf.h \
+  ../include/priunit.h  ../include/single.h
+ccefffock.o : ccefffock.F \
+  ../include/implicit.h  ../include/aovec.h \
+  ../include/blocks.h  ../include/cbieri.h \
+  ../include/cc1dxfck.h  ../include/ccexpfck.h \
+  ../include/ccfield.h  ../include/ccfop.h \
+  ../include/ccfro.h  ../include/cclr.h \
+  ../include/ccorb.h  ../include/ccr1rsp.h \
+  ../include/ccroper.h  ../include/ccropr2.h \
+  ../include/ccsdinp.h  ../include/ccsdio.h \
+  ../include/ccsdsym.h  ../include/chrxyz.h \
+  ../include/distcl.h  ../include/drw2el.h \
+  ../include/dummy.h  ../include/eribuf.h \
+  ../include/infind.h  ../include/inftap.h \
+  ../include/iratdef.h  ../include/maxaqn.h \
+  ../include/maxash.h  ../include/maxorb.h \
+  ../include/mxcent.h  ../include/nuclei.h \
+  ../include/priunit.h  ../include/single.h \
+  ../include/symmet.h
+cceq_solv.o : cceq_solv.F \
+  ../include/ccexci.h  ../include/ccfro.h \
+  ../include/ccinf.h  ../include/cclr.h \
+  ../include/ccorb.h  ../include/ccrc1rsp.h \
+  ../include/ccsdinp.h  ../include/ccsdsym.h \
+  ../include/ibndxdef.h  ../include/implicit.h \
+  ../include/leinf.h  ../include/priunit.h \
+  ../include/single.h
+ccetacor.o : ccetacor.F \
+  ../include/aovec.h  ../include/blocks.h \
+  ../include/cbieri.h  ../include/ccfield.h \
+  ../include/ccfro.h  ../include/ccinftap.h \
+  ../include/ccorb.h  ../include/ccsdinp.h \
+  ../include/ccsdio.h  ../include/ccsdsym.h \
+  ../include/distcl.h  ../include/dummy.h \
+  ../include/eribuf.h  ../include/implicit.h \
+  ../include/infind.h  ../include/inftap.h \
+  ../include/iratdef.h  ../include/maxash.h \
+  ../include/maxorb.h  ../include/mxcent.h \
+  ../include/priunit.h  ../include/single.h
+ccexlr.o : ccexlr.F \
+  ../include/implicit.h  ../include/ccel1rsp.h \
+  ../include/ccer1rsp.h  ../include/ccexci.h \
+  ../include/ccexlrinf.h  ../include/ccn2rsp.h \
+  ../include/cco2rsp.h  ../include/ccorb.h \
+  ../include/ccr1rsp.h  ../include/ccroper.h \
+  ../include/ccsdinp.h  ../include/ccsdsym.h \
+  ../include/priunit.h  ../include/single.h
+ccexnorm.o : ccexnorm.F \
+  ../include/ccexci.h  ../include/ccexcinf.h \
+  ../include/ccfield.h  ../include/ccnoddy.h \
+  ../include/ccorb.h  ../include/ccsdinp.h \
+  ../include/ccsdsym.h  ../include/codata.h \
+  ../include/dummy.h  ../include/inftap.h \
+  ../include/maxorb.h  ../include/priunit.h \
+  ../include/single.h  ../include/cc3t3d.h \
+  ../include/ccexci.h  ../include/ccinftap.h \
+  ../include/ccorb.h  ../include/ccsdsym.h \
+  ../include/dummy.h  ../include/iratdef.h \
+  ../include/priunit.h
+ccexpfck.o : ccexpfck.F \
+  ../include/implicit.h  ../include/cc1dxfck.h \
+  ../include/ccexpfck.h  ../include/ccfield.h \
+  ../include/ccfro.h  ../include/ccorb.h \
+  ../include/ccr1rsp.h  ../include/ccroper.h \
+  ../include/ccropr2.h  ../include/ccsdsym.h \
+  ../include/ccsections.h  ../include/chrnos.h \
+  ../include/chrxyz.h  ../include/maxaqn.h \
+  ../include/maxorb.h  ../include/mxcent.h \
+  ../include/nuclei.h  ../include/priunit.h \
+  ../include/single.h  ../include/symmet.h
+ccfbint1.o : ccfbint1.F \
+  ../include/ccorb.h  ../include/ccsdinp.h \
+  ../include/ccsdsym.h  ../include/maxorb.h \
+  ../include/priunit.h  ../include/single.h
+ccfbint2.o : ccfbint2.F \
+  ../include/ccfield.h  ../include/ccorb.h \
+  ../include/ccsdinp.h  ../include/ccsdsym.h \
+  ../include/maxorb.h  ../include/priunit.h \
+  ../include/single.h
+ccfbtaao1.o : ccfbtaao1.F \
+  ../include/implicit.h  ../include/ccisao.h \
+  ../include/ccorb.h  ../include/ccsdinp.h \
+  ../include/ccsdsym.h  ../include/maxorb.h \
+  ../include/priunit.h  ../include/single.h
+ccfbtaao2.o : ccfbtaao2.F \
+  ../include/implicit.h  ../include/ccisao.h \
+  ../include/ccorb.h  ../include/ccsdinp.h \
+  ../include/ccsdsym.h  ../include/maxorb.h \
+  ../include/priunit.h  ../include/single.h
+ccfbtaf.o : ccfbtaf.F \
+  ../include/implicit.h  ../include/ccisao.h \
+  ../include/ccorb.h  ../include/ccsdinp.h \
+  ../include/ccsdsym.h  ../include/maxorb.h \
+  ../include/priunit.h  ../include/single.h
+ccfndop.o : ccfndop.F \
+  ../include/implicit.h  ../include/ccorb.h \
+  ../include/ccroper.h  ../include/ccropr2.h \
+  ../include/ccsdsym.h  ../include/priunit.h \
+  ../include/single.h
+cckappasq.o : cckappasq.F \
+  ../include/ccfro.h  ../include/ccorb.h \
+  ../include/ccsdsym.h  ../include/priunit.h \
+  ../include/single.h
+cclr_fa.o : cclr_fa.F \
+  ../include/implicit.h  ../include/cbieri.h \
+  ../include/ccisao.h  ../include/ccorb.h \
+  ../include/ccsdinp.h  ../include/ccsdsym.h \
+  ../include/distcl.h  ../include/eribuf.h \
   ../include/iratdef.h  ../include/maxorb.h \
   ../include/mxcent.h  ../include/priunit.h \
   ../include/single.h
 cclr_setup.o : cclr_setup.F \
-  ../include/ccexpfck.h  ../include/cclists.h \
-  ../include/cclrinf.h  ../include/ccorb.h \
-  ../include/ccr1rsp.h  ../include/ccroper.h \
-  ../include/ccsdinp.h  ../include/implicit.h \
+  ../include/implicit.h  ../include/ccexpfck.h \
+  ../include/cclists.h  ../include/cclrinf.h \
+  ../include/ccorb.h  ../include/ccr1rsp.h \
+  ../include/ccroper.h  ../include/ccsdinp.h \
   ../include/priunit.h  ../include/single.h
 cclr_util.o : cclr_util.F \
   ../include/aovec.h  ../include/cclr.h \
@@ -907,59 +1219,10 @@ cclt_yps1.o : cclt_yps1.F \
   ../include/cclr.h  ../include/ccorb.h \
   ../include/ccsdsym.h  ../include/implicit.h \
   ../include/single.h
-cc_maomao.o : cc_maomao.F \
-  ../include/ccorb.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/priunit.h \
-  ../include/single.h
-cc_mcdny.o : cc_mcdny.F \
-  ../include/ccel1rsp.h  ../include/ccer1rsp.h \
-  ../include/ccexci.h  ../include/cclists.h \
-  ../include/cclrmrsp.h  ../include/ccmcdinf.h \
-  ../include/cco1rsp.h  ../include/cco2rsp.h \
-  ../include/ccorb.h  ../include/ccpl1rsp.h \
-  ../include/ccr1rsp.h  ../include/ccroper.h \
-  ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/ccx1rsp.h  ../include/dummy.h \
-  ../include/implicit.h  ../include/priunit.h \
-  ../include/single.h
 ccmcd_setup.o : ccmcd_setup.F \
-  ../include/ccexci.h  ../include/cclists.h \
-  ../include/ccmcdinf.h  ../include/ccorb.h \
-  ../include/ccroper.h  ../include/implicit.h \
-  ../include/priunit.h  ../include/single.h
-cc_mkrv.o : cc_mkrv.F \
-  ../include/ccorb.h  ../include/ccsdinp.h \
-  ../include/ccsdsym.h  ../include/implicit.h \
-  ../include/priunit.h  ../include/r12int.h \
-  ../include/single.h
-cc_mmommo.o : cc_mmommo.F \
-  ../include/ccorb.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/priunit.h \
-  ../include/single.h
-cc_mofcon2.o : cc_mofcon2.F \
-  ../include/ccorb.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/maxorb.h \
-  ../include/priunit.h  ../include/single.h \
-  ../include/symsq.h
-cc_nuccon.o : cc_nuccon.F \
-  ../include/ccorb.h  ../include/ccsdsym.h \
-  ../include/dipole.h  ../include/implicit.h \
-  ../include/maxaqn.h  ../include/maxorb.h \
-  ../include/mxcent.h  ../include/nuclei.h \
-  ../include/priunit.h  ../include/single.h \
-  ../include/symmet.h
-cc_opa.o : cc_opa.F \
-  ../include/ccexci.h  ../include/cclists.h \
-  ../include/ccopainf.h  ../include/ccroper.h \
-  ../include/ccsdinp.h  ../include/codata.h \
-  ../include/dummy.h  ../include/pgroup.h \
-  ../include/priunit.h  ../include/single.h
-cc_pckutil.o : cc_pckutil.F \
-  ../include/priunit.h  ../include/single.h
-cc_pqi.o : cc_pqi.F \
-  ../include/ccorb.h  ../include/ccsdinp.h \
-  ../include/ccsdsym.h  ../include/implicit.h \
-  ../include/iratdef.h  ../include/maxorb.h \
+  ../include/implicit.h  ../include/ccexci.h \
+  ../include/cclists.h  ../include/ccmcdinf.h \
+  ../include/ccorb.h  ../include/ccroper.h \
   ../include/priunit.h  ../include/single.h
 ccpt_btrden.o : ccpt_btrden.F \
   ../include/ccinftap.h  ../include/ccorb.h \
@@ -1014,79 +1277,18 @@ ccpt_symmback.o : ccpt_symmback.F \
   ../include/dummy.h  ../include/inftap.h \
   ../include/iratdef.h  ../include/priunit.h \
   ../include/single.h
-cc_qaos.o : cc_qaos.F \
-  ../include/ccorb.h  ../include/ccsdsym.h \
-  ../include/dummy.h  ../include/implicit.h \
-  ../include/priunit.h  ../include/single.h
-cc_qmat.o : cc_qmat.F \
-  ../include/ccfro.h  ../include/ccorb.h \
-  ../include/ccsdsym.h  ../include/implicit.h \
-  ../include/priunit.h  ../include/single.h
-cc_qr2rs.o : cc_qr2rs.F \
-  ../include/ccexci.h  ../include/ccinftap.h \
-  ../include/cclres.h  ../include/cclr.h \
-  ../include/cclrinf.h  ../include/ccorb.h \
-  ../include/ccqr2r.h  ../include/ccroper.h \
-  ../include/ccsdinp.h  ../include/ccsdio.h \
-  ../include/ccsdsym.h  ../include/dummy.h \
-  ../include/implicit.h  ../include/iratdef.h \
-  ../include/leinf.h  ../include/maxaqn.h \
-  ../include/maxorb.h  ../include/mxcent.h \
-  ../include/priunit.h  ../include/single.h \
-  ../include/symmet.h
 ccqr_fdrv.o : ccqr_fdrv.F \
-  ../include/ccorb.h  ../include/ccroper.h \
-  ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/dummy.h  ../include/implicit.h \
-  ../include/priunit.h  ../include/single.h
-ccqr_setup.o : ccqr_setup.F \
-  ../include/ccl1rsp.h  ../include/cclc1rsp.h \
-  ../include/cclists.h  ../include/ccorb.h \
-  ../include/ccqrinf.h  ../include/ccr1rsp.h \
+  ../include/implicit.h  ../include/ccorb.h \
   ../include/ccroper.h  ../include/ccsdinp.h \
   ../include/ccsdsym.h  ../include/dummy.h \
-  ../include/implicit.h  ../include/priunit.h \
-  ../include/single.h
-cc_r12.o : cc_r12.F \
-  ../include/ccfdgeo.h  ../include/ccfro.h \
-  ../include/cclr.h  ../include/ccorb.h \
-  ../include/ccsdinp.h  ../include/ccsdio.h \
-  ../include/ccsdsym.h  ../include/implicit.h \
-  ../include/iratdef.h  ../include/maxorb.h \
-  ../include/priunit.h  ../include/r12int.h \
-  ../include/single.h
-cc_rdaod.o : cc_rdaod.F \
-  ../include/cbieri.h  ../include/ccisao.h \
-  ../include/ccorb.h  ../include/ccsdsym.h \
-  ../include/chrnos.h  ../include/dummy.h \
-  ../include/eribuf.h  ../include/ibtfun.h \
-  ../include/ibtpar.h  ../include/implicit.h \
-  ../include/infind.h  ../include/inftap.h \
-  ../include/iratdef.h  ../include/maxash.h \
-  ../include/maxorb.h  ../include/mxcent.h \
-  ../include/nuclei.h  ../include/priunit.h \
-  ../include/single.h
-cc_rdrsp.o : cc_rdrsp.F \
-  ../include/cccl2rsp.h  ../include/ccco2rsp.h \
-  ../include/cccr2rsp.h  ../include/cccx2rsp.h \
-  ../include/ccel1rsp.h  ../include/ccel2rsp.h \
-  ../include/ccer1rsp.h  ../include/ccer2rsp.h \
-  ../include/ccexci.h  ../include/ccfro.h \
-  ../include/ccisao.h  ../include/ccl1rsp.h \
-  ../include/ccl2rsp.h  ../include/ccl3rsp.h \
-  ../include/ccl4rsp.h  ../include/cclc1rsp.h \
-  ../include/cclrmrsp.h  ../include/ccn2rsp.h \
-  ../include/cco1rsp.h  ../include/cco2rsp.h \
-  ../include/cco3rsp.h  ../include/cco4rsp.h \
-  ../include/ccorb.h  ../include/ccpl1rsp.h \
-  ../include/ccr1rsp.h  ../include/ccr2rsp.h \
-  ../include/ccr3rsp.h  ../include/ccr4rsp.h \
-  ../include/ccrc1rsp.h  ../include/ccsdinp.h \
-  ../include/ccsdsym.h  ../include/ccx1rsp.h \
-  ../include/ccx2rsp.h  ../include/ccx3rsp.h \
-  ../include/ccx4rsp.h  ../include/dummy.h \
-  ../include/implicit.h  ../include/inftap.h \
-  ../include/maxorb.h  ../include/priunit.h \
+  ../include/priunit.h  ../include/single.h
+ccqr_setup.o : ccqr_setup.F \
+  ../include/implicit.h  ../include/ccl1rsp.h \
+  ../include/cclc1rsp.h  ../include/cclists.h \
+  ../include/ccorb.h  ../include/ccqrinf.h \
+  ../include/ccr1rsp.h  ../include/ccroper.h \
+  ../include/ccsdinp.h  ../include/ccsdsym.h \
+  ../include/dummy.h  ../include/priunit.h \
   ../include/single.h
 ccreo2con.o : ccreo2con.F \
   ../include/cc1dxfck.h  ../include/ccexpfck.h \
@@ -1100,32 +1302,10 @@ ccrhs_ipm1.o : ccrhs_ipm1.F \
   ../include/implicit.h  ../include/maxorb.h \
   ../include/single.h  ../include/symsq.h
 ccrhsvec.o : ccrhsvec.F \
-  ../include/cclists.h  ../include/ccorb.h \
-  ../include/ccroper.h  ../include/ccsdinp.h \
-  ../include/ccsdsym.h  ../include/dummy.h \
-  ../include/implicit.h  ../include/priunit.h \
-  ../include/single.h
-cc_rhtr3.o : cc_rhtr3.F \
-  ../include/aovec.h  ../include/blocks.h \
-  ../include/cbieri.h  ../include/ccfield.h \
-  ../include/ccisao.h  ../include/cclr.h \
-  ../include/ccorb.h  ../include/ccsdinp.h \
-  ../include/ccsdio.h  ../include/ccsdsym.h \
-  ../include/distcl.h  ../include/dummy.h \
-  ../include/eribuf.h  ../include/iratdef.h \
-  ../include/maxorb.h  ../include/mxcent.h \
-  ../include/priunit.h  ../include/single.h
-cc_rhtr.o : cc_rhtr.F \
-  ../include/aovec.h  ../include/blocks.h \
-  ../include/cbieri.h  ../include/ccfield.h \
-  ../include/ccisao.h  ../include/cclr.h \
-  ../include/ccorb.h  ../include/ccsdinp.h \
-  ../include/ccsdio.h  ../include/ccsdsym.h \
-  ../include/ccsections.h  ../include/ccslvinf.h \
-  ../include/distcl.h  ../include/dummy.h \
-  ../include/eribuf.h  ../include/implicit.h \
-  ../include/iratdef.h  ../include/maxash.h \
-  ../include/maxorb.h  ../include/mxcent.h \
+  ../include/implicit.h  ../include/cclists.h \
+  ../include/ccorb.h  ../include/ccroper.h \
+  ../include/ccsdinp.h  ../include/ccsdsym.h \
+  ../include/dummy.h  ../include/implicit.h \
   ../include/priunit.h  ../include/single.h
 ccrlxxim.o : ccrlxxim.F \
   ../include/cc1dxfck.h  ../include/ccexpfck.h \
@@ -1133,39 +1313,40 @@ ccrlxxim.o : ccrlxxim.F \
   ../include/ccroper.h  ../include/ccsdsym.h \
   ../include/priunit.h  ../include/single.h
 ccrspsym.o : ccrspsym.F \
-  ../include/cc1dxfck.h  ../include/cc4rinf.h \
-  ../include/cc5perm.h  ../include/cc5rinf.h \
-  ../include/cccl2rsp.h  ../include/ccco2rsp.h \
-  ../include/cccperm.h  ../include/cccr2rsp.h \
-  ../include/cccrinf.h  ../include/cccx2rsp.h \
-  ../include/ccel1rsp.h  ../include/ccel2rsp.h \
-  ../include/ccer1rsp.h  ../include/ccer2rsp.h \
-  ../include/ccexci.h  ../include/ccexcinf.h \
-  ../include/ccexgr.h  ../include/ccexlrinf.h \
-  ../include/ccexpfck.h  ../include/ccl1rsp.h \
-  ../include/ccl2rsp.h  ../include/ccl3rsp.h \
-  ../include/ccl4rsp.h  ../include/cclc1rsp.h \
-  ../include/cclres.h  ../include/cclr.h \
-  ../include/cclrinf.h  ../include/cclrmrsp.h \
-  ../include/ccmcdinf.h  ../include/ccn2rsp.h \
-  ../include/cco1rsp.h  ../include/cco2rsp.h \
-  ../include/cco3rsp.h  ../include/cco4rsp.h \
-  ../include/ccopainf.h  ../include/ccorb.h \
-  ../include/ccpl1rsp.h  ../include/ccqr2r.h \
-  ../include/ccqrinf.h  ../include/ccr1rsp.h \
-  ../include/ccr2rsp.h  ../include/ccr3rsp.h \
-  ../include/ccr4rsp.h  ../include/ccrc1rsp.h \
-  ../include/ccroper.h  ../include/ccropr2.h \
-  ../include/ccrspprp.h  ../include/ccsdinp.h \
-  ../include/ccsdsym.h  ../include/ccsections.h \
-  ../include/ccsm.h  ../include/ccsminf.h \
-  ../include/cctm.h  ../include/cctminf.h \
-  ../include/ccx1rsp.h  ../include/ccx2rsp.h \
-  ../include/ccx3rsp.h  ../include/ccx4rsp.h \
-  ../include/implicit.h  ../include/maxaqn.h \
-  ../include/maxorb.h  ../include/mxcent.h \
-  ../include/nuclei.h  ../include/priunit.h \
-  ../include/single.h  ../include/symmet.h
+  ../include/implicit.h  ../include/cc1dxfck.h \
+  ../include/cc4rinf.h  ../include/cc5perm.h \
+  ../include/cc5rinf.h  ../include/cccl2rsp.h \
+  ../include/ccco2rsp.h  ../include/cccperm.h \
+  ../include/cccr2rsp.h  ../include/cccrinf.h \
+  ../include/cccx2rsp.h  ../include/ccel1rsp.h \
+  ../include/ccel2rsp.h  ../include/ccer1rsp.h \
+  ../include/ccer2rsp.h  ../include/ccexci.h \
+  ../include/ccexcinf.h  ../include/ccexgr.h \
+  ../include/ccexlrinf.h  ../include/ccexpfck.h \
+  ../include/ccl1rsp.h  ../include/ccl2rsp.h \
+  ../include/ccl3rsp.h  ../include/ccl4rsp.h \
+  ../include/cclc1rsp.h  ../include/cclr.h \
+  ../include/cclres.h  ../include/cclrinf.h \
+  ../include/cclrmrsp.h  ../include/ccmcdinf.h \
+  ../include/ccn2rsp.h  ../include/cco1rsp.h \
+  ../include/cco2rsp.h  ../include/cco3rsp.h \
+  ../include/cco4rsp.h  ../include/ccopainf.h \
+  ../include/ccorb.h  ../include/ccpl1rsp.h \
+  ../include/ccqr2r.h  ../include/ccqrinf.h \
+  ../include/ccr1rsp.h  ../include/ccr2rsp.h \
+  ../include/ccr3rsp.h  ../include/ccr4rsp.h \
+  ../include/ccrc1rsp.h  ../include/ccroper.h \
+  ../include/ccropr2.h  ../include/ccrspprp.h \
+  ../include/ccsdinp.h  ../include/ccsdsym.h \
+  ../include/ccsections.h  ../include/ccsm.h \
+  ../include/ccsminf.h  ../include/cctm.h \
+  ../include/cctminf.h  ../include/ccx1rsp.h \
+  ../include/ccx2rsp.h  ../include/ccx3rsp.h \
+  ../include/ccx4rsp.h  ../include/implicit.h \
+  ../include/maxaqn.h  ../include/maxorb.h \
+  ../include/mxcent.h  ../include/nuclei.h \
+  ../include/priunit.h  ../include/single.h \
+  ../include/symmet.h
 ccsd_diis.o : ccsd_diis.F \
   ../include/ccsdinp.h  ../include/dummy.h \
   ../include/implicit.h  ../include/priunit.h \
@@ -1187,30 +1368,49 @@ ccsd_energy.o : ccsd_energy.F \
   ../include/priunit.h  ../include/r12int.h \
   ../include/single.h  ../include/symsq.h
 ccsd_input.o : ccsd_input.F \
-  ../include/cbieri.h  ../include/cc4rinf.h \
-  ../include/cc5perm.h  ../include/cc5rinf.h \
-  ../include/cccrinf.h  ../include/ccexci.h \
-  ../include/ccexgr.h  ../include/ccexlrinf.h \
-  ../include/ccfdgeo.h  ../include/ccfield.h \
-  ../include/ccfop.h  ../include/ccgr.h \
-  ../include/cclres.h  ../include/cclr.h \
-  ../include/cclrinf.h  ../include/ccmcdinf.h \
-  ../include/ccnoddy.h  ../include/ccopainf.h \
+  ../include/implicit.h  ../include/cbieri.h \
+  ../include/cc4rinf.h  ../include/cc5perm.h \
+  ../include/cc5rinf.h  ../include/cccrinf.h \
+  ../include/ccexci.h  ../include/ccexgr.h \
+  ../include/ccexlrinf.h  ../include/ccfdgeo.h \
+  ../include/ccfield.h  ../include/ccfop.h \
+  ../include/ccgr.h  ../include/cclr.h \
+  ../include/cclres.h  ../include/cclrinf.h \
+  ../include/ccmcdinf.h  ../include/ccnoddy.h \
+  ../include/ccopainf.h  ../include/ccorb.h \
+  ../include/ccpack.h  ../include/ccqr2r.h \
+  ../include/ccqrinf.h  ../include/ccroper.h \
+  ../include/ccrspprp.h  ../include/ccsdinp.h \
+  ../include/ccsdsym.h  ../include/ccsections.h \
+  ../include/ccslvinf.h  ../include/ccsm.h \
+  ../include/ccsminf.h  ../include/cctm.h \
+  ../include/cctminf.h  ../include/dummy.h \
+  ../include/eribuf.h  ../include/gnrinf.h \
+  ../include/ibtfun.h  ../include/implicit.h \
+  ../include/infinp.h  ../include/inftap.h \
+  ../include/leinf.h  ../include/maxaqn.h \
+  ../include/maxorb.h  ../include/mxcent.h \
+  ../include/nuclei.h  ../include/priunit.h \
+  ../include/r12int.h  ../include/single.h \
+  ../include/symmet.h
+ccsd_rhs.o : ccsd_rhs.F \
+  ../include/aovec.h  ../include/blocks.h \
+  ../include/cbieri.h  ../include/ccfield.h \
+  ../include/ccinftap.h  ../include/ccisao.h \
+  ../include/cclr.h  ../include/ccnoddy.h \
   ../include/ccorb.h  ../include/ccpack.h \
-  ../include/ccqr2r.h  ../include/ccqrinf.h \
-  ../include/ccroper.h  ../include/ccrspprp.h \
-  ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/ccsections.h  ../include/ccslvinf.h \
-  ../include/ccsm.h  ../include/ccsminf.h \
-  ../include/cctm.h  ../include/cctminf.h \
+  ../include/ccsdinp.h  ../include/ccsdio.h \
+  ../include/ccsdsym.h  ../include/ccsections.h \
+  ../include/chrnos.h  ../include/distcl.h \
   ../include/dummy.h  ../include/eribuf.h \
-  ../include/gnrinf.h  ../include/ibtfun.h \
-  ../include/implicit.h  ../include/infinp.h \
-  ../include/inftap.h  ../include/leinf.h \
-  ../include/maxaqn.h  ../include/maxorb.h \
-  ../include/mxcent.h  ../include/nuclei.h \
-  ../include/priunit.h  ../include/r12int.h \
-  ../include/single.h  ../include/symmet.h
+  ../include/ibtfun.h  ../include/ibtpar.h \
+  ../include/implicit.h  ../include/infind.h \
+  ../include/inftap.h  ../include/iratdef.h \
+  ../include/leinf.h  ../include/maxash.h \
+  ../include/maxorb.h  ../include/mxcent.h \
+  ../include/nuclei.h  ../include/priunit.h \
+  ../include/r12int.h  ../include/single.h \
+  ../include/symsq.h
 ccsd_rhs3.o : ccsd_rhs3.F \
   ../include/aovec.h  ../include/blocks.h \
   ../include/cbieri.h  ../include/ccfield.h \
@@ -1221,23 +1421,6 @@ ccsd_rhs3.o : ccsd_rhs3.F \
   ../include/iratdef.h  ../include/maxorb.h \
   ../include/mxcent.h  ../include/priunit.h \
   ../include/single.h
-ccsd_rhs.o : ccsd_rhs.F \
-  ../include/aovec.h  ../include/blocks.h \
-  ../include/cbieri.h  ../include/ccfield.h \
-  ../include/ccinftap.h  ../include/ccisao.h \
-  ../include/cclr.h  ../include/ccorb.h \
-  ../include/ccpack.h  ../include/ccsdinp.h \
-  ../include/ccsdio.h  ../include/ccsdsym.h \
-  ../include/ccsections.h  ../include/chrnos.h \
-  ../include/distcl.h  ../include/dummy.h \
-  ../include/eribuf.h  ../include/ibtfun.h \
-  ../include/ibtpar.h  ../include/implicit.h \
-  ../include/infind.h  ../include/inftap.h \
-  ../include/iratdef.h  ../include/leinf.h \
-  ../include/maxash.h  ../include/maxorb.h \
-  ../include/mxcent.h  ../include/nuclei.h \
-  ../include/priunit.h  ../include/r12int.h \
-  ../include/single.h  ../include/symsq.h
 ccsd_rou3.o : ccsd_rou3.F \
   ../include/cclr.h  ../include/ccorb.h \
   ../include/ccsdinp.h  ../include/ccsdio.h \
@@ -1253,70 +1436,6 @@ ccsd_sortao.o : ccsd_sortao.F \
   ../include/inftap.h  ../include/iratdef.h \
   ../include/maxorb.h  ../include/priunit.h \
   ../include/single.h
-ccsdt_aden_noddy.o : ccsdt_aden_noddy.F \
-  ../include/cc3t3d.h  ../include/ccinftap.h \
-  ../include/ccl1rsp.h  ../include/ccorb.h \
-  ../include/ccr1rsp.h  ../include/ccsdinp.h \
-  ../include/ccsdsym.h  ../include/dummy.h \
-  ../include/inftap.h  ../include/iratdef.h \
-  ../include/priunit.h  ../include/single.h
-ccsdt_ba_noddy.o : ccsdt_ba_noddy.F \
-  ../include/ccfield.h  ../include/ccorb.h \
-  ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/maxorb.h \
-  ../include/priunit.h  ../include/single.h
-ccsdt_b_noddy.o : ccsdt_b_noddy.F \
-  ../include/ccfield.h  ../include/ccorb.h \
-  ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/dummy.h  ../include/implicit.h \
-  ../include/maxorb.h  ../include/priunit.h \
-  ../include/single.h
-ccsdt_eta_cont.o : ccsdt_eta_cont.F \
-  ../include/ccexci.h  ../include/ccinftap.h \
-  ../include/cclists.h  ../include/ccorb.h \
-  ../include/ccr1rsp.h  ../include/ccroper.h \
-  ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/dummy.h  ../include/inftap.h \
-  ../include/iratdef.h  ../include/priunit.h \
-  ../include/single.h
-ccsdt_eta_noddy.o : ccsdt_eta_noddy.F \
-  ../include/ccfield.h  ../include/ccorb.h \
-  ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/dummy.h  ../include/implicit.h \
-  ../include/maxorb.h  ../include/priunit.h \
-  ../include/single.h
-ccsdt_fbmat.o : ccsdt_fbmat.F \
-  ../include/ccexci.h  ../include/ccinftap.h \
-  ../include/ccorb.h  ../include/ccr1rsp.h \
-  ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/dummy.h  ../include/inftap.h \
-  ../include/iratdef.h  ../include/priunit.h \
-  ../include/single.h
-ccsdt_f_noddy.o : ccsdt_f_noddy.F \
-  ../include/ccexci.h  ../include/ccexgr.h \
-  ../include/ccfield.h  ../include/ccl1rsp.h \
-  ../include/cclrmrsp.h  ../include/ccn2rsp.h \
-  ../include/ccorb.h  ../include/ccr1rsp.h \
-  ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/dummy.h  ../include/implicit.h \
-  ../include/inftap.h  ../include/maxorb.h \
-  ../include/priunit.h  ../include/single.h
-ccsdt_g_noddy.o : ccsdt_g_noddy.F \
-  ../include/ccfield.h  ../include/ccorb.h \
-  ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/maxorb.h \
-  ../include/priunit.h  ../include/single.h
-ccsdt_h_noddy.o : ccsdt_h_noddy.F \
-  ../include/ccfield.h  ../include/ccorb.h \
-  ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/maxorb.h \
-  ../include/priunit.h  ../include/single.h
-ccsdt_ints_noddy.o : ccsdt_ints_noddy.F \
-  ../include/ccfield.h  ../include/ccorb.h \
-  ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/inforb.h \
-  ../include/maxorb.h  ../include/priunit.h \
-  ../include/single.h
 ccsd_triple.o : ccsd_triple.F \
   ../include/aovec.h  ../include/blocks.h \
   ../include/ccfield.h  ../include/ccorb.h \
@@ -1327,99 +1446,67 @@ ccsd_triple.o : ccsd_triple.F \
   ../include/iratdef.h  ../include/maxash.h \
   ../include/maxorb.h  ../include/mxcent.h \
   ../include/priunit.h  ../include/single.h
-ccsdt_xi_noddy.o : ccsdt_xi_noddy.F \
-  ../include/ccexci.h  ../include/ccfield.h \
+ccsdt_aden_noddy.o : ccsdt_aden_noddy.F \
+  ../include/cc3t3d.h  ../include/ccinftap.h \
+  ../include/ccl1rsp.h  ../include/ccorb.h \
+  ../include/ccr1rsp.h  ../include/ccsdinp.h \
+  ../include/ccsdsym.h  ../include/dummy.h \
+  ../include/inftap.h  ../include/iratdef.h \
+  ../include/priunit.h  ../include/single.h
+ccsdt_b_noddy.o : ccsdt_b_noddy.F \
+  ../include/implicit.h  ../include/ccfield.h \
+  ../include/ccorb.h  ../include/ccsdinp.h \
+  ../include/ccsdsym.h  ../include/dummy.h \
+  ../include/maxorb.h  ../include/priunit.h \
+  ../include/single.h
+ccsdt_ba_noddy.o : ccsdt_ba_noddy.F \
+  ../include/implicit.h  ../include/ccfield.h \
+  ../include/ccorb.h  ../include/ccsdinp.h \
+  ../include/ccsdsym.h  ../include/maxorb.h \
+  ../include/priunit.h  ../include/single.h
+ccsdt_eta_cont.o : ccsdt_eta_cont.F \
+  ../include/ccexci.h  ../include/ccinftap.h \
   ../include/cclists.h  ../include/ccorb.h \
   ../include/ccr1rsp.h  ../include/ccroper.h \
   ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/inforb.h \
-  ../include/maxorb.h  ../include/priunit.h \
+  ../include/dummy.h  ../include/inftap.h \
+  ../include/iratdef.h  ../include/priunit.h \
   ../include/single.h
-cc_setdorps.o : cc_setdorps.F \
-  ../include/abainf.h  ../include/cbinuc.h \
-  ../include/cch2d.h  ../include/ccorb.h \
-  ../include/chrnos.h  ../include/dorps.h \
-  ../include/exeinf.h  ../include/implicit.h \
-  ../include/maxaqn.h  ../include/maxorb.h \
-  ../include/mxcent.h  ../include/nuclei.h \
-  ../include/priunit.h  ../include/single.h \
-  ../include/symmet.h
-cc_setfa.o : cc_setfa.F \
-  ../include/priunit.h  ../include/single.h
-cc_setfb12.o : cc_setfb12.F \
-  ../include/priunit.h  ../include/single.h
-cc_setxe.o : cc_setxe.F \
-  ../include/cclists.h  ../include/priunit.h \
-  ../include/single.h
-cc_slv.o : cc_slv.F \
-  ../include/ccfdgeo.h  ../include/ccfield.h \
-  ../include/ccinftap.h  ../include/ccorb.h \
-  ../include/ccsdinp.h  ../include/ccsdio.h \
-  ../include/ccsdsym.h  ../include/ccslvinf.h \
-  ../include/dummy.h  ../include/exeinf.h \
-  ../include/implicit.h  ../include/iratdef.h \
-  ../include/maxorb.h  ../include/mxcent.h \
-  ../include/priunit.h  ../include/single.h \
-  ../include/thrzer.h
-cc_smcal.o : cc_smcal.F \
-  ../include/ccexci.h  ../include/cclr.h \
-  ../include/ccorb.h  ../include/ccroper.h \
-  ../include/ccrspprp.h  ../include/ccsdinp.h \
-  ../include/ccsdsym.h  ../include/ccsm.h \
-  ../include/ccsminf.h  ../include/implicit.h \
-  ../include/priunit.h  ../include/single.h
-cc_soldrv.o : cc_soldrv.F \
-  ../include/ccfro.h  ../include/cclr.h \
+ccsdt_eta_noddy.o : ccsdt_eta_noddy.F \
+  ../include/implicit.h  ../include/ccfield.h \
   ../include/ccorb.h  ../include/ccsdinp.h \
-  ../include/ccsdio.h  ../include/ccsdsym.h \
-  ../include/dummy.h  ../include/implicit.h \
-  ../include/iratdef.h  ../include/leinf.h \
+  ../include/ccsdsym.h  ../include/dummy.h \
   ../include/maxorb.h  ../include/priunit.h \
   ../include/single.h
-cc_solrsp.o : cc_solrsp.F \
-  ../include/cccl2rsp.h  ../include/ccco2rsp.h \
-  ../include/cccr2rsp.h  ../include/cccx2rsp.h \
-  ../include/ccel1rsp.h  ../include/ccel2rsp.h \
-  ../include/ccer1rsp.h  ../include/ccer2rsp.h \
-  ../include/ccl1rsp.h  ../include/ccl2rsp.h \
-  ../include/ccl3rsp.h  ../include/ccl4rsp.h \
-  ../include/cclc1rsp.h  ../include/cclr.h \
-  ../include/cclrmrsp.h  ../include/ccn2rsp.h \
-  ../include/cco1rsp.h  ../include/cco2rsp.h \
-  ../include/cco3rsp.h  ../include/cco4rsp.h \
-  ../include/ccorb.h  ../include/ccpl1rsp.h \
-  ../include/ccr1rsp.h  ../include/ccr2rsp.h \
-  ../include/ccr3rsp.h  ../include/ccr4rsp.h \
-  ../include/ccrc1rsp.h  ../include/ccsdinp.h \
-  ../include/ccsdio.h  ../include/ccsdsym.h \
-  ../include/ccsections.h  ../include/ccslvinf.h \
-  ../include/ccx1rsp.h  ../include/ccx2rsp.h \
-  ../include/ccx3rsp.h  ../include/ccx4rsp.h \
-  ../include/dummy.h  ../include/implicit.h \
-  ../include/iratdef.h  ../include/leinf.h \
-  ../include/maxorb.h  ../include/priunit.h \
-  ../include/single.h
-cc_sop.o : cc_sop.F \
-  ../include/cclists.h  ../include/cclrinf.h \
+ccsdt_f_noddy.o : ccsdt_f_noddy.F \
+  ../include/implicit.h  ../include/ccexci.h \
+  ../include/ccexgr.h  ../include/ccfield.h \
+  ../include/ccl1rsp.h  ../include/cclrmrsp.h \
+  ../include/ccn2rsp.h  ../include/ccorb.h \
+  ../include/ccr1rsp.h  ../include/ccsdinp.h \
+  ../include/ccsdsym.h  ../include/dummy.h \
+  ../include/inftap.h  ../include/maxorb.h \
+  ../include/priunit.h  ../include/single.h
+ccsdt_fbmat.o : ccsdt_fbmat.F \
+  ../include/ccexci.h  ../include/ccinftap.h \
   ../include/ccorb.h  ../include/ccr1rsp.h \
-  ../include/ccrc1rsp.h  ../include/ccroper.h \
   ../include/ccsdinp.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/priunit.h \
+  ../include/dummy.h  ../include/inftap.h \
+  ../include/iratdef.h  ../include/priunit.h \
   ../include/single.h
-cc_sort4o.o : cc_sort4o.F \
-  ../include/ccorb.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/maxorb.h \
-  ../include/single.h
-cc_sortz2.o : cc_sortz2.F \
-  ../include/ccorb.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/maxorb.h \
-  ../include/single.h
-cc_tmcal.o : cc_tmcal.F \
-  ../include/ccexci.h  ../include/cclr.h \
-  ../include/ccorb.h  ../include/ccroper.h \
-  ../include/ccrspprp.h  ../include/ccsdinp.h \
-  ../include/ccsdsym.h  ../include/cctm.h \
-  ../include/cctminf.h  ../include/implicit.h \
+ccsdt_ints_noddy.o : ccsdt_ints_noddy.F \
+  ../include/implicit.h  ../include/ccfield.h \
+  ../include/ccorb.h  ../include/ccsdinp.h \
+  ../include/ccsdsym.h  ../include/implicit.h \
+  ../include/inforb.h  ../include/maxorb.h \
+  ../include/priunit.h  ../include/single.h
+ccsdt_xi_noddy.o : ccsdt_xi_noddy.F \
+  ../include/implicit.h  ../include/ccexci.h \
+  ../include/ccfield.h  ../include/cclists.h \
+  ../include/ccorb.h  ../include/ccr1rsp.h \
+  ../include/ccroper.h  ../include/ccsdinp.h \
+  ../include/ccsdsym.h  ../include/implicit.h \
+  ../include/inforb.h  ../include/maxorb.h \
   ../include/priunit.h  ../include/single.h
 cctrbt1.o : cctrbt1.F \
   ../include/ccorb.h  ../include/ccsdsym.h \
@@ -1427,69 +1514,6 @@ cctrbt1.o : cctrbt1.F \
 cctrbt2.o : cctrbt2.F \
   ../include/ccorb.h  ../include/ccsdsym.h \
   ../include/implicit.h  ../include/single.h
-cc_trdrv.o : cc_trdrv.F \
-  ../include/aovec.h  ../include/ccfield.h \
-  ../include/ccisao.h  ../include/cclr.h \
-  ../include/ccorb.h  ../include/ccsdinp.h \
-  ../include/ccsdio.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/leinf.h \
-  ../include/maxash.h  ../include/maxorb.h \
-  ../include/priunit.h  ../include/single.h
-cc_util.o : cc_util.F \
-  ../include/ccisao.h  ../include/cclr.h \
-  ../include/ccorb.h  ../include/ccsdinp.h \
-  ../include/ccsdio.h  ../include/ccsdsym.h \
-  ../include/dummy.h  ../include/implicit.h \
-  ../include/inftap.h  ../include/iratdef.h \
-  ../include/maxorb.h  ../include/priunit.h \
-  ../include/single.h  ../include/symsq.h
-cc_wrrsp.o : cc_wrrsp.F \
-  ../include/cccl2rsp.h  ../include/ccco2rsp.h \
-  ../include/cccr2rsp.h  ../include/cccx2rsp.h \
-  ../include/ccel1rsp.h  ../include/ccel2rsp.h \
-  ../include/ccer1rsp.h  ../include/ccer2rsp.h \
-  ../include/ccexci.h  ../include/ccfro.h \
-  ../include/ccl1rsp.h  ../include/ccl2rsp.h \
-  ../include/ccl3rsp.h  ../include/ccl4rsp.h \
-  ../include/cclc1rsp.h  ../include/cclrmrsp.h \
-  ../include/ccn2rsp.h  ../include/cco1rsp.h \
-  ../include/cco2rsp.h  ../include/cco3rsp.h \
-  ../include/cco4rsp.h  ../include/ccorb.h \
-  ../include/ccpl1rsp.h  ../include/ccr1rsp.h \
-  ../include/ccr2rsp.h  ../include/ccr3rsp.h \
-  ../include/ccr4rsp.h  ../include/ccrc1rsp.h \
-  ../include/ccsdsym.h  ../include/ccx1rsp.h \
-  ../include/ccx2rsp.h  ../include/ccx3rsp.h \
-  ../include/ccx4rsp.h  ../include/dummy.h \
-  ../include/implicit.h  ../include/priunit.h \
-  ../include/single.h
-cc_xetst.o : cc_xetst.F \
-  ../include/aovec.h  ../include/ccfield.h \
-  ../include/ccfro.h  ../include/ccinftap.h \
-  ../include/cclists.h  ../include/cclr.h \
-  ../include/cco1rsp.h  ../include/ccorb.h \
-  ../include/ccr1rsp.h  ../include/ccroper.h \
-  ../include/ccsdinp.h  ../include/ccsdio.h \
-  ../include/ccsdsym.h  ../include/ccx1rsp.h \
-  ../include/dummy.h  ../include/implicit.h \
-  ../include/inftap.h  ../include/iratdef.h \
-  ../include/leinf.h  ../include/maxorb.h \
-  ../include/priunit.h  ../include/single.h
-cc_xieta.o : cc_xieta.F \
-  ../include/aovec.h  ../include/blocks.h \
-  ../include/ccfield.h  ../include/ccfro.h \
-  ../include/ccisao.h  ../include/cclists.h \
-  ../include/ccnoddy.h  ../include/cco1rsp.h \
-  ../include/ccorb.h  ../include/ccr1rsp.h \
-  ../include/ccroper.h  ../include/ccsdinp.h \
-  ../include/ccsdsym.h  ../include/ccx1rsp.h \
-  ../include/chrxyz.h  ../include/distcl.h \
-  ../include/dummy.h  ../include/eribuf.h \
-  ../include/implicit.h  ../include/inftap.h \
-  ../include/iratdef.h  ../include/maxaqn.h \
-  ../include/maxorb.h  ../include/mxcent.h \
-  ../include/nuclei.h  ../include/priunit.h \
-  ../include/single.h  ../include/symmet.h
 ccximcon.o : ccximcon.F \
   ../include/cc1dxfck.h  ../include/ccexpfck.h \
   ../include/ccfro.h  ../include/ccorb.h \
@@ -1497,10 +1521,6 @@ ccximcon.o : ccximcon.F \
   ../include/ccsdsym.h  ../include/dummy.h \
   ../include/inftap.h  ../include/iratdef.h \
   ../include/priunit.h  ../include/single.h
-cc_zkjam.o : cc_zkjam.F \
-  ../include/ccorb.h  ../include/ccsdsym.h \
-  ../include/implicit.h  ../include/maxorb.h \
-  ../include/single.h
 crayio2.o : crayio2.F \
   ../include/ccsdinp.h  ../include/priunit.h \
   ../include/single.h

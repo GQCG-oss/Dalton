@@ -80,6 +80,7 @@ C
 #include <cbieri.h>
 #include <eribuf.h>
 #include <ccslvinf.h>
+#include <ccnoddy.h>
 C
       DIMENSION INDEXA(MXCORB)
       DIMENSION RHO1(LRHO1,NSIMTR),C1AM(LRHO1,NSIMTR)
@@ -1884,10 +1885,20 @@ c     only for one vector at a time in triples code.
 c
       IV = 1
       IF (CCSDT) THEN
-C
-         IF (JACTST) ECURR = 0.0D00
-C
-         TIMTRIP = SECOND()
+ 
+       TIMTRIP = SECOND()
+
+       IF (JACTST) ECURR = 0.0D00
+
+       IF (NODDY_RHTR) THEN
+
+         KFCKC1 = KFOCKC + N2BST(ISYMTR)*(IV-1)
+         CALL CC_RHTR_NODDY(IVEC+IV-1,LUFC2,FC2AM,ECURR,
+     &                      C1AM(1,IV),WORK(KFCKC1),ISYMTR,
+     &                      WORK(KFOCK),WORK(KLAMDP),WORK(KLAMDH),
+     &                      RHO1(1,IV),RHO2,WORK(KEND1),LWRK1)
+
+       ELSE
 C
 C---------------------------------------
 C        Readin C2 amplitudes from disk.
@@ -2207,8 +2218,9 @@ C
             WRITE(LUPRI,1) 'Norm of Rho2 -after cc3_omeg-3:    ',RHO2N
          ENDIF
 C
-        ENDIF
-       ENDIF
+        ENDIF! (.NOT.CC1B)
+       ENDIF ! (.NOT. CC1A)
+       ENDIF ! (NODDY_RHTR)
 C
 C---------------------
 C      Scale Diagonal.

@@ -51,12 +51,11 @@ ccpt_den.o     ccpt_eta.o     ccpt_fropro.o \
 ccpt_grad0.o  \
 cc_lhtr_noddy.o ccsdt_xi_noddy.o \
 ccsdt_f_noddy.o ccsdt_ints_noddy.o \
-ccsdt_g_noddy.o ccsdt_h_noddy.o \
 ccsdt_eta_noddy.o ccsdt_b_noddy.o ccsdt_ba_noddy.o \
 ccsdt_eta_cont.o cc3_fmat.o     ccsdt_fbmat.o  \
 cc3_etasd.o cc3_ft3b.o cc3_fmatsd.o cc3_xi_cont.o \
 cc3_init.o ccexnorm.o cc_opa.o ccsdt_aden_noddy.o cc3_aden.o \
-cc_foppt_sc.o cc_r12.o       cc_mkrv.o
+cc_foppt_sc.o cc_r12.o       cc_mkrv.o cc_rhtr_noddy.o
   
 # cc_pckcr8.o    cc_pckutil.o   
 io : crayio.o

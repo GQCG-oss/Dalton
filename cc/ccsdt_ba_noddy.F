@@ -377,7 +377,9 @@ C        -----------------------------------------------------------
          FREQ = FREQB + FREQC + FREQD
 
          IF (LWRK1.LT.NT1AMX) CALL QUIT('OUT OF MEMORY - CCSDT_BAMAT')
-         CALL CCSDT_3AM(WORK(KOMEGA3),FREQ,WORK(KEND1),WORK(KFOCKD))
+         IF (NONHF) CALL QUIT('No NONHF in CCSDT_BAMAT_NODDY')
+         CALL CCSDT_3AM(WORK(KOMEGA3),FREQ,WORK(KEND1),WORK(KFOCKD),
+     &                  NONHF,DUMMY,.FALSE.,DUMMY)
 
 C        --------------------------------------------------------
 C        Add contributions to the effective result vector:

@@ -268,7 +268,7 @@ C
 
         LRELAX = LTWOEL .OR. (IRELAX.GE.1)
         IF (LRELAX) CALL QUIT(
-     &    'Relaxed contributions not yet implemented in CCSDT_XI_CONT')
+     &    'Relaxed contributions not yet implemented in CC3_XI_CONT')
 
         IF (.NOT.SKIPXI) THEN
           IVEC = 1
