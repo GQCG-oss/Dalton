@@ -53,7 +53,7 @@ C
 #include <maxaqn.h>
 #include <maxorb.h>      
 C
-      PARAMETER (NUCMAX = 15,NSTMAX = 10,NTRIAL = 15,
+      PARAMETER (NUCMAX = 15,NSTMAX = 10,NTRIAL = 1500,
      &     TOLX = 1.0D-12,TOLF = 1.0D-12)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       LOGICAL MAGSUS, MOLGFA, QUADRU, SHIELD, SPINRO, POLAR, ALFA,
@@ -213,9 +213,9 @@ C
          CALL OUTPUT(XJMAT,1,3,1,3,3,3,1,LUPRI)
       END IF
 C
-      ECKP(1) = 1.0D-9
-      ECKP(2) = 1.0D-9
-      ECKP(3) = 1.0D-9
+      ECKP(1) = 1.0D-0
+      ECKP(2) = 1.0D-0
+      ECKP(3) = 1.0D-0
 C
       CALL MNEWT(NTRIAL,ECKP,3,BVEC,XJMAT,TOLX,TOLF)
       XN(1) = SIN(ECKP(1))*COS(ECKP(2))
