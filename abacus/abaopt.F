@@ -1655,11 +1655,18 @@ C
      &           WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4),
      &           WORK(KWRK2),LWRK2)
          END IF
+C
+C     Update information for this iteration
+C
          GEINFO(ITRNMR,1) = ENERGY
          GEINFO(ITRNMR,3) = INDTOT*1.0D0
+         IREJ = 0
+C
+C     Write Hessian to file
+C
          CALL PNCHES(MXRCRD,MX2CRD,HESINT,WILBMT,BMTRAN,WORK(KTEMP1),
      &        WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4),WORK(KWRK2),LWRK2)
-         IREJ = 0
+C
  756     CONTINUE
          IF (REDINT .OR. DELINT) THEN
             CALL FNSTIN(MXRCRD,MX2CRD,NCRDHS,SCLVEC,HESINT,WORK(KEVEC),
@@ -2523,6 +2530,10 @@ C
          WRITE(LUPRI,*)
          WRITE(LUPRI,*) 'Initial Hessian has been calculated.'
          WRITE(LUPRI,*)
+C
+C     Next line makes reinitialization possible:
+C
+         INITHS = .FALSE.
 C
 C     Check if initial Hessian should be diagonal in redundant internal
 C     coordinates.
@@ -5122,7 +5133,7 @@ C
 C     For saddle point optimizations we place both an upper and
 C     lower bound on the trust radius.
 C
-      IF (SADDLE) TRSTRA = MAX(0.05D0, MIN(1.0D0,TRSTRA))
+      IF (SADDLE) TRSTRA = MAX(0.025D0, MIN(1.0D0,TRSTRA))
 C      IF (SADDLE .AND. DELINT .AND.
 C     &     ((RATIO .LE. RTRJMN) .OR. (RATIO .GE. RTRJMX)))
 C     &     REBILD = .TRUE.
@@ -6881,6 +6892,7 @@ C
          WRITE (LUPRI,'(A,1P,D12.5)') ' HESMIN: ', HESMIN
          WRITE (LUPRI,'(A,1P,D12.5)') ' GRDMIN: ', GRDMIN
          WRITE (LUPRI,'(A,1P,D12.5)') ' GRDNRM: ', GRDNRM
+         WRITE (LUPRI,'(A,1P,D12.5)') ' ZERGRD: ', ZERGRD
       END IF
 C
 C     ************************

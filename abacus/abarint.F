@@ -213,6 +213,7 @@ C
             UNTTXT = ' Ang.'
             IF (INTCRD(I,1) .EQ. 1) CRDTXT='Regular bond'
             IF (INTCRD(I,1) .EQ. 3) CRDTXT='Interfragment bond'
+            IF (INTCRD(I,1) .EQ. 4) CRDTXT='Additional interfrag. bond'
             IF (INTCRD(I,1) .EQ. 5) CRDTXT='Hydrogen bond'
             IF (INTCRD(I,1) .EQ. 7) CRDTXT='Auxiliary bond'
             IF ((INTCRD(I,1) .NE. 7) .OR. (IPRINT .GE. 3))
@@ -498,10 +499,17 @@ C
                      VEC1(3) = ATMARR(II,4)-ATMARR(JJ,4)
                      DIST = SQRT(DDOT(3,VEC1,1,VEC1,1))
                      IF (DIST .LE. BNDLIM) THEN
-                        IBOND(II,JJ) = 3
-                        IBOND(JJ,II) = 3
+                        BNDTYP = 4
+C
+C     We make a distinction between interfragment bonds that are
+C     approximately as short as the shortest one and additional
+C     longer interfragment bonds.
+C
+                        IF (DIST .LE. DSTMIN*1.05D0) BNDTYP = 3
+                        IBOND(II,JJ) = BNDTYP
+                        IBOND(JJ,II) = BNDTYP
                         IINTCR = IINTCR + 1
-                        INTCRD(IINTCR,1) = 3
+                        INTCRD(IINTCR,1) = BNDTYP
                         IF (II .LT. JJ) THEN
                            INTCRD(IINTCR,2) = II
                            INTCRD(IINTCR,3) = JJ
@@ -670,12 +678,13 @@ C
  15      CONTINUE
          IF (NUMBND .GT. 1) THEN
             DO 20 J = 1, IATOM - 1
-               IF (IBOND(I,J) .GT. 0) THEN
+               IF ((IBOND(I,J) .GT. 0) .AND. (IBOND(I,J) .NE. 4)) THEN
                   VEC1(1) = ATMARR(J,2)-ATMARR(I,2)
                   VEC1(2) = ATMARR(J,3)-ATMARR(I,3)
                   VEC1(3) = ATMARR(J,4)-ATMARR(I,4)
                   DO 25 K = J + 1, IATOM
-                     IF (IBOND(I,K) .GT. 0) THEN
+                     IF ((IBOND(I,K) .GT. 0) .AND.
+     &                    (IBOND(I,K) .NE. 4)) THEN
                         IINTCR = IINTCR + 1
                         INTCRD(IINTCR,1) = 11
                         INTCRD(IINTCR,2) = J
@@ -738,12 +747,13 @@ C
       IBEFOR = IINTCR
       DO 10 I = 1, IATOM
          DO 15 J = 1, IATOM
-            IF (IBOND(I,J) .GT. 0) THEN
+            IF ((IBOND(I,J) .GT. 0) .AND. (IBOND(I,J) .NE. 4)) THEN
                DO 20 K = 1, IATOM
-                  IF ((IBOND(J,K) .GT. 0) .AND. (K .NE. I)) THEN
+                  IF ((IBOND(J,K) .GT. 0) .AND. (K .NE. I) .AND.
+     &                 (IBOND(J,K) .NE. 4)) THEN 
                      DO 25 L = I, IATOM
                         IF ((IBOND(K,L) .GT. 0) .AND. (L .NE. J) .AND.
-     &                       (L .NE. I)) THEN
+     &                       (L .NE. I) .AND. (IBOND(K,L) .NE. 4)) THEN
 C
 C     Check for linearity.
 C
@@ -2997,7 +3007,7 @@ C
             END IF
  35      CONTINUE
          IF (JMIN .NE. I) THEN
-            CALL DSWAP(1,  EVAL  (I),1,EVAL  (JMIN),1)
+            CALL DSWAP(1,EVAL(I),1,EVAL(JMIN),1)
             CALL DSWAP(MX2CRD,EVEC(1,I),1,EVEC(1,JMIN),1)
             CALL DSWAP(1,GRDDIA(I),1,GRDDIA(JMIN),1)
          END IF
@@ -3035,7 +3045,7 @@ C
 #include <pi.h>
 #include <cbiwlk.h>
       DIMENSION SCLVEC(MXCOOR)
-      DIMENSION HESINT(MXRCRD,MXRCRD),EVEC(MX2CRD,MX2CRD)
+      DIMENSION HESINT(MXRCRD,MXRCRD), EVEC(MX2CRD,MX2CRD)
       DIMENSION TMPMAT(MX2CRD*MX2CRD), TMPMT2(MX2CRD*MX2CRD)
       DIMENSION TMPMT3(MX2CRD*MX2CRD), TMPMT4(MX2CRD,MX2CRD)
       DIMENSION TMPMT5(MX2CRD,MX2CRD)
@@ -3043,7 +3053,7 @@ C
       DIMENSION BMTINV(MXRCRD,MXCOOR)
       DIMENSION GRDARR(25,MXRCRD), STPARR(MXRCRD,MXRCRD)
       DIMENSION STPLIN(MXRCRD), VECMOD(MXCOOR)
-      LOGICAL INSIDE,ACTIVE,DOSCAL
+      LOGICAL   INSIDE, ACTIVE, DOSCAL
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0)
       PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
@@ -3839,6 +3849,7 @@ C
       DIMENSION CSTEP(MXCOOR)
       DIMENSION TMPVEC(IINTCR), TMPMAT(IINTCR*IINTCR)
       SAVE INDOLD
+      DATA INDOLD /999/
 #include <ibtfun.h>
       CALL DZERO(STPDIA,MXRCRD)
       CALL DZERO(CSTEP,MXCOOR)
