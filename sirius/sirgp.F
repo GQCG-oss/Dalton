@@ -33,28 +33,8 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef REVISION_LOG
-===========================================================================
-Revision 1.9  2000/05/24 12:30:05  hjj
-new options in RDSIFC (read CMO and others)
-
-Revision 1.8  2000/05/01 14:50:14  hjj
-bug fix.
-
-Revision 1.4-1.7  2000/05/01  hjj
-1)New subroutine: make_klwop(klwop) for making KLWOP array.
-2)Removed reading of KLWOP in GETWOP (KLWOP not in infvar.h any more)
-
-revision 1.3 2000/04/14 06:51:44 hjj
-1) revised LUSUPM test in RDSUPM and FOPEN test. Now I think it is OK
-   with the new GPOPEN.
-2) changed many LUERR to LUPRI
-   ----------------------------
-revision 1.2 2000/04/13 14:05:03 hjj
-1) RDSUPM: corrected LUSUPM test to include 0 for new GPOPEN system
-2) removed VAR_LUNDSUPM code
-===========================================================================
-#endif
+C File:    sirgp.F
+C Purpose: general purpose routines for the Sirius module
 C
 C  /* Deck errwrk */
       SUBROUTINE ERRWRK (STRING,LNEED,LAVAIL)
@@ -367,9 +347,10 @@ C
 C  /* Deck getwop */
       LOGICAL FUNCTION GETWOP(XLABEL)
 C
-C (9-Nov-1985 hjaaj)
-C
 C Purpose: read new orbital rotation specification into INFVAR.
+C
+C 9-Nov-1985 hjaaj
+C 1-May-2000 hjaaj: Removed reading of KLWOP (KLWOP not in infvar.h any more)
 C
 #include <implicit.h>
       CHARACTER*8 XLABEL
@@ -431,7 +412,7 @@ C  /* Deck make_klwop */
 C
 C 1-May-2000 hjaaj
 C
-C Purpose: Generate KLWOP from JWOP
+C Purpose: Generate KLWOP array from JWOP
 C
 #include <implicit.h>
       DIMENSION KLWOP(NOCCT,NORBT)
@@ -535,8 +516,9 @@ C
          PFMT = '(6F12.8)'
       END IF
 C
-      CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
-     &            .FALSE.)
+      JLUCMD = LUCMD
+      IF (JLUCMD .LE. 0) CALL GPOPEN(LUCMD,'DALTON.INP',
+     &   'OLD',' ','FORMATTED',IDUMMY,.FALSE.)
       REWIND (LUCMD)
   310 READ (LUCMD,'(A)',END=400,ERR=400) MOLABL
       IF (MOLABL .NE. '**MOLORB' .AND. MOLABL .NE. '**NATORB') GO TO 310
@@ -555,7 +537,7 @@ C
          END IF
   335    CONTINUE
   340 CONTINUE
-      CALL GPCLOSE(LUCMD,'KEEP')
+      IF (JLUCMD .LE. 0) CALL GPCLOSE(LUCMD,'KEEP')
       GO TO 9000
   400 CONTINUE
          WRITE (LUPRI,'(//A)')
@@ -963,23 +945,23 @@ C
       CALL GPINQ(FNONEL,'OPENED',OPEND)
       IF (.NOT.OPEND) THEN
          CALL GPINQ(FNONEL,'EXIST',FEXIST)
-      IF (FEXIST) THEN
+       IF (FEXIST) THEN
          CALL GPOPEN(LUONEL,FNONEL,'OLD',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          OPEND = .TRUE.
          IF (LBONEL .LT. 0) LBONEL = LBUF
-      ELSE
+       ELSE
          WRITE (LUPRI,'(/3A)')
      *      ' RDONEL ERROR: LUONEL file ',FNONEL,' does not exist'
          WRITE (LUERR ,'(/3A)')
      *      ' RDONEL ERROR: LUONEL file ',FNONEL,' does not exist'
          IF (ERRSTP) THEN
-            CALL QUIT('RDONEL ERROR: LUONEL FILE DOES NOT EXIST')
+            CALL QUIT('RDONEL ERROR: AOONEINT file DOES NOT EXIST')
          ELSE
             FOUND = .FALSE.
             GO TO 9999
          END IF
-      END IF
+       END IF
       END IF
 C
       IF     (KEY.EQ.'OPEN    ') THEN
@@ -1005,9 +987,9 @@ C        READ (LUONEL) NBT,(ICENT(I),I=1,NBT),(ITYPE(I),I=1,NBT)
          IF (NBT .NE. NBAST) THEN
             WRITE (LUPRI,'(//A,2(/A,I5))')
      *      ' >>> RDONEL ERROR',
-     *      '     NBAST from first record on LUONEL :',NBAST,
-     *      '     NBAST from "SYMINPUT"   on LUONEL :',NBT
-            CALL QUIT('RDONEL ERROR, two different NBAST on LUONEL')
+     *      '     NBAST from first record on AOONEINT :',NBAST,
+     *      '     NBAST from "SYMINPUT"   on AOONEINT :',NBT
+            CALL QUIT('RDONEL ERROR, two different NBAST on AOONEINT')
          END IF
          REWIND LUONEL
          DO 130 I=1,NBAST
@@ -1645,8 +1627,9 @@ C
       LOGICAL OPEND, FNDLB2
 C
       CALL QENTER('RDPROP')
-      CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
+      IF (LUPROP .GT. 0) CALL GPCLOSE(LUPROP,'KEEP')
+      CALL GPOPEN(LUPROP,'AOPROPER',
+     &            'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
       REWIND LUPROP
       IF ( FNDLB2(WORD,RTNLBL,LUPROP)) THEN
          IF (RTNLBL(2).EQ.'SYMMETRI') THEN
@@ -1655,16 +1638,16 @@ C
             ANTSYM = .TRUE.
          ELSE
             WRITE (LUPRI,'(//A)')
-     *         ' RDPROP error: No antisymmetry label on LUPROP'
+     *         ' RDPROP error: No antisymmetry label on AOPROPER'
             CALL QTRACE(LUPRI)
-            CALL QUIT('RDPROP error: No antisymmetry label on LUPROP')
+            CALL QUIT('RDPROP error: No antisymmetry label on AOPROPER')
          END IF
          CALL READT(LUPROP,NNBASX,PRPAO)
       ELSE
          WRITE (LUPRI,'(//3A)') ' >>> RDPROP error: property "',WORD,
-     *      '" not found on LUPROP.'
+     *      '" not found on AOPROPER.'
          CALL QTRACE(LUPRI)
-         CALL QUIT('RDPROP error: property not found on LUPROP.')
+         CALL QUIT('RDPROP error: property not found on AOPROPER.')
       END IF
       CALL GPCLOSE(LUPROP,'KEEP')
       CALL QEXIT('RDPROP')
@@ -1673,9 +1656,10 @@ C
 C  /* Deck rdsifc */
       SUBROUTINE RDSIFC(KEY,FOUND,AMAT,WRK,LWRK)
 C
-C 10-Dec-1992 HJAaJ
-C
 C Read specific information from Sirius interface file
+C
+C 10-Dec-1992 HJAaJ
+C Revision 2000/05/24 hjj:  new options (read CMO and others)
 C
 C The following records have been written by WRSIFC:
 C
