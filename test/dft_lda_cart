@@ -50,8 +50,7 @@ cat > dft_lda_cart.dal <<'%EOF%'
 .RUN WAVE 
 **WAVE FUNCTIONS
 .DFT
-*SCF INPUT
-.LDA
+LDA
 **END OF INPUT
 %EOF%
 #######################################################################
@@ -75,7 +74,7 @@ fi
 
 # Energy
 #    Final    HF energy:              -91.339783213015
-CRIT1=`$GREP "Final DFT energy\: * \-91\.3397832....." $log | wc -l`
+CRIT1=`$GREP "Final DFT energy\: * \-91\.3397833....." $log | wc -l`
 TEST[1]=`expr  $CRIT1`
 CTRL[1]=1
 ERROR[1]="LDA-ENERGY NOT CORRECT"

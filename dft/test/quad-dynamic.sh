@@ -262,7 +262,6 @@ cd $tmp || exit 1
 rm SIRIUS.RST
 #run_test gen_LiH  1  "GGAKey"
 run_test gen_LiH  1  LDA
-exit 0
 run_test gen_LiH  1  "GGAKey becke=1 dirac=1 lyp=1"
 run_test gen_LiH  1  "BLYP"
 rm SIRIUS.RST

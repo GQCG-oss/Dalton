@@ -1873,6 +1873,7 @@ C
 #include <infpri.h>
 #include <gnrinf.h>
 #include <inftra.h>
+#include <dftcom.h>
 C
 #if !defined (VAR_NONAMELIST)
       NAMELIST /NMLSIR/ NPATH, MAXMIC
@@ -2098,6 +2099,9 @@ C           ... DORHF may also be set with .CC
          DODFT    = .TRUE.
          DORHF    = .TRUE.
          FLAG(21) = .TRUE.
+c     dodft should be enough but it is sometimes to have also dftrun set.
+         DFTRUN = .TRUE.
+         DFTADD = .TRUE.
 C        ... flag for QCDFT -- quadratically convergent Hartree-Fock
          LUSUPM   = -1
 C        ... no P-supermatrix for DFT
