@@ -111,6 +111,14 @@ CBS   read(5,SYMTRA,END=4711)
      *mval(irun),ncount(irun),nadpt(irun)
      *,(nphase(I,irun),I=1,nadpt(irun)) 
       numbofcent=max(numbofcent,ncent(irun)) 
+Chj-start
+      IF (LVAL(IRUN) .LT. 0) CALL QUIT('Negative L value on SYMINFO')
+C     hjaaj nov 2001: I discovered that only s,p,d,f,g orbitals
+C     was programmed in SYMOUT in herrdn.F, thus this consistency test.
+C     Old code gave wrong lval for h orbitals etc.
+C      -- modify SYMOUT if you need orbitals with higher L
+C
+Chj-end
       if (index.ne.irun) CALL QUIT('weird numbering  on SYMINFO')
       enddo 
       CALL GPCLOSE(ISYMUNIT,'KEEP')
