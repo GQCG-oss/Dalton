@@ -2117,7 +2117,7 @@ C
             KLAST = KWORD + 80*KMLINE
             IF (KLAST.GT.LWORK) CALL QUIT('Memory exceeded ' //
      &                                       'in fndexs.')
-            CALL FNDEXS(WORK(KWORD))
+            CALL FNDEXS(WORK(KWORD),IPRINT)
          END IF
 C
          CALL EXESIR(WORK,LWORK,IWOFF,WRKDLM)
