@@ -161,10 +161,10 @@ ERROR[4]="ENERGIES NOT CORRECT"
 CRIT1=`$GREP "Nuclear spin\-spin coupling constants" $log | wc -l`
 CRIT2=`$GREP "No mass\-velocity correction calculated" $log | wc -l`
 CRIT3=`$GREP "No Darwin correction calculated" $log | wc -l`
-CRIT4=`$GREP "Spin\-spin couplings printed for atoms with abundance greater than \: (0| )\.40(D|E)\-01" $log | wc -l`
+CRIT4=`$GREP "Spin\-spin couplings printed for atoms with abundance greater than \:.*.040 %" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[5]=4
-ERROR[5]="CALCULATION OF PORPERTIES NOT SET UP CORRECTLY"
+ERROR[5]="CALCULATION OF SPIN-SPIN PROPERTIES NOT SET UP CORRECTLY"
 
 # H-O coupling
 CRIT1=`$GREP "Isotropic coupling * \: * \-78\.767[0-9] Hz" $log | wc -l`

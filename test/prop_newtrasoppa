@@ -131,7 +131,7 @@ CRIT2=`$GREP "SOPPA \: * Second Order Polarization Propagator Approximation" $lo
 CRIT3=`$GREP "Nuclear spin\-spin coupling constants" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[5]=3
-ERROR[5]="CALCULATION OF PORPERTIES NOT SET UP CORRECTLY"
+ERROR[5]="CALCULATION OF PROPERTIES NOT SET UP CORRECTLY"
 
 # H-C coupling
 CRIT1=`$GREP "Isotropic coupling * \: * 121\.494[0-9] Hz" $log | wc -l`
