@@ -179,7 +179,17 @@ species for each temperature will have its own unique
 (ro)vibrationally averaged geometry, we will have to calculate the
 harmonic contribution for each temperature and each isotopic species
 separately. The isotopic constitution is specified in the
-\verb|MOLECULE.INP| file as described in Chapter~\ref{ch:molinp}.
+\verb|MOLECULE.INP| file as described in Chapter~\ref{ch:molinp}. 
+
+We note that we may reuse the property derivatives from a different
+geometry for calculating the harmonic contribution to the vibrational
+correction at the given geometry by using the keyword \Key{REUSE} in
+the \Sec{WALK} module. A new force field is calculated, but the
+property derivatives are assumed to remain unchanged. The
+approximation has been tested and been shown to account, through the
+change in the effective geometry for different temperatures, for a
+very large fraction of the temperature effects on molecular
+properties~\cite{krjljv}. 
 
 This calculation will always be done in normal coordinates, and the
 recommended step length is 0.05~\cite{krpoaprtjcp112}. As for the calculation of
