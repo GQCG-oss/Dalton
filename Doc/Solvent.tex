@@ -1,30 +1,29 @@
 \chapter{Solvent calculations}\label{ch:solvent}
 
-This chapter describes the implementation of the Multiconfigurational
-Self-Consistent Reaction Field (MCSCRF) model as implemented in \siraba
-. The first section describes some considerations about the
-implementation  and the range of
+This chapter describes the implementation of the
+Multiconfigurational Self-Consistent Reaction Field (MCSCRF) model
+as implemented in \siraba \ . The first section describes some
+considerations about the implementation  and the range of
 properties that may be evaluated with the present MCSCRF
-implementation. The second section gives two input examples for MCSCRF 
-calculations.
+implementation. The second section gives two input examples for
+MCSCRF calculations.
 
 \section{General considerations}\label{sec:solventimpl}
 
-\siraba\ has the possibility of modeling the effect of a surrounding
-linear, homogeneous dielectric medium\index{dielectric medium} on a
-variety of molecular 
-properties using
+\siraba\ has the possibility of modelling the effect of a
+surrounding linear, homogeneous dielectric medium\index{dielectric
+medium} on a variety of molecular properties using
 SCF\index{SCF}\index{HF}\index{Hartree-Fock}\index{MCSCF} or MCSCF
-wave functions. This is achieved by the 
-Multiconfigurational Self-Consistent Reaction Field
-(MCSCRF)\index{reaction field}\index{MCSCRF}
+wave functions. This is achieved by the Multiconfigurational
+Self-Consistent Reaction Field (MCSCRF)\index{reaction
+field}\index{MCSCRF}
 approach~\cite{kvmedpsjpc91,kvmhahjajthjcp89}, where the solute is
-placed in a spherical cavity\index{cavity} and 
-surrounded by the dielectric medium. The solvent response to the
-the presence of the solute is modeled by a multipole
-expansion\index{multipole expansion}, in \siraba\ in
-principle to infinite order, but practical applications show that the
-multipole expansion is usually converged at order $L=6$.
+placed in a spherical cavity\index{cavity} and surrounded by the
+dielectric medium. The solvent response to the the presence of the
+solute is modelled by a multipole expansion\index{multipole
+expansion}, in \siraba\ in principle to infinite order, but
+practical applications show that the multipole expansion is
+usually converged at order $L=6$.
 
 In \siraba\ the solvent model is implemented both for SCF and MCSCF wave
 functions in a self-consistent manner as describes in
@@ -44,10 +43,10 @@ properties have been presented, and we refer to these papers for an
 overview of what can currently be calculated with the
 approach~\cite{kvmpjhjajjcp100,kvmylhapjjcp100}, including ESR
 hyperfine coupling constants~\cite{bfocobpjkvmjcp104}\index{hyperfine
-coupling}. 
+coupling}.
 
 In addition, a non-equilibrium solvation\index{non-equilibrium
-solvation} model has been implemented 
+solvation} model has been implemented
 for molecular energies~\cite{kvmachahjajjcp103}. This model in needed
 when studying processes where the charge distribution of the solute
 cannot be expected to be in equilibrium with the charge distribution
@@ -57,11 +56,11 @@ been used as a perturbation.
 In the \aba\ program, the solvent model has been implemented for
 geometric distortions and nuclear shieldings and
 magnetizabilities\index{nuclear shielding}\index{magnetizability},
-and of course all the 
+and of course all the
 properties that do not use perturbation-dependent basis
 sets\index{perturbation-dependent basis set}, like for
 instance indirect spin-spin coupling constants\index{spin-spin
-coupling}. This is noteworthy, as 
+coupling}. This is noteworthy, as
 although the program will probably give results for most results
 calculated using the solvent  model, these results will not
 necessarily be theoretically correct, due to lack of reorthonormalization
@@ -70,7 +69,7 @@ therefore give a fairly complete literature reference of works that
 have been done with the
 program~\cite{kvmpjkrthjcp106,poakvmkrthjpc100}. Properties not
 included in this list are thus not trustworthy with the current
-version of \siraba . 
+version of \siraba .
 
 \section{Input description}\label{sec:solventinp}
 
@@ -90,13 +89,13 @@ and T.Helgaker. \newblock {\em J.Chem.Phys.}, {\bf
 \item Non-equilibrium solvation: K.V.Mikkelsen, A.Cesar, H.{\AA}gren,
 H.J.Aa.Jensen.\newblock {\em J.Chem.Phys.}, {\bf
 103},\hspace{0.25em}9010, (1995).
-\item Linear singlett response: K.V.Mikkelsen, P.J{\o}rgensen,
+\item Linear singlet response: K.V.Mikkelsen, P.J{\o}rgensen,
 H.J.Aa.Jensen.\newblock {\em J.Chem.Phys.}, {\bf
 100},\hspace{0.25em}6597, (1994).
 \item Linear triplet response: P.-O.\AA strand, K.V.Mikkelsen, P.J{\o}rgensen,
 K.Ruud and T.Helgaker. To be published.
 \item Hyperfine couplings: B.Fernandez, O.Christensen, O.Bludsky,
-P.J{\o}rgensen, 
+P.J{\o}rgensen,
 K.V.Mikkelsen. \newblock {\em J.Chem.Phys.}, {\bf
 104},\hspace{0.25em}629, (1996).
 \item Magnetizabilities and nuclear shieldings: K.V.Mikkelsen,
@@ -116,7 +115,7 @@ The necessary input for a solvent calculation is given in the
 \Sec{*INTEGRALS} and \Sec{*WAVE FUNCTIONS} input modules. A typical input file
 for an SCF calculation of the nuclear shielding constants of a
 molecule in a dielectric medium will look like\index{nuclear
-shielding}\index{dielectric medium}: 
+shielding}\index{dielectric medium}:
 
 \begin{verbatim}
 **DALTON INPUT
@@ -142,14 +141,14 @@ shielding}\index{dielectric medium}:
 In \Sec{*INTEGRALS} we request the evaluation of the undifferentiated solvent
 multipole integrals\index{multipole integral} as given in for instance
 Ref.~\cite{kvmhahjajthjcp89} by the keyword \Key{MAX L} in the
-\Sec{ONEINT} submodule. We request all 
+\Sec{ONEINT} submodule. We request all
 integrals up to $L=10$ to be evaluated. This is needed if static or
 dynamic (response) properties
 calculations are to be done, but is not needed for a run of the
 wave function only (\Sec{*WAVE FUNCTIONS}).
 
 In \Sec{*WAVE FUNCTIONS} there is a separate input module for the
-solvent input, 
+solvent input,
 headed by the name \Sec{SOLVENT}. We refer to Sec.~\ref{ref-solinp}
 for a presentation of all possible keywords in this submodule. The
 interaction between the solute and the dielectric
@@ -157,7 +156,7 @@ medium\index{dielectric medium} is
 characterized by three parameters; the dielectric
 constant\index{dielectric constant}, the cavity\index{cavity}
 size, and the order of the multipole expansion\index{multipole
-expansion}. In the above input we have 
+expansion}. In the above input we have
 requested a dielectric constant of 78.5 (corresponding to water\index{water})
 through the keyword \Key{DIELECTRIC}, a cavity radius of 3.98 atomic
 units with the keyword \Key{CAVITY}, and the multipole expansion is to
@@ -170,7 +169,7 @@ include all terms up to $L=10$, as can be seen from the keyword
 In the present release of the \siraba\ program, there are certain
 limitations imposed on the optimizing geometries using the solvent
 model. Only second-order geometry optimizations \index{geometry
-optimization} are available, and 
+optimization} are available, and
 only through the general \Sec{WALK} module. Furthermore, symmetry
 cannot be used during the geometry optimization, and care must be
 exercised in order to turn off automatic symmetry detection in case of
@@ -196,13 +195,13 @@ optimization with the solvent model would look like:
 \subsection{Non-equilibrium solvation}
 
 This example describes calculations for non-equilibrium
-solvation\index{non-equilibrium solvation}. 
+solvation\index{non-equilibrium solvation}.
 Usually one starts with a calculation of a reference state
 (most often the ground state) with equilibrium solvation, using
 keyword \Key{INERSF}. The interface file is then
 used (without user interference) for
 a non-equilibrium excited state calculation; keyword
-\Key{INERSI}. 
+\Key{INERSI}.
 
 \begin{verbatim}
 **DALTON INPUT
@@ -213,9 +212,9 @@ a non-equilibrium excited state calculation; keyword
  10
 **WAVE FUNCTIONS
 .TITLE
- 2-RAS(2p2p') : on F+ (1^D) in Glycol 
- Widmark (5432)-ANO Basis set 
-.MCSCF        
+ 2-RAS(2p2p') : on F+ (1^D) in Glycol
+ Widmark (5432)-ANO Basis set
+.MCSCF
 .NSYM
  8
 *CONFIGURATION INPUT
@@ -224,7 +223,7 @@ a non-equilibrium excited state calculation; keyword
 .SYMMETRY
  1
 .INACTIVE ORBITALS
- 1  0  0  0  0  0  0  0 
+ 1  0  0  0  0  0  0  0
 .ELECTRONS
  6
 .RAS1 SPACE
@@ -233,10 +232,10 @@ a non-equilibrium excited state calculation; keyword
  1  2  2  0  2  0  0  0
 .RAS3 SPACE
  8  4  4  3  4  3  3  1
-.RAS1 ELECTRONS 
- 0  0 
-.RAS3 ELECTRONS 
- 0  2 
+.RAS1 ELECTRONS
+ 0  0
+.RAS3 ELECTRONS
+ 0  2
 *OPTIMIZATION
 .NEO ALWAYS
 .OPTIMAL ORBITAL TRIAL VECTORS
