@@ -99,6 +99,7 @@ C
 C
 C     Test on the number of electrons
 C   
+      WRITE(2,*) ' node ', mynum,' knows of ', electrons
       CALL  DFTINTCOLLECT(ELECTRONS)
 #ifdef VAR_MPI
       CHECKELS = MYNUM.EQ.0

@@ -1323,7 +1323,7 @@ C
  299  CONTINUE
       WRITE (LUPRI,'(A,1X,I4)') 'Cannot determine the charge of atom '//
      &     'type', I
-      WRITE (LUPRI,'(A)') 'Correct input format is: Charge=???'
+      WRITE (LUPRI,'(A)') "Correct input format is: Charge=???"
       CALL QUIT('Cannot determine the charge of one atom')
       END
 C  /* Deck cntinp */
@@ -6336,7 +6336,7 @@ C
  199  CONTINUE
       WRITE (LUPRI,'(A)') ' Error in the determination of the number '//
      &     'of atomic types'
-      WRITE (LUPRI,*) ' Correct input structure is: Atomtypes=???'
+      WRITE (LUPRI,*) "Correct input structure is: Atomtypes=???"
       CALL QUIT('Error in determining the number of different '//
      &     'atom types')
       END
