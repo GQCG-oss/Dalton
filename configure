@@ -1007,6 +1007,12 @@ case "$WHICH" in
                inc='-I../include'
                LIB="-lcc_dynamic"
                cpp=${cpp}" -DIMPLICIT_NONE"
+# Notes for g77 (3.4) under OS X 10.3:
+# The following files must be compiled with -O2 rather than -O3 (compiler crashes): 
+# abavib.F abandsym.F koopro4.F rspc82.F rspqrx3.F eri2dis.F erisph.F arhpack.F cc_slv.F eispack.F
+# Also, csfstuff.f must be compiled with -O1 because of a compiler bug with subroutine LRFEX2 (variable IRTP).
+# Finally, note that, for ccsd_rhs.F, the compiler crashes with -O2 but not with -O3.
+# Proceed as follows: 1) run "make -k"; 2) set -O3 to -O2 and run "make"; 3) set -O2 to -O1, touch csfstuff.F and run "make"
             else
                cpp="-D SYS_LINUX -D VAR_ABSOFT -D NO_F90 -D 'INSTALL_WRKMEM=$memsiz' -D IMPLICIT_NONE"
 #              F90FLAGS = -YEXT_SFX=_ -YEXT_NAMES=LCS -s -w
