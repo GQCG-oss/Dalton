@@ -39,8 +39,6 @@ current release of \dalton\ requires OSX 10.3, XTools version 1.5
 and gcc version 3.3, all available from the Apple website. 
 We recommend the use of the IBM xlf (v8.1) and xlc (v6.0) 
 compilers, as development and testing is with these compilers. 
-For installation with a G4 architecture, users are asked to check the
-configure script for installation instructions.
 
 \section{Source files}\label{sec:source}
 
@@ -220,21 +218,24 @@ code is to type
 \end{verbatim}
 
 
-For MacOS X\index{MacOSX} installation with the g77 compiler (v3.3 or later), 
-installation requires the following 3-step process: first type
+For MacOS X\index{MacOSX}, the program may be installed either with the IBM
+xlf compiler (version 8.1 at the time of release) for best  performance 
+or with the g77 compiler (version 3.4.2 at the time of release). Be sure
+to use the latest Xcode from \verb|http://developer.apple.com/|. The
+g77 compiler may be obtained from \verb|http://hpc.sourceforge.net/|.  With
+the g77 compiler, the program may be installed as configured by default
+(-O2 optimization level). However, for slightly better performance,
+perform the following two-step process: First, make a copy of the original
+\verb|Makefile.config| file. Next, in \verb|Makefile.config|, 
+change -O2 to -O3 and type
 \begin{verbatim}
 > make -k
 \end{verbatim}
-then edit the Makefile.config file, changing -O3 to -O2 (optimization level),
-and then type
+Finally, revert to the original \verb|Makefile.config| file and then type
 \begin{verbatim} 
 > make 
 \end{verbatim} 
-Re-edit the makefile, changing -O2 to -O1 and type
-\begin{verbatim}
-> touch sirius/csfstuff.F
-> make
-\end{verbatim}
+This process results in a code where -O3 has been used wherever possible.
 
 %Note to users who want to install a parallel program\index{parallel
 %program} employing PVM3\index{PVM}
