@@ -843,7 +843,7 @@ C        Construct KLWOP and remove any duplicate active-active
 C        rotations
 C
          NKLWOP = NOCCT*NORBT
-         IF (NKLWOP .GT. IRAT*LKLWOP)
+         IF (NKLWOP/IRAT + 1 .GT. LKLWOP)
      &      CALL ERRWRK('SETWOP',(NKLWOP/IRAT),LKLWOP)
          CALL IZERO(KLWOP,NKLWOP)
          NWOPT = 0
