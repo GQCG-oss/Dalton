@@ -609,16 +609,22 @@ C******************************************************************************
      &   '                   current maximum number ',KATOM
         CALL QUIT('Too many atomic types in .mol input')
       END IF
-      IF (THRS .LT. THRMIN .AND. THRS .GT. 0.0D0) THEN
-         WRITE (LUPRI,'(/2X,A)') '*** WARNING from READIN ***'
-         WRITE (LUPRI,'(2(/2X,A,1P,D12.2))')
+C***********************************************************************
+C Check integral threshold: THRS must be .gt. 0
+C       ( log(thrs*thrs) taken in oneint) (851005-hjaaj)
+C***********************************************************************
+      IF (THRS .LT. THRMIN) THEN
+         IF (THRS .GE. 0.0D0) THEN
+C        ... THRS .lt. 0.0D0 is code from LINE4 that
+C            user has not specified THRS
+            WRITE (LUPRI,'(/2X,A)') '*** WARNING from READIN ***'
+            WRITE (LUPRI,'(2(/2X,A,1P,D12.2))')
      &      'Threshold for discarding integrals was',THRS,
      &      'Threshold is reset to minimum value   ',THRMIN
+         END IF
          THRS = THRMIN
 C        note that her2drv.F has explicit THRESH = MAX(THRS,1.0D-15)
 C        - hjaaj, aug99
-      ELSE IF (THRS .LT. 0.0D0) THEN
-         THRS = THRMIN
       ENDIF
 C*****************************************************************************
 C Check if symmetry is to be added automatically
@@ -6103,7 +6109,8 @@ C
                CALL FREFRM(LINE,IPOS+IPOS2,IDUMMY,THRS,'REA',IERR)
             END IF
          ELSE
-            THRS = -1.0D-15
+C           ... tell READIN that user hasn't specified THRS
+            THRS = -1.0D0
          END IF
       ELSE
 C     
@@ -6112,6 +6119,8 @@ C     input format
 C         
          READ (LINE,'(BN,A1,I4,I3,A2,10A1,D10.2,6I5)') CRT,
      &        NONTYP,KCHARG,SYMTXT,((KASYM(I,J),I=1,3),J=1,3),ID3,THRS
+         IF (LINE(21:30) .EQ. '          ') THRS = -1.0D0
+C        ... tell READIN that user hasn't specified THRS
          ADDSYM = (SYMTXT .EQ. '  ')
          IF (.NOT. ADDSYM) THEN
             READ(SYMTXT,'(I2)') NSYMOP
