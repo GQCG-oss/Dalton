@@ -2409,7 +2409,8 @@ C
            IF (FREE) THEN
 #if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D) || defined (SYS_T90)
               ISTART = 1
-              CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,ALPHA(L),'REA',IERR)
+              CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,ALPHA(L),'REA',
+     *                    IERR)
 #else
               READ (MLINE(NMLINE),*) ALPHA(L)
 #endif
