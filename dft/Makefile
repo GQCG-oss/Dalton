@@ -14,7 +14,9 @@ FFILES = \
         dft_aux.F    \
         dft_grad.F   \
         dft_int.F    \
-        dft_inp.F
+        dft_inp.F    \
+        dft_hestat.F \
+        dft_hesfd.F
 
 #        dft_ac.F     dft_old.F
 

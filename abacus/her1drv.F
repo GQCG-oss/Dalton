@@ -208,6 +208,7 @@ C
 #include <symmet.h>
 #include <drw2el.h>
 #include <cbisol.h>
+#include <inforb.h>
 C
 #include <ibtfun.h>
 C
@@ -257,7 +258,8 @@ C
             KHESFS = KHESNA + MXCOOR*MXCOOR
             KHSOLT = KHESFS + MXCOOR*MXCOOR
             KHSOLN = KHSOLT + MXCOOR*MXCOOR
-            KLAST  = KHSOLN + MXCOOR*MXCOOR
+            KHEDFT = KHSOLN + MXCOOR*MXCOOR
+            KLAST  = KHEDFT + MXCOOR*MXCOOR
          ELSE
             KLAST = KHESKE
          END IF
@@ -266,12 +268,14 @@ C
             KHESKE = KTLMD
             KHESNA = KHESKE + MXCOOR*MXCOOR
             KHESFS = KHESNA + MXCOOR*MXCOOR
-            KLAST  = KHESFS + MXCOOR*MXCOOR
+            KHEDFT = KHESFS + MXCOOR*MXCOOR
+            KLAST  = KHEDFT + MXCOOR*MXCOOR
          ELSE
             KLAST  = KTLMD
             KHESKE = KLAST
             KHESNA = KLAST
             KHESFS = KLAST
+            KHEDFT = KLAST
          END IF
          KHSOLT = KLAST
          KHSOLN = KLAST
@@ -284,7 +288,7 @@ C
      &            WORK(KLAST),LWRK,IPRINT,PROPTY,MAXDIF,
      &            NODC,NODV,DIFDIP,NBAST,NNBASX,NNBAST,DOINT,.TRUE.,
      &            WORK(KHESKE),WORK(KHESNA),WORK(KHESFS),WORK(KHSOLT),
-     &            WORK(KHSOLN),HFONLY,NCLONE)
+     &            WORK(KHSOLN),WORK(KHEDFT),HFONLY,NCLONE)
       CALL QEXIT('ONEDRV')
       RETURN
       END
@@ -293,7 +297,7 @@ C  /* Deck onedr1 */
      &                  JSYMC,JCENTC,TLMD,CSTRA,SCTRA,WORK,LWORK,IPRINT,
      &                  PROPTY,MAXDIF,NODC,NODV,DIFDIP,NBAST,NNBASX,
      &                  NNBAST,DOINT,TOFILE,HESSKE,HESSNA,HESFS2,HSOLT2,
-     &                  HSOLNN,HFONLY,NCLONE)
+     &                  HSOLNN,HESDFT,HFONLY,NCLONE)
 C
 C     TUH
 C
@@ -326,7 +330,8 @@ C
      &          JCENTC(NUCDEP), TLMD(3*NUCDEP*LMNTOT,2),
      &          HESSKE(MXCOOR,MXCOOR), HESSNA(MXCOOR,MXCOOR),
      &          HESFS2(MXCOOR,MXCOOR), HSOLT2(MXCOOR,MXCOOR),
-     &          HSOLNN(MXCOOR,MXCOOR), CSTRA(*), SCTRA(*)
+     &          HSOLNN(MXCOOR,MXCOOR), HESDFT(MXCOOR,MXCOOR),
+     &          CSTRA(*), SCTRA(*)
       CHARACTER*8 RTNLBL(2)
 #include <inftap.h>
 #include <onecom.h>

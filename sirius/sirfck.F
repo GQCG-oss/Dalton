@@ -89,6 +89,7 @@ C
 #include <inforb.h>
 #include <inftap.h>
 #include <infpri.h>
+#include <dftcom.h>
 C
       LOGICAL SFIRST
       SAVE SFIRST
@@ -365,7 +366,7 @@ C
       PARAMETER (DP25 = 0.25D0)
       INTEGER P, Q, R, S
 #include <inforb.h>
-#include "dftcom.h"
+#include <dftcom.h>
       DIMENSION FMAT(NBAST,NBAST), DMAT(NBAST,NBAST),
      &          BUF(LENGTH), IBUF(4,LENGTH)
 C
@@ -426,7 +427,7 @@ C
       PARAMETER (D1 = 1.0D00, DP5 = 0.50D00)
       INTEGER P, Q, R, S
 #include <inforb.h>
-#include "dftcom.h"
+#include <dftcom.h>
       DIMENSION FMAT(NBAST,NBAST), XMAT(NBAST,NBAST),
      &          BUF(LENGTH), IBUF(4,LENGTH)
 C
@@ -512,7 +513,7 @@ C
       PARAMETER (DP5 = 0.50D00)
       INTEGER P, Q, R, S
 #include <inforb.h>
-#include "dftcom.h"
+#include <dftcom.h>
       DIMENSION FMAT(NBAST,NBAST), DMAT(NBAST,NBAST),
      &          BUF(LENGTH), IBUF(4,LENGTH)
 #include <ibtfun.h>
@@ -602,7 +603,6 @@ C     in size. Remember to zero out the fock matrices before starting
 C     to accumulate.
 C
 #include <implicit.h>
-#include <priunit.h>
       INTEGER P, Q, R, S
       PARAMETER ( DP5 = 0.5D0 )
 #include <inforb.h>

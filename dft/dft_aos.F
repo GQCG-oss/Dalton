@@ -638,6 +638,7 @@ c RETURNS: GSO: evaluated orbitals for a batch of grid points.
 c     GSO(:,:,1) contains orbital values.
 c     GSO(:,:,2:4) contains first geom. derivatives. - if requested.
 c     GSO(:,:,5:10) contains second derivatives - if requested.
+c     GSO(:,:,11:20) contains third derivatives - if requested.
 c     After requested geometric derivatives, LND related derivatives
 c     are placed.
 C  /* Deck blgetsos */
@@ -716,6 +717,9 @@ C
       IF(NDER.GT.1) THEN
 c        fixme - this won't scale linearly 
          CALL DZERO(GAO(1,1,5),6*NBAST*NVCLEN)
+         IF(NDER.GT.2)THEN
+            CALL DZERO(GAO(1,1,11),10*NBAST*NVCLEN)
+         END IF
       END IF
 
       DO IBL = 1, NBLCNT
@@ -755,6 +759,13 @@ C
      &                 GAO(1,IADR,5),GAO(1,IADR,6),GAO(1,IADR,7),
      &                 GAO(1,IADR,8),GAO(1,IADR,9),GAO(1,IADR,10),
      &                 CSP(ISPADR(NHKTA)),PA,PA2,DFTHRI)
+                  IF (NDER.GT.2) THEN
+                     CALL BLGETGA3(NVCLEN,
+     &                    GAO(1,IADR,11),GAO(1,IADR,12),GAO(1,IADR,13),
+     &                    GAO(1,IADR,14),GAO(1,IADR,15),GAO(1,IADR,16),
+     &                    GAO(1,IADR,17),GAO(1,IADR,18),GAO(1,IADR,19),
+     &                  GAO(1,IADR,20),CSP(ISPADR(NHKTA)),PA,PA2,DFTHRI)
+                  END IF
                END IF
             END IF
             IF (DOLND) THEN
@@ -906,14 +917,13 @@ C
 #include <maxaqn.h>
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0) 
+      PARAMETER (I0=1,IX=2,IY=3,IZ=4)
 C
 c     GAO(1..NVCLEN, 1..KCKTA,1..4) is set
       DIMENSION GAO(NVCLEN,NBAST,4)
-      PARAMETER (I0=1,IX=2,IY=3,IZ=4)
       DIMENSION PA(3,NVCLEN), PA2(NVCLEN)
-c      
       DIMENSION CAO(NVCLEN,MXAQN), CAOX(NVCLEN,MXAQN),
-     &         CAOY(NVCLEN,MXAQN), CAOZ(NVCLEN,MXAQN)
+     &          CAOY(NVCLEN,MXAQN), CAOZ(NVCLEN,MXAQN)
       DIMENSION CSP(KHKTA,KCKTA)
       DIMENSION GA(NVCLEN), GU(NVCLEN),
      &          GAX(NVCLEN),GAY(NVCLEN), GAZ(NVCLEN), P0(NVCLEN),
@@ -1148,19 +1158,41 @@ C
                   PYP = TAPAY*PY0
                   PZP = TAPAZ*PZ0
                   P000 = PX0*PY0*PZ0 
-C                 
-                  GAXX = (TAPAX**2 + TALPH*SDPRE(2*L+1))*P000
-     &                 + PXD*PY0*PZ0
-                  GAYY = (TAPAY**2 + TALPH*SDPRE(2*M+1))*P000
-     &                 + PX0*PYD*PZ0
-                  GAZZ = (TAPAZ**2 + TALPH*SDPRE(2*N+1))*P000
-     &                 + PX0*PY0*PZD
-                  GAXY = TAPAX*TAPAY*P000
-     &                 + (PXP*PYM+PXM*PYP+PXM*PYM)*PZ0
-                  GAXZ = TAPAX*TAPAZ*P000
-     &                 + (PXP*PZM+PXM*PZP+PXM*PZM)*PY0
-                  GAYZ = TAPAY*TAPAZ*P000
-     &                 + (PYP*PZM+PYM*PZP+PYM*PZM)*PX0
+C      s orbitals
+                  IF (NHKTA.EQ.1) THEN
+                     GAXX = TAPAX**2 + TALPH
+                     GAYY = TAPAY**2 + TALPH
+                     GAZZ = TAPAZ**2 + TALPH
+                     GAXY = TAPAX*TAPAY
+                     GAXZ = TAPAX*TAPAZ
+                     GAYZ = TAPAY*TAPAZ
+C      p orbitals
+                  ELSE IF (NHKTA.EQ.2) THEN
+                     GAXX = (TAPAX**2 + TALPH*SDPRE(2*L+1))*P000
+                     GAYY = (TAPAY**2 + TALPH*SDPRE(2*M+1))*P000
+                     GAZZ = (TAPAZ**2 + TALPH*SDPRE(2*N+1))*P000
+
+                     GAXY = TAPAX*TAPAY*P000
+     &                    + (PXP*PYM + PXM*PYP)*PZ0
+                     GAXZ = TAPAX*TAPAZ*P000
+     &                    + (PXP*PZM + PXM*PZP)*PY0
+                     GAYZ = TAPAY*TAPAZ*P000
+     &                    + (PYP*PZM + PYM*PZP)*PX0
+C      d and higher orbitals
+                  ELSE 
+                     GAXX = (TAPAX**2 + TALPH*SDPRE(2*L+1))*P000
+     &                    + PXD*PY0*PZ0
+                     GAYY = (TAPAY**2 + TALPH*SDPRE(2*M+1))*P000
+     &                    + PX0*PYD*PZ0
+                     GAZZ = (TAPAZ**2 + TALPH*SDPRE(2*N+1))*P000
+     &                    + PX0*PY0*PZD
+                     GAXY = TAPAX*TAPAY*P000
+     &                    + (PXP*PYM+PXM*PYP+PXM*PYM)*PZ0
+                     GAXZ = TAPAX*TAPAZ*P000
+     &                    + (PXP*PZM+PXM*PZP+PXM*PZM)*PY0
+                     GAYZ = TAPAY*TAPAZ*P000
+     &                    + (PYP*PZM+PYM*PZP+PYM*PZM)*PX0
+                  END IF
 C
                   IF (SPHRA) THEN
                      CAOXX(ICOMPA) = CAOXX(ICOMPA) + GAXX*GA 
@@ -1210,6 +1242,241 @@ C
       END DO
       RETURN
       END
+C
+C  /* Deck blgetga3 */
+      SUBROUTINE BLGETGA3(NVCLEN,
+     &                    GAOXXX,GAOXXY,GAOXXZ,GAOXYY,GAOXYZ,
+     &                    GAOXZZ,GAOYYY,GAOYYZ,GAOYZZ,GAOZZZ,
+     &                    CSP,PA,PA2,DFTHRI)
+C
+C     O. Lutnaes, D. Wilson Feb 04
+C
+c     routine sets GAO___(1:NVCLEN, 1:KCKTA)
+#include <implicit.h>
+#include <priunit.h>
+#include <aovec.h>
+#include <maxorb.h>
+#include <maxaqn.h>
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0)
+C
+      DIMENSION GAOXXX(NVCLEN,KCKTA), GAOXXY(NVCLEN,KCKTA),
+     &          GAOXXZ(NVCLEN,KCKTA), GAOXYY(NVCLEN,KCKTA),
+     &          GAOXYZ(NVCLEN,KCKTA), GAOXZZ(NVCLEN,KCKTA),
+     &          GAOYYY(NVCLEN,KCKTA), GAOYYZ(NVCLEN,KCKTA),
+     &          GAOYZZ(NVCLEN,KCKTA), GAOZZZ(NVCLEN,KCKTA)
+      DIMENSION CSP(KHKTA,KCKTA), PA(3,NVCLEN), PA2(NVCLEN)
+      DIMENSION CAOXXX(MXAQN), CAOXXY(MXAQN),
+     &          CAOXXZ(MXAQN), CAOXYY(MXAQN),
+     &          CAOXYZ(MXAQN), CAOXZZ(MXAQN),
+     &          CAOYYY(MXAQN), CAOYYZ(MXAQN),
+     &          CAOYZZ(MXAQN), CAOZZZ(MXAQN)
+C
+#include <lmns.h>
+#include <onecom.h>
+#include <primit.h>
+#include <sdpre.h>
+C
+      DO IV = 1, NVCLEN
+         IF (SPHRA) THEN
+            DO K = 1, KCKTA
+               CAOXXX(K) = D0
+               CAOYYY(K) = D0
+               CAOZZZ(K) = D0
+               CAOXXY(K) = D0
+               CAOXXZ(K) = D0
+               CAOXYY(K) = D0
+               CAOXZZ(K) = D0
+               CAOYYZ(K) = D0
+               CAOYZZ(K) = D0
+               CAOXYZ(K) = D0
+            END DO
+         END IF
+C
+         DO IPRIMA = JSTA + 1, JSTA + NUCA
+            ALPHA = PRIEXP(IPRIMA)
+            TALPH = -D2*ALPHA
+            T2A   = TALPH*TALPH
+            T2AX  = T2A*PA(1,IV)
+            T2AY  = T2A*PA(2,IV)
+            T2AZ  = T2A*PA(3,IV)
+            TAPAX = TALPH*PA(1,IV)
+            TAPAY = TALPH*PA(2,IV)
+            TAPAZ = TALPH*PA(3,IV)
+            GA = PRICCF(IPRIMA,NUMCFA)*DEXP(-ALPHA*PA2(IV))
+            IF (DABS(GA).GT.DFTHRI) THEN
+               DO ICOMPA = 1, KCKTA
+                  L = LVALUA(ICOMPA)
+                  M = MVALUA(ICOMPA)
+                  N = NVALUA(ICOMPA)
+C
+                  PXP = D0
+                  PYP = D0
+                  PZP = D0
+                  PXT = D0
+                  PYT = D0
+                  PZT = D0
+                  IF (L.GT.2) PXT=SDPRE(L*(L-1)*(L-2))*(PA(1,IV)**(L-3))
+                  IF (M.GT.2) PYT=SDPRE(M*(M-1)*(M-2))*(PA(2,IV)**(M-3))
+                  IF (N.GT.2) PZT=SDPRE(N*(N-1)*(N-2))*(PA(3,IV)**(N-3))
+                  PXD = D0
+                  PYD = D0
+                  PZD = D0
+                  IF (L.GT.1) PXD = SDPRE(L*(L-1))*(PA(1,IV)**(L-2))
+                  IF (M.GT.1) PYD = SDPRE(M*(M-1))*(PA(2,IV)**(M-2))
+                  IF (N.GT.1) PZD = SDPRE(N*(N-1))*(PA(3,IV)**(N-2))
+                  PXM = D0
+                  PYM = D0
+                  PZM = D0
+                  IF (L.GT.0) PXM = SDPRE(L)*(PA(1,IV)**(L-1))
+                  IF (M.GT.0) PYM = SDPRE(M)*(PA(2,IV)**(M-1))
+                  IF (N.GT.0) PZM = SDPRE(N)*(PA(3,IV)**(N-1))
+                  PX0  = PA(1,IV)**L
+                  PY0  = PA(2,IV)**M
+                  PZ0  = PA(3,IV)**N
+                  PXP  = TAPAX*PX0
+                  PYP  = TAPAY*PY0
+                  PZP  = TAPAZ*PZ0
+                  PXPM = PXP + PXM
+                  PYPM = PYP + PYM
+                  PZPM = PZP + PZM
+                  P000 = PX0*PY0*PZ0
+C       s orbitals 
+                  IF (NHKTA.EQ.1) THEN
+                  GAXXX = TAPAX**3 + D3*TAPAX*TALPH
+                  GAYYY = TAPAY**3 + D3*TAPAY*TALPH
+                  GAZZZ = TAPAZ**3 + D3*TAPAZ*TALPH
+                  GAXXY = TAPAX**2*TAPAY + TALPH*PYP
+                  GAXXZ = TAPAX**2*TAPAZ + TALPH*PZP
+                  GAXYY = TAPAY**2*TAPAX + TALPH*PXP
+                  GAXZZ = TAPAZ**2*TAPAX + TALPH*PXP
+                  GAYYZ = TAPAY**2*TAPAZ + TALPH*PZP
+                  GAYZZ = TAPAZ**2*TAPAY + TALPH*PYP
+                  GAXYZ = TAPAX*TAPAY*TAPAZ
+C       p orbitals
+                  ELSE IF (NHKTA.EQ.2) THEN
+                  GAXXX = (TAPAX**3 + SDPRE(3*L+3)*TALPH*TAPAX)*P000
+     &                  + D3*TALPH*PXM*PY0*PZ0
+                  GAYYY = (TAPAY**3 + SDPRE(3*M+3)*TALPH*TAPAY)*P000
+     &                  + D3*TALPH*PYM*PX0*PZ0
+                  GAZZZ = (TAPAZ**3 + SDPRE(3*N+3)*TALPH*TAPAZ)*P000
+     &                  + D3*TALPH*PZM*PX0*PY0
+                  GAXXY = TAPAX**2*TAPAY*P000 + TAPAX*PXP*PYM*PZ0
+     &                  + SDPRE(2*L+1)*TALPH*PX0*PZ0*PYPM
+                  GAXXZ = TAPAX**2*TAPAZ*P000 + TAPAX*PXP*PZM*PY0
+     &                  + SDPRE(2*L+1)*TALPH*PX0*PY0*PZPM
+                  GAXYY = TAPAX*TAPAY**2*P000 + TAPAY*PYP*PXM*PZ0
+     &                  + SDPRE(2*M+1)*TALPH*PY0*PZ0*PXPM
+                  GAXZZ = TAPAX*TAPAZ**2*P000 + TAPAZ*PZP*PXM*PY0
+     &                  + SDPRE(2*N+1)*TALPH*PZ0*PY0*PXPM
+                  GAYYZ = TAPAY**2*TAPAZ*P000 + TAPAY*PYP*PZM*PX0
+     &                  + SDPRE(2*M+1)*TALPH*PY0*PX0*PZPM
+                  GAYZZ = TAPAY*TAPAZ**2*P000 + TAPAZ*PZP*PYM*PX0
+     &                  + SDPRE(2*N+1)*TALPH*PZ0*PX0*PYPM
+                  GAXYZ = TAPAX*TAPAY*TAPAZ*P000 + PXM*PYP*PZP
+     &                  + PXP*PYM*PZP + PXP*PYP*PZM
+C       d and higher orbitals
+                  ELSE  
+                  GAXXX = (TAPAX**3 + SDPRE(3*L+3)*TALPH*TAPAX)*P000
+     &                  + (PXT + SDPRE(3*L)*TALPH*PXM)*PY0*PZ0 
+                  GAYYY = (TAPAY**3 + SDPRE(3*M+3)*TALPH*TAPAY)*P000
+     &                  + (PYT + SDPRE(3*M)*TALPH*PYM)*PX0*PZ0 
+                  GAZZZ = (TAPAZ**3 + SDPRE(3*N+3)*TALPH*TAPAZ)*P000
+     &                  + (PZT + SDPRE(3*N)*TALPH*PZM)*PX0*PY0
+                  GAXXY = TAPAX**2*TAPAY*P000
+     &                  + (PXD + SDPRE(2*L+1)*TALPH*PX0)*PZ0*PYPM
+     &                  + PXP*TAPAX*PYM*PZ0
+                  GAXXZ = TAPAX**2*TAPAZ*P000
+     &                  + (PXD + SDPRE(2*L+1)*TALPH*PX0)*PY0*PZPM
+     &                  + PXP*TAPAX*PY0*PZM
+                  GAXYY = TAPAX*TAPAY**2*P000
+     &                  + (PYD + SDPRE(2*M+1)*TALPH*PY0)*PZ0*PXPM
+     &                  + PYP*TAPAY*PXM*PZ0
+                  GAXZZ = TAPAX*TAPAZ**2*P000
+     &                  + (PZD + SDPRE(2*N+1)*TALPH*PZ0)*PY0*PXPM
+     &                  + PZP*TAPAZ*PXM*PY0
+                  GAYYZ = TAPAY**2*TAPAZ*P000
+     &                  + (PYD + SDPRE(2*M+1)*TALPH*PY0)*PX0*PZPM
+     &                  + PYP*TAPAY*PZM*PX0
+                  GAYZZ = TAPAY*TAPAZ**2*P000
+     &                  + (PZD + SDPRE(2*N+1)*TALPH*PZ0)*PX0*PYPM
+     &                  + PZP*TAPAZ*PYM*PX0
+                  GAXYZ = TAPAX*TAPAY*TAPAZ*P000
+     &                  + PXM*PYM*PZM
+     &                  + PXM*PYM*PZP + PXM*PYP*PZM + PXP*PYM*PZM
+     &                  + PXM*PYP*PZP + PXP*PYM*PZP + PXP*PYP*PZM
+                  END IF
+C
+                  IF (SPHRA) THEN
+                     CAOXXX(ICOMPA) = CAOXXX(ICOMPA) + GAXXX*GA
+                     CAOYYY(ICOMPA) = CAOYYY(ICOMPA) + GAYYY*GA
+                     CAOZZZ(ICOMPA) = CAOZZZ(ICOMPA) + GAZZZ*GA
+                     CAOXXY(ICOMPA) = CAOXXY(ICOMPA) + GAXXY*GA
+                     CAOXXZ(ICOMPA) = CAOXXZ(ICOMPA) + GAXXZ*GA
+                     CAOXYY(ICOMPA) = CAOXYY(ICOMPA) + GAXYY*GA
+                     CAOXZZ(ICOMPA) = CAOXZZ(ICOMPA) + GAXZZ*GA
+                     CAOYYZ(ICOMPA) = CAOYYZ(ICOMPA) + GAYYZ*GA
+                     CAOYZZ(ICOMPA) = CAOYZZ(ICOMPA) + GAYZZ*GA
+                     CAOXYZ(ICOMPA) = CAOXYZ(ICOMPA) + GAXYZ*GA
+                  ELSE
+                     GAOXXX(IV,ICOMPA) = GAOXXX(IV,ICOMPA) + GAXXX*GA
+                     GAOXXY(IV,ICOMPA) = GAOXXY(IV,ICOMPA) + GAXXY*GA
+                     GAOXXZ(IV,ICOMPA) = GAOXXZ(IV,ICOMPA) + GAXXZ*GA
+                     GAOXYY(IV,ICOMPA) = GAOXYY(IV,ICOMPA) + GAXYY*GA
+                     GAOXYZ(IV,ICOMPA) = GAOXYZ(IV,ICOMPA) + GAXYZ*GA
+                     GAOXZZ(IV,ICOMPA) = GAOXZZ(IV,ICOMPA) + GAXZZ*GA
+                     GAOYYY(IV,ICOMPA) = GAOYYY(IV,ICOMPA) + GAYYY*GA
+                     GAOYYZ(IV,ICOMPA) = GAOYYZ(IV,ICOMPA) + GAYYZ*GA
+                     GAOYZZ(IV,ICOMPA) = GAOYZZ(IV,ICOMPA) + GAYZZ*GA
+                     GAOZZZ(IV,ICOMPA) = GAOZZZ(IV,ICOMPA) + GAZZZ*GA
+
+                  END IF
+               END DO
+            END IF
+         END DO
+C
+         IF (SPHRA) THEN
+            DO I = 1, KHKTA
+               SPHXXX = D0
+               SPHXXY = D0
+               SPHXXZ = D0
+               SPHXYY = D0
+               SPHXYZ = D0
+               SPHXZZ = D0
+               SPHYYY = D0
+               SPHYYZ = D0
+               SPHYZZ = D0
+               SPHZZZ = D0
+               DO J = 1, KCKTA
+                  SPHFAC = CSP(I,J)
+                  IF (ABS(SPHFAC).GT.D0) THEN
+                     SPHXXX = SPHXXX + SPHFAC*CAOXXX(J)
+                     SPHYYY = SPHYYY + SPHFAC*CAOYYY(J)
+                     SPHZZZ = SPHZZZ + SPHFAC*CAOZZZ(J)
+                     SPHXXY = SPHXXY + SPHFAC*CAOXXY(J)
+                     SPHXXZ = SPHXXZ + SPHFAC*CAOXXZ(J)
+                     SPHXYY = SPHXYY + SPHFAC*CAOXYY(J)
+                     SPHXZZ = SPHXZZ + SPHFAC*CAOXZZ(J)
+                     SPHYYZ = SPHYYZ + SPHFAC*CAOYYZ(J)
+                     SPHYZZ = SPHYZZ + SPHFAC*CAOYZZ(J)
+                     SPHXYZ = SPHXYZ + SPHFAC*CAOXYZ(J)
+                  END IF
+               END DO
+               GAOXXX(IV,I) = SPHXXX
+               GAOYYY(IV,I) = SPHYYY
+               GAOZZZ(IV,I) = SPHZZZ
+               GAOXXY(IV,I) = SPHXXY
+               GAOXXZ(IV,I) = SPHXXZ
+               GAOXYY(IV,I) = SPHXYY
+               GAOXZZ(IV,I) = SPHXZZ
+               GAOYYZ(IV,I) = SPHYYZ
+               GAOYZZ(IV,I) = SPHYZZ
+               GAOXYZ(IV,I) = SPHXYZ
+            END DO   
+         END IF      
+      END DO         
+      RETURN         
+      END            
+C
 C  /* Deck blgetgb1 */
       SUBROUTINE BLGETGB1(NVCLEN,NBAST,GAO,PA,GABX,GABY,GABZ)
 C
@@ -1310,14 +1577,17 @@ c     (orbital values=O, [dO/dx,dO/dy,dO/dz, [d0/dxx, ..]],
 c      [dO/dBx, dO/dBy, dO/dBz])
 #include <dftinf.h>
 #include <inforb.h>
+#include "dftmolhes.h"
 C
       NDER = GEODRV
       IF (NDER.EQ.0) NTYPSO =  1
       IF (NDER.EQ.1) NTYPSO =  4
       IF (NDER.EQ.2) NTYPSO = 10
+      IF (NDER.EQ.3) NTYPSO = 20
       NSO0 = 1
       NSO1 = 2
       NSO2 = 5
+      NSO3 = 11
       IF (DOLND) THEN
          NTYPSO = NTYPSO + 3
          NSOB   = NTYPSO - 2 
@@ -1338,6 +1608,7 @@ c      NOSB1 defined in common block but never used? or is it NSOB1?
       KSO0  = (NSO0-1)*NBAST + 1
       KSO1  = (NSO1-1)*NBAST + 1
       KSO2  = (NSO2-1)*NBAST + 1
+      KSO3  = (NSO3-1)*NBAST + 1
       KSOB  = (NSOB-1)*NBAST + 1
       KSOB1 = (NSOB1-1)*NBAST + 1
       ITYPE = NTYPSO
@@ -1349,9 +1620,9 @@ C
 #include <inforb.h>
       DIMENSION TMP(NVCLEN,NBAST),NBLOCKS(NSYM),IBLOCKS(2,LDAIB,NSYM)
       DO ISYM = 1, NSYM
-         DO IBL=1,NBLOCKS(ISYM)
-            DO IDX= IBLOCKS(1,IBL,ISYM), IBLOCKS(2,IBL,ISYM)
-               DO J=1,NVCLEN
+         DO IBL = 1, NBLOCKS(ISYM)
+            DO IDX = IBLOCKS(1,IBL,ISYM), IBLOCKS(2,IBL,ISYM)
+               DO J = 1, NVCLEN
                   TMP(J,IDX) = 0D0
                END DO
             END DO

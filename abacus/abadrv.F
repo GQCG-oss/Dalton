@@ -224,7 +224,13 @@ C
       END IF
       CALL GETTIM(TIMDIP,TIMDUM)
       TIMDIP = TIMDIP - TIMSTR
-      IF (LUDA1 .GT. 0) CALL GPCLOSE(LUDA1,'DELETE')
+      IF (LUDA1 .GT. 0) THEN
+         IF (DFTRUN .AND. MOLHES) THEN
+            CALL GPCLOSE(LUDA1,'KEEP')
+         ELSE
+            CALL GPCLOSE(LUDA1,'DELETE')
+         END IF
+      END IF
 C
 C     ******************************************
 C     ***** Solve MCSCF response equations *****

@@ -130,11 +130,13 @@ C
 #include <inftap.h>
 #include <infpri.h>
 #include <cbgetdis.h>
+#include <dftcom.h> 
+#include <wrkrsp.h>
 C ---
-      PARAMETER (IDTIM1 = 6, IDTIM2 = 8)
+      PARAMETER (IDTIM1 = 6, IDTIM2 = 8, D4 = 4.0D0)
 #include <inftim.h>
 C
-      LOGICAL SOLVNT, ORBLIN, MEMLIN
+      LOGICAL SOLVNT, ORBLIN, MEMLIN, DFTADX
 C
 C
       CALL QENTER('LINTRN')
@@ -293,11 +295,14 @@ C
          JUBO = KUBO + (IOSIM-1)*N2ORBX
          CALL UPKWOP(NWOPT,JWOP,BOVECS(1,IOSIM),WRK(JUBO))
   200 CONTINUE
+      DFTADX = DFTADD
+      DFTADD = .FALSE.
       CALL SIRTR1(MCSIM,NOSIM,CMO,
      &            BCVECS,CREF,INDXCI,WRK(KDTV),WRK(KFTV),WRK(KFTQ),
      &            WRK(KUBO),DV,PV,FC,FV,
      &            WRK(KFXC),WRK(KFXV),WRK(KFXQ),WRK(KEMYX),WRK(KH2XAC),
      &            WRK,K3A,L3A,ORBLIN,.FALSE.)
+      DFTADD = DFTADX
 C     CALL SIRTR1(NCSIM,NOSIM,CMO,
 C    &            BCVECS,CREF,INDXCI,DTV,FTV,FTQ,
 C    &            UBO,DV,PV,FC,FV,FXC,FXV,FXQ,EMYX,H2XAC,
@@ -382,6 +387,27 @@ C *** end of electronic contribution to LINTRN
 C
   900 CONTINUE
       CALL GETTIM(T4,W4)
+      DFTADX = DFTADD
+      DFTADD = .TRUE.
+      IF (DFTRUN) THEN
+         DO IOSIM = 1,NOSIM
+           CALL DZERO(WRK(KFXC),N2ORBX)
+           CALL UPKWOP(NWOPT,JWOP,BOVECS(1,IOSIM),WRK(KUBO))
+           KSYMOX = KSYMOP
+           KSYMOP = 1
+           CALL DFT_LIN_RESPF(WRK(KFXC),CMO,WRK(KUBO),
+     &                        .FALSE.,KSYMOP,WRK(K3A),L3A)
+           KSYMOP = KSYMOX
+           CALL PKWOP(NWOPT,JWOP,WRK(KUBO),WRK(KFXC))
+           IF (IPRINT.GT.5) THEN
+              DO ILOOP = 1,NWOPT
+                 WRITE(LUPRI,*) WRK(KSOVEC+ILOOP-1)
+              END DO
+           END IF
+           CALL DAXPY(NWOPT,D4,WRK(KUBO),1,WRK(KSOVEC+(IOSIM-1)*NVAR),1)
+         END DO
+      END IF
+      DFTADD = DFTADX 
 C
 C *** Now the solvent contribution, if any
 C

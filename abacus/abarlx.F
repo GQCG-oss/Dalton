@@ -180,6 +180,7 @@ C
 #include <inforb.h>
 #include <inflin.h>
 #include <gdvec.h>
+#include <dftcom.h>
 C
       IF (SKIP) RETURN
       CALL QENTER('RELAX')
@@ -227,8 +228,14 @@ C
       ELSE
          IF (MOLHES) THEN
             KHESRL = 1
-            KLAST  = KHESRL + MXCOOR*MXCOOR
-            LWRK1  = LWORK - KLAST + 1
+            IF (DFTRUN) THEN 
+               KDFTSH = KHESRL + MXCOOR*MXCOOR
+               KLAST  = KDFTSH + MXCOOR*MXCOOR
+               LWRK1  = LWORK - KLAST + 1
+            ELSE 
+               KLAST  = KHESRL + MXCOOR*MXCOOR
+               LWRK1  = LWORK - KLAST + 1
+            END IF
             IF (KLAST .GT. LWORK) CALL STOPIT('ADDREL',' ',KLAST,LWORK)
          ELSE
             KLAST  = 1
@@ -338,6 +345,13 @@ C
          END IF
  210     CONTINUE
  200  CONTINUE
+C
+C     ******************************************************
+C     Calculate static contribution to dft molecular hessian
+C     ******************************************************
+C
+      IF (MOLHES.AND.DFTRUN) 
+     &           CALL DFTMOLHES(LURD,WORK(KLAST),LWRK1,IPRINT)
 C
 C     ***********************
 C     ***** Close units *****

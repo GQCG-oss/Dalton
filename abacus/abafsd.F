@@ -36,7 +36,7 @@ C
 C
 C  /* Deck getfd */
       SUBROUTINE GETFD(IATOM,NOORBI,TWOH1,NOH1,NOH2,NODC,NODV,IPRINT,
-     &                 DERIV,EMYD,CMO,DV,FCD,FVD,WORK,LWORK,AOMAT,
+     &                 DERIV,EMYD,CMO,DV,FCD,FVD,FDFTD,WORK,LWORK,AOMAT,
      &                 DOREAL,INTPRI)
 C
 C  3-Nov-1988 hjaaj -- interface routine for GETFD
@@ -45,7 +45,7 @@ C
       LOGICAL   TWOH1, NOH1, NOH2, NODC, NODV, DERIV(3),
      *          NOORBI, AOMAT, DOREAL
       DIMENSION CMO(*), DV(*), FCD(N2BASX,3), FVD(N2ORBX,3),
-     *          EMYD(3), WORK(LWORK)
+     *          EMYD(3), FDFTD(N2BASX,3), WORK(LWORK)
 #include <priunit.h>
 #include <iratdef.h>
 C
@@ -78,7 +78,7 @@ C
       IF (KGETFD.GT.LWORK) CALL STOPIT('GETFD',' ',KGETFD,LWORK)
 C
       CALL GETFD1(IATOM,NOORBI,TWOH1,NOH1,NOH2,NODC,NODV,IPRINT,
-     &            DERIV,EMYD,CMO,DV,FCD,FVD,
+     &            DERIV,EMYD,CMO,DV,FCD,FVD,FDFTD,
      &            WORK(KFCAOX),WORK(KFCAOY),WORK(KFCAOZ),
      &            WORK(KFVAOX),WORK(KFVAOY),WORK(KFVAOZ),
      &            WORK(KDCAO), WORK(KDVAO), WORK(KDCFO),
@@ -89,8 +89,8 @@ C
       END
 C  /* Deck getfd1 */
       SUBROUTINE GETFD1(IATOM,NOORBI,TWOH1,NOH1,NOH2,NODC,NODV,IPRINT,
-     &                  DERIV,EMYD,CMO,DV,FCD,FVD,FCSOX,FCSOY,FCSOZ,
-     &                  FVSOX,FVSOY,FVSOZ,DCSO,DVSO,DCFOLD,
+     &                  DERIV,EMYD,CMO,DV,FCD,FVD,FDFTD,FCSOX,FCSOY,
+     &                  FCSOZ,FVSOX,FVSOY,FVSOZ,DCSO,DVSO,DCFOLD,
      &                  IBUF,WORK,LWORK,AOMAT,DOREAL,INTPRI)
 C
 C     This subroutine calculates the AO-differentiated Fock (inactive
@@ -109,7 +109,7 @@ C
      *        NOORBI, AOMAT, DOFV, DOREAL
 #include <inforb.h>
       DIMENSION IBUF(4,600), CMO(*), DV(*),
-     *          FCD(N2BASX,3), FVD(N2ORBX,3),
+     *          FCD(N2BASX,3), FVD(N2ORBX,3), FDFTD(N2BASX,3),
      *          FCSOX(NNBASX), FCSOY(NNBASX), FCSOZ(NNBASX),
      *          FVSOX(NNBASX), FVSOY(NNBASX), FVSOZ(NNBASX),
      *          DCSO(NNBASX),  DVSO(NNBASX),
@@ -185,9 +185,21 @@ C
 C
 C        DFT contribution
 C
-         IF (DFTADD .AND. IATOM .EQ. 0 .AND. .NOT.NOLOND) THEN
-             CALL DFTBRHS(FCD,WORK,LWORK,IPRINT)
+         write(lupri,*) 'djw: abafsd: dftadd',dftadd
+         IF (DFTADD) THEN
+            IF (IATOM.GT.0) THEN
+               CALL DZERO(FDFTD,3*N2BASX)
+               CALL DFTHED(IATOM,FCD(1,1),FCD(1,2),FCD(1,3),
+     &              FDFTD(1,1),FDFTD(1,2),FDFTD(1,3),
+     &              WORK(KLAST),LWORK,IPRINT)
+            ELSE IF (IATOM .EQ. 0 .AND. .NOT.NOLOND) THEN
+               CALL DFTBRHS(FCD,WORK,LWORK,IPRINT)
+            END IF
          END IF
+C
+c        IF (DFTADD .AND. IATOM .EQ. 0 .AND. .NOT.NOLOND) THEN
+c            CALL DFTBRHS(FCD,WORK,LWORK,IPRINT)
+c        END IF
 C
          IF (IATOM .GT. 0) THEN
             CALL DSITSP(NBAST,FCD(1,1),FCSOX)

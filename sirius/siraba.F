@@ -65,7 +65,7 @@ LONTR1: integrated into ABATR1
 C  /* Deck abarhs */
       SUBROUTINE ABARHS(NGD,DV,PV,FC,FV,CREF,CMO,
      &                  TD,FDC,FDV,FDQ,H2DAC,LH2DAC,GRDICT,GRDACT,
-     &                  GD,XNDXCI,LONDON,WRK,KFRSAV,LFRSAV)
+     &                  GD,XNDXCI,LONDON,DFTFD,WRK,KFRSAV,LFRSAV)
 C
 C Dec 1989 Hans Joergen Aa. Jensen
 C Apr 1992 HJAaJ + Rika Kobayashi (London orbitals)
@@ -94,12 +94,13 @@ C
 #include <implicit.h>
       DIMENSION DV(1), PV(1), FC(1), FV(1), CREF(1), CMO(1)
       DIMENSION FDC(N2ORBX,1),FDV(N2ORBX,1),FDQ(1)
-      DIMENSION H2DAC(LH2DAC,1)
+      DIMENSION H2DAC(LH2DAC,1), DFTFD(N2ORBX,1)
       DIMENSION TD(1), GRDICT(NGD),  GRDACT(NGD),  GD(NVARPT,NGD)
       DIMENSION XNDXCI(1),    WRK(1)
       LOGICAL   LONDON
 C
-      PARAMETER ( DM1 = -1.0D0, D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0 )
+      PARAMETER ( DM1 = -1.0D0, D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0,
+     *            D2 = 2.0D0)
 C
 C  Local:
 C
@@ -115,6 +116,8 @@ C
 #include <inforb.h>
 #include <inflin.h>
 #include <cbgetdis.h>
+#include <dftcom.h>
+#include <priunit.h>
 C
 C (0) Initialize
       CALL QENTER('ABARHS')
@@ -189,12 +192,23 @@ C
 C
 C (3) Calculate orbital part of GD vectors.
 C
+C     Adding last term of dft-contribution to fock derivative matrix
+C
+      IF (DFTADD) THEN
+         CALL DAXPY(N2ORBX,D1,DFTFD,1,FDC,1)
+      END IF
+C
       IF (NWOPPT .GT. 0) THEN
          DO 300 IGD = 1,NGD
             JFDQ = 1 + NASHT*NORBT*(IGD-1)
             CALL ABAOGR(WRK(KUDV),FDC(1,IGD),FDV(1,IGD),
      &                  FDQ(JFDQ),LONDON,GD(NCONST+1,IGD))
   300    CONTINUE
+      END IF
+C     Removing last term of dft-contribution to fock derivative matrix,
+C     now the matrix is the generalized fock derivative matrix
+      IF (DFTADD) THEN
+         CALL DAXPY(N2ORBX,DM1,DFTFD,1,FDC,1)
       END IF
 C
 C (4) Project out CREF component of GD vectors and
@@ -1196,9 +1210,9 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
-      PARAMETER (D2 = 2.0D0,DM1 = -1.0D0)
+      PARAMETER (D2 = 2.0D0, DM1 = -1.0D0)
 C
-      LOGICAL LONDON
+      LOGICAL LONDON, DFTADX
       DIMENSION TMAT(N2ORBX,NTMAT),CMO(*),UDV(*)
       DIMENSION FXC(NORBT,NORBT,NTMAT), FXV(NORBT,NORBT,NTMAT)
       DIMENSION WRK(LWRK)
@@ -1212,6 +1226,7 @@ C
 #include <infinp.h>
 #include <inforb.h>
 #include <infvar.h>
+#include <dftcom.h>
 C
       PARAMETER (MXTMAT = 50)
       DIMENSION ISYMDM(MXTMAT), IFCTYP(MXTMAT)
@@ -1258,8 +1273,11 @@ CTROND         IFCSET = 1
          ISYMDM(I) = JWOPSY
          IFCTYP(I) = IFCSET
   100 CONTINUE
+      DFTADX = DFTADD
+      IF (LONDON) DFTADD = .FALSE.
       CALL SIRFCK(WRK(KFXCAO),WRK(KDXCAO),NXMAT,ISYMDM,IFCTYP,
      &            DIRFCK,WRK(KFREE),LFREE)
+      DFTADD = DFTADX
 #if defined (VAR_OLDCODE)
 C
 CHJAAJ: this is from FCKDIR; change it !

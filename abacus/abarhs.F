@@ -485,6 +485,7 @@ C
 #include <inflin.h>
 #include <infpar.h>
 #include <cbieri.h>
+#include <dftcom.h>
 C
 C     For GDHAM true:
 C
@@ -625,8 +626,14 @@ C           K.Ruud comment: FDC and FDV should be of dimension N2ORBX.
 C           However, in order to save memory, they are used as temporary
 C           arrays for AO-matrices in GETFD
 C
-            KFDC   = KDV    + NNASHX
-            KFDV   = KFDC   + 3*N2BASX
+            IF (DFTADD) THEN
+               KDFTFD = KDV    + NNASHX
+               KFDC   = KDFTFD + 3*N2BASX
+               KFDV   = KFDC   + 3*N2BASX
+            ELSE
+               KFDC   = KDV    + NNASHX
+               KFDV   = KFDC   + 3*N2BASX
+            END IF
 C
 C           Calculated in GETSD:
 C
@@ -960,9 +967,9 @@ C
                IF (IPRFD .GT. 2)
      &            CALL TIMER('START ',TIMSTR,TIMEND)
                CALL GETFD(IATOM,NOORBI,TWOH1,NOH1,NOH2,NODC,NODV,IPRFD,
-     &                    DERIV,EMYD, WORK(KCMO),WORK(KDV),WORK(KFDC),
-     &                    WORK(KFDV),WORK(KGETFD),LGETFD,AOMAT,DOREAL,
-     &                    IPRINT)
+     &                    DERIV,EMYD,WORK(KCMO),WORK(KDV),WORK(KFDC),
+     &                    WORK(KFDV),WORK(KDFTFD),WORK(KGETFD),LGETFD,
+     &                    AOMAT,DOREAL,IPRINT)
                IF (IPRFD .GT. 2)
      &            CALL TIMER('GETFD ',TIMSTR,TIMEND)
             END IF
@@ -1017,7 +1024,7 @@ C           **************************************
 C
             CALL MAKEGD(DOSFD,EMYD,WORK(KCMO),WORK(KDV),WORK(KFDC),
      &                  WORK(KFDV),WORK(KTD),WORK(KFOCK),
-     &                  WORK(KPV),WORK(KWMAT),WORK(KSYMAT),
+     &                  WORK(KPV),WORK(KWMAT),WORK(KSYMAT),WORK(KDFTFD),
      &                  WORK(KWRKGD),LWRKGD,IATOM,DERIV,MAXSIM,NOORBI,
      &                  NOH1,NOH2,NODC,NODV,NOPV,
      &                  NOORTH,LONDON,RUNTRA,TRATST,FCKTST,
@@ -1065,7 +1072,7 @@ C
       END
 C  /* Deck makegd */
        SUBROUTINE MAKEGD(DOSFD,EMYD,CMO,DV,FDC,FDV,TD,
-     &                   FOCK,PV,WMAT,SYMAT,WORK,LWORK,IATOM,
+     &                   FOCK,PV,WMAT,SYMAT,DFTFD,WORK,LWORK,IATOM,
      &                   DERIV,MAXSIM,NOORBI,NOH1,NOH2,NODC,NODV,NOPV,
      &                   NOORTH,LONDON,RUNTRA,TRATST,FCKTST,RUNGDY,
      &                   LUGDH,IPRMAX,IPRALL,IPRTRA,IPRGDY)
@@ -1091,7 +1098,7 @@ C
       DIMENSION EMYD(3), CMO(NCMOT), WMAT(N2ORBX,3),
      &          DV(NNASHX), PV(*), SYMAT(N2ORBX,*),
      &          FDC(N2BASX,3), FDV(N2ORBX,3), TD(N2BASX,3),
-     &          FOCK(N2ORBT), WORK(LWORK)
+     &          FOCK(N2ORBT), DFTFD(N2BASX,3),WORK(LWORK)
       LOGICAL DERIV(3), NODC, NODV, NOPV, RUNTRA, TRATST,FCKTST, RUNGDY,
      &        NOORBI, NOORTH, NOH1, NOH2 ,LONDON, DOSFD, SUSCEP, ANTI,
      &        FOUND
@@ -1114,6 +1121,7 @@ C
 #include <energy.h>
 #include <suscpt.h>
 #include <abares.h>
+#include <dftcom.h>
 C
       CALL QENTER('MAKEGD')
       SUSCEP = IATOM .EQ. 0 .AND. (MAGSUS .OR. MOLGFA)
@@ -1283,7 +1291,12 @@ C
          KFDCSQ = KFREE
          KFDVSQ = KFDCSQ + N2ORBX
          KTDSQ  = KFDVSQ + N2ORBX
-         KUMAT  = KTDSQ  + N2ORBX
+         KDFTSQ = KTDSQ  + N2ORBX 
+         IF (DFTADD) THEN
+            KUMAT = KDFTSQ + N2ORBX
+         ELSE
+            KUMAT = KDFTSQ
+         END IF
          IF (SOLVNT) THEN
             KWSQ = KUMAT  + N2ORBX
          ELSE
@@ -1402,6 +1415,9 @@ C
                CALL EXFDTD(TD(1,ICOOR),WORK(KTDSQ),ISYM,IPRMAX)
             END IF
             CALL EXFDTD(FDC(1,ICOOR),WORK(KFDCSQ),ISYM,IPRMAX)
+            IF (DFTADD) THEN
+               CALL EXFDTD(DFTFD(1,ICOOR),WORK(KDFTSQ),ISYM,IPRMAX)
+            END IF
             IF (NASHT .GT. 0) THEN
                CALL EXFDTD(FDV(1,ICOOR),WORK(KFDVSQ),ISYM,IPRMAX)
             ELSE
@@ -1485,7 +1501,7 @@ CSPAS : 3/12-98 : changes for SOPPA
      &                           WORK(KFDCSQ),WORK(KFDVSQ),WORK(KQD),
      &                           WORK(KH2D),LH2DAC,GRDICT,GRDACT,
      &                           WORK(KGD),WORK(KCINDX),LONDON,
-     &                           WORK(KWKRHS),1,LWKRHS)
+     &                           WORK(KDFTSQ),WORK(KWKRHS),1,LWKRHS)
                   ENDIF
 CKeinSPASmehr
                   IF (IPRGDY .GT. 2)

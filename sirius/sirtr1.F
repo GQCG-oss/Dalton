@@ -656,7 +656,7 @@ C
       DIMENSION DXCAO(N2BASX,*),DXVAO(N2BASX,*),DTVAO(N2BASX,*)
       DIMENSION FXCAO(N2BASX,*),FXVAO(N2BASX,*),FTVAO(N2BASX,*)
       DIMENSION WRK(*)
-      LOGICAL   AODRCT, P6SAVE
+      LOGICAL   AODRCT, P6SAVE, DFTADX
 C
 #include <dummy.h>
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0)
@@ -680,6 +680,7 @@ C
 #include <inftap.h>
 #include <infpri.h>
 #include <infinp.h>
+#include <abainf.h>
 C
 #if defined (VAR_DEBUG)
 #include <idbg.h>
@@ -885,7 +886,7 @@ C
 C
 C     add DFT contribution in MO BASIS
 C
-      IF (DODFT) THEN
+      IF (DODFT .AND. .NOT. MOLHES) THEN
          IF (NASHT.GT.0) CALL QUIT('TR1FCY: open shell DFT not yet')
 c        TODO         DFTIMG = .FALSE.
          ksymop = jwopsy
