@@ -50,9 +50,6 @@ cat > energy_douglaskroll.dal <<'%EOF%'
 .DOUGLAS-KROLL
 **WAVE FUNCTION
 .HF
-*ORBITAL
-.MOSTART
- H1DIAG
 **END OF INPUT
 %EOF%
 #######################################################################
