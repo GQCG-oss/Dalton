@@ -21,7 +21,7 @@ cat > rsp_hfc.info <<'%EOF%'
    rsp_esr
    -------
    Molecule:         TiF3
-   Wave Function:    Restricted open-shell DFT:B3LYP  
+   Wave Function:    Restricted open-shell DFT:BP86  
    Test Purpose:     Single-point calculation of hfc parameters
 %EOF%
 
@@ -32,7 +32,7 @@ cat > rsp_hfc.mol <<'%EOF%'
 BASIS
 STO-3G 
 TiF3. 
-B3LYP.
+
     2              *
        22.    1         
 Ti    0.000000  0.000000   0.000000
