@@ -652,6 +652,19 @@ C     .. NMLAU indentifies input line with Angstroms or bohrs indicator.
       ELSE
          ANG = .FALSE.
       ENDIF
+C
+C     Currently the program cannot handle symmetry if there is a chance 
+C     that the atoms in the input may be different sue to different basis
+C     sets
+C     
+      IF (ADDSYM .AND. ATOMBA) THEN
+         WRITE (LUPRI,'(A,/A)')' The symmetry of the molecule cannot'//
+     &        ' be determined when ATOMBASIS is used',
+     &        ' Please specify the molecular symmetry in the input'//
+     &        ' and be welcome back'
+         CALL QUIT('Symmetry cannot be determined when ATOMBASIS '//
+     &             'is used')
+      END IF
 C*****************************************************************************
 C Process Cartesian to spherical or your own transformation
 C     note: SPHINP will read additional input lines if DOOWN true
