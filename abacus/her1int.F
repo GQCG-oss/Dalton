@@ -360,8 +360,8 @@ C
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
       ELSE IF (INTTYP .EQ.50) THEN
-	 JMAXD  = 1
-	 JMAXM  = 0
+         JMAXD  = 1
+         JMAXM  = 0
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
       ELSEIF (INTTYP .EQ.51) THEN
@@ -520,6 +520,11 @@ cLig <<
          JMAXD = 2
          JMAXM = 1
          DONUC1= .FALSE.
+         DOMOM1 = .TRUE.
+      ELSE IF (INTTYP .EQ.98) THEN
+         JMAXD  = 2
+         JMAXM  = 0
+         DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
       END IF
 C
@@ -1005,7 +1010,7 @@ C
          ELSE IF (INTTYP.EQ.12 .OR. INTTYP.EQ.58 .OR. INTTYP.EQ.96) THEN
             CALL DSOTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,DOATOM,
      &                  KAB,TRIANG,NATOM,INTADR,NSHINT,INTTYP,IPRINT)
-         ELSE IF ((INTTYP .EQ. 14) .OR. (INTTYP .EQ. 44)) THEN
+         ELSE IF (INTTYP.EQ.14 .OR. INTTYP.EQ.44 .OR. INTTYP.EQ.98) THEN
             CALL HDOTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,IORBA,IORBB,
      &                  NBAST,INTTYP,IPRINT)
 cLig <> added the call to NSSTRA for INTTYP = 82
@@ -1158,7 +1163,7 @@ cLig <> set DIFODC true also for INTTYP = 81 and 82
      &    .OR. (INTTYP.EQ.74) .OR. (INTTYP.EQ.80) .OR. (INTTYP.EQ.81)
      &    .OR. (INTTYP.EQ.82) .OR. (INTTYP.EQ.83) .OR. (INTTYP.EQ.84)
      &    .OR. (INTTYP.EQ.91) .OR. (INTTYP.EQ.92) .OR. (INTTYP.EQ.93)
-     &    .OR. (INTTYP.EQ.94) .OR. (INTTYP.EQ.97)
+     &    .OR. (INTTYP.EQ.94) .OR. (INTTYP.EQ.97) .OR. (INTTYP.EQ.98)
       ADDNAI = (INTTYP.EQ. 5) .OR. (INTTYP.EQ.19) .OR. (INTTYP.EQ.20)
      &    .OR. (INTTYP.EQ.24) .OR. (INTTYP.EQ.25) .OR. (INTTYP.EQ.51)
      &    .OR. (INTTYP.EQ.57) .OR. (INTTYP.EQ.61) .OR. (INTTYP.EQ.62)
@@ -1363,8 +1368,13 @@ C        -----------------------------------------------------
 C
          ELSE IF ((INTTYP .EQ. 3) .OR. (INTTYP .EQ. 14) .OR.
      &            (INTTYP .EQ. 44).OR. (INTTYP .EQ. 59)) THEN
-            CALL DPVINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
-     &                  CORPX,CORPY,CORPZ)
+            CALL DPVINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT)
+C
+C        <d2/dx2>, <d2/dy2>, <d2/dz2> integrals for SQH2DO /hjaaj Oct 2004
+C        -------------------------------------------------
+C
+         ELSE IF (INTTYP .EQ. 98) THEN
+            CALL DV2INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT)
 C
 C        Quadrupole integrals
 C        --------------------
@@ -4499,8 +4509,7 @@ C
       RETURN
       END
 C  /* Deck dpvint */
-      SUBROUTINE DPVINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
-     &                  CORPX,CORPY,CORPZ)
+      SUBROUTINE DPVINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT)
 C
 C     tuh Jan. 17 1990
 C
@@ -4531,6 +4540,49 @@ C
          SHLINT(INT,2) = SHLINT(INT,2) - SX0*DY0*SZ0
          SHLINT(INT,3) = SHLINT(INT,3) - SX0*SY0*DZ0
   100 CONTINUE
+      RETURN
+      END
+C  /* Deck dv2int */
+      SUBROUTINE DV2INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT)
+C
+C     <d2/dx2>, <d2/dy2>, <d2/dz2>.
+C
+C     H.J.Aa.Jensen, Oct. 2004. Based on KININT and DPVINT.
+C     For use with SQH2DO.
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+      PARAMETER (DP5 = 0.5 D00)
+      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
+     &          SHLINT(KCKTAB,3)
+#include <onecom.h>
+#include <lmns.h>
+      INT = 0
+      DO 100 ICOMPA = 1,KCKTA
+         LVALA = LVALUA(ICOMPA)
+         MVALA = MVALUA(ICOMPA)
+         NVALA = NVALUA(ICOMPA)
+      DO 100 ICOMPB = 1, KCKTB
+         LVALB = LVALUB(ICOMPB)
+         MVALB = MVALUB(ICOMPB)
+         NVALB = NVALUB(ICOMPB)
+C
+C    **********************************************
+C    ***** CALCULATE second derivative INTEGRALS **
+C    **********************************************
+C
+         X0 = SHGTF*ODC(LVALA,LVALB,0,0,0,1)
+         Y0 = SHGTF*ODC(MVALA,MVALB,0,0,0,2)
+         Z0 = SHGTF*ODC(NVALA,NVALB,0,0,0,3)
+         X2 = SHGTF*ODC(LVALA,LVALB,0,2,0,1)
+         Y2 = SHGTF*ODC(MVALA,MVALB,0,2,0,2)
+         Z2 = SHGTF*ODC(NVALA,NVALB,0,2,0,3)
+         INT = INT + 1
+         SHLINT(INT,1) = SHLINT(INT,1) + X2*Y0*Z0
+         SHLINT(INT,2) = SHLINT(INT,2) + X0*Y2*Z0
+         SHLINT(INT,3) = SHLINT(INT,3) + X0*Y0*Z2
+ 100  CONTINUE
       RETURN
       END
 C  /* Deck rstint */
@@ -5617,6 +5669,7 @@ C  /* Deck hdotra */
                ISCOOR = IPTCNT(3*(NCENTA - 1) + ICOOR,IREPO,1)
                FAC = HKAB
             ELSE IF (INTTYP .EQ. 59 .OR. INTTYP .EQ. 70) THEN
+C              ... not use (hjaaj Oct 2004)
                ISCOOR = 0
                IF (NCENTA .NE. NCENTB) THEN
                   ISCORA = IPTCNT(3*(NCENTA - 1) + ICOOR,IREPO,1)
@@ -5645,6 +5698,7 @@ C  /* Deck hdotra */
                   END IF
                END IF
             ELSE
+C              ... INTTYP 44 and 98
                ISCOOR = IPTCNT(3*(NCENTB - 1) + ICOOR,IREPO,1)
                FAC = HKAB*PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
      *                   *PT(IBTAND(IREPO, ISYMOP))

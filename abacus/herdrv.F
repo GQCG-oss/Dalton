@@ -208,7 +208,7 @@ C
 C     NTABLE has been increased from 102 to 105 (WK/UniKA/04-11-2002).
 cLig <> changed NTABLE from 111 to 112
 C     NTABLE has been increased 114 (WK/UniKA/09-03-2004).
-      PARAMETER (NDIR = 7, NTABLE = 121)
+      PARAMETER (NDIR = 7, NTABLE = 123)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, D10 = 1.0D1)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -266,7 +266,7 @@ cLig <> added RANGMO and RPSO
      &             '.U21INT', '.DCCR12', '.RANGMO', '.RPSO  ',
      &             '.DPTPXP', '.NOPICH', '.OZ-KE ', '.PSO-KE', 
      &             '.DNS-KE', '.SD-KE ', '.FC-KE ', '.DSO-KE', 
-     &             '.PSO-OZ'/
+     &             '.PSO-OZ', '.SQHD2O', 'xxxxxxx'/
 C
 C     Check if input has been processed earlier.
 C
@@ -281,6 +281,17 @@ C
 C     *** Initialize ***
 C
       CALL HERINI
+C
+C     If WESTA - calculate integrals for WESTA program
+C
+      IF (WESTA) THEN
+         SQHDOR = .TRUE.
+         SQHD2O = .TRUE.
+         DIPLEN = .TRUE.
+         DIPVEL = .TRUE.
+         ANGMOM = .TRUE.
+         ONEPRP = .TRUE.
+      END IF
 C
       CALL TITLER('Output from HERMIT input processing','*',118)
 C
@@ -332,7 +343,7 @@ cLig <> added go to 211 and 212
      &                191,192,193,194,195,196,197,198,199,200,
      &                201,202,203,204,205,206,207,208,209,210,
      &                211,212,213,214,215,216,217,218,219,220,
-     &                221), I
+     &                221,222,223), I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -908,6 +919,13 @@ cLig <<
             PSOOZ = .TRUE.
             ONEPRP = .TRUE.
             GO TO 100
+C        .SQH2DO
+ 222     CONTINUE
+            SQHD2O = .TRUE.
+            ONEPRP = .TRUE.
+            GO TO 100
+ 223     CONTINUE
+            GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 299
       ELSE
@@ -1044,7 +1062,7 @@ cLig >>
 cLig <<
          END IF
          IF (HDO) WRITE (LUPRI,'(10X,A)')
-     &                            '- half-derivative overlap integrals'
+     &       '- antisymmetrized half-derivative overlap integrals'
          IF (S1MAG) WRITE (LUPRI,'(10X,A)')
      &       '- first magnetic derivatives of overlap integrals'
          IF (S1MAGT) WRITE (LUPRI,'(10X,A)')
@@ -1110,11 +1128,13 @@ cLig <<
          IF (S1MRT) WRITE (LUPRI,'(10X,A)')
      &        '- Test of ket-diff. overlap matrix with respect to B'
          IF (HDOBRT) WRITE (LUPRI,'(10X,A)')
-     &        '- Test og ket-diff. hdo-integrals with respect to B'
+     &        '- Test of ket-diff. hdo-integrals with respect to B'
          IF (SQHDOL) WRITE (LUPRI,'(10X,A)')
-     &        '- Bra differentiated half-derivative overlap matrix'
+     &      '- Bra differentiated half-derivative overlap matrix'
          IF (SQHDOR) WRITE (LUPRI,'(10X,A)')
-     &        '- Ket differentiated half-derivative overlap matrix'
+     &      '- Ket differentiated half-derivative overlap matrix'
+         IF (SQHD2O) WRITE (LUPRI,'(10X,A)')
+     &      '- Ket second differentiated half-derivative overlap matrix'
          IF (NUCPOT) WRITE (LUPRI,'(10X,A)')
      &            '- Potenial energy at the nuclei'
          IF (NPOTST) WRITE (LUPRI,'(10X,A)')
@@ -1692,6 +1712,7 @@ C
                CALL QUIT('Illegal keyword in SUPINP.')
     1          CONTINUE
                   RUNSUP = .FALSE.
+                  SUPMAT = .FALSE.
                GO TO 100
     2          CONTINUE
                   READ (LUCMD,*) IPRSUP
@@ -1818,7 +1839,17 @@ C        *******************************************
 C        ***** One-electron property integrals *****
 C        *******************************************
 C
-         IF (ONEPRP .OR. DOHUCKEL) THEN
+         IF (DOHUCKEL) THEN
+C
+C           ***** Overlap integrals for Huckel *****
+C
+            CALL TIMER('START ',TIMSTR,TIMEND)
+            CALL PR1INT('HUCKEL  ',WORK,LWORK,IDUMMY,
+     &                  IDUMMY,TRIANG,PROPRI,IPRONE)
+            CALL TIMER('HUCKEL',TIMSTR,TIMEND)
+            CALL FLSHFO(LUPRI)
+         END IF
+         IF (ONEPRP) THEN
 C
 C           ***** Overlap integrals *****
 C
@@ -2040,6 +2071,13 @@ C
                CALL PR1INT('HDO    ',WORK,LWORK,IDUMMY,
      &                     IDUMMY,TRIANG,PROPRI,IPRONE)
                CALL TIMER('HDO   ',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
+            END IF
+            IF (SQHD2O) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('SQHD2OR',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('SQHD2OR',TIMSTR,TIMEND)
                CALL FLSHFO(LUPRI)
             END IF
 C
@@ -3401,11 +3439,6 @@ C     for calculation of Douglas-Kroll integrals.
 C
 #include <implicit.h>
 #include <mxcent.h>
-#if defined (SYS_T3D)
-      PARAMETER (MAXPRD = 14)
-#else
-      PARAMETER (MAXPRD = 25)
-#endif
       DIMENSION WORK(LWORK)
       LOGICAL UNCONTBKP
 #include <maxaqn.h>

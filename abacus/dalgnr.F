@@ -1053,7 +1053,7 @@ CSONIA
      &             '.INPTES', '.PARALL', '.DIRECT',
      &             '.WALK  ', '.MAX IT', '.RESPON',
      &             '.RUN PR', '.RUN RE', '.RUN WA',
-     &             '.PRESOR', '.XXXXXX', '.XXXXXX',
+     &             '.PRESOR', '.WESTA ', '.XXXXXX',
      &             '.XXXXXX', '.XXXXXX', '.XXXXXX',
      &             '.XXXXXX', '.XXXXXX', '.TOTSYM',
      &             '.VECLEN', '.RUNERI', '.XXXXXX',
@@ -1103,6 +1103,7 @@ C
       PARCAL = .FALSE.
       DIRCAL = .FALSE.
       DOCCSD = .FALSE.
+      WESTA  = .FALSE.
 C     NEWTRA is in /INFTRA/ for practical reasons
       NEWTRA = .FALSE.
       OPTNEW = .FALSE.
@@ -1174,8 +1175,8 @@ C
          DO 99 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,109,110,
-     &                111,112,113,114,115,116,104,105,106,113,
-     &                115,114,123,124,125,126,127,128,129,129,
+     &                111,112,113,114,115,116,117,118,119,112,
+     &                121,122,123,124,125,126,127,128,129,129,
      &                123,130), I
             END IF
    99    CONTINUE
@@ -1245,8 +1246,13 @@ C
             NEWTRA = .TRUE.
          GO TO 100
  117     CONTINUE
+            WESTA = .TRUE.
          GO TO 100
  118     CONTINUE
+ 119     CONTINUE
+ 120     CONTINUE
+ 121     CONTINUE
+ 122     CONTINUE
          GO TO 100
  123     CONTINUE
             OPTNEW = .TRUE.
@@ -1290,14 +1296,14 @@ C
 C     ... default print level for statistics /hjaaj apr 2000
       IF (TESTIN) WRITE (LUPRI,'(A/)') ' *** Input test run only ***'
       IF (OPTWLK) THEN
-         WRITE (LUPRI,'(3X,A/5X,A,I5/5X,A,I5)')
-     &      ' Geometry optimization',
-     &        ' Starting at iteration:', ITERNR,
-     &        ' Maximum number of iterations:', ITERMX
+         WRITE (LUPRI,'(4X,A/6X,A,I5/6X,A,I5)')
+     &      'Geometry optimization',
+     &        'Starting at iteration:', ITERNR,
+     &        'Maximum number of iterations:', ITERMX
       ELSE IF (ITERNR .GT. 0) THEN
-         WRITE (LUPRI,'(3X,A/3X,A)')
-     &' Specification of iteration number only valid for optimization',
-     &' Iteration number has been reset to 0'
+         WRITE (LUPRI,'(4X,A)')
+     &  'Specification of iteration number only valid for optimization',
+     &  'Iteration number has been reset to 0'
          ITERNR = 0
       END IF
       IF (TOTSYM .AND. OPTNEW) THEN
@@ -1325,13 +1331,13 @@ C     ... default print level for statistics /hjaaj apr 2000
       END IF
 #endif
       CALL MOHEAD
-      IF (DKTRAN) WRITE (LUPRI,'(3X,A)') 
-     &   ' The second order Douglas-Kroll transformation is applied'
-      IF (RNHERM) WRITE (LUPRI,'(3X,A)')
-     &     ' Integral sections will be executed'
+      IF (DKTRAN) WRITE (LUPRI,'(4X,A)') 
+     &   'The second order Douglas-Kroll transformation is applied'
+      IF (RNHERM) WRITE (LUPRI,'(4X,A)')
+     &     'Integral sections will be executed'
       IF (RUNERI) THEN
-         WRITE (LUPRI,'(3X,A)')
-     &     ' Integrals are calculated using ERI '//
+         WRITE (LUPRI,'(4X,A)')
+     &     'Integrals are calculated using ERI '//
      &     'instead of HERMIT (where possible)'
          RUNERI = RUNERI .AND. .NOT. PARCAL
          IF (.NOT. RUNERI) THEN
@@ -1350,14 +1356,16 @@ C     ... default print level for statistics /hjaaj apr 2000
          WRITE(LUPRI,'(4X,A)') '"Old" integral transformation used'//
      &     ' (limited to max 255 basis functions)'
       END IF
-      IF (RNSIRI) WRITE (LUPRI,'(3X,A)')
-     &     ' Wave function sections will be executed'
-      IF (RNRESP) WRITE (LUPRI,'(3X,A)')
-     &     ' Dynamic molecular property section will be executed'
-      IF (RNABAC) WRITE (LUPRI,'(3X,A)')
-     &     ' Static molecular property section will be executed'
-      IF (NMWALK) WRITE (LUPRI,'(3X,A)') 
+      IF (RNSIRI) WRITE (LUPRI,'(4X,A)')
+     &     'Wave function sections will be executed'
+      IF (RNRESP) WRITE (LUPRI,'(4X,A)')
+     &     'Dynamic molecular property section will be executed'
+      IF (RNABAC) WRITE (LUPRI,'(4X,A)')
+     &     'Static molecular property section will be executed'
+      IF (NMWALK) WRITE (LUPRI,'(4X,A)') 
      &   'Numerical derivatives will be calculated'
+      IF (WESTA) WRITE (LUPRI,'(4X,A)') 
+     &  'Information for WESTA will be calculated and written to files.'
   200 PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          READ (LUCMD,'(A7)') WORD
