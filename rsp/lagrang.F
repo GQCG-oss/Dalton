@@ -431,9 +431,7 @@ C
 C SD labels generation
 C
       IF (SDFLG) THEN
-      write(lupri,*) 'NUMBER OF ATTOM', ESRNUC
       DO 410 I = 1, ESRNUC
-         write(lupri,*) 'COUNTER', I , 'NUC.', NUCINF(I)
          CALL SDOPER(NUCINF(I),LABDAT,INUM)
          DO 420 IG = 1, INUM
              ESROPT( INDPRP(LABDAT(IG))) = .TRUE.
@@ -1233,7 +1231,6 @@ C
                 ISCOR1 = IPTCNT(3*(NUCINF(I) - 1) + 1,IREP,2)
                 IF (ISCOR1 .GT. 0)  DEGEN(I)=DEGEN(I)+1.0D0
  100      CONTINUE
-          WRITE(LUPRI, *) 'DEGEN ', I, DEGEN(I)
  50   CONTINUE
 C
       RETURN
@@ -1292,7 +1289,6 @@ C
      *                            //' '//CHRXYZ(-ICOOR2)
  300          CONTINUE
               IF (ICOOR1 .EQ. 1) DEGEN(ATMIND)=DEGEN(ATMIND)+1.0D0
-               WRITE(LUPRI, *) 'DEGEN ', ATMIND, DEGEN(ATMIND)
               SDIND(1,ISCOR1)=NUCINF(ATMIND)
               SDIND(2,ISCOR1)=ICOOR1
               ENDIF

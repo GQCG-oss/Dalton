@@ -1,0 +1,145 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > rsp_hfc.info <<'%EOF%'
+   rsp_esr
+   -------
+   Molecule:         TiF3
+   Wave Function:    Restricted open-shell DFT:B3LYP  
+   Test Purpose:     Single-point calculation of hfc parameters
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > rsp_hfc.mol <<'%EOF%'
+BASIS
+STO-3G 
+TiF3. 
+B3LYP.
+    2              *
+       22.    1         
+Ti    0.000000  0.000000   0.000000
+        9.    3         
+F     1.756834  0.000000   0.000000
+F    -0.878417  1.521463   0.000000
+F    -0.878417 -1.521463  -0.000000
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > rsp_hfc.dal <<'%EOF%'
+**DALTON INPUT
+.RUN RESPONSE
+.DIRECT 
+**INTEGRALS
+.FC
+.SD
+**WAVE FUNCTIONS
+.DFT 
+BP86
+*HF INPUT 
+.THRESH 
+1.0D-9 
+**RESPON
+.TRPFLG
+*ESR
+.MAXIT
+  30
+.ATOMS 
+2 
+1 2
+.FCCALC
+.SDCALC   
+*END OF
+%EOF%
+#######################################################################
+
+
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >rsp_hfc.check
+cat >>rsp_hfc.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# Energy
+CRIT1=`$GREP "Final * DFT energy\: * \-1136\.2507724[0-9][0-9][0-9]" $log | wc -l`
+TEST[1]=`expr	$CRIT1`
+CTRL[1]=1
+ERROR[1]="ENERGY NOT CORRECT"
+
+# ESR parameters
+CRIT1=`$GREP "TRIPLET OPERATOR\: \"FC Ti 01\" LAGRANGIAN\: * 0\.395444 AVERAGE\: * 14\.941602 TOTAL\: * 15\.337045" $log | wc -l` 
+CRIT2=`$GREP "TRIPLET OPERATOR\: \"FC F  02\" LAGRANGIAN\: * \-0\.006221 AVERAGE\: *  0\.318812 TOTAL\: * 0\.312592" $log | wc -l`
+CRIT3=`$GREP "TRIPLET OPERATOR\: \"SD 002 y\" LAGRANGIAN\: * 0\.008648 AVERAGE\: * \-0\.044683 TOTAL\: * \-0\.036035" $log | wc -l` 
+CRIT4=`$GREP "TRIPLET OPERATOR\: \"SD 006 x\" LAGRANGIAN\: * \-0\.017296 AVERAGE\: *  0\.089367 TOTAL\: *  0\.072072" $log | wc -l`
+CRIT5=`$GREP "TRIPLET OPERATOR\: \"SD 009 z\" LAGRANGIAN\: * 0\.008648 AVERAGE\: * \-0\.044684 TOTAL\: * \-0\.036037" $log | wc -l`
+CRIT6=`$GREP "TRIPLET OPERATOR\: \"SD 003 y\" LAGRANGIAN\: * 0\.046291 AVERAGE\: * \-0\.027474 TOTAL\: * 0\.018817" $log | wc -l`
+CRIT7=`$GREP "TRIPLET OPERATOR\: \"SD 007 x\" LAGRANGIAN\: * \-0\.102313 AVERAGE\: * \-0\.017017 TOTAL\: * \-0\.119330" $log | wc -l`
+CRIT8=`$GREP "TRIPLET OPERATOR\: \"SD 010 z\" LAGRANGIAN\: *  0\.056022 AVERAGE\:  * 0\.044491 TOTAL\: *  0\.100513" $log | wc -l`
+CRIT9=`$GREP "TRIPLET OPERATOR\: \"SD * 006 z\" contribution \= (0| )\.0 by symmetry" $log | wc -l`
+CRIT10=`$GREP "TRIPLET OPERATOR\: \"SD * 009 x\" contribution \= (0| )\.0 by symmetry" $log | wc -l`
+CRIT11=`$GREP "TRIPLET OPERATOR\: \"SD * 007 z\" contribution \= (0| )\.0 by symmetry" $log | wc -l`
+CRIT12=`$GREP "TRIPLET OPERATOR\: \"SD * 010 x\" contribution \= (0| )\.0 by symmetry" $log | wc -l`
+CRIT13=`$GREP "TRIPLET OPERATOR\: \"SD * 002 z\" contribution \= (0| )\.0 by symmetry" $log | wc -l`
+CRIT14=`$GREP "TRIPLET OPERATOR\: \"SD * 009 y\" contribution \= (0| )\.0 by symmetry" $log | wc -l`
+CRIT15=`$GREP "TRIPLET OPERATOR\: \"SD * 003 z\" contribution \= (0| )\.0 by symmetry" $log | wc -l`
+CRIT16=`$GREP "TRIPLET OPERATOR\: \"SD * 010 y\" contribution \= (0| )\.0 by symmetry" $log | wc -l`
+CRIT17=`$GREP "TRIPLET OPERATOR\: \"SD * 002 x\" contribution \= (0| )\.0 by symmetry" $log | wc -l`
+CRIT18=`$GREP "TRIPLET OPERATOR\: \"SD * 006 y\" contribution \= (0| )\.0 by symmetry" $log | wc -l`
+CRIT19=`$GREP "TRIPLET OPERATOR\: \"SD * 003 x\" contribution \= (0| )\.0 by symmetry" $log | wc -l`
+CRIT20=`$GREP "TRIPLET OPERATOR\: \"SD * 007 y\" contribution \= (0| )\.0 by symmetry" $log | wc -l`
+TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7 \+ $CRIT8\+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
+                $CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ \
+                $CRIT18 \+ $CRIT19 \+ $CRIT20` 
+CTRL[2]=20 
+ERROR[2]="ESR PARAMETERS NOT CORRECT"
+
+PASSED=1
+for i in 1 2 
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo ${ERROR[i]}
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+%EOF%
+#######################################################################
