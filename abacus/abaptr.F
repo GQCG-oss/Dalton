@@ -2521,14 +2521,13 @@ C
       RETURN
       END
 C  /* Deck makpv3 */
-      SUBROUTINE MAKPVQ(PV,XINDX,CREF,DV,PVSQ,WORK,LWORK,ANTI,IPRINT)
+      SUBROUTINE MAKPVQ(PV,XINDX,CREF,DV,PVSQ,WORK,LWORK,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxorb.h>
 #include <iratdef.h>
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
       PARAMETER (DM1=-1.0D0, DP25=0.25D0)
-      LOGICAL ANTI
       INTEGER T,U,V,X, TU, VX, XINDX(*)
       DIMENSION PV(NNASHX,NNASHX), PVSQ(NASHT,NASHT,NASHT,NASHT),
      &          CREF(NCONRF), DV(N2ASHX), WORK(LWORK)
