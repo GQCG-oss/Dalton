@@ -558,7 +558,7 @@ we add a $p$ function with exponent 0.75 to the hydrogen basis
 set. The order of these functions are arbitrary (that is, a $p$
 function can be given before an $s$ function and so on).
 
-Augmenting\index{basis!augmented} the correlation-consistent\index{basis!correlation-consistent} 
+Augmenting\index{basis!augmented} the correlation-consistent\index{basis!correlation-consistent}\index{correlation-consistent basis set} 
 sets of Dunning~\cite{dewthdjcp100} is a straight-forward process in \dalton. 
 The aug-cc-pVXZ and aug-cc-pCVXZ basis sets are extended in an even-tempered manner 
 (in the manner of Dunning~\cite{dewthdjcp100})
@@ -697,14 +697,16 @@ Note that the keyword \Key{AUXBAS} must be specified in the
 
 \section{The basis sets supplied with \dalton }
 \label{sec:basislist}
+\index{basis set!library}
 
 As mentioned above, all the basis sets supplied with this distribution
-of the \dalton\ program --- with the exception of the ANO,
-Sadlej-pVTZ\index{sadlej basis set}\index{ANO basis set}\index{NQvD basis set}\index{basis set!sadlej}\index{basis set!ANO}\index{basis set!NQvD}
-and NQvD basis sets --- have been obtained from the EMSL basis set
-library~\cite{emslref}. 
+of the \dalton\ program --- with the exception of the ANO\index{ANO basis set}\index{basis set!ANO}, 
+Sadlej-pVTZ\index{sadlej basis set}\index{basis set!sadlej} 
+and NQvD basis sets\index{NQvD basis set}\index{basis set!NQvD} --- have been obtained 
+from the EMSL basis set library~\cite{emslref}. 
 Supplied basis sets include the STO-$n$G and Pople style basis sets,
-Dunning's correlation consistent basis sets, 
+Dunning's correlation-consistent basis 
+sets\index{basis!correlation-consistent}\index{correlation-consistent basis set}, 
 Ahlrich's basis sets and Huzinaga basis sets. 
 In a very few cases we have corrected the
 files as obtained from EMSL, however we take no responsibility
@@ -745,8 +747,8 @@ STO-6G & H--Ar & \cite{wjhrfsjapjcp51,wjhrdrfsjapjcp52} \\
    kddwjhjcc7,kddwjhjcc8-1,kddwjhjcc8-2,edgdfjpc99} \\
 3-21G* & H--Cl & 3-21G, with polariz. functions from
   \cite{wjpmmfwjhdjdjapjsbjacs104}.\\
-  & & \emph{Note}: Polarization functions only on Na--Cl \\
-3-21++G & H; Li--Ar & 3-21G, with diffuse functions from
+  & & \emph{Note}: Polariz. functions only on Na--Cl \\
+3-21++G & H, Li--Ar & 3-21G, with diffuse functions from
   \cite{tcjcgwsprsjcc4}.\\
 3-21++G* & H--Cl & 3-21++G and 3-21G*\\
 4-31G & H--Ar & \cite{rdwjhjapjcp54,msgjsbjapwjpwjhjacs104} 
@@ -812,7 +814,8 @@ DZP+Rydberg(Dunning) & H, B--Ne, Al--Cl & DZP, with polariz. functions from
   \cite{thdpjhhfs1977-2}.\\
 TZ(Dunning) & H, Li--Ne & \cite{thdjcp55}\\
 \hline
-\multicolumn{2}{l}{\bf{\emph{Dunning's correlation consistent basis sets}}} & \\
+\multicolumn{2}{l}{\bf{\emph{Dunning's correlation consistent basis 
+sets\index{basis set!correlation-consistent}\index{correlation-consistent basis set}}}} \\
 \multicolumn{3}{l}{\emph{Note: H,He (valence only) are included in all core-valence basis sets 
   for convenience.}} \\
 cc-pVXZ (X = D,T,Q,5,6) & H--Ne, Al--Ar, & \cite{thdjcp90,dewthdjcp100,dewthdjcp98,
@@ -865,7 +868,7 @@ Sadlej-pVTZ & H--I & \cite{ajstca79,ajsmujmst234,ajstca81,ajstca81-2} \\
 Sadlej-pVTZ-J & H, C--O, S & \cite{pfpgaaspasjcp115} Sadlej-pVTZ optimized for NMR calcs.\\
 aug-cc-pVTZ-J & H, C--F, S & \cite{pfpgaaspasjcp115} aug-cc-pVTZ optimized for NMR calcs. \\
 \hline
-\multicolumn{2}{l}{\bf{\emph{ANO basis sets -- see Sec.~\ref{sec:molbasis}.}}} & \\
+\multicolumn{2}{l}{\bf{\emph{ANO basis sets\index{basis!ANO} -- see Sec.~\ref{sec:molbasis}.}}} & \\
 NQvD & & \cite{nqvdref} \\
 Almlof-Taylor-ANO & H--Ne & \cite{japrtjcp86} Almlof and Taylor ANO \\
 NASA-Ames-ANO & H, B--Ne, & \cite{japrtjcp86,cwbsrlaktca77} \\
