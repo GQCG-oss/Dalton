@@ -1,33 +1,50 @@
-\chapter{Potential energy surfaces}\index{geometry walk}\label{ch:geometrywalks}
+\chapter{Potential energy surfaces}\index{geometry
+walk}\label{ch:geometrywalks}
 
 This section describes one of the most important features of any
 quantum chemical software package; locating equilibrium
 geometries\index{equilibrium structure} and
 transition structures\index{transition state} of molecules. In
-\siraba\ this is done using either
-second-order trust-region \index{second-order optimization}\index{trust region}
-optimizations~\cite{tuhjahjajpjjcp84} or a
-variety of first-order\index{first-order optimization}
-methods~\cite{Fletcher}. These methods
+\dalton\ this is done using either
+second-order trust-region \index{second-order
+optimization}\index{trust region}
+optimizations~\cite{tuhjahjajpjjcp84} (energies, gradients and
+Hessians are calculated) or a variety of first-order\index{first-order
+optimization} methods~\cite{Fletcher} (only energies and gradients are
+calculated). These methods
 have been implemented for SCF and MCSCF wave functions. For
-non-variational wave functions --- like MP2 or CI --- the program can
+non-variational wave functions --- like CI --- the program can
 only do first-order geometry optimizations using a
 numerically\index{numerical gradient}
 calculated gradient. This will be invoked automatically by the program
 in case of a non-variational wave function. Some comments connected to
 such geometry optimizations are collected in Sec.~\ref{sec:nonvargeom}.
 
-One of the strengths of the \siraba\ program package is the
+For historical reasons \dalton\ actually contains two different
+modules for exploring potential energy surfaces: \Sec{WALK} which is
+a pure second-order module and \Sec{OPTIMIZE} which contains both
+first- and second-order methods. While there is a lot of overlap
+between the two modules, certain calculations can only be done using
+one or the other of the two. The main strength of \Sec{WALK} is it's
+robustness, while \Sec{OPTIMIZE} focuses more on speed and
+efficiency. For regular optimizations of minima and transition states,
+the recommended module is usually \Sec{OPTIMIZE}.
+
+One of the strengths of the \dalton\ program package is the
 stable algorithms for locating first-order transition
 states\index{transition state}. As described below,
-this is done by one of three algorithms: by trust-region
+this can done by one of three algorithms in \Sec{WALK}: by trust-region
 second-order image surface minimization~\cite{thcpl182}\index{image
 surface}, by gradient extremal
 walks~\cite{pjhjajthtca73}\index{gradient extremal}, or by following a
-specific mode~\cite{hjajpjthjcp85}\index{mode following}. These
-options will be discussed in more detail below.
+specific mode~\cite{hjajpjthjcp85}\index{mode following} (all
+requiring the calculation of the Hessian at every point). These
+options will be discussed in more detail below. The \Sec{OPTIMIZE}
+module also contains the stable second-order trust-region image
+surface minimization (using analytical or approximate Hessians), as
+well as a partitioned rational function method~\cite{vb001}.
 
-Another feature of the \siraba\ program system is the options for
+Another feature of the \dalton\ program system is the options for
 calculating essential information about the potential energy
 surface so that subsequent molecular dynamics analysis can be
 made. There are two options for doing this in the program: One can
@@ -75,7 +92,7 @@ T.Helgaker. \newblock {\em J.Phys.Chem.}, {\bf
 }}
 \end{center}
 
-A minimal input file for the location of a molecular geometry
+A short input file for the location of a molecular geometry
 corresponding to minimum molecular energy
 (using a second-order optimization\index{second-order optimization}
 method) and performing a vibrational
@@ -88,6 +105,8 @@ geometry, will look like
 \begin{verbatim}
 **DALTON INPUT
 .OPTIMIZE
+*OPTIMIZE
+.2NDORD
 **WAVE FUNCTIONS
 .HF
 **FINAL
@@ -96,12 +115,14 @@ geometry, will look like
 *END OF INPUT
 \end{verbatim}
 
-The keyword \Key{OPTIMIZE} signals a search for a minimum, that is,
-a stationary point on the molecular surface with Hessian index 0 using
-a second-order geometry optimization procedure as described in
-Ref.~\cite{tuhjahjajpjjcp84}. At
-the final, optimized geometry the input in the \Sec{*FINAL} section requests
-a vibrational analysis and the evaluation of nuclear shieldings.
+The keyword \Key{OPTIMIZE} by default signals a search for a minimum,
+that is, a stationary point on the molecular surface with Hessian
+index 0 using a second-order geometry optimization procedure as
+described in Ref.~\cite{tuhjahjajpjjcp84}. With the \Sec{OPTIMIZE}
+module the second-order method has to be explicitly requested
+(\Key{2NDORD}), as first-order methods are the default. At the final,
+optimized geometry the input in the \Sec{*FINAL} section requests a
+vibrational analysis and the evaluation of nuclear shieldings.
 
 In second-order methods the Hessian\index{Hessian} is calculated at every
 geometry. The analytical Hessian naturally gives a better description
@@ -144,22 +165,21 @@ input:
 In case a vibrational analysis has been requested at the optimized
 geometry, the program will recalculate the complete molecular Hessian
 at the optimized geometry in order to be able to evaluate all
-frequencies. Note that the generalized potential energy surface
-routines have to be used, indicated by the keyword \Key{WALK}. We also
-note that any requests for static
+frequencies. Note that only the \Sec{WALK} module, indicated by the
+keyword \Key{WALK}, supports the \Key{TOTSYM} keyword.
+We also note that any requests for static
 polarizabilities\index{polarizability}, Cioslowski population
 analysis\index{population analysis}, dipole gradients\index{dipole
 gradient} or vibrational circular dichroism (VCD)\index{vibrational
 circular dichroism}\index{VCD} will be ignored as all the necessary
-property vectors will not be available. However, at the optimized
-geometry, the full Hessian will be evaluated, as may then also these
-properties.
-
+property vectors will not be available. However, at the final
+optimized geometry, the full Hessian will be evaluated, as may then
+also these properties.
 
 For direct calculations\index{direct calculation} --- where the
 two-electron integrals are not stored on disc --- the cost of a
 second-order geometry optimization algorithm may become
-prohibitively expensive despite the rather few iterations normally
+prohibitively expensive, despite the rather few iterations normally
 needed to converge the geometry. In these cases, it may be
 advantageous to use first-order geometry
 optimization\index{first-order optimization} routines as
@@ -168,8 +188,6 @@ illustrated in the following input:
 \begin{verbatim}
 **DALTON INPUT
 .OPTIMIZE
-*OPTIMIZE
-.1STORD
 **WAVE FUNCTIONS
 .HF
 **FINAL
@@ -178,7 +196,7 @@ illustrated in the following input:
 *END OF INPUT
 \end{verbatim}
 
-The above input yields a first-order
+This will use the default method of \Key{OPTIMIZE}: a first-order
 optimization~\cite{Fletcher} in redundant internal
 coordinates~\cite{gfxfzpwtppjacs114,ppgfjcp96,vbth}\index{redundant
 internal coordinates} using the BFGS\index{BFGS}\index{Hessian update}
@@ -189,15 +207,15 @@ displacements. The initial Hessian is diagonal in the redundant
 internal coordinates. To obtain the properties at the optimized
 geometry, the Hessian has to be calculated. By looking at the
 vibrational frequencies one can then verify that a true minimum has
-been reached (as all frequencies are real, corresponding to a positive
-definite Hessian).
+been reached (as all frequencies should be real, corresponding to a
+positive definite Hessian).
 
 Several first-order methods have been implemented in DALTON, the
 recommended method being the Broyden-Fletcher-Goldfarb-Shanno (BFGS)
 Hessian updating scheme\index{BFGS}\index{Hessian update}. Though other
 updates may perform better in
 certain cases, the BFGS update generally seems to be the most
-reliable and thus is the default method.
+reliable and thus is the default method for minimization.
 
 Without the calculation of the Hessian at the optimized geometry, one
 can never be sure that the geometry is indeed a minimum, and this is the
@@ -224,40 +242,55 @@ process may be repeated.
 
 Another consideration concerning optimizations, is the choice of
 coordinate system. Second-order methods doesn't seem to be very
-sensitive to this, but it may be crucial to the performance of
-first-order methods. {\siraba} provides the normal Cartesian
-coordinates\index{cartesian coordinate} and redundant internal
-coordinates\index{redundant internal coordinates}, the latter being
-highly recommended when using first-order methods. Redundant internal
-coordinates consists of all bond lengths, angles and dihedral angles
-in a molecule, and the redundancies are removed through
-projection. The default for second-order methods is Cartesian
-coordinates, while redundant internal coordinates is the default for
-first-order methods.
+sensitive to this, and the \Sec{WALK} module thus only uses
+Cartesian coordinates. However, the coordinate system may be crucial
+to the performance of first-order methods, especially when starting
+from approximate Hessians. \Sec{OPTIMIZE} provides the normal Cartesian
+coordinates\index{cartesian coordinate} and redundant
+internal coordinates\index{redundant internal coordinates},
+the latter being highly recommended when using
+first-order methods. Redundant internal coordinates consists of all
+bond lengths, angles and dihedral angles in a molecule, and the
+redundancies are removed through projection. The default for
+second-order methods is Cartesian coordinates, while redundant
+internal coordinates is the default for first-order methods, but it is
+possible to override this with the keywords \Key{REDINT} and
+\Key{CARTES} respectively.
 
-The program decides when a minimum is reached through a set of
+The \Sec{OPTIMIZE} decides when a minimum is reached through a set of
 convergence criteria\index{convergence criteria}. These will be
 set automatically depending on the accuracy of the wave function
 using three different criterions, namely the change in energy
 between two iterations, the norm of the molecular
 gradient\index{norm of gradient} and the norm of the
-step\index{step norm}. The threshold for convergence are for all
-these criterions the maximum of 1.0D-6 and two times the
+step\index{step norm}. The convergence threshold for the change
+in energy is the maximum of $1.0\cdot 10^{-6}$ a.u.\ and two times the
+convergence threshold for the wave function, whereas for the norm of
+the gradient and step it's the maximum of $1.0\cdot 10^{-5}$ a.u.\ and
+two times the 
 convergence threshold for the wave function. Two out of these
 three have to decrease below its threshold, before the program
 declares convergence. These criteria ensure a good geometry
 suitable for vibrational analysis, but may be unnecessary tight if
-one only wants the energy. The convergence criteria can be
-controlled through the input file. One should keep in mind that
-while second-order methods are rather insensitive to changes in
-theses thresholds due to their quadratic convergence, first-order
-methods may run into severe trouble if the criteria are too close
-to the accuracy of the wave function and the gradient.
+one only wants the energy.
+
+The convergence criteria can be controlled through the input file. One
+should keep in mind that while second-order methods are rather
+insensitive to changes in these thresholds due to their quadratic
+convergence, first-order methods may run into severe trouble if the
+criteria are too close to the accuracy of the wave function and the
+gradient. The quickest way to get somewhat looser convergence
+criterias, is to use the keyword \Key{BAKER} enforcing the convergence
+criterias of Baker\cite{Baker} (see the Reference Manual for
+details). This will normally give energies converged to within
+$1.0\cdot 10^{-6}$ a.u.
 
 In case of non-variational\index{non-variational wave functions}
 wave functions, where a numerical gradient\index{numerical
 gradient} is used, the threshold for convergence is reset to
-1.0D-4, due to possible numerical instabilities occurring in the
+$1.0\cdot 10^{-4}$ a.u., due to possible numerical instabilities
+occurring 
+in the 
 finite difference\index{finite difference} methods employed to
 determine the molecular gradient\index{molecular gradient}.
 
@@ -275,13 +308,14 @@ and it becomes very important to start the optimization from a decent
 geometry. One way to solve this is through
 preoptimization\index{preoptimization}, that is,
 one or more smaller basis sets are first used to optimize the
-molecule. {\siraba} supports the use of up to ten different basis sets
-for preoptimization. This may also be used as a very effective way to
-get the optimized energy of a molecule for a series of basis
-sets. One may also want to calculate the energy of a molecule using a
-large basis set at the optimized geometry of a smaller basis set, and
-this is also supported in {\siraba}, but limited to only one single-point
-basis set. Both these features are illustrated in the input file below:
+molecule. \Sec{OPTIMIZE} supports the use of up to ten different
+basis sets for preoptimization. This may also be used as a very
+effective way to get the optimized energy of a molecule for a series
+of basis sets. One may also want to calculate the energy of a molecule
+using a large basis set at the optimized geometry of a smaller basis
+set, and this is also supported in {\dalton}, but limited to only one
+single-point basis set. Both these features are illustrated in the
+input file below:
 
 \begin{verbatim}
 **DALTON INPUT
@@ -327,11 +361,10 @@ entire calculation.
 molecular geometry is to be printed.
 \item[\Sec{GETSGY}] Controls the set up of the right-hand sides
 (gradient terms).
-\item[\Sec{OPTIMIZE}] Controls the first- and second-order
-minimization methods
-(gradient terms).
 \item[\Sec{NUCREP}] Controls the calculation of the nuclear contributions.
 \item[\Sec{ONEINT}] Controls the calculation of one-electron contributions.
+\item[\Sec{OPTIMIZE}] Controls the first- and second-order
+optimization methods (both minima and transition states).
 \item[\Sec{RELAX}] Controls the adding of solution and right-hand side vectors
 into relaxation contributions.
 \item[\Sec{REORT}] Controls the calculation of reorthonormalization terms.
@@ -361,16 +394,33 @@ states'' and ``Doing Dynamical walks'').
 }}
 \end{center}
 
-\index{transition state}\index{image surface} The simplest way of
-locating a first order transition state, which are the chemically
-most interesting ones, is to use the trust-region
+\index{transition state}Transition states are found as saddle points
+on the potential energy surface. \index{image surface} The simplest
+way of locating a first-order transition state, which are the
+chemically most interesting ones, is to use the trust-region
 image\index{image surface,trust region} minimization method
 described in Ref.~\cite{thcpl182}. Such geometry optimizations may
-be considered as a special case of walks on second-order surfaces,
-and are controlled by the keyword \Key{WALK} in the general input
-section, and the request for a trust-region image minimization is
-achieved  by adding the keyword \Key{IMAGE} in the \Sec{WALK}
-input module and the input file will then look like:
+be considered as a special case of walks on second-order surfaces, and
+can be done using either the \Sec{WALK} module or the \Sec{OPTIMIZE}
+module. Just like for minimization the former uses a pure second-order
+method (analytical Hessians calculated at every geometry), while the
+latter gives you a choice of first- and second-order methods or
+combinations of the two.
+
+A second-order optimization of a transition state can be requested by
+either adding \Key{SADDLE} and \Key{2NDORD} in the \Sec{OPTIMIZE}
+section:
+\begin{verbatim}
+**DALTON INPUT
+.OPTIMIZE
+*OPTIMIZE
+.SADDLE
+.2NDORD
+**WAVE FUNCTIONS
+.HF
+*END OF INPUT
+\end{verbatim}
+or by adding the keyword \Key{IMAGE} in the \Sec{WALK} section:
 \begin{verbatim}
 **DALTON INPUT
 .WALK
@@ -401,7 +451,8 @@ lies mainly in the
 fact that we may take advantage of well-known techniques for
 minimization. In addition, the method does not need to be started at
 a stationary point of the potential surface which is necessary when
-following a gradient extremal. We
+following a gradient extremal (in fact, when using \Sec{OPTIMIZE} the
+starting geometry should {\em not} be a minimum). We
 have so far not experienced that the trust-region image optimization
 fails to locate a first order transition state, even though this is by
 no means globally guaranteed from the approach. Note that the
@@ -422,13 +473,14 @@ transition states.
 
 The other approach is to request
 that not the lowest mode, but some other eigenmode is to be inverted.
-This can be achieved by explicitly give the mode which is to be
-inverted through the keyword \Key{MODE}. However, one
+This can be achieved by explicitly giving the mode which is to be
+inverted through the keyword \Key{MODE}. This keyword is the same in
+both the \Sec{WALK} and the \Sec{OPTIMIZE} module. However, one
 should keep in mind that there will be crossings where a given mode
 will switch from the chosen mode to a lower mode. However, what will happen
 is these crossing points cannot be predicted in advance. Thus, for such
 investigations, the gradient extremal approach may prove equally well
-suited. Let us finally give an example of an input for a trust-region
+suited. Let us give an example of an input for a trust-region
 image optimization where the third mode is inverted:
 
 \begin{verbatim}
@@ -442,6 +494,64 @@ image optimization where the third mode is inverted:
 .HF
 *END OF INPUT
 \end{verbatim}
+
+\subsection{Transition states using first-order
+methods}\label{sec:saddle1stord}
+
+While second-order methods are robust, we have already pointed out
+in section~\ref{sec:minimization} that Hessians might be expensive to
+compute. The \Sec{OPTIMIZE} module therefore provides first-order
+methods for locating transition states, where approximate rather than
+exact Hessians are used. The step control method is, however, the same
+trust-region image optimization.
+
+When locating transition states it's important to have a good
+description of the mode that should be maximized (i.e. have a negative
+eigenvalue). It is therefore not recommended to start off with a
+simple model Hessian, but rather to calculate the initial Hessian
+analytically. Alternatively it can be calculated using a smaller basis
+set/cheaper wave function and then be read in. The minimal input for a
+transition state optimization using \Sec{OPTIMIZE} is:
+\begin{verbatim}
+**DALTON INPUT
+.OPTIMIZE
+*OPTIMIZE
+.SADDLE
+**WAVE FUNCTIONS
+.HF
+*END OF INPUT
+\end{verbatim}
+This will calculate the Hessian at the initial geometry, then update
+it using Bofill's update\cite{vb002}\index{Bofill's update}\index{Hessian
+update} (the BFGS update is not suitable since it tends towards a
+positive definite Hessian). As for minimizations, redundant internal
+coordinates are used by default for first-order methods.
+
+It is highly recommended that a Hessian calculation/vibrational
+analysis be performed once a stationary point has been found, to
+verify that it's actually a first-order transition state. There should
+be one and only one negative eigenvalue/imaginary frequency.
+
+If no analytical second derivatives (Hessians) are available, it is
+still possible to attempt a saddle point optimization by starting from
+a model Hessian indicated by the keyword \Key{INIMOD}:
+\begin{verbatim}
+**DALTON INPUT
+.OPTIMIZE
+*OPTIMIZE
+.INIMOD
+.SADDLE
+**WAVE FUNCTIONS
+.HF
+*END OF INPUT
+\end{verbatim}
+Provided the starting geometry is reasonably near the transition
+state, such optimization will usually converge correctly. If not, it
+is usually a good idea to start from different geometries and also to
+try to follow different Hessian modes, as described in
+section~\ref{sec:image} (through the \Key{MODE} keyword).
+
+
 
 \subsection{Transition states following a gradient
 extremal}\label{sec:gradext}
@@ -470,7 +580,7 @@ the line. From a stationary point there will be gradient extremals
 leaving in all normal coordinate directions, and stationary points
 on a molecular potential surface may thus be characterized by
 following these gradient extremals. The implementation of this approach
-in \siraba\ is described in Ref.~\cite{pjhjajthtca73}.
+in \dalton\ is described in Ref.~\cite{pjhjajthtca73}.
 
 Before discussing more closely which keywords are of importance in
 such a calculation and how they are to be used, we give an example of
@@ -497,9 +607,9 @@ ethane\index{ethane} molecule:
 
 
 The request for a gradient extremal\index{gradient extremal}
-calculation is controlled by the
-keyword \Key{GRDEXT}. In this example we have chosen to follow the
-second-lowest mode, as specified by the keyword \Key{MODE}.
+calculation is controlled by the {\Key{GRDEXT}}, and in this example
+we have chosen to follow the second-lowest mode, as specified by the
+\Key{MODE} keyword.
 
 As the calculation of the gradient extremal uses mass-weighted
 coordinates\index{mass-weighted coordinate}, it is recommended to
@@ -619,7 +729,7 @@ most successful ways of doing this is the Intrinsic Reaction Coordinate (IRC)
 approach~\cite{kfacr14,pmjcp88}\index{IRC}\index{intrinsic reaction
 coordinate}. The IRC is calculated by taking small steps along the
 negative gradient in a mass-weighted coordinate\index{mass-weighted
-coordinate} system. In \siraba , the
+coordinate} system. In \dalton , the
 size of the step is adjusted with the use of the trust-region based
 algorithm. In order to get a sufficiently accurate potential energy surface,
 rather small steps must be taken, and the default trust radius is thus reset
@@ -631,7 +741,7 @@ and a typical input would look like:
 
 \begin{verbatim}
 **DALTON INPUT
-.OPTIMIZE
+.WALK
 .MAX IT
  150
 *WALK
@@ -691,7 +801,7 @@ molecular potential energy surface from the results of an IRC
 calculation, and from the
 potential energy surface valley, the dynamics\index{dynamics} of a
 chemical reaction may be
-mimicked. However, \siraba\ gives another, more direct, opportunity
+mimicked. However, \dalton\ gives another, more direct, opportunity
 for studying molecular dynamics through dynamic walks as described in
 more detail in the next section.
 
@@ -710,7 +820,7 @@ Chem.Phys.Lett.}, {\bf 173},\hspace{0.25em}145, (1993).
 }}
 \end{center}
 
-The theory behind the ``direct dynamics'' as implemented in \siraba\ is
+The theory behind the ``direct dynamics'' as implemented in \dalton\ is
 described in Ref.~\cite{theuhjajcpl173}\index{dynamics}. The
 main idea behind this
 approach is that Newton's equations of motion for the nuclei are
@@ -803,7 +913,7 @@ different energy modes.
 During the dynamical calculation, care has also to be taken in order
 to ensure that the steps taken are not too long. If this occurs, the
 initial trust radius and/or the trust radius increment should be
-reduced by the keyword \Key{TRUST}. In the \siraba\ output one will
+reduced by the keyword \Key{TRUST}. In the \dalton\ output one will
 find ``Accumulated kinetic energy since start'', and this property
 will be calculated in two ways: From conservation of the total energy,
 and from integrated momenta. If the difference between these numbers
@@ -852,7 +962,7 @@ release\index{relative translation energy} in a given reaction, as this can be c
 values determined from e.g. mass
 spectrometry~\cite{theuhjajcpl173}\index{mass spectrometry}. Although
 this quantity
-is printed in the output from \siraba\ in the entire dynamical walk, the
+is printed in the output from \dalton\ in the entire dynamical walk, the
 relative translational energy release should be calculated, due to
 basis set superposition errors\index{BSSE}\index{basis set superposition error} and
 vibrational\index{vibrational excitation} and rotational
@@ -874,31 +984,29 @@ the molecule at the transition state and the energy for the separated
 molecular fragments, or an experimentally determined barrier height
 may be used. The relative translational energy release may then be
 obtained  by dividing the translational energy release
-from the last \siraba\ iteration by the barrier height. This number will
-not be identical to the number printed in the \siraba -output, because
+from the last \dalton\ iteration by the barrier height. This number will
+not be identical to the number printed in the \dalton -output, because
 of the different vibrational and rotational state of
 the molecule in the final iteration point as compared to the minimized
 structure.
 
-\section{Geometry optimizations using non-variational wave
+\section{Geometry optimization using non-variational wave
 functions}\label{sec:nonvargeom}
 
-\siraba\ do not have any support for the calculation of molecular
-gradients and Hessians for the non-variational wave functions MP2 and
-CI\index{MP2}\index{M\o ller-Plesset}\index{CI}\index{configuration
-interaction}. However, in order to
+\dalton\ do not have any support for the calculation of molecular
+gradients and Hessians for the non-variational wave functions like
+CI\index{CI}\index{configuration interaction}. However, in order to
 exploit the facilities of the first-order
-geometry optimization routines in \siraba , a numerical
+geometry optimization routines in {\dalton}, a numerical
 gradient\index{numerical gradient} based
 on energies will be calculated if a geometry optimization is invoked
-for a non-variational wave function. Thus, to optimize the MP2
-geometry of a molecule, the only input needed is
+for a non-variational wave function. Thus, for example to optimize the
+MP2 geometry of a molecule using numerical gradients, the only input
+needed is
 
 \begin{verbatim}
 **DALTON INPUT
 .OPTIMIZE
-*OPTIMIZE
-.1STORDER
 **WAVE FUNCTION
 .HF
 .MP2
@@ -907,7 +1015,7 @@ geometry of a molecule, the only input needed is
 
 The size of the displacements used during the evaluation of the
 numerical gradient can be controlled through the keyword
-\Key{DISPLA} in the \Sec{MINIMI} input module. Default value is
+\Key{DISPLA} in the \Sec{OPTIIMI} input module. Default value is
 $1.0\cdot 10^{-3}$ a.u. By default, the threshold for convergence
 of the geometry will be changed because of estimated inaccuracies
 in the numerical gradients. However, if the threshold for
@@ -916,4 +1024,4 @@ convergence will be used also in geometry optimizations using
 numerical gradients\index{numerical gradient}. Note that due to
 the possibility of larger numerical errors in the gradient, too
 tight convergence criteria for an optimized geometry may make it
-difficult for the program to obtained a converged geometry.
+difficult for the program to obtain a converged geometry.
