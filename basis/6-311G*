@@ -1,16 +1,30 @@
-$6-311G**
+$6-311G*
 
 $
 $  REFERENCE
-$ Elements                             References --------                     
-$         ---------- H, Li - Ne: R. Krishnan, J.S. Binkley, R. Seeger and J.A. 
-$ Pople,             J. Chem. Phys. 72, 650 (1980) Na - Ar:    A.D. McLean and 
-$ G.S. Chandler J. Chem. Phys. 72, 5639, (1980).                               
+$Elements                             References                                
+$--------                             ----------                                
+$H, Li - Ne: R. Krishnan, J.S. Binkley, R. Seeger and J.A. Pople,               
+$            J. Chem. Phys. 72, 650 (1980)                                      
+$Na - Ar:    A.D. McLean and G.S. Chandler J. Chem. Phys. 72, 5639, (1980).     
+$K  - Ca:    J-P. Blaudeau, M. P. McGrath, L.A. Curtiss and L. Radom,           
+$            J. Chem. Phys. 107, 5016 (1997).                                   
+$Ga - Kr:    L. A. Curtiss, M. P. McGrath, J-P. Blandeau, N. E. Davis,          
+$            R. C. Binning, Jr. L. Radom, J. Chem. Phys. 103, 6104 (1995).      
+$I      :    M.N. Glukhovstev, A. pross, M.P. McGrath, L. Radom, J. Chem. Phys. 
+$            103, 1878 (1995)
 $
 $  POLARIZATION AND/OR DIFFUSE FUNCTIONS
-$ Elements                             References --------                     
-$         ---------- H - Ar:  R. Krishnan, J.S. Binkley, R. Seeger, J.A. Pople,
-$  J. Chem. Phys. 72,          650 (1980)                                      
+$Elements                             References                                
+$--------                             ----------                                
+$Li - Ar: R. Krishnan, J.S. Binkley, R. Seeger, J.A. Pople, J. Chem. Phys. 72,  
+$         650 (1980).                                                           
+$K  - Ca: J-P. Blaudeau, M. P. McGrath, L.A. Curtiss                            
+$                                   and L. Radom, J. Chem. Phys. 107, 5016      
+$                                   (1997).                                     
+$Ga - Kr: L. A. Curtiss, M. P. McGrath, J-P. Blandeau, N. E. Davis, R. C.       
+$         Binning, Jr., L. Radom, J. Chem. Phys. 103, 6104 (1995)
+$
 a 1
 $ HYDROGEN     (5s) -> [3s]                                      
 $ HYDROGEN     (1p)                                              
@@ -501,7 +515,7 @@ $ D-TYPE FUNCTIONS
     1    1    0
       0.8500000  1.00000000
 a 35
-$ BROMINE      (14s,12p,5d) -> [8s,7p,2d]                        
+$ BROMINE      (14s,12p,5d) -> [8s,7p,3d]                        
 $ S-TYPE FUNCTIONS
    15    8    0
  439700.000000   0.00081300  0.00000000  0.00000000  0.00000000  0.00000000  0.00000000
