@@ -5,12 +5,6 @@ vibrational and rotational motions of a molecule. This includes
 vibrational frequencies and the associated infrared
 (IR)\index{IR intensity} and Raman intensities\index{Raman intensity}.
 
-To the best of our knowledge, {\dalton} is the only quantum chemical
-software package that can calculate Raman intensities at the frequency
-of the incident laser light. Thus, {\dalton} gives an unique
-opportunity to study the effect of the dispersion on the Raman
-intensity.
-
 \section{Vibrational frequencies}\label{sec:vibfreq}
 
 The calculation of vibrational frequencies\index{vibrational
@@ -29,8 +23,8 @@ of a molecule all that is is needed is the input:
 **END OF DALTON INPUT
 \end{verbatim}
 
-This keyword will, in addition to calculating the molecular frequencies
-and rotational constants, also calculate the zero-point vibrational
+This keyword will, in addition to calculating the molecular
+frequencies, also calculate the zero-point vibrational 
 energy corrections\index{zero-point vibrational energy} and vibrational
 and rotational partition functions\index{partition functions}
 at selected temperatures.
@@ -126,7 +120,7 @@ an input may look like:
 \noindent The keyword \Key{DIPGRA} invokes the calculation of the dipole
 gradients.
 
-\section{Dipole gradient based population analysis}
+\section{Dipole-gradient based population analysis}
 
 \begin{center}
 \fbox{
@@ -191,19 +185,10 @@ Faraday Discuss.}, {\bf 99},\hspace{0.25em}165, (1994).
 
 \index{Raman intensity} Calculating Raman intensities is by no means
 a trivial task, and
-because of the computational cost of such calculations (as there does
-not exist any program which avoids the numerical differentiation of the
-polarizability with respect to nuclear distortions), there are
-few theoretical investigations of basis set requirements and
-correlation effects on calculated Raman intensities.
-
-To the best of our knowledge, \siraba\ is the only quantum chemical program package capable of
-calculating the Raman intensities at the frequency of the incident
-laser beam. \siraba\ also has the same possibilities as other
-common quantum chemical software packages to calculate static
-Raman intensities (that is, where the frequency dependence of the
-polarizability has been neglected). The Raman intensities calculated
-are the ones obtained within the Placzek
+because of the computational cost of such calculations, and there are
+therefore few theoretical investigations of basis set requirements and
+correlation effects on calculated Raman intensities. The Raman
+intensities calculated are the ones obtained within the Placzek
 approximation~\cite{placzek}\index{Placzek approximation},
 and the implementation is described in Ref.~\cite{thkrklbpjjofd99}.
 
@@ -221,8 +206,6 @@ in Section~\ref{sec:vroa}
 \begin{verbatim}
 **DALTON INPUT
 .WALK
-.MAX IT
- 31
 *WALK
 .NUMERI
 **WAVE FUNCTIONS
@@ -232,7 +215,6 @@ in Section~\ref{sec:vroa}
 1.0D-8
 **START
 .RAMAN
-.ABALNR
 *ABALNR
 .THRESH
 1.0D-7
@@ -241,7 +223,6 @@ in Section~\ref{sec:vroa}
 0.0 0.09321471
 **PROPERTIES
 .RAMAN
-.ABALNR
 *ABALNR
 .THRESH
 1.0D-7
@@ -250,7 +231,6 @@ in Section~\ref{sec:vroa}
 0.0 0.09321471
 **FINAL
 .RAMAN
-.ABALNR
 .VIBANA
 *RESPONSE
 .THRESH
@@ -282,10 +262,7 @@ depolarization ratios\index{depolarization ratio}. Note
 that these parameters are also obtainable by using the keyword
 \Key{VROA}. In this calculation we calculate the Raman intensities for two
 frequencies, the static case and a frequency of the incident light
-corresponding to a laser of wavelength 488.8 nm. Note, however, that
-Raman intensities corresponding to zero frequency cannot be calculated
-with the \Key{POLARI} keyword, even though static
-polarizabilities may be obtained using this keyword.
+corresponding to a laser of wavelength 488.8 nm. 
 
 Due to the numerical differentiation\index{numerical differentiation}
 that is done, the threshold for
@@ -310,9 +287,12 @@ of all nuclei, as well as calculating the property at the reference
 geometry. Thus, for a molecule with $N$ atoms the properties will need
 to be calculated in a total of 2*3*$N$ + 1 points, which for a 
 molecule with five atoms will amount to 31 points. The default maximum number of
-steps in \siraba\ is 20. Thus one often need to
-change the maximum number of allowed iterations\index{geometry
-iteration} by adding the keyword
+steps in \siraba\ is 20. However, in numerical differentiation
+calculations, the number of iterations will always be reset (if there
+are more than 20 steps that need to be taken) to 6$N$+1, as it is
+assumed that the user always wants the calculation to complete
+correctly. The maximum number of allowed iterations\index{geometry
+iteration} can be manually set by adding the keyword
 \Key{MAX IT} in the \Sec{*DALTON} input module.
 
 The default step length in the numerical
@@ -325,19 +305,3 @@ of a large number of isotopically substituted molecules at once. This
 is done in the \Sec{*FINAL} input section, where we
 have requested one isotopically substituted species in addition to the
 isotopic species containing the most abundant isotope of each element.
-
-It should be evident that the calculation of Raman intensities is
-a task for connoisseurs. However, the fact that \siraba\ can
-calculate Raman intensities at the frequency of the incident
-light puts \siraba\ in a special position among {\em ab initio}
-programs, as these  at most  can calculate Raman intensities
-based on static polarizabilities.
-
-Concerning basis sets requirement for Raman intensities,  there is
-yet much work to be done. In the only study presented of Raman
-Optical Activity using London atomic orbitals, it is argued in
-favor of the aug-cc-pVDZ basis set supplied with the basis set
-library. However, in order to get Hartree--Fock limit quality of
-the vibrational frequencies as well, a basis set of at least
-aug-cc-pVTZ seems to be necessary. Whether these observations will
-also apply to the Raman intensities is not known.
