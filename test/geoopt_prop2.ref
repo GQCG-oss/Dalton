@@ -63,16 +63,17 @@
      If results obtained with this code are published, an
      appropriate citation would be:
       
-     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,H. Aagren,
-     K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,P. Dahle, E.K. Dalskov,
-     T. Enevoldsen, B. Fernandez,C. Haettig, K. Hald, A. Halkier,
-     H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-     H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T.A. Ruden, T. Saue,
-     S.P.A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,P.R. Taylor, and O. Vahtras:
+     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,
+     H. Aagren, K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,
+     P. Dahle, E.K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
+     K. Hald, A. Halkier, H. Heiberg, H. Hettema, D. Jonsson,
+     S. Kirpekar, R. Kobayashi, H. Koch, K.V. Mikkelsen, P. Norman,
+     M.J. Packer, T.A. Ruden, T. Saue, S.P.A. Sauer, B. Schimmelpfennig,
+     K. O. Sylvester-Hvid, P.R. Taylor, and O. Vahtras:
      "Dalton release 1.2 (2001), an electronic structure program"
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:23 2001
+     Date and time (Linux)  : Mon Apr 30 14:02:00 2001
      Host name              : slater.uio.no                           
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
@@ -133,8 +134,8 @@
   Title Cards
   -----------
 
-  Test1 i test-suite: Geometrioptimering med symmetri, med beregning av   
-  egenskaper i foerste og siste punkt. Generelt kontraherte basissett     
+  Geometry optimization(2nd order), calculation of Third-Harmonic         
+  generation at the optimized geometry                                    
 
 
                   SYMADD: Requested addition of symmetry
@@ -366,7 +367,7 @@ Represented as: C2v
  >>> Time used in ONEDRV is   0.01 seconds
 
 
- >>> Time used in OVERLA is   0.00 seconds
+ >>> Time used in OVERLA is   0.02 seconds
 
 
  Number of two-electron integrals written:       57092 ( 25.7% )
@@ -374,13 +375,13 @@ Represented as: C2v
 
 
 
- >>> Time used in TWOINT is   0.21 seconds
+ >>> Time used in TWOINT is   0.20 seconds
 
 
  >>> Time used in FRMSUP is   0.03 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.28 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.27 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
@@ -390,12 +391,12 @@ Represented as: C2v
  ************************************************************************
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:24 2001
+     Date and time (Linux)  : Mon Apr 30 14:02:00 2001
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     Test1 i test-suite: Geometrioptimering med symmetri, med beregning av   
-     egenskaper i foerste og siste punkt. Generelt kontraherte basissett     
+     Geometry optimization(2nd order), calculation of Third-Harmonic         
+     generation at the optimized geometry                                    
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -425,7 +426,7 @@ Represented as: C2v
      Number of basis functions         17   6  11   2
 
       ** Automatic occupation of RHF orbitals **
-      -- Initial occupation of symmetries is determined from Huckel guess.               
+      -- Initial occupation of symmetries is determined from Huckel guess.                    
       -- Initial occupation of symmetries is : --
 
      Occupied HF orbitals               3   1   1   0
@@ -502,7 +503,7 @@ Represented as: C2v
      Final gradient norm:           0.000000294912
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:24 2001
+     Date and time (Linux)  : Mon Apr 30 14:02:00 2001
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -557,7 +558,7 @@ Represented as: C2v
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:24 2001
+     Date and time (Linux)  : Mon Apr 30 14:02:00 2001
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -565,7 +566,7 @@ Represented as: C2v
 
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:24 2001
+     Date and time (Linux)  : Mon Apr 30 14:02:00 2001
      Host name              : slater.uio.no                           
 
 
@@ -575,7 +576,7 @@ Represented as: C2v
 
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:29 2001
+     Date and time (Linux)  : Mon Apr 30 14:02:02 2001
      Host name              : slater.uio.no                           
 
 
@@ -752,14 +753,14 @@ Represented as: C2v
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:02      73 %
+ TWOTEX     00:00:01      60 %
 
- TOTAL      00:00:03     100 %
+ TOTAL      00:00:02     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   2.84 seconds
- >>>> Total wall time used in ABACUS:   5.00 seconds
+ >>>> Total CPU  time used in ABACUS:   1.90 seconds
+ >>>> Total wall time used in ABACUS:   2.00 seconds
 
 - End of Static Property Section
 
@@ -820,13 +821,13 @@ Represented as: C2v
 
 
 
- >>> Time used in TWOINT is   0.63 seconds
+ >>> Time used in TWOINT is   0.20 seconds
 
 
  >>> Time used in FRMSUP is   0.03 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.68 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.25 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
@@ -836,12 +837,12 @@ Represented as: C2v
  ************************************************************************
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:30 2001
+     Date and time (Linux)  : Mon Apr 30 14:02:02 2001
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     Test1 i test-suite: Geometrioptimering med symmetri, med beregning av   
-     egenskaper i foerste og siste punkt. Generelt kontraherte basissett     
+     Geometry optimization(2nd order), calculation of Third-Harmonic         
+     generation at the optimized geometry                                    
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -947,7 +948,7 @@ Represented as: C2v
      Final gradient norm:           0.000000342458
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:31 2001
+     Date and time (Linux)  : Mon Apr 30 14:02:02 2001
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -998,11 +999,11 @@ Represented as: C2v
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.06 seconds
- >>>> Total wall time used in SIRIUS :      1.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.05 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:31 2001
+     Date and time (Linux)  : Mon Apr 30 14:02:02 2001
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -1012,11 +1013,11 @@ Represented as: C2v
 
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:31 2001
+     Date and time (Linux)  : Mon Apr 30 14:02:02 2001
      Host name              : slater.uio.no                           
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:39 2001
+     Date and time (Linux)  : Mon Apr 30 14:02:04 2001
      Host name              : slater.uio.no                           
 
 
@@ -1024,15 +1025,15 @@ Represented as: C2v
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:02      73 %
- REST       00:00:02      53 %
+ TWOTEX     00:00:01      60 %
+ REST       00:00:02      80 %
 
- TOTAL      00:00:03     100 %
+ TOTAL      00:00:02     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   3.02 seconds
- >>>> Total wall time used in ABACUS:   8.00 seconds
+ >>>> Total CPU  time used in ABACUS:   1.91 seconds
+ >>>> Total wall time used in ABACUS:   2.00 seconds
 
 - End of Static Property Section
 
@@ -1094,12 +1095,12 @@ Represented as: C2v
 
 
 
- >>> Time used in TWOINT is   0.24 seconds
+ >>> Time used in TWOINT is   0.20 seconds
 
 
  >>> Time used in FRMSUP is   0.03 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.29 seconds
+ >>>> Total CPU  time used in HERMIT:   0.25 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
@@ -1110,12 +1111,12 @@ Represented as: C2v
  ************************************************************************
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:39 2001
+     Date and time (Linux)  : Mon Apr 30 14:02:04 2001
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     Test1 i test-suite: Geometrioptimering med symmetri, med beregning av   
-     egenskaper i foerste og siste punkt. Generelt kontraherte basissett     
+     Geometry optimization(2nd order), calculation of Third-Harmonic         
+     generation at the optimized geometry                                    
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -1220,7 +1221,7 @@ Represented as: C2v
      Final gradient norm:           0.000000293253
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:39 2001
+     Date and time (Linux)  : Mon Apr 30 14:02:04 2001
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -1275,7 +1276,7 @@ Represented as: C2v
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:39 2001
+     Date and time (Linux)  : Mon Apr 30 14:02:04 2001
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -1285,11 +1286,11 @@ Represented as: C2v
 
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:39 2001
+     Date and time (Linux)  : Mon Apr 30 14:02:04 2001
      Host name              : slater.uio.no                           
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:42 2001
+     Date and time (Linux)  : Mon Apr 30 14:02:06 2001
      Host name              : slater.uio.no                           
 
 
@@ -1297,14 +1298,14 @@ Represented as: C2v
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:01      62 %
+ TWOTEX     00:00:01      60 %
 
  TOTAL      00:00:02     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   2.09 seconds
- >>>> Total wall time used in ABACUS:   4.00 seconds
+ >>>> Total CPU  time used in ABACUS:   1.91 seconds
+ >>>> Total wall time used in ABACUS:   2.00 seconds
 
 - End of Static Property Section
 
@@ -1366,13 +1367,13 @@ Represented as: C2v
 
 
 
- >>> Time used in TWOINT is   0.21 seconds
+ >>> Time used in TWOINT is   0.20 seconds
 
 
  >>> Time used in FRMSUP is   0.03 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.26 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.25 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
@@ -1382,12 +1383,12 @@ Represented as: C2v
  ************************************************************************
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:43 2001
+     Date and time (Linux)  : Mon Apr 30 14:02:07 2001
      Host name              : slater.uio.no                           
 
  Title lines from integral program:
-     Test1 i test-suite: Geometrioptimering med symmetri, med beregning av   
-     egenskaper i foerste og siste punkt. Generelt kontraherte basissett     
+     Geometry optimization(2nd order), calculation of Third-Harmonic         
+     generation at the optimized geometry                                    
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -1489,7 +1490,7 @@ Represented as: C2v
      Final gradient norm:           0.000000885200
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:43 2001
+     Date and time (Linux)  : Mon Apr 30 14:02:07 2001
      Host name              : slater.uio.no                           
 
      Molecular orbitals for symmetry species   1
@@ -1544,7 +1545,7 @@ Represented as: C2v
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:43 2001
+     Date and time (Linux)  : Mon Apr 30 14:02:07 2001
      Host name              : slater.uio.no                           
 
 - End of Wave Function Section
@@ -1554,11 +1555,11 @@ Represented as: C2v
 
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:43 2001
+     Date and time (Linux)  : Mon Apr 30 14:02:07 2001
      Host name              : slater.uio.no                           
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:45 2001
+     Date and time (Linux)  : Mon Apr 30 14:02:11 2001
      Host name              : slater.uio.no                           
 
 
@@ -1566,15 +1567,16 @@ Represented as: C2v
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:01      62 %
- REST       00:00:02      75 %
+ TWOTEX     00:00:01      31 %
+ RHSIDE     00:00:02      62 %
+ REST       00:00:01      27 %
 
- TOTAL      00:00:02     100 %
+ TOTAL      00:00:04     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   2.14 seconds
- >>>> Total wall time used in ABACUS:   2.00 seconds
+ >>>> Total CPU  time used in ABACUS:   3.68 seconds
+ >>>> Total wall time used in ABACUS:   4.00 seconds
 
 - End of Static Property Section
 
@@ -1623,7 +1625,7 @@ Represented as: C2v
 
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:45 2001
+     Date and time (Linux)  : Mon Apr 30 14:02:11 2001
      Host name              : slater.uio.no                           
 
 
@@ -1633,7 +1635,7 @@ Represented as: C2v
 
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:45 2001
+     Date and time (Linux)  : Mon Apr 30 14:02:12 2001
      Host name              : slater.uio.no                           
 
 
@@ -1733,8 +1735,8 @@ Represented as: C2v
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.04 seconds
- >>>> Total wall time used in ABACUS:   0.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.03 seconds
+ >>>> Total wall time used in ABACUS:   1.00 seconds
 
 - End of Static Property Section
 
@@ -1820,7 +1822,7 @@ Represented as: C2v
  -- nuclear repulsion :        9.346964375649915
 
 
- <<<<< SOLVING SET OF LINEAR RESPONSE EQUATIONS >>>>>
+ <<<<< Solving set of linear response equations for cubic response >>>>>
 
 
 
@@ -1932,7 +1934,7 @@ Represented as: C2v
  Configuration variables.   KZCONF:       0
  Total number of variables. KZVAR :      21
 
- >>> Time used in CRVEC1 is   0.19 seconds
+ >>> Time used in CRVEC1 is   0.18 seconds
 
 
 
@@ -1994,12 +1996,12 @@ Represented as: C2v
  Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   10)
- RSP solution vector no.    1; norm of residual   7.58D-04
+ RSP solution vector no.    1; norm of residual   7.53D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
     XDIPLEN     ZDIPLEN      freq1     freq2                Norm
  ---------------------------------------------------------------
-                          0.059200  0.059200         11.20256865
+                          0.059200  0.059200         11.20859110
 
 
  Perturbation symmetry.     KSYMOP:       3
@@ -2032,7 +2034,7 @@ Represented as: C2v
  *** RSPCTL MICROITERATIONS CONVERGED
     YDIPLEN     ZDIPLEN      freq1     freq2                Norm
  ---------------------------------------------------------------
-                          0.059200  0.059200         13.31909484
+                          0.059200  0.059200         13.31688920
 
 
  Perturbation symmetry.     KSYMOP:       1
@@ -2060,12 +2062,12 @@ Represented as: C2v
  Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   12)
- RSP solution vector no.    1; norm of residual   2.55D-04
+ RSP solution vector no.    1; norm of residual   2.59D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
     XDIPLEN     XDIPLEN      freq1     freq2                Norm
  ---------------------------------------------------------------
-                          0.059200  0.059200         22.31529116
+                          0.059200  0.059200         22.33556577
 
 
  Perturbation symmetry.     KSYMOP:       1
@@ -2093,12 +2095,12 @@ Represented as: C2v
  Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   12)
- RSP solution vector no.    1; norm of residual   2.61D-04
+ RSP solution vector no.    1; norm of residual   2.67D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
     YDIPLEN     YDIPLEN      freq1     freq2                Norm
  ---------------------------------------------------------------
-                          0.059200  0.059200         12.45794670
+                          0.059200  0.059200         12.46352249
 
 
  Perturbation symmetry.     KSYMOP:       4
@@ -2126,14 +2128,14 @@ Represented as: C2v
  Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   10)
- RSP solution vector no.    1; norm of residual   1.26D-04
+ RSP solution vector no.    1; norm of residual   1.23D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
     YDIPLEN     XDIPLEN      freq1     freq2                Norm
  ---------------------------------------------------------------
-                          0.059200  0.059200          7.46490411
+                          0.059200  0.059200          7.49923037
 
- >>> Time used in CRVEC2 is   0.61 seconds
+ >>> Time used in CRVEC2 is   0.56 seconds
 
 
 
@@ -2161,12 +2163,12 @@ Represented as: C2v
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd        5.71814213          5.71814213
- Na T[3] Nx Nyz         26.13776885         31.85591098
- Na X[3] Ny Nz          24.86253486         56.71844583
- Nx A[3] Ny Nz           5.22036685         61.93881269
- Na X[2] Nyz          -188.27956657       -126.34075388
- Nx A[2] Nyz           -36.02580065       -162.36655453
+ Na T[4] Nb Nc Nd        5.69361460          5.69361460
+ Na T[3] Nx Nyz         26.13198825         31.82560285
+ Na X[3] Ny Nz          24.86253486         56.68813771
+ Nx A[3] Ny Nz           5.22036685         61.90850456
+ Na X[2] Nyz          -188.39598600       -126.48748144
+ Nx A[2] Nyz           -36.04032773       -162.52780917
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   XDIPLEN    2 -0.177600
@@ -2174,18 +2176,18 @@ Represented as: C2v
 @ C operator, symmetry, frequency:   ZDIPLEN    1  0.059200
 @ D operator, symmetry, frequency:   ZDIPLEN    1  0.059200
 
-@ << A; B, C, D >>  =        -162.36655453
+@ << A; B, C, D >>  =        -162.52780917
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd      -23.82689005        -23.82689005
- Na T[3] Nx Nyz         28.75288449          4.92599444
- Na X[3] Ny Nz          66.31081950         71.23681394
- Nx A[3] Ny Nz          19.77264992         91.00946386
- Na X[2] Nyz          -227.36660880       -136.35714494
- Nx A[2] Nyz          -215.28700979       -351.64415473
+ Na T[4] Nb Nc Nd      -23.80863004        -23.80863004
+ Na T[3] Nx Nyz         28.65851156          4.84988152
+ Na X[3] Ny Nz          66.31081950         71.16070102
+ Nx A[3] Ny Nz          19.77264992         90.93335093
+ Na X[2] Nyz          -227.33269424       -136.39934330
+ Nx A[2] Nyz          -215.26699356       -351.66633687
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   YDIPLEN    3 -0.177600
@@ -2193,18 +2195,18 @@ Represented as: C2v
 @ C operator, symmetry, frequency:   ZDIPLEN    1  0.059200
 @ D operator, symmetry, frequency:   ZDIPLEN    1  0.059200
 
-@ << A; B, C, D >>  =        -351.64415473
+@ << A; B, C, D >>  =        -351.66633687
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd        6.65613915          6.65613915
- Na T[3] Nx Nyz         15.05508832         21.71122747
- Na X[3] Ny Nz          20.34622268         42.05745014
- Nx A[3] Ny Nz           5.96459335         48.02204349
- Na X[2] Nyz           -53.49945886         -5.47741537
- Nx A[2] Nyz           -94.92194791       -100.39936328
+ Na T[4] Nb Nc Nd        6.27188635          6.27188635
+ Na T[3] Nx Nyz         15.23155741         21.50344377
+ Na X[3] Ny Nz          20.34622268         41.84966644
+ Nx A[3] Ny Nz           5.96459335         47.81425979
+ Na X[2] Nyz           -53.67765305         -5.86339326
+ Nx A[2] Nyz           -95.07287528       -100.93626854
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   ZDIPLEN    1 -0.177600
@@ -2212,18 +2214,18 @@ Represented as: C2v
 @ C operator, symmetry, frequency:   XDIPLEN    2  0.059200
 @ D operator, symmetry, frequency:   ZDIPLEN    1  0.059200
 
-@ << A; B, C, D >>  =        -100.39936328
+@ << A; B, C, D >>  =        -100.93626854
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd      -25.17431696        -25.17431696
- Na T[3] Nx Nyz         38.43220003         13.25788307
- Na X[3] Ny Nz          71.38869431         84.64657739
- Nx A[3] Ny Nz          19.19422530        103.84080269
- Na X[2] Nyz          -327.63406277       -223.79326008
- Nx A[2] Nyz          -172.55145243       -396.34471251
+ Na T[4] Nb Nc Nd      -25.38241076        -25.38241076
+ Na T[3] Nx Nyz         38.51034230         13.12793154
+ Na X[3] Ny Nz          71.38869431         84.51662585
+ Nx A[3] Ny Nz          19.19422530        103.71085115
+ Na X[2] Nyz          -327.72969657       -224.01884542
+ Nx A[2] Nyz          -172.61913334       -396.63797876
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   ZDIPLEN    1 -0.177600
@@ -2231,18 +2233,18 @@ Represented as: C2v
 @ C operator, symmetry, frequency:   YDIPLEN    3  0.059200
 @ D operator, symmetry, frequency:   ZDIPLEN    1  0.059200
 
-@ << A; B, C, D >>  =        -396.34471251
+@ << A; B, C, D >>  =        -396.63797876
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd      -11.05640438        -11.05640438
- Na T[3] Nx Nyz         66.77252695         55.71612257
- Na X[3] Ny Nz         155.91851178        211.63463434
- Nx A[3] Ny Nz          38.87171380        250.50634814
- Na X[2] Nyz          -921.40690716       -670.90055902
- Nx A[2] Nyz          -581.87302733      -1252.77358635
+ Na T[4] Nb Nc Nd      -12.47849875        -12.47849875
+ Na T[3] Nx Nyz         67.21447736         54.73597862
+ Na X[3] Ny Nz         155.91851178        210.65449039
+ Nx A[3] Ny Nz          38.87171380        249.52620419
+ Na X[2] Nyz          -922.40629454       -672.88009035
+ Nx A[2] Nyz          -582.56347089      -1255.44356124
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   XDIPLEN    2 -0.177600
@@ -2250,18 +2252,18 @@ Represented as: C2v
 @ C operator, symmetry, frequency:   XDIPLEN    2  0.059200
 @ D operator, symmetry, frequency:   XDIPLEN    2  0.059200
 
-@ << A; B, C, D >>  =       -1252.77358635
+@ << A; B, C, D >>  =       -1255.44356124
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd       11.34681408         11.34681408
- Na T[3] Nx Nyz         12.31807350         23.66488758
- Na X[3] Ny Nz           8.94765118         32.61253876
- Nx A[3] Ny Nz           3.04174013         35.65427889
- Na X[2] Nyz            18.74602283         54.40030172
- Nx A[2] Nyz           -32.05688817         22.34341355
+ Na T[4] Nb Nc Nd       10.70432962         10.70432962
+ Na T[3] Nx Nyz         12.65108785         23.35541747
+ Na X[3] Ny Nz           8.94765118         32.30306865
+ Nx A[3] Ny Nz           3.04174013         35.34480878
+ Na X[2] Nyz            18.50207054         53.84687932
+ Nx A[2] Nyz           -32.33347434         21.51340498
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   YDIPLEN    3 -0.177600
@@ -2269,18 +2271,18 @@ Represented as: C2v
 @ C operator, symmetry, frequency:   XDIPLEN    2  0.059200
 @ D operator, symmetry, frequency:   XDIPLEN    2  0.059200
 
-@ << A; B, C, D >>  =          22.34341355
+@ << A; B, C, D >>  =          21.51340498
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd       13.00372991         13.00372991
- Na T[3] Nx Nyz         21.05794915         34.06167905
- Na X[3] Ny Nz          12.64270832         46.70438738
- Nx A[3] Ny Nz           2.48239980         49.18678717
- Na X[2] Nyz           -99.98515114        -50.79836397
- Nx A[2] Nyz            15.19694310        -35.60142087
+ Na T[4] Nb Nc Nd       12.18571968         12.18571968
+ Na T[3] Nx Nyz         21.11665969         33.30237937
+ Na X[3] Ny Nz          12.64270832         45.94508769
+ Nx A[3] Ny Nz           2.48239980         48.42748749
+ Na X[2] Nyz          -100.78847115        -52.36098367
+ Nx A[2] Nyz            14.97379910        -37.38718456
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   XDIPLEN    2 -0.177600
@@ -2288,18 +2290,18 @@ Represented as: C2v
 @ C operator, symmetry, frequency:   YDIPLEN    3  0.059200
 @ D operator, symmetry, frequency:   XDIPLEN    2  0.059200
 
-@ << A; B, C, D >>  =         -35.60142087
+@ << A; B, C, D >>  =         -37.38718456
 
 
 
    Contribution                Term         Accumulated
  ------------------------------------------------------
- Na T[4] Nb Nc Nd      -24.08426822        -24.08426822
- Na T[3] Nx Nyz         38.47663599         14.39236777
- Na X[3] Ny Nz         111.82309512        126.21546289
- Nx A[3] Ny Nz          32.94621908        159.16168197
- Na X[2] Nyz          -319.60025674       -160.43857477
- Nx A[2] Nyz          -241.05384735       -401.49242212
+ Na T[4] Nb Nc Nd      -24.69969616        -24.69969616
+ Na T[3] Nx Nyz         38.57784809         13.87815193
+ Na X[3] Ny Nz         111.82309512        125.70124705
+ Nx A[3] Ny Nz          32.94621908        158.64746613
+ Na X[2] Nyz          -319.94041328       -161.29294714
+ Nx A[2] Nyz          -241.33639391       -402.62934105
 
 @ Cubic response function value in a.u. for
 @ A operator, symmetry, frequency:   YDIPLEN    3 -0.177600
@@ -2307,7 +2309,7 @@ Represented as: C2v
 @ C operator, symmetry, frequency:   YDIPLEN    3  0.059200
 @ D operator, symmetry, frequency:   YDIPLEN    3  0.059200
 
-@ << A; B, C, D >>  =        -401.49242212
+@ << A; B, C, D >>  =        -402.62934105
 
 
 
@@ -2318,32 +2320,32 @@ Represented as: C2v
 @ C-freq:  0.059200
 @ D-freq:  0.059200
 
-@ gamma(X;X,X,X)       1252.7736
-@ gamma(X;X,Y,Y)         35.6014
-@ gamma(X;Y,Y,X)         35.6014
-@ gamma(X;Y,X,Y)         35.6014
-@ gamma(X;X,Z,Z)        162.3666
-@ gamma(X;Z,Z,X)        162.3666
-@ gamma(X;Z,X,Z)        162.3666
-@ gamma(Y;Y,X,X)        -22.3434
-@ gamma(Y;X,X,Y)        -22.3434
-@ gamma(Y;X,Y,X)        -22.3434
-@ gamma(Y;Y,Y,Y)        401.4924
-@ gamma(Y;Y,Z,Z)        351.6442
-@ gamma(Y;Z,Z,Y)        351.6442
-@ gamma(Y;Z,Y,Z)        351.6442
-@ gamma(Z;Z,X,X)        100.3994
-@ gamma(Z;X,X,Z)        100.3994
-@ gamma(Z;X,Z,X)        100.3994
-@ gamma(Z;Z,Y,Y)        396.3447
-@ gamma(Z;Y,Y,Z)        396.3447
-@ gamma(Z;Y,Z,Y)        396.3447
+@ gamma(X;X,X,X)       1255.4436
+@ gamma(X;X,Y,Y)         37.3872
+@ gamma(X;Y,Y,X)         37.3872
+@ gamma(X;Y,X,Y)         37.3872
+@ gamma(X;X,Z,Z)        162.5278
+@ gamma(X;Z,Z,X)        162.5278
+@ gamma(X;Z,X,Z)        162.5278
+@ gamma(Y;Y,X,X)        -21.5134
+@ gamma(Y;X,X,Y)        -21.5134
+@ gamma(Y;X,Y,X)        -21.5134
+@ gamma(Y;Y,Y,Y)        402.6293
+@ gamma(Y;Y,Z,Z)        351.6663
+@ gamma(Y;Z,Z,Y)        351.6663
+@ gamma(Y;Z,Y,Z)        351.6663
+@ gamma(Z;Z,X,X)        100.9363
+@ gamma(Z;X,X,Z)        100.9363
+@ gamma(Z;X,Z,X)        100.9363
+@ gamma(Z;Z,Y,Y)        396.6380
+@ gamma(Z;Y,Y,Z)        396.6380
+@ gamma(Z;Y,Z,Y)        396.6380
 @ gamma(Z;Z,Z,Z)        407.5069
 
-@ Averaged gamma parallel to the applied field is       617.157137
+@ Averaged gamma parallel to the applied field is       618.644392
 
- >>>> Total CPU  time used in RESPONSE:   2.38 seconds
- >>>> Total wall time used in RESPONSE:   3.00 seconds
+ >>>> Total CPU  time used in RESPONSE:   2.26 seconds
+ >>>> Total wall time used in RESPONSE:   2.00 seconds
 
 
      <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -2376,9 +2378,9 @@ Represented as: C2v
  Energy change during optimization :      -0.001964 a.u.
                                              -5.157 kJ/mol
 
- >>>> Total CPU  time used in DALTON:  14.33 seconds
- >>>> Total wall time used in DALTON:  25.00 seconds
+ >>>> Total CPU  time used in DALTON:  12.99 seconds
+ >>>> Total wall time used in DALTON:  14.00 seconds
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:48 2001
+     Date and time (Linux)  : Mon Apr 30 14:02:14 2001
      Host name              : slater.uio.no                           

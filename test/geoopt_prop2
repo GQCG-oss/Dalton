@@ -180,33 +180,32 @@ CTRL[12]=3
 ERROR[12]="FINAL ENERGY NOT CORRECT"
 
 # Gamma values:
-CRIT1=`$GREP "gamma\(X\;X\,X\,X\) * 1252\.773[0-9]" $log | wc -l`
-CRIT2=`$GREP "gamma\(X\;X\,Y\,Y\) * 35\.601[0-9]" $log | wc -l`
-CRIT3=`$GREP "gamma\(X\;Y\,Y\,X\) * 35\.601[0-9]" $log | wc -l`
-CRIT4=`$GREP "gamma\(X\;Y\,X\,Y\) * 35\.601[0-9]" $log | wc -l`
-CRIT5=`$GREP "gamma\(X\;X\,Z\,Z\) * 162\.366[0-9]" $log | wc -l`
-CRIT6=`$GREP "gamma\(X\;Z\,Z\,X\) * 162\.366[0-9]" $log | wc -l`
-CRIT7=`$GREP "gamma\(X\;Z\,X\,Z\) * 162\.366[0-9]" $log | wc -l`
-CRIT8=`$GREP "gamma\(Y\;Y\,X\,X\) * \-22\.343[0-9]" $log | wc -l`
-CRIT9=`$GREP "gamma\(Y\;X\,X\,Y\) * \-22\.343[0-9]" $log | wc -l`
-CRIT10=`$GREP "gamma\(Y\;X\,Y\,X\) * \-22\.343[0-9]" $log | wc -l`
-CRIT11=`$GREP "gamma\(Y\;Y\,Y\,Y\) * 401\.492[0-9]" $log | wc -l`
-CRIT12=`$GREP "gamma\(Y\;Y\,Z\,Z\) * 351\.644[0-9]" $log | wc -l`
-CRIT13=`$GREP "gamma\(Y\;Z\,Z\,Y\) * 351\.644[0-9]" $log | wc -l`
-CRIT14=`$GREP "gamma\(Y\;Z\,Y\,Z\) * 351\.644[0-9]" $log | wc -l`
-CRIT15=`$GREP "gamma\(Z\;Z\,X\,X\) * 100\.399[0-9]" $log | wc -l`
-CRIT16=`$GREP "gamma\(Z\;X\,X\,Z\) * 100\.399[0-9]" $log | wc -l`
-CRIT17=`$GREP "gamma\(Z\;X\,Z\,X\) * 100\.399[0-9]" $log | wc -l`
-CRIT18=`$GREP "gamma\(Z\;Z\,Y\,Y\) * 396\.344[0-9]" $log | wc -l`
-CRIT19=`$GREP "gamma\(Z\;Y\,Y\,Z\) * 396\.344[0-9]" $log | wc -l`
-CRIT20=`$GREP "gamma\(Z\;Y\,Z\,Y\) * 396\.344[0-9]" $log | wc -l`
-CRIT21=`$GREP "gamma\(Z\;Z\,Z\,Z\) * 407\.506[0-9]" $log | wc -l`
-CRIT22=`$GREP "Averaged gamma parallel to the applied field is *  617\.15713[0-9]" $log | wc -l`
-TEST[13]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
-               $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9  \+ $CRIT10 \+ \
-               $CRIT11 \+ $CRIT12 \+ $CRIT13 \+ $CRIT14 \+ $CRIT15 \+ \
-               $CRIT16 \+ $CRIT17 \+ $CRIT18 \+ $CRIT19 \+ $CRIT20 \+ \
-               $CRIT21 \+ $CRIT22`
+CRIT1=`$GREP "\@ gamma\(X\;X\,X\,X\) * 1255\.443[0-9]" $log | wc -l`
+CRIT2=`$GREP "\@ gamma\(X\;X\,Y\,Y\) * 37\.387[0-9]" $log | wc -l`
+CRIT3=`$GREP "\@ gamma\(X\;Y\,Y\,X\) * 37\.387[0-9]" $log | wc -l`
+CRIT4=`$GREP "\@ gamma\(X\;Y\,X\,Y\) * 37\.387[0-9]" $log | wc -l`
+CRIT5=`$GREP "\@ gamma\(X\;X\,Z\,Z\) * 162\.527[0-9]" $log | wc -l`
+CRIT6=`$GREP "\@ gamma\(X\;Z\,Z\,X\) * 162\.527[0-9]" $log | wc -l`
+CRIT7=`$GREP "\@ gamma\(X\;Z\,X\,Z\) * 162\.527[0-9]" $log | wc -l`
+CRIT8=`$GREP "\@ gamma\(Y\;Y\,X\,X\) * \-21\.513[0-9]" $log | wc -l`
+CRIT9=`$GREP "\@ gamma\(Y\;X\,X\,Y\) * \-21\.513[0-9]" $log | wc -l`
+CRIT10=`$GREP "\@ gamma\(Y\;X\,Y\,X\) * \-21\.513[0-9]" $log | wc -l`
+CRIT11=`$GREP "\@ gamma\(Y\;Y\,Y\,Y\) * 402\.629[0-9]" $log | wc -l`
+CRIT12=`$GREP "\@ gamma\(Y\;Y\,Z\,Z\) * 351\.666[0-9]" $log | wc -l`
+CRIT13=`$GREP "\@ gamma\(Y\;Z\,Z\,Y\) * 351\.666[0-9]" $log | wc -l`
+CRIT14=`$GREP "\@ gamma\(Y\;Z\,Y\,Z\) * 351\.666[0-9]" $log | wc -l`
+CRIT15=`$GREP "\@ gamma\(Z\;Z\,X\,X\) * 100\.936[0-9]" $log | wc -l`
+CRIT16=`$GREP "\@ gamma\(Z\;X\,X\,Z\) * 100\.936[0-9]" $log | wc -l`
+CRIT17=`$GREP "\@ gamma\(Z\;X\,Z\,X\) * 100\.936[0-9]" $log | wc -l`
+CRIT18=`$GREP "\@ gamma\(Z\;Z\,Y\,Y\) * 396\.638[0-9]" $log | wc -l`
+CRIT19=`$GREP "\@ gamma\(Z\;Y\,Y\,Z\) * 396\.638[0-9]" $log | wc -l`
+CRIT20=`$GREP "\@ gamma\(Z\;Y\,Z\,Y\) * 396\.638[0-9]" $log | wc -l`
+CRIT21=`$GREP "\@ gamma\(Z\;Z\,Z\,Z\) * 407\.506[0-9]" $log | wc -l`
+CRIT22=`$GREP "\@ Averaged gamma parallel to the applied field is * 618\.64439[0-9]" $log | wc -l`
+TEST[13]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
+		$CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ $CRIT18 \+ \
+		$CRIT19 \+ $CRIT20 \+ $CRIT21 \+ $CRIT22`
 CTRL[13]=22
 ERROR[13]="GAMMA VALUES NOT CORRECT"
 
