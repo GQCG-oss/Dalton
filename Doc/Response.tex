@@ -276,10 +276,6 @@ Default is 5.
   and $S^{\left[2\right]}$ using the keyword \Key{ABOCHK}. Default is
   6. Mainly for debugging purposes.
 
-\item{\Key{NODOIT}} Do not perform the linear transformation of the
-  response equation in a direct manner, which is the default. Not
-  recommend to use and primarily for debugging purposes.
-
 \item{\Key{PRINT}}\\
 \verb|READ *,IPRLR|\\
 Sets print level for linear response module. Default is 2.
@@ -426,11 +422,6 @@ Maximum number of iterations in the optimal orbital
 algorithm\index{optimal orbital trial vector}
 \cite{tuhjahjajpjjcp84}. 
 Default is 5.
-
-\item{\Key{NODOIT}} Do not perform the linear transformations of the
-  single residue response equation in a direct manner,
-  which is the default. Not
-  recommend to use and primarily for debugging purposes.
 
 \item{\Key{NSTART}}\\
 \verb|READ (LUCMD,*) (NPPSTV(J),J=1,NSYM)|\\
@@ -617,11 +608,6 @@ orbital\index{optimal orbital trial vector} algorithm
 \cite{tuhjahjajpjjcp84}. 
 Default is 5.
 
-\item{\Key{NODOIT}} Do not perform the linear transformations of the
-  linear response equation in a direct manner,
-  which is the default. Not
-  recommend to use and primarily for debugging purposes.
-
 \item{\Key{OPTREF}}
 Only response functions connected with optical rectification
 \index{Optical rectification}\index{response!Optical
@@ -793,11 +779,6 @@ the $B$ operator
 is set to the atomic mean-field spin-orbit\index{spin-orbit}
 operators.
 The reference state {\em must} be a singlet spin state.
-
-\item{\Key{NODOIT}} Do not perform the linear transformations of the
-  linear response equation in a direct manner,
-  which is the default. Not
-  recommend to use and primarily for debugging purposes.
 
 \item{\Key{PHOSPHORESCENCE}}
 Specifies a phosphorescence\index{phosphorescence} calculation, {\it i.e.\/}

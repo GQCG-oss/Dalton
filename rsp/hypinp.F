@@ -56,7 +56,7 @@ C
 C
       DATA TABLE /'.BPROP ', '.BFREQ ', '.CPROP ', '.CFREQ ',
      *            '.APROP ', '.MAX IT', '.THCLR ', '.MAXITO',
-     *            '.PRINT ', '.DIPLEN', '.E3TEST', '.NODOIT',
+     *            '.PRINT ', '.DIPLEN', '.E3TEST', '.XXXXXX',
      *            '.ISPABC', '.A2TEST', '.X2TEST', '.REFCHK',
      *            '.TSTJEP', '.SHG   ', '.POCKEL', '.OPTREF',
      *            '.FREQUE', '.DIPLNX', '.DIPLNY', '.DIPLNZ',
@@ -312,7 +312,6 @@ C
                   E3TEST = .TRUE.
                GO TO 100
    12          CONTINUE
-                  DIROIT = .TRUE.
                GO TO 100
    13          CONTINUE
                   READ (LUCMD,*) ISPINA,ISPINB,ISPINC
@@ -593,7 +592,7 @@ C
       DATA TABLE /'.BPROP ', '.BFREQ ', '.APROP ', '.ROOTS ',
      *            '.MAXITP', '.THCLR ', '.MAXITL', '.THCPP ',
      *            '.MAXITO', '.PRINT ', '.DIPLEN', '.E3TEST',
-     *            '.ISPABC', '.NODOIT', '.X2TEST', '.A2TEST',
+     *            '.ISPABC', '.XXXXXX', '.X2TEST', '.A2TEST',
      *            '.DIPLNX', '.DIPLNY', '.DIPLNZ', '.FREQUE',
      *            '.SINGLE', '.PHOSPH', '.MNFPHO', '.TWO-PH',
      *            '.MCDBTE'/
@@ -688,7 +687,6 @@ C
                   READ (LUCMD,*) ISPINA,ISPINB,ISPINC
                GO TO 100
  14            CONTINUE
-                  DIROIT = .TRUE.
                GO TO 100
  15            CONTINUE
                   X2TEST = .TRUE.

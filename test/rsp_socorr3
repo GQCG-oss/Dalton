@@ -64,7 +64,6 @@ cat > rsp_socorr3.dal <<'%EOF%'
 **RESPONSE
 .TRPFLG
 *QUADRATIC
-.DIROIT
 .ISPABC
 1    1    0
 .THCLR

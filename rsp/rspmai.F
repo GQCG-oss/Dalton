@@ -940,7 +940,7 @@ C              .PROP2Average
          IF (QRREST) WRITE(LUPRI,'(/A/A)')
      *      ' QUADRATIC RESPONSE CALCULATION RESTARTED',
      *      '    FROM PREVIOUSLY CALCULATED SOLUTION VECTORS'
-         IF (.NOT. DIROIT) WRITE(LUPRI,'(/A/A)')
+         IF (.NOT. DIROIT) WRITE(LUPRI,'(/A/A,L1)')
      *      ' Direct linear transformations NOT used in RESPONSE',
      *      ' calculation, DIROIT=',DIROIT
          IF (DFT_SO) WRITE (LUPRI,'(/A)')
@@ -1128,7 +1128,7 @@ C
      *            '.MAXITO', '.XXXXXX', '.ANTTES', '.RESTPP',
      *            '.ABCHK ', '.ABSYM ', '.PRINT ',
      *            '.IPREXM', '.E3TEST', '.EXMTES', '.ISPABC',
-     *            '.NODOIT', '.X2TEST', '.A2TEST',
+     *            '.XXXXXX', '.X2TEST', '.A2TEST',
      *            '.SINGLE', '.DOUBLE', '.THCLR ', '.MAXITL',
      *            '.TRIPLE', '.NSIMUL', '.NSTART'/
 C
@@ -1316,7 +1316,6 @@ C
                READ (LUCMD,*) ISPINA,ISPINB,ISPINC
                GO TO 100
  40            CONTINUE
-               DIROIT = .FALSE.
                GO TO 100
  41            CONTINUE
                X2TEST = .TRUE.
@@ -1487,7 +1486,7 @@ C
      *            '.SPNORX', '.SPNORY', '.SPNORZ', '.PROPRT',
      *            '.MAX IT', '.THCLR ', '.MAXITO',
      *            '.PRINT ', '.FREQUE', '.ABOCHK', '.ISTOCK',
-     *            '.MAXOCK', '.SOPRSY', '.RESTLR', '.NODOIT',
+     *            '.MAXOCK', '.SOPRSY', '.RESTLR', '.DIROIT',
      *            '.TRIPLE', '.PV PSO', '.PV SO1', '.PV SO2',
      *            '.FERMI ', '.SPIN-D'/
 C
