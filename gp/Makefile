@@ -7,8 +7,6 @@ F_OBJS = gphjj.o    gpjeppe.o  gptrygve.o     mempkg.o \
 	mpimacro.o pvmmacro.o gpdahle.o      intf7790.o \
 	gpsimen.o $(GP_EXTRAS)
 
-C_OBJS = gpc.o
-
 F_CPPS = $(F_OBJS:.o=.i)
 
 pre: $(F_CPPS)
@@ -26,7 +24,7 @@ libgp.a: $(F_OBJS) $(C_OBJS)
 clean : 
 	$(RM) -f *.o *~ *.lst *.i *.L i.*.f v.i.*.f *.a
 
-Makefile.depend depend: *.h ../include/*.h
+Makefile.depend depend: ../include/*.h
 	../tools/check_depend $(INCLUDES) > Makefile.depend
 
 include Makefile.depend
