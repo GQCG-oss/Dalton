@@ -83,26 +83,26 @@ ERROR[1]="ENERGIES NOT CORRECT"
 
 
 # freq.-dep. CCS hyperpolarizabilities
-CRIT1=`$GREP  "ZDIPLEN  \(unrel\.\)  ..0000   ZDIPLEN  \(unrel\.\)  ..0000   ZDIPLEN  \(unrel\.\)  ..0000      16.5732" $log | wc -l`
+CRIT1=`$GREP  "ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000      16.5732" $log | wc -l`
 CRIT2=`$GREP  "                  ...0856                      ..0428                      ..0428      17.0182" $log | wc -l`
 CRIT3=`$GREP  "                  ...1312                      ..0656                      ..0656      17.6491" $log | wc -l`
-CRIT4=`$GREP  "                   ..0000                      ..0428                     ...0428      16.7195" $log | wc -l`
-CRIT5=`$GREP  "                   ..0000                      ..0656                     ...0656      16.9200" $log | wc -l`
-CRIT6=`$GREP  "XDIPLEN  \(unrel\.\)  ..0000   ZDIPLEN  \(unrel\.\)  ..0000   XDIPLEN  \(unrel\.\)  ..0000     ..675553" $log | wc -l`
+CRIT4=`$GREP  "                  (\-0| \-| 0|  )\.0000                      ..0428                     ...0428      16.7195" $log | wc -l`
+CRIT5=`$GREP  "                  (\-0| \-| 0|  )\.0000                      ..0656                     ...0656      16.9200" $log | wc -l`
+CRIT6=`$GREP  "XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000     ..675553" $log | wc -l`
 CRIT7=`$GREP  "                  ...0856                      ..0428                      ..0428     ..680361" $log | wc -l`
 CRIT8=`$GREP  "                  ...1312                      ..0656                      ..0656     ..686966" $log | wc -l`
-CRIT9=`$GREP  "                   ..0000                      ..0428                     ...0428     ..699483" $log | wc -l`
-CRIT10=`$GREP "                   ..0000                      ..0656                     ...0656     ..732982" $log | wc -l`
-CRIT11=`$GREP "XDIPLEN  \(unrel\.\)  ..0000   ZDIPLEN  \(unrel\.\)  ..0000   XDIPLEN  \(unrel\.\)  ..0000     ..675553" $log | wc -l`
+CRIT9=`$GREP  "                  (\-0| \-| 0|  )\.0000                      ..0428                     ...0428     ..699483" $log | wc -l`
+CRIT10=`$GREP "                  (\-0| \-| 0|  )\.0000                      ..0656                     ...0656     ..732982" $log | wc -l`
+CRIT11=`$GREP "XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000     ..675553" $log | wc -l`
 CRIT12=`$GREP "                  ...0856                      ..0428                      ..0428     ..732119" $log | wc -l`
 CRIT13=`$GREP "                  ...1312                      ..0656                      ..0656     ..816679" $log | wc -l`
-CRIT14=`$GREP "                   ..0000                      ..0428                     ...0428     ..682705" $log | wc -l`
-CRIT15=`$GREP "                   ..0000                      ..0656                     ...0656     ..692579" $log | wc -l`
-CRIT16=`$GREP "beta_\|\|    ..0000   ..0000   ..0000     10.7546" $log | wc -l`
+CRIT14=`$GREP "                  (\-0| \-| 0|  )\.0000                      ..0428                     ...0428     ..682705" $log | wc -l`
+CRIT15=`$GREP "                  (\-0| \-| 0|  )\.0000                      ..0656                     ...0656     ..692579" $log | wc -l`
+CRIT16=`$GREP "beta_\|\| * (\-0|\-|0| )\.0000 * (\-0|\-|0| )\.0000 * (\-0|\-|0| )\.0000     10.7546" $log | wc -l`
 CRIT17=`$GREP "          ...0856   ..0428   ..0428     11.0688" $log | wc -l`
-CRIT18=`$GREP "beta.K     ..0000   ..0000   ..0000     10.7546" $log | wc -l`
+CRIT18=`$GREP "beta.K * (\-0|\-|0| )\.0000 * (\-0|\-|0| )\.0000 * (\-0|\-|0| )\.0000     10.7546" $log | wc -l`
 CRIT19=`$GREP "          ...0856   ..0428   ..0428     11.1205" $log | wc -l`
-CRIT20=`$GREP "beta_\|_    ..0000   ..0000   ..0000     3.58487" $log | wc -l`
+CRIT20=`$GREP "beta_\|_ * (\-0|\-|0| )\.0000 * (\-0|\-|0| )\.0000 * (\-0|\-|0| )\.0000     3.58487" $log | wc -l`
 CRIT21=`$GREP "          ...0856   ..0428   ..0428     7.05875" $log | wc -l`
 CRIT22=`$GREP "          ...0856   ..0428   ..0428   ...517581" $log | wc -l`
 
@@ -117,26 +117,26 @@ ERROR[2]="FREQ.-DEP. CCS FIRST HYPERPOLARIZABILITIES NOT CORRECT"
 
 
 # freq.-dep. CCSD hyperpolarizabilities
-CRIT1=`$GREP  "ZDIPLEN  \(unrel\.\)  ..0000   ZDIPLEN  \(unrel\.\)  ..0000   ZDIPLEN  \(unrel\.\)  ..0000      15.3808" $log | wc -l`
+CRIT1=`$GREP  "ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000      15.3808" $log | wc -l`
 CRIT2=`$GREP  "                  ...0856                      ..0428                      ..0428      15.8480" $log | wc -l`
 CRIT3=`$GREP  "                  ...1312                      ..0656                      ..0656      16.5139" $log | wc -l`
-CRIT4=`$GREP  "                   ..0000                      ..0428                     ...0428      15.5341" $log | wc -l`
-CRIT5=`$GREP  "                   ..0000                      ..0656                     ...0656      15.7446" $log | wc -l`
-CRIT6=`$GREP  "XDIPLEN  \(unrel\.\)  ..0000   ZDIPLEN  \(unrel\.\)  ..0000   XDIPLEN  \(unrel\.\)  ..0000     ..902738" $log | wc -l`
+CRIT4=`$GREP  "                  (\-0| \-| 0|  )\.0000                      ..0428                     ...0428      15.5341" $log | wc -l`
+CRIT5=`$GREP  "                  (\-0| \-| 0|  )\.0000                      ..0656                     ...0656      15.7446" $log | wc -l`
+CRIT6=`$GREP  "XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000     ..902738" $log | wc -l`
 CRIT7=`$GREP  "                  ...0856                      ..0428                      ..0428     ..914367" $log | wc -l`
 CRIT8=`$GREP  "                  ...1312                      ..0656                      ..0656     ..930708" $log | wc -l`
-CRIT9=`$GREP  "                   ..0000                      ..0428                     ...0428     ..939224" $log | wc -l`
-CRIT10=`$GREP "                   ..0000                      ..0656                     ...0656     ..990687" $log | wc -l`
-CRIT11=`$GREP "XDIPLEN  \(unrel\.\)  ..0000   ZDIPLEN  \(unrel\.\)  ..0000   XDIPLEN  \(unrel\.\)  ..0000     ..902738" $log | wc -l`
+CRIT9=`$GREP  "                  (\-0| \-| 0|  )\.0000                      ..0428                     ...0428     ..939224" $log | wc -l`
+CRIT10=`$GREP "                  (\-0| \-| 0|  )\.0000                      ..0656                     ...0656     ..990687" $log | wc -l`
+CRIT11=`$GREP "XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000     ..902738" $log | wc -l`
 CRIT12=`$GREP "                  ...0856                      ..0428                      ..0428     ..990566" $log | wc -l`
 CRIT13=`$GREP "                  ...1312                      ..0656                      ..0656      1.12473" $log | wc -l`
-CRIT14=`$GREP "                   ..0000                      ..0428                     ...0428     ..914688" $log | wc -l`
-CRIT15=`$GREP           "         ..0000                      ..0656                     ...0656     ..931267" $log | wc -l`
-CRIT16=`$GREP "beta_\|\|    ..0000   ..0000   ..0000     10.3117" $log | wc -l`
+CRIT14=`$GREP "                  (\-0| \-| 0|  )\.0000                      ..0428                     ...0428     ..914688" $log | wc -l`
+CRIT15=`$GREP           "        (\-0| \-| 0|  )\.0000                      ..0656                     ...0656     ..931267" $log | wc -l`
+CRIT16=`$GREP "beta_\|\| * (\-0|\-|0| )\.0000 * (\-0|\-|0| )\.0000 * (\-0|\-|0| )\.0000     10.3117" $log | wc -l`
 CRIT17=`$GREP "          ...0856   ..0428   ..0428     10.6670" $log | wc -l`
-CRIT18=`$GREP "beta.K     ..0000   ..0000   ..0000     10.3117" $log | wc -l`
+CRIT18=`$GREP "beta.K * (\-0|\-|0| )\.0000 * (\-0|\-|0| )\.0000 * (\-0|\-|0| )\.0000     10.3117" $log | wc -l`
 CRIT19=`$GREP "          ...0856   ..0428   ..0428     10.7432" $log | wc -l`
-CRIT20=`$GREP "beta_\|_    ..0000   ..0000   ..0000     3.43726" $log | wc -l`
+CRIT20=`$GREP "beta_\|_ * (\-0|\-|0| )\.0000 * (\-0|\-|0| )\.0000 * (\-0|\-|0| )\.0000     3.43726" $log | wc -l`
 CRIT21=`$GREP "          ...0856   ..0428   ..0428     6.67447" $log | wc -l`
 CRIT22=`$GREP "          ...0856   ..0428   ..0428   ...761993" $log | wc -l`
 

@@ -109,8 +109,8 @@ ERROR[3]="CCSD SHIELDINGS NOT CORRECT"
 
 
 # SCF and CCSD shieldings
-CRIT1=`$GREP "<<PSO 02  ,dh/dBX  >>\( (0| ).000000\) = * ..0000000." $log | wc -l`
-CRIT2=`$GREP "<<PSO 03  ,dh/dBY  >>\( (0| ).000000\) = * ..0000000." $log | wc -l`
+CRIT1=`$GREP "<<PSO 02  ,dh/dBX  >>\( (0| ).000000\) = * (\-0|\-| |0)\.0000000." $log | wc -l`
+CRIT2=`$GREP "<<PSO 03  ,dh/dBY  >>\( (0| ).000000\) = * (\-0|\-| |0)\.0000000." $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2`
 CTRL[4]=6
 ERROR[4]="SYMMETRY IN SCF AND CCSD SHIELDINGS NOT CORRECT"

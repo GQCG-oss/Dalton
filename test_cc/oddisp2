@@ -74,7 +74,7 @@ CTRL[1]=8
 ERROR[1]="ENERGIES NOT CORRECT"
 
 # CCS/CCSD freq.-dep. first hyperpolarizabilities:
-CRIT1=`$GREP "XDIPLEN  \(unrel.\)  ( |0)\.0000   YDIPLEN  \(unrel.\)  ( |0)\.0000   ZANGMOM  \(unrel.\)  ( |0)\.0000" $log | \
+CRIT1=`$GREP "XDIPLEN  \(unrel.\) (\-0| \-|  | 0)\.0000   YDIPLEN  \(unrel.\) (\-0| \-|  | 0)\.0000   ZANGMOM  \(unrel.\) (\-0| \-|  | 0)\.0000" $log | \
        sed "s/D/E/" | awk "{if (\\\$NF < 1.0E-8) print \\\$0}" | wc -l`
 TEST[2]=`expr $CRIT1`
 CTRL[2]=2

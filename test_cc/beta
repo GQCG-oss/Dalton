@@ -78,11 +78,11 @@ ERROR[1]="ENERGIES NOT CORRECT"
 
 
 # static CCS hyperpolarizabilities
-CRIT1=`$GREP "ZDIPLEN  \(unrel\.\)  ..0000   ZDIPLEN  \(unrel\.\)  ..0000   ZDIPLEN  \(unrel\.\)  ..0000      16.5732" $log | wc -l`
-CRIT2=`$GREP "ZDIPLEN  \(unrel\.\)  ..0000   XDIPLEN  \(unrel\.\)  ..0000   XDIPLEN  \(unrel\.\)  ..0000     ..675553" $log | wc -l`
-CRIT3=`$GREP "beta_\|\|    ..0000   ..0000   ..0000     10.7546" $log | wc -l`
-CRIT4=`$GREP "beta.K     ..0000   ..0000   ..0000     10.7546" $log | wc -l`
-CRIT5=`$GREP "beta_\|_    ..0000   ..0000   ..0000     3.58487" $log | wc -l`
+CRIT1=`$GREP "ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000 * ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000 * ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000 * 16.5732" $log | wc -l`
+CRIT2=`$GREP "ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000 * XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000 * XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000 * ..675553" $log | wc -l`
+CRIT3=`$GREP "beta_\|\| * (\-0|\-|0| )\.0000 * (\-0|\-|0| )\.0000 * (\-0|\-|0| )\.0000 * 10.7546" $log | wc -l`
+CRIT4=`$GREP "beta.K * (\-0|\-|0| )\.0000 * (\-0|\-|0| )\.0000 * (\-0|\-|0| )\.0000 * 10.7546" $log | wc -l`
+CRIT5=`$GREP "beta_\|_ * (\-0|\-|0| )\.0000 * (\-0|\-|0| )\.0000 * (\-0|\-|0| )\.0000 * 3.58487" $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5` 
 CTRL[2]=5
 ERROR[2]="STATIC CCS FIRST HYPERPOLARIZABILITIES NOT CORRECT"
@@ -103,11 +103,11 @@ ERROR[3]="CCS FIRST HYPERPOLARIZABILITIES DISPERSION COEFFICIENTS NOT CORRECT"
 
 
 # static CCSD hyperpolarizabilities
-CRIT1=`$GREP "ZDIPLEN  \(unrel\.\)  ..0000   ZDIPLEN  \(unrel\.\)  ..0000   ZDIPLEN  \(unrel\.\)  ..0000      15.3808" $log | wc -l`
-CRIT2=`$GREP "ZDIPLEN  \(unrel\.\)  ..0000   XDIPLEN  \(unrel\.\)  ..0000   XDIPLEN  \(unrel\.\)  ..0000     ..902738" $log | wc -l`
-CRIT3=`$GREP "beta_\|\|    ..0000   ..0000   ..0000     10.3117" $log | wc -l`
-CRIT4=`$GREP "beta.K     ..0000   ..0000   ..0000     10.3117" $log | wc -l`
-CRIT5=`$GREP "beta_\|_    ..0000   ..0000   ..0000     3.43726" $log | wc -l`
+CRIT1=`$GREP "ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000      15.3808" $log | wc -l`
+CRIT2=`$GREP "ZDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000   XDIPLEN  \(unrel\.\) (\-0| \-| 0|  )\.0000     ..902738" $log | wc -l`
+CRIT3=`$GREP "beta_\|\| * (\-0|\-|0| )\.0000 * (\-0|\-|0| )\.0000 * (\-0|\-|0| )\.0000 * 10.3117" $log | wc -l`
+CRIT4=`$GREP "beta.K * (\-0|\-|0| )\.0000 * (\-0|\-|0| )\.0000 * (\-0|\-|0| )\.0000 * 10.3117" $log | wc -l`
+CRIT5=`$GREP "beta_\|_ * (\-0|\-|0| )\.0000 * (\-0|\-|0| )\.0000 * (\-0|\-|0| )\.0000 * 3.43726" $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5` 
 CTRL[4]=5
 ERROR[4]="STATIC CCSD FIRST HYPERPOLARIZABILITIES NOT CORRECT"
@@ -127,7 +127,7 @@ CTRL[5]=11
 ERROR[5]="CCSD FIRST HYPERPOLARIZABILITIES DISPERSION COEFFICIENTS NOT CORRECT"
 
 # symmetry of beta tensor:
-CRIT1=`$GREP "beta_ms    ..0000   ..0000   ..0000" $log | \
+CRIT1=`$GREP "beta_ms * (\-0|\-|0| )\.0000 * (\-0|\-|0| )\.0000 * (\-0|\-|0| )\.0000" $log | \
        awk "\\\$5 < 1.0e-12 {print \\\$0}" | wc -l`
 CRIT2=`$GREP "beta_ms                                    0" $log | \
        awk "NF==5 && \\\$3+\\\$4+\\\$5 < 1.0e-12 {print \\\$0}" | wc -l`

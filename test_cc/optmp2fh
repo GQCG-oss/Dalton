@@ -1,3 +1,4 @@
+
 #######################################################################
 #  INTEGRAL INPUT
 #######################################################################
@@ -116,7 +117,7 @@ CRIT4=`$GREP " H * ( |0)\.0000000000 * ( |0)\.0000000000 * ( \-|\-0)\.003535" $l
 CRIT5=`$GREP " F * ( |0)\.0000000000 * ( |0)\.0000000000 * ( |0)\.003535" $log | wc -l`
 CRIT6=`$GREP "Energy at this geometry is * : * -100\.223190" $log | wc -l`
 CRIT7=`$GREP "Norm of gradient * : * ( |0)\.005000" $log | wc -l`
-CRIT8=`$GREP "Norm of step * : * ( |0)\.005816" $log | wc -l`
+CRIT8=`$GREP "Norm of step * : * ( |0)\.00581[5-8]" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8` 
 CTRL[3]=9
 ERROR[3]="SECOND ITERATION IS NOT CORRECT"

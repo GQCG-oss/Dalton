@@ -89,12 +89,12 @@ CTRL[1]=8
 ERROR[1]="ENERGIES NOT CORRECT"
 
 # CCS freq.-dep. first hyperpolarizabilities:
-CRIT1=`$GREP "XDIPLEN * \(unrel.\) * ( |0)\.0000 * YDIPLEN * \(unrel.\) * ( |0)\.0000 * ZANGMOM * \(unrel.\) * ( |0)\.0000 * ( |0)\.0000000" $log | wc -l`
-CRIT2=`$GREP "XDIPLEN * \(unrel.\) * ( |0)\.0000 * ZANGMOM * \(unrel.\) * ( |0)\.0000 * YDIPLEN * \(unrel.\) * ( |0)\.0000 * ( |0)\.0000000" $log | wc -l`
-CRIT3=`$GREP "XDIPLEN * \(unrel.\) * ( |0)\.0000 * XDIPLEN * \(unrel.\) * ( |0)\.0000 * ZZTHETA * \(unrel.\) * ( |0)\.0000 * 1.584440" $log | wc -l`
-CRIT4=`$GREP "( |0)\.0000[ ]* ( |0)\.0720[ ]* ( \-|\-0)\.0720 * ( |0)\.110242" $log | wc -l`
-CRIT5=`$GREP "( |0)\.0000[ ]* ( |0)\.0720[ ]* ( \-|\-0)\.0720 * ( \-|\-0)\.110242" $log | wc -l`
-CRIT6=`$GREP "( |0)\.0000[ ]* ( |0)\.0720[ ]* ( \-|\-0)\.0720 * 1.616757" $log | wc -l`
+CRIT1=`$GREP "XDIPLEN * \(unrel.\) (\-0| \-|  | 0)\.0000 * YDIPLEN * \(unrel.\) (\-0| \-|  | 0)\.0000 * ZANGMOM * \(unrel.\) (\-0| \-|  | 0)\.0000 * (\-0|\-| |0)\.0000000" $log | wc -l`
+CRIT2=`$GREP "XDIPLEN * \(unrel.\) (\-0| \-|  | 0)\.0000 * ZANGMOM * \(unrel.\) (\-0| \-|  | 0)\.0000 * YDIPLEN * \(unrel.\) (\-0| \-|  | 0)\.0000 * (\-0|\-| |0)\.0000000" $log | wc -l`
+CRIT3=`$GREP "XDIPLEN * \(unrel.\) (\-0| \-|  | 0)\.0000 * XDIPLEN * \(unrel.\) (\-0| \-|  | 0)\.0000 * ZZTHETA * \(unrel.\) (\-0| \-|  | 0)\.0000 * 1.584440" $log | wc -l`
+CRIT4=`$GREP "(\-0|\-| |0)\.0000[ ]* ( |0)\.0720[ ]* ( \-|\-0)\.0720 * ( |0)\.110242" $log | wc -l`
+CRIT5=`$GREP "(\-0|\-| |0)\.0000[ ]* ( |0)\.0720[ ]* ( \-|\-0)\.0720 * ( \-|\-0)\.110242" $log | wc -l`
+CRIT6=`$GREP "(\-0|\-| |0)\.0000[ ]* ( |0)\.0720[ ]* ( \-|\-0)\.0720 * 1.616757" $log | wc -l`
 CRIT7=`$GREP "( \-|\-0)\.1440[ ]* ( |0)\.0720[ ]* ( |0)\.0720 * ( |0)\.360339" $log | wc -l`
 CRIT8=`$GREP "( \-|\-0)\.1440[ ]* ( |0)\.0720[ ]* ( |0)\.0720 * ( |0)\.360339" $log | wc -l`
 CRIT9=`$GREP "( \-|\-0)\.1440[ ]* ( |0)\.0720[ ]* ( |0)\.0720 * 1.816034" $log | wc -l`
@@ -117,12 +117,12 @@ CTRL[3]=9
 ERROR[3]="CCS 1. HYPERPOLARIZABILITIES DISPERSION COEFFICIENTS NOT CORRECT"
 
 # CCSD freq.-dep. first hyperpolarizabilities:
-CRIT1=`$GREP "XDIPLEN * \(unrel.\) * ( |0)\.0000 * YDIPLEN * \(unrel.\) * ( |0)\.0000 * ZANGMOM * \(unrel.\) * ( |0)\.0000 * ( |0)\.0000000" $log | wc -l`
-CRIT2=`$GREP "XDIPLEN * \(unrel.\) * ( |0)\.0000 * ZANGMOM * \(unrel.\) * ( |0)\.0000 * YDIPLEN * \(unrel.\) * ( |0)\.0000 * ( |0)\.0000000" $log | wc -l`
-CRIT3=`$GREP "XDIPLEN * \(unrel.\) * ( |0)\.0000 * XDIPLEN * \(unrel.\) * ( |0)\.0000 * ZZTHETA * \(unrel.\) * ( |0)\.0000 * 1.717869" $log | wc -l`
-CRIT4=`$GREP "( |0)\.0000[ ]* ( |0)\.0720[ ]* ( \-|\-0)\.0720     ( |0)\.145463" $log | wc -l`
-CRIT5=`$GREP "( |0)\.0000[ ]* ( |0)\.0720[ ]* ( \-|\-0)\.0720    ( \-|\-0)\.145463" $log | wc -l`
-CRIT6=`$GREP "( |0)\.0000[ ]* ( |0)\.0720[ ]* ( \-|\-0)\.0720      1.765741" $log | wc -l`
+CRIT1=`$GREP "XDIPLEN * \(unrel.\) (\-0| \-|  | 0)\.0000 * YDIPLEN * \(unrel.\) (\-0| \-|  | 0)\.0000 * ZANGMOM * \(unrel.\) (\-0| \-|  | 0)\.0000 * (\-0|\-| |0)\.0000000" $log | wc -l`
+CRIT2=`$GREP "XDIPLEN * \(unrel.\) (\-0| \-|  | 0)\.0000 * ZANGMOM * \(unrel.\) (\-0| \-|  | 0)\.0000 * YDIPLEN * \(unrel.\) (\-0| \-|  | 0)\.0000 * (\-0|\-| |0)\.0000000" $log | wc -l`
+CRIT3=`$GREP "XDIPLEN * \(unrel.\) (\-0| \-|  | 0)\.0000 * XDIPLEN * \(unrel.\) (\-0| \-|  | 0)\.0000 * ZZTHETA * \(unrel.\) (\-0| \-|  | 0)\.0000 * 1.717869" $log | wc -l`
+CRIT4=`$GREP "(\-0|\-| |0)\.0000[ ]* ( |0)\.0720[ ]* ( \-|\-0)\.0720     ( |0)\.145463" $log | wc -l`
+CRIT5=`$GREP "(\-0|\-| |0)\.0000[ ]* ( |0)\.0720[ ]* ( \-|\-0)\.0720    ( \-|\-0)\.145463" $log | wc -l`
+CRIT6=`$GREP "(\-0|\-| |0)\.0000[ ]* ( |0)\.0720[ ]* ( \-|\-0)\.0720      1.765741" $log | wc -l`
 CRIT7=`$GREP "( \-|\-0)\.1440[ ]* ( |0)\.0720[ ]* ( |0)\.0720     ( |0)\.488792" $log | wc -l`
 CRIT8=`$GREP "( \-|\-0)\.1440[ ]* ( |0)\.0720[ ]* ( |0)\.0720     ( |0)\.488792" $log | wc -l`
 CRIT9=`$GREP "( \-|\-0)\.1440[ ]* ( |0)\.0720[ ]* ( |0)\.0720      2.040192" $log | wc -l`
