@@ -24,8 +24,10 @@ C
       LWRK  = LWORK - KLAST +1
       IF(KLAST.GT.LWORK) CALL QUIT('NOMEM IN DFTGRAD')
       CALL DFTDNS(WORK(KDMAT),WORK(KLAST),LWRK,0)
+      CALL KICK_SLAVES_GRAD(NBAST,WORK(KDMAT),IPRINT)
       CALL DFTINT(WORK(KDMAT),1,1,.FALSE.,WORK(KLAST),LWRK,
      &            DFTMOLGRD,WORK(KDMAT),ELE) 
+      CALL GRADSLAVE_COLLECT(GRADFT,WORK(KLAST),LWRK)
       RETURN
       END
 C
@@ -147,4 +149,65 @@ C
          END DO
       END DO
       RETURN
+      END
+C
+      SUBROUTINE KICK_SLAVES_GRAD(NBAST,DMAT,IPRINT)
+#if defined (VAR_MPI)
+#include "implicit.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infpar.h"
+#include "mpif.h"
+C
+      DIMENSION DMAT(NBAST,NBAST)
+      IF (MYNUM .EQ. MASTER) THEN
+         IPRTYP = 6
+         CALL MPI_BCAST(IPRTYP,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(IPRINT,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+         CALL DFTINTBCAST
+         CALL KSMSYNC(DMAT)
+      END IF
+      RETURN
+#endif
+      END
+#if defined (VAR_MPI)
+      SUBROUTINE DFT_GRAD_SLAVE(WORK,LWORK,IPRINT)
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "inforb.h"
+#include "dftmolgrad.h"
+#include "energy.h"
+      DIMENSION WORK(LWORK)
+      EXTERNAL DFTMOLGRD 
+      LOGICAL DFT_ISGGA
+      EXTERNAL DFT_ISGGA
+C
+      DOGGA = DFT_ISGGA()
+      KDMAT  = 1
+      KFREE  = KDMAT + N2BASX
+      IF (KFREE .GT. LWORK) CALL STOPIT('DFT_GRAD_SLAVE','',KFREE,LWORK)
+      LFREE = LWORK - KFREE + 1
+      CALL DFTINTBCAST
+      CALL KSMSYNC(WORK(KDMAT))
+      CALL DZERO(GRADFT,MXCOOR)
+      CALL DFTINT(WORK(KDMAT),1,1,.FALSE.,WORK(KFREE),LFREE,
+     &            DFTMOLGRD,WORK(KDMAT),ELE) 
+      CALL GRADSLAVE_COLLECT(GRADFT,WORK(KFREE),LFREE)
+      RETURN
+      END
+#endif
+      SUBROUTINE GRADSLAVE_COLLECT(GRADMOL,WORK,LWORK)
+#if defined (VAR_MPI)
+#include "implicit.h"
+#include "mxcent.h"
+#include "mpif.h"
+      DIMENSION GRADMOL(MXCOOR), WORK(LWORK)
+      CALL DCOPY(MXCOOR,GRADMOL,1,WORK(1),1)
+      CALL MPI_Reduce(WORK,GRADMOL,MXCOOR,MPI_DOUBLE_PRECISION,
+     &                MPI_SUM,0,MPI_COMM_WORLD,IERR)
+      RETURN
+#endif
       END

@@ -196,6 +196,7 @@ c
 #include <onecom.h>
 #include <pincom.h>
 #include <shells.h>
+#include <dftcom.h>
 #include <sphtrm.h>
 #include <symmet.h>
 #include <xyzpow.h>
@@ -284,6 +285,15 @@ c     /XYZPOW/
      &               0, MPI_COMM_WORLD,ie)
       CALL MPI_Bcast(nval, MXAQNM, MPI_INTEGER,
      &               0, MPI_COMM_WORLD,ie)
+c     /DFTCOM/
+      IF (DFTADD) THEN
+         IDFT = 1
+      ELSE
+         IDFT = 0
+      END IF
+      CALL MPI_Bcast(IDFT,1,MPI_INTEGER,0,MPI_COMM_WORLD,ie)
+      DFTADD = .FALSE.
+      IF (IDFT.EQ.1) DFTADD = .TRUE.
 c
 c     sync functionals, too.
       CALL DFTFUNCSYNC(MYNUM,NODTOT)
