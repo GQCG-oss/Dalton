@@ -51,7 +51,7 @@ cat > walk_image.dal <<'%EOF%'
 .IMAGE
 **WAVE FUNCTION
 .HF
-**FINAL
+**PROPERTIES
 .VIBANA
 .POPANA
 **END OF DALTON INPUT

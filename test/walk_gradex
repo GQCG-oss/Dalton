@@ -56,7 +56,7 @@ cat > walk_gradex.dal <<'%EOF%'
  1
 **WAVE FUNCTION
 .HF
-**FINAL
+**PROPERTIES
 .VIBANA
 .POPANA
 **END OF DALTON INPUT

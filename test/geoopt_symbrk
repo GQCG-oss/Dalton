@@ -51,7 +51,7 @@ cat > geoopt_symbrk.dal <<'%EOF%'
 .2NDORDER
 **WAVE FUNCTIONS
 .HF
-**FINAL
+**PROPERTIES
 .VIBANA
 *END OF INPUT
 %EOF%

@@ -55,7 +55,7 @@ cat > walk_modeflw.dal <<'%EOF%'
  -1
 **WAVE FUNCTION
 .HF
-**FINAL
+**PROPERTIES
 .VIBANA
 .POPANA
 **END OF DALTON INPUT

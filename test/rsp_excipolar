@@ -90,7 +90,7 @@ cat > rsp_excipolar.dal <<'%EOF%'
    0 3 3 0
 .MAXITO
  100
-.MAXIT
+.MAX IT
  100
 .MAXITP
  100

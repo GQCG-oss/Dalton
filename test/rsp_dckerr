@@ -73,7 +73,7 @@ cat > rsp_dckerr.dal <<'%EOF%'
  0 2
 **RESPONSE
 *CUBIC
-.MAXIT
+.MAX IT
  40
 .DC-KER
 .FREQUE

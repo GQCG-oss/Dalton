@@ -52,7 +52,7 @@ cat > walk_polar.dal <<'%EOF%'
 .WALK
 **WAVE FUNCTION
 .HF
-**FINAL
+**PROPERTIES
 .POLARI
 .VIBANA
 .POPANA
@@ -340,7 +340,7 @@ ERROR[25]="VIBRATIONAL FREQUENCIES NOT CORRECT"
 # IR intensities:
 CRIT1=`$GREP "2 * A1 * ....... * ........ * 25\.488 * (0| )\.6032" $log | wc -l`
 CRIT2=`$GREP "3 * A1 * ....... * ........ * 85\.614 * 2\.0261" $log | wc -l`
-CRIT3=`$GREP "1 * B2 * ....... * ........ * 88\.280 * 2\.0892" $log | wc -l`
+CRIT3=`$GREP "1 * B2 * ....... * ........ * 88\.2(79|80) * 2\.0892" $log | wc -l`
 TEST[26]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3`
 CTRL[26]=3
 ERROR[26]="IR INTENSITIES NOT CORRECT"

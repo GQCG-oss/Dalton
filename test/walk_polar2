@@ -74,7 +74,7 @@ cat > walk_polar2.dal <<'%EOF%'
 **START
 .PRINT
  4
-**FINAL
+**PROPERTIES
 .POLARI
 .VIBANA
 .POPANA

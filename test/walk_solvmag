@@ -63,7 +63,7 @@ cat > walk_solvmag.dal <<'%EOF%'
  10
 .CAVITY
  5.08
-**FINAL
+**PROPERTIES
 .SHIELD
 .MAGNET
 *END OF

@@ -67,7 +67,7 @@ cat > walk_vibave2.dal <<'%EOF%'
 *RESPONSE
 .THRESH
 1.0D-6
-**PROPERTIES
+**EACH STEP
 .SHIELD
 .PRINT
  4

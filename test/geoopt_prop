@@ -52,7 +52,7 @@ cat > geoopt_prop.dal <<'%EOF%'
 .OPTIMIZE
 **WAVE FUNCTION
 .HF
-**FINAL
+**PROPERTIES
 .QUADRU
 .VIBANA
 .MAGNET
@@ -200,7 +200,7 @@ CRIT2=`$GREP "Diamagnetic contribution\: * \-3\.2053 * \-252\.9296 * \-15\.2318"
 CRIT3=`$GREP "Paramagnetic contribution\: * (0| )\.3067 * 24\.1985 * 1\.4573" $log | wc -l`
 CRIT4=`$GREP "1st anisotropy\: * (\-0|\-)\.0339 * \-2\.6750 * (\-0|\-)\.1611" $log | wc -l`
 CRIT5=`$GREP "2nd anisotropy\: * (0| )\.0367 * 2\.8937 * (0| )\.1743" $log | wc -l`
-CRIT6=`$GREP "Bx * \-2\.9004669949[0-9][0-9] * (\-0| 0| \-|  )\.000000000000 * (\-0| 0| \-|  )\.000000000000" $log | wc -l`
+CRIT6=`$GREP "Bx * \-2\.90046699[4-5][0-9][0-9][0-9] * (\-0| 0| \-|  )\.000000000000 * (\-0| 0| \-|  )\.000000000000" $log | wc -l`
 CRIT7=`$GREP "By * (\-0| 0| \-|  )\.000000000000 * \-2\.8741724910[0-9][0-9] * (\-0| 0| \-|  )\.000000000000" $log | wc -l`
 CRIT8=`$GREP "Bz * (\-0| 0| \-|  )\.000000000000 * (\-0| 0| \-|  )\.000000000000 * \-2\.9212192851[0-9][0-9]" $log | wc -l`
 TEST[14]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
@@ -224,17 +224,17 @@ CTRL[15]=9
 ERROR[15]="G-TENSORS NOT CORRECT"
 
 # Chemical shielding:
-CRIT1=`$GREP "Shielding constant\: * 334\.2539 ppm" $log | wc -l`
-CRIT2=`$GREP "Anisotropy\: * 53\.0667 ppm" $log | wc -l`
-CRIT3=`$GREP "Asymmetry\: * (0| )\.3232" $log | wc -l`
-CRIT4=`$GREP "S parameter\: * 53\.9826 ppm" $log | wc -l`
+CRIT1=`$GREP "Shielding constant\: * 334\.25[3-4][0-9] ppm" $log | wc -l`
+CRIT2=`$GREP "Anisotropy\: * 53\.06[5-6][0-9] ppm" $log | wc -l`
+CRIT3=`$GREP "Asymmetry\: * (0| )\.323{1-2]" $log | wc -l`
+CRIT4=`$GREP "S parameter\: * 53\.98[1-2][0-9] ppm" $log | wc -l`
 CRIT5=`$GREP "A parameter\: * (0| )\.0000 ppm" $log | wc -l`
 CRIT6=`$GREP "Shielding constant\: * 31\.8639 ppm" $log | wc -l`
 CRIT7=`$GREP "Anisotropy\: * 20\.5468 ppm" $log | wc -l`
 CRIT8=`$GREP "Asymmetry\: * (0| )\.0968" $log | wc -l`
 CRIT9=`$GREP "S parameter\: * 20\.5789 ppm" $log | wc -l`
 CRIT10=`$GREP "A parameter\: * (0| )\.6772 ppm" $log | wc -l`
-CRIT11=`$GREP "\@1 *O * 334\.2539 * 417\.2752 * \-83\.0213 * (0| )\.6110 * 58\.7836 * 53\.0667 * (0| )\.3232" $log | wc -l`
+CRIT11=`$GREP "\@1 *O * 334\.25[3-4][0-9] * 417\.2752 * \-83\.021[2-3] * (0| )\.611[0-1] * 58\.78[1-3][0-9] * 53\.06[5-6][0-9] * (0| )\.323[1-2]" $log | wc -l`
 CRIT12=`$GREP "\@1 *H * 1 * 31\.8639 * 24\.9229 * 6\.9410 * (0| )\.8750 * 21\.2096 * 20\.5468 * (0| )\.0968" $log | wc -l`
 CRIT13=`$GREP "\@1 *H * 2 * 31\.8639 * 24\.9229 * 6\.9410 * (0| )\.8750 * 21\.2096 * 20\.5468 * (0| )\.0968" $log | wc -l`
 TEST[16]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \

@@ -110,7 +110,7 @@ cat > rsp_esr.dal <<'%EOF%'
 **RESPON
 .TRPFLG
 *ESR
-.MAXIT
+.MAX IT
    30
 .TRPPRP
 FC Cl 01
