@@ -191,7 +191,7 @@ case $WHICH in
     paragon)  liblist='libmath.a libblas.a'
               complist='if90 if77 f90 f77'
               ccmplist='cc';;
-    linux)    liblist='libacml.a libmkl_p3.a libatlas.a libblas.a'
+    linux)    liblist='libacml.a libmkl.so libmkl_p3.a libatlas.a libblas.a'
               complist='ifort ifc efc pgf77 g77'
               ccmplist='icc ecc pgcc gcc';;
     darwin)   liblist='libatlas.a libblas.a'
@@ -463,7 +463,7 @@ fi
 
 # Try to find paths to special libraries
 if [ $WHICH = "linux" ]; then
-	testdir=`locate libmkl_p3.a`
+	testdir=`locate libmkl.so`
 	for i in $testdir; do
 	  dn=`dirname $i`; dirlist="$dn $dirlist"
 	done
@@ -504,7 +504,9 @@ for testlib in $liblist; do
       	               blas3="true";;
             libcomplib.sgimath.a) LIB='-lcomplib.sgimath'
 	                          blas3='true';;
-            libmkl_p3.a) LIB="-L$mkllib -lmkl_p3 -lguide -lpthread -static"
+            libmkl_p3.a) LIB="-lmkl_p3 -lguide -lpthread -static"
+                         blas3="true";;
+            libmkl.so) LIB="-Wl,--rpath=$testdir -lmkl -lguide -lpthread"
                          blas3="true";;
 	    lib[cd]xml.a) LIB='-ldxml'
 	               blas3="true"; lapack="true"
