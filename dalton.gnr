@@ -334,6 +334,9 @@ if [ "$1" = "$2" ]; then
          echo "DALTON.OUT has not been created from the present run"
       fi
    fi
+   if [ -s molden.inp -a -r molden.inp ]; then
+      cp molden.inp $WRKDIR/$1.molden
+   fi
 else
    if [ -s $WRKDIR/$1_$2.$OUTEXT ];then
       cp $WRKDIR/$1_$2.$OUTEXT $WRKDIR/$1_$2.$OUTEXT.bak
@@ -354,6 +357,9 @@ else
       else
          echo "DALTON.OUT has not been created from the present run"
       fi
+   fi
+   if [ -s molden.inp -a -r molden.inp ]; then
+      cp molden.inp $WRKDIR/$1_$2.$OUTEXT
    fi
 fi
 cd $WRKDIR
