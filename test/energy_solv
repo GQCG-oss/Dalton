@@ -22,7 +22,7 @@ cat > energy_solv.info <<'%EOF%'
    -----------
    Molecule:         H2CO
    Wave Functions:   SCF, MP2 and MCSCF (CAS) / 6-31G
-   Test Purpose:     Solvation energies
+   Test Purpose:     Solvation energies; check .MOSTART H1DIAG option
 %EOF%
 
 #######################################################################
@@ -58,6 +58,9 @@ cat > energy_solv.dal <<'%EOF%'
 .SCF
 .MP2
 .MCSCF
+*ORBITAL INPUT
+.MODIAG   ! Huckel gives better start guess, but we must check somewhere
+ H1DIAG   ! that the H1DIAG option works.
 *SCF INP
 .DOUBLY OCCUPIED
  5 1 2 0
@@ -84,9 +87,6 @@ cat > energy_solv.dal <<'%EOF%'
   7
 .PRINT
   5
-*ORBITAL
-.MOSTART
- H1DIAG
 *OPTIMIZATION
 .THRESHOLD
   1.D-06
