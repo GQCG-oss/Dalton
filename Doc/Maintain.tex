@@ -13,7 +13,7 @@ perturbations handled simultaneously (see
 Sec.~\ref{sec:abares}).  Otherwise, some redimensioning will be
 necessary.
 
-The program use approximately 0.8 MW of memory allocated as common
+The program use approximately 4 Mw of memory allocated as common
 blocks and similar data structures. Most of the memory used during the
 calculation is taken from a large work array. The size of this work
 array\index{scratch memory},
@@ -21,11 +21,8 @@ array\index{scratch memory},
 variable. How this is done is
 exemplified in the chapter on how to get started
 (Chapter~\ref{ch:starting}). This makes it easy
-to give the program the memory needed for a given calculation. It is
-worth noticing that some computers using batch queue systems often
-give priority to jobs according to their memory requirements, and it may
-therefore be of interest to minimize the requested memory in order to
-get the jobs faster through (real time). If no value to the shell
+to give the program the memory needed for a given calculation. If no
+value to the shell 
 variable is supplied, the program will use the  default value which is
 determined at installation time from the variable
 \verb|INSTALL_WRKMEM|\index{INSTALL\_WRKMEM} in the preprocessor
@@ -36,7 +33,7 @@ directives\index{scratch memory}.
 Most of the \dalton\ program has in principle no limitations on
 the size of the problem one can handle, apart from
 physical memory requirements and available disc space. The default
-version of the program can handle 1200 basis functions, 80 nuclei and
+version of the program can handle 1200 basis functions, 120 nuclei and
 400 occupied orbitals and up to $i$ functions in the basis
 set. However, most such settings are adjustable to suit your own
 needs, at the expense of larger (or smaller of course) static memory
@@ -49,9 +46,8 @@ require the user to change other parameters not included in this
 list, and these variables are then easily found in the include
 directory by ``grep'ing for'' its occurrence. We also point out that
 whenever a change is made to one or more include files, it is most
-safe to do \verb|make clean| and rebuild the program from scratch,
-even though a file containing the appropriate dependencies are
-available.
+safe to do \verb|make depend| and then rebuild the program using the
+command \verb|make|.
 
 \bigskip
 
@@ -93,12 +89,11 @@ in the input processing.  See Sec.~\ref{sec:herrdn}.
 New versions will be announced on the \dalton\
 homepage\\
 (\verb|http://www.kjemi.uio.no/software/dalton/dalton.html| 
-and the American mirror-site at \verb|http://www.sdsc.edu/dalton/dalton.html|) 
-as well
-as the \dalton\ mailing-list
-(\verb|dalton-users@kjemi.uio.no|)\index{mailing list}.
+and the \dalton\ mailing-list
+(\verb|dalton-users@kjemi.uio.no|)\index{mailing list}.\footnote{We no
+  longer support and American mirror site for the \dalton\ program.}
 
-In between releases, bug fixes will be distributed as
+Inbetween releases, bug fixes will be distributed as
 patches\index{patches} to an
 existing version. Although not frequently used in the past, we believe
 this to be a more common approach in the future. New patches will be
