@@ -1,6 +1,6 @@
 #!/bin/sh
-dalton="mpirun -np 4 `pwd`/../../dalpar.x"; par='.PARALLEL'
-#dalton="`pwd`/../../dalpar.x"; par='!.PARALLEL'
+#dalton="mpirun -np 4 `pwd`/../../dalpar.x"; par='.PARALLEL'
+dalton="`pwd`/../../dalton.x"; par='!.PARALLEL'
 tmp=/tmp/${USER}
 fld=2e-4
 runenergy=1

@@ -80,16 +80,16 @@
      P. R. Taylor and O. Vahtras"
 
  
-     Date and time (Linux)  : Thu May 20 13:32:38 2004
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Tue Jun  1 23:56:34 2004
+     Host name              : nora.saleks.org                         
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
 
 
  Default print level:        0
 
-    Direct calculation
     Integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
     Wave function sections will be executed
     Dynamic molecular property section will be executed
 
@@ -106,7 +106,7 @@ Starting in Integral Section -
 
  * Nuclear model: Point charge
 
- Calculation of one-electron Hamiltonian integrals.
+ Calculation of one- and two-electron Hamiltonian integrals.
 
 
  *************************************************************************
@@ -352,7 +352,12 @@ Point group: C2v
  >>> Time used in ONEDRV is   0.00 seconds
 
 
- >>> Time used in GABGEN is   0.00 seconds
+ Number of two-electron integrals written:        1270 ( 30.3% )
+ Megabytes written:                              0.021
+
+
+
+ >>> Time used in TWOINT is   0.00 seconds
 
  >>>> Total CPU  time used in HERMIT:   0.02 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
@@ -372,8 +377,8 @@ Starting in Wave Function Section -
  **********************************************************************
 
  
-     Date and time (Linux)  : Thu May 20 13:32:38 2004
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Tue Jun  1 23:56:34 2004
+     Host name              : nora.saleks.org                         
 
  Title lines from integral program:
      Water                                                                   
@@ -387,8 +392,6 @@ Starting in Wave Function Section -
 
      Time-dependent Kohn-Sham calculation (random phase approximation).
 
-               Fock matrices are calculated directly
-               without use of integrals on disk.
 
  Initial molecular orbitals are obtained according to
  ".MOSTART HUCKEL" input option.
@@ -430,7 +433,7 @@ Starting in Wave Function Section -
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
      Maximum number of QC-SCF iterations     15
-     Threshold for SCF convergence     1.00E-12
+     Threshold for SCF convergence     1.00E-10
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -441,32 +444,20 @@ Starting in Wave Function Section -
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
- Screening settings in next iteration (IFTHRS/DIFDEN)    7    F
-
- >>> Time used in TWOINT is   0.00 seconds
-
  Radial Quadrature : LMG scheme
  Space partitioning: Blocked partitioning for large molecules/parallel calc:s.
  Radial integration threshold: 1e-13
  Atom:    1*1 points=16558 compressed from 16644 ( 96 radial)
  Atom:    2*2 points=15802 compressed from 15802 ( 77 radial)
- Postprocessing compression: from 32360 to 32151
+ Postprocessing compression: from 32360 to 32159
 
- Number of grid points:    32151 Grid generation time:       0.0 s
+ Number of grid points:    32159 Grid generation time:       0.1 s
 
 Kohn-Sham electrons/energy :   10.00000965418809   -7.41793683392854
    1    -75.629684150547   3.73E+00  -7.56E+01    3  1  1  0
- Screening settings in next iteration (IFTHRS/DIFDEN)    8    F
-
- >>> Time used in TWOINT is   0.01 seconds
-
-Kohn-Sham electrons/energy :   10.00000492521864   -7.59924738912387
+Kohn-Sham electrons/energy :   10.00000492521845   -7.59924738912386
    2    -75.923796861764   5.22E-01  -2.94E-01    3  1  1  0
- Screening settings in next iteration (IFTHRS/DIFDEN)    9    F
-
- >>> Time used in TWOINT is   0.00 seconds
-
-Kohn-Sham electrons/energy :   10.00000587583838   -7.43355887192472
+Kohn-Sham electrons/energy :   10.00000587583823   -7.43355887192475
    3    -75.920023559625   6.26E-01   3.77E-03    3  1  1  0
 
 !!! INFO: DIIS restarted because it was stalled ...
@@ -477,18 +468,10 @@ Kohn-Sham electrons/energy :   10.00000587583838   -7.43355887192472
 
 ! Backstep to previous Fock matrix because energy increased.
  Applying shift level= -0.0377329455
- Screening settings in next iteration (IFTHRS/DIFDEN)    9    F
-
- >>> Time used in TWOINT is   0.01 seconds
-
-Kohn-Sham electrons/energy :   10.00000582842031   -7.43473791820399
+Kohn-Sham electrons/energy :   10.00000582842036   -7.43473791820399
    4    -75.920534136132   6.22E-01  -5.11E-04    3  1  1  0
  Applying shift level= -0.0292430327
- Screening settings in next iteration (IFTHRS/DIFDEN)    9    F
-
- >>> Time used in TWOINT is   0.00 seconds
-
-Kohn-Sham electrons/energy :   10.00000511863220   -7.61833627021495
+Kohn-Sham electrons/energy :   10.00000511863215   -7.61833627021503
    5    -75.917643492241   6.85E-01   2.89E-03    3  1  1  0
 
 !!! INFO: DIIS restarted because it was stalled ...
@@ -499,11 +482,7 @@ Kohn-Sham electrons/energy :   10.00000511863220   -7.61833627021495
 
 ! Backstep to previous Fock matrix because energy increased.
  Applying shift level= -0.0581493957
- Screening settings in next iteration (IFTHRS/DIFDEN)    9    F
-
- >>> Time used in TWOINT is   0.00 seconds
-
-Kohn-Sham electrons/energy :   10.00000511415895   -7.62296526744734
+Kohn-Sham electrons/energy :   10.00000511415889   -7.62296526744732
    6    -75.915948117303   7.21E-01   1.70E-03    3  1  1  0
 
 !!! INFO: DIIS restarted because it was stalled ...
@@ -514,76 +493,30 @@ Kohn-Sham electrons/energy :   10.00000511415895   -7.62296526744734
 
 ! Backstep to previous Fock matrix because energy increased.
  Applying shift level= -0.0751030692
- Screening settings in next iteration (IFTHRS/DIFDEN)    9    F
-
- >>> Time used in TWOINT is   0.00 seconds
-
-Kohn-Sham electrons/energy :   10.00000513064538   -7.62019744925530
+Kohn-Sham electrons/energy :   10.00000513064539   -7.62019744925532
    7    -75.917026001024   7.03E-01  -1.08E-03    3  1  1  0
  Applying shift level= -0.0638376088
- Screening settings in next iteration (IFTHRS/DIFDEN)    9    F
-
- >>> Time used in TWOINT is   0.01 seconds
-
-Kohn-Sham electrons/energy :   10.00000592165824   -7.42614372832455
+Kohn-Sham electrons/energy :   10.00000592165833   -7.42614372832454
    8    -75.917303307994   6.85E-01  -2.77E-04    3  1  1  0
  Applying shift level= -0.0542619675
- Screening settings in next iteration (IFTHRS/DIFDEN)    9    F
-
- >>> Time used in TWOINT is   0.00 seconds
-
-Kohn-Sham electrons/energy :   10.00000554855299   -7.51771955503205
+Kohn-Sham electrons/energy :   10.00000554855307   -7.51771955503206
    9    -75.935812924043   2.39E-02  -1.85E-02    3  1  1  0
  Applying shift level= -0.0461226724
- Screening settings in next iteration (IFTHRS/DIFDEN)   11    F
-
- >>> Time used in TWOINT is   0.01 seconds
-
-Kohn-Sham electrons/energy :   10.00000551753859   -7.52181769918873
+Kohn-Sham electrons/energy :   10.00000551753871   -7.52181769918872
   10    -75.935845671149   3.44E-03  -3.27E-05    3  1  1  0
- Screening settings in next iteration (IFTHRS/DIFDEN)   11    F
-
- >>> Time used in TWOINT is   0.00 seconds
-
-Kohn-Sham electrons/energy :   10.00000551461775   -7.52141932997816
+Kohn-Sham electrons/energy :   10.00000551461779   -7.52141932997816
   11    -75.935846160318   1.33E-04  -4.89E-07    3  1  1  0
- Screening settings in next iteration (IFTHRS/DIFDEN)   13    F
-
- >>> Time used in TWOINT is   0.00 seconds
-
-Kohn-Sham electrons/energy :   10.00000551415783   -7.52140408081439
+Kohn-Sham electrons/energy :   10.00000551415799   -7.52140408081437
   12    -75.935846161919   6.65E-06  -1.60E-09    3  1  1  0
- Screening settings in next iteration (IFTHRS/DIFDEN)   14    F
-
- >>> Time used in TWOINT is   0.01 seconds
-
-Kohn-Sham electrons/energy :   10.00000551410541   -7.52140415959777
-  13    -75.935846161926   3.95E-07  -7.71E-12    3  1  1  0
- Screening settings in next iteration (IFTHRS/DIFDEN)   14    F
-
- >>> Time used in TWOINT is   0.00 seconds
-
-Kohn-Sham electrons/energy :   10.00000551410423   -7.52140416580579
-  14    -75.935846161926   1.69E-08   3.55E-14    3  1  1  0
- Screening settings in next iteration (IFTHRS/DIFDEN)   14    F
-
- >>> Time used in TWOINT is   0.00 seconds
-
-Kohn-Sham electrons/energy :   10.00000551410438   -7.52140416465821
-  15    -75.935846161926   4.78E-10   9.24E-14    3  1  1  0
- Screening settings in next iteration (IFTHRS/DIFDEN)   14    F
-
- >>> Time used in TWOINT is   0.00 seconds
-
-Kohn-Sham electrons/energy :   10.00000551410440   -7.52140416461862
-  16    -75.935846161926   8.07E-12   7.11E-15    3  1  1  0
- Screening settings in next iteration (IFTHRS/DIFDEN)   14    F
-
- >>> Time used in TWOINT is   0.00 seconds
-
-Kohn-Sham electrons/energy :   10.00000551410421   -7.52140416461874
-  17    -75.935846161926   1.86E-13  -2.13E-14    3  1  1  0
- DIIS converged in  17 iterations !
+Kohn-Sham electrons/energy :   10.00000551410553   -7.52140415959778
+  13    -75.935846161926   3.95E-07  -7.74E-12    3  1  1  0
+Kohn-Sham electrons/energy :   10.00000551410452   -7.52140416580579
+  14    -75.935846161926   1.69E-08   2.13E-14    3  1  1  0
+Kohn-Sham electrons/energy :   10.00000551410450   -7.52140416465823
+  15    -75.935846161926   4.78E-10   7.82E-14    3  1  1  0
+Kohn-Sham electrons/energy :   10.00000551410449   -7.52140416461862
+  16    -75.935846161926   8.10E-12   2.13E-14    3  1  1  0
+ DIIS converged in  16 iterations !
 
 
  *** RHF orbital energy analysis ***
@@ -624,11 +557,11 @@ Kohn-Sham electrons/energy :   10.00000551410421   -7.52140416461874
      Nuclear repulsion:             9.055287756882
      Electronic energy:           -84.991133918808
 
-     Final gradient norm:           0.000000000000
+     Final gradient norm:           0.000000000008
 
  
-     Date and time (Linux)  : Thu May 20 13:32:48 2004
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Tue Jun  1 23:56:57 2004
+     Host name              : nora.saleks.org                         
 
      Molecular orbitals for symmetry species   1
 
@@ -657,12 +590,12 @@ Kohn-Sham electrons/energy :   10.00000551410421   -7.52140416461874
 
 
 
- >>>> Total CPU  time used in SIRIUS :     10.34 seconds
- >>>> Total wall time used in SIRIUS :     10.00 seconds
+ >>>> Total CPU  time used in SIRIUS :     10.30 seconds
+ >>>> Total wall time used in SIRIUS :     23.00 seconds
 
  
-     Date and time (Linux)  : Thu May 20 13:32:48 2004
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Tue Jun  1 23:56:57 2004
+     Host name              : nora.saleks.org                         
 
  NOTE:    3 informational messages have been issued.
  Check output, result, and error files for "INFO".
@@ -695,7 +628,7 @@ Kohn-Sham electrons/energy :   10.00000551410421   -7.52140416461874
 
  Print level                                    : IPRHYP =   2
  Maximum number of iterations in lin.rsp. solver: MAXITL =  60
- Threshold for convergence of linear resp. eq.s : THCLR  = 1.000E-08
+ Threshold for convergence of linear resp. eq.s : THCLR  = 1.000E-03
  Maximum iterations in optimal orbital algorithm: MAXITO =   5
  Direct one-index transformation                : DIROIT= T
 
@@ -736,8 +669,8 @@ Kohn-Sham electrons/energy :   10.00000551410421   -7.52140416461874
           ZDIPLEN 
 
 
-   SCF energy         :      -75.935846161926321
- -- inactive part     :      -84.991133918808345
+   SCF energy         :      -75.935846161926264
+ -- inactive part     :      -84.991133918808302
  -- nuclear repulsion :        9.055287756882031
 
 
@@ -762,62 +695,41 @@ Kohn-Sham electrons/energy :   10.00000551410421   -7.52140416461874
 
  Operator symmetry =  1; triplet =   F
 
-
- >>> Time used in TWOINT is   0.01 seconds
-
- Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
- Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
- Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
-
- >>> Time used in TWOINT is   0.00 seconds
-
- Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
- Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
- Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
-
- >>> Time used in TWOINT is   0.00 seconds
-
- Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
- Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
- Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
-
- >>> Time used in TWOINT is   0.00 seconds
-
- Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
- Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
- Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
-
- >>> Time used in TWOINT is   0.00 seconds
-
- Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
- Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
- Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
+ Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.8 s
+ Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.8 s
+ Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.8 s
+ Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.8 s
+ Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.8 s
+ Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.8 s
+ Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.8 s
+ Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.8 s
+ Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.8 s
 
  *** THE REQUESTED    3 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-08
+ Convergence of RSP solution vectors, threshold = 1.00E-03
  ---------------------------------------------------------------
- (dimension of paired reduced space:   30)
- RSP solution vector no.    1; norm of residual   7.48E-09
- RSP solution vector no.    2; norm of residual   8.17E-09
- RSP solution vector no.    3; norm of residual   9.00E-09
+ (dimension of paired reduced space:   18)
+ RSP solution vector no.    1; norm of residual   7.35E-04
+ RSP solution vector no.    2; norm of residual   7.04E-04
+ RSP solution vector no.    3; norm of residual   6.13E-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
  QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.000000E+00
  SYMMETRY    1
 
-@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.00000):     4.22049206664    
+@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.00000):     4.22049198632    
 
  QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.100000E+00
  SYMMETRY    1
 
-@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.10000):     4.39705520093    
+@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.10000):     4.39705511275    
 
  QRLRVE: SINGLET SOLUTION   LABEL   YDIPLEN     FREQUENCY   0.200000E+00
  SYMMETRY    1
 
-@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.20000):     5.10692864604    
+@QRLRVE:  << YDIPLEN  ; YDIPLEN  >> (   0.20000):     5.10692852235    
 
 
  Linear response calculations for quadratic response
@@ -841,60 +753,41 @@ Kohn-Sham electrons/energy :   10.00000551410421   -7.52140416461874
 
  Operator symmetry =  2; triplet =   F
 
-
- >>> Time used in TWOINT is   0.00 seconds
-
+ Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.8 s
  Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
  Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
  Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
-
- >>> Time used in TWOINT is   0.00 seconds
-
  Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
+ Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.8 s
+ Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.8 s
  Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
- Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
-
- >>> Time used in TWOINT is   0.00 seconds
-
- Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
- Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
- Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
-
- >>> Time used in TWOINT is   0.00 seconds
-
- Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
- Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
- Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
-
- >>> Time used in TWOINT is   0.01 seconds
-
  Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
 
  *** THE REQUESTED    3 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-08
+ Convergence of RSP solution vectors, threshold = 1.00E-03
  ---------------------------------------------------------------
- (dimension of paired reduced space:   26)
- RSP solution vector no.    1; norm of residual   2.13E-15
- RSP solution vector no.    2; norm of residual   1.95E-15
- RSP solution vector no.    3; norm of residual   1.96E-15
+ (dimension of paired reduced space:   18)
+ RSP solution vector no.    1; norm of residual   2.62E-05
+ RSP solution vector no.    2; norm of residual   2.61E-05
+ RSP solution vector no.    3; norm of residual   2.60E-05
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
  QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.000000E+00
  SYMMETRY    2
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.00000):     6.99254589851    
+@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.00000):     6.99254589817    
 
  QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.100000E+00
  SYMMETRY    2
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.10000):     7.21249409500    
+@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.10000):     7.21249409462    
 
  QRLRVE: SINGLET SOLUTION   LABEL   XDIPLEN     FREQUENCY   0.200000E+00
  SYMMETRY    2
 
-@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.20000):     7.98279844341    
+@QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.20000):     7.98279844283    
 
 
  Linear response calculations for quadratic response
@@ -918,43 +811,34 @@ Kohn-Sham electrons/energy :   10.00000551410421   -7.52140416461874
 
  Operator symmetry =  3; triplet =   F
 
-
- >>> Time used in TWOINT is   0.01 seconds
-
  Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
  Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
  Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
-
- >>> Time used in TWOINT is   0.00 seconds
-
  Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
  Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
  Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
-
- >>> Time used in TWOINT is   0.00 seconds
-
  Electrons: 10.000006( 5.51e-06): LR-DFT/b evaluation time:       0.7 s
 
  *** THE REQUESTED    3 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00E-08
+ Convergence of RSP solution vectors, threshold = 1.00E-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   14)
- RSP solution vector no.    1; norm of residual   3.46E-15
- RSP solution vector no.    2; norm of residual   3.44E-15
- RSP solution vector no.    3; norm of residual   3.07E-15
+ RSP solution vector no.    1; norm of residual   8.29E-16
+ RSP solution vector no.    2; norm of residual   7.08E-16
+ RSP solution vector no.    3; norm of residual   5.63E-16
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
  QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.000000E+00
  SYMMETRY    3
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.00000):    0.837739978373    
+@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.00000):    0.837739978372    
 
  QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.100000E+00
  SYMMETRY    3
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.10000):    0.865320479839    
+@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.10000):    0.865320479838    
 
  QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.200000E+00
  SYMMETRY    3
@@ -969,7 +853,7 @@ Kohn-Sham electrons/energy :   10.00000551410421   -7.52140416461874
  in a *QUADRA calculation of <<A;B,C>>(omega_b,omega_c)
 
  Note: the accuracy of off-diagonal elements will be linear
- in the convergence threshold THCLR =  1.00E-08
+ in the convergence threshold THCLR =  1.00E-03
 
 
  Perturbation symmetry.     KSYMOP:       1
@@ -983,14 +867,14 @@ Kohn-Sham electrons/energy :   10.00000551410421   -7.52140416461874
 @ A operator, symmetry, frequency:   YDIPLEN    1  0.000000
 @ B operator, symmetry, frequency:   YDIPLEN    1  0.000000
 
-@ Value of linear response -<<A;B>(omega):       4.220492066635
+@ Value of linear response -<<A;B>(omega):       4.220491986316
 
 @ Singlet linear response function in a.u.
 
 @ A operator, symmetry, frequency:   YDIPLEN    1 -0.100000
 @ B operator, symmetry, frequency:   YDIPLEN    1  0.100000
 
-@ Value of linear response -<<A;B>(omega):       4.397055200928
+@ Value of linear response -<<A;B>(omega):       4.397055112746
 
 
  Perturbation symmetry.     KSYMOP:       2
@@ -1004,14 +888,14 @@ Kohn-Sham electrons/energy :   10.00000551410421   -7.52140416461874
 @ A operator, symmetry, frequency:   XDIPLEN    2  0.000000
 @ B operator, symmetry, frequency:   XDIPLEN    2  0.000000
 
-@ Value of linear response -<<A;B>(omega):       6.992545898512
+@ Value of linear response -<<A;B>(omega):       6.992545898174
 
 @ Singlet linear response function in a.u.
 
 @ A operator, symmetry, frequency:   XDIPLEN    2 -0.100000
 @ B operator, symmetry, frequency:   XDIPLEN    2  0.100000
 
-@ Value of linear response -<<A;B>(omega):       7.212494095000
+@ Value of linear response -<<A;B>(omega):       7.212494094617
 
 
  Perturbation symmetry.     KSYMOP:       3
@@ -1025,163 +909,85 @@ Kohn-Sham electrons/energy :   10.00000551410421   -7.52140416461874
 @ A operator, symmetry, frequency:   ZDIPLEN    3  0.000000
 @ B operator, symmetry, frequency:   ZDIPLEN    3  0.000000
 
-@ Value of linear response -<<A;B>(omega):       0.837739978373
+@ Value of linear response -<<A;B>(omega):       0.837739978372
 
 @ Singlet linear response function in a.u.
 
 @ A operator, symmetry, frequency:   ZDIPLEN    3 -0.100000
 @ B operator, symmetry, frequency:   ZDIPLEN    3  0.100000
 
-@ Value of linear response -<<A;B>(omega):       0.865320479839
+@ Value of linear response -<<A;B>(omega):       0.865320479838
 
 
   Results from quadratic response calculation
  --------------------------------------------
 
-
- >>> Time used in TWOINT is   0.00 seconds
-
  DFT-QR uses symmetry adapted matrix multipication code.
 
- Electrons:      10.0000055. Quadratic response time:       3.44 s
+ Electrons:      10.0000055. Quadratic response time:       2.78 s
 
-@ B-freq = 0.000000  C-freq = 0.000000     beta(Y;Y,Y) =    -16.43967357
+@ B-freq = 0.000000  C-freq = 0.000000     beta(Y;Y,Y) =    -15.36429168
+ Electrons:      10.0000055. Quadratic response time:       2.84 s
 
- >>> Time used in TWOINT is   0.00 seconds
-
-
- >>> Time used in TWOINT is   0.00 seconds
-
- Electrons:      10.0000055. Quadratic response time:       3.45 s
-
-@ B-freq = 0.100000  C-freq = 0.000000     beta(Y;Y,Y) =    -18.52705572
+@ B-freq = 0.100000  C-freq = 0.000000     beta(Y;Y,Y) =    -17.25784278
 @ B-freq = 0.000000  C-freq = 0.100000     beta(Y;Y,Y) = beta(Y,Y,Y)
+ Electrons:      10.0000055. Quadratic response time:       2.76 s
 
- >>> Time used in TWOINT is   0.01 seconds
+@ B-freq = 0.100000  C-freq = 0.100000     beta(Y;Y,Y) =    -22.61648759
+ Electrons:      10.0000055. Quadratic response time:       2.70 s
 
- Electrons:      10.0000055. Quadratic response time:       3.44 s
+@ B-freq = 0.000000  C-freq = 0.000000     beta(X;X,Y) =    -21.38431647
+ Electrons:      10.0000055. Quadratic response time:       2.73 s
 
-@ B-freq = 0.100000  C-freq = 0.100000     beta(Y;Y,Y) =    -24.54509994
+@ B-freq = 0.100000  C-freq = 0.000000     beta(X;X,Y) =    -22.86902621
+ Electrons:      10.0000055. Quadratic response time:       2.70 s
 
- >>> Time used in TWOINT is   0.00 seconds
+@ B-freq = 0.000000  C-freq = 0.100000     beta(X;X,Y) =    -23.17289705
+ Electrons:      10.0000055. Quadratic response time:       2.72 s
 
+@ B-freq = 0.100000  C-freq = 0.100000     beta(X;X,Y) =    -26.80628365
+ Electrons:      10.0000055. Quadratic response time:       2.67 s
 
- >>> Time used in TWOINT is   0.01 seconds
+@ B-freq = 0.000000  C-freq = 0.000000     beta(Z;Z,Y) =     -1.29486623
+ Electrons:      10.0000055. Quadratic response time:       2.67 s
 
- Electrons:      10.0000055. Quadratic response time:       3.31 s
+@ B-freq = 0.100000  C-freq = 0.000000     beta(Z;Z,Y) =     -1.65167088
+ Electrons:      10.0000055. Quadratic response time:       2.68 s
 
-@ B-freq = 0.000000  C-freq = 0.000000     beta(X;X,Y) =    -24.37803660
+@ B-freq = 0.000000  C-freq = 0.100000     beta(Z;Z,Y) =     -1.50265463
+ Electrons:      10.0000055. Quadratic response time:       2.66 s
 
- >>> Time used in TWOINT is   0.00 seconds
-
-
- >>> Time used in TWOINT is   0.00 seconds
-
- Electrons:      10.0000055. Quadratic response time:       3.32 s
-
-@ B-freq = 0.100000  C-freq = 0.000000     beta(X;X,Y) =    -26.14244152
-
- >>> Time used in TWOINT is   0.00 seconds
-
-
- >>> Time used in TWOINT is   0.00 seconds
-
- Electrons:      10.0000055. Quadratic response time:       3.30 s
-
-@ B-freq = 0.000000  C-freq = 0.100000     beta(X;X,Y) =    -26.52580226
-
- >>> Time used in TWOINT is   0.01 seconds
-
-
- >>> Time used in TWOINT is   0.00 seconds
-
- Electrons:      10.0000055. Quadratic response time:       3.32 s
-
-@ B-freq = 0.100000  C-freq = 0.100000     beta(X;X,Y) =    -30.94049077
-
- >>> Time used in TWOINT is   0.01 seconds
-
-
- >>> Time used in TWOINT is   0.00 seconds
-
- Electrons:      10.0000055. Quadratic response time:       3.29 s
-
-@ B-freq = 0.000000  C-freq = 0.000000     beta(Z;Z,Y) =     -1.28340470
-
- >>> Time used in TWOINT is   0.00 seconds
-
-
- >>> Time used in TWOINT is   0.00 seconds
-
- Electrons:      10.0000055. Quadratic response time:       3.29 s
-
-@ B-freq = 0.100000  C-freq = 0.000000     beta(Z;Z,Y) =     -1.65666307
-
- >>> Time used in TWOINT is   0.01 seconds
-
-
- >>> Time used in TWOINT is   0.00 seconds
-
- Electrons:      10.0000055. Quadratic response time:       3.29 s
-
-@ B-freq = 0.000000  C-freq = 0.100000     beta(Z;Z,Y) =     -1.49477603
-
- >>> Time used in TWOINT is   0.00 seconds
-
-
- >>> Time used in TWOINT is   0.00 seconds
-
- Electrons:      10.0000055. Quadratic response time:       3.29 s
-
-@ B-freq = 0.100000  C-freq = 0.100000     beta(Z;Z,Y) =     -2.88768136
+@ B-freq = 0.100000  C-freq = 0.100000     beta(Z;Z,Y) =     -2.82632583
 @ B-freq = 0.000000  C-freq = 0.000000     beta(X;Y,X) = beta(X,X,Y)
 @ B-freq = 0.100000  C-freq = 0.000000     beta(X;Y,X) = beta(X,X,Y)
 @ B-freq = 0.000000  C-freq = 0.100000     beta(X;Y,X) = beta(X,X,Y)
 @ B-freq = 0.100000  C-freq = 0.100000     beta(X;Y,X) = beta(X,X,Y)
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Y;X,X) = beta(X,X,Y)
+ Electrons:      10.0000055. Quadratic response time:       2.55 s
 
- >>> Time used in TWOINT is   0.01 seconds
-
-
- >>> Time used in TWOINT is   0.00 seconds
-
- Electrons:      10.0000055. Quadratic response time:       3.11 s
-
-@ B-freq = 0.100000  C-freq = 0.000000     beta(Y;X,X) =    -26.91286577
+@ B-freq = 0.100000  C-freq = 0.000000     beta(Y;X,X) =    -23.17289705
 @ B-freq = 0.000000  C-freq = 0.100000     beta(Y;X,X) = beta(Y,X,X)
+ Electrons:      10.0000055. Quadratic response time:       2.57 s
 
- >>> Time used in TWOINT is   0.00 seconds
-
- Electrons:      10.0000055. Quadratic response time:       3.12 s
-
-@ B-freq = 0.100000  C-freq = 0.100000     beta(Y;X,X) =    -33.57950884
+@ B-freq = 0.100000  C-freq = 0.100000     beta(Y;X,X) =    -28.37917557
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Z;Y,Z) = beta(Z,Z,Y)
 @ B-freq = 0.100000  C-freq = 0.000000     beta(Z;Y,Z) = beta(Z,Z,Y)
 @ B-freq = 0.000000  C-freq = 0.100000     beta(Z;Y,Z) = beta(Z,Z,Y)
 @ B-freq = 0.100000  C-freq = 0.100000     beta(Z;Y,Z) = beta(Z,Z,Y)
 @ B-freq = 0.000000  C-freq = 0.000000     beta(Y;Z,Z) = beta(Z,Z,Y)
+ Electrons:      10.0000055. Quadratic response time:       2.53 s
 
- >>> Time used in TWOINT is   0.00 seconds
-
-
- >>> Time used in TWOINT is   0.01 seconds
-
- Electrons:      10.0000055. Quadratic response time:       3.09 s
-
-@ B-freq = 0.100000  C-freq = 0.000000     beta(Y;Z,Z) =     -1.48249412
+@ B-freq = 0.100000  C-freq = 0.000000     beta(Y;Z,Z) =     -1.50265463
 @ B-freq = 0.000000  C-freq = 0.100000     beta(Y;Z,Z) = beta(Y,Z,Z)
+ Electrons:      10.0000055. Quadratic response time:       2.52 s
 
- >>> Time used in TWOINT is   0.01 seconds
+@ B-freq = 0.100000  C-freq = 0.100000     beta(Y;Z,Z) =     -1.92233260
 
- Electrons:      10.0000055. Quadratic response time:       3.09 s
-
-@ B-freq = 0.100000  C-freq = 0.100000     beta(Y;Z,Z) =     -1.88790935
-
- >>>> Total CPU  time used in RESPONSE:  1 minute  14 seconds
- >>>> Total wall time used in RESPONSE:  1 minute  14 seconds
- >>>> Total CPU  time used in DALTON:  1 minute  24 seconds
- >>>> Total wall time used in DALTON:  1 minute  24 seconds
+ >>>> Total CPU  time used in RESPONSE:  59.04 seconds
+ >>>> Total wall time used in RESPONSE:  1 minute   4 seconds
+ >>>> Total CPU  time used in DALTON:  1 minute   9 seconds
+ >>>> Total wall time used in DALTON:  1 minute  27 seconds
 
  
-     Date and time (Linux)  : Thu May 20 13:34:02 2004
-     Host name              : pi.biotech.kth.se                       
+     Date and time (Linux)  : Tue Jun  1 23:58:01 2004
+     Host name              : nora.saleks.org                         
