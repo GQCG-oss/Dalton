@@ -779,8 +779,13 @@ case $WHICH in
           fi
           inc='-I../include -I../include_cc'
           cpp=${cpp}" -DIMPLICIT_NONE"
-          opt='+O2 +U77 +E4 +E5'
-          safe_opt='+O1 +U77 +E4 +E5'
+          if [ $F77 = 'f90' ]; then
+              opt='+O2 +U77'
+              safe_opt='+O1 +U77'
+          else
+              opt='+O2 +U77 +E4 +E5'
+              safe_opt='+O1 +U77 +E4 +E5'
+          fi
           LIB="-lV7 $LIB";;
      linux-alpha)  
 	  if [ "$mesp" = "dummy" ]; then
@@ -808,7 +813,7 @@ case $WHICH in
                       proc=''
                   fi
                   cpp="-DVAR_PGF77 $cpp"
-                  copt=''
+                  copt="-O3"
                   opt="-O3 $proc -Munroll"; safe_opt="$proc"
               else
                   test_linux_g77=false
