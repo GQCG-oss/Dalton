@@ -216,7 +216,7 @@ Specification of which wave function calculation is to be performed.
 
 \item[\Key{DFT}]
   \verb"READ (LUINP,'(A80)) LINE" \\
-  Restricted closed-shell or one open-shell Kohn-Sham
+  Restricted closed-shell, one open-shell  or high-spin spin-restricted Kohn-Sham
   density functional theory\index{DFT}\index{Kohn--Sham}\index{open shell!DFT} calculation.
   On the following line you must specify which functional to use.
   The occupied orbitals, optimization control etc. are specified in the
@@ -747,7 +747,8 @@ not higher than 14.
 
 {\bf Purpose:}
 
-This section deals with the closed shell and one open shell
+This section deals with the closed shell, one open shell and
+high--spin spin-restricted 
 Hartree--Fock cases\index{SCF}\index{HF}\index{Hartree--Fock}
 and Kohn-Sham DFT\index{DFT}. For the case of Hartree--Fock, also
 high-spin restricted open-shell wave functions can be defined.
@@ -856,7 +857,8 @@ using the \quotekw{.HSROHF} described here.
   must be frozen in the MP2 calculation).
   NOTE: no Roothaan Fock iterations allowed if frozen orbitals.
 
-\item[\Key{H1VIRT}]
+\item[\Key{H1VIRT}] Use the virtual orbitals that diagonalize the
+  one-electron Hamiltonian operator.
 
 \item[\Key{HSROHF}]
     \kw{READ (LUINP,*) (NROHF(I),I=1,NSYM)} \\
@@ -1429,7 +1431,7 @@ reordering and punching of orbitals.
    \item[{\tt OLDORB\ }] Input from {\sir} restart file
                             (\verb|SIRIUS.RST| file) with label \quotekw{OLDORB  }
    \item[{\tt SIRIFC\ }] Input from {\sir} interface file ("SIRIFC")
-   \end{description}
+\end{description}
 
 %Oct 2003 hjaaj: now NOSUPSYM always default,
 % SUPSYM must be activated explicitly with .SUPSYM

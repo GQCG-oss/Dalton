@@ -4,10 +4,21 @@
 The \dalton\ program system is designed to allow convenient,
 automated determination of a large number of molecular properties
 based on an SCF, MP2, Coupled Cluster, or MCSCF reference wave
-function.
+function. Additions to the Dalton~2.0 release include
+density functional theory implemented fully up to cubic response
+theory for closed-shell systems, as well as second derivatives for
+properties involving perturbation-dependent basis sets such a
+molecular Hessians and magnetizabilities and nuclear shieldings. Also
+available is the NEVPT2 approach
+(the $n$-electron valence second-order perturbation theory) for
+calculating  accurate energetics of
+multireference-based systems including also dynamic electron
+correlation, and highly accurate MP2-R12 and 
+CC-R12 methods are available for high-accuracy energetics of
+single-reference dominated closed-shell systems.
 
  The program consists
-of six separate components, developed more or less independently.
+of seven separate components, developed more or less independently.
 \her\ is the integral generator, generating ordinary
 atomic\index{atomic integrals} and molecular integrals appearing
 in the time-independent, non-relativistic Schr\"{o}dinger
@@ -25,10 +36,13 @@ general-purpose program for evaluating response functions, up to cubic
 response functions for (MC)SCF wave functions and linear response for
 the Second-Order Polarization Propagator Approximation (SOPPA) and Second-Order
 Polarization Propagator Approximation with Coupled Cluster Singles and Doubles
-Amplitudes - SOPPA(CCSD). New for
-this release is {\cc}, a Coupled Cluster program that can calculate
-coupled-cluster energies and response properties for a number of
-coupled-cluster approximations. 
+Amplitudes - SOPPA(CCSD). A new density functional theory module has
+been added in the 2.0 release of the program. Existing modules have
+been extended with the NEVPT2 and the MP2-R12 and CC-R12 methodologies.
+%New for
+%this release is {\cc}, a Coupled Cluster program that can calculate
+%coupled-cluster energies and response properties for a number of
+%coupled-cluster approximations. 
 
 Throughout this manual there will be references to articles
 describing the implementation of a specific molecular property or
@@ -43,7 +57,7 @@ be calculated and the flexibility and stability of the wave function
 implementations available. As described in the individual sections, the range of
 molecular properties, some of which are highly non-standard, is fairly
 large. On the other hand, several common properties can perhaps more
-easily be calculated using other, commercially available, quantum
+easily be calculated using other, (non-)commercially available, quantum
 chemistry program packages.
 
 We have tried when writing this manual to emphasize the modularity of
@@ -134,10 +148,11 @@ to provide in electronic form a basis set of similar performance to
 these widely used basis set, included here as the Not Quite van
 Duijneveldt (NQvD) basis sets.
 
-We would also like to express our gratitude to Sonia Coriani (Trieste
-University), Gilbert Hangartner (University of Freiburg), and Antonio
+We would also like to express our gratitude to Andreas Hesselmann
+(University of D\"{u}sseldorf), Gilbert Hangartner (University of
+Freiburg), and Antonio
 Rizzo (Istituto di Chimica Quantistica ed Energetica Molecolare del
-CNR, Pisa), for allowing us to distribute their utility programs for
+CNR, Pisa) for allowing us to distribute their utility programs for
 pre- and post-processing of \dalton\ input/output-files, as described
 in the Appendix.
 

@@ -124,7 +124,7 @@ iterations can also be set explicitly by using
 the keyword \verb|.MAX IT| in the \verb|**DALTON INPUT| module.
 
 \section{Vibrational averaged
-geometries}\label{sec:vibavegeo}\index{vibrational
+properties}\label{sec:vibavegeo}\index{vibrational
 corrections}\index{zero-point vibrational
 corrections}\index{temperature effects}
 
@@ -194,3 +194,53 @@ of vibrational averaging calculations. The maximum number of
 iterations can also be set explicitly by using
 the keyword \verb|.MAX IT| in the \verb|**DALTON INPUT| module.
 
+\section{Vibrationally averaged spin--spin coupling constants}
+
+For the calculation of vibrational corrections in indirect spin--spin
+coupling constants, \dalton\ provides and alternative approach to the
+calculation of vibrational corrections, in which also the full
+point-group symmetry of the molecule can be exploited in order to
+reduce the number of displaced geometries that need to be included. An
+example of such an input is given by the input:
+
+\begin{verbatim}
+**DALTON INPUT
+.NMDDRV
+**NMDDRV
+.SYMMETRY
+  C2v
+.VIBANA
+.DISPLA
+ 0.01
+*PROPAV
+.ANHA-P
+**WAVE FUNCTIONS
+.HF
+*SCF INPUT
+.THRESH
+ 1.0D-12
+**PROPERTIES
+.SPIN-SPIN
+*SPIN-S
+.SELECT
+  3
+  1  2  3
+*TRPRSP
+.THRESH
+1.0D-12
+*LINRES
+.THRESH
+1.0D-12
+*END OF INPUT
+\end{verbatim}
+
+We note that the input includes the full point group symmetry of the
+molecule (in this case the water molecule, and thus here given as
+$C_{2v}$). In this case, the vibrational corrections are evaluated at
+the equilibrium geometry of the molecule, and both the harmonic and
+anharmonic contributions are included. The approach is very similar to
+that presented in the previous two sections, and a detailed
+description of the two approaches and a comparison of the two methods
+are given in Ref.~\cite{}. For information about the special input
+modules used in the above input example, we refer to
+Sec.~\ref{sec:nmddrv}. 

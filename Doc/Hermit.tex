@@ -1435,12 +1435,27 @@ calculations. However, {\eri} can also be invoked by specifying the
 available in {\eri}.
 
 \begin{description}
+\item[\Key{AOBTCH}]\verb| |\newline
+\verb|READ (LUCMD,*) IAOBCH| 
+
+Only integrals with the first integral index belonging to AO batch
+number \verb|IAOBCH| will be calculated|.
+
 \item[\Key{BUFFER}]\verb| |\newline
 \verb|READ (LUCMD,*) LBFINP|
 
 This option may be used to set the buffer length for integrals written
 to disk. For compatibility with {\twoint}, the default buffer length
 is 600. Longer buffer lengths may give more efficient I/O.
+
+\item[\Key{DISTRI}] Use distributions for electron 1. Must be used in
+  connection with the keywork \Key{SELCT1}.
+
+\item[\Key{DISTST}] Test the calculation of two-electron integrals
+  using distributions.
+
+\item[\Key{DOERIP}] Use the ERI integral program for the calculation
+  of two-electron integrals instead of TWOINT.
 
 \item[\Key{EXTPRI}]\verb| |\newline
 \verb|READ (LUCMD,'(2I5)') IPROD1, IPROD2|
@@ -1454,8 +1469,29 @@ integral evaluation.
 gradient is set to zero upon each entry into \verb|ERIAVE| (for
 debugging).
 
+\item[\Key{INTPRI}] Force the printing of calculated two-electron integrals.
+
+\item[\Key{INTSKI}] Skip the calculation of two-electron integrals in
+  the ERI calculation.
+
+\item[\Key{MAXDIS}]\verb| |\newline
+\verb|READ (LUCMD,*) MAXDST|  
+
+Read in the maximimum number of integral distribution calculated in
+each call to the integral code. Default value is 40.
+
+\item[\Key{MXBCH}]\verb| |\newline
+\verb|READ (LUCMD,*) MXBCH|
+
+Read in the maximum number of integral batches to treat
+simultaneously, and thus determines the vector lengths. Default value
+is 1000000000.
+
 \item[\Key{NCLERI}] Calculate only integrals with nonclassiscal
 contributions.
+
+\item[\Key{NEWCR1}] Use an old transformation routine for the
+  generation of the Cartesian integrals for electron 1.
 
 \item[\Key{NOLOCS}] Do not use local symmetry during evaluation.
 
@@ -1476,16 +1512,29 @@ orbitals of electron 1.
 
 \item[\Key{NOPSCD}] Do not assume permutational symmetry between
 orbitals of electron 2.
+ 
+\item[\Key{NOSCRE}] Do not do integral screening before integrals are
+  written to disk.
 
 \item[\Key{NOWRIT}] Do not write integrals to disk.
+
+\item[\Key{NSPMAX}]\verb| |\newline
+\verb|READ (LUCMD,*) NSPMAX| 
+
+Allows for the reduction of the number of symmetry generations for
+each basis function in order to reduce memory requirements. Mainly for
+debugging purposes, do not use.
+
 
 \item[\Key{OFFCNT}] During sorting of OD batches, treat batches
 containing one and two distinct AO centers as equivalent.
 
 \item[\Key{PRINT}]\verb| |\newline
-\verb|READ (LUCMD,'(I5)') IPRERI|
+\verb|READ (LUCMD,*) IPRERI, IPRNT1, IPRNT2|
 
-Print level for {\eri}.
+Print level for {\eri}. By giving numbers different from zero for
+\verb|IPRNT1| and \verb|IPRNT2|, extra print information may be given
+for these overlap distributions, after which the program will exit.
 
 \item[\Key{RETURN}] Stop after the shell quadruplet specified
 under \Key{PRINT} above. Mainly for debugging purposes.
@@ -1506,5 +1555,11 @@ first AO.
 \item[\Key{SKIP}] Skip the calculation of two-electron Hamiltonian
 integrals. An alternative keyword is \Key{NOTWO} in the \Sec{*INTEGRALS}
 input module.
+
+\item[\Key{TIME}] Provide detailed timings for the two-electron
+  integral calculation in ERI.
+
+\item[\Key{WRITEA}] Write all integrals to disk without any screening.
+
 \end{description}
 

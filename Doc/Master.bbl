@@ -101,6 +101,10 @@ R.~Steckler, G.~M. Thurman, J.~D. Watts, and R.~J. Bartlett.
   + H$_{2}$O}.
 \newblock {\em J.~Chem.~Phys.}, 106:3926, 1997.
 
+\bibitem{vbthjcp117}
+V.~Bakken and T.~Helgaker.
+\newblock {\em J.~Chem.~Phys.}, 117:9160, 2002.
+
 \bibitem{gfxfzpwtppjacs114}
 G.~Fogarasi, X.~F. Zhou, P.~W. Taylor, and P.~Pulay.
 \newblock The calculation of {\it{ab initio}} molecular geometries -- efficient
@@ -112,10 +116,6 @@ G.~Fogarasi, X.~F. Zhou, P.~W. Taylor, and P.~Pulay.
 P.~Pulay and G.~Fogarasi.
 \newblock Geometry optimization in redundant internal coordinates.
 \newblock {\em J.~Chem.~Phys.}, 96:2856, 1992.
-
-\bibitem{vbth}
-V.~Bakken and T.~Helgaker.
-\newblock To be published.
 
 \bibitem{rlabgkpamcpl241}
 R.~Lindh, A.~Bernhardsson, G.~Karlstr\"{o}m, and {\mbox{P.-{\AA}}}.~Malmqvist.
@@ -143,6 +143,10 @@ C.~J. Cerjan and W.~H. Miller.
 \bibitem{kfacr14}
 K.~Fukui.
 \newblock {\em Acc.~Chem.~Res.}, 14:363, 1981.
+
+\bibitem{krtheujms393}
+K.~Ruud, T.~Helgaker, and E.~Uggerud.
+\newblock {\em J.~Mol.~Struct. (THEOCHEM)}, 393:59, 1997.
 
 \bibitem{jcjacs111}
 J.~Cioslowski.
@@ -411,6 +415,10 @@ K.~L. Bak, P.~J\o rgensen, T.~Helgaker, and K.~Ruud.
   dichroism calculations using {L}ondon atomic orbitals.
 \newblock {\em Faraday Discuss.}, 99:121, 1994.
 
+\bibitem{mpkrthcpl388}
+M.~Pecul, K.~Ruud, and T.~Helgaker.
+\newblock {\em Chem.~Phys.~Lett.}, 388:110, 2004.
+
 \bibitem{jrcmjffjdpjsjpca104}
 J.~R. Cheeseman, M.~J. Frisch, F.~J. Devlin, and P.~J. Stephens.
 \newblock {H}artree--{F}ock and density functional theory {\it{ab initio}}
@@ -422,6 +430,10 @@ R.~D. Amos.
 \newblock Electric and magnetic properties of {CO}, {HF}, and {HCl}, and
   {CH$_{3}$F}.
 \newblock {\em Chem.~Phys.~Lett.}, 87:23, 1982.
+
+\bibitem{gzwhjpca108}
+G.~Zuber and W.~Hug.
+\newblock {\em J.~Phys.~Chem.~{\bf A}}, 108:2108, 2004.
 
 \bibitem{krdjpnhatshjajpdthjcp108}
 K.~Ruud, D.~Jonsson, P.~Norman, H.~{\AA}gren, T.~Saue, H.~J.~Aa. Jensen,
@@ -691,19 +703,17 @@ O.~Plashkevych, T.~Privalov, H.~{\AA}gren, V.~Carravetta, and K.~Ruud.
   x-ray photoemission and photoabsorption spectral bands.
 \newblock {\em Chem.~Phys.}, 260:11, 2000.
 
+\bibitem{pndmbhjajjojcp115}
+P.~Norman, D.~M. Bishop, H.~J.~Aa. Jensen, and J.~Oddershede.
+\newblock {\em J.~Chem.~Phys.}, 115:10323, 2001.
+
+\bibitem{pnkrthjcp120}
+P.~Norman, K.~Ruud, and T.~Helgaker.
+\newblock {\em J.~Chem.~Phys.}, 120:5027, 2004.
+
 \bibitem{hsijqc30}
 H.~Sellers.
 \newblock {\em Int.~J.~Quantum Chem.}, 30:433, 1986.
-
-\bibitem{barronbook}
-L.~D. Barron.
-\newblock {\em Molecular light scattering and optical activity}.
-\newblock Cambridge University Press, Cambridge, 1982.
-
-\bibitem{whc48}
-W.~Hug.
-\newblock Vibrational raman optical activity comes of age.
-\newblock {\em Chimia}, 48:386, 1994.
 
 \bibitem{jrtsvmjcp58}
 J.~Rose, T.~Shibuya, and V.~McKoy.

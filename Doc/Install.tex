@@ -7,25 +7,19 @@ supported}\label{sec:hardsoft}\index{hardware/software support}
 operating system. The current release of the program supports
 Cray-UNICOS\index{Cray},
 Cray-T3D/E\index{Cray!T3D}\index{Cray!T3E}\index{Cray},
-HP,
+HP-UX,
 IBM-AIX\index{IBM-AIX},
 IBM-SP2,
-Linux\index{Linux} using g77 or pgf77,
+Linux\index{Linux} using g77, pgf77 or ifc,
 SGI-IRIX\index{SGI}\index{SGI-IRIX},
 Sun\index{Sun},
-and partially also
-DEC-Alpha\index{DEC-Alpha}\footnote{The limitations imposed in the
-DEC-Alpha installation is the sorting of differentiated two-electron
-density matrices. The practical consequences of this is that the
-calculation of magnetizabilities\index{magnetizability} and molecular
-Hessians\index{Hessian} cannot be done
-using MCSCF\index{MCSCF} wave functions on DEC-Alphas.}.
+and DEC-Alpha\index{DEC-Alpha}.
 We furthermore note that response calculations involving the
 spin--orbit\index{spin-orbit} operator only will work on some of these
 computers (more details are given in the file
 \verb|dalton/test/KNOWN_PROBLEMS|).
 
-The program is written in FORTRAN~77\index{FORTRAN~77}, with
+The program is written in FORTRAN~77\index{FORTRAN~77} and C~\index{C}, with
 machine dependencies isolated using C preprocessor directives\index{C
 preprocessor}.  All floating-point computations are
 performed in 64-bit precision, but if 32-bit integers are
@@ -57,13 +51,13 @@ tar xf dalton.tar
 will produce the following subdirectory structure in the current
 directory:
 \begin{verbatim}
-dalton/Doc       dalton/cc         dalton/pdpack    dalton/tools
-dalton/abacus    dalton/eri        dalton/rsp
-dalton/amfi      dalton/gp         dalton/sirius
-dalton/basis     dalton/include    dalton/test
+dalton/abacus    dalton/dft        dalton/include   dalton/test
+dalton/amfi      dalton/Doc        dalton/pdpack    dalton/tools
+dalton/basis     dalton/eri        dalton/rsp
+dalton/cc        dalton/gp         dalton/sirius
 \end{verbatim}
 Most of the subdirectories contain source code for the different sections
-constituting the program (\verb|abacus|, \verb|amfi|, \verb|cc|,
+constituting the program (\verb|abacus|, \verb|amfi|, \verb|cc|, \verb|dft|,
 \verb|eri|, \verb|gp|, \verb|rsp| and \verb|sirius|). Furthermore,
 there's a directory containing
 various public domain routines (\verb|pdpack|), a directory with the
@@ -105,11 +99,11 @@ where hosttype may be one of
 \bigskip
 
 \begin{tabular}{lll}
-aix \hspace{3cm} & cray-t3e \hspace{3cm} & linux-alpha\\
+aix \hspace{3cm} & darwin \hspace{3cm} & linux-alpha\\
 cray             & dec-alpha             & nec\\
-cray-t90         & hp                    & sgi\\
-cray-t3d         & linux                 & sun\\
-\end{tabular}
+cray-t90         & hal                   & sgi\\
+cray-t3d         & hp                    & sun\\
+cray-t3e         & linux                 &\\\end{tabular}
 \index{installation!supported platforms}
 
 \bigskip
@@ -165,10 +159,10 @@ of the job files. If \verb|/work| or \verb|/scratch| is defined in the
 local directory structure, the script will normally suggest
 \verb|/work/$USER| or  \verb|/scratch/$USER| as default head scratch space.
 
-\item Default install 
-directory\index{install directory}\index{installation!install directory}:
-Denotes the directory where the {\dalton} executable and the
-\verb|dalton| run script will be moved to.
+%\item Default install 
+%directory\index{install directory}\index{installation!install directory}:
+%Denotes the directory where the {\dalton} executable and the
+%\verb|dalton| run script will be moved to.
 \end{enumerate}
 
 Compiler options will be supplied in \verb|Makefile.config|, in the manner
@@ -196,22 +190,22 @@ code is to type
 \begin{verbatim}
 > make
 \end{verbatim}
-Note to users who want to install a parallel program\index{parallel
-program} employing PVM3\index{PVM}
-as message passing interface: Whereas a normal installation will
-create a single executable, the PVM installation will
-create both a master\index{master program} and a slave
-program\index{slave program}.
-The slave program, called \verb|node.x|\index{node}, must be placed in
-the proper directory, as defined by the PVM3 installation on the
-platform you are using. NOTE: Default location of the slave program
-will be the same directory as the master program, that is, the default
-installation directory.
-
-MPI\index{MPI} parallel executables will be called \verb|dalpar.x|,
-PVM\index{PVM} parallel executables are called \verb|dalpvm.x| and
-\verb|node.x|, whereas a single-processor executable will be called
-\verb|dalton.x|.
+%Note to users who want to install a parallel program\index{parallel
+%program} employing PVM3\index{PVM}
+%as message passing interface: Whereas a normal installation will
+%create a single executable, the PVM installation will
+%create both a master\index{master program} and a slave
+%program\index{slave program}.
+%The slave program, called \verb|node.x|\index{node}, must be placed in
+%the proper directory, as defined by the PVM3 installation on the
+%platform you are using. NOTE: Default location of the slave program
+%will be the same directory as the master program, that is, the default
+%installation directory.
+%
+%MPI\index{MPI} parallel executables will be called \verb|dalpar.x|,
+%PVM\index{PVM} parallel executables are called \verb|dalpvm.x| and
+%\verb|node.x|, whereas a single-processor executable will be called
+%\verb|dalton.x|.
 
 \section{Running the {\dalton} test suite}\label{sec:testsuite}
 \index{test suite}\index{installation!test suite}
@@ -230,7 +224,7 @@ for short descriptions of the various tests. To run the
 complete test suite, simply go to the \verb|dalton/test| directory and
 type:
 \begin{verbatim}
-> TEST all
+> ./TEST all
 \end{verbatim}
 You can follow the progress of the tests directly, but all messages
 are also printed to a log (\verb|TESTLOG| by default). After all the
@@ -242,7 +236,7 @@ on your particular platform.
 
 Any tests that fail will leave behind the \verb|.mol| and \verb|.dal|
 input-files (these are described in more detail in
-chapter~\ref{ch:starting}), and the output-file from the test
+Chapter~\ref{ch:starting}), and the output-file from the test
 calculation which will have the extension \verb|.log| ({\dalton}
 output-files usually have the extension \verb|.out|). For all
 successful tests these files, as well as some other auxiliary files,

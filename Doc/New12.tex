@@ -1,10 +1,110 @@
-\chapter{New features in Dalton 1.2}
+\chapter{New features in Dalton}
 %\pagestyle{myheadings}
 %\markboth{ }
 %{ }
 %\markright{ }
 %\addcontentsline{toc}{chapter}{New features in Dalton 1.2}
 
+\section{New features in Dalton~2.0}
+
+There are several new additions introduced in the Dalton~2.0. The most
+important and largest extension to the code is the addition of a
+complete Density Functional Theory (DFT) module, including up to cubic
+response properties as well as an extensive open-shell
+(spin-restricted) module. The main new features and changes are
+summarized below:
+
+\begin{enumerate}
+\item{\bf Density Functional Theory:}
+
+The largest new extension to Dalton~2.0 is the addition of a complete
+Density Functional Theory (DFT) module. It contains 24 different
+exchange-correlation  functions (and in addition the
+Coulomb-Attenuated Method~\cite{}), and is implemented for energies,
+linear and quadratic response functions (for both singlet and triplet
+perturbing operators) and geometric Hessians, nuclear shielding
+tensors, and magnizabilities as well as indirect spin--spin coupling
+constants. Energies and linear response properties are also available
+for spin-restricted, high-spin DFT ({\em vide infra\/}).
+
+\item{\bf Coulomb Attenuated Method:}
+
+
+\item{\bf NEVPT2:} Dalton~2.0 allows for the calculation of
+  second-order MP2 energy corrections to an MCSCF reference wave
+  function. The approach used here, the ``n-electron valence space
+  second-order perturbation theory'' approach (NEVPT2), is similar to
+  CASPT2~\cite{}, but is based on a two-electron zeroth-order
+  Hamiltonian (the Dyall Hamiltonian~\cite{}) and thus rarely displays
+  problems with intruder states~\cite{}.
+
+\item{\bf R12 methods:} The R12 approach for obtaining basis-set limit
+MP2 energies are available in a couple of  approximations~\cite{}.
+
+\item{\bf Excited-state gradients:} Excited-state gradients are
+  available for singlet excited states for a Hartree--Fock reference
+  wave function, calculated as the single residue of the quadratic
+  response function. The excited-state gradients can be used to
+  optimzie the structure of excited states using first-order
+  optimization schemes.
+
+\item{\bf Absorption in linear response:} The linear reponse code now
+  allows finite lifetimes for excited states, allowing both scattering
+  and absorptions processes to be taken into account simultaneously.
+
+\item{\bf Improvements for 64-bit machines:} The code can now also
+  calculate two-electron spin--orbit integrals as well as do AO2MO
+  transformations for more than 255 basis functions also on 64-bit
+  machines.
+
+\item{\bf Extensions to the coupled-cluster code:} CCSD(T) energies
+  and analytical gradients are now available.
+
+\item{\bf Orbital exponent gradients:} Gradients of the orbital
+  gradients can now be calculated~\cite{}.
+
+\item{\bf New \mol\ input format:} There is now a new input structure
+  for the \mol\ input files. The new formet is keyword-driven and
+  contains no fixed-format input lines unless the basis set is
+  explicitely given in the input file. However, with the exception of
+  the \verb|ATOMBASIS| option, the input file is fully backward
+  compatible with the old input format. For more information, see
+  Sec.~\ref{ch:molinp}.
+
+\item{\bf Spin--spin coupling constants:} Allows for the calculation
+  of coupling constants to one single nucleus.
+
+\item{\bf Changes to DALTON.INP:} To harmonize the input for
+  single-point and geometry optimization calculations, the labels for
+  calculating   molecular properties during a geometry optimization is
+  changes such that
+
+\begin{center}
+\begin{tabular}{|l|l|}\hline
+Old label & New label\\\hline
+**START & **START\\
+**PROPERTIES & **EACH STEP\\
+**FINAL & **PROPERTIES\\\hline
+\end{tabular}
+\end{center}
+
+\item{\bf Depricated features: PVM no longer supported:} The parallel
+  version no longer supports PVM as a message passing
+  interface. Currently Dalton will only correctly install a parallel
+  version using MPI. Note also that if a parallel \dalton\ is
+  requested, the executable can both run parallel and sequential
+  calculations.
+
+%\item{\bf Polarizable Continuum Model (PCM):} The official release of
+%  Dalton~2.0 does not contain any major extensions to the solvent
+%  models used. However, a separate version containing the Polarizable
+%  Continuum Model (PCM) for quadratically convergent SCF and MCSCF
+%  wave function as well as DFT, including also linear and quadratic
+%  respons functions. This module is av
+
+\end{enumerate}
+
+\section{New features in Dalton~1.2}
 Dalton 1.2 includes several large modules that have been added in order
 to increase the possibilities for user applications of the code. In
 addition, several improvements in the general performance of the code
@@ -60,7 +160,7 @@ functions, and although molecular gradients and Hessians can be
 calculated, they are not strictly correct, as they use the
 non-relativistic derivatives of the one-electron Hamiltonian.
 
-\item {\bf Linear coupling model} The linear coupling model used for
+\item {\bf Linear coupling model} The linear coupling model can be used for
 estimating Franck-Condon factors.
 
 \item  {\bf Vibrational averaging} A new approach for calculating
