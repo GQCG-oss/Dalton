@@ -7,7 +7,7 @@ DIR='/tmp'
 
 dirlist=`echo '.' $* | sed -e 's/-WF//g' -e 's/-I//g' -e 's/,/ /g' `
 
-echo 'BEGIN{r=f;sub("\\.[^.]$","",r);
+echo 'BEGIN{FS="[\"<>]";r=f;sub("\\.[^.]$","",r);
       printf("%s.o %s.i : %s",r,r,f);'  > $DIR/awk.tmp$$
 for dir in $dirlist; do
   cd $dir
@@ -20,7 +20,7 @@ done
 echo ' n = 3 }'  >> $DIR/awk.tmp$$
 
 cat >> $DIR/awk.tmp$$ <<!
-/^ *# *include/{sub("include","");gsub("[#<>\" ]","");inc[\$0]++}
+/^ *# *include/{ inc[\$2]++}
 
 END {
   n=3;
