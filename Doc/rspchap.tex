@@ -185,6 +185,30 @@ induced by spin-orbit coupling
 have the keyword, {\tt .PHOSPHORESCENCE} under {\tt *QUADRATIC}, which sets
 $A$ to electric dipole operators and $B$ to spin-orbit operators.
 
+Another special case of residue of quadratic response function 
+is the ${\cal{B}}(0\to f)$ term of magnetic circular dichroism (MCD).
+\begin{verbatim}
+**RESPONSE
+*QUADRATIC
+.SINGLE RESIDUE
+.ROOTS
+ 2 2 0 0
+.MCDBTERM
+*END OF INPUT
+\end{verbatim}
+For each dipole allowed excited state among those specified in 
+{\tt .ROOTS}, the {\tt .MCDBTERM} keyword automatically 
+calculates all symmetry allowed products of the single residue of the 
+quadratic response function for $A$ corresponding to the electric dipole
+operator and $B$ to the angular momentum operator with the single residue 
+of the linear response function for $C$ equal to the electric dipole operator.
+In other words the mixed electric dipole---magnetic dipole two-photon transition moment 
+for final state $f$ times the dipole one-photon moment for the same state $f$.
+Note that in the current implementation (for SCF and MCSCF) degeneracies between
+excited states may lead to numerical divergencies. 
+The final ${\cal{B}}(0\to f)$ must be obtained from combination of the individual
+components. 
+
 It is possible to construct double
 residues\index{residue}\index{double residue} of the quadratic
 response function, the interpretation of which is transition
