@@ -24,7 +24,7 @@
 #include "grid-gen.h"
 #include "basisinfo.h"
 
-//#define USE_PTHREADS
+/* #define USE_PTHREADS */
 #ifdef USE_PTHREADS
 #include <pthread.h>
 #endif
@@ -248,7 +248,6 @@ do_output_2(int prio, const char* format, ...)
   printf("%s\n", s);
 #else
   fort_print(s);
-  //printf("%s\n", s); 
 #endif
 
 #ifdef USE_PTHREADS
@@ -383,8 +382,11 @@ parseParam(char* s)
 #define MAX_BYTES 222
   char* p = s;
   char* endPtr = s + strlen(s);
-  // look for =
+  char paramName[MAX_BYTES];
+  char paramValueString[MAX_BYTES];
+  /* look for = */
   char* q = p;
+
   while((*q != '=') && (*q != 0))
     q++;
   if(*q != '=')
@@ -392,15 +394,13 @@ parseParam(char* s)
       do_output_2(0, "error parsing string '%s': '=' not found", s);
       return -1;
     }
-  // now q points to '='
-  char paramName[MAX_BYTES];
+  /* now q points to '=' */
   memcpy(paramName, p, q-p);
   paramName[q-p] = 0;
-  //printf("paramName = '%s'\n", paramName);
-  char paramValueString[MAX_BYTES];
+  /*printf("paramName = '%s'\n", paramName); */
   memcpy(paramValueString, q+1, endPtr-q-1);
   paramValueString[endPtr-q-1] = 0;
-  //printf("paramValueString = '%s'\n", paramValueString);
+  /*printf("paramValueString = '%s'\n", paramValueString); */
   if(strlen(paramName) == 0)
     {
       do_output_2(0, "error parsing string '%s': nothing found before '='", s);
@@ -427,6 +427,7 @@ parseParam(char* s)
   if(strcmp(paramName, "maxerror") == 0)
     {
       real new_maxerror;
+      char ss[MAX_BYTES];
       new_maxerror = atof(paramValueString);
       if(new_maxerror <= 0)
 	{
@@ -434,7 +435,6 @@ parseParam(char* s)
 	  return -1;
 	}
       global_maxerror = new_maxerror;
-      char ss[MAX_BYTES];
       make_float_string(ss, global_maxerror);
       do_output_2(2, "grid parameter maxerror = %s", ss);
       return 0;
@@ -488,29 +488,32 @@ dftcartesianinput_(const char *line, int line_len)
 #define MAX_BYTES 222
   int inperr;
   int* inperrPtr = &inperr;
+  char *endPtr, *p;
+  char line2[MAX_BYTES];
+
   do_output_2(1, "dftcartesianinput, line_len = %i", line_len);
   if(line_len < 0)
     return;
-  char line2[MAX_BYTES];
   memset(line2, 0, MAX_BYTES);
   memcpy(line2, line, line_len);
   line2[line_len] = 0;
-  //printf("dftgridparams_ len = %i\n", line_len);
-  //printf("line after cutting at line_len:\n'%s'\n", line2);
-  char* endPtr = line2 + line_len;
-  char* p = line2;
+  /*printf("dftgridparams_ len = %i\n", line_len); */
+  /*printf("line after cutting at line_len:\n'%s'\n", line2); */
+  endPtr = line2 + line_len;
+  p = line2;
   while(p < endPtr)
     {
-      // skip spaces
+      char paramBuf[MAX_BYTES];
+      char* q;
+        /* skip spaces */
       while(*p == ' ')
 	p++;
       if(*p == 0)
 	break;
-      // now we are at the beginning of some string
-      char* q = p;
+      /* now we are at the beginning of some string */
+      q = p;
       while((*q != ' ') && (*q != 0))
 	q++;
-      char paramBuf[MAX_BYTES];
       memcpy(paramBuf, p, q-p);
       paramBuf[q-p] = 0;
       if(parseParam(paramBuf) != 0)
@@ -1104,6 +1107,7 @@ use_cubature_rule(int maxlen,
   real currCoords[3];
   int Ngrid, currIndex;
   int i, j, k, ii;
+  real a0, a1, a2;
 
   volume = 1;
   for(i = 0; i < NO_OF_DIMENSIONS; i++)
@@ -1215,7 +1219,6 @@ use_cubature_rule(int maxlen,
 
       MACRO_3VECT(coor[0], c0, c1, c2);
 
-      real a0, a1, a2;
       ii = 1;
       a0 = a;
       a1 = a;
@@ -1463,7 +1466,9 @@ compute_grid_for_box(compute_grid_for_box_params_struct* params,
         /* to check, compare with denser grid */
       real testCoor[MAX_NO_OF_TEST_POINTS][3];
       real testWeight[MAX_NO_OF_TEST_POINTS];
-      int Ngrid2;
+      real testIapprox;
+      int Ngrid2, testAbsError;
+
       Ngrid2 = use_cubature_rule(MAX_NO_OF_TEST_POINTS, 
 				 testCoor, testWeight, box, CUBATURE_RULE_2);
       if(Ngrid2 <= 0)
@@ -1472,7 +1477,6 @@ compute_grid_for_box(compute_grid_for_box_params_struct* params,
 	  return -1;
 	}
       
-      real testIapprox;
       testIapprox = 
 	compute_integral_from_points(
 				     &params->density,
@@ -1484,7 +1488,7 @@ compute_grid_for_box(compute_grid_for_box_params_struct* params,
 				     &testCoor[0],
 				     testWeight,
 				     workList);
-      real testAbsError = fabs(Iexact - testIapprox);
+      testAbsError = fabs(Iexact - testIapprox);
       /* we demand that the denser grid should give better result */
       /*printf("abserror     = %66.55f\n", abserror); */
       /*printf("testAbsError = %66.55f\n\n", testAbsError); */
@@ -2128,6 +2132,7 @@ compute_grid_thread_func(void* arg)
 
 	      if(writeResultsToFile == 1)
 		{
+                    int nPointsLeft;
                     /* make block-list of non-zero shells to write to file */
 		  nblocks = 0;
 		  blockStarted = 0;
@@ -2171,7 +2176,7 @@ compute_grid_thread_func(void* arg)
 		    }
 
 		  /* write grid points to file */
-		  int nPointsLeft = nPoints;
+		   nPointsLeft = nPoints;
 #ifdef USE_PTHREADS
 		  pthread_mutex_lock(inputParams->fileMutex);
 #endif
@@ -2259,7 +2264,7 @@ do_test_integration(DensitySpecStruct* density, char* gridFileName)
   int nRepeats, repeatNo;
   real testIntegralResult;
   int maxNoOfPoints, noOfShells, noOfDistributions;
-  //  char s[888];
+  /*  char s[888]; */
   time_t startSeconds2, endSeconds2;
   clock_t startClock, endClock;
   FILE* gridFile;
@@ -2472,6 +2477,7 @@ int compute_grid(
   int noOfDistributions, writeResultsToFile;
   int currJobNumber, noOfShells;
   real megaBytes;
+  compute_grid_thread_func_struct* threadParamsList;
 
   do_output_2(2, "entering compute_grid..\n");
 
@@ -2592,8 +2598,6 @@ int compute_grid(
   pthread_mutex_t fileMutex = PTHREAD_MUTEX_INITIALIZER;
   pthread_mutex_t jobMutex = PTHREAD_MUTEX_INITIALIZER;
 #endif
-
-  compute_grid_thread_func_struct* threadParamsList;
 
   threadParamsList = dal_malloc_safe(noOfThreads * 
 				     sizeof(compute_grid_thread_func_struct));
@@ -2859,16 +2863,18 @@ compute_extent_for_shells(BasisInfoStruct* basisInfo, real targetRhoError)
       for(kk = 0; kk < contr; kk++)
 	{
 	  DistributionSpecStruct testDistr;
+	  BoxStruct testBox;
+	  int j;
+	  real currExtent;
+
 	  testDistr.coeff = currShell->coeffList[kk];
 	  testDistr.exponent = currShell->exponentList[kk];
-	  int j;
 	  for(j = 0; j < 3; j++)
 	    testDistr.centerCoords[j] = 0;
 	  for(j = 0; j < 3; j++)
 	    testDistr.monomialInts[j] = 0;
-	  BoxStruct testBox;
 	  get_distribution_box(&testBox, &testDistr, targetRhoError);
-	  real currExtent = (testBox.max[0] - testBox.min[0]) / 2;
+          currExtent = (testBox.max[0] - testBox.min[0]) / 2;
 	  if(currExtent > largestExtent)
 	    {
 	      largestExtent = currExtent;
@@ -2878,7 +2884,7 @@ compute_extent_for_shells(BasisInfoStruct* basisInfo, real targetRhoError)
       if(worstIndex < 0)
 	return -1;
       currShell->extent = largestExtent;
-    } // END FOR i
+    } /* END FOR i */
   return 0;
 }
 
@@ -2899,12 +2905,10 @@ get_density(DistributionSpecStruct* rho,
 #define MAX_DISTR_IN_TEMP_LIST 888
   real cutoff = cutoffInp;
 
-  do_output_2(2, "entering function get_density, cutoff = %22.15f", cutoff);
+  /*DistributionSpecStruct* rho2 =  */
+  /*malloc(maxCountRho * sizeof(DistributionSpecStruct)); */
 
-  //DistributionSpecStruct* rho2 = 
-  //malloc(maxCountRho * sizeof(DistributionSpecStruct));
-
-  //char s[888];
+  /*char s[888]; */
   int i, j, k, kk;
   DistributionSpecStruct* workList;
   DistributionSpecStruct* rhoSaved;
@@ -2914,8 +2918,11 @@ get_density(DistributionSpecStruct* rho,
   int sameYesNo, firstIndex, count, withinLimit, resultCount;
   real coeffSum;
   int* markList;
-
+  int symmetryFactor;
+  int nBasisFuncs, nn;
   BasisInfoStruct basisInfo;
+
+  do_output_2(2, "entering function get_density, cutoff = %22.15f", cutoff);
 
   if(get_shells(&basisInfo) != 0)
     {
@@ -2945,25 +2952,25 @@ get_density(DistributionSpecStruct* rho,
   do_output_2(2, "get_simple_primitives_all returned OK, n = %i",
 	      basisInfo.noOfSimplePrimitives);
   
-  int symmetryFactor;
-  int nBasisFuncs = basisInfo.noOfBasisFuncs;
-  int nn = 0;
+  nBasisFuncs = basisInfo.noOfBasisFuncs;
+  nn = 0;
   for(i = 0; i < nBasisFuncs; i++)
     {
       for(j = 0; j < nBasisFuncs; j++)
 	{
-	  //printf("i = %i, j = %i\n", i, j);
+	  DistributionSpecStruct tempList[MAX_DISTR_IN_TEMP_LIST];
+	  int nPrimitives, k;
+            /*printf("i = %i, j = %i\n", i, j); */
 	  /* the matrix M is symmetric: include diagonal terms once, */
 	  /* and include upper off-diagonal terms multiplied by 2 */
 	  if(i == j)
-	    symmetryFactor = 1;
+              symmetryFactor = 1;
 	  else
 	    symmetryFactor = 2;
 	  if(i > j)
 	    continue;
-	  DistributionSpecStruct tempList[MAX_DISTR_IN_TEMP_LIST];
-	  //printf("calling get_product_simple_primitives\n");
-	  int nPrimitives = 
+	  /*printf("calling get_product_simple_primitives\n"); */
+          nPrimitives = 
 	    get_product_simple_primitives(&basisInfo, i,
 					  &basisInfo, j,
 					  tempList,
@@ -2975,19 +2982,18 @@ get_density(DistributionSpecStruct* rho,
 	      do_output_2(0, "error in get_product_simple_primitives");
 	      return -1;
 	    }
-	  int k;
 	  for(k = 0; k < nPrimitives; k++)
 	    {
 	      DistributionSpecStruct* currDistr = &tempList[k];
 	      real Mij = dmat[i*nBasisFuncs+j];
-	      //printf("symmetryFactor = %i\n", symmetryFactor);
+	      /*printf("symmetryFactor = %i\n", symmetryFactor); */
 	      real newCoeff = currDistr->coeff * Mij * symmetryFactor;
 	      do_output_2(4, "Mij = %33.22f", Mij);
 	      do_output_2(4, "currDistr->coeff = %33.22f", currDistr->coeff);
 	      do_output_2(4, "newCoeff = %33.22f", newCoeff);
 	      if(fabs(newCoeff) > cutoff)
 		{
-		  // add to final list
+                    /* add to final list */
 		  memcpy(&rho[nn], currDistr, 
 			 sizeof(DistributionSpecStruct));
 		  rho[nn].coeff = newCoeff;
@@ -3177,8 +3183,8 @@ get_density(DistributionSpecStruct* rho,
   do_output_2(2, "count       = %9i", count);
   do_output_2(2, "resultCount = %9i", resultCount);
 
-  //dal_free(list);
-  //dal_free(indexList);
+  /*dal_free(list); */
+  /*dal_free(indexList); */
   dal_free(workList);
   dal_free(markList);
   dal_free(rhoSaved);
@@ -3202,7 +3208,7 @@ do_cartesian_grid(int nbast, const real* dmat, DftGridReader* res)
      ((global_gridCount+1) % global_nFreeze) == 0)
     {
 
-      // check dmat
+        /* check dmat */
       real maxabs = 0;
       int i;
       for(i = 0; i < nbast*nbast; i++)
@@ -3287,8 +3293,9 @@ void
 output_energy_(double* energyPtr)
 {
   double energy = *energyPtr;
-  output_energy_counter++;
   char s[888];
+
+  output_energy_counter++;
   sprintf(s, "Energy %2i: %20.12f", output_energy_counter, energy);
   do_output_2(1, s);
   if(energy_file == NULL)
