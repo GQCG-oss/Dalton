@@ -2,7 +2,7 @@ include ../Makefile.config
 
 OBJS =	gphjj.o    gpjeppe.o  gptrygve.o     mempkg.o \
 	qpack.o    graphic.o  vcraypack.o    gpsaue.o \
-	mpimacro.o pvmmacro.o gpdahle.o
+	mpimacro.o pvmmacro.o gpdahle.o      intf7790.o
 
 all: libgp.a
 

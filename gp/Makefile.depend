@@ -35,6 +35,15 @@ graphic.o : graphic.F \
   ../include/pi.h  ../include/primit.h \
   ../include/priunit.h  ../include/shells.h \
   ../include/single.h  ../include/symmet.h
+intf7790.o : intf7790.F \
+  ../include/abainf.h  ../include/cbirea.h \
+  ../include/codata.h  ../include/gnrinf.h \
+  ../include/huckel.h  ../include/implicit.h \
+  ../include/infinp.h  ../include/infopt.h \
+  ../include/maxaqn.h  ../include/maxorb.h \
+  ../include/molinp.h  ../include/mxcent.h \
+  ../include/mxorb.h  ../include/nuclei.h \
+  ../include/priunit.h  ../include/symmet.h
 mempkg.o : mempkg.F \
   ../include/implicit.h  ../include/iratdef.h \
   ../include/memcb1.h  ../include/single.h
