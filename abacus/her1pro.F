@@ -186,7 +186,7 @@ C
      &        TOFILE,DOINT(2,2)
       CHARACTER LABINT(*)*8, WORD*7, TABLE(NTABLE)*7, MTFORM*6,
      &          EFDIR*1
-      CHARACTER*8  RTNLBL(2)
+      CHARACTER*8  RTNLBL(2), TMPTXT
       DIMENSION WORK(*), INTREP(*), INTADR(*), SINTMA(*)
 C
 #include <shells.h>
@@ -1904,7 +1904,12 @@ C
                   END IF
                END IF
 cLig <> Replace data information with the symmetry of the operator
-               WRITE(RTNLBL(1),*) (INTREP(I)+1),' ',REP(INTREP(I))
+cVB Free format write does not work with all compilers
+C               WRITE(RTNLBL(1),*) (INTREP(I)+1),' ',REP(INTREP(I))
+               TMPTXT = RTNLBL(1)
+               WRITE(TMPTXT(1:5),'(I1,A1,A3)')
+     &              (INTREP(I)+1), ' ', REP(INTREP(I))
+               RTNLBL(1) = TMPTXT
                CALL WRTPRO(WORK(IADR),NELMNT,LABINT(I),RTNLBL)
                IADR = IADR + NELMNT
   600       CONTINUE
