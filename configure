@@ -921,6 +921,7 @@ case $WHICH in
                cpp=${cpp}" -DIMPLICIT_NONE"
             else
                cpp="-D SYS_LINUX -D VAR_ABSOFT -D NO_F90 -D 'INSTALL_WRKMEM=$memsiz' -D IMPLICIT_NONE"
+#              F90FLAGS = -YEXT_SFX=_ -YEXT_NAMES=LCS -s -w
                copt="-mcpu=7450"
                copt="$copt -O3 -ffast-math -fexpensive-optimizations -funroll-loops -std=c99"
                opt="-N11 -N15 -f -N22 -N116 -s -w -N3 -O"
