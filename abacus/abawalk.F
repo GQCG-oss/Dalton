@@ -29,11 +29,14 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abawalk.F,v 1.8 2001-05-02 18:20:43 ruud Exp $
+C$Id: abawalk.F,v 1.9 2001-05-14 19:05:09 ruud Exp $
 C
 #include <single.h>
 #ifdef REVLOG
 $Log: not supported by cvs2svn $
+Revision 1.8  2001/05/02 18:20:43  ruud
+Changes to make IRC work/kr/
+
 Revision 1.7  2001/05/02 07:34:21  ruud
 Small change to ensure that you can do 2nd-order optimizations with
 Douglas-Kroll. However, the gradients and Hessians are formally not correct
@@ -2582,9 +2585,12 @@ C
       CALL TRAGRD(GRDMOL,CGRAD,CSTRA,SCTRA,NCRREP(0,1),NCOOR)
       CALL TRAHES(HESMOL,MXCOOR,CHESS,CSTRA,SCTRA,MXCOOR,NCOOR,1)
       ARC = AACCUM - STPNRM
-      WRITE (LUWLK) IPOINT, NCOOR, DUMMY, DUMMY, DUMMY
-      WRITE (LUWLK) ARC, ERGMOL, DUMMY, DUMMY
-      WRITE (LUWLK) (DMASS (I),I=1,NUCDEP)
+      WRITE (LUWLK) IPOINT, NCOOR, DUMMY, DUMMY, DUMMY,
+     &     DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY
+      WRITE (LUWLK) ARC, ERGMOL, DUMMY, DUMMY,
+     &     DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY
+      WRITE (LUWLK) (DMASS (I),I=1,NUCDEP),
+     &     DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY
       WRITE (LUWLK) (COOR (I),I=1,NCOOR)
       WRITE (LUWLK) (CGRAD(I),I=1,NCOOR)
       WRITE (LUWLK) ((CHESS(I,J),I=1,NCOOR),J=1,NCOOR)
