@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abamag.F,v 1.12 2002-01-14 17:16:18 ruden Exp $
+C$Id: abamag.F,v 1.13 2002-02-12 08:17:22 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -1629,8 +1629,8 @@ C
                ICOOR2 = MOD(ICOOR,3)
             END IF
 C
-            CALL GETGP(LABEL,DUMMY,CMO,UDV,PV,XINDX,
-     &                 ANTSYM,WORK,LWORK)
+            CALL GETGPV(LABEL,DUMMY,CMO,UDV,PV,XINDX,
+     &                  ANTSYM,WORK,LWORK)
 C
             TRPLAB(IREC) = LABEL
             CALL DSCAL(KZVAR,DM1,WORK,1)

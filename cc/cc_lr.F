@@ -173,7 +173,7 @@ C
       NLRPRP  = NLROP*NBLRFR 
 C
 C     --------------------------------------------------------------
-C     open AOPROPER file for GETGP routine of the RSP program...
+C     open AOPROPER file for GETGPV routine of the RSP program...
 C     --------------------------------------------------------------
 C
       CALL CC_SIRINF(NCMOT,NASHT,N2ASHX,LCINDX)

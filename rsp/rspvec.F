@@ -32,11 +32,18 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: rspvec.F,v 1.8 2001-05-31 06:38:31 vebjornb Exp $
+C$Id: rspvec.F,v 1.9 2002-02-12 08:17:24 vebjornb Exp $
 C
 #include <single.h>
 #ifdef REVLOG
 $Log: not supported by cvs2svn $
+Revision 1.8.14.1  2002/01/31 13:34:42  vebjornb
+Changed GETGP to GETGPV everywhere. The former subroutine name caused a
+conflict with the cxperf profiling tool on HP - VB
+
+Revision 1.8  2001/05/31 06:38:31  vebjornb
+Updated copyright, authors and reference in all Fortran-files - VB
+
 Revision 1.7  2001/04/19 06:25:07  hjj
 bugfix in LRHYP reported by Olav Vahtras. /HJAaJ
 
@@ -44,7 +51,7 @@ Revision 1.6  2001/04/03 20:33:01  vebjornb
 Bugfixes from Patrick - VB
 
 Revision 1.5  2001/04/03 07:26:27  coriani
-MCD in SOMOM, fixed DP5 and argument list in CALL GETGP. SC
+MCD in SOMOM, fixed DP5 and argument list in CALL GETGPV. SC
 
 Revision 1.4  2001/03/29 08:06:45  hjj
 Declare MJWOP in LRHYP so compiler knows it is a vector! /HJAaJ.
@@ -675,8 +682,8 @@ C
   410    CONTINUE
          IF (NFREQ .EQ. 0) GOTO 680
 C
-         CALL GETGP(LRLAB(ILRLAB),FC,CMO,UDV,PV,XINDX,
-     &              ANTSYM,WRK(KGP),LWRK1)
+         CALL GETGPV(LRLAB(ILRLAB),FC,CMO,UDV,PV,XINDX,
+     &               ANTSYM,WRK(KGP),LWRK1)
          GPNORM = DNRM2(KZYVAR,WRK(KGP),1)
 C
          WRITE (LUPRI,'(//A,I3,/2A,/A,(T25,5F10.6))')
@@ -723,8 +730,8 @@ CMAERKE        IF (IPRRSP.GE.5) THEN
      *            ' SYMMETRY',KSYMOP
                   JEIVEC = KEIVEC + (JFREQ-1)*KZYRED
                DO JLRLAB = 1, NLRLAB
-               CALL GETGP(LRLAB(JLRLAB),FC,CMO,UDV,PV,XINDX,
-     &                    ANTSM2,WRK(KGP2),LGP2)
+               CALL GETGPV(LRLAB(JLRLAB),FC,CMO,UDV,PV,XINDX,
+     &                     ANTSM2,WRK(KGP2),LGP2)
                VAL = DDOT(KZYVAR,WRK(KGP2),1,WRK(JBVECS),1)
                WRITE (LUPRI,'(/5A,F10.5,A,1P,G22.12)')
      &              '@QRLRVE:  << ', LRLAB(JLRLAB),' ; '
@@ -1557,7 +1564,7 @@ C
 C Revision 910405-hjaaj: FACB and FACMOM for mixed and velocity repr.
 C
 C Modified 980722-sonia: MCD. Included common block WRKRSP and
-C call to GETGP.
+C call to GETGPV.
 C
 #include <implicit.h>
 C
@@ -2134,9 +2141,9 @@ C
                                    JWOP(2,IOP) = MJWOP(2,IOP,KSYMOP)
                                  ENDDO
 c
-                                 !GETGP uses variables in wrkrsp.h
-                                 CALL GETGP(CLABEL,FC,CMO,UDV,PV,XINDX,
-     *                                         ANTSYM,WRK(KFREE),LFREE)
+                                 !GETGPV uses variables in wrkrsp.h
+                                 CALL GETGPV(CLABEL,FC,CMO,UDV,PV,XINDX,
+     *                                       ANTSYM,WRK(KFREE),LFREE)
 
                                  TM1 = DDOT(KZYVAR,WRK(KFREE),1,VECC,1)
                                  BCONTR = SMOM*TM1*DP5
@@ -2816,8 +2823,8 @@ C
   410    CONTINUE
          IF (NFREQ .EQ. 0) GOTO 680
 C
-         CALL GETGP(LRLAB(ILRLAB),FC,CMO,UDV,PV,XINDX,
-     &              ANTSYM,WRK(KGP),LWRK1)
+         CALL GETGPV(LRLAB(ILRLAB),FC,CMO,UDV,PV,XINDX,
+     &               ANTSYM,WRK(KGP),LWRK1)
          GPNORM = DNRM2(KZYVAR,WRK(KGP),1)
 C
          WRITE (LUPRI,'(//A,I3,/2A,/A,(T25,5F10.6))')
@@ -3169,8 +3176,8 @@ C
 C
 C     Get gradient
 C
-                  CALL GETGP(AQRLB(ISYM,IAOP),FC,CMO,UDV,PV,XINDX,
-     &                       ANTSYM,WRK(KRES),LFREE)
+                  CALL GETGPV(AQRLB(ISYM,IAOP),FC,CMO,UDV,PV,XINDX,
+     &                        ANTSYM,WRK(KRES),LFREE)
                   CALL DCOPY(KZYVAR,WRK(KRES),1,VECA,1)
 C
 C     Print out gradient

@@ -32,12 +32,19 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: rspcr2.F,v 1.2 2001-05-31 06:38:28 vebjornb Exp $
+C$Id: rspcr2.F,v 1.3 2002-02-12 08:17:23 vebjornb Exp $
 C
 #include <single.h>
 C
 #ifdef REV_LOG
 $Log: not supported by cvs2svn $
+Revision 1.2.14.1  2002/01/31 13:34:41  vebjornb
+Changed GETGP to GETGPV everywhere. The former subroutine name caused a
+conflict with the cxperf profiling tool on HP - VB
+
+Revision 1.2  2001/05/31 06:38:28  vebjornb
+Updated copyright, authors and reference in all Fortran-files - VB
+
 Revision 1.1.1.1  2001/02/08 13:33:13  hjj
 *** Dalton Master Version *** cvs started 8-Feb-2001.
 
@@ -157,8 +164,8 @@ C
 C     Call RSPCTL to solve linear set of response equations
 C
       DO 680 ILRLAB = 1,NLRLAB
-         CALL GETGP( LRLAB(ILRLAB),FC,CMO,UDV,PV,XINDX,ANTSYM,
-     &              WRK(KGD),LWRK1)
+         CALL GETGPV(LRLAB(ILRLAB),FC,CMO,UDV,PV,XINDX,ANTSYM,
+     &               WRK(KGD),LWRK1)
          GDNORM = DNRM2(KZYVAR,WRK(KGD),1)
          NFREQ  = 0
          CALL DZERO(WRK(KEIVAL),NLRCR(KSYMOP))

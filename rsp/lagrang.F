@@ -32,12 +32,19 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: lagrang.F,v 1.2 2001-05-31 06:38:27 vebjornb Exp $
+C$Id: lagrang.F,v 1.3 2002-02-12 08:17:23 vebjornb Exp $
 C
 #include <single.h>
 C
 #ifdef REV_LOG
 $Log: not supported by cvs2svn $
+Revision 1.2.14.1  2002/01/31 13:34:41  vebjornb
+Changed GETGP to GETGPV everywhere. The former subroutine name caused a
+conflict with the cxperf profiling tool on HP - VB
+
+Revision 1.2  2001/05/31 06:38:27  vebjornb
+Updated copyright, authors and reference in all Fortran-files - VB
+
 Revision 1.1.1.1  2001/02/08 13:33:13  hjj
 *** Dalton Master Version *** cvs started 8-Feb-2001.
 
@@ -56,7 +63,7 @@ C  /* Deck lagran */
 C
 C 18-AUG-1991
 C
-C Called from GETGP when label(5:8) = 'LAGR'
+C Called from GETGPV when label(5:8) = 'LAGR'
 C
 #include <implicit.h>
 #include <dummy.h>
@@ -274,7 +281,7 @@ C
       WRITE (LUPRI,'(//A,I3,/2A)')
      & ' RSPLAN -- linear response calculation for symmetry',KSYMOP,
      & ' RSPLAN -- operator label : ',LABEL
-      CALL GETGP(LABEL,FC,CMO,UDV,PV,XINDX,ANTSYM,WRK(KGP),LWRK1 )
+      CALL GETGPV(LABEL,FC,CMO,UDV,PV,XINDX,ANTSYM,WRK(KGP),LWRK1)
       IF (IPRRSP.GT.120) THEN
          WRITE(LUPRI,'(/A)') ' RSPLAN: LAGRANGIAN VECTOR '
          CALL OUTPUT(WRK(KGP),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
@@ -494,9 +501,9 @@ C                   XINDX,WRK,KFREE,LFREE)
      *              ' LAGRANGIAN VECTOR BEFORE PRODUCT'
                   CALL OUTPUT(WRK(KLAGR),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
                END IF
-               CALL GETGP(LBESRT(KSYMOP,IOP),FC,CMO,UDV,PV,XINDX,ANTSYM,
-     *                    WRK(KGP),LWRK1 )
-C              CALL GETGP(LABELOP,FC,CMO,UDV,PV,XINDX,ANTSYM,WRK,LWRK)
+               CALL GETGPV(LBESRT(KSYMOP,IOP),FC,CMO,UDV,PV,XINDX,
+     *                     ANTSYM,WRK(KGP),LWRK1 )
+C              CALL GETGPV(LABELOP,FC,CMO,UDV,PV,XINDX,ANTSYM,WRK,LWRK)
                IF (IPRRSP.GT.120) THEN
                   WRITE(LUPRI,'(/2A)')
      *              ' GP VECTOR  LABEL: ',LBESRT(KSYMOP,IOP)

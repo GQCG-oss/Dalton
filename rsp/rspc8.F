@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: rspc8.F,v 1.2 2001-05-31 06:38:28 vebjornb Exp $
+C$Id: rspc8.F,v 1.3 2002-02-12 08:17:23 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -134,8 +134,8 @@ C
          WRITE(LUPRI,'(A,A/A,I4)')
      *      ' OPERATOR TYPE:    ',LBLC6(KSYMOP,IOP),
      *      ' OPERATOR SYMMETRY:',KSYMOP
-         CALL GETGP(LBLC6(KSYMOP,IOP),FC,CMO,UDV,PV,XINDX,ANTSYM,
-     *              WRK(KGDOFF),LWRK1)
+         CALL GETGPV(LBLC6(KSYMOP,IOP),FC,CMO,UDV,PV,XINDX,ANTSYM,
+     *               WRK(KGDOFF),LWRK1)
          KGDOFF = KGDOFF + KZYVAR
  600  CONTINUE
       NTOTAL = KZYVAR*NGDNUM

@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abarhs.F,v 1.8 2002-02-08 12:25:37 ruud Exp $
+C$Id: abarhs.F,v 1.9 2002-02-12 08:17:22 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -3543,8 +3543,8 @@ C
      &                           LWORK,IPRALL)
                END IF
                IMGLAB(IREC) = LABINT(ISCOOR)
-               CALL GETGP(LABINT(ISCOOR),DUMMY,CMO,UDV,PVX,XINDX,
-     &                    ANTSYM,WORK,LWORK)
+               CALL GETGPV(LABINT(ISCOOR),DUMMY,CMO,UDV,PVX,XINDX,
+     &                     ANTSYM,WORK,LWORK)
 C
 C              Scaled by -2 in accordance with ABARHS
 C

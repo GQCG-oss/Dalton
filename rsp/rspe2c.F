@@ -32,11 +32,18 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: rspe2c.F,v 1.4 2002-01-17 09:02:28 alfch Exp $
+C$Id: rspe2c.F,v 1.5 2002-02-12 08:17:23 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
 $Log: not supported by cvs2svn $
+Revision 1.4.2.1  2002/01/31 13:34:41  vebjornb
+Changed GETGP to GETGPV everywhere. The former subroutine name caused a
+conflict with the cxperf profiling tool on HP - VB
+
+Revision 1.4  2002/01/17 09:02:28  alfch
+Keywords and output for parity violation.
+
 Revision 1.3  2001/05/31 06:38:29  vebjornb
 Updated copyright, authors and reference in all Fortran-files - VB
 
@@ -1696,8 +1703,8 @@ C
          ELSE
             JST = IOP
          END IF
-         CALL GETGP(LBLLR(KSYMOP,IOP),FC,CMO,UDV,PV,XINDX,ANTSYM,
-     *              WRK(KGP),LWRKGP)
+         CALL GETGPV(LBLLR(KSYMOP,IOP),FC,CMO,UDV,PV,XINDX,ANTSYM,
+     *               WRK(KGP),LWRKGP)
          DO 200 IFREQ = 1,NFREQ
             IFRSOL = (IOP-1)*NFREQ*2 + (IFREQ-1)*2 + 1
             CALL READDX(LURSP2,IFRSOL,IRAT*KZYVAR,WRK(KISOL))
@@ -1743,18 +1750,18 @@ C
                JST = IOP
             END IF
             IF (SOPW4) THEN
-               CALL GETGP(LBLLR(KSYMOP,IOP),FC,CMO,UDV,PV,XINDX,ANTSYM,
-     *                    WRK(KGP),LWRKGP)
+               CALL GETGPV(LBLLR(KSYMOP,IOP),FC,CMO,UDV,PV,XINDX,ANTSYM,
+     *                     WRK(KGP),LWRKGP)
                CALL SOPDW4(WRK(KGP),WRK(KISOL),WRK(KJSOL),FREQ(IFREQ))
             END IF            
 c ach            
             DO 600 JOP = JST,NOP
                XPROP = SOPR(IFREQ,IOP,JOP)
                WRITE(LUPRI,'(A,A,3X,A,1P,D20.12)')
-     *         '@',LBLLR(KSYMOP,IOP), LBLLR(KSYMOP,JOP),XPROP                              
+     *         '@',LBLLR(KSYMOP,IOP), LBLLR(KSYMOP,JOP),XPROP
                IF (SOPW4) THEN
-                  CALL GETGP(LBLLR(KSYMOP,JOP),FC,CMO,UDV,PV,XINDX,
-     *                       ANTSYM,WRK(KGP),LWRKGP)
+                  CALL GETGPV(LBLLR(KSYMOP,JOP),FC,CMO,UDV,PV,XINDX,
+     *                        ANTSYM,WRK(KGP),LWRKGP)
                   W4TERM = DDOT(KZYVAR,WRK(KGP),1,WRK(KISOL),1)
                   WRITE(LUPRI,'(A,1P,D20.12)')
      &            '@SOPPA W4(E) term  ',W4TERM
@@ -3309,7 +3316,7 @@ C
       LNEED = 100
       IF (REFST) LNEED = LNEED + KZCONF
 C
-C REQUIREMENT in GETGP or RSPEVE (RSPEVE needs less than GETGP)
+C REQUIREMENT in GETGPV or RSPEVE (RSPEVE needs less than GETGPV)
 C
       IF (NGPPP(KSYMOP) .GT. 0) THEN
          LNEED = LNEED + KZYVAR + N2ORBX + N2BASX
@@ -3374,7 +3381,7 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
          IF ( NGPPP(KSYMOP) .GT. 0 ) THEN
             JOP = 1
             DO 600 IOP = 1,NGPPP(KSYMOP)
-               CALL GETGP( LBLPP(KSYMOP,IOP),FC,CMO,UDV,PV,
+               CALL GETGPV(LBLPP(KSYMOP,IOP),FC,CMO,UDV,PV,
      *                     XINDX,ANTSYM,WRK(KWRK2),LWRK2 )
                IF (LBLPP(KSYMOP,IOP)(1:3) .EQ. 'HDO') THEN
                   IF (REFST) THEN
@@ -3653,8 +3660,8 @@ C
      &   ' RSPLR -- linear response calculation for symmetry',KSYMOP,
      &   ' RSPLR -- operator label : ',LBLLR(KSYMOP,IOP),
      &   ' RSPLR -- frequencies :',(FREQ(I),I=1,NFREQ)
-         CALL GETGP(LBLLR(KSYMOP,IOP),FC,CMO,UDV,PV,XINDX,ANTSYM,
-     *              WRK(KGD),LWRK1)
+         CALL GETGPV(LBLLR(KSYMOP,IOP),FC,CMO,UDV,PV,XINDX,ANTSYM,
+     *               WRK(KGD),LWRK1)
          IF (IPRRSP .GT. 30) THEN
             CALL HEADER('Gradient vectors in RSPLR for operator '//
      &                  LBLLR(KSYMOP,IOP)//':',-1)
@@ -5271,8 +5278,8 @@ C
 C     Define variables that depend on symmetry
 C
          DO IOPA = 1, NGPLR(KSYMOP)
-            CALL GETGP(LBLLR(KSYMOP,IOPA),FC,CMO,UDV,PV,XINDX,
-     *                 ANTSYM,WRK(KVECA),LWRK)
+            CALL GETGPV(LBLLR(KSYMOP,IOPA),FC,CMO,UDV,PV,XINDX,
+     *                  ANTSYM,WRK(KVECA),LWRK)
 C
 C     Loop over solution vectors
 C

@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abaexc.F,v 1.5 2001-10-01 13:22:09 vebjornb Exp $
+C$Id: abaexc.F,v 1.6 2002-02-12 08:17:21 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck excinp */
@@ -567,8 +567,8 @@ C             ISYM = Reference state symmetry times excited state symmetry.
 C
               IF (KSYM.EQ.ISYM) THEN
                 KSYMOP = ISYM
-                CALL GETGP(LABEL,DUMMY,WORK(KCMO),WORK(KUDV),WORK(KPVX),
-     &                     WORK(KXINDX),ANTSYM,WORK(KWRKG1),LWRKG1)
+                CALL GETGPV(LABEL,DUMMY,WORK(KCMO),WORK(KUDV),
+     &               WORK(KPVX),WORK(KXINDX),ANTSYM,WORK(KWRKG1),LWRKG1)
                 IF (IPREXC.GT.3) THEN
                   WRITE (LUPRI,'(2A)') 'GP Vector, label: ',LABEL
                    CALL OUTPUT(WORK(KGD1),1,2*NVARPT,1,1,2*NVARPT,

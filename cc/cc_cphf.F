@@ -184,7 +184,7 @@ C     PARAMETER (MXFRVAL = 1)  ! switch off simultaneous equations
 * some initilizations:
 *---------------------------------------------------------------------*
 
-* arrays for GETGP and ABARSP:
+* arrays for GETGPV and ABARSP:
       KCMO   = 1
       KUDV   = KCMO   + NCMOT
       KXINDX = KUDV   + N2ASHX

@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abalnr.F,v 1.3 2001-05-31 06:38:01 vebjornb Exp $
+C$Id: abalnr.F,v 1.4 2002-02-12 08:17:22 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck lnrinp */
@@ -478,8 +478,8 @@ C
             KSYMOP = ISYM
             TRPLET = .FALSE.
 C
-            CALL GETGP(LABEL1,DUMMY,WORK(KCMO),WORK(KUDV),WORK(KPVX),
-     &                 WORK(KXINDX),ANTSYM,WORK(KWRKG1),LWRKG1)
+            CALL GETGPV(LABEL1,DUMMY,WORK(KCMO),WORK(KUDV),WORK(KPVX),
+     &                  WORK(KXINDX),ANTSYM,WORK(KWRKG1),LWRKG1)
             REWIND LUGDVE
             CALL WRITT(LUGDVE,2*NVARPT,WORK(KWRKG1))
             IF (IPRLNR.GT.3) THEN
@@ -517,9 +517,9 @@ C
 C                 Find right hand side for second operator
 C                 ========================================
 C
-                  CALL GETGP(LABEL2,DUMMY,WORK(KCMO),WORK(KUDV),
-     &                       WORK(KPVX),WORK(KXINDX),ANTSYM,
-     &                       WORK(KWRKG1),LWRKG1)
+                  CALL GETGPV(LABEL2,DUMMY,WORK(KCMO),WORK(KUDV),
+     &                        WORK(KPVX),WORK(KXINDX),ANTSYM,
+     &                        WORK(KWRKG1),LWRKG1)
 C
                   IF (IPRLNR.GT.3) THEN
                      WRITE (LUPRI,'(2A)') 'GP Vector, label: ',LABEL2
