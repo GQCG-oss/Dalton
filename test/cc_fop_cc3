@@ -56,7 +56,7 @@ cat > cc_fop_cc3.dal <<%EOF%
 .CC
 *SCF INP
 .THRESH
- 1.0D-10
+ 1.0D-9
 *CC INP
 .CC3
 .PRINT
