@@ -166,6 +166,7 @@ C
 *---------------------------------------------------------------------*
 *     Read SCF orbital energies from file:
 *---------------------------------------------------------------------*
+      LUSIFC = 0
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUSIFC
