@@ -55,7 +55,7 @@ cat > rsp_hfc.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .DFT 
 BP86
-*HF INPUT 
+*SCF INPUT 
 .THRESH 
 1.0D-9 
 **RESPON
