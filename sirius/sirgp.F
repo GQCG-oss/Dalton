@@ -1675,12 +1675,12 @@ C    0) label
 C    1) POTNUC,EMY,EACTIV,EMCSCF
 C    2) NISHT,NASHT,...
 C    3) CMO
-C    4) DV
-C    5) F
-C    6) PV
-C    7) FC
-C    8) FV
-C    9) CREF
+C    4) CREF
+C    5) DV
+C    6) F
+C    7) PV
+C    8) FC
+C    9) FV
 C   10) FCAC
 C   11) H2AC
 C   12) GORB
@@ -1747,12 +1747,16 @@ C
       END IF
       REWIND LUSIFC
       IF (KEY .EQ. 'CMO') THEN
-         IF (.NOT. FNDLAB(LBSIFC,LUSIFC)) GO TO 8888
+         IF (.NOT. FNDLAB(LBSIFC,LUSIFC)) THEN
+            REWIND LUSIFC
+            IF (.NOT. FNDLAB('CIRESPON',LUSIFC)) GO TO 8888
+         ENDIF
          READ (LUSIFC)
          READ (LUSIFC)
          CALL READT(LUSIFC,NCMOT,AMAT)
       ELSE IF (KEY .EQ. 'DV') THEN
          IF (.NOT. FNDLAB(LBSIFC,LUSIFC)) GO TO 8888
+         READ (LUSIFC)
          READ (LUSIFC)
          READ (LUSIFC)
          READ (LUSIFC)
@@ -1764,9 +1768,11 @@ C
          READ (LUSIFC)
          READ (LUSIFC)
          READ (LUSIFC)
+         READ (LUSIFC)
          CALL READT(LUSIFC,NNASHX*NNASHX,AMAT)
       ELSE IF (KEY .EQ. 'FOCK') THEN
          IF (.NOT. FNDLAB(LBSIFC,LUSIFC)) GO TO 8888
+         READ (LUSIFC)
          READ (LUSIFC)
          READ (LUSIFC)
          READ (LUSIFC)

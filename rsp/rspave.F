@@ -197,8 +197,8 @@ C
       READ (LUSIFC)
       READ (LUSIFC)
       READ (LUSIFC)
+      READ (LUSIFC)
       CALL READT(LUSIFC,N2ORBT,WRK(KFOCK))
-      REWIND(LUSIFC)
       IF (IPRAVE .GT. 80 ) THEN
          WRITE(LUPRI,'(//A)')  ' Fock matrix for use in RFANTI'
          WRITE(LUPRI,'(A)')    ' ============================='

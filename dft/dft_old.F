@@ -686,6 +686,7 @@ C
       REWIND (LUSIFC)
       CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
       READ (LUSIFC) 
+      READ (LUSIFC) 
       READ (LUSIFC)
       READ (LUSIFC) 
       READ (LUSIFC)

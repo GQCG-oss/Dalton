@@ -6199,15 +6199,9 @@ C
 C
 C        No first-order correction has been obtained in this version,
 C        therefore set it to zero. Delete this line when WLKMC has been
-C        implemented.
+C        reimplemented.
 C
          CALL DZERO(WORK(KCSTEP),NCONF)
-C        skip DV, F, PV, FC, FV
-         READ (LUSIFC)
-         READ (LUSIFC)
-         READ (LUSIFC)
-         READ (LUSIFC)
-         READ (LUSIFC)
          CALL READT (LUSIFC,NCONF,WORK(KCREF))
 C
          CALL DAXPY(NCONF,D1,WORK(KCREF),1,WORK(KCSTEP),1)

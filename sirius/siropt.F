@@ -2283,12 +2283,12 @@ C    0) label
 C    1) POTNUC,EMY,EACTIV,EMCSCF
 C    2) NISHT,NASHT,...
 C    3) CMO
-C    4) DV
-C    5) F
-C    6) PV
-C    7) FC
-C    8) FV
-C    9) CREF
+C    4) CREF
+C    5) DV
+C    6) F
+C    7) PV
+C    8) FC
+C    9) FV
 C   10) FCAC
 C   11) H2AC
 C   12) GORB
@@ -2508,6 +2508,7 @@ C
       M2ASHY = MAX(4,NNASHX*NNASHX)
 C
       CALL WRITT (LUSIFC,NCMOT4,CMO)
+      CALL WRITT (LUSIFC,NC4,CREF)
       CALL WRITT (LUSIFC,MMASHX,DV)
 C Write Fock matrix.
       CALL WRITT (LUSIFC,M2ORBT,WRK(KFOCK))
@@ -2520,7 +2521,6 @@ C Write Fock matrix.
          CALL WRITT (LUSIFC,MMORBT,FV)
       END IF
 C
-      CALL WRITT (LUSIFC,NC4,CREF)
       CALL WRITT (LUSIFC,MMASHX,FCAC)
       IF (IADH2 .GE. 0) THEN
 #if defined (VAR_NEWCODE)
