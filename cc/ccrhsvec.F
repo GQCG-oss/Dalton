@@ -24,24 +24,25 @@ c /* deck CCRHSVEC */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <ccorb_dec.h>
+#include <priunit_dec.h>
+#include <dummy_dec.h>
+#include <ccsdsym_dec.h>
+#include <ccorb_dec.h>
 #else
-#  include <implicit.h>
+#include <implicit.h>
 #endif
 #include <priunit.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 #include <ccorb.h>
 #include <cclists.h>
+#include <dummy.h>
 
 * local parameters:
       CHARACTER*(18) MSGDBG
       PARAMETER (MSGDBG = '[debug] CCRHSVEC> ')
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE. )
-      INTEGER KDUMMY
 
       CHARACTER TYPE*(*)
 
@@ -218,8 +219,6 @@ c /* deck CCRHSVEC */
           CALL QUIT('Insufficient work space in CCRHSVEC. (2)')
         END IF
 
-        KDUMMY = -999999
-
         CALL DZERO(WORK(KRHS1),LMAX1)
         IF (.NOT.CCS) CALL DZERO(WORK(KRHS2),LMAX2)
 
@@ -238,7 +237,7 @@ c /* deck CCRHSVEC */
 
         DO IVEC = 1, NVEC
          ISYM = ILSTSYM(TYPE,IVEC)
-         CALL CC_WRRSP(TYPE,IVEC,ISYM,IOPT,MODEL,WORK(KDUMMY),
+         CALL CC_WRRSP(TYPE,IVEC,ISYM,IOPT,MODEL,IDUMMY,
      &                 WORK(KRHS1),WORK(KRHS2),WORK(KEND1),LEND1)
         END DO
       

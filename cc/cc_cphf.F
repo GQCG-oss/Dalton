@@ -14,20 +14,20 @@ c /* deck cc_cphf */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <dummy_dec.h>
-#  include <exeinf_dec.h>
-#  include <maxorb_dec.h>
-#  include <infvar_dec.h>
-#  include <iratdef_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <ccorb_dec.h>
-#  include <cclr_dec.h>
-#  include <inftap_dec.h>
+#include <priunit_dec.h>
+#include <dummy_dec.h>
+#include <exeinf_dec.h>
+#include <maxorb_dec.h>
+#include <infvar_dec.h>
+#include <iratdef_dec.h>
+#include <ccsdsym_dec.h>
+#include <ccorb_dec.h>
+#include <cclr_dec.h>
+#include <inftap_dec.h>
       INTEGER IPRLIN, LSYMRF, LSYMPT, LSYMST,
      &        NCONRF, NCONST, NWOPPT, NVARPT
 #else
-#  include <implicit.h>
+#include <implicit.h>
 #endif
 #include <priunit.h>
 #include <dummy.h>
@@ -48,8 +48,6 @@ c /* deck cc_cphf */
       PARAMETER (MSGDBG = '[debug] CC_CPHF>  ')
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE. )
-      INTEGER KDUMMY
-      PARAMETER (KDUMMY = -99 999 999)
       CHARACTER*8 FNGDVE, FNSOVE, FNREVE
       PARAMETER(FNGDVE='CCPHFRHS',FNSOVE='CCPHFSOL')
       PARAMETER(FNREVE='CCPHFRES')
@@ -69,7 +67,7 @@ C     PARAMETER (MXFRVAL = 1)  ! switch off simultaneous equations
 #if defined (SYS_CRAY)
       REAL FREQS(MAXVEC,*), EIGV(MAXVEC,*)
       REAL WORK(LWORK)
-      REAL ZERO, RDUM, DUMMY
+      REAL ZERO, RDUM
       REAL XNORM, DDOT, DSQRT, GDNORM
 #else
       DOUBLE PRECISION FREQS(MAXVEC,*), EIGV(MAXVEC,*)
@@ -166,7 +164,7 @@ C     PARAMETER (MXFRVAL = 1)  ! switch off simultaneous equations
       END IF
 
 * read MO coefficients from file:
-      CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',KDUMMY,
+      CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUSIFC
       CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
@@ -200,15 +198,15 @@ C     PARAMETER (MXFRVAL = 1)  ! switch off simultaneous equations
       LUGDVE = 0
       LUSOVE = 0
       LUREVE = 0
-      CALL GPOPEN(LUGDVE,FNGDVE,'UNKNOWN',' ','UNFORMATTED',KDUMMY,
+      CALL GPOPEN(LUGDVE,FNGDVE,'UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
-      CALL GPOPEN(LUSOVE,FNSOVE,'UNKNOWN',' ','UNFORMATTED',KDUMMY,
+      CALL GPOPEN(LUSOVE,FNSOVE,'UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
-      CALL GPOPEN(LUREVE,FNREVE,'UNKNOWN',' ','UNFORMATTED',KDUMMY,
+      CALL GPOPEN(LUREVE,FNREVE,'UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
 * open property integral file:
       IF (LUPROP .LE. 0) CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
-     &                               'UNFORMATTED',KDUMMY,.FALSE.)
+     &                               'UNFORMATTED',IDUMMY,.FALSE.)
 
 * close twoelectron integral file 'AOTWOINT':
       IF (LUINTA.GT.0) CALL GPCLOSE(LUINTA,'KEEP')

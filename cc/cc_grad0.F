@@ -1159,7 +1159,11 @@ C
                   ELSE IF (CCS) THEN
                      KD2GIJ = KD2IJG + IF2IJG(ISYMPQ,ISYMG)
      &                      + NFROIJ(ISYMPQ)*(G - 1)
-                     KLAMDH = KDUMMY
+C
+C VB mar 2001:
+C     KDUMMY is undefined and should not be used as an address anyway
+C                     KLAMDH = KDUMMY
+                     KLAMDH = KD2GIJ + 1
                   ENDIF
 C
 C----------------------------------------------------------
@@ -1179,8 +1183,8 @@ C
                      LWRK4  = LWORK  - KEND4
 C
                      IF (LWRK4 .LT. 0) THEN
-                        WRITE(LURPI,*) 'Available:', LWORK
-                        WRITE(LURPI,*) 'Needed:', KEND4
+                        WRITE(LUPRI,*) 'Available:', LWORK
+                        WRITE(LUPRI,*) 'Needed:', KEND4
                         CALL QUIT( 
      &                    'Insufficient work space in CC_GRAD2E')
                      ENDIF

@@ -1225,9 +1225,9 @@ C
      *        (LAB32(J).EQ.LAB3O(I)))  THEN
 C Take care with excitation energies !!!!
            IF (((IOPRPCO(I).GT.0).AND.
-     *          ((ABS(FRQ12(J)-FRQ1O(I)).LT.TOLPRPF).AND.
-     *           (ABS(FRQ22(J)-FRQ2O(I)).LT.TOLPRPF).AND.
-     *           (ABS(FRQ32(J)-FRQ3O(I)).LT.TOLPRPF))).OR.
+     *          ((ABS(FRQ12(J)-FRQ1O(I)).LT.TOLPRPFD).AND.
+     *           (ABS(FRQ22(J)-FRQ2O(I)).LT.TOLPRPFD).AND.
+     *           (ABS(FRQ32(J)-FRQ3O(I)).LT.TOLPRPFD))).OR.
      *         ((IOPRPCO(I).LT.0).AND.
      *          ((ABS(FRQ12(J)-FRQ1O(I)).LT.TOLEX).AND.
      *           (ABS(FRQ22(J)-FRQ2O(I)).LT.TOLEX).AND.

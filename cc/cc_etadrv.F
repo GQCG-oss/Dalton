@@ -23,9 +23,10 @@ c /* deck CC_ETADRV */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-#  include <priunit_dec.h>
-#  include <ccsdsym_dec.h>
-#  include <ccorb_dec.h>
+#include <priunit_dec.h>
+#include <dummy_dec.h>
+#include <ccsdsym_dec.h>
+#include <ccorb_dec.h>
 #else
 #  include <implicit.h>
 #endif
@@ -33,14 +34,13 @@ c /* deck CC_ETADRV */
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 #include <ccorb.h>
+#include <dummy.h>
 
 * local parameters:
       CHARACTER*(19) MSGDBG
       PARAMETER (MSGDBG = '[debug] CC_ETADRV> ')
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE. )
-      INTEGER KDUMMY
-      PARAMETER (KDUMMY = +99 999 999) ! dummy address
 
       CHARACTER TYPE*(*)
 
@@ -219,7 +219,7 @@ C       MPERM = ??
 
       DO IVEC = 1, NVEC
         ISYM = ILSTSYM(TYPE,IVEC)
-        CALL CC_WRRSP(TYPE,IVEC,ISYM,IOPTRW,MODEL,WORK(KDUMMY),
+        CALL CC_WRRSP(TYPE,IVEC,ISYM,IOPTRW,MODEL,IDUMMY,
      &                WORK(KCHI1),WORK(KCHI2),WORK(KEND1),LEND1)
       END DO
 
@@ -229,7 +229,7 @@ C       MPERM = ??
       IF (TYPE(1:2).EQ.'X3') THEN
         IOPTH = 4
         CALL CC_HMAT('L0','R1','R1','R1',TYPE,N0KTRAN, 0,
-     &               WORK(K0KTRAN),WORK(KDUMMY),WORK(KDUMMY),
+     &               WORK(K0KTRAN),IDUMMY,IDUMMY,
      &               WORK(KEND0), LEND0, IOPTH )
       END IF
 
@@ -335,22 +335,22 @@ C       MPERM = ??
 *---------------------------------------------------------------------*
       IF (TYPE(1:2).EQ.'X2') THEN
         CALL CCQR_FADRV('L0 ','o1 ','R1 ',TYPE,N0FATRAN, 0,
-     &                   WORK(K0FATRAN),WORK(KDUMMY),WORK(KDUMMY),
+     &                   WORK(K0FATRAN),IDUMMY,IDUMMY,
      &                   WORK(KEND0), LEND0, 'FILE' )
       ELSE IF (TYPE(1:3).EQ.'CX2') THEN
         CALL CCQR_FADRV('L0 ','o1 ','RC ',TYPE,N0FATRAN, 0,
-     &                   WORK(K0FATRAN),WORK(KDUMMY),WORK(KDUMMY),
+     &                   WORK(K0FATRAN),IDUMMY,IDUMMY,
      &                   WORK(KEND0), LEND0, 'FILE' )
       ELSE IF (TYPE(1:2).EQ.'X3') THEN
         CALL CCQR_FADRV('L0 ','o1 ','R2 ',TYPE,N0FATRAN, 0,
-     &                   WORK(K0FATRAN),WORK(KDUMMY),WORK(KDUMMY),
+     &                   WORK(K0FATRAN),IDUMMY,IDUMMY,
      &                   WORK(KEND0), LEND0, 'FILE' )
         CALL CCQR_FADRV('L1 ','o1 ','R1 ',TYPE,N1FATRAN, 0,
-     &                   WORK(K1FATRAN),WORK(KDUMMY),WORK(KDUMMY),
+     &                   WORK(K1FATRAN),IDUMMY,IDUMMY,
      &                   WORK(KEND0), LEND0, 'FILE' )
       ELSE IF (TYPE(1:3).EQ.'EX2') THEN
         CALL CCQR_FADRV('LE ','o1 ','R1 ',TYPE,N0FATRAN, 0,
-     &                   WORK(K0FATRAN),WORK(KDUMMY),WORK(KDUMMY),
+     &                   WORK(K0FATRAN),IDUMMY,IDUMMY,
      &                   WORK(KEND0), LEND0, 'FILE' )
       END IF
 
@@ -373,23 +373,23 @@ C       MPERM = ??
 *---------------------------------------------------------------------*
       IF (TYPE(1:2).EQ.'X2') THEN
         CALL CCQR_EADRV('L1 ','o1 ',TYPE,NEATRAN, 0,
-     &                   WORK(KEATRAN),WORK(KDUMMY),WORK(KDUMMY),
+     &                   WORK(KEATRAN),IDUMMY,IDUMMY,
      &                   WORK(KEND0), LEND0, 'FILE' )
       ELSE IF (TYPE(1:3).EQ.'CX2') THEN
         CALL CCQR_EADRV('LC ','o1 ',TYPE,NEATRAN, 0,
-     &                   WORK(KEATRAN),WORK(KDUMMY),WORK(KDUMMY),
+     &                   WORK(KEATRAN),IDUMMY,IDUMMY,
      &                   WORK(KEND0), LEND0, 'FILE' )
       ELSE IF (TYPE(1:2).EQ.'X3') THEN
         CALL CCQR_EADRV('L2 ','o1 ',TYPE,NEATRAN, 0,
-     &                   WORK(KEATRAN),WORK(KDUMMY),WORK(KDUMMY),
+     &                   WORK(KEATRAN),IDUMMY,IDUMMY,
      &                   WORK(KEND0), LEND0, 'FILE' )
       ELSE IF (TYPE(1:3).EQ.'EX2') THEN
         CALL CCQR_EADRV('EL1','o1 ',TYPE,NEATRAN, 0,
-     &                   WORK(KEATRAN),WORK(KDUMMY),WORK(KDUMMY),
+     &                   WORK(KEATRAN),IDUMMY,IDUMMY,
      &                   WORK(KEND0), LEND0, 'FILE' )
       ELSE IF (TYPE(1:3).EQ.'EX1') THEN
         CALL CCQR_EADRV('LE ','o1 ',TYPE,NEATRAN, 0,
-     &                   WORK(KEATRAN),WORK(KDUMMY),WORK(KDUMMY),
+     &                   WORK(KEATRAN),IDUMMY,IDUMMY,
      &                   WORK(KEND0), LEND0, 'FILE' )
       END IF
 

@@ -4248,7 +4248,7 @@ C
       enddo
       enddo
       write(LUPRI,*) 
-      write(LUPR,*) 
+      write(LUPRI,*) 
      *'multiplicitation table '
       write(LUPRI,*) 
       do ired=1,4

@@ -132,7 +132,7 @@ c /* deck cc_iabj */
       INTEGER KSCR1, KEND1, LWRK1, KLAMJ, KLAMB
       INTEGER KINT, KLAMD, KIAJB, KOFF1, KOFF2, KOFF3, KOFF4, KSCR6
       INTEGER NNBSAB, NBASG, NBASA, NBASB, NVIRA, NAI, KOFF6
-      INTEGER NRHFI, KSCR3, KOFF5, KDUM
+      INTEGER NRHFI, KSCR3, KOFF5
 
 *---------------------------------------------------------------------*
 *     set some symmetries
@@ -180,7 +180,11 @@ c /* deck cc_iabj */
         KSCR3 = KEND1
         KEND1 = KSCR3 + N2BST(ISY2ALBE)
       ELSE
-        KSCR3 = KDUM
+C
+C VB mar 2001:
+C     KDUM should not be used as an address (it was also undefined)
+C        KSCR3 = KDUM
+        KSCR3 = KEND1
       END IF
 
       LWRK1   = LWORK - KEND1
