@@ -56,14 +56,14 @@ revision 1.5 2000/04/14 08:32:47 hjj
 revision 1.4 2000/04/14 08:27:22 hjj
 /hjaaj dec 1999 - apr 2000:
 1) removed obsolete RNALL references
-2) do not activate QCHF (flag(21)) for solvent or writing interface
+2) do not activate QCSCF (flag(21)) for solvent or writing interface
 if MXDIIS.gt.0; solvent and CALL WRSIFC are now also implemented
 in the DIIS module.
 3) removed absolete input tests on NACTEL and ISPIN
-4) if not QCHF then zero iteration limits, for consistent output in PRTINP
+4) if not QCSCF then zero iteration limits, for consistent output in PRTINP
 5) BUG FIX: hucdrv was not called for start orbitals when
          not automatic occupation (when HF OCC specified in input)
-6) fix: corrected output error in max # of QCHF iteration
+6) fix: corrected output error in max # of QCSCF iteration
 7) polishing ...
 ----------------------------
 revision 1.3 2000/04/14 08:23:47 hjj
@@ -243,6 +243,7 @@ C   INFTRA : THRP,THRQ,USEDRC,IPRTRA
 C   SCBRHF : IOPRHF, NFRRHF(8), MXHFMA, MXHFMI, RHFCAN
 C   INFMP2 : NFRMP2(*)
 C   HUCKEL : ADDSTO
+C   CBIHRS : RUNSUP
 C
 #include <maxash.h>
 #include <maxorb.h>
@@ -260,6 +261,7 @@ C
 #include <gnrinf.h>
 #include <siripc.h>
 #include <huckel.h>
+#include <cbihrs.h>
 #include <dftcom.h>
 #include <dfterg.h>
 C
@@ -538,7 +540,11 @@ C********** Default value sections SCFINP and AUXINP *****
 C           (default: use AOSUPMAT if available,
 C                     LUSUPM=-1 means do not use AOSUPMAT)
 C
-      LUSUPM = -9999
+      IF (.NOT. RUNSUP) THEN
+         LUSUPM = -1
+      ELSE
+         LUSUPM = -9999
+      END IF
 C
 C********** Default values section DFTINP *****
 C
@@ -562,7 +568,9 @@ C              accidental degeneracies, which will cause the super
 C              symmetry analysis to fail.
 C
       THRSSY = 5.0D-8
-      SUPSYM = .NOT. (RNABAC .OR. RNRESP) 
+      SUPSYM = .FALSE.
+C     ... Oct 2003 hjaaj: new default
+c     SUPSYM = .NOT. (RNABAC .OR. RNRESP) 
 C     supsym false forced for DOCCSD set after reading of sirius input
 C
 C IRDMO : select how to get starting orbitals
@@ -684,28 +692,33 @@ C            now also defined in DIIS module.
           IF (FLAG(16)) THEN
             NINFO = NINFO + 1
             WRITE (LUPRI,'(/5X,A/5X,A)')
-     &      'SIRRDI INFO, ".NOQCHF" ignored because solvent is only',
-     &      '             implemented in DIIS and QCHF modules.'
+     &      'SIRRDI INFO, ".NOQCSCF" ignored because solvent is only',
+     &      '             implemented in DIIS and QCSCF modules.'
             FLAG(21) = .TRUE.
           ELSE IF (FLAG(25) .AND. .NOT.(DOMC .OR. DOCI)) THEN
             NINFO = NINFO + 1
             WRITE (LUPRI,'(/5X,A/5X,A)')
-     &      'SIRRDI INFO, ".NOQCHF" ignored because writing interface',
-     &      '             is only implemented in DIIS and QCHF modules.'
+     &     'SIRRDI INFO, ".NOQCSCF" ignored because writing interface',
+     &     '             is only implemented in DIIS and QCSCF modules.'
             FLAG(21) = .TRUE.
           END IF
         END IF
         IF (.NOT.FLAG(21)) THEN
-C       ... if not QCHF zero iteration limit (for consistent output in PRTINP)
+C       ... if not QCSCF zero iteration limit (for consistent output in PRTINP)
           MXHFMA = 0
           MXHFMI = 0
         END IF
       END IF
 C
+      IF ((DOCCSD .OR. DOMP2) .AND. SUPSYM) THEN
+         SUPSYM = .FALSE.
+         NINFO = NINFO + 1
+         WRITE (LUPRI,'(/A)') ' INFO: SUPSYM disabled'//
+     &      ' because SUPSYM not implemented in MP2 and CC'
+      END IF
       IF (DOCCSD) THEN
          FLAG(11) = .TRUE.
          IF (DORHF) FLAG(25) = .TRUE.
-         SUPSYM = .FALSE.
       END IF
       IF (RNRESP .or. RNABAC) THEN
          FLAG(25) = .TRUE.
@@ -1324,7 +1337,7 @@ C     CALL AVESET(CMO,WRK,KFREE,LFREE)
 C
 C
 C *** Set up various index arrays etc.
-C     If AVERAGE check if OK in AVECHK
+C     If SUPSYM check if OK in AVECHK
 C
       IF (IORTO .NE. 1) THEN
 C     ... only SETORB needed for reorthonormalization and
@@ -1336,6 +1349,11 @@ C        CALL SIRSET(WRK,LWRK,OLDWOP)
          CALL AVECHK(CMO(K1),LCMO-K1,INPERR)
       END IF
 C
+      IF (LUSUPM.NE.-1 .AND. NBAST .GT. 255) THEN
+         WRITE(LUPRI,'(/A)')
+     &   'INFO: no P-SUPMAT because more than 255 basis functions'
+         LUSUPM = -1
+      END IF
 C
 C ***  PRINT INPUT DATA *****
 C
@@ -1577,7 +1595,7 @@ C  *RESPONSE CALCULATION
 C  *UPDATE
 C  *SOLVENT CALCULATION
 C  *PRINT LEVELS
-C  *AUXILLIARY INPUT
+C  *AUXILIARY INPUT
 C  *END OF (marks end of keyword input)
 C
 C******************************************
@@ -1695,9 +1713,9 @@ C
 C
       DATA TABMOD/'XXXXXXX','*CONFIG','*OPTIMI','*CI INP','*ORBITA',
      *            '*CI VEC','*STEP C','*POPULA','*TRANSF','*SCF IN',
-     *            '*UPDATE','*SOLVEN','*PRINT ','*AUXILL','*HF INP',
+     *            '*UPDATE','*SOLVEN','*PRINT ','*AUXILI','*HF INP',
      *            '*MP2 IN','*HAMILT','*CC INP','*DFT IN','*NEVPT2',
-     *            '*DFT IN','*END OF'/
+     *            '*AUXILL','*END OF'/
 C
 C
 C  ***************************************************
@@ -1716,7 +1734,7 @@ C
             IF (TABMOD(I) .EQ. WORD) THEN
                GO TO (1100,1200,1300,1400,1500,1600,1700,1800,1900,
      *                2500,2100,2200,2300,2400,2500,2600,2700,2800,
-     *                2500,2900,3000,8000), I
+     *                2900,3000,2400,8000), I
             END IF
  920     CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 8000
@@ -1766,6 +1784,7 @@ C
        GO TO 910
  2300  CALL PRIINP(WORD,INPERR,ALLOPT)
        GO TO 910
+C *AUXILIARY (and misspelled *AUXILLIARY for backwards compatibility)
  2400  CALL AUXINP(WORD,INPERR,ALLOPT)
        GO TO 910
  2500  CALL SCFINP(WORD,INPERR,ALLOPT)
@@ -1781,9 +1800,9 @@ C
      &       'CC_INP error: NSYM from SIRIFC .ne. NSYM in this run')
        END IF
        GOTO 910
- 2900  CALL NEVPT2INP(WORD,INPERR,ALLOPT)
+ 2900  CALL DFTINP(WORD,INPERR,ALLOPT)
        GO TO 910
- 3000  CALL DFTINP(WORD,INPERR,ALLOPT)
+ 3000  CALL NEVPT2INP(WORD,INPERR,ALLOPT)
        GO TO 910
 C  Here if "*END OF"
  8000  CONTINUE
@@ -1946,7 +1965,7 @@ C *** Option 6 >HARTRE<  Restricted Hartree-Fock SCF
 C           ... DORHF may also be set with .CC
             DORHF    = .TRUE.
             FLAG(21) = .TRUE.
-C           ... flag for QCHF -- quadratically convergent Hartree-Fock
+C           ... flag for QCSCF -- quadratically convergent HF or DFT
             NUMRUN = NUMRUN + 1
          END IF
       GO TO 100
@@ -2008,7 +2027,7 @@ C *** Option  10 >MP2  <  Moller-Pleset PT2 calculation
       GO TO 100
 C
 C *** Option 11 >NSYM  < Number of symmetries.
-C    Specified by integral program, used for consistency check.
+C    Specified by integral program, entry used for consistency check.
 C    (for example in template inputs which are made for
 C     a certain point group symmetry)
   111 CONTINUE
@@ -2016,8 +2035,8 @@ C     a certain point group symmetry)
          IF (MSYM .NE. NSYM) THEN
             INPERR = INPERR + 1
             WRITE (LUPRI,'(/A,2I5/A)')
-     *   ' >>> GENINP-ERROR, NSYM from LUONEL .ne. NSYM from input:',
-     *      NSYM,MSYM,
+     *   ' >>> GENINP-ERROR, NSYM specified .ne. number of symmetries:',
+     *      MSYM,NSYM,
      &   '     NSYM from input used in reading remaining input.'
             NSYM = MSYM
          END IF
@@ -2057,6 +2076,8 @@ C           ... DORHF may also be set with .CC
          DORHF    = .TRUE.
          FLAG(21) = .TRUE.
 C        ... flag for QCDFT -- quadratically convergent Hartree-Fock
+         LUSUPM   = -1
+C        ... no P-supermatrix for DFT
          NUMRUN = NUMRUN + 1
  1161    READ (LUCMD, '(A)') TITLIN
          PROMPT = TITLIN(1:1)
@@ -2385,7 +2406,7 @@ C
       DATA TABLE /'.DOUBLY','.THRESH','.FOCK I','.H1VIRT','.NOQCSC',
      *            '.PRINT ','.OPEN S','.MAX MA','.MAX MI','.NONCAN',
      *            '.FROZEN','.DIRFOC','.NODIIS','.MAX DI','.C2DIIS',
-     *            '.MAX ER','.DDSCF ','.COREHO','.CORERE','.HF OCC',
+     *            '.MAX ER','XXXXXXX','.COREHO','.CORERE','.HF OCC',
      *            '.ELECTR','.AUTOCC','.FC MVO','.HFXFAC','.LDA   ',
      *            '.BLYP  ','.B3LYP ','.FROMVX','.WAH   ','.DFTWEI',
      *            '.DFTAC ','.DFTHES','.DFTTHR','.DFTELS','.RADINT',
@@ -2474,7 +2495,7 @@ C *** Option 4 >H1VIRT<  Virtual orbitals that diagonalize 1-el. H
       FCVORB = .TRUE.
       GO TO 100
 C
-C *** Option 5 >NOQCSC<  No quadratically convergent SCF
+C *** Option 5 >NOQCSCF<  No quadratically convergent SCF
   105 FLAG(21) = .FALSE.
       GO TO 100
 C
@@ -2514,8 +2535,6 @@ C *** Option 11 >FROZEN<  Frozen orbitals per symmetry
       GO TO 100
 C
 C *** Option 12 >DIRFOC< Direct Fock matrix construction
-  117 WRITE (LUPRI,*) 'WARNING: .DDSCF has been replaced by .DIRFOCK'
-      WRITE (LUPRI,*) 'WARNING: .DDSCF may be removed in future relase'
   112 DIRFCK = .TRUE.
       LUSUPM = -1
       GO TO 100
@@ -2536,8 +2555,9 @@ C *** Option 16 >MAX ER< Max. number of DIIS error vectors
   116 READ (LUCMD,*) MAXEVC
       GO TO 100
 C
-C 117: see 112
-C
+C *** Option 17 (not in use)
+  117 CONTINUE
+      GO TO 100
 C
 C *** Option 18 >COREHO< core hole calculation
   118 READ (LUCMD,*) JCHSYM,JCHORB
@@ -4391,7 +4411,7 @@ C *** Option 1 >ONESUP<  use same units for SUPM. and ONEL. integrals
 C              (obsolete, removed March 2000 /Kenneth Ruud)
   101 GO TO 100
 C
-C *** Option 2 >NOSUPM<  Do not use SUPMAT
+C *** Option 2 >NOSUPMAT<  Do not use SUPMAT
   102 LUSUPM = -1
       GO TO 100
 C
@@ -4678,7 +4698,7 @@ C     formulation of NEVPT.
             IF (IOPRHF .EQ. 0) THEN
                WRITE(IWUNIT,1050)
      *            'Restricted, closed shell Hartree-Fock calculation.'
-               WRITE(LUCME,'(A/)')
+               IF (LUCME.GT.0) WRITE(LUCME,'(A/)')
      *            'Restricted, closed shell Hartree-Fock calculation.'
             ELSE
                WRITE(IWUNIT,1050)
@@ -4691,7 +4711,7 @@ C     formulation of NEVPT.
             IF (IOPRHF .EQ. 0) THEN
                WRITE(IWUNIT,1050)
      *            'Restricted, closed shell Kohn-Sham calculation.'
-               WRITE(LUCME,'(A/)')
+               IF (LUCME.GT.0) WRITE(LUCME,'(A/)')
      *            'Restricted, closed shell Kohn-Sham calculation.'
             ELSE
                WRITE(IWUNIT,1050)

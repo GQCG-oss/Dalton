@@ -50,11 +50,11 @@ C  Get 2-electron active integrals distribution / K L ) in RIJKL
 C  for Jeppe's determinant CI.
 C  910416-hjaaj: NOTE that now RIJKL(I,J) = (I J / K L).
 C
-C  FIJKL is an auxilliary array, which may contain all or some of
+C  FIJKL is an auxiliary array, which may contain all or some of
 C  the active integrals, or which may be used as buffer in reading
 C  integrals from disk.
 C
-C  WIJKL is an auxilliary array, for reordering from Sirius order
+C  WIJKL is an auxiliary array, for reordering from Sirius order
 C  to Lunar order.
 C
 C     DISTYP = 1 : SYMMETRIC TRIANGULAR PACKED FIJKL(NNASHX,NNASHX)

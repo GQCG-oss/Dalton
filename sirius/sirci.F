@@ -142,8 +142,8 @@ C
       TIMTOT = SECOND()
       WRITE (LUW4,'(//A///)')
      *   ' <<<<< Output from SIRIUS CI module (CICTL) >>>>>'
-      IF (LUPRI .NE. LUW4) WRITE (LUPRI,'(A//A///)')
-     *   '1',' <<<<< Output from SIRIUS CI module (CICTL) >>>>>'
+      IF (LUPRI .NE. LUW4) WRITE (LUPRI,'(//A///)')
+     *   ' <<<<< Output from SIRIUS CI module (CICTL) >>>>>'
       IF (NASHT .LE. 1) THEN
          WRITE(LUPRI,'(//A,I8/)')
      *      ' *** ERROR *** CICTL CALLED, BUT NASHT =',NASHT
@@ -967,7 +967,6 @@ C Output:
 C  SCVECS; will start at WRK(1) on output; followed by
 C
 #include <implicit.h>
-#include <infvar.h>
       DIMENSION BCVECS(NCONF,*), FCAC(*), H2AC(*)
       DIMENSION INDXCI(*),WRK(LFREE)
 C
@@ -980,6 +979,7 @@ C   INFVAR : NCONF
 C CBGETDIS : DISTYP,IADINT,IADH2
 C
 #include <maxorb.h>
+#include <infvar.h>
 #include <cbgetdis.h>
 C
       CALL QENTER('CILIN ')
@@ -1107,7 +1107,7 @@ C
          END IF
          FIRST = .FALSE.
       END IF
- 1010 FORMAT(' Convergence threshold for auxilliary roots:',F15.8/)
+ 1010 FORMAT(' Convergence threshold for auxiliary roots:',F15.8/)
       NCIT3 = NCIRED
 C
       WCRESD = FLAG(76)
@@ -1560,7 +1560,6 @@ C Scratch:
 C  CPREV(*),    scratch array for old vectors on LUCVEC
 C
 #include <implicit.h>
-#include <infvar.h>
       DIMENSION KCROOT(*), CVEC(NCONF,*), CPREV(*)
 C
       PARAMETER ( THRRND=1.D-2, THRTT=1.D-4, D1=1.0D0 )
@@ -1570,6 +1569,7 @@ C   INFVAR : NCONF
 C
 #include <maxorb.h>
 #include <priunit.h>
+#include <infvar.h>
 #include <infpri.h>
 C
 C
@@ -1834,7 +1834,6 @@ C         dimension: NCONF and NREDCI*(NREDCI+1)/2, rsp.
 C  WRK, real scratch array for BIG and JBIG in JACO, dim: 2*NREDCI
 C
 #include <implicit.h>
-#include <infvar.h>
       DIMENSION CVECS(*), SVECS(NCONF,*)
       DIMENSION REDCI(*),EVEC(NREDCI,*),EVAL(*), WRK(*)
 C
@@ -1844,6 +1843,7 @@ C   INFIND : IROW(*)
 C
 #include <maxash.h>
 #include <maxorb.h>
+#include <infvar.h>
 #include <infinp.h>
 #include <infind.h>
 #include <inftap.h>

@@ -769,6 +769,7 @@ C
 #include <iratdef.h>
 C
 #include <mxpdim.h>
+#include <maxash.h>
 #include <detbas.h>
 #include <ciinfo.h>
 #include <strnum.h>
@@ -783,6 +784,20 @@ C
      *   ' =============================================='
          CALL GETTIM(TTSTRT,WTSTRT)
       END IF
+C
+C     Check max number of active orbitals
+C
+      IF (NORB .GT. MAXASH) THEN
+         WRITE (LUPRI,'(/A,2(/A,I5))')
+     &      ' DETINF ERROR, this version of CI module cannot'//
+     &      ' handle so many orbitals.',
+     &      ' The total number of active orbitals:   ',NORB,
+     &      ' is greater than fixed parameter MAXASH=',MAXASH
+         CALL QUIT('DETINF: Too many active orbitals for this version')
+      END IF
+C
+C     Consistency check
+C
       IF (MULTS .NE. MULTSX) THEN
          WRITE (LUPRI,*) ' ERROR in DETINF'
          WRITE (LUPRI,*) '    MULTS from parameter list ',MULTSX

@@ -3310,6 +3310,7 @@ c before IASM .GT. IBSM
 #include <tstjep.h>
 c
 #include <mxpdim.h>
+#include <maxash.h>
 #include <mxsmob.h>
 c
       LOGICAL PERMSM  , IH8SM
@@ -3345,9 +3346,9 @@ c
       DIMENSION IFTP(MXPTP),NFTP(MXPTP),IC2OOS(MXPTP,MXPTP)
       DIMENSION WIJKL(*)
 c.added
-CHJ: The 100 below is max for NORB.
+CHJ: The MAXASH below is max for NORB.
       DIMENSION IFTP2(MXPTP),IOST(2*MXPST)
-      DIMENSION LORB(100),NKLSTA(100)
+      DIMENSION LORB(MAXASH),NKLSTA(MAXASH)
       DIMENSION NFTPA(MXPTP,MXSMOB),IFTPA(MXPTP,MXSMOB),
      &          INDX7(MXPTP,MXSMOB)
 c
@@ -4562,8 +4563,9 @@ c
       DIMENSION ISELST(*),ISELTP(*)
 c
 #include <mxpdim.h>
+#include <maxash.h>
       COMMON/ADDON/NL1FTP(MXOCTP,2),NL2FTP(MXOCTP,2),NL3FTP(MXOCTP,3),
-     &             IJTYP(10000),IJTST(9,MXPTP,2)
+     &             IJTYP(MAXASH**2),IJTST(9,MXPTP,2)
 c
       CALL ISETVC(NLFTP,0,NTYPE)
       NTERM = 0
@@ -4725,8 +4727,9 @@ c.Output
       DIMENSION ISCAT(*),NSCPTP(*)
 c
 #include <mxpdim.h>
+#include <maxash.h>
       COMMON/ADDON/NL1FTP(MXOCTP,2),NL2FTP(MXOCTP,2),NL3FTP(MXOCTP,3),
-     &             IJTYP(10000),IJTST(9,MXPTP,2)
+     &             IJTYP(MAXASH**2),IJTST(9,MXPTP,2)
 
       CALL ISETVC(NSCPTP,0,NTYPE)
       LSTRIN = 0
@@ -5358,8 +5361,9 @@ C
 C
 #include <priunit.h>
 #include <mxpdim.h>
+#include <maxash.h>
       COMMON/ADDON/NL1FTP(MXOCTP,2),NL2FTP(MXOCTP,2),NL3FTP(MXOCTP,3),
-     &             IJTYP(10000),IJTST(9,MXPTP,2)
+     &             IJTYP(MAXASH**2),IJTST(9,MXPTP,2)
       INTEGER R,DISSYM(*),SXSTSM(NSMSX,*)
       DIMENSION  NSSO(NTYPE,*),ISSO(NTYPE,*)
       DIMENSION ITO(*),IIJ(*),ITYPST(*),
@@ -5692,6 +5696,7 @@ c. Detailed string information for lower level routines
 c. Output
       DIMENSION RHO1(*),RHO2(*)
 #include <mxpdim.h>
+#include <maxash.h>
 c. Scratch blocks
       DIMENSION ILOFF(MXPTP,MXPTP),IROFF(MXPTP,MXPTP)
       DIMENSION ILOFF2(MXPTP,MXPTP),IROFF2(MXPTP,MXPTP)
@@ -5708,9 +5713,8 @@ c. Largest number of strings of a given symmetry
       INTEGER KOC(2*MXPST )
       INTEGER NFTPK(MXPTP)
 c
-      PARAMETER(MXPORB = 100)
-      DIMENSION RHO1A(MXPORB ** 2),RHO1B(MXPORB ** 2)
-      DIMENSION RHO2A(MXPORB ** 2),RHO2B(MXPORB ** 2)
+      DIMENSION RHO1A(MAXASH ** 2),RHO1B(MAXASH ** 2)
+      DIMENSION RHO2A(MAXASH ** 2),RHO2B(MAXASH ** 2)
       DIMENSION C2(*)
 c
 c

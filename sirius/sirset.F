@@ -349,19 +349,6 @@ C     ***** CALL SIROPI to open MO integral files
 C
       CALL SIROPI
 C
-C     ***** Check LUSUPM for AOSUPINT
-C
-      IF (LUSUPM .NE. -1) THEN
-         CALL GPINQ(FNSUPM,'EXIST',FEXIST)
-         IF (.NOT.FEXIST) THEN
-            NINFO  = NINFO + 1
-            WRITE (LUERR,'(/3A/A/)')
-     *         ' SIROPI INFO: ',FNSUPM,' file does not exist',
-     *         ' -- will calculate Fock matrices from AO integrals'
-            LUSUPM = -1
-         END IF
-      END IF
-C
 C     ***** Open other files
 C
       IF (FLAG(2) .OR. FLAG(21)) CALL GPOPEN(LUINF,'SIRIUS.ITINFO',
@@ -966,6 +953,9 @@ C  /* Deck raswop */
       SUBROUTINE RASWOP(ISYM,JSYM,NWOPX,JWOP)
 C
 C     27-Jul-1988 Hans Joergen Aa. Jensen
+C     Revised 25. Oct. 2003, in special circumstances
+C     (not CAS in RAS2 but CAS in RAS1 and/or RAS3)
+C     some non-redundant rotations were not incuded.
 C
 C     Set up RAS active to active orbital rotations
 C     from symmetry ISYM to JSYM.
@@ -992,9 +982,10 @@ C
 #include <inforb.h>
 #include <infind.h>
 C
-      LOGICAL CAS1, CAS3
+      LOGICAL CAS1, CAS2, CAS3
 C
       IF (MCTYPE .NE. 2) RETURN
+C
       MINCAS = MAX( 0 , NACTEL - 2*(NAS2T+NAS3T) )
       MAXCAS = MIN( 2*NAS1T , NACTEL )
       IF ( NELMN1 .LE. MINCAS .AND. NELMX1 .GE. MAXCAS) THEN
@@ -1002,6 +993,17 @@ C
       ELSE
          CAS1 = .FALSE.
       END IF
+C
+      MINCAS = MAX( 0 , NACTEL - 2*(NAS1T+NAS3T) )
+      MAXCAS = MIN( 2*NAS2T , NACTEL )
+      NELMN2 = MAX( 0, NACTEL - NELMX1 - NELMX3)
+      NELMX2 =         NACTEL - NELMN1 - NELMN3
+      IF ( NELMN2 .LE. MINCAS .AND. NELMX2 .GE. MAXCAS) THEN
+         CAS2 = .TRUE.
+      ELSE
+         CAS2 = .FALSE.
+      END IF
+C
       MINCAS = MAX( 0 , NACTEL - 2*(NAS1T+NAS2T) )
       MAXCAS = MIN( 2*NAS3T , NACTEL )
       IF ( NELMN3 .LE. MINCAS .AND. NELMX3 .GE. MAXCAS ) THEN
@@ -1023,10 +1025,11 @@ C     RAS1 to RAS2 and RAS3 rotations
 C     (rotations which are redundant because RAS1 or RAS3 actually is
 C      a CAS space are removed)
 C
-      IF ( .NOT. CAS1 ) THEN
+      IF ( .NOT. CAS1 .OR. .NOT. CAS2) THEN
+C     ... RAS1 to RAS2 rotations, when at least one is not a CAS
          DO 200 IT = ISTT1,IEND1
             IF (NOROT(IT).NE.0) GO TO 200
-            DO 100 JT = JSTT2,JEND3
+            DO 100 JT = JSTT2,JEND2
                IF (NOROT(JT).NE.0) GO TO 100
                IF (ISYM.NE.JSYM .OR. ISSMO(IT) .EQ. ISSMO(JT)) THEN
                   NWOPX = NWOPX + 1
@@ -1035,8 +1038,10 @@ C
                END IF
   100       CONTINUE
   200    CONTINUE
-      ELSE IF ( .NOT. CAS3 ) THEN
-C        ... RAS1 to RAS3 rotations, when CAS in RAS1 but not in RAS3
+      END IF
+C
+      IF ( .NOT. CAS1 .OR. .NOT. CAS3 ) THEN
+C     ... RAS1 to RAS3 rotations, when at least one is not a CAS
          DO 400 IT = ISTT1,IEND1
             IF (NOROT(IT).NE.0) GO TO 400
             DO 300 JT = JSTT3,JEND3
@@ -1050,9 +1055,8 @@ C        ... RAS1 to RAS3 rotations, when CAS in RAS1 but not in RAS3
   400    CONTINUE
       END IF
 C
-C     RAS2 to RAS3 rotations
-C
-      IF ( .NOT. CAS3 ) THEN
+      IF ( .NOT. CAS2 .OR. .NOT. CAS3 ) THEN
+C     ... RAS2 to RAS3 rotations, when at least one is not a CAS
          DO 700 IT = ISTT2,IEND2
             IF (NOROT(IT).NE.0) GO TO 700
             DO 600 JT = JSTT3,JEND3

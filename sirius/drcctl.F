@@ -52,12 +52,12 @@ C
 ===========================================================================
 #endif
 C  /* Deck drcctl */
-      SUBROUTINE DRCCTL(LVLDRC,WRK,LWRK)
+      SUBROUTINE DRCCTL(LVLDRC,CMO,WRK,LWRK)
 C
-C Last revision Dec 89 hjaaj
+C Last revision Dec 89, Oct 2003 (CMO check) hjaaj
 C
 C PURPOSE:
-C  SET UP LUINTD CONTAINING DIRAC INTEGTRAL DISTRIBUTIONS
+C  SET UP DRCINT CONTAINING DIRAC INTEGTRAL DISTRIBUTIONS
 C  <**/CD> C.ge.D
 C
 C If (LVLDRC .eq. 0)      then C,D both active
@@ -67,10 +67,12 @@ C
 #include <implicit.h>
 #include <priunit.h>
 C
-      DIMENSION WRK(LWRK)
+      DIMENSION CMO(*), WRK(LWRK)
+      LOGICAL FNDLAB
 C
 #include <iratdef.h>
 #include <lbmxsq.h>
+#include <thrzer.h>
 C
 C Used from common blocks:
 C   INFORB : N2ORBT, N2ORBX, ...
@@ -84,6 +86,29 @@ C
 #include <infpri.h>
 C
       CALL QENTER('DRCCTL')
+C
+C     Open DRCINT and check if integrals already there ...
+C
+      LUINTD = 0
+      CALL GPOPEN(LUINTD,'DRCINT','UNKNOWN',' ','UNFORMATTED',IDUMMY,
+     &            .FALSE.)
+      REWIND (LUINTD)
+      IF (FNDLAB('DRCINFO',LUINTD)) THEN
+         READ  (LUINTD) LBINTD, LVLOLD
+         IF (LVLOLD .GE. LVLDRC) THEN
+C           read CMO matrix from LUINTD
+C           and subtract from input CMO matrix
+            READ  (LUINTD) (WRK(I),I=1,NCMOT)
+            CALL DAXPY(NCMOT,-1.0D0,CMO,1,WRK,1)
+            I = IDAMAX(NCMOT,WRK,1)
+            IF (ABS(WRK(I)) .LE. THRZER) THEN
+               IF (IPRTRA.GE.0) WRITE (LUPRI,'(/A/A)')
+     *' DRCCTL abandoned: the required MO integrals in Dirac format',
+     *' are already available on the DRCINT file.'
+               GO TO 9999
+            END IF
+         END IF
+      END IF
 C
 C Set LBINTD to optimal buffer length .le. LBMXSQ for LUINTD
 C ( N2ORBT is the maximum number of non-zero elements in
@@ -134,9 +159,6 @@ C
 C
 C REPEAT UNTILL
 C
-      LUINTD = 0
-      CALL GPOPEN(LUINTD,'DRCINT','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
  100  CONTINUE
          NLOAD  = NLOAD + 1
          IHGHDI = MIN(NTOTDI,NCDDIS+ILOWDI-1)
@@ -148,11 +170,10 @@ C
      *               LVLDRC,WRK(KWRK1),LWRK1)
 C
 C WRITE these DIRAC DISTRIBUTIONS OUT ON LUINTD
-C
          CALL DRCWRT(WRK(KH2ACD),ICMIN,IDMIN,ILOWDI,IHGHDI,NTOTDI,
-     *               LVLDRC,LABCD,WRK(KOUTB),WRK(KOUTB),LUINTD)
+     *               LVLDRC,LABCD,WRK(KOUTB),WRK(KOUTB),LUINTD,CMO)
 C        CALL DRCWRT(H2ACD,ICMIN,IDMIN,ILOWDI,IHGHDI,NTOTDI,
-C    *               LVLDRC,LABCD,OUTB,IOUTB,LUINTD)
+C    *               LVLDRC,LABCD,OUTB,IOUTB,LUINTD,CMO)
 C ICMIN AND IDMIN ARE UPDATED IN DRCWRT
          ILOWDI = IHGHDI + 1
       IF (ILOWDI.LE.NTOTDI) GO TO 100
@@ -165,7 +186,7 @@ C
      *        ' "DRCINT" is',I10,
      *       /'         Number of passes over Mulliken file',I5)
 C
-      CALL QEXIT('DRCCTL')
+ 9999 CALL QEXIT('DRCCTL')
       RETURN
 C     ... end of DRCCTL
       END
@@ -343,7 +364,7 @@ C
       END
 C  /* Deck drcwrt */
       SUBROUTINE DRCWRT(H2ACD,ICMIN,IDMIN,ILOWDI,IHGHDI,NTOTDI,
-     *                  LVLDRC,LABCD,OUTB,IOUTB,LUINTD)
+     *                  LVLDRC,LABCD,OUTB,IOUTB,LUINTD,CMO)
 C
 C WRITE DIRAC DISTRIBUTIONS ON FILE LUINTD
 C
@@ -356,7 +377,7 @@ C NOTE: EQUIVALENCE (OUTB,IOUTB) in call of DRCWRT
 C
 #include <implicit.h>
 C
-      DIMENSION H2ACD(NORBT,NORBT,*),OUTB(*),IOUTB(*)
+      DIMENSION H2ACD(NORBT,NORBT,*),OUTB(*),IOUTB(*),CMO(NCMOT)
 #include <iratdef.h>
       PARAMETER ( D0 = 0.0D0 )
 C
@@ -394,6 +415,7 @@ C
          REWIND LUINTD
          WRITE(LUINTD)LAB123,LABELD(1)
          WRITE(LUINTD)LBINTD,LVLDRC,D0,D0,D0,D0
+         WRITE(LUINTD)CMO
          WRITE(LUINTD)LAB123,LABELD(2)
       END IF
 C

@@ -317,6 +317,7 @@ C MEMORY
 C
 #include <implicit.h>
 #include <mxpdim.h>
+#include <maxash.h>
 #include <strnum.h>
 #include <ciinfo.h>
 #include <priunit.h>
@@ -325,11 +326,11 @@ c NL1FTP : Number of electron in ras 1 for string of given type
 c NL2FTP : Number of electron in ras 2 for string of given type
 c NL3FTP : Number of electron in ras 3 for string of given type
 c IJTYP  : type of a given orbital excitation
-C dimension: MXORB*MXORB
+C dimension: MAXASH*MAXASH
 c IJTST  : Type of string arising from excitation times string type
 c          (0 indicates a forbidden excitation )
       COMMON/ADDON/NL1FTP(MXOCTP,2),NL2FTP(MXOCTP,2),NL3FTP(MXOCTP,3),
-     &             IJTYP(10000),IJTST(9,MXPTP,2)
+     &             IJTYP(MAXASH**2),IJTST(9,MXPTP,2)
       DIMENSION ITPFOB(NORB)
 C
 C
@@ -735,6 +736,7 @@ C NOSYM added Nov '88
 C
 #include <mxsmob.h>
 #include <mxpdim.h>
+#include <maxash.h>
 C
 #include <priunit.h>
 #include <spinfo.h>
@@ -752,6 +754,17 @@ C
      &            6,5,8,7,2,1,4,3,
      &            7,8,5,6,3,4,1,2,
      &            8,7,6,5,4,3,2,1 /
+C
+C     Check max number of active orbitals
+C
+      IF (NORB .GT. MAXASH) THEN
+         WRITE (LUPRI,'(/A,2(/A,I5))')
+     &      ' DETFO ERROR, this version of CI module cannot'//
+     &      ' handle so many orbitals.',
+     &      ' The total number of active orbitals:   ',NORB,
+     &      ' is greater than fixed parameter MAXASH=',MAXASH
+         CALL QUIT('DETFO: Too many active orbitals for this version')
+      END IF
 C
 C     Transfer input to common /CIINFO/
 C

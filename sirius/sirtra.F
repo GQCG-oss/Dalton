@@ -2231,6 +2231,8 @@ C
          IF (JTRLVL .EQ. 3 .AND. ITRLVL .EQ. 2) JTRLVL = -1
          IF (JTRLVL .EQ. 2 .AND. ITRLVL .EQ. 3) JTRLVL =  3
          IF (JTRLVL .GE. ITRLVL) THEN
+C           read CMO matrix from LUINTM
+C           and subtract from input CMO matrix
             READ  (LUINTM) (WORK(I),I=1,NCMOT)
             CALL DAXPY(NCMOT,DM1,CMO,1,WORK,1)
             I = IDAMAX(NCMOT,WORK,1)
@@ -2414,7 +2416,6 @@ C
 C Sort mo integrals to Dirac form, if requested
 C 971201-hjaaj: after 9999 so we are sure Dirac form is present
 C    if needed and LUINTM is OK
-C    -- MAERKE TODO: insert check in DRCCTL if already done/971201-hjaaj
 C
       IF (USEDRC .AND. ITRLVL .GT. 0) THEN
          IF (ITRLVL .GE. 4) THEN
@@ -2424,7 +2425,7 @@ C           ... all occ-occ distributions
             LVLDRC = 0
 C           ... all active-active distributions
          END IF
-         CALL DRCCTL(LVLDRC,WORK,LWORK)
+         CALL DRCCTL(LVLDRC,CMO,WORK,LWORK)
          CALL FLSHFO(LUPRI)
       END IF
       CALL QEXIT('TRACTL')

@@ -1123,51 +1123,41 @@ C Used from common blocks:
 C  INFORB : NBAST,N2BASX
 C  INFTAP : LUSUPM
 C  INFPRI : IPRERR,LUERR
+C  CBIHRS : parameters for FRMSUP
 C
 #include <inforb.h>
 #include <inftap.h>
 #include <infpri.h>
+#include <cbihrs.h>
 C
 C     Local variables:
 C
-      CHARACTER*8 SRCLBL, RTNLBL(2)
-      LOGICAL  FOPEN, OLDSUP, NXTLAB
-      SAVE     OLDSUP
-C
+      LOGICAL FNDLAB
+
       CALL QENTER('RDSUPM')
 C
       IF (LUSUPM .EQ. -1) THEN
+C     ... special code for AOSUPMAT not to be used
          WRITE (LUPRI,'(/A/A)')
      &      'PROGRAMMING ERROR: RDSUPM called with LUSUPM = -1',
      &      'Please report to dalton-admin.'
          CALL QTRACE(LUPRI)
          CALL QUIT('Programming ERROR: RDSUPM called with LUSUPM.eq.-1')
       END IF
-      FOPEN = .FALSE.
-      IF (LUSUPM.GT.0) CALL GPINQ(FNSUPM,'OPENED',FOPEN)
-      IF (.NOT. FOPEN) THEN
-         IF (IPRERR .GE. 100) WRITE (LUERR,*) 'Opening ',FNSUPM
 C
-         CALL GPOPEN(LUSUPM,FNSUPM,'OLD',' ','UNFORMATTED',IDUMMY,
-     &               .FALSE.)
+      I = 0
+ 100     IF (LUSUPM .LE. 0) CALL GPOPEN(LUSUPM,FNSUPM,
+     &      'UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
+         I = I + 1
          CALL REWSPL(LUSUPM)
-  100    IF (.NOT. NXTLAB(SRCLBL,RTNLBL,LUSUPM)) THEN
-            WRITE (LUPRI,*)
-     &      'RDSUPM ERROR, no "TWOELSUP" or "PSUPMAT " label on LUSUPM'
-            WRITE (LUPRI,*) 'Dump of all labels on LUSUPM:'
-            write(lupri,*)'FNSUPM,LUSUPM = ', FNSUPM,LUSUPM
-            CALL REWSPL(LUSUPM)
-            CALL DMPLAB(LUSUPM,LUPRI)
-            CALL QUIT('RDSUPM ERROR, no proper label on LUSUPM')
-         END IF
-         IF (SRCLBL .EQ. 'TWOELSUP') THEN
-            OLDSUP = .TRUE.
-         ELSE IF (SRCLBL .EQ. 'PSUPMAT ') THEN
-            OLDSUP = .FALSE.
-         ELSE
+         IF (.NOT. FNDLAB('PSUPMAT ',LUSUPM)) THEN
+            IF (I.GT.1) CALL QUIT('CALL FRMSUP failed')
+            CALL TIMER('START ',TIMSTR,TIMEND)
+            CALL FRMSUP(WORK,LFREE,NOSSUP,THRSUP,IPRSUP)
+            CALL TIMER('FRMSUP',TIMSTR,TIMEND)
+            CALL FLSHFO(LUPRI)
             GO TO 100
          END IF
-      END IF
 C
 C     Fold density matrices
 C
@@ -1180,11 +1170,7 @@ C
 C
 C     note equivalence(WORK, IWORK)
 C
-      IF (OLDSUP) THEN
-         CALL RDSUP1(NSIM,FMAT,DMAT,WORK,WORK,LFREE)
-      ELSE
-         CALL RDSUPP(NSIM,FMAT,DMAT,WORK,WORK,LFREE)
-      END IF
+      CALL RDSUPP(NSIM,FMAT,DMAT,WORK,WORK,LFREE)
 C
 C     square Fock matrices, restore DCAO
 C
@@ -1260,16 +1246,16 @@ C
       END IF
       IF (NERR .GT. 0) THEN
          WRITE (LUPRI,'(//5X,A)')
-     &      'RDSUPP ERROR: LUSUPM inconsistent with Sirius input'
+     &      'RDSUPP ERROR: AOSUPINT inconsistent with Sirius input'
          IF (MOD(NERR,10) .NE. 0) WRITE (LUPRI,'(/5X,2A)')
-     &      'LUSUPM must be sorted with NOSYM when ',
+     &      'AOSUPINT must be sorted with NOSYM when ',
      &      'perturbation symmetry .ne. 1'
          IF (NERR .GE. 10) WRITE (LUPRI,'(/5X,A,2I3/,(5X,A,8I5))')
-     &      'LUSUPM vs. LUONEL/Sirius input, NSYM =',MSYM,NSYM,
-     &      'NBAS from LUSUPM :',(MBAS(I),I=1,8),
-     &      'NBAS from LUONEL :',(NBAS(I),I=1,8)
+     &      'AOSUPINT vs. AOONEINT, NSYM =',MSYM,NSYM,
+     &      'NBAS from AOSUPINT :',(MBAS(I),I=1,8),
+     &      'NBAS from AOONEINT :',(NBAS(I),I=1,8)
          CALL QTRACE(LUPRI)
-         CALL QUIT('RDSUPP ERROR:LUSUPM inconsistent with Sirius input')
+         CALL QUIT('RDSUPP ERROR: AOSUPINT inconsistent with AOONEINT')
       END IF
       IF (IPRERR .GT. 5) THEN
          WRITE (LUERR,*) 'Test output from RDSUPP, NOSYM =',NOSYM
@@ -1463,129 +1449,6 @@ C
       END IF
 C
       CALL QEXIT('RDSUPP')
-      RETURN
-      END
-C  /* Deck rdsup1 */
-      SUBROUTINE RDSUP1(NSIM,FMAT,DMAT,WORK,IWORK,LFREE)
-C
-C     870709 hjaaj, based on P-O Widmark PMAT from SCF program.
-C
-C     NOTE: EQUIVALENCE (WORK(1),IWORK(1)) assumed ...
-C
-#include <implicit.h>
-#include <iratdef.h>
-#include <priunit.h>
-      DIMENSION FMAT(*), DMAT(*), WORK(*), IWORK(*)
-C
-C Used from common blocks:
-C
-C   INFORB : N2BASX
-C   INFTAP : LUSUPM
-C   INFPRI : LUERR, IPRERR
-C
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-C
-      LOGICAL     FMATPK
-      CHARACTER*8 RTNLBL(2)
-C
-      CALL QENTER('RDSUP1')
-C
-C DOUBLE BUFFERED READ OF SUPERMATRIX FILE.
-C READ KBUF2 WHILE PROCESSING KBUF1.
-C
-      LBUF   = 600
-      LBUFTI = IRAT*LBUF + LBUF + 1
-C     ... BUF(LBUF), IBUF(LBUF), LENGTH
-      LBUFT  = (LBUFTI-1)/IRAT + 1
-      JBUF = 256 + 144*IRAT
-      IF (2*LBUFT.GT.LFREE) CALL ERRWRK('RDSUP1',2*LBUFT,LFREE)
-      KBUF1  = 1
-      KBUF2  = KBUF1 + LBUFT
-      IF (IPRERR .GE. 100) THEN
-         WRITE (LUERR,'(//A/)') ' >>> TEST OUTPUT FROM RDSUP1'
-         WRITE (LUERR,*) 'LUSUPM ',LUSUPM
-         WRITE (LUERR,*) 'LBUF   ',LBUF
-         WRITE (LUERR,*) 'LBUFT  ',LBUFT
-         WRITE (LUERR,*) 'LBUFTI ',LBUFTI
-         WRITE (LUERR,*) 'KBUF1  ',KBUF1
-         WRITE (LUERR,*) 'KBUF2  ',KBUF2
-      END IF
-C
-C
-      KBUF1  = 1
-      KBUF2  = KBUF1 + LBUFT
-      CALL REWSPL(LUSUPM)
-      CALL MOLLB2('TWOELSUP',RTNLBL,LUSUPM,LUPRI)
-C
-C 900111-hjaaj: switch from NNBASX to NNBAST packing
-C               (unless NOSYMMETRY has been used in FRMSUP.)
-C
-      IF (NSYM .GT. 1 .AND. RTNLBL(2) .NE. 'NOSYMMET') THEN
-         DO 10 ISIM = 1,NSIM
-            IOFF = 1 + (ISIM-1)*N2BASX
-            CALL PKSYM1(DMAT(IOFF),DMAT(IOFF),NBAS,NSYM,+2)
-            CALL PKSYM1(FMAT(IOFF),FMAT(IOFF),NBAS,NSYM,+2)
-   10    CONTINUE
-         FMATPK = .TRUE.
-      ELSE
-         FMATPK = .FALSE.
-      END IF
-C
-#if defined (VAR_SPLITFILES)
-      CALL READSI(LUSUPM,LBUFTI,WORK(KBUF1),JBUF)
-#else
-      CALL READI(LUSUPM,LBUFTI,WORK(KBUF1))
-#endif
-100   CONTINUE
-         LENGTH = IWORK(IRAT*(KBUF1-1+LBUF)+LBUF+1)
-      IF (LENGTH.LT.0) GOTO 200
-#if defined (VAR_SPLITFILES)
-         CALL READSI(LUSUPM,LBUFTI,WORK(KBUF2),JBUF)
-#else
-         CALL READI(LUSUPM,LBUFTI,WORK(KBUF2))
-#endif
-         CALL RDSUP2(FMAT,DMAT,WORK(KBUF1+LBUF),
-     &               WORK(KBUF1),LENGTH,N2BASX,NSIM)
-         K    =KBUF1
-         KBUF1=KBUF2
-         KBUF2=K
-         GOTO 100
-200   CONTINUE
-C
-C 900111-hjaaj: switch back to NNBASX packing
-C
-      IF ( FMATPK ) THEN
-         IF (LFREE.LT.NNBAST) CALL ERRWRK('RDSUP1.FMATPK',NNBAST,LFREE)
-         DO 210 ISIM = 1,NSIM
-            IOFF = 1 + (ISIM-1)*N2BASX
-            CALL DCOPY(NNBAST,FMAT(IOFF),1,WORK,1)
-            CALL PKSYM1(FMAT(IOFF),WORK,NBAS,NSYM,-1)
-            CALL DCOPY(NNBAST,DMAT(IOFF),1,WORK,1)
-            CALL PKSYM1(DMAT(IOFF),WORK,NBAS,NSYM,-1)
-  210    CONTINUE
-      END IF
-      CALL QEXIT('RDSUP1')
-      RETURN
-      END
-C  /* Deck rdsup2 */
-      SUBROUTINE RDSUP2(FMAT,DMAT,IND,BUF,L,LDMAT,NDENS)
-C
-C     Per-Olof Widmark (PMCORE in SCF program)
-C
-#include <implicit.h>
-      DIMENSION FMAT(*),DMAT(*),BUF(*),IND(*)
-#include <ibtdef.h>
-C
-      DO 200 J=0,NDENS-1
-         DO 210 I=1,L
-            II=IBTAND(IBTSHR(IND(I),16),IBT16)+LDMAT*J
-            JJ=IBTAND(       IND(I),    IBT16)+LDMAT*J
-            FMAT(II) = FMAT(II) + DMAT(JJ)*BUF(I)
-            FMAT(JJ) = FMAT(JJ) + DMAT(II)*BUF(I)
-210      CONTINUE
-200   CONTINUE
       RETURN
       END
 C  /* Deck sirh1 */

@@ -1123,7 +1123,7 @@ C                 orbital trial vector
  1100    CONTINUE
 C
  9030    FORMAT(/' (NEONEX) NEO vector is converged.')
- 9040    FORMAT(/' (NEONEX) NEO auxilliary root no.',I3,
+ 9040    FORMAT(/' (NEONEX) NEO auxiliary root no.',I3,
      *           ' is converged.')
 C
 C        Use IBNDX(IBNOFF+NSIMX+*) for keeping track of which root

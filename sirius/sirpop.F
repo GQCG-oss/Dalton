@@ -394,12 +394,12 @@ C
       VIR = -V/TK
       WRITE(LUPRI,1001) EMCSCF,TK,V,POTNUC,VIR
       IF (LUW4 .NE. LUPRI) WRITE(LUW4,1001) EMCSCF,TK,V,POTNUC,VIR
- 1001 FORMAT(//' ENERGY ANALYSIS'
+ 1001 FORMAT(//' Energy analysis'
      *        /' ---------------'
-     *        /' TOTAL ENERGY',T30,F18.10
-     *        /' KINETIC ENERGY',T30,F18.10
-     *        /' POTENTIAL ENERGY',T30,F18.10
-     *        /' NUCLEAR REPULSION ENERGY',T30,F18.10
+     *        /' Total energy',T30,F18.10
+     *        /' Kinetic energy',T30,F18.10
+     *        /' Potential energy',T30,F18.10
+     *        /' Nuclear repulsion energy',T30,F18.10
      *        /' -V/T',T30,F14.6)
       RETURN
 #endif
@@ -550,6 +550,7 @@ C         to compute and print out a population analysis.
 C         Based on release 82 08 31
 C
 #include <implicit.h>
+#include <priunit.h>
 #include <dummy.h>
 C
       DIMENSION OCCUP(NOCCT),IAMN(NBAST),IPR(NBAST),NUMBER(NBAST),
@@ -563,20 +564,15 @@ C   INFORB ? NBAST,
 C   INFTAP : LUTEMP
 C
 #include <mxcent.h>
-#include <priunit.h>
+#include <maxaqn.h>
+#include <ccom.h>
 #include <infpop.h>
 #include <inforb.h>
 #include <inftap.h>
 #include <infpri.h>
 C
       DIMENSION   POPTSM(MXCENT)
-      CHARACTER*4 LTOT(3)
-      CHARACTER*4 LQN(MAXTYP)
-      DATA LTOT/'   P','   D','   F'/
-      DATA  LQN/'   S', '   X', '   Y', '   Z', '  XX',
-     *          '  XY', '  XZ', '  YY', '  YZ', '  ZZ',
-     *          ' XXX', ' XXY', ' XXZ', ' XYY', ' XYZ',
-     *          ' XZZ', ' YYY', ' YYZ', ' YZZ', ' ZZZ'/
+      CHARACTER*1 SPDCAR
 CMAERKE-hj-910708:
 C     This information should be read from integral program
 C     (HERMIT, MOLECULE, or whatever), because this only works
@@ -733,13 +729,13 @@ C     POPULATIONS BETWEEN CENTRES
 C
       IF ( IPRMUL.GE.5 ) THEN
          WRITE (LUPRI,1001)
- 1001    FORMAT (//6X,'NET AND OVERLAP POPULATIONS',
-     *           //6X,'NET AND OVERLAP BETWEEN CENTRES A AND B',
-     *           //6X,'CONTRIBUTIONS FROM MO"S P')
+ 1001    FORMAT (//6X,'Mulliken net and overlap populations',
+     *           //6X,'Net and overlap between centres A and B',
+     *           //6X,'Contributions from individual MOs')
          REWIND LUTEMP
          DO 130 IP = 1,NOCCT
             WRITE (LUPRI,1002) IP
- 1002       FORMAT (//6X,'MOLECULAR ORBITAL NUMBER',I4//)
+ 1002       FORMAT (//6X,'Molecular orbital number',I4//)
             READ (LUTEMP) POPABI
 C
             IEND = 0
@@ -761,9 +757,9 @@ C901028: use 7 instead of 10 (to fit in 80 columns)
 C
       WRITE (LUPRI,1004)
       IF (LUW4 .NE. LUPRI) WRITE (LUW4,1004)
- 1004 FORMAT(//6X,'TOTAL OVERLAP POPULATIONS',
-     *        /6X,'NET AND OVERLAP POPULATIONS BETWEEN CENTRES A AND B',
-     *        /6X,'SUM OVER ALL MO"S P',//)
+ 1004 FORMAT(//6X,'Mulliken total overlap populations',
+     *        /6X,'Net and overlap populations between centres A and B',
+     *        /6X,'Sum over all MOs P',//)
 C
       IEND = 0
     5    IST  = IEND + 1
@@ -792,9 +788,9 @@ C
       IF (IPRMUL.GE.2) THEN
          WRITE (LUPRI,1005)
          IF (LUW4 .NE. LUPRI) WRITE (LUW4,1005)
- 1005    FORMAT (//6X,'PARTIAL ORBITAL GROSS POPULATIONS',
-     *            /6X,'GROSS POPULATIONS OF CGTO BASIS FUNCTIONS A',
-     *            /6X,'CONTRIBUTION FROM MO P'//)
+ 1005    FORMAT (//6X,'Partial orbital gross populations',
+     *            /6X,'Gross populations of CGTO basis functions A',
+     *            /6X,'Contribution from MO no. P'//)
          IPSTRT = 0
          DO 160 IP = 1,NOCCT
             WRITE (LUPRI,1002) IP
@@ -814,17 +810,18 @@ C
          WRITE (LUW4,1007)
          WRITE (LUW4,1006) (IA,POPCGT(IA),IA = 1,NBAST)
       END IF
- 1007 FORMAT(//6X,'TOTAL GROSS POPULATIONS OF CGTO BASIS FUNCTIONS A',
-     *        /6X,'SUM OVER ALL MO"S'//)
+ 1007 FORMAT(//6X,
+     *   'Mulliken total gross populations of CGTO basis functions A',
+     *        /6X,'Sum over all MOs'//)
 C
 C     GROSS POPULATIONS OF ORBITAL TYPES
 C
       IF (IPRMUL.GE.2) THEN
          WRITE (LUPRI,1008)
          IF (LUW4 .NE. LUPRI) WRITE (LUW4,1008)
- 1008    FORMAT(//6X,'PARTIAL GROSS POPULATION OF CGTO BASIS',
-     *               ' FUNCTIONS OF TYPE T',/6X,'FOR EACH CENTRE',
-     *           /6X,'CONTRIBUTION FROM MO P'//)
+ 1008    FORMAT(//6X,'Partial gross population of CGTO basis',
+     *               ' functions of type T',/6X,'for each centre',
+     *           /6X,'Contribution from MO no. P'//)
          IPSTRT = 0
          DO 200 IP = 1,NOCCT
             WRITE (LUPRI,1002) IP
@@ -854,23 +851,24 @@ C901028: use 7 instead of 10 (to fit in 80 columns)
                WRITE (LUW4,1009) (NAME(NUC),NUC = IST,IEND)
                WRITE (LUW4,1011)
             END IF
- 1009       FORMAT (' CENTRE',4X,A4,(9(6X,A4)))
- 1011       FORMAT (2X,'TYPE')
+ 1009       FORMAT (' Centre',4X,A4,(9(6X,A4)))
+ 1011       FORMAT ('  Type')
             DO 190 ITYP = 1,NTYP
-            WRITE (LUPRI,1012) LQN(ITYP),(POPTY(ITYP,NUC), NUC=IST,IEND)
-            IF (LUW4 .NE. LUPRI)
-     *      WRITE (LUW4,1012) LQN(ITYP),(POPTY(ITYP,NUC), NUC=IST,IEND)
- 1012       FORMAT (1X,A4,2X,10F9.4)
+               WRITE (LUPRI,1012)
+     &         GTOTYP(ITYP),(POPTY(ITYP,NUC), NUC=IST,IEND)
+               IF (LUW4 .NE. LUPRI) WRITE (LUW4,1012)
+     &         GTOTYP(ITYP),(POPTY(ITYP,NUC), NUC=IST,IEND)
   190       CONTINUE
+ 1012       FORMAT (1X,A4,2X,10F9.4)
             IF (IEND.LT.NNUC)   GO TO 7
   200    CONTINUE
       END IF
 C
       WRITE (LUPRI,1013)
       IF (LUW4 .NE. LUPRI) WRITE (LUW4,1013)
- 1013 FORMAT (//6X,'TOTAL GROSS POPULATION OF CGTO BASIS FUNCTIONS ',
-     *             'OF TYPE T',/6X,'FOR EACH CENTRE'
-     *         /6X,'SUM OVER ALL MO"S'//)
+ 1013 FORMAT (//6X,'Mulliken total gross population of CGTO basis ',
+     *             'functions of type T',/6X,'for each centre'
+     *         /6X,'Sum over all MOs'//)
       IEND = 0
     9 IST  = IEND + 1
 C     IEND = MIN(NNUC, IEND + 10)
@@ -886,23 +884,25 @@ C901028: use 7 instead of 10 (to fit in 80 columns)
       END IF
  1099 FORMAT (1X)
       LQ     = 0
-      LDEGEN = 1
-      LEND   = 1
       DO 210 ITYP = 1,NTYP
-         IF (ITYP.GT.1) THEN
+         WRITE (LUPRI,1012) GTOTYP(ITYP),(POPTYP(ITYP,NUC),NUC=IST,IEND)
+         IF (LUW4 .NE. LUPRI)
+     &     WRITE(LUW4,1012) GTOTYP(ITYP),(POPTYP(ITYP,NUC),NUC=IST,IEND)
+C
+         IF (LQ.GT.0) THEN
             DO 211 NUC = IST,IEND
                POPTSM(NUC) = POPTSM(NUC) + POPTYP(ITYP,NUC)
   211       CONTINUE
          END IF
-         WRITE (LUPRI,1012) LQN(ITYP),(POPTYP(ITYP,NUC), NUC=IST,IEND)
-         IF (LUW4 .NE. LUPRI) THEN
-            WRITE(LUW4,1012)LQN(ITYP),(POPTYP(ITYP,NUC), NUC=IST,IEND)
-         END IF
-      IF (ITYP.NE.LEND) GO TO 210
-         IF (ITYP.GT.1) THEN
-            WRITE (LUPRI,1012) LTOT(LQ),(POPTSM(NUC), NUC=IST,IEND)
+      IF (GTOTYP(ITYP+1)(1:1) .EQ. GTOTYP(ITYP)(1:1)) GO TO 210
+C     for cartesian GTOTYP(*)(1:1) will be 's', 'p', etc.
+C     for spherical GTOTYP(*)(1:1) will be '1', '2', etc.
+C     thus: when char 1 changes no l quantum number and
+C     using GTOTYP to decide works both for cartesian and spherical
+         IF (LQ.GT.0) THEN
+            WRITE (LUPRI,1012) SPDCAR(LQ),(POPTSM(NUC), NUC=IST,IEND)
             IF (LUW4 .NE. LUPRI) THEN
-               WRITE (LUW4,1012) LTOT(LQ),(POPTSM(NUC), NUC=IST,IEND)
+               WRITE (LUW4,1012) SPDCAR(LQ),(POPTSM(NUC), NUC=IST,IEND)
             END IF
          END IF
          WRITE (LUPRI,1099)
@@ -910,9 +910,7 @@ C901028: use 7 instead of 10 (to fit in 80 columns)
          DO 212 NUC = IST,IEND
             POPTSM(NUC) = D0
   212    CONTINUE
-         LQ     = LQ + 1
-         LDEGEN = LDEGEN + LQ + 1
-         LEND   = LEND + LDEGEN
+         LQ = LQ + 1
   210 CONTINUE
       IF (IEND.LT.NNUC)   GO TO 9
 C
@@ -921,8 +919,8 @@ C
       IF (IPRMUL.GE.1) THEN
       WRITE (LUPRI,1014)
       IF (LUW4 .NE. LUPRI) WRITE (LUW4,1014)
- 1014 FORMAT (//6X,'PARTIAL GROSS POPULATION OF CENTRE A',
-     *         /6X,'CONTRIBUTION FROM MO P'//)
+ 1014 FORMAT (//6X,'Partial gross population of centre A',
+     *         /6X,'Contribution from MO no. P'//)
 C
       IPSTRT = 0
       DO 240 IP = 1,NOCCT
@@ -946,8 +944,8 @@ C
 C
       WRITE (LUPRI,1016)
       IF (LUW4 .NE. LUPRI) WRITE (LUW4,1016)
- 1016 FORMAT (//6X,'TOTAL GROSS POPULATION OF CENTRE A',
-     *         /6X,'SUM OVER ALL MO"S'/)
+ 1016 FORMAT (//6X,'Mulliken total gross population of centre A',
+     *         /6X,'Sum over all MOs'/)
       WRITE (LUPRI,1015) (NAME(NUC),POPNUC(NUC),NUC=1,NNUC)
       IF (LUW4 .NE. LUPRI)
      *   WRITE (LUW4,1015) (NAME(NUC),POPNUC(NUC),NUC=1,NNUC)
@@ -958,8 +956,8 @@ C     NET and overlap populations between cgto basis functions - sum
 C
       IF (IPRMUL.GE.4) THEN
          WRITE (LUW4,1017)
- 1017    FORMAT(//6X,'TOTAL NET AND OVERLAP POPULATIONS BETWEEN CGTO',
-     *          ' BASIS FUNCTIONS'/10X,'SUM OVER ALL MO"S'//)
+ 1017    FORMAT(//6X,'Total net and overlap populations between CGTO',
+     *          ' basis functions'/10X,'Sum over all MOs'//)
 C
          IEND = 0
          INDEND = 0
@@ -1023,7 +1021,7 @@ C
 C
       WRITE (LUPRI,1001)
       IF (LUW4 .NE. LUPRI) WRITE (LUW4,1001)
- 1001 FORMAT (///,21X,' DIPOLE MOMENT ANALYSIS')
+ 1001 FORMAT (///,22X,'Dipole moment analysis')
 C
 C     *****     READ IN THE DIPOLE MOMENT INTEGRALS
 C

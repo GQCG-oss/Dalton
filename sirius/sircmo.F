@@ -564,7 +564,7 @@ C        CALL JACO (F,V,NB,NMAX,NROWV,BIG,JBIG)
             ELSE
               WRITE (LUPRI,'(/A,I5/)')
      &        'CMODEL: eigenvalues of overlap matrix for '//
-     &        'auxilliary basis for symmetry',ISYM
+     &        'auxiliary basis for symmetry',ISYM
             END IF
             WRITE (LUPRI,'(1P,5D15.5)') (SCRA(KS1T-1+I),I=1,NORBI)
          END IF

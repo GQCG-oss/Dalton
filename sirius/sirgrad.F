@@ -426,7 +426,7 @@ C
 C ***** add one-electron contribution to FCAO
 C
 C     One-electron contribution is not added for the construction of 
-C     the exchange operator in the auxilliary basis (WK/UniKA/04-11-2002).
+C     the exchange operator in the auxiliary basis (WK/UniKA/04-11-2002).
       IF (.NOT. (R12TRA .OR. R12ECO))
      *     CALL DAXPY(N2BASX,D1,WRK(KH1AO),1,FCAO,1)
 C
@@ -445,7 +445,7 @@ C
         END IF
       END IF
  1000 FORMAT(/' FCAO = Fock matrix, inactive part (AO-basis)')
- 1001 FORMAT(/' FCAO = Fock matrix, inactive part (auxilliary basis)')
+ 1001 FORMAT(/' FCAO = Fock matrix, inactive part (auxiliary basis)')
  1100 FORMAT(/' FVAO = Fock matrix, active part (AO-basis)')
 C
 C *** End of subroutine FCKMAO
@@ -520,10 +520,7 @@ C        ... off-set to FVAO,DVAO in FCAO,DCAO
       CALL DZERO(FCAO,NDMAT*N2BASX)
 CKR   This line read NDMAT instead of NFMAT, 150997
       IF (NFMAT .GT. 0) THEN
-      IF (LUSUPM .NE. -1) THEN
-         IF (DFTRUN) THEN
-            CALL QUIT('P supermatrix integrals not implemented for DFT')
-         END IF
+      IF (LUSUPM .NE. -1 .AND. .NOT. DFTRUN) THEN
          CALL RDSUPM(NFMAT,FCAO(IOFFAO),DCAO(IOFFAO),WRK(KFREE),LFREE)
       ELSE
          CALL SIRFCK(FCAO(IOFFAO),DCAO(IOFFAO),NFMAT,ISYMDM,IFCTYP,

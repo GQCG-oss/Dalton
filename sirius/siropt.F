@@ -1013,7 +1013,7 @@ C        CALL RHFENR(IPRINT,LUPRI,FD,SCRA,LSCRA)
       END IF
 C
       IF (LMULBS .OR. R12CAL) THEN
-C        Construct orthonormal auxilliary basis sets (WK/UniKA/04-11-2002).
+C        Construct orthonormal auxiliary basis sets (WK/UniKA/04-11-2002).
          LWRKG  = LFREE  - (KWRKG-1)
          CALL TIMER('START ',TIMSTR,TIMEND)
          CALL R12AUX(WRK(KWRKG),LWRKG)
@@ -2619,7 +2619,7 @@ C
       WRITE (LUSIFC) (CMO(I),I=1,NCMOT4)
 C
       IF (LMULBS .OR. R12CAL) THEN
-C        Interface for auxilliary basis set (WK/UniKA/04-11-2002).
+C        Interface for auxiliary basis set (WK/UniKA/04-11-2002).
          LUMULB = 34
          CALL GPOPEN(LUMULB,'AUXBAS','UNKNOWN','SEQUENTIAL',
      &               'FORMATTED',IDUMMY,LDUMMY)
