@@ -508,6 +508,8 @@ C  /* Deck execc */
 #include <siripc.h>
 #include <inftra.h>
 #include <gnrinf.h>
+#include <mxcent.h>
+#include <optinf.h>
 C
 C     Run Coupled Cluster program
 C
@@ -523,7 +525,15 @@ C     It causes the End of Record to be skipped.
          CALL ER2INI
 #endif
       END IF
+
+      ! ITRNMR > 0 required for proper restart of CPHF solver
+      ISAVITR = ITRNMR
+      ITRNMR = 1
+
       CALL CC_DRV(WORK(IWOFF+2),LMWORK)
+
+      ITRNMR = ISAVITR 
+
       CALL BNDCHK(WORK, LMWORK, IWOFF, WRKDLM, 'CC    ')
       WRITE(LUPRI, '(/A/)') '- End of Coupled Cluster'
       CALL FLSHFO(LUPRI)

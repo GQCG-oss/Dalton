@@ -2163,7 +2163,6 @@ C
             THRSTP = MAX(THRSTP,5.0D-05)
          END IF
          IF (DOCCSD) THEN
-C
             CALL CC_GEOFLAG
             CALL EXECC(WORK,LWORK,IWOFF,WRKDLM)
          ENDIF
