@@ -50,8 +50,8 @@ gradient). The input file for such a calculation will look like:
 .HF & We start with HF\\
 .MP2 & Then MP2 (starting orb. for MCSCF)\\
 .MCSCF & Request an MCSCF\\
-**HF INPUT & HF input\\
-.HF OCCUPATION\\
+**SCF INPUT & HF input\\
+.DOUBLY OCCUPIED\\
  3 1 1 0\\
 **CONFIGURATION INPUT & Input of active space\\
 .SYMMETRY & Wave function symmetry\\
@@ -96,14 +96,13 @@ CAS) and in addition allow single- and double-excitations into
 {\ttfamily
 \begin{tabular}{ll}
 **DALTON INPUT\\
-.RUN PROPERTIES\hspace{2cm} & Run integrals, wave
-func.\ and properties\\
-***WAVE FUNCTIONS\\
+.RUN PROPERTIES\hspace{2cm} & Run integrals, wave function\ and properties\\
+**WAVE FUNCTIONS\\
 .HF\\
 .MP2\\
 .MCSCF\\
-**RHF INPUT\\
-.HF OCCUPATION\\
+**SCF INPUT\\
+.DOUBLY OCCUPIED\\
  3 1 1 0\\
 **CONFIGURATION INPUT\\
 .SYMMETRY\\

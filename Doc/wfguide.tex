@@ -1,3 +1,4 @@
+% checked with "ispell" 18.Sep.2003 /hjaaj
 \chapter{\label{ch:wf-guide}Getting the wave function you want}
 
 Currently the following wave function types are implemented in DALTON:
@@ -25,7 +26,7 @@ space model (CAS) and the restricted active space model (RAS).
 
 \item[CC] Coupled Cluster\index{CC}\index{Coupled Cluster}.
 For information on how to run this kind of calculation, we refer to 
-Chapers~\ref{ch:ccexamples} and~\ref{ch:CC}.
+Chapters~\ref{ch:ccexamples} and~\ref{ch:CC}.
 
 \item[MCSCF] Multiconfiguration self-consistent field based on
 the complete active space model (CASSCF) and
@@ -157,27 +158,26 @@ input modules through indentation
 \begin{verbatim}
 **WAVE FUNCTIONS
   .TITLE
-  .NSYM                    (1)
   .HF
-     *HF INPUT
-       .HF OCCUPATION
+     *SCF INPUT
+       .DOUBLY OCCUPIED
        ...
-     *ORBITAL INPUT        (3)
-     *STEP CONTROL         (if QCHF)
+     *ORBITAL INPUT        (2)
+     *STEP CONTROL         (if QCSCF)
   .MP2
      *MP2 INPUT
-     *ORBITAL INPUT        (3)
-     *HF INPUT
-       .HF OCCUPATION
+     *ORBITAL INPUT        (2)
+     *SCF INPUT
+       .DOUBLY OCCUPIED
   .CI
-     *CONFIGURATION INPUT  (2)
-     *ORBITAL INPUT        (3)
-     *CI VECTOR            (4)
+     *CONFIGURATION INPUT  (1)
+     *ORBITAL INPUT        (2)
+     *CI VECTOR            (3)
      *CI INPUT
   .MCSCF
-     *CONFIGURATION INPUT  (2)
-     *ORBITAL INPUT        (3)
-     *CI VECTOR            (4)
+     *CONFIGURATION INPUT  (1)
+     *ORBITAL INPUT        (2)
+     *CI VECTOR            (3)
      *OPTIMIZATION
      *STEP CONTROL
   .CC
@@ -190,7 +190,7 @@ input modules through indentation
 *TRANSFORMATION
 *POPULATION ANALYSIS
 *PRINT LEVELS
-*AUXILLIARY INPUT
+*AUXILIARY INPUT
 \end{verbatim}
 
 %\clearpage
@@ -198,10 +198,7 @@ input modules through indentation
 
 \begin{verbatim}
 
-(1) NSYM is normally provided by the integral module. May be provided
-    for consistency checking.
-
-(2) *CONFIGURATION INPUT
+(1) *CONFIGURATION INPUT
       .SPIN MULTIPLICITY (*R*)
       .SYMMETRY (*R*)
       .INACTIVE ORBITALS (*R*)
@@ -217,13 +214,12 @@ input modules through indentation
         .RAS3 ELECTRONS
       are required.
 
-(3) *ORBITAL INPUT
-      .MOSTART (*R*)
+(2) *ORBITAL INPUT
+      .MOSTART   ! default Huckel guess if available, otherwise H1DIAG
 
       .SYMMETRIC ORTHONORMALIZATION
       .GRAM-SCHMIDT ORTHONORMALIZATION
 
-      .AVERAGE
       .FROZEN CORE ORBITALS
       .FREEZE ORBITALS
 
@@ -236,9 +232,9 @@ input modules through indentation
       .PUNCHINPUTORBITALS
       .PUNCHOUTPUTORBITALS
 
-(4) *CI VECTOR
+(3) *CI VECTOR
       One and only one of the following three
-        .STARTHDIAGONAL
+        .STARTHDIAGONAL  ! default
         .STARTOLDCI
         .SELECT CONFIGURATION
 
@@ -323,7 +319,7 @@ occupation during the first DIIS\index{DIIS} iterations will be
 shown. There will also be an example showing how an old
 \verb|SIRIUS.RST| file is used for restart in the
 input. \index{SIRIUS.RST}\index{restart}
-In this case the Hartree--Fock occupation will be then read from
+In this case the Hartree--Fock occupation will be read from
 the file \verb|SIRIUS.RST| and used as initial Hartree--Fock
 occupation\index{HF occupation}\index{Hartree--Fock occupation}.
 The HF occupation is
@@ -435,8 +431,8 @@ described in Ref.~\cite{hjajpjhajojcp88}. The input would be:
 .HF
 .MP2
 .MCSCF
-*HF INPUT
-.HF OCCUPATION
+*SCF INPUT
+.DOUBLY OCCUPIED
  2 0 0 0
 *CONFIGURATION INPUT
 .SYMMETRY
@@ -466,9 +462,9 @@ MCSCF\index{RASSCF} as indicated in this input example:
 .RUN WAVE FUNCTIONS
 **WAVE FUNCTIONS
 .MCSCF
-*HF INPUT
-.HF OCCUPATION
- 2 0 0 0
+*ORBITAL INPUT
+.MOSTART
+ NEWORB
 *CONFIGURATION INPUT
 .SYMMETRY
  1
@@ -491,10 +487,7 @@ MCSCF\index{RASSCF} as indicated in this input example:
 *OPTIMIZATION
 .TRACI
 .FOCKONLY
-*ORBITAL INPUT
-.MOSTART
- NEWORB
-*END OF SIRIUS
+**END OF DALTON
 \end{verbatim}
 \label{sirius_ex4}
 

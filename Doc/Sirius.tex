@@ -1,3 +1,4 @@
+% checked with "ispell" sep.2003 /hjaaj
 \chapter{\label{chap:inpref} Molecular wave functions, {\sir}}
 
 \section{\label{sec:ref-notes} General notes for the {\sir} input reference
@@ -133,7 +134,7 @@ respective calculation types:
 
 Section~\ref{ref-cicinp} \Sec{CI INPUT}
 
-Section~\ref{ref-rhfinp} \Sec{HF INPUT}
+Section~\ref{ref-rhfinp} \Sec{SCF INPUT}
 
 Section~\ref{ref-mp2inp} \Sec{MP2 INPUT}
 
@@ -141,7 +142,7 @@ Section~\ref{ref-nevpt2inp} \Sec{NEVPT2 INPUT}
 
 \noindent
 The next section is used to select some types of analysis of the final
-MCSCF or CI wave function:
+Hartree--Fock, DFT, MCSCF, or CI wave function:
 
 Section~\ref{ref-popinp} \Sec{POPULATION ANALYSIS}
 
@@ -158,10 +159,10 @@ collect options not fitting in any of the other groups:
 
 Section~\ref{ref-priinp} \Sec{PRINT LEVELS}
 
-Section~\ref{ref-auxinp} \Sec{AUXILLIARY INPUT}
+Section~\ref{ref-auxinp} \Sec{AUXILIARY INPUT}
 
 \noindent
-Finally we note that there is an input module controling the
+Finally we note that there is an input module controlling the
 calculation of Coupled Cluster wave functions. This is treated in a
 separate chapter:
 
@@ -198,30 +199,69 @@ of the input file.
 
 {\bf Purpose:}
 
-Specification of which calculation is to be performed and
-optionally of the number of symmetries for consistency check of
-input.
+Specification of which wave function calculation is to be performed.
+
+{\bf Primary keywords, listed in the order the corresonding modules
+ will be executed by the program (if the keyword is set): }
 
 \begin{description}
-\item[\Key{BASIS SET}]
-   Default: specified by integral program \\
-   \verb"READ (LUINP,*) (NBAS(I), I = 1,NSYM)" \\
-   Number of basis functions per symmetry.
+
+\item[\Key{HF}]
+  Restricted closed-shell or one open-shell 
+  Hartree--Fock\index{HF}\index{SCF}\index{Hartree--Fock}\index{open shell!HF} calculation.
+  The occupied orbitals, optimization control etc. are specified in the
+  \quotekw{*SCF INPUT} submodule.
+  Note: you cannot specify both \quotekw{.HF} and \quotekw{.DFT} keywords.
+
+\item[\Key{DFT}]
+  \verb"READ (LUINP,'(A80)) LINE" \\
+  Restricted closed-shell or one open-shell Kohn-Sham
+  density functional theory\index{DFT}\index{Kohn--Sham}\index{open shell!DFT} calculation.
+  On the following line you must specify which functional to use.
+  The occupied orbitals, optimization control etc. are specified in the
+  \quotekw{*SCF INPUT} submodule shared with the \quotekw{.HF} option.
+  The DFT specific input options are collected in the \quotekw{*DFT INPUT} input submodule.
+  Note: you cannot specify both \quotekw{.HF} and \quotekw{.DFT} keywords.
+
+\item[\Key{MP2}]
+ \index{M{\o}ller-Plesset!second-order}\index{MP2}
+  M{\o}ller-Plesset second-order perturbation theory calculation.
+  Requires \quotekw{.HF} or previously calculated canonical Hartree-Fock orbitals.
+
+\item[(\quotekw{.FC MVO} in \quotekw{*SCF INPUT}}]
+  Calculation of modified virtual SCF orbitals based on the
+  potential determined by the keyword (see comments below).
+  The occupied SCF orbitals are not modified.
+  Note that this keyword is not located in this module but in the
+  \quotekw{*SCF INPUT} submodule. It is mentioned here to make clear
+  at what point this transformation will be performed, if requested.
+
+\item[\Key{CI}]
+  \index{CI}\index{Configuration Interaction}
+  Configuration interaction calculation.
+
+\item[\Key{MCSCF}]
+  Multiconfigurational self-consistent field (MCSCF) calculation.\index{MCSCF}
+
+\item[\Key{NEVPT2}]
+  Multireference second-order perturbation theory calculation.\index{NEVPT2}
 
 \item[\Key{CC}]
   \index{Coupled Cluster}\index{CC}
-  Coupled Cluster calculation. After a Hartree--Fock calculation
+  Coupled Cluster calculation. Activates automatically Hartree--Fock (\quotekw{.HF}).
+  After the Hartree--Fock calculation
   the \cc\ program is called to do a Coupled Cluster (response) calculation.
-  For further input options for the \cc\ program see
-  Section~\ref{sec:ccgeneral}. 
+  For further input options for the \cc\ program see Section~\ref{sec:ccgeneral}. 
 
 \item[\Key{CC ONLY}] Skip the calculation of a Hartree--Fock wave
   function, and start directly in the Coupled Cluster part. Convenient
   for restarts in the Coupled Cluster module.
 
-\item[\Key{CI}]
-  \index{CI}\index{Configuration Interaction}
-  Configuration interaction calculation.
+\end{description}
+
+{\bf Secondary keywords (in alphabetical order): }
+
+\begin{description}
 
 \item[\Key{FLAGS}]
   \verb"READ (LUINP,NMLSIR)" \\
@@ -229,42 +269,28 @@ input.
   Only for debugging. Set internal control flags directly.
   Usage is not documented.
 
-\item[\Key{HF}]
-  Restricted closed-shell or one open-shell 
-  Hartree--Fock\index{HF}\index{SCF}\index{Hartree--Fock}\index{open shell!HF} calculation.
-
 \item[\Key{INTERFACE}]
   Write the "SIRIFC" interface file\index{interface file} for post-processing programs.
 
-\item[\Key{MCSCF}]
-  Multiconfigurational self-consistent field (MCSCF) calculation.\index{MCSCF}
-
-\item[\Key{MP2}]
- \index{M{\o}ller-Plesset!second-order}\index{MP2}
-  M{\o}ller-Plesset second-order perturbation theory calculation.
-
-\item[\Key{NEVPT2}]
- \index{NEVPT2}
-  Multireference second-order perturbation theory calculation.
-
-\item[\Key{NSYM}]
-%  Required, no defaults. \\
-  Default: specified by integral program \\
-  \verb"READ (LUINP,*) NSYM" \\
-  Number of spatial Abelian symmetries (1, 2, 4, or 8), corresponding
-  to $D_{2h}$ or one of its subgroups.
-
+%hjaaj oct 2003: obsolete ...
+%\item[\Key{NSYM}]
+%%  Required, no defaults. \\
+%  Default: specified by integral program \\
+%  \verb"READ (LUINP,*) NSYM" \\
+%  Number of spatial Abelian symmetries (1, 2, 4, or 8), corresponding
+%  to $D_{2h}$ or one of its subgroups.
 
 \item[\Key{PRINT}]
   \verb"READ (LUINP,*) IPRSIR" \\
-  General {\sir} print level and default for all other print parameters.
+  General {\sir} print level and default for all other print parameters in this module.
 
 \item[\Key{RESTART}]
   restart {\sir}\index{restart!wave function},
   the {\sir} restart file (\verb|SIRIUS.RST|) must be available
 
-\item[\Key{SCF}]
-    Alias for the \quotekw{\Key{HF}} keyword.
+%hjaaj Oct 2003: obsolete, we want the specific .HF or .DFT
+%\item[\Key{SCF}]
+%    Alias for the \quotekw{\Key{HF}} keyword.
 
 \item[\Key{STOP}]
   \kw{READ (LUINP,'(A20)') REWORD} \\
@@ -276,7 +302,7 @@ input.
 
 \item \hspace{2em} \quotekw{ AFTER MO-ORTHONORMALIZATION}
 
-\item \hspace{2em} \quotekw{ AFTER GRADIENT}
+\item \hspace{2em} \quotekw{ AFTER GRADIENT} (only for MCSCF and 2. order HF or DFT)
 \end{enumerate}
 
 \item[\Key{TITLE}] 
@@ -289,13 +315,14 @@ input.
 \item[\Key{WESTA}]
   Write the "SIRIFC" interface file for the WESTA post-processing program.
 
+%hjaaj Oct 2003: obsolete
 %\item[\Key{BASIS SET}]
 %   Default: specified by integral program \\
 %   \verb"READ (LUINP,*) (NBAS(I), I = 1,NSYM)" \\
 %   Number of basis functions per symmetry.
 \end{description}
 
-\noindent{\bf Comments:}
+%hj%\noindent{\bf Comments:}
 
 %\ifabacus ABACUS: 
 %If the full molecular Hessian is calculated in
@@ -308,14 +335,14 @@ input.
 %full molecular Hessian. 
 %\fi
 
-BASIS SET is provided such that the number of basis functions in each
-symmetry may be specified if {\sir} is modified to interface to an
-integral program which doesn't write this information to the integral
-file.
-
+%hjaaj Oct 2003: obsolete
+%BASIS SET is provided such that the number of basis functions in each
+%symmetry may be specified if {\sir} is modified to interface to an
+%integral program which doesn't write this information to the integral
+%file.
 
 \pagebreak[3]
-\subsection{\label{ref-auxinp}\Sec{AUXILLIARY INPUT}}
+\subsection{\label{ref-auxinp}\Sec{AUXILIARY INPUT}}
 
 {\bf Purpose:}
 
@@ -514,7 +541,7 @@ To specify the configuration part in MCSCF and CI calculations.
 \item[\Key{SYMMETRY}]
   Required for MCSCF and CI wave functions.\\
   \kw{READ (LUINP,*) LSYM} \\
-  Spatial symmetry\index{symmetry} of MCSCF wave function
+  Spatial symmetry\index{symmetry} of CI and/or MCSCF wave function
 
 \item[\Key{INACTIVE ORBITALS}]
   Required.\\
@@ -526,10 +553,10 @@ To specify the configuration part in MCSCF and CI calculations.
 \noindent{\bf Comments:}
 
 \noindent SYMMETRY   Specifies total spatial symmetry of the wave
-function in $D_{2h}$ symmetry and its subgroups: $C_{2v}$, $C_2h$,
+function in $D_{2h}$ symmetry or one of its subgroups: $C_{2v}$, $C_2h$,
 $D_2$, $C_s$, $C_i$, $C_2$, $C_1$. The  symmetry number of wave
 function follows MOLECULE output ordering of symmetries ($D_{2h}$
-subgroup IR's).
+subgroup irreps).
 
 \noindent
 CAS and RAS\index{RASSCF}\index{CASSCF}\index{MCSCF} are exclusive and
@@ -550,10 +577,13 @@ Add extra terms to the Hamiltonian (for finite field\index{finite field} calcula
   Default = no fields. \\
   \verb"READ (LUINP,*) EFIELD(NFIELD)" \\
   \verb"READ (LUINP,'(1X,A8)') LFIELD(NFIELD)" \\
-  Enter field strength (in au) and label,
-  where label is a MOLE\-CULE-style property label produced
-  by the property program, see Chapter~\ref{ch:hermit}.
-
+  Enter field strength (in atomic units) and property label on separate lines
+  where label is a MOLE\-CULE-style property label on file AOPROPER
+  produced by the property program module, see Chapter~\ref{ch:hermit}.
+  The calculation of the necessary property integral(s) must be requested
+  in the \quotekw{**INTEGRALS} input module. \\
+  NOTE: This keyword may be repeated several times for adding more than
+  one finite field (max 20 fields).
 
 \item[\Key{PRINT}]
   Default = 0.\\
@@ -571,18 +601,19 @@ The field integrals are read from file \verb|AOPROPER| with the specified label.
 
 
 \pagebreak[3]
-\subsection{\label{ref-rhfinp}\Sec{HF INPUT}}
+\subsection{\label{ref-rhfinp}\Sec{SCF INPUT}}
 
 {\bf Purpose:}
 
 This section deals with the closed shell and one open shell
-Hartree--Fock cases\index{SCF}\index{HF}\index{Hartree--Fock}.  The
-input here will usually only be used if
-\quotekw{\Key{HF}} (or its alias \quotekw{\Key{SCF}}) or
-\quotekw{\Key{MP2}}\index{MP2}\index{M{\o}ller-Plesset!second-order}
-have been specified under \quotekw{\Sec{*WAVE
-FUNCTIONS}}. Single configuration cases with more than one open
-shell\index{open shell}
+Hartree--Fock cases\index{SCF}\index{HF}\index{Hartree--Fock}
+and Kohn-Sham DFT\index{DFT}. 
+The input here will usually only be used if either
+\quotekw{\Key{DFT}} or \quotekw{\Key{HF}}
+has been specified under \quotekw{\Sec{*WAVE FUNCTIONS}}
+(though it is also needed for MP2 calculations based on saved closed-shell HF
+orbitals).
+Single configuration cases with more than one open shell\index{open shell}
 are handled by the general \Sec{CONFIGURATION INPUT} section.
 
 \begin{description}
@@ -592,13 +623,11 @@ are handled by the general \Sec{CONFIGURATION INPUT} section.
   starting from H\"{u}ckel or H1DIAG
   starting orbitals\index{starting orbitals}\index{H\"{u}ckel}.
 
-  Allow the Hartree--Fock
-occupation\index{Hartree--Fock occupation}\index{HF occupation} to
-  change based on changes in
-  orbital ordering during DIIS\index{DIIS} optimization.
+  Allow the Hartree--Fock occupation\index{Hartree--Fock occupation}\index{HF occupation} to
+  change based on changes in orbital ordering during DIIS\index{DIIS} optimization.
 
 \item[\Key{C2DIIS}]
-  Use Harell Sellers' C2-DIIS algorithm instead of Pulay's C1-DIIS algorithm
+  Use Harrell Sellers' C2-DIIS algorithm instead of Pulay's C1-DIIS algorithm
   (see comments).
 
 \item[\Key{COREHOLE}]
@@ -609,14 +638,13 @@ occupation\index{Hartree--Fock occupation}\index{HF occupation} to
   SHELL}} must not
   be specified.  The specified core orbital must be
   inactive\index{inactive orbital}.
-  The HF occupation in symmetry \kw{JCHSYM} will be reduced with one
-  and instead an
-  open shell orbital will be added for the core hole orbital.
+  The number of doubly occupied orbitals in symmetry \kw{JCHSYM} will be reduced with one
+  and instead an open shell orbital will be added for the core hole orbital.
   If the specified core orbital is not the last occupied orbital in symmetry
   \kw{JCHSYM} it will switch places with that orbital and user-defined reordering
   is not possible.
   If explicit reordering is required you must also reorder
-  the core orbital yourself and let \kw{JCHORB} point to the last occupied orbtial
+  the core orbital yourself and let \kw{JCHORB} point to the last occupied orbital
   of symmetry \kw{JCHSYM}.  See comments below.
 
 \item[\Key{CORERELAX}]
@@ -640,11 +668,23 @@ occupation\index{Hartree--Fock occupation}\index{HF occupation} to
   determined on the basis of the nuclear charges and the total charge
   of the molecule\index{charge of molecule} as specified in the
   \verb|MOLECULE.INP| file. The
-  keyword is incompatible with the keywords \quotekw{\Key{HF
-  OCCUPATION}} and \quotekw{\Key{OPEN SHELL}}.
+  keyword is incompatible with the keywords \quotekw{.DOUBLY OCCUPIED}
+  and \quotekw{.OPEN SHELL}.
 
 \item[\Key{FC MVO}]
-  See Ref.~\cite{cwbjcp72}.
+  \kw{READ (LUINP,*) (NMVO(I), I = 1,NSYM)} \\
+  Modified virtual orbitals using Bauschlichers suggestion
+  (see Ref.~\cite{cwbjcp72})
+  for CI or for start guess for MCSCF. The modified virtual orbitals
+  are obtained by  diagonalizing the virtual-virtual
+  block of the Fock matrix constructed from NMVO(1:NSYM) doubly
+  occupied orbitals.
+  The occupied SCF orbitals (i.e those specified with
+  \quotekw{.DOUBLY OCCUPIED} and \quotekw{.OPEN SHELL}
+  or by automatic occupation) are not modified.
+  The construction of modified virtual orbitals
+  will follow any SCF and MP2 calculations.
+  See comments below.
 
 \item[\Key{FOCK ITERATIONS}]
   \kw{READ (LUINP,*) MAXFCK} \\
@@ -655,18 +695,17 @@ occupation\index{Hartree--Fock occupation}\index{HF occupation} to
   \kw{READ (LUINP,*) (NFRRHF(I),I=1,NSYM)} \\
   Frozen orbitals per symmetry (if MP2 follows then at least these orbitals
   must be frozen in the MP2 calculation).
-  NOTE: no Roothaan Fock iterations if frozen orbitals.
+  NOTE: no Roothaan Fock iterations allowed if frozen orbitals.
 
-\item[\Key{H1VIRTUALS}]
-  Virtual orbitals that diagonalize the one-electron Hamiltonian matrix
-  (see comments below).
-
-\item[\Key{HF OCCUPATION}]
+\item[\Key{DOUBLY OCCUPIED}]
     \kw{READ (LUINP,*) (NRHF(I),I=1,NSYM)} \\
   \index{HF}\index{SCF}\index{Hartree--Fock}\index{MP2}\index{M{\o}ller-Plesset!second-order}
-  Hartree--Fock occupancy for RHF and MP2 calculations. This keyword
-  is required is Hartree--Fock or MP2 is part of a multistep
+  Explicit specification of number of doubly occupied orbitals in each symmetry
+  for DFT, RHF and MP2 calculations. This keyword
+  is required when Hartree--Fock or MP2 is part of a multistep
   calculation which includes an MCSCF wave function. 
+  Otherwise the program by default will try to guess the occupation,
+  corresponding to the  \quotekw{.AUTOCC} keyword.
 
 \item[\Key{MAX DIIS ITERATIONS}]
   \kw{READ (LUINP,*) MXDIIS} \\
@@ -680,11 +719,11 @@ occupation\index{Hartree--Fock occupation}\index{HF occupation} to
 
 \item[\Key{MAX MACRO ITERATIONS}]
   \kw{READ (LUINP,*) MXHFMA} \\
-  Maximum number of QCHF macro\index{HF!quadratic convergent} iterations (default = 15).
+  Maximum number of QCSCF macro\index{SCF!quadratic convergent} iterations (default = 15).
 
 \item[\Key{MAX MICRO ITERATIONS}]
   \kw{READ (LUINP,*) MXHFMI} \\
-  Maximum number of QCHF\index{HF!quadratic convergent} micro iterations per macro iteration (default = 12).
+  Maximum number of QCSCF\index{SCF!quadratic convergent} micro iterations per macro iteration (default = 12).
 
 \item[\Key{NODIIS}]
   Do not use DIIS algorithms\index{DIIS} (default: use DIIS algorithm).
@@ -692,8 +731,8 @@ occupation\index{Hartree--Fock occupation}\index{HF occupation} to
 \item[\Key{NONCANONICAL}]
   No transformation to canonical orbitals\index{canonical orbital}
 
-\item[\Key{NOQCHF}]
-  No quadratically convergent Hartree--Fock\index{HF!quadratic convergent} iterations
+\item[\Key{NOQCSCF}]
+  No quadratically convergent SCF\index{SCF!quadratic convergent} iterations
 
 \item[\Key{OPEN SHELL}]
   Default = no open shell\\
@@ -717,7 +756,7 @@ occupation\index{Hartree--Fock occupation}\index{HF occupation} to
 
 \noindent{\bf Comments:}
 
-By default, the RHF part of a {\sir} calculation will consist of :
+By default, the RHF/DFT part of a calculation will consist of :
 \begin{enumerate}
 \item {MAXFCK Roothaan Fock iterations (early exit if convergence
     or oscillations). However, the default is that no Roothaan Fock
@@ -727,40 +766,45 @@ iterations are done unless explicitly requested through the keyword
 \item {MXDIIS DIIS iterations (exit if convergence, i.e. gradient norm
     less than THRRHF, and if convergence rate too slow or even diverging).
 }
-\item {Unless NOQCHF, quadratically convergent Hartree--Fock until
+\item {Unless NOQCSCF, quadratically convergent Hartree--Fock/DFT until
     gradient norm less than THRRHF.
 }
-\item{If \quotekw{.H1VIRT} then transformation of
-    virtual orbitals to diagonalize
-    the one-electron Hamiltonion, i.e. virtual orbitals will be defined
-    for a bare nuclei potential.
-    If the RHF calculation is going to be followed
-    directly by an MCSCF calculation,
-    \quotekw{.H1VIRT} will usually provide much
+\item{If \quotekw{.FC MVO} has been specified
+    then the virtual SCF orbitals will be modified by diagonalizing
+    the virtual-virtual block of
+    a modified Fock matrix: the Fock matrix
+    based on the occupied orbitals specified after the keyword, a
+    good choice is the inactive (doubly occupied) orbitals in the
+    following CI or MCSCF.
+    The occupied SCF orbitals will not be modified.
+    If the RHF calculation is followed by a CI or an MCSCF calculation,
+    \quotekw{.FC MVO} will usually provide much
     better start orbitals than the canonical orbitals (canonical
     orbitals will usually put diffuse, non-correlating orbitals in the
-    active space).  Note that if the basis set contains compact,
-    core-correlating orbitals, \quotekw{.H1VIRT} will put those in the
-    active space. 
-    WARNING: if both \quotekw{.MP2} and \quotekw{.H1VIRT} are specified,
-    then the MP2 orbitals will be destroyed and replaced with \kw{H1VIRT}
+    active space). \\
+    WARNING: if both \quotekw{.MP2} and \quotekw{.FC MVO} are specified,
+    then the MP2 orbitals will be destroyed and replaced with \quotekw{.FC MVO}
     orbitals.
 }
 \end{enumerate}
 
-In general \quotekw{.HF OCCUPATION} should be specified for CI or MCSCF\index{HF occupation}\index{Hartree--Fock occupation}\index{CI}\index{MCSCF}\index{Configuration Interaction}
-wave function calculations.  If not specified, the HF occupation
-will be the number of inactive orbitals in the MCSCF calculation (or
-CI calculation if no MCSCF). For SCF or MP2\index{HF}\index{SCF}\index{Hartree--Fock}\index{MP2}\index{M{\o}ller-Plesset!second-order}
-calculations the Hartree--Fock occupation will be determined on the
+In general \quotekw{.DOUBLY OCCUPIED} should be specified for CI or MCSCF
+\index{HF occupation}\index{Hartree--Fock occupation}\index{CI}\index{MCSCF}
+\index{Configuration Interaction}
+wave function calculations -- you anyway need to know the distribution
+of orbitals over symmetries to specify the \quotekw{*CI INPUT} input.
+For RHF\index{RHF}\index{SCF}\index{Hartree--Fock}
+or MP2\index{MP2}\index{M{\o}ller-Plesset!second-order}
+calculations the orbital occupation will be determined on the
 basis of the nuclear charges and molecular charge of the molecule as
 specified in the \verb|MOLECULE.INP| file.
 
-By default, starting orbitals and initial Hartree--Fock occupation will
-be determined on the basis of a H\"{u}ckel\index{H\"{u}ckel}
+By default, starting orbitals and initial orbital occupation will
+be determined automatically on the basis of a H\"{u}ckel\index{H\"{u}ckel}
 calculation (for molecules where all nuclear charges are
-less than or equal to 36). If problems is experienced due to the
-Huckel starting guess, it can be avoided by requiring another set of
+less than or equal to 36), corresponding to the \quotekw{.AUTOCC} keyword.
+If problems is experienced due to the
+H\"{u}ckel starting guess, it can be avoided by requiring another set of
 starting orbitals (e.g. \verb|H1DIAG|).
 
 %The default convergence threshold is quite sharp (compare with the
@@ -779,8 +823,8 @@ Harrell Sellers, Int. J. Quant. Chem. {\bf 45}, 31-41 (1993) is
 also implemented, and may be selected with \quotekw{\Key{C2DIIS}}.
 
 
-H1VIRTUALS: This option can be used without a Hartree--Fock calculation
-to obtain compact virtual orbitals, but \quotekw{\Key{HF OCCUPATION}} must be
+FC MVO: This option can be used without a Hartree--Fock calculation
+to obtain compact virtual orbitals, but \quotekw{.DOUBLY OCCUPIED} must be
 specified anyway in order to identify the virtual orbitals to be transformed.
 
 COREHOLE: Enable SCF
@@ -832,15 +876,18 @@ Chapter~\ref{ch:CC}.
 \noindent{\bf Comments:}
 
 
-The MP2 module expects canonical Hartree--Fock
-orbitals\index{canonical orbital}, the module will
-check the orbitals and exit if the Fock matrix has off-diagonal non-zero
+The MP2 module expects canonical Hartree--Fock orbitals. The MP2 module will
+check the orbitals and exits if the Fock matrix has off-diagonal non-negligible
 elements.
+If starting from saved canonical Hartree--Fock orbitals from a previous calculations,
+although not Hartree-Fock calculation will be done
+the number of occupied Hartree--Fock orbitals in each symmetry must anyway be
+specified with the \quotekw{.DOUBLY OCCUPIED} under \quotekw{*SCF INPUT}.
 
 The MP2 calculation will produce the MP2 energy and the natural orbitals
 for the density matrix through second order.  The primary purpose of
 this option is to generate good starting orbitals for CI or MCSCF wave
-functions, but
+functions, but it
 may of course also be used to obtain the MP2 energy, perhaps with frozen
 core orbitals. {\em For valence MCSCF calculations it is recommended that the
 \quotekw{\Key{MP2 FROZEN}} option is used in order to obtain the appropriate
@@ -1211,25 +1258,6 @@ reordering and punching of orbitals.
   THROVL: limit for basis
   set numerical linear dependence (eigenvectors with eigenvalue less
   than THROVL are excluded). Default is 1.0$\cdot$10$^{-6}$.
-
-%\item[\Key{AVERAGE}]
-%  Default = no average (\kw{KAVER = 0})\\
-%  \kw{READ (LUINP,*) KAVER,(KSYM(I),I=1,4)} \\
-%  Old option for averaging degenerate symmetries in $D_{2h}$, it is
-%  generally recommended to use the new SUPSYM feature.
-%  If you want to use \quotekw{\Key{AVERAGE}} the SUPSYM
-%  feature must be disabled with \quotekw{\Key{NOSUPSYM}}.
-%\begin{verbatim}
-%  KAVER=1: double degeneracy, average KSYM(1) and KSYM(2)
-%  KAVER=2: a) KSYM(1)=KSYM(3): triple degeneracy, average
-%              KSYM(1), KSYM(2), KSYM(4)
-%           b) else: two double degeneracies,
-%              average KSYM(1) and KSYM(2), and
-%              average KSYM(3) and KSYM(4).
-%  KAVER .ne. 0 : MO coefficients are copied from the KSYM(1) and
-%           KSYM(3) to the other degenerate symmetries to avoid
-%           different orbitals through numerical roundoff errors.
-%\end{verbatim}
 
 \item[\Key{CMOMAX}]
   \kw{READ (LUINP,*) CMAXMO} \\
@@ -1646,7 +1674,7 @@ User control of the NEO restricted step optimization.
   must be rejected if ratio is worse than RATREJ.
 
 \item[\Key{THQKVA}]
-  Default: 8.0 for MCSCF; 0.8 for QCHF\\
+  Default: 8.0 for MCSCF; 0.8 for QCSCF\\
   \kw{READ (LUINP,*) THQKVA} \\
   Convergence factor for micro iterations in local (quadratic) region:
   THQKVA*(norm of gradient)**2
@@ -1660,7 +1688,7 @@ User control of the NEO restricted step optimization.
 \item[\Key{THQMIN}]
   Default: 0.1\\
   \kw{READ (LUINP,*) THQMIN} \\
-  Convergence threshold for auxilliary roots in NEO MCSCF optimization.
+  Convergence threshold for auxiliary roots in NEO MCSCF optimization.
 
 \item[\Key{TIGHT STEP CONTROL}]
   Tight step control also for ground state calculations
@@ -1738,7 +1766,7 @@ specified by the two transformation level keywords.
    \item[2:] Default for MCSCF optimization. All integrals needed for {\sir}
              second-order MCSCF optimization, including the integrals
              needed to explicitly construct the diagonal of the orbital
-             hessian. Two indices occupied orbitals, two indices all
+             Hessian. Two indices occupied orbitals, two indices all
              orbitals, with some reduction for inactive indices.
              Both (cd/ab) and (ab/cd) are stored.
 
