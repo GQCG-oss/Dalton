@@ -424,7 +424,7 @@ C
          WRITE (LUPRI,'(2X,A,/A)') 
      &      ' Symmetry not implemented for explicit Hessian in DFTLTR.',
      &      ' Program aborted.'
-         CALL QUIT('Symmetry not implementd for DOHES in DFTLTR',-1)
+         CALL QUIT('Symmetry not implementd for DOHES in DFTLTR')
       END IF
       IF (DOHES) THEN
          B0 = D1
