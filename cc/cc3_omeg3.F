@@ -6665,7 +6665,7 @@ C
          KOFF1  = ISAIKJ(ISYBIJ,ISYML)
      *          + 1
          KOFF2  = KINT1
-         KOFF3 = 1 +
+         KOFF3 = 1
      *          + IT2SP(ISYBIJ,ISYMA)
 C
          IF (IOPT .EQ. 1) THEN
