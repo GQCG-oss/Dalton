@@ -305,7 +305,16 @@ C
 C
 C        Too many components at present
 C
-         NCOMP = (3*NUCDEP*(3*NUCDEP + 1)/2)
+         IF (ALLCOM .OR. .NOT. DODRCT) THEN
+            NCOMP = (3*NUCDEP*(3*NUCDEP + 1)/2)
+         ELSE
+            NDEGMX = 1
+            DO I = 1, NUCIND
+               NDEG = NUCDEG(I)
+               IF (NDEG .GT. NDEGMX) NDEGMX = NDEG
+            END DO
+            NCOMP = 9*NDEGMX*NDEGMX
+         END IF
          CALL MAGDRV(SPNDSO,WORK(KDENMA),WORK(KFOCMA),WORK(KLAST),LWRK,
      &               MPRINT,MNODC,MNODV,WORD,NCOMP)
       END IF
@@ -493,12 +502,27 @@ C
             CALL MAGAVE(SPNDSO,STHMAT,DENMAT,EXPVAL,NCOMP,WORK,LWORK,
      &                  IPRINT,WORD,LABINT,SIGN)
  61      CONTINUE
-      ELSE
-         IF (WORD .EQ. 'DSO    ') THEN
+      ELSE IF (WORD .EQ. 'DSO    ') THEN
+         IF (ALLCOM) THEN
             NPATOM = 1
+            CALL GET1IN(STHMAT,WORD,NCOMP,WORK(1),LWORK,LABINT,INTREP,
+     &                  INTADR,MPQUAD,.FALSE.,NPATOM,.TRUE.,IPRINT)
+            IF (IPRINT .GE. 15) THEN
+               DO ICOMP = 1, NCOMP
+                  CALL AROUND('Integrals of operator: '//LABINT(ICOMP))
+                  WRITE (LUPRI,'(A,I2)') ' Symmetry of operator:',
+     &                 INTREP(ICOMP) + 1
+                  CALL OUTPAK(STHMAT(1,ICOMP),NBAST,1,LUPRI)
+               END DO
+            END IF
+            CALL MAGAVE(SPNDSO,STHMAT,DENMAT,EXPVAL,NCOMP,WORK,LWORK,
+     &                  IPRINT,WORD,LABINT,SIGN)
          ELSE
-            NPATOM = 0
+            CALL GET1DS(STHMAT,WORD,NCOMP,WORK,LWORK,LABINT,INTREP,
+     &                  INTADR,SPNDSO,DENMAT,EXPVAL,MPQUAD,IPRINT)
          END IF
+      ELSE
+         NPATOM = 0
          IF (WORD .EQ. 'DSUSCGM') THEN
             CALL GET1IN(STHMAT,'DSUSCGO',NCOMP,WORK(1),LWORK,LABINT,
      &           INTREP,INTADR,MPQUAD,.FALSE.,NPATOM,.TRUE.,IPRINT)
@@ -506,9 +530,6 @@ C
             CALL GET1IN(STHMAT,WORD,NCOMP,WORK(1),LWORK,LABINT,INTREP,
      &               INTADR,MPQUAD,.FALSE.,NPATOM,.TRUE.,IPRINT)
          END IF
-C
-C     Add contribution from electric field, KRu, Aug.-93
-C
          IF (IPRINT .GE. 15) THEN
             DO 140 ICOMP = 1, NCOMP
                CALL AROUND('Integrals of operator: '//LABINT(ICOMP))
@@ -517,6 +538,9 @@ C
                CALL OUTPAK(STHMAT(1,ICOMP),NBAST,1,LUPRI)
  140        CONTINUE
          END IF
+C
+C     Add contribution from electric field, KRu, Aug.-93
+C
          IF (NFIELD .GT. 0 .AND. (WORD .EQ. 'DIASUS ')) THEN
             NCOMP = 6
             KTMAT = 1
@@ -910,6 +934,66 @@ C
      &            WORD,IORDER,MPQUAD,TRIANG,PROPRI,
      &            NPRINT,SINTMA,NCOMP,TOFILE,'TRIANG',DOINT)
       CALL GPCLOSE(LUPROP,'KEEP')
+      RETURN
+      END
+C  /* Deck get1ds */
+      SUBROUTINE GET1DS(STHMAT,WORD,NCOMP,WORK,LWORK,LABINT,INTREP,
+     &                  INTADR,SPNDSO,DENMAT,EXPVAL,MPQUAD,NPRINT)
+C
+C     K.Ruud, May 2002. Calculates diamagnetic spin-orbit integrals
+C                       by looping over pairs of nuclei, and contracts
+C                       them with densities. Alternative routine for 
+C                       reducing memory requirements in the 1-el.int.part
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <iratdef.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <maxmom.h>
+#include <nuclei.h>
+#include <cbiher.h>
+#include <dorps.h>
+#include <spnout.h>
+#include <inftap.h>
+C
+      LOGICAL DOINT(2,2), TOFILE
+      CHARACTER WORD*7, LABINT(*)*8
+      DIMENSION WORK(LWORK), STHMAT(*), INTREP(*), INTADR(*), SPNDSO(*),
+     &          DENMAT(*), EXPVAL(*)
+C
+      CALL QENTER('GET1DS')
+      TRIANG = .TRUE.
+      TOFILE = .FALSE.
+      SIGN   = 1.0D0
+      PROPRI = NPRINT .GT. 5
+C
+      DOINT(1,1) = .TRUE.
+      DOINT(2,2) = .TRUE.
+      DOINT(1,2) = .FALSE.
+      DOINT(2,1) = .FALSE.
+C
+      CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ','UNFORMATTED',IDUMMY,
+     &            .FALSE.)
+      DO INUC = 1, NUCIND
+         DO JNUC = 1, INUC
+            IF (INUC .EQ. JNUC) THEN
+               NPATOM = 1
+            ELSE
+               NPATOM = 2
+               IPATOM(2) = JNUC
+            END IF
+            IPATOM(1) = INUC
+            ALLATM = .FALSE.
+            CALL PR1IN1(WORK,LWORK,INTREP,INTADR,LABINT,
+     &                  WORD,IDUMMY,MPQUAD,TRIANG,PROPRI,
+     &                  NPRINT,STHMAT,NCOMP,TOFILE,'TRIANG',DOINT)
+            CALL MAGAVE(SPNDSO,STHMAT,DENMAT,EXPVAL,NCOMP,WORK,LWORK,
+     &                  NPRINT,WORD,LABINT,SIGN)
+         END DO
+      END DO
+      CALL GPCLOSE(LUPROP,'KEEP')
+      CALL QEXIT('GET1DS')
       RETURN
       END
 C  /* Deck spntra */
