@@ -87,8 +87,8 @@ void dft_kohn_sham_(real* dmat, real* ksm, real *edfty,
                     real* work, int *lwork, int* ipr);
 void dft_lin_resp_(real* fmat, real *cmo, real *zymat, int *trplet, 
 		   int *ksymop, real* work,int* lwork);
-void FSYM2(dft_lin_respf)(real* fmat, real *cmo, real *zymat, int *trplet, 
-		   int *ksymop, real* work,int* lwork);
+void FSYM2(dft_lin_respf)(int *nosim, real* fmat, real *cmo, real *zymat,
+                          int *trplet, int *ksymop, real* work,int* lwork);
 void dft_mol_grad_(real* dmat, real* work, int* lwork, int* iprint);
 void dftqrcf_(real* fi, real* cmo, real* kappaY, int* symY, int* spinY,
               real* kappaZ, int* symZ, int* spinZ, int* addfock,

@@ -395,7 +395,7 @@ C
            CALL UPKWOP(NWOPT,JWOP,BOVECS(1,IOSIM),WRK(KUBO))
            KSYMOX = KSYMOP
            KSYMOP = 1
-           CALL DFT_LIN_RESPF(WRK(KFXC),CMO,WRK(KUBO),
+           CALL DFT_LIN_RESPF(1,WRK(KFXC),CMO,WRK(KUBO),
      &                        .FALSE.,KSYMOP,WRK(K3A),L3A)
            KSYMOP = KSYMOX
            CALL PKWOP(NWOPT,JWOP,WRK(KUBO),WRK(KFXC))

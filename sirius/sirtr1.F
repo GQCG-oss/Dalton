@@ -906,7 +906,7 @@ C
          IF (NASHT.GT.0) CALL QUIT('TR1FCY: open shell DFT not yet')
 c        TODO         DFTIMG = .FALSE.
          ksymop = jwopsy
-         call dft_lin_respf(fxc(1,1),cmo,ubo(1,1),.FALSE.,
+         call dft_lin_respf(1,fxc(1,1),cmo,ubo(1,1),.FALSE.,
      &                      jwopsy,wrk(kfree),lfree)
 c         CALL DFTATR(FXC(1,1),CMO,UBO(1,1),.false.,
 c                     JWOPSY,WRK(KFREE),LFREE)

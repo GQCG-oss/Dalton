@@ -725,18 +725,18 @@ C
 C add DFT contribution 
 C
       IF (DODFT) THEN
-         DO IOSIM = 1, NOSIM
-            if(NASHT.GT.0) THEN
+         IF(NASHT.GT.0) THEN
+            DO IOSIM = 1, NOSIM
                call dft_lin_respab(fcone(1,1,iosim),fvone(1,1,iosim),
-     &                   cmo,zymat(1,iosim),trplet,ksymop,wrk(kwrk0),
-     &                   lfree)
-            ELSE
-               call dft_lin_respf(fcone(1,1,iosim),cmo,zymat(1,iosim),
-     &                           trplet, ksymop,wrk(kwrk0),lfree)
+     &              cmo,zymat(1,iosim),trplet,ksymop,wrk(kwrk0),
+     &              lfree)
+            END DO
+         ELSE
+            call dft_lin_respf(NOSIM,fcone,cmo,zymat,
+     &                         trplet, ksymop,wrk(kwrk0),lfree)
 c              CALL DFTATR(FCONE(1,1,IOSIM),CMO,ZYMAT(1,IOSIM),TRPLET,
 c     &                    KSYMOP,WRK(KWRK0),LFREE)
-            ENDIF
-         END DO
+         ENDIF
       END IF
 C
 C ADD CONTRIBUTION FROM THE A(0)S(2) TERM IF HRPA

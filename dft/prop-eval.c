@@ -236,40 +236,45 @@ dft_lin_resp_slave(real* work, int* lwork, const int* iprint)
 #endif
 
 static void
-dft_lin_resp_sync_slaves(real* cmo, real* zymat, int* trplet, int* ksymop)
+dft_lin_resp_sync_slaves(real* cmo, int *nvec, real**zymat, int* trplet, int* ksymop)
 {
-#ifdef C99_COMPILER
-    const SyncData data2[] = {
-	{ &inforb_.norbt, 1,                   MPI_INT    },
-	{ cmo,     inforb_.norbt*inforb_.nbast,MPI_DOUBLE },
-	{ zymat,   inforb_.n2orbx,             MPI_DOUBLE },
-	{ trplet,  1,                          MPI_INT    },
-	{ ksymop,  1,                          MPI_INT    }
-    };
-#else
-    /* Is it only HP that has such archaic compilers? */
-    static SyncData data2[4] = 
-    { {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_INT}, {NULL, 0, MPI_INT} };
+    static SyncData data2[] = 
+    { {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_INT},
+      {NULL, 0, MPI_INT} };
+    MPI_Bcast(nvec, 1, MPI_INT, MASTER_NO, MPI_COMM_WORLD);
+    if(*zymat == NULL) /* we are a slave */
+	*zymat = dal_malloc(*nvec*inforb_.n2orbx*sizeof(real));
     data2[0].data = cmo;    data2[0].count = inforb_.norbt*inforb_.nbast;
-    data2[1].data = zymat;  data2[1].count = inforb_.n2orbx;
+    data2[1].data = *zymat; data2[1].count = *nvec*inforb_.n2orbx;
     data2[2].data = trplet; data2[2].count = 1;
     data2[3].data = ksymop; data2[3].count = 1;
-#endif
+
     FSYM(dftlrsync)();
     mpi_sync_data(data2, ELEMENTS(data2));
 }
 
 static __inline__ void
-dft_lin_resp_collect_info(real* fmat, real*work)
+dft_lin_resp_collect_info(int nvec, real* fmat, real*work, int lwork)
 {
-    dcopy_(&inforb_.n2basx, fmat,&ONEI, work, &ONEI);
-    MPI_Reduce(work, fmat, inforb_.n2basx, MPI_DOUBLE, MPI_SUM, 
-	       MASTER_NO, MPI_COMM_WORLD);
+    int sz = nvec*inforb_.n2basx;
+    if(sz>lwork) {
+        if(inforb_.n2basx>lwork) dalton_quit("not enough mem to collect data");
+        for(sz=0; sz<nvec; sz++) {
+            dcopy_(&inforb_.n2basx, fmat + sz*inforb_.n2basx,
+                   &ONEI, work, &ONEI);
+            MPI_Reduce(work, fmat+sz*inforb_.n2basx, inforb_.n2basx,
+                       MPI_DOUBLE, MPI_SUM, MASTER_NO, MPI_COMM_WORLD);
+        }
+    } else {
+        dcopy_(&sz, fmat, &ONEI, work, &ONEI);
+        MPI_Reduce(work, fmat, sz, MPI_DOUBLE, MPI_SUM, 
+                   MASTER_NO, MPI_COMM_WORLD);
+    }
 }
 
 #else  /* VAR_MPI */
-#define dft_lin_resp_sync_slaves(cmo,zymat,trplet,ksymop)
-#define dft_lin_resp_collect_info(fmat,work)
+#define dft_lin_resp_sync_slaves(cmo,nvec,zymat,trplet,ksymop)
+#define dft_lin_resp_collect_info(nvec,fmat,work,lwork)
 #endif /* VAR_MPI */
 
 static void
@@ -379,11 +384,11 @@ dft_lin_resp_(real* fmat, real *cmo, real *zymat, int *trplet,
     DftCallbackData cbdata[1];
     DftDensity dens = { dft_dens_restricted, NULL, NULL };
     real dummy;
-    int i, j;
+    int i=1, j;
     
     /* WARNING: NO work MAY BE done before syncing slaves! */
-    dft_wake_slaves((DFTPropEvalMaster)dft_lin_resp_); /* NO-OP in serial */
-    dft_lin_resp_sync_slaves(cmo,zymat,trplet,ksymop); /* NO-OP in serial */
+    dft_wake_slaves((DFTPropEvalMaster)dft_lin_resp_);    /* NO-OP in serial */
+    dft_lin_resp_sync_slaves(cmo,&i,&zymat,trplet,ksymop);/* NO-OP in serial */
 
     times(&starttm);
     lr_data.dmat  = malloc(inforb_.n2basx*sizeof(real));
@@ -619,8 +624,8 @@ kohn_shamab_cb(DftGrid* grid, DftKohnShamU* exc)
 	real *atvZ = &grid->atv[inforb_.nbast*3];
 	real fxa, fya, fza, fxb, fyb, fzb;
         /* add epsilon to avoid division by zero */
-        real grada = grid->dp.grada ? grid->dp.grada : 1e-40;
-        real gradb = grid->dp.gradb ? grid->dp.gradb : 1e-40;
+        real grada = fabs(grid->dp.grada)>1e-40 ? grid->dp.grada : 1e-40;
+        real gradb = fabs(grid->dp.gradb)>1e-40 ? grid->dp.gradb : 1e-40;
         /* alpha  */ 
 	drvs.df0010 *= 2.0/grada;
 	fxa = drvs.df0010*grid->grada[0]+2.0*drvs.df00001*grid->gradb[0];
@@ -821,13 +826,13 @@ lin_resp_cbab_gga(DftGrid* grid, LinRespDataab* data)
     selected_func->second(&vxc, grid->curr_weight, &grid->dp);
     /* alpha coeficients */
     /* add epsilon to avoid division by zero */
-    znva = 1.0/(grid->dp.grada ? grid->dp.grada : 1e-40);
+    znva = 1.0/(fabs(grid->dp.grada)>1e-40 ? grid->dp.grada : 1e-40);
     vxc.df0010 = znva*vxc.df0010; 
     rxa = znva*grid->grada[0];
     rya = znva*grid->grada[1];
     rza = znva*grid->grada[2];
     /* beta coeficients */
-    znvb = 1.0/(grid->dp.gradb ? grid->dp.gradb : 1e-40);
+    znvb = 1.0/(fabs(grid->dp.gradb)>1e-40 ? grid->dp.gradb : 1e-40);
     vxc.df0001 = znvb*vxc.df0001; 
     rxb = znvb*grid->gradb[0];
     ryb = znvb*grid->gradb[1];
@@ -1005,7 +1010,7 @@ FSYM2(dft_lin_respab)(real* fmatc, real* fmato,  real *cmo, real *zymat,
     struct tms starttm, endtm; clock_t utm;
     LinRespDataab lr_data;
     DftCallbackData cbdata[1];
-    int i, j, ioff, joff, isym, jsym, norbi, norbj;
+    int i=1, j, ioff, joff, isym, jsym, norbi, norbj;
     real averag;
     real *fmata, *fmatb; 
     real *runit;
@@ -1013,7 +1018,7 @@ FSYM2(dft_lin_respab)(real* fmatc, real* fmato,  real *cmo, real *zymat,
 
     /* WARNING: NO work MAY BE done before syncing slaves! */
     dft_wake_slaves((DFTPropEvalMaster)FSYM2(dft_lin_respab)); /* NO-OP in serial */
-    dft_lin_resp_sync_slaves(cmo,zymat,trplet,ksymop);          /* NO-OP in serial */
+    dft_lin_resp_sync_slaves(cmo,&i,&zymat,trplet,ksymop);     /* NO-OP in serial */
 
     times(&starttm);
     /* linear reponse data */
@@ -1321,7 +1326,7 @@ typedef struct {
     real* dmat, *kappa, *res;
     real* dtgao;
     real* vt; /* dimensioned [bllen] for LDA, [bllen][4] for GGA */
-    int   trplet, ksymop;
+    int   trplet, ksymop, vecs_in_batch;
 } LinRespBlData;
 
 extern void
@@ -1342,45 +1347,47 @@ lin_resp_cb_b_lda(DftIntegratorBl* grid, real * RESTRICT tmp,
     real * RESTRICT aos = grid->atv;
     real * RESTRICT excmat = data->res;
     real (* RESTRICT vt) = data->vt; /* [bllen][4] */
-    int ibl, i, jbl, j, k, isym;
+    int ibl, i, jbl, j, k, isym, ivec;
     DftDensProp dp = { 0 };
 
-    /* compute vector of transformed densities vt */
-    FSYM2(getexp_blocked_lda)(&data->ksymop, data->kappa, grid->atv,
-                        grid->bas_bl_cnt, grid->basblocks, &grid->shl_bl_cnt,
-                        tmp, &bllen, vt);
+    for(ivec=0; ivec<data->vecs_in_batch; ivec++) {
+        /* compute vector of transformed densities vt */
+        FSYM2(getexp_blocked_lda)(&data->ksymop, data->kappa + ivec*inforb_.n2basx,
+                                  grid->atv, grid->bas_bl_cnt, grid->basblocks,
+                                  &grid->shl_bl_cnt, tmp, &bllen, vt);
 
-    for(i=blstart; i<blend; i++) {
-        SecondDrv vxc;
-        real weight = grid->weight[grid->curr_point+i];
-        dp.rhoa = dp.rhob = 0.5*grid->r.rho[i];
-        dftpot1_(&vxc, &weight, &dp, &data->trplet);
-        vt[i] = vxc.fRR*vt[i];
-    }
+        for(i=blstart; i<blend; i++) {
+            SecondDrv vxc;
+            real weight = grid->weight[grid->curr_point+i];
+            dp.rhoa = dp.rhob = 0.5*grid->r.rho[i];
+            dftpot1_(&vxc, &weight, &dp, &data->trplet);
+            vt[i] = vxc.fRR*vt[i];
+        }
 
-    for(isym=0; isym<grid->nsym; isym++) {
-        int (*RESTRICT iblocks)[2] = BASBLOCK(grid,isym);
-        int ibl_cnt = grid->bas_bl_cnt[isym];
-        
-        for(ibl=0; ibl<ibl_cnt; ibl++)
-            for(i=iblocks[ibl][0]-1; i<iblocks[ibl][1]; i++) { 
-                int ioff = i*bllen;
-                for(k=blstart; k<blend; k++)
-                    tmp[k+ioff] = aos[k+ioff]*vt[k];
-	    }
-
-        for(ibl=0; ibl<ibl_cnt; ibl++) {
-        for(i=iblocks[ibl][0]-1; i<iblocks[ibl][1]; i++) { 
-            int ioff = i*inforb_.nbast;
-	    int jsym = inforb_.muld2h[data->ksymop-1][isym]-1;
-            int (*RESTRICT jblocks)[2] = BASBLOCK(grid,jsym);
-            int jbl_cnt = grid->bas_bl_cnt[jsym];
-	    if (isym<jsym) continue;
-            for(jbl=0; jbl<jbl_cnt; jbl++) {
-                int jtop = min(jblocks[jbl][1],i+1);
-                for(j=jblocks[jbl][0]-1; j<jtop; j++) { 
+        for(isym=0; isym<grid->nsym; isym++) {
+            int (*RESTRICT iblocks)[2] = BASBLOCK(grid,isym);
+            int ibl_cnt = grid->bas_bl_cnt[isym];
+            
+            for(ibl=0; ibl<ibl_cnt; ibl++)
+                for(i=iblocks[ibl][0]-1; i<iblocks[ibl][1]; i++) { 
+                    int ioff = i*bllen;
                     for(k=blstart; k<blend; k++)
-                            excmat[j+ioff] += aos[k+j*bllen]*tmp[k+i*bllen];
+                    tmp[k+ioff] = aos[k+ioff]*vt[k];
+                }
+            
+            for(ibl=0; ibl<ibl_cnt; ibl++) {
+                for(i=iblocks[ibl][0]-1; i<iblocks[ibl][1]; i++) { 
+                    int ioff = i*inforb_.nbast + ivec*inforb_.n2basx;
+                    int jsym = inforb_.muld2h[data->ksymop-1][isym]-1;
+                    int (*RESTRICT jblocks)[2] = BASBLOCK(grid,jsym);
+                    int jbl_cnt = grid->bas_bl_cnt[jsym];
+                    if (isym<jsym) continue;
+                    for(jbl=0; jbl<jbl_cnt; jbl++) {
+                        int jtop = min(jblocks[jbl][1],i+1);
+                        for(j=jblocks[jbl][0]-1; j<jtop; j++) { 
+                            for(k=blstart; k<blend; k++)
+                                excmat[j+ioff] += aos[k+j*bllen]*tmp[k+i*bllen];
+                        }
                     }
                 }
             }
@@ -1393,7 +1400,7 @@ lin_resp_cb_b_gga(DftIntegratorBl* grid, real * RESTRICT tmp,
                   int bllen, int blstart, int blend,
                   LinRespBlData* data)
 {
-    int ibl, i, jbl, j, k, isym;
+    int ibl, i, jbl, j, k, isym, ivec;
     real (* RESTRICT vt3)[4] = (real(*)[4])data->vt; /* [bllen][4] */
     real * RESTRICT aos = grid->atv;
     real * RESTRICT aox = grid->atv+bllen*inforb_.nbast;
@@ -1402,68 +1409,71 @@ lin_resp_cb_b_gga(DftIntegratorBl* grid, real * RESTRICT tmp,
     real * RESTRICT excmat = data->res;
     DftDensProp dp = { 0 };
 
-    /* compute vector of transformed densities and dens. gradients vt3 */
-    FSYM2(getexp_blocked_gga)(&data->ksymop,data->kappa, grid->atv, grid->bas_bl_cnt,
-                        grid->basblocks, &grid->shl_bl_cnt, tmp, &bllen, vt3);
-    for(i=blstart; i<blend; i++) {
-        SecondDrv vxc;
-	real facr, facg;
-        real weight = grid->weight[grid->curr_point+i];
-        real ngrad  = sqrt(grid->g.grad[i][0]*grid->g.grad[i][0]+
-                           grid->g.grad[i][1]*grid->g.grad[i][1]+
-                           grid->g.grad[i][2]*grid->g.grad[i][2]);
-        real brg, brz, b0 = vt3[i][0];
-        if(ngrad<1e-15|| grid->r.rho[i]<1e-15) {
-            vt3[i][0] = vt3[i][1] = vt3[i][2] = vt3[i][3] = 0;
-            continue;
+    for(ivec=0; ivec<data->vecs_in_batch; ivec++) {
+        /* compute vector of transformed densities and dens. gradients vt3 */
+        FSYM2(getexp_blocked_gga)(&data->ksymop,data->kappa + ivec*inforb_.n2basx,
+                                  grid->atv, grid->bas_bl_cnt,
+                                  grid->basblocks, &grid->shl_bl_cnt, tmp, &bllen, vt3);
+        for(i=blstart; i<blend; i++) {
+            SecondDrv vxc;
+            real facr, facg;
+            real weight = grid->weight[grid->curr_point+i];
+            real ngrad  = sqrt(grid->g.grad[i][0]*grid->g.grad[i][0]+
+                               grid->g.grad[i][1]*grid->g.grad[i][1]+
+                               grid->g.grad[i][2]*grid->g.grad[i][2]);
+            real brg, brz, b0 = vt3[i][0];
+            if(ngrad<1e-15|| grid->r.rho[i]<1e-15) {
+                vt3[i][0] = vt3[i][1] = vt3[i][2] = vt3[i][3] = 0;
+                continue;
+            }
+            brg = (vt3[i][1]*grid->g.grad[i][0] +
+                   vt3[i][2]*grid->g.grad[i][1] +
+                   vt3[i][3]*grid->g.grad[i][2]);
+            brz = brg/ngrad;
+            dp. rhoa = dp. rhob = 0.5*grid->r.rho[i];
+            dp.grada = dp.gradb = 0.5*ngrad;
+            dp.gradab = dp.grada*dp.gradb;
+            dftpot1_(&vxc, &weight, &dp, &data->trplet);
+            facr = vxc.fRZ*b0 + (vxc.fZZ-vxc.fZ/ngrad)*brz + vxc.fZG*brg;
+            facr = facr/ngrad + (vxc.fRG*b0+vxc.fZG*brz +vxc.fGG*brg);
+            facg = vxc.fZ/ngrad + vxc.fG;
+            vt3[i][0] = vxc.fRR*b0 + vxc.fRZ*brz+ vxc.fRG*brg;
+            vt3[i][1] = grid->g.grad[i][0]*facr + facg*vt3[i][1];
+            vt3[i][2] = grid->g.grad[i][1]*facr + facg*vt3[i][2];
+            vt3[i][3] = grid->g.grad[i][2]*facr + facg*vt3[i][3];
         }
-        brg = (vt3[i][1]*grid->g.grad[i][0] +
-	       vt3[i][2]*grid->g.grad[i][1] +
-	       vt3[i][3]*grid->g.grad[i][2]);
-	brz = brg/ngrad;
-        dp. rhoa = dp. rhob = 0.5*grid->r.rho[i];
-        dp.grada = dp.gradb = 0.5*ngrad;
-        dp.gradab = dp.grada*dp.gradb;
-        dftpot1_(&vxc, &weight, &dp, &data->trplet);
-	facr = vxc.fRZ*b0 + (vxc.fZZ-vxc.fZ/ngrad)*brz + vxc.fZG*brg;
-	facr = facr/ngrad + (vxc.fRG*b0+vxc.fZG*brz +vxc.fGG*brg);
-	facg = vxc.fZ/ngrad + vxc.fG;
-        vt3[i][0] = vxc.fRR*b0 + vxc.fRZ*brz+ vxc.fRG*brg;
-        vt3[i][1] = grid->g.grad[i][0]*facr + facg*vt3[i][1];
-        vt3[i][2] = grid->g.grad[i][1]*facr + facg*vt3[i][2];
-        vt3[i][3] = grid->g.grad[i][2]*facr + facg*vt3[i][3];
-    }
 
-    for(isym=0; isym<grid->nsym; isym++) {
-        int (*RESTRICT iblocks)[2] = BASBLOCK(grid,isym);
-        int ibl_cnt = grid->bas_bl_cnt[isym];
-        
-        for(ibl=0; ibl<ibl_cnt; ibl++) {
-            for(i=iblocks[ibl][0]-1; i<iblocks[ibl][1]; i++) { 
-                real *RESTRICT g0i = &aos[i*bllen];
-                real *RESTRICT gxi = &aox[i*bllen];
-                real *RESTRICT gyi = &aoy[i*bllen];
-                real *RESTRICT gzi = &aoz[i*bllen];
-                int ioff = i*inforb_.nbast;
-                int jsym = inforb_.muld2h[data->ksymop-1][isym]-1;
-                int (*RESTRICT jblocks)[2] = BASBLOCK(grid,jsym);
-                int jbl_cnt = grid->bas_bl_cnt[jsym];
-                if(isym<jsym) continue;
-                for(jbl=0; jbl<jbl_cnt; jbl++) {
-                    int jtop = min(jblocks[jbl][1],i+1);
-                    for(j=jblocks[jbl][0]-1; j<jtop; j++) { 
-                        real *RESTRICT g0j = &aos[j*bllen];
-                        real *RESTRICT gxj = &aox[j*bllen];
-                        real *RESTRICT gyj = &aoy[j*bllen];
-                        real *RESTRICT gzj = &aoz[j*bllen];
-                        for(k=blstart; k<blend; k++) {
-                            real a0 = g0i[k]*g0j[k];
-                            real ax = gxi[k]*g0j[k] + g0i[k]*gxj[k];
-                            real ay = gyi[k]*g0j[k] + g0i[k]*gyj[k];
-                            real az = gzi[k]*g0j[k] + g0i[k]*gzj[k];
-                            excmat[j+ioff] += 
-                                vt3[k][0]*a0 + vt3[k][1]*ax + 
-                                vt3[k][2]*ay + vt3[k][3]*az;
+        for(isym=0; isym<grid->nsym; isym++) {
+            int (*RESTRICT iblocks)[2] = BASBLOCK(grid,isym);
+            int ibl_cnt = grid->bas_bl_cnt[isym];
+
+            for(ibl=0; ibl<ibl_cnt; ibl++) {
+                for(i=iblocks[ibl][0]-1; i<iblocks[ibl][1]; i++) { 
+                    real *RESTRICT g0i = &aos[i*bllen];
+                    real *RESTRICT gxi = &aox[i*bllen];
+                    real *RESTRICT gyi = &aoy[i*bllen];
+                    real *RESTRICT gzi = &aoz[i*bllen];
+                    int ioff = i*inforb_.nbast + ivec*inforb_.n2basx;
+                    int jsym = inforb_.muld2h[data->ksymop-1][isym]-1;
+                    int (*RESTRICT jblocks)[2] = BASBLOCK(grid,jsym);
+                    int jbl_cnt = grid->bas_bl_cnt[jsym];
+                    if(isym<jsym) continue;
+                    for(jbl=0; jbl<jbl_cnt; jbl++) {
+                        int jtop = min(jblocks[jbl][1],i+1);
+                        for(j=jblocks[jbl][0]-1; j<jtop; j++) { 
+                            real *RESTRICT g0j = &aos[j*bllen];
+                            real *RESTRICT gxj = &aox[j*bllen];
+                            real *RESTRICT gyj = &aoy[j*bllen];
+                            real *RESTRICT gzj = &aoz[j*bllen];
+                            for(k=blstart; k<blend; k++) {
+                                real a0 = g0i[k]*g0j[k];
+                                real ax = gxi[k]*g0j[k] + g0i[k]*gxj[k];
+                                real ay = gyi[k]*g0j[k] + g0i[k]*gyj[k];
+                                real az = gzi[k]*g0j[k] + g0i[k]*gzj[k];
+                                excmat[j+ioff] += 
+                                    vt3[k][0]*a0 + vt3[k][1]*ax + 
+                                    vt3[k][2]*ay + vt3[k][3]*az;
+                            }
                         }
                     }
                 }
@@ -1474,55 +1484,84 @@ lin_resp_cb_b_gga(DftIntegratorBl* grid, real * RESTRICT tmp,
 
 /* dft_lin_respf_:
    Main Linear Response evaluator.
-   FMAT(NORBT,NORBT) - result added to FMAT.
+   FMAT(NORBT,NORBT,NOSIM) - result added to FMAT. Must not be referenced on slaves.
    cmo -const
-   zymat(NORBT,NORBT) - const response vector.
+   zymat(NORBT,NORBT,NOSIM) - const response vector.
    trplet - triplet excitation? (bool)
+   NOSIM - number of simultaneously transformed response vectors.
 */
 void
-FSYM2(dft_lin_respf)(real* fmat, real *cmo, real *zymat, int *trplet,
+FSYM2(dft_lin_respf)(int *nosim, real* fmat, real *cmo, real *zymat, int *trplet,
                     int *ksymop, real* work,int* lwork)
 {
+    /* MAX_VEC determines the number of simultaneusly transformed
+       vectors.  Set it to a small mumber (eg. 3) - the only operation
+       that is saved is evaluation of orbitals and density and density
+       gradients which is usually small compared to the time spent in
+       actual vector transformation. Larger values will only increate
+       memory utilization without positive impact on performance.
+       FIXME: consider using work for this purpose. */
+    static const int MAX_VEC = 5;
     struct tms starttm, endtm; clock_t utm;
     real electrons;
     LinRespBlData lr_data; /* linear response data */
     real dummy;
-    int i, j;
-    
+    int i, j, ivec, jvec;
+    int max_vecs;
+
     /* WARNING: NO work MAY BE done before syncing slaves! */
     dft_wake_slaves((DFTPropEvalMaster)FSYM2(dft_lin_respf)); /* NO-OP in serial */
-    dft_lin_resp_sync_slaves(cmo,zymat,trplet,ksymop);         /* NO-OP in serial */
+    dft_lin_resp_sync_slaves(cmo,nosim,&zymat,trplet,ksymop); /* NO-OP in serial */
+
     times(&starttm);
+    max_vecs = *nosim>MAX_VEC ? MAX_VEC : *nosim;
     lr_data.dmat  = dal_malloc(inforb_.n2basx*sizeof(real));
-    lr_data.res   = calloc(inforb_.n2basx,sizeof(real));
-    lr_data.kappa = calloc(inforb_.n2basx,sizeof(real));
+    lr_data.res   = dal_malloc(inforb_.n2basx*sizeof(real)*max_vecs);
+    lr_data.kappa = dal_malloc(inforb_.n2basx*sizeof(real)*max_vecs);
     lr_data.vt    = dal_malloc(DFT_BLLEN*4   *sizeof(real));
     lr_data.dtgao = dal_malloc(inforb_.nbast *sizeof(real));
     lr_data.trplet= *trplet;
     lr_data.ksymop= *ksymop;
     FSYM2(dft_get_ao_dens_mat)(cmo, lr_data.dmat, work, lwork);
-    FSYM(deq27)(cmo,zymat,&dummy,lr_data.kappa,&dummy,work,lwork);
-    electrons = dft_integrate_ao_bl(1, lr_data.dmat, work, lwork, 0, 
-                                    (DftBlockCallback)
-                                    (selected_func->is_gga() ?
-                                     lin_resp_cb_b_gga : lin_resp_cb_b_lda),
-                                     &lr_data);
-    dft_lin_resp_collect_info(lr_data.res, work);
-    if(DFTLR_DEBUG) {
-        fort_print("AO Fock matrix contribution in dft_lin_respf");
-        outmat_(lr_data.res,&ONEI,&inforb_.nbast,&ONEI,&inforb_.nbast,
-                &inforb_.nbast, &inforb_.nbast);
+    
+    for(ivec=0; ivec<*nosim; ivec+=max_vecs) {
+        int sz;
+        lr_data.vecs_in_batch = ivec + max_vecs > *nosim ? *nosim - ivec : max_vecs;
+        sz = lr_data.vecs_in_batch * inforb_.n2basx;
+        FSYM(dzero)(lr_data.kappa, &sz);
+        for(jvec=0; jvec<lr_data.vecs_in_batch; jvec++)
+            FSYM(deq27)(cmo,zymat+(ivec+jvec)*inforb_.n2orbx,&dummy,
+                        lr_data.kappa+jvec*inforb_.n2basx, &dummy,work,lwork);
+        FSYM(dzero)(lr_data.res, &sz);
+        electrons = dft_integrate_ao_bl(1, lr_data.dmat, work, lwork, 0, 
+                                        (DftBlockCallback)
+                                        (selected_func->is_gga() ?
+                                         lin_resp_cb_b_gga : lin_resp_cb_b_lda),
+                                        &lr_data);
+#ifdef VAR_MPI
+        dft_lin_resp_collect_info(lr_data.vecs_in_batch,lr_data.res, work, *lwork);
+	if(fmat == NULL)  /* The transformations below are done only by master. */
+	    continue;
+#endif
+        if(DFTLR_DEBUG) {
+            fort_print("AO Fock matrix contribution in dft_lin_respf");
+            outmat_(lr_data.res,&ONEI,&inforb_.nbast,&ONEI,&inforb_.nbast,
+                    &inforb_.nbast, &inforb_.nbast);
+        }
+        for(jvec=0; jvec<lr_data.vecs_in_batch; jvec++){
+            for(i=0; i<inforb_.nbast; i++) {
+                int ioff = i*inforb_.nbast + jvec*inforb_.n2basx;
+                for(j=0; j<i; j++) {
+                    int joff = j*inforb_.nbast + jvec*inforb_.n2basx;
+                    real averag = lr_data.res[i+joff] + lr_data.res[j+ioff];
+                    lr_data.res[i+joff] = lr_data.res[j+ioff] = averag;
+                }
+            }
+            /* transform to MO Fock matrix contribution  */
+            FSYM(lrao2mo)(cmo, &lr_data.ksymop, lr_data.res+jvec*inforb_.n2basx,
+                          fmat+(ivec+jvec)*inforb_.n2orbx, work, lwork);
+        }
     }
-    for(i=0; i<inforb_.nbast; i++) {
-	int ioff = i*inforb_.nbast;
-	for(j=0; j<i; j++) {
-	    int joff = j*inforb_.nbast;
-	    real averag = lr_data.res[i+joff] + lr_data.res[j+ioff];
-	    lr_data.res[i+joff] = lr_data.res[j+ioff] = averag;
-	}
-    }
-    /* transform to MO Fock matrix contribution  */
-    FSYM(lrao2mo)(cmo, &lr_data.ksymop, lr_data.res, fmat, work, lwork);
 
     free(lr_data.dmat);
     free(lr_data.kappa);
@@ -1531,23 +1570,21 @@ FSYM2(dft_lin_respf)(real* fmat, real *cmo, real *zymat, int *trplet,
     free(lr_data.dtgao);
     times(&endtm);
     utm = endtm.tms_utime-starttm.tms_utime;
-    fort_print("Electrons: %f(%9.3g): LR-DFT/b evaluation time: %9.1f s", 
-               electrons, (double)(electrons-(int)(electrons+0.5)),
+    fort_print("Electrons: %f(%9.3g): LR-DFT*%d evaluation time: %9.1f s", 
+               electrons, (double)(electrons-(int)(electrons+0.5)), *nosim,
                utm/(double)sysconf(_SC_CLK_TCK));
 }
 
 void
 dft_lin_respf_slave(real* work, int* lwork, const int* iprint)
 {
-    real *fmat = calloc(inforb_.n2orbx,sizeof(real));              /* OUT */
     real *cmo  = malloc(inforb_.norbt*inforb_.nbast*sizeof(real)); /* IN  */
-    real *zymat= malloc(inforb_.n2orbx*sizeof(real));              /* IN  */
+    real *zymat= NULL;                                             /* IN  */
     int trplet;                         /* IN: will be synced from master */
-    int ksymop;
-    FSYM2(dft_lin_respf)(fmat, cmo, zymat, &trplet, &ksymop, work, lwork);
-    free(fmat);
+    int ksymop, nosim;
+    FSYM2(dft_lin_respf)(&nosim, NULL, cmo, zymat, &trplet, &ksymop, work, lwork);
     free(cmo);
-    free(zymat); 
+    if(zymat) free(zymat); 
 }
 
 /* ================================================================== */
@@ -1652,8 +1689,8 @@ kohn_shamab_cb_b_gga(DftIntegratorBl *grid, real * RESTRICT tmp,
         drv1_clear(&drvs);
         d->energy += selected_func->func(&dp)*weight;
         selected_func->first(&drvs, weight, &dp);
-        dp.grada = dp.grada ? dp.grada : 1e-40;
-        dp.gradb = dp.gradb ? dp.gradb : 1e-40;
+        dp.grada = fabs(dp.grada)>1e-40 ? dp.grada : 1e-40;
+        dp.gradb = fabs(dp.gradb)>1e-40 ? dp.gradb : 1e-40;
         d->dRa[i] = drvs.df1000;
         d->dRb[i] = drvs.df0100;
         d->dZa[i]  = drvs.df0010/dp.grada;
