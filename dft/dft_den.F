@@ -339,7 +339,6 @@ C
 C     DFTDNS adaptation for open shell case ZR
 C
 #include <implicit.h>
-#include <kinds.h>
       DIMENSION DMATA(*), DMATB(*)
       DIMENSION WORK(LWORK)
       INTEGER IPRINT
@@ -347,7 +346,6 @@ C
 #include <inftap.h>
 #include <dummy.h>
 #include <priunit.h>
-      REAL(DOUBLE) D1
       PARAMETER ( D1 = 1.0D0, DP5 =0.5D0)
       LOGICAL CLOSED
 C

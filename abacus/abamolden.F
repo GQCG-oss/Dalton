@@ -162,6 +162,7 @@ C
 
       CHARACTER*6 NAME
       CHARACTER*4 WORD
+      CHARACTER*2 ASYMB(103)
 
 #include <molde.h>
 #include <nuclei.h>
@@ -173,9 +174,6 @@ C
 #include <chrsgn.h>
 #include <chrnos.h>
 #include <ibtfun.h>
-
-
-      CHARACTER*2 ASYMB(103)
 
       DATA (ASYMB(I),I = 1,103)
      1/' H', 'He', 'Li', 'Be', ' B', ' C', ' N', ' O', ' F', 'Ne',
