@@ -122,9 +122,8 @@ C
       END IF
   300 CONTINUE
       IF (ICHANG .GT. 0) THEN
-         CALL HEADER('Changes of defaults for *VIBANA section:',0)
-         WRITE (LUPRI,'(A)') '                                    '
-         WRITE (LUPRI,'(5X,A,I4)') 'Numerical derivatives' //
+         CALL HEADER('Changes of defaults for *PROPAV section:',0)
+         WRITE (LUPRI,'(/5X,A,I4)') 'Numerical derivatives' //
      &             ' of energy calculated to order', NMORDR
          WRITE (LUPRI,'(5X,A,I4,A)') 'from analytical', NAORDR,
      &                              '. derivatives'
@@ -136,14 +135,12 @@ C
          IF (PRPVIB) THEN
             WRITE (LUPRI,'(5X,A)') 'Vibrational averages of' //
      &           ' properties calculated.'
-            WRITE (LUPRI,'(A)') '                                  '
-            WRITE (LUPRI,'(5X,A)') 'Vibrational averages of the ' //
+            WRITE (LUPRI,'(/5X,A)') 'Vibrational averages of the ' //
      &           'following properties:'
             IF (NSPNSP) THEN
                WRITE (LUPRI,'(5X,A)') 'Spin-spin couplings.'
             END IF
-            WRITE (LUPRI,'(A)') '                                  '
-            WRITE (LUPRI,'(5X,A)') 'Harmonic contribution calculated.'
+            WRITE (LUPRI,'(/5X,A)') 'Harmonic contribution calculated.'
             IF ((NMORDR+NAORDR).GT.2) THEN
                WRITE (LUPRI,'(5X,A)')
      &              'Anharmonic contribution calculated.'
