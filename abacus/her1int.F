@@ -115,6 +115,7 @@ C
 C
 #include <ibtfun.h>
 C
+      IF(THRS.EQ.0D0) THRS = 1D-15
       TOLS   = THRS*THRS
       TOLOG  = - LOG(TOLS)
 C

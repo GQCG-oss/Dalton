@@ -359,6 +359,7 @@ C
       TIMINT = D0
       FRSDER = MAXDIF .GE. 1
       SECDER = MAXDIF .EQ. 2
+      IF(THRS.EQ.0D0) THRS = 1D-15
       TOLS   = THRS*THRS
       TOLOG  = - LOG(TOLS)
       IF (PROPTY .AND. (SECDER .OR. DIFDIP)) THEN
