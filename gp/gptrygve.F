@@ -248,7 +248,7 @@ C     ... define exit code to the environment for MPI_ABORT
 #endif
 C
       CALL TRACE
-#if defined (SYS_LINUX)
+#if defined (VAR_G77) || defined (VAR_IFC)
       CALL EXIT(100)
 #else
       STOP 100

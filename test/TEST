@@ -435,12 +435,8 @@ myprint ""
 if [ "$benchmark" = "true" ]; then
     if [ "$numresult" -gt 0  ]; then
         ind=1
-        while [ "$ind" -le "$numresult" ]
-        do
-          namelength=`expr length ${testlist[$ind]}`
-          spclength=`expr 32 \- $namelength`
-          spc=`expr substr "$emptystring" 1 $spclength`
-          myprint "	${testlist[$ind]}$spc${timelist[$ind]}"
+      while [ "$ind" -le "$numresult" ]; do
+	  awk "END{printf \"%32s %s\\n\", \"${testlist[$ind]}\",\"${timelist[$ind]}\"}"</dev/null
           ind=`expr $ind \+ 1`
         done
         echo
