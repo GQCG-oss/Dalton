@@ -592,7 +592,7 @@ Point group: C1
 
 
                        +---------------------------+
-                       ! CCSD  Natural Occupations !
+                       ! CCSD Natural Occupations !
                        +---------------------------+
 
   
@@ -641,12 +641,12 @@ Point group: C1
     1   XDIPLEN     1    1  F    0
     2   YDIPLEN     1    1  F    0
     3   ZDIPLEN     1    1  F    0
-    4   1DHAM 01    1    1  T    1
-    5   1DHAM 02    1    1  T    1
-    6   1DHAM 03    1    1  T    1
-    7   1DHAM 04    1    1  T    2
-    8   1DHAM 05    1    1  T    2
-    9   1DHAM 06    1    1  T    2
+    4   1DHAM001    1    1  T    1
+    5   1DHAM002    1    1  T    1
+    6   1DHAM003    1    1  T    1
+    7   1DHAM004    1    1  T    2
+    8   1DHAM005    1    1  T    2
+    9   1DHAM006    1    1  T    2
    10   HAM0        1    1  T    0
  DEBUG_CC_MCDIND> NMCDOPER =            0
 WARNING: integrals for operator with label 02 DPG X are smaller than   1.0000000D-12
@@ -659,12 +659,12 @@ WARNING: integrals for operator with label 04 DPG Y are smaller than   1.0000000
 WARNING: irrep symmetry can not be determined.
 
  LIST OF REQUIRED PROPERTY OPERATORS:
-    1   1DHAM 01    1    1  T
-    2   1DHAM 02    1    1  T
-    3   1DHAM 03    1    1  T
-    4   1DHAM 04    1    1  T
-    5   1DHAM 05    1    1  T
-    6   1DHAM 06    1    1  T
+    1   1DHAM001    1    1  T
+    2   1DHAM002    1    1  T
+    3   1DHAM003    1    1  T
+    4   1DHAM004    1    1  T
+    5   1DHAM005    1    1  T
+    6   1DHAM006    1    1  T
     7   HAM0        1    1  T
     8   XDIPLEN     1    1  F
     9   YDIPLEN     1    1  F
@@ -690,12 +690,12 @@ WARNING: irrep symmetry can not be determined.
 
  LIST OF REQUIRED EXPECTATION VALUES:
     1   HAM0        1
-    2   1DHAM 01    1
-    3   1DHAM 02    1
-    4   1DHAM 03    1
-    5   1DHAM 04    1
-    6   1DHAM 05    1
-    7   1DHAM 06    1
+    2   1DHAM001    1
+    3   1DHAM002    1
+    4   1DHAM003    1
+    5   1DHAM004    1
+    6   1DHAM005    1
+    7   1DHAM006    1
     8   XDIPLEN     1
     9   YDIPLEN     1
    10   ZDIPLEN     1
@@ -720,12 +720,12 @@ WARNING: irrep symmetry can not be determined.
 
  LIST OF REQUIRED EFFECTIVE FOCK MATRICES:
     1   HAM0        1
-    2   1DHAM 01    1
-    3   1DHAM 02    1
-    4   1DHAM 03    1
-    5   1DHAM 04    1
-    6   1DHAM 05    1
-    7   1DHAM 06    1
+    2   1DHAM001    1
+    3   1DHAM002    1
+    4   1DHAM003    1
+    5   1DHAM004    1
+    6   1DHAM005    1
+    7   1DHAM006    1
     8   XDIPLEN     1
     9   YDIPLEN     1
    10   ZDIPLEN     1
@@ -760,45 +760,45 @@ WARNING: irrep symmetry can not be determined.
     9   HAM0     R1     9
 
  LIST OF REQUIRED FIRST ORDER XI VECTORS:
-    1   1DHAM 01  T    1     0.000000D+00
-    2   1DHAM 02  T    1     0.000000D+00
-    3   1DHAM 03  T    1     0.000000D+00
-    4   1DHAM 04  T    1     0.000000D+00
-    5   1DHAM 05  T    1     0.000000D+00
-    6   1DHAM 06  T    1     0.000000D+00
+    1   1DHAM001  T    1     0.000000D+00
+    2   1DHAM002  T    1     0.000000D+00
+    3   1DHAM003  T    1     0.000000D+00
+    4   1DHAM004  T    1     0.000000D+00
+    5   1DHAM005  T    1     0.000000D+00
+    6   1DHAM006  T    1     0.000000D+00
     7   XDIPLEN   T    1     0.000000D+00
     8   YDIPLEN   T    1     0.000000D+00
     9   ZDIPLEN   T    1     0.000000D+00
 
  LIST OF REQUIRED FIRST ORDER T VECTORS:
-    1   1DHAM 01  T    1     0.000000D+00
-    2   1DHAM 02  T    1     0.000000D+00
-    3   1DHAM 03  T    1     0.000000D+00
-    4   1DHAM 04  T    1     0.000000D+00
-    5   1DHAM 05  T    1     0.000000D+00
-    6   1DHAM 06  T    1     0.000000D+00
+    1   1DHAM001  T    1     0.000000D+00
+    2   1DHAM002  T    1     0.000000D+00
+    3   1DHAM003  T    1     0.000000D+00
+    4   1DHAM004  T    1     0.000000D+00
+    5   1DHAM005  T    1     0.000000D+00
+    6   1DHAM006  T    1     0.000000D+00
     7   XDIPLEN   T    1     0.000000D+00
     8   YDIPLEN   T    1     0.000000D+00
     9   ZDIPLEN   T    1     0.000000D+00
 
  LIST OF REQUIRED FIRST ORDER ETA VECTORS:
-    1   1DHAM 01  T    1     0.000000D+00
-    2   1DHAM 02  T    1     0.000000D+00
-    3   1DHAM 03  T    1     0.000000D+00
-    4   1DHAM 04  T    1     0.000000D+00
-    5   1DHAM 05  T    1     0.000000D+00
-    6   1DHAM 06  T    1     0.000000D+00
+    1   1DHAM001  T    1     0.000000D+00
+    2   1DHAM002  T    1     0.000000D+00
+    3   1DHAM003  T    1     0.000000D+00
+    4   1DHAM004  T    1     0.000000D+00
+    5   1DHAM005  T    1     0.000000D+00
+    6   1DHAM006  T    1     0.000000D+00
     7   XDIPLEN   T    1     0.000000D+00
     8   YDIPLEN   T    1     0.000000D+00
     9   ZDIPLEN   T    1     0.000000D+00
 
  LIST OF REQUIRED FIRST ORDER ZETA VECTORS:
-    1   1DHAM 01  T    1     0.000000D+00
-    2   1DHAM 02  T    1     0.000000D+00
-    3   1DHAM 03  T    1     0.000000D+00
-    4   1DHAM 04  T    1     0.000000D+00
-    5   1DHAM 05  T    1     0.000000D+00
-    6   1DHAM 06  T    1     0.000000D+00
+    1   1DHAM001  T    1     0.000000D+00
+    2   1DHAM002  T    1     0.000000D+00
+    3   1DHAM003  T    1     0.000000D+00
+    4   1DHAM004  T    1     0.000000D+00
+    5   1DHAM005  T    1     0.000000D+00
+    6   1DHAM006  T    1     0.000000D+00
     7   XDIPLEN   T    1     0.000000D+00
     8   YDIPLEN   T    1     0.000000D+00
     9   ZDIPLEN   T    1     0.000000D+00
@@ -890,27 +890,27 @@ WARNING: irrep symmetry can not be determined.
  CC_XIETA> ISTART :            1           4           7
  CC_XIETA> IEND   :            3           6           9
  WORK(0) =   0.0000000000000000E+000
- orbital relaxation vector:           1  1DHAM 01
+ orbital relaxation vector:           1  1DHAM001
 
                Column   1
        4       0.02954521
       10      -0.02954521
  CC_XIETA> memory alloc. for AO section:
- CC_XIETA> LABELH,ISYHOP = 1DHAM 01           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM001           1
  CC_XIETA> IOPER,IRELAX,IDLSTL=           1           1           0
  CC_XIETA> LTWOEL,LRELAX =  T T
  CC_XIETA> KEND1, LWRK1:        1094     9898449
- orbital relaxation vector:           2  1DHAM 02
+ orbital relaxation vector:           2  1DHAM002
 
                Column   1
        5       0.02954521
       11      -0.02954521
  CC_XIETA> memory alloc. for AO section:
- CC_XIETA> LABELH,ISYHOP = 1DHAM 02           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM002           1
  CC_XIETA> IOPER,IRELAX,IDLSTL=           2           2           0
  CC_XIETA> LTWOEL,LRELAX =  T T
  CC_XIETA> KEND1, LWRK1:        1822     9897721
- orbital relaxation vector:           3  1DHAM 03
+ orbital relaxation vector:           3  1DHAM003
 
                Column   1
        1      -0.17203487
@@ -922,26 +922,26 @@ WARNING: irrep symmetry can not be determined.
        9      -0.07105008
       12      -0.03221831
  CC_XIETA> memory alloc. for AO section:
- CC_XIETA> LABELH,ISYHOP = 1DHAM 03           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM003           1
  CC_XIETA> IOPER,IRELAX,IDLSTL=           3           3           0
  CC_XIETA> LTWOEL,LRELAX =  T T
  CC_XIETA> KEND1, LWRK1:        2550     9896993
  Initialize now integral program:
  LLTWOEL =  T
- LABELH  = 1DHAM 03
+ LABELH  = 1DHAM003
  rewind lu2der in DR2WRT!
  CC_XIETA> after integral evaluation for ILLL:           1
  CC_XIETA> KEND3, LWRK3:        2586     9896957
  WORK(0) =   0.0000000000000000E+000
  CC_XIETA> IOPER         =            1
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 01           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM001           1
  CC_XIETA> IATOM,ICOOR   =            1           1
  Norm^2 of undifferentiated integrals:   10.89582229234300     
  Norm^2 of derivative integrals (packed):  2.7180596479856494E-002
  ITRAN      :           1
  IOPER      :           1
- LABELH     :1DHAM 01
+ LABELH     :1DHAM001
  IRELAX     :           1
  LZEROIMDONE: F
  LZERO      : T
@@ -951,13 +951,13 @@ WARNING: irrep symmetry can not be determined.
  KG0IM :         721         728
  CC_XIETA> IOPER         =            2
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 02           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM002           1
  CC_XIETA> IATOM,ICOOR   =            1           2
  Norm^2 of undifferentiated integrals:   10.89582229234300     
  Norm^2 of derivative integrals (packed):  2.7180596479856494E-002
  ITRAN      :           2
  IOPER      :           2
- LABELH     :1DHAM 02
+ LABELH     :1DHAM002
  IRELAX     :           2
  LZEROIMDONE: T
  LZERO      : F
@@ -967,13 +967,13 @@ WARNING: irrep symmetry can not be determined.
  KG0IM :        1486        1493
  CC_XIETA> IOPER         =            3
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 03           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM003           1
  CC_XIETA> IATOM,ICOOR   =            1           3
  Norm^2 of undifferentiated integrals:   10.89582229234300     
  Norm^2 of derivative integrals (packed):   1.116357456343139     
  ITRAN      :           3
  IOPER      :           3
- LABELH     :1DHAM 03
+ LABELH     :1DHAM003
  IRELAX     :           3
  LZEROIMDONE: T
  LZERO      : F
@@ -986,13 +986,13 @@ WARNING: irrep symmetry can not be determined.
  WORK(0) =   0.0000000000000000E+000
  CC_XIETA> IOPER         =            1
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 01           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM001           1
  CC_XIETA> IATOM,ICOOR   =            1           1
  Norm^2 of undifferentiated integrals:   7.704936770333117     
  Norm^2 of derivative integrals (packed):  3.1708132333314665E-002
  ITRAN      :           1
  IOPER      :           1
- LABELH     :1DHAM 01
+ LABELH     :1DHAM001
  IRELAX     :           1
  LZEROIMDONE: F
  LZERO      : T
@@ -1002,13 +1002,13 @@ WARNING: irrep symmetry can not be determined.
  KG0IM :         721         728
  CC_XIETA> IOPER         =            2
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 02           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM002           1
  CC_XIETA> IATOM,ICOOR   =            1           2
  Norm^2 of undifferentiated integrals:   7.704936770333117     
  Norm^2 of derivative integrals (packed):  3.1708132333314665E-002
  ITRAN      :           2
  IOPER      :           2
- LABELH     :1DHAM 02
+ LABELH     :1DHAM002
  IRELAX     :           2
  LZEROIMDONE: T
  LZERO      : F
@@ -1018,13 +1018,13 @@ WARNING: irrep symmetry can not be determined.
  KG0IM :        1486        1493
  CC_XIETA> IOPER         =            3
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 03           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM003           1
  CC_XIETA> IATOM,ICOOR   =            1           3
  Norm^2 of undifferentiated integrals:   7.704936770333117     
  Norm^2 of derivative integrals (packed):   1.326680617301991     
  ITRAN      :           3
  IOPER      :           3
- LABELH     :1DHAM 03
+ LABELH     :1DHAM003
  IRELAX     :           3
  LZEROIMDONE: T
  LZERO      : F
@@ -1037,13 +1037,13 @@ WARNING: irrep symmetry can not be determined.
  WORK(0) =   0.0000000000000000E+000
  CC_XIETA> IOPER         =            1
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 01           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM001           1
  CC_XIETA> IATOM,ICOOR   =            1           1
  Norm^2 of undifferentiated integrals:   5.216865004811122     
  Norm^2 of derivative integrals (packed):  0.1444054147944462     
  ITRAN      :           1
  IOPER      :           1
- LABELH     :1DHAM 01
+ LABELH     :1DHAM001
  IRELAX     :           1
  LZEROIMDONE: F
  LZERO      : T
@@ -1053,13 +1053,13 @@ WARNING: irrep symmetry can not be determined.
  KG0IM :         721         728
  CC_XIETA> IOPER         =            2
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 02           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM002           1
  CC_XIETA> IATOM,ICOOR   =            1           2
  Norm^2 of undifferentiated integrals:   5.216865004811122     
  Norm^2 of derivative integrals (packed):  1.1921055710220072E-002
  ITRAN      :           2
  IOPER      :           2
- LABELH     :1DHAM 02
+ LABELH     :1DHAM002
  IRELAX     :           2
  LZEROIMDONE: T
  LZERO      : F
@@ -1069,13 +1069,13 @@ WARNING: irrep symmetry can not be determined.
  KG0IM :        1486        1493
  CC_XIETA> IOPER         =            3
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 03           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM003           1
  CC_XIETA> IATOM,ICOOR   =            1           3
  Norm^2 of undifferentiated integrals:   5.216865004811122     
  Norm^2 of derivative integrals (packed):  0.2943925421834779     
  ITRAN      :           3
  IOPER      :           3
- LABELH     :1DHAM 03
+ LABELH     :1DHAM003
  IRELAX     :           3
  LZEROIMDONE: T
  LZERO      : F
@@ -1088,13 +1088,13 @@ WARNING: irrep symmetry can not be determined.
  WORK(0) =   0.0000000000000000E+000
  CC_XIETA> IOPER         =            1
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 01           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM001           1
  CC_XIETA> IATOM,ICOOR   =            1           1
  Norm^2 of undifferentiated integrals:   5.216865004811122     
  Norm^2 of derivative integrals (packed):  1.1921055710220072E-002
  ITRAN      :           1
  IOPER      :           1
- LABELH     :1DHAM 01
+ LABELH     :1DHAM001
  IRELAX     :           1
  LZEROIMDONE: F
  LZERO      : T
@@ -1104,13 +1104,13 @@ WARNING: irrep symmetry can not be determined.
  KG0IM :         721         728
  CC_XIETA> IOPER         =            2
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 02           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM002           1
  CC_XIETA> IATOM,ICOOR   =            1           2
  Norm^2 of undifferentiated integrals:   5.216865004811122     
  Norm^2 of derivative integrals (packed):  0.1444054147944462     
  ITRAN      :           2
  IOPER      :           2
- LABELH     :1DHAM 02
+ LABELH     :1DHAM002
  IRELAX     :           2
  LZEROIMDONE: T
  LZERO      : F
@@ -1120,13 +1120,13 @@ WARNING: irrep symmetry can not be determined.
  KG0IM :        1486        1493
  CC_XIETA> IOPER         =            3
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 03           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM003           1
  CC_XIETA> IATOM,ICOOR   =            1           3
  Norm^2 of undifferentiated integrals:   5.216865004811122     
  Norm^2 of derivative integrals (packed):  0.2943925421834779     
  ITRAN      :           3
  IOPER      :           3
- LABELH     :1DHAM 03
+ LABELH     :1DHAM003
  IRELAX     :           3
  LZEROIMDONE: T
  LZERO      : F
@@ -1139,13 +1139,13 @@ WARNING: irrep symmetry can not be determined.
  WORK(0) =   0.0000000000000000E+000
  CC_XIETA> IOPER         =            1
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 01           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM001           1
  CC_XIETA> IATOM,ICOOR   =            1           1
  Norm^2 of undifferentiated integrals:   5.878815760584202     
  Norm^2 of derivative integrals (packed):  1.8858214185767938E-002
  ITRAN      :           1
  IOPER      :           1
- LABELH     :1DHAM 01
+ LABELH     :1DHAM001
  IRELAX     :           1
  LZEROIMDONE: F
  LZERO      : T
@@ -1155,13 +1155,13 @@ WARNING: irrep symmetry can not be determined.
  KG0IM :         721         728
  CC_XIETA> IOPER         =            2
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 02           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM002           1
  CC_XIETA> IATOM,ICOOR   =            1           2
  Norm^2 of undifferentiated integrals:   5.878815760584202     
  Norm^2 of derivative integrals (packed):  1.8858214185767938E-002
  ITRAN      :           2
  IOPER      :           2
- LABELH     :1DHAM 02
+ LABELH     :1DHAM002
  IRELAX     :           2
  LZEROIMDONE: T
  LZERO      : F
@@ -1171,13 +1171,13 @@ WARNING: irrep symmetry can not be determined.
  KG0IM :        1486        1493
  CC_XIETA> IOPER         =            3
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 03           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM003           1
  CC_XIETA> IATOM,ICOOR   =            1           3
  Norm^2 of undifferentiated integrals:   5.878815760584202     
  Norm^2 of derivative integrals (packed):   1.204064212634778     
  ITRAN      :           3
  IOPER      :           3
- LABELH     :1DHAM 03
+ LABELH     :1DHAM003
  IRELAX     :           3
  LZEROIMDONE: T
  LZERO      : F
@@ -1190,13 +1190,13 @@ WARNING: irrep symmetry can not be determined.
  WORK(0) =   0.0000000000000000E+000
  CC_XIETA> IOPER         =            1
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 01           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM001           1
  CC_XIETA> IATOM,ICOOR   =            1           1
  Norm^2 of undifferentiated integrals:   5.610250768447377     
  Norm^2 of derivative integrals (packed):  0.1238724354585878     
  ITRAN      :           1
  IOPER      :           1
- LABELH     :1DHAM 01
+ LABELH     :1DHAM001
  IRELAX     :           1
  LZEROIMDONE: F
  LZERO      : T
@@ -1206,13 +1206,13 @@ WARNING: irrep symmetry can not be determined.
  KG0IM :         721         728
  CC_XIETA> IOPER         =            2
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 02           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM002           1
  CC_XIETA> IATOM,ICOOR   =            1           2
  Norm^2 of undifferentiated integrals:   5.610250768447377     
  Norm^2 of derivative integrals (packed):  0.1238724354585878     
  ITRAN      :           2
  IOPER      :           2
- LABELH     :1DHAM 02
+ LABELH     :1DHAM002
  IRELAX     :           2
  LZEROIMDONE: T
  LZERO      : F
@@ -1222,13 +1222,13 @@ WARNING: irrep symmetry can not be determined.
  KG0IM :        1486        1493
  CC_XIETA> IOPER         =            3
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 03           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM003           1
  CC_XIETA> IATOM,ICOOR   =            1           3
  Norm^2 of undifferentiated integrals:   5.610250768447377     
  Norm^2 of derivative integrals (packed):   2.554500767961159     
  ITRAN      :           3
  IOPER      :           3
- LABELH     :1DHAM 03
+ LABELH     :1DHAM003
  IRELAX     :           3
  LZEROIMDONE: T
  LZERO      : F
@@ -1241,13 +1241,13 @@ WARNING: irrep symmetry can not be determined.
  WORK(0) =   0.0000000000000000E+000
  CC_XIETA> IOPER         =            1
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 01           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM001           1
  CC_XIETA> IATOM,ICOOR   =            1           1
  Norm^2 of undifferentiated integrals:   4.709897223393233     
  Norm^2 of derivative integrals (packed):  6.0613102557198495E-002
  ITRAN      :           1
  IOPER      :           1
- LABELH     :1DHAM 01
+ LABELH     :1DHAM001
  IRELAX     :           1
  LZEROIMDONE: F
  LZERO      : T
@@ -1257,13 +1257,13 @@ WARNING: irrep symmetry can not be determined.
  KG0IM :         721         728
  CC_XIETA> IOPER         =            2
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 02           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM002           1
  CC_XIETA> IATOM,ICOOR   =            1           2
  Norm^2 of undifferentiated integrals:   4.709897223393233     
  Norm^2 of derivative integrals (packed):  6.0613102557198495E-002
  ITRAN      :           2
  IOPER      :           2
- LABELH     :1DHAM 02
+ LABELH     :1DHAM002
  IRELAX     :           2
  LZEROIMDONE: T
  LZERO      : F
@@ -1273,13 +1273,13 @@ WARNING: irrep symmetry can not be determined.
  KG0IM :        1486        1493
  CC_XIETA> IOPER         =            3
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 03           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM003           1
  CC_XIETA> IATOM,ICOOR   =            1           3
  Norm^2 of undifferentiated integrals:   4.709897223393233     
  Norm^2 of derivative integrals (packed):  0.9822241289793089     
  ITRAN      :           3
  IOPER      :           3
- LABELH     :1DHAM 03
+ LABELH     :1DHAM003
  IRELAX     :           3
  LZEROIMDONE: T
  LZERO      : F
@@ -1290,11 +1290,11 @@ WARNING: irrep symmetry can not be determined.
  CC_XIETA> after loop over AO
  CC_XIETA> IOPER, IRELAX =            1           1
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 01           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM001           1
  CC_XIETA> SKIPXI        =  F
  WORK(0) =   0.0000000000000000E+000
  Final result of CC_XIETA:
- operator label:      1DHAM 01
+ operator label:      1DHAM001
  output file type:    O1 
  index of output file:           1
  two-electron contr.:  T
@@ -1329,7 +1329,7 @@ WARNING: irrep symmetry can not be determined.
  IDLSTL :           0
  IXETRAN(4,ITRAN):           0
  Final result of CC_XIETA:
- operator label:      1DHAM 01
+ operator label:      1DHAM001
  output file type:    X1 
  index of output file:           1
  two-electron contr.:  T
@@ -1361,11 +1361,11 @@ WARNING: irrep symmetry can not be determined.
   
  CC_XIETA> IOPER, IRELAX =            2           2
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 02           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM002           1
  CC_XIETA> SKIPXI        =  F
  WORK(0) =   0.0000000000000000E+000
  Final result of CC_XIETA:
- operator label:      1DHAM 02
+ operator label:      1DHAM002
  output file type:    O1 
  index of output file:           2
  two-electron contr.:  T
@@ -1400,7 +1400,7 @@ WARNING: irrep symmetry can not be determined.
  IDLSTL :           0
  IXETRAN(4,ITRAN):           0
  Final result of CC_XIETA:
- operator label:      1DHAM 02
+ operator label:      1DHAM002
  output file type:    X1 
  index of output file:           2
  two-electron contr.:  T
@@ -1432,11 +1432,11 @@ WARNING: irrep symmetry can not be determined.
   
  CC_XIETA> IOPER, IRELAX =            3           3
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 03           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM003           1
  CC_XIETA> SKIPXI        =  F
  WORK(0) =   0.0000000000000000E+000
  Final result of CC_XIETA:
- operator label:      1DHAM 03
+ operator label:      1DHAM003
  output file type:    O1 
  index of output file:           3
  two-electron contr.:  T
@@ -1479,7 +1479,7 @@ WARNING: irrep symmetry can not be determined.
  IDLSTL :           0
  IXETRAN(4,ITRAN):           0
  Final result of CC_XIETA:
- operator label:      1DHAM 03
+ operator label:      1DHAM003
  output file type:    X1 
  index of output file:           3
  two-electron contr.:  T
@@ -1517,27 +1517,27 @@ WARNING: irrep symmetry can not be determined.
        5      -0.02512619
        6       0.00000000    -0.05010493
   
- orbital relaxation vector:           4  1DHAM 04
+ orbital relaxation vector:           4  1DHAM004
 
                Column   1
        4      -0.02954521
       10       0.02954521
  CC_XIETA> memory alloc. for AO section:
- CC_XIETA> LABELH,ISYHOP = 1DHAM 04           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM004           1
  CC_XIETA> IOPER,IRELAX,IDLSTL=           4           4           0
  CC_XIETA> LTWOEL,LRELAX =  T T
  CC_XIETA> KEND1, LWRK1:        1094     9898449
- orbital relaxation vector:           5  1DHAM 05
+ orbital relaxation vector:           5  1DHAM005
 
                Column   1
        5      -0.02954521
       11       0.02954521
  CC_XIETA> memory alloc. for AO section:
- CC_XIETA> LABELH,ISYHOP = 1DHAM 05           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM005           1
  CC_XIETA> IOPER,IRELAX,IDLSTL=           5           5           0
  CC_XIETA> LTWOEL,LRELAX =  T T
  CC_XIETA> KEND1, LWRK1:        1822     9897721
- orbital relaxation vector:           6  1DHAM 06
+ orbital relaxation vector:           6  1DHAM006
 
                Column   1
        1       0.17203487
@@ -1549,26 +1549,26 @@ WARNING: irrep symmetry can not be determined.
        9       0.07105008
       12       0.03221831
  CC_XIETA> memory alloc. for AO section:
- CC_XIETA> LABELH,ISYHOP = 1DHAM 06           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM006           1
  CC_XIETA> IOPER,IRELAX,IDLSTL=           6           6           0
  CC_XIETA> LTWOEL,LRELAX =  T T
  CC_XIETA> KEND1, LWRK1:        2550     9896993
  Initialize now integral program:
  LLTWOEL =  T
- LABELH  = 1DHAM 06
+ LABELH  = 1DHAM006
  rewind lu2der in DR2WRT!
  CC_XIETA> after integral evaluation for ILLL:           1
  CC_XIETA> KEND3, LWRK3:        2586     9896957
  WORK(0) =   0.0000000000000000E+000
  CC_XIETA> IOPER         =            4
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 04           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM004           1
  CC_XIETA> IATOM,ICOOR   =            2           1
  Norm^2 of undifferentiated integrals:   10.89582229234300     
  Norm^2 of derivative integrals (packed):  2.7180596479856494E-002
  ITRAN      :           4
  IOPER      :           4
- LABELH     :1DHAM 04
+ LABELH     :1DHAM004
  IRELAX     :           4
  LZEROIMDONE: F
  LZERO      : T
@@ -1578,13 +1578,13 @@ WARNING: irrep symmetry can not be determined.
  KG0IM :         721         728
  CC_XIETA> IOPER         =            5
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 05           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM005           1
  CC_XIETA> IATOM,ICOOR   =            2           2
  Norm^2 of undifferentiated integrals:   10.89582229234300     
  Norm^2 of derivative integrals (packed):  2.7180596479856494E-002
  ITRAN      :           5
  IOPER      :           5
- LABELH     :1DHAM 05
+ LABELH     :1DHAM005
  IRELAX     :           5
  LZEROIMDONE: T
  LZERO      : F
@@ -1594,13 +1594,13 @@ WARNING: irrep symmetry can not be determined.
  KG0IM :        1486        1493
  CC_XIETA> IOPER         =            6
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 06           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM006           1
  CC_XIETA> IATOM,ICOOR   =            2           3
  Norm^2 of undifferentiated integrals:   10.89582229234300     
  Norm^2 of derivative integrals (packed):   1.116357456343139     
  ITRAN      :           6
  IOPER      :           6
- LABELH     :1DHAM 06
+ LABELH     :1DHAM006
  IRELAX     :           6
  LZEROIMDONE: T
  LZERO      : F
@@ -1613,13 +1613,13 @@ WARNING: irrep symmetry can not be determined.
  WORK(0) =   0.0000000000000000E+000
  CC_XIETA> IOPER         =            4
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 04           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM004           1
  CC_XIETA> IATOM,ICOOR   =            2           1
  Norm^2 of undifferentiated integrals:   7.704936770333117     
  Norm^2 of derivative integrals (packed):  3.1708132333314665E-002
  ITRAN      :           4
  IOPER      :           4
- LABELH     :1DHAM 04
+ LABELH     :1DHAM004
  IRELAX     :           4
  LZEROIMDONE: F
  LZERO      : T
@@ -1629,13 +1629,13 @@ WARNING: irrep symmetry can not be determined.
  KG0IM :         721         728
  CC_XIETA> IOPER         =            5
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 05           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM005           1
  CC_XIETA> IATOM,ICOOR   =            2           2
  Norm^2 of undifferentiated integrals:   7.704936770333117     
  Norm^2 of derivative integrals (packed):  3.1708132333314665E-002
  ITRAN      :           5
  IOPER      :           5
- LABELH     :1DHAM 05
+ LABELH     :1DHAM005
  IRELAX     :           5
  LZEROIMDONE: T
  LZERO      : F
@@ -1645,13 +1645,13 @@ WARNING: irrep symmetry can not be determined.
  KG0IM :        1486        1493
  CC_XIETA> IOPER         =            6
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 06           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM006           1
  CC_XIETA> IATOM,ICOOR   =            2           3
  Norm^2 of undifferentiated integrals:   7.704936770333117     
  Norm^2 of derivative integrals (packed):   1.326680617301991     
  ITRAN      :           6
  IOPER      :           6
- LABELH     :1DHAM 06
+ LABELH     :1DHAM006
  IRELAX     :           6
  LZEROIMDONE: T
  LZERO      : F
@@ -1664,13 +1664,13 @@ WARNING: irrep symmetry can not be determined.
  WORK(0) =   0.0000000000000000E+000
  CC_XIETA> IOPER         =            4
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 04           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM004           1
  CC_XIETA> IATOM,ICOOR   =            2           1
  Norm^2 of undifferentiated integrals:   5.216865004811122     
  Norm^2 of derivative integrals (packed):  0.1444054147944462     
  ITRAN      :           4
  IOPER      :           4
- LABELH     :1DHAM 04
+ LABELH     :1DHAM004
  IRELAX     :           4
  LZEROIMDONE: F
  LZERO      : T
@@ -1680,13 +1680,13 @@ WARNING: irrep symmetry can not be determined.
  KG0IM :         721         728
  CC_XIETA> IOPER         =            5
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 05           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM005           1
  CC_XIETA> IATOM,ICOOR   =            2           2
  Norm^2 of undifferentiated integrals:   5.216865004811122     
  Norm^2 of derivative integrals (packed):  1.1921055710220072E-002
  ITRAN      :           5
  IOPER      :           5
- LABELH     :1DHAM 05
+ LABELH     :1DHAM005
  IRELAX     :           5
  LZEROIMDONE: T
  LZERO      : F
@@ -1696,13 +1696,13 @@ WARNING: irrep symmetry can not be determined.
  KG0IM :        1486        1493
  CC_XIETA> IOPER         =            6
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 06           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM006           1
  CC_XIETA> IATOM,ICOOR   =            2           3
  Norm^2 of undifferentiated integrals:   5.216865004811122     
  Norm^2 of derivative integrals (packed):  0.2943925421834779     
  ITRAN      :           6
  IOPER      :           6
- LABELH     :1DHAM 06
+ LABELH     :1DHAM006
  IRELAX     :           6
  LZEROIMDONE: T
  LZERO      : F
@@ -1715,13 +1715,13 @@ WARNING: irrep symmetry can not be determined.
  WORK(0) =   0.0000000000000000E+000
  CC_XIETA> IOPER         =            4
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 04           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM004           1
  CC_XIETA> IATOM,ICOOR   =            2           1
  Norm^2 of undifferentiated integrals:   5.216865004811122     
  Norm^2 of derivative integrals (packed):  1.1921055710220072E-002
  ITRAN      :           4
  IOPER      :           4
- LABELH     :1DHAM 04
+ LABELH     :1DHAM004
  IRELAX     :           4
  LZEROIMDONE: F
  LZERO      : T
@@ -1731,13 +1731,13 @@ WARNING: irrep symmetry can not be determined.
  KG0IM :         721         728
  CC_XIETA> IOPER         =            5
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 05           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM005           1
  CC_XIETA> IATOM,ICOOR   =            2           2
  Norm^2 of undifferentiated integrals:   5.216865004811122     
  Norm^2 of derivative integrals (packed):  0.1444054147944462     
  ITRAN      :           5
  IOPER      :           5
- LABELH     :1DHAM 05
+ LABELH     :1DHAM005
  IRELAX     :           5
  LZEROIMDONE: T
  LZERO      : F
@@ -1747,13 +1747,13 @@ WARNING: irrep symmetry can not be determined.
  KG0IM :        1486        1493
  CC_XIETA> IOPER         =            6
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 06           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM006           1
  CC_XIETA> IATOM,ICOOR   =            2           3
  Norm^2 of undifferentiated integrals:   5.216865004811122     
  Norm^2 of derivative integrals (packed):  0.2943925421834779     
  ITRAN      :           6
  IOPER      :           6
- LABELH     :1DHAM 06
+ LABELH     :1DHAM006
  IRELAX     :           6
  LZEROIMDONE: T
  LZERO      : F
@@ -1766,13 +1766,13 @@ WARNING: irrep symmetry can not be determined.
  WORK(0) =   0.0000000000000000E+000
  CC_XIETA> IOPER         =            4
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 04           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM004           1
  CC_XIETA> IATOM,ICOOR   =            2           1
  Norm^2 of undifferentiated integrals:   5.878815760584202     
  Norm^2 of derivative integrals (packed):  1.8858214185767938E-002
  ITRAN      :           4
  IOPER      :           4
- LABELH     :1DHAM 04
+ LABELH     :1DHAM004
  IRELAX     :           4
  LZEROIMDONE: F
  LZERO      : T
@@ -1782,13 +1782,13 @@ WARNING: irrep symmetry can not be determined.
  KG0IM :         721         728
  CC_XIETA> IOPER         =            5
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 05           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM005           1
  CC_XIETA> IATOM,ICOOR   =            2           2
  Norm^2 of undifferentiated integrals:   5.878815760584202     
  Norm^2 of derivative integrals (packed):  1.8858214185767938E-002
  ITRAN      :           5
  IOPER      :           5
- LABELH     :1DHAM 05
+ LABELH     :1DHAM005
  IRELAX     :           5
  LZEROIMDONE: T
  LZERO      : F
@@ -1798,13 +1798,13 @@ WARNING: irrep symmetry can not be determined.
  KG0IM :        1486        1493
  CC_XIETA> IOPER         =            6
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 06           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM006           1
  CC_XIETA> IATOM,ICOOR   =            2           3
  Norm^2 of undifferentiated integrals:   5.878815760584202     
  Norm^2 of derivative integrals (packed):   1.204064212634778     
  ITRAN      :           6
  IOPER      :           6
- LABELH     :1DHAM 06
+ LABELH     :1DHAM006
  IRELAX     :           6
  LZEROIMDONE: T
  LZERO      : F
@@ -1817,13 +1817,13 @@ WARNING: irrep symmetry can not be determined.
  WORK(0) =   0.0000000000000000E+000
  CC_XIETA> IOPER         =            4
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 04           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM004           1
  CC_XIETA> IATOM,ICOOR   =            2           1
  Norm^2 of undifferentiated integrals:   5.610250768447377     
  Norm^2 of derivative integrals (packed):  0.1238724354585878     
  ITRAN      :           4
  IOPER      :           4
- LABELH     :1DHAM 04
+ LABELH     :1DHAM004
  IRELAX     :           4
  LZEROIMDONE: F
  LZERO      : T
@@ -1833,13 +1833,13 @@ WARNING: irrep symmetry can not be determined.
  KG0IM :         721         728
  CC_XIETA> IOPER         =            5
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 05           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM005           1
  CC_XIETA> IATOM,ICOOR   =            2           2
  Norm^2 of undifferentiated integrals:   5.610250768447377     
  Norm^2 of derivative integrals (packed):  0.1238724354585878     
  ITRAN      :           5
  IOPER      :           5
- LABELH     :1DHAM 05
+ LABELH     :1DHAM005
  IRELAX     :           5
  LZEROIMDONE: T
  LZERO      : F
@@ -1849,13 +1849,13 @@ WARNING: irrep symmetry can not be determined.
  KG0IM :        1486        1493
  CC_XIETA> IOPER         =            6
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 06           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM006           1
  CC_XIETA> IATOM,ICOOR   =            2           3
  Norm^2 of undifferentiated integrals:   5.610250768447377     
  Norm^2 of derivative integrals (packed):   2.554500767961159     
  ITRAN      :           6
  IOPER      :           6
- LABELH     :1DHAM 06
+ LABELH     :1DHAM006
  IRELAX     :           6
  LZEROIMDONE: T
  LZERO      : F
@@ -1868,13 +1868,13 @@ WARNING: irrep symmetry can not be determined.
  WORK(0) =   0.0000000000000000E+000
  CC_XIETA> IOPER         =            4
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 04           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM004           1
  CC_XIETA> IATOM,ICOOR   =            2           1
  Norm^2 of undifferentiated integrals:   4.709897223393233     
  Norm^2 of derivative integrals (packed):  6.0613102557198495E-002
  ITRAN      :           4
  IOPER      :           4
- LABELH     :1DHAM 04
+ LABELH     :1DHAM004
  IRELAX     :           4
  LZEROIMDONE: F
  LZERO      : T
@@ -1884,13 +1884,13 @@ WARNING: irrep symmetry can not be determined.
  KG0IM :         721         728
  CC_XIETA> IOPER         =            5
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 05           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM005           1
  CC_XIETA> IATOM,ICOOR   =            2           2
  Norm^2 of undifferentiated integrals:   4.709897223393233     
  Norm^2 of derivative integrals (packed):  6.0613102557198495E-002
  ITRAN      :           5
  IOPER      :           5
- LABELH     :1DHAM 05
+ LABELH     :1DHAM005
  IRELAX     :           5
  LZEROIMDONE: T
  LZERO      : F
@@ -1900,13 +1900,13 @@ WARNING: irrep symmetry can not be determined.
  KG0IM :        1486        1493
  CC_XIETA> IOPER         =            6
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 06           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM006           1
  CC_XIETA> IATOM,ICOOR   =            2           3
  Norm^2 of undifferentiated integrals:   4.709897223393233     
  Norm^2 of derivative integrals (packed):  0.9822241289793089     
  ITRAN      :           6
  IOPER      :           6
- LABELH     :1DHAM 06
+ LABELH     :1DHAM006
  IRELAX     :           6
  LZEROIMDONE: T
  LZERO      : F
@@ -1917,11 +1917,11 @@ WARNING: irrep symmetry can not be determined.
  CC_XIETA> after loop over AO
  CC_XIETA> IOPER, IRELAX =            4           4
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 04           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM004           1
  CC_XIETA> SKIPXI        =  F
  WORK(0) =   0.0000000000000000E+000
  Final result of CC_XIETA:
- operator label:      1DHAM 04
+ operator label:      1DHAM004
  output file type:    O1 
  index of output file:           4
  two-electron contr.:  T
@@ -1956,7 +1956,7 @@ WARNING: irrep symmetry can not be determined.
  IDLSTL :           0
  IXETRAN(4,ITRAN):           0
  Final result of CC_XIETA:
- operator label:      1DHAM 04
+ operator label:      1DHAM004
  output file type:    X1 
  index of output file:           4
  two-electron contr.:  T
@@ -1988,11 +1988,11 @@ WARNING: irrep symmetry can not be determined.
   
  CC_XIETA> IOPER, IRELAX =            5           5
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 05           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM005           1
  CC_XIETA> SKIPXI        =  F
  WORK(0) =   0.0000000000000000E+000
  Final result of CC_XIETA:
- operator label:      1DHAM 05
+ operator label:      1DHAM005
  output file type:    O1 
  index of output file:           5
  two-electron contr.:  T
@@ -2027,7 +2027,7 @@ WARNING: irrep symmetry can not be determined.
  IDLSTL :           0
  IXETRAN(4,ITRAN):           0
  Final result of CC_XIETA:
- operator label:      1DHAM 05
+ operator label:      1DHAM005
  output file type:    X1 
  index of output file:           5
  two-electron contr.:  T
@@ -2059,11 +2059,11 @@ WARNING: irrep symmetry can not be determined.
   
  CC_XIETA> IOPER, IRELAX =            6           6
  CC_XIETA> LTWOEL,LRELAX =  T T
- CC_XIETA> LABELH,ISYHOP = 1DHAM 06           1
+ CC_XIETA> LABELH,ISYHOP = 1DHAM006           1
  CC_XIETA> SKIPXI        =  F
  WORK(0) =   0.0000000000000000E+000
  Final result of CC_XIETA:
- operator label:      1DHAM 06
+ operator label:      1DHAM006
  output file type:    O1 
  index of output file:           6
  two-electron contr.:  T
@@ -2106,7 +2106,7 @@ WARNING: irrep symmetry can not be determined.
  IDLSTL :           0
  IXETRAN(4,ITRAN):           0
  Final result of CC_XIETA:
- operator label:      1DHAM 06
+ operator label:      1DHAM006
  output file type:    X1 
  index of output file:           6
  two-electron contr.:  T
@@ -3975,24 +3975,24 @@ List of vector pairs for 2. order intermediates:
  <<XDIPLEN ,XDIPLEN >>( 0.000000) =     0.35604359
  <<YDIPLEN ,YDIPLEN >>( 0.000000) =     0.35604359
  <<ZDIPLEN ,ZDIPLEN >>( 0.000000) =     2.01844108
- <<XDIPLEN ,1DHAM 01>>( 0.000000) =     0.18068528
- <<XDIPLEN ,1DHAM 02>>( 0.000000) =     0.00000000
- <<XDIPLEN ,1DHAM 03>>( 0.000000) =     0.00000000
- <<XDIPLEN ,1DHAM 04>>( 0.000000) =     0.81931472
- <<XDIPLEN ,1DHAM 05>>( 0.000000) =     0.00000000
- <<XDIPLEN ,1DHAM 06>>( 0.000000) =     0.00000000
- <<YDIPLEN ,1DHAM 01>>( 0.000000) =     0.00000000
- <<YDIPLEN ,1DHAM 02>>( 0.000000) =     0.18068528
- <<YDIPLEN ,1DHAM 03>>( 0.000000) =     0.00000000
- <<YDIPLEN ,1DHAM 04>>( 0.000000) =     0.00000000
- <<YDIPLEN ,1DHAM 05>>( 0.000000) =     0.81931472
- <<YDIPLEN ,1DHAM 06>>( 0.000000) =     0.00000000
- <<ZDIPLEN ,1DHAM 01>>( 0.000000) =     0.00000000
- <<ZDIPLEN ,1DHAM 02>>( 0.000000) =     0.00000000
- <<ZDIPLEN ,1DHAM 03>>( 0.000000) =    -0.21573461
- <<ZDIPLEN ,1DHAM 04>>( 0.000000) =     0.00000000
- <<ZDIPLEN ,1DHAM 05>>( 0.000000) =     0.00000000
- <<ZDIPLEN ,1DHAM 06>>( 0.000000) =     1.21573461
+ <<XDIPLEN ,1DHAM001>>( 0.000000) =     0.18068528
+ <<XDIPLEN ,1DHAM002>>( 0.000000) =     0.00000000
+ <<XDIPLEN ,1DHAM003>>( 0.000000) =     0.00000000
+ <<XDIPLEN ,1DHAM004>>( 0.000000) =     0.81931472
+ <<XDIPLEN ,1DHAM005>>( 0.000000) =     0.00000000
+ <<XDIPLEN ,1DHAM006>>( 0.000000) =     0.00000000
+ <<YDIPLEN ,1DHAM001>>( 0.000000) =     0.00000000
+ <<YDIPLEN ,1DHAM002>>( 0.000000) =     0.18068528
+ <<YDIPLEN ,1DHAM003>>( 0.000000) =     0.00000000
+ <<YDIPLEN ,1DHAM004>>( 0.000000) =     0.00000000
+ <<YDIPLEN ,1DHAM005>>( 0.000000) =     0.81931472
+ <<YDIPLEN ,1DHAM006>>( 0.000000) =     0.00000000
+ <<ZDIPLEN ,1DHAM001>>( 0.000000) =     0.00000000
+ <<ZDIPLEN ,1DHAM002>>( 0.000000) =     0.00000000
+ <<ZDIPLEN ,1DHAM003>>( 0.000000) =    -0.21573461
+ <<ZDIPLEN ,1DHAM004>>( 0.000000) =     0.00000000
+ <<ZDIPLEN ,1DHAM005>>( 0.000000) =     0.00000000
+ <<ZDIPLEN ,1DHAM006>>( 0.000000) =     1.21573461
 
 
  CCSD  linear response properties in atomic units:
@@ -4001,24 +4001,24 @@ List of vector pairs for 2. order intermediates:
  <<XDIPLEN ,XDIPLEN >>( 0.000000) =    -0.34574812
  <<YDIPLEN ,YDIPLEN >>( 0.000000) =    -0.34574812
  <<ZDIPLEN ,ZDIPLEN >>( 0.000000) =    -2.40772178
- <<XDIPLEN ,1DHAM 01>>( 0.000000) =    -0.20039129
- <<XDIPLEN ,1DHAM 02>>( 0.000000) =     0.00000000
- <<XDIPLEN ,1DHAM 03>>( 0.000000) =     0.00000000
- <<XDIPLEN ,1DHAM 04>>( 0.000000) =    -0.79960871
- <<XDIPLEN ,1DHAM 05>>( 0.000000) =     0.00000000
- <<XDIPLEN ,1DHAM 06>>( 0.000000) =     0.00000000
- <<YDIPLEN ,1DHAM 01>>( 0.000000) =     0.00000000
- <<YDIPLEN ,1DHAM 02>>( 0.000000) =    -0.20039129
- <<YDIPLEN ,1DHAM 03>>( 0.000000) =     0.00000000
- <<YDIPLEN ,1DHAM 04>>( 0.000000) =     0.00000000
- <<YDIPLEN ,1DHAM 05>>( 0.000000) =    -0.79960871
- <<YDIPLEN ,1DHAM 06>>( 0.000000) =     0.00000000
- <<ZDIPLEN ,1DHAM 01>>( 0.000000) =     0.00000000
- <<ZDIPLEN ,1DHAM 02>>( 0.000000) =     0.00000000
- <<ZDIPLEN ,1DHAM 03>>( 0.000000) =     0.20566824
- <<ZDIPLEN ,1DHAM 04>>( 0.000000) =     0.00000000
- <<ZDIPLEN ,1DHAM 05>>( 0.000000) =     0.00000000
- <<ZDIPLEN ,1DHAM 06>>( 0.000000) =    -1.20566824
+ <<XDIPLEN ,1DHAM001>>( 0.000000) =    -0.20039129
+ <<XDIPLEN ,1DHAM002>>( 0.000000) =     0.00000000
+ <<XDIPLEN ,1DHAM003>>( 0.000000) =     0.00000000
+ <<XDIPLEN ,1DHAM004>>( 0.000000) =    -0.79960871
+ <<XDIPLEN ,1DHAM005>>( 0.000000) =     0.00000000
+ <<XDIPLEN ,1DHAM006>>( 0.000000) =     0.00000000
+ <<YDIPLEN ,1DHAM001>>( 0.000000) =     0.00000000
+ <<YDIPLEN ,1DHAM002>>( 0.000000) =    -0.20039129
+ <<YDIPLEN ,1DHAM003>>( 0.000000) =     0.00000000
+ <<YDIPLEN ,1DHAM004>>( 0.000000) =     0.00000000
+ <<YDIPLEN ,1DHAM005>>( 0.000000) =    -0.79960871
+ <<YDIPLEN ,1DHAM006>>( 0.000000) =     0.00000000
+ <<ZDIPLEN ,1DHAM001>>( 0.000000) =     0.00000000
+ <<ZDIPLEN ,1DHAM002>>( 0.000000) =     0.00000000
+ <<ZDIPLEN ,1DHAM003>>( 0.000000) =     0.20566824
+ <<ZDIPLEN ,1DHAM004>>( 0.000000) =     0.00000000
+ <<ZDIPLEN ,1DHAM005>>( 0.000000) =     0.00000000
+ <<ZDIPLEN ,1DHAM006>>( 0.000000) =    -1.20566824
 
  *******************************************************************
  *                                                                 *
@@ -4754,41 +4754,41 @@ List of vector pairs for 2. order intermediates:
 
  ZDIPLEN  (relax.)  0.0000   ZDIPLEN  (relax.)  0.0000      2.4077218    
 
- XDIPLEN  (relax.)  0.0000   1DHAM 01 (relax.)  0.0000     0.20039129    
+ XDIPLEN  (relax.)  0.0000   1DHAM001 (relax.)  0.0000     0.20039129    
 
- XDIPLEN  (relax.)  0.0000   1DHAM 02 (relax.)  0.0000     0.00000000E+00
+ XDIPLEN  (relax.)  0.0000   1DHAM002 (relax.)  0.0000     0.00000000E+00
 
- XDIPLEN  (relax.)  0.0000   1DHAM 03 (relax.)  0.0000     0.00000000E+00
+ XDIPLEN  (relax.)  0.0000   1DHAM003 (relax.)  0.0000     0.00000000E+00
 
- XDIPLEN  (relax.)  0.0000   1DHAM 04 (relax.)  0.0000     0.79960871    
+ XDIPLEN  (relax.)  0.0000   1DHAM004 (relax.)  0.0000     0.79960871    
 
- XDIPLEN  (relax.)  0.0000   1DHAM 05 (relax.)  0.0000     0.00000000E+00
+ XDIPLEN  (relax.)  0.0000   1DHAM005 (relax.)  0.0000     0.00000000E+00
 
- XDIPLEN  (relax.)  0.0000   1DHAM 06 (relax.)  0.0000     0.00000000E+00
+ XDIPLEN  (relax.)  0.0000   1DHAM006 (relax.)  0.0000     0.00000000E+00
 
- YDIPLEN  (relax.)  0.0000   1DHAM 01 (relax.)  0.0000     0.00000000E+00
+ YDIPLEN  (relax.)  0.0000   1DHAM001 (relax.)  0.0000     0.00000000E+00
 
- YDIPLEN  (relax.)  0.0000   1DHAM 02 (relax.)  0.0000     0.20039129    
+ YDIPLEN  (relax.)  0.0000   1DHAM002 (relax.)  0.0000     0.20039129    
 
- YDIPLEN  (relax.)  0.0000   1DHAM 03 (relax.)  0.0000     0.00000000E+00
+ YDIPLEN  (relax.)  0.0000   1DHAM003 (relax.)  0.0000     0.00000000E+00
 
- YDIPLEN  (relax.)  0.0000   1DHAM 04 (relax.)  0.0000     0.00000000E+00
+ YDIPLEN  (relax.)  0.0000   1DHAM004 (relax.)  0.0000     0.00000000E+00
 
- YDIPLEN  (relax.)  0.0000   1DHAM 05 (relax.)  0.0000     0.79960871    
+ YDIPLEN  (relax.)  0.0000   1DHAM005 (relax.)  0.0000     0.79960871    
 
- YDIPLEN  (relax.)  0.0000   1DHAM 06 (relax.)  0.0000     0.00000000E+00
+ YDIPLEN  (relax.)  0.0000   1DHAM006 (relax.)  0.0000     0.00000000E+00
 
- ZDIPLEN  (relax.)  0.0000   1DHAM 01 (relax.)  0.0000     0.00000000E+00
+ ZDIPLEN  (relax.)  0.0000   1DHAM001 (relax.)  0.0000     0.00000000E+00
 
- ZDIPLEN  (relax.)  0.0000   1DHAM 02 (relax.)  0.0000     0.00000000E+00
+ ZDIPLEN  (relax.)  0.0000   1DHAM002 (relax.)  0.0000     0.00000000E+00
 
- ZDIPLEN  (relax.)  0.0000   1DHAM 03 (relax.)  0.0000    -0.20566824    
+ ZDIPLEN  (relax.)  0.0000   1DHAM003 (relax.)  0.0000    -0.20566824    
 
- ZDIPLEN  (relax.)  0.0000   1DHAM 04 (relax.)  0.0000     0.00000000E+00
+ ZDIPLEN  (relax.)  0.0000   1DHAM004 (relax.)  0.0000     0.00000000E+00
 
- ZDIPLEN  (relax.)  0.0000   1DHAM 05 (relax.)  0.0000     0.00000000E+00
+ ZDIPLEN  (relax.)  0.0000   1DHAM005 (relax.)  0.0000     0.00000000E+00
 
- ZDIPLEN  (relax.)  0.0000   1DHAM 06 (relax.)  0.0000      1.2056682    
+ ZDIPLEN  (relax.)  0.0000   1DHAM006 (relax.)  0.0000      1.2056682    
 ------------------------------------------------------------------------
 
 

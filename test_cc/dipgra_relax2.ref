@@ -1170,7 +1170,7 @@ Point group: C1
 
 
                        +---------------------------+
-                       ! CCSD  Natural Occupations !
+                       ! CCSD Natural Occupations !
                        +---------------------------+
 
   
@@ -1219,207 +1219,207 @@ Point group: C1
 
  UNSORTED LIST OF REQUIRED OPERATORS:
     1   XDIPLEN     1    1  F    0
-    2   1DHAM 01    1    1  T    1
-    3   1DHAM 02    1    1  T    1
-    4   1DHAM 03    1    1  T    1
-    5   1DHAM 04    1    1  T    2
-    6   1DHAM 05    1    1  T    2
-    7   1DHAM 06    1    1  T    2
-    8   1DHAM 07    1    1  T    3
-    9   1DHAM 08    1    1  T    3
-   10   1DHAM 09    1    1  T    3
+    2   1DHAM001    1    1  T    1
+    3   1DHAM002    1    1  T    1
+    4   1DHAM003    1    1  T    1
+    5   1DHAM004    1    1  T    2
+    6   1DHAM005    1    1  T    2
+    7   1DHAM006    1    1  T    2
+    8   1DHAM007    1    1  T    3
+    9   1DHAM008    1    1  T    3
+   10   1DHAM009    1    1  T    3
    11   YDIPLEN     1    1  F    0
    12   ZDIPLEN     1    1  F    0
    13   HAM0        1    1  T    0
- IROPER2>XDIPLEN 1DHAM 01
- IROPER2>           -1                   0           0
+ IROPER2>XDIPLEN 1DHAM001
+ IROPER2>           -1           0           0
  "01 DPG X" integrals found on file : T
- IROPER2>XDIPLEN 1DHAM 01
+ IROPER2>XDIPLEN 1DHAM001
  IROPER2>            101 DPG X          -1           1
- IROPER2>XDIPLEN 1DHAM 02
- IROPER2>           -1                   0           0
+ IROPER2>XDIPLEN 1DHAM002
+ IROPER2>           -1           0           0
  "02 DPG X" integrals found on file : T
- IROPER2>XDIPLEN 1DHAM 02
+ IROPER2>XDIPLEN 1DHAM002
  IROPER2>            202 DPG X          -1           1
- IROPER2>XDIPLEN 1DHAM 03
- IROPER2>           -1                   0           0
+ IROPER2>XDIPLEN 1DHAM003
+ IROPER2>           -1           0           0
  "03 DPG X" integrals found on file : T
- IROPER2>XDIPLEN 1DHAM 03
+ IROPER2>XDIPLEN 1DHAM003
  IROPER2>            303 DPG X          -1           1
- IROPER2>XDIPLEN 1DHAM 04
- IROPER2>           -1                   0           0
+ IROPER2>XDIPLEN 1DHAM004
+ IROPER2>           -1           0           0
  "04 DPG X" integrals found on file : T
- IROPER2>XDIPLEN 1DHAM 04
+ IROPER2>XDIPLEN 1DHAM004
  IROPER2>            404 DPG X          -1           1
- IROPER2>XDIPLEN 1DHAM 05
- IROPER2>           -1                   0           0
+ IROPER2>XDIPLEN 1DHAM005
+ IROPER2>           -1           0           0
  "05 DPG X" integrals found on file : T
- IROPER2>XDIPLEN 1DHAM 05
+ IROPER2>XDIPLEN 1DHAM005
  IROPER2>            505 DPG X          -1           1
- IROPER2>XDIPLEN 1DHAM 06
- IROPER2>           -1                   0           0
+ IROPER2>XDIPLEN 1DHAM006
+ IROPER2>           -1           0           0
  "06 DPG X" integrals found on file : T
- IROPER2>XDIPLEN 1DHAM 06
+ IROPER2>XDIPLEN 1DHAM006
  IROPER2>            606 DPG X          -1           1
- IROPER2>XDIPLEN 1DHAM 07
- IROPER2>           -1                   0           0
+ IROPER2>XDIPLEN 1DHAM007
+ IROPER2>           -1           0           0
  "07 DPG X" integrals found on file : T
- IROPER2>XDIPLEN 1DHAM 07
+ IROPER2>XDIPLEN 1DHAM007
  IROPER2>            707 DPG X          -1           1
- IROPER2>XDIPLEN 1DHAM 08
- IROPER2>           -1                   0           0
+ IROPER2>XDIPLEN 1DHAM008
+ IROPER2>           -1           0           0
  "08 DPG X" integrals found on file : T
- IROPER2>XDIPLEN 1DHAM 08
+ IROPER2>XDIPLEN 1DHAM008
  IROPER2>            808 DPG X          -1           1
- IROPER2>XDIPLEN 1DHAM 09
- IROPER2>           -1                   0           0
+ IROPER2>XDIPLEN 1DHAM009
+ IROPER2>           -1           0           0
  "09 DPG X" integrals found on file : T
- IROPER2>XDIPLEN 1DHAM 09
+ IROPER2>XDIPLEN 1DHAM009
  IROPER2>            909 DPG X          -1           1
- IROPER2>YDIPLEN 1DHAM 01
- IROPER2>           -1                   0           0
+ IROPER2>YDIPLEN 1DHAM001
+ IROPER2>           -1           0           0
  "01 DPG Y" integrals found on file : T
- IROPER2>YDIPLEN 1DHAM 01
+ IROPER2>YDIPLEN 1DHAM001
  IROPER2>           1001 DPG Y          -1           1
- IROPER2>YDIPLEN 1DHAM 02
- IROPER2>           -1                   0           0
+ IROPER2>YDIPLEN 1DHAM002
+ IROPER2>           -1           0           0
  "02 DPG Y" integrals found on file : T
- IROPER2>YDIPLEN 1DHAM 02
+ IROPER2>YDIPLEN 1DHAM002
  IROPER2>           1102 DPG Y          -1           1
- IROPER2>YDIPLEN 1DHAM 03
- IROPER2>           -1                   0           0
+ IROPER2>YDIPLEN 1DHAM003
+ IROPER2>           -1           0           0
  "03 DPG Y" integrals found on file : T
- IROPER2>YDIPLEN 1DHAM 03
+ IROPER2>YDIPLEN 1DHAM003
  IROPER2>           1203 DPG Y          -1           1
- IROPER2>YDIPLEN 1DHAM 04
- IROPER2>           -1                   0           0
+ IROPER2>YDIPLEN 1DHAM004
+ IROPER2>           -1           0           0
  "04 DPG Y" integrals found on file : T
- IROPER2>YDIPLEN 1DHAM 04
+ IROPER2>YDIPLEN 1DHAM004
  IROPER2>           1304 DPG Y          -1           1
- IROPER2>YDIPLEN 1DHAM 05
- IROPER2>           -1                   0           0
+ IROPER2>YDIPLEN 1DHAM005
+ IROPER2>           -1           0           0
  "05 DPG Y" integrals found on file : T
- IROPER2>YDIPLEN 1DHAM 05
+ IROPER2>YDIPLEN 1DHAM005
  IROPER2>           1405 DPG Y          -1           1
- IROPER2>YDIPLEN 1DHAM 06
- IROPER2>           -1                   0           0
+ IROPER2>YDIPLEN 1DHAM006
+ IROPER2>           -1           0           0
  "06 DPG Y" integrals found on file : T
- IROPER2>YDIPLEN 1DHAM 06
+ IROPER2>YDIPLEN 1DHAM006
  IROPER2>           1506 DPG Y          -1           1
- IROPER2>YDIPLEN 1DHAM 07
- IROPER2>           -1                   0           0
+ IROPER2>YDIPLEN 1DHAM007
+ IROPER2>           -1           0           0
  "07 DPG Y" integrals found on file : T
- IROPER2>YDIPLEN 1DHAM 07
+ IROPER2>YDIPLEN 1DHAM007
  IROPER2>           1607 DPG Y          -1           1
- IROPER2>YDIPLEN 1DHAM 08
- IROPER2>           -1                   0           0
+ IROPER2>YDIPLEN 1DHAM008
+ IROPER2>           -1           0           0
  "08 DPG Y" integrals found on file : T
- IROPER2>YDIPLEN 1DHAM 08
+ IROPER2>YDIPLEN 1DHAM008
  IROPER2>           1708 DPG Y          -1           1
- IROPER2>YDIPLEN 1DHAM 09
- IROPER2>           -1                   0           0
+ IROPER2>YDIPLEN 1DHAM009
+ IROPER2>           -1           0           0
  "09 DPG Y" integrals found on file : T
- IROPER2>YDIPLEN 1DHAM 09
+ IROPER2>YDIPLEN 1DHAM009
  IROPER2>           1809 DPG Y          -1           1
- IROPER2>ZDIPLEN 1DHAM 01
- IROPER2>           -1                   0           0
+ IROPER2>ZDIPLEN 1DHAM001
+ IROPER2>           -1           0           0
  "01 DPG Z" integrals found on file : T
- IROPER2>ZDIPLEN 1DHAM 01
+ IROPER2>ZDIPLEN 1DHAM001
  IROPER2>           1901 DPG Z          -1           1
- IROPER2>ZDIPLEN 1DHAM 02
- IROPER2>           -1                   0           0
+ IROPER2>ZDIPLEN 1DHAM002
+ IROPER2>           -1           0           0
  "02 DPG Z" integrals found on file : T
- IROPER2>ZDIPLEN 1DHAM 02
+ IROPER2>ZDIPLEN 1DHAM002
  IROPER2>           2002 DPG Z          -1           1
- IROPER2>ZDIPLEN 1DHAM 03
- IROPER2>           -1                   0           0
+ IROPER2>ZDIPLEN 1DHAM003
+ IROPER2>           -1           0           0
  "03 DPG Z" integrals found on file : T
- IROPER2>ZDIPLEN 1DHAM 03
+ IROPER2>ZDIPLEN 1DHAM003
  IROPER2>           2103 DPG Z          -1           1
- IROPER2>ZDIPLEN 1DHAM 04
- IROPER2>           -1                   0           0
+ IROPER2>ZDIPLEN 1DHAM004
+ IROPER2>           -1           0           0
  "04 DPG Z" integrals found on file : T
- IROPER2>ZDIPLEN 1DHAM 04
+ IROPER2>ZDIPLEN 1DHAM004
  IROPER2>           2204 DPG Z          -1           1
- IROPER2>ZDIPLEN 1DHAM 05
- IROPER2>           -1                   0           0
+ IROPER2>ZDIPLEN 1DHAM005
+ IROPER2>           -1           0           0
  "05 DPG Z" integrals found on file : T
- IROPER2>ZDIPLEN 1DHAM 05
+ IROPER2>ZDIPLEN 1DHAM005
  IROPER2>           2305 DPG Z          -1           1
- IROPER2>ZDIPLEN 1DHAM 06
- IROPER2>           -1                   0           0
+ IROPER2>ZDIPLEN 1DHAM006
+ IROPER2>           -1           0           0
  "06 DPG Z" integrals found on file : T
- IROPER2>ZDIPLEN 1DHAM 06
+ IROPER2>ZDIPLEN 1DHAM006
  IROPER2>           2406 DPG Z          -1           1
- IROPER2>ZDIPLEN 1DHAM 07
- IROPER2>           -1                   0           0
+ IROPER2>ZDIPLEN 1DHAM007
+ IROPER2>           -1           0           0
  "07 DPG Z" integrals found on file : T
- IROPER2>ZDIPLEN 1DHAM 07
+ IROPER2>ZDIPLEN 1DHAM007
  IROPER2>           2507 DPG Z          -1           1
- IROPER2>ZDIPLEN 1DHAM 08
- IROPER2>           -1                   0           0
+ IROPER2>ZDIPLEN 1DHAM008
+ IROPER2>           -1           0           0
  "08 DPG Z" integrals found on file : T
- IROPER2>ZDIPLEN 1DHAM 08
+ IROPER2>ZDIPLEN 1DHAM008
  IROPER2>           2608 DPG Z          -1           1
- IROPER2>ZDIPLEN 1DHAM 09
- IROPER2>           -1                   0           0
+ IROPER2>ZDIPLEN 1DHAM009
+ IROPER2>           -1           0           0
  "09 DPG Z" integrals found on file : T
- IROPER2>ZDIPLEN 1DHAM 09
+ IROPER2>ZDIPLEN 1DHAM009
  IROPER2>           2709 DPG Z          -1           1
- IROPER2>XDIPLEN 1DHAM 01
- IROPER2>XDIPLEN 1DHAM 01
- IROPER2>XDIPLEN 1DHAM 02
- IROPER2>XDIPLEN 1DHAM 02
- IROPER2>XDIPLEN 1DHAM 03
- IROPER2>XDIPLEN 1DHAM 03
- IROPER2>XDIPLEN 1DHAM 04
- IROPER2>XDIPLEN 1DHAM 04
- IROPER2>XDIPLEN 1DHAM 05
- IROPER2>XDIPLEN 1DHAM 05
- IROPER2>XDIPLEN 1DHAM 06
- IROPER2>XDIPLEN 1DHAM 06
- IROPER2>XDIPLEN 1DHAM 07
- IROPER2>XDIPLEN 1DHAM 07
- IROPER2>XDIPLEN 1DHAM 08
- IROPER2>XDIPLEN 1DHAM 08
- IROPER2>XDIPLEN 1DHAM 09
- IROPER2>XDIPLEN 1DHAM 09
- IROPER2>YDIPLEN 1DHAM 01
- IROPER2>YDIPLEN 1DHAM 01
- IROPER2>YDIPLEN 1DHAM 02
- IROPER2>YDIPLEN 1DHAM 02
- IROPER2>YDIPLEN 1DHAM 03
- IROPER2>YDIPLEN 1DHAM 03
- IROPER2>YDIPLEN 1DHAM 04
- IROPER2>YDIPLEN 1DHAM 04
- IROPER2>YDIPLEN 1DHAM 05
- IROPER2>YDIPLEN 1DHAM 05
- IROPER2>YDIPLEN 1DHAM 06
- IROPER2>YDIPLEN 1DHAM 06
- IROPER2>YDIPLEN 1DHAM 07
- IROPER2>YDIPLEN 1DHAM 07
- IROPER2>YDIPLEN 1DHAM 08
- IROPER2>YDIPLEN 1DHAM 08
- IROPER2>YDIPLEN 1DHAM 09
- IROPER2>YDIPLEN 1DHAM 09
- IROPER2>ZDIPLEN 1DHAM 01
- IROPER2>ZDIPLEN 1DHAM 01
- IROPER2>ZDIPLEN 1DHAM 02
- IROPER2>ZDIPLEN 1DHAM 02
- IROPER2>ZDIPLEN 1DHAM 03
- IROPER2>ZDIPLEN 1DHAM 03
- IROPER2>ZDIPLEN 1DHAM 04
- IROPER2>ZDIPLEN 1DHAM 04
- IROPER2>ZDIPLEN 1DHAM 05
- IROPER2>ZDIPLEN 1DHAM 05
- IROPER2>ZDIPLEN 1DHAM 06
- IROPER2>ZDIPLEN 1DHAM 06
- IROPER2>ZDIPLEN 1DHAM 07
- IROPER2>ZDIPLEN 1DHAM 07
- IROPER2>ZDIPLEN 1DHAM 08
- IROPER2>ZDIPLEN 1DHAM 08
- IROPER2>ZDIPLEN 1DHAM 09
- IROPER2>ZDIPLEN 1DHAM 09
+ IROPER2>XDIPLEN 1DHAM001
+ IROPER2>XDIPLEN 1DHAM001
+ IROPER2>XDIPLEN 1DHAM002
+ IROPER2>XDIPLEN 1DHAM002
+ IROPER2>XDIPLEN 1DHAM003
+ IROPER2>XDIPLEN 1DHAM003
+ IROPER2>XDIPLEN 1DHAM004
+ IROPER2>XDIPLEN 1DHAM004
+ IROPER2>XDIPLEN 1DHAM005
+ IROPER2>XDIPLEN 1DHAM005
+ IROPER2>XDIPLEN 1DHAM006
+ IROPER2>XDIPLEN 1DHAM006
+ IROPER2>XDIPLEN 1DHAM007
+ IROPER2>XDIPLEN 1DHAM007
+ IROPER2>XDIPLEN 1DHAM008
+ IROPER2>XDIPLEN 1DHAM008
+ IROPER2>XDIPLEN 1DHAM009
+ IROPER2>XDIPLEN 1DHAM009
+ IROPER2>YDIPLEN 1DHAM001
+ IROPER2>YDIPLEN 1DHAM001
+ IROPER2>YDIPLEN 1DHAM002
+ IROPER2>YDIPLEN 1DHAM002
+ IROPER2>YDIPLEN 1DHAM003
+ IROPER2>YDIPLEN 1DHAM003
+ IROPER2>YDIPLEN 1DHAM004
+ IROPER2>YDIPLEN 1DHAM004
+ IROPER2>YDIPLEN 1DHAM005
+ IROPER2>YDIPLEN 1DHAM005
+ IROPER2>YDIPLEN 1DHAM006
+ IROPER2>YDIPLEN 1DHAM006
+ IROPER2>YDIPLEN 1DHAM007
+ IROPER2>YDIPLEN 1DHAM007
+ IROPER2>YDIPLEN 1DHAM008
+ IROPER2>YDIPLEN 1DHAM008
+ IROPER2>YDIPLEN 1DHAM009
+ IROPER2>YDIPLEN 1DHAM009
+ IROPER2>ZDIPLEN 1DHAM001
+ IROPER2>ZDIPLEN 1DHAM001
+ IROPER2>ZDIPLEN 1DHAM002
+ IROPER2>ZDIPLEN 1DHAM002
+ IROPER2>ZDIPLEN 1DHAM003
+ IROPER2>ZDIPLEN 1DHAM003
+ IROPER2>ZDIPLEN 1DHAM004
+ IROPER2>ZDIPLEN 1DHAM004
+ IROPER2>ZDIPLEN 1DHAM005
+ IROPER2>ZDIPLEN 1DHAM005
+ IROPER2>ZDIPLEN 1DHAM006
+ IROPER2>ZDIPLEN 1DHAM006
+ IROPER2>ZDIPLEN 1DHAM007
+ IROPER2>ZDIPLEN 1DHAM007
+ IROPER2>ZDIPLEN 1DHAM008
+ IROPER2>ZDIPLEN 1DHAM008
+ IROPER2>ZDIPLEN 1DHAM009
+ IROPER2>ZDIPLEN 1DHAM009
 
 
                   Nuclear contribution to dipole moments
@@ -1445,15 +1445,15 @@ Point group: C1
 
 
  LIST OF REQUIRED PROPERTY OPERATORS:
-    1   1DHAM 01    1    1  T
-    2   1DHAM 02    1    1  T
-    3   1DHAM 03    1    1  T
-    4   1DHAM 04    1    1  T
-    5   1DHAM 05    1    1  T
-    6   1DHAM 06    1    1  T
-    7   1DHAM 07    1    1  T
-    8   1DHAM 08    1    1  T
-    9   1DHAM 09    1    1  T
+    1   1DHAM001    1    1  T
+    2   1DHAM002    1    1  T
+    3   1DHAM003    1    1  T
+    4   1DHAM004    1    1  T
+    5   1DHAM005    1    1  T
+    6   1DHAM006    1    1  T
+    7   1DHAM007    1    1  T
+    8   1DHAM008    1    1  T
+    9   1DHAM009    1    1  T
    10   HAM0        1    1  T
    11   XDIPLEN     1    1  F
    12   YDIPLEN     1    1  F
@@ -1488,15 +1488,15 @@ Point group: C1
 
  LIST OF REQUIRED EXPECTATION VALUES:
     1   HAM0        1
-    2   1DHAM 01    1
-    3   1DHAM 02    1
-    4   1DHAM 03    1
-    5   1DHAM 04    1
-    6   1DHAM 05    1
-    7   1DHAM 06    1
-    8   1DHAM 07    1
-    9   1DHAM 08    1
-   10   1DHAM 09    1
+    2   1DHAM001    1
+    3   1DHAM002    1
+    4   1DHAM003    1
+    5   1DHAM004    1
+    6   1DHAM005    1
+    7   1DHAM006    1
+    8   1DHAM007    1
+    9   1DHAM008    1
+   10   1DHAM009    1
    11   XDIPLEN     1
    12   01 DPG X    1
    13   02 DPG X    1
@@ -1530,15 +1530,15 @@ Point group: C1
 
  LIST OF REQUIRED EFFECTIVE FOCK MATRICES:
     1   HAM0        1
-    2   1DHAM 01    1
-    3   1DHAM 02    1
-    4   1DHAM 03    1
-    5   1DHAM 04    1
-    6   1DHAM 05    1
-    7   1DHAM 06    1
-    8   1DHAM 07    1
-    9   1DHAM 08    1
-   10   1DHAM 09    1
+    2   1DHAM001    1
+    3   1DHAM002    1
+    4   1DHAM003    1
+    5   1DHAM004    1
+    6   1DHAM005    1
+    7   1DHAM006    1
+    8   1DHAM007    1
+    9   1DHAM008    1
+   10   1DHAM009    1
    11   XDIPLEN     1
    12   01 DPG X    1
    13   02 DPG X    1
@@ -1585,43 +1585,43 @@ Point group: C1
    12   HAM0     R1    12
 
  LIST OF REQUIRED FIRST ORDER XI VECTORS:
-    1   1DHAM 01  T    1     0.000000D+00
-    2   1DHAM 02  T    1     0.000000D+00
-    3   1DHAM 03  T    1     0.000000D+00
-    4   1DHAM 04  T    1     0.000000D+00
-    5   1DHAM 05  T    1     0.000000D+00
-    6   1DHAM 06  T    1     0.000000D+00
-    7   1DHAM 07  T    1     0.000000D+00
-    8   1DHAM 08  T    1     0.000000D+00
-    9   1DHAM 09  T    1     0.000000D+00
+    1   1DHAM001  T    1     0.000000D+00
+    2   1DHAM002  T    1     0.000000D+00
+    3   1DHAM003  T    1     0.000000D+00
+    4   1DHAM004  T    1     0.000000D+00
+    5   1DHAM005  T    1     0.000000D+00
+    6   1DHAM006  T    1     0.000000D+00
+    7   1DHAM007  T    1     0.000000D+00
+    8   1DHAM008  T    1     0.000000D+00
+    9   1DHAM009  T    1     0.000000D+00
    10   XDIPLEN   T    1     0.000000D+00
    11   YDIPLEN   T    1     0.000000D+00
    12   ZDIPLEN   T    1     0.000000D+00
 
  LIST OF REQUIRED FIRST ORDER T VECTORS:
-    1   1DHAM 01  T    1     0.000000D+00
-    2   1DHAM 02  T    1     0.000000D+00
-    3   1DHAM 03  T    1     0.000000D+00
-    4   1DHAM 04  T    1     0.000000D+00
-    5   1DHAM 05  T    1     0.000000D+00
-    6   1DHAM 06  T    1     0.000000D+00
-    7   1DHAM 07  T    1     0.000000D+00
-    8   1DHAM 08  T    1     0.000000D+00
-    9   1DHAM 09  T    1     0.000000D+00
+    1   1DHAM001  T    1     0.000000D+00
+    2   1DHAM002  T    1     0.000000D+00
+    3   1DHAM003  T    1     0.000000D+00
+    4   1DHAM004  T    1     0.000000D+00
+    5   1DHAM005  T    1     0.000000D+00
+    6   1DHAM006  T    1     0.000000D+00
+    7   1DHAM007  T    1     0.000000D+00
+    8   1DHAM008  T    1     0.000000D+00
+    9   1DHAM009  T    1     0.000000D+00
    10   XDIPLEN   T    1     0.000000D+00
    11   YDIPLEN   T    1     0.000000D+00
    12   ZDIPLEN   T    1     0.000000D+00
 
  LIST OF REQUIRED FIRST ORDER ETA VECTORS:
-    1   1DHAM 01  T    1     0.000000D+00
-    2   1DHAM 02  T    1     0.000000D+00
-    3   1DHAM 03  T    1     0.000000D+00
-    4   1DHAM 04  T    1     0.000000D+00
-    5   1DHAM 05  T    1     0.000000D+00
-    6   1DHAM 06  T    1     0.000000D+00
-    7   1DHAM 07  T    1     0.000000D+00
-    8   1DHAM 08  T    1     0.000000D+00
-    9   1DHAM 09  T    1     0.000000D+00
+    1   1DHAM001  T    1     0.000000D+00
+    2   1DHAM002  T    1     0.000000D+00
+    3   1DHAM003  T    1     0.000000D+00
+    4   1DHAM004  T    1     0.000000D+00
+    5   1DHAM005  T    1     0.000000D+00
+    6   1DHAM006  T    1     0.000000D+00
+    7   1DHAM007  T    1     0.000000D+00
+    8   1DHAM008  T    1     0.000000D+00
+    9   1DHAM009  T    1     0.000000D+00
    10   XDIPLEN   T    1     0.000000D+00
    11   YDIPLEN   T    1     0.000000D+00
    12   ZDIPLEN   T    1     0.000000D+00
@@ -3899,17 +3899,17 @@ Point group: C1
  FILETA = X1 
  NXETRAN, MXVEC:          12           0
  WORK(0) =   0.0000000000000000E+000
- itran   =            11DHAM 01 T
+ itran   =            11DHAM001 T
  ioper   =            1          -1
  irelax  =            1          -1 T
  irelax2 =           -1          -1
  allocate relaxed stuff...
- itran   =            21DHAM 02 T
+ itran   =            21DHAM002 T
  ioper   =            2           1
  irelax  =            2           1 T
  irelax2 =           -1          -1
  allocate relaxed stuff...
- itran   =            31DHAM 03 T
+ itran   =            31DHAM003 T
  ioper   =            3           2
  irelax  =            3           2 T
  irelax2 =           -1          -1
@@ -3947,17 +3947,17 @@ Point group: C1
 >>> Time used in CCSSORTDERAO:           0.00 seconds.
 
 >>> Total time used in CCGETH2D :        0.05 seconds.
- itran   =            41DHAM 04 T
+ itran   =            41DHAM004 T
  ioper   =            4          -1
  irelax  =            4          -1 T
  irelax2 =           -1          -1
  allocate relaxed stuff...
- itran   =            51DHAM 05 T
+ itran   =            51DHAM005 T
  ioper   =            5           4
  irelax  =            5           4 T
  irelax2 =           -1          -1
  allocate relaxed stuff...
- itran   =            61DHAM 06 T
+ itran   =            61DHAM006 T
  ioper   =            6           5
  irelax  =            6           5 T
  irelax2 =           -1          -1
@@ -3995,17 +3995,17 @@ Point group: C1
 >>> Time used in CCSSORTDERAO:           0.00 seconds.
 
 >>> Total time used in CCGETH2D :        0.03 seconds.
- itran   =            71DHAM 07 T
+ itran   =            71DHAM007 T
  ioper   =            7          -1
  irelax  =            7          -1 T
  irelax2 =           -1          -1
  allocate relaxed stuff...
- itran   =            81DHAM 08 T
+ itran   =            81DHAM008 T
  ioper   =            8           7
  irelax  =            8           7 T
  irelax2 =           -1          -1
  allocate relaxed stuff...
- itran   =            91DHAM 09 T
+ itran   =            91DHAM009 T
  ioper   =            9           8
  irelax  =            9           8 T
  irelax2 =           -1          -1
@@ -4060,45 +4060,45 @@ Point group: C1
  allocate relaxed stuff...
 
  Solving  12 response equations:
- R1 :1DHAM 01  0.000000  1
- R1 :1DHAM 02  0.000000  1
- R1 :1DHAM 03  0.000000  1
- R1 :1DHAM 04  0.000000  1
- R1 :1DHAM 05  0.000000  1
- R1 :1DHAM 06  0.000000  1
- R1 :1DHAM 07  0.000000  1
- R1 :1DHAM 08  0.000000  1
- R1 :1DHAM 09  0.000000  1
+ R1 :1DHAM001  0.000000  1
+ R1 :1DHAM002  0.000000  1
+ R1 :1DHAM003  0.000000  1
+ R1 :1DHAM004  0.000000  1
+ R1 :1DHAM005  0.000000  1
+ R1 :1DHAM006  0.000000  1
+ R1 :1DHAM007  0.000000  1
+ R1 :1DHAM008  0.000000  1
+ R1 :1DHAM009  0.000000  1
  R1 :XDIPLEN   0.000000  1
  R1 :YDIPLEN   0.000000  1
  R1 :ZDIPLEN   0.000000  1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 01 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM001 and symmetry:   1
      R1  start vector nr.  1 of symmetry  1 generated from gradient
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 02 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM002 and symmetry:   1
      R1  start vector nr.  2 of symmetry  1 generated from gradient
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 03 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM003 and symmetry:   1
      R1  start vector nr.  3 of symmetry  1 generated from gradient
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 04 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM004 and symmetry:   1
      R1  start vector nr.  4 of symmetry  1 generated from gradient
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 05 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM005 and symmetry:   1
      R1  start vector nr.  5 of symmetry  1 generated from gradient
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 06 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM006 and symmetry:   1
      R1  start vector nr.  6 of symmetry  1 generated from gradient
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 07 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM007 and symmetry:   1
      R1  start vector nr.  7 of symmetry  1 generated from gradient
 
  (CCORT) new  b-vector no.  1
@@ -4110,7 +4110,7 @@ Point group: C1
  (CCORT)  trial vectors reduced from  1 to  0
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 08 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM008 and symmetry:   1
      R1  start vector nr.  8 of symmetry  1 generated from gradient
 
  (CCORT) new  b-vector no.  1
@@ -4122,7 +4122,7 @@ Point group: C1
  (CCORT)  trial vectors reduced from  1 to  0
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 09 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM009 and symmetry:   1
      R1  start vector nr.  9 of symmetry  1 generated from gradient
 
  (CCORT) new  b-vector no.  1
@@ -4227,31 +4227,31 @@ Point group: C1
   
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 01 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM001 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 02 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM002 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 03 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM003 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 04 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM004 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 05 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM005 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 06 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM006 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 07 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM007 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 08 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM008 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 09 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM009 and symmetry:   1
 
  Finding gradient for 
  Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
@@ -4263,31 +4263,31 @@ Point group: C1
  Frequency  0.000000 and label: ZDIPLEN  and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 01 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM001 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 02 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM002 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 03 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM003 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 04 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM004 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 05 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM005 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 06 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM006 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 07 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM007 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 08 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM008 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 09 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM009 and symmetry:   1
 
  Finding gradient for 
  Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
@@ -4397,31 +4397,31 @@ Point group: C1
   
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 01 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM001 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 02 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM002 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 03 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM003 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 04 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM004 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 05 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM005 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 06 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM006 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 07 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM007 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 08 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM008 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 09 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM009 and symmetry:   1
 
  Finding gradient for 
  Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
@@ -4433,31 +4433,31 @@ Point group: C1
  Frequency  0.000000 and label: ZDIPLEN  and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 01 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM001 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 02 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM002 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 03 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM003 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 04 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM004 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 05 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM005 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 06 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM006 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 07 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM007 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 08 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM008 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 09 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM009 and symmetry:   1
 
  Finding gradient for 
  Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
@@ -4567,31 +4567,31 @@ Point group: C1
   
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 01 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM001 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 02 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM002 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 03 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM003 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 04 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM004 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 05 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM005 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 06 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM006 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 07 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM007 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 08 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM008 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 09 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM009 and symmetry:   1
 
  Finding gradient for 
  Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
@@ -4603,31 +4603,31 @@ Point group: C1
  Frequency  0.000000 and label: ZDIPLEN  and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 01 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM001 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 02 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM002 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 03 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM003 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 04 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM004 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 05 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM005 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 06 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM006 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 07 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM007 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 08 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM008 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 09 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM009 and symmetry:   1
 
  Finding gradient for 
  Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
@@ -4737,31 +4737,31 @@ Point group: C1
   
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 01 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM001 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 02 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM002 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 03 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM003 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 04 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM004 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 05 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM005 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 06 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM006 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 07 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM007 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 08 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM008 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 09 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM009 and symmetry:   1
 
  Finding gradient for 
  Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
@@ -4773,31 +4773,31 @@ Point group: C1
  Frequency  0.000000 and label: ZDIPLEN  and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 01 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM001 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 02 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM002 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 03 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM003 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 04 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM004 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 05 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM005 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 06 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM006 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 07 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM007 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 08 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM008 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 09 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM009 and symmetry:   1
 
  Finding gradient for 
  Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
@@ -4904,31 +4904,31 @@ Point group: C1
   
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 01 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM001 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 02 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM002 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 03 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM003 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 04 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM004 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 05 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM005 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 06 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM006 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 07 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM007 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 08 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM008 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 09 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM009 and symmetry:   1
 
  Finding gradient for 
  Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
@@ -4940,31 +4940,31 @@ Point group: C1
  Frequency  0.000000 and label: ZDIPLEN  and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 01 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM001 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 02 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM002 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 03 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM003 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 04 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM004 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 05 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM005 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 06 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM006 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 07 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM007 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 08 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM008 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 09 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM009 and symmetry:   1
 
  Finding gradient for 
  Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
@@ -5062,31 +5062,31 @@ Point group: C1
   
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 01 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM001 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 02 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM002 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 03 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM003 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 04 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM004 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 05 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM005 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 06 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM006 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 07 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM007 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 08 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM008 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 09 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM009 and symmetry:   1
 
  Finding gradient for 
  Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
@@ -5098,31 +5098,31 @@ Point group: C1
  Frequency  0.000000 and label: ZDIPLEN  and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 01 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM001 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 02 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM002 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 03 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM003 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 04 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM004 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 05 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM005 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 06 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM006 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 07 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM007 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 08 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM008 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 09 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM009 and symmetry:   1
 
  Finding gradient for 
  Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
@@ -5225,31 +5225,31 @@ Point group: C1
   
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 01 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM001 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 02 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM002 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 03 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM003 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 04 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM004 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 05 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM005 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 06 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM006 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 07 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM007 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 08 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM008 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 09 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM009 and symmetry:   1
 
  Finding gradient for 
  Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
@@ -5261,31 +5261,31 @@ Point group: C1
  Frequency  0.000000 and label: ZDIPLEN  and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 01 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM001 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 02 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM002 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 03 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM003 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 04 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM004 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 05 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM005 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 06 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM006 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 07 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM007 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 08 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM008 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 09 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM009 and symmetry:   1
 
  Finding gradient for 
  Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
@@ -5370,31 +5370,31 @@ Point group: C1
   
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 01 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM001 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 02 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM002 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 03 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM003 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 04 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM004 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 05 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM005 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 06 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM006 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 07 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM007 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 08 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM008 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 09 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM009 and symmetry:   1
 
  Finding gradient for 
  Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
@@ -5406,31 +5406,31 @@ Point group: C1
  Frequency  0.000000 and label: ZDIPLEN  and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 01 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM001 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 02 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM002 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 03 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM003 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 04 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM004 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 05 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM005 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 06 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM006 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 07 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM007 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 08 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM008 and symmetry:   1
 
  Finding gradient for 
- Frequency  0.000000 and label: 1DHAM 09 and symmetry:   1
+ Frequency  0.000000 and label: 1DHAM009 and symmetry:   1
 
  Finding gradient for 
  Frequency  0.000000 and label: XDIPLEN  and symmetry:   1
@@ -6007,15 +6007,15 @@ Point group: C1
 
  Testing R1  list with 12 elements on it:
  List Nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     1DHAM 01     1         0.0000000000   0.0000968032   0.0043719676
-     2     1DHAM 02     1         0.0000000000   0.0003346447   0.0120207567
-     3     1DHAM 03     1         0.0000000000   0.0001788867   0.0089890200
-     4     1DHAM 04     1         0.0000000000   0.0000250314   0.0018938833
-     5     1DHAM 05     1         0.0000000000   0.0003065895   0.0053182311
-     6     1DHAM 06     1         0.0000000000   0.0000788964   0.0045766046
-     7     1DHAM 07     1         0.0000000000   0.0000250314   0.0018938833
-     8     1DHAM 08     1         0.0000000000   0.0003065895   0.0053182311
-     9     1DHAM 09     1         0.0000000000   0.0000788964   0.0045766046
+     1     1DHAM001     1         0.0000000000   0.0000968032   0.0043719676
+     2     1DHAM002     1         0.0000000000   0.0003346447   0.0120207567
+     3     1DHAM003     1         0.0000000000   0.0001788867   0.0089890200
+     4     1DHAM004     1         0.0000000000   0.0000250314   0.0018938833
+     5     1DHAM005     1         0.0000000000   0.0003065895   0.0053182311
+     6     1DHAM006     1         0.0000000000   0.0000788964   0.0045766046
+     7     1DHAM007     1         0.0000000000   0.0000250314   0.0018938833
+     8     1DHAM008     1         0.0000000000   0.0003065895   0.0053182311
+     9     1DHAM009     1         0.0000000000   0.0000788964   0.0045766046
     10     XDIPLEN      1         0.0000000000   0.0000897810   0.0020506865
     11     YDIPLEN      1         0.0000000000   0.0118836122   0.0427196615
     12     ZDIPLEN      1         0.0000000000   0.0032085395   0.0187955663
@@ -6068,15 +6068,15 @@ Point group: C1
 
  Testing F1  list with 12 elements on it:
  List Nr.  Label     Symmetry      Frequency      T1-norm        T2-norm
-     1     1DHAM 01     1         0.0000000000   0.0000000712   0.0000010788
-     2     1DHAM 02     1         0.0000000000   0.0000059356   0.0001286449
-     3     1DHAM 03     1         0.0000000000   0.0000004870   0.0002267139
-     4     1DHAM 04     1         0.0000000000   0.0000000286   0.0000004635
-     5     1DHAM 05     1         0.0000000000   0.0000141099   0.0001000196
-     6     1DHAM 06     1         0.0000000000   0.0000003602   0.0000802046
-     7     1DHAM 07     1         0.0000000000   0.0000000286   0.0000004635
-     8     1DHAM 08     1         0.0000000000   0.0000141099   0.0001000196
-     9     1DHAM 09     1         0.0000000000   0.0000003602   0.0000802046
+     1     1DHAM001     1         0.0000000000   0.0000000712   0.0000010788
+     2     1DHAM002     1         0.0000000000   0.0000059356   0.0001286449
+     3     1DHAM003     1         0.0000000000   0.0000004870   0.0002267139
+     4     1DHAM004     1         0.0000000000   0.0000000286   0.0000004635
+     5     1DHAM005     1         0.0000000000   0.0000141099   0.0001000196
+     6     1DHAM006     1         0.0000000000   0.0000003602   0.0000802046
+     7     1DHAM007     1         0.0000000000   0.0000000286   0.0000004635
+     8     1DHAM008     1         0.0000000000   0.0000141099   0.0001000196
+     9     1DHAM009     1         0.0000000000   0.0000003602   0.0000802046
     10     XDIPLEN      1         0.0000000000   0.0000000690   0.0000003937
     11     YDIPLEN      1         0.0000000000   0.0008141928   0.0003364482
     12     ZDIPLEN      1         0.0000000000   0.0009552731   0.0002510412
@@ -6128,39 +6128,39 @@ Point group: C1
 
 
  List EL1 is empty.
- Operator: :   1DHAM 01
+ Operator: :   1DHAM001
  Average contribution:       0.0000000000
  Response contribution:      0.0000000000
  Total expectation value:    0.0000000000
- Operator: :   1DHAM 02
+ Operator: :   1DHAM002
  Average contribution:       0.0000000000
  Response contribution:      0.0000000000
  Total expectation value:    0.0000000000
- Operator: :   1DHAM 03
+ Operator: :   1DHAM003
  Average contribution:      -2.8792084648
  Response contribution:      0.0410072086
  Total expectation value:   -2.8382012562
- Operator: :   1DHAM 04
+ Operator: :   1DHAM004
  Average contribution:       0.0000000000
  Response contribution:      0.0000000000
  Total expectation value:    0.0000000000
- Operator: :   1DHAM 05
+ Operator: :   1DHAM005
  Average contribution:       1.8411465610
  Response contribution:     -0.0206571835
  Total expectation value:    1.8204893775
- Operator: :   1DHAM 06
+ Operator: :   1DHAM006
  Average contribution:       1.4396042324
  Response contribution:     -0.0205036043
  Total expectation value:    1.4191006281
- Operator: :   1DHAM 07
+ Operator: :   1DHAM007
  Average contribution:       0.0000000000
  Response contribution:      0.0000000000
  Total expectation value:    0.0000000000
- Operator: :   1DHAM 08
+ Operator: :   1DHAM008
  Average contribution:      -1.8411465610
  Response contribution:      0.0206571835
  Total expectation value:   -1.8204893775
- Operator: :   1DHAM 09
+ Operator: :   1DHAM009
  Average contribution:       1.4396042324
  Response contribution:     -0.0205036043
  Total expectation value:    1.4191006281
@@ -6193,340 +6193,340 @@ Point group: C1
          ! Calculation of CCSD       linear response properties  !
          +-------------------------------------------------------+
 
- <<XDIPLEN ,1DHAM 01>>(  0.000000) EtaA*tB cont.  =   0.006905
- <<1DHAM 01,XDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.006915
- <<XDIPLEN ,1DHAM 01>>(  0.000000) F*tA*tB cont. =   0.000019
- IROPER2>XDIPLEN 1DHAM 01
- IROPER2>XDIPLEN 1DHAM 01
- <<XDIPLEN ,1DHAM 01>>(  0.000000) EtaA*tB cont.  =   0.006905
- <<1DHAM 01,XDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.006915
- <<XDIPLEN ,1DHAM 01>>(  0.000000) F*tA*tB cont. =   0.000019
- IROPER2>XDIPLEN 1DHAM 01
- IROPER2>XDIPLEN 1DHAM 01
- <<XDIPLEN ,1DHAM 02>>(  0.000000) EtaA*tB cont.  =   0.000000
- <<1DHAM 02,XDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
- <<XDIPLEN ,1DHAM 02>>(  0.000000) F*tA*tB cont. =   0.000000
- IROPER2>XDIPLEN 1DHAM 02
- IROPER2>XDIPLEN 1DHAM 02
- <<XDIPLEN ,1DHAM 02>>(  0.000000) EtaA*tB cont.  =   0.000000
- <<1DHAM 02,XDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
- <<XDIPLEN ,1DHAM 02>>(  0.000000) F*tA*tB cont. =   0.000000
- IROPER2>XDIPLEN 1DHAM 02
- IROPER2>XDIPLEN 1DHAM 02
- <<XDIPLEN ,1DHAM 03>>(  0.000000) EtaA*tB cont.  =   0.000000
- <<1DHAM 03,XDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
- <<XDIPLEN ,1DHAM 03>>(  0.000000) F*tA*tB cont. =   0.000000
- IROPER2>XDIPLEN 1DHAM 03
- IROPER2>XDIPLEN 1DHAM 03
- <<XDIPLEN ,1DHAM 03>>(  0.000000) EtaA*tB cont.  =   0.000000
- <<1DHAM 03,XDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
- <<XDIPLEN ,1DHAM 03>>(  0.000000) F*tA*tB cont. =   0.000000
- IROPER2>XDIPLEN 1DHAM 03
- IROPER2>XDIPLEN 1DHAM 03
- <<XDIPLEN ,1DHAM 04>>(  0.000000) EtaA*tB cont.  =  -0.003453
- <<1DHAM 04,XDIPLEN >>(  0.000000) EtaA*tB cont.  =  -0.003458
- <<XDIPLEN ,1DHAM 04>>(  0.000000) F*tA*tB cont. =  -0.000010
- IROPER2>XDIPLEN 1DHAM 04
- IROPER2>XDIPLEN 1DHAM 04
- <<XDIPLEN ,1DHAM 04>>(  0.000000) EtaA*tB cont.  =  -0.003453
- <<1DHAM 04,XDIPLEN >>(  0.000000) EtaA*tB cont.  =  -0.003458
- <<XDIPLEN ,1DHAM 04>>(  0.000000) F*tA*tB cont. =  -0.000010
- IROPER2>XDIPLEN 1DHAM 04
- IROPER2>XDIPLEN 1DHAM 04
- <<XDIPLEN ,1DHAM 05>>(  0.000000) EtaA*tB cont.  =   0.000000
- <<1DHAM 05,XDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
- <<XDIPLEN ,1DHAM 05>>(  0.000000) F*tA*tB cont. =   0.000000
- IROPER2>XDIPLEN 1DHAM 05
- IROPER2>XDIPLEN 1DHAM 05
- <<XDIPLEN ,1DHAM 05>>(  0.000000) EtaA*tB cont.  =   0.000000
- <<1DHAM 05,XDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
- <<XDIPLEN ,1DHAM 05>>(  0.000000) F*tA*tB cont. =   0.000000
- IROPER2>XDIPLEN 1DHAM 05
- IROPER2>XDIPLEN 1DHAM 05
- <<XDIPLEN ,1DHAM 06>>(  0.000000) EtaA*tB cont.  =   0.000000
- <<1DHAM 06,XDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
- <<XDIPLEN ,1DHAM 06>>(  0.000000) F*tA*tB cont. =   0.000000
- IROPER2>XDIPLEN 1DHAM 06
- IROPER2>XDIPLEN 1DHAM 06
- <<XDIPLEN ,1DHAM 06>>(  0.000000) EtaA*tB cont.  =   0.000000
- <<1DHAM 06,XDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
- <<XDIPLEN ,1DHAM 06>>(  0.000000) F*tA*tB cont. =   0.000000
- IROPER2>XDIPLEN 1DHAM 06
- IROPER2>XDIPLEN 1DHAM 06
- <<XDIPLEN ,1DHAM 07>>(  0.000000) EtaA*tB cont.  =  -0.003453
- <<1DHAM 07,XDIPLEN >>(  0.000000) EtaA*tB cont.  =  -0.003458
- <<XDIPLEN ,1DHAM 07>>(  0.000000) F*tA*tB cont. =  -0.000010
- IROPER2>XDIPLEN 1DHAM 07
- IROPER2>XDIPLEN 1DHAM 07
- <<XDIPLEN ,1DHAM 07>>(  0.000000) EtaA*tB cont.  =  -0.003453
- <<1DHAM 07,XDIPLEN >>(  0.000000) EtaA*tB cont.  =  -0.003458
- <<XDIPLEN ,1DHAM 07>>(  0.000000) F*tA*tB cont. =  -0.000010
- IROPER2>XDIPLEN 1DHAM 07
- IROPER2>XDIPLEN 1DHAM 07
- <<XDIPLEN ,1DHAM 08>>(  0.000000) EtaA*tB cont.  =   0.000000
- <<1DHAM 08,XDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
- <<XDIPLEN ,1DHAM 08>>(  0.000000) F*tA*tB cont. =   0.000000
- IROPER2>XDIPLEN 1DHAM 08
- IROPER2>XDIPLEN 1DHAM 08
- <<XDIPLEN ,1DHAM 08>>(  0.000000) EtaA*tB cont.  =   0.000000
- <<1DHAM 08,XDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
- <<XDIPLEN ,1DHAM 08>>(  0.000000) F*tA*tB cont. =   0.000000
- IROPER2>XDIPLEN 1DHAM 08
- IROPER2>XDIPLEN 1DHAM 08
- <<XDIPLEN ,1DHAM 09>>(  0.000000) EtaA*tB cont.  =   0.000000
- <<1DHAM 09,XDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
- <<XDIPLEN ,1DHAM 09>>(  0.000000) F*tA*tB cont. =   0.000000
- IROPER2>XDIPLEN 1DHAM 09
- IROPER2>XDIPLEN 1DHAM 09
- <<XDIPLEN ,1DHAM 09>>(  0.000000) EtaA*tB cont.  =   0.000000
- <<1DHAM 09,XDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
- <<XDIPLEN ,1DHAM 09>>(  0.000000) F*tA*tB cont. =   0.000000
- IROPER2>XDIPLEN 1DHAM 09
- IROPER2>XDIPLEN 1DHAM 09
- <<YDIPLEN ,1DHAM 01>>(  0.000000) EtaA*tB cont.  =   0.000000
- <<1DHAM 01,YDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
- <<YDIPLEN ,1DHAM 01>>(  0.000000) F*tA*tB cont. =   0.000000
- IROPER2>YDIPLEN 1DHAM 01
- IROPER2>YDIPLEN 1DHAM 01
- <<YDIPLEN ,1DHAM 01>>(  0.000000) EtaA*tB cont.  =   0.000000
- <<1DHAM 01,YDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
- <<YDIPLEN ,1DHAM 01>>(  0.000000) F*tA*tB cont. =   0.000000
- IROPER2>YDIPLEN 1DHAM 01
- IROPER2>YDIPLEN 1DHAM 01
- <<YDIPLEN ,1DHAM 02>>(  0.000000) EtaA*tB cont.  =  -0.040671
- <<1DHAM 02,YDIPLEN >>(  0.000000) EtaA*tB cont.  =  -0.041061
- <<YDIPLEN ,1DHAM 02>>(  0.000000) F*tA*tB cont. =   0.001205
- IROPER2>YDIPLEN 1DHAM 02
- IROPER2>YDIPLEN 1DHAM 02
- <<YDIPLEN ,1DHAM 02>>(  0.000000) EtaA*tB cont.  =  -0.040671
- <<1DHAM 02,YDIPLEN >>(  0.000000) EtaA*tB cont.  =  -0.041061
- <<YDIPLEN ,1DHAM 02>>(  0.000000) F*tA*tB cont. =   0.001205
- IROPER2>YDIPLEN 1DHAM 02
- IROPER2>YDIPLEN 1DHAM 02
- <<YDIPLEN ,1DHAM 03>>(  0.000000) EtaA*tB cont.  =   0.000000
- <<1DHAM 03,YDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
- <<YDIPLEN ,1DHAM 03>>(  0.000000) F*tA*tB cont. =   0.000000
- IROPER2>YDIPLEN 1DHAM 03
- IROPER2>YDIPLEN 1DHAM 03
- <<YDIPLEN ,1DHAM 03>>(  0.000000) EtaA*tB cont.  =   0.000000
- <<1DHAM 03,YDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
- <<YDIPLEN ,1DHAM 03>>(  0.000000) F*tA*tB cont. =   0.000000
- IROPER2>YDIPLEN 1DHAM 03
- IROPER2>YDIPLEN 1DHAM 03
- <<YDIPLEN ,1DHAM 04>>(  0.000000) EtaA*tB cont.  =   0.000000
- <<1DHAM 04,YDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
- <<YDIPLEN ,1DHAM 04>>(  0.000000) F*tA*tB cont. =   0.000000
- IROPER2>YDIPLEN 1DHAM 04
- IROPER2>YDIPLEN 1DHAM 04
- <<YDIPLEN ,1DHAM 04>>(  0.000000) EtaA*tB cont.  =   0.000000
- <<1DHAM 04,YDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
- <<YDIPLEN ,1DHAM 04>>(  0.000000) F*tA*tB cont. =   0.000000
- IROPER2>YDIPLEN 1DHAM 04
- IROPER2>YDIPLEN 1DHAM 04
- <<YDIPLEN ,1DHAM 05>>(  0.000000) EtaA*tB cont.  =   0.020335
- <<1DHAM 05,YDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.020531
- <<YDIPLEN ,1DHAM 05>>(  0.000000) F*tA*tB cont. =  -0.000602
- IROPER2>YDIPLEN 1DHAM 05
- IROPER2>YDIPLEN 1DHAM 05
- <<YDIPLEN ,1DHAM 05>>(  0.000000) EtaA*tB cont.  =   0.020335
- <<1DHAM 05,YDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.020531
- <<YDIPLEN ,1DHAM 05>>(  0.000000) F*tA*tB cont. =  -0.000602
- IROPER2>YDIPLEN 1DHAM 05
- IROPER2>YDIPLEN 1DHAM 05
- <<YDIPLEN ,1DHAM 06>>(  0.000000) EtaA*tB cont.  =   0.020823
- <<1DHAM 06,YDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.020927
- <<YDIPLEN ,1DHAM 06>>(  0.000000) F*tA*tB cont. =  -0.000612
- IROPER2>YDIPLEN 1DHAM 06
- IROPER2>YDIPLEN 1DHAM 06
- <<YDIPLEN ,1DHAM 06>>(  0.000000) EtaA*tB cont.  =   0.020823
- <<1DHAM 06,YDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.020927
- <<YDIPLEN ,1DHAM 06>>(  0.000000) F*tA*tB cont. =  -0.000612
- IROPER2>YDIPLEN 1DHAM 06
- IROPER2>YDIPLEN 1DHAM 06
- <<YDIPLEN ,1DHAM 07>>(  0.000000) EtaA*tB cont.  =   0.000000
- <<1DHAM 07,YDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
- <<YDIPLEN ,1DHAM 07>>(  0.000000) F*tA*tB cont. =   0.000000
- IROPER2>YDIPLEN 1DHAM 07
- IROPER2>YDIPLEN 1DHAM 07
- <<YDIPLEN ,1DHAM 07>>(  0.000000) EtaA*tB cont.  =   0.000000
- <<1DHAM 07,YDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
- <<YDIPLEN ,1DHAM 07>>(  0.000000) F*tA*tB cont. =   0.000000
- IROPER2>YDIPLEN 1DHAM 07
- IROPER2>YDIPLEN 1DHAM 07
- <<YDIPLEN ,1DHAM 08>>(  0.000000) EtaA*tB cont.  =   0.020335
- <<1DHAM 08,YDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.020531
- <<YDIPLEN ,1DHAM 08>>(  0.000000) F*tA*tB cont. =  -0.000602
- IROPER2>YDIPLEN 1DHAM 08
- IROPER2>YDIPLEN 1DHAM 08
- <<YDIPLEN ,1DHAM 08>>(  0.000000) EtaA*tB cont.  =   0.020335
- <<1DHAM 08,YDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.020531
- <<YDIPLEN ,1DHAM 08>>(  0.000000) F*tA*tB cont. =  -0.000602
- IROPER2>YDIPLEN 1DHAM 08
- IROPER2>YDIPLEN 1DHAM 08
- <<YDIPLEN ,1DHAM 09>>(  0.000000) EtaA*tB cont.  =  -0.020823
- <<1DHAM 09,YDIPLEN >>(  0.000000) EtaA*tB cont.  =  -0.020927
- <<YDIPLEN ,1DHAM 09>>(  0.000000) F*tA*tB cont. =   0.000612
- IROPER2>YDIPLEN 1DHAM 09
- IROPER2>YDIPLEN 1DHAM 09
- <<YDIPLEN ,1DHAM 09>>(  0.000000) EtaA*tB cont.  =  -0.020823
- <<1DHAM 09,YDIPLEN >>(  0.000000) EtaA*tB cont.  =  -0.020927
- <<YDIPLEN ,1DHAM 09>>(  0.000000) F*tA*tB cont. =   0.000612
- IROPER2>YDIPLEN 1DHAM 09
- IROPER2>YDIPLEN 1DHAM 09
- <<ZDIPLEN ,1DHAM 01>>(  0.000000) EtaA*tB cont.  =   0.000000
- <<1DHAM 01,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
- <<ZDIPLEN ,1DHAM 01>>(  0.000000) F*tA*tB cont. =   0.000000
- IROPER2>ZDIPLEN 1DHAM 01
- IROPER2>ZDIPLEN 1DHAM 01
- <<ZDIPLEN ,1DHAM 01>>(  0.000000) EtaA*tB cont.  =   0.000000
- <<1DHAM 01,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
- <<ZDIPLEN ,1DHAM 01>>(  0.000000) F*tA*tB cont. =   0.000000
- IROPER2>ZDIPLEN 1DHAM 01
- IROPER2>ZDIPLEN 1DHAM 01
- <<ZDIPLEN ,1DHAM 02>>(  0.000000) EtaA*tB cont.  =   0.000000
- <<1DHAM 02,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
- <<ZDIPLEN ,1DHAM 02>>(  0.000000) F*tA*tB cont. =   0.000000
- IROPER2>ZDIPLEN 1DHAM 02
- IROPER2>ZDIPLEN 1DHAM 02
- <<ZDIPLEN ,1DHAM 02>>(  0.000000) EtaA*tB cont.  =   0.000000
- <<1DHAM 02,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
- <<ZDIPLEN ,1DHAM 02>>(  0.000000) F*tA*tB cont. =   0.000000
- IROPER2>ZDIPLEN 1DHAM 02
- IROPER2>ZDIPLEN 1DHAM 02
- <<ZDIPLEN ,1DHAM 03>>(  0.000000) EtaA*tB cont.  =  -0.039072
- <<1DHAM 03,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =  -0.039283
- <<ZDIPLEN ,1DHAM 03>>(  0.000000) F*tA*tB cont. =   0.000928
- IROPER2>ZDIPLEN 1DHAM 03
- IROPER2>ZDIPLEN 1DHAM 03
- <<ZDIPLEN ,1DHAM 03>>(  0.000000) EtaA*tB cont.  =  -0.039072
- <<1DHAM 03,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =  -0.039283
- <<ZDIPLEN ,1DHAM 03>>(  0.000000) F*tA*tB cont. =   0.000928
- IROPER2>ZDIPLEN 1DHAM 03
- IROPER2>ZDIPLEN 1DHAM 03
- <<ZDIPLEN ,1DHAM 04>>(  0.000000) EtaA*tB cont.  =   0.000000
- <<1DHAM 04,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
- <<ZDIPLEN ,1DHAM 04>>(  0.000000) F*tA*tB cont. =   0.000000
- IROPER2>ZDIPLEN 1DHAM 04
- IROPER2>ZDIPLEN 1DHAM 04
- <<ZDIPLEN ,1DHAM 04>>(  0.000000) EtaA*tB cont.  =   0.000000
- <<1DHAM 04,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
- <<ZDIPLEN ,1DHAM 04>>(  0.000000) F*tA*tB cont. =   0.000000
- IROPER2>ZDIPLEN 1DHAM 04
- IROPER2>ZDIPLEN 1DHAM 04
- <<ZDIPLEN ,1DHAM 05>>(  0.000000) EtaA*tB cont.  =   0.015248
- <<1DHAM 05,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.015220
- <<ZDIPLEN ,1DHAM 05>>(  0.000000) F*tA*tB cont. =  -0.000322
- IROPER2>ZDIPLEN 1DHAM 05
- IROPER2>ZDIPLEN 1DHAM 05
- <<ZDIPLEN ,1DHAM 05>>(  0.000000) EtaA*tB cont.  =   0.015248
- <<1DHAM 05,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.015220
- <<ZDIPLEN ,1DHAM 05>>(  0.000000) F*tA*tB cont. =  -0.000322
- IROPER2>ZDIPLEN 1DHAM 05
- IROPER2>ZDIPLEN 1DHAM 05
- <<ZDIPLEN ,1DHAM 06>>(  0.000000) EtaA*tB cont.  =   0.019536
- <<1DHAM 06,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.019642
- <<ZDIPLEN ,1DHAM 06>>(  0.000000) F*tA*tB cont. =  -0.000464
- IROPER2>ZDIPLEN 1DHAM 06
- IROPER2>ZDIPLEN 1DHAM 06
- <<ZDIPLEN ,1DHAM 06>>(  0.000000) EtaA*tB cont.  =   0.019536
- <<1DHAM 06,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.019642
- <<ZDIPLEN ,1DHAM 06>>(  0.000000) F*tA*tB cont. =  -0.000464
- IROPER2>ZDIPLEN 1DHAM 06
- IROPER2>ZDIPLEN 1DHAM 06
- <<ZDIPLEN ,1DHAM 07>>(  0.000000) EtaA*tB cont.  =   0.000000
- <<1DHAM 07,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
- <<ZDIPLEN ,1DHAM 07>>(  0.000000) F*tA*tB cont. =   0.000000
- IROPER2>ZDIPLEN 1DHAM 07
- IROPER2>ZDIPLEN 1DHAM 07
- <<ZDIPLEN ,1DHAM 07>>(  0.000000) EtaA*tB cont.  =   0.000000
- <<1DHAM 07,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
- <<ZDIPLEN ,1DHAM 07>>(  0.000000) F*tA*tB cont. =   0.000000
- IROPER2>ZDIPLEN 1DHAM 07
- IROPER2>ZDIPLEN 1DHAM 07
- <<ZDIPLEN ,1DHAM 08>>(  0.000000) EtaA*tB cont.  =  -0.015248
- <<1DHAM 08,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =  -0.015220
- <<ZDIPLEN ,1DHAM 08>>(  0.000000) F*tA*tB cont. =   0.000322
- IROPER2>ZDIPLEN 1DHAM 08
- IROPER2>ZDIPLEN 1DHAM 08
- <<ZDIPLEN ,1DHAM 08>>(  0.000000) EtaA*tB cont.  =  -0.015248
- <<1DHAM 08,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =  -0.015220
- <<ZDIPLEN ,1DHAM 08>>(  0.000000) F*tA*tB cont. =   0.000322
- IROPER2>ZDIPLEN 1DHAM 08
- IROPER2>ZDIPLEN 1DHAM 08
- <<ZDIPLEN ,1DHAM 09>>(  0.000000) EtaA*tB cont.  =   0.019536
- <<1DHAM 09,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.019642
- <<ZDIPLEN ,1DHAM 09>>(  0.000000) F*tA*tB cont. =  -0.000464
- IROPER2>ZDIPLEN 1DHAM 09
- IROPER2>ZDIPLEN 1DHAM 09
- <<ZDIPLEN ,1DHAM 09>>(  0.000000) EtaA*tB cont.  =   0.019536
- <<1DHAM 09,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.019642
- <<ZDIPLEN ,1DHAM 09>>(  0.000000) F*tA*tB cont. =  -0.000464
- IROPER2>ZDIPLEN 1DHAM 09
- IROPER2>ZDIPLEN 1DHAM 09
+ <<XDIPLEN ,1DHAM001>>(  0.000000) EtaA*tB cont.  =   0.006905
+ <<1DHAM001,XDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.006915
+ <<XDIPLEN ,1DHAM001>>(  0.000000) F*tA*tB cont. =   0.000019
+ IROPER2>XDIPLEN 1DHAM001
+ IROPER2>XDIPLEN 1DHAM001
+ <<XDIPLEN ,1DHAM001>>(  0.000000) EtaA*tB cont.  =   0.006905
+ <<1DHAM001,XDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.006915
+ <<XDIPLEN ,1DHAM001>>(  0.000000) F*tA*tB cont. =   0.000019
+ IROPER2>XDIPLEN 1DHAM001
+ IROPER2>XDIPLEN 1DHAM001
+ <<XDIPLEN ,1DHAM002>>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<1DHAM002,XDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<XDIPLEN ,1DHAM002>>(  0.000000) F*tA*tB cont. =   0.000000
+ IROPER2>XDIPLEN 1DHAM002
+ IROPER2>XDIPLEN 1DHAM002
+ <<XDIPLEN ,1DHAM002>>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<1DHAM002,XDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<XDIPLEN ,1DHAM002>>(  0.000000) F*tA*tB cont. =   0.000000
+ IROPER2>XDIPLEN 1DHAM002
+ IROPER2>XDIPLEN 1DHAM002
+ <<XDIPLEN ,1DHAM003>>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<1DHAM003,XDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<XDIPLEN ,1DHAM003>>(  0.000000) F*tA*tB cont. =   0.000000
+ IROPER2>XDIPLEN 1DHAM003
+ IROPER2>XDIPLEN 1DHAM003
+ <<XDIPLEN ,1DHAM003>>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<1DHAM003,XDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<XDIPLEN ,1DHAM003>>(  0.000000) F*tA*tB cont. =   0.000000
+ IROPER2>XDIPLEN 1DHAM003
+ IROPER2>XDIPLEN 1DHAM003
+ <<XDIPLEN ,1DHAM004>>(  0.000000) EtaA*tB cont.  =  -0.003453
+ <<1DHAM004,XDIPLEN >>(  0.000000) EtaA*tB cont.  =  -0.003458
+ <<XDIPLEN ,1DHAM004>>(  0.000000) F*tA*tB cont. =  -0.000010
+ IROPER2>XDIPLEN 1DHAM004
+ IROPER2>XDIPLEN 1DHAM004
+ <<XDIPLEN ,1DHAM004>>(  0.000000) EtaA*tB cont.  =  -0.003453
+ <<1DHAM004,XDIPLEN >>(  0.000000) EtaA*tB cont.  =  -0.003458
+ <<XDIPLEN ,1DHAM004>>(  0.000000) F*tA*tB cont. =  -0.000010
+ IROPER2>XDIPLEN 1DHAM004
+ IROPER2>XDIPLEN 1DHAM004
+ <<XDIPLEN ,1DHAM005>>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<1DHAM005,XDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<XDIPLEN ,1DHAM005>>(  0.000000) F*tA*tB cont. =   0.000000
+ IROPER2>XDIPLEN 1DHAM005
+ IROPER2>XDIPLEN 1DHAM005
+ <<XDIPLEN ,1DHAM005>>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<1DHAM005,XDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<XDIPLEN ,1DHAM005>>(  0.000000) F*tA*tB cont. =   0.000000
+ IROPER2>XDIPLEN 1DHAM005
+ IROPER2>XDIPLEN 1DHAM005
+ <<XDIPLEN ,1DHAM006>>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<1DHAM006,XDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<XDIPLEN ,1DHAM006>>(  0.000000) F*tA*tB cont. =   0.000000
+ IROPER2>XDIPLEN 1DHAM006
+ IROPER2>XDIPLEN 1DHAM006
+ <<XDIPLEN ,1DHAM006>>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<1DHAM006,XDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<XDIPLEN ,1DHAM006>>(  0.000000) F*tA*tB cont. =   0.000000
+ IROPER2>XDIPLEN 1DHAM006
+ IROPER2>XDIPLEN 1DHAM006
+ <<XDIPLEN ,1DHAM007>>(  0.000000) EtaA*tB cont.  =  -0.003453
+ <<1DHAM007,XDIPLEN >>(  0.000000) EtaA*tB cont.  =  -0.003458
+ <<XDIPLEN ,1DHAM007>>(  0.000000) F*tA*tB cont. =  -0.000010
+ IROPER2>XDIPLEN 1DHAM007
+ IROPER2>XDIPLEN 1DHAM007
+ <<XDIPLEN ,1DHAM007>>(  0.000000) EtaA*tB cont.  =  -0.003453
+ <<1DHAM007,XDIPLEN >>(  0.000000) EtaA*tB cont.  =  -0.003458
+ <<XDIPLEN ,1DHAM007>>(  0.000000) F*tA*tB cont. =  -0.000010
+ IROPER2>XDIPLEN 1DHAM007
+ IROPER2>XDIPLEN 1DHAM007
+ <<XDIPLEN ,1DHAM008>>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<1DHAM008,XDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<XDIPLEN ,1DHAM008>>(  0.000000) F*tA*tB cont. =   0.000000
+ IROPER2>XDIPLEN 1DHAM008
+ IROPER2>XDIPLEN 1DHAM008
+ <<XDIPLEN ,1DHAM008>>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<1DHAM008,XDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<XDIPLEN ,1DHAM008>>(  0.000000) F*tA*tB cont. =   0.000000
+ IROPER2>XDIPLEN 1DHAM008
+ IROPER2>XDIPLEN 1DHAM008
+ <<XDIPLEN ,1DHAM009>>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<1DHAM009,XDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<XDIPLEN ,1DHAM009>>(  0.000000) F*tA*tB cont. =   0.000000
+ IROPER2>XDIPLEN 1DHAM009
+ IROPER2>XDIPLEN 1DHAM009
+ <<XDIPLEN ,1DHAM009>>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<1DHAM009,XDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<XDIPLEN ,1DHAM009>>(  0.000000) F*tA*tB cont. =   0.000000
+ IROPER2>XDIPLEN 1DHAM009
+ IROPER2>XDIPLEN 1DHAM009
+ <<YDIPLEN ,1DHAM001>>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<1DHAM001,YDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<YDIPLEN ,1DHAM001>>(  0.000000) F*tA*tB cont. =   0.000000
+ IROPER2>YDIPLEN 1DHAM001
+ IROPER2>YDIPLEN 1DHAM001
+ <<YDIPLEN ,1DHAM001>>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<1DHAM001,YDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<YDIPLEN ,1DHAM001>>(  0.000000) F*tA*tB cont. =   0.000000
+ IROPER2>YDIPLEN 1DHAM001
+ IROPER2>YDIPLEN 1DHAM001
+ <<YDIPLEN ,1DHAM002>>(  0.000000) EtaA*tB cont.  =  -0.040671
+ <<1DHAM002,YDIPLEN >>(  0.000000) EtaA*tB cont.  =  -0.041061
+ <<YDIPLEN ,1DHAM002>>(  0.000000) F*tA*tB cont. =   0.001205
+ IROPER2>YDIPLEN 1DHAM002
+ IROPER2>YDIPLEN 1DHAM002
+ <<YDIPLEN ,1DHAM002>>(  0.000000) EtaA*tB cont.  =  -0.040671
+ <<1DHAM002,YDIPLEN >>(  0.000000) EtaA*tB cont.  =  -0.041061
+ <<YDIPLEN ,1DHAM002>>(  0.000000) F*tA*tB cont. =   0.001205
+ IROPER2>YDIPLEN 1DHAM002
+ IROPER2>YDIPLEN 1DHAM002
+ <<YDIPLEN ,1DHAM003>>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<1DHAM003,YDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<YDIPLEN ,1DHAM003>>(  0.000000) F*tA*tB cont. =   0.000000
+ IROPER2>YDIPLEN 1DHAM003
+ IROPER2>YDIPLEN 1DHAM003
+ <<YDIPLEN ,1DHAM003>>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<1DHAM003,YDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<YDIPLEN ,1DHAM003>>(  0.000000) F*tA*tB cont. =   0.000000
+ IROPER2>YDIPLEN 1DHAM003
+ IROPER2>YDIPLEN 1DHAM003
+ <<YDIPLEN ,1DHAM004>>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<1DHAM004,YDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<YDIPLEN ,1DHAM004>>(  0.000000) F*tA*tB cont. =   0.000000
+ IROPER2>YDIPLEN 1DHAM004
+ IROPER2>YDIPLEN 1DHAM004
+ <<YDIPLEN ,1DHAM004>>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<1DHAM004,YDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<YDIPLEN ,1DHAM004>>(  0.000000) F*tA*tB cont. =   0.000000
+ IROPER2>YDIPLEN 1DHAM004
+ IROPER2>YDIPLEN 1DHAM004
+ <<YDIPLEN ,1DHAM005>>(  0.000000) EtaA*tB cont.  =   0.020335
+ <<1DHAM005,YDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.020531
+ <<YDIPLEN ,1DHAM005>>(  0.000000) F*tA*tB cont. =  -0.000602
+ IROPER2>YDIPLEN 1DHAM005
+ IROPER2>YDIPLEN 1DHAM005
+ <<YDIPLEN ,1DHAM005>>(  0.000000) EtaA*tB cont.  =   0.020335
+ <<1DHAM005,YDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.020531
+ <<YDIPLEN ,1DHAM005>>(  0.000000) F*tA*tB cont. =  -0.000602
+ IROPER2>YDIPLEN 1DHAM005
+ IROPER2>YDIPLEN 1DHAM005
+ <<YDIPLEN ,1DHAM006>>(  0.000000) EtaA*tB cont.  =   0.020823
+ <<1DHAM006,YDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.020927
+ <<YDIPLEN ,1DHAM006>>(  0.000000) F*tA*tB cont. =  -0.000612
+ IROPER2>YDIPLEN 1DHAM006
+ IROPER2>YDIPLEN 1DHAM006
+ <<YDIPLEN ,1DHAM006>>(  0.000000) EtaA*tB cont.  =   0.020823
+ <<1DHAM006,YDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.020927
+ <<YDIPLEN ,1DHAM006>>(  0.000000) F*tA*tB cont. =  -0.000612
+ IROPER2>YDIPLEN 1DHAM006
+ IROPER2>YDIPLEN 1DHAM006
+ <<YDIPLEN ,1DHAM007>>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<1DHAM007,YDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<YDIPLEN ,1DHAM007>>(  0.000000) F*tA*tB cont. =   0.000000
+ IROPER2>YDIPLEN 1DHAM007
+ IROPER2>YDIPLEN 1DHAM007
+ <<YDIPLEN ,1DHAM007>>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<1DHAM007,YDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<YDIPLEN ,1DHAM007>>(  0.000000) F*tA*tB cont. =   0.000000
+ IROPER2>YDIPLEN 1DHAM007
+ IROPER2>YDIPLEN 1DHAM007
+ <<YDIPLEN ,1DHAM008>>(  0.000000) EtaA*tB cont.  =   0.020335
+ <<1DHAM008,YDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.020531
+ <<YDIPLEN ,1DHAM008>>(  0.000000) F*tA*tB cont. =  -0.000602
+ IROPER2>YDIPLEN 1DHAM008
+ IROPER2>YDIPLEN 1DHAM008
+ <<YDIPLEN ,1DHAM008>>(  0.000000) EtaA*tB cont.  =   0.020335
+ <<1DHAM008,YDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.020531
+ <<YDIPLEN ,1DHAM008>>(  0.000000) F*tA*tB cont. =  -0.000602
+ IROPER2>YDIPLEN 1DHAM008
+ IROPER2>YDIPLEN 1DHAM008
+ <<YDIPLEN ,1DHAM009>>(  0.000000) EtaA*tB cont.  =  -0.020823
+ <<1DHAM009,YDIPLEN >>(  0.000000) EtaA*tB cont.  =  -0.020927
+ <<YDIPLEN ,1DHAM009>>(  0.000000) F*tA*tB cont. =   0.000612
+ IROPER2>YDIPLEN 1DHAM009
+ IROPER2>YDIPLEN 1DHAM009
+ <<YDIPLEN ,1DHAM009>>(  0.000000) EtaA*tB cont.  =  -0.020823
+ <<1DHAM009,YDIPLEN >>(  0.000000) EtaA*tB cont.  =  -0.020927
+ <<YDIPLEN ,1DHAM009>>(  0.000000) F*tA*tB cont. =   0.000612
+ IROPER2>YDIPLEN 1DHAM009
+ IROPER2>YDIPLEN 1DHAM009
+ <<ZDIPLEN ,1DHAM001>>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<1DHAM001,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<ZDIPLEN ,1DHAM001>>(  0.000000) F*tA*tB cont. =   0.000000
+ IROPER2>ZDIPLEN 1DHAM001
+ IROPER2>ZDIPLEN 1DHAM001
+ <<ZDIPLEN ,1DHAM001>>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<1DHAM001,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<ZDIPLEN ,1DHAM001>>(  0.000000) F*tA*tB cont. =   0.000000
+ IROPER2>ZDIPLEN 1DHAM001
+ IROPER2>ZDIPLEN 1DHAM001
+ <<ZDIPLEN ,1DHAM002>>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<1DHAM002,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<ZDIPLEN ,1DHAM002>>(  0.000000) F*tA*tB cont. =   0.000000
+ IROPER2>ZDIPLEN 1DHAM002
+ IROPER2>ZDIPLEN 1DHAM002
+ <<ZDIPLEN ,1DHAM002>>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<1DHAM002,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<ZDIPLEN ,1DHAM002>>(  0.000000) F*tA*tB cont. =   0.000000
+ IROPER2>ZDIPLEN 1DHAM002
+ IROPER2>ZDIPLEN 1DHAM002
+ <<ZDIPLEN ,1DHAM003>>(  0.000000) EtaA*tB cont.  =  -0.039072
+ <<1DHAM003,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =  -0.039283
+ <<ZDIPLEN ,1DHAM003>>(  0.000000) F*tA*tB cont. =   0.000928
+ IROPER2>ZDIPLEN 1DHAM003
+ IROPER2>ZDIPLEN 1DHAM003
+ <<ZDIPLEN ,1DHAM003>>(  0.000000) EtaA*tB cont.  =  -0.039072
+ <<1DHAM003,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =  -0.039283
+ <<ZDIPLEN ,1DHAM003>>(  0.000000) F*tA*tB cont. =   0.000928
+ IROPER2>ZDIPLEN 1DHAM003
+ IROPER2>ZDIPLEN 1DHAM003
+ <<ZDIPLEN ,1DHAM004>>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<1DHAM004,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<ZDIPLEN ,1DHAM004>>(  0.000000) F*tA*tB cont. =   0.000000
+ IROPER2>ZDIPLEN 1DHAM004
+ IROPER2>ZDIPLEN 1DHAM004
+ <<ZDIPLEN ,1DHAM004>>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<1DHAM004,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<ZDIPLEN ,1DHAM004>>(  0.000000) F*tA*tB cont. =   0.000000
+ IROPER2>ZDIPLEN 1DHAM004
+ IROPER2>ZDIPLEN 1DHAM004
+ <<ZDIPLEN ,1DHAM005>>(  0.000000) EtaA*tB cont.  =   0.015248
+ <<1DHAM005,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.015220
+ <<ZDIPLEN ,1DHAM005>>(  0.000000) F*tA*tB cont. =  -0.000322
+ IROPER2>ZDIPLEN 1DHAM005
+ IROPER2>ZDIPLEN 1DHAM005
+ <<ZDIPLEN ,1DHAM005>>(  0.000000) EtaA*tB cont.  =   0.015248
+ <<1DHAM005,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.015220
+ <<ZDIPLEN ,1DHAM005>>(  0.000000) F*tA*tB cont. =  -0.000322
+ IROPER2>ZDIPLEN 1DHAM005
+ IROPER2>ZDIPLEN 1DHAM005
+ <<ZDIPLEN ,1DHAM006>>(  0.000000) EtaA*tB cont.  =   0.019536
+ <<1DHAM006,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.019642
+ <<ZDIPLEN ,1DHAM006>>(  0.000000) F*tA*tB cont. =  -0.000464
+ IROPER2>ZDIPLEN 1DHAM006
+ IROPER2>ZDIPLEN 1DHAM006
+ <<ZDIPLEN ,1DHAM006>>(  0.000000) EtaA*tB cont.  =   0.019536
+ <<1DHAM006,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.019642
+ <<ZDIPLEN ,1DHAM006>>(  0.000000) F*tA*tB cont. =  -0.000464
+ IROPER2>ZDIPLEN 1DHAM006
+ IROPER2>ZDIPLEN 1DHAM006
+ <<ZDIPLEN ,1DHAM007>>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<1DHAM007,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<ZDIPLEN ,1DHAM007>>(  0.000000) F*tA*tB cont. =   0.000000
+ IROPER2>ZDIPLEN 1DHAM007
+ IROPER2>ZDIPLEN 1DHAM007
+ <<ZDIPLEN ,1DHAM007>>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<1DHAM007,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.000000
+ <<ZDIPLEN ,1DHAM007>>(  0.000000) F*tA*tB cont. =   0.000000
+ IROPER2>ZDIPLEN 1DHAM007
+ IROPER2>ZDIPLEN 1DHAM007
+ <<ZDIPLEN ,1DHAM008>>(  0.000000) EtaA*tB cont.  =  -0.015248
+ <<1DHAM008,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =  -0.015220
+ <<ZDIPLEN ,1DHAM008>>(  0.000000) F*tA*tB cont. =   0.000322
+ IROPER2>ZDIPLEN 1DHAM008
+ IROPER2>ZDIPLEN 1DHAM008
+ <<ZDIPLEN ,1DHAM008>>(  0.000000) EtaA*tB cont.  =  -0.015248
+ <<1DHAM008,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =  -0.015220
+ <<ZDIPLEN ,1DHAM008>>(  0.000000) F*tA*tB cont. =   0.000322
+ IROPER2>ZDIPLEN 1DHAM008
+ IROPER2>ZDIPLEN 1DHAM008
+ <<ZDIPLEN ,1DHAM009>>(  0.000000) EtaA*tB cont.  =   0.019536
+ <<1DHAM009,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.019642
+ <<ZDIPLEN ,1DHAM009>>(  0.000000) F*tA*tB cont. =  -0.000464
+ IROPER2>ZDIPLEN 1DHAM009
+ IROPER2>ZDIPLEN 1DHAM009
+ <<ZDIPLEN ,1DHAM009>>(  0.000000) EtaA*tB cont.  =   0.019536
+ <<1DHAM009,ZDIPLEN >>(  0.000000) EtaA*tB cont.  =   0.019642
+ <<ZDIPLEN ,1DHAM009>>(  0.000000) F*tA*tB cont. =  -0.000464
+ IROPER2>ZDIPLEN 1DHAM009
+ IROPER2>ZDIPLEN 1DHAM009
 
 
  SCF linear response properties in atomic units:
  -----------------------------------------------
 
- <<XDIPLEN ,1DHAM 01>>( 0.000000) =    -0.54879079
- <<XDIPLEN ,1DHAM 02>>( 0.000000) =     0.00000000
- <<XDIPLEN ,1DHAM 03>>( 0.000000) =     0.00000000
- <<XDIPLEN ,1DHAM 04>>( 0.000000) =     0.27439540
- <<XDIPLEN ,1DHAM 05>>( 0.000000) =     0.00000000
- <<XDIPLEN ,1DHAM 06>>( 0.000000) =     0.00000000
- <<XDIPLEN ,1DHAM 07>>( 0.000000) =     0.27439540
- <<XDIPLEN ,1DHAM 08>>( 0.000000) =     0.00000000
- <<XDIPLEN ,1DHAM 09>>( 0.000000) =     0.00000000
- <<YDIPLEN ,1DHAM 01>>( 0.000000) =     0.00000000
- <<YDIPLEN ,1DHAM 02>>( 0.000000) =    -0.02299245
- <<YDIPLEN ,1DHAM 03>>( 0.000000) =     0.00000000
- <<YDIPLEN ,1DHAM 04>>( 0.000000) =     0.00000000
- <<YDIPLEN ,1DHAM 05>>( 0.000000) =     0.01149622
- <<YDIPLEN ,1DHAM 06>>( 0.000000) =    -0.22059860
- <<YDIPLEN ,1DHAM 07>>( 0.000000) =     0.00000000
- <<YDIPLEN ,1DHAM 08>>( 0.000000) =     0.01149622
- <<YDIPLEN ,1DHAM 09>>( 0.000000) =     0.22059860
- <<ZDIPLEN ,1DHAM 01>>( 0.000000) =     0.00000000
- <<ZDIPLEN ,1DHAM 02>>( 0.000000) =     0.00000000
- <<ZDIPLEN ,1DHAM 03>>( 0.000000) =     0.08828584
- <<ZDIPLEN ,1DHAM 04>>( 0.000000) =     0.00000000
- <<ZDIPLEN ,1DHAM 05>>( 0.000000) =    -0.15572763
- <<ZDIPLEN ,1DHAM 06>>( 0.000000) =    -0.04414292
- <<ZDIPLEN ,1DHAM 07>>( 0.000000) =     0.00000000
- <<ZDIPLEN ,1DHAM 08>>( 0.000000) =     0.15572763
- <<ZDIPLEN ,1DHAM 09>>( 0.000000) =    -0.04414292
+ <<XDIPLEN ,1DHAM001>>( 0.000000) =    -0.54879079
+ <<XDIPLEN ,1DHAM002>>( 0.000000) =     0.00000000
+ <<XDIPLEN ,1DHAM003>>( 0.000000) =     0.00000000
+ <<XDIPLEN ,1DHAM004>>( 0.000000) =     0.27439540
+ <<XDIPLEN ,1DHAM005>>( 0.000000) =     0.00000000
+ <<XDIPLEN ,1DHAM006>>( 0.000000) =     0.00000000
+ <<XDIPLEN ,1DHAM007>>( 0.000000) =     0.27439540
+ <<XDIPLEN ,1DHAM008>>( 0.000000) =     0.00000000
+ <<XDIPLEN ,1DHAM009>>( 0.000000) =     0.00000000
+ <<YDIPLEN ,1DHAM001>>( 0.000000) =     0.00000000
+ <<YDIPLEN ,1DHAM002>>( 0.000000) =    -0.02299245
+ <<YDIPLEN ,1DHAM003>>( 0.000000) =     0.00000000
+ <<YDIPLEN ,1DHAM004>>( 0.000000) =     0.00000000
+ <<YDIPLEN ,1DHAM005>>( 0.000000) =     0.01149622
+ <<YDIPLEN ,1DHAM006>>( 0.000000) =    -0.22059860
+ <<YDIPLEN ,1DHAM007>>( 0.000000) =     0.00000000
+ <<YDIPLEN ,1DHAM008>>( 0.000000) =     0.01149622
+ <<YDIPLEN ,1DHAM009>>( 0.000000) =     0.22059860
+ <<ZDIPLEN ,1DHAM001>>( 0.000000) =     0.00000000
+ <<ZDIPLEN ,1DHAM002>>( 0.000000) =     0.00000000
+ <<ZDIPLEN ,1DHAM003>>( 0.000000) =     0.08828584
+ <<ZDIPLEN ,1DHAM004>>( 0.000000) =     0.00000000
+ <<ZDIPLEN ,1DHAM005>>( 0.000000) =    -0.15572763
+ <<ZDIPLEN ,1DHAM006>>( 0.000000) =    -0.04414292
+ <<ZDIPLEN ,1DHAM007>>( 0.000000) =     0.00000000
+ <<ZDIPLEN ,1DHAM008>>( 0.000000) =     0.15572763
+ <<ZDIPLEN ,1DHAM009>>( 0.000000) =    -0.04414292
 
 
  CCSD  linear response properties in atomic units:
  -------------------------------------------------
 
- <<XDIPLEN ,1DHAM 01>>( 0.000000) =     0.50549974
- <<XDIPLEN ,1DHAM 02>>( 0.000000) =     0.00000000
- <<XDIPLEN ,1DHAM 03>>( 0.000000) =     0.00000000
- <<XDIPLEN ,1DHAM 04>>( 0.000000) =    -0.25274987
- <<XDIPLEN ,1DHAM 05>>( 0.000000) =     0.00000000
- <<XDIPLEN ,1DHAM 06>>( 0.000000) =     0.00000000
- <<XDIPLEN ,1DHAM 07>>( 0.000000) =    -0.25274987
- <<XDIPLEN ,1DHAM 08>>( 0.000000) =     0.00000000
- <<XDIPLEN ,1DHAM 09>>( 0.000000) =     0.00000000
- <<YDIPLEN ,1DHAM 01>>( 0.000000) =     0.00000000
- <<YDIPLEN ,1DHAM 02>>( 0.000000) =    -0.08454458
- <<YDIPLEN ,1DHAM 03>>( 0.000000) =     0.00000000
- <<YDIPLEN ,1DHAM 04>>( 0.000000) =     0.00000000
- <<YDIPLEN ,1DHAM 05>>( 0.000000) =     0.04227229
- <<YDIPLEN ,1DHAM 06>>( 0.000000) =     0.24755299
- <<YDIPLEN ,1DHAM 07>>( 0.000000) =     0.00000000
- <<YDIPLEN ,1DHAM 08>>( 0.000000) =     0.04227229
- <<YDIPLEN ,1DHAM 09>>( 0.000000) =    -0.24755299
- <<ZDIPLEN ,1DHAM 01>>( 0.000000) =     0.00000000
- <<ZDIPLEN ,1DHAM 02>>( 0.000000) =     0.00000000
- <<ZDIPLEN ,1DHAM 03>>( 0.000000) =    -0.17508306
- <<ZDIPLEN ,1DHAM 04>>( 0.000000) =     0.00000000
- <<ZDIPLEN ,1DHAM 05>>( 0.000000) =     0.18190965
- <<ZDIPLEN ,1DHAM 06>>( 0.000000) =     0.08754153
- <<ZDIPLEN ,1DHAM 07>>( 0.000000) =     0.00000000
- <<ZDIPLEN ,1DHAM 08>>( 0.000000) =    -0.18190965
- <<ZDIPLEN ,1DHAM 09>>( 0.000000) =     0.08754153
+ <<XDIPLEN ,1DHAM001>>( 0.000000) =     0.50549974
+ <<XDIPLEN ,1DHAM002>>( 0.000000) =     0.00000000
+ <<XDIPLEN ,1DHAM003>>( 0.000000) =     0.00000000
+ <<XDIPLEN ,1DHAM004>>( 0.000000) =    -0.25274987
+ <<XDIPLEN ,1DHAM005>>( 0.000000) =     0.00000000
+ <<XDIPLEN ,1DHAM006>>( 0.000000) =     0.00000000
+ <<XDIPLEN ,1DHAM007>>( 0.000000) =    -0.25274987
+ <<XDIPLEN ,1DHAM008>>( 0.000000) =     0.00000000
+ <<XDIPLEN ,1DHAM009>>( 0.000000) =     0.00000000
+ <<YDIPLEN ,1DHAM001>>( 0.000000) =     0.00000000
+ <<YDIPLEN ,1DHAM002>>( 0.000000) =    -0.08454458
+ <<YDIPLEN ,1DHAM003>>( 0.000000) =     0.00000000
+ <<YDIPLEN ,1DHAM004>>( 0.000000) =     0.00000000
+ <<YDIPLEN ,1DHAM005>>( 0.000000) =     0.04227229
+ <<YDIPLEN ,1DHAM006>>( 0.000000) =     0.24755299
+ <<YDIPLEN ,1DHAM007>>( 0.000000) =     0.00000000
+ <<YDIPLEN ,1DHAM008>>( 0.000000) =     0.04227229
+ <<YDIPLEN ,1DHAM009>>( 0.000000) =    -0.24755299
+ <<ZDIPLEN ,1DHAM001>>( 0.000000) =     0.00000000
+ <<ZDIPLEN ,1DHAM002>>( 0.000000) =     0.00000000
+ <<ZDIPLEN ,1DHAM003>>( 0.000000) =    -0.17508306
+ <<ZDIPLEN ,1DHAM004>>( 0.000000) =     0.00000000
+ <<ZDIPLEN ,1DHAM005>>( 0.000000) =     0.18190965
+ <<ZDIPLEN ,1DHAM006>>( 0.000000) =     0.08754153
+ <<ZDIPLEN ,1DHAM007>>( 0.000000) =     0.00000000
+ <<ZDIPLEN ,1DHAM008>>( 0.000000) =    -0.18190965
+ <<ZDIPLEN ,1DHAM009>>( 0.000000) =     0.08754153
 
  *******************************************************************
  *                                                                 *
@@ -6536,60 +6536,60 @@ Point group: C1
  *                                                                 *
  *******************************************************************
 
- IROPER2>XDIPLEN 1DHAM 01
- IROPER2>XDIPLEN 1DHAM 01
- IROPER2>XDIPLEN 1DHAM 02
- IROPER2>XDIPLEN 1DHAM 02
- IROPER2>XDIPLEN 1DHAM 03
- IROPER2>XDIPLEN 1DHAM 03
- IROPER2>XDIPLEN 1DHAM 04
- IROPER2>XDIPLEN 1DHAM 04
- IROPER2>XDIPLEN 1DHAM 05
- IROPER2>XDIPLEN 1DHAM 05
- IROPER2>XDIPLEN 1DHAM 06
- IROPER2>XDIPLEN 1DHAM 06
- IROPER2>XDIPLEN 1DHAM 07
- IROPER2>XDIPLEN 1DHAM 07
- IROPER2>XDIPLEN 1DHAM 08
- IROPER2>XDIPLEN 1DHAM 08
- IROPER2>XDIPLEN 1DHAM 09
- IROPER2>XDIPLEN 1DHAM 09
- IROPER2>YDIPLEN 1DHAM 01
- IROPER2>YDIPLEN 1DHAM 01
- IROPER2>YDIPLEN 1DHAM 02
- IROPER2>YDIPLEN 1DHAM 02
- IROPER2>YDIPLEN 1DHAM 03
- IROPER2>YDIPLEN 1DHAM 03
- IROPER2>YDIPLEN 1DHAM 04
- IROPER2>YDIPLEN 1DHAM 04
- IROPER2>YDIPLEN 1DHAM 05
- IROPER2>YDIPLEN 1DHAM 05
- IROPER2>YDIPLEN 1DHAM 06
- IROPER2>YDIPLEN 1DHAM 06
- IROPER2>YDIPLEN 1DHAM 07
- IROPER2>YDIPLEN 1DHAM 07
- IROPER2>YDIPLEN 1DHAM 08
- IROPER2>YDIPLEN 1DHAM 08
- IROPER2>YDIPLEN 1DHAM 09
- IROPER2>YDIPLEN 1DHAM 09
- IROPER2>ZDIPLEN 1DHAM 01
- IROPER2>ZDIPLEN 1DHAM 01
- IROPER2>ZDIPLEN 1DHAM 02
- IROPER2>ZDIPLEN 1DHAM 02
- IROPER2>ZDIPLEN 1DHAM 03
- IROPER2>ZDIPLEN 1DHAM 03
- IROPER2>ZDIPLEN 1DHAM 04
- IROPER2>ZDIPLEN 1DHAM 04
- IROPER2>ZDIPLEN 1DHAM 05
- IROPER2>ZDIPLEN 1DHAM 05
- IROPER2>ZDIPLEN 1DHAM 06
- IROPER2>ZDIPLEN 1DHAM 06
- IROPER2>ZDIPLEN 1DHAM 07
- IROPER2>ZDIPLEN 1DHAM 07
- IROPER2>ZDIPLEN 1DHAM 08
- IROPER2>ZDIPLEN 1DHAM 08
- IROPER2>ZDIPLEN 1DHAM 09
- IROPER2>ZDIPLEN 1DHAM 09
+ IROPER2>XDIPLEN 1DHAM001
+ IROPER2>XDIPLEN 1DHAM001
+ IROPER2>XDIPLEN 1DHAM002
+ IROPER2>XDIPLEN 1DHAM002
+ IROPER2>XDIPLEN 1DHAM003
+ IROPER2>XDIPLEN 1DHAM003
+ IROPER2>XDIPLEN 1DHAM004
+ IROPER2>XDIPLEN 1DHAM004
+ IROPER2>XDIPLEN 1DHAM005
+ IROPER2>XDIPLEN 1DHAM005
+ IROPER2>XDIPLEN 1DHAM006
+ IROPER2>XDIPLEN 1DHAM006
+ IROPER2>XDIPLEN 1DHAM007
+ IROPER2>XDIPLEN 1DHAM007
+ IROPER2>XDIPLEN 1DHAM008
+ IROPER2>XDIPLEN 1DHAM008
+ IROPER2>XDIPLEN 1DHAM009
+ IROPER2>XDIPLEN 1DHAM009
+ IROPER2>YDIPLEN 1DHAM001
+ IROPER2>YDIPLEN 1DHAM001
+ IROPER2>YDIPLEN 1DHAM002
+ IROPER2>YDIPLEN 1DHAM002
+ IROPER2>YDIPLEN 1DHAM003
+ IROPER2>YDIPLEN 1DHAM003
+ IROPER2>YDIPLEN 1DHAM004
+ IROPER2>YDIPLEN 1DHAM004
+ IROPER2>YDIPLEN 1DHAM005
+ IROPER2>YDIPLEN 1DHAM005
+ IROPER2>YDIPLEN 1DHAM006
+ IROPER2>YDIPLEN 1DHAM006
+ IROPER2>YDIPLEN 1DHAM007
+ IROPER2>YDIPLEN 1DHAM007
+ IROPER2>YDIPLEN 1DHAM008
+ IROPER2>YDIPLEN 1DHAM008
+ IROPER2>YDIPLEN 1DHAM009
+ IROPER2>YDIPLEN 1DHAM009
+ IROPER2>ZDIPLEN 1DHAM001
+ IROPER2>ZDIPLEN 1DHAM001
+ IROPER2>ZDIPLEN 1DHAM002
+ IROPER2>ZDIPLEN 1DHAM002
+ IROPER2>ZDIPLEN 1DHAM003
+ IROPER2>ZDIPLEN 1DHAM003
+ IROPER2>ZDIPLEN 1DHAM004
+ IROPER2>ZDIPLEN 1DHAM004
+ IROPER2>ZDIPLEN 1DHAM005
+ IROPER2>ZDIPLEN 1DHAM005
+ IROPER2>ZDIPLEN 1DHAM006
+ IROPER2>ZDIPLEN 1DHAM006
+ IROPER2>ZDIPLEN 1DHAM007
+ IROPER2>ZDIPLEN 1DHAM007
+ IROPER2>ZDIPLEN 1DHAM008
+ IROPER2>ZDIPLEN 1DHAM008
+ IROPER2>ZDIPLEN 1DHAM009
+ IROPER2>ZDIPLEN 1DHAM009
 
 
    For the requested 27 second-order properties
@@ -6646,17 +6646,17 @@ Point group: C1
  irelax  =           10          -1 T
  irelax2 =           -1          -1
  allocate relaxed stuff...
- itran   =            21DHAM 01 T
+ itran   =            21DHAM001 T
  ioper   =            1          -1
  irelax  =            1          -1 T
  irelax2 =           -1          -1
  allocate relaxed stuff...
- itran   =            31DHAM 02 T
+ itran   =            31DHAM002 T
  ioper   =            2           1
  irelax  =            2           1 T
  irelax2 =           -1          -1
  allocate relaxed stuff...
- itran   =            41DHAM 03 T
+ itran   =            41DHAM003 T
  ioper   =            3           2
  irelax  =            3           2 T
  irelax2 =           -1          -1
@@ -6694,17 +6694,17 @@ Point group: C1
 >>> Time used in CCSSORTDERAO:           0.00 seconds.
 
 >>> Total time used in CCGETH2D :        0.04 seconds.
- itran   =            51DHAM 04 T
+ itran   =            51DHAM004 T
  ioper   =            4          -1
  irelax  =            4          -1 T
  irelax2 =           -1          -1
  allocate relaxed stuff...
- itran   =            61DHAM 05 T
+ itran   =            61DHAM005 T
  ioper   =            5           4
  irelax  =            5           4 T
  irelax2 =           -1          -1
  allocate relaxed stuff...
- itran   =            71DHAM 06 T
+ itran   =            71DHAM006 T
  ioper   =            6           5
  irelax  =            6           5 T
  irelax2 =           -1          -1
@@ -6742,17 +6742,17 @@ Point group: C1
 >>> Time used in CCSSORTDERAO:           0.00 seconds.
 
 >>> Total time used in CCGETH2D :        0.03 seconds.
- itran   =            81DHAM 07 T
+ itran   =            81DHAM007 T
  ioper   =            7          -1
  irelax  =            7          -1 T
  irelax2 =           -1          -1
  allocate relaxed stuff...
- itran   =            91DHAM 08 T
+ itran   =            91DHAM008 T
  ioper   =            8           7
  irelax  =            8           7 T
  irelax2 =           -1          -1
  allocate relaxed stuff...
- itran   =           101DHAM 09 T
+ itran   =           101DHAM009 T
  ioper   =            9           8
  irelax  =            9           8 T
  irelax2 =           -1          -1
@@ -6860,60 +6860,60 @@ Point group: C1
  CCREO2CON> -0.1570365650531858     
 
 >>> Time used for    9 2. order reortho./relax. contribs.:         0.02 seconds.
- IROPER2>XDIPLEN 1DHAM 01
- IROPER2>XDIPLEN 1DHAM 01
- IROPER2>XDIPLEN 1DHAM 02
- IROPER2>XDIPLEN 1DHAM 02
- IROPER2>XDIPLEN 1DHAM 03
- IROPER2>XDIPLEN 1DHAM 03
- IROPER2>XDIPLEN 1DHAM 04
- IROPER2>XDIPLEN 1DHAM 04
- IROPER2>XDIPLEN 1DHAM 05
- IROPER2>XDIPLEN 1DHAM 05
- IROPER2>XDIPLEN 1DHAM 06
- IROPER2>XDIPLEN 1DHAM 06
- IROPER2>XDIPLEN 1DHAM 07
- IROPER2>XDIPLEN 1DHAM 07
- IROPER2>XDIPLEN 1DHAM 08
- IROPER2>XDIPLEN 1DHAM 08
- IROPER2>XDIPLEN 1DHAM 09
- IROPER2>XDIPLEN 1DHAM 09
- IROPER2>YDIPLEN 1DHAM 01
- IROPER2>YDIPLEN 1DHAM 01
- IROPER2>YDIPLEN 1DHAM 02
- IROPER2>YDIPLEN 1DHAM 02
- IROPER2>YDIPLEN 1DHAM 03
- IROPER2>YDIPLEN 1DHAM 03
- IROPER2>YDIPLEN 1DHAM 04
- IROPER2>YDIPLEN 1DHAM 04
- IROPER2>YDIPLEN 1DHAM 05
- IROPER2>YDIPLEN 1DHAM 05
- IROPER2>YDIPLEN 1DHAM 06
- IROPER2>YDIPLEN 1DHAM 06
- IROPER2>YDIPLEN 1DHAM 07
- IROPER2>YDIPLEN 1DHAM 07
- IROPER2>YDIPLEN 1DHAM 08
- IROPER2>YDIPLEN 1DHAM 08
- IROPER2>YDIPLEN 1DHAM 09
- IROPER2>YDIPLEN 1DHAM 09
- IROPER2>ZDIPLEN 1DHAM 01
- IROPER2>ZDIPLEN 1DHAM 01
- IROPER2>ZDIPLEN 1DHAM 02
- IROPER2>ZDIPLEN 1DHAM 02
- IROPER2>ZDIPLEN 1DHAM 03
- IROPER2>ZDIPLEN 1DHAM 03
- IROPER2>ZDIPLEN 1DHAM 04
- IROPER2>ZDIPLEN 1DHAM 04
- IROPER2>ZDIPLEN 1DHAM 05
- IROPER2>ZDIPLEN 1DHAM 05
- IROPER2>ZDIPLEN 1DHAM 06
- IROPER2>ZDIPLEN 1DHAM 06
- IROPER2>ZDIPLEN 1DHAM 07
- IROPER2>ZDIPLEN 1DHAM 07
- IROPER2>ZDIPLEN 1DHAM 08
- IROPER2>ZDIPLEN 1DHAM 08
- IROPER2>ZDIPLEN 1DHAM 09
- IROPER2>ZDIPLEN 1DHAM 09
+ IROPER2>XDIPLEN 1DHAM001
+ IROPER2>XDIPLEN 1DHAM001
+ IROPER2>XDIPLEN 1DHAM002
+ IROPER2>XDIPLEN 1DHAM002
+ IROPER2>XDIPLEN 1DHAM003
+ IROPER2>XDIPLEN 1DHAM003
+ IROPER2>XDIPLEN 1DHAM004
+ IROPER2>XDIPLEN 1DHAM004
+ IROPER2>XDIPLEN 1DHAM005
+ IROPER2>XDIPLEN 1DHAM005
+ IROPER2>XDIPLEN 1DHAM006
+ IROPER2>XDIPLEN 1DHAM006
+ IROPER2>XDIPLEN 1DHAM007
+ IROPER2>XDIPLEN 1DHAM007
+ IROPER2>XDIPLEN 1DHAM008
+ IROPER2>XDIPLEN 1DHAM008
+ IROPER2>XDIPLEN 1DHAM009
+ IROPER2>XDIPLEN 1DHAM009
+ IROPER2>YDIPLEN 1DHAM001
+ IROPER2>YDIPLEN 1DHAM001
+ IROPER2>YDIPLEN 1DHAM002
+ IROPER2>YDIPLEN 1DHAM002
+ IROPER2>YDIPLEN 1DHAM003
+ IROPER2>YDIPLEN 1DHAM003
+ IROPER2>YDIPLEN 1DHAM004
+ IROPER2>YDIPLEN 1DHAM004
+ IROPER2>YDIPLEN 1DHAM005
+ IROPER2>YDIPLEN 1DHAM005
+ IROPER2>YDIPLEN 1DHAM006
+ IROPER2>YDIPLEN 1DHAM006
+ IROPER2>YDIPLEN 1DHAM007
+ IROPER2>YDIPLEN 1DHAM007
+ IROPER2>YDIPLEN 1DHAM008
+ IROPER2>YDIPLEN 1DHAM008
+ IROPER2>YDIPLEN 1DHAM009
+ IROPER2>YDIPLEN 1DHAM009
+ IROPER2>ZDIPLEN 1DHAM001
+ IROPER2>ZDIPLEN 1DHAM001
+ IROPER2>ZDIPLEN 1DHAM002
+ IROPER2>ZDIPLEN 1DHAM002
+ IROPER2>ZDIPLEN 1DHAM003
+ IROPER2>ZDIPLEN 1DHAM003
+ IROPER2>ZDIPLEN 1DHAM004
+ IROPER2>ZDIPLEN 1DHAM004
+ IROPER2>ZDIPLEN 1DHAM005
+ IROPER2>ZDIPLEN 1DHAM005
+ IROPER2>ZDIPLEN 1DHAM006
+ IROPER2>ZDIPLEN 1DHAM006
+ IROPER2>ZDIPLEN 1DHAM007
+ IROPER2>ZDIPLEN 1DHAM007
+ IROPER2>ZDIPLEN 1DHAM008
+ IROPER2>ZDIPLEN 1DHAM008
+ IROPER2>ZDIPLEN 1DHAM009
+ IROPER2>ZDIPLEN 1DHAM009
 
 
    For the requested 27 second-order properties
@@ -6936,59 +6936,59 @@ Point group: C1
   A operator                  B operator                     property 
 ------------------------------------------------------------------------
 
- XDIPLEN  (relax.)  0.0000   1DHAM 01 (relax.)  0.0000    -0.50549974    
+ XDIPLEN  (relax.)  0.0000   1DHAM001 (relax.)  0.0000    -0.50549974    
 
- XDIPLEN  (relax.)  0.0000   1DHAM 02 (relax.)  0.0000     0.00000000E+00
+ XDIPLEN  (relax.)  0.0000   1DHAM002 (relax.)  0.0000     0.00000000E+00
 
- XDIPLEN  (relax.)  0.0000   1DHAM 03 (relax.)  0.0000     0.00000000E+00
+ XDIPLEN  (relax.)  0.0000   1DHAM003 (relax.)  0.0000     0.00000000E+00
 
- XDIPLEN  (relax.)  0.0000   1DHAM 04 (relax.)  0.0000     0.25274987    
+ XDIPLEN  (relax.)  0.0000   1DHAM004 (relax.)  0.0000     0.25274987    
 
- XDIPLEN  (relax.)  0.0000   1DHAM 05 (relax.)  0.0000     0.00000000E+00
+ XDIPLEN  (relax.)  0.0000   1DHAM005 (relax.)  0.0000     0.00000000E+00
 
- XDIPLEN  (relax.)  0.0000   1DHAM 06 (relax.)  0.0000     0.00000000E+00
+ XDIPLEN  (relax.)  0.0000   1DHAM006 (relax.)  0.0000     0.00000000E+00
 
- XDIPLEN  (relax.)  0.0000   1DHAM 07 (relax.)  0.0000     0.25274987    
+ XDIPLEN  (relax.)  0.0000   1DHAM007 (relax.)  0.0000     0.25274987    
 
- XDIPLEN  (relax.)  0.0000   1DHAM 08 (relax.)  0.0000     0.00000000E+00
+ XDIPLEN  (relax.)  0.0000   1DHAM008 (relax.)  0.0000     0.00000000E+00
 
- XDIPLEN  (relax.)  0.0000   1DHAM 09 (relax.)  0.0000     0.00000000E+00
+ XDIPLEN  (relax.)  0.0000   1DHAM009 (relax.)  0.0000     0.00000000E+00
 
- YDIPLEN  (relax.)  0.0000   1DHAM 01 (relax.)  0.0000     0.00000000E+00
+ YDIPLEN  (relax.)  0.0000   1DHAM001 (relax.)  0.0000     0.00000000E+00
 
- YDIPLEN  (relax.)  0.0000   1DHAM 02 (relax.)  0.0000     0.84544580E-01
+ YDIPLEN  (relax.)  0.0000   1DHAM002 (relax.)  0.0000     0.84544580E-01
 
- YDIPLEN  (relax.)  0.0000   1DHAM 03 (relax.)  0.0000     0.24130377E-15
+ YDIPLEN  (relax.)  0.0000   1DHAM003 (relax.)  0.0000     0.24130377E-15
 
- YDIPLEN  (relax.)  0.0000   1DHAM 04 (relax.)  0.0000     0.00000000E+00
+ YDIPLEN  (relax.)  0.0000   1DHAM004 (relax.)  0.0000     0.00000000E+00
 
- YDIPLEN  (relax.)  0.0000   1DHAM 05 (relax.)  0.0000    -0.42272290E-01
+ YDIPLEN  (relax.)  0.0000   1DHAM005 (relax.)  0.0000    -0.42272290E-01
 
- YDIPLEN  (relax.)  0.0000   1DHAM 06 (relax.)  0.0000    -0.24755299    
+ YDIPLEN  (relax.)  0.0000   1DHAM006 (relax.)  0.0000    -0.24755299    
 
- YDIPLEN  (relax.)  0.0000   1DHAM 07 (relax.)  0.0000     0.00000000E+00
+ YDIPLEN  (relax.)  0.0000   1DHAM007 (relax.)  0.0000     0.00000000E+00
 
- YDIPLEN  (relax.)  0.0000   1DHAM 08 (relax.)  0.0000    -0.42272290E-01
+ YDIPLEN  (relax.)  0.0000   1DHAM008 (relax.)  0.0000    -0.42272290E-01
 
- YDIPLEN  (relax.)  0.0000   1DHAM 09 (relax.)  0.0000     0.24755299    
+ YDIPLEN  (relax.)  0.0000   1DHAM009 (relax.)  0.0000     0.24755299    
 
- ZDIPLEN  (relax.)  0.0000   1DHAM 01 (relax.)  0.0000     0.00000000E+00
+ ZDIPLEN  (relax.)  0.0000   1DHAM001 (relax.)  0.0000     0.00000000E+00
 
- ZDIPLEN  (relax.)  0.0000   1DHAM 02 (relax.)  0.0000    -0.24882682E-15
+ ZDIPLEN  (relax.)  0.0000   1DHAM002 (relax.)  0.0000    -0.24882682E-15
 
- ZDIPLEN  (relax.)  0.0000   1DHAM 03 (relax.)  0.0000     0.17508306    
+ ZDIPLEN  (relax.)  0.0000   1DHAM003 (relax.)  0.0000     0.17508306    
 
- ZDIPLEN  (relax.)  0.0000   1DHAM 04 (relax.)  0.0000     0.00000000E+00
+ ZDIPLEN  (relax.)  0.0000   1DHAM004 (relax.)  0.0000     0.00000000E+00
 
- ZDIPLEN  (relax.)  0.0000   1DHAM 05 (relax.)  0.0000    -0.18190965    
+ ZDIPLEN  (relax.)  0.0000   1DHAM005 (relax.)  0.0000    -0.18190965    
 
- ZDIPLEN  (relax.)  0.0000   1DHAM 06 (relax.)  0.0000    -0.87541528E-01
+ ZDIPLEN  (relax.)  0.0000   1DHAM006 (relax.)  0.0000    -0.87541528E-01
 
- ZDIPLEN  (relax.)  0.0000   1DHAM 07 (relax.)  0.0000     0.00000000E+00
+ ZDIPLEN  (relax.)  0.0000   1DHAM007 (relax.)  0.0000     0.00000000E+00
 
- ZDIPLEN  (relax.)  0.0000   1DHAM 08 (relax.)  0.0000     0.18190965    
+ ZDIPLEN  (relax.)  0.0000   1DHAM008 (relax.)  0.0000     0.18190965    
 
- ZDIPLEN  (relax.)  0.0000   1DHAM 09 (relax.)  0.0000    -0.87541528E-01
+ ZDIPLEN  (relax.)  0.0000   1DHAM009 (relax.)  0.0000    -0.87541528E-01
 ------------------------------------------------------------------------
 
 
