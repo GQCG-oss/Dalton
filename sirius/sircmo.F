@@ -1162,6 +1162,8 @@ C
                WRITE (LUPRI,1750) (SCRA(I),I=1,IEND)
             END IF
   200    CONTINUE
+         IF (SUPSYM) CALL AVEORD()
+C        ... remake ISSORD() as ISSMO() may have changed in ORDRSS
 C
  1730    FORMAT(//' Fock iteration number',I3,
      *             '; inactive energy:',F25.12,
@@ -1172,11 +1174,6 @@ C
 C        Step 3: Reorthogonalize new mo's
 C
          CALL ORTHO(CMO,FC,SCRA(1),LSCRA)
-         IF (SUPSYM) THEN
-            KFREE = 1
-            LFREE = LSCRA
-            CALL AVECPH(IPHCHA,CMO,SCRA,KFREE,LFREE)
-         END IF
 C
 C        Another Fock iteration?
 C
@@ -1247,6 +1244,7 @@ C   INFORB : NSYM, NNBAST, NNORBT, ...
 C   SCBRHF : IOPRHF, NMVO(), NMVOT
 C   INFIND : IROW(*)
 C   INFPRI : IPRI6
+C   INFIND : SUPSYM
 C
 #include <maxash.h>
 #include <maxorb.h>
@@ -1255,6 +1253,7 @@ C
 #include <scbrhf.h>
 #include <infind.h>
 #include <infpri.h>
+#include <infinp.h>
 #include <gnrinf.h>
 C
       DIMENSION MISH(8), MRHF(8)
@@ -1345,6 +1344,8 @@ C
      *   ' Hamiltonian',' Symmetry',ISYM,
      *   (ISSMO(IORBI+I),WRK(I),I=(NOCCI+1),NORBI)
   200 CONTINUE
+      IF (SUPSYM) CALL AVEORD()
+C     ... remake ISSORD() as ISSMO() may have changed in ORDRSS
 C
       CALL QEXIT('FCVIRT')
       RETURN
