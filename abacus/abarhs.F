@@ -67,18 +67,18 @@ C  /* Deck rhsinp */
 #include <abainf.h>
 #include <cbirhs.h>
 #include <inftap.h>
-      DATA TABLE /'.SKIP  ', '.PRINT ', '.MAXSIM',
+      DATA TABLE /'.SKIP  ', '.PRINT ', 'XXXXXXX',
      &            '.INTSKI', '.INTPRI', '.RETURN',
-     &            '.FCKSKI', '.FCKPRI', '.TWOH1 ',
+     &            '.FCKSKI', '.FCKPRI', 'XXXXXXX',
      &            '.NOH1  ', '.NOH2  ', '.FCKTES',
      &            '.SDRSKI', '.TRASKI', '.SDRPRI',
-     &            '.TRAPRI', '.SDRTES', '.UNDIF ',
+     &            '.TRAPRI', '.SDRTES', 'XXXXXXX',
      &            '.TRATES', '.GDYSKI', '.GDYPRI',
      &            '.NODC  ', '.NODV  ', '.NOPV  ',
-     &            '.FSTTES', '.DIAGTD', '.NOFD  ',
+     &            '.FSTTES', 'XXXXXXX', '.NOFD  ',
      &            '.NOFS  ', '.NOSSF ', '.SIRPR4',
      &            '.SIRPR6', '.NOORTH', '.GDHAM ',
-     &            '.ALLCOM', '.TIME  ', '.AOMAT ',
+     &            '.ALLCOM', '.TIME  ', 'XXXXXXX',
      &            '.STOP  ', '.NODDY ', '.NODPTR',
      &            '.PTRPRI', '.SORPRI', '.PTRSKI'/
 C
@@ -124,8 +124,7 @@ C
                      IF (IPRGDY .EQ. IPRDEF) IPRGDY = IPRALL
                   END IF
                GO TO 100
-    3             READ (LUCMD,*) MAXSIM
-                  IF (MAXSIM .EQ. 3) ICHANG = ICHANG - 1
+    3             CONTINUE
                GO TO 100
     4             RUNINT = .FALSE.
                GO TO 100
@@ -144,7 +143,7 @@ C
     8             READ (LUCMD,*) IPRFD
                   IF (IPRFD .EQ. IPRDEF) ICHANG = ICHANG - 1
                GO TO 100
-    9             TWOH1 = .TRUE.
+    9             CONTINUE
                GO TO 100
    10             NOH1 = .TRUE.
                GO TO 100
@@ -164,7 +163,7 @@ C
                GO TO 100
    17             SDRTST = .TRUE.
                GO TO 100
-   18             UNDIF = .TRUE.
+   18             CONTINUE
                GO TO 100
    19             TRATST = .TRUE.
                GO TO 100
@@ -181,7 +180,7 @@ C
                GO TO 100
    25             TESTFS = .TRUE.
                GO TO 100
-   26             DIAGTD = .TRUE.
+   26             CONTINUE
                GO TO 100
    27             NOFD = .TRUE.
                GO TO 100
@@ -203,7 +202,7 @@ C
                GO TO 100
    35             TKTIME  = .TRUE.
                GO TO 100
-   36             AOMAT   = .TRUE.
+   36             CONTINUE
                GO TO 100
    37             CUT     = .TRUE.
                GO TO 100
