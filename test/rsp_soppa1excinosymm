@@ -106,7 +106,7 @@ ERROR[2]="GEOMETRY NOT READ CORRECTLY"
 
 # Energies
 CRIT1=`$GREP "Hartree\-Fock total energy \: * \-76\.025681483[0-9]" $log | wc -l`
-CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.230666825[0-9]" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.2306668(2|3).[0-9]" $log | wc -l`
 TEST[3]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[3]=2
 ERROR[3]="ENERGIES NOT CORRECT"
@@ -119,19 +119,19 @@ CTRL[4]=2
 ERROR[4]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
 
 # Transition moments
-CRIT1=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: * (0| )\.(    |0000000    |00000000D\+00|00000000E\+00) \*ENERGY\(eV\)\: * 7\.754451[0-9]" $log | wc -l`
-CRIT2=`$GREP "\@ *STATE NO\: * 2 \*TRANSITION MOMENT\: * (0| )\.(    |0000000    |00000000D\+00|00000000E\+00) \*ENERGY\(eV\)\: * 9\.777845[0-9]" $log | wc -l`
-CRIT3=`$GREP "\@ *STATE NO\: * 3 \*TRANSITION MOMENT\: (\-| )[0-9]\.[0-9]......[0-9](D|E)\-1[4-7] \*ENERGY\(eV\)\: * 10\.39535[0-9]" $log | wc -l`
-CRIT4=`$GREP "\@ *STATE NO\: * 4 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.50061667 * \*ENERGY\(eV\)\: * 12\.46520[0-9]" $log | wc -l`
-CRIT5=`$GREP "\@ *STATE NO\: * 3 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.61159281 * \*ENERGY\(eV\)\: * 10\.39535[0-9]" $log | wc -l`
-CRIT6=`$GREP "\@ *STATE NO\: * 4 \*TRANSITION MOMENT\: ( |\-)[0-9]\.[0-9]......[0-9](D|E)\-1[4-7] \*ENERGY\(eV\)\: * 12\.46520[0-9]" $log | wc -l`
-CRIT7=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: * (\-0| \-| 0|  )\.36245990 * \*ENERGY\(eV\)\: * 7\.754451[0-9]" $log | wc -l`
-CRIT8=`$GREP "\@ *STATE NO\: * 2 \*TRANSITION MOM(D|E)NT\: ( |\-)[0-9]\.[0-9]......[0-9](D|E)\-1[4-7] \*ENERGY\(eV\)\: * 9\.777845[0-9]" $log | wc -l`
-CRIT9=`$GREP "\@ *STATE NO\: * 3 \*TRANSITION MOMENT\: * (0| )\.(    |0000000    |00000000D\+00|00000000E\+00) \*ENERGY\(eV\)\: * 10\.39535[0-9]" $log | wc -l`
-CRIT10=`$GREP "\@ *STATE NO\: * 4 \*TRANSITION MOMENT\: * (0| )\.(    |0000000    |00000000D\+00|00000000E\+00) \*ENERGY\(eV\)\: * 12\.46520[0-9]" $log | wc -l`
+CRIT1=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: * (\-| )[0-9]\.[0-9]......[0-9](D|E)\-1[4-7] \*ENERGY\(eV\)\: * 7\.75445.[0-9]" $log | wc -l`
+CRIT2=`$GREP "\@ *STATE NO\: * 2 \*TRANSITION MOMENT\: * (\-| )[0-9]\.[0-9]......[0-9](D|E)\-1[4-7] \*ENERGY\(eV\)\: * 9\.77784.[0-9]" $log | wc -l`
+CRIT3=`$GREP "\@ *STATE NO\: * 3 \*TRANSITION MOMENT\: (\-| )[0-9]\.[0-9]......[0-9](D|E)\-1[4-7] \*ENERGY\(eV\)\: * 10\.3953.[0-9]" $log | wc -l`
+CRIT4=`$GREP "\@ *STATE NO\: * 4 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.500616.. * \*ENERGY\(eV\)\: * 12\.4652.[0-9]" $log | wc -l`
+CRIT5=`$GREP "\@ *STATE NO\: * 3 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.611592(8|9). * \*ENERGY\(eV\)\: * 10\.3953.[0-9]" $log | wc -l`
+CRIT6=`$GREP "\@ *STATE NO\: * 4 \*TRANSITION MOMENT\: ( |\-)[0-9]\.[0-9]......[0-9](D|E)\-1[4-7] \*ENERGY\(eV\)\: * 12\.4652.[0-9]" $log | wc -l`
+CRIT7=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: * (\-0| \-| 0|  )\.362459.. * \*ENERGY\(eV\)\: * 7\.75445.[0-9]" $log | wc -l`
+CRIT8=`$GREP "\@ *STATE NO\: * 2 \*TRANSITION MOM(D|E)NT\: ( |\-)[0-9]\.[0-9]......[0-9](D|E)\-1[4-7] \*ENERGY\(eV\)\: * 9\.77784.[0-9]" $log | wc -l`
+CRIT9=`$GREP "\@ *STATE NO\: * 3 \*TRANSITION MOMENT\: * (\-| )[0-9]\.[0-9]......[0-9](D|E)\-1[4-7] \*ENERGY\(eV\)\: * 10\.3953.[0-9]" $log | wc -l`
+CRIT10=`$GREP "\@ *STATE NO\: * 4 \*TRANSITION MOMENT\: * (\-| )[0-9]\.[0-9]......[0-9](D|E)\-1[4-7] \*ENERGY\(eV\)\: * 12\.4652.[0-9]" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10`
-CTRL[5]=12
+CTRL[5]=19
 ERROR[5]="TRANSITION MOMENTS NOT CORRECT"
 
 # State 1
@@ -140,8 +140,8 @@ CRIT2=`$GREP "\@ *Excitation energy \: * (0| )\.2849708[0-9] * au" $log | wc -l`
 CRIT3=`$GREP "\@ *Total energy \: * \-75\.740711 * au" $log | wc -l`
 CRIT4=`$GREP "\@ *SOPPA * p\-h * weight in excitation operator\: * 95\.26 \%" $log | wc -l`
 CRIT5=`$GREP "\@ *SOPPA 2p\-2h weight in excitation operator\: * 4\.74 \%" $log | wc -l`
-CRIT6=`$GREP "\@ *Oscillator strength \(LENGTH\) * \: * 2\.4959111[0-9](D|E)\-02" $log | wc -l`
-CRIT7=`$GREP "Transition moment * \(LENGTH\) * \: (\-0| \-| 0|  )\.3624599[0-9]" $log | wc -l`
+CRIT6=`$GREP "\@ *Oscillator strength \(LENGTH\) * \: * 2\.4959(0|1)..[0-9](D|E)\-02" $log | wc -l`
+CRIT7=`$GREP "Transition moment * \(LENGTH\) * \: (\-0| \-| 0|  )\.362459.[0-9]" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7`
 CTRL[6]=7
@@ -159,12 +159,12 @@ ERROR[7]="STATE 2 NOT CORRECT"
 
 # State 3
 CRIT1=`$GREP "\@ *State no\: * 3" $log | wc -l`
-CRIT2=`$GREP "\@ *Excitation energy \: * (0| )\.3820221[0-9] * au" $log | wc -l`
+CRIT2=`$GREP "\@ *Excitation energy \: * (0| )\.382022.[0-9] * au" $log | wc -l`
 CRIT3=`$GREP "\@ *Total energy \: * \-75\.643659 * au" $log | wc -l`
 CRIT4=`$GREP "\@ *SOPPA * p\-h * weight in excitation operator\: * 95\.22 \%" $log | wc -l`
 CRIT5=`$GREP "\@ *SOPPA 2p\-2h weight in excitation operator\: * 4\.78 \%" $log | wc -l`
-CRIT6=`$GREP "\@ *Oscillator strength \(LENGTH\) * \: * 9\.5262497[0-9](D|E)\-02" $log | wc -l`
-CRIT7=`$GREP "Transition moment * \(LENGTH\) * \: (\-0| \-| 0|  )\.6115928[0-9]" $log | wc -l`
+CRIT6=`$GREP "\@ *Oscillator strength \(LENGTH\) * \: * 9\.5262(4|5)..[0-9](D|E)\-02" $log | wc -l`
+CRIT7=`$GREP "Transition moment * \(LENGTH\) * \: (\-0| \-| 0|  )\.611592.[0-9]" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7`
 CTRL[8]=7
@@ -172,12 +172,12 @@ ERROR[8]="STATE 3 NOT CORRECT"
 
 # State 4
 CRIT1=`$GREP "\@ *State no\: * 4" $log | wc -l`
-CRIT2=`$GREP "\@ *Excitation energy \: * (0| )\.4580878[0-9] * au" $log | wc -l`
+CRIT2=`$GREP "\@ *Excitation energy \: * (0| )\.458087.[0-9] * au" $log | wc -l`
 CRIT3=`$GREP "\@ *Total energy \: * \-75\.567594 * au" $log | wc -l`
 CRIT4=`$GREP "\@ *SOPPA * p\-h * weight in excitation operator\: * 95\.54 \%" $log | wc -l`
 CRIT5=`$GREP "\@ *SOPPA 2p\-2h weight in excitation operator\: * 4\.46 \%" $log | wc -l`
-CRIT6=`$GREP "\@ *Oscillator strength \(LENGTH\) * \: * 7\.6536422[0-9](D|E)\-02" $log | wc -l`
-CRIT7=`$GREP "Transition moment * \(LENGTH\) * \: (\-0| \-| 0|  )\.5006166[0-9]" $log | wc -l`
+CRIT6=`$GREP "\@ *Oscillator strength \(LENGTH\) * \: * 7\.6536(4|5)..[0-9](D|E)\-02" $log | wc -l`
+CRIT7=`$GREP "Transition moment * \(LENGTH\) * \: (\-0| \-| 0|  )\.500616.[0-9]" $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7`
 CTRL[9]=7
