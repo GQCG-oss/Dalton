@@ -1230,6 +1230,7 @@ mgrid_free(GridGenMolGrid* mg)
     for(i=0; i< mg->atom_cnt; i++)
         agrid_free(mg->atom_grids[i]);
     free(mg->atom_grids);
+    free(mg);
 }
 
 /* mgrid_set_radial:
