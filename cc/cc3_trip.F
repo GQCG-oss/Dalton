@@ -61,7 +61,7 @@ C  /* Deck cc3_triplet */
 !
 !
 #if defined (SYS_CRAY)
-      REAL ZERO, HALF, ONE, TWO, DTIME, TIMHER1, TIMHER2
+      REAL ZERO, HALF, ONE, TWO, DTIME ! , TIMHER1, TIMHER2
       REAL TIMRDAO, OMEGA1(*), OMEGA2P(*), T2AM(*)
       REAL FOCK(*), XLAMDP(*), XLAMDH(*), XLAMPC(*)
       REAL XLAMHC(*), WORK(LWORK), C2AMP(*), C2AMM(*)
@@ -70,7 +70,7 @@ C  /* Deck cc3_triplet */
       REAL XONE, XHALF
       REAL C1AM(*)
 #else
-      DOUBLE PRECISION ZERO, HALF, ONE, TWO, DTIME, TIMHER1, TIMHER2
+      DOUBLE PRECISION ZERO, HALF, ONE, TWO, DTIME ! , TIMHER1, TIMHER2
       DOUBLE PRECISION TIMRDAO, OMEGA1(*), OMEGA2P(*), T2AM(*)
       DOUBLE PRECISION FOCK(*), XLAMDP(*), XLAMDH(*), XLAMPC(*)
       DOUBLE PRECISION XLAMHC(*), WORK(LWORK), C2AMP(*), C2AMM(*)
@@ -254,11 +254,11 @@ C  /* Deck cc3_triplet */
 !
       IF (DIRECT) THEN
          NTOSYM = 1
-         DTIME  = SECOND()
+!        DTIME  = SECOND()
 !!!!        CALL HERDI1(WORK(KEND1),LWRK1,IPRINT)
          CALL QUIT('Direct not implemented')
-         DTIME  = SECOND() - DTIME
-         TIMHER1 = TIMHER1 + DTIME
+!        DTIME  = SECOND() - DTIME
+!        TIMHER1 = TIMHER1 + DTIME
       ELSE
          NTOSYM = NSYM
       ENDIF
@@ -278,11 +278,11 @@ C  /* Deck cc3_triplet */
 !-----------------------------------------------------------------
 !
             IF (DIRECT) THEN
-               DTIME  = SECOND()
+!              DTIME  = SECOND()
 !!!!              CALL HERDI2(WORK(KEND1),LWRK1,INDEXA,ILLL,NUMDIS,IPRINT)
                CALL QUIT('Direct not implemented')
-               DTIME  = SECOND() - DTIME
-               TIMHER2 = TIMHER2 + DTIME
+!              DTIME  = SECOND() - DTIME
+!              TIMHER2 = TIMHER2 + DTIME
 !
                KRECNR = KEND1
                KEND1  = KRECNR + (NBUFX(0) - 1)/IRAT + 1
