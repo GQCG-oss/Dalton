@@ -1,9 +1,13 @@
-      LOGICAL OOTV, SKIP, CUT, DIPSTR, ROTSTR, ROTVEL, FNAC, EXCTRP
-      LOGICAL SUMRUL
+C
+C     cbiexc.h - Control common block for abacus/abaexc.F
+C
+      LOGICAL SKIP, CUT, DIPSTR, ROTSTR, ROTVEL, FNAC, EXCTRP,
+     &        SUMRUL, OOTV
       PARAMETER       (MAXPP = 200)
       CHARACTER*8     LABAPP
       COMMON /PPLBL / LABAPP(MAXPP), LABSYM(MAXPP)
       COMMON /CBIEXC/ THREXC,
-     &                OOTV, NEXCIT(8), MAXITE, IPRINT, MXRM,
-     &                MXPHP, SKIP, CUT, NABAPP, DIPSTR, ROTSTR,
-     &                ROTVEL, IPREXC, FNAC, EXCTRP, SUMRUL
+     &                NEXCIT(8), MAXITE, MXNEXI, MXRM,
+     &                MXPHP, NABAPP, IPREXC, IPR1IN,
+     &                SKIP, CUT, DIPSTR, ROTSTR, ROTVEL, FNAC, EXCTRP,
+     &                SUMRUL, OOTV

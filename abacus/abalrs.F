@@ -41,8 +41,7 @@ C  /* Deck lrsinp */
       PARAMETER (NTABLE = 15)
       LOGICAL SET, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <cbilrs.h>
-#include <cbiexc.h>
+#include "cbilrs.h"
 C
 #include <abainf.h>
 #include <anrinf.h>
@@ -143,21 +142,15 @@ C
          IF (SKIP) THEN
             WRITE (LUPRI,'(A)') ' LINRES skipped in this run.'
          ELSE
-            IF (EXCLC) THEN
-               WRITE (LUPRI,'(A,/,A,I5)')
-     &            ' Calculation of excitation energies.',
-     &            ' Number of excitations:',NEXVAL
-            ELSE
-               WRITE (LUPRI,'(A,/,A,I5)')
-     &            ' Linear response calculation',
-     &            ' Number of perturbations:',NEXVAL
-            END IF
+            WRITE (LUPRI,'(A)')
+     &         ' Singlet linear response module for properties',
+     &         ' as VCD, MAGSUS, SPIN-SPIN, SHIELD, SPINRO, MOLGFA'
             WRITE (LUPRI,'(A,I5)')
      *         ' Print level in LINRES        :',IPRCLC
-            WRITE (LUPRI,'(A,1P,E9.2)')
-     *            ' Threshold in LINRES          :',THRCLC
-            WRITE(LUPRI,'(A,I5)')' Maximum iterations in LINRES :',
-     *                              MAXCLC
+            WRITE (LUPRI,'(A,1P,D9.2)')
+     *         ' Threshold in LINRES          :',THRCLC
+            WRITE(LUPRI,'(A,I5)')
+     &         ' Maximum iterations in LINRES :',MAXCLC
             IF (CUT) THEN
                WRITE (LUPRI,'(/,A)') ' Program is stopped after LINRES.'
             END IF
@@ -174,15 +167,12 @@ C
 #include <implicit.h>
 #include <mxcent.h>
 #include <abainf.h>
-#include <cbiexc.h>
-#include <cbilrs.h>
+#include "cbilrs.h"
 C
       IPRCLC = IPRDEF
       SKIP   = .FALSE.
       CUT    = .FALSE.
       OOTV   = .FALSE.
-      EXCLC  = .FALSE.
-      NEXVAL = 1
       IF (SPINRO .OR. SHIELD .OR. (SHIELD .AND. MAGSUS)
      &          .AND. .NOT. SPNSPN) THEN
          THRCLC = 1.D-04
@@ -192,7 +182,6 @@ C
       MAXCLC = 60
       MXRM   = 400
       MXPHP  = 0
-      CALL DZERO(FREQUE,MXFRQ)
       RETURN
       END
 C  /* Deck lrsdrv */
@@ -206,8 +195,7 @@ C  /* Deck lrsdrv */
       LOGICAL INTTRS, CICLC, HFCLC, TRPCLC
       DIMENSION WORK(LWORK)
 C
-#include <cbilrs.h>
-#include <cbiexc.h>
+#include "cbilrs.h"
 #include <abainf.h>
 #include <gnrinf.h>
 #include <spnout.h>
@@ -231,15 +219,13 @@ C
 C
 C     Allocations
 C
-      KEXVAL = 1
-      KNABAT = KEXVAL + NEXVAL
+      KNABAT = 1
       KZERO  = KNABAT + (3*NUCDEP + 6 + 1)/IRAT
       KLAST  = KZERO  + (3*NUCDEP + 6 + 1)/IRAT
       IF (KLAST .GT. LWORK) CALL STOPIT('LRSDRV',' ',KLAST,LWORK)
       KWRK   = KLAST
       LWRK   = LWORK - KLAST + 1
-      CALL LRSDR1(WORK(KEXVAL),WORK(KNABAT),WORK(KZERO),
-     &            WORK(KWRK),LWRK)
+      CALL LRSDR1(WORK(KNABAT),WORK(KZERO),WORK(KWRK),LWRK)
       IF (IPRCLC .GT. 0) CALL TIMER ('LRSDRV',TIMEIN,TIMOUT)
       PASS = .TRUE.
       IF (CUT) THEN
@@ -251,7 +237,7 @@ C
       RETURN
       END
 C  /* Deck lrsdr1 */
-      SUBROUTINE LRSDR1(EXVAL,NABATY,ZERNRM,WORK,LWORK)
+      SUBROUTINE LRSDR1(NABATY,ZERNRM,WORK,LWORK)
 #include <implicit.h>
 #include <dummy.h>
 #include <mxcent.h>
@@ -260,10 +246,9 @@ C  /* Deck lrsdr1 */
 #include <priunit.h>
       LOGICAL PASS
       LOGICAL INTTRS, CICLC, HFCLC, TRPCLC, ZERNRM(*)
-      DIMENSION WORK(LWORK), EXVAL(NEXVAL), NABATY(*)
+      DIMENSION WORK(LWORK), NABATY(*)
 C
-#include <cbilrs.h>
-#include <cbiexc.h>
+#include "cbilrs.h"
 #include <abainf.h>
 #include <inflin.h>
 #include <infvar.h>
@@ -284,16 +269,17 @@ C
          CALL GETMRH(HFCLC,OOTV,NABATY,NABAOP,LUGDVE,LUSOVE,LUREVE,
      &               THRCLC,MAXCLC,IPRCLC,MXRM,MXPHP,ZERNRM,WORK,LWORK)
       ELSE
+#ifndef use_getrhs
+         CALL QUIT('program error: LRSDR1 not defined for this call')
+#else
+c is the following old code for NACME which we might want to reactivate?
+c -- hjaaj Aug 2004
          TRPCLC = .FALSE.
          INTTRS = .TRUE.
          CICLC  = .FALSE.
          IOPSYM = 1
          NABAOP = 1
-         IF (EXCLC) THEN
-            CALL  DCOPY(NEXVAL,FREQUE,1,EXVAL,1)
-         ELSE
-            CALL GETRHS(IOPSYM,NEXVAL,LUGDVE,IPRCLC,WORK,LWORK)
-         END IF
+         CALL GETRHS(IOPSYM,NEXVAL,LUGDVE,IPRCLC,WORK,LWORK)
          DO 100 I = 1, NABAOP
             NABATY(I) = 1
  100     CONTINUE
@@ -301,6 +287,7 @@ C
      &               EXVAL,NEXVAL,NABATY,NABAOP,'DUMMY   ',LUGDVE,
      &               LUSOVE,LUREVE,THRCLC,MAXCLC,IPRCLC,MXRM,MXPHP,
      &               WORK,LWORK)
+#endif /* use_getrhs */
 C
       END IF
       CALL GPCLOSE(LUSOVE,'DELETE')
@@ -446,6 +433,7 @@ ckr                  IDORCI(IREC,2) = 2
       CALL GPCLOSE(LURDI,'KEEP')
       RETURN
       END
+#ifdef use_getrhs
 C  /* Deck getrhs */
       SUBROUTINE GETRHS(IOPSYM,NEXVAL,LUGDVE,IPRINT,WORK,LWORK)
 #include <implicit.h>
@@ -477,3 +465,5 @@ C
       CALL GPCLOSE(LUGDR,'KEEP')
       RETURN
       END
+#endif /* uyy1Gse_getrhs */
+C--- end of abalrs.F ---

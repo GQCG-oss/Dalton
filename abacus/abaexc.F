@@ -42,8 +42,7 @@ C  /* Deck excinp */
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 #include <inforb.h>
-#include <cbiexc.h>
-#include <cbilrs.h>
+#include "cbiexc.h"
 C
 #include <abainf.h>
 #include <anrinf.h>
@@ -83,7 +82,7 @@ C
                   ICHANG = ICHANG + 1
                GO TO 100
     2          CONTINUE
-                  READ (LUCMD,*) IPRINT
+                  READ (LUCMD,*) IPR1IN
                   ICHANG = ICHANG + 1
                GO TO 100
     3          CONTINUE
@@ -153,12 +152,6 @@ C                 NSYM is set to 8 since NSYM has not yet been set !!
       END IF
   300 CONTINUE
 C
-      IF (ECD) THEN
-         ROTSTR = .TRUE.
-      ELSE
-         ROTSTR = .FALSE.
-      END IF
-C
 C      NSYM is set to 8 since NSYM has not yet been set !!
 C      NTOT = ISUM(NSYM,NEXCIT,1)
       NTOT = ISUM(8,NEXCIT,1)
@@ -187,7 +180,7 @@ C               NSYM is set to 8 since NSYM has not yet been set !!
             WRITE (LUPRI,'(A,I5)')
      &         ' Print level in EXCITA        :',IPREXC
             WRITE (LUPRI,'(A,I5)')
-     &         ' Integral print level in EXCITA        :',IPRINT
+     &         ' Integral print level in EXCITA        :',IPR1IN
             WRITE (LUPRI,'(A,1P,E9.2)')
      &           ' Threshold in EXCITA          :',THREXC
             WRITE(LUPRI,'(A,I5)')' Maximum iterations in EXCITA :',
@@ -222,15 +215,15 @@ C         DO 400 I = 1, NSYM
 C  /* Deck excini */
       SUBROUTINE EXCINI
 C
-C     Initialize /LRSRES/
+C     Initialize /cbiexc/
 C
 #include <implicit.h>
 #include <mxcent.h>
-#include <cbiexc.h>
+#include "cbiexc.h"
 #include <abainf.h>
 C
-      IPRINT = IPRDEF
-      IPREXC = IPRINT
+      IPR1IN = IPRDEF
+      IPREXC = IPRDEF
       SKIP   = .FALSE.
       CUT    = .FALSE.
       OOTV   = .FALSE.
@@ -238,12 +231,14 @@ C
       ROTVEL = .FALSE.
       FNAC   = .FALSE.
       EXCTRP = .FALSE.
+      ROTSTR = .FALSE.
       CALL IZERO(NEXCIT,8)
       THREXC = 1.D-04
       MAXITE = 60
       MXRM   = 400
       MXPHP  = 0
       NABAPP = 0
+      MXNEXI = 1
 C
       RETURN
       END
@@ -254,9 +249,8 @@ C  /* Deck excita */
 #include <priunit.h>
 #include <mxcent.h>
 #include <inforb.h>
-#include <cbiexc.h>
+#include "cbiexc.h"
 #include <infrsp.h>
-#include <cbilrs.h>
 #include <nuclei.h>
       LOGICAL PASS
       DIMENSION WORK(LWORK)
@@ -271,15 +265,7 @@ C
       IF (IPREXC .GT. 0) WRITE (LUPRI,'(A,/)')
      *    '  <<<<<<<<<< Output from EXCITA >>>>>>>>>> '
 C
-CSPAS : I am trying to separate the print level in the integral routines
-C       from the overall print level in EXCITA
-C
-C      IPRINT = IPREXC
-CKeinSPASmehr
       IPRRSP = IPREXC
-C
-C     Work allocations:
-C
 C
       CALL EXCIT1(TRLEN,TRVEL,TRLON,TRMAG,BSRLON,EXENG,FONAC,FONA2,
      &            WORK,LWORK)
@@ -303,8 +289,7 @@ C  /* Deck excit1 */
 #include <maxorb.h>
 #include <iratdef.h>
 #include <priunit.h>
-#include <cbilrs.h>
-#include <cbiexc.h>
+#include "cbiexc.h"
 #include <inforb.h>
 #include <nuclei.h>
 #include <inflin.h>
@@ -326,6 +311,11 @@ C
       DIMENSION FONAC(3*NATOMS,NSYM,MXNEXI),FONA2(3*NATOMS,NSYM,MXNEXI)
       CHARACTER*8 LABEL, LABINT(3*MXCOOR)
       LOGICAL   FOUND
+C
+C     If ECD true then
+C     set ROTSTR in cbiexc.h true to calculate needed integrals
+C
+      IF (ECD) ROTSTR = .TRUE.
 C
 C     Get reference state
 C     ===================
@@ -458,7 +448,7 @@ C
          NPATOM = 0
          CALL GET1IN(DUMMY,'DIPLEN ',NCOMP,WORK(KWORK2),LWORK2,
      &               LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,IPRINT)
+     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,IPR1IN)
          NLAB = 3
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
 C
@@ -472,7 +462,7 @@ C
                NPATOM = 0
                CALL GET1IN(DUMMY,'HBDO   ',NCOMP,WORK(KWORK2),LWORK2,
      &                     LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &                     IDUMMY,.TRUE.,NPATOM,.TRUE.,IPRINT)
+     &                     IDUMMY,.TRUE.,NPATOM,.TRUE.,IPR1IN)
                NLAB = 3
                CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,
      &                     LABSYM)
@@ -485,14 +475,14 @@ C
          NPATOM = 0
          CALL GET1IN(DUMMY,'DIPVEL ',NCOMP,WORK(KWORK2),LWORK2,
      &               LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,IPRINT)
+     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,IPR1IN)
          NLAB = 3
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
          NCOMP  = 0
          NPATOM = 0
          CALL GET1IN(DUMMY,'ANGMOM ',NCOMP,WORK(KWORK2),LWORK2,
      &               LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,IPRINT)
+     &               IDUMMY,.TRUE.,NPATOM,.TRUE.,IPR1IN)
          NLAB = 3
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
       ENDIF
@@ -502,7 +492,7 @@ C
          NPATOM = 0
          CALL GET1IN(DUMMY,'HDO    ',NCOMP,WORK(KWORK2),LWORK2,
      &               LABINT,WORK(KIDSYM),WORK(KIDADR),IDUMMY,
-     &               .TRUE.,NPATOM,.TRUE.,IPRINT)
+     &               .TRUE.,NPATOM,.TRUE.,IPR1IN)
          NLAB = 3 * NUCDEP
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
       ENDIF
@@ -644,8 +634,7 @@ C  /* Deck excout */
 #include <mxcent.h>
 #include <codata.h>
 #include <gnrinf.h>
-#include <cbiexc.h>
-#include <cbilrs.h>
+#include "cbiexc.h"
 #include <inforb.h>
 #include <nuclei.h>
 #include <abainf.h>
@@ -984,10 +973,10 @@ C
                   WRITE (NMDTXT(5:7),'(I1,I2)') ISYM, IEXVAL
                END IF
                NMDTXT(1:4) = 'EXEN'
-               CALL WRAVFL(EXENG(ISYM,IEXVAL),1,1,1,NMDTXT,IPRINT)
+               CALL WRAVFL(EXENG(ISYM,IEXVAL),1,1,1,NMDTXT,IPREXC)
                IF (DIPSTR) THEN
                   NMDTXT(1:4) = 'TRDP'
-                  CALL WRAVFL(TRLEN(1,ISYM,IEXVAL),3,1,1,NMDTXT,IPRINT)
+                  CALL WRAVFL(TRLEN(1,ISYM,IEXVAL),3,1,1,NMDTXT,IPREXC)
                END IF
             END DO
          END DO
@@ -1009,7 +998,7 @@ C
       LOGICAL INTTRS, CICLC, HFCLC, TRIPLE, EXECLC
       DIMENSION WORK(LWORK), EXVAL(NEXENG)
 C
-#include <cbiexc.h>
+#include "cbiexc.h"
 #include <infvar.h>
 #include <inforb.h>
 C
@@ -1051,7 +1040,7 @@ C     symmetries from LAB1 and ISYM1 to LAB2 and ISYM2.
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <cbiexc.h>
+#include "cbiexc.h"
       CHARACTER LAB1(*)*8, LAB2(*)*8
       DIMENSION ISYM1(*), ISYM2(*)
 C
