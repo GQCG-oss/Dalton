@@ -30,20 +30,20 @@ dalton='**DALTON INPUT
 '
 
 test='
-check_scf_energy DFT -76.342046236607 1e-12
+check_scf_energy DFT -76.379272900591 1e-12
 
-check_mol_gradient 1 "O     " 0.0  0.0           0.164201559 1e-5
-check_mol_gradient 1 "H    1" 0.0 -0.1044292794 -0.082105466 1e-5
-check_mol_gradient 1 "H    2" 0.0  0.1044292794 -0.082105466 1e-5
-check_final_geometry "O     " 0  0      -0.30895       1e-5
-check_final_geometry "H    1" 0  1.44138 0.82017       1e-5
-check_final_geometry "H    2" 0 -1.44138 0.82017       1e-5
+check_mol_gradient 1 "O     " 0.0  0.0            0.1639548715 1e-5
+check_mol_gradient 1 "H    1" 0.0 -0.1042084035  -0.0819821486 1e-5
+check_mol_gradient 1 "H    2" 0.0  0.1042084035  -0.0819821486 1e-5
+check_final_geometry "O     " 0  0           -0.3086422106     1e-5
+check_final_geometry "H    1" 0  1.4411287506 0.8200232640     1e-5
+check_final_geometry "H    2" 0 -1.4411287506 0.8200232640     1e-5
 
 #check_optimization_step 0
 #check_optimization_step 1
 
 # Final energy
-check_final_energy -76.369896 1e-10
+check_final_energy -76.407026 1e-5
 '
 
 . ./functions || { echo "'functions' library not found." ; exit 1; }

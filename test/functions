@@ -148,11 +148,11 @@ return(v>r||v<-r)}
 if(++c == '$1') { getline; getline;
 #skip norms
 cemty=0;
-while(cempty<4 && substr($0,2,6)!="'"$2"'") {
+while(cempty<9 && substr($0,2,6)!="'"$2"'") {
   if($0=="") cempty++;
   getline;
 }
-if(cempty==4) { print "mol_gradient: Label '"$2"' not found!"; exit 1;}
+if(cempty==9) { print "mol_gradient: Label '"$2"' not found!"; exit 1;}
 split(substr($0,8),a);
 exit( e(a[1]-('$3'),'$6') || e(a[2]-('$4'),'$6') || e(a[3]-('$5'),'$6'))
 }
