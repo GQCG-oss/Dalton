@@ -1917,9 +1917,9 @@ C
      *   ' B operator label,  symmetry, spin: ',
      *      BSMLB(MSYMB,IBOP),MSYMB,ISPINB,
      *   ' Excited state no., symmetry, spin: ',IC,MSYMCX,ISPINC
-                           WRITE(LUPRI,'(/A,3F12.6)')
-     *              ' omega B, excitation energy, moment :',
-     *              BSMFR(IBFR),EXCITA(MSYMC,IC,ISPINC+1),SMOM
+                        WRITE(LUPRI,'(/A,2F12.6,1P,G15.5)')
+     *   ' omega B, excitation energy, moment :',
+     *      BSMFR(IBFR),EXCITA(MSYMC,IC,ISPINC+1),SMOM
                               IF (PHOSPH .AND.
      &                        ASMLB(MSYMA,IAOP)(2:8).EQ.'DIPLEN ' .AND.
      &                        BSMLB(MSYMB,IBOP)(2:8).EQ.' SPNORB' ) THEN
@@ -1944,7 +1944,7 @@ C
                                  RESSOM(IB,IA,IC,MSYMC)=SMOM
                               ELSE
                                  WRITE(LUPRI,'(/A)') 
-     &             'WARNING!! NOT ENOUGH SPACE TO IN RESULT MATRIX'
+     &             'WARNING!! not enough space in RESSOM result matrix'
                               END IF
                            END IF
                            CALL FLSHFO(LUPRI)
@@ -2057,9 +2057,12 @@ C ---------------------------------------------------------------endofmcd-------
      &        ' (H_SO: Full spin-orbit integrals used.)'
             IF (MNFPHO) WRITE(LUPRI,'(A)')
      &        ' (AMFI: Atomic Mean field spin-orbit Integrals used.)'
+            IF (NSMCNV(MSYMC) .LE. 0) WRITE(LUPRI,'(/A)')
+     &        ' No excited states calculated of this symmetry.'
             DO IC = 1,NSMCNV(MSYMC)
-               WRITE(LUPRI,'(/A,I3/)')
-     &  ' Phosphorescence transition rate from excited state no.',IC
+               WRITE(LUPRI,'(/A,I3/A/)')
+     &  ' Phosphorescence transition rate from excited state no.',IC,
+     &  ' (Triplet->singlet transition, high-temperature limit)'
                W=EXCITA(MSYMC,IC,ISPINC+1)
                RATE =D0
                RATEA=D0
@@ -2072,27 +2075,25 @@ C ---------------------------------------------------------------endofmcd-------
                   END DO
                   IF (PHOSPH) THEN
                      XRATE=D4D3*(ALPHAC*W)**3*XDIP/XFSEC
-                     WRITE(LUPRI,'(2A,G17.5)')
+                     WRITE(LUPRI,'(2A,1P,G17.5)')
      &               ' Partial rates (H_SO): ',
      &               CHAR(ICHAR('X')+I-1)//'-polarization', XRATE
                      RATE=RATE+XRATE
                    END IF
-                  IF (MNFPHO) THEN
+                   IF (MNFPHO) THEN
                      XRATEA=D4D3*(ALPHAC*W)**3*XDIPA/XFSEC
-                     WRITE(LUPRI,'(2A,G17.5)')
+                     WRITE(LUPRI,'(2A,1P,G17.5)')
      &               ' Partial rates (AMFI): ',
      &               CHAR(ICHAR('X')+I-1)//'-polarization', XRATEA
                      RATEA=RATEA+XRATEA
                    END IF
                END DO
                IF (PHOSPH) WRITE(LUPRI,'(1P,2(/A,G12.5,A))')
-     &         ' Total transition       rate     (H_SO)',RATE/D3,' s-1',
-     &           ' Total phosphorescence lifetime (H_SO)', D3/RATE, ' s'
+     &        ' Total transition       rate    (H_SO)', RATE/D3,' s-1',
+     &        ' Total phosphorescence lifetime (H_SO)', D3/RATE, ' s'
                IF (MNFPHO) WRITE(LUPRI,'(1P,2(/A,G12.5,A))')
-     &        ' Total transition       rate     (AMFI)',RATEA/D3,' s-1',
-     &           ' Total phosphorescence lifetime (AMFI)', D3/RATEA,' s'
-               WRITE(LUPRI,'(/A)') 
-     &        '   (Triplet->singlet transition, high-temperature limit)'
+     &        ' Total transition       rate    (AMFI)', RATEA/D3,' s-1',
+     &        ' Total phosphorescence lifetime (AMFI)', D3/RATEA,' s'
             END DO
          END IF
  300  CONTINUE
