@@ -1264,7 +1264,7 @@ C
          CALL RDLINE(LUINFO)
          IPOS = INDEX(MLINE(NMLINE),' ')
          IF (IPOS .LT. 2) THEN
-            WRITE (LUPRI,*) 'Atom name mast start in first column'
+            WRITE (LUPRI,*) 'Atom name must start in first column'
             CALL QUIT('Error in placement of atom name. See output')
          ELSE IF (IPOS .EQ. 2) THEN
             FRMT = '(A1)'
