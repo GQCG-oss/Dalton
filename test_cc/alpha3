@@ -1,5 +1,17 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > alpha3.info <<%EOF%
+   alpha3
+   ------
+   Molecule:       Ne atom in D2h
+   Wave Function:  CCS, CC2, CCSD
+   Test Purpose:   frequency-dependent polarizabilities and
+                   dispersion coefficients
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > alpha3.mol <<%EOF%

@@ -1,5 +1,19 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > gamma_freq.info <<%EOF%
+   gamma_freq
+   ----------
+   Molecule:       FH in C2
+   Wave Function:  CCS / 6-31G**
+   Test Purpose:   second hyperpolarizability (cubic response):
+                   - parallel isotropic average (gamma_||) 
+                   - ESHG & THG for one frequency
+                   - no use of special symmetries 
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > gamma_freq.mol <<%EOF%

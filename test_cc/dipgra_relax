@@ -1,5 +1,16 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > dipgra_relax.info <<%EOF%
+   dipgra_relax
+   ------------
+   Molecule:       HeH+ in C1
+   Wave Function:  CCSD
+   Test Purpose:   orbital-relaxed dipole derivatives
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################   
 cat > dipgra_relax.mol <<%EOF%

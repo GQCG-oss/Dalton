@@ -1,12 +1,23 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > dpt.info <<%EOF%
+   dpt
+   ---
+   Molecule:       CO in C2v
+   Wave Function:  CCS, CCSD
+   Test Purpose:   relativistic direct perturbation theory
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > dpt.mol <<%EOF%
 BASIS
 6-311++G**
 DPT calculation of first-order
-dunning-basienergy corrections
+
     2    2  X  Y  Z   1.00D-15
         6.0   1
 C     0.0000000000000000  0.0000000000000000 1.21824313000000000       *

@@ -1,5 +1,18 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > 2dar.info <<%EOF%
+   2dar
+   ----
+   Molecule:       HF in C2
+   Wave Function:  CCS, CCSD
+   Test Purpose:   static first hyperpolarizabilities and
+                   first hyperpolarizability dispersion coefficients
+                   tests .AVERAGE and .NOBMAT options
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > beta.mol <<%EOF%
@@ -7,7 +20,7 @@ BASIS
 6-31G**
 Hydrogen flourid
 small test basis
-    2    1  Y  X      1.00D-15
+    2    1  Y         1.00D-15
         9.0   1    
 F     0.0000000000000000  0.0000000000000000 1.76320000000000000      
         1.0   1

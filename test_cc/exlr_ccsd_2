@@ -1,5 +1,16 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > exlr_ccsd_2.info <<%EOF%
+   exlr_ccsd_2
+   -----------
+   Molecule:       HeH+ in C2
+   Wave Function:  CCSD
+   Test Purpose:   excited states linear response function
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > exlr_ccsd_2.mol <<%EOF%

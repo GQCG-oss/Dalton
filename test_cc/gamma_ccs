@@ -1,5 +1,19 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > gamma_ccs.info <<%EOF%
+   gamma_ccs
+   ---------
+   Molecule:       HF in C2
+   Wave Function:  CCS
+   Test Purpose:   second hyperpolarizabilities (cubic response):
+                   - parallel isotropic average (gamma_||) 
+                   - A & B coefficients  (2. and 4. order disp. coefficients)
+                   - use explicitly symmetry of linear molecules
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > gamma_ccs.mol <<%EOF%

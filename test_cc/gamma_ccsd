@@ -1,5 +1,19 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > gamma_ccsd.info <<%EOF%
+   gamma_ccsd
+   ----------
+   Molecule:       FH in C2
+   Wave Function:  CCSD / 6-31G**
+   Test Purpose:   second hyperpolarizability (cubic response):
+                   - parallel isotropic average (gamma_||) 
+                   - A & B coefficients  (2. and 4. order disp. coefficients)
+                   - use explicitly symmetry of linear molecules
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > gamma_ccsd.mol <<%EOF%

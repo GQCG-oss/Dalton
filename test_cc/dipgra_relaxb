@@ -1,5 +1,15 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > dipgra_relaxb.info <<%EOF%
+   dipgra_relaxb
+   -------------
+   Molecule:       HeH+ C2v
+   Wave Function:  FCI / 6-31G
+   Test Purpose:   geometrical derivatives of dipole moment
+%EOF
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################   
 cat > dipgra_relaxb.mol <<%EOF%

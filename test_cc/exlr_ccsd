@@ -1,5 +1,16 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > exlr_ccsd.info <<%EOF%
+   exlr_ccsd
+   ---------
+   Molecule:       He in D2h
+   Wave Function:  CCSD
+   Test Purpose:   excited states frequency-dependent polarizabilities
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > exlr_ccsd.mol <<%EOF%

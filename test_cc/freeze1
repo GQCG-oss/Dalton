@@ -1,5 +1,17 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > freeze1.info <<%EOF%
+   freeze1
+   -------
+   Molecule:       N2 in D2h
+   Wave Function:  CCS, MP2, CCSD / aug-cc-pVDZ
+   Test Purpose:   frozen-core approximation for
+                   first-order one-electron properties
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > freeze1.mol <<%EOF%

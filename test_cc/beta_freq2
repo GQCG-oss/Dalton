@@ -1,5 +1,18 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > beta_freq2.info <<%EOF%
+   beta_freq2
+   ----------
+   Molecule:       HF in C2
+   Wave Function:  CCS, CCSD
+   Test Purpose:   first hyperpolarizabilities
+                   - ZZZ, XXZ, XZX, ZXX components
+                   - static and for two non-zero frequencies
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > beta_freq2.mol <<%EOF%
@@ -28,7 +41,6 @@ cat > beta_freq2.dal <<%EOF%
   for CCS and CCSD wavefunctions compute:
   - ZZZ, XXZ, XZX, ZXX components
   - static and for two non-zero frequencies
-  - use explicitly that X and Y directions degnerated
 .CC
 *ORBITALS 
 .NOSUPSYM

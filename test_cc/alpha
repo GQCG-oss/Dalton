@@ -1,5 +1,17 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > alpha.info <<%EOF%
+   alpha
+   -----
+   Molecule:       HF in C1
+   Wave Function:  CCS, CCSD / 6-31G**
+   Test Purpose:   frequency-dependent polarizabilities and
+                   dispersion coefficients
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > alpha.mol <<%EOF%

@@ -1,5 +1,17 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > field.info <<%EOF%
+   field
+   ----
+   Molecule:       FH in C2v
+   Wave Function:  CCSD, CCSD(T)
+   Test Purpose:   finite field for energy
+                   binary packing of two-electron integrals
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > field.mol <<%EOF%

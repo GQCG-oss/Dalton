@@ -1,5 +1,19 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > beta_freq.info <<%EOF%
+   beta_freq
+   ----
+   Molecule:       HF in C2
+   Wave Function:  CCS, CCSD
+   Test Purpose:   first hyperpolarizabilities
+                   - parallel (beta_||) and orthogonal averages (beta_|_)
+                   - static and for two non-zero frequencies
+                   - use explicitly that X and Y directions degnerated
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > beta_freq.mol <<%EOF%

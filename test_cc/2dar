@@ -1,5 +1,18 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+
+cat > 2dar.info <<%EOF%
+   2dar
+   ----
+   Molecule:       CO in D2h
+   Wave Function:  CCS, MP2, CCSD
+   Test Purpose:   first-order one-electron properties,
+                   two-electron Darwin term
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > 2dar.mol <<%EOF%

@@ -1,5 +1,17 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > exgr1.info <<%EOF%
+   exgr1
+   ----
+   Molecule:       H2O in C1
+   Wave Function:  CCS, CC2, CCSD
+   Test Purpose:   excited states first-order properties and
+                   transition moments
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > exgr1.mol <<%EOF%
