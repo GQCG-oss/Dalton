@@ -220,31 +220,23 @@ max(real a, real b)
 */
 #if defined(VAR_MPI)
 
-#if 0
-void
-dft_lin_resp_slave(real* work, int* lwork, const int* iprint)
-{
-    real *fmat = calloc(inforb_.n2orbx,sizeof(real));              /* OUT */
-    real *cmo  = malloc(inforb_.norbt*inforb_.nbast*sizeof(real)); /* IN  */
-    real *zymat= malloc(inforb_.n2orbx*sizeof(real));              /* IN  */
-    int trplet;                         /* IN: will be synced from master */
-    dft_lin_resp_(fmat, cmo, zymat, &trplet, work, lwork);
-    free(fmat);
-    free(cmo);
-    free(zymat); 
-}
-#endif
-
 extern void FSYM(dftlrsync)(void);
 static void
-dft_lin_resp_sync_slaves(real* cmo, int *nvec, real**zymat, int* trplet, int* ksymop)
+dft_lin_resp_sync_slaves(real* cmo, int *nvec, real**zymat,
+                         int* trplet, int* ksymop,
+                         real *work, int lwork)
 {
     static SyncData data2[] = 
     { {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_DOUBLE}, {NULL, 0, MPI_INT},
       {NULL, 0, MPI_INT} };
     MPI_Bcast(nvec, 1, MPI_INT, MASTER_NO, MPI_COMM_WORLD);
-    if(*zymat == NULL) /* we are a slave */
-	*zymat = dal_malloc(*nvec*inforb_.n2orbx*sizeof(real));
+    if(*zymat == NULL) { /* we are a slave */
+        if(lwork<*nvec*inforb_.n2orbx)
+            dalton_quit("%s:  slave needs %d words for ZYMAT, available %d",
+                        __FUNC__, *nvec*inforb_.n2orbx, lwork);
+	*zymat = work;
+        work += *nvec*inforb_.n2orbx;
+    }
     data2[0].data = cmo;    data2[0].count = inforb_.norbt*inforb_.nbast;
     data2[1].data = *zymat; data2[1].count = *nvec*inforb_.n2orbx;
     data2[2].data = trplet; data2[2].count = 1;
@@ -274,7 +266,7 @@ dft_lin_resp_collect_info(int nvec, real* fmat, real*work, int lwork)
 }
 
 #else  /* VAR_MPI */
-#define dft_lin_resp_sync_slaves(cmo,nvec,zymat,trplet,ksymop)
+#define dft_lin_resp_sync_slaves(cmo,nvec,zymat,trplet,ksymop,work,lwork)
 #define dft_lin_resp_collect_info(nvec,fmat,work,lwork)
 #endif /* VAR_MPI */
 
@@ -389,7 +381,8 @@ dft_lin_resp_(real* fmat, real *cmo, real *zymat, int *trplet,
     
     /* WARNING: NO work MAY BE done before syncing slaves! */
     dft_wake_slaves((DFTPropEvalMaster)dft_lin_resp_);    /* NO-OP in serial */
-    dft_lin_resp_sync_slaves(cmo,&i,&zymat,trplet,ksymop);/* NO-OP in serial */
+    dft_lin_resp_sync_slaves(cmo,&i,&zymat,trplet,ksymop,
+                             &work, *lwork);              /* NO-OP in serial */
 
     times(&starttm);
     lr_data.dmat  = malloc(inforb_.n2basx*sizeof(real));
@@ -1019,7 +1012,8 @@ FSYM2(dft_lin_respab)(real* fmatc, real* fmato,  real *cmo, real *zymat,
 
     /* WARNING: NO work MAY BE done before syncing slaves! */
     dft_wake_slaves((DFTPropEvalMaster)FSYM2(dft_lin_respab)); /* NO-OP in serial */
-    dft_lin_resp_sync_slaves(cmo,&i,&zymat,trplet,ksymop);     /* NO-OP in serial */
+    dft_lin_resp_sync_slaves(cmo,&i,&zymat,trplet,ksymop,
+                             &work, *lwork);              /* NO-OP in serial */
 
     times(&starttm);
     /* linear reponse data */
@@ -1512,7 +1506,8 @@ FSYM2(dft_lin_respf)(int *nosim, real* fmat, real *cmo, real *zymat, int *trplet
 
     /* WARNING: NO work MAY BE done before syncing slaves! */
     dft_wake_slaves((DFTPropEvalMaster)FSYM2(dft_lin_respf)); /* NO-OP in serial */
-    dft_lin_resp_sync_slaves(cmo,nosim,&zymat,trplet,ksymop); /* NO-OP in serial */
+    dft_lin_resp_sync_slaves(cmo,nosim,&zymat,trplet,ksymop,
+                             &work, *lwork);              /* NO-OP in serial */
 
     times(&starttm);
     max_vecs = *nosim>MAX_VEC ? MAX_VEC : *nosim;
@@ -1580,12 +1575,11 @@ void
 dft_lin_respf_slave(real* work, int* lwork, const int* iprint)
 {
     real *cmo  = malloc(inforb_.norbt*inforb_.nbast*sizeof(real)); /* IN  */
-    real *zymat= NULL;                                             /* IN  */
     int trplet;                         /* IN: will be synced from master */
     int ksymop, nosim;
-    FSYM2(dft_lin_respf)(&nosim, NULL, cmo, zymat, &trplet, &ksymop, work, lwork);
+    FSYM2(dft_lin_respf)(&nosim, NULL, cmo, NULL,
+                         &trplet, &ksymop, work, lwork);
     free(cmo);
-    if(zymat) free(zymat); 
 }
 
 /* ================================================================== */

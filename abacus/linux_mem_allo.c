@@ -57,7 +57,7 @@ void cexe_(DaltonDriver drv, int* nwords, double* wrkdlm,
     mem_block = (double*)malloc((*nwords+2)*sizeof(double));
     if(!mem_block) {
         fprintf(stderr,"CEXE: Cannot allocate  work: %i dwords\n", *nwords);
-        return;
+        dalton_quit("CEXE: Cannot allocate work: %i dwords\n", *nwords);
     }
     mem_block[0] = *wrkdlm;
     mem_block[1+*nwords] = *wrkdlm;
