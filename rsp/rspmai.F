@@ -29,12 +29,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rspmai.F,v 1.2 2001-02-12 18:17:56 vebjornb Exp $
+C$Id: rspmai.F,v 1.3 2001-03-08 13:49:36 hjj Exp $
 C
 #include <single.h>
 #ifdef REVISIONLOG
 /* Comdeck revision_log */
 $Log: not supported by cvs2svn $
+Revision 1.2  2001/02/12 18:17:56  vebjornb
+First commit after CC merge
+
 Revision 1.3  2001/01/30 14:11:20  kenneth
 AMFI integrals now stored on AOPROPER instead AOPROPER_MF
 
@@ -3199,6 +3202,7 @@ C
 C
 C Used from common blocks:
 C SCBRHF : IOPRHF
+C QRINF  : MZCONF(1)
 C
 #include <maxorb.h>
 #include <priunit.h>
@@ -3210,6 +3214,7 @@ C
 #include <infvar.h>
 #include <infsop.h>
 #include <inflin.h>
+#include <qrinf.h>
 #include <scbrhf.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
@@ -3231,6 +3236,11 @@ C
       NCREF  = NCONRF
       IREFSY = LSYMRF
       DETERM = FLAG(27)
+C
+      MZCONF(1) = NCONRF
+C     ... MZCONF(1) is used in qr and cr for cref vector and
+C         it will not be defined in qr/cr modules if no
+C         perturbation operators of symmetry 1. /hjaaj Mar 2001
 C
 C     Find out if TDHF or not :
 C
