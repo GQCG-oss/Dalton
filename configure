@@ -937,7 +937,7 @@ case $WHICH in
                   fi
                   cpp="-DVAR_G77 $cpp"
 		  if [ $split != 'true' ] ; then
-		      cpp="-D_FILE_OFFSET_BITS=64"
+		      cpp=${cpp}" -D_FILE_OFFSET_BITS=64"
 		  fi
 		  if [ "$prc" = alpha ]; then
 			copt="-mieee"; 
