@@ -235,6 +235,7 @@ dft_lin_resp_slave(real* work, int* lwork, const int* iprint)
 }
 #endif
 
+extern void FSYM(dftlrsync)(void);
 static void
 dft_lin_resp_sync_slaves(real* cmo, int *nvec, real**zymat, int* trplet, int* ksymop)
 {
