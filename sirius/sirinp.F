@@ -1206,10 +1206,7 @@ C
          K1   = 1    + NCMOT
          LSCR = LCMO - K1
          JRDMO = -IRDMO
-         CALL GPOPEN(LUIT1,'SIRIUS.RST','OLD',' ','UNFORMATTED',IDUMMY,
-     &               .FALSE.)
          CALL READMO(CMO,JRDMO,CMO(K1),LSCR)
-         CALL GPCLOSE(LUIT1,'KEEP')
 C        JRDMO negative : return with error status in JRDMO
 C        JRDMO positive : abort in READMO if error
          IF (JRDMO .GT. 0) THEN
@@ -3291,10 +3288,6 @@ C          and in column 1 (as some other places).
              IRDMO = 3
           ELSE IF (RWORD .EQ. 'FORM12') THEN
              IRDMO = 4
-          ELSE IF (RWORD .EQ. 'CANORB') THEN
-             IRDMO = 1
-          ELSE IF (RWORD .EQ. 'MOLORB') THEN
-             IRDMO = 2
           ELSE IF (RWORD .EQ. 'OLDORB') THEN
              IRDMO = 7
           ELSE IF (RWORD .EQ. 'H1DIAG') THEN
@@ -4493,7 +4486,7 @@ C
 #include <dftacb.h>
 C
       CHARACTER*6 RDMOLB(11)
-      DATA RDMOLB/'CANORB','MOLORB','FORM18','FORM12','--5-- ',
+      DATA RDMOLB/'--1-- ','--2-- ','FORM18','FORM12','--5-- ',
      &            '--6-- ','OLDORB','H1DIAG','NEWORB','SIRIFC',
      &            'HUCKEL'/
       CHARACTER*33 TXTOCC(0:5)

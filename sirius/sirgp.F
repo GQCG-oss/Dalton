@@ -553,6 +553,9 @@ C
 C-- IRDMO = 7 or 9:
 C
   700 CONTINUE
+      JLUIT1 = LUIT1
+      IF (JLUIT1 .LE. 0) CALL GPOPEN(LUIT1,'SIRIUS.RST','OLD',' ',
+     &   'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND LUIT1
       IF (IRDMO.EQ.7) THEN
          MOLABL = 'OLDORB  '
@@ -565,7 +568,7 @@ C
          CALL READT(LUIT1,NCMOT,CMO(1))
       ELSE IF (LBLERR .EQ. -1) THEN
          WRITE (LUPRI,'(//3A)')
-     *   ' >>> FATAL ERROR, MO label "',MOLABL,'" not found on LUIT1.'
+     & ' >>> FATAL ERROR, MO label "',MOLABL,'" not found on SIRIUS.RST'
          CALL QTRACE(LUPRI)
          IF (NOSTOP) THEN
             JRDMO = JRDMO + 1
@@ -574,8 +577,8 @@ C
          END IF
       ELSE
          WRITE (LUPRI,'(//A/2A)')
-     *   ' >>> FATAL ERROR, could not read LUIT1',
-     *   '                  when searching for mo label :',MOLABL
+     &   ' >>> FATAL ERROR, could not read SIRIUS.RST',
+     &   '                  when searching for mo label :',MOLABL
          CALL QTRACE(LUPRI)
          IF (NOSTOP) THEN
             JRDMO = JRDMO + 1
@@ -583,6 +586,7 @@ C
             CALL QUIT('ERROR (READMO) COULD NOT READ MO FILE.')
          END IF
       END IF
+      IF (JLUIT1 .LE. 0) CALL GPCLOSE(LUIT1,'KEEP')
       GO TO 9000
 C
 C-- IRDMO = 10:
