@@ -183,8 +183,10 @@ typedef struct
     int Nx;
     int Ny;
     int Nz;
+#ifdef USE_PTHREADS
     pthread_mutex_t* fileMutex;
     pthread_mutex_t* jobMutex;
+#endif
     int* currJobNumber;
       int noOfPoints;         /* OUTPUT */
       int noOfWrittenBatches; /* OUTPUT */
