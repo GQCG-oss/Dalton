@@ -24,20 +24,25 @@ cat >> $DIR/awk.tmp$$ <<!
 END{printf("\n");}
 !
 
-foreach file (*.F)
+# search all Fortran and C source files for includes
+foreach file (*.F *.f *.c *.cc)
   set root   = $file:r
+  #  use awk to remove newline character from echo
   echo "$root.o $root.i $file" | awk '{printf("%s %s : %s ",$1,$2,$3)}'
-#  use awk to remove newline character from echo
   sed -n -e '/^ *# *include/p' $file | \
-           sed -e 's/include//g' -e 's/[#<>" ]//g' | sort | uniq | \
-           awk -f $DIR/awk.tmp$$
-## hjaaj: old code with grep below, on linux Redhat 8.0 this code
-## required 24s for the abacus directory, new code only used 2s !
-## The problem seems to be that grep has a slow output routine,
-## if few matches then grep was also quite fast.
-# grep '^ *# *include' $file  | \
-#          sed -e 's/include//g' -e 's/[#<>" ]//g' | sort | uniq | \
-#          awk -f $DIR/awk.tmp$$
+           sed -e 's/include//g' -e 's/[#<>" ]//g' | sort | uniq > $DIR/tmp.$$
+  # strip path information from the strings extracted from the source files
+  # by passing the file names through 'basename' (this needs a for loop since
+  # for some reasons 'basename' doesn't work if invoked between pipes...)
+  set myincludes=`cat $DIR/tmp.$$`
+  rm $DIR/tmp.$$
+  foreach entry ($myincludes);
+    basename $entry >> $DIR/tmp.$$
+  end
+  touch $DIR/tmp.$$
+  # invoke awk script to select those includes files which are part of DALTON,
+  # i.e. are not e.g. standard includes from the C library etc.
+  awk -f $DIR/awk.tmp$$ $DIR/tmp.$$
   echo " "
   echo " "
 end
