@@ -736,6 +736,7 @@ C  /* Deck dftsol */
       DIMENSION WORK(*)
 #include <infvar.h>
 #include <inflin.h>
+#include <inforb.h>
 C
       KVEC = 1
       KFCK = KVEC + NWOPPT
