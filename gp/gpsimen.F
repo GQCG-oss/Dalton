@@ -55,6 +55,6 @@ C return right values
       NUABCD = 1
       CALL GETGAM(NODS,INDADR,wvalu,rj,JMAX,NUABCD,fjws,indads,wvals,
      &            rexpw,0)
-      TABERF=fjws(1,0)*2.d0*x/SQRTPI
+      GETERF=fjws(1,0)*2.d0*x/SQRTPI
       RETURN
       END
