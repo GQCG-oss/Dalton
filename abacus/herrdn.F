@@ -352,7 +352,7 @@ C
 #include <cbirea.h>
 C
       DIMENSION WORK(LWORK)
-      LOGICAL HERMIT,NEWFILE,SET
+      LOGICAL HERMIT,NEWFILE,SET,CMDOPN
       CHARACTER KEYWRD*6
 #include <molinp.h>
 #include <ccom.h>
@@ -378,17 +378,25 @@ C
       IF (IPREAD .GT.  0) THEN
          CALL TITLER('Output from READIN input processing','*',118)
       END IF
+      IF (LUCMD .LE. 0) THEN
+         CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
+     &               .FALSE.)
+         CMDOPN = .TRUE.
+      ELSE
+         CMDOPN = .FALSE.
+      END IF
       REWIND(LUCMD)
       READ (LUCMD,'(A6)') KEYWRD
       IF (KEYWRD .EQ. 'INTGRL' .OR. KEYWRD .EQ. 'BASIS ' .OR. 
      &    KEYWRD .EQ. 'ATOMBA') LUMLCL = LUCMD
+      IF (CMDOPN) CALL GPCLOSE(LUCMD,'KEEP')
       IF (ITERNR .EQ. 0 .AND. ITRNMR .EQ. 0 .AND. IPRE .EQ. 0)
      &    LUINFO = LUMLCL
 C
 C Only the master in a parallel calc. reads the input file. The
 C slaves do not read the input file in RDLINE but use the input lines
 C read by the master and transferred in common block MOLINP. /hjaaj
-C<
+C
       NEWFILE = LUINFO .NE. LUCMD .AND. .NOT. SLAVE
       IF (NEWFILE) THEN
          CALL GPOPEN (LUINFO,'MOLECULE.INP','OLD',' ','FORMATTED',
