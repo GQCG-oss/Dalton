@@ -136,7 +136,7 @@ CTRL[4]=1
 ERROR[4]="THE ONE-ELECTRON INTEGRAL GRADIENT IS NOT CORRECT"
 
 # CCSD (frozen core) nuclear two-electron integral gradient: 
-CRIT1=`$GREP "N * 0?\.0000000000 * 0?\.0000000000 * -12.56501143" $log | wc -l`
+CRIT1=`$GREP "N * (0| |\-0|\-)\.0000000000 * (0| |\-0|\-)\.0000000000 * -12.56501143" $log | wc -l`
 TEST[5]=`expr $CRIT1` 
 CTRL[5]=1
 ERROR[5]="THE TWO-ELECTRON INTEGRAL GRADIENT IS NOT CORRECT"
