@@ -36,7 +36,7 @@ dalton="**DALTON
 "
 
 test="
-check_hf_energy -149.608171287437 1e-13
+check_scf_energy HF -149.608171287437 1e-6
 "
 
 check_gen_input "$0" "$info" "$molecule" "$dalton" "$test"

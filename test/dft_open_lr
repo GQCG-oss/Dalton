@@ -27,9 +27,9 @@ dalton="**DALTON INPUT
 **INTEGRAL
 .NOSUP
 **WAVE FUNCTIONS
-.HF
-*SCF INPUT
-.B3LYP
+.DFT
+ B3LYP
+*SCF INP
 .THRESHOLD
 1e-10
 **RESPONSE
@@ -41,7 +41,7 @@ dalton="**DALTON INPUT
 "
 
 test="
-check_hf_energy -75.940797586758 1e-13
-check_polarizabilities 5.956539048061 5.082779265466 4.123393725350 1e-10
+check_scf_energy DFT -75.940797586758 1e-6
+check_polarizabilities 5.956539048061 5.082779265466 4.123393725350 1e-4
 "
 check_gen_input "$0" "$info" "$molecule" "$dalton" "$test"

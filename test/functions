@@ -91,9 +91,9 @@ END{exit (s?1:0)}' $log || ERRLIST="$ERRLIST; Dipole moment"
 check_polarizabilities() {
 [ "$4" = "" ] &&  echo "not enough parameters to check_polarizabilities."
 awk 'function e(a,b,r){return(a-b>r||a-b<-r)} BEGIN {s=0}
-/^@XDIPLEN/ {if(!e($3,'$1,$4'))s++}
-/^@YDIPLEN/ {if(!e($3,'$2,$4'))s++}
-/^@ZDIPLEN/ {if(!e($3,'$3,$4'))s++}
+/^@.*XDIPLEN/ {if(!e($8,'$1,$4'))s++}
+/^@.*YDIPLEN/ {if(!e($8,'$2,$4'))s++}
+/^@.*ZDIPLEN/ {if(!e($8,'$3,$4'))s++}
 END{exit (s==3?0:1) }' $log || ERRLIST="$ERRLIST; Polarizabilities"
 }
 
