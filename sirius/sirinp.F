@@ -1,15 +1,18 @@
 C
-C...   Copyright (c) 1997 by the authors of Dalton (see below).
+C...   Copyright (c) 2001 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
-C...   "Dalton, an ab initio electronic structure program, Release 1.0
-C...   (1997), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
-C...   J. Olsen, K. Ruud, H. Aagren, T. Andersen, K. L. Bak, V. Bakken,
-C...   O. Christiansen, P. Dahle, E. K. Dalskov, T. Enevoldsen,
-C...   H. Heiberg, D. Jonsson, S. Kirpekar, R. Kobayashi, H. Koch,
-C...   K. V. Mikkelsen, P. Norman, M. J. Packer, T.Saue,
-C...   P. R. Taylor, and O. Vahtras"
+C...   "Dalton, a molecular electronic structure program, Release 1.2
+C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+C...   and O. Vahtras"
 C...
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
@@ -29,11 +32,14 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: sirinp.F,v 1.7 2001-05-14 10:04:42 hjj Exp $
+C$Id: sirinp.F,v 1.8 2001-05-31 06:38:35 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
 $Log: not supported by cvs2svn $
+Revision 1.7  2001/05/14 10:04:42  hjj
+revised print to correspond to current keywords /hjaaj
+
 Revision 1.6  2001/05/09 12:00:41  hjj
 Removed SIRRUN and sirrun.h; integrated identify.h in sirinp.F /hjaaj
 

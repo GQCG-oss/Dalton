@@ -1,40 +1,50 @@
 C
-C...   Copyright (c) 1997 by the authors of Dalton (see below).
+C...   Copyright (c) 2001 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
-C...   The source code in this file is part of 
-C...   "Dalton, an ab initio electronic structure program, Release 1.0
-C...   (1997), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
-C...   J. Olsen, K. Ruud, H. Aagren, T. Andersen, K. L. Bak, V. Bakken,
-C...   O. Christiansen, P. Dahle, E. K. Dalskov, T. Enevoldsen,
-C...   B. Fernandez, H. Heiberg, D. Jonsson, S. Kirpekar,
-C...   R. Kobayashi, H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer, 
-C...   T. Saue, P. R. Taylor, and O. Vahtras"
+C...   The source code in this file is part of
+C...   "Dalton, a molecular electronic structure program, Release 1.2
+C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+C...   and O. Vahtras"
 C...
-C...   This source code is provided under a written licence and may be 
+C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
 C...
-C...   In particular, no part of the source code or compiled modules may 
-C...   be distributed outside the research group of the licence holder. 
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
 C...   group of the licence holder may not take any part of Dalton,
 C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence. 
+C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
 C...      dalton-admin@kjemi.uio.no
 C...
 C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
+C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: dalton.F,v 1.5 2001-04-21 12:11:59 ruud Exp $
+C$Id: dalton.F,v 1.6 2001-05-31 06:38:04 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
 C
 $Log: not supported by cvs2svn $
+Revision 1.5  2001/04/21 12:11:59  ruud
+Added the possibility of reusing property derivatives in vibrational average
+calculations. Fixed a bug in the temperature part, as well as in the Eckart
+transformations. Fixed huge memory use in herrdn.F. Added SYS_SUN in
+cc/crayio.c and modified a couple of the test cases for accuracy on our
+old HP.
+
 Revision 1.4  2001/04/06 17:21:41  vebjornb
 MPI bugfixes from Patrick - VB
 
@@ -112,16 +122,26 @@ C
 C     NOTE
 C
 C     This is an experimental code for the evaluation of SCF, CC and
-C     MCSCF molecular properties as energy derivatives or response 
-C     functions.  The authors accept no responsibility for the 
+C     MCSCF molecular properties as energy derivatives or response
+C     functions.  The authors accept no responsibility for the
 C     performance of the code or for the correctness of the results.
 C
 C     The code (in whole or part) is not to be reproduced for
 C     further distribution without the written permission of the authors.
 C
 C     If results obtained with this code are published, an appropriate
-C     citation would be:  
-C     "DALTON, an electronic structure program".
+C     citation would be:
+C
+C     "Dalton, a molecular electronic structure program, Release 1.2
+C     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+C     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+C     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+C     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+C     H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+C     H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+C     T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+C     B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+C     and O. Vahtras"
 C
 C     This note is not to be removed or altered.
 C
@@ -200,7 +220,7 @@ C
 #endif
 C
 C     Either default memory size,
-C     
+C
       IF (LMWORK .LE. 0) THEN
          WRITE (LUERR,'(/A)') ' DALTON: default work memory size used.'
          LMWORK = LWORK
@@ -276,7 +296,7 @@ C
       DO 43 I = 1, 60
          IF (BASDIR(I:I) .EQ. ' ') GO TO 44
          LENBAS = LENBAS + 1
- 43   CONTINUE 
+ 43   CONTINUE
  44   CONTINUE
       IF (BASDIR(LENBAS:LENBAS) .NE. '/') THEN
          LENBAS = LENBAS + 1
@@ -303,7 +323,7 @@ c#endif
 C
 C     Allowing now for parallelization over different molecular geometries,
 C     we must first check if this calculation indeed is of that kind.
-C     We do this by letting the Master node read DALTON.INP, searching for 
+C     We do this by letting the Master node read DALTON.INP, searching for
 C     the keyword .PARNMD. If found, read DALTON/MOLECULE.INP and send them
 C     to the slaves, who writes them out in their own files
 C
@@ -351,7 +371,7 @@ C
 C
          WRITE (LUPRI,'(T15,A,//,T26,A,/,6(/T12,A),//,T26,A,//,
      &        (T12,A))')
-     *   ' This is output from DALTON (Release 1.2, April 2001)',
+     *   ' This is output from DALTON (Release 1.2, June 2001)',
      *    ' Principal authors:',
      *    ' Trygve Helgaker,       University of Oslo,         Norway ',
      *    ' Hans Joergen Jensen,   SDU - Odense University,    Denmark',
@@ -360,6 +380,7 @@ C
      *    ' Kenneth Ruud,          San Diego Superc. Center,   USA    ',
      *    ' Hans Aagren,           KTH Stockholm,              Sweden ',
      *    ' Contributors:',
+     *    ' Alexander A. Auer,     University of Mainz,        Germany',
      *    ' Keld L. Bak,           UNI-C,                      Denmark',
      *    ' Vebjoern Bakken,       University of Oslo,         Norway ',
      *    ' Ove Christiansen,      University of Lund,         Sweden ',
@@ -368,7 +389,7 @@ C
      *    ' Erik K. Dalskov,       UNI-C,                      Denmark',
      *    ' Thomas Enevoldsen,     SDU - Odense University,    Denmark',
      *    ' Berta Fernandez,       U.of Santiago de Compostela,Spain  ',
-     *    ' Christof Haettig,      Forschungszentrum Karlsruhe,Germany', 
+     *    ' Christof Haettig,      Forschungszentrum Karlsruhe,Germany',
      *    ' Kasper Hald,           Aarhus University,          Denmark',
      *    ' Asger Halkier,         Aarhus University,          Denmark',
      *    ' Hanne Heiberg,         University of Oslo,         Norway ',
@@ -379,8 +400,10 @@ C
      *    ' Henrik Koch,           SDU - Odense University,    Denmark',
      *    ' Kurt V.Mikkelsen,      University of Copenhagen,   Denmark',
      *    ' Patrick Norman,        University of Linkoeping,   Sweden ',
+     *    ' Thomas B. Pedersen,    U.of Santiago de Compostela,Spain  ',
      *    ' Martin J. Packer,      University of Sheffield,    UK     ',
      *    ' Torgeir A. Ruden,      University of Oslo,         Norway ',
+     *    ' Alfredo Sanchez,       University of Valencia,     Spain  ',
      *    ' Trond Saue,            University of Toulouse,     France ',
      *    ' Stephan P. A. Sauer,   University of Copenhagen,   Denmark',
      *    ' Bernd Schimmelpfennig, KTH Stockholm,              Sweden ',
@@ -388,8 +411,8 @@ C
      *    ' Peter R.Taylor,        San Diego Superc. Center,   USA    ',
      *    ' Olav Vahtras,          PDC, Stockholm,             Sweden '
 C
-         WRITE (LUPRI,'(72A1/)') ('-',I=1,72)
-         WRITE (LUPRI,'(//,(5X,A))')
+         WRITE (LUPRI,'(/72A1/)') ('-',I=1,72)
+         WRITE (LUPRI,'(/,(5X,A))')
      &'NOTE:',
      &' ',
      &'This is an experimental code for the evaluation of molecular',
@@ -405,16 +428,18 @@ C
      &'If results obtained with this code are published, an',
      &'appropriate citation would be:',
      &' ',
-     &'T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,',
-     &'H. Aagren, K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,',
-     &'P. Dahle, E.K. Dalskov, T. Enevoldsen, B. Fernandez, ' //
-     &'C. Haettig,',
-     &'K. Hald, A. Halkier, H. Heiberg, H. Hettema, D. Jonsson,',
-     &'S. Kirpekar, R. Kobayashi, H. Koch, K.V. Mikkelsen, P. Norman,',
-     &'M.J. Packer, T.A. Ruden, T. Saue, S.P.A. Sauer, ' //
-     &'B. Schimmelpfennig,',
-     &'K. O. Sylvester-Hvid, P.R. Taylor, and O. Vahtras:',
-     &'"Dalton release 1.2 (2001), an electronic structure program"'
+     &'"Dalton, a molecular electronic structure program, Release 1.2',
+     &'(2001), written by T. Helgaker, H. J. Aa. Jensen, ' //
+     &'P. Joergensen,',
+     &'J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,',
+     &'O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,',
+     &'T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,',
+     &'H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,',
+     &'H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,',
+     &'T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, ' //
+     &'S. P. A. Sauer,',
+     &'B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,',
+     &'and O. Vahtras"'
 C
 C     Stamp date and time and hostname to output
 C
@@ -443,12 +468,12 @@ C
                CALL QUIT('*** End of input test for GENERAL ***')
             END IF
             CALL EXEDRV(WORK, LMWORK, IWOFF, WRKDLM)
-C     
+C
 C     Send ending signal to slaves
 C
             FINISH = .TRUE.
             CALL MPI_BCAST(FINISH,1,MPI_LOGICAL,NODEID(MASTER),
-     &           MPI_COMM_WORLD,IERR)       
+     &           MPI_COMM_WORLD,IERR)
             CALL GPCLOSE(LUCME,'KEEP')
             CALL GPCLOSE(LUERR,'KEEP')
             CALL GPCLOSE(LUMOLDEN,'KEEP')
@@ -490,7 +515,7 @@ C
 #endif
 #if defined (VAR_PVM)
       IF (PARCAL) THEN
-C     
+C
 C        Tell slaves to quit.
 C        --------------------
 C
