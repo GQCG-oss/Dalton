@@ -5,6 +5,6 @@
      &           JTSEAC = 5, JTSESE = 6)
       COMMON /INFIND/ IROW(LIROW),  ISMO(MXCORB),ISAO(MXCORB),
      &                ISW(MXCORB),  ISX(MXCORB),
-     &                ICH(MXCORB),  LOC(MXCORB), IOBTYP(MXCORB),
+     &                ICH(MXCORB),  IOBTYP(MXCORB),
      &                NSM(MAXASH),  IACTYP(MAXASH),
      &                ISSMO(MXCORB),ISSORD(MXCORB)

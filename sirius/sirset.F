@@ -583,7 +583,6 @@ C
             IR  = IR  - 1
             ISW(I)   = IIN
             ISX(IIN) = I
-            LOC(IIN) = KISH
             ICH(I)   = IR
  1040    CONTINUE
          NASHI = NASH(ISYM)
@@ -593,7 +592,6 @@ C
             IU  = IU  + 1
             ISW(I)   = IAC
             ISX(IAC) = I
-            LOC(IAC) = KASH
             ICH(I)   = IU
             NSM(IU)  = ISYM
  1050    CONTINUE
@@ -603,7 +601,6 @@ C
             I    = I    + 1
             ISW(I)    = ISEC
             ISX(ISEC) = I
-            LOC(ISEC) = KSEC
             ICH(I)    = 0
  1060    CONTINUE
  1030 CONTINUE
