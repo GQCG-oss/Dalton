@@ -109,7 +109,7 @@ else
    if [ "$molfil" = "$dalfil" ]; then
       outnam=$molfil
    else
-      outnam=$dalfil_$molfil
+      outnam=${dalfil}_${molfil}
    fi
 fi
 #
