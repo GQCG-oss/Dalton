@@ -190,6 +190,39 @@ C notation changed from 'd' to 'd-' for consistency with EMSL
      &              'augmentation level'
                CALL QUIT('Illegal augmentation level in HERBAS')
             END IF
+C for backward compatibility the old notation is retained
+         ELSE IF (BASNAM(2:9) .EQ. 'aug-cc-p') THEN
+            write(lupri,*) 'cc basis'
+            call flshfo(lupri)
+            BASTMP(1:79) = BASNAM(2:80) 
+            IF (BASNAM(1:1) .EQ. 'd') THEN
+               IAUG = 1
+            ELSE IF (BASNAM(1:1) .EQ. 't') THEN             
+               IAUG = 2
+            ELSE IF (BASNAM(1:1) .EQ. 'q') THEN
+               IAUG = 3
+            ELSE
+               WRITE (LUPRI,'(/A1,A)') BASNAM(1:1),' is an unknown'//
+     &              'augmentation level'
+               CALL QUIT('Illegal augmentation level in HERBAS')
+            END IF 
+         ELSE IF (BASNAM(1:7) .EQ. 'aug-ecp') THEN 
+            BASTMP(1:75) = BASNAM(5:80)                      
+            IAUG = 1 
+         ELSE IF (BASNAM(2:8) .EQ. 'aug-ecp') THEN           
+            BASTMP(1:74) = BASNAM(6:80)
+            IF (BASNAM(1:1) .EQ. 'd') THEN
+               IAUG = 1
+            ELSE IF (BASNAM(1:1) .EQ. 't') THEN
+               IAUG = 2
+            ELSE IF (BASNAM(1:1) .EQ. 'q') THEN
+               IAUG = 3                                      
+            ELSE
+               WRITE (LUPRI,'(/A1,A)') BASNAM(1:1),' is an unknown'//
+     &              'augmentation level' 
+               CALL QUIT('Illegal augmentation level in HERBAS')
+            END IF
+C
          ELSE IF (BASNAM(1:3) .EQ. 'ano') THEN
             ANO = .TRUE.
             BASTMP(1:5) = BASNAM(1:5)
