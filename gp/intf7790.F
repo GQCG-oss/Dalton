@@ -93,6 +93,7 @@ C
 #include <mxcent.h>
 #include <gnrinf.h>
 #include <abainf.h>
+      LOGICAL LWRI, LGRAD, LHESS, LHLFEY
       WRINDX = LWRI
       MOLGRD = LGRAD
       MOLHES = LHESS
