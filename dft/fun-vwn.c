@@ -42,8 +42,20 @@ Functional VWN3Functional = {
     vwn3_third
 };
 
+Functional VWN5Functional = {
+    "VWN5",     /* name */
+    vwn_isgga,  /* gga-corrected */
+    vwn_read,   /* no extra input expected, just set the common block */
+    NULL,
+    vwn_energy, 
+    vwn_first,
+    vwn_second,
+    vwn_third
+};
+
+/* VWN is used for backward compatibility only */
 Functional VWNFunctional = {
-    "VWN",      /* name */
+    "VWN",     /* name */
     vwn_isgga,  /* gga-corrected */
     vwn_read,   /* no extra input expected, just set the common block */
     NULL,

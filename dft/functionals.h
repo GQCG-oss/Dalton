@@ -233,6 +233,7 @@ extern Functional PWggaIIxFunctional;
 extern Functional PZ81Functional;
 extern Functional SlaterFunctional;
 extern Functional VWN3Functional;
+extern Functional VWN5Functional;
 extern Functional VWNFunctional;
 extern Functional XAlphaFunctional;
 
@@ -253,6 +254,9 @@ extern Functional OLYPFunctional;
 extern Functional PBE0Functional;
 extern Functional PBEFunctional;
 extern Functional PW91Functional;
+extern Functional SVWN5Functional;
+extern Functional SVWN3Functional;
+
 /* the list of the functionals */
 extern Functional* available_functionals[];
 

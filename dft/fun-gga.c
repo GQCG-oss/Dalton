@@ -77,8 +77,32 @@ Functional LDAFunctional = {
     lda_third
 };
 
+/* SVWN5 aliases LDA */
+Functional SVWN5Functional = {
+    "SVWN5",       /* name */
+    fun_false,     /* not gga-corrected */
+    lda_read,
+    NULL,
+    lda_energy, 
+    lda_first,
+    lda_second,
+    lda_third
+};
+
 Functional LDAGaussFunctional = {
     "LDAGauss",    /* name */
+    fun_false,     /* not gga-corrected */
+    ldagauss_read,
+    NULL,
+    gga_energy, 
+    gga_first,
+    gga_second,
+    gga_third
+};
+
+/* SVWN3 aliases LDAGauss */
+Functional SVWN3Functional = {
+    "SVWN3",       /* name */
     fun_false,     /* not gga-corrected */
     ldagauss_read,
     NULL,
@@ -123,7 +147,7 @@ Functional B3LYPFunctional = {
 };
 
 Functional B3LYPGaussFunctional = {
-    "B3LYPGauss",      /* name */
+    "B3LYP-G",      /* name */
     gga_isgga,     /* gga-corrected */
     b3lypgauss_read,
     gga_report,
@@ -526,7 +550,6 @@ gga_first(FirstFuncDrv *ds, real factor,  const DftDensProp* dp)
 {
     FuncList* lst;
     for(lst=gga_fun_list; lst; lst=lst->next) {
-	real df10 = ds->df1000, df01 = ds->df0010;
         lst->func->first(ds, factor*lst->weight, dp);
 /*      fort_print("[%g,%g,w=%g] %s f: %g deriv (%g,%g)", dp->rhoa,
                    dp->grada, lst->weight, lst->func->name, factor,

@@ -64,6 +64,7 @@ Functional* available_functionals[] = {
     &PZ81Functional,
     &SlaterFunctional,
     &VWN3Functional,
+    &VWN5Functional,
     &VWNFunctional,
     &XAlphaFunctional,
     /* mixed functionals */
@@ -83,6 +84,8 @@ Functional* available_functionals[] = {
     &PBE0Functional,
     &PBEFunctional,
     &PW91Functional,
+    &SVWN5Functional,
+    &SVWN3Functional,
     NULL
 };
 Functional* selected_func = &LDAFunctional;

@@ -390,6 +390,7 @@ C
       DFTADX = DFTADD
       DFTADD = .TRUE.
       IF (DFTRUN) THEN
+         IF(NASHT.NE.0) CALL QUIT('QC-SCF not implemented for RO-DFT')
          DO IOSIM = 1,NOSIM
            CALL DZERO(WRK(KFXC),N2ORBX)
            CALL UPKWOP(NWOPT,JWOP,BOVECS(1,IOSIM),WRK(KUBO))

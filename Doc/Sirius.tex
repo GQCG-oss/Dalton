@@ -134,7 +134,7 @@ respective calculation types:
 
 Section~\ref{ref-rhfinp} \Sec{SCF INPUT}
 
-Section~\ref{ref-rhfinp} \Sec{DFT INPUT}
+Section~\ref{ref-dftinp} \Sec{DFT INPUT}
 
 Section~\ref{ref-mp2inp} \Sec{MP2 INPUT}
 
@@ -567,7 +567,7 @@ MCSCF or CI\index{MCSCF}\index{CI}\index{Configuration Interaction}
 calculation. One of them {\em must} be specified.
 
 \pagebreak[3]
-\subsection{\label{ref-dft}\Sec{DFT INPUT}}
+\subsection{\label{ref-dftinp}\Sec{DFT INPUT}}
 
 {\bf Purpose:}
 
@@ -612,6 +612,93 @@ To specify the parameters of the DFT integration.
   order is provided for reference and can be selected by keyword
   \verb|GC2|. The default is \verb|BECKE LMG| which is optimal for an
   overwhelming number of cases.
+\end{description}
+
+\subsection{\label{ref-dft}DFT functionals}
+
+Functionals in dalton can be divided into two groups: primitive and
+combined functionals. Combined functionals are a linear combination of
+primitive ones. One can always create own combined functionals by
+using \verb|GGAKey| general functional. 
+
+\subsubsection{Primitive functionals}
+\begin{description}
+\item[BECKE] Becke correction (Full becke functional is BECKE +
+  SLATER). Reference
+
+\item[KT] 
+
+\item[LB94]
+
+\item[LYP] correlation functional by Lee, Yang and Parr.
+
+\item[OPTX] exchange functional of Handy.
+
+\item[P86] correlation functional of Perdew.
+
+\item[PBEx] exchange functional 
+
+\item[PW86x] Phys. Rev. B 33. 8800 (1986)
+
+\item[PW91] correlation functional of Perdew and Wang, 91.
+
+\item[PZ81] correlation functional of Perdew and Zunger.
+
+\item[SLATER] Dirac-Slater exchange functional.
+
+\item[VWN3] correlation functional Vosko, Wilk and Nusair (number
+  III).
+
+\item[VWN5]  correlation functional Vosko, Wilk and Nusair (number
+  V -- the recommended one).
+
+\end{description}
+
+\subsubsection{Combined functionals}
+\begin{description}
+\item[GGAKey] it is an universal keyword allowing to manually
+  construct arbitrary linear combinations of other functionals. Even
+  fractional hartree-fock exchange can be specified. This keyword is
+  to be followed by a string of functionals with associated
+  weights. The syntax is \verb|NAME=WEIGHT ...|. Example:
+\begin{verbatim}
+.DFT
+ GGAKey hf=0.2 slater=0.8 becke=0.72 lyp=0.81 vwn3=0.19
+\end{verbatim}
+
+\item[BLYP]
+
+\item[B3LYP] hybrid functional
+
+\item[B3LYP-G] hybrid functional with VWN3 form used for correlation
+  -- this is the form used by Gaussian.
+
+\item[BP86] Becke88 exchange functional and Perdew86 correlation
+  functional.
+
+
+\item[B3P86] variant of \verb|B3LYP| with P86 used to get correlation.
+
+
+\item[CAMB3LYP] Coulomb Attenuated Method Functional of Yanai and Handy.
+
+\item[KT1]
+
+\item[KT2]
+
+\item[KT3]
+
+\item[OLYP]
+
+\item[PBE0] a hybrid functional of Perdew, Burke and Ernzerhof with
+  0.2 weight of exact exchange, 0.75 of \verb|PBEx| functional and
+  \verb|PW91c| correlation functional.
+
+\item[PBE] same as above but with exchange estimated exclusively by
+  \verb|PBEx| functional.
+
+\item[PW91] correlation functional of Perdew and Wang.
+
 \end{description}
 
 
