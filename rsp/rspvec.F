@@ -1918,7 +1918,7 @@ C
      *   ' B operator label,  symmetry, spin: ',
      *      BSMLB(MSYMB,IBOP),MSYMB,ISPINB,
      *   ' Excited state no., symmetry, spin: ',IC,MSYMCX,ISPINC
-                        WRITE(LUPRI,'(/A,2F12.6,1P,G15.5)')
+                        WRITE(LUPRI,'(/A,3F12.6)')
      *   ' omega B, excitation energy, moment :',
      *      BSMFR(IBFR),EXCITA(MSYMC,IC,ISPINC+1),SMOM
                               IF (PHOSPH .AND.
@@ -2091,7 +2091,7 @@ C ---------------------------------------------------------------endofmcd-------
                END DO
                IF (PHOSPH) WRITE(LUPRI,'(1P,2(/A,G12.5,A))')
      &        ' Total transition       rate    (H_SO)', RATE/D3,' s-1',
-     &        ' Total phosphorescence lifetime (H_SO)', D3/RATE, ' s'
+     &        ' Total phosphorescence lifetime (H_SO)', D3/RATE,' s'
                IF (MNFPHO) WRITE(LUPRI,'(1P,2(/A,G12.5,A))')
      &        ' Total transition       rate    (AMFI)', RATEA/D3,' s-1',
      &        ' Total phosphorescence lifetime (AMFI)', D3/RATEA,' s'
