@@ -52,14 +52,13 @@ if [ "$MACHTYPE" = 'Linux' -o "$MACHTYPE" = Darwin ]; then
 else
     ECHO=echo
 fi
-
 $ECHO ''
 $ECHO '------------------------------------------------------------------'
 $ECHO '   Configuring the DALTON Makefile.config and DALTON run script'
 $ECHO '------------------------------------------------------------------'
 $ECHO ''
 
-arclist='aix convex cray cray-t3d cray-t3e dec-alpha linux-alpha linux paragon sgi sun hp hal cray-t90 nec darwin'
+arclist='aix cray cray-t3d cray-t3e dec-alpha linux-alpha linux paragon sgi sun hp hal cray-t90 nec darwin'
 
 #
 # Attempting auto-configuration. The list of replies from uname should be
@@ -108,7 +107,6 @@ case $ARCH in
     -cray-t3d ) WHICH="cray";;
     -cray-t3e ) WHICH="cray_t3e";;
     -nec ) WHICH="nec";;
-    -convex ) WHICH="convex";;
     -sun|-sun4 ) WHICH="sun4";;
     -dec-alpha|-alpha|-ultrix ) WHICH="alpha";;
     -linux-alpha ) WHICH="linux-alpha";;
@@ -127,18 +125,16 @@ esac
 # thus define only two for each computer type
 #
 dirlist='/lib /usr/lib /usr/local/lib'
+
 case $WHICH in
     rs6000)   liblist='libessl.a libesslp2.a libblas.a'
-              complist='xlf f77 f90'
+              complist='xlf f90 f77'
               ccmplist='xlc cc';;
     iris4d)   liblist='libcomplib.sgimath.a libblas.a'
-              complist='f77 f90'
-              ccmplist='cc';;
-    convex)   liblist='libveclib.a libblas.a'
-              complist='fc f77 f90'
+              complist='f90 f77'
               ccmplist='cc';;
     cray)     liblist=''
-              complist='cf77 f77 cf90 f90'
+              complist='cf90 f90 cf77 f77'
               ccmplist='cc';;
     cray_t90) liblist=''
               complist='f90 cf90'
@@ -150,20 +146,20 @@ case $WHICH in
               complist='f77sx'
               ccmplist='ccsx';;
     alpha)    liblist='libblas.a libdxml.a'
-              complist='f77 f90'
+              complist='f90 f77'
               ccmplist='cc';;
     linux-alpha) liblist='libcxml.a'
               complist='fort'
               ccmplist='ccc';;
     sun4)     liblist='libblas.a'
-              complist='f77 f90'
+              complist='f90 f77'
               ccmplist='cc';;
     paragon)  liblist='libmath.a libblas.a'
-              complist='if77 if90 f77 f90'
+              complist='if90 if77 f90 f77'
               ccmplist='cc';;
-    linux)    liblist='libatlas.a libblas.a'
-              complist='pgf77 g77'
-              ccmplist='pgcc gcc';;
+    linux)    liblist='libmkl_p3.a libatlas.a libblas.a'
+              complist='ifc pgf77 g77'
+              ccmplist='gcc pgcc';;
     darwin)   liblist='libatlas.a libblas.a'
               complist='g77 f77'
 #                       f77 is the Absoft v8.0 compiler
@@ -177,7 +173,13 @@ case $WHICH in
 esac
 #
 if [ $WHICH = "linux" ]; then
-    if [ ! -z $PGI ]; then
+    if  which ifc 1>/dev/null 2>&1; then
+	mkllib=`locate libmkl_p3.a`
+	if [ "$mkllib" != "" ]; then
+	mkllib=`dirname $mkllib`
+	fi
+	dirlist="$mkllib"
+    elif [ ! -z $PGI ]; then
 	if [ $PGI != "" ]; then
 	    dirlist="$dirlist $PGI/linux86/lib"
 	fi
@@ -389,6 +391,24 @@ if test -z "$F77"; then
     $ECHO "   Cannot proceed without a Fortran compiler in path"
     exit
 fi
+#
+#   Test to see whether the compiler has necessary F90 support
+#
+cat <<EOF > test.f
+      PROGRAM TEST
+      ALLOCATABLE WORK(:)
+      ALLOCATE(WORK(199))
+      END PROGRAM
+EOF
+$F77 -o test.x test.f >/dev/null 2>&1
+if [ ! -e test.x ]; then
+   f90yes=" -DNO_F90"
+    rm -f test.x test.o test.f
+else
+    f90yes=""
+    rm -f test.x test.o test.f
+fi
+#
 $ECHO "   Checking for C compiler ...\c"
 for comp in $ccmplist; do
     set dummy $comp; ac_word=$2
@@ -436,6 +456,8 @@ for testdir in $dirlist; do
 	    libcxml.a) LIB="$LIB -lcxml"
 	               blas3="true"
 	               cpp="$cpp -DVAR_DXML";;
+            libmkl_p3.a) LIB="-L$mkllib -lmkl_p3 -Vaxlib -lguide -lpthread -static"
+                         blas3="true";;
 	    libdxml.a) LIB='-ldxml'
 	               blas3="true"
 	               cpp='-DVAR_DXML';;
@@ -690,7 +712,7 @@ case $WHICH in
 		       fi
 		   fi
                    inc='-I../include'
-                   cpp=${cpp}" -DIMPLICIT_NONE";;
+                   cpp=${cpp}" -DIMPLICIT_NONE"${f90yes};;
                 *) if [ "$mesp" = "dummy" ]; then
 		     if [ $split = 'true' ] ; then
                        cpp="-WF,-DSYS_AIX,-DVAR_MFDS,-DVAR_SPLITFILES,-D'INSTALL_WRKMEM=$memsiz',-D'INSTALL_BASDIR=\"$basdir\"'"
@@ -708,6 +730,9 @@ case $WHICH in
 		   fi
 		   inc='-I../include'
                    cpp=${cpp}",-DIMPLICIT_NONE"
+		   if [ "$f90yes" = " -DNO_F90" ]; then
+		       cpp=${cpp}",-DNO_F90"
+		   fi
             esac
             copt="$copt -I../include -DSYS_AIX -D_LARGE_FILES -qlonglong -O3 -qarch=auto -qtune=auto"
             opt='-O3 -qstrict -qarch=auto -qtune=auto -qmaxmem=-1 -bmaxdata:0x40000000 -bmaxstack:0x10000000 -qextname';;
@@ -739,22 +764,13 @@ case $WHICH in
 	    fi
 	    inc='-I../include'
             cpp=${cpp}" -DIMPLICIT_NONE";;
-    convex) if [ "$mesp" = "dummy" ]; then
-                cpp="-P -DSYS_CONVEX -DNO_F90 -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
-	    else
-                cpp="-P -DSYS_CONVEX -DNO_F90 -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
-                def='parallel.x'
-	    fi
-            cpp=${cpp}" -DIMPLICIT_NONE"
-            opt="-O2 -link \"-W\""
-	    inc='-I../include';;
     cray)   if [ "$mesp" = "dummy" ]; then
                 cpp="-DSYS_CRAY -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -DVAR_VECTOR"
 	    else
                 cpp="-DSYS_CRAY -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -DVAR_VECTOR $parop"
 	    fi
 	    inc='-I../include'
-	    cpp=${cpp}" -DIMPLICIT_NONE"
+	    cpp=${cpp}" -DIMPLICIT_NONE"${f90yes}
             opt="-Wf\"-i 64 -a stack -dp\" -Wl\"-i ./equivalences\" -Wp\"-F\""
             def='cray.x';;
     cray_t90) if [ "$mesp" = "dummy" ]; then
@@ -763,7 +779,7 @@ case $WHICH in
                 cpp="-DSYS_T90 -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -DVAR_VECTOR $parop"
             fi
             inc='-I../include'
-	    cpp=${cpp}" -DIMPLICIT_NONE"
+	    cpp=${cpp}" -DIMPLICIT_NONE"${f90yes}
             opt="-O nofastint -d p -Wl\"-i ./equivalences\" -Wp\"-F\""
             def='t90.x';;
     cray_t3e) if [ "$mesp" = "dummy" ]; then
@@ -772,7 +788,7 @@ case $WHICH in
                 cpp="-DSYS_T3D -DVAR_NONAMELIST -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
 	    fi
 	    inc='-I../include -I/opt/ctl/mpt/mpt/include'
-            cpp=${cpp}" -DIMPLICIT_NONE"
+            cpp=${cpp}" -DIMPLICIT_NONE"${f90yes}
             opt="-dp -F -Oaggress,scalar3,vector3,unroll2,msgs,negmsgs"
             def='t3d.x'
             LIB="crilib.cld -Wl,-Dstreams=on -lmfastv";;
@@ -784,6 +800,9 @@ case $WHICH in
 	fi
         inc='-I../include'
         cpp=${cpp}" DIMPLICIT_NONE"
+	if [ "$f90yes" = " -DNO_F90" ]; then
+	    cpp=${cpp}" DNO_F90"
+	fi
 	opt='-float0 -w double8 -ptr byte -b -pvctl noassume loopcnt=10000000 -fopp';;
     alpha)  if [ "$mesp" = "dummy" ]; then
                 cpp="$cpp -DSYS_DEC -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
@@ -792,19 +811,19 @@ case $WHICH in
 		set_parallel_def $cc
 	    fi
 	    inc='-I../include'
-            cpp=${cpp}" -DIMPLICIT_NONE"
+            cpp=${cpp}" -DIMPLICIT_NONE"${f90yes}
             opt='-fast -fpe3 -warn nouncalled';;
     sun4) if [ "$mesp" = "dummy" ]; then
            if [ $split = 'true' ] ; then
-              cpp="-DSYS_SUN -DNO_F90 -DVAR_SPLITFILES -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
+              cpp="-DSYS_SUN -DVAR_SPLITFILES -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
 	   else
-              cpp="-DSYS_SUN -DNO_F90 -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
+              cpp="-DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
 	   fi
           else
 	     if [ $split = 'true' ] ; then
-              cpp="-DSYS_SUN -DNO_F90 -DVAR_SPLITFILES -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
+              cpp="-DSYS_SUN -DVAR_SPLITFILES -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
 	     else
-              cpp="-DSYS_SUN -DNO_F90 -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
+              cpp="-DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
 	     fi
 	     set_parallel_def $mesp
               fi
@@ -833,7 +852,8 @@ case $WHICH in
               safe_opt='+O1 +U77 +E4 +E5'
               copt='-D_FILE_OFFSET_BITS=64 +O3'
               LIB="-lV7 $LIB"
-          fi;;
+          fi
+          cpp=${cpp}${f90yes};;
      linux-alpha)  
 	  if [ "$mesp" = "dummy" ]; then
               cpp="$cpp -DHAVE_GCPP -DSYS_DEC -DVAR_64BITS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
@@ -843,31 +863,49 @@ case $WHICH in
  	  fi
           opt='-fast'
 	  inc='-I../include'
-          cpp=${cpp}" -DIMPLICIT_NONE"
+          cpp=${cpp}" -DIMPLICIT_NONE"${f90yes}
           copt='-fast';;
-    linux) if [ "$mesp" = "dummy" ]; then
+    linux) if [ "$mesp" = "dummy" -a $F77 != "ifc" ]; then
 	      if [ $split = 'true' ] ; then
-                 cpp="-DSYS_LINUX -DNO_F90 -DVAR_MFDS -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
+                 cpp="-DSYS_LINUX -DVAR_MFDS -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
 	      else
-                 cpp="-DSYS_LINUX -DNO_F90 -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
+                 cpp="-DSYS_LINUX -D_FILE_OFFSET_BITS=64 -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
+  	      fi
+	   elif [ "$mesp" = "dummy" -a $F77 = "ifc" ]; then
+	      if [ $split = 'true' ] ; then
+                 cpp="-DSYS_LINUX -DVAR_MFDS -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
+	      else
+                 cpp="-DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
   	      fi
             else
 	      if [ $split = 'true' ] ; then
-                 cpp="-DSYS_LINUX -DNO_F90 -DVAR_MFDS -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
+                 cpp="-DSYS_LINUX -DVAR_MFDS -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
               else
-                 cpp="-DSYS_LINUX -DNO_F90 -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
+                 cpp="-DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"' -D$parop"
  	      fi
 	      set_parallel_def $mesp
-          fi
-              if [ $F77 = 'pgf77' ]; then
-                  if [ $prc = 'i686' ]; then
-                      proc='-tp p6'
-                  elif [ $prc = 'i586' ]; then
-                      proc='-tp p5'
-                  else
-                      proc=''
-                  fi
-                  cpp="-DVAR_PGF77 $cpp"
+	      fi
+      if [ $F77 = 'ifc' ]; then
+	  if [ $prc = 'i686' ]; then
+	      proc='-tpp6 -xK'
+	  elif [ $prc = 'i586' ]; then
+	      proc='-tpp5 -xi'
+	  else
+	      proc=''
+	  fi
+	  cpp="-DVAR_IFC $cpp"
+	  copt="-O3"
+	  opt="-O3 $proc -ip -w"
+	  safe_opt="-O1 -w"
+      elif [ $F77 = 'pgf77' ]; then
+	  if [ $prc = 'i686' ]; then
+	      proc='-tp p6'
+	  elif [ $prc = 'i586' ]; then
+	      proc='-tp p5'
+	  else
+	      proc=''
+	  fi
+	      cpp="-DVAR_PGF77 $cpp"
                   copt="-O3"
                   opt="-O3 $proc -Munroll"; safe_opt="$proc"
               else
@@ -915,7 +953,7 @@ case $WHICH in
                   def='linuxparallel.x'
               fi
               inc='-I../include'
-              cpp=${cpp}" -DIMPLICIT_NONE";;
+              cpp=${cpp}" -DIMPLICIT_NONE"${f90yes};;
     darwin) if [ "$mesp" = "dummy" ]; then
               cpp="-DSYS_LINUX -DVAR_MFDS -DVAR_SPLITFILES -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
             else       
@@ -949,7 +987,7 @@ case $WHICH in
                 def='parallel.x'
             fi
             inc='-I../include'
-            cpp=${cpp}" -DIMPLICIT_NONE"
+            cpp=${cpp}" -DIMPLICIT_NONE"${f90yes}
             opt="-Kfast,gs,V8PLUS,eval -fs"
             LIB="$LIB -L/usr/ucblib -lucb"
 esac
@@ -1014,41 +1052,6 @@ fi
 # Include the rule for building the object files
 #
 cppuse=
-if [ $WHICH = 'convex' ]; then
-    cpptry='cpp'
-#
-#  On the Convex accesible to us, cpp is very oddly placed. If we can't
-#  find cpp, we try to see if this is a general Convex installation
-#
-    set dummy $cpptry; ac_word=$2
-    $ECHO "checking for preprocessor""... $cpptry\c"
-    IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
-    for ac_dir in $PATH; do
-        test -z "$ac_dir" && ac_dir=.
-	if test -f $ac_dir/$ac_word; then
-	    ac_cv_prog_cpp=$ac_word
-     	    break
-        fi  
-    done
-    IFS="$ac_save_ifs"
-    test -z "$ac_cv_prog_cpp" && ac_cv_prog_cpp=""
-    cppuse="$ac_cv_prog_cpp"
-    $ECHO "cppuse $cppuse cpptry $cpptry"
-    if test -z "$cppuse"; then
-#
-#   Try /usr/lib/cc as a last resort
-#
-        if [ -x /usr/lib/cc/cpp ]; then
-	   cppuse='/usr/lib/cc/cpp'
-	fi
-    fi
-    if test -n "$cppuse"; then
-       $ECHO "Preprocessor $cppuse found"
-    else
-       $ECHO "Preprocessor $cpptry not found"
-    fi
-    
-fi
 if [ "$WHICH" = "rs6000" -a "$opsys" = "2" ]; then
     cppuse='cc'
 fi
