@@ -2340,7 +2340,7 @@ c     second-row transition metals
                VLE = CHG - 38D0
                FAC = 4.680 + 0.060*VLE 
 c     third-row transition metals
-            ELSE IF(CHG.GE.CHGY.AND.CHG.LE.CHGCd) THEN
+            ELSE IF(CHG.GE.CHGLa.AND.CHG.LE.CHGHg) THEN
                VLE = CHG - 56D0
                FAC = 13.960 + 0.140*VLE
             ELSE
