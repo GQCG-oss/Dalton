@@ -1224,6 +1224,7 @@ fi
 touch abacus/Makefile.depend
 touch amfi/Makefile.depend
 touch cc/Makefile.depend
+touch densfit/Makefile.depend
 touch dft/Makefile.depend
 touch eri/Makefile.depend
 touch gp/Makefile.depend
