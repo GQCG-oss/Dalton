@@ -362,7 +362,7 @@ C        Changed format (WK/UniKA/04-11-2002).
      &'an appropriate citation would be:',
      &' ',
      &'"Dalton, a molecular electronic structure program, Release 2.0',
-     &'(2004), written by <INSERT AUTHOR LIST>"'
+     &'(2005), see http://www.kjemi.uio.no/software/dalton/dalton.html"'
 C
 C     Stamp date and time and hostname to output
 C
