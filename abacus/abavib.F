@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abavib.F,v 1.4 2001-03-26 09:37:03 ruud Exp $
+C$Id: abavib.F,v 1.5 2001-04-25 13:42:50 ruud Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -595,8 +595,8 @@ C
 C           Output: AMASS  - atomic masses
 C                   TOTMAS - molecular mass
 C
-         CALL VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,NATOMS,GEOM,WRK(KORIG),
-     &               IPRINT)
+         CALL VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,NATOMS,GEOM,
+     &               WRK(KORIG),MAX(IPRINT,1))
 C
 C           *******************************
 C           ***** Rotational analysis *****
@@ -3758,8 +3758,8 @@ C
      &     '--------------------------'
       DO IMODE = 1, NUMMOD
          WRITE (LUPRI,'(2X,I2,F10.2,3X,F10.6)') 
-     &        IMODE,XTKAYS*EVAL(IMODE)*SQRT(XFAMU),
-     &        EVAL(IMODE)*SQRT(XFAMU)
+     &        IMODE,XTKAYS*SQRT(EVAL(IMODE)),
+     &        SQRT(EVAL(IMODE))
       END DO
       DO ITMP = 1, NTEMP
             WRITE (LUPRI,'(////A,/1X,A,F12.6,A,/A)') 
@@ -4062,7 +4062,7 @@ C
 C     Molecular quadrupole moment
 C
       IF (QUADRU) THEN
-         CALL HEADER ('Molecular quadrupole moment',-1)
+         CALL HEADER ('Molecular quadrupole moment (au)',-1)
          WRITE (LUPRI,'(4X,A,7X,A,6X,A)') 'Effective geometry',
      &        '<P^(0)_2>_eff','Vibrationally corrected'
          WRITE (LUPRI,'(A)') ' -------------------------------'//
@@ -4079,7 +4079,7 @@ C
 C     Nuclear shieldings
 C
       IF (SHIELD) THEN
-         CALL HEADER ('Nuclear magnetic shielding constants',-1)
+         CALL HEADER ('Nuclear magnetic shielding constants (ppm)',-1)
          DO IATOM = 1, NUCDEP
             WRITE (LUPRI,'(/A,A)') 'Atom : ',NAMDEP(IATOM)
             WRITE (LUPRI,'(4X,A,7X,A,6X,A)') 'Effective geometry',
@@ -4178,7 +4178,7 @@ C     Nuclear quadrupole moments
 C
 C
       IF (NQCC) THEN
-         CALL HEADER('Nuclear quadrupole moments',-1)
+         CALL HEADER('Nuclear quadrupole moments (au)',-1)
          DO IATOM = 1, NUCDEP
             WRITE (LUPRI,'(//A,A)') 'Atom : ',NAMDEP(IATOM)
             WRITE (LUPRI,'(/4X,A,7X,A,6X,A)') 'Effective geometry',
@@ -4204,13 +4204,14 @@ C
 C     Indirect spin-spin coupling constants
 C
       IF (SPNSPN) THEN
-         CALL HEADER('Spin-spin coupling constants at effective '//
-     &               'geometry',-1)
+         CALL HEADER('Reduced spin-spin coupling constants at '//
+     &               'effective geometry (Hz)',-1)
          CALL PRIHES(SSJ0,'SPNSPN',CSTRA,SCTRA)
-         CALL HEADER('Spin-spin coupling constants <P^(0)_2>_eff',-1)
+         CALL HEADER('Reduced spin-spin coupling constants '//
+     &        '<P^(0)_2>_eff (Hz)',-1)
          CALL PRIHES(SSJAV,'SPNSPN',CSTRA,SCTRA)
-         CALL HEADER('Vibrationally avereaged spin-spin coupling '//
-     &               'constants',-1)
+         CALL HEADER('Vibrationally averaged reduced spin-spin '//
+     &               'coupling constants (Hz)',-1)
          CALL DAXPY(MXCOOR*MXCOOR,D1,SSJ0,1,SSJAV,1)
          CALL PRIHES(SSJAV,'SPNSPN',CSTRA,SCTRA)         
       END IF
