@@ -49,12 +49,12 @@ C     tuh
 C
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
       IMPLICIT REAL (F,S), LOGICAL(D)
-      REAL ONE, TWO
+      REAL ONE, TWO, GAMAC, GAMAD
       PARAMETER (ONE = 1.00 E00, TWO = 2.00 E00)
 #endif
 #if !defined (SYS_CRAY) && !defined (SYS_T3D) && !defined (VAR_REAL) && !defined (SYS_T90)
       IMPLICIT DOUBLE PRECISION (F,S), LOGICAL(D)
-      DOUBLE PRECISION ONE, TWO
+      DOUBLE PRECISION ONE, TWO, GAMAC, GAMAD
       PARAMETER (ONE = 1.00 D00, TWO = 2.00 D00)
 #endif
 #include <priunit.h>
