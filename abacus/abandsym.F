@@ -70,6 +70,7 @@ C
                NCORDR = 2*NCORDR
             END IF
             NDEGIR = (NCORDR-NONEDI)/2
+            SEPDEG = .TRUE.
          ELSE
             MROTAX = .TRUE.
             READ (FCLASS(2:2),'(I1)') NCORDR
@@ -92,6 +93,7 @@ C
             NUMELM = 1
             N1DIME = 2*NONEDI
             N2DIME = 2*NDEGIR
+            SEPDEG = .TRUE.
          ELSE 
             NGORDR = 2*NCORDR
             NUMELM = 1
@@ -1683,7 +1685,7 @@ C     *** Finding the starting point. ***
 C
       IF (ICRIRP(ICOOR,1) .GT. N1DIME) THEN
          ISTRTT = N1DIME + 4*(ICRIRP(ICOOR,1)-N1DIME-1) 
-         IF (ICRIRP(ICOOR,2) .EQ. 1) THEN
+         IF ((ICRIRP(ICOOR,2).EQ.1).AND.(.NOT.SEPDEG)) THEN
             ISTRTT = ISTRTT + 2
          END IF
       ELSE

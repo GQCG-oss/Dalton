@@ -438,6 +438,7 @@ C     /FCSYM/
       DPLANE = .FALSE.
       ICNTR  = .FALSE.
       ROTARE = .FALSE.
+      SEPDEG = .FALSE.
 C
 C     /ABAINF/
       DO 100 I = 1, MXCENT
@@ -6056,7 +6057,8 @@ C
  100  CONTINUE
       READ (LUCMD,'(A)') WORD
       IF (WORD .EQ. '.NSYM  ') NOMOVE = .TRUE.
-      IF (WORD .NE. '*END OF') GOTO 100
+      IF((WORD .NE. '*END OF ') .AND.
+     &   (WORD .NE. '**END OF')) GOTO 100
       CALL GPCLOSE(LUCMD,'KEEP')
 C
 C     *** Numerical derivatives of properties, ***
