@@ -174,6 +174,22 @@ aggressive.} The proper options to the C preprocessor for an ordinary
 installation of the program are also supplied with
 \verb|Makefile.config|\index{Makefile.config}.
 
+The \verb|configure| script attempts to detect mathematical libraries
+available on the system and use them whenever possible. {\dalton} can
+use third-party BLAS and LAPACK libraries or libraries providing
+equivalent functionality like ESSL on AIX, COMPLIB.sgimath on SGI,
+DXML and CXML on Alpha architectures, ATLAS, ACML, MKL on Intel
+architectures, VECLIB on HP/UX. You can point the \verb|configure|
+script to the location of the preferred libraries by setting
+\verb|LIBDIR| environment variable before running the script. For
+example, if one has high-performance BLAS routines in \verb|mylibs|
+subdirectory of the user's home directory, \verb|configure| script can
+be instructed to use them as follows:
+\begin{verbatim}
+env LIBDIR=\$HOME/mylibs ./configure
+\end{verbatim}
+
+
 NOTE: If problems with I/O\index{I/O-problems} are experienced on
 any computer,
 manifesting themselves as error messages saying that a read statement
