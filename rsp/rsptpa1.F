@@ -56,7 +56,7 @@ C
       CHARACTER*8 LABEL
 C
       DATA TABLE /'.BPROP ', '.BFREQ ', '.APROP ', '.ROOTS ',
-     *            '.MAXITP', '.THCPP ', '.MAXIT ', '.THCLR ',
+     *            '.MAXITP', '.THCPP ', '.MAX IT', '.THCLR ',
      *            '.MAXITO', '.PRINT ', '.FREQUE', '.DIPLEN', 
      *            '.DIPLNX', '.DIPLNY', '.DIPLNZ', '.DOUBLE'/
 C

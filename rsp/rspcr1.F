@@ -53,7 +53,7 @@ C
       CHARACTER*8 LABEL
 C
       DATA TABLE /'.BPROP ', '.BFREQ ', '.CPROP ', '.CFREQ ',
-     *            '.DPROP ', '.DFREQ ', '.APROP ', '.MAXIT ',
+     *            '.DPROP ', '.DFREQ ', '.APROP ', '.MAX IT',
      *            '.THCLR ', '.MAXITO', '.PRINT ', '.FREQUE',
      *            '.ISABCD', '.INVEXP', '.THG   ', '.DC-SHG',
      *            '.DC-KER', '.IDRI  ', 'xXXXXXX', '.THRNRM',

@@ -57,7 +57,7 @@ C
 C
       DATA TABLE /'.CPROP ', '.CFREQ ', '.BPROP ', '.BFREQ ',
      *            '.APROP ', '.ROOTS ', '.MAXITP', '.THCPP ', 
-     *            '.MAXIT ', '.THCLR ', '.MAXITO', '.PRINT ', 
+     *            '.MAX IT', '.THCLR ', '.MAXITO', '.PRINT ', 
      *            '.NOHG  ', '.DIPLEN', '.DIPLNX', '.DIPLNY', 
      *            '.DIPLNZ', '.SINGLE', '.FREQUE', '.THREE-'/
 C

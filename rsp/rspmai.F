@@ -1124,7 +1124,7 @@ C
      *            '.QUADMO', '.QUADXX', '.QUADXY', '.QUADXZ',
      *            '.QUADYY', '.QUADYZ', '.QUADZZ', '.SPIN-O',
      *            '.SPNORX', '.SPNORY', '.SPNORZ', '.PROPRT',
-     *            '.ROOTS ', '.MAXIT ', '.THCPP ', '.OLSEN ',
+     *            '.ROOTS ', '.MAX IT', '.THCPP ', '.OLSEN ',
      *            '.MAXITO', '.LRSTVE', '.ANTTES', '.RESTPP',
      *            '.ABCHK ', '.ABSYM ', '.PRINT ',
      *            '.IPREXM', '.E3TEST', '.EXMTES', '.ISPABC',
@@ -1486,7 +1486,7 @@ C
      *            '.QUADMO', '.QUADXX', '.QUADXY', '.QUADXZ',
      *            '.QUADYY', '.QUADYZ', '.QUADZZ', '.SPIN-O',
      *            '.SPNORX', '.SPNORY', '.SPNORZ', '.PROPRT',
-     *            '.MAXIT ', '.THCLR ', '.MAXITO',
+     *            '.MAX IT', '.THCLR ', '.MAXITO',
      *            '.PRINT ', '.FREQUE', '.ABOCHK', '.ISTOCK',
      *            '.MAXOCK', '.SOPRSY', '.RESTLR', '.DIROIT',
      *            '.TRIPLE', '.PV PSO', '.PV SO ', '.PV SO2',
@@ -1854,7 +1854,7 @@ C
      *            '.DIPMAG', '.DIPMGX', '.DIPMGY', '.DIPMGZ',
      *            '.QUADMO', '.QUADXX', '.QUADXY', '.QUADXZ',
      *            '.QUADYY', '.QUADYZ', '.QUADZZ', '.PROPRT',
-     *            '.C6SPH ', '.C8SPH ', '.MAXIT ', '.THCC6 ',
+     *            '.C6SPH ', '.C8SPH ', '.MAX IT', '.THCC6 ',
      *            '.MAXITO', '.PRINT ', '.MAXMOM', '.THCMOM',
      *            '.FREQUE', '.PADE  ', '.GSLEGN', '.NGRID ',
      *            '.C6CALC', '.C10SPH', '.C6ATM ', '.C8ATM ',
@@ -4076,7 +4076,7 @@ C
 #include <inftap.h>
 #include <esg.h>
 C
-      DATA TABLE /'.ROOTS', '.THCPP ', '.MAXIT ', '.MAXITO', '.THCLR ',
+      DATA TABLE /'.ROOTS', '.THCPP ', '.MAX IT', '.MAXITO', '.THCLR ',
      *            '.RESTPP','.PRINT ', '.STATE '/
 C
       DATA SPNDEF/.FALSE./

@@ -55,7 +55,7 @@ C
       CHARACTER*8 LABEL, LABFND, RTNLBL(2)
 C
       DATA TABLE /'.BPROP ', '.BFREQ ', '.CPROP ', '.CFREQ ',
-     *            '.APROP ', '.MAXIT ', '.THCLR ', '.MAXITO',
+     *            '.APROP ', '.MAX IT', '.THCLR ', '.MAXITO',
      *            '.PRINT ', '.DIPLEN', '.E3TEST', '.DIROIT',
      *            '.ISPABC', '.A2TEST', '.X2TEST', '.REFCHK',
      *            '.TSTJEP', '.SHG   ', '.POCKEL', '.OPTREF',

@@ -115,8 +115,9 @@ C
             IF ((OPTNEW .AND. ITRNMR .GT. 0) .OR. 
      &          (OPTWLK .AND. ITERNR .GT. 0)) THEN
                USOLVD = .TRUE.
-               WRITE (LUPRI,'(/A)') ' Converged vectors from previous'//
-     &            ' geometry used are read and used as starting vectors'
+               WRITE (LUPRI,'(/A,/2A)') ' Converged vectors from'//
+     &            ' previous geometry are used as starting '//
+     &              'vectors for property',LABX1, LABX2
             ELSE
                WRITE (LUPRI,'(/A,2(/A,F20.10))')
      &              ' Molecular energy found on response'//

@@ -340,7 +340,7 @@ C
       CHARACTER*8 LABEL
       CHARACTER LABDAT(9*ATMNUM)*8
 C
-      DATA TABLE /'.TRPPRP', '.SNGPRP', '.MAXIT ', '.THCESR',
+      DATA TABLE /'.TRPPRP', '.SNGPRP', '.MAX IT', '.THCESR',
      *            '.PRINT ', '.G-TENS', '.ZFS   ', '.FCCALC',
      *            '.ATOMS ','.SDCALC' /
 C
@@ -469,7 +469,7 @@ C
          IF ( ESRCAL ) THEN
             WRITE (LUPRI,'(/A)')
      *         ' ESR - hyperfine calculation carried out'
-            IF (MAXESR.NE.20) WRITE(LUPRI,'(/A,I6)')
+            IF (MAXESR.NE.60) WRITE(LUPRI,'(/A,I6)')
      *         ' MAXIMUM NUMBER OF ITERATIONS. MAXESR =',MAXESR
             IF (THCESR.NE.1.0D-5) WRITE(LUPRI,'(/A,D12.6)')
      *         ' THRESHOLD FOR CONVERGENCE. THCESR =',THCESR

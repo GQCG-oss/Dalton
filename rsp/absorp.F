@@ -64,7 +64,7 @@ C
       CHARACTER*8 DIPLEN(3)
       DATA DIPLEN/'XDIPLEN','YDIPLEN','ZDIPLEN'/
 C
-      DATA TABLE /'.ALPHA ','.FREQUE','.THCLR ','.MAXIT ','MAXITO',
+      DATA TABLE /'.ALPHA ','.FREQUE','.THCLR ','.MAX IT','MAXITO',
      &            '.PRINT ','.LIFETI','.EXCITA','.MAX IT','THCPP '/
 C
       NEWDEF = (WORD .EQ. '*ABSORP')
