@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abafsd.F,v 1.2 2001-02-26 15:34:46 ruud Exp $
+C$Id: abafsd.F,v 1.3 2001-03-26 11:31:51 ruud Exp $
 C
 #include <single.h>
 C  /* Deck getfd */
@@ -1978,7 +1978,9 @@ C
 C
 C     Determine label to search for
 C
-      LABEL = 'SQHDOR'//CHRNOS(ISCOOR/10)//CHRNOS(MOD(ISCOOR,10))
+      LABEL = 'SQHDR'//CHRNOS(ISCOOR/100)
+     &     //CHRNOS(MOD(ISCOOR,100)/10)
+     &     //CHRNOS(MOD((MOD(ISCOOR,100)),10))
       REWIND LUPROP
       IF (.NOT. FNDLAB(LABEL,LUPROP)) THEN
          WRITE(LUPRI,'(1X,3A)')
