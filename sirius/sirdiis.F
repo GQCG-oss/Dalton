@@ -908,7 +908,7 @@ c We ignore small jump up.
      &       EMCDIF.GT.5D-5) THEN
 #else
           IF (JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
-     &       ( ABS(CVEC(INDEVC)) .LT. 0.2D0 .OR.
+     &       ( ABS(CVEC(INDEVC)) .LT. 0.1D0 .OR.
      &         ABS(CVEC(INDEVC)) .GT. 5.0D0 .OR.
      &         EMCDIF*(GRDNRM-GNRMSV) .LT. 0.0D0 )
      &      ) THEN
