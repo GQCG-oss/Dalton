@@ -69,7 +69,7 @@ real dft_integrate_ao(DftDensity* dens, real* work, int* lwork,
 /* Max block length. Should not be too short because the loop overhead
  * will grow too large, nor too long because we run out of cache
  * then. */
-#define DFT_BLLEN 253
+#define DFT_BLLEN 100
 
 typedef struct DftIntegratorBl_ {
     /* private to integrator */
