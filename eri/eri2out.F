@@ -257,9 +257,14 @@ C
 C
 C        sort distributions
 C
-         CALL ERISRT(BIN,IBIN,LBIN,NIBUF,INDORB,SO,
-     &               IPNTCR,IODDCC,IPNTUV,IPNBCH,NBITS,NINTS,
-     &               IOFCMP,INDXBT,0,IPRINT)
+         IF (.TRUE.) THEN
+            CALL ERISOR(BIN,IBIN,LBIN,NIBUF,NBITS,INDORB,SO,NINTS,
+     &                  IODDCC,IPNTUV,IPRINT)
+         ELSE
+            CALL ERISRT(BIN,IBIN,LBIN,NIBUF,INDORB,SO,
+     &                  IPNTCR,IODDCC,IPNTUV,IPNBCH,NBITS,NINTS,
+     &                  IOFCMP,INDXBT,0,IPRINT)
+         END IF
 C
 C        write integrals
 C
@@ -2098,5 +2103,74 @@ C  /* Deck eripri */
      &                   ' @@ ', ISCOOR, I, J, K, L, BUF(INT)
          END IF
       END DO
+      RETURN
+      END
+C  /* Deck erisor */
+      SUBROUTINE ERISOR(BIN,IBIN,LBIN,NIBUF,NBITS,INDORB,SO,NINTS,
+     &                  IODDCC,IPNTUV,IPRINT)
+#include <implicit.h>
+#include <priunit.h>
+#include <iratdef.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <aovec.h>
+C
+      DIMENSION BIN(LBIN), IBIN(LBIN,NIBUF),
+     &          INDORB(NCCT,KHKTAB,KHKTCD,NIBUF), 
+     &          SO    (NCCT,KHKTAB,KHKTCD),
+     &          IODDCC(*), IPNTUV(KC2MAX,0:NRDER,2)
+      DIMENSION NINTS(NDISTR)
+#include <cbieri.h>
+#include <ericom.h>
+#include <aobtch.h>
+#include <hertop.h>
+#include <erithr.h>
+#include <eridst.h>
+C
+#include <ibtfun.h>
+      IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERISRT',-1)
+C
+      IF(.NOT.COMPRS)CALL QUIT('ERITRX not implemented for .NOT.COMPRS')
+      IBIT1 = 2**NBITS - 1
+C
+      INT = 0
+      DO IDIST = 1, NDISTR
+         INT0 = INT
+         DO ICMPCD = 1, KHKTCD
+         DO ICMPAB = 1, KHKTAB
+         IF (IODDCC(IPNTUV(ICMPCD,0,2)).EQ. 
+     &       IODDCC(IPNTUV(ICMPAB,0,1))) THEN
+            IF (NIBUF.EQ.1) THEN
+               DO I = 1, NCCT 
+                  SOINT = SO(I,ICMPAB,ICMPCD)
+                  LABEL = INDORB(I,ICMPAB,ICMPCD,1)
+                  IDSTR = INDXDS(IBTAND(IBTSHR(LABEL,3*NBITS),IBIT1))
+                  IF (IDSTR.EQ.IDIST.AND.ABS(SOINT).GT.THRSH) THEN
+                     INT = INT + 1
+                     BIN (INT)   = SOINT 
+                     IBIN(INT,1) = LABEL 
+                  END IF  
+               END DO   
+            ELSE
+               DO I = 1, NCCT 
+                  SOINT  = SO(I,ICMPAB,ICMPCD)
+                  LABEL1 = INDORB(I,ICMPAB,ICMPCD,1)
+                  LABEL2 = INDORB(I,ICMPAB,ICMPCD,2)
+                  IDSTR  = INDXDS(IBTAND(IBTSHR(LABEL1,NBITS),IBIT1))
+                  IF (IDSTR.EQ.IDIST.AND.ABS(SOINT).GT.THRSH) THEN
+                     INT = INT + 1
+                     BIN (INT)   = SOINT 
+                     IBIN(INT,1) = LABEL1 
+                     IBIN(INT,2) = LABEL2 
+                  END IF
+               END DO  
+            END IF
+         END IF
+         END DO 
+         END DO
+         NINTS(IDIST) = INT - INT0
+      END DO
+C
       RETURN
       END
