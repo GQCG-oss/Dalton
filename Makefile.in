@@ -30,7 +30,7 @@ OBJSMEM = abacus/linux_mem_allo.o
 #
 dalton.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
 	DFIT_OBJ PD_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
-	echo "---------------> Linking sequential dalton.x ..."
+	@echo "---------------> Linking sequential dalton.x ..."
 	$(F77) $(FFLAGS) \
 	-o $(INSTALLDIR)/dalton.x $(OBJPRG) $(OBJSIO) $(OBJSLAVE) \
 	$(OBJSAMFI) gp/mpi_dummy.o $(DALTON_LIBS) $(LIBS)
@@ -39,7 +39,7 @@ dalton.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
 #
 linux.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
 	DFIT_OBJ PD_OBJ MEM_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
-	echo "---------------> Linking sequential dalton.x ..."
+	@echo "---------------> Linking sequential dalton.x ..."
 	$(F77) $(FFLAGS) \
 	-o $(INSTALLDIR)/dalton.x $(OBJPRG) $(OBJSIO) $(OBJSMEM) \
 	$(OBJSLAVE) $(OBJSAMFI) gp/mpi_dummy.o $(DALTON_LIBS) $(LIBS)
@@ -47,7 +47,7 @@ linux.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
 #     Linux MPI parallel build (first create sequential build dalton.x, then dalpar.x)
 #
 linuxparallel.x: linux.x
-	echo "---------------> Linking parallel dalpar.x ..."
+	@echo "---------------> Linking parallel dalpar.x ..."
 	$(F77) $(FFLAGS) \
 	-o $(INSTALLDIR)/dalpar.x $(OBJPRG) $(OBJSIO) $(OBJSMEM) \
 	$(OBJSLAVE) $(OBJSAMFI) $(DALTON_LIBS) $(LIBS) \
@@ -56,7 +56,7 @@ linuxparallel.x: linux.x
 #	MPI parallel build (first create sequential build dalton.x, then dalpar.x)
 #
 parallel.x: dalton.x
-	echo "---------------> Linking parallel dalpar.x ..."
+	@echo "---------------> Linking parallel dalpar.x ..."
 	$(F77) $(FFLAGS) \
 	-o $(INSTALLDIR)/dalpar.x $(OBJPRG) $(OBJSIO) $(OBJSLAVE) $(OBJSAMFI) \
 	$(DALTON_LIBS) $(LIBS) $(MPI_LIB_PATH) $(MPI_LIB)
