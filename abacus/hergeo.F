@@ -337,7 +337,8 @@ C
          DO 20 I= 1, J-1
             RADI = RADIUS(ICHARG(I))
             IF (RADI .LT. 0 .OR. RADJ .LT. 0) THEN
-               IF (ICHARG(I).GE.0 .AND. ICHARG(J).GE.0) WRITE(LUPRI,*)
+C              do not print if cavity center or floating orbital /hjaaj
+               IF (ICHARG(I).GT.0 .AND. ICHARG(J).GT.0) WRITE(LUPRI,*)
      &            'RADII FOR ATOMS WITH ATOMIC NUMBER ',
      &            ICHARG(I), ' AND/OR ', ICHARG(J), ' ARE UNAVAILABLE'
                BONDED(I,J) = .FALSE.
