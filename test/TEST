@@ -361,10 +361,10 @@ do
           failed=false
           if [ "$step" -eq "$numsteps" ]; then
               $DALTON $paramlist -ext log $dalfile $molfile > "$tmpfile"
-              if [$? -ne 0 ]; then failed=true; fi
+              if [ $? -ne 0 ]; then failed=true; fi
           else
               $DALTON -D $paramlist -ext log $dalfile $molfile  > "$tmpfile"
-              if [$? -ne 0 ]; then failed=true; fi
+              if [ $? -ne 0 ]; then failed=true; fi
           fi
           grep -v '\*\*\* *[^W][^A]' $tmpfile | \
           grep -v 'OUTPUT FROM' | grep -v 'Version' | grep -v 'PID' | \
