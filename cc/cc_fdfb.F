@@ -43,7 +43,6 @@ C----------------------------
 C
       ISYMTR     = 1
       ISYMOP     = 1
-      ISYM0      = 1
 C
       NTAMP      = NT1AMX + NT2AMX
       IF (CCS) NTAMP = NT1AMX
@@ -378,14 +377,9 @@ C
 C     -------------------------------------------
 C     Read the CC reference amplitudes from disk:
 C     -------------------------------------------
-      LUTAM = 0
-      CALL GPOPEN(LUTAM,'CCSD_TAM','OLD',' ','UNFORMATTED',
-     *            IDUMMY,.FALSE.)
-      REWIND(LUTAM)
-      READ(LUTAM) (WORK(KT1AMPSAV + I -1 ) , I = 1, NT1AMX)
-      IF (.NOT.CCS) 
-     *   READ(LUTAM) (WORK(KT2AMPSAV + I -1 ) , I = 1, NT2AMX)
-      CALL GPCLOSE(LUTAM,'KEEP')
+      IOPT = 3
+      CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AMPSAV),
+     *              WORK(KT2AMPSAV))
  
 C     --------------------------------------------
 C     Read the T^A reference amplitudes from disk:
@@ -411,13 +405,6 @@ C     -------------------------------------------------------------
       CALL DAXPY(NT1AMX,DELTA,WORK(KT1AMPA),1,WORK(KT1AMP0),1)
       IF (.NOT.CCS) 
      & CALL DAXPY(NT2AMX,DELTA,WORK(KT2AMPA),1,WORK(KT2AMP0),1)
- 
-      CALL GPOPEN(LUTAM,'CCSD_TAM','OLD',' ','UNFORMATTED',
-     *            IDUMMY,.FALSE.)
-      REWIND(LUTAM)
-      WRITE(LUTAM) (WORK(KT1AMP0 + J -1 ) , J = 1, NT1AMX)
-      IF (.NOT.CCS) WRITE(LUTAM) (WORK(KT1AMP0 + J -1 ) , J = 1, NT2AMX)
-      CALL GPCLOSE(LUTAM,'KEEP')
  
       IOPT = 3
       CALL CC_WRRSP('R0 ',0,1,IOPT,MODEL,WORK(KT0AMP0),
@@ -479,13 +466,6 @@ C     -------------------------------------------------------------
       IF (.NOT.CCS) 
      &  CALL DAXPY(NT2AMX,-DELTA,WORK(KT2AMPA),1,WORK(KT2AMP0),1)
  
-      CALL GPOPEN(LUTAM,'CCSD_TAM','OLD',' ','UNFORMATTED',
-     *            IDUMMY,.FALSE.)
-      REWIND(LUTAM)
-      WRITE(LUTAM) (WORK(KT1AMP0 + J -1 ) , J = 1, NT1AMX)
-      IF (.NOT.CCS) WRITE(LUTAM) (WORK(KT2AMP0 + J -1 ) , J = 1, NT2AMX)
-      CALL GPCLOSE(LUTAM,'KEEP')
- 
       IOPT = 3
       CALL CC_WRRSP('R0 ',0,1,IOPT,MODEL,WORK(KT0AMP0),
      &              WORK(KT1AMP0),WORK(KT2AMP0),WORK(KEND1A),LWRK1A)
@@ -545,14 +525,6 @@ C     CALL CCLR_DIASCL(RHODIF2,TWO,1)
 C     --------------------------------------------
 C     Restore the CC reference amplitudes on disk:
 C     --------------------------------------------
-      CALL GPOPEN(LUTAM,'CCSD_TAM','OLD',' ','UNFORMATTED',
-     *            IDUMMY,.FALSE.)
-      REWIND(LUTAM)
-      WRITE(LUTAM) (WORK(KT1AMPSAV + I -1 ) , I = 1, NT1AMX)
-      IF (.NOT.CCS) 
-     *    WRITE(LUTAM) (WORK(KT2AMPSAV + I -1 ) , I = 1, NT2AMX)
-      CALL GPCLOSE(LUTAM,'KEEP')
- 
       CALL DCOPY(NT1AMX,WORK(KT1AMPSAV),1,WORK(KT1AMP0),1)
       IF (.NOT.CCS) 
      &  CALL DCOPY(NT2AMX,WORK(KT2AMPSAV),1,WORK(KT2AMP0),1)
@@ -686,15 +658,10 @@ C
 C     -------------------------------------------
 C     Read the CC reference amplitudes from disk:
 C     -------------------------------------------
-      LUTAM = 0
-      CALL GPOPEN(LUTAM,'CCSD_TAM','OLD',' ','UNFORMATTED',
-     *            IDUMMY,.FALSE.)
-      REWIND(LUTAM)
-      READ(LUTAM) (WORK(KT1AMPSAV + I -1 ) , I = 1, NT1AMX)
-      IF (.NOT.CCS) 
-     *     READ(LUTAM) (WORK(KT2AMPSAV + I -1 ) , I = 1, NT2AMX)
-      CALL GPCLOSE(LUTAM,'KEEP')
- 
+      IOPT = 3
+      CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AMPSAV),
+     *              WORK(KT2AMPSAV))
+
 C     --------------------------------------------
 C     Read the T^A reference amplitudes from disk:
 C     --------------------------------------------
@@ -709,31 +676,6 @@ C     --------------------------------------------
 *     response intermediates and the Eta^B vector:
 *               Eta^B{t^0 + delta x t^A} 
 *---------------------------------------------------------------------*
-C
-C     -------------------------------------------------------------
-C     add finite displadement to t^0 and recalculate intermediates:
-C     -------------------------------------------------------------
-C      CALL DCOPY(NT1AMX,WORK(KT1AMPSAV),1,WORK(KT1AMP0),1)
-C      IF (.NOT.CCS) 
-C     &  CALL DCOPY(NT2AMX,WORK(KT2AMPSAV),1,WORK(KT2AMP0),1)
-C      CALL DAXPY(NT1AMX,DELTA,WORK(KT1AMPA),1,WORK(KT1AMP0),1)
-C      IF (.NOT.CCS) 
-C     & CALL DAXPY(NT2AMX,DELTA,WORK(KT2AMPA),1,WORK(KT2AMP0),1)
-C 
-C      CALL GPOPEN(LUTAM,'CCSD_TAM','OLD',' ','UNFORMATTED',
-C     *            IDUMMY,.FALSE.)
-C      REWIND(LUTAM)
-C      WRITE(LUTAM) (WORK(KT1AMP0 + J -1 ) , J = 1, NT1AMX)
-C      IF (.NOT.CCS) WRITE(LUTAM) (WORK(K21AMP0 + J -1 ) , J = 1, NT2AMX)
-C      CALL GPCLOSE(LUTAM,'KEEP')
-C 
-C      IOPT = 3
-C      CALL CC_WRRSP('R0 ',0,1,IOPT,MODEL,WORK(KT0AMP0),
-C     &              WORK(KT1AMP0),WORK(KT2AMP0),WORK(KEND1A),LWRK1A)
-C 
-C      RSPIM = .TRUE.
-C      CALL CCRHSN(WORK(KOMEGA1),WORK(KOMEGA2),
-C     &            WORK(KT1AMP0),WORK(KT2AMP0),WORK(KEND1A),LWRK1A)
 C 
 C     ---------------------------------
 C     calculate the transformed vector:
@@ -786,13 +728,6 @@ C     -------------------------------------------------------------
       CALL DAXPY(NT1AMX,-DELTA,WORK(KT1AMPA),1,WORK(KT1AMP0),1)
       IF (.NOT.CCS) 
      &  CALL DAXPY(NT2AMX,-DELTA,WORK(KT2AMPA),1,WORK(KT2AMP0),1)
- 
-      CALL GPOPEN(LUTAM,'CCSD_TAM','OLD',' ','UNFORMATTED',
-     *            IDUMMY,.FALSE.)
-      REWIND(LUTAM)
-      WRITE(LUTAM) (WORK(KT1AMP0 + J -1 ) , J = 1, NT1AMX)
-      IF (.NOT.CCS) WRITE(LUTAM) (WORK(KT2AMP0 + J -1 ) , J = 1, NT2AMX)
-      CALL GPCLOSE(LUTAM,'KEEP')
  
       IOPT = 3
       CALL CC_WRRSP('R0 ',0,1,IOPT,MODEL,WORK(KT0AMP0),
@@ -853,14 +788,6 @@ C     CALL CCLR_DIASCL(RHODIF2,TWO,1)
 C     --------------------------------------------
 C     Restore the CC reference amplitudes on disk:
 C     --------------------------------------------
-      CALL GPOPEN(LUTAM,'CCSD_TAM','OLD',' ','UNFORMATTED',
-     *            IDUMMY,.FALSE.)
-      REWIND(LUTAM)
-      WRITE(LUTAM) (WORK(KT1AMPSAV + I -1 ) , I = 1, NT1AMX)
-      IF (.NOT.CCS) 
-     *      WRITE(LUTAM) (WORK(KT2AMPSAV + I -1 ) , I = 1, NT2AMX)
-      CALL GPCLOSE(LUTAM,'KEEP')
- 
       CALL DCOPY(NT1AMX,WORK(KT1AMPSAV),1,WORK(KT1AMP0),1)
       IF (.NOT.CCS) 
      &  CALL DCOPY(NT2AMX,WORK(KT2AMPSAV),1,WORK(KT2AMP0),1)

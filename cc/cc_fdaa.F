@@ -374,13 +374,9 @@ C
 C     -------------------------------------------
 C     Read the CC reference amplitudes from disk:
 C     -------------------------------------------
-      LUTAM = 0
-      CALL GPOPEN(LUTAM,'CCSD_TAM','OLD',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
-      REWIND(LUTAM)
-      READ(LUTAM) (WORK(KT1AMPSAV + I -1 ) , I = 1, NT1AMX)
-      READ(LUTAM) (WORK(KT2AMPSAV + I -1 ) , I = 1, NT2AMX)
-      CALL GPCLOSE(LUTAM,'KEEP')
+      IOPT = 3
+      CALL CC_RDRSP('R0',0,ISYM0,IOPT,MODEL,WORK(KT1AMPSAV),
+     &              WORK(KT2AMPSAV))
  
 C     --------------------------------------------
 C     Read the T^A reference amplitudes from disk:
@@ -405,13 +401,6 @@ C     -------------------------------------------------------------
       CALL DAXPY(NT1AMX,DELTA,WORK(KT1AMPA),1,WORK(KT1AMP0),1)
       CALL DAXPY(NT2AMX,DELTA,WORK(KT2AMPA),1,WORK(KT2AMP0),1)
 C
-      CALL GPOPEN(LUTAM,'CCSD_TAM','OLD',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
-      REWIND(LUTAM)
-      WRITE(LUTAM) (WORK(KT1AMP0 + J -1 ) , J = 1, NT1AMX)
-      WRITE(LUTAM) (WORK(KT1AMP0 + J -1 ) , J = 1, NT2AMX)
-      CALL GPCLOSE(LUTAM,'KEEP')
- 
       IOPT = 3
       CALL CC_WRRSP('R0 ',0,1,IOPT,MODEL,WORK(KT0AMP0),
      &              WORK(KT1AMP0),WORK(KT2AMP0),WORK(KEND1A),LWRK1A)
@@ -464,13 +453,6 @@ C     -------------------------------------------------------------
       CALL DCOPY(NT2AMX,WORK(KT2AMPSAV),1,WORK(KT2AMP0),1)
       CALL DAXPY(NT1AMX,-DELTA,WORK(KT1AMPA),1,WORK(KT1AMP0),1)
       CALL DAXPY(NT2AMX,-DELTA,WORK(KT2AMPA),1,WORK(KT2AMP0),1)
-C 
-      CALL GPOPEN(LUTAM,'CCSD_TAM','OLD',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
-      REWIND(LUTAM)
-      WRITE(LUTAM) (WORK(KT1AMP0 + J -1 ) , J = 1, NT1AMX)
-      WRITE(LUTAM) (WORK(KT1AMP0 + J -1 ) , J = 1, NT2AMX)
-      CALL GPCLOSE(LUTAM,'KEEP')
  
       IOPT = 3
       CALL CC_WRRSP('R0 ',0,1,IOPT,MODEL,WORK(KT0AMP0),
@@ -525,13 +507,6 @@ C     -----------------------------------------------------------------
 C     --------------------------------------------
 C     Restore the CC reference amplitudes on disk:
 C     --------------------------------------------
-      CALL GPOPEN(LUTAM,'CCSD_TAM','OLD',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
-      REWIND(LUTAM)
-      WRITE(LUTAM) (WORK(KT1AMPSAV + I -1 ) , I = 1, NT1AMX)
-      WRITE(LUTAM) (WORK(KT2AMPSAV + I -1 ) , I = 1, NT2AMX)
-      CALL GPCLOSE(LUTAM,'KEEP')
- 
       CALL DCOPY(NT1AMX,WORK(KT1AMPSAV),1,WORK(KT1AMP0),1)
       CALL DCOPY(NT2AMX,WORK(KT2AMPSAV),1,WORK(KT2AMP0),1)
  
