@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: her1int.F,v 1.7 2001-10-01 13:22:12 vebjornb Exp $
+C$Id: her1int.F,v 1.8 2001-10-09 16:40:41 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -1742,8 +1742,7 @@ C
 C        Parity violating electroweak interaction
 C        ----------------------------------------
          ELSE IF (INTTYP .EQ. 80) THEN
-            CALL CNTFPV(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT,
-     &                  NOPTYP,NATOMC)
+            CALL CNTFPV(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT)
 C
          END IF                                    
   200    CONTINUE

@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: her2sup.F,v 1.3 2001-05-31 06:38:07 vebjornb Exp $
+C$Id: her2sup.F,v 1.4 2001-10-09 16:40:42 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -1911,6 +1911,7 @@ C
      C           NREC(255),IBATCH(255),IS(255),NBW,NWW,LSUP
       COMMON/CSPREA/THRQ,BUF(600),DUM4(4)
 #include <inftap.h>
+#include <priunit.h>
 #if defined (VAR_SPLITFILES)
 #include <dummy.h>
 #include <iratdef.h>
@@ -2112,6 +2113,7 @@ C  /* Deck wrsup1 */
       SUBROUTINE WRSUP1(LUSUPM,P,NPQRS,ITYP1,NPF,NQF,NPL,NQL,IOFF,
      &                  NPQL,JBUF)
 #include <implicit.h>
+#include <priunit.h>
       DIMENSION P(NPQRS)
 #if defined (VAR_SPLITFILES)
 #include <dummy.h>
@@ -2176,6 +2178,7 @@ C
 C 900319-hjaaj
 C
 #include <implicit.h>
+#include <priunit.h>
       DIMENSION P(NRSOUT), INDP(NRSOUT)
 #if defined (VAR_SPLITFILES)
 #include <dummy.h>

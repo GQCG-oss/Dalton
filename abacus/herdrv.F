@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: herdrv.F,v 1.17 2001-10-01 13:22:13 vebjornb Exp $
+C$Id: herdrv.F,v 1.18 2001-10-09 16:40:42 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -2896,7 +2896,7 @@ C        and cavity center in VIBMAS
 C
       SOLVNT = .FALSE.
 C
-      PVFINN = D1
+      PVFINN = 1.D0
       BGWEIL = .FALSE.
       PVIOLA = .FALSE.
       DO I = 1, MXCENT
