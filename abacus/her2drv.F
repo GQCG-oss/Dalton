@@ -1897,8 +1897,18 @@ C  /* Deck symlop */
 #include "mxcent.h"
 #include "aovec.h"
 #include "maxorb.h"
-      PARAMETER (D1 = 1.0D0, D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0)
+#include "twocom.h"
+#include "symmet.h"
+#include "dorps.h"
+#include "nuclei.h"
+#include "twosta.h"
+#include "energy.h"
+#include "expopt.h"
+#include "drw2el.h"
+#include "r12int.h"
+#include "doxyz.h"
 #include "blocks.h"
+      PARAMETER (D1 = 1.0D0, D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0)
       CHARACTER COMP(2)*1,SPDCAR*1
       LOGICAL AACDX, AACDY, AACDZ, ABCCX, ABCCY, ABCCZ, NOPV, NODV,
      &        PERTUR, EXPECT, INTS, UNDIFF, CAEQCB, CCEQCD, ABADX,
@@ -1929,16 +1939,6 @@ C  /* Deck symlop */
      &          DMRSO(*),DNSBUF(2,NDMAT),DINTSKP(2,4),IREPDM(*),
      &          IXPAB(NUCA*NUCB,2,NODCAB), IXPCD(NUCC*NUCD,2,NODCCD)
       dimension coefcd(*)
-#include "twocom.h"
-#include "symmet.h"
-#include "dorps.h"
-#include "nuclei.h"
-#include "twosta.h"
-#include "energy.h"
-#include "expopt.h"
-#include "drw2el.h"
-#include "r12int.h"
-#include "doxyz.h"
 #include "ibtfun.h"
       IBTAXO(I,J) = IBTAND(I,IBTXOR(I,J))
       XAND(I)     = PT(IBTAND(ISYMAX(1,1),I))
@@ -2438,10 +2438,15 @@ C  /* Deck caoint */
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
+#include "nuclei.h"
+#include "r12int.h"
+#include "ccom.h"
+#include "symmet.h"
+#include "twocom.h"
+#include "twosta.h"
       LOGICAL NOPV, NODV, PERTUR, EXPECT, NOINT, DDFOCK, DIRFCK, DISTRI,
      &        INTS, UNDIFF, NOCONT, SPNORB, DIA2SO, BIGVEC, ONECEN,
      &        SQ12EL, SOP000, LONDON, SUSCEP, SOFOCK, ZFS2EL
-#include "nuclei.h"
       DIMENSION AOINT(NCCINT,NINTYP), SOINT(NSOINT,*), PSO(*),PSA(*),
      &          COEFAB(*), COEFCD(*), COORAB(*), COORCD(*), EXPAB(*),
      &          EXPCD(*), CONTA(*), CONTB(*), CONTC(*), CONTD(*),
@@ -2453,11 +2458,6 @@ C  /* Deck caoint */
      &          FMAT(NBASIS,NBASIS,*), DMAT(NBASIS,NBASIS,*), IFCTYP(*),
      &          HESSEE(*), DNSBUF(*),DINTSKP(*), IXPAB(*), IXPCD(*),
      &          WORK(LWORK)
-#include "r12int.h"
-#include "ccom.h"
-#include "symmet.h"
-#include "twocom.h"
-#include "twosta.h"
 C
 C     *************************
 C     ***** Print Section *****

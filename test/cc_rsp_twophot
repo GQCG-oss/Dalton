@@ -21,7 +21,7 @@ cat > cc_rsp_twophot.info <<'%EOF%'
    cc_rsp_twophot
    --------------
    Molecule:         HF in C2
-   Wave Function:    CC2 / 6-31G**
+   Wave Function:    CCS, CC2 and CCSD / 6-31G**
    Test Purpose:     Two-photon transition moments
 %EOF%
 
@@ -54,7 +54,9 @@ cat > cc_rsp_twophot.dal <<'%EOF%'
 .THRESH
  1.0d-12
 *CC INPUT 
+.CCS
 .CC2
+.CCSD
 .NSYM
  2
 .THRENR
@@ -66,14 +68,14 @@ cat > cc_rsp_twophot.dal <<'%EOF%'
  0 4 
 .THREXC
  1.0d-7
-*CCLRSD
-.DIPOLE
-*CCSM
-.SELSTA
+*CCOPA
+.DIPLEN
+*CCTPA
+.TRANSITION
  2 3 0.0
-.OPERATOR
-YDIPLEN XDIPLEN YDIPLEN XDIPLEN
-XDIPLEN YDIPLEN XDIPLEN YDIPLEN
+.OPERATORS
+YDIPLEN XDIPLEN
+XDIPLEN YDIPLEN
 **END OF DALTON INPUT
 %EOF%
 #######################################################################
@@ -92,48 +94,92 @@ else
    GREP="egrep"
 fi
 
-# SCF, MP2 and CCSD energies:
+# SCF, MP2 and CC2 energies:
 CRIT1=`$GREP "Final * HF energy:" $log | $GREP "\-100.00891992" | wc -l`
-CRIT2=`$GREP "Total MP2   energy:                  \-100.19366261" $log | wc -l`
-CRIT4=`$GREP "Total CC2   energy:                  \-100.19468693" $log | wc -l`
-TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT4`
-CTRL[1]=5
+CRIT2=`$GREP "Total MP2 * energy:  * \-100.19366261" $log | wc -l`
+CRIT3=`$GREP "Total CC2 * energy:  * \-100.19468693" $log | wc -l`
+CRIT4=`$GREP "Total CCSD * energy: * \-100.19779093" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[1]=7
 ERROR[1]="ENERGIES NOT CORRECT"
 
+# CCS twophoton transition moment:
+#  +-------------------+----------------+----------------+----------------+
+#  |    A        B     | M_0f(  0.0000) | M_f0(  0.0000) | S^0f(  0.0000) |
+#  +-------------------+----------------+----------------+----------------+
+#  | YDIPLEN  XDIPLEN  |     0.36465397 |     0.14365998 |     0.05238618 |
+#  | XDIPLEN  YDIPLEN  |    -0.36465397 |    -0.14365998 |     0.05238618 |
+#  +-------------------+----------------+----------------+----------------+
+CRIT1=`$GREP "YDIPLEN *XDIPLEN *. *( |0|\-|\-0)\.364653.. *. *(0| |\-0|\-)\.143659.. *. *(0| )\.052386.." $log | wc -l`
+CRIT2=`$GREP "XDIPLEN *YDIPLEN *. *( |0|\-|\-0)\.364653.. *. *(0| |\-0|\-)\.143659.. *. *(0| )\.052386.." $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2`
+CTRL[2]=2
+ERROR[2]="CCS TWOPHOTON TRANSITION MOMENTS OR STRENGTHS NOT CORRECT"
 
-# CC2 twophoton transition moment
-CRIT1=`$GREP "M\^AB_of\(\-w\): * (\-|\-0| |0)\.815478" $log |
-       $GREP "M\^CD_fo\(w\): * (\-|\-0| |0)\.414048" | wc -l`
-CRIT2=`$GREP "M\^CD_of\(\-w\): * (\-|\-0| |0)\.815478" $log |
-       $GREP "M\^AB_fo\(w\): * (\-|\-0| |0)\.414048" $log | wc -l`
-CRIT3=`$GREP "M\^AB_of\(\-w\) x M\^CD_fo\(w\)   = * ( |0)\.337647" $log | wc -l`
-CRIT4=`$GREP "M\^CD_of\(\-w\) x M\^AB_fo\(w\)\]\* = * ( |0)\.337647" $log | wc -l`
-CRIT5=`$GREP "CC2  S\^of_AB,CD" $log | $GREP "(0| )\.337647.." | wc -l`
-TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
-CTRL[2]=10
-ERROR[2]="CC2 TWOPHOTON TRANSITION MOMENTS OR STRENGTH NOT CORRECT"
+
+# CC2 twophoton transition moment:
+#  +-------------------+----------------+----------------+----------------+
+#  |    A        B     | M_0f(  0.0000) | M_f0(  0.0000) | S^0f(  0.0000) |
+#  +-------------------+----------------+----------------+----------------+
+#  | YDIPLEN  XDIPLEN  |     0.81547843 |     0.41404819 |     0.33764737 |
+#  | XDIPLEN  YDIPLEN  |     0.81547843 |     0.41404819 |     0.33764737 |
+#  +-------------------+----------------+----------------+----------------+
+CRIT1=`$GREP "YDIPLEN *XDIPLEN *. *(0| |\-0|\-)\.815478.. *. *(0| |\-0|\-)\.414048.. *. *(0| )\.337647.." $log | wc -l`
+CRIT2=`$GREP "XDIPLEN *YDIPLEN *. *(0| |\-0|\-)\.815478.. *. *(0| |\-0|\-)\.414048.. *. *(0| )\.337647.." $log | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2`
+CTRL[3]=2
+ERROR[3]="CC2 TWOPHOTON TRANSITION MOMENTS OR STRENGTHS NOT CORRECT"
+
+# CCSD twophoton transition moment:
+#  +-------------------+----------------+----------------+----------------+
+#  |    A        B     | M_0f(  0.0000) | M_f0(  0.0000) | S^0f(  0.0000) |
+#  +-------------------+----------------+----------------+----------------+
+#  | YDIPLEN  XDIPLEN  |    -0.16802885 |    -0.04758689 |     0.00799597 |
+#  | XDIPLEN  YDIPLEN  |    -0.16802885 |    -0.04758689 |     0.00799597 |
+#  +-------------------+----------------+----------------+----------------+
+CRIT1=`$GREP "YDIPLEN *XDIPLEN *. *(0| |\-0|\-)\.168028.. *. *(0| |\-0|\-)\.047586.. *. *(0| )\.007995.." $log | wc -l`
+CRIT2=`$GREP "XDIPLEN *YDIPLEN *. *(0| |\-0|\-)\.168028.. *. *(0| |\-0|\-)\.047586.. *. *(0| )\.007995.." $log | wc -l`
+TEST[4]=`expr $CRIT1 \+ $CRIT2`
+CTRL[4]=2
+ERROR[4]="CCSD TWOPHOTON TRANSITION MOMENTS NOT CORRECT"
+
+# CCS excitation energies
+CRIT1=`$GREP "\^1A.  \|    3   \|     1\.455144.  \|      39\.596..  \|    319367\....  \| 100\.00" $log | wc -l`
+TEST[5]=`expr $CRIT1`
+CTRL[5]=1
+ERROR[5]="CC EXCITATION ENERGIES NOT CORRECT"
 
 # CC2 excitation energies
 CRIT1=`$GREP "\^1A.  \|    1   \|     ( |0)\.396682.  \|      10\.7942.  \|     87061\....  \|  96\.73" $log | wc -l`
 CRIT2=`$GREP "\^1A.  \|    2   \|     1\.090983.  \|      29\.6871.  \|    239443\....  \|  96\.14" $log | wc -l`
 CRIT3=`$GREP "\^1A.  \|    3   \|     1\.518329.  \|      41\.3158.  \|    333234\....  \|  99\.13" $log | wc -l`
 CRIT4=`$GREP "\^1A.  \|    4   \|     1\.572808.  \|      42\.7983.  \|    345191\....  \|  98\.34" $log | wc -l`
-TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
-CTRL[3]=4
-ERROR[3]="CC2 EXCITATION ENERGIES NOT CORRECT"
+TEST[6]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[6]=4
+ERROR[6]="CC2 EXCITATION ENERGIES NOT CORRECT"
+
+# CCSD excitation energies
+CRIT1=`$GREP "\^1A.  \|    3   \|     1\.328216.  \|      36\.1426.  \|    291509\....  \|   ( |0)\.35" $log | wc -l`
+TEST[7]=`expr $CRIT1`
+CTRL[7]=1
+ERROR[7]="CC EXCITATION ENERGIES NOT CORRECT"
 
 # CC2 onephoton transition moments:
-CRIT1=`$GREP "\^1A.  \|    1   \|        ( |0)\.052101.      \|      ( |0)\.013778.       \|    Y " $log | wc -l`
-CRIT2=`$GREP "\^1A.  \|    2   \|        ( |0)\.075966.      \|      ( |0)\.055252.       \|    Y " $log | wc -l`
-CRIT3=`$GREP "\^1A.  \|    3   \|        ( |0)\.000000.      \|      ( |0)\.000000.       \|    \- " $log | wc -l`
-CRIT4=`$GREP "\^1A.  \|    4   \|        ( |0)\.008620.      \|      ( |0)\.009038.       \|    Y " $log | wc -l`
-TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
-CTRL[4]=4
-ERROR[4]="CC2 ONEPHOTON TRANSITION MOMENTS NOT CORRECT"
+CRIT1=`$GREP "YDIPLEN * . * (0| |\-0|\-)\.16301839 *. * (0| |\-0|\-)\.31960292 *. * (0| )\.05210115" $log | wc -l`
+CRIT3=`$GREP "YDIPLEN * . * (0| |\-0|\-)\.19607140 *. * (0| |\-0|\-)\.38744492 *. * (0| )\.07596687" $log | wc -l`
+CRIT5=`$GREP "YDIPLEN * . * (0| |\-0|\-)\.00000000 *. * (0| |\-0|\-)\.00000000 *. * (0| )\.00000000" $log | wc -l`
+CRIT7=`$GREP "YDIPLEN * . * (0| |\-0|\-)\.06643699 *. * (0| |\-0|\-)\.12975335 *. * (0| )\.00862042" $log | wc -l`
+CRIT2=`$GREP "oscillator strength .length gauge. * . * (0| )\.01377840" $log | wc -l`
+CRIT4=`$GREP "oscillator strength .length gauge. * . * (0| )\.05525241" $log | wc -l`
+CRIT6=`$GREP "oscillator strength .length gauge. * . * (0| )\.00000000" $log | wc -l`
+CRIT8=`$GREP "oscillator strength .length gauge. * . * (0| )\.00903885" $log | wc -l`
+TEST[8]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8`
+CTRL[8]=14
+ERROR[8]="CC2 ONEPHOTON TRANSITION MOMENTS NOT CORRECT"
 
 
 PASSED=1
-for i in 1 2 3 4
+for i in 1 2 3 4 5 6 7 8
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo ${ERROR[i]}

@@ -58,24 +58,26 @@ cat > cc_rsp_twophot5.dal <<'%EOF%'
 .NSYM
  2
 .THRENR
- 1.0d-8
+ 1.0d-10
 .THRLEQ
- 1.0d-8
+ 1.0d-9
 .PRINT
   5
+.MAX ITER
+  300
 *CCEXCI
 .NCCEXCI
- 0 3 
+ 0 5 
 .THREXC
- 1.0d-7
-*CCSM
+ 1.0d-9
+*CCOPA
+.DIPLEN
+*CCTPA
 .SELSTA
  2 3 0.01
 .OPERATOR
-YDIPLEN XDIPLEN YDIPLEN XDIPLEN
-XDIPLEN YDIPLEN XDIPLEN YDIPLEN
-*CCLRSD
-.DIPOLE
+YDIPLEN XDIPLEN
+XDIPLEN YDIPLEN
 **END OF DALTON INPUT
 %EOF%
 #######################################################################
@@ -106,17 +108,19 @@ CTRL[1]=5
 ERROR[1]="ENERGIES NOT CORRECT"
 
 
-# CCSD twophoton transition moment
-CRIT1=`$GREP "M\^AB_of\(\-w\): * ( |\-|0|\-0)\.165298.[0-9]" $log |
-       $GREP "M\^CD_fo\(w\): * ( |\-)(4\.|0\.4|\.4|0\.04|\.04)922989" | wc -l`
-CRIT2=`$GREP "M\^CD_of\(\-w\): * ( |\-|0|\-0)\.165298.[0-9]" $log |
-       $GREP "M\^AB_fo\(w\): * ( |\-)(4\.|0\.4|\.4|0\.04|\.04)922989" $log | wc -l`
-CRIT3=`$GREP "M\^AB_of\(\-w\) x M\^CD_fo\(w\)   = * (8\.|0\.8|\.8|0.008|\.008)13763[0-9]" $log | wc -l`
-CRIT4=`$GREP "M\^CD_of\(\-w\) x M\^AB_fo\(w\)\]\* = * (8\.|0\.8|\.8|0.008|\.008)13763[0-9]" $log | wc -l`
-CRIT5=`$GREP "CCSD S\^of_AB,CD\( * ( |0).010000\)" $log | $GREP "(8\.|0\.8|\.8|0.008|\.008)13763[0-9]" | wc -l`
-TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
-CTRL[2]=10
+# CCSD twophoton transition moment:
+#  +-------------------+----------------+----------------+----------------+
+#  |    A        B     | M_0f(  0.0000) | M_f0(  0.0000) | S^0f(  0.0000) |
+#  +-------------------+----------------+----------------+----------------+
+#  | YDIPLEN  XDIPLEN  |    -0.16529861 |    -0.04922990 |     0.00813763 |
+#  | XDIPLEN  YDIPLEN  |    -0.16529861 |    -0.04922990 |     0.00813763 |
+#  +-------------------+----------------+----------------+----------------+
+CRIT1=`$GREP "YDIPLEN *XDIPLEN *. *(0| |\-0|\-)\.165298.. *. *(0| |\-0|\-)\.049229.. *. *(0| )\.008137.." $log | wc -l`
+CRIT2=`$GREP "XDIPLEN *YDIPLEN *. *(0| |\-0|\-)\.165298.. *. *(0| |\-0|\-)\.049229.. *. *(0| )\.008137.." $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2`
+CTRL[2]=2
 ERROR[2]="CCSD TWOPHOTON TRANSITION MOMENTS NOT CORRECT"
+
 
 # CCSD excitation energies
 CRIT1=`$GREP "\^1A.  \|    3   \|     1\.328216.  \|      36\.1426.  \|    291509\....  \|   ( |0)\.35" $log | wc -l`

@@ -18997,7 +18997,7 @@ c
 *     End of DSYTRD
 *
       END
-#if 0
+#if 1
       INTEGER          FUNCTION IEEECK( ISPEC, ZERO, ONE )
 *
 *  -- LAPACK auxiliary routine (version 3.0) --
