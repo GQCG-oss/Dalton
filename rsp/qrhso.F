@@ -1204,35 +1204,55 @@ C
 C Built gradient of one-index transformed spin-orbit operator
 C from AO integrals (single determinant)
 C
-#include <implicit.h>
+      IMPLICIT NONE
 C
 C Input
 C
       CHARACTER*8 OPLBL
-      DIMENSION CMO(*)
+      REAL*8  CMO(*)
       INTEGER MJWOP(*)
       INTEGER LVEC, VECSYM, VECSPIN
-      DIMENSION VEC(*)
+      REAL*8  VEC(*)
       INTEGER LGR, GRSYM, GRSPIN
 C
 C Output
 C
-c      REAL(DOUBLE) GR
+       REAL*8 GR
 C
 C Work
 C
       INTEGER LWORK
-      DIMENSION WORK(LWORK)
+      REAL*8 WORK(LWORK)
 #include <inforb.h>
 #include <priunit.h>
 #include <infrsp.h>
+#include <maxorb.h>
+#include <infinp.h>
+#include <aovec.h>
+#include <dummy.h>
+#include <dftcom.h>
 C
 C Local
 C
       INTEGER KFREE,LFREE,KAO,KMO,KS,KD,KD1,KD2,KF,KF1,KF2
       LOGICAL TRIPLET(2)
+      REAL*8  D1
       PARAMETER (D1 = 1.0D0)
 C
+      INTEGER IPRINT, NDMAT
+      INTEGER KJSTRS , KNPRIM , KNCONT , KIORBS , KJORBS , NPAO , KKORBS
+      REAL*8       TIMEND,TIMSTR,SO1WAL,SO1CPU
+      REAL*8       SO2WAL,SO2CPU,SOCPU,SOWAL, HFXSAV
+      INTEGER I2TYP
+      INTEGER IPRTWO,IPRNTA,IPRNTB,IPRNTC,IPRNTD
+      INTEGER IRNTYP , NUMDIS, IFCTYP(2), ISYMDM(2)
+      LOGICAL TKTIME,RTNTWO
+C
+      IPRINT=IPRRSP
+      NDMAT=2
+      IF (NASHT.GT.0) 
+     &   CALL QUIT('X2HSOAO not implemented for open shells')
+
       CALL QENTER('X2HSOAO')
       KFREE=1
       LFREE=LWORK
@@ -1278,17 +1298,96 @@ C
          CALL MAOPRI(WORK(KD2),'X2HSOAO:Density 2')
       END IF
 C
+C Build fock
+C
+      IF (DIRFCK) THEN
+         IF (OPLBL(1:1).EQ.'X') IFCTYP(1)=1
+         IF (OPLBL(1:1).EQ.'Y') IFCTYP(1)=2
+         IF (OPLBL(1:1).EQ.'Z') IFCTYP(1)=3
+         IFCTYP(2) = IFCTYP(1)
+         IF (GRSPIN.NE.VECSPIN) IFCTYP(1) = -IFCTYP(1)
+         IF (GRSPIN.EQ.1)       IFCTYP(2) = -IFCTYP(2)
+C
+C        Transform density to AO basis 
+C
+         CALL DSOTAO(WORK(KD1),WORK(KF1),NBAST,0,IPRINT)
+         CALL DSOTAO(WORK(KD2),WORK(KF2),NBAST,VECSYM-1,IPRINT)
+         CALL DCOPY(NDMAT*N2BASX,WORK(KF),1,WORK(KD),1)
+C
+C Setup for TWOINT
+C
+         NPAO = MXSHEL*MXAOVC
+         CALL MEMGET('INTE',KJSTRS,NPAO*2,WORK,KFREE,LFREE)     
+         CALL MEMGET('INTE',KNPRIM,NPAO*2,WORK,KFREE,LFREE)     
+         CALL MEMGET('INTE',KNCONT,NPAO*2,WORK,KFREE,LFREE)     
+         CALL MEMGET('INTE',KIORBS,NPAO  ,WORK,KFREE,LFREE)     
+         CALL MEMGET('INTE',KJORBS,NPAO  ,WORK,KFREE,LFREE)     
+         CALL MEMGET('INTE',KKORBS,NPAO  ,WORK,KFREE,LFREE)     
+         CALL PAOVEC(WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),
+     &               WORK(KIORBS),WORK(KJORBS),WORK(KKORBS),0,
+     &               .FALSE.,IPRRSP)
+         CALL MEMREL('HERINT.PAOVEC',WORK,1,KJORBS,KFREE,LFREE)
+         CALL TIMER('START ',TIMSTR,TIMEND)
+         CALL GETTIM(SO1CPU,SO1WAL)
+         I2TYP = 0
+         IRNTYP = -20
+         IPRTWO = 0
+         TKTIME = .FALSE.
+         CALL DZERO(WORK(KF),NDMAT*N2BASX)
+         IF (DFTRUN) THEN
+            HFXSAV=HFXFAC
+            HFXFAC=D1
+         END IF
+         CALL TWOINT(WORK(KFREE),LFREE,WORK(KFREE),
+     &               WORK(KF),WORK(KD),NDMAT,
+     &               IDUMMY, IFCTYP,
+     &               DUMMY,IDUMMY,NUMDIS,1,IRNTYP,0,0,.TRUE.,.TRUE.,
+     &               .FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
+     &               IPRNTD,RTNTWO,IDUMMY,I2TYP,WORK(KJSTRS),
+     &               WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
+     &               IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
+     &               .FALSE.)
+         CALL MEMREL('HSOFCKAO.TWOINT',WORK,KF,KJSTRS,KFREE,LFREE)
+         IF (DFTRUN) THEN
+            HFXFAC=HFXSAV
+         END IF
+      IF (DEBUG) THEN
+         CALL MAOPRI(WORK(KF1),'X2HSOAO(TWOINT):Fock 1')
+         CALL MAOPRI(WORK(KF2),'X2HSOAO(TWOINT):Fock 2')
+      END IF
+C
+C  Transform to SO
+C
+         ISYMDM(1)=0
+         ISYMDM(2)=VECSYM-1
+         CALL SKLFCK(WORK(KF),DUMMY,WORK(KFREE),LFREE,
+     &               IPRTWO,.FALSE.,
+     &               .FALSE.,.FALSE.,.FALSE.,.TRUE.,IDUMMY,.TRUE.,NDMAT,
+     &               ISYMDM,IFCTYP,IDUMMY,.TRUE.)
+C
+         CALL MEMCHK('HSOFCKAO.SKLFCK',WORK,KF)
+         CALL GETTIM(SO2CPU,SO2WAL)
+         SOCPU=SO2CPU-SO1CPU
+         SOWAL=SO2WAL-SO1WAL
+         CALL TIMER('TWOINT',TIMSTR,TIMEND)
+         CALL FLSHFO(LUPRI)
+         WRITE(LUPRI,'(2(/A),2(/A,F5.0,A))')
+     &      '   Two-electron spin-orbit integrals',
+     &   '   =================================',
+     &   '   Spin-orbit 2-electron CPU  time ',SOCPU,' seconds',
+     &   '   Spin-orbit 2-electron wall time ',SOWAL,' seconds'
+      ELSE
+         TRIPLET(1) = GRSPIN.NE.VECSPIN
+         TRIPLET(2) = GRSPIN.EQ.1
+         CALL GETFMATX(OPLBL,TRIPLET,WORK(KF),WORK(KD),2)
+      END IF
+C
 C One-electron
 C
       IF (OPLBL(2:2).EQ.' ') THEN
-         CALL GET_P(OPLBL(1:1)//'1'//OPLBL(3:8),WORK(KF1))
+         CALL GET_P(OPLBL(1:1)//'1'//OPLBL(3:8),WORK(KD1))
+         CALL DAXPY(N2BASX,D1,WORK(KD1),1,WORK(KF1),1)
       END IF
-C
-C Build fock
-C
-      TRIPLET(1) = GRSPIN.NE.VECSPIN
-      TRIPLET(2) = GRSPIN.EQ.1
-      CALL GETFMATX(OPLBL,TRIPLET,WORK(KF),WORK(KD),2)
       IF (DEBUG) THEN
          CALL MAOPRI(WORK(KF1),'X2HSOAO:Fock 1')
          CALL MAOPRI(WORK(KF2),'X2HSOAO:Fock 2')

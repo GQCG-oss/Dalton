@@ -305,10 +305,12 @@ C hj start TODO Mar 2004
 C TODO  hjaaj Mar 2004: calling Q3FOCK gives wrong result in
 C       test rsp_solvhyper, thus it has been disabled until
 C       the error has been found ...
-C     IF (TDHF) THEN
-      IF (TDHF .AND.  (CRCAL.OR.TOMOM.OR.TPAMP.OR.ESG) ) THEN
+C     IF (TDHF .AND.  (CRCAL.OR.TOMOM.OR.TPAMP.OR.ESG) ) THEN
 C hj end TODO Mar 2004
 C
+C ov rsp_solvhyper passes with Q3FOCK  Sep 2004
+C
+      IF (TDHF) THEN
          IF (CRCAL.OR.TOMOM.OR.TPAMP.OR.ESG) THEN
             CALL C3FOCK(IBEQC,WRK(KFC),VECB,VECC,
      *                 WRK(KZYMB),WRK(KZYMC),

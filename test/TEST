@@ -20,7 +20,8 @@ prop_ecd prop_or prop_exci prop_nolondon prop_spinspin prop_spinspin2 \
 prop_spinspin3 prop_spinspin4 prop_vibvcd rsp_2ndharm rsp_3rdharm \
 rsp_3rdmom rsp_dresqr rsp_ecp rsp_exci rsp_excipolar2 rsp_hyperpolar \
 rsp_lrso rsp_lrso2 rsp_mcdbterm rsp_mnf rsp_phosph rsp_polar rsp_propave \
-rsp_socorr rsp_solvhyper rsp_soppa1excinosymm rsp_soppa1excisymm \
+rsp_socorr rsp_socorr2 rsp_socorr3 rsp_socorr_dir rsp_socorr2_dir \
+rsp_socorr3_dir rsp_solvhyper rsp_soppa1excinosymm rsp_soppa1excisymm \
 rsp_soppa3excinosymm rsp_soppa3excisymm rsp_soppafcnosymm rsp_soppafcsymm \
 rsp_soppapolar rsp_soppapolarnosymm rsp_soppapolarsymm rsp_sreslrso \
 rsp_sresqr walk_gradex walk_image walk_modeflw walk_polar walk_vibave \
