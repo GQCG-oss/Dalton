@@ -34,7 +34,8 @@
      &        IMAABCI,NMAABCI,IMAABI,NMAABI,
      &        IMAAB_CI,NMAAB_CI,IMAJBAI,
      &        IMAAOBCI,NMAAOBCI,IMAJBAIT,
-     &        IMAIAB,NMAIAB,IMAIAJ,NMAIAJ
+     &        IMAIAB,NMAIAB,IMAIAJ,NMAIAJ,
+     &        IMAAOBI,NMAAOBI
       LOGICAL OMEGSQ,T2TCOR,OMEGOR,CC3LR,RSPIM,LSEC,LCOR,NEWGAM,INTTR,
      &        TRIPIM
       COMMON /CCSDSYM/ NT1AMX, NT2AMX, NT1AM(8), NT2AM(8), NT2AMA(8),
@@ -78,6 +79,7 @@
      &                 IMAABCI(8,8),NMAABCI(8),IMAABI(8,8),NMAABI(8),
      &                 IMAAB_CI(8,8),NMAAB_CI(8),IMAJBAI(8,8),
      &                 IMAAOBCI(8,8),NMAAOBCI(8),IMAJBAIT(8,8),
-     &                 IMAIAB(8,8),NMAIAB(8),IMAIAJ(8,8),NMAIAJ(8)
+     &                 IMAIAB(8,8),NMAIAB(8),IMAIAJ(8,8),NMAIAJ(8),
+     &                 IMAAOBI(8,8),NMAAOBI(8)
 C
       INTEGER A,B,C,D,E,F,G,P,Q,R,S,I,J,K,L,M,N
