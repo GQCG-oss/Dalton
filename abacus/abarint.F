@@ -31,7 +31,7 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-#include <single.h>
+#include "single.h"
 C
 #ifdef UNDEF
 ===========================================================================
@@ -47,10 +47,10 @@ C
 C     Initializes everything that has to do with redundant internal
 C     coordinates.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <optinf.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "optinf.h"
+#include "priunit.h"
       DIMENSION WILBMT(MXRCRD*MX2CRD), BMTRAN(MXRCRD*MXRCRD)
       DIMENSION BMTINV(MXRCRD*MX2CRD), PJINMT(MXRCRD*MXRCRD)
       DIMENSION TMPMAT(MX2CRD,MX2CRD), TMPMT2(MX2CRD,MX2CRD)
@@ -82,11 +82,11 @@ C  /* Deck fndred */
 C
 C     Finds natural redundant internal coordinates.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <optinf.h>
-#include <gnrinf.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "optinf.h"
+#include "gnrinf.h"
+#include "priunit.h"
       DIMENSION ATMARR(MXCENT,8), IBOND(MXCENT,MXCENT)
       PARAMETER (D0 = 0.0D0)
       PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
@@ -189,11 +189,11 @@ C  /* Deck prnred */
 C
 C     Prints out information about redundant internal coordinates.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <optinf.h>
-#include <codata.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "optinf.h"
+#include "codata.h"
       DIMENSION VALINT(ICRD)
       CHARACTER CRDTXT*22, EMPTXT*8, MARK*1, UNTTXT*5
       LOGICAL REMCRD
@@ -255,17 +255,17 @@ C  /* Deck redvib */
 C
 C     Converts normal coordinates to redundant internal coordinates.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <codata.h>
+#include "codata.h"
 C
-#include <mxcent.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <priunit.h>
-#include <optinf.h>
-#include <symmet.h>
-#include <nuclei.h>
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "priunit.h"
+#include "optinf.h"
+#include "symmet.h"
+#include "nuclei.h"
       DIMENSION EVEC(NCORD,NCORD), IFRQCM(NCORD)
       DIMENSION IMAGIN(NCORD), ATMARR(MXCENT,8)
       DIMENSION CRDRIN(MXRCRD), WILBMT(MXRCRD,MXCOOR)
@@ -275,7 +275,7 @@ C
       CHARACTER*4 CRDTXT
       CHARACTER*1 CHRIMG(0:1)
       DATA CHRIMG /' ','i'/
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       SXFAMU = SQRT(XFAMU)
       IF (.NOT. (REDINT .OR. DELINT)) RETURN
@@ -362,11 +362,11 @@ C  /* Deck fndbnd */
 C
 C     Finds all bonds.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <optinf.h>
-#include <priunit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "optinf.h"
+#include "priunit.h"
+#include "pi.h"
       DIMENSION ATMARR(MXCENT,8), VEC1(3), VEC2(3), IBOND(MXCENT,MXCENT)
       LOGICAL POSSIB
       PARAMETER (D0 = 0.0D0)
@@ -659,11 +659,11 @@ C  /* Deck fndang */
 C
 C     Finds all angles.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <optinf.h>
-#include <priunit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "optinf.h"
+#include "priunit.h"
+#include "pi.h"
       DIMENSION ATMARR(MXCENT,8), VEC1(3), VEC2(3), IBOND(MXCENT,MXCENT)
       PARAMETER (D0 = 0.0D0)
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
@@ -729,11 +729,11 @@ C  /* Deck fndihd */
 C
 C     Finds all dihedral angles.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <optinf.h>
-#include <priunit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "optinf.h"
+#include "priunit.h"
+#include "pi.h"
       DIMENSION ATMARR(MXCENT,8), IBOND(MXCENT,MXCENT)
       DIMENSION VEC1(3), VEC2(3), VEC3(3), VEC4(3), IBNDCN(16)
       PARAMETER (D0 = 0.0D0)
@@ -914,11 +914,11 @@ C  /* Deck rredun */
 C
 C     Reduces the redundancy of the redundant internal coordinates.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <optinf.h>
-#include <priunit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "optinf.h"
+#include "priunit.h"
+#include "pi.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       NDIHD = 0
@@ -997,12 +997,12 @@ C
 C     Constructs the Wilson B matrix used for transformations between
 C     Cartesian and redundant natural internal coordinates.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <optinf.h>
-#include <gnrinf.h>
-#include <priunit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "optinf.h"
+#include "gnrinf.h"
+#include "priunit.h"
+#include "pi.h"
       DIMENSION ATMARR(MXCENT,8), WILBMT(MXRCRD,MXCOOR)
       DIMENSION BMTRAN(MXRCRD,MXRCRD), TMPMAT(MX2CRD,MX2CRD)
       DIMENSION VEC1(3), VEC2(3), VEC3(3), VEC4(3), VEC5(3), VEC6(3)
@@ -1356,11 +1356,11 @@ C
 C     Constructs the derivative of the Wilson B matrix used for transformations
 C     between Cartesian and redundant natural internal coordinates.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <optinf.h>
-#include <gnrinf.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "optinf.h"
+#include "gnrinf.h"
+#include "priunit.h"
       DIMENSION DWILBM(MXCOOR,MXCOOR), WILBMT(MXRCRD,MXCOOR)
       DIMENSION ATMARR(MXCENT,8), TMPMAT(MXCOOR,MXCOOR)
       DIMENSION VEC1(3), VEC2(3), VEC3(3), VEC4(3), VEC5(3), VEC6(3)
@@ -1669,11 +1669,11 @@ C
 C     Ths subroutine determines the coordinate system in work, and
 C     allocates memory if needed.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <optinf.h>
-#include <gnrinf.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "optinf.h"
+#include "gnrinf.h"
+#include "priunit.h"
       DIMENSION DWILBM(MXCOOR,MXCOOR), ATMARR(MXCENT,8)
       DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION WORK(LWORK)
@@ -1697,11 +1697,11 @@ C
 C     Ths subroutine acts as a buffer for the subroutine GTDWLM when
 C     delocalized internal coordinates are used.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <optinf.h>
-#include <gnrinf.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "optinf.h"
+#include "gnrinf.h"
+#include "priunit.h"
       DIMENSION DWILBM(MXCOOR,MXCOOR), ATMARR(MXCENT,8)
       DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION REDMAT(IRED,ICRT,ICRT)
@@ -1750,11 +1750,11 @@ C
 C     Returns the derivative of the Wilson B matrix for _one_
 C     redundant internal coordinate (IC).
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <optinf.h>
-#include <gnrinf.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "optinf.h"
+#include "gnrinf.h"
+#include "priunit.h"
       DIMENSION DWILBM(MXCOOR,MXCOOR), ATMARR(MXCENT,8)
       DIMENSION WILBMT(MXRCRD,MXCOOR)
       DIMENSION VEC1(3),VEC2(3),VEC3(3),VEC4(3),VEC5(3)
@@ -2018,10 +2018,10 @@ C
 C     Decomposes the transpose of Wilson's B matrix, then one can
 C     construct the inverse of the rectangulat matrix.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <optinf.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "optinf.h"
+#include "priunit.h"
       DIMENSION UMAT(MXCOOR,MXRCRD), WMAT(MXRCRD,MXRCRD)
       DIMENSION VMAT(MXRCRD,MXRCRD), VAL(MXRCRD)
       DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
@@ -2234,10 +2234,10 @@ C  /* Deck decomp */
 C
 C     Decomposes the transpose of Wilson's B matrix.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <optinf.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "optinf.h"
+#include "priunit.h"
       DIMENSION UMAT(MXCOOR,MXRCRD), WMAT(MXRCRD,MXRCRD)
       DIMENSION VMAT(MXRCRD,MXRCRD), VAL(MXRCRD)
       DIMENSION WILBMT(MXRCRD,MXCOOR)
@@ -2491,9 +2491,9 @@ C     Transforms the gradient in redundant internal coordinates to
 C     Cartesian coordinates:
 C                              g_x = B^t g_q
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <optinf.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "optinf.h"
       DIMENSION GRADQ(MXRCRD), GRADX(MXCOOR), WILBMT(MXRCRD,MXCOOR)
       CALL DZERO(GRADX,MXCOOR)
       DO 10 I = 1, ICRTCR
@@ -2511,9 +2511,9 @@ C     Transforms the gradient in Cartesian coordinates to redundant
 C     internal coordinates:
 C                              g_q = (B^t)^-1 g_x
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <optinf.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "optinf.h"
       DIMENSION GRADX(MXCOOR), GRADQ(MXRCRD), BMTINV(MXRCRD,MXCOOR)
       CALL DZERO(GRADQ,MXRCRD)
       DO 10 I = 1, IINTCR
@@ -2532,9 +2532,9 @@ C     Transforms the Hessian in redundant internal coordinates to
 C     Cartesian coordinates:
 C                              H_x = B^t H_q B + B'^t g_q
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <optinf.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "optinf.h"
       DIMENSION ATMARR(MXCENT,8), TMPMAT(MX2CRD,MX2CRD)
       DIMENSION TMPMT2(MX2CRD,MX2CRD), HESSQ(MXRCRD,MXRCRD)
       DIMENSION GRADQ(MXRCRD), HESSX(MXCOOR,MXCOOR)
@@ -2585,10 +2585,10 @@ C     Transforms the Hessian in Cartesian coordinates to redundant
 C     internal coordinates:
 C                         H_q = (B^t)^-1 (H_x - B'^t g_q) B^-1
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <optinf.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "optinf.h"
+#include "priunit.h"
       DIMENSION ATMARR(MXCENT,8), TMPMAT(MXCOOR,MXCOOR)
       DIMENSION TMPMT2(MX2CRD,MX2CRD), TMPMT3(MX2CRD,MX2CRD)
       DIMENSION HESSX(MXCOOR,MXCOOR), GRADQ(MXRCRD)
@@ -2648,15 +2648,15 @@ C
 C     Transforms Cartesian gradient and Hessian to redundant internal
 C     coordinates.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <optinf.h>
-#include <taymol.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "optinf.h"
+#include "taymol.h"
+#include "nuclei.h"
+#include "symmet.h"
       DIMENSION SCLVEC(MXCOOR), HESTMP(MXCOOR,MXCOOR)
       DIMENSION TMPMAT(MX2CRD,MX2CRD), TMPMT2(MX2CRD,MX2CRD)
       DIMENSION TMPMT3(MX2CRD,MX2CRD), TMPMT4(MX2CRD,MX2CRD)
@@ -2675,7 +2675,7 @@ C loop rewritten to avoid problems. VB Oct 2003
 C
       DO 1 IREP = 0, MAXREP
          DO 2 ICRD = 1, 3*NUCIND
-#include <scalar.h>
+#include "scalar.h"
             IF (IPTCNT(ICRD,IREP,1) .GT. 0) THEN
                SCLVEC(IPTCNT(ICRD,IREP,1)) =
      &              SQRT(FMULT(ISTBNU((ICRD-1)/3 + 1)))
@@ -2740,10 +2740,10 @@ C     both the gradient and Hessian. If a constrained optimization
 C     has been requested, we have to construct a matrix of constraints
 C     and modify the projection matrix.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <optinf.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "optinf.h"
       DIMENSION PJINMT(MXRCRD,MXRCRD), CONMAT(MXRCRD,MXRCRD)
       DIMENSION HESINT(MXRCRD,MXRCRD), TMPMT1(NDIM,NDIM)
       DIMENSION TMPMT2(NDIM,NDIM), TMPMT3(NDIM,NDIM)
@@ -2932,10 +2932,10 @@ C  /* Deck diaint */
 C
 C     The Hessian in redundant internal coordinates is diagonalized.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <optinf.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "optinf.h"
       DIMENSION EVEC(MX2CRD,MX2CRD), EVCTMP(NCRDHS,NCRDHS)
       DIMENSION HESPCK(NCRDHS*NCRDHS), TMPHES(NCRDHS,NCRDHS)
       DIMENSION TMPMAT(MX2CRD*MX2CRD), HESINT(MXRCRD,MXRCRD)
@@ -3040,12 +3040,12 @@ C     We determine the step in redundant internal coordinates,
 C     then we find the corresponding step vector in
 C     Cartesian coordinates.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <optinf.h>
-#include <pi.h>
-#include <cbiwlk.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "optinf.h"
+#include "pi.h"
+#include "cbiwlk.h"
       DIMENSION SCLVEC(MXCOOR)
       DIMENSION HESINT(MXRCRD,MXRCRD), EVEC(MX2CRD,MX2CRD)
       DIMENSION TMPMAT(MX2CRD*MX2CRD), TMPMT2(MX2CRD*MX2CRD)
@@ -3350,11 +3350,11 @@ C  /* Deck getint */
 C
 C     Determines the value of all redundant internal coordinates.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <optinf.h>
-#include <priunit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "optinf.h"
+#include "priunit.h"
+#include "pi.h"
       DIMENSION ATMCRD(MXCENT,8), VALINT(MXRCRD)
       DIMENSION VEC1(3), VEC2(3), VEC3(3), VEC4(3), VEC5(3)
       PARAMETER (D0 = 0.0D0, DEG175 = 175D0*PI/180D0)
@@ -3454,11 +3454,11 @@ C     The logical parameter CORREC indicates if the internal step
 C     is a small correctional step to reimpose constraints in a
 C     constrained optimization.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <optinf.h>
-#include <pi.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "optinf.h"
+#include "pi.h"
       DIMENSION SCLVEC(MXCOOR), CRDORG(MXCENT,8), CRDOLD(MXCENT,8)
       DIMENSION CRDNEW(MXCENT,8), VALOLD(MXRCRD), VALORG(MXRCRD)
       DIMENSION VALNEW(MXRCRD), DIFF(MXRCRD)
@@ -3830,20 +3830,20 @@ C  /* Deck dobrki */
 C
 C     This procedure does the actual breaking of symmetry.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxcent.h>
-#include <molinp.h>
-#include <gnrinf.h>
-#include <optinf.h>
-#include <cbiwlk.h>
-#include <cbirea.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <trkoor.h>
-#include <huckel.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "molinp.h"
+#include "gnrinf.h"
+#include "optinf.h"
+#include "cbiwlk.h"
+#include "cbirea.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "trkoor.h"
+#include "huckel.h"
       LOGICAL EXHER, EXSIR, EXABA, BRKALS
       CHARACTER FILENM*10, TMPLN*80, TMPTXT*11
       DIMENSION GEINFO(0:ITRMAX,6), NONT(MXCENT)
@@ -3852,7 +3852,7 @@ C
       DIMENSION TMPVEC(IINTCR), TMPMAT(IINTCR*IINTCR)
       SAVE INDOLD
       DATA INDOLD /999/
-#include <ibtfun.h>
+#include "ibtfun.h"
       CALL DZERO(STPDIA,MXRCRD)
       CALL DZERO(CSTEP,MXCOOR)
       CALL DZERO(TMPVEC,IINTCR)
@@ -4075,10 +4075,10 @@ C
 C     Controls saddle point optimization in redundant internal
 C     coordinates using the partitioned rational function approach.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <optinf.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "optinf.h"
       DIMENSION HESINT(MXRCRD,MXRCRD),EVEC(MX2CRD,MX2CRD)
       DIMENSION TMPMAT(MX2CRD*MX2CRD),TMPMT2(MX2CRD*MX2CRD)
       DIMENSION TMPMT3(MX2CRD*MX2CRD),TMPMT4(MX2CRD,MX2CRD)
@@ -4297,9 +4297,9 @@ C
 C     Calculates the function
 C     rho_ij = exp[alfa_ij (r_ref,ij^2 - r_ij^2)]
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       DIMENSION ATMARR(MXCENT,8)
       DIMENSION ALFA(3,3), DIST(3,3)
       DIMENSION VEC(3)
@@ -4323,12 +4323,12 @@ C  /* Deck bldhes */
 C
 C     Builds a simple model Hessian in redundant internal coordinates.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <gnrinf.h>
-#include <optinf.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "gnrinf.h"
+#include "optinf.h"
+#include "nuclei.h"
       DIMENSION ATMARR(MXCENT,8), HESINT(MXRCRD,MXRCRD)
       DIMENSION ALFA(3,3), DIST(3,3)
       CALL DZERO(HESINT,MXRCRD*MXRCRD)
@@ -4390,7 +4390,7 @@ C  /* Deck nrmlvc */
 C
 C     Normalizes a three-dimensional vector.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VEC(3)
       VECNRM = SQRT(DDOT(3,VEC,1,VEC,1))
       VEC(1) = VEC(1)/VECNRM
@@ -4404,7 +4404,7 @@ C  /* Deck nrmlvx */
 C
 C     Normalizes any vector.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VEC(ICRD)
       VECNRM = SQRT(DDOT(ICRD,VEC,1,VEC,1))
       IF (VECNRM .LE. 1.0D-12) VECNRM = 1.0D0
@@ -4419,7 +4419,7 @@ C  /* Deck vecprd */
 C
 C     Finds the vector product of two three-dimensional vectors.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VEC1(3),VEC2(3),VPRD(3)
       VPRD(1) =  VEC1(2)*VEC2(3) - VEC2(2)*VEC1(3)
       VPRD(2) = -VEC1(1)*VEC2(3) + VEC2(1)*VEC1(3)
