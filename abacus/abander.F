@@ -326,10 +326,9 @@ C
       IF (CCSDT .OR. CIS   .OR. CC1A .OR. CC1B .OR. MCC2 .OR. CCP2 .OR. 
      &    CCD   .OR. CC3   .OR. CCPT .OR. CCP3  .OR. CCRT .OR. CCR3 .OR. 
      &    CCR1A .OR. CCR1B .OR. CCR1B.OR. CCT .OR. 
-     &   (MP2.AND..NOT.DOCCSD)) THEN
+     &   (DMP2.AND..NOT.MCSCF)) THEN
          NAORDR = 0
-      ELSE IF (CCSD .OR. CCS .OR. CC2 .OR. (DMP2.AND..NOT.MCSCF).OR.
-     &                                                   DFTRUN) THEN
+      ELSE IF (CCSD .OR. CCS .OR. CC2 .OR. MP2 .OR. DFTRUN) THEN
          NAORDR = 1
       ELSE
          NAORDR = 2
@@ -461,8 +460,6 @@ c#endif
       DIMENSION WORK(LWORK)
       LOGICAL MOLECU
       CHARACTER WORD*7
-C
- 100  CONTINUE
 C
       MOLECU = .TRUE.
       NCOOR  = 3*NUCDEP
@@ -813,10 +810,10 @@ C
      &        WORK(KIDCMP),WORK(KIEQVG),WORK(KICIN),WORK(KIRPID),MBKLIN,
      &        NMBKLN,NDERIV,LWRK,NDIME,NINTIN,MAXADR,LDPMTX,IFRSTD,
      &        MAXINR,IWOFF,LTHTST,IDIMAX,IDIMIN,LURSTR,IPRINT,WRKDLM,
+     &        SYMDET,RSTDON)
 c#if defined (VAR_MPI)
 c     &        WORK(KFTVAL),SYMDET,RSTDON)
 c#else 
-     &        SYMDET,RSTDON)
 c#endif
 C
 C        *** Restoring property derivatives. ***
@@ -984,10 +981,10 @@ C
      &              WORK(KIRPID),MBKLIN,NMBKLN,NDERIV,LWRK,NDIME,NINTIN,
      &              MAXADR,LDPMTX,IFRSTD,MAXINR,IWOFF,LTHTST,IDIMAX,
      &              IDIMIN,LURSTR,IPRINT,WRKDLM,
+     &              SYMDET,RSTDON)
 c#if defined (VAR_MPI)
 c     &              WORK(KFTVAL),SYMDET,RSTDON)
 c#else
-     &              SYMDET,RSTDON)
 c#endif
 C
 C        *** Close the restart file ***
@@ -1065,10 +1062,10 @@ C  /* Deck nmder */
      &                 IRPIND,MBKLIN,NMBKLN,NDERIV,LWORK,NDIME,NINTIN,
      &                 MAXADR,LDPMTX,IFRSTD,MAXINR,IWOFF,LTHTST,IDIMAX,
      &                 IDIMIN,LURSTR,IPRINT,WRKDLM,
+     &                 SYMDET,RSTDON)
 c#if defined (VAR_MPI)
 c     &                 FTVAL,SYMDET,RSTDON)
 c#else
-     &                 SYMDET,RSTDON)
 c#endif
 #include <implicit.h>
 #include <priunit.h>
@@ -1220,7 +1217,6 @@ C
                      DO 800 IC = IRSRDR+1, 2, -1
                         IF (INDSTP(IC) .LT. (INDSTP(IC-1)-1)) THEN
                            INDSTP(IC) = INDSTP(IC) + 1
-                           ITEMP = ITEMP - 1
                            DO 900 I = IC+1, IRSRDR+1
                               INDSTP(I) = (IRSRDR+2) - I
  900                       CONTINUE
@@ -1310,10 +1306,10 @@ C
      &                       IFRSTD,NLDPMX,IORDR,IRSRDR,IINNER,NMPRTN,
      &                       NDIME,MAXINR,LWORK,NMBKLN,MBKLIN,IDIME,
      &                       NINTIN,IDIMAX,IDIMIN,LURSTR,IWOFF,
+     &                       RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
 c#if defined (VAR_MPI)
 c     &                       FTVAL,RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
 c#else
-     &                       RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
 c#endif
 C     
  1500                CONTINUE
@@ -1339,10 +1335,10 @@ C
      &        WRKDLM,INDSTP,ICRIRP,NPRTNR,ICIN,KDPMTX,IRPIND,IDCOMP,
      &        LDPMTX,IFRSTD,NLDPMX,0,IRSRDR,IINNER,NMPRTN,NDIME,
      &        MAXINR,LWORK,NMBKLN,MBKLIN,IDIME,NINTIN,IDIMAX,IDIMIN,
+     &        LURSTR,IWOFF,RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
 c#if defined (VAR_MPI)
 c     &        LURSTR,IWOFF,FTVAL,RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
 c#else
-     &        LURSTR,IWOFF,RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
 c#endif
 C
 c#if defined (VAR_MPI)
@@ -1438,8 +1434,8 @@ C        *****************************************
 C        *** Calculating property derivatives. ***
 C        *****************************************
 C
-         IF ((NPRPDR).AND.((.NOT.NRMCRD).OR.
-     &                          (NRMCRD.AND..NOT.FRSTNM))) THEN
+         IF (NPRPDR.AND.((.NOT.NRMCRD).OR.
+     &                   (NRMCRD.AND..NOT.FRSTNM))) THEN
 C
 C           *** Workaround to avoid common commonblock ***
 C           *** variables.                             ***
@@ -1478,7 +1474,7 @@ C
      &           WORK(KLAST),IADRSS,KDPMTX,ICRIRP,INDSTP,IDCOMP,
      &           WORK(KIMAX),WORK(KIMIN),WORK(KICNT),WORK(KNCVAL),
      &           WORK(KIDDCP),MXCOEF,NTYPE,NPPDER,LDPMTX,IFRSTD,NLDPMX,
-     &           LWORK,IPRINT)  
+     &           NSYM,MXNEXI,LWORK,IPRINT)  
          END IF
 C
 C        *******************
@@ -1508,10 +1504,10 @@ C  /* Deck gtnpnt */
      &                  IRPIND,IDCOMP,LDPMTX,IFRSTD,NLDPMX,IORDR,IRSRDR,
      &                  IINNER,NMPRTN,NDIME,MAXINR,LWORK,NMBKLN,MBKLIN,
      &                  IDIME,NINTIN,IDIMAX,IDIMIN,LURSTR,IWOFF,
+     &                  RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
 c#if defined (VAR_MPI)
 c     &                  FTVAL,RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
 c#else
-     &                  RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
 c#endif
 #include <implicit.h>
 #include <priunit.h>
@@ -1542,6 +1538,7 @@ c#endif
 #include <past.h>
 #include <pvibav.h>
 #include <gnrinf.h>
+#include <nuclei.h>
 c
 #include <huckel.h>      
 c
@@ -1566,10 +1563,10 @@ C     *** If property derivatives are calculated at this ***
 C     *** geometry, som variables needs to be set.       ***
 C
       IF ((.NOT.NRMCRD).OR.(NRMCRD.AND..NOT.FRSTNM)) THEN
-         IF ((PRPVIB).AND.(IORDR.LE.1)) THEN
+         IF (PRPVIB.AND.(IORDR.LE.1)) THEN
             NMPCAL = NMPCAL + 1
             CNMPRP = .TRUE.
-         ELSE IF ((NPRPDR).AND.(IORDR.LE.NMRDRP+NARDRP)) THEN
+         ELSE IF (NPRPDR.AND.(IORDR.LE.NMRDRP+NARDRP)) THEN
             NMPCAL = NMPCAL + 1
             CNMPRP = .TRUE.
          ELSE
@@ -1676,6 +1673,10 @@ c     &                     .FALSE.)
 C     
 C              *** Update MOLECULE.INP file. ***
 C
+               KNATOM = 1
+               KNLINE = KNATOM + NUCIND
+               KNATIN = KNLINE + NUCIND
+               KLAST  = KNATIN + NUCIND
                CALL UPCOMB(COOR,WORK(KNATOM),WORK(KNLINE),WORK(KNATIN),
      &                     MBKLIN,NMBKLN,LASTE)
 C
@@ -2334,7 +2335,7 @@ C
       DO 100 IORDR = 1, NORDR
 C
          DIAGON = (.NOT.FCCAL ).AND.(IORDR.EQ.NORDR).AND.
-     &            (     PRPVIB).AND.((NARDRP+NMRDRP).EQ.2) 
+     &                  PRPVIB .AND.((NARDRP+NMRDRP).EQ.2) 
 
 C        ***********************************************
 C        *** Special code for gradients and hessians ***
@@ -2444,8 +2445,6 @@ C           ***      numerical differentiation      ***
 C
             DO 600 ISTP = 1, NSTP
 C
- 700           CONTINUE
-C
 C              *** Finding which component this is ***
 C
                DO 800 IC = IORDR, 1, -1
@@ -2490,7 +2489,7 @@ C              *** In some calculations we only need diagonal. ***
 C              *** derivatives.                                ***
 C
                IF ((IORDR.GT.1).AND.DIAGON) THEN
-                  CLFVAL = (CLFVAL).AND.
+                  CLFVAL =  CLFVAL .AND.
      &                     (INDSTP(IORDR-1).EQ.INDSTP(IORDR)) 
                END IF
 C
@@ -2716,7 +2715,7 @@ C
       DO 900 IRS = NRSRDR, 2, -1
          IDISP = 0
          IF (INDCMP(ITCMP(IRS)) .LT. 0) THEN
-            IDISP = 2**(IORD)
+            IDISP = 2**IORD
          END IF
          IORD = IORD - 1
          NDISP = NDISP + IDISP
@@ -3105,7 +3104,7 @@ C     /* Deck mknrmc */
 #include <priunit.h>
 #include <mxcent.h>
 #include <codata.h>
-      PARAMETER (DMTHR = 1.0D-6, D0 = 0.0D0, D1 = 1.0D0)
+      PARAMETER (DMTHR = 1.0D-6, D0 = 0.0D0, D1 = 1.0D0, KCOL=6)
 #include <taymol.h>
 #include <trkoor.h>      
 #include <nuclei.h>
@@ -3327,7 +3326,7 @@ C
       NUMTIM = (NONZRO-1)/6 + 1
       DO ITIM = 1, NUMTIM
          ISTART =     6*(ITIM-1)+1
-         IEND   = MIN(6*(ITIM  )  ,NONZRO)
+         IEND   = MIN(6*ITIM,NONZRO)
          WRITE (LUPRI,'(I11,8I13)') (ICRIRP(I,1),I=ISTART,IEND)
          DO ICOOR = 1, NCOOR
             WRITE (LUPRI,'(6F13.7)') (SYMCOR(ICOOR,I),I=ISTART,IEND)
@@ -3455,7 +3454,7 @@ C
          CALL HEADER('Numerical hessian in ' // TEXT(1:LTXT) //
      &               ' coordinates',-1)  
 C
-         IF ((NAORDR.GE.2).AND..NOT.(PREHES)) THEN
+         IF ((NAORDR.GE.2).AND..NOT.PREHES) THEN
             KCSTRA = 1
             KSCTRA = KCSTRA + NCOOR**2
             KEHESS = KSCTRA + NCOOR**2
@@ -3755,8 +3754,6 @@ C
 C         
  1000 FORMAT (8X,6(3X,I4,5X),(3X,I4,5X))
  2000 FORMAT (1X,I4,2X,6F12.6)
- 3000 FORMAT (8X,6(3X,A6,3X),(3X,A6,5X))
- 4000 FORMAT (1X,A6,2X,6F12.6)
       RETURN
       END
 C
@@ -4161,7 +4158,7 @@ C
 C
 C     /*Deck nrmiso*/
       SUBROUTINE NRMISO(TDER,SYMCOR,DKIN,TRNCCR,TRAMSS,TMPGRD,TMPHES,
-     &                  TMPMSS,TMPTD1,TMPTD2,NDIMT)
+     &                  TMPMSS,TMPTD1,TMPTD2,NDIMT,IPRINT)
 C     *******************************************************************************
 C     *** This routine takes the force constants (with respect to the most normal ***
 C     *** masses) and finds the force constants with respect to other isotopes).  ***
@@ -4740,7 +4737,7 @@ C     ***********************************************
 C     
       IF (PRPVIB) THEN
          NMDPRP = 0
-         CALL NDWTPP(SPSPFV,SPSPDR,NMPCAL,NPPDER,IPRINT)
+         CALL NDWTPP(SPSPFV,SPSPDR,NPPDER,IPRINT)
       END IF
 C
 C     ***********************************
@@ -4776,7 +4773,7 @@ C
 C
                      IDERV = IDERV + 1
 C                    
-                     IF ((PRPVIB).AND.((NARDRP+NMRDRP).EQ.2)) THEN
+                     IF (PRPVIB.AND.((NARDRP+NMRDRP).EQ.2)) THEN
                         PRIVAL = ICOOR1.EQ.ICOOR2
                      ELSE
                         PRIVAL = .TRUE.
@@ -5296,7 +5293,7 @@ C
 C
 C
 C     /* Deck fndexs */
-      SUBROUTINE FNDEXS(WORD)
+      SUBROUTINE FNDEXS(WORD,IPRINT)
 C     ******************************************************
 C     *** Subroutine that sorts out the symmetry of the  ***
 C     *** excited states, and assign them to a new irrep ***
@@ -5371,15 +5368,13 @@ C
 C
 C     *** Print. ***
 C
-      IF (IPRINT.GT.0) THEN
-         WRITE (LUPRI,'(A)') '                                   '
-         WRITE (LUPRI,'(A)') 
-     &         'Symmetries of frozen core orbitals in reduced symmetry:'
-         WRITE (LUPRI,'(8A4))') (REP(I), I=0,MAXREP)
-         WRITE (LUPRI,'(I2,7I4)') (NRHFFR(I), I=1,MAXREP+1)
-         WRITE (LUPRI,'(A)') '                                   '
-         WRITE (LUPRI,'(A)') '                                   '
-      END IF
+      WRITE (LUPRI,'(A)') '                                   '
+      WRITE (LUPRI,'(A)') 
+     &     'Symmetries of frozen core orbitals in reduced symmetry:'
+      WRITE (LUPRI,'(8A4))') (REP(I), I=0,MAXREP)
+      WRITE (LUPRI,'(I2,7I4)') (NRHFFR(I), I=1,MAXREP+1)
+      WRITE (LUPRI,'(A)') '                                   '
+      WRITE (LUPRI,'(A)') '                                   '
 C
       RETURN
       END

@@ -204,7 +204,7 @@ C
       IF (PRPVIB) THEN
          NPPDER = NDCOOR
 C
-         IF ((NMRDRP.EQ.2).AND.(PRPVIB)) THEN
+         IF ((NMRDRP.EQ.2).AND.PRPVIB) THEN
             NPPDER = NPPDER + NDCOOR
          ELSE IF (NMRDRP.GE.2) THEN
             NPPDER = NPPDER + NDCOOR*(NDCOOR+1)/2
@@ -734,7 +734,7 @@ C
 C     
 C        *** If only the diagonal is needed. ***
 C
-         IF ((PRPVIB).AND.((NARDRP+NMRDRP).EQ.2)) THEN
+         IF (PRPVIB.AND.((NARDRP+NMRDRP).EQ.2)) THEN
             PRIVAL = ICOOR1.EQ.ICOOR2
          ELSE
             PRIVAL = .TRUE.
@@ -897,7 +897,7 @@ C
 C
 C        *** If only the diagonal is needed. ***
 C
-         IF ((PRPVIB).AND.((NARDRP+NMRDRP).EQ.2)) THEN
+         IF (PRPVIB.AND.((NARDRP+NMRDRP).EQ.2)) THEN
             RDDVAL = ICOOR1.EQ.ICOOR2
          ELSE
             RDDVAL = .TRUE.
@@ -943,7 +943,7 @@ C
 C         
 C           *** If only the diagonal is used. ***
 C
-            IF ((PRPVIB).AND.((NARDRP+NMRDRP).EQ.2)) THEN
+            IF (PRPVIB.AND.((NARDRP+NMRDRP).EQ.2)) THEN
                RDDVAL = ICOOR1.EQ.ICOOR2
             ELSE
                RDDVAL = .TRUE.
@@ -995,14 +995,14 @@ C
       IDERV = NDCOOR
       IADD  = 0
       DO ICOOR1 = 1, NDCOOR
-         IF ((PRPVIB).AND.((NARDRP+NMRDRP).EQ.2)) THEN
+         IF (PRPVIB.AND.((NARDRP+NMRDRP).EQ.2)) THEN
             IDERV = IDERV + 1
          ELSE
             IADD  = IADD  + 1
             IDERV = IDERV + IADD
          END IF
 C
-         PFAC = D025*(RNNORM(ICOOR1)**2)/(FREQ(ICOOR1))
+         PFAC = D025*(RNNORM(ICOOR1)**2)/FREQ(ICOOR1)
 C
          DO IDIM3 = 1, NDIM3
          DO IDIM2 = 1, NDIM2

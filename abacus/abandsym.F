@@ -947,7 +947,7 @@ C
 C
          RNORM2 = 0.0D0
          DO 2300 ICOOR1 = 1, NCOOR
-            RNORM2 = RNORM2 + (TMPSYM(ICOOR1))**2
+            RNORM2 = RNORM2 + TMPSYM(ICOOR1)**2
  2300    CONTINUE
          IF (RNORM2 .LT. DTHR) GOTO 2700
 C
@@ -1475,7 +1475,7 @@ C
 C        *** Check if further simplyfication is possible through *** 
 C        *** the use of partner geometry's                       ***
 C
-         IF (CLNRGY.AND.(NAORDR.EQ.0)) THEN
+         IF (CLNRGY.AND.(NAORDR.EQ.0).AND.(.NOT.SCND)) THEN
             KIDCTP = 1
             KINDTP = KIDCTP + NMORDR
             KLAST  = KINDTP + 5
@@ -3562,8 +3562,8 @@ C
 C
 C     *** Checking if this geometry has a partner geometry ***
 C
-      IF ((IORDR.LE.2) .AND. (NMORDR.EQ.2) .AND. (PRTNR)
-     &                                     .AND. (.NOT.TSM)) THEN
+      IF ((IORDR.LE.2) .AND. (NMORDR.EQ.2) .AND.PRTNR
+     &                                     .AND..NOT.TSM) THEN
 C
 C        *** Stepping in two directions. ***
 C     
