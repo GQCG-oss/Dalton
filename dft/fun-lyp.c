@@ -20,10 +20,10 @@
 /* INTERFACE PART */
 static int lyp_isgga(void) { return 1; }
 static int lyp_read(const char* conf_line);
-static real lyp_energy(const DftDensProp* dp);
-static void lyp_first(FirstFuncDrv *ds,   real factor, const DftDensProp* dp);
-static void lyp_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp);
-static void lyp_third(ThirdFuncDrv *ds,   real factor, const DftDensProp* dp);
+static real lyp_energy(const FunDensProp* dp);
+static void lyp_first(FunFirstFuncDrv *ds,   real factor, const FunDensProp* dp);
+static void lyp_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
+static void lyp_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp);
 
 Functional LYPFunctional = {
     "LYP",      /* name */
@@ -51,7 +51,7 @@ lyp_read(const char* conf_line)
    important than you think).
 */
 static real
-lyp_energy(const DftDensProp* dp)
+lyp_energy(const FunDensProp* dp)
 {
     const real A = 0.04918, B = 0.132, C = 0.2533, D = 0.349;
     const real CF = 0.3*pow(3*M_PI*M_PI,2.0/3.0);
@@ -95,7 +95,7 @@ lyp_energy(const DftDensProp* dp)
    See Doc/dft/functionals.tex for details.
 */
 static void
-lyp_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
+lyp_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     const real A = 0.04918, B = 0.132, C = 0.2533, D = 0.349;
     const real CF = 0.3*pow(3*M_PI*M_PI,2.0/3.0);
@@ -180,7 +180,7 @@ lyp_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
    alpha density and gradient.
 */
 static void
-lyp_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
+lyp_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     const real A = 0.04918, B = 0.132, C = 0.2533, D = 0.349;
     const real CF = 0.3*pow(3*M_PI*M_PI,2.0/3.0);
@@ -356,7 +356,7 @@ lyp_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
 }
 
 static void
-lyp_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
+lyp_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     const real A = 0.04918, B = 0.132, C = 0.2533, D = 0.349;
     const real CF = 0.3*pow(3*M_PI*M_PI,2.0/3.0);

@@ -100,11 +100,155 @@ FSYM(dftsetfunc)(const char* line, int * inperr, int len)
 }
 
 /* =================================================================== */
+/* transformations of functional derivatives from from unrestricted
+ * ones to closed shell case. */
+real
+dftene_(const real *rho, const real *grad)
+{
+    FunDensProp dp;
+    dp.rhoa  = dp.rhob  = *rho  *0.5;
+    dp.grada = dp.gradb = *grad *0.5;
+    dp.gradab = dp.grada*dp.gradb;
+    return selected_func->func(&dp);
+}
+
+void
+dftptf0_(real *rho, real *grad, real *wght, real *vx)
+{
+    FunFirstFuncDrv drvs;
+    FunDensProp dp;
+    dp.rhoa  = dp.rhob  = *rho *0.5;
+    dp.grada = dp.gradb = *grad*0.5;
+    if(dp.rhoa<1e-13) dp.rhoa = dp.rhob = 1e-13;
+    if(dp.grada<1e-13) dp.grada = dp.gradb = 1e-13;
+    dp.gradab = dp.grada*dp.gradb;
+    drv1_clear(&drvs);
+    selected_func->first(&drvs, *wght, &dp);
+    vx[0] = drvs.df1000;
+    vx[1] = drvs.df0010 + 0.5*drvs.df00001* (*grad);
+}
+
+void
+dftpot0_(FirstDrv *ds, const real* weight, const FunDensProp* dp)
+{
+    FunFirstFuncDrv drvs;
+    drv1_clear(&drvs);
+    selected_func->first(&drvs, *weight, dp);
+    ds->fR = drvs.df1000;
+    ds->fZ = drvs.df0010 + 0.5*drvs.df00001* (dp->grada+dp->gradb);
+}
+
+void
+dftpot1_(SecondDrv *ds, const real* w, const FunDensProp* dp, 
+         const int* triplet)
+{
+    
+    FunSecondFuncDrv drvs;
+
+    drv2_clear(&drvs);
+    if(dp->rhoa + dp->rhob>1e-14)
+        selected_func->second(&drvs, *w, dp);
+    if (*triplet) { /* triplet */  
+        ds->fZ  = drvs.df0010;
+        ds->fG  = -0.5*drvs.df00001;
+        ds->fRR = 0.5*(drvs.df2000 - drvs.df1100);
+        ds->fRZ = 0.5*(drvs.df1010 - drvs.df1001); 
+        ds->fRG = 0.0;  
+        ds->fZZ = 0.5*(drvs.df0020 - drvs.df0011); 
+        ds->fZG = 0.0; 
+        ds->fGG = 0.0; 
+    } else { /* singlet */
+        ds->fR  = 0.5*(drvs.df1000 + drvs.df0100);
+        ds->fZ  = drvs.df0010;
+        ds->fRR = 0.5*(drvs.df2000 + drvs.df1100);
+        ds->fRZ = 0.5*(drvs.df1010 + drvs.df1001);
+        ds->fZZ = 0.5*(drvs.df0020 + drvs.df0011); 
+        ds->fRG = 0.5*drvs.df10001;   
+        ds->fZG = 0.5*drvs.df00101;   
+        ds->fGG = 0.25*drvs.df00002; 
+        ds->fG  = 0.5*drvs.df00001;  
+    }
+}
+
+
+
+/* dftpot2_:
+   computes third order derivatives of selected functional with respect
+   to rho and zeta=|\nabla\rho|
+*/
+void
+dftpot2_(ThirdDrv *ds, real factor, const FunDensProp* dp, int isgga,
+         int triplet)
+{
+    FunThirdFuncDrv drvs;
+
+    drv3_clear(&drvs);
+    selected_func->third(&drvs, factor, dp);
+    /* transform to density from density_alpha derivatives below */
+    /* This could be a separate function. */
+    /* we treat singlet here */
+    ds->fR   = (drvs.df1000);
+    ds->fRR[0] = (drvs.df2000 + drvs.df1100);
+    ds->fRR[1] = (drvs.df2000 - drvs.df1100);
+    ds->fRRR[0] = (drvs.df3000 + 3*drvs.df2100);
+    ds->fRRR[1] = (drvs.df3000 - drvs.df2100);
+
+    if(isgga) { /* FORMULAE seem ok but were never really tested */
+        real grada = dp->grada;
+        real grada2= grada*grada;
+        real grada3= grada2*grada;
+	/* transform to closed shell, second time. Oh, I love this mess. */
+        ds->fZ  = drvs.df0010/(2*grada);
+        ds->fG = drvs.df00001;
+        ds->fZZ[0]  = (drvs.df0020 + drvs.df0011)/(4*grada2) 
+	    -drvs.df0010/(4*grada3);
+        ds->fZZ[1]  = (drvs.df0020 - drvs.df0011)/(4*grada2) 
+	    -drvs.df0010/(4*grada3);
+        ds->fRZ[0]  = (drvs.df1010 + drvs.df1001)/(2*grada);
+        ds->fRZ[1]  = (drvs.df1010 - drvs.df1001)/(2*grada);
+        ds->fRG[0]  = 2*drvs.df10001;
+        ds->fRG[1]  = 0.0;  
+        ds->fRRZ[0][0] = (drvs.df2010+drvs.df2001+2*drvs.df1110)/(2*grada);
+        ds->fRRZ[0][1] = (drvs.df2010+drvs.df2001-2*drvs.df1110)/(2*grada);
+        ds->fRRZ[1][0] = (drvs.df2010-drvs.df2001)/(2*grada);
+        ds->fRRZ[1][1] = ds->fRRZ[1][0];
+        ds->fRRG[0] = drvs.df20001+drvs.df11001;
+        ds->fRRG[1] = drvs.df20001-drvs.df11001;
+        ds->fRRGX[0][0] = 2*(drvs.df20001+drvs.df11001);
+        ds->fRRGX[1][1] = 2*(drvs.df20001-drvs.df11001);
+        ds->fRRGX[1][0] = ds->fRRGX[0][1] = 0;
+         
+        ds->fRZZ[0][0] = (drvs.df1020+drvs.df0120+2*drvs.df1011)/(4*grada2) 
+                      - (drvs.df1010+drvs.df1001)/(4*grada3);
+        ds->fRZZ[0][1] = (drvs.df1020+drvs.df0120-2*drvs.df1011)/(4*grada2) 
+                      - (drvs.df1010+drvs.df1001)/(4*grada3);
+        ds->fRZZ[1][0] = (drvs.df1020-drvs.df0120)/(4*grada2) 
+                      - (drvs.df1010-drvs.df1001)/(4*grada3);
+        ds->fRZZ[1][1] = ds->fRZZ[1][0];
+        ds->fZZZ[0] = ((drvs.df0030 + 3*drvs.df0021)/grada3 
+                   -3*(drvs.df0020 + drvs.df0011)/(grada2*grada2)
+                   +3*drvs.df0010/(grada3*grada2))/8.0; 
+        ds->fZZZ[1] = ((drvs.df0030 - drvs.df0021)/grada3 
+                   -(3*drvs.df0020 - drvs.df0011)/(grada2*grada2)
+                   +3*drvs.df0010/(grada3*grada2))/8.0; 
+    } else {
+        ds->fZ = ds->fZZ[0] = ds->fZZ[1] = ds->fRZ[0] = ds->fRZ[1] = 0;
+        ds->fRRZ[0][0] = ds->fRRZ[0][1]  = ds->fRRZ[1][0] = 0;
+        ds->fRRZ[1][1] = ds->fRZZ[0][0] = ds->fRZZ[0][1] = 0;
+        ds->fRZZ[1][0] = ds->fRZZ[1][1] = ds->fZZZ[0] = ds->fZZZ[1] = 0; 
+        ds->fG = ds->fRG[0] = ds->fRG[1]= ds->fRRG[0] = ds->fRRG[1] = 0;
+        ds->fRRGX[0][0] = ds->fRRGX[1][0] = 
+	    ds->fRRGX[0][1] = ds->fRRGX[1][1] = 0;  
+    }
+}
+
+
+/* =================================================================== */
 /*    DFT density evaluators for restricted and unrestricted cases.    */
 /*    evaluate density properties                                      */
 /* =================================================================== */
 void
-dft_dens_restricted(DftDensity* dens, DftDensProp* dp, DftGrid* grid,
+dft_dens_restricted(DftDensity* dens, FunDensProp* dp, DftGrid* grid,
                     real* tmp_vec)
 {
     /* Note that dens->dmata is really the total density, i.e rho_a+rho_b */
@@ -128,7 +272,7 @@ dft_dens_restricted(DftDensity* dens, DftDensProp* dp, DftGrid* grid,
 }
 
 void
-dft_dens_unrestricted(DftDensity* dens, DftDensProp* dp, DftGrid* grid,
+dft_dens_unrestricted(DftDensity* dens, FunDensProp* dp, DftGrid* grid,
                       real* tmp_vec)
 {
     real *tmpa = tmp_vec, *tmpb = tmp_vec + inforb_.nbast;

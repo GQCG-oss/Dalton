@@ -28,13 +28,13 @@
 /* INTERFACE PART */
 static int  kt_isgga(void) { return 1; }
 static int  kt_read(const char* conf_line);
-static real kt_energy(const DftDensProp* dens_prop);
-static void kt_first(FirstFuncDrv *ds, real factor, 
-                        const DftDensProp* dens_prop);
-static void kt_second(SecondFuncDrv *ds, real factor, 
-                        const DftDensProp* dens_prop);
-static void kt_third(ThirdFuncDrv *ds, real factor, 
-                        const DftDensProp* dens_prop);
+static real kt_energy(const FunDensProp* dens_prop);
+static void kt_first(FunFirstFuncDrv *ds, real factor, 
+                        const FunDensProp* dens_prop);
+static void kt_second(FunSecondFuncDrv *ds, real factor, 
+                        const FunDensProp* dens_prop);
+static void kt_third(FunThirdFuncDrv *ds, real factor, 
+                        const FunDensProp* dens_prop);
 
 Functional KTFunctional = {
     "KT",      /* name */
@@ -67,7 +67,7 @@ kt_read(const char* conf_line)
 static const real KT_THRESHOLD = 1e-14;
 static const real DELTA = 0.1;
 static real
-kt_energy(const DftDensProp* dp)
+kt_energy(const FunDensProp* dp)
 {
    real ea,eb;
    if (dp->rhob<KT_THRESHOLD)
@@ -90,7 +90,7 @@ kt_energy(const DftDensProp* dp)
 }
 
 static void
-kt_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
+kt_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real xa, ra43, ra13;
     real xb, rb43, rb13;
@@ -125,7 +125,7 @@ kt_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
 
 
 static void
-kt_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
+kt_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real xa, ra43, ra13, ram2;
     real xb, rb43, rb13, rbm2;
@@ -176,7 +176,7 @@ kt_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
 
 
 static void
-kt_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
+kt_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real ra, xa, ra43, ra13, ra23, ram1, ram2;
     real rb, xb, rb43, rb13, rb23, rbm1, rbm2;

@@ -20,14 +20,14 @@
 /* INTERFACE PART */
 static int  vwn_isgga(void) { return 0; }
 static int  vwn_read(const char* conf_line);
-static real vwn3_energy(const DftDensProp* dp);
-static void vwn3_first(FirstFuncDrv *ds,   real factor, const DftDensProp* dp);
-static void vwn3_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp);
-static void vwn3_third(ThirdFuncDrv *ds,   real factor, const DftDensProp* dp);
-static real vwn_energy(const DftDensProp* dp);
-static void vwn_first(FirstFuncDrv *ds,   real factor, const DftDensProp* dp);
-static void vwn_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp);
-static void vwn_third(ThirdFuncDrv *ds,   real factor, const DftDensProp* dp);
+static real vwn3_energy(const FunDensProp* dp);
+static void vwn3_first(FunFirstFuncDrv *ds,   real factor, const FunDensProp* dp);
+static void vwn3_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
+static void vwn3_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp);
+static real vwn_energy(const FunDensProp* dp);
+static void vwn_first(FunFirstFuncDrv *ds,   real factor, const FunDensProp* dp);
+static void vwn_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
+static void vwn_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp);
 
 /* VWN3 is a Gaussian version of the VWN functional based on suboptimal
  * set of parameters */
@@ -160,7 +160,7 @@ vwn_en_pot(real* enpot, real rho, int order, const struct vwn_params* p)
 }
 
 static real
-par_energy(const DftDensProp* dp, const struct vwn_params* para,
+par_energy(const FunDensProp* dp, const struct vwn_params* para,
            const struct vwn_params* ferro)
 {
     real ep_p[2], ep_f[2], ep_i[2], zeta, zeta4, f_zeta, delta;
@@ -184,7 +184,7 @@ par_energy(const DftDensProp* dp, const struct vwn_params* para,
 }
 
 static void
-par_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp,
+par_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp,
           const struct vwn_params* para, const struct vwn_params* ferro)
 {
     real zeta, zeta3,zeta4, f_zeta, f_zet1, e_f,acp, dacp, vcfp, g_f;
@@ -228,7 +228,7 @@ par_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp,
    CAUTION: may raise zeros to a negative power!
 */
 static void
-par_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp,
+par_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp,
            const struct vwn_params* para, const struct vwn_params* ferro)
 {
     real zeta, zeta2, zeta3,zeta4, f_zeta, f_zet1, f_zet2, vcfp;
@@ -300,7 +300,7 @@ par_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp,
 
 /* third not tested for open-shell! */
 static void
-par_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp,
+par_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp,
           const struct vwn_params* para, const struct vwn_params* ferro)
 {
     real zeta, zeta2, zeta3,zeta4, f_zeta, f_zet1, f_zet2, f_zet3, vcfp;
@@ -416,50 +416,50 @@ par_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp,
 
 /* The dispatch part of the functional implementation */
 static real
-vwn3_energy(const DftDensProp* dp)
+vwn3_energy(const FunDensProp* dp)
 {
     return par_energy(dp, &vwn3_paramagnetic, &vwn3_ferromagnetic);
 }
 
 static void
-vwn3_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
+vwn3_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     par_first(ds, factor, dp, &vwn3_paramagnetic, &vwn3_ferromagnetic);
 }
 
 static void
-vwn3_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
+vwn3_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     par_second(ds, factor, dp, &vwn3_paramagnetic, &vwn3_ferromagnetic);
 }
 
 static void
-vwn3_third(ThirdFuncDrv *ds,   real factor, const DftDensProp* dp)
+vwn3_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp)
 {
     par_third(ds, factor, dp, &vwn3_paramagnetic, &vwn3_ferromagnetic);
 }
 
 
 static real
-vwn_energy(const DftDensProp* dp)
+vwn_energy(const FunDensProp* dp)
 {
     return par_energy(dp, &vwn_paramagnetic, &vwn_ferromagnetic);
 }
 
 static void
-vwn_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
+vwn_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     par_first(ds, factor, dp, &vwn_paramagnetic, &vwn_ferromagnetic);
 }
 
 static void
-vwn_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
+vwn_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     par_second(ds, factor, dp, &vwn_paramagnetic, &vwn_ferromagnetic);
 }
 
 static void
-vwn_third(ThirdFuncDrv *ds,   real factor, const DftDensProp* dp)
+vwn_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp)
 {
     par_third(ds, factor, dp, &vwn_paramagnetic, &vwn_ferromagnetic);
 }

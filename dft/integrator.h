@@ -32,7 +32,7 @@ struct DftGrid_ {
 
     int london_off; /* offset of the "london" orbital derivatives */
     /* 1 - only values; 4 - values + (x,y,z) derivatives, etc */
-    DftDensProp dp;
+    FunDensProp dp;
     real grada[3];/* alpha, also used in closed-shell code */
     real gradb[3];/* beta, used only in open-shell calculations. */ 
     real *mov;

@@ -40,6 +40,7 @@ K(rhoa,grada,rhob,gradb,gradab):=0.5*(Ea(2*rhoa)+Eb(2*rhob));
 #define _XOPEN_SOURCE_EXTENDED 1
 #endif
 #include <math.h>
+#include <stddef.h>
  
 #define __CVERSION__
  
@@ -48,13 +49,13 @@ K(rhoa,grada,rhob,gradb,gradab):=0.5*(Ea(2*rhoa)+Eb(2*rhob));
 /* INTERFACE PART */
 static int pbex_isgga(void) { return 1; } /* FIXME: detect! */
 static int pbex_read(const char *conf_line);
-static real pbex_energy(const DftDensProp* dp);
-static void pbex_first(FirstFuncDrv *ds,   real factor,
-                         const DftDensProp* dp);
-static void pbex_second(SecondFuncDrv *ds, real factor,
-                          const DftDensProp* dp);
-static void pbex_third(ThirdFuncDrv *ds,   real factor,
-                         const DftDensProp* dp);
+static real pbex_energy(const FunDensProp* dp);
+static void pbex_first(FunFirstFuncDrv *ds,   real factor,
+                         const FunDensProp* dp);
+static void pbex_second(FunSecondFuncDrv *ds, real factor,
+                          const FunDensProp* dp);
+static void pbex_third(FunThirdFuncDrv *ds,   real factor,
+                         const FunDensProp* dp);
  
 Functional PbexFunctional = {
   "Pbex",       /* name */
@@ -76,7 +77,7 @@ pbex_read(const char *conf_line)
 }
 
 static real
-pbex_energy(const DftDensProp *dp)
+pbex_energy(const FunDensProp *dp)
 {
     real res;
     real rhoa = dp->rhoa, rhob = dp->rhob;
@@ -116,7 +117,7 @@ pbex_first_helper(real rhoa, real grada, real *res)
 }
 
 static void
-pbex_first(FirstFuncDrv *ds, real factor, const DftDensProp *dp)
+pbex_first(FunFirstFuncDrv *ds, real factor, const FunDensProp *dp)
 {
     real res[2];
 
@@ -162,7 +163,7 @@ pbex_second_helper(real rhoa, real grada, real *res)
 }
 
 static void
-pbex_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
+pbex_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real res[5];
  
@@ -234,7 +235,7 @@ pbex_third_helper(real rhoa, real grada, real *res)
 }
 
 static void
-pbex_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
+pbex_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real res[9];
  

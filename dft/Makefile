@@ -43,11 +43,6 @@ FUNFILES = \
 	fun-pbex.c	\
 	fun-pw86x.c	\
 	fun-pw91c.c	\
-	fun-pw92.c	\
-	fun-pw92pe.c	\
-	fun-pwggaIIc.c	\
-	fun-pwggaIIc2.c	\
-	fun-pwggaIIx.c	\
 	fun-pz81.c	\
 	fun-slater.c	\
 	fun-vwn.c

@@ -8,6 +8,7 @@
    (c) P. Salek, oct 2003 - the working implementation.
 */
 
+#define _XOPEN_SOURCE 500
 #include <math.h>
 #include <stddef.h>
 
@@ -18,18 +19,18 @@
 /* INTERFACE PART */
 static int  lb94_isgga(void) { return 1; }
 static int  lb94_read(const char* conf_line);
-static real lb94_energy(const DftDensProp* dens_prop);
-static void lb94_first(FirstFuncDrv *ds, real factor, 
-                       const DftDensProp* dens_prop);
-static void lb94_second(SecondFuncDrv *ds, real factor,
-                        const DftDensProp* dens_prop);
+static real lb94_energy(const FunDensProp* dens_prop);
+static void lb94_first(FunFirstFuncDrv *ds, real factor, 
+                       const FunDensProp* dens_prop);
+static void lb94_second(FunSecondFuncDrv *ds, real factor,
+                        const FunDensProp* dens_prop);
 
-static void lb94_third(ThirdFuncDrv *ds, real factor,
-                       const DftDensProp* dens_prop);
+static void lb94_third(FunThirdFuncDrv *ds, real factor,
+                       const FunDensProp* dens_prop);
 
 #ifdef FOURTH_ORDER_DERIVATIVES
 static void lb94_fourth(FourthFuncDrv *ds, real factor,
-                        const DftDensProp* dens_prop);
+                        const FunDensProp* dens_prop);
 #endif
 
 Functional LB94Functional = {"LB94",      /* name */
@@ -63,24 +64,23 @@ static const real LB94_THRESHOLD = 1e-14;
 static const real BETA = 0.05;
 
 static real
-lb94_energy(const DftDensProp* dp)
+lb94_energy(const FunDensProp* dp)
 {
     return SlaterFunctional.func(dp)+VWNFunctional.func(dp);
 }
 
 static void
-lb94_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
+lb94_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real rho    = dp->rhoa + dp->rhob;
     real rho13 = pow(rho, 1.0/3.0);
     real grad = dp->grada + dp->gradb;
     real rho43=rho*rho13;
-    real scaled_grad, sg2;
+    real scaled_grad, sg2, vx;
     scaled_grad = grad/(rho43>1e-13 ? rho43 : 1e-13);
     sg2   = scaled_grad*scaled_grad;
 
-
-    real vx = -BETA*rho13*sg2/
+    vx = -BETA*rho13*sg2/
         (1+3*BETA*scaled_grad*asinh(scaled_grad));
 
     ds->df1000 += vx*factor;
@@ -91,7 +91,7 @@ lb94_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
 }
 
 static void
-lb94_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
+lb94_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
 /* according to the authors, it is equivalent to ALDA for LR and higher.
  * See comments in Gisbergen et al, JCP 105(8) 3142. */
@@ -137,7 +137,7 @@ lb94_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
 
  
 static void
-lb94_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
+lb94_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     SlaterFunctional.third(ds, factor, dp);
     VWNFunctional.third(ds,   factor, dp);
@@ -145,7 +145,7 @@ lb94_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
 
 #ifdef FOURTH_ORDER_DERIVATIVES  
 static void
-lb94_fourth(FourthFuncDrv *ds, real factor, const DftDensProp* dp)
+lb94_fourth(FourthFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     SlaterFunctional.fourth(ds, factor, dp);
     VWNFunctional.fourth(ds,   factor, dp);

@@ -27,13 +27,13 @@
 /* INTERFACE PART */
 static int  becke_isgga(void) { return 1; }
 static int  becke_read(const char* conf_line);
-static real becke_energy(const DftDensProp* dens_prop);
-static void becke_first(FirstFuncDrv *ds, real factor, 
-                        const DftDensProp* dens_prop);
-static void becke_second(SecondFuncDrv *ds, real factor,
-                         const DftDensProp* dens_prop);
-static void becke_third(ThirdFuncDrv *ds, real factor,
-                        const DftDensProp* dens_prop);
+static real becke_energy(const FunDensProp* dens_prop);
+static void becke_first(FunFirstFuncDrv *ds, real factor, 
+                        const FunDensProp* dens_prop);
+static void becke_second(FunSecondFuncDrv *ds, real factor,
+                         const FunDensProp* dens_prop);
+static void becke_third(FunThirdFuncDrv *ds, real factor,
+                        const FunDensProp* dens_prop);
 
 Functional BeckeFunctional = {
     "Becke",      /* name */
@@ -66,7 +66,7 @@ becke_read(const char* conf_line)
 static const real BECKE_THRESHOLD = 1e-14;
 static const real BETA = 0.0042;
 static real
-becke_energy(const DftDensProp* dp)
+becke_energy(const FunDensProp* dp)
 {
    real ea,eb;
    if (dp->rhob<BECKE_THRESHOLD)
@@ -91,7 +91,7 @@ becke_energy(const DftDensProp* dp)
 
 
 static void
-becke_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
+becke_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real alpha, aa2, asha, sq1aa2;
     real alphb, ab2, ashb, sq1ab2;
@@ -133,7 +133,7 @@ becke_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
 }
 
 static void
-becke_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
+becke_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     const real BETA2 = BETA*BETA;
     real alpha, a2, a3, a4, asha, asha2, sq1a2;
@@ -247,7 +247,7 @@ becke_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
    restricted case.
 */
 static void
-becke_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
+becke_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     const real BETA2 = BETA*BETA;
     real alpha, a2, a3, a4, a5, asha, asha2, sq1a2;

@@ -25,6 +25,8 @@ Pawel Salek, 2004.06, Himmelbjerg.
  
 #include "functionals.h"
 
+#define ELEMENTS(arr) (sizeof(arr)/sizeof(arr[0]))
+
 static real CamMuFactor = 0.33, CamAlpha = 0.19, CamBeta = 0.46;
 #define MU    CamMuFactor
 #define ALPHA CamAlpha
@@ -61,13 +63,13 @@ typedef struct {
 static int camb3lyp_isgga(void) { return 1; }
 static int camb3lyp_read(const char *conf_line);
 static void camb3lyp_report(void);
-static real camb3lyp_energy(const DftDensProp* dp);
-static void camb3lyp_first(FirstFuncDrv *ds,   real factor,
-                           const DftDensProp* dp);
-static void camb3lyp_second(SecondFuncDrv *ds, real factor,
-                            const DftDensProp* dp);
-static void camb3lyp_third(ThirdFuncDrv *ds, real factor,
-                           const DftDensProp* dp);
+static real camb3lyp_energy(const FunDensProp* dp);
+static void camb3lyp_first(FunFirstFuncDrv *ds,   real factor,
+                           const FunDensProp* dp);
+static void camb3lyp_second(FunSecondFuncDrv *ds, real factor,
+                            const FunDensProp* dp);
+static void camb3lyp_third(FunThirdFuncDrv *ds, real factor,
+                           const FunDensProp* dp);
 
 Functional Camb3lypFunctional = {
   "Camb3lyp",       /* name */
@@ -417,10 +419,10 @@ camb3lyp_energy_sigma(real rho, real ex)
 }
 
 static real
-camb3lyp_energy(const DftDensProp *dp)
+camb3lyp_energy(const FunDensProp *dp)
 {
     real res, ea, eb, ex;
-    DftDensProp dsigma;
+    FunDensProp dsigma;
 
     dsigma.rhoa  = dsigma.rhob  = dp->rhoa;
     dsigma.grada = dsigma.gradb = dp->grada;
@@ -460,12 +462,12 @@ camb3lyp_first_sigma(real rho, real ex,
 }
 
 static void
-camb3lyp_first(FirstFuncDrv *ds, real factor, const DftDensProp *dp)
+camb3lyp_first(FunFirstFuncDrv *ds, real factor, const FunDensProp *dp)
 {
     RGFirstDrv res, dfun;
-    DftDensProp dsigma;
+    FunDensProp dsigma;
     real ex;
-    FirstFuncDrv fun1;
+    FunFirstFuncDrv fun1;
 
     dsigma.rhoa  = dsigma.rhob  = dp->rhoa;
     dsigma.grada = dsigma.gradb = dp->grada;
@@ -534,11 +536,11 @@ camb3lyp_second_sigma(real rho, real ex, RGSecondDrv *f2,
 }
 
 static void
-camb3lyp_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
+camb3lyp_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
-    SecondFuncDrv f2;
+    FunSecondFuncDrv f2;
     RGSecondDrv res, dfun;
-    DftDensProp dsigma;
+    FunDensProp dsigma;
     real ex;
 
     dsigma.rhoa  = dsigma.rhob  = dp->rhoa;
@@ -642,11 +644,11 @@ camb3lyp_third_sigma(real rho, real ex, RGThirdDrv *f3,
 
 
 static void
-camb3lyp_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
+camb3lyp_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 {
-    ThirdFuncDrv f3;
+    FunThirdFuncDrv f3;
     RGThirdDrv res, dfun;
-    DftDensProp dsigma;
+    FunDensProp dsigma;
     real ex;
 
     dsigma.rhoa  = dsigma.rhob  = dp->rhoa;
@@ -709,7 +711,7 @@ camb3lyp_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
 #include <stdlib.h>
 int main(int argc, char *argv[])
 {
-    DftDensProp dp;
+    FunDensProp dp;
     RGFirstDrv fa;
     real a, bfactor, bfactor_first, bfactor_second;
     if(argc<4) { printf("rhoa grada mu\n"); return 1;}

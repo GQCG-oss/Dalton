@@ -30,13 +30,13 @@
 
 /* INTERFACE PART */
 static int pwggaIIc2_read(const char* conf_line);
-static real pwggaIIc2_energy(const DftDensProp* dp);
+static real pwggaIIc2_energy(const FunDensProp* dp);
 static void pwggaIIc2_first(FirstFuncDrv *ds, real factor, 
-                       const DftDensProp* dp);
+                       const FunDensProp* dp);
 static void pwggaIIc2_second(SecondFuncDrv *ds, real factor,
-                        const DftDensProp* dp);
+                        const FunDensProp* dp);
 static void pwggaIIc2_third(ThirdFuncDrv *ds, real factor,
-                       const DftDensProp* dp);
+                       const FunDensProp* dp);
 
 Functional PWggaIIc2Functional = {
   "pwggaIIc2",
@@ -59,7 +59,7 @@ pwggaIIc2_read(const char* conf_line)
 
 
 static real
-pwggaIIc2_energy(const DftDensProp* dp)
+pwggaIIc2_energy(const FunDensProp* dp)
 {
     real t[11],zk;
     real rhoa = dp->rhoa;
@@ -83,7 +83,7 @@ pwggaIIc2_energy(const DftDensProp* dp)
 }
 
 static void
-pwggaIIc2_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
+pwggaIIc2_first(FirstFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real t[42];
     real dfdra, dfdrb, dfdga, dfdgb, dfdab;
@@ -147,7 +147,7 @@ pwggaIIc2_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
 }
 
 static void
-pwggaIIc2_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
+pwggaIIc2_second(SecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real t[96];
     real dfdra, dfdrb, dfdga, dfdgb, dfdab;
@@ -317,4 +317,4 @@ pwggaIIc2_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
     ds->df00002+= factor*d2fdabab;
 }
 static void pwggaIIc2_third(ThirdFuncDrv *ds, real factor,
-                       const DftDensProp* dp){}
+                       const FunDensProp* dp){}

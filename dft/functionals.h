@@ -15,55 +15,30 @@
 #ifndef _FUNCTIONALS_H_
 #define _FUNCTIONALS_H_
 
-#include "general.h"
+typedef double real;
 
 /* FirstDrv: matrix of first order derivatives with respect to two
  * parameters: density rho and SQUARE of the gradient of density grho.  
  * zeta_i = |\nabla\rho_i|²
  * mu     = |\nabla\rho_\alpha||\nabla\rho_\beta|
  */
-
-struct FirstDrv_ {
-    real fR;  /* d/drho F     */
-    real fZ;  /* d/zeta F     */
-};
-
-/* FirstDrv: matrix of first order derivatives with respect to two
- * parameters: density rho and SQUARE of the gradient of density grho.  
- * zeta_i = |\nabla\rho_i|²
- * mu     = |\nabla\rho_\alpha||\nabla\rho_\beta|
- */
-struct FirstFuncDrv_ {
+typedef struct FunFirstFuncDrv_ {
     real df1000;  /* d/drho F     */
     real df0100;
     real df0010;  /* d/zeta F     */
     real df0001;
     real df00001;
-};
+} FunFirstFuncDrv;
 
 /* SecondDrv:  matrix  of  second  order functional  derivatives  with
  * respect  to two  parameters: density  rho and  SQUARE  of the
  * density gradient zeta.  The derivatives are computed for alpha-alpha
  * or beta-beta spin-orbital block (i.e. include triplet flag).
  */
-struct SecondDrv_ {
-    real fR; /* d/drho  F */
-    real fZ; /* d/dzeta F */ 
-    real fRR; /* d/drho² F */
-    real fRZ; /* d/(drho dzeta) F */ 
-    real fZZ; /* d/dzeta² F */ 
-    /* additional derivatives required by  */ 
-    /* general linear response scheme     */ 
-    real fRG; /* d/(drho dgamma) F */ 
-    real fZG; /* d/(dzeta dgamma) F */
-    real fGG; /* d/dzgamma² F */  
-    real fG;  /* d/dgamma F */ 
-};
-
 /* SecondFuncDrv: this structure is used by functional derivative
  * evaluation procedures. Do not include "triplet" transformation.
  */
-struct SecondFuncDrv_ {
+typedef struct FunSecondFuncDrv_ {
     real df1000;  /* d/drho_alpha F               */
     real df0100;  /* d/drho_beta F                */
     real df0010;  /* d/|zeta_alpha| F             */
@@ -84,34 +59,15 @@ struct SecondFuncDrv_ {
     real df0002;  /* d/dzeta_beta^2 F             */
     real df00011;
     real df00002;
-};
+} FunSecondFuncDrv;
 
-/* ThirdDrv: matrix of third derivatives with respect to two parameters:
-   density rho and SQUARE of the density gradient zeta.
-*/
-struct ThirdDrv_ {
-    real fR;   /* d/drho  F */
-    real fZ;   /* d/dzeta F */
-    real fG;   /* d/dgamma F */
-    real fRR[2];  /* d/drho² F */
-    real fRZ[2];  /* d/(drho dzeta) F */
-    real fZZ[2];  /* d/dzeta² F */
-    real fRG[2];  /* d/(drho dgamma) F */
-    real fRRR[2]; /* d/drho³ F */
-    real fRRZ[2][2]; /* d/(drho² dzeta) F */
-    /* two forms of fRRG needed as the formulae is non symmetric */
-    real fRRG[2];     /* d/(drho? dgamma) F */
-    real fRRGX[2][2]; /* d/(drho? dgamma) F */   
-    real fRZZ[2][2]; /* d/(drho dzeta²) F */
-    real fZZZ[2]; /* d/dzeta³ F */
-};
 
 /* ThirdFuncDrv: matrix of third derivatives with respect to five
    parameters: density rho_alpha and SQUARE of the density gradient
    zeta.  and mu.
 */
 
-struct ThirdFuncDrv_ {
+typedef struct FunThirdFuncDrv_ {
     real df1000;   /* d/drho F          */
     real df0100; 
     real df0010;   /* d/|zeta| F        */
@@ -157,7 +113,8 @@ struct ThirdFuncDrv_ {
   /* most derivatives for fith variable not included *
    * this makes functionals valid only to square grad rho 
    */
-};
+} FunThirdFuncDrv;
+typedef struct Functional_ Functional;
 
 enum FunError { FUN_OK, FUN_UNKNOWN, FUN_CONF_ERROR };
 enum FunError fun_select_by_name(const char *conf_string);
@@ -167,6 +124,16 @@ extern void (*fun_set_hf_weight)(real w);
 extern real (*fun_get_hf_weight)(void);
 extern void (*fun_set_cam_param)(real w, real b);
 
+/* FunDensProp structure contains properties of the density that are
+   needed for functional evaluation and possibly other purposes.
+*/
+typedef struct FunDensProp_ {
+    real rhoa,  rhob;
+    real grada, gradb; /* norms of the density gradient, not squares */
+    real gradab;       /* scalar product of grada and gradb */
+    /* real current[3] or something may come in the future :-) */
+} FunDensProp;
+
 /* EnergyFunc: the function returning the energy for given densities
    and gradients. Note that some functionals(like LYP) depend explicitely
    on separately alpha and beta densities
@@ -174,15 +141,15 @@ extern void (*fun_set_cam_param)(real w, real b);
 typedef int (*IsGGAFunc)(void);
 typedef int (*ReadInputFunc)(const char* conf_string);
 typedef void (*ReportFunc)(void);
-typedef real (*EnergyFunc)(const DftDensProp* dens_prop);
-typedef void (*FirstOrderFun)(FirstFuncDrv *ds, real factor,
-                              const DftDensProp* dns_prp);
+typedef real (*EnergyFunc)(const FunDensProp* dens_prop);
+typedef void (*FirstOrderFun)(FunFirstFuncDrv *ds, real factor,
+                              const FunDensProp* dns_prp);
 
-typedef void (*SecondOrderFun)(SecondFuncDrv *ds, real factor,
-                               const DftDensProp* dens_prop);
+typedef void (*SecondOrderFun)(FunSecondFuncDrv *ds, real factor,
+                               const FunDensProp* dens_prop);
 
-typedef void (*ThirdOrderFun)(ThirdFuncDrv *ds, real factor,
-                              const DftDensProp* dens_prop);
+typedef void (*ThirdOrderFun)(FunThirdFuncDrv *ds, real factor,
+                              const FunDensProp* dens_prop);
 
 struct Functional_ {
     const char* name; /* descriptive functional name (usually 5 characters) */
@@ -198,31 +165,14 @@ struct Functional_ {
     ThirdOrderFun   third;
 };
 
-int  dft_isgga(void);
-void dftreport_(void);
-void dftlistfuncs_(void);
-real dftenergy_(const real* rho, const real* grad);
-void dftpot0_(FirstDrv *ds, const real* w, const DftDensProp* dp);
-void dftpot1_(SecondDrv*ds, const real* w, const DftDensProp* dp,
-              const int* triplet); 
-void dftpot2_(ThirdDrv *ds, real factor, const DftDensProp* dp, int isgga,
-              int triplet);
-
-void drv1_clear(FirstFuncDrv* gga);  /* set all components to 0 */
-void drv2_clear(SecondFuncDrv* gga); /* set all components to 0 */
-void drv3_clear(ThirdFuncDrv* gga);  /* set all components to 0 */
+void drv1_clear(FunFirstFuncDrv* gga);  /* set all components to 0 */
+void drv2_clear(FunSecondFuncDrv* gga); /* set all components to 0 */
+void drv3_clear(FunThirdFuncDrv* gga);  /* set all components to 0 */
 
 /* The list of functionals */
 /* sorted list of generic functionals */
 extern Functional BeckeFunctional;
 extern Functional Example2Functional;
-extern Functional Example3Functional;
-extern Functional Example4Functional;
-extern Functional Example5Functional;
-extern Functional Example6Functional;
-extern Functional Example7Functional;
-extern Functional Example8Functional;
-extern Functional Example9Functional;
 extern Functional ExampleFunctional;
 extern Functional KTFunctional;
 extern Functional LB94Functional;
@@ -230,12 +180,7 @@ extern Functional LYPFunctional;
 extern Functional OPTXFunctional;
 extern Functional P86cFunctional;
 extern Functional PW86xFunctional;
-extern Functional PW91cFunctional;
-extern Functional PW92Functional;
-extern Functional PW92peFunctional;
-extern Functional PWggaIIc2Functional;
-extern Functional PWggaIIcFunctional;
-extern Functional PWggaIIxFunctional;
+extern Functional Pw91cFunctional;
 extern Functional PZ81Functional;
 extern Functional PbecFunctional;
 extern Functional PbexFunctional;
@@ -270,6 +215,11 @@ extern Functional* available_functionals[];
 
 extern int fun_true(void);
 extern int fun_false(void);
+/* fortran (and not only) functional stub routines */
+void dftlistfuncs_(void);
+int dft_isgga_(void);
+int dft_isgga__(void);
+
 #endif /* _FUNCTIONALS_H_ */
 #else /* THE FORTRAN VERSION OF THE HEADERS; out of date as of 20021120 */
 

@@ -16,10 +16,10 @@
 /* INTERFACE PART */
 static int example2_isgga(void) { return 1; }
 static int example2_read(const char* conf_line);
-static real example2_energy(const DftDensProp* dp);
-static void example2_first(FirstFuncDrv *ds,   real factor, const DftDensProp* dp);
-static void example2_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp);
-static void example2_third(ThirdFuncDrv *ds,   real factor, const DftDensProp* dp);
+static real example2_energy(const FunDensProp* dp);
+static void example2_first(FunFirstFuncDrv *ds,   real factor, const FunDensProp* dp);
+static void example2_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
+static void example2_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp);
 
 Functional Example2Functional = {
   "Example2",         /* name */
@@ -43,7 +43,7 @@ example2_read(const char* conf_line)
 static const real EPREF= -5e-5;
 
 static real
-example2_energy(const DftDensProp* dp)
+example2_energy(const FunDensProp* dp)
 {
   return EPREF*(dp->rhoa*dp->grada*dp->grada+dp->rhob*dp->gradb*dp->gradb);
 }
@@ -51,14 +51,14 @@ example2_energy(const DftDensProp* dp)
    derivatives with respect to dp->rho_alpha, and dp->grad_alpha
  */
 static void
-example2_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
+example2_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
 {
   ds->df1000 +=  EPREF*dp->grada*dp->grada*factor;
   ds->df0010 +=  EPREF*dp->rhoa*2*dp->grada*factor;
 }
 
 static void
-example2_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
+example2_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
   ds->df1000 +=  EPREF*dp->grada*dp->grada*factor;
   ds->df0010 +=  EPREF*dp->rhoa*2*dp->grada*factor;
@@ -70,7 +70,7 @@ example2_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
    Test functional derivatives.
 */
 static void
-example2_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
+example2_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 {
   ds->df1000 +=  EPREF*dp->grada*dp->grada*factor;
   ds->df0010 +=  EPREF*dp->rhoa*2*dp->grada*factor;

@@ -15,10 +15,10 @@
 /* INTERFACE PART */
 static int example9_isgga(void) { return 1; }
 static int example9_read(const char* conf_line);
-static real example9_energy(const DftDensProp* dp);
-static void example9_first(FirstFuncDrv *ds,   real factor, const DftDensProp* dp);
-static void example9_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp);
-static void example9_third(ThirdFuncDrv *ds,   real factor, const DftDensProp* dp);
+static real example9_energy(const FunDensProp* dp);
+static void example9_first(FunFirstFuncDrv *ds,   real factor, const FunDensProp* dp);
+static void example9_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
+static void example9_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp);
 
 Functional Example9Functional = {
   "Example9",         /* name */
@@ -42,7 +42,7 @@ example9_read(const char* conf_line)
 static const real EPREF= -5e-2;
 
 static real
-example9_energy(const DftDensProp* dp)
+example9_energy(const FunDensProp* dp)
 {
   return EPREF*(dp->gradab);
 }
@@ -50,13 +50,13 @@ example9_energy(const DftDensProp* dp)
    derivatives with respect to rho_alpha, and grad_alpha
  */
 static void
-example9_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
+example9_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
 {
   ds->df00001 +=  EPREF*factor;
 }
 
 static void
-example9_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
+example9_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
   ds->df00001 +=  EPREF*factor;
 }
@@ -65,7 +65,7 @@ example9_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
    Test functional derivatives.
 */
 static void
-example9_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
+example9_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 {
   ds->df00001 +=  EPREF*factor;
 }

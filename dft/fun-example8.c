@@ -15,13 +15,13 @@
 /* INTERFACE PART */
 static int example8_isgga(void) { return 1; }
 static int example8_read(const char* conf_line);
-static real example8_energy(const DftDensProp* dp);
-static void example8_first(FirstFuncDrv *ds,   real factor, 
-                           const DftDensProp* dp);
-static void example8_second(SecondFuncDrv *ds, real factor,
-                            const DftDensProp* dp);
-static void example8_third(ThirdFuncDrv *ds,   real factor,
-                           const DftDensProp* dp);
+static real example8_energy(const FunDensProp* dp);
+static void example8_first(FunFirstFuncDrv *ds,   real factor, 
+                           const FunDensProp* dp);
+static void example8_second(FunSecondFuncDrv *ds, real factor,
+                            const FunDensProp* dp);
+static void example8_third(FunThirdFuncDrv *ds,   real factor,
+                           const FunDensProp* dp);
 
 Functional Example8Functional = {
   "Example8",         /* name */
@@ -45,7 +45,7 @@ example8_read(const char* conf_line)
 static const real EPREF= -5e-2;
 
 static real
-example8_energy(const DftDensProp* dp)
+example8_energy(const FunDensProp* dp)
 {
   return EPREF*(dp->rhoa * dp->rhob * dp->grada * dp->gradb);
 }
@@ -53,14 +53,14 @@ example8_energy(const DftDensProp* dp)
    derivatives with respect to rho_alpha, and grad_alpha
  */
 static void
-example8_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
+example8_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
 {
   ds->df1000 +=  EPREF*dp->rhob * dp->grada * dp->gradb*factor;
   ds->df0010 +=  EPREF*dp->rhoa * dp->rhob * dp->gradb*factor;
 }
 
 static void
-example8_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
+example8_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
   ds->df1000 +=  EPREF*dp->rhob * dp->grada * dp->gradb*factor;
   ds->df0010 +=  EPREF*dp->rhoa * dp->rhob * dp->gradb*factor;
@@ -74,7 +74,7 @@ example8_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
    Test functional derivatives.
 */
 static void
-example8_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
+example8_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 {
   ds->df1000 +=  EPREF*dp->rhob * dp->grada * dp->gradb*factor;
   ds->df0010 +=  EPREF*dp->rhoa * dp->rhob * dp->gradb*factor;

@@ -13,6 +13,15 @@
 #define RESTRICT
 #endif
 
+/* define the basic floating-point variable type used by the Fortran code */
+typedef double real;
+
+#if !defined(__CVERSION)
+#define __CVERSION__
+#endif
+
+#include "functionals.h"
+
 /* Match Fortran name mangling. If the Fortran compiler does not
  * mangle names, define NO_UNDERSCORE in CFLAGS.  g77 and compaq fort
  * (cryptically referred to with HAVE_GCPP below) for linux-alpha both
@@ -42,8 +51,6 @@
 
 #define ELEMENTS(arr) (sizeof(arr)/sizeof(arr[0]))
 
-/* define the basic floating-point variable type used by the Fortran code */
-typedef double real;
 
 typedef struct Functional_ Functional;
 typedef struct FirstDrv_  FirstDrv;
@@ -59,27 +66,72 @@ typedef struct DftDensity_  DftDensity;
 typedef struct DftDensProp_ DftDensProp;
 typedef struct DftGrid_     DftGrid;
 
-typedef void (*DftDensEvaluator)(DftDensity* dens, DftDensProp* dp,
+typedef void (*DftDensEvaluator)(DftDensity* dens, FunDensProp* dp,
                                  DftGrid* grid, real* tmp_vec);
 struct DftDensity_ {
     DftDensEvaluator evaluate;
     real *dmata, *dmatb;
 };
 
-/* DftDensProp structure contains properties of the density that are
-   needed for functional evaluation and possibly other purposes.
-*/
-struct DftDensProp_ {
-    real rhoa,  rhob;
-    real grada, gradb; /* norms of the density gradient, not squares */
-    real gradab;       /* scalar product of grada and gradb */
-    /* real current[3] or something may come in the future :-) */
+/* FirstDrv: matrix of first order derivatives with respect to two
+ * parameters: density rho and SQUARE of the gradient of density grho.
+ * zeta_i = |\nabla\rho_i|%Gï¿¿%@
+ * mu     = |\nabla\rho_\alpha||\nabla\rho_\beta|
+ */
+
+struct FirstDrv_ {
+    real fR;  /* d/drho F     */
+    real fZ;  /* d/zeta F     */
 };
 
+/* SecondDrv:  matrix  of  second  order functional  derivatives  with
+ * respect  to two  parameters: density  rho and  SQUARE  of the
+ * density gradient zeta.  The derivatives are computed for alpha-alpha
+ * or beta-beta spin-orbital block (i.e. include triplet flag).
+ */
+struct SecondDrv_ {
+    real fR; /* d/drho  F */
+    real fZ; /* d/dzeta F */
+    real fRR; /* d/drho%Gï¿¿%@ F */
+    real fRZ; /* d/(drho dzeta) F */
+    real fZZ; /* d/dzeta%Gï¿¿%@ F */
+    /* additional derivatives required by  */
+    /* general linear response scheme     */
+    real fRG; /* d/(drho dgamma) F */
+    real fZG; /* d/(dzeta dgamma) F */
+    real fGG; /* d/dzgamma%Gï¿¿%@ F */
+    real fG;  /* d/dgamma F */
+};
 
-void dft_dens_restricted  (DftDensity* dens, DftDensProp* dp, DftGrid* grid,
+/* ThirdDrv: matrix of third derivatives with respect to two parameters:
+   density rho and SQUARE of the density gradient zeta.
+*/
+struct ThirdDrv_ {
+    real fR;   /* d/drho  F */
+    real fZ;   /* d/dzeta F */
+    real fG;   /* d/dgamma F */
+    real fRR[2];  /* d/drho%Gï¿¿%@ F */
+    real fRZ[2];  /* d/(drho dzeta) F */
+    real fZZ[2];  /* d/dzeta%Gï¿¿%@ F */
+    real fRG[2];  /* d/(drho dgamma) F */
+    real fRRR[2]; /* d/drho%Gï¿¿%@ F */
+    real fRRZ[2][2]; /* d/(drho%Gï¿¿%@ dzeta) F */
+    /* two forms of fRRG needed as the formulae is non symmetric */
+    real fRRG[2];     /* d/(drho? dgamma) F */
+    real fRRGX[2][2]; /* d/(drho? dgamma) F */
+    real fRZZ[2][2]; /* d/(drho dzeta%Gï¿¿%@) F */
+    real fZZZ[2]; /* d/dzeta%Gï¿¿%@ F */
+};
+
+void dftpot0_(FirstDrv *ds, const real* weight, const FunDensProp* dp);
+void dftpot1_(SecondDrv *ds, const real* w, const FunDensProp* dp,
+              const int* triplet);
+void dftpot2_(ThirdDrv *ds, real factor, const FunDensProp* dp, int isgga,
+              int triplet);
+
+void dft_dens_restricted  (DftDensity* dens, FunDensProp* dp, DftGrid* grid,
                            real* tmp_vec);
-void dft_dens_unrestricted(DftDensity* dens, DftDensProp* dp, DftGrid* grid,
+void dft_dens_unrestricted(DftDensity* dens, FunDensProp* dp, DftGrid* grid,
                            real* tmp_vec);
 
 

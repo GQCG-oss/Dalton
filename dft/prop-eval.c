@@ -603,7 +603,7 @@ dft_kohn_shamab_collect_info(real*ksm, real* energy, real* work)
 static void
 kohn_shamab_cb(DftGrid* grid, DftKohnShamU* exc)
 {
-    FirstFuncDrv drvs;
+    FunFirstFuncDrv drvs;
     int isym, i, j;
 
     drv1_clear(&drvs);
@@ -780,7 +780,7 @@ lin_resp_cbab_gga(DftGrid* grid, LinRespDataab* data)
     real rhowa,rhowb, gradwa[3], gradwb[3];  
     int isym, i, j;
     int jsym, istr, iend, jstr, jend, ioff;
-    SecondFuncDrv vxc;    
+    FunSecondFuncDrv vxc;    
     real zetaa, zetab, zetac; 
     real znva, rxa, rya, rza; 
     real znvb, rxb, ryb, rzb;
@@ -933,7 +933,7 @@ lin_resp_cbab_nogga(DftGrid* grid, LinRespDataab* data)
     real rhowa,rhowb;  
     int isym, i, j;
     int jsym, istr, iend, jstr, jend, ioff;
-    SecondFuncDrv vxc;    
+    FunSecondFuncDrv vxc;    
     real vt, gvi;
 
     compute_trans_rho(grid, data, &rhowa, &rhowb); 
@@ -1213,7 +1213,7 @@ kohn_sham_cb_b_lda(DftIntegratorBl *grid, real * RESTRICT tmp,
     int i;
     real * RESTRICT excmat = data->excmat;
     real * RESTRICT dR     = data->dR;
-    DftDensProp dp = { 0 };
+    FunDensProp dp = { 0 };
     
     assert(grid->ntypso >0);
     for(i=blstart; i<bllen; i++) {
@@ -1237,7 +1237,7 @@ kohn_sham_cb_b_gga(DftIntegratorBl* grid, real * RESTRICT tmp,
     real * RESTRICT excmat = data->excmat;
     real * RESTRICT dR = data->dR;
     real * RESTRICT dZ = data->dZ;
-    DftDensProp dp = { 0 };
+    FunDensProp dp = { 0 };
 
     assert(grid->ntypso >0);
     for(i=0; i<bllen; i++) {
@@ -1341,7 +1341,7 @@ lin_resp_cb_b_lda(DftIntegratorBl* grid, real * RESTRICT tmp,
     real * RESTRICT excmat = data->res;
     real (* RESTRICT vt) = data->vt; /* [bllen][4] */
     int ibl, i, jbl, j, k, isym, ivec;
-    DftDensProp dp = { 0 };
+    FunDensProp dp = { 0 };
 
     for(ivec=0; ivec<data->vecs_in_batch; ivec++) {
         /* compute vector of transformed densities vt */
@@ -1400,7 +1400,7 @@ lin_resp_cb_b_gga(DftIntegratorBl* grid, real * RESTRICT tmp,
     real * RESTRICT aoy = grid->atv+bllen*inforb_.nbast*2;
     real * RESTRICT aoz = grid->atv+bllen*inforb_.nbast*3;
     real * RESTRICT excmat = data->res;
-    DftDensProp dp = { 0 };
+    FunDensProp dp = { 0 };
 
     for(ivec=0; ivec<data->vecs_in_batch; ivec++) {
         /* compute vector of transformed densities and dens. gradients vt3 */
@@ -1598,8 +1598,8 @@ kohn_shamab_cb_b_lda(DftIntegratorBl *grid, real * RESTRICT tmp,
                      int bllen, int blstart, int blend,
                      struct ks_data_ab* d)
 {
-    FirstFuncDrv drvs;
-    DftDensProp dp = { 0 };
+    FunFirstFuncDrv drvs;
+    FunDensProp dp = { 0 };
     int i;
 
     for(i=blstart; i<bllen; i++) {
@@ -1664,9 +1664,9 @@ kohn_shamab_cb_b_gga(DftIntegratorBl *grid, real * RESTRICT tmp,
                      int bllen, int blstart, int blend,
                      struct ks_data_ab* d)
 {
-    FirstFuncDrv drvs;
+    FunFirstFuncDrv drvs;
     int i;
-    DftDensProp dp = { 0 };
+    FunDensProp dp = { 0 };
 
     assert(grid->ntypso >0);
     for(i=0; i<bllen; i++) {
@@ -1760,7 +1760,7 @@ dft_kohn_shamab_b_(real* dmat, real* ksm, real *edfty,
 static void
 dft_mol_grad_ab(DftGrid* grid, real* dmat)
 { 
-    FirstFuncDrv drvs;
+    FunFirstFuncDrv drvs;
 
     real* dmata = dmat;
     real* dmatb = dmat + inforb_.n2basx;

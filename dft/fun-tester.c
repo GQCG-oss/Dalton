@@ -68,7 +68,7 @@ test_first(const char* fun_name, EnergyFunc func, FirstOrderFun first_func)
 		real rho   = i/40.0;
 		real ngrad = j/40.0;
 		real gracos= k/20.0;
-		DftDensProp dt, dp = { 0.5*rho,0.2*rho, 0.2*ngrad,0.2*ngrad };
+		FunDensProp dt, dp = { 0.5*rho,0.2*rho, 0.2*ngrad,0.2*ngrad };
 		dp.gradab = dp.grada*dp.gradb*gracos;
 		/* TEST df1000 */
 		drho = rho*1e-4;
@@ -118,7 +118,7 @@ test_second(const char* fname,
 		real rho   = i/40.0;
 		real ngrad = j/40.0;
 		real gracos= k/20.0;
-		DftDensProp dt, dp = { 0.5*rho, 0.2*rho, 0.5*ngrad, 0.3*ngrad };
+		FunDensProp dt, dp = { 0.5*rho, 0.2*rho, 0.5*ngrad, 0.3*ngrad };
 		dp.gradab = dp.grada*dp.gradb*gracos;
 		drv2_clear(&d);
 		second_fun(&d, 1, &dp);
@@ -236,7 +236,7 @@ test_third(const char* fun_name,
 		real rho   = i/40.0;
 		real ngrad = j/40.0;
 		real gracos= k/20.0;
-		DftDensProp dt, dp = {0.5*rho, 0.3*rho, 0.5*ngrad, 1*ngrad};
+		FunDensProp dt, dp = {0.5*rho, 0.3*rho, 0.5*ngrad, 1*ngrad};
 		dp.gradab = dp.grada*dp.gradb*gracos;
 		drv3_clear(&d);
 		third_fun(&d, 1, &dp);
@@ -372,7 +372,7 @@ main(int argc, char* argv[])
     static int funco[] = { 0, 0, 0 };
     char* arg;
     Functional* func;
-    DftDensProp  dp;
+    FunDensProp  dp;
     FirstFuncDrv ds;
 
     dp.rhoa = dp.rhob = 1.0000;

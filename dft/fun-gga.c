@@ -27,10 +27,10 @@
 
 /* INTERFACE PART */
 static int  lda_read(const char* conf_line);
-static real lda_energy(const DftDensProp* dp);
-static void lda_first(FirstFuncDrv *ds,   real factor, const DftDensProp* dp);
-static void lda_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp);
-static void lda_third(ThirdFuncDrv *ds,   real factor, const DftDensProp* dp);
+static real lda_energy(const FunDensProp* dp);
+static void lda_first(FunFirstFuncDrv *ds,   real factor, const FunDensProp* dp);
+static void lda_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
+static void lda_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp);
 static int  ldagauss_read(const char* conf_line);
 static int  blyp_read(const char* conf_line);
 static int  b3lyp_read(const char* conf_line);
@@ -50,10 +50,10 @@ static int  gga_isgga(void);
 static int  xalpha_read(const char* conf_line);
 static int  gga_key_read(const char* conf_line);
 static void gga_report(void);
-static real gga_energy(const DftDensProp* dp);
-static void gga_first(FirstFuncDrv *ds,   real factor, const DftDensProp* dp);
-static void gga_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp);
-static void gga_third(ThirdFuncDrv *ds,   real factor, const DftDensProp* dp);
+static real gga_energy(const FunDensProp* dp);
+static void gga_first(FunFirstFuncDrv *ds,   real factor, const FunDensProp* dp);
+static void gga_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
+static void gga_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp);
 
 #define LDA_FUNCTIONAL(name,read) { (name), \
     fun_false, (read), NULL, lda_energy, lda_first, lda_second, \
@@ -133,27 +133,27 @@ lda_read(const char* conf_line)
 }
 
 static real
-lda_energy(const DftDensProp* dp)
+lda_energy(const FunDensProp* dp)
 {
     return SlaterFunctional.func(dp) + VWNFunctional.func(dp);
 }
 
 static void
-lda_first(FirstFuncDrv *ds, real factor,  const DftDensProp* dp)
+lda_first(FunFirstFuncDrv *ds, real factor,  const FunDensProp* dp)
 {
     SlaterFunctional.first(ds, factor, dp);
     VWNFunctional  .first(ds, factor, dp);
 }
 
 static void
-lda_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
+lda_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     SlaterFunctional.second(ds, factor, dp);
     VWNFunctional  .second(ds, factor, dp);
 }
 
 static void
-lda_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
+lda_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     SlaterFunctional.third(ds, factor, dp);
     VWNFunctional  .third(ds, factor, dp);
@@ -241,7 +241,7 @@ bpw91_read(const char* conf_line)
 {
     gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, 1);
     gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional,  1);
-    gga_fun_list = add_functional(gga_fun_list, &PW91cFunctional,  1);
+    gga_fun_list = add_functional(gga_fun_list, &Pw91cFunctional,  1);
     fun_set_hf_weight(0);
     return 1;
 }
@@ -329,7 +329,8 @@ gga_key_read(const char* conf_line)
         if(*str =='\0') break; /* line ended by whitespace */
         if(strncasecmp("HF=", str, 3)==0) {
             if(sscanf(str+3,"%g", &f) != 1) {
-                fun_printf("GGAKey: HF not followed by the weight: ", conf_line);
+                fun_printf("GGAKey: HF not followed by the weight: ",
+                           conf_line);
                 res = 0;
             } else fun_set_hf_weight(f);
         } else {
@@ -339,12 +340,14 @@ gga_key_read(const char* conf_line)
                    str[len] == '=') {
                     if(sscanf(str+len+1,"%g", &f) != 1) {
                         fun_printf("GGAKey: keyword '%s' not followed by "
-                                   "weight: %s", available_functionals[i]->name, 
+                                   "weight: %s",
+                                   available_functionals[i]->name, 
                                    conf_line);
                         res = 0;
                     } else {
-                        gga_fun_list = add_functional(gga_fun_list, 
-                                                      available_functionals[i], f);
+                        gga_fun_list = 
+                            add_functional(gga_fun_list, 
+                                           available_functionals[i], f);
                         break; /* weight properly read, break the 'for' loop */
                     }
                 }
@@ -364,13 +367,13 @@ gga_report(void)
     FuncList* lst;
     fun_printf("Weighted mixed functional:");
     if(fun_get_hf_weight()>0)
-        fun_printf("%30s: %10.5f", "HF exchange", fun_get_hf_weight());
+        fun_printf("%25s: %10.5f", "HF exchange", fun_get_hf_weight());
     for(lst=gga_fun_list; lst; lst=lst->next) 
-        fun_printf("%30s: %10.5f", lst->func->name, lst->weight);
+        fun_printf("%25s: %10.5f", lst->func->name, lst->weight);
 }
 
 static real
-gga_energy(const DftDensProp* dp)
+gga_energy(const FunDensProp* dp)
 {
     real res = 0;
     FuncList* lst;
@@ -384,7 +387,7 @@ gga_energy(const DftDensProp* dp)
 }
 
 static void
-gga_first(FirstFuncDrv *ds, real factor,  const DftDensProp* dp)
+gga_first(FunFirstFuncDrv *ds, real factor,  const FunDensProp* dp)
 {
     FuncList* lst;
     for(lst=gga_fun_list; lst; lst=lst->next) {
@@ -396,7 +399,7 @@ gga_first(FirstFuncDrv *ds, real factor,  const DftDensProp* dp)
 }
 
 static void
-gga_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
+gga_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     FuncList* lst;
     for(lst=gga_fun_list; lst; lst=lst->next) 
@@ -404,7 +407,7 @@ gga_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
 }
 
 static void
-gga_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
+gga_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     FuncList* lst;
     for(lst=gga_fun_list; lst; lst=lst->next) 

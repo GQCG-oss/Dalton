@@ -21,10 +21,10 @@
 
 /* INTERFACE PART */
 static int pz81_read(const char* conf_line);
-static real pz81_energy(const DftDensProp* dp);
-static void pz81_first (FirstFuncDrv *ds,  real factor, const DftDensProp* dp);
-static void pz81_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp);
-static void pz81_third (ThirdFuncDrv *ds,  real factor, const DftDensProp* dp);
+static real pz81_energy(const FunDensProp* dp);
+static void pz81_first (FunFirstFuncDrv *ds,  real factor, const FunDensProp* dp);
+static void pz81_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
+static void pz81_third (FunThirdFuncDrv *ds,  real factor, const FunDensProp* dp);
 
 Functional PZ81Functional = {
   "PZ81",
@@ -65,7 +65,7 @@ pz81_read(const char* conf_line)
 
 
 static real
-pz81a_energy(const DftDensProp* dp)
+pz81a_energy(const FunDensProp* dp)
 {
     real t[7],zk;
     real rhoa = dp->rhoa;
@@ -82,7 +82,7 @@ pz81a_energy(const DftDensProp* dp)
 }
 
 static void
-pz81a_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
+pz81a_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real t[28];
     real dfdra, dfdrb;
@@ -123,7 +123,7 @@ pz81a_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
 }
 
 static void
-pz81a_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
+pz81a_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real t[56];
     real dfdra, dfdrb;
@@ -199,7 +199,7 @@ pz81a_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
 }
 
 static void
-pz81a_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
+pz81a_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real t[95];
     real dfdra, dfdrb;
@@ -329,7 +329,7 @@ pz81a_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
 
 
 static real
-pz81b_energy(const DftDensProp* dp)
+pz81b_energy(const FunDensProp* dp)
 {
     real t[6],zk;
     real rhoa = dp->rhoa;
@@ -345,7 +345,7 @@ pz81b_energy(const DftDensProp* dp)
 }
 
 static void
-pz81b_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
+pz81b_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real t[27];
     real dfdra, dfdrb;
@@ -385,7 +385,7 @@ pz81b_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
 }
 
 static void
-pz81b_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
+pz81b_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real t[54];
     real dfdra, dfdrb;
@@ -459,7 +459,7 @@ pz81b_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
 }
 
 static void
-pz81b_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
+pz81b_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real t[90];
     real dfdra, dfdrb;
@@ -581,7 +581,7 @@ pz81b_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
 /*                        Dispatch part                                */
 /* ******************************************************************* */
 static real
-pz81_energy(const DftDensProp* dp)
+pz81_energy(const FunDensProp* dp)
 {
     real rs3 = 3/(4*M_PI*(dp->rhoa+dp->rhob));
     if(rs3>=1)
@@ -591,7 +591,7 @@ pz81_energy(const DftDensProp* dp)
 }
     
 static void
-pz81_first(FirstFuncDrv *ds,  real factor, const DftDensProp* dp)
+pz81_first(FunFirstFuncDrv *ds,  real factor, const FunDensProp* dp)
 {
     real rs3 = 3/(4*M_PI*(dp->rhoa+dp->rhob));
     if(rs3>=1)
@@ -601,7 +601,7 @@ pz81_first(FirstFuncDrv *ds,  real factor, const DftDensProp* dp)
 }
 
 static void
-pz81_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
+pz81_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real rs3 = 3/(4*M_PI*(dp->rhoa+dp->rhob));
     if(rs3>=1)
@@ -611,7 +611,7 @@ pz81_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
 }
 
 static void
-pz81_third (ThirdFuncDrv *ds,  real factor, const DftDensProp* dp)
+pz81_third (FunThirdFuncDrv *ds,  real factor, const FunDensProp* dp)
 {
     real rs3 = 3/(4*M_PI*(dp->rhoa+dp->rhob));
     if(rs3>=1)

@@ -22,8 +22,8 @@
 /* INTERFACE PART */
 static int pw86x_isgga(void) { return 1; }
 static int pw86x_read(const char* conf_line);
-static real pw86x_energy(const DftDensProp* dp);
-static void pw86x_first (FirstFuncDrv *ds,  real factor, const DftDensProp*dp);
+static real pw86x_energy(const FunDensProp* dp);
+static void pw86x_first (FunFirstFuncDrv *ds,  real factor, const FunDensProp*dp);
 
 Functional PW86xFunctional = {
   "PW86x",       /* name */
@@ -45,7 +45,7 @@ pw86x_read(const char* conf_line)
 }
 
 static real
-pw86x_energy(const DftDensProp* dp)
+pw86x_energy(const FunDensProp* dp)
 {
 /* Use density functional form. In case of spin polarization,
    this function will have to be called twice with arguments
@@ -67,7 +67,7 @@ pw86x_energy(const DftDensProp* dp)
 }
 
 static void
-pw86x_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
+pw86x_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
 {
 /* The energy expression is the integral int(Ax*rho**(4/3)*F). We first 
    calculate d(F)/d(rho) and d(F)/d(grad_rho) and differentiate the

@@ -18,10 +18,10 @@
 /* INTERFACE PART */
 static int example5_isgga(void) { return 1; }
 static int example5_read(const char* conf_line);
-static real example5_energy(const DftDensProp* dp);
-static void example5_first(FirstFuncDrv *ds,   real factor, const DftDensProp* dp);
-static void example5_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp);
-static void example5_third(ThirdFuncDrv *ds,   real factor, const DftDensProp* dp);
+static real example5_energy(const FunDensProp* dp);
+static void example5_first(FunFirstFuncDrv *ds,   real factor, const FunDensProp* dp);
+static void example5_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
+static void example5_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp);
 
 Functional Example5Functional = {
   "Example5",       /* name */
@@ -45,20 +45,20 @@ example5_read(const char* conf_line)
 static const real PREF= -1.5e-2;
 
 static real
-example5_energy(const DftDensProp* dp)
+example5_energy(const FunDensProp* dp)
 {
   return PREF*(pow(dp->rhoa,1.3)*dp->grada*dp->grada +
                pow(dp->rhob,1.3)*dp->gradb*dp->gradb);
 }
 
 static void
-example5_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
+example5_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
 {
   ds->df1000 += PREF*1.3*pow(dp->rhoa,0.3)*dp->grada*dp->grada*factor;
   ds->df0010 += PREF*pow(dp->rhoa,1.3)*2*dp->grada*factor;
 }
 static void
-example5_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
+example5_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
   ds->df1000 += PREF*1.3*pow(dp->rhoa,0.3)*dp->grada*dp->grada*factor;
   ds->df0010 += PREF*pow(dp->rhoa,1.3)*2*dp->grada*factor;
@@ -71,7 +71,7 @@ example5_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
    Example5 functional derivatives.
 */
 static void
-example5_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
+example5_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 {
   ds->df1000 += PREF*1.3*pow(dp->rhoa,0.3)*dp->grada*dp->grada*factor;
   ds->df0010 += PREF*pow(dp->rhoa,1.3)*2*dp->grada*factor;

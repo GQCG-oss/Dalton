@@ -17,10 +17,10 @@
 /* INTERFACE PART */
 static int example3_isgga(void) { return 1; }
 static int example3_read(const char* conf_line);
-static real example3_energy(const DftDensProp* dp);
-static void example3_first(FirstFuncDrv *ds,   real factor, const DftDensProp* dp);
-static void example3_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp);
-static void example3_third(ThirdFuncDrv *ds,   real factor, const DftDensProp* dp);
+static real example3_energy(const FunDensProp* dp);
+static void example3_first(FunFirstFuncDrv *ds,   real factor, const FunDensProp* dp);
+static void example3_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
+static void example3_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp);
 
 Functional Example3Functional = {
   "Example3",         /* name */
@@ -49,7 +49,7 @@ static const real EPREF= -5e-2;
 #endif
 
 static real
-example3_energy(const DftDensProp* dp)
+example3_energy(const FunDensProp* dp)
 {
 #if LEVEL==2
   return EPREF*(pow(dp->grada,4.0)+pow(dp->gradb,4.0)); 
@@ -61,7 +61,7 @@ example3_energy(const DftDensProp* dp)
    derivatives with respect to rho_alpha, and zeta=|\nabla\grad_alpha|^2
  */
 static void
-example3_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
+example3_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
 {
 #if LEVEL==2
   ds->df0010 += EPREF*3*pow(dp->grada,3.0)*factor;
@@ -75,7 +75,7 @@ example3_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
    (OBS: inconsistency!)
 */
 static void
-example3_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
+example3_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
 #if LEVEL==2
   ds->df0010 += EPREF* 4*pow(dp->grada,3.0)*factor;
@@ -91,7 +91,7 @@ example3_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
    derivatives with respect to rho_alpha, and zeta=|\nabla\grad_alpha|^2
 */
 static void
-example3_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
+example3_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 {
 #if LEVEL==2
   ds->df0010 += EPREF* 4*pow(dp->grada,3.0)*factor;

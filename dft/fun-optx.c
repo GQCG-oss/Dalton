@@ -27,13 +27,13 @@
 /* INTERFACE PART */
 static int  optx_isgga(void) { return 1; }
 static int  optx_read(const char* conf_line);
-static real optx_energy(const DftDensProp* dens_prop);
-static void optx_first(FirstFuncDrv *ds, real factor, 
-                        const DftDensProp* dens_prop);
-static void optx_second(SecondFuncDrv *ds, real factor, 
-                        const DftDensProp* dens_prop);
-static void optx_third(ThirdFuncDrv *ds, real factor, 
-                        const DftDensProp* dens_prop);
+static real optx_energy(const FunDensProp* dens_prop);
+static void optx_first(FunFirstFuncDrv *ds, real factor, 
+                        const FunDensProp* dens_prop);
+static void optx_second(FunSecondFuncDrv *ds, real factor, 
+                        const FunDensProp* dens_prop);
+static void optx_third(FunThirdFuncDrv *ds, real factor, 
+                        const FunDensProp* dens_prop);
 
 Functional OPTXFunctional = {
     "OPTX",      /* name */
@@ -67,7 +67,7 @@ optx_read(const char* conf_line)
 static const real OPTX_THRESHOLD = 1e-14;
 static const real GAMMA  = 0.006;
 static real
-optx_energy(const DftDensProp* dp)
+optx_energy(const FunDensProp* dp)
 {
    real ea,eb;
    if (dp->rhob<OPTX_THRESHOLD)
@@ -93,7 +93,7 @@ optx_energy(const DftDensProp* dp)
 }
 
 static void
-optx_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
+optx_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real ra, gra, xa, ra43, ra13, ua, ua2, gxa2;
     real rb, grb, xb, rb43, rb13, ub, ub2, gxb2;
@@ -132,7 +132,7 @@ optx_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
 
 
 static void
-optx_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
+optx_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real ra, gra, xa, ra43, ra13, ua, ua2, gxa2;
     real rb, grb, xb, rb43, rb13, ub, ub2, gxb2;
@@ -188,7 +188,7 @@ optx_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
 }
 
 static void
-optx_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
+optx_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     real ra, gra, xa, xa2, ra43, ra13, ua, ua2, gxa2;
     real rb, grb, xb, xb2, rb43, rb13, ub, ub2, gxb2;

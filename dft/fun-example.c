@@ -17,10 +17,10 @@
 /* INTERFACE PART */
 static int example_isgga(void) { return 1; }
 static int example_read(const char* conf_line);
-static real example_energy(const DftDensProp* dp);
-static void example_first(FirstFuncDrv *ds,   real factor, const DftDensProp* dp);
-static void example_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp);
-static void example_third(ThirdFuncDrv *ds,   real factor, const DftDensProp* dp);
+static real example_energy(const FunDensProp* dp);
+static void example_first(FunFirstFuncDrv *ds,   real factor, const FunDensProp* dp);
+static void example_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
+static void example_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp);
 
 Functional ExampleFunctional = {
   "Example",         /* name */
@@ -48,7 +48,7 @@ static const real EPREF= -2e-3;
 #endif
 
 static real
-example_energy(const DftDensProp* dp)
+example_energy(const FunDensProp* dp)
 {
 #if LEVEL==2
   return EPREF*(dp->rhoa*dp->rhoa*dp->rhob);
@@ -61,7 +61,7 @@ example_energy(const DftDensProp* dp)
    derivatives with respect to rho_alpha, and zeta=|grad_alpha|^2
  */
 static void
-example_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
+example_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
 {
 #if LEVEL==2
   ds->df1000 +=  EPREF*2*dp->rhoa*dp->rhob*factor;
@@ -72,7 +72,7 @@ example_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
 }
 
 static void
-example_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
+example_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
 #if LEVEL==2
   ds->df1000 +=  EPREF*2*dp->rhoa*dp->rhob*factor;
@@ -92,7 +92,7 @@ example_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
    Test functional derivatives.
 */
 static void
-example_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
+example_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 {
 #if LEVEL==2
   ds->df1000 +=  EPREF*2*dp->rhoa*dp->rhob*factor;

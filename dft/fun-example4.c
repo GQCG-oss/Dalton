@@ -18,10 +18,10 @@
 /* INTERFACE PART */
 static int example4_isgga(void) { return 1; }
 static int example4_read(const char* conf_line);
-static real example4_energy(const DftDensProp* dp);
-static void example4_first(FirstFuncDrv *ds,   real factor, const DftDensProp* dp);
-static void example4_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp);
-static void example4_third(ThirdFuncDrv *ds,   real factor, const DftDensProp* dp);
+static real example4_energy(const FunDensProp* dp);
+static void example4_first(FunFirstFuncDrv *ds,   real factor, const FunDensProp* dp);
+static void example4_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
+static void example4_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp);
 
 Functional Example4Functional = {
   "Example4",       /* name */
@@ -45,14 +45,14 @@ example4_read(const char* conf_line)
 static const real PREF= -5e-5;
 
 static real
-example4_energy(const DftDensProp* dp)
+example4_energy(const FunDensProp* dp)
 {
   real grad2 = dp->grada*dp->grada+dp->gradb*dp->gradb+2.0*dp->gradab;
   return PREF*dp->rhoa*dp->rhob*grad2;
 }
 
 static void
-example4_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
+example4_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
 {
   real grada2 = dp->grada*dp->grada;
   real gradb2 = dp->gradb*dp->gradb;    
@@ -65,7 +65,7 @@ example4_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
   ds->df00001 += 2.0*PREF*factor*rhoab; 
 }
 static void
-example4_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
+example4_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
   real grada2 = dp->grada*dp->grada;
   real gradb2 = dp->gradb*dp->gradb;    
@@ -94,7 +94,7 @@ example4_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
    Example4 functional derivatives.
 */
 static void
-example4_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
+example4_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 {
   real r2 = dp->rhoa*dp->rhoa;
   real denom = 0.3+r2;

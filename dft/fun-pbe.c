@@ -37,12 +37,12 @@
 /* INTERFACE PART */
 static int pbe_isgga(void) { return 0; }
 static int pbe_read(const char* conf_line);
-static real pbe_energy(const DftDensProp* dp);
-static void pbe_first(FirstFuncDrv *ds,   real factor, const DftDensProp* dp);
-static void pbe_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp);
-static void pbe_third(ThirdFuncDrv *ds,   real factor, const DftDensProp* dp);
+static real pbe_energy(const FunDensProp* dp);
+static void pbe_first(FirstFuncDrv *ds,   real factor, const FunDensProp* dp);
+static void pbe_second(SecondFuncDrv *ds, real factor, const FunDensProp* dp);
+static void pbe_third(ThirdFuncDrv *ds,   real factor, const FunDensProp* dp);
 #ifdef FOURTH_ORDER_DERIVATIVES
-static void pbe_fourth(FourthFuncDrv *ds, real factor, const DftDensProp* dp);
+static void pbe_fourth(FourthFuncDrv *ds, real factor, const FunDensProp* dp);
 #endif
 
 Functional PBEFunctional = {
@@ -83,22 +83,22 @@ typedef struct TwoVarDrv_ TwoVarDrv;
  * used for pbe functonal and its
  * derivatives */
 
-static real pbe_cenergy(const DftDensProp* dp);
-static real pbe_xenergy(const DftDensProp* dp);
+static real pbe_cenergy(const FunDensProp* dp);
+static real pbe_xenergy(const FunDensProp* dp);
 
 static real pbe_ro2energy(const real *p_ro, const real *p_gro);
 static void pbe_ro2d(TwoVarDrv *ds, real *p_ro, real *p_gro);
 
-static void pbe_xd1(FirstFuncDrv *ds, real factor, const DftDensProp *dp);
-static void pbe_cd1(FirstFuncDrv *ds, real factor, const DftDensProp *dp);
-static void pbe_xd2(SecondFuncDrv *ds, real factor, const DftDensProp *dp);
-static void pbe_cd2(SecondFuncDrv *ds, real factor, const DftDensProp *dp);
-static void pbe_xd3(ThirdFuncDrv *ds, real factor, const DftDensProp *dp);
+static void pbe_xd1(FirstFuncDrv *ds, real factor, const FunDensProp *dp);
+static void pbe_cd1(FirstFuncDrv *ds, real factor, const FunDensProp *dp);
+static void pbe_xd2(SecondFuncDrv *ds, real factor, const FunDensProp *dp);
+static void pbe_cd2(SecondFuncDrv *ds, real factor, const FunDensProp *dp);
+static void pbe_xd3(ThirdFuncDrv *ds, real factor, const FunDensProp *dp);
 	
-static void pbe_cd3(ThirdFuncDrv *ds, real factor, const DftDensProp *dp);
+static void pbe_cd3(ThirdFuncDrv *ds, real factor, const FunDensProp *dp);
 #ifdef FOURTH_ORDER_DERIVATIVES
-static void pbe_xd4(FourthFuncDrv *ds, real factor, const DftDensProp *dp);
-static void pbe_cd4(FourthFuncDrv *ds, real factor, const DftDensProp *dp);
+static void pbe_xd4(FourthFuncDrv *ds, real factor, const FunDensProp *dp);
+static void pbe_cd4(FourthFuncDrv *ds, real factor, const FunDensProp *dp);
 #endif
 
 /* End of declarations */
@@ -114,7 +114,7 @@ pbe_read(const char* conf_line)
 
 #define PBETHR 1e-14
 static real
-pbe_energy(const DftDensProp* dp)
+pbe_energy(const FunDensProp* dp)
 {
     if ((dp->rhoa + dp->rhob) < PBETHR) return(0.0);
     return (
@@ -124,14 +124,14 @@ pbe_energy(const DftDensProp* dp)
 }
 
 static void
-pbe_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
+pbe_first(FirstFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     if ((dp->rhoa + dp->rhob) < PBETHR) return;
     pbe_xd1(ds, factor, dp);
     pbe_cd1(ds, factor, dp);
 }
 static void
-pbe_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
+pbe_second(SecondFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     if ((dp->rhoa + dp->rhob) < PBETHR) return;
     pbe_xd2(ds, factor, dp);
@@ -139,7 +139,7 @@ pbe_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
 }
 
 static void
-pbe_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
+pbe_third(ThirdFuncDrv *ds, real factor, const FunDensProp* dp)
 {
     if ((dp->rhoa + dp->rhob) < PBETHR) return;
     pbe_xd3(ds, factor, dp);
@@ -148,7 +148,7 @@ pbe_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
 
 #ifdef FOURTH_ORDER_DERIVATIVES
 static void
-pbe_fourth(FourthFuncDrv *ds, real factor, const DftDensProp *dp)
+pbe_fourth(FourthFuncDrv *ds, real factor, const FunDensProp *dp)
 {
     if ((dp->rhoa + dp->rhob) < PBETHR) return;
     pbe_xd4(ds, factor, dp);
@@ -182,7 +182,7 @@ static const real COR_nT    = 0.03272492347489; /* 2/(nKS^6)       */
 
 /* PBE functional exchange energy */
 static real
-pbe_xenergy(const DftDensProp* dp)
+pbe_xenergy(const FunDensProp* dp)
 {
     real E;
 
@@ -197,7 +197,7 @@ pbe_xenergy(const DftDensProp* dp)
 /* PBE functional correlation energy */
 
 static real
-pbe_cenergy(const DftDensProp* dp)
+pbe_cenergy(const FunDensProp* dp)
 {
     real  A;
     real  A_p2;
@@ -511,7 +511,7 @@ pbe_ro2d(TwoVarDrv *ds, real *p_ro, real *p_gro)
 }
 
 static void
-pbe_xd1(FirstFuncDrv *ds, real factor, const DftDensProp *dp)
+pbe_xd1(FirstFuncDrv *ds, real factor, const FunDensProp *dp)
 {
 real    roa = dp->rhoa;
 real    rob = dp->rhob;
@@ -558,7 +558,7 @@ real  df00010  =  (rob*Exb_01)/roa_rob;
 }
 
 static void
-pbe_xd2(SecondFuncDrv *ds, real factor, const DftDensProp *dp)
+pbe_xd2(SecondFuncDrv *ds, real factor, const FunDensProp *dp)
 {
 real    roa = dp->rhoa;
 real    rob = dp->rhob;
@@ -646,7 +646,7 @@ real  df00020  = rob*Exb_02/roa_rob;
 }
 
 static void
-pbe_xd3(ThirdFuncDrv *ds, real factor, const DftDensProp *dp)
+pbe_xd3(ThirdFuncDrv *ds, real factor, const FunDensProp *dp)
 {
 real    roa = dp->rhoa;
 real    rob = dp->rhob;
@@ -818,7 +818,7 @@ real  df00030  = rob*Exb_03/roa_rob;
 
 #ifdef FOURTH_ORDER_DERIVATIVES
 static void
-pbe_xd4(FourthFuncDrv *ds, real factor, const DftDensProp *dp)
+pbe_xd4(FourthFuncDrv *ds, real factor, const FunDensProp *dp)
 {
 real    roa = dp->rhoa;
 real    rob = dp->rhob;
@@ -1128,7 +1128,7 @@ real  df00040  = (rob*Exb_04)/roa_rob;
 #endif
 
 static void
-pbe_cd1(FirstFuncDrv *ds, real factor, const DftDensProp *dp) {
+pbe_cd1(FirstFuncDrv *ds, real factor, const FunDensProp *dp) {
 
 /* roa, rob and powers */
 real  roa = dp->rhoa;
@@ -1316,7 +1316,7 @@ ds->df0001 += factor*roa_rob*df00010;
 }
 
 static void
-pbe_cd2(SecondFuncDrv *ds, real factor, const DftDensProp *dp) {
+pbe_cd2(SecondFuncDrv *ds, real factor, const FunDensProp *dp) {
 
 /* roa, rob and powers */
 real  roa = dp->rhoa;
@@ -1706,7 +1706,7 @@ ds->df0002 += factor*roa_rob*df00020;
 }
 
 static void
-pbe_cd3(ThirdFuncDrv *ds, real factor, const DftDensProp *dp) {
+pbe_cd3(ThirdFuncDrv *ds, real factor, const FunDensProp *dp) {
 
 /* Constants */
 const real  COR_delta_p2 = COR_delta*COR_delta;
@@ -2372,7 +2372,7 @@ ds->df0003 += factor*roa_rob*df00030;
 
 #ifdef FOURTH_ORDER_DERIVATIVES
 static void
-pbe_cd4(FourthFuncDrv *ds, real factor, const DftDensProp *dp) {
+pbe_cd4(FourthFuncDrv *ds, real factor, const FunDensProp *dp) {
 
 /* Constants */
 real  COR_delta_p2 = COR_delta*COR_delta;
