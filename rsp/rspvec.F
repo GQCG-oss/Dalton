@@ -1546,7 +1546,7 @@ C
 C
       PARAMETER (BLANK = '        ')
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, D4D3 = 4.0D0/3.0D0,
-     &            IMXEXC=20)
+     &            IMXEXC=20, D30 = 30.0D0)
       PARAMETER ( DP5 = 0.5D0 )
       DIMENSION RESSOM(3,3,IMXEXC,8), RESFRE(IMXEXC,8)
 C
@@ -2209,9 +2209,10 @@ C
          WRITE(LUPRI,'(A64,4(/A64))') 
      & ' The two-photon absorption strength for an average molecular  ',
      & ' orientation is computed according to formulas given by       ',
-     & ' W.M. MacClain in J. Chem. Phys. 55:2789, 1971. The absorption',
-     & ' depends on the light polarization. A monochromatic light     ',
-     & ' source is assumed.                                           '
+     & ' P.R. Monson and W.M. MacClain in J. Chem. Phys. 53:29, 1970  ',
+     & ' and W.M. MacClain in J. Chem. Phys. 55:2789, 1971.           ',
+     & ' The absorption depends on the light polarization.            ',
+     & ' A monochromatic light source is assumed.                     '
          WRITE(LUPRI,'(2(/A64))')
      & ' All results are presented in atomic units, except the        ',
      & ' excitation energy which is given in eV.                      '
@@ -2245,8 +2246,8 @@ C
      &        '-----------------------------------------',
      &        ' D  =  2*Df + 4*Dg, Linear   polarization',
      &        ' D  = -2*Df + 6*Dg, Circular polarization',
-     &        ' Df = sum(i,j){ S_ii * S_jj }            ',
-     &        ' Dg = sum(i,j){ S_ij * S_ij }            '
+     &        ' Df = sum(i,j){ S_ii * S_jj }/30         ',
+     &        ' Dg = sum(i,j){ S_ij * S_ij }/30         '
          WRITE(LUPRI,'(3(/A53))') 
      &        '       Polarization ratio      ',
      &        '-------------------------------',
@@ -2273,6 +2274,8 @@ C
                   DG=DG+RESSOM(I,J,IC,ISYMC)**2
                END DO
                END DO
+               DF = DF/D30
+               DG = DG/D30
                R=(-DF+3*DG)/(DF+2*DG)
                D=2*DF+4*DG
                WRITE(LUPRI,'(A2,2I4,F8.2,A14,3E11.3,F8.2)')' ',ISYMC,IC,
