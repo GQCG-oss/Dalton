@@ -33,7 +33,7 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-C$Id: intsort.F,v 1.3 2001-08-21 09:46:25 vebjornb Exp $
+C$Id: intsort.F,v 1.4 2001-10-26 14:03:15 hjj Exp $
 C
 #define VAR_AOCANORDER
 #define VAR_STAR2
@@ -170,7 +170,6 @@ C
 #include <cbisor.h>
 #include <priunit.h>
 #include <inftap.h>
-      DATA OUTSTR /'                                        '/
 C
 #include <ibtdef.h>
 C
@@ -283,15 +282,15 @@ C
  1152 FORMAT(  10X,'SYMMETRIES DELETED',18X,8I4)
 C
       WRITE(LUPRI,'(1P,/A,D10.2)')
-     *   ' Threshold for omitting integrals            :',THRQ
-      IF (ABS(THRQ-THRQD) .GT. 1.0D-3*THRQD) WRITE(LUPRI,'(1P,A,D10.2)')
+     *   ' Threshold for omitting integrals            :',THRQ2
+      IF (ABS(THRQ2-THRQD).GT.1.0D-3*THRQD) WRITE(LUPRI,'(1P,A,D10.2)')
      *   ' Threshold has been reset, default value was :',THRQD
       IF (INTSYM .NE. 1) WRITE(LUPRI,'(/A,I5)')
      *   ' Non-symmetric integrals of symmetry',INTSYM
       IF (IPRINT .GT. 0) WRITE(LUPRI,'(/A,I5)')
-     *   ' Test print level       ',IPRINT
+     *   ' Print level            ',IPRINT
       IF (IPRFIO .GT. 0) WRITE(LUPRI,'(/A,I5)')
-     *   ' Test fastio print level',IPRFIO
+     *   ' Print level for fastio ',IPRFIO
 C
       IF (IPRFIO .GE. 20) THEN
          CALL FASTIO('TRACE=ON')
@@ -491,7 +490,7 @@ C
       VALUE=RINT(I+KBUF1-1)
 C     XLABEL=RINT(I+IBUF+KBUF1-1)
 C     WRITE(LUPRI,'(Z8,2Z16)') I,VALUE,XLABEL
-      IF (ABS(VALUE).LT.THRQ) GO TO 30
+      IF (ABS(VALUE).LT.THRQ2) GO TO 30
 C
       IF (NIBUF .EQ. 1) THEN
          ILABEL = IINT(IIND1 + I)
