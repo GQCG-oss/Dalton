@@ -135,6 +135,7 @@ C
 C
       CALL MEMREL('GDRV',WORK,1,1,KFREE,LFREE)
       CALL QEXIT('GDRV')
+      RETURN
       END
 C
 C Deck /* gset2 */
@@ -213,6 +214,7 @@ C
       IF (.NOT.OPENED) CALL GPCLOSE(LU,'KEEP')
       CALL MEMREL('GSET2',WORK,KANG,KANG,KFREE,LFREE)
       CALL QEXIT('GSET2')
+      RETURN
       END
 
 C /* Deck ginit */
@@ -340,6 +342,7 @@ C              LRRANK( INDPRP(SOLBL(3,J))) = 0
             END DO
          END IF
       END IF
+      RETURN
       END
 C /* Deck gset */
       SUBROUTINE GSET(CMO,UDV,XINDX,WRK,LWRK)
@@ -389,6 +392,7 @@ C
       IF (ECC) CALL DCOPY(3,GAGSAV,1,GAGORG,1)
 
       CALL QEXIT('GSET')
+      RETURN
       END
 C
       SUBROUTINE SETECC(WORK,KFREE,LFREE)
@@ -428,6 +432,7 @@ C
       ECCORG(3)=ECCORG(3)/N
       WRITE(LUPRI,'(A,3F10.6)') '   Charge centroid:',ECCORG
       CALL MEMREL('SETECC',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      RETURN
       END
 
       SUBROUTINE GET_TD(D,WORK,KFREE,LFREE)
@@ -470,6 +475,7 @@ C
       CALL MEMREL('GET_TD',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
 C       
       CALL QEXIT('GET_D')
+      RETURN
       END
 
       SUBROUTINE ECCSET(CMO,UDV,WRK,LWRK)
@@ -569,6 +575,7 @@ C
       CALL GPCLOSE(LUPROP,'KEEP')
 C
       CALL QEXIT('ECCSET')
+      RETURN
       END
 C
       SUBROUTINE GINP(WORD)
@@ -691,6 +698,7 @@ C              CALL QUIT(' ILLEGAL KEYWORD IN GINP ')
       END IF
 C     DOOZSO=DOOZSO1.OR.DOOZSO2
       CALL GINIT
+      RETURN
       END
 C
 C *** END OF GINP
@@ -773,6 +781,7 @@ C Finish
 C
       CALL MEMREL('GETRMC',WRK,1,1,KFREE,LFREE)
       CALL QEXIT('GETRMC')
+      RETURN
       END
       SUBROUTINE GETGC1(CMO,XINDX,WRK,LWRK)
 #include <implicit.h>
@@ -897,6 +906,7 @@ C Finish
 C
       CALL MEMREL('GETGC1',WRK,1,1,KFREE,LFREE)
       CALL QEXIT('GETGC1')
+      RETURN
       END
 C Deck Scaled effective gauge correction 
       SUBROUTINE GETGC2SCA(CMO,XINDX,WRK,LWRK)
@@ -1030,6 +1040,7 @@ C Finish
 C
       CALL MEMREL('GETGC2SCA',WRK,1,1,KFREE,LFREE)
       CALL QEXIT('GETGC2SCA')
+      RETURN
       END
 C /* Deck gset  */
       SUBROUTINE GOZHSO(I,J,XPROP)
@@ -1064,11 +1075,12 @@ C /* Deck gset  */
      &         GOZSO(IA,IB,2) = XPROP/REFSPIN
          END IF
       END IF
+      RETURN
       END
 C  /* Deck gprint  */
       SUBROUTINE GPRINT(WORK,LWORK)
 #include <implicit.h>
-      DIMENSION WORK(*), PVAL(6)
+      DIMENSION WORK(*)
 #include <infpri.h>
 #include <gtensor.h>
 #include <codata.h>
@@ -1087,7 +1099,7 @@ C
       CHARACTER*10 FMT
       CHARACTER*80 GHEAD
       LOGICAL LINEAR, DIAG, PR(5)
-      DIMENSION GSHIFT(3,3), GEIG(3)
+      DIMENSION GSHIFT(3,3), GEIG(3), PVAL(6)
 C
       IF (.NOT.GCALC) RETURN
       CALL QENTER('GPRINT')
@@ -1279,18 +1291,25 @@ C           GTENSOR(3,2)=(GTENSOR(2,3)+GTENSOR(3,2))*DP5
      &            WORK,3,
      &         D0,GTENSOR,3
      &         )
-            CALL DSYEV('V','L',3,GTENSOR,3,GEIG,WORK,LWORK,INFO)
-            GEIG(1)=SQRT(GEIG(1))
-            GEIG(2)=SQRT(GEIG(2))
-            GEIG(3)=SQRT(GEIG(3))
-            IF (INFO.NE.0) CALL QUIT('LAPACK:DSYEV FAILED')
+            CALL DUNIT(GSHIFT,3)
+            IJ = 1
+            DO I = 1, 3
+               DO J = 1, I
+                  PVAL(IJ) = GTENSOR(I,J)
+                  IJ = IJ + 1
+               END DO
+            END DO
+            CALL JACO(PVAL,GSHIFT,3,3,3,WORK,LWORK)
+            GEIG(1)=SQRT(PVAL(1))
+            GEIG(2)=SQRT(PVAL(3))
+            GEIG(3)=SQRT(PVAL(6))
             CALL HEADER('G-shift/tensor eigenvalues and cosines',0)
             WRITE(LUPRI,'(8X,2A14,A24)')'g-shift','g-tensor',
      &         'direction cosines'
             DO K=1,3
                WRITE(LUPRI,'(3X,I5,2F14.6,3F8.4)') 
      &          K,GEIG(K)-GFAC,GEIG(K),
-     &         (GTENSOR(J,K),J=1,3) 
+     &         (GSHIFT(J,K),J=1,3) 
             END DO
             GEIGSUM=GEIG(1)+GEIG(2)+GEIG(3)
             IF (ABS(GTRACE-GEIGSUM).GT.1E-6) THEN
@@ -1303,6 +1322,7 @@ C           GTENSOR(3,2)=(GTENSOR(2,3)+GTENSOR(3,2))*DP5
          END IF
       END IF
       CALL QEXIT('GPRINT')
+      RETURN
       END
 C /* Deck bdg */
       BLOCK DATA BDG
@@ -1771,13 +1791,14 @@ C
       REWIND LUSHPS
       CALL WRFMTD(LUSHPS,FMT,DENTRP,NBAST)
       CLOSE(LUSHPS)
-
+      RETURN
       END
 
       SUBROUTINE WRFMTI(LU,FMT,IVEC,N)
       INTEGER LU, N, IVEC(N)
       CHARACTER*(*) FMT
       WRITE(LU,FMT)(IVEC(I),I=1,N)
+      RETURN
       END
 
       SUBROUTINE WRFMTD(LU,FMT,MAT,N)
@@ -1788,6 +1809,7 @@ C
       DO I=1,N
          WRITE(LU,FMT)(MAT(I,J),J=1,N)
       END DO
+      RETURN
       END
 
       SUBROUTINE INDSRT(EIG,IVEC,N)
@@ -1817,6 +1839,7 @@ C
          IVEC(I)=IVEC(JMIN)
          IVEC(JMIN)=ITMP
       END DO
+      RETURN
       END
 
       SUBROUTINE NEWOPN(LU,NAME)
@@ -2016,6 +2039,7 @@ C
       END DO
       CALL MEMREL('AVEDSO:NPLOOP',WORK,KPAO,KPAO,KFREE,LFREE)
       CALL QEXIT('P2ORG ')
+      RETURN
       END
 
       SUBROUTINE TENPRI(LU,FMT,LABEL,PR,G)
@@ -2059,6 +2083,7 @@ C
          END IF
       END IF
       WRITE(LU,'(A)')LINE
+      RETURN
       END
 
       INTEGER FUNCTION SWRITE(STRING,OFFSET,LENGTH,INSTRING)
@@ -2067,6 +2092,7 @@ C
       INTEGER OFFSET, LENGTH
       STRING(OFFSET:OFFSET+LENGTH)=INSTRING 
       SWRITE=OFFSET+LENGTH
+      RETURN
       END
 
       INTEGER FUNCTION RWRITE(STRING,OFFSET,LENGTH,FMT,INREAL)
@@ -2079,4 +2105,5 @@ C
       WRITE(BUF,FMT)INREAL
       STRING(OFFSET:OFFSET+LENGTH)=BUF(1:LENGTH)
       RWRITE=OFFSET+LENGTH
+      RETURN
       END
