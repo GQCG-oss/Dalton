@@ -34,30 +34,30 @@ C
 #include <single.h>
 C
 #ifdef REV_LOG
-===========================================================================
-Revision 1.5-1.9  2000/05/02  hjj
-(1) changed QUIT so that it calls TSTAMP, prints total cpu and elapsed time,
-    and stops with STOP 100
-(2) removed obsolete subroutine TIMDAT
-(3) allow unit 6 in GPOPEN;
-    do not test for unit 6 in GPCLOSE (and do not close unit 6)
-
-revision 1.4 2000/04/14 07:40:36 hjj
-GPIOIN: initialize priunit.h, new defaults:  /hjaaj apr 2000
-   LUPRI = 6 (to use stdout on unix)
-   LUW4  = 6 (same as LUPRI by default)
-   NINFO = 0, NWARN = 0 (zero counters moved to here)
-   LUERR = -9xxx (let GPOPEN assign this one, could be = stderr on unix)
-   IPRERR = 0 (no debug print on LUERR)
-----------------------------
-revision 1.3 2000/04/10 10:52:18 hjj
- changed test for "no more available file numbers" in GPOPEN and DAINTF
- the old test would use IUNTAB(100) and the dimension is only 99. /HJAaJ
-----------------------------
-revision 1.2 2000/04/10 hjj
- changed initialization to -9xxx from 0, because unit 0 is stderr on
- many systems.
-===========================================================================
+c===========================================================================
+cRevision 1.5-1.9  2000/05/02  hjj
+c(1) changed QUIT so that it calls TSTAMP, prints total cpu and elapsed time,
+c    and stops with STOP 100
+c(2) removed obsolete subroutine TIMDAT
+c(3) allow unit 6 in GPOPEN;
+c    do not test for unit 6 in GPCLOSE (and do not close unit 6)
+c
+crevision 1.4 2000/04/14 07:40:36 hjj
+cGPIOIN: initialize priunit.h, new defaults:  /hjaaj apr 2000
+c   LUPRI = 6 (to use stdout on unix)
+c   LUW4  = 6 (same as LUPRI by default)
+c   NINFO = 0, NWARN = 0 (zero counters moved to here)
+c   LUERR = -9xxx (let GPOPEN assign this one, could be = stderr on unix)
+c   IPRERR = 0 (no debug print on LUERR)
+c----------------------------
+crevision 1.3 2000/04/10 10:52:18 hjj
+c changed test for "no more available file numbers" in GPOPEN and DAINTF
+c the old test would use IUNTAB(100) and the dimension is only 99. /HJAaJ
+c----------------------------
+crevision 1.2 2000/04/10 hjj
+c changed initialization to -9xxx from 0, because unit 0 is stderr on
+c many systems.
+c===========================================================================
 #endif
 C  /* Deck header */
       SUBROUTINE HEADER(HEAD,IN)
@@ -308,7 +308,7 @@ C
 C     ERROR HANDLING (JAA 1997-06-06)
 C
  301     IF (IOS .GT. 0) THEN
-            WRITE(102,*) '*** ERROR (OPENDX) NEW FILE OPEN FAILED'
+            WRITE(102,*) '--> ERROR (OPENDX) NEW FILE OPEN FAILED'
             WRITE(102,*) '    FILE=',NAME,', UNIT=',LUDX,
      $           ', IOSTAT=',IOS
             IF (IOS .LT. 1000) THEN
@@ -384,20 +384,20 @@ C error branches
 C
  9000 CONTINUE
       WRITE (LUPRI,'(//2A/2A/A,I5)')
-     *   ' *** ERROR (OPENDX) INVALID STATUS KEYWORD: ',STATUS,
+     *   ' --> ERROR (OPENDX) INVALID STATUS KEYWORD: ',STATUS,
      *   '                    FILE NAME   =',NAME,
      *   '                    FILE NUMBER =',LUDX
       CALL QTRACE(LUPRI)
-      CALL QUIT('*** ERROR (OPENDX) INVALID STATUS KEYWORD')
+      CALL QUIT('ERROR (OPENDX) INVALID STATUS KEYWORD')
 C
  9100 CONTINUE
       WRITE (LUPRI,'(//A/2A/A,I5/A)')
-     *   ' *** ERROR (OPENDX) OLD FILE NOT FOUND',
+     *   ' --> ERROR (OPENDX) OLD FILE NOT FOUND',
      *   '                    FILE NAME   =',NAME,
      *   '                    FILE NUMBER =',LUDX,
      *   ' --- or wrong record length on old file.'
       CALL QTRACE(LUPRI)
-      CALL QUIT('*** ERROR (OPENDX) FILE NOT FOUND')
+      CALL QUIT('ERROR (OPENDX) FILE NOT FOUND')
 C
 C end of OPENDX
 C
@@ -628,7 +628,7 @@ C
   200    CONTINUE
 #endif
       ELSE
-	 CALL QUIT('AOLAB4 error')
+         CALL QUIT('AOLAB4 error')
       END IF
       ELSE
          DO 300 I = 1,N
@@ -924,97 +924,83 @@ C
 C error branches
 C
  9001 CONTINUE
-      WRITE (6,'(//A/A/A)')
-     &     ' *** ERROR (GPOPEN) NO MORE AVAILABLE FILENUMBERS! ',
-     &     ' *** THIS CALCULATION EITHER NEEDS TOO MANY SIMULTANEOUS '//
-     &     'FILES OR', ' *** SOMEBODY HAS FORGOT TO CLOSE FILES IN'//
-     &     'THE SOURCE CODE'
-      WRITE (6,'(/A)') ' ### Please report the problem to '//
-     &     'dalton-admin@kjemi.uio.no'
+      WRITE (6,'(//A/A/A//A)')
+     &   '--> ERROR (GPOPEN) NO MORE AVAILABLE FILENUMBERS!',
+     &   '--> THIS CALCULATION EITHER NEEDS TOO MANY SIMULTANEOUS '//
+     &   'FILES OR', 
+     &   '--> SOMEBODY HAS FORGOTTEN TO CLOSE FILES IN THE SOURCE CODE',
+     &   '### Please report the problem to dalton-admin@kjemi.uio.no'
       CALL QTRACE(6)
-      CALL QUIT('*** ERROR (GPOPEN) NO MORE FILE NUMBERS')
+      CALL QUIT('ERROR (GPOPEN) NO MORE FILE NUMBERS')
 C
  9002 CONTINUE
-      WRITE (6,'(//A/A/A)')
-     &     ' *** ERROR (GPOPEN) TRYING TO OPEN AN ILLEGAL FILE NUMBER',
-     &     ' *** SOMEBODY HAS TRIED TO OPEN UNIT 5 or 6',
-     &     ' *** THE PROGRAM DOES NOT ALLOW THE USE OF THESE RESERVED'//
-     &     ' UNIT NUMBERS'
-      WRITE (6,'(//A,I5)') ' Offending UNIT number: ',LUNIT
-      WRITE (6,*) ' Name of offending file (if any): ',
-     &     FILENM(1:FILELN)
-      WRITE (6,'(/A)') ' ### Please report the problem to '//
-     &     'dalton-admin@kjemi.uio.no'
+      WRITE (6,'(//A/A,I3/A//2A//A)')
+     &   '--> ERROR (GPOPEN) TRYING TO OPEN AN ILLEGAL FILE NUMBER',
+     &   '--> SOMEBODY HAS TRIED TO OPEN UNIT',LUNIT,
+     &   '--> THE PROGRAM DOES NOT ALLOW THE USE OF THIS RESERVED'//
+     &   'UNIT NUMBER',
+     &   '--> Name of offending file (if any): ',FILENM(1:FILELN),
+     &   '### Please report the problem to dalton-admin@kjemi.uio.no'
       CALL QTRACE(6)
-      CALL QUIT('*** ERROR (GPOPEN) ILLEGAL FILE NUMBER REQUESTED')
+      CALL QUIT('ERROR (GPOPEN) ILLEGAL FILE NUMBER REQUESTED')
 C
  9003 CONTINUE
-      WRITE (6,'(//A/A)')
-     &     ' *** ERROR (GPOPEN) TRYING TO OPEN A FILE ALREADY IN USE',
-     &     ' *** SOMEBODY IS TRYING TO USE A FILENUMBER THAT IS '//
-     &     'ALREADY IN USE'
-      WRITE (6,'(//A,I5)') ' Offending UNIT number: ',LUNIT
-      WRITE (6,*) ' Name of offending file (if any): ',
-     &     FILENM(1:FILELN)
-      WRITE (6,'(/A)') ' ### Please report the problem to '//
-     &     'dalton-admin@kjemi.uio.no'
+      WRITE (6,'(//A/A//A,I5/2A//A)')
+     &   '--> ERROR (GPOPEN) TRYING TO OPEN A FILE ALREADY IN USE',
+     &   '--> SOMEBODY IS TRYING TO USE A FILENUMBER THAT IS '//
+     &   'ALREADY IN USE',
+     &   '--> Offending UNIT number: ',LUNIT,
+     &   '--> Name of offending file (if any): ', FILENM(1:FILELN),
+     &   '### Please report the problem to dalton-admin@kjemi.uio.no'
       CALL QTRACE(6)
-      CALL QUIT('*** ERROR (GPOPEN) TRYING TO OPEN A FILE ALREADY '//
-     &          'IN USE')
+      CALL QUIT('ERROR (GPOPEN) TRYING TO OPEN A FILE ALREADY IN USE')
 C
  9004 CONTINUE
       WRITE (6,'(//A,I3/2A/A,I7)')
-     &     ' *** ERROR (GPOPEN) UPON TRYING TO OPEN FILE ON UNIT',
-     &     LUNIT,' *** with filename ',FILENM(1:FILELN),
-     &     ' *** IOSTAT ERROR CODE RETURNED ',IOS
-      WRITE (6,*) ' Name of offending file (if any): ',
-     &     FILENM(1:FILELN)
+     &   '--> ERROR (GPOPEN) UPON TRYING TO OPEN FILE ON UNIT',LUNIT,
+     &   '--> with filename ',FILENM(1:FILELN),
+     &   '--> IOSTAT ERROR CODE RETURNED ',IOS
       CALL QTRACE(6)
-      CALL QUIT('*** ERROR (GPOPEN) UPON OPENING A FILE')
+      CALL QUIT('ERROR (GPOPEN) UPON OPENING A FILE')
 C
  9005 CONTINUE
-      WRITE (6,'(//A/A/A)')
-     &     ' *** ERROR (GPOPEN) TRYING TO OPEN A NON-EXISTING OLD FILE',
-     &     ' *** A FILE HAS BEEN SPECIFIED TO BE OLD, BUT THE TABLE',
-     &     ' *** ENTRY INDICATE THAT IT DOES NOT EXIST'
-      WRITE (6,'(/A)') ' ### Please report the problem to '//
-     &     'dalton-admin@kjemi.uio.no'
+      WRITE (6,'(//A/A/A//A)')
+     &   '--> ERROR (GPOPEN) TRYING TO OPEN A NON-EXISTING OLD FILE',
+     &   '--> A FILE HAS BEEN SPECIFIED TO BE OLD, BUT THE TABLE',
+     &   '--> ENTRY INDICATES THAT IT DOES NOT EXIST',
+     &   '### Please report the problem to dalton-admin@kjemi.uio.no'
       CALL QTRACE(6)
-      CALL QUIT('*** ERROR (GPOPEN) TRYING TO OPEN A NON-EXISTING '//
+      CALL QUIT('ERROR (GPOPEN) TRYING TO OPEN A NON-EXISTING '//
      &          'FILE AS OLD')
 C
  9006 CONTINUE
-      WRITE (6,'(//A/A/A)')
-     &     ' *** ERROR (GPOPEN) TRYING TO OPEN AN EXISTING NEW FILE',
-     &     ' *** A FILE HAS BEEN SPECIFIED TO BE NEW, BUT THE TABLE',
-     &     ' *** ENTRY INDICATE THAT IT ALREADY EXISTS'
-      WRITE (6,'(/A)') ' ### Please report the problem to '//
-     &     'dalton-admin@kjemi.uio.no'
-      WRITE (6,'(//A,I5)') ' Offending UNIT number: ',LUNIT
-      WRITE (6,*) ' Name of offending file (if any): ',
-     &     FILENM(1:FILELN)
+      WRITE (6,'(//A/A/A//A,I5/2A//A)')
+     &   '--> ERROR (GPOPEN) TRYING TO OPEN AN EXISTING NEW FILE',
+     &   '--> A FILE HAS BEEN SPECIFIED TO BE NEW, BUT THE TABLE',
+     &   '--> ENTRY INDICATES THAT IT ALREADY EXISTS',
+     &   '--> Offending UNIT number: ',LUNIT,
+     &   '--> Name of offending file (if any): ',FILENM(1:FILELN),
+     &   '### Please report the problem to dalton-admin@kjemi.uio.no'
       CALL QTRACE(6)
-      CALL QUIT('*** ERROR (GPOPEN) TRYING TO OPEN AN EXISTING '//
+      CALL QUIT('ERROR (GPOPEN) TRYING TO OPEN AN EXISTING '//
      &          'FILE AS NEW')
 C
  9007 CONTINUE
-      WRITE (6,'(//A/A/A)')
-     &     ' *** ERROR (GPOPEN) TRYING TO OPEN A NON-EXISTING OLD FILE',
-     &     ' *** A FILE HAS BEEN SPECIFIED TO BE OLD, BUT THE FILE',
-     &     ' *** DOES NOT EXIST'
-      WRITE (6,'(/A)') ' ### Please report the problem to '//
-     &     'dalton-admin@kjemi.uio.no'
-      WRITE (6,'(//A,I5)') ' Offending UNIT number: ',LUNIT
-      WRITE (6,*) ' Name of offending file (if any): ',
-     &     FILENM(1:FILELN)
+      WRITE (6,'(//A/A/A//A,I5/2A//A)')
+     &   '--> ERROR (GPOPEN) TRYING TO OPEN A NON-EXISTING OLD FILE',
+     &   '--> A FILE HAS BEEN SPECIFIED TO BE OLD,',
+     &   '--> BUT THE FILE DOES NOT EXIST',
+     &   '--> Offending UNIT number: ',LUNIT,
+     &   '--> Name of offending file (if any): ',FILENM(1:FILELN),
+     &   '### Please report the problem to dalton-admin@kjemi.uio.no'
       CALL QTRACE(6)
-      CALL QUIT('*** ERROR (GPOPEN) TRYING TO OPEN A NON_EXISTING '//
+      CALL QUIT('ERROR (GPOPEN) TRYING TO OPEN A NON_EXISTING '//
      &          'FILE AS OLD')
 C
 C end of GPOPEN
 C
       END
-C  /* Deck gpclse */
+C  /* Deck gpclose */
       SUBROUTINE GPCLOSE(LUNIT,DISP)
 C
 C 23-Feb-2000 K.Ruud
@@ -1137,37 +1123,31 @@ C
 C error branches
 C
  9001 CONTINUE
-      WRITE (6,'(//A/A,I10/A)')
-     &    ' *** ERROR (GPCLOSE) TRYING TO CLOSE AN ILLEGAL FILE NUMBER',
-     &    ' *** SOMEBODY HAS TRIED TO CLOSE UNIT',LUNIT,
-     &    ' *** THE PROGRAM DOES NOT ALLOW THE USE OF THIS UNIT NUMBER'
-      WRITE (6,'(//A,I5)') ' Offending UNIT number: ',LUNIT
-      WRITE (6,'(/A)') ' ### Please report the problem to '//
-     &     'dalton-admin@kjemi.uio.no'
+      WRITE (6,'(//A/A,I15/A//A)')
+     &   '--> ERROR (GPCLOSE) TRYING TO CLOSE AN ILLEGAL FILE NUMBER',
+     &   '--> SOMEBODY HAS TRIED TO CLOSE UNIT',LUNIT,
+     &   '--> THE PROGRAM DOES NOT ALLOW THE USE OF THIS UNIT NUMBER',
+     &   '### Please report the problem to dalton-admin@kjemi.uio.no'
       CALL QTRACE(6)
-      CALL QUIT('*** ERROR (GPCLOSE) ILLEGAL FILE NUMBER REQUESTED')
+      CALL QUIT('ERROR (GPCLOSE) ILLEGAL FILE NUMBER REQUESTED')
 C
  9002 CONTINUE
-      WRITE (6,'(//A/A)')
-     &     ' *** ERROR (GPCLOSE) TRYING TO CLOSE A FILE NOT IN USE',
-     &     ' *** SOMEBODY IS TRYING TO USE A FILENUMBER THAT HAS '//
-     &     'NOT BEEN USED'
-      WRITE (6,'(//A,I5)') ' Offending UNIT number: ',LUNIT
-      WRITE (6,'(/A)') ' ### Please report the problem to '//
-     &     'dalton-admin@kjemi.uio.no'
+      WRITE (6,'(//A/A,I15//A)')
+     &   '--> ERROR (GPCLOSE) TRYING TO CLOSE A FILE NOT IN USE',
+     &   '--> SOMEBODY IS TRYING TO USE A FILENUMBER THAT HAS '//
+     &   'NOT BEEN USED :',LUNIT,
+     &   '### Please report the problem to dalton-admin@kjemi.uio.no'
       CALL QTRACE(6)
-      CALL QUIT('*** ERROR (GPCLOSE) TRYING TO CLOSE A FILE NOT '//
-     &          'IN USE')
+      CALL QUIT('ERROR (GPCLOSE) TRYING TO CLOSE A FILE NOT IN USE')
 C
  9003 CONTINUE
-      WRITE (6,'(//A/A/A)')
-     &     ' *** ERROR (GPCLOSE) TRYING TO KEEP A SCRATCH FILE',
-     &     ' *** A FILE HAS BEEN INDICATED TO BE CLOSED AND KEPT,',
-     &     ' *** BUT IT APPEARS THE FILE IS A SCRATCH FILE'
-      WRITE (6,'(/A)') ' ### Please report the problem to '//
-     &     'dalton-admin@kjemi.uio.no'
+      WRITE (6,'(//A/A/A//A)')
+     &   '--> ERROR (GPCLOSE) TRYING TO KEEP A SCRATCH FILE',
+     &   '--> A FILE HAS BEEN INDICATED TO BE CLOSED AND KEPT,',
+     &   '--> BUT IT APPEARS THE FILE IS A SCRATCH FILE',
+     &   '### Please report the problem to dalton-admin@kjemi.uio.no'
       CALL QTRACE(6)
-      CALL QUIT('*** ERROR (GPCLOSE) TRYING TO CLOSE A SCRATCH FILE ')
+      CALL QUIT('ERROR (GPCLOSE) TRYING TO CLOSE A SCRATCH FILE ')
 C
 C end of GPCLOSE
 C
@@ -1342,14 +1322,13 @@ C
 C error branch
 C
  9001 CONTINUE
-      WRITE (6,'(//A/A/A)')
-     &     ' *** ERROR (DAINTF) NO MORE AVAILABLE FILENUMBERS! ',
-     &     ' *** THIS CALCULATION EITHER NEEDS TOO MANY SIMULTANEOUS '//
-     &     'FILES OR', ' *** SOMEBODY HAS FORGOT TO CLOSE FILES IN'//
-     &     'THE SOURCE CODE'
-      WRITE (6,'(/A)') ' ### Please report the problem to '//
-     &     'dalton-admin@kjemi.uio.no'
+      WRITE (6,'(//A/A/A//A)')
+     &   '--> ERROR (DAINTF) NO MORE AVAILABLE FILENUMBERS!',
+     &   '--> THIS CALCULATION EITHER NEEDS TOO MANY SIMULTANEOUS '//
+     &   'FILES OR', 
+     &   '--> SOMEBODY HAS FORGOTTEN TO CLOSE FILES IN THE SOURCE CODE',
+     &   '### Please report the problem to dalton-admin@kjemi.uio.no'
       CALL QTRACE(6)
-      CALL QUIT('*** ERROR (DAINTF) NO MORE FILE NUMBERS')
+      CALL QUIT('ERROR (DAINTF) No more available file numbers')
 C
       END
