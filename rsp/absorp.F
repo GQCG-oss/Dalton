@@ -631,11 +631,11 @@ C     From file we read:
 C         LURSP3 contains trial vectors
 C         LURSP5 contains sigma vectors
 C
-C                          / b1 \                    / b2 \             
+C                          / b1 \                    / b2 \
 C     NR = sum(i=1,KZRED) |      | * REDVEC(4i-3) + |      | * REDVEC(4i-1)
 C                          \ b2 /_i                  \ b1 /_i           
 C
-C                          / b1 \                    / b2 \             
+C                          / b1 \                    / b2 \
 C     NI = sum(i=1,KZRED) |      | * REDVEC(4i-2) + |      | * REDVEC(4i)
 C                          \ b2 /_i                  \ b1 /_i           
 C

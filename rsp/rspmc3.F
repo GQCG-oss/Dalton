@@ -524,7 +524,7 @@ C
      *                 UDV,DEN1,XINDX,MJWOP,WRK,LWRK)
 C      
 C
-C     /  <01L| qj |0> + <0| qj |01R>  \ 
+C     /  <01L| qj |0> + <0| qj |01R>  \
 C     |               0               | * -2/3*(S(2)S(3)' + S(2)'S(3))
 C     |  <01L| qj+|0> + <0| qj+|01R>  |
 C     \               0               /

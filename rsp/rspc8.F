@@ -33,7 +33,7 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef rev-log
+#ifdef revlog
 !===========================================================================
 !921011-pj+hjaaj: EFPOLL added C6IFC test
 !920722-Hinne Hettema + HJAaJ
