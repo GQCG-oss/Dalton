@@ -234,13 +234,13 @@ C
       PARAMETER (D0=0.0D0, D1=1.0D0, THFMP2=1.0D-6)
 C
 C Used from common blocks:
-C   INFINP : ...,ITRLVL,ITRFIN,..., DO*, DIRFCK,MXDIIS,...
+C   INFINP : ...,ITRLVL,ITRFIN,..., DO*, DIRFCK,...
 C   INFORB : NSYM,?
 C   INFVAR : MAXOCC,NWOPT,JWOP(2,*),JWOPSY
 C   INFOPT : EPOT,?
 C   INFDIM : MAXPHP,?
 C   INFTRA : THRP,THRQ,USEDRC,IPRTRA
-C   SCBRHF : IOPRHF, NFRRHF(8), MXHFMA, MXHFMI, RHFCAN
+C   SCBRHF : IOPRHF, NFRRHF(8), MXHFMA, MXHFMI, RHFCAN, MAXCK, MXDIIS, THRRHF
 C   INFMP2 : NFRMP2(*)
 C   HUCKEL : ADDSTO
 C   CBIHRS : RUNSUP
@@ -467,7 +467,7 @@ C     MAXJT    Max number of micro iterations in any macro iteration
       MAXMIC = -1
       MAXJT  = -1
       IMCCNO = 0
-C     THRGRD   Threshold for convergence on gradient in MC/QC-HF opt.
+C     THRGRD   Threshold for convergence on gradient in MC/QC-SCF opt.
       THRRHF = THFMP2
       THRCI  = 1.D-05
       THRMC  = 1.D-05
@@ -513,9 +513,9 @@ C     ... do not converge to a specific state.
       ICICNO = 0
 C
 C********** Default values section SCFINP *****
+C           and common scbrhf.h (except DIRFCK which is in infinp.h)
 C
       IOPRHF = 0
-      DIRFCK = DIRCAL
       MXDIIS = 60
       MAXEVC = -1
       RHFCAN = .TRUE.
@@ -535,6 +535,7 @@ C               ICHRG = ICHRGNU - (2*NISHT+NACTEL)
       ELSE
          AUTOCC = .FALSE.
       END IF
+      DIRFCK = DIRCAL
 C
 C********** Default value sections SCFINP and AUXINP *****
 C           (default: use AOSUPMAT if available,
@@ -1099,7 +1100,7 @@ C
             INPERR = INPERR + 1
             WRITE (LUPRI,*) 'Input error for core-hole calculation:'
             WRITE (LUPRI,*)
-     &         'automatic occupation of HF orbitals not allowed.'
+     &         'automatic occupation of SCF orbitals not allowed.'
          END IF
          IF (IRDMO .EQ. 8) THEN
             INPERR = INPERR + 1
@@ -1253,7 +1254,7 @@ C               of initial occupation guess
 C
 C       
 C     If INIOCC .ge. 2 and RHF/MP2 highest level (i.e. MCTYPE .eq. 0),
-C     we need to retransfer HF occupation to MCSCF parameters as
+C     we need to retransfer SCF occupation to MCSCF parameters as
 C     NRHF(*),IOPRHF may have changed since previous RHF setting above.
 C     (INIOCC .ge. 2: NRHF(*) from LUIT1, LUSIFC, H1OCC, or HUCDRV)
 C
@@ -2380,8 +2381,8 @@ C
 C
 C Used from common:
 C
-C SCBRHF : NFRRHF(8), IOPRHF, RHFCAN, MXHFMA, MXHFMI
-C INFINP : THRRHF,FLAG(*),DIRFCK,MXDIIS
+C SCBRHF : NFRRHF(8), IOPRHF, RHFCAN, MXHFMA, MXHFMI, MAXFCK, MXDIIS, THRRHF
+C INFINP : FLAG(*),DIRFCK
 C INFORB : NRHF(8)
 C INFTAP : LUSUPM
 C INFPRI : IPRSIR,IPRRHF
@@ -4540,11 +4541,11 @@ C
 #include <implicit.h>
 C
 C Used from common blocks:
-C   INFINP : DOMC,DOCI,DIRFCK,FLAG(21),MAXFCK,MCTYPE,THR*,NFIELD,...,?
+C   INFINP : DOMC,DOCI,DIRFCK,FLAG(21),MCTYPE,THR*,NFIELD,...,?
 C   INFVAR : NCONF,NWOPT,NVAR
 C   INFIND : ISMO(),?
 C   INFDIM : MAXPHP
-C   SCBRHF : IOPRHF,NFRRHF(*)
+C   SCBRHF : IOPRHF,NFRRHF(*),MAXFCK
 C   INFMP2 : NFRMP2(*)
 C   DFTACB : DFTIPT, DFTBR1, DFTBR2
 C
@@ -4958,9 +4959,9 @@ C
  1400 FORMAT(5X,'Secondary orbitals',T38,8I4)
  1450 FORMAT(5X,'Total number of orbitals',T38,8I4)
  1500 FORMAT(5X,'Number of basis functions',T38,8I4)
- 1550 FORMAT(5X,'Occupied HF orbitals',T38,8I4)
- 1555 FORMAT(5X,'Open shell HF orbitals',T38,8I4)
- 1560 FORMAT(/5X,'plus one open shell HF orbital of symmetry',I4)
+ 1550 FORMAT(5X,'Occupied SCF orbitals',T38,8I4)
+ 1555 FORMAT(5X,'Open shell SCF orbitals',T38,8I4)
+ 1560 FORMAT(/5X,'plus one open shell SCF orbital of symmetry',I4)
 C
 C ***** Optimization information *****
 C       FLAG(27) : use determinants
@@ -5032,10 +5033,10 @@ C
  1800 FORMAT(/5X,'Maximum number of CI iterations ',I10,
      *       /5X,'Threshold for CI convergence    ',1P,D10.2,
      *       /5X,'Number of CI roots to converge  ',I10)
- 1900 FORMAT(/5X,'Maximum number of Fock  iterations',I8,
-     &       /5X,'Maximum number of DIIS  iterations',I8,
-     &       /5X,'Maximum number of QC-HF iterations',I8,
-     *       /5X,'Threshold for HF convergence ',1P,D13.2)
+ 1900 FORMAT(/5X,'Maximum number of Fock   iterations',I7,
+     &       /5X,'Maximum number of DIIS   iterations',I7,
+     &       /5X,'Maximum number of QC-SCF iterations',I7,
+     *       /5X,'Threshold for SCF convergence ',1P,D12.2)
  2500 FORMAT(/5X,'Maximum number of NEO/NR iterations',I4)
  2550 FORMAT(/5X,'CI trial vectors are generated with the Olsen',
      *       ' algorithm.')
@@ -5062,7 +5063,7 @@ C
       IF (DOMC .AND. NFROT.GT.0) THEN
          WRITE (IWUNIT,6100) (NFRO(I),I=1,NSYM)
       END IF
- 6110 FORMAT(//,5X,'Number of frozen HF orbitals',T38,8I4)
+ 6110 FORMAT(//,5X,'Number of frozen SCF orbitals',T38,8I4)
  6111 FORMAT(//,5X,'Number of frozen KS orbitals',T38,8I4)
  6120 FORMAT(//,5X,'Number of frozen MP2 orbitals',T38,8I4)
  6100 FORMAT(//,5X,'Number of frozen MCSCF orbitals',T38,8I4)

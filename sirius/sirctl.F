@@ -75,7 +75,7 @@ C   INFVAR : NCONF,JWOPSY,?
 C   INFDIM : MWORK
 C   INFTRA : USEDRC
 C   INFPRI : IPRERR, NWARN
-C   SCBRHF : RHFCAN, MXHFMA, MXHFMI, NFRRHF(8), IOPRHF
+C   SCBRHF : RHFCAN, MXHFMA, MXHFMI, NFRRHF(8), IOPRHF, MAXFCK, MXDIIS, THRRHF
 C   GNRINF : WRINDX
 C
 #include <maxorb.h>
@@ -297,17 +297,17 @@ C
                CALL NEWORB('FOCKDIIS',WORK(KCMO),.FALSE.)
             END IF
 C           ... REWIT1 false: do not destroy any GEOWALK information
-C           QCHF currently needed for solvent and for writing SIRIFC
-C           QCHF for writing SIRIFC no longer needed, except for SOPPA 
+C           QCSCF currently needed for solvent and for writing SIRIFC
+C           QCSCF for writing SIRIFC no longer needed, except for SOPPA 
 C           calculations, K.Ruud May-97
-C           QCHF no longer needed for solvent calculations, kr Feb-99
-C           QCHF no longer needed !!! hjaaj may 2000
+C           QCSCF no longer needed for solvent calculations, kr Feb-99
+C           QCSCF no longer needed !!! hjaaj may 2000
 C
          END IF
          FLAG(11) = .FALSE.
 C     ... flag(11) definitely not needed after DIIS /hjaaj.apr2000
 C
-C        Call SIROPT to perform QCHF iterations
+C        Call SIROPT to perform QC-SCF iterations
 C
          IF (FLAG(21) .AND. ICONV .LE. 0) THEN
             FLAG( 2) = .TRUE.
@@ -325,11 +325,11 @@ C
             THRLDG = SQRT(THRLDG)
             IF (THRGRD .LT. THRLDG) THEN
                WRITE(LUPRI,'(//A,2(/A,D12.2))')
-     *         ' SIRCTL error: RHF threshold below lin.dep. limit',
-     *         ' RHF convergence threshold:',THRGRD,
+     *         ' SIRCTL error: SCF threshold below lin.dep. limit',
+     *         ' SCF convergence threshold:',THRGRD,
      *         ' lin.dep. limit           :',THRLDG
                CALL QUIT(
-     &            'SIRCTL error: RHF threshold below lin.dep. limit')
+     &            'SIRCTL error: SCF threshold below lin.dep. limit')
             END IF
 C
             CALL SIROPT(WORK,LWORK,ICONV)
@@ -342,7 +342,7 @@ C
          TUSED = TEND - TSTART
          WUSED = WEND - WSTART
          IF (IPRERR .GT. 0) WRITE (LUERR,'(//A,2F10.2)')
-     *      ' >>>> CPU and wall time for RHF :',TUSED,WUSED
+     *      ' >>>> CPU and wall time for SCF :',TUSED,WUSED
          CALL FLSHFO(LUW4)
          IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
          IF (LUERR.NE.LUW4 .AND. LUERR.NE.LUPRI) CALL FLSHFO(LUERR)

@@ -80,7 +80,6 @@ C
       MAXUIT = MXUITB
       MAXAPM = MXAPMB
       MAXABS = MXABSB
-      MAXFCK = MXFCKB
       ITRLVL = ITRLVB
       ITRFIN = ITRFNB
       JCHSYM = JCHSMB
@@ -91,8 +90,6 @@ C
       MXCIMA = MXCMAB
       ICICNO = ICCNOB
       IMCCNO = IMCNOB
-      MXDIIS = MXDISB
-      MAXEVC = MXEVCB
       IF (NEWSYM) THEN
          DORHF  = DORHFB
          DOMP2  = DOMP2B
@@ -128,7 +125,6 @@ C
       RSOL(3)= RSOLB(3)
       THRGRD = TRGRDB
       THRPWF = TRPWFB
-      THRRHF = TRRHFB
       THRCI  = TRCIB
       THRMC  = TRMCB
       THRCGR = TRCGRB
@@ -229,7 +225,6 @@ C
       MXUITB = MAXUIT
       MXAPMB = MAXAPM
       MXABSB = MAXABS
-      MXFCKB = MAXFCK
       ITRLVB = ITRLVL
       ITRFNB = ITRFIN
       JCHSMB = JCHSYM
@@ -240,8 +235,6 @@ C
       MXCMAB = MXCIMA
       ICCNOB = ICICNO
       IMCNOB = IMCCNO
-      MXDISB = MXDIIS
-      MXEVCB = MAXEVC
       DORHFB = DORHF
       DOMP2B = DOMP2
       DOCNOB = DOCINO
@@ -269,7 +262,6 @@ C
       RSOLB(3)= RSOL(3)
       TRGRDB = THRGRD
       TRPWFB = THRPWF
-      TRRHFB = THRRHF
       TRCIB  = THRCI
       TRMCB  = THRMC
       TRCGRB = THRCGR

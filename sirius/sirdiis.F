@@ -35,8 +35,8 @@ C
 C
 #ifdef REV_LOG
 ===========================================================================
-se efter HJMAERKE
-HJMAERKE 940816: if .FREEZE implemented in FCKEIG (requires new ORDRSS)
+se efter HJTODO
+HJTODO 940816: if .FREEZE implemented in FCKEIG (requires new ORDRSS)
   then check all setting of MXDIIS = 0 and MAXFCK = 0 (I think MAXFCK
   also will work if .FREEZE implemented in FCKEIG).
 
@@ -134,7 +134,8 @@ C
 C
 C
 C Used from common blocks:
-C  INFINP : MXDIIS,MAXEVC,DIRFCK
+C  INFINP : DIRFCK, FLAG(*)
+C  SCBRHF : MAXEVC
 C  INFORB : N2BAST,NNBAST,N2BASX,NCMOT,NSYM, ...,MXDGSS
 C  INFVAR : NWOPT
 C  INFPRI : IPRRHF
@@ -142,6 +143,7 @@ C
 #include <maxorb.h>
 #include <priunit.h>
 #include <infinp.h>
+#include <scbrhf.h>
 #include <inforb.h>
 #include <infvar.h>
 #include <infpri.h>
@@ -300,9 +302,10 @@ C
       DIMENSION EGSAV(2,MXERRV), TNLM(*), WRK(*)
 C
 C Used from common blocks:
-C  INFINP : THRRHF,MXDIIS
+C  INFINP : FLAG(*), DFTRUN
 C  INFORB : NCMOT,NNBAST,NSYM
 C  INFOPT : EPOT,EMCSCF,EMY,EACTIV,GRDNRM
+C  SCBRHF : THRRHF,MXDIIS, ?
 C  INFVAR : NWOPH
 C  SCBRHF : IOPRHF,AUTOCC
 C
