@@ -539,13 +539,10 @@ C
 C  /* Deck getdate */
       SUBROUTINE GETDATE
 #include <implicit.h>
-#if defined (SYS_UNIX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_LINUX)
+#if defined (SYS_UNIX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_AIX)
 #if !defined (VAR_G77)
       CHARACTER*(24) FDATE
 #endif
-#endif
-#if defined (SYS_AIX)
-      CHARACTER*(24) fdate_
 #endif
 #if defined (SYS_HAL)
       CHARACTER*(24) CFDATE
@@ -579,7 +576,7 @@ C  /* Deck getdate */
       WRITE (LUPRIN,'(T6,2A)') 'Date and time (Linux)  : ',FDATE()
 #endif
 #if defined (SYS_AIX)
-      WRITE (LUPRIN,'(2A)') '     Date and time (IBM-AIX): ',fdate_()
+      WRITE (LUPRIN,'(2A)') '     Date and time (IBM-AIX): ',FDATE()
 #endif
 C
       RETURN

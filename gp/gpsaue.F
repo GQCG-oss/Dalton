@@ -2295,11 +2295,8 @@ C
 #include <implicit.h>
       CHARACTER TEXT*(*)
 C
-#if defined (SYS_UNIX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_HAL)
+#if defined (SYS_UNIX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_HAL) || defined (SYS_AIX)
       CHARACTER*(24) FDATE
-#endif
-#if defined (SYS_AIX)
-      CHARACTER*(24) fdate_
 #endif
 C
       TEXT = '                        '
@@ -2307,11 +2304,8 @@ C
       WRITE(TEXT(1:8),'(A8)') DATE()
       WRITE(TEXT(12:19),'(A8)') CLOCK()
 #endif
-#if defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_HAL)
+#if defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_HAL) || defined (SYS_AIX)
       TEXT = FDATE()
-#endif
-#if defined (SYS_AIX)
-      TEXT = fdate_()
 #endif
 C
       RETURN
