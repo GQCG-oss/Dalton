@@ -36,7 +36,7 @@
 #if defined(SYS_SUN)
 #define __FUNCTION__ "SUNs CC compiler_does_not_define__FUNCTION__"
 #endif
-#if defined(SYS_SGI)
+#if defined(SYS_IRIX)
 #define __FUNCTION__ "SGIs CC compiler_does_not_define__FUNCTION__"
 #endif
 
