@@ -1,0 +1,1039 @@
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+          This is output from DALTON (Release 2.0, ? 2001)
+
+                          Principal authors:
+
+          Trygve Helgaker,       University of Oslo,           Norway 
+          Hans Joergen Jensen,   SDU - Odense University,      Denmark
+          Poul Joergensen,       Aarhus University,            Denmark
+          Jeppe Olsen,           Aarhus University,            Denmark
+          Kenneth Ruud,          University of Tromsoe,        Norway 
+          Hans Aagren,           KTH Stockholm,                Sweden 
+
+                          Contributors:
+
+          Alexander A. Auer,     University of Mainz,          Germany
+          Keld L. Bak,           UNI-C,                        Denmark
+          Vebjoern Bakken,       University of Oslo,           Norway 
+          Ove Christiansen,      University of Lund,           Sweden 
+          Sonia Coriani,         University of Trieste,        Italy  
+          Paal Dahle,            University of Oslo,           Norway 
+          Erik K. Dalskov,       UNI-C,                        Denmark
+          Thomas Enevoldsen,     SDU - Odense University,      Denmark
+          Berta Fernandez,       U. of Santiago de Compostela, Spain  
+          Christof Haettig,      Forschungszentrum Karlsruhe,  Germany
+          Kasper Hald,           Aarhus University,            Denmark
+          Asger Halkier,         Aarhus University,            Denmark
+          Hanne Heiberg,         University of Oslo,           Norway 
+          Hinne Hettema,         University of Auckland,       NZ     
+          Dan Jonsson,           KTH Stockholm                 Sweden 
+          Sheela Kirpekar,       SDU - Odense University,      Denmark
+          Wim Klopper,           University of Karlsruhe,      Germany
+          Rika Kobayashi,        Cambridge University,         England
+          Henrik Koch,           University of Trondheim,      Norway 
+          Kurt V. Mikkelsen,     University of Copenhagen,     Denmark
+          Patrick Norman,        University of Linkoeping,     Sweden 
+          Thomas B. Pedersen,    U. of Santiago de Compostela, Spain  
+          Martin J. Packer,      University of Sheffield,      UK     
+          Torgeir A. Ruden,      University of Oslo,           Norway 
+          Pawel Salek,           KTH Stockholm,                Sweden 
+          Alfredo Sanchez,       University of Valencia,       Spain  
+          Trond Saue,            University of Toulouse,       France 
+          Stephan P. A. Sauer,   University of Copenhagen,     Denmark
+          Bernd Schimmelpfennig, KTH Stockholm,                Sweden 
+          K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark
+          Peter R. Taylor,       University of Warwick,        UK     
+          Olav Vahtras,          PDC, Stockholm,               Sweden 
+
+ ---------------------------------------------------------------------
+
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF wave functions. The authors accept no
+     responsibility for the performance of the code or for the
+     correctness of the results.
+      
+     The code (in whole or part) is provided under a license and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+     See licence agreement for further information.
+      
+     If results obtained with this code are published, an
+     appropriate citation would be:
+      
+     "Dalton, a molecular electronic structure program, Release 1.2
+     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+     H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, W. Klopper,
+     R. Kobayashi, H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+     T. B. Pedersen, T. A. Ruden, P. Salek, A. Sanchez, T. Saue, 
+     S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, 
+     P. R. Taylor and O. Vahtras"
+
+ 
+     Date and time (Linux)  : Wed Oct 22 18:53:22 2003
+     Host name              : tk00.uio.no                             
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Integral sections will be executed
+    Wave function sections will be executed
+    Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ A direct relativistic perturbation is added to
+ Hamiltonian and metric with perturbation parameter:  0.00500000000000
+ (perturbation parameter * c^{-2} =   0.00000026625677)
+
+
+ The following one-electron property integrals are calculated:
+          - overlap integrals
+          - small component potential energy for DPT
+
+ Precalculated two-electron integrals are transformed to P-supermatrix elements.
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  First-order relativistic corrections (frozen core)                      
+                                                                          
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 2
+
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C2v
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E 
+    C2z | C2z   E 
+    Oxz | Oxz  Oyz   E 
+    Oyz | Oyz  Oxz  C2z   E 
+
+   * Character table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B1   B2   A2 
+   -----+--------------------
+    A1  | A1 
+    B1  | B1   A1 
+    B2  | B2   A2   A1 
+    A2  | A2   B2   B1   A1 
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           Br         78.918336
+                           H           1.007825
+
+                       Total mass:    79.926161 amu
+                       Natural abundance:  50.682 %
+
+ Center-of-mass coordinates (A):    0.000000    0.000000    0.033693
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    2
+
+  Basis set used is "AhlrichsVDZ" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis
+  ----------------------------------------------------------------------
+  Br          1      35      69      27      [14s10p5d|5s4p2d]                            
+  H           1       1       4       2      [4s|2s]                                      
+  ----------------------------------------------------------------------
+  total:      2      36      73      29
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for integrals:  1.00D-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  6
+
+
+   1   Br       x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
+
+   4   H        x      0.0000000000
+   5            y      0.0000000000
+   6            z      2.6720725479
+
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:   2  2  2  0
+
+
+  Symmetry 1
+
+   1   Br    z    3
+   2   H     z    6
+
+
+  Symmetry 2
+
+   3   Br    x    1
+   4   H     x    4
+
+
+  Symmetry 3
+
+   5   Br    y    2
+   6   H     y    5
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            Br          H     
+            ------      ------
+ Br    :    0.000000
+ H     :    1.414000    0.000000
+
+
+  Max interatomic separation is    1.4140 Angstroms
+  between atoms H      and Br    .
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  H          Br           1.414000
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    0.000000          0.000000    0.000000    1.000000
+   IB    0.000320          0.000000    1.000000    0.000000
+   IC    0.000320          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is linear.
+
+               B =   1577396852.42 MHz     (52616.295385 cm-1)
+
+
+  Nuclear repulsion energy :   13.098446757426
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:              15   6   6   2
+
+
+  Symmetry  A1 ( 1)
+
+    1     Br       1s         1
+    2     Br       1s         2
+    3     Br       1s         3
+    4     Br       1s         4
+    5     Br       1s         5
+    6     Br       2pz        8
+    7     Br       2pz       11
+    8     Br       2pz       14
+    9     Br       2pz       17
+   10     Br       3d0       20
+   11     Br       3d2+      22
+   12     Br       3d0       25
+   13     Br       3d2+      27
+   14     H        1s        28
+   15     H        1s        29
+
+
+  Symmetry  B1 ( 2)
+
+   16     Br       2px        6
+   17     Br       2px        9
+   18     Br       2px       12
+   19     Br       2px       15
+   20     Br       3d1+      21
+   21     Br       3d1+      26
+
+
+  Symmetry  B2 ( 3)
+
+   22     Br       2py        7
+   23     Br       2py       10
+   24     Br       2py       13
+   25     Br       2py       16
+   26     Br       3d1-      19
+   27     Br       3d1-      24
+
+
+  Symmetry  A2 ( 4)
+
+   28     Br       3d2-      18
+   29     Br       3d2-      23
+
+  Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
+
+  Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ Metric is changed by direct perturbation theory (DPT) 
+
+ >>> Time used in ONEDRV is   0.01 seconds
+
+
+ >>> Time used in OVERLA is   0.03 seconds
+
+
+ >>> Time used in DPTPOT is   0.04 seconds
+
+
+ Number of two-electron integrals written:       15100 ( 15.9% )
+ Megabytes written:                              0.179
+
+
+
+ >>> Time used in TWOINT is   1.62 seconds
+
+
+
+ ***********************************************************************
+ ************************* Output from FORMSUP *************************
+ ***********************************************************************
+
+  NOSYM :  F
+
+ Threshold for discarding integrals :  1.00D-15
+
+ >>> Time used in FRMSUP is   0.01 seconds
+
+ >>>> Total CPU  time used in HERMIT:   1.73 seconds
+ >>>> Total wall time used in HERMIT:   3.00 seconds
+
+- End of Integral Section
+     Starting Wave Function Section -
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Wed Oct 22 18:53:25 2003
+     Host name              : tk00.uio.no                             
+
+ Title lines from integral program:
+     First-order relativistic corrections (frozen core)                      
+                                                                             
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+      (Integral direct) CC calculation.
+
+
+     This is a combination run starting with
+
+               a RHF calculation
+
+
+ The molecule is placed in a static field.
+ Field strength (a.u.)          Field operator
+ ---------------------          --------------
+    2.66256770E-07                  DERXXPVP
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         36
+     Number of electrons in active shells      0
+     Total charge of the molecule              0
+
+     Number of active orbitals                 0
+     Total number of orbitals                 29
+
+     Spin multiplicity                         1
+     Total number of symmetries                4
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1   2   3   4
+                                       --  --  --  --
+     Total number of orbitals          15   6   6   2
+     Number of basis functions         15   6   6   2
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from Huckel guess.                    
+      -- Initial occupation of symmetries is : --
+
+     Occupied HF orbitals               9   4   4   1
+
+     Maximum number of Fock  iterations       0
+     Maximum number of DIIS  iterations      60
+     Maximum number of QC-HF iterations      15
+     Threshold for HF convergence      1.00D-10
+
+
+ Changes of defaults for CC:
+ ---------------------------
+
+
+ -Implicit frozen core calculation
+ -Calculation with finite fields:
+ Field strenths:   0.000000Field Label:  DERXXPVP
+Center of charge:    0.00000000    0.00000000    0.07422424
+Charge correction to interaction with electric field:    0.00000000
+
+  
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ Automatic occupation of symmetries with  36 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    HF occupation
+ -----------------------------------------------------------------------------
+   1  -2572.682180245004   3.61D+00  -2.57D+03    9  4  4  1
+   2  -2572.812431320300   1.91D-01  -1.30D-01    9  4  4  1
+   3  -2572.814790895992   4.73D-02  -2.36D-03    9  4  4  1
+   4  -2572.814919808624   1.85D-02  -1.29D-04    9  4  4  1
+   5  -2572.814931048718   1.40D-03  -1.12D-05    9  4  4  1
+   6  -2572.814931294893   2.11D-04  -2.46D-07    9  4  4  1
+   7  -2572.814931300355   3.70D-05  -5.46D-09    9  4  4  1
+   8  -2572.814931300518   3.64D-06  -1.64D-10    9  4  4  1
+   9  -2572.814931300520   3.56D-07  -1.88D-12    9  4  4  1
+  10  -2572.814931300519   3.03D-08   8.49D-13    9  4  4  1
+  11  -2572.814931300520   4.10D-09  -5.15D-13    9  4  4  1
+  12  -2572.814931300520   2.84D-10  -6.04D-14    9  4  4  1
+  13  -2572.814931300520   2.31D-11  -5.15D-13    9  4  4  1
+ DIIS converged in  13 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   36
+ Orbital occupations :    9    4    4    1
+
+ Hartree-Fock orbital energies, symmetry 1
+
+      -490.02577205   -65.15816959   -58.52356518    -9.84056447    -7.45715808
+        -3.19883610    -3.18362890    -1.03499184    -0.57625380     0.12693732
+         0.50195331     0.56321897     0.90880984     2.96296633
+
+ Hartree-Fock orbital energies, symmetry 2
+
+       -58.52178941    -7.44690563    -3.19430657    -0.43201814     0.81881890
+         2.94816507
+
+ Hartree-Fock orbital energies, symmetry 3
+
+       -58.52178941    -7.44690563    -3.19430657    -0.43201814     0.81881890
+         2.94816507
+
+ Hartree-Fock orbital energies, symmetry 4
+
+        -3.18362890     2.96296633
+
+    E(LUMO) :     0.12693732 au (symmetry 1)
+  - E(HOMO) :    -0.43201814 au (symmetry 3)
+  ------------------------------------------
+    gap     :     0.55895546 au
+
+ >>> Writing SIRIFC interface file <<<
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+ The molecule is placed in a static field.
+ Field strength (a.u.)          Field operator
+ ---------------------          --------------
+    2.66256770E-07                  DERXXPVP
+
+
+     Final    HF energy:        -2572.814931300520
+     Nuclear repulsion:            13.098446757426
+     Electronic energy:         -2585.913378057946
+
+     Final gradient norm:           0.000000000023
+
+ 
+     Date and time (Linux)  : Wed Oct 22 18:53:25 2003
+     Host name              : tk00.uio.no                             
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3        4        5        6        7
+   1  Br  1s     0.9949  -0.3475   0.0004   0.1367  -0.0012  -0.0004   0.0000
+   2  Br  1s     0.0157   1.0477  -0.0014  -0.5169   0.0045   0.0013   0.0000
+   3  Br  1s    -0.0038   0.0164   0.0001   1.0997  -0.0103  -0.0045   0.0000
+   4  Br  1s     0.0021  -0.0036  -0.0005   0.0176   0.0022   0.0093   0.0000
+   5  Br  1s    -0.0013   0.0020   0.0012  -0.0045  -0.0016  -0.0123   0.0000
+   6  Br  2pz    0.0000   0.0012   0.9904  -0.0037  -0.4418   0.0025   0.0000
+   7  Br  2pz    0.0000   0.0001   0.0245   0.0088   1.0788  -0.0067   0.0000
+   8  Br  2pz    0.0001  -0.0001  -0.0055   0.0010   0.0148   0.0042   0.0000
+   9  Br  2pz   -0.0002   0.0003   0.0026  -0.0007  -0.0016  -0.0099   0.0000
+  10  Br  3d0    0.0000   0.0000   0.0001   0.0011   0.0039   0.8473   0.0000
+  11  Br  3d2+   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.8489
+  12  Br  3d0    0.0000   0.0000   0.0000   0.0008   0.0016   0.2723   0.0000
+  13  Br  3d2+   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.2709
+  14  H   1s    -0.0001   0.0002   0.0004  -0.0002   0.0003   0.0155   0.0000
+  15  H   1s     0.0004  -0.0006  -0.0014   0.0010   0.0008   0.0042   0.0000
+
+ Orbital          8        9
+   1  Br  1s    -0.0439   0.0144
+   2  Br  1s     0.1225  -0.0392
+   3  Br  1s    -0.5888   0.1964
+   4  Br  1s     0.7858  -0.2597
+   5  Br  1s     0.3107  -0.2355
+   6  Br  2pz    0.0171   0.0910
+   7  Br  2pz   -0.0520  -0.2802
+   8  Br  2pz    0.0754   0.4220
+   9  Br  2pz    0.0376   0.3280
+  10  Br  3d0   -0.0164  -0.0346
+  11  Br  3d2+   0.0000   0.0000
+  12  Br  3d0    0.0062   0.0183
+  13  Br  3d2+   0.0000   0.0000
+  14  H   1s     0.1877   0.4004
+  15  H   1s     0.0024   0.1570
+
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1        2        3        4
+   1  Br  2px    0.9905  -0.4421   0.0019   0.1138
+   2  Br  2px    0.0243   1.0799  -0.0051  -0.3516
+   3  Br  2px   -0.0052   0.0126   0.0021   0.5312
+   4  Br  2px    0.0019  -0.0004  -0.0005   0.6238
+   5  Br  3d1+   0.0001   0.0030   0.8481  -0.0043
+   6  Br  3d1+   0.0000   0.0015   0.2720   0.0046
+
+     Molecular orbitals for symmetry species   3
+
+ Orbital          1        2        3        4
+   1  Br  2py    0.9905  -0.4421   0.0019   0.1138
+   2  Br  2py    0.0243   1.0799  -0.0051  -0.3516
+   3  Br  2py   -0.0052   0.0126   0.0021   0.5312
+   4  Br  2py    0.0019  -0.0004  -0.0005   0.6238
+   5  Br  3d1-   0.0001   0.0030   0.8481  -0.0043
+   6  Br  3d1-   0.0000   0.0015   0.2720   0.0046
+
+     Molecular orbitals for symmetry species   4
+
+ Orbital          1
+   1  Br  3d2-   0.8489
+   2  Br  3d2-   0.2709
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.03 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
+
+ 
+     Date and time (Linux)  : Wed Oct 22 18:53:25 2003
+     Host name              : tk00.uio.no                             
+
+- End of Wave Function Section
+     Starting Coupled Cluster -
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                    START OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+
+                         +------------------------+
+                         ! Information from CCORB !
+                         +------------------------+
+
+   NBAS   :      15       6       6       2
+   IBAS   :       0      15      21      27
+   NRHF   :       4       2       2       1
+   NVIR   :       6       2       2       1
+   NRHFS  :       9       4       4       1
+   NVIRS  :       6       2       2       1
+   NRHFFR :       5       2       2       0
+   NVIRFR :       0       0       0       0
+   NORBTS :      29
+   NORBT  :      20
+   N2BAST :     301
+   N2BASX :     841
+   NNBASX :     435
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :        33
+          Number of t2 amplitudes                 :      1332
+          Total number of amplitudes in ccsd      :      1365
+
+ Iter.  1: Coupled cluster MP2   energy :   -2572.9773025754580000
+
+       Iteration no.:  1
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.07 seconds
+       Norm of omega1 after ccvec:         0.2931886554D-02
+       Norm of omega2 after ccvec:         0.5762005748D-02
+ Iter.  1: Coupled cluster CCSD  energy :   -2572.9772273428330000
+
+       Iteration no.:  2
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.06 seconds
+       Norm of omega1 after ccvec:         0.5698992870D-04
+       Norm of omega2 after ccvec:         0.4388317302D-03
+ Iter.  2: Coupled cluster CCSD  energy :   -2572.9821418298800000
+
+       Iteration no.:  3
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.07 seconds
+       Norm of omega1 after ccvec:         0.1702896757D-04
+       Norm of omega2 after ccvec:         0.3263425761D-04
+ Iter.  3: Coupled cluster CCSD  energy :   -2572.9818134755710000
+
+       Iteration no.:  4
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.07 seconds
+       Norm of omega1 after ccvec:         0.1951097578D-06
+       Norm of omega2 after ccvec:         0.8104479365D-06
+ Iter.  4: Coupled cluster CCSD  energy :   -2572.9818002207750000
+
+       Iteration no.:  5
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.06 seconds
+       Norm of omega1 after ccvec:         0.3394826371D-08
+       Norm of omega2 after ccvec:         0.1937619384D-07
+ Iter.  5: Coupled cluster CCSD  energy :   -2572.9818049679920000
+
+       Iteration no.:  6
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.06 seconds
+       Norm of omega1 after ccvec:         0.1788267232D-09
+       Norm of omega2 after ccvec:         0.7481781042D-09
+ Iter.  6: Coupled cluster CCSD  energy :   -2572.9818038998830000
+
+       Iteration no.:  7
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.08 seconds
+       Norm of omega1 after ccvec:         0.8479990374D-11
+       Norm of omega2 after ccvec:         0.2572418144D-10
+ Iter.  7: Coupled cluster CCSD  energy :   -2572.9818039602270000
+
+       Iteration no.:  8
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.06 seconds
+       Norm of omega1 after ccvec:         0.3197290132D-12
+       Norm of omega2 after ccvec:         0.1046181959D-11
+ Iter.  8: Coupled cluster CCSD  energy :   -2572.9818039579480000
+
+       Iteration no.:  9
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.08 seconds
+       Norm of omega1 after ccvec:         0.1304056964D-13
+       Norm of omega2 after ccvec:         0.5778432740D-13
+ Iter.  9: Coupled cluster CCSD  energy :   -2572.9818039541180000
+
+       Iteration no.: 10
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.06 seconds
+       Norm of omega1 after ccvec:         0.1604644266D-14
+       Norm of omega2 after ccvec:         0.5410953030D-14
+ Iter. 10: Coupled cluster CCSD  energy :   -2572.9818039515850000
+
+       Iteration no.: 11
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.08 seconds
+       Norm of omega1 after ccvec:         0.1188082531D-15
+       Norm of omega2 after ccvec:         0.3772108507D-15
+ Iter. 11: Coupled cluster CCSD  energy :   -2572.9818039509100000
+
+       Iteration no.: 12
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.06 seconds
+       Norm of omega1 after ccvec:         0.2813163000D-17
+       Norm of omega2 after ccvec:         0.1489023138D-16
+ Iter. 12: Coupled cluster CCSD  energy :   -2572.9818039509430000
+
+ CCSD  energy converged to within   0.10D-09 is  -2572.981803951
+
+
+                +------------------------------------------+
+                ! Largest amplitudes in converged solution !
+                +------------------------------------------+
+
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :               0.7748 %
+
+          Double Excitation Contribution :              99.2252 %
+
+          ||T1||/||T2||                  :               0.0884
+
+          Tau1 diagnostic                :               0.0033
+
+          Norm of Total Amplitude Vector :               0.1574
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   1   |   6       1     |        6          |              |    0.003350  |
+ | 1   1   |   5       2     |       11          |              |   -0.003471  |
+ | 1   1   |   1       3     |       13          |              |   -0.005372  |
+ | 1   1   |   4       3     |       16          |              |    0.002517  |
+ | 1   1   |   1       4     |       19          |              |    0.005590  |
+ | 1   1   |   2       4     |       20          |              |   -0.005879  |
+ | 1   1   |   3       4     |       21          |              |    0.003780  |
+ | 2   2   |   2       1     |       26          |              |   -0.003494  |
+ | 3   3   |   2       1     |       30          |              |   -0.003494  |
+ | 4   4   |   1       1     |       33          |              |    0.003471  |
+ +-----------------------------------------------------------------------------+
+ | 1 1 1 1 |   1   1   4   4 |       19       19 |          190 |   -0.079523  |
+ | 1 1 1 1 |   2   1   4   4 |       20       19 |          209 |    0.028096  |
+ | 1 1 1 1 |   3   1   4   4 |       21       19 |          229 |   -0.028917  |
+ | 1 1 1 1 |   4   1   4   4 |       22       19 |          250 |    0.025694  |
+ | 1 1 1 1 |   3   3   4   4 |       21       21 |          231 |   -0.033379  |
+ | 2 2 2 2 |   1   1   2   2 |       27       27 |          378 |   -0.033927  |
+ | 3 3 3 3 |   1   1   2   2 |       31       31 |          496 |   -0.033927  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.1105
+
+
+          Printed all single excitations greater than 0.002201
+
+
+          Printed all double excitations greater than 0.024903
+
+
+
+
+
+         +-------------------------------------------------------+
+         ! Final results from the Coupled Cluster energy program !
+         +-------------------------------------------------------+
+
+
+
+            Total SCF   energy:                 -2572.8149313005
+
+            Total MP2   energy:                 -2572.9773025755
+
+            Total CCSD  energy:                 -2572.9818039509
+
+ *******************************************************************
+
+ Ground state energy is target 
+
+ Ecorr =                  -2572.98180395094300000000
+
+ *******************************************************************
+
+
+                         +------------------------+
+                         ! Information from CCORB !
+                         +------------------------+
+
+   NBAS   :      15       6       6       2
+   IBAS   :       0      15      21      27
+   NRHF   :       4       2       2       1
+   NVIR   :       6       2       2       1
+   NRHFS  :       9       4       4       1
+   NVIRS  :       6       2       2       1
+   NRHFFR :       5       2       2       0
+   NVIRFR :       0       0       0       0
+   NORBTS :      29
+   NORBT  :      20
+   N2BAST :     301
+   N2BASX :     841
+   NNBASX :     435
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :        33
+          Number of t2 amplitudes                 :      1332
+          Total number of amplitudes in ccsd      :      1365
+
+ Iter.  1: Coupled cluster RSTAR energy :   -2572.9818039509430000
+
+       Iteration no.:  1
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.06 seconds
+       Norm of omega1 after ccvec:         0.4465819629D-19
+       Norm of omega2 after ccvec:         0.1939066066D-18
+ Iter.  1: Coupled cluster CCSD  energy :   -2572.9818039509620000
+
+ CCSD  energy converged to within   0.10D-09 is  -2572.981803951
+
+
+                +------------------------------------------+
+                ! Largest amplitudes in converged solution !
+                +------------------------------------------+
+
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :               0.7748 %
+
+          Double Excitation Contribution :              99.2252 %
+
+          ||T1||/||T2||                  :               0.0884
+
+          Tau1 diagnostic                :               0.0033
+
+          Norm of Total Amplitude Vector :               0.1574
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   1   |   6       1     |        6          |              |    0.003350  |
+ | 1   1   |   5       2     |       11          |              |   -0.003471  |
+ | 1   1   |   1       3     |       13          |              |   -0.005372  |
+ | 1   1   |   4       3     |       16          |              |    0.002517  |
+ | 1   1   |   1       4     |       19          |              |    0.005590  |
+ | 1   1   |   2       4     |       20          |              |   -0.005879  |
+ | 1   1   |   3       4     |       21          |              |    0.003780  |
+ | 2   2   |   2       1     |       26          |              |   -0.003494  |
+ | 3   3   |   2       1     |       30          |              |   -0.003494  |
+ | 4   4   |   1       1     |       33          |              |    0.003471  |
+ +-----------------------------------------------------------------------------+
+ | 1 1 1 1 |   1   1   4   4 |       19       19 |          190 |   -0.079523  |
+ | 1 1 1 1 |   2   1   4   4 |       20       19 |          209 |    0.028096  |
+ | 1 1 1 1 |   3   1   4   4 |       21       19 |          229 |   -0.028917  |
+ | 1 1 1 1 |   4   1   4   4 |       22       19 |          250 |    0.025694  |
+ | 1 1 1 1 |   3   3   4   4 |       21       21 |          231 |   -0.033379  |
+ | 2 2 2 2 |   1   1   2   2 |       27       27 |          378 |   -0.033927  |
+ | 3 3 3 3 |   1   1   2   2 |       31       31 |          496 |   -0.033927  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.1105
+
+
+          Printed all single excitations greater than 0.002201
+
+
+          Printed all double excitations greater than 0.024903
+       Time used in   RHS - TOTAL  :       0.17 seconds
+
+
+
+
+
+         +-------------------------------------------------------+
+         ! Final results from the Coupled Cluster energy program !
+         +-------------------------------------------------------+
+
+
+
+            Total SCF   energy:                 -2572.8149313005
+
+            Total RSTAR energy:                 -2572.9818039509
+
+            Total CCSD  energy:                 -2572.9818039510
+
+
+                     Perturbative triples corrections
+                     --------------------------------
+
+            The E4 doubles and triples:            -0.0023071376
+            The E5 singles and triples:             0.0001447092
+
+            Total energy CCSD(T):               -2572.9839663793
+
+ *******************************************************************
+
+ Ground state energy is target 
+
+ Ecorr =                  -2572.98396637931200000000
+
+ *******************************************************************
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                   SUMMARY OF COUPLED CLUSTER CALCULATION                    *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+                                                                                
+                                                                                
+            Total SCF   energy:                 -2572.8149313005                
+            Total MP2   energy:                 -2572.9773025755                
+            Total CCSD  energy:                 -2572.9818039509                
+                                                                                
+                                                                                
+            Total SCF   energy:                 -2572.8149313005                
+            Total RSTAR energy:                 -2572.9818039509                
+            Total CCSD  energy:                 -2572.9818039510                
+                                                                                
+                                                                                
+                     Perturbative triples corrections                           
+                     --------------------------------                           
+                                                                                
+            The E4 doubles and triples:            -0.0023071376                
+            The E5 singles and triples:             0.0001447092                
+                                                                                
+            Total energy CCSD(T):               -2572.9839663793                
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                      END OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+- End of Coupled Cluster
+ >>>> Total CPU  time used in DALTON:   2.85 seconds
+ >>>> Total wall time used in DALTON:   4.00 seconds
+
+ 
+     Date and time (Linux)  : Wed Oct 22 18:53:26 2003
+     Host name              : tk00.uio.no                             
