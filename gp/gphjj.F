@@ -32,8 +32,8 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C VERSION : $Revision: 1.17 $
-C DATE    : $Date: 2003-10-25 14:10:39 $
+C VERSION : $Revision: 1.18 $
+C DATE    : $Date: 2003-10-26 13:25:37 $
 C FILE    : gphjj.F
 C
 #include "single.h"
@@ -352,7 +352,7 @@ C
 #endif
 #endif
 #if defined (SYS_AIX)
-      CHARACTER*(24) fdate_
+      CHARACTER*(24) fdate
       CHARACTER*(32) HSTNAM
 #endif
 #if defined (SYS_HAL)
@@ -408,7 +408,7 @@ C      WRITE (LUPRIN,'(T6,2A)') 'Date and time (HP-UX)  : ',FDATE()
 #if defined (SYS_LINUX)
       WRITE (LUPRIN,'(T6,2A)') 'Date and time (Linux)  : ',FDATE()
 #endif
-#if defined (SYS_AIX) || (SYS_LINUX) || defined (SYS_UNIX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN)
+#if defined (SYS_LINUX) || defined (SYS_UNIX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN)
       CALL HOSTNM(HSTNAM)
       WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
 #endif
