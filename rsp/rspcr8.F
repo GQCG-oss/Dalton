@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: rspcr8.F,v 1.4 2001-10-01 13:22:19 vebjornb Exp $
+C$Id: rspcr8.F,v 1.5 2001-10-10 10:27:19 hjj Exp $
 C
 #include <single.h>
 C
@@ -473,11 +473,13 @@ C
          NVIR2  = NVIR(ISYM2)
          NVIR3  = NVIR(ISYM3)
 C
-         CALL DGEMM('N','N',NOCC1,NOCC3,NVIR2,1.D0,
+         IF (NOCC1*NOCC3*NVIR2 .NE. 0)
+     &   CALL DGEMM('N','N',NOCC1,NOCC3,NVIR2,1.D0,
      &              ZYMB(IOCC1+1,IVIR2+1),NORBT,
      &              ZYMC(IVIR2+1,IOCC3+1),NORBT,1.D0,
      &              ZYMBC(IOCC1+1,IOCC3+1),NORBT)
-         CALL DGEMM('N','N',NVIR1,NVIR3,NOCC2,1.D0,
+         IF (NVIR1*NVIR3*NOCC2 .NE. 0)
+     &   CALL DGEMM('N','N',NVIR1,NVIR3,NOCC2,1.D0,
      &              ZYMB(IVIR1+1,IOCC2+1),NORBT,
      &              ZYMC(IOCC2+1,IVIR3+1),NORBT,1.D0,
      &              ZYMBC(IVIR1+1,IVIR3+1),NORBT)
@@ -529,11 +531,13 @@ C
          NVIR2  = NVIR(ISYM2)
          NVIR3  = NVIR(ISYM3)
 C
-         CALL DGEMM('N','N',NOCC1,NVIR3,NOCC2,1.D0,
+         IF (NOCC1*NVIR3*NOCC2 .NE. 0)
+     &   CALL DGEMM('N','N',NOCC1,NVIR3,NOCC2,1.D0,
      &              ZYMBC(IOCC1+1,IOCC2+1),NORBT,
      &              ZYMD(IOCC2+1,IVIR3+1),NORBT,1.D0,
      &              ZYMBCD(IOCC1+1,IVIR3+1),NORBT)
-         CALL DGEMM('N','N',NVIR1,NOCC3,NVIR2,1.D0,
+         IF (NVIR1*NOCC3*NOCC2 .NE. 0)
+     &   CALL DGEMM('N','N',NVIR1,NOCC3,NVIR2,1.D0,
      &              ZYMBC(IVIR1+1,IVIR2+1),NORBT,
      &              ZYMD(IVIR2+1,IOCC3+1),NORBT,1.D0,
      &              ZYMBCD(IVIR1+1,IOCC3+1),NORBT)
@@ -594,27 +598,21 @@ C
          ICMO1  = ICMO(ISYM1)
          ICMO2  = ICMO(ISYM2)
 C
-         IF (NBAS1*NBAS2*NOCC1*NVIR2 .NE. 0) THEN
+         IF (NOCC1*NVIR2 .NE. 0) THEN
             CALL DGEMM('N','T',NBAS2,NOCC1,NVIR2,1.D0,
      &                 CMO(ICMO2+NOCC2*NBAS2+1),NBAS2,
      &                 ZYM(IOCC1+1,IVIR2+1),NORBT,0.D0,
      &                 TMP(IBAS2+1,IOCC1+1),NBAST)
-         END IF
-         NTMP = NBAS1*NBAS2*NOCC1
-         IF (NTMP .NE. 0) THEN
             CALL DGEMM('N','T',NBAS1,NBAS2,NOCC1,1.D0,
      &                 CMO(ICMO1+1),NBAS1,
      &                 TMP(IBAS2+1,IOCC1+1),NBAST,1.D0,
      &                 DAO(IBAS1+1,IBAS2+1),NBAST)
          END IF
-         IF (NBAS1*NBAS2*NOCC2*NVIR1 .NE. 0) THEN
+         IF (NOCC2*NVIR1 .NE. 0) THEN
             CALL DGEMM('N','T',NBAS2,NVIR1,NOCC2,1.D0,
      &                 CMO(ICMO2+1),NBAS2,
      &                 ZYM(IVIR1+1,IOCC2+1),NORBT,0.D0,
      &                 TMP(IBAS2+1,IVIR1+1),NBAST)
-         END IF
-         NTMP = NBAS1*NBAS2*NVIR1
-         IF (NTMP .NE. 0) THEN
             CALL DGEMM('N','T',NBAS1,NBAS2,NVIR1,-1.D0,
      &                 CMO(ICMO1+NOCC1*NBAS1+1),NBAS1,
      &                 TMP(IBAS2+1,IVIR1+1),NBAST,1.D0,
@@ -677,27 +675,21 @@ C
          ICMO1  = ICMO(ISYM1)
          ICMO2  = ICMO(ISYM2)
 C
-         IF (NBAS1*NBAS2*NOCC1*NOCC2 .NE. 0) THEN
+         IF (NOCC1*NOCC2 .NE. 0) THEN
             CALL DGEMM('N','T',NBAS2,NOCC1,NOCC2,1.D0,
      &                 CMO(ICMO2+1),NBAS2,
      &                 ZYM(IOCC1+1,IOCC2+1),NORBT,0.D0,
      &                 TMP(IBAS2+1,IOCC1+1),NBAST)
-         END IF
-         NTMP = NBAS1*NBAS2*NOCC1
-         IF (NTMP .NE.0) THEN
             CALL DGEMM('N','T',NBAS1,NBAS2,NOCC1,1.D0,
      &                 CMO(ICMO1+1),NBAS1,
      &                 TMP(IBAS2+1,IOCC1+1),NBAST,1.D0,
      &                 DAO(IBAS1+1,IBAS2+1),NBAST)
          END IF
-         IF (NBAS1*NBAS2*NVIR1*NVIR2 .NE. 0) THEN
+         IF (NVIR1*NVIR2 .NE. 0) THEN
             CALL DGEMM('N','T',NBAS2,NVIR1,NVIR2,1.D0,
      &                 CMO(ICMO2+NOCC2*NBAS2+1),NBAS2,
      &                 ZYM(IVIR1+1,IVIR2+1),NORBT,0.D0,
      &                 TMP(IBAS2+1,IVIR1+1),NBAST)
-         END IF
-         NTMP = NBAS1*NBAS2*NVIR1
-         IF (NTMP .NE.0) THEN
             CALL DGEMM('N','T',NBAS1,NBAS2,NVIR1,-1.D0,
      &                 CMO(ICMO1+NOCC1*NBAS1+1),NBAS1,
      &                 TMP(IBAS2+1,IVIR1+1),NBAST,1.D0,
