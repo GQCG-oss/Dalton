@@ -1852,6 +1852,62 @@ C
 C
          DPTONE = ALPHA2*DDOT(N2BST(ISYMOP),WORK(KONEP),1,WORK(KDENS),1)
 C
+         DPTFLD = ZERO
+C
+         IF (NFIELD .GT. 0) THEN
+C
+C           -------------------------------------------------------------
+C           Add contributions from external fields (WK/UniKA/11-03-2004).
+C           -------------------------------------------------------------
+C
+            DO IFIELD = 1, NFIELD
+               IF (LFIELD(IFIELD) .EQ. 'OVERLAP ') THEN
+                  LABEL = 'KINENERG'
+                  FF = 0.5D0 * EFIELD(IFIELD)
+               ELSE IF (LFIELD(IFIELD) .EQ. 'CM000000') THEN
+                  LABEL = 'KINENERG'
+                  FF = 0.5D0 * EFIELD(IFIELD)
+               ELSE IF (LFIELD(IFIELD) .EQ. 'XDIPLEN ') THEN
+                  LABEL = 'PXPDIPOL'
+                  FF = EFIELD(IFIELD)
+               ELSE IF (LFIELD(IFIELD) .EQ. 'YDIPLEN ') THEN
+                  LABEL = 'PYPDIPOL'
+                  FF = EFIELD(IFIELD)
+               ELSE IF (LFIELD(IFIELD) .EQ. 'ZDIPLEN ') THEN
+                  LABEL = 'PZPDIPOL'
+                  FF = EFIELD(IFIELD)
+               ELSE
+                    CALL QUIT('DPT correction can not be computed with'
+     *                               //' this finite field switched on')
+               ENDIF
+               KONEP  = KWRK3
+               KWRK4  = KONEP  + N2BST(ISYMOP)
+               LWRK4  = LWORK  - KWRK4
+C
+               IF (LWRK4 .LT. 0) THEN
+                 WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KWRK4
+                 CALL QUIT('Insufficient memory for '//
+     *                     'DPT-integrals in CC_FOP')
+               ENDIF
+C
+               CALL DZERO(WORK(KONEP),N2BST(ISYMOP))
+               ISY = 1
+               CALL CC_ONEP(WORK(KONEP),WORK(KWRK4),LWRK4,FF,ISY,LABEL)
+C
+               IF (IPRINT .GT. 50) THEN
+                  CALL AROUND('Relativistic integrals in cc_fop')
+                  CALL CC_PRFCKAO(WORK(KONEP),ISYMOP)
+               ENDIF
+C
+               DPTLAB = DDOT(N2BST(ISYMOP),WORK(KONEP),1,WORK(KDENS),1)
+               DPTLAB = DPTLAB * ALPHA2
+               DPTFLD = DPTFLD + DPTLAB
+               WRITE(LUPRI,*) ' '
+               WRITE(LUPRI,1361) 'DPTFLD:', DPTLAB, LFIELD(IFIELD)
+               WRITE(LUPRI,138) '------ '
+            ENDDO
+         ENDIF
+C
 C----------------------------------------------------------
 C        Calculate the second "one-electron term" - similar
 C        to the reorthonormalization term of the gradient.
@@ -1870,6 +1926,12 @@ C
          end if
          !
          REORTH = ALPHA2*REORTH
+         IF (NFIELD .GT. 0) THEN
+            WRITE(LUPRI,*) ' '
+            WRITE(LUPRI,1361) 'DPTFLD:', DPTFLD, 'TOTAL   '
+            WRITE(LUPRI,138)  '------ '
+            WRITE(LUPRI,*) ' '
+         ENDIF
          WRITE(LUPRI,*) ' '
          WRITE(LUPRI,136) 'DPTONE:', DPTONE
          WRITE(LUPRI,138) '------ '
@@ -1877,8 +1939,9 @@ C
          WRITE(LUPRI,136) 'DPTREO:', REORTH
          WRITE(LUPRI,138) '------ '
 C
-  136    FORMAT(9X,A7,F17.9)
-  137    FORMAT(9X,A33,F17.9)
+  136    FORMAT(9X,A7,F20.12)
+ 1361    FORMAT(9X,A7,F20.12,4X,'(',A8,')')
+  137    FORMAT(9X,A33,F20.12)
   138    FORMAT(9X,A7)
   139    FORMAT(9X,A32)
 C
@@ -1906,7 +1969,7 @@ C
          WRITE(LUPRI,138) '------ '
          WRITE(LUPRI,*) ' '
          WRITE(LUPRI,137) 'Total first-order DPT correction:',
-     *                DPTONE+REORTH+WORK(KWRK4)
+     *                DPTONE+REORTH+WORK(KWRK4)+DPTFLD
          WRITE(LUPRI,139) '--------------------------------'
 C
       ENDIF

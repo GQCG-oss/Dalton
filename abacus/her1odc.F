@@ -1,5 +1,4 @@
-C
-C...   Copyright (c) 2001 by the authors of Dalton (see below).
+C C...   Copyright (c) 2001 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
@@ -139,7 +138,7 @@ C
          IF ((INTTYP .EQ. 49) .OR. (INTTYP .EQ. 51)) THEN
             CALL EFODC(ODC,ODCUND,JMAXA,JMAXAP,JMAXBP,JMAXB,JMAXT,
      &                 JMAXTP,JMAXD,JMAXM,EXPA,EXPB,IPRINT)
-         ELSE IF (INTTYP .EQ. 63) THEN
+         ELSE IF (INTTYP .EQ. 63 .OR. INTTYP .EQ. 83) THEN
             CALL DODCB2(ODC,ODCUND,JMAXA,JMAXAP,JMAXBP,JMAXB,JMAXT,
      &                  JMAXTP,JMAXD,JMAXM,EXPB,IPRINT)
          ELSE IF (DOMOM1) THEN

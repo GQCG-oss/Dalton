@@ -164,6 +164,7 @@ C     Half-derivative overlap integrals for 1st-order NACMEs (25.06.91)
 C     Cosine and Sine integrals (24.06.93)
 C     Mass-velocity and Darwin integrals (23.07.93 ShKi+HJAaJ)
 C     Magnetic field derivatives of electric field (280893 KRu)
+C     DPT correction to dipole (WK/UniKA/09-03-2004)
 C
 C     Changes for writing symmetry information to property file
 C     (OV 08.03.90)
@@ -178,7 +179,7 @@ C
 #include <maxorb.h>
 #include <iratdef.h>
 #include <efield.h>
-      PARAMETER (NTABLE = 79)
+      PARAMETER (NTABLE = 81)
       PARAMETER (D2 = 2.D0)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, PROPRI, SQUARE,
@@ -218,7 +219,8 @@ cLig <> added RAGMO and RPSO
      &            'ELGDIAL', 'DPTOVL ', 'DPTPO1 ', 'DPTPO2 ',
      &            'XDDXR3 ', 'PVPINT ', 'POTENER', 'PVIOLA ',
      &            'SPHMOML', 'QDBINT ', 'SOSCALE', 'ELGDSCA',
-     &            'ANGECC ', 'RANGMO ', 'RPSO   '/
+     &            'ANGECC ', 'RANGMO ', 'RPSO   ', 'PXPINT ',
+     &            'PRPINT '/
       LOGICAL   RGAUGE, RCHRG
       DIMENSION GAGSAV(3)
 C
@@ -246,7 +248,7 @@ cLig <> added goto 75 and 76 for RANGMO and RPSO
      &             34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
      &             49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,
      &             64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,
-     &             79), I
+     &             79,80,81), I
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -1872,6 +1874,36 @@ C
 c
          ANTI = .FALSE.
          SQUARE = .TRUE.
+      GO TO 200
+ 80   CONTINUE
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
+     &      'Calculation of DPT correction to dipole (1)'
+         INTTYP = 83
+         NOPTYP = 3
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         LABINT(1) = 'PXPDIPOL'
+         LABINT(2) = 'PYPDIPOL'
+         LABINT(3) = 'PZPDIPOL'
+         INTREP(1) = ISYMAX(1,1)
+         INTREP(2) = ISYMAX(2,1)
+         INTREP(3) = ISYMAX(3,1)
+         ANTI = .FALSE.
+      GO TO 200
+ 81   CONTINUE
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
+     &      'Calculation of DPT correction to dipole (2)'
+         INTTYP = 84
+         NOPTYP = 3
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         LABINT(1) = 'pXpINTEG'
+         LABINT(2) = 'pYpINTEG'
+         LABINT(3) = 'pZpINTEG'
+         INTREP(1) = ISYMAX(1,1)
+         INTREP(2) = ISYMAX(2,1)
+         INTREP(3) = ISYMAX(3,1)
+         ANTI = .FALSE.
       GO TO 200
 cLig <<
 C

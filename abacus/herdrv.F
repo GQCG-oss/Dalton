@@ -207,7 +207,8 @@ C
 #include <efield.h>
 C     NTABLE has been increased from 102 to 105 (WK/UniKA/04-11-2002).
 cLig <> changed NTABLE from 111 to 112
-      PARAMETER (NDIR = 7, NTABLE = 112)
+C     NTABLE has been increased 113 (WK/UniKA/09-03-2004).
+      PARAMETER (NDIR = 7, NTABLE = 113)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, D10 = 1.0D1)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -262,7 +263,8 @@ cLig <> added RANGMO and RPSO
      &             '.FINDPT', '.FNPROP', '.PVP   ', '.1ELPOT',
      &             '.QDBINT', '.QDBTST', '.R12   ', '.R12EXP',
      &             '.AUXBAS', '.NOTV12', '.R12INT', '.U12INT',
-     &             '.U21INT', '.DCCR12', '.RANGMO', '.RPSO  '/
+     &             '.U21INT', '.DCCR12', '.RANGMO', '.RPSO  ',
+     &             '.DPTPXP'/
 C
 C     Check if input has been processed earlier.
 C
@@ -327,7 +329,7 @@ cLig <> added go to 211 and 212
      &                181,182,183,184,185,186,187,188,189,190,
      &                191,192,193,194,195,196,197,198,199,200,
      &                201,202,203,204,205,206,207,208,209,210,
-     &                211,212), I
+     &                211,212,213), I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -870,6 +872,10 @@ cLig >> added what to do for RANGMO and RPSO options
             RPSO   = .TRUE.
             ONEPRP = .TRUE.
             GO TO 100
+ 213     CONTINUE
+            PXPINT = .TRUE.
+            ONEPRP = .TRUE.
+            GO TO 100
 cLig <<
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 299
@@ -1104,6 +1110,8 @@ cLig <<
      &      '- Magnetic-moment correction to one-electron SO integrals'
          IF (PVPINT) WRITE (LUPRI,'(10X,A)')
      &      '- pVp integrals of the Douglas-Kroll Hamiltonian'
+         IF (PXPINT) WRITE (LUPRI,'(10X,A)')
+     &      '- small component dipole lengths integrals for DPT'
          IF (POTENE) WRITE (LUPRI,'(10X,A)')
      &      '- Potential energy Hamiltonian integrals'   
          IF (DKTRAN) WRITE (LUPRI,'(10X,A)')
@@ -2610,6 +2618,21 @@ C
                CALL TIMER('RPSO  ',TIMSTR,TIMEND)  
                CALL FLSHFO(LUPRI) 
             END IF
+C
+C           ***** pXp integrals, for DPT correction to dipole *****
+C
+            IF (PXPINT) THEN
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('PXPINT ',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('PXPINT',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
+               CALL TIMER('START ',TIMSTR,TIMEND)
+               CALL PR1INT('PRPINT ',WORK,LWORK,IDUMMY,
+     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
+               CALL TIMER('PRPINT',TIMSTR,TIMEND)
+               CALL FLSHFO(LUPRI)
+            END IF
 cLig <<
          END IF
       END IF
@@ -3029,6 +3052,7 @@ C#endif
       MNF_SO = .FALSE.
       PVPINT = .FALSE.
       POTENE = .FALSE.
+      PXPINT = .FALSE.
       PRTHRS = 1.0D-10
       NPQUAD = 40
       ALLATM = .TRUE.

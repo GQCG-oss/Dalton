@@ -484,6 +484,16 @@ cLig >> setting for INTTYP 81 and 82
          DONUC1 = .FALSE. 
          DOMOM1 = .TRUE. 
 cLig <<
+      ELSE IF (INTTYP .EQ.83) THEN
+         JMAXD  = 1 
+         JMAXM  = 1 
+         DONUC1 = .TRUE.
+         DOMOM1 = .FALSE.
+      ELSE IF (INTTYP .EQ.84) THEN
+         JMAXD  = 2
+         JMAXM  = 1
+         DONUC1 = .TRUE.
+         DOMOM1 = .FALSE.            
       END IF
 C
       IF (IPRINT .GT. 5) THEN
@@ -793,7 +803,7 @@ cLig <> added JMAX adjustment  for INTTYP = 82
      &                    .OR. (INTTYP .EQ. 73)
      &                    .OR. (INTTYP .EQ. 74)
      &                    .OR. (INTTYP .EQ. 80)
-     &                    .OR. (INTTYP .EQ. 82)) THEN    
+     &                    .OR. (INTTYP .EQ. 82)) THEN
          JMAX = NHKTA + NHKTB - 2
          IF (INTTYP .EQ.  5) JMAX = JMAX + 1
          IF (INTTYP .EQ. 10) JMAX = JMAX + 1
@@ -1105,7 +1115,7 @@ cLig <> set DIFODC true also for INTTYP = 81 and 82
      &    .OR. (INTTYP.EQ.61) .OR. (INTTYP.EQ.63) .OR. (INTTYP.EQ.70)
      &    .OR. (INTTYP.EQ.71) .OR. (INTTYP.EQ.72) .OR. (INTTYP.EQ.73)
      &    .OR. (INTTYP.EQ.74) .OR. (INTTYP.EQ.80) .OR. (INTTYP.EQ.81)
-     &    .OR. (INTTYP.EQ.82)
+     &    .OR. (INTTYP.EQ.82) .OR. (INTTYP.EQ.83) .OR. (INTTYP.EQ.84)
       ADDNAI = (INTTYP.EQ. 5) .OR. (INTTYP.EQ.19) .OR. (INTTYP.EQ.20)
      &    .OR. (INTTYP.EQ.24) .OR. (INTTYP.EQ.25) .OR. (INTTYP.EQ.51)
      &    .OR. (INTTYP.EQ.57) .OR. (INTTYP.EQ.61) .OR. (INTTYP.EQ.62)
@@ -1167,7 +1177,8 @@ C
      &            (INTTYP .EQ. 8) .OR. (INTTYP .EQ. 29) .OR.
      &            (INTTYP .EQ. 30) .OR. (INTTYP .EQ. 31) .OR.
      &            (INTTYP .EQ. 56) .OR. (INTTYP .EQ. 53) .OR.
-     &            (INTTYP .EQ. 54)) THEN                  
+     &            (INTTYP .EQ. 54) .OR. (INTTYP .EQ. 83) .OR.
+     &            (INTTYP .EQ. 84) ) THEN                  
             TEMP(1) = DIPORG(1)
             TEMP(2) = DIPORG(2)
             TEMP(3) = DIPORG(3)
@@ -1796,6 +1807,20 @@ C
             CALL RMIINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
      &                  SHLINT,NOPTYP,NATOMC)
 cLig <<
+C
+C        DPT correction to dipole
+C        ------------------------
+C
+         ELSE IF (INTTYP .EQ. 83) THEN
+            CALL PRPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &                  CORPX,CORPY,CORPZ,DIPORG)
+C
+C        DPT correction to dipole
+C        ------------------------
+C
+         ELSE IF (INTTYP .EQ. 84) THEN
+            CALL PXPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &                  CORPX,CORPY,CORPZ,DIPORG)
          END IF                                    
   200    CONTINUE
   100 CONTINUE
@@ -2104,6 +2129,111 @@ C
          SHLINT(INT,1) = SHLINT(INT,1) - DX0*SY0*SZ0
          SHLINT(INT,2) = SHLINT(INT,2) - SX0*DY0*SZ0
          SHLINT(INT,3) = SHLINT(INT,3) - SX0*SY0*DZ0
+  100 CONTINUE
+      RETURN
+      END
+C  /* Deck prpint */
+      SUBROUTINE PRPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &                  CORPX,CORPY,CORPZ,ORIGIN)
+C
+C     Computation of pRp integrals: 1/4 < grad A | {x,y,z} | grad B >
+C     DPT correction to dipole integrals (same as PXPINT)
+C
+C     (WK/UniKA/10-03-2004)
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+      PARAMETER (D25 = 0.25D0)
+      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
+     &          SHLINT(KCKTAB,3), ORIGIN(3)
+#include <onecom.h>
+#include <lmns.h>
+      POX = CORPX - ORIGIN(1)
+      POY = CORPY - ORIGIN(2)
+      POZ = CORPZ - ORIGIN(3)
+      INT = 0
+      DO 100 ICOMPA = 1,KCKTA
+         LVALA = LVALUA(ICOMPA)
+         MVALA = MVALUA(ICOMPA)
+         NVALA = NVALUA(ICOMPA)
+      DO 100 ICOMPB = 1, KCKTB
+         LVALB = LVALUB(ICOMPB)
+         MVALB = MVALUB(ICOMPB)
+         NVALB = NVALUB(ICOMPB)
+         SX0 = SHGTF*ODC(LVALA,LVALB,0,0,0,1)
+         SY0 = SHGTF*ODC(MVALA,MVALB,0,0,0,2)
+         SZ0 = SHGTF*ODC(NVALA,NVALB,0,0,0,3)
+         SX2 = SHGTF*ODC(LVALA,LVALB,0,1,1,1)
+         SY2 = SHGTF*ODC(MVALA,MVALB,0,1,1,2)
+         SZ2 = SHGTF*ODC(NVALA,NVALB,0,1,1,3)
+         DX0 = POX*SX0 + SHGTF*ODC(LVALA,LVALB,1,0,0,1)
+         DY0 = POY*SY0 + SHGTF*ODC(MVALA,MVALB,1,0,0,2)
+         DZ0 = POZ*SZ0 + SHGTF*ODC(NVALA,NVALB,1,0,0,3)
+         DX2 = POX*SX2 + SHGTF*ODC(LVALA,LVALB,1,1,1,1)
+         DY2 = POY*SY2 + SHGTF*ODC(MVALA,MVALB,1,1,1,2)
+         DZ2 = POZ*SZ2 + SHGTF*ODC(NVALA,NVALB,1,1,1,3)
+         INT = INT + 1
+         XXX = (DX2*SY0*SZ0 + DX0*SY2*SZ0 + DX0*SY0*SZ2) * D25
+         YYY = (SX2*DY0*SZ0 + SX0*DY2*SZ0 + DX0*SY0*SZ2) * D25
+         ZZZ = (SX2*SY0*DZ0 + SX0*SY2*DZ0 + SX0*SY0*DZ2) * D25
+         SHLINT(INT,1) = SHLINT(INT,1) - XXX
+         SHLINT(INT,2) = SHLINT(INT,2) - YYY
+         SHLINT(INT,3) = SHLINT(INT,3) - ZZZ
+  100 CONTINUE
+      RETURN
+      END
+C  /* Deck pxpint */
+      SUBROUTINE PXPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &                  CORPX,CORPY,CORPZ,ORIGIN)
+C
+C     Computation of pRp integrals: < grad A | {x,y,z} | grad B >
+C     DPT correction to dipole integrals (same as PRPINT)
+C
+C     (WK/UniKA/09-03-2004)
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+      PARAMETER (D25 = 0.25D0)
+      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
+     &          SHLINT(KCKTAB,3), ORIGIN(3)
+#include <onecom.h>
+#include <lmns.h>
+      POX = CORPX - ORIGIN(1)
+      POY = CORPY - ORIGIN(2)
+      POZ = CORPZ - ORIGIN(3)
+      INT = 0
+      DO 100 ICOMPA = 1,KCKTA
+         LVALA = LVALUA(ICOMPA)
+         MVALA = MVALUA(ICOMPA)
+         NVALA = NVALUA(ICOMPA)
+      DO 100 ICOMPB = 1, KCKTB
+         LVALB = LVALUB(ICOMPB)
+         MVALB = MVALUB(ICOMPB)
+         NVALB = NVALUB(ICOMPB)
+         SX0 = SHGTF*ODC(LVALA,LVALB,0,0,0,1)
+         SX1 = SHGTF*ODC(LVALA,LVALB,0,1,0,1)
+         SX2 = SHGTF*ODC(LVALA,LVALB,0,2,0,1)
+         SY0 = SHGTF*ODC(MVALA,MVALB,0,0,0,2)
+         SY1 = SHGTF*ODC(MVALA,MVALB,0,1,0,2)
+         SY2 = SHGTF*ODC(MVALA,MVALB,0,2,0,2)
+         SZ0 = SHGTF*ODC(NVALA,NVALB,0,0,0,3)
+         SZ1 = SHGTF*ODC(NVALA,NVALB,0,1,0,3)
+         SZ2 = SHGTF*ODC(NVALA,NVALB,0,2,0,3)
+         DX0 = POX*SX0 + SHGTF*ODC(LVALA,LVALB,1,0,0,1)
+         DY0 = POY*SY0 + SHGTF*ODC(MVALA,MVALB,1,0,0,2)
+         DZ0 = POZ*SZ0 + SHGTF*ODC(NVALA,NVALB,1,0,0,3)
+         DX2 = POX*SX2 + SHGTF*ODC(LVALA,LVALB,1,2,0,1) - SX1
+         DY2 = POY*SY2 + SHGTF*ODC(MVALA,MVALB,1,2,0,2) - SY1
+         DZ2 = POZ*SZ2 + SHGTF*ODC(NVALA,NVALB,1,2,0,3) - SZ1
+         INT = INT + 1
+         XXX = (DX2*SY0*SZ0 + DX0*SY2*SZ0 + DX0*SY0*SZ2) * D25
+         YYY = (SX2*DY0*SZ0 + SX0*DY2*SZ0 + SX0*DY0*SZ2) * D25
+         ZZZ = (SX2*SY0*DZ0 + SX0*SY2*DZ0 + SX0*SY0*DZ2) * D25
+         SHLINT(INT,1) = SHLINT(INT,1) + XXX
+         SHLINT(INT,2) = SHLINT(INT,2) + YYY
+         SHLINT(INT,3) = SHLINT(INT,3) + ZZZ
   100 CONTINUE
       RETURN
       END

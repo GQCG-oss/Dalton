@@ -1552,7 +1552,7 @@ c        NBUFX(0) = 0
          WRITE (LUAORC(0),REC=NBUFX(0)) BUF,IBUF,ICOUNT
 C
          IF (IPRINT .GE. 6) THEN
-C        if (bph2oo) then
+c        if (bph2oo) then
             WRITE (LUPRI,'(2X,A,I5,A/)')
      &         'Integral buffer #',NBUFX(0),' has been written.'
             IBIT1 = 2**NBITS - 1
@@ -1582,7 +1582,7 @@ C        if (bph2oo) then
          END IF
 C
          IF (IPRINT .GE. 6) THEN
-C        if (bph2oo) then
+c        if (bph2oo) then
             IF (ICOUNT .GT. 0) THEN
                WRITE (LUPRI,'(2X,A,I5,A/)')
      &            'Integral buffer #',NBUFX(0),' has been written.'

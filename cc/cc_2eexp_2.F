@@ -59,6 +59,15 @@ C
 C
       CALL QENTER('CC_2EEXP_2')
 C
+C-----------------------------
+C     Trick for CCSD(T)
+C-----------------------------
+C
+       IF (CCPT) THEN
+         LCCSD_SAV = CCSD
+         CCSD = .TRUE.
+       END IF
+C
 C------------------------------
 C     Initialization of result.
 C------------------------------
@@ -1438,6 +1447,10 @@ C
          WRITE(LUPRI,*) 
      *        'Time used for 1 e- density & intermediates:',TIMONE
       ENDIF
+C
+       IF (CCPT) THEN
+          CCSD = LCCSD_SAV
+       END IF
 C
       CALL QEXIT('CC_2EEXP_2')
 C

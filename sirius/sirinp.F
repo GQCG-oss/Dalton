@@ -2133,6 +2133,7 @@ C
 C Copyright Nov 1990 Hans Joergen Aa. Jensen
 C
 #include <implicit.h>
+#include <drw2el.h>
       PARAMETER (NTABLE = 2)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      *          REWORD*12
@@ -2189,6 +2190,29 @@ C *** Option 1 >FIELD TERM<   Field dependent Hamiltonian term
          IF (NFIELD .LE. MXFELT) THEN
             READ(LUCMD,*) EFIELD(NFIELD)
             READ(LUCMD,'(1X,A8)') LFIELD(NFIELD)
+C
+C...........Add DPT contribution to dipole where needed (WK/UniKA/10-03-2004)
+            IF (FINDPT) THEN
+              IF (LFIELD(1).NE.'DERXXPVP')
+     *        CALL QUIT(' INCORRECT LABEL FOR FINITE DPT ')
+              IF (LFIELD(NFIELD) .EQ. 'XDIPLEN ' ) THEN
+                NFIELD = NFIELD + 1
+                LFIELD(NFIELD) = 'PXPDIPOL'
+                EFIELD(NFIELD) = EFIELD(NFIELD-1)*EFIELD(1)
+              ELSE IF (LFIELD(NFIELD) .EQ. 'YDIPLEN ' ) THEN
+                NFIELD = NFIELD + 1
+                LFIELD(NFIELD) = 'PYPDIPOL'
+                EFIELD(NFIELD) = EFIELD(NFIELD-1)*EFIELD(1)
+              ELSE IF (LFIELD(NFIELD) .EQ. 'ZDIPLEN ' ) THEN
+                NFIELD = NFIELD + 1
+                LFIELD(NFIELD) = 'PZPDIPOL'
+                EFIELD(NFIELD) = EFIELD(NFIELD-1)*EFIELD(1)
+              ELSE
+               CALL QUIT(' FINITE DPT NOT POSSIBLE WITH THIS'//
+     *                   ' HAMILTONIAN, SORRY. ')
+              END IF
+            END IF
+C
          ELSE
             INPERR = INPERR + 1
             WRITE (LUPRI,'(/A/A,I5/)')

@@ -65,7 +65,8 @@ dft_blyp_sym dft_energy_sym dft_lda_cart dft_lda_nosym dft_lda_sym \
 dft_optimize_nosym dft_optimize_sym dft_properties_nosym \
 dft_properties_sym"
 #
-DPT="dpt_h2s dpt_h2s_finp dpt_hbr_finm dpt_h2s_finm dpt_hbr dpt_hbr_finp"
+DPT="dpt_hf dpt_h2s dpt_h2s_finp dpt_hbr_finm dpt_h2s_finm \
+dpt_hbr dpt_hbr_finp dpt_h2s_ff"
 #
 R12="r12_damped r12_damped_herdir \
 r12_sym r12_nosym r12_fc_sym r12_fc_nosym \

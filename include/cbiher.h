@@ -12,7 +12,7 @@ cLig <> added RANGMO and RSPO
      &        DERHAM, DEROVL, SOMM, SOFLD, THRMOM, ROTSTR, OCTGRA,
      &        QUAGRA, DPLGRA, ELGDIL, ELGDIA, MNF_SO, DPTOVL, DPTPOT,
      &        XDDXR3, PVIOLA, PVPINT, POTENE, QDBINT, QDBTST, NO2SO,
-     &        RANGMO, RPSO
+     &        RANGMO, RPSO, PXPINT
 cLig <> added RANGMO and RSPO
       COMMON /CBIHER/ EXPKR(3), THRESH,
      &                IPRDEF, IORCAR, IORSPH, NPQUAD,
@@ -33,4 +33,4 @@ cLig <> added RANGMO and RSPO
      &                ROTSTR, OCTGRA, QUAGRA, DPLGRA, ELGDIL, ELGDIA,
      &                MNF_SO, DPTOVL, DPTPOT, XDDXR3, PVIOLA,
      &                POTENE, PVPINT, QDBINT, QDBTST, NO2SO,
-     &                RANGMO, RPSO
+     &                RANGMO, RPSO, PXPINT

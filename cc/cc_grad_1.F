@@ -102,10 +102,10 @@ C------------------------------
 C     Trick for CCSD(T)
 C------------------------------
 C
-!      IF (CCPT) THEN
-!         LCCSD_SAV = CCSD
-!         CCSD = .TRUE.
-!      END IF
+       IF (CCPT) THEN
+          LCCSD_SAV = CCSD
+          CCSD = .TRUE.
+       END IF
 C
 C-----------------------------------------
 C     Initialization of result
@@ -907,6 +907,15 @@ C----------------------------------------------------
 C
                  CALL DZERO(WORK(K1DHAM),N2BST(1))
                  CALL CCRHS_ONEAO(WORK(K1DHAM),WORK(KEND2),LWRK2)
+C
+C     Including finite fields (WK/UniKA/11-03-2004).
+      DO IF = 1, NFIELD
+        IF ( .NOT. NHFFIELD(IF) ) THEN
+          CALL CC_ONEP(WORK(K1DHAM),WORK(KEND2),LWRK2,EFIELD(IF),
+     *                 1,LFIELD(IF))
+        END IF
+      END DO
+C
                  ECCSD1 = DDOT(N2BST(1),WORK(K1DHAM),1,WORK(KAODEN),1)
 C
 C-------------------------------------------------------------------
@@ -1742,9 +1751,9 @@ C
 C
       CALL QEXIT('CC_GRAD_1')
 
-      !IF (CCPT) THEN
-      !   CCSD = LCCSD_SAV
-      !END IF
+       IF (CCPT) THEN
+          CCSD = LCCSD_SAV
+       END IF
 
       RETURN
       END
