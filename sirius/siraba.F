@@ -33,34 +33,33 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef UNDEF
-===========================================================================
-/* Comdeck notes */
->>> lontr1.u >>> London 1-index transformation of regular integrals
-941207-hjaaj:
-c: removed SYMTD (=NODIFC) everywhere, not needed!
-   cut CPU time in half in TR1LH1 for SYMTD false
-LFKDEN: corrected code to correspond to formulas, annotated with
- explicit formulas, streamlined, and removed SYMTD extra code
- (old versions had extra factors and signs in LFKDIR, now the result
- should be the same if IFCTYP = 2 or the general IFCTYP = 3.
-9410-hjaaj:
-LFKDIR: removed from this module (now FCKDS2 in SIRFCK module)
-c: s/NODIFC/SYMTD/; SYMTD in parameter list (used to be NODIFC from
-  /ABAINF/, i.e. /ABAINF/ not used any more)
-ABATR1: UDV added to parameter list
-ABARHS: allocate and calculate UDV for ABATR1
-LONTR1: integrated into ABATR1
-930412-kr: New changes due to the new way of calculating right-hand sides.
-931116-hjaaj:
-    LFKDEN: corrected DX[CV]AO(NORBT,NORBT) to DX[CV]AO(NBAST,NBAST)
-    LFK1TR: corrected NBAST to NORBT in 2 AMPAB calls (dim FXC & FXV)
-930929-hjaaj: "cat lontr1.u tr1lfk.u >> siraba.u; rm lontr1.u tr1lfk.u"
-930929-hjaaj: extracted as siraba.u from sirn04.su; replaced abarhs,
-    abaogr, abatr1 with E92 revision for London orbitals (london_sir.u)
-900409-hjaaj: abarhs rev: skip cisigo if rhf (and similar checks).
-891214-hjaaj: this module contains special files for abacus
-===========================================================================
+#ifdef NOTES
+!===========================================================================
+!>>> lontr1.u >>> London 1-index transformation of regular integrals
+!941207-hjaaj:
+!c: removed SYMTD (=NODIFC) everywhere, not needed!
+!   cut CPU time in half in TR1LH1 for SYMTD false
+!LFKDEN: corrected code to correspond to formulas, annotated with
+! explicit formulas, streamlined, and removed SYMTD extra code
+! (old versions had extra factors and signs in LFKDIR, now the result
+! should be the same if IFCTYP = 2 or the general IFCTYP = 3.
+!9410-hjaaj:
+!LFKDIR: removed from this module (now FCKDS2 in SIRFCK module)
+!c: s/NODIFC/SYMTD/; SYMTD in parameter list (used to be NODIFC from
+!  /ABAINF/, i.e. /ABAINF/ not used any more)
+!ABATR1: UDV added to parameter list
+!ABARHS: allocate and calculate UDV for ABATR1
+!LONTR1: integrated into ABATR1
+!930412-kr: New changes due to the new way of calculating right-hand sides.
+!931116-hjaaj:
+!    LFKDEN: corrected DX[CV]AO(NORBT,NORBT) to DX[CV]AO(NBAST,NBAST)
+!    LFK1TR: corrected NBAST to NORBT in 2 AMPAB calls (dim FXC & FXV)
+!930929-hjaaj: "cat lontr1.u tr1lfk.u >> siraba.u; rm lontr1.u tr1lfk.u"
+!930929-hjaaj: extracted as siraba.u from sirn04.su; replaced abarhs,
+!    abaogr, abatr1 with E92 revision for London orbitals (london_sir.u)
+!900409-hjaaj: abarhs rev: skip cisigo if rhf (and similar checks).
+!891214-hjaaj: this module contains special files for abacus
+!===========================================================================
 #endif
 C  /* Deck abarhs */
       SUBROUTINE ABARHS(NGD,DV,PV,FC,FV,CREF,CMO,
@@ -1029,7 +1028,7 @@ C
       RETURN
       END
 C  /* Deck tr1l2d */
-      SUBROUTINE TR1L2D()
+      SUBROUTINE TR1L2D(A,B,C,D,E,F,G,H)
 C
 C Apr 92 Hans Joergen Aa. Jensen
 C
@@ -1038,9 +1037,10 @@ C   Calculate contributions from Dirac format integrals
 C   of London orbitals
 C
 #include <implicit.h>
+#include <priunit.h>
       CALL QENTER('TR1L2D')
 C
-      CALL QTRACE (6)
+      CALL QTRACE (LUPRI)
       CALL QUIT('TR1L2D ERROR: MO integrals Dirac format not '//
      &          'implemented yet')
 C
