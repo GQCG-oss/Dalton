@@ -320,10 +320,14 @@ C           ***** Calculation of Cartesian integrals *****
 C           **********************************************
 C
             IF (EXPGRA) THEN
+               IF (ECP) CALL QUIT(
+     &            'ECP not implemented yet in ONEPR1 for "EXPGRA" !')
                CALL CINTAB(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,EXPA,EXPB,
      &                     EXPDER(1,1,1,IPRIMA,IPRIMB),SHGTF,AHGTF,
      &                     NATOMC)
             ELSE IF (PROPTY) THEN
+               IF (ECP) CALL QUIT(
+     &            'ECP not implemented yet in ONEPR1 for "PROPTY" !')
                IF (ONECEN) THEN
                   CALL CINT1(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,ADER,
      &                       AHGTF,NCENTC,NATOMC,SECDER)
