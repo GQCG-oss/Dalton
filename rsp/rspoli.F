@@ -231,7 +231,7 @@ C
 C IF DIRFCK (direct RPA) compute new densities
 C and Fock matrices in AO basis
 C
-      IF (DIRFCK) GO TO 1000
+      IF (DIRFCK .OR. HSROHF .OR. DODFT) GO TO 1000
 
 CSONIA SONIA SONIA
 CSONIA SONIA SONIA control direct for kappabar of CCSD(T)
@@ -692,7 +692,8 @@ C
          DO IOSIM = 1, NOSIM
             if(NASHT.GT.0) THEN
                call dft_lin_respab(fcone(1,1,iosim),fvone(1,1,iosim),
-     &                   cmo,zymat(1,iosim),trplet,wrk(kwrk0),lfree)
+     &                   cmo,zymat(1,iosim),trplet,ksymop,wrk(kwrk0),
+     &                   lfree)
             ELSE
                call dft_lin_respf(fcone(1,1,iosim),cmo,zymat(1,iosim),
      &                           trplet, ksymop,wrk(kwrk0),lfree)
