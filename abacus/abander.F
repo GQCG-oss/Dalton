@@ -828,7 +828,6 @@ c#endif
 C
 C        *** Restoring property derivatives. ***
 C
-         write (lupri,*) 'er her dalalalalalala'
          IF (NRMCRD) THEN
             NPRPDR = NPRBKP
             NSPNSP = NSPNBK
@@ -2136,6 +2135,10 @@ C
       RDINPC = .FALSE.
       RDMLIN = .FALSE.
 C
+C     *** Reseting aba ***
+C     
+      CALL ABUSET
+C
 C     *** NOADSY -> If no automatic symmetry detection is requested ***
 C     ***           we need to use Huckel start-guess first time.   ***
 C
@@ -2509,6 +2512,10 @@ C
                         HESMOL(ICOOR1,ICOOR2) =
      &                         (COEFF( 1,1)*FUNVAL(ICOOR1,IDIME      )
      &                        + COEFF(-1,1)*FUNVAL(ICOOR1,IDIME+1))*HINV
+                        if ((ICOOR1.eq.3).and.(ICOOR2.eq.3)) then
+                           write (lupri,*) 'er inne inne',
+     &                             FUNVAL(ICOOR1,IDIME), idime
+                        end if
  270                 CONTINUE
                      IDIME = IDIME + 2
  260              CONTINUE
@@ -2602,7 +2609,7 @@ C
             POWER  = DBLE(IORDR)
             DIVDIS = D1/(DISPLC**POWER)
 C
-            CALL IZERO(INDSTP,NMORDR)
+            CALL IZERO(INDSTP,NMORDR+NAORDR)
 C
 C           *** NSTP -> Number of components in the ***
 C           ***      numerical differentiation      ***
@@ -3398,7 +3405,7 @@ C     /* Deck mknrmc */
 #include <priunit.h>
 #include <mxcent.h>
 #include <codata.h>
-      PARAMETER (DMTHR = 1.0D-7, D0 = 0.0D0, D1 = 1.0D0)
+      PARAMETER (DMTHR = 2.0D-8, D0 = 0.0D0, D1 = 1.0D0)
 #include <taymol.h>
 #include <trkoor.h>      
 #include <nuclei.h>

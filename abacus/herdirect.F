@@ -793,6 +793,9 @@ C  /* Deck abarun */
       DATA ABA /.FALSE./
       RUNABA = ABA
       RETURN
+      ENTRY ABUSET
+      ABA = .FALSE.
+      RETURN
       ENTRY ABASET
       ABA = .TRUE.
       RETURN
