@@ -29,12 +29,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rspmai.F,v 1.6 2001-05-13 14:50:30 ruud Exp $
+C$Id: rspmai.F,v 1.7 2001-05-14 09:09:39 hjj Exp $
 C
 #include <single.h>
 #ifdef REVISIONLOG
 /* Comdeck revision_log */
 $Log: not supported by cvs2svn $
+Revision 1.6  2001/05/13 14:50:30  ruud
+Fixes to solve CSF and triplet operator problems
+
 Revision 1.5  2001/05/04 08:52:39  hjj
 Revised RSPMC such that RESPONS now also works for CSF in Sirius and triplet
 response with solvent. Changed LUERR to LUPRI. /HJAaJ
@@ -331,7 +334,7 @@ C
          CALL GETREF(WRK(KCREF),NCREF)
          IF ( IPRRSP.GT.110 ) THEN
             WRITE(LUPRI,'(/A)')
-     &           ' ***** ONE BODY DENSITY MATRIX FROM LUSIFC'
+     &           ' ***** ONE BODY DENSITY MATRIX from SIRIFC file'
             CALL OUTPUT(WRK(KUDV),1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
          END IF
          ISPIN1 = 0
@@ -3207,6 +3210,7 @@ C  /* Deck rspmc */
       SUBROUTINE RSPMC(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
 C
 C 28 JAN 87 BASED ON READMC
+C Revised May 2001 /hjaaj
 C
 C Purpose:
 C   Read that MC information written by WRSIFC in SIRIUS which
@@ -3218,7 +3222,6 @@ C
 #include <implicit.h>
 #include <infdim.h>
 C
-      LOGICAL FOUND
       DIMENSION CMO(*),UDV(*),PV(*),XINDX(LCINDX),
      *          FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*),WRK(*)
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
@@ -3242,17 +3245,10 @@ C
 #include <infrsp.h>
 #include <wrkrsp.h>
 C
-      REWIND LUSIFC
-      IF (RSPCI) THEN
-         CALL MOLLAB('CIRESPON',LUSIFC,LUPRI)
-      ELSE
-         CALL MOLLAB(LBSIFC,LUSIFC,LUPRI)
-      END IF
-      READ (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF
-      READ (LUSIFC) MISHT,MASHT, MOCCT, MORBT, MBAST, MCONF,MWOPT,MWOPH,
-     *            NCDETS,MCMOT,MNASHX,MNASHY,MNORBT,M2ORBT
-C     READ (LUSIFC) NISHT,NASHT, NOCCT, NORBT, NBAST, NCONF,NWOPT,NWOPH,
-C    *            NCDETS,NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT
+C     ====================================================
+C     Initial checks based on info in Sirius common blocks
+C     (we assume that either the SIRIUS module or the SETSIR
+C      subroutine has been called before RSPMC).
 C
 C     Find out if TDHF or not :
 C
@@ -3268,6 +3264,21 @@ C
 C        ... call setsir to reset Sirius common blocks to determinants
          CALL SETSIR(WRK,LWRK)
       END IF
+C
+C     ====================================================
+C     Read and check information on LUSIFC
+C
+      REWIND LUSIFC
+      IF (RSPCI) THEN
+         CALL MOLLAB('CIRESPON',LUSIFC,LUPRI)
+      ELSE
+         CALL MOLLAB(LBSIFC,LUSIFC,LUPRI)
+      END IF
+      READ (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF
+      READ (LUSIFC) MISHT,MASHT, MOCCT, MORBT, MBAST, MCONF,MWOPT,MWOPH,
+     *            NCDETS,MCMOT,MNASHX,MNASHY,MNORBT,M2ORBT
+C     READ (LUSIFC) NISHT,NASHT, NOCCT, NORBT, NBAST, NCONF,NWOPT,NWOPH,
+C    *            NCDETS,NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT
 C
 C     Transfer information
 C
@@ -3385,7 +3396,7 @@ C                      (this should also catch SUPSYM inconsistencies)
 C
 C READ IN MATRICES NEEDED IN RESPONSE CALCULATION
 C
-      CALL RDSIFC('CMO',FOUND,CMO,WRK,LWRK)
+      CALL READT (LUSIFC,NCMOT,CMO)
       IF (NASHT .GT. 0) THEN
 C        read and unpack DV
          CALL READT (LUSIFC,NNASHX,WRK)
