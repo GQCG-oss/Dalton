@@ -69,7 +69,7 @@ cat > prop_expgrad.dal <<'%EOF%'
 .NOSUP
 **WAVE FUNCTION
 .DFT
-*HF INPUT
+*SCF INPUT
 .BLYP
 **PROPERTIES
 .EXPGRA

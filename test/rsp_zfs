@@ -32,7 +32,7 @@ cat > rsp_zfs.dal <<%EOF%
 .RUN RESPONSE
 **WAVE FUNCTION
 .HF
-*HF INPUT
+*SCF INPUT
 .HF OCC
  3 1 1 0 2 0 0 0
 .HSROHF
