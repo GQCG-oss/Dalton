@@ -450,7 +450,6 @@ C
 #include <priunit.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
-#include <infs0.h>
 #include <infpri.h>
 #include <infdim.h>
 #include <trhso.h>
