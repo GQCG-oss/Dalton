@@ -31,7 +31,11 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-#include <single.h>
+#if (defined (SYS_AIX) && !defined (VAR_INT64)) || (SYS_IRIX) || (SYS_SUN) || (SYS_HPUX)||defined(__apple__)
+#define BIGENDIAN 1
+#elif defined (SYS_LINUX) || (SYS_DEC)
+#define LITTLEENDIAN 1
+#endif
 C
 C  /* Deck pckr8 */
       SUBROUTINE PCKR8(BUFFER,NDATA,BUFPCK,NBYTE,IPCKTABLE,LPACK)
@@ -83,22 +87,19 @@ C
       INTEGER IB1, IW1, IW2, IT1, L, I, OFF, MBYTE
       INTEGER*4 MASK1, MASK2, HBITS, ISIGN, ITMP
 C
-#if defined (SYS_LINUX) || (SYS_DEC)
+#ifdef LITTLEENDIAN
       PARAMETER (IT1 = 1) 
       PARAMETER (IB1 = 8) 
       PARAMETER (IW1 = 2, IW2 = 1) 
-#elif (defined (SYS_AIX) && !defined (VAR_INT64)) || (SYS_IRIX) || (SYS_SUN) || (SYS_HPUX)
+#elif BIGENDIAN
       PARAMETER (IT1 = 4) 
       PARAMETER (IB1 = 1) 
       PARAMETER (IW1 = 1, IW2 = 2) 
 #endif
 C
-#if defined (SYS_LINUX) || defined (SYS_AIX) || (SYS_IRIX) || (SYS_SUN) || (SYS_HPUX) || (SYS_DEC)
       PARAMETER (MASK1 = z'C0000000')
       PARAMETER (MASK2 = z'3FFFFFFF')
-#else
-      CALL QUIT('PCKR8 not implemented for this operating system.')
-#endif
+
 C
 C---------------------------------------------------------------
 C     if packing disabled, copy input data to output array
@@ -114,6 +115,9 @@ C----------------------------------------------------------------
 C     Pack the input data and copy to output array
 C----------------------------------------------------------------
 C
+#if !(defined (BIGENDIAN) || defined(LITTLEENDIAN))
+      CALL QUIT('PCKR8 not implemented for this operating system.')
+#endif
       NBYTE = 0
       ITAB  = 0
 C
@@ -127,7 +131,6 @@ C
 C
          R8WORD      = BUFFER(I)
 C
-#if defined (SYS_LINUX) || defined (SYS_AIX) || (SYS_IRIX) || (SYS_SUN) || (SYS_HPUX) || (SYS_DEC)
          ISIGN       = IAND(I4WORD(IW1),MASK1)
          I4WORD(IW1) = ISHFT(I4WORD(IW1),4)
          I4WORD(IW1) = IAND(I4WORD(IW1),MASK2)
@@ -145,22 +148,16 @@ C
 C
          MBYTE = IPCKTABLE(ITAB)
 C
-#if defined (SYS_LINUX) || (SYS_DEC)
+#ifdef LITTLEENDIAN
          OFF = 8 - MBYTE
          DO L = 1, MBYTE
            BUFPCK(NBYTE+L) = L1BYTE(OFF+L)
          END DO
-#elif (defined SYS_AIX && !defined VAR_INT64) || (SYS_IRIX) || (SYS_SUN) || (SYS_HPUX)
+#elif defined(BIGENDIAN)
          OFF = MBYTE + 1
          DO L = 1, MBYTE
            BUFPCK(NBYTE+L) = L1BYTE(OFF-L)
          END DO
-#else
-         CALL QUIT('PCKR8 not implemented for this operating system.')
-#endif
-C
-#else
-         CALL QUIT('PCKR8 not implemented for this operating system.')
 #endif
 C
          NBYTE = NBYTE + MBYTE
@@ -226,24 +223,20 @@ C
       INTEGER IB1, IB4, IW1, IW2, IT1, L, OFF, KBYTE, MBYTE, MDATA
       INTEGER*4 MASK1, MASK3, MASK4, MASK5, HBITS, ISIGN, ITMP
 C
-#if defined (SYS_LINUX) || (SYS_DEC)
+#ifdef LITTLEENDIAN
       PARAMETER (IT1 = 1) 
       PARAMETER (IB1 = 8) 
       PARAMETER (IW1 = 2, IW2 = 1) 
-#elif (defined SYS_AIX && !defined VAR_INT64) || (SYS_IRIX) || (SYS_SUN) || (SYS_HPUX)
+#elif defined(BIGENDIAN)
       PARAMETER (IT1 = 4) 
       PARAMETER (IB1 = 1) 
       PARAMETER (IW1 = 1, IW2 = 2) 
 #endif
 C
-#if defined (SYS_LINUX) || defined (SYS_AIX) || (SYS_IRIX) || (SYS_SUN) || (SYS_HPUX) || (SYS_DEC)
       PARAMETER (MASK1 = z'C0000000')
       PARAMETER (MASK3 = z'3C000000')
       PARAMETER (MASK4 = z'C3FFFFFF')
       PARAMETER (MASK5 = z'0000000F')
-#else
-      CALL QUIT('UNPCKR8 not implemented for this operating system.')
-#endif
 C
 C---------------------------------------------------------------
 C     if packing disabled, copy input data to output array
@@ -258,6 +251,9 @@ C---------------------------------------------------------------
 C     Unpack the input data and copy to output array
 C----------------------------------------------------------------
 C
+#if !(defined (BIGENDIAN) || defined(LITTLEENDIAN))
+      CALL QUIT('PCKR8 not implemented for this operating system.')
+#endif
       MBYTE  = NBYTE
       MDATA  = NDATA
       ITAB   = 0
@@ -269,22 +265,19 @@ C
 C
          IF (LOCDBG) CALL I4BITREP(ITAB)
 C
-#if defined (SYS_LINUX) || defined (SYS_AIX) || (SYS_IRIX) || (SYS_SUN) || (SYS_HPUX) || (SYS_DEC)
          KBYTE = IPCKTABLE(ITAB)
 C
-#if defined (SYS_LINUX) || (SYS_DEC)
+#ifdef LITTLENDIAN
          MBYTE = MBYTE - KBYTE
          OFF = 8 - KBYTE
          DO L = 1, KBYTE
            L1BYTE(OFF+L) = BUFPCK(MBYTE+L) 
          END DO
-#elif (defined SYS_AIX && !defined VAR_INT64) || (SYS_IRIX) || (SYS_SUN) || (SYS_HPUX)
+#elif defined(BIGENDIAN)
          DO L = 1, KBYTE
            L1BYTE(L) = BUFPCK(MBYTE+1-L)
          END DO
          MBYTE = MBYTE - KBYTE
-#else
-         CALL QUIT('UNPCKR8 not implemented for this operating system.')
 #endif
 C
          IF (LOCDBG) CALL R8BITREP(R8WORD)
@@ -303,9 +296,6 @@ C
          ELSE 
            I4WORD(IW1) = IOR( I4WORD(IW1),MASK3)
          END IF
-#else
-         CALL QUIT('UNPCKR8 not implemented for this operating system.')
-#endif
 C
          BUFFER(MDATA)   = R8WORD
 C
@@ -366,15 +356,15 @@ C
       INTEGER IW1, IW2, L
 C
 #undef NOPACKING
-#if defined (SYS_LINUX) || (SYS_DEC)
+#if LITTLEENDIAN
       PARAMETER (IW1 = 2, IW2 = 1) 
-#elif (defined SYS_AIX && !defined VAR_INT64) || (SYS_IRIX) || (SYS_SUN) || (SYS_HPUX)
+#elif defined(BIGENDIAN)
       PARAMETER (IW1 = 1, IW2 = 2) 
 #else
 # define NOPACKING
 #endif
 C
-#if defined (SYS_LINUX) || defined (SYS_AIX) || (SYS_IRIX) || (SYS_SUN) || (SYS_HPUX) || (SYS_DEC)
+#if defined (LITTLENDIAN) || defined(BIGENDIAN)
       PARAMETER (JMASK = z'3C000000')
 C
       DATA IMASK / z'00000000', z'000FF000',
