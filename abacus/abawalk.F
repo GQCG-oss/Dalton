@@ -29,11 +29,18 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abawalk.F,v 1.6 2001-04-21 12:11:58 ruud Exp $
+C$Id: abawalk.F,v 1.7 2001-05-02 07:34:21 ruud Exp $
 C
 #include <single.h>
 #ifdef REVLOG
 $Log: not supported by cvs2svn $
+Revision 1.6  2001/04/21 12:11:58  ruud
+Added the possibility of reusing property derivatives in vibrational average
+calculations. Fixed a bug in the temperature part, as well as in the Eckart
+transformations. Fixed huge memory use in herrdn.F. Added SYS_SUN in
+cc/crayio.c and modified a couple of the test cases for accuracy on our
+old HP.
+
 Revision 1.5  2001/03/26 09:37:04  ruud
 Various small bug fixes, among them now allowing for more than 100
 geometry perturbations with natural connection, a OPTORB problem is rsp,
@@ -4318,7 +4325,7 @@ C
                WRITE (LUPRI,'(A)') ' New harmonic force '//
      &              'field, but derivatives read in from file'
 C
-C     We can either check what the user want (by reading input file), 
+C     We can either check what the user wants (by reading input file), 
 C     since the user need to calculate properties in new effective geometry
 C
                CALL ABAINP('**START',WORK,LWORK)

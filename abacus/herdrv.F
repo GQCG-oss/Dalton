@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: herdrv.F,v 1.10 2001-04-29 12:54:09 ruud Exp $
+C$Id: herdrv.F,v 1.11 2001-05-02 07:34:22 ruud Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -2921,6 +2921,7 @@ C
 #include <inftap.h>
 #include <cbiher.h>
 #include <cbihr1.h>
+#include <cbihr2.h>
 #include <cbieri.h>
 #include <cbihrs.h>
 #include <gnrinf.h>
@@ -2939,6 +2940,7 @@ C
       ONEPRP = .TRUE.
       RUNONE = .TRUE.
       RUNSUP = .FALSE.
+      RUNTWO = .FALSE.
       CALL DKREIN
 C
 C     Process basis set, although now as a decontracted set without
@@ -2964,6 +2966,9 @@ C
       ADDSTO = STOBKP
       RDINPC = .FALSE.
       RUNSUP = SUPMAT
+      PVPINT = .FALSE.
+      RUNTWO = .NOT.NOTWO
+      HAMILT = .TRUE.
       CALL GETTIM(TEND,WEND)
       TIMHER = TEND - TIMHER
       WALHER = WEND - WALHER

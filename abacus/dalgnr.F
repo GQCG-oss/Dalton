@@ -415,11 +415,9 @@ C  /* Deck exeher */
       DIMENSION WORK(LMWORK)
 #include <priunit.h>
 #include <gnrinf.h>
+#include <cbirea.h>
 C
 C     Run Integral section
-C
-C     We need to open an extra output file needed for CM and shielding
-C     polarizabilities, kr and sc, oct-95
 C
       NEWPRP = .TRUE.
 C
@@ -433,6 +431,7 @@ C     the necessary integrals in the primitive basis
 C
       IF (DKTRAN) THEN
          CALL DKINTF(WORK(IWOFF+2),LMWORK)
+         UNCONT = .FALSE.
          NEWPRP = .TRUE.
       END IF
       CALL HERCTL(WORK(IWOFF+2),LMWORK)
