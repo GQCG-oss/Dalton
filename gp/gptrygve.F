@@ -211,20 +211,28 @@ C  /* Deck quit */
       CHARACTER TEXT*(*)
 C
 C     Stamp date and time and hostname to output
+C     (if output unit has been defined yet)
 C
+      IF (LUPRI .GE. 0) THEN
+         LUPRIN = LUPRI
+      ELSE IF (LUERR .GE. 0) THEN
+         LUPRIN = LUERR
+      ELSE
+         LUPRIN = 6
+      END IF
       CALL TSTAMP('  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---',
-     &   LUPRI)
-      WRITE (LUPRI,'(/2A/)') ' Reason: ',TEXT
+     &   LUPRIN)
+      WRITE (LUPRIN,'(/2A/)') ' Reason: ',TEXT
 #if defined (SYS_CRAY) || defined (SYS_CONVEX) || defined (SYS_UNIX) || defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_DEC) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_T90)
 C     Write to stderr
       WRITE (0,'(/A/1X,A)')
      *   '  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---',TEXT
 #endif
       CALL GETTIM(CTOT,WTOT)
-      CALL TIMTXT('>>>> Total CPU  time used in DALTON:',CTOT,LUPRI)
-      CALL TIMTXT('>>>> Total wall time used in DALTON:',WTOT,LUPRI)
-      CALL QTRACE(LUPRI)
-      CALL FLSHFO(LUPRI)
+      CALL TIMTXT('>>>> Total CPU  time used in DALTON:',CTOT,LUPRIN)
+      CALL TIMTXT('>>>> Total wall time used in DALTON:',WTOT,LUPRIN)
+      CALL QTRACE(LUPRIN)
+      CALL FLSHFO(LUPRIN)
 C
 #if defined (VAR_MPI)
       CALL MPI_ABORT(MPI_COMM_WORLD,IERR,IERR)
