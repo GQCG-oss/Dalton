@@ -4,7 +4,7 @@
     ***********  DALTON - An electronic structure program  ***********
     ******************************************************************
 
-               This is output from DALTON (Release 1.2, April 2001)
+            This is output from DALTON (Release 2.0, ? 2001)
 
                           Principal authors:
 
@@ -17,6 +17,7 @@
 
                           Contributors:
 
+            Alexander A. Auer,     University of Mainz,        Germany
             Keld L. Bak,           UNI-C,                      Denmark
             Vebjoern Bakken,       University of Oslo,         Norway 
             Ove Christiansen,      University of Lund,         Sweden 
@@ -36,16 +37,18 @@
             Henrik Koch,           SDU - Odense University,    Denmark
             Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
             Patrick Norman,        University of Linkoeping,   Sweden 
+            Thomas B. Pedersen,    U.of Santiago de Compostela,Spain  
             Martin J. Packer,      University of Sheffield,    UK     
             Torgeir A. Ruden,      University of Oslo,         Norway 
+            Alfredo Sanchez,       University of Valencia,     Spain  
             Trond Saue,            University of Toulouse,     France 
             Stephan P. A. Sauer,   University of Copenhagen,   Denmark
             Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
             K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
             Peter R.Taylor,        San Diego Superc. Center,   USA    
             Olav Vahtras,          PDC, Stockholm,             Sweden 
-------------------------------------------------------------------------
 
+------------------------------------------------------------------------
 
 
      NOTE:
@@ -63,18 +66,19 @@
      If results obtained with this code are published, an
      appropriate citation would be:
       
-     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,
-     H. Aagren, K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,
-     P. Dahle, E.K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-     K. Hald, A. Halkier, H. Heiberg, H. Hettema, D. Jonsson,
-     S. Kirpekar, R. Kobayashi, H. Koch, K.V. Mikkelsen, P. Norman,
-     M.J. Packer, T.A. Ruden, T. Saue, S.P.A. Sauer, B. Schimmelpfennig,
-     K. O. Sylvester-Hvid, P.R. Taylor, and O. Vahtras:
-     "Dalton release 1.2 (2001), an electronic structure program"
+     "Dalton, a molecular electronic structure program, Release 1.2
+     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+     H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+     H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+     T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+     B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+     and O. Vahtras"
 
  
-     Date and time (Linux)  : Mon Apr 30 14:02:00 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
 
@@ -90,7 +94,6 @@
  Optimization will be performed in Cartesian coordinates.
 
 
- Threshold for symmetry-break set to       :      0.10D-02
  Trust region method will be used to control step (default).
 
 
@@ -168,30 +171,30 @@ Represented as: C2v
 
    * Group multiplication table
 
-        |  E   C2z  Oxz  Oyz
+        |  E   C2z  Oxz  Oyz  
    -----+--------------------
-     E  |  E 
-    C2z | C2z   E 
-    Oxz | Oxz  Oyz   E 
-    Oyz | Oyz  Oxz  C2z   E 
+     E  |  E   
+    C2z | C2z   E   
+    Oxz | Oxz  Oyz   E   
+    Oyz | Oyz  Oxz  C2z   E   
 
    * Character table
 
-        |  E   C2z  Oxz  Oyz
+        |  E   C2z  Oxz  Oyz  
    -----+--------------------
-    A1  |   1    1    1    1
-    B1  |   1   -1    1   -1
-    B2  |   1   -1   -1    1
-    A2  |   1    1   -1   -1
+    A1  |   1    1    1    1  
+    B1  |   1   -1    1   -1  
+    B2  |   1   -1   -1    1  
+    A2  |   1    1   -1   -1  
 
    * Direct product table
 
-        | A1   B1   B2   A2 
+        | A1   B1   B2   A2   
    -----+--------------------
-    A1  | A1 
-    B1  | B1   A1 
-    B2  | B2   A2   A1 
-    A2  | A2   B2   B1   A1 
+    A1  | A1   
+    B1  | B1   A1   
+    B2  | B2   A2   A1   
+    A2  | A2   B2   B1   A1   
 
 
   Atoms and basis sets
@@ -268,7 +271,7 @@ Represented as: C2v
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            O           H  1        H  2
+            O           H  1        H  2        
 
    O       0.000000
    H  1    0.972000    0.000000
@@ -305,54 +308,54 @@ Represented as: C2v
 
   Symmetry  A1 ( 1)
 
-    1     O        1s         1
-    2     O        1s         2
-    3     O        1s         3
-    4     O        1s         4
-    5     O        1s         5
-    6     O        2pz        8
-    7     O        2pz       11
-    8     O        2pz       14
-    9     O        2pz       17
-   10     O        3d0       20
-   11     O        3d2+      22
-   12     H        1s        23  +  24
-   13     H        1s        25  +  26
-   14     H        1s        27  +  28
-   15     H        1s        29  +  30
-   16     H        2py       33  -  34
-   17     H        2pz       35  +  36
+    1     O        1s         1  
+    2     O        1s         2  
+    3     O        1s         3  
+    4     O        1s         4  
+    5     O        1s         5  
+    6     O        2pz        8  
+    7     O        2pz       11  
+    8     O        2pz       14  
+    9     O        2pz       17  
+   10     O        3d0       20  
+   11     O        3d2+      22  
+   12     H        1s        23  +  24  
+   13     H        1s        25  +  26  
+   14     H        1s        27  +  28  
+   15     H        1s        29  +  30  
+   16     H        2py       33  -  34  
+   17     H        2pz       35  +  36  
 
 
   Symmetry  B1 ( 2)
 
-   18     O        2px        6
-   19     O        2px        9
-   20     O        2px       12
-   21     O        2px       15
-   22     O        3d1+      21
-   23     H        2px       31  +  32
+   18     O        2px        6  
+   19     O        2px        9  
+   20     O        2px       12  
+   21     O        2px       15  
+   22     O        3d1+      21  
+   23     H        2px       31  +  32  
 
 
   Symmetry  B2 ( 3)
 
-   24     O        2py        7
-   25     O        2py       10
-   26     O        2py       13
-   27     O        2py       16
-   28     O        3d1-      19
-   29     H        1s        23  -  24
-   30     H        1s        25  -  26
-   31     H        1s        27  -  28
-   32     H        1s        29  -  30
-   33     H        2py       33  +  34
-   34     H        2pz       35  -  36
+   24     O        2py        7  
+   25     O        2py       10  
+   26     O        2py       13  
+   27     O        2py       16  
+   28     O        3d1-      19  
+   29     H        1s        23  -  24  
+   30     H        1s        25  -  26  
+   31     H        1s        27  -  28  
+   32     H        1s        29  -  30  
+   33     H        2py       33  +  34  
+   34     H        2pz       35  -  36  
 
 
   Symmetry  A2 ( 4)
 
-   35     O        3d2-      18
-   36     H        2px       31  -  32
+   35     O        3d2-      18  
+   36     H        2px       31  -  32  
 
   Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
 
@@ -375,24 +378,23 @@ Represented as: C2v
 
 
 
- >>> Time used in TWOINT is   0.20 seconds
+ >>> Time used in TWOINT is   0.19 seconds
 
 
- >>> Time used in FRMSUP is   0.03 seconds
+ >>> Time used in FRMSUP is   0.76 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.27 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   1.07 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Mon Apr 30 14:02:00 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Title lines from integral program:
      Geometry optimization(2nd order), calculation of Third-Harmonic         
@@ -454,8 +456,8 @@ Represented as: C2v
    7    -76.051459480014   4.80D-04  -2.00D-06    3  1  1  0
    8    -76.051459518235   7.75D-05  -3.82D-08    3  1  1  0
    9    -76.051459519144   1.74D-05  -9.09D-10    3  1  1  0
-  10    -76.051459519203   2.92D-06  -5.90D-11    3  1  1  0
-  11    -76.051459519204   2.95D-07  -1.14D-12    3  1  1  0
+  10    -76.051459519203   2.92D-06  -5.89D-11    3  1  1  0
+  11    -76.051459519204   2.95D-07  -1.12D-12    3  1  1  0
  DIIS converged in  11 iterations !
 
 
@@ -503,8 +505,7 @@ Represented as: C2v
      Final gradient norm:           0.000000294912
 
  
-     Date and time (Linux)  : Mon Apr 30 14:02:00 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
      Molecular orbitals for symmetry species   1
 
@@ -518,7 +519,7 @@ Represented as: C2v
    7  O   2pz   -0.0007   0.0605   0.3840
    8  O   2pz    0.0002   0.0192   0.2997
    9  O   2pz    0.0001  -0.0001   0.0602
-  10  O   3d0    0.0000   0.0027   0.0163
+  10  O   3d0   -0.0000   0.0027   0.0163
   11  O   3d2+   0.0001  -0.0075  -0.0048
   12  H   1s     0.0002   0.0905   0.0881
   13  H   1s     0.0002   0.0812   0.1527
@@ -554,20 +555,18 @@ Represented as: C2v
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.08 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.16 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Mon Apr 30 14:02:00 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 - End of Wave Function Section
       Starting Static Property Section -
 
 
  
-     Date and time (Linux)  : Mon Apr 30 14:02:00 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
  ***************************************************************************
@@ -576,8 +575,7 @@ Represented as: C2v
 
 
  
-     Date and time (Linux)  : Mon Apr 30 14:02:02 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
@@ -600,7 +598,7 @@ Represented as: C2v
 
      Total energy        -76.0514595192 au (Hartrees)
                          -2069.46542311 eV
-                           -199673.0786 kJ/mol
+                           -199673.0783 kJ/mol
 
 
 
@@ -608,11 +606,11 @@ Represented as: C2v
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.1974514528 au
-     Mass-velocity correction:                  -0.2489637988 au
+     Darwin correction:                          0.1974514231 au
+     Mass-velocity correction:                  -0.2489637613 au
 
-     Total relativistic correction:             -0.0515123460 au (0.0677%)
-     Non-relativistic + relativistic energy:   -76.1029718652 au
+     Total relativistic correction:             -0.0515123382 au (0.0677%)
+     Non-relativistic + relativistic energy:   -76.1029718574 au
 
 
 
@@ -640,7 +638,7 @@ Represented as: C2v
 
            Symmetry 1
 
-           O   z       H   y       H   z 
+           O   z       H   y       H   z       
 
  O   z     0.472257
  H   y    -0.363925    0.780892
@@ -649,7 +647,7 @@ Represented as: C2v
 
            Symmetry 2
 
-           O   x       H   x 
+           O   x       H   x       
 
  O   x     0.036482
  H   x    -0.036482    0.036482
@@ -657,7 +655,7 @@ Represented as: C2v
 
            Symmetry 3
 
-           O   y       H   y       H   z 
+           O   y       H   y       H   z       
 
  O   y     0.657735
  H   y    -0.657735    0.657735
@@ -666,14 +664,14 @@ Represented as: C2v
 
            Symmetry 4
 
-           H   x 
+           H   x       
 
  H   x     0.034090
 
 
 
 
-           O   x       O   y       O   z       H  1x       H  1y       H  1z 
+           O   x       O   y       O   z       H  1x       H  1y       H  1z       
 
  O   x     0.036482
  O   y     0.000000    0.657735
@@ -688,7 +686,7 @@ Represented as: C2v
  H  2z     0.000000    0.240513   -0.236129    0.000000   -0.029275    0.016429
 
 
-           H  2x       H  2y       H  2z 
+           H  2x       H  2y       H  2z       
 
  H  2x     0.017643
  H  2y     0.000000    0.359657
@@ -701,7 +699,7 @@ Represented as: C2v
                               Dipole moment
                               -------------
 
-                    0.887038 au           2.254646 Debye
+                    0.887038 au           2.254625 Debye
 
 
 
@@ -711,9 +709,9 @@ Represented as: C2v
 
                                au             Debye
 
-                    z      0.88703794      2.25464642
+                    z      0.88703794      2.25462530
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -722,7 +720,7 @@ Represented as: C2v
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            O           H  1        H  2
+            O           H  1        H  2        
 
    O       0.000000
    H  1    0.972000    0.000000
@@ -753,25 +751,25 @@ Represented as: C2v
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:01      60 %
+ REST       00:00:01      98 %
 
- TOTAL      00:00:02     100 %
+ TOTAL      00:00:01     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   1.90 seconds
+ >>>> Total CPU  time used in ABACUS:   1.26 seconds
  >>>> Total wall time used in ABACUS:   2.00 seconds
 
 - End of Static Property Section
 
- Predicted energy change       -0.002101936459400
+ Predicted energy change       -0.002101936459403
 
 
   Step in diagonal representation
   -------------------------------
 
 
-               Column   1     Column   2
+               Column   1     Column   2     
        1      -0.01768153     0.06775295
 
 
@@ -821,24 +819,23 @@ Represented as: C2v
 
 
 
- >>> Time used in TWOINT is   0.20 seconds
+ >>> Time used in TWOINT is   0.25 seconds
 
 
- >>> Time used in FRMSUP is   0.03 seconds
+ >>> Time used in FRMSUP is   0.64 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.25 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.96 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Mon Apr 30 14:02:02 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Title lines from integral program:
      Geometry optimization(2nd order), calculation of Third-Harmonic         
@@ -900,7 +897,7 @@ Represented as: C2v
     6      -76.053397779125    1.49454D-04   -1.25D-07
     7      -76.053397783027    2.50579D-05   -3.90D-09
     8      -76.053397783127    3.84358D-06   -1.00D-10
-    9      -76.053397783129    3.42458D-07   -2.14D-12
+    9      -76.053397783129    3.42458D-07   -2.19D-12
  DIIS converged in   9 iterations !
 
 
@@ -948,8 +945,7 @@ Represented as: C2v
      Final gradient norm:           0.000000342458
 
  
-     Date and time (Linux)  : Mon Apr 30 14:02:02 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
      Molecular orbitals for symmetry species   1
 
@@ -963,14 +959,14 @@ Represented as: C2v
    7  O   2pz   -0.0007   0.0641   0.3872
    8  O   2pz    0.0002   0.0191   0.3006
    9  O   2pz    0.0001   0.0011   0.0621
-  10  O   3d0    0.0000   0.0026   0.0164
+  10  O   3d0   -0.0000   0.0026   0.0164
   11  O   3d2+   0.0001  -0.0083  -0.0049
   12  H   1s     0.0002   0.0965   0.0871
   13  H   1s     0.0002   0.0826   0.1481
   14  H   1s    -0.0002  -0.0067   0.0118
-  15  H   1s    -0.0001   0.0076   0.0000
+  15  H   1s    -0.0001   0.0076  -0.0000
   16  H   2py   -0.0001  -0.0239  -0.0309
-  17  H   2pz    0.0000  -0.0141   0.0107
+  17  H   2pz   -0.0000  -0.0141   0.0107
 
      Molecular orbitals for symmetry species   2
 
@@ -999,12 +995,11 @@ Represented as: C2v
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.05 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.11 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Mon Apr 30 14:02:02 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 - End of Wave Function Section
  Trust radius increased due to good ratio.
@@ -1013,26 +1008,23 @@ Represented as: C2v
 
 
  
-     Date and time (Linux)  : Mon Apr 30 14:02:02 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  
-     Date and time (Linux)  : Mon Apr 30 14:02:04 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:01      60 %
- REST       00:00:02      80 %
+ REST       00:00:01     100 %
 
- TOTAL      00:00:02     100 %
-
+ TOTAL      00:00:01     100 %
 
 
- >>>> Total CPU  time used in ABACUS:   1.91 seconds
+
+ >>>> Total CPU  time used in ABACUS:   1.19 seconds
  >>>> Total wall time used in ABACUS:   2.00 seconds
 
 - End of Static Property Section
@@ -1044,7 +1036,7 @@ Represented as: C2v
   -------------------------------
 
 
-               Column   1     Column   2
+               Column   1     Column   2     
        1       0.00579661    -0.00638513
 
 
@@ -1095,24 +1087,23 @@ Represented as: C2v
 
 
 
- >>> Time used in TWOINT is   0.20 seconds
+ >>> Time used in TWOINT is   0.17 seconds
 
 
- >>> Time used in FRMSUP is   0.03 seconds
+ >>> Time used in FRMSUP is   0.77 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.25 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.99 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Mon Apr 30 14:02:04 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Title lines from integral program:
      Geometry optimization(2nd order), calculation of Third-Harmonic         
@@ -1173,7 +1164,7 @@ Represented as: C2v
     5      -76.053423548870    6.93037D-05   -8.95D-09
     6      -76.053423549838    1.33489D-05   -9.68D-10
     7      -76.053423549870    2.07916D-06   -3.19D-11
-    8      -76.053423549871    2.93253D-07   -7.14D-13
+    8      -76.053423549871    2.93253D-07   -7.11D-13
  DIIS converged in   8 iterations !
 
 
@@ -1221,8 +1212,7 @@ Represented as: C2v
      Final gradient norm:           0.000000293253
 
  
-     Date and time (Linux)  : Mon Apr 30 14:02:04 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
      Molecular orbitals for symmetry species   1
 
@@ -1236,14 +1226,14 @@ Represented as: C2v
    7  O   2pz   -0.0007   0.0636   0.3872
    8  O   2pz    0.0002   0.0190   0.3013
    9  O   2pz    0.0001   0.0010   0.0621
-  10  O   3d0    0.0000   0.0025   0.0164
+  10  O   3d0   -0.0000   0.0025   0.0164
   11  O   3d2+   0.0001  -0.0083  -0.0049
   12  H   1s     0.0002   0.0959   0.0871
   13  H   1s     0.0002   0.0824   0.1480
   14  H   1s    -0.0002  -0.0065   0.0125
   15  H   1s    -0.0001   0.0076   0.0000
   16  H   2py   -0.0001  -0.0239  -0.0308
-  17  H   2pz    0.0000  -0.0141   0.0106
+  17  H   2pz   -0.0000  -0.0141   0.0106
 
      Molecular orbitals for symmetry species   2
 
@@ -1272,12 +1262,11 @@ Represented as: C2v
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.04 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.10 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Mon Apr 30 14:02:04 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 - End of Wave Function Section
  Trust radius squarely increased due to very good ratio.
@@ -1286,25 +1275,23 @@ Represented as: C2v
 
 
  
-     Date and time (Linux)  : Mon Apr 30 14:02:04 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  
-     Date and time (Linux)  : Mon Apr 30 14:02:06 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:01      60 %
+ REST       00:00:01     100 %
 
- TOTAL      00:00:02     100 %
+ TOTAL      00:00:01     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   1.91 seconds
+ >>>> Total CPU  time used in ABACUS:   1.33 seconds
  >>>> Total wall time used in ABACUS:   2.00 seconds
 
 - End of Static Property Section
@@ -1316,7 +1303,7 @@ Represented as: C2v
   -------------------------------
 
 
-               Column   1     Column   2
+               Column   1     Column   2     
        1     2.304413D-05  -7.725075D-05
 
 
@@ -1370,21 +1357,20 @@ Represented as: C2v
  >>> Time used in TWOINT is   0.20 seconds
 
 
- >>> Time used in FRMSUP is   0.03 seconds
+ >>> Time used in FRMSUP is   0.70 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.25 seconds
+ >>>> Total CPU  time used in HERMIT:   0.93 seconds
  >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Mon Apr 30 14:02:07 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Title lines from integral program:
      Geometry optimization(2nd order), calculation of Third-Harmonic         
@@ -1442,7 +1428,7 @@ Represented as: C2v
     2      -76.053423553044    4.44246D-05   -9.45D-10
     3      -76.053423553124    2.00743D-05   -8.00D-11
     4      -76.053423553145    3.38838D-06   -2.07D-11
-    5      -76.053423553147    8.85200D-07   -1.62D-12
+    5      -76.053423553147    8.85200D-07   -1.68D-12
  DIIS converged in   5 iterations !
 
 
@@ -1490,8 +1476,7 @@ Represented as: C2v
      Final gradient norm:           0.000000885200
 
  
-     Date and time (Linux)  : Mon Apr 30 14:02:07 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
      Molecular orbitals for symmetry species   1
 
@@ -1505,14 +1490,14 @@ Represented as: C2v
    7  O   2pz   -0.0007   0.0636   0.3872
    8  O   2pz    0.0002   0.0190   0.3013
    9  O   2pz    0.0001   0.0010   0.0621
-  10  O   3d0    0.0000   0.0025   0.0164
+  10  O   3d0   -0.0000   0.0025   0.0164
   11  O   3d2+   0.0001  -0.0083  -0.0049
   12  H   1s     0.0002   0.0958   0.0871
   13  H   1s     0.0002   0.0824   0.1480
   14  H   1s    -0.0002  -0.0065   0.0125
   15  H   1s    -0.0001   0.0076   0.0000
   16  H   2py   -0.0001  -0.0239  -0.0308
-  17  H   2pz    0.0000  -0.0141   0.0106
+  17  H   2pz   -0.0000  -0.0141   0.0106
 
      Molecular orbitals for symmetry species   2
 
@@ -1541,12 +1526,11 @@ Represented as: C2v
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.03 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.06 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Mon Apr 30 14:02:07 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 - End of Wave Function Section
  Trust radius squarely increased due to very good ratio.
@@ -1555,28 +1539,24 @@ Represented as: C2v
 
 
  
-     Date and time (Linux)  : Mon Apr 30 14:02:07 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  
-     Date and time (Linux)  : Mon Apr 30 14:02:11 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:01      31 %
- RHSIDE     00:00:02      62 %
- REST       00:00:01      27 %
+ REST       00:00:01     100 %
 
- TOTAL      00:00:04     100 %
+ TOTAL      00:00:01     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   3.68 seconds
- >>>> Total wall time used in ABACUS:   4.00 seconds
+ >>>> Total CPU  time used in ABACUS:   1.33 seconds
+ >>>> Total wall time used in ABACUS:   2.00 seconds
 
 - End of Static Property Section
 
@@ -1587,8 +1567,8 @@ Represented as: C2v
   -------------------------------
 
 
-               Column   1     Column   2
-       1     5.446864D-07   1.541797D-07
+               Column   1     Column   2     
+       1     5.446863D-07   1.541797D-07
 
 
        :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1614,7 +1594,7 @@ Represented as: C2v
  Iteration number               :       3
  End of optimization            :       T 
  Energy at this geometry is     :     -76.053424
- Energy change from last geom.  :       0.000000
+ Energy change from last geom.  :      -0.000000
  Norm of gradient               :       0.000000
  Norm of step                   :       0.000001
  Updated trust radius           :       0.500000
@@ -1625,8 +1605,7 @@ Represented as: C2v
 
 
  
-     Date and time (Linux)  : Mon Apr 30 14:02:11 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
  ***************************************************************************
@@ -1635,8 +1614,7 @@ Represented as: C2v
 
 
  
-     Date and time (Linux)  : Mon Apr 30 14:02:12 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
@@ -1659,7 +1637,7 @@ Represented as: C2v
 
      Total energy        -76.0534235531 au (Hartrees)
                          -2069.51886719 eV
-                           -199678.2351 kJ/mol
+                           -199678.2349 kJ/mol
 
 
 
@@ -1667,11 +1645,11 @@ Represented as: C2v
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.1973998189 au
-     Mass-velocity correction:                  -0.2489050541 au
+     Darwin correction:                          0.1973997892 au
+     Mass-velocity correction:                  -0.2489050166 au
 
-     Total relativistic correction:             -0.0515052352 au (0.0677%)
-     Non-relativistic + relativistic energy:   -76.1049287883 au
+     Total relativistic correction:             -0.0515052274 au (0.0677%)
+     Non-relativistic + relativistic energy:   -76.1049287806 au
 
 
 
@@ -1679,7 +1657,7 @@ Represented as: C2v
                               Dipole moment
                               -------------
 
-                    0.863936 au           2.195928 Debye
+                    0.863936 au           2.195907 Debye
 
 
 
@@ -1689,9 +1667,9 @@ Represented as: C2v
 
                                au             Debye
 
-                    z      0.86393636      2.19592751
+                    z      0.86393636      2.19590694
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -1700,7 +1678,7 @@ Represented as: C2v
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            O           H  1        H  2
+            O           H  1        H  2        
 
    O       0.000000
    H  1    0.941231    0.000000
@@ -1736,12 +1714,12 @@ Represented as: C2v
 
 
  >>>> Total CPU  time used in ABACUS:   0.03 seconds
- >>>> Total wall time used in ABACUS:   1.00 seconds
+ >>>> Total wall time used in ABACUS:   0.00 seconds
 
 - End of Static Property Section
 
 
-  This is output from RESPONS  -  an MCSCF and SOPPA response property program 
+  This is output from RESPONSE  -  an MCSCF and SOPPA response property program 
  ------------------------------------------------------------------------------
 
 
@@ -1817,9 +1795,9 @@ Represented as: C2v
           YDIPLEN 
 
 
-   SCF energy         :      -76.053423553146730
- -- inactive part     :      -85.400387928796650
- -- nuclear repulsion :        9.346964375649915
+   SCF energy         :      -76.053423553146814
+ -- inactive part     :      -85.400387928796789
+ -- nuclear repulsion :        9.346964375649979
 
 
  <<<<< Solving set of linear response equations for cubic response >>>>>
@@ -1934,7 +1912,7 @@ Represented as: C2v
  Configuration variables.   KZCONF:       0
  Total number of variables. KZVAR :      21
 
- >>> Time used in CRVEC1 is   0.18 seconds
+ >>> Time used in CRVEC1 is   0.41 seconds
 
 
 
@@ -2135,7 +2113,7 @@ Represented as: C2v
  ---------------------------------------------------------------
                           0.059200  0.059200          7.49923037
 
- >>> Time used in CRVEC2 is   0.56 seconds
+ >>> Time used in CRVEC2 is   1.07 seconds
 
 
 
@@ -2344,8 +2322,8 @@ Represented as: C2v
 
 @ Averaged gamma parallel to the applied field is       618.644392
 
- >>>> Total CPU  time used in RESPONSE:   2.26 seconds
- >>>> Total wall time used in RESPONSE:   2.00 seconds
+ >>>> Total CPU  time used in RESPONSE:   6.88 seconds
+ >>>> Total wall time used in RESPONSE:   8.00 seconds
 
 
      <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -2368,19 +2346,18 @@ Represented as: C2v
    0   -76.051460   0.000000   0.061239    0    0.070022*   0.500000   0 
    1   -76.053398  -0.001938   0.007134    0    0.008624*   0.500000   0 
    2   -76.053424  -0.000026   0.000084    0    0.000081*   0.500000   0 
-   3   -76.053424   0.000000   0.000000    0    0.000001*   0.500000   0 
+   3   -76.053424  -0.000000   0.000000    0    0.000001*   0.500000   0 
 
  *) Newton step taken.
 
- Geometry converged in            4 iterations!
+ Geometry converged in  4  iterations!
 
  Energy at final geometry is       :     -76.053424 a.u.
  Energy change during optimization :      -0.001964 a.u.
                                              -5.157 kJ/mol
 
- >>>> Total CPU  time used in DALTON:  12.99 seconds
- >>>> Total wall time used in DALTON:  14.00 seconds
+ >>>> Total CPU  time used in DALTON:  16.58 seconds
+ >>>> Total wall time used in DALTON:  20.00 seconds
 
  
-     Date and time (Linux)  : Mon Apr 30 14:02:14 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    

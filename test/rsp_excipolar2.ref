@@ -4,7 +4,7 @@
     ***********  DALTON - An electronic structure program  ***********
     ******************************************************************
 
-               This is output from DALTON (Release 1.2, April 2001)
+            This is output from DALTON (Release 2.0, ? 2001)
 
                           Principal authors:
 
@@ -17,6 +17,7 @@
 
                           Contributors:
 
+            Alexander A. Auer,     University of Mainz,        Germany
             Keld L. Bak,           UNI-C,                      Denmark
             Vebjoern Bakken,       University of Oslo,         Norway 
             Ove Christiansen,      University of Lund,         Sweden 
@@ -36,16 +37,18 @@
             Henrik Koch,           SDU - Odense University,    Denmark
             Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
             Patrick Norman,        University of Linkoeping,   Sweden 
+            Thomas B. Pedersen,    U.of Santiago de Compostela,Spain  
             Martin J. Packer,      University of Sheffield,    UK     
             Torgeir A. Ruden,      University of Oslo,         Norway 
+            Alfredo Sanchez,       University of Valencia,     Spain  
             Trond Saue,            University of Toulouse,     France 
             Stephan P. A. Sauer,   University of Copenhagen,   Denmark
             Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
             K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
             Peter R.Taylor,        San Diego Superc. Center,   USA    
             Olav Vahtras,          PDC, Stockholm,             Sweden 
-------------------------------------------------------------------------
 
+------------------------------------------------------------------------
 
 
      NOTE:
@@ -63,17 +66,19 @@
      If results obtained with this code are published, an
      appropriate citation would be:
       
-     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,H. Aagren,
-     K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,P. Dahle, E.K. Dalskov,
-     T. Enevoldsen, B. Fernandez,C. Haettig, K. Hald, A. Halkier,
+     "Dalton, a molecular electronic structure program, Release 1.2
+     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
      H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-     H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T.A. Ruden, T. Saue,
-     S.P.A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,P.R. Taylor, and O. Vahtras:
-     "Dalton release 1.2 (2001), an electronic structure program"
+     H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+     T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+     B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+     and O. Vahtras"
 
  
-     Date and time (Linux)  : Tue Feb 13 00:30:58 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
 
@@ -102,8 +107,8 @@
   Title Cards
   -----------
 
-  lithium-hydrid                                                          
-  --------------                                                          
+  Calculation of the polarizability of an excited state                   
+                                                                          
 
 
   Symmetry Operations
@@ -125,30 +130,30 @@ Point group: C2v
 
    * Group multiplication table
 
-        |  E   C2z  Oxz  Oyz
+        |  E   C2z  Oxz  Oyz  
    -----+--------------------
-     E  |  E 
-    C2z | C2z   E 
-    Oxz | Oxz  Oyz   E 
-    Oyz | Oyz  Oxz  C2z   E 
+     E  |  E   
+    C2z | C2z   E   
+    Oxz | Oxz  Oyz   E   
+    Oyz | Oyz  Oxz  C2z   E   
 
    * Character table
 
-        |  E   C2z  Oxz  Oyz
+        |  E   C2z  Oxz  Oyz  
    -----+--------------------
-    A1  |   1    1    1    1
-    B1  |   1   -1    1   -1
-    B2  |   1   -1   -1    1
-    A2  |   1    1   -1   -1
+    A1  |   1    1    1    1  
+    B1  |   1   -1    1   -1  
+    B2  |   1   -1   -1    1  
+    A2  |   1    1   -1   -1  
 
    * Direct product table
 
-        | A1   B1   B2   A2 
+        | A1   B1   B2   A2   
    -----+--------------------
-    A1  | A1 
-    B1  | B1   A1 
-    B2  | B2   A2   A1 
-    A2  | A2   B2   B1   A1 
+    A1  | A1   
+    B1  | B1   A1   
+    B2  | B2   A2   A1   
+    A2  | A2   B2   B1   A1   
 
 
   Atoms and basis sets
@@ -213,7 +218,7 @@ Point group: C2v
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-             H           Li 
+             H           Li         
 
     H      0.000000
     Li     1.637242    0.000000
@@ -240,25 +245,25 @@ Point group: C2v
 
   Symmetry  A1 ( 1)
 
-    1      H       1s         1
-    2      H       1s         2
-    3      Li      1s         3
-    4      Li      1s         4
-    5      Li      1s         5
-    6      Li      2pz        8
-    7      Li      2pz       11
+    1      H       1s         1  
+    2      H       1s         2  
+    3      Li      1s         3  
+    4      Li      1s         4  
+    5      Li      1s         5  
+    6      Li      2pz        8  
+    7      Li      2pz       11  
 
 
   Symmetry  B1 ( 2)
 
-    8      Li      2px        6
-    9      Li      2px        9
+    8      Li      2px        6  
+    9      Li      2px        9  
 
 
   Symmetry  B2 ( 3)
 
-   10      Li      2py        7
-   11      Li      2py       10
+   10      Li      2py        7  
+   11      Li      2py       10  
 
 
   No orbitals in symmetry  A2 ( 4)
@@ -273,7 +278,7 @@ Point group: C2v
  ************************************************************************
 
 
- >>> Time used in ONEDRV is   0.00 seconds
+ >>> Time used in ONEDRV is   0.01 seconds
 
 
  >>> Time used in OVERLA is   0.01 seconds
@@ -297,25 +302,24 @@ Point group: C2v
 
  Threshold for discarding integrals :  1.10D-11
 
- >>> Time used in FRMSUP is   0.00 seconds
+ >>> Time used in FRMSUP is   0.01 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total CPU  time used in HERMIT:   0.15 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 00:30:58 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Title lines from integral program:
-     lithium-hydrid                                                          
-     --------------                                                          
+     Calculation of the polarizability of an excited state                   
+                                                                             
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -393,7 +397,7 @@ Point group: C2v
     6       -7.977349366868    5.79311D-05   -1.58D-07
     7       -7.977349367727    8.26625D-06   -8.59D-10
     8       -7.977349367749    1.28648D-06   -2.27D-11
-    9       -7.977349367750    1.38030D-07   -6.62D-13
+    9       -7.977349367750    1.38030D-07   -6.63D-13
  DIIS converged in   9 iterations !
 
 
@@ -466,7 +470,7 @@ Point group: C2v
  RHF     0.00000000
  Diff.   0.00117345
 
- Time used for MP2 natural orbitals :       0.020 CPU seconds.
+ Time used for MP2 natural orbitals :       0.030 CPU seconds.
 
 
         SIRIUS MCSCF optimization (SIROPT)
@@ -499,7 +503,7 @@ Point group: C2v
 
 
  CI energies and residuals:
-    1       -7.993704627989374       2.56D-16
+    1       -7.993704627989377       2.26D-15
 
    <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
 
@@ -514,7 +518,7 @@ Point group: C2v
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :       -7.993704627989374       (MACRO    1)
+ Total MCSCF energy       :       -7.993704627989377       (MACRO    1)
 
  Norm of total gradient   :        0.028391760177
  -    of CI gradient      :        0.000000000000
@@ -539,7 +543,7 @@ Point group: C2v
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :       -7.994068405526825       (MACRO    2)
+ Total MCSCF energy       :       -7.994068405526830       (MACRO    2)
 
  Norm of total gradient   :        0.012800332339
  -    of CI gradient      :        0.005989469568
@@ -564,7 +568,7 @@ Point group: C2v
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :       -7.994129906655665       (MACRO    3)
+ Total MCSCF energy       :       -7.994129906655663       (MACRO    3)
 
  Norm of total gradient   :        0.000818483922
  -    of CI gradient      :        0.000221341180
@@ -589,7 +593,7 @@ Point group: C2v
  <<< MACRO ITERATION  4 >>>
  --------------------------
 
- Total MCSCF energy       :       -7.994130529597820       (MACRO    4)
+ Total MCSCF energy       :       -7.994130529597818       (MACRO    4)
 
  Norm of total gradient   :        0.000010896456
  -    of CI gradient      :        0.000004956737
@@ -614,7 +618,7 @@ Point group: C2v
  <<< MACRO ITERATION  5 >>>
  --------------------------
 
- Total MCSCF energy       :       -7.994130529632507       (MACRO    5)
+ Total MCSCF energy       :       -7.994130529632505       (MACRO    5)
 
  Norm of total gradient   :        0.000001888648
  -    of CI gradient      :        0.000000000172
@@ -623,14 +627,13 @@ Point group: C2v
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            5
      Number of micro iterations used           17
-     Total number of CPU seconds used         0.00
+     Total number of CPU seconds used         0.22
 
 
                >>> SIRIUS OPTIMIZATION STATISTICS <<<
 
  
-     Date and time (Linux)  : Tue Feb 13 00:30:59 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
@@ -644,21 +647,21 @@ Point group: C2v
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
  ------------------------------------------------------------------------------
-    1      1    0.000000    0.000000     10    0.026946    0.028392    0.028392
-    2      3    0.005692    0.005989     10   -0.009925    0.011313    0.012800
-    3      2   -0.000182    0.000221      2    0.000515    0.000788    0.000818
-    4      3    0.000005    0.000005     10   -0.000008    0.000010    0.000011
-    5      2    0.000000    0.000000     10    0.000001    0.000002    0.000002
+    1      3    0.000000    0.000000     10    0.026946    0.028392    0.028392
+    2      3   -0.005692    0.005989     10   -0.009925    0.011313    0.012800
+    3      2   -0.000182    0.000221      2   -0.000515    0.000788    0.000818
+    4      3   -0.000005    0.000005     10   -0.000008    0.000010    0.000011
+    5      2   -0.000000    0.000000     10    0.000001    0.000002    0.000002
 
 
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1     4     1     3      0.00      0.00      1.88      0.00      0.47
-    2     4     2     3      0.00      0.00      1.88      0.00      0.47
-    3     7     2     5      0.00      0.00      1.88      0.00      0.27
-    4     2     2     1      0.00      0.00      1.88      0.00      0.94
-    5     0     0     0      0.00      0.00      0.00      0.00
+    1     4     1     3      0.05      0.00      0.04      0.03      0.01
+    2     4     2     3      0.03      0.01      0.02      0.02      0.01
+    3     7     2     5      0.05      0.01      0.03      0.01      0.00
+    4     2     2     1      0.02      0.01      0.01      0.01      0.00
+    5     0     0     0      0.02      0.01      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
@@ -673,15 +676,15 @@ Point group: C2v
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.000491390705     -0.000363777537      0.740302032366
-    3     -0.000059577219     -0.000061501129      1.032292708612
-    4     -0.000000621344     -0.000000622942      1.002572626856
+    2     -0.000491390705     -0.000363777537      0.740302032368
+    3     -0.000059577219     -0.000061501129      1.032292708476
+    4     -0.000000621344     -0.000000622942      1.002572628297
     5     -0.000000000035     -0.000000000035      1.000000000000
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
-    1      0.20000000  1.00000000      0.136418480257      0.700000000000
+    1      0.20000000  1.00000000      0.136418480258      0.700000000000
     2      0.20000000  1.00000000      0.029855803475      0.700000000000
     3      0.20000000  1.00000000      0.004432274785      0.700000000000
     4      0.20000000  1.00000000      0.000021890384      0.700000000000
@@ -711,8 +714,7 @@ Point group: C2v
      Final gradient norm:           0.000001888648
 
  
-     Date and time (Linux)  : Tue Feb 13 00:30:59 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
  Occupancies of natural orbitals
@@ -739,13 +741,13 @@ Point group: C2v
      Molecular orbitals for symmetry species   1
 
  Orbital          1        2        3
-   1   H  1s     0.0022   0.3003   0.7048
-   2   H  1s     0.0013   0.4029   0.4595
-   3   Li 1s     0.9986  -0.1361   0.1091
-   4   Li 1s     0.0294   0.1818  -0.4545
-   5   Li 1s    -0.0155   0.2332  -0.5481
-   6   Li 2pz   -0.0087   0.1997  -0.3928
-   7   Li 2pz    0.0053   0.0225  -0.1351
+   1   H  1s     0.0022   0.3003  -0.7048
+   2   H  1s     0.0013   0.4029  -0.4595
+   3   Li 1s     0.9986  -0.1361  -0.1091
+   4   Li 1s     0.0294   0.1818   0.4545
+   5   Li 1s    -0.0155   0.2332   0.5481
+   6   Li 2pz   -0.0087   0.1997   0.3928
+   7   Li 2pz    0.0053   0.0225   0.1351
 
 
  Printout of CI-coefficients larger than 0.05000 for root  1
@@ -785,21 +787,20 @@ Point group: C2v
    ( Ranges are relative to norm of vector :  1.00E+00 )
 
   10- 1 to 10- 0         2    0.10000000E+01    0.10000000E+01
-  Number of coefficients less than 10^-11 times norm is            1
+  Number of coefficients less than 10^-11 times norm is  1
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.10 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.33 seconds
  >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 00:30:59 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 - End of Wave Function Section
 
 
-  This is output from RESPONS  -  an MCSCF and SOPPA response property program 
+  This is output from RESPONSE  -  an MCSCF and SOPPA response property program 
  ------------------------------------------------------------------------------
 
 
@@ -812,7 +813,7 @@ Point group: C2v
  Cubic Response double residue calculation
  -----------------------------------------
 
- Cubic respons two-photon absorbtion TPAMP=T
+ Cubic response two-photon absorbtion TPAMP=T
  Excited state polarizability requested TPALP=T
 
  Print level                                    : IPRTPA =    2
@@ -851,13 +852,13 @@ Point group: C2v
  Old direct access AO file found, SORTA skipped.
 
 
- MCSCF energy         :       -7.994130529632507
- -- inactive part     :       -7.879190006123967
- --   active part     :       -1.084577999728911
+ MCSCF energy         :       -7.994130529632505
+ -- inactive part     :       -7.879190006123966
+ --   active part     :       -1.084577999728910
  -- nuclear repulsion :        0.969637476220371
 
 
- <<<<< SOLVING EIGENVALUE EQUATIONS >>>>>
+ <<<<< Solving eigenvalue equations for cubic response >>>>>
 
 
 
@@ -889,11 +890,11 @@ Point group: C2v
 
       Index(r,s)      r      s        (r s) operator      (s r) operator
       ----------    -----  -----      --------------      --------------
-           7         2(1)   4(1)       -0.5533183515       -0.0022727495
+           7         2(1)   4(1)        0.5533183515        0.0022727495
            8         2(1)   5(1)       -0.1641040621       -0.0003456109
-          10         2(1)   7(1)        0.1291841382        0.0059759710
+          10         2(1)   7(1)       -0.1291841382       -0.0059759710
           11         3(1)   4(1)        1.2573612208       -0.0397985915
-          12         3(1)   5(1)        0.4090837843       -0.0124196952
+          12         3(1)   5(1)       -0.4090837843        0.0124196952
           13         3(1)   6(1)        0.2784232498       -0.0031401722
           14         3(1)   7(1)       -0.4230751055        0.1008603184
 
@@ -903,7 +904,7 @@ Point group: C2v
 
       Index(conf)                         Z operator          Y operator
       ----------                      --------------      --------------
-           2                            0.1795955554       -0.0094562797
+           2                           -0.1795955554        0.0094562797
            3                            0.4207810751       -0.0003590477
 
         1 elements with absolute value less than 4.21D-02 not printed.
@@ -914,7 +915,7 @@ Point group: C2v
   Printout of coefficients in interval  0.1449     to 0.4583    
   ==============================================================
 
- Coefficient of CSF no.         2 is  0.17959556    
+ Coefficient of CSF no.         2 is -0.17959556    
  Occupation and spin coupling 
         2
         2
@@ -944,19 +945,19 @@ Point group: C2v
 
   10- 1 to 10- 0         2    0.20931128E+00    0.20931128E+00
   10- 2 to 10- 1         1    0.69281241E-03    0.21000409E+00
-  Number of coefficients less than 10^-11 times norm is            0
+  Number of coefficients less than 10^-11 times norm is  0
 
      Orbital operator symmetry = 1
      (only elements abs greater than   10.00 % of max abs value)
 
       Index(r,s)      r      s        (r s) operator      (s r) operator
       ----------    -----  -----      --------------      --------------
-           7         2(1)   4(1)       -0.3793320969       -0.0020975298
+           7         2(1)   4(1)        0.3793320969        0.0020975298
            8         2(1)   5(1)        0.1996280646        0.0019466734
-           9         2(1)   6(1)        0.3493510393        0.0094746529
-          10         2(1)   7(1)       -0.1668835466       -0.0003820182
+           9         2(1)   6(1)       -0.3493510393       -0.0094746529
+          10         2(1)   7(1)        0.1668835466        0.0003820182
           11         3(1)   4(1)        0.6699432068       -0.0046391716
-          12         3(1)   5(1)       -0.4785817984        0.0276961626
+          12         3(1)   5(1)        0.4785817984       -0.0276961626
           13         3(1)   6(1)       -0.8300442303        0.1148288892
           14         3(1)   7(1)        0.5386890406       -0.0403296119
 
@@ -966,7 +967,7 @@ Point group: C2v
 
       Index(conf)                         Z operator          Y operator
       ----------                      --------------      --------------
-           2                           -0.1745777885        0.0057534886
+           2                            0.1745777885       -0.0057534886
            3                           -0.4967801833        0.0005980568
 
         1 elements with absolute value less than 4.97D-02 not printed.
@@ -977,7 +978,7 @@ Point group: C2v
   Printout of coefficients in interval  0.1667     to 0.5272    
   ==============================================================
 
- Coefficient of CSF no.         2 is -0.17457779    
+ Coefficient of CSF no.         2 is  0.17457779    
  Occupation and spin coupling 
         2
         2
@@ -1007,7 +1008,7 @@ Point group: C2v
 
   10- 1 to 10- 0         2    0.27726795E+00    0.27726795E+00
   10- 2 to 10- 1         1    0.65463989E-03    0.27792259E+00
-  Number of coefficients less than 10^-11 times norm is            0
+  Number of coefficients less than 10^-11 times norm is  0
 
 
  Perturbation symmetry.     KSYMOP:       2
@@ -1038,8 +1039,8 @@ Point group: C2v
       Index(r,s)      r      s        (r s) operator      (s r) operator
       ----------    -----  -----      --------------      --------------
            3         2(1)   8(2)       -0.6590048689       -0.0103994282
-           4         2(1)   9(2)        0.1546941456        0.0080104291
-           5         3(1)   8(2)        1.5101700719       -0.1291500853
+           4         2(1)   9(2)       -0.1546941456       -0.0080104291
+           5         3(1)   8(2)       -1.5101700719        0.1291500853
            6         3(1)   9(2)       -0.4484715803        0.1117575175
 
         2 elements with absolute value less than 1.51D-01 not printed.
@@ -1064,7 +1065,7 @@ Point group: C2v
  Total number of variables. KZVAR :       0
 
 
- <<<<< SOLVING SET OF LINEAR RESPONSE EQUATIONS >>>>>
+ <<<<< Solving set of linear response equations for cubic response >>>>>
 
 
 
@@ -1170,7 +1171,7 @@ Point group: C2v
  Configuration variables.   KZCONF:       0
  Total number of variables. KZVAR :       0
 
- >>> Time used in CRVEC1 is   0.07 seconds
+ >>> Time used in CRVEC1 is   0.21 seconds
 
 
 
@@ -2173,7 +2174,7 @@ Point group: C2v
 
 
  GP * SOLUTION VECTOR AT FREQUENCY     0.12777 AU
- AFTER    4 LINEAR TRANSFORMATIONS IS  -6153.36588800
+ AFTER    4 LINEAR TRANSFORMATIONS IS  -6153.36588799
  INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS    7    0    1
  DETERMINANT OF REDUCED MATRIX IS -3.43 * 10 ** -9.0
 
@@ -2246,7 +2247,7 @@ Point group: C2v
  CRLRV2 -- freqr1 :  -3.000000D-02
  CRLRV2 -- freqr2 :  -1.577654D-01
   >>> RSPCTL skipped because norm of
-      property vector is only  0.0000000000000000E+000
+      property vector is only 0.0
 
 
  Perturbation symmetry.     KSYMOP:       4
@@ -2262,9 +2263,9 @@ Point group: C2v
  CRLRV2 -- freqr1 :  -3.000000D-02
  CRLRV2 -- freqr2 :   1.577654D-01
   >>> RSPCTL skipped because norm of
-      property vector is only  0.0000000000000000E+000
+      property vector is only 0.0
 
- >>> Time used in CRVEC2 is   0.41 seconds
+ >>> Time used in CRVEC2 is   0.92 seconds
 
 
 
@@ -2441,11 +2442,10 @@ Point group: C2v
 @ < e | AB | f >  =          28.34624107
 
 
- >>>> Total CPU  time used in RESPONSE:   1.39 seconds
- >>>> Total wall time used in RESPONSE:   1.00 seconds
- >>>> Total CPU  time used in DALTON:   1.52 seconds
- >>>> Total wall time used in DALTON:   2.00 seconds
+ >>>> Total CPU  time used in RESPONSE:   2.55 seconds
+ >>>> Total wall time used in RESPONSE:   6.00 seconds
+ >>>> Total CPU  time used in DALTON:   3.03 seconds
+ >>>> Total wall time used in DALTON:   7.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 00:31:00 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    

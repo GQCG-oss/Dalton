@@ -4,7 +4,7 @@
     ***********  DALTON - An electronic structure program  ***********
     ******************************************************************
 
-               This is output from DALTON (Release 1.2, April 2001)
+            This is output from DALTON (Release 2.0, ? 2001)
 
                           Principal authors:
 
@@ -17,6 +17,7 @@
 
                           Contributors:
 
+            Alexander A. Auer,     University of Mainz,        Germany
             Keld L. Bak,           UNI-C,                      Denmark
             Vebjoern Bakken,       University of Oslo,         Norway 
             Ove Christiansen,      University of Lund,         Sweden 
@@ -36,16 +37,18 @@
             Henrik Koch,           SDU - Odense University,    Denmark
             Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
             Patrick Norman,        University of Linkoeping,   Sweden 
+            Thomas B. Pedersen,    U.of Santiago de Compostela,Spain  
             Martin J. Packer,      University of Sheffield,    UK     
             Torgeir A. Ruden,      University of Oslo,         Norway 
+            Alfredo Sanchez,       University of Valencia,     Spain  
             Trond Saue,            University of Toulouse,     France 
             Stephan P. A. Sauer,   University of Copenhagen,   Denmark
             Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
             K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
             Peter R.Taylor,        San Diego Superc. Center,   USA    
             Olav Vahtras,          PDC, Stockholm,             Sweden 
-------------------------------------------------------------------------
 
+------------------------------------------------------------------------
 
 
      NOTE:
@@ -63,17 +66,19 @@
      If results obtained with this code are published, an
      appropriate citation would be:
       
-     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,
-     H. Aagren, K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,
-     P. Dahle, E.K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-     K. Hald, A. Halkier, H. Heiberg, H. Hettema, D. Jonsson,
-     S. Kirpekar, R. Kobayashi, H. Koch, K.V. Mikkelsen, P. Norman,
-     M.J. Packer, T.A. Ruden, T. Saue, S.P.A. Sauer, B. Schimmelpfennig,
-     K. O. Sylvester-Hvid, P.R. Taylor, and O. Vahtras:
-     "Dalton release 1.2 (2001), an electronic structure program"
+     "Dalton, a molecular electronic structure program, Release 1.2
+     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+     H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+     H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+     T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+     B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+     and O. Vahtras"
 
  
-     Host name              : victorio                                
+     Host name              : pico                                    
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
 
@@ -207,7 +212,7 @@ Point group: C1
 
 
 
- >>> Time used in TWOINT is   0.39 seconds
+ >>> Time used in TWOINT is   0.27 seconds
 
 
 
@@ -220,20 +225,20 @@ Point group: C1
 
  Threshold for discarding integrals :  1.00D-15
 
- >>> Time used in FRMSUP is   0.08 seconds
+ >>> Time used in FRMSUP is   0.06 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.66 seconds
- >>>> Total wall time used in HERMIT:   3.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.52 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Host name              : victorio                                
+     Host name              : pico                                    
 
  Title lines from integral program:
      Vibrational averaging of shieldings                                     
@@ -296,10 +301,10 @@ Point group: C1
    8   -100.056552108015   2.99D-05  -8.52D-09    5
    9   -100.056552108117   3.72D-06  -1.02D-10    5
   10   -100.056552108118   3.26D-07  -1.31D-12    5
-  11   -100.056552108118   2.64D-08   1.42D-14    5
-  12   -100.056552108118   3.64D-09  -1.28D-13    5
-  13   -100.056552108118   3.89D-10   1.14D-13    5
-  14   -100.056552108118   3.07D-11   5.68D-14    5
+  11   -100.056552108118   2.64D-08  -4.26D-14    5
+  12   -100.056552108118   3.64D-09   5.68D-14    5
+  13   -100.056552108118   3.89D-10  -5.68D-14    5
+  14   -100.056552108118   3.07D-11   4.26D-14    5
  DIIS converged in  14 iterations !
 
 
@@ -328,12 +333,12 @@ Point group: C1
 
      Final    HF energy:         -100.056552108118
      Nuclear repulsion:             5.215566151592
-     Electronic energy:          -105.272118259710
+     Electronic energy:          -105.272118259711
 
      Final gradient norm:           0.000000000031
 
  
-     Host name              : victorio                                
+     Host name              : pico                                    
 
      Molecular orbitals for symmetry species   1
 
@@ -373,11 +378,11 @@ Point group: C1
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.25 seconds
- >>>> Total wall time used in SIRIUS :      2.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.24 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Host name              : victorio                                
+     Host name              : pico                                    
 
 - End of Wave Function Section
 
@@ -470,7 +475,7 @@ Point group: C1
 
 
  
-     Host name              : victorio                                
+     Host name              : pico                                    
 
 
                         **************************
@@ -558,15 +563,15 @@ Point group: C1
 
                     x      0.00000000      0.00000000
                     y      0.00000000      0.00000000
-                    z      1.96749607      5.00092248
+                    z      1.96749607      5.00087563
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
 
  Greatest diff. between AO and SO reorthonormalization gradients:       5.55E-17
- Greatest diff. between AO and SO one-electron Hamiltonian gradients:   2.66E-15
+ Greatest diff. between AO and SO one-electron Hamiltonian gradients:   5.33E-15
 
 
                      Kinetic energy integral gradient
@@ -649,7 +654,7 @@ Point group: C1
 
 
 
- >>> Time used in ONEINT is   0.28 seconds
+ >>> Time used in ONEINT is   0.23 seconds
 
 
 
@@ -672,9 +677,9 @@ Point group: C1
 
                     x      0.00000000      0.00000000
                     y      0.00000000      0.00000000
-                    z      1.96749607      5.00092248
+                    z      1.96749607      5.00087563
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -693,11 +698,11 @@ Point group: C1
 
                                au             Debye
 
-                    x      0.00000000      0.00000000
-                    y      0.00000000      0.00000000
-                    z     -1.20811072     -3.07073958
+                    x     -0.00000000     -0.00000000
+                    y     -0.00000000     -0.00000000
+                    z     -1.20811072     -3.07071081
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -714,36 +719,36 @@ Point group: C1
 
                        Bx             By             Bz             
 
-        H    x    19.44444777     0.00000000     0.00000000
-        H    y     0.00000000    19.44444777     0.00000000
-        H    z     0.00000000     0.00000000    44.38498886
+        H    x    19.44444484     0.00000000     0.00000000
+        H    y     0.00000000    19.44444484     0.00000000
+        H    z     0.00000000     0.00000000    44.38498218
 
-        F    x   461.60631557     0.00000000     0.00000000
-        F    y     0.00000000   461.60631557     0.00000000
-        F    z     0.00000000     0.00000000   481.77723476
+        F    x   461.60624612     0.00000000     0.00000000
+        F    y     0.00000000   461.60624612     0.00000000
+        F    z     0.00000000     0.00000000   481.77716227
 
 
 
 
  Expectation values for NUCSHI 
- Component: 01 NST X              0.365145
- Component: 01 NST Y              0.000000
- Component: 01 NST Z              0.000000
- Component: 02 NST X              0.000000
- Component: 02 NST Y              0.365145
- Component: 02 NST Z              0.000000
- Component: 03 NST X              0.000000
- Component: 03 NST Y              0.000000
- Component: 03 NST Z              0.833500
- Component: 04 NST X              8.668441
- Component: 04 NST Y              0.000000
- Component: 04 NST Z              0.000000
- Component: 05 NST X              0.000000
- Component: 05 NST Y              8.668441
- Component: 05 NST Z              0.000000
- Component: 06 NST X              0.000000
- Component: 06 NST Y              0.000000
- Component: 06 NST Z              9.047228
+ Component: 001 NSTX              0.365145
+ Component: 001 NSTY              0.000000
+ Component: 001 NSTZ              0.000000
+ Component: 002 NSTX              0.000000
+ Component: 002 NSTY              0.365145
+ Component: 002 NSTZ              0.000000
+ Component: 003 NSTX              0.000000
+ Component: 003 NSTY              0.000000
+ Component: 003 NSTZ              0.833500
+ Component: 004 NSTX              8.668441
+ Component: 004 NSTY              0.000000
+ Component: 004 NSTZ              0.000000
+ Component: 005 NSTX              0.000000
+ Component: 005 NSTY              8.668441
+ Component: 005 NSTZ              0.000000
+ Component: 006 NSTX              0.000000
+ Component: 006 NSTY              0.000000
+ Component: 006 NSTZ              9.047228
 
 
 
@@ -780,7 +785,7 @@ Point group: C1
 
 
 
- >>> Time used in MAGINT is   0.89 seconds
+ >>> Time used in MAGINT is   0.77 seconds
 
 1 <<<<<<<<<< Output from TWOEXP >>>>>>>>>> 
 
@@ -831,14 +836,14 @@ Point group: C1
   Number of primitive integrals (counting zeros) :     1567335
 
 
-  Average time for non-zero (written) integrals:   78.6 microseconds
-  Average time for zero/non-zero integrals     :   17.1 microseconds
-  Average time for primitive integrals         :    1.5 microseconds
+  Average time for non-zero (written) integrals:   45.1 microseconds
+  Average time for zero/non-zero integrals     :    9.8 microseconds
+  Average time for primitive integrals         :    0.9 microseconds
 
   Average reduction of primitive ODC vectors:    0.97 %
   Average reduction of contracted ODC vectors:   0.00 %
 
- >>> Time used in TWOINT is   2.39 seconds
+ >>> Time used in TWOINT is   1.37 seconds
 
 
 
@@ -890,7 +895,7 @@ Point group: C1
 
 
 
- >>> Time used in TWOEXP is   2.40 seconds
+ >>> Time used in TWOEXP is   1.37 seconds
 
 
 
@@ -939,9 +944,9 @@ Point group: C1
   Number of primitive integrals (counting zeros) :     1567335
 
 
-  Average time for non-zero (written) integrals:   30.3 microseconds
-  Average time for zero/non-zero integrals     :    6.6 microseconds
-  Average time for primitive integrals         :    0.6 microseconds
+  Average time for non-zero (written) integrals:   21.0 microseconds
+  Average time for zero/non-zero integrals     :    4.6 microseconds
+  Average time for primitive integrals         :    0.4 microseconds
 
   Average reduction of primitive ODC vectors:    0.97 %
   Average reduction of contracted ODC vectors:   0.00 %
@@ -956,19 +961,19 @@ Point group: C1
  NORB    32
  NBAS    32
 
- >>> Time used in GETFD  is   0.34 seconds
+ >>> Time used in GETFD  is   0.42 seconds
 
 
- >>> Time used in GETSD  is   0.09 seconds
-
-
- >>> Time used in ABARHS is   0.02 seconds
+ >>> Time used in GETSD  is   0.07 seconds
 
 
  >>> Time used in ABARHS is   0.01 seconds
 
 
- >>> Time used in ABARHS is   0.00 seconds
+ >>> Time used in ABARHS is   0.01 seconds
+
+
+ >>> Time used in ABARHS is   0.01 seconds
 
 
 
@@ -989,18 +994,18 @@ Point group: C1
 
                        Bx             By             Bz             
 
-        H    x   -10.06193059     0.00000000     0.00000000
-        H    y     0.00000000   -10.06193059     0.00000000
+        H    x   -10.06192908     0.00000000     0.00000000
+        H    y     0.00000000   -10.06192908     0.00000000
         H    z     0.00000000     0.00000000     0.00000000
 
-        F    x    14.54689775     0.00000000     0.00000000
-        F    y     0.00000000    14.54689775     0.00000000
+        F    x    14.54689556     0.00000000     0.00000000
+        F    y     0.00000000    14.54689556     0.00000000
         F    z     0.00000000     0.00000000     0.00000000
 
 
 
 
- >>> Time used in PSORHS is   0.12 seconds
+ >>> Time used in PSORHS is   0.10 seconds
 
 
 
@@ -1013,7 +1018,7 @@ Point group: C1
  NORB    32
  NBAS    32
 
- >>> Time used in GETFD  is   0.00 seconds
+ >>> Time used in GETFD  is   0.01 seconds
 
 
  >>> Time used in GETSD  is   0.00 seconds
@@ -1022,7 +1027,7 @@ Point group: C1
  >>> Time used in ABARHS is   0.00 seconds
 
 
- >>> Time used in RHSIDE is   1.63 seconds
+ >>> Time used in RHSIDE is   1.36 seconds
 
   <<<<<<<<<< OUTPUT FROM REORT >>>>>>>>>> 
 
@@ -1059,7 +1064,7 @@ Point group: C1
    Number of orbital trial vectors :    1
 
 
- >>> TIME USED IN ABALIN         0.01
+ >>> TIME USED IN ABALIN         0.00
      FOR   0 CI AND   1 ORBITAL TRIAL VECTORS.
 
 
@@ -1074,7 +1079,7 @@ Point group: C1
  Newton-Raphson vector no.       norm of residual
               1                8.58270354D-01
 
- >>> Time used in this microiteration        0.02
+ >>> Time used in this microiteration        0.00
 
 
 
@@ -1084,7 +1089,7 @@ Point group: C1
    Number of orbital trial vectors :    1
 
 
- >>> TIME USED IN ABALIN         0.01
+ >>> TIME USED IN ABALIN         0.02
      FOR   0 CI AND   1 ORBITAL TRIAL VECTORS.
 
 
@@ -1099,7 +1104,7 @@ Point group: C1
  Newton-Raphson vector no.       norm of residual
               1                2.07622396D-01
 
- >>> Time used in this microiteration        0.01
+ >>> Time used in this microiteration        0.02
 
 
 
@@ -1134,7 +1139,7 @@ Point group: C1
    Number of orbital trial vectors :    1
 
 
- >>> TIME USED IN ABALIN         0.01
+ >>> TIME USED IN ABALIN         0.00
      FOR   0 CI AND   1 ORBITAL TRIAL VECTORS.
 
 
@@ -1149,7 +1154,7 @@ Point group: C1
  Newton-Raphson vector no.       norm of residual
               1                8.51316617D-03
 
- >>> Time used in this microiteration        0.02
+ >>> Time used in this microiteration        0.00
 
 
 
@@ -1184,7 +1189,7 @@ Point group: C1
    Number of orbital trial vectors :    1
 
 
- >>> TIME USED IN ABALIN         0.01
+ >>> TIME USED IN ABALIN         0.02
      FOR   0 CI AND   1 ORBITAL TRIAL VECTORS.
 
 
@@ -1199,7 +1204,7 @@ Point group: C1
  Newton-Raphson vector no.       norm of residual
               1                1.73401743D-04
 
- >>> Time used in this microiteration        0.03
+ >>> Time used in this microiteration        0.02
 
 
 
@@ -1209,7 +1214,7 @@ Point group: C1
    Number of orbital trial vectors :    1
 
 
- >>> TIME USED IN ABALIN         0.01
+ >>> TIME USED IN ABALIN         0.00
      FOR   0 CI AND   1 ORBITAL TRIAL VECTORS.
 
 
@@ -1224,7 +1229,7 @@ Point group: C1
  Newton-Raphson vector no.       norm of residual
               1                1.16172289D-05
 
- >>> Time used in this microiteration        0.01
+ >>> Time used in this microiteration        0.00
 
 
 
@@ -1241,15 +1246,15 @@ Point group: C1
 
  GRADIENT NO.      CSF RESIDUAL        ORBITAL RESIDUAL    TOTAL RESIDUAL
 
-         1          0.00000000D+00      1.10367584D-06      1.10367584D-06
+         1          0.00000000D+00      1.10367585D-06      1.10367585D-06
 
 
  Residual of Newton-Raphson vectors not converged:
 
  Newton-Raphson vector no.       norm of residual
-              1                1.10367584D-06
+              1                1.10367585D-06
 
- >>> Time used in this microiteration        0.02
+ >>> Time used in this microiteration        0.01
 
 
 
@@ -1284,19 +1289,19 @@ Point group: C1
     -0.00010585    -0.00000857    -0.00000072    -0.00000006
 
 
- >>> Total time in microiterations      0.14 s.
+ >>> Total time in microiterations      0.08 s.
 
    Total number of CI and orbital trial vectors :   0   9
 
              ROUTINE   CALLS    TIME
-             ABALIN       9      0.09
-             ANRRED       9      0.01
-             ANRNEX       9      0.01
+             ABALIN       9      0.08
+             ANRRED       9      0.00
+             ANRNEX       9      0.00
 
- >>> Time used in ANRCTL is   0.14 seconds
+ >>> Time used in ANRCTL is   0.08 seconds
 
 
- >>> Time used in RESPON is   0.15 seconds
+ >>> Time used in RESPON is   0.08 seconds
 
 
 
@@ -1319,7 +1324,7 @@ Point group: C1
  Number of response frequencies:     1
  Convergence threshold:     1.00D-07
 
- WORKING AREA IN TRANSFORMATION SECTION    6998962
+ WORKING AREA IN TRANSFORMATION SECTION    8000000
 
  TRANSFORMATION SECTION: PARAMETER =   4
  MAXIMUM NUMBER OF AO INTEGRALS =     139656
@@ -1338,12 +1343,12 @@ Point group: C1
 
   THRESHOLD FOR DISCARDING INTEGRALS  1.00D-15
 
- TIME IN SORTA      0.06
+ TIME IN SORTA      0.03
 
- NUMBER OF INTEGRALS (PQ/CD) WRITTEN ON UNIT 15 IS     20285
+ NUMBER OF INTEGRALS (PQ/CD) WRITTEN ON UNIT 15 IS     20283
 
   THRESHOLD FOR DISCARDING INTEGRALS  1.00D-15
- TIME IN TRACD      0.29
+ TIME IN TRACD      0.15
 
  SECOND HALF-SORT STATISTICS
   NUMBER OF PASSES OVER FILE       1
@@ -1356,22 +1361,24 @@ Point group: C1
   NUMBER OF DA RECORDS FOR ALL INTEGRALS    12
   NUMBER OF DA RECORDS ACTUALLY USED        12
   PERCENT NON-ZERO INTEGRALS              0.01
- TIME IN SORTB      0.03
- TIME IN TRAAB      0.13
+ TIME IN SORTB      0.02
+ TIME IN TRAAB      0.07
 
- NUMBER OF TRANSFORMED INTEGRALS WRITTEN ON UNIT 14 IS      7538
+ NUMBER OF TRANSFORMED INTEGRALS WRITTEN ON UNIT 14 IS      7526
  USING   150 + 1 RECORDS WITH BUFFER LENGTH   528
 
   THRESHOLD FOR DISCARDING INTEGRALS  1.00D-15
- TOTAL TIME IN TRACD,SORTB,TRAAB      0.45
+ TOTAL TIME IN TRACD,SORTB,TRAAB      0.24
 
- DRCCTL: NUMBER OF DIRAC INTEGRALS WRITTEN ON UNIT 15 IS      4211
-         NUMBER OF PASSES OVER MULLIKEN FILE    1
+ DRCCTL: Number of Dirac integrals written on file
+
+ "DRCINT" is      4205
+         Number of passes over Mulliken file    1
 
 
  >>>>>>>>>> Symmetry of excitation/property operator    1
 
- Number of operators for linear respons equations:     1
+ Number of operators for linear response equations:     1
  Number of response frequencies:     1
 
 
@@ -1409,18 +1416,18 @@ Point group: C1
 
       Index(r,s)      r      s        (r s) operator      (s r) operator
       ----------    -----  -----      --------------      --------------
-          33         2(1)  11(1)        0.0375767703        0.0375767703
-          39         2(1)  17(1)       -0.0447498565       -0.0447498565
+          34         2(1)  12(1)        0.0375767703        0.0375767703
+          40         2(1)  18(1)       -0.0447498565       -0.0447498565
           46         2(1)  24(1)       -0.0358445208       -0.0358445208
           59         3(1)  10(1)       -0.1217014858       -0.1217014858
-          60         3(1)  11(1)        0.1575505379        0.1575505379
-          66         3(1)  17(1)       -0.1082896912       -0.1082896912
+          61         3(1)  12(1)        0.1575505379        0.1575505379
+          67         3(1)  18(1)       -0.1082896912       -0.1082896912
           71         3(1)  22(1)       -0.0589454077       -0.0589454077
           73         3(1)  24(1)       -0.0393453763       -0.0393453763
           82         4(1)   6(1)        0.1283347348        0.1283347348
           83         4(1)   7(1)       -0.2058651889       -0.2058651889
           84         4(1)   8(1)        0.1311987265        0.1311987265
-          90         4(1)  14(1)       -0.1318129795       -0.1318129795
+          90         4(1)  14(1)        0.1318129795        0.1318129795
 
       123 elements with absolute value less than 2.06D-02 not printed.
 
@@ -1430,9 +1437,9 @@ Point group: C1
      >> NO ELEMENTS <<
 
 
- Time used in linear response calculation is      0.16 CPU seconds for symmetry 1
+ Time used in linear response calculation is      0.11 CPU seconds for symmetry 1
 
- >>> Total time used in response solver is         0.70 CPU seconds.
+ >>> Total time used in response solver is         0.40 CPU seconds.
 
 
   THIS IS OUTPUT FROM THE MCSCF AND SOPPA RESPONSE SOLVER
@@ -1447,7 +1454,7 @@ Point group: C1
 
  >>>>>>>>>> Symmetry of excitation/property operator    1
 
- Number of operators for linear respons equations:     1
+ Number of operators for linear response equations:     1
  Number of response frequencies:     1
 
 
@@ -1485,18 +1492,18 @@ Point group: C1
 
       Index(r,s)      r      s        (r s) operator      (s r) operator
       ----------    -----  -----      --------------      --------------
-          34         2(1)  12(1)       -0.0375767703       -0.0375767703
-          40         2(1)  18(1)        0.0447498565        0.0447498565
+          33         2(1)  11(1)       -0.0375767703       -0.0375767703
+          39         2(1)  17(1)        0.0447498565        0.0447498565
           47         2(1)  25(1)       -0.0358445208       -0.0358445208
           58         3(1)   9(1)        0.1217014858        0.1217014858
-          61         3(1)  12(1)       -0.1575505379       -0.1575505379
-          67         3(1)  18(1)        0.1082896912        0.1082896912
+          60         3(1)  11(1)       -0.1575505379       -0.1575505379
+          66         3(1)  17(1)        0.1082896912        0.1082896912
           70         3(1)  21(1)        0.0589454077        0.0589454077
           74         3(1)  25(1)       -0.0393453763       -0.0393453763
          109         5(1)   6(1)       -0.1283347348       -0.1283347348
          110         5(1)   7(1)        0.2058651889        0.2058651889
          111         5(1)   8(1)       -0.1311987265       -0.1311987265
-         117         5(1)  14(1)        0.1318129795        0.1318129795
+         117         5(1)  14(1)       -0.1318129795       -0.1318129795
 
       123 elements with absolute value less than 2.06D-02 not printed.
 
@@ -1506,11 +1513,11 @@ Point group: C1
      >> NO ELEMENTS <<
 
 
- Time used in linear response calculation is      0.19 CPU seconds for symmetry 1
+ Time used in linear response calculation is      0.11 CPU seconds for symmetry 1
 
- >>> Total time used in response solver is         0.19 CPU seconds.
+ >>> Total time used in response solver is         0.12 CPU seconds.
 
- >>> Time used in LRSDRV is   0.89 seconds
+ >>> Time used in LRSDRV is   0.54 seconds
 
   <<<<<<<<<< Output from RELAX >>>>>>>>>> 
 
@@ -1544,18 +1551,18 @@ Point group: C1
 
                        Bx             By             Bz             
 
-        H    x    12.01816727     0.00000000     0.00000000
-        H    y     0.00000000    12.01816727     0.00000000
-        H    z     0.00000000     0.00000000     0.00000000
+        H    x    12.01816546    -0.00000000    -0.00000000
+        H    y    -0.00000000    12.01816546    -0.00000000
+        H    z    -0.00000000    -0.00000000    -0.00000000
 
-        F    x   -94.65375746     0.00000000     0.00000000
-        F    y     0.00000000   -94.65375746     0.00000000
-        F    z     0.00000000     0.00000000     0.00000000
-
-
+        F    x   -94.65374322    -0.00000000    -0.00000000
+        F    y    -0.00000000   -94.65374322    -0.00000000
+        F    z    -0.00000000    -0.00000000    -0.00000000
 
 
- >>> Time used in RELAX  is   0.01 seconds
+
+
+ >>> Time used in RELAX  is   0.00 seconds
 
 
 
@@ -1592,7 +1599,7 @@ Point group: C1
 
 
  
-     Host name              : victorio                                
+     Host name              : pico                                    
 
 
 
@@ -1614,7 +1621,7 @@ Point group: C1
 
      Total energy       -100.0565521081 au (Hartrees)
                          -2722.67720110 eV
-                           -262698.4402 kJ/mol
+                           -262698.4398 kJ/mol
 
 
 
@@ -1622,11 +1629,11 @@ Point group: C1
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.3220116020 au
-     Mass-velocity correction:                  -0.4082541268 au
+     Darwin correction:                          0.3220115535 au
+     Mass-velocity correction:                  -0.4082540654 au
 
-     Total relativistic correction:             -0.0862425248 au (0.0862%)
-     Non-relativistic + relativistic energy:  -100.1427946329 au
+     Total relativistic correction:             -0.0862425118 au (0.0862%)
+     Non-relativistic + relativistic energy:  -100.1427946199 au
 
 
 
@@ -1661,7 +1668,7 @@ Point group: C1
                               Dipole moment
                               -------------
 
-                    0.759385 au           1.930183 Debye
+                    0.759385 au           1.930165 Debye
 
 
 
@@ -1673,9 +1680,9 @@ Point group: C1
 
                     x      0.00000000      0.00000000
                     y      0.00000000      0.00000000
-                    z      0.75938535      1.93018290
+                    z      0.75938535      1.93016482
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -1692,13 +1699,13 @@ Point group: C1
 
                        Bx             By             Bz             
 
-        H    x    21.40068444     0.00000000     0.00000000
-        H    y     0.00000000    21.40068444     0.00000000
-        H    z     0.00000000     0.00000000    44.38498886
+        H    x    21.40068122     0.00000000     0.00000000
+        H    y     0.00000000    21.40068122     0.00000000
+        H    z     0.00000000     0.00000000    44.38498218
 
-        F    x   381.49945586     0.00000000     0.00000000
-        F    y     0.00000000   381.49945586     0.00000000
-        F    z     0.00000000     0.00000000   481.77723476
+        F    x   381.49939846     0.00000000     0.00000000
+        F    y     0.00000000   381.49939846     0.00000000
+        F    z     0.00000000     0.00000000   481.77716227
 
 
 
@@ -1721,9 +1728,9 @@ Point group: C1
 
                   Bx             By             Bz             
 
-  H    x    21.40068444     0.00000000     0.00000000
-  H    y     0.00000000    21.40068444     0.00000000
-  H    z     0.00000000     0.00000000    44.38498886
+  H    x    21.40068122     0.00000000     0.00000000
+  H    y     0.00000000    21.40068122     0.00000000
+  H    z     0.00000000     0.00000000    44.38498218
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1735,7 +1742,7 @@ Point group: C1
   H    y     0.0000     9.3825     0.0000         0.0000    12.0182     0.0000
   H    z     0.0000     0.0000    44.3850         0.0000     0.0000     0.0000
 
-  Diamagnetic contribution:     21.050008         Paramagnetic:       8.012112
+  Diamagnetic contribution:     21.050005         Paramagnetic:       8.012110
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -1751,16 +1758,16 @@ Point group: C1
   Principal values and axes:
   --------------------------
 
-  H     1     21.400684  =   29.06  -   7.66:     0.000000  1.000000  0.000000
-  H     2     21.400684  =   29.06  -   7.66:     1.000000  0.000000  0.000000
-  H     3     44.384989  =   29.06  +  15.32:     0.000000  0.000000  1.000000
+  H     1     21.400681  =   29.06  -   7.66:     0.000000  1.000000  0.000000
+  H     2     21.400681  =   29.06  -   7.66:     1.000000  0.000000  0.000000
+  H     3     44.384982  =   29.06  +  15.32:     0.000000  0.000000  1.000000
 
 
   Chemical shielding for F     :
   ==============================
 
 
-  Shielding constant:    414.9254 ppm
+  Shielding constant:    414.9253 ppm
   Anisotropy:            100.2778 ppm
   Asymmetry:               0.0000    
 
@@ -1773,9 +1780,9 @@ Point group: C1
 
                   Bx             By             Bz             
 
-  F    x   381.49945586     0.00000000     0.00000000
-  F    y     0.00000000   381.49945586     0.00000000
-  F    z     0.00000000     0.00000000   481.77723476
+  F    x   381.49939846     0.00000000     0.00000000
+  F    y     0.00000000   381.49939846     0.00000000
+  F    z     0.00000000     0.00000000   481.77716227
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -1783,11 +1790,11 @@ Point group: C1
 
                Bx         By         Bz             Bx         By         Bz         
 
-  F    x   476.1532     0.0000     0.0000       -94.6538     0.0000     0.0000
-  F    y     0.0000   476.1532     0.0000         0.0000   -94.6538     0.0000
+  F    x   476.1531     0.0000     0.0000       -94.6537     0.0000     0.0000
+  F    y     0.0000   476.1531     0.0000         0.0000   -94.6537     0.0000
   F    z     0.0000     0.0000   481.7772         0.0000     0.0000     0.0000
 
-  Diamagnetic contribution:    478.027887         Paramagnetic:     -63.102505
+  Diamagnetic contribution:    478.027815         Paramagnetic:     -63.102495
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -1797,15 +1804,15 @@ Point group: C1
 
   F    x     0.0000     0.0000     0.0000       -33.4259     0.0000     0.0000
   F    y     0.0000     0.0000     0.0000         0.0000   -33.4259     0.0000
-  F    z     0.0000     0.0000     0.0000         0.0000     0.0000    66.8519
+  F    z     0.0000     0.0000     0.0000         0.0000     0.0000    66.8518
 
 
   Principal values and axes:
   --------------------------
 
-  F     1    381.499456  =  414.93  -  33.43:     0.000000  1.000000  0.000000
-  F     2    381.499456  =  414.93  -  33.43:     1.000000  0.000000  0.000000
-  F     3    481.777235  =  414.93  +  66.85:     0.000000  0.000000  1.000000
+  F     1    381.499398  =  414.93  -  33.43:     1.000000  0.000000  0.000000
+  F     2    381.499398  =  414.93  -  33.43:     0.000000  1.000000  0.000000
+  F     3    481.777162  =  414.93  +  66.85:     0.000000  0.000000  1.000000
 
 
                      +--------------------------------+
@@ -1817,7 +1824,7 @@ Point group: C1
  @1atom   shielding       dia      para     skew      span     (aniso     asym)
  @1----------------------------------------------------------------------------
  @1H        29.0621   21.0500    8.0121    1.0000   22.9843   22.9843    0.0000
- @1F       414.9254  478.0279  -63.1025    1.0000  100.2778  100.2778    0.0000
+ @1F       414.9253  478.0278  -63.1025    1.0000  100.2778  100.2778    0.0000
 
 
 
@@ -1830,7 +1837,7 @@ Point group: C1
  @2atom   shielding       dia      para     aniso      asym        S        A
  @2----------------------------------------------------------------------------
  @2H        29.0621   21.0500    8.0121   22.9843    0.0000   22.9843    0.0000
- @2F       414.9254  478.0279  -63.1025  100.2778    0.0000  100.2778    0.0000
+ @2F       414.9253  478.0278  -63.1025  100.2778    0.0000  100.2778    0.0000
 
 
 
@@ -1887,7 +1894,7 @@ Point group: C1
  Number of steps        0
  WLKEND                 F
 
- Largest deviation from orthonormality of OMOs:0.439648E-13
+ Largest deviation from orthonormality of OMOs:0.428546E-13
  - found for element   29  29
 
 
@@ -1948,6 +1955,7 @@ B      0.000000       0.000000       0.000000
                Column   1     Column   2     Column   3     
        1       2.80558739     0.00000000     0.00000000
        2       0.00000000     2.80558739     0.00000000
+       3       0.00000000     0.00000000    -0.00000000
 
 
  Parameters of the Eckart frame:
@@ -1963,7 +1971,7 @@ AN     0.000000
 
 
                Column   1     Column   2     Column   3     
-       1       1.00000000     0.00000000     0.00000000
+       1       1.00000000    -0.00000000     0.00000000
        2       0.00000000     1.00000000     0.00000000
        3       0.00000000     0.00000000     1.00000000
 
@@ -1988,14 +1996,14 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
 
 
                Column   1     Column   2     Column   3     
-       1      21.40068444     0.00000000     0.00000000
-       2       0.00000000    21.40068444     0.00000000
-       3       0.00000000     0.00000000    44.38498886
+       1      21.40068122     0.00000000     0.00000000
+       2       0.00000000    21.40068122     0.00000000
+       3       0.00000000     0.00000000    44.38498218
 
                Column   1     Column   2     Column   3     
-       1     381.49945586     0.00000000     0.00000000
-       2       0.00000000   381.49945586     0.00000000
-       3       0.00000000     0.00000000   481.77723476
+       1     381.49939846    -0.00000000     0.00000000
+       2      -0.00000000   381.49939846     0.00000000
+       3       0.00000000     0.00000000   481.77716227
 
 
    ********************************************************************
@@ -2021,15 +2029,15 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
 
 
                Column   1     Column   2     Column   3     Column   4     
-       1       0.00000000     0.00000000     0.00000000     0.00000000
+       1       0.00000000     0.00000000     0.00000000    -0.00000000
        2       0.00000000     0.00000000     0.00000000     0.00000000
        3       0.00000000     0.00000000     0.65526763     0.00000000
-       4       0.00000000     0.00000000     0.00000000     0.00000000
-       5       0.00000000     0.00000000     0.00000000     0.00000000
+       4      -0.00000000     0.00000000     0.00000000     0.00000000
+       5       0.00000000    -0.00000000     0.00000000     0.00000000
        6       0.00000000     0.00000000    -0.65526763     0.00000000
 
                Column   5     Column   6     
-       2       0.00000000     0.00000000
+       2      -0.00000000     0.00000000
        3       0.00000000    -0.65526763
        5       0.00000000     0.00000000
        6       0.00000000     0.65526763
@@ -2048,32 +2056,32 @@ IN 2   0.0000000000   0.0000000000  -0.0869282556
 
                   Bx             By             Bz             
 
-  H    x    21.40068444     0.00000000     0.00000000
-  H    y     0.00000000    21.40068444     0.00000000
-  H    z     0.00000000     0.00000000    44.38498886
+  H    x    21.40068122     0.00000000     0.00000000
+  H    y     0.00000000    21.40068122     0.00000000
+  H    z     0.00000000     0.00000000    44.38498218
                   Bx             By             Bz             
 
-  F    x   381.49945586     0.00000000     0.00000000
-  F    y     0.00000000   381.49945586     0.00000000
-  F    z     0.00000000     0.00000000   481.77723476
+  F    x   381.49939846    -0.00000000     0.00000000
+  F    y    -0.00000000   381.49939846     0.00000000
+  F    z     0.00000000     0.00000000   481.77716227
 
- >>> Time used in WLKDRV is   0.38 seconds
+ >>> Time used in WLKDRV is   0.31 seconds
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:02      36 %
- RHSIDE     00:00:02      25 %
- REST       00:00:03      39 %
+ TWOTEX     00:00:01      29 %
+ RHSIDE     00:00:01      29 %
+ REST       00:00:02      41 %
 
- TOTAL      00:00:07     100 %
+ TOTAL      00:00:05     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   6.65 seconds
- >>>> Total wall time used in ABACUS:  16.00 seconds
+ >>>> Total CPU  time used in ABACUS:   4.67 seconds
+ >>>> Total wall time used in ABACUS:   6.00 seconds
 
 - End of Static Property Section
 
@@ -2413,7 +2421,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
 
 
- >>> Time used in TWOINT is   0.38 seconds
+ >>> Time used in TWOINT is   0.26 seconds
 
 
 
@@ -2426,20 +2434,20 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
  Threshold for discarding integrals :  1.00D-15
 
- >>> Time used in FRMSUP is   0.10 seconds
+ >>> Time used in FRMSUP is   0.06 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.56 seconds
+ >>>> Total CPU  time used in HERMIT:   0.41 seconds
  >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Host name              : victorio                                
+     Host name              : pico                                    
 
  Title lines from integral program:
      Vibrational averaging of shieldings                                     
@@ -2501,11 +2509,11 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
     6     -100.054805140040    3.39892D-04   -4.18D-07
     7     -100.054805155592    3.80296D-05   -1.56D-08
     8     -100.054805155741    7.14062D-06   -1.49D-10
-    9     -100.054805155746    1.00594D-06   -4.49D-12
+    9     -100.054805155746    1.00594D-06   -4.46D-12
    10     -100.054805155746    1.01339D-07   -8.53D-14
-   11     -100.054805155746    1.09386D-08    3.41D-13
-   12     -100.054805155746    9.49051D-10   -4.55D-13
-   13     -100.054805155746    5.59573D-11    1.42D-13
+   11     -100.054805155746    1.09386D-08   -5.68D-14
+   12     -100.054805155746    9.49055D-10    2.84D-14
+   13     -100.054805155746    5.59493D-11    2.84D-14
  DIIS converged in  13 iterations !
 
 
@@ -2554,7 +2562,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
      Final gradient norm:           0.000000000056
 
  
-     Host name              : victorio                                
+     Host name              : pico                                    
 
      Molecular orbitals for symmetry species   1
 
@@ -2585,20 +2593,20 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
   24  F   3d1-   0.0000   0.0000   0.0000   0.0204   0.0000
   25  F   3d0   -0.0003   0.0090   0.0305   0.0000   0.0000
   26  F   3d1+   0.0000   0.0000   0.0000   0.0000   0.0204
-  27  F   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
+  27  F   3d2+  -0.0000  -0.0000   0.0000   0.0000   0.0000
   28  F   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000
   29  F   3d1-   0.0000   0.0000   0.0000   0.0057   0.0000
-  30  F   3d0   -0.0001   0.0000   0.0047   0.0000   0.0000
+  30  F   3d0   -0.0001  -0.0000   0.0047   0.0000   0.0000
   31  F   3d1+   0.0000   0.0000   0.0000   0.0000   0.0057
-  32  F   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
+  32  F   3d2+  -0.0000  -0.0000   0.0000   0.0000   0.0000
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.17 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.18 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Host name              : victorio                                
+     Host name              : pico                                    
 
 - End of Wave Function Section
 
@@ -2648,7 +2656,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
 
  
-     Host name              : victorio                                
+     Host name              : pico                                    
 
 
                         **************************
@@ -2719,9 +2727,9 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
                     x      0.00000000      0.00000000
                     y      0.00000000      0.00000000
-                    z      1.99285886      5.06538886
+                    z      1.99285886      5.06534141
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -2756,7 +2764,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
 
 
- >>> Time used in ONEINT is   0.13 seconds
+ >>> Time used in ONEINT is   0.12 seconds
 
 
 
@@ -2779,9 +2787,9 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
                     x      0.00000000      0.00000000
                     y      0.00000000      0.00000000
-                    z      1.99285886      5.06538886
+                    z      1.99285886      5.06534141
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -2800,11 +2808,11 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
                                au             Debye
 
-                    x      0.00000000      0.00000000
-                    y      0.00000000      0.00000000
-                    z     -1.21213976     -3.08098047
+                    x     -0.00000000     -0.00000000
+                    y     -0.00000000     -0.00000000
+                    z     -1.21213976     -3.08095161
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -2821,36 +2829,36 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
                        Bx             By             Bz             
 
-        H    x    18.12498455     0.00000000     0.00000000
-        H    y     0.00000000    18.12498455     0.00000000
-        H    z     0.00000000     0.00000000    42.26327131
+        H    x    18.12498182     0.00000000     0.00000000
+        H    y     0.00000000    18.12498182     0.00000000
+        H    z     0.00000000     0.00000000    42.26326495
 
-        F    x   461.69829696     0.00000000     0.00000000
-        F    y     0.00000000   461.69829696     0.00000000
-        F    z     0.00000000     0.00000000   481.67464465
+        F    x   461.69822749     0.00000000     0.00000000
+        F    y     0.00000000   461.69822749     0.00000000
+        F    z     0.00000000     0.00000000   481.67457218
 
 
 
 
  Expectation values for NUCSHI 
- Component: 01 NST X              0.340367
- Component: 01 NST Y              0.000000
- Component: 01 NST Z              0.000000
- Component: 02 NST X              0.000000
- Component: 02 NST Y              0.340367
- Component: 02 NST Z              0.000000
- Component: 03 NST X              0.000000
- Component: 03 NST Y              0.000000
- Component: 03 NST Z              0.793656
- Component: 04 NST X              8.670169
- Component: 04 NST Y              0.000000
- Component: 04 NST Z              0.000000
- Component: 05 NST X              0.000000
- Component: 05 NST Y              8.670169
- Component: 05 NST Z              0.000000
- Component: 06 NST X              0.000000
- Component: 06 NST Y              0.000000
- Component: 06 NST Z              9.045302
+ Component: 001 NSTX              0.340367
+ Component: 001 NSTY              0.000000
+ Component: 001 NSTZ              0.000000
+ Component: 002 NSTX              0.000000
+ Component: 002 NSTY              0.340367
+ Component: 002 NSTZ              0.000000
+ Component: 003 NSTX              0.000000
+ Component: 003 NSTY              0.000000
+ Component: 003 NSTZ              0.793656
+ Component: 004 NSTX              8.670169
+ Component: 004 NSTY              0.000000
+ Component: 004 NSTZ              0.000000
+ Component: 005 NSTX              0.000000
+ Component: 005 NSTY              8.670169
+ Component: 005 NSTZ              0.000000
+ Component: 006 NSTX              0.000000
+ Component: 006 NSTY              0.000000
+ Component: 006 NSTZ              9.045302
 
 
 
@@ -2887,7 +2895,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
 
 
- >>> Time used in MAGINT is   0.90 seconds
+ >>> Time used in MAGINT is   0.77 seconds
 
 1 <<<<<<<<<< Output from TWOEXP >>>>>>>>>> 
 
@@ -2938,14 +2946,14 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
   Number of primitive integrals (counting zeros) :     1567335
 
 
-  Average time for non-zero (written) integrals:   21.7 microseconds
-  Average time for zero/non-zero integrals     :    4.7 microseconds
-  Average time for primitive integrals         :    0.4 microseconds
+  Average time for non-zero (written) integrals:   14.5 microseconds
+  Average time for zero/non-zero integrals     :    3.2 microseconds
+  Average time for primitive integrals         :    0.3 microseconds
 
   Average reduction of primitive ODC vectors:    1.03 %
   Average reduction of contracted ODC vectors:   0.00 %
 
- >>> Time used in TWOINT is   0.66 seconds
+ >>> Time used in TWOINT is   0.44 seconds
 
 
 
@@ -2980,7 +2988,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
                    Molecular gradient norm:  6.91E-02
 
- >>> Time used in TWOEXP is   0.66 seconds
+ >>> Time used in TWOEXP is   0.44 seconds
 
 
 
@@ -3029,9 +3037,9 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
   Number of primitive integrals (counting zeros) :     1567335
 
 
-  Average time for non-zero (written) integrals:   29.6 microseconds
-  Average time for zero/non-zero integrals     :    6.4 microseconds
-  Average time for primitive integrals         :    0.6 microseconds
+  Average time for non-zero (written) integrals:   20.7 microseconds
+  Average time for zero/non-zero integrals     :    4.5 microseconds
+  Average time for primitive integrals         :    0.4 microseconds
 
   Average reduction of primitive ODC vectors:    1.03 %
   Average reduction of contracted ODC vectors:   0.00 %
@@ -3046,19 +3054,19 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
  NORB    32
  NBAS    32
 
- >>> Time used in GETFD  is   0.34 seconds
+ >>> Time used in GETFD  is   0.43 seconds
 
 
- >>> Time used in GETSD  is   0.09 seconds
-
-
- >>> Time used in ABARHS is   0.00 seconds
-
-
- >>> Time used in ABARHS is   0.00 seconds
+ >>> Time used in GETSD  is   0.08 seconds
 
 
  >>> Time used in ABARHS is   0.01 seconds
+
+
+ >>> Time used in ABARHS is   0.00 seconds
+
+
+ >>> Time used in ABARHS is   0.02 seconds
 
 
 
@@ -3079,21 +3087,21 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
                        Bx             By             Bz             
 
-        H    x    -9.55510092     0.00000000     0.00000000
-        H    y     0.00000000    -9.55510092     0.00000000
+        H    x    -9.55509948     0.00000000     0.00000000
+        H    y     0.00000000    -9.55509948     0.00000000
         H    z     0.00000000     0.00000000     0.00000000
 
-        F    x    13.08728249     0.00000000     0.00000000
-        F    y     0.00000000    13.08728249     0.00000000
+        F    x    13.08728052     0.00000000     0.00000000
+        F    y     0.00000000    13.08728052     0.00000000
         F    z     0.00000000     0.00000000     0.00000000
 
 
 
 
- >>> Time used in PSORHS is   0.12 seconds
+ >>> Time used in PSORHS is   0.10 seconds
 
 
- >>> Time used in RHSIDE is   1.51 seconds
+ >>> Time used in RHSIDE is   1.27 seconds
 
 
 
@@ -3116,7 +3124,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
  Number of response frequencies:     1
  Convergence threshold:     1.00D-04
 
- WORKING AREA IN TRANSFORMATION SECTION    6998962
+ WORKING AREA IN TRANSFORMATION SECTION    8000000
 
  TRANSFORMATION SECTION: PARAMETER =   4
  MAXIMUM NUMBER OF AO INTEGRALS =     139656
@@ -3137,10 +3145,10 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
  TIME IN SORTA      0.05
 
- NUMBER OF INTEGRALS (PQ/CD) WRITTEN ON UNIT 15 IS     20285
+ NUMBER OF INTEGRALS (PQ/CD) WRITTEN ON UNIT 15 IS     20282
 
   THRESHOLD FOR DISCARDING INTEGRALS  1.00D-15
- TIME IN TRACD      0.31
+ TIME IN TRACD      0.15
 
  SECOND HALF-SORT STATISTICS
   NUMBER OF PASSES OVER FILE       1
@@ -3153,22 +3161,24 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
   NUMBER OF DA RECORDS FOR ALL INTEGRALS    12
   NUMBER OF DA RECORDS ACTUALLY USED        12
   PERCENT NON-ZERO INTEGRALS              0.01
- TIME IN SORTB      0.02
- TIME IN TRAAB      0.14
+ TIME IN SORTB      0.01
+ TIME IN TRAAB      0.08
 
- NUMBER OF TRANSFORMED INTEGRALS WRITTEN ON UNIT 14 IS      7537
+ NUMBER OF TRANSFORMED INTEGRALS WRITTEN ON UNIT 14 IS      7520
  USING   150 + 1 RECORDS WITH BUFFER LENGTH   528
 
   THRESHOLD FOR DISCARDING INTEGRALS  1.00D-15
- TOTAL TIME IN TRACD,SORTB,TRAAB      0.47
+ TOTAL TIME IN TRACD,SORTB,TRAAB      0.24
 
- DRCCTL: NUMBER OF DIRAC INTEGRALS WRITTEN ON UNIT 15 IS      4211
-         NUMBER OF PASSES OVER MULLIKEN FILE    1
+ DRCCTL: Number of Dirac integrals written on file
+
+ "DRCINT" is      4202
+         Number of passes over Mulliken file    1
 
 
  >>>>>>>>>> Symmetry of excitation/property operator    1
 
- Number of operators for linear respons equations:     1
+ Number of operators for linear response equations:     1
  Number of response frequencies:     1
 
 
@@ -3207,17 +3217,17 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
       Index(r,s)      r      s        (r s) operator      (s r) operator
       ----------    -----  -----      --------------      --------------
           33         2(1)  11(1)        0.0375939738        0.0375939738
-          39         2(1)  17(1)       -0.0435227095       -0.0435227095
-          46         2(1)  24(1)       -0.0362591951       -0.0362591951
+          40         2(1)  18(1)       -0.0435227095       -0.0435227095
+          47         2(1)  25(1)       -0.0362591951       -0.0362591951
           59         3(1)  10(1)       -0.1396278946       -0.1396278946
           60         3(1)  11(1)        0.1643375706        0.1643375706
-          66         3(1)  17(1)       -0.1117174015       -0.1117174015
-          70         3(1)  21(1)       -0.0637083961       -0.0637083961
-          73         3(1)  24(1)       -0.0398980838       -0.0398980838
+          67         3(1)  18(1)       -0.1117174015       -0.1117174015
+          71         3(1)  22(1)       -0.0637083961       -0.0637083961
+          74         3(1)  25(1)       -0.0398980838       -0.0398980838
           82         4(1)   6(1)        0.1553354412        0.1553354412
           83         4(1)   7(1)       -0.2430470396       -0.2430470396
           84         4(1)   8(1)        0.1306353875        0.1306353875
-          90         4(1)  14(1)       -0.1359690699       -0.1359690699
+          90         4(1)  14(1)        0.1359690699        0.1359690699
 
       123 elements with absolute value less than 2.43D-02 not printed.
 
@@ -3227,9 +3237,9 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
      >> NO ELEMENTS <<
 
 
- Time used in linear response calculation is      0.10 CPU seconds for symmetry 1
+ Time used in linear response calculation is      0.09 CPU seconds for symmetry 1
 
- >>> Total time used in response solver is         0.64 CPU seconds.
+ >>> Total time used in response solver is         0.40 CPU seconds.
 
 
   THIS IS OUTPUT FROM THE MCSCF AND SOPPA RESPONSE SOLVER
@@ -3244,7 +3254,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
  >>>>>>>>>> Symmetry of excitation/property operator    1
 
- Number of operators for linear respons equations:     1
+ Number of operators for linear response equations:     1
  Number of response frequencies:     1
 
 
@@ -3283,17 +3293,17 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
       Index(r,s)      r      s        (r s) operator      (s r) operator
       ----------    -----  -----      --------------      --------------
           34         2(1)  12(1)       -0.0375939738       -0.0375939738
-          40         2(1)  18(1)        0.0435227095        0.0435227095
-          47         2(1)  25(1)       -0.0362591951       -0.0362591951
+          39         2(1)  17(1)        0.0435227095        0.0435227095
+          46         2(1)  24(1)       -0.0362591951       -0.0362591951
           58         3(1)   9(1)        0.1396278946        0.1396278946
           61         3(1)  12(1)       -0.1643375706       -0.1643375706
-          67         3(1)  18(1)        0.1117174015        0.1117174015
-          71         3(1)  22(1)        0.0637083961        0.0637083961
-          74         3(1)  25(1)       -0.0398980838       -0.0398980838
+          66         3(1)  17(1)        0.1117174015        0.1117174015
+          70         3(1)  21(1)        0.0637083961        0.0637083961
+          73         3(1)  24(1)       -0.0398980838       -0.0398980838
          109         5(1)   6(1)       -0.1553354412       -0.1553354412
          110         5(1)   7(1)        0.2430470396        0.2430470396
          111         5(1)   8(1)       -0.1306353875       -0.1306353875
-         117         5(1)  14(1)        0.1359690699        0.1359690699
+         117         5(1)  14(1)       -0.1359690699       -0.1359690699
 
       123 elements with absolute value less than 2.43D-02 not printed.
 
@@ -3303,11 +3313,11 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
      >> NO ELEMENTS <<
 
 
- Time used in linear response calculation is      0.11 CPU seconds for symmetry 1
+ Time used in linear response calculation is      0.09 CPU seconds for symmetry 1
 
- >>> Total time used in response solver is         0.12 CPU seconds.
+ >>> Total time used in response solver is         0.09 CPU seconds.
 
- >>> Time used in LRSDRV is   0.77 seconds
+ >>> Time used in LRSDRV is   0.49 seconds
 
   <<<<<<<<<< Output from RELAX >>>>>>>>>> 
 
@@ -3324,13 +3334,13 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
                        Bx             By             Bz             
 
-        H    x    12.10308976     0.00000000     0.00000000
-        H    y     0.00000000    12.10308976     0.00000000
-        H    z     0.00000000     0.00000000     0.00000000
+        H    x    12.10308794    -0.00000000    -0.00000000
+        H    y    -0.00000000    12.10308794    -0.00000000
+        H    z    -0.00000000    -0.00000000    -0.00000000
 
-        F    x  -110.49002518     0.00000000     0.00000000
-        F    y     0.00000000  -110.49002518     0.00000000
-        F    z     0.00000000     0.00000000     0.00000000
+        F    x  -110.49000856    -0.00000000    -0.00000000
+        F    y    -0.00000000  -110.49000856    -0.00000000
+        F    z    -0.00000000    -0.00000000    -0.00000000
 
 
 
@@ -3362,7 +3372,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
  Largest deviation from tra-rot symmetry is in gradient element  6:  0.00E+00
 
- >>> Time used in TROINV is   0.01 seconds
+ >>> Time used in TROINV is   0.00 seconds
 
 
 
@@ -3372,7 +3382,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
 
  
-     Host name              : victorio                                
+     Host name              : pico                                    
 
 
 
@@ -3394,7 +3404,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
      Total energy       -100.0548051557 au (Hartrees)
                          -2722.62966411 eV
-                           -262693.8536 kJ/mol
+                           -262693.8532 kJ/mol
 
 
 
@@ -3402,11 +3412,11 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.3220179926 au
-     Mass-velocity correction:                  -0.4082444323 au
+     Darwin correction:                          0.3220179442 au
+     Mass-velocity correction:                  -0.4082443709 au
 
-     Total relativistic correction:             -0.0862264397 au (0.0862%)
-     Non-relativistic + relativistic energy:  -100.1410315954 au
+     Total relativistic correction:             -0.0862264267 au (0.0862%)
+     Non-relativistic + relativistic energy:  -100.1410315824 au
 
 
 
@@ -3424,7 +3434,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
                               Dipole moment
                               -------------
 
-                    0.780719 au           1.984408 Debye
+                    0.780719 au           1.984390 Debye
 
 
 
@@ -3436,9 +3446,9 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
                     x      0.00000000      0.00000000
                     y      0.00000000      0.00000000
-                    z      0.78071910      1.98440839
+                    z      0.78071910      1.98438980
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -3455,13 +3465,13 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
                        Bx             By             Bz             
 
-        H    x    20.67297339     0.00000000     0.00000000
-        H    y     0.00000000    20.67297339     0.00000000
-        H    z     0.00000000     0.00000000    42.26327131
+        H    x    20.67297028     0.00000000     0.00000000
+        H    y     0.00000000    20.67297028     0.00000000
+        H    z     0.00000000     0.00000000    42.26326495
 
-        F    x   364.29555426     0.00000000     0.00000000
-        F    y     0.00000000   364.29555426     0.00000000
-        F    z     0.00000000     0.00000000   481.67464465
+        F    x   364.29549945     0.00000000     0.00000000
+        F    y     0.00000000   364.29549945     0.00000000
+        F    z     0.00000000     0.00000000   481.67457218
 
 
 
@@ -3484,9 +3494,9 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
                   Bx             By             Bz             
 
-  H    x    20.67297339     0.00000000     0.00000000
-  H    y     0.00000000    20.67297339     0.00000000
-  H    z     0.00000000     0.00000000    42.26327131
+  H    x    20.67297028     0.00000000     0.00000000
+  H    y     0.00000000    20.67297028     0.00000000
+  H    z     0.00000000     0.00000000    42.26326495
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -3498,7 +3508,7 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
   H    y     0.0000     8.5699     0.0000         0.0000    12.1031     0.0000
   H    z     0.0000     0.0000    42.2633         0.0000     0.0000     0.0000
 
-  Diamagnetic contribution:     19.801013         Paramagnetic:       8.068727
+  Diamagnetic contribution:     19.801010         Paramagnetic:       8.068725
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -3514,9 +3524,9 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
   Principal values and axes:
   --------------------------
 
-  H     1     20.672973  =   27.87  -   7.20:     0.000000  1.000000  0.000000
-  H     2     20.672973  =   27.87  -   7.20:     1.000000  0.000000  0.000000
-  H     3     42.263271  =   27.87  +  14.39:     0.000000  0.000000  1.000000
+  H     1     20.672970  =   27.87  -   7.20:     0.000000  1.000000  0.000000
+  H     2     20.672970  =   27.87  -   7.20:     1.000000  0.000000  0.000000
+  H     3     42.263265  =   27.87  +  14.39:     0.000000  0.000000  1.000000
 
 
   Chemical shielding for F     :
@@ -3536,9 +3546,9 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
                   Bx             By             Bz             
 
-  F    x   364.29555426     0.00000000     0.00000000
-  F    y     0.00000000   364.29555426     0.00000000
-  F    z     0.00000000     0.00000000   481.67464465
+  F    x   364.29549945     0.00000000     0.00000000
+  F    y     0.00000000   364.29549945     0.00000000
+  F    z     0.00000000     0.00000000   481.67457218
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -3546,11 +3556,11 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
 
                Bx         By         Bz             Bx         By         Bz         
 
-  F    x   474.7856     0.0000     0.0000      -110.4900     0.0000     0.0000
-  F    y     0.0000   474.7856     0.0000         0.0000  -110.4900     0.0000
+  F    x   474.7855     0.0000     0.0000      -110.4900     0.0000     0.0000
+  F    y     0.0000   474.7855     0.0000         0.0000  -110.4900     0.0000
   F    z     0.0000     0.0000   481.6746         0.0000     0.0000     0.0000
 
-  Diamagnetic contribution:    477.081935         Paramagnetic:     -73.660017
+  Diamagnetic contribution:    477.081863         Paramagnetic:     -73.660006
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -3566,9 +3576,9 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
   Principal values and axes:
   --------------------------
 
-  F     1    364.295554  =  403.42  -  39.13:     0.000000  1.000000  0.000000
-  F     2    364.295554  =  403.42  -  39.13:     1.000000  0.000000  0.000000
-  F     3    481.674645  =  403.42  +  78.25:     0.000000  0.000000  1.000000
+  F     1    364.295499  =  403.42  -  39.13:     0.000000  1.000000  0.000000
+  F     2    364.295499  =  403.42  -  39.13:     1.000000  0.000000  0.000000
+  F     3    481.674572  =  403.42  +  78.25:     0.000000  0.000000  1.000000
 
 
                      +--------------------------------+
@@ -3630,8 +3640,8 @@ F     0.0000000000000000  0.0000000000000000  0.0216145723460439       *
  Number of steps        0
  WLKEND                 F
 
- Largest deviation from orthonormality of OMOs:0.506262E-13
- - found for element   32  32
+ Largest deviation from orthonormality of OMOs:0.388578E-13
+ - found for element   13  13
 
 
                              Isotopic Masses
@@ -3691,6 +3701,7 @@ B      0.000000       0.000000       0.000000
                Column   1     Column   2     Column   3     
        1       2.88868418     0.00000000     0.00000000
        2       0.00000000     2.88868418     0.00000000
+       3       0.00000000     0.00000000     0.00000000
 
 
  Parameters of the Eckart frame:
@@ -3706,7 +3717,7 @@ AN     0.000000
 
 
                Column   1     Column   2     Column   3     
-       1       1.00000000     0.00000000     0.00000000
+       1       1.00000000    -0.00000000     0.00000000
        2       0.00000000     1.00000000     0.00000000
        3       0.00000000     0.00000000     1.00000000
 
@@ -3731,14 +3742,14 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
 
 
                Column   1     Column   2     Column   3     
-       1      20.67297339     0.00000000     0.00000000
-       2       0.00000000    20.67297339     0.00000000
-       3       0.00000000     0.00000000    42.26327131
+       1      20.67297028     0.00000000     0.00000000
+       2       0.00000000    20.67297028     0.00000000
+       3       0.00000000     0.00000000    42.26326495
 
                Column   1     Column   2     Column   3     
-       1     364.29555426     0.00000000     0.00000000
-       2       0.00000000   364.29555426     0.00000000
-       3       0.00000000     0.00000000   481.67464465
+       1     364.29549945     0.00000000     0.00000000
+       2       0.00000000   364.29549945     0.00000000
+       3       0.00000000     0.00000000   481.67457218
 
 
    ********************************************************************
@@ -3762,31 +3773,31 @@ IN 2   0.0000000000   0.0000000000  -0.0895029246
 
                   Bx             By             Bz             
 
-  H    x    20.67297339     0.00000000     0.00000000
-  H    y     0.00000000    20.67297339     0.00000000
-  H    z     0.00000000     0.00000000    42.26327131
+  H    x    20.67297028     0.00000000     0.00000000
+  H    y     0.00000000    20.67297028     0.00000000
+  H    z     0.00000000     0.00000000    42.26326495
                   Bx             By             Bz             
 
-  F    x   364.29555426     0.00000000     0.00000000
-  F    y     0.00000000   364.29555426     0.00000000
-  F    z     0.00000000     0.00000000   481.67464465
+  F    x   364.29549945     0.00000000     0.00000000
+  F    y     0.00000000   364.29549945     0.00000000
+  F    z     0.00000000     0.00000000   481.67457218
 
- >>> Time used in WLKDRV is   0.42 seconds
+ >>> Time used in WLKDRV is   0.34 seconds
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- RHSIDE     00:00:02      34 %
- REST       00:00:03      66 %
+ RHSIDE     00:00:01      37 %
+ REST       00:00:02      63 %
 
- TOTAL      00:00:04     100 %
+ TOTAL      00:00:03     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   4.42 seconds
- >>>> Total wall time used in ABACUS:   9.00 seconds
+ >>>> Total CPU  time used in ABACUS:   3.44 seconds
+ >>>> Total wall time used in ABACUS:   4.00 seconds
 
 - End of Static Property Section
 
@@ -4126,7 +4137,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
 
 
- >>> Time used in TWOINT is   0.39 seconds
+ >>> Time used in TWOINT is   0.25 seconds
 
 
 
@@ -4141,18 +4152,18 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
  >>> Time used in FRMSUP is   0.07 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.53 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.41 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Host name              : victorio                                
+     Host name              : pico                                    
 
  Title lines from integral program:
      Vibrational averaging of shieldings                                     
@@ -4214,12 +4225,12 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
     6     -100.056582339185    3.69162D-04   -2.26D-07
     7     -100.056582352551    6.74801D-05   -1.34D-08
     8     -100.056582353100    1.17554D-05   -5.49D-10
-    9     -100.056582353119    1.93538D-06   -1.90D-11
-   10     -100.056582353120    1.42957D-07   -4.69D-13
-   11     -100.056582353119    1.46321D-08    9.95D-14
-   12     -100.056582353119    1.79043D-09    8.53D-14
-   13     -100.056582353120    1.30699D-10   -2.27D-13
-   14     -100.056582353120    7.26325D-12    2.84D-14
+    9     -100.056582353119    1.93538D-06   -1.91D-11
+   10     -100.056582353119    1.42957D-07   -4.41D-13
+   11     -100.056582353119    1.46321D-08    0.00D+00
+   12     -100.056582353120    1.79042D-09   -4.26D-14
+   13     -100.056582353119    1.30702D-10    9.95D-14
+   14     -100.056582353120    7.25057D-12   -9.95D-14
  DIIS converged in  14 iterations !
 
 
@@ -4268,7 +4279,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
      Final gradient norm:           0.000000000007
 
  
-     Host name              : victorio                                
+     Host name              : pico                                    
 
      Molecular orbitals for symmetry species   1
 
@@ -4299,20 +4310,20 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
   24  F   3d1-   0.0000   0.0000   0.0000   0.0213   0.0000
   25  F   3d0   -0.0002   0.0075   0.0299   0.0000   0.0000
   26  F   3d1+   0.0000   0.0000   0.0000   0.0000   0.0213
-  27  F   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
+  27  F   3d2+  -0.0000  -0.0000   0.0000   0.0000   0.0000
   28  F   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000
   29  F   3d1-   0.0000   0.0000   0.0000   0.0054   0.0000
   30  F   3d0   -0.0001  -0.0018   0.0033   0.0000   0.0000
   31  F   3d1+   0.0000   0.0000   0.0000   0.0000   0.0054
-  32  F   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
+  32  F   3d2+  -0.0000   0.0000   0.0000   0.0000   0.0000
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.19 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.18 seconds
+ >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
-     Host name              : victorio                                
+     Host name              : pico                                    
 
 - End of Wave Function Section
 
@@ -4362,7 +4373,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
 
  
-     Host name              : victorio                                
+     Host name              : pico                                    
 
 
                         **************************
@@ -4402,7 +4413,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
         F    y   -    dependent 
         F    z   -    dependent 
 
- >>> Time used in TROINV is   0.00 seconds
+ >>> Time used in TROINV is   0.01 seconds
 
   <<<<<<<<<< Output from NUCREP >>>>>>>>>> 
 
@@ -4433,9 +4444,9 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
                     x      0.00000000      0.00000000
                     y      0.00000000      0.00000000
-                    z      1.94213327      4.93645609
+                    z      1.94213327      4.93640984
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -4470,7 +4481,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
 
 
- >>> Time used in ONEINT is   0.13 seconds
+ >>> Time used in ONEINT is   0.12 seconds
 
 
 
@@ -4493,9 +4504,9 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
                     x      0.00000000      0.00000000
                     y      0.00000000      0.00000000
-                    z      1.94213327      4.93645609
+                    z      1.94213327      4.93640984
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -4514,11 +4525,11 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
                                au             Debye
 
-                    x      0.00000000      0.00000000
-                    y      0.00000000      0.00000000
-                    z     -1.20380788     -3.05980277
+                    x     -0.00000000     -0.00000000
+                    y     -0.00000000     -0.00000000
+                    z     -1.20380788     -3.05977410
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -4535,36 +4546,36 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
                        Bx             By             Bz             
 
-        H    x    20.98605696     0.00000000     0.00000000
-        H    y     0.00000000    20.98605696     0.00000000
-        H    z     0.00000000     0.00000000    46.66286914
+        H    x    20.98605381     0.00000000     0.00000000
+        H    y     0.00000000    20.98605381     0.00000000
+        H    z     0.00000000     0.00000000    46.66286212
 
-        F    x   461.38003030     0.00000000     0.00000000
-        F    y     0.00000000   461.38003030     0.00000000
-        F    z     0.00000000     0.00000000   481.89464529
+        F    x   461.37996088     0.00000000     0.00000000
+        F    y     0.00000000   461.37996088     0.00000000
+        F    z     0.00000000     0.00000000   481.89457278
 
 
 
 
  Expectation values for NUCSHI 
- Component: 01 NST X              0.394094
- Component: 01 NST Y              0.000000
- Component: 01 NST Z              0.000000
- Component: 02 NST X              0.000000
- Component: 02 NST Y              0.394094
- Component: 02 NST Z              0.000000
- Component: 03 NST X              0.000000
- Component: 03 NST Y              0.000000
- Component: 03 NST Z              0.876276
- Component: 04 NST X              8.664192
- Component: 04 NST Y              0.000000
- Component: 04 NST Z              0.000000
- Component: 05 NST X              0.000000
- Component: 05 NST Y              8.664192
- Component: 05 NST Z              0.000000
- Component: 06 NST X              0.000000
- Component: 06 NST Y              0.000000
- Component: 06 NST Z              9.049433
+ Component: 001 NSTX              0.394094
+ Component: 001 NSTY              0.000000
+ Component: 001 NSTZ              0.000000
+ Component: 002 NSTX              0.000000
+ Component: 002 NSTY              0.394094
+ Component: 002 NSTZ              0.000000
+ Component: 003 NSTX              0.000000
+ Component: 003 NSTY              0.000000
+ Component: 003 NSTZ              0.876276
+ Component: 004 NSTX              8.664192
+ Component: 004 NSTY              0.000000
+ Component: 004 NSTZ              0.000000
+ Component: 005 NSTX              0.000000
+ Component: 005 NSTY              8.664192
+ Component: 005 NSTZ              0.000000
+ Component: 006 NSTX              0.000000
+ Component: 006 NSTY              0.000000
+ Component: 006 NSTZ              9.049433
 
 
 
@@ -4601,7 +4612,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
 
 
- >>> Time used in MAGINT is   0.90 seconds
+ >>> Time used in MAGINT is   0.78 seconds
 
 1 <<<<<<<<<< Output from TWOEXP >>>>>>>>>> 
 
@@ -4652,14 +4663,14 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
   Number of primitive integrals (counting zeros) :     1567335
 
 
-  Average time for non-zero (written) integrals:   22.0 microseconds
-  Average time for zero/non-zero integrals     :    4.8 microseconds
-  Average time for primitive integrals         :    0.4 microseconds
+  Average time for non-zero (written) integrals:   14.8 microseconds
+  Average time for zero/non-zero integrals     :    3.2 microseconds
+  Average time for primitive integrals         :    0.3 microseconds
 
   Average reduction of primitive ODC vectors:    0.84 %
   Average reduction of contracted ODC vectors:   0.00 %
 
- >>> Time used in TWOINT is   0.67 seconds
+ >>> Time used in TWOINT is   0.45 seconds
 
 
 
@@ -4694,7 +4705,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
                    Molecular gradient norm:  2.62E-02
 
- >>> Time used in TWOEXP is   0.67 seconds
+ >>> Time used in TWOEXP is   0.45 seconds
 
 
 
@@ -4743,9 +4754,9 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
   Number of primitive integrals (counting zeros) :     1567335
 
 
-  Average time for non-zero (written) integrals:   29.9 microseconds
-  Average time for zero/non-zero integrals     :    6.5 microseconds
-  Average time for primitive integrals         :    0.6 microseconds
+  Average time for non-zero (written) integrals:   20.7 microseconds
+  Average time for zero/non-zero integrals     :    4.5 microseconds
+  Average time for primitive integrals         :    0.4 microseconds
 
   Average reduction of primitive ODC vectors:    0.84 %
   Average reduction of contracted ODC vectors:   0.00 %
@@ -4760,19 +4771,19 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
  NORB    32
  NBAS    32
 
- >>> Time used in GETFD  is   0.35 seconds
+ >>> Time used in GETFD  is   0.41 seconds
 
 
- >>> Time used in GETSD  is   0.09 seconds
-
-
- >>> Time used in ABARHS is   0.00 seconds
+ >>> Time used in GETSD  is   0.08 seconds
 
 
  >>> Time used in ABARHS is   0.00 seconds
 
 
- >>> Time used in ABARHS is   0.01 seconds
+ >>> Time used in ABARHS is   0.02 seconds
+
+
+ >>> Time used in ABARHS is   0.00 seconds
 
 
 
@@ -4793,21 +4804,21 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
                        Bx             By             Bz             
 
-        H    x   -10.67061682     0.00000000     0.00000000
-        H    y     0.00000000   -10.67061682     0.00000000
+        H    x   -10.67061521     0.00000000     0.00000000
+        H    y     0.00000000   -10.67061521     0.00000000
         H    z     0.00000000     0.00000000     0.00000000
 
-        F    x    16.09375593     0.00000000     0.00000000
-        F    y     0.00000000    16.09375593     0.00000000
+        F    x    16.09375351     0.00000000     0.00000000
+        F    y     0.00000000    16.09375351     0.00000000
         F    z     0.00000000     0.00000000     0.00000000
 
 
 
 
- >>> Time used in PSORHS is   0.11 seconds
+ >>> Time used in PSORHS is   0.10 seconds
 
 
- >>> Time used in RHSIDE is   1.49 seconds
+ >>> Time used in RHSIDE is   1.26 seconds
 
 
 
@@ -4830,7 +4841,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
  Number of response frequencies:     1
  Convergence threshold:     1.00D-04
 
- WORKING AREA IN TRANSFORMATION SECTION    6998962
+ WORKING AREA IN TRANSFORMATION SECTION    8000000
 
  TRANSFORMATION SECTION: PARAMETER =   4
  MAXIMUM NUMBER OF AO INTEGRALS =     139656
@@ -4849,12 +4860,12 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
   THRESHOLD FOR DISCARDING INTEGRALS  1.00D-15
 
- TIME IN SORTA      0.05
+ TIME IN SORTA      0.03
 
- NUMBER OF INTEGRALS (PQ/CD) WRITTEN ON UNIT 15 IS     20282
+ NUMBER OF INTEGRALS (PQ/CD) WRITTEN ON UNIT 15 IS     20283
 
   THRESHOLD FOR DISCARDING INTEGRALS  1.00D-15
- TIME IN TRACD      0.31
+ TIME IN TRACD      0.15
 
  SECOND HALF-SORT STATISTICS
   NUMBER OF PASSES OVER FILE       1
@@ -4868,21 +4879,23 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
   NUMBER OF DA RECORDS ACTUALLY USED        12
   PERCENT NON-ZERO INTEGRALS              0.01
  TIME IN SORTB      0.02
- TIME IN TRAAB      0.13
+ TIME IN TRAAB      0.07
 
- NUMBER OF TRANSFORMED INTEGRALS WRITTEN ON UNIT 14 IS      7521
+ NUMBER OF TRANSFORMED INTEGRALS WRITTEN ON UNIT 14 IS      7526
  USING   150 + 1 RECORDS WITH BUFFER LENGTH   528
 
   THRESHOLD FOR DISCARDING INTEGRALS  1.00D-15
- TOTAL TIME IN TRACD,SORTB,TRAAB      0.46
+ TOTAL TIME IN TRACD,SORTB,TRAAB      0.24
 
- DRCCTL: NUMBER OF DIRAC INTEGRALS WRITTEN ON UNIT 15 IS      4202
-         NUMBER OF PASSES OVER MULLIKEN FILE    1
+ DRCCTL: Number of Dirac integrals written on file
+
+ "DRCINT" is      4206
+         Number of passes over Mulliken file    1
 
 
  >>>>>>>>>> Symmetry of excitation/property operator    1
 
- Number of operators for linear respons equations:     1
+ Number of operators for linear response equations:     1
  Number of response frequencies:     1
 
 
@@ -4920,19 +4933,19 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
       Index(r,s)      r      s        (r s) operator      (s r) operator
       ----------    -----  -----      --------------      --------------
-          34         2(1)  12(1)        0.0375348148        0.0375348148
-          40         2(1)  18(1)       -0.0458372445       -0.0458372445
+          33         2(1)  11(1)        0.0375348148        0.0375348148
+          39         2(1)  17(1)       -0.0458372445       -0.0458372445
           46         2(1)  24(1)       -0.0353401188       -0.0353401188
-          59         3(1)  10(1)       -0.1044009352       -0.1044009352
-          61         3(1)  12(1)        0.1506476972        0.1506476972
-          67         3(1)  18(1)       -0.1045568251       -0.1045568251
-          71         3(1)  22(1)       -0.0542601113       -0.0542601113
+          58         3(1)   9(1)       -0.1044009352       -0.1044009352
+          60         3(1)  11(1)        0.1506476972        0.1506476972
+          66         3(1)  17(1)       -0.1045568251       -0.1045568251
+          70         3(1)  21(1)       -0.0542601113       -0.0542601113
           73         3(1)  24(1)       -0.0386644837       -0.0386644837
           82         4(1)   6(1)        0.1036716417        0.1036716417
           83         4(1)   7(1)       -0.1693948546       -0.1693948546
           84         4(1)   8(1)        0.1296836884        0.1296836884
-          90         4(1)  14(1)       -0.1267543736       -0.1267543736
-         101         4(1)  25(1)        0.0188986838        0.0188986838
+          90         4(1)  14(1)        0.1267543736        0.1267543736
+         101         4(1)  25(1)       -0.0188986838       -0.0188986838
 
       122 elements with absolute value less than 1.69D-02 not printed.
 
@@ -4942,9 +4955,9 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
      >> NO ELEMENTS <<
 
 
- Time used in linear response calculation is      0.10 CPU seconds for symmetry 1
+ Time used in linear response calculation is      0.08 CPU seconds for symmetry 1
 
- >>> Total time used in response solver is         0.65 CPU seconds.
+ >>> Total time used in response solver is         0.37 CPU seconds.
 
 
   THIS IS OUTPUT FROM THE MCSCF AND SOPPA RESPONSE SOLVER
@@ -4959,7 +4972,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
  >>>>>>>>>> Symmetry of excitation/property operator    1
 
- Number of operators for linear respons equations:     1
+ Number of operators for linear response equations:     1
  Number of response frequencies:     1
 
 
@@ -4997,19 +5010,19 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
       Index(r,s)      r      s        (r s) operator      (s r) operator
       ----------    -----  -----      --------------      --------------
-          33         2(1)  11(1)       -0.0375348148       -0.0375348148
-          39         2(1)  17(1)        0.0458372445        0.0458372445
+          34         2(1)  12(1)       -0.0375348148       -0.0375348148
+          40         2(1)  18(1)        0.0458372445        0.0458372445
           45         2(1)  23(1)       -0.0353401188       -0.0353401188
-          58         3(1)   9(1)        0.1044009352        0.1044009352
-          60         3(1)  11(1)       -0.1506476972       -0.1506476972
-          66         3(1)  17(1)        0.1045568251        0.1045568251
-          70         3(1)  21(1)        0.0542601113        0.0542601113
+          59         3(1)  10(1)        0.1044009352        0.1044009352
+          61         3(1)  12(1)       -0.1506476972       -0.1506476972
+          67         3(1)  18(1)        0.1045568251        0.1045568251
+          71         3(1)  22(1)        0.0542601113        0.0542601113
           72         3(1)  23(1)       -0.0386644837       -0.0386644837
          109         5(1)   6(1)       -0.1036716417       -0.1036716417
          110         5(1)   7(1)        0.1693948546        0.1693948546
          111         5(1)   8(1)       -0.1296836884       -0.1296836884
-         117         5(1)  14(1)        0.1267543736        0.1267543736
-         128         5(1)  25(1)       -0.0188986838       -0.0188986838
+         117         5(1)  14(1)       -0.1267543736       -0.1267543736
+         128         5(1)  25(1)        0.0188986838        0.0188986838
 
       122 elements with absolute value less than 1.69D-02 not printed.
 
@@ -5019,11 +5032,11 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
      >> NO ELEMENTS <<
 
 
- Time used in linear response calculation is      0.10 CPU seconds for symmetry 1
+ Time used in linear response calculation is      0.08 CPU seconds for symmetry 1
 
- >>> Total time used in response solver is         0.10 CPU seconds.
+ >>> Total time used in response solver is         0.08 CPU seconds.
 
- >>> Time used in LRSDRV is   0.78 seconds
+ >>> Time used in LRSDRV is   0.46 seconds
 
   <<<<<<<<<< Output from RELAX >>>>>>>>>> 
 
@@ -5040,18 +5053,18 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
                        Bx             By             Bz             
 
-        H    x    11.89506648     0.00000000     0.00000000
-        H    y     0.00000000    11.89506648     0.00000000
-        H    z     0.00000000     0.00000000     0.00000000
+        H    x    11.89506469    -0.00000000    -0.00000000
+        H    y    -0.00000000    11.89506469    -0.00000000
+        H    z    -0.00000000    -0.00000000    -0.00000000
 
-        F    x   -80.28017574     0.00000000     0.00000000
-        F    y     0.00000000   -80.28017574     0.00000000
-        F    z     0.00000000     0.00000000     0.00000000
-
-
+        F    x   -80.28016366    -0.00000000    -0.00000000
+        F    y    -0.00000000   -80.28016366    -0.00000000
+        F    z    -0.00000000    -0.00000000    -0.00000000
 
 
- >>> Time used in RELAX  is   0.00 seconds
+
+
+ >>> Time used in RELAX  is   0.01 seconds
 
 
 
@@ -5088,7 +5101,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
 
  
-     Host name              : victorio                                
+     Host name              : pico                                    
 
 
 
@@ -5110,7 +5123,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
      Total energy       -100.0565823531 au (Hartrees)
                          -2722.67802410 eV
-                           -262698.5196 kJ/mol
+                           -262698.5192 kJ/mol
 
 
 
@@ -5118,11 +5131,11 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.3220106046 au
-     Mass-velocity correction:                  -0.4082753082 au
+     Darwin correction:                          0.3220105561 au
+     Mass-velocity correction:                  -0.4082752468 au
 
-     Total relativistic correction:             -0.0862647037 au (0.0862%)
-     Non-relativistic + relativistic energy:  -100.1428470568 au
+     Total relativistic correction:             -0.0862646907 au (0.0862%)
+     Non-relativistic + relativistic energy:  -100.1428470438 au
 
 
 
@@ -5140,7 +5153,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
                               Dipole moment
                               -------------
 
-                    0.738325 au           1.876653 Debye
+                    0.738325 au           1.876636 Debye
 
 
 
@@ -5152,9 +5165,9 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
                     x      0.00000000      0.00000000
                     y      0.00000000      0.00000000
-                    z      0.73832539      1.87665332
+                    z      0.73832539      1.87663574
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -5171,13 +5184,13 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
                        Bx             By             Bz             
 
-        H    x    22.21050662     0.00000000     0.00000000
-        H    y     0.00000000    22.21050662     0.00000000
-        H    z     0.00000000     0.00000000    46.66286914
+        H    x    22.21050328     0.00000000     0.00000000
+        H    y     0.00000000    22.21050328     0.00000000
+        H    z     0.00000000     0.00000000    46.66286212
 
-        F    x   397.19361049     0.00000000     0.00000000
-        F    y     0.00000000   397.19361049     0.00000000
-        F    z     0.00000000     0.00000000   481.89464529
+        F    x   397.19355073     0.00000000     0.00000000
+        F    y     0.00000000   397.19355073     0.00000000
+        F    z     0.00000000     0.00000000   481.89457278
 
 
 
@@ -5200,9 +5213,9 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
                   Bx             By             Bz             
 
-  H    x    22.21050662     0.00000000     0.00000000
-  H    y     0.00000000    22.21050662     0.00000000
-  H    z     0.00000000     0.00000000    46.66286914
+  H    x    22.21050328     0.00000000     0.00000000
+  H    y     0.00000000    22.21050328     0.00000000
+  H    z     0.00000000     0.00000000    46.66286212
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -5214,7 +5227,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
   H    y     0.0000    10.3154     0.0000         0.0000    11.8951     0.0000
   H    z     0.0000     0.0000    46.6629         0.0000     0.0000     0.0000
 
-  Diamagnetic contribution:     22.431250         Paramagnetic:       7.930044
+  Diamagnetic contribution:     22.431246         Paramagnetic:       7.930043
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -5230,16 +5243,16 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
   Principal values and axes:
   --------------------------
 
-  H     1     22.210507  =   30.36  -   8.15:     0.000000  1.000000  0.000000
-  H     2     22.210507  =   30.36  -   8.15:     1.000000  0.000000  0.000000
-  H     3     46.662869  =   30.36  +  16.30:     0.000000  0.000000  1.000000
+  H     1     22.210503  =   30.36  -   8.15:     0.000000  1.000000  0.000000
+  H     2     22.210503  =   30.36  -   8.15:     1.000000  0.000000  0.000000
+  H     3     46.662862  =   30.36  +  16.30:     0.000000  0.000000  1.000000
 
 
   Chemical shielding for F     :
   ==============================
 
 
-  Shielding constant:    425.4273 ppm
+  Shielding constant:    425.4272 ppm
   Anisotropy:             84.7010 ppm
   Asymmetry:               0.0000    
 
@@ -5252,9 +5265,9 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
                   Bx             By             Bz             
 
-  F    x   397.19361049     0.00000000     0.00000000
-  F    y     0.00000000   397.19361049     0.00000000
-  F    z     0.00000000     0.00000000   481.89464529
+  F    x   397.19355073     0.00000000     0.00000000
+  F    y     0.00000000   397.19355073     0.00000000
+  F    z     0.00000000     0.00000000   481.89457278
 
 
   Diamagnetic and paramagnetic contributions (ppm):
@@ -5262,11 +5275,11 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
                Bx         By         Bz             Bx         By         Bz         
 
-  F    x   477.4738     0.0000     0.0000       -80.2802     0.0000     0.0000
-  F    y     0.0000   477.4738     0.0000         0.0000   -80.2802     0.0000
+  F    x   477.4737     0.0000     0.0000       -80.2802     0.0000     0.0000
+  F    y     0.0000   477.4737     0.0000         0.0000   -80.2802     0.0000
   F    z     0.0000     0.0000   481.8946         0.0000     0.0000     0.0000
 
-  Diamagnetic contribution:    478.947406         Paramagnetic:     -53.520117
+  Diamagnetic contribution:    478.947334         Paramagnetic:     -53.520109
 
 
   Antisymmetric and traceless symmetric parts (ppm):
@@ -5276,15 +5289,15 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
 
   F    x     0.0000     0.0000     0.0000       -28.2337     0.0000     0.0000
   F    y     0.0000     0.0000     0.0000         0.0000   -28.2337     0.0000
-  F    z     0.0000     0.0000     0.0000         0.0000     0.0000    56.4674
+  F    z     0.0000     0.0000     0.0000         0.0000     0.0000    56.4673
 
 
   Principal values and axes:
   --------------------------
 
-  F     1    397.193610  =  425.43  -  28.23:     0.000000  1.000000  0.000000
-  F     2    397.193610  =  425.43  -  28.23:     1.000000  0.000000  0.000000
-  F     3    481.894645  =  425.43  +  56.47:     0.000000  0.000000  1.000000
+  F     1    397.193551  =  425.43  -  28.23:     1.000000  0.000000  0.000000
+  F     2    397.193551  =  425.43  -  28.23:     0.000000  1.000000  0.000000
+  F     3    481.894573  =  425.43  +  56.47:     0.000000  0.000000  1.000000
 
 
                      +--------------------------------+
@@ -5296,7 +5309,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
  @1atom   shielding       dia      para     skew      span     (aniso     asym)
  @1----------------------------------------------------------------------------
  @1H        30.3613   22.4312    7.9300    1.0000   24.4524   24.4524    0.0000
- @1F       425.4273  478.9474  -53.5201    1.0000   84.7010   84.7010    0.0000
+ @1F       425.4272  478.9473  -53.5201    1.0000   84.7010   84.7010    0.0000
 
 
 
@@ -5309,7 +5322,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
  @2atom   shielding       dia      para     aniso      asym        S        A
  @2----------------------------------------------------------------------------
  @2H        30.3613   22.4312    7.9300   24.4524    0.0000   24.4524    0.0000
- @2F       425.4273  478.9474  -53.5201   84.7010    0.0000   84.7010    0.0000
+ @2F       425.4272  478.9473  -53.5201   84.7010    0.0000   84.7010    0.0000
 
 
 
@@ -5346,7 +5359,7 @@ F     0.0000000000000000  0.0000000000000000  0.0267639104539561       *
  Number of steps        1
  WLKEND                 T
 
- Largest deviation from orthonormality of OMOs:0.439648E-13
+ Largest deviation from orthonormality of OMOs:0.459632E-13
  - found for element   20  20
 
 
@@ -5407,6 +5420,7 @@ B      0.000000       0.000000       0.000000
                Column   1     Column   2     Column   3     
        1       2.72249060     0.00000000     0.00000000
        2       0.00000000     2.72249060     0.00000000
+       3       0.00000000     0.00000000    -0.00000000
 
 
  Parameters of the Eckart frame:
@@ -5422,7 +5436,7 @@ AN     0.000000
 
 
                Column   1     Column   2     Column   3     
-       1       1.00000000     0.00000000     0.00000000
+       1       1.00000000    -0.00000000     0.00000000
        2       0.00000000     1.00000000     0.00000000
        3       0.00000000     0.00000000     1.00000000
 
@@ -5447,14 +5461,14 @@ IN 2   0.0000000000   0.0000000000  -0.0843535865
 
 
                Column   1     Column   2     Column   3     
-       1      22.21050662     0.00000000     0.00000000
-       2       0.00000000    22.21050662     0.00000000
-       3       0.00000000     0.00000000    46.66286914
+       1      22.21050328     0.00000000     0.00000000
+       2       0.00000000    22.21050328     0.00000000
+       3       0.00000000     0.00000000    46.66286212
 
                Column   1     Column   2     Column   3     
-       1     397.19361049     0.00000000     0.00000000
-       2       0.00000000   397.19361049     0.00000000
-       3       0.00000000     0.00000000   481.89464529
+       1     397.19355073    -0.00000000     0.00000000
+       2      -0.00000000   397.19355073     0.00000000
+       3       0.00000000     0.00000000   481.89457278
 
 
    ********************************************************************
@@ -5478,14 +5492,14 @@ IN 2   0.0000000000   0.0000000000  -0.0843535865
 
                   Bx             By             Bz             
 
-  H    x    22.21050662     0.00000000     0.00000000
-  H    y     0.00000000    22.21050662     0.00000000
-  H    z     0.00000000     0.00000000    46.66286914
+  H    x    22.21050328     0.00000000     0.00000000
+  H    y     0.00000000    22.21050328     0.00000000
+  H    z     0.00000000     0.00000000    46.66286212
                   Bx             By             Bz             
 
-  F    x   397.19361049     0.00000000     0.00000000
-  F    y     0.00000000   397.19361049     0.00000000
-  F    z     0.00000000     0.00000000   481.89464529
+  F    x   397.19355073    -0.00000000     0.00000000
+  F    y    -0.00000000   397.19355073     0.00000000
+  F    z     0.00000000     0.00000000   481.89457278
 
  All displacements are now done - numerical differentiation is complete.
 
@@ -5548,48 +5562,48 @@ Atom : H
     Effective geometry       <P^(0)_2>_eff      Vibrationally corrected
  -----------------------------------------------------------------------
 
- Bxmx       21.40068444            0.23208325           21.63276769    
+ Bxmx       21.40068122            0.23208321           21.63276444    
  Bymx        0.00000000            0.00000000            0.00000000    
  Bzmx        0.00000000            0.00000000            0.00000000    
  Bxmy        0.00000000            0.00000000            0.00000000    
- Bymy       21.40068444            0.23208325           21.63276769    
+ Bymy       21.40068122            0.23208321           21.63276444    
  Bzmy        0.00000000            0.00000000            0.00000000    
  Bxmz        0.00000000            0.00000000            0.00000000    
  Bymz        0.00000000            0.00000000            0.00000000    
- Bzmz       44.38498886            0.44138667           44.82637553    
+ Bzmz       44.38498218            0.44138661           44.82636879    
 
 Atom : F     
     Effective geometry       <P^(0)_2>_eff      Vibrationally corrected
  -----------------------------------------------------------------------
 
- Bxmx      381.49945586           -4.26722934          377.23222652    
- Bymx        0.00000000            0.00000000            0.00000000    
+ Bxmx      381.49939846           -4.26722870          377.23216976    
+ Bymx       -0.00000000            0.00000000            0.00000000    
  Bzmx        0.00000000            0.00000000            0.00000000    
- Bxmy        0.00000000            0.00000000            0.00000000    
- Bymy      381.49945586           -4.26722934          377.23222652    
+ Bxmy       -0.00000000            0.00000000            0.00000000    
+ Bymy      381.49939846           -4.26722870          377.23216976    
  Bzmy        0.00000000            0.00000000            0.00000000    
  Bxmz        0.00000000            0.00000000            0.00000000    
  Bymz        0.00000000            0.00000000            0.00000000    
- Bzmz      481.77723476            0.04188921          481.81912397    
+ Bzmz      481.77716227            0.04188920          481.81905147    
 
  Numerical differentiation complete.
 
- >>> Time used in WLKDRV is   0.43 seconds
+ >>> Time used in WLKDRV is   0.32 seconds
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- RHSIDE     00:00:02      34 %
- REST       00:00:03      66 %
+ RHSIDE     00:00:01      37 %
+ REST       00:00:02      63 %
 
- TOTAL      00:00:04     100 %
+ TOTAL      00:00:03     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   4.42 seconds
- >>>> Total wall time used in ABACUS:   9.00 seconds
+ >>>> Total CPU  time used in ABACUS:   3.42 seconds
+ >>>> Total wall time used in ABACUS:   3.00 seconds
 
 - End of Static Property Section
 
@@ -5929,7 +5943,7 @@ F     0.0000000000000000  0.0000000000000000  0.0241892414000000       *
 
 
 
- >>> Time used in TWOINT is   0.38 seconds
+ >>> Time used in TWOINT is   0.26 seconds
 
 
 
@@ -5942,20 +5956,20 @@ F     0.0000000000000000  0.0000000000000000  0.0241892414000000       *
 
  Threshold for discarding integrals :  1.00D-15
 
- >>> Time used in FRMSUP is   0.09 seconds
+ >>> Time used in FRMSUP is   0.06 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.56 seconds
+ >>>> Total CPU  time used in HERMIT:   0.40 seconds
  >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Host name              : victorio                                
+     Host name              : pico                                    
 
  Title lines from integral program:
      Vibrational averaging of shieldings                                     
@@ -6015,13 +6029,13 @@ F     0.0000000000000000  0.0000000000000000  0.0241892414000000       *
     4     -100.056542591007    1.52788D-02   -1.16D-04
     5     -100.056551657066    1.65915D-03   -9.07D-06
     6     -100.056552093049    3.36727D-04   -4.36D-07
-    7     -100.056552107941    4.08981D-05   -1.49D-08
+    7     -100.056552107940    4.08981D-05   -1.49D-08
     8     -100.056552108112    8.29225D-06   -1.71D-10
-    9     -100.056552108118    1.04064D-06   -6.30D-12
-   10     -100.056552108118    9.77112D-08   -2.70D-13
-   11     -100.056552108118    1.05060D-08    1.71D-13
-   12     -100.056552108118    9.03240D-10    9.95D-14
-   13     -100.056552108118    6.16023D-11   -1.99D-13
+    9     -100.056552108118    1.04064D-06   -6.20D-12
+   10     -100.056552108118    9.77112D-08   -1.42D-13
+   11     -100.056552108118    1.05060D-08    2.84D-14
+   12     -100.056552108118    9.03237D-10   -2.84D-14
+   13     -100.056552108118    6.16015D-11    1.42D-14
  DIIS converged in  13 iterations !
 
 
@@ -6050,12 +6064,12 @@ F     0.0000000000000000  0.0000000000000000  0.0241892414000000       *
  >>> step control for geometry walk (ABACUS interface)
 
 
- (SIRSTP) Close to convergence, ratio set to one.
- Energy difference; actual and predicted:    3.02450D-05    1.01969-314
+ (SIRSTP) Energy difference;
+ actual, predicted and ratio:   0.0000302450  -6.2890615483   -0.000005
 
 
- *** GEOMETRY WALK STEP ACCEPTED.
-
+ *** GEOMETRY WALK STEP TOO LONG,
+     DECREASE WALK TRUST RADIUS AND TRY AGAIN
 
 
                     >>> FINAL RESULTS FROM SIRIUS <<<
@@ -6070,7 +6084,7 @@ F     0.0000000000000000  0.0000000000000000  0.0241892414000000       *
      Final gradient norm:           0.000000000062
 
  
-     Host name              : victorio                                
+     Host name              : pico                                    
 
      Molecular orbitals for symmetry species   1
 
@@ -6101,30 +6115,30 @@ F     0.0000000000000000  0.0000000000000000  0.0241892414000000       *
   24  F   3d1-   0.0000   0.0000   0.0000   0.0208   0.0000
   25  F   3d0   -0.0002   0.0083   0.0303   0.0000   0.0000
   26  F   3d1+   0.0000   0.0000   0.0000   0.0000   0.0208
-  27  F   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
+  27  F   3d2+  -0.0000  -0.0000   0.0000   0.0000   0.0000
   28  F   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000
   29  F   3d1-   0.0000   0.0000   0.0000   0.0056   0.0000
   30  F   3d0   -0.0001  -0.0009   0.0040   0.0000   0.0000
   31  F   3d1+   0.0000   0.0000   0.0000   0.0000   0.0056
-  32  F   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
+  32  F   3d2+  -0.0000  -0.0000   0.0000   0.0000   0.0000
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.17 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.16 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Host name              : victorio                                
+     Host name              : pico                                    
 
 - End of Wave Function Section
       Starting Static Property Section -
 
 
  
-     Host name              : victorio                                
+     Host name              : pico                                    
 
  
-     Host name              : victorio                                
+     Host name              : pico                                    
 
 
 
@@ -6139,8 +6153,8 @@ F     0.0000000000000000  0.0000000000000000  0.0241892414000000       *
  >>>> Total wall time used in ABACUS:   0.00 seconds
 
 - End of Static Property Section
- >>>> Total CPU  time used in DALTON:  18.87 seconds
- >>>> Total wall time used in DALTON:  45.00 seconds
+ >>>> Total CPU  time used in DALTON:  14.28 seconds
+ >>>> Total wall time used in DALTON:  17.00 seconds
 
  
-     Host name              : victorio                                
+     Host name              : pico                                    

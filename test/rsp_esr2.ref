@@ -4,7 +4,7 @@
     ***********  DALTON - An electronic structure program  ***********
     ******************************************************************
 
-               This is output from DALTON (Release 1.2, April 2001)
+            This is output from DALTON (Release 2.0, ? 2001)
 
                           Principal authors:
 
@@ -17,6 +17,7 @@
 
                           Contributors:
 
+            Alexander A. Auer,     University of Mainz,        Germany
             Keld L. Bak,           UNI-C,                      Denmark
             Vebjoern Bakken,       University of Oslo,         Norway 
             Ove Christiansen,      University of Lund,         Sweden 
@@ -36,16 +37,18 @@
             Henrik Koch,           SDU - Odense University,    Denmark
             Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
             Patrick Norman,        University of Linkoeping,   Sweden 
+            Thomas B. Pedersen,    U.of Santiago de Compostela,Spain  
             Martin J. Packer,      University of Sheffield,    UK     
             Torgeir A. Ruden,      University of Oslo,         Norway 
+            Alfredo Sanchez,       University of Valencia,     Spain  
             Trond Saue,            University of Toulouse,     France 
             Stephan P. A. Sauer,   University of Copenhagen,   Denmark
             Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
             K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
             Peter R.Taylor,        San Diego Superc. Center,   USA    
             Olav Vahtras,          PDC, Stockholm,             Sweden 
-------------------------------------------------------------------------
 
+------------------------------------------------------------------------
 
 
      NOTE:
@@ -63,17 +66,19 @@
      If results obtained with this code are published, an
      appropriate citation would be:
       
-     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,H. Aagren,
-     K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,P. Dahle, E.K. Dalskov,
-     T. Enevoldsen, B. Fernandez,C. Haettig, K. Hald, A. Halkier,
+     "Dalton, a molecular electronic structure program, Release 1.2
+     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
      H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-     H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T.A. Ruden, T. Saue,
-     S.P.A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,P.R. Taylor, and O. Vahtras:
-     "Dalton release 1.2 (2001), an electronic structure program"
+     H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+     T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+     B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+     and O. Vahtras"
 
  
-     Date and time (Linux)  : Mon Feb 12 23:26:03 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
 
@@ -120,8 +125,8 @@
   Title Cards
   -----------
 
-  beoh                                                                    
-  doublet geometry                                                        
+  ESR parameters for BeOH                                                 
+                                                                          
 
 
   Symmetry Operations
@@ -142,24 +147,24 @@ Point group: Cs
 
    * Group multiplication table
 
-        |  E   Oxy
+        |  E   Oxy  
    -----+----------
-     E  |  E 
-    Oxy | Oxy   E 
+     E  |  E   
+    Oxy | Oxy   E   
 
    * Character table
 
-        |  E   Oxy
+        |  E   Oxy  
    -----+----------
-    A'  |   1    1
-    A"  |   1   -1
+    A'  |   1    1  
+    A"  |   1   -1  
 
    * Direct product table
 
-        | A'   A" 
+        | A'   A"   
    -----+----------
-    A'  | A' 
-    A"  | A"   A' 
+    A'  | A'   
+    A"  | A"   A'   
 
 
   Atoms and basis sets
@@ -227,7 +232,7 @@ Point group: Cs
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            Be          O           H   
+            Be          O           H           
 
    Be      0.000000
    O       1.369421    0.000000
@@ -264,84 +269,84 @@ Point group: Cs
 
   Symmetry  A' ( 1)
 
-    1     Be       1s         1
-    2     Be       1s         2
-    3     Be       1s         3
-    4     Be       1s         4
-    5     Be       2px        5
-    6     Be       2py        6
-    7     Be       2px        8
-    8     Be       2py        9
-    9     Be       2px       11
-   10     Be       2py       12
-   11     Be       3d2-      14
-   12     Be       3d0       16
-   13     Be       3d2+      18
-   14     Be       3d2-      19
-   15     Be       3d0       21
-   16     Be       3d2+      23
-   17     Be       4f3-      24
-   18     Be       4f1-      26
-   19     Be       4f1+      28
-   20     Be       4f3+      30
-   21     O        1s        31
-   22     O        1s        32
-   23     O        1s        33
-   24     O        1s        34
-   25     O        2px       35
-   26     O        2py       36
-   27     O        2px       38
-   28     O        2py       39
-   29     O        2px       41
-   30     O        2py       42
-   31     O        3d2-      44
-   32     O        3d0       46
-   33     O        3d2+      48
-   34     O        3d2-      49
-   35     O        3d0       51
-   36     O        3d2+      53
-   37     O        4f3-      54
-   38     O        4f1-      56
-   39     O        4f1+      58
-   40     O        4f3+      60
-   41     H        1s        61
-   42     H        1s        62
-   43     H        1s        63
-   44     H        2px       64
-   45     H        2py       65
-   46     H        2px       67
-   47     H        2py       68
-   48     H        3d2-      70
-   49     H        3d0       72
-   50     H        3d2+      74
+    1     Be       1s         1  
+    2     Be       1s         2  
+    3     Be       1s         3  
+    4     Be       1s         4  
+    5     Be       2px        5  
+    6     Be       2py        6  
+    7     Be       2px        8  
+    8     Be       2py        9  
+    9     Be       2px       11  
+   10     Be       2py       12  
+   11     Be       3d2-      14  
+   12     Be       3d0       16  
+   13     Be       3d2+      18  
+   14     Be       3d2-      19  
+   15     Be       3d0       21  
+   16     Be       3d2+      23  
+   17     Be       4f3-      24  
+   18     Be       4f1-      26  
+   19     Be       4f1+      28  
+   20     Be       4f3+      30  
+   21     O        1s        31  
+   22     O        1s        32  
+   23     O        1s        33  
+   24     O        1s        34  
+   25     O        2px       35  
+   26     O        2py       36  
+   27     O        2px       38  
+   28     O        2py       39  
+   29     O        2px       41  
+   30     O        2py       42  
+   31     O        3d2-      44  
+   32     O        3d0       46  
+   33     O        3d2+      48  
+   34     O        3d2-      49  
+   35     O        3d0       51  
+   36     O        3d2+      53  
+   37     O        4f3-      54  
+   38     O        4f1-      56  
+   39     O        4f1+      58  
+   40     O        4f3+      60  
+   41     H        1s        61  
+   42     H        1s        62  
+   43     H        1s        63  
+   44     H        2px       64  
+   45     H        2py       65  
+   46     H        2px       67  
+   47     H        2py       68  
+   48     H        3d2-      70  
+   49     H        3d0       72  
+   50     H        3d2+      74  
 
 
   Symmetry  A" ( 2)
 
-   51     Be       2pz        7
-   52     Be       2pz       10
-   53     Be       2pz       13
-   54     Be       3d1-      15
-   55     Be       3d1+      17
-   56     Be       3d1-      20
-   57     Be       3d1+      22
-   58     Be       4f2-      25
-   59     Be       4f0       27
-   60     Be       4f2+      29
-   61     O        2pz       37
-   62     O        2pz       40
-   63     O        2pz       43
-   64     O        3d1-      45
-   65     O        3d1+      47
-   66     O        3d1-      50
-   67     O        3d1+      52
-   68     O        4f2-      55
-   69     O        4f0       57
-   70     O        4f2+      59
-   71     H        2pz       66
-   72     H        2pz       69
-   73     H        3d1-      71
-   74     H        3d1+      73
+   51     Be       2pz        7  
+   52     Be       2pz       10  
+   53     Be       2pz       13  
+   54     Be       3d1-      15  
+   55     Be       3d1+      17  
+   56     Be       3d1-      20  
+   57     Be       3d1+      22  
+   58     Be       4f2-      25  
+   59     Be       4f0       27  
+   60     Be       4f2+      29  
+   61     O        2pz       37  
+   62     O        2pz       40  
+   63     O        2pz       43  
+   64     O        3d1-      45  
+   65     O        3d1+      47  
+   66     O        3d1-      50  
+   67     O        3d1+      52  
+   68     O        4f2-      55  
+   69     O        4f0       57  
+   70     O        4f2+      59  
+   71     H        2pz       66  
+   72     H        2pz       69  
+   73     H        3d1-      71  
+   74     H        3d1+      73  
 
   Symmetries of electric field:  A' (1)  A' (1)  A" (2)
 
@@ -358,19 +363,19 @@ Point group: Cs
 
   Symmetry  A' ( 0)
 
-  I  1   Be    z    3
-  I  2   O     z    6
-  I  3   H     z    9
+  I  1   Be    z    3  
+  I  2   O     z    6  
+  I  3   H     z    9  
 
 
   Symmetry  A" ( 1)
 
-  I  4   Be    x    1
-  I  5   Be    y    2
-  I  6   O     x    4
-  I  7   O     y    5
-  I  8   H     x    7
-  I  9   H     y    8
+  I  4   Be    x    1  
+  I  5   Be    y    2  
+  I  6   O     x    4  
+  I  7   O     y    5  
+  I  8   H     x    7  
+  I  9   H     y    8  
 
 
  ************************************************************************
@@ -378,24 +383,24 @@ Point group: Cs
  ************************************************************************
 
 
- >>> Time used in ONEDRV is   0.42 seconds
+ >>> Time used in ONEDRV is   0.40 seconds
 
 
- >>> Time used in OVERLA is   0.19 seconds
+ >>> Time used in OVERLA is   0.16 seconds
 
 
- >>> Time used in FERMI  is   0.20 seconds
+ >>> Time used in FERMI  is   0.29 seconds
 
 
- >>> Time used in SPIN-D is   0.79 seconds
+ >>> Time used in SPIN-D is   1.00 seconds
 
 
- Number of two-electron integrals written:     1507901 ( 39.1% )
+ Number of two-electron integrals written:     1507902 ( 39.1% )
  Megabytes written:                             17.272
 
 
 
- >>> Time used in TWOINT is  1 minute  14 seconds
+ >>> Time used in TWOINT is  36.11 seconds
 
 
 
@@ -408,27 +413,26 @@ Point group: Cs
 
  Threshold for discarding integrals :  1.00D-15
 
- >>> Time used in FRMSUP is   1.35 seconds
+ >>> Time used in FRMSUP is   1.51 seconds
 
- >>>> Total CPU  time used in HERMIT:  1 minute  17 seconds
- >>>> Total wall time used in HERMIT:  2 minutes 43 seconds
+ >>>> Total CPU  time used in HERMIT:  39.59 seconds
+ >>>> Total wall time used in HERMIT:  41.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Mon Feb 12 23:28:46 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Title     : beoh                                                        
 
  Title lines from integral program:
-     beoh                                                                    
-     doublet geometry                                                        
+     ESR parameters for BeOH                                                 
+                                                                             
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -507,14 +511,14 @@ Point group: Cs
     6      -89.683424188095    6.41637D-03   -1.14D-04
     7      -89.683430051544    1.68456D-03   -5.86D-06
     8      -89.683430658082    5.44130D-04   -6.07D-07
-    9      -89.683430736877    2.00597D-04   -7.88D-08
+    9      -89.683430736876    2.00597D-04   -7.88D-08
    10      -89.683430748078    8.18700D-05   -1.12D-08
    11      -89.683430749821    3.37704D-05   -1.74D-09
-   12      -89.683430750113    1.46336D-05   -2.92D-10
-   13      -89.683430750167    6.51805D-06   -5.45D-11
-   14      -89.683430750178    2.96768D-06   -1.05D-11
-   15      -89.683430750180    1.40197D-06   -2.35D-12
-   16      -89.683430750180    6.86291D-07   -3.62D-13
+   12      -89.683430750113    1.46336D-05   -2.91D-10
+   13      -89.683430750167    6.51805D-06   -5.43D-11
+   14      -89.683430750178    2.96768D-06   -1.07D-11
+   15      -89.683430750180    1.40197D-06   -2.19D-12
+   16      -89.683430750181    6.86291D-07   -5.68D-13
  DIIS converged in  16 iterations !
 
 
@@ -549,7 +553,7 @@ Point group: Cs
 
 
  CI energies and residuals:
-    1      -90.091436258292500       1.45D-06
+    1      -90.091436258292560       1.45D-06
 
    <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
 
@@ -569,11 +573,11 @@ Point group: Cs
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :      -90.091436258292260       (MACRO    1)
+ Total MCSCF energy       :      -90.091436258292134       (MACRO    1)
 
  Norm of total gradient   :        0.740349814346
  -    of CI gradient      :        0.000002896783
- -    of orbital gradient :        0.740349814340
+ -    of orbital gradient :        0.740349814341
 
  (SIRNEO) iteration (  1,  4)
  Micro iteration termination criterion met, EVAL(ISTATE+1) = -2.33D-02
@@ -596,10 +600,10 @@ Point group: Cs
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :      -90.185457930885890       (MACRO    2)
+ Total MCSCF energy       :      -90.185457930886016       (MACRO    2)
 
  Norm of total gradient   :        0.211937248261
- -    of CI gradient      :        0.165339829431
+ -    of CI gradient      :        0.165339829432
  -    of orbital gradient :        0.132590112769
 
  Residual norm when dim(red L) =  10
@@ -626,7 +630,7 @@ Point group: Cs
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :      -90.229504224425550       (MACRO    3)
+ Total MCSCF energy       :      -90.229504224425738       (MACRO    3)
 
  Norm of total gradient   :        0.225232989861
  -    of CI gradient      :        0.159341749419
@@ -656,10 +660,10 @@ Point group: Cs
  <<< MACRO ITERATION  4 >>>
  --------------------------
 
- Total MCSCF energy       :      -90.259281735756870       (MACRO    4)
+ Total MCSCF energy       :      -90.259281735757269       (MACRO    4)
 
- Norm of total gradient   :        0.211079652537
- -    of CI gradient      :        0.202107752102
+ Norm of total gradient   :        0.211079652535
+ -    of CI gradient      :        0.202107752100
  -    of orbital gradient :        0.060885763979
 
  Residual norm when dim(red L) =  10
@@ -686,10 +690,10 @@ Point group: Cs
  <<< MACRO ITERATION  5 >>>
  --------------------------
 
- Total MCSCF energy       :      -90.274031985093320       (MACRO    5)
+ Total MCSCF energy       :      -90.274031985093230       (MACRO    5)
 
- Norm of total gradient   :        0.139794098456
- -    of CI gradient      :        0.126694350167
+ Norm of total gradient   :        0.139794098455
+ -    of CI gradient      :        0.126694350166
  -    of orbital gradient :        0.059084106144
 
  Residual norm when dim(red L) =   6
@@ -716,7 +720,7 @@ Point group: Cs
  <<< MACRO ITERATION  6 >>>
  --------------------------
 
- Total MCSCF energy       :      -90.275530331908360       (MACRO    6)
+ Total MCSCF energy       :      -90.275530331908072       (MACRO    6)
 
  Norm of total gradient   :        0.013203616360
  -    of CI gradient      :        0.012721554047
@@ -746,7 +750,7 @@ Point group: Cs
  <<< MACRO ITERATION  7 >>>
  --------------------------
 
- Total MCSCF energy       :      -90.275549992644120       (MACRO    7)
+ Total MCSCF energy       :      -90.275549992644343       (MACRO    7)
 
  Norm of total gradient   :        0.000140628397
  -    of CI gradient      :        0.000119869236
@@ -776,7 +780,7 @@ Point group: Cs
  <<< MACRO ITERATION  8 >>>
  --------------------------
 
- Total MCSCF energy       :      -90.275549994390270       (MACRO    8)
+ Total MCSCF energy       :      -90.275549994390047       (MACRO    8)
 
  Norm of total gradient   :        0.000007523122
  -    of CI gradient      :        0.000006854396
@@ -785,14 +789,13 @@ Point group: Cs
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            8
      Number of micro iterations used           50
-     Total number of CPU seconds used         0.00
+     Total number of CPU seconds used        87.14
 
 
                >>> SIRIUS OPTIMIZATION STATISTICS <<<
 
  
-     Date and time (Linux)  : Mon Feb 12 23:32:18 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
@@ -804,12 +807,12 @@ Point group: Cs
     5    4    -90.274031985093   0.1397940985  0.808652   0.0731186397
     6   14    -90.275530331908   0.0132036164  1.006867   0.0118684797
     7    7    -90.275549992644   0.0001406284  0.999500   0.0000928115
-    8    0    -90.275549994390   0.0000075231  1.000045   0.0000000000
+    8    0    -90.275549994390   0.0000075231  0.999785   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
  ------------------------------------------------------------------------------
-    1   3152    0.000000    0.000003    183    0.261894    0.740350    0.740350
+    1   3152    0.000000    0.000003    183   -0.261894    0.740350    0.740350
     2   4624    0.072237    0.165340    395   -0.040139    0.132590    0.211937
     3   3561   -0.034723    0.159342    254   -0.053115    0.159186    0.225233
     4   3592    0.056157    0.202108    261   -0.024394    0.060886    0.211080
@@ -822,14 +825,14 @@ Point group: Cs
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1     4     1     3      0.00      0.00      1.95      0.00      0.49
-    2     8     6     3      0.00      0.00      1.97      0.00      0.25
-    3     5     4     2      0.00      0.00      2.01      0.00      0.40
-    4     8     5     4      0.00      0.00      1.88      0.00      0.23
-    5     4     3     2      0.00      0.00      1.88      0.00      0.47
-    6    14     9     6      0.00      0.00      1.88      0.00      0.13
-    7     7     5     3      0.00      0.00      1.88      0.00      0.27
-    8     0     0     0      0.00      0.00      0.00      0.00
+    1     4     1     3      8.83      6.41      2.00      1.76      0.50
+    2     8     6     3     11.04      6.60      4.03      3.69      0.50
+    3     5     4     2      9.53      6.50      2.58      2.35      0.52
+    4     8     5     4     11.10      6.45      4.20      3.85      0.52
+    5     4     3     2      9.56      6.71      2.40      2.14      0.60
+    6    14     9     6     13.70      6.70      6.62      6.17      0.47
+    7     7     5     3     10.38      6.59      3.41      3.16      0.49
+    8     0     0     0      6.82      6.43      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
@@ -837,9 +840,9 @@ Point group: Cs
     1    -82.033840458887    -25.853375610397    -90.091436258292
     2    -82.034473137579    -25.946764604299    -90.185457930886
     3    -82.034355213468    -25.990928821950    -90.229504224426
-    4    -81.991667730345    -26.063393816404    -90.259281735757
+    4    -81.991667730346    -26.063393816403    -90.259281735757
     5    -82.029623545185    -26.040188250901    -90.274031985093
-    6    -82.030436412503    -26.040873730398    -90.275530331908
+    6    -82.030436412502    -26.040873730398    -90.275530331908
     7    -82.030475061759    -26.040854741878    -90.275549992644
     8    -82.030476645503    -26.040853159880    -90.275549994390
 
@@ -847,23 +850,23 @@ Point group: Cs
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.106316627700     -0.094021672594      0.884355294445
-    3     -0.050835355850     -0.044046293540      0.866449989437
-    4     -0.041457222966     -0.029777511331      0.718270766855
-    5     -0.018240549647     -0.014750249336      0.808651582444
-    6     -0.001488127212     -0.001498346815      1.006867425684
-    7     -0.000019670573     -0.000019660736      0.999499921173
-    8     -0.000000001746     -0.000000001746      1.000045330454
+    2     -0.106316627700     -0.094021672594      0.884355294447
+    3     -0.050835355851     -0.044046293540      0.866449989437
+    4     -0.041457222966     -0.029777511332      0.718270766863
+    5     -0.018240549647     -0.014750249336      0.808651582423
+    6     -0.001488127212     -0.001498346815      1.006867425566
+    7     -0.000019670573     -0.000019660736      0.999499947190
+    8     -0.000000001746     -0.000000001746      0.999784891242
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
     1      0.98406090  1.00000000      0.767498705414      0.700000000000
     2      1.24688585  1.00000000      0.695233638188      0.700000000000
-    3      1.45413027  1.00000000      0.721055579419      0.700000000000
-    4      0.20000000  1.00000000      0.744162565511      0.700000000000
-    5      0.20000000  1.00000000      0.073118639690      0.700000000000
-    6      0.20000000  1.00000000      0.011868479675      0.700000000000
+    3      1.45413027  1.00000000      0.721055579417      0.700000000000
+    4      0.20000000  1.00000000      0.744162565508      0.700000000000
+    5      0.20000000  1.00000000      0.073118639689      0.700000000000
+    6      0.20000000  1.00000000      0.011868479674      0.700000000000
     7      0.20000000  1.00000000      0.000092811479      0.700000000000
     8      0.00000000  0.00000000      0.000000000000      0.700000000000
 
@@ -871,10 +874,10 @@ Point group: Cs
  Reduced L root no.  1
  ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
  ----------------------------------------------------------------------------
-    1   -0.131116601385    0.797978650451   -0.560817372696   -0.064876835769
-    2   -0.090249569675    0.755610423267   -0.105970052987   -0.589040213695
-    3   -0.083511776853   -0.690168996544    0.019994612636    0.696735495179
-    4   -0.001427620581    0.989105111520   -0.004719807444   -0.143605334942
+    1   -0.131116601385    0.797978650451   -0.560817372697   -0.064876835769
+    2   -0.090249569676    0.755610423267   -0.105970052987   -0.589040213695
+    3   -0.083511776853   -0.690168996545    0.019994612636    0.696735495178
+    4   -0.001427620581    0.989105111520   -0.004719807444   -0.143605334941
     5   -0.000119024723    0.999893090438   -0.003353943502   -0.013321893575
     6   -0.000001573637    0.999997182796   -0.000641946724   -0.002085060375
     7   -0.000000000140    0.999999999828   -0.000004759438   -0.000016640264
@@ -894,8 +897,7 @@ Point group: Cs
      Final gradient norm:           0.000007523122
 
  
-     Date and time (Linux)  : Mon Feb 12 23:32:18 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
  Occupancies of natural orbitals
@@ -928,52 +930,52 @@ Point group: Cs
    5  Be  2px    0.0015  -0.0041   0.2157  -0.2685  -0.0014  -0.5536   0.6957
    6  Be  2py    0.0000   0.0000   0.0001   0.0002   0.1525   0.0004   0.0000
    7  Be  2px    0.0001   0.0009  -0.0237   0.0225   0.0001  -0.0052  -0.1037
-   8  Be  2py    0.0000   0.0000   0.0000   0.0000  -0.0446  -0.0001  -0.0002
+   8  Be  2py    0.0000   0.0000  -0.0000  -0.0000  -0.0446  -0.0001  -0.0002
    9  Be  2px    0.0001  -0.0004   0.0147  -0.0120  -0.0002  -0.0075   0.0392
-  10  Be  2py    0.0000   0.0000   0.0000   0.0000   0.0105   0.0000   0.0000
+  10  Be  2py   -0.0000   0.0000   0.0000  -0.0000   0.0105   0.0000   0.0000
   11  Be  3d2-   0.0000   0.0000   0.0000   0.0001   0.0557  -0.0001  -0.0001
   12  Be  3d0   -0.0001   0.0004  -0.0312   0.0404   0.0001  -0.0061  -0.0836
   13  Be  3d2+   0.0001  -0.0007   0.0541  -0.0700  -0.0002   0.0105   0.1447
-  14  Be  3d2-   0.0000   0.0000   0.0000   0.0000   0.0152   0.0000   0.0000
-  15  Be  3d0    0.0000   0.0001  -0.0062   0.0052   0.0000   0.0025  -0.0177
-  16  Be  3d2+   0.0001  -0.0002   0.0107  -0.0089   0.0000  -0.0043   0.0307
-  17  Be  4f3-   0.0000   0.0000   0.0000   0.0000   0.0195   0.0000   0.0000
-  18  Be  4f1-   0.0000   0.0000   0.0000   0.0000  -0.0050   0.0000   0.0000
+  14  Be  3d2-  -0.0000  -0.0000   0.0000  -0.0000   0.0152   0.0000   0.0000
+  15  Be  3d0   -0.0000   0.0001  -0.0062   0.0052   0.0000   0.0025  -0.0177
+  16  Be  3d2+   0.0001  -0.0002   0.0107  -0.0089  -0.0000  -0.0043   0.0307
+  17  Be  4f3-   0.0000   0.0000   0.0000   0.0000   0.0195  -0.0000  -0.0000
+  18  Be  4f1-  -0.0000  -0.0000  -0.0000  -0.0000  -0.0050   0.0000   0.0000
   19  Be  4f1+   0.0000   0.0001  -0.0088   0.0134   0.0000   0.0025  -0.0252
-  20  Be  4f3+   0.0000  -0.0001   0.0114  -0.0173   0.0000  -0.0032   0.0325
+  20  Be  4f3+  -0.0000  -0.0001   0.0114  -0.0173  -0.0000  -0.0032   0.0325
   21  O   1s     0.9996  -0.0004  -0.0262   0.0004   0.0001   0.0006  -0.0431
   22  O   1s     0.0018   0.0073   0.8268   0.1728   0.0012  -0.0746  -0.3810
   23  O   1s    -0.0029   0.0022  -0.0300   0.0706   0.0003   0.0360   0.6494
   24  O   1s    -0.0004   0.0003  -0.0117   0.0271   0.0001   0.0124  -0.3210
   25  O   2px   -0.0003  -0.0070  -0.0616   0.5719   0.0031   0.0567   0.3780
-  26  O   2py    0.0000   0.0000   0.0003  -0.0018   0.8892   0.0004  -0.0005
+  26  O   2py   -0.0000  -0.0000   0.0003  -0.0018   0.8892   0.0004  -0.0005
   27  O   2px    0.0011  -0.0019   0.1197  -0.1713  -0.0007  -0.0219  -0.0533
-  28  O   2py    0.0000   0.0000  -0.0004   0.0008   0.0125   0.0001   0.0009
-  29  O   2px    0.0010   0.0012   0.0097   0.0011   0.0000   0.0011   0.1099
-  30  O   2py    0.0000   0.0000   0.0000   0.0000  -0.0055   0.0000  -0.0004
-  31  O   3d2-   0.0000   0.0000  -0.0003  -0.0001   0.0036   0.0000  -0.0007
+  28  O   2py   -0.0000  -0.0000  -0.0004   0.0008   0.0125   0.0001   0.0009
+  29  O   2px    0.0010   0.0012   0.0097   0.0011  -0.0000   0.0011   0.1099
+  30  O   2py   -0.0000  -0.0000  -0.0000  -0.0000  -0.0055  -0.0000  -0.0004
+  31  O   3d2-   0.0000   0.0000  -0.0003  -0.0001   0.0036  -0.0000  -0.0007
   32  O   3d0    0.0001  -0.0010  -0.0098  -0.0064   0.0002  -0.0011  -0.0212
   33  O   3d2+  -0.0002   0.0017   0.0170   0.0111   0.0000   0.0019   0.0367
   34  O   3d2-   0.0000   0.0000  -0.0002   0.0002   0.0050   0.0000  -0.0003
   35  O   3d0    0.0002  -0.0002  -0.0028   0.0027   0.0001  -0.0014  -0.0065
   36  O   3d2+  -0.0004   0.0004   0.0049  -0.0047   0.0000   0.0025   0.0113
-  37  O   4f3-   0.0000   0.0000  -0.0001  -0.0001   0.0062   0.0000   0.0000
+  37  O   4f3-  -0.0000  -0.0000  -0.0001  -0.0001   0.0062  -0.0000  -0.0000
   38  O   4f1-   0.0000   0.0000   0.0000   0.0000  -0.0016   0.0000   0.0000
-  39  O   4f1+   0.0000   0.0005   0.0000  -0.0045   0.0000  -0.0010  -0.0055
-  40  O   4f3+   0.0000  -0.0007   0.0000   0.0057   0.0001   0.0013   0.0071
+  39  O   4f1+   0.0000   0.0005  -0.0000  -0.0045   0.0000  -0.0010  -0.0055
+  40  O   4f3+  -0.0000  -0.0007   0.0000   0.0057   0.0001   0.0013   0.0071
   41  H   1s     0.0005   0.0032  -0.1316   0.5504   0.0004   0.0529  -0.3801
   42  H   1s    -0.0008   0.0003  -0.1210   0.0019   0.0011   0.0171  -0.2545
   43  H   1s    -0.0002  -0.0005   0.0423   0.0141  -0.0004   0.0015   0.1135
   44  H   2px   -0.0003  -0.0015   0.0284  -0.0792  -0.0002  -0.0019   0.1208
-  45  H   2py    0.0000   0.0000  -0.0002   0.0007   0.0383   0.0000  -0.0009
-  46  H   2px    0.0000  -0.0005   0.0287  -0.0092  -0.0003  -0.0014   0.0687
-  47  H   2py    0.0000   0.0000  -0.0003   0.0000   0.0024   0.0000  -0.0005
-  48  H   3d2-   0.0000   0.0000   0.0000  -0.0001  -0.0047   0.0000   0.0003
-  49  H   3d0    0.0000  -0.0001  -0.0008  -0.0047   0.0000  -0.0001   0.0091
+  45  H   2py    0.0000   0.0000  -0.0002   0.0007   0.0383  -0.0000  -0.0009
+  46  H   2px   -0.0000  -0.0005   0.0287  -0.0092  -0.0003  -0.0014   0.0687
+  47  H   2py    0.0000  -0.0000  -0.0003   0.0000   0.0024  -0.0000  -0.0005
+  48  H   3d2-   0.0000  -0.0000  -0.0000  -0.0001  -0.0047   0.0000   0.0003
+  49  H   3d0    0.0000  -0.0001  -0.0008  -0.0047  -0.0000  -0.0001   0.0091
   50  H   3d2+  -0.0001   0.0002   0.0013   0.0082  -0.0001   0.0002  -0.0158
 
  Orbital          8        9
-   1  Be  1s     0.0000   0.0046
+   1  Be  1s    -0.0000   0.0046
    2  Be  1s     0.0019  -0.0826
    3  Be  1s    -0.0003   0.0755
    4  Be  1s     0.0001  -0.0134
@@ -983,17 +985,17 @@ Point group: Cs
    8  Be  2py    0.0943  -0.0002
    9  Be  2px    0.0003  -0.0352
   10  Be  2py   -0.0209   0.0001
-  11  Be  3d2-  -0.0818   0.0000
+  11  Be  3d2-  -0.0818  -0.0000
   12  Be  3d0   -0.0002   0.0061
   13  Be  3d2+   0.0003  -0.0106
   14  Be  3d2-  -0.0333   0.0000
   15  Be  3d0   -0.0001   0.0088
   16  Be  3d2+   0.0001  -0.0153
   17  Be  4f3-  -0.0295   0.0000
-  18  Be  4f1-   0.0076   0.0000
-  19  Be  4f1+   0.0000   0.0017
+  18  Be  4f1-   0.0076  -0.0000
+  19  Be  4f1+  -0.0000   0.0017
   20  Be  4f3+   0.0000  -0.0023
-  21  O   1s     0.0000  -0.0021
+  21  O   1s    -0.0000  -0.0021
   22  O   1s    -0.0007  -0.1613
   23  O   1s    -0.0004   0.1807
   24  O   1s     0.0002  -0.0850
@@ -1010,16 +1012,16 @@ Point group: Cs
   35  O   3d0   -0.0002  -0.0277
   36  O   3d2+  -0.0001   0.0480
   37  O   4f3-  -0.0010   0.0001
-  38  O   4f1-   0.0003   0.0000
-  39  O   4f1+   0.0000   0.0033
-  40  O   4f3+   0.0000  -0.0043
+  38  O   4f1-   0.0003  -0.0000
+  39  O   4f1+  -0.0000   0.0033
+  40  O   4f3+  -0.0000  -0.0043
   41  H   1s    -0.0009   0.5316
   42  H   1s    -0.0014  -0.1344
   43  H   1s     0.0006   0.0779
   44  H   2px    0.0006   0.0343
   45  H   2py   -0.0692  -0.0004
   46  H   2px    0.0003  -0.0172
-  47  H   2py   -0.0020   0.0000
+  47  H   2py   -0.0020  -0.0000
   48  H   3d2-   0.0044   0.0005
   49  H   3d0    0.0001   0.0161
   50  H   3d2+  -0.0001  -0.0278
@@ -1030,9 +1032,9 @@ Point group: Cs
    1  Be  2pz    0.1525   0.2612
    2  Be  2pz   -0.0446  -0.0943
    3  Be  2pz    0.0105   0.0209
-   4  Be  3d1-   0.0000   0.0000
+   4  Be  3d1-   0.0000  -0.0000
    5  Be  3d1+   0.0557   0.0818
-   6  Be  3d1-   0.0000   0.0000
+   6  Be  3d1-   0.0000  -0.0000
    7  Be  3d1+   0.0152   0.0333
    8  Be  4f2-   0.0000   0.0000
    9  Be  4f0   -0.0123  -0.0186
@@ -1044,7 +1046,7 @@ Point group: Cs
   15  O   3d1+   0.0036  -0.0051
   16  O   3d1-  -0.0001  -0.0003
   17  O   3d1+   0.0050  -0.0030
-  18  O   4f2-   0.0000   0.0000
+  18  O   4f2-  -0.0000  -0.0000
   19  O   4f0   -0.0039  -0.0006
   20  O   4f2+   0.0050   0.0008
   21  H   2pz    0.0383   0.0692
@@ -1105,22 +1107,21 @@ Point group: Cs
   10- 8 to 10- 7      1309    0.33320099E-11    0.10000000E+01
   10- 9 to 10- 8       464    0.15473721E-13    0.10000000E+01
   10-10 to 10- 9        73    0.25614896E-16    0.10000000E+01
-  10-11 to 10-10         8    0.33915040E-19    0.10000000E+01
-  Number of coefficients less than 10^-11 times norm is             0
+  10-11 to 10-10         8    0.33915039E-19    0.10000000E+01
+  Number of coefficients less than 10^-11 times norm is   0
 
 
 
- >>>> Total CPU  time used in SIRIUS :     83.77 seconds
- >>>> Total wall time used in SIRIUS :    212.00 seconds
+ >>>> Total CPU  time used in SIRIUS :     89.83 seconds
+ >>>> Total wall time used in SIRIUS :     93.00 seconds
 
  
-     Date and time (Linux)  : Mon Feb 12 23:32:18 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 - End of Wave Function Section
 
 
-  This is output from RESPONS  -  an MCSCF and SOPPA response property program 
+  This is output from RESPONSE  -  an MCSCF and SOPPA response property program 
  ------------------------------------------------------------------------------
 
 
@@ -1156,44 +1157,44 @@ Point group: Cs
           FC Be 01
           FC O  02
           FC H  03
-          SD  01 z
-          SD  02 z
-          SD  03 z
-          SD  04 x
-          SD  04 y
-          SD  05 x
-          SD  05 y
-          SD  06 x
-          SD  06 y
-          SD  07 x
-          SD  07 y
-          SD  08 x
-          SD  08 y
-          SD  09 x
-          SD  09 y
+          SD 001 z
+          SD 002 z
+          SD 003 z
+          SD 004 x
+          SD 004 y
+          SD 005 x
+          SD 005 y
+          SD 006 x
+          SD 006 y
+          SD 007 x
+          SD 007 y
+          SD 008 x
+          SD 008 y
+          SD 009 x
+          SD 009 y
 
    12 ESR CALC. : TRIPLET OP.  SYMMETRY NO:    2 AND LABEL:
 
-          SD  01 x
-          SD  01 y
-          SD  02 x
-          SD  02 y
-          SD  03 x
-          SD  03 y
-          SD  04 z
-          SD  05 z
-          SD  06 z
-          SD  07 z
-          SD  08 z
-          SD  09 z
+          SD 001 x
+          SD 001 y
+          SD 002 x
+          SD 002 y
+          SD 003 x
+          SD 003 y
+          SD 004 z
+          SD 005 z
+          SD 006 z
+          SD 007 z
+          SD 008 z
+          SD 009 z
 
  Old direct access AO file found, SORTA skipped.
 
 
- MCSCF energy         :      -90.275549994390270
- -- inactive part     :      -82.030476645502670
- --   active part     :      -26.040853159880170
- -- nuclear repulsion :       17.795779810992560
+ MCSCF energy         :      -90.275549994390047
+ -- inactive part     :      -82.030476645502545
+ --   active part     :      -26.040853159880057
+ -- nuclear repulsion :       17.795779810992559
 
 
  Perturbation symmetry.     KSYMOP:       1
@@ -1222,8 +1223,8 @@ Point group: Cs
 
  Convergence of RSP solution vectors, threshold = 1.00D-05
  ---------------------------------------------------------------
- (dimension of paired reduced space:   48)
- RSP solution vector no.    1; norm of residual   5.96D-06
+ (dimension of paired reduced space:   42)
+ RSP solution vector no.    1; norm of residual   7.82D-06
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -1237,7 +1238,7 @@ TRIPLET OPERATOR: "FC Be 01" LAGRANGIAN:  0.571695 AVERAGE:  2.805693 TOTAL:  3.
      FC O  02 ACTIVE PART  :     0.55289632
      FC O  02 TOTAL        :     0.55289632
 
-TRIPLET OPERATOR: "FC O  02" LAGRANGIAN: -0.008029 AVERAGE:  0.552896 TOTAL:  0.544867
+TRIPLET OPERATOR: "FC O  02" LAGRANGIAN: -0.008027 AVERAGE:  0.552896 TOTAL:  0.544870
 
      FC H  03 INACTIVE PART: 0.00000000D+00
      FC H  03 ACTIVE PART  : 8.74286067D-03
@@ -1245,125 +1246,124 @@ TRIPLET OPERATOR: "FC O  02" LAGRANGIAN: -0.008029 AVERAGE:  0.552896 TOTAL:  0.
 
 TRIPLET OPERATOR: "FC H  03" LAGRANGIAN:  0.003256 AVERAGE:  0.008743 TOTAL:  0.011999
 
-     SD  01 z INACTIVE PART:     0.00000000
-     SD  01 z ACTIVE PART  :    -0.04342415
-     SD  01 z TOTAL        :    -0.04342415
+     SD 001 z INACTIVE PART:     0.00000000
+     SD 001 z ACTIVE PART  :    -0.04342415
+     SD 001 z TOTAL        :    -0.04342415
 
-TRIPLET OPERATOR: "SD  01 z" LAGRANGIAN:  0.002178 AVERAGE: -0.043424 TOTAL: -0.041246
+TRIPLET OPERATOR: "SD 001 z" LAGRANGIAN:  0.002178 AVERAGE: -0.043424 TOTAL: -0.041246
 
-     SD  02 z INACTIVE PART:     0.00000000
-     SD  02 z ACTIVE PART  :    -0.04419045
-     SD  02 z TOTAL        :    -0.04419045
+     SD 002 z INACTIVE PART:     0.00000000
+     SD 002 z ACTIVE PART  :    -0.04419045
+     SD 002 z TOTAL        :    -0.04419045
 
-TRIPLET OPERATOR: "SD  02 z" LAGRANGIAN: -0.019432 AVERAGE: -0.044190 TOTAL: -0.063622
+TRIPLET OPERATOR: "SD 002 z" LAGRANGIAN: -0.019432 AVERAGE: -0.044190 TOTAL: -0.063622
 
-     SD  03 z INACTIVE PART: 0.00000000D+00
-     SD  03 z ACTIVE PART  :-3.11068858D-03
-     SD  03 z TOTAL        :-3.11068858D-03
+     SD 003 z INACTIVE PART: 0.00000000D+00
+     SD 003 z ACTIVE PART  :-3.11068858D-03
+     SD 003 z TOTAL        :-3.11068858D-03
 
-TRIPLET OPERATOR: "SD  03 z" LAGRANGIAN:  0.001676 AVERAGE: -0.003111 TOTAL: -0.001434
+TRIPLET OPERATOR: "SD 003 z" LAGRANGIAN:  0.001676 AVERAGE: -0.003111 TOTAL: -0.001434
 
-     SD  04 x INACTIVE PART:     0.00000000
-     SD  04 x ACTIVE PART  :     0.08684820
-     SD  04 x TOTAL        :     0.08684820
+     SD 004 x INACTIVE PART:     0.00000000
+     SD 004 x ACTIVE PART  :     0.08684820
+     SD 004 x TOTAL        :     0.08684820
 
-TRIPLET OPERATOR: "SD  04 x" LAGRANGIAN: -0.004355 AVERAGE:  0.086848 TOTAL:  0.082493
+TRIPLET OPERATOR: "SD 004 x" LAGRANGIAN: -0.004355 AVERAGE:  0.086848 TOTAL:  0.082493
 
-     SD  04 y INACTIVE PART: 0.00000000D+00
-     SD  04 y ACTIVE PART  :-1.17705653D-04
-     SD  04 y TOTAL        :-1.17705653D-04
+     SD 004 y INACTIVE PART: 0.00000000D+00
+     SD 004 y ACTIVE PART  :-1.17705653D-04
+     SD 004 y TOTAL        :-1.17705653D-04
 
-TRIPLET OPERATOR: "SD  04 y" LAGRANGIAN: -0.000012 AVERAGE: -0.000118 TOTAL: -0.000130
+TRIPLET OPERATOR: "SD 004 y" LAGRANGIAN: -0.000012 AVERAGE: -0.000118 TOTAL: -0.000130
 
-     SD  05 x INACTIVE PART: 0.00000000D+00
-     SD  05 x ACTIVE PART  :-1.17705653D-04
-     SD  05 x TOTAL        :-1.17705653D-04
+     SD 005 x INACTIVE PART: 0.00000000D+00
+     SD 005 x ACTIVE PART  :-1.17705653D-04
+     SD 005 x TOTAL        :-1.17705653D-04
 
-TRIPLET OPERATOR: "SD  05 x" LAGRANGIAN: -0.000012 AVERAGE: -0.000118 TOTAL: -0.000130
+TRIPLET OPERATOR: "SD 005 x" LAGRANGIAN: -0.000012 AVERAGE: -0.000118 TOTAL: -0.000130
 
-     SD  05 y INACTIVE PART:     0.00000000
-     SD  05 y ACTIVE PART  :    -0.04342405
-     SD  05 y TOTAL        :    -0.04342405
+     SD 005 y INACTIVE PART:     0.00000000
+     SD 005 y ACTIVE PART  :    -0.04342405
+     SD 005 y TOTAL        :    -0.04342405
 
-TRIPLET OPERATOR: "SD  05 y" LAGRANGIAN:  0.002178 AVERAGE: -0.043424 TOTAL: -0.041246
+TRIPLET OPERATOR: "SD 005 y" LAGRANGIAN:  0.002178 AVERAGE: -0.043424 TOTAL: -0.041246
 
-     SD  06 x INACTIVE PART:     0.00000000
-     SD  06 x ACTIVE PART  :     0.08837576
-     SD  06 x TOTAL        :     0.08837576
+     SD 006 x INACTIVE PART:     0.00000000
+     SD 006 x ACTIVE PART  :     0.08837576
+     SD 006 x TOTAL        :     0.08837576
 
-TRIPLET OPERATOR: "SD  06 x" LAGRANGIAN:  0.038858 AVERAGE:  0.088376 TOTAL:  0.127234
+TRIPLET OPERATOR: "SD 006 x" LAGRANGIAN:  0.038858 AVERAGE:  0.088376 TOTAL:  0.127234
 
-     SD  06 y INACTIVE PART: 0.00000000D+00
-     SD  06 y ACTIVE PART  :-7.95568158D-05
-     SD  06 y TOTAL        :-7.95568158D-05
+     SD 006 y INACTIVE PART: 0.00000000D+00
+     SD 006 y ACTIVE PART  :-7.95568158D-05
+     SD 006 y TOTAL        :-7.95568158D-05
 
-TRIPLET OPERATOR: "SD  06 y" LAGRANGIAN: -0.000332 AVERAGE: -0.000080 TOTAL: -0.000411
+TRIPLET OPERATOR: "SD 006 y" LAGRANGIAN: -0.000332 AVERAGE: -0.000080 TOTAL: -0.000411
 
-     SD  07 x INACTIVE PART: 0.00000000D+00
-     SD  07 x ACTIVE PART  :-7.95568158D-05
-     SD  07 x TOTAL        :-7.95568158D-05
+     SD 007 x INACTIVE PART: 0.00000000D+00
+     SD 007 x ACTIVE PART  :-7.95568158D-05
+     SD 007 x TOTAL        :-7.95568158D-05
 
-TRIPLET OPERATOR: "SD  07 x" LAGRANGIAN: -0.000332 AVERAGE: -0.000080 TOTAL: -0.000411
+TRIPLET OPERATOR: "SD 007 x" LAGRANGIAN: -0.000332 AVERAGE: -0.000080 TOTAL: -0.000411
 
-     SD  07 y INACTIVE PART:     0.00000000
-     SD  07 y ACTIVE PART  :    -0.04418531
-     SD  07 y TOTAL        :    -0.04418531
+     SD 007 y INACTIVE PART:     0.00000000
+     SD 007 y ACTIVE PART  :    -0.04418531
+     SD 007 y TOTAL        :    -0.04418531
 
-TRIPLET OPERATOR: "SD  07 y" LAGRANGIAN: -0.019426 AVERAGE: -0.044185 TOTAL: -0.063612
+TRIPLET OPERATOR: "SD 007 y" LAGRANGIAN: -0.019426 AVERAGE: -0.044185 TOTAL: -0.063612
 
-     SD  08 x INACTIVE PART: 0.00000000D+00
-     SD  08 x ACTIVE PART  : 6.22147301D-03
-     SD  08 x TOTAL        : 6.22147301D-03
+     SD 008 x INACTIVE PART: 0.00000000D+00
+     SD 008 x ACTIVE PART  : 6.22147301D-03
+     SD 008 x TOTAL        : 6.22147301D-03
 
-TRIPLET OPERATOR: "SD  08 x" LAGRANGIAN: -0.003353 AVERAGE:  0.006221 TOTAL:  0.002869
+TRIPLET OPERATOR: "SD 008 x" LAGRANGIAN: -0.003353 AVERAGE:  0.006221 TOTAL:  0.002869
 
-     SD  08 y INACTIVE PART: 0.00000000D+00
-     SD  08 y ACTIVE PART  :-5.35354220D-06
-     SD  08 y TOTAL        :-5.35354220D-06
+     SD 008 y INACTIVE PART: 0.00000000D+00
+     SD 008 y ACTIVE PART  :-5.35354220D-06
+     SD 008 y TOTAL        :-5.35354220D-06
 
-TRIPLET OPERATOR: "SD  08 y" LAGRANGIAN:  0.000036 AVERAGE: -0.000005 TOTAL:  0.000030
+TRIPLET OPERATOR: "SD 008 y" LAGRANGIAN:  0.000036 AVERAGE: -0.000005 TOTAL:  0.000030
 
-     SD  09 x INACTIVE PART: 0.00000000D+00
-     SD  09 x ACTIVE PART  :-5.35354220D-06
-     SD  09 x TOTAL        :-5.35354220D-06
+     SD 009 x INACTIVE PART: 0.00000000D+00
+     SD 009 x ACTIVE PART  :-5.35354220D-06
+     SD 009 x TOTAL        :-5.35354220D-06
 
-TRIPLET OPERATOR: "SD  09 x" LAGRANGIAN:  0.000036 AVERAGE: -0.000005 TOTAL:  0.000030
+TRIPLET OPERATOR: "SD 009 x" LAGRANGIAN:  0.000036 AVERAGE: -0.000005 TOTAL:  0.000030
 
-     SD  09 y INACTIVE PART: 0.00000000D+00
-     SD  09 y ACTIVE PART  :-3.11078443D-03
-     SD  09 y TOTAL        :-3.11078443D-03
+     SD 009 y INACTIVE PART: 0.00000000D+00
+     SD 009 y ACTIVE PART  :-3.11078443D-03
+     SD 009 y TOTAL        :-3.11078443D-03
 
-TRIPLET OPERATOR: "SD  09 y" LAGRANGIAN:  0.001676 AVERAGE: -0.003111 TOTAL: -0.001434
+TRIPLET OPERATOR: "SD 009 y" LAGRANGIAN:  0.001676 AVERAGE: -0.003111 TOTAL: -0.001434
 
-TRIPLET OPERATOR: "SD  01 x" contribution = 0.0 by symmetry
+TRIPLET OPERATOR: "SD 001 x" contribution = 0.0 by symmetry
 
-TRIPLET OPERATOR: "SD  01 y" contribution = 0.0 by symmetry
+TRIPLET OPERATOR: "SD 001 y" contribution = 0.0 by symmetry
 
-TRIPLET OPERATOR: "SD  02 x" contribution = 0.0 by symmetry
+TRIPLET OPERATOR: "SD 002 x" contribution = 0.0 by symmetry
 
-TRIPLET OPERATOR: "SD  02 y" contribution = 0.0 by symmetry
+TRIPLET OPERATOR: "SD 002 y" contribution = 0.0 by symmetry
 
-TRIPLET OPERATOR: "SD  03 x" contribution = 0.0 by symmetry
+TRIPLET OPERATOR: "SD 003 x" contribution = 0.0 by symmetry
 
-TRIPLET OPERATOR: "SD  03 y" contribution = 0.0 by symmetry
+TRIPLET OPERATOR: "SD 003 y" contribution = 0.0 by symmetry
 
-TRIPLET OPERATOR: "SD  04 z" contribution = 0.0 by symmetry
+TRIPLET OPERATOR: "SD 004 z" contribution = 0.0 by symmetry
 
-TRIPLET OPERATOR: "SD  05 z" contribution = 0.0 by symmetry
+TRIPLET OPERATOR: "SD 005 z" contribution = 0.0 by symmetry
 
-TRIPLET OPERATOR: "SD  06 z" contribution = 0.0 by symmetry
+TRIPLET OPERATOR: "SD 006 z" contribution = 0.0 by symmetry
 
-TRIPLET OPERATOR: "SD  07 z" contribution = 0.0 by symmetry
+TRIPLET OPERATOR: "SD 007 z" contribution = 0.0 by symmetry
 
-TRIPLET OPERATOR: "SD  08 z" contribution = 0.0 by symmetry
+TRIPLET OPERATOR: "SD 008 z" contribution = 0.0 by symmetry
 
-TRIPLET OPERATOR: "SD  09 z" contribution = 0.0 by symmetry
+TRIPLET OPERATOR: "SD 009 z" contribution = 0.0 by symmetry
 
- >>>> Total CPU  time used in RESPONSE:  19.29 seconds
- >>>> Total wall time used in RESPONSE:  46.00 seconds
- >>>> Total CPU  time used in DALTON:  3 minutes  0 seconds
- >>>> Total wall time used in DALTON:  7 minutes  2 seconds
+ >>>> Total CPU  time used in RESPONSE:  16.12 seconds
+ >>>> Total wall time used in RESPONSE:  17.00 seconds
+ >>>> Total CPU  time used in DALTON:  2 minutes 26 seconds
+ >>>> Total wall time used in DALTON:  2 minutes 31 seconds
 
  
-     Date and time (Linux)  : Mon Feb 12 23:33:05 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    

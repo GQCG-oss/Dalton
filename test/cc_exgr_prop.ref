@@ -4,43 +4,51 @@
     ***********  DALTON - An electronic structure program  ***********
     ******************************************************************
 
-               This is output from DALTON (Prerelease 1.1, September 1999)
+            This is output from DALTON (Release 2.0, ? 2001)
 
                           Principal authors:
 
-            Trygve Helgaker,     University of Oslo,        Norway 
-            Hans Joergen Jensen, SDU - Odense University,   Denmark
-            Poul Joergensen,     Aarhus University,         Denmark
-            Jeppe Olsen,         Aarhus University,         Denmark
-            Kenneth Ruud,        San Diego Superc. Center,  USA    
-            Hans Aagren,         KTH Stockholm,             Sweden 
+            Trygve Helgaker,       University of Oslo,         Norway 
+            Hans Joergen Jensen,   SDU - Odense University,    Denmark
+            Poul Joergensen,       Aarhus University,          Denmark
+            Jeppe Olsen,           Aarhus University,          Denmark
+            Kenneth Ruud,          San Diego Superc. Center,   USA    
+            Hans Aagren,           KTH Stockholm,              Sweden 
 
                           Contributors:
 
-            Keld L. Bak,         UNI-C,                     Denmark
-            Vebjoern Bakken,     University of Oslo,        Norway 
-            Ove Christiansen,    University of Lund,        Sweden 
-            Paal Dahle,          University of Oslo,        Norway 
-            Erik K. Dalskov,     UNI-C,                     Denmark
-            Thomas Enevoldsen,   SDU - Odense University,   Denmark
-            Berta Fernandez,     U.of Santiago de Compostela,Spain 
-            Hanne Heiberg,       University of Oslo,        Norway 
-            Hinne Hettema,       University of Auckland,    NZ     
-            Dan Jonsson,         San Diego Superc. Center,  USA    
-            Sheela Kirpekar,     SDU - Odense University,   Denmark
-            Rika Kobayashi,      Cambridge University,      England
-            Henrik Koch,         SDU - Odense University,   Denmark
-            Kurt V.Mikkelsen,    University of Copenhagen,  Denmark
-            Patrick Norman,      University of Linkoeping,  Sweden 
-            Martin J. Packer,    University of Sheffield,   UK     
-            Torgeir A. Ruden,    University of Oslo,        Norway 
-            Trond Saue,          University of Toulouse,    France 
-            Stephan P. A. Sauer, University of Copenhagen,  Denmark
-            Bernd Schimmelpfennig,KTH Stockholm,            Sweden 
-            Peter R.Taylor,      San Diego Superc. Center,  USA    
-            Olav Vahtras,        PDC, Stockholm,            Sweden 
-------------------------------------------------------------------------
+            Alexander A. Auer,     University of Mainz,        Germany
+            Keld L. Bak,           UNI-C,                      Denmark
+            Vebjoern Bakken,       University of Oslo,         Norway 
+            Ove Christiansen,      University of Lund,         Sweden 
+            Sonia Coriani,         University of Trieste,      Italy  
+            Paal Dahle,            University of Oslo,         Norway 
+            Erik K. Dalskov,       UNI-C,                      Denmark
+            Thomas Enevoldsen,     SDU - Odense University,    Denmark
+            Berta Fernandez,       U.of Santiago de Compostela,Spain  
+            Christof Haettig,      Forschungszentrum Karlsruhe,Germany
+            Kasper Hald,           Aarhus University,          Denmark
+            Asger Halkier,         Aarhus University,          Denmark
+            Hanne Heiberg,         University of Oslo,         Norway 
+            Hinne Hettema,         University of Auckland,     NZ     
+            Dan Jonsson,           San Diego Superc. Center,   USA    
+            Sheela Kirpekar,       SDU - Odense University,    Denmark
+            Rika Kobayashi,        Cambridge University,       England
+            Henrik Koch,           SDU - Odense University,    Denmark
+            Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
+            Patrick Norman,        University of Linkoeping,   Sweden 
+            Thomas B. Pedersen,    U.of Santiago de Compostela,Spain  
+            Martin J. Packer,      University of Sheffield,    UK     
+            Torgeir A. Ruden,      University of Oslo,         Norway 
+            Alfredo Sanchez,       University of Valencia,     Spain  
+            Trond Saue,            University of Toulouse,     France 
+            Stephan P. A. Sauer,   University of Copenhagen,   Denmark
+            Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
+            K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
+            Peter R.Taylor,        San Diego Superc. Center,   USA    
+            Olav Vahtras,          PDC, Stockholm,             Sweden 
 
+------------------------------------------------------------------------
 
 
      NOTE:
@@ -58,22 +66,21 @@
      If results obtained with this code are published, an
      appropriate citation would be:
       
-     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,
-     H. Aagren, T. Andersen, K.L. Bak, V. Bakken, O. Christiansen
-     P. Dahle, E.K. Dalskov, T. Enevoldsen, B. Fernandez,
+     "Dalton, a molecular electronic structure program, Release 1.2
+     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
      H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-     H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T. Saue,
-     S.P.A. Sauer, B. Schimmelpfennig, P.R. Taylor, and O. Vahtras:
-     "Dalton release 1.1 (1999), an electronic structure program"
+     H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+     T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+     B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+     and O. Vahtras"
 
  
-     Date and time (IRIX)   : Fri Oct 13 16:03:23 2000
-     Host name              : aausgi4                                 
-
+     Host name              : pico                                    
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
-
-
 
 
  Default print level:        0
@@ -89,23 +96,19 @@
  *************************************************************************
 
 
-
  Default print level:        1
 
  * Nuclear model: Point charge
 
  Calculation of one- and two-electron Hamiltonian integrals.
 
-
  The following one-electron property integrals are calculated:
-
           - overlap integrals
           - dipole length integrals
           - second moments integrals
 
  In this run  precalculated two-electron integrals are transformed
  to P-supermatrix elements.
-
 
 
  *************************************************************************
@@ -117,8 +120,8 @@
   Title Cards
   -----------
 
-  bla. bla.                                                               
-  H2o ano basis Almloef and Taylor.                                       
+  Properties of excited state                                             
+  H2O in minimal basis                                                    
 
 
                       SYMGRP:Point group information
@@ -128,15 +131,15 @@ Point group: C1
 
    * Character table
 
-        |  E 
+        |  E   
    -----+-----
-    A   |   1
+    A   |   1  
 
    * Direct product table
 
-        | A  
+        | A    
    -----+-----
-    A   | A  
+    A   | A    
 
 
   Atoms and basis sets
@@ -155,6 +158,7 @@ Point group: C1
   ----------------------------------------------------------------------
   total:      3      10      21       7
   ----------------------------------------------------------------------
+
   Threshold for integrals:  1.00D-15
 
 
@@ -181,7 +185,7 @@ Point group: C1
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            O           H           H   
+            O           H           H           
 
    O       0.000000
    H       1.000000    0.000000
@@ -215,10 +219,10 @@ Point group: C1
  ************************************************************************
 
 
- >>> Time used in ONEDRV is   0.01 seconds
+ >>> Time used in ONEDRV is   0.00 seconds
 
 
- >>> Time used in OVERLA is   0.00 seconds
+ >>> Time used in OVERLA is   0.01 seconds
 
 
  >>> Time used in DIPLEN is   0.00 seconds
@@ -227,14 +231,8 @@ Point group: C1
  >>> Time used in SECMOM is   0.00 seconds
 
 
-
- ************************************************************************
- ************************** Output from TWOINT **************************
- ************************************************************************
-
-
- Number of two-electron integrals written:       228 (56.2%)
- Kilobytes written:                                8
+ Number of two-electron integrals written:         228 ( 56.2% )
+ Megabytes written:                              0.007
 
 
 
@@ -253,27 +251,26 @@ Point group: C1
 
  >>> Time used in FRMSUP is   0.00 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.07 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.13 seconds
+ >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
-@@     Starting Wave-Function Section -
+     Starting Wave Function Section -
 
- NCCEXCI for singlet:           1
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ NCCEXCI for singlet: 1
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (IRIX)   : Fri Oct 13 16:03:23 2000
-     Host name              : aausgi4                                 
+     Host name              : pico                                    
 
  Title lines from integral program:
-     bla. bla.                                                               
-     H2o ano basis Almloef and Taylor.                                       
+     Properties of excited state                                             
+     H2O in minimal basis                                                    
 
  Print level on unit LUPRI =   2 is   0
- Print level on unit LUW4 =   2 is   5
+ Print level on unit LUW4  =   2 is   5
 
       (Integral direct) CC calculation.
 
@@ -305,7 +302,7 @@ Point group: C1
      Number of basis functions          7
 
       ** Automatic occupation of RHF orbitals **
-      -- Initial occupation of symmetries is determined from Huckel guess.               
+      -- Initial occupation of symmetries is determined from Huckel guess.                    
       -- Initial occupation of symmetries is : --
 
      Occupied HF orbitals               5
@@ -342,15 +339,15 @@ Point group: C1
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-   1    -74.667675183375   3.98D+00  -7.47D+01    5
-   2    -74.945993649214   3.97D-01  -2.78D-01    5
-   3    -74.963813689907   1.12D-01  -1.78D-02    5
-   4    -74.965591300972   1.81D-02  -1.78D-03    5
-   5    -74.965653747133   4.02D-03  -6.24D-05    5
-   6    -74.965656991555   2.40D-05  -3.24D-06    5
-   7    -74.965656991615   1.22D-06  -6.01D-11    5
-   8    -74.965656991615   5.97D-09  -7.11D-14    5
-   9    -74.965656991615   7.06D-11  -4.26D-14    5
+   1    -74.725091722287   3.45D+00  -7.47D+01    5
+   2    -74.949955673775   3.60D-01  -2.25D-01    5
+   3    -74.964396124692   9.61D-02  -1.44D-02    5
+   4    -74.965606359306   1.56D-02  -1.21D-03    5
+   5    -74.965651150879   5.45D-03  -4.48D-05    5
+   6    -74.965656990378   9.70D-05  -5.84D-06    5
+   7    -74.965656991615   1.20D-06  -1.24D-09    5
+   8    -74.965656991615   3.15D-09  -1.42D-13    5
+   9    -74.965656991615   6.13D-12   0.00D+00    5
  DIIS converged in   9 iterations !
 
 
@@ -370,7 +367,7 @@ Point group: C1
   - E(HOMO) :    -0.39216304 au (symmetry 1)
   ------------------------------------------
     gap     :     0.96402865 au
-1
+
 
                     >>> FINAL RESULTS FROM SIRIUS <<<
 
@@ -381,33 +378,31 @@ Point group: C1
      Nuclear repulsion:             8.812229431637
      Electronic energy:           -83.777886423252
 
-     Final gradient norm:           0.000000000071
+     Final gradient norm:           0.000000000006
 
  
-     Date and time (IRIX)   : Fri Oct 13 16:03:23 2000
-     Host name              : aausgi4                                 
+     Host name              : pico                                    
 
      Molecular orbitals for symmetry species   1
 
  Orbital          1        2        3        4        5
-   1  O   1s     0.9942  -0.2342   0.0000   0.1033   0.0000
-   2  O   1s     0.0256   0.8485   0.0000  -0.5339   0.0000
+   1  O   1s     0.9942  -0.2342  -0.0000   0.1033   0.0000
+   2  O   1s     0.0256   0.8485  -0.0000  -0.5339   0.0000
    3  O   2px    0.0000   0.0000   0.0000   0.0000   1.0000
-   4  O   2py    0.0000   0.0000   0.6127   0.0000   0.0000
+   4  O   2py    0.0000  -0.0000   0.6127  -0.0000   0.0000
    5  O   2pz    0.0041   0.1192   0.0000   0.7537   0.0000
    6  H   1s    -0.0055   0.1547   0.4497   0.2991   0.0000
    7  H   1s    -0.0055   0.1547  -0.4497   0.2991   0.0000
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.09 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.06 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (IRIX)   : Fri Oct 13 16:03:23 2000
-     Host name              : aausgi4                                 
+     Host name              : pico                                    
 
-@@- End of Wave-Function Section
+- End of Wave Function Section
      Starting Coupled Cluster -
 
   
@@ -423,7 +418,7 @@ Point group: C1
  *******************************************************************************
 
 
- LWORK =        20000000
+ LWORK =        10000000
 
 
 
@@ -592,10 +587,10 @@ Point group: C1
                                au             Debye
 
                     x      0.00000000      0.00000000
-                    y      0.00000000      0.00000000
-                    z      0.66661222      1.69437495
+                    y     -0.00000000     -0.00000000
+                    z      0.66661222      1.69435907
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -607,10 +602,10 @@ Point group: C1
 
                     X              Y              Z
 
-               Column   1     Column   2     Column   3
+               Column   1     Column   2     Column   3     
        1       4.56086700     0.00000000     0.00000000
        2       0.00000000     7.52381947     0.00000000
-       3       0.00000000     0.00000000     6.29770834
+       3       0.00000000     0.00000000     6.29770833
 
  Alfa**2 Invariant:                         37.545827
  Beta**2 Invariant:                          6.649527
@@ -646,33 +641,32 @@ Point group: C1
  Length of Excitation vectors in this class is:        10
  Converging for  1 roots.
   >> output from FNDMN3 <<
-  LOWEST VALUE AND PLACE   0.9640286466370301               9
-  HIGHST VALUE AND PLACE    20.93380859648904               2
+  LOWEST VALUE AND PLACE  0.964028646628759 9
+  HIGHST VALUE AND PLACE  20.93380859646782 2
 IELMNT XMIN IMIN NDEG        1    9.64029D-01       9   1
 IELMNT XMIN IMIN NDEG        2    1.03034D+00       7   1
 IELMNT XMIN IMIN NDEG        3    1.07294D+00      10   1
 IELMNT XMIN IMIN NDEG        4    1.13925D+00       8   1
 IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
-  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3  4
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
 
      1 :      9      7     10      8
-  MIN AND MAX IN SELECTED SUPSPACE   0.9640286466370301    
-    1.139252884868239    
+  MIN AND MAX IN SELECTED SUPSPACE  0.964028646628759 1.13925288486258
  Start vector guessed from diagonal
  ... selected element no.  9
- CCEQ_SOL: IPRLE   =               6
+ CCEQ_SOL: IPRLE   =     6
  CCEQ_SOL: TRIPLET =     F
  CCEQ_SOL: LINQCC  =     F
- CCEQ_SOL: NREDH   =               1
- CCEQ_SOL: MAXRED  =             200
- CCEQ_SOL: MAXLE   =              40
- CCEQ_SOL: ISIDE   =               1
- CCEQ_SOL: ISTRVE  =               1
- CCEQ_SOL: NVEC    =               1
- CCEQ_SOL: NUPVEC  =               1
- CCEQ_SOL: NCCVAR  =              10
+ CCEQ_SOL: NREDH   =     1
+ CCEQ_SOL: MAXRED  =     200
+ CCEQ_SOL: MAXLE   =     40
+ CCEQ_SOL: ISIDE   =     1
+ CCEQ_SOL: ISTRVE  =     1
+ CCEQ_SOL: NVEC    =     1
+ CCEQ_SOL: NUPVEC  =     1
+ CCEQ_SOL: NCCVAR  =     10
 
 
 
@@ -687,38 +681,38 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919393
+  Workspace input:  9919393
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   1
 
 
- Time used in     CC_RHTR in total   :       0.00 seconds
+ Time used in     CC_RHTR in total   :       0.01 seconds
  Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
   CCRED  
-  ISIDE             1
-  NREDH             1
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919393
+  ISIDE   1
+  NREDH   1
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919393
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
+               Column   1     
        1       0.44864954
   
- ROOT:  1 RESIDUAL TOT: 1.38778D-15
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.38778D-15
-      1       1         0.00     0.14E-14
+ ROOT:  1 RESIDUAL TOT: 5.46460D-16
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.46460D-16
+      1       1         0.00     0.55E-15
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
+               Column   1     
        1       0.44864954
 
  Dimension of the reduced space:     1
@@ -765,13 +759,13 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Excitation no.       Hartree               eV 
  --------------       -------               --
 
-         1            0.448650           12.208380
+         1            0.448650           12.208375
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -74.517007454948057
+@@    1    1           -74.517007454954935
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -835,35 +829,34 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Length of Excitation vectors in this class is:        10
  Converging for  1 roots.
   >> output from FNDMN3 <<
-  LOWEST VALUE AND PLACE   0.9640286466370301               9
-  HIGHST VALUE AND PLACE    20.93380859648904               2
+  LOWEST VALUE AND PLACE  0.964028646628759 9
+  HIGHST VALUE AND PLACE  20.93380859646782 2
 IELMNT XMIN IMIN NDEG        1    9.64029D-01       9   1
 IELMNT XMIN IMIN NDEG        2    1.03034D+00       7   1
 IELMNT XMIN IMIN NDEG        3    1.07294D+00      10   1
 IELMNT XMIN IMIN NDEG        4    1.13925D+00       8   1
 IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
-  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3  4
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
 
      1 :      9      7     10      8
-  MIN AND MAX IN SELECTED SUPSPACE   0.9640286466370301    
-    1.139252884868239    
+  MIN AND MAX IN SELECTED SUPSPACE  0.964028646628759 1.13925288486258
  Start left vector eigenvalue equation from right eigenvectors.
- CC_GETSAV> IOPT =           33
+ CC_GETSAV> IOPT =  33
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CCS       RE  vector
- CCEQ_SOL: IPRLE   =               6
+ CCEQ_SOL: IPRLE   =     6
  CCEQ_SOL: TRIPLET =     F
  CCEQ_SOL: LINQCC  =     F
- CCEQ_SOL: NREDH   =               1
- CCEQ_SOL: MAXRED  =             200
- CCEQ_SOL: MAXLE   =              40
- CCEQ_SOL: ISIDE   =              -1
- CCEQ_SOL: ISTRVE  =               1
- CCEQ_SOL: NVEC    =               1
- CCEQ_SOL: NUPVEC  =               1
- CCEQ_SOL: NCCVAR  =              10
+ CCEQ_SOL: NREDH   =     1
+ CCEQ_SOL: MAXRED  =     200
+ CCEQ_SOL: MAXLE   =     40
+ CCEQ_SOL: ISIDE   =     -1
+ CCEQ_SOL: ISTRVE  =     1
+ CCEQ_SOL: NVEC    =     1
+ CCEQ_SOL: NUPVEC  =     1
+ CCEQ_SOL: NCCVAR  =     10
 
 
 
@@ -878,7 +871,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919393
+  Workspace input:  9919393
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
@@ -891,25 +884,25 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
   CCRED  
-  ISIDE            -1
-  NREDH             1
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919393
+  ISIDE   -1
+  NREDH   1
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919393
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
+               Column   1     
        1       0.44864954
   
- ROOT:  1 RESIDUAL TOT: 1.38778D-15
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.38778D-15
-      1       1         0.00     0.14E-14
+ ROOT:  1 RESIDUAL TOT: 5.46460D-16
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 5.46460D-16
+      1       1         0.00     0.55E-15
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
+               Column   1     
        1       0.44864954
 
  Dimension of the reduced space:     1
@@ -956,13 +949,13 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Excitation no.       Hartree               eV 
  --------------       -------               --
 
-         1            0.448650           12.208380
+         1            0.448650           12.208375
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -74.517007454948057
+@@    1    1           -74.517007454954935
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -1006,7 +999,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Ground state energy is target 
 
- Ecorr =                    -74.96565699161512000000
+ Ecorr =                    -74.96565699161509100000
 
  *******************************************************************
 
@@ -1048,6 +1041,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  +==================================================+
  |        F MATRIX TRANSFORMATION SECTION           |
+ |  (results are written to a direct access file)   |
  +--------------------------------------------------+
  | time for zero order intermediat.:      0.00 secs.|
  | time for  1 sets of left interm.:      0.00 secs.|
@@ -1059,38 +1053,26 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  | LE   No. |  RE  No. |   CC_  No.   |  time/secs  |
  +--------------------------------------------------+
  |     1    |     1    |      1       |       0.00  |
- +--------------------------------------------------+
- | total time for   1 F transforms.:      0.03 secs.|
- +--------------------------------------------------+
- |  % of time used in start up org.:     36.18      |
- |  % of time used in Fock interm. :      1.89      |
- |  % of time used in ERI          :      0.14      |
- |  % of time used in CCRDAO       :      1.04      |
- |  % of time used in (**|k del)   :      0.00      |
- |  % of time used in BF term      :      0.00      |
- |  % of time used in C term       :      0.00      |
- |  % of time used in D term       :      0.00      |
- |  % of time used in I/O          :     46.42      |
  +==================================================+
 
 
 
  Solving  1 response equations for states;
  Energy:  0.448650 and nr.:   1 of symmetry:   1
- ilstnr:            1
+ ilstnr:  1
      E0 start vector nr.  1 of symmetry  1 generated from gradient
- exgr, irst:           1
- CCEQ_SOL: IPRLE   =               6
+ exgr, irst: 1
+ CCEQ_SOL: IPRLE   =     6
  CCEQ_SOL: TRIPLET =     F
  CCEQ_SOL: LINQCC  =     T
- CCEQ_SOL: NREDH   =               1
- CCEQ_SOL: MAXRED  =             200
- CCEQ_SOL: MAXLE   =              40
- CCEQ_SOL: ISIDE   =              -1
- CCEQ_SOL: ISTRVE  =               1
- CCEQ_SOL: NVEC    =               1
- CCEQ_SOL: NUPVEC  =               1
- CCEQ_SOL: NCCVAR  =              10
+ CCEQ_SOL: NREDH   =     1
+ CCEQ_SOL: MAXRED  =     200
+ CCEQ_SOL: MAXLE   =     40
+ CCEQ_SOL: ISIDE   =     -1
+ CCEQ_SOL: ISTRVE  =     1
+ CCEQ_SOL: NVEC    =     1
+ CCEQ_SOL: NUPVEC  =     1
+ CCEQ_SOL: NCCVAR  =     10
 
 
 
@@ -1105,27 +1087,27 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   1
 
 
- Time used in     CC_RHTR in total   :       0.00 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
   CCRED  
-  ISIDE            -1
-  NREDH             1
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
- ilstnr:            1
- ilstnr:            1
+  ISIDE   -1
+  NREDH   1
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
+ ilstnr:  1
+ ilstnr:  1
   
  ROOT:  1 RESIDUAL TOT: 5.40576D-02
       1       1         0.00     0.54E-01
@@ -1141,7 +1123,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
@@ -1154,21 +1136,21 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
   CCRED  
-  ISIDE            -1
-  NREDH             2
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
- ilstnr:            1
- ilstnr:            1
+  ISIDE   -1
+  NREDH   2
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
+ ilstnr:  1
+ ilstnr:  1
   
  ROOT:  1 RESIDUAL TOT: 1.29414D-02
       2       1         0.00     0.13E-01
 
  Dimension of the reduced space:     3
 
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -1177,27 +1159,27 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   3
 
 
- Time used in     CC_RHTR in total   :       0.00 seconds
+ Time used in     CC_RHTR in total   :       0.01 seconds
  Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
   CCRED  
-  ISIDE            -1
-  NREDH             3
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
- ilstnr:            1
- ilstnr:            1
+  ISIDE   -1
+  NREDH   3
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
+ ilstnr:  1
+ ilstnr:  1
   
  ROOT:  1 RESIDUAL TOT: 3.33378D-03
       3       1         0.00     0.33E-02
@@ -1213,31 +1195,31 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   4
 
 
- Time used in     CC_RHTR in total   :       0.00 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
   CCRED  
-  ISIDE            -1
-  NREDH             4
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
- ilstnr:            1
- ilstnr:            1
+  ISIDE   -1
+  NREDH   4
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
+ ilstnr:  1
+ ilstnr:  1
   
- ROOT:  1 RESIDUAL TOT: 7.03264D-17
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 7.03264D-17
-      4       1         0.00     0.70E-16
+ ROOT:  1 RESIDUAL TOT: 1.42050D-16
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.42050D-16
+      4       1         0.00     0.14E-15
 
  Dimension of the reduced space:     4
 
@@ -1359,10 +1341,10 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
 
           Printed all single excitations greater than 0.010000
- Total, actual nr.,loop index           1           1           1
- Sym, reduced nr.           1           1
- Norm of AO density-1   18.61593196311159    
- Norm of AO density2   6.931778485877357    
+ Total, actual nr.,loop index 1 1 1
+ Sym, reduced nr. 1 1
+ Norm of AO density-1 18.61593196309078
+ Norm of AO density2 6.93177848587857
 
 
         +---------------------------------------------------------+
@@ -1373,7 +1355,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Excited state properties for 
  Excited state nr.:               1
  Excited state sym:               1
- Excitation energy (au.,eV):    0.448650   12.208380
+ Excitation energy (au.,eV):    0.448650   12.208375
 
 
                         +--------------------------+
@@ -1389,9 +1371,9 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
                     x      0.00000000      0.00000000
                     y      0.00000000      0.00000000
-                    z     -0.14163648     -0.36000736
+                    z     -0.14163648     -0.36000399
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -1403,16 +1385,17 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
                     X              Y              Z
 
-               Column   1     Column   2     Column   3
+               Column   1     Column   2     Column   3     
        1       4.17877127     0.00000000     0.00000000
-       2       0.00000000     9.15857742     0.00000000
-       3       0.00000000     0.00000000     7.44972336
+       2       0.00000000     9.15857742    -0.00000000
+       3       0.00000000    -0.00000000     7.44972336
 
  Alfa**2 Invariant:                         48.011374
  Beta**2 Invariant:                         19.208890
 
  Isotropic Property:                         6.929024 a.u.
  Property anisotropy invariant:              4.382795 a.u.
+ WORK: 10000000 2.12446904128055 0.0
       
 
     *******************************************************************
@@ -1450,6 +1433,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
 
 
+ WORK: 10000000 2.12446904128055 0.0
 
 
  List R1  is empty.
@@ -1478,18 +1462,6 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  | L0   No. |  RE  No. |   FR   No.   |  time/secs  |
  +--------------------------------------------------+
  |     0    |     1    |      1       |       0.00  |
- +--------------------------------------------------+
- | total time for   1 F transforms.:      0.03 secs.|
- +--------------------------------------------------+
- |  % of time used in start up org.:     34.70      |
- |  % of time used in Fock interm. :      2.05      |
- |  % of time used in ERI          :      0.18      |
- |  % of time used in CCRDAO       :      1.11      |
- |  % of time used in (**|k del)   :      0.00      |
- |  % of time used in BF term      :      0.00      |
- |  % of time used in C term       :      0.00      |
- |  % of time used in D term       :      0.00      |
- |  % of time used in I/O          :     48.58      |
  +==================================================+
 
 
@@ -1505,17 +1477,17 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Solving   1 response equations:
  M1 :
      M1  start vector nr.  1 of symmetry  1 generated from gradient
- CCEQ_SOL: IPRLE   =               6
+ CCEQ_SOL: IPRLE   =     6
  CCEQ_SOL: TRIPLET =     F
  CCEQ_SOL: LINQCC  =     T
- CCEQ_SOL: NREDH   =               1
- CCEQ_SOL: MAXRED  =             200
- CCEQ_SOL: MAXLE   =              40
- CCEQ_SOL: ISIDE   =              -1
- CCEQ_SOL: ISTRVE  =               1
- CCEQ_SOL: NVEC    =               1
- CCEQ_SOL: NUPVEC  =               1
- CCEQ_SOL: NCCVAR  =              10
+ CCEQ_SOL: NREDH   =     1
+ CCEQ_SOL: MAXRED  =     200
+ CCEQ_SOL: MAXLE   =     40
+ CCEQ_SOL: ISIDE   =     -1
+ CCEQ_SOL: ISTRVE  =     1
+ CCEQ_SOL: NVEC    =     1
+ CCEQ_SOL: NUPVEC  =     1
+ CCEQ_SOL: NCCVAR  =     10
 
 
 
@@ -1530,29 +1502,29 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   1
 
 
- Time used in     CC_RHTR in total   :       0.00 seconds
+ Time used in     CC_RHTR in total   :       0.01 seconds
  Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
   CCRED  
-  ISIDE            -1
-  NREDH             1
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   1
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
- ROOT:  1 RESIDUAL TOT: 1.38765D-15
- ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.38765D-15
-      1       1         0.00     0.14E-14
+ ROOT:  1 RESIDUAL TOT: 6.24309D-16
+ ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 6.24309D-16
+      1       1         0.00     0.62E-15
 
  Dimension of the reduced space:     1
 
@@ -1725,12 +1697,12 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  -------------------------------------------------------
 
  RES{<<XDIPLEN ,XDIPLEN >>( 0.448650)} =     0.00948966 (   0.09741489)
- RES{<<XDIPLEN ,YDIPLEN >>( 0.448650)} =     0.00000000 (   0.00000000)
- RES{<<XDIPLEN ,ZDIPLEN >>( 0.448650)} =     0.00000000 (   0.00000000)
- RES{<<YDIPLEN ,XDIPLEN >>( 0.448650)} =     0.00000000 (   0.00000000)
+ RES{<<XDIPLEN ,YDIPLEN >>( 0.448650)} =    -0.00000000 (  -0.00000000)
+ RES{<<XDIPLEN ,ZDIPLEN >>( 0.448650)} =    -0.00000000 (  -0.00000000)
+ RES{<<YDIPLEN ,XDIPLEN >>( 0.448650)} =    -0.00000000 (  -0.00000000)
  RES{<<YDIPLEN ,YDIPLEN >>( 0.448650)} =     0.00000000 (   0.00000000)
  RES{<<YDIPLEN ,ZDIPLEN >>( 0.448650)} =     0.00000000 (   0.00000000)
- RES{<<ZDIPLEN ,XDIPLEN >>( 0.448650)} =     0.00000000 (   0.00000000)
+ RES{<<ZDIPLEN ,XDIPLEN >>( 0.448650)} =    -0.00000000 (  -0.00000000)
  RES{<<ZDIPLEN ,YDIPLEN >>( 0.448650)} =     0.00000000 (   0.00000000)
  RES{<<ZDIPLEN ,ZDIPLEN >>( 0.448650)} =     0.00000000 (   0.00000000)
 
@@ -1740,8 +1712,8 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Dipole gauge
 
-               Column   1     Column   2     Column   3
-       1       0.00948966     0.00000000     0.00000000
+               Column   1     Column   2     Column   3     
+       1       0.00948966    -0.00000000    -0.00000000
 
  Principal values of diagonalized transition strength matrix:
 
@@ -1753,7 +1725,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Principal axis of diagonalized transition strength matrix:
 
 
-               Column   1     Column   2     Column   3
+               Column   1     Column   2     Column   3     
        1       1.00000000     0.00000000     0.00000000
        2       0.00000000     1.00000000     0.00000000
        3       0.00000000     0.00000000     1.00000000
@@ -1763,8 +1735,8 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  CCS   excitation energy: 0.44864954
 
 
-               Column   1     Column   2     Column   3
-       1       0.00283835     0.00000000     0.00000000
+               Column   1     Column   2     Column   3     
+       1       0.00283835    -0.00000000    -0.00000000
 
  Principal values of diagonalized oscillator strength matrix:
 
@@ -1776,7 +1748,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Principal axis of diagonalized oscillator strength matrix:
 
 
-               Column   1     Column   2     Column   3
+               Column   1     Column   2     Column   3     
        1       1.00000000     0.00000000     0.00000000
        2       0.00000000     1.00000000     0.00000000
        3       0.00000000     0.00000000     1.00000000
@@ -1848,87 +1820,87 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
 
           Printed all double excitations greater than 0.016667
- Iter.  1: Coupled cluster MP2   energy :     -75.0055650564717950
+ Iter.  1: Coupled cluster MP2   energy :     -75.0055650564716380
 
        Iteration no.:  1
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.01 seconds
+       Time used in   RHS - TOTAL  :       0.00 seconds
        Norm of t1am   after ccvec:         0.0000000000D+00
        Norm of t2am   after ccvec:         0.1169897203D-01
-       Norm of omega1 after ccvec:         0.6301777627D-04
-       Norm of omega2 after ccvec:         0.1039889323D-32
- Iter.  1: Coupled cluster CC2   energy :     -75.0055546070088040
+       Norm of omega1 after ccvec:         0.6301777647D-04
+       Norm of omega2 after ccvec:         0.4997212980D-31
+ Iter.  1: Coupled cluster CC2   energy :     -75.0055546070086050
 
        Iteration no.:  2
        -----------------
 
        Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm of t1am   after ccvec:         0.5430471818D-04
+       Norm of t1am   after ccvec:         0.5430471833D-04
        Norm of t2am   after ccvec:         0.1169897203D-01
-       Norm of omega1 after ccvec:         0.4968262740D-05
-       Norm of omega2 after ccvec:         0.3497035313D-05
- Iter.  2: Coupled cluster CC2   energy :     -75.0056992695113250
+       Norm of omega1 after ccvec:         0.4968262742D-05
+       Norm of omega2 after ccvec:         0.3497035318D-05
+ Iter.  2: Coupled cluster CC2   energy :     -75.0056992695111830
 
        Iteration no.:  3
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm of t1am   after ccvec:         0.9851737098D-04
+       Time used in   RHS - TOTAL  :       0.00 seconds
+       Norm of t1am   after ccvec:         0.9851737117D-04
        Norm of t2am   after ccvec:         0.1181359789D-01
-       Norm of omega1 after ccvec:         0.4809675076D-06
-       Norm of omega2 after ccvec:         0.9852513522D-07
- Iter.  3: Coupled cluster CC2   energy :     -75.0057127366546300
+       Norm of omega1 after ccvec:         0.4809675082D-06
+       Norm of omega2 after ccvec:         0.9852513541D-07
+ Iter.  3: Coupled cluster CC2   energy :     -75.0057127366546290
 
        Iteration no.:  4
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm of t1am   after ccvec:         0.1152974590D-03
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm of t1am   after ccvec:         0.1152974592D-03
        Norm of t2am   after ccvec:         0.1182750607D-01
-       Norm of omega1 after ccvec:         0.1000704526D-07
-       Norm of omega2 after ccvec:         0.4504242913D-08
- Iter.  4: Coupled cluster CC2   energy :     -75.0057135507788080
+       Norm of omega1 after ccvec:         0.1000704530D-07
+       Norm of omega2 after ccvec:         0.4504242933D-08
+ Iter.  4: Coupled cluster CC2   energy :     -75.0057135507787360
 
        Iteration no.:  5
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm of t1am   after ccvec:         0.1168478348D-03
+       Time used in   RHS - TOTAL  :       0.00 seconds
+       Norm of t1am   after ccvec:         0.1168478350D-03
        Norm of t2am   after ccvec:         0.1182877595D-01
-       Norm of omega1 after ccvec:         0.1130571963D-09
-       Norm of omega2 after ccvec:         0.5469306269D-10
- Iter.  5: Coupled cluster CC2   energy :     -75.0057135386613680
+       Norm of omega1 after ccvec:         0.1130571966D-09
+       Norm of omega2 after ccvec:         0.5469306289D-10
+ Iter.  5: Coupled cluster CC2   energy :     -75.0057135386613250
 
        Iteration no.:  6
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm of t1am   after ccvec:         0.1168631236D-03
+       Time used in   RHS - TOTAL  :       0.00 seconds
+       Norm of t1am   after ccvec:         0.1168631238D-03
        Norm of t2am   after ccvec:         0.1182870768D-01
-       Norm of omega1 after ccvec:         0.1104231989D-11
-       Norm of omega2 after ccvec:         0.1213338527D-12
- Iter.  6: Coupled cluster CC2   energy :     -75.0057135297827530
+       Norm of omega1 after ccvec:         0.1104231995D-11
+       Norm of omega2 after ccvec:         0.1213338533D-12
+ Iter.  6: Coupled cluster CC2   energy :     -75.0057135297827240
 
        Iteration no.:  7
        -----------------
 
        Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm of t1am   after ccvec:         0.1168567791D-03
+       Norm of t1am   after ccvec:         0.1168567793D-03
        Norm of t2am   after ccvec:         0.1182869973D-01
-       Norm of omega1 after ccvec:         0.5248021482D-16
-       Norm of omega2 after ccvec:         0.2609521154D-16
- Iter.  7: Coupled cluster CC2   energy :     -75.0057135296702310
+       Norm of omega1 after ccvec:         0.5248014096D-16
+       Norm of omega2 after ccvec:         0.2609521255D-16
+ Iter.  7: Coupled cluster CC2   energy :     -75.0057135296701880
 
        Iteration no.:  8
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm of t1am   after ccvec:         0.1168567319D-03
+       Time used in   RHS - TOTAL  :       0.00 seconds
+       Norm of t1am   after ccvec:         0.1168567321D-03
        Norm of t2am   after ccvec:         0.1182869971D-01
-       Norm of omega1 after ccvec:         0.3020640163D-19
-       Norm of omega2 after ccvec:         0.1457020651D-19
- Iter.  8: Coupled cluster CC2   energy :     -75.0057135296736560
+       Norm of omega1 after ccvec:         0.3020692302D-19
+       Norm of omega2 after ccvec:         0.1457019324D-19
+ Iter.  8: Coupled cluster CC2   energy :     -75.0057135296736410
 
  CC2   energy converged to within   0.10D-10 is    -75.005713530
 
@@ -2007,7 +1979,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
 
 
-       Time used in   RHS - TOTAL  :       0.01 seconds
+       Time used in   RHS - TOTAL  :       0.02 seconds
 
 
             E-intermediates calculated 
@@ -2030,18 +2002,21 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                      ! Coupled Cluster model is: CC2 !
                      +-------------------------------+
 
+
+ Solving   1 response equations:
+ L0 :
      Start vector generated from gradient
- CCEQ_SOL: IPRLE   =               6
+ CCEQ_SOL: IPRLE   =     6
  CCEQ_SOL: TRIPLET =     F
  CCEQ_SOL: LINQCC  =     T
- CCEQ_SOL: NREDH   =               1
- CCEQ_SOL: MAXRED  =             200
- CCEQ_SOL: MAXLE   =              40
- CCEQ_SOL: ISIDE   =              -1
- CCEQ_SOL: ISTRVE  =               1
- CCEQ_SOL: NVEC    =               1
- CCEQ_SOL: NUPVEC  =               1
- CCEQ_SOL: NCCVAR  =              65
+ CCEQ_SOL: NREDH   =     1
+ CCEQ_SOL: MAXRED  =     200
+ CCEQ_SOL: MAXLE   =     40
+ CCEQ_SOL: ISIDE   =     -1
+ CCEQ_SOL: ISTRVE  =     1
+ CCEQ_SOL: NVEC    =     1
+ CCEQ_SOL: NUPVEC  =     1
+ CCEQ_SOL: NCCVAR  =     65
 
 
 
@@ -2056,21 +2031,21 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   1
   
- Time used in CC_LHTR :  1.4086008071899414E-02
+ Time used in CC_LHTR : 1.000005006790161E-02
   
   CCRED  
-  ISIDE            -1
-  NREDH             1
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   1
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 6.43247D-02
       1       1         0.00     0.64E-01
@@ -2086,21 +2061,21 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   2
   
- Time used in CC_LHTR :  1.2266993522644043E-02
+ Time used in CC_LHTR : 9.999990463256836E-03
   
   CCRED  
-  ISIDE            -1
-  NREDH             2
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   2
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 2.43906D-02
       2       1         0.00     0.24E-01
@@ -2116,21 +2091,21 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   3
   
- Time used in CC_LHTR :  1.2897968292236328E-02
+ Time used in CC_LHTR : 0.0
   
   CCRED  
-  ISIDE            -1
-  NREDH             3
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   3
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 4.96991D-03
       3       1         0.00     0.50E-02
@@ -2146,28 +2121,28 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   4
   
- Time used in CC_LHTR :  1.2434959411621094E-02
+ Time used in CC_LHTR : 0.0
   
   CCRED  
-  ISIDE            -1
-  NREDH             4
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   4
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 4.09317D-04
       4       1         0.00     0.41E-03
 
  Dimension of the reduced space:     5
 
- >>> TIME USED IN THIS MICRO ITERATION        0.03
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -2176,28 +2151,28 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   5
   
- Time used in CC_LHTR :  1.3670027256011963E-02
+ Time used in CC_LHTR : 9.999990463256836E-03
   
   CCRED  
-  ISIDE            -1
-  NREDH             5
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   5
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 8.00167D-05
       5       1         0.00     0.80E-04
 
  Dimension of the reduced space:     6
 
- >>> TIME USED IN THIS MICRO ITERATION        0.03
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -2206,28 +2181,28 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   6
   
- Time used in CC_LHTR :  1.3491034507751465E-02
+ Time used in CC_LHTR : 2.000004053115845E-02
   
   CCRED  
-  ISIDE            -1
-  NREDH             6
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   6
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 1.55166D-06
       6       1         0.00     0.16E-05
 
  Dimension of the reduced space:     7
 
- >>> TIME USED IN THIS MICRO ITERATION        0.03
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -2236,21 +2211,21 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   7
   
- Time used in CC_LHTR :  1.2940049171447754E-02
+ Time used in CC_LHTR : 0.0
   
   CCRED  
-  ISIDE            -1
-  NREDH             7
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   7
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 8.48543D-09
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 8.48543D-09
@@ -2274,7 +2249,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.17 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.12 seconds
  >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
@@ -2282,8 +2257,8 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
 
 
- Analysis of the undifferentiated Lagrangian multipliers: 
- --------------------------------------------------------
+ Analysis of CC Response/Cauchy vector:
+ --------------------------------------
 
 
           CC_PRAM:Overall Contribution of the Different Components
@@ -2322,9 +2297,9 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
           Printed all double excitations greater than 0.083089
 
 
-                       +---------------------------+
-                       !  CC2  Natural Occupations !
-                       +---------------------------+
+                        +--------------------------+
+                        ! CC2  Natural Occupations !
+                        +--------------------------+
 
   
    Symmetry block number:  1
@@ -2343,7 +2318,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
 
           +------------------------------------------------------+
-          ! Unrelaxed  CC2 First-order one-electron properties:  !
+          ! Unrelaxed CC2  First-order one-electron properties:  !
           +------------------------------------------------------+
 
 
@@ -2360,10 +2335,10 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                                au             Debye
 
                     x      0.00000000      0.00000000
-                    y      0.00000000      0.00000000
-                    z      0.63118340      1.60432302
+                    y     -0.00000000     -0.00000000
+                    z      0.63118340      1.60430799
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -2375,7 +2350,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
                     X              Y              Z
 
-               Column   1     Column   2     Column   3
+               Column   1     Column   2     Column   3     
        1       4.56801883     0.00000000     0.00000000
        2       0.00000000     7.59443398     0.00000000
        3       0.00000000     0.00000000     6.33721431
@@ -2414,33 +2389,32 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Length of Excitation vectors in this class is:        65
  Converging for  1 roots.
   >> output from FNDMN3 <<
-  LOWEST VALUE AND PLACE   0.9640286466370301               9
-  HIGHST VALUE AND PLACE    41.86761719297808              13
+  LOWEST VALUE AND PLACE  0.964028646628759 9
+  HIGHST VALUE AND PLACE  41.86761719293564 13
 IELMNT XMIN IMIN NDEG        1    9.64029D-01       9   1
 IELMNT XMIN IMIN NDEG        2    1.03034D+00       7   1
 IELMNT XMIN IMIN NDEG        3    1.07294D+00      10   1
 IELMNT XMIN IMIN NDEG        4    1.13925D+00       8   1
 IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
-  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3  4
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
 
      1 :      9      7     10      8
-  MIN AND MAX IN SELECTED SUPSPACE   0.9640286466370301    
-    1.139252884868239    
+  MIN AND MAX IN SELECTED SUPSPACE  0.964028646628759 1.13925288486258
  Start vector guessed from diagonal
  ... selected element no.  9
- CCEQ_SOL: IPRLE   =               6
+ CCEQ_SOL: IPRLE   =     6
  CCEQ_SOL: TRIPLET =     F
  CCEQ_SOL: LINQCC  =     F
- CCEQ_SOL: NREDH   =               1
- CCEQ_SOL: MAXRED  =             200
- CCEQ_SOL: MAXLE   =              40
- CCEQ_SOL: ISIDE   =               1
- CCEQ_SOL: ISTRVE  =               1
- CCEQ_SOL: NVEC    =               1
- CCEQ_SOL: NUPVEC  =               1
- CCEQ_SOL: NCCVAR  =              65
+ CCEQ_SOL: NREDH   =     1
+ CCEQ_SOL: MAXRED  =     200
+ CCEQ_SOL: MAXLE   =     40
+ CCEQ_SOL: ISIDE   =     1
+ CCEQ_SOL: ISTRVE  =     1
+ CCEQ_SOL: NVEC    =     1
+ CCEQ_SOL: NUPVEC  =     1
+ CCEQ_SOL: NCCVAR  =     65
 
 
 
@@ -2455,7 +2429,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919393
+  Workspace input:  9919393
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
@@ -2463,21 +2437,21 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
   CCRED  
-  ISIDE             1
-  NREDH             1
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919393
+  ISIDE   1
+  NREDH   1
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919393
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
+               Column   1     
        1       0.46928558
   
  ROOT:  1 RESIDUAL TOT: 2.29673D-01
@@ -2485,7 +2459,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
+               Column   1     
        1       0.46928558
 
  Dimension of the reduced space:     2
@@ -2499,7 +2473,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919393
+  Workspace input:  9919393
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
@@ -2508,20 +2482,20 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Time used in     CC_RHTR in total   :       0.01 seconds
  Time used in   CC part              :       0.00 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   Int. calc. & read    :       0.01 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
   CCRED  
-  ISIDE             1
-  NREDH             2
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919393
+  ISIDE   1
+  NREDH   2
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919393
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
+               Column   1     
        1       0.43827168
        2       2.30763407
   
@@ -2530,7 +2504,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
+               Column   1     
        1       0.43827168
 
  Dimension of the reduced space:     3
@@ -2544,7 +2518,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919393
+  Workspace input:  9919393
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
@@ -2552,21 +2526,21 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
   CCRED  
-  ISIDE             1
-  NREDH             3
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919393
+  ISIDE   1
+  NREDH   3
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919393
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
+               Column   1     
        1       0.43825118
        2       2.16438935
        3       2.70707017
@@ -2576,12 +2550,12 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
+               Column   1     
        1       0.43825118
 
  Dimension of the reduced space:     4
 
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -2590,29 +2564,29 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919393
+  Workspace input:  9919393
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   4
 
 
- Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in     CC_RHTR in total   :       0.00 seconds
  Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
   CCRED  
-  ISIDE             1
-  NREDH             4
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919393
+  ISIDE   1
+  NREDH   4
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919393
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
+               Column   1     
        1       0.43825215
        2       2.12328899
        3       2.54974196
@@ -2623,12 +2597,12 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
+               Column   1     
        1       0.43825215
 
  Dimension of the reduced space:     5
 
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -2637,29 +2611,29 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919393
+  Workspace input:  9919393
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   5
 
 
- Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.00 seconds
+ Time used in     CC_RHTR in total   :       0.02 seconds
+ Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.01 seconds
   
   CCRED  
-  ISIDE             1
-  NREDH             5
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919393
+  ISIDE   1
+  NREDH   5
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919393
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
+               Column   1     
        1       0.43825226
        2       1.99885886
        3       2.25326267
@@ -2672,12 +2646,12 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
+               Column   1     
        1       0.43825226
 
  Dimension of the reduced space:     5
 
- >>> TIME USED IN THIS MICRO ITERATION        0.01
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
     --------------------------------------
     converged in  5 iterations
@@ -2719,13 +2693,13 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Excitation no.       Hartree               eV 
  --------------       -------               --
 
-         1            0.438252           11.925456
+         1            0.438252           11.925450
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -74.567461274006362
+@@    1    1           -74.567461274007527
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -2812,35 +2786,34 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Length of Excitation vectors in this class is:        65
  Converging for  1 roots.
   >> output from FNDMN3 <<
-  LOWEST VALUE AND PLACE   0.9640286466370301               9
-  HIGHST VALUE AND PLACE    41.86761719297808              13
+  LOWEST VALUE AND PLACE  0.964028646628759 9
+  HIGHST VALUE AND PLACE  41.86761719293564 13
 IELMNT XMIN IMIN NDEG        1    9.64029D-01       9   1
 IELMNT XMIN IMIN NDEG        2    1.03034D+00       7   1
 IELMNT XMIN IMIN NDEG        3    1.07294D+00      10   1
 IELMNT XMIN IMIN NDEG        4    1.13925D+00       8   1
 IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
-  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3  4
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
 
      1 :      9      7     10      8
-  MIN AND MAX IN SELECTED SUPSPACE   0.9640286466370301    
-    1.139252884868239    
+  MIN AND MAX IN SELECTED SUPSPACE  0.964028646628759 1.13925288486258
  Start left vector eigenvalue equation from right eigenvectors.
- CC_GETSAV> IOPT =           33
+ CC_GETSAV> IOPT =  33
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       RE  vector
- CCEQ_SOL: IPRLE   =               6
+ CCEQ_SOL: IPRLE   =     6
  CCEQ_SOL: TRIPLET =     F
  CCEQ_SOL: LINQCC  =     F
- CCEQ_SOL: NREDH   =               1
- CCEQ_SOL: MAXRED  =             200
- CCEQ_SOL: MAXLE   =              40
- CCEQ_SOL: ISIDE   =              -1
- CCEQ_SOL: ISTRVE  =               1
- CCEQ_SOL: NVEC    =               1
- CCEQ_SOL: NUPVEC  =               1
- CCEQ_SOL: NCCVAR  =              65
+ CCEQ_SOL: NREDH   =     1
+ CCEQ_SOL: MAXRED  =     200
+ CCEQ_SOL: MAXLE   =     40
+ CCEQ_SOL: ISIDE   =     -1
+ CCEQ_SOL: ISTRVE  =     1
+ CCEQ_SOL: NVEC    =     1
+ CCEQ_SOL: NUPVEC  =     1
+ CCEQ_SOL: NCCVAR  =     65
 
 
 
@@ -2855,25 +2828,25 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919393
+  Workspace input:  9919393
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   1
   
- Time used in CC_LHTR :  1.2971043586730957E-02
+ Time used in CC_LHTR : 1.999998092651367E-02
   
   CCRED  
-  ISIDE            -1
-  NREDH             1
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919393
+  ISIDE   -1
+  NREDH   1
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919393
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
+               Column   1     
        1       0.43825226
   
  ROOT:  1 RESIDUAL TOT: 9.68717D-02
@@ -2881,7 +2854,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
+               Column   1     
        1       0.43825226
 
  Dimension of the reduced space:     2
@@ -2895,25 +2868,25 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919393
+  Workspace input:  9919393
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   2
   
- Time used in CC_LHTR :  1.2169957160949707E-02
+ Time used in CC_LHTR : 0.0
   
   CCRED  
-  ISIDE            -1
-  NREDH             2
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919393
+  ISIDE   -1
+  NREDH   2
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919393
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
+               Column   1     
        1       0.43825226
        2       2.23787140
   
@@ -2922,12 +2895,12 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
+               Column   1     
        1       0.43825226
 
  Dimension of the reduced space:     3
 
- >>> TIME USED IN THIS MICRO ITERATION        0.02
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -2936,25 +2909,25 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919393
+  Workspace input:  9919393
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   3
   
- Time used in CC_LHTR :  1.3612031936645508E-02
+ Time used in CC_LHTR : 2.000004053115845E-02
   
   CCRED  
-  ISIDE            -1
-  NREDH             3
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919393
+  ISIDE   -1
+  NREDH   3
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919393
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
+               Column   1     
        1       0.43825226
        2       2.23474563
        3       2.35832734
@@ -2964,7 +2937,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
+               Column   1     
        1       0.43825226
 
  Dimension of the reduced space:     4
@@ -2978,25 +2951,25 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919393
+  Workspace input:  9919393
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   4
   
- Time used in CC_LHTR :  1.3877034187316895E-02
+ Time used in CC_LHTR : 0.0
   
   CCRED  
-  ISIDE            -1
-  NREDH             4
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919393
+  ISIDE   -1
+  NREDH   4
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919393
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
+               Column   1     
        1       0.43825226
        2       2.13284857
        3       2.23783485
@@ -3008,12 +2981,12 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
+               Column   1     
        1       0.43825226
 
  Dimension of the reduced space:     4
 
- >>> TIME USED IN THIS MICRO ITERATION        0.02
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
     --------------------------------------
     converged in  4 iterations
@@ -3029,7 +3002,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.09 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.05 seconds
  >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
@@ -3055,13 +3028,13 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Excitation no.       Hartree               eV 
  --------------       -------               --
 
-         1            0.438252           11.925456
+         1            0.438252           11.925450
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -74.567461274146964
+@@    1    1           -74.567461274148129
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -3127,7 +3100,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Ground state energy is target 
 
- Ecorr =                    -75.00571352967365600000
+ Ecorr =                    -75.00571352967364100000
 
  *******************************************************************
 
@@ -3169,6 +3142,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  +==================================================+
  |        F MATRIX TRANSFORMATION SECTION           |
+ |  (results are written to a direct access file)   |
  +--------------------------------------------------+
  | time for zero order intermediat.:      0.00 secs.|
  | time for  1 sets of left interm.:      0.00 secs.|
@@ -3179,39 +3153,27 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  | L vector | R vector |    result    |             |
  | LE   No. |  RE  No. |   CC_  No.   |  time/secs  |
  +--------------------------------------------------+
- |     1    |     1    |      1       |       0.00  |
- +--------------------------------------------------+
- | total time for   1 F transforms.:      0.05 secs.|
- +--------------------------------------------------+
- |  % of time used in start up org.:     23.08      |
- |  % of time used in Fock interm. :      1.10      |
- |  % of time used in ERI          :      0.10      |
- |  % of time used in CCRDAO       :      0.72      |
- |  % of time used in (**|k del)   :      0.57      |
- |  % of time used in BF term      :      0.00      |
- |  % of time used in C term       :      0.00      |
- |  % of time used in D term       :      0.00      |
- |  % of time used in I/O          :     57.86      |
+ |     1    |     1    |      1       |       0.01  |
  +==================================================+
 
 
 
  Solving  1 response equations for states;
  Energy:  0.438252 and nr.:   1 of symmetry:   1
- ilstnr:            1
+ ilstnr:  1
      E0 start vector nr.  1 of symmetry  1 generated from gradient
- exgr, irst:           1
- CCEQ_SOL: IPRLE   =               6
+ exgr, irst: 1
+ CCEQ_SOL: IPRLE   =     6
  CCEQ_SOL: TRIPLET =     F
  CCEQ_SOL: LINQCC  =     T
- CCEQ_SOL: NREDH   =               1
- CCEQ_SOL: MAXRED  =             200
- CCEQ_SOL: MAXLE   =              40
- CCEQ_SOL: ISIDE   =              -1
- CCEQ_SOL: ISTRVE  =               1
- CCEQ_SOL: NVEC    =               1
- CCEQ_SOL: NUPVEC  =               1
- CCEQ_SOL: NCCVAR  =              65
+ CCEQ_SOL: NREDH   =     1
+ CCEQ_SOL: MAXRED  =     200
+ CCEQ_SOL: MAXLE   =     40
+ CCEQ_SOL: ISIDE   =     -1
+ CCEQ_SOL: ISTRVE  =     1
+ CCEQ_SOL: NVEC    =     1
+ CCEQ_SOL: NUPVEC  =     1
+ CCEQ_SOL: NCCVAR  =     65
 
 
 
@@ -3226,23 +3188,23 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   1
   
- Time used in CC_LHTR :  1.2970924377441406E-02
+ Time used in CC_LHTR : 9.999990463256836E-03
   
   CCRED  
-  ISIDE            -1
-  NREDH             1
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
- ilstnr:            1
- ilstnr:            1
+  ISIDE   -1
+  NREDH   1
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
+ ilstnr:  1
+ ilstnr:  1
   
  ROOT:  1 RESIDUAL TOT: 1.81884D-01
       1       1         0.00     0.18E+00
@@ -3258,30 +3220,30 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   2
   
- Time used in CC_LHTR :  1.5372037887573242E-02
+ Time used in CC_LHTR : 9.999990463256836E-03
   
   CCRED  
-  ISIDE            -1
-  NREDH             2
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
- ilstnr:            1
- ilstnr:            1
+  ISIDE   -1
+  NREDH   2
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
+ ilstnr:  1
+ ilstnr:  1
   
  ROOT:  1 RESIDUAL TOT: 1.29947D-02
       2       1         0.00     0.13E-01
 
  Dimension of the reduced space:     3
 
- >>> TIME USED IN THIS MICRO ITERATION        0.03
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -3290,23 +3252,23 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   3
   
- Time used in CC_LHTR :  1.4801025390625000E-02
+ Time used in CC_LHTR : 1.999998092651367E-02
   
   CCRED  
-  ISIDE            -1
-  NREDH             3
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
- ilstnr:            1
- ilstnr:            1
+  ISIDE   -1
+  NREDH   3
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
+ ilstnr:  1
+ ilstnr:  1
   
  ROOT:  1 RESIDUAL TOT: 3.30416D-03
       3       1         0.00     0.33E-02
@@ -3322,23 +3284,23 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   4
   
- Time used in CC_LHTR :  1.2341022491455078E-02
+ Time used in CC_LHTR : 0.0
   
   CCRED  
-  ISIDE            -1
-  NREDH             4
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
- ilstnr:            1
- ilstnr:            1
+  ISIDE   -1
+  NREDH   4
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
+ ilstnr:  1
+ ilstnr:  1
   
  ROOT:  1 RESIDUAL TOT: 6.03813D-04
       4       1         0.00     0.60E-03
@@ -3354,30 +3316,30 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   5
   
- Time used in CC_LHTR :  1.2603998184204102E-02
+ Time used in CC_LHTR : 0.0
   
   CCRED  
-  ISIDE            -1
-  NREDH             5
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
- ilstnr:            1
- ilstnr:            1
+  ISIDE   -1
+  NREDH   5
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
+ ilstnr:  1
+ ilstnr:  1
   
  ROOT:  1 RESIDUAL TOT: 6.29053D-05
       5       1         0.00     0.63E-04
 
  Dimension of the reduced space:     6
 
- >>> TIME USED IN THIS MICRO ITERATION        0.02
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -3386,23 +3348,23 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   6
   
- Time used in CC_LHTR :  1.3055920600891113E-02
+ Time used in CC_LHTR : 1.999998092651367E-02
   
   CCRED  
-  ISIDE            -1
-  NREDH             6
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
- ilstnr:            1
- ilstnr:            1
+  ISIDE   -1
+  NREDH   6
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
+ ilstnr:  1
+ ilstnr:  1
   
  ROOT:  1 RESIDUAL TOT: 2.33452D-07
       6       1         0.00     0.23E-06
@@ -3418,23 +3380,23 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   7
   
- Time used in CC_LHTR :  1.4019012451171875E-02
+ Time used in CC_LHTR : 0.0
   
   CCRED  
-  ISIDE            -1
-  NREDH             7
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
- ilstnr:            1
- ilstnr:            1
+  ISIDE   -1
+  NREDH   7
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
+ ilstnr:  1
+ ilstnr:  1
   
  ROOT:  1 RESIDUAL TOT: 1.26940D-08
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 1.26940D-08
@@ -3458,7 +3420,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.16 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.11 seconds
  >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
@@ -3533,32 +3495,17 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 1   1   |   1       1     |        1          |              |    0.000000  |
- | 1   1   |   1       2     |        3          |              |    0.000000  |
- | 1   1   |   2       3     |        6          |              |    0.000000  |
- | 1   1   |   1       4     |        7          |              |    0.000000  |
  +-----------------------------------------------------------------------------+
- | 1 1 1 1 |   2   1   3   2 |        6        3 |           18 |    0.000000  |
- | 1 1 1 1 |   2   2   2   2 |        4        4 |           10 |    0.000000  |
- | 1 1 1 1 |   1   2   3   2 |        5        4 |           14 |    0.000000  |
- | 1 1 1 1 |   2   2   4   2 |        8        4 |           32 |    0.000000  |
- | 1 1 1 1 |   1   1   3   3 |        5        5 |           15 |    0.000000  |
- | 1 1 1 1 |   2   1   4   3 |        8        5 |           33 |    0.000000  |
- | 1 1 1 1 |   1   2   4   3 |        7        6 |           27 |    0.000000  |
- | 1 1 1 1 |   1   1   4   4 |        7        7 |           28 |    0.000000  |
- | 1 1 1 1 |   2   2   4   4 |        8        8 |           36 |    0.000000  |
- | 1 1 1 1 |   1   1   5   5 |        9        9 |           45 |    0.000000  |
- | 1 1 1 1 |   2   2   5   5 |       10       10 |           55 |    0.000000  |
  +=============================================================================+
 
 
           Norm of Printed Amplitude Vector :             0.0000
 
 
-          Printed all single excitations greater than 0.000000
+          Printed all single excitations greater than 0.010000
 
 
-          Printed all double excitations greater than 0.000000
+          Printed all double excitations greater than 0.010000
 
 
  Analysis of the X-st 0-th order Lagrangian multipliers: 
@@ -3585,26 +3532,17 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 1   1   |   1       1     |        1          |              |    0.000000  |
- | 1   1   |   1       2     |        3          |              |    0.000000  |
- | 1   1   |   2       3     |        6          |              |    0.000000  |
- | 1   1   |   1       4     |        7          |              |    0.000000  |
  +-----------------------------------------------------------------------------+
- | 1 1 1 1 |   1   2   3   2 |        5        4 |           14 |    0.000000  |
- | 1 1 1 1 |   2   2   4   2 |        8        4 |           32 |    0.000000  |
- | 1 1 1 1 |   1   1   3   3 |        5        5 |           15 |    0.000000  |
- | 1 1 1 1 |   2   1   4   3 |        8        5 |           33 |    0.000000  |
- | 1 1 1 1 |   1   2   4   3 |        7        6 |           27 |    0.000000  |
  +=============================================================================+
 
 
           Norm of Printed Amplitude Vector :             0.0000
 
 
-          Printed all single excitations greater than 0.000000
+          Printed all single excitations greater than 0.010000
 
 
-          Printed all double excitations greater than 0.000000
+          Printed all double excitations greater than 0.010000
 
 
  Analysis of the X-st 0-th order Lagrangian multipliers: 
@@ -3631,28 +3569,17 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
  |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
  +=============================================================================+
- | 1   1   |   1       1     |        1          |              |    0.000000  |
- | 1   1   |   1       2     |        3          |              |    0.000000  |
- | 1   1   |   2       3     |        6          |              |    0.000000  |
- | 1   1   |   1       4     |        7          |              |    0.000000  |
  +-----------------------------------------------------------------------------+
- | 1 1 1 1 |   1   2   3   2 |        5        4 |           14 |    0.000000  |
- | 1 1 1 1 |   2   2   4   2 |        8        4 |           32 |    0.000000  |
- | 1 1 1 1 |   1   1   3   3 |        5        5 |           15 |    0.000000  |
- | 1 1 1 1 |   2   1   4   3 |        8        5 |           33 |    0.000000  |
- | 1 1 1 1 |   1   2   4   3 |        7        6 |           27 |    0.000000  |
- | 1 1 1 1 |   2   2   4   4 |        8        8 |           36 |    0.000000  |
- | 1 1 1 1 |   1   1   5   5 |        9        9 |           45 |    0.000000  |
  +=============================================================================+
 
 
           Norm of Printed Amplitude Vector :             0.0000
 
 
-          Printed all single excitations greater than 0.000000
+          Printed all single excitations greater than 0.010000
 
 
-          Printed all double excitations greater than 0.000000
+          Printed all double excitations greater than 0.010000
 
 
  Analysis of the X-st 0-th order Lagrangian multipliers: 
@@ -3698,21 +3625,21 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
 
           Printed all double excitations greater than 0.000127
- Total, actual nr.,loop index           1           1           1
- Sym, reduced nr.           1           1
- Norm of Response vector: T2AM   .  1.1828699706192738E-02
- Norms: XMAT  1.1093151995375233E-04
+ Total, actual nr.,loop index 1 1 1
+ Sym, reduced nr. 1 1
+ Norm of Response vector: T2AM   . 1.182869970631473E-02
+ Norms: XMAT 1.109315199444596E-04
 
 
         +---------------------------------------------------------+
-        ! Unrelaxed excited state  CC2   First-order properties:  !
+        ! Unrelaxed excited state CC2    First-order properties:  !
         +---------------------------------------------------------+
 
 
  Excited state properties for 
  Excited state nr.:               1
  Excited state sym:               1
- Excitation energy (au.,eV):    0.438252   11.925456
+ Excitation energy (au.,eV):    0.438252   11.925450
 
 
                         +--------------------------+
@@ -3727,10 +3654,10 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                                au             Debye
 
                     x      0.00000000      0.00000000
-                    y      0.00000000      0.00000000
-                    z     -0.07521183     -0.19117117
+                    y     -0.00000000     -0.00000000
+                    z     -0.07521183     -0.19116938
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -3742,7 +3669,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
                     X              Y              Z
 
-               Column   1     Column   2     Column   3
+               Column   1     Column   2     Column   3     
        1       4.15533716     0.00000000     0.00000000
        2       0.00000000     9.01115908     0.00000000
        3       0.00000000     0.00000000     7.36025411
@@ -3752,6 +3679,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Isotropic Property:                         6.842250 a.u.
  Property anisotropy invariant:              4.276446 a.u.
+ WORK: 10000000 2.12526780363902 0.0
       
 
     *******************************************************************
@@ -3789,6 +3717,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
 
 
+ WORK: 10000000 2.12526780363902 0.0
 
 
  List R1  is empty.
@@ -3816,19 +3745,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  | L vector | R vector |    result    |             |
  | L0   No. |  RE  No. |   FR   No.   |  time/secs  |
  +--------------------------------------------------+
- |     0    |     1    |      1       |       0.00  |
- +--------------------------------------------------+
- | total time for   1 F transforms.:      0.06 secs.|
- +--------------------------------------------------+
- |  % of time used in start up org.:     23.75      |
- |  % of time used in Fock interm. :      1.05      |
- |  % of time used in ERI          :      0.10      |
- |  % of time used in CCRDAO       :      0.74      |
- |  % of time used in (**|k del)   :      0.54      |
- |  % of time used in BF term      :      0.00      |
- |  % of time used in C term       :      0.00      |
- |  % of time used in D term       :      0.00      |
- |  % of time used in I/O          :     58.83      |
+ |     0    |     1    |      1       |       0.01  |
  +==================================================+
 
 
@@ -3844,17 +3761,17 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Solving   1 response equations:
  M1 :
      M1  start vector nr.  1 of symmetry  1 generated from gradient
- CCEQ_SOL: IPRLE   =               6
+ CCEQ_SOL: IPRLE   =     6
  CCEQ_SOL: TRIPLET =     F
  CCEQ_SOL: LINQCC  =     T
- CCEQ_SOL: NREDH   =               1
- CCEQ_SOL: MAXRED  =             200
- CCEQ_SOL: MAXLE   =              40
- CCEQ_SOL: ISIDE   =              -1
- CCEQ_SOL: ISTRVE  =               1
- CCEQ_SOL: NVEC    =               1
- CCEQ_SOL: NUPVEC  =               1
- CCEQ_SOL: NCCVAR  =              65
+ CCEQ_SOL: NREDH   =     1
+ CCEQ_SOL: MAXRED  =     200
+ CCEQ_SOL: MAXLE   =     40
+ CCEQ_SOL: ISIDE   =     -1
+ CCEQ_SOL: ISTRVE  =     1
+ CCEQ_SOL: NVEC    =     1
+ CCEQ_SOL: NUPVEC  =     1
+ CCEQ_SOL: NCCVAR  =     65
 
 
 
@@ -3869,28 +3786,28 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   1
   
- Time used in CC_LHTR :  1.2687921524047852E-02
+ Time used in CC_LHTR : 0.0
   
   CCRED  
-  ISIDE            -1
-  NREDH             1
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   1
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 2.68988D-01
       1       1         0.00     0.27E+00
 
  Dimension of the reduced space:     2
 
- >>> TIME USED IN THIS MICRO ITERATION        0.02
+ >>> TIME USED IN THIS MICRO ITERATION        0.00
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -3899,21 +3816,21 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   2
   
- Time used in CC_LHTR :  1.3891100883483887E-02
+ Time used in CC_LHTR : 9.999990463256836E-03
   
   CCRED  
-  ISIDE            -1
-  NREDH             2
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   2
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 4.19928D-03
       2       1         0.00     0.42E-02
@@ -3929,28 +3846,28 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   3
   
- Time used in CC_LHTR :  1.1850118637084961E-02
+ Time used in CC_LHTR : 0.0
   
   CCRED  
-  ISIDE            -1
-  NREDH             3
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   3
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 2.16173D-04
       3       1         0.00     0.22E-03
 
  Dimension of the reduced space:     4
 
- >>> TIME USED IN THIS MICRO ITERATION        0.02
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -3959,28 +3876,28 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   4
   
- Time used in CC_LHTR :  1.2742996215820313E-02
+ Time used in CC_LHTR : 9.999990463256836E-03
   
   CCRED  
-  ISIDE            -1
-  NREDH             4
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   4
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 1.85572D-05
       4       1         0.00     0.19E-04
 
  Dimension of the reduced space:     5
 
- >>> TIME USED IN THIS MICRO ITERATION        0.02
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -3989,21 +3906,21 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   5
   
- Time used in CC_LHTR :  1.4027953147888184E-02
+ Time used in CC_LHTR : 9.999990463256836E-03
   
   CCRED  
-  ISIDE            -1
-  NREDH             5
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   5
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 4.16151D-08
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 4.16151D-08
@@ -4011,7 +3928,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Dimension of the reduced space:     5
 
- >>> TIME USED IN THIS MICRO ITERATION        0.02
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
     --------------------------------------
     converged in  5 iterations
@@ -4027,8 +3944,8 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.11 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.05 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -4209,12 +4126,12 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  -------------------------------------------------------
 
  RES{<<XDIPLEN ,XDIPLEN >>( 0.438252)} =     0.00917692 (   0.09579626)
- RES{<<XDIPLEN ,YDIPLEN >>( 0.438252)} =     0.00000000 (   0.00000000)
- RES{<<XDIPLEN ,ZDIPLEN >>( 0.438252)} =     0.00000000 (   0.00000000)
- RES{<<YDIPLEN ,XDIPLEN >>( 0.438252)} =     0.00000000 (   0.00000000)
+ RES{<<XDIPLEN ,YDIPLEN >>( 0.438252)} =    -0.00000000 (  -0.00000000)
+ RES{<<XDIPLEN ,ZDIPLEN >>( 0.438252)} =    -0.00000000 (  -0.00000000)
+ RES{<<YDIPLEN ,XDIPLEN >>( 0.438252)} =    -0.00000000 (  -0.00000000)
  RES{<<YDIPLEN ,YDIPLEN >>( 0.438252)} =     0.00000000 (   0.00000000)
  RES{<<YDIPLEN ,ZDIPLEN >>( 0.438252)} =     0.00000000 (   0.00000000)
- RES{<<ZDIPLEN ,XDIPLEN >>( 0.438252)} =     0.00000000 (   0.00000000)
+ RES{<<ZDIPLEN ,XDIPLEN >>( 0.438252)} =    -0.00000000 (  -0.00000000)
  RES{<<ZDIPLEN ,YDIPLEN >>( 0.438252)} =     0.00000000 (   0.00000000)
  RES{<<ZDIPLEN ,ZDIPLEN >>( 0.438252)} =     0.00000000 (   0.00000000)
 
@@ -4224,8 +4141,8 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Dipole gauge
 
-               Column   1     Column   2     Column   3
-       1       0.00917692     0.00000000     0.00000000
+               Column   1     Column   2     Column   3     
+       1       0.00917692    -0.00000000    -0.00000000
 
  Principal values of diagonalized transition strength matrix:
 
@@ -4237,7 +4154,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Principal axis of diagonalized transition strength matrix:
 
 
-               Column   1     Column   2     Column   3
+               Column   1     Column   2     Column   3     
        1       1.00000000     0.00000000     0.00000000
        2       0.00000000     1.00000000     0.00000000
        3       0.00000000     0.00000000     1.00000000
@@ -4247,8 +4164,8 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  CC2   excitation energy: 0.43825226
 
 
-               Column   1     Column   2     Column   3
-       1       0.00268120     0.00000000     0.00000000
+               Column   1     Column   2     Column   3     
+       1       0.00268120    -0.00000000    -0.00000000
 
  Principal values of diagonalized oscillator strength matrix:
 
@@ -4260,7 +4177,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Principal axis of diagonalized oscillator strength matrix:
 
 
-               Column   1     Column   2     Column   3
+               Column   1     Column   2     Column   3     
        1       1.00000000     0.00000000     0.00000000
        2       0.00000000     1.00000000     0.00000000
        3       0.00000000     0.00000000     1.00000000
@@ -4283,147 +4200,147 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
           Number of t2 amplitudes                 :        55
           Total number of amplitudes in ccsd      :        65
 
- Iter.  1: Coupled cluster RSTAR energy :     -75.0057135296736560
+ Iter.  1: Coupled cluster RSTAR energy :     -75.0057135296736410
 
        Iteration no.:  1
        -----------------
 
        Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm of t1am   after ccvec:         0.1168567333D-03
+       Norm of t1am   after ccvec:         0.1168567335D-03
        Norm of t2am   after ccvec:         0.1182869971D-01
-       Norm of omega1 after ccvec:         0.3520717971D-22
+       Norm of omega1 after ccvec:         0.3521803204D-22
        Norm of omega2 after ccvec:         0.6076953797D-02
- Iter.  1: Coupled cluster CCSD  energy :     -75.0163437264996280
+ Iter.  1: Coupled cluster CCSD  energy :     -75.0163437264994990
 
        Iteration no.:  2
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm of t1am   after ccvec:         0.1168567333D-03
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm of t1am   after ccvec:         0.1168567335D-03
        Norm of t2am   after ccvec:         0.1933314679D-01
-       Norm of omega1 after ccvec:         0.3817445759D-05
+       Norm of omega1 after ccvec:         0.3817445758D-05
        Norm of omega2 after ccvec:         0.7208354334D-03
- Iter.  2: Coupled cluster CCSD  energy :     -75.0211866141406740
+ Iter.  2: Coupled cluster CCSD  energy :     -75.0211866141404040
 
        Iteration no.:  3
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm of t1am   after ccvec:         0.1828459354D-03
+       Time used in   RHS - TOTAL  :       0.00 seconds
+       Norm of t1am   after ccvec:         0.1828459357D-03
        Norm of t2am   after ccvec:         0.2375554083D-01
-       Norm of omega1 after ccvec:         0.8508580774D-06
+       Norm of omega1 after ccvec:         0.8508580772D-06
        Norm of omega2 after ccvec:         0.9282016133D-05
- Iter.  3: Coupled cluster CCSD  energy :     -75.0214881292950220
+ Iter.  3: Coupled cluster CCSD  energy :     -75.0214881292947230
 
        Iteration no.:  4
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm of t1am   after ccvec:         0.2137044518D-03
+       Time used in   RHS - TOTAL  :       0.00 seconds
+       Norm of t1am   after ccvec:         0.2137044521D-03
        Norm of t2am   after ccvec:         0.2419314298D-01
        Norm of omega1 after ccvec:         0.1262007908D-06
-       Norm of omega2 after ccvec:         0.6494107211D-06
- Iter.  4: Coupled cluster CCSD  energy :     -75.0215071757428550
+       Norm of omega2 after ccvec:         0.6494107210D-06
+ Iter.  4: Coupled cluster CCSD  energy :     -75.0215071757425700
 
        Iteration no.:  5
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm of t1am   after ccvec:         0.2273630972D-03
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm of t1am   after ccvec:         0.2273630974D-03
        Norm of t2am   after ccvec:         0.2424667877D-01
        Norm of omega1 after ccvec:         0.1404052256D-08
-       Norm of omega2 after ccvec:         0.1956114029D-07
- Iter.  5: Coupled cluster CCSD  energy :     -75.0215072128150520
+       Norm of omega2 after ccvec:         0.1956114028D-07
+ Iter.  5: Coupled cluster CCSD  energy :     -75.0215072128147250
 
        Iteration no.:  6
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm of t1am   after ccvec:         0.2289952180D-03
+       Time used in   RHS - TOTAL  :       0.00 seconds
+       Norm of t1am   after ccvec:         0.2289952182D-03
        Norm of t2am   after ccvec:         0.2424222536D-01
-       Norm of omega1 after ccvec:         0.3560577125D-10
+       Norm of omega1 after ccvec:         0.3560577126D-10
        Norm of omega2 after ccvec:         0.2676040221D-09
- Iter.  6: Coupled cluster CCSD  energy :     -75.0215076112960450
+ Iter.  6: Coupled cluster CCSD  energy :     -75.0215076112957460
 
        Iteration no.:  7
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm of t1am   after ccvec:         0.2291070568D-03
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm of t1am   after ccvec:         0.2291070571D-03
        Norm of t2am   after ccvec:         0.2424269906D-01
        Norm of omega1 after ccvec:         0.9366700506D-12
-       Norm of omega2 after ccvec:         0.2155488964D-10
- Iter.  7: Coupled cluster CCSD  energy :     -75.0215075015816810
+       Norm of omega2 after ccvec:         0.2155488963D-10
+ Iter.  7: Coupled cluster CCSD  energy :     -75.0215075015814250
 
        Iteration no.:  8
        -----------------
 
        Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm of t1am   after ccvec:         0.2291306559D-03
+       Norm of t1am   after ccvec:         0.2291306562D-03
        Norm of t2am   after ccvec:         0.2424258758D-01
-       Norm of omega1 after ccvec:         0.2742761669D-13
-       Norm of omega2 after ccvec:         0.8574028355D-12
- Iter.  8: Coupled cluster CCSD  energy :     -75.0215075572998560
+       Norm of omega1 after ccvec:         0.2742761701D-13
+       Norm of omega2 after ccvec:         0.8574028368D-12
+ Iter.  8: Coupled cluster CCSD  energy :     -75.0215075572995430
 
        Iteration no.:  9
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm of t1am   after ccvec:         0.2291342260D-03
+       Time used in   RHS - TOTAL  :       0.00 seconds
+       Norm of t1am   after ccvec:         0.2291342262D-03
        Norm of t2am   after ccvec:         0.2424263202D-01
-       Norm of omega1 after ccvec:         0.1652853231D-14
-       Norm of omega2 after ccvec:         0.6573081506D-13
- Iter.  9: Coupled cluster CCSD  energy :     -75.0215075494333230
+       Norm of omega1 after ccvec:         0.1652853117D-14
+       Norm of omega2 after ccvec:         0.6573081515D-13
+ Iter.  9: Coupled cluster CCSD  energy :     -75.0215075494330530
 
        Iteration no.: 10
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm of t1am   after ccvec:         0.2291349405D-03
+       Time used in   RHS - TOTAL  :       0.02 seconds
+       Norm of t1am   after ccvec:         0.2291349408D-03
        Norm of t2am   after ccvec:         0.2424262268D-01
-       Norm of omega1 after ccvec:         0.2907984131D-15
-       Norm of omega2 after ccvec:         0.5168655171D-14
- Iter. 10: Coupled cluster CCSD  energy :     -75.0215075437311610
+       Norm of omega1 after ccvec:         0.2907984288D-15
+       Norm of omega2 after ccvec:         0.5168655126D-14
+ Iter. 10: Coupled cluster CCSD  energy :     -75.0215075437308910
 
        Iteration no.: 11
        -----------------
 
        Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm of t1am   after ccvec:         0.2291354897D-03
+       Norm of t1am   after ccvec:         0.2291354900D-03
        Norm of t2am   after ccvec:         0.2424261565D-01
-       Norm of omega1 after ccvec:         0.3556131412D-17
-       Norm of omega2 after ccvec:         0.2304669067D-15
- Iter. 11: Coupled cluster CCSD  energy :     -75.0215075437068460
+       Norm of omega1 after ccvec:         0.3556134454D-17
+       Norm of omega2 after ccvec:         0.2304669123D-15
+ Iter. 11: Coupled cluster CCSD  energy :     -75.0215075437065190
 
        Iteration no.: 12
        -----------------
 
-       Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm of t1am   after ccvec:         0.2291355395D-03
+       Time used in   RHS - TOTAL  :       0.00 seconds
+       Norm of t1am   after ccvec:         0.2291355398D-03
        Norm of t2am   after ccvec:         0.2424261551D-01
-       Norm of omega1 after ccvec:         0.3079615051D-18
-       Norm of omega2 after ccvec:         0.2276350451D-16
- Iter. 12: Coupled cluster CCSD  energy :     -75.0215075438840420
+       Norm of omega1 after ccvec:         0.3079637224D-18
+       Norm of omega2 after ccvec:         0.2276350653D-16
+ Iter. 12: Coupled cluster CCSD  energy :     -75.0215075438837280
 
        Iteration no.: 13
        -----------------
 
        Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm of t1am   after ccvec:         0.2291355457D-03
+       Norm of t1am   after ccvec:         0.2291355459D-03
        Norm of t2am   after ccvec:         0.2424261567D-01
-       Norm of omega1 after ccvec:         0.5121264278D-20
-       Norm of omega2 after ccvec:         0.3990760504D-18
- Iter. 13: Coupled cluster CCSD  energy :     -75.0215075439174940
+       Norm of omega1 after ccvec:         0.5122495965D-20
+       Norm of omega2 after ccvec:         0.3990753547D-18
+ Iter. 13: Coupled cluster CCSD  energy :     -75.0215075439172230
 
        Iteration no.: 14
        -----------------
 
        Time used in   RHS - TOTAL  :       0.01 seconds
-       Norm of t1am   after ccvec:         0.2291355476D-03
+       Norm of t1am   after ccvec:         0.2291355478D-03
        Norm of t2am   after ccvec:         0.2424261570D-01
-       Norm of omega1 after ccvec:         0.2876971491D-21
-       Norm of omega2 after ccvec:         0.5870642788D-20
- Iter. 14: Coupled cluster CCSD  energy :     -75.0215075439198530
+       Norm of omega1 after ccvec:         0.2876755452D-21
+       Norm of omega2 after ccvec:         0.5870502394D-20
+ Iter. 14: Coupled cluster CCSD  energy :     -75.0215075439195110
 
  CCSD  energy converged to within   0.10D-10 is    -75.021507544
 
@@ -4520,20 +4437,23 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                      ! Coupled Cluster model is: CCSD !
                      +--------------------------------+
 
- CC_GETSAV> IOPT =           33
+
+ Solving   1 response equations:
+ L0 :
+ CC_GETSAV> IOPT =  33
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       L0  vector
- CCEQ_SOL: IPRLE   =               6
+ CCEQ_SOL: IPRLE   =     6
  CCEQ_SOL: TRIPLET =     F
  CCEQ_SOL: LINQCC  =     T
- CCEQ_SOL: NREDH   =               1
- CCEQ_SOL: MAXRED  =             200
- CCEQ_SOL: MAXLE   =              40
- CCEQ_SOL: ISIDE   =              -1
- CCEQ_SOL: ISTRVE  =               1
- CCEQ_SOL: NVEC    =               1
- CCEQ_SOL: NUPVEC  =               1
- CCEQ_SOL: NCCVAR  =              65
+ CCEQ_SOL: NREDH   =     1
+ CCEQ_SOL: MAXRED  =     200
+ CCEQ_SOL: MAXLE   =     40
+ CCEQ_SOL: ISIDE   =     -1
+ CCEQ_SOL: ISTRVE  =     1
+ CCEQ_SOL: NVEC    =     1
+ CCEQ_SOL: NUPVEC  =     1
+ CCEQ_SOL: NCCVAR  =     65
 
 
 
@@ -4548,28 +4468,28 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   1
   
- Time used in CC_LHTR :  2.4840831756591797E-02
+ Time used in CC_LHTR : 1.999998092651367E-02
   
   CCRED  
-  ISIDE            -1
-  NREDH             1
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   1
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 3.57859D-01
       1       1         0.00     0.36E+00
 
  Dimension of the reduced space:     2
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -4578,28 +4498,28 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   2
   
- Time used in CC_LHTR :  2.1960973739624023E-02
+ Time used in CC_LHTR : 1.999998092651367E-02
   
   CCRED  
-  ISIDE            -1
-  NREDH             2
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   2
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 8.12813D-02
       2       1         0.00     0.81E-01
 
  Dimension of the reduced space:     3
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -4608,28 +4528,28 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   3
   
- Time used in CC_LHTR :  2.2346258163452148E-02
+ Time used in CC_LHTR : 1.999998092651367E-02
   
   CCRED  
-  ISIDE            -1
-  NREDH             3
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   3
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 2.30786D-02
       3       1         0.00     0.23E-01
 
  Dimension of the reduced space:     4
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -4638,21 +4558,21 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   4
   
- Time used in CC_LHTR :  2.1393060684204102E-02
+ Time used in CC_LHTR : 1.000010967254639E-02
   
   CCRED  
-  ISIDE            -1
-  NREDH             4
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   4
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 4.93627D-03
       4       1         0.00     0.49E-02
@@ -4668,28 +4588,28 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   5
   
- Time used in CC_LHTR :  2.2523880004882813E-02
+ Time used in CC_LHTR : 9.999990463256836E-03
   
   CCRED  
-  ISIDE            -1
-  NREDH             5
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   5
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 7.24434D-04
       5       1         0.00     0.72E-03
 
  Dimension of the reduced space:     6
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -4698,28 +4618,28 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   6
   
- Time used in CC_LHTR :  2.3297071456909180E-02
+ Time used in CC_LHTR : 1.999998092651367E-02
   
   CCRED  
-  ISIDE            -1
-  NREDH             6
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   6
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 9.34221D-05
       6       1         0.00     0.93E-04
 
  Dimension of the reduced space:     7
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -4728,28 +4648,28 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   7
   
- Time used in CC_LHTR :  2.1050214767456055E-02
+ Time used in CC_LHTR : 9.999990463256836E-03
   
   CCRED  
-  ISIDE            -1
-  NREDH             7
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   7
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 2.04789D-05
       7       1         0.00     0.20E-04
 
  Dimension of the reduced space:     8
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -4758,28 +4678,28 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   8
   
- Time used in CC_LHTR :  2.2815942764282227E-02
+ Time used in CC_LHTR : 1.999998092651367E-02
   
   CCRED  
-  ISIDE            -1
-  NREDH             8
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   8
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 3.81455D-06
       8       1         0.00     0.38E-05
 
  Dimension of the reduced space:     9
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -4788,21 +4708,21 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   9
   
- Time used in CC_LHTR :  2.2449016571044922E-02
+ Time used in CC_LHTR : 1.999998092651367E-02
   
   CCRED  
-  ISIDE            -1
-  NREDH             9
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   9
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 6.94582D-07
       9       1         0.00     0.69E-06
@@ -4818,28 +4738,28 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:  10
   
- Time used in CC_LHTR :  2.1689891815185547E-02
+ Time used in CC_LHTR : 0.0
   
   CCRED  
-  ISIDE            -1
-  NREDH            10
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   10
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 1.80458D-07
      10       1         0.00     0.18E-06
 
  Dimension of the reduced space:    11
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -4848,21 +4768,21 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:  11
   
- Time used in CC_LHTR :  2.0523071289062500E-02
+ Time used in CC_LHTR : 9.999990463256836E-03
   
   CCRED  
-  ISIDE            -1
-  NREDH            11
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   11
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 2.91599D-08
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.91599D-08
@@ -4870,7 +4790,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Dimension of the reduced space:    11
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
     --------------------------------------
     converged in 11 iterations
@@ -4879,14 +4799,14 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
          Routine          Time (min)
          ---------------------------
-         CC_TRDRV            0.01
+         CC_TRDRV            0.00
          CCRED               0.00
          CCNEX               0.00
          ---------------------------
-         Total time          0.01
+         Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.44 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.28 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -4894,8 +4814,8 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
 
 
- Analysis of the undifferentiated Lagrangian multipliers: 
- --------------------------------------------------------
+ Analysis of CC Response/Cauchy vector:
+ --------------------------------------
 
 
           CC_PRAM:Overall Contribution of the Different Components
@@ -4937,9 +4857,9 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
           Printed all double excitations greater than 0.083053
 
 
-                       +---------------------------+
-                       ! CCSD  Natural Occupations !
-                       +---------------------------+
+                        +--------------------------+
+                        ! CC2  Natural Occupations !
+                        +--------------------------+
 
   
    Symmetry block number:  1
@@ -4958,7 +4878,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
 
           +------------------------------------------------------+
-          ! Unrelaxed CCSD First-order one-electron properties:  !
+          ! Unrelaxed CC2  First-order one-electron properties:  !
           +------------------------------------------------------+
 
 
@@ -4975,10 +4895,10 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                                au             Debye
 
                     x      0.00000000      0.00000000
-                    y      0.00000000      0.00000000
-                    z      0.61286929      1.55777279
+                    y     -0.00000000     -0.00000000
+                    z      0.61286929      1.55775819
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -4990,7 +4910,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
                     X              Y              Z
 
-               Column   1     Column   2     Column   3
+               Column   1     Column   2     Column   3     
        1       4.57144052     0.00000000     0.00000000
        2       0.00000000     7.63532429     0.00000000
        3       0.00000000     0.00000000     6.35994260
@@ -5029,34 +4949,33 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Length of Excitation vectors in this class is:        65
  Converging for  1 roots.
   >> output from FNDMN3 <<
-  LOWEST VALUE AND PLACE   0.9640286466370301               9
-  HIGHST VALUE AND PLACE    41.86761719297808              13
+  LOWEST VALUE AND PLACE  0.964028646628759 9
+  HIGHST VALUE AND PLACE  41.86761719293564 13
 IELMNT XMIN IMIN NDEG        1    9.64029D-01       9   1
 IELMNT XMIN IMIN NDEG        2    1.03034D+00       7   1
 IELMNT XMIN IMIN NDEG        3    1.07294D+00      10   1
 IELMNT XMIN IMIN NDEG        4    1.13925D+00       8   1
 IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
-  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3  4
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
 
      1 :      9      7     10      8
-  MIN AND MAX IN SELECTED SUPSPACE   0.9640286466370301    
-    1.139252884868239    
- CC_GETSAV> IOPT =           33
+  MIN AND MAX IN SELECTED SUPSPACE  0.964028646628759 1.13925288486258
+ CC_GETSAV> IOPT =  33
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       RE  vector
- CCEQ_SOL: IPRLE   =               6
+ CCEQ_SOL: IPRLE   =     6
  CCEQ_SOL: TRIPLET =     F
  CCEQ_SOL: LINQCC  =     F
- CCEQ_SOL: NREDH   =               1
- CCEQ_SOL: MAXRED  =             200
- CCEQ_SOL: MAXLE   =              40
- CCEQ_SOL: ISIDE   =               1
- CCEQ_SOL: ISTRVE  =               1
- CCEQ_SOL: NVEC    =               1
- CCEQ_SOL: NUPVEC  =               1
- CCEQ_SOL: NCCVAR  =              65
+ CCEQ_SOL: NREDH   =     1
+ CCEQ_SOL: MAXRED  =     200
+ CCEQ_SOL: MAXLE   =     40
+ CCEQ_SOL: ISIDE   =     1
+ CCEQ_SOL: ISTRVE  =     1
+ CCEQ_SOL: NVEC    =     1
+ CCEQ_SOL: NUPVEC  =     1
+ CCEQ_SOL: NCCVAR  =     65
 
 
 
@@ -5071,55 +4990,11 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919393
+  Workspace input:  9919393
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   1
-
-
- Time used in     CC_RHTR in total   :       0.02 seconds
- Time used in   CC part              :       0.01 seconds
- Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
-  
-  CCRED  
-  ISIDE             1
-  NREDH             1
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919393
-
- REDUCED EIGENVALUES real part:
-
-               Column   1
-       1       0.43307008
-  
- ROOT:  1 RESIDUAL TOT: 1.10368D-01
-      1       1         0.00     0.11E+00
-
- Lowest eigenvalues in this iteration: 
-
-               Column   1
-       1       0.43307008
-
- Dimension of the reduced space:     2
-
- >>> TIME USED IN THIS MICRO ITERATION        0.04
-
-  >>> Call CC_TRDRV with TRIPLET flag set to: F
-
-
-                          +---------------------+
-                          !  START OF CC_TRDRV  !
-                          +---------------------+
-
-  Workspace input:     19919393
-  Triplet flag   :  F
-
- CC_TRDRV: The total number of trial vectors is:    1
- CC_TRDRV: Transforming vector nr.:   2
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
@@ -5128,16 +5003,60 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
   CCRED  
-  ISIDE             1
-  NREDH             2
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919393
+  ISIDE   1
+  NREDH   1
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919393
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
+               Column   1     
+       1       0.43307008
+  
+ ROOT:  1 RESIDUAL TOT: 1.10368D-01
+      1       1         0.00     0.11E+00
+
+ Lowest eigenvalues in this iteration: 
+
+               Column   1     
+       1       0.43307008
+
+ Dimension of the reduced space:     2
+
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
+
+  >>> Call CC_TRDRV with TRIPLET flag set to: F
+
+
+                          +---------------------+
+                          !  START OF CC_TRDRV  !
+                          +---------------------+
+
+  Workspace input:  9919393
+  Triplet flag   :  F
+
+ CC_TRDRV: The total number of trial vectors is:    1
+ CC_TRDRV: Transforming vector nr.:   2
+
+
+ Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in   CC part              :       0.00 seconds
+ Time used in   Int. calc. & read    :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.01 seconds
+  
+  CCRED  
+  ISIDE   1
+  NREDH   2
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919393
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1     
        1       0.41947271
        2       1.37251538
   
@@ -5146,12 +5065,12 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
+               Column   1     
        1       0.41947271
 
  Dimension of the reduced space:     3
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -5160,29 +5079,29 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919393
+  Workspace input:  9919393
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   3
 
 
- Time used in     CC_RHTR in total   :       0.01 seconds
+ Time used in     CC_RHTR in total   :       0.02 seconds
  Time used in   CC part              :       0.01 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.01 seconds
   
   CCRED  
-  ISIDE             1
-  NREDH             3
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919393
+  ISIDE   1
+  NREDH   3
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919393
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
+               Column   1     
        1       0.41990830
        2       1.28727095
        3       1.77932887
@@ -5192,12 +5111,12 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
+               Column   1     
        1       0.41990830
 
  Dimension of the reduced space:     4
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -5206,29 +5125,29 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919393
+  Workspace input:  9919393
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   4
 
 
- Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
+ Time used in     CC_RHTR in total   :       0.02 seconds
+ Time used in   CC part              :       0.02 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
   CCRED  
-  ISIDE             1
-  NREDH             4
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919393
+  ISIDE   1
+  NREDH   4
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919393
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
+               Column   1     
        1       0.42000083
        2       1.18917303
        3       1.41072519
@@ -5239,12 +5158,12 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
+               Column   1     
        1       0.42000083
 
  Dimension of the reduced space:     5
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -5253,29 +5172,29 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919393
+  Workspace input:  9919393
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   5
 
 
- Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
+ Time used in     CC_RHTR in total   :       0.02 seconds
+ Time used in   CC part              :       0.02 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
   CCRED  
-  ISIDE             1
-  NREDH             5
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919393
+  ISIDE   1
+  NREDH   5
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919393
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
+               Column   1     
        1       0.41999477
        2       1.10821899
        3       1.35306438
@@ -5287,12 +5206,12 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
+               Column   1     
        1       0.41999477
 
  Dimension of the reduced space:     6
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -5301,7 +5220,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919393
+  Workspace input:  9919393
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
@@ -5309,21 +5228,21 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
 
  Time used in     CC_RHTR in total   :       0.01 seconds
- Time used in   CC part              :       0.01 seconds
+ Time used in   CC part              :       0.00 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
- Time used in   IO of vectors/I.M.   :       0.00 seconds
+ Time used in   IO of vectors/I.M.   :       0.01 seconds
   
   CCRED  
-  ISIDE             1
-  NREDH             6
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919393
+  ISIDE   1
+  NREDH   6
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919393
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
+               Column   1     
        1       0.41998489
        2       1.07779939
        3       1.30927781
@@ -5336,12 +5255,12 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
+               Column   1     
        1       0.41998489
 
  Dimension of the reduced space:     7
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -5350,7 +5269,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919393
+  Workspace input:  9919393
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
@@ -5358,21 +5277,21 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
 
  Time used in     CC_RHTR in total   :       0.02 seconds
- Time used in   CC part              :       0.01 seconds
+ Time used in   CC part              :       0.02 seconds
  Time used in   Int. calc. & read    :       0.00 seconds
  Time used in   IO of vectors/I.M.   :       0.00 seconds
   
   CCRED  
-  ISIDE             1
-  NREDH             7
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919393
+  ISIDE   1
+  NREDH   7
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919393
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
+               Column   1     
        1       0.41998469
        2       1.07660230
        3       1.29476484
@@ -5387,12 +5306,12 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
+               Column   1     
        1       0.41998469
 
  Dimension of the reduced space:     7
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
     --------------------------------------
     converged in  7 iterations
@@ -5408,7 +5327,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.28 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.16 seconds
  >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
@@ -5434,13 +5353,13 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Excitation no.       Hartree               eV 
  --------------       -------               --
 
-         1            0.419985           11.428370
+         1            0.419985           11.428364
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -74.601522856440226
+@@    1    1           -74.601522856439970
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -5527,34 +5446,33 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Length of Excitation vectors in this class is:        65
  Converging for  1 roots.
   >> output from FNDMN3 <<
-  LOWEST VALUE AND PLACE   0.9640286466370301               9
-  HIGHST VALUE AND PLACE    41.86761719297808              13
+  LOWEST VALUE AND PLACE  0.964028646628759 9
+  HIGHST VALUE AND PLACE  41.86761719293564 13
 IELMNT XMIN IMIN NDEG        1    9.64029D-01       9   1
 IELMNT XMIN IMIN NDEG        2    1.03034D+00       7   1
 IELMNT XMIN IMIN NDEG        3    1.07294D+00      10   1
 IELMNT XMIN IMIN NDEG        4    1.13925D+00       8   1
 IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
-  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3  4
   FROM FNDMN3 : 
     PLACES OF LOWEST ELEMENTS 
 
      1 :      9      7     10      8
-  MIN AND MAX IN SELECTED SUPSPACE   0.9640286466370301    
-    1.139252884868239    
- CC_GETSAV> IOPT =           33
+  MIN AND MAX IN SELECTED SUPSPACE  0.964028646628759 1.13925288486258
+ CC_GETSAV> IOPT =  33
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       LE  vector
- CCEQ_SOL: IPRLE   =               6
+ CCEQ_SOL: IPRLE   =     6
  CCEQ_SOL: TRIPLET =     F
  CCEQ_SOL: LINQCC  =     F
- CCEQ_SOL: NREDH   =               1
- CCEQ_SOL: MAXRED  =             200
- CCEQ_SOL: MAXLE   =              40
- CCEQ_SOL: ISIDE   =              -1
- CCEQ_SOL: ISTRVE  =               1
- CCEQ_SOL: NVEC    =               1
- CCEQ_SOL: NUPVEC  =               1
- CCEQ_SOL: NCCVAR  =              65
+ CCEQ_SOL: NREDH   =     1
+ CCEQ_SOL: MAXRED  =     200
+ CCEQ_SOL: MAXLE   =     40
+ CCEQ_SOL: ISIDE   =     -1
+ CCEQ_SOL: ISTRVE  =     1
+ CCEQ_SOL: NVEC    =     1
+ CCEQ_SOL: NUPVEC  =     1
+ CCEQ_SOL: NCCVAR  =     65
 
 
 
@@ -5569,25 +5487,25 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919393
+  Workspace input:  9919393
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   1
   
- Time used in CC_LHTR :  2.2187948226928711E-02
+ Time used in CC_LHTR : 1.999998092651367E-02
   
   CCRED  
-  ISIDE            -1
-  NREDH             1
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919393
+  ISIDE   -1
+  NREDH   1
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919393
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
+               Column   1     
        1       0.43056411
   
  ROOT:  1 RESIDUAL TOT: 1.17634D-01
@@ -5595,12 +5513,12 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
+               Column   1     
        1       0.43056411
 
  Dimension of the reduced space:     2
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -5609,25 +5527,25 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919393
+  Workspace input:  9919393
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   2
   
- Time used in CC_LHTR :  2.1041154861450195E-02
+ Time used in CC_LHTR : 9.999990463256836E-03
   
   CCRED  
-  ISIDE            -1
-  NREDH             2
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919393
+  ISIDE   -1
+  NREDH   2
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919393
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
+               Column   1     
        1       0.42239923
        2       1.47146545
   
@@ -5636,12 +5554,12 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
+               Column   1     
        1       0.42239923
 
  Dimension of the reduced space:     3
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -5650,25 +5568,25 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919393
+  Workspace input:  9919393
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   3
   
- Time used in CC_LHTR :  2.3119926452636719E-02
+ Time used in CC_LHTR : 9.999990463256836E-03
   
   CCRED  
-  ISIDE            -1
-  NREDH             3
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919393
+  ISIDE   -1
+  NREDH   3
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919393
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
+               Column   1     
        1       0.42005754
        2       1.25988733
        3       1.57050229
@@ -5678,12 +5596,12 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
+               Column   1     
        1       0.42005754
 
  Dimension of the reduced space:     4
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -5692,25 +5610,25 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919393
+  Workspace input:  9919393
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   4
   
- Time used in CC_LHTR :  2.4121284484863281E-02
+ Time used in CC_LHTR : 9.999990463256836E-03
   
   CCRED  
-  ISIDE            -1
-  NREDH             4
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919393
+  ISIDE   -1
+  NREDH   4
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919393
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
+               Column   1     
        1       0.41998163
        2       1.23498205
        3       1.45514077
@@ -5721,12 +5639,12 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
+               Column   1     
        1       0.41998163
 
  Dimension of the reduced space:     5
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -5735,25 +5653,25 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919393
+  Workspace input:  9919393
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   5
   
- Time used in CC_LHTR :  2.2567987442016602E-02
+ Time used in CC_LHTR : 9.999990463256836E-03
   
   CCRED  
-  ISIDE            -1
-  NREDH             5
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919393
+  ISIDE   -1
+  NREDH   5
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919393
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
+               Column   1     
        1       0.41998308
        2       1.17265901
        3       1.39085171
@@ -5765,12 +5683,12 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
+               Column   1     
        1       0.41998308
 
  Dimension of the reduced space:     6
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -5779,25 +5697,25 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919393
+  Workspace input:  9919393
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   6
   
- Time used in CC_LHTR :  2.3839235305786133E-02
+ Time used in CC_LHTR : 9.999990463256836E-03
   
   CCRED  
-  ISIDE            -1
-  NREDH             6
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919393
+  ISIDE   -1
+  NREDH   6
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919393
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
+               Column   1     
        1       0.41998453
        2       1.08755233
        3       1.31480793
@@ -5810,12 +5728,12 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
+               Column   1     
        1       0.41998453
 
  Dimension of the reduced space:     7
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -5824,25 +5742,25 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919393
+  Workspace input:  9919393
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   7
   
- Time used in CC_LHTR :  2.2696971893310547E-02
+ Time used in CC_LHTR : 9.999990463256836E-03
   
   CCRED  
-  ISIDE            -1
-  NREDH             7
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919393
+  ISIDE   -1
+  NREDH   7
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919393
 
  REDUCED EIGENVALUES real part:
 
-               Column   1
+               Column   1     
        1       0.41998477
        2       1.07499001
        3       1.29425933
@@ -5857,12 +5775,12 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Lowest eigenvalues in this iteration: 
 
-               Column   1
+               Column   1     
        1       0.41998477
 
  Dimension of the reduced space:     7
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
     --------------------------------------
     converged in  7 iterations
@@ -5878,8 +5796,8 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.27 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.16 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -5904,13 +5822,13 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  Excitation no.       Hartree               eV 
  --------------       -------               --
 
-         1            0.419985           11.428372
+         1            0.419985           11.428366
 
 
  Total excited state energies for states of symmetry/spin    1    1
  Excitation no.       Energy (Hartree) 
  ------------------------------------- 
-@@    1    1           -74.601522778814598
+@@    1    1           -74.601522778814356
 
 
  Analysis of the Coupled Cluster Excitation Vector Number :  1
@@ -5977,7 +5895,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Ground state energy is target 
 
- Ecorr =                    -75.02150754391985300000
+ Ecorr =                    -75.02150754391951100000
 
  *******************************************************************
 
@@ -6019,50 +5937,39 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  +==================================================+
  |        F MATRIX TRANSFORMATION SECTION           |
+ |  (results are written to a direct access file)   |
  +--------------------------------------------------+
- | time for zero order intermediat.:      0.00 secs.|
- | time for  1 sets of left interm.:      0.01 secs.|
+ | time for zero order intermediat.:      0.01 secs.|
+ | time for  1 sets of left interm.:      0.00 secs.|
  | time for  1 sets of right inter.:      0.01 secs.|
- | time for  1 sets of 2. ord. int.:      0.01 secs.|
+ | time for  1 sets of 2. ord. int.:      0.02 secs.|
  | intermediates calculated in   1 batches          |
  +--------------------------------------------------+
  | L vector | R vector |    result    |             |
  | LE   No. |  RE  No. |   CC_  No.   |  time/secs  |
  +--------------------------------------------------+
- |     1    |     1    |      1       |       0.01  |
- +--------------------------------------------------+
- | total time for   1 F transforms.:      0.15 secs.|
- +--------------------------------------------------+
- |  % of time used in start up org.:     23.46      |
- |  % of time used in Fock interm. :      0.19      |
- |  % of time used in ERI          :      0.03      |
- |  % of time used in CCRDAO       :      0.22      |
- |  % of time used in (**|k del)   :      0.97      |
- |  % of time used in BF term      :      3.99      |
- |  % of time used in C term       :      1.32      |
- |  % of time used in D term       :      1.23      |
- |  % of time used in I/O          :     53.35      |
+ |     1    |     1    |      1       |       0.00  |
  +==================================================+
 
 
 
  Solving  1 response equations for states;
  Energy:  0.419985 and nr.:   1 of symmetry:   1
- CC_GETSAV> IOPT =           33
+ CC_GETSAV> IOPT =  33
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
- Start vector is a CC2       E0Î vector
- exgr, irst:           1
- CCEQ_SOL: IPRLE   =               6
+ Start vector is a CC2       E0  vector
+ exgr, irst: 1
+ CCEQ_SOL: IPRLE   =     6
  CCEQ_SOL: TRIPLET =     F
  CCEQ_SOL: LINQCC  =     T
- CCEQ_SOL: NREDH   =               1
- CCEQ_SOL: MAXRED  =             200
- CCEQ_SOL: MAXLE   =              40
- CCEQ_SOL: ISIDE   =              -1
- CCEQ_SOL: ISTRVE  =               1
- CCEQ_SOL: NVEC    =               1
- CCEQ_SOL: NUPVEC  =               1
- CCEQ_SOL: NCCVAR  =              65
+ CCEQ_SOL: NREDH   =     1
+ CCEQ_SOL: MAXRED  =     200
+ CCEQ_SOL: MAXLE   =     40
+ CCEQ_SOL: ISIDE   =     -1
+ CCEQ_SOL: ISTRVE  =     1
+ CCEQ_SOL: NVEC    =     1
+ CCEQ_SOL: NUPVEC  =     1
+ CCEQ_SOL: NCCVAR  =     65
 
 
 
@@ -6077,30 +5984,30 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   1
   
- Time used in CC_LHTR :  2.2799015045166016E-02
+ Time used in CC_LHTR : 1.999998092651367E-02
   
   CCRED  
-  ISIDE            -1
-  NREDH             1
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
- ilstnr:            1
- ilstnr:            1
+  ISIDE   -1
+  NREDH   1
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
+ ilstnr:  1
+ ilstnr:  1
   
  ROOT:  1 RESIDUAL TOT: 4.05168D-01
       1       1         0.00     0.41E+00
 
  Dimension of the reduced space:     2
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -6109,23 +6016,23 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   2
   
- Time used in CC_LHTR :  2.2742033004760742E-02
+ Time used in CC_LHTR : 1.999998092651367E-02
   
   CCRED  
-  ISIDE            -1
-  NREDH             2
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
- ilstnr:            1
- ilstnr:            1
+  ISIDE   -1
+  NREDH   2
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
+ ilstnr:  1
+ ilstnr:  1
   
  ROOT:  1 RESIDUAL TOT: 4.83690D-02
       2       1         0.00     0.48E-01
@@ -6141,30 +6048,30 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   3
   
- Time used in CC_LHTR :  2.1867275238037109E-02
+ Time used in CC_LHTR : 9.999990463256836E-03
   
   CCRED  
-  ISIDE            -1
-  NREDH             3
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
- ilstnr:            1
- ilstnr:            1
+  ISIDE   -1
+  NREDH   3
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
+ ilstnr:  1
+ ilstnr:  1
   
  ROOT:  1 RESIDUAL TOT: 1.04803D-02
       3       1         0.00     0.10E-01
 
  Dimension of the reduced space:     4
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -6173,30 +6080,30 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   4
   
- Time used in CC_LHTR :  2.2150039672851563E-02
+ Time used in CC_LHTR : 9.999990463256836E-03
   
   CCRED  
-  ISIDE            -1
-  NREDH             4
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
- ilstnr:            1
- ilstnr:            1
+  ISIDE   -1
+  NREDH   4
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
+ ilstnr:  1
+ ilstnr:  1
   
  ROOT:  1 RESIDUAL TOT: 4.72303D-03
       4       1         0.00     0.47E-02
 
  Dimension of the reduced space:     5
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -6205,30 +6112,30 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   5
   
- Time used in CC_LHTR :  2.3281812667846680E-02
+ Time used in CC_LHTR : 9.999990463256836E-03
   
   CCRED  
-  ISIDE            -1
-  NREDH             5
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
- ilstnr:            1
- ilstnr:            1
+  ISIDE   -1
+  NREDH   5
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
+ ilstnr:  1
+ ilstnr:  1
   
  ROOT:  1 RESIDUAL TOT: 8.09783D-04
       5       1         0.00     0.81E-03
 
  Dimension of the reduced space:     6
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -6237,30 +6144,30 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   6
   
- Time used in CC_LHTR :  2.3710250854492188E-02
+ Time used in CC_LHTR : 9.999990463256836E-03
   
   CCRED  
-  ISIDE            -1
-  NREDH             6
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
- ilstnr:            1
- ilstnr:            1
+  ISIDE   -1
+  NREDH   6
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
+ ilstnr:  1
+ ilstnr:  1
   
  ROOT:  1 RESIDUAL TOT: 1.07344D-04
       6       1         0.00     0.11E-03
 
  Dimension of the reduced space:     7
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.01
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -6269,30 +6176,30 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   7
   
- Time used in CC_LHTR :  2.2639036178588867E-02
+ Time used in CC_LHTR : 9.999990463256836E-03
   
   CCRED  
-  ISIDE            -1
-  NREDH             7
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
- ilstnr:            1
- ilstnr:            1
+  ISIDE   -1
+  NREDH   7
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
+ ilstnr:  1
+ ilstnr:  1
   
  ROOT:  1 RESIDUAL TOT: 2.04647D-05
       7       1         0.00     0.20E-04
 
  Dimension of the reduced space:     8
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -6301,30 +6208,30 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   8
   
- Time used in CC_LHTR :  2.3868083953857422E-02
+ Time used in CC_LHTR : 0.0
   
   CCRED  
-  ISIDE            -1
-  NREDH             8
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
- ilstnr:            1
- ilstnr:            1
+  ISIDE   -1
+  NREDH   8
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
+ ilstnr:  1
+ ilstnr:  1
   
  ROOT:  1 RESIDUAL TOT: 3.68162D-06
       8       1         0.00     0.37E-05
 
  Dimension of the reduced space:     9
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -6333,30 +6240,30 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   9
   
- Time used in CC_LHTR :  2.2115707397460938E-02
+ Time used in CC_LHTR : 9.999990463256836E-03
   
   CCRED  
-  ISIDE            -1
-  NREDH             9
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
- ilstnr:            1
- ilstnr:            1
+  ISIDE   -1
+  NREDH   9
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
+ ilstnr:  1
+ ilstnr:  1
   
  ROOT:  1 RESIDUAL TOT: 6.73838D-07
       9       1         0.00     0.67E-06
 
  Dimension of the reduced space:    10
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -6365,30 +6272,30 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:  10
   
- Time used in CC_LHTR :  2.2358894348144531E-02
+ Time used in CC_LHTR : 9.999990463256836E-03
   
   CCRED  
-  ISIDE            -1
-  NREDH            10
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
- ilstnr:            1
- ilstnr:            1
+  ISIDE   -1
+  NREDH   10
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
+ ilstnr:  1
+ ilstnr:  1
   
  ROOT:  1 RESIDUAL TOT: 1.69169D-07
      10       1         0.00     0.17E-06
 
  Dimension of the reduced space:    11
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -6397,23 +6304,23 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:  11
   
- Time used in CC_LHTR :  2.2479057312011719E-02
+ Time used in CC_LHTR : 9.999990463256836E-03
   
   CCRED  
-  ISIDE            -1
-  NREDH            11
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
- ilstnr:            1
- ilstnr:            1
+  ISIDE   -1
+  NREDH   11
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
+ ilstnr:  1
+ ilstnr:  1
   
  ROOT:  1 RESIDUAL TOT: 3.78414D-08
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 3.78414D-08
@@ -6421,7 +6328,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Dimension of the reduced space:    11
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
     --------------------------------------
     converged in 11 iterations
@@ -6430,15 +6337,15 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
          Routine          Time (min)
          ---------------------------
-         CC_TRDRV            0.01
+         CC_TRDRV            0.00
          CCRED               0.00
          CCNEX               0.00
          ---------------------------
-         Total time          0.01
+         Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.43 seconds
- >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.25 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   1.00 seconds
 
 
  >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
@@ -6704,21 +6611,21 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
 
           Printed all double excitations greater than 0.059704
- Total, actual nr.,loop index           1           1           1
- Sym, reduced nr.           1           1
- Norm of Response vector: T2AM   .  2.4242615703291691E-02
- Norms: XMAT  8.2794449991471970E-04
+ Total, actual nr.,loop index 1 1 1
+ Sym, reduced nr. 1 1
+ Norm of Response vector: T2AM   . 2.424261570333819E-02
+ Norms: XMAT 8.279444998444182E-04
 
 
         +---------------------------------------------------------+
-        ! Unrelaxed excited state CCSD   First-order properties:  !
+        ! Unrelaxed excited state CC2    First-order properties:  !
         +---------------------------------------------------------+
 
 
  Excited state properties for 
  Excited state nr.:               1
  Excited state sym:               1
- Excitation energy (au.,eV):    0.419985   11.428370
+ Excitation energy (au.,eV):    0.419985   11.428364
 
 
                         +--------------------------+
@@ -6733,10 +6640,10 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
                                au             Debye
 
                     x      0.00000000      0.00000000
-                    y      0.00000000      0.00000000
-                    z     -0.03598914     -0.09147612
+                    y     -0.00000000     -0.00000000
+                    z     -0.03598914     -0.09147526
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -6748,7 +6655,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
                     X              Y              Z
 
-               Column   1     Column   2     Column   3
+               Column   1     Column   2     Column   3     
        1       4.13633972     0.00000000     0.00000000
        2       0.00000000     8.92718558     0.00000000
        3       0.00000000     0.00000000     7.30769199
@@ -6758,6 +6665,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Isotropic Property:                         6.790406 a.u.
  Property anisotropy invariant:              4.220926 a.u.
+ WORK: 10000000 2.12592976199753 0.0
       
 
     *******************************************************************
@@ -6795,6 +6703,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
 
 
+ WORK: 10000000 2.12592976199753 0.0
 
 
  List R1  is empty.
@@ -6814,27 +6723,15 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
  |          (result is written to file)             |
  +--------------------------------------------------+
  | time for zero order intermediat.:      0.00 secs.|
- | time for  1 sets of left interm.:      0.01 secs.|
- | time for  1 sets of right inter.:      0.01 secs.|
- | time for  1 sets of 2. ord. int.:      0.01 secs.|
+ | time for  1 sets of left interm.:      0.00 secs.|
+ | time for  1 sets of right inter.:      0.00 secs.|
+ | time for  1 sets of 2. ord. int.:      0.00 secs.|
  | intermediates calculated in   1 batches          |
  +--------------------------------------------------+
  | L vector | R vector |    result    |             |
  | L0   No. |  RE  No. |   FR   No.   |  time/secs  |
  +--------------------------------------------------+
- |     0    |     1    |      1       |       0.01  |
- +--------------------------------------------------+
- | total time for   1 F transforms.:      0.15 secs.|
- +--------------------------------------------------+
- |  % of time used in start up org.:     24.46      |
- |  % of time used in Fock interm. :      0.21      |
- |  % of time used in ERI          :      0.03      |
- |  % of time used in CCRDAO       :      0.23      |
- |  % of time used in (**|k del)   :      1.03      |
- |  % of time used in BF term      :      4.06      |
- |  % of time used in C term       :      1.35      |
- |  % of time used in D term       :      1.19      |
- |  % of time used in I/O          :     53.34      |
+ |     0    |     1    |      1       |       0.02  |
  +==================================================+
 
 
@@ -6849,7 +6746,7 @@ IELMNT XMIN IMIN NDEG        5    1.16044D+00       5   1
 
  Solving   1 response equations:
  M1 :
- CC_GETSAV> IOPT =           33
+ CC_GETSAV> IOPT =  33
  vector for wrong frequencies on file CCM1_1___1
 FILE  :CCM1_1___1
 IDXLST:    1
@@ -6866,17 +6763,17 @@ LORXFIL:    F
   IOPTSV=33... read vector nevertheless...
  Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
  Start vector is a CC2       M1  vector
- CCEQ_SOL: IPRLE   =               6
+ CCEQ_SOL: IPRLE   =     6
  CCEQ_SOL: TRIPLET =     F
  CCEQ_SOL: LINQCC  =     T
- CCEQ_SOL: NREDH   =               1
- CCEQ_SOL: MAXRED  =             200
- CCEQ_SOL: MAXLE   =              40
- CCEQ_SOL: ISIDE   =              -1
- CCEQ_SOL: ISTRVE  =               1
- CCEQ_SOL: NVEC    =               1
- CCEQ_SOL: NUPVEC  =               1
- CCEQ_SOL: NCCVAR  =              65
+ CCEQ_SOL: NREDH   =     1
+ CCEQ_SOL: MAXRED  =     200
+ CCEQ_SOL: MAXLE   =     40
+ CCEQ_SOL: ISIDE   =     -1
+ CCEQ_SOL: ISTRVE  =     1
+ CCEQ_SOL: NVEC    =     1
+ CCEQ_SOL: NUPVEC  =     1
+ CCEQ_SOL: NCCVAR  =     65
 
 
 
@@ -6891,28 +6788,28 @@ LORXFIL:    F
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   1
   
- Time used in CC_LHTR :  2.3866415023803711E-02
+ Time used in CC_LHTR : 9.999990463256836E-03
   
   CCRED  
-  ISIDE            -1
-  NREDH             1
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   1
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 3.53628D-01
       1       1         0.00     0.35E+00
 
  Dimension of the reduced space:     2
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -6921,28 +6818,28 @@ LORXFIL:    F
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   2
   
- Time used in CC_LHTR :  2.2608280181884766E-02
+ Time used in CC_LHTR : 9.999990463256836E-03
   
   CCRED  
-  ISIDE            -1
-  NREDH             2
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   2
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 2.37653D-02
       2       1         0.00     0.24E-01
 
  Dimension of the reduced space:     3
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -6951,28 +6848,28 @@ LORXFIL:    F
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   3
   
- Time used in CC_LHTR :  2.2610187530517578E-02
+ Time used in CC_LHTR : 0.0
   
   CCRED  
-  ISIDE            -1
-  NREDH             3
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   3
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 1.91360D-03
       3       1         0.00     0.19E-02
 
  Dimension of the reduced space:     4
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -6981,28 +6878,28 @@ LORXFIL:    F
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   4
   
- Time used in CC_LHTR :  2.2225856781005859E-02
+ Time used in CC_LHTR : 1.000022888183594E-02
   
   CCRED  
-  ISIDE            -1
-  NREDH             4
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   4
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 2.49936D-04
       4       1         0.00     0.25E-03
 
  Dimension of the reduced space:     5
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -7011,28 +6908,28 @@ LORXFIL:    F
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   5
   
- Time used in CC_LHTR :  2.2078990936279297E-02
+ Time used in CC_LHTR : 2.000021934509277E-02
   
   CCRED  
-  ISIDE            -1
-  NREDH             5
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   5
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 2.20880D-05
       5       1         0.00     0.22E-04
 
  Dimension of the reduced space:     6
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -7041,28 +6938,28 @@ LORXFIL:    F
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   6
   
- Time used in CC_LHTR :  2.2447109222412109E-02
+ Time used in CC_LHTR : 1.999998092651367E-02
   
   CCRED  
-  ISIDE            -1
-  NREDH             6
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   6
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 1.74341D-06
       6       1         0.00     0.17E-05
 
  Dimension of the reduced space:     7
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.03
 
   >>> Call CC_TRDRV with TRIPLET flag set to: F
 
@@ -7071,21 +6968,21 @@ LORXFIL:    F
                           !  START OF CC_TRDRV  !
                           +---------------------+
 
-  Workspace input:     19919399
+  Workspace input:  9919399
   Triplet flag   :  F
 
  CC_TRDRV: The total number of trial vectors is:    1
  CC_TRDRV: Transforming vector nr.:   7
   
- Time used in CC_LHTR :  2.3849964141845703E-02
+ Time used in CC_LHTR : 1.999998092651367E-02
   
   CCRED  
-  ISIDE            -1
-  NREDH             7
-  ISTRVE            1
-  NUPVEC            1
-  NVEC              1
-  LWRK       19919399
+  ISIDE   -1
+  NREDH   7
+  ISTRVE  1
+  NUPVEC  1
+  NVEC    1
+  LWRK    9919399
   
  ROOT:  1 RESIDUAL TOT: 2.96008D-08
  ROOT:  1 HAS CONVERGED. RESIDUAL TOT: 2.96008D-08
@@ -7093,7 +6990,7 @@ LORXFIL:    F
 
  Dimension of the reduced space:     7
 
- >>> TIME USED IN THIS MICRO ITERATION        0.04
+ >>> TIME USED IN THIS MICRO ITERATION        0.02
 
     --------------------------------------
     converged in  7 iterations
@@ -7109,7 +7006,7 @@ LORXFIL:    F
          Total time          0.00
 
 
- >>>> Total CPU  time used in CCEQ_SOLV:   0.28 seconds
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.16 seconds
  >>>> Total wall time used in CCEQ_SOLV:   0.00 seconds
 
 
@@ -7221,7 +7118,7 @@ LORXFIL:    F
 
  Calculating linear response residues for state  1
  of symmetry   1 and with eigenvalue:       0.41998469
- Time used in    CC_ETA            :       0.00 seconds
+ Time used in    CC_ETA            :       0.01 seconds
  <XDIPLEN |f> EtaA*RE cont. =  -0.137769
  <XDIPLEN |f> Mf*KsiA  cont. =   0.003520
  <f|XDIPLEN > LE*XksiB cont. =  -0.068799
@@ -7233,7 +7130,7 @@ LORXFIL:    F
  <XDIPLEN |f> EtaA*RE cont. =  -0.137769
  <XDIPLEN |f> Mf*KsiA  cont. =   0.003520
  <f|ZDIPLEN > LE*XksiB cont. =   0.000000
- Time used in    CC_ETA            :       0.00 seconds
+ Time used in    CC_ETA            :       0.01 seconds
  <YDIPLEN |f> EtaA*RE cont. =   0.000000
  <YDIPLEN |f> Mf*KsiA  cont. =   0.000000
  <f|XDIPLEN > LE*XksiB cont. =  -0.068799
@@ -7245,7 +7142,7 @@ LORXFIL:    F
  <YDIPLEN |f> EtaA*RE cont. =   0.000000
  <YDIPLEN |f> Mf*KsiA  cont. =   0.000000
  <f|ZDIPLEN > LE*XksiB cont. =   0.000000
- Time used in    CC_ETA            :       0.00 seconds
+ Time used in    CC_ETA            :       0.01 seconds
  <ZDIPLEN |f> EtaA*RE cont. =   0.000000
  <ZDIPLEN |f> Mf*KsiA  cont. =   0.000000
  <f|XDIPLEN > LE*XksiB cont. =  -0.068799
@@ -7291,12 +7188,12 @@ LORXFIL:    F
  -------------------------------------------------------
 
  RES{<<XDIPLEN ,XDIPLEN >>( 0.419985)} =     0.00923612 (   0.09610475)
- RES{<<XDIPLEN ,YDIPLEN >>( 0.419985)} =     0.00000000 (   0.00000000)
- RES{<<XDIPLEN ,ZDIPLEN >>( 0.419985)} =     0.00000000 (   0.00000000)
- RES{<<YDIPLEN ,XDIPLEN >>( 0.419985)} =     0.00000000 (   0.00000000)
+ RES{<<XDIPLEN ,YDIPLEN >>( 0.419985)} =    -0.00000000 (  -0.00000000)
+ RES{<<XDIPLEN ,ZDIPLEN >>( 0.419985)} =    -0.00000000 (  -0.00000000)
+ RES{<<YDIPLEN ,XDIPLEN >>( 0.419985)} =    -0.00000000 (  -0.00000000)
  RES{<<YDIPLEN ,YDIPLEN >>( 0.419985)} =     0.00000000 (   0.00000000)
  RES{<<YDIPLEN ,ZDIPLEN >>( 0.419985)} =     0.00000000 (   0.00000000)
- RES{<<ZDIPLEN ,XDIPLEN >>( 0.419985)} =     0.00000000 (   0.00000000)
+ RES{<<ZDIPLEN ,XDIPLEN >>( 0.419985)} =    -0.00000000 (  -0.00000000)
  RES{<<ZDIPLEN ,YDIPLEN >>( 0.419985)} =     0.00000000 (   0.00000000)
  RES{<<ZDIPLEN ,ZDIPLEN >>( 0.419985)} =     0.00000000 (   0.00000000)
 
@@ -7306,8 +7203,8 @@ LORXFIL:    F
 
  Dipole gauge
 
-               Column   1     Column   2     Column   3
-       1       0.00923612     0.00000000     0.00000000
+               Column   1     Column   2     Column   3     
+       1       0.00923612    -0.00000000    -0.00000000
 
  Principal values of diagonalized transition strength matrix:
 
@@ -7319,7 +7216,7 @@ LORXFIL:    F
  Principal axis of diagonalized transition strength matrix:
 
 
-               Column   1     Column   2     Column   3
+               Column   1     Column   2     Column   3     
        1       1.00000000     0.00000000     0.00000000
        2       0.00000000     1.00000000     0.00000000
        3       0.00000000     0.00000000     1.00000000
@@ -7329,8 +7226,8 @@ LORXFIL:    F
  CCSD  excitation energy: 0.41998469
 
 
-               Column   1     Column   2     Column   3
-       1       0.00258602     0.00000000     0.00000000
+               Column   1     Column   2     Column   3     
+       1       0.00258602    -0.00000000    -0.00000000
 
  Principal values of diagonalized oscillator strength matrix:
 
@@ -7342,7 +7239,7 @@ LORXFIL:    F
  Principal axis of diagonalized oscillator strength matrix:
 
 
-               Column   1     Column   2     Column   3
+               Column   1     Column   2     Column   3     
        1       1.00000000     0.00000000     0.00000000
        2       0.00000000     1.00000000     0.00000000
        3       0.00000000     0.00000000     1.00000000
@@ -7367,16 +7264,16 @@ LORXFIL:    F
  |(spin, |        +------------------------------------------------------------+
  | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
  +=============================================================================+
- | ^1A   |    1   |     0.4486495  |      12.20838  |     98467.191  | 100.00  |
+ | ^1A   |    1   |     0.4486495  |      12.20837  |     98467.192  | 100.00  |
  +=============================================================================+
                                                                                 
                                                                                 
  +=============================================================================+
  |  sym. | Exci.  |        CCS        Transition properties                    |
- |       |        +------------------------------------------------------------+
- |       |        | Dipole Strength(a.u.) | Oscillator strength  | Direction   |
+ |(spin, |        +------------------------------------------------------------+
+ | spat) |        | Dipole Strength(a.u.) | Oscillator strength  | Direction   |
  +=============================================================================+
- |   1   |    1   |        0.0094897      |      0.0028384       |    X        |
+ | ^1A   |    1   |        0.0094897      |      0.0028384       |    X        |
  +=============================================================================+
                                                                                 
                                                                                 
@@ -7390,16 +7287,16 @@ LORXFIL:    F
  |(spin, |        +------------------------------------------------------------+
  | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
  +=============================================================================+
- | ^1A   |    1   |     0.4382523  |      11.92546  |     96185.252  |  98.47  |
+ | ^1A   |    1   |     0.4382523  |      11.92545  |     96185.252  |  98.47  |
  +=============================================================================+
                                                                                 
                                                                                 
  +=============================================================================+
  |  sym. | Exci.  |        CC2        Transition properties                    |
- |       |        +------------------------------------------------------------+
- |       |        | Dipole Strength(a.u.) | Oscillator strength  | Direction   |
+ |(spin, |        +------------------------------------------------------------+
+ | spat) |        | Dipole Strength(a.u.) | Oscillator strength  | Direction   |
  +=============================================================================+
- |   1   |    1   |        0.0091769      |      0.0026812       |    X        |
+ | ^1A   |    1   |        0.0091769      |      0.0026812       |    X        |
  +=============================================================================+
                                                                                 
                                                                                 
@@ -7413,20 +7310,20 @@ LORXFIL:    F
  |(spin, |        +------------------------------------------------------------+
  | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
  +=============================================================================+
- | ^1A   |    1   |     0.4199847  |      11.42837  |     92175.984  |  94.29  |
+ | ^1A   |    1   |     0.4199847  |      11.42836  |     92175.984  |  94.29  |
  +=============================================================================+
                                                                                 
                                                                                 
  +=============================================================================+
  |  sym. | Exci.  |        CCSD       Transition properties                    |
- |       |        +------------------------------------------------------------+
- |       |        | Dipole Strength(a.u.) | Oscillator strength  | Direction   |
+ |(spin, |        +------------------------------------------------------------+
+ | spat) |        | Dipole Strength(a.u.) | Oscillator strength  | Direction   |
  +=============================================================================+
- |   1   |    1   |        0.0092361      |      0.0025860       |    X        |
+ | ^1A   |    1   |        0.0092361      |      0.0025860       |    X        |
  +=============================================================================+
 
-  1 a.u. =        27.21140 eV.  
-  1 a.u. =    219474.63067 cm-1.
+  1 a.u. =        27.21138 eV.  
+  1 a.u. =    219474.63128 cm-1.
   
 
  +---------------------------------------------------------+ 
@@ -7461,13 +7358,9 @@ LORXFIL:    F
  *******************************************************************************
 
 
- WARNING: Tried to close a non-existent or already closed file
- Unit number was:  10
-
 - End of Coupled Cluster
- >>>> Total CPU  time used in DALTON:   4.28 seconds
- >>>> Total wall time used in DALTON:   7.00 seconds
+ >>>> Total CPU  time used in DALTON:   2.44 seconds
+ >>>> Total wall time used in DALTON:  10.00 seconds
 
  
-     Date and time (IRIX)   : Fri Oct 13 16:03:30 2000
-     Host name              : aausgi4                                 
+     Host name              : pico                                    

@@ -4,7 +4,7 @@
     ***********  DALTON - An electronic structure program  ***********
     ******************************************************************
 
-               This is output from DALTON (Release 1.2, April 2001)
+            This is output from DALTON (Release 2.0, ? 2001)
 
                           Principal authors:
 
@@ -17,6 +17,7 @@
 
                           Contributors:
 
+            Alexander A. Auer,     University of Mainz,        Germany
             Keld L. Bak,           UNI-C,                      Denmark
             Vebjoern Bakken,       University of Oslo,         Norway 
             Ove Christiansen,      University of Lund,         Sweden 
@@ -36,16 +37,18 @@
             Henrik Koch,           SDU - Odense University,    Denmark
             Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
             Patrick Norman,        University of Linkoeping,   Sweden 
+            Thomas B. Pedersen,    U.of Santiago de Compostela,Spain  
             Martin J. Packer,      University of Sheffield,    UK     
             Torgeir A. Ruden,      University of Oslo,         Norway 
+            Alfredo Sanchez,       University of Valencia,     Spain  
             Trond Saue,            University of Toulouse,     France 
             Stephan P. A. Sauer,   University of Copenhagen,   Denmark
             Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
             K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
             Peter R.Taylor,        San Diego Superc. Center,   USA    
             Olav Vahtras,          PDC, Stockholm,             Sweden 
-------------------------------------------------------------------------
 
+------------------------------------------------------------------------
 
 
      NOTE:
@@ -63,17 +66,19 @@
      If results obtained with this code are published, an
      appropriate citation would be:
       
-     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,H. Aagren,
-     K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,P. Dahle, E.K. Dalskov,
-     T. Enevoldsen, B. Fernandez,C. Haettig, K. Hald, A. Halkier,
+     "Dalton, a molecular electronic structure program, Release 1.2
+     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
      H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-     H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T.A. Ruden, T. Saue,
-     S.P.A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,P.R. Taylor, and O. Vahtras:
-     "Dalton release 1.2 (2001), an electronic structure program"
+     H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+     T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+     B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+     and O. Vahtras"
 
  
-     Date and time (Linux)  : Mon Feb 12 21:51:42 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
 
@@ -113,8 +118,8 @@
   Title Cards
   -----------
 
-  Water                                                                   
-  anolund                                                                 
+  Geometry optimization using WALK module plus                            
+  static and dynamic polarizabilities                                     
 
 
   Symmetry Operations
@@ -136,30 +141,30 @@ Point group: C2v
 
    * Group multiplication table
 
-        |  E   C2x  Oxy  Oxz
+        |  E   C2x  Oxy  Oxz  
    -----+--------------------
-     E  |  E 
-    C2x | C2x   E 
-    Oxy | Oxy  Oxz   E 
-    Oxz | Oxz  Oxy  C2x   E 
+     E  |  E   
+    C2x | C2x   E   
+    Oxy | Oxy  Oxz   E   
+    Oxz | Oxz  Oxy  C2x   E   
 
    * Character table
 
-        |  E   C2x  Oxy  Oxz
+        |  E   C2x  Oxy  Oxz  
    -----+--------------------
-    A1  |   1    1    1    1
-    B1  |   1   -1    1   -1
-    B2  |   1   -1   -1    1
-    A2  |   1    1   -1   -1
+    A1  |   1    1    1    1  
+    B1  |   1   -1    1   -1  
+    B2  |   1   -1   -1    1  
+    A2  |   1    1   -1   -1  
 
    * Direct product table
 
-        | A1   B1   B2   A2 
+        | A1   B1   B2   A2   
    -----+--------------------
-    A1  | A1 
-    B1  | B1   A1 
-    B2  | B2   A2   A1 
-    A2  | A2   B2   B1   A1 
+    A1  | A1   
+    B1  | B1   A1   
+    B2  | B2   A2   A1   
+    A2  | A2   B2   B1   A1   
 
 
   Atoms and basis sets
@@ -236,7 +241,7 @@ Point group: C2v
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            OS          OP 1        OP 2
+            OS          OP 1        OP 2        
 
    OS      0.000000
    OP 1    1.272001    0.000000
@@ -273,87 +278,87 @@ Point group: C2v
 
   Symmetry  A1 ( 1)
 
-    1     OS       1s         1
-    2     OS       1s         2
-    3     OS       1s         3
-    4     OS       1s         4
-    5     OS       2px        5
-    6     OS       2px        8
-    7     OS       2px       11
-    8     OS       3d0       16
-    9     OS       3d2+      18
-   10     OS       3d0       21
-   11     OS       3d2+      23
-   12     OP       1s        24  +  25
-   13     OP       1s        26  +  27
-   14     OP       1s        28  +  29
-   15     OP       1s        30  +  31
-   16     OP       2px       32  +  33
-   17     OP       2py       34  -  35
-   18     OP       2px       38  +  39
-   19     OP       2py       40  -  41
-   20     OP       2px       44  +  45
-   21     OP       2py       46  -  47
-   22     OP       3d2-      50  -  51
-   23     OP       3d0       54  +  55
-   24     OP       3d2+      58  +  59
-   25     OP       3d2-      60  -  61
-   26     OP       3d0       64  +  65
-   27     OP       3d2+      68  +  69
+    1     OS       1s         1  
+    2     OS       1s         2  
+    3     OS       1s         3  
+    4     OS       1s         4  
+    5     OS       2px        5  
+    6     OS       2px        8  
+    7     OS       2px       11  
+    8     OS       3d0       16  
+    9     OS       3d2+      18  
+   10     OS       3d0       21  
+   11     OS       3d2+      23  
+   12     OP       1s        24  +  25  
+   13     OP       1s        26  +  27  
+   14     OP       1s        28  +  29  
+   15     OP       1s        30  +  31  
+   16     OP       2px       32  +  33  
+   17     OP       2py       34  -  35  
+   18     OP       2px       38  +  39  
+   19     OP       2py       40  -  41  
+   20     OP       2px       44  +  45  
+   21     OP       2py       46  -  47  
+   22     OP       3d2-      50  -  51  
+   23     OP       3d0       54  +  55  
+   24     OP       3d2+      58  +  59  
+   25     OP       3d2-      60  -  61  
+   26     OP       3d0       64  +  65  
+   27     OP       3d2+      68  +  69  
 
 
   Symmetry  B1 ( 2)
 
-   28     OS       2py        6
-   29     OS       2py        9
-   30     OS       2py       12
-   31     OS       3d2-      14
-   32     OS       3d2-      19
-   33     OP       1s        24  -  25
-   34     OP       1s        26  -  27
-   35     OP       1s        28  -  29
-   36     OP       1s        30  -  31
-   37     OP       2px       32  -  33
-   38     OP       2py       34  +  35
-   39     OP       2px       38  -  39
-   40     OP       2py       40  +  41
-   41     OP       2px       44  -  45
-   42     OP       2py       46  +  47
-   43     OP       3d2-      50  +  51
-   44     OP       3d0       54  -  55
-   45     OP       3d2+      58  -  59
-   46     OP       3d2-      60  +  61
-   47     OP       3d0       64  -  65
-   48     OP       3d2+      68  -  69
+   28     OS       2py        6  
+   29     OS       2py        9  
+   30     OS       2py       12  
+   31     OS       3d2-      14  
+   32     OS       3d2-      19  
+   33     OP       1s        24  -  25  
+   34     OP       1s        26  -  27  
+   35     OP       1s        28  -  29  
+   36     OP       1s        30  -  31  
+   37     OP       2px       32  -  33  
+   38     OP       2py       34  +  35  
+   39     OP       2px       38  -  39  
+   40     OP       2py       40  +  41  
+   41     OP       2px       44  -  45  
+   42     OP       2py       46  +  47  
+   43     OP       3d2-      50  +  51  
+   44     OP       3d0       54  -  55  
+   45     OP       3d2+      58  -  59  
+   46     OP       3d2-      60  +  61  
+   47     OP       3d0       64  -  65  
+   48     OP       3d2+      68  -  69  
 
 
   Symmetry  B2 ( 3)
 
-   49     OS       2pz        7
-   50     OS       2pz       10
-   51     OS       2pz       13
-   52     OS       3d1+      17
-   53     OS       3d1+      22
-   54     OP       2pz       36  +  37
-   55     OP       2pz       42  +  43
-   56     OP       2pz       48  +  49
-   57     OP       3d1-      52  -  53
-   58     OP       3d1+      56  +  57
-   59     OP       3d1-      62  -  63
-   60     OP       3d1+      66  +  67
+   49     OS       2pz        7  
+   50     OS       2pz       10  
+   51     OS       2pz       13  
+   52     OS       3d1+      17  
+   53     OS       3d1+      22  
+   54     OP       2pz       36  +  37  
+   55     OP       2pz       42  +  43  
+   56     OP       2pz       48  +  49  
+   57     OP       3d1-      52  -  53  
+   58     OP       3d1+      56  +  57  
+   59     OP       3d1-      62  -  63  
+   60     OP       3d1+      66  +  67  
 
 
   Symmetry  A2 ( 4)
 
-   61     OS       3d1-      15
-   62     OS       3d1-      20
-   63     OP       2pz       36  -  37
-   64     OP       2pz       42  -  43
-   65     OP       2pz       48  -  49
-   66     OP       3d1-      52  +  53
-   67     OP       3d1+      56  -  57
-   68     OP       3d1-      62  +  63
-   69     OP       3d1+      66  -  67
+   61     OS       3d1-      15  
+   62     OS       3d1-      20  
+   63     OP       2pz       36  -  37  
+   64     OP       2pz       42  -  43  
+   65     OP       2pz       48  -  49  
+   66     OP       3d1-      52  +  53  
+   67     OP       3d1+      56  -  57  
+   68     OP       3d1-      62  +  63  
+   69     OP       3d1+      66  -  67  
 
   Symmetries of electric field:  A1 (1)  B1 (2)  B2 (3)
 
@@ -365,10 +370,10 @@ Point group: C2v
  ************************************************************************
 
 
- >>> Time used in ONEDRV is   0.03 seconds
+ >>> Time used in ONEDRV is   0.04 seconds
 
 
- >>> Time used in OVERLA is   0.03 seconds
+ >>> Time used in OVERLA is   0.04 seconds
 
 
  Number of two-electron integrals written:      672537 ( 23.1% )
@@ -376,7 +381,7 @@ Point group: C2v
 
 
 
- >>> Time used in TWOINT is   5.31 seconds
+ >>> Time used in TWOINT is   2.36 seconds
 
 
 
@@ -389,25 +394,24 @@ Point group: C2v
 
  Threshold for discarding integrals :  1.00D-15
 
- >>> Time used in FRMSUP is   0.29 seconds
+ >>> Time used in FRMSUP is   0.42 seconds
 
- >>>> Total CPU  time used in HERMIT:   5.67 seconds
- >>>> Total wall time used in HERMIT:  15.00 seconds
+ >>>> Total CPU  time used in HERMIT:   2.98 seconds
+ >>>> Total wall time used in HERMIT:   3.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Mon Feb 12 21:51:57 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Title lines from integral program:
-     Water                                                                   
-     anolund                                                                 
+     Geometry optimization using WALK module plus                            
+     static and dynamic polarizabilities                                     
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -477,7 +481,7 @@ Point group: C2v
     1     -223.191109535740    5.64716D+00   -2.23D+02
     2     -223.857746696543    3.18873D+00   -6.67D-01
     3     -224.229024331282    1.16315D+00   -3.71D-01
-    4     -224.288873806323    1.23307D-01   -5.98D-02
+    4     -224.288873806322    1.23307D-01   -5.98D-02
     5     -224.290276547658    4.13890D-02   -1.40D-03
     6     -224.290474702109    1.12384D-02   -1.98D-04
     7     -224.290497719893    3.38563D-03   -2.30D-05
@@ -485,8 +489,8 @@ Point group: C2v
     9     -224.290500227457    2.55853D-04   -1.63D-07
    10     -224.290500241528    8.77186D-05   -1.41D-08
    11     -224.290500243351    3.62116D-05   -1.82D-09
-   12     -224.290500243731    6.62530D-06   -3.80D-10
-   13     -224.290500243741    7.01411D-07   -1.01D-11
+   12     -224.290500243731    6.62530D-06   -3.81D-10
+   13     -224.290500243742    7.01411D-07   -1.02D-11
  DIIS converged in  13 iterations !
 
 
@@ -503,9 +507,9 @@ Point group: C2v
  Orbital occupations :    6    4    1    1
 
 
- Hartree-Fock electronic energy:        -293.189688334521
+ Hartree-Fock electronic energy:        -293.189688334520
 
- Hartree-Fock total      energy:        -224.290500243742
+ Hartree-Fock total      energy:        -224.290500243741
 
  Hartree-Fock orbital energies, symmetry 1
 
@@ -593,7 +597,7 @@ Point group: C2v
  RHF     2.00000000
  Diff.  -0.11374371
 
- Time used for MP2 natural orbitals :       3.330 CPU seconds.
+ Time used for MP2 natural orbitals :       4.550 CPU seconds.
 
 
         SIRIUS MCSCF optimization (SIROPT)
@@ -625,7 +629,7 @@ Point group: C2v
 
 
  CI energies and residuals:
-    1     -224.500819785184400       1.40D-01
+    1     -224.500819785184570       1.40D-01
 
    <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
 
@@ -652,11 +656,11 @@ Point group: C2v
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.500819785184300       (MACRO    1)
+ Total MCSCF energy       :     -224.500819785184600       (MACRO    1)
 
  Norm of total gradient   :        0.339419956569
  -    of CI gradient      :        0.280424968463
- -    of orbital gradient :        0.191226943655
+ -    of orbital gradient :        0.191226943656
 
  Residual norm when dim(red L) =   8
  NEO root     CSF        orbital          total
@@ -689,10 +693,10 @@ Point group: C2v
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.516582846925000       (MACRO    2)
+ Total MCSCF energy       :     -224.516582846925350       (MACRO    2)
 
- Norm of total gradient   :        0.101546345596
- -    of CI gradient      :        0.094936317327
+ Norm of total gradient   :        0.101546345597
+ -    of CI gradient      :        0.094936317328
  -    of orbital gradient :        0.036038256843
 
  Residual norm when dim(red L) =   9
@@ -726,7 +730,7 @@ Point group: C2v
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.518481406261600       (MACRO    3)
+ Total MCSCF energy       :     -224.518481406261510       (MACRO    3)
 
  Norm of total gradient   :        0.017856083688
  -    of CI gradient      :        0.017222757999
@@ -763,7 +767,7 @@ Point group: C2v
  <<< MACRO ITERATION  4 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.518523901233000       (MACRO    4)
+ Total MCSCF energy       :     -224.518523901232980       (MACRO    4)
 
  Norm of total gradient   :        0.000213978707
  -    of CI gradient      :        0.000194993920
@@ -800,7 +804,7 @@ Point group: C2v
  <<< MACRO ITERATION  5 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.518523910220100       (MACRO    5)
+ Total MCSCF energy       :     -224.518523910219860       (MACRO    5)
 
  Norm of total gradient   :        0.000008307570
  -    of CI gradient      :        0.000006710812
@@ -809,23 +813,22 @@ Point group: C2v
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            5
      Number of micro iterations used           38
-     Total number of CPU seconds used         0.00
+     Total number of CPU seconds used        25.26
 
 
                >>> SIRIUS OPTIMIZATION STATISTICS <<<
 
  
-     Date and time (Linux)  : Mon Feb 12 21:52:45 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
-    1    6   -224.500819785184   0.3394199566  0.000000   0.4820820758
+    1    6   -224.500819785185   0.3394199566  0.000000   0.4820820758
     2    7   -224.516582846925   0.1015463456  0.870029   0.1166727067
     3   14   -224.518481406262   0.0178560837  1.019103   0.0190825112
     4   11   -224.518523901233   0.0002139787  1.002352   0.0002657072
-    5    0   -224.518523910220   0.0000083076  1.000235   0.0000000000
+    5    0   -224.518523910220   0.0000083076  1.000216   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
@@ -840,35 +843,35 @@ Point group: C2v
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1     6     4     3      0.00      0.00      1.88      0.00      0.31
-    2     7     5     3      0.00      0.00      1.88      0.00      0.27
-    3    14    10     5      0.00      0.00      1.88      0.00      0.13
-    4    11     8     4      0.00      0.00      1.88      0.00      0.17
-    5     0     0     0      0.00      0.00      0.00      0.00
+    1     6     4     3      4.64      3.23      1.26      1.17      0.21
+    2     7     5     3      4.71      3.12      1.43      1.38      0.20
+    3    14    10     5      5.77      3.02      2.59      2.44      0.19
+    4    11     8     4      5.36      3.06      2.14      2.06      0.19
+    5     0     0     0      3.03      2.89      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1   -254.323243055675    -39.076764820288   -224.500819785184
-    2   -253.414099511395    -40.001671426309   -224.516582846925
+    1   -254.323243055676    -39.076764820288   -224.500819785185
+    2   -253.414099511396    -40.001671426308   -224.516582846925
     3   -253.543874955428    -39.873794541612   -224.518481406262
-    4   -253.552239622945    -39.865472369067   -224.518523901233
-    5   -253.552849342932    -39.864862658067   -224.518523910220
+    4   -253.552239622944    -39.865472369068   -224.518523901233
+    5   -253.552849342930    -39.864862658069   -224.518523910220
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.018117851703     -0.015763061741      0.870029294815
-    3     -0.001862970480     -0.001898559337      1.019103285336
-    4     -0.000042395266     -0.000042494971      1.002351816816
-    5     -0.000000008985     -0.000000008987      1.000234832542
+    2     -0.018117851703     -0.015763061741      0.870029294819
+    3     -0.001862970480     -0.001898559336      1.019103285118
+    4     -0.000042395266     -0.000042494971      1.002351816820
+    5     -0.000000008985     -0.000000008987      1.000215852784
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
-    1      0.20000000  1.00000000      0.482082075818      0.700000000000
-    2      0.20000000  1.00000000      0.116672706743      0.700000000000
+    1      0.20000000  1.00000000      0.482082075819      0.700000000000
+    2      0.20000000  1.00000000      0.116672706744      0.700000000000
     3      0.20000000  1.00000000      0.019082511186      0.700000000000
     4      0.20000000  1.00000000      0.000265707229      0.700000000000
     5      0.00000000  0.00000000      0.000000000000      0.700000000000
@@ -897,8 +900,7 @@ Point group: C2v
      Final gradient norm:           0.000008307570
 
  
-     Date and time (Linux)  : Mon Feb 12 21:52:45 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
  Occupancies of natural orbitals
@@ -940,7 +942,7 @@ Point group: C2v
    6  OS  2px   -0.0065   0.0038  -0.0175  -0.0724   0.0290   0.0256  -0.2037
    7  OS  2px   -0.0001   0.0015  -0.0272  -0.0050  -0.0035   0.0027   0.0239
    8  OS  3d0   -0.0002   0.0001  -0.0069  -0.0049   0.0026   0.0203   0.0084
-   9  OS  3d2+   0.0000   0.0001  -0.0114   0.0125   0.0236   0.0075   0.0389
+   9  OS  3d2+  -0.0000   0.0001  -0.0114   0.0125   0.0236   0.0075   0.0389
   10  OS  3d0    0.0015  -0.0008   0.0004   0.0085  -0.0068   0.0192  -0.0039
   11  OS  3d2+   0.0004  -0.0002  -0.0118   0.0326   0.0312  -0.0179   0.0041
   12  OP  1s     0.0022   0.7079  -0.0022  -0.0010  -0.0020  -0.0011  -0.0085
@@ -978,9 +980,9 @@ Point group: C2v
   13  OP  2py    0.0067  -0.0526   0.0281  -0.0470  -0.0317
   14  OP  2px    0.0002  -0.0032  -0.0265  -0.0112  -0.0091
   15  OP  2py    0.0005  -0.0058   0.0307   0.0009   0.0230
-  16  OP  3d2-   0.0000   0.0006   0.0081  -0.0191   0.0003
+  16  OP  3d2-  -0.0000   0.0006   0.0081  -0.0191   0.0003
   17  OP  3d0   -0.0002  -0.0004  -0.0025   0.0105   0.0010
-  18  OP  3d2+   0.0000  -0.0005   0.0092   0.0072   0.0058
+  18  OP  3d2+  -0.0000  -0.0005   0.0092   0.0072   0.0058
   19  OP  3d2-  -0.0017   0.0120   0.0084  -0.0097   0.0028
   20  OP  3d0    0.0012  -0.0095  -0.0006   0.0127   0.0088
   21  OP  3d2+   0.0010  -0.0079   0.0158   0.0118   0.0077
@@ -1083,16 +1085,15 @@ Point group: C2v
   10- 5 to 10- 4       285    0.10768279E-05    0.10000000E+01
   10- 6 to 10- 5        46    0.21080932E-08    0.10000000E+01
   10- 7 to 10- 6         6    0.12401689E-11    0.10000000E+01
-  Number of coefficients less than 10^-11 times norm is             0
+  Number of coefficients less than 10^-11 times norm is   0
 
 
 
- >>>> Total CPU  time used in SIRIUS :     24.46 seconds
- >>>> Total wall time used in SIRIUS :     48.00 seconds
+ >>>> Total CPU  time used in SIRIUS :     34.29 seconds
+ >>>> Total wall time used in SIRIUS :     36.00 seconds
 
  
-     Date and time (Linux)  : Mon Feb 12 21:52:45 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 - End of Wave Function Section
 
@@ -1114,7 +1115,7 @@ Point group: C2v
  Default print level:        4
 
 
- *** SETSIR-INFO, time in NSETUP:       0.00 seconds.
+ *** SETSIR-INFO, time in NSETUP:       0.01 seconds.
 
 
 
@@ -1135,8 +1136,7 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Mon Feb 12 21:52:45 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
                         **************************
@@ -1224,7 +1224,7 @@ Point group: C2v
 
            Symmetry 1
 
-           OS   x      OP   x      OP   y
+           OS   x      OP   x      OP   y      
 
  OS   x   -1.577539
  OP   x    1.577539   -1.577539
@@ -1233,7 +1233,7 @@ Point group: C2v
 
            Symmetry 2
 
-           OS   y      OP   x      OP   y
+           OS   y      OP   x      OP   y      
 
  OS   y   10.793731
  OP   x  -12.363206   -5.319787
@@ -1242,7 +1242,7 @@ Point group: C2v
 
            Symmetry 3
 
-           OS   z      OP   z
+           OS   z      OP   z      
 
  OS   z    0.000000
  OP   z    0.000000    0.000000
@@ -1250,14 +1250,14 @@ Point group: C2v
 
            Symmetry 4
 
-           OP   z
+           OP   z      
 
  OP   z    0.000000
 
 
 
 
-           OS   x      OS   y      OS   z      OP 1 x      OP 1 y      OP 1 z
+           OS   x      OS   y      OS   z      OP 1 x      OP 1 y      OP 1 z      
 
  OS   x   -1.577539
  OS   y    0.000000   10.793731
@@ -1266,14 +1266,14 @@ Point group: C2v
  OP 2 x    0.788770    6.181603    0.000000    0.935562    0.000000    0.000000
  OP 2 y    6.181603   -5.396866    0.000000    0.000000   -1.871124    0.000000
 
-           OP 2 x      OP 2 y      OP 2 z
+           OP 2 x      OP 2 y      OP 2 z      
 
  OP 2 x   -1.724332
  OP 2 y   -6.181603    7.267990
 
 
 
- >>> Time used in NUCREP is   0.00 seconds
+ >>> Time used in NUCREP is   0.01 seconds
 
 
 
@@ -1288,27 +1288,27 @@ Point group: C2v
 
                                au             Debye
 
-                    x     20.21520400     51.38239907
+                    x     20.21520400     51.38191770
 
-                        1 a.u. =   2.54177 Debye 
-
-
+                        1 a.u. =   2.54175 Debye 
 
 
- Greatest diff. between AO and SO reorthonormalization gradients:       3.05E-16
- Greatest diff. between AO and SO one-electron Hamiltonian gradients:   3.91E-14
+
+
+ Greatest diff. between AO and SO reorthonormalization gradients:       8.05E-16
+ Greatest diff. between AO and SO one-electron Hamiltonian gradients:   1.14E-13
 
 
                      Kinetic energy integral gradient
                      --------------------------------
 
-                         OS   x     0.3605779045
-                         OP   x    -0.3605779045
+                         OS   x     0.3605779044
+                         OP   x    -0.3605779044
                          OP   y    -0.7235670404
 
 
 
- OS         0.3605779045            0.0000000000            0.0000000000
+ OS         0.3605779044            0.0000000000            0.0000000000
  OP   1    -0.1802889522           -0.3617835202            0.0000000000
  OP   2    -0.1802889522            0.3617835202            0.0000000000
 
@@ -1321,13 +1321,13 @@ Point group: C2v
 
                          OS   x   -19.2999503720
                          OP   x    19.2999503720
-                         OP   y    45.0144650305
+                         OP   y    45.0144650304
 
 
 
  OS       -19.2999503720            0.0000000000            0.0000000000
- OP   1     9.6499751860           22.5072325153            0.0000000000
- OP   2     9.6499751860          -22.5072325153            0.0000000000
+ OP   1     9.6499751860           22.5072325152            0.0000000000
+ OP   2     9.6499751860          -22.5072325152            0.0000000000
 
 
 
@@ -1356,7 +1356,7 @@ Point group: C2v
 
            Symmetry 1
 
-           OS   x      OP   x      OP   y
+           OS   x      OP   x      OP   y      
 
  OS   x   -0.049719
  OP   x    0.049719   -0.049719
@@ -1365,7 +1365,7 @@ Point group: C2v
 
            Symmetry 2
 
-           OS   y      OP   x      OP   y
+           OS   y      OP   x      OP   y      
 
  OS   y    2.012454
  OP   x   -1.601215    0.080902
@@ -1374,7 +1374,7 @@ Point group: C2v
 
            Symmetry 3
 
-           OS   z      OP   z
+           OS   z      OP   z      
 
  OS   z    0.000000
  OP   z    0.000000    0.000000
@@ -1382,23 +1382,23 @@ Point group: C2v
 
            Symmetry 4
 
-           OP   z
+           OP   z      
 
  OP   z    0.000000
 
 
 
 
-           OS   x      OS   y      OS   z      OP 1 x      OP 1 y      OP 1 z
+           OS   x      OS   y      OS   z      OP 1 x      OP 1 y      OP 1 z      
 
  OS   x   -0.049719
  OS   y    0.000000    2.012454
  OP 1 x    0.024859   -0.800607    0.000000    0.007796
  OP 1 y   -0.800607   -1.006227    0.000000    0.800607    0.856004
  OP 2 x    0.024859    0.800607    0.000000   -0.032655    0.000000    0.000000
- OP 2 y    0.800607   -1.006227    0.000000    0.000000    0.150223    0.000000
+ OP 2 y    0.800607   -1.006227    0.000000   -0.000000    0.150223    0.000000
 
-           OP 2 x      OP 2 y      OP 2 z
+           OP 2 x      OP 2 y      OP 2 z      
 
  OP 2 x    0.007796
  OP 2 y   -0.800607    0.856004
@@ -1412,7 +1412,7 @@ Point group: C2v
 
            Symmetry 1
 
-           OS   x      OP   x      OP   y
+           OS   x      OP   x      OP   y      
 
  OS   x    7.353139
  OP   x   -7.353139    7.353139
@@ -1421,7 +1421,7 @@ Point group: C2v
 
            Symmetry 2
 
-           OS   y      OP   x      OP   y
+           OS   y      OP   x      OP   y      
 
  OS   y  -21.940950
  OP   x   26.142654   10.628442
@@ -1430,7 +1430,7 @@ Point group: C2v
 
            Symmetry 3
 
-           OS   z      OP   z
+           OS   z      OP   z      
 
  OS   z    0.000000
  OP   z    0.000000    0.000000
@@ -1438,14 +1438,14 @@ Point group: C2v
 
            Symmetry 4
 
-           OP   z
+           OP   z      
 
  OP   z    0.000000
 
 
 
 
-           OS   x      OS   y      OS   z      OP 1 x      OP 1 y      OP 1 z
+           OS   x      OS   y      OS   z      OP 1 x      OP 1 y      OP 1 z      
 
  OS   x    7.353139
  OS   y    0.000000  -21.940950
@@ -1454,7 +1454,7 @@ Point group: C2v
  OP 2 x   -3.676570  -13.071327    0.000000   -0.818826    0.374569    0.000000
  OP 2 y  -12.322189   10.970475    0.000000   -0.374569    1.852731    0.000000
 
-           OP 2 x      OP 2 y      OP 2 z
+           OP 2 x      OP 2 y      OP 2 z      
 
  OP 2 x    4.495395
  OP 2 y   12.696758  -12.823206
@@ -1468,7 +1468,7 @@ Point group: C2v
 
            Symmetry 1
 
-           OS   x      OP   x      OP   y
+           OS   x      OP   x      OP   y      
 
  OS   x   -0.449067
  OP   x    0.449067   -0.449067
@@ -1477,7 +1477,7 @@ Point group: C2v
 
            Symmetry 2
 
-           OS   y      OP   x      OP   y
+           OS   y      OP   x      OP   y      
 
  OS   y    0.180735
  OP   x   -0.498072   -0.235764
@@ -1486,7 +1486,7 @@ Point group: C2v
 
            Symmetry 3
 
-           OS   z      OP   z
+           OS   z      OP   z      
 
  OS   z    0.000000
  OP   z    0.000000    0.000000
@@ -1494,30 +1494,30 @@ Point group: C2v
 
            Symmetry 4
 
-           OP   z
+           OP   z      
 
  OP   z    0.000000
 
 
 
 
-           OS   x      OS   y      OS   z      OP 1 x      OP 1 y      OP 1 z
+           OS   x      OS   y      OS   z      OP 1 x      OP 1 y      OP 1 z      
 
  OS   x   -0.449067
  OS   y    0.000000    0.180735
  OP 1 x    0.224533   -0.249036    0.000000   -0.171208
  OP 1 y   -0.249036   -0.090367    0.000000    0.249036    0.013369
- OP 2 x    0.224533    0.249036    0.000000   -0.053326    0.000000    0.000000
+ OP 2 x    0.224533    0.249036    0.000000   -0.053326   -0.000000    0.000000
  OP 2 y    0.249036   -0.090367    0.000000    0.000000    0.076999    0.000000
 
-           OP 2 x      OP 2 y      OP 2 z
+           OP 2 x      OP 2 y      OP 2 z      
 
  OP 2 x   -0.171208
  OP 2 y   -0.249036    0.013369
 
 
 
- >>> Time used in ONEINT is   0.32 seconds
+ >>> Time used in ONEINT is   0.35 seconds
 
 
 
@@ -1538,9 +1538,9 @@ Point group: C2v
 
                                au             Debye
 
-                    x     20.21520400     51.38239907
+                    x     20.21520400     51.38191770
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -1559,9 +1559,9 @@ Point group: C2v
 
                                au             Debye
 
-                    x    -20.43180264    -51.93294300
+                    x    -20.43180264    -51.93245648
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -1590,7 +1590,7 @@ Point group: C2v
 
 
 
- >>> Time used in MAGINT is   0.15 seconds
+ >>> Time used in MAGINT is   0.12 seconds
 
 1 <<<<<<<<<< Output from TWOEXP >>>>>>>>>> 
 
@@ -1668,7 +1668,7 @@ Point group: C2v
 
     Number of half-transformed matrix elements is       28209
 
-  Time in first half-transformation is    0.00 seconds
+  Time in first half-transformation is    0.01 seconds
 
 
     Sort Parameters:
@@ -1679,14 +1679,14 @@ Point group: C2v
       Number of chains                13
       Length of DA buffer           2048
 
-  Time for sorting half-transformed matrix is    0.00 seconds
+  Time for sorting half-transformed matrix is    0.03 seconds
 
 
  Number of two-electron density elements transformed:  751029
 
-  Time in second half-transformation is    0.00 seconds
+  Time in second half-transformation is    8.33 seconds
 
- >>> Time used in PTRAN  is   4.88 seconds
+ >>> Time used in PTRAN  is   8.38 seconds
 
 1           <<<<<<<<<<  P S O R T >>>>>>>>>>
 
@@ -1704,7 +1704,7 @@ Point group: C2v
   Number of two-electron density elements sorted: 4441093
 
 
- >>> Time used in PSORT  is   6.09 seconds
+ >>> Time used in PSORT  is   3.43 seconds
 
 
 
@@ -1739,7 +1739,7 @@ Point group: C2v
   Allocations in INTEXP:                       284
   Allocations in PPRIM :                         0
   Allocations in DRSYM2:                         0
-
+ 
 
 
   Performance of TWOINT
@@ -1753,14 +1753,14 @@ Point group: C2v
   Number of primitive integrals (counting zeros) :    15487395
 
 
-  Average time for non-zero (written) integrals:   67.8 microseconds
-  Average time for zero/non-zero integrals     :   15.6 microseconds
-  Average time for primitive integrals         :    2.9 microseconds
+  Average time for non-zero (written) integrals:   35.2 microseconds
+  Average time for zero/non-zero integrals     :    8.1 microseconds
+  Average time for primitive integrals         :    1.5 microseconds
 
   Average reduction of primitive ODC vectors:    2.35 %
   Average reduction of contracted ODC vectors:   0.00 %
 
- >>> Time used in TWOINT is  45.62 seconds
+ >>> Time used in TWOINT is  23.66 seconds
 
 
 
@@ -1769,13 +1769,13 @@ Point group: C2v
 
                          OS   x     7.1536677509
                          OP   x    -7.1536677509
-                         OP   y   -17.6301404289
+                         OP   y   -17.6301404288
 
 
 
  OS         7.1536677509            0.0000000000            0.0000000000
- OP   1    -3.5768338755           -8.8150702144            0.0000000000
- OP   2    -3.5768338755            8.8150702144            0.0000000000
+ OP   1    -3.5768338754           -8.8150702144            0.0000000000
+ OP   2    -3.5768338754            8.8150702144            0.0000000000
 
 
 
@@ -1791,8 +1791,8 @@ Point group: C2v
 
 
  OS        -0.5020824891            0.0000000000            0.0000000000
- OP   1     0.2510412445            0.4427931605            0.0000000000
- OP   2     0.2510412445           -0.4427931605            0.0000000000
+ OP   1     0.2510412445            0.4427931604            0.0000000000
+ OP   2     0.2510412445           -0.4427931604            0.0000000000
 
 
 
@@ -1823,7 +1823,7 @@ Point group: C2v
 
            Symmetry 1
 
-           OS   x      OP   x      OP   y
+           OS   x      OP   x      OP   y      
 
  OS   x   -5.767600
  OP   x    5.767600   -5.767600
@@ -1832,7 +1832,7 @@ Point group: C2v
 
            Symmetry 2
 
-           OS   y      OP   x      OP   y
+           OS   y      OP   x      OP   y      
 
  OS   y    7.411971
  OP   x  -10.940409   -6.058612
@@ -1841,7 +1841,7 @@ Point group: C2v
 
            Symmetry 3
 
-           OS   z      OP   z
+           OS   z      OP   z      
 
  OS   z    0.000000
  OP   z    0.000000    0.000000
@@ -1849,14 +1849,14 @@ Point group: C2v
 
            Symmetry 4
 
-           OP   z
+           OP   z      
 
  OP   z    0.000000
 
 
 
 
-           OS   x      OS   y      OS   z      OP 1 x      OP 1 y      OP 1 z
+           OS   x      OS   y      OS   z      OP 1 x      OP 1 y      OP 1 z      
 
  OS   x   -5.767600
  OS   y    0.000000    7.411971
@@ -1865,14 +1865,14 @@ Point group: C2v
  OP 2 x    2.883800    5.470204    0.000000    0.072753   -0.238787    0.000000
  OP 2 y    4.992630   -3.705985    0.000000    0.238787   -0.262467    0.000000
 
-           OP 2 x      OP 2 y      OP 2 z
+           OP 2 x      OP 2 y      OP 2 z      
 
  OP 2 x   -2.956553
  OP 2 y   -5.231417    3.968452
 
 
 
- >>> Time used in TWOEXP is  56.77 seconds
+ >>> Time used in TWOEXP is  35.49 seconds
 
 
 
@@ -1916,7 +1916,7 @@ Point group: C2v
   Allocations in INTEXP:                         0
   Allocations in PPRIM :                         0
   Allocations in DRSYM2:                     10000
-
+ 
 
 
   Performance of TWOINT
@@ -1930,9 +1930,9 @@ Point group: C2v
   Number of primitive integrals (counting zeros) :    15487395
 
 
-  Average time for non-zero (written) integrals:   27.3 microseconds
-  Average time for zero/non-zero integrals     :    6.3 microseconds
-  Average time for primitive integrals         :    1.2 microseconds
+  Average time for non-zero (written) integrals:   14.6 microseconds
+  Average time for zero/non-zero integrals     :    3.4 microseconds
+  Average time for primitive integrals         :    0.6 microseconds
 
   Average reduction of primitive ODC vectors:    2.35 %
   Average reduction of contracted ODC vectors:   0.00 %
@@ -1947,10 +1947,10 @@ Point group: C2v
  NORB    27   21   12    9
  NBAS    27   21   12    9
 
- >>> Time used in GETFD  is   1.58 seconds
+ >>> Time used in GETFD  is   0.62 seconds
 
 
- >>> Time used in GETSD  is   0.01 seconds
+ >>> Time used in GETSD  is   0.04 seconds
 
 
 
@@ -1965,10 +1965,10 @@ Point group: C2v
 
 TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
- >>> Time used in DERTRA is   0.69 seconds
+ >>> Time used in DERTRA is   0.82 seconds
 
 
- >>> Time used in ABARHS is   3.37 seconds
+ >>> Time used in ABARHS is   0.51 seconds
 
 
 
@@ -1980,7 +1980,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
 TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
- >>> Time used in DERTRA is   0.50 seconds
+ >>> Time used in DERTRA is   0.85 seconds
 
 
  >>> Time used in ABARHS is   0.51 seconds
@@ -1995,13 +1995,13 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
 TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
- >>> Time used in DERTRA is   0.48 seconds
+ >>> Time used in DERTRA is   0.84 seconds
 
 
- >>> Time used in ABARHS is   0.48 seconds
+ >>> Time used in ABARHS is   0.50 seconds
 
 
- >>> Time used in RHSIDE is  26.12 seconds
+ >>> Time used in RHSIDE is  14.56 seconds
 
   <<<<<<<<<< OUTPUT FROM REORT >>>>>>>>>> 
 
@@ -2012,7 +2012,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
            Symmetry 1
 
-           OS   x      OP   x      OP   y
+           OS   x      OP   x      OP   y      
 
  OS   x    0.000000
  OP   x    0.000000  385.952663
@@ -2021,7 +2021,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
            Symmetry 2
 
-           OS   y      OP   x      OP   y
+           OS   y      OP   x      OP   y      
 
  OS   y    0.000000
  OP   x    0.000000    0.000000
@@ -2030,7 +2030,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
            Symmetry 3
 
-           OS   z      OP   z
+           OS   z      OP   z      
 
  OS   z    0.000000
  OP   z    0.000000    0.000000
@@ -2038,21 +2038,21 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
            Symmetry 4
 
-           OP   z
+           OP   z      
 
  OP   z    0.000000
 
 
 
 
-           OS   x      OS   y      OS   z      OP 1 x      OP 1 y      OP 1 z
+           OS   x      OS   y      OS   z      OP 1 x      OP 1 y      OP 1 z      
 
  OP 1 x    0.000000    0.000000    0.000000   96.488166
  OP 1 y    0.000000    0.000000    0.000000   16.041003  235.985602
  OP 2 x    0.000000    0.000000    0.000000   96.488166   16.041003    0.000000
  OP 2 y    0.000000    0.000000    0.000000  -16.041003   -1.013675    0.000000
 
-           OP 2 x      OP 2 y      OP 2 z
+           OP 2 x      OP 2 y      OP 2 z      
 
  OP 2 x   96.488166
  OP 2 y  -16.041003  235.985602
@@ -2084,7 +2084,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
  Maximum number of response vectors for this symmetry :    1
 
- >>> Time used in RESPON is  38.19 seconds
+ >>> Time used in RESPON is  36.29 seconds
 
   <<<<<<<<<< Output from RELAX >>>>>>>>>> 
 
@@ -2108,7 +2108,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
            Symmetry 1
 
-           OS   x      OP   x      OP   y
+           OS   x      OP   x      OP   y      
 
  OS   x    0.000000
  OP   x    0.000000 -385.032258
@@ -2117,7 +2117,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
            Symmetry 2
 
-           OS   y      OP   x      OP   y
+           OS   y      OP   x      OP   y      
 
  OS   y    0.000000
  OP   x    0.000000    0.000000
@@ -2126,7 +2126,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
            Symmetry 3
 
-           OS   z      OP   z
+           OS   z      OP   z      
 
  OS   z    0.000000
  OP   z    0.000000    0.000000
@@ -2134,21 +2134,21 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
            Symmetry 4
 
-           OP   z
+           OP   z      
 
  OP   z    0.000000
 
 
 
 
-           OS   x      OS   y      OS   z      OP 1 x      OP 1 y      OP 1 z
+           OS   x      OS   y      OS   z      OP 1 x      OP 1 y      OP 1 z      
 
  OP 1 x    0.000000    0.000000    0.000000  -96.258065
  OP 1 y    0.000000    0.000000    0.000000  -15.928991 -234.929615
  OP 2 x    0.000000    0.000000    0.000000  -96.258065  -15.928991    0.000000
  OP 2 y    0.000000    0.000000    0.000000   15.928991    0.943882    0.000000
 
-           OP 2 x      OP 2 y      OP 2 z
+           OP 2 x      OP 2 y      OP 2 z      
 
  OP 2 x  -96.258065
  OP 2 y   15.928991 -234.929615
@@ -2176,9 +2176,9 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
         OS   x        0.0099144942     0.0099144942     0.0000000000
 
- Largest deviation from tra-rot symmetry is in gradient element  1:  3.55E-15
+ Largest deviation from tra-rot symmetry is in gradient element  1:  1.07E-14
 
- >>> Time used in TROINV is   0.18 seconds
+ >>> Time used in TROINV is   0.01 seconds
 
 
 
@@ -2188,8 +2188,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
 
  
-     Date and time (Linux)  : Mon Feb 12 21:57:25 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
@@ -2212,7 +2211,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
      Total energy       -224.5185239102 au (Hartrees)
                          -6109.45963452 eV
-                           -589473.3006 kJ/mol
+                           -589473.2999 kJ/mol
 
 
 
@@ -2220,11 +2219,11 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.5989066988 au
-     Mass-velocity correction:                  -0.7546130739 au
+     Darwin correction:                          0.5989066087 au
+     Mass-velocity correction:                  -0.7546129604 au
 
-     Total relativistic correction:             -0.1557063751 au (0.0694%)
-     Non-relativistic + relativistic energy:  -224.6742302853 au
+     Total relativistic correction:             -0.1557063517 au (0.0694%)
+     Non-relativistic + relativistic energy:  -224.6742302619 au
 
 
 
@@ -2252,7 +2251,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
            Symmetry 1
 
-           OS   x      OP   x      OP   y
+           OS   x      OP   x      OP   y      
 
  OS   x    0.429619
  OP   x   -0.429619    0.429619
@@ -2261,7 +2260,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
            Symmetry 2
 
-           OS   y      OP   x      OP   y
+           OS   y      OP   x      OP   y      
 
  OS   y    0.430329
  OP   x   -0.270729    0.157997
@@ -2270,7 +2269,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
            Symmetry 3
 
-           OS   z      OP   z
+           OS   z      OP   z      
 
  OS   z   -0.007847
  OP   z    0.007847   -0.007847
@@ -2278,14 +2277,14 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
            Symmetry 4
 
-           OP   z
+           OP   z      
 
  OP   z   -0.009274
 
 
 
 
-           OS   x      OS   y      OS   z      OP 1 x      OP 1 y      OP 1 z
+           OS   x      OS   y      OS   z      OP 1 x      OP 1 y      OP 1 z      
 
  OS   x    0.429619
  OS   y    0.000000    0.430329
@@ -2300,7 +2299,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
  OP 2 z    0.000000    0.000000    0.003924    0.000000    0.000000    0.000357
 
 
-           OP 2 x      OP 2 y      OP 2 z
+           OP 2 x      OP 2 y      OP 2 z      
 
  OP 2 x    0.146904
  OP 2 y   -0.130538    0.338596
@@ -2313,7 +2312,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
                               Dipole moment
                               -------------
 
-                    0.216599 au           0.550544 Debye
+                    0.216599 au           0.550539 Debye
 
 
 
@@ -2323,9 +2322,9 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
                                au             Debye
 
-                    x     -0.21659864     -0.55054393
+                    x     -0.21659864     -0.55053878
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -2334,7 +2333,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            OS          OP 1        OP 2
+            OS          OP 1        OP 2        
 
    OS      0.000000
    OP 1    1.272001    0.000000
@@ -2382,14 +2381,14 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
  Newton step taken.
 
 
- Predicted energy change       -0.000225896774531
+ Predicted energy change       -0.000225896774630
 
 
   Step in diagonal representation (eigenvalue order)
   --------------------------------------------------
 
 
-               Column   1     Column   2
+               Column   1     Column   2     
        1       0.01399445    -0.02221948
 
 
@@ -2397,7 +2396,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
                   -------------------------------------
 
 
-               Column   1     Column   2     Column   3
+               Column   1     Column   2     Column   3     
        1      -0.00877515     0.00620497     0.02395924
 
  Norm of scaled step:   0.0262592833
@@ -2408,7 +2407,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
                       ------------------------------
 
 
-               Column   1     Column   2     Column   3
+               Column   1     Column   2     Column   3     
        1      -0.00877515     0.00620497     0.02395924
 
  Norm of unscaled step:   0.0262592833
@@ -2430,8 +2429,8 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
  Acceptable step has been obtained.
 
- Largest deviation from orthonormality of OMOs:0.999201E-13
- - found for element    9   9
+ Largest deviation from orthonormality of OMOs:0.196287E-12
+ - found for element   12  12
 
 
  ***************************************************************************
@@ -2457,8 +2456,8 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
    ---------------------------------------------------------------------
     1           2           1       1.809066D-02    0          2.49D+00
     2           1           2       0.000000D+00    0          1.00D+00
-    3           0           2
-    4           0           1
+    3           0           2       
+    4           0           1       
 
 
 
@@ -2481,14 +2480,14 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
                           +----------------------+
 
 
-   sym 1            1           2
+   sym 1            1           2       
   ----------------------------------
    OS   x       0.452278    0.679788
    OP   x      -0.319809   -0.480683
    OP   y       0.832567   -0.553925
 
 
-   sym 2            1
+   sym 2            1       
   ----------------------
    OS   y       0.769032
    OP   x      -0.335981
@@ -2523,7 +2522,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
    Differential interatomic separations (in Angstroms):
    ----------------------------------------------------
 
-            OS          OP 1        OP 2
+            OS          OP 1        OP 2        
 
    OS      0.000000
    OP 1    0.011289    0.000000
@@ -2554,7 +2553,7 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            OS          OP 1        OP 2
+            OS          OP 1        OP 2        
 
    OS      0.000000
    OP 1    1.283289    0.000000
@@ -2581,23 +2580,23 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
 
 
 
- >>> Time used in WLKDRV is   0.33 seconds
+ >>> Time used in WLKDRV is   0.08 seconds
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:57      47 %
- RHSIDE     00:00:26      21 %
- RESPON     00:00:38      31 %
+ TWOTEX     00:00:35      41 %
+ RHSIDE     00:00:15      17 %
+ RESPON     00:00:36      42 %
 
- TOTAL      00:02:02     100 %
+ TOTAL      00:01:27     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:  2 minutes  2 seconds
- >>>> Total wall time used in ABACUS:  4 minutes 40 seconds
+ >>>> Total CPU  time used in ABACUS:  1 minute  27 seconds
+ >>>> Total wall time used in ABACUS:  1 minute  30 seconds
 
 - End of Static Property Section
 
@@ -2624,15 +2623,15 @@ TRDDRV: finished transformation in    1 passes over derivative AO integral file.
   Title Cards
   -----------
 
-  Water                                                                   
-  anolund                                                                 
+  Geometry optimization using WALK module plus                            
+  static and dynamic polarizabilities                                     
 
 Atomic type:     1
    Nuclear charge:   8.0
    Number of symmetry independent centres:     2
    Symmetry independent centers:
-      OS    -0.008775154605945   0.000000000000000   0.000000000000000
-      OP     1.267837827302972   2.061843647691582   0.000000000000000
+      OS    -0.008775154602262   0.000000000000000   0.000000000000000
+      OP     1.267837827301131   2.061843647699753   0.000000000000000
    Basis set:
       Max.ang.quantum no.:    2  Blocks:    1    1    1
 
@@ -2656,30 +2655,30 @@ Point group: C2v
 
    * Group multiplication table
 
-        |  E   C2x  Oxy  Oxz
+        |  E   C2x  Oxy  Oxz  
    -----+--------------------
-     E  |  E 
-    C2x | C2x   E 
-    Oxy | Oxy  Oxz   E 
-    Oxz | Oxz  Oxy  C2x   E 
+     E  |  E   
+    C2x | C2x   E   
+    Oxy | Oxy  Oxz   E   
+    Oxz | Oxz  Oxy  C2x   E   
 
    * Character table
 
-        |  E   C2x  Oxy  Oxz
+        |  E   C2x  Oxy  Oxz  
    -----+--------------------
-    A1  |   1    1    1    1
-    B1  |   1   -1    1   -1
-    B2  |   1   -1   -1    1
-    A2  |   1    1   -1   -1
+    A1  |   1    1    1    1  
+    B1  |   1   -1    1   -1  
+    B2  |   1   -1   -1    1  
+    A2  |   1    1   -1   -1  
 
    * Direct product table
 
-        | A1   B1   B2   A2 
+        | A1   B1   B2   A2   
    -----+--------------------
-    A1  | A1 
-    B1  | B1   A1 
-    B2  | B2   A2   A1 
-    A2  | A2   B2   B1   A1 
+    A1  | A1   
+    B1  | B1   A1   
+    B2  | B2   A2   A1   
+    A2  | A2   B2   B1   A1   
 
 
   Atoms and basis sets
@@ -2756,7 +2755,7 @@ Point group: C2v
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            OS          OP 1        OP 2
+            OS          OP 1        OP 2        
 
    OS      0.000000
    OP 1    1.283289    0.000000
@@ -2782,7 +2781,7 @@ Point group: C2v
   bond angle:       OP 1       OS         OP 2                 116.472
 
 
-  Nuclear repulsion energy :   68.302182313629
+  Nuclear repulsion energy :   68.302182313479
 
 
   Orbital exponents and contraction coefficients
@@ -3143,87 +3142,87 @@ Point group: C2v
 
   Symmetry  A1 ( 1)
 
-    1     OS       1s         1
-    2     OS       1s         2
-    3     OS       1s         3
-    4     OS       1s         4
-    5     OS       2px        5
-    6     OS       2px        8
-    7     OS       2px       11
-    8     OS       3d0       16
-    9     OS       3d2+      18
-   10     OS       3d0       21
-   11     OS       3d2+      23
-   12     OP       1s        24  +  25
-   13     OP       1s        26  +  27
-   14     OP       1s        28  +  29
-   15     OP       1s        30  +  31
-   16     OP       2px       32  +  33
-   17     OP       2py       34  -  35
-   18     OP       2px       38  +  39
-   19     OP       2py       40  -  41
-   20     OP       2px       44  +  45
-   21     OP       2py       46  -  47
-   22     OP       3d2-      50  -  51
-   23     OP       3d0       54  +  55
-   24     OP       3d2+      58  +  59
-   25     OP       3d2-      60  -  61
-   26     OP       3d0       64  +  65
-   27     OP       3d2+      68  +  69
+    1     OS       1s         1  
+    2     OS       1s         2  
+    3     OS       1s         3  
+    4     OS       1s         4  
+    5     OS       2px        5  
+    6     OS       2px        8  
+    7     OS       2px       11  
+    8     OS       3d0       16  
+    9     OS       3d2+      18  
+   10     OS       3d0       21  
+   11     OS       3d2+      23  
+   12     OP       1s        24  +  25  
+   13     OP       1s        26  +  27  
+   14     OP       1s        28  +  29  
+   15     OP       1s        30  +  31  
+   16     OP       2px       32  +  33  
+   17     OP       2py       34  -  35  
+   18     OP       2px       38  +  39  
+   19     OP       2py       40  -  41  
+   20     OP       2px       44  +  45  
+   21     OP       2py       46  -  47  
+   22     OP       3d2-      50  -  51  
+   23     OP       3d0       54  +  55  
+   24     OP       3d2+      58  +  59  
+   25     OP       3d2-      60  -  61  
+   26     OP       3d0       64  +  65  
+   27     OP       3d2+      68  +  69  
 
 
   Symmetry  B1 ( 2)
 
-   28     OS       2py        6
-   29     OS       2py        9
-   30     OS       2py       12
-   31     OS       3d2-      14
-   32     OS       3d2-      19
-   33     OP       1s        24  -  25
-   34     OP       1s        26  -  27
-   35     OP       1s        28  -  29
-   36     OP       1s        30  -  31
-   37     OP       2px       32  -  33
-   38     OP       2py       34  +  35
-   39     OP       2px       38  -  39
-   40     OP       2py       40  +  41
-   41     OP       2px       44  -  45
-   42     OP       2py       46  +  47
-   43     OP       3d2-      50  +  51
-   44     OP       3d0       54  -  55
-   45     OP       3d2+      58  -  59
-   46     OP       3d2-      60  +  61
-   47     OP       3d0       64  -  65
-   48     OP       3d2+      68  -  69
+   28     OS       2py        6  
+   29     OS       2py        9  
+   30     OS       2py       12  
+   31     OS       3d2-      14  
+   32     OS       3d2-      19  
+   33     OP       1s        24  -  25  
+   34     OP       1s        26  -  27  
+   35     OP       1s        28  -  29  
+   36     OP       1s        30  -  31  
+   37     OP       2px       32  -  33  
+   38     OP       2py       34  +  35  
+   39     OP       2px       38  -  39  
+   40     OP       2py       40  +  41  
+   41     OP       2px       44  -  45  
+   42     OP       2py       46  +  47  
+   43     OP       3d2-      50  +  51  
+   44     OP       3d0       54  -  55  
+   45     OP       3d2+      58  -  59  
+   46     OP       3d2-      60  +  61  
+   47     OP       3d0       64  -  65  
+   48     OP       3d2+      68  -  69  
 
 
   Symmetry  B2 ( 3)
 
-   49     OS       2pz        7
-   50     OS       2pz       10
-   51     OS       2pz       13
-   52     OS       3d1+      17
-   53     OS       3d1+      22
-   54     OP       2pz       36  +  37
-   55     OP       2pz       42  +  43
-   56     OP       2pz       48  +  49
-   57     OP       3d1-      52  -  53
-   58     OP       3d1+      56  +  57
-   59     OP       3d1-      62  -  63
-   60     OP       3d1+      66  +  67
+   49     OS       2pz        7  
+   50     OS       2pz       10  
+   51     OS       2pz       13  
+   52     OS       3d1+      17  
+   53     OS       3d1+      22  
+   54     OP       2pz       36  +  37  
+   55     OP       2pz       42  +  43  
+   56     OP       2pz       48  +  49  
+   57     OP       3d1-      52  -  53  
+   58     OP       3d1+      56  +  57  
+   59     OP       3d1-      62  -  63  
+   60     OP       3d1+      66  +  67  
 
 
   Symmetry  A2 ( 4)
 
-   61     OS       3d1-      15
-   62     OS       3d1-      20
-   63     OP       2pz       36  -  37
-   64     OP       2pz       42  -  43
-   65     OP       2pz       48  -  49
-   66     OP       3d1-      52  +  53
-   67     OP       3d1+      56  -  57
-   68     OP       3d1-      62  +  63
-   69     OP       3d1+      66  -  67
+   61     OS       3d1-      15  
+   62     OS       3d1-      20  
+   63     OP       2pz       36  -  37  
+   64     OP       2pz       42  -  43  
+   65     OP       2pz       48  -  49  
+   66     OP       3d1-      52  +  53  
+   67     OP       3d1+      56  -  57  
+   68     OP       3d1-      62  +  63  
+   69     OP       3d1+      66  -  67  
 
   Symmetries of electric field:  A1 (1)  B1 (2)  B2 (3)
 
@@ -3235,12 +3234,12 @@ Point group: C2v
 
 BASIS                                                                           
 aug-cc-pVDZ                                                                     
-Water                                                                           
-anolund                                                                         
+Geometry optimization using WALK module plus                                    
+static and dynamic polarizabilities                                             
     1    2  Y  Z                                                                
         8.    2                                                                 
-OS   -0.0087751546059449  0.0000000000000000  0.0000000000000000       *        
-OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *        
+OS   -0.0087751546022624  0.0000000000000000  0.0000000000000000       *        
+OP    1.2678378273011312  2.0618436476997525  0.0000000000000000       *        
 
 
 
@@ -3258,7 +3257,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
 
 
- >>> Time used in TWOINT is   6.61 seconds
+ >>> Time used in TWOINT is   2.33 seconds
 
 
 
@@ -3271,25 +3270,24 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
  Threshold for discarding integrals :  1.00D-15
 
- >>> Time used in FRMSUP is   2.45 seconds
+ >>> Time used in FRMSUP is   0.47 seconds
 
- >>>> Total CPU  time used in HERMIT:   9.11 seconds
- >>>> Total wall time used in HERMIT:  25.00 seconds
+ >>>> Total CPU  time used in HERMIT:   2.87 seconds
+ >>>> Total wall time used in HERMIT:   3.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Mon Feb 12 21:57:50 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Title lines from integral program:
-     Water                                                                   
-     anolund                                                                 
+     Geometry optimization using WALK module plus                            
+     static and dynamic polarizabilities                                     
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -3352,9 +3350,9 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
 
  (OPTST) Geometry walk
-               Old MCSCF energy:            -224.518523910220100
-               Predicted energy change:       -0.000225896774531
-               Predicted new energy:        -224.518749806994600
+               Old MCSCF energy:            -224.518523910219860
+               Predicted energy change:       -0.000225896774630
+               Predicted new energy:        -224.518749806994490
 
                Ratios for rejecting walk,
                  Minimum :       0.10000
@@ -3385,11 +3383,11 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.202221875713100       (MACRO    1)
+ Total MCSCF energy       :     -224.202221875595020       (MACRO    1)
 
- Norm of total gradient   :        4.804607888130
- -    of CI gradient      :        0.026925883607
- -    of orbital gradient :        4.804532438799
+ Norm of total gradient   :        4.804607889049
+ -    of CI gradient      :        0.026925883615
+ -    of orbital gradient :        4.804532439718
 
  Residual norm when dim(red L) =   4
  NEO root     CSF        orbital          total
@@ -3422,11 +3420,11 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.512049468164600       (MACRO    2)
+ Total MCSCF energy       :     -224.512049468156240       (MACRO    2)
 
- Norm of total gradient   :        0.388764664802
- -    of CI gradient      :        0.110813164977
- -    of orbital gradient :        0.372637098350
+ Norm of total gradient   :        0.388764665278
+ -    of CI gradient      :        0.110813165114
+ -    of orbital gradient :        0.372637098805
 
  (SIRNEO) iteration (  2,  5)
  Micro iteration termination criterion met, EVAL(ISTATE+1) = -8.67D-03
@@ -3442,7 +3440,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
  Symmetry  2
 
-   1.987725305   1.938407031   0.094524701
+   1.987725305   1.938407031   0.094524702
 
  Symmetry  3
 
@@ -3456,14 +3454,14 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.175944097126000       (MACRO    3)
+ Total MCSCF energy       :     -224.175944096131500       (MACRO    3)
 
- Norm of total gradient   :        3.003572040217
- -    of CI gradient      :        2.538657943905
- -    of orbital gradient :        1.605198070215
+ Norm of total gradient   :        3.003572046665
+ -    of CI gradient      :        2.538657949578
+ -    of orbital gradient :        1.605198073308
 
  (SIRSTP) Energy difference;
- actual, predicted and ratio:   0.3361053710  -0.0428253464   -7.848281
+ actual, predicted and ratio:   0.3361053720  -0.0428253466   -7.848281
 
  (SIRSTP) step is too large -- backstep
 
@@ -3494,14 +3492,14 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
  <<< MACRO ITERATION  3 BACKSTEP NO.  1 >>>
 
- Total MCSCF energy       :     -224.437661955086400       (MACRO    3)
+ Total MCSCF energy       :     -224.437661954906330       (MACRO    3)
 
- Norm of total gradient   :        1.080454933899
- -    of CI gradient      :        0.886243617697
- -    of orbital gradient :        0.618025172852
+ Norm of total gradient   :        1.080454935623
+ -    of CI gradient      :        0.886243619134
+ -    of orbital gradient :        0.618025173805
 
  (SIRSTP) Energy difference;
- actual, predicted and ratio:   0.0743875131  -0.0244055569   -3.047974
+ actual, predicted and ratio:   0.0743875132  -0.0244055569   -3.047974
 
  (SIRSTP) step is too large -- backstep
 
@@ -3532,14 +3530,14 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
  <<< MACRO ITERATION  3 BACKSTEP NO.  2 >>>
 
- Total MCSCF energy       :     -224.502878791162700       (MACRO    3)
+ Total MCSCF energy       :     -224.502878791143010       (MACRO    3)
 
- Norm of total gradient   :        0.360007191335
- -    of CI gradient      :        0.296961620443
- -    of orbital gradient :        0.203516519714
+ Norm of total gradient   :        0.360007191663
+ -    of CI gradient      :        0.296961620677
+ -    of orbital gradient :        0.203516519953
 
  (SIRSTP) Energy difference;
- actual, predicted and ratio:   0.0091706770  -0.0150095899   -0.610988
+ actual, predicted and ratio:   0.0091706770  -0.0150095900   -0.610988
 
  (SIRSTP) step is too large -- backstep
 
@@ -3570,11 +3568,11 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
  <<< MACRO ITERATION  3 BACKSTEP NO.  3 >>>
 
- Total MCSCF energy       :     -224.516320183884300       (MACRO    3)
+ Total MCSCF energy       :     -224.516320183884090       (MACRO    3)
 
- Norm of total gradient   :        0.125926179186
- -    of CI gradient      :        0.112934501508
- -    of orbital gradient :        0.055706381803
+ Norm of total gradient   :        0.125926179322
+ -    of CI gradient      :        0.112934501515
+ -    of orbital gradient :        0.055706382095
 
  Residual norm when dim(red L) =   5
  NEO root     CSF        orbital          total
@@ -3607,11 +3605,11 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
  <<< MACRO ITERATION  4 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.518590741541200       (MACRO    4)
+ Total MCSCF energy       :     -224.518590741541510       (MACRO    4)
 
  Norm of total gradient   :        0.022775811697
- -    of CI gradient      :        0.020211950462
- -    of orbital gradient :        0.010498316864
+ -    of CI gradient      :        0.020211950464
+ -    of orbital gradient :        0.010498316859
 
  Residual norm when dim(red L) =  13
  NEO root     CSF        orbital          total
@@ -3644,11 +3642,11 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
  <<< MACRO ITERATION  5 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.518755064173500       (MACRO    5)
+ Total MCSCF energy       :     -224.518755064173290       (MACRO    5)
 
- Norm of total gradient   :        0.002404648811
- -    of CI gradient      :        0.001515902931
- -    of orbital gradient :        0.001866647854
+ Norm of total gradient   :        0.002404648807
+ -    of CI gradient      :        0.001515902929
+ -    of orbital gradient :        0.001866647850
 
  Residual norm when dim(red L) =  22
  NEO root     CSF        orbital          total
@@ -3681,7 +3679,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
  <<< MACRO ITERATION  6 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.518756473353600       (MACRO    6)
+ Total MCSCF energy       :     -224.518756473353930       (MACRO    6)
 
  Norm of total gradient   :        0.000032485844
  -    of CI gradient      :        0.000015874566
@@ -3719,7 +3717,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
  Symmetry  3
 
-   1.962569481   0.258433696
+   1.962569481   0.258433697
 
  Symmetry  4
 
@@ -3729,7 +3727,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
  <<< MACRO ITERATION  7 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.518756473648100       (MACRO    7)
+ Total MCSCF energy       :     -224.518756473648430       (MACRO    7)
 
  Norm of total gradient   :        0.000007620160
  -    of CI gradient      :        0.000006157639
@@ -3738,7 +3736,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            7
      Number of micro iterations used           44
-     Total number of CPU seconds used         0.00
+     Total number of CPU seconds used        42.51
 
 
  Check ratio for geometry walk with converged MC :
@@ -3759,22 +3757,21 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
                >>> SIRIUS OPTIMIZATION STATISTICS <<<
 
  
-     Date and time (Linux)  : Mon Feb 12 22:00:15 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
-    1    3   -224.202221875713   4.8046078881  0.000000   0.2661474420
-    2    5   -224.512049468165   0.3887646648  0.942978   0.6986993209
-    3    0   -224.175944097126   3.0035720402 -7.848281   0.0000000000
-    3    0   -224.437661955086   1.0804549339 -3.047974   0.0000000000
-    3    0   -224.502878791163   0.3600071913 -0.610988   0.0000000000
-    3    3   -224.516320183884   0.1259261792  0.426618   0.0422846287
-    4   11   -224.518590741541   0.0227758117  1.038921   0.0235574522
-    5   20   -224.518755064174   0.0024046488  1.040494   0.0024418555
+    1    3   -224.202221875595   4.8046078890  0.000000   0.2661474421
+    2    5   -224.512049468156   0.3887646653  0.942978   0.6986993209
+    3    0   -224.175944096132   3.0035720467 -7.848281   0.0000000000
+    3    0   -224.437661954906   1.0804549356 -3.047974   0.0000000000
+    3    0   -224.502878791143   0.3600071917 -0.610988   0.0000000000
+    3    3   -224.516320183884   0.1259261793  0.426618   0.0422846287
+    4   11   -224.518590741542   0.0227758117  1.038921   0.0235574522
+    5   20   -224.518755064173   0.0024046488  1.040494   0.0024418555
     6    2   -224.518756473354   0.0000324858  1.008823   0.0000364103
-    7    0   -224.518756473648   0.0000076202  1.001644   0.0000000000
+    7    0   -224.518756473648   0.0000076202  1.001741   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
@@ -3794,71 +3791,71 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1     3     0     3      0.00      0.00      1.88      0.00      0.63
-    2     5     2     3      0.00      0.00      2.23      0.00      0.45
-    3     0     0     0      0.00      0.00      0.00      0.00
-    3     0     0     0      0.00      0.00      0.00      0.00
-    3     0     0     0      0.00      0.00      0.00      0.00
-    3     3     2     2      0.00      0.00      1.88      0.00      0.63
-    4    11     8     4      0.00      0.00      1.88      0.00      0.17
-    5    20    15     6      0.00      0.00      1.88      0.00      0.09
-    6     2     2     1      0.00      0.00      1.88      0.00      0.94
-    7     0     0     0      0.00      0.00      0.00      0.00
+    1     3     0     3      4.82      3.88      0.78      0.69      0.26
+    2     5     2     3      4.36      3.07      1.13      1.05      0.23
+    3     0     0     0      3.28      3.09      0.00      0.00
+    3     0     0     0      3.09      2.88      0.00      0.00
+    3     0     0     0      3.31      3.10      0.00      0.00
+    3     3     2     2      3.98      3.05      0.75      0.66      0.25
+    4    11     8     4      5.47      3.09      2.21      2.06      0.20
+    5    20    15     6      7.21      3.13      3.91      3.61      0.20
+    6     2     2     1      3.73      3.04      0.52      0.47      0.26
+    7     0     0     0      3.20      3.04      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1   -252.779680221371    -39.724723967970   -224.202221875713
-    2   -251.918029084158    -40.896202697635   -224.512049468165
-    3   -246.974207515035    -45.503918895720   -224.175944097126
-    3   -250.869283647854    -41.870560620861   -224.437661955086
-    3   -252.608186203791    -40.196874901000   -224.502878791163
-    3   -253.112057547099    -39.706444950414   -224.516320183884
-    4   -253.146901854350    -39.673871200820   -224.518590741541
-    5   -253.176066649858    -39.644870727944   -224.518755064174
-    6   -253.174967856515    -39.645970930467   -224.518756473354
-    7   -253.174970072692    -39.645968714585   -224.518756473648
+    1   -252.779680221147    -39.724723967927   -224.202221875595
+    2   -251.918029082881    -40.896202698755   -224.512049468156
+    3   -246.974207500299    -45.503918909311   -224.175944096132
+    3   -250.869283642408    -41.870560625978   -224.437661954906
+    3   -252.608186202279    -40.196874902343   -224.502878791143
+    3   -253.112057546741    -39.706444950622   -224.516320183884
+    4   -253.146901854075    -39.673871200946   -224.518590741542
+    5   -253.176066649739    -39.644870727914   -224.518755064173
+    6   -253.174967856420    -39.645970930413   -224.518756473354
+    7   -253.174970072594    -39.645968714533   -224.518756473648
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.328563065046     -0.309827592451      0.942977544989
-    3     -0.042825346437      0.336105371039     -7.848281426823
-    3     -0.024405556879      0.074387513078     -3.047974420181
-    3     -0.015009589946      0.009170677002     -0.610987844099
-    3     -0.010010640568     -0.004270715720      0.426617626570
-    4     -0.002185496722     -0.002270557657      1.038920641581
-    5     -0.000157927503     -0.000164322632      1.040494083426
-    6     -0.000001396856     -0.000001409180      1.008822799276
-    7     -0.000000000294     -0.000000000294      1.001643915903
+    2     -0.328563065176     -0.309827592561      0.942977544952
+    3     -0.042825346559      0.336105372025     -7.848281427514
+    3     -0.024405556934      0.074387513250     -3.047974420373
+    3     -0.015009589971      0.009170677013     -0.610987843833
+    3     -0.010010640580     -0.004270715728      0.426617626872
+    4     -0.002185496723     -0.002270557657      1.038920641591
+    5     -0.000157927503     -0.000164322632      1.040494080991
+    6     -0.000001396856     -0.000001409181      1.008823147009
+    7     -0.000000000294     -0.000000000295      1.001740593938
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
-    1      0.20000000  1.00000000      0.266147442042      0.700000000000
-    2      2.40946546  1.00000000      0.698699320936      0.700000000000
-    3      0.00000000  0.00000000      0.000000000000      0.468128545027
-    3      0.00000000  0.00000000      0.000000000000      0.312562785694
-    3      0.00000000  0.00000000      0.000000000000      0.208657843429
-    3      0.20000000  1.00000000      0.042284628723      0.208657843429
-    4      0.20000000  1.00000000      0.023557452194      0.300467294538
-    5      0.20000000  1.00000000      0.002441855455      0.432672904135
-    6      0.20000000  1.00000000      0.000036410325      0.623048981954
+    1      0.20000000  1.00000000      0.266147442124      0.700000000000
+    2      2.40946546  1.00000000      0.698699320933      0.700000000000
+    3      0.00000000  0.00000000      0.000000000000      0.468128545025
+    3      0.00000000  0.00000000      0.000000000000      0.312562785691
+    3      0.00000000  0.00000000      0.000000000000      0.208657843425
+    3      0.20000000  1.00000000      0.042284628730      0.208657843425
+    4      0.20000000  1.00000000      0.023557452188      0.300467294533
+    5      0.20000000  1.00000000      0.002441855451      0.432672904127
+    6      0.20000000  1.00000000      0.000036410325      0.623048981943
     7      0.00000000  0.00000000      0.000000000000      0.700000000000
 
 
  Reduced L root no.  1
  ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
  ----------------------------------------------------------------------------
-    1   -0.026210780144    0.998586314204   -0.027238578020   -0.031418517718
-    2   -0.129689186818   -0.510699860127    0.792752881532    0.134292571099
+    1   -0.026210780155    0.998586314203   -0.027238578026   -0.031418517725
+    2   -0.129689187313   -0.510699859429    0.792752882165    0.134292569370
     3    0.000000000000    0.000000000000    0.000000000000    0.000000000000
     3    0.000000000000    0.000000000000    0.000000000000    0.000000000000
     3    0.000000000000    0.000000000000    0.000000000000    0.000000000000
-    3   -0.000174827234    0.999964242122   -0.006815061724   -0.002753677779
-    4   -0.000012633920    0.999988901114   -0.002169056897   -0.003492634340
-    5   -0.000000111748    0.999999880747   -0.000182472408   -0.000375192145
+    3   -0.000174827234    0.999964242121   -0.006815061726   -0.002753677779
+    4   -0.000012633920    0.999988901114   -0.002169056897   -0.003492634341
+    5   -0.000000111748    0.999999880747   -0.000182472407   -0.000375192145
     6   -0.000000000024    0.999999999973   -0.000001847322   -0.000007028060
     7    0.000000000000    0.000000000000    0.000000000000    0.000000000000
 
@@ -3870,14 +3867,13 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
      State number:                1
 
      Final MCSCF energy:         -224.518756473648
-     Nuclear repulsion:            68.302182313629
-     Electronic energy:          -292.820938787277
+     Nuclear repulsion:            68.302182313479
+     Electronic energy:          -292.820938787128
 
      Final gradient norm:           0.000007620160
 
  
-     Date and time (Linux)  : Mon Feb 12 22:00:15 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
  Occupancies of natural orbitals
@@ -3898,7 +3894,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
  Symmetry  3
 
-   1.962569481   0.258433696
+   1.962569481   0.258433697
 
  Sum =           2.221003178
 
@@ -3932,7 +3928,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
   19  OP  2py   -0.0032   0.0045   0.0020  -0.0389   0.0588  -0.0723  -0.1054
   20  OP  2px   -0.0005   0.0003   0.0009   0.0059   0.0379   0.0156   0.0232
   21  OP  2py   -0.0003   0.0007  -0.0075  -0.0064   0.0012  -0.0028   0.0131
-  22  OP  3d2-  -0.0001   0.0000   0.0071  -0.0091   0.0007  -0.0130  -0.0094
+  22  OP  3d2-  -0.0001  -0.0000   0.0071  -0.0091   0.0007  -0.0130  -0.0094
   23  OP  3d0    0.0001  -0.0001  -0.0040   0.0023  -0.0036   0.0099   0.0047
   24  OP  3d2+   0.0001   0.0000   0.0006  -0.0052  -0.0111   0.0149  -0.0011
   25  OP  3d2-   0.0005  -0.0012  -0.0002   0.0107  -0.0039  -0.0172  -0.0234
@@ -3957,9 +3953,9 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
   13  OP  2py    0.0066  -0.0512   0.0282  -0.0472  -0.0306
   14  OP  2px    0.0002  -0.0029  -0.0265  -0.0114  -0.0089
   15  OP  2py    0.0004  -0.0053   0.0308   0.0009   0.0231
-  16  OP  3d2-   0.0000   0.0007   0.0079  -0.0190   0.0008
+  16  OP  3d2-  -0.0000   0.0007   0.0079  -0.0190   0.0008
   17  OP  3d0   -0.0002  -0.0004  -0.0025   0.0104   0.0006
-  18  OP  3d2+   0.0000  -0.0005   0.0088   0.0070   0.0053
+  18  OP  3d2+  -0.0000  -0.0005   0.0088   0.0070   0.0053
   19  OP  3d2-  -0.0017   0.0120   0.0080  -0.0094   0.0025
   20  OP  3d0    0.0012  -0.0095  -0.0005   0.0125   0.0085
   21  OP  3d2+   0.0010  -0.0078   0.0157   0.0115   0.0074
@@ -4062,24 +4058,22 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
   10- 5 to 10- 4       293    0.11208627E-05    0.10000000E+01
   10- 6 to 10- 5        38    0.14736826E-08    0.10000000E+01
   10- 7 to 10- 6         2    0.15545909E-12    0.10000000E+01
-  Number of coefficients less than 10^-11 times norm is             0
+  Number of coefficients less than 10^-11 times norm is   0
 
 
 
- >>>> Total CPU  time used in SIRIUS :     51.18 seconds
- >>>> Total wall time used in SIRIUS :    145.00 seconds
+ >>>> Total CPU  time used in SIRIUS :     46.30 seconds
+ >>>> Total wall time used in SIRIUS :     49.00 seconds
 
  
-     Date and time (Linux)  : Mon Feb 12 22:00:15 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 - End of Wave Function Section
       Starting Static Property Section -
 
 
  
-     Date and time (Linux)  : Mon Feb 12 22:00:16 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Old LUGDR file opened in ORTREL.
 
@@ -4090,8 +4084,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
 
  
-     Date and time (Linux)  : Mon Feb 12 22:06:23 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
@@ -4114,7 +4107,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
      Total energy       -224.5187564736 au (Hartrees)
                          -6109.46596290 eV
-                           -589473.9112 kJ/mol
+                           -589473.9105 kJ/mol
 
 
 
@@ -4122,11 +4115,11 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.5989601103 au
-     Mass-velocity correction:                  -0.7546765956 au
+     Darwin correction:                          0.5989600202 au
+     Mass-velocity correction:                  -0.7546764821 au
 
-     Total relativistic correction:             -0.1557164853 au (0.0694%)
-     Non-relativistic + relativistic energy:  -224.6744729589 au
+     Total relativistic correction:             -0.1557164618 au (0.0694%)
+     Non-relativistic + relativistic energy:  -224.6744729355 au
 
 
 
@@ -4154,7 +4147,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
            Symmetry 1
 
-           OS   x      OP   x      OP   y
+           OS   x      OP   x      OP   y      
 
  OS   x    0.404829
  OP   x   -0.404829    0.404829
@@ -4163,7 +4156,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
            Symmetry 2
 
-           OS   y      OP   x      OP   y
+           OS   y      OP   x      OP   y      
 
  OS   y    0.376184
  OP   x   -0.233127    0.143930
@@ -4172,7 +4165,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
            Symmetry 3
 
-           OS   z      OP   z
+           OS   z      OP   z      
 
  OS   z   -0.000337
  OP   z    0.000337   -0.000337
@@ -4180,14 +4173,14 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
            Symmetry 4
 
-           OP   z
+           OP   z      
 
  OP   z   -0.000413
 
 
 
 
-           OS   x      OS   y      OS   z      OP 1 x      OP 1 y      OP 1 z
+           OS   x      OS   y      OS   z      OP 1 x      OP 1 y      OP 1 z      
 
  OS   x    0.404829
  OS   y    0.000000    0.376184
@@ -4202,7 +4195,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
  OP 2 z    0.000000    0.000000    0.000168    0.000000    0.000000    0.000019
 
 
-           OP 2 x      OP 2 y      OP 2 z
+           OP 2 x      OP 2 y      OP 2 z      
 
  OP 2 x    0.137190
  OP 2 y   -0.113309    0.306258
@@ -4215,7 +4208,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
                               Dipole moment
                               -------------
 
-                    0.210152 au           0.534158 Debye
+                    0.210152 au           0.534153 Debye
 
 
 
@@ -4225,9 +4218,9 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
                                au             Debye
 
-                    x     -0.21015192     -0.53415783
+                    x     -0.21015192     -0.53415283
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -4236,7 +4229,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            OS          OP 1        OP 2
+            OS          OP 1        OP 2        
 
    OS      0.000000
    OP 1    1.283289    0.000000
@@ -4283,7 +4276,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
      Actual           /  Predicted        =  Ratio 
 
-       -0.0002325634  /    -0.0002258968  =     1.0295119464
+       -0.0002325634  /    -0.0002258968  =     1.0295119483
 
  Iteration in WLKGEO:  1
  Trust radius:     0.50000000
@@ -4293,14 +4286,14 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
  Newton step taken.
 
 
- Predicted energy change       -0.000000489342772
+ Predicted energy change       -0.000000489342760
 
 
   Step in diagonal representation (eigenvalue order)
   --------------------------------------------------
 
 
-               Column   1     Column   2
+               Column   1     Column   2     
        1       0.00075128    -0.00105332
 
 
@@ -4308,7 +4301,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
                   -------------------------------------
 
 
-               Column   1     Column   2     Column   3
+               Column   1     Column   2     Column   3     
        1      -0.00040105     0.00028358     0.00119693
 
  Norm of scaled step:   0.0012937957
@@ -4319,7 +4312,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
                       ------------------------------
 
 
-               Column   1     Column   2     Column   3
+               Column   1     Column   2     Column   3     
        1      -0.00040105     0.00028358     0.00119693
 
  Norm of unscaled step:   0.0012937957
@@ -4330,8 +4323,8 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
                -------------------------------------------
 
  OS        -0.0004010458            0.0000000000            0.0000000000
- OP   1     0.0002005229            0.0008463601            0.0000000000
- OP   2     0.0002005229           -0.0008463601            0.0000000000
+ OP   1     0.0002005229            0.0008463600            0.0000000000
+ OP   2     0.0002005229           -0.0008463600            0.0000000000
 
 
 
@@ -4341,8 +4334,8 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
  Acceptable step has been obtained.
 
- Largest deviation from orthonormality of OMOs:0.108893E-12
- - found for element   16  12
+ Largest deviation from orthonormality of OMOs:0.970335E-13
+ - found for element    1   1
 
 
  ***************************************************************************
@@ -4375,8 +4368,8 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
    ---------------------------------------------------------------------
     1           2           1       7.994290D-04    0          2.39D+00
     2           1           2       0.000000D+00    0          1.00D+00
-    3           0           2
-    4           0           1
+    3           0           2       
+    4           0           1       
 
 
 
@@ -4399,14 +4392,14 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
                           +----------------------+
 
 
-   sym 1            1           2
+   sym 1            1           2       
   ----------------------------------
    OS   x       0.434973    0.690989
    OP   x      -0.307572   -0.488603
    OP   y       0.846285   -0.532731
 
 
-   sym 2            1
+   sym 2            1       
   ----------------------
    OS   y       0.768849
    OP   x      -0.336612
@@ -4431,8 +4424,8 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
                        ----------------------------
 
  OS        -0.0004010458            0.0000000000            0.0000000000
- OP   1     0.0002005229            0.0008463601            0.0000000000
- OP   2     0.0002005229           -0.0008463601            0.0000000000
+ OP   1     0.0002005229            0.0008463600            0.0000000000
+ OP   2     0.0002005229           -0.0008463600            0.0000000000
 
 
 
@@ -4441,7 +4434,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
    Differential interatomic separations (in Angstroms):
    ----------------------------------------------------
 
-            OS          OP 1        OP 2
+            OS          OP 1        OP 2        
 
    OS      0.000000
    OP 1    0.000548    0.000000
@@ -4472,7 +4465,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            OS          OP 1        OP 2
+            OS          OP 1        OP 2        
 
    OS      0.000000
    OP 1    1.283837    0.000000
@@ -4506,17 +4499,17 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
  CPU time statistics for ABACUS
  ------------------------------
 
- ONEINT     00:00:01       1 %
- TWOTEX     00:00:50      39 %
- RHSIDE     00:00:37      29 %
- RESPON     00:00:39      31 %
+ TWOTEX     00:00:33      43 %
+ RHSIDE     00:00:15      19 %
+ RESPON     00:00:28      37 %
+ REST       00:00:01       1 %
 
- TOTAL      00:02:07     100 %
+ TOTAL      00:01:17     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:  2 minutes  7 seconds
- >>>> Total wall time used in ABACUS:  6 minutes  7 seconds
+ >>>> Total CPU  time used in ABACUS:  1 minute  17 seconds
+ >>>> Total wall time used in ABACUS:  1 minute  19 seconds
 
 - End of Static Property Section
 
@@ -4543,7 +4536,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
 
 
- >>> Time used in TWOINT is   5.53 seconds
+ >>> Time used in TWOINT is   2.34 seconds
 
 
 
@@ -4556,25 +4549,24 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
  Threshold for discarding integrals :  1.00D-15
 
- >>> Time used in FRMSUP is   0.31 seconds
+ >>> Time used in FRMSUP is   0.45 seconds
 
- >>>> Total CPU  time used in HERMIT:   5.88 seconds
- >>>> Total wall time used in HERMIT:  13.00 seconds
+ >>>> Total CPU  time used in HERMIT:   2.84 seconds
+ >>>> Total wall time used in HERMIT:   3.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Mon Feb 12 22:06:36 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Title lines from integral program:
-     Water                                                                   
-     anolund                                                                 
+     Geometry optimization using WALK module plus                            
+     static and dynamic polarizabilities                                     
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -4637,9 +4629,9 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
 
  (OPTST) Geometry walk
-               Old MCSCF energy:            -224.518756473648100
-               Predicted energy change:       -0.000000489342772
-               Predicted new energy:        -224.518756962990900
+               Old MCSCF energy:            -224.518756473648430
+               Predicted energy change:       -0.000000489342760
+               Predicted new energy:        -224.518756962991200
 
                Ratios for rejecting walk,
                  Minimum :       0.10000
@@ -4660,7 +4652,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
  Symmetry  3
 
-   1.962569481   0.258433696
+   1.962569481   0.258433697
 
  Symmetry  4
 
@@ -4670,11 +4662,11 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.518017089423200       (MACRO    1)
+ Total MCSCF energy       :     -224.518017089441200       (MACRO    1)
 
- Norm of total gradient   :        0.233359155172
- -    of CI gradient      :        0.001294656525
- -    of orbital gradient :        0.233355563823
+ Norm of total gradient   :        0.233359152375
+ -    of CI gradient      :        0.001294656509
+ -    of orbital gradient :        0.233355561026
 
  Residual norm when dim(red L) =   4
  NEO root     CSF        orbital          total
@@ -4697,7 +4689,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
  Symmetry  3
 
-   1.962569481   0.258433696
+   1.962569481   0.258433697
 
  Symmetry  4
 
@@ -4707,11 +4699,11 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.518756584478700       (MACRO    2)
+ Total MCSCF energy       :     -224.518756584478860       (MACRO    2)
 
- Norm of total gradient   :        0.001328627304
- -    of CI gradient      :        0.001242320633
- -    of orbital gradient :        0.000471051968
+ Norm of total gradient   :        0.001328627287
+ -    of CI gradient      :        0.001242320618
+ -    of orbital gradient :        0.000471051961
 
  Residual norm when dim(red L) =  18
  NEO root     CSF        orbital          total
@@ -4744,9 +4736,9 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.518756963757800       (MACRO    3)
+ Total MCSCF energy       :     -224.518756963757790       (MACRO    3)
 
- Norm of total gradient   :        0.000010523205
+ Norm of total gradient   :        0.000010523204
  -    of CI gradient      :        0.000005600311
  -    of orbital gradient :        0.000008909228
 
@@ -4792,16 +4784,16 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
  <<< MACRO ITERATION  4 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.518756963767100       (MACRO    4)
+ Total MCSCF energy       :     -224.518756963767650       (MACRO    4)
 
  Norm of total gradient   :        0.000004467316
  -    of CI gradient      :        0.000002348068
- -    of orbital gradient :        0.000003800460
+ -    of orbital gradient :        0.000003800459
 
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            4
      Number of micro iterations used           21
-     Total number of CPU seconds used         0.00
+     Total number of CPU seconds used        17.92
 
 
  Check ratio for geometry walk with converged MC :
@@ -4812,7 +4804,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
 
  (SIRSTP) Energy difference;
- actual, predicted and ratio:  -0.0000004901  -0.0000004893    1.001586
+ actual, predicted and ratio:  -0.0000004901  -0.0000004893    1.001587
 
 
  *** GEOMETRY WALK STEP ACCEPTED.
@@ -4822,55 +4814,54 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
                >>> SIRIUS OPTIMIZATION STATISTICS <<<
 
  
-     Date and time (Linux)  : Mon Feb 12 22:07:12 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
-    1    3   -224.518017089423   0.2333591552  0.000000   0.0095818074
+    1    3   -224.518017089441   0.2333591524  0.000000   0.0095818073
     2   16   -224.518756584479   0.0013286273  0.999734   0.0011115978
     3    2   -224.518756963758   0.0000105232  0.999950   0.0000086260
-    4    0   -224.518756963767   0.0000044673  1.000000   0.0000000000
+    4    0   -224.518756963768   0.0000044673  1.000000   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
  ------------------------------------------------------------------------------
     1    702    0.000385    0.001295    171   -0.093404    0.233356    0.233359
     2    624    0.000341    0.001242      1   -0.000135    0.000471    0.001329
-    3    630    0.000001    0.000006      3   -0.000007    0.000009    0.000011
-    4    858    0.000000    0.000002      3    0.000002    0.000004    0.000004
+    3    774    0.000001    0.000006      3   -0.000007    0.000009    0.000011
+    4    858   -0.000000    0.000002      3    0.000002    0.000004    0.000004
 
 
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1     3     0     3      0.00      0.00      1.88      0.00      0.63
-    2    16    11     6      0.00      0.00      1.88      0.00      0.12
-    3     2     2     1      0.00      0.00      1.88      0.00      0.94
-    4     0     0     0      0.00      0.00      0.00      0.00
+    1     3     0     3      4.86      3.84      0.85      0.78      0.28
+    2    16    11     6      6.16      2.94      3.06      2.89      0.19
+    3     2     2     1      3.68      3.03      0.50      0.44      0.25
+    4     0     0     0      3.17      3.00      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1   -253.155884987701    -39.635401100328   -224.518017089423
-    2   -253.153906972854    -39.638118610230   -224.518756584479
-    3   -253.156633579139    -39.635392383225   -224.518756963758
-    4   -253.156637366516    -39.635388595857   -224.518756963767
+    1   -253.155884987847    -39.635401100401   -224.518017089441
+    2   -253.153906973017    -39.638118610269   -224.518756584479
+    3   -253.156633579267    -39.635392383297   -224.518756963758
+    4   -253.156637366644    -39.635388595931   -224.518756963768
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.000739691847     -0.000739495056      0.999733955255
-    3     -0.000000379298     -0.000000379279      0.999950470026
-    4     -0.000000000010     -0.000000000009      1.000000000000
+    2     -0.000739691829     -0.000739495038      0.999733955082
+    3     -0.000000379298     -0.000000379279      0.999949972329
+    4     -0.000000000010     -0.000000000010      1.000000000000
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
-    1      0.20000000  1.00000000      0.009581807378      0.700000000000
-    2      0.20000000  1.00000000      0.001111597792      0.700000000000
+    1      0.20000000  1.00000000      0.009581807263      0.700000000000
+    2      0.20000000  1.00000000      0.001111597779      0.700000000000
     3      0.20000000  1.00000000      0.000008625958      0.700000000000
     4      0.00000000  0.00000000      0.000000000000      0.700000000000
 
@@ -4878,8 +4869,8 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
  Reduced L root no.  1
  ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
  ----------------------------------------------------------------------------
-    1   -0.000059175130    0.999998163784   -0.001891341192   -0.000294683584
-    2   -0.000000030344    0.999999975287   -0.000116927821   -0.000128835577
+    1   -0.000059175129    0.999998163784   -0.001891341170   -0.000294683580
+    2   -0.000000030344    0.999999975287   -0.000116927820   -0.000128835575
     3   -0.000000000001    0.999999999999   -0.000000518786   -0.000001638509
     4    0.000000000000    0.000000000000    0.000000000000    0.000000000000
 
@@ -4890,15 +4881,14 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
      Spatial symmetry:            1
      State number:                1
 
-     Final MCSCF energy:         -224.518756963767
-     Nuclear repulsion:            68.273268998606
-     Electronic energy:          -292.792025962373
+     Final MCSCF energy:         -224.518756963768
+     Nuclear repulsion:            68.273268998807
+     Electronic energy:          -292.792025962575
 
      Final gradient norm:           0.000004467316
 
  
-     Date and time (Linux)  : Mon Feb 12 22:07:12 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
  Occupancies of natural orbitals
@@ -4953,7 +4943,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
   19  OP  2py   -0.0032   0.0044   0.0021  -0.0389   0.0587  -0.0721  -0.1053
   20  OP  2px   -0.0005   0.0003   0.0010   0.0059   0.0379   0.0156   0.0232
   21  OP  2py   -0.0003   0.0007  -0.0075  -0.0064   0.0012  -0.0028   0.0131
-  22  OP  3d2-  -0.0001   0.0000   0.0071  -0.0091   0.0007  -0.0130  -0.0094
+  22  OP  3d2-  -0.0001  -0.0000   0.0071  -0.0091   0.0007  -0.0130  -0.0094
   23  OP  3d0    0.0001  -0.0001  -0.0040   0.0023  -0.0036   0.0099   0.0047
   24  OP  3d2+   0.0001   0.0000   0.0006  -0.0052  -0.0111   0.0149  -0.0011
   25  OP  3d2-   0.0005  -0.0012  -0.0001   0.0106  -0.0039  -0.0172  -0.0234
@@ -4978,9 +4968,9 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
   13  OP  2py    0.0066  -0.0511   0.0282  -0.0472  -0.0306
   14  OP  2px    0.0002  -0.0028  -0.0265  -0.0114  -0.0089
   15  OP  2py    0.0004  -0.0053   0.0308   0.0009   0.0231
-  16  OP  3d2-   0.0000   0.0007   0.0079  -0.0190   0.0008
+  16  OP  3d2-  -0.0000   0.0007   0.0079  -0.0190   0.0008
   17  OP  3d0   -0.0002  -0.0004  -0.0025   0.0104   0.0006
-  18  OP  3d2+   0.0000  -0.0005   0.0088   0.0070   0.0053
+  18  OP  3d2+  -0.0000  -0.0005   0.0088   0.0070   0.0053
   19  OP  3d2-  -0.0017   0.0120   0.0080  -0.0094   0.0025
   20  OP  3d0    0.0012  -0.0095  -0.0005   0.0125   0.0085
   21  OP  3d2+   0.0010  -0.0078   0.0157   0.0115   0.0074
@@ -5083,24 +5073,22 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
   10- 5 to 10- 4       293    0.11243240E-05    0.10000000E+01
   10- 6 to 10- 5        38    0.15174608E-08    0.10000000E+01
   10- 7 to 10- 6         2    0.13079824E-12    0.10000000E+01
-  Number of coefficients less than 10^-11 times norm is             0
+  Number of coefficients less than 10^-11 times norm is   0
 
 
 
- >>>> Total CPU  time used in SIRIUS :     17.30 seconds
- >>>> Total wall time used in SIRIUS :     36.00 seconds
+ >>>> Total CPU  time used in SIRIUS :     21.91 seconds
+ >>>> Total wall time used in SIRIUS :     23.00 seconds
 
  
-     Date and time (Linux)  : Mon Feb 12 22:07:12 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 - End of Wave Function Section
       Starting Static Property Section -
 
 
  
-     Date and time (Linux)  : Mon Feb 12 22:07:12 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Old LUGDR file opened in ORTREL.
 
@@ -5111,8 +5099,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
 
  
-     Date and time (Linux)  : Mon Feb 12 22:10:06 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
@@ -5135,7 +5122,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
      Total energy       -224.5187569638 au (Hartrees)
                          -6109.46597623 eV
-                           -589473.9125 kJ/mol
+                           -589473.9117 kJ/mol
 
 
 
@@ -5143,11 +5130,11 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.5989626551 au
-     Mass-velocity correction:                  -0.7546796214 au
+     Darwin correction:                          0.5989625650 au
+     Mass-velocity correction:                  -0.7546795079 au
 
-     Total relativistic correction:             -0.1557169663 au (0.0694%)
-     Non-relativistic + relativistic energy:  -224.6744739301 au
+     Total relativistic correction:             -0.1557169429 au (0.0694%)
+     Non-relativistic + relativistic energy:  -224.6744739066 au
 
 
 
@@ -5175,7 +5162,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
            Symmetry 1
 
-           OS   x      OP   x      OP   y
+           OS   x      OP   x      OP   y      
 
  OS   x    0.403665
  OP   x   -0.403665    0.403665
@@ -5184,7 +5171,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
            Symmetry 2
 
-           OS   y      OP   x      OP   y
+           OS   y      OP   x      OP   y      
 
  OS   y    0.373663
  OP   x   -0.231372    0.143266
@@ -5193,22 +5180,22 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
            Symmetry 3
 
-           OS   z      OP   z
+           OS   z      OP   z      
 
  OS   z    0.000000
- OP   z    0.000000    0.000000
+ OP   z   -0.000000    0.000000
 
 
            Symmetry 4
 
-           OP   z
+           OP   z      
 
  OP   z    0.000001
 
 
 
 
-           OS   x      OS   y      OS   z      OP 1 x      OP 1 y      OP 1 z
+           OS   x      OS   y      OS   z      OP 1 x      OP 1 y      OP 1 z      
 
  OS   x    0.403665
  OS   y    0.000000    0.373663
@@ -5216,14 +5203,14 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
  OP 1 x   -0.201832   -0.115686    0.000000    0.136733
  OP 1 y   -0.109331   -0.186832    0.000000    0.112508    0.304739
- OP 1 z    0.000000    0.000000    0.000000    0.000000    0.000000    0.000000
+ OP 1 z    0.000000    0.000000   -0.000000    0.000000    0.000000    0.000000
 
  OP 2 x   -0.201832    0.115686    0.000000    0.065100   -0.003177    0.000000
  OP 2 y    0.109331   -0.186832    0.000000    0.003177   -0.117907    0.000000
- OP 2 z    0.000000    0.000000    0.000000    0.000000    0.000000    0.000000
+ OP 2 z    0.000000    0.000000   -0.000000    0.000000    0.000000   -0.000000
 
 
-           OP 2 x      OP 2 y      OP 2 z
+           OP 2 x      OP 2 y      OP 2 z      
 
  OP 2 x    0.136733
  OP 2 y   -0.112508    0.304739
@@ -5236,7 +5223,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
                               Dipole moment
                               -------------
 
-                    0.209828 au           0.533336 Debye
+                    0.209828 au           0.533331 Debye
 
 
 
@@ -5246,9 +5233,9 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
                                au             Debye
 
-                    x     -0.20982847     -0.53333571
+                    x     -0.20982847     -0.53333072
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -5257,7 +5244,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            OS          OP 1        OP 2
+            OS          OP 1        OP 2        
 
    OS      0.000000
    OP 1    1.283837    0.000000
@@ -5291,7 +5278,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
  Walk type:     1
 
- Norm of gradient   1.013644D-06
+ Norm of gradient   1.013635D-06
  Totally sym.  index    0
  Total Hessian index    0
  Number of steps        1
@@ -5326,10 +5313,10 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
    sym        #int        #ext       gradient     index       cond. num.
    ---------------------------------------------------------------------
-    1           2           1       1.013644D-06    0          2.38D+00
+    1           2           1       1.013635D-06    0          2.38D+00
     2           1           2       0.000000D+00    0          1.00D+00
-    3           0           2
-    4           0           1
+    3           0           2       
+    4           0           1       
 
 
 
@@ -5344,22 +5331,20 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
             @ 1           2        -0.0000007963     0.7243534730
             @ 2           1         0.0000000000     0.6321274110
 
-  This is Newton step.
-
 
                           +----------------------+
                           ! Hessian eigenvectors !
                           +----------------------+
 
 
-   sym 1            1           2
+   sym 1            1           2       
   ----------------------------------
    OS   x       0.434060    0.691563
    OP   x      -0.306927   -0.489009
    OP   y       0.846988   -0.531612
 
 
-   sym 2            1
+   sym 2            1       
   ----------------------
    OS   y       0.768843
    OP   x      -0.336630
@@ -5387,7 +5372,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            OS          OP 1        OP 2
+            OS          OP 1        OP 2        
 
    OS      0.000000
    OP 1    1.283837    0.000000
@@ -5421,17 +5406,16 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:43      49 %
- RHSIDE     00:00:26      29 %
- RESPON     00:00:19      21 %
- REST       00:00:01       2 %
+ TWOTEX     00:00:33      51 %
+ RHSIDE     00:00:15      23 %
+ RESPON     00:00:17      26 %
 
- TOTAL      00:01:28     100 %
-
+ TOTAL      00:01:05     100 %
 
 
- >>>> Total CPU  time used in ABACUS:  1 minute  28 seconds
- >>>> Total wall time used in ABACUS:  2 minutes 54 seconds
+
+ >>>> Total CPU  time used in ABACUS:  1 minute   5 seconds
+ >>>> Total wall time used in ABACUS:  1 minute   6 seconds
 
 - End of Static Property Section
 
@@ -5473,10 +5457,12 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
 
  
-     Date and time (Linux)  : Mon Feb 12 22:10:06 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Old LUGDR file opened in ORTREL.
+
+ TRACTL: Integral transformation abandoned,
+ the required MO integrals are already available.
 
  GP * SOLUTION VECTOR AT FREQUENCY     0.09600 AU
  AFTER   24 LINEAR TRANSFORMATIONS IS     10.19506580
@@ -5606,7 +5592,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
  ***WARNING, negative eigenvalues in reduced matrix, inertia is  129    0    1
 
- >>> Time used in LNRABA is  31.48 seconds
+ >>> Time used in LNRABA is  25.71 seconds
 
 
 
@@ -5616,8 +5602,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
 
  
-     Date and time (Linux)  : Mon Feb 12 22:14:14 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
@@ -5640,7 +5625,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
      Total energy       -224.5187569638 au (Hartrees)
                          -6109.46597623 eV
-                           -589473.9125 kJ/mol
+                           -589473.9117 kJ/mol
 
 
 
@@ -5648,11 +5633,11 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.5989626551 au
-     Mass-velocity correction:                  -0.7546796214 au
+     Darwin correction:                          0.5989625650 au
+     Mass-velocity correction:                  -0.7546795079 au
 
-     Total relativistic correction:             -0.1557169663 au (0.0694%)
-     Non-relativistic + relativistic energy:  -224.6744739301 au
+     Total relativistic correction:             -0.1557169429 au (0.0694%)
+     Non-relativistic + relativistic energy:  -224.6744739066 au
 
 
 
@@ -5660,7 +5645,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
                               Dipole moment
                               -------------
 
-                    0.209828 au           0.533336 Debye
+                    0.209828 au           0.533331 Debye
 
 
 
@@ -5670,9 +5655,9 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
                                au             Debye
 
-                    x     -0.20982847     -0.53333571
+                    x     -0.20982847     -0.53333072
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -5683,28 +5668,28 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
 
     Symmetry 1
-                       Ex
+                       Ex             
 
         OS   x     0.03892472
         OP   x    -0.03892472
         OP   y     0.41118201
 
     Symmetry 2
-                       Ey
+                       Ey             
 
         OS   y     0.94771773
         OP   x    -0.48509975
         OP   y    -0.94771773
 
     Symmetry 3
-                       Ez
+                       Ez             
 
         OS   z     0.16428600
         OP   z    -0.16428600
 
 
 
-                       Ex             Ey             Ez
+                       Ex             Ey             Ez             
 
         OS   x     0.03892472     0.00000000     0.00000000
         OS   y     0.00000000     0.94771773     0.00000000
@@ -5783,7 +5768,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
           Polarizability tensor for frequency     0.000000 au
           ----------------------------------------------------
 
-                        Ex     Ey     Ez
+                        Ex     Ey     Ez     
 
                 Ex    12.1243222   0.0000000   0.0000000
                 Ey     0.0000000  28.3267489   0.0000000
@@ -5792,7 +5777,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
           Polarizability tensor for frequency     0.059200 au
           ----------------------------------------------------
 
-                        Ex     Ey     Ez
+                        Ex     Ey     Ez     
 
                 Ex    12.2173359   0.0000000   0.0000000
                 Ey     0.0000000  29.3542277   0.0000000
@@ -5801,7 +5786,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
           Polarizability tensor for frequency     0.096000 au
           ----------------------------------------------------
 
-                        Ex     Ey     Ez
+                        Ex     Ey     Ez     
 
                 Ex    12.3778932   0.0000000   0.0000000
                 Ey     0.0000000  31.4860768   0.0000000
@@ -5811,7 +5796,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            OS          OP 1        OP 2
+            OS          OP 1        OP 2        
 
    OS      0.000000
    OP 1    1.283837    0.000000
@@ -5849,7 +5834,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
  Conversion factors used:
 
-    Hartree to (cm)-1      : 219474.63137
+    Hartree to (cm)-1      : 219474.63128
     a.m.u.  to a.u.        :   1822.88848
     Bohr    to Angstrom    :  0.529177208
     a.u.    to A**4amu-1   :   142.943570
@@ -5906,10 +5891,10 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
                  cm-1       hartrees     km/mol   (D/A)**2/amu
   ------------------------------------------------------------
 
-   1      A1     1093.93    0.004984      0.795   0.0188
-   3      A1      708.43    0.003228      4.496   0.1064
+   1      A1     1093.93    0.004984      0.795   0.0188          
+   3      A1      708.43    0.003228      4.496   0.1064          
 
-   2      B1     1021.92    0.004656     89.005   2.1064
+   2      B1     1021.92    0.004656     89.005   2.1063          
 
 
 
@@ -5923,16 +5908,16 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
                 1  1094     2  1022     3   708 
   ----------------------------------------------
 
-      OS   x    0.172918    0.000000   -0.108532
-      OS   y    0.000000    0.192241    0.000000
+      OS   x    0.172918   -0.000000    0.108532
+      OS   y    0.000000    0.192241   -0.000000
       OS   z    0.000000    0.000000    0.000000
 
-      OP 1 x   -0.086459   -0.059518    0.054266
-      OP 1 y   -0.093992   -0.096121   -0.149751
+      OP 1 x   -0.086459   -0.059518   -0.054266
+      OP 1 y   -0.093992   -0.096121    0.149751
       OP 1 z    0.000000    0.000000    0.000000
 
-      OP 2 x   -0.086459    0.059518    0.054266
-      OP 2 y    0.093992   -0.096121    0.149751
+      OP 2 x   -0.086459    0.059518   -0.054266
+      OP 2 y    0.093992   -0.096121   -0.149751
       OP 2 z    0.000000    0.000000    0.000000
 
 
@@ -5944,9 +5929,9 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
   mode           dMA/dQi        dMB/dQi        dMC/dQi
   ----------------------------------------------------
-   1           -0.137140       0.000000       0.000000
-   2            0.000000       1.451340       0.000000
-   3           -0.326198       0.000000       0.000000
+   1           -0.137139       0.000000       0.000000
+   2            0.000000       1.451326       0.000000
+   3            0.326195      -0.000000       0.000000
 
 
 
@@ -5956,7 +5941,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
              electronic     vibrational           total    energy 
 
             -224.518757        0.006434     -224.512323    Hartrees
-           -49276171.42         1412.14    -49274759.28    cm-1
+           -49276171.40         1412.14    -49274759.26    cm-1
              -589473.91           16.89      -589457.02    kJ/mol
              -140887.65            4.04      -140883.61    kcal/mol
 
@@ -6078,22 +6063,22 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:23      19 %
- RHSIDE     00:00:28      22 %
- RESPON     00:00:42      33 %
- LNRABA     00:00:31      25 %
+ TWOTEX     00:00:19      18 %
+ RHSIDE     00:00:16      16 %
+ RESPON     00:00:41      40 %
+ LNRABA     00:00:26      25 %
 
- TOTAL      00:02:05     100 %
+ TOTAL      00:01:41     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:  2 minutes  5 seconds
- >>>> Total wall time used in ABACUS:  4 minutes  8 seconds
+ >>>> Total CPU  time used in ABACUS:  1 minute  41 seconds
+ >>>> Total wall time used in ABACUS:  1 minute  46 seconds
 
 - End of Static Property Section
 
 
-  This is output from RESPONS  -  an MCSCF and SOPPA response property program 
+  This is output from RESPONSE  -  an MCSCF and SOPPA response property program 
  ------------------------------------------------------------------------------
 
 
@@ -6101,6 +6086,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
  <<<<<<<<<< OUTPUT FROM RESPONSE INPUT PROCESSING >>>>>>>>>>
 
 
+ 2
 
 
  Linear Response calculation
@@ -6108,7 +6094,7 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
 
  Print level                                    : IPRLR  = -12
  Maximum number of iterations                   : MAXITL =  60
- Threshold for convergence                      : THCLR  = 5.000D-05
+ Threshold for relative convergence             : THCLR  = 5.000D-05
  Maximum iterations in optimal orbital algorithm: MAXITO =   5
 
   2 B-frequencies  0.000000D+00  5.920000D-02
@@ -6129,10 +6115,10 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
  the required MO integrals are already available.
 
 
- MCSCF energy         :     -224.518756963767100
- -- inactive part     :     -253.156637366516300
- --   active part     :      -39.635388595856650
- -- nuclear repulsion :       68.273268998605760
+ MCSCF energy         :     -224.518756963767650
+ -- inactive part     :     -253.156637366643620
+ --   active part     :      -39.635388595930912
+ -- nuclear repulsion :       68.273268998806898
 
 
  >>>>>>>>>> Linear response calculation
@@ -6173,16 +6159,16 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
  ======================================================================
 
  Linear response function in a.u.
- A operator, symmetry, frequency:   XDIPLEN    1  0.000000
+ A operator, symmetry, frequency:   XDIPLEN    1 -0.000000
  B operator, symmetry, frequency:   XDIPLEN    1  0.000000
 
- Value of linear response:      12.124322243843
+ Value of linear response:      12.124322243785
 
  Linear response function in a.u.
  A operator, symmetry, frequency:   XDIPLEN    1 -0.059200
  B operator, symmetry, frequency:   XDIPLEN    1  0.059200
 
- Value of linear response:      12.217335874330
+ Value of linear response:      12.217335874271
 
 
  >>>>>>>>>> Linear response calculation
@@ -6216,16 +6202,16 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
  ======================================================================
 
  Linear response function in a.u.
- A operator, symmetry, frequency:   YDIPLEN    2  0.000000
+ A operator, symmetry, frequency:   YDIPLEN    2 -0.000000
  B operator, symmetry, frequency:   YDIPLEN    2  0.000000
 
- Value of linear response:      28.326748898821
+ Value of linear response:      28.326748898766
 
  Linear response function in a.u.
  A operator, symmetry, frequency:   YDIPLEN    2 -0.059200
  B operator, symmetry, frequency:   YDIPLEN    2  0.059200
 
- Value of linear response:      29.354227683756
+ Value of linear response:      29.354227683687
 
 
  >>>>>>>>>> Linear response calculation
@@ -6259,22 +6245,21 @@ OP    1.2678378273029720  2.0618436476915820  0.0000000000000000       *
  ======================================================================
 
  Linear response function in a.u.
- A operator, symmetry, frequency:   ZDIPLEN    3  0.000000
+ A operator, symmetry, frequency:   ZDIPLEN    3 -0.000000
  B operator, symmetry, frequency:   ZDIPLEN    3  0.000000
 
- Value of linear response:      10.075962904542
+ Value of linear response:      10.075962904526
 
  Linear response function in a.u.
  A operator, symmetry, frequency:   ZDIPLEN    3 -0.059200
  B operator, symmetry, frequency:   ZDIPLEN    3  0.059200
 
- Value of linear response:      10.130891960367
+ Value of linear response:      10.130891960351
 
- >>>> Total CPU  time used in RESPONSE:   0.76 seconds
- >>>> Total wall time used in RESPONSE:   1.00 seconds
- >>>> Total CPU  time used in DALTON:  9 minutes 37 seconds
- >>>> Total wall time used in DALTON: 22 minutes 33 seconds
+ >>>> Total CPU  time used in RESPONSE:   1.19 seconds
+ >>>> Total wall time used in RESPONSE:   2.00 seconds
+ >>>> Total CPU  time used in DALTON:  7 minutes 22 seconds
+ >>>> Total wall time used in DALTON:  7 minutes 40 seconds
 
  
-     Date and time (Linux)  : Mon Feb 12 22:14:15 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    

@@ -4,7 +4,7 @@
     ***********  DALTON - An electronic structure program  ***********
     ******************************************************************
 
-               This is output from DALTON (Release 1.2, April 2001)
+            This is output from DALTON (Release 2.0, ? 2001)
 
                           Principal authors:
 
@@ -17,6 +17,7 @@
 
                           Contributors:
 
+            Alexander A. Auer,     University of Mainz,        Germany
             Keld L. Bak,           UNI-C,                      Denmark
             Vebjoern Bakken,       University of Oslo,         Norway 
             Ove Christiansen,      University of Lund,         Sweden 
@@ -36,16 +37,18 @@
             Henrik Koch,           SDU - Odense University,    Denmark
             Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
             Patrick Norman,        University of Linkoeping,   Sweden 
+            Thomas B. Pedersen,    U.of Santiago de Compostela,Spain  
             Martin J. Packer,      University of Sheffield,    UK     
             Torgeir A. Ruden,      University of Oslo,         Norway 
+            Alfredo Sanchez,       University of Valencia,     Spain  
             Trond Saue,            University of Toulouse,     France 
             Stephan P. A. Sauer,   University of Copenhagen,   Denmark
             Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
             K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
             Peter R.Taylor,        San Diego Superc. Center,   USA    
             Olav Vahtras,          PDC, Stockholm,             Sweden 
-------------------------------------------------------------------------
 
+------------------------------------------------------------------------
 
 
      NOTE:
@@ -63,17 +66,19 @@
      If results obtained with this code are published, an
      appropriate citation would be:
       
-     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,H. Aagren,
-     K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,P. Dahle, E.K. Dalskov,
-     T. Enevoldsen, B. Fernandez,C. Haettig, K. Hald, A. Halkier,
+     "Dalton, a molecular electronic structure program, Release 1.2
+     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
      H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-     H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T.A. Ruden, T. Saue,
-     S.P.A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,P.R. Taylor, and O. Vahtras:
-     "Dalton release 1.2 (2001), an electronic structure program"
+     H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+     T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+     B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+     and O. Vahtras"
 
  
-     Date and time (Linux)  : Mon Feb 12 22:31:26 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
 
@@ -90,10 +95,7 @@
  Model Hessian will be used as initial Hessian.
  The model Hessian parameters of Roland Lindh will be used.
 
- Hessian will be reinitialized after rejected steps.
 
-
- Threshold for symmetry-break set to       :      0.10D-02
  Trust region method will be used to control step (default).
 
 
@@ -127,8 +129,8 @@
   Title Cards
   -----------
 
-  Water                                                                   
-  anolund                                                                 
+  Geometry optimization, calculation of DC-Kerr effect                    
+  at the optimized geometry                                               
 
 
   Symmetry Operations
@@ -150,30 +152,30 @@ Point group: C2v
 
    * Group multiplication table
 
-        |  E   C2x  Oxy  Oxz
+        |  E   C2x  Oxy  Oxz  
    -----+--------------------
-     E  |  E 
-    C2x | C2x   E 
-    Oxy | Oxy  Oxz   E 
-    Oxz | Oxz  Oxy  C2x   E 
+     E  |  E   
+    C2x | C2x   E   
+    Oxy | Oxy  Oxz   E   
+    Oxz | Oxz  Oxy  C2x   E   
 
    * Character table
 
-        |  E   C2x  Oxy  Oxz
+        |  E   C2x  Oxy  Oxz  
    -----+--------------------
-    A1  |   1    1    1    1
-    B1  |   1   -1    1   -1
-    B2  |   1   -1   -1    1
-    A2  |   1    1   -1   -1
+    A1  |   1    1    1    1  
+    B1  |   1   -1    1   -1  
+    B2  |   1   -1   -1    1  
+    A2  |   1    1   -1   -1  
 
    * Direct product table
 
-        | A1   B1   B2   A2 
+        | A1   B1   B2   A2   
    -----+--------------------
-    A1  | A1 
-    B1  | B1   A1 
-    B2  | B2   A2   A1 
-    A2  | A2   B2   B1   A1 
+    A1  | A1   
+    B1  | B1   A1   
+    B2  | B2   A2   A1   
+    A2  | A2   B2   B1   A1   
 
 
   Atoms and basis sets
@@ -250,7 +252,7 @@ Point group: C2v
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            OS          OP 1        OP 2
+            OS          OP 1        OP 2        
 
    OS      0.000000
    OP 1    1.272001    0.000000
@@ -287,87 +289,87 @@ Point group: C2v
 
   Symmetry  A1 ( 1)
 
-    1     OS       1s         1
-    2     OS       1s         2
-    3     OS       1s         3
-    4     OS       1s         4
-    5     OS       2px        5
-    6     OS       2px        8
-    7     OS       2px       11
-    8     OS       3d0       16
-    9     OS       3d2+      18
-   10     OS       3d0       21
-   11     OS       3d2+      23
-   12     OP       1s        24  +  25
-   13     OP       1s        26  +  27
-   14     OP       1s        28  +  29
-   15     OP       1s        30  +  31
-   16     OP       2px       32  +  33
-   17     OP       2py       34  -  35
-   18     OP       2px       38  +  39
-   19     OP       2py       40  -  41
-   20     OP       2px       44  +  45
-   21     OP       2py       46  -  47
-   22     OP       3d2-      50  -  51
-   23     OP       3d0       54  +  55
-   24     OP       3d2+      58  +  59
-   25     OP       3d2-      60  -  61
-   26     OP       3d0       64  +  65
-   27     OP       3d2+      68  +  69
+    1     OS       1s         1  
+    2     OS       1s         2  
+    3     OS       1s         3  
+    4     OS       1s         4  
+    5     OS       2px        5  
+    6     OS       2px        8  
+    7     OS       2px       11  
+    8     OS       3d0       16  
+    9     OS       3d2+      18  
+   10     OS       3d0       21  
+   11     OS       3d2+      23  
+   12     OP       1s        24  +  25  
+   13     OP       1s        26  +  27  
+   14     OP       1s        28  +  29  
+   15     OP       1s        30  +  31  
+   16     OP       2px       32  +  33  
+   17     OP       2py       34  -  35  
+   18     OP       2px       38  +  39  
+   19     OP       2py       40  -  41  
+   20     OP       2px       44  +  45  
+   21     OP       2py       46  -  47  
+   22     OP       3d2-      50  -  51  
+   23     OP       3d0       54  +  55  
+   24     OP       3d2+      58  +  59  
+   25     OP       3d2-      60  -  61  
+   26     OP       3d0       64  +  65  
+   27     OP       3d2+      68  +  69  
 
 
   Symmetry  B1 ( 2)
 
-   28     OS       2py        6
-   29     OS       2py        9
-   30     OS       2py       12
-   31     OS       3d2-      14
-   32     OS       3d2-      19
-   33     OP       1s        24  -  25
-   34     OP       1s        26  -  27
-   35     OP       1s        28  -  29
-   36     OP       1s        30  -  31
-   37     OP       2px       32  -  33
-   38     OP       2py       34  +  35
-   39     OP       2px       38  -  39
-   40     OP       2py       40  +  41
-   41     OP       2px       44  -  45
-   42     OP       2py       46  +  47
-   43     OP       3d2-      50  +  51
-   44     OP       3d0       54  -  55
-   45     OP       3d2+      58  -  59
-   46     OP       3d2-      60  +  61
-   47     OP       3d0       64  -  65
-   48     OP       3d2+      68  -  69
+   28     OS       2py        6  
+   29     OS       2py        9  
+   30     OS       2py       12  
+   31     OS       3d2-      14  
+   32     OS       3d2-      19  
+   33     OP       1s        24  -  25  
+   34     OP       1s        26  -  27  
+   35     OP       1s        28  -  29  
+   36     OP       1s        30  -  31  
+   37     OP       2px       32  -  33  
+   38     OP       2py       34  +  35  
+   39     OP       2px       38  -  39  
+   40     OP       2py       40  +  41  
+   41     OP       2px       44  -  45  
+   42     OP       2py       46  +  47  
+   43     OP       3d2-      50  +  51  
+   44     OP       3d0       54  -  55  
+   45     OP       3d2+      58  -  59  
+   46     OP       3d2-      60  +  61  
+   47     OP       3d0       64  -  65  
+   48     OP       3d2+      68  -  69  
 
 
   Symmetry  B2 ( 3)
 
-   49     OS       2pz        7
-   50     OS       2pz       10
-   51     OS       2pz       13
-   52     OS       3d1+      17
-   53     OS       3d1+      22
-   54     OP       2pz       36  +  37
-   55     OP       2pz       42  +  43
-   56     OP       2pz       48  +  49
-   57     OP       3d1-      52  -  53
-   58     OP       3d1+      56  +  57
-   59     OP       3d1-      62  -  63
-   60     OP       3d1+      66  +  67
+   49     OS       2pz        7  
+   50     OS       2pz       10  
+   51     OS       2pz       13  
+   52     OS       3d1+      17  
+   53     OS       3d1+      22  
+   54     OP       2pz       36  +  37  
+   55     OP       2pz       42  +  43  
+   56     OP       2pz       48  +  49  
+   57     OP       3d1-      52  -  53  
+   58     OP       3d1+      56  +  57  
+   59     OP       3d1-      62  -  63  
+   60     OP       3d1+      66  +  67  
 
 
   Symmetry  A2 ( 4)
 
-   61     OS       3d1-      15
-   62     OS       3d1-      20
-   63     OP       2pz       36  -  37
-   64     OP       2pz       42  -  43
-   65     OP       2pz       48  -  49
-   66     OP       3d1-      52  +  53
-   67     OP       3d1+      56  -  57
-   68     OP       3d1-      62  +  63
-   69     OP       3d1+      66  -  67
+   61     OS       3d1-      15  
+   62     OS       3d1-      20  
+   63     OP       2pz       36  -  37  
+   64     OP       2pz       42  -  43  
+   65     OP       2pz       48  -  49  
+   66     OP       3d1-      52  +  53  
+   67     OP       3d1+      56  -  57  
+   68     OP       3d1-      62  +  63  
+   69     OP       3d1+      66  -  67  
 
   Symmetries of electric field:  A1 (1)  B1 (2)  B2 (3)
 
@@ -379,10 +381,10 @@ Point group: C2v
  ************************************************************************
 
 
- >>> Time used in ONEDRV is   0.03 seconds
+ >>> Time used in ONEDRV is   0.04 seconds
 
 
- >>> Time used in OVERLA is   0.02 seconds
+ >>> Time used in OVERLA is   0.03 seconds
 
 
  Number of two-electron integrals written:      672537 ( 23.1% )
@@ -390,28 +392,27 @@ Point group: C2v
 
 
 
- >>> Time used in TWOINT is   4.94 seconds
+ >>> Time used in TWOINT is   2.44 seconds
 
 
- >>> Time used in FRMSUP is   0.31 seconds
+ >>> Time used in FRMSUP is   0.51 seconds
 
- >>>> Total CPU  time used in HERMIT:   5.32 seconds
- >>>> Total wall time used in HERMIT:  10.00 seconds
+ >>>> Total CPU  time used in HERMIT:   3.09 seconds
+ >>>> Total wall time used in HERMIT:   3.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Mon Feb 12 22:31:36 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Title lines from integral program:
-     Water                                                                   
-     anolund                                                                 
+     Geometry optimization, calculation of DC-Kerr effect                    
+     at the optimized geometry                                               
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -491,7 +492,7 @@ Point group: C2v
     1     -223.191109535740    5.64716D+00   -2.23D+02
     2     -223.857746696543    3.18873D+00   -6.67D-01
     3     -224.229024331282    1.16315D+00   -3.71D-01
-    4     -224.288873806323    1.23307D-01   -5.98D-02
+    4     -224.288873806322    1.23307D-01   -5.98D-02
     5     -224.290276547658    4.13890D-02   -1.40D-03
     6     -224.290474702109    1.12384D-02   -1.98D-04
     7     -224.290497719893    3.38563D-03   -2.30D-05
@@ -499,8 +500,8 @@ Point group: C2v
     9     -224.290500227457    2.55853D-04   -1.63D-07
    10     -224.290500241528    8.77186D-05   -1.41D-08
    11     -224.290500243351    3.62116D-05   -1.82D-09
-   12     -224.290500243731    6.62530D-06   -3.80D-10
-   13     -224.290500243741    7.01411D-07   -1.01D-11
+   12     -224.290500243731    6.62530D-06   -3.81D-10
+   13     -224.290500243742    7.01411D-07   -1.02D-11
  DIIS converged in  13 iterations !
 
 
@@ -517,9 +518,9 @@ Point group: C2v
  Orbital occupations :    6    4    1    1
 
 
- Hartree-Fock electronic energy:        -293.189688334521
+ Hartree-Fock electronic energy:        -293.189688334520
 
- Hartree-Fock total      energy:        -224.290500243742
+ Hartree-Fock total      energy:        -224.290500243741
 
  Hartree-Fock orbital energies, symmetry 1
 
@@ -607,7 +608,7 @@ Point group: C2v
  RHF     2.00000000
  Diff.  -0.11374371
 
- Time used for MP2 natural orbitals :       3.610 CPU seconds.
+ Time used for MP2 natural orbitals :       4.700 CPU seconds.
 
 
         SIRIUS MCSCF optimization (SIROPT)
@@ -639,7 +640,7 @@ Point group: C2v
 
 
  CI energies and residuals:
-    1     -224.494783098161800       9.25D-02
+    1     -224.494783098161970       9.25D-02
 
    <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
 
@@ -670,9 +671,9 @@ Point group: C2v
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.494783098161800       (MACRO    1)
+ Total MCSCF energy       :     -224.494783098162080       (MACRO    1)
 
- Norm of total gradient   :        0.270878516993
+ Norm of total gradient   :        0.270878516994
  -    of CI gradient      :        0.185061794353
  -    of orbital gradient :        0.197806226493
 
@@ -711,7 +712,7 @@ Point group: C2v
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.508858218916300       (MACRO    2)
+ Total MCSCF energy       :     -224.508858218916680       (MACRO    2)
 
  Norm of total gradient   :        0.095196529168
  -    of CI gradient      :        0.085713175276
@@ -752,7 +753,7 @@ Point group: C2v
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.510471107632100       (MACRO    3)
+ Total MCSCF energy       :     -224.510471107632350       (MACRO    3)
 
  Norm of total gradient   :        0.017255080583
  -    of CI gradient      :        0.016550073343
@@ -790,7 +791,7 @@ Point group: C2v
  <<< MACRO ITERATION  4 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.510739066864600       (MACRO    4)
+ Total MCSCF energy       :     -224.510739066864940       (MACRO    4)
 
  Norm of total gradient   :        0.008052979732
  -    of CI gradient      :        0.007671601485
@@ -828,7 +829,7 @@ Point group: C2v
  <<< MACRO ITERATION  5 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.510748508422200       (MACRO    5)
+ Total MCSCF energy       :     -224.510748508422380       (MACRO    5)
 
  Norm of total gradient   :        0.000191996567
  -    of CI gradient      :        0.000111939702
@@ -869,7 +870,7 @@ Point group: C2v
  <<< MACRO ITERATION  6 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.510748516220100       (MACRO    6)
+ Total MCSCF energy       :     -224.510748516220070       (MACRO    6)
 
  Norm of total gradient   :        0.000009244466
  -    of CI gradient      :        0.000006992437
@@ -878,24 +879,23 @@ Point group: C2v
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            6
      Number of micro iterations used           88
-     Total number of CPU seconds used         0.00
+     Total number of CPU seconds used        42.49
 
 
                >>> SIRIUS OPTIMIZATION STATISTICS <<<
 
  
-     Date and time (Linux)  : Mon Feb 12 22:32:42 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
     1    6   -224.494783098162   0.2708785170  0.000000   0.4566279586
-    2   10   -224.508858218916   0.0951965292  0.911862   0.1005995093
+    2   10   -224.508858218917   0.0951965292  0.911862   0.1005995093
     3   24   -224.510471107632   0.0172550806  1.000085   0.0857468380
     4   24   -224.510739066865   0.0080529797  0.980360   0.0048648798
     5   24   -224.510748508422   0.0001919966  1.000666   0.0004077859
-    6    0   -224.510748516220   0.0000092445  1.000160   0.0000000000
+    6    0   -224.510748516220   0.0000092445  1.000135   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
@@ -911,37 +911,37 @@ Point group: C2v
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1     6     3     4      0.00      0.00      1.88      0.00      0.31
-    2    10     6     5      0.00      0.00      1.88      0.00      0.19
-    3    24    14    11      0.00      0.00      1.88      0.00      0.08
-    4    24    14    11      0.00      0.00      1.88      0.00      0.08
-    5    24    13    12      0.00      0.00      1.88      0.00      0.08
-    6     0     0     0      0.00      0.00      0.00      0.00
+    1     6     3     4      4.81      3.01      1.65      1.58      0.27
+    2    10     6     5      5.58      2.88      2.56      2.48      0.26
+    3    24    14    11      8.71      2.79      5.77      5.61      0.24
+    4    24    14    11      9.30      3.03      6.14      5.99      0.26
+    5    24    13    12      9.35      3.05      6.17      5.96      0.26
+    6     0     0     0      3.21      3.08      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1   -254.323243055675    -39.070728133265   -224.494783098162
-    2   -253.384613005047    -40.023433304648   -224.508858218916
+    1   -254.323243055676    -39.070728133265   -224.494783098162
+    2   -253.384613005049    -40.023433304646   -224.508858218917
     3   -253.377841916071    -40.031817282340   -224.510471107632
     4   -253.422332211862    -39.987594945781   -224.510739066865
-    5   -253.423109733923    -39.986826865278   -224.510748508422
-    6   -253.423486926385    -39.986449680614   -224.510748516220
+    5   -253.423109733925    -39.986826865277   -224.510748508422
+    6   -253.423486926384    -39.986449680615   -224.510748516220
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.015435576743     -0.014075120754      0.911862315771
-    3     -0.001612751653     -0.001612888716      1.000084987188
-    4     -0.000273327393     -0.000267959233      0.980359962276
-    5     -0.000009435276     -0.000009441558      1.000665781265
-    6     -0.000000007797     -0.000000007798      1.000160335816
+    2     -0.015435576743     -0.014075120755      0.911862315780
+    3     -0.001612751653     -0.001612888716      1.000084987082
+    4     -0.000273327393     -0.000267959233      0.980359962588
+    5     -0.000009435276     -0.000009441557      1.000665766199
+    6     -0.000000007797     -0.000000007798      1.000134818551
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
-    1      0.20000000  1.00000000      0.456627958602      0.700000000000
+    1      0.20000000  1.00000000      0.456627958603      0.700000000000
     2      0.20000000  1.00000000      0.100599509314      0.700000000000
     3      0.20000000  1.00000000      0.085746838004      0.700000000000
     4      0.20000000  1.00000000      0.004864879766      0.700000000000
@@ -973,8 +973,7 @@ Point group: C2v
      Final gradient norm:           0.000009244466
 
  
-     Date and time (Linux)  : Mon Feb 12 22:32:42 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
  Occupancies of natural orbitals
@@ -1012,15 +1011,15 @@ Point group: C2v
      Molecular orbitals for symmetry species   1
 
  Orbital          1        2        3        4        5        6        7
-   1  OS  1s     1.0013  -0.0048  -0.0020  -0.0041   0.0046   0.0000   0.0703
-   2  OS  1s     0.0030   0.0000   0.5671  -0.5877   0.5116  -0.2036   0.7431
+   1  OS  1s     1.0013  -0.0048  -0.0020  -0.0041   0.0046  -0.0000   0.0703
+   2  OS  1s     0.0030  -0.0000   0.5671  -0.5877   0.5116  -0.2036   0.7431
    3  OS  1s    -0.0136   0.0105  -0.0743  -0.1127   0.1025   0.1238   0.0268
    4  OS  1s    -0.0044   0.0078  -0.0742  -0.0477   0.1464   0.0716   0.2266
    5  OS  2px    0.0033   0.0008  -0.1818   0.3498  -0.0194  -0.8132   0.8172
    6  OS  2px   -0.0066   0.0039  -0.0191  -0.0704   0.0362   0.0328  -0.2153
    7  OS  2px   -0.0001   0.0015  -0.0273  -0.0048  -0.0045   0.0017   0.0229
    8  OS  3d0   -0.0002   0.0001  -0.0068  -0.0046   0.0019   0.0203   0.0084
-   9  OS  3d2+   0.0000   0.0001  -0.0114   0.0139   0.0214   0.0068   0.0410
+   9  OS  3d2+  -0.0000   0.0001  -0.0114   0.0139   0.0214   0.0068   0.0410
   10  OS  3d0    0.0015  -0.0008   0.0009   0.0082  -0.0077   0.0191  -0.0027
   11  OS  3d2+   0.0004  -0.0002  -0.0116   0.0341   0.0296  -0.0175   0.0026
   12  OP  1s     0.0027   0.7079  -0.0022  -0.0009  -0.0021  -0.0008  -0.0089
@@ -1033,7 +1032,7 @@ Point group: C2v
   19  OP  2py   -0.0032   0.0046  -0.0004  -0.0367   0.0664  -0.0687  -0.1182
   20  OP  2px   -0.0005   0.0003   0.0008   0.0077   0.0367   0.0158   0.0222
   21  OP  2py   -0.0003   0.0007  -0.0079  -0.0064   0.0013  -0.0037   0.0117
-  22  OP  3d2-  -0.0001   0.0000   0.0068  -0.0095   0.0020  -0.0129  -0.0122
+  22  OP  3d2-  -0.0001  -0.0000   0.0068  -0.0095   0.0020  -0.0129  -0.0122
   23  OP  3d0    0.0001  -0.0001  -0.0038   0.0023  -0.0042   0.0099   0.0061
   24  OP  3d2+   0.0001   0.0000   0.0010  -0.0059  -0.0113   0.0150   0.0004
   25  OP  3d2-   0.0005  -0.0012  -0.0003   0.0106  -0.0032  -0.0168  -0.0252
@@ -1058,9 +1057,9 @@ Point group: C2v
   13  OP  2py    0.0067  -0.0531   0.0278  -0.0464  -0.0419
   14  OP  2px    0.0002  -0.0032  -0.0265  -0.0109  -0.0095
   15  OP  2py    0.0005  -0.0057   0.0299   0.0006   0.0210
-  16  OP  3d2-   0.0000   0.0004   0.0080  -0.0194  -0.0013
+  16  OP  3d2-  -0.0000   0.0004   0.0080  -0.0194  -0.0013
   17  OP  3d0   -0.0002  -0.0003  -0.0024   0.0107   0.0015
-  18  OP  3d2+   0.0000  -0.0004   0.0091   0.0071   0.0068
+  18  OP  3d2+  -0.0000  -0.0004   0.0091   0.0071   0.0068
   19  OP  3d2-  -0.0017   0.0119   0.0083  -0.0101   0.0030
   20  OP  3d0    0.0012  -0.0095  -0.0007   0.0129   0.0087
   21  OP  3d2+   0.0010  -0.0078   0.0156   0.0118   0.0085
@@ -1190,16 +1189,15 @@ Point group: C2v
   10- 3 to 10- 2        55    0.16047504E-02    0.99999673E+00
   10- 4 to 10- 3        12    0.32555336E-05    0.99999999E+00
   10- 5 to 10- 4         2    0.10312635E-07    0.10000000E+01
-  Number of coefficients less than 10^-11 times norm is            0
+  Number of coefficients less than 10^-11 times norm is  0
 
 
 
- >>>> Total CPU  time used in SIRIUS :     36.94 seconds
- >>>> Total wall time used in SIRIUS :     66.00 seconds
+ >>>> Total CPU  time used in SIRIUS :     51.76 seconds
+ >>>> Total wall time used in SIRIUS :     55.00 seconds
 
  
-     Date and time (Linux)  : Mon Feb 12 22:32:42 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 - End of Wave Function Section
 
@@ -1211,12 +1209,15 @@ Point group: C2v
                     Gradient norm  0.00002000
                     Step norm      0.00002000
                     Energy change  0.00002000
+                                   
+     Order of the analytical energy-derivative available:   2
+     This will be the default.
+                                   
       Starting Static Property Section -
 
 
  
-     Date and time (Linux)  : Mon Feb 12 22:32:42 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
  ***************************************************************************
@@ -1225,8 +1226,7 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Mon Feb 12 22:33:28 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
@@ -1249,7 +1249,7 @@ Point group: C2v
 
      Total energy       -224.5107485162 au (Hartrees)
                          -6109.24805530 eV
-                           -589452.8863 kJ/mol
+                           -589452.8856 kJ/mol
 
 
 
@@ -1257,11 +1257,11 @@ Point group: C2v
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.5988664784 au
-     Mass-velocity correction:                  -0.7545387779 au
+     Darwin correction:                          0.5988663883 au
+     Mass-velocity correction:                  -0.7545386644 au
 
-     Total relativistic correction:             -0.1556722996 au (0.0693%)
-     Non-relativistic + relativistic energy:  -224.6664208158 au
+     Total relativistic correction:             -0.1556722761 au (0.0693%)
+     Non-relativistic + relativistic energy:  -224.6664207924 au
 
 
 
@@ -1286,7 +1286,7 @@ Point group: C2v
                               Dipole moment
                               -------------
 
-                    0.204760 au           0.520453 Debye
+                    0.204760 au           0.520448 Debye
 
 
 
@@ -1296,9 +1296,9 @@ Point group: C2v
 
                                au             Debye
 
-                    x     -0.20476008     -0.52045302
+                    x     -0.20476008     -0.52044814
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -1307,7 +1307,7 @@ Point group: C2v
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            OS          OP 1        OP 2
+            OS          OP 1        OP 2        
 
    OS      0.000000
    OP 1    1.272001    0.000000
@@ -1338,14 +1338,14 @@ Point group: C2v
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:22      98 %
+ TWOTEX     00:00:18      99 %
 
- TOTAL      00:00:23     100 %
+ TOTAL      00:00:18     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:  22.55 seconds
- >>>> Total wall time used in ABACUS:  46.00 seconds
+ >>>> Total CPU  time used in ABACUS:  18.37 seconds
+ >>>> Total wall time used in ABACUS:  19.00 seconds
 
 - End of Static Property Section
 
@@ -1388,7 +1388,7 @@ Point group: C2v
  *************************************************************************
 
 
- >>> Time used in ONEDRV is   0.03 seconds
+ >>> Time used in ONEDRV is   0.04 seconds
 
 
  Number of two-electron integrals written:      672537 ( 23.1% )
@@ -1396,28 +1396,27 @@ Point group: C2v
 
 
 
- >>> Time used in TWOINT is   4.06 seconds
+ >>> Time used in TWOINT is   2.45 seconds
 
 
- >>> Time used in FRMSUP is   0.44 seconds
+ >>> Time used in FRMSUP is   0.58 seconds
 
- >>>> Total CPU  time used in HERMIT:   4.54 seconds
- >>>> Total wall time used in HERMIT:   7.00 seconds
+ >>>> Total CPU  time used in HERMIT:   3.09 seconds
+ >>>> Total wall time used in HERMIT:   3.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Mon Feb 12 22:33:36 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Title lines from integral program:
-     Water                                                                   
-     anolund                                                                 
+     Geometry optimization, calculation of DC-Kerr effect                    
+     at the optimized geometry                                               
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -1517,11 +1516,11 @@ Point group: C2v
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.510749725241400       (MACRO    1)
+ Total MCSCF energy       :     -224.510749725241140       (MACRO    1)
 
- Norm of total gradient   :        0.003431340649
- -    of CI gradient      :        0.001181970424
- -    of orbital gradient :        0.003221342044
+ Norm of total gradient   :        0.003431340654
+ -    of CI gradient      :        0.001181970426
+ -    of orbital gradient :        0.003221342049
 
  Residual norm when dim(red L) =  14
  NEO root     CSF        orbital          total
@@ -1558,7 +1557,7 @@ Point group: C2v
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.510750608847600       (MACRO    2)
+ Total MCSCF energy       :     -224.510750608847750       (MACRO    2)
 
  Norm of total gradient   :        0.000048033215
  -    of CI gradient      :        0.000046487355
@@ -1599,7 +1598,7 @@ Point group: C2v
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.510750612652300       (MACRO    3)
+ Total MCSCF energy       :     -224.510750612652030       (MACRO    3)
 
  Norm of total gradient   :        0.000009565483
  -    of CI gradient      :        0.000008231509
@@ -1608,21 +1607,20 @@ Point group: C2v
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            3
      Number of micro iterations used           27
-     Total number of CPU seconds used         0.00
+     Total number of CPU seconds used        16.19
 
 
                >>> SIRIUS OPTIMIZATION STATISTICS <<<
 
  
-     Date and time (Linux)  : Mon Feb 12 22:34:04 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
-    1   13   -224.510749725241   0.0034313406  0.000000   0.0009421694
+    1   13   -224.510749725241   0.0034313407  0.000000   0.0009421694
     2   14   -224.510750608848   0.0000480332  1.000071   0.0003163843
-    3    0   -224.510750612652   0.0000095655  1.000087   0.0000000000
+    3    0   -224.510750612652   0.0000095655  0.999998   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
@@ -1635,23 +1633,23 @@ Point group: C2v
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1    13     6     7      0.00      0.00      1.88      0.00      0.14
-    2    14     8     7      0.00      0.00      1.88      0.00      0.13
-    3     0     0     0      0.00      0.00      0.00      0.00
+    1    13     6     7      6.57      4.04      2.27      2.19      0.17
+    2    14     8     7      5.87      3.16      2.44      2.36      0.17
+    3     0     0     0      3.69      3.42      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1   -253.399940446125    -39.976981376447   -224.510749725241
-    2   -253.402196556868    -39.974726149310   -224.510750608848
-    3   -253.402252592083    -39.974670117900   -224.510750612652
+    1   -253.399940446083    -39.976981376431   -224.510749725241
+    2   -253.402196556828    -39.974726149293   -224.510750608848
+    3   -253.402252592046    -39.974670117879   -224.510750612652
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.000000883544     -0.000000883606      1.000070867073
-    3     -0.000000003804     -0.000000003805      1.000087320505
+    2     -0.000000883544     -0.000000883607      1.000071250398
+    3     -0.000000003804     -0.000000003804      0.999997666481
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
@@ -1676,14 +1674,13 @@ Point group: C2v
      State number:                1
 
      Final MCSCF energy:         -224.510750612652
-     Nuclear repulsion:            68.866172097331
-     Electronic energy:          -293.376922709983
+     Nuclear repulsion:            68.866172097273
+     Electronic energy:          -293.376922709925
 
      Final gradient norm:           0.000009565483
 
  
-     Date and time (Linux)  : Mon Feb 12 22:34:04 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
  Occupancies of natural orbitals
@@ -1721,15 +1718,15 @@ Point group: C2v
      Molecular orbitals for symmetry species   1
 
  Orbital          1        2        3        4        5        6        7
-   1  OS  1s     1.0013  -0.0048  -0.0020  -0.0041   0.0046   0.0000   0.0702
-   2  OS  1s     0.0030   0.0000   0.5673  -0.5879   0.5114  -0.2030   0.7421
+   1  OS  1s     1.0013  -0.0048  -0.0020  -0.0041   0.0046  -0.0000   0.0702
+   2  OS  1s     0.0030  -0.0000   0.5673  -0.5879   0.5114  -0.2030   0.7421
    3  OS  1s    -0.0136   0.0105  -0.0743  -0.1124   0.1023   0.1235   0.0267
    4  OS  1s    -0.0044   0.0077  -0.0741  -0.0476   0.1461   0.0717   0.2263
    5  OS  2px    0.0032   0.0008  -0.1815   0.3494  -0.0192  -0.8132   0.8171
    6  OS  2px   -0.0066   0.0039  -0.0190  -0.0703   0.0363   0.0328  -0.2152
    7  OS  2px   -0.0001   0.0015  -0.0273  -0.0048  -0.0045   0.0017   0.0228
    8  OS  3d0   -0.0002   0.0001  -0.0068  -0.0046   0.0019   0.0203   0.0084
-   9  OS  3d2+   0.0000   0.0001  -0.0113   0.0139   0.0214   0.0068   0.0409
+   9  OS  3d2+  -0.0000   0.0001  -0.0113   0.0139   0.0214   0.0068   0.0409
   10  OS  3d0    0.0015  -0.0008   0.0009   0.0082  -0.0077   0.0191  -0.0027
   11  OS  3d2+   0.0004  -0.0002  -0.0116   0.0340   0.0295  -0.0175   0.0027
   12  OP  1s     0.0027   0.7079  -0.0022  -0.0009  -0.0021  -0.0007  -0.0088
@@ -1742,7 +1739,7 @@ Point group: C2v
   19  OP  2py   -0.0032   0.0045  -0.0004  -0.0366   0.0663  -0.0686  -0.1180
   20  OP  2px   -0.0005   0.0003   0.0008   0.0077   0.0367   0.0158   0.0222
   21  OP  2py   -0.0003   0.0007  -0.0078  -0.0063   0.0013  -0.0037   0.0117
-  22  OP  3d2-  -0.0001   0.0000   0.0068  -0.0095   0.0020  -0.0129  -0.0121
+  22  OP  3d2-  -0.0001  -0.0000   0.0068  -0.0095   0.0020  -0.0129  -0.0121
   23  OP  3d0    0.0001  -0.0001  -0.0038   0.0023  -0.0042   0.0099   0.0061
   24  OP  3d2+   0.0001   0.0000   0.0009  -0.0059  -0.0113   0.0150   0.0004
   25  OP  3d2-   0.0005  -0.0012  -0.0003   0.0106  -0.0032  -0.0168  -0.0252
@@ -1767,9 +1764,9 @@ Point group: C2v
   13  OP  2py    0.0067  -0.0530   0.0278  -0.0464  -0.0418
   14  OP  2px    0.0002  -0.0032  -0.0265  -0.0109  -0.0095
   15  OP  2py    0.0005  -0.0057   0.0299   0.0006   0.0210
-  16  OP  3d2-   0.0000   0.0004   0.0079  -0.0194  -0.0012
+  16  OP  3d2-  -0.0000   0.0004   0.0079  -0.0194  -0.0012
   17  OP  3d0   -0.0002  -0.0003  -0.0024   0.0107   0.0015
-  18  OP  3d2+   0.0000  -0.0005   0.0091   0.0071   0.0068
+  18  OP  3d2+  -0.0000  -0.0005   0.0091   0.0071   0.0068
   19  OP  3d2-  -0.0017   0.0119   0.0082  -0.0100   0.0030
   20  OP  3d0    0.0012  -0.0095  -0.0007   0.0129   0.0087
   21  OP  3d2+   0.0010  -0.0078   0.0156   0.0118   0.0085
@@ -1899,44 +1896,45 @@ Point group: C2v
   10- 3 to 10- 2        55    0.16066938E-02    0.99999673E+00
   10- 4 to 10- 3        12    0.32572750E-05    0.99999999E+00
   10- 5 to 10- 4         2    0.10078185E-07    0.10000000E+01
-  Number of coefficients less than 10^-11 times norm is            0
+  Number of coefficients less than 10^-11 times norm is  0
 
 
 
- >>>> Total CPU  time used in SIRIUS :     14.12 seconds
- >>>> Total wall time used in SIRIUS :     29.00 seconds
+ >>>> Total CPU  time used in SIRIUS :     20.43 seconds
+ >>>> Total wall time used in SIRIUS :     23.00 seconds
 
  
-     Date and time (Linux)  : Mon Feb 12 22:34:04 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 - End of Wave Function Section
  Trust radius increased due to good ratio.
  Updated trust radius   0.50000
+                                   
+     Order of the analytical energy-derivative available:   2
+     This will be the default.
+                                   
       Starting Static Property Section -
 
 
  
-     Date and time (Linux)  : Mon Feb 12 22:34:04 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  
-     Date and time (Linux)  : Mon Feb 12 22:34:48 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:22      99 %
+ TWOTEX     00:00:19      99 %
 
- TOTAL      00:00:22     100 %
+ TOTAL      00:00:19     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:  21.77 seconds
- >>>> Total wall time used in ABACUS:  44.00 seconds
+ >>>> Total CPU  time used in ABACUS:  18.96 seconds
+ >>>> Total wall time used in ABACUS:  19.00 seconds
 
 - End of Static Property Section
 
@@ -1980,7 +1978,7 @@ Point group: C2v
  *************************************************************************
 
 
- >>> Time used in ONEDRV is   0.03 seconds
+ >>> Time used in ONEDRV is   0.04 seconds
 
 
  Number of two-electron integrals written:      672537 ( 23.1% )
@@ -1988,28 +1986,27 @@ Point group: C2v
 
 
 
- >>> Time used in TWOINT is   4.31 seconds
+ >>> Time used in TWOINT is   2.62 seconds
 
 
- >>> Time used in FRMSUP is   0.31 seconds
+ >>> Time used in FRMSUP is   0.71 seconds
 
- >>>> Total CPU  time used in HERMIT:   4.66 seconds
- >>>> Total wall time used in HERMIT:   7.00 seconds
+ >>>> Total CPU  time used in HERMIT:   3.39 seconds
+ >>>> Total wall time used in HERMIT:   4.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Mon Feb 12 22:34:55 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Title lines from integral program:
-     Water                                                                   
-     anolund                                                                 
+     Geometry optimization, calculation of DC-Kerr effect                    
+     at the optimized geometry                                               
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -2109,11 +2106,11 @@ Point group: C2v
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.510750458035300       (MACRO    1)
+ Total MCSCF energy       :     -224.510750458035260       (MACRO    1)
 
- Norm of total gradient   :        0.003208906233
- -    of CI gradient      :        0.001080730976
- -    of orbital gradient :        0.003021440016
+ Norm of total gradient   :        0.003208906220
+ -    of CI gradient      :        0.001080730971
+ -    of orbital gradient :        0.003021440004
 
  Residual norm when dim(red L) =  13
  NEO root     CSF        orbital          total
@@ -2150,9 +2147,9 @@ Point group: C2v
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.510751241999100       (MACRO    2)
+ Total MCSCF energy       :     -224.510751241998940       (MACRO    2)
 
- Norm of total gradient   :        0.000048297784
+ Norm of total gradient   :        0.000048297783
  -    of CI gradient      :        0.000041392694
  -    of orbital gradient :        0.000024886157
 
@@ -2191,7 +2188,7 @@ Point group: C2v
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.510751245740600       (MACRO    3)
+ Total MCSCF energy       :     -224.510751245740660       (MACRO    3)
 
  Norm of total gradient   :        0.000008815425
  -    of CI gradient      :        0.000008087674
@@ -2200,21 +2197,20 @@ Point group: C2v
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            3
      Number of micro iterations used           32
-     Total number of CPU seconds used         0.00
+     Total number of CPU seconds used        16.69
 
 
                >>> SIRIUS OPTIMIZATION STATISTICS <<<
 
  
-     Date and time (Linux)  : Mon Feb 12 22:35:26 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
     1   12   -224.510750458035   0.0032089062  0.000000   0.0008882499
     2   20   -224.510751241999   0.0000482978  1.000066   0.0003285330
-    3    0   -224.510751245741   0.0000088154  1.000017   0.0000000000
+    3    0   -224.510751245741   0.0000088154  1.000070   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
@@ -2227,28 +2223,28 @@ Point group: C2v
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1    12     6     6      0.00      0.00      1.88      0.00      0.16
-    2    20    11    10      0.00      0.00      1.88      0.00      0.09
-    3     0     0     0      0.00      0.00      0.00      0.00
+    1    12     6     6      6.58      4.25      2.07      1.98      0.17
+    2    20    11    10      6.57      2.95      3.38      3.25      0.17
+    3     0     0     0      3.48      3.20      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1   -253.381210633854    -39.966245346618   -224.510750458035
-    2   -253.383283168204    -39.964173596231   -224.510751241999
-    3   -253.383294115499    -39.964162652678   -224.510751245741
+    1   -253.381210633937    -39.966245346647   -224.510750458035
+    2   -253.383283168277    -39.964173596270   -224.510751241999
+    3   -253.383294115571    -39.964162652718   -224.510751245741
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.000000783912     -0.000000783964      1.000066362466
-    3     -0.000000003741     -0.000000003742      1.000016666354
+    2     -0.000000783912     -0.000000783964      1.000066224936
+    3     -0.000000003741     -0.000000003742      1.000069848634
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
-    1      0.20000000  1.00000000      0.000888249905      0.700000000000
+    1      0.20000000  1.00000000      0.000888249899      0.700000000000
     2      0.20000000  1.00000000      0.000328533037      0.700000000000
     3      0.00000000  0.00000000      0.000000000000      0.700000000000
 
@@ -2257,7 +2253,7 @@ Point group: C2v
  ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
  ----------------------------------------------------------------------------
     1   -0.000000062713    0.999999984220   -0.000063066493   -0.000075600688
-    2   -0.000000000299    0.999999997841   -0.000042502298   -0.000009871684
+    2   -0.000000000299    0.999999997841   -0.000042502297   -0.000009871684
     3    0.000000000000    0.000000000000    0.000000000000    0.000000000000
 
 
@@ -2268,14 +2264,13 @@ Point group: C2v
      State number:                1
 
      Final MCSCF energy:         -224.510751245741
-     Nuclear repulsion:            68.836705522436
-     Electronic energy:          -293.347456768177
+     Nuclear repulsion:            68.836705522549
+     Electronic energy:          -293.347456768289
 
      Final gradient norm:           0.000008815425
 
  
-     Date and time (Linux)  : Mon Feb 12 22:35:26 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
  Occupancies of natural orbitals
@@ -2314,14 +2309,14 @@ Point group: C2v
 
  Orbital          1        2        3        4        5        6        7
    1  OS  1s     1.0013  -0.0048  -0.0020  -0.0041   0.0046   0.0000   0.0701
-   2  OS  1s     0.0030   0.0000   0.5674  -0.5881   0.5113  -0.2025   0.7413
+   2  OS  1s     0.0030  -0.0000   0.5674  -0.5881   0.5113  -0.2025   0.7413
    3  OS  1s    -0.0136   0.0105  -0.0742  -0.1121   0.1022   0.1233   0.0266
    4  OS  1s    -0.0043   0.0077  -0.0740  -0.0475   0.1459   0.0716   0.2261
    5  OS  2px    0.0032   0.0008  -0.1812   0.3490  -0.0190  -0.8132   0.8172
    6  OS  2px   -0.0066   0.0039  -0.0190  -0.0702   0.0363   0.0328  -0.2151
    7  OS  2px   -0.0001   0.0015  -0.0273  -0.0048  -0.0045   0.0017   0.0228
    8  OS  3d0   -0.0002   0.0001  -0.0068  -0.0046   0.0019   0.0203   0.0084
-   9  OS  3d2+   0.0000   0.0001  -0.0113   0.0139   0.0214   0.0068   0.0409
+   9  OS  3d2+  -0.0000   0.0001  -0.0113   0.0139   0.0214   0.0068   0.0409
   10  OS  3d0    0.0015  -0.0008   0.0009   0.0081  -0.0077   0.0191  -0.0027
   11  OS  3d2+   0.0004  -0.0002  -0.0115   0.0339   0.0295  -0.0175   0.0027
   12  OP  1s     0.0027   0.7079  -0.0021  -0.0009  -0.0021  -0.0007  -0.0088
@@ -2334,7 +2329,7 @@ Point group: C2v
   19  OP  2py   -0.0032   0.0045  -0.0004  -0.0366   0.0663  -0.0685  -0.1179
   20  OP  2px   -0.0005   0.0003   0.0008   0.0077   0.0367   0.0158   0.0222
   21  OP  2py   -0.0003   0.0007  -0.0078  -0.0063   0.0012  -0.0037   0.0117
-  22  OP  3d2-  -0.0001   0.0000   0.0068  -0.0095   0.0020  -0.0129  -0.0121
+  22  OP  3d2-  -0.0001  -0.0000   0.0068  -0.0095   0.0020  -0.0129  -0.0121
   23  OP  3d0    0.0001  -0.0001  -0.0038   0.0023  -0.0042   0.0099   0.0061
   24  OP  3d2+   0.0001   0.0000   0.0009  -0.0059  -0.0113   0.0150   0.0003
   25  OP  3d2-   0.0005  -0.0012  -0.0003   0.0106  -0.0032  -0.0168  -0.0252
@@ -2359,9 +2354,9 @@ Point group: C2v
   13  OP  2py    0.0067  -0.0529   0.0279  -0.0464  -0.0417
   14  OP  2px    0.0002  -0.0032  -0.0265  -0.0109  -0.0095
   15  OP  2py    0.0005  -0.0056   0.0299   0.0006   0.0210
-  16  OP  3d2-   0.0000   0.0004   0.0079  -0.0194  -0.0012
+  16  OP  3d2-  -0.0000   0.0004   0.0079  -0.0194  -0.0012
   17  OP  3d0   -0.0002  -0.0003  -0.0024   0.0107   0.0015
-  18  OP  3d2+   0.0000  -0.0005   0.0091   0.0071   0.0068
+  18  OP  3d2+  -0.0000  -0.0005   0.0091   0.0071   0.0068
   19  OP  3d2-  -0.0017   0.0119   0.0082  -0.0100   0.0030
   20  OP  3d0    0.0012  -0.0095  -0.0006   0.0129   0.0087
   21  OP  3d2+   0.0010  -0.0078   0.0156   0.0118   0.0085
@@ -2491,44 +2486,45 @@ Point group: C2v
   10- 3 to 10- 2        55    0.16081856E-02    0.99999673E+00
   10- 4 to 10- 3        12    0.32579094E-05    0.99999999E+00
   10- 5 to 10- 4         2    0.99449114E-08    0.10000000E+01
-  Number of coefficients less than 10^-11 times norm is            0
+  Number of coefficients less than 10^-11 times norm is  0
 
 
 
- >>>> Total CPU  time used in SIRIUS :     15.41 seconds
- >>>> Total wall time used in SIRIUS :     31.00 seconds
+ >>>> Total CPU  time used in SIRIUS :     20.60 seconds
+ >>>> Total wall time used in SIRIUS :     22.00 seconds
 
  
-     Date and time (Linux)  : Mon Feb 12 22:35:26 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 - End of Wave Function Section
  Trust radius squarely increased due to very good ratio.
  Updated trust radius   0.50000
+                                   
+     Order of the analytical energy-derivative available:   2
+     This will be the default.
+                                   
       Starting Static Property Section -
 
 
  
-     Date and time (Linux)  : Mon Feb 12 22:35:26 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  
-     Date and time (Linux)  : Mon Feb 12 22:36:18 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:22      99 %
+ TWOTEX     00:00:18      99 %
 
- TOTAL      00:00:22     100 %
+ TOTAL      00:00:19     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:  22.43 seconds
- >>>> Total wall time used in ABACUS:  52.00 seconds
+ >>>> Total CPU  time used in ABACUS:  18.52 seconds
+ >>>> Total wall time used in ABACUS:  19.00 seconds
 
 - End of Static Property Section
 
@@ -2580,28 +2576,27 @@ Point group: C2v
 
 
 
- >>> Time used in TWOINT is   4.30 seconds
+ >>> Time used in TWOINT is   2.49 seconds
 
 
- >>> Time used in FRMSUP is   0.28 seconds
+ >>> Time used in FRMSUP is   0.61 seconds
 
- >>>> Total CPU  time used in HERMIT:   4.62 seconds
- >>>> Total wall time used in HERMIT:   8.00 seconds
+ >>>> Total CPU  time used in HERMIT:   3.15 seconds
+ >>>> Total wall time used in HERMIT:   3.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Mon Feb 12 22:36:26 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Title lines from integral program:
-     Water                                                                   
-     anolund                                                                 
+     Geometry optimization, calculation of DC-Kerr effect                    
+     at the optimized geometry                                               
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -2701,11 +2696,11 @@ Point group: C2v
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.510751245605000       (MACRO    1)
+ Total MCSCF energy       :     -224.510751245604860       (MACRO    1)
 
- Norm of total gradient   :        0.000094702421
- -    of CI gradient      :        0.000027452538
- -    of orbital gradient :        0.000090636123
+ Norm of total gradient   :        0.000094702413
+ -    of CI gradient      :        0.000027452535
+ -    of orbital gradient :        0.000090636115
 
  Residual norm when dim(red L) =   7
  NEO root     CSF        orbital          total
@@ -2742,29 +2737,28 @@ Point group: C2v
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :     -224.510751246375700       (MACRO    2)
+ Total MCSCF energy       :     -224.510751246375490       (MACRO    2)
 
- Norm of total gradient   :        0.000007956194
+ Norm of total gradient   :        0.000007956193
  -    of CI gradient      :        0.000005965474
  -    of orbital gradient :        0.000005264421
 
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            2
      Number of micro iterations used            6
-     Total number of CPU seconds used         0.00
+     Total number of CPU seconds used         8.83
 
 
                >>> SIRIUS OPTIMIZATION STATISTICS <<<
 
  
-     Date and time (Linux)  : Mon Feb 12 22:36:54 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
     1    6   -224.510751245605   0.0000947024  0.000000   0.0000322001
-    2    0   -224.510751246376   0.0000079562  1.000355   0.0000000000
+    2    0   -224.510751246375   0.0000079562  1.000171   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
@@ -2776,20 +2770,20 @@ Point group: C2v
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1     6     2     4      0.00      0.00      1.88      0.00      0.31
-    2     0     0     0      0.00      0.00      0.00      0.00
+    1     6     2     4      5.65      4.35      1.06      1.01      0.18
+    2     0     0     0      3.12      2.92      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1   -253.383291705430    -39.964171892099   -224.510751245605
-    2   -253.383294648802    -39.964168949498   -224.510751246376
+    1   -253.383291705377    -39.964171892087   -224.510751245605
+    2   -253.383294648764    -39.964168949469   -224.510751246375
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.000000000770     -0.000000000771      1.000355255320
+    2     -0.000000000770     -0.000000000771      1.000170993628
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
@@ -2801,7 +2795,7 @@ Point group: C2v
  Reduced L root no.  1
  ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
  ----------------------------------------------------------------------------
-    1   -0.000000000062    0.999999999979   -0.000005184585   -0.000002376827
+    1   -0.000000000062    0.999999999979   -0.000005184584   -0.000002376826
     2    0.000000000000    0.000000000000    0.000000000000    0.000000000000
 
 
@@ -2811,15 +2805,14 @@ Point group: C2v
      Spatial symmetry:            1
      State number:                1
 
-     Final MCSCF energy:         -224.510751246376
-     Nuclear repulsion:            68.836712351924
-     Electronic energy:          -293.347463598300
+     Final MCSCF energy:         -224.510751246375
+     Nuclear repulsion:            68.836712351858
+     Electronic energy:          -293.347463598234
 
-     Final gradient norm:           0.000007956194
+     Final gradient norm:           0.000007956193
 
  
-     Date and time (Linux)  : Mon Feb 12 22:36:54 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
  Occupancies of natural orbitals
@@ -2858,14 +2851,14 @@ Point group: C2v
 
  Orbital          1        2        3        4        5        6        7
    1  OS  1s     1.0013  -0.0048  -0.0020  -0.0041   0.0046   0.0000   0.0701
-   2  OS  1s     0.0030   0.0000   0.5674  -0.5881   0.5113  -0.2025   0.7413
+   2  OS  1s     0.0030  -0.0000   0.5674  -0.5881   0.5113  -0.2025   0.7413
    3  OS  1s    -0.0136   0.0105  -0.0742  -0.1121   0.1022   0.1233   0.0266
    4  OS  1s    -0.0043   0.0077  -0.0740  -0.0475   0.1459   0.0716   0.2261
    5  OS  2px    0.0032   0.0008  -0.1812   0.3490  -0.0190  -0.8132   0.8172
    6  OS  2px   -0.0066   0.0039  -0.0190  -0.0702   0.0363   0.0328  -0.2151
    7  OS  2px   -0.0001   0.0015  -0.0273  -0.0048  -0.0045   0.0017   0.0228
    8  OS  3d0   -0.0002   0.0001  -0.0068  -0.0046   0.0019   0.0203   0.0084
-   9  OS  3d2+   0.0000   0.0001  -0.0113   0.0139   0.0214   0.0068   0.0409
+   9  OS  3d2+  -0.0000   0.0001  -0.0113   0.0139   0.0214   0.0068   0.0409
   10  OS  3d0    0.0015  -0.0008   0.0009   0.0081  -0.0077   0.0191  -0.0027
   11  OS  3d2+   0.0004  -0.0002  -0.0115   0.0339   0.0295  -0.0175   0.0027
   12  OP  1s     0.0027   0.7079  -0.0021  -0.0009  -0.0021  -0.0007  -0.0088
@@ -2878,7 +2871,7 @@ Point group: C2v
   19  OP  2py   -0.0032   0.0045  -0.0004  -0.0366   0.0663  -0.0685  -0.1179
   20  OP  2px   -0.0005   0.0003   0.0008   0.0077   0.0367   0.0158   0.0222
   21  OP  2py   -0.0003   0.0007  -0.0078  -0.0063   0.0012  -0.0037   0.0117
-  22  OP  3d2-  -0.0001   0.0000   0.0068  -0.0095   0.0020  -0.0129  -0.0121
+  22  OP  3d2-  -0.0001  -0.0000   0.0068  -0.0095   0.0020  -0.0129  -0.0121
   23  OP  3d0    0.0001  -0.0001  -0.0038   0.0023  -0.0042   0.0099   0.0061
   24  OP  3d2+   0.0001   0.0000   0.0009  -0.0059  -0.0113   0.0150   0.0003
   25  OP  3d2-   0.0005  -0.0012  -0.0003   0.0106  -0.0032  -0.0168  -0.0252
@@ -2903,9 +2896,9 @@ Point group: C2v
   13  OP  2py    0.0067  -0.0529   0.0279  -0.0464  -0.0417
   14  OP  2px    0.0002  -0.0032  -0.0265  -0.0109  -0.0095
   15  OP  2py    0.0005  -0.0056   0.0299   0.0006   0.0210
-  16  OP  3d2-   0.0000   0.0004   0.0079  -0.0194  -0.0012
+  16  OP  3d2-  -0.0000   0.0004   0.0079  -0.0194  -0.0012
   17  OP  3d0   -0.0002  -0.0003  -0.0024   0.0107   0.0015
-  18  OP  3d2+   0.0000  -0.0005   0.0091   0.0071   0.0068
+  18  OP  3d2+  -0.0000  -0.0005   0.0091   0.0071   0.0068
   19  OP  3d2-  -0.0017   0.0119   0.0082  -0.0100   0.0030
   20  OP  3d0    0.0012  -0.0095  -0.0006   0.0129   0.0087
   21  OP  3d2+   0.0010  -0.0078   0.0156   0.0118   0.0085
@@ -3035,45 +3028,45 @@ Point group: C2v
   10- 3 to 10- 2        55    0.16082303E-02    0.99999673E+00
   10- 4 to 10- 3        12    0.32574814E-05    0.99999999E+00
   10- 5 to 10- 4         2    0.99657671E-08    0.10000000E+01
-  Number of coefficients less than 10^-11 times norm is            0
+  Number of coefficients less than 10^-11 times norm is  0
 
 
 
- >>>> Total CPU  time used in SIRIUS :      9.24 seconds
- >>>> Total wall time used in SIRIUS :     28.00 seconds
+ >>>> Total CPU  time used in SIRIUS :     12.40 seconds
+ >>>> Total wall time used in SIRIUS :     13.00 seconds
 
  
-     Date and time (Linux)  : Mon Feb 12 22:36:54 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 - End of Wave Function Section
  Trust radius increased due to good ratio.
  Updated trust radius   0.50000
+                                   
+     Order of the analytical energy-derivative available:   2
+     This will be the default.
+                                   
       Starting Static Property Section -
 
 
  
-     Date and time (Linux)  : Mon Feb 12 22:36:54 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  
-     Date and time (Linux)  : Mon Feb 12 22:37:46 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:21      99 %
- REST       00:00:01       6 %
+ TWOTEX     00:00:18      99 %
 
- TOTAL      00:00:21     100 %
-
+ TOTAL      00:00:19     100 %
 
 
- >>>> Total CPU  time used in ABACUS:  20.89 seconds
- >>>> Total wall time used in ABACUS:  52.00 seconds
+
+ >>>> Total CPU  time used in ABACUS:  18.50 seconds
+ >>>> Total wall time used in ABACUS:  19.00 seconds
 
 - End of Static Property Section
 
@@ -3101,7 +3094,7 @@ Point group: C2v
  Iteration number               :       3
  End of optimization            :       T 
  Energy at this geometry is     :    -224.510751
- Energy change from last geom.  :       0.000000
+ Energy change from last geom.  :      -0.000000
  Norm of gradient               :       0.000007
  Norm of step                   :       0.000029
  Updated trust radius           :       0.500000
@@ -3112,8 +3105,7 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Mon Feb 12 22:37:46 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
  ***************************************************************************
@@ -3122,8 +3114,7 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Mon Feb 12 22:37:47 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
@@ -3146,7 +3137,7 @@ Point group: C2v
 
      Total energy       -224.5107512464 au (Hartrees)
                          -6109.24812959 eV
-                           -589452.8935 kJ/mol
+                           -589452.8927 kJ/mol
 
 
 
@@ -3154,11 +3145,11 @@ Point group: C2v
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.5988722249 au
-     Mass-velocity correction:                  -0.7545455275 au
+     Darwin correction:                          0.5988721348 au
+     Mass-velocity correction:                  -0.7545454140 au
 
-     Total relativistic correction:             -0.1556733026 au (0.0693%)
-     Non-relativistic + relativistic energy:  -224.6664245490 au
+     Total relativistic correction:             -0.1556732792 au (0.0693%)
+     Non-relativistic + relativistic energy:  -224.6664245255 au
 
 
 
@@ -3166,7 +3157,7 @@ Point group: C2v
                               Dipole moment
                               -------------
 
-                    0.204135 au           0.518863 Debye
+                    0.204135 au           0.518858 Debye
 
 
 
@@ -3176,9 +3167,9 @@ Point group: C2v
 
                                au             Debye
 
-                    x     -0.20413455     -0.51886307
+                    x     -0.20413455     -0.51885821
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -3187,7 +3178,7 @@ Point group: C2v
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            OS          OP 1        OP 2
+            OS          OP 1        OP 2        
 
    OS      0.000000
    OP 1    1.273235    0.000000
@@ -3218,17 +3209,18 @@ Point group: C2v
  CPU time statistics for ABACUS
  ------------------------------
 
+ REST       00:00:01     858 %
 
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.16 seconds
- >>>> Total wall time used in ABACUS:   1.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.12 seconds
+ >>>> Total wall time used in ABACUS:   0.00 seconds
 
 - End of Static Property Section
 
 
-  This is output from RESPONS  -  an MCSCF and SOPPA response property program 
+  This is output from RESPONSE  -  an MCSCF and SOPPA response property program 
  ------------------------------------------------------------------------------
 
 
@@ -3274,13 +3266,13 @@ Point group: C2v
  Old direct access AO file found, SORTA skipped.
 
 
- MCSCF energy         :     -224.510751246375700
- -- inactive part     :     -253.383294648801600
- --   active part     :      -39.964168949498190
- -- nuclear repulsion :       68.836712351924050
+ MCSCF energy         :     -224.510751246375490
+ -- inactive part     :     -253.383294648764200
+ --   active part     :      -39.964168949469495
+ -- nuclear repulsion :       68.836712351858210
 
 
- <<<<< SOLVING SET OF LINEAR RESPONSE EQUATIONS >>>>>
+ <<<<< Solving set of linear response equations for cubic response >>>>>
 
 
 
@@ -3338,7 +3330,7 @@ Point group: C2v
  Configuration variables.   KZCONF:     262
  Total number of variables. KZVAR :     435
 
- >>> Time used in CRVEC1 is   9.16 seconds
+ >>> Time used in CRVEC1 is  10.87 seconds
 
 
 
@@ -3407,7 +3399,7 @@ Point group: C2v
  ---------------------------------------------------------------
                           0.059200  0.000000          8.87146898
 
- >>> Time used in CRVEC2 is  22.89 seconds
+ >>> Time used in CRVEC2 is  27.14 seconds
 
 
 
@@ -3424,7 +3416,7 @@ Point group: C2v
  Nx A[2] Nyz          -147.37409702       -207.46395478
 
 @ Cubic response function value in a.u. for
-@ A operator, symmetry, frequency:   ZDIPLEN    3  0.000000
+@ A operator, symmetry, frequency:   ZDIPLEN    3 -0.000000
 @ B operator, symmetry, frequency:   ZDIPLEN    3  0.000000
 @ C operator, symmetry, frequency:   ZDIPLEN    3  0.000000
 @ D operator, symmetry, frequency:   ZDIPLEN    3  0.000000
@@ -3471,8 +3463,8 @@ Point group: C2v
 
 @ gamma(Z;Z,Z,Z)        214.8164
 
- >>>> Total CPU  time used in RESPONSE:  2 minutes  0 seconds
- >>>> Total wall time used in RESPONSE:  4 minutes 34 seconds
+ >>>> Total CPU  time used in RESPONSE:  1 minute  42 seconds
+ >>>> Total wall time used in RESPONSE:  1 minute  45 seconds
 
 
      <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -3495,19 +3487,18 @@ Point group: C2v
    0  -224.510749   0.000000   0.002080    0    0.002375*   0.500000   0 
    1  -224.510751  -0.000002   0.001004    0    0.002083*   0.500000   0 
    2  -224.510751  -0.000001   0.000023    0    0.000059*   0.500000   0 
-   3  -224.510751   0.000000   0.000007    0    0.000029*   0.500000   0 
+   3  -224.510751  -0.000000   0.000007    0    0.000029*   0.500000   0 
 
  *) Newton step taken.
 
- Geometry converged in            4 iterations!
+ Geometry converged in  4  iterations!
 
  Energy at final geometry is       :    -224.510751 a.u.
  Energy change during optimization :      -0.000003 a.u.
                                              -0.007 kJ/mol
 
- >>>> Total CPU  time used in DALTON:  5 minutes  3 seconds
- >>>> Total wall time used in DALTON: 10 minutes 55 seconds
+ >>>> Total CPU  time used in DALTON:  4 minutes 54 seconds
+ >>>> Total wall time used in DALTON:  5 minutes  7 seconds
 
  
-     Date and time (Linux)  : Mon Feb 12 22:42:21 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    

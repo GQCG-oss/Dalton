@@ -4,7 +4,7 @@
     ***********  DALTON - An electronic structure program  ***********
     ******************************************************************
 
-               This is output from DALTON (Release 1.2, April 2001)
+            This is output from DALTON (Release 2.0, ? 2001)
 
                           Principal authors:
 
@@ -17,6 +17,7 @@
 
                           Contributors:
 
+            Alexander A. Auer,     University of Mainz,        Germany
             Keld L. Bak,           UNI-C,                      Denmark
             Vebjoern Bakken,       University of Oslo,         Norway 
             Ove Christiansen,      University of Lund,         Sweden 
@@ -36,16 +37,18 @@
             Henrik Koch,           SDU - Odense University,    Denmark
             Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
             Patrick Norman,        University of Linkoeping,   Sweden 
+            Thomas B. Pedersen,    U.of Santiago de Compostela,Spain  
             Martin J. Packer,      University of Sheffield,    UK     
             Torgeir A. Ruden,      University of Oslo,         Norway 
+            Alfredo Sanchez,       University of Valencia,     Spain  
             Trond Saue,            University of Toulouse,     France 
             Stephan P. A. Sauer,   University of Copenhagen,   Denmark
             Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
             K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
             Peter R.Taylor,        San Diego Superc. Center,   USA    
             Olav Vahtras,          PDC, Stockholm,             Sweden 
-------------------------------------------------------------------------
 
+------------------------------------------------------------------------
 
 
      NOTE:
@@ -63,17 +66,19 @@
      If results obtained with this code are published, an
      appropriate citation would be:
       
-     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,H. Aagren,
-     K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,P. Dahle, E.K. Dalskov,
-     T. Enevoldsen, B. Fernandez,C. Haettig, K. Hald, A. Halkier,
+     "Dalton, a molecular electronic structure program, Release 1.2
+     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
      H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-     H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T.A. Ruden, T. Saue,
-     S.P.A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,P.R. Taylor, and O. Vahtras:
-     "Dalton release 1.2 (2001), an electronic structure program"
+     H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+     T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+     B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+     and O. Vahtras"
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:11 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
 
@@ -91,7 +96,6 @@
  The model Hessian parameters of Roland Lindh will be used.
 
 
- Threshold for symmetry-break set to       :      0.10D-02
  Trust region method will be used to control step (default).
 
 
@@ -135,8 +139,8 @@
   Title Cards
   -----------
 
-  Test1 i test-suite: Geometrioptimering med symmetri, med beregning av   
-  egenskaper i foerste og siste punkt. Generelt kontraherte basissett     
+  Geometry optimization, calculation of quadrupole moment, magnetizabiliti
+  and nuclear shieldings at the optimized geometry                        
 
 
                   SYMADD: Requested addition of symmetry
@@ -169,30 +173,30 @@ Represented as: C2v
 
    * Group multiplication table
 
-        |  E   C2z  Oxz  Oyz
+        |  E   C2z  Oxz  Oyz  
    -----+--------------------
-     E  |  E 
-    C2z | C2z   E 
-    Oxz | Oxz  Oyz   E 
-    Oyz | Oyz  Oxz  C2z   E 
+     E  |  E   
+    C2z | C2z   E   
+    Oxz | Oxz  Oyz   E   
+    Oyz | Oyz  Oxz  C2z   E   
 
    * Character table
 
-        |  E   C2z  Oxz  Oyz
+        |  E   C2z  Oxz  Oyz  
    -----+--------------------
-    A1  |   1    1    1    1
-    B1  |   1   -1    1   -1
-    B2  |   1   -1   -1    1
-    A2  |   1    1   -1   -1
+    A1  |   1    1    1    1  
+    B1  |   1   -1    1   -1  
+    B2  |   1   -1   -1    1  
+    A2  |   1    1   -1   -1  
 
    * Direct product table
 
-        | A1   B1   B2   A2 
+        | A1   B1   B2   A2   
    -----+--------------------
-    A1  | A1 
-    B1  | B1   A1 
-    B2  | B2   A2   A1 
-    A2  | A2   B2   B1   A1 
+    A1  | A1   
+    B1  | B1   A1   
+    B2  | B2   A2   A1   
+    A2  | A2   B2   B1   A1   
 
 
   Atoms and basis sets
@@ -269,7 +273,7 @@ Represented as: C2v
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            O           H  1        H  2
+            O           H  1        H  2        
 
    O       0.000000
    H  1    0.972000    0.000000
@@ -306,54 +310,54 @@ Represented as: C2v
 
   Symmetry  A1 ( 1)
 
-    1     O        1s         1
-    2     O        1s         2
-    3     O        1s         3
-    4     O        1s         4
-    5     O        1s         5
-    6     O        2pz        8
-    7     O        2pz       11
-    8     O        2pz       14
-    9     O        2pz       17
-   10     O        3d0       20
-   11     O        3d2+      22
-   12     H        1s        23  +  24
-   13     H        1s        25  +  26
-   14     H        1s        27  +  28
-   15     H        1s        29  +  30
-   16     H        2py       33  -  34
-   17     H        2pz       35  +  36
+    1     O        1s         1  
+    2     O        1s         2  
+    3     O        1s         3  
+    4     O        1s         4  
+    5     O        1s         5  
+    6     O        2pz        8  
+    7     O        2pz       11  
+    8     O        2pz       14  
+    9     O        2pz       17  
+   10     O        3d0       20  
+   11     O        3d2+      22  
+   12     H        1s        23  +  24  
+   13     H        1s        25  +  26  
+   14     H        1s        27  +  28  
+   15     H        1s        29  +  30  
+   16     H        2py       33  -  34  
+   17     H        2pz       35  +  36  
 
 
   Symmetry  B1 ( 2)
 
-   18     O        2px        6
-   19     O        2px        9
-   20     O        2px       12
-   21     O        2px       15
-   22     O        3d1+      21
-   23     H        2px       31  +  32
+   18     O        2px        6  
+   19     O        2px        9  
+   20     O        2px       12  
+   21     O        2px       15  
+   22     O        3d1+      21  
+   23     H        2px       31  +  32  
 
 
   Symmetry  B2 ( 3)
 
-   24     O        2py        7
-   25     O        2py       10
-   26     O        2py       13
-   27     O        2py       16
-   28     O        3d1-      19
-   29     H        1s        23  -  24
-   30     H        1s        25  -  26
-   31     H        1s        27  -  28
-   32     H        1s        29  -  30
-   33     H        2py       33  +  34
-   34     H        2pz       35  -  36
+   24     O        2py        7  
+   25     O        2py       10  
+   26     O        2py       13  
+   27     O        2py       16  
+   28     O        3d1-      19  
+   29     H        1s        23  -  24  
+   30     H        1s        25  -  26  
+   31     H        1s        27  -  28  
+   32     H        1s        29  -  30  
+   33     H        2py       33  +  34  
+   34     H        2pz       35  -  36  
 
 
   Symmetry  A2 ( 4)
 
-   35     O        3d2-      18
-   36     H        2px       31  -  32
+   35     O        3d2-      18  
+   36     H        2px       31  -  32  
 
   Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
 
@@ -365,10 +369,10 @@ Represented as: C2v
  ************************************************************************
 
 
- >>> Time used in ONEDRV is   0.01 seconds
+ >>> Time used in ONEDRV is   0.02 seconds
 
 
- >>> Time used in OVERLA is   0.01 seconds
+ >>> Time used in OVERLA is   0.02 seconds
 
 
  Number of two-electron integrals written:       57092 ( 25.7% )
@@ -376,28 +380,27 @@ Represented as: C2v
 
 
 
- >>> Time used in TWOINT is   0.22 seconds
+ >>> Time used in TWOINT is   1.75 seconds
 
 
- >>> Time used in FRMSUP is   0.38 seconds
+ >>> Time used in FRMSUP is   2.43 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.63 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   4.31 seconds
+ >>>> Total wall time used in HERMIT:   4.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:11 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Title lines from integral program:
-     Test1 i test-suite: Geometrioptimering med symmetri, med beregning av   
-     egenskaper i foerste og siste punkt. Generelt kontraherte basissett     
+     Geometry optimization, calculation of quadrupole moment, magnetizabiliti
+     and nuclear shieldings at the optimized geometry                        
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -427,7 +430,7 @@ Represented as: C2v
      Number of basis functions         17   6  11   2
 
       ** Automatic occupation of RHF orbitals **
-      -- Initial occupation of symmetries is determined from Huckel guess.               
+      -- Initial occupation of symmetries is determined from Huckel guess.                    
       -- Initial occupation of symmetries is : --
 
      Occupied HF orbitals               3   1   1   0
@@ -455,8 +458,8 @@ Represented as: C2v
    7    -76.051459480014   4.80D-04  -2.00D-06    3  1  1  0
    8    -76.051459518235   7.75D-05  -3.82D-08    3  1  1  0
    9    -76.051459519144   1.74D-05  -9.09D-10    3  1  1  0
-  10    -76.051459519203   2.92D-06  -5.90D-11    3  1  1  0
-  11    -76.051459519204   2.95D-07  -1.14D-12    3  1  1  0
+  10    -76.051459519203   2.92D-06  -5.89D-11    3  1  1  0
+  11    -76.051459519204   2.95D-07  -1.12D-12    3  1  1  0
  DIIS converged in  11 iterations !
 
 
@@ -504,8 +507,7 @@ Represented as: C2v
      Final gradient norm:           0.000000294912
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:12 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
      Molecular orbitals for symmetry species   1
 
@@ -519,7 +521,7 @@ Represented as: C2v
    7  O   2pz   -0.0007   0.0605   0.3840
    8  O   2pz    0.0002   0.0192   0.2997
    9  O   2pz    0.0001  -0.0001   0.0602
-  10  O   3d0    0.0000   0.0027   0.0163
+  10  O   3d0   -0.0000   0.0027   0.0163
   11  O   3d2+   0.0001  -0.0075  -0.0048
   12  H   1s     0.0002   0.0905   0.0881
   13  H   1s     0.0002   0.0812   0.1527
@@ -555,20 +557,22 @@ Represented as: C2v
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.10 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.18 seconds
  >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:12 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 - End of Wave Function Section
+                                   
+     Order of the analytical energy-derivative available:   2
+     This will be the default.
+                                   
       Starting Static Property Section -
 
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:12 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
  ***************************************************************************
@@ -577,8 +581,7 @@ Represented as: C2v
 
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:12 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
@@ -601,7 +604,7 @@ Represented as: C2v
 
      Total energy        -76.0514595192 au (Hartrees)
                          -2069.46542311 eV
-                           -199673.0786 kJ/mol
+                           -199673.0783 kJ/mol
 
 
 
@@ -609,11 +612,11 @@ Represented as: C2v
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.1974514528 au
-     Mass-velocity correction:                  -0.2489637988 au
+     Darwin correction:                          0.1974514231 au
+     Mass-velocity correction:                  -0.2489637613 au
 
-     Total relativistic correction:             -0.0515123460 au (0.0677%)
-     Non-relativistic + relativistic energy:   -76.1029718652 au
+     Total relativistic correction:             -0.0515123382 au (0.0677%)
+     Non-relativistic + relativistic energy:   -76.1029718574 au
 
 
 
@@ -638,7 +641,7 @@ Represented as: C2v
                               Dipole moment
                               -------------
 
-                    0.887038 au           2.254646 Debye
+                    0.887038 au           2.254625 Debye
 
 
 
@@ -648,9 +651,9 @@ Represented as: C2v
 
                                au             Debye
 
-                    z      0.88703794      2.25464642
+                    z      0.88703794      2.25462530
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -659,7 +662,7 @@ Represented as: C2v
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            O           H  1        H  2
+            O           H  1        H  2        
 
    O       0.000000
    H  1    0.972000    0.000000
@@ -694,7 +697,7 @@ Represented as: C2v
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.45 seconds
+ >>>> Total CPU  time used in ABACUS:   0.29 seconds
  >>>> Total wall time used in ABACUS:   0.00 seconds
 
 - End of Static Property Section
@@ -746,28 +749,27 @@ Represented as: C2v
 
 
 
- >>> Time used in TWOINT is   0.21 seconds
+ >>> Time used in TWOINT is   1.63 seconds
 
 
- >>> Time used in FRMSUP is   0.03 seconds
+ >>> Time used in FRMSUP is   2.37 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.26 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   4.07 seconds
+ >>>> Total wall time used in HERMIT:   4.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:12 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Title lines from integral program:
-     Test1 i test-suite: Geometrioptimering med symmetri, med beregning av   
-     egenskaper i foerste og siste punkt. Generelt kontraherte basissett     
+     Geometry optimization, calculation of quadrupole moment, magnetizabiliti
+     and nuclear shieldings at the optimized geometry                        
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -824,8 +826,8 @@ Represented as: C2v
     5      -76.053316507997    5.69588D-04   -6.61D-07
     6      -76.053316573566    1.06106D-04   -6.56D-08
     7      -76.053316575532    1.73499D-05   -1.97D-09
-    8      -76.053316575579    2.57318D-06   -4.73D-11
-    9      -76.053316575580    2.65350D-07   -1.05D-12
+    8      -76.053316575579    2.57318D-06   -4.74D-11
+    9      -76.053316575580    2.65350D-07   -9.81D-13
  DIIS converged in   9 iterations !
 
 
@@ -873,8 +875,7 @@ Represented as: C2v
      Final gradient norm:           0.000000265350
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:12 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
      Molecular orbitals for symmetry species   1
 
@@ -888,14 +889,14 @@ Represented as: C2v
    7  O   2pz   -0.0007   0.0637   0.3855
    8  O   2pz    0.0002   0.0191   0.2978
    9  O   2pz    0.0001   0.0007   0.0610
-  10  O   3d0    0.0000   0.0028   0.0165
+  10  O   3d0   -0.0000   0.0028   0.0165
   11  O   3d2+   0.0001  -0.0080  -0.0048
   12  H   1s     0.0002   0.0950   0.0879
   13  H   1s     0.0002   0.0824   0.1512
   14  H   1s    -0.0003  -0.0060   0.0139
   15  H   1s    -0.0001   0.0076   0.0002
   16  H   2py   -0.0001  -0.0237  -0.0313
-  17  H   2pz    0.0000  -0.0144   0.0098
+  17  H   2pz   -0.0000  -0.0144   0.0098
 
      Molecular orbitals for symmetry species   2
 
@@ -924,38 +925,38 @@ Represented as: C2v
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.04 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.10 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:12 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 - End of Wave Function Section
  Trust radius increased due to good ratio.
  Updated trust radius   0.50000
+                                   
+     Order of the analytical energy-derivative available:   2
+     This will be the default.
+                                   
       Starting Static Property Section -
 
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:12 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:13 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:01     296 %
 
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.46 seconds
+ >>>> Total CPU  time used in ABACUS:   0.25 seconds
  >>>> Total wall time used in ABACUS:   1.00 seconds
 
 - End of Static Property Section
@@ -1008,28 +1009,27 @@ Represented as: C2v
 
 
 
- >>> Time used in TWOINT is   0.21 seconds
+ >>> Time used in TWOINT is   1.67 seconds
 
 
- >>> Time used in FRMSUP is   0.03 seconds
+ >>> Time used in FRMSUP is   2.54 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.25 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   4.26 seconds
+ >>>> Total wall time used in HERMIT:   6.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:13 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Title lines from integral program:
-     Test1 i test-suite: Geometrioptimering med symmetri, med beregning av   
-     egenskaper i foerste og siste punkt. Generelt kontraherte basissett     
+     Geometry optimization, calculation of quadrupole moment, magnetizabiliti
+     and nuclear shieldings at the optimized geometry                        
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -1086,7 +1086,7 @@ Represented as: C2v
     5      -76.053411783938    1.53851D-04   -5.75D-08
     6      -76.053411788570    3.11451D-05   -4.63D-09
     7      -76.053411788743    5.37887D-06   -1.74D-10
-    8      -76.053411788748    8.60996D-07   -4.72D-12
+    8      -76.053411788748    8.60996D-07   -4.75D-12
  DIIS converged in   8 iterations !
 
 
@@ -1134,8 +1134,7 @@ Represented as: C2v
      Final gradient norm:           0.000000860996
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:13 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
      Molecular orbitals for symmetry species   1
 
@@ -1149,14 +1148,14 @@ Represented as: C2v
    7  O   2pz   -0.0007   0.0641   0.3865
    8  O   2pz    0.0002   0.0191   0.2993
    9  O   2pz    0.0001   0.0009   0.0617
-  10  O   3d0    0.0000   0.0027   0.0164
+  10  O   3d0   -0.0000   0.0027   0.0164
   11  O   3d2+   0.0001  -0.0082  -0.0049
   12  H   1s     0.0002   0.0960   0.0874
   13  H   1s     0.0002   0.0825   0.1493
   14  H   1s    -0.0003  -0.0064   0.0125
   15  H   1s    -0.0001   0.0076   0.0001
   16  H   2py   -0.0001  -0.0238  -0.0311
-  17  H   2pz    0.0000  -0.0142   0.0103
+  17  H   2pz   -0.0000  -0.0142   0.0103
 
      Molecular orbitals for symmetry species   2
 
@@ -1185,38 +1184,40 @@ Represented as: C2v
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.04 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.08 seconds
+ >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:13 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 - End of Wave Function Section
  Trust radius squarely increased due to very good ratio.
  Updated trust radius   0.50000
+                                   
+     Order of the analytical energy-derivative available:   2
+     This will be the default.
+                                   
       Starting Static Property Section -
 
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:13 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:14 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
+ REST       00:00:01     528 %
 
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.46 seconds
- >>>> Total wall time used in ABACUS:   1.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.25 seconds
+ >>>> Total wall time used in ABACUS:   0.00 seconds
 
 - End of Static Property Section
 
@@ -1268,28 +1269,27 @@ Represented as: C2v
 
 
 
- >>> Time used in TWOINT is   0.20 seconds
+ >>> Time used in TWOINT is   1.75 seconds
 
 
- >>> Time used in FRMSUP is   0.03 seconds
+ >>> Time used in FRMSUP is   2.53 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.25 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   4.31 seconds
+ >>>> Total wall time used in HERMIT:   8.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:14 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Title lines from integral program:
-     Test1 i test-suite: Geometrioptimering med symmetri, med beregning av   
-     egenskaper i foerste og siste punkt. Generelt kontraherte basissett     
+     Geometry optimization, calculation of quadrupole moment, magnetizabiliti
+     and nuclear shieldings at the optimized geometry                        
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -1344,8 +1344,8 @@ Represented as: C2v
     3      -76.053421459898    2.09016D-04   -1.27D-07
     4      -76.053421464292    9.37494D-05   -4.39D-09
     5      -76.053421464852    1.70895D-05   -5.60D-10
-    6      -76.053421464890    3.90107D-06   -3.82D-11
-    7      -76.053421464893    7.87776D-07   -2.81D-12
+    6      -76.053421464890    3.90107D-06   -3.83D-11
+    7      -76.053421464893    7.87776D-07   -2.73D-12
  DIIS converged in   7 iterations !
 
 
@@ -1393,8 +1393,7 @@ Represented as: C2v
      Final gradient norm:           0.000000787776
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:14 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
      Molecular orbitals for symmetry species   1
 
@@ -1408,14 +1407,14 @@ Represented as: C2v
    7  O   2pz   -0.0007   0.0638   0.3869
    8  O   2pz    0.0002   0.0191   0.3005
    9  O   2pz    0.0001   0.0010   0.0619
-  10  O   3d0    0.0000   0.0026   0.0164
+  10  O   3d0   -0.0000   0.0026   0.0164
   11  O   3d2+   0.0001  -0.0083  -0.0049
   12  H   1s     0.0002   0.0959   0.0872
   13  H   1s     0.0002   0.0825   0.1485
   14  H   1s    -0.0003  -0.0065   0.0124
   15  H   1s    -0.0001   0.0076   0.0000
   16  H   2py   -0.0001  -0.0239  -0.0309
-  17  H   2pz    0.0000  -0.0141   0.0105
+  17  H   2pz   -0.0000  -0.0141   0.0105
 
      Molecular orbitals for symmetry species   2
 
@@ -1444,39 +1443,39 @@ Represented as: C2v
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.03 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.06 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:14 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 - End of Wave Function Section
  Trust radius increased due to good ratio.
  Updated trust radius   0.50000
+                                   
+     Order of the analytical energy-derivative available:   2
+     This will be the default.
+                                   
       Starting Static Property Section -
 
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:14 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:14 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:02     407 %
 
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.45 seconds
- >>>> Total wall time used in ABACUS:   0.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.24 seconds
+ >>>> Total wall time used in ABACUS:   1.00 seconds
 
 - End of Static Property Section
 
@@ -1520,7 +1519,7 @@ Represented as: C2v
  *************************************************************************
 
 
- >>> Time used in ONEDRV is   0.00 seconds
+ >>> Time used in ONEDRV is   0.01 seconds
 
 
  Number of two-electron integrals written:       57092 ( 25.7% )
@@ -1528,28 +1527,27 @@ Represented as: C2v
 
 
 
- >>> Time used in TWOINT is   0.21 seconds
+ >>> Time used in TWOINT is   1.62 seconds
 
 
- >>> Time used in FRMSUP is   0.03 seconds
+ >>> Time used in FRMSUP is   2.40 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.25 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total CPU  time used in HERMIT:   4.06 seconds
+ >>>> Total wall time used in HERMIT:   8.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:15 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Title lines from integral program:
-     Test1 i test-suite: Geometrioptimering med symmetri, med beregning av   
-     egenskaper i foerste og siste punkt. Generelt kontraherte basissett     
+     Geometry optimization, calculation of quadrupole moment, magnetizabiliti
+     and nuclear shieldings at the optimized geometry                        
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -1605,7 +1603,7 @@ Represented as: C2v
     4      -76.053423552562    7.45343D-05   -3.24D-09
     5      -76.053423553054    1.06660D-05   -4.92D-10
     6      -76.053423553070    2.66771D-06   -1.55D-11
-    7      -76.053423553071    4.72374D-07   -1.25D-12
+    7      -76.053423553071    4.72374D-07   -1.32D-12
  DIIS converged in   7 iterations !
 
 
@@ -1653,8 +1651,7 @@ Represented as: C2v
      Final gradient norm:           0.000000472374
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:15 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
      Molecular orbitals for symmetry species   1
 
@@ -1668,14 +1665,14 @@ Represented as: C2v
    7  O   2pz   -0.0007   0.0636   0.3872
    8  O   2pz    0.0002   0.0190   0.3013
    9  O   2pz    0.0001   0.0010   0.0621
-  10  O   3d0    0.0000   0.0025   0.0164
+  10  O   3d0   -0.0000   0.0025   0.0164
   11  O   3d2+   0.0001  -0.0083  -0.0049
   12  H   1s     0.0002   0.0958   0.0871
   13  H   1s     0.0002   0.0824   0.1480
   14  H   1s    -0.0002  -0.0065   0.0125
   15  H   1s    -0.0001   0.0076   0.0000
   16  H   2py   -0.0001  -0.0239  -0.0308
-  17  H   2pz    0.0000  -0.0141   0.0106
+  17  H   2pz   -0.0000  -0.0141   0.0106
 
      Molecular orbitals for symmetry species   2
 
@@ -1704,26 +1701,27 @@ Represented as: C2v
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.04 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.08 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:15 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 - End of Wave Function Section
  Trust radius squarely increased due to very good ratio.
  Updated trust radius   0.50000
+                                   
+     Order of the analytical energy-derivative available:   2
+     This will be the default.
+                                   
       Starting Static Property Section -
 
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:15 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:15 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
@@ -1734,8 +1732,8 @@ Represented as: C2v
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.46 seconds
- >>>> Total wall time used in ABACUS:   0.00 seconds
+ >>>> Total CPU  time used in ABACUS:   0.27 seconds
+ >>>> Total wall time used in ABACUS:   1.00 seconds
 
 - End of Static Property Section
 
@@ -1787,28 +1785,27 @@ Represented as: C2v
 
 
 
- >>> Time used in TWOINT is   0.21 seconds
+ >>> Time used in TWOINT is   1.31 seconds
 
 
- >>> Time used in FRMSUP is   0.03 seconds
+ >>> Time used in FRMSUP is   1.51 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.26 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total CPU  time used in HERMIT:   2.85 seconds
+ >>>> Total wall time used in HERMIT:   3.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:16 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Title lines from integral program:
-     Test1 i test-suite: Geometrioptimering med symmetri, med beregning av   
-     egenskaper i foerste og siste punkt. Generelt kontraherte basissett     
+     Geometry optimization, calculation of quadrupole moment, magnetizabiliti
+     and nuclear shieldings at the optimized geometry                        
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -1860,7 +1857,7 @@ Represented as: C2v
  ----------------------------------------------------
     1      -76.053423553100    2.67222D-05   -7.61D+01
     2      -76.053423553144    5.26818D-06   -4.38D-11
-    3      -76.053423553147    9.17206D-07   -2.91D-12
+    3      -76.053423553147    9.17206D-07   -2.80D-12
  DIIS converged in   3 iterations !
 
 
@@ -1908,8 +1905,7 @@ Represented as: C2v
      Final gradient norm:           0.000000917206
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:16 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
      Molecular orbitals for symmetry species   1
 
@@ -1923,14 +1919,14 @@ Represented as: C2v
    7  O   2pz   -0.0007   0.0636   0.3872
    8  O   2pz    0.0002   0.0190   0.3013
    9  O   2pz    0.0001   0.0010   0.0621
-  10  O   3d0    0.0000   0.0025   0.0164
+  10  O   3d0   -0.0000   0.0025   0.0164
   11  O   3d2+   0.0001  -0.0083  -0.0049
   12  H   1s     0.0002   0.0958   0.0871
   13  H   1s     0.0002   0.0824   0.1480
   14  H   1s    -0.0002  -0.0065   0.0125
   15  H   1s    -0.0001   0.0076   0.0000
   16  H   2py   -0.0001  -0.0239  -0.0308
-  17  H   2pz    0.0000  -0.0141   0.0106
+  17  H   2pz   -0.0000  -0.0141   0.0106
 
      Molecular orbitals for symmetry species   2
 
@@ -1959,38 +1955,39 @@ Represented as: C2v
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.05 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:16 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 - End of Wave Function Section
  Trust radius squarely increased due to very good ratio.
  Updated trust radius   0.50000
+                                   
+     Order of the analytical energy-derivative available:   2
+     This will be the default.
+                                   
       Starting Static Property Section -
 
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:16 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:16 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- REST       00:00:02     398 %
+ REST       00:00:02     567 %
 
 
 
 
- >>>> Total CPU  time used in ABACUS:   0.46 seconds
+ >>>> Total CPU  time used in ABACUS:   0.27 seconds
  >>>> Total wall time used in ABACUS:   0.00 seconds
 
 - End of Static Property Section
@@ -2019,7 +2016,7 @@ Represented as: C2v
  Iteration number               :       5
  End of optimization            :       T 
  Energy at this geometry is     :     -76.053424
- Energy change from last geom.  :       0.000000
+ Energy change from last geom.  :      -0.000000
  Norm of gradient               :       0.000001
  Norm of step                   :       0.000002
  Updated trust radius           :       0.500000
@@ -2054,8 +2051,7 @@ Represented as: C2v
 
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:16 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
  ***************************************************************************
@@ -2064,8 +2060,7 @@ Represented as: C2v
 
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:23 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
@@ -2088,7 +2083,7 @@ Represented as: C2v
 
      Total energy        -76.0534235531 au (Hartrees)
                          -2069.51886719 eV
-                           -199678.2351 kJ/mol
+                           -199678.2349 kJ/mol
 
 
 
@@ -2096,11 +2091,11 @@ Represented as: C2v
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.1973998207 au
-     Mass-velocity correction:                  -0.2489050565 au
+     Darwin correction:                          0.1973997910 au
+     Mass-velocity correction:                  -0.2489050191 au
 
-     Total relativistic correction:             -0.0515052358 au (0.0677%)
-     Non-relativistic + relativistic energy:   -76.1049287889 au
+     Total relativistic correction:             -0.0515052280 au (0.0677%)
+     Non-relativistic + relativistic energy:   -76.1049287812 au
 
 
 
@@ -2128,7 +2123,7 @@ Represented as: C2v
 
            Symmetry 1
 
-           O    z      H    y      H    z
+           O    z      H    y      H    z      
 
  O    z    0.529754
  H    y   -0.483343    0.939809
@@ -2137,15 +2132,15 @@ Represented as: C2v
 
            Symmetry 2
 
-           O    x      H    x
+           O    x      H    x      
 
- O    x    0.000000
- H    x    0.000000    0.000000
+ O    x   -0.000000
+ H    x    0.000000   -0.000000
 
 
            Symmetry 3
 
-           O    y      H    y      H    z
+           O    y      H    y      H    z      
 
  O    y    0.813497
  H    y   -0.813497    0.813497
@@ -2154,31 +2149,31 @@ Represented as: C2v
 
            Symmetry 4
 
-           H    x
+           H    x      
 
- H    x    0.000000
-
-
+ H    x   -0.000000
 
 
-           O    x      O    y      O    z      H  1 x      H  1 y      H  1 z
 
- O    x    0.000000
+
+           O    x      O    y      O    z      H  1 x      H  1 y      H  1 z      
+
+ O    x   -0.000000
  O    y    0.000000    0.813497
  O    z    0.000000    0.000000    0.529754
 
- H  1 x    0.000000    0.000000    0.000000    0.000000
+ H  1 x    0.000000    0.000000    0.000000   -0.000000
  H  1 y    0.000000   -0.406748   -0.241671    0.000000    0.438326
  H  1 z    0.000000   -0.305280   -0.264877    0.000000    0.273476    0.247000
 
- H  2 x    0.000000    0.000000    0.000000    0.000000    0.000000    0.000000
+ H  2 x    0.000000    0.000000    0.000000   -0.000000    0.000000    0.000000
  H  2 y    0.000000   -0.406748    0.241671    0.000000   -0.031578    0.031804
  H  2 z    0.000000    0.305280   -0.264877    0.000000   -0.031804    0.017877
 
 
-           H  2 x      H  2 y      H  2 z
+           H  2 x      H  2 y      H  2 z      
 
- H  2 x    0.000000
+ H  2 x   -0.000000
  H  2 y    0.000000    0.438326
  H  2 z    0.000000   -0.273476    0.247000
 
@@ -2189,7 +2184,7 @@ Represented as: C2v
                               Dipole moment
                               -------------
 
-                    0.863935 au           2.195924 Debye
+                    0.863935 au           2.195903 Debye
 
 
 
@@ -2199,9 +2194,9 @@ Represented as: C2v
 
                                au             Debye
 
-                    z      0.86393491      2.19592385
+                    z      0.86393491      2.19590327
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -2232,9 +2227,9 @@ Represented as: C2v
                          Ex          Ey          Ez
 
 
-            Ex      -2.361455    0.000000    0.000000
-            Ey       0.000000    2.607447    0.000000
-            Ez       0.000000    0.000000   -0.245992
+            Ex      -2.361433    0.000000    0.000000
+            Ey       0.000000    2.607422    0.000000
+            Ez       0.000000    0.000000   -0.245989
 
 
 
@@ -2275,9 +2270,9 @@ Represented as: C2v
                                  Bx                  By                  Bz
 
 
-            Bx        -2.900466668669      0.000000000000      0.000000000000
-            By         0.000000000000     -2.874172491015      0.000000000000
-            Bz         0.000000000000      0.000000000000     -2.921219285114
+            Bx        -2.900466668669     -0.000000000000     -0.000000000000
+            By        -0.000000000000     -2.874172491015     -0.000000000000
+            Bz        -0.000000000000     -0.000000000000     -2.921219285114
 
 
 
@@ -2288,9 +2283,9 @@ Represented as: C2v
                                  Bx                  By                  Bz
 
 
-            Bx        -3.409316239752      0.000000000000      0.000000000000
-            By         0.000000000000     -3.013168644412      0.000000000000
-            Bz         0.000000000000      0.000000000000     -3.193348860239
+            Bx        -3.409316239752     -0.000000000000     -0.000000000000
+            By        -0.000000000000     -3.013168644412     -0.000000000000
+            Bz        -0.000000000000     -0.000000000000     -3.193348860239
 
 
 
@@ -2301,9 +2296,9 @@ Represented as: C2v
                                  Bx                  By                  Bz
 
 
-            Bx         0.508849571083      0.000000000000      0.000000000000
-            By         0.000000000000      0.138996153397      0.000000000000
-            Bz         0.000000000000      0.000000000000      0.272129575125
+            Bx         0.508849571083     -0.000000000000     -0.000000000000
+            By        -0.000000000000      0.138996153397     -0.000000000000
+            Bz        -0.000000000000     -0.000000000000      0.272129575125
 
 
 
@@ -2316,7 +2311,7 @@ Represented as: C2v
   London orbitals used.
 
 
- Principal moments of inertia (a.u.) and principle axis
+ Principal moments of inertia (a.u.) and principal axes
  ------------------------------------------------------
 
    IA    2.040612          0.000000    1.000000    0.000000
@@ -2339,20 +2334,20 @@ Represented as: C2v
   Molecular g-factor in principal axis system (a.u.):
   ---------------------------------------------------
 
-   A        0.66954197  0.00000000  0.00000000
-   B        0.00000000  0.73065986  0.00000000
+   A        0.66954197 -0.00000000  0.00000000
+   B       -0.00000000  0.73065986  0.00000000
    C        0.00000000  0.00000000  0.64594025
 
 
-  Nuclear contribution in principle axis system (a.u.):
+  Nuclear contribution in principal axis system (a.u.):
   -----------------------------------------------------
 
-   A        0.94398430  0.00000000  0.00000000
-   B        0.00000000  0.99945573  0.00000000
+   A        0.94398430 -0.00000000  0.00000000
+   B       -0.00000000  0.99945573  0.00000000
    C        0.00000000  0.00000000  0.98095876
 
 
-  Electronic contribution in principle axis system (a.u.):
+  Electronic contribution in principal axis system (a.u.):
   --------------------------------------------------------
 
    A       -0.28411790  0.00000000  0.00000000
@@ -2360,7 +2355,7 @@ Represented as: C2v
    C        0.00000000  0.00000000 -0.36028313
 
 
-  Diamagnetic contribution in principle axis system (a.u.):
+  Diamagnetic contribution in principal axis system (a.u.):
   ---------------------------------------------------------
 
    A        0.00967557  0.00000000  0.00000000
@@ -2379,24 +2374,24 @@ Represented as: C2v
 
 
     Symmetry 2
-                       By
+                       By             
 
-        O    y   369.63173303
-        H    y    80.33047634
-        H    z    16.32983127
+        O    y   369.63167741
+        H    y    80.33046425
+        H    z    16.32982881
 
     Symmetry 3
-                       Bx
+                       Bx             
 
-        O    x   310.84810881
-        H    x    48.70431104
+        O    x   310.84806203
+        H    x    48.70430371
 
     Symmetry 4
-                       Bz
+                       Bz             
 
-        O    z   322.28199299
-        H    y    19.03849568
-        H    z    62.14859331
+        O    z   322.28194449
+        H    y    19.03849281
+        H    z    62.14858396
 
 
 
@@ -2416,29 +2411,29 @@ Represented as: C2v
   Total shielding tensor (ppm):
   -----------------------------
 
-                  Bx             By             Bz
+                  Bx             By             Bz             
 
-  O    x   310.84810881     0.00000000     0.00000000
-  O    y     0.00000000   369.63173303     0.00000000
-  O    z     0.00000000     0.00000000   322.28199299
+  O    x   310.84806203     0.00000000     0.00000000
+  O    y     0.00000000   369.63167741     0.00000000
+  O    z     0.00000000     0.00000000   322.28194449
 
 
   Diamagnetic and paramagnetic contributions (ppm):
   -------------------------------------------------
 
-               Bx         By         Bz             Bx         By         Bz
+               Bx         By         Bz             Bx         By         Bz         
 
   O    x   421.5950     0.0000     0.0000      -110.7469     0.0000     0.0000
   O    y     0.0000   414.6992     0.0000         0.0000   -45.0675     0.0000
   O    z     0.0000     0.0000   415.5315         0.0000     0.0000   -93.2495
 
-  Diamagnetic contribution:    417.275266         Paramagnetic:     -83.021321
+  Diamagnetic contribution:    417.275203         Paramagnetic:     -83.021308
 
 
   Antisymmetric and traceless symmetric parts (ppm):
   --------------------------------------------------
 
-               Bx         By         Bz             Bx         By         Bz
+               Bx         By         Bz             Bx         By         Bz         
 
   O    x     0.0000     0.0000     0.0000       -23.4058     0.0000     0.0000
   O    y     0.0000     0.0000     0.0000         0.0000    35.3778     0.0000
@@ -2448,9 +2443,9 @@ Represented as: C2v
   Principal values and axes:
   --------------------------
 
-  O     1    310.848109  =  334.25  -  23.41:     1.000000  0.000000  0.000000
-  O     2    322.281993  =  334.25  -  11.97:     0.000000  0.000000  1.000000
-  O     3    369.631733  =  334.25  +  35.38:     0.000000  1.000000  0.000000
+  O     1    310.848062  =  334.25  -  23.41:     1.000000  0.000000  0.000000
+  O     2    322.281944  =  334.25  -  11.97:     0.000000  0.000000  1.000000
+  O     3    369.631677  =  334.25  +  35.38:     0.000000  1.000000  0.000000
 
 
   Chemical shielding for H    1:
@@ -2468,29 +2463,29 @@ Represented as: C2v
   Total shielding tensor (ppm):
   -----------------------------
 
-                  Bx             By             Bz
+                  Bx             By             Bz             
 
-  H  1 x    24.35215552     0.00000000     0.00000000
-  H  1 y     0.00000000    40.16523817     9.51924784
-  H  1 z     0.00000000     8.16491564    31.07429665
+  H  1 x    24.35215186     0.00000000     0.00000000
+  H  1 y     0.00000000    40.16523213     9.51924641
+  H  1 z     0.00000000     8.16491441    31.07429198
 
 
   Diamagnetic and paramagnetic contributions (ppm):
   -------------------------------------------------
 
-               Bx         By         Bz             Bx         By         Bz
+               Bx         By         Bz             Bx         By         Bz         
 
   H  1 x    13.8316     0.0000     0.0000        10.5206     0.0000     0.0000
   H  1 y     0.0000    37.5262    17.3240         0.0000     2.6390    -7.8047
   H  1 z     0.0000    14.5528    23.4109         0.0000    -6.3879     7.6634
 
-  Diamagnetic contribution:     24.922900         Paramagnetic:       6.940997
+  Diamagnetic contribution:     24.922896         Paramagnetic:       6.940996
 
 
   Antisymmetric and traceless symmetric parts (ppm):
   --------------------------------------------------
 
-               Bx         By         Bz             Bx         By         Bz
+               Bx         By         Bz             Bx         By         Bz         
 
   H  1 x     0.0000     0.0000     0.0000        -7.5117     0.0000     0.0000
   H  1 y     0.0000     0.0000     0.6772         0.0000     8.3013     8.8421
@@ -2500,9 +2495,9 @@ Represented as: C2v
   Principal values and axes:
   --------------------------
 
-  H    11     24.352156  =   31.86  -   7.51:     1.000000  0.000000  0.000000
-  H    12     25.677750  =   31.86  -   6.19:     0.000000 -0.520962  0.853580
-  H    13     45.561785  =   31.86  +  13.70:     0.000000  0.853580  0.520962
+  H    11     24.352152  =   31.86  -   7.51:     1.000000  0.000000  0.000000
+  H    12     25.677746  =   31.86  -   6.19:     0.000000 -0.520962  0.853580
+  H    13     45.561778  =   31.86  +  13.70:     0.000000  0.853580  0.520962
 
 
   Chemical shielding for H    2:
@@ -2520,29 +2515,29 @@ Represented as: C2v
   Total shielding tensor (ppm):
   -----------------------------
 
-                  Bx             By             Bz
+                  Bx             By             Bz             
 
-  H  2 x    24.35215552     0.00000000     0.00000000
-  H  2 y     0.00000000    40.16523817    -9.51924784
-  H  2 z     0.00000000    -8.16491564    31.07429665
+  H  2 x    24.35215186     0.00000000     0.00000000
+  H  2 y     0.00000000    40.16523213    -9.51924641
+  H  2 z     0.00000000    -8.16491441    31.07429198
 
 
   Diamagnetic and paramagnetic contributions (ppm):
   -------------------------------------------------
 
-               Bx         By         Bz             Bx         By         Bz
+               Bx         By         Bz             Bx         By         Bz         
 
   H  2 x    13.8316     0.0000     0.0000        10.5206     0.0000     0.0000
   H  2 y     0.0000    37.5262   -17.3240         0.0000     2.6390     7.8047
   H  2 z     0.0000   -14.5528    23.4109         0.0000     6.3879     7.6634
 
-  Diamagnetic contribution:     24.922900         Paramagnetic:       6.940997
+  Diamagnetic contribution:     24.922896         Paramagnetic:       6.940996
 
 
   Antisymmetric and traceless symmetric parts (ppm):
   --------------------------------------------------
 
-               Bx         By         Bz             Bx         By         Bz
+               Bx         By         Bz             Bx         By         Bz         
 
   H  2 x     0.0000     0.0000     0.0000        -7.5117     0.0000     0.0000
   H  2 y     0.0000     0.0000    -0.6772         0.0000     8.3013    -8.8421
@@ -2552,9 +2547,9 @@ Represented as: C2v
   Principal values and axes:
   --------------------------
 
-  H    21     24.352156  =   31.86  -   7.51:     1.000000  0.000000  0.000000
-  H    22     25.677750  =   31.86  -   6.19:     0.000000  0.520962  0.853580
-  H    23     45.561785  =   31.86  +  13.70:     0.000000  0.853580 -0.520962
+  H    21     24.352152  =   31.86  -   7.51:     1.000000  0.000000  0.000000
+  H    22     25.677746  =   31.86  -   6.19:     0.000000  0.520962  0.853580
+  H    23     45.561778  =   31.86  +  13.70:     0.000000  0.853580 -0.520962
 
 
                      +--------------------------------+
@@ -2565,7 +2560,7 @@ Represented as: C2v
 
  @1atom   shielding       dia      para     skew      span     (aniso     asym)
  @1----------------------------------------------------------------------------
- @1O       334.2539  417.2753  -83.0213    0.6110   58.7836   53.0667    0.3232
+ @1O       334.2539  417.2752  -83.0213    0.6110   58.7836   53.0667    0.3232
  @1H    1   31.8639   24.9229    6.9410    0.8750   21.2096   20.5468    0.0968
  @1H    2   31.8639   24.9229    6.9410    0.8750   21.2096   20.5468    0.0968
 
@@ -2579,7 +2574,7 @@ Represented as: C2v
 
  @2atom   shielding       dia      para     aniso      asym        S        A
  @2----------------------------------------------------------------------------
- @2O       334.2539  417.2753  -83.0213   53.0667    0.3232   53.9826    0.0000
+ @2O       334.2539  417.2752  -83.0213   53.0667    0.3232   53.9826    0.0000
  @2H    1   31.8639   24.9229    6.9410   20.5468    0.0968   20.5789    0.6772
  @2H    2   31.8639   24.9229    6.9410   20.5468    0.0968   20.5789    0.6772
 
@@ -2588,7 +2583,7 @@ Represented as: C2v
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            O           H  1        H  2
+            O           H  1        H  2        
 
    O       0.000000
    H  1    0.941231    0.000000
@@ -2626,7 +2621,7 @@ Represented as: C2v
 
  Conversion factors used:
 
-    Hartree to (cm)-1      : 219474.63137
+    Hartree to (cm)-1      : 219474.63128
     a.m.u.  to a.u.        :   1822.88848
     Bohr    to Angstrom    :  0.529177208
     a.u.    to A**4amu-1   :   142.943570
@@ -2667,8 +2662,8 @@ Represented as: C2v
 
                A                   B                   C
 
-         884411.8782         442438.7010         294907.3910 MHz
-           29.500805           14.758167            9.837052 cm-1
+         884411.8778         442438.7009         294907.3909 MHz
+           29.500805           14.758166            9.837052 cm-1
 
 
 
@@ -2678,10 +2673,10 @@ Represented as: C2v
    mode   irrep     cm-1     hartrees 
   ------------------------------------
 
-    2      A1      4142.56  0.0188749 
-    3      A1      1726.24  0.0078653 
+    2      A1      4142.56  0.0188749      
+    3      A1      1726.24  0.0078653      
 
-    1      B2      4244.54  0.0193396 
+    1      B2      4244.54  0.0193396      
 
 
 
@@ -2696,16 +2691,16 @@ Represented as: C2v
   ----------------------------------------------
 
       O    x    0.000000    0.000000    0.000000
-      O    y   -0.068292    0.000000    0.000000
-      O    z    0.000000    0.048869   -0.067888
+      O    y   -0.068292    0.000000   -0.000000
+      O    z   -0.000000   -0.048869   -0.067888
 
       H  1 x    0.000000    0.000000    0.000000
-      H  1 y    0.541921   -0.571650   -0.411502
-      H  1 z    0.406732   -0.387792    0.538713
+      H  1 y    0.541921    0.571650   -0.411502
+      H  1 z    0.406732    0.387792    0.538713
 
       H  2 x    0.000000    0.000000    0.000000
-      H  2 y    0.541921    0.571650    0.411502
-      H  2 z   -0.406732   -0.387792    0.538713
+      H  2 y    0.541921   -0.571650    0.411502
+      H  2 z   -0.406732    0.387792    0.538713
 
 
 
@@ -2718,7 +2713,7 @@ Represented as: C2v
                       ------------------------------
 
 
-               Column   1     Column   2     Column   3     Column   4
+               Column   1     Column   2     Column   3     Column   4     
        1       8.00000000     0.00000000     0.00000000    -0.71179266
        2       1.00000000     0.00000000     1.42256969     0.35589633
        3       1.00000000     0.00000000    -1.42256969     0.35589633
@@ -2741,9 +2736,9 @@ Represented as: C2v
                 1  4245     2  4143     3  1726 
   ----------------------------------------------
 
-    1 stre      0.732195   -0.719319    0.035010
-    2 stre     -0.732195   -0.719319    0.035010
-    3 bend      0.000000    0.006850   -0.823278
+    1 stre      0.732195    0.719319    0.035010
+    2 stre     -0.732195    0.719319    0.035010
+    3 bend     -0.000000   -0.006850   -0.823278
 
 
                           Total Molecular Energy
@@ -2752,8 +2747,8 @@ Represented as: C2v
              electronic     vibrational           total    energy 
 
              -76.053424        0.023040      -76.030384    Hartrees
-           -16691797.10         5056.68    -16686740.42    cm-1
-             -199678.24           60.49      -199617.74    kJ/mol
+           -16691797.09         5056.68    -16686740.42    cm-1
+             -199678.23           60.49      -199617.74    kJ/mol
               -47724.24           14.46       -47709.79    kcal/mol
 
 
@@ -2784,23 +2779,23 @@ Represented as: C2v
   1500.00     1.7056D+08         914.56         1.2816   1.999100D+11
   2000.00     3.5013D+08        1406.96         1.5548   7.659218D+11
 
- >>> Time used in VIBCTL is   0.02 seconds
+ >>> Time used in VIBCTL is   0.01 seconds
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:01      24 %
- RHSIDE     00:00:03      63 %
- REST       00:00:01      22 %
+ RHSIDE     00:00:01      14 %
+ LINRES     00:00:06      67 %
+ REST       00:00:02      20 %
 
- TOTAL      00:00:05     100 %
+ TOTAL      00:00:10     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   5.47 seconds
- >>>> Total wall time used in ABACUS:   7.00 seconds
+ >>>> Total CPU  time used in ABACUS:   9.52 seconds
+ >>>> Total wall time used in ABACUS:  11.00 seconds
 
 - End of Static Property Section
 
@@ -2827,19 +2822,18 @@ Represented as: C2v
    2   -76.053412  -0.000095   0.002095    0    0.006719*   0.500000   0 
    3   -76.053421  -0.000010   0.000921    0    0.004635*   0.500000   0 
    4   -76.053424  -0.000002   0.000006    0    0.000030*   0.500000   0 
-   5   -76.053424   0.000000   0.000001    0    0.000002*   0.500000   0 
+   5   -76.053424  -0.000000   0.000001    0    0.000002*   0.500000   0 
 
  *) Newton step taken.
 
- Geometry converged in            6 iterations!
+ Geometry converged in  6  iterations!
 
  Energy at final geometry is       :     -76.053424 a.u.
  Energy change during optimization :      -0.001964 a.u.
                                              -5.157 kJ/mol
 
- >>>> Total CPU  time used in DALTON:  10.73 seconds
- >>>> Total wall time used in DALTON:  12.00 seconds
+ >>>> Total CPU  time used in DALTON:  35.83 seconds
+ >>>> Total wall time used in DALTON:  49.00 seconds
 
  
-     Date and time (Linux)  : Mon Feb 12 21:50:23 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    

@@ -4,7 +4,7 @@
     ***********  DALTON - An electronic structure program  ***********
     ******************************************************************
 
-               This is output from DALTON (Release 1.2, April 2001)
+            This is output from DALTON (Release 2.0, ? 2001)
 
                           Principal authors:
 
@@ -17,6 +17,7 @@
 
                           Contributors:
 
+            Alexander A. Auer,     University of Mainz,        Germany
             Keld L. Bak,           UNI-C,                      Denmark
             Vebjoern Bakken,       University of Oslo,         Norway 
             Ove Christiansen,      University of Lund,         Sweden 
@@ -36,16 +37,18 @@
             Henrik Koch,           SDU - Odense University,    Denmark
             Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
             Patrick Norman,        University of Linkoeping,   Sweden 
+            Thomas B. Pedersen,    U.of Santiago de Compostela,Spain  
             Martin J. Packer,      University of Sheffield,    UK     
             Torgeir A. Ruden,      University of Oslo,         Norway 
+            Alfredo Sanchez,       University of Valencia,     Spain  
             Trond Saue,            University of Toulouse,     France 
             Stephan P. A. Sauer,   University of Copenhagen,   Denmark
             Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
             K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
             Peter R.Taylor,        San Diego Superc. Center,   USA    
             Olav Vahtras,          PDC, Stockholm,             Sweden 
-------------------------------------------------------------------------
 
+------------------------------------------------------------------------
 
 
      NOTE:
@@ -63,17 +66,19 @@
      If results obtained with this code are published, an
      appropriate citation would be:
       
-     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,H. Aagren,
-     K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,P. Dahle, E.K. Dalskov,
-     T. Enevoldsen, B. Fernandez,C. Haettig, K. Hald, A. Halkier,
+     "Dalton, a molecular electronic structure program, Release 1.2
+     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
      H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-     H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T.A. Ruden, T. Saue,
-     S.P.A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,P.R. Taylor, and O. Vahtras:
-     "Dalton release 1.2 (2001), an electronic structure program"
+     H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+     T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+     B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+     and O. Vahtras"
 
  
-     Date and time (Linux)  : Tue Feb 13 11:12:16 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
 
@@ -113,8 +118,8 @@
   Title Cards
   -----------
 
-  * O Oxygen atom                                                         
-  *                                                                       
+  Calculation of linear response spin-orbit                               
+                                                                          
 
 
   Symmetry Operations
@@ -137,42 +142,42 @@ Point group: D2h
 
    * Group multiplication table
 
-        |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+        |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz 
    -----+----------------------------------------
-     E  |  E 
-    C2z | C2z   E 
-    C2y | C2y  C2x   E 
-    C2x | C2x  C2y  C2z   E 
-     i  |  i   Oxy  Oxz  Oyz   E 
-    Oxy | Oxy   i   Oyz  Oxz  C2z   E 
-    Oxz | Oxz  Oyz   i   Oxy  C2y  C2x   E 
-    Oyz | Oyz  Oxz  Oxy   i   C2x  C2y  C2z   E 
+     E  |  E   
+    C2z | C2z   E   
+    C2y | C2y  C2x   E   
+    C2x | C2x  C2y  C2z   E   
+     i  |  i   Oxy  Oxz  Oyz   E   
+    Oxy | Oxy   i   Oyz  Oxz  C2z   E   
+    Oxz | Oxz  Oyz   i   Oxy  C2y  C2x   E   
+    Oyz | Oyz  Oxz  Oxy   i   C2x  C2y  C2z   E  
 
    * Character table
 
-        |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+        |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz 
    -----+----------------------------------------
-    Ag  |   1    1    1    1    1    1    1    1
-    B3u |   1   -1   -1    1   -1    1    1   -1
-    B2u |   1   -1    1   -1   -1    1   -1    1
-    B1g |   1    1   -1   -1    1    1   -1   -1
-    B1u |   1    1   -1   -1   -1   -1    1    1
-    B2g |   1   -1    1   -1    1   -1    1   -1
-    B3g |   1   -1   -1    1    1   -1   -1    1
-    Au  |   1    1    1    1   -1   -1   -1   -1
+    Ag  |   1    1    1    1    1    1    1    1 
+    B3u |   1   -1   -1    1   -1    1    1   -1 
+    B2u |   1   -1    1   -1   -1    1   -1    1 
+    B1g |   1    1   -1   -1    1    1   -1   -1 
+    B1u |   1    1   -1   -1   -1   -1    1    1 
+    B2g |   1   -1    1   -1    1   -1    1   -1 
+    B3g |   1   -1   -1    1    1   -1   -1    1 
+    Au  |   1    1    1    1   -1   -1   -1   -1 
 
    * Direct product table
 
-        | Ag   B3u  B2u  B1g  B1u  B2g  B3g  Au 
+        | Ag   B3u  B2u  B1g  B1u  B2g  B3g  Au  
    -----+----------------------------------------
-    Ag  | Ag 
-    B3u | B3u  Ag 
-    B2u | B2u  B1g  Ag 
-    B1g | B1g  B2u  B3u  Ag 
-    B1u | B1u  B2g  B3g  Au   Ag 
-    B2g | B2g  B1u  Au   B3g  B3u  Ag 
-    B3g | B3g  Au   B1u  B2g  B2u  B1g  Ag 
-    Au  | Au   B3g  B2g  B1u  B1g  B2u  B3u  Ag 
+    Ag  | Ag   
+    B3u | B3u  Ag   
+    B2u | B2u  B1g  Ag   
+    B1g | B1g  B2u  B3u  Ag   
+    B1u | B1u  B2g  B3g  Au   Ag   
+    B2g | B2g  B1u  Au   B3g  B3u  Ag   
+    B3g | B3g  Au   B1u  B2g  B2u  B1g  Ag   
+    Au  | Au   B3g  B2g  B1u  B1g  B2u  B3u  Ag  
 
 
   Atoms and basis sets
@@ -248,7 +253,7 @@ Point group: D2h
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            O  1        O  2
+            O  1        O  2        
 
    O  1    0.000000
    O  2    1.207053    0.000000
@@ -275,64 +280,64 @@ Point group: D2h
 
   Symmetry  Ag ( 1)
 
-    1     O        s          1  +   2
-    2     O        s          3  +   4
-    3     O        s          5  +   6
-    4     O        pz        11  -  12
-    5     O        pz        17  -  18
-    6     O        dxx       19  +  20
-    7     O        dyy       25  +  26
-    8     O        dzz       29  +  30
+    1     O        s          1  +   2  
+    2     O        s          3  +   4  
+    3     O        s          5  +   6  
+    4     O        pz        11  -  12  
+    5     O        pz        17  -  18  
+    6     O        dxx       19  +  20  
+    7     O        dyy       25  +  26  
+    8     O        dzz       29  +  30  
 
 
   Symmetry  B3u( 2)
 
-    9     O        px         7  +   8
-   10     O        px        13  +  14
-   11     O        dxz       23  -  24
+    9     O        px         7  +   8  
+   10     O        px        13  +  14  
+   11     O        dxz       23  -  24  
 
 
   Symmetry  B2u( 3)
 
-   12     O        py         9  +  10
-   13     O        py        15  +  16
-   14     O        dyz       27  -  28
+   12     O        py         9  +  10  
+   13     O        py        15  +  16  
+   14     O        dyz       27  -  28  
 
 
   Symmetry  B1g( 4)
 
-   15     O        dxy       21  +  22
+   15     O        dxy       21  +  22  
 
 
   Symmetry  B1u( 5)
 
-   16     O        s          1  -   2
-   17     O        s          3  -   4
-   18     O        s          5  -   6
-   19     O        pz        11  +  12
-   20     O        pz        17  +  18
-   21     O        dxx       19  -  20
-   22     O        dyy       25  -  26
-   23     O        dzz       29  -  30
+   16     O        s          1  -   2  
+   17     O        s          3  -   4  
+   18     O        s          5  -   6  
+   19     O        pz        11  +  12  
+   20     O        pz        17  +  18  
+   21     O        dxx       19  -  20  
+   22     O        dyy       25  -  26  
+   23     O        dzz       29  -  30  
 
 
   Symmetry  B2g( 6)
 
-   24     O        px         7  -   8
-   25     O        px        13  -  14
-   26     O        dxz       23  +  24
+   24     O        px         7  -   8  
+   25     O        px        13  -  14  
+   26     O        dxz       23  +  24  
 
 
   Symmetry  B3g( 7)
 
-   27     O        py         9  -  10
-   28     O        py        15  -  16
-   29     O        dyz       27  +  28
+   27     O        py         9  -  10  
+   28     O        py        15  -  16  
+   29     O        dyz       27  +  28  
 
 
   Symmetry  Au ( 8)
 
-   30     O        dxy       21  -  22
+   30     O        dxy       21  -  22  
 
   Symmetries of electric field:  B3u(2)  B2u(3)  B1u(5)
 
@@ -344,10 +349,10 @@ Point group: D2h
  ************************************************************************
 
 
- >>> Time used in ONEDRV is   0.05 seconds
+ >>> Time used in ONEDRV is   0.06 seconds
 
 
- >>> Time used in OVERLA is   0.03 seconds
+ >>> Time used in OVERLA is   0.04 seconds
 
 
  >>> Time used in SPNORB is   0.07 seconds
@@ -358,20 +363,19 @@ Point group: D2h
 
 
 
- >>> Time used in TWOINT is   7.60 seconds
+ >>> Time used in TWOINT is   3.02 seconds
 
 
- >>> Time used in TWOINT is  19.94 seconds
+ >>> Time used in TWOINT is  10.78 seconds
 
 
    Two-electron spin-orbit integrals
    =================================
-   Spin-orbit 2-electron CPU  time   20. seconds
-   Spin-orbit 2-electron wall time   20. seconds
+   Spin-orbit 2-electron CPU  time   11. seconds
+   Spin-orbit 2-electron wall time   11. seconds
           AO INTEGRAL SORT PROGRAM ACTIVE - RELEASE 86 12 01
 
            Sirius release Jan 1989/April 1994
- DUMMY SETTIM called
 
 
           NUMBER OF SYMMETRIES   8
@@ -379,8 +383,7 @@ Point group: D2h
           NUMBER OF BASIS FUNCTIONS              8   3   3   1   8   3   3   1
           SYMMETRIES DELETED                     0   0   0   0   0   0   0   0
 
- Threshold for omitting integrals            :  0.00D+00
- Threshold has been reset, default value was :  1.00D-15
+ Threshold for omitting integrals            :  1.00D-15
 
 
           NUMBER OF BATCHES     106
@@ -423,31 +426,29 @@ Point group: D2h
               6      1     36      6      6      1
 
  Number of buffers on AOORDINT:     176
- DUMMY TIMING called
 
 
-          CPU TIME USED (MINUTES)    0.000
-          I/O TIME USED (MINUTES)    0.000
+          CPU TIME USED (MINUTES)    0.004
+          I/O TIME USED (MINUTES)    0.013
 
- >>> Time used in SORTAO is   0.63 seconds
+ >>> Time used in SORTAO is   1.06 seconds
 
- >>>> Total CPU  time used in HERMIT:  28.35 seconds
- >>>> Total wall time used in HERMIT:  30.00 seconds
+ >>>> Total CPU  time used in HERMIT:  15.13 seconds
+ >>>> Total wall time used in HERMIT:  15.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 11:12:46 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Title lines from integral program:
-     * O Oxygen atom                                                         
-     *                                                                       
+     Calculation of linear response spin-orbit                               
+                                                                             
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -522,8 +523,8 @@ Point group: D2h
 
  Element no. Config.no.    Active energy      Total energy
 
-         1 :          2     -1.8000835269   -149.1345849515
-         2 :          1     -1.8000835269   -149.1345849515
+         1 :          1     -1.8000835269   -149.1345849515
+         2 :          2     -1.8000835269   -149.1345849515
 
 
  Convergence threshold for CI optimization :     0.00000500
@@ -537,7 +538,7 @@ Point group: D2h
 
 
  CI energies and residuals:
-    1     -149.110042062278200       1.14D-15
+    1     -149.110042062278150       2.05D-15
 
    <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
 
@@ -546,7 +547,7 @@ Point group: D2h
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :     -149.110042062278200       (MACRO    1)
+ Total MCSCF energy       :     -149.110042062278150       (MACRO    1)
 
  Norm of total gradient   :        3.868984067312
  -    of CI gradient      :        0.000000000000
@@ -565,7 +566,7 @@ Point group: D2h
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :     -149.538831756906100       (MACRO    2)
+ Total MCSCF energy       :     -149.538831756906200       (MACRO    2)
 
  Norm of total gradient   :        0.519540866464
  -    of CI gradient      :        0.000000000000
@@ -584,7 +585,7 @@ Point group: D2h
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :     -149.556071025688600       (MACRO    3)
+ Total MCSCF energy       :     -149.556071025688530       (MACRO    3)
 
  Norm of total gradient   :        0.009050915463
  -    of CI gradient      :        0.000000000000
@@ -603,11 +604,11 @@ Point group: D2h
  <<< MACRO ITERATION  4 >>>
  --------------------------
 
- Total MCSCF energy       :     -149.556075023304200       (MACRO    4)
+ Total MCSCF energy       :     -149.556075023304230       (MACRO    4)
 
- Norm of total gradient   :        0.000071617562
+ Norm of total gradient   :        0.000071617563
  -    of CI gradient      :        0.000000000000
- -    of orbital gradient :        0.000071617562
+ -    of orbital gradient :        0.000071617563
 
  Residual norm when dim(red L) =   4
  NEO root     CSF        orbital          total
@@ -622,7 +623,7 @@ Point group: D2h
  <<< MACRO ITERATION  5 >>>
  --------------------------
 
- Total MCSCF energy       :     -149.556075023584200       (MACRO    5)
+ Total MCSCF energy       :     -149.556075023584210       (MACRO    5)
 
  Norm of total gradient   :        0.000000599696
  -    of CI gradient      :        0.000000000000
@@ -631,14 +632,13 @@ Point group: D2h
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            5
      Number of micro iterations used           12
-     Total number of CPU seconds used         0.00
+     Total number of CPU seconds used         0.56
 
 
                >>> SIRIUS OPTIMIZATION STATISTICS <<<
 
  
-     Date and time (Linux)  : Tue Feb 13 11:12:46 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
@@ -647,26 +647,26 @@ Point group: D2h
     2    3   -149.538831756906   0.5195408665  0.852672   0.0751524573
     3    3   -149.556071025689   0.0090509155  1.003073   0.0010950536
     4    3   -149.556075023304   0.0000716176  0.999979   0.0000091923
-    5    0   -149.556075023584   0.0000005997  1.000405   0.0000000000
+    5    0   -149.556075023584   0.0000005997  1.000201   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
  ------------------------------------------------------------------------------
-    1      2    0.000000    0.000000     20    2.731927    3.868984    3.868984
-    2      1    0.000000    0.000000     27   -0.336854    0.519541    0.519541
+    1      2   -0.000000    0.000000     20    2.731927    3.868984    3.868984
+    2      1   -0.000000    0.000000     27   -0.336854    0.519541    0.519541
     3      2    0.000000    0.000000     14   -0.004379    0.009051    0.009051
     4      2    0.000000    0.000000     27   -0.000039    0.000072    0.000072
-    5      2    0.000000    0.000000     14    0.000000    0.000001    0.000001
+    5      2    0.000000    0.000000     14   -0.000000    0.000001    0.000001
 
 
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1     3     0     3      0.00      0.00      1.88      0.00      0.63
-    2     3     0     3      0.00      0.00      1.88      0.00      0.63
-    3     3     0     3      0.00      0.00      1.88      0.00      0.63
-    4     3     0     3      0.00      0.00      1.88      0.00      0.63
-    5     0     0     0      0.00      0.00      0.00      0.00
+    1     3     0     3      0.13      0.05      0.05      0.03      0.02
+    2     3     0     3      0.10      0.04      0.05      0.04      0.02
+    3     3     0     3      0.11      0.04      0.05      0.03      0.02
+    4     3     0     3      0.10      0.04      0.04      0.04      0.01
+    5     0     0     0      0.06      0.05      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
@@ -681,10 +681,10 @@ Point group: D2h
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.502877716769     -0.428789694628      0.852671892847
-    3     -0.017186457716     -0.017239268782      1.003072830218
-    4     -0.000003997698     -0.000003997616      0.999979455407
-    5     -0.000000000280     -0.000000000280      1.000404517745
+    2     -0.502877716769     -0.428789694628      0.852671892848
+    3     -0.017186457716     -0.017239268782      1.003072830210
+    4     -0.000003997698     -0.000003997616      0.999979483819
+    5     -0.000000000280     -0.000000000280      1.000201450990
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
@@ -719,8 +719,7 @@ Point group: D2h
      Final gradient norm:           0.000000599696
 
  
-     Date and time (Linux)  : Tue Feb 13 11:12:46 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
  Occupancies of natural orbitals
@@ -803,7 +802,7 @@ Point group: D2h
    2  O   s      0.0018   0.7883
    3  O   s      0.0009   0.0472
    4  O   pz    -0.0014   0.1724
-   5  O   pz     0.0000  -0.0346
+   5  O   pz    -0.0000  -0.0346
    6  O   dxx   -0.0002  -0.0021
    7  O   dyy   -0.0002  -0.0021
    8  O   dzz    0.0001  -0.0112
@@ -859,16 +858,15 @@ Point group: D2h
    ( Ranges are relative to norm of vector :  1.00E+00 )
 
   10- 1 to 10- 0         2    0.10000000E+01    0.10000000E+01
-  Number of coefficients less than 10^-11 times norm is             0
+  Number of coefficients less than 10^-11 times norm is   0
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.22 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.62 seconds
+ >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 11:12:46 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  NOTE:    1 informational messages have been issued.
  Check output, result, and error files for "INFO".
@@ -876,7 +874,7 @@ Point group: D2h
 - End of Wave Function Section
 
 
-  This is output from RESPONS  -  an MCSCF and SOPPA response property program 
+  This is output from RESPONSE  -  an MCSCF and SOPPA response property program 
  ------------------------------------------------------------------------------
 
 
@@ -901,15 +899,9 @@ Point group: D2h
  -------------------------------------------
 
  Print level                                    : IPRPP  =   2
- Maximum number of iterations                   : MAXITL =  60
- Maximum number of iterations                   : MAXITP =  60
- Threshold for convergence                      : THCPP  = 1.000D-03
- Threshold for convergence                      : THCLR  = 1.000D-03
+ Maximum number of iterations for eigenval.eqs. : MAXITP =  60
+ Threshold for convergence of eigenval.eqs.     : THCPP  = 1.000D-03
  Maximum iterations in optimal orbital algorithm: MAXITO =   5
-
- Spin of operator A , ISPINA=    0
- Spin of operator B , (Excitation energy) ISPINB=    0
- Spin of operator C , (Excitation energy) ISPINC=    0
 
       1 Excitation energies are calculated for symmetry no.    4
 
@@ -921,10 +913,10 @@ Point group: D2h
  AOORDINT will be deleted as requested.
 
 
- MCSCF energy         :     -149.556075023584200
- -- inactive part     :     -176.090793792895400
- --   active part     :       -1.523150586234627
- -- nuclear repulsion :       28.057869355545810
+ MCSCF energy         :     -149.556075023584210
+ -- inactive part     :     -176.090793792895390
+ --   active part     :       -1.523150586234631
+ -- nuclear repulsion :       28.057869355545811
 
 
  >>>>>>>>>> Linear response calculation
@@ -958,10 +950,10 @@ Point group: D2h
  *** RSPCTL MICROITERATIONS CONVERGED
 
 @Transition operator type:    Z1SPNORB
-@STATE NO:    1 *TRANSITION MOMENT:  1.30258189E-03 *ENERGY(eV):  -2.9132584    
+@STATE NO:    1 *TRANSITION MOMENT:  1.30258170E-03 *ENERGY(eV):  -2.9132584    
 
 @Transition operator type:    Z2SPNORB
-@STATE NO:    1 *TRANSITION MOMENT: -4.54882175E-04 *ENERGY(eV):  -2.9132584    
+@STATE NO:    1 *TRANSITION MOMENT: -4.54882107E-04 *ENERGY(eV):  -2.9132584    
 
 
 @REFERENCE  STATE    SYMMETRY  1
@@ -978,21 +970,20 @@ Point group: D2h
 @Total energy :       -149.66314     au
 
 @Operator type:    Z1SPNORB
-@Spin-orbit coupling constant (Z1SPNORB) :   285.88368     cm-1
-                                            1.30258189E-03 au
+@Spin-orbit coupling constant (Z1SPNORB) :   285.88364     cm-1
+                                            1.30258170E-03 au
 
 @Operator type:    Z2SPNORB
-@Spin-orbit coupling constant (Z2SPNORB) :  -99.835098     cm-1
-                                           -4.54882175E-04 au
+@Spin-orbit coupling constant (Z2SPNORB) :  -99.835083     cm-1
+                                           -4.54882107E-04 au
 
 
- Time used in polarization propagator calculation is      0.00 CPU seconds for symmetry 4
+ Time used in polarization propagator calculation is      2.54 CPU seconds for symmetry 4
 
- >>>> Total CPU  time used in RESPONSE:   1.22 seconds
- >>>> Total wall time used in RESPONSE:   1.00 seconds
- >>>> Total CPU  time used in DALTON:  29.80 seconds
- >>>> Total wall time used in DALTON:  31.00 seconds
+ >>>> Total CPU  time used in RESPONSE:   2.99 seconds
+ >>>> Total wall time used in RESPONSE:   4.00 seconds
+ >>>> Total CPU  time used in DALTON:  18.75 seconds
+ >>>> Total wall time used in DALTON:  20.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 11:12:47 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    

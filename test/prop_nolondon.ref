@@ -4,7 +4,7 @@
     ***********  DALTON - An electronic structure program  ***********
     ******************************************************************
 
-               This is output from DALTON (Release 1.2, April 2001)
+            This is output from DALTON (Release 2.0, ? 2001)
 
                           Principal authors:
 
@@ -17,6 +17,7 @@
 
                           Contributors:
 
+            Alexander A. Auer,     University of Mainz,        Germany
             Keld L. Bak,           UNI-C,                      Denmark
             Vebjoern Bakken,       University of Oslo,         Norway 
             Ove Christiansen,      University of Lund,         Sweden 
@@ -36,16 +37,18 @@
             Henrik Koch,           SDU - Odense University,    Denmark
             Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
             Patrick Norman,        University of Linkoeping,   Sweden 
+            Thomas B. Pedersen,    U.of Santiago de Compostela,Spain  
             Martin J. Packer,      University of Sheffield,    UK     
             Torgeir A. Ruden,      University of Oslo,         Norway 
+            Alfredo Sanchez,       University of Valencia,     Spain  
             Trond Saue,            University of Toulouse,     France 
             Stephan P. A. Sauer,   University of Copenhagen,   Denmark
             Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
             K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
             Peter R.Taylor,        San Diego Superc. Center,   USA    
             Olav Vahtras,          PDC, Stockholm,             Sweden 
-------------------------------------------------------------------------
 
+------------------------------------------------------------------------
 
 
      NOTE:
@@ -63,17 +66,19 @@
      If results obtained with this code are published, an
      appropriate citation would be:
       
-     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,H. Aagren,
-     K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,P. Dahle, E.K. Dalskov,
-     T. Enevoldsen, B. Fernandez,C. Haettig, K. Hald, A. Halkier,
+     "Dalton, a molecular electronic structure program, Release 1.2
+     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
      H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-     H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T.A. Ruden, T. Saue,
-     S.P.A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,P.R. Taylor, and O. Vahtras:
-     "Dalton release 1.2 (2001), an electronic structure program"
+     H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+     T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+     B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+     and O. Vahtras"
 
  
-     Date and time (Linux)  : Tue Feb 13 01:04:39 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
 
@@ -102,8 +107,8 @@
   Title Cards
   -----------
 
-  H2O                                                                     
-  Coupling Constants                                                      
+  Calculation of no-London shielding constants through ABACUS             
+                                                                          
 
   *** WARNING from READIN ***
 
@@ -130,30 +135,30 @@ Point group: C2v
 
    * Group multiplication table
 
-        |  E   C2z  Oxz  Oyz
+        |  E   C2z  Oxz  Oyz  
    -----+--------------------
-     E  |  E 
-    C2z | C2z   E 
-    Oxz | Oxz  Oyz   E 
-    Oyz | Oyz  Oxz  C2z   E 
+     E  |  E   
+    C2z | C2z   E   
+    Oxz | Oxz  Oyz   E   
+    Oyz | Oyz  Oxz  C2z   E   
 
    * Character table
 
-        |  E   C2z  Oxz  Oyz
+        |  E   C2z  Oxz  Oyz  
    -----+--------------------
-    A1  |   1    1    1    1
-    B1  |   1   -1    1   -1
-    B2  |   1   -1   -1    1
-    A2  |   1    1   -1   -1
+    A1  |   1    1    1    1  
+    B1  |   1   -1    1   -1  
+    B2  |   1   -1   -1    1  
+    A2  |   1    1   -1   -1  
 
    * Direct product table
 
-        | A1   B1   B2   A2 
+        | A1   B1   B2   A2   
    -----+--------------------
-    A1  | A1 
-    B1  | B1   A1 
-    B2  | B2   A2   A1 
-    A2  | A2   B2   B1   A1 
+    A1  | A1   
+    B1  | B1   A1   
+    B2  | B2   A2   A1   
+    A2  | A2   B2   B1   A1   
 
 
   Atoms and basis sets
@@ -229,7 +234,7 @@ Point group: C2v
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            O           H  1        H  2
+            O           H  1        H  2        
 
    O       0.000000
    H  1    0.958391    0.000000
@@ -266,57 +271,57 @@ Point group: C2v
 
   Symmetry  A1 ( 1)
 
-    1     O        s          1
-    2     O        s          2
-    3     O        s          3
-    4     O        s          4
-    5     O        s          5
-    6     O        s          6
-    7     O        pz         9
-    8     O        pz        12
-    9     O        pz        15
-   10     O        pz        18
-   11     O        pz        21
-   12     O        dxx       22
-   13     O        dyy       25
-   14     O        dzz       27
-   15     H        s         28  +  29
-   16     H        s         30  +  31
-   17     H        s         32  +  33
-   18     H        py        36  -  37
-   19     H        pz        38  +  39
+    1     O        s          1  
+    2     O        s          2  
+    3     O        s          3  
+    4     O        s          4  
+    5     O        s          5  
+    6     O        s          6  
+    7     O        pz         9  
+    8     O        pz        12  
+    9     O        pz        15  
+   10     O        pz        18  
+   11     O        pz        21  
+   12     O        dxx       22  
+   13     O        dyy       25  
+   14     O        dzz       27  
+   15     H        s         28  +  29  
+   16     H        s         30  +  31  
+   17     H        s         32  +  33  
+   18     H        py        36  -  37  
+   19     H        pz        38  +  39  
 
 
   Symmetry  B1 ( 2)
 
-   20     O        px         7
-   21     O        px        10
-   22     O        px        13
-   23     O        px        16
-   24     O        px        19
-   25     O        dxz       24
-   26     H        px        34  +  35
+   20     O        px         7  
+   21     O        px        10  
+   22     O        px        13  
+   23     O        px        16  
+   24     O        px        19  
+   25     O        dxz       24  
+   26     H        px        34  +  35  
 
 
   Symmetry  B2 ( 3)
 
-   27     O        py         8
-   28     O        py        11
-   29     O        py        14
-   30     O        py        17
-   31     O        py        20
-   32     O        dyz       26
-   33     H        s         28  -  29
-   34     H        s         30  -  31
-   35     H        s         32  -  33
-   36     H        py        36  +  37
-   37     H        pz        38  -  39
+   27     O        py         8  
+   28     O        py        11  
+   29     O        py        14  
+   30     O        py        17  
+   31     O        py        20  
+   32     O        dyz       26  
+   33     H        s         28  -  29  
+   34     H        s         30  -  31  
+   35     H        s         32  -  33  
+   36     H        py        36  +  37  
+   37     H        pz        38  -  39  
 
 
   Symmetry  A2 ( 4)
 
-   38     O        dxy       23
-   39     H        px        34  -  35
+   38     O        dxy       23  
+   39     H        px        34  -  35  
 
   Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
 
@@ -328,10 +333,10 @@ Point group: C2v
  ************************************************************************
 
 
- >>> Time used in ONEDRV is   0.01 seconds
+ >>> Time used in ONEDRV is   0.02 seconds
 
 
- >>> Time used in OVERLA is   0.01 seconds
+ >>> Time used in OVERLA is   0.02 seconds
 
 
  Number of two-electron integrals written:       75206 ( 24.7% )
@@ -339,7 +344,7 @@ Point group: C2v
 
 
 
- >>> Time used in TWOINT is   0.81 seconds
+ >>> Time used in TWOINT is   1.16 seconds
 
 
 
@@ -352,28 +357,24 @@ Point group: C2v
 
  Threshold for discarding integrals :  1.00D-15
 
- >>> Time used in FRMSUP is   0.05 seconds
+ >>> Time used in FRMSUP is   2.09 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.90 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total CPU  time used in HERMIT:   3.40 seconds
+ >>>> Total wall time used in HERMIT:   4.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 01:04:40 2001
-     Host name              : slater.uio.no                           
-
- Title     : H2O : SOPPA calculation of magnetizability, rotational g-fac
-             and nuclear magnetic shielding without London orbitals      
+     Host name              : pico                                    
 
  Title lines from integral program:
-     H2O                                                                     
-     Coupling Constants                                                      
+     Calculation of no-London shielding constants through ABACUS             
+                                                                             
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -408,7 +409,7 @@ Point group: C2v
      Number of basis functions         19   7  11   2
 
       ** Automatic occupation of RHF orbitals **
-      -- Initial occupation of symmetries is determined from Huckel guess.               
+      -- Initial occupation of symmetries is determined from Huckel guess.                    
       -- Initial occupation of symmetries is : --
 
      Occupied HF orbitals               3   1   1   0
@@ -437,7 +438,7 @@ Point group: C2v
    8    -76.060784217854   7.41D-05  -3.72D-08    3  1  1  0
    9    -76.060784218638   1.61D-05  -7.84D-10    3  1  1  0
   10    -76.060784218681   2.41D-06  -4.29D-11    3  1  1  0
-  11    -76.060784218682   3.12D-07  -8.31D-13    3  1  1  0
+  11    -76.060784218682   3.12D-07  -8.38D-13    3  1  1  0
  DIIS converged in  11 iterations !
 
 
@@ -532,7 +533,7 @@ Point group: C2v
  RHF     0.00000000
  Diff.   0.00653049
 
- Time used for MP2 natural orbitals :       0.490 CPU seconds.
+ Time used for MP2 natural orbitals :      11.330 CPU seconds.
 
 
                     >>> FINAL RESULTS FROM SIRIUS <<<
@@ -547,8 +548,7 @@ Point group: C2v
      Final gradient norm:           0.000000311902
 
  
-     Date and time (Linux)  : Tue Feb 13 01:04:40 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
      Molecular orbitals for symmetry species   1
 
@@ -601,12 +601,11 @@ Point group: C2v
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.58 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :     11.54 seconds
+ >>>> Total wall time used in SIRIUS :     11.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 01:04:40 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 - End of Wave Function Section
 
@@ -640,8 +639,7 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:04:40 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  TRACTL: Integral transformation abandoned,
  the required MO integrals are already available.
@@ -653,8 +651,7 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Tue Feb 13 01:04:42 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
@@ -677,7 +674,7 @@ Point group: C2v
 
      Total energy        -76.0607842187 au (Hartrees)
                          -2069.71916108 eV
-                           -199697.5605 kJ/mol
+                           -199697.5603 kJ/mol
 
 
 
@@ -718,9 +715,9 @@ Point group: C2v
                                  Bx                  By                  Bz
 
 
-            Bx        -3.053778647751      0.000000000000      0.000000000000
-            By         0.000000000000     -2.995364023031      0.000000000000
-            Bz         0.000000000000      0.000000000000     -3.062225781037
+            Bx        -3.053778647751     -0.000000000000     -0.000000000000
+            By        -0.000000000000     -2.995364023031     -0.000000000000
+            Bz        -0.000000000000     -0.000000000000     -3.062225781037
 
 
 
@@ -731,9 +728,9 @@ Point group: C2v
                                  Bx                  By                  Bz
 
 
-            Bx        -3.509385943194      0.000000000000      0.000000000000
-            By         0.000000000000     -3.123016283690      0.000000000000
-            Bz         0.000000000000      0.000000000000     -3.301507617538
+            Bx        -3.509385943194     -0.000000000000     -0.000000000000
+            By        -0.000000000000     -3.123016283690     -0.000000000000
+            Bz        -0.000000000000     -0.000000000000     -3.301507617538
 
 
 
@@ -744,9 +741,9 @@ Point group: C2v
                                  Bx                  By                  Bz
 
 
-            Bx         0.455607295444      0.000000000000      0.000000000000
-            By         0.000000000000      0.127652260659      0.000000000000
-            Bz         0.000000000000      0.000000000000      0.239281836501
+            Bx         0.455607295444     -0.000000000000     -0.000000000000
+            By        -0.000000000000      0.127652260659     -0.000000000000
+            Bz        -0.000000000000     -0.000000000000      0.239281836501
 
 
 
@@ -759,7 +756,7 @@ Point group: C2v
   Calculation without London orbitals.
 
 
- Principal moments of inertia (a.u.) and principle axis
+ Principal moments of inertia (a.u.) and principal axes
  ------------------------------------------------------
 
    IA    2.203200          0.000000    1.000000    0.000000
@@ -782,20 +779,20 @@ Point group: C2v
   Molecular g-factor in principal axis system (a.u.):
   ---------------------------------------------------
 
-   A        0.71053998  0.00000000  0.00000000
-   B        0.00000000  0.76605491  0.00000000
+   A        0.71053998 -0.00000000  0.00000000
+   B       -0.00000000  0.76605491  0.00000000
    C        0.00000000  0.00000000  0.69033699
 
 
-  Nuclear contribution in principle axis system (a.u.):
+  Nuclear contribution in principal axis system (a.u.):
   -----------------------------------------------------
 
-   A        0.94398430  0.00000000  0.00000000
-   B        0.00000000  0.99945573  0.00000000
+   A        0.94398430 -0.00000000  0.00000000
+   B       -0.00000000  0.99945573  0.00000000
    C        0.00000000  0.00000000  0.98016019
 
 
-  Electronic contribution in principle axis system (a.u.):
+  Electronic contribution in principal axis system (a.u.):
   --------------------------------------------------------
 
    A       -0.23344432  0.00000000  0.00000000
@@ -803,7 +800,7 @@ Point group: C2v
    C        0.00000000  0.00000000 -0.28982319
 
 
-  Diamagnetic contribution in principle axis system (a.u.):
+  Diamagnetic contribution in principal axis system (a.u.):
   ---------------------------------------------------------
 
    A        0.00000000  0.00000000  0.00000000
@@ -822,24 +819,24 @@ Point group: C2v
 
 
     Symmetry 2
-                       By
+                       By             
 
-        O    y   355.21840256
-        H    y    78.24711664
-        H    z   -15.20513135
+        O    y   355.21834911
+        H    y    78.24710487
+        H    z   -15.20512906
 
     Symmetry 3
-                       Bx
+                       Bx             
 
-        O    x   297.16201653
-        H    x    46.81780798
+        O    x   297.16197182
+        H    x    46.81780093
 
     Symmetry 4
-                       Bz
+                       Bz             
 
-        O    z   304.75564269
-        H    y   -19.14051555
-        H    z    59.89596830
+        O    z   304.75559683
+        H    y   -19.14051267
+        H    z    59.89595929
 
 
 
@@ -848,7 +845,7 @@ Point group: C2v
   ==============================
 
 
-  Shielding constant:    319.0454 ppm
+  Shielding constant:    319.0453 ppm
   Anisotropy:             54.2596 ppm
   Asymmetry:               0.2099    
 
@@ -859,29 +856,29 @@ Point group: C2v
   Total shielding tensor (ppm):
   -----------------------------
 
-                  Bx             By             Bz
+                  Bx             By             Bz             
 
-  O    x   297.16201653     0.00000000     0.00000000
-  O    y     0.00000000   355.21840256     0.00000000
-  O    z     0.00000000     0.00000000   304.75564269
+  O    x   297.16197182     0.00000000     0.00000000
+  O    y     0.00000000   355.21834911     0.00000000
+  O    z     0.00000000     0.00000000   304.75559683
 
 
   Diamagnetic and paramagnetic contributions (ppm):
   -------------------------------------------------
 
-               Bx         By         Bz             Bx         By         Bz
+               Bx         By         Bz             Bx         By         Bz         
 
-  O    x   415.6128     0.0000     0.0000      -118.4507     0.0000     0.0000
-  O    y     0.0000   413.6582     0.0000         0.0000   -58.4398     0.0000
+  O    x   415.6127     0.0000     0.0000      -118.4507     0.0000     0.0000
+  O    y     0.0000   413.6581     0.0000         0.0000   -58.4398     0.0000
   O    z     0.0000     0.0000   415.5063         0.0000     0.0000  -110.7507
 
-  Diamagnetic contribution:    414.925758         Paramagnetic:     -95.880404
+  Diamagnetic contribution:    414.925696         Paramagnetic:     -95.880390
 
 
   Antisymmetric and traceless symmetric parts (ppm):
   --------------------------------------------------
 
-               Bx         By         Bz             Bx         By         Bz
+               Bx         By         Bz             Bx         By         Bz         
 
   O    x     0.0000     0.0000     0.0000       -21.8833     0.0000     0.0000
   O    y     0.0000     0.0000     0.0000         0.0000    36.1730     0.0000
@@ -891,9 +888,9 @@ Point group: C2v
   Principal values and axes:
   --------------------------
 
-  O     1    297.162017  =  319.05  -  21.88:     1.000000  0.000000  0.000000
-  O     2    304.755643  =  319.05  -  14.29:     0.000000  0.000000  1.000000
-  O     3    355.218403  =  319.05  +  36.17:     0.000000  1.000000  0.000000
+  O     1    297.161972  =  319.05  -  21.88:     1.000000  0.000000  0.000000
+  O     2    304.755597  =  319.05  -  14.29:     0.000000  0.000000  1.000000
+  O     3    355.218349  =  319.05  +  36.17:     0.000000  1.000000  0.000000
 
 
   Chemical shielding for H    1:
@@ -911,29 +908,29 @@ Point group: C2v
   Total shielding tensor (ppm):
   -----------------------------
 
-                  Bx             By             Bz
+                  Bx             By             Bz             
 
-  H  1 x    23.40890399     0.00000000     0.00000000
-  H  1 y     0.00000000    39.12355832    -9.57025777
-  H  1 z     0.00000000    -7.60256567    29.94798415
+  H  1 x    23.40890047     0.00000000     0.00000000
+  H  1 y     0.00000000    39.12355243    -9.57025633
+  H  1 z     0.00000000    -7.60256453    29.94797964
 
 
   Diamagnetic and paramagnetic contributions (ppm):
   -------------------------------------------------
 
-               Bx         By         Bz             Bx         By         Bz
+               Bx         By         Bz             Bx         By         Bz         
 
   H  1 x    13.9926     0.0000     0.0000         9.4163     0.0000     0.0000
   H  1 y     0.0000    36.9435   -17.3333         0.0000     2.1800     7.7630
   H  1 z     0.0000   -14.1329    23.6845         0.0000     6.5303     6.2635
 
-  Diamagnetic contribution:     24.873524         Paramagnetic:       5.953291
+  Diamagnetic contribution:     24.873521         Paramagnetic:       5.953290
 
 
   Antisymmetric and traceless symmetric parts (ppm):
   --------------------------------------------------
 
-               Bx         By         Bz             Bx         By         Bz
+               Bx         By         Bz             Bx         By         Bz         
 
   H  1 x     0.0000     0.0000     0.0000        -7.4179     0.0000     0.0000
   H  1 y     0.0000     0.0000    -0.9838         0.0000     8.2967    -8.5864
@@ -943,9 +940,9 @@ Point group: C2v
   Principal values and axes:
   --------------------------
 
-  H    11     23.408904  =   30.83  -   7.42:     1.000000  0.000000  0.000000
-  H    12     24.800564  =   30.83  -   6.03:     0.000000  0.514171  0.857688
-  H    13     44.270978  =   30.83  +  13.44:     0.000000  0.857688 -0.514171
+  H    11     23.408900  =   30.83  -   7.42:     1.000000  0.000000  0.000000
+  H    12     24.800560  =   30.83  -   6.03:     0.000000  0.514171  0.857688
+  H    13     44.270972  =   30.83  +  13.44:     0.000000  0.857688 -0.514171
 
 
   Chemical shielding for H    2:
@@ -963,29 +960,29 @@ Point group: C2v
   Total shielding tensor (ppm):
   -----------------------------
 
-                  Bx             By             Bz
+                  Bx             By             Bz             
 
-  H  2 x    23.40890399     0.00000000     0.00000000
-  H  2 y     0.00000000    39.12355832     9.57025777
-  H  2 z     0.00000000     7.60256567    29.94798415
+  H  2 x    23.40890047     0.00000000     0.00000000
+  H  2 y     0.00000000    39.12355243     9.57025633
+  H  2 z     0.00000000     7.60256453    29.94797964
 
 
   Diamagnetic and paramagnetic contributions (ppm):
   -------------------------------------------------
 
-               Bx         By         Bz             Bx         By         Bz
+               Bx         By         Bz             Bx         By         Bz         
 
   H  2 x    13.9926     0.0000     0.0000         9.4163     0.0000     0.0000
   H  2 y     0.0000    36.9435    17.3333         0.0000     2.1800    -7.7630
   H  2 z     0.0000    14.1329    23.6845         0.0000    -6.5303     6.2635
 
-  Diamagnetic contribution:     24.873524         Paramagnetic:       5.953291
+  Diamagnetic contribution:     24.873521         Paramagnetic:       5.953290
 
 
   Antisymmetric and traceless symmetric parts (ppm):
   --------------------------------------------------
 
-               Bx         By         Bz             Bx         By         Bz
+               Bx         By         Bz             Bx         By         Bz         
 
   H  2 x     0.0000     0.0000     0.0000        -7.4179     0.0000     0.0000
   H  2 y     0.0000     0.0000     0.9838         0.0000     8.2967     8.5864
@@ -995,9 +992,9 @@ Point group: C2v
   Principal values and axes:
   --------------------------
 
-  H    21     23.408904  =   30.83  -   7.42:     1.000000  0.000000  0.000000
-  H    22     24.800564  =   30.83  -   6.03:     0.000000 -0.514171  0.857688
-  H    23     44.270978  =   30.83  +  13.44:     0.000000  0.857688  0.514171
+  H    21     23.408900  =   30.83  -   7.42:     1.000000  0.000000  0.000000
+  H    22     24.800560  =   30.83  -   6.03:     0.000000 -0.514171  0.857688
+  H    23     44.270972  =   30.83  +  13.44:     0.000000  0.857688  0.514171
 
 
                      +--------------------------------+
@@ -1008,7 +1005,7 @@ Point group: C2v
 
  @1atom   shielding       dia      para     skew      span     (aniso     asym)
  @1----------------------------------------------------------------------------
- @1O       319.0454  414.9258  -95.8804    0.7384   58.0564   54.2596    0.2099
+ @1O       319.0453  414.9257  -95.8804    0.7384   58.0564   54.2596    0.2099
  @1H    1   30.8268   24.8735    5.9533    0.8666   20.8621   20.1662    0.1035
  @1H    2   30.8268   24.8735    5.9533    0.8666   20.8621   20.1662    0.1035
 
@@ -1022,7 +1019,7 @@ Point group: C2v
 
  @2atom   shielding       dia      para     aniso      asym        S        A
  @2----------------------------------------------------------------------------
- @2O       319.0454  414.9258  -95.8804   54.2596    0.2099   54.6566    0.0000
+ @2O       319.0453  414.9257  -95.8804   54.2596    0.2099   54.6566    0.0000
  @2H    1   30.8268   24.8735    5.9533   20.1662    0.1035   20.2022    0.9838
  @2H    2   30.8268   24.8735    5.9533   20.1662    0.1035   20.2022    0.9838
 
@@ -1031,7 +1028,7 @@ Point group: C2v
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            O           H  1        H  2
+            O           H  1        H  2        
 
    O       0.000000
    H  1    0.958391    0.000000
@@ -1062,19 +1059,18 @@ Point group: C2v
  CPU time statistics for ABACUS
  ------------------------------
 
- LINRES     00:00:02      87 %
+ LINRES     00:00:03      77 %
 
- TOTAL      00:00:02     100 %
+ TOTAL      00:00:04     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   2.10 seconds
- >>>> Total wall time used in ABACUS:   2.00 seconds
+ >>>> Total CPU  time used in ABACUS:   3.51 seconds
+ >>>> Total wall time used in ABACUS:   5.00 seconds
 
 - End of Static Property Section
- >>>> Total CPU  time used in DALTON:   3.60 seconds
- >>>> Total wall time used in DALTON:   3.00 seconds
+ >>>> Total CPU  time used in DALTON:  18.46 seconds
+ >>>> Total wall time used in DALTON:  20.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 01:04:42 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    

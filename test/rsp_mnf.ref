@@ -4,7 +4,7 @@
     ***********  DALTON - An electronic structure program  ***********
     ******************************************************************
 
-               This is output from DALTON (Release 1.2, April 2001)
+            This is output from DALTON (Release 2.0, ? 2001)
 
                           Principal authors:
 
@@ -17,6 +17,7 @@
 
                           Contributors:
 
+            Alexander A. Auer,     University of Mainz,        Germany
             Keld L. Bak,           UNI-C,                      Denmark
             Vebjoern Bakken,       University of Oslo,         Norway 
             Ove Christiansen,      University of Lund,         Sweden 
@@ -36,16 +37,18 @@
             Henrik Koch,           SDU - Odense University,    Denmark
             Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
             Patrick Norman,        University of Linkoeping,   Sweden 
+            Thomas B. Pedersen,    U.of Santiago de Compostela,Spain  
             Martin J. Packer,      University of Sheffield,    UK     
             Torgeir A. Ruden,      University of Oslo,         Norway 
+            Alfredo Sanchez,       University of Valencia,     Spain  
             Trond Saue,            University of Toulouse,     France 
             Stephan P. A. Sauer,   University of Copenhagen,   Denmark
             Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
             K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
             Peter R.Taylor,        San Diego Superc. Center,   USA    
             Olav Vahtras,          PDC, Stockholm,             Sweden 
-------------------------------------------------------------------------
 
+------------------------------------------------------------------------
 
 
      NOTE:
@@ -63,14 +66,16 @@
      If results obtained with this code are published, an
      appropriate citation would be:
       
-     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,
-     H. Aagren, K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,
-     P. Dahle, E.K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
-     K. Hald, A. Halkier, H. Heiberg, H. Hettema, D. Jonsson,
-     S. Kirpekar, R. Kobayashi, H. Koch, K.V. Mikkelsen, P. Norman,
-     M.J. Packer, T.A. Ruden, T. Saue, S.P.A. Sauer, B. Schimmelpfennig,
-     K. O. Sylvester-Hvid, P.R. Taylor, and O. Vahtras:
-     "Dalton release 1.2 (2001), an electronic structure program"
+     "Dalton, a molecular electronic structure program, Release 1.2
+     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+     H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+     H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+     T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+     B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+     and O. Vahtras"
 
  
      Host name              : pico                                    
@@ -97,6 +102,10 @@
  * Nuclear model: Point charge
 
  Calculation of one- and two-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated:
+          - overlap integrals
+          - Mean field spin-orbit integrals
 
  In this run  precalculated two-electron integrals are transformed
  to P-supermatrix elements.
@@ -342,10 +351,10 @@ Point group: D2h
  ************************************************************************
 
 
- >>> Time used in ONEDRV is   0.07 seconds
+ >>> Time used in ONEDRV is   0.06 seconds
 
 
- >>> Time used in OVERLA is   0.05 seconds
+ >>> Time used in OVERLA is   0.04 seconds
 
 SO-integrals are calculated for  O: [He]2s^2 2p^4             
 
@@ -456,7 +465,7 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
 
 
 
- >>> Time used in TWOINT is   2.32 seconds
+ >>> Time used in TWOINT is   3.14 seconds
 
 
 
@@ -469,17 +478,17 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
 
  Threshold for discarding integrals :  1.00D-12
 
- >>> Time used in FRMSUP is   0.02 seconds
+ >>> Time used in FRMSUP is   0.03 seconds
 
- >>>> Total CPU  time used in HERMIT:   2.68 seconds
- >>>> Total wall time used in HERMIT:   3.00 seconds
+ >>>> Total CPU  time used in HERMIT:   3.65 seconds
+ >>>> Total wall time used in HERMIT:   4.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
      Host name              : pico                                    
@@ -604,7 +613,7 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :     -149.538831756906170       (MACRO    2)
+ Total MCSCF energy       :     -149.538831756906200       (MACRO    2)
 
  Norm of total gradient   :        0.519540866464
  -    of CI gradient      :        0.000000000000
@@ -623,7 +632,7 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :     -149.556071025688620       (MACRO    3)
+ Total MCSCF energy       :     -149.556071025688560       (MACRO    3)
 
  Norm of total gradient   :        0.009050915463
  -    of CI gradient      :        0.000000000000
@@ -661,7 +670,7 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
  <<< MACRO ITERATION  5 >>>
  --------------------------
 
- Total MCSCF energy       :     -149.556075023584180       (MACRO    5)
+ Total MCSCF energy       :     -149.556075023584120       (MACRO    5)
 
  Norm of total gradient   :        0.000000599696
  -    of CI gradient      :        0.000000000000
@@ -670,7 +679,7 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            5
      Number of micro iterations used           12
-     Total number of CPU seconds used         0.38
+     Total number of CPU seconds used         0.49
 
 
                >>> SIRIUS OPTIMIZATION STATISTICS <<<
@@ -685,13 +694,13 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
     2    3   -149.538831756906   0.5195408665  0.852672   0.0751524573
     3    3   -149.556071025689   0.0090509155  1.003073   0.0010950536
     4    3   -149.556075023304   0.0000716176  0.999979   0.0000091923
-    5    0   -149.556075023584   0.0000005997  1.000100   0.0000000000
+    5    0   -149.556075023584   0.0000005997  0.999897   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
  ------------------------------------------------------------------------------
     1      1   -0.000000    0.000000     20    2.731927    3.868984    3.868984
-    2      2   -0.000000    0.000000     27   -0.336854    0.519541    0.519541
+    2      1   -0.000000    0.000000     27   -0.336854    0.519541    0.519541
     3      1    0.000000    0.000000     14   -0.004379    0.009051    0.009051
     4      2    0.000000    0.000000     27   -0.000039    0.000072    0.000072
     5      1    0.000000    0.000000     14   -0.000000    0.000001    0.000001
@@ -700,11 +709,11 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1     3     0     3      0.07      0.05      0.01      0.01      0.00
-    2     3     0     3      0.07      0.05      0.01      0.01      0.00
-    3     3     0     3      0.07      0.05      0.01      0.01      0.00
-    4     3     0     3      0.08      0.05      0.02      0.01      0.01
-    5     0     0     0      0.05      0.04      0.00      0.00
+    1     3     0     3      0.09      0.05      0.02      0.02      0.01
+    2     3     0     3      0.08      0.06      0.02      0.02      0.01
+    3     3     0     3      0.09      0.06      0.02      0.01      0.01
+    4     3     0     3      0.09      0.05      0.03      0.01      0.01
+    5     0     0     0      0.06      0.06      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
@@ -720,9 +729,9 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
 
     1      0.000000000000      0.000000000000      0.000000000000
     2     -0.502877716769     -0.428789694628      0.852671892848
-    3     -0.017186457716     -0.017239268782      1.003072830216
-    4     -0.000003997698     -0.000003997616      0.999979462495
-    5     -0.000000000280     -0.000000000280      1.000099917832
+    3     -0.017186457716     -0.017239268782      1.003072830211
+    4     -0.000003997698     -0.000003997616      0.999979476718
+    5     -0.000000000280     -0.000000000280      0.999896851915
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
@@ -900,7 +909,7 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.43 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.55 seconds
  >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
@@ -909,7 +918,7 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
 - End of Wave Function Section
 
 
-  This is output from RESPONS  -  an MCSCF and SOPPA response property program 
+  This is output from RESPONSE  -  an MCSCF and SOPPA response property program 
  ------------------------------------------------------------------------------
 
 
@@ -934,15 +943,9 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
  -------------------------------------------
 
  Print level                                    : IPRPP  =   2
- Maximum number of iterations                   : MAXITL =  60
- Maximum number of iterations                   : MAXITP =  60
- Threshold for convergence                      : THCPP  = 1.000D-03
- Threshold for convergence                      : THCLR  = 1.000D-03
+ Maximum number of iterations for eigenval.eqs. : MAXITP =  60
+ Threshold for convergence of eigenval.eqs.     : THCPP  = 1.000D-03
  Maximum iterations in optimal orbital algorithm: MAXITO =   5
-
- Spin of operator A , ISPINA=    0
- Spin of operator B , (Excitation energy) ISPINB=    0
- Spin of operator C , (Excitation energy) ISPINC=    0
 
       1 Excitation energies are calculated for symmetry no.    4
 
@@ -953,9 +956,9 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
  Old direct access AO file found, SORTA skipped.
 
 
- MCSCF energy         :     -149.556075023584180
- -- inactive part     :     -176.090793792895390
- --   active part     :       -1.523150586234617
+ MCSCF energy         :     -149.556075023584120
+ -- inactive part     :     -176.090793792895340
+ --   active part     :       -1.523150586234616
  -- nuclear repulsion :       28.057869355545811
 
 
@@ -990,7 +993,7 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
  *** RSPCTL MICROITERATIONS CONVERGED
 
 @Transition operator type:    Z1MNF-SO
-@STATE NO:    1 *TRANSITION MOMENT: -8.71001410E-04 *ENERGY(eV):  -2.9132584    
+@STATE NO:    1 *TRANSITION MOMENT:  8.71001279E-04 *ENERGY(eV):  -2.9132584    
 
 
 @REFERENCE  STATE    SYMMETRY  1
@@ -1007,16 +1010,16 @@ SO-integrals are calculated for  O: [He]2s^2 2p^4
 @Total energy :       -149.66314     au
 
 @Operator type:    Z1MNF-SO
-@Spin-orbit coupling constant (Z1MNF-SO) :  -191.16271     cm-1
-                                           -8.71001410E-04 au
+@Spin-orbit coupling constant (Z1MNF-SO) :   191.16268     cm-1
+                                            8.71001279E-04 au
 
 
- Time used in polarization propagator calculation is      0.05 CPU seconds for symmetry 4
+ Time used in polarization propagator calculation is      0.06 CPU seconds for symmetry 4
 
- >>>> Total CPU  time used in RESPONSE:   0.16 seconds
+ >>>> Total CPU  time used in RESPONSE:   0.18 seconds
  >>>> Total wall time used in RESPONSE:   0.00 seconds
- >>>> Total CPU  time used in DALTON:   3.28 seconds
- >>>> Total wall time used in DALTON:   4.00 seconds
+ >>>> Total CPU  time used in DALTON:   4.39 seconds
+ >>>> Total wall time used in DALTON:   5.00 seconds
 
  
      Host name              : pico                                    

@@ -4,7 +4,7 @@
     ***********  DALTON - An electronic structure program  ***********
     ******************************************************************
 
-               This is output from DALTON (Release 1.2, April 2001)
+            This is output from DALTON (Release 2.0, ? 2001)
 
                           Principal authors:
 
@@ -17,6 +17,7 @@
 
                           Contributors:
 
+            Alexander A. Auer,     University of Mainz,        Germany
             Keld L. Bak,           UNI-C,                      Denmark
             Vebjoern Bakken,       University of Oslo,         Norway 
             Ove Christiansen,      University of Lund,         Sweden 
@@ -36,16 +37,18 @@
             Henrik Koch,           SDU - Odense University,    Denmark
             Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
             Patrick Norman,        University of Linkoeping,   Sweden 
+            Thomas B. Pedersen,    U.of Santiago de Compostela,Spain  
             Martin J. Packer,      University of Sheffield,    UK     
             Torgeir A. Ruden,      University of Oslo,         Norway 
+            Alfredo Sanchez,       University of Valencia,     Spain  
             Trond Saue,            University of Toulouse,     France 
             Stephan P. A. Sauer,   University of Copenhagen,   Denmark
             Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
             K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
             Peter R.Taylor,        San Diego Superc. Center,   USA    
             Olav Vahtras,          PDC, Stockholm,             Sweden 
-------------------------------------------------------------------------
 
+------------------------------------------------------------------------
 
 
      NOTE:
@@ -63,17 +66,19 @@
      If results obtained with this code are published, an
      appropriate citation would be:
       
-     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,H. Aagren,
-     K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,P. Dahle, E.K. Dalskov,
-     T. Enevoldsen, B. Fernandez,C. Haettig, K. Hald, A. Halkier,
+     "Dalton, a molecular electronic structure program, Release 1.2
+     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
      H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-     H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T.A. Ruden, T. Saue,
-     S.P.A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,P.R. Taylor, and O. Vahtras:
-     "Dalton release 1.2 (2001), an electronic structure program"
+     H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+     T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+     B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+     and O. Vahtras"
 
  
-     Date and time (Linux)  : Mon Feb 12 23:20:52 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
 
@@ -102,8 +107,8 @@
   Title Cards
   -----------
 
-  bla. bla.                                                               
-  H2o ano basis Almloef and Taylor.                                       
+  Calculation of nuclear quadrupole coupling constants                    
+                                                                          
 
 
   Symmetry Operations
@@ -125,30 +130,30 @@ Point group: C2v
 
    * Group multiplication table
 
-        |  E   C2z  Oxz  Oyz
+        |  E   C2z  Oxz  Oyz  
    -----+--------------------
-     E  |  E 
-    C2z | C2z   E 
-    Oxz | Oxz  Oyz   E 
-    Oyz | Oyz  Oxz  C2z   E 
+     E  |  E   
+    C2z | C2z   E   
+    Oxz | Oxz  Oyz   E   
+    Oyz | Oyz  Oxz  C2z   E   
 
    * Character table
 
-        |  E   C2z  Oxz  Oyz
+        |  E   C2z  Oxz  Oyz  
    -----+--------------------
-    A1  |   1    1    1    1
-    B1  |   1   -1    1   -1
-    B2  |   1   -1   -1    1
-    A2  |   1    1   -1   -1
+    A1  |   1    1    1    1  
+    B1  |   1   -1    1   -1  
+    B2  |   1   -1   -1    1  
+    A2  |   1    1   -1   -1  
 
    * Direct product table
 
-        | A1   B1   B2   A2 
+        | A1   B1   B2   A2   
    -----+--------------------
-    A1  | A1 
-    B1  | B1   A1 
-    B2  | B2   A2   A1 
-    A2  | A2   B2   B1   A1 
+    A1  | A1   
+    B1  | B1   A1   
+    B2  | B2   A2   A1   
+    A2  | A2   B2   B1   A1   
 
 
   Atoms and basis sets
@@ -225,7 +230,7 @@ Point group: C2v
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            Cl          O1 1        O1 2
+            Cl          O1 1        O1 2        
 
    Cl      0.000000
    O1 1    1.470000    0.000000
@@ -262,112 +267,112 @@ Point group: C2v
 
   Symmetry  A1 ( 1)
 
-    1     Cl       1s         1
-    2     Cl       1s         2
-    3     Cl       1s         3
-    4     Cl       1s         4
-    5     Cl       1s         5
-    6     Cl       2pz        8
-    7     Cl       2pz       11
-    8     Cl       2pz       14
-    9     Cl       2pz       17
-   10     Cl       3d0       20
-   11     Cl       3d2+      22
-   12     Cl       3d0       25
-   13     Cl       3d2+      27
-   14     Cl       4f0       31
-   15     Cl       4f2+      33
-   16     O1       1s        35  +  36
-   17     O1       1s        37  +  38
-   18     O1       1s        39  +  40
-   19     O1       1s        41  +  42
-   20     O1       2py       45  -  46
-   21     O1       2pz       47  +  48
-   22     O1       2py       51  -  52
-   23     O1       2pz       53  +  54
-   24     O1       2py       57  -  58
-   25     O1       2pz       59  +  60
-   26     O1       3d1-      63  -  64
-   27     O1       3d0       65  +  66
-   28     O1       3d2+      69  +  70
-   29     O1       3d1-      73  -  74
-   30     O1       3d0       75  +  76
-   31     O1       3d2+      79  +  80
-   32     O1       4f3-      81  -  82
-   33     O1       4f1-      85  -  86
-   34     O1       4f0       87  +  88
-   35     O1       4f2+      91  +  92
+    1     Cl       1s         1  
+    2     Cl       1s         2  
+    3     Cl       1s         3  
+    4     Cl       1s         4  
+    5     Cl       1s         5  
+    6     Cl       2pz        8  
+    7     Cl       2pz       11  
+    8     Cl       2pz       14  
+    9     Cl       2pz       17  
+   10     Cl       3d0       20  
+   11     Cl       3d2+      22  
+   12     Cl       3d0       25  
+   13     Cl       3d2+      27  
+   14     Cl       4f0       31  
+   15     Cl       4f2+      33  
+   16     O1       1s        35  +  36  
+   17     O1       1s        37  +  38  
+   18     O1       1s        39  +  40  
+   19     O1       1s        41  +  42  
+   20     O1       2py       45  -  46  
+   21     O1       2pz       47  +  48  
+   22     O1       2py       51  -  52  
+   23     O1       2pz       53  +  54  
+   24     O1       2py       57  -  58  
+   25     O1       2pz       59  +  60  
+   26     O1       3d1-      63  -  64  
+   27     O1       3d0       65  +  66  
+   28     O1       3d2+      69  +  70  
+   29     O1       3d1-      73  -  74  
+   30     O1       3d0       75  +  76  
+   31     O1       3d2+      79  +  80  
+   32     O1       4f3-      81  -  82  
+   33     O1       4f1-      85  -  86  
+   34     O1       4f0       87  +  88  
+   35     O1       4f2+      91  +  92  
 
 
   Symmetry  B1 ( 2)
 
-   36     Cl       2px        6
-   37     Cl       2px        9
-   38     Cl       2px       12
-   39     Cl       2px       15
-   40     Cl       3d1+      21
-   41     Cl       3d1+      26
-   42     Cl       4f1+      32
-   43     Cl       4f3+      34
-   44     O1       2px       43  +  44
-   45     O1       2px       49  +  50
-   46     O1       2px       55  +  56
-   47     O1       3d2-      61  -  62
-   48     O1       3d1+      67  +  68
-   49     O1       3d2-      71  -  72
-   50     O1       3d1+      77  +  78
-   51     O1       4f2-      83  -  84
-   52     O1       4f1+      89  +  90
-   53     O1       4f3+      93  +  94
+   36     Cl       2px        6  
+   37     Cl       2px        9  
+   38     Cl       2px       12  
+   39     Cl       2px       15  
+   40     Cl       3d1+      21  
+   41     Cl       3d1+      26  
+   42     Cl       4f1+      32  
+   43     Cl       4f3+      34  
+   44     O1       2px       43  +  44  
+   45     O1       2px       49  +  50  
+   46     O1       2px       55  +  56  
+   47     O1       3d2-      61  -  62  
+   48     O1       3d1+      67  +  68  
+   49     O1       3d2-      71  -  72  
+   50     O1       3d1+      77  +  78  
+   51     O1       4f2-      83  -  84  
+   52     O1       4f1+      89  +  90  
+   53     O1       4f3+      93  +  94  
 
 
   Symmetry  B2 ( 3)
 
-   54     Cl       2py        7
-   55     Cl       2py       10
-   56     Cl       2py       13
-   57     Cl       2py       16
-   58     Cl       3d1-      19
-   59     Cl       3d1-      24
-   60     Cl       4f3-      28
-   61     Cl       4f1-      30
-   62     O1       1s        35  -  36
-   63     O1       1s        37  -  38
-   64     O1       1s        39  -  40
-   65     O1       1s        41  -  42
-   66     O1       2py       45  +  46
-   67     O1       2pz       47  -  48
-   68     O1       2py       51  +  52
-   69     O1       2pz       53  -  54
-   70     O1       2py       57  +  58
-   71     O1       2pz       59  -  60
-   72     O1       3d1-      63  +  64
-   73     O1       3d0       65  -  66
-   74     O1       3d2+      69  -  70
-   75     O1       3d1-      73  +  74
-   76     O1       3d0       75  -  76
-   77     O1       3d2+      79  -  80
-   78     O1       4f3-      81  +  82
-   79     O1       4f1-      85  +  86
-   80     O1       4f0       87  -  88
-   81     O1       4f2+      91  -  92
+   54     Cl       2py        7  
+   55     Cl       2py       10  
+   56     Cl       2py       13  
+   57     Cl       2py       16  
+   58     Cl       3d1-      19  
+   59     Cl       3d1-      24  
+   60     Cl       4f3-      28  
+   61     Cl       4f1-      30  
+   62     O1       1s        35  -  36  
+   63     O1       1s        37  -  38  
+   64     O1       1s        39  -  40  
+   65     O1       1s        41  -  42  
+   66     O1       2py       45  +  46  
+   67     O1       2pz       47  -  48  
+   68     O1       2py       51  +  52  
+   69     O1       2pz       53  -  54  
+   70     O1       2py       57  +  58  
+   71     O1       2pz       59  -  60  
+   72     O1       3d1-      63  +  64  
+   73     O1       3d0       65  -  66  
+   74     O1       3d2+      69  -  70  
+   75     O1       3d1-      73  +  74  
+   76     O1       3d0       75  -  76  
+   77     O1       3d2+      79  -  80  
+   78     O1       4f3-      81  +  82  
+   79     O1       4f1-      85  +  86  
+   80     O1       4f0       87  -  88  
+   81     O1       4f2+      91  -  92  
 
 
   Symmetry  A2 ( 4)
 
-   82     Cl       3d2-      18
-   83     Cl       3d2-      23
-   84     Cl       4f2-      29
-   85     O1       2px       43  -  44
-   86     O1       2px       49  -  50
-   87     O1       2px       55  -  56
-   88     O1       3d2-      61  +  62
-   89     O1       3d1+      67  -  68
-   90     O1       3d2-      71  +  72
-   91     O1       3d1+      77  -  78
-   92     O1       4f2-      83  +  84
-   93     O1       4f1+      89  -  90
-   94     O1       4f3+      93  -  94
+   82     Cl       3d2-      18  
+   83     Cl       3d2-      23  
+   84     Cl       4f2-      29  
+   85     O1       2px       43  -  44  
+   86     O1       2px       49  -  50  
+   87     O1       2px       55  -  56  
+   88     O1       3d2-      61  +  62  
+   89     O1       3d1+      67  -  68  
+   90     O1       3d2-      71  +  72  
+   91     O1       3d1+      77  -  78  
+   92     O1       4f2-      83  +  84  
+   93     O1       4f1+      89  -  90  
+   94     O1       4f3+      93  -  94  
 
   Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
 
@@ -390,7 +395,7 @@ Point group: C2v
 
 
 
- >>> Time used in TWOINT is  16.95 seconds
+ >>> Time used in TWOINT is  10.09 seconds
 
 
 
@@ -403,25 +408,24 @@ Point group: C2v
 
  Threshold for discarding integrals :  1.00D-15
 
- >>> Time used in FRMSUP is   1.36 seconds
+ >>> Time used in FRMSUP is   2.08 seconds
 
- >>>> Total CPU  time used in HERMIT:  18.50 seconds
- >>>> Total wall time used in HERMIT:  40.00 seconds
+ >>>> Total CPU  time used in HERMIT:  12.49 seconds
+ >>>> Total wall time used in HERMIT:  13.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Mon Feb 12 23:21:32 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Title lines from integral program:
-     bla. bla.                                                               
-     H2o ano basis Almloef and Taylor.                                       
+     Calculation of nuclear quadrupole coupling constants                    
+                                                                             
 
  Print level on unit LUPRI =   2 is   0
  Print level on unit LUW4  =   2 is   5
@@ -491,21 +495,21 @@ Point group: C2v
  ----------------------------------------------------
     1     -607.835172348114    6.05880D+00   -6.08D+02
     2     -608.731228340409    2.59793D+00   -8.96D-01
-    3     -608.997615068778    1.08930D+00   -2.66D-01
+    3     -608.997615068777    1.08930D+00   -2.66D-01
     4     -609.052239254927    1.14205D-01   -5.46D-02
     5     -609.053444585493    4.02373D-02   -1.21D-03
-    6     -609.053656972455    1.14029D-02   -2.12D-04
+    6     -609.053656972457    1.14029D-02   -2.12D-04
     7     -609.053688493375    4.30276D-03   -3.15D-05
-    8     -609.053694838133    1.41800D-03   -6.34D-06
-    9     -609.053695439746    4.62415D-04   -6.02D-07
-   10     -609.053695535922    2.28845D-04   -9.62D-08
+    8     -609.053694838134    1.41800D-03   -6.34D-06
+    9     -609.053695439745    4.62415D-04   -6.02D-07
+   10     -609.053695535921    2.28845D-04   -9.62D-08
    11     -609.053695561357    8.28252D-05   -2.54D-08
    12     -609.053695565497    3.55568D-05   -4.14D-09
-   13     -609.053695566167    2.11044D-05   -6.69D-10
-   14     -609.053695566275    7.70863D-06   -1.08D-10
-   15     -609.053695566288    2.44272D-06   -1.28D-11
-   16     -609.053695566289    1.09537D-06   -1.47D-12
-   17     -609.053695566290    3.45566D-07   -4.41D-13
+   13     -609.053695566166    2.11044D-05   -6.69D-10
+   14     -609.053695566274    7.70863D-06   -1.08D-10
+   15     -609.053695566289    2.44272D-06   -1.47D-11
+   16     -609.053695566290    1.09537D-06   -7.96D-13
+   17     -609.053695566290    3.45566D-07   -2.27D-13
  DIIS converged in  17 iterations !
 
 
@@ -538,7 +542,7 @@ Point group: C2v
 
 
  CI energies and residuals:
-    1     -609.112168625765100       5.08D-02
+    1     -609.112168625766680       5.08D-02
 
    <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
 
@@ -565,7 +569,7 @@ Point group: C2v
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :     -609.112168625763700       (MACRO    1)
+ Total MCSCF energy       :     -609.112168625764750       (MACRO    1)
 
  Norm of total gradient   :        0.201796196392
  -    of CI gradient      :        0.101667198095
@@ -602,7 +606,7 @@ Point group: C2v
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :     -609.152686247284400       (MACRO    2)
+ Total MCSCF energy       :     -609.152686247283090       (MACRO    2)
 
  Norm of total gradient   :        0.260982773878
  -    of CI gradient      :        0.239182661366
@@ -639,7 +643,7 @@ Point group: C2v
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :     -609.164945066592200       (MACRO    3)
+ Total MCSCF energy       :     -609.164945066593190       (MACRO    3)
 
  Norm of total gradient   :        0.048337530037
  -    of CI gradient      :        0.038496498755
@@ -676,7 +680,7 @@ Point group: C2v
  <<< MACRO ITERATION  4 >>>
  --------------------------
 
- Total MCSCF energy       :     -609.165579807365100       (MACRO    4)
+ Total MCSCF energy       :     -609.165579807367060       (MACRO    4)
 
  Norm of total gradient   :        0.007435591826
  -    of CI gradient      :        0.006135359204
@@ -713,7 +717,7 @@ Point group: C2v
  <<< MACRO ITERATION  5 >>>
  --------------------------
 
- Total MCSCF energy       :     -609.165589621379100       (MACRO    5)
+ Total MCSCF energy       :     -609.165589621379350       (MACRO    5)
 
  Norm of total gradient   :        0.000130503461
  -    of CI gradient      :        0.000105546619
@@ -750,7 +754,7 @@ Point group: C2v
  <<< MACRO ITERATION  6 >>>
  --------------------------
 
- Total MCSCF energy       :     -609.165589624201600       (MACRO    6)
+ Total MCSCF energy       :     -609.165589624201400       (MACRO    6)
 
  Norm of total gradient   :        0.000008063635
  -    of CI gradient      :        0.000007081926
@@ -759,24 +763,23 @@ Point group: C2v
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            6
      Number of micro iterations used           41
-     Total number of CPU seconds used         0.00
+     Total number of CPU seconds used       257.55
 
 
                >>> SIRIUS OPTIMIZATION STATISTICS <<<
 
  
-     Date and time (Linux)  : Mon Feb 12 23:25:51 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
-    1    8   -609.112168625764   0.2017961964  0.000000   0.7592202287
-    2    4   -609.152686247284   0.2609827739  0.515346   0.1722707712
-    3    7   -609.164945066592   0.0483375300  0.992611   0.0737768456
-    4   13   -609.165579807365   0.0074355918  1.000691   0.0068740440
+    1    8   -609.112168625765   0.2017961964  0.000000   0.7592202287
+    2    4   -609.152686247283   0.2609827739  0.515346   0.1722707712
+    3    7   -609.164945066593   0.0483375300  0.992611   0.0737768456
+    4   13   -609.165579807367   0.0074355918  1.000691   0.0068740440
     5    9   -609.165589621379   0.0001305035  1.001670   0.0001037208
-    6    0   -609.165589624202   0.0000080636  1.001047   0.0000000000
+    6    0   -609.165589624201   0.0000080636  1.000886   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
@@ -792,40 +795,40 @@ Point group: C2v
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1     8     6     3      0.00      0.00      2.01      0.00      0.25
-    2     4     3     2      0.00      0.00      1.88      0.00      0.47
-    3     7     5     3      0.00      0.00      1.88      0.00      0.27
-    4    13     9     5      0.00      0.00      1.88      0.00      0.14
-    5     9     6     4      0.00      0.00      1.88      0.00      0.21
-    6     0     0     0      0.00      0.00      0.00      0.00
+    1     8     6     3     45.70     40.37      4.72      4.54      0.59
+    2     4     3     2     37.90     34.81      2.58      2.43      0.65
+    3     7     5     3     43.81     39.10      4.17      4.02      0.60
+    4    13     9     5     45.59     37.28      7.72      7.58      0.59
+    5     9     6     4     35.49     28.99      5.85      5.67      0.65
+    6     0     0     0     40.50     39.88      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1   -636.535257741531    -83.974308741913   -609.112168625764
-    2   -636.532740170401    -84.017343934564   -609.152686247284
-    3   -636.489582160093    -84.072760764180   -609.164945066592
-    4   -636.448860308592    -84.114117356453   -609.165579807365
-    5   -636.442666164618    -84.120321314441   -609.165589621379
-    6   -636.442642004103    -84.120345477779   -609.165589624202
+    1   -636.535257741533    -83.974308741913   -609.112168625765
+    2   -636.532740170400    -84.017343934564   -609.152686247283
+    3   -636.489582160094    -84.072760764180   -609.164945066593
+    4   -636.448860308594    -84.114117356453   -609.165579807367
+    5   -636.442666164617    -84.120321314443   -609.165589621379
+    6   -636.442642004103    -84.120345477779   -609.165589624201
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.078622149774     -0.040517621521      0.515346141476
-    3     -0.012350079449     -0.012258819308      0.992610562440
-    4     -0.000634302307     -0.000634740773      1.000691257226
-    5     -0.000009797654     -0.000009814014      1.001669825199
-    6     -0.000000002820     -0.000000002823      1.001047456378
+    2     -0.078622149774     -0.040517621518      0.515346141446
+    3     -0.012350079449     -0.012258819310      0.992610562622
+    4     -0.000634302307     -0.000634740774      1.000691258651
+    5     -0.000009797654     -0.000009814012      1.001669651128
+    6     -0.000000002820     -0.000000002822      1.000886172745
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
-    1      1.34505581  1.00000000      0.759220228693      0.700000000000
-    2      0.20000000  1.00000000      0.172270771157      0.700000000000
+    1      1.34505581  1.00000000      0.759220228694      0.700000000000
+    2      0.20000000  1.00000000      0.172270771156      0.700000000000
     3      0.20000000  1.00000000      0.073776845606      0.700000000000
-    4      0.20000000  1.00000000      0.006874043977      0.700000000000
+    4      0.20000000  1.00000000      0.006874043978      0.700000000000
     5      0.20000000  1.00000000      0.000103720833      0.700000000000
     6      0.00000000  0.00000000      0.000000000000      0.700000000000
 
@@ -833,7 +836,7 @@ Point group: C2v
  Reduced L root no.  1
  ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
  ----------------------------------------------------------------------------
-    1   -0.139258575699   -0.699653825679    0.080111611925    0.676398261781
+    1   -0.139258575699   -0.699653825679    0.080111611921    0.676398261781
     2   -0.000986834895    0.999406983548   -0.017554463865   -0.021421716463
     3   -0.000050733139    0.999891157314   -0.003975317153   -0.012983886647
     4   -0.000000783811    0.999999054952   -0.000602564050   -0.000978567870
@@ -847,15 +850,14 @@ Point group: C2v
      Spatial symmetry:            2
      State number:                1
 
-     Final MCSCF energy:         -609.165589624202
+     Final MCSCF energy:         -609.165589624201
      Nuclear repulsion:           111.397397857680
      Electronic energy:          -720.562987481882
 
      Final gradient norm:           0.000008063635
 
  
-     Date and time (Linux)  : Mon Feb 12 23:25:51 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
  Occupancies of natural orbitals
@@ -891,7 +893,7 @@ Point group: C2v
 
  Orbital          1        2        3        4        5        6        7
    1  Cl  1s     1.0000   0.0003   0.0002   0.0004  -0.0011  -0.0012  -0.0028
-   2  Cl  1s     0.0000   0.0024   1.0007   0.0096  -0.0087  -0.0354  -0.0153
+   2  Cl  1s    -0.0000   0.0024   1.0007   0.0096  -0.0087  -0.0354  -0.0153
    3  Cl  1s     0.0007  -0.0009  -0.0151  -0.0126   0.3555  -0.8768  -0.3913
    4  Cl  1s     0.0000  -0.0014  -0.0012  -0.0024  -0.0022  -0.0066  -0.0001
    5  Cl  1s     0.0001  -0.0018  -0.0018   0.0033  -0.0370   0.0383   0.0884
@@ -899,32 +901,32 @@ Point group: C2v
    7  Cl  2pz    0.0001  -0.0007  -0.0086   0.0021   0.0270  -0.3587   0.5233
    8  Cl  2pz    0.0001   0.0008  -0.0020  -0.0001  -0.0072   0.0000   0.0072
    9  Cl  2pz    0.0000   0.0003   0.0008  -0.0017   0.0173   0.0520  -0.0935
-  10  Cl  3d0    0.0000   0.0000   0.0001  -0.0015  -0.0014   0.0112  -0.0392
-  11  Cl  3d2+   0.0000   0.0004  -0.0008   0.0002  -0.0185  -0.0032  -0.0169
-  12  Cl  3d0    0.0000  -0.0002   0.0003   0.0004  -0.0012   0.0120  -0.0495
-  13  Cl  3d2+   0.0000   0.0001   0.0003  -0.0003  -0.0150  -0.0075  -0.0371
+  10  Cl  3d0   -0.0000  -0.0000   0.0001  -0.0015  -0.0014   0.0112  -0.0392
+  11  Cl  3d2+  -0.0000   0.0004  -0.0008   0.0002  -0.0185  -0.0032  -0.0169
+  12  Cl  3d0   -0.0000  -0.0002   0.0003   0.0004  -0.0012   0.0120  -0.0495
+  13  Cl  3d2+  -0.0000   0.0001   0.0003  -0.0003  -0.0150  -0.0075  -0.0371
   14  Cl  4f0    0.0000   0.0001   0.0001  -0.0002   0.0060  -0.0011   0.0036
   15  Cl  4f2+   0.0000   0.0001   0.0002  -0.0004   0.0107   0.0022  -0.0045
   16  O1  1s     0.0000   0.7062   0.0000   0.0004   0.0229   0.0077   0.0020
   17  O1  1s     0.0001  -0.0265   0.0023  -0.0071   0.6140   0.2675   0.1313
-  18  O1  1s     0.0000   0.0007   0.0000   0.0000  -0.0038   0.0018   0.0043
+  18  O1  1s     0.0000   0.0007  -0.0000  -0.0000  -0.0038   0.0018   0.0043
   19  O1  1s    -0.0001   0.0005   0.0006   0.0000  -0.0099   0.0495   0.0689
   20  O1  2py    0.0000  -0.0054  -0.0018   0.0042   0.0334   0.0382   0.3905
   21  O1  2pz    0.0001   0.0047  -0.0024   0.0020  -0.0357  -0.2011   0.2627
   22  O1  2py    0.0000   0.0027  -0.0001   0.0002  -0.0064  -0.0035   0.0016
-  23  O1  2pz    0.0000  -0.0016   0.0000   0.0001   0.0040  -0.0007   0.0036
+  23  O1  2pz   -0.0000  -0.0016  -0.0000   0.0001   0.0040  -0.0007   0.0036
   24  O1  2py    0.0000   0.0003  -0.0003   0.0001   0.0143  -0.0180  -0.0184
-  25  O1  2pz    0.0000  -0.0001   0.0005   0.0003  -0.0154   0.0184   0.0148
-  26  O1  3d1-   0.0000   0.0000   0.0000   0.0001  -0.0018   0.0035   0.0009
-  27  O1  3d0    0.0000   0.0000   0.0000   0.0001   0.0001  -0.0014   0.0043
-  28  O1  3d2+   0.0000   0.0000   0.0000   0.0001  -0.0013   0.0009   0.0053
-  29  O1  3d1-   0.0000   0.0003   0.0001   0.0000  -0.0030   0.0099   0.0016
+  25  O1  2pz   -0.0000  -0.0001   0.0005   0.0003  -0.0154   0.0184   0.0148
+  26  O1  3d1-  -0.0000  -0.0000  -0.0000   0.0001  -0.0018   0.0035   0.0009
+  27  O1  3d0    0.0000   0.0000  -0.0000   0.0001   0.0001  -0.0014   0.0043
+  28  O1  3d2+  -0.0000  -0.0000  -0.0000   0.0001  -0.0013   0.0009   0.0053
+  29  O1  3d1-  -0.0000   0.0003   0.0001   0.0000  -0.0030   0.0099   0.0016
   30  O1  3d0    0.0000   0.0000  -0.0001   0.0003   0.0001  -0.0053   0.0180
   31  O1  3d2+   0.0000   0.0003  -0.0001   0.0005  -0.0026   0.0015   0.0181
-  32  O1  4f3-   0.0000  -0.0001   0.0000   0.0000   0.0009   0.0000  -0.0035
-  33  O1  4f1-   0.0000   0.0000   0.0001   0.0000  -0.0003   0.0020  -0.0042
-  34  O1  4f0    0.0000   0.0001   0.0000   0.0000  -0.0006   0.0004   0.0023
-  35  O1  4f2+   0.0000   0.0001   0.0001   0.0000  -0.0012   0.0014   0.0019
+  32  O1  4f3-   0.0000  -0.0001  -0.0000  -0.0000   0.0009   0.0000  -0.0035
+  33  O1  4f1-  -0.0000   0.0000   0.0001  -0.0000  -0.0003   0.0020  -0.0042
+  34  O1  4f0   -0.0000   0.0001   0.0000  -0.0000  -0.0006   0.0004   0.0023
+  35  O1  4f2+  -0.0000   0.0001   0.0001  -0.0000  -0.0012   0.0014   0.0019
 
  Orbital          8        9
    1  Cl  1s     0.0055   0.0047
@@ -934,7 +936,7 @@ Point group: C2v
    5  Cl  1s    -0.3343   0.0532
    6  Cl  2pz    0.0138  -0.0356
    7  Cl  2pz   -0.5366  -0.8159
-   8  Cl  2pz   -0.0211   0.0000
+   8  Cl  2pz   -0.0211  -0.0000
    9  Cl  2pz    0.1000   0.0943
   10  Cl  3d0   -0.0392   0.0375
   11  Cl  3d2+  -0.0738   0.0707
@@ -982,8 +984,8 @@ Point group: C2v
   14  O1  3d2-  -0.0003  -0.0180   0.0081
   15  O1  3d1+   0.0001   0.0110  -0.0048
   16  O1  4f2-   0.0000  -0.0033   0.0013
-  17  O1  4f1+   0.0000   0.0001   0.0006
-  18  O1  4f3+   0.0000  -0.0034   0.0009
+  17  O1  4f1+  -0.0000   0.0001   0.0006
+  18  O1  4f3+  -0.0000  -0.0034   0.0009
 
      Molecular orbitals for symmetry species   3
 
@@ -999,16 +1001,16 @@ Point group: C2v
    9  O1  1s     0.7062  -0.0001   0.0237  -0.0020   0.0025  -0.0127
   10  O1  1s    -0.0263   0.0045   0.6765  -0.0594   0.0062  -0.2386
   11  O1  1s     0.0008  -0.0001  -0.0040  -0.0053   0.0047  -0.0026
-  12  O1  1s     0.0000   0.0001   0.0036  -0.0841   0.0292  -0.1267
+  12  O1  1s    -0.0000   0.0001   0.0036  -0.0841   0.0292  -0.1267
   13  O1  2py   -0.0058  -0.0012   0.0646  -0.0160   0.6050   0.2923
   14  O1  2pz    0.0041   0.0075  -0.0417   0.5316   0.1660  -0.6524
   15  O1  2py    0.0029  -0.0003  -0.0085   0.0028   0.0069   0.0268
   16  O1  2pz   -0.0017   0.0002   0.0055   0.0037   0.0023   0.0275
   17  O1  2py    0.0006  -0.0002   0.0105   0.0314   0.0013  -0.0181
   18  O1  2pz   -0.0003   0.0003  -0.0052  -0.0010   0.0260   0.2070
-  19  O1  3d1-   0.0000  -0.0002  -0.0011  -0.0061   0.0046   0.0013
+  19  O1  3d1-  -0.0000  -0.0002  -0.0011  -0.0061   0.0046   0.0013
   20  O1  3d0    0.0000   0.0001  -0.0002   0.0025   0.0028  -0.0003
-  21  O1  3d2+   0.0000  -0.0001  -0.0009  -0.0019   0.0058   0.0009
+  21  O1  3d2+  -0.0000  -0.0001  -0.0009  -0.0019   0.0058   0.0009
   22  O1  3d1-   0.0004  -0.0004  -0.0029  -0.0208   0.0101  -0.0008
   23  O1  3d0    0.0001   0.0001  -0.0001   0.0132   0.0147   0.0070
   24  O1  3d2+   0.0004  -0.0001  -0.0028  -0.0032   0.0202   0.0103
@@ -1109,16 +1111,15 @@ Point group: C2v
   10- 6 to 10- 5       186    0.69058807E-08    0.10000000E+01
   10- 7 to 10- 6        20    0.66022009E-11    0.10000000E+01
   10- 8 to 10- 7         3    0.71069618E-14    0.10000000E+01
-  Number of coefficients less than 10^-11 times norm is            0
+  Number of coefficients less than 10^-11 times norm is  0
 
 
 
- >>>> Total CPU  time used in SIRIUS :    110.99 seconds
- >>>> Total wall time used in SIRIUS :    260.00 seconds
+ >>>> Total CPU  time used in SIRIUS :    299.38 seconds
+ >>>> Total wall time used in SIRIUS :    304.00 seconds
 
  
-     Date and time (Linux)  : Mon Feb 12 23:25:52 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 - End of Wave Function Section
 
@@ -1141,8 +1142,7 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Mon Feb 12 23:25:53 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
  ***************************************************************************
@@ -1151,8 +1151,7 @@ Point group: C2v
 
 
  
-     Date and time (Linux)  : Mon Feb 12 23:25:59 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
@@ -1175,7 +1174,7 @@ Point group: C2v
 
      Total energy       -609.1655896242 au (Hartrees)
                         -16576.23841335 eV
-                          -1599364.0280 kJ/mol
+                          -1599364.0259 kJ/mol
 
 
 
@@ -1183,11 +1182,11 @@ Point group: C2v
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          4.9133757671 au
-     Mass-velocity correction:                  -6.4195864602 au
+     Darwin correction:                          4.9133750278 au
+     Mass-velocity correction:                  -6.4195854943 au
 
-     Total relativistic correction:             -1.5062106931 au (0.2473%)
-     Non-relativistic + relativistic energy:  -610.6718003173 au
+     Total relativistic correction:             -1.5062104665 au (0.2473%)
+     Non-relativistic + relativistic energy:  -610.6718000907 au
 
 
 
@@ -1195,7 +1194,7 @@ Point group: C2v
                               Dipole moment
                               -------------
 
-                    0.773073 au           1.964973 Debye
+                    0.773073 au           1.964954 Debye
 
 
 
@@ -1205,9 +1204,9 @@ Point group: C2v
 
                                au             Debye
 
-                    z      0.77307253      1.96497257
+                    z      0.77307253      1.96495417
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -1224,16 +1223,16 @@ Point group: C2v
 
           Spin     :  1.5          Quadrupole moment:-.08165000
                             au           MHz        Gauss
- Cl     35    Vx =      -0.272182     5.221778     1.863261
- Cl     35    Vy =      -2.394406    45.936363    16.391241
- Cl     35    Vz =       2.666588   -51.158141   -18.254502
+ Cl     35    Vx =      -0.272182     5.221780     1.865422
+ Cl     35    Vy =      -2.394406    45.936379    16.410250
+ Cl     35    Vz =       2.666588   -51.158159   -18.275671
                  Asymmetry constant eta:      0.795857
                  Auxiliary value au  1/T  0.574136D-02
           Spin     :  1.5          Quadrupole moment:-.06435000
                             au           MHz        Gauss
- Cl     37    Vx =      -0.272182     4.115388     1.468473
- Cl     37    Vy =      -2.394406    36.203368    12.918265
- Cl     37    Vz =       2.666588   -40.318756   -14.386738
+ Cl     37    Vx =      -0.272182     4.115389     1.470176
+ Cl     37    Vy =      -2.394406    36.203380    12.933246
+ Cl     37    Vz =       2.666588   -40.318769   -14.403422
                  Asymmetry constant eta:      0.795857
                  Auxiliary value au  1/T  0.356615D-02
 
@@ -1243,9 +1242,9 @@ Point group: C2v
 
           Spin     :  2.5          Quadrupole moment:-.02558000
                             au           MHz        Gauss
- O1   1 17    Vx =      -0.494792     2.973893     1.061159
- O1   1 17    Vy =      -1.185838     7.127358     2.543219
- O1   1 17    Vz =       1.680630   -10.101251    -3.604379
+ O1   1 17    Vx =      -0.494792     2.973894     1.062390
+ O1   1 17    Vy =      -1.185838     7.127360     2.546168
+ O1   1 17    Vz =       1.680630   -10.101254    -3.608558
                  Asymmetry constant eta:      0.411183
                  Auxiliary value au  1/T  0.468562D-04
 
@@ -1255,9 +1254,9 @@ Point group: C2v
 
           Spin     :  2.5          Quadrupole moment:-.02558000
                             au           MHz        Gauss
- O1   2 17    Vx =      -0.494792     2.973893     1.061159
- O1   2 17    Vy =      -1.185838     7.127358     2.543219
- O1   2 17    Vz =       1.680630   -10.101251    -3.604379
+ O1   2 17    Vx =      -0.494792     2.973894     1.062390
+ O1   2 17    Vy =      -1.185838     7.127360     2.546168
+ O1   2 17    Vz =       1.680630   -10.101254    -3.608558
                  Asymmetry constant eta:      0.411183
                  Auxiliary value au  1/T  0.468562D-04
 
@@ -1265,7 +1264,7 @@ Point group: C2v
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            Cl          O1 1        O1 2
+            Cl          O1 1        O1 2        
 
    Cl      0.000000
    O1 1    1.470000    0.000000
@@ -1296,19 +1295,16 @@ Point group: C2v
  CPU time statistics for ABACUS
  ------------------------------
 
- MAGINT     00:00:02     100 %
-
- TOTAL      00:00:02     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   1.58 seconds
- >>>> Total wall time used in ABACUS:   6.00 seconds
+
+ >>>> Total CPU  time used in ABACUS:   0.50 seconds
+ >>>> Total wall time used in ABACUS:   1.00 seconds
 
 - End of Static Property Section
- >>>> Total CPU  time used in DALTON:  2 minutes 11 seconds
- >>>> Total wall time used in DALTON:  5 minutes  7 seconds
+ >>>> Total CPU  time used in DALTON:  5 minutes 12 seconds
+ >>>> Total wall time used in DALTON:  5 minutes 18 seconds
 
  
-     Date and time (Linux)  : Mon Feb 12 23:25:59 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    

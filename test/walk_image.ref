@@ -4,7 +4,7 @@
     ***********  DALTON - An electronic structure program  ***********
     ******************************************************************
 
-               This is output from DALTON (Release 1.2, April 2001)
+            This is output from DALTON (Release 2.0, ? 2001)
 
                           Principal authors:
 
@@ -17,6 +17,7 @@
 
                           Contributors:
 
+            Alexander A. Auer,     University of Mainz,        Germany
             Keld L. Bak,           UNI-C,                      Denmark
             Vebjoern Bakken,       University of Oslo,         Norway 
             Ove Christiansen,      University of Lund,         Sweden 
@@ -36,16 +37,18 @@
             Henrik Koch,           SDU - Odense University,    Denmark
             Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
             Patrick Norman,        University of Linkoeping,   Sweden 
+            Thomas B. Pedersen,    U.of Santiago de Compostela,Spain  
             Martin J. Packer,      University of Sheffield,    UK     
             Torgeir A. Ruden,      University of Oslo,         Norway 
+            Alfredo Sanchez,       University of Valencia,     Spain  
             Trond Saue,            University of Toulouse,     France 
             Stephan P. A. Sauer,   University of Copenhagen,   Denmark
             Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
             K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
             Peter R.Taylor,        San Diego Superc. Center,   USA    
             Olav Vahtras,          PDC, Stockholm,             Sweden 
-------------------------------------------------------------------------
 
+------------------------------------------------------------------------
 
 
      NOTE:
@@ -63,17 +66,19 @@
      If results obtained with this code are published, an
      appropriate citation would be:
       
-     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,H. Aagren,
-     K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,P. Dahle, E.K. Dalskov,
-     T. Enevoldsen, B. Fernandez,C. Haettig, K. Hald, A. Halkier,
+     "Dalton, a molecular electronic structure program, Release 1.2
+     (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+     J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+     O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+     T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
      H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-     H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T.A. Ruden, T. Saue,
-     S.P.A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,P.R. Taylor, and O. Vahtras:
-     "Dalton release 1.2 (2001), an electronic structure program"
+     H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+     T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+     B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+     and O. Vahtras"
 
  
-     Date and time (Linux)  : Tue Feb 13 00:43:44 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
 
@@ -113,7 +118,7 @@
   Title Cards
   -----------
 
-  Ammonia TS                                                              
+  Location of saddle point (transition state) using IMAGE method          
                                                                           
 
 
@@ -124,15 +129,15 @@ Point group: C1
 
    * Character table
 
-        |  E 
+        |  E   
    -----+-----
-    A   |   1
+    A   |   1  
 
    * Direct product table
 
-        | A  
+        | A    
    -----+-----
-    A   | A  
+    A   | A    
 
 
   Atoms and basis sets
@@ -183,7 +188,7 @@ Point group: C1
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            N           H           H           H   
+            N           H           H           H           
 
    N       0.000000
    H       0.899601    0.000000
@@ -232,7 +237,7 @@ Point group: C1
 
 
 
- >>> Time used in TWOINT is   0.27 seconds
+ >>> Time used in TWOINT is   0.23 seconds
 
 
 
@@ -245,24 +250,23 @@ Point group: C1
 
  Threshold for discarding integrals :  1.00D-15
 
- >>> Time used in FRMSUP is   0.04 seconds
+ >>> Time used in FRMSUP is   0.09 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.36 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.47 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 00:43:45 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Title lines from integral program:
-     Ammonia TS                                                              
+     Location of saddle point (transition state) using IMAGE method          
                                                                              
 
  Print level on unit LUPRI =   2 is   0
@@ -293,7 +297,7 @@ Point group: C1
      Number of basis functions         30
 
       ** Automatic occupation of RHF orbitals **
-      -- Initial occupation of symmetries is determined from Huckel guess.               
+      -- Initial occupation of symmetries is determined from Huckel guess.                    
       -- Initial occupation of symmetries is : --
 
      Occupied HF orbitals               5
@@ -316,12 +320,12 @@ Point group: C1
    2    -56.057014530077   5.67D-01  -3.59D-01    5
    3    -56.076323053842   2.58D-01  -1.93D-02    5
    4    -56.079653303378   5.05D-02  -3.33D-03    5
-   5    -56.079983508263   8.90D-03  -3.30D-04    5
+   5    -56.079983508262   8.90D-03  -3.30D-04    5
    6    -56.079990127353   1.28D-03  -6.62D-06    5
    7    -56.079990295174   1.01D-04  -1.68D-07    5
    8    -56.079990296143   1.27D-05  -9.69D-10    5
-   9    -56.079990296161   2.28D-06  -1.80D-11    5
-  10    -56.079990296162   4.00D-07  -7.25D-13    5
+   9    -56.079990296161   2.28D-06  -1.81D-11    5
+  10    -56.079990296162   4.00D-07  -7.82D-13    5
  DIIS converged in  10 iterations !
 
 
@@ -355,31 +359,30 @@ Point group: C1
      Final gradient norm:           0.000000399649
 
  
-     Date and time (Linux)  : Tue Feb 13 00:43:45 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
      Molecular orbitals for symmetry species   1
 
  Orbital          1        2        3        4        5
-   1  N   s      0.9947  -0.2012  -0.0454   0.0000   0.0000
-   2  N   s      0.0261   0.3933   0.0904   0.0000   0.0000
+   1  N   s      0.9947  -0.2012  -0.0454  -0.0000   0.0000
+   2  N   s      0.0261   0.3933   0.0904  -0.0000   0.0000
    3  N   s     -0.0001   0.3637   0.1387   0.0000   0.0000
-   4  N   px    -0.0008  -0.0792   0.4595   0.0000   0.0000
+   4  N   px    -0.0008  -0.0792   0.4595  -0.0000   0.0000
    5  N   py     0.0000   0.0000   0.0000   0.5051   0.0000
    6  N   pz     0.0000   0.0000   0.0000   0.0000   0.5875
-   7  N   px     0.0001  -0.0117   0.1811   0.0000   0.0000
-   8  N   py     0.0000   0.0000   0.0000   0.2981   0.0000
+   7  N   px     0.0001  -0.0117   0.1811  -0.0000   0.0000
+   8  N   py    -0.0000  -0.0000   0.0000   0.2981   0.0000
    9  N   pz     0.0000   0.0000   0.0000   0.0000   0.5348
-  10  N   dxx   -0.0014   0.0076  -0.0018   0.0000   0.0000
-  11  N   dxy    0.0000   0.0000   0.0000  -0.0298   0.0000
+  10  N   dxx   -0.0014   0.0076  -0.0018  -0.0000   0.0000
+  11  N   dxy   -0.0000  -0.0000  -0.0000  -0.0298   0.0000
   12  N   dxz    0.0000   0.0000   0.0000   0.0000  -0.0097
-  13  N   dyy   -0.0023  -0.0030  -0.0049   0.0000   0.0000
+  13  N   dyy   -0.0023  -0.0030  -0.0049  -0.0000   0.0000
   14  N   dyz    0.0000   0.0000   0.0000   0.0000   0.0000
-  15  N   dzz   -0.0023  -0.0064   0.0010   0.0000   0.0000
+  15  N   dzz   -0.0023  -0.0064   0.0010  -0.0000   0.0000
   16  H   s     -0.0006   0.1251   0.3036   0.0000   0.0000
-  17  H   s      0.0003   0.0020   0.1033   0.0000   0.0000
-  18  H   px     0.0004  -0.0168  -0.0231   0.0000   0.0000
-  19  H   py     0.0000   0.0000   0.0000   0.0165   0.0000
+  17  H   s      0.0003   0.0020   0.1033  -0.0000   0.0000
+  18  H   px     0.0004  -0.0168  -0.0231  -0.0000   0.0000
+  19  H   py    -0.0000  -0.0000   0.0000   0.0165   0.0000
   20  H   pz     0.0000   0.0000   0.0000   0.0000   0.0239
   21  H   s     -0.0005   0.1877  -0.1610   0.2311   0.0000
   22  H   s      0.0003   0.0213  -0.0566   0.1993   0.0000
@@ -394,12 +397,11 @@ Point group: C1
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.12 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.21 seconds
+ >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 00:43:45 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 - End of Wave Function Section
 
@@ -468,8 +470,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 00:43:45 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
  ***************************************************************************
@@ -478,8 +479,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 00:43:50 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
@@ -503,7 +503,7 @@ Point group: C1
 
      Total energy        -56.0799902962 au (Hartrees)
                          -1526.01411702 eV
-                           -147237.9936 kJ/mol
+                           -147237.9934 kJ/mol
 
 
 
@@ -511,11 +511,11 @@ Point group: C1
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.1119225722 au
-     Mass-velocity correction:                  -0.1403794209 au
+     Darwin correction:                          0.1119225553 au
+     Mass-velocity correction:                  -0.1403793997 au
 
-     Total relativistic correction:             -0.0284568487 au (0.0507%)
-     Non-relativistic + relativistic energy:   -56.1084471448 au
+     Total relativistic correction:             -0.0284568444 au (0.0507%)
+     Non-relativistic + relativistic energy:   -56.1084471406 au
 
 
 
@@ -524,7 +524,7 @@ Point group: C1
                          -----------------------
 
  N          0.0179559467            0.0000000000            0.0000000000
- H         -0.1096919712            0.0000000000            0.0000000000
+ H         -0.1096919712           -0.0000000000            0.0000000000
  H          0.0458680122           -0.1795321573            0.0000000000
  H          0.0458680122            0.1795321573            0.0000000000
 
@@ -535,14 +535,14 @@ Point group: C1
                           Molecular Hessian (au)
                           ----------------------
 
-           N    x      N    y      N    z      H    x      H    y      H    z
+           N    x      N    y      N    z      H    x      H    y      H    z      
 
  N    x    2.144847
- N    y    0.000000    0.627430
+ N    y   -0.000000    0.627430
  N    z    0.000000    0.000000   -0.321138
 
- H    x   -0.989143    0.000000    0.000000    0.977107
- H    y    0.000000    0.017196    0.000000    0.000000   -0.029536
+ H    x   -0.989143   -0.000000    0.000000    0.977107
+ H    y   -0.000000    0.017196    0.000000    0.000000   -0.029536
  H    z    0.000000    0.000000    0.149944    0.000000    0.000000   -0.102860
 
  H    x   -0.577852    0.455441    0.000000    0.006018    0.021374    0.000000
@@ -554,7 +554,7 @@ Point group: C1
  H    z    0.000000    0.000000    0.085597    0.000000    0.000000   -0.023542
 
 
-           H    x      H    y      H    z      H    x      H    y      H    z
+           H    x      H    y      H    z      H    x      H    y      H    z      
 
  H    x    0.546409
  H    y   -0.458897    0.425909
@@ -571,7 +571,7 @@ Point group: C1
                               Dipole moment
                               -------------
 
-                    0.222937 au           0.566654 Debye
+                    0.222937 au           0.566649 Debye
 
 
 
@@ -581,11 +581,11 @@ Point group: C1
 
                                au             Debye
 
-                    x     -0.22293673     -0.56665390
+                    x     -0.22293673     -0.56664859
                     y      0.00000000      0.00000000
                     z      0.00000000      0.00000000
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -594,7 +594,7 @@ Point group: C1
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            N           H           H           H   
+            N           H           H           H           
 
    N       0.000000
    H       0.899601    0.000000
@@ -625,7 +625,7 @@ Point group: C1
 
 
 
- Largest deviation from orthonormality of OMOs:0.774936E-13
+ Largest deviation from orthonormality of OMOs:0.757172E-13
  - found for element   30  30
 
 
@@ -665,10 +665,10 @@ Point group: C1
 @  iter   sym     mode      gradient     eigenvalue       step        energy 
 @  ----------------------------------------------------------------------------
 @    0     1       1<     0.00000000   -0.43735219    0.00000000    0.00000000 
-@    0     1       2      0.00000000   -0.05146034    0.00000000    0.00000000 
-@    0     1       3     -0.16083526    0.14482451    0.45880354<  -0.05854896<
+@    0     1       2     -0.00000000   -0.05146034    0.00000000   -0.00000000 
+@    0     1       3      0.16083526    0.14482451   -0.45880354<  -0.05854896<
 @    0     1       4     -0.23300689<   0.96783174    0.19854691   -0.02718641 
-@    0     1       5      0.00000000    1.56615972    0.00000000    0.00000000 
+@    0     1       5      0.00000000    1.56615972   -0.00000000   -0.00000000 
 @    0     1       6     -0.02942606    3.11680611<   0.00885651   -0.00013837 
 
 
@@ -677,34 +677,34 @@ Point group: C1
                           +----------------------+
 
 
-   sym 1            1           2           3           4           5
+   sym 1            1           2           3           4           5   
   ----------------------------------------------------------------------
 
-   N    x       0.000000    0.000000   -0.254625   -0.005837    0.000000
-   N    y       0.000000    0.575479    0.000000    0.000000    0.640576
+   N    x       0.000000   -0.000000    0.254625   -0.005837    0.000000
+   N    y       0.000000   -0.575479   -0.000000    0.000000    0.640576
    N    z       0.859604    0.000000    0.000000    0.000000    0.000000
 
-   H    x       0.000000    0.000000   -0.289351    0.719238    0.000000
-   H    y       0.000000   -0.538114    0.000000    0.000000   -0.004423
+   H    x       0.000000   -0.000000    0.289351    0.719238   -0.000000
+   H    y       0.000000    0.538114    0.000000    0.000000   -0.004423
    H    z      -0.385778    0.000000    0.000000    0.000000    0.000000
 
-   H    x       0.000000   -0.435063    0.271988   -0.356700    0.440055
-   H    y       0.000000   -0.018682    0.593080    0.337781   -0.318077
+   H    x       0.000000    0.435063   -0.271988   -0.356700    0.440055
+   H    y       0.000000    0.018682   -0.593080    0.337781   -0.318077
    H    z      -0.236913    0.000000    0.000000    0.000000    0.000000
 
-   H    x       0.000000    0.435063    0.271988   -0.356700   -0.440055
-   H    y       0.000000   -0.018682   -0.593080   -0.337781   -0.318077
+   H    x       0.000000   -0.435063   -0.271988   -0.356700   -0.440055
+   H    y       0.000000    0.018682    0.593080   -0.337781   -0.318077
    H    z      -0.236913    0.000000    0.000000    0.000000    0.000000
 
 
-   sym 1            6
+   sym 1            6       
   ----------------------
    N    x       0.827727
-   N    y       0.000000
+   N    y      -0.000000
    N    z       0.000000
 
    H    x      -0.385970
-   H    y       0.000000
+   H    y      -0.000000
    H    z       0.000000
 
    H    x      -0.220879
@@ -734,8 +734,8 @@ Point group: C1
                        Cartesian displacements (au)
                        ----------------------------
 
- N         -0.1106508544            0.0000000000            0.0000000000
- H          0.0066288313            0.0000000000            0.0000000000
+ N         -0.1106508544           -0.0000000000            0.0000000000
+ H          0.0066288313           -0.0000000000            0.0000000000
  H          0.0520110115            0.3408094471            0.0000000000
  H          0.0520110115           -0.3408094471            0.0000000000
 
@@ -746,7 +746,7 @@ Point group: C1
    Differential interatomic separations (in Angstroms):
    ----------------------------------------------------
 
-            N           H           H           H   
+            N           H           H           H           
 
    N       0.000000
    H       0.062062    0.000000
@@ -767,8 +767,8 @@ Point group: C1
                         Cartesian coordinates (au)
                         --------------------------
 
- N         -0.1106508544            0.0000000000            0.0000000000
- H          1.7066288313            0.0000000000            0.0000000000
+ N         -0.1106508544           -0.0000000000            0.0000000000
+ H          1.7066288313           -0.0000000000            0.0000000000
  H         -1.3320889885            1.3327094471            0.0000000000
  H         -1.3320889885           -1.3327094471            0.0000000000
 
@@ -779,7 +779,7 @@ Point group: C1
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            N           H           H           H   
+            N           H           H           H           
 
    N       0.000000
    H       0.961663    0.000000
@@ -814,15 +814,15 @@ Point group: C1
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:02      58 %
- RHSIDE     00:00:01      31 %
+ TWOTEX     00:00:01      49 %
+ REST       00:00:01      51 %
 
  TOTAL      00:00:03     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   3.47 seconds
- >>>> Total wall time used in ABACUS:   5.00 seconds
+ >>>> Total CPU  time used in ABACUS:   2.57 seconds
+ >>>> Total wall time used in ABACUS:   3.00 seconds
 
 - End of Static Property Section
 
@@ -841,15 +841,15 @@ Point group: C1
  ************************************************************************
 
 
- >>> Time used in ONEDRV is   0.00 seconds
+ >>> Time used in ONEDRV is   0.01 seconds
 
 
- Number of two-electron integrals written:       53516 ( 49.4% )
- Megabytes written:                              0.618
+ Number of two-electron integrals written:       52684 ( 48.6% )
+ Megabytes written:                              0.605
 
 
 
- >>> Time used in TWOINT is   0.27 seconds
+ >>> Time used in TWOINT is   0.23 seconds
 
 
 
@@ -862,24 +862,23 @@ Point group: C1
 
  Threshold for discarding integrals :  1.00D-15
 
- >>> Time used in FRMSUP is   0.04 seconds
+ >>> Time used in FRMSUP is   0.07 seconds
 
  >>>> Total CPU  time used in HERMIT:   0.32 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 00:43:51 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Title lines from integral program:
-     Ammonia TS                                                              
+     Location of saddle point (transition state) using IMAGE method          
                                                                              
 
  Print level on unit LUPRI =   2 is   0
@@ -938,8 +937,8 @@ Point group: C1
     6      -56.165328827296    6.85713D-04   -1.77D-06
     7      -56.165328878115    1.08167D-04   -5.08D-08
     8      -56.165328879410    2.16153D-05   -1.29D-09
-    9      -56.165328879465    2.54857D-06   -5.56D-11
-   10      -56.165328879466    3.32508D-07   -8.56D-13
+    9      -56.165328879465    2.54857D-06   -5.57D-11
+   10      -56.165328879466    3.32508D-07   -7.67D-13
  DIIS converged in  10 iterations !
 
 
@@ -988,59 +987,56 @@ Point group: C1
      Final gradient norm:           0.000000332508
 
  
-     Date and time (Linux)  : Tue Feb 13 00:43:51 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
      Molecular orbitals for symmetry species   1
 
  Orbital          1        2        3        4        5
    1  N   s      0.9948  -0.2033  -0.0183   0.0000   0.0000
    2  N   s      0.0253   0.4089   0.0395   0.0000   0.0000
-   3  N   s     -0.0006   0.4069   0.0568   0.0000   0.0000
-   4  N   px    -0.0002  -0.0326   0.4625   0.0000   0.0000
-   5  N   py     0.0000   0.0000   0.0000   0.4774   0.0000
+   3  N   s     -0.0006   0.4069   0.0568  -0.0000   0.0000
+   4  N   px    -0.0002  -0.0326   0.4625  -0.0000   0.0000
+   5  N   py    -0.0000   0.0000   0.0000   0.4774   0.0000
    6  N   pz     0.0000   0.0000   0.0000   0.0000   0.5886
-   7  N   px     0.0001  -0.0101   0.2327   0.0000   0.0000
-   8  N   py     0.0000   0.0000   0.0000   0.2698   0.0000
+   7  N   px     0.0001  -0.0101   0.2327  -0.0000   0.0000
+   8  N   py     0.0000  -0.0000   0.0000   0.2698   0.0000
    9  N   pz     0.0000   0.0000   0.0000   0.0000   0.5399
-  10  N   dxx   -0.0019   0.0036   0.0050   0.0000   0.0000
-  11  N   dxy    0.0000   0.0000   0.0000  -0.0278   0.0000
+  10  N   dxx   -0.0019   0.0036   0.0050  -0.0000   0.0000
+  11  N   dxy    0.0000  -0.0000   0.0000  -0.0278   0.0000
   12  N   dxz    0.0000   0.0000   0.0000   0.0000  -0.0046
   13  N   dyy   -0.0021  -0.0006  -0.0071   0.0000   0.0000
-  14  N   dyz    0.0000   0.0000   0.0000   0.0000   0.0000
+  14  N   dyz    0.0000   0.0000   0.0000   0.0000  -0.0000
   15  N   dzz   -0.0021  -0.0061   0.0009   0.0000   0.0000
   16  H   s     -0.0001   0.1383   0.2896   0.0000   0.0000
   17  H   s      0.0002   0.0150   0.1268   0.0000   0.0000
-  18  H   px     0.0002  -0.0182  -0.0203   0.0000   0.0000
-  19  H   py     0.0000   0.0000   0.0000   0.0122   0.0000
+  18  H   px     0.0002  -0.0182  -0.0203  -0.0000   0.0000
+  19  H   py    -0.0000   0.0000  -0.0000   0.0122   0.0000
   20  H   pz     0.0000   0.0000   0.0000   0.0000   0.0214
   21  H   s      0.0000   0.1573  -0.1530   0.2436   0.0000
   22  H   s      0.0003   0.0190  -0.0648   0.1612   0.0000
-  23  H   px     0.0000   0.0122   0.0006   0.0147   0.0000
+  23  H   px    -0.0000   0.0122   0.0006   0.0147   0.0000
   24  H   py     0.0002  -0.0158   0.0138  -0.0042   0.0000
   25  H   pz     0.0000   0.0000   0.0000   0.0000   0.0204
   26  H   s      0.0000   0.1573  -0.1530  -0.2436   0.0000
   27  H   s      0.0003   0.0190  -0.0648  -0.1612   0.0000
-  28  H   px     0.0000   0.0122   0.0006  -0.0147   0.0000
+  28  H   px    -0.0000   0.0122   0.0006  -0.0147   0.0000
   29  H   py    -0.0002   0.0158  -0.0138  -0.0042   0.0000
   30  H   pz     0.0000   0.0000   0.0000   0.0000   0.0204
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.10 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.15 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 00:43:51 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 - End of Wave Function Section
       Starting Static Property Section -
 
 
  
-     Date and time (Linux)  : Tue Feb 13 00:43:51 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Old LUGDR file opened in ORTREL.
 
@@ -1051,16 +1047,15 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 00:43:59 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
                          Molecular geometry (au)
                          -----------------------
 
- N         -0.1106508544            0.0000000000            0.0000000000
- H          1.7066288313            0.0000000000            0.0000000000
+ N         -0.1106508544           -0.0000000000            0.0000000000
+ H          1.7066288313           -0.0000000000            0.0000000000
  H         -1.3320889885            1.3327094471            0.0000000000
  H         -1.3320889885           -1.3327094471            0.0000000000
 
@@ -1076,7 +1071,7 @@ Point group: C1
 
      Total energy        -56.1653288795 au (Hartrees)
                          -1528.33629793 eV
-                           -147462.0500 kJ/mol
+                           -147462.0498 kJ/mol
 
 
 
@@ -1084,11 +1079,11 @@ Point group: C1
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.1118668356 au
-     Mass-velocity correction:                  -0.1402464108 au
+     Darwin correction:                          0.1118668188 au
+     Mass-velocity correction:                  -0.1402463897 au
 
-     Total relativistic correction:             -0.0283795751 au (0.0505%)
-     Non-relativistic + relativistic energy:   -56.1937084546 au
+     Total relativistic correction:             -0.0283795709 au (0.0505%)
+     Non-relativistic + relativistic energy:   -56.1937084503 au
 
 
 
@@ -1096,8 +1091,8 @@ Point group: C1
                          Molecular gradient (au)
                          -----------------------
 
- N          0.0370719326            0.0000000000            0.0000000000
- H         -0.0213431544            0.0000000000            0.0000000000
+ N          0.0370719326           -0.0000000000            0.0000000000
+ H         -0.0213431544           -0.0000000000            0.0000000000
  H         -0.0078643891           -0.0647290111            0.0000000000
  H         -0.0078643891            0.0647290111            0.0000000000
 
@@ -1108,34 +1103,34 @@ Point group: C1
                           Molecular Hessian (au)
                           ----------------------
 
-           N    x      N    y      N    z      H    x      H    y      H    z
+           N    x      N    y      N    z      H    x      H    y      H    z      
 
  N    x    1.313660
- N    y    0.000000    0.847257
+ N    y   -0.000000    0.847257
  N    z    0.000000    0.000000   -0.136706
 
- H    x   -0.667319    0.000000    0.000000    0.668370
+ H    x   -0.667319   -0.000000    0.000000    0.668370
  H    y    0.000000   -0.062742    0.000000    0.000000    0.041362
- H    z    0.000000    0.000000    0.067150    0.000000    0.000000   -0.034015
+ H    z   -0.000000   -0.000000    0.067150   -0.000000   -0.000000   -0.034015
 
- H    x   -0.323171    0.302821    0.000000   -0.000525    0.026411    0.000000
- H    y    0.292033   -0.392258    0.000000   -0.010701    0.010690    0.000000
- H    z    0.000000    0.000000    0.034778    0.000000    0.000000   -0.016567
+ H    x   -0.323171    0.302821    0.000000   -0.000525    0.026411   -0.000000
+ H    y    0.292033   -0.392258   -0.000000   -0.010701    0.010690    0.000000
+ H    z   -0.000000   -0.000000    0.034778   -0.000000   -0.000000   -0.016567
 
- H    x   -0.323171   -0.302821    0.000000   -0.000525   -0.026411    0.000000
- H    y   -0.292033   -0.392258    0.000000    0.010701    0.010690    0.000000
- H    z    0.000000    0.000000    0.034778    0.000000    0.000000   -0.016567
+ H    x   -0.323171   -0.302821   -0.000000   -0.000525   -0.026411    0.000000
+ H    y   -0.292033   -0.392258   -0.000000    0.010701    0.010690    0.000000
+ H    z   -0.000000   -0.000000    0.034778   -0.000000   -0.000000   -0.016567
 
 
-           H    x      H    y      H    z      H    x      H    y      H    z
+           H    x      H    y      H    z      H    x      H    y      H    z      
 
  H    x    0.306442
  H    y   -0.305282    0.431861
- H    z    0.000000    0.000000   -0.033390
+ H    z   -0.000000    0.000000   -0.033390
 
  H    x    0.017254    0.023949    0.000000    0.306442
  H    y   -0.023949   -0.050293    0.000000    0.305282    0.431861
- H    z    0.000000    0.000000    0.015179    0.000000    0.000000   -0.033390
+ H    z   -0.000000    0.000000    0.015179    0.000000    0.000000   -0.033390
 
 
 
@@ -1144,7 +1139,7 @@ Point group: C1
                               Dipole moment
                               -------------
 
-                    0.103650 au           0.263453 Debye
+                    0.103650 au           0.263451 Debye
 
 
 
@@ -1154,11 +1149,11 @@ Point group: C1
 
                                au             Debye
 
-                    x     -0.10364956     -0.26345335
+                    x     -0.10364956     -0.26345088
                     y      0.00000000      0.00000000
                     z      0.00000000      0.00000000
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -1167,7 +1162,7 @@ Point group: C1
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            N           H           H           H   
+            N           H           H           H           
 
    N       0.000000
    H       0.961663    0.000000
@@ -1201,8 +1196,8 @@ Point group: C1
  Overlap between normal coordinate  1 and the normal coordinate walk 
  direction of the previous iteration is equal to 0.99879
 
- Largest deviation from orthonormality of OMOs:0.912603E-13
- - found for element    2   2
+ Largest deviation from orthonormality of OMOs:0.894840E-13
+ - found for element   21  21
 
 
  ***************************************************************************
@@ -1251,10 +1246,10 @@ Point group: C1
 @  iter   sym     mode      gradient     eigenvalue       step        energy 
 @  ----------------------------------------------------------------------------
 @    1     1       1<    -0.00000001   -0.18576908   -0.00000005    0.00000000 
-@    1     1       2      0.00000000    0.11484601    0.00000002    0.00000000 
+@    1     1       2     -0.00000000    0.11484601    0.00000002   -0.00000000 
 @    1     1       3     -0.07745702<   0.15593773    0.49671763<  -0.01923713<
 @    1     1       4      0.06378859    0.67173907   -0.09496037   -0.00302869 
-@    1     1       5      0.00000000    1.46425070    0.00000000    0.00000000 
+@    1     1       5      0.00000000    1.46425070   -0.00000000   -0.00000000 
 @    1     1       6      0.01626874    1.96020367<  -0.00829952   -0.00006751 
 
   This is Newton step.
@@ -1265,43 +1260,43 @@ Point group: C1
                           +----------------------+
 
 
-   sym 1            1           2           3           4           5
+   sym 1            1           2           3           4           5   
   ----------------------------------------------------------------------
 
-   N    x       0.000000    0.000000   -0.294187    0.016247    0.000000
-   N    y       0.000000   -0.429128    0.000000    0.000000    0.750559
-   N    z       0.863740    0.000000    0.000000    0.000000    0.000000
+   N    x      -0.000000   -0.000000   -0.294187    0.016247    0.000000
+   N    y      -0.000000   -0.429128    0.000000   -0.000000    0.750559
+   N    z       0.863740    0.000000   -0.000000   -0.000000    0.000000
 
-   H    x       0.000000    0.000000   -0.360148   -0.663813    0.000000
-   H    y       0.000000    0.590482    0.000000    0.000000   -0.037702
-   H    z      -0.347188    0.000000    0.000000    0.000000    0.000000
+   H    x      -0.000000   -0.000000   -0.360148   -0.663813   -0.000000
+   H    y      -0.000000    0.590482   -0.000000   -0.000000   -0.037702
+   H    z      -0.347188   -0.000000    0.000000    0.000000   -0.000000
 
    H    x       0.000000    0.476531    0.327168    0.323783    0.300964
    H    y       0.000000   -0.080677    0.533699   -0.417982   -0.356428
-   H    z      -0.258276    0.000000    0.000000    0.000000    0.000000
+   H    z      -0.258276   -0.000000    0.000000    0.000000   -0.000000
 
    H    x       0.000000   -0.476531    0.327168    0.323783   -0.300964
-   H    y       0.000000   -0.080677   -0.533699    0.417982   -0.356428
-   H    z      -0.258276    0.000000    0.000000    0.000000    0.000000
+   H    y      -0.000000   -0.080677   -0.533699    0.417982   -0.356428
+   H    z      -0.258276   -0.000000    0.000000    0.000000   -0.000000
 
 
-   sym 1            6
+   sym 1            6       
   ----------------------
    N    x       0.814365
-   N    y       0.000000
+   N    y      -0.000000
    N    z       0.000000
 
    H    x      -0.423847
    H    y       0.000000
-   H    z       0.000000
+   H    z      -0.000000
 
    H    x      -0.195259
    H    y       0.201137
-   H    z       0.000000
+   H    z      -0.000000
 
    H    x      -0.195259
    H    y      -0.201137
-   H    z       0.000000
+   H    z      -0.000000
 
 
 
@@ -1334,7 +1329,7 @@ Point group: C1
    Differential interatomic separations (in Angstroms):
    ----------------------------------------------------
 
-            N           H           H           H   
+            N           H           H           H           
 
    N       0.000000
    H       0.022274    0.000000
@@ -1367,7 +1362,7 @@ Point group: C1
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            N           H           H           H   
+            N           H           H           H           
 
    N       0.000000
    H       0.983937    0.000000
@@ -1402,15 +1397,15 @@ Point group: C1
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:03      70 %
- RHSIDE     00:00:01      21 %
+ TWOTEX     00:00:01      50 %
+ REST       00:00:01      50 %
 
- TOTAL      00:00:05     100 %
+ TOTAL      00:00:03     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   4.84 seconds
- >>>> Total wall time used in ABACUS:   8.00 seconds
+ >>>> Total CPU  time used in ABACUS:   2.75 seconds
+ >>>> Total wall time used in ABACUS:   3.00 seconds
 
 - End of Static Property Section
 
@@ -1437,7 +1432,7 @@ Point group: C1
 
 
 
- >>> Time used in TWOINT is   0.32 seconds
+ >>> Time used in TWOINT is   0.27 seconds
 
 
 
@@ -1450,24 +1445,23 @@ Point group: C1
 
  Threshold for discarding integrals :  1.00D-15
 
- >>> Time used in FRMSUP is   0.06 seconds
+ >>> Time used in FRMSUP is   0.12 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.39 seconds
+ >>>> Total CPU  time used in HERMIT:   0.42 seconds
  >>>> Total wall time used in HERMIT:   1.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 00:44:00 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Title lines from integral program:
-     Ammonia TS                                                              
+     Location of saddle point (transition state) using IMAGE method          
                                                                              
 
  Print level on unit LUPRI =   2 is   0
@@ -1519,15 +1513,15 @@ Point group: C1
  Iter      Total energy        Error norm    Delta(E)
  ----------------------------------------------------
     1      -55.603680382592    4.57782D+00   -5.56D+01
-    2      -56.179687564925    4.16614D-01   -5.76D-01
+    2      -56.179687564924    4.16614D-01   -5.76D-01
     3      -56.186432886345    3.02872D-02   -6.75D-03
     4      -56.186527992662    8.73482D-03   -9.51D-05
-    5      -56.186536195888    3.45541D-03   -8.20D-06
-    6      -56.186537319869    5.84717D-04   -1.12D-06
+    5      -56.186536195887    3.45541D-03   -8.20D-06
+    6      -56.186537319868    5.84717D-04   -1.12D-06
     7      -56.186537353141    8.18740D-05   -3.33D-08
     8      -56.186537353886    1.31374D-05   -7.44D-10
-    9      -56.186537353911    1.94627D-06   -2.51D-11
-   10      -56.186537353911    1.73713D-07   -5.99D-13
+    9      -56.186537353911    1.94627D-06   -2.52D-11
+   10      -56.186537353911    1.73713D-07   -5.54D-13
  DIIS converged in  10 iterations !
 
 
@@ -1576,59 +1570,56 @@ Point group: C1
      Final gradient norm:           0.000000173713
 
  
-     Date and time (Linux)  : Tue Feb 13 00:44:00 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
      Molecular orbitals for symmetry species   1
 
  Orbital          1        2        3        4        5
    1  N   s      0.9949  -0.2030   0.0012   0.0000   0.0000
-   2  N   s      0.0250   0.4135  -0.0026   0.0000   0.0000
-   3  N   s     -0.0007   0.4229  -0.0057   0.0000   0.0000
-   4  N   px     0.0000   0.0039   0.4639   0.0000   0.0000
-   5  N   py     0.0000   0.0000   0.0000   0.4620   0.0000
-   6  N   pz     0.0000   0.0000   0.0000   0.0000   0.5896
-   7  N   px     0.0000   0.0008   0.2549   0.0000   0.0000
-   8  N   py     0.0000   0.0000   0.0000   0.2561   0.0000
-   9  N   pz     0.0000   0.0000   0.0000   0.0000   0.5412
-  10  N   dxx   -0.0020   0.0019   0.0103   0.0000   0.0000
-  11  N   dxy    0.0000   0.0000   0.0000  -0.0201   0.0000
+   2  N   s      0.0250   0.4135  -0.0026  -0.0000  -0.0000
+   3  N   s     -0.0007   0.4229  -0.0057  -0.0000  -0.0000
+   4  N   px     0.0000   0.0039   0.4639   0.0000  -0.0000
+   5  N   py     0.0000   0.0000  -0.0000   0.4620   0.0000
+   6  N   pz     0.0000   0.0000   0.0000  -0.0000   0.5896
+   7  N   px    -0.0000   0.0008   0.2549   0.0000  -0.0000
+   8  N   py     0.0000  -0.0000  -0.0000   0.2561  -0.0000
+   9  N   pz    -0.0000   0.0000   0.0000   0.0000   0.5412
+  10  N   dxx   -0.0020   0.0019   0.0103   0.0000  -0.0000
+  11  N   dxy   -0.0000  -0.0000   0.0000  -0.0201  -0.0000
   12  N   dxz    0.0000   0.0000   0.0000   0.0000   0.0003
-  13  N   dyy   -0.0020   0.0019  -0.0105   0.0000   0.0000
-  14  N   dyz    0.0000   0.0000   0.0000   0.0000   0.0000
-  15  N   dzz   -0.0020  -0.0061  -0.0001   0.0000   0.0000
+  13  N   dyy   -0.0020   0.0019  -0.0105  -0.0000  -0.0000
+  14  N   dyz   -0.0000   0.0000  -0.0000   0.0000  -0.0000
+  15  N   dzz   -0.0020  -0.0061  -0.0001  -0.0000   0.0000
   16  H   s      0.0001   0.1466   0.2866   0.0000   0.0000
   17  H   s      0.0003   0.0197   0.1579   0.0000   0.0000
-  18  H   px     0.0001  -0.0187  -0.0178   0.0000   0.0000
-  19  H   py     0.0000   0.0000   0.0000   0.0101   0.0000
-  20  H   pz     0.0000   0.0000   0.0000   0.0000   0.0197
+  18  H   px     0.0001  -0.0187  -0.0178  -0.0000  -0.0000
+  19  H   py     0.0000   0.0000  -0.0000   0.0101  -0.0000
+  20  H   pz     0.0000  -0.0000  -0.0000  -0.0000   0.0197
   21  H   s      0.0001   0.1416  -0.1437   0.2477   0.0000
   22  H   s      0.0003   0.0197  -0.0810   0.1387   0.0000
   23  H   px    -0.0001   0.0092   0.0031   0.0121   0.0000
-  24  H   py     0.0001  -0.0160   0.0121  -0.0112   0.0000
-  25  H   pz     0.0000   0.0000   0.0000   0.0000   0.0194
+  24  H   py     0.0001  -0.0160   0.0121  -0.0112  -0.0000
+  25  H   pz     0.0000  -0.0000   0.0000  -0.0000   0.0194
   26  H   s      0.0001   0.1416  -0.1437  -0.2477   0.0000
   27  H   s      0.0003   0.0197  -0.0810  -0.1387   0.0000
   28  H   px    -0.0001   0.0092   0.0031  -0.0121   0.0000
   29  H   py    -0.0001   0.0160  -0.0121  -0.0112   0.0000
-  30  H   pz     0.0000   0.0000   0.0000   0.0000   0.0194
+  30  H   pz     0.0000  -0.0000   0.0000   0.0000   0.0194
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.12 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.18 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 00:44:00 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 - End of Wave Function Section
       Starting Static Property Section -
 
 
  
-     Date and time (Linux)  : Tue Feb 13 00:44:00 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Old LUGDR file opened in ORTREL.
 
@@ -1641,8 +1632,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 00:44:07 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
@@ -1666,7 +1656,7 @@ Point group: C1
 
      Total energy        -56.1865373539 au (Hartrees)
                          -1528.91340986 eV
-                           -147517.7328 kJ/mol
+                           -147517.7326 kJ/mol
 
 
 
@@ -1674,11 +1664,11 @@ Point group: C1
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.1118370553 au
-     Mass-velocity correction:                  -0.1401802731 au
+     Darwin correction:                          0.1118370385 au
+     Mass-velocity correction:                  -0.1401802520 au
 
-     Total relativistic correction:             -0.0283432178 au (0.0504%)
-     Non-relativistic + relativistic energy:   -56.2148805718 au
+     Total relativistic correction:             -0.0283432136 au (0.0504%)
+     Non-relativistic + relativistic energy:   -56.2148805675 au
 
 
 
@@ -1698,34 +1688,34 @@ Point group: C1
                           Molecular Hessian (au)
                           ----------------------
 
-           N    x      N    y      N    z      H    x      H    y      H    z
+           N    x      N    y      N    z      H    x      H    y      H    z      
 
  N    x    0.951912
- N    y    0.000000    0.906940
+ N    y   -0.000000    0.906940
  N    z    0.000000    0.000000   -0.069707
 
- H    x   -0.563280    0.000000    0.000000    0.577846
- H    y    0.000000   -0.082274    0.000000    0.000000    0.067013
- H    z    0.000000    0.000000    0.027463    0.000000    0.000000   -0.010299
+ H    x   -0.563280    0.000000   -0.000000    0.577846
+ H    y    0.000000   -0.082274   -0.000000   -0.000000    0.067013
+ H    z   -0.000000   -0.000000    0.027463    0.000000    0.000000   -0.010299
 
  H    x   -0.194316    0.185021    0.000000   -0.007283    0.034685    0.000000
- H    y    0.186164   -0.412333    0.000000   -0.007457    0.007630    0.000000
- H    z    0.000000    0.000000    0.021122    0.000000    0.000000   -0.008582
+ H    y    0.186164   -0.412333   -0.000000   -0.007457    0.007630    0.000000
+ H    z    0.000000   -0.000000    0.021122   -0.000000    0.000000   -0.008582
 
  H    x   -0.194316   -0.185021    0.000000   -0.007283   -0.034685    0.000000
  H    y   -0.186164   -0.412333    0.000000    0.007457    0.007630    0.000000
- H    z    0.000000    0.000000    0.021122    0.000000    0.000000   -0.008582
+ H    z    0.000000    0.000000    0.021122   -0.000000   -0.000000   -0.008582
 
 
-           H    x      H    y      H    z      H    x      H    y      H    z
+           H    x      H    y      H    z      H    x      H    y      H    z      
 
  H    x    0.186208
  H    y   -0.199206    0.419069
- H    z    0.000000    0.000000   -0.003271
+ H    z   -0.000000    0.000000   -0.003271
 
- H    x    0.015391    0.020500    0.000000    0.186208
+ H    x    0.015391    0.020500   -0.000000    0.186208
  H    y   -0.020500   -0.014367    0.000000    0.199206    0.419069
- H    z    0.000000    0.000000   -0.009269    0.000000    0.000000   -0.003271
+ H    z   -0.000000   -0.000000   -0.009269   -0.000000   -0.000000   -0.003271
 
 
 
@@ -1744,11 +1734,11 @@ Point group: C1
 
                                au             Debye
 
-                    x     -0.00102598     -0.00260781
-                    y      0.00000000     -0.00000001
+                    x     -0.00102598     -0.00260779
+                    y     -0.00000000     -0.00000001
                     z      0.00000018      0.00000046
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -1757,7 +1747,7 @@ Point group: C1
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            N           H           H           H   
+            N           H           H           H           
 
    N       0.000000
    H       0.983937    0.000000
@@ -1791,7 +1781,7 @@ Point group: C1
  Overlap between normal coordinate  1 and the normal coordinate walk 
  direction of the previous iteration is equal to 0.99743
 
- Largest deviation from orthonormality of OMOs:0.883738E-13
+ Largest deviation from orthonormality of OMOs:0.894840E-13
  - found for element   19  19
 
 
@@ -1841,11 +1831,11 @@ Point group: C1
 @  iter   sym     mode      gradient     eigenvalue       step        energy 
 @  ----------------------------------------------------------------------------
 @    2     1       1<     0.00000001   -0.09295506    0.00000014    0.00000000 
-@    2     1       2      0.00000001    0.15803281   -0.00000006    0.00000000 
-@    2     1       3     -0.00334168    0.16142542    0.02070110<  -0.00003459 
-@    2     1       4     -0.01103475    0.54109086    0.02039353   -0.00011252<
-@    2     1       5      0.00000002    1.38819567   -0.00000001    0.00000000 
-@    2     1       6      0.01551318<   1.46227637<  -0.01060892   -0.00008229 
+@    2     1       2     -0.00000000    0.15803280    0.00000001   -0.00000000 
+@    2     1       3     -0.00334168    0.16142540    0.02070110<  -0.00003459 
+@    2     1       4     -0.01103475    0.54109084    0.02039353   -0.00011252<
+@    2     1       5      0.00000002    1.38819565   -0.00000001   -0.00000000 
+@    2     1       6      0.01551318<   1.46227635<  -0.01060892   -0.00008229 
 
   This is Newton step.
 
@@ -1855,38 +1845,38 @@ Point group: C1
                           +----------------------+
 
 
-   sym 1            1           2           3           4           5
+   sym 1            1           2           3           4           5   
   ----------------------------------------------------------------------
 
-   N    x       0.000000   -0.000001    0.332618   -0.030829    0.000000
-   N    y       0.000000   -0.330303   -0.000001    0.000000    0.800562
-   N    z       0.866025    0.000000    0.000000    0.000000    0.000000
+   N    x       0.000000    0.000000    0.332618   -0.030829    0.000001
+   N    y      -0.000000   -0.330303    0.000000   -0.000000    0.800562
+   N    z       0.866025   -0.000000   -0.000000    0.000000    0.000000
 
-   H    x       0.000000   -0.000001    0.420160   -0.560322    0.000000
-   H    y       0.000000    0.647775    0.000002    0.000000   -0.045449
-   H    z      -0.289489    0.000000    0.000000    0.000000    0.000000
+   H    x       0.000000    0.000000    0.420160   -0.560322   -0.000000
+   H    y       0.000000    0.647775   -0.000000    0.000000   -0.045449
+   H    z      -0.289489    0.000000   -0.000000   -0.000000   -0.000000
 
-   H    x       0.000000    0.458745   -0.376388    0.295576    0.189654
-   H    y       0.000000   -0.158735   -0.463408   -0.505153   -0.377556
-   H    z      -0.288268    0.000000    0.000000    0.000000    0.000000
+   H    x      -0.000000    0.458744   -0.376390    0.295576    0.189654
+   H    y       0.000000   -0.158736   -0.463407   -0.505153   -0.377556
+   H    z      -0.288268    0.000000    0.000000   -0.000000   -0.000000
 
-   H    x       0.000000   -0.458743   -0.376391    0.295576   -0.189654
-   H    y       0.000000   -0.158738    0.463407    0.505153   -0.377556
-   H    z      -0.288268    0.000000    0.000000    0.000000    0.000000
+   H    x      -0.000000   -0.458744   -0.376389    0.295576   -0.189654
+   H    y      -0.000000   -0.158736    0.463407    0.505153   -0.377556
+   H    z      -0.288268   -0.000000    0.000000   -0.000000    0.000000
 
 
-   sym 1            6
+   sym 1            6       
   ----------------------
    N    x       0.799008
-   N    y       0.000000
+   N    y      -0.000001
    N    z       0.000000
 
    H    x      -0.509416
    H    y       0.000000
-   H    z       0.000000
+   H    z      -0.000000
 
    H    x      -0.144797
-   H    y       0.173420
+   H    y       0.173421
    H    z       0.000000
 
    H    x      -0.144796
@@ -1912,10 +1902,10 @@ Point group: C1
                        Cartesian displacements (au)
                        ----------------------------
 
- N         -0.0022197697           -0.0000000068            0.0000001245
- H          0.0026751841            0.0000000040           -0.0000000415
- H         -0.0002277057           -0.0217346840           -0.0000000415
- H         -0.0002277087            0.0217346868           -0.0000000415
+ N         -0.0022197695           -0.0000000066            0.0000001247
+ H          0.0026751844            0.0000000034           -0.0000000415
+ H         -0.0002277064           -0.0217346840           -0.0000000416
+ H         -0.0002277085            0.0217346872           -0.0000000416
 
 
 
@@ -1924,7 +1914,7 @@ Point group: C1
    Differential interatomic separations (in Angstroms):
    ----------------------------------------------------
 
-            N           H           H           H   
+            N           H           H           H           
 
    N       0.000000
    H       0.002590    0.000000
@@ -1945,10 +1935,10 @@ Point group: C1
                         Cartesian coordinates (au)
                         --------------------------
 
- N         -0.2673003389           -0.0000000011            0.0000000137
- H          1.5969658677            0.0000000008            0.0000000030
- H         -1.1989327639            1.6140950430           -0.0000000084
- H         -1.1989327649           -1.6140950428           -0.0000000084
+ N         -0.2673003387           -0.0000000008            0.0000000139
+ H          1.5969658679            0.0000000002            0.0000000030
+ H         -1.1989327646            1.6140950430           -0.0000000084
+ H         -1.1989327647           -1.6140950424           -0.0000000084
 
 
 
@@ -1957,7 +1947,7 @@ Point group: C1
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            N           H           H           H   
+            N           H           H           H           
 
    N       0.000000
    H       0.986527    0.000000
@@ -1992,16 +1982,15 @@ Point group: C1
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:03      58 %
- RHSIDE     00:00:01      30 %
- REST       00:00:01      27 %
+ TWOTEX     00:00:02      53 %
+ RHSIDE     00:00:01      31 %
 
- TOTAL      00:00:05     100 %
-
+ TOTAL      00:00:04     100 %
 
 
- >>>> Total CPU  time used in ABACUS:   4.85 seconds
- >>>> Total wall time used in ABACUS:   7.00 seconds
+
+ >>>> Total CPU  time used in ABACUS:   3.71 seconds
+ >>>> Total wall time used in ABACUS:   4.00 seconds
 
 - End of Static Property Section
 
@@ -2023,12 +2012,12 @@ Point group: C1
  >>> Time used in ONEDRV is   0.01 seconds
 
 
- Number of two-electron integrals written:       98155 ( 90.6% )
+ Number of two-electron integrals written:       98143 ( 90.6% )
  Megabytes written:                              1.127
 
 
 
- >>> Time used in TWOINT is   0.31 seconds
+ >>> Time used in TWOINT is   0.26 seconds
 
 
 
@@ -2041,24 +2030,23 @@ Point group: C1
 
  Threshold for discarding integrals :  1.00D-15
 
- >>> Time used in FRMSUP is   0.06 seconds
+ >>> Time used in FRMSUP is   0.10 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.38 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.40 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 00:44:08 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Title lines from integral program:
-     Ammonia TS                                                              
+     Location of saddle point (transition state) using IMAGE method          
                                                                              
 
  Print level on unit LUPRI =   2 is   0
@@ -2109,15 +2097,15 @@ Point group: C1
 
  Iter      Total energy        Error norm    Delta(E)
  ----------------------------------------------------
-    1      -56.183438150858    5.41762D-01   -5.62D+01
+    1      -56.183438150845    5.41762D-01   -5.62D+01
     2      -56.186730256755    2.90969D-02   -3.29D-03
     3      -56.186759638724    6.44227D-03   -2.94D-05
     4      -56.186761905253    2.04312D-03   -2.27D-06
     5      -56.186762194464    3.26629D-04   -2.89D-07
     6      -56.186762210669    4.19364D-05   -1.62D-08
     7      -56.186762210892    7.02162D-06   -2.23D-10
-    8      -56.186762210897    1.15063D-06   -5.61D-12
-    9      -56.186762210898    1.81606D-07   -1.81D-13
+    8      -56.186762210897    1.15063D-06   -5.51D-12
+    9      -56.186762210898    1.81607D-07   -1.99D-13
  DIIS converged in   9 iterations !
 
 
@@ -2160,65 +2148,62 @@ Point group: C1
      Spatial symmetry:            1
 
      Final    HF energy:          -56.186762210898
-     Nuclear repulsion:            12.196193546760
-     Electronic energy:           -68.382955757658
+     Nuclear repulsion:            12.196193546364
+     Electronic energy:           -68.382955757262
 
-     Final gradient norm:           0.000000181606
+     Final gradient norm:           0.000000181607
 
  
-     Date and time (Linux)  : Tue Feb 13 00:44:08 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
      Molecular orbitals for symmetry species   1
 
  Orbital          1        2        3        4        5
-   1  N   s      0.9949  -0.2032   0.0000   0.0000   0.0000
+   1  N   s      0.9949  -0.2032  -0.0000  -0.0000  -0.0000
    2  N   s      0.0250   0.4131   0.0000   0.0000   0.0000
    3  N   s     -0.0007   0.4213   0.0000   0.0001   0.0000
-   4  N   px     0.0000  -0.0001   0.0000   0.4641   0.0000
-   5  N   py     0.0000   0.0000   0.4641   0.0000   0.0000
-   6  N   pz     0.0000   0.0000   0.0000   0.0000   0.5894
-   7  N   px     0.0000   0.0000   0.0000   0.2544   0.0000
-   8  N   py     0.0000   0.0000   0.2543   0.0000   0.0000
-   9  N   pz     0.0000   0.0000   0.0000   0.0000   0.5411
+   4  N   px    -0.0000  -0.0001   0.0000   0.4641  -0.0000
+   5  N   py    -0.0000  -0.0000   0.4641  -0.0000   0.0000
+   6  N   pz    -0.0000  -0.0000   0.0000   0.0000   0.5894
+   7  N   px    -0.0000  -0.0000   0.0000   0.2544  -0.0000
+   8  N   py    -0.0000  -0.0000   0.2543  -0.0000  -0.0000
+   9  N   pz     0.0000  -0.0000   0.0000   0.0000   0.5411
   10  N   dxx   -0.0020   0.0018   0.0000   0.0102   0.0000
-  11  N   dxy    0.0000   0.0000  -0.0205   0.0000   0.0000
-  12  N   dxz    0.0000   0.0000   0.0000   0.0000   0.0000
-  13  N   dyy   -0.0020   0.0018   0.0000  -0.0102   0.0000
-  14  N   dyz    0.0000   0.0000   0.0000   0.0000   0.0000
-  15  N   dzz   -0.0020  -0.0061   0.0000   0.0000   0.0000
-  16  H   s      0.0001   0.1443   0.0000   0.2872   0.0000
-  17  H   s      0.0003   0.0192   0.0000   0.1581   0.0000
-  18  H   px     0.0001  -0.0187   0.0000  -0.0179   0.0000
-  19  H   py     0.0000   0.0000   0.0102   0.0000   0.0000
-  20  H   pz     0.0000   0.0000   0.0000   0.0000   0.0196
-  21  H   s      0.0001   0.1444   0.2487  -0.1436   0.0000
-  22  H   s      0.0003   0.0192   0.1368  -0.0790   0.0000
-  23  H   px    -0.0001   0.0094   0.0122   0.0032   0.0000
+  11  N   dxy    0.0000   0.0000  -0.0205   0.0000  -0.0000
+  12  N   dxz    0.0000   0.0000  -0.0000  -0.0000  -0.0000
+  13  N   dyy   -0.0020   0.0018  -0.0000  -0.0102   0.0000
+  14  N   dyz   -0.0000   0.0000  -0.0000   0.0000  -0.0000
+  15  N   dzz   -0.0020  -0.0061  -0.0000   0.0000  -0.0000
+  16  H   s      0.0001   0.1443   0.0000   0.2872  -0.0000
+  17  H   s      0.0003   0.0192   0.0000   0.1581  -0.0000
+  18  H   px     0.0001  -0.0187  -0.0000  -0.0179   0.0000
+  19  H   py    -0.0000  -0.0000   0.0102  -0.0000  -0.0000
+  20  H   pz    -0.0000   0.0000  -0.0000   0.0000   0.0196
+  21  H   s      0.0001   0.1444   0.2487  -0.1436  -0.0000
+  22  H   s      0.0003   0.0192   0.1368  -0.0790  -0.0000
+  23  H   px    -0.0001   0.0094   0.0122   0.0032  -0.0000
   24  H   py     0.0001  -0.0162  -0.0109   0.0122   0.0000
-  25  H   pz     0.0000   0.0000   0.0000   0.0000   0.0197
-  26  H   s      0.0001   0.1444  -0.2487  -0.1436   0.0000
-  27  H   s      0.0003   0.0192  -0.1368  -0.0790   0.0000
-  28  H   px    -0.0001   0.0094  -0.0122   0.0032   0.0000
-  29  H   py    -0.0001   0.0162  -0.0109  -0.0122   0.0000
-  30  H   pz     0.0000   0.0000   0.0000   0.0000   0.0197
+  25  H   pz    -0.0000   0.0000   0.0000  -0.0000   0.0197
+  26  H   s      0.0001   0.1444  -0.2487  -0.1436  -0.0000
+  27  H   s      0.0003   0.0192  -0.1368  -0.0790  -0.0000
+  28  H   px    -0.0001   0.0094  -0.0122   0.0032  -0.0000
+  29  H   py    -0.0001   0.0162  -0.0109  -0.0122  -0.0000
+  30  H   pz    -0.0000   0.0000  -0.0000  -0.0000   0.0197
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.11 seconds
- >>>> Total wall time used in SIRIUS :      0.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.13 seconds
+ >>>> Total wall time used in SIRIUS :      1.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 00:44:08 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 - End of Wave Function Section
       Starting Static Property Section -
 
 
  
-     Date and time (Linux)  : Tue Feb 13 00:44:08 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Old LUGDR file opened in ORTREL.
 
@@ -2229,18 +2214,17 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 00:44:15 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
                          Molecular geometry (au)
                          -----------------------
 
- N         -0.2673003389           -0.0000000011            0.0000000137
- H          1.5969658677            0.0000000008            0.0000000030
- H         -1.1989327639            1.6140950430           -0.0000000084
- H         -1.1989327649           -1.6140950428           -0.0000000084
+ N         -0.2673003387           -0.0000000008            0.0000000139
+ H          1.5969658679            0.0000000002            0.0000000030
+ H         -1.1989327646            1.6140950430           -0.0000000084
+ H         -1.1989327647           -1.6140950424           -0.0000000084
 
 
 
@@ -2254,7 +2238,7 @@ Point group: C1
 
      Total energy        -56.1867622109 au (Hartrees)
                          -1528.91952853 eV
-                           -147518.3232 kJ/mol
+                           -147518.3230 kJ/mol
 
 
 
@@ -2262,11 +2246,11 @@ Point group: C1
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.1118444702 au
-     Mass-velocity correction:                  -0.1401945869 au
+     Darwin correction:                          0.1118444534 au
+     Mass-velocity correction:                  -0.1401945658 au
 
-     Total relativistic correction:             -0.0283501167 au (0.0505%)
-     Non-relativistic + relativistic energy:   -56.2151123276 au
+     Total relativistic correction:             -0.0283501125 au (0.0505%)
+     Non-relativistic + relativistic energy:   -56.2151123234 au
 
 
 
@@ -2274,10 +2258,10 @@ Point group: C1
                          Molecular gradient (au)
                          -----------------------
 
- N         -0.0003675821           -0.0000000011           -0.0000000014
- H         -0.0000175105            0.0000000002            0.0000000005
- H          0.0001925462           -0.0002989011            0.0000000005
- H          0.0001925464            0.0002989020            0.0000000005
+ N         -0.0003675820           -0.0000000010           -0.0000000014
+ H         -0.0000175105            0.0000000001            0.0000000005
+ H          0.0001925460           -0.0002989011            0.0000000005
+ H          0.0001925465            0.0002989020            0.0000000005
 
 
 
@@ -2286,33 +2270,33 @@ Point group: C1
                           Molecular Hessian (au)
                           ----------------------
 
-           N    x      N    y      N    z      H    x      H    y      H    z
+           N    x      N    y      N    z      H    x      H    y      H    z      
 
  N    x    0.957365
  N    y    0.000000    0.958928
  N    z    0.000000    0.000000   -0.078141
 
  H    x   -0.553623    0.000000    0.000000    0.568522
- H    y    0.000000   -0.084461    0.000000    0.000000    0.068192
- H    z    0.000000    0.000000    0.025906    0.000000    0.000000   -0.008639
+ H    y   -0.000000   -0.084461   -0.000000    0.000000    0.068192
+ H    z    0.000000   -0.000000    0.025906   -0.000000    0.000000   -0.008639
 
- H    x   -0.201871    0.203703    0.000000   -0.007449    0.034691    0.000000
- H    y    0.203696   -0.437233    0.000000   -0.007724    0.008135    0.000000
- H    z    0.000000    0.000000    0.026117    0.000000    0.000000   -0.008634
+ H    x   -0.201871    0.203703   -0.000000   -0.007449    0.034691   -0.000000
+ H    y    0.203696   -0.437233    0.000000   -0.007724    0.008135   -0.000000
+ H    z   -0.000000    0.000000    0.026117    0.000000   -0.000000   -0.008634
 
- H    x   -0.201871   -0.203703    0.000000   -0.007449   -0.034691    0.000000
- H    y   -0.203696   -0.437233    0.000000    0.007724    0.008135    0.000000
- H    z    0.000000    0.000000    0.026117    0.000000    0.000000   -0.008634
+ H    x   -0.201871   -0.203703   -0.000000   -0.007449   -0.034691   -0.000000
+ H    y   -0.203696   -0.437233   -0.000000    0.007724    0.008135    0.000000
+ H    z   -0.000000   -0.000000    0.026117    0.000000    0.000000   -0.008634
 
 
-           H    x      H    y      H    z      H    x      H    y      H    z
+           H    x      H    y      H    z      H    x      H    y      H    z      
 
  H    x    0.193400
  H    y   -0.217183    0.444310
- H    z    0.000000    0.000000   -0.008834
+ H    z    0.000000   -0.000000   -0.008834
 
  H    x    0.015920    0.021211    0.000000    0.193400
- H    y   -0.021211   -0.015211    0.000000    0.217183    0.444310
+ H    y   -0.021211   -0.015211   -0.000000    0.217183    0.444310
  H    z    0.000000    0.000000   -0.008649    0.000000    0.000000   -0.008834
 
 
@@ -2332,11 +2316,11 @@ Point group: C1
 
                                au             Debye
 
-                    x      0.00015446      0.00039259
+                    x      0.00015445      0.00039259
                     y      0.00000000      0.00000000
                     z     -0.00000002     -0.00000006
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -2345,7 +2329,7 @@ Point group: C1
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            N           H           H           H   
+            N           H           H           H           
 
    N       0.000000
    H       0.986527    0.000000
@@ -2379,8 +2363,8 @@ Point group: C1
  Overlap between normal coordinate  1 and the normal coordinate walk 
  direction of the previous iteration is equal to 1.00000
 
- Largest deviation from orthonormality of OMOs:0.630607E-13
- - found for element    3   3
+ Largest deviation from orthonormality of OMOs:0.552891E-13
+ - found for element    2   2
 
 
  ***************************************************************************
@@ -2428,12 +2412,12 @@ Point group: C1
 
 @  iter   sym     mode      gradient     eigenvalue       step        energy 
 @  ----------------------------------------------------------------------------
-@    3     1       1<     0.00000000   -0.10418800   -0.00000002    0.00000000 
-@    3     1       2     -0.00000063    0.15769458    0.00000398    0.00000000 
-@    3     1       3      0.00000000    0.15782343    0.00000000    0.00000000 
+@    3     1       1<    -0.00000000   -0.10418800   -0.00000002    0.00000000 
+@    3     1       2     -0.00000063    0.15769458    0.00000398   -0.00000000 
+@    3     1       3      0.00000000    0.15782343   -0.00000000   -0.00000000 
 @    3     1       4      0.00041977    0.56334455   -0.00074514<  -0.00000016<
 @    3     1       5     -0.00046049<   1.47368852    0.00031247   -0.00000007 
-@    3     1       6      0.00000000    1.47600475<   0.00000000    0.00000000 
+@    3     1       6     -0.00000000    1.47600475<   0.00000000   -0.00000000 
 
   This is Newton step.
 
@@ -2443,31 +2427,31 @@ Point group: C1
                           +----------------------+
 
 
-   sym 1            1           2           3           4           5
+   sym 1            1           2           3           4           5   
   ----------------------------------------------------------------------
 
-   N    x       0.000000    0.335242   -0.000011    0.000786    0.798506
-   N    y       0.000000   -0.000011   -0.335162    0.000000    0.000001
-   N    z       0.866025    0.000000    0.000000    0.000000    0.000000
+   N    x      -0.000000    0.335242   -0.000011    0.000786    0.798506
+   N    y      -0.000000   -0.000011   -0.335162   -0.000000    0.000001
+   N    z       0.866025    0.000000   -0.000000   -0.000000    0.000000
 
-   H    x       0.000000    0.420727   -0.000014   -0.577685   -0.489152
-   H    y       0.000000    0.000022    0.644041    0.000000    0.000000
+   H    x      -0.000000    0.420727   -0.000014   -0.577685   -0.489152
+   H    y       0.000000    0.000022    0.644041    0.000000   -0.000000
    H    z      -0.288572    0.000000    0.000000    0.000000    0.000000
 
    H    x       0.000000   -0.377969    0.461084    0.288449   -0.154677
-   H    y       0.000000   -0.460905   -0.154424   -0.499937    0.193994
-   H    z      -0.288727    0.000000    0.000000    0.000000    0.000000
+   H    y      -0.000000   -0.460905   -0.154424   -0.499937    0.193994
+   H    z      -0.288727   -0.000000   -0.000000    0.000000   -0.000000
 
    H    x       0.000000   -0.378000   -0.461059    0.288449   -0.154678
    H    y       0.000000    0.460895   -0.154455    0.499937   -0.193995
-   H    z      -0.288727    0.000000    0.000000    0.000000    0.000000
+   H    z      -0.288727   -0.000000    0.000000    0.000000   -0.000000
 
 
-   sym 1            6
+   sym 1            6       
   ----------------------
    N    x      -0.000001
    N    y       0.798540
-   N    z       0.000000
+   N    z      -0.000000
 
    H    x       0.000001
    H    y      -0.042699
@@ -2479,7 +2463,7 @@ Point group: C1
 
    H    x      -0.193471
    H    y      -0.377920
-   H    z       0.000000
+   H    z      -0.000000
 
 
 
@@ -2500,10 +2484,10 @@ Point group: C1
                        Cartesian displacements (au)
                        ----------------------------
 
- N          0.0002502588            0.0000000011           -0.0000000131
- H          0.0002792824           -0.0000000009            0.0000000044
- H         -0.0002647711            0.0004313072            0.0000000044
- H         -0.0002647702           -0.0004313074            0.0000000044
+ N          0.0002502586            0.0000000008           -0.0000000132
+ H          0.0002792822           -0.0000000002            0.0000000044
+ H         -0.0002647704            0.0004313072            0.0000000044
+ H         -0.0002647704           -0.0004313078            0.0000000044
 
 
 
@@ -2512,7 +2496,7 @@ Point group: C1
    Differential interatomic separations (in Angstroms):
    ----------------------------------------------------
 
-            N           H           H           H   
+            N           H           H           H           
 
    N       0.000000
    H       0.000015    0.000000
@@ -2533,8 +2517,8 @@ Point group: C1
                         Cartesian coordinates (au)
                         --------------------------
 
- N         -0.2670500801            0.0000000000            0.0000000006
- H          1.5972451501            0.0000000000            0.0000000074
+ N         -0.2670500801           -0.0000000000            0.0000000007
+ H          1.5972451501           -0.0000000000            0.0000000074
  H         -1.1991975349            1.6145263503           -0.0000000040
  H         -1.1991975351           -1.6145263502           -0.0000000040
 
@@ -2545,7 +2529,7 @@ Point group: C1
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            N           H           H           H   
+            N           H           H           H           
 
    N       0.000000
    H       0.986543    0.000000
@@ -2580,15 +2564,16 @@ Point group: C1
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:03      60 %
- RHSIDE     00:00:01      28 %
+ TWOTEX     00:00:02      52 %
+ RHSIDE     00:00:01      31 %
+ REST       00:00:01      33 %
 
- TOTAL      00:00:05     100 %
+ TOTAL      00:00:04     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   4.69 seconds
- >>>> Total wall time used in ABACUS:   7.00 seconds
+ >>>> Total CPU  time used in ABACUS:   3.81 seconds
+ >>>> Total wall time used in ABACUS:   4.00 seconds
 
 - End of Static Property Section
 
@@ -2610,12 +2595,12 @@ Point group: C1
  >>> Time used in ONEDRV is   0.01 seconds
 
 
- Number of two-electron integrals written:       98079 ( 90.5% )
+ Number of two-electron integrals written:       98094 ( 90.5% )
  Megabytes written:                              1.127
 
 
 
- >>> Time used in TWOINT is   0.31 seconds
+ >>> Time used in TWOINT is   0.28 seconds
 
 
 
@@ -2628,24 +2613,23 @@ Point group: C1
 
  Threshold for discarding integrals :  1.00D-15
 
- >>> Time used in FRMSUP is   0.06 seconds
+ >>> Time used in FRMSUP is   0.11 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.38 seconds
- >>>> Total wall time used in HERMIT:   1.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.43 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
      Starting Wave Function Section -
 
- ************************************************************************
- *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
- ************************************************************************
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
 
  
-     Date and time (Linux)  : Tue Feb 13 00:44:16 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Title lines from integral program:
-     Ammonia TS                                                              
+     Location of saddle point (transition state) using IMAGE method          
                                                                              
 
  Print level on unit LUPRI =   2 is   0
@@ -2696,13 +2680,13 @@ Point group: C1
 
  Iter      Total energy        Error norm    Delta(E)
  ----------------------------------------------------
-    1      -56.186759155807    1.72855D-02   -5.62D+01
+    1      -56.186759155808    1.72855D-02   -5.62D+01
     2      -56.186762406468    9.00005D-04   -3.25D-06
     3      -56.186762436349    2.19520D-04   -2.99D-08
     4      -56.186762439047    6.48392D-05   -2.70D-09
     5      -56.186762439368    1.03173D-05   -3.21D-10
     6      -56.186762439385    1.05695D-06   -1.66D-11
-    7      -56.186762439385    1.53684D-07   -8.53D-14
+    7      -56.186762439385    1.53684D-07   -1.56D-13
  DIIS converged in   7 iterations !
 
 
@@ -2732,7 +2716,7 @@ Point group: C1
 
 
  (SIRSTP) Energy difference;
- actual, predicted and ratio:  -0.0000002285  -0.0000002283    1.000646
+ actual, predicted and ratio:  -0.0000002285  -0.0000002283    1.000647
 
 
  *** GEOMETRY WALK STEP ACCEPTED.
@@ -2746,64 +2730,61 @@ Point group: C1
 
      Final    HF energy:          -56.186762439385
      Nuclear repulsion:            12.193377890184
-     Electronic energy:           -68.380140329569
+     Electronic energy:           -68.380140329568
 
      Final gradient norm:           0.000000153684
 
  
-     Date and time (Linux)  : Tue Feb 13 00:44:16 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
      Molecular orbitals for symmetry species   1
 
  Orbital          1        2        3        4        5
-   1  N   s      0.9949  -0.2032   0.0000   0.0000   0.0000
+   1  N   s      0.9949  -0.2032   0.0000  -0.0000  -0.0000
    2  N   s      0.0250   0.4131   0.0000   0.0000   0.0000
    3  N   s     -0.0007   0.4214   0.0000   0.0000   0.0000
-   4  N   px     0.0000   0.0000   0.0000   0.4641   0.0000
-   5  N   py     0.0000   0.0000   0.4641   0.0000   0.0000
-   6  N   pz     0.0000   0.0000   0.0000   0.0000   0.5894
-   7  N   px     0.0000   0.0000   0.0000   0.2544   0.0000
-   8  N   py     0.0000   0.0000   0.2544   0.0000   0.0000
-   9  N   pz     0.0000   0.0000   0.0000   0.0000   0.5411
+   4  N   px    -0.0000  -0.0000   0.0000   0.4641  -0.0000
+   5  N   py     0.0000   0.0000   0.4641  -0.0000  -0.0000
+   6  N   pz    -0.0000  -0.0000   0.0000   0.0000   0.5894
+   7  N   px     0.0000  -0.0000   0.0000   0.2544  -0.0000
+   8  N   py    -0.0000   0.0000   0.2544  -0.0000  -0.0000
+   9  N   pz     0.0000  -0.0000   0.0000   0.0000   0.5411
   10  N   dxx   -0.0020   0.0018   0.0000   0.0102   0.0000
-  11  N   dxy    0.0000   0.0000  -0.0205   0.0000   0.0000
-  12  N   dxz    0.0000   0.0000   0.0000   0.0000   0.0000
-  13  N   dyy   -0.0020   0.0018   0.0000  -0.0102   0.0000
-  14  N   dyz    0.0000   0.0000   0.0000   0.0000   0.0000
-  15  N   dzz   -0.0020  -0.0061   0.0000   0.0000   0.0000
-  16  H   s      0.0001   0.1443   0.0000   0.2872   0.0000
-  17  H   s      0.0003   0.0192   0.0000   0.1581   0.0000
-  18  H   px     0.0001  -0.0187   0.0000  -0.0179   0.0000
-  19  H   py     0.0000   0.0000   0.0102   0.0000   0.0000
-  20  H   pz     0.0000   0.0000   0.0000   0.0000   0.0196
-  21  H   s      0.0001   0.1443   0.2487  -0.1436   0.0000
-  22  H   s      0.0003   0.0192   0.1369  -0.0791   0.0000
-  23  H   px    -0.0001   0.0094   0.0122   0.0032   0.0000
+  11  N   dxy    0.0000   0.0000  -0.0205   0.0000  -0.0000
+  12  N   dxz    0.0000   0.0000  -0.0000   0.0000  -0.0000
+  13  N   dyy   -0.0020   0.0018  -0.0000  -0.0102   0.0000
+  14  N   dyz   -0.0000   0.0000  -0.0000   0.0000   0.0000
+  15  N   dzz   -0.0020  -0.0061  -0.0000   0.0000  -0.0000
+  16  H   s      0.0001   0.1443   0.0000   0.2872  -0.0000
+  17  H   s      0.0003   0.0192   0.0000   0.1581  -0.0000
+  18  H   px     0.0001  -0.0187  -0.0000  -0.0179  -0.0000
+  19  H   py    -0.0000   0.0000   0.0102  -0.0000  -0.0000
+  20  H   pz     0.0000  -0.0000  -0.0000  -0.0000   0.0196
+  21  H   s      0.0001   0.1443   0.2487  -0.1436  -0.0000
+  22  H   s      0.0003   0.0192   0.1369  -0.0791  -0.0000
+  23  H   px    -0.0001   0.0094   0.0122   0.0032  -0.0000
   24  H   py     0.0001  -0.0162  -0.0109   0.0122   0.0000
-  25  H   pz     0.0000   0.0000   0.0000   0.0000   0.0196
-  26  H   s      0.0001   0.1443  -0.2487  -0.1436   0.0000
-  27  H   s      0.0003   0.0192  -0.1369  -0.0790   0.0000
-  28  H   px    -0.0001   0.0094  -0.0122   0.0032   0.0000
-  29  H   py    -0.0001   0.0162  -0.0109  -0.0122   0.0000
-  30  H   pz     0.0000   0.0000   0.0000   0.0000   0.0196
+  25  H   pz    -0.0000   0.0000   0.0000   0.0000   0.0196
+  26  H   s      0.0001   0.1443  -0.2487  -0.1436  -0.0000
+  27  H   s      0.0003   0.0192  -0.1369  -0.0790  -0.0000
+  28  H   px    -0.0001   0.0094  -0.0122   0.0032  -0.0000
+  29  H   py    -0.0001   0.0162  -0.0109  -0.0122  -0.0000
+  30  H   pz    -0.0000   0.0000  -0.0000   0.0000   0.0196
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.08 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.13 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 00:44:16 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 - End of Wave Function Section
       Starting Static Property Section -
 
 
  
-     Date and time (Linux)  : Tue Feb 13 00:44:16 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Old LUGDR file opened in ORTREL.
 
@@ -2814,16 +2795,15 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 00:44:24 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
                          Molecular geometry (au)
                          -----------------------
 
- N         -0.2670500801            0.0000000000            0.0000000006
- H          1.5972451501            0.0000000000            0.0000000074
+ N         -0.2670500801           -0.0000000000            0.0000000007
+ H          1.5972451501           -0.0000000000            0.0000000074
  H         -1.1991975349            1.6145263503           -0.0000000040
  H         -1.1991975351           -1.6145263502           -0.0000000040
 
@@ -2839,7 +2819,7 @@ Point group: C1
 
      Total energy        -56.1867624394 au (Hartrees)
                          -1528.91953474 eV
-                           -147518.3238 kJ/mol
+                           -147518.3236 kJ/mol
 
 
 
@@ -2847,11 +2827,11 @@ Point group: C1
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.1118441822 au
-     Mass-velocity correction:                  -0.1401940330 au
+     Darwin correction:                          0.1118441653 au
+     Mass-velocity correction:                  -0.1401940119 au
 
-     Total relativistic correction:             -0.0283498509 au (0.0505%)
-     Non-relativistic + relativistic energy:   -56.2151122903 au
+     Total relativistic correction:             -0.0283498466 au (0.0505%)
+     Non-relativistic + relativistic energy:   -56.2151122860 au
 
 
 
@@ -2871,33 +2851,33 @@ Point group: C1
                           Molecular Hessian (au)
                           ----------------------
 
-           N    x      N    y      N    z      H    x      H    y      H    z
+           N    x      N    y      N    z      H    x      H    y      H    z      
 
  N    x    0.957047
- N    y    0.000000    0.957048
- N    z    0.000000    0.000000   -0.077810
+ N    y   -0.000000    0.957048
+ N    z    0.000000   -0.000000   -0.077810
 
- H    x   -0.553603    0.000000    0.000000    0.568475
- H    y    0.000000   -0.084428    0.000000    0.000000    0.068178
- H    z    0.000000    0.000000    0.025937    0.000000    0.000000   -0.008646
+ H    x   -0.553603    0.000000   -0.000000    0.568475
+ H    y    0.000000   -0.084428    0.000000   -0.000000    0.068178
+ H    z   -0.000000    0.000000    0.025937    0.000000   -0.000000   -0.008646
 
- H    x   -0.201722    0.203160    0.000000   -0.007436    0.034672    0.000000
- H    y    0.203160   -0.436310    0.000000   -0.007721    0.008125    0.000000
- H    z    0.000000    0.000000    0.025937    0.000000    0.000000   -0.008646
+ H    x   -0.201722    0.203160   -0.000000   -0.007436    0.034672   -0.000000
+ H    y    0.203160   -0.436310    0.000000   -0.007721    0.008125   -0.000000
+ H    z   -0.000000    0.000000    0.025937    0.000000    0.000000   -0.008646
 
- H    x   -0.201722   -0.203160    0.000000   -0.007436   -0.034672    0.000000
- H    y   -0.203160   -0.436310    0.000000    0.007721    0.008125    0.000000
- H    z    0.000000    0.000000    0.025937    0.000000    0.000000   -0.008646
+ H    x   -0.201722   -0.203160   -0.000000   -0.007436   -0.034672   -0.000000
+ H    y   -0.203160   -0.436310   -0.000000    0.007721    0.008125    0.000000
+ H    z   -0.000000   -0.000000    0.025937    0.000000   -0.000000   -0.008646
 
 
-           H    x      H    y      H    z      H    x      H    y      H    z
+           H    x      H    y      H    z      H    x      H    y      H    z      
 
  H    x    0.193253
  H    y   -0.216635    0.443402
- H    z    0.000000    0.000000   -0.008646
+ H    z    0.000000   -0.000000   -0.008646
 
  H    x    0.015905    0.021196    0.000000    0.193253
- H    y   -0.021196   -0.015216    0.000000    0.216635    0.443402
+ H    y   -0.021196   -0.015216   -0.000000    0.216635    0.443402
  H    z    0.000000    0.000000   -0.008646    0.000000    0.000000   -0.008646
 
 
@@ -2919,9 +2899,9 @@ Point group: C1
 
                     x      0.00000011      0.00000028
                     y      0.00000000      0.00000000
-                    z      0.00000000      0.00000000
+                    z     -0.00000000     -0.00000000
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -2930,7 +2910,7 @@ Point group: C1
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            N           H           H           H   
+            N           H           H           H           
 
    N       0.000000
    H       0.986543    0.000000
@@ -3007,41 +2987,39 @@ Point group: C1
             @ 1           5        -0.0000004849     1.4729168439
             @ 1           6         0.0000000029     1.4729190288
 
-  This is Newton step.
-
 
                           +----------------------+
                           ! Hessian eigenvectors !
                           +----------------------+
 
 
-   sym 1            1           2           3           4           5
+   sym 1            1           2           3           4           5   
   ----------------------------------------------------------------------
 
-   N    x       0.000000    0.333456    0.032787   -0.000001    0.798567
-   N    y       0.000000   -0.032787    0.333456    0.000000    0.004839
+   N    x      -0.000000    0.333456    0.032788   -0.000001    0.798567
+   N    y       0.000000   -0.032788    0.333456   -0.000000    0.004839
    N    z       0.866025    0.000000    0.000000    0.000000    0.000000
 
-   H    x       0.000000    0.418681    0.041167    0.577351   -0.489560
-   H    y       0.000000    0.063025   -0.640984    0.000000   -0.000259
-   H    z      -0.288675    0.000000    0.000000    0.000000    0.000000
+   H    x       0.000000    0.418681    0.041168    0.577351   -0.489560
+   H    y      -0.000000    0.063026   -0.640984    0.000000   -0.000259
+   H    z      -0.288675    0.000000    0.000000    0.000000   -0.000000
 
-   H    x       0.000000   -0.330952   -0.495826   -0.288675   -0.153331
-   H    y       0.000000   -0.473967    0.108648    0.500000    0.191156
-   H    z      -0.288675    0.000000    0.000000    0.000000    0.000000
+   H    x       0.000000   -0.330951   -0.495826   -0.288675   -0.153331
+   H    y      -0.000000   -0.473968    0.108647    0.500000    0.191156
+   H    z      -0.288675   -0.000000   -0.000000   -0.000000   -0.000000
 
-   H    x       0.000000   -0.421185    0.421872   -0.288675   -0.155676
-   H    y       0.000000    0.443730    0.198881   -0.500000   -0.195736
-   H    z      -0.288675    0.000000    0.000000    0.000000    0.000000
+   H    x       0.000000   -0.421186    0.421871   -0.288675   -0.155675
+   H    y       0.000000    0.443729    0.198882   -0.500000   -0.195736
+   H    z      -0.288675   -0.000000    0.000000   -0.000000   -0.000000
 
 
-   sym 1            6
+   sym 1            6       
   ----------------------
    N    x      -0.004839
    N    y       0.798567
-   N    z       0.000000
+   N    z      -0.000000
 
-   H    x       0.002967
+   H    x       0.002966
    H    y      -0.042817
    H    z       0.000000
 
@@ -3049,9 +3027,9 @@ Point group: C1
    H    y      -0.379047
    H    z       0.000000
 
-   H    x      -0.192509
+   H    x      -0.192510
    H    y      -0.376703
-   H    z       0.000000
+   H    z      -0.000000
 
 
 
@@ -3065,8 +3043,8 @@ Point group: C1
                         Cartesian coordinates (au)
                         --------------------------
 
- N         -0.2670500801            0.0000000000            0.0000000006
- H          1.5972451501            0.0000000000            0.0000000074
+ N         -0.2670500801           -0.0000000000            0.0000000007
+ H          1.5972451501           -0.0000000000            0.0000000074
  H         -1.1991975349            1.6145263503           -0.0000000040
  H         -1.1991975351           -1.6145263502           -0.0000000040
 
@@ -3077,7 +3055,7 @@ Point group: C1
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            N           H           H           H   
+            N           H           H           H           
 
    N       0.000000
    H       0.986543    0.000000
@@ -3112,16 +3090,15 @@ Point group: C1
  CPU time statistics for ABACUS
  ------------------------------
 
- TWOTEX     00:00:03      58 %
- RHSIDE     00:00:01      30 %
- REST       00:00:01      24 %
+ TWOTEX     00:00:02      53 %
+ RHSIDE     00:00:01      31 %
 
- TOTAL      00:00:05     100 %
-
+ TOTAL      00:00:04     100 %
 
 
- >>>> Total CPU  time used in ABACUS:   4.81 seconds
- >>>> Total wall time used in ABACUS:   8.00 seconds
+
+ >>>> Total CPU  time used in ABACUS:   3.74 seconds
+ >>>> Total wall time used in ABACUS:   5.00 seconds
 
 - End of Static Property Section
 
@@ -3152,8 +3129,7 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 00:44:24 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
  Old LUGDR file opened in ORTREL.
 
@@ -3164,16 +3140,15 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Tue Feb 13 00:44:27 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
 
 
 
                          Molecular geometry (au)
                          -----------------------
 
- N         -0.2670500801            0.0000000000            0.0000000006
- H          1.5972451501            0.0000000000            0.0000000074
+ N         -0.2670500801           -0.0000000000            0.0000000007
+ H          1.5972451501           -0.0000000000            0.0000000074
  H         -1.1991975349            1.6145263503           -0.0000000040
  H         -1.1991975351           -1.6145263502           -0.0000000040
 
@@ -3189,7 +3164,7 @@ Point group: C1
 
      Total energy        -56.1867624394 au (Hartrees)
                          -1528.91953474 eV
-                           -147518.3238 kJ/mol
+                           -147518.3236 kJ/mol
 
 
 
@@ -3197,11 +3172,11 @@ Point group: C1
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.1118441822 au
-     Mass-velocity correction:                  -0.1401940330 au
+     Darwin correction:                          0.1118441653 au
+     Mass-velocity correction:                  -0.1401940119 au
 
-     Total relativistic correction:             -0.0283498509 au (0.0505%)
-     Non-relativistic + relativistic energy:   -56.2151122903 au
+     Total relativistic correction:             -0.0283498466 au (0.0505%)
+     Non-relativistic + relativistic energy:   -56.2151122860 au
 
 
 
@@ -3221,9 +3196,9 @@ Point group: C1
 
                     x      0.00000011      0.00000028
                     y      0.00000000      0.00000000
-                    z      0.00000000      0.00000000
+                    z     -0.00000000     -0.00000000
 
-                        1 a.u. =   2.54177 Debye 
+                        1 a.u. =   2.54175 Debye 
 
 
 
@@ -3232,23 +3207,23 @@ Point group: C1
                        Dipole moment gradient (au)
                        ---------------------------
 
-                       Ex             Ey             Ez
+                       Ex             Ey             Ez             
 
         N    x    -0.46525473     0.00000000     0.00000000
         N    y     0.00000000    -0.46525497     0.00000000
         N    z     0.00000000     0.00000000    -1.21850826
 
-        H    x     0.15140769     0.00000000     0.00000000
-        H    y     0.00000000     0.15876238     0.00000000
-        H    z     0.00000000     0.00000000     0.40616941
+        H    x     0.15140769    -0.00000000    -0.00000000
+        H    y    -0.00000000     0.15876238    -0.00000000
+        H    z    -0.00000000    -0.00000000     0.40616941
 
-        H    x     0.15692352     0.00318470     0.00000000
+        H    x     0.15692352     0.00318470    -0.00000000
         H    y     0.00318459     0.15324630     0.00000000
-        H    z     0.00000000     0.00000000     0.40616942
+        H    z    -0.00000000     0.00000000     0.40616942
 
-        H    x     0.15692352    -0.00318469     0.00000000
-        H    y    -0.00318459     0.15324630     0.00000000
-        H    z     0.00000000     0.00000000     0.40616942
+        H    x     0.15692352    -0.00318469    -0.00000000
+        H    y    -0.00318459     0.15324630    -0.00000000
+        H    z    -0.00000000    -0.00000000     0.40616942
 
 
 
@@ -3304,8 +3279,8 @@ Point group: C1
              -----------------------------------------------
 
                 8.4795          1.0000     0.0000     0.0000
-                8.4795          0.0000     1.0000     0.0000
-                4.1343          0.0000     0.0000     1.0000
+                8.4795         -0.0000     1.0000    -0.0000
+                4.1343         -0.0000    -0.0000     1.0000
 
 
             Mean value:    7.0311        Anisotropy:    4.3452
@@ -3317,7 +3292,7 @@ Point group: C1
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            N           H           H           H   
+            N           H           H           H           
 
    N       0.000000
    H       0.986543    0.000000
@@ -3359,7 +3334,7 @@ Point group: C1
 
  Conversion factors used:
 
-    Hartree to (cm)-1      : 219474.63137
+    Hartree to (cm)-1      : 219474.63128
     a.m.u.  to a.u.        :   1822.88848
     Bohr    to Angstrom    :  0.529177208
     a.u.    to A**4amu-1   :   142.943570
@@ -3391,8 +3366,8 @@ Point group: C1
  --------------------------------------------------------
 
    IA    1.471322          1.000000    0.000038    0.000000
-   IB    1.471323         -0.000038    1.000000    0.000000
-   IC    2.942645          0.000000    0.000000    1.000000
+   IB    1.471323         -0.000038    1.000000   -0.000000
+   IC    2.942645         -0.000000    0.000000    1.000000
 
 
  Rotational constants
@@ -3402,8 +3377,8 @@ Point group: C1
 
                A                   B                   C
 
-         343486.3930         343486.1434         171743.1341 MHz
-           11.457473           11.457465            5.728734 cm-1
+         343486.3929         343486.1432         171743.1340 MHz
+           11.457473           11.457464            5.728734 cm-1
 
 
 
@@ -3417,12 +3392,12 @@ Point group: C1
                  cm-1       hartrees     km/mol   (D/A)**2/amu
   ------------------------------------------------------------
 
-   1      A      4065.90    0.018526     43.347   1.0258
-   2      A      4065.89    0.018526     43.347   1.0258
-   3      A      3840.50    0.017499      0.000   0.0000
-   4      A      1714.31    0.007811     41.557   0.9835
-   5      A      1714.31    0.007811     41.556   0.9835
-   6      A       909.33i   0.004143i
+   1      A      4065.90    0.018526     43.347   1.0258          
+   2      A      4065.89    0.018526     43.347   1.0258          
+   3      A      3840.50    0.017499      0.000   0.0000          
+   4      A      1714.31    0.007811     41.557   0.9835          
+   5      A      1714.31    0.007811     41.556   0.9835          
+   6      A       909.33i   0.004143i                             
 
 
 
@@ -3437,39 +3412,39 @@ Point group: C1
   ----------------------------------------------------------------------
 
       N    x    0.000533   -0.082136   -0.000001   -0.008013   -0.076618
-      N    y   -0.082136   -0.000533    0.000000   -0.076618    0.008013
-      N    z    0.000000    0.000000    0.000000    0.000000    0.000000
+      N    y   -0.082136   -0.000533   -0.000000   -0.076618    0.008013
+      N    z    0.000000   -0.000000    0.000000   -0.000000   -0.000000
 
       H    x   -0.005024    0.773818    0.575112   -0.006521   -0.062353
-      H    y   -0.013006   -0.000084    0.000000    0.772056   -0.080740
-      H    z    0.000000    0.000000    0.000000    0.000000    0.000000
+      H    y   -0.013006   -0.000084   -0.000000    0.772056   -0.080742
+      H    z   -0.000000    0.000000    0.000000   -0.000000   -0.000000
 
-      H    x   -0.341900    0.181492   -0.287551    0.420235    0.525669
-      H    y    0.579328   -0.336965    0.498052    0.184034    0.346016
-      H    z    0.000000    0.000000    0.000000    0.000000    0.000000
+      H    x   -0.341900    0.181492   -0.287551    0.420236    0.525668
+      H    y    0.579328   -0.336965    0.498052    0.184035    0.346015
+      H    z   -0.000000    0.000000   -0.000000    0.000000    0.000000
 
-      H    x    0.339515    0.185916   -0.287550   -0.302385    0.601239
-      H    y    0.574904    0.344459   -0.498052    0.108464   -0.376604
-      H    z    0.000000    0.000000    0.000000    0.000000    0.000000
+      H    x    0.339515    0.185916   -0.287550   -0.302384    0.601239
+      H    y    0.574904    0.344459   -0.498052    0.108463   -0.376605
+      H    z    0.000000    0.000000   -0.000000   -0.000000    0.000000
 
 
                 6   909i
   ----------------------
 
       N    x    0.000000
-      N    y    0.000000
+      N    y   -0.000000
       N    z   -0.112610
 
-      H    x    0.000000
+      H    x   -0.000000
       H    y    0.000000
       H    z    0.521549
 
-      H    x    0.000000
+      H    x   -0.000000
       H    y    0.000000
       H    z    0.521549
 
-      H    x    0.000000
-      H    y    0.000000
+      H    x   -0.000000
+      H    y   -0.000000
       H    z    0.521549
 
 
@@ -3481,12 +3456,12 @@ Point group: C1
 
   mode           dMA/dQi        dMB/dQi        dMC/dQi
   ----------------------------------------------------
-   1           -0.006576       1.012818       0.000000
-   2            1.012818       0.006576       0.000000
-   3            0.000009       0.000001       0.000000
-   4            0.103148       0.986327       0.000000
-   5            0.986326      -0.103148       0.000000
-   6            0.000000       0.000000       3.711607
+   1           -0.006575       1.012809      -0.000000
+   2            1.012809       0.006575       0.000000
+   3            0.000009       0.000001      -0.000000
+   4            0.103149       0.986317       0.000000
+   5            0.986316      -0.103149       0.000000
+   6           -0.000000      -0.000000       3.711573
 
 
 
@@ -3528,27 +3503,26 @@ Point group: C1
   1500.00     1.5678D+08        2179.68         1.6414   5.609129D+11
   2000.00     3.2183D+08        3354.30         2.3733   2.562037D+12
 
- >>> Time used in VIBCTL is   0.00 seconds
+ >>> Time used in VIBCTL is   0.01 seconds
 
 
 
  CPU time statistics for ABACUS
  ------------------------------
 
- RHSIDE     00:00:01      53 %
- REST       00:00:01      47 %
+ RHSIDE     00:00:01      51 %
+ REST       00:00:02      75 %
 
- TOTAL      00:00:03     100 %
+ TOTAL      00:00:02     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:   2.53 seconds
- >>>> Total wall time used in ABACUS:   3.00 seconds
+ >>>> Total CPU  time used in ABACUS:   2.27 seconds
+ >>>> Total wall time used in ABACUS:   2.00 seconds
 
 - End of Static Property Section
- >>>> Total CPU  time used in DALTON:  27.57 seconds
- >>>> Total wall time used in DALTON:  43.00 seconds
+ >>>> Total CPU  time used in DALTON:  21.71 seconds
+ >>>> Total wall time used in DALTON:  24.00 seconds
 
  
-     Date and time (Linux)  : Tue Feb 13 00:44:27 2001
-     Host name              : slater.uio.no                           
+     Host name              : pico                                    
