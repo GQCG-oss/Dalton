@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > walk_modeflw.info <<%EOF%
+cat > walk_modeflw.info <<'%EOF%'
    walk_modeflw
    ------------
    Molecule:         NH3
@@ -13,7 +28,7 @@ cat > walk_modeflw.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > walk_modeflw.mol <<%EOF%
+cat > walk_modeflw.mol <<'%EOF%'
 ATOMBASIS
 Location of saddle point (transition state) by following
 a specific eigenmode
@@ -29,7 +44,7 @@ H         -1.1558492311           -1.5260211423            -.1256905447
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > walk_modeflw.dal <<%EOF%
+cat > walk_modeflw.dal <<'%EOF%'
 **GENERAL
 .WALK
 *WALK
@@ -54,7 +69,8 @@ cat > walk_modeflw.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >walk_modeflw.check
+cat >>walk_modeflw.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -325,5 +341,5 @@ else
   exit 1
 fi
 
-' > walk_modeflw.check
+%EOF%
 #######################################################################

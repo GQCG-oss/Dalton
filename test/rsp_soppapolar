@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > rsp_soppapolar.info <<%EOF%
+cat > rsp_soppapolar.info <<'%EOF%'
    rsp_soppapolar
    --------------
    Molecule:         CH4
@@ -13,7 +28,7 @@ cat > rsp_soppapolar.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > rsp_soppapolar.mol <<%EOF%
+cat > rsp_soppapolar.mol <<'%EOF%'
 INTGRL
 Calculation of SOPPA polarizability
 
@@ -49,7 +64,7 @@ F   4    2
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > rsp_soppapolar.dal <<%EOF%
+cat > rsp_soppapolar.dal <<'%EOF%'
 **DALTON
 .RUN RESPONSE
 **WAVE FUNCTION
@@ -73,7 +88,8 @@ cat > rsp_soppapolar.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >rsp_soppapolar.check
+cat >>rsp_soppapolar.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -164,5 +180,5 @@ else
   exit 1
 fi
 
-' > rsp_soppapolar.check
+%EOF%
 #######################################################################

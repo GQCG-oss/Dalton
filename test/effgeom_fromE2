@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > effgeom_fromE2.info <<%EOF%
+cat > effgeom_fromE2.info <<'%EOF%'
    effgeom_fromE2
    --------------
    Molecule:         CO
@@ -14,7 +29,7 @@ cat > effgeom_fromE2.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > effgeom_fromE2.mol <<%EOF%
+cat > effgeom_fromE2.mol <<'%EOF%'
 BASIS
 STO-3G
 CO
@@ -29,7 +44,7 @@ O          0.0000000000            0.0000000000            1.0823225614
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > effgeom_fromE2.dal <<%EOF%
+cat > effgeom_fromE2.dal <<'%EOF%'
 **DALTON INPUT
 .NMDDRV
 **NMDDRV
@@ -57,7 +72,8 @@ cat > effgeom_fromE2.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >effgeom_fromE2.check
+cat >>effgeom_fromE2.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -153,5 +169,5 @@ else
   exit 1
 fi
 
-' > effgeom_fromE2.check
+%EOF%
 #######################################################################

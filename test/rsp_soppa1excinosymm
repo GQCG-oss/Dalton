@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > rsp_soppa1excinosymm.info <<%EOF%
+cat > rsp_soppa1excinosymm.info <<'%EOF%'
    rsp_soppa1excinosymm
    --------------------
    Molecule:         H2O
@@ -13,7 +28,7 @@ cat > rsp_soppa1excinosymm.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > rsp_soppa1excinosymm.mol <<%EOF%
+cat > rsp_soppa1excinosymm.mol <<'%EOF%'
 BASIS
 cc-pVDZ
 SOPPA calculation of singlet excitation energies. No symmetry
@@ -29,7 +44,7 @@ H    -1.45235 0.899623 0.0
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > rsp_soppa1excinosymm.dal <<%EOF%
+cat > rsp_soppa1excinosymm.dal <<'%EOF%'
 **GENERAL
 .RUN RESPONSE
 **WAVE FUNCTION
@@ -54,7 +69,8 @@ cat > rsp_soppa1excinosymm.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >rsp_soppa1excinosymm.check
+cat >>rsp_soppa1excinosymm.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -185,5 +201,5 @@ else
   exit 1
 fi
 
-' > rsp_soppa1excinosymm.check
+%EOF%
 #######################################################################

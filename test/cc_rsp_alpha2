@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > cc_rsp_alpha2.info <<%EOF%
+cat > cc_rsp_alpha2.info <<'%EOF%'
    cc_rsp_alpha2
    -------------
    Molecule:         Ne atom in D2h
@@ -14,7 +29,7 @@ cat > cc_rsp_alpha2.info <<%EOF%
 #######################################################################
 #  INTEGRAL INPUT
 #######################################################################
-cat > cc_rsp_alpha2.mol <<%EOF%
+cat > cc_rsp_alpha2.mol <<'%EOF%'
 BASIS
 daug-cc-pVDZ
 Neon atom
@@ -27,7 +42,7 @@ Ne    0.0000000000000000  0.0000000000000000 0.00000000000000000
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > cc_rsp_alpha2.dal <<%EOF%
+cat > cc_rsp_alpha2.dal <<'%EOF%'
 **GENERAL
 .RUNSIR
 **INTEGRAL
@@ -77,7 +92,8 @@ ZDIPLEN ZDIPLEN
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >cc_rsp_alpha2.check
+cat >>cc_rsp_alpha2.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -141,6 +157,6 @@ fi
 
 exit 0
 
-' > cc_rsp_alpha2.check
+%EOF%
 chmod +x cc_rsp_alpha2.check
 #######################################################################

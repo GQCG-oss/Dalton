@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > rsp_propave.info <<%EOF%
+cat > rsp_propave.info <<'%EOF%'
    rsp_propave
    -----------
    Molecule:         LiH
@@ -13,7 +28,7 @@ cat > rsp_propave.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > rsp_propave.mol <<%EOF%
+cat > rsp_propave.mol <<'%EOF%'
 BASIS
 STO-3G
 Calculation to verify that AVEPRP in response works properly
@@ -28,7 +43,7 @@ H    0.000000   0.000000    -2.2743576849
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > rsp_propave.dal <<%EOF%
+cat > rsp_propave.dal <<'%EOF%'
 **DALTON INPUT
 .RUN RESPONSE
 **INTEGRALS
@@ -51,7 +66,8 @@ ZDIPLEN
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >rsp_propave.check
+cat >>rsp_propave.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -145,5 +161,5 @@ else
   exit 1
 fi
 
-' > rsp_propave.check
+%EOF%
 #######################################################################

@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > walk_vibave2.info <<%EOF%
+cat > walk_vibave2.info <<'%EOF%'
    walk_vibave2
    ------------
    Molecule:         HF
@@ -13,7 +28,7 @@ cat > walk_vibave2.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > walk_vibave2.mol <<%EOF%
+cat > walk_vibave2.mol <<'%EOF%'
 ATOMBASIS
 Vibrational averaging of shieldings
 
@@ -27,7 +42,7 @@ F          0.0000000000            0.0000000000            0.0241892414
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > walk_vibave2.dal <<%EOF%
+cat > walk_vibave2.dal <<'%EOF%'
 **DALTON INPUT
 .WALK
 *WALK
@@ -73,7 +88,8 @@ cat > walk_vibave2.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >walk_vibave2.check
+cat >>walk_vibave2.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -261,5 +277,5 @@ else
   exit 1
 fi
 
-' > walk_vibave2.check
+%EOF%
 #######################################################################

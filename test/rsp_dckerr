@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > rsp_dckerr.info <<%EOF%
+cat > rsp_dckerr.info <<'%EOF%'
    rsp_dckerr
    ----------
    Molecule:         O3
@@ -13,7 +28,7 @@ cat > rsp_dckerr.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > rsp_dckerr.mol <<%EOF%
+cat > rsp_dckerr.mol <<'%EOF%'
 BASIS
 aug-cc-pVDZ
 Calculation of DC-Kerr effect
@@ -27,7 +42,7 @@ OP        1.2641677124            2.0463120050             .0000000000
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > rsp_dckerr.dal <<%EOF%
+cat > rsp_dckerr.dal <<'%EOF%'
 **GENERAL
 .RUN RESPONSE
 **WAVE FUNCTIONS
@@ -85,7 +100,8 @@ ZDIPLEN
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >rsp_dckerr.check
+cat >>rsp_dckerr.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -151,5 +167,5 @@ else
   exit 1
 fi
 
-' > rsp_dckerr.check
+%EOF%
 #######################################################################

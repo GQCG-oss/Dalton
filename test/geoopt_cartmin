@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > geoopt_cartmin.info <<%EOF%
+cat > geoopt_cartmin.info <<'%EOF%'
    geoopt_cartmin
    --------------
    Molecule:         C6H5CHO
@@ -16,7 +31,7 @@ cat > geoopt_cartmin.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > geoopt_cartmin.mol <<%EOF%
+cat > geoopt_cartmin.mol <<'%EOF%'
 BASIS
 STO-3G
 First order minimization in Cartesian coordinates, where the initial
@@ -44,7 +59,7 @@ H     2.4915143918        3.4703378645        0.0000000000             *
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > geoopt_cartmin.dal <<%EOF%
+cat > geoopt_cartmin.dal <<'%EOF%'
 **GENERAL
 .OPTIMIZE
 *OPTIMIZE
@@ -66,7 +81,8 @@ cat > geoopt_cartmin.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >geoopt_cartmin.check
+cat >>geoopt_cartmin.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -284,5 +300,5 @@ else
   exit 1
 fi
 
-' > geoopt_cartmin.check
+%EOF%
 #######################################################################

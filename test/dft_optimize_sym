@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > dft_optimize_sym.info <<%EOF%
+cat > dft_optimize_sym.info <<'%EOF%'
    dft_optimize_sym
    ----------------
    Molecule:         H2O
@@ -13,7 +28,7 @@ cat > dft_optimize_sym.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > dft_optimize_sym.mol <<%EOF%
+cat > dft_optimize_sym.mol <<'%EOF%'
 BASIS
 6-31G*
 H2O
@@ -29,7 +44,7 @@ H    -1.430    0.0  0.8
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > dft_optimize_sym.dal <<%EOF%
+cat > dft_optimize_sym.dal <<'%EOF%'
 **DALTON INPUT
 .OPTIMIZE
 **INTEGRALS
@@ -52,7 +67,8 @@ cat > dft_optimize_sym.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >dft_optimize_sym.check
+cat >>dft_optimize_sym.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -147,5 +163,5 @@ else
   exit 1
 fi
 
-' > dft_optimize_sym.check
+%EOF%
 #######################################################################

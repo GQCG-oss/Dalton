@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > geoopt_numgrd.info <<%EOF%
+cat > geoopt_numgrd.info <<'%EOF%'
    geoopt_numgrd
    -------------
    Molecule:         H2O
@@ -14,7 +29,7 @@ cat > geoopt_numgrd.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > geoopt_numgrd.mol <<%EOF%
+cat > geoopt_numgrd.mol <<'%EOF%'
 BASIS
 6-31G
 MP2 geometry optimization using numerical gradients
@@ -30,7 +45,7 @@ H2        0.00000000     1.44761450     1.07875057
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > geoopt_numgrd.dal <<%EOF%
+cat > geoopt_numgrd.dal <<'%EOF%'
 **DALTON INPUT
 .OPTIMIZE
 **WAVE FUNCTIONS
@@ -47,7 +62,8 @@ cat > geoopt_numgrd.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >geoopt_numgrd.check
+cat >>geoopt_numgrd.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -216,5 +232,5 @@ else
   exit 1
 fi
 
-' > geoopt_numgrd.check
+%EOF%
 #######################################################################

@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > prop_vibana.info <<%EOF%
+cat > prop_vibana.info <<'%EOF%'
    prop_vibana
    -----------
    Molecule:         Pyrimidine cation
@@ -13,7 +28,7 @@ cat > prop_vibana.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > prop_vibana.mol <<%EOF%
+cat > prop_vibana.mol <<'%EOF%'
 BASIS
 cc-pVDZ
 Vibrational analysis of open-shell molecule
@@ -34,7 +49,7 @@ H     0.0000000000000000 -4.2874161167537146  0.0000000000000000
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > prop_vibana.dal <<%EOF%
+cat > prop_vibana.dal <<'%EOF%'
 *DALTON INPUT
 .RUN PROPERTIES
 **WAVE FUNCTIONS
@@ -59,7 +74,8 @@ cat > prop_vibana.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >prop_vibana.check
+cat >>prop_vibana.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -259,5 +275,5 @@ else
   exit 1
 fi
 
-' > prop_vibana.check
+%EOF%
 #######################################################################

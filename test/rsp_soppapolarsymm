@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > rsp_soppapolarsymm.info <<%EOF%
+cat > rsp_soppapolarsymm.info <<'%EOF%'
    rsp_soppapolarsymm
    ------------------
    Molecule:         H2O
@@ -13,7 +28,7 @@ cat > rsp_soppapolarsymm.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > rsp_soppapolarsymm.mol <<%EOF%
+cat > rsp_soppapolarsymm.mol <<'%EOF%'
 BASIS
 cc-pVDZ
 SOPPA singlet properties with symmetry.
@@ -28,7 +43,7 @@ H     1.45235 0.899623 0.0
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > rsp_soppapolarsymm.dal <<%EOF%
+cat > rsp_soppapolarsymm.dal <<'%EOF%'
 **GENERAL
 .RUN RESPONSE
 **INTEGRALS
@@ -61,7 +76,8 @@ cat > rsp_soppapolarsymm.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >rsp_soppapolarsymm.check
+cat >>rsp_soppapolarsymm.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -169,5 +185,5 @@ else
   exit 1
 fi
 
-' > rsp_soppapolarsymm.check
+%EOF%
 #######################################################################

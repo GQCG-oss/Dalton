@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > rsp_esr2.info <<%EOF%
+cat > rsp_esr2.info <<'%EOF%'
    rsp_esr2
    --------
    Molecule:         BeOH
@@ -13,7 +28,7 @@ cat > rsp_esr2.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > rsp_esr2.mol <<%EOF%
+cat > rsp_esr2.mol <<'%EOF%'
 INTGRL
 ESR parameters for BeOH
 
@@ -115,7 +130,7 @@ H      4.36047 -.01504    0.000
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > rsp_esr2.dal <<%EOF%
+cat > rsp_esr2.dal <<'%EOF%'
 **DALTON INPUT
 .RUN RESPONSE
 **INTEGRALS
@@ -225,7 +240,8 @@ SD 009 z
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >rsp_esr2.check
+cat >>rsp_esr2.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -320,5 +336,5 @@ else
   exit 1
 fi
 
-' > rsp_esr2.check
+%EOF%
 #######################################################################

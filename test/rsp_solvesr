@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > rsp_solvesr.info <<%EOF%
+cat > rsp_solvesr.info <<'%EOF%'
    rsp_solvesr
    -----------
    Molecule:         CH3 radical
@@ -13,7 +28,7 @@ cat > rsp_solvesr.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > rsp_solvesr.mol <<%EOF%
+cat > rsp_solvesr.mol <<'%EOF%'
 INTGRL
 Calculation of ESR hyperfine couplings with solvent for the CH3 radical
 
@@ -68,7 +83,7 @@ H2    -.118598  1.763441 -1.018124
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > rsp_solvesr.dal <<%EOF%
+cat > rsp_solvesr.dal <<'%EOF%'
 **DALTON INPUT
 .RUN RESPONSE
 **INTEGRALS
@@ -204,7 +219,8 @@ SD 012 z
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >rsp_solvesr.check
+cat >>rsp_solvesr.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -351,5 +367,5 @@ else
   exit 1
 fi
 
-' > rsp_solvesr.check
+%EOF%
 #######################################################################

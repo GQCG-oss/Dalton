@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > r12_fc_aux_sym.info <<%EOF%
+cat > r12_fc_aux_sym.info <<'%EOF%'
    r12_fc_aux_sym
    --------------
    Molecule:         Nitrogen (N2)
@@ -13,7 +28,7 @@ cat > r12_fc_aux_sym.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > r12_fc_aux_sym.mol <<%EOF%
+cat > r12_fc_aux_sym.mol <<'%EOF%'
 BASIS
 cc-pVTZ cc-pCVQZ
 Direct MP2-R12 calculation using symmetry
@@ -28,7 +43,7 @@ N      0.000000000000000   0.000000000000000   1.037572100000000       *
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > r12_fc_aux_sym.dal <<%EOF%
+cat > r12_fc_aux_sym.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
 .DIRECT
@@ -61,7 +76,8 @@ cat > r12_fc_aux_sym.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >r12_fc_aux_sym.check
+cat >>r12_fc_aux_sym.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -98,5 +114,5 @@ else
   exit 1
 fi
 
-' > r12_fc_aux_sym.check
+%EOF%
 #######################################################################

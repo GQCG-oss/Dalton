@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > hfreqfromg.info <<%EOF%
+cat > hfreqfromg.info <<'%EOF%'
    hfreqfromg
    ----------
    Molecule:         H2O
@@ -14,7 +29,7 @@ cat > hfreqfromg.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > hfreqfromg.mol <<%EOF%
+cat > hfreqfromg.mol <<'%EOF%'
 BASIS                                 
 STO-3G
 NH3
@@ -31,7 +46,7 @@ H          0.8886985114           -1.5392766339            0.0487594750
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > hfreqfromg.dal <<%EOF%
+cat > hfreqfromg.dal <<'%EOF%'
 **DALTON INPUT
 .NMDDRV
 **NMDDRV
@@ -59,7 +74,8 @@ cat > hfreqfromg.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >hfreqfromg.check
+cat >>hfreqfromg.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -143,5 +159,5 @@ else
   exit 1
 fi
 
-' > hfreqfromg.check
+%EOF%
 #######################################################################

@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > rsp_3rdmom.info <<%EOF%
+cat > rsp_3rdmom.info <<'%EOF%'
    rsp_3rdmom
    ----------
    Molecule:         LiH
@@ -13,7 +28,7 @@ cat > rsp_3rdmom.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > rsp_3rdmom.mol <<%EOF%
+cat > rsp_3rdmom.mol <<'%EOF%'
 BASIS
 4-31G
 Calculation of third order transition moments
@@ -28,7 +43,7 @@ Calculation of third order transition moments
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > rsp_3rdmom.dal <<%EOF%
+cat > rsp_3rdmom.dal <<'%EOF%'
 **DALTON INPUT
 .RUN RESPONS
 **WAVEFUNCTION
@@ -69,7 +84,8 @@ cat > rsp_3rdmom.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >rsp_3rdmom.check
+cat >>rsp_3rdmom.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -169,5 +185,5 @@ else
   exit 1
 fi
 
-' > rsp_3rdmom.check
+%EOF%
 #######################################################################

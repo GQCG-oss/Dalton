@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > geoopt_parallel.info <<%EOF%
+cat > geoopt_parallel.info <<'%EOF%'
    geoopt_parallel
    ---------------
    Molecule:         Acrolein
@@ -16,7 +31,7 @@ cat > geoopt_parallel.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > geoopt_parallel.mol <<%EOF%
+cat > geoopt_parallel.mol <<'%EOF%'
 BASIS
 3-21G
 Locating the rotational transition state of acrolein
@@ -38,7 +53,7 @@ H    -1.3797298905        2.6031905771       -1.3536182728             *
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > geoopt_parallel.dal <<%EOF%
+cat > geoopt_parallel.dal <<'%EOF%'
 **GENERAL
 .PARALLEL
 .OPTIMIZE
@@ -61,7 +76,8 @@ cat > geoopt_parallel.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >geoopt_parallel.check
+cat >>geoopt_parallel.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -225,5 +241,5 @@ else
   exit 1
 fi
 
-' > geoopt_parallel.check
+%EOF%
 #######################################################################

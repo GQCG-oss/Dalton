@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > cc_energy_field.info <<%EOF%
+cat > cc_energy_field.info <<'%EOF%'
    cc_energy_field
    ---------------
    Molecule:         HF in C2v
@@ -14,7 +29,7 @@ cat > cc_energy_field.info <<%EOF%
 #######################################################################
 #  INTEGRAL INPUT
 #######################################################################
-cat > cc_energy_field.mol <<%EOF%
+cat > cc_energy_field.mol <<'%EOF%'
 BASIS
 aug-cc-pVDZ
 Quadrupole convergence calculations
@@ -29,7 +44,7 @@ F     0.0000000000000000  0.000000000000000   -.08729478000000        *
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > cc_energy_field.dal <<%EOF%
+cat > cc_energy_field.dal <<'%EOF%'
 **GENERAL
 .RUNSIRIUS
 **INTEGRAL
@@ -73,7 +88,8 @@ cat > cc_energy_field.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >cc_energy_field.check
+cat >>cc_energy_field.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -121,5 +137,5 @@ else
   exit 1
 fi
 
-' > cc_energy_field.check
+%EOF%
 #######################################################################

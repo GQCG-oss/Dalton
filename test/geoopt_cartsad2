@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > geoopt_cartsad2.info <<%EOF%
+cat > geoopt_cartsad2.info <<'%EOF%'
    geoopt_cartsad2
    ---------------
    Molecule:         C2H6
@@ -17,7 +32,7 @@ cat > geoopt_cartsad2.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > geoopt_cartsad2.mol <<%EOF%
+cat > geoopt_cartsad2.mol <<'%EOF%'
 BASIS
 STO-3G
 First order saddle point optimization in Cartesian coordinates
@@ -38,7 +53,7 @@ H     0.4600000000        1.8308721894       -2.1445545504             *
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > geoopt_cartsad2.dal <<%EOF%
+cat > geoopt_cartsad2.dal <<'%EOF%'
 **GENERAL
 .OPTIMIZE
 *OPTIMIZE
@@ -60,7 +75,8 @@ cat > geoopt_cartsad2.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >geoopt_cartsad2.check
+cat >>geoopt_cartsad2.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -202,5 +218,5 @@ else
   exit 1
 fi
 
-' > geoopt_cartsad2.check
+%EOF%
 #######################################################################

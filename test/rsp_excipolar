@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > rsp_excipolar.info <<%EOF%
+cat > rsp_excipolar.info <<'%EOF%'
    rsp_excipolar
    -------------
    Molecule:         O3
@@ -13,7 +28,7 @@ cat > rsp_excipolar.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > rsp_excipolar.mol <<%EOF%
+cat > rsp_excipolar.mol <<'%EOF%'
 INTGRL
 Excited state polarizability of ozone (exp geometry from Lanholt-Boernstein)
 
@@ -43,7 +58,7 @@ O      2.05743749931276   1.24132156150274   0.0000000000000
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > rsp_excipolar.dal <<%EOF%
+cat > rsp_excipolar.dal <<'%EOF%'
 **DALTON INPUT
 .RUN RESPONSE
 **WAVE FUNCTION
@@ -90,7 +105,8 @@ cat > rsp_excipolar.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >rsp_excipolar.check
+cat >>rsp_excipolar.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -197,5 +213,5 @@ else
   exit 1
 fi
 
-' > rsp_excipolar.check
+%EOF%
 #######################################################################

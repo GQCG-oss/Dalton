@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > energy_zmat.info <<%EOF%
+cat > energy_zmat.info <<'%EOF%'
    energy_zmat
    -----------
    Molecule:         1,3,5-trifluorobenzene
@@ -13,7 +28,7 @@ cat > energy_zmat.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > energy_zmat.mol <<%EOF%
+cat > energy_zmat.mol <<'%EOF%'
 BASIS
 STO-3G
 Z-matrix input
@@ -36,7 +51,7 @@ F   12  2 1.353844  1 119.3667  6 180.0000 0 9.0
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > energy_zmat.dal <<%EOF%
+cat > energy_zmat.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
 **WAVE FUNCTIONS
@@ -54,7 +69,8 @@ cat > energy_zmat.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >energy_zmat.check
+cat >>energy_zmat.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -145,5 +161,5 @@ else
   exit 1
 fi
 
-' > energy_zmat.check
+%EOF%
 #######################################################################

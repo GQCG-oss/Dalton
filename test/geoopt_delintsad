@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > geoopt_delintsad.info <<%EOF%
+cat > geoopt_delintsad.info <<'%EOF%'
    geoopt_delintsad
    ----------------
    Molecule:         C2H6
@@ -17,7 +32,7 @@ cat > geoopt_delintsad.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > geoopt_delintsad.mol <<%EOF%
+cat > geoopt_delintsad.mol <<'%EOF%'
 BASIS
 STO-3G
 First order saddle point optimization in delocalized internal coordinates
@@ -38,7 +53,7 @@ H     0.4600000000        1.8308721894       -2.1445545504             *
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > geoopt_delintsad.dal <<%EOF%
+cat > geoopt_delintsad.dal <<'%EOF%'
 **GENERAL
 .OPTIMIZE
 *OPTIMIZE
@@ -61,7 +76,8 @@ cat > geoopt_delintsad.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >geoopt_delintsad.check
+cat >>geoopt_delintsad.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -286,5 +302,5 @@ else
   exit 1
 fi
 
-' > geoopt_delintsad.check
+%EOF%
 #######################################################################

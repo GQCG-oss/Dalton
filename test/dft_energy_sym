@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > dft_energy_sym.info <<%EOF%
+cat > dft_energy_sym.info <<'%EOF%'
    dft_energy_sym
    --------------
    Molecule:         H2O2
@@ -13,7 +28,7 @@ cat > dft_energy_sym.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > dft_energy_sym.mol <<%EOF%
+cat > dft_energy_sym.mol <<'%EOF%'
 BASIS                                                                   
 6-31G** 
 Hydrogen Peroxide                                                       
@@ -30,7 +45,7 @@ H    -0.6908148895270996 -1.7261489114716695  1.6677746753855953       *
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > dft_energy_sym.dal <<%EOF%
+cat > dft_energy_sym.dal <<'%EOF%'
 **GENERAL
 .RUN RESPONSE
 .DIRECT 
@@ -51,7 +66,8 @@ cat > dft_energy_sym.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >dft_energy_sym.check
+cat >>dft_energy_sym.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -84,5 +100,5 @@ else
   exit 1
 fi
 
-' > dft_energy_sym.check
+%EOF%
 #######################################################################

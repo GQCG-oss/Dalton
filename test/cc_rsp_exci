@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > cc_rsp_exci.info <<%EOF%
+cat > cc_rsp_exci.info <<'%EOF%'
    cc_rsp_exci
    -----------
    Molecule:         HeH+ in C2
@@ -13,7 +28,7 @@ cat > cc_rsp_exci.info <<%EOF%
 #######################################################################
 #  INTEGRAL INPUT
 #######################################################################
-cat > cc_rsp_exci.mol <<%EOF%
+cat > cc_rsp_exci.mol <<'%EOF%'
 BASIS
 6-31G** 
 HeH+
@@ -30,7 +45,7 @@ H     0.0000000000000000  0.0000000000000000  0.00000000000000         *
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > cc_rsp_exci.dal <<%EOF%
+cat > cc_rsp_exci.dal <<'%EOF%'
 **GENERAL
 .RUNSIR
 **INTEGRAL
@@ -96,7 +111,8 @@ YDIPLEN YDIPLEN
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >cc_rsp_exci.check
+cat >>cc_rsp_exci.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -178,5 +194,5 @@ else
   echo THERE IS A PROBLEM
   exit 1
 fi                
-' > cc_rsp_exci.check
+%EOF%
 #######################################################################

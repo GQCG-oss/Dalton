@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > prop_nolondon.info <<%EOF%
+cat > prop_nolondon.info <<'%EOF%'
    prop_nolondon
    -------------
    Molecule:         H2O
@@ -14,7 +29,7 @@ cat > prop_nolondon.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > prop_nolondon.mol <<%EOF%
+cat > prop_nolondon.mol <<'%EOF%'
 INTGRL
 Calculation of no-London shielding constants through ABACUS
 
@@ -70,7 +85,7 @@ F  1    1
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > prop_nolondon.dal <<%EOF%
+cat > prop_nolondon.dal <<'%EOF%'
 **DALTON INPUT
 .RUN PROPERTIES
 **WAVE FUNCTIONS
@@ -91,7 +106,8 @@ cat > prop_nolondon.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >prop_nolondon.check
+cat >>prop_nolondon.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -300,5 +316,5 @@ else
   exit 1
 fi
 
-' > prop_nolondon.check
+%EOF%
 #######################################################################

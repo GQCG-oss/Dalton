@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > geoopt_mp2froz.info <<%EOF%
+cat > geoopt_mp2froz.info <<'%EOF%'
    geoopt_mp2froz
    --------------
    Molecule:         C6H6
@@ -14,7 +29,7 @@ cat > geoopt_mp2froz.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > geoopt_mp2froz.mol <<%EOF%
+cat > geoopt_mp2froz.mol <<'%EOF%'
 BASIS
 STO-3G
 1st order geometry optimization using MP2 frozen core
@@ -31,7 +46,7 @@ C2    2.283034611         1.318102747         0.00000000               *
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > geoopt_mp2froz.dal <<%EOF%
+cat > geoopt_mp2froz.dal <<'%EOF%'
 **GENERAL
 .RUN WAVEFUNCTION
 .OPTIMIZE
@@ -53,7 +68,8 @@ cat > geoopt_mp2froz.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >geoopt_mp2froz.check
+cat >>geoopt_mp2froz.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -250,5 +266,5 @@ else
   exit 1
 fi
 
-' > geoopt_mp2froz.check
+%EOF%
 #######################################################################

@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > dft_properties_nosym.info <<%EOF%
+cat > dft_properties_nosym.info <<'%EOF%'
    dft_properties_nosym
    --------------------
    Molecule:         H2O
@@ -15,7 +30,7 @@ cat > dft_properties_nosym.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > dft_properties_nosym.mol <<%EOF%
+cat > dft_properties_nosym.mol <<'%EOF%'
 BASIS 
 cc-pVDZ
 H2O
@@ -31,7 +46,7 @@ H2   -1.430    0.0  1.1
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > dft_properties_nosym.dal <<%EOF%
+cat > dft_properties_nosym.dal <<'%EOF%'
 **DALTON INPUT
 .RUN PROPERTIES
 .RUN RESPONSE 
@@ -90,7 +105,8 @@ Z1SPNORB
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >dft_properties_nosym.check
+cat >>dft_properties_nosym.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -189,5 +205,5 @@ else
   exit 1
 fi
 
-' > dft_properties_nosym.check
+%EOF%
 #######################################################################

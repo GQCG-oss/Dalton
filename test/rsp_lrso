@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > rsp_lrso.info <<%EOF%
+cat > rsp_lrso.info <<'%EOF%'
    rsp_lrso
    --------
    Molecule:         O2
@@ -13,7 +28,7 @@ cat > rsp_lrso.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > rsp_lrso.mol <<%EOF%
+cat > rsp_lrso.mol <<'%EOF%'
 ATOMBASIS
 Calculation of linear response spin-orbit
 
@@ -26,7 +41,7 @@ O      0.00000   0.00000  -1.14050
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > rsp_lrso.dal <<%EOF%
+cat > rsp_lrso.dal <<'%EOF%'
 **DALTON INPUT
 .RUN RESPONSE
 .PRESORT
@@ -70,7 +85,8 @@ Z2SPNORB
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >rsp_lrso.check
+cat >>rsp_lrso.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -165,5 +181,5 @@ else
   exit 1
 fi
 
-' > rsp_lrso.check
+%EOF%
 #######################################################################

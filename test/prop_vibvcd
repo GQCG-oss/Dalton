@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > prop_vibvcd.info <<%EOF%
+cat > prop_vibvcd.info <<'%EOF%'
    prop_vibvcd
    -----------
    Molecule:         C2H4O
@@ -14,7 +29,7 @@ cat > prop_vibvcd.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > prop_vibvcd.mol <<%EOF%
+cat > prop_vibvcd.mol <<'%EOF%'
 INTGRL
  DZ (9S5P/4S)-[4S2P/2S].  Scalingfactor for H is 1.2.
  Basis of T. H. Dunning, Jr., J. Chem. Phys. 53, 2823 (1970)
@@ -72,7 +87,7 @@ H#4   -1.748934           -2.379468          -2.201879                 *
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > prop_vibvcd.dal <<%EOF%
+cat > prop_vibvcd.dal <<'%EOF%'
 **GENERAL
 .RUN PROPERTIES
 **WAVE FUNCTION
@@ -103,7 +118,8 @@ cat > prop_vibvcd.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >prop_vibvcd.check
+cat >>prop_vibvcd.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -374,5 +390,5 @@ else
   exit 1
 fi
 
-' > prop_vibvcd.check
+%EOF%
 #######################################################################

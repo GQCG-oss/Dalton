@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > cc_rsp_alpha.info <<%EOF%
+cat > cc_rsp_alpha.info <<'%EOF%'
    cc_rsp_alpha
    ------------
    Molecule:         HF in C1
@@ -14,7 +29,7 @@ cat > cc_rsp_alpha.info <<%EOF%
 #######################################################################
 #  INTEGRAL INPUT
 #######################################################################
-cat > cc_rsp_alpha.mol <<%EOF%
+cat > cc_rsp_alpha.mol <<'%EOF%'
 BASIS
 6-31G**
 Hydrogen flourid
@@ -29,7 +44,7 @@ H     0.0000000000000000  0.0000000000000000 0.00000000000000000
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > cc_rsp_alpha.dal <<%EOF%
+cat > cc_rsp_alpha.dal <<'%EOF%'
 **GENERAL
 .RUNSIR
 **INTEGRAL
@@ -79,7 +94,8 @@ YANGMOM XZTHETA
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >cc_rsp_alpha.check
+cat >>cc_rsp_alpha.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -185,6 +201,6 @@ fi
 
 exit 0
 
-' > cc_rsp_alpha.check
+%EOF%
 chmod +x cc_rsp_alpha.check
 #######################################################################

@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > geoopt_dckerr.info <<%EOF%
+cat > geoopt_dckerr.info <<'%EOF%'
    geoopt_dckerr
    -------------
    Molecule:         O3
@@ -15,7 +30,7 @@ cat > geoopt_dckerr.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > geoopt_dckerr.mol <<%EOF%
+cat > geoopt_dckerr.mol <<'%EOF%'
 BASIS
 aug-cc-pVDZ
 Geometry optimization, calculation of DC-Kerr effect
@@ -29,7 +44,7 @@ OP        1.2634502500        2.0449019100         .0000000000             *
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > geoopt_dckerr.dal <<%EOF%
+cat > geoopt_dckerr.dal <<'%EOF%'
 **GENERAL
 .OPTIMIZE
 **WAVE FUNCTIONS
@@ -85,7 +100,8 @@ ZDIPLEN
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >geoopt_dckerr.check
+cat >>geoopt_dckerr.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -219,5 +235,5 @@ else
   exit 1
 fi
 
-' > geoopt_dckerr.check
+%EOF%
 #######################################################################

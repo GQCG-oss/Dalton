@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > prop_spinspin2.info <<%EOF%
+cat > prop_spinspin2.info <<'%EOF%'
    prop_spinspin2
    --------------
    Molecule:         H2O
@@ -17,7 +32,7 @@ cat > prop_spinspin2.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > prop_spinspin2.mol <<%EOF%
+cat > prop_spinspin2.mol <<'%EOF%'
 INTGRL
 Calculation of only the dominating contributions to the isotropic and
 anisotropic coupling constants
@@ -64,7 +79,7 @@ H1    1.4523499293        0.0  .8996235720
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > prop_spinspin2.dal <<%EOF%
+cat > prop_spinspin2.dal <<'%EOF%'
 **DALTON INPUT
 .RUN PROPERTIES
 **INTEGRALS
@@ -115,7 +130,8 @@ cat > prop_spinspin2.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >prop_spinspin2.check
+cat >>prop_spinspin2.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -197,5 +213,5 @@ else
   exit 1
 fi
 
-' > prop_spinspin2.check
+%EOF%
 #######################################################################

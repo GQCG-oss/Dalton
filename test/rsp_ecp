@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > rsp_ecp.info <<%EOF%
+cat > rsp_ecp.info <<'%EOF%'
    rsp_ecp
    -------
    Molecule:         H2O
@@ -14,7 +29,7 @@ cat > rsp_ecp.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > rsp_ecp.mol <<%EOF%
+cat > rsp_ecp.mol <<'%EOF%'
 ATOMBASIS
 ECP test
 
@@ -29,7 +44,7 @@ H      -1.3457079896            0.3458453074            0.0000000000
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > rsp_ecp.dal <<%EOF%
+cat > rsp_ecp.dal <<'%EOF%'
 **DALTON INPUT
 .RUN RESPONSE
 **WAVE FUNCTIONS
@@ -58,7 +73,8 @@ cat > rsp_ecp.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >rsp_ecp.check
+cat >>rsp_ecp.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -175,5 +191,5 @@ else
   exit 1
 fi
 
-' > rsp_ecp.check
+%EOF%
 #######################################################################

@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > dft_blyp_nosym.info <<%EOF%
+cat > dft_blyp_nosym.info <<'%EOF%'
    dft_blyp_nosym
    --------------
    Molecule:         HCN
@@ -13,7 +28,7 @@ cat > dft_blyp_nosym.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > dft_blyp_nosym.mol <<%EOF%
+cat > dft_blyp_nosym.mol <<'%EOF%'
 BASIS 
 aug-cc-pVDZ
 HCN 
@@ -30,7 +45,7 @@ N   0.3   0.0     1.5
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > dft_blyp_nosym.dal <<%EOF%
+cat > dft_blyp_nosym.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE 
 **INTEGRALS
@@ -54,7 +69,8 @@ cat > dft_blyp_nosym.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >dft_blyp_nosym.check
+cat >>dft_blyp_nosym.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -87,5 +103,5 @@ else
   exit 1
 fi
 
-' > dft_blyp_nosym.check
+%EOF%
 #######################################################################

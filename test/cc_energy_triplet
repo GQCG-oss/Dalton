@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > cc_energy_triplet.info <<%EOF%
+cat > cc_energy_triplet.info <<'%EOF%'
    cc_energy_triplet
    -----------------
    Molecule:         CH
@@ -13,7 +28,7 @@ cat > cc_energy_triplet.info <<%EOF%
 #######################################################################
 #  INTEGRAL INPUT
 #######################################################################
-cat > cc_energy_triplet.mol <<%EOF%
+cat > cc_energy_triplet.mol <<'%EOF%'
 BASIS
 cc-pVDZ
 C2H2 in cc-pVDZ basis set
@@ -28,7 +43,7 @@ H1    .000000  .000000  3.143437
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > cc_energy_triplet.dal <<%EOF%
+cat > cc_energy_triplet.dal <<'%EOF%'
 **GENERAL
 .RUNSIR
 **WAVE FUNCTIONS
@@ -66,7 +81,8 @@ cat > cc_energy_triplet.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >cc_energy_triplet.check
+cat >>cc_energy_triplet.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -147,5 +163,5 @@ else
   echo THERE IS A PROBLEM
   exit 1
 fi                
-' > cc_energy_triplet.check
+%EOF%
 #######################################################################

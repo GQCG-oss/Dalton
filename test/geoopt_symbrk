@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > geoopt_symbrk.info <<%EOF%
+cat > geoopt_symbrk.info <<'%EOF%'
    geoopt_symbrk
    -------------
    Molecule:         H2O2
@@ -14,7 +29,7 @@ cat > geoopt_symbrk.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > geoopt_symbrk.mol <<%EOF%
+cat > geoopt_symbrk.mol <<'%EOF%'
 BASIS
 cc-pVDZ
 Geometry optimization (2nd order) with automatic breaking of symmetry
@@ -29,7 +44,7 @@ H     0.0 0.73 0.95
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > geoopt_symbrk.dal <<%EOF%
+cat > geoopt_symbrk.dal <<'%EOF%'
 **DALTON INPUT
 .OPTIMIZE
 *OPTIMIZE
@@ -49,7 +64,8 @@ cat > geoopt_symbrk.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >geoopt_symbrk.check
+cat >>geoopt_symbrk.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -257,5 +273,5 @@ else
   exit 1
 fi
 
-' > geoopt_symbrk.check
+%EOF%
 #######################################################################

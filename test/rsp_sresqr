@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > rsp_sresqr.info <<%EOF%
+cat > rsp_sresqr.info <<'%EOF%'
    rsp_sresqr
    ----------
    Molecule:         LiH
@@ -13,7 +28,7 @@ cat > rsp_sresqr.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > rsp_sresqr.mol <<%EOF%
+cat > rsp_sresqr.mol <<'%EOF%'
 BASIS
 4-31G
 Single residue of the quadratic response function
@@ -28,7 +43,7 @@ Single residue of the quadratic response function
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > rsp_sresqr.dal <<%EOF%
+cat > rsp_sresqr.dal <<'%EOF%'
 **DALTON INPUT
 .RUN RESPONS
 **WAVEFUNCTION
@@ -69,7 +84,8 @@ cat > rsp_sresqr.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >rsp_sresqr.check
+cat >>rsp_sresqr.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -158,5 +174,5 @@ else
   exit 1
 fi
 
-' > rsp_sresqr.check
+%EOF%
 #######################################################################

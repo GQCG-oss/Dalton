@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > walk_image.info <<%EOF%
+cat > walk_image.info <<'%EOF%'
    walk_image
    ----------
    Molecule:         NH3
@@ -13,7 +28,7 @@ cat > walk_image.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > walk_image.mol <<%EOF%
+cat > walk_image.mol <<'%EOF%'
 ATOMBASIS
 Location of saddle point (transition state) using IMAGE method
 
@@ -29,7 +44,7 @@ H    -1.3841  -0.9919  0.0
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > walk_image.dal <<%EOF%
+cat > walk_image.dal <<'%EOF%'
 **GENERAL
 .WALK
 *WALK
@@ -50,7 +65,8 @@ cat > walk_image.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >walk_image.check
+cat >>walk_image.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -312,5 +328,5 @@ else
   exit 1
 fi
 
-' > walk_image.check
+%EOF%
 #######################################################################

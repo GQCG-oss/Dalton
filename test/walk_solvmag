@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > walk_solvmag.info <<%EOF%
+cat > walk_solvmag.info <<'%EOF%'
    walk_solvmag
    ------------
    Molecule:         CH3F
@@ -14,7 +29,7 @@ cat > walk_solvmag.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > walk_solvmag.mol <<%EOF%
+cat > walk_solvmag.mol <<'%EOF%'
 ATOMBASIS
 Geomatry walk and calculation of shielding and magnetizability for a
 solvated molecule (equilibrium solvation)
@@ -32,7 +47,7 @@ H    -0.9678997639598013  1.6764519428415161 -2.0424864897035540
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > walk_solvmag.dal <<%EOF%
+cat > walk_solvmag.dal <<'%EOF%'
 **DALTON INPUT
 .WALK
 **INTEGRALS
@@ -62,7 +77,8 @@ cat > walk_solvmag.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >walk_solvmag.check
+cat >>walk_solvmag.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -302,5 +318,5 @@ else
   exit 1
 fi
 
-' > walk_solvmag.check
+%EOF%
 #######################################################################

@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > geoopt_preopt.info <<%EOF%
+cat > geoopt_preopt.info <<'%EOF%'
    geoopt_preopt
    -------------
    Molecule:         H2O
@@ -15,7 +30,7 @@ cat > geoopt_preopt.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > geoopt_preopt.mol <<%EOF%
+cat > geoopt_preopt.mol <<'%EOF%'
 BASIS
 cc-pVTZ
 Geometry optimization utilizing pre-optimization with smaller
@@ -31,7 +46,7 @@ H    -1.5 -0.9 0.0
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > geoopt_preopt.dal <<%EOF%
+cat > geoopt_preopt.dal <<'%EOF%'
 **GENERAL
 .OPTIMIZE
 *OPTIMIZE
@@ -53,7 +68,8 @@ STO-3G
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >geoopt_preopt.check
+cat >>geoopt_preopt.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -196,5 +212,5 @@ else
   exit 1
 fi
 
-' > geoopt_preopt.check
+%EOF%
 #######################################################################

@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > rsp_mnf.info <<%EOF%
+cat > rsp_mnf.info <<'%EOF%'
    rsp_mnf
    -------
    Molecule:         O2
@@ -13,7 +28,7 @@ cat > rsp_mnf.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > rsp_mnf.mol <<%EOF%
+cat > rsp_mnf.mol <<'%EOF%'
 ATOMBASIS
 AMFI linear response spin-orbit
 
@@ -26,7 +41,7 @@ O      0.00000   0.00000  -1.14050
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > rsp_mnf.dal <<%EOF%
+cat > rsp_mnf.dal <<'%EOF%'
 **DALTON INPUT
 .RUN RESPONSE
 **INTEGRALS
@@ -67,7 +82,8 @@ Z1MNF-SO
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >rsp_mnf.check
+cat >>rsp_mnf.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -167,5 +183,5 @@ else
   exit 1
 fi
 
-' > rsp_mnf.check
+%EOF%
 #######################################################################

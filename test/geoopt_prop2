@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > geoopt_prop2.info <<%EOF%
+cat > geoopt_prop2.info <<'%EOF%'
    geoopt_prop2
    ------------
    Molecule:         H2O
@@ -15,7 +30,7 @@ cat > geoopt_prop2.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > geoopt_prop2.mol <<%EOF%
+cat > geoopt_prop2.mol <<'%EOF%'
 BASIS
 6-311++G**
 Geometry optimization(2nd order), calculation of Third-Harmonic
@@ -31,7 +46,7 @@ H    -1.45235 0.899623 0.0
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > geoopt_prop2.dal <<%EOF%
+cat > geoopt_prop2.dal <<'%EOF%'
 **GENERAL
 .OPTIMIZE
 *OPTIMIZE
@@ -56,7 +71,8 @@ cat > geoopt_prop2.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >geoopt_prop2.check
+cat >>geoopt_prop2.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -235,5 +251,5 @@ else
   exit 1
 fi
 
-' > geoopt_prop2.check
+%EOF%
 #######################################################################

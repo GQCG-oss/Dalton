@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > walk_polar.info <<%EOF%
+cat > walk_polar.info <<'%EOF%'
    walk_polar
    ----------
    Molecule:         H2O
@@ -17,7 +32,7 @@ cat > walk_polar.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > walk_polar.mol <<%EOF%
+cat > walk_polar.mol <<'%EOF%'
 ATOMBASIS
 Geometry optimization using WALK module plus
 static and dynamic polarizabilities
@@ -32,7 +47,7 @@ H    -1.45235 0.899623 0.0
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > walk_polar.dal <<%EOF%
+cat > walk_polar.dal <<'%EOF%'
 **GENERAL
 .WALK
 **WAVE FUNCTION
@@ -64,7 +79,8 @@ cat > walk_polar.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >walk_polar.check
+cat >>walk_polar.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -385,5 +401,5 @@ else
   exit 1
 fi
 
-' > walk_polar.check
+%EOF%
 #######################################################################

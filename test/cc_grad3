@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > cc_grad3.info <<%EOF%
+cat > cc_grad3.info <<'%EOF%'
    cc_grad3
    --------
    Molecule:         N2 in C1
@@ -13,7 +28,7 @@ cat > cc_grad3.info <<%EOF%
 #######################################################################
 #  INTEGRAL INPUT
 #######################################################################
-cat > cc_grad3.mol <<%EOF%
+cat > cc_grad3.mol <<'%EOF%'
 INTGRL
 first order property calculation on N2                                          
 small test-basis                                                                
@@ -47,7 +62,7 @@ H   2    2
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > cc_grad3.dal <<%EOF%
+cat > cc_grad3.dal <<'%EOF%'
 **GENERAL
 .DIRECT
 .RUNSIR
@@ -87,7 +102,8 @@ cat > cc_grad3.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >cc_grad3.check
+cat >>cc_grad3.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -153,6 +169,6 @@ else
   exit 1
 fi
 
-' > cc_grad3.check
+%EOF%
 chmod +x cc_grad3.check
 #######################################################################

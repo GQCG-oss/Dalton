@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > geoopt_prop3.info <<%EOF%
+cat > geoopt_prop3.info <<'%EOF%'
    geoopt_prop3
    ------------
    Molecule:         O3
@@ -16,7 +31,7 @@ cat > geoopt_prop3.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > geoopt_prop3.mol <<%EOF%
+cat > geoopt_prop3.mol <<'%EOF%'
 BASIS
 aug-cc-pVDZ
 Geometry optimization, calculation of magnetizabilities
@@ -30,7 +45,7 @@ OP        1.2634502500        2.0449019100         .0000000000             *
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > geoopt_prop3.dal <<%EOF%
+cat > geoopt_prop3.dal <<'%EOF%'
 **GENERAL
 .OPTIMIZE
 *OPTIMIZE
@@ -72,7 +87,8 @@ cat > geoopt_prop3.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >geoopt_prop3.check
+cat >>geoopt_prop3.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -288,5 +304,5 @@ else
   exit 1
 fi
 
-' > geoopt_prop3.check
+%EOF%
 #######################################################################

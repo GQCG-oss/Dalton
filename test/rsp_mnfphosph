@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > rsp_mnfphosph.info <<%EOF%
+cat > rsp_mnfphosph.info <<'%EOF%'
    rsp_mnfphosph
    -------------
    Molecule:         C2H4
@@ -13,7 +28,7 @@ cat > rsp_mnfphosph.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > rsp_mnfphosph.mol <<%EOF%
+cat > rsp_mnfphosph.mol <<'%EOF%'
 ATOMBASIS
 AMFI spin-orbit and phosphorescence
 
@@ -27,7 +42,7 @@ AMFI spin-orbit and phosphorescence
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > rsp_mnfphosph.dal <<%EOF%
+cat > rsp_mnfphosph.dal <<'%EOF%'
 **DALTON INPUT
 .RUN RESPONS
 **INTEGRALS
@@ -72,7 +87,8 @@ cat > rsp_mnfphosph.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >rsp_mnfphosph.check
+cat >>rsp_mnfphosph.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -187,5 +203,5 @@ else
   exit 1
 fi
 
-' > rsp_mnfphosph.check
+%EOF%
 #######################################################################

@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > prop_roa.info <<%EOF%
+cat > prop_roa.info <<'%EOF%'
    prop_roa
    --------
    Molecule:         C3H4
@@ -14,7 +29,7 @@ cat > prop_roa.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > prop_roa.mol <<%EOF%
+cat > prop_roa.mol <<'%EOF%'
 BASIS
 DunningDZ
 ROA calculation for allene (H2C=C=CH2) at optimized geometry SCF-DZ
@@ -34,7 +49,7 @@ H7    0.0           -3.5259125935 -1.7367853003
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > prop_roa.dal <<%EOF%
+cat > prop_roa.dal <<'%EOF%'
 **GENERAL
 .WALK
 .MAX IT
@@ -103,7 +118,8 @@ cat > prop_roa.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >prop_roa.check
+cat >>prop_roa.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -474,5 +490,5 @@ else
   exit 1
 fi
 
-' > prop_roa.check
+%EOF%
 #######################################################################

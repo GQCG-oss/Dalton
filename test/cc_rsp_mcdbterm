@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > cc_rsp_mcdbterm.info <<%EOF%
+cat > cc_rsp_mcdbterm.info <<'%EOF%'
    cc_rsp_mcdbterm
    ---------------
    Molecule:         H3+ in C2v
@@ -13,7 +28,7 @@ cat > cc_rsp_mcdbterm.info <<%EOF%
 #######################################################################
 #  INTEGRAL INPUT
 #######################################################################
-cat > cc_rsp_mcdbterm.mol <<%EOF%
+cat > cc_rsp_mcdbterm.mol <<'%EOF%'
 BASIS
 STO-3G
 B term (MCD) components of H3+
@@ -28,7 +43,7 @@ HL     1.000000           0.899623572        0.000000
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > cc_rsp_mcdbterm.dal <<%EOF%
+cat > cc_rsp_mcdbterm.dal <<'%EOF%'
 **GENERAL
 .RUNSIR
 **INTEGRAL
@@ -62,7 +77,8 @@ cat > cc_rsp_mcdbterm.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >cc_rsp_mcdbterm.check
+cat >>cc_rsp_mcdbterm.check <<'%EOF%'
 log=$1
 #
 if [ `uname` = Linux ]; then
@@ -115,5 +131,5 @@ else
   exit 1
 fi
 
-' > cc_rsp_mcdbterm.check
+%EOF%
 #######################################################################

@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > energy_corehole.info <<%EOF%
+cat > energy_corehole.info <<'%EOF%'
    energy_corehole
    ---------------
    Molecule:         CO
@@ -14,7 +29,7 @@ cat > energy_corehole.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > energy_corehole.mol <<%EOF%
+cat > energy_corehole.mol <<'%EOF%'
 INTGRL
 Calculation of core-hole excitations using both a frozen and a relaxed
 core orbital. This is a three step job
@@ -74,7 +89,7 @@ C   0.        0.000000  0.000000
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > energy_corehole__1.dal <<%EOF%
+cat > energy_corehole__1.dal <<'%EOF%'
 **DALTON INPUT
 .INTEGRALS
 .WAVE FUNCTIONS
@@ -96,7 +111,7 @@ cat > energy_corehole__1.dal <<%EOF%
 *END OF SIRIUS INPUT
 %EOF%
 
-cat > energy_corehole__2.dal <<%EOF%
+cat > energy_corehole__2.dal <<'%EOF%'
 **DALTON INPUT
 .WAVE FUNCTIONS
 **WAVE FUNCTIONS
@@ -144,7 +159,7 @@ cat > energy_corehole__2.dal <<%EOF%
 **END OF SIRIUS INPUT
 %EOF%
 
-cat > energy_corehole__3.dal <<%EOF%
+cat > energy_corehole__3.dal <<'%EOF%'
 **DALTON INPUT
 .WAVE FUNCTIONS
 **WAVE FUNCTIONS
@@ -195,7 +210,8 @@ cat > energy_corehole__3.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >energy_corehole__1.check
+cat >>energy_corehole__1.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -257,9 +273,10 @@ else
   exit 1
 fi
 
-' > energy_corehole__1.check
+%EOF%
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >energy_corehole__2.check
+cat >>energy_corehole__2.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -336,9 +353,10 @@ else
   exit 1
 fi
 
-' > energy_corehole__2.check
+%EOF%
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >energy_corehole__3.check
+cat >>energy_corehole__3.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -401,5 +419,5 @@ else
   exit 1
 fi
 
-' > energy_corehole__3.check
+%EOF%
 #######################################################################

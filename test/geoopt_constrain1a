@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > geoopt_constrain1a.info <<%EOF%
+cat > geoopt_constrain1a.info <<'%EOF%'
    geoopt_constrain1a
    ------------------
    Molecule:         C2H6
@@ -16,7 +31,7 @@ cat > geoopt_constrain1a.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > geoopt_constrain1a.mol <<%EOF%
+cat > geoopt_constrain1a.mol <<'%EOF%'
 BASIS
 STO-3G
 Determination of redundant internal coordinates
@@ -37,7 +52,7 @@ H     0.0000000000        1.9408721894       -2.4445545504             *
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > geoopt_constrain1a.dal <<%EOF%
+cat > geoopt_constrain1a.dal <<'%EOF%'
 **GENERAL
 .OPTIMIZE
 *OPTIMIZE
@@ -55,7 +70,8 @@ cat > geoopt_constrain1a.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >geoopt_constrain1a.check
+cat >>geoopt_constrain1a.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -169,5 +185,5 @@ else
   exit 1
 fi
 
-' > geoopt_constrain1a.check
+%EOF%
 #######################################################################

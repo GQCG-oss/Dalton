@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > geoopt_exci.info <<%EOF%
+cat > geoopt_exci.info <<'%EOF%'
    geoopt_exci
    -----------
    Molecule:         H2O
@@ -17,7 +32,7 @@ cat > geoopt_exci.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > geoopt_exci.mol <<%EOF%
+cat > geoopt_exci.mol <<'%EOF%'
 BASIS
 aug-cc-pVDZ
 Geometry optimization of excited state. Breaking of symmetry leads to
@@ -33,7 +48,7 @@ O     0.0 -0.2249058930 0.0
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > geoopt_exci.dal <<%EOF%
+cat > geoopt_exci.dal <<'%EOF%'
 **GENERAL
 .OPTIMIZE
 *OPTIMIZE
@@ -78,7 +93,8 @@ cat > geoopt_exci.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >geoopt_exci.check
+cat >>geoopt_exci.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -204,5 +220,5 @@ else
   exit 1
 fi
 
-' > geoopt_exci.check
+%EOF%
 #######################################################################

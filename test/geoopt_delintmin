@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > geoopt_delintmin.info <<%EOF%
+cat > geoopt_delintmin.info <<'%EOF%'
    geoopt_delintmin
    ----------------
    Molecule:         C6H5CHO
@@ -16,7 +31,7 @@ cat > geoopt_delintmin.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > geoopt_delintmin.mol <<%EOF%
+cat > geoopt_delintmin.mol <<'%EOF%'
 BASIS
 STO-3G
 First order minimization in delocalized internal coordinates
@@ -44,7 +59,7 @@ H     2.4915143918        3.4703378645        0.0000000000             *
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > geoopt_delintmin.dal <<%EOF%
+cat > geoopt_delintmin.dal <<'%EOF%'
 **GENERAL
 .OPTIMIZE
 *OPTIMIZE
@@ -64,7 +79,8 @@ cat > geoopt_delintmin.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >geoopt_delintmin.check
+cat >>geoopt_delintmin.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -256,5 +272,5 @@ else
   exit 1
 fi
 
-' > geoopt_delintmin.check
+%EOF%
 #######################################################################

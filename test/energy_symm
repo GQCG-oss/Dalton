@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > energy_symm.info <<%EOF%
+cat > energy_symm.info <<'%EOF%'
    energy_symm
    -----------
    Molecule:         H2O
@@ -13,7 +28,7 @@ cat > energy_symm.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > energy_symm.mol <<%EOF%
+cat > energy_symm.mol <<'%EOF%'
 BASIS
 cc-pVDZ
 Energy calculation with symmetry
@@ -29,7 +44,7 @@ H    -1.45235 0.899623 0.0
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > energy_symm.dal <<%EOF%
+cat > energy_symm.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
 **WAVE FUNCTIONS
@@ -61,7 +76,8 @@ cat > energy_symm.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >energy_symm.check
+cat >>energy_symm.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -166,5 +182,5 @@ else
   exit 1
 fi
 
-' > energy_symm.check
+%EOF%
 #######################################################################

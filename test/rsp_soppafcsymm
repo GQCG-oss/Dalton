@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > rsp_soppafcsymm.info <<%EOF%
+cat > rsp_soppafcsymm.info <<'%EOF%'
    rsp_soppafcsymm
    ---------------
    Molecule:         H2O
@@ -13,7 +28,7 @@ cat > rsp_soppafcsymm.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > rsp_soppafcsymm.mol <<%EOF%
+cat > rsp_soppafcsymm.mol <<'%EOF%'
 BASIS
 cc-pVDZ
 SOPPA calculation of Fermi contact contribution to
@@ -28,7 +43,7 @@ H     1.45235 0.899623 0.0
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > rsp_soppafcsymm.dal <<%EOF%
+cat > rsp_soppafcsymm.dal <<'%EOF%'
 **GENERAL
 .RUN RESPONSE
 **INTEGRALS
@@ -59,7 +74,8 @@ FC H  03
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >rsp_soppafcsymm.check
+cat >>rsp_soppafcsymm.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -141,5 +157,5 @@ else
   exit 1
 fi
 
-' > rsp_soppafcsymm.check
+%EOF%
 #######################################################################

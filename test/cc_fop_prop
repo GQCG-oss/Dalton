@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > cc_fop_prop.info <<%EOF%
+cat > cc_fop_prop.info <<'%EOF%'
    cc_fop_prop
    -----------
    Molecule:         CO in C2v
@@ -13,7 +28,7 @@ cat > cc_fop_prop.info <<%EOF%
 #######################################################################
 #  INTEGRAL INPUT
 #######################################################################
-cat > cc_fop_prop.mol <<%EOF%
+cat > cc_fop_prop.mol <<'%EOF%'
 BASIS
 aug-cc-pVDZ
 CC2 relaxed FOP
@@ -28,7 +43,7 @@ O     0.0000000000000000  0.0000000000000000 -.91397310000000000       *
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > cc_fop_prop.dal <<%EOF%
+cat > cc_fop_prop.dal <<'%EOF%'
 **GENERAL
 .RUNSIRIUS
 **INTEGRAL
@@ -70,7 +85,8 @@ cat > cc_fop_prop.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >cc_fop_prop.check
+cat >>cc_fop_prop.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -172,5 +188,5 @@ else
   exit 1
 fi
 
-' > cc_fop_prop.check
+%EOF%
 #######################################################################

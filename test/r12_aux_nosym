@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > r12_aux_nosym.info <<%EOF%
+cat > r12_aux_nosym.info <<'%EOF%'
    r12_aux_nosym
    -------------
    Molecule:         Methane (CH4)
@@ -13,7 +28,7 @@ cat > r12_aux_nosym.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > r12_aux_nosym.mol <<%EOF%
+cat > r12_aux_nosym.mol <<'%EOF%'
 BASIS
 6-311G** 6-311++G(3df,3pd)
 Direct MP2-R12/B calculation without symmetry
@@ -38,7 +53,7 @@ H      1.383652834453088  -1.901530832048569   6.012279000000000       *
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > r12_aux_nosym.dal <<%EOF%
+cat > r12_aux_nosym.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
 .DIRECT
@@ -68,7 +83,8 @@ cat > r12_aux_nosym.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >r12_aux_nosym.check
+cat >>r12_aux_nosym.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -106,5 +122,5 @@ else
   exit 1
 fi
 
-' > r12_aux_nosym.check
+%EOF%
 #######################################################################

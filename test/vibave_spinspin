@@ -1,7 +1,22 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > vibave_spinspin.info <<%EOF%
+cat > vibave_spinspin.info <<'%EOF%'
    vibave_spinspin
    ---------------
    Molecule:         H2O
@@ -13,7 +28,7 @@ cat > vibave_spinspin.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > vibave_spinspin.mol <<%EOF%
+cat > vibave_spinspin.mol <<'%EOF%'
 BASIS
 STO-3G
 H2O
@@ -29,7 +44,7 @@ H     0.0000000000       -1.4325641791        0.4004978308
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > vibave_spinspin.dal <<%EOF%
+cat > vibave_spinspin.dal <<'%EOF%'
 **DALTON INPUT
 .NMDDRV
 **NMDDRV
@@ -68,7 +83,8 @@ cat > vibave_spinspin.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >vibave_spinspin.check
+cat >>vibave_spinspin.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -194,5 +210,5 @@ else
   exit 1
 fi
 
-' > vibave_spinspin.check
+%EOF%
 #######################################################################

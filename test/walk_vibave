@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > walk_vibave.info <<%EOF%
+cat > walk_vibave.info <<'%EOF%'
    walk_vibave
    -----------
    Molecule:         NH3
@@ -14,7 +29,7 @@ cat > walk_vibave.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > walk_vibave.mol <<%EOF%
+cat > walk_vibave.mol <<'%EOF%'
 BASIS
 STO-3G
 Vibrational averaging of shieldings, magnetizabilities and polarizabilities
@@ -31,7 +46,7 @@ H         -0.1947831           -1.7995826090           -0.000000
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > walk_vibave.dal <<%EOF%
+cat > walk_vibave.dal <<'%EOF%'
 **DALTON INPUT
 .WALK
 *WALK
@@ -76,7 +91,8 @@ H         -0.2012451011           -1.7773969533            0.0000000000
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >walk_vibave.check
+cat >>walk_vibave.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -532,5 +548,5 @@ else
   exit 1
 fi
 
-' > walk_vibave.check
+%EOF%
 #######################################################################

@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > geoopt_vrml.info <<%EOF%
+cat > geoopt_vrml.info <<'%EOF%'
    geoopt_vrml
    -----------
    Molecule:         KUM1
@@ -15,7 +30,7 @@ cat > geoopt_vrml.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > geoopt_vrml.mol <<%EOF%
+cat > geoopt_vrml.mol <<'%EOF%'
 BASIS
 6-31++G
 VRML visualization
@@ -34,7 +49,7 @@ H      5.0413894   1.3219498   0.0000000
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > geoopt_vrml.dal <<%EOF%
+cat > geoopt_vrml.dal <<'%EOF%'
 **GENERAL
 .OPTIMIZE
 *OPTIMIZE
@@ -53,7 +68,8 @@ cat > geoopt_vrml.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >geoopt_vrml.check
+cat >>geoopt_vrml.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -102,5 +118,5 @@ else
   exit 1
 fi
 
-' > geoopt_vrml.check
+%EOF%
 #######################################################################

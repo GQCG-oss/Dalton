@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > cc_geoopt2.info <<%EOF%
+cat > cc_geoopt2.info <<'%EOF%'
    cc_geoopt2
    ----------
    Molecule:         CO in C1
@@ -14,7 +29,7 @@ cat > cc_geoopt2.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > cc_geoopt2.mol <<%EOF%
+cat > cc_geoopt2.mol <<'%EOF%'
 INTGRL
 first order property calculation on CO                                          
 dunning-basis                                                                   
@@ -120,7 +135,7 @@ H   2    2
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > cc_geoopt2.dal <<%EOF%
+cat > cc_geoopt2.dal <<'%EOF%'
 **GENERAL
 .DIRECT
 .OPTIMIZE
@@ -160,7 +175,8 @@ cat > cc_geoopt2.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >cc_geoopt2.check
+cat >>cc_geoopt2.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -235,6 +251,6 @@ else
   echo THERE IS A PROBLEM 
   exit 1
 fi
-' > cc_geoopt2.check
+%EOF%
 chmod +x cc_geoopt2.check
 #######################################################################

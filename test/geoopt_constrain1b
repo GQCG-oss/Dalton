@@ -1,8 +1,23 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -e /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -e /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
 
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > geoopt_constrain1b.info <<%EOF%
+cat > geoopt_constrain1b.info <<'%EOF%'
    geoopt_constrain1b
    ------------------
    Molecule:         C2H6
@@ -15,7 +30,7 @@ cat > geoopt_constrain1b.info <<%EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > geoopt_constrain1b.mol <<%EOF%
+cat > geoopt_constrain1b.mol <<'%EOF%'
 BASIS
 STO-3G
 Constrained geometry optimization of ethane
@@ -36,7 +51,7 @@ H     0.0000000000        1.9408721894       -2.4445545504             *
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > geoopt_constrain1b.dal <<%EOF%
+cat > geoopt_constrain1b.dal <<'%EOF%'
 **GENERAL
 .OPTIMIZE
 *OPTIMIZE
@@ -56,7 +71,8 @@ cat > geoopt_constrain1b.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo $CHECK_SHELL >geoopt_constrain1b.check
+cat >>geoopt_constrain1b.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -202,5 +218,5 @@ else
   exit 1
 fi
 
-' > geoopt_constrain1b.check
+%EOF%
 #######################################################################
