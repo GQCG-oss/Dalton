@@ -102,8 +102,8 @@ CTRL[2]=2
 ERROR[2]="OPTICAL ROTATION NOT CORRECT"
 
 # Excitation Energies
-CRIT1=`$GREP "1     1      0.3628 a.u.    9.871 eV    125.60 nm" $log | wc -l`
-CRIT2=`$GREP "1     2      0.3764 a.u.   10.242 eV    121.05 nm" $log | wc -l`
+CRIT1=`$GREP "1     1      (0| )\.3628 a.u.    9\.871 eV    125\.60 nm" $log | wc -l`
+CRIT2=`$GREP "1     2      (0| )\.3764 a.u.   10\.242 eV    121\.05 nm" $log | wc -l`
 TEST[3]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[3]=2
 ERROR[3]="EXCITATION ENERGIES NOT CORRECT"
