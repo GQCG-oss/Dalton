@@ -52,7 +52,7 @@ cat > effgeom_fromE.dal <<'%EOF%'
 .SYMMETRY
   C9v
 .VIBANA
-*VIBANA
+*PROPAV
 .EFFECTIVE GEOMETRY
 **WAVE FUNCTIONS
 .HF

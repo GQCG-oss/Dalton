@@ -54,7 +54,7 @@ cat > effgeom_fromE2.dal <<'%EOF%'
   C9v
 .NORMAL 
 .VIBANA
-*VIBANA
+*PROPAV
 .EFFECTIVE GEOMETRY
 **WAVE FUNCTIONS
 .HF
