@@ -216,15 +216,21 @@ together with quadratic or cubic response.
 
 \begin{description}
 
-\item{\Key{TRIPLET}} Defines $A$ and $B$ to be triplet operators.
-Will also make a simultaneous \Sec{LINEAR} \Key{SINGLE RESIDUE} calculation to
-a calculation of triplet excitation energies and transition moments.
+\item{\Key{ABOCHK}} Sets up the orbital part of the $E^{\left[2\right]}$
+  and $S^{\left[2\right]}$ used in solving the linear response
+  equation. Mainly for debugging purposes.
 
 \item{\Key{DIPLEN}}
 Sets $A$ and $B$ to dipole operators\index{dipole length}.
 
 \item{\Key{DIPLNX/Y/Z}}
 Sets $A$ and $B$ to the X, Y, or Z component of the dipole length operators, respectively\index{dipole length}.
+
+\item{\Key{DIPMAG}}
+Sets $A$ and $B$ to angular momentum operators\index{angular momentum}.
+
+\item{\Key{DIPMGX/Y/Z}}
+Sets $A$ and $B$ to the X, Y, or Z component of the angular momentum operators\index{angular momentum}.
 
 \item{\Key{DIPVEL}}
 Sets $A$ and $B$ to the dipole velocity operators\index{dipole velocity}.
@@ -233,31 +239,9 @@ Sets $A$ and $B$ to the dipole velocity operators\index{dipole velocity}.
 Sets $A$ and $B$ to the X, Y, or Z component of the dipole velocity
 operator, respectively\index{dipole velocity}.
 
-\item{\Key{DIPMAG}}
-Sets $A$ and $B$ to angular momentum operators\index{angular momentum}.
-
-\item{\Key{DIPMGX/Y/Z}}
-Sets $A$ and $B$ to the X, Y, or Z component of the angular momentum operators\index{angular momentum}.
-
-\item{\Key{QUADMOM}}
-Sets $A$ and $B$ to the quadrupole\index{quadrupole operator} operators.
-
-\item{\Key{QUADXX/XY/XZ/YY/YZ/ZZ}}
-Sets $A$ and $B$ to the XX, XY, XZ, YY, YZ, or ZZ component of the
-quadrupole\index{quadrupole operator} operator, respectively.
-
-\item{\Key{SPIN-O}}
-Sets $A$ and $B$ to spin-orbit operators\index{spin-orbit}.
-
-\item{\Key{SPNORX/Y/Z}}
-Sets $A$ and $B$ to the X, Y, or Z component of the spin--orbit
-operator, respectively\index{spin-orbit}.
-
-\item{\Key{PROPRT}}\\
-\verb|READ '(A)', LABEL|\\
-Sets $A$ and $B$ to a given operator with label; LABEL.
-(The calculation of the operator must be specified to the integral
-module, see section \ref{ch:hermit}.)
+\item{\Key{FERMI}} Sets $A$ and $B$ to be all Fermi-contact operators
+  found on the file \verb|AOPROPER|, {\it i.e.\/} all Fermi-contact
+  operators requested in the \Sec{*INTEGRALS} input module.
 
 \item{\Key{FREQUE}}\\
 \verb|READ *, NFREQ|\\
@@ -268,24 +252,10 @@ this option must contain 1) The number of frequencies, 2) Frequencies
 in atomic units.
 Remember to increase \Key{MAXRM} if many frequencies are specified.
 
-\item{\Key{THCLR}}\\
-\verb|READ *, THCLR|\\
-Relative convergence threshold for all requested linear response functions.
-Default is 1.0D-3; note that this number should be at least 10 times
-bigger than the final gradient norm in the SCF/MCSCF
-wave function optimization. The accuracy of the linear response 
-properties will be quadratic in this threshold; thus the default
-corresponds to convergence to approximately 6 digits.
-
-\item{\Key{PRINT}}\\
-\verb|READ *,IPRLR|\\
-Sets print level for linear response module. Default is 2.
- 
-\item{\Key{RESTLR}}
-Restart\index{restart!linear response} of response calculation. This
-can only be used if the  
-operator specified is the same which was used \textit{last} in the previous
-response calculation.
+\item{\Key{ISTOCK}} Selects the starting row in setting up the orbital
+  parts of $E^{\left[2\right]}$
+  and $S^{\left[2\right]}$ using the keyword \Key{ABOCHK}. Default is
+  1. Mainly for debugging purposes.
 
 \item{\Key{MAX IT}}\\
 \verb|READ (LUCMD,*) MAXITL|\\
@@ -298,6 +268,86 @@ Maximum number of iterations in the optimal orbital
 algorithm\index{optimal orbital trial vector}
 \cite{tuhjahjajpjjcp84}. 
 Default is 5.
+
+\item{\Key{MAXOCK}} Selects the last row in setting up the orbital
+  parts of $E^{\left[2\right]}$
+  and $S^{\left[2\right]}$ using the keyword \Key{ABOCHK}. Default is
+  6. Mainly for debugging purposes.
+
+\item{\Key{NODOIT}} Do not perform the linear transformation of the
+  response equation in a direct manner, which is the default. Not
+  recommend to use and primarily for debugging purposes.
+
+\item{\Key{PRINT}}\\
+\verb|READ *,IPRLR|\\
+Sets print level for linear response module. Default is 2.
+ 
+\item{\Key{PROPRT}}\\
+\verb|READ '(A)', LABEL|\\
+Sets $A$ and $B$ to a given operator with label; LABEL.
+(The calculation of the operator must be specified to the integral
+module, see section \ref{ch:hermit}.)
+
+\item{\Key{PV PSO}} Sets $A$ and $B$ in the linear response function
+  to the parity-violating operator and the complete list of
+  paramagnetic spin-orbit integrals. The \Key{TRPFLG} keyword will
+  also be set by this option.
+
+\item{\Key{PV SO}} Sets $A$ and $B$ in the linear response function
+  to the parity-violating operator and the complete list of
+  paramagnetic spin-orbit integrals. The \Key{TRPFLG} keyword will
+  also be set by this option.
+
+\item{\Key{PV SO1}} Sets $A$ and $B$ in the linear response function
+  to the parity-violating operator and the one-electron spin--orbit
+  integrals. The \Key{TRPFLG} keyword will
+  also be set by this option.
+
+\item{\Key{PV SO2}} Sets $A$ and $B$ in the linear response function
+  to the parity-violating operator and the two-electron spin--orbit
+  integrals. The \Key{TRPFLG} keyword will
+  also be set by this option.
+
+\item{\Key{QUADMOM}}
+Sets $A$ and $B$ to the quadrupole\index{quadrupole operator} operators.
+
+\item{\Key{QUADXX/XY/XZ/YY/YZ/ZZ}}
+Sets $A$ and $B$ to the XX, XY, XZ, YY, YZ, or ZZ component of the
+quadrupole\index{quadrupole operator} operator, respectively.
+
+\item{\Key{RESTLR}}
+Restart\index{restart!linear response} of response calculation. This
+can only be used if the  
+operator specified is the same which was used \textit{last} in the previous
+response calculation.
+
+\item{\Key{SOPRSY}} Calculate both $\alpha_{ij}$ and $\alpha_{ji}$ to
+  test the quadratic accuracy of the calculated property. Mainly for
+  debugging purposes.
+
+\item{\Key{FERMI}} Sets $A$ and $B$ to be all spin-dipole operators
+  found on the file \verb|AOPROPER|, {\it i.e.\/} all spin-dipole
+  operators requested in the \Sec{*INTEGRALS} input module.
+
+\item{\Key{SPIN-O}}
+Sets $A$ and $B$ to spin-orbit operators\index{spin-orbit}.
+
+\item{\Key{SPNORX/Y/Z}}
+Sets $A$ and $B$ to the X, Y, or Z component of the spin--orbit
+operator, respectively\index{spin-orbit}.
+
+\item{\Key{THCLR}}\\
+\verb|READ *, THCLR|\\
+Relative convergence threshold for all requested linear response functions.
+Default is 1.0D-3; note that this number should be at least 10 times
+bigger than the final gradient norm in the SCF/MCSCF
+wave function optimization. The accuracy of the linear response 
+properties will be quadratic in this threshold; thus the default
+corresponds to convergence to approximately 6 digits.
+
+\item{\Key{TRIPLET}} Defines $A$ and $B$ to be triplet operators.
+Will also make a simultaneous \Sec{LINEAR} \Key{SINGLE RESIDUE} calculation to
+a calculation of triplet excitation energies and transition moments.
 
 %\item{\Key{OLSEN}}
 %CI trial vectors are obtained with Olsen algorithm (for the single
@@ -321,11 +371,86 @@ together with quadratic or cubic response.
 
 \begin{description}
 
-\item{\Key{SINGLE RESIDUE}} Required to get excitation energies, without
-this keyword the linear response function will be evaluated, see Sec.~\ref{sec:linearrsp}.
+\item{\Key{ABCHK}} Sets up $E^{\left[2\right]}$
+  and $S^{\left[2\right]}$ used in solving the linear response
+  equation. Mainly for debugging purposes.
 
-\item{\Key{TRIPLET}} Calculate triplet excitation energies and transition moments.
-Will also make a simultaneous linear response calculation of triplet symmetry.
+\item{\Key{ABSYM}} Tests the symmetry of $E^{\left[2\right]}$
+  and $S^{\left[2\right]}$ in the reduced space.
+
+\item{\Key{ANTTES}} Test the antisymmetry of the response
+  vector. Mainly for debugging purposes.
+
+\item{\Key{DIPLEN}}
+Sets $A$ and $B$ to dipole operators\index{dipole length}.
+
+\item{\Key{DIPLNX/Y/Z}}
+Sets $A$ and $B$ to the X, Y, or Z component of the dipole length operators, respectively\index{dipole length}.
+
+\item{\Key{DIPMAG}}
+Sets $A$ and $B$ to angular momentum operators\index{angular momentum}.
+
+\item{\Key{DIPMGX/Y/Z}}
+Sets $A$ and $B$ to the X, Y, or Z component of the angular momentum operators\index{angular momentum}.
+
+\item{\Key{DIPVEL}}
+Sets $A$ and $B$ to the dipole velocity operators\index{dipole velocity}.
+
+\item{\Key{DIPVLX/Y/Z}}
+Sets $A$ and $B$ to the X, Y, or Z component of the dipole velocity
+operator, respectively\index{dipole velocity}.
+
+\item{\Key{MAX IT}}\\
+\verb|READ *, MAXITP|\\
+Maximum number of iterations for solving the linear response eigenvalue
+equation. Default is 60.
+
+\item{\Key{MAXITO}}\\
+\verb|READ *, MAXITO|\\
+Maximum number of iterations in the optimal orbital
+algorithm\index{optimal orbital trial vector}
+\cite{tuhjahjajpjjcp84}. 
+Default is 5.
+
+\item{\Key{NODOIT}} Do not perform the linear transformation of the
+  response equation in a direct manner, which is the default. Not
+  recommend to use and primarily for debugging purposes.
+
+\item{\Key{NSTART}}\\
+\verb|READ (LUCMD,*) (NPPSTV(J),J=1,NSYM)|\\
+ The number of start vectors to be used in the
+  optimization of the transition vectors in each symmetry. By default
+  this is set equal to the number of excited states that have been
+  requested through the keyword \Key{ROOTS}. Mainly for debugging purposes.
+
+\item{\Key{NSIMUL}}\\
+\verb|READ (LUCMD,*) (NPPSIM(J),J=1,NSYM)|\\
+The number of eigenvectors to solve simultaneously in each
+symmetry. Normally decided automatically be the program depending on
+available memory and size of eigenvectors. Mainly for debugging purposes.
+
+\item{\Key{PRINT}}\\
+\verb|READ *,IPRPP|\\
+Sets print level for single residue linear response module. Default is 2.
+
+\item{\Key{PROPRT}}\\
+\verb|READ '(A)', LABEL|\\
+Calculate either singlet or triplet transition moments for a given operator with label; LABEL.
+(The calculation of the operator must be specified to the integral
+module, see section \ref{ch:hermit}.)
+
+\item{\Key{QUADMOM}}
+Sets $A$ and $B$ to the quadrupole\index{quadrupole operator} operators.
+
+\item{\Key{QUADXX/XY/XZ/YY/YZ/ZZ}}
+Sets $A$ and $B$ to the XX, XY, XZ, YY, YZ, or ZZ component of the
+quadrupole\index{quadrupole operator} operator, respectively.
+
+\item{\Key{RESTPP}}
+Restart\index{restart!excitation energy} of response
+calculation. This can only be used if the root which is 
+specified is the same which was used \textit{last} in the previous
+response calculation.
 
 \item{\Key{ROOTS}}\\
 \verb|READ '*',(ROOTS(I) I=1,NSYM)|\\
@@ -338,31 +463,8 @@ calculated between the
 reference state and the excited states.
 Remember to increase \Key{MAXRM} if many frequencies are specified.
 
-\item{\Key{DIPLEN}}
-Sets $A$ and $B$ to dipole operators\index{dipole length}.
-
-\item{\Key{DIPLNX/Y/Z}}
-Sets $A$ and $B$ to the X, Y, or Z component of the dipole length operators, respectively\index{dipole length}.
-
-\item{\Key{DIPVEL}}
-Sets $A$ and $B$ to the dipole velocity operators\index{dipole velocity}.
-
-\item{\Key{DIPVLX/Y/Z}}
-Sets $A$ and $B$ to the X, Y, or Z component of the dipole velocity
-operator, respectively\index{dipole velocity}.
-
-\item{\Key{DIPMAG}}
-Sets $A$ and $B$ to angular momentum operators\index{angular momentum}.
-
-\item{\Key{DIPMGX/Y/Z}}
-Sets $A$ and $B$ to the X, Y, or Z component of the angular momentum operators\index{angular momentum}.
-
-\item{\Key{QUADMOM}}
-Sets $A$ and $B$ to the quadrupole\index{quadrupole operator} operators.
-
-\item{\Key{QUADXX/XY/XZ/YY/YZ/ZZ}}
-Sets $A$ and $B$ to the XX, XY, XZ, YY, YZ, or ZZ component of the
-quadrupole\index{quadrupole operator} operator, respectively.
+\item{\Key{SINGLE RESIDUE}} Required to get excitation energies, without
+this keyword the linear response function will be evaluated, see Sec.~\ref{sec:linearrsp}.
 
 \item{\Key{SPIN-O}}
 Sets $A$ and $B$ to spin-orbit operators\index{spin-orbit}.
@@ -379,34 +481,6 @@ forces the excitations to be of triplet symmetry,
 and all operators---including
 {\it e.g.\/} \Key{DIPLEN}---will be assumed by the program to be of triplet symmetry!!
 
-\item{\Key{PROPRT}}\\
-\verb|READ '(A)', LABEL|\\
-Calculate either singlet or triplet transition moments for a given operator with label; LABEL.
-(The calculation of the operator must be specified to the integral
-module, see section \ref{ch:hermit}.)
-
-\item{\Key{PRINT}}\\
-\verb|READ *,IPRPP|\\
-Sets print level for single residue linear response module. Default is 2.
-
-\item{\Key{MAX IT}}\\
-\verb|READ *, MAXITP|\\
-Maximum number of iterations for solving the linear response eigenvalue
-equation. Default is 60.
-
-\item{\Key{MAXITO}}\\
-\verb|READ *, MAXITO|\\
-Maximum number of iterations in the optimal orbital
-algorithm\index{optimal orbital trial vector}
-\cite{tuhjahjajpjjcp84}. 
-Default is 5.
-
-\item{\Key{RESTPP}}
-Restart\index{restart!excitation energy} of response
-calculation. This can only be used if the root which is 
-specified is the same which was used \textit{last} in the previous
-response calculation.
-
 \item{\Key{THCPP}}\\
 \verb|READ *, THCPP|\\
 Threshold for solving the single residue linear response eigenvalue equation. 
@@ -416,6 +490,9 @@ wave function optimization.
 The accuracy of the pole (excitation energy) will be 
 quadratic in this threshold, thus the default corresponds to approximately
 6 digits. The accuracy of transition moments will be linear in this threshold.
+
+\item{\Key{TRIPLET}} Calculate triplet excitation energies and transition moments.
+Will also make a simultaneous linear response calculation of triplet symmetry.
 
 \item{\Key{OLSEN}}
 CI trial vectors are obtained with Olsen algorithm.
@@ -439,40 +516,25 @@ as they can be obtained at no extra computational cost.
 
 \begin{description}
 
-\item{\Key{SHG}}
-Only response functions connected with second harmonic
-generation\index{second harmonic generation}\index{response!second harmonic generation}\index{quadratic response!second harmonic generation}
-are computed, $\beta(-2\omega,\omega,\omega)$ .
-Can be specified together with \Key{POCKEL}.
-Frequencies must be specified with \Key{FREQUE}.
-Remember to specify operators as well, {\it e.g.\/} \Key{DIPLEN}.
-
-\item{\Key{POCKEL}}
-Only response functions connected with electro-optical
-Pockels effect\index{Pockels effect}\index{response!Pockels effect}\index{quadratic response!Pockels effect}
-$\beta(-\omega; \omega,0)$, are computed.
-Can be specified together with \Key{SHG}.
-Frequencies must be specified with \Key{FREQUE}.
-Remember to specify operators as well, {\it e.g.\/} \Key{DIPLEN}.
-
-\item{\Key{DIPLEN}}
-Sets $A$, $B$, and $C$ to dipole operators\index{dipole length}.
-
-\item{\Key{DIPLNX}}
-Sets $A$, $B$, and $C$ to the $x$ dipole operator\index{dipole length}.
-
-\item{\Key{DIPLNY}}
-Sets $A$, $B$, and $C$ to the $y$ dipole operator\index{dipole length}.
-
-\item{\Key{DIPLNZ}}
-Sets $A$, $B$, and $C$ to the $z$ dipole operator\index{dipole length}.
-
-\item[\Key{APROP}, \Key{BPROP}, \Key{CPROP}]
+\item[\Key{APROP}, \Key{BPROP}, \Key{CPROP}]\\
+\verb|READ(LUCMD,'( A )')LABEL|\\
 Specify the operators $A$, $B$, and $C$. The line following this
 option should be the label of the operator as it appears in the file
-AOPROPER.
+AOPROPER. 
 
-\item[\Key{ASPIN}, \Key{BSPIN}, \Key{CSPIN}]
+Note that giving the label \verb|ANGMOM|, \verb|1SPNORB|,
+\verb|2SPNORB|, or \verb|MNFSPNOR|, all the components of angular
+momentum, one-electron spin--orbit, two-electron spin--orbit or the
+atomic mean-field spin--orbit operator will be selected.
+
+By specifying the labels \verb|FERMI CO|, \verb|SPIN-DIP| or
+\verb|PSO|, all components of the Fermi contact, spin--dipole or
+paramagnetic spin--orbit integrals that can be found on the file
+\verb|AOPROPER| will be selected. These integrals are selected by the
+appropriate keywords in the \Sec{*INTEGRALS} input module.
+
+\item[\Key{ASPIN}, \Key{BSPIN}, \Key{CSPIN}]\\
+\verb|READ(LUCMD,*)ISPINA|\\
 Spin information for quadratic response calculations.
 The line following these options contains the spin
 rank\index{spin rank} of the operators 
@@ -480,6 +542,22 @@ $A$, $B$, and $C$, respectively, 0 for singlet operators and 1 for triplet
 operators.
 In a triplet response calculations two of these operators are of rank one,
 and the remaining operator of rank zero.
+
+\item[\Key{BFREQ}, \Key{CFREQ}]\\
+\verb|READ (LUCMD,*) NBQRFR|\\
+\verb|READ (LUCMD,*) (BQRFR(J),J=1,NBQRFR)|\\
+Individual specification of the frequencies $\omega_b$ and $\omega_c$.
+Input as in \Key{FREQUE} above.
+May not be used for \Key{SHG} and \Key{POCKEL}.
+May not be used together with \Key{FREQUE}.
+Default is one frequency of each type: zero (static).
+
+\item{\Key{DIPLEN}}
+Sets $A$, $B$, and $C$ to dipole operators\index{dipole length}.
+
+\item{\Key{DIPLNX/Y/Z}}
+Sets $A$, $B$, and $C$ operators to the X, Y, or Z component of the
+dipole length operators, respectively\index{dipole length}. 
 
 \item{\Key{FREQUE}}\\
 \verb|READ *, NFREQ|\\
@@ -493,13 +571,6 @@ and in other cases both $B$ and $C$-frequencies are set.
 May not be used together with \Key{BFREQ} or \Key{CFREQ}.
 Default is one frequency of each type: zero (static).
 
-\item[\Key{BFREQ}, \Key{CFREQ}]
-Individual specification of the frequencies $\omega_b$ and $\omega_c$.
-Input as in \Key{FREQUE} above.
-May not be used for \Key{SHG} and \Key{POCKEL}.
-May not be used together with \Key{FREQUE}.
-Default is one frequency of each type: zero (static).
-
 \item{\Key{MAX IT}}
 Maximum number of iterations for solving a linear response equation.
 Default is 60.
@@ -510,9 +581,25 @@ orbital\index{optimal orbital trial vector} algorithm
 \cite{tuhjahjajpjjcp84}. 
 Default is 5.
 
+\item{\Key{POCKEL}}
+Only response functions connected with electro-optical
+Pockels effect\index{Pockels effect}\index{response!Pockels effect}\index{quadratic response!Pockels effect}
+$\beta(-\omega; \omega,0)$, are computed.
+Can be specified together with \Key{SHG}.
+Frequencies must be specified with \Key{FREQUE}.
+Remember to specify operators as well, {\it e.g.\/} \Key{DIPLEN}.
+
 \item{\Key{PRINT}}\\
 \verb|READ *,IPRHYP|\\
 Print level. Default is 2.
+
+\item{\Key{SHG}}
+Only response functions connected with second harmonic
+generation\index{second harmonic generation}\index{response!second harmonic generation}\index{quadratic response!second harmonic generation}
+are computed, $\beta(-2\omega,\omega,\omega)$ .
+Can be specified together with \Key{POCKEL}.
+Frequencies must be specified with \Key{FREQUE}.
+Remember to specify operators as well, {\it e.g.\/} \Key{DIPLEN}.
 
 \item{\Key{THCLR}}
 Threshold for solving the linear response equations.
