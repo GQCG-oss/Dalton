@@ -33,14 +33,13 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef UNDEF
-===========================================================================
-C/*COMDECK log */
-950103-hjaaj
-NX2HSO: changed IADRM(x,37,36) to IADRM(x, 1,37)
-        and dimension from IARDM(3,36,36) to IADRM(3,36,37)
-        however, IADRM(1:3,2:36,37) are not defined nor allocated.
-===========================================================================
+#ifdef OLD_REVISION_OLG
+c===========================================================================
+c950103-hjaaj
+cNX2HSO: changed IADRM(x,37,36) to IADRM(x, 1,37)
+c        and dimension from IARDM(3,36,36) to IADRM(3,36,37)
+c        however, IADRM(1:3,2:36,37) are not defined nor allocated.
+c===========================================================================
 #endif
 C/*deck  trahso*/
       SUBROUTINE TRAHSO(ITRLSO,CMO,WRK,KWORK)
@@ -343,7 +342,7 @@ C
 C
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION H2CD(1),NEEDTP(6),WRK(1)
+      DIMENSION H2CD(*),NEEDTP(6),WRK(*)
 C
       PARAMETER (LIADRM = 3*36*36 + 3)
 C     last 3 elements are used for 1) first free address,
@@ -352,11 +351,9 @@ C
 C Used from common blocks:
 C   INFORB : NNORBX
 C   INFDIM : NORBMA
-C   INFPRI : LUERR
 C
 #include <inforb.h>
 #include <infdim.h>
-#include <infpri.h>
 C
       SAVE KFRSAV, KNEXT, KIADRM, KICDTR
       DATA KNEXT /-1/
@@ -375,24 +372,24 @@ C
 C        ... check that IADRM has not been destroyed by calling
 C            routine.
          IF (KNEXT.EQ. -1  ) THEN
-            WRITE (LUERR,*)
+            WRITE (LUPRI,*)
      &         'NXTHSO error, IDIST must be zero in first call'
-            WRITE (LUERR,*) 'IDIST =',IDIST
-            CALL QTRACE(LUERR)
+            WRITE (LUPRI,*) 'IDIST =',IDIST
+            CALL QTRACE(LUPRI)
             CALL QUIT('NXTHSO error, IDIST must be zero in first call')
          END IF
          IF (KFREE.LT.KNEXT) THEN
-            WRITE (LUERR,*)
+            WRITE (LUPRI,*)
      &         'NXTHSO error, KFREE lower than buffer allocation'
-            WRITE (LUERR,*) 'KFREE ',KFREE
-            WRITE (LUERR,*) 'KIADRM',KIADRM
-            WRITE (LUERR,*) 'KICDTR',KICDTR
-            WRITE (LUERR,*) 'KNEXT ',KNEXT,
+            WRITE (LUPRI,*) 'KFREE ',KFREE
+            WRITE (LUPRI,*) 'KIADRM',KIADRM
+            WRITE (LUPRI,*) 'KICDTR',KICDTR
+            WRITE (LUPRI,*) 'KNEXT ',KNEXT,
      &         ' ( next avail. address after nxth2m alloc.)'
          END IF
          CALL MEMCHK('IDIST .ne. 0 MEMCHK in NXTHSO',WRK,KFRSAV)
          IF (KFREE.LT.KNEXT) THEN
-           CALL QTRACE(LUERR)
+           CALL QTRACE(LUPRI)
            CALL QUIT('NXTHSO error: KFREE lower than buffer allocation')
          END IF
       END IF
@@ -445,7 +442,7 @@ C
 C ****************************************************************
 C
 #include <implicit.h>
-      DIMENSION H2CD(NORBT,NORBT),BUF(1)
+      DIMENSION H2CD(NORBT,NORBT),BUF(*)
       INTEGER   IADRM(3,36,37), NEEDTP(6), ICDTRA(NNORBX)
 C     ... actual dimension: IARDM(3, (36,36) + 1)
 C
@@ -614,11 +611,11 @@ C
       END IF
 C
       IF (ITYPCD .GT. 0 .AND. ICDTRA(ICDNEW) .EQ. 0) THEN
-         WRITE (LUERR,*) ' NX2HSO ERROR: needed integral distribution'
-         WRITE (LUERR,*) '               has not been calculated'
-         WRITE (LUERR,*) 'IC    ,ID     :',ICNEW,IDNEW
-         WRITE (LUERR,*) 'ITYPC ,ITYPD  :',COBTYP(ITYPC),COBTYP(ITYPD)
-         CALL QTRACE(LUERR)
+         WRITE (LUPRI,*) ' NX2HSO ERROR: needed integral distribution'
+         WRITE (LUPRI,*) '               has not been calculated'
+         WRITE (LUPRI,*) 'IC    ,ID     :',ICNEW,IDNEW
+         WRITE (LUPRI,*) 'ITYPC ,ITYPD  :',COBTYP(ITYPC),COBTYP(ITYPD)
+         CALL QTRACE(LUPRI)
          CALL QUIT('NXTHSO error: needed integrals not calculated')
       END IF
 C
@@ -649,7 +646,7 @@ C
          END IF
          IF (LREC .GT. 0) THEN
             IF (IADCD(ISYMA) .LT. 0) THEN
-               CALL QTRACE(LUERR)
+               CALL QTRACE(LUPRI)
                CALL QUIT('NX2HSO ERROR, IADCD(ISYMA) .lt. 0')
             END IF
             IF (ITYPCD.EQ.0) THEN
