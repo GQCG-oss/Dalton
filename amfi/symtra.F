@@ -90,6 +90,7 @@ CBS   write(LUPRI,*) 'Symmetry adapation of the SO-integrals'
       read(isymunit,*)   
       read(isymunit,*)   
       numboffunct=0
+      END = '   '
       do while(END.ne.'END') 
       numboffunct=numboffunct+1   
       read(isymunit,'(A3)') END   

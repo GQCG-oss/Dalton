@@ -184,9 +184,9 @@ cbs   check if Lpowmax is high enough..
       enddo
 cbs   move some powers of x,y,z to the right place   END   
       if (FINITE) then 
-      	ifinite=1
+        ifinite=1
       else
-	ifinite=0
+        ifinite=0
       endif 
 cbs   read the input 
       call readbas(Lhigh,makemean,bonn,breit,
@@ -332,7 +332,7 @@ cbs #####################################################################
       do M3=-Lmax,Lmax
       do M2=-Lmax,Lmax
       do M1=-Lmax,Lmax
-	      preXZ(m1,m2,m3,m4)=0.25d0
+             preXZ(m1,m2,m3,m4)=0.25d0
       enddo
       enddo
       enddo
@@ -340,28 +340,28 @@ cbs #####################################################################
       do M3=-Lmax,Lmax
       do M2=-Lmax,Lmax
       do M1=-Lmax,Lmax
-	      preXZ(m1,m2,m3,0)=preXZ(m1,m2,m3,0)*roottwo  
+             preXZ(m1,m2,m3,0)=preXZ(m1,m2,m3,0)*roottwo  
       enddo
       enddo
       enddo
       do M3=-Lmax,Lmax
       do M2=-Lmax,Lmax
       do M1=-Lmax,Lmax
-	      preXZ(m1,m2,0,m3)=preXZ(m1,m2,0,m3)*roottwo  
+             preXZ(m1,m2,0,m3)=preXZ(m1,m2,0,m3)*roottwo  
       enddo
       enddo
       enddo
       do M3=-Lmax,Lmax
       do M2=-Lmax,Lmax
       do M1=-Lmax,Lmax
-	      preXZ(m1,0,m2,m3)=preXZ(m1,0,m2,m3)*roottwo  
+             preXZ(m1,0,m2,m3)=preXZ(m1,0,m2,m3)*roottwo  
       enddo
       enddo
       enddo
       do M3=-Lmax,Lmax
       do M2=-Lmax,Lmax
       do M1=-Lmax,Lmax
-	      preXZ(0,m1,m2,m3)=preXZ(0,m1,m2,m3)*roottwo  
+             preXZ(0,m1,m2,m3)=preXZ(0,m1,m2,m3)*roottwo  
       enddo
       enddo
       enddo
@@ -369,7 +369,7 @@ cbs #####################################################################
       do M3=-Lmax,Lmax
       do M2=-Lmax,Lmax
       do M1=-Lmax,Lmax
-	      preY(m1,m2,m3,m4)=preXZ(m1,m2,m3,m4) 
+             preY(m1,m2,m3,m4)=preXZ(m1,m2,m3,m4) 
       enddo
       enddo
       enddo
@@ -415,7 +415,7 @@ cbs   + +  - -  >   -
       do M3=-Lmax,-1  
       do M2=0,Lmax
       do M1=0,Lmax
-	      preY(m1,m2,m3,m4)=-preY(m1,m2,m3,m4) 
+             preY(m1,m2,m3,m4)=-preY(m1,m2,m3,m4) 
       enddo
       enddo
       enddo
@@ -425,7 +425,7 @@ cbs   - -  + +  >   -
       do M3=0,Lmax
       do M2=-Lmax,-1  
       do M1=-Lmax,-1  
-	      preY(m1,m2,m3,m4)=-preY(m1,m2,m3,m4) 
+             preY(m1,m2,m3,m4)=-preY(m1,m2,m3,m4) 
       enddo
       enddo
       enddo
@@ -437,23 +437,23 @@ cbs #####################################################################
       do M3=0,Lmax
       do M2=0,Lmax
       do M1=0,Lmax
-	      icheck=mcheckxy(m1,m2,m3,m4)
-	      icheckxy(m1,m2,m3,m4)=icheck 
-	      icheckxy(m1,m2,m3,-m4)=icheck 
-	      icheckxy(m1,m2,-m3,m4)=icheck 
-	      icheckxy(m1,-m2,m3,m4)=icheck 
-	      icheckxy(-m1,m2,m3,m4)=icheck 
-	      icheckxy(m1,m2,-m3,-m4)=icheck 
-	      icheckxy(m1,-m2,m3,-m4)=icheck 
-	      icheckxy(m1,-m2,-m3,m4)=icheck 
-	      icheckxy(m1,-m2,-m3,-m4)=icheck 
-	      icheckxy(-m1,m2,m3,-m4)=icheck 
-	      icheckxy(-m1,m2,-m3,m4)=icheck 
-	      icheckxy(-m1,m2,-m3,-m4)=icheck 
-	      icheckxy(-m1,-m2,m3,m4)=icheck 
-	      icheckxy(-m1,-m2,m3,-m4)=icheck 
-	      icheckxy(-m1,-m2,-m3,m4)=icheck 
-	      icheckxy(-m1,-m2,-m3,-m4)=icheck 
+             icheck=mcheckxy(m1,m2,m3,m4)
+             icheckxy(m1,m2,m3,m4)=icheck 
+             icheckxy(m1,m2,m3,-m4)=icheck 
+             icheckxy(m1,m2,-m3,m4)=icheck 
+             icheckxy(m1,-m2,m3,m4)=icheck 
+             icheckxy(-m1,m2,m3,m4)=icheck 
+             icheckxy(m1,m2,-m3,-m4)=icheck 
+             icheckxy(m1,-m2,m3,-m4)=icheck 
+             icheckxy(m1,-m2,-m3,m4)=icheck 
+             icheckxy(m1,-m2,-m3,-m4)=icheck 
+             icheckxy(-m1,m2,m3,-m4)=icheck 
+             icheckxy(-m1,m2,-m3,m4)=icheck 
+             icheckxy(-m1,m2,-m3,-m4)=icheck 
+             icheckxy(-m1,-m2,m3,m4)=icheck 
+             icheckxy(-m1,-m2,m3,-m4)=icheck 
+             icheckxy(-m1,-m2,-m3,m4)=icheck 
+             icheckxy(-m1,-m2,-m3,-m4)=icheck 
       enddo 
       enddo 
       enddo 
@@ -462,23 +462,23 @@ cbs #####################################################################
       do M3=0,Lmax
       do M2=0,Lmax
       do M1=0,Lmax
-	      icheck=mcheckz(m1,m2,m3,m4)
-	      icheckz(m1,m2,m3,m4)=icheck 
-	      icheckz(m1,m2,m3,-m4)=icheck 
-	      icheckz(m1,m2,-m3,m4)=icheck 
-	      icheckz(m1,m2,-m3,-m4)=icheck 
-	      icheckz(m1,-m2,m3,m4)=icheck 
-	      icheckz(m1,-m2,m3,-m4)=icheck 
-	      icheckz(m1,-m2,-m3,m4)=icheck 
-	      icheckz(m1,-m2,-m3,-m4)=icheck 
-	      icheckz(-m1,m2,m3,m4)=icheck 
-	      icheckz(-m1,m2,m3,-m4)=icheck 
-	      icheckz(-m1,m2,-m3,m4)=icheck 
-	      icheckz(-m1,m2,-m3,-m4)=icheck 
-	      icheckz(-m1,-m2,m3,m4)=icheck 
-	      icheckz(-m1,-m2,m3,-m4)=icheck 
-	      icheckz(-m1,-m2,-m3,m4)=icheck 
-	      icheckz(-m1,-m2,-m3,-m4)=icheck 
+             icheck=mcheckz(m1,m2,m3,m4)
+             icheckz(m1,m2,m3,m4)=icheck 
+             icheckz(m1,m2,m3,-m4)=icheck 
+             icheckz(m1,m2,-m3,m4)=icheck 
+             icheckz(m1,m2,-m3,-m4)=icheck 
+             icheckz(m1,-m2,m3,m4)=icheck 
+             icheckz(m1,-m2,m3,-m4)=icheck 
+             icheckz(m1,-m2,-m3,m4)=icheck 
+             icheckz(m1,-m2,-m3,-m4)=icheck 
+             icheckz(-m1,m2,m3,m4)=icheck 
+             icheckz(-m1,m2,m3,-m4)=icheck 
+             icheckz(-m1,m2,-m3,m4)=icheck 
+             icheckz(-m1,m2,-m3,-m4)=icheck 
+             icheckz(-m1,-m2,m3,m4)=icheck 
+             icheckz(-m1,-m2,m3,-m4)=icheck 
+             icheckz(-m1,-m2,-m3,m4)=icheck 
+             icheckz(-m1,-m2,-m3,-m4)=icheck 
       enddo 
       enddo 
       enddo 
@@ -510,85 +510,85 @@ cbs   type 1 (++++) and ending with type 16 (-++-)
           if (iabs(m1+m2-m3-m4).le.1) then 
           irun=irun+1
           interxyz(irun,m1,m2,m3,m4)=1          ! + + + + 
-	          if (m1.gt.0.and.m2.gt.0.and.
+                 if (m1.gt.0.and.m2.gt.0.and.
      *            m3.gt.0.and.m4.gt.0) then
-	          irun=irun+1
-	          interxyz(irun,m1,m2,m3,m4)=2  ! - - - - 
-	          endif 
+                  irun=irun+1
+                  interxyz(irun,m1,m2,m3,m4)=2  ! - - - - 
+                 endif 
           endif 
           if (iabs(m1+m2-m3+m4).le.1) then 
-	          if (m4.gt.0) then
+                 if (m4.gt.0) then
                   irun=irun+1
                   interxyz(irun,m1,m2,m3,m4)=3  ! + + + - 
-	          endif 
-	          if (m1.gt.0.and.m2.gt.0.and.
+                 endif 
+                 if (m1.gt.0.and.m2.gt.0.and.
      *            m3.gt.0) then
-	          irun=irun+1
-	          interxyz(irun,m1,m2,m3,m4)=4  ! - - - + 
-	          endif 
+                  irun=irun+1
+                  interxyz(irun,m1,m2,m3,m4)=4  ! - - - + 
+                 endif 
           endif 
           if (iabs(m1+m2+m3-m4).le.1) then 
-	          if (m3.gt.0) then
+                 if (m3.gt.0) then
                   irun=irun+1
                   interxyz(irun,m1,m2,m3,m4)=5  ! + + - + 
-	          endif 
-	          if (m1.gt.0.and.m2.gt.0.and.
+                 endif 
+                 if (m1.gt.0.and.m2.gt.0.and.
      *            m4.gt.0) then
-	          irun=irun+1
-	          interxyz(irun,m1,m2,m3,m4)=6  ! - - + - 
-	          endif 
+                  irun=irun+1
+                  interxyz(irun,m1,m2,m3,m4)=6  ! - - + - 
+                 endif 
           endif 
           if (iabs(m1-m2-m3-m4).le.1) then 
-	          if (m2.gt.0) then
+                 if (m2.gt.0) then
                   irun=irun+1
                   interxyz(irun,m1,m2,m3,m4)=7  ! + - + + 
-	          endif 
-	          if (m1.gt.0.and.m3.gt.0.and.
+                 endif 
+                 if (m1.gt.0.and.m3.gt.0.and.
      *            m4.gt.0) then
-	          irun=irun+1
-	          interxyz(irun,m1,m2,m3,m4)=8  ! - + - - 
-	          endif 
+                  irun=irun+1
+                  interxyz(irun,m1,m2,m3,m4)=8  ! - + - - 
+                 endif 
           endif 
           if (iabs(-m1+m2-m3-m4).le.1) then 
-	          if (m1.gt.0) then
+                 if (m1.gt.0) then
                   irun=irun+1
                   interxyz(irun,m1,m2,m3,m4)=9  ! - + + + 
-	          endif 
-	          if (m2.gt.0.and.m3.gt.0.and.
+                 endif 
+                 if (m2.gt.0.and.m3.gt.0.and.
      *            m4.gt.0) then
-	          irun=irun+1
-	          interxyz(irun,m1,m2,m3,m4)=10 ! + - - - 
-	          endif 
+                  irun=irun+1
+                  interxyz(irun,m1,m2,m3,m4)=10 ! + - - - 
+                 endif 
           endif 
           if (iabs(m1+m2+m3+m4).le.1) then 
-	          if (m3.gt.0.and.m4.gt.0) then
+                 if (m3.gt.0.and.m4.gt.0) then
                   irun=irun+1
                   interxyz(irun,m1,m2,m3,m4)=11 ! + + - - 
-	          endif 
-	          if (m1.gt.0.and.m2.gt.0) then  
-	          irun=irun+1
-	          interxyz(irun,m1,m2,m3,m4)=12 ! - - + +   
-	          endif 
+                 endif 
+                 if (m1.gt.0.and.m2.gt.0) then  
+                  irun=irun+1
+                  interxyz(irun,m1,m2,m3,m4)=12 ! - - + +   
+                 endif 
           endif 
           if (iabs(m1-m2-m3+m4).le.1) then 
-	          if (m2.gt.0.and.m4.gt.0) then
+                 if (m2.gt.0.and.m4.gt.0) then
                   irun=irun+1
                   interxyz(irun,m1,m2,m3,m4)=13 ! + - + - 
-	          endif 
-	          if (m1.gt.0.and.m3.gt.0) then  
-	          irun=irun+1
-	          interxyz(irun,m1,m2,m3,m4)=14 ! - + - +   
-	          endif 
+                 endif 
+                 if (m1.gt.0.and.m3.gt.0) then  
+                  irun=irun+1
+                  interxyz(irun,m1,m2,m3,m4)=14 ! - + - +   
+                 endif 
           endif 
           if (iabs(m1-m2+m3-m4).le.1) then 
-	          if (m2.gt.0.and.m3.gt.0) then
+                 if (m2.gt.0.and.m3.gt.0) then
                   irun=irun+1
                   interxyz(irun,m1,m2,m3,m4)=15 ! + - - + 
-	          endif 
-	          if (m1.gt.0.and.m4.gt.0) then  
-	          irun=irun+1
-	          interxyz(irun,m1,m2,m3,m4)=16 ! - + + -   
-	          endif 
+                 endif 
+                 if (m1.gt.0.and.m4.gt.0) then  
+                  irun=irun+1
+                  interxyz(irun,m1,m2,m3,m4)=16 ! - + + -   
+                 endif 
           endif 
       endif 
       enddo
@@ -1326,22 +1326,22 @@ cbs ##################################################################
                 else
                 limit2=nprim2
                 endif 
-  	        do irun2=1,limit2 
-   	        pow24inv=doff1/power24(irun4,irun2)
+                do irun2=1,limit2 
+                pow24inv=doff1/power24(irun4,irun2)
                 if (l1.eq.l3) then          
                 limit1=irun3
                 else
                 limit1=nprim1
                 endif 
-        	do irun1=1,limit1 
+                do irun1=1,limit1 
                 prmints(irun1,irun2,irun3,irun4)=    
      *          quotpow1(irun1,irun2,irun3,irun4)*          
      *          dsqrt(0.5d0*(expo1(irun1)+expo3(irun3)))*
      *          power13(irun3,irun1)*pow24inv
-      		enddo 
-      		enddo 
-      		enddo 
-      		enddo 
+                enddo 
+                enddo 
+                enddo 
+                enddo 
       else 
                 do irun4=1,nprim4
                 do irun3=1,nprim3
@@ -1350,7 +1350,7 @@ cbs ##################################################################
                 else
                 limit2=nprim2
                 endif 
-  	        do irun2=1,limit2 
+                do irun2=1,limit2 
                 alpha24inv=1d0/(expo2(irun2)+expo4(irun4))
                 pow24inv=doff1/power24(irun4,irun2)
                 if (l1.eq.l3) then          
@@ -1358,7 +1358,7 @@ cbs ##################################################################
                 else
                 limit1=nprim1
                 endif 
-        	do irun1=1,limit1 
+                do irun1=1,limit1 
                 a1324= alpha24inv*(expo1(irun1)+expo3(irun3))
                    Cfunctx1(irun1)=fraclist1(0)
                    frac(irun1)=a1324/(1d0+a1324)
@@ -1380,10 +1380,10 @@ cbs ##################################################################
      *          quotpow1(irun1,irun2,irun3,irun4)*       
      *          dsqrt(alpha13)*power13(irun3,irun1)*pow24inv*
      *          Cfunctx1(irun1) 
-		enddo
-		enddo
-		enddo
-		enddo
+                enddo
+                enddo
+                enddo
+                enddo
       endif   
       if (index3.eq.1) then 
                 do irun4=1,nprim4
@@ -1393,15 +1393,15 @@ cbs ##################################################################
                 else
                 limit2=nprim2
                 endif 
-  	        do irun2=1,limit2 
-		pow24=doff2*power24(irun4,irun2)*
+                do irun2=1,limit2 
+                pow24=doff2*power24(irun4,irun2)*
      *          dsqrt(0.5d0*(expo2(irun2)+expo4(irun4)))
                 if (l1.eq.l3) then          
                 limit1=irun3
                 else
                 limit1=nprim1
                 endif 
-        	do irun1=1,limit1 
+                do irun1=1,limit1 
                 prmints(irun1,irun2,irun3,irun4)=    
      *          prmints(irun1,irun2,irun3,irun4)+    
      *          pow24*quotpow2(irun1,irun2,irun3,irun4)/
@@ -1418,21 +1418,21 @@ cbs ##################################################################
                 else
                 limit2=nprim2
                 endif 
-  	        do irun2=1,limit2 
+                do irun2=1,limit2 
                 alpha24=expo2(irun2)+expo4(irun4)
-		pow24=doff2*power24(irun4,irun2)*
+                pow24=doff2*power24(irun4,irun2)*
      *          dsqrt(0.5d0*alpha24)                                  
                 if (l1.eq.l3) then          
                 limit1=irun3
                 else
                 limit1=nprim1
                 endif 
-        	do irun1=1,limit1 
+                do irun1=1,limit1 
                 a2413= alpha24/(expo1(irun1)+expo3(irun3))
                    Cfunctx2(irun1)=fraclist2(0)
                    frac(irun1)=a2413/(1d0+a2413)
                    fact(irun1)=frac(irun1)
-        	enddo 
+                enddo 
 *vocl    loop,repeat(Lmax+3)
                    do k=1,(index3-1)/2
                    do irun1=1,limit1 
@@ -1973,11 +1973,11 @@ c
 cbs   generate one-electron integrals for all L greater/equal 1
       if (ifinite.eq.2) charge=0d0 ! nuclear integrals are modelled for finite nucleus somewhere else
       do L=1,Lhigh   
-      	call contone(L,oneoverr3(1,L),onecontr(1,1,-Lmax,1,L),
+        call contone(L,oneoverr3(1,L),onecontr(1,1,-Lmax,1,L),
      *  Lmax,contrarray(iaddtyp3(L)),nprimit(L),ncontrac(L),
-     *	MxcontL,dummyone,
-     *	onecartx(1,1,1,L),onecartY(1,1,1,L),onecartZ(1,1,1,L),
-     *	charge,oneonly)
+     *  MxcontL,dummyone,
+     *  onecartx(1,1,1,L),onecartY(1,1,1,L),onecartZ(1,1,1,L),
+     *  charge,oneonly)
       Enddo 
 c
 cbs   ***********************************************************************
@@ -2001,96 +2001,96 @@ cbs   determine  if L_X L_Y or L_Z
         ipowy=ipowxyz(2,mfirst,Lrun)+ipowxyz(2,msec,Lrun)
         ipowz=ipowxyz(3,mfirst,Lrun)+ipowxyz(3,msec,Lrun)
 c
-      	mrun=mrun+1
+        mrun=mrun+1
 cbs     now determine the irreducable representations 
-      	iredfirst=iredLM(Mfirst,Lrun)
-      	iredsec=iredLM(Msec,Lrun)
+        iredfirst=iredLM(Mfirst,Lrun)
+        iredsec=iredLM(Msec,Lrun)
 cbs     check out which IR is the lower one. 
-      	if (iredfirst.le.iredsec) then 
+        if (iredfirst.le.iredsec) then 
 cbs     calculate shift to get to the beginning of the block 
-      		iredired=shiftIRIR((iredsec*iredsec-iredsec)/2+iredfirst)
-     *		+incrlm(Mfirst,Lrun)*itotalperIR(iredsec)+
-     *		incrLM(Msec,Lrun)
+           iredired=shiftIRIR((iredsec*iredsec-iredsec)/2+iredfirst)
+     *       +incrlm(Mfirst,Lrun)*itotalperIR(iredsec)+
+     *        incrLM(Msec,Lrun)
        if (mod(ipowx,2).eq.0.and.mod(ipowy,2).eq.1.and.
      * mod(ipowz,2).eq.1) then  
-      		do icartfirst=1,ncontrac(Lrun) ! loop over functions first index
-      		do icartsec=1,ncontrac(Lrun)   ! loop over functions second index
+            do icartfirst=1,ncontrac(Lrun) ! loop over functions first index
+            do icartsec=1,ncontrac(Lrun)   ! loop over functions second index
 CBS                print *, 'iocax',iocax,iredired,icartsec
-      		WRK(iocax+iredired+(icartsec-1))=
-     *		WRK(iocax+iredired+(icartsec-1)) 
-     *		+onecartx(icartfirst,icartsec,mrun,Lrun)*factor
-      		enddo
+                WRK(iocax+iredired+(icartsec-1))=
+     *          WRK(iocax+iredired+(icartsec-1)) 
+     *          +onecartx(icartfirst,icartsec,mrun,Lrun)*factor
+                enddo
 cbs             shift pointer by number of functions in IR
-      		iredired=iredired+itotalperIR(iredsec)
-      		enddo
+                iredired=iredired+itotalperIR(iredsec)
+                enddo
         endif 
        if (mod(ipowx,2).eq.1.and.mod(ipowy,2).eq.0.and.
      * mod(ipowz,2).eq.1) then  
-      		do icartfirst=1,ncontrac(Lrun) ! loop over functions first index
-      		do icartsec=1,ncontrac(Lrun)   ! loop over functions second index
-      		WRK(iocay+iredired+(icartsec-1))=
-     *		WRK(iocay+iredired+(icartsec-1)) 
-     *	        +onecarty(icartfirst,icartsec,mrun,Lrun)*factor
-      		enddo
+                do icartfirst=1,ncontrac(Lrun) ! loop over functions first index
+                do icartsec=1,ncontrac(Lrun)   ! loop over functions second index
+                WRK(iocay+iredired+(icartsec-1))=
+     *          WRK(iocay+iredired+(icartsec-1)) 
+     *          +onecarty(icartfirst,icartsec,mrun,Lrun)*factor
+                enddo
 cbs             shift pointer by number of functions in IR
-      		iredired=iredired+itotalperIR(iredsec)
-      		enddo
+                iredired=iredired+itotalperIR(iredsec)
+                enddo
         endif 
        if (mod(ipowx,2).eq.1.and.mod(ipowy,2).eq.1.and.
      * mod(ipowz,2).eq.0) then  
-      		do icartfirst=1,ncontrac(Lrun) ! loop over functions first index
-      		do icartsec=1,ncontrac(Lrun)   ! loop over functions second index
-      		WRK(iocaz+iredired+(icartsec-1))=
-     *		WRK(iocaz+iredired+(icartsec-1)) 
-     *	        +onecartz(icartfirst,icartsec,mrun,Lrun)*factor
-      		enddo
+                do icartfirst=1,ncontrac(Lrun) ! loop over functions first index
+                do icartsec=1,ncontrac(Lrun)   ! loop over functions second index
+                WRK(iocaz+iredired+(icartsec-1))=
+     *          WRK(iocaz+iredired+(icartsec-1)) 
+     *          +onecartz(icartfirst,icartsec,mrun,Lrun)*factor
+                enddo
 cbs             shift pointer by number of functions in IR
-      		iredired=iredired+itotalperIR(iredsec)
-      		enddo
+                iredired=iredired+itotalperIR(iredsec)
+                enddo
         endif 
-      	elseif (iredfirst.gt.iredsec) then 
+        elseif (iredfirst.gt.iredsec) then 
 cbs     In this case, indices are exchanged with respect to former 
 cbs     symmetry of blocks. Therefore, there will be a minus sign 
 c
 cbs     calculate shift to get to the beginning of the block 
-      		iredired=shiftIRIR((iredfirst*iredfirst-iredfirst)/2+
-     *		iredsec)+
-     *		incrLM(Msec,Lrun)*itotalperIR(iredfirst)+  
-     *		incrLM(Mfirst,Lrun)
+                iredired=shiftIRIR((iredfirst*iredfirst-iredfirst)/2+
+     *          iredsec)+
+     *          incrLM(Msec,Lrun)*itotalperIR(iredfirst)+  
+     *          incrLM(Mfirst,Lrun)
        if (mod(ipowx,2).eq.0.and.mod(ipowy,2).eq.1.and.
      * mod(ipowz,2).eq.1) then  
-      		do icartsec=1,ncontrac(Lrun) !loop over functions second index
-      		do icartfirst=1,ncontrac(Lrun) !loop over functions first index
-      		WRK(iocax+iredired+(icartfirst-1))=
-     *		WRK(iocax+iredired+(icartfirst-1)) 
+                do icartsec=1,ncontrac(Lrun) !loop over functions second index
+                do icartfirst=1,ncontrac(Lrun) !loop over functions first index
+                WRK(iocax+iredired+(icartfirst-1))=
+     *          WRK(iocax+iredired+(icartfirst-1)) 
      *         -onecartx(icartsec,icartfirst,mrun,Lrun)*factor
-      		enddo
+                enddo
 cbs             shift pointer by number of functions in IR
-      		iredired=iredired+itotalperIR(iredfirst)
-      		enddo
+                iredired=iredired+itotalperIR(iredfirst)
+                enddo
         endif 
        if (mod(ipowx,2).eq.1.and.mod(ipowy,2).eq.0.and.
      * mod(ipowz,2).eq.1) then  
-      		do icartsec=1,ncontrac(Lrun) !loop over functions second index
-      		do icartfirst=1,ncontrac(Lrun) !loop over functions first index
-      		WRK(iocay+iredired+(icartfirst-1))=
-     *		WRK(iocay+iredired+(icartfirst-1)) 
-     *	       -onecarty(icartsec,icartfirst,mrun,Lrun)*factor
-      		enddo
+                do icartsec=1,ncontrac(Lrun) !loop over functions second index
+                do icartfirst=1,ncontrac(Lrun) !loop over functions first index
+                WRK(iocay+iredired+(icartfirst-1))=
+     *          WRK(iocay+iredired+(icartfirst-1)) 
+     *         -onecarty(icartsec,icartfirst,mrun,Lrun)*factor
+                enddo
 cbs             shift pointer by number of functions in IR
-      		iredired=iredired+itotalperIR(iredfirst)
-      		enddo
+                iredired=iredired+itotalperIR(iredfirst)
+                enddo
         endif 
        if (mod(ipowx,2).eq.1.and.mod(ipowy,2).eq.1.and.
      * mod(ipowz,2).eq.0) then  
-      		do icartsec=1,ncontrac(Lrun) !loop over functions second index
-      		do icartfirst=1,ncontrac(Lrun) !loop over functions first index
-      		WRK(iocaz+iredired+(icartfirst-1))=
-     *		WRK(iocaz+iredired+(icartfirst-1)) 
-     *	       -onecartz(icartsec,icartfirst,mrun,Lrun)*factor
-      		enddo
-      		iredired=iredired+itotalperIR(iredfirst)
-      		enddo
+                do icartsec=1,ncontrac(Lrun) !loop over functions second index
+                do icartfirst=1,ncontrac(Lrun) !loop over functions first index
+                WRK(iocaz+iredired+(icartfirst-1))=
+     *          WRK(iocaz+iredired+(icartfirst-1)) 
+     *         -onecartz(icartsec,icartfirst,mrun,Lrun)*factor
+                enddo
+                iredired=iredired+itotalperIR(iredfirst)
+                enddo
         endif 
       endif 
       enddo
@@ -2109,7 +2109,7 @@ cbs   which means huge triangular matrices
       norbsh1=noRb1-shiftIRED(ired1) 
       irun=irun+1 
       iredirEd=shiftIRIR((ired2*ired2-ired2)/2+
-     *		ired1)
+     *          ired1)
       if (ired1.ne.ired2) then 
         WRK(iocax2+irun-1)=WRK(iocax-1+iredired+norbsh2+
      * (norbsH1-1)*itotalperIR(IREd2)) 
@@ -3003,8 +3003,8 @@ cbs   l-combinations
 cbs   no (ss|ss) contributions 
       if (l1.eq.0.and.l2.eq.0.and.l3.eq.0.and.l4.eq.0) return  ! no integrals for <ss|ss> 
       if (makemean) then 
-      		nblock=1  ! sp sp are the first, so the first block
-      		Lstarter(1)=1
+                nblock=1  ! sp sp are the first, so the first block
+                Lstarter(1)=1
       else 
       CALL QUIT('only mean-field with this version')
       endif 
@@ -3052,12 +3052,12 @@ cbs   returns first and last L-values (Lanf,Lend), for which
 cbs   radial integrals have to be calculated 
       if(Lend-Lanf.ge.0) then 
 cbs   if there are blocks 
-      	Lblocks(1)=(Lend-Lanf)/2+1 ! L increases in steps of 2, 
+        Lblocks(1)=(Lend-Lanf)/2+1 ! L increases in steps of 2, 
 cbs                                       due to parity conservation 
-      	Lfirst(1)=Lanf
-      	Llast(1)=Lend 
+        Lfirst(1)=Lanf
+        Llast(1)=Lend 
       else 
-      	Lblocks(1)=0 
+        Lblocks(1)=0 
       endif 
       if (Lblocks(1).gt.0) then    ! integrals have to be calculated 
 cbs### check, whether integrals fit on array ################
@@ -3071,8 +3071,8 @@ cbs   ipow1 and ipow2 are the the numbers of powers in the prefactor
 cbs   of the function Cfunct 
 cbs   now loop over possible L-values 
       do Lrun= Lfirst(1),Llast(1),2
-      		ipow1=2+(l2+l4+Lrun)/2
-      		ipow2=2+(l1+l3+incl1+incl3+Lrun)/2
+                ipow1=2+(l2+l4+Lrun)/2
+                ipow2=2+(l1+l3+incl1+incl3+Lrun)/2
 cbs   those powers have to be generated... 
       call getpow(ipow1,WRK(iquot1),WRK(iquotp1),
      *nprimit(l1),nprimit(l2),nprimit(l3),nprimit(l4))
@@ -3080,24 +3080,24 @@ cbs   those powers have to be generated...
       call getpow(ipow2,WRK(iquot2),WRK(iquotp2),
      *nprimit(l1),nprimit(l2),nprimit(l3),nprimit(l4))
 c     in buildcoul the radial integrals are calculated 
-      		call buildcoul(l1,l2,l3,l4,incl1,incl3,
-     *		Lrun,WRK(iprim),nprimit(l1),nprimit(l2),nprimit(l3),
-     *		nprimit(l4), 
-     *		exponents(1,l1),exponents(1,l2),
-     *		exponents(1,l3),exponents(1,l4),
-     *		powexp(1,1,l3,l1,lrun),powexp(1,1,l4,l2,lrun),
-     *		WRK(iquotp1),WRK(iquotp2))
+                call buildcoul(l1,l2,l3,l4,incl1,incl3,
+     *          Lrun,WRK(iprim),nprimit(l1),nprimit(l2),nprimit(l3),
+     *          nprimit(l4), 
+     *          exponents(1,l1),exponents(1,l2),
+     *          exponents(1,l3),exponents(1,l4),
+     *          powexp(1,1,l3,l1,lrun),powexp(1,1,l4,l2,lrun),
+     *          WRK(iquotp1),WRK(iquotp2))
 cbs   in the contcas_ routines the integrals are contracted, including exponents as prefactors... 
-      		if (bonn.or.breit.or.sameorb) then      
-      		call contcasASO(l1,l2,l3,l4,istart,WRK(iprim),
+                if (bonn.or.breit.or.sameorb) then      
+                call contcasASO(l1,l2,l3,l4,istart,WRK(iprim),
      *           WRK(iscr1),WRK(iscr2),cont4SO)
                 else 
-      		call contcasASO(l1,l2,l3,l4,istart,WRK(iprim),
+                call contcasASO(l1,l2,l3,l4,istart,WRK(iprim),
      *           WRK(iscr1),WRK(iscr2),cont4SO)
                 call contcasAOO(l1,l2,l3,l4,istart,WRK(iprim),
      *           WRK(iscr1),WRK(iscr2),cont4OO)
                 endif 
-      		istart=istart+nanz  ! start-address for the next block of contracted integrals 
+                istart=istart+nanz  ! start-address for the next block of contracted integrals 
       enddo 
       endif   
 cbs   ##########################################################################################################
@@ -3242,8 +3242,8 @@ cbs   l-combinations
 cbs   no (ss|ss) contributions 
       if (l1.eq.0.and.l2.eq.0.and.l3.eq.0.and.l4.eq.0) return  ! no integrals for <ss|ss> 
       if (makemean) then 
-      		nblock=1  ! sp sp are the first, so the first block
-      		Lstarter(1)=1
+                nblock=1  ! sp sp are the first, so the first block
+                Lstarter(1)=1
       else 
       CALL QUIT('only mean-field with this version')
       endif 
@@ -3279,12 +3279,12 @@ cbs   returns first and last L-values (Lanf,Lend), for which
 cbs   radial integrals have to be calculated 
       if(Lend-Lanf.ge.0) then 
 cbs   if there are blocks 
-      	Lblocks(1)=(Lend-Lanf)/2+1 ! L increases in steps of 2, 
+        Lblocks(1)=(Lend-Lanf)/2+1 ! L increases in steps of 2, 
 cbs                                       due to parity conservation 
-      	Lfirst(1)=Lanf
-      	Llast(1)=Lend 
+        Lfirst(1)=Lanf
+        Llast(1)=Lend 
       else 
-      	Lblocks(1)=0 
+        Lblocks(1)=0 
       endif 
 cbs   ##########################################################################################################
 cbs   the (0) cases         CASE  B
@@ -3339,12 +3339,12 @@ c
 cbs   generates overlap of normalized  primitives. 
       dimension evecinv(MxprimL,MxprimL)
       do L=0,Lhigh 
-      	do Jrun=1,nprimit(L)
-      	do Irun=1,nprimit(L)
+        do Jrun=1,nprimit(L)
+        do Irun=1,nprimit(L)
         normovlp(Irun,Jrun,L)=coulovlp(irun,jrun,0,0,
      *  L,L)   
-      	enddo 
-      	enddo 
+        enddo 
+        enddo 
 cbs   invert the matrix, not very elegant, but sufficient
       ipnt=0
       do jrun=1,nprimit(L)
@@ -3519,37 +3519,37 @@ cbs   subroutine to generate the kinetic energy
 cbs   one triangular part of the matrix
       do irun2=1,nprims  
       do irun1=1,irun2   
-      	dummy(irun1,irun2)=
-     *	Tkinet(l,exponents(irun1),
-     *	exponents(irun2))
+        dummy(irun1,irun2)=
+     *  Tkinet(l,exponents(irun1),
+     *  exponents(irun2))
       enddo     
       enddo     
 cbs   copy to the other triangular part.... 
       do irun2=1,nprims-1 
       do irun1=irun2+1,nprims      
-      	dummy(irun1,irun2)=dummy(irun2,irun1)                       
+        dummy(irun1,irun2)=dummy(irun2,irun1)                       
       enddo     
       enddo     
 cbs   now transform by rootovlp*dummy*rootovlp 
       do jrun=1,nprims
       do irun=1,nprims
-      	TKIN(irun,jrun)=0d0
-      	dummy2(irun,jrun)=0d0
+        TKIN(irun,jrun)=0d0
+        dummy2(irun,jrun)=0d0
       enddo
       enddo
       do irun=1,nprims
       do jrun=1,nprims
       do krun=1,nprims
-      	dummy2(irun,jrun)=dummy2(irun,jrun)+
-     *	dummy(irun,krun)*rootovlpinv(krun,jrun)
+        dummy2(irun,jrun)=dummy2(irun,jrun)+
+     *  dummy(irun,krun)*rootovlpinv(krun,jrun)
       enddo
       enddo
       enddo
       do irun=1,nprims
       do jrun=1,nprims
       do krun=1,nprims
-      	Tkin(irun,jrun)=Tkin(irun,jrun)+
-     *	dummy2(krun,jrun)*rootovlpinv(irun,krun)
+        Tkin(irun,jrun)=Tkin(irun,jrun)+
+     *  dummy2(krun,jrun)*rootovlpinv(irun,krun)
       enddo
       enddo
       enddo
@@ -4126,24 +4126,24 @@ cbs   initialize some arrays with factors  needed for cfunct(x)
       do irun4=1,nprimit4 
       do irun3=1,nprimit3 
       do irun2=1,nprimit2 
-      	sum24=expo2(irun2)+expo4(irun4)
-      		do irun1=1,nprimit1 
-      		quot1(irun1,irun2,irun3,irun4)= 
-     *		1d0/(1d0+(expo1(irun1)+expo3(irun3))/
-     *		sum24)                             
-      		enddo
+        sum24=expo2(irun2)+expo4(irun4)
+                do irun1=1,nprimit1 
+                quot1(irun1,irun2,irun3,irun4)= 
+     *          1d0/(1d0+(expo1(irun1)+expo3(irun3))/
+     *          sum24)                             
+                enddo
       enddo
       enddo
       enddo
       do irun4=1,nprimit4 
       do irun3=1,nprimit3 
       do irun2=1,nprimit2 
-      	sum24=expo2(irun2)+expo4(irun4)
-      		do irun1=1,nprimit1 
-      		quot2(irun1,irun2,irun3,irun4)= 
-     *		1d0/(1d0+sum24/
-     *		(expo1(irun1)+expo3(irun3)))
-      		enddo
+        sum24=expo2(irun2)+expo4(irun4)
+                do irun1=1,nprimit1 
+                quot2(irun1,irun2,irun3,irun4)= 
+     *          1d0/(1d0+sum24/
+     *          (expo1(irun1)+expo3(irun3)))
+                enddo
       enddo
       enddo
       enddo
@@ -4767,20 +4767,20 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(3).gt.0) then 
       M=m2-m4
-	      if (Lfirst(3).lt.Kfirst) then 
-	      do L=Lfirst(3),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3+1,l4,m1-1,m2,
+        if (Lfirst(3).lt.Kfirst) then 
+        do L=Lfirst(3),Kfirst,2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3+1,l4,m1-1,m2,
      *        m3-1,m4,cheater)
-	      enddo 
-	      Kfirst=Lfirst(3)
-	      endif 
-	      if (Llast(3).gt.Klast) then 
-	      do L=Klast,Llast(3),2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3+1,l4,m1-1,m2,
+        enddo 
+        Kfirst=Lfirst(3)
+        endif 
+        if (Llast(3).gt.Klast) then 
+        do L=Klast,Llast(3),2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3+1,l4,m1-1,m2,
      *        m3-1,m4,cheater)
-	      enddo 
-	      Klast=Llast(3)
-	      endif 
+        enddo 
+        Klast=Llast(3)
+        endif 
       Lrun=1
       do L=Lfirst(3),Llast(3),2  
       if (dummy(L).ne.0d0) then
@@ -4833,20 +4833,20 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(2).gt.0) then 
       M=m2-m4
-	      if (Lfirst(2).lt.Kfirst) then 
-	      do L=Lfirst(2),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1+1,l2,l3-1,l4,m1-1,m2,
+        if (Lfirst(2).lt.Kfirst) then 
+        do L=Lfirst(2),Kfirst,2
+        dummy(L)=LMdepang(L,M,l1+1,l2,l3-1,l4,m1-1,m2,
      *        m3-1,m4,cheater)
-	      enddo 
-	      Kfirst=Lfirst(2)
-	      endif 
-	      if (Llast(2).gt.Klast) then 
-	      do L=Klast,Llast(2),2
-	      dummy(L)=LMdepang(L,M,l1+1,l2,l3-1,l4,m1-1,m2,
+        enddo 
+        Kfirst=Lfirst(2)
+        endif 
+        if (Llast(2).gt.Klast) then 
+        do L=Klast,Llast(2),2
+        dummy(L)=LMdepang(L,M,l1+1,l2,l3-1,l4,m1-1,m2,
      *        m3-1,m4,cheater)
-	      enddo 
-	      Klast=Llast(2)
-	      endif 
+        enddo 
+        Klast=Llast(2)
+        endif 
       Lrun=1
       do L=Lfirst(2),Llast(2),2  
       if (dummy(L).ne.0d0) then 
@@ -4898,20 +4898,20 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(2).gt.0) then 
       M=m2-m4
-	      if (Lfirst(2).lt.Kfirst) then 
-	      do L=Lfirst(2),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1-1,m2,
+        if (Lfirst(2).lt.Kfirst) then 
+        do L=Lfirst(2),Kfirst,2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1-1,m2,
      *        m3-1,m4,cheater)
-	      enddo 
-	      Kfirst=Lfirst(2)
-	      endif 
-	      if (Llast(2).gt.Klast) then 
-	      do L=Klast,Llast(2),2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1-1,m2,
+        enddo 
+        Kfirst=Lfirst(2)
+        endif 
+        if (Llast(2).gt.Klast) then 
+        do L=Klast,Llast(2),2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1-1,m2,
      *        m3-1,m4,cheater)
-	      enddo 
-	      Klast=Llast(2)
-	      endif 
+        enddo 
+        Klast=Llast(2)
+        endif 
       Lrun=1
       do L=Lfirst(2),Llast(2),2  
       if (dummy(L).ne.0d0)  then 
@@ -4930,20 +4930,20 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(3).gt.0) then 
       M=m2-m4
-	      if (Lfirst(3).lt.Kfirst) then 
-	      do L=Lfirst(3),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1-1,m2,
+        if (Lfirst(3).lt.Kfirst) then 
+        do L=Lfirst(3),Kfirst,2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1-1,m2,
      *        m3-1,m4,cheater)
-	      enddo 
-	      Kfirst=Lfirst(3)
-	      endif 
-	      if (Llast(3).gt.Klast) then 
-	      do L=Klast,Llast(3),2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1-1,m2,
+        enddo 
+        Kfirst=Lfirst(3)
+        endif 
+        if (Llast(3).gt.Klast) then 
+        do L=Klast,Llast(3),2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1-1,m2,
      *        m3-1,m4,cheater)
-	      enddo 
-	      Klast=Llast(3)
-	      endif 
+        enddo 
+        Klast=Llast(3)
+        endif 
       Lrun=1
       do L=Lfirst(3),Llast(3),2  
       if (dummy(L).ne.0d0)  then
@@ -4962,20 +4962,20 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(4).gt.0) then 
       M=m2-m4
-	      if (Lfirst(4).lt.Kfirst) then 
-	      do L=Lfirst(4),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1-1,m2,
+        if (Lfirst(4).lt.Kfirst) then 
+        do L=Lfirst(4),Kfirst,2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1-1,m2,
      *        m3-1,m4,cheater)
-	      enddo 
-	      Kfirst=Lfirst(4)
-	      endif 
-	      if (Llast(4).gt.Klast) then 
-	      do L=Klast,Llast(4),2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1-1,m2,
+        enddo 
+        Kfirst=Lfirst(4)
+        endif 
+        if (Llast(4).gt.Klast) then 
+        do L=Klast,Llast(4),2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1-1,m2,
      *        m3-1,m4,cheater)
-	      enddo 
-	      Klast=Llast(4)   
-	      endif 
+        enddo 
+        Klast=Llast(4)   
+        endif 
       Lrun=1
       do L=Lfirst(4),Llast(4),2  
       if (dummy(L).ne.0d0)  then 
@@ -5057,20 +5057,20 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(3).gt.0) then 
       M=m2-m4
-	      if (Lfirst(3).lt.Kfirst) then 
-	      do L=Lfirst(3),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3+1,l4,m1+1,m2,
+        if (Lfirst(3).lt.Kfirst) then 
+        do L=Lfirst(3),Kfirst,2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3+1,l4,m1+1,m2,
      *        m3+1,m4,cheater)
-	      enddo 
-	      Kfirst=Lfirst(3)
-	      endif 
-	      if (Llast(3).gt.Klast) then 
-	      do L=Klast,Llast(3),2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3+1,l4,m1+1,m2,
+        enddo 
+        Kfirst=Lfirst(3)
+        endif 
+        if (Llast(3).gt.Klast) then 
+        do L=Klast,Llast(3),2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3+1,l4,m1+1,m2,
      *        m3+1,m4,cheater)
-	      enddo 
-	      Klast=Llast(3)
-	      endif 
+        enddo 
+        Klast=Llast(3)
+        endif 
       Lrun=1
       do L=Lfirst(3),Llast(3),2  
       if (dummy(L).ne.0d0) then 
@@ -5122,20 +5122,20 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(2).gt.0) then 
       M=m2-m4
-	      if (Lfirst(2).lt.Kfirst) then 
-	      do L=Lfirst(2),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1+1,l2,l3-1,l4,m1+1,m2,
+        if (Lfirst(2).lt.Kfirst) then 
+        do L=Lfirst(2),Kfirst,2
+        dummy(L)=LMdepang(L,M,l1+1,l2,l3-1,l4,m1+1,m2,
      *        m3+1,m4,cheater)
-	      enddo 
-	      Kfirst=Lfirst(2)
-	      endif 
-	      if (Llast(2).gt.Klast) then 
-	      do L=Klast,Llast(2),2
-	      dummy(L)=LMdepang(L,M,l1+1,l2,l3-1,l4,m1+1,m2,
+        enddo 
+        Kfirst=Lfirst(2)
+        endif 
+        if (Llast(2).gt.Klast) then 
+        do L=Klast,Llast(2),2
+        dummy(L)=LMdepang(L,M,l1+1,l2,l3-1,l4,m1+1,m2,
      *        m3+1,m4,cheater)
-	      enddo 
-	      Klast=Llast(2)
-	      endif 
+        enddo 
+        Klast=Llast(2)
+        endif 
       Lrun=1
       do L=Lfirst(2),Llast(2),2  
       if (dummy(L).ne.0d0)  then
@@ -5187,20 +5187,20 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(2).gt.0) then 
       M=m2-m4
-	      if (Lfirst(2).lt.Kfirst) then 
-	      do L=Lfirst(2),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,
+        if (Lfirst(2).lt.Kfirst) then 
+        do L=Lfirst(2),Kfirst,2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,
      *        m3+1,m4,cheater)
-	      enddo 
-	      Kfirst=Lfirst(2)
-	      endif 
-	      if (Llast(2).gt.Klast) then 
-	      do L=Klast,Llast(2),2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,
+        enddo 
+        Kfirst=Lfirst(2)
+        endif 
+        if (Llast(2).gt.Klast) then 
+        do L=Klast,Llast(2),2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,
      *        m3+1,m4,cheater)
-	      enddo 
-	      Klast=Llast(2)
-	      endif 
+        enddo 
+        Klast=Llast(2)
+        endif 
       Lrun=1
       do L=Lfirst(2),Llast(2),2  
       if (dummy(L).ne.0d0)  then
@@ -5219,20 +5219,20 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(3).gt.0) then 
       M=m2-m4
-	      if (Lfirst(3).lt.Kfirst) then 
-	      do L=Lfirst(3),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,
+        if (Lfirst(3).lt.Kfirst) then 
+        do L=Lfirst(3),Kfirst,2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,
      *        m3+1,m4,cheater)
-	      enddo 
-	      Kfirst=Lfirst(3)
-	      endif 
-	      if (Llast(3).gt.Klast) then 
-	      do L=Klast,Llast(3),2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,
+        enddo 
+        Kfirst=Lfirst(3)
+        endif 
+        if (Llast(3).gt.Klast) then 
+        do L=Klast,Llast(3),2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,
      *        m3+1,m4,cheater)
-	      enddo 
-	      Klast=Llast(3)
-	      endif 
+        enddo 
+        Klast=Llast(3)
+        endif 
       Lrun=1
       do L=Lfirst(3),Llast(3),2  
       if (dummy(L).ne.0d0)  then
@@ -5251,20 +5251,20 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(4).gt.0) then 
       M=m2-m4
-	      if (Lfirst(4).lt.Kfirst) then 
-	      do L=Lfirst(4),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,
+        if (Lfirst(4).lt.Kfirst) then 
+        do L=Lfirst(4),Kfirst,2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,
      *        m3+1,m4,cheater)
-	      enddo 
-	      Kfirst=Lfirst(4)
-	      endif 
-	      if (Llast(4).gt.Klast) then 
-	      do L=Klast,Llast(4),2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,
+        enddo 
+        Kfirst=Lfirst(4)
+        endif 
+        if (Llast(4).gt.Klast) then 
+        do L=Klast,Llast(4),2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,
      *        m3+1,m4,cheater)
-	      enddo 
-	      Klast=Llast(4)   
-	      endif 
+        enddo 
+        Klast=Llast(4)   
+        endif 
       Lrun=1
       do L=Lfirst(4),Llast(4),2  
       if (dummy(L).ne.0d0) then 
@@ -5403,18 +5403,18 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(3).gt.0) then 
       M=m2-m4
-	      if (Lfirst(3).lt.Kfirst) then 
-	      do L=Lfirst(3),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3+1,l4,m1+1,m2,m3,m4,cheater) 
-	      enddo 
-	      Kfirst=Lfirst(3)
-	      endif 
-	      if (Llast(3).gt.Klast) then 
-	      do L=Klast,Llast(3),2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3+1,l4,m1+1,m2,m3,m4,cheater)
-	      enddo 
-	      Klast=Llast(3)
-	      endif 
+        if (Lfirst(3).lt.Kfirst) then 
+        do L=Lfirst(3),Kfirst,2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3+1,l4,m1+1,m2,m3,m4,cheater) 
+        enddo 
+        Kfirst=Lfirst(3)
+        endif 
+        if (Llast(3).gt.Klast) then 
+        do L=Klast,Llast(3),2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3+1,l4,m1+1,m2,m3,m4,cheater)
+        enddo 
+        Klast=Llast(3)
+        endif 
       Lrun=1
       do L=Lfirst(3),Llast(3),2  
       if (dummy(L).ne.0d0)  then
@@ -5466,19 +5466,19 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(2).gt.0) then 
       M=m2-m4
-	      if (Lfirst(2).lt.Kfirst) then 
-	      do L=Lfirst(2),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1+1,l2,l3-1,l4,m1+1,m2,
+        if (Lfirst(2).lt.Kfirst) then 
+        do L=Lfirst(2),Kfirst,2
+        dummy(L)=LMdepang(L,M,l1+1,l2,l3-1,l4,m1+1,m2,
      *                 m3,m4,Cheater)
-	      enddo 
-	      Kfirst=Lfirst(2)
-	      endif 
-	      if (Llast(2).gt.Klast) then 
-	      do L=Klast,Llast(2),2
-	      dummy(L)=LMdepang(L,M,l1+1,l2,l3-1,l4,m1+1,m2,m3,m4,cheater)
-	      enddo 
-	      Klast=Llast(2)
-	      endif 
+        enddo 
+        Kfirst=Lfirst(2)
+        endif 
+        if (Llast(2).gt.Klast) then 
+        do L=Klast,Llast(2),2
+        dummy(L)=LMdepang(L,M,l1+1,l2,l3-1,l4,m1+1,m2,m3,m4,cheater)
+        enddo 
+        Klast=Llast(2)
+        endif 
       Lrun=1
       do L=Lfirst(2),Llast(2),2  
       if (dummy(L).ne.0d0)  then
@@ -5530,18 +5530,18 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(2).gt.0) then 
       M=m2-m4
-	      if (Lfirst(2).lt.Kfirst) then 
-	      do L=Lfirst(2),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,m3,m4,cheater)
-	      enddo 
-	      Kfirst=Lfirst(2)
-	      endif 
-	      if (Llast(2).gt.Klast) then 
-	      do L=Klast,Llast(2),2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,m3,m4,cheater)
-	      enddo 
-	      Klast=Llast(2)
-	      endif 
+        if (Lfirst(2).lt.Kfirst) then 
+        do L=Lfirst(2),Kfirst,2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,m3,m4,cheater)
+        enddo 
+        Kfirst=Lfirst(2)
+        endif 
+        if (Llast(2).gt.Klast) then 
+        do L=Klast,Llast(2),2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,m3,m4,cheater)
+        enddo 
+        Klast=Llast(2)
+        endif 
       Lrun=1
       do L=Lfirst(2),Llast(2),2  
       if (dummy(L).ne.0d0)  then
@@ -5560,18 +5560,18 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(3).gt.0) then 
       M=m2-m4
-	      if (Lfirst(3).lt.Kfirst) then 
-	      do L=Lfirst(3),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,m3,m4,cheater)
-	      enddo 
-	      Kfirst=Lfirst(3)
-	      endif 
-	      if (Llast(3).gt.Klast) then 
-	      do L=Klast,Llast(3),2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,m3,m4,cheater)
-	      enddo 
-	      Klast=Llast(3)
-	      endif 
+        if (Lfirst(3).lt.Kfirst) then 
+        do L=Lfirst(3),Kfirst,2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,m3,m4,cheater)
+        enddo 
+        Kfirst=Lfirst(3)
+        endif 
+        if (Llast(3).gt.Klast) then 
+        do L=Klast,Llast(3),2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,m3,m4,cheater)
+        enddo 
+        Klast=Llast(3)
+        endif 
       Lrun=1
       do L=Lfirst(3),Llast(3),2  
       if (dummy(L).ne.0d0) then 
@@ -5590,18 +5590,18 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(4).gt.0) then 
       M=m2-m4
-	      if (Lfirst(4).lt.Kfirst) then 
-	      do L=Lfirst(4),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,m3,m4,cheater)
-	      enddo 
-	      Kfirst=Lfirst(4)
-	      endif 
-	      if (Llast(4).gt.Klast) then 
-	      do L=Klast,Llast(4),2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,m3,m4,cheater)
-	      enddo 
-	      Klast=Llast(4)   
-	      endif 
+        if (Lfirst(4).lt.Kfirst) then 
+        do L=Lfirst(4),Kfirst,2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,m3,m4,cheater)
+        enddo 
+        Kfirst=Lfirst(4)
+        endif 
+        if (Llast(4).gt.Klast) then 
+        do L=Klast,Llast(4),2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1+1,m2,m3,m4,cheater)
+        enddo 
+        Klast=Llast(4)   
+        endif 
       Lrun=1
       do L=Lfirst(4),Llast(4),2  
       if (dummy(L).ne.0d0) then 
@@ -5683,18 +5683,18 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(3).gt.0) then 
       M=m2-m4
-	      if (Lfirst(3).lt.Kfirst) then 
-	      do L=Lfirst(3),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3+1,l4,m1,m2,m3-1,m4,cheater)
-	      enddo 
-	      Kfirst=Lfirst(3)
-	      endif 
-	      if (Llast(3).gt.Klast) then 
-	      do L=Klast,Llast(3),2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3+1,l4,m1,m2,m3-1,m4,cheater)
-	      enddo 
-	      Klast=Llast(3)
-	      endif 
+        if (Lfirst(3).lt.Kfirst) then 
+        do L=Lfirst(3),Kfirst,2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3+1,l4,m1,m2,m3-1,m4,cheater)
+        enddo 
+        Kfirst=Lfirst(3)
+        endif 
+        if (Llast(3).gt.Klast) then 
+        do L=Klast,Llast(3),2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3+1,l4,m1,m2,m3-1,m4,cheater)
+        enddo 
+        Klast=Llast(3)
+        endif 
       Lrun=1
       do L=Lfirst(3),Llast(3),2  
       if (dummy(L).ne.0d0)  then 
@@ -5746,18 +5746,18 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(2).gt.0) then 
       M=m2-m4
-	      if (Lfirst(2).lt.Kfirst) then 
-	      do L=Lfirst(2),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1+1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
-	      enddo 
-	      Kfirst=Lfirst(2)
-	      endif 
-	      if (Llast(2).gt.Klast) then 
-	      do L=Klast,Llast(2),2
-	      dummy(L)=LMdepang(L,M,l1+1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
-	      enddo 
-	      Klast=Llast(2)
-	      endif 
+        if (Lfirst(2).lt.Kfirst) then 
+        do L=Lfirst(2),Kfirst,2
+        dummy(L)=LMdepang(L,M,l1+1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
+        enddo 
+        Kfirst=Lfirst(2)
+        endif 
+        if (Llast(2).gt.Klast) then 
+        do L=Klast,Llast(2),2
+        dummy(L)=LMdepang(L,M,l1+1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
+        enddo 
+        Klast=Llast(2)
+        endif 
       Lrun=1
       do L=Lfirst(2),Llast(2),2  
       if (dummy(L).ne.0d0)  then
@@ -5809,18 +5809,18 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(2).gt.0) then 
       M=m2-m4
-	      if (Lfirst(2).lt.Kfirst) then 
-	      do L=Lfirst(2),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
-	      enddo 
-	      Kfirst=Lfirst(2)
-	      endif 
-	      if (Llast(2).gt.Klast) then 
-	      do L=Klast,Llast(2),2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
-	      enddo 
-	      Klast=Llast(2)
-	      endif 
+        if (Lfirst(2).lt.Kfirst) then 
+        do L=Lfirst(2),Kfirst,2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
+        enddo 
+        Kfirst=Lfirst(2)
+        endif 
+        if (Llast(2).gt.Klast) then 
+        do L=Klast,Llast(2),2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
+        enddo 
+        Klast=Llast(2)
+        endif 
       Lrun=1
       do L=Lfirst(2),Llast(2),2  
       if (dummy(L).ne.0d0) then 
@@ -5839,18 +5839,18 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(3).gt.0) then 
       M=m2-m4
-	      if (Lfirst(3).lt.Kfirst) then 
-	      do L=Lfirst(3),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
-	      enddo 
-	      Kfirst=Lfirst(3)
-	      endif 
-	      if (Llast(3).gt.Klast) then 
-	      do L=Klast,Llast(3),2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
-	      enddo 
-	      Klast=Llast(3)
-	      endif 
+        if (Lfirst(3).lt.Kfirst) then 
+        do L=Lfirst(3),Kfirst,2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
+        enddo 
+        Kfirst=Lfirst(3)
+        endif 
+        if (Llast(3).gt.Klast) then 
+        do L=Klast,Llast(3),2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
+        enddo 
+        Klast=Llast(3)
+        endif 
       Lrun=1
       do L=Lfirst(3),Llast(3),2  
       if (dummy(L).ne.0d0)  then 
@@ -5869,18 +5869,18 @@ cbs   get the L,M dependent coefficients
       endif 
       if (Lblocks(4).gt.0) then 
       M=m2-m4
-	      if (Lfirst(4).lt.Kfirst) then 
-	      do L=Lfirst(4),Kfirst,2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
-	      enddo 
-	      Kfirst=Lfirst(4)
-	      endif 
-	      if (Llast(4).gt.Klast) then 
-	      do L=Klast,Llast(4),2
-	      dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
-	      enddo 
-	      Klast=Llast(4)   
-	      endif 
+        if (Lfirst(4).lt.Kfirst) then 
+        do L=Lfirst(4),Kfirst,2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
+        enddo 
+        Kfirst=Lfirst(4)
+        endif 
+        if (Llast(4).gt.Klast) then 
+        do L=Klast,Llast(4),2
+        dummy(L)=LMdepang(L,M,l1-1,l2,l3-1,l4,m1,m2,m3-1,m4,cheater)
+        enddo 
+        Klast=Llast(4)   
+        endif 
       Lrun=1
       do L=Lfirst(4),Llast(4),2  
       if (dummy(L).ne.0d0) then 
@@ -6063,13 +6063,13 @@ CBS   write(LUPRI,'(I3,I3)') nprimit(Lrun),ncontrac(Lrun)
 cbs   check keywords
 cbs   check maximum numbers
          if (nprimit(Lrun).gt.MxprimL) then 
-            write(LUPRI,*) 'To many primitives for L=',L,
+            write(LUPRI,*) 'Too many primitives for L=',Lrun,
      *           ' increase MxprimL in para.h or reduce ',
      *           'the number of primitives to at least ',MxprimL
             CALL QUIT('Too many primitive functions in AMFI')            
          endif   
          if (ncontrac(Lrun).gt.MxcontL) then 
-            write(LUPRI,*) 'To many contracted fncts for L=',L,
+            write(LUPRI,*) 'Too many contracted fncts for L=',Lrun,
      *           ' increase MxcontL in para.h or ',
      *           'reduce the number of contracted functions',
      *           'to at most ',MxcontL
@@ -6448,22 +6448,22 @@ cbs   first the simple cases
      *2*Mat(2,3)*Mat(3,2)*Mat(2,2)*Mat(3,3)+
      *Mat(2,2)*(Mat(2,2)-1)*Mat(3,3)*(Mat(3,3)-1)
       else !  all the cases with Mat(1,1) >= 3 
-	      Icoeff=1
-	      do Ibm=Mat(3,2)-Mat(1,1)+1,Mat(3,2)
-	        icoeff=icoeff*ibm
-	      enddo
-	      do Ibm=Mat(2,3)-Mat(1,1)+1,Mat(2,3)
-	        icoeff=icoeff*ibm
-	      enddo
-	      isum=icoeff
-	      do Icount=1,MAT(1,1) 
-	         icoeff=-icoeff*(Mat(1,1)+1-icount)*(Mat(2,2)+1-icount)*
+        Icoeff=1
+        do Ibm=Mat(3,2)-Mat(1,1)+1,Mat(3,2)
+          icoeff=icoeff*ibm
+        enddo
+        do Ibm=Mat(2,3)-Mat(1,1)+1,Mat(2,3)
+          icoeff=icoeff*ibm
+        enddo
+        isum=icoeff
+        do Icount=1,MAT(1,1) 
+           icoeff=-icoeff*(Mat(1,1)+1-icount)*(Mat(2,2)+1-icount)*
      *           (Mat(3,3)+1-icount)
-	         Idenom=icount*(Mat(2,3)-Mat(1,1)+icount)*
+           Idenom=icount*(Mat(2,3)-Mat(1,1)+icount)*
      *           (Mat(3,2)-Mat(1,1)+icount)
-	         icoeff=icoeff/Idenom
-	         isum=isum+icoeff
-	      enddo
+           icoeff=icoeff/Idenom
+           isum=isum+icoeff
+        enddo
       endif   
 cbs  additional sign from interchanging rows or columns
       if (ifirst.ne.1) isum=isum*isign
@@ -6497,12 +6497,12 @@ c     write(6,*) 'Iwork: ',(iwork(i),i=1,LIMIT)
       Enddo 
       up=dfloat(iup) 
       if(.not.testup) then ! if the integers did not run correctly  
-	      up=1d0
-	      do I=1,LIMIT   
+        up=1d0
+        do I=1,LIMIT   
               do J=1,iwork(I)
               up=up*dfloat(prim(i))
               enddo 
-	      enddo 
+        enddo 
       endif 
       do I=1,LIMIT   
       do J=1,-iwork(I)
@@ -6512,12 +6512,12 @@ c     write(6,*) 'Iwork: ',(iwork(i),i=1,LIMIT)
       enddo 
       down=dfloat(idown) 
       if(.not.testdown) then 
-	      down=1d0
-	      do I=1,LIMIT   
+        down=1d0
+        do I=1,LIMIT   
               do J=1,-iwork(I)
               down=down*dfloat(prim(i))
               enddo 
-	      enddo 
+        enddo 
       endif 
 c     if (.not.(testup.and.testdown)) then 
 c     write(6,*) 'j1,j2,j3,m1,m2,m3 ',j1,j2,j3,m1,m2,m3
@@ -7422,21 +7422,21 @@ cbs   copy old contraction coefficients in dense form to common block
       enddo 
 cbs   ensure normalization 
       do ICONT=1,ncont
-      	xnorm=0d0   
-      	do Jrun=1,nprim
-      	do Irun=1,nprim
-      	xnorm=xnorm+contnew(Irun,ICONT)*contnew(Jrun,ICONT)
-     *	*ovlp(Irun,Jrun)
+        xnorm=0d0   
+        do Jrun=1,nprim
+        do Irun=1,nprim
+        xnorm=xnorm+contnew(Irun,ICONT)*contnew(Jrun,ICONT)
+     *  *ovlp(Irun,Jrun)
 c       write(6,*) 'Icont,jrun,irun,xnorm ',
 c    *  icont,jrun,irun,xnorm 
-      	enddo 
-      	enddo 
+        enddo 
+        enddo 
 c       write(6,*) 'ICONT ',ICONT,xnorm   
-      	xnorm=1d0/dsqrt(xnorm)
+        xnorm=1d0/dsqrt(xnorm)
 cbs   scale with normalization factor 
-      	do Irun=1,nprim
-      	contnew(Irun,ICONT)=xnorm*contnew(Irun,ICONT)
-      	enddo 
+        do Irun=1,nprim
+        contnew(Irun,ICONT)=xnorm*contnew(Irun,ICONT)
+        enddo 
       enddo 
 c     write(6,*) 'end transcon nprim,ncont ',nprim,ncont 
       return 
