@@ -214,7 +214,7 @@ c
                  IF (LORXA) IKAPA = ITAMPA
                  IF (LORXB) IKAPB = ITAMPB
     
-c                 IF (LOCDBG) THEN
+                 IF (LOCDBG) THEN
                     WRITE (LUPRI,*) 'CCMCD_SETUP> LABELA: ', LABELA, 
      &                      '  ISYMA: ',ISYMA,
      &                      '  LORXA: ', LORXA, ' LPDBSA: ', LPDBSA 
@@ -223,7 +223,7 @@ c                 IF (LOCDBG) THEN
      &                      '  LORXB: ', LORXB, ' LPDBSB: ', LPDBSB 
                     WRITE (LUPRI,*) 'LUSEPL1: ', LUSEPL1
                     CALL FLSHFO(LUPRI)
-c                 ENDIF
+                 ENDIF
                  
                  IZETA0 = 0
                  IM1F   = ILRMAMP(IEXCIF,EIGVAF,ISYMC)
