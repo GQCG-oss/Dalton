@@ -407,6 +407,46 @@ D.~Jonsson, P.~Norman, and H.~{\AA}gren.
 D.~Jonsson, P.~Norman, Y.~Liu, and H.~{\AA}gren.
 \newblock {\em J.~Chem.~Phys.}, 105:581, 1996.
 
+\bibitem{Christiansen:CPL243}
+Ove Christiansen, Henrik Koch, and Poul J{\o}rgensen.
+\newblock The second-order approximate coupled cluster singles and doubles
+  model {CC2}.
+\newblock {\em Chem. Phys. Lett.}, 243:409--418, 1995.
+
+\bibitem{Moller34}
+C.~M{\o}ller and M.~S. Plesset.
+\newblock {\em Phys. Rev.}, 46:618, 1934.
+
+\bibitem{Head-Gordon:94}
+Martin Head-Gordon, Rudolph~J. Rico, Manaby Oumi, and Timothy~J. Lee.
+\newblock {\em Chem. Phys. Lett.}, 219:21, 1994.
+
+\bibitem{Purvis82}
+G.~D. Purvis and R.~J. Bartlett.
+\newblock {\em J. Chem. Phys.}, 76:1910, 1982.
+
+\bibitem{Christiansen:PERTURBATIVE_TRIPLES}
+Ove Christiansen, Henrik Koch, and Poul J{\o}rgensen.
+\newblock Perturbative triple excitation corrections to coupled cluster singles
+  and doubles excitation energies.
+\newblock {\em J. Chem. Phys.}, 105:1451--1459, 1996.
+
+\bibitem{Raghavachari89}
+K.~Raghavachari, G.~W. Trucks, J.~A. Pople, and M.~Head-Gordon.
+\newblock {\em Chem. Phys. Lett.}, 157:479, 1989.
+
+\bibitem{Christiansen:JCP103}
+Ove Christiansen, Henrik Koch, and Poul J{\o}rgensen.
+\newblock Response functions in the {CC3} iterative triple excitation model.
+\newblock {\em J. Chem. Phys.}, 103:7429--7441, 1995.
+
+\bibitem{Koch:JCP106}
+Henrik Koch, Ove Christiansen, Poul J{\o}rgensen, Alfredo~S{\'a}nchez {de
+  Mer{\'a}s}, , and Trygve Helgaker.
+\newblock The {CC3} model: {A}n iterative coupled cluster approach including
+  connected triples.
+\newblock {\em J. Chem. Phys.}, 106:1808, 1997.
+
 \bibitem{Halkier:CCFOP}
 Asger Halkier, Henrik Koch, Ove Christiansen, Poul J{\o}rgensen, and Trygve
   Helgaker.
@@ -417,8 +457,7 @@ Asger Halkier, Henrik Koch, Ove Christiansen, Poul J{\o}rgensen, and Trygve
 \bibitem{Halkier:CC2RLXFOP}
 Asger Halkier and Sonia Coriani.
 \newblock Relaxed {CC2} first--order properties.
-\newblock 2000.
-\newblock Unpublished (Technical notes).
+\newblock (Technical notes), 2000.
 
 \bibitem{Christiansen:CCLR}
 Ove Christiansen, Asger Halkier, Henrik Koch, Poul J{\o}rgensen, and Trygve
@@ -426,6 +465,12 @@ Ove Christiansen, Asger Halkier, Henrik Koch, Poul J{\o}rgensen, and Trygve
 \newblock Integral-direct coupled cluster calculations of frequency-dependent
   polarizabilities, transition probailities and excited-state properties.
 \newblock {\em J. Chem. Phys.}, 108:2801, 1998.
+
+\bibitem{Christiansen:QEL}
+Ove Christiansen, Poul J{\o}rgensen, and Christof H\"attig.
+\newblock Response functions from {F}ourier component variational perturbation
+  theory applied to a time-averaged quasienergy.
+\newblock {\em Int. J. Quantum Chem.}, 68:1--52, 1998.
 
 \bibitem{Haettig:CAUCHY}
 Christof H{\"attig}, Ove Christiansen, and Poul J{\o}rgensen.
@@ -456,6 +501,19 @@ Christof H\"attig and Poul J{\o}rgensen.
 \newblock Dispersion coefficients for second hyperpolarizabilities using
   coupled cluster cubic response theory.
 \newblock {\em Advances in Quantum Chemistry}, 35:111--148, 1999.
+
+\bibitem{Christiansen:JCP105}
+Ove Christiansen, Henrik Koch, Asger Halkier, Poul J{\o}rgensen, Trygve
+  Helgaker, and Alfredo~M. {Sanchez de Meras}.
+\newblock Large-scale calculations of excitation energies in coupled cluster
+  theory: The singlet excited states of benzene.
+\newblock {\em J. Chem. Phys.}, 105:6921, 1996.
+
+\bibitem{Hald:JCP113}
+C.\~H\"attig K.\~Hald and P.\ J{\o}rgensen.
+\newblock Triplet excitation energies in the coupled cluster singles and
+  doubles model using an explicit triplet spin coupled excitation space.
+\newblock {\em J. Chem. Phys.}, 113:7765--7772, 2000.
 
 \bibitem{Haettig:MULTIPHOTON}
 Christof H{\"attig}, Ove Christiansen, and Poul J{\o}rgensen.
@@ -498,6 +556,17 @@ Christof H{\"a}ttig, Ove Christiansen, Sonia Coriani, and Poul J{\o}rgensen.
 \newblock Frequency-dependent polarizabilities of excited states using coupled
   cluster response theory.
 \newblock {\em J. Chem. Phys.}, 109:9237--9243, 1998.
+
+\bibitem{cc:solve}
+O.~Christiansen and K.~V. Mikkelsen.
+\newblock A coupled cluster solvent reaction field method.
+\newblock {\em J. Chem. Phys.}, 110:1365--1375, 1999.
+
+\bibitem{cc:slvrsp}
+O.~Christiansen and K.~V. Mikkelsen.
+\newblock Coupled cluster response theory for solvated molecules in equilibrium
+  and nonequilibrium solvation.
+\newblock {\em J. Chem. Phys.}, 110:8348--8361, 1999.
 
 \bibitem{wtrrrmp37}
 W.~T. Raynes and R.~Ratcliffe.

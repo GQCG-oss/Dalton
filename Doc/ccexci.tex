@@ -2,32 +2,108 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Calculation of excitation energies: \Sec{CCEXCI}}\label{sec:ccexci}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\index{linear response}
+\index{excitation energies, coupled cluster}
+\index{excited states, coupled cluster}
+
+In the \Sec{CCEXCI} section the input that is
+specific for coupled cluster linear response calculation of
+electronic excitation energies is given. 
+Coupled cluster linear response excitation energies 
+are implemented for the iterative CC models CCS, CC2, CCSD, and CC3 for 
+both singlet and triplet excited states (for CC3 only singlet).
+For singlet excited states the non-iterative models CC(2)(=CIS(D)) and CCSDR(3)
+are also avaiable.
+Publications that report results obtained with CC excitation energies
+should cite Ref.\ \cite{Christiansen:JCP105} for singlet excitation energies
+and \cite{Hald:JCP113} for triplet excitation energies.
+For understanding the theoretical background for some
+aspects of the CC3 calculations consult also Ref.\ \cite{Christiansen:JCP103}.
 
 \begin{description}
 \item[\Key{NCCEXC}] 
+
+\verb|READ (LUCMD,*) (NCCEXCI(ISYM,1),ISYM=1,MSYM)|
+
+Give the number of states desired.
+For singlet states only, only one line is required with
+the number of excitation energies for each symmetry class (max. 8). \\ 
+If also triplet states are desired an additional line is given in same format, 
+else nothing.
 %
-\item[\Key{FDJAC }] 
+\item[\Key{THREXC}] 
+
+The threshold for the solution of the excitation energies and
+corresponding response eigenvectors. 
+The threshold is the norm of the residual for the eigenvalue equation.
+(Default: 1.0D-04). 
+
 %
-\item[\Key{FDEXCI}] 
+%\item[\Key{FDJAC }] 
 %
-\item[\Key{JACEXP}] 
+%\item[\Key{FDEXCI}] 
 %
-\item[\Key{JACTST}] 
+%\item[\Key{JACEXP}] 
 %
-\item[\Key{LHTR  }] 
+%\item[\Key{JACTST}] 
+%
+%\item[\Key{LHTR  }] 
 %
 \item[\Key{NOSCOM}] 
 %
-\item[\Key{STSD  }] 
+For CC3 calculations only: indicates that no self-consistent solution
+should be seeked in the partitioned CC3 algorithm.
+
+%\item[\Key{STSD  }] 
 %
 \item[\Key{TOLSC }] 
 %
+For CC3 calculations only: 
+Set tolerance for the self-consistent solution for obtaining self-consistent
+solution to the partitioned CC3 algorithm.
+Tolerance refers to the eigenvalue itself.
+(Default:1.0D-04).
+
+
 \item[\Key{OMEINP}] 
 %
-\item[\Key{STVEC }] 
+A way to provide an input omega for the partitioned CC3 algorithm or restrict
+the self-consistent solution to specific states.
+If OMEINP is not specified the program uses the best choice available to it at that
+moment based on previous levels of approximations (CCSD or even better CCSDR(3)) 
+and calculates all states as given by NCCEXC.
+IOMPINP is 1 for the lowest excited state of a given symmetry, 2 for the second lowest etc. \\
+By giving an 0.0 input excitation energy (as EOMINP) the program takes the best previous
+approximation found in this run - otherwise the user can specify a qualified guess 
+(perhaps from a previous calculation which is now restarted).\newline
+\verb|READ (LUCMD,*) (NOMINP(ISYM,1),ISYM=1,MSYM)|\newline
+\verb|DO ISYM = 1, MSYM|\newline
+\verb|  DO IOM = 1, NOMINP(ISYM,1)|\newline
+\verb|     READ (LUCMD,*) IOMINP(IOM,ISYM,1),EOMINP(IOM,ISYM,1)|\newline
+\verb|  ENDDO|\newline
+\verb|ENDDO|
+
+%\item[\Key{STVEC }] 
 %
-\item[\Key{STOLD }] 
+%\item[\Key{STOLD }] 
 %
-\item[\Key{THREXC}] 
+\item[\Key{CCSPIC}] 
+
+\verb|READ(LUCMD,*) OMPCCS| \newline
+Keyword for picking a state with a given CCS excitation energy.
+Optimize a number of states in CCS with different symmetries and this option
+will pick the one in closest correspondence with the given input excitation
+energy, and skip the states at higher energies and other symmetries in 
+the following calculation.
+Useful for example in numerical Hessian calculations on excited states.
+
+\item[\Key{CC2PIC}] 
+Functions as CCSPIC but the picking is based on CC2 excitation energies.
+\item[\Key{CCSDPI}] 
+Functions as CCSPIC but the picking is based on CCSD excitation energies.
 %
+\item[\Key{MARGIN}] 
+Specifies the maximum allowed deviation of the actual excitation energy
+from the input excitation energy when using CCSPIC, CC2PIC and CCSDPI. 
+
 \end{description}

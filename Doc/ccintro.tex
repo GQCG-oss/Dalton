@@ -15,13 +15,14 @@ hierarchy of coupled cluster models: CCS, CC2, CCSD and CC3.
 The program offers almost the same options as the other
 parts of the Dalton program for SCF and MCSCF wave functions.
 It thus contains a wave function optimization section and 
-a response function section where linear, quadratic and cubic response functions 
-and residues are calculated.
+a response function section
+where linear, quadratic and cubic response functions and electronic
+transition properties are calculated.
 For CC3 however, it is only possible to calculate the wave function and 
 singlet excitation energies. 
 \index{response functions}
 At the moment molecular gradients are available 
-only up to the CCSD level \index{gradient}.  
+only up to the CCSD level\index{gradient} for ground states.  
 London orbitals have so far not been implemented 
 for the calculation of magnetic properties.
 \index{magnetic properties}\index{London orbitals} 
@@ -50,3 +51,20 @@ input file for a CCSD(T) energy calculation would be:
 *END OF INPUT
 \end{verbatim}
 
+Several models can be calculated at the same time by specifying more models
+in the CC input section. 
+The models supported in the CC program are 
+CCS\cite{Christiansen:CPL243},
+MP2\cite{Moller34},
+CC2\cite{Christiansen:CPL243},
+the CIS(D) excitation energy approximation \cite{Head-Gordon:94},
+CCSD\cite{Purvis82},
+the CCSDR(3) excitation energy approximation\cite{Christiansen:PERTURBATIVE_TRIPLES}, 
+CCSD(T)\cite{Raghavachari89}, CC3\cite{Christiansen:JCP103,Koch:JCP106}.
+Several electronic properties can also 
+be calculated in one calculation by specifying simultaneously 
+the various input sections in the CC INPUT section
+as detailed in the following sections.
+
+There is also a possibility for performing cavity coupled cluster
+self-consistent-reaction field calculations for solvent modelling.

@@ -36,8 +36,12 @@ Coupled cluster linear response functions and dispersion coefficients
 are implemented for the models CCS, CC2 and CCSD. 
 Publications that report results obtained with CC linear response
 calculations should cite Ref.\ \cite{Christiansen:CCLR}. 
+The theoretical background for the implementation is detailed in Ref.\ \cite{Christiansen:QEL}.
 For dispersion coefficients also a citation of Ref.\ \cite{Haettig:CAUCHY} 
 should be included.
+The properties calculated are in the approach now generally known as coupled cluster 
+linear response - in the frequency independent limit this coincides with so-called 
+orbital-unrelaxed energy derivatives (and thus the orbital-unrelaxed finite field result).
 
 \begin{description}
 % \item[\Key{RELAXE}] 
@@ -45,7 +49,7 @@ should be included.
 % \item[\Key{UNRELA}] 
 %
 \item[\Key{FREQUE}] \verb| |\newline
-READ (LUCMD,*) NBLRFR
+READ (LUCMD,*) NBLRFR\newline
 READ (LUCMD,*) (BLRFR(I),I=1,NBLRFR)
 
 Frequency input for $\langle\langle A;B \rangle\rangle_{\omega}$.
