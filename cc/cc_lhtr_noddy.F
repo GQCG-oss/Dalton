@@ -1263,6 +1263,7 @@ C
       DIMENSION T1AM(*),T2AM(*), T3AM(*)
       DIMENSION C1AM(*), C2AM(*), C3AM(*)
       DIMENSION XLAMDP(*),XLAMDH(*), FOCK(*), WORK(LWORK)
+      LOGICAL   L2INCL
 C
 #include <ccfield.h>
 #include <inforb.h>
@@ -1282,7 +1283,7 @@ C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
       IF (NSYM .NE. 1) THEN
-         CALL QUIT('No symmetry in this part yet')
+         CALL QUIT('CC_LHTR_NODDY2: No symmetry in this part yet')
       ENDIF
 C
 C------------------------
