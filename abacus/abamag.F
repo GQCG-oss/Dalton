@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abamag.F,v 1.11 2001-12-13 08:52:35 ruden Exp $
+C$Id: abamag.F,v 1.12 2002-01-14 17:16:18 ruden Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -2207,6 +2207,7 @@ C
 C
 C Print individual contributions, if requested
 C
+      ISPPRI = 11
       IF (ISPPRI .GE. 10) THEN
          CALL HEADER('DSO-part of coupling constants',1)
          CALL PRIHES (SPNDSO,'SPNSPN',CSTRA,SCTRA)
@@ -2223,6 +2224,7 @@ C
          NCOOR = 3*NUCDEP
          CALL PR2DER(CHESS(1,1,1),NCOOR,NCOOR,LUPRI)
       END IF
+      ISPPRI = 0
 C
 C     *** Final indirect spin-spin coupling analysis. ***
 C

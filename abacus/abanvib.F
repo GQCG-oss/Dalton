@@ -444,7 +444,7 @@ C
 C     
 C     /* Deck ndrdpp */
       SUBROUTINE NDRDPP(SPSPFV,TRLNFV,EXENFV,TRAMAT,SYMCOR,WORK,LWORK,
-     &                  IPRINT)
+     &                  IPRINT,DODIPS)
 C     **************************************************
 C     *** This routine keeps track of which property ***
 C     *** that will be read from file next. The      ***
@@ -538,7 +538,7 @@ C     *** original geometry (IMPCAL=1), need not to be    ***
 C     *** calculated. Only when force constants are       ***
 C     *** calculated from energies.                       ***
 C
-      IF (SPNSPN.AND.(NAORDR.EQ.0)) THEN
+      IF (SPNSPN.AND.(NAORDR.GT.0)) THEN
          KSPTMP = 1
          KLAST  = KSPTMP + NCOOR**2
          IF (KLAST.GT.LWORK) CALL QUIT('Memory exceeded in OTRTEN')
