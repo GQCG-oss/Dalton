@@ -1635,6 +1635,7 @@ c#endif
 #include <past.h>
 #include <pvibav.h>
 #include <gnrinf.h>
+#include <nuclei.h>
 c
 #include <huckel.h>      
       LOGICAL RUNPNT, CLNRGY, RSTDON, PRTNR, XESIR, XEHER, XEABA, 

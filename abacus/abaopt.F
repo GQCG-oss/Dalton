@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abaopt.F,v 1.12 2001-12-13 08:52:36 ruden Exp $
+C$Id: abaopt.F,v 1.13 2002-02-14 17:36:24 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -2094,6 +2094,7 @@ C
 #include <gnrinf.h>
 #include <siripc.h>
 #include <dftcom.h>
+#include <molinp.h>
       LOGICAL EXHER, EXSIR, EXABA
       DIMENSION WORK(LWORK)
       CALL QENTER('GTNRGY')
