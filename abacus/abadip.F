@@ -44,7 +44,7 @@ C  /* Deck dipinp */
 #include <abainf.h>
 #include <cbidip.h>
       DATA TABLE /'.SKIP  ', '.PRINT ', '.NODC  ', '.NODV  ',
-     *            '.XXXXXX', '.AOMAT ', '.STOP  '/
+     *            '.XXXXXX', '.XXXXXX', '.STOP  '/
 C
       NEWDEF = (WORD .EQ. '*DIPCTL')
       ICHANG = 0
@@ -85,7 +85,7 @@ C
                GO TO 100
     5             CONTINUE
                GO TO 100
-    6             AOMAT = .TRUE.
+    6             CONTINUE
                GO TO 100
     7             CUT   = .TRUE.
                GO TO 100
@@ -113,8 +113,6 @@ C
      *      ' density matrix neglected in DIPCTL.'
             IF (TEST) WRITE (LUPRI,'(/,2A)') ' Test for dipole moments',
      *      ' and dipole reorthonormalization.'
-            IF (AOMAT) WRITE (LUPRI, '(A)')
-     *         ' AO printing of SO overlap matrices.'
             IF (CUT) THEN
                WRITE (LUPRI,'(/,A)') ' Program is stopped after DIPCTL.'
             END IF

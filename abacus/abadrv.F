@@ -1046,7 +1046,8 @@ cLig <> added goto 151
             READ (LUCMD,*) (DIPORG(ICOOR), ICOOR = 1, 3)
          GOTO 100
  143     CONTINUE
-            RAMAN = .TRUE.
+            RAMAN  = .TRUE.
+            ABALNR = .TRUE.
          GOTO 100
  144     CONTINUE
             QUADRU = .TRUE.
