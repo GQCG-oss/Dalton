@@ -544,16 +544,18 @@ fi
 # Look for LAPACK library.
 # Add -L$LIBDIR to be sure compiler can find it.
 #
-if test -f $LIBDIR/liblapack.a; then
-  lapack=true; LIB="-L$LIBDIR -llapack $LIB"
-else
-  LIB="-L$LIBDIR $LIB"
-  for testdir in $dirlist; do
-    if test -f $testdir/liblapack.a; then
-        lapack=true; LIB="-L$testdir -llapack $LIB"
-        break
-    fi
-  done
+if test -n "$LIBDIR"; then
+   if test -f $LIBDIR/liblapack.a; then
+      lapack=true; LIB="-L$LIBDIR -llapack $LIB"
+   else
+      LIB="-L$LIBDIR $LIB"
+      for testdir in $dirlist; do
+         if test -f $testdir/liblapack.a; then
+            lapack=true; LIB="-L$testdir -llapack $LIB"
+            break
+         fi
+      done
+   fi
 fi
 
 
