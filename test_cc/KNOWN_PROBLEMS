@@ -6,3 +6,14 @@ all architectures
   in the integrals used to compute DPTTWO
 
 
+------------------------------------------------------------------------
+DEC
+------------------------------------------------------------------------
+due to problems in ERI (?) the following tests don't work on 
+DEC alpha machines:
+
+alpha_deriv        optco              triples_direct2
+dipgra_relax       gamma_direct       optmp2fh           triples_direri
+dipgra_relax2      grdn2              optn2h2            twophot_direct
+grdn2h2            triples_direct     verdet_hf_direct
+
