@@ -325,7 +325,7 @@ C              ================================================
 C
                IF (((IPRLBL.LE.NLBSHIE).AND.(KSYM.EQ.ISYM)).OR.
      &             (IPRLBL.GT.NLBSHIE)) THEN
-                  KSYMOP = ISYM
+                  KSYMOP = KSYM
                   TRPLET = .FALSE.
 C
 C                 Find right hand side for left operator
