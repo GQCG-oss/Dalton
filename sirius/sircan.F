@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: sircan.F,v 1.1.1.1 2001-02-08 13:33:31 hjj Exp $
+C$Id: sircan.F,v 1.2 2001-03-22 14:34:56 hjj Exp $
 C
 #include <single.h>
 C  /* Deck sircan */
@@ -272,7 +272,7 @@ C   INFVAR : NCONF,?
 C   INFORB : NASHT,?
 C   INFIND : IROW(*),ISSMO(*),...
 C   INFDIM : NBASMA,?
-C   INFTAP : LBSYMB
+C   INFTAP : 
 C
 #include <maxash.h>
 #include <maxorb.h>

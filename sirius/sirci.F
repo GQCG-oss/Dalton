@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: sirci.F,v 1.1.1.1 2001-02-08 13:33:30 hjj Exp $
+C$Id: sirci.F,v 1.2 2001-03-22 14:34:56 hjj Exp $
 C
 #include <single.h>
 C  /* Deck cimain */
@@ -115,7 +115,7 @@ C   INFINP : POTNUC,FLAG(*),LSYM
 C   INFVAR : NCONF
 C   INFORB : NNASHX
 C   INFDIM : MWORK,LCINDX,LACIMX,LBCIMX,LPHPMX,MAXPHP
-C   INFTAP : LBSYMB,LUIT1,LUIT3,LUIT5
+C   INFTAP : LUIT1,LUIT3,LUIT5
 C
 #include <maxorb.h>
 #include <priunit.h>
