@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: sirntra.F,v 1.2 2001-05-31 06:38:36 vebjornb Exp $
+C$Id: sirntra.F,v 1.3 2001-11-04 16:32:19 hjj Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -1946,7 +1946,8 @@ C
       IF (DORUPQ .OR. DOUSPQ) THEN
 C
 C
-         CALL TRA2E1(CMO,X1,X2,USPQ,RUPQ,TUPQ,ICDTRA,OPHLF3)
+         CALL TRA2E1(CMO,X1,X2,USPQ,RUPQ,TUPQ,ICDTRA,OPHLF3,
+     &                  LUHLF1,LUHLF2,LUHLF3)
 C
 C
       END IF
@@ -1974,7 +1975,8 @@ C
       RETURN
       END
 C  /* Deck tra2e1 */
-      SUBROUTINE TRA2E1(CMO,X1,X2,USPQ,RUPQ,TUPQ,ICDTRA,OPHLF3)
+      SUBROUTINE TRA2E1(CMO,X1,X2,USPQ,RUPQ,TUPQ,ICDTRA,OPHLF3,
+     &                  LUHLF1,LUHLF2,LUHLF3)
 C
 C     SECOND ORDER TWO-ELECTRON TRANSFORMATION module for exchange
 C     integrals.  Called from TRA2.
@@ -2044,6 +2046,7 @@ C
        LAR=NOP*LR
        IF(LR.LT.NBR) THEN
         IAD3S=0
+        IF (.NOT.OPHLF3) CALL DAINTF(LUHLF3,'HALF3.DA')
         CALL DAFILE(LUHLF3,DASKIP,TUPQ,IRAT*LAR,IAD3S)
         OPHLF3 = .TRUE.
         IAD3=0
@@ -2210,6 +2213,7 @@ C     ... ISP.ne.ISS because ISP .gt. ISQ .ge. ISR .ge. ISS
        LAR=NOQ*LR
        IF(LR.LT.NBR) THEN
         IAD3S=0
+        IF (.NOT.OPHLF3) CALL DAINTF(LUHLF3,'HALF3.DA')
         CALL DAFILE(LUHLF3,DASKIP,TUPQ,IRAT*LAR,IAD3S)
         OPHLF3 = .TRUE.
         IAD3=0
@@ -2337,6 +2341,7 @@ C     MAERKE hvad med ISQ.EQ.ISR; er det ikke muligt for INTSYM.ne.1?JO
        LAR=NOP*LR
        IF(LR.LT.NBS) THEN
         IAD3S=0
+        IF (.NOT.OPHLF3) CALL DAINTF(LUHLF3,'HALF3.DA')
         CALL DAFILE(LUHLF3,DASKIP,RUPQ,IRAT*LAR,IAD3S)
         OPHLF3 = .TRUE.
         IAD3=0
@@ -2468,6 +2473,7 @@ C
        LAR=NOQ*LR
        IF(LR.LT.NBS) THEN
         IAD3S=0
+        IF (.NOT.OPHLF3) CALL DAINTF(LUHLF3,'HALF3.DA')
         CALL DAFILE(LUHLF3,DASKIP,RUPQ,IRAT*LAR,IAD3S)
         OPHLF3 = .TRUE.
         IAD3=0
