@@ -2,9 +2,9 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > verdet.info <<%EOF%
-   verdet
-   ------
+cat > verdet_h2.info <<%EOF%
+   verdet_h2
+   ---------
    Molecule:       H2
    Wave Function:  CCSD
    Test Purpose:   verdet constants with London orbitals

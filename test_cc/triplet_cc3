@@ -2,9 +2,9 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > 2dar.info <<%EOF%
-   2dar
-   ----
+cat > triplet_cc3.info <<%EOF%
+   triplet_cc3
+   -----------
    Molecule:       HF in C1
    Wave Function:  CC2, CCSD, CC3 / 6-31G**
    Test Purpose:   triplet excitation energies
