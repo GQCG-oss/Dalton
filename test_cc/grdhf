@@ -55,7 +55,11 @@ cat > grdhf.dal <<%EOF%
 echo '#!/bin/ksh
 log=$1
 
-GREP="egrep -a"
+if [ `uname` = IRIX64 ]; then
+   GREP="egrep"
+else
+   GREP="egrep -a"
+fi
 
 # SCF, MP2, CC2 and CCSD energies:
 CRIT1=`$GREP "Final    HF energy: * -98\.57217047" $log | wc -l`

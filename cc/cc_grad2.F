@@ -368,7 +368,7 @@ C
       END IF
 C
       IF (.NOT. (CCS.OR.CC2)) THEN
-         LUBAR0 = 0
+         LUBAR0 = -765
          CALL GPOPEN(LUBAR0,'CCKABAR0','OLD',' ','UNFORMATTED',IDUMMY,
      *               .FALSE.)
          REWIND(LUBAR0)

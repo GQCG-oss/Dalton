@@ -173,9 +173,9 @@ c /* deck cc_gethfgd */
 
         IOPT  = 0
         CALL DZERO(WORK(KKAPPA),2*NALLAI(ISYM))
-        CALL CC_LAMBDAQ(WORK(IDUMMY),WORK(IDUMMY),
+        CALL CC_LAMBDAQ(DUMMY,DUMMY,
      &                  WORK(KCMOPQ), WORK(KCMOHQ),
-     &                  ISYM,WORK(IDUMMY),WORK(KKAPPA),WORK(KRMAT),
+     &                  ISYM,DUMMY,WORK(KKAPPA),WORK(KRMAT),
      &                  IREAL,IOPT,WORK(KEND1),LWRK1)
         
         

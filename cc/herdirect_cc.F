@@ -122,6 +122,7 @@ C
 #include <cbitwo.h>
 #include <dorps.h>
 #include <inftap.h>
+#include <nuclei.h>
 #include <symmet.h>
 #include <blocks.h>
 #include <eribuf.h>

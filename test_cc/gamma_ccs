@@ -62,7 +62,11 @@ LINEAR
 echo '#!/bin/ksh
 log=$1
 
-GREP="egrep -a"
+if [ `uname` = IRIX64 ]; then
+   GREP="egrep"
+else
+   GREP="egrep -a"
+fi
 
 # SCF energy:
 CRIT1=`$GREP "Final    HF energy:" $log | $GREP "\-100.00891992" | wc -l`

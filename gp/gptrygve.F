@@ -29,12 +29,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: gptrygve.F,v 1.1.1.1 2001-02-08 13:33:12 hjj Exp $
+C$Id: gptrygve.F,v 1.2 2001-02-13 18:35:03 vebjornb Exp $
 C
 #include <single.h>
 C
 #ifdef REV_LOG
 $Log: not supported by cvs2svn $
+Revision 1.1.1.1  2001/02/08 13:33:12  hjj
+*** Dalton Master Version *** cvs started 8-Feb-2001.
+
 Revision 1.2  2001/01/31 17:51:22  vebjornb
 Parallel modifications from pdahle, MPI and PVM
 
@@ -1196,6 +1199,8 @@ C 10-Apr-2000 HJAaJ: changed initialization to -9xxx from 0,
 C                    because unit 0 is stderr on many systems.
 C                    The number -9xxx is used for easier debugging.
 C
+#include <mxcent.h>
+#include <eribuf.h>
 #include <priunit.h>
 #include <inftap.h>
 C
@@ -1232,8 +1237,10 @@ C
       LUNR5  = -9030
       LUCMD  = -9031
       LUINTR = -9032
-      LUAORC = -9033
-      LUMOLDEN=-9034
+      LUMOLDEN=-9033
+      DO I = 1, MXCOOR
+         LUAORC(I) = -9034 - I
+      ENDDO
 C
 C     /RSPTAP/
 C

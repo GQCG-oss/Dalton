@@ -942,7 +942,7 @@ C
 
          IOPT = 2
          CALL CC_RDRSP(RLIST,IRLNR,ISYMR,IOPT,MODELX,
-     *                 WORK(IDUMMY),WORK(KRHO2))
+     *                 DUMMY,WORK(KRHO2))
          CALL CCLR_DIASCL(WORK(KRHO2),TWO,ISYMR)
          CALL CC_T2SQ(WORK(KRHO2),WORK(KC2AM),ISYMR)
 
@@ -1909,7 +1909,7 @@ C
          DTIME = SECOND()
          IOPT = 2
          CALL CC_RDRSP(RLIST,IRLNR,ISYMR,IOPT,MODELX,
-     *                 WORK(IDUMMY),WORK(KRHO2))
+     *                 DUMMY,WORK(KRHO2))
          DTIME = SECOND() - DTIME
          TIMIO = TIMIO + DTIME
 C
@@ -3385,7 +3385,7 @@ C----------------------------------------------------------------------
       IOPT  =  2
       DTIME = SECOND()
       CALL CC_RDRSP(LLIST,ILLNR,ISYZETA,IOPT,MODEL,
-     &              WORK(IDUMMY),WORK(KTAMP))
+     &              DUMMY,WORK(KTAMP))
       TIMIO = TIMIO + SECOND() - DTIME
 
 * square up zeta vector and store now in ZETAA:
@@ -3397,7 +3397,7 @@ C----------------------------------------------------------------------
       IOPT =  2
       DTIME = SECOND()
       CALL CC_RDRSP(RLIST,IRLNR,ISYTAMP,IOPT,MODEL,
-     &              WORK(IDUMMY),WORK(KTAMP))
+     &              DUMMY,WORK(KTAMP))
       TIMIO = TIMIO + SECOND() - DTIME
 
 * fix normalization for response vectors:
@@ -3648,7 +3648,7 @@ C
 * first the packed zeta vector in TAMP:
       IOPT =  2
       CALL CC_RDRSP(LLIST,ILLNR,ISYZETA,IOPT,MODEL,
-     &              WORK(IDUMMY),WORK(KTAMP))
+     &              DUMMY,WORK(KTAMP))
 
 * square up zeta vector and store now in ZETAA:
       CALL CC_T2SQ(WORK(KTAMP),WORK(KZETA),ISYZETA)
@@ -3656,7 +3656,7 @@ C
 * read now the amplitude vector into TAMP:
       IOPT =  2
       CALL CC_RDRSP(RLIST,IRLNR,ISYTAMP,IOPT,MODEL,
-     &              WORK(IDUMMY),WORK(KTAMP))
+     &              DUMMY,WORK(KTAMP))
 
 * fix normalization for response vectors:
       IF (RLIST(1:2).NE.'R0') THEN

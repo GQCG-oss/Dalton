@@ -553,7 +553,7 @@ C
                  KT1    = KWRK2 + (ICOUNT-1)*LETOT
                  KT2    = KWRK2 + (ICOUNT-1)*LETOT + NT1AM(ISYMTR)
                  IOPT   = 3
-                 CALL CC_WRRSP(LIST,ILSTNR,ISYM,IOPT,MODEL,WORK(IDUMMY),
+                 CALL CC_WRRSP(LIST,ILSTNR,ISYM,IOPT,MODEL,DUMMY,
      *                  WORK(KT1),WORK(KT2),WORK(KWRK1),NVARPT)
                  ILSTNR = ILSTNR + 1
 C

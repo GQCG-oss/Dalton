@@ -65,7 +65,11 @@ cat > triplet_cc3.dal <<%EOF%
 echo '#!/bin/ksh
 log=$1
 
-GREP="egrep -a"
+if [ `uname` = IRIX64 ]; then
+   GREP="egrep"
+else
+   GREP="egrep -a"
+fi
 
 # SCF, MP2, CC2, CCSD and CC3 energies:
 CRIT1=`$GREP "Final  *HF energy:  * -100\.008919920982" $log | wc -l`

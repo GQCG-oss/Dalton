@@ -259,13 +259,12 @@ C----------------------------------------------
 C
          CALL DZERO(WORK(KKABAR),LENBAR)
 C
-         LUBAR0 = 0
+         LUBAR0 = -903
          CALL GPOPEN(LUBAR0,'CCKABAR0','OLD',' ','UNFORMATTED',IDUMMY,
      *               .FALSE.)
          REWIND(LUBAR0)
          READ(LUBAR0) (WORK(KKABAR+I-1), I = 1,LENBAR)
          CALL GPCLOSE(LUBAR0,'KEEP')
-
 C
 C--------------------------------------------------------------
 C     Calculate ao-transformed zeta-kappa-bar-0 and HF density.
@@ -471,7 +470,6 @@ C----------------------------------------------
 C
          CALL DZERO(WORK(KKABAR),LENBAR)
 C
-         LUBAR0 = 0
          CALL GPOPEN(LUBAR0,'CCKABAR0','OLD',' ','UNFORMATTED',
      *               IDUMMY,.FALSE.)
          REWIND(LUBAR0)
@@ -622,6 +620,7 @@ C-------------------------------------------------
 C        Read orbital relaxation vector from disc:
 C-------------------------------------------------
 C
+         LUBAR0 = -905
          CALL GPOPEN(LUBAR0,'CCKABAR0','OLD',' ','UNFORMATTED',
      *               IDUMMY,.FALSE.)
          REWIND(LUBAR0)

@@ -64,7 +64,11 @@ cat > 2dar.dal <<%EOF%
 echo '#!/bin/ksh
 log=$1
 
-GREP="egrep -a"
+if [ `uname` = IRIX64 ]; then
+   GREP="egrep"
+else
+   GREP="egrep -a"
+fi
 
 # SCF, MP2 and CCSD energies:
 CRIT1=`$GREP "Final    HF energy: * -111\.22459161" $log | wc -l`

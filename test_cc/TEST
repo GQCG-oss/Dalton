@@ -22,8 +22,9 @@ SHORT="2dar cc2drw2e cc2refop cc2rf dpt dpt1 field \
        triplet triplet3 twophot twophotb twophot_c2v twophot_cc2_cs \
        twophot_ccs_cs twophot_ccsd_cs twophot_direct \
        alpha_relax dipgra_relax dipgra_relaxb dipgra_relax2 alpha_deriv \
-       triplet_cc3 freeze1 exgr1 solvh2smini optmp2fh grdhf grdn2h2"
-LONG="alpha2 triplet2 grdn2 optn2h2 optco"
+       triplet_cc3 freeze1 exgr1 solvh2smini optmp2fh grdhf grdn2h2 \
+       shield triples_direct2 verdet_h2 verdet_hf"
+LONG="alpha2 triplet2 grdn2 optn2h2 optco verdet_hf_direct"
 ALL="$SHORT $LONG"
 
 #########################################################################

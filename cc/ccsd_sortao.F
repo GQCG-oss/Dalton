@@ -329,7 +329,7 @@ C
       DATA NAME  /'CCAOIN_1','CCAOIN_2','CCAOIN_3','CCAOIN_4',
      *            'CCAOIN_5','CCAOIN_6','CCAOIN_7','CCAOIN_8'/
 
-      COMMON/SORTIO/LUAOIN(8)
+      COMMON/SORTIO/LUAOIN(8),LUAODR(8)
 #include <ccorb.h>
 #include <mxorb.h>
 #include <ccpack.h>

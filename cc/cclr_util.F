@@ -2040,7 +2040,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 #include <implicit.h>
 C
-      PARAMETER (TWO = 2.0D0, THPRT = 1.0D-9)
+      PARAMETER (TWO = 2.0D0, THPRT = 1.0D-9, HUNDRED = 100.0D0)
 C
 #include <ccorb.h>
 #include <ccsdsym.h>
@@ -2072,19 +2072,19 @@ C
      *     '--------------------------------------------------------'
          WRITE(LUPRI,'(/10X,A,10X,F10.4,A)')
      *     'Single Excitation Contribution : ',
-     *     (C1NOSQ/CNOSQ)*100.0,' %'
+     *     (C1NOSQ/CNOSQ)*HUNDRED,' %'
          WRITE(LUPRI,'(/10X,A,10X,F10.4,A)')
      *     'Double Excitation Contribution : ',
-     *     (C2NOSQ/CNOSQ)*100.0,' %'
+     *     (C2NOSQ/CNOSQ)*HUNDRED,' %'
          WRITE(LUPRI,'(/10X,A,10X,F10.4)')
      *     '||T1||/||T2||                  : ',
      *      SQRT(C1NOSQ/C2NOSQ)
          WRITE(LUPRI,'(/10X,A,10X,F10.4)')
      *     'Tau1 diagnostic                : ',
      *      SQRT(C1NOSQ/(TWO*DFLOAT(NRHFT)))
-         PT1 = (C1NOSQ/CNOSQ)*100.0D0
+         PT1 = (C1NOSQ/CNOSQ)*HUNDRED
       ELSE
-         PT1 = 100.0D0
+         PT1 = HUNDRED
       ENDIF
       WRITE(LUPRI,'(/10X,A,10X,F10.4)')
      *  'Norm of Total Amplitude Vector : ',SQRT(CNOSQ)

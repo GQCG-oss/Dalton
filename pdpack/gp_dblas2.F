@@ -1,5 +1,5 @@
 #ifndef SYS_T3D
-      SUBROUTINE DGEMV ( TRANS, M, N, ALPHA, A, LDA, X, INCX,
+      SUBROUTINE DGEMV( TRANS, M, N, ALPHA, A, LDA, X, INCX,
      $                   BETA, Y, INCY )
 *     .. Scalar Arguments ..
       DOUBLE PRECISION   ALPHA, BETA

@@ -265,7 +265,7 @@ C----------------------------------------------
 C
          CALL DZERO(WORK(KKABAR),LENBAR)
 C
-         LUBAR0 = 0
+         LUBAR0 = -907
          CALL GPOPEN(LUBAR0,'CCKABAR0','OLD',' ','UNFORMATTED',
      *               IDUMMY,.FALSE.)
          REWIND(LUBAR0)

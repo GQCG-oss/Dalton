@@ -70,7 +70,11 @@ cat > dipgra_relaxb.dal <<%EOF%
 echo '#!/bin/ksh
 log=$1
 
-GREP="egrep -a"
+if [ `uname` = IRIX64 ]; then
+   GREP="egrep"
+else
+   GREP="egrep -a"
+fi
 
 # MCSCF energy:
 CRIT1=`$GREP "Final MCSCF energy:           -2.93364928" $log | wc -l`

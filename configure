@@ -584,7 +584,7 @@ if [ "$blas3" != "true" ] ; then
     if [ "$blas2" != "true" ] ; then
        pdpackextras="$pdpackextras gp_dblas2.o"
        if [ "$blas" != "true" ] ; then
-          pdpackextras="$pdpackextras gpblas.o"
+          pdpackextras="$pdpackextras gp_dblas1.o"
        fi
     fi
 fi
@@ -675,8 +675,8 @@ case $WHICH in
             esac
             opt='-O3 -qstrict -qarch=auto -qtune=auto -qmaxmem=-1 -bmaxdata:0x40000000 -bmaxstack:0x10000000';;
     iris4d) case $opsys in
-               IRIX64) opt='-O3 -64 -mips4 -G 0';;
-	       *) opt='-O3 -32 -mips2 -G 0';;
+               IRIX64) opt='-O2 -64 -mips4 -G 0 -OPT:Olimit=0';;
+	       *) opt='-O2 -32 -mips2 -G 0 -OPT:Olimit=0';;
             esac
             if [ "$mesp" = "dummy" ]; then
 	       if [ $split = 'true' ] ; then
@@ -924,29 +924,19 @@ if [ "$WHICH" = "rs6000" -a "$opsys" = "2" ]; then
 fi
 
 
-if [ $WHICH = 'convex' ]; then
-   cat <<EOF >> Makefile.config
-CPP         = $cppuse
-#
-# Suffix rules
-#
-.SUFFIXES : .F .f .o
-
-.F.o:
-$tab\$(CPP) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$*.F > \$*.f
-$tab\$(F77) \$(OPTFLAGS) -c \$*.f 
-$tab\$(RM) \$*.f
-EOF
-elif [ $WHICH = 'hal' ]; then
+if [ $WHICH = 'hal' ]; then
    cat <<EOF >> Makefile.config
 #
 # Suffix rules
 #
-.SUFFIXES : .F .f .o
+.SUFFIXES : .F .f .o .c
 
 .F.o:
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F 
 $tab\$(RM) \$*.f
+
+.c.o:
+$tab\$(CC) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(CFLAGS) -c \$*.F 
 EOF
 elif [ $WHICH = 'rs6000' ]; then
    if [ $opsys = '2' ]; then
@@ -955,12 +945,18 @@ CPP        = $cppuse
 #
 # Suffix rules
 #
-.SUFFIXES : .F .o
+.SUFFIXES : .F .o .c 
 
 .F.o:
 $tab\$(CPP) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$*.F
 $tab mv \$*.i \$*.f
 $tab\$(F77) \$(OPTFLAGS) -c \$*.f 
+$tab\$(RM) \$*.f
+
+.c.o:
+$tab\$(CPP) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$*.c
+$tab mv \$*.i \$*.f
+$tab\$(CC) \$(CFLAGS) -c \$*.f 
 $tab\$(RM) \$*.f
 EOF
     else cat <<EOF>> Makefile.config
@@ -973,7 +969,7 @@ EOF
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F 
 
 .c.o:
-$tab\$(CC) \$(INCLUDE_DIR) \$(OPTFLAGS) -c \$*.c 
+$tab\$(CC) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(CFLAGS) -c \$*.c 
 EOF
     fi
 elif [ $WHICH = 'linux' ]; then
@@ -981,7 +977,7 @@ cat <<EOF>> Makefile.config
 #
 # Suffix rules
 #
-.SUFFIXES : .F .o
+.SUFFIXES : .F .o .c
 
 .F.o:
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F 
@@ -993,13 +989,13 @@ else cat <<EOF>> Makefile.config
 #
 # Suffix rules
 #
-.SUFFIXES : .F .o
+.SUFFIXES : .F .o .c
 
 .F.o:
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F 
 
 .c.o:
-$tab\$(CC) \$(INCLUDE_DIR) \$(CFLAGS) -c \$*.c 
+$tab\$(CC) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(CFLAGS) -c \$*.c 
 EOF
 fi
 #

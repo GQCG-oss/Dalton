@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2car2.F,v 1.2 2001-02-12 18:17:53 vebjornb Exp $
+C$Id: eri2car2.F,v 1.3 2001-02-13 18:35:03 vebjornb Exp $
 C
 #include <single.h>
 C
@@ -97,6 +97,7 @@ C
          LCV3   = 0
          LCA4   = 0
          LCV4   = 0
+         LC34   = 0
 C
          LFIRST = 6*KHKT12
 C

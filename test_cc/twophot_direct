@@ -66,7 +66,11 @@ XDIPLEN YDIPLEN XDIPLEN YDIPLEN
 echo '#!/bin/ksh
 log=$1
 
-GREP="egrep -a"
+if [ `uname` = IRIX64 ]; then
+   GREP="egrep"
+else
+   GREP="egrep -a"
+fi
 
 # SCF, MP2 and CCSD energies:
 CRIT1=`$GREP "Final * HF energy:" $log | $GREP "\-100.00891992" | wc -l`
@@ -78,31 +82,31 @@ ERROR[1]="ENERGIES NOT CORRECT"
 
 
 # CCS twophoton transition moment
-CRIT1=`$GREP "TSM:[ ]*(5\.|0\.5)238618............" $log | wc -l`
-CRIT2=`$GREP "ABLMOM[ ]*( |\-|0|\-0)\.364653............[ ]* CDRMOM[ ]*( |\-|0|\-0)\.143659............" $log | wc -l`
-CRIT3=`$GREP "CDLMOM[ ]*( |\-|0|\-0)\.364653............[ ]* ABRMOM[ ]*( |\-|0|\-0)\.143659............" $log | wc -l`
-CRIT4=`$GREP " w moment product  \(ablmom\*cdlmom\):[ ]+(5\.|0\.5)238618............" $log | wc -l`
-CRIT5=`$GREP "\-w moment product \(cdlmom\*abrmom\):[ ]+(5\.|0\.5)238618............" $log | wc -l`
+CRIT1=`$GREP "TSM:[ ]*(5\.|0\.5|0.05)238618." $log | wc -l`
+CRIT2=`$GREP "ABLMOM[ ]*( |\-|0|\-0|0)\.364653[0-9]*[ ]* CDRMOM[ ]*( |\-|0|\-0|0)\.143659." $log | wc -l`
+CRIT3=`$GREP "CDLMOM[ ]*( |\-|0|\-0|0)\.364653[0-9]*[ ]* ABRMOM[ ]*( |\-|0|\-0|0)\.143659." $log | wc -l`
+CRIT4=`$GREP "w moment product * \(ablmom\*cdlmom\):[ ]*(\+| )(5\.|0\.5|0\.05)238618." $log | wc -l`
+CRIT5=`$GREP "\-w moment product \(cdlmom\*abrmom\):[ ]*(\+| )(5\.|0\.5|0\.05)238618." $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[2]=10
 ERROR[2]="CCS TWOPHOTON TRANSITION MOMENTS NOT CORRECT"
 
 # CC2 twophoton transition moment
-CRIT1=`$GREP "TSM:[ ]*0.337647............" $log | wc -l`
-CRIT2=`$GREP "ABLMOM[ ]*( |0)\.815478............[ ]* CDRMOM[ ]*( |0)\.414048............" $log | wc -l`
-CRIT3=`$GREP "CDLMOM[ ]*( |0)\.815478............[ ]* ABRMOM[ ]*( |0)\.414048............" $log | wc -l`
-CRIT4=`$GREP " w moment product  \(ablmom\*cdlmom\):[ ]+( |0)\.337647............" $log | wc -l`
-CRIT5=`$GREP "\-w moment product \(cdlmom\*abrmom\):[ ]+( |0)\.337647............" $log | wc -l`
+CRIT1=`$GREP "TSM:[ ]*0.337647." $log | wc -l`
+CRIT2=`$GREP "ABLMOM[ ]*( |0)\.815478[0-9]*[ ]* CDRMOM[ ]*( |0)\.414048." $log | wc -l`
+CRIT3=`$GREP "CDLMOM[ ]*( |0)\.815478[0-9]*[ ]* ABRMOM[ ]*( |0)\.414048." $log | wc -l`
+CRIT4=`$GREP " w moment product  \(ablmom\*cdlmom\):[ ]*(\+| )( |0)\.337647." $log | wc -l`
+CRIT5=`$GREP "\-w moment product \(cdlmom\*abrmom\):[ ]*(\+| )( |0)\.337647." $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[3]=10
 ERROR[3]="CC2 TWOPHOTON TRANSITION MOMENTS NOT CORRECT"
 
 # CCSD twophoton transition moment
-CRIT1=`$GREP "TSM:[ ]*(7\.|0\.7)995971............" $log | wc -l`
-CRIT2=`$GREP "ABLMOM[ ]*( |\-|0|\-0)\.168028............[ ]* CDRMOM[ ]*( |\-)(4\.|0.4)758689..." $log | wc -l`
-CRIT3=`$GREP "CDLMOM[ ]*( |\-|0|\-0)\.168028............[ ]* ABRMOM[ ]*( |\-)(4\.|0.4)758689..." $log | wc -l`
-CRIT4=`$GREP " w moment product  \(ablmom\*cdlmom\):[ ]+(7\.|0\.7)995971............" $log | wc -l`
-CRIT5=`$GREP "\-w moment product \(cdlmom\*abrmom\):[ ]+(7\.|0\.7)995971............" $log | wc -l`
+CRIT1=`$GREP "TSM:[ ]*(7\.|0\.7|0.007)995971." $log | wc -l`
+CRIT2=`$GREP "ABLMOM[ ]*( |\-|0|\-0)\.168028[0-9]*[ ]* CDRMOM[ ]*( |\-)(4\.|0.4|0\.04)758689." $log | wc -l`
+CRIT3=`$GREP "CDLMOM[ ]*( |\-|0|\-0)\.168028[0-9]*[ ]* ABRMOM[ ]*( |\-)(4\.|0.4|0\.04)758689." $log | wc -l`
+CRIT4=`$GREP " w moment product  \(ablmom\*cdlmom\):[ ]+(7\.|0\.7|0.007)995971." $log | wc -l`
+CRIT5=`$GREP "\-w moment product \(cdlmom\*abrmom\):[ ]+(7\.|0\.7|0.007)995971." $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[4]=10
 ERROR[4]="CCSD TWOPHOTON TRANSITION MOMENTS NOT CORRECT"

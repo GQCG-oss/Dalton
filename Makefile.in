@@ -4,10 +4,10 @@ DALTON_LIBS = \
 -Labacus -labacus	\
 -Lrsp -lrsp 		\
 -Lsirius -lsirius	\
--Lpdpack -lpdpack	\
--Lgp -lgp               \
--Leri -leri             \
--Lcc  -lcc
+-Leri -leri		\
+-Lcc  -lcc		\
+-Lgp -lgp		\
+-Lpdpack -lpdpack
 
 PDLIB = pdpack/pdlib.a
 
@@ -29,7 +29,7 @@ dalton.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
 	PD_OBJ CC_OBJ IO_OBJ AMFI_OBJ
 	$(F77) $(OPTFLAGS) \
 	-o dalton.x $(OBJPRG) $(OBJSIO) $(OBJSLAVE) \
-	$(OBJSAMFI) $(DALTON_LIBS)
+	$(OBJSAMFI) $(DALTON_LIBS) $(LIB_LIST)
 	mv dalton.x $(INSTALLDIR)
 #
 #       Linux version of the program

@@ -4,41 +4,46 @@
     ***********  DALTON - An electronic structure program  ***********
     ******************************************************************
 
-               This is output from DALTON (Release 1.1, July 2000)
+               This is output from DALTON (Release 1.2, April 2001)
 
                           Principal authors:
 
-            Trygve Helgaker,     University of Oslo,        Norway 
-            Hans Joergen Jensen, SDU - Odense University,   Denmark
-            Poul Joergensen,     Aarhus University,         Denmark
-            Jeppe Olsen,         Aarhus University,         Denmark
-            Kenneth Ruud,        San Diego Superc. Center,  USA    
-            Hans Aagren,         KTH Stockholm,             Sweden 
+            Trygve Helgaker,       University of Oslo,         Norway 
+            Hans Joergen Jensen,   SDU - Odense University,    Denmark
+            Poul Joergensen,       Aarhus University,          Denmark
+            Jeppe Olsen,           Aarhus University,          Denmark
+            Kenneth Ruud,          San Diego Superc. Center,   USA    
+            Hans Aagren,           KTH Stockholm,              Sweden 
 
                           Contributors:
 
-            Keld L. Bak,         UNI-C,                     Denmark
-            Vebjoern Bakken,     University of Oslo,        Norway 
-            Ove Christiansen,    University of Lund,        Sweden 
-            Paal Dahle,          University of Oslo,        Norway 
-            Erik K. Dalskov,     UNI-C,                     Denmark
-            Thomas Enevoldsen,   SDU - Odense University,   Denmark
-            Berta Fernandez,     U.of Santiago de Compostela,Spain 
-            Hanne Heiberg,       University of Oslo,        Norway 
-            Hinne Hettema,       University of Auckland,    NZ     
-            Dan Jonsson,         San Diego Superc. Center,  USA    
-            Sheela Kirpekar,     SDU - Odense University,   Denmark
-            Rika Kobayashi,      Cambridge University,      England
-            Henrik Koch,         SDU - Odense University,   Denmark
-            Kurt V.Mikkelsen,    University of Copenhagen,  Denmark
-            Patrick Norman,      University of Linkoeping,  Sweden 
-            Martin J. Packer,    University of Sheffield,   UK     
-            Torgeir A. Ruden,    University of Oslo,        Norway 
-            Trond Saue,          University of Toulouse,    France 
-            Stephan P. A. Sauer, University of Copenhagen,  Denmark
-            Bernd Schimmelpfennig,KTH Stockholm,            Sweden 
-            Peter R.Taylor,      San Diego Superc. Center,  USA    
-            Olav Vahtras,        PDC, Stockholm,            Sweden 
+            Keld L. Bak,           UNI-C,                      Denmark
+            Vebjoern Bakken,       University of Oslo,         Norway 
+            Ove Christiansen,      University of Lund,         Sweden 
+            Sonia Coriani,         University of Trieste,      Italy  
+            Paal Dahle,            University of Oslo,         Norway 
+            Erik K. Dalskov,       UNI-C,                      Denmark
+            Thomas Enevoldsen,     SDU - Odense University,    Denmark
+            Berta Fernandez,       U.of Santiago de Compostela,Spain  
+            Christof Haettig,      Forschungszentrum Karlsruhe,Germany
+            Kasper Hald,           Aarhus University,          Denmark
+            Asger Halkier,         Aarhus University,          Denmark
+            Hanne Heiberg,         University of Oslo,         Norway 
+            Hinne Hettema,         University of Auckland,     NZ     
+            Dan Jonsson,           San Diego Superc. Center,   USA    
+            Sheela Kirpekar,       SDU - Odense University,    Denmark
+            Rika Kobayashi,        Cambridge University,       England
+            Henrik Koch,           SDU - Odense University,    Denmark
+            Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
+            Patrick Norman,        University of Linkoeping,   Sweden 
+            Martin J. Packer,      University of Sheffield,    UK     
+            Torgeir A. Ruden,      University of Oslo,         Norway 
+            Trond Saue,            University of Toulouse,     France 
+            Stephan P. A. Sauer,   University of Copenhagen,   Denmark
+            Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
+            K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
+            Peter R.Taylor,        San Diego Superc. Center,   USA    
+            Olav Vahtras,          PDC, Stockholm,             Sweden 
 ------------------------------------------------------------------------
 
 
@@ -59,15 +64,16 @@
      appropriate citation would be:
       
      T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,H. Aagren,
-     K.L. Bak, V. Bakken, O. Christiansen,P. Dahle, E.K. Dalskov, T. Enevoldsen,
-     B. Fernandez,H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+     K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,P. Dahle, E.K. Dalskov,
+     T. Enevoldsen, B. Fernandez,C. Haettig, K. Hald, A. Halkier,
+     H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
      H. Koch, K.V. Mikkelsen, P. Norman, M.J. Packer, T.A. Ruden, T. Saue,
-     S.P.A. Sauer, B. Schimmelpfennig, P.R. Taylor, and O. Vahtras:
-     "Dalton release 1.1 (2000), an electronic structure program"
+     S.P.A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid,P.R. Taylor, and O. Vahtras:
+     "Dalton release 1.2 (2001), an electronic structure program"
 
  
-     Date and time (Linux)  : 
-     Host name              : mojo08                                  
+     Date and time (Linux)  : Tue Feb 13 00:31:02 2001
+     Host name              : slater.uio.no                           
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
 
@@ -78,6 +84,12 @@
     Wave function sections will be executed
     Dynamic molecular property section will be executed
     Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
 
 
 
@@ -261,10 +273,10 @@ Point group: C2v
  ************************************************************************
 
 
- >>> Time used in ONEDRV is   -nan seconds
+ >>> Time used in ONEDRV is   0.00 seconds
 
 
- >>> Time used in OVERLA is   -nan seconds
+ >>> Time used in OVERLA is   0.01 seconds
 
 
  Number of two-electron integrals written:         677 ( 30.6% )
@@ -272,7 +284,7 @@ Point group: C2v
 
 
 
- >>> Time used in TWOINT is   0.00 seconds
+ >>> Time used in TWOINT is   0.01 seconds
 
 
 
@@ -285,9 +297,9 @@ Point group: C2v
 
  Threshold for discarding integrals :  1.10D-11
 
- >>> Time used in FRMSUP is   -nan seconds
+ >>> Time used in FRMSUP is   0.00 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.06 seconds
+ >>>> Total CPU  time used in HERMIT:   0.04 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
@@ -298,8 +310,8 @@ Point group: C2v
  ************************************************************************
 
  
-     Wed Jul 12 16:0Linux)  : 
-     Host name              : mojo08                                  
+     Date and time (Linux)  : Tue Feb 13 00:31:02 2001
+     Host name              : slater.uio.no                           
 
  Title lines from integral program:
      lithium-hydrid                                                          
@@ -381,7 +393,7 @@ Point group: C2v
     6       -7.977349366868    5.79311D-05   -1.58D-07
     7       -7.977349367727    8.26625D-06   -8.59D-10
     8       -7.977349367749    1.28648D-06   -2.27D-11
-    9       -7.977349367750    1.38030D-07   -6.66D-13
+    9       -7.977349367750    1.38030D-07   -6.62D-13
  DIIS converged in   9 iterations !
 
 
@@ -454,7 +466,7 @@ Point group: C2v
  RHF     0.00000000
  Diff.   0.00117345
 
- Time used for MP2 natural orbitals :      -2.019 CPU seconds.
+ Time used for MP2 natural orbitals :       0.010 CPU seconds.
 
 
         SIRIUS MCSCF optimization (SIROPT)
@@ -487,7 +499,7 @@ Point group: C2v
 
 
  CI energies and residuals:
-    1       -7.993704627989370       1.23D-16
+    1       -7.993704627989374       2.56D-16
 
    <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
 
@@ -502,7 +514,7 @@ Point group: C2v
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Total MCSCF energy       :       -7.993704627989370       (MACRO    1)
+ Total MCSCF energy       :       -7.993704627989374       (MACRO    1)
 
  Norm of total gradient   :        0.028391760177
  -    of CI gradient      :        0.000000000000
@@ -527,7 +539,7 @@ Point group: C2v
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Total MCSCF energy       :       -7.994068405526821       (MACRO    2)
+ Total MCSCF energy       :       -7.994068405526825       (MACRO    2)
 
  Norm of total gradient   :        0.012800332339
  -    of CI gradient      :        0.005989469568
@@ -552,7 +564,7 @@ Point group: C2v
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Total MCSCF energy       :       -7.994129906655663       (MACRO    3)
+ Total MCSCF energy       :       -7.994129906655665       (MACRO    3)
 
  Norm of total gradient   :        0.000818483922
  -    of CI gradient      :        0.000221341180
@@ -577,7 +589,7 @@ Point group: C2v
  <<< MACRO ITERATION  4 >>>
  --------------------------
 
- Total MCSCF energy       :       -7.994130529597817       (MACRO    4)
+ Total MCSCF energy       :       -7.994130529597820       (MACRO    4)
 
  Norm of total gradient   :        0.000010896456
  -    of CI gradient      :        0.000004956737
@@ -617,8 +629,8 @@ Point group: C2v
                >>> SIRIUS OPTIMIZATION STATISTICS <<<
 
  
-     Wed Jul 12 16:0Linux)  : 
-     Host name              : mojo08                                  
+     Date and time (Linux)  : Tue Feb 13 00:31:02 2001
+     Host name              : slater.uio.no                           
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
@@ -661,9 +673,9 @@ Point group: C2v
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.000491390705     -0.000363777537      0.740302032367
-    3     -0.000059577219     -0.000061501129      1.032292708628
-    4     -0.000000621344     -0.000000622942      1.002572626862
+    2     -0.000491390705     -0.000363777537      0.740302032366
+    3     -0.000059577219     -0.000061501129      1.032292708612
+    4     -0.000000621344     -0.000000622942      1.002572626856
     5     -0.000000000035     -0.000000000035      1.000000000000
 
 
@@ -699,8 +711,8 @@ Point group: C2v
      Final gradient norm:           0.000001888648
 
  
-     Wed Jul 12 16:0Linux)  : 
-     Host name              : mojo08                                  
+     Date and time (Linux)  : Tue Feb 13 00:31:02 2001
+     Host name              : slater.uio.no                           
 
 
  Occupancies of natural orbitals
@@ -777,12 +789,12 @@ Point group: C2v
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.15 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.10 seconds
  >>>> Total wall time used in SIRIUS :      0.00 seconds
 
  
-     Wed Jul 12 16:0Linux)  : 
-     Host name              : mojo08                                  
+     Date and time (Linux)  : Tue Feb 13 00:31:02 2001
+     Host name              : slater.uio.no                           
 
 - End of Wave Function Section
 
@@ -801,8 +813,8 @@ Point group: C2v
  ----------------------------------------------
 
  Print level                                    : IPRPP  =   2
- Maximum number of iterations                   : MAXITL =  30
- Maximum number of iterations                   : MAXITP =  30
+ Maximum number of iterations                   : MAXITL =  60
+ Maximum number of iterations                   : MAXITP =  60
  Threshold for convergence                      : THCPP  = 1.000D-03
  Threshold for convergence                      : THCLR  = 1.000D-03
  Maximum iterations in optimal orbital algorithm: MAXITO =   5
@@ -835,7 +847,7 @@ Point group: C2v
 
  MCSCF energy         :       -7.994130529632507
  -- inactive part     :       -7.879190006123967
- --   active part     :       -1.084577999728910
+ --   active part     :       -1.084577999728911
  -- nuclear repulsion :        0.969637476220371
 
 
@@ -919,56 +931,56 @@ Point group: C2v
 
 
  GP * SOLUTION VECTOR AT FREQUENCY     0.15260 AU
- AFTER    8 LINEAR TRANSFORMATIONS IS    -26.30671006
+ AFTER    6 LINEAR TRANSFORMATIONS IS    -62.15564632
+ INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   11    0    1
+ DETERMINANT OF REDUCED MATRIX IS -3.00 * 10 ** -8.0
+
+
+ ***WARNING, negative eigenvalues in reduced matrix, inertia is   11    0    1
+
+ GP * SOLUTION VECTOR AT FREQUENCY     0.15260 AU
+ AFTER    8 LINEAR TRANSFORMATIONS IS    -21.63944748
  INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   15    0    1
- DETERMINANT OF REDUCED MATRIX IS -3.67 * 10 **-10.0
+ DETERMINANT OF REDUCED MATRIX IS -8.29 * 10 **-12.0
 
 
  ***WARNING, negative eigenvalues in reduced matrix, inertia is   15    0    1
 
  GP * SOLUTION VECTOR AT FREQUENCY     0.15260 AU
- AFTER   10 LINEAR TRANSFORMATIONS IS    -21.56807608
+ AFTER   10 LINEAR TRANSFORMATIONS IS    -21.19712823
  INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   19    0    1
- DETERMINANT OF REDUCED MATRIX IS -1.91 * 10 **-12.0
+ DETERMINANT OF REDUCED MATRIX IS -8.85 * 10 **-14.0
 
 
  ***WARNING, negative eigenvalues in reduced matrix, inertia is   19    0    1
 
  GP * SOLUTION VECTOR AT FREQUENCY     0.15260 AU
- AFTER   12 LINEAR TRANSFORMATIONS IS    -21.20868574
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   23    0    1
- DETERMINANT OF REDUCED MATRIX IS -7.78 * 10 **-13.0
+ AFTER   11 LINEAR TRANSFORMATIONS IS    -21.18852439
+ INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   21    0    1
+ DETERMINANT OF REDUCED MATRIX IS -2.86 * 10 **-14.0
 
 
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   23    0    1
-
- GP * SOLUTION VECTOR AT FREQUENCY     0.15260 AU
- AFTER   13 LINEAR TRANSFORMATIONS IS    -21.18884962
- INERTIA (POS,ZER,NEG) OF REDUCED MATRIX IS   25    0    1
- DETERMINANT OF REDUCED MATRIX IS -6.69 * 10 **-13.0
-
-
- ***WARNING, negative eigenvalues in reduced matrix, inertia is   25    0    1
+ ***WARNING, negative eigenvalues in reduced matrix, inertia is   21    0    1
 
  *** THE REQUESTED    2 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
- (dimension of paired reduced space:   26)
- RSP solution vector no.    1; norm of residual   1.32D-04
- RSP solution vector no.    2; norm of residual   7.35D-04
+ (dimension of paired reduced space:   22)
+ RSP solution vector no.    1; norm of residual   4.40D-04
+ RSP solution vector no.    2; norm of residual   5.83D-04
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
  QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.000000D+00
  SYMMETRY    1
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.00000):     27.1965590957    
+@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.00000):     27.1965315715    
 
  QRLRVE: SINGLET SOLUTION   LABEL   ZDIPLEN     FREQUENCY   0.152600D+00
  SYMMETRY    1
 
-@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.15260):    -21.1888496204    
+@QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.15260):    -21.1885243925    
 
 
  Linear response calculations for quadratic response
@@ -1019,7 +1031,7 @@ Point group: C2v
 @B excited state no., symmetry, spin:             1    1    0
 @C excited state no., symmetry, spin:             1    1    0
 
-@B and C excitation energies, moment:   0.11958917   0.11958917  -4.14175131
+@B and C excitation energies, moment:   0.11958917   0.11958917  -4.14157542
 
 
 @Transition moment <B | A | C> in a.u. for
@@ -1027,7 +1039,7 @@ Point group: C2v
 @B excited state no., symmetry, spin:             1    1    0
 @C excited state no., symmetry, spin:             2    1    0
 
-@B and C excitation energies, moment:   0.11958917   0.27218872  -0.93942961
+@B and C excitation energies, moment:   0.11958917   0.27218872  -0.93920143
 
 
 @Transition moment <B | A | C> in a.u. for
@@ -1035,7 +1047,7 @@ Point group: C2v
 @B excited state no., symmetry, spin:             2    1    0
 @C excited state no., symmetry, spin:             2    1    0
 
-@B and C excitation energies, moment:   0.27218872   0.27218872  -0.53599539
+@B and C excitation energies, moment:   0.27218872   0.27218872  -0.53586028
 
 
 @Transition moment <B | A | C> in a.u. for
@@ -1059,13 +1071,13 @@ Point group: C2v
 @B excited state no., symmetry, spin:             1    2    0
 @C excited state no., symmetry, spin:             1    2    0
 
-@B and C excitation energies, moment:   0.15776544   0.15776544  -2.29592037
+@B and C excitation energies, moment:   0.15776544   0.15776544  -2.29582503
 
- >>>> Total CPU  time used in RESPONSE:   0.23 seconds
+ >>>> Total CPU  time used in RESPONSE:   0.16 seconds
  >>>> Total wall time used in RESPONSE:   0.00 seconds
- >>>> Total CPU  time used in DALTON:   0.44 seconds
+ >>>> Total CPU  time used in DALTON:   0.30 seconds
  >>>> Total wall time used in DALTON:   0.00 seconds
 
  
-     Wed Jul 12 16:0Linux)  : 
-     Host name              : mojo08                                  
+     Date and time (Linux)  : Tue Feb 13 00:31:02 2001
+     Host name              : slater.uio.no                           

@@ -11,12 +11,11 @@
 ################################################################################
 #
 # location of executeables
-DALTON="/projects/ruud/dalton11/dalton.x"
-DALMPI="/projects/ruud/dalton11/dalpar.x"
-DALPVM="/projects/ruud/dalton11/dalpvm.x"
-MPIRUN="MPIRUN"
+DALTON="/work/dalton_new/dalton/dalton.x"
+DALMPI="/work/dalton_new/dalton/dalpar.x"
+MPIRUN="mpirun"
 # set TMPDIR (if not defined by e.g. NQS) and WRKDIR
-[ -z "$TMPDIR" ] && TMPDIR="/scr/$USER"
+[ -z "$TMPDIR" ] && TMPDIR="/work/$USER"
 WRKDIR=`pwd`
 export WRKDIR
 #
@@ -45,7 +44,7 @@ optw=0
 frl=rel
 #
 usage (){
-          echo "\nUsage:    dalton [-a] [-A] [-b directory] [-d] [-D] [-e ext] [
+          echo "\nUsage:    dalton [-a] [-A] [-b directory] [-d] [-D] [-ext log] [
 -f] [-F] [-i] [-I] \n[-m mem] [-N nodes]  dal{.$DALEXT} mol{.$MOLEXT}\n"
           echo 'Options:'
           echo ' a        copy auxiliary files from WRKDIR to TMPDIR before calculation starts'
@@ -53,7 +52,7 @@ usage (){
 	  echo ' b dir    change directory where basis sets are searched for to dir'
           echo ' d        delete TMPDIR before calculation starts'
           echo ' D        do not delete TMPDIR after calculation stops'
-          echo ' e ext    change default output extension to ext'
+          echo ' ext log  change default output extension to log'
           echo ' f        copy SIRIUS.RST/RESULTS.RSP/RSPVEC from WRKDIR to TMPDIR before calculation starts'
           echo ' F        copy SIRIUS.RST/RESULTS.RSP/RSPVEC from TMPDIR to WRKDIR after calculation stops'
           echo ' i f1 f2  copy SIRIFCs from WRKDIR to TMPDIR before calculation starts'
@@ -73,7 +72,7 @@ while [ -n "`echo $1 | grep '-'`" ]; do
 	   shift;;
       -d ) optd=1;;
       -D ) optD=0;;
-      -e ) OUTEXT=$2
+      -ext ) OUTEXT=$2
            shift;;
       -f ) optf=1;;
       -F ) optF=1;;
@@ -124,6 +123,7 @@ fi
 #
 export TMPDIR
 #
+echo
 echo "   ***************************************** "
 echo "   **** OUTPUT FROM DALTON SHELL SCRIPT **** "
 echo "   ***************************************** "
@@ -242,7 +242,7 @@ fi
 if [ $optn -gt 1 ] ; then
    if [ -s $MPIRUN -a -x $MPIRUN ]; then
       if [ -a $DALMPI -a -x $DALMPI ]; then
-         $MPIRUN -np $optn $DALMPI
+         $MPIRUN -np $optn -x SCRATCHDIR,WRKDIR,BASDIR,WRKMEM $DALMPI
       else
          echo "$DALMPI does not exist or is not executeable"
          exit 1
@@ -253,7 +253,7 @@ if [ $optn -gt 1 ] ; then
    fi
 else
    if [ -s $DALTON -a -x $DALTON ]; then
-      cp $DALTON .
+      cp $DALTON ./dalton.x
       ./dalton.x
    else
       echo "$DALTON does not exist or is not executeable"
@@ -335,11 +335,13 @@ if [ "$1" = "$2" ]; then
    $WRKDIR/$1.$OUTEXT.bak"
    fi
    if [ $opto -eq 1 ] ; then
-      if [ -s $WRKDIR/$OUTFIL -a -r $WRKDIR/$OUTFIL ]; then
-         cp $WRKDIR/$OUTFIL $WRKDIR/$1.$OUTEXT
-         rm -rf $WRKDIR/$OUTFIL
-      else	
-         echo "$WRKDIR/$OUTFIL has not been created from the present run"
+      if [ "$OUTFIL" != "$1.$OUTEXT" ] ; then
+         if [ -s $WRKDIR/$OUTFIL -a -r $WRKDIR/$OUTFIL ]; then
+            cp $WRKDIR/$OUTFIL $WRKDIR/$1.$OUTEXT
+            rm -rf $WRKDIR/$OUTFIL
+         else	
+            echo "$WRKDIR/$OUTFIL has not been created from the present run"
+         fi
       fi
    else
       if [ -s DALTON.OUT -a -r DALTON.OUT ]; then
@@ -354,11 +356,13 @@ else
       echo "Existing file $WRKDIR/$1_$2.$OUTEXT renamed to $WRKDIR/$1_$2.$OUTEXT.bak"
    fi
    if [ $opto -eq 1 ] ; then
-      if [ -s $WRKDIR/$OUTFIL -a -r $WRKDIR/$OUTFIL ]; then
-         cp $WRKDIR/$OUTFIL $WRKDIR/$1_$2.$OUTEXT
-         rm -rf $WRKDIR/$OUTFIL
-      else	
-         echo "$WRKDIR/$OUTFIL has not been created from the present run"
+      if [ "$OUTFIL" != "$1_$2.$OUTEXT" ]; then
+         if [ -s $WRKDIR/$OUTFIL -a -r $WRKDIR/$OUTFIL ]; then
+            cp $WRKDIR/$OUTFIL $WRKDIR/$1_$2.$OUTEXT
+            rm -rf $WRKDIR/$OUTFIL
+         else	
+            echo "$WRKDIR/$OUTFIL has not been created from the present run"
+         fi
       fi
    else
       if [ -s DALTON.OUT -a -r DALTON.OUT ]; then

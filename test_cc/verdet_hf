@@ -77,6 +77,12 @@ YDIPLEN ZDIPLEN dh/dBX
 echo '#!/bin/ksh
 log=$1
 
+if [ `uname` = IRIX64 ]; then
+   GREP="egrep"
+else
+   GREP="egrep -a"
+fi
+
 # SCF, MP2 and CCSD energies:
 CRIT1=`egrep "Total SCF   energy: * \-100\.0219696975" $log | wc -l`
 CRIT2=`egrep "Total MP2   energy: * \-100\.1561878288" $log | wc -l`

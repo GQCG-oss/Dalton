@@ -683,7 +683,7 @@ C======================================================================
      &                      WORK(KVEC1),WORK(KVEC2)  )
             END IF
 
-            CALL CC_WRRSP('RC',IDXRC,ISYM,IOPT,MODEL,WORK(IDUMMY),
+            CALL CC_WRRSP('RC',IDXRC,ISYM,IOPT,MODEL,DUMMY,
      &                    WORK(KVEC1),WORK(KVEC2),WORK(KEND1),LEND1)
           END IF
 

@@ -795,7 +795,7 @@ C
 
          IOPT = 2
          CALL CC_RDRSP(RLIST,IRLNR,ISYMR,IOPT,MODELX,
-     *                 WORK(IDUMMY),WORK(KRHO2))
+     *                 DUMMY,WORK(KRHO2))
          CALL CCLR_DIASCL(WORK(KRHO2),TWO,ISYMR)
          CALL CC_T2SQ(WORK(KRHO2),WORK(KC2AM),ISYMR)
 
@@ -1851,7 +1851,7 @@ C
          DTIME = SECOND()
          IOPT = 2
          CALL CC_RDRSP(RLIST,IRLNR,ISYMR,IOPT,MODELX,
-     *                 WORK(IDUMMY),WORK(KRHO2))
+     *                 DUMMY,WORK(KRHO2))
          DTIME = SECOND() - DTIME
          TIMIO = TIMIO + DTIME
 C

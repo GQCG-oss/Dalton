@@ -62,7 +62,11 @@ HYPERPOLARIZABILITY
 echo '#!/bin/ksh
 log=$1
 
-GREP="egrep -a"
+if [ `uname` = IRIX64 ]; then
+   GREP="egrep"
+else
+   GREP="egrep -a"
+fi
 
 # SCF, MP2 and CCSD energies:
 CRIT1=`$GREP "Total SCF   energy: * \-100.00891992" $log | wc -l`

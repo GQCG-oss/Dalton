@@ -601,7 +601,7 @@ C    *                       work(kwrk2+(icount-1)*nccvar),1)
 C
                IOPT = 3
                CALL CC_WRRSP(LIST,ILSTNR,ISYM,IOPT,MODEL,
-     *                       WORK(IDUMMY),
+     *                       DUMMY,
      *                       WORK(KWRK2+(ICOUNT-1)*NCCVAR),
      *                       WORK(KWRK2+(ICOUNT-1)*NCCVAR+NT1AM(ISYM)),
      *                       WORK(KWRK1),NVARPT)

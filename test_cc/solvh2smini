@@ -89,7 +89,11 @@ cat > solvh2smini.dal <<%EOF%
 echo '#!/bin/ksh
 log=$1
 
-GREP="egrep -a"
+if [ `uname` = IRIX64 ]; then
+   GREP="egrep"
+else
+   GREP="egrep -a"
+fi
 
 # Vacuum and solvation energies
 # Solvent: L_max=10, R_cav=  4.5300, Eps_st =  1.0000, Eps_op =  1.0000:

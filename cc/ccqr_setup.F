@@ -1556,7 +1556,7 @@ c /* deck ccqr_fadrv */
            CALL QUIT('Unkown coupled cluster model in CC_FADRV.')
         END IF
 
-        CALL CC_WARSP(LISTC, IFILE, ISYRES, IOPT, MODEL,WORK(IDUMMY),
+        CALL CC_WARSP(LISTC, IFILE, ISYRES, IOPT, MODEL,DUMMY,
      &                WORK(KGAMMA1),WORK(KGAMMA2),WORK(KEND1),LEND1)
 
       ELSE IF (OPTION(1:4).EQ.'DOTP') THEN
@@ -1770,7 +1770,7 @@ c /* deck ccqr_eadrv */
            CALL QUIT('Unkown coupled cluster model in CC_EADRV.')
         END IF
 
-        CALL CC_WARSP(LISTB, IFILE, ISYRES, IOPT, MODEL,WORK(IDUMMY),
+        CALL CC_WARSP(LISTB, IFILE, ISYRES, IOPT, MODEL, DUMMY,
      &                WORK(KETA1),WORK(KETA2),WORK(KEND1),LEND1)
 
       ELSE IF (OPTION(1:4).EQ.'DOTP') THEN

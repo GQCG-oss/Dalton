@@ -1558,7 +1558,7 @@ C----------------------------------------------
 C
          CALL DZERO(WORK(KKABAR),LENBAR)
 C
-         LUCCK = 0
+         LUCCK = -786
          CALL GPOPEN(LUCCK,'CCKABAR0','OLD',' ','UNFORMATTED',
      *              IDUMMY,.FALSE.)
          REWIND(LUCCK)

@@ -69,7 +69,11 @@ echo '#!/bin/ksh
 log=$1
 treshhold=1.0D-8
 
-GREP="egrep -a"
+if [ `uname` = IRIX64 ]; then
+   GREP="egrep"
+else
+   GREP="egrep -a"
+fi
 
 # SCF, MP2 and CCSD energies:
 CRIT1=`$GREP "Final    HF energy:" $log | $GREP "\--100.00891992" | wc -l`

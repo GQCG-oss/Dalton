@@ -4644,6 +4644,7 @@ C
             FAODER = 'AO2DIS'//CHRNOS(0)//CHRNOS(0)
             CALL GPOPEN(LUAORC(0),FAODER,'UNKNOWN','DIRECT',
      &           'UNFORMATTED',LRECL,OLDDX)
+                rewind(luaorc(0))
       END IF
 C
       ICOUNT = 0
@@ -4655,8 +4656,8 @@ C
             IF (IRECNR(J) .EQ. IDELTA) THEN
                ICOUNT = ICOUNT + 1
                NREC   = J
-               READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF,NINT
-               DO 110 I = 1,NINT
+               READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF,LENGTH
+               DO 110 I = 1,LENGTH
                   IP = IBTAND(       IBUF(I,1)         ,IBIT1)
                   IQ = IBTAND(IBTSHR(IBUF(I,1),  NBITS),IBIT1)
                   IR = IBTAND(IBTSHR(IBUF(I,1),2*NBITS),IBIT1)
@@ -4674,8 +4675,8 @@ C
             IF (IRECNR(J) .EQ. IDELTA) THEN
                ICOUNT = ICOUNT + 1
                NREC   = J
-               READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF,NINT
-               DO 130 I = 1,NINT
+               READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF,LENGTH
+               DO 130 I = 1,LENGTH
                   IP = IBTAND(       IBUF(I,2)       ,IBIT1)
                   IQ = IBTAND(IBTSHR(IBUF(I,2),NBITS),IBIT1)
                   IR = IBTAND(       IBUF(I,1)       ,IBIT1)

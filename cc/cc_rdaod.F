@@ -290,7 +290,7 @@ C
          KRBUF = KIBUF + (NIBUF*LBUF-1)/IRAT + 1
          KEND1 = KRBUF + LBUF
          LWRK1 = LWORK - KEND1
-         IF (LWRK2 .LT. 0) THEN
+         IF (LWRK1 .LT. 0) THEN
             WRITE(LUPRI,*) 'Insufficient work space in CC_RDAOD:'
             WRITE(LUPRI,*) 'Need:',KEND1
             WRITE(LUPRI,*) 'Available:',LWORK
@@ -442,7 +442,8 @@ C
           ID = 0
           DO JD = 1, NUMD
             IF (IRECNR(NREC).EQ.IDEL(JD)) ID = JD
-            WRITE(LUPRI,*)'IRECNR,JD,IDEL,ID:',
+            IF (LOCDBG)
+     &      WRITE(LUPRI,*)'IRECNR,JD,IDEL,ID:',
      &                     IRECNR(NREC),JD,IDEL(JD),ID
           END DO
 

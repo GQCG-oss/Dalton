@@ -246,7 +246,7 @@ C----------------------------------------------
 C
          CALL DZERO(WORK(KKABAR),LENBAR)
 C
-         LUBAR0 = 0
+         LUBAR0 = -324
          CALL GPOPEN(LUBAR0,'CCKABAR0','OLD',' ','UNFORMATTED',IDUMMY,
      *               .FALSE.)
          REWIND(LUBAR0)
@@ -463,7 +463,6 @@ C----------------------------------------------
 C
          CALL DZERO(WORK(KKABAR),LENBAR)
 C
-         LUBAR0 = 0
          CALL GPOPEN(LUBAR0,'CCKABAR0','OLD',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND(LUBAR0)

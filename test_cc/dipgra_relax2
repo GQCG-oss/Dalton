@@ -95,7 +95,11 @@ ZDIPLEN 1DHAM 09
 echo '#!/bin/ksh
 log=$1
 
-GREP="egrep -a"
+if [ `uname` = IRIX64 ]; then
+   GREP="egrep"
+else
+   GREP="egrep -a"
+fi
 
 # SCF, MP2 and CCSD energies:
 CRIT1=`$GREP "Total SCF   energy:                   -74.96565699" $log | wc -l`

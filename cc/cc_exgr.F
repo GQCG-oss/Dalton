@@ -350,7 +350,7 @@ C
          WRITE(LUPRI,'(1X,A)')
      *'--------------------------------------------------------'
                  CALL CC_PRAM(WORK(KWRK2 + (ICOUNT-1)*LETOT),
-     *                        DUMMY,ISYM)
+     *                        PT1LOCAL,ISYM)
                ENDIF
                IF (CCSTST) THEN
                   CALL DZERO(WORK(KWRK2+(ICOUNT-1)*LETOT+
@@ -364,7 +364,7 @@ C
                KT1    = KWRK2 + (ICOUNT-1)*LETOT
                KT2    = KWRK2 + (ICOUNT-1)*LETOT + NT1AM(ISYM)
                IOPT   = 3
-               CALL CC_WRRSP('E0',ILSTNR,ISYM,IOPT,MODEL,WORK(IDUMMY),
+               CALL CC_WRRSP('E0',ILSTNR,ISYM,IOPT,MODEL,DUMMY,
      *                        WORK(KT1),WORK(KT2),WORK(KWRK1),NVARPT)
                ILSTNR = ILSTNR + 1
 C

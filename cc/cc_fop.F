@@ -295,11 +295,9 @@ C        Analysis of solution vectors.
 C-------------------------------------
 C
       FILEX  = 'CCSAV_LAM'
-      IF (LULAM .LE. 0) THEN
-         LULAM = 0
-         CALL GPOPEN(LULAM,FILEX,'UNKNOWN',' ',
-     *               'UNFORMATTED',IDUMMY,.FALSE.)
-      END IF
+      LULAM = -912
+      CALL GPOPEN(LULAM,FILEX,'UNKNOWN',' ',
+     *     'UNFORMATTED',IDUMMY,.FALSE.)
       WRITE(LULAM) NSIM,MODEL
 C
       IF (MP2) THEN
@@ -401,10 +399,10 @@ C
      *                       ISYMOP,LR,WORK(KWRK4),LWRK4)
               KOMEG1 = KWRK4
               KOMEG2 = KWRK4 + NT1AMX
-              LUOME = 0
+              LUOME = -9000
               CALL GPOPEN(LUOME,'CC_OME','UNKNOWN',' ',
      *            'UNFORMATTED',IDUMMY,.FALSE.)
-              REWIND (UNIT=54)
+              REWIND (LUOME)
               READ(LUOME) (WORK(KOMEG1+K-1), K = 1,NT1AMX)
               IF (.NOT.CCS) THEN
                  READ(LUOME) (WORK(KOMEG2+K-1), K = 1,NT2AMX)
@@ -671,7 +669,7 @@ C
             WRITE(LUPRI,*) 'Norm of zeta-kappa-0:', ZKNOR
          ENDIF
 C
-         LUBAR0 = 0
+         LUBAR0 = -516
          CALL GPOPEN(LUBAR0,'CCKABAR0','UNKNOWN',' ','UNFORMATTED',
      &               IDUMMY,.FALSE.)
          REWIND(LUBAR0)
@@ -1362,7 +1360,7 @@ C
             CALL QUIT('Insufficient space in CC_FOP ')
          ENDIF
 C
-         LUTAM = 0
+         LUTAM = -723
          CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
      *               IDUMMY,.FALSE.)
          REWIND (LUTAM)
@@ -1437,11 +1435,9 @@ C
             CALL QUIT('Insufficient memory for allocation in cc_fop')
          ENDIF
 C
-         IF (LULAM .LE. 0) THEN
-           LULAM = 0
-           CALL GPOPEN(LULAM,FILEX,'UNKNOWN',' ',
-     *            'UNFORMATTED',IDUMMY,.FALSE.)
-         END IF
+         LULAM = -812
+         CALL GPOPEN(LULAM,FILEX,'UNKNOWN',' ',
+     *        'UNFORMATTED',IDUMMY,.FALSE.)
          REWIND(LULAM)
          READ(LULAM)
          READ(LULAM) (WORK(KLAM+I-1), I = 1,NT1AMX)
@@ -2254,11 +2250,9 @@ C----------------------------------------
 C     Read zero'th order zeta amplitudes.
 C----------------------------------------
 C
-      IF (LULAM .LE. 0) THEN
-         LULAM = 0
-         CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ',
-     *            'UNFORMATTED',IDUMMY,.FALSE.)
-      END IF
+      LULAM = -765
+      CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ',
+     *     'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND(LULAM)
       READ(LULAM) NVEDUM, MODDUM
       READ(LULAM) (WORK(KZ1AM + I - 1), I = 1,NT1AMX)
@@ -2326,11 +2320,9 @@ C     (By doing it this way, we only need one packed vector in core
 C     along with the integral distribution in the delta loop.)
 C--------------------------------------------------------------------
 C
-      IF (LULAM .LE.0) THEN
-        LULAM = 0
-        CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ',
-     *      'UNFORMATTED',IDUMMY,.FALSE.)
-      END IF
+      LULAM = -127
+      CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ',
+     *     'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND(LULAM)
       READ(LULAM) NVEDUM, MODDUM
       READ(LULAM) (WORK(KZ1AM + I - 1), I = 1,NT1AMX)
@@ -3426,11 +3418,9 @@ C----------------------------------------
 C     Read zero'th order zeta amplitudes.
 C----------------------------------------
 C
-      IF (LULAM .LE. 0) THEN
-       LULAM = 0
-       CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ',
-     *            'UNFORMATTED',IDUMMY,.FALSE.)
-      END IF
+      LULAM = -519
+      CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ',
+     *     'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND(LULAM)
       READ(LULAM) NVEDUM, MODDUM
       READ(LULAM) (WORK(KZ1AM + I - 1), I = 1,NT1AMX)
@@ -3513,11 +3503,9 @@ C     Store it squared in KZ2AM to make smart contraction with
 C     packed integrals (ai|bj) using the X- and Y-routines.
 C-------------------------------------------------------------
 C
-      IF (LULAM.LE.0) THEN
-        LULAM = 0
-        CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ','UNFORMATTED',
-     *              IDUMMY,.FALSE.)
-      END IF
+      LULAM = -626
+      CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ','UNFORMATTED',
+     *     IDUMMY,.FALSE.)
       REWIND(LULAM)
       READ(LULAM) NVEDUM, MODDUM
       READ(LULAM) (WORK(KZ1AM + I - 1), I = 1,NT1AMX)
@@ -3830,11 +3818,9 @@ C----------------------------------------
 C     Read zero'th order zeta amplitudes.
 C----------------------------------------
 C
-      IF (LULAM .LE. 0) THEN
-       LULAM = 0
-       CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ',
-     *            'UNFORMATTED',IDUMMY,.FALSE.)
-      END IF
+      LULAM = -1230
+      CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ',
+     *     'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND(LULAM)
       READ(LULAM) NVEDUM, MODDUM
       READ(LULAM) (WORK(KT1AM + I - 1), I = 1,NT1AMX)
@@ -5064,7 +5050,7 @@ C-------------------------------------------------------------
 C        Read MO-coefficients from interface file and reorder.
 C-------------------------------------------------------------
 C
-         LUSIFC = 0
+         LUSIFC = -993
          CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND LUSIFC
@@ -5080,11 +5066,9 @@ C-------------------------------------------
 C        Read zero'th order zeta amplitudes.
 C-------------------------------------------
 C
-         IF (LULAM.LE.0) THEN
-           LULAM = 0
-           CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ',
+         LULAM = -871
+         CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ',
      *                 'UNFORMATTED',IDUMMY,.FALSE.)
-         END IF
          REWIND(LULAM)
          READ(LULAM) NVEDUM, MODDUM
          READ(LULAM) (WORK(KZ1AM + I - 1), I = 1,NT1AMX)
@@ -5189,7 +5173,7 @@ C----------------------------------------------
 C
          CALL DZERO(WORK(KKABAR),LENBAR)
 C
-         LUCCK = 0
+         LUCCK = -987
          CALL GPOPEN(LUCCK,'CCKABAR0','UNKNOWN',' ','UNFORMATTED',
      *               IDUMMY,FALSE)
          REWIND(LUCCK)
@@ -5257,11 +5241,9 @@ C----------------------------------------
 C     Read zero'th order zeta amplitudes.
 C----------------------------------------
 C
-         IF (LULAM .LE.0 ) THEN
-           LULAM = 0
-           CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ',
+         LULAM = -476
+         CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ',
      *                 'UNFORMATTED',IDUMMY,.FALSE.)
-         END IF
          REWIND(LULAM)
          READ(LULAM) NVEDUM, MODDUM
          READ(LULAM) (WORK(KZ1AM + I - 1), I = 1,NT1AMX)
@@ -5407,7 +5389,7 @@ C----------------------------------------------
 C
          CALL DZERO(WORK(KKABAR),LENBAR)
 C
-         LUCCK = 0
+         LUCCK = -678
          CALL GPOPEN(LUCCK,'CCKABAR0','UNKNOWN',' ',
      *               'UNFORMATTED',IDUMMY,.FALSE.)
          REWIND(LUCCK)
@@ -5674,11 +5656,9 @@ C----------------------------------------
 C     Read zero'th order zeta amplitudes.
 C----------------------------------------
 C
-         IF (LULAM .LE. 0) THEN
-           LULAM = 0
-           CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ',
-     *                 'UNFORMATTED',IDUMMY,.FALSE.)
-         END IF
+         LULAM = -2156
+         CALL GPOPEN(LULAM,'CCSAV_LAM','UNKNOWN',' ',
+     *        'UNFORMATTED',IDUMMY,.FALSE.)
          REWIND(LULAM)
          READ(LULAM) NVEDUM, MODDUM
          READ(LULAM) (WORK(KSKOD + I - 1), I = 1,NT1AMX)
@@ -5689,7 +5669,7 @@ C-------------------------------------------
 C     Read zero'th order cluster amplitudes.
 C-------------------------------------------
 C
-         LUTAM = 0
+         LUTAM = -1568
          CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
      *               IDUMMY,.FALSE.)
          REWIND(LUTAM)
