@@ -78,7 +78,8 @@
      and O. Vahtras"
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Wed Sep  4 14:39:09 2002
+     Host name              : pi.biotech.kth.se                       
 
  <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
 
@@ -147,30 +148,45 @@ Represented as: C2v
 
    * Group multiplication table
 
-        |  E   C2z  Oxz  Oyz  
+        |  E   C2z  Oxz  Oyz
    -----+--------------------
-     E  |  E   
-    C2z | C2z   E   
-    Oxz | Oxz  Oyz   E   
-    Oyz | Oyz  Oxz  C2z   E   
+     E  |  E 
+    C2z | C2z   E 
+    Oxz | Oxz  Oyz   E 
+    Oyz | Oyz  Oxz  C2z   E 
 
    * Character table
 
-        |  E   C2z  Oxz  Oyz  
+        |  E   C2z  Oxz  Oyz
    -----+--------------------
-    A1  |   1    1    1    1  
-    B1  |   1   -1    1   -1  
-    B2  |   1   -1   -1    1  
-    A2  |   1    1   -1   -1  
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
 
    * Direct product table
 
-        | A1   B1   B2   A2   
+        | A1   B1   B2   A2 
    -----+--------------------
-    A1  | A1   
-    B1  | B1   A1   
-    B2  | B2   A2   A1   
-    A2  | A2   B2   B1   A1   
+    A1  | A1 
+    B1  | B1   A1 
+    B2  | B2   A2   A1 
+    A2  | A2   B2   B1   A1 
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           O          15.994915
+                           H    1      1.007825
+                           H    2      1.007825
+
+                       Total mass:    18.010565 amu
+                       Natural abundance:  99.730 %
+
+
+
+ Center-of-mass coordinates (A):    0.000000    0.000000    0.000000
 
 
   Atoms and basis sets
@@ -190,7 +206,7 @@ Represented as: C2v
   ----------------------------------------------------------------------
   Spherical harmonic basis used.
 
-  Threshold for integrals:  1.00D-15
+  Threshold for integrals:  1.00E-15
 
 
   Cartesian Coordinates
@@ -201,15 +217,15 @@ Represented as: C2v
 
    1   O        x      0.0000000000
    2            y      0.0000000000
-   3            z     -0.7333333333
+   3            z     -0.1231063545
 
    4   H    1   x      0.0000000000
    5            y      1.4300000000
-   6            z      0.3666666667
+   6            z      0.9768936455
 
    7   H    2   x      0.0000000000
    8            y     -1.4300000000
-   9            z      0.3666666667
+   9            z      0.9768936455
 
 
 
@@ -221,33 +237,33 @@ Represented as: C2v
 
   Symmetry 1
 
-   1   O     z    3
-   2   H     y    [  5  -   8 ]/2
-   3   H     z    [  6  +   9 ]/2
+   1   O     z    [  5  -   8 ]/2
+   2   H     y    [  6  +   9 ]/2
+   3   H     z    1
 
 
   Symmetry 2
 
-   4   O     x    1
-   5   H     x    [  4  +   7 ]/2
+   4   O     x    [  4  +   7 ]/2
+   5   H     x    2
 
 
   Symmetry 3
 
-   6   O     y    2
-   7   H     y    [  5  +   8 ]/2
-   8   H     z    [  6  -   9 ]/2
+   6   O     y    [  5  +   8 ]/2
+   7   H     y    [  6  -   9 ]/2
+   8   H     z    [  4  -   7 ]/2
 
 
   Symmetry 4
 
-   9   H     x    [  4  -   7 ]/2
+   9   H     x    2
 
 
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            O           H  1        H  2        
+            O           H  1        H  2
 
    O       0.000000
    H  1    0.954707    0.000000
@@ -273,6 +289,27 @@ Represented as: C2v
   bond angle:       H  1       O          H  2                 104.863
 
 
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    0.542934          0.000000    1.000000    0.000000
+   IB    1.154222          0.000000    0.000000    1.000000
+   IC    1.697156          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is planar.
+
+               A                   B                   C
+
+         930830.1404         437852.4026         297779.9458 MHz
+           31.049151           14.605184            9.932870 cm-1
+
+
   Nuclear repulsion energy :    9.218170507464
 
 
@@ -284,42 +321,42 @@ Represented as: C2v
 
   Symmetry  A1 ( 1)
 
-    1     O        1s         1  
-    2     O        1s         2  
-    3     O        1s         3  
-    4     O        2pz        6  
-    5     O        2pz        9  
-    6     O        3d0       12  
-    7     O        3d2+      14  
-    8     H        1s        15  +  16  
-    9     H        1s        17  +  18  
-   10     H        2py       21  -  22  
-   11     H        2pz       23  +  24  
+    1     O        1s         1
+    2     O        1s         2
+    3     O        1s         3
+    4     O        2pz        6
+    5     O        2pz        9
+    6     O        3d0       12
+    7     O        3d2+      14
+    8     H        1s        15  +  16
+    9     H        1s        17  +  18
+   10     H        2py       21  -  22
+   11     H        2pz       23  +  24
 
 
   Symmetry  B1 ( 2)
 
-   12     O        2px        4  
-   13     O        2px        7  
-   14     O        3d1+      13  
-   15     H        2px       19  +  20  
+   12     O        2px        4
+   13     O        2px        7
+   14     O        3d1+      13
+   15     H        2px       19  +  20
 
 
   Symmetry  B2 ( 3)
 
-   16     O        2py        5  
-   17     O        2py        8  
-   18     O        3d1-      11  
-   19     H        1s        15  -  16  
-   20     H        1s        17  -  18  
-   21     H        2py       21  +  22  
-   22     H        2pz       23  -  24  
+   16     O        2py        5
+   17     O        2py        8
+   18     O        3d1-      11
+   19     H        1s        15  -  16
+   20     H        1s        17  -  18
+   21     H        2py       21  +  22
+   22     H        2pz       23  -  24
 
 
   Symmetry  A2 ( 4)
 
-   23     O        3d2-      10  
-   24     H        2px       19  -  20  
+   23     O        3d2-      10
+   24     H        2px       19  -  20
 
   Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
 
@@ -331,10 +368,10 @@ Represented as: C2v
  ************************************************************************
 
 
- >>> Time used in ONEDRV is   0.02 seconds
+ >>> Time used in ONEDRV is   0.01 seconds
 
 
- >>> Time used in OVERLA is   0.01 seconds
+ >>> Time used in OVERLA is   0.00 seconds
 
 
  Number of two-electron integrals written:       11412 ( 25.3% )
@@ -342,9 +379,9 @@ Represented as: C2v
 
 
 
- >>> Time used in TWOINT is   0.11 seconds
+ >>> Time used in TWOINT is   0.05 seconds
 
- >>>> Total CPU  time used in HERMIT:   0.27 seconds
+ >>>> Total CPU  time used in HERMIT:   0.07 seconds
  >>>> Total wall time used in HERMIT:   0.00 seconds
 
 - End of Integral Section
@@ -355,7 +392,8 @@ Represented as: C2v
  **********************************************************************
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Wed Sep  4 14:39:09 2002
+     Host name              : pi.biotech.kth.se                       
 
  Title lines from integral program:
      H2O                                                                     
@@ -385,9 +423,10 @@ Represented as: C2v
 
      Dirac, Becke, and HF exchange weights:    0.800000    0.720000    0.200000
      WVN and LYP correlation weights:          0.190000    0.810000
-     Default thresholds:                       0.10D-07    0.10D-09    0.10D-12
-     Default threshold for number of electrons:                        0.10D-02
-     DFT quadrature level: 4
+     Default thresholds:                       0.10E-08    0.10E-09    0.10E-12
+     Default threshold for number of electrons:                        0.10E-02
+     DFT quadrature accuracy:  0.10E-12  35
+ 35
 
      Orbital specifications
      ======================
@@ -405,7 +444,7 @@ Represented as: C2v
      Maximum number of Fock  iterations       0
      Maximum number of DIIS  iterations      30
      Maximum number of QC-HF iterations      15
-     Threshold for HF convergence      1.00D-10
+     Threshold for HF convergence      1.00E-10
 
 
  >>>>> DIIS optimization of Hartree-Fock <<<<<
@@ -416,119 +455,142 @@ Represented as: C2v
 
  Iter     Total energy    Error norm  Delta(E)    HF occupation
  -----------------------------------------------------------------------------
-O     1   21638      64     590
-H     2   21828      60     590
+** Atom O   
+* Grid spacing
+ Value chosen:  0.123
+ AH =   23440.
+ RADERR =   1.E-13
+* Inner grid point: 5.71138E-07
+* Outer point:
+ Value chosen:  8.038
+Constant c: 0.43568E-05
+Number of points:  117
+O     1   21690     117     434
+** Atom H   
+* Grid spacing
+ Value chosen:  0.131
+ AH =   26.02
+ RADERR =   1.E-13
+* Inner grid point: 1.71422E-05
+* Outer point:
+ Value chosen: 11.369
+Constant c: 0.12227E-03
+Number of points:   87
+H     2   20742      87     434
 
-   Number of grid points in quadrature:     43466 (100.0%)
+   Number of grid points in quadrature:     42432 (100.0%)
 
 
-   Number of electrons/abscissas:        9.999996      -.41D-05         43466
+ >>> Time used in DFTGRD is   0.04 seconds
+
+
+   Number of electrons/abscissas:      10.0000002      0.21E-06         42432
    Dirac and Becke exchange energy:     -6.391334     -0.619249     -7.010583
    VWN and LYP correlation energy :     -0.124601     -0.272634     -0.397235
-   DFT exchange-correlation energy:                                 -7.407817
+   DFT exchange-correlation energy:                                 -7.407818
 
- >>> Time used in DFTDRV is   2.40 seconds
+ >>> Time used in DFTDRV is   1.10 seconds
 
-   1    -76.038213023869   3.81D+00  -7.60D+01    3  1  1  0
+   1    -76.038213392865   3.81E+00  -7.60E+01    3  1  1  0
 
-   Number of electrons/abscissas:        9.999999      -.11D-05         43466
+   Number of electrons/abscissas:      10.0000002      0.17E-06         42432
    Dirac and Becke exchange energy:     -6.637795     -0.628917     -7.266712
    VWN and LYP correlation energy :     -0.127923     -0.279710     -0.407633
    DFT exchange-correlation energy:                                 -7.674345
 
- >>> Time used in DFTDRV is   2.22 seconds
+ >>> Time used in DFTDRV is   1.04 seconds
 
-   2    -76.345592234801   9.29D-01  -3.07D-01    3  1  1  0
+   2    -76.345592562015   9.29E-01  -3.07E-01    3  1  1  0
 
-   Number of electrons/abscissas:        9.999998      -.19D-05         43466
-   Dirac and Becke exchange energy:     -6.390126     -0.622701     -7.012827
+   Number of electrons/abscissas:      10.0000003      0.26E-06         42432
+   Dirac and Becke exchange energy:     -6.390126     -0.622702     -7.012827
    VWN and LYP correlation energy :     -0.125256     -0.272551     -0.397807
    DFT exchange-correlation energy:                                 -7.410634
 
- >>> Time used in DFTDRV is   2.24 seconds
+ >>> Time used in DFTDRV is   1.06 seconds
 
-   3    -76.353543019153   8.22D-01  -7.95D-03    3  1  1  0
+   3    -76.353543228858   8.22E-01  -7.95E-03    3  1  1  0
 
-   Number of electrons/abscissas:        9.999999      -.13D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.56E-09         42432
    Dirac and Becke exchange energy:     -6.530814     -0.625962     -7.156776
    VWN and LYP correlation energy :     -0.126744     -0.276726     -0.403470
    DFT exchange-correlation energy:                                 -7.560247
 
- >>> Time used in DFTDRV is   2.24 seconds
+ >>> Time used in DFTDRV is   1.06 seconds
 
-   4    -76.382247051619   1.34D-01  -2.87D-02    3  1  1  0
+   4    -76.382247278426   1.34E-01  -2.87E-02    3  1  1  0
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.24E-07         42432
    Dirac and Becke exchange energy:     -6.513282     -0.625691     -7.138973
    VWN and LYP correlation energy :     -0.126564     -0.276191     -0.402755
    DFT exchange-correlation energy:                                 -7.541728
 
- >>> Time used in DFTDRV is   2.23 seconds
+ >>> Time used in DFTDRV is   1.06 seconds
 
-   5    -76.383049739834   6.90D-03  -8.03D-04    3  1  1  0
+   5    -76.383049963136   6.90E-03  -8.03E-04    3  1  1  0
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.24E-07         42432
    Dirac and Becke exchange energy:     -6.514039     -0.625711     -7.139750
    VWN and LYP correlation energy :     -0.126571     -0.276212     -0.402783
    DFT exchange-correlation energy:                                 -7.542533
 
- >>> Time used in DFTDRV is   2.23 seconds
+ >>> Time used in DFTDRV is   1.06 seconds
 
-   6    -76.383051918202   4.27D-04  -2.18D-06    3  1  1  0
+   6    -76.383052142970   4.27E-04  -2.18E-06    3  1  1  0
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
    Dirac and Becke exchange energy:     -6.514103     -0.625713     -7.139817
    VWN and LYP correlation energy :     -0.126572     -0.276214     -0.402785
    DFT exchange-correlation energy:                                 -7.542602
 
- >>> Time used in DFTDRV is   2.23 seconds
+ >>> Time used in DFTDRV is   1.04 seconds
 
-   7    -76.383051928111   1.45D-05  -9.91D-09    3  1  1  0
+   7    -76.383052152884   1.45E-05  -9.91E-09    3  1  1  0
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
    Dirac and Becke exchange energy:     -6.514102     -0.625713     -7.139815
    VWN and LYP correlation energy :     -0.126572     -0.276214     -0.402785
    DFT exchange-correlation energy:                                 -7.542601
 
- >>> Time used in DFTDRV is   2.24 seconds
+ >>> Time used in DFTDRV is   1.06 seconds
 
-   8    -76.383051928136   1.42D-06  -2.57D-11    3  1  1  0
+   8    -76.383052152909   1.42E-06  -2.55E-11    3  1  1  0
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
    Dirac and Becke exchange energy:     -6.514102     -0.625713     -7.139815
    VWN and LYP correlation energy :     -0.126572     -0.276214     -0.402785
    DFT exchange-correlation energy:                                 -7.542600
 
- >>> Time used in DFTDRV is   2.24 seconds
+ >>> Time used in DFTDRV is   1.06 seconds
 
-   9    -76.383051928136   8.37D-08   9.95D-14    3  1  1  0
+   9    -76.383052152909   8.37E-08   5.33E-15    3  1  1  0
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
    Dirac and Becke exchange energy:     -6.514102     -0.625713     -7.139815
    VWN and LYP correlation energy :     -0.126572     -0.276214     -0.402785
    DFT exchange-correlation energy:                                 -7.542600
 
- >>> Time used in DFTDRV is   2.24 seconds
+ >>> Time used in DFTDRV is   1.06 seconds
 
-  10    -76.383051928136   2.67D-09  -1.71D-13    3  1  1  0
+  10    -76.383052152909   2.67E-09  -7.99E-14    3  1  1  0
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
    Dirac and Becke exchange energy:     -6.514102     -0.625713     -7.139815
    VWN and LYP correlation energy :     -0.126572     -0.276214     -0.402785
    DFT exchange-correlation energy:                                 -7.542600
 
- >>> Time used in DFTDRV is   2.23 seconds
+ >>> Time used in DFTDRV is   1.06 seconds
 
-  11    -76.383051928136   1.86D-10   0.00D+00    3  1  1  0
+  11    -76.383052152909   1.86E-10   1.90E-13    3  1  1  0
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
    Dirac and Becke exchange energy:     -6.514102     -0.625713     -7.139815
    VWN and LYP correlation energy :     -0.126572     -0.276214     -0.402785
    DFT exchange-correlation energy:                                 -7.542600
 
- >>> Time used in DFTDRV is   2.24 seconds
+ >>> Time used in DFTDRV is   1.05 seconds
 
-  12    -76.383051928136   5.85D-12   2.84D-14    3  1  1  0
+  12    -76.383052152909   4.60E-12  -5.15E-14    3  1  1  0
  DIIS converged in  12 iterations !
 
 
@@ -541,26 +603,26 @@ H     2   21828      60     590
 
  Hartree-Fock orbital energies, symmetry 1
 
-       -19.11780123    -0.99258374    -0.36062804     0.05581405     0.61891821
-         0.90436044     1.21049460     1.59655109
+       -19.11780141    -0.99258388    -0.36062822     0.05581178     0.61891671
+         0.90435977     1.21049454     1.59655021
 
  Hartree-Fock orbital energies, symmetry 2
 
-        -0.28460745     0.92249241     1.43317478     2.92602067
+        -0.28460770     0.92249192     1.43317457     2.92602050
 
  Hartree-Fock orbital energies, symmetry 3
 
-        -0.51216711     0.13164505     0.56760930     0.99822340     1.67579065
-         2.12756251
+        -0.51216734     0.13164338     0.56760804     0.99822318     1.67579066
+         2.12756231
 
  Hartree-Fock orbital energies, symmetry 4
 
-         1.23635185     2.97457674
+         1.23635180     2.97457659
 
-    E(LUMO) :     0.05581405 au (symmetry 1)
-  - E(HOMO) :    -0.28460745 au (symmetry 2)
+    E(LUMO) :     0.05581178 au (symmetry 1)
+  - E(HOMO) :    -0.28460770 au (symmetry 2)
   ------------------------------------------
-    gap     :     0.34042151 au
+    gap     :     0.34041947 au
 
 
                     >>> FINAL RESULTS FROM SIRIUS <<<
@@ -568,14 +630,15 @@ H     2   21828      60     590
      Spin multiplicity:           1
      Spatial symmetry:            1
 
-     Final    HF energy:          -76.383051928136
+     Final    HF energy:          -76.383052152909
      Nuclear repulsion:             9.218170507464
-     Electronic energy:           -85.601222435600
+     Electronic energy:           -85.601222660373
 
-     Final gradient norm:           0.000000000006
+     Final gradient norm:           0.000000000005
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Wed Sep  4 14:39:22 2002
+     Host name              : pi.biotech.kth.se                       
 
      Molecular orbitals for symmetry species   1
 
@@ -613,11 +676,12 @@ H     2   21828      60     590
 
 
 
- >>>> Total CPU  time used in SIRIUS :     27.08 seconds
- >>>> Total wall time used in SIRIUS :     28.00 seconds
+ >>>> Total CPU  time used in SIRIUS :     12.74 seconds
+ >>>> Total wall time used in SIRIUS :     13.00 seconds
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Wed Sep  4 14:39:22 2002
+     Host name              : pi.biotech.kth.se                       
 
 - End of Wave Function Section
 
@@ -649,634 +713,635 @@ H     2   21828      60     590
  Threshold in EXCITA          : 1.00E-04
  Maximum iterations in EXCITA :   60
 
- Center of mass gauge origin:    0.000000    0.000000   -0.610227
+ Center of mass gauge origin:    0.000000    0.000000    0.000000
       Starting Static Property Section -
 
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Wed Sep  4 14:39:22 2002
+     Host name              : pi.biotech.kth.se                       
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   3.02 seconds
+ >>> Time used in DFTDRV is   1.57 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.97 seconds
+ >>> Time used in DFTDRV is   1.52 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.92 seconds
+ >>> Time used in DFTDRV is   1.51 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.96 seconds
+ >>> Time used in DFTDRV is   1.51 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.94 seconds
+ >>> Time used in DFTDRV is   1.50 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.89 seconds
+ >>> Time used in DFTDRV is   1.51 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.91 seconds
+ >>> Time used in DFTDRV is   1.50 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.91 seconds
+ >>> Time used in DFTDRV is   1.51 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.94 seconds
+ >>> Time used in DFTDRV is   1.51 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.93 seconds
+ >>> Time used in DFTDRV is   1.50 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.92 seconds
+ >>> Time used in DFTDRV is   1.51 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.89 seconds
+ >>> Time used in DFTDRV is   1.51 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.92 seconds
+ >>> Time used in DFTDRV is   1.51 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.96 seconds
+ >>> Time used in DFTDRV is   1.50 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.96 seconds
+ >>> Time used in DFTDRV is   1.50 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   3.53 seconds
+ >>> Time used in DFTDRV is   1.50 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   6.64 seconds
+ >>> Time used in DFTDRV is   1.50 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   5.32 seconds
+ >>> Time used in DFTDRV is   1.52 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   3.60 seconds
+ >>> Time used in DFTDRV is   1.52 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.98 seconds
+ >>> Time used in DFTDRV is   1.51 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.98 seconds
+ >>> Time used in DFTDRV is   1.50 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.98 seconds
+ >>> Time used in DFTDRV is   1.51 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   3.14 seconds
+ >>> Time used in DFTDRV is   1.50 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.93 seconds
+ >>> Time used in DFTDRV is   1.50 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.91 seconds
+ >>> Time used in DFTDRV is   1.53 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.89 seconds
+ >>> Time used in DFTDRV is   1.51 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.78 seconds
+ >>> Time used in DFTDRV is   1.45 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.77 seconds
+ >>> Time used in DFTDRV is   1.42 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.78 seconds
+ >>> Time used in DFTDRV is   1.43 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.82 seconds
+ >>> Time used in DFTDRV is   1.42 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.81 seconds
+ >>> Time used in DFTDRV is   1.42 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.93 seconds
+ >>> Time used in DFTDRV is   1.42 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.76 seconds
+ >>> Time used in DFTDRV is   1.41 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.78 seconds
+ >>> Time used in DFTDRV is   1.43 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.82 seconds
+ >>> Time used in DFTDRV is   1.42 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.89 seconds
+ >>> Time used in DFTDRV is   1.46 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.87 seconds
+ >>> Time used in DFTDRV is   1.46 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.88 seconds
+ >>> Time used in DFTDRV is   1.46 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.84 seconds
+ >>> Time used in DFTDRV is   1.46 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.88 seconds
+ >>> Time used in DFTDRV is   1.46 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.90 seconds
+ >>> Time used in DFTDRV is   1.46 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.88 seconds
+ >>> Time used in DFTDRV is   1.46 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.82 seconds
+ >>> Time used in DFTDRV is   1.45 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.81 seconds
+ >>> Time used in DFTDRV is   1.47 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.78 seconds
+ >>> Time used in DFTDRV is   1.46 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.78 seconds
+ >>> Time used in DFTDRV is   1.43 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.82 seconds
+ >>> Time used in DFTDRV is   1.47 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.84 seconds
+ >>> Time used in DFTDRV is   1.46 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.83 seconds
+ >>> Time used in DFTDRV is   1.46 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.82 seconds
+ >>> Time used in DFTDRV is   1.45 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.85 seconds
+ >>> Time used in DFTDRV is   1.44 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.81 seconds
+ >>> Time used in DFTDRV is   1.45 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.85 seconds
+ >>> Time used in DFTDRV is   1.46 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.80 seconds
+ >>> Time used in DFTDRV is   1.45 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.81 seconds
+ >>> Time used in DFTDRV is   1.44 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.83 seconds
+ >>> Time used in DFTDRV is   1.45 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.85 seconds
+ >>> Time used in DFTDRV is   1.47 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.79 seconds
+ >>> Time used in DFTDRV is   1.47 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.77 seconds
+ >>> Time used in DFTDRV is   1.45 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.77 seconds
+ >>> Time used in DFTDRV is   1.44 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.72 seconds
+ >>> Time used in DFTDRV is   1.41 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.71 seconds
+ >>> Time used in DFTDRV is   1.42 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.81 seconds
+ >>> Time used in DFTDRV is   1.41 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.77 seconds
+ >>> Time used in DFTDRV is   1.41 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.75 seconds
+ >>> Time used in DFTDRV is   1.40 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.75 seconds
+ >>> Time used in DFTDRV is   1.41 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.75 seconds
+ >>> Time used in DFTDRV is   1.42 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.74 seconds
+ >>> Time used in DFTDRV is   1.42 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.61 seconds
+ >>> Time used in DFTDRV is   1.45 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.61 seconds
+ >>> Time used in DFTDRV is   1.44 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.60 seconds
+ >>> Time used in DFTDRV is   1.45 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.61 seconds
+ >>> Time used in DFTDRV is   1.46 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.51 seconds
+ >>> Time used in DFTDRV is   1.37 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.51 seconds
+ >>> Time used in DFTDRV is   1.37 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.51 seconds
+ >>> Time used in DFTDRV is   1.37 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.50 seconds
+ >>> Time used in DFTDRV is   1.37 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.50 seconds
+ >>> Time used in DFTDRV is   1.37 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.51 seconds
+ >>> Time used in DFTDRV is   1.36 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.53 seconds
+ >>> Time used in DFTDRV is   1.36 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.55 seconds
+ >>> Time used in DFTDRV is   1.38 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.57 seconds
+ >>> Time used in DFTDRV is   1.37 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.81 seconds
+ >>> Time used in DFTDRV is   1.37 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.59 seconds
+ >>> Time used in DFTDRV is   1.37 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.52 seconds
+ >>> Time used in DFTDRV is   1.36 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.52 seconds
+ >>> Time used in DFTDRV is   1.37 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.55 seconds
+ >>> Time used in DFTDRV is   1.37 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.54 seconds
+ >>> Time used in DFTDRV is   1.37 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.56 seconds
+ >>> Time used in DFTDRV is   1.36 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.56 seconds
+ >>> Time used in DFTDRV is   1.40 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.55 seconds
+ >>> Time used in DFTDRV is   1.40 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.57 seconds
+ >>> Time used in DFTDRV is   1.42 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.56 seconds
+ >>> Time used in DFTDRV is   1.40 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.57 seconds
+ >>> Time used in DFTDRV is   1.40 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.57 seconds
+ >>> Time used in DFTDRV is   1.40 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.59 seconds
+ >>> Time used in DFTDRV is   1.40 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.56 seconds
+ >>> Time used in DFTDRV is   1.40 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.59 seconds
+ >>> Time used in DFTDRV is   1.41 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.63 seconds
+ >>> Time used in DFTDRV is   1.41 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.57 seconds
+ >>> Time used in DFTDRV is   1.40 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.52 seconds
+ >>> Time used in DFTDRV is   1.37 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.52 seconds
+ >>> Time used in DFTDRV is   1.35 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.80 seconds
+ >>> Time used in DFTDRV is   1.36 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.54 seconds
+ >>> Time used in DFTDRV is   1.35 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.51 seconds
+ >>> Time used in DFTDRV is   1.36 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.51 seconds
+ >>> Time used in DFTDRV is   1.37 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.53 seconds
+ >>> Time used in DFTDRV is   1.36 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.52 seconds
+ >>> Time used in DFTDRV is   1.35 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.52 seconds
+ >>> Time used in DFTDRV is   1.36 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.52 seconds
+ >>> Time used in DFTDRV is   1.36 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.52 seconds
+ >>> Time used in DFTDRV is   1.36 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.54 seconds
+ >>> Time used in DFTDRV is   1.36 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.53 seconds
+ >>> Time used in DFTDRV is   1.35 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.52 seconds
+ >>> Time used in DFTDRV is   1.36 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   2.52 seconds
+ >>> Time used in DFTDRV is   1.35 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   3.24 seconds
+ >>> Time used in DFTDRV is   1.43 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   3.22 seconds
+ >>> Time used in DFTDRV is   1.43 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   3.23 seconds
+ >>> Time used in DFTDRV is   1.46 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   3.20 seconds
+ >>> Time used in DFTDRV is   1.46 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   3.25 seconds
+ >>> Time used in DFTDRV is   1.44 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   3.25 seconds
+ >>> Time used in DFTDRV is   1.45 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   3.22 seconds
+ >>> Time used in DFTDRV is   1.45 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   3.21 seconds
+ >>> Time used in DFTDRV is   1.45 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   3.23 seconds
+ >>> Time used in DFTDRV is   1.47 seconds
 
 
-   Number of electrons/abscissas:        9.999999      -.14D-05         43466
+   Number of electrons/abscissas:      10.0000000      -.23E-07         42432
 
- >>> Time used in DFTDRV is   3.22 seconds
+ >>> Time used in DFTDRV is   1.46 seconds
 
 
- >>> Time used in EXCITA is  32.33 seconds
+ >>> Time used in EXCITA is  14.51 seconds
 
 
 
@@ -1286,16 +1351,17 @@ H     2   21828      60     590
 
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Wed Sep  4 14:42:22 2002
+     Host name              : pi.biotech.kth.se                       
 
 
 
                          Molecular geometry (au)
                          -----------------------
 
- O          0.0000000000            0.0000000000           -0.7333333333
- H    1     0.0000000000            1.4300000000            0.3666666667
- H    2     0.0000000000           -1.4300000000            0.3666666667
+ O          0.0000000000            0.0000000000           -0.1231063545
+ H    1     0.0000000000            1.4300000000            0.9768936455
+ H    2     0.0000000000           -1.4300000000            0.9768936455
 
 
 
@@ -1307,9 +1373,9 @@ H     2   21828      60     590
      Spin multiplicity  1     State number       1     Total charge       0
 
 
-     Total energy        -76.3830519281 au (Hartrees)
-                         -2078.48851128 eV
-                           -200543.6740 kJ/mol
+     Total energy        -76.3830521529 au (Hartrees)
+                         -2078.48852028 eV
+                           -200543.6746 kJ/mol
 
 
 
@@ -1317,11 +1383,11 @@ H     2   21828      60     590
                          Relativistic corrections
                          ------------------------
 
-     Darwin correction:                          0.1987572499 au
-     Mass-velocity correction:                  -0.2502969250 au
+     Darwin correction:                          0.1987572456 au
+     Mass-velocity correction:                  -0.2502969192 au
 
-     Total relativistic correction:             -0.0515396751 au (0.0675%)
-     Non-relativistic + relativistic energy:   -76.4345916033 au
+     Total relativistic correction:             -0.0515396736 au (0.0675%)
+     Non-relativistic + relativistic energy:   -76.4345918265 au
 
 
 
@@ -1329,7 +1395,7 @@ H     2   21828      60     590
                               Dipole moment
                               -------------
 
-                    0.748785 au           1.903221 Debye
+                    0.748785 au           1.903222 Debye
 
 
 
@@ -1339,7 +1405,7 @@ H     2   21828      60     590
 
                                au             Debye
 
-                    z      0.74878496      1.90322132
+                    z      0.74878518      1.90322189
 
                         1 a.u. =   2.54175 Debye 
 
@@ -1354,8 +1420,8 @@ H     2   21828      60     590
                Sym.   Mode   Frequency    Frequency
               ex. st.  No.      (au)          (eV)
               ---------------------------------------
-                 1        1    0.364775    9.926038
-                 1        2    0.623601   16.969035
+                 1        1    0.364773    9.925972
+                 1        2    0.623599   16.968995
 
 
  ******************************************************************************
@@ -1369,24 +1435,24 @@ H     2   21828      60     590
 
 
     Symmetry 2
-                       By             
+                       By
 
-        O   y    363.32052115
-        H   y     79.06249706
-        H   z     13.16714192
+        O   y    363.32107831
+        H   y     79.06248199
+        H   z     13.16721382
 
     Symmetry 3
-                       Bx             
+                       Bx
 
-        O   x    328.43776515
-        H   x     50.03101068
+        O   x    328.43838632
+        H   x     50.03100891
 
     Symmetry 4
-                       Bz             
+                       Bz
 
-        O   z    349.41630763
-        H   y     18.15501192
-        H   z     62.83986408
+        O   z    349.41733949
+        H   y     18.15506797
+        H   z     62.83985588
 
 
 
@@ -1395,8 +1461,8 @@ H     2   21828      60     590
   ==============================
 
 
-  Shielding constant:    347.0582 ppm
-  Anisotropy:            -27.9306 ppm
+  Shielding constant:    347.0589 ppm
+  Anisotropy:            -27.9308 ppm
   Asymmetry:               0.7467    
 
   S parameter:            30.4157 ppm
@@ -1406,41 +1472,41 @@ H     2   21828      60     590
   Total shielding tensor (ppm):
   -----------------------------
 
-                  Bx             By             Bz             
+                  Bx             By             Bz
 
-  O   x    328.43776515     0.00000000     0.00000000
-  O   y      0.00000000   363.32052115     0.00000000
-  O   z      0.00000000     0.00000000   349.41630763
+  O   x    328.43838632     0.00000000     0.00000000
+  O   y      0.00000000   363.32107831     0.00000000
+  O   z      0.00000000     0.00000000   349.41733949
 
 
   Diamagnetic and paramagnetic contributions (ppm):
   -------------------------------------------------
 
-               Bx         By         Bz             Bx         By         Bz         
+               Bx         By         Bz             Bx         By         Bz
 
-  O   x    392.2322     0.0000     0.0000       -63.7945     0.0000     0.0000
-  O   y      0.0000   410.0416     0.0000         0.0000   -46.7211     0.0000
-  O   z      0.0000     0.0000   387.1160         0.0000     0.0000   -37.6997
+  O   x    392.2322     0.0000     0.0000       -63.7938     0.0000     0.0000
+  O   y      0.0000   410.0417     0.0000         0.0000   -46.7206     0.0000
+  O   z      0.0000     0.0000   387.1158         0.0000     0.0000   -37.6985
 
-  Diamagnetic contribution:    396.463287         Paramagnetic:     -49.405089
+  Diamagnetic contribution:    396.463230         Paramagnetic:     -49.404295
 
 
   Antisymmetric and traceless symmetric parts (ppm):
   --------------------------------------------------
 
-               Bx         By         Bz             Bx         By         Bz         
+               Bx         By         Bz             Bx         By         Bz
 
-  O   x      0.0000     0.0000     0.0000       -18.6204     0.0000     0.0000
-  O   y      0.0000     0.0000     0.0000         0.0000    16.2623     0.0000
-  O   z      0.0000     0.0000     0.0000         0.0000     0.0000     2.3581
+  O   x      0.0000     0.0000     0.0000       -18.6205     0.0000     0.0000
+  O   y      0.0000     0.0000     0.0000         0.0000    16.2621     0.0000
+  O   z      0.0000     0.0000     0.0000         0.0000     0.0000     2.3584
 
 
   Principal values and axes:
   --------------------------
 
-  O     1    363.320521  =  347.06  +  16.26:     0.000000  1.000000  0.000000
-  O     2    349.416308  =  347.06  +   2.36:     0.000000  0.000000  1.000000
-  O     3    328.437765  =  347.06  -  18.62:     1.000000  0.000000  0.000000
+  O     1    363.321078  =  347.06  +  16.26:     0.000000  1.000000  0.000000
+  O     2    349.417339  =  347.06  +   2.36:     0.000000  0.000000  1.000000
+  O     3    328.438386  =  347.06  -  18.62:     1.000000  0.000000  0.000000
 
 
   Chemical shielding for H    1:
@@ -1451,48 +1517,48 @@ H     2   21828      60     590
   Anisotropy:             18.4578 ppm
   Asymmetry:               0.1334    
 
-  S parameter:            18.5124 ppm
+  S parameter:            18.5125 ppm
   A parameter:             1.2470 ppm
 
 
   Total shielding tensor (ppm):
   -----------------------------
 
-                  Bx             By             Bz             
+                  Bx             By             Bz
 
-  H  1x     25.01550534     0.00000000     0.00000000
-  H  1y      0.00000000    39.53124853     9.07750596
-  H  1z      0.00000000     6.58357096    31.41993204
+  H  1x     25.01550445     0.00000000     0.00000000
+  H  1y      0.00000000    39.53124100     9.07753398
+  H  1z      0.00000000     6.58360691    31.41992794
 
 
   Diamagnetic and paramagnetic contributions (ppm):
   -------------------------------------------------
 
-               Bx         By         Bz             Bx         By         Bz         
+               Bx         By         Bz             Bx         By         Bz
 
   H  1x     13.0493     0.0000     0.0000        11.9662     0.0000     0.0000
   H  1y      0.0000    35.6756    17.3399         0.0000     3.8556    -8.2624
-  H  1z      0.0000    15.3685    23.2236         0.0000    -8.7849     8.1963
+  H  1z      0.0000    15.3685    23.2237         0.0000    -8.7849     8.1963
 
-  Diamagnetic contribution:     23.982865         Paramagnetic:       8.006030
+  Diamagnetic contribution:     23.982865         Paramagnetic:       8.006026
 
 
   Antisymmetric and traceless symmetric parts (ppm):
   --------------------------------------------------
 
-               Bx         By         Bz             Bx         By         Bz         
+               Bx         By         Bz             Bx         By         Bz
 
   H  1x      0.0000     0.0000     0.0000        -6.9734     0.0000     0.0000
-  H  1y      0.0000     0.0000     1.2470         0.0000     7.5424     7.8305
-  H  1z      0.0000    -1.2470     0.0000         0.0000     7.8305    -0.5690
+  H  1y      0.0000     0.0000     1.2470         0.0000     7.5423     7.8306
+  H  1z      0.0000    -1.2470     0.0000         0.0000     7.8306    -0.5690
 
 
   Principal values and axes:
   --------------------------
 
-  H    11     25.015505  =   31.99  -   6.97:     1.000000  0.000000  0.000000
-  H    12     26.657104  =   31.99  -   5.33:     0.000000 -0.519661  0.854372
-  H    13     44.294076  =   31.99  +  12.31:     0.000000  0.854372  0.519661
+  H    11     25.015504  =   31.99  -   6.97:     1.000000  0.000000  0.000000
+  H    12     26.657071  =   31.99  -   5.33:     0.000000 -0.519662  0.854372
+  H    13     44.294098  =   31.99  +  12.31:     0.000000  0.854372  0.519662
 
 
   Chemical shielding for H    2:
@@ -1503,48 +1569,48 @@ H     2   21828      60     590
   Anisotropy:             18.4578 ppm
   Asymmetry:               0.1334    
 
-  S parameter:            18.5124 ppm
+  S parameter:            18.5125 ppm
   A parameter:             1.2470 ppm
 
 
   Total shielding tensor (ppm):
   -----------------------------
 
-                  Bx             By             Bz             
+                  Bx             By             Bz
 
-  H  2x     25.01550534     0.00000000     0.00000000
-  H  2y      0.00000000    39.53124853    -9.07750596
-  H  2z      0.00000000    -6.58357096    31.41993204
+  H  2x     25.01550445     0.00000000     0.00000000
+  H  2y      0.00000000    39.53124100    -9.07753398
+  H  2z      0.00000000    -6.58360691    31.41992794
 
 
   Diamagnetic and paramagnetic contributions (ppm):
   -------------------------------------------------
 
-               Bx         By         Bz             Bx         By         Bz         
+               Bx         By         Bz             Bx         By         Bz
 
   H  2x     13.0493     0.0000     0.0000        11.9662     0.0000     0.0000
   H  2y      0.0000    35.6756   -17.3399         0.0000     3.8556     8.2624
-  H  2z      0.0000   -15.3685    23.2236         0.0000     8.7849     8.1963
+  H  2z      0.0000   -15.3685    23.2237         0.0000     8.7849     8.1963
 
-  Diamagnetic contribution:     23.982865         Paramagnetic:       8.006030
+  Diamagnetic contribution:     23.982865         Paramagnetic:       8.006026
 
 
   Antisymmetric and traceless symmetric parts (ppm):
   --------------------------------------------------
 
-               Bx         By         Bz             Bx         By         Bz         
+               Bx         By         Bz             Bx         By         Bz
 
   H  2x      0.0000     0.0000     0.0000        -6.9734     0.0000     0.0000
-  H  2y      0.0000     0.0000    -1.2470         0.0000     7.5424    -7.8305
-  H  2z      0.0000     1.2470     0.0000         0.0000    -7.8305    -0.5690
+  H  2y      0.0000     0.0000    -1.2470         0.0000     7.5423    -7.8306
+  H  2z      0.0000     1.2470     0.0000         0.0000    -7.8306    -0.5690
 
 
   Principal values and axes:
   --------------------------
 
-  H    21     25.015505  =   31.99  -   6.97:     1.000000  0.000000  0.000000
-  H    22     26.657104  =   31.99  -   5.33:     0.000000  0.519661  0.854372
-  H    23     44.294076  =   31.99  +  12.31:     0.000000  0.854372 -0.519661
+  H    21     25.015504  =   31.99  -   6.97:     1.000000  0.000000  0.000000
+  H    22     26.657071  =   31.99  -   5.33:     0.000000  0.519662  0.854372
+  H    23     44.294098  =   31.99  +  12.31:     0.000000  0.854372 -0.519662
 
 
                      +--------------------------------+
@@ -1555,7 +1621,7 @@ H     2   21828      60     590
 
  @1atom   shielding       dia      para     skew      span     (aniso     asym)
  @1----------------------------------------------------------------------------
- @1O       347.0582  396.4633  -49.4051   -0.2028   34.8828   24.3935    1.2900
+ @1O       347.0589  396.4632  -49.4043   -0.2028   34.8827   24.3932    1.2900
  @1H    1   31.9889   23.9829    8.0060    0.8297   19.2786   18.4578    0.1334
  @1H    2   31.9889   23.9829    8.0060    0.8297   19.2786   18.4578    0.1334
 
@@ -1569,9 +1635,9 @@ H     2   21828      60     590
 
  @2atom   shielding       dia      para     aniso      asym        S        A
  @2----------------------------------------------------------------------------
- @2O       347.0582  396.4633  -49.4051  -27.9306    0.7467   30.4157    0.0000
- @2H    1   31.9889   23.9829    8.0060   18.4578    0.1334   18.5124    1.2470
- @2H    2   31.9889   23.9829    8.0060   18.4578    0.1334   18.5124    1.2470
+ @2O       347.0589  396.4632  -49.4043  -27.9308    0.7467   30.4157    0.0000
+ @2H    1   31.9889   23.9829    8.0060   18.4578    0.1334   18.5125    1.2470
+ @2H    2   31.9889   23.9829    8.0060   18.4578    0.1334   18.5125    1.2470
 
 
 
@@ -1612,7 +1678,7 @@ H     2   21828      60     590
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            O           H  1        H  2        
+            O           H  1        H  2
 
    O       0.000000
    H  1    0.954707    0.000000
@@ -1643,21 +1709,22 @@ H     2   21828      60     590
  CPU time statistics for ABACUS
  ------------------------------
 
- RHSIDE     00:00:03       1 %
- EXCITA     00:00:32       9 %
- LINRES     00:01:58      33 %
- TRP LR     00:03:20      56 %
+ RHSIDE     00:00:02       1 %
+ EXCITA     00:00:15       8 %
+ LINRES     00:01:04      36 %
+ TRP LR     00:01:38      55 %
 
- TOTAL      00:05:54     100 %
+ TOTAL      00:02:59     100 %
 
 
 
- >>>> Total CPU  time used in ABACUS:  5 minutes 54 seconds
- >>>> Total wall time used in ABACUS:  6 minutes  7 seconds
+ >>>> Total CPU  time used in ABACUS:  2 minutes 59 seconds
+ >>>> Total wall time used in ABACUS:  3 minutes  0 seconds
 
 - End of Static Property Section
- >>>> Total CPU  time used in DALTON:  6 minutes 21 seconds
- >>>> Total wall time used in DALTON:  6 minutes 35 seconds
+ >>>> Total CPU  time used in DALTON:  3 minutes 11 seconds
+ >>>> Total wall time used in DALTON:  3 minutes 13 seconds
 
  
-     Host name              : pico                                    
+     Date and time (Linux)  : Wed Sep  4 14:42:22 2002
+     Host name              : pi.biotech.kth.se                       
