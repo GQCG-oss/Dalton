@@ -1,26 +1,29 @@
 \chapter{\label{chap:wf-guide}Getting the wave function you want}
- 
+
 Currently the following wave function types are implemented in DALTON:
 
 \begin{description}
 
 \item[RHF] Closed-shell singlet and Open-shell doublet (only one open shell)
 restricted Hartree-Fock (SCF, self-consistent
-field)\index{HF}\index{SCF}\index{Hartree-Fock}. 
+field)\index{HF}\index{SCF}\index{Hartree-Fock}.
 
 \item[MP2] M{\o}ller-Plesset second-order perturbation
-theory\index{MP2}\index{M\o ller-Plesset} based on
-closed-shell restricted Hartree-Fock.  Energy, second-order one-electron
+theory\index{MP2}\index{M\o ller-Plesset} based on closed-shell
+restricted Hartree-Fock.  Energy, second-order one-electron
 density matrix and first-order wave function (for SOPPA) may be
 calculated, as well as first-order geometry optimizations using
-numerical gradients.
+numerical gradients. \typeout{Sonia: Note: MP2 is also part of CC.
+First order properties and geometry optimization are available.
+The latter though is connected to Trygve's new integral
+code....not distributed}
 
 \item[CI] Configuration interaction\index{CI}\index{configuration
-interaction}. Two types of configuration selection 
+interaction}. Two types of configuration selection
 schemes are implemented: the complete active space model (CAS) and the
 restricted active space model (RAS).
 
-\item[MCSCF] Multiconfiguraion self-consistent field based on
+\item[MCSCF] Multiconfiguration self-consistent field based on
 the complete active space model (CASSCF) and
 the restricted active space model
 (RASSCF)\index{MCSCF}\index{CASSCF}\index{RASSCF}.
@@ -28,18 +31,18 @@ the restricted active space model
 \end{description}
 
 SIRIUS is the part of the code that computes all of these
-wave functions. 
+wave functions.
 This part of the DALTON manual discusses aspects of converging to the
 wave function you want.
 
 \section{\label{sec:ig_necinp} Necessary input to SIRIUS}
- 
+
 In order for DALTON to perform a calculation for a given wave function a
-minimum amount of  
+minimum amount of
 information is required. This information is collected in the
 \Sec{*WAVE FUNCTION} input module. Fig.~\ref{fig-nec.inp.} collects the most
 essential information.
- 
+
 \begin{figure}
     \newlength{\mpwidth}
     \settowidth{\mpwidth}{\tt M}
@@ -48,9 +51,9 @@ essential information.
 \hline
 \begin{minipage}{\mpwidth}
 \begin{verbatim}
- 
-   Calculation type(s): RHF, MP2, CI, MCSCF.
- 
+
+   Calculation type(s): RHF, MP2, CI, MCSCF, CC.
+
    Number of symmetries (needed only for MCSCF wave functions)
    If MCSCF or CI calculation then
       Symmetry of wave function.
@@ -60,10 +63,10 @@ essential information.
    else
       Totally symmetric, singlet spin multiplicity
    end if
- 
+
    Number of basis orbitals.
    Number of molecular orbitals.
- 
+
    Number of inactive orbitals in each symmetry.
    If MCSCF or CI calculation then
       Number of active electrons.
@@ -76,20 +79,20 @@ essential information.
          Limits on number of electrons in RAS1 and RAS3.
       end if
    end if
- 
+
    if not MP2 then convergence threshold.
- 
+
    how to begin the calculation (initial guess).
- 
+
 \end{verbatim}
 \end{minipage} \\ \hline
 \end{tabular}
 \vspace{0.5cm}
 \caption{Necessary input information for determining the wave
-function.}\label{fig-nec.inp.} 
+function.}\label{fig-nec.inp.}
 \end{figure}
- 
- 
+
+
 \section{\label{sec:si-ex} An input example for SIRIUS}
 
 \noindent
@@ -97,13 +100,13 @@ The number of symmetries and the number of basis orbitals are read from
 the one-electron integral file.  The number of symmetries may also be
 specified in the \Sec{*WAVE FUNCTION} input module as a way of
 obtaining a consistency check between the wave function input section
-and available integral files. 
- 
+and available integral files.
+
 \noindent
 The following sample input specifies a CASSCF\index{CASSCF}
-calculation on water\index{water} 
+calculation on water\index{water}
 with maximum use of defaults:
- 
+
 \vbox{
 \begin{verbatim}
 **WAVE FUNCTIONS
@@ -125,7 +128,7 @@ with maximum use of defaults:
 **END OF INPUTS
 \end{verbatim}
 } % end vbox
- 
+
 \noindent
 Comparing to the list of necessary input information in
 Fig.~\ref{fig-nec.inp.},
@@ -138,25 +141,25 @@ molecular orbitals will be the same as the number of basis functions.
 No state has been specified as ground state calculation is the default.
 \noindent
 The default convergence threshold\index{convergence threshold} of
-1.0D-5 is used. 
- 
- 
+1.0D-5 is used.
+
+
 \clearpage
 \section{\label{sec:ig_hints} Hints on the structure of the input for
 the \\\Sec{*WAVE FUNCTION} input module}
- 
- 
+
+
 The following list attempts to show the interdependence of the various
-input modules through indentation  
+input modules through indentation
 (\kw{*R*}: required input) :
- 
+
 \begin{verbatim}
 **WAVE FUNCTION
   .TITLE
   .NSYM                    (1)
   .HF
      *HF INPUT
-       .HF OCCUPATION 
+       .HF OCCUPATION
        ...
      *ORBITAL INPUT        (3)
      *STEP CONTROL         (if QCHF)
@@ -164,7 +167,7 @@ input modules through indentation
      *MP2 INPUT
      *ORBITAL INPUT        (3)
      *HF INPUT
-       .HF OCCUPATION 
+       .HF OCCUPATION
   .CI
      *CONFIGURATION INPUT  (2)
      *ORBITAL INPUT        (3)
@@ -186,12 +189,12 @@ input modules through indentation
 *PRINT LEVELS
 *AUXILLIARY INPUT
 \end{verbatim}
- 
+
 %\clearpage
 {\bf Notes:}
- 
+
 \begin{verbatim}
- 
+
 (1) NSYM is normally provided by the integral module. May be provided
     for consistency checking.
 
@@ -210,141 +213,134 @@ input modules through indentation
         .RAS1 HOLES or .RAS1 ELECTRONS
         .RAS3 ELECTRONS
       are required.
- 
+
 (3) *ORBITAL INPUT
       .MOSTART (*R*)
- 
+
       .SYMMETRIC ORTHONORMALIZATION
       .GRAM-SCHMIDT ORTHONORMALIZATION
- 
+
       .AVERAGE
       .FROZEN CORE ORBITALS
       .FREEZE ORBITALS
- 
+
       .5D7F9G
       .AO DELETE
       .DELETE
- 
+
       .REORDER MO'S
- 
+
       .PUNCHINPUTORBITALS
       .PUNCHOUTPUTORBITALS
- 
+
 (4) *CI VECTOR
       One and only one of the following three
         .STARTHDIAGONAL
         .STARTOLDCI
         .SELECT CONFIGURATION
- 
+
       .CNO START
 \end{verbatim}
- 
+
 \pagebreak[3]
 \section{\label{sec:ig_restart} How to restart a wave function calculation}
- 
-It is possible to restart\index{restart} after the last finished macro
-iteration in 
-(MC)SCF, provided the "f21"\index{fort.21} file was saved.  You will
-then at most loose 
-part of one macro iteration in case of system crashes, disks running
-full, or other irregularities.
-\noindent 
-In general the only change needed to the wave function input is to add the
-\Key{RESTART} keyword under \Sec{*WAVE FUNCTION}.
-If the correct two-electron
-integrals over molecular orbitals are available, you can skip the
-integral transformation\index{integral transformation} in the
-beginning of the macro iteration by 
-means of the \Key{OLD TRANSFORMATION} keyword under
-\Sec{TRANSFORMATION}.
-When resubmitting the job, you must make sure that the correct "f21"
-file is made available to the job. 
+
+It is possible to restart\index{restart} after the last finished
+macro iteration in (MC)SCF, provided the "f21"\index{fort.21}
+\typeout{Sonia: SIRIUS.RST} file was saved.  You will then at most
+loose part of one macro iteration in case of system crashes, disks
+running full, or other irregularities. \noindent In general the
+only change needed to the wave function input is to add the
+\Key{RESTART} keyword under \Sec{*WAVE FUNCTION}. If the correct
+two-electron integrals over molecular orbitals are available, you
+can skip the integral transformation\index{integral
+transformation} in the beginning of the macro iteration by means
+of the \Key{OLD TRANSFORMATION} keyword under
+\Sec{TRANSFORMATION}. When resubmitting the job, you must make
+sure that the correct "f21" \typeout{Sonia: SIRIUS.RST} file is
+made available to the job.
 %(specify the old "f21" file using
 %the format described in Section~\ref{VM-runs} for VM/CMS
 %and in Section~\ref{AIX-runs} for AIX).
- 
+
 \noindent
 %As done in Example~\ref{ex-6.1.4}, you can also use the restart feature if you
-You can also use the restart feature if you
-find it desirable to converge\index{convergence threshold} the wave
-function sharper than specified 
-in the original input. By default, SCF wave functions are converged to
-1.0D-6, whereas MCSCF and CI wave functions are converged to 1.0D-5.
- 
+You can also use the restart feature if you find it desirable to
+converge\index{convergence threshold} the wave function sharper
+than specified in the original input. By default, SCF wave
+functions are converged to 1.0D-6, whereas MCSCF and CI wave
+functions are converged to 1.0D-5.
+
 \pagebreak[2]
 \section{\label{sec:ig_orbtransfer}
 Transfer of molecular orbitals between different computers}
- 
+
 In order to be able to transfer molecular orbital coefficients between
-different computer systems, 
+different computer systems,
 an option is provided for
 formatted punching and formatted reading of the molecular orbital
 coefficients.  The options are
 \begin{center}
    \Key{PUNCHOUTPUTORBITALS} or \Key{PUNCHINPUTORBITALS}
 \end{center}
-in input group \Sec{ORBITAL INPUT}.
-The first option
-is used to punch the orbitals at the end of the optimization, while the
-second option is used to punch some molecular orbitals\index{molecular
-orbital} already available 
-on the "f21" file, for instance the converged orbitals from a previous
-calculation.  The orbitals can then be transferred to another computer
-and appended to the SIRIUS input there.
-The orbitals may then be read by \siraba\ using the \Key{MOSTART}
-followed by \Key{FORM18} option  (with this option \siraba\ will,
-after having finished the \Sec{*WAVE FUNCTION} input module,
-search the input file for either the \Sec{*MOLORB} keyword
-or the \Sec{*NATORB} keyword
-and expect the orbital coefficients to follow immediately afterwards).
+in input group \Sec{ORBITAL INPUT}. The first option is used to
+punch the orbitals at the end of the optimization, while the
+second option is used to punch some molecular
+orbitals\index{molecular orbital} already available on the "f21"
+\typeout{Sonia: SIRIUS.RST} file, for instance the converged
+orbitals from a previous calculation.  The orbitals can then be
+transferred to another computer and appended to the SIRIUS input
+there. The orbitals may then be read by \siraba\ using the
+\Key{MOSTART} followed by \Key{FORM18} option  (with this option
+\siraba\ will, after having finished the \Sec{*WAVE FUNCTION}
+input module, search the input file for either the \Sec{*MOLORB}
+keyword or the \Sec{*NATORB} keyword and expect the orbital
+coefficients to follow immediately afterwards).
 
 
 \section{\label{examples} Wave function input examples}
 
-Those who are used to the old {\sc sirius} input will not experience
-any dramatic changes with respect to the DALTON
-input, although a few minor differences exist in order
-to create a more user-friendly environment. The input sections are the
-same as before starting with a wavefunction specification, currently,
-including options for SCF, MP2, and MCSCF reference states. Depending
-on this choice of reference state the following input sections take
-different form, from the simplest SCF input to the more complex MCSCF
-input. Minimal SCF and SCF+MP2
+Those who are used to the old {\sc sirius} input will not
+experience any dramatic changes with respect to the DALTON input,
+although a few minor differences exist in order to create a more
+user-friendly environment. The input sections are the same as
+before starting with a wavefunction specification, currently,
+including options for SCF, MP2, and MCSCF reference states.
+Depending on this choice of reference state the following input
+sections take different form, from the simplest SCF input to the
+more complex MCSCF input. Minimal SCF and SCF+MP2
 \index{HF}\index{Hartree-Fock}\index{SCF}\index{MP2}\index{M\o
-ller-Plesset} 
-using the new feature of generating the HF
+ller-Plesset} using the new feature of generating the HF
 occupation on the basis of an initial H\"{u}ckel
-calculation\index{H\"{u}ckel} and then 
-possibly change the occupation during the first DIIS\index{DIIS}
-iterations will be shown. There will also be an example showing how an
-old f21 file is used for restart in the input. \index{fort.21}\index{restart}
-In this case the Hartree-Fock
-occupation will be then read from the f21-file and used as initial
-Hartree-Fock occupation\index{HF occupation}\index{Hartree-Fock occupation}.
-The HF occupation is needed for an
-MCSCF calculation\index{MCSCF}, as this is anyway determined when
-establishing a 
-suitably chosen active space\index{active space}. An example of an
-MCSCF-CAS\index{CASSCF} input without starting 
-orbitals\index{starting orbitals} will be give, as well as an
-MCSCF-RAS\index{RASSCF} with starting orbitals. We note that and MCSCF
-wave function by 
-default will be optimized using spin-adapted configurations
-(CSFs)\index{CSF}\index{configuration state function},
-unless the wave function optimization is followed by a calculation of
-molecular properties or geometry optimization, when
-determinants\index{determinants} will 
-be used. The three following examples illustrate calculations
-on excited states\index{excited state}, on a core
-hole\index{core hole} state with frozen core orbital\index{frozen core} and 
-on a core hole state with relaxed core\index{relaxed core} orbital.
-The last example shows an MCSCF calculation of non-equilibrium 
-solvation energy\index{non-equilibrium solvation}. 
+calculation\index{H\"{u}ckel} and then possibly change the
+occupation during the first DIIS\index{DIIS} iterations will be
+shown. There will also be an example showing how an old f21 file
+is used for restart in the input. \index{fort.21}\index{restart}
+In this case the Hartree-Fock occupation will be then read from
+the f21-file and used as initial Hartree-Fock occupation\index{HF
+occupation}\index{Hartree-Fock occupation}. The HF occupation is
+needed for an MCSCF calculation\index{MCSCF}, as this is anyway
+determined when establishing a suitably chosen active
+space\index{active space}. An example of an
+MCSCF-CAS\index{CASSCF} input without starting
+orbitals\index{starting orbitals} will be given, as well as an
+MCSCF-RAS\index{RASSCF} with starting orbitals. We note that and
+MCSCF wave function by default will be optimized using
+spin-adapted configurations (CSFs)\index{CSF}\index{configuration
+state function}, unless the wave function optimization is followed
+by a calculation of molecular properties or geometry optimization,
+when determinants\index{determinants} will be used. The three
+following examples illustrate calculations on excited
+states\index{excited state}, on a core hole\index{core hole} state
+with frozen core orbital\index{frozen core} and on a core hole
+state with relaxed core\index{relaxed core} orbital. The last
+example shows an MCSCF calculation of non-equilibrium solvation
+energy\index{non-equilibrium solvation}.
 
 \bigskip
 
 The following input example gives a minimal
-SCF\index{SCF}\index{HF}\index{Hartree-Fock} input with default 
+SCF\index{SCF}\index{HF}\index{Hartree-Fock} input with default
 starting  orbitals (that is, H\"{u}ckel guess), and automatic Hartree-Fock
 occupation, first based on the H\"{u}ckel\index{H\"{u}ckel} guess, and
 then updated during the DIIS\index{DIIS} iterations:
@@ -361,7 +357,7 @@ then updated during the DIIS\index{DIIS} iterations:
 The following input give a minimal input for an
 MP2\index{MP2}\index{M\o ller-Plesset}
 calculation using all default settings for the Hartree-Fock
-calculation (see previous example): 
+calculation (see previous example):
 
 \begin{verbatim}
 **DALTON INPUT
@@ -374,11 +370,11 @@ calculation (see previous example):
 \label{sirius_ex1b}
 
 If we would like to calculate molecular properties in several
-geometries, we may take advantage of the fact the molecular orbitals
-at the previous geometry probably is quite close to the optimized MOs
-at the new geometry, and thus restart\index{restart} from the MOs
-contained in the f21\index{fort.21} file, as indicated in the
-following example: 
+geometries, we may take advantage of the fact the molecular
+orbitals at the previous geometry probably is quite close to the
+optimized MOs at the new geometry, and thus restart\index{restart}
+from the MOs contained in the f21\index{fort.21} \typeout{Sonia:
+SIRIUS.RST} file, as indicated in the following example:
 
 \begin{verbatim}
 **DALTON INPUT
@@ -401,10 +397,10 @@ following example:
 \begin{list}{}{}
 \item Restricted-step second-order MCSCF: H.J.Aa.Jensen, and H.\AA
 gren. \newblock {\em Chem.Phys.Lett.}, {\bf 110},\hspace{0.25em}1140,
-(1984). 
+(1984).
 \item Restricted-step second-order MCSCF: H.J.Aa.Jensen, and H.\AA
 gren. \newblock {\em Chem.Phys.}, {\bf 104},\hspace{0.25em}229,
-(1986). 
+(1986).
 \item MP2 natural orbital occupation analysis: H.J.Aa.Jensen, P.J\o
 rgensen, H.\AA gren, and J.Olsen. \newblock {\em J.Chem.Phys.}, {\bf
 88},\hspace{0.25em}3824, (1987).
@@ -415,8 +411,8 @@ rgensen, H.\AA gren, and J.Olsen. \newblock {\em J.Chem.Phys.}, {\bf
 The next input example gives the necessary input for an Complete
 Active Space SCF (CASSCF)\index{CASSCF} calculation where we use MP2 to provide
 starting orbitals\index{MP2}\index{M\o ller-Plesset}\index{starting
-orbitals} for our MCSCF. The 
-active space may for instance be 
+orbitals} for our MCSCF. The
+active space may for instance be
 chosen on the basis of an MP2 natural orbital occupation
 analysis\index{active space} as
 described in Ref.~\cite{hjajpjhajojcp88}. The input would like:
@@ -451,7 +447,7 @@ described in Ref.~\cite{hjajpjhajojcp88}. The input would like:
 As for Hartree-Fock calculation, we may want to use available
 molecular orbitals on the fort.21\index{fort.21} file from previous
 calculations as starting orbitals\index{starting orbitals} for our
-MCSCF\index{RASSCF} as indicated in this input example: 
+MCSCF\index{RASSCF} as indicated in this input example:
 
 \begin{verbatim}
 **DALTON INPUT
@@ -511,7 +507,7 @@ The next input describes the optimization of the first excited
 state\index{excited state}
 of the same symmetry as the ground state. To speed up convergence, we
 employ optimal orbital\index{optimal orbital trial vector} trial
-vectors as described in 
+vectors as described in
 Ref.~\cite{hjajpjhajcp87}. Such an input would look like:
 
 \begin{verbatim}
@@ -536,11 +532,11 @@ Ref.~\cite{hjajpjhajcp87}. Such an input would look like:
  4 2 2 0
 *ORBITAL INPUT
 .MOSTART
- NEWORB             
-*CI VECTOR
-.STARTHDIAG         | Compute start vector from Hessian CI-diagonal
-*OPTIMIZATION
-.THRESHOLD
+ NEWORB
+ *CI VECTOR
+ .STARTHDIAG |Compute start vector from Hessian CI-diagonal
+ *OPTIMIZATION
+ .THRESHOLD
   1.D-07
 .SIMULTANEOUS ROOTS
   2 2
@@ -572,7 +568,7 @@ Chem.Phys.}, {\bf 172},\hspace{0.25em}45, (1993).
 \end{center}
 
 The next input describes the calculation of a core-hole\index{core
-hole} state of the 
+hole} state of the
 carbon 1s orbital in carbon monoxide\index{carbon monoxide}, the first
 example employing a frozen core\index{frozen core}:
 
@@ -607,7 +603,7 @@ Frozen core orbital calculation.
 .COREHOLE
  1 2               | symmetry of core orbital and the orbital in this symmetry
 !                    with the core hole according to list of input orbitals.
-!                    The same thing could be obatined by reordering
+!                    The same thing could be obtained by reordering
 !                    the core orbital to the first active orbital (by .REORDER),
 !                    and specifying .FREEZE and .NEO ALWAYS
 .TRACI
@@ -622,13 +618,13 @@ Frozen core orbital calculation.
 
 
 whereas we in a calculation where we would allow the core to
-relax\index{relaxed core} only
-would require the following changes compared to the previous input,
-assuming that we start out from orbitals and CI vectors generated by the
-previous calculation  ".STARTHDIAG" is therefore replaced by
-".STARTOLDCI", and the core orbital has number 3 (instead of 1)
-in the list of orbitals in the first symmetry. ".CORERELAX" is specifed
-for relaxation of the core orbital using the NR algorithm.
+relax\index{relaxed core} only would require the following changes
+compared to the previous input, assuming that we start out from
+orbitals and CI vectors generated by the previous calculation
+\Key{STARTHDIAG} is therefore replaced by \Key{STARTOLDCI}, and
+the core orbital has number 3 (instead of 1) in the list of
+orbitals in the first symmetry. "\Key{CORERELAX}" is specified for
+relaxation of the core orbital using the NR algorithm.
 
 \begin{verbatim}
 *OPTIMIZATION
@@ -661,19 +657,18 @@ H.J.Aa.Jensen.\newblock {\em J.Chem.Phys.}, {\bf
 \end{center}
 
 This example describes calculations for non-equilibrium
-solvation\index{non-equilibrium solvation}.
-Usually one starts with a calculation of a reference state
-(most often the ground state) with equilibrium solvation, using
-keyword "INESRF". The interface file is then used (without user 
-interference) for a non-equilibrium excited state calculation; keyword
-"INERSI". 
+solvation\index{non-equilibrium solvation}. Usually one starts
+with a calculation of a reference state (most often the ground
+state) with equilibrium solvation, using keyword \Key{INESRF}. The
+interface file is then used (without user interference) for a
+non-equilibrium excited state calculation; keyword \Key{INERSI}.
 
 \begin{verbatim}
 **DALTON INPUT
 .RUN WAVE FUNCTIONS
 **WAVE FUNCTION
 .TITLE
- 2-RAS(2p2p') : on F+ (1^D) in Glycol 
+ 2-RAS(2p2p') : on F+ (1^D) in Glycol
 .MCSCF
 .NSYM
  8
@@ -683,7 +678,7 @@ interference) for a non-equilibrium excited state calculation; keyword
 .SYMMETRY
  1
 .INACTIVE ORBITALS
- 1  0  0  0  0  0  0  0 
+ 1  0  0  0  0  0  0  0
 .ELECTRONS
  6
 .RAS1 SPACE
@@ -692,10 +687,10 @@ interference) for a non-equilibrium excited state calculation; keyword
  1  2  2  0  2  0  0  0
 .RAS3 SPACE
  8  4  4  3  4  3  3  1
-.RAS1 ELECTRONS 
- 0  0 
-.RAS3 ELECTRONS 
- 0  2 
+.RAS1 ELECTRONS
+ 0  0
+.RAS3 ELECTRONS
+ 0  2
 *OPTIMIZATION
 .NEO ALWAYS
 .OPTIMA
@@ -716,4 +711,3 @@ interference) for a non-equilibrium excited state calculation; keyword
 *END OF DALTON
 \end{verbatim}
 \label{sirius_ex8}
- 
