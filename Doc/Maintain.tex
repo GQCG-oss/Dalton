@@ -16,19 +16,18 @@ necessary.
 The program use approximately 4 Mw of memory allocated as common
 blocks and similar data structures. Most of the memory used during the
 calculation is taken from a large work array. The size of this work
-array\index{scratch memory},
-\verb|MEMWRK|\index{MEMWRK}, is supplied to the program as a shell
-variable. How this is done is
-exemplified in the chapter on how to get started
+array\index{memory!scratch} is supplied to the program as a shell
+variable, \verb|MEMWRK|\index{MEMWRK}.
+How this is done is exemplified in the chapter on how to get started
 (Chapter~\ref{ch:starting}). This makes it easy
 to give the program the memory needed for a given calculation. If no
 value to the shell 
-variable is supplied, the program will use the  default value which is
+variable is supplied, the program will use the default value which is
 determined at installation time from the variable
 \verb|INSTALL_WRKMEM|\index{INSTALL\_WRKMEM} in the preprocessor
-directives\index{scratch memory}.
+directives\index{memory!scratch}.
 
-\subsection{Redimensioning \dalton}\index{Redimensioning}
+\subsection{Redimensioning \dalton}\index{redimensioning Dalton}
 
 Most of the \dalton\ program has in principle no limitations on
 the size of the problem one can handle, apart from
@@ -43,46 +42,46 @@ corresponding include
 file in which the variable appears and a short description of what
 it defines. However, we note that the program sometimes will
 require the user to change other parameters not included in this
-list, and these variables are then easily found in the include
+list, and these variables are then easily found in the include/
 directory by ``grep'ing for'' its occurrence. We also point out that
-whenever a change is made to one or more include files, it is most
-safe to do \verb|make depend| and then rebuild the program using the
+whenever a change is made to one or more include files, it is strongly
+recommended to do \verb|make depend| and then rebuild the program using the
 command \verb|make|.
 
 \bigskip
 
 \begin{tabular}{lll}
 \verb|MAXOCC| & \verb|maxorb.h| & Maximum number of occupied
-orbitals.\index{occupied orbitals}\index{limits}\\
-\verb|MAXORB| & \verb|maxorb.h| & Maximum number of
-orbitals.\index{orbitals}\index{limits}\\
+orbitals.\index{occupied orbitals!max limit}\index{limits}\\
+\verb|MXCORB| & \verb|maxorb.h| & Maximum number of contracted atomic
+orbitals.\index{orbitals!max limit}\index{limits!orbitals}\\
 \verb|MAXWOP| & \verb|infvar.h| & Maximum number of orbital
-rotations.\index{orbital rotations}\index{limits}\\
+rotations.\index{orbital rotations!max limit}\index{limits}\\
 \verb|MXPST| & \verb|mxpdim.h| & The parameter MXPST is the largest
-allowed number\index{string numbers}\index{limits} of \\ && string types.
-A string type is defined by a given number \\&& of electrons in RAS1 and
-RAS3. So for a normal CAS or \\ &&  FCI calculation there is only a
-single string
-type (all elec-\\&&trons in for example RAS2). The number of string types
- \\ & & become large when one allows a large number of electrons
- \\ &&  in  RAS3  and a large number of holes on RAS1. If the
- \\ && number of  string types
-in a given calculation exceeds  \\&&  MXPST the program stops, and
-informs the user to raise\\&& MXPST.\\
-\verb|MXCENT| & \verb|mxcent.h| & Maximum number of nuclear
-centers.\index{atomic centers}\index{limits}\\
-\verb|MXQN| & \verb|maxaqn.h| & Maximum angular momentum in basis
-set.\index{angular momentum}\index{limits}\\
-\verb|MXAOVC| & \verb|aovec.h| & Maximum number of primitives in a
-contracted orbital.\index{primitive orbitals}\index{limits}
+allowed number\index{limits!CI string types} of \\
+&& string types.  A string type is defined by a given number \\
+&& of electrons in RAS1 and RAS3. So for a normal CAS or \\
+&& FCI calculation there is only a single string type (all elec-\\
+&&trons in for example RAS2). The number of string types \\
+&& become large when one allows a large number of electrons \\
+&& in  RAS3  and a large number of holes on RAS1. If the \\
+&& number of  string types in a given calculation exceeds \\
+&& MXPST the program stops, and informs the user to raise\\
+&& MXPST.\\
+\verb|MXCENT| & \verb|mxcent.h| & Maximum number of nuclear centers +
+point charges + ghost orbital centers.\index{nuclei!change max number}\index{limits!number of nuclei}\\
+\verb|MXQN| & \verb|maxaqn.h| & Maximum angular momentum + 1 ($l+1$) in basis
+set.\index{limits!max l-quantum number in basis functions}\\
+\verb|MXAOVC| & \verb|aovec.h| & Maximum number of basis function blocks for
+a given nuclear center.\index{limits!number of basis function blocks}
 \end{tabular}
 
-\begin{quote}
-SPECIAL NOTE: Even after adjusting \verb|MXAOVC|\index{MXAOVC}, it will be
-necessary to explicitly reset \verb|.MAXPRI|\index{MAXPRI} in the
-\her\ input modules as well, in order to increase the contraction depth
-in the input processing.  See Sec.~\ref{sec:herrdn}.
-\end{quote}
+%\begin{quote}
+%SPECIAL NOTE: Even after adjusting \verb|MXAOVC|\index{MXAOVC}, it will be
+%necessary to explicitly reset \verb|.MAXPRI|\index{MAXPRI} in the
+%\her\ input modules as well, in order to increase the contraction depth
+%in the input processing.  See Sec.~\ref{sec:herrdn}.
+%\end{quote}
 
 \section{New versions, patches}
 
@@ -91,7 +90,7 @@ homepage\\
 (\verb|http://www.kjemi.uio.no/software/dalton/dalton.html| 
 and the \dalton\ mailing-list
 (\verb|dalton-users@kjemi.uio.no|)\index{mailing list}.\footnote{We no
-  longer support and American mirror site for the \dalton\ program.}
+  longer support an American mirror site for the \dalton\ program.}
 
 Inbetween releases, bug fixes will be distributed as
 patches\index{patches} to an
@@ -114,11 +113,11 @@ modifications\index{modifications} completely, making it much easier
 to apply them to later
 releases.
 
-Often one may be interested in code that is newly developed\index{new
+One may be interested in code that is newly developed\index{new
 code} within the
 \dalton\ author group, but not part of any release of the program. In
 such cases, users are asked to take direct contact with one of the
-authors of that code, and ask for him/her for the new code
+authors of that code, and ask him/her for the new code
 needed. Such requests are {\em not} to be sent to
 \verb|dalton-admin@kjemi.uio.no|. Note also that this may lead to user
 restrictions of the program not contained in the license agreement
