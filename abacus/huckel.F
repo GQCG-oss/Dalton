@@ -130,6 +130,7 @@ C
       LWRK  = LWORK - (KWRK-1)
       CALL DCOPY(NCMOT,CMO,1,WORK(KCMO1),1)
 C
+C
 C     Extract Huckel matrix, do one symmetry at a time
 C
       ISTRT  = 0
@@ -259,7 +260,7 @@ C
 C
 C     We do our own Gram-Schmidt Orthogonalization of the trial vectors
 C
-      CALL HUCORT(CMO,WORK(KCMO1),TOTOVL,WORK,LWORK)
+      CALL HUCORT(CMO,WORK(KCMO1),TOTOVL,WORK(KWRK),LWRK)
       IF (P6FLAG(6)) THEN
          WRITE (LUPRI,'(/A)')
      &   ' Huckel guess MOs after Gram-Schmidt orthogonalization:'
@@ -576,7 +577,7 @@ C              we try the next mo vector from the initial mo's in CMO1
 C
                IF (IKROW1 .EQ. NHUCI) THEN
 C                 ... we have tried them all!
-                  IRETUR = IKROW
+                  IRETUR = -10 000*IKROW
                   GO TO 5000
                END IF
                GOTO 107
@@ -622,5 +623,5 @@ C
       WRITE(LUERR,4010) ISYM, IRETUR
       CALL QUIT('*** ERROR *** FATAL ERROR IN HUCORT')
  4010 FORMAT(/' *** HUCORT-FATAL ERROR *** Linear dependency in',
-     *        ' symmetry (Huckel part) =',I3,', CODE =',I4)
+     *        ' symmetry (Huckel part) =',I3/' CODE =',I10)
       END
