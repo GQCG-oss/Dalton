@@ -1123,7 +1123,7 @@ C
 C     Version: 1.0
 C
 C     Purpose: To set up the right hand side of the equation for
-C              zeta-kappa-0_ab (ETAIJ) from MO-integrals (XIN*), CC2
+C              zeta-kappa-0_ab (ETAAB) from MO-integrals (XIN*), CC2
 C              densities (D*) and t1-amplitudes (T1AM)!
 C              Note that due to the symmetry in the formulas, this
 C              routine is able to handle both the one- and the two-

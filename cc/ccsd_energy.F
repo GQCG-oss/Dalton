@@ -64,6 +64,8 @@ C
 #include <ccslvinf.h>
 #include <ccfdgeo.h>
 #include <r12int.h>
+!Sonia
+#include <ccfop.h>
       LOGICAL LCONVG,RSPIM2,EX,LEXIST
       CHARACTER*5 ETY0, ETY1, ETY2
       CHARACTER MODEL*10
@@ -180,13 +182,6 @@ C
      *     'Total number of amplitudes in ccsd      :  ',
      *     (NT1AMX+NT2AMX)
       WRITE(LUPRI,*)
-C
-C----------------------------------------------------
-C     IF iterative triples, open files for integrals.
-C----------------------------------------------------
-C
-      IF (CCSDT.OR.CCPT.OR.CCP3.OR.(CCR3.OR.CCRT.OR.CCR1A.OR.CCR1B))
-     *    CALL CC3_FILOP()
 C
 C------------------------------------------
 C     Sort AO-integrals into distributions.
@@ -1242,6 +1237,10 @@ C
       INTEGER IDUM
       LOGICAL LDUM
 C
+      CHARACTER*5 FN3FOP
+      CHARACTER*6 FN3VI, FN3FOP2
+      CHARACTER*8 FN3SRT, FN3VI2, FNTOC
+C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
       CALL QENTER('CCSD_IAJB')
@@ -1343,8 +1342,11 @@ C--------------------------------------
 C
       IF ((FROIMP .OR. FROEXP) .AND. ((R12TRA .AND. .NOT. R12INT
      *    .AND. .NOT. R12EIN .AND. .NOT. U12INT) .OR.
-     *    (RELORB .OR. (CCFOP .AND. MP2)))) THEN
+     *    (RELORB .OR. MP2))) THEN
 C        Not needed for R12 integrals (WK/UniKA/04-11-2002).
+!     *    (RELORB .OR. (CCFOP .AND. MP2))) THEN
+!     Sonia: remove "FOP" condition to be able to do gradients MP2
+
          KCMO  = KEND1
          KFRIN = KCMO  + NLAMDS
          KEND1 = KFRIN + NT2FRO(1)
@@ -1499,9 +1501,11 @@ C              needed for frozen core gradients.
 C-----------------------------------------------
 C
 C             Modified for R12 method (WK/UniKA/04-11-2002).
+C             Modified (RELORB .OR. (CCFOP .AND. MP2)) for MP2 frozen-core gradients
+C             Sonia
               IF ((FROIMP .OR. FROEXP) .AND. ((R12TRA .AND. .NOT. R12INT
      *             .AND. .NOT. R12EIN .AND. .NOT. U12INT) .OR.
-     *              (RELORB .OR. (CCFOP .AND. MP2)))) THEN
+     *              (RELORB .OR. (MP2)))) THEN
 C
                   CALL CC_FRCOIN(WORK(KFRIN),WORK(KXINT),WORK(KCMO),
      *                           WORK(KEND2),LWRK2,IDEL,ISYMD)
@@ -1569,6 +1573,14 @@ C------------------------------------------------------------------
 C                 Transform integrals and add to the result vector.
 C------------------------------------------------------------------
 C
+C<<<<<<< ccsd_energy.F
+                  IF (CCSDT .OR. CCPT .OR.
+     *                CCP3 .OR. (CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B)) THEN
+                      LUTOC = 0
+                      FNTOC = 'CCSDT_OC'
+                      CALL WOPEN2(LUTOC,FNTOC,64,0)
+                  ENDIF
+C
                   IF (U12INT .OR. R12SQR) THEN
 C                    KOFF4 for non-Hermitean integrals (WK/UniKA/04-11-2002).
                      KOFF4  = IU2AM(ISYMAI,ISYMBJ) + 1
@@ -1578,7 +1590,12 @@ C                    KOFF4 for non-Hermitean integrals (WK/UniKA/04-11-2002).
 C
                   CALL CCSD_AIBJ2(WORK(KEND2),XAIBJ(KOFF4),WORK(KLAMDP),
      *                            WORK(KLAMDH),WORK(KSCR1),WORK(KSCR2),
-     *                            IDEL,ISYMD,ISYMJ,ISYMAB)
+     *                            IDEL,ISYMD,ISYMJ,ISYMAB,LUTOC,FNTOC)
+C
+                  IF (CCSDT .OR. CCPT .OR.
+     *                CCP3 .OR. (CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B)) THEN
+                     CALL WCLOSE2(LUTOC,FNTOC,'KEEP')
+                  ENDIF
 C
                   IF (.NOT. R12TRA .AND. (CCSDT.OR.(CCPT.OR.CCP3).OR.
      *                (CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B))) THEN
@@ -1600,11 +1617,18 @@ C
 
                      KOFF5 = KXINT + IDSAOG(ISYMG,ISYDIS)
 C
+                     LU3SRT = 0
+                     FN3SRT = 'CC3_SORT'
+                     CALL WOPEN2(LU3SRT,FN3SRT,64,0)
+C
                      CALL CCSD_AIBJ3(WORK(KOFF5),WORK(KINT3),
      *                               WORK(KINT4),WORK(KLAMDP),
      *                               WORK(KLAMDH),WORK(KSCR1),
      *                               WORK(KSCR2),WORK(KSCR3),
-     *                               IDEL,ISYMD,ISYMG,ISYMAB)
+     *                               IDEL,ISYMD,ISYMG,ISYMAB,
+     *                               LU3SRT,FN3SRT)
+C
+                     CALL WCLOSE2(LU3SRT,FN3SRT,'KEEP')
 C
                   END IF
 C
@@ -1674,9 +1698,11 @@ C     Write integrals (cJ|dk) to disk.
 C-------------------------------------
 C
 C     Modified for R12 method (WK/UniKA/04-11-2002).
+C     Modified for MP2 frozen-core geometry opt. Sonia 2002
       IF ((FROIMP .OR. FROEXP) .AND. ((R12TRA .AND. .NOT. R12INT
      *    .AND. .NOT. R12EIN .AND. .NOT. U12INT) .OR.
-     *    (RELORB .OR. (CCFOP .AND. MP2)))) THEN
+     *    (RELORB .OR. MP2))) THEN
+C
          LUCJDK = 0
          CALL GPOPEN(LUCJDK,'INCJDK','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
@@ -1692,10 +1718,34 @@ C------------------------------------
 C        Sort integrals (kc,d alpha).
 C------------------------------------
 C
-         ISYINT = ISYMOP
-         CALL CC3_SORT1(WORK,LWORK,1,ISYINT)
+         LU3SRT  = 0
+         LU3VI   = 0
+         LU3VI2  = 0
+         LU3FOP  = 0
+         LU3FOP2 = 0
+         FN3SRT  = 'CC3_SORT'
+         FN3VI   = 'CC3_VI'
+         FN3VI2  = 'CC3_VI12'
+         FN3FOP  = 'PTFOP'
+         FN3FOP2 = 'PTFOP2'
+         CALL WOPEN2(LU3SRT,FN3SRT,64,0)
+         CALL WOPEN2(LU3VI,FN3VI,64,0)
+         CALL WOPEN2(LU3VI2,FN3VI2,64,0)
+         CALL WOPEN2(LU3FOP,FN3FOP,64,0)
+         CALL WOPEN2(LU3FOP2,FN3FOP2,64,0)
 C
-      END IF
+         ISYINT = ISYMOP
+         CALL CC3_SORT1(WORK,LWORK,1,ISYINT,LU3SRT,FN3SRT,
+     *                  LU3VI,FN3VI,LU3VI2,FN3VI2,LU3FOP,FN3FOP,
+     *                  LU3FOP2,FN3FOP2)
+C
+         CALL WCLOSE2(LU3SRT,FN3SRT,'KEEP')
+         CALL WCLOSE2(LU3VI,FN3VI,'KEEP')
+         CALL WCLOSE2(LU3VI2,FN3VI2,'KEEP')
+         CALL WCLOSE2(LU3FOP,FN3FOP,'KEEP')
+         CALL WCLOSE2(LU3FOP2,FN3FOP2,'KEEP')
+C
+      ENDIF
 C
       CALL QEXIT('CCSD_IAJB')
 C
@@ -1703,7 +1753,8 @@ C
       END
 C  /* Deck ccsd_aibj2 */
       SUBROUTINE CCSD_AIBJ2(XINT,XAIBJ,XLAMDP,XLAMDH,
-     *                      SCR1,SCR2,IDEL,ISYMD,ISYMJ,ISYMAB)
+     *                      SCR1,SCR2,IDEL,ISYMD,ISYMJ,ISYMAB,
+     *                      LUFILE,FNFILE)
 C
 C     Written by Henrik Koch 27-Mar-1990.
 C
@@ -1717,6 +1768,9 @@ C
 #include <r12int.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
+#include <ccfop.h>
+C
+      CHARACTER*(*) FNFILE
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -1780,8 +1834,8 @@ C------------------------------------------
 C        Write out integrals used in CCSDT.
 C------------------------------------------
 C
-         IF (CCSDT.OR.(CCPT.OR.CCP3).OR.
-     *      (CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B)) THEN
+         IF (CCSDT.OR.CCPT.OR.CCP3.OR.CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B) 
+     *                                                            THEN
 C
             ISYMI  = ISYMJ
             ISYMCK = ISYMAB
@@ -1794,7 +1848,7 @@ C
      *           + ICKI(ISYMCK,ISYMI) + NT1AM(ISYMCK)*(I - 1) + 1
 C
             IF (NT1AM(ISYMCK) .GT. 0) THEN
-               CALL PUTWA2(LUTOC,FNTOC,SCR1,IOFF,NT1AM(ISYMCK))
+               CALL PUTWA2(LUFILE,FNFILE,SCR1,IOFF,NT1AM(ISYMCK))
             ENDIF
          ENDIF
 C
@@ -1835,7 +1889,7 @@ C
       END
 C  /* Deck ccsd_aibj3 */
       SUBROUTINE CCSD_AIBJ3(XINT,XINT3,XINT4,XLAMDP,XLAMDH,SCR1,SCR2,
-     *                      SCR3,IDEL,ISYDEL,ISYMG,ISYMAB)
+     *                      SCR3,IDEL,ISYDEL,ISYMG,ISYMAB,LUFILE,FNFILE)
 C
 C     Written by Henrik Koch 27-Mar-1990.
 C     Modified asm
@@ -1849,6 +1903,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
+C
+      CHARACTER*(*) FNFILE
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -1942,7 +1998,7 @@ C
      *     + ICKATR(ISYMCK,ISYMD) + 1
 C
       IF (LENGTH .GT. 0) THEN
-         CALL PUTWA2(LU3SRT,FN3SRT,XINT3,IOFF,LENGTH)
+         CALL PUTWA2(LUFILE,FNFILE,XINT3,IOFF,LENGTH)
       ENDIF
 C
       CALL QEXIT('CCSD_AIBJ3')
@@ -2387,6 +2443,7 @@ C
          ICOUN4 = 0
          ICOUN5 = 0
          ICOUN6 = 0
+         ICOUN7 = 0
          DO 560 ISYMK = 1,NSYM
             ISYMIJ = MULD2H(ISYMK,ISYIJK)
             IMAIJK(ISYMIJ,ISYMK) = ICOUN1
@@ -2395,12 +2452,14 @@ C
             ID2IJG(ISYMIJ,ISYMK) = ICOUN4
             ID2AIG(ISYMIJ,ISYMK) = ICOUN5
             ID2ABG(ISYMIJ,ISYMK) = ICOUN6
+            IMAABC(ISYMIJ,ISYMK) = ICOUN7
             ICOUN1 = ICOUN1 + NMATIJ(ISYMIJ)*NRHF(ISYMK)
             ICOUN2 = ICOUN2 + NVIR(ISYMIJ)*NMATIJ(ISYMK)
             ICOUN3 = ICOUN3 + NMATIJ(ISYMIJ)*NVIR(ISYMK)
             ICOUN4 = ICOUN4 + NMATIJ(ISYMIJ)*NBAS(ISYMK)
             ICOUN5 = ICOUN5 + NT1AM(ISYMIJ)*NBAS(ISYMK)
             ICOUN6 = ICOUN6 + NMATAB(ISYMIJ)*NBAS(ISYMK)
+            ICOUN7 = ICOUN7 + NMATAB(ISYMIJ)*NVIR(ISYMK)
   560    CONTINUE
          NMAIJK(ISYIJK) = ICOUN1
          NT2AIJ(ISYIJK) = ICOUN2
@@ -2408,24 +2467,48 @@ C
          ND2IJG(ISYIJK) = ICOUN4
          ND2AIG(ISYIJK) = ICOUN5
          ND2ABG(ISYIJK) = ICOUN6
+         NMAABC(ISYIJK) = ICOUN7
   550 CONTINUE
 C
       DO 570 ISIJKD = 1,NSYM
          ICOUN1 = 0
          ICOUN2 = 0
          ICOUN3 = 0
+         ICOUN4 = 0
+         ICOUN5 = 0
+C PJ
+C modified to contain I3VOOO
+C
+         ICOUN6 = 0
+
+C
          DO 580 ISYMD = 1,NSYM
             ISYIJK = MULD2H(ISYMD,ISIJKD)
             I3ODEL(ISYIJK,ISYMD) = ICOUN1
             I3ORHF(ISYIJK,ISYMD) = ICOUN2
             I3OVIR(ISYIJK,ISYMD) = ICOUN3
+            I3VDEL(ISYIJK,ISYMD) = ICOUN4
+            I3VVIR(ISYIJK,ISYMD) = ICOUN5
+!PJ         
+            I3VOOO(ISYIJK,ISYMD) = ICOUN6
+
             ICOUN1 = ICOUN1 + NMAIJK(ISYIJK)*NBAS(ISYMD)
             ICOUN2 = ICOUN2 + NMAIJK(ISYIJK)*NRHF(ISYMD)
             ICOUN3 = ICOUN3 + NMAIJK(ISYIJK)*NVIR(ISYMD)
+            ICOUN4 = ICOUN4 + NMAABC(ISYIJK)*NBAS(ISYMD)
+            ICOUN5 = ICOUN5 + NMAABC(ISYIJK)*NVIR(ISYMD)
+!PJ
+            ICOUN6 = ICOUN6 + NVIR(ISYIJK)*NMAIJK(ISYMD)
+C
   580    CONTINUE
          N3ODEL(ISIJKD) = ICOUN1
          N3ORHF(ISIJKD) = ICOUN2
          N3OVIR(ISIJKD) = ICOUN3
+         N3VDEL(ISIJKD) = ICOUN4
+         N3VVIR(ISIJKD) = ICOUN5
+!PJ
+         N3VOOO(ISIJKD) = ICOUN6
+
   570 CONTINUE
 C
       ICOUN = 0
@@ -2685,6 +2768,9 @@ C
          ICOUN4 = 0
          ICOUN5 = 0
          ICOUN6 = 0
+         ICOUN7 = 0
+         ICOUN8 = 0
+C
          DO 1080 ISYMJ = 1, NSYM
 C
             ISYAIK = MULD2H(JSAIKJ,ISYMJ)
@@ -2696,6 +2782,8 @@ C
             ICKDAO(ISYAIK,ISYMJ) = ICOUN4
             ICKBD(ISYAIK,ISYMJ)  = ICOUN5
             IT2SP(ISYAIK,ISYMJ)  = ICOUN6
+            ICDKAO(ISYAIK,ISYMJ) = ICOUN7
+            ICDKVI(ISYAIK,ISYMJ) = ICOUN8
 C
             ICOUN1 = ICOUN1 + NCKI(ISYAIK)*NRHF(ISYMJ)
             ICOUN2 = ICOUN2 + NCKI(ISYAIK)*NBAS(ISYMJ)
@@ -2703,6 +2791,8 @@ C
             ICOUN4 = ICOUN4 + NCKATR(ISYAIK)*NBAS(ISYMJ)
             ICOUN5 = ICOUN5 + NCKATR(ISYAIK)*NVIR(ISYMJ)
             ICOUN6 = ICOUN6 + NCKI(ISYAIK)*NVIR(ISYMJ)
+            ICOUN7 = ICOUN7 + NCKASR(ISYAIK)*NBAS(ISYMJ)
+            ICOUN8 = ICOUN8 + NCKASR(ISYAIK)*NVIR(ISYMJ)
 C
  1080    CONTINUE
 C
@@ -3289,9 +3379,15 @@ C
       RETURN
       END
 C  /* Deck cc3_sort1 */
-      SUBROUTINE CC3_SORT1(WORK,LWORK,IOPT,ISYINT)
+      SUBROUTINE CC3_SORT1(WORK,LWORK,IOPT,ISYINT,LU3SRT,FN3SRT,
+     *                     LU3VI,FN3VI,LU3VI2,FN3VI2,
+     *                     LU3FOP,FN3FOP,LU3FOP2,FN3FOP2)
 C
 C     Henrik Koch and Alfredo Sanchez.       28-May-1995
+C
+C     Kasper Hald fall 2001 - Added 2*C-E for ccsd(t) f.o.p.
+C
+C     FN3VI can be FN3VI or FNDELD
 C
 C     Sort virtual integrals for perturbative triples.
 C
@@ -3301,9 +3397,15 @@ C
 #include <ccorb.h>
 #include <ccinftap.h>
 #include <ccsdsym.h>
+#include <ccfop.h>
+#include <ccsdinp.h>
+#include <ccsections.h>
+C
+      PARAMETER (TWO = 2.0D0)
+C
+      CHARACTER*(*) FN3SRT, FN3VI, FN3VI2, FN3FOP, FN3FOP2
 C
       CALL QENTER('CC3_SORT1')
-C
 C
       IF ((IOPT .NE. 1) .AND. (IOPT .NE. 2)) THEN
          CALL QUIT('IOPT error in CC3_SORT1')
@@ -3403,16 +3505,91 @@ C
      *                    + ICKA(ISYMCK,ISYMD)
      *                    + NT1AM(ISYMCK)*(ID1 - 1) + 1
 C
-                     IF (IOPT .EQ. 1) THEN
-                        CALL PUTWA2(LU3VI,FN3VI,WORK(KSCR2),IOFF,LENGTH)
-                     ELSE
-                        CALL PUTWA2(LUDELD,FNDELD,WORK(KSCR2),IOFF,
-     &                              LENGTH)
-                     END IF
+                     CALL PUTWA2(LU3VI,FN3VI,WORK(KSCR2),IOFF,LENGTH)
+C
                   ENDIF
 C
   130          CONTINUE
   120       CONTINUE
+C
+C----------------------------------------------------------------------
+C           Sort integrals (ck,del,b) from (ck,b,del).
+C           for (ccpt and ccfop) = true  and iopt = 1 
+C           and construct 2*C-E.
+C----------------------------------------------------------------------
+C
+!Sonia
+!            IF ((IOPT .EQ. 1) .AND. (CCPT .AND. CCFOP)) THEN
+!
+            IF ((IOPT .EQ. 1) .AND.
+     &          (CCPT .AND. (CCFOP.OR.ETACCPT))) THEN
+C
+               DO ISYMB = 1,NSYM
+C
+                  ISYMCK = MULD2H(ISYCKB,ISYMB)
+                  ISYCKD = MULD2H(ISYMCK,ISYMD)
+C
+                  DO B = 1,NVIR(ISYMB)
+C
+                     DO I = 1,NUMD
+C
+                        ID = ID1 + I - 1
+C
+                        DO ISYMK = 1, NSYM
+C
+                           ISYMC  = MULD2H(ISYMCK,ISYMK)
+                           ISYMBK = MULD2H(ISYMB,ISYMK)
+C
+                           DO K = 1, NRHF(ISYMK)
+                           DO C = 1, NVIR(ISYMC)
+C
+                              KOFF1 = KSCR1
+     *                              + NCKATR(ISYCKB)*(I - 1)
+     *                              + ICKATR(ISYMCK,ISYMB)
+     *                              + NT1AM(ISYMCK)*(B - 1)
+     *                              + IT1AM(ISYMC,ISYMK)
+     *                              + NVIR(ISYMC)*(K-1) + C - 1
+                              KOFF2 = KSCR1
+     *                              + NCKATR(ISYCKB)*(I - 1)
+     *                              + ICKATR(ISYMBK,ISYMC)
+     *                              + NT1AM(ISYMBK)*(C - 1)
+     *                              + IT1AM(ISYMB,ISYMK)
+     *                              + NVIR(ISYMB)*(K-1) + B - 1
+                              KOFF3 = KSCR2
+     *                              + NT1AM(ISYMCK)*(I - 1)
+     *                              + IT1AM(ISYMC,ISYMK)
+     *                              + NVIR(ISYMC)*(K-1) + C - 1
+C
+                              WORK(KOFF3) = TWO*WORK(KOFF1) 
+     *                                    - WORK(KOFF2)
+C
+                           ENDDO  ! B
+                           ENDDO  ! K
+                        ENDDO     ! ISYMK
+                     ENDDO        ! I
+C
+C----------------------------------------
+C                 Write sorted integrals.
+C----------------------------------------
+C
+                     LENGTH = NT1AM(ISYMCK)*NUMD
+C
+                     IF (LENGTH .GT. 0) THEN
+C
+                        IOFF = ICKAD(ISYCKD,ISYMB)
+     *                       + NCKA(ISYCKD)*(B - 1)
+     *                       + ICKA(ISYMCK,ISYMD)
+     *                       + NT1AM(ISYMCK)*(ID1 - 1) + 1
+C
+                        CALL PUTWA2(LU3FOP,FN3FOP,WORK(KSCR2),
+     *                              IOFF,LENGTH)
+C
+                     ENDIF
+C
+                  ENDDO   ! B
+               ENDDO      ! ISYMB
+C
+            ENDIF
 C
             IF (IOPT .EQ. 2) GOTO 110
 C
@@ -3472,11 +3649,91 @@ C
      *                    + ICKA(ISYMBK,ISYMD)
      *                    + NT1AM(ISYMBK)*(ID1 - 1) + 1
 C
-                     CALL PUTWA2(LU3VI2,FN3VI2,WORK(KSCR2),IOFF,LENGTH)
+                        CALL PUTWA2(LU3VI2,FN3VI2,WORK(KSCR2),IOFF,
+     *                              LENGTH)
                   ENDIF
 C
   160          CONTINUE
   150       CONTINUE
+C
+C------------------------------------------------------------------------
+C           For iopt = 1 and (ccpt.and.ccfop) = .true. construct 2*C - E
+C           Sort integrals 2*(bk,c,del) - (ck,b,del)
+C           from (ck,b,del).
+C------------------------------------------------------------------------
+C
+            !IF ((IOPT .EQ. 1 .AND. (CCPT .AND. CCFOP)) 
+            IF ((IOPT .EQ. 1 .AND. (CCPT .AND. (CCFOP.OR.ETACCPT))) 
+     *           .OR. (IOPT .EQ. 3)) THEN
+
+C
+               DO ISYMC = 1,NSYM
+C
+               ISYMBK = MULD2H(ISYCKB,ISYMC)
+               ISYBKD = MULD2H(ISYMBK,ISYMD)
+C
+               DO C = 1,NVIR(ISYMC)
+                  DO I = 1,NUMD
+C
+                     ID = ID1 + I - 1
+C
+                     DO ISYMK = 1,NSYM
+C
+                        ISYMB  = MULD2H(ISYMBK,ISYMK)
+                        ISYMCK = MULD2H(ISYMC,ISYMK)
+C
+                        NTOTCK = MAX(NT1AM(ISYMCK),1)
+C
+                        DO K = 1,NRHF(ISYMK)
+                        DO B = 1,NVIR(ISYMB)
+
+C
+                           KOFF1 = KSCR1
+     *                           + NCKATR(ISYCKB)*(I - 1)
+     *                           + ICKATR(ISYMCK,ISYMB)
+     *                           + NT1AM(ISYMCK)*(B-1)
+     *                           + IT1AM(ISYMC,ISYMK)
+     *                           + NVIR(ISYMC)*(K - 1) + C - 1
+                           KOFF2 = KSCR1
+     *                           + NCKATR(ISYCKB)*(I - 1)
+     *                           + ICKATR(ISYMBK,ISYMC)
+     *                           + NT1AM(ISYMBK)*(C-1)
+     *                           + IT1AM(ISYMB,ISYMK)
+     *                           + NVIR(ISYMB)*(K - 1) + B - 1
+C
+                           KOFF3 = KSCR2
+     *                           + NT1AM(ISYMBK)*(I - 1)
+     *                           + IT1AM(ISYMB,ISYMK)
+     *                           + NVIR(ISYMB)*(K - 1) + B - 1
+C
+                           WORK(KOFF3) = TWO*WORK(KOFF1)-WORK(KOFF2)
+C
+                        ENDDO ! B
+                        ENDDO ! K
+                     ENDDO    ! ISYMK
+                  ENDDO       ! I
+C
+C----------------------------------------
+C                 Write sorted integrals.
+C----------------------------------------
+C
+                  LENGTH = NT1AM(ISYMBK)*NUMD
+C
+                  IF (LENGTH .GT. 0) THEN
+C
+                     IOFF = ICKAD(ISYBKD,ISYMC)
+     *                    + NCKA(ISYBKD)*(C - 1)
+     *                    + ICKA(ISYMBK,ISYMD)
+     *                    + NT1AM(ISYMBK)*(ID1 - 1) + 1
+C
+                     CALL PUTWA2(LU3FOP2,FN3FOP2,WORK(KSCR2),
+     *                           IOFF,LENGTH)
+                  ENDIF
+C
+C
+               ENDDO          ! C
+               ENDDO          ! ISYMC
+            ENDIF
 C
   110    CONTINUE
   100 CONTINUE
