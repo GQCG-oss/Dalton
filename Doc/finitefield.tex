@@ -42,7 +42,8 @@ differentiation\index{numerical differentiation}. Note that care has
 to be taken to choose a field that 
 is weak enough for the numeric differentiation to be valid,
 yet large enough to give numerically significant changes in the
-molecular properties. Note also that it may be necessary to increase
+molecular properties (see for instance Ref.~\ref{mptskrarjcp121}). Note
+also that it may be necessary to increase  
 the convergence threshold for the solution of the response equations
 if molecular properties are being evaluated.
 
@@ -60,8 +61,7 @@ included in \siraba .
 calculated with perturbation dependent basis sets that may be
 numerically differentiated using finite field, are the nuclear shieldings
 and magnetizabilities using the implementation described in
-Ref.~\cite{arthkrabmjpjjcp102}, and molecular gradients as described
-in Ref.~\cite{}}. 
+Ref.~\cite{arthkrabmjpjjcp102}, and molecular gradients.} 
 
 \section{Input description}\label{sec:finiteinput}
 
@@ -110,5 +110,9 @@ keyword \Key{FIELD}. On the next line, the
 strength of the electric field (in atomic units) is given, and on the following
 line we give the direction of the applied electric field
 (\verb|XDIPLEN|, \verb|YDIPLEN|, or \verb|ZDIPLEN|). Several fields may
-of course be applied at the same time.
-
+of course be applied at the same time. In comparison with \dalton\
+1.2, the present version of \dalton\ can also calculate the nuclear
+shielding polarizabilities with respect to an external electric field
+gradient using London atomic orbitals, both using the traceless
+quadrupole operator \Key{Theta} and the second moment of charge
+operator \Key{SECMOM}.
