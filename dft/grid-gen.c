@@ -1521,8 +1521,9 @@ grid_par_slave(const char *fname)
 #endif
 
 /* save_final saves the grid, possibly distributing it over to many
- * nodes. */
-
+ * nodes. NOTE: atom_idx is used only for partitioning schemes that do
+ * postprocessing and should not be accessed without prior checking.
+ **/
 static int
 save_final(GridGenMolGrid *mg, const char *fname, int point_cnt,
            real (*coor)[3], real *w, const int *atom_idx,
@@ -1577,7 +1578,7 @@ save_final(GridGenMolGrid *mg, const char *fname, int point_cnt,
             dt[i*3+1]    = coor[j][1];
             dt[i*3+2]    = coor[j][2];
             dt[cnt*3+i]  = w[j];
-            atom_nums[i] = atom_idx[j];
+            if(atom_idx) atom_nums[i] = atom_idx[j];
         }
         getblocks_(&c.x, &c.y, &c.z, &cell_size, rshel2, &nblocks, shlblocks);
         if(nblocks==0) continue;        
