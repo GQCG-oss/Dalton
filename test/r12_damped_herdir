@@ -84,7 +84,6 @@ cat > r12_damped_herdir.dal <<'%EOF%'
 #######################################################################
 echo $CHECK_SHELL >r12_damped_herdir.check
 cat >>r12_damped_herdir.check <<'%EOF%'
-#!/bin/ksh
 log=$1
 
 if [ `uname` = Linux ]; then
