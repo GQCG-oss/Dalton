@@ -953,7 +953,7 @@ case "$WHICH" in
             set_parallel_def $mesp
           fi
           case $F77 in
-          [ei]fc|ifort)
+          [ei]fc|ifort|mpif77)
              if  grep -q sse2 /proc/cpuinfo 2>/dev/null; then
                  proc='-xW'
              elif [ $prc = 'i686' ]; then
@@ -967,7 +967,7 @@ case "$WHICH" in
              opt="-O3 $proc -ip -w"
              safe_opt="-O2 -w"
              case $CC in
-                 [ie]cc) copt="-O3 $proc -ip -restrict -DRESTRICT=restrict";;
+                 [ie]cc|mpicc) copt="-O3 $proc -ip -restrict -DRESTRICT=restrict";;
                  gcc) copt="-O3 -malign-double -std=c99 -DRESTRICT=restrict";;
              esac
              LIB="$LIB -Vaxlib"
