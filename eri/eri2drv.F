@@ -1844,7 +1844,7 @@ C
      &               WORK(KHARGE),WORK(KHARGF),WORK(KHALPH),
      &               WORK(KHBETA),WORK(KHPRE1),WORK(KHPRE2),
      &               WORK(KHPRE3),WORK(KRO000),
-     &               WORK(KHRIN1),WORK(KHRIN2),WORK(KHRIN3),
+     &               WORK(KHRIN3),WORK(KHRIN4),WORK(KHRIN5),
      &               HEXPP,HEXPQ,LWKGAM,LWKHER,LWKCR1,LWKCR2,
      &               NDIMD,IPRINT)
 C
