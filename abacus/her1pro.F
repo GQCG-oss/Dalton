@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: her1pro.F,v 1.2 2001-02-12 18:17:52 vebjornb Exp $
+C$Id: her1pro.F,v 1.3 2001-02-26 15:34:47 ruud Exp $
 C
 #include <single.h>
 C  /* Deck pr1int */
@@ -148,7 +148,7 @@ C
 #include <mxorb.h>
 #include <iratdef.h>
 #include <efield.h>
-      PARAMETER (NTABLE = 69)
+      PARAMETER (NTABLE = 71)
       PARAMETER (D2 = 2.D0)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, PROPRI, SQUARE,
@@ -182,7 +182,7 @@ C
      &            'OCTGRA ', 'ROTSTR ', 'THRMOM ', 'SOFIELD',
      &            'SOMAGMO', 'DEROVLP', 'DERHAMI', 'ELGDIAN',
      &            'ELGDIAL', 'DPTOVL ', 'DPTPO1 ', 'DPTPO2 ',
-     &            'XDDXR3 '/
+     &            'XDDXR3 ', 'PVPINT ', 'POTENER'/
 C
 #include <ibtfun.h>
 C
@@ -203,7 +203,7 @@ C
      &             19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,
      &             34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
      &             49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,
-     &             64,65,66,67,68,69), I
+     &             64,65,66,67,68,69,70,71), I
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -1565,6 +1565,36 @@ C
 C         CALL ALFTYP(NOPTYP,INTREP,LABINT,INTADR,WORK(KATOM),NATOM,
 C     &        TRIANG)
          SQUARE = .TRUE.
+      GO TO 200
+C
+C     pVp integrals for Douglas-Kroll transformation
+C     ----------------------------------------------
+C
+ 70   CONTINUE
+         IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
+     &   ' Calculation of Douglas-Kroll pVp integrals'
+         INTTYP = 63
+         NOPTYP = 1
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         LABINT(1) = 'pVpINTEG'
+         INTREP(1) = 0
+         ANTI = .FALSE.
+      GO TO 200
+C
+C     Electronic kinetic energy
+C     -------------------------
+C
+ 71   CONTINUE
+         IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
+     &   ' Calculation of electronic one-electron potential energy'
+         INTTYP = 64
+         NOPTYP = 1
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         LABINT(1) = 'POTENERG'
+         INTREP(1) = 0
+         ANTI = .FALSE.
       GO TO 200
 C
 C

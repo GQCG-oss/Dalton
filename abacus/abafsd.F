@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abafsd.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: abafsd.F,v 1.2 2001-02-26 15:34:46 ruud Exp $
 C
 #include <single.h>
 C  /* Deck getfd */
@@ -325,10 +325,10 @@ C
          IF (IATOM .GT. 0) THEN
             IF (AOMAT) THEN
                CALL AROUND('Inactive Fock matrix diff. in x direction')
-               CALL TRSOAO(FCSOX,WORK,LWORK,IATOM,IPRINT)
+               CALL TRSOAO(FCSOX,WORK,LWORK,NBAST,IATOM,IPRINT)
                IF (DOFV) THEN
                   CALL AROUND('Active Fock matrix diff. in x direction')
-                  CALL TRSOAO(FVSOX,WORK,LWORK,IATOM,IPRINT)
+                  CALL TRSOAO(FVSOX,WORK,LWORK,NBAST,IATOM,IPRINT)
                END IF
             END IF
             EMYD(ISIM) = DP5*(EMY1X + DDOT(NNBASX,DCFOLD,1,FCSOX,1))
@@ -376,10 +376,10 @@ C
          IF (IATOM .GT. 0) THEN
             IF (AOMAT) THEN
                CALL AROUND('Inactive Fock matrix diff. in y direction')
-               CALL TRSOAO(FCSOY,WORK,LWORK,IATOM,IPRINT)
+               CALL TRSOAO(FCSOY,WORK,LWORK,NBAST,IATOM,IPRINT)
                IF (DOFV) THEN
                   CALL AROUND('Active Fock matrix diff. in y direction')
-                  CALL TRSOAO(FVSOY,WORK,LWORK,IATOM,IPRINT)
+                  CALL TRSOAO(FVSOY,WORK,LWORK,NBAST,IATOM,IPRINT)
                END IF
             END IF
             EMYD(ISIM) = DP5*(EMY1Y + DDOT(NNBASX,DCFOLD,1,FCSOY,1))
@@ -427,10 +427,10 @@ C
          IF (IATOM .GT. 0) THEN
             IF (AOMAT) THEN
                CALL AROUND('Inactive Fock matrix diff. in z direction')
-               CALL TRSOAO(FCSOZ,WORK,LWORK,IATOM,IPRINT)
+               CALL TRSOAO(FCSOZ,WORK,LWORK,NBAST,IATOM,IPRINT)
                IF (DOFV) THEN
                   CALL AROUND('Active Fock matrix diff. in z direction')
-                  CALL TRSOAO(FVSOZ,WORK,LWORK,IATOM,IPRINT)
+                  CALL TRSOAO(FVSOZ,WORK,LWORK,NBAST,IATOM,IPRINT)
                END IF
             END IF
             EMYD(ISIM) = DP5*(EMY1Z + DDOT(NNBASX,DCFOLD,1,FCSOZ,1))
@@ -1103,38 +1103,72 @@ C
       RETURN
       END
 C  /* Deck trsoao */
-      SUBROUTINE TRSOAO(FCSO,WORK,LWORK,IATOM,IPRINT)
+      SUBROUTINE TRSOAO(FCSO,WORK,LWORK,IDIM,IATOM,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
-#include <inforb.h>
-      DIMENSION FCSO(NNBASX), WORK(LWORK)
+      DIMENSION FCSO(*), WORK(LWORK)
 C
-      CALL TITLER('Subroutine TRSOAO','*',103)
+      IF (IPRINT .GT. 2) CALL TITLER('Subroutine TRSOAO','*',103)
 C
 C     Allocation
 C
-      KTRMT = 1
-      KFCAO = KTRMT + N2BASX
-      KFCSO = KFCAO + NNBASX
-      KWRK  = KFCSO + NNBASX
-      LMAX  = KWRK  + NBAST
+      KFCAO = 1
+      KTRMT = KFCAO + IDIM*(IDIM + 1)/2
+      KWRK  = KTRMT + IDIM*IDIM
+      LMAX  = KWRK  + IDIM
       IF (LMAX.GT.LWORK) CALL STOPIT('TRSOAO',' ',LMAX,LWORK)
+C
+C     Set up AO to SO transformation matrix
+C
+      CALL TRAORB(WORK(KTRMT),IDIM,IATOM,IPRINT)
+C     
+C     Transform one-electron matrix
+C
+      CALL DZERO(WORK(KFCAO),IDIM*(IDIM + 1)/2)
+      CALL UTHU(FCSO,WORK(KFCAO),WORK(KTRMT),
+     *          WORK(KWRK),IDIM,IDIM)
+      IF (IPRINT .GT. 6) THEN
+         CALL HEADER('Matrix transformed from SO to AO basis',-1)
+         CALL OUTPAK(WORK(KFCAO),IDIM,1,LUPRI)
+      END IF
+      RETURN
+      END
+C  /* Deck traoso */
+      SUBROUTINE TRAOSO(FCAO,WORK,LWORK,IDIM,IATOM,IPRINT)
+#include <implicit.h>
+#include <priunit.h>
+#include <mxorb.h>
+      DIMENSION FCAO(*), WORK(LWORK)
+#include <aosotr.h>
+C
+      IF (IPRINT .GT. 2) CALL TITLER('Subroutine TRAOSO','*',103)
+C
+C     Allocation
+C
+      KFCSO = 1
+      KTRMT = KFCSO + IDIM*(IDIM + 1)/2
+      KWRK  = KTRMT + IDIM*IDIM
+      LMAX  = KWRK  + IDIM
+      IF (LMAX.GT.LWORK) CALL STOPIT('TRAOSO',' ',LMAX,LWORK)
 C
 C     Construct transformation matrix
 C
-      CALL TRAORB(WORK(KTRMT),IATOM,IPRINT)
+      CALL TRAORB(WORK(KTRMT),IDIM,IATOM,IPRINT)
+      CALL DGETRN(WORK(KTRMT),IDIM,IDIM)
 C
 C     Transform one-electron matrix
 C
-      CALL DZERO(WORK(KFCAO),N2BASX)
-      CALL UTHU(FCSO,WORK(KFCAO),WORK(KTRMT),
-     *          WORK(KWRK),NBAST,NBAST)
-      CALL HEADER('Matrix transformed from SO to AO basis',-1)
-      CALL OUTPAK(WORK(KFCAO),NBAST,1,LUPRI)
+      CALL DZERO(WORK(KFCSO),IDIM*(IDIM + 1)/2)
+      CALL UTHU(FCAO,WORK(KFCSO),WORK(KTRMT),
+     *          WORK(KWRK),IDIM,IDIM)
+      IF (IPRINT .GT. 6) THEN
+         CALL HEADER('Matrix transformed from AO to SO basis',-1)
+         CALL OUTPAK(WORK(KFCSO),IDIM,1,6)
+      END IF
       RETURN
       END
 C  /* Deck traorb */
-      SUBROUTINE TRAORB(ORBTRA,IATOM,IPRINT)
+      SUBROUTINE TRAORB(ORBTRA,IDIM,IATOM,IPRINT)
 C
 C     Sets up transformation matrices between SO and AO orbitals
 C
@@ -1149,34 +1183,44 @@ C
 #include <nuclei.h>
 #include <shells.h>
 #include <symmet.h>
-#include <inforb.h>
 #include <aosotr.h>
-      DIMENSION ORBTRA(NBAST,NBAST)
+      DIMENSION ORBTRA(IDIM,IDIM)
 #include <ibtfun.h>
 C
-      FACTOR = SQRT(FMULT(ISTBNU(IATOM)))
-      CALL DZERO(ORBTRA,N2BASX)
-      DO 100 I = 1, NBAST
-         DO 200 J = 1, NSYM
-            K = IAOAO(ITRAN(I,J))
+      IF (IATOM .EQ. 0) THEN
+         FACTOR = 1.0D0
+      ELSE
+         FACTOR = SQRT(FMULT(ISTBNU(IATOM)))
+      END IF
+      CALL DZERO(ORBTRA,IDIM*IDIM)
+      DO 100 I = 1, IDIM
+         DO 200 J = 1, MAXREP + 1
+            IF (IATOM .LE. 0) THEN
+               K = ITRAN(I,J)
+            ELSE
+               K = IAOAO(ITRAN(I,J))
+            END IF
             IF (K .GT. 0) THEN
                ORBTRA(I,K) = CTRAN(I,J)
             END IF
   200    CONTINUE
   100 CONTINUE
-      DO 300 I = 1, NBAST
-         SUM = D0
-         DO 400 J = 1, NBAST
-            SUM = SUM + ABS(ORBTRA(I,J))
-  400    CONTINUE
-         SUM = FACTOR*SUM
-         DO 500 J = 1, NBAST
-            ORBTRA(I,J) = ORBTRA(I,J)/SUM
-  500    CONTINUE
-  300 CONTINUE
+      IF (IATOM .GE. 0) THEN
+         DO 300 I = 1, IDIM
+            SUM = D0
+            DO 400 J = 1, IDIM
+               SUM = SUM + ABS(ORBTRA(I,J))
+ 400        CONTINUE
+            SUM = FACTOR*SUM
+            DO 500 J = 1, IDIM
+               ORBTRA(I,J) = ORBTRA(I,J)/SUM
+ 500        CONTINUE
+ 300     CONTINUE
+      END IF
+C
       IF (IPRINT .GE. 15) THEN
          CALL HEADER('SO to AO transformation matrix',-1)
-         CALL OUTPUT(ORBTRA,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(ORBTRA,1,IDIM,1,IDIM,IDIM,IDIM,1,LUPRI)
       END IF
       RETURN
       END

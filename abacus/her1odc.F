@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: her1odc.F,v 1.1.1.1 2001-02-08 13:33:20 hjj Exp $
+C$Id: her1odc.F,v 1.2 2001-02-26 15:34:47 ruud Exp $
 C
 #include <single.h>
 C  /* Deck getodc */
@@ -138,6 +138,9 @@ C
          IF ((INTTYP .EQ. 49) .OR. (INTTYP .EQ. 51)) THEN
             CALL EFODC(ODC,ODCUND,JMAXA,JMAXAP,JMAXBP,JMAXB,JMAXT,
      &                 JMAXTP,JMAXD,JMAXM,EXPA,EXPB,IPRINT)
+         ELSE IF (INTTYP .EQ. 63) THEN
+            CALL DODCB2(ODC,ODCUND,JMAXA,JMAXAP,JMAXBP,JMAXB,JMAXT,
+     &                  JMAXTP,JMAXD,JMAXM,EXPB,IPRINT)
          ELSE IF (DOMOM1) THEN
             CALL MODCA(ODC,ODCUND,JMAXA,JMAXAP,JMAXBP,JMAXB,JMAXT,
      &                 JMAXTP,JMAXD,JMAXM,ORIGIN,IPRINT,INTTYP)
@@ -612,6 +615,62 @@ C
                CALL AROUND('ODC in DEFODC - z component')
                CALL OUTPUT(ODC(0,0,0,2,1,3),1,JMAXAB,1,JMAXT,JMAXAB,
      &                     JMAXT,1,LUPRI)
+      END IF
+      RETURN
+      END
+      SUBROUTINE DODCB2(ODC,ODCUND,JMAXA,JMAXAP,JMAXBP,JMAXB,JMAXT,
+     &                 JMAXTP,JMAXD,JMAXM,EXPB,IPRINT)
+C
+C     K.Ruud, Sept 2000. Code for B-derivative integrals at the same
+C     time as we have A-derivative integrals. Needed for pVp integrals
+C     of the Douglas-Kroll transformation.
+C
+#include <implicit.h>
+#include <priunit.h>
+      INTEGER A, B, T, D, X, M
+      DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
+     &                 0:JMAXD,0:JMAXM,3),
+     &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
+#include <onecom.h>
+#include <sdpre.h>
+C
+      TEXPB1 = EXPB + EXPB
+      DO 10 M = 1, JMAXM
+         DO 20 A = 0, JMAXAP
+            DO 30 B = 0, JMAXBP
+               DO 40 D = 0, JMAXD
+               FAC10B = SDPRE(B)
+               DO 40 T = 0, A + B + D + M
+               DO 40 X = 1, 3
+                  ODCUND(A,B,T,D,M,X) = TEXPB1*ODCUND(A,B + 1,T,D,M-1,X)
+     &                                - FAC10B*ODCUND(A,B - 1,T,D,M-1,X)
+ 40            CONTINUE
+ 30         CONTINUE
+ 20      CONTINUE
+ 10   CONTINUE
+C
+      CALL COPODC(ODCUND,ODC,JMAXAP,JMAXBP,JMAXA,JMAXB,JMAXT,JMAXTP,
+     &            JMAXD,JMAXM,JMAXD,JMAXM)
+      IF (IPRINT .GE. 20) THEN
+         CALL TITLER('Output from DODCB2','*',103)
+         JMAXAB = (JMAXA + 1)*(JMAXB + 1)
+         DO 50 D = 0, JMAXD
+            DO 50 M = 0, JMAXM
+               WRITE(LUPRI,'(/A/)') ' '
+               WRITE(LUPRI,'(10X,I2,A)')
+     &              D, '.order differentiated coefficients'
+               WRITE(LUPRI,'(10X,I2,A)')
+     &              M, '.order moment'
+               CALL AROUND('ODC in MODCB - x component')
+               CALL OUTPUT(ODC(0,0,0,D,M,1),1,JMAXAB,1,JMAXT,JMAXAB,
+     &                     JMAXT,1,LUPRI)
+               CALL AROUND('ODC in MODCB - y component')
+               CALL OUTPUT(ODC(0,0,0,D,M,2),1,JMAXAB,1,JMAXT,JMAXAB,
+     &                     JMAXT,1,LUPRI)
+               CALL AROUND('ODC in MODCB - z component')
+               CALL OUTPUT(ODC(0,0,0,D,M,3),1,JMAXAB,1,JMAXT,JMAXAB,
+     &                     JMAXT,1,LUPRI)
+ 50      CONTINUE
       END IF
       RETURN
       END

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: her1int.F,v 1.2 2001-02-12 18:17:51 vebjornb Exp $
+C$Id: her1int.F,v 1.3 2001-02-26 15:34:46 ruud Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -424,6 +424,16 @@ C
           JMAXM = 1
           DONUC1= .FALSE.
           DOMOM1 = .TRUE.
+      ELSE IF (INTTYP .EQ.63) THEN
+         JMAXD  = 1
+         JMAXM  = 1
+         DONUC1 = .TRUE.
+         DOMOM1 = .FALSE.            
+      ELSE IF (INTTYP .EQ.64) THEN
+         JMAXD  = 0
+         JMAXM  = 0
+         DONUC1 = .FALSE.
+         DOMOM1 = .FALSE.               
       ELSE IF (INTTYP .EQ.70) THEN
          JMAXD  = 3
          JMAXM  = 0
@@ -749,6 +759,8 @@ C
      &                    .OR. (INTTYP .EQ. 58)
      &                    .OR. (INTTYP .EQ. 61)
      &                    .OR. (INTTYP .EQ. 62)
+     &                    .OR. (INTTYP .EQ. 63)
+     &                    .OR. (INTTYP .EQ. 64)
      &                    .OR. (INTTYP .EQ. 70)
      &                    .OR. (INTTYP .EQ. 72)
      &                    .OR. (INTTYP .EQ. 73)
@@ -776,7 +788,8 @@ C
          IF (INTTYP .EQ. 58) JMAX = JMAX + 2
          IF (INTTYP .EQ. 58) JMAX = JMAX + 1
          IF (INTTYP .EQ. 61) JMAX = JMAX + 2                
-         IF (INTTYP .EQ. 62) JMAX = JMAX + 2                
+         IF (INTTYP .EQ. 62) JMAX = JMAX + 2
+         IF (INTTYP .EQ. 63) JMAX = JMAX + 2
          IF (INTTYP .EQ. 70) JMAX = JMAX + 1                
          IF (INTTYP .EQ. 72) JMAX = JMAX + 2
          IF (INTTYP .EQ. 73) JMAX = JMAX + 2
@@ -788,6 +801,8 @@ C
      &                            .OR. (INTTYP .EQ. 57)      
      &                            .OR. (INTTYP .EQ. 61)      
      &                            .OR. (INTTYP .EQ. 62)      
+     &                            .OR. (INTTYP .EQ. 63)
+     &                            .OR. (INTTYP .EQ. 64)
      &                            .OR. (INTTYP .EQ. 70)
      &                            .OR. (INTTYP .EQ. 72)
      &                            .OR. (INTTYP .EQ. 73)
@@ -1044,12 +1059,14 @@ C
      &    .OR. (INTTYP.EQ.40) .OR. (INTTYP.EQ.44) .OR. (INTTYP.EQ.50)
      &    .OR. (INTTYP.EQ.51) .OR. (INTTYP.EQ.52) .OR. (INTTYP.EQ.53)
      &    .OR. (INTTYP.EQ.54) .OR. (INTTYP.EQ.55) .OR. (INTTYP.EQ.59)
-     &    .OR. (INTTYP.EQ.61) .OR. (INTTYP.EQ.70) .OR. (INTTYP.EQ.71)
-     &    .OR. (INTTYP.EQ.72) .OR. (INTTYP.EQ.73) .OR. (INTTYP.EQ.74)
+     &    .OR. (INTTYP.EQ.61) .OR. (INTTYP.EQ.63) .OR. (INTTYP.EQ.70)
+     &    .OR. (INTTYP.EQ.71) .OR. (INTTYP.EQ.72) .OR. (INTTYP.EQ.73)
+     &    .OR. (INTTYP.EQ.74)
       ADDNAI = (INTTYP.EQ. 5) .OR. (INTTYP.EQ.19) .OR. (INTTYP.EQ.20)
      &    .OR. (INTTYP.EQ.24) .OR. (INTTYP.EQ.25) .OR. (INTTYP.EQ.51)
      &    .OR. (INTTYP.EQ.57) .OR. (INTTYP.EQ.61) .OR. (INTYTP.EQ.62)
-     &    .OR. (INTTYP.EQ.72) .OR. (INTTYP.EQ.73)
+     &    .OR. (INTTYP.EQ.63) .OR. (INTTYP.EQ.64) .OR. (INTTYP.EQ.72)
+     &    .OR. (INTTYP.EQ.73)
 C
       DO 100 IPRIMA = 1,NUCA
          JPRIMA = JSTA + IPRIMA
@@ -1176,6 +1193,8 @@ C
      &                       .OR. (INTTYP .EQ. 57)
      &                       .OR. (INTTYP .EQ. 61)
      &                       .OR. (INTTYP .EQ. 62)
+     &                       .OR. (INTTYP .EQ. 63)
+     &                       .OR. (INTTYP .EQ. 64)
      &                       .OR. (INTTYP .EQ. 70)
      &                       .OR. (INTTYP .EQ. 72)
      &                       .OR. (INTTYP .EQ. 73)
@@ -1650,6 +1669,19 @@ C
          ELSE IF (INTTYP .EQ. 62) THEN
                CALL DELGIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
      &                  SHLINT,NOPTYP)
+C
+C        Douglas-Kroll pVp integrals
+C        ------------------------
+C
+         ELSE IF (INTTYP .EQ. 63) THEN
+            CALL PVPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT,
+     &                  NATOMC,EXPB)
+C
+C        Potential energy integrals
+C        ------------------------
+C
+         ELSE IF (INTTYP .EQ. 64) THEN
+            CALL POTINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT)
 C
 C        Geometrical derivative of one-electron Hamiltonian
 C        --------------------------------------------------
@@ -2751,6 +2783,74 @@ C
  100  CONTINUE
       RETURN
       END
+C  /* Deck pvpint */
+      SUBROUTINE PVPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT,
+     &                  NATOMC,EXPB)
+C
+C     K.Ruud, September 2000
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
+     &          SHLINT(KCKTAB), AHGTF(*)
+#include <onecom.h>
+#include <lmns.h>
+#include <sdpre.h>
+      INT = 0
+      DO 100 ICOMPA = 1,KCKTA
+         LVALA = LVALUA(ICOMPA)
+         MVALA = MVALUA(ICOMPA)
+         NVALA = NVALUA(ICOMPA)
+      DO 100 ICOMPB = 1,KCKTB
+         LVALB = LVALUB(ICOMPB)
+         MVALB = MVALUB(ICOMPB)
+         NVALB = NVALUB(ICOMPB)
+C
+         INT = INT + 1
+C
+         MAXT = LVALA + LVALB
+         MAXU = MVALA + MVALB
+         MAXV = NVALA + NVALB
+         IADRAV = 1
+         DO 200 IV = 0, MAXV + 2
+            IADRAU = IADRAV
+            EV = ODC(NVALA,NVALB,IV,0,0,3)
+            FV = ODC(NVALA,NVALB,IV,1,1,3)
+            IUMAX = MAXU + 2
+            IF (IV .GT. MAXV + 1) THEN
+               IUMAX = MAXU
+            ELSE IF (IV .GT. MAXV) THEN
+               IUMAX = MAXU + 1
+            END IF
+            DO 300 IU = 0, IUMAX
+               EU = ODC(MVALA,MVALB,IU,0,0,2)
+               FU = ODC(MVALA,MVALB,IU,1,1,2)
+               ITMAX = MAXT + 2
+               IF (((IU .GT. MAXU + 1) .OR. (IV .GT. MAXV + 1))
+     &               .OR. ((IU .EQ. MAXU + 1) .AND. (IV .EQ. MAXV + 1)))
+     &               THEN
+                  ITMAX = MAXT
+               ELSE IF ((IU .GT. MAXU) .OR. (IV .GT. MAXV)) THEN
+                  ITMAX = MAXT + 1
+               END IF
+               DO 400 IT = 0, ITMAX
+                  ET = ODC(LVALA,LVALB,IT,0,0,1)
+                  FT = ODC(LVALA,LVALB,IT,1,1,1)
+                  GXX = FT*EU*EV
+                  GYY = ET*FU*EV
+                  GZZ = ET*EU*FV
+C     
+                  SHLINT(INT) = SHLINT(INT)
+     &                        + (GXX + GYY + GZZ)*AHGTF(IADRAU+IT)
+ 400           CONTINUE
+               IADRAU = IADRAU + ISTEPU
+ 300        CONTINUE
+            IADRAV = IADRAV + ISTEPV
+ 200     CONTINUE
+ 100  CONTINUE
+      RETURN
+      END
 C  /* Deck dsusan */
       SUBROUTINE DSUSAN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,
      &                  SHLINT,CORPX,CORPY,CORPZ,DIFABX,DIFABY,DIFABZ)
@@ -2944,7 +3044,7 @@ C
      &               THEN
                   ITMAX = MAXT
                ELSE IF ((IU .GT. MAXU) .OR. (IV .GT. MAXV)) THEN
-                  ITMAX = ITMAX + 1
+                  ITMAX = MAXT + 1
                END IF
                DO 400 IT = 0, ITMAX
                   ET = ODC(LVALA,LVALB,IT,0,0,1)
@@ -3363,7 +3463,55 @@ C
  100  CONTINUE
       RETURN
       END
-C  /* Deck efgint */
+C  /* Deck potint */
+      SUBROUTINE POTINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT)
+C
+C     1-electron potential energy
+C
+C     K.Ruud, September 2000
+C
+#include <implicit.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
+     &              SHLINT(KCKTAB), AHGTF(*)
+#include <onecom.h>
+#include <lmns.h>
+C
+      INT = 1
+      DO 100 ICOMPA = 1, KCKTA
+         LVALA = LVALUA(ICOMPA)
+         MVALA = MVALUA(ICOMPA)
+         NVALA = NVALUA(ICOMPA)
+      DO 100 ICOMPB = 1, KCKTB
+         LVALB = LVALUB(ICOMPB)
+         MVALB = MVALUB(ICOMPB)
+         NVALB = NVALUB(ICOMPB)
+C
+         MAXT = LVALA + LVALB
+         MAXU = MVALA + MVALB
+         MAXV = NVALA + NVALB
+         IADRAV = 1
+         DO 200 IV = 0, MAXV
+            EV = ODC(NVALA,NVALB,IV,0,0,3)
+            IADRAU = IADRAV
+            DO 300 IU = 0, MAXU
+               EU = ODC(MVALA,MVALB,IU,0,0,2)
+               DO 400 IT = 0, MAXT
+                  ET = ODC(LVALA,LVALB,IT,0,0,1)
+                  EEE = ET*EU*EV
+                  SHLINT(INT) = SHLINT(INT)
+     &                        + EEE*AHGTF(IADRAU + IT)
+ 400           CONTINUE
+               IADRAU = IADRAU + ISTEPU
+ 300        CONTINUE
+            IADRAV = IADRAV + ISTEPV
+ 200     CONTINUE
+         INT = INT + 1
+ 100  CONTINUE
+      RETURN
+      END
+CC  /* Deck efgint */
       SUBROUTINE EFGINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT,
      &                  NOPTYP,NATOMC,DISTAB)
 C

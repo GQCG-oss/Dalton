@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: her1drv.F,v 1.2 2001-02-12 18:17:51 vebjornb Exp $
+C$Id: her1drv.F,v 1.3 2001-02-26 15:34:46 ruud Exp $
 C
 #include <single.h>
 C  /* Deck oneinp */
@@ -327,6 +327,7 @@ C
 #include <symind.h>
 #include <csym1.h>
 #include <cbisol.h>
+#include <gnrinf.h>
 C
 #include <ibtfun.h>
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEDR1','*',103)
@@ -604,10 +605,17 @@ C
 C        Write undifferentiated one-electron integrals
 C
         IF(TOFILE) THEN
-          DO 800 I = 1, NNBASX
-             STHMAT(I,2) = STHMAT(I,2) + STHMAT(I,3)
- 800      CONTINUE
-          CALL WRTUND(STHMAT,NBAST,NNBASX,IPRINT)
+C
+C     We use the modified Douglas-Kroll integrals instead
+C
+           IF (DKTRAN) THEN
+              CALL DKTRF(STHMAT(1,2),NBAST,NNBASX,IPRINT)
+           ELSE
+              DO 800 I = 1, NNBASX
+                 STHMAT(I,2) = STHMAT(I,2) + STHMAT(I,3)
+ 800          CONTINUE
+           END IF
+           CALL WRTUND(STHMAT,NBAST,NNBASX,IPRINT)
         ENDIF
       END IF
 C
@@ -1226,5 +1234,32 @@ C
          JLM  = JLM  + NLM
          JXYZ = JXYZ + NXYZ
   100 CONTINUE
+      RETURN
+      END
+C /* Deck dktrf */
+      SUBROUTINE DKTRF(STDER0,NBAST,NNBASX,IPRINT)
+C
+C     Read in Douglas-Kroll and overlap integrals and transfer to standard
+C     arrays
+C
+#include <implicit.h>
+#include <priunit.h>
+      LOGICAL FNDLAB
+#include <inftap.h>
+      DIMENSION STDER0(NNBASX)
+C
+      REWIND (LUPROP)
+      IF (FNDLAB('DKPOTINT',LUPROP)) THEN
+         CALL READT(LUPROP,NNBASX,STDER0)
+         IF (IPRINT .GT. 6) THEN
+            CALL HEADER('Douglas-Kroll matrix read from LUPROP '//
+     &                  'in DKTRF',-1)
+            CALL OUTPAK(STDER0,NBAST,1,LUPRI)
+         END IF
+      ELSE
+         WRITE (LUPRI,'(//3A)') ' >>> DKTRF error: Douglas-Kroll'//
+     &      'integrals not found on LUPROP.'
+         CALL QUIT('DKTRF error: Integrals not found on LUPROP')
+      END IF
       RETURN
       END

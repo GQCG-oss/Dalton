@@ -427,6 +427,14 @@ C
 C     The dollar sign in the previous line may not be standard.
 C     It causes the End of Record to be skipped.
       CALL QENTER('HERMIT')
+C
+C     If we use the Douglas-Kroll transformation, we first generate
+C     the necessary integrals in the primitive basis
+C
+      IF (DKTRAN) THEN
+         CALL DKINTF(WORK(IWOFF+2),LMWORK)
+         NEWPRP = .TRUE.
+      END IF
       CALL HERCTL(WORK(IWOFF+2),LMWORK)
 C     ... Note: HERCTL sets FTRCTL = .TRUE. if RUNTWO or RUNERI
 C     for transformation control, old AO/MO files cannot be used
@@ -989,7 +997,7 @@ C
 #include <cbieri.h>
 #include <veclen.h>
 #include <numder.h>
-      PARAMETER (NDIR = 7, NTABLE = 31, D0 = 0.D0)
+      PARAMETER (NDIR = 7, NTABLE = 32, D0 = 0.D0)
 #if defined (VAR_VECTOR)
       PARAMETER (IVECDF = 128)
 #else
@@ -1010,7 +1018,7 @@ C
      &             '.RUNRSP', '.MINIMI', '.TOTSYM',
      &             '.VECLEN', '.RUNERI', '.ERITWO',
      &             '.RUN AL', '.NMDDRV', '.PARNMD',
-     &             '.OPTIMI'/
+     &             '.OPTIMI', '.DOUGLA'/
 C
       CALL QENTER('GRNLIN')
 C
@@ -1063,6 +1071,7 @@ C     NEWTRA is in /INFTRA/ for practical reasons
       TOTSYM = .FALSE.
       RELCAL = .FALSE.
       NMWALK = .FALSE.
+      DKTRAN = .FALSE.
       PANAS  = 0.0D0
 C
 C     Initialize /EXEINF/
@@ -1119,7 +1128,7 @@ C
                GO TO (101,102,103,104,105,106,107,108,109,110,
      &                111,112,113,114,115,116,104,105,106,113,
      &                115,114,123,124,125,126,127,128,129,129,
-     &                123), I
+     &                123,130), I
             END IF
    99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1214,9 +1223,11 @@ C
          GO TO 100
  129     CONTINUE
             NMWALK = .TRUE.
-ckr            NOMOVE = .TRUE.
             NOMOVE = .FALSE.
             OPTWLK = .TRUE.
+         GOTO 100
+ 130     CONTINUE
+            DKTRAN = .TRUE.
          GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 999
@@ -1299,6 +1310,10 @@ C                 because DIRCAL false for MCSCF ??????????
       IF (NMWALK) THEN
          WRITE (LUPRI,'(3X,A)') 
      &                       'Numerical derivatives will be calculated'
+      END IF
+      IF (DKTRAN) THEN
+         WRITE (LUPRI,'(3X,A)') 
+     &        ' The Douglas-Kroll transformation is applied'
       END IF
   200 PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN

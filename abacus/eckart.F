@@ -70,8 +70,6 @@ C
 C
 C     Define instantaneous geometry
 C     
-      call output(hescar,1,ncart,1,ncart,ncart,ncart,1,lupri)
-      write (lupri,*) 'hessian',hessia
       CALL CMMASS(GEOM,AMASS,NATTYP,ISOTPS,IPRINT)
       IF (IPRINT .GE. 4) THEN
          CALL HEADER('Instantaneous geometry:',0)
