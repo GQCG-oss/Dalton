@@ -1,4 +1,4 @@
-C
+
 C...   Copyright (c) 2001 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
@@ -72,12 +72,12 @@ C*****************************************************************************
          CALL HEADER('SYMADD: Requested addition of symmetry',-1)
 	 WRITE(LUPRI,'(A,G9.2)') ' Symmetry threshold: ', TOLLRN
          KCOOR = 1
-         KROT = KCOOR + 5 * (MXCENT + 1)
-         KIROT = KROT + 5 * (MAXAXS + 1)
-         KMIR = KIROT + 5 * (MAXAXS + 1)
-         KTEMP = KMIR + 5 * (MAXMIR + 1)
+         KROT = KCOOR + 6 * (MXCENT + 1)
+         KIROT = KROT + 6 * (MAXAXS + 1)
+         KMIR = KIROT + 6 * (MAXAXS + 1)
+         KTEMP = KMIR + 6 * (MAXMIR + 1)
          KTEMP2 = KTEMP + 7 * (MAX(2*MXCENT,MXCENT+2*MAXAXS+MAXMIR) + 1)
-         KLAST = KTEMP2 + 5 * (MXCENT + 1)
+         KLAST = KTEMP2 + 6 * (MXCENT + 1)
 	 IF (KLAST.GT.LWORK) CALL STOPIT('SYMADD',' ',KLAST,LWORK)
 	 LWRK = LWORK - KLAST + 1
          LENTMP = MAX(2*MXCENT,MXCENT+2*MAXAXS+MAXMIR)
@@ -108,10 +108,10 @@ C *   DIRAXS - Improper rotational axes
 C *   DMRPLN - Mirror planes
 C *   TMPARR + TMP2AR - Temporary arrays
 C ***********************************************************
-         DIMENSION ATMARR(6,0:MXCENT), DRTAXS(5,0:MAXAXS)
-         DIMENSION DIRAXS(5,0:MAXAXS), DMRPLN(5,0:MAXMIR)
+         DIMENSION ATMARR(6,0:MXCENT), DRTAXS(6,0:MAXAXS)
+         DIMENSION DIRAXS(6,0:MAXAXS), DMRPLN(6,0:MAXMIR)
          DIMENSION TMPARR(7,0:LENTMP), WORK(LWORK)
-         DIMENSION TMP2AR(5,0:MXCENT), NONT(KATOM)
+         DIMENSION TMP2AR(6,0:MXCENT), NONT(KATOM)
          LOGICAL VRML
          PARAMETER (D0 = 0.0D0)
          CHARACTER*1 KASYM(3,3), CLASS*15, TEXT*40
@@ -123,11 +123,11 @@ C
 C     Just to make sure, we zero all temporary arrays
 C
          CALL DZERO(ATMARR,6*(MXCENT + 1))
-         CALL DZERO(DRTAXS,5*(MAXAXS + 1))
-         CALL DZERO(DIRAXS,5*(MAXAXS + 1))
-         CALL DZERO(DMRPLN,5*(MAXMIR + 1))
+         CALL DZERO(DRTAXS,6*(MAXAXS + 1))
+         CALL DZERO(DIRAXS,6*(MAXAXS + 1))
+         CALL DZERO(DMRPLN,6*(MAXMIR + 1))
          CALL DZERO(TMPARR,7*(LENTMP + 1))
-         CALL DZERO(TMP2AR,5*(MXCENT + 1))
+         CALL DZERO(TMP2AR,6*(MXCENT + 1))
 C         IF (SOLVNT .OR. DORLM) THEN
 C	    NUCLP = NUCIND - 1
 C	 ELSE
@@ -371,7 +371,7 @@ C ::                              ::
 C ::::::::::::::::::::::::::::::::::
 #include <implicit.h>
 #include <mxsymm.h>
-         DIMENSION ARR(5,0:MXM), VEC(3)
+         DIMENSION ARR(6,0:MXM), VEC(3)
          IF (ABS(VEC(1)) .LT. TOLLRN) VEC(1) = 0.0D0
          IF (ABS(VEC(2)) .LT. TOLLRN) VEC(2) = 0.0D0
          IF (ABS(VEC(3)) .LT. TOLLRN) VEC(3) = 0.0D0
@@ -412,7 +412,7 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include <implicit.h>
 #include <mxsymm.h>
 #include <priunit.h>
-         DIMENSION AXARR(5,0:MXM), V1(3), V2(3)
+         DIMENSION AXARR(6,0:MXM), V1(3), V2(3)
          N = NINT(AXARR(1,0))
          I = 1
  100     CONTINUE
@@ -507,7 +507,7 @@ C ::       The method used is bubble sorting.                             ::
 C ::                                                                      ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include <implicit.h>
-         DIMENSION ARR(ILOWER,0:IUPPER)
+         DIMENSION ARR(6,0:IUPPER)
          DIMENSION ATM1(3), ATM2(3)
          LOGICAL USENRM, SORTED
          N = NINT(ARR(1,0))
@@ -696,8 +696,8 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include <implicit.h>
 #include <priunit.h>
 #include <mxsymm.h>
-         DIMENSION ATMARR(6, 0:MXM), DRTAXS(5, 0:MAXAXS)
-         DIMENSION DIRAXS(5, 0:MAXAXS), DMRPLN (5, 0:MAXMIR)
+         DIMENSION ATMARR(6, 0:MXM), DRTAXS(6, 0:MAXAXS)
+         DIMENSION DIRAXS(6, 0:MAXAXS), DMRPLN (6, 0:MAXMIR)
          DIMENSION V1(3), V2(3), V3(3), TMPARR(6, 0:LENTMP)
          CALL DZERO(TMPARR,6*LENTMP)
          N = NINT(ATMARR(1,0))
@@ -1130,7 +1130,7 @@ C ::: a non-zero z-coordinate (after rotation).                     :::
 		  ATMARR(2,IND) = ATMARR(2,I)
 		  ATMARR(3,IND) = -ATMARR(3,I)
 		  ATMARR(4,IND) = -ATMARR(4,I)
-		  ATMARR(6,IND) = ATMARR(6,I)
+		  ATMARR(6,IND) = -ATMARR(6,I)
 		  IND = IND + 1
 	       END IF
  150	    CONTINUE
@@ -1164,7 +1164,7 @@ C ::: We take the XY-component. :::
      &                   NINT(ATMARR(6,I)) .EQ. NINT(ATMARR(6,J)))
 	       ELSE
 		  EQL = (NINT(ATMARR(4,I)) .EQ. -NINT(ATMARR(4,J)) .AND.
-     &                   NINT(ATMARR(6,I)) .EQ. NINT(ATMARR(6,J)))
+     &                   NINT(ATMARR(6,I)) .EQ. -NINT(ATMARR(6,J)))
 		  IF ((J .LT. N) .AND. (.NOT. EQL)) THEN
 		     J = J + 1
 		     GOTO 350
@@ -1222,8 +1222,8 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include <mxsymm.h>
 #include <mxcent.h>
 #include <priunit.h>
-         DIMENSION ATMARR(6,0:MXM), DRTAXS(5,0:MAXAXS)
-         DIMENSION TMPARR(6,0:2*MXM)
+         DIMENSION ATMARR(6,0:MXM), DRTAXS(6,0:MAXAXS)
+         DIMENSION TMPARR(7,0:2*MXM)
          DIMENSION V1(3), V2(3), V3(3), VSTORE(3)
          DIMENSION ICNT(2), IUSED(2*MXCENT)
          LOGICAL ROTAXS, PROP
@@ -1517,8 +1517,8 @@ C ::                                                                ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include <implicit.h>
 #include <mxsymm.h>
-         DIMENSION ATMARR(6,0:MXM), AXIMAR(5,0:MAXAXS)
-         DIMENSION AXARR(5,0:MAXAXS), TMPARR(6,0:2*MXM)
+         DIMENSION ATMARR(6,0:MXM), AXIMAR(6,0:MAXAXS)
+         DIMENSION AXARR(6,0:MAXAXS), TMPARR(7,0:2*MXM)
          DIMENSION V1(3), V2(3)
          N = NINT(ATMARR(1,0))
 C ::: And we call upon FindAx to find all axes for this molecule. :::
@@ -1566,8 +1566,8 @@ C ::                                                     ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include <implicit.h>
 #include <mxsymm.h>
-         DIMENSION ATMARR(6,0:MXM), DMRARR(5,0:MAXMIR)
-         DIMENSION AXARR(5,0:MAXAXS), TMPARR(6,0:MXM)
+         DIMENSION ATMARR(6,0:MXM), DMRARR(6,0:MAXMIR)
+         DIMENSION AXARR(6,0:MAXAXS), TMPARR(7,0:MXM)
          DIMENSION V1(3), V2(3), V3(3), VSTORE(3)
          LOGICAL MIRMOL, PLNMOL, LINMOL
          DMRARR(1,0) = 0.0D0
@@ -1726,9 +1726,9 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include <implicit.h>
 #include <mxsymm.h>
 #include <priunit.h>
-         DIMENSION ATMARR(6,0:MXM), DRTAXS(5,0:MAXAXS)
-         DIMENSION DIRAXS(5,0:MAXAXS), DMRPLN(5,0:MAXMIR)
-         DIMENSION TMPARR(6,0:2*MXM)
+         DIMENSION ATMARR(6,0:MXM), DRTAXS(6,0:MAXAXS)
+         DIMENSION DIRAXS(6,0:MAXAXS), DMRPLN(6,0:MAXMIR)
+         DIMENSION TMPARR(7,0:2*MXM)
          DIMENSION V1(3), V2(3)
          CHARACTER*15 CLASS
          LOGICAL LINMOL, INVMOL
