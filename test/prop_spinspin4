@@ -153,7 +153,7 @@ ERROR[5]="CALCULATION OF PORPERTIES NOT SET UP CORRECTLY"
 
 # H-O coupling
 CRIT1=`$GREP "Isotropic coupling * \: * \-78\.767[0-9] Hz" $log | wc -l`
-CRIT2=`$GREP "Anistropic coupling * \: * \-19\.584[0-9] Hz" $log | wc -l`
+CRIT2=`$GREP "Anisotropic coupling * \: * \-19\.584[0-9] Hz" $log | wc -l`
 CRIT3=`$GREP "Asymmetry * \: * (0| )\.997[0-9]" $log | wc -l`
 CRIT4=`$GREP "S parameter * \: * \-22\.601[0-9] Hz" $log | wc -l`
 CRIT5=`$GREP "A parameter * \: * (\-0|\-)\.279[0-9] Hz" $log | wc -l`
@@ -168,7 +168,7 @@ ERROR[6]="H-O SPIN-SPIN COUPLING NOT CORRECT"
 
 # H-H coupling
 CRIT1=`$GREP "Isotropic coupling * \: * \-11\.566[0-9] Hz" $log | wc -l`
-CRIT2=`$GREP "Anistropic coupling * \: * \-37\.526[0-9] Hz" $log | wc -l`
+CRIT2=`$GREP "Anisotropic coupling * \: * \-37\.526[0-9] Hz" $log | wc -l`
 CRIT3=`$GREP "Asymmetry * \: * (\-0|\-)\.050[0-9]" $log | wc -l`
 CRIT4=`$GREP "S parameter * \: * 37\.542[0-9] Hz" $log | wc -l`
 CRIT5=`$GREP "A parameter * \: * 3\.063[0-9] Hz" $log | wc -l`

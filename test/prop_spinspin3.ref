@@ -1365,7 +1365,7 @@ Point group: C2v
   Mass number atom 2:  17   abundance:    0.040   g factor:  -0.757516
 
   Isotropic coupling        :    -70.5929 Hz
-  Anistropic coupling       :      0.0000 Hz
+  Anisotropic coupling      :      0.0000 Hz
   Asymmetry                 :      0.0000   
   S parameter               :      0.0000 Hz
   A parameter               :      0.0000 Hz
@@ -1380,7 +1380,7 @@ Point group: C2v
   Mass number atom 2:  17   abundance:    0.040   g factor:  -0.757516
 
   Isotropic coupling        :    -10.8364 Hz
-  Anistropic coupling       :      0.0000 Hz
+  Anisotropic coupling      :      0.0000 Hz
   Asymmetry                 :      0.0000   
   S parameter               :      0.0000 Hz
   A parameter               :      0.0000 Hz
@@ -1400,7 +1400,7 @@ Point group: C2v
   Mass number atom 2:  17   abundance:    0.040   g factor:  -0.757516
 
   Isotropic coupling        :    -70.5929 Hz
-  Anistropic coupling       :      0.0000 Hz
+  Anisotropic coupling      :      0.0000 Hz
   Asymmetry                 :      0.0000   
   S parameter               :      0.0000 Hz
   A parameter               :      0.0000 Hz
@@ -1415,7 +1415,7 @@ Point group: C2v
   Mass number atom 2:  17   abundance:    0.040   g factor:  -0.757516
 
   Isotropic coupling        :    -10.8364 Hz
-  Anistropic coupling       :      0.0000 Hz
+  Anisotropic coupling      :      0.0000 Hz
   Asymmetry                 :      0.0000   
   S parameter               :      0.0000 Hz
   A parameter               :      0.0000 Hz
@@ -1435,7 +1435,7 @@ Point group: C2v
   Mass number atom 2:   1   abundance:   99.985   g factor:   5.585694
 
   Isotropic coupling        :    -13.9246 Hz
-  Anistropic coupling       :      0.0000 Hz
+  Anisotropic coupling      :      0.0000 Hz
   Asymmetry                 :      0.0000   
   S parameter               :      0.0000 Hz
   A parameter               :      0.0000 Hz
@@ -1450,7 +1450,7 @@ Point group: C2v
   Mass number atom 2:   2   abundance:    0.015   g factor:   0.857438
 
   Isotropic coupling        :     -2.1375 Hz
-  Anistropic coupling       :      0.0000 Hz
+  Anisotropic coupling      :      0.0000 Hz
   Asymmetry                 :      0.0000   
   S parameter               :      0.0000 Hz
   A parameter               :      0.0000 Hz
@@ -1465,7 +1465,7 @@ Point group: C2v
   Mass number atom 2:   1   abundance:   99.985   g factor:   5.585694
 
   Isotropic coupling        :     -2.1375 Hz
-  Anistropic coupling       :      0.0000 Hz
+  Anisotropic coupling      :      0.0000 Hz
   Asymmetry                 :      0.0000   
   S parameter               :      0.0000 Hz
   A parameter               :      0.0000 Hz
@@ -1480,7 +1480,7 @@ Point group: C2v
   Mass number atom 2:   2   abundance:    0.015   g factor:   0.857438
 
   Isotropic coupling        :     -0.3281 Hz
-  Anistropic coupling       :      0.0000 Hz
+  Anisotropic coupling      :      0.0000 Hz
   Asymmetry                 :      0.0000   
   S parameter               :      0.0000 Hz
   A parameter               :      0.0000 Hz

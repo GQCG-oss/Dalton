@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abamag.F,v 1.2 2001-03-13 08:43:26 vebjornb Exp $
+C$Id: abamag.F,v 1.3 2001-03-18 12:35:10 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -2345,7 +2345,7 @@ C
                               FC     = AVEISO(IATIJ,5)*FACTOR
                            WRITE(LUPRI,'(9(/,2X,A,F12.4,A),/,/)')
      &                       'Isotropic coupling        :',AVETOT,' Hz',
-     &                       'Anistropic coupling       :',ANIS  ,' Hz',
+     &                       'Anisotropic coupling      :',ANIS  ,' Hz',
      &                       'Asymmetry                 :',ASYMM ,'   ',
      &                       'S parameter               :',SPARA ,' Hz',
      &                       'A parameter               :',APARA ,' Hz',

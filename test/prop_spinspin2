@@ -171,7 +171,7 @@ ERROR[4]="ENERGIES NOT CORRECT"
 
 # Spin-spin coupling
 CRIT1=`$GREP "Isotropic coupling * \: * \-12\.8653 Hz" $log | wc -l`
-CRIT2=`$GREP "Anistropic coupling * \: * \-34\.0161 Hz" $log | wc -l`
+CRIT2=`$GREP "Anisotropic coupling * \: * \-34\.0161 Hz" $log | wc -l`
 CRIT3=`$GREP "Asymmetry * \: * (\-0|\-)\.0316" $log | wc -l`
 CRIT4=`$GREP "S parameter * \: * 34\.0218 Hz" $log | wc -l`
 CRIT5=`$GREP "A parameter * \: * (0| )\.6617 Hz" $log | wc -l`

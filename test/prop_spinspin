@@ -175,7 +175,7 @@ ERROR[5]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
 
 # O-H coupling
 CRIT1=`$GREP "Isotropic coupling * \: * \-81\.4406 Hz" $log | wc -l`
-CRIT2=`$GREP "Anistropic coupling * \: * \-13\.2904 Hz" $log | wc -l`
+CRIT2=`$GREP "Anisotropic coupling * \: * \-13\.2904 Hz" $log | wc -l`
 CRIT3=`$GREP "Asymmetry * \: * (0| )\.5682" $log | wc -l`
 CRIT4=`$GREP "S parameter * \: * \-13\.9872 Hz" $log | wc -l`
 CRIT5=`$GREP "A parameter * \: * (\-0|\-)\.0366 Hz" $log | wc -l`
@@ -184,7 +184,7 @@ CRIT7=`$GREP "Isotropic PSO contribution\: * \-10\.5390 Hz" $log | wc -l`
 CRIT8=`$GREP "Isotropic SD contribution \: * (\-0|\-)\.2594 Hz" $log | wc -l`
 CRIT9=`$GREP "Isotropic FC contribution \: * \-70\.5929 Hz" $log | wc -l`
 CRIT10=`$GREP "Isotropic coupling * \: * \-12\.5016 Hz" $log | wc -l`
-CRIT11=`$GREP "Anistropic coupling * \: * \-2\.0402 Hz" $log | wc -l`
+CRIT11=`$GREP "Anisotropic coupling * \: * \-2\.0402 Hz" $log | wc -l`
 CRIT12=`$GREP "Asymmetry * \: * (0| )\.5682" $log | wc -l`
 CRIT13=`$GREP "S parameter * \: * \-2\.1471 Hz" $log | wc -l`
 CRIT14=`$GREP "A parameter * \: * (\-0|\-)\.0056 Hz" $log | wc -l`
@@ -200,7 +200,7 @@ ERROR[6]="O-H SPIN-SPIN COUPLING NOT CORRECT"
 
 # H-H coupling
 CRIT1=`$GREP "Isotropic coupling * \: * \-11\.9277 Hz" $log | wc -l`
-CRIT2=`$GREP "Anistropic coupling * \: * \-37\.8904 Hz" $log | wc -l`
+CRIT2=`$GREP "Anisotropic coupling * \: * \-37\.8904 Hz" $log | wc -l`
 CRIT3=`$GREP "Asymmetry * \: * (\-0|\-)\.0676" $log | wc -l`
 CRIT4=`$GREP "S parameter * \: * 37\.9192 Hz" $log | wc -l`
 CRIT5=`$GREP "A parameter * \: * 2\.5137 Hz" $log | wc -l`
@@ -209,7 +209,7 @@ CRIT7=`$GREP "Isotropic PSO contribution\: * 7\.8265 Hz" $log | wc -l`
 CRIT8=`$GREP "Isotropic SD contribution \: * (0| )\.9376 Hz" $log | wc -l`
 CRIT9=`$GREP "Isotropic FC contribution \: * \-13\.9246 Hz" $log | wc -l`
 CRIT10=`$GREP "Isotropic coupling * \: * \-1\.8310 Hz" $log | wc -l`
-CRIT11=`$GREP "Anistropic coupling * \: * \-5\.8164 Hz" $log | wc -l`
+CRIT11=`$GREP "Anisotropic coupling * \: * \-5\.8164 Hz" $log | wc -l`
 CRIT12=`$GREP "Asymmetry * \: * (\-0|\-)\.0676" $log | wc -l`
 CRIT13=`$GREP "S parameter * \: * 5\.8208 Hz" $log | wc -l`
 CRIT14=`$GREP "A parameter * \: * (0| )\.3859 Hz" $log | wc -l`
@@ -218,7 +218,7 @@ CRIT16=`$GREP "Isotropic PSO contribution\: * 1\.2014 Hz" $log | wc -l`
 CRIT17=`$GREP "Isotropic SD contribution \: * (0| )\.1439 Hz" $log | wc -l`
 CRIT18=`$GREP "Isotropic FC contribution \: * \-2\.1375 Hz" $log | wc -l`
 CRIT19=`$GREP "Isotropic coupling * \: * (\-0|\-)\.2811 Hz" $log | wc -l`
-CRIT20=`$GREP "Anistropic coupling * \: * (\-0|\-)\.8929 Hz" $log | wc -l`
+CRIT20=`$GREP "Anisotropic coupling * \: * (\-0|\-)\.8929 Hz" $log | wc -l`
 CRIT21=`$GREP "Asymmetry * \: * (\-0|\-)\.0676" $log | wc -l`
 CRIT22=`$GREP "S parameter * \: * (0| )\.8935 Hz" $log | wc -l`
 CRIT23=`$GREP "A parameter * \: * (0| )\.0592 Hz" $log | wc -l`

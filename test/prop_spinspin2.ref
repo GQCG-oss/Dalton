@@ -1138,7 +1138,7 @@ Point group: C2v
   Mass number atom 2:   1   abundance:   99.985   g factor:   5.585694
 
   Isotropic coupling        :    -12.8653 Hz
-  Anistropic coupling       :    -34.0161 Hz
+  Anisotropic coupling      :    -34.0161 Hz
   Asymmetry                 :     -0.0316   
   S parameter               :     34.0218 Hz
   A parameter               :      0.6617 Hz
