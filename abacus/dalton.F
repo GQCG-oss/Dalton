@@ -87,16 +87,15 @@ C
 #include <infpri.h>
 #include <gnrinf.h>
 #include <inftap.h>
+      EXTERNAL EXEDRV
 #if defined (VAR_MPI)
+      EXTERNAL NODSTR
       INCLUDE 'mpif.h'
       LOGICAL FINISH
 #endif
       CHARACTER*12 FILNAM
-#if defined (VAR_G77)
-      INTEGER(KIND=2) IWOFF
-#endif
       PARAMETER (LWORK = INSTALL_WRKMEM)
-#if !defined (SYS_CONVEX) && !defined (SYS_HAL) && !defined (VAR_G77)
+#if !defined (SYS_CONVEX) && !defined (SYS_HAL) 
       PARAMETER (IWOFF = 0)
 #endif
 #if defined (SYS_AIX) || defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_CONVEX) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_DEC)
@@ -108,7 +107,7 @@ C
 #if defined (SYS_CONVEX) || (defined (SYS_LINUX) && defined (VAR_G77))
       DIMENSION WORK(2)
 #else
-#if defined (SYS_NEC) || defined (SYS_AIX)
+#if defined (SYS_NEC) || defined (SYS_AIX) || (defined (SYS_LINUX) && defined (VAR_IFC))
 #if defined (NO_F90)
       POINTER (WADDR,WORK(1))
 #else
@@ -193,16 +192,16 @@ C
       WADDR = MALLOC(NBYTES)
 #endif
 
-#if defined (SYS_NEC) || defined (SYS_AIX)
+#if defined (SYS_NEC) || defined (SYS_AIX)||(defined (SYS_LINUX) && defined (VAR_IFC))
 #if defined (NO_F90)
       WADDR = MALLOC(NBYTES)
 #else
       WADDR = 1
-      ALLOCATE (WORK(LMWORK+2),STAT=I)
+      ALLOCATE (WORK(LMWORK+2))
 #endif
 #endif
 #if (defined (SYS_LINUX) && defined (VAR_G77))
-      WADDR = LINUX_MEM_ALLO(IWOFF,NBYTES,WORK)
+      WADDR = 1
 #endif
       IF (WADDR .EQ. 0) THEN
          WRITE(LUERR,1000)
@@ -249,8 +248,10 @@ C
 C
 C     Set memory traps and initialize unit numbers
 C
-      WORK(IWOFF+1)        = WRKDLM
-      WORK(IWOFF+2+LMWORK) = WRKDLM
+#if !(defined (SYS_LINUX) && defined (VAR_G77))
+      WORK(1)        = WRKDLM
+      WORK(2+LMWORK) = WRKDLM
+#endif
 C
 C     Next 20+ lines commented out, does not work for general parallel
 C     calculations.
@@ -401,7 +402,11 @@ C
             CALL QUIT('*** End of input test for GENERAL ***')
          END IF
          CALL RECVNAMES
-         CALL EXEDRV(WORK, LMWORK, IWOFF, WRKDLM)
+#if defined (VAR_G77)
+         CALL CEXE(EXEDRV, LMWORK, WRKDLM,MASTER,MYNUM)
+#else
+         CALL EXEDRV(WORK, LMWORK, WRKDLM,MASTER,MYNUM)
+#endif
          CALL FLSHFO(LUPRI)
 C
 C     Send ending signal to slaves
@@ -418,7 +423,11 @@ C
             IF (TESTIN) THEN
                CALL QUIT('*** End of input test for GENERAL ***')
             END IF
-            CALL EXEDRV(WORK, LMWORK, IWOFF, WRKDLM)
+#if defined (VAR_G77)
+            CALL CEXE(EXEDRV, LMWORK, WRKDLM,MASTER,MYNUM)
+#else
+            CALL EXEDRV(WORK, LMWORK,WRKDLM,MASTER,MYNUM)
+#endif
 C
 C     Send ending signal to slaves
 C
@@ -431,7 +440,11 @@ C
             CALL GPCLOSE(LUPRI,'KEEP')
          ELSE
             CALL SENDNAME(MASTER,MYNUM)
-            CALL NODSTR(WORK(IWOFF+1),LMWORK,MASTER,MYNUM)
+#if defined (VAR_G77)
+            CALL CEXE(NODSTR,LMWORK,WRKDLM,MASTER,MYNUM)
+#else
+            CALL NODSTR(WORK,LMWORK,WRKDLM,MASTER,MYNUM)
+#endif
          END IF
       END IF
       CALL MPIXFINALIZE
@@ -458,7 +471,11 @@ C
       END IF
 #endif
 #if !defined (VAR_MPI)
-      CALL EXEDRV(WORK, LMWORK, IWOFF, WRKDLM)
+#if defined (VAR_G77)
+      CALL CEXE(EXEDRV, LMWORK, WRKDLM,MASTER,MYNUM)
+#else
+      CALL EXEDRV(WORK, LMWORK,WRKDLM,MASTER,MYNUM)
+#endif
       CALL GPCLOSE(LUERR,'KEEP')
       CALL GPCLOSE(LUCME,'KEEP')
       CALL GPCLOSE(LUMOLDEN,'KEEP')
