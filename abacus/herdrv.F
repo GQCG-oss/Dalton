@@ -109,7 +109,7 @@ C
 #include <r12int.h>
 #include <nuclei.h>
 C
-      LOGICAL SET
+      LOGICAL SET, FEXIST
 C
       DIMENSION WORK(LWORK)
 C
@@ -146,12 +146,19 @@ C        Delete old MO integrals and AOSUP integrals
             IF (LUMINT .LE. 0) CALL DAOPEN(LUMINT,'MOTWOINT')
                                CALL DARMOV(LUMINT)
          ELSE
-            CALL GPOPEN(LUINTM,'AOSRTINT.DA',
-     &           'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-            CALL GPCLOSE(LUINTM,'DELETE')
-            CALL GPOPEN(LUINTM,'MOTWOINT',
-     &           'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-            CALL GPCLOSE(LUINTM,'DELETE')
+            CALL GPINQ('AOSRTINT.DA','EXIST',FEXIST)
+            IF (FEXIST) THEN
+               INQUIRE(FILE='AOSRTINT.DA',RECL=LREC)
+               CALL GPOPEN(LUINTM,'AOSRTINT.DA',
+     &              'UNKNOWN','DIRECT',' ',LREC,FEXIST)
+               CALL GPCLOSE(LUINTM,'DELETE')
+            END IF
+            CALL GPINQ('MOTWOINT','EXIST',FEXIST)
+            IF (FEXIST) THEN
+               CALL GPOPEN(LUINTM,'MOTWOINT',
+     &              'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+               CALL GPCLOSE(LUINTM,'DELETE')
+            END IF
          END IF
          CALL GPOPEN(LUSUPM,'AOSUPINT',
      &           'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
