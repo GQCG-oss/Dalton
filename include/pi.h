@@ -1,1 +1,6 @@
+#if defined (SYS_CRAY)
+      REAL PI
+#else
+      DOUBLE PRECISION PI
+#endif
       PARAMETER (PI = 3.14159 26535 89793 23846 D00)

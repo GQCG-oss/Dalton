@@ -1,11 +1,11 @@
       LOGICAL CCFOP, CCLR, CCQR, CCCR, CC4R, CC5R,
-     &        CCEXGR,CCSM, CCTM, CCEXLR,
+     &        CCEXGR,CCSM, CCTM, CCEXLR, CCOPA,
      &        CCQR2R,CCGR, CCMCD, CCDERI,
      &        CCSLV, CCEXCI, CCLRSD,
      &        OLDLR
 
       COMMON /CCSECTIONS/ CCFOP, CCLR, CCQR,  CCCR, CC4R, CC5R,
-     &                    CCEXGR,CCSM, CCTM,  CCEXLR, 
+     &                    CCEXGR,CCSM, CCTM,  CCEXLR, CCOPA,
      &                    CCQR2R,CCGR, CCMCD, CCDERI,
      &                    CCSLV, CCEXCI, CCLRSD,
      &                    OLDLR
