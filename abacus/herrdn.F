@@ -686,7 +686,7 @@ C     *****   Returns CLASS, the full symmetry    *****
 C     *************************************************
 C
       CLASS = 'N/A'
-      IF (ADDSYM .AND. (.NOT. DIRAC)) THEN
+      IF (ADDSYM .AND. (.NOT. DIRAC) .AND. (.NOT. LMULBS)) THEN
          CALL SYMADD(WORK,LWORK,NONTYP,NSYMOP,NONT,KATOM,KASYM,CLASS)
       END IF
 C
