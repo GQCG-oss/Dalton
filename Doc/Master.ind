@@ -1,8 +1,7 @@
 \begin{theindex}
 
   \item {\normalfont  \ttfamily  {**DALTON}}, 21, 49, 56, 59, 66, 128, 
-		159, 235
-  \item {\normalfont  \ttfamily  {**DALTON INPUT}}, 128, 131
+		131, 159, 235
   \item {\normalfont  \ttfamily  {**FINAL}}, 22, 45, 49, 66, 89
   \item {\normalfont  \ttfamily  {**GENERAL}}, 128
   \item {\normalfont  \ttfamily  {**HERMIT}}, 234
@@ -16,12 +15,9 @@
   \item {\normalfont  \ttfamily  {**RESPONSE}}, 18, 21, 79, 93, 119, 
 		233
   \item {\normalfont  \ttfamily  {**START}}, 22, 49
-  \item {\normalfont  \ttfamily  {**WAVE FUNCTION}}, 28, 29, 31, 33, 34, 
-		162, 235
-  \item {\normalfont  \ttfamily  {**WAVE FUNCTIONS}}, 18, 21, 70, 73, 
-		75--78, 84, 94, 103, 107, 119, 120, 148, 177, 178, 183, 
-		241
-  \item \AA ngstr\"{o}m, 167
+  \item {\normalfont  \ttfamily  {**WAVE FUNCTIONS}}, 18, 21, 28, 29, 
+		31, 33, 34, 70, 73, 75--78, 84, 94, 103, 107, 119, 120, 
+		148, 162, 177, 178, 183, 235, 241
   \item \sc  abacus, 1, 4, 18, 21, 22, 70, 81, 83, 88, 103, 106, 130, 
 		144, 146, 163, 194, 195, 200, 202, 212
   \item \sc  cc, 1, 60, 121, 122, 179, 241
@@ -32,6 +28,7 @@
 		121, 130, 148, 194, 195, 200, 205, 233
   \item \sc  sirius, 1, 18, 103, 130, 131, 159, 162, 176--180, 185, 194, 
 		200, 201, 220, 235, 241, 279
+  \item {\AA}ngstr\"{o}m, 167
   \item {\normalfont  \ttfamily  {.1ELPOT}}, 149
   \item {\normalfont  \ttfamily  {.1STORD}}, 131
   \item {\normalfont  \ttfamily  {.2ELDAR}}, 248
@@ -46,7 +43,8 @@
   \item {\normalfont  \ttfamily  {*ABALNR}}, 66, 70, 88, 89, 206
   \item {\normalfont  \ttfamily  {.ABALNR}}, 66, 70, 88, 202
   \item {\normalfont  \ttfamily  {.ABSORPTION}}, 188
-  \item absorption strength, coupled cluster, 260
+  \item absorption strength
+    \subitem Coupled Cluster, 260
   \item {\normalfont  \ttfamily  {.ABUNDA}}, 226
   \item abundance, 78, 226
   \item active electrons, 182
@@ -75,7 +73,7 @@
   \item APT, 18, 63, 202
   \item {\normalfont  \ttfamily  {.ASPIN}}, 237
   \item {\normalfont  \ttfamily  {.ASYMSD}}, 250
-  \item ATOMBASIS, 24, 173
+  \item ATOMBASIS, 24, 172, 173
   \item atomic axial tensor, 209, 210, 274
   \item atomic centers, 14
   \item atomic integrals, 1, 18, 21
@@ -90,17 +88,26 @@
   \item B-term, 237, 265
   \item {\normalfont  \ttfamily  {.B0SKIP}}, 243
   \item {\normalfont  \ttfamily  {.BAKER}}, 47, 132
-  \item basis function, 166
+  \item BASIS, 172
+  \item basis function
+    \subitem Cartesian, 166
+    \subitem Rydberg, 161
+    \subitem spherical, 166
   \item {\normalfont  \ttfamily  {.BASIS SET}}, 178
-  \item basis set, 25, 137, 138
-  \item basis set library, 10, 165--167, 172, 173
-  \item basis set quality, 234
-  \item basis set superposition error, 59
+  \item basis set, 25, 136, 138
+    \subitem ANO, 165, 173--175
+    \subitem ECP, 115
+    \subitem EMSL library, 165
+    \subitem library, 10, 165--167, 172, 173
+    \subitem NQvD, 165, 173--175
+    \subitem quality, 234
+    \subitem sadlej, 165, 175
+    \subitem superposition error, 59
   \item {\normalfont  \ttfamily  {.BFGS}}, 131, 132
   \item BFGS update, 46, 131, 132
   \item {\normalfont  \ttfamily  {.BFREQ}}, 238
   \item {\normalfont  \ttfamily  {.BOFILL}}, 132, 138
-  \item Bofill's update, 52
+  \item Bofill's update, 52, 132, 138
   \item bond angle, 215, 216
   \item bond distance, 215
   \item bonded atoms, 140
@@ -127,21 +134,20 @@
   \item {\normalfont  \ttfamily  {.C8SPH}}, 240
   \item {\normalfont  \ttfamily  {.CANONI}}, 196
   \item canonical orbital, 185, 187, 196
-  \item carbon monoxide, 39
   \item {\normalfont  \ttfamily  {.CARMOM}}, 150, 159
   \item {\normalfont  \ttfamily  {.CARTES}}, 47, 131, 132
   \item Cartesian basis function, 166
   \item Cartesian coordinate input, 165, 166, 168, 169
-  \item Cartesian coordinates, 23, 47, 61, 89, 131, 138
+  \item Cartesian coordinates, 23, 47, 61, 89, 131, 132, 138
   \item {\normalfont  \ttfamily  {.CAS SPACE}}, 182
   \item CASSCF, 18, 28, 29, 34, 35, 183
   \item Cauchy moments, 250
   \item {\normalfont  \ttfamily  {.CAVITY}}, 107, 197
   \item cavity, 105, 107
-  \item cavity origin, 160, 202
-  \item cavity radius, 197
+    \subitem origin, 160, 202
+    \subitem radius, 197
   \item {\normalfont  \ttfamily  {.CAVORG}}, 160, 202
-  \item CC, 28, 131, 179
+  \item CC, 28, 131, 178
   \item {\normalfont  \ttfamily  {.CC}}, 179, 241
   \item {\normalfont  \ttfamily  {*CC INPUT}}, 178, 241, 243
   \item {\normalfont  \ttfamily  {.CC ONLY}}, 179
@@ -184,10 +190,10 @@
   \item charge of molecule, 166, 184
   \item chirality number, 232
   \item CI, 28, 60, 142, 179, 180, 182, 183, 186, 235
+    \subitem Singles, 243
   \item {\normalfont  \ttfamily  {.CI}}, 179
   \item {\normalfont  \ttfamily  {*CI INPUT}}, 177, 180
   \item {\normalfont  \ttfamily  {.CI PHP MATRIX}}, 188
-  \item CI Singles, 243
   \item {\normalfont  \ttfamily  {*CI VECTOR}}, 177, 181, 192
   \item CID, 232
   \item {\normalfont  \ttfamily  {.CIDENSITY}}, 180
@@ -205,19 +211,27 @@
   \item {\normalfont  \ttfamily  {.COMND}}, 162
   \item {\normalfont  \ttfamily  {.COMPAR}}, 227
   \item {\normalfont  \ttfamily  {.CONDIT}}, 132
-  \item configuration   interaction, 179
+  \item configuration
+    \subitem start, 181
   \item {\normalfont  \ttfamily  {*CONFIGURATION INPUT}}, 177, 182, 183, 
 		187, 190
-  \item configuration interaction, 28, 60, 142, 180, 182, 183, 186, 235
-  \item Configuration Interaction Singles, 243
+  \item Configuration Interaction, 28, 60, 142, 179, 180, 182, 183, 186, 
+		235
+    \subitem Singles, 243
   \item configuration state function, 34, 192
-  \item configuration, start, 181
   \item configure script, 9
   \item {\normalfont  \ttfamily  {.CONSTRAINT}}, 132, 137
   \item contracted basis function, 170
   \item contraction coefficient, 171
-  \item convergence criteria, 47, 132, 133, 138
-  \item convergence threshold, 29, 33, 89
+  \item convergence
+    \subitem criteria, 47, 132, 133, 138
+    \subitem geometry, 43, 129
+    \subitem threshold, 29, 33, 89
+    \subitem wave function, 28
+  \item coordinate system, 47
+    \subitem Cartesian coordinates, 47, 132
+    \subitem delocalized internal coordinates, 133
+    \subitem redundant internal coordinates, 46, 47, 131, 137
   \item core hole, 34, 39, 184, 186--188, 191
   \item {\normalfont  \ttfamily  {.COREHOLE}}, 184, 186, 188, 189
   \item {\normalfont  \ttfamily  {.CORERELAX}}, 40, 184, 188--190
@@ -225,18 +239,17 @@
   \item correlating orbitals, 187
   \item cosine integral, 153
   \item Cotton-Mouton, 27
-  \item Coupled Cluster, 179
-  \item coupled cluster, 28
-  \item Coupled Cluster calculations, 241
-  \item Coupled Cluster Doubles, 243
-  \item Coupled Cluster program, 241
-  \item Coupled Cluster response, 255
-  \item Coupled Cluster Singles, 243
-  \item Coupled Cluster Singles and Doubles, 243
+  \item Coupled Cluster, 28, 178, 241
+    \subitem cubic response, 255
+    \subitem Doubles, 243
+    \subitem linear response, 250, 270
+    \subitem quadratic response, 267
+    \subitem Singles, 243
+    \subitem Singles and Doubles, 243
   \item {\normalfont  \ttfamily  {.CPROP}}, 237, 238
   \item Cray, 8
-  \item Cray-T3D, 8
-  \item Cray-T3E, 8
+    \subitem T3D, 8
+    \subitem T3E, 8
   \item CSF, 34, 192
   \item {\normalfont  \ttfamily  {.CSPIN}}, 237, 238
   \item {\normalfont  \ttfamily  {*CUBIC}}, 238
@@ -249,13 +262,14 @@
   \item DALTON.INP, 24
   \item DALTON.IRC, 56
   \item DALTON.TRJ, 58, 59
-  \item damping, 198
+  \item damping, 198, 199
   \item {\normalfont  \ttfamily  {.DAMPING FACTOR}}, 198
   \item {\normalfont  \ttfamily  {.DARWIN}}, 150
   \item Darwin correction, 205, 206
   \item Darwin integral, 150
-  \item Darwin term, one-electron, 249, 269
-  \item Darwin term, two-electron, 248
+  \item Darwin term
+    \subitem one-electron, 249, 269
+    \subitem two-electron, 248
   \item Davidson algorithm, 188, 190
   \item {\normalfont  \ttfamily  {.DC-KER}}, 238
   \item dc-Kerr effect, 256
@@ -271,6 +285,7 @@
   \item {\normalfont  \ttfamily  {.DELETE}}, 193
   \item delete orbitals, 192, 193
   \item {\normalfont  \ttfamily  {.DELINT}}, 133
+  \item delocalized internal coordinates, 133
   \item depolarization ratio, 66, 86
   \item {\normalfont  \ttfamily  {.DERHAM}}, 151
   \item {\normalfont  \ttfamily  {.DEROVL}}, 151
@@ -292,8 +307,8 @@
   \item {\normalfont  \ttfamily  {.DIHEDR}}, 216
   \item dihedral angle, 215, 216
   \item DIIS, 34, 184, 185
-  \item DIIS error vector, 185
-  \item DIIS iteration, 185
+    \subitem error vector, 185
+    \subitem iteration, 185
   \item {\normalfont  \ttfamily  {*DIPCTL}}, 83
   \item {\normalfont  \ttfamily  {.DIPGRA}}, 63, 151, 202, 206
   \item {\normalfont  \ttfamily  {.DIPLEN}}, 151, 234, 235, 237, 239
@@ -347,6 +362,7 @@
   \item ECD, 72, 81, 83, 203, 212, 213
   \item {\normalfont  \ttfamily  {.ECD}}, 83, 203
   \item {\normalfont  \ttfamily  {.ECKART}}, 142
+  \item ECP, 115
   \item Effective core potentials, 115
   \item effective geometries, 110, 231
   \item EFG, 68, 69
@@ -354,23 +370,23 @@
   \item {\normalfont  \ttfamily  {.EFGSPH}}, 153
   \item {\normalfont  \ttfamily  {.EIGEN}}, 55, 143
   \item eigenvector, 140, 143
-  \item electric  field at nucleus, 155
   \item electric dipole, 150, 248, 268
-  \item electric field at nucleus, 215
-  \item electric field gradient, 68, 69, 152, 153, 214, 248, 268
-  \item electric field induced Kerr, 238
-  \item electric field induced SHG, 238
-  \item electric field, external, 104, 150
+  \item electric field
+    \subitem at nucleus, 155, 215
+    \subitem external, 104, 150
+    \subitem gradient, 68, 69, 152, 153, 214, 248, 268
+    \subitem induced Kerr, 238
+    \subitem induced SHG, 238
   \item electric quadrupole, 249, 268
   \item electron hole, 182
   \item electronic circular dichroism, 72, 81, 83, 203, 212, 213
   \item electronic excitation, 83, 84, 94, 118, 119, 203, 212
-  \item {\normalfont  \ttfamily  {.ELECTRONS}}, 184
-  \item {\normalfont  \ttfamily  {.ELECTRONS (active)}}, 182
+  \item {\normalfont  \ttfamily  {.ELECTRONS}}, 182, 184
   \item electrons in molecule, 184
   \item {\normalfont  \ttfamily  {.ELFGRA}}, 214
   \item {\normalfont  \ttfamily  {.ELGDIA}}, 153
   \item {\normalfont  \ttfamily  {.ELGDIL}}, 153
+  \item EMSL basis set library service, 165
   \item {\normalfont  \ttfamily  {.ENCODE}}, 141
   \item {\normalfont  \ttfamily  {*END OF}}, 22, 131, 148, 149, 212, 
 		233
@@ -388,16 +404,18 @@
   \item {\normalfont  \ttfamily  {.EXACTDIAGONAL}}, 189
   \item {\normalfont  \ttfamily  {*EXCITA}}, 84, 85, 203
   \item {\normalfont  \ttfamily  {.EXCITA}}, 203, 221
-  \item excitation energies, coupled cluster, 258
   \item excitation energy, 203, 212, 213, 236
-  \item excitation energy, triplet, 214
-  \item excited state, 34, 37, 47, 97, 192, 236
-  \item excited state polarizability, 239
-  \item excited states linear response, 270
-  \item excited states, coupled cluster, 258
+    \subitem Coupled Cluster, 258
+    \subitem triplet, 214
+  \item excited state, 34, 37, 97, 192, 236
+    \subitem Coupled Cluster, 258
+    \subitem geometry optimization, 47
+    \subitem linear response, 270
+    \subitem polarizability, 239
   \item {\normalfont  \ttfamily  {*EXPECT}}, 74, 79
   \item expectation values, 248
-  \item expectation values, excited states, coupled cluster, 268
+    \subitem excited state
+      \subsubitem Coupled Cluster, 268
   \item {\normalfont  \ttfamily  {.EXPFCK}}, 203
   \item {\normalfont  \ttfamily  {.EXPIKR}}, 153
   \item external field, 244
@@ -414,8 +432,8 @@
   \item Fermi contact, 78, 80, 153, 159, 208, 226--228
   \item {\normalfont  \ttfamily  {.FIELD}}, 104, 244
   \item {\normalfont  \ttfamily  {.FIELD TERM}}, 183
-  \item final   polarization, 198
   \item {\normalfont  \ttfamily  {.FINAL LEVEL}}, 200
+  \item final polarization, 198
   \item {\normalfont  \ttfamily  {.FINDRE}}, 133, 137
   \item finite difference, 47
   \item finite field, 102, 103, 183, 203, 243, 244
@@ -423,7 +441,8 @@
   \item first hyperpolarizability, 25, 95
   \item first-order optimization, 27, 43, 46, 131--135, 137, 138, 232
   \item first-order properties, 248
-  \item first-order properties, excited states, coupled cluster, 268
+    \subitem excited state
+      \subsubitem Coupled Cluster, 268
   \item {\normalfont  \ttfamily  {.FLAGS}}, 179
   \item fluoromethane, 88
   \item {\normalfont  \ttfamily  {.FNAC}}, 212
@@ -432,12 +451,10 @@
   \item {\normalfont  \ttfamily  {.FOCKONLY}}, 189
   \item {\normalfont  \ttfamily  {.FORM18}}, 34
   \item formaldehyde, 57
-  \item fort.21, 34, 36
   \item FORTRAN~77, 8
   \item fourth-order properties, 255
   \item {\normalfont  \ttfamily  {.FRAGME}}, 57, 143
-  \item {\normalfont  \ttfamily  {.FREEZE}}, 244, 248
-  \item {\normalfont  \ttfamily  {.FREEZE ORBITALS}}, 193
+  \item {\normalfont  \ttfamily  {.FREEZE}}, 193, 244, 248
   \item {\normalfont  \ttfamily  {.FREQ}}, 270
   \item {\normalfont  \ttfamily  {.FREQUE}}, 70, 210, 221, 236--239, 
 		251
@@ -460,13 +477,35 @@
   \item Gaussian quadrature, 152, 157, 215
   \item {\normalfont  \ttfamily  {.GD}}, 227
   \item {\normalfont  \ttfamily  {.GDHAM}}, 217
-  \item {\normalfont  \ttfamily  {.GDIIS}}, 133, 136, 139
+  \item {\normalfont  \ttfamily  {.GDIIS}}, 133, 135, 139
   \item {\normalfont  \ttfamily  {.GDYPRI}}, 217
   \item {\normalfont  \ttfamily  {.GDYSKI}}, 217
   \item general frequency mixing, 257
   \item {\normalfont  \ttfamily  {*GEOANA}}, 49, 83, 215
+  \item geometrical DIIS, 133
+  \item geometry
+    \subitem bond angle, 215, 216
+    \subitem bond distance, 215
+    \subitem Cartesian coordinate input, 165
+    \subitem dihedral angle, 215, 216
+    \subitem visualizing, 139
+    \subitem Z-matrix input, 165, 169, 171
   \item geometry iteration, 56, 58, 66, 129, 135
-  \item geometry optimization, 18, 21, 108, 129, 131, 202
+  \item geometry optimization, 18, 21, 43, 108, 129, 131, 202
+    \subitem coordinate system, 47
+    \subitem equilibrium geometry, 44
+    \subitem first-order, 43, 46, 131
+    \subitem iterations, 135
+    \subitem line search, 135
+    \subitem mode following, 135
+    \subitem number of iterations, 129
+    \subitem preoptimization, 48
+    \subitem rejected step, 135
+    \subitem second-order, 43, 44, 131, 135
+    \subitem solvation, 108
+    \subitem symmetry breaking, 45, 136
+    \subitem transition state, 43, 49, 138
+    \subitem trust region, 46
   \item geometry walk, 43, 129, 131
   \item {\normalfont  \ttfamily  {*GETSGY}}, 49, 74, 79, 82, 85, 216
   \item {\normalfont  \ttfamily  {.GFACDI}}, 153
@@ -503,24 +542,34 @@
   \item {\normalfont  \ttfamily  {.HESPUN}}, 27, 231, 232
   \item Hessian, 8, 27, 45, 50, 54, 61, 66, 82, 89, 129, 131, 142, 
 		205, 206, 222, 223, 229, 231, 232, 274
-  \item Hessian eigenvalue, 54, 55
-  \item Hessian index, 54, 55, 134, 136, 139, 143
-  \item Hessian reinitialization, 134, 136, 137
-  \item Hessian update, 46, 131, 134
-    \subitem Bofill's update, 52
-  \item Hessian, initial, 134
+    \subitem diagonal, 134
+    \subitem eigenvalue, 54, 55
+    \subitem index, 54, 55, 136, 139, 143
+    \subitem initial, 134
+    \subitem model, 134
+    \subitem reinitialization, 134, 136, 137
+  \item Hessian update, 131, 134
+    \subitem BFGS, 46, 131, 132
+    \subitem Bofill's update, 52, 132, 138
+    \subitem DFP, 133
+    \subitem MS, 137
+    \subitem PSB, 137
+    \subitem rank one, 137
+    \subitem SR1, 137
   \item HF, 28, 34, 99, 105, 128, 129, 131, 167, 179, 183--186, 212
+    \subitem open shell, 185
+    \subitem quadratic convergent, 185
   \item {\normalfont  \ttfamily  {.HF}}, 179, 183, 235
   \item {\normalfont  \ttfamily  {*HF INPUT}}, 178, 183
   \item {\normalfont  \ttfamily  {.HF OCCUPATION}}, 184--186
   \item HF occupation, 20, 34, 166, 167, 184, 186
-  \item HF, quadratic convergent, 185
   \item {\normalfont  \ttfamily  {.HIRPA}}, 234
   \item hydrogen, 58
   \item hyperfine coupling, 79, 80, 106, 240
   \item hyperpolarizabilities, 255
-  \item hyperpolarizabilities, dipole, 252
-  \item hyperpolarizabilities, first, 252
+    \subitem dipole, 252
+    \subitem first, 252
+    \subitem second, 255
 
   \indexspace
 
@@ -536,16 +585,14 @@
   \item {\normalfont  \ttfamily  {.INACTIVE ORBITALS}}, 183
   \item {\normalfont  \ttfamily  {.INCREMENT FACTOR}}, 198
   \item {\normalfont  \ttfamily  {.INDEX}}, 54, 55, 143
-  \item {\normalfont  \ttfamily  {.INERSF}}, 40, 108
-  \item {\normalfont  \ttfamily  {.INERSFINAL}}, 198
-  \item {\normalfont  \ttfamily  {.INERSI}}, 40, 108, 198
-  \item {\normalfont  \ttfamily  {.INERSINITIAL}}, 197, 198
-  \item inertial   polarization, 197
+  \item {\normalfont  \ttfamily  {.INERSFINAL}}, 40, 108, 198
+  \item {\normalfont  \ttfamily  {.INERSINITIAL}}, 40, 108, 197, 198
+  \item inertial polarization, 197
   \item {\normalfont  \ttfamily  {.INIMOD}}, 52, 134, 135
   \item {\normalfont  \ttfamily  {.INIRED}}, 134, 135
   \item {\normalfont  \ttfamily  {.INITEV}}, 134, 135
-  \item {\normalfont  \ttfamily  {.INITHE}}, 134--136, 138
-  \item initial Hessian, 134, 135
+  \item {\normalfont  \ttfamily  {.INITHE}}, 134, 136, 138
+  \item initial Hessian, 134
   \item {\normalfont  \ttfamily  {.INPTES}}, 128, 154, 203, 233
   \item input card, 22
   \item install directory, 10
@@ -560,17 +607,16 @@
     \subitem supported platforms, 9
     \subitem test suite, 11
     \subitem troubleshooting, 12
-  \item integral direct, 245
+  \item integral direct, 241, 245
   \item integral label, 149
   \item integral presorting, 3
   \item integral screening, 100, 101, 164
   \item integral sort, 130, 159, 162
   \item integral transformation, 3, 33, 200
-  \item integral-direct techniques, 241
   \item {\normalfont  \ttfamily  {.INTEGRALS}}, 129
   \item {\normalfont  \ttfamily  {.INTERFACE}}, 179, 200
   \item interface file, 179
-  \item intgral screening, 164
+  \item INTGRL, 166
   \item {\normalfont  \ttfamily  {.INTPRI}}, 209, 212, 217, 228, 230
   \item intrinsic reaction coordinate, 27, 44, 55, 129, 144, 147
   \item {\normalfont  \ttfamily  {.INTSKI}}, 218, 230
@@ -618,14 +664,15 @@
   \item {\normalfont  \ttfamily  {.LEVEL}}, 200
   \item limits, 14
   \item {\normalfont  \ttfamily  {.LINE S}}, 135
+  \item line serach, 135
   \item {\normalfont  \ttfamily  {*LINEAR}}, 235, 238
   \item {\normalfont  \ttfamily  {.LINEAR}}, 204
   \item linear dependence, 192
   \item linear molecule, 240
   \item linear response, 66, 70, 71, 92, 93, 105, 202, 203, 210, 211, 
 		213, 221, 233, 235, 238, 250, 258
-  \item linear response, coupled cluster, 260
-  \item linear response, excited states, 270
+    \subitem Coupled Cluster, 260
+    \subitem excited states, 270
   \item {\normalfont  \ttfamily  {*LINRES}}, 74, 79, 82
   \item Linux, 8
   \item {\normalfont  \ttfamily  {.LISKIP}}, 245
@@ -639,9 +686,6 @@
   \item {\normalfont  \ttfamily  {.M-BFGS}}, 135
   \item {\normalfont  \ttfamily  {.M-PSB}}, 135
   \item {\normalfont  \ttfamily  {.M1SKIP}}, 245
-  \item M\o   ller-Plesset, 185
-  \item M\o ller-Plesset, 28, 34, 35, 131, 142, 167, 179, 183, 184, 
-		186, 187
   \item {\normalfont  \ttfamily  {.MAGMOM}}, 154, 155
   \item {\normalfont  \ttfamily  {.MAGNET}}, 73, 204, 205
   \item magnetic circular dichroism, 237, 265
@@ -650,8 +694,7 @@
   \item magnetic properties, 241
   \item magnetizability, 8, 18, 69, 72, 73, 103, 106, 118, 204, 205, 
 		214, 222
-  \item magnetizability     polarizability, 276
-  \item magnetizability polarizability, 27
+  \item magnetizability polarizability, 27, 276
   \item mailing list, 3, 14, 15
   \item Makefile, 9
   \item Makefile.config, 9--11
@@ -666,7 +709,7 @@
   \item master, 100, 141, 142
   \item master program, 11
   \item {\normalfont  \ttfamily  {.MAX CI}}, 189
-  \item {\normalfont  \ttfamily  {.MAX DAMPING}}, 198
+  \item {\normalfont  \ttfamily  {.MAX DAMPING}}, 199
   \item {\normalfont  \ttfamily  {.MAX DIIS ITERATIONS}}, 185
   \item {\normalfont  \ttfamily  {.MAX ERROR VECTORS}}, 185
   \item {\normalfont  \ttfamily  {.MAX IT}}, 56, 58, 66, 89, 129, 135, 
@@ -712,7 +755,8 @@
   \item {\normalfont  \ttfamily  {.MINIMIZE}}, 129
   \item {\normalfont  \ttfamily  {.MIXFRE}}, 252, 253, 255, 257
   \item {\normalfont  \ttfamily  {.MODE}}, 51--53, 135, 143, 144
-  \item mode following, 43, 54
+  \item mode following, 43, 54, 135
+  \item model Hessian, 134
   \item {\normalfont  \ttfamily  {.MODFOL}}, 54, 145
   \item {\normalfont  \ttfamily  {.MODHES}}, 135
   \item modifications, 15
@@ -737,7 +781,7 @@
 		122, 179, 183, 235, 246
   \item {\normalfont  \ttfamily  {.MP2 FROZEN}}, 187
   \item {\normalfont  \ttfamily  {*MP2 INPUT}}, 178, 187
-  \item MPI, 100, 130, 142
+  \item MPI, 10, 11, 100, 130, 142
   \item {\normalfont  \ttfamily  {.MULLIKEN}}, 195
   \item Mulliken population analysis, 64, 195
   \item multipole expansion, 105, 107
@@ -746,7 +790,9 @@
   \item MXAOVC, 14
   \item {\normalfont  \ttfamily  {.MXDIIS}}, 246
   \item {\normalfont  \ttfamily  {.MXLRV}}, 246
-  \item M{\o}ller-Plesset, second-order, 246
+  \item M{\o}ller-Plesset
+    \subitem second-order, 28, 34, 35, 131, 142, 167, 179, 183--187, 
+		246
 
   \indexspace
 
@@ -766,10 +812,9 @@
   \item {\normalfont  \ttfamily  {.NETMO}}, 196
   \item new code, 15
   \item {\normalfont  \ttfamily  {.NEWRD}}, 225
-  \item {\normalfont  \ttfamily  {.NEWTON}}, 131, 136, 138, 145
+  \item {\normalfont  \ttfamily  {.NEWTON}}, 131, 135, 138, 145
   \item Newton-Raphson step, 145
-  \item {\normalfont  \ttfamily  {.NEXCIT}}, 213
-  \item {\normalfont  \ttfamily  {.NEXCITA}}, 84
+  \item {\normalfont  \ttfamily  {.NEXCIT}}, 84, 213
   \item {\normalfont  \ttfamily  {.NEXVAL}}, 221
   \item {\normalfont  \ttfamily  {*NMDDRV}}, 140
   \item {\normalfont  \ttfamily  {.NMDDRV}}, 129
@@ -794,8 +839,7 @@
   \item {\normalfont  \ttfamily  {.NODBDR}}, 209
   \item {\normalfont  \ttfamily  {.NODC}}, 211, 214, 218, 223, 230
   \item {\normalfont  \ttfamily  {.NODDY}}, 209, 218
-  \item node, 20, 100
-  \item node.x, 11
+  \item node, 11, 20, 100
   \item {\normalfont  \ttfamily  {.NODES}}, 100, 141, 142
   \item {\normalfont  \ttfamily  {.NODIFC}}, 204, 205
   \item {\normalfont  \ttfamily  {.NODIHE}}, 136, 137
@@ -830,7 +874,7 @@
   \item {\normalfont  \ttfamily  {.NOREIN}}, 136
   \item {\normalfont  \ttfamily  {.NORHS}}, 229
   \item norm of gradient, 47, 132
-  \item norm of step, 132
+  \item norm of step, 47, 132
   \item {\normalfont  \ttfamily  {.NORMAL}}, 141, 145
   \item normal mode, 87, 89
   \item {\normalfont  \ttfamily  {.NOROT}}, 227
@@ -873,7 +917,8 @@
   \item {\normalfont  \ttfamily  {.NUCPOT}}, 155, 156
   \item {\normalfont  \ttfamily  {*NUCREP}}, 49, 83, 222
   \item {\normalfont  \ttfamily  {.NUMERI}}, 89, 146
-  \item numerical derivatives, coupled cluster, 272
+  \item numerical derivatives
+    \subitem coupled cluster, 272
   \item numerical differentiation, 66, 86, 87, 89, 102, 142, 146
   \item numerical gradient, 43, 47, 60
   \item {\normalfont  \ttfamily  {.NUMGD}}, 272
@@ -890,11 +935,12 @@
   \item {\normalfont  \ttfamily  {.OMEINP}}, 259
   \item one-electron integral, 129, 148
   \item one-electron properties, 248
-  \item one-electron properties, excited states, coupled cluster, 268
+    \subitem excited state
+      \subsubitem Coupled Cluster, 268
   \item {\normalfont  \ttfamily  {*ONEINT}}, 49, 83, 107, 154, 160, 222
   \item {\normalfont  \ttfamily  {.OPEN SHELL}}, 184, 185
   \item open shell, 183
-  \item open-shell HF, 179, 185
+    \subitem HF, 179, 185
   \item {\normalfont  \ttfamily  {.OPERAT}}, 248, 251--253, 255--257, 
 		260, 261, 263, 265, 267, 268, 271
   \item optical rectification, 253
@@ -925,13 +971,16 @@
   \item {\normalfont  \ttfamily  {.ORBSFT}}, 234
   \item {\normalfont  \ttfamily  {.ORBSPC}}, 235
   \item {\normalfont  \ttfamily  {.ORFREQ}}, 252, 253
-  \item orthonormalization, Gram-Schmidt, 193
-  \item orthonormalization, symmetric, 194
+  \item orthonormalization
+    \subitem Gram--Schmidt, 193
+    \subitem symmetric, 194
   \item oscillator strength, 212
-  \item oscillator strength, coupled cluster, 260
-  \item oscillator strength, excited states, coupled cluster, 267
-  \item overlap, half-differentiated, 154, 160, 209
-  \item overlap, magnetic field derivative, 157, 158
+    \subitem Coupled Cluster, 260
+    \subitem excited states
+      \subsubitem Coupled Cluster, 267
+  \item overlap
+    \subitem half-differentiated, 154, 160, 209
+    \subitem magnetic field derivative, 157, 158
 
   \indexspace
 
@@ -947,33 +996,35 @@
   \item patches, 14, 15
   \item performance of integral program, 169
   \item perturbation-dependent basis set, 103, 106
+  \item PES, 43
   \item {\normalfont  \ttfamily  {.PHASEO}}, 157, 206
   \item {\normalfont  \ttfamily  {.PHOSPHORESCENCE}}, 237
   \item phosphoresence, 96, 237
-  \item {\normalfont  \ttfamily  {.PHPRES}}, 235
-  \item {\normalfont  \ttfamily  {.PHPRESIDUAL}}, 188, 190
-  \item pin-orbit mean-field, 116
+  \item {\normalfont  \ttfamily  {.PHPRESIDUAL}}, 188, 190, 234, 235
   \item Placzek approximation, 64
   \item PLTORB, 26
   \item {\normalfont  \ttfamily  {.PLUS COMBINATIONS}}, 181, 192
   \item Pockels effect, electro optical, 253
   \item {\normalfont  \ttfamily  {.POINTS}}, 152, 157, 215
   \item {\normalfont  \ttfamily  {.POLARI}}, 66, 71, 131, 206
-  \item polarizabilities, coupled cluster, 250
-  \item polarizabilities, frequency-dependent, 250, 270
-  \item polarizabilities, static, 250
   \item polarizability, 45, 64, 66, 68, 70, 71, 89, 93, 97, 118, 202, 
 		206, 210
+    \subitem Coupled Cluster, 250
+    \subitem frequency-dependent, 250, 270
+    \subitem static, 250
   \item polarization function, 173
   \item polarization propagator, 70, 73, 84, 118, 233, 235
   \item pole of response function, 94
   \item {\normalfont  \ttfamily  {.POPANA}}, 206
   \item {\normalfont  \ttfamily  {*POPULATION ANALYSIS}}, 178, 195
   \item population analysis, 45, 63, 195, 196, 206
+    \subitem Mulliken, 64, 195
   \item porting, 8
-  \item potential energy at nucleus, 156
+  \item potential energy
+    \subitem at nucleus, 156
+  \item potential energy surface, 43
   \item {\normalfont  \ttfamily  {.PREOPT}}, 136
-  \item preoptimization, 48, 137
+  \item preoptimization, 48, 136
   \item {\normalfont  \ttfamily  {.PRESORT}}, 130, 159, 162, 200
   \item primitive basis function, 170
   \item primitive orbitals, 14, 162
@@ -987,6 +1038,12 @@
   \item {\normalfont  \ttfamily  {.PRINTLEVELS}}, 197
   \item {\normalfont  \ttfamily  {.PROPAV}}, 235
   \item {\normalfont  \ttfamily  {.PROPERTIES}}, 130
+  \item properties
+    \subitem first-order, 268
+    \subitem fourth-order, 255
+    \subitem one-electron, 268
+    \subitem second-order, 270
+    \subitem third-order, 252
   \item property average, 235
   \item property gradient, 216
   \item property integral, 149
@@ -1007,14 +1064,12 @@
   \item {\normalfont  \ttfamily  {.QRREST}}, 235
   \item {\normalfont  \ttfamily  {.QUADMO}}, 236
   \item {\normalfont  \ttfamily  {*QUADRA}}, 236
-  \item quadratic response, 92, 95, 105, 235--237
-  \item quadratic response, coupled cluster, 267
-  \item quadrict response, 252
+  \item quadratic response, 92, 95, 105, 235--237, 252, 267
   \item {\normalfont  \ttfamily  {.QUADRP}}, 196
   \item {\normalfont  \ttfamily  {.QUADRU}}, 68, 157, 206, 215, 249, 
 		268
   \item quadrupole moment, 68, 157, 196, 206, 215, 249, 268
-  \item quadrupole moment, trcaeless, 160
+    \subitem traceless, 160
   \item quadrupole operator, 236
   \item {\normalfont  \ttfamily  {.QUASUM}}, 157
   \item questions, 3
@@ -1040,6 +1095,7 @@
   \item RAS3 orbital space, 182
   \item {\normalfont  \ttfamily  {.RAS3 SPACE}}, 182
   \item RASSCF, 19, 28, 34, 36, 183
+  \item rational function, 137
   \item {\normalfont  \ttfamily  {.RATLIM}}, 146
   \item {\normalfont  \ttfamily  {.RD}}, 228
   \item {\normalfont  \ttfamily  {.RDVECS}}, 225
@@ -1052,13 +1108,15 @@
   \item redundant internal coordinates, 46, 47, 131, 137, 138
   \item reference literature, 2
   \item reflection, 167
-  \item refractive index, intensity dependent, 239
+  \item refractive index
+    \subitem intensity dependent, 239
   \item {\normalfont  \ttfamily  {.REJECT}}, 146
   \item {\normalfont  \ttfamily  {.REJECT THRESHOLD}}, 199
   \item rejected geometry step, 135, 137, 146
   \item {\normalfont  \ttfamily  {.REJINI}}, 137
   \item relative translation energy, 59
-  \item relativistic corrections, one-electron, 249, 269
+  \item relativistic corrections
+    \subitem one-electron, 249, 269
   \item {\normalfont  \ttfamily  {*RELAX}}, 49, 74, 79, 83, 223
   \item relaxed core, 34, 40, 184
   \item relaxed core hole, 187, 189, 191
@@ -1074,29 +1132,34 @@
   \item {\normalfont  \ttfamily  {*RESPON}}, 49, 83, 224
   \item {\normalfont  \ttfamily  {.RESPONSE}}, 130
   \item response, 21
+    \subitem cubic, 20, 92, 97, 105, 238, 239, 255
+    \subitem linear, 66, 70, 71, 92, 93, 105, 202, 203, 210, 211, 213, 
+		221, 233, 235, 238, 250, 258, 260, 270
+    \subitem quadratic, 92, 105, 235--237, 252, 267
+    \subitem triplet, 105
   \item response function, 18, 92, 241
   \item responsibility, 15
   \item {\normalfont  \ttfamily  {.RESTART}}, 33, 146, 179, 207, 247
   \item restart, 26, 33--35
-  \item restart, excitation energy, 236
-  \item restart, geometry optimization, 146
-  \item restart, linear response, 236
-  \item restart, wave function, 179
+    \subitem excitation energy, 236
+    \subitem geometry optimization, 146
+    \subitem linear response, 236
+    \subitem wave function, 179
   \item {\normalfont  \ttfamily  {.RESTLR}}, 236
   \item {\normalfont  \ttfamily  {.RESTPP}}, 236
   \item restricted-unrestricted method, 80, 240
   \item {\normalfont  \ttfamily  {.RETURN}}, 164, 219, 231
   \item {\normalfont  \ttfamily  {.REUSE}}, 146
-  \item {\normalfont  \ttfamily  {.RF}}, 136, 138, 139
+  \item {\normalfont  \ttfamily  {.RF}}, 135, 137--139
   \item right-hand side, 216
   \item ROA, 27, 64, 72, 81, 86--88, 90, 142, 202, 209, 210, 231, 232, 
 		274
-  \item root, CI, 180
+  \item root
+    \subitem CI, 180
   \item Roothaan iteration, 184
   \item {\normalfont  \ttfamily  {.ROOTS}}, 236, 239
   \item rotation, 167
   \item rotation constant, 61
-  \item rotational  invariance, 227
   \item rotational excitation, 59
   \item rotational g tensor, 69, 72, 75, 118, 204, 205
   \item rotational invariance, 227, 228
@@ -1127,7 +1190,7 @@
   \item {\normalfont  \ttfamily  {.S2MAGT}}, 158
   \item {\normalfont  \ttfamily  {.SADDLE}}, 50, 138
   \item saddle-point, 51
-  \item sadlej basis set, 175
+  \item sadlej basis set, 165, 175
   \item {\normalfont  \ttfamily  {.SCALE}}, 146
   \item SCF, 28, 34, 99, 105, 128, 129, 131, 167, 179, 183--186, 212
   \item {\normalfont  \ttfamily  {.SCF}}, 179, 183
@@ -1144,14 +1207,14 @@
   \item {\normalfont  \ttfamily  {.SECMOM}}, 159, 249, 269
   \item {\normalfont  \ttfamily  {.SECOND}}, 231
   \item second harmonic generation, 238, 254, 256
-  \item second harmonic generation, electric field induced, 256
-  \item second hyperpolarizabilities, 255
-  \item second hyperpolarizability, 20, 97
+    \subitem electric field induced, 256
+  \item second hyperpolarizability, 20, 97, 255
   \item second moment of charge, 249, 269
   \item second residues of cubic response functions, 270
   \item second-moment, 159
   \item second-order optimization, 43, 44, 131, 139, 142
-  \item second-order properties, excited states, 270
+  \item second-order properties
+    \subitem excited states, 270
   \item {\normalfont  \ttfamily  {.SELECT}}, 159, 181, 207, 227
   \item {\normalfont  \ttfamily  {.SELEXC}}, 260, 267, 269
   \item {\normalfont  \ttfamily  {.SELSTA}}, 261--264, 266, 271
@@ -1171,7 +1234,7 @@
   \item single residue, 203, 235, 237, 239
   \item singlet state, 192
   \item singlet-triplet transition, 237
-  \item SIRIUS.RST, 26, 33, 35
+  \item SIRIUS.RST, 26, 33--36
   \item {\normalfont  \ttfamily  {.SIRPR4}}, 220
   \item {\normalfont  \ttfamily  {.SIRPR6}}, 220
   \item {\normalfont  \ttfamily  {.SKIP}}, 161, 163, 164, 210--213, 
@@ -1180,6 +1243,9 @@
   \item slave program, 11
   \item {\normalfont  \ttfamily  {.SNGPRP}}, 240
   \item {\normalfont  \ttfamily  {.SOFOCK}}, 164
+  \item solvation
+    \subitem geometry optimization, 108
+    \subitem non-equilibrium, 108
   \item {\normalfont  \ttfamily  {.SOLVEN}}, 161
   \item {\normalfont  \ttfamily  {*SOLVENT}}, 107, 177, 197
   \item SOPPA, 70, 73, 75--78, 84, 93, 118, 202--205, 207, 233, 235
@@ -1203,6 +1269,7 @@
   \item spin-dipole, 80, 158, 159, 208, 226--228
   \item {\normalfont  \ttfamily  {.SPIN-O}}, 159, 160, 235
   \item spin-orbit, 8, 235, 237
+  \item spin-orbit mean-field, 116
   \item {\normalfont  \ttfamily  {.SPIN-R}}, 208
   \item spin-rotation constant, 72, 76, 77, 118, 208, 215
   \item {\normalfont  \ttfamily  {*SPIN-S}}, 78, 79
@@ -1212,8 +1279,7 @@
 		222, 226--229
   \item {\normalfont  \ttfamily  {.SQHDOR}}, 160
   \item {\normalfont  \ttfamily  {.STARTHDIAGONAL}}, 40, 181
-  \item starting orbital, 184
-  \item starting orbitals, 34--36
+  \item starting orbitals, 34--36, 184
   \item {\normalfont  \ttfamily  {.STARTOLDCI}}, 40, 182
   \item {\normalfont  \ttfamily  {.STATE}}, 180, 188, 190, 191
   \item {\normalfont  \ttfamily  {.STATIC}}, 252, 254, 255, 257, 
@@ -1221,7 +1287,6 @@
   \item {\normalfont  \ttfamily  {.STEEPD}}, 138
   \item steepest descent, 55, 138
   \item {\normalfont  \ttfamily  {*STEP CONTROL}}, 177, 198
-  \item step norm, 47
   \item {\normalfont  \ttfamily  {.STEP T}}, 132, 133, 138
   \item {\normalfont  \ttfamily  {.STOP}}, 179, 210--212, 214, 215, 220, 
 		222--224, 226, 228, 229, 231
@@ -1242,15 +1307,15 @@
   \item {\normalfont  \ttfamily  {.SYMMETRIC ORTHONORMALIZATION}}, 194
   \item {\normalfont  \ttfamily  {.SYMMETRY}}, 183
   \item symmetry, 1, 131, 166, 183, 190
-  \item symmetry breaking, 45, 136, 139
-  \item symmetry detection, 23, 166, 167
-  \item symmetry element, 24
-  \item symmetry generator, 166--168
-  \item symmetry group, 24, 166, 194
+    \subitem automatic detection, 23, 166, 167
+    \subitem breaking, 45, 136, 139
+    \subitem element, 24
+    \subitem generator, 166--168
+    \subitem group, 24, 166, 194
   \item symmetry-dependent center, 24
   \item symmetry-distinct atom, 166, 169
   \item {\normalfont  \ttfamily  {.SYMTES}}, 224
-  \item {\normalfont  \ttfamily  {.SYMTHR}}, 139, 162, 167
+  \item {\normalfont  \ttfamily  {.SYMTHR}}, 138, 162, 167
 
   \indexspace
 
@@ -1273,12 +1338,12 @@
   \item {\normalfont  \ttfamily  {.THQLIN}}, 199
   \item {\normalfont  \ttfamily  {.THQMIN}}, 199
   \item {\normalfont  \ttfamily  {.THRCGR}}, 191
-  \item three-photon absorption, 239
-  \item three-photon transition moment, 263
+  \item three-photon
+    \subitem absorption, 239
+    \subitem transition moment, 263
   \item {\normalfont  \ttfamily  {.THRENR}}, 247
-  \item {\normalfont  \ttfamily  {.THRESH}}, 163, 211, 214, 222, 226, 
-		228, 229
-  \item {\normalfont  \ttfamily  {.THRESHOLD}}, 181, 185, 191
+  \item {\normalfont  \ttfamily  {.THRESH}}, 163, 181, 185, 191, 211, 
+		214, 222, 226, 228, 229
   \item {\normalfont  \ttfamily  {.THREXC}}, 259
   \item {\normalfont  \ttfamily  {.THRFAC}}, 164
   \item {\normalfont  \ttfamily  {.THRLEQ}}, 247
@@ -1286,7 +1351,7 @@
   \item {\normalfont  \ttfamily  {.THRPWF}}, 181, 197
   \item {\normalfont  \ttfamily  {.THRQ}}, 163
   \item {\normalfont  \ttfamily  {.THRSSY}}, 194
-  \item {\normalfont  \ttfamily  {.TIGHT STEP CONTROL}}, 199
+  \item {\normalfont  \ttfamily  {.TIGHT STEP CONTROL}}, 200
   \item {\normalfont  \ttfamily  {.TIME}}, 164, 220, 231
   \item {\normalfont  \ttfamily  {.TITLE}}, 179
   \item {\normalfont  \ttfamily  {.TOLERANCE}}, 147, 200
@@ -1298,21 +1363,22 @@
   \item {\normalfont  \ttfamily  {*TRANSFORMATION}}, 33, 159, 162, 178, 
 		200
   \item transition moment, 84, 94, 97, 118, 203, 235--237
-  \item transition moment, coupled cluster, 260
-  \item transition moment, excited states, 237
-  \item transition moment, excited states, coupled cluster, 267
-  \item transition moment, second-order, 261
-  \item transition moment, third-order, 263
-  \item transition moment, three-photon, 263
-  \item transition moment, two-photon, 261
-  \item transition moments, one-photon, 265
-  \item transition moments, two-photon, 265
-  \item transition state, 43, 49, 55, 58, 143, 145, 202
-  \item transition strength, coupled cluster, 260
-  \item transition strength, excited states, coupled cluster, 267
-  \item transition strength, third-order, 263
-  \item transition strength, three-photon, 263
-  \item transition strength, two-photon, 261
+    \subitem Coupled Cluster, 260
+    \subitem excited states, 237
+      \subsubitem Coupled Cluster, 267
+    \subitem one-photon, 265
+    \subitem second-order, 261
+    \subitem third-order, 263
+    \subitem three-photon, 263
+    \subitem two-photon, 96, 237, 261, 265
+  \item transition state, 43, 49, 55, 58, 138, 143, 145, 202
+  \item transition strength
+    \subitem Coupled Cluster, 260
+    \subitem excited states
+      \subsubitem Coupled Cluster, 267
+    \subitem third-order, 263
+    \subitem three-photon, 263
+    \subitem two-photon, 261
   \item transition strengths, 265
   \item translational invariance, 227, 228
   \item {\normalfont  \ttfamily  {.TRAPRI}}, 220
@@ -1333,9 +1399,10 @@
   \item {\normalfont  \ttfamily  {.TRUSTR}}, 139
   \item {\normalfont  \ttfamily  {.TSTDEN}}, 249
   \item two-electron integral, 128, 129, 148, 160, 164, 200
-  \item two-photon amplitude, 95
-  \item two-photon transition moment, 237, 261
-  \item two-photon transition moment between excited states, 239, 270
+  \item two-photon
+    \subitem amplitude, 95
+    \subitem transition moment, 96, 237, 261
+      \subsubitem excited states, 239, 270
   \item {\normalfont  \ttfamily  {*TWOEXP}}, 49, 83, 229
   \item {\normalfont  \ttfamily  {.TWOH1}}, 220
   \item {\normalfont  \ttfamily  {*TWOINT}}, 164
@@ -1378,7 +1445,7 @@
   \item {\normalfont  \ttfamily  {.VR-SYM}}, 140
   \item {\normalfont  \ttfamily  {.VR-VIB}}, 139, 140
   \item VRML, 139, 140
-  \item {\normalfont  \ttfamily  {.VRML}}, 140
+  \item {\normalfont  \ttfamily  {.VRML}}, 139, 140
   \item {\normalfont  \ttfamily  {.VROA}}, 66, 88, 209
 
   \indexspace
@@ -1401,8 +1468,7 @@
 
   \indexspace
 
-  \item Z-matrix, 23, 24
-  \item Z-matrix input, 165, 166, 169, 171
+  \item Z-matrix input, 23, 24, 165, 166, 169, 171
   \item {\normalfont  \ttfamily  {.ZCMVAL}}, 161, 162
   \item {\normalfont  \ttfamily  {.ZERGRD}}, 144, 147
   \item zero-point vibrational corrections, 112

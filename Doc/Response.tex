@@ -14,7 +14,8 @@ appear.
 
 In addition, SOPPA\index{SOPPA}\index{polarization propagator}
 (Second-Order Polarization Propagator 
-approximation) for the calculation of linear response\index{linear response}
+approximation) for the calculation of linear response
+\index{linear response}\index{response!linear}
 properties are requested in this input section. The current
 implementation of the SOPPA method is described 
 in Ref.~\cite{mjpekdtehjajjojcp}. Note that a SOPPA calculation
@@ -56,7 +57,7 @@ PHP is a subblock of the CI matrix which is calculated explicitly
 in order to obtain improved CI trial vectors compared to the
 straight Davidson algorithm\cite{erdjcp17}.  The configurations
 corresponding to 
-the lowest diagonal elements are selected, unless .PHPRESIDUAL is
+the lowest diagonal elements are selected, unless \Key{PHPRESIDUAL} is
 specified. MAXPHP is the maximum dimension of PHP, the 
 actual dimension will be less if MAXPHP will split degenerate configurations.
  
@@ -85,7 +86,7 @@ $N_e=\langle0\mid [r,p] \mid0\rangle$ provided that dipole length and
 velocity integrals are available on the property integral file 
 (calculated with \Sec{*HERMIT} options \Key{DIPLEN} and \Key{DIPVEL}).
 The calculated quantity gives a measure of the quality of the basis
-set\index{basis set quality}.
+set\index{basis set!quality}.
 
 \item{\Key{OPTORB}}
 Orbital trial vectors are calculated with optimal orbital
@@ -94,15 +95,15 @@ algorithm \cite{tuhjahjajpjjcp84}.
 
 \item{\Key{ORBSFT}}\\
 \verb|READ *, ORBSFT|\\
-Change the amount for shifting the orbital diagonal\index{orbital
-diagonal Hessian} of the MCSCF Hessian.
+Change the amount for shifting the orbital
+diagonal\index{orbital diagonal Hessian} of the MCSCF Hessian.
 May be used if there is a large number of negative eigenvalues.
 Default is $10^{-4}$. 
 
 \item{\Key{ORBSPC}}
 Calculation with only orbital operators. 
 
-\item{\Key{PHPRES}}
+\item{\Key{PHPRESIDUAL}}
 Select configurations for PHP matrix based on largest residual
 rather than lowest diagonal elements.
 
@@ -115,10 +116,11 @@ label of the operator given in the integral property file.
 (See section \ref{ch:hermit}.)
 
 \item{\Key{QRREST}}
-Restart quadratic response\index{quadratic response} calculation.
+Restart quadratic response\index{quadratic response}\index{response!quadratic}
+calculation.
 
 \item{\Key{RSPCI}}
-Configuration interaction\index{configuration interaction}\index{CI}
+Configuration interaction\index{Configuration Interaction}\index{CI}
 response calculation. 
 
 \item{\Key{SOPPA}}
@@ -126,7 +128,7 @@ Required, no defaults. \\
 The SOPPA\index{SOPPA}\index{polarization propagator} flag requires that
 the preceding {\sir} calculation has generated the MP2 correlation
 coefficients and written them to disk (set \Key{RUN RESPONSE} in \Sec{*DALTON}
-input as well as \Key{HF} and \Key{MP2} in \Sec{*WAVE FUNCTION}). See
+input as well as \Key{HF} and \Key{MP2} in \Sec{*WAVE FUNCTIONS}). See
 example input in Chapter~\ref{ch:starting}.
 
 \item{\Key{SOPW4}}
@@ -144,17 +146,18 @@ operators must be used in a response calculation
 
 \subsection{Linear reponse calculation: \Sec{LINEAR}}
 
-A\index{linear response} linear response \cite{jodlypjjcp91,pjhjajjojcp89} 
-calculation is performed for a given choice of
-operators, $\langle\!\langle A; B \rangle\!\rangle_{\omega}$.
+A\index{linear response}\index{response!linear} linear response
+\cite{jodlypjjcp91,pjhjajjojcp89} calculation is performed for a given
+choice of operators, $\langle\!\langle A; B
+\rangle\!\rangle_{\omega}$.
 
 \begin{description}
 
 \item{\Key{SINGLE}}
 The single residue\index{single residue} of the linear
-response\index{linear response} function is computed. 
-Residues of a linear response function correspond to transition
-moments\index{transition moment}.
+response\index{linear response}\index{response!linear} function is
+computed. Residues of a linear response function correspond to
+transition moments\index{transition moment}.
 
 \item{\Key{DIPMAG}}
 Sets $A$ and $B$ to angular momentum operators\index{angular momentum}.
@@ -203,7 +206,7 @@ Sets $A$ and $B$ to a given operator with label; LABEL.
 Sets $A$ and $B$ to the quadrupole\index{quadrupole operator} operators.
 
 \item{\Key{RESTPP}}
-Restart\index{restart, excitation energy} of response
+Restart\index{restart!excitation energy} of response
 calculation. This can only be used if the root which is 
 specified is the same which was used \textit{last} in the previous
 response calculation.
@@ -221,7 +224,7 @@ frequencies\index{frequency}. Two lines following
 this option must contain 1) The number of frequencies, 2) Frequencies;
  
 \item{\Key{RESTLR}}
-Restart\index{restart, linear response} of response calculation. This
+Restart\index{restart!linear response} of response calculation. This
 can only be used if the  
 operator specified is the same which was used \textit{last} in the previous
 response calculation.
@@ -235,7 +238,7 @@ response calculation.
 \subsection{Quadratic response calculation: \Sec{QUADRA}}
 
 Calculation of third-order properties as quadratic response
-functions\index{quadratic response}.
+functions\index{quadratic response}\index{response!quadratic}.
 $A,B$, and $C$-named options refer to the operators in the quadratic
 response function 
 $\langle\!\langle A;B,C \rangle\!\rangle_{\omega_b,\omega_c}$
@@ -245,16 +248,16 @@ $\langle\!\langle A;B,C \rangle\!\rangle_{\omega_b,\omega_c}$
 
 \item{\Key{SINGLE}}
 Computes the single residue\index{single residue} of the quadratic
-response function\index{quadratic response}.
+response function\index{quadratic response}\index{response!quadratic}.
 For the case of dipole operators this corresponds to two-photon
-transition moments\index{two-photon transition
-moment}\index{transition moment}.
+transition
+moments\index{two-photon!transition moment}\index{transition moment}\index{transition moment!two-photon}.
 
 \item{\Key{DOUBLE}}
 Computes the double residue\index{double residue} of the quadratic
-response function\index{quadratic response}.
+response function\index{quadratic response}\index{response!quadratic}.
 Double residues of the quadratic repsonse function correspond to transition
-moments between excited states\index{transition moment, excited states}. 
+moments between excited states\index{transition moment!excited states}. 
 
 \item{\Key{DIPLEN}}
 Sets $A$, $B$, and $C$ to dipole operators\index{dipole length}.
@@ -285,8 +288,7 @@ and in other cases both $B$ and $C$-frequencies are set.
 \item{\Key{PHOSPHORESCENCE}}
 Specifies a phosphoresence\index{phosphoresence} calculation, i.e.,
 the spin-orbit\index{spin-orbit} 
-induced singlet-triplet transition\index{singlet-triplet
-transition}. This keyword sets up the  
+induced singlet-triplet transition\index{singlet-triplet transition}. This keyword sets up the  
 calculation so that no further response input is required; the
 $A$ operator is set to the dipole operators\index{dipole length} and
 the $B$ operator  
@@ -312,9 +314,10 @@ option should be the label of the operator as it appears in the file
 AOPROPER.
 
 \item[\Key{ASPIN}, \Key{BSPIN}, \Key{CSPIN}]
-Spin information for quadratic response\index{quadratic response} calculations.
-The line following these options contains the spin rank\index{spin
-rank} of the operators 
+\index{quadratic response}\index{response!quadratic}
+Spin information for quadratic response calculations.
+The line following these options contains the spin
+rank\index{spin rank} of the operators 
 $A$, $B$, and $C$, respectively, 0 for singlet operators and 1 for triplet
 operators. If \Key{SINGLE} is specified, \Key{CSPIN} denotes the
 spin of the excited state. If \Key{DOUBLE} is specified,
@@ -331,8 +334,8 @@ The frequencies $\omega_b$ and $\omega_c$. Input as in
 Maximum number of iterations in this section.
 
 \item{\Key{MAXITO}}
-Maximum number of iterations in the optimal orbital\index{optimal
-orbital trial vector} algorithm 
+Maximum number of iterations in the optimal
+orbital\index{optimal orbital trial vector} algorithm 
 \cite{tuhjahjajpjjcp84}. 
 Default is 5.
 
@@ -351,19 +354,19 @@ Default is $10^{-3}$.
 
 \item{\Key{MAXITP}}
 Maximum number of iterations in solving the linear
-response\index{linear response} eigenvalue 
+response\index{linear response}\index{response!linear} eigenvalue 
 equations.
 
 \item{\Key{THCPP}}\\
 \verb|READ *, THCPP|\\
-Threshold for solving the linear response\index{linear response} eigenvalue equation. 
-Default is $10^{-3}$.
+Threshold for solving the linear response
+\index{linear response}\index{response!linear}
+eigenvalue equation. Default is $10^{-3}$.
 
 \end{description}
 
 \subsection{Cubic response calculation: \Sec{CUBIC}}
-Calculation of fourth-order properties as cubic response
-functions\index{cubic response} 
+Calculation of fourth-order properties as cubic response functions\index{cubic response}\index{response!cubic}
 \cite{pndjovhacpl242,djpnhajcp105,pndjhapdkrthhkcpl253}.
 $A,B$,$C$, and $D$-named options refer to the operators in the cubic
 response function 
@@ -387,17 +390,17 @@ computed, $\gamma(-3\omega;\omega,\omega,\omega)$ \cite{djpnylhajcp105}.
 
 \item{\Key{DC-SHG}}
 Only response functions connected to the static electric field-induced
-second harmonic generation\index{electric field induced SHG} are computed,
+second harmonic generation\index{electric field!induced SHG} are computed,
 $\gamma(-2\omega;\omega,\omega,0)$.
 
 \item{\Key{DC-KER}}
 Only response functions connected to the static electric field induced
-Kerr effect\index{electric field induced Kerr} are computed,
+Kerr effect\index{electric field!induced Kerr} are computed,
 $\gamma(-\omega;\omega,0,0)$.
 
 \item{\Key{IDRI}}
 Only response functions connected to the intensity dependent 
-refractive\index{refractive index, intensity dependent} index are computed,
+refractive\index{refractive index!intensity dependent} index are computed,
 $\gamma(-\omega;\omega,-\omega,\omega)$.
 
 \item{\Key{FREQUE}}\\
@@ -414,17 +417,16 @@ file.
 
 \item{\Key{SINGLE}}
 Computes the single residue\index{single residue} of the cubic
-response function\index{cubic response}.
+response function\index{cubic response}\index{response!cubic}.
 In the case of dipole operators this corresponds to
-three-photon absorption\index{three-photon absorption}.
+three-photon absorption\index{three-photon!absorption}.
 
 \item{\Key{DOUBLE}}
 Computes the double\index{double residue} residue of the cubic
-response function\index{cubic response}.
+response function\index{cubic response}\index{response!cubic}.
 In the case of dipole operators this corresponds to excited
 state polarizabilities and two-photon transition
-moments\index{two-photon transition moment between excited
-states}\index{excited state polarizability}
+moments\index{two-photon!transition moment!excited states}\index{excited state!polarizability} 
 between excited states \cite{djpnylhajcp105}.
 
 \item{\Key{DIPLEN}}

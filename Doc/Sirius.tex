@@ -207,19 +207,19 @@ input.
    Number of basis functions per symmetry.
 
 \item[\Key{CC}]
+  \index{Coupled Cluster}\index{CC}
   Coupled Cluster calculation. After a Hartree--Fock calculation
   the \cc\ program is called to do a Coupled Cluster (response) calculation.
   For further input options for the \cc\ program see
   Section~\ref{sec:ccgeneral}. 
-  \index{Coupled Cluster}\index{CC}
 
 \item[\Key{CC ONLY}] Skip the calculation of a Hartree--Fock wave
   function, and start directly in the Coupled Cluster part. Convenient
   for restarts in the Coupled Cluster module.
 
 \item[\Key{CI}]
-  Configuration interaction calculation.\index{CI}\index{configuration
-  interaction}
+  \index{CI}\index{Configuration Interaction}
+  Configuration interaction calculation.
 
 \item[\Key{FLAGS}]
   \verb"READ (LUINP,NMLSIR)" \\
@@ -229,7 +229,7 @@ input.
 
 \item[\Key{HF}]
   Restricted closed-shell or one open-shell 
-  Hartree--Fock\index{HF}\index{SCF}\index{Hartree--Fock}\index{open-shell HF} calculation.
+  Hartree--Fock\index{HF}\index{SCF}\index{Hartree--Fock}\index{open shell!HF} calculation.
 
 \item[\Key{INTERFACE}]
   Write the "SIRIFC" interface file\index{interface file} for post-processing programs.
@@ -238,7 +238,8 @@ input.
   Multiconfigurational self-consistent field (MCSCF) calculation.\index{MCSCF}
 
 \item[\Key{MP2}]
-  M{\o}ller-Plesset second-order perturbation theory\index{M\o ller-Plesset}\index{MP2} calculation.
+ \index{M{\o}ller-Plesset!second-order}\index{MP2}
+  M{\o}ller-Plesset second-order perturbation theory calculation.
 
 \item[\Key{NSYM}]
 %  Required, no defaults. \\
@@ -253,7 +254,7 @@ input.
   General {\sir} print level and default for all other print parameters.
 
 \item[\Key{RESTART}]
-  restart {\sir}\index{restart, wave function},
+  restart {\sir}\index{restart!wave function},
   the {\sir} restart file (\verb|SIRIUS.RST|) must be available
 
 \item[\Key{SCF}]
@@ -341,7 +342,7 @@ Options for a CI calculation.
   occupations after convergence.
 
 \item[\Key{CINO}]
-  Generate CI\index{CI}\index{configuration interaction} natural
+  Generate CI\index{CI}\index{Configuration Interaction} natural
   orbitals\index{natural orbital} for CI root
   number \kw{ISTACI},
   clear the \verb|SIRIUS.RST| file and write the orbitals with label \quotekw{NEWORB  }.
@@ -350,7 +351,7 @@ Options for a CI calculation.
 \item[\Key{CIROOTS}]
   Default: NROOCI = 1\\
   \kw{READ (LUINP,*) NROOCI} \\
-  Converge the lowest \kw{NROOCI} CI roots\index{root, CI} to threshold.
+  Converge the lowest \kw{NROOCI} CI roots\index{root!CI} to threshold.
 
 \item[\Key{DISKH2}]
   Active two-electron MO integrals on disk (see comments below).
@@ -367,7 +368,7 @@ Options for a CI calculation.
   (from the \quotekw{\Sec{OPTIMIZATION}} input group, see
   p.~\pageref{ref-optinp}).
 
-\item[\Key{THRESHOLD}]
+\item[\Key{THRESH}]
   Default = 1.D-05\\
   \kw{READ (LUINP,*) THRCI} \\
   Threshold for CI energy gradient.  The CI energy will be converged to
@@ -429,7 +430,7 @@ To obtain initial guess for CI vector(s).
 \item[\Key{SELECT}]
   \kw{READ (LUINP,*) ICONF} \\
   Select CSF (or determinant if \quotekw{\Key{DETERMINANTS}}) no.
-  ICONF as start configuration.\index{configuration, start}
+  ICONF as start configuration.\index{configuration!start}
 
 \item[\Key{STARTHDIAGONAL}]
   Select configurations corresponding to the lowest diagonal elements in
@@ -461,7 +462,7 @@ To specify the configuration part in MCSCF and CI calculations.
   \kw{READ (LUINP,*) (NASH(I),I=1,NSYM)} \\
   CAS calculation: Active orbitals\index{active orbital} each symmetry.
 
-\item[\Key{ELECTRONS (active)}]
+\item[\Key{ELECTRONS}]
   Required.\\
   \kw{READ (LUINP,*) NACTEL} \\
   Number of active electrons\index{active electrons} (the number of
@@ -497,7 +498,7 @@ To specify the configuration part in MCSCF and CI calculations.
 
 \item[\Key{SPIN MULTIPLICITY}]
   Required for MCSCF and CI wave
-  functions\index{MCSCF}\index{CI}\index{configuration interaction}.\\
+  functions\index{MCSCF}\index{CI}\index{Configuration Interaction}.\\
   \kw{READ (LUINP,*) ISPIN}\\
   For CSF basis: state spin multiplicity\index{spin multiplicity} = $2S + 1$,
   where $S$ is the spin quantum number. \\
@@ -527,7 +528,7 @@ subgroup IR's).
 \noindent
 CAS and RAS\index{RASSCF}\index{CASSCF}\index{MCSCF} are exclusive and
 both cannot be specified in the same
-MCSCF or CI\index{MCSCF}\index{CI}\index{configuration interaction}
+MCSCF or CI\index{MCSCF}\index{CI}\index{Configuration Interaction}
 calculation. One of them {\em must} be specified.
 
 
@@ -536,8 +537,7 @@ calculation. One of them {\em must} be specified.
 
 {\bf Purpose:}
 
-Add extra terms to the Hamiltonian (for finite field\index{finite
-field} calculations).
+Add extra terms to the Hamiltonian (for finite field\index{finite field} calculations).
 
 \begin{description}
 \item[\Key{FIELD TERM}]
@@ -573,8 +573,8 @@ This section deals with the closed shell and one open shell
 Hartree--Fock cases\index{SCF}\index{HF}\index{Hartree--Fock}.  The
 input here will usually only be used if
 \quotekw{\Key{HF}} (or its alias \quotekw{\Key{SCF}}) or
-\quotekw{\Key{MP2}}\index{MP2}\index{M\o ller-Plesset} have been
-specified under \quotekw{\Sec{*WAVE
+\quotekw{\Key{MP2}}\index{MP2}\index{M{\o}ller-Plesset!second-order}
+have been specified under \quotekw{\Sec{*WAVE
 FUNCTIONS}}. Single configuration cases with more than one open
 shell\index{open shell}
 are handled by the general \Sec{CONFIGURATION INPUT} section.
@@ -582,8 +582,9 @@ are handled by the general \Sec{CONFIGURATION INPUT} section.
 \begin{description}
 \item[\Key{AUTOCCUPATION}]
   Default for SCF\index{SCF}\index{HF}\index{Hartree--Fock} and
-  MP2\index{MP2}\index{M\o ller-Plesset} calculations starting from H\"{u}ckel or H1DIAG
-  starting orbitals\index{starting orbital}\index{H\"{u}ckel}.
+  MP2\index{MP2}\index{M{\o}ller-Plesset!second-order} calculations
+  starting from H\"{u}ckel or H1DIAG
+  starting orbitals\index{starting orbitals}\index{H\"{u}ckel}.
 
   Allow the Hartree--Fock
 occupation\index{Hartree--Fock occupation}\index{HF occupation} to
@@ -656,29 +657,28 @@ occupation\index{Hartree--Fock occupation}\index{HF occupation} to
 
 \item[\Key{HF OCCUPATION}]
     \kw{READ (LUINP,*) (NRHF(I),I=1,NSYM)} \\
-  Hartree--Fock occupancy for RHF and MP2
-  calculations\index{HF}\index{SCF}\index{Hartree--Fock}\index{MP2}\index{M\o
-  ller-Plesset}. This keyword is required is Hartree--Fock or MP2 is
-  part of a multistep calculation which includes an MCSCF wave
-  function. 
+  \index{HF}\index{SCF}\index{Hartree--Fock}\index{MP2}\index{M{\o}ller-Plesset!second-order}
+  Hartree--Fock occupancy for RHF and MP2 calculations. This keyword
+  is required is Hartree--Fock or MP2 is part of a multistep
+  calculation which includes an MCSCF wave function. 
 
 \item[\Key{MAX DIIS ITERATIONS}]
   \kw{READ (LUINP,*) MXDIIS} \\
-  Maximum number of DIIS iterations\index{DIIS iteration} (default = 30).
+  Maximum number of DIIS iterations\index{DIIS!iteration} (default = 30).
 
 \item[\Key{MAX ERROR VECTORS}]
   \kw{READ (LUINP,*) MXEVC} \\
-  Maximum number of DIIS error vectors\index{DIIS error vector}
+  Maximum number of DIIS error vectors\index{DIIS!error vector}
   (default = 10, if there is sufficient memory available to hold these
   vectors in memory).
 
 \item[\Key{MAX MACRO ITERATIONS}]
   \kw{READ (LUINP,*) MXHFMA} \\
-  Maximum number of QCHF macro\index{HF, quadratic convergent} iterations (default = 15).
+  Maximum number of QCHF macro\index{HF!quadratic convergent} iterations (default = 15).
 
 \item[\Key{MAX MICRO ITERATIONS}]
   \kw{READ (LUINP,*) MXHFMI} \\
-  Maximum number of QCHF\index{HF, quadratic convergent} micro iterations per macro iteration (default = 12).
+  Maximum number of QCHF\index{HF!quadratic convergent} micro iterations per macro iteration (default = 12).
 
 \item[\Key{NODIIS}]
   Do not use DIIS algorithms\index{DIIS} (default: use DIIS algorithm).
@@ -687,12 +687,12 @@ occupation\index{Hartree--Fock occupation}\index{HF occupation} to
   No transformation to canonical orbitals\index{canonical orbital}
 
 \item[\Key{NOQCHF}]
-  No quadratically convergent Hartree--Fock\index{HF, quadratic convergent} iterations
+  No quadratically convergent Hartree--Fock\index{HF!quadratic convergent} iterations
 
 \item[\Key{OPEN SHELL}]
   Default = no open shell\\
   \kw{READ (LUINP,*) IOPRHF} \\
-  Symmetry of the open shell in a one open shell\index{open-shell HF}
+  Symmetry of the open shell in a one open shell\index{open shell!HF}\index{HF!open shell}
   calculation.
 
 \item[\Key{PRINT}]
@@ -700,7 +700,7 @@ occupation\index{Hartree--Fock occupation}\index{HF occupation} to
   Resets general print level to \verb|IPRRHF| in Hartree--Fock calculation
   (if not specified, global print levels will be used).
 
-\item[\Key{THRESHOLD}]
+\item[\Key{THRESH}]
   Default = 1.0D-06\\
   \kw{READ (LUINP,*) THRRHF} \\
   Hartree--Fock convergence threshold for energy gradient.  The convergence
@@ -742,17 +742,13 @@ iterations are done unless explicitly requested through the keyword
 }
 \end{enumerate}
 
-In general \quotekw{.HF OCCUPATION} should be specified for CI or
-MCSCF\index{HF occupation}\index{Hartree--Fock occupation}\index{CI}\index{MCSCF}\index{configuration
-interaction} wave function calculations.  If not specified, the HF
-occupation
+In general \quotekw{.HF OCCUPATION} should be specified for CI or MCSCF\index{HF occupation}\index{Hartree--Fock occupation}\index{CI}\index{MCSCF}\index{Configuration Interaction}
+wave function calculations.  If not specified, the HF occupation
 will be the number of inactive orbitals in the MCSCF calculation (or
-CI calculation if no MCSCF). For SCF or
-MP2\index{HF}\index{SCF}\index{Hartree--Fock}\index{MP2}\index{M\o
-ller-Plesset} calculations the
-Hartree--Fock occupation will be determined on the basis of the nuclear
-charges and molecular charge of the molecule as specified in the
-\verb|MOLECULE.INP| file.
+CI calculation if no MCSCF). For SCF or MP2\index{HF}\index{SCF}\index{Hartree--Fock}\index{MP2}\index{M{\o}ller-Plesset!second-order}
+calculations the Hartree--Fock occupation will be determined on the
+basis of the nuclear charges and molecular charge of the molecule as
+specified in the \verb|MOLECULE.INP| file.
 
 By default, starting orbitals and initial Hartree--Fock occupation will
 be determined on the basis of a H\"{u}ckel\index{H\"{u}ckel}
@@ -798,8 +794,8 @@ calculation with filled core orbitals and the core hole
 calculation. The core hole\index{core hole} orbital will be
 frozen\index{frozen core hole} in the following optimization.
 After this calculation has converged, the CORERELAX option may be
-added and the core orbital will be relaxed\index{relaxed core
-hole}.  When CORERELAX is specified it is assumed that the
+added and the core orbital will be relaxed\index{relaxed core hole}.  
+When CORERELAX is specified it is assumed that the
 calculation was preceded by a frozen core calculation, and that
 the orbital has already been moved to the open shell orbital. Only
 the main peak can be obtained in SCF calculations, for shake-up
@@ -810,9 +806,10 @@ energies MCSCF must be used.
 
 {\bf Purpose:}
 
-To direct MP2 calculation\index{MP2}\index{M\o ller-Plesset}. Note
-that MP2 energies as well as properties also are available through the
-Coupled Cluster module, see Chapter~\ref{ch:CC}.
+\index{MP2}\index{M{\o}ller-Plesset!second-order}
+To direct MP2 calculation. Note that MP2 energies as well as
+properties also are available through the Coupled Cluster module, see
+Chapter~\ref{ch:CC}.
 
 \begin{description}
 \item[\Key{MP2 FROZEN}]
@@ -829,8 +826,8 @@ Coupled Cluster module, see Chapter~\ref{ch:CC}.
 \noindent{\bf Comments:}
 
 
-The MP2 module expects canonical Hartree--Fock orbitals\index{canonical
-orbital}, the module will
+The MP2 module expects canonical Hartree--Fock
+orbitals\index{canonical orbital}, the module will
 check the orbitals and exit if the Fock matrix has off-diagonal non-zero
 elements.
 
@@ -1046,7 +1043,7 @@ Some of the options also affect a QC-HF optimization.
   \kw{READ (LUINP,*) THRCGR} \\
   Threshold for print of CI gradient. Default is 0.1D0.
 
-\item[\Key{THRESHOLD}]
+\item[\Key{THRESH}]
   Default = 1.0D-05\\
   \kw{READ (LUINP,*) THRMC} \\
   Convergence threshold for energy gradient in MCSCF optimization.
@@ -1143,9 +1140,8 @@ excited singlet\index{excited state} states which often have lower lying triplet
 
 {\bf Purpose:}
 
-To define an initial set of molecular orbitals\index{molecular
-orbital} and to control the
-use of supersymmetry\index{supersymmetry}, frozen
+To define an initial set of molecular orbitals\index{molecular orbital}
+and to control the use of supersymmetry\index{supersymmetry}, frozen
 orbitals\index{frozen orbitals}, deletion of orbitals\index{delete orbitals},
 reordering and punching of orbitals.
 
@@ -1195,7 +1191,7 @@ reordering and punching of orbitals.
   Delete orbitals\index{delete orbitals}. The delete starts from the
   last orbital of the symmetry and counts downward.
 
-\item[\Key{FREEZE ORBITALS}]
+\item[\Key{FREEZE}]
   Default: no frozen orbitals
 \begin{verbatim}
   READ (LUINP,*) (NNOR(ISYM), ISYM = 1,NSYM)
@@ -1218,7 +1214,7 @@ reordering and punching of orbitals.
 
 \item[\Key{GRAM-SCHMIDT ORTHONORMALIZATION}]
   Default.\\
-  Gram-Schmidt orthonormalization\index{orthonormalization, Gram-Schmidt} of input orbitals.
+  Gram--Schmidt orthonormalization\index{orthonormalization!Gram--Schmidt} of input orbitals.
 
 \item[\Key{MOSTART}]
    Molecular orbital input\index{molecular orbital}\\
@@ -1287,7 +1283,7 @@ For example if orbitals 1 and 5 in symmetry 1 should change place, specify
 \item[\Key{SYMMETRIC ORTHONORMALIZATION}]
   Default: Gram-Schmidt orthonormalization\\
   Symmetric orthonormalization of input
-  orbitals\index{orthonormalization, symmetric}.
+  orbitals\index{orthonormalization!symmetric}.
 
 \item[\Key{THRSSY}]
   \kw{READ (LUINP,*) THRSSY} \\
@@ -1303,7 +1299,7 @@ For example if orbitals 1 and 5 in symmetry 1 should change place, specify
 
 {\sir} automatically identifies "super
 symmetry"\index{supersymmetry}, {\it i.e.\/} of irreps of the true point
-group of the molecule\index{symmetry group} which is a
+group of the molecule\index{symmetry!group} which is a
 "supergroup" of the Abelian group used in the calculation.
 Degenerate orbitals will be averaged and the "super
 symmetry"\index{supersymmetry} will be enforced in the orbitals.
@@ -1365,7 +1361,7 @@ Requires a set of natural orbitals\index{natural orbital} and their occupation.
   Do gross MO population analysis.\index{population analysis}
 
 \item[\Key{MULLIKEN}]
-  Do Mulliken population analysis\index{population analysis}\index{Mulliken population analysis}
+  Do Mulliken population analysis\index{population analysis}\index{population analysis!Mulliken}\index{Mulliken population analysis}
 
 \item[\Key{NETALL}]
   Do all net population analysis.\index{population analysis}
@@ -1478,8 +1474,8 @@ To control the printing of output.
 
 {\bf Purpose:}
 
-Model solvent effects with the self-consistent reaction\index{reaction
-field} field model.
+Model solvent effects with the self-consistent
+reaction\index{reaction field} field model.
 Any specification of dielectric constant(s)\index{dielectric constant}
 will activate this model.
 
@@ -1487,7 +1483,7 @@ will activate this model.
 \item[\Key{CAVITY}]
   Required, no defaults.\\
   \kw{READ (LUINP,*) RSOLAV}\\
-  Enter radius of spherical cavity\index{cavity radius} in atomic units (bohr).
+  Enter radius of spherical cavity\index{cavity!radius} in atomic units (bohr).
 
 \item[\Key{DIELECTRIC CONSTANT}]
   \kw{READ (LUINP,*) EPSOL}\\
@@ -1496,15 +1492,14 @@ will activate this model.
 \item[\Key{INERSINITIAL}]
   \kw{READ (LUINP,*) EPSOL}\\
   Enter static dielectric constant\index{dielectric constant} of solvent for calculation
-  of the initial state defining inertial polarization\index{inertial
-  polarization}.
+  of the initial state defining inertial polarization\index{inertial polarization}.
 
 \item[\Key{INERSFINAL}]
   \kw{READ (LUINP,*) EPSTAT,EPSOL}\\
   Enter static and optical dielectric\index{dielectric constant} constants of solvent
   for calculation of the final state with inertial polarization
-  from a previous calculation with \quotekw{\Key{INERSI}}\index{final
-  polarization}. This keyword should also be used to specify the
+  from a previous calculation with \quotekw{\Key{INERSINITIAL}}\index{final polarization}. 
+  This keyword should also be used to specify the
   static and optical dielectric constants for non-equilibrium
   solvation linear, quadratic or cubic response functions, see also Sec.~\ref{sec:solvnoneqrsp}.
 

@@ -1,16 +1,14 @@
-\chapter{Potential energy surfaces}\index{geometry
-walk}\label{ch:geometrywalks}
+\chapter{Potential energy surfaces}\label{ch:geometrywalks}
+\index{geometry walk}\index{geometry optimization}\index{convergence!geometry}
 
 This section describes one of the most important features of any
 quantum chemical software package; locating equilibrium
 geometries\index{equilibrium structure} and
 transition structures\index{transition state} of molecules. In
-\dalton\ this is done using either
-second-order trust-region \index{second-order
-optimization}\index{trust region}
+{\dalton} this is done using either second-order trust-region\index{second-order optimization}\index{geometry optimization!second-order}\index{trust region}
 optimizations~\cite{tuhjahjajpjjcp84} (energies, gradients and
-Hessians are calculated) or a variety of first-order\index{first-order
-optimization} methods~\cite{Fletcher} (only energies and gradients are
+Hessians are calculated) or a variety of first-order\index{first-order optimization}\index{geometry optimization!first-order}
+methods~\cite{Fletcher} (only energies and gradients are
 calculated). These methods
 have been implemented for SCF and MCSCF wave functions. For
 non-variational wave functions --- like CI --- the program can
@@ -20,8 +18,9 @@ calculated gradient. This will be invoked automatically by the program
 in case of a non-variational wave function. Some comments connected to
 such geometry optimizations are collected in Sec.~\ref{sec:nonvargeom}.
 
-For historical reasons \dalton\ actually contains two different
-modules for exploring potential energy surfaces: \Sec{WALK} which is
+For historical reasons {\dalton} actually contains two different
+modules for exploring potential energy surfaces\index{PES}\index{potential energy surface}:
+\Sec{WALK} which is
 a pure second-order module and \Sec{OPTIMIZE} which contains both
 first- and second-order methods. While there is a lot of overlap
 between the two modules, certain calculations can only be done using
@@ -30,27 +29,26 @@ robustness, while \Sec{OPTIMIZE} focuses more on speed and
 efficiency. For regular optimizations of minima and transition states,
 the recommended module is usually \Sec{OPTIMIZE}.
 
-One of the strengths of the \dalton\ program package is the
-stable algorithms for locating first-order transition
-states\index{transition state}. As described below,
-this can done by one of three algorithms in \Sec{WALK}: by trust-region
-second-order image surface minimization~\cite{thcpl182}\index{image
-surface}, by gradient extremal
-walks~\cite{pjhjajthtca73}\index{gradient extremal}, or by following a
-specific mode~\cite{hjajpjthjcp85}\index{mode following} (all
+One of the strengths of the {\dalton} program package is the
+stable algorithms for locating first-order transition states\index{transition state}\index{geometry optimization!transition state}.
+As described below, this can done by one of three algorithms in
+\Sec{WALK}: by trust-region second-order image surface
+minimization~\cite{thcpl182}\index{image surface},
+by gradient extremal walks~\cite{pjhjajthtca73}\index{gradient extremal},
+or by following a specific mode~\cite{hjajpjthjcp85}\index{mode following} (all
 requiring the calculation of the Hessian at every point). These
 options will be discussed in more detail below. The \Sec{OPTIMIZE}
 module also contains the stable second-order trust-region image
 surface minimization (using analytical or approximate Hessians), as
 well as a partitioned rational function method~\cite{abnajsrsjpc89}.
 
-Another feature of the \dalton\ program system is the options for
+Another feature of the {\dalton} program system is the options for
 calculating essential information about the potential energy
 surface so that subsequent molecular dynamics analysis can be
 made. There are two options for doing this in the program: One can
 either follow an Intrinsic Reaction Coordinate
-(IRC)~\cite{pjhjajthtca73}\index{IRC}\index{intrinsic reaction
-coordinate}, or solve Newton's equations for the nuclei under the
+(IRC)~\cite{pjhjajthtca73}\index{IRC}\index{intrinsic reaction coordinate}, 
+or solve Newton's equations for the nuclei under the
 potential put up by the electronic cloud
 \cite{theuhjajcpl173}\index{dynamics}. Whereas the first option
 can be used for modeling the immediate surroundings of a
@@ -93,8 +91,8 @@ T.Helgaker. \newblock {\em J.Phys.Chem.}, {\bf
 \end{center}
 
 A short input file for the location of a molecular geometry
-corresponding to minimum molecular energy
-(using a second-order optimization\index{second-order optimization}
+corresponding to minimum molecular energy\index{geometry optimization!equilibrium geometry}
+(using a second-order optimization\index{second-order optimization}\index{geometry optimization!second-order}
 method) and performing a vibrational
 analysis\index{vibrational analysis} at the stationary point, as well
 as determining the nuclear
@@ -130,9 +128,8 @@ of the potential energy surface than the approximate Hessians of
 first-order methods, and fewer steps will usually be needed to reach
 the minimum. However, the price one has to pay for this, is that each
 iteration uses significantly more CPU time. Another advantage of
-second-order methods, is that the program will automatically break the
-symmetry\index{symmetry breaking} of the molecule, if needed in order
-to reach a minimum
+second-order methods, is that the program will automatically break the symmetry\index{symmetry!breaking}\index{geometry optimization!symmetry breaking}
+of the molecule, if needed in order to reach a minimum
 (unless the user specifies that symmetry not should be broken). If
 one wants to minimize a water molecule starting from a linear
 geometry and using molecular symmetry, a first-order method will
@@ -169,12 +166,12 @@ frequencies. Note that only the \Sec{WALK} module, indicated by the
 keyword \Key{WALK}, supports the \Key{TOTSYM} keyword.
 We also note that any requests for static
 polarizabilities\index{polarizability}, Cioslowski population
-analysis\index{population analysis}, dipole gradients\index{dipole
-gradient} or vibrational circular dichroism (VCD)\index{vibrational
-circular dichroism}\index{VCD} will be ignored as all the necessary
-property vectors will not be available. However, at the final
-optimized geometry, the full Hessian will be evaluated, as may then
-also these properties.
+analysis\index{population analysis}, dipole 
+gradients\index{dipole gradient} or vibrational circular dichroism
+(VCD)\index{vibrational circular dichroism}\index{VCD} will be ignored
+as all the necessary property vectors will not be available. However,
+at the final optimized geometry, the full Hessian will be evaluated,
+as may then also these properties.
 
 For direct calculations\index{direct calculation} --- where the
 two-electron integrals are not stored on disc --- the cost of a
@@ -182,8 +179,7 @@ second-order geometry optimization algorithm may become
 prohibitively expensive, despite the rather few iterations normally
 needed to converge the geometry. In these cases, it may be
 advantageous to use first-order geometry
-optimization\index{first-order optimization} routines as
-illustrated in the following input:
+optimization\index{first-order optimization}\index{geometry optimization!first-order} routines as illustrated in the following input:
 
 \begin{verbatim}
 **DALTON INPUT
@@ -198,9 +194,9 @@ illustrated in the following input:
 
 This will use the default method of \Key{OPTIMIZE}: a first-order
 optimization~\cite{Fletcher} in redundant internal
-coordinates~\cite{gfxfzpwtppjacs114,ppgfjcp96,vbth}\index{redundant
-internal coordinates} using the BFGS\index{BFGS update}\index{Hessian
-update} Hessian update. This means that
+coordinates~\cite{gfxfzpwtppjacs114,ppgfjcp96,vbth}\index{redundant internal coordinates}\index{coordinate system!redundant internal coordinates}
+using the BFGS\index{BFGS update}\index{Hessian update!BFGS}
+Hessian update. This means that
 only the energy and the gradient is calculated in each iteration, and
 an approximate Hessian is obtained using the gradients and the
 displacements. The initial Hessian is diagonal in the redundant
@@ -213,8 +209,8 @@ positive definite Hessian).
 
 Several first-order methods have been implemented in DALTON, the
 recommended method being the Broyden-Fletcher-Goldfarb-Shanno (BFGS)
-Hessian updating scheme\index{BFGS update}\index{Hessian update}. Though other
-updates may perform better in
+Hessian updating\index{BFGS update}\index{Hessian update!BFGS}
+scheme. Though other updates may perform better in
 certain cases, the BFGS update generally seems to be the most
 reliable and thus is the default method for minimization.
 
@@ -223,7 +219,7 @@ can never be sure that the geometry is indeed a minimum, and this is the
 main problem with first-order methods.
 
 Both first- and second-order methods are based on
-trust-region\index{trust region}
+trust-region\index{trust region}\index{geometry optimization!trust region}
 optimization. The trust-region is the region of the potential energy
 surface where our quadratic model (based on an analytical or
 approximate Hessian) gives a good representation of the true
@@ -241,14 +237,14 @@ to the rejected energy and the previous energy and gradient. The
 minimum of this function is then used as the new step, and this
 process may be repeated.
 
-Another consideration concerning optimizations, is the choice of
+Another consideration concerning optimizations, is the choice of\index{coordinate system}\index{geometry optimization!coordinate system}
 coordinate system. Second-order methods doesn't seem to be very
 sensitive to this, and the \Sec{WALK} module thus only uses
 Cartesian coordinates. However, the coordinate system may be crucial
 to the performance of first-order methods, especially when starting
 from approximate Hessians. \Sec{OPTIMIZE} provides the normal Cartesian
-coordinates\index{Cartesian coordinates} and redundant
-internal coordinates\index{redundant internal coordinates},
+coordinates\index{Cartesian coordinates}\index{coordinate system!Cartesian coordinates}
+and redundant internal coordinates,\index{redundant internal coordinates}\index{coordinate system!redundant internal coordinates}
 the latter being highly recommended when using
 first-order methods. Redundant internal coordinates consists of all
 bond lengths, angles and dihedral angles in a molecule, and the
@@ -259,12 +255,12 @@ possible to override this with the keywords \Key{REDINT} and
 \Key{CARTES} respectively.
 
 The \Sec{OPTIMIZE} module decides when a minimum is reached through a
-set of convergence criteria\index{convergence criteria}. These will be
+set of convergence criteria\index{convergence!criteria}. These will be
 set automatically depending on the accuracy of the wave function
 using three different criteria, namely the change in energy
 between two iterations, the norm of the molecular
 gradient\index{norm of gradient} and the norm of the
-step\index{step norm}. The convergence threshold for the change
+step\index{norm of step}. The convergence threshold for the change
 in energy is the maximum of $1.0\cdot 10^{-6}$ a.u.\ and two times the
 convergence threshold for the wave function, whereas for the norm of
 the gradient and step it's the maximum of $1.0\cdot 10^{-5}$ a.u.\ and
@@ -287,16 +283,17 @@ details). This will normally give energies converged to within
 $1.0\cdot 10^{-6}$ a.u.
 
 In case of non-variational\index{non-variational wave functions}
-wave functions, where a numerical gradient\index{numerical
-gradient} is used, the threshold for convergence is reset to
-$1.0\cdot 10^{-4}$ a.u., due to possible numerical instabilities
-occurring 
-in the 
+wave functions, where a numerical 
+gradient\index{numerical gradient} is used, the threshold for
+convergence is reset to 
+$1.0\cdot 10^{-4}$ a.u., due to possible numerical
+instabilities\index{numerical gradient} occurring in the 
 finite difference\index{finite difference} methods employed to
 determine the molecular gradient\index{molecular gradient}.
 
-We also note that for optimization of excited states\index{excited
-state} where the state of interest is not the lowest of its
+We also note that for optimization of excited
+states\index{excited state!geometry optimization}
+where the state of interest is not the lowest of its
 symmetry, most of the parameters controlling the trust-region
 optimization method will be reset to much more conservative
 values, as one in such calculations will loose the possibility of
@@ -307,8 +304,8 @@ is within the local region of the optimized wave function.
 Calculations involving large basis sets may be very time-consuming,
 and it becomes very important to start the optimization from a decent
 geometry. One way to solve this is through
-preoptimization\index{preoptimization}, that is,
-one or more smaller basis sets are first used to optimize the
+preoptimization\index{preoptimization}\index{geometry optimization!preoptimization},
+that is, one or more smaller basis sets are first used to optimize the
 molecule. \Sec{OPTIMIZE} supports the use of up to ten different
 basis sets for preoptimization. This may also be used as a very
 effective way to get the optimized energy of a molecule for a series
@@ -333,8 +330,9 @@ cc-daug-pVTZ
 *END OF INPUT
 \end{verbatim}
 
-As one can see, two small basis sets have been chosen for
-preoptimization\index{preoptimization}. Note that they will be
+As one can see, two small basis sets have been chosen 
+for\index{preoptimization}\index{geometry optimization!preoptimization}
+preoptimization. Note that they will be
 used in the order they appear in the input file, so one should
 sort the sets and put the smaller one at the top for maximum
 efficiency. The ``main'' basis set, that is, the one that will be
@@ -395,9 +393,10 @@ states'' and ``Doing Dynamical walks'').
 }}
 \end{center}
 
-\index{transition state}Transition states are found as saddle points
-on the potential energy surface. \index{image surface} The simplest
-way of locating a first-order transition state, which are the
+\index{transition state}\index{geometry optimization!transition state}
+Transition states are found as saddle points
+on the potential energy surface\index{image surface}.
+The simplest way of locating a first-order transition state, which are the
 chemically most interesting ones, is to use the trust-region
 image\index{image surface}\index{trust region} minimization method
 described in Ref.~\cite{thcpl182}. Such geometry optimizations may
@@ -627,9 +626,9 @@ the most abundant isotope. See also Sec.~\ref{sec:vibfreq}.
 A requirement in a gradient extremal calculation is that the
 calculation is started on a gradient extremal. In practice this is
 most conveniently ensured by starting at a stationary point, a minimum
-or a transition state. The index\index{Hessian index} of the critical point
+or a transition state. The index\index{Hessian!index} of the critical point
 --- that is,
-the number of negative Hessian eigenvalues\index{Hessian eigenvalue}
+the number of negative Hessian eigenvalues\index{Hessian!eigenvalue}
 --- sought, need to
 be specified (by the keyword \Key{INDEX}), as the calculation would
 otherwise continue until a critical point with index zero
@@ -652,10 +651,9 @@ J.Chem.Phys.}, {\bf 85},\hspace{0.25em}3917, (1986).
 }}
 \end{center}
 
-The input needed for doing a level-shifted mode following\index{mode
-following} is very
-similar to the input for following a gradient extremal\index{gradient
-extremal}, and the
+The input needed for doing a level-shifted mode
+following\index{mode following} is very similar to the input for
+following a gradient extremal\index{gradient extremal}, and the
 keyword that is needed in order to invoke this kind of calculation is
 \Key{MODFOL}. As for gradient extremals, we need to specify which
 mode we follow. However, a mode following does not use mass-weighted
@@ -700,8 +698,8 @@ mode of interest using the keyword \Key{EIGEN} in the
 \Key{WALK} module. We refer to the reference manual for a further
 description of this option.
 
-The index\index{Hessian index} of the critical point  --- that is,
-the number of negative Hessian eigenvalues\index{Hessian eigenvalue}
+The index\index{Hessian!index} of the critical point  --- that is,
+the number of negative Hessian eigenvalues\index{Hessian!eigenvalue}
 --- sought, need to
 be specified (by the keyword \Key{INDEX}), as the calculation would
 otherwise continue until a critical point with index zero
@@ -731,8 +729,8 @@ state\index{transition state} towards a minimum. One of the
 most successful ways of doing this is the Intrinsic Reaction Coordinate (IRC)
 approach~\cite{kfacr14,pmjcp88}\index{IRC}\index{intrinsic reaction
 coordinate}. The IRC is calculated by taking small steps along the
-negative gradient in a mass-weighted coordinate\index{mass-weighted
-coordinates} system. In \dalton , the
+negative gradient in a mass-weighted 
+coordinate\index{mass-weighted coordinates} system. In {\dalton}, the
 size of the step is adjusted with the use of the trust-region based
 algorithm. In order to get a sufficiently accurate potential energy surface,
 rather small steps must be taken, and the default trust radius is thus reset
@@ -939,7 +937,7 @@ the iteration at which the calculation will restarted by the keyword
 The calculation should be stopped (at least for ordinary hydrogen
 elimination reactions) when the ``Relative velocity'' starts to
 decrease, as this indicates that the molecules are so far apart that
-basis set superposition errors\index{BSSE}\index{basis set superposition error}
+basis set superposition errors\index{BSSE}\index{basis set!superposition error}
 become apparent. We will below return to how
 one then calculates translational energy release of the reaction.
 
@@ -967,8 +965,8 @@ spectrometry~\cite{theuhjajcpl173}\index{mass spectrometry}. Although
 this quantity
 is printed in the output from \dalton\ in the entire dynamical walk, the
 relative translational energy release should be calculated, due to
-basis set superposition errors\index{BSSE}\index{basis set superposition error} and
-vibrational\index{vibrational excitation} and rotational
+basis set superposition errors\index{BSSE}\index{basis set!superposition error}
+and vibrational\index{vibrational excitation} and rotational
 excitation\index{rotational excitation} in the departing molecular
 fragments, in the way described here.
 
@@ -998,7 +996,7 @@ functions}\label{sec:nonvargeom}
 
 \dalton\ do not have any support for the calculation of molecular
 gradients and Hessians for the non-variational wave functions like
-CI\index{CI}\index{configuration interaction}. However, in order to
+CI\index{CI}\index{Configuration Interaction}. However, in order to
 exploit the facilities of the first-order
 geometry optimization routines in {\dalton}, a numerical
 gradient\index{numerical gradient} based
@@ -1011,7 +1009,7 @@ module}, the only input needed is
 \begin{verbatim}
 **DALTON INPUT
 .OPTIMIZE
-**WAVE FUNCTION
+**WAVE FUNCTIONS
 .HF
 .MP2
 *END OF INPUT

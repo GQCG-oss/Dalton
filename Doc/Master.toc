@@ -26,7 +26,7 @@
 \contentsline {chapter}{\numberline {6}Getting the wave function you want}{28}
 \contentsline {section}{\numberline {6.1} Necessary input to SIRIUS}{28}
 \contentsline {section}{\numberline {6.2} An input example for SIRIUS}{29}
-\contentsline {section}{\numberline {6.3} Hints on the structure of the input for the \\{\normalfont \ttfamily {**WAVE FUNCTION}} input module}{31}
+\contentsline {section}{\numberline {6.3} Hints on the structure of the input for the \\{\normalfont \ttfamily {**WAVE FUNCTIONS}} input module}{31}
 \contentsline {section}{\numberline {6.4} How to restart a wave function calculation}{33}
 \contentsline {section}{\numberline {6.5} Transfer of molecular orbitals between different computers}{33}
 \contentsline {section}{\numberline {6.6} Wave function input examples}{34}
@@ -98,13 +98,13 @@
 \contentsline {section}{\numberline {19.7}Excited state geometry optimization}{126}
 \contentsline {part}{III\hspace {1em}DALTON Reference Manual}{127}
 \contentsline {chapter}{\numberline {20}General input module}{128}
-\contentsline {section}{\numberline {20.1}General input to DALTON : {\normalfont \ttfamily {**DALTON INPUT}}}{128}
+\contentsline {section}{\numberline {20.1}General input to DALTON : {\normalfont \ttfamily {**DALTON}}}{128}
 \contentsline {subsection}{\numberline {20.1.1}End of General input: {\normalfont \ttfamily {*END OF}}}{131}
 \contentsline {subsection}{\numberline {20.1.2}General: {\normalfont \ttfamily {*OPTIMIZE}}}{131}
 \contentsline {subsection}{\numberline {20.1.3}Numerical differentiation : {\normalfont \ttfamily {*NMDDRV}}}{140}
 \contentsline {subsection}{\numberline {20.1.4}Parallel calculations : {\normalfont \ttfamily {*PARALLEL}}}{141}
 \contentsline {subsection}{\numberline {20.1.5}Geometry optimization: {\normalfont \ttfamily {*WALK}}}{142}
-\contentsline {chapter}{\numberline {21}Integral evaluation, HERMIT}{148}
+\contentsline {chapter}{\numberline {21}Integral evaluation, {{\sc hermit}}}{148}
 \contentsline {section}{\numberline {21.1}General}{148}
 \contentsline {section}{\numberline {21.2}{\normalfont \ttfamily {**INTEGRALS}} directives}{148}
 \contentsline {subsection}{\numberline {21.2.1}End of input: {\normalfont \ttfamily {*END OF}}}{149}

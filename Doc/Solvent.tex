@@ -2,7 +2,7 @@
 
 This chapter describes the 
 Multiconfigurational Self-Consistent Reaction Field (MCSCRF) model
-as implemented in \siraba \ . The first section describes some
+as implemented in {\dalton}. The first section describes some
 considerations about the implementation  and the range of
 properties that may be evaluated with the present MCSCRF
 implementation. The second section gives two input examples for
@@ -10,22 +10,22 @@ MCSCRF calculations.
 
 \section{General considerations}\label{sec:solventimpl}
 
-\siraba\ has the possibility of modelling the effect of a
-surrounding linear, homogeneous dielectric medium\index{dielectric
-medium} on a variety of molecular properties using
+{\dalton} has the possibility of modelling the effect of a
+surrounding linear, homogeneous dielectric
+medium\index{dielectric medium} on a variety of molecular properties using
 SCF\index{SCF}\index{HF}\index{Hartree--Fock}\index{MCSCF} or MCSCF
 wave functions. This is achieved by the Multiconfigurational
-Self-Consistent Reaction Field (MCSCRF)\index{reaction
-field}\index{MCSCRF}
+Self-Consistent Reaction Field
+(MCSCRF)\index{reaction field}\index{MCSCRF}
 approach~\cite{kvmedpsjpc91,kvmhahjajthjcp89}, where the solute is
 placed in a spherical cavity\index{cavity} and surrounded by the
 dielectric medium. The solvent response to the presence of the
-solute is modelled by a multipole expansion\index{multipole
-expansion}, in \siraba\ in principle to infinite order, but
+solute is modelled by a multipole 
+expansion\index{multipole expansion}, in {\dalton} in principle to infinite order, but
 practical applications show that the multipole expansion is
 usually converged at order $L=6$.
 
-In \siraba\ the solvent model is implemented both for SCF and MCSCF wave
+In {\dalton} the solvent model is implemented both for SCF and MCSCF wave
 functions in a self-consistent manner as describes in
 Ref.~\cite{kvmedpsjpc91,kvmhahjajthjcp89}. In MCSCF calculations where
 MP2 orbitals is requested as starting orbitals for the MCSCF
@@ -36,17 +36,19 @@ for this wave function. Note also that differential densities will be
 disabled in direct calculations when the solvent model is employed.
 
 As regards molecular properties, the solvent model has so far been
-extended to singlet linear, quadratic and cubic response, and  triplet linear response\index{linear response}\index{quadratic response}\index{cubic response}\index{triplet response} in the
-\resp\ program, both using equilibrium and no-equilibrium solvation. A number of properties and excitation energies can
+extended to singlet linear, quadratic and cubic response, and  triplet
+linear response\index{linear response}\index{quadratic response}\index{cubic response}\index{triplet response}\index{response!linear}\index{response!quadratic}\index{response!cubic}\index{response!triplet}
+in the {\resp} program, both using equilibrium and no-equilibrium
+solvation. A number of properties and excitation energies can
 be calculated with the (MC)SCRF model, and several studies of such
 properties have been presented, and we refer to these papers for an
 overview of what can currently be calculated with the
 approach~\cite{kvmpjhjajjcp100,kvmylhapjjcp100}, including ESR
-hyperfine coupling constants~\cite{bfocobpjkvmjcp104}\index{hyperfine
-coupling}.
+hyperfine coupling
+constants~\cite{bfocobpjkvmjcp104}\index{hyperfine coupling}.
 
-In addition, a non-equilibrium solvation\index{non-equilibrium
-solvation} model has been implemented
+In addition, a non-equilibrium
+solvation\index{non-equilibrium solvation} model has been implemented
 for molecular energies~\cite{kvmachahjajjcp103}. This model in needed
 when studying processes where the charge distribution of the solute
 cannot be expected to be in equilibrium with the charge distribution
@@ -59,8 +61,8 @@ magnetizabilities\index{nuclear shielding}\index{magnetizability},
 and of course all the
 properties that do not use perturbation-dependent basis
 sets\index{perturbation-dependent basis set}, like for
-instance indirect spin-spin coupling constants\index{spin-spin
-coupling}. This is noteworthy, as
+instance indirect spin-spin coupling 
+constants\index{spin-spin coupling}. This is noteworthy, as
 although the program will probably give results for most results
 calculated using the solvent  model, these results will not
 necessarily be theoretically correct, due to lack of reorthonormalization
@@ -69,7 +71,7 @@ therefore give a fairly complete literature reference of works that
 have been done with the
 program~\cite{kvmpjkrthjcp106,poakvmkrthjpc100}. Properties not
 included in this list are thus not trustworthy with the current
-version of \siraba .
+version of {\dalton}.
 
 \section{Input description}\label{sec:solventinp}
 
@@ -114,8 +116,8 @@ K.Ruud and T.Helgaker. \newblock {\em J.~Chem.~Phys.}, {\bf 108},\hspace{0.25em}
 The necessary input for a solvent calculation is given in the
 \Sec{*INTEGRALS} and \Sec{*WAVE FUNCTIONS} input modules. A typical input file
 for an SCF calculation of the nuclear shielding constants of a
-molecule in a dielectric medium will look like\index{nuclear
-shielding}\index{dielectric medium}:
+molecule in a dielectric medium will look
+like\index{nuclear shielding}\index{dielectric medium}:
 
 \begin{verbatim}
 **DALTON INPUT
@@ -155,8 +157,8 @@ interaction between the solute and the dielectric
 medium\index{dielectric medium} is
 characterized by three parameters; the dielectric
 constant\index{dielectric constant}, the cavity\index{cavity}
-size, and the order of the multipole expansion\index{multipole
-expansion}. In the above input we have
+size, and the order of the multipole
+expansion\index{multipole expansion}. In the above input we have
 requested a dielectric constant of 78.5 (corresponding to water)
 through the keyword \Key{DIELECTRIC CONSTANT}, a cavity radius of 3.98 atomic
 units with the keyword \Key{CAVITY}, and the multipole expansion is to
@@ -166,17 +168,16 @@ include all terms up to $L=10$, as can be seen from the keyword
 
 \subsection{Geometry optimization}\label{sec:solventgeoopt}
 
-In the present release of the \siraba\ program, there are certain
+In the present release of the {\dalton} program, there are certain
 limitations imposed on the optimizing geometries using the solvent
-model. Only second-order geometry optimizations \index{geometry
-optimization} are available, and
-only through the general \Sec{WALK} module. 
+model. Only second-order geometry optimizations\index{geometry optimization}\index{geometry optimization!solvation}\index{solvation!geometry optimization}
+are available, and only through the general \Sec{WALK} module. 
 %Furthermore, symmetry
 %cannot be used during the geometry optimization, and care must be
 %exercised in order to turn off automatic symmetry detection in case of
 %Hartree--Fock calculations. 
-Thus the input for an SCF geometry
-optimization with the solvent model would look like:
+Thus the input for an SCF geometry optimization with the solvent model
+would look like:
 
 \begin{verbatim}
 **DALTON INPUT
@@ -196,14 +197,13 @@ optimization with the solvent model would look like:
 
 \subsection{Non-equilibrium solvation}
 
-This example describes calculations for non-equilibrium
-solvation\index{non-equilibrium solvation}.
-Usually one starts with a calculation of a reference state
+This example describes calculations for non-equilibrium\index{non-equilibrium solvation}\index{solvation!non-equilibrium}
+solvation. Usually one starts with a calculation of a reference state
 (most often the ground state) with equilibrium solvation, using
-keyword \Key{INERSF}. The interface file is then
+keyword \Key{INERSFINAL}. The interface file is then
 used (without user interference) for
 a non-equilibrium excited state calculation; keyword
-\Key{INERSI}.
+\Key{INERSINITIAL}.
 
 \begin{verbatim}
 **DALTON INPUT
@@ -250,7 +250,7 @@ a non-equilibrium excited state calculation; keyword
 *SOLVENT
 .CAVITY
  2.5133D0
-.INERSI   | initial state inertial polarization
+.INERSINITIAL     | initial state inertial polarization
  37.7D0  2.050D0  | static and optic dielectric constants for Glycol
 .MAX L
  10

@@ -3,10 +3,13 @@
 \section{Cubic response functions: \Sec{CCCR}}\label{sec:cccr}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \index{cubic response}
-\index{Coupled Cluster response}
+\index{response!cubic}
+\index{Coupled Cluster!cubic response}
 \index{fourth-order properties}
+\index{properties!fourth-order}
 \index{hyperpolarizabilities}
-\index{second hyperpolarizabilities}
+\index{second hyperpolarizability}
+\index{hyperpolarizabilities!second}
 
 In the \Sec{CCCR} section the input that is  specific for 
 coupled cluster cubic response properties is read in.
@@ -86,8 +89,7 @@ on the first line following \Key{DCKERR} the number of different
 frequencies are read, from the second line the input for
 $\omega_D = \omega$ is read. $\omega_C$ and $\omega_D$ to $0$
 and $\omega_A$ to $-\omega$. 
-\index{Kerr effect, dc}
-\index{dc-Kerr effect}
+\index{Kerr effect, dc}\index{dc-Kerr effect}
  
 \item[\Key{DFWMFR}] \verb| |\newline
 \verb|READ (LUCMD,*) MFREQ|\newline
@@ -120,16 +122,13 @@ real fourth-order properties.
 \verb|READ (LUCMD,*) MFREQ|\newline
 \verb|READ (LUCMD,*) (BCRFR(IDX),IDX=NCRFREQ+1,NCRFREQ+MFREQ)|
 
-Input for electric field induced second harmonic generation
-\index{ESHG}
+Input for electric field induced second harmonic generation\index{ESHG}
 $\gamma_{ABCD}(-2\omega;\omega,\omega,0)$:
 on the first line following \Key{ESHGFR} the number of different
 frequencies are read, from the second line the input for
 $\omega_B = \omega$ is read. $\omega_C$ is set to $\omega$,
 $\omega_D$ to $0$ and $\omega_A$ to $-2\omega$. 
-\index{second harmonic generation}
-\index{second harmonic generation, electric field induced}
-\index{ESHG}
+\index{second harmonic generation}\index{second harmonic generation!electric field induced}\index{ESHG}
  
 \item[\Key{L2 BC}] solve response equations for the second-order
 Lagrangian multipliers $\bar{t}^{BC}$ instead of the equations for 

@@ -1,4 +1,4 @@
-\chapter{Integral evaluation, HERMIT}\label{ch:hermit}
+\chapter{Integral evaluation, {\her}}\label{ch:hermit}
 
 \section{General}\label{sec:herminf}
 
@@ -127,11 +127,11 @@ where $ii+jj+kk =$\verb|IORDER|, and where \verb|ii| = (i/10)*10+mod(i,10)
 \item[\Key{CM-1}]\verb| |\newline
 \verb|READ (LUCMD, '(A7)') FIELD1|
 
-First derivative of the  electric dipole operator\index{electric
-dipole} with respect to an
-external magnetic field\index{magnetic field} due to differentiation of the London phase
+First derivative of the  electric dipole operator\index{electric dipole}
+with respect to an external magnetic field\index{magnetic field}
+due to differentiation of the London phase
 factors, see Ref.~\cite{arthkrabmjpjjcp102}. Read one more line giving
-the direction of the electric field~(A7)\index{electric field, external}. These
+the direction of the electric field~(A7)\index{electric field!external}. These 
 include \verb|X-FIELD|, \verb|Y-FIELD|, and \verb|Z-FIELD|.
 
 \begin{list}{}{}
@@ -145,13 +145,12 @@ the input.
 \item[\Key{CM-2}]\verb| |\newline
 \verb|READ (LUCMD, '(A7)') FIELD2|
 
-Second derivative electric dipole\index{electric
-dipole} operator
+Second derivative electric dipole\index{electric dipole} operator
 with respect to an external magnetic field\index{magnetic field} due
 to differentiation of
 the London phase factors, see Ref.~\cite{arthkrabmjpjjcp102}. Read one
 more line giving the direction of the electric
-field~(A7)\index{electric field, external}. These
+field~(A7)\index{electric field!external}. These
 include \verb|X-FIELD|, \verb|Y-FIELD|, and \verb|Z-FIELD|.
 
 \begin{list}{}{}
@@ -277,8 +276,8 @@ r}{\bf r}^{T}h\right|\chi_{\nu}\right>Q_{MN}$
 
 \item[\Key{DSUSLL}] The contribution to the diamagnetic
 magnetizability\index{diamagnetic magnetizability} integrals from mixed differentiation on the Hamiltonian
-and the London orbital phase factors\index{London
-orbitals}, see Ref.~\cite{thpjjcp95}.
+and the London orbital phase factors\index{London orbitals}, see
+Ref.~\cite{thpjjcp95}.
 
 \begin{list}{}{}
 \item Integral: $\frac{1}{4}\overline{Q_{MN}\left<\chi_{\mu}\left|{\bf
@@ -289,8 +288,7 @@ r}{\bf L}_{N}^{T}\right|\chi_{\nu}\right>}$
 
 \item[\Key{DSUSNL}] The contribution to the diamagnetic
 magnetizability\index{diamagnetic magnetizability} integrals using
-London orbitals\index{London
-orbitals} but with
+London orbitals\index{London orbitals} but with
 contributions from the differentiation of the Hamiltonian only, see
 Ref.~\cite{thpjjcp95}.
 
@@ -306,7 +304,7 @@ integrals\index{diamagnetic magnetizability} with London atomic
 orbitals\index{London orbitals}. Mainly for debugging purposes.
 
 \item[\Key{EFGCAR}] Cartesian electric field gradient
-integrals\index{electric field gradient}.
+integrals\index{electric field!gradient}.
 
 \begin{list}{}{}
 \item Integral: $\frac{1}{3}\left<\chi_{\mu}\left|\frac{3{\bf
@@ -317,10 +315,10 @@ independent center, and \verb|c| that centers c'th symmetry-generated
 atom.
 \end{list}
 
-\item[\Key{EFGSPH}] Spherical electric field gradient\index{electric
-field gradient}
-integrals. Obtained by transforming the Cartesian electric-field
-gradient integrals (see \Key{EFGCAR}) to spherical basis.
+\item[\Key{EFGSPH}] Spherical electric field gradient
+\index{electric field!gradient} integrals. Obtained by transforming
+the Cartesian electric-field gradient integrals (see \Key{EFGCAR}) to
+spherical basis.
 
 \item[\Key{ELGDIA}] Diamagnetic one-electron spin-orbit integrals
 without London orbitals.
@@ -366,13 +364,13 @@ components (*). Default is~(0,0,0).
 
 \item[\Key{GFACDI}] 
 \item[\Key{HBDO}] Geometric half-differentiated overlap
-matrix\index{overlap, half-differentiated}
+matrix\index{overlap!half-differentiated}
 differentiated once more with respect to magnetic field as given in Eq.~(59)
 in Ref.~\cite{klbpjthkrhjajjcp98}.
 
 \item[\Key{HDO}] Symmetrized, half-differentiated
-overlap integrals with respect to geometric distortions\index{overlap,
-half-differentiated}, see
+overlap integrals with respect to geometric
+distortions\index{overlap!half-differentiated}, see
 Ref.~\cite{klbpjhjajjothjcp97}. Differentiation on the ket-vector.
 
 \begin{list}{}{}
@@ -384,7 +382,7 @@ of the symmetry-adapted coordinate being differentiated.
 \end{list}
 
 \item[\Key{HDOBR}] Geometric half-differentiated overlap
-matrix\index{overlap, half-differentiated}
+matrix\index{overlap!half-differentiated}
 differentiated once more on the ket-vector with respect to external
 magnetic field as given in Eq.~(60) of Ref.~\cite{klbpjthkrhjajjcp98}.
 
@@ -453,8 +451,7 @@ integrals.
 Set the threshold for which two-electron integrals should be tested
  with the keyword \Key{MGMO2T}. Default is~10$^{-10}$.
 
-\item[\Key{NELFLD}] Nuclear electric field integrals\index{electric
- field at nucleus}.
+\item[\Key{NELFLD}] Nuclear electric field integrals\index{electric field!at nucleus}.
 
 \begin{list}{}{}
 \item Integral:
@@ -561,7 +558,7 @@ default), and 2 corresponds to a Gaussian distribution model.
 
 \item[\Key{NUCPOT}] Calculate the nuclear potential energy.
 Currently this keyword can only be used in calculations not employing
-symmetry.\index{potential energy at nucleus}
+symmetry.\index{potential energy!at nucleus}
 
 \begin{list}{}{}
 \item Integral:
@@ -627,7 +624,7 @@ matrices, irrespective of their inherent Hermiticity or
 anti-Hermiticity.
 
 \item[\Key{S1MAG}] Calculate the first derivative overlap
-matrix\index{overlap, magnetic field derivative} with respect to an
+matrix\index{overlap!magnetic field derivative} with respect to an
 external magnetic field by differentiation
 of the London phase factors\index{London orbitals}, see Ref.~\cite{thpjjcp95}.
 
@@ -639,7 +636,7 @@ r}\right|\chi_{\nu}\right>$
 \end{list}
 
 \item[\Key{S1MAGL}] Calculate the first magnetic half-differentiated overlap
-matrix\index{overlap, magnetic field derivative} with respect to an
+matrix\index{overlap!magnetic field derivative} with respect to an
 external magnetic field as needed with the
 natural connection\index{natural connection}, see
 Ref.~\cite{krthklbpjjocp195}. Differentiated
@@ -653,7 +650,7 @@ r}\right|\chi_{\nu}\right>$
 \end{list}
 
 \item[\Key{S1MAGR}] Calculate the first magnetic half-differentiated overlap
-matrix\index{overlap, magnetic field derivative} with respect to an external magnetic field as needed with the
+matrix\index{overlap!magnetic field derivative} with respect to an external magnetic field as needed with the
 natural connection\index{natural connection}, see Ref.~\cite{krthklbpjjocp195}. Differentiated on
 the ket-vector.
 
@@ -674,7 +671,7 @@ r}\right|\chi_{\nu}\right>$
 \Key{S1MAGR}. Mainly for debugging purposes.
 
 \item[\Key{S2MAG}] Calculate the second derivative of the overlap
-matrix\index{overlap, magnetic field derivative} with respect to an external magnetic field by differentiation
+matrix\index{overlap!magnetic field derivative} with respect to an external magnetic field by differentiation
 of the London phase factors\index{London orbitals}, see Ref.~\cite{thpjjcp95}.
 
 \begin{list}{}{}
@@ -773,7 +770,7 @@ $\left<\chi_{\mu}\chi_{\nu}\left|\frac{{\bf l}_{12}}{r_{12}^{3}}\right|\chi_{\rh
 \end{list}
 
 %\item[\Key{SQHDOL}] Square, non-symmetrized half differentiated
-%overlap integrals\index{overlap, half-differentiated} with respect to
+%overlap integrals\index{overlap!half-differentiated} with respect to
 %geometric distortions, see
 %Ref.~\cite{klbpjhjajjothjcp97}. Differentiation on the bra-vector.
 %
@@ -785,8 +782,7 @@ $\left<\chi_{\mu}\chi_{\nu}\left|\frac{{\bf l}_{12}}{r_{12}^{3}}\right|\chi_{\rh
 %\end{list}
 
 \item[\Key{SQHDOR}] Square, non-symmetrized half differentiated
-overlap integrals with respect to geometric distortions\index{overlap,
-half-differentiated}, see
+overlap integrals with respect to geometric distortions\index{overlap!half-differentiated}, see
 Ref.~\cite{klbpjhjajjothjcp97}. Differentiation on the ket-vector.
 
 \begin{list}{}{}
@@ -814,7 +810,7 @@ can be controled by the keyword \Key{GAUGEO}.
 \end{list}
 
 \item[\Key{THETA}] Traceless quadrupole moment\index{quadrupole
-moment, trcaeless} integrals as defined by Buckingham~\cite{adbacp12}.
+moment!traceless} integrals as defined by Buckingham~\cite{adbacp12}.
 
 \begin{list}{}{}
 \item Integral: $\frac{1}{5}\left<\chi_{\mu}\left|3r^{2}I - {\bf r}
@@ -834,7 +830,7 @@ integral calculation appear in the \Sec{ONEINT} section.
 \verb|READ (LUCMD,*) (CAVORG(I), I = 1, 3|
 
 Read one more line containing the origin to be used for the origin of
-the cavity\index{cavity origin} in self-consistent reaction field
+the cavity\index{cavity!origin} in self-consistent reaction field
 calculations. The default
 is that this origin is chosen to be the center of mass\index{center of
 mass} of the molecule.
@@ -883,8 +879,8 @@ Directives to control the reading of the molecule input appear in the
 \item[\Key{CM FUN}]\verb| |\newline
 \verb|READ (LUCMD,*) LCMMAX, CMSTR, CMEND|
 
-Use Rydberg basis functions\index{Rydberg basis function} (center of
-mass functions\index{center of mass function}) as suggested by
+Use Rydberg basis functions\index{Rydberg basis function}\index{basis function!Rydberg}
+ (center of mass functions\index{center of mass function}) as suggested by
 Kaufman {\it et al.\/}~\cite{kkwbmjjpbamop22}. \verb|LCMMAX| denoted
 the maximum quantum number of the Rydberg functions, basis functions
 for all quantum up to and including \verb|LCMMAX| will be generated
@@ -941,7 +937,7 @@ integrals\index{integral sort}. Note that in order for \sir\ to use
 the sorted integrals
 generated with the keyword \Key{SORT I}, the keyword
 \Key{PRESORT} has to used in the \Sec{TRANSFORMATION} input
-module of the \Sec{*WAVE FUNCTION} input section. For standard
+module of the \Sec{*WAVE FUNCTIONS} input section. For standard
 calculation you will in general not need to change any of the
 default settings.
 
@@ -1025,7 +1021,7 @@ integral calculation appear in the \Sec{TWOINT} section.
 \item[\Key{ICEDIF}]\verb| |\newline
 \verb|READ (LUCMD,*) ICDIFF,IEDIFF|
 
-Screening\index{intgral screening} threshold for Coulomb and exchange
+Screening\index{integral screening} threshold for Coulomb and exchange
 contributions to the Fock
 matrix in direct and parallel calculations. The thresholds for the
 integrals will ten to the power of these numbers. By default the same

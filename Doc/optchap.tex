@@ -156,7 +156,7 @@ input for a molecule without symmetry will thus look like:
 **PROPERTIES
 .ECD
 *EXCITA
-.NEXCITA
+.NEXCIT
     3
 *END OF INPUT
 \end{verbatim}
@@ -164,7 +164,7 @@ input for a molecule without symmetry will thus look like:
 In this run we will calculate the rotatory strength\index{rotatory
 strength} corresponding to 
 the three lowest electronic excitations\index{electronic excitation}
-(the \Key{NEXCITA} keyword) 
+(the \Key{NEXCIT} keyword) 
 using London atomic orbitals\index{London orbitals}. 
 If rotatory strengths obtained without London atomic orbitals is also
 wanted, this is easily accomplished by adding the keyword
@@ -191,7 +191,7 @@ C$_{2v}$ symmetry an input would look like:
 .EXCITA
 *EXCITA
 .DIPSTR
-.NEXCITA
+.NEXCIT
     3    2    1    0
 *END OF DALTON
 \end{verbatim}
@@ -226,7 +226,7 @@ strength to be calculated without the use of London orbitals):
 *EXCITA
 .DIPSTR
 .ROTVEL
-.NEXCITA
+.NEXCIT
     3
 *END OF INPUT
 \end{verbatim}
@@ -282,7 +282,7 @@ be:
 \begin{verbatim}
 **DALTON INPUT
 .RUN PROPERTIES
-**WAVE FUNCTION
+**WAVE FUNCTIONS
 .HF
 **PROPERTIES
 .OPTROT
@@ -370,7 +370,7 @@ polarizabilities. This may be achieved by the following input:
 **WAVE FUNCTIONS
 .HF
 *HF INPUT
-.THRESHOLD
+.THRESH
 1.0D-8
 **START
 .VROA
@@ -410,7 +410,7 @@ polarizabilities. This may be achieved by the following input:
      2
 0.0 0.09321471
 *RESPONSE
-.THRESHOLD
+.THRESH
 1.0D-6
 *VIBANA
 .PRINT
@@ -448,7 +448,7 @@ that because of the numerical differentiation\index{numerical
 differentiation} the response equations need to be converged 
 rather tightly (1.0$\cdot$10$^{-7}$). Remember also that this will
 require you to converge your wave function\index{wave
-function}\index{convergence threshold} more
+function}\index{convergence!threshold} more
 tightly than is the default. 
 
 The numerical differentiation\index{numerical differentiation} is
@@ -515,7 +515,7 @@ the VROA parameters obtained with a given basis set through the input:
      2
 0.0 0.09321471
 *RESPONSE
-.THRESHOLD
+.THRESH
 1.0D-6
 *VIBANA
 .HESFIL

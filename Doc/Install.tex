@@ -1,13 +1,12 @@
 \chapter{Installation}\label{ch:install}
 
 \section{Hardware/software
-supported}\label{sec:hardsoft}
-\index{hardware/software support}
+supported}\label{sec:hardsoft}\index{hardware/software support}
 
 {\dalton} can be run on a variety of systems running the UNIX
 operating system. The current release of the program supports
 Cray-UNICOS\index{Cray},
-Cray-T3D/E\index{Cray-T3D}\index{Cray-T3E}\index{Cray},
+Cray-T3D/E\index{Cray!T3D}\index{Cray!T3E}\index{Cray},
 HP,
 IBM-AIX\index{IBM-AIX},
 IBM-SP2,
@@ -124,7 +123,7 @@ Although this script in most cases is capable of making a correct
 \verb|Makefile.config| against local system set-up. This applies in
 particular in case of parallel installations, where the user manually
 {\em has} to specify certain variables like the path for the
-MPI-libraries.
+MPI-libraries\index{MPI}.
 
 During the execution of the \verb|configure| script, you will be
 asked a few questions, most of which require a quite obvious
@@ -142,9 +141,9 @@ different value for \verb|WRKMEM| through the shell-script running
 {\dalton}.
 
 \item Default basis set library
-\index{basis set library}\index{installation!basis set library}
-location:
-This defines the directory where the program will look for the
+\index{basis set!library}
+\index{installation!basis set library}
+location: This defines the directory where the program will look for the
 basis sets supplied with the distribution, and this need to be
 changed according to the local directory structure. We recommend
 that the basis sets in this directory are {\em not} changed, but
@@ -178,7 +177,8 @@ optimization\index{optimization (f77)} (for instance on the Cray), as
 it is our experience that
 the code is optimized incorrectly if the optimization is too
 aggressive.} The proper options to the C preprocessor for an ordinary
-installation of the program are also supplied with \verb|Makefile.config|\index{Makefile.config}.
+installation of the program are also supplied with
+\verb|Makefile.config|\index{Makefile.config}.
 
 NOTE: If problems with I/O\index{I/O-problems} are experienced on
 any computer,
@@ -202,15 +202,16 @@ as message passing interface: Whereas a normal installation will
 create a single executable, the PVM installation will
 create both a master\index{master program} and a slave
 program\index{slave program}.
-The slave program, called \verb|node.x|\index{node.x}, must be placed in  the
-proper directory, as defined by the PVM3 installation on the
+The slave program, called \verb|node.x|\index{node}, must be placed in
+the proper directory, as defined by the PVM3 installation on the
 platform you are using. NOTE: Default location of the slave program
 will be the same directory as the master program, that is, the default
 installation directory.
 
-MPI parallel executables will be called \verb|dalpar.x|, PVM parallel
-executables are called \verb|dalpvm.x| and \verb|node.x|, whereas a
-single-processor executable will be called \verb|dalton.x|.
+MPI\index{MPI} parallel executables will be called \verb|dalpar.x|,
+PVM\index{PVM} parallel executables are called \verb|dalpvm.x| and
+\verb|node.x|, whereas a single-processor executable will be called
+\verb|dalton.x|.
 
 \section{Running the {\dalton} test suite}\label{sec:testsuite}
 \index{test suite}\index{installation!test suite}

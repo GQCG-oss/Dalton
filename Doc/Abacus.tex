@@ -21,24 +21,22 @@ general input  module. See also Chapter~\ref{ch:geometrywalks}.
 \begin{description}
 
 \item[\Key{ABALNR}] Invokes the calculation of frequency dependent
-linear response\index{frequency}\index{linear response} calculations. 
-At present this only  
+linear response\index{frequency}\index{linear response}\index{response!linear}
+calculations. At present this only  
 includes the frequency dependent polarizability\index{polarizability} as well as directives
-controlling the calculation of Raman related properties\index{Raman
-intensity}\index{Raman optical activity}\index{ROA}. Combined with the 
+controlling the calculation of Raman related
+properties\index{Raman intensity}\index{Raman optical activity}\index{ROA}. Combined with the 
 keyword \Key{SOPPA} it invokes a SOPPA\index{SOPPA} calculation of the 
 frequency dependent polarizability.
 
 \item[\Key{CAVORG}]\verb| |\newline
 \verb|READ (LUCMD,*) (CAVORG(ICOOR), ICOOR = 1, 3)|
 
-Reads the origin to be used for the cavity\index{cavity
-origin}\index{reaction field} during a solvent
-calculation. By default this is chosen to be the center of
-mass\index{center of mass}. Should by used with care, as it has to
-correspond to the center 
-used in the evaluation of the undifferentiated solvent integrals in
-the \her\ section.
+Reads the origin to be used for the cavity\index{cavity!origin}\index{reaction field}
+during a solvent calculation. By default this is chosen to be the
+center of mass\index{center of mass}. Should by used with care, as it
+has to correspond to the center used in the evaluation of the
+undifferentiated solvent integrals in the {\her} section.
 
 \item[\Key{DIPGRA}] Invokes the calculation of dipole moment
 gradients\index{dipole gradient}\index{atomic polar tensor}\index{APT}
@@ -73,11 +71,10 @@ more detail (Sec.~\ref{sec:ecd}).
 
 \item[\Key{EXCITA}] Invokes the calculation of electronic
 excitation\index{electronic excitation}\index{excitation energy}
-energies as residues of linear response functions\index{linear
-response}\index{single residue} as described by
-Olsen and J\o rgensen \cite{jopjjcp82}. It also calculates closely
-related properties like transition moments\index{transition
-moment}\index{rotatory strength} and 
+energies as residues of linear response functions\index{linear response}\index{response!linear}\index{single residue}
+as described by Olsen and J\o rgensen \cite{jopjjcp82}. It also
+calculates closely related properties like transition
+moments\index{transition moment}\index{rotatory strength} and 
 rotatory strengths. Combined with the 
 keyword \Key{SOPPA} it invokes a SOPPA\index{SOPPA} calculation of electronic
 excitation energies and transition moments.
@@ -228,8 +225,8 @@ indirect nuclear spin-spin coupling\index{spin-spin coupling}
 constants. The reader is refered to the 
 description of the two keywords \Key{SHIELD} and \Key{SPIN-S}.
 
-\item[\Key{NOCMC}] This keyword sets the gauge origin\index{gauge
-origin}  to the origin of the Cartesian Coordinate system,
+\item[\Key{NOCMC}] This keyword sets the gauge
+origin\index{gauge origin}  to the origin of the Cartesian Coordinate system,
 that is (0,0,0). This keyword is automatically invoked in case of VCD
 calculations.
 
@@ -314,8 +311,7 @@ level of 2 or higher has been chosen. Note that quadrupole moment is
 defined according to Buckingham \cite{adbacp12}, and it is not
 transformed to the principal moments of inertia coordinate system.
 
-\item[\Key{RAMAN}] Calculates Raman intensities\index{Raman
-intensity}, as described in 
+\item[\Key{RAMAN}] Calculates Raman intensities\index{Raman intensity}, as described in 
 Ref.~\cite{thkrklbpjjofd99}. This property needs a lot of settings
 in order to perform correctly, and the reader is therefore refered to
 Section~\ref{sec:vroa}, where the
@@ -349,9 +345,8 @@ nuclear coordinates. This ordering can be obtained by setting the
 print level in the \verb|*READIN| module to 20 or higher.
 
 \item[\Key{SHIELD}] Invokes the calculation of nuclear
-shielding\index{nuclear shielding}
-constants. By default this is done using London orbitals\index{London
-orbitals} in order to 
+shielding\index{nuclear shielding} constants. By default this is done
+using London orbitals\index{London orbitals} in order to 
 ensure fast basis set convergence as shown in
 Ref.~\cite{kwjfhppjacs112,krthrkpjklbhjajjcp100}. The use of London
 orbitals can be disabled by the keyword \verb|.NOLOND|.
@@ -403,8 +398,7 @@ spin-spin couplings
 between nuclei with naturally occuring isotopes with abundance more
 than 1\% and non-zero spin will be calculated, as well as all the different
 contributions (Fermi contact, dia- and paramagnetic spin-orbit and
-spin-dipole)\index{Fermi
-contact}\index{spin-dipole}\index{paramagnetic spin-orbit}\index{diamagnetic spin-orbit}. The implementation is described in 
+spin-dipole)\index{Fermi contact}\index{spin-dipole}\index{paramagnetic spin-orbit}\index{diamagnetic spin-orbit}. The implementation is described in 
 Ref.~\cite{ovhapjhjajsbpthjcp96}. 
 
 As this is a very time consuming property, as well as requiring MCSCF
@@ -483,7 +477,7 @@ calculation of Atomic Axial Tensors are controled by the keyword
 \verb|.PRINT |.
 
 \item[\Key{NODBDR}] Skip contributions originating from first
-half-differentiated overlap\index{overlap, half-differentiated}
+half-differentiated overlap\index{overlap!half-differentiated}
 integrals with respect to both nuclear 
 distortions as well as magnetic field. This will give wrong results
 for VCD\index{VCD}\index{vibrational circular dichroism}. Mainly for debugging purposes.
@@ -527,8 +521,8 @@ calculation of the Atomic Axial Tensors\index{atomic axial tensor}\index{AAT}. M
 *ABALNR}}\label{sec:abalnr}
 
 Directives to control the calculation of frequency dependent linear
-response\index{frequency}\index{linear response} functions. At present
-these directives only affect the 
+response\index{frequency}\index{linear response}\index{response!linear}
+functions. At present these directives only affect the 
 calculation of frequency dependent linear response functions appearing
 in connection with Vibrational Raman Optical Activity
 (ROA)\index{Raman optical activity}\index{ROA}.
@@ -578,10 +572,9 @@ Set the maximum dimension of the reduced space to which new basis
 vectors are added as described in Ref.~\cite{tuhjahjajpjjcp84}. Read
 one more line containing maximum dimension. Default value is~400.
 
-\item[\Key{OPTORB}] Use optimal orbital trial vectors\index{optimal
-orbital trial vector} in the 
+\item[\Key{OPTORB}] Use optimal orbital trial vectors\index{optimal orbital trial vector} in the 
 iterative solution of the frequency-depen\-dent linear
-response\index{linear response}
+response\index{linear response}\index{response!linear}
 equations. These are generate as described in
 Ref.~\cite{tuhjahjajpjjcp84} by solving the orbital response equation
 exact, keeping the configuration part fixed.
@@ -663,8 +656,8 @@ visible and UV absorption.
 \item Rotatory Strength\index{rotatory strength} which determines
 Electronic Circular Dichroism\index{electronic circular dichroism}\index{ECD}
 (ECD).
-\item Excitation Energies\index{electronic
-excitation}\index{excitation energy}. These are always calculated when
+\item Excitation Energies\index{electronic excitation}\index{excitation energy}. 
+These are always calculated when
 invoking the \verb|.EXCITA| keyword in the general input module.
 \end{enumerate}
 
@@ -724,7 +717,8 @@ irreducible representations.
 
 \item[\Key{OPTORB}] Use optimal orbital trial vectors\index{optimal
 orbital trial vector} in the
-iterative solution of the eigenvalue equations.~\index{linear response}
+iterative solution of the eigenvalue equations.
+\index{linear response}\index{response!linear}
 These are generate by solving the orbital response equation
 exact, keeping the configuration part fixed as described in
 Ref.~\cite{tuhjahjajpjjcp84}. 
@@ -760,8 +754,9 @@ containing the convergence threshold. The default value is
 $1\cdot10^{-4}$.
 
 \item[\Key{TRIPLE}]
-Indicates that it is triplet excitation energies\index{excitation energy,
-triplet} that is to be calculated. 
+\index{excitation energy!triplet}
+Indicates that it is triplet excitation energies that is to be
+calculated.
 \end{description}
 
 \subsection{One-electron expectation values: {\tt
@@ -803,13 +798,14 @@ one-electron expectation values. Mainly for debugging purposes.
 \item[\Key{ELFGRA}] Invokes the calculation of the electronic
 contribution to the nuclear quadrupole moment coupling
 tensor\index{nuclear quadrupole coupling}\index{NQCC} (that
-is, the electric field gradient\index{electric field
-gradient}). Default value is \verb|TRUE| if 
+is, the electric field 
+\index{electric field!gradient}
+gradient). Default value is \verb|TRUE| if 
 nuclear quadrupole coupling constants have been requested in the
 general input module, otherwise \verb|FALSE|.
 
 \item[\Key{NEFIEL}] Invokes the evaluation of the electric
-field at the individual nuclei\index{electric field at nucleus}. Default
+field at the individual nuclei\index{electric field!at nucleus}. Default
 value is \verb|TRUE| if 
 spin-rotation\index{spin-rotation constant} constants have been
 requested in the general input 
@@ -822,8 +818,7 @@ symmetry dependent nuclei cannot be used when calculating this property.
 Set the number of integration points to be used in the Gaussian
 quadrature\index{Gaussian quadrature}
 when evaluating  the diamagnetic spin-orbit\index{diamagnetic
-spin-orbit} integrals. Default 
-value is 40.
+spin-orbit} integrals. Default value is 40.
 
 \item[\Key{PRINT}]\verb| |\newline
 \verb|READ (LUCMD,*) MPRINT|
@@ -893,10 +888,8 @@ purposes.
 
 \subsection{Geometry analysis: \Sec{GEOANA}}
 
-Directives controlling the calculation and printing of bond
-angles\index{bond distance}\index{bond angle}\index{dihedral angle}
-and 
-dihedral angles appear in the \verb|*GEOANA| section. By default all
+Directives controlling the calculation and printing of bond angles\index{bond distance}\index{bond angle}\index{dihedral angle}\index{geometry!bond distance}\index{geometry!bond angle}\index{geometry!dihedral angle}
+and dihedral angles appear in the \verb|*GEOANA| section. By default all
 bond distances will be calculated. The program will also define atoms
 to be bonded to each other depending on their bond distance. For all atoms
 defined to be bonded to each other, the bond distance and bond angles
@@ -909,7 +902,8 @@ will be printed.
 \verb|       READ (LUCMD,*) (IANG(J,I), J = 1,3)|\newline
 \verb|310 CONTINUE|
 
-Calculate and print bond angles\index{bond angle}.  Read one
+Calculate and print
+bond angles\index{bond angle}\index{geometry!bond angle}. Read one
 more line specifying the number of angles, and then read \verb|NANG|
 lines containing triplets $A,B,C$ of atom labels, each
 specifying a particular bond angle~$\angle ABC$. Notice that in the
@@ -925,8 +919,8 @@ Waals radius} radii of the atoms.
 \verb|       READ (LUCMD,*) (IDIHED(J,I), J = 1,4)|\newline
 \verb|410 CONTINUE|
 
-Calculate and print dihedral\index{dihedral angle} (torsional)
-angles.  Read one more line specifying the number of angles,
+Calculate and print dihedral\index{dihedral angle}\index{geometry!dihedral angle}
+(torsional) angles.  Read one more line specifying the number of angles,
 and then read \verb|NDIHED| lines containing quadruplets $A,B,C,D$ of atom
 labels.  The angle computed is that between the planes~$ABC$
 and $BCD$. Notice that in the current version of the program there is
@@ -1174,8 +1168,8 @@ keyword. Do not use.
 *LINRES}}\label{sec:linres}
 
 Directives to control the calculation of frequency-independent linear
-response functions\index{linear response}. At present these directives
-only affect the 
+response functions\index{linear response}\index{response!linear}. At
+present these directives only affect the 
 calculation of frequency-independent linear response functions appearing
 in connection with singlet, magnetic perturbations. This
 whole section will become obsolete and be replaced by \verb|*EXCITA|
@@ -1418,8 +1412,8 @@ as trial vectors.
 \item[\Key{NOAVER}] Use an approximation to the orbital Hessian
 diagonal when generating trial vectors.
 
-\item[\Key{NONEXT}] Do not use optimal orbital trial\index{optimal
-orbital trial vector} vectors. 
+\item[\Key{NONEXT}] Do not use optimal orbital 
+trial\index{optimal orbital trial vector} vectors. 
 
 \item[\Key{NOTRIA}] Do not use old solutions as trial vectors, even
 though they may exist.
@@ -1470,7 +1464,8 @@ spin-spin coupling constants that are to be calculated.
 \item[\Key{ABUNDA}]\verb| |\newline
 \verb|READ (LUCMD,*) ABUND|
 
-Set the natural abundance\index{abundance} threshold for discarding couplings between
+Set the natural abundance\index{abundance} threshold for discarding
+couplings between 
 certain nuclei. By default all isotopes in the molecule with a natural
 abundance above this limit will be included in the list of nuclei for which
 spin-spin coupling constants will be calculated. Read one more line
@@ -1479,20 +1474,19 @@ which includes both proton and $^{13}$C nuclei.
 
 \item[\Key{NODSO}] Do not calculate diamagnetic
 spin-orbit\index{diamagnetic spin-orbit}
-contributions to the total indirect spin-spin coupling\index{spin-spin
-coupling} constants. This 
+contributions to the total indirect spin-spin 
+coupling\index{spin-spin coupling} constants. This 
 will give wrong results for the total spin-spin couplings.
 
-\item[\Key{NOFC}] Do not calculate the Fermi contact\index{Fermi
-contact} contribution 
+\item[\Key{NOFC}] Do not calculate the Fermi
+contact\index{Fermi contact} contribution 
 to the total indirect spin-spin coupling\index{spin-spin coupling}
 constants. This will give 
 wrong results for the total spin-spin couplings.
 
 \item[\Key{NOPSO}] Do not calculate the paramagnetic
-spin-orbit\index{paramagnetic spin-orbit}
-contribution to the indirect spin-spin coupling\index{spin-spin
-coupling} constants. This will 
+spin-orbit\index{paramagnetic spin-orbit} contribution to the indirect
+spin-spin coupling\index{spin-spin coupling} constants. This will 
 give wrong results for the total spin-spin couplings.
 
 \item[\Key{NOSD}] Do not calculate the spin-dipole\index{spin-dipole}
@@ -1520,9 +1514,10 @@ Will only calculate the spin dipole--Fermi\index{spin-dipole}\index{Fermi contac
 Fermi contanct--Fermi contact contribution for the triplet
 responses. The first of these to terms only contribute to the
 anistotropy, and one may in this way obtain the most important triplet
-contributions to the isotropic and anisotropic\index{spin-spin
-coupling}\index{spin-spin anisotropy} spin-spin couplings by
-only solving one instead of ten response equations for each nucleus.
+contributions to the isotropic and 
+anisotropic\index{spin-spin coupling}\index{spin-spin anisotropy}
+spin-spin couplings by only solving one instead of ten response
+equations for each nucleus.
 
 \item[\Key{SELECT}]\verb| |\newline
 \verb|READ (LUCMD,*) NPERT|\newline
@@ -1551,8 +1546,7 @@ invariance\index{translational invariance}\index{rotational invariance}
 appear in the \verb|*TROINV| section.
 \begin{description}
 \item[\Key{COMPAR}] Use both translational and
- rotational\index{translational invariance}\index{rotational
- invariance} symmetry 
+ rotational\index{translational invariance}\index{rotational invariance} symmetry 
  and check the molecular Hessian against the Hessian obtained
 without the use of translational and rotational invariance. This is
 default in a calculation of vibrational circular dichroism
@@ -1592,9 +1586,8 @@ value.  Default is~0.1.
 Directives controlling the set-up of right-hand sides for triplet
 perturbing operators (for instance the Fermi contact and spin-dipole
 operators entering the nuclear spin-spin coupling
-constants)\index{spin-dipole}\index{Fermi contact}\index{spin-spin
-coupling}, as well 
-as when solving the triplet response equations appear in the
+constants)\index{spin-dipole}\index{Fermi contact}\index{spin-spin coupling},
+as well as when solving the triplet response equations appear in the
 \verb|*TRPRSP| input module. 
 
 \begin{description}
@@ -1637,8 +1630,8 @@ for the total spin-spin\index{spin-spin coupling} couplings. Mainly for debuggin
 equations. This will give wrong results for the total spin-spin
 couplings\index{spin-spin coupling}. Mainly for debugging purposes.
 
-\item[\Key{OPTORB}] Optimal orbital trial\index{optimal orbital trial
-vector} vectors used in the 
+\item[\Key{OPTORB}] Optimal orbital
+trial\index{optimal orbital trial vector} vectors used in the 
 solution of the triplet response equations. These are generate by
 solving the orbital response equation 
 exact, keeping the configuration part fixed as described in

@@ -4,10 +4,14 @@ The following approaches to treat relativistic effects are available in DALTON:
 
 \begin{description}
 
-\item[ECP]\index{Effective core potentials} The Effective Core Potential approach of Pitzer and Winter~\cite{rmpnmwijqc40} is available 
-for single-point calculations by asking for ECP as the basis set for the chosen element. Analytical gradients and Hessians are under development. So far, only a limited 
-set of elments is covered by the basis set library. See the \verb|rsp_ecp| example in the 
-test-suite. The corresponding spin-orbit operators are not implemented.  	
+\item[ECP]\index{Effective core potentials}\index{ECP}\index{basis set!ECP}
+The Effective Core Potential approach of Pitzer and
+Winter~\cite{rmpnmwijqc40} is available for single-point calculations
+by asking for ECP as the basis set for the chosen element. Analytical
+gradients and Hessians are under development. So far, only a limited
+set of elments is covered by the basis set library. See the
+\verb|rsp_ecp| example in the test-suite. The corresponding spin-orbit
+operators are not implemented.
 
 \begin{center}
 \fbox{
@@ -54,7 +58,7 @@ operators are not suitable in this case, see for instance Ref.~\cite{}.
 }}
 \end{center}
 
-\item[Spin-orbit Mean-Field]\index{AMFI}\index{pin-orbit mean-field} The spin-orbit mean-field approach can be used 
+\item[Spin-orbit Mean-Field]\index{AMFI}\index{spin-orbit mean-field} The spin-orbit mean-field approach can be used 
 for either replacing the Breit-Pauli spin-orbit operator, or as an operator 
 with suitable relativistic corrections in combination with the Douglas-Kroll 
 approach. It is based on an effective one-electron operator, where the two-electron

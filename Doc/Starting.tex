@@ -29,14 +29,13 @@ of {\dalton}.
 
 \subsection{A CASSCF geometry optimization}
 
-We start by a simple geometry optimization\index{geometry
-optimization} of a water molecule using a Complete
+We start by a simple geometry optimization\index{geometry optimization} 
+of a water molecule using a Complete 
 Active Space (CAS)\index{CASSCF} wave function, where we use C$_{2v}$ symmetry
 keeping the 1s-orbital on oxygen inactive and distributing the valence
 electrons  into 8 orbitals. At the starting geometry we
-evaluate the nuclear magnetic shielding constants\index{nuclear
-shielding} and the
-magnetizability\index{magnetizability} of the water
+evaluate the nuclear magnetic shielding constants\index{nuclear shielding} 
+and the magnetizability\index{magnetizability} of the water
 molecule, and at the optimized geometry we perform a vibrational
 analysis\index{vibrational analysis} and calculate the IR
 intensities\index{IR intensity}\index{dipole gradient}\index{atomic polar tensor}\index{APT} 
@@ -81,8 +80,7 @@ evaluating the two parameters determining an NMR spectrum, the nuclear
 shielding\index{nuclear shielding} constants and the spin--spin
 coupling constants\index{spin-spin coupling}. We do this
 at a fixed geometry, and use a Restricted Active Space (RAS)\index{RASSCF} wave
-function. In this way we include near degeneracy\index{near
-degeneracy} effects by inclusion
+function. In this way we include near degeneracy\index{near degeneracy} effects by inclusion
 of the appropriate orbitals in the RAS2 space, and also some of the
 dynamical correlation\index{dynamical correlation}  by single and
 double excitations
@@ -137,8 +135,8 @@ the program has been compiled with MPI options, and request a SCF
 calculation of the second
 hyperpolarizability\index{second hyperpolarizability}
 ($\gamma_{xxxx}$) using
-the cubic response solver\index{cubic response} of the \resp\
-program. No two-electron
+the cubic response solver\index{cubic response}\index{response!cubic}
+of the {\resp} program. No two-electron
 integrals will be stored on disc in any part of the calculation. The
 number of nodes\index{node} used is determined when submitting the
 job, and how
@@ -279,10 +277,10 @@ file, as it is treated thoroughly in a separate chapter,
 Chapter~\ref{ch:molinp}. Here we only present two inputs for
 water; one
 using Cartesian coordinate\index{Cartesian coordinates} input and
-automatic symmetry detection\index{symmetry detection} and
+automatic symmetry detection\index{symmetry!automatic detection} and
 the other using Cartesian coordinates and where we explicitly give the
 symmetry elements. Finally we show the \mol\ input for H$_{2}$O$^{2+}$
-using Z-matrix input\index{Z-matrix}. In
+using Z-matrix input\index{Z-matrix input}. In
 all cases the basis set library of {\dalton} have been used, as we
 assume that most users will exploit the basis sets provided in the basis
 set library as opposed to punching them in. The punching
@@ -311,10 +309,9 @@ will be detected by the program during the input processing unless
 turned off as shown in the last of the input examples for the \mol\
 input files.
 
-We may also add the symmetry elements\index{symmetry element} of the
-symmetry group\index{symmetry group} ourselves. We must
-then remove any symmetry-dependent centers\index{symmetry-dependent
-center}. For the above input this
+We may also add the symmetry elements\index{symmetry!element} of the
+symmetry group\index{symmetry!group} ourselves. We must
+then remove any symmetry-dependent centers\index{symmetry-dependent center}. For the above input this
 will result in, if we use the yz- and xy-planes as symmetry elements:
 
 \begin{verbatim}
@@ -338,7 +335,7 @@ different basis
 functions to be used on different atoms.
 
 Let us now proceed to an input for H$_{2}$O$^{2+}$ where we use
-Z-matrix input\index{Z-matrix}. The  input will then look like:
+Z-matrix input\index{Z-matrix input}. The  input will then look like:
 
 \begin{verbatim}
 BASIS
@@ -484,16 +481,17 @@ Sec.~\ref{sec:dynamic}\index{dynamics}.
 \item[DALTON.CM] An output file that contains the most essential
 information needed for calculation of shielding polarizabilities
 and magnetizability polarizabilities. Most easily used together
-with the analyzing program \verb|ODCPRG.f| supplied in the
-tool-directory\index{shielding polarizability}\index{magnetizability polarizability}\index{Cotton-Mouton}.
+with the analyzing program \verb|ODCPRG.f| supplied in
+the\index{shielding polarizability}\index{magnetizability polarizability}\index{Cotton-Mouton}
+tool-directory.
 
 \item[DALTON.HES] If the keyword \Key{HESPUN} has been specified in
 the \Sec{VIBANA} input module, the molecular Hessian\index{Hessian}
 will be written
 to this file in a standard format, which may be used as a start Hessian
 in an first-order\index{first-order optimization} geometry
-optimization, or as input to a ROA  or VCD \index{ROA}\index{Raman optical
-activity}\index{VCD}\index{vibrational circular dichroism}
+optimization, or as input to a ROA  or
+VCD\index{ROA}\index{Raman optical activity}\index{VCD}\index{vibrational circular dichroism}
 analysis with different basis sets/level of correlation for the
 intensity operators and the force field. See also the
 \verb|FChk2HES.f| program in the tool-directory.
