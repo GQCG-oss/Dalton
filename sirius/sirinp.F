@@ -537,32 +537,7 @@ C
 C
 C********** Default values section DFTINP *****
 C
-      IQDTYP = 4
-C
-C     IQDTYP = 1     very coarse
-C     IQDTYP = 2     coarse
-C     IQDTYP = 3     medium
-C     IQDTYP = 4     dense
-C     IQDTYP = 5     very dense
-C
-      HFXFAC = D1
-      WDFTX  = D0
-      WDFTC  = D0
-      WDFTL  = D0
-      WDFTB  = D0
-      DFTRUN = .FALSE.
-      DFTADD = .FALSE.
-      GRDONE = .FALSE.
-      DFTPOT = .FALSE.
-      DFTORD = .FALSE.
-      DFTASC = .FALSE.
-      DFTHES = .FALSE.
-      DFTHR0 = 1.0D-8
-      DFTHRL = 1.0D-10
-      DFTHRI = 1.0D-13 
-      DFTHRS = .FALSE.
-      DFTELS = 1.0D-3
-      DFTEST = .FALSE.
+      CALL DFTINI
 C
 C
 C********** Default values section ORBINP *****
@@ -2327,7 +2302,7 @@ C 13-May-1995 K.Ruud, added keyword .ELECTRONS.
 C 1999 Helgaker, DFT input added 
 C
 #include <implicit.h>
-      PARAMETER (NTABLE = 35)
+      PARAMETER (NTABLE = 38)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      *          REWORD*12
@@ -2361,7 +2336,8 @@ C
      *            '.MAX ER','.DDSCF ','.COREHO','.CORERE','XXXXXXX',
      *            '.ELECTR','.AUTOCC','.FC MVO','.HFXFAC','.LDA   ',
      *            '.BLYP  ','.B3LYP ','.FROMVX','.WAH   ','.DFTWEI',
-     *            '.GRID  ','.DFTAC ','.DFTHES','.DFTTHR','.DFTELS'/
+     *            '.DFTAC ','.DFTHES','.DFTTHR','.DFTELS','.RADINT',
+     *            '.ANGINT','.ANGMIN',',.NOPRUN'/
 C
 C     ***** PROCESS INPUT FOR RHFINP *****
 C
@@ -2381,7 +2357,7 @@ C
                   GO TO (101,102,103,104,105,106,107,108,109,110,
      &                   111,112,113,114,115,116,117,118,119,120,
      &                   121,122,123,124,125,126,127,128,129,130,
-     &                   131,132,133,134,135),II
+     &                   131,132,133,134,135,136,137,138),II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -2606,24 +2582,37 @@ C
       WDFTC  = D1 - WDFTL
       HFXFAC = D1 - WDFTX
       GO TO 100
-  131 CONTINUE
-      READ (LUCMD,*) IQDTYP
-      GO TO 100
-  132 CONTINUE
+ 131  CONTINUE
       DFTASC = .TRUE.
       DFTPOT = .TRUE.
       READ (LUCMD,*) DFTIPT, DFTBR1, DFTBR2
       GO TO 100
-  133 CONTINUE
+ 132  CONTINUE
       DFTHES = .TRUE.
       GO TO 100
-  134 CONTINUE
+ 133  CONTINUE
       DFTHRS = .TRUE.
       READ (LUCMD,*) DFTHR0, DFTHRL, DFTHRI
       GO TO 100
-  135 CONTINUE
-      DFTEST = .TRUE.
+ 134  CONTINUE
       READ (LUCMD,*) DFTELS 
+C&&& RADINT: Give relative precision of the radial integration
+ 135  CONTINUE
+      READ (LUCMD,*) RADINT
+      GO TO 100
+C&&& ANGINT: Give precision of the angular integration.
+C            The integration is exact for spherical harmonics up to
+C            order ANGINT
+ 136  CONTINUE
+      READ(LUCMD,*) ANGINT
+      GO TO 100
+C&&& ANGMIN: Set minimum order of Lebedev scheme after pruning
+ 137  CONTINUE
+      READ(LUCMD,*) ANGMIN
+      GO TO 100
+C&&& NOPRUN: Turn off pruning of angular grid.
+ 138  CONTINUE
+      NOPRUN = .TRUE.
       GO TO 100
 C
  2000 CONTINUE
@@ -4751,7 +4740,9 @@ C
             WRITE (IWUNIT,'(4X,A,17X,3D12.2)')
      &        ' Default threshold for number of electrons:   ', DFTELS 
          END IF
-         WRITE (IWUNIT,'(4X,A,I2)') ' DFT quadrature level:', IQDTYP 
+         WRITE (IWUNIT,'(4X,A,E10.2,I4)') ' DFT quadrature accuracy:',
+     &        RADINT,ANGINT
+         WRITE(IWUNIT,*) ANGINT
          IF (DFTPOT) WRITE (IWUNIT,'(/,A)')
      &        ' Kohn-Sham matrix calculated from potential.'
          IF (DFTASC) THEN

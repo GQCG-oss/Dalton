@@ -1,9 +1,9 @@
-include ../Makefile.config
-
 all : libdft.a
 
+include ../Makefile.config
+
 OBJS =  dftdrv.o dftgrd.o  dftden.o dftaos.o dftaux.o \
-        dftfun.o  dftest.o dftac.o dftpar.o
+        dftfun.o  dftest.o dftac.o dftpar.o Lebedev-Laikov.o
 
 libdft.a: $(OBJS)
 	$(AR) $(ARFLAGS) $@ $?

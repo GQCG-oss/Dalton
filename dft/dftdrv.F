@@ -32,6 +32,34 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
+c     DFTINI
+C     intialize DFTCOM common block
+      SUBROUTINE DFTINI
+#include <implicit.h>
+#include <dftcom.h>
+      HFXFAC = D1
+      WDFTX  = D0
+      WDFTC  = D0
+      WDFTL  = D0
+      WDFTB  = D0
+      DFTHR0 = 1.0D-9
+      DFTHRL = 1.0D-10
+      DFTHRI = 1.0D-13 
+      DFTELS = 1.0D-3
+      RADINT = 1.0D-13
+      ANGINT = 35
+      ANGMIN = 15
+c     LEBMIN is in the common block but is used only internall in dftgrd
+      DFTADD = .FALSE.
+      GRDONE = .FALSE.
+      DFTRUN = .FALSE.
+      DFTPOT = .FALSE.
+      DFTORD = .FALSE.
+      DFTASC = .FALSE.
+      DFTHES = .FALSE.
+      DFTHRS = .FALSE.
+      NOPRUN = .FALSE.
+      END
 C
 C /* Deck dftexc */
       SUBROUTINE DFTEXC(DMAT,NDMAT,EXCMAT,NXCMAT,MAKDEN,DOERG,DOGRD,
@@ -460,7 +488,7 @@ C
 C     Print section
 C
       IF (IPRINT .GT. 2) THEN 
-         WRITE (LUPRI,'(/2X,A,F14.6,6X,D8.2,I14)')
+         WRITE (LUPRI,'(/2X,A,F14.7,6X,D8.2,I14)')
      &      ' Number of electrons/abscissas:  ', 
      &        ELCTRN,ELCTRN-ELCTRX,NPNTS
          IF (DOERG) THEN
