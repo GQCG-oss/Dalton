@@ -29,11 +29,14 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rspvec.F,v 1.6 2001-04-03 20:33:01 vebjornb Exp $
+C$Id: rspvec.F,v 1.7 2001-04-19 06:25:07 hjj Exp $
 C
 #include <single.h>
 #ifdef REVLOG
 $Log: not supported by cvs2svn $
+Revision 1.6  2001/04/03 20:33:01  vebjornb
+Bugfixes from Patrick - VB
+
 Revision 1.5  2001/04/03 07:26:27  coriani
 MCD in SOMOM, fixed DP5 and argument list in CALL GETGP. SC
 
@@ -3102,8 +3105,8 @@ C
 C
       WRITE(LUPRI,'(A)') ' '
       CALL PRSYMB(LUPRI,'=',70,1)
-      WRITE(LUPRI,'(2A)') 
-     &     ' >>>>>>>>    L I N E A R   R E S P O N S E   ',
+      WRITE(LUPRI,'(A)') 
+     &     ' >>>>>>>>    L I N E A R   R E S P O N S E   '//
      &     'F U N C T I O N   <<<<<<<<'
       CALL PRSYMB(LUPRI,'=',70,1)
 C
@@ -3123,7 +3126,7 @@ C
 C
 C     Read in the linear response vector from file
 C
-               FRQ = QRFREQ(IBFR)
+               FRQ = BQRFR(IBFR)
                CALL REARSP(LURSP,KLEN,VECB,BQRLB(KSYMOP,IBOP),BLANK,
      &                     FRQ,D0,KSYMOP,0,THCLR,FOUND,CONV,ANTSYM)
                IF (.NOT. (FOUND .AND. CONV)) THEN
@@ -3146,8 +3149,8 @@ C     Print out response vector
 C
                IF (IPRRSP.GT.10) THEN
                   WRITE(LUPRI,'(/A,3X,A,3X,A,2X,D12.6,/A,I5)')
-     *                 ' QRHYP: SOLUTION VECTOR  LABEL',
-     *                 QRLBL(IBFR),' FREQUENCY ',FRQ,
+     *                 ' LRHYP: SOLUTION VECTOR  LABEL',
+     *                 BQRLB(ISYM,IBOP),' FREQUENCY ',FRQ,
      *                 ' SYMMETRY',ISYM
                   WRITE (LUPRI,'(/A)')
      *                 ' SOLUTION VECTOR OF LINEAR EQUATIONS'
@@ -3168,7 +3171,7 @@ C     Print out gradient
 C
                   IF (IPRRSP.GT.10) THEN
                      WRITE(LUPRI,'(/A,3X,A,3X,A,2X,D12.6,/A,I5)')
-     *                    ' QRHYP: GRADIENT VECTOR  LABEL',
+     *                    ' LRHYP: GRADIENT VECTOR  LABEL',
      *                    AQRLB(ISYM,IAOP),' FREQUENCY ',-FRQ,
      *                    ' SYMMETRY',ISYM
                      WRITE (LUPRI,'(/A)')
