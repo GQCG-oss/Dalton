@@ -16,8 +16,6 @@ ftnchek: pre
 
 all: libgp.a mpi_dummy.o
 
-gphjj.o: ../compinfo.h gphjj.F
-
 libgp.a: $(F_OBJS) $(C_OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 

@@ -32,7 +32,6 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
-#include "../compinfo.h"
 C
 C  /* Deck flshfo */
       SUBROUTINE FLSHFO (IUNIT)
@@ -363,13 +362,15 @@ C
 C
       LTEXT = LEN(TEXT)
       IF (TEXT(1:4) .EQ. 'INIT') THEN
-         WRITE (LUPRIN,'(3(/T6,2A)/)')
-     &   'Last compilation       : ',
-     &   LAST_DALTON_COMPILATION
-     &  ,'Fortran and C compilers: ',
-     &   F_AND_C_COMPILERS
-     &  ,'Scientific libraries   : ',
-     &   LIBRARY_LIST
+CHJ March 2005: this is not working on all machines, so ...
+C        WRITE (LUPRIN,'(3(/T6,2A)/)')
+C    &   'Last compilation       : ',
+C    &   LAST_DALTON_COMPILATION
+C    &  ,'Fortran and C compilers: ',
+C    &   F_AND_C_COMPILERS
+C    &  ,'Scientific libraries   : ',
+C    &   LIBRARY_LIST
+         WRITE (LUPRIN,'()')
       ELSE IF (LTEXT .GT. 0) THEN
          WRITE (LUPRIN,'(/A)') TEXT
       ELSE
