@@ -29,12 +29,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: sirtra.F,v 1.1.1.1 2001-02-08 13:33:31 hjj Exp $
+C$Id: sirtra.F,v 1.2 2001-03-22 14:47:04 hjj Exp $
 C
 #include <single.h>
 #ifdef UNDEF
 /* Comdeck rev_log */
 $Log: not supported by cvs2svn $
+Revision 1.1.1.1  2001/02/08 13:33:31  hjj
+*** Dalton Master Version *** cvs started 8-Feb-2001.
+
 Revision 1.1.1.1  2001/01/15 13:53:38  vebjornb
 Dalton 1.2
 
@@ -375,9 +378,9 @@ C
 C
 C....    CHECK STATISTICS FOR OVERFLOW OF MAXIMUM INSTALLED VALUES
 C
-      IF (NCHAIN .GT. NUMCHA) THEN
+      IF (NCHAIN .GT. MAXCHA) THEN
          WRITE(LUPRI,200) NSTEP,NBLOCK,NCHAIN,NBATCH
-         WRITE(LUPRI,153) NUMCHA
+         WRITE(LUPRI,153) MAXCHA
          CALL QUIT('SORTA: TOO MANY CHAINS')
       END IF
   153 FORMAT(/' TRACTL.SORTA: TOO MANY CHAINS, MORE THAN',I5)
@@ -720,9 +723,9 @@ C
 C
 C....    CHECK FOR OVERFLOW
 C
-      IF (NCHAIN .GT. NUMCHA) THEN
+      IF (NCHAIN .GT. MAXCHA) THEN
          WRITE(LUPRI,200) NSTEP,NBLOCK,NCHAIN,NBATCH
-         WRITE(LUPRI,153) NUMCHA
+         WRITE(LUPRI,153) MAXCHA
          CALL QUIT('TRACTL.SORTB: TOO MANY CHAINS')
       END IF
   153 FORMAT(/' TRACTL.SORTB: TOO MANY CHAINS; MORE THAN',I5)
@@ -2016,7 +2019,7 @@ C        ***** COMPUTE SYMMETRY INDEX ITSAO and ITSMO *****
 C
 C        MCMOT   : SIZE OF THE MO-SPACE
 C        NNOCX : NUMBER OF OCCUPIED PAIRS
-C        NUMCHA: MAXIMUM NUMBER OF DA CHAINS
+C        MAXCHA: MAXIMUM NUMBER OF DA CHAINS
 C        LDAMAX: MAXIMUM SIZE OF DA RECORDS
 C        LRBUF : Max size of AO/MO integral records
 C
@@ -2024,9 +2027,6 @@ C
          DO 50 ISYM = 1,NSYM
    50       MCMOT = MCMOT + MORB(ISYM)*MBAS(ISYM)
          NMOCCX = MOCCT*(MOCCT+1)/2
-         NUMCHA = 2500
-C        ... NUMCHA must be .le. dimensions of LASTAD(*) and
-C            LASTAE(*) in COMMON /INTTRA/.
 C
          LDAMAX = MAX(1706,NMBAST)
          LDAMAX = ((LDAMAX+IRAT-1)/IRAT)*IRAT
@@ -2151,10 +2151,12 @@ C
       LW5   = LW4 + M2ORBX
       LW6   = LW5 + MORBT
       LTRI  = LWORK - LW6 + 1
-      IF (LTRI.LT.NMBASX) THEN
-         LWORK  = LW6 - 1 + NMBASX
+      NPQMIN = 1 + (NMBASX-1)/MAXCHA
+      LTRIMIN = NPQMIN*NMBASX
+      IF (LTRI.LT.LTRIMIN) THEN
+         LWORK  = LW6 - 1 + LTRIMIN
          IF (LWORK.LE.KWORK) THEN
-            LTRI  = NMBASX
+            LTRI  = LTRIMIN
             MWORK = MAX(LWORK,MWORK)
             WRITE(LUPRI,9030) LWORK
          ELSE
@@ -2359,8 +2361,6 @@ C
 C        7000: CALL TRAAB TO OPEN LUINTM AND WRITE INFORMATION
 C              ABOUT NO INTEGRALS.
       END IF
-C
-      NUMCHA = 2500
 C
 C     ***** SET UP DYNAMIC STORAGE FOR TRAAB *****
 C           870522: is now the same as for TRACD /hjaaj
