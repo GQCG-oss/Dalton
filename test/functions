@@ -220,13 +220,16 @@ END {exit(failed)}
 # check the molecular hessian.
 # $1 - tolerance
 # $2 - the hessian
-# checking is tricky because of the large amount of data to be verified.
-# we compare all the numbers in the string with given tolerance.
+# checking is tricky because of the large amount of data to be
+# verified. We compare all the numbers in the string with given
+# tolerance.  When passing string to awk, we compress spaces and
+# trailing zeros because some variants of awk (notably on AIX) cannot
+# handle strings longer than 399 characters.
 check_mol_hessian() {
 if [ "$3" = "" ]; then
     echo "not enough parameters to check_vibr_freq."; return 1
 fi
-p=`echo $3`
+p=`echo $3|sed 's,[ 0]* , ,g'`
 $AWK 'function e(v,r){#print "mol_hessian: checking " v,",", r;
 return(v>r||v<-r)}
  BEGIN {s=0;c=0}
