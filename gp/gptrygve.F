@@ -29,12 +29,21 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: gptrygve.F,v 1.3 2001-03-26 09:37:06 ruud Exp $
+C$Id: gptrygve.F,v 1.4 2001-05-02 18:20:45 ruud Exp $
 C
 #include <single.h>
 C
 #ifdef REV_LOG
 $Log: not supported by cvs2svn $
+Revision 1.3  2001/03/26 09:37:06  ruud
+Various small bug fixes, among them now allowing for more than 100
+geometry perturbations with natural connection, a OPTORB problem is rsp,
+and inconsistent record length in non-direct response calculations.
+
+In addition, added temperature dependence to the harmonic vibrational average
+and the possibility of reusing property derivatives. In this connection changed
+the name of some ABACUS interface files. K.Ruud
+
 Revision 1.2  2001/02/13 18:35:03  vebjornb
 Lots of minor bug-fixes + CC documentation
 
@@ -1279,6 +1288,7 @@ C
       ABASF  = 'ABACUS.SF'
       ABATLM = 'ABACUS.TLM'
       ABAWLK = 'DALTON.WLK'
+      ABAIRC = 'DALTON.IRC'
       ABANR1 = 'ABAENR.RST'
       ABANR3 = 'ABAENR.BVC'
       ABANR5 = 'ABAENR.SVC'

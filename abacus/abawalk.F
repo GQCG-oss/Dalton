@@ -29,11 +29,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abawalk.F,v 1.7 2001-05-02 07:34:21 ruud Exp $
+C$Id: abawalk.F,v 1.8 2001-05-02 18:20:43 ruud Exp $
 C
 #include <single.h>
 #ifdef REVLOG
 $Log: not supported by cvs2svn $
+Revision 1.7  2001/05/02 07:34:21  ruud
+Small change to ensure that you can do 2nd-order optimizations with
+Douglas-Kroll. However, the gradients and Hessians are formally not correct
+
 Revision 1.6  2001/04/21 12:11:58  ruud
 Added the possibility of reusing property derivatives in vibrational average
 calculations. Fixed a bug in the temperature part, as well as in the Eckart
@@ -6014,7 +6018,7 @@ C  /* Deck wlkirn */
 #include <implicit.h>
 #include <priunit.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D100 = 100.0D0)
-      PARAMETER (ITMAX = 100, SMALL = 10.0D-6, NLOOP = 10)
+      PARAMETER (ITMAX = 1000, SMALL = 10.0D-6, NLOOP = 10)
       DIMENSION GRDDIA(NCART), EVAL(NCART)
 C
 C     calculates the timestep T corresponding to
@@ -6061,8 +6065,8 @@ C
       IF (ITER .LT. ITMAX) GO TO 400
 C
          WRITE (LUPRI,'(//A,I5,A)') ' Bisection failed at after ',ITER,
-     &                           ' iterations in WLKDYN.'
-         CALL QUIT('Bisection failed in WLKDYN.')
+     &                           ' iterations in WLKIRN'
+         CALL QUIT('Bisection failed in WLKIRN')
 C
  401  CONTINUE
       IF (IPRINT .GT. 10) THEN
