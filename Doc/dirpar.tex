@@ -2,7 +2,7 @@
 
 In this chapter we briefly discuss aspects connected to
 direct\index{direct calculation} and parallel\index{parallel calculation}
-methods as implemented in the \siraba\ program. 
+methods as implemented in the \dalton\ program. 
 
 \section{Direct methods}\label{sec:direct}
 
@@ -13,8 +13,8 @@ methods as implemented in the \siraba\ program.
 \noindent
 {\bf Reference literature:}
 \begin{list}{}{}
-\item H.\AA gren, O.Vahtras, H.Koch, P.J\o rgensen, and
-T.Helgaker. \newblock {\em J.Chem.Phys.}, {\bf
+\item H.~\AA gren, O.~Vahtras, H.~Koch, P.~J\o rgensen, and
+T.~Helgaker. \newblock {\em J.~Chem.~Phys.}, {\bf
 98},\hspace{0.25em}6471, (1993). 
 \item K.~Ruud, D.~Jonsson, P.~Norman, H.~{\AA}gren, T.~Saue,
 H.~J.~Aa.~Jensen, P.~Dahle, and P.~Dahle. \newblock {\em
@@ -24,7 +24,7 @@ J.~Chem.~Phys.} {\bf 108}, 7973 (1998).
 \end{center}
 
 The entire SCF\index{SCF}\index{HF}\index{Hartree--Fock} part
-of the \siraba\ code is direct, including all derivative two-electron
+of the \dalton\ code is direct, including all derivative two-electron
 integrals, and all the way up to the cubic response function. To
 perform a direct\index{direct calculation} calculation, all that is
 required is to add the 
@@ -49,7 +49,7 @@ screened~\cite{krdjpnhatshjajpdthjcp108}, using an increasingly
 tighter integral screening threshold during the SCF iterations. Thus,
 direct calculations calculated using integral screening will, when
 converged, be almost as exact as the results obtained with integral
-screening turned of. The thresholds can be changed with the
+screening turned off. The thresholds can be changed with the
 keywords \Key{IFTHRS} and \Key{ICEDIF}\index{integral screening}. To
 turn of integral screening in direct or parallel calculations
 altogether, \Key{IFTHRS} should be set to 20 or larger.
@@ -63,14 +63,14 @@ altogether, \Key{IFTHRS} should be set to 20 or larger.
 \noindent
 {\bf Reference literature:}
 \begin{list}{}{}
-\item P.Norman, D.Jonsson, H.\AA gren, P.Dahle, K.Ruud, T.helgaker,
-and H.Koch. \newblock {\em Chem.Phys.Lett.}, {\bf
+\item P.~Norman, D.~Jonsson, H.~\AA gren, P.~Dahle, K.~Ruud, T.~Helgaker,
+and H.~Koch. \newblock {\em Chem.~Phys.~Lett.}, {\bf
 253},\hspace{0.25em}1, (1996).
 \end{list}
 }}
 \end{center}
 
-As for direct methods, the entire Hartree--Fock part of the \siraba\
+As for direct methods, the entire Hartree--Fock part of the \dalton\
 program has been parallelized using MPI\index{MPI}\index{message passing} as
 message passing interface. The use of the parallel code requires,
 however, that the code has been installed as a parallel
@@ -100,7 +100,7 @@ requested to the
 Section~\ref{sec:firstcalc}), or as stated in local
 documentation. Note that the master/slave\index{master}\index{slave}
 paradigm employed by 
-\siraba\ will leave the master mainly doing sequential parts of the
+\dalton\ will leave the master mainly doing sequential parts of the
 calculation and distribution of tasks, thus very little computation
 compared to the \verb|N-1| slaves, see
 Ref.~\cite{pndjhapdkrthhkcpl253}.
@@ -134,7 +134,7 @@ screened~\cite{krdjpnhatshjajpdthjcp108}, using an increasingly
 tighter integral screening threshold during the SCF iterations. Thus,
 direct calculations calculated using integral screening will, when
 converged, be almost as exact as the results obtained with integral
-screening turned of. The thresholds can be changed with the
+screening turned off. The thresholds can be changed with the
 keywords \Key{IFTHRS} and \Key{ICEDIF}\index{integral screening}. To
 turn of integral screening in direct or parallel calculations
 altogether, \Key{IFTHRS} should be set to 20 or larger.
