@@ -322,10 +322,10 @@ C
 C              If symmetry of right operator equals symmetry of
 C              the left operator, that is if ISYM = KSYM, then
 C              ================================================
+C              (otherwise 2. order property SNDPRP is zero)
 C
-               IF (((IPRLBL.LE.NLBSHIE).AND.(KSYM.EQ.ISYM)).OR.
-     &             (IPRLBL.GT.NLBSHIE)) THEN
-                  KSYMOP = KSYM
+               IF (KSYM.EQ.ISYM) THEN
+                  KSYMOP = ISYM
                   TRPLET = .FALSE.
 C
 C                 Find right hand side for left operator
@@ -365,7 +365,7 @@ C
 C                 Write properties into the various property matrices
 C                 ===================================================
 C
-C                 Magnetizzability
+C                 Magnetizability
 C                 ----------------
                   IF (IPRLBL.LT.NLBSHIS) THEN 
                      IF (LABEL2(1:2).EQ.'XX') THEN  
@@ -446,7 +446,7 @@ C
 C                 Nuclear Shieldings
 C                 ------------------
                   IF ((IPRLBL.GE.NLBSHIS).AND.
-     &               (IPRLBL.LE.NLBSHIE))  THEN
+     &                (IPRLBL.LE.NLBSHIE))  THEN
                      INUCLEO = (IPRLBL-NLBSHIS)/3+1
                      IF (LABEL1.EQ.'XDIPVEL') THEN
                         IF (LABEL2(8:8).EQ.'Y') THEN
