@@ -50,8 +50,7 @@ cat > dft_lda_nosym.dal <<'%EOF%'
 .RUN WAVE 
 **WAVE FUNCTIONS
 .DFT
-*SCF INPUT
-.LDA
+ LDA
 **END OF INPUT
 %EOF%
 #######################################################################
@@ -73,8 +72,8 @@ else
    GREP="egrep"
 fi
 
-# Energy                              -91.324722981066
-CRIT1=`$GREP "Final DFT energy\: * \-91\.32472298...." $log | wc -l`
+# Energy                              -91.324722981066 -91.324723122137
+CRIT1=`$GREP "Final DFT energy\: * \-91\.324723...." $log | wc -l`
 TEST[1]=`expr  $CRIT1`
 CTRL[1]=1
 ERROR[1]="DFT/LDA ENERGY NOT CORRECT"

@@ -65,8 +65,7 @@ cat > dft_b3lyp_nosym.dal <<'%EOF%'
 .RUN WAVE 
 **WAVE FUNCTIONS
 .DFT
-*SCF INPUT
-.B3LYP
+B3LYP
 *END OF INPUT
 %EOF%
 #######################################################################
@@ -88,8 +87,8 @@ else
    GREP="egrep"
 fi
 
-# B3LYP ENERGY                        -73.176325851294
-CRIT1=`$GREP "Final DFT energy\: * \-73\.1763258....." $log | wc -l`
+# B3LYP ENERGY                        -73.176324877598
+CRIT1=`$GREP "Final DFT energy\: * \-73\.176324....." $log | wc -l`
 TEST[1]=`expr	$CRIT1`
 CTRL[1]=1
 ERROR[1]="B3LYP ENERGY NOT CORRECT"

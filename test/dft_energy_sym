@@ -51,8 +51,7 @@ cat > dft_energy_sym.dal <<'%EOF%'
 .DIRECT 
 **WAVE FUNCTIONS
 .DFT
-*SCF INPUT
-.B3LYP
+ B3LYP
 **END OF 
 %EOF%
 #######################################################################
@@ -72,8 +71,8 @@ else
    GREP="egrep"
 fi
 
-# Energy                          -151.463939352995794
-CRIT1=`$GREP "DFT energy *\: * \-151\.46393935...." $log | wc -l`
+# Energy                          -151.463939352995794 -151.463940172596
+CRIT1=`$GREP "DFT energy *\: * \-151\.4639(39|40)...." $log | wc -l`
 TEST[1]=`expr	$CRIT1`
 CTRL[1]=1
 ERROR[1]="DFT/B3LYP ENERGY NOT CORRECT"

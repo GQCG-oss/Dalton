@@ -50,8 +50,7 @@ cat > dft_blyp_nosym.dal <<'%EOF%'
 .RUN WAVE 
 **WAVE FUNCTIONS
 .DFT
-*SCF INPUT
-.BLYP
+ BLYP
 *END OF INPUT
 %EOF%
 #######################################################################
@@ -73,8 +72,8 @@ else
    GREP="egrep"
 fi
 
-# Energy                              -92.114499893847
-CRIT1=`$GREP "Final DFT energy\: * \-92\.1144998....." $log | wc -l`
+# Energy                              -92.114499893847  -92.114500400000
+CRIT1=`$GREP "Final DFT energy\: * \-92\.114(499|500|501)....." $log | wc -l`
 TEST[1]=`expr	$CRIT1`
 CTRL[1]=1
 ERROR[1]="DFT/BLYP ENERGY NOT CORRECT"

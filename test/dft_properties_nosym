@@ -57,8 +57,8 @@ cat > dft_properties_nosym.dal <<'%EOF%'
 0.25
 **WAVE FUNCTIONS
 .DFT
+ B3LYP
 *SCF INPUT
-.B3LYP
 .THRESH
  1.0d-10
 **PROPERTIES 
