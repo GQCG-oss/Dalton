@@ -66,7 +66,7 @@ C#include <ccropr2.h>
       PARAMETER (ZERO=0.0D00, D05=0.5D00, TWO=2.0D00, ONE=1.0D00)
 C      PARAMETER (DUMMY = -12345.67890)
 
-      CHARACTER*10 MODEL
+      CHARACTER MODEL*10, MODPRI*5
       CHARACTER*8  LABELA, LABELB, LABELC, LABSOP
       CHARACTER*8  CRLXA,  CRLXB,  CRLXC
       LOGICAL LORXA, LORXB, LORXC, LPDBSA, LPDBSB, LPDBSC, LPROJ 
@@ -159,12 +159,15 @@ C      PARAMETER (DUMMY = -12345.67890)
       IF (CCS) THEN
          MODEL = 'CCS       '
          IOPTRD = 1
+         MODPRI = 'CCS  '
       ELSE IF (CC2) THEN 
          MODEL = 'CC2       '
          IOPTRD = 3
+         MODPRI = 'CC2  '
       ELSE IF (CCSD) THEN
          MODEL = 'CCSD      '
          IOPTRD = 3
+         MODPRI = 'CCSD '
       ELSE
          CALL QUIT('Unknown coupled cluster model in CC_MCD')
       END IF
@@ -892,7 +895,7 @@ c     &                      WORK(KEND0),LEND0)
 *  Note: final result divided by 2 because of (mu = -0.5 L)
 * ----------------------------------------------------------------------*
 *
-         WRITE(LUPRI,'(1X,53("-"))')
+         WRITE(LUPRI,'(1X,58("-"))')
          WRITE(LUPRI,'(/1x,a,f9.5,a,i1)') 
      &  'For transition |o> -> |f(',FREQEX,')>, of symm. ', ISYMC 
          WRITE(LUPRI,'(3(/1x,a,a,a,a1,f9.5,a,i1))') 
@@ -908,14 +911,16 @@ C     &      ' S^of_C,AB = M^C*_of x M^AB*_fo(0.0) = ', XMC_MAB
      &     ' M^AB_of(0.0) x M^C_fo         = ',XMAB_MC,
      &     ' M^C*_of x M^AB*_fo(0.0)       = ',XMC_MAB
          IF (IPRINT.GT.5) THEN 
-            WRITE(LUPRI,'(/1X,A,F16.6,A,F16.8,A)')
+            WRITE(LUPRI,'(/1X,a5,A,F16.6,A,F16.8,A)')
+     &     MODPRI,
      &     ' B term contribution (au): ', D05*BTERM_A, ' (antisym) ', 
      &                                    D05*BTERM_S, ' (symm)    '
             WRITE(LUPRI,'(1X,69("-"))')
          ELSE
-            WRITE(LUPRI,'(/1X,A,F16.8,A)')
+            WRITE(LUPRI,'(/1X,A5,A,F16.8,A)')
+     &     MODPRI,
      &     ' B term contribution (au): ', D05*BTERM_A, ' (antisym) ' 
-            WRITE(LUPRI,'(1X,53("-"))')
+            WRITE(LUPRI,'(1X,58("-"))')
          END IF
 * ---------------------------------------------------------------------*
            END IF
