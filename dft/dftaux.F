@@ -254,7 +254,7 @@ C
                         FRC = V2*GD*GA + VXB*GF
                      ELSE
                         GD = D0 
-                        DO IB = 1, ISTR, IEND 
+                        DO IB = ISTR, IEND 
                            GD = GD + GAO(IB)*DMAT(IB,IA)
                         END DO
                         FRC = V2*GD*GAO1(KA,IX)
@@ -265,33 +265,6 @@ C
             END DO
          END DO
       END DO
-C     IF (DOGGA) THEN
-C        DO 300 I = 1, NBAST
-C           GRHOX = D0 
-C           GRHOY = D0 
-C           GRHOZ = D0 
-C           DO 400 J = 1, NBAST
-C              GRHOX = GRHOX - DMAT(J,I)*
-C    &           (RHX*(GAO2(I,1)*GAO(J) + GAO1(I,1)*GAO1(J,1))
-C    &          + RHY*(GAO2(I,2)*GAO(J) + GAO1(I,1)*GAO1(J,2))
-C    &          + RHZ*(GAO2(I,3)*GAO(J) + GAO1(I,1)*GAO1(J,3)))
-C              GRHOY = GRHOY - DMAT(J,I)*
-C    &           (RHX*(GAO2(I,2)*GAO(J) + GAO1(I,2)*GAO1(J,1))
-C    &          + RHY*(GAO2(I,4)*GAO(J) + GAO1(I,2)*GAO1(J,2))
-C    &          + RHZ*(GAO2(I,5)*GAO(J) + GAO1(I,2)*GAO1(J,3)))
-C              GRHOZ = GRHOZ - DMAT(J,I)*
-C    &           (RHX*(GAO2(I,3)*GAO(J) + GAO1(I,3)*GAO1(J,1))
-C    &          + RHY*(GAO2(I,5)*GAO(J) + GAO1(I,3)*GAO1(J,2))
-C    &          + RHZ*(GAO2(I,6)*GAO(J) + GAO1(I,3)*GAO1(J,3)))
-C 400       CONTINUE 
-C           IX = 3*NCNT(I) - 2
-C           IY = IX + 1 
-C           IZ = IY + 1 
-C           GRADFT(IX) = GRADFT(IX) + VXB*GRHOX
-C           GRADFT(IY) = GRADFT(IY) + VXB*GRHOY
-C           GRADFT(IZ) = GRADFT(IZ) + VXB*GRHOZ
-C 300    CONTINUE 
-C     END IF
       RETURN
       END
 C /* Deck dftmag */
