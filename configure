@@ -586,10 +586,7 @@ do
 done
 
 if [ "$curr" = "$INSTALL_DIR" ]; then
-    sed '/mv dalton.x/d' Makefile.in > Makefile1
-    sed '/mv dalpar.x/d' Makefile1 > Makefile2
-    sed '/mv dalpvm.x/d' Makefile2 > Makefile
-    rm -f Makefile[1-2]
+    sed -e '/mv dalton.x/d' -e '/mv dalpar.x/d' -e '/mv dalpvm.x/d' Makefile.in > Makefile
 else
     cp Makefile.in Makefile
 fi
