@@ -37,6 +37,18 @@
 #define DA_MAXOPEN 10
 
 
+/* block size (in bytes): space on the disk is allocated in chunks of
+   this size to be able to address large amounts of data with 32-bit
+   addresses/integers.  Generally, the smaller block size the better
+   on the other hand having too small block size may lead to lot of
+   wasted space if blocks are not filled... Original code has blocks
+   of 4096 bytes.  Excessive block size can increase the file size for
+   eg HSOINT.  Too small block size on the other hand may wrap "record
+   numbers" on 32-bit architectures - and some people learnt it the
+   hard way... We can have no blocks (ie. block size=1) on 64-bit
+   architectures with current disk sizes.
+*/
+#define DA_BLOCKSZ 1024
 
 static struct file_data {
     FILE *file;
@@ -121,14 +133,15 @@ dawrite_(int *lu, void *buffer, integer *wrdlen, integer *pos)
 {
     int idx = *lu-1;
     off_t off;
+    integer occupied_blocks = 1 + ((*wrdlen)*sizeof(integer)-1)/DA_BLOCKSZ;
     CHECK_ARGS(idx>=0 && idx <DA_MAXOPEN);
     CHECK_ARGS(open_files[idx].file != NULL);
 
-    off = *pos; fseeko(open_files[idx].file, off*sizeof(integer), SEEK_SET);
+    off = *pos; fseeko(open_files[idx].file, off*DA_BLOCKSZ, SEEK_SET);
     if(fwrite(buffer, sizeof(integer), 
               *wrdlen, open_files[idx].file) != *wrdlen)
         dalton_quit("dawrite: writing error encountered.\n");
-    *pos += *wrdlen;;
+    *pos += occupied_blocks;
 }
 
 /** dawrite() reads wrdlen words (integers) to the buffer from the
@@ -138,14 +151,18 @@ daread_(int *lu, void *buffer, integer *wrdlen, integer *pos)
 {
     int idx = *lu-1;
     off_t off;
+    integer occupied_blocks = 1 + ((*wrdlen)*sizeof(integer)-1)/DA_BLOCKSZ;
     CHECK_ARGS(idx>=0 && idx <DA_MAXOPEN);
     CHECK_ARGS(open_files[idx].file != NULL);
 
-    off = *pos; fseeko(open_files[idx].file, off*sizeof(integer), SEEK_SET);
+    off = *pos; fseeko(open_files[idx].file, off*DA_BLOCKSZ, SEEK_SET);
     if(fread(buffer, sizeof(integer),
-             *wrdlen, open_files[idx].file) != *wrdlen)
-        dalton_quit("daread: reading error encountered.\n");
-    *pos += *wrdlen;
+             *wrdlen, open_files[idx].file) != *wrdlen) {
+        fort_print("problematic position: %ld offset %ld\n", (long)*pos, off);
+        dalton_quit("daread: error at pos %ld words (%ld words to read) ferror=%d.",
+                    (long)off, (long)*wrdlen, ferror(open_files[idx].file));
+    }
+    *pos += occupied_blocks;
 }
 
 /* darelist_() reads from a file lu, at position pos, a list
@@ -161,19 +178,22 @@ darelist_(int *lu, integer *pos, integer *nlist,...)
     int i;
     int idx = *lu-1;
     off_t off;
+    integer occupied_blocks, wrdlen = 0;
     CHECK_ARGS(idx>=0 && idx <DA_MAXOPEN);
     CHECK_ARGS(open_files[idx].file != NULL);
 
     va_start(alist, nlist);
-    off = *pos; fseeko(open_files[idx].file, off*sizeof(integer), SEEK_SET);
+    off = *pos; fseeko(open_files[idx].file, off*DA_BLOCKSZ, SEEK_SET);
     for(i=0; i<*nlist; i++) {
         integer *arr = va_arg(alist, integer*);
         integer *len = va_arg(alist, integer*);
         if( fread(arr, sizeof(integer), *len, open_files[idx].file) != *len)
             dalton_quit("darelist: failed on read.\n");
-        *pos += *len;
+        wrdlen += *len;
     }
     va_end(alist);
+    occupied_blocks = 1 + (wrdlen*sizeof(integer)-1)/DA_BLOCKSZ;
+    *pos += occupied_blocks;
 }
 
 /* dawrlist_() writes to a file lu, at position pos, a list
@@ -188,21 +208,31 @@ dawrlist_(int *lu, integer *pos, integer *nlist,...)
     int i;
     int idx = *lu-1;
     off_t off;
+    integer occupied_blocks, wrdlen = 0;
     CHECK_ARGS(idx>=0 && idx <DA_MAXOPEN);
     CHECK_ARGS(open_files[idx].file != NULL);
 
     va_start(alist, nlist);
-    off = *pos; fseeko(open_files[idx].file, off*sizeof(integer), SEEK_SET);
+    off = *pos; fseeko(open_files[idx].file, off*DA_BLOCKSZ, SEEK_SET);
     for(i=0; i<*nlist; i++) {
         integer *arr = va_arg(alist, integer*);
         integer *len = va_arg(alist, integer*);
         if( fwrite(arr, sizeof(integer), *len, open_files[idx].file) != *len)
             dalton_quit("darelist: failed on read.\n");
-        *pos += *len;
+        wrdlen += *len;
     }
     va_end(alist);
+    occupied_blocks = 1 + (wrdlen*sizeof(integer)-1)/DA_BLOCKSZ;
+    *pos += occupied_blocks;
 }
 
+/* daskip updates pos taking into account block size */
+void
+daskip_(int *lu, integer *wrdlen, integer *pos)
+{
+    integer occupied_blocks = 1 + ((*wrdlen)*sizeof(integer)-1)/DA_BLOCKSZ;
+    *pos += occupied_blocks;
+}
 
 /* =================================================================== *
  *                  LOCAL AUXILLIARY ROUTINES                          *

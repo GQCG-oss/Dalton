@@ -668,8 +668,7 @@ C
             END IF
             IF (ITYPCD.EQ.0) THEN
 C           ... skip this record
-c               CALL DAFILE(LUMHSO,DASKIP,DUMMY,LREC,IADCD(ISYMA))
-               IADCD(ISYMA) = IADCD(ISYMA) + LREC
+               CALL DASKIP(LUMHSO,LREC,IADCD(ISYMA))
             ELSE
                NINT = NINT + 1
                CALL DAREAD(LUMHSO,BUF(IBUF2),LREC,IADCD(ISYMA))
