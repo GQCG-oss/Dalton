@@ -2830,6 +2830,7 @@ C  /* Deck vibv3 */
 #include <priunit.h>
 #include <mxcent.h>
 #include <mxorb.h>
+#include <maxaqn.h>
 #include <codata.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, D24 = 24.0D0, D36 = 36.0D0)
@@ -2838,12 +2839,15 @@ C  /* Deck vibv3 */
      &          FMATT(NCORD,NCORD,NCORD),
      &          POS(3,NCORD/3), AMASS(*), WORK(LWORK)
 C
+#include <symmet.h>
 #include <nuclei.h>
 #include <abainf.h>
 #include <inftap.h>
 #include <cbivib.h>
 #include <cbinum.h>
 #include <cbiwlk.h>
+#include <gnrinf.h>
+#include <ibtfun.h>
 C      
       CALL GPOPEN(LUWLK,ABAWLK,'OLD','SEQUENTIAL','UNFORMATTED',IDUMMY,
      &          .FALSE.)
@@ -3049,19 +3053,43 @@ C
          END DO
          CALL AROUND('Change to effective geometry')
          CALL HEADER('Cartesian coordinates (au)',-1)
-         CALL PRIGEO(POS)
+         IF (NMWALK) THEN
+            DO IATOM = 1, NUCDEP
+               WRITE (LUPRI,'(1X,A,F17.10,2F24.10)') NAMDEP(IATOM),
+     *                                  (POS(ICOOR,IATOM),ICOOR=1,3)
+            END DO
+         ELSE
+            CALL PRIGEO(POS)
+         END IF
 C     
-         DO IATOM = 1, NCORD/3
-            DO ICOOR = 1, 3
-               POS(ICOOR,IATOM) = CORD(ICOOR,IATOM) + POS(ICOOR,IATOM)
+         ICOOR = 0
+         IATOM = 0
+         DO ICENT = 1, NUCIND
+            MULCNT = ISTBNU(ICENT)
+            DO IOP = 0, MAXOPR
+               IF (IBTAND(IOP,MULCNT) .EQ. 0) THEN
+                  IATOM = IATOM + 1
+                  DO I = 1, 3
+                     ICOOR = ICOOR + 1
+                     POS(I,IATOM) = POS(I,IATOM)
+     &                    + PT(IBTAND(ISYMAX(I,1),IOP))*CORD(I,ICENT)
+                  END DO
+               END IF
             END DO
          END DO
 C     
          CALL AROUND('Estimated effective geometry')
          CALL HEADER('Cartesian coordinates (au)',-1)
-         CALL PRIGEO(POS)
-         CALL GEOANA(POS,.TRUE.,.FALSE.,NBONDS,.FALSE.,IDUMMY,
-     &               WORK,LWORK)
+         IF (NMWALK) THEN
+            DO IATOM = 1, NUCDEP
+               WRITE (LUPRI,'(1X,A,F17.10,2F24.10)') NAMDEP(IATOM),
+     *                                  (POS(ICOOR,IATOM),ICOOR=1,3)
+            END DO
+         ELSE
+            CALL PRIGEO(POS)
+            CALL GEOANA(POS,.TRUE.,.FALSE.,NBONDS,.FALSE.,IDUMMY,
+     &                  WORK,LWORK)
+         END IF
       END IF
 C
 C     Some analysis of the quality of the above predictions

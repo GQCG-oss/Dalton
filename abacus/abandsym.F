@@ -822,6 +822,8 @@ C
 C     
       CALL DZERO(SYMCOR,NCOOR**2       )
       CALL DZERO(TRAMTX,NCOOR**2*NGORDR)
+      CALL DZERO(ATMTRA,NUCDEP*NUCDEP*NMTRX)
+      CALL DZERO(CORTRA,9*NMTRX)
 C
       CALL TRMTRX(COOR,ATMTRA,CORTRA,IPRINT)
 C     
@@ -1541,6 +1543,13 @@ C
          CLNRGY = .TRUE.
       END IF
 C
+c      if (iordr.eq.2) then
+c         if ((icrirp(indstp(1),1).eq.5).and.
+c     &       (icrirp(indstp(1),2).eq.1).and.
+c     &       (icrirp(indstp(2),1).eq.5).and.
+c     &       (icrirp(indstp(2),2).eq.0))
+c     &        stop ' '
+c      end if
       RETURN
       END
 C
@@ -1653,7 +1662,20 @@ C
      &                     IORDER,IORDR,IPRINT)
 C
                DO 2200 IC = 1, IORDR
-                  RTMPCO = RTMPCO*GRIREP(IORDER,IREPST(IC)+IRPDEG(IC))
+C
+C                 *** Special care for groups based on separable  ***
+C                 *** degenerate groups, Sn, Cnh Dnd. GOT doesn't ***
+C                 *** apply, only LOT.                            ***
+C
+                  IF (SEPDEG) THEN
+                     IFAC = 2
+                     IF (ICRIRP(INDSTP(IC),2).EQ.1) IFAC = -2
+                     FMULT = GRIREP(IORDER,IREPST(IC)+IRPDEG(IC)     )
+     &                     + GRIREP(IORDER,IREPST(IC)+IRPDEG(IC)+IFAC)
+                  ELSE
+                     FMULT = GRIREP(IORDER,IREPST(IC)+IRPDEG(IC))
+                  END IF
+                  RTMPCO = RTMPCO*FMULT
  2200          CONTINUE
 C
                SMTXEL = SMTXEL + RTMPCO
@@ -1685,7 +1707,7 @@ C     *** Finding the starting point. ***
 C
       IF (ICRIRP(ICOOR,1) .GT. N1DIME) THEN
          ISTRTT = N1DIME + 4*(ICRIRP(ICOOR,1)-N1DIME-1) 
-         IF ((ICRIRP(ICOOR,2).EQ.1).AND.(.NOT.SEPDEG)) THEN
+         IF (ICRIRP(ICOOR,2).EQ.1) THEN
             ISTRTT = ISTRTT + 2
          END IF
       ELSE
