@@ -119,38 +119,80 @@ C        on the available Huckel parameters in huckel.F
 C        (it would be good to extend with 2p parameters for Li, Be etc.)
 C        BASNAM is needed here but contains true basis set name,
 C        this is restored from BASSAV just before RETURN.
+C panor/johhe 2005:
+C        Huckel guess now based on ano-5 instead because it 
+C        includes all elements in the periodic table.
 C
          ANO = .TRUE.
-         BASTMP = 'ano-4'
+         BASTMP = 'ano-5'
 C        NOTE that ECP Huckel start guess is implemented
 C        in REAANO through the Q-QEFF parameter. 
          ISTART = 6
          IF (INTQ .LE. 2) THEN
 C           ... H and He
-            BASNAM = 'ano-4   1 0 0 0'
+            BASNAM = 'ano-5   1 0 0 0'
          ELSE IF (INTQ .LE. 4) THEN
 C           ... Li, Be
-            BASNAM = 'ano-4   2 0 0 0'
+            BASNAM = 'ano-5   2 0 0 0'
          ELSE IF (INTQ .LE. 10) THEN
 C           ... B, C, N, O, F, Ne
-            BASNAM = 'ano-4   2 1 0 0'
+            BASNAM = 'ano-5   2 1 0 0'
          ELSE IF (INTQ .LE. 12) THEN
 C           ... Na, Mg
-            BASNAM = 'ano-4   3 1 0 0'
+            BASNAM = 'ano-5   3 1 0 0'
          ELSE IF (INTQ .LE. 18) THEN
 C           ... Al, Si, P, S, Cl, Ar
-            BASNAM = 'ano-4   3 2 0 0'
+            BASNAM = 'ano-5   3 2 0 0'
          ELSE IF (INTQ .LE. 20) THEN
 C           ...  K, Ca
-            BASNAM = 'ano-4   4 2 0 0'
+            BASNAM = 'ano-5   4 2 0 0'
          ELSE IF (INTQ .LE. 30) THEN
 C           ...  Sc, Ti, V, Cr, Mn, Fe, Co, Ni, Cu, Zn
-            BASNAM = 'ano-4   4 2 1 0'
+            BASNAM = 'ano-5   4 2 1 0'
          ELSE IF (INTQ .LE. 36) THEN
 C           ...  Ga, Ge, As, Se, Br, Kr
-            BASNAM = 'ano-4   4 3 1 0'
+            BASNAM = 'ano-5   4 3 1 0'
+         ELSE IF (INTQ .LE. 38) THEN
+C           ...  Rb, Sr
+            BASNAM = 'ano-5   5 3 1 0'
+         ELSE IF (INTQ .LE. 45) THEN
+C           ...  Rh
+            BASNAM = 'ano-5   5 3 2 0'
+         ELSE IF (INTQ .LE. 46) THEN
+C           ...  Pd
+            BASNAM = 'ano-5   4 3 2 0'
+         ELSE IF (INTQ .LE. 48) THEN
+C           ...  Cd
+            BASNAM = 'ano-5   5 3 2 0'
+         ELSE IF (INTQ .LE. 54) THEN
+C           ...  Xe
+            BASNAM = 'ano-5   5 4 2 0'
+         ELSE IF (INTQ .LE. 56) THEN
+C           ...  Ba
+            BASNAM = 'ano-5   6 4 2 0'
+         ELSE IF (INTQ .LE. 57) THEN
+C           ...  La
+            BASNAM = 'ano-5   6 4 3 0'
+         ELSE IF (INTQ .LE. 58) THEN
+C           ...  Ce
+            BASNAM = 'ano-5   6 4 3 1'
+         ELSE IF (INTQ .LE. 63) THEN
+C           ...  Eu
+            BASNAM = 'ano-5   6 4 2 1'
+         ELSE IF (INTQ .LE. 64) THEN
+C           ...  Gd
+            BASNAM = 'ano-5   6 4 3 1'
+         ELSE IF (INTQ .LE. 70) THEN
+C           ...  Yb
+            BASNAM = 'ano-5   6 4 2 1'
+         ELSE IF (INTQ .LE. 80) THEN
+C           ...  Hg
+            BASNAM = 'ano-5   6 4 3 1'
+         ELSE IF (INTQ .LE. 86) THEN
+C           ...  Rn
+            BASNAM = 'ano-5   6 5 3 1'
          ELSE
-            CALL QUIT('BASLIB error: Huckel not defined for Z.gt.36')
+            CALL QUIT('BASLIB error: Huckel not defined for Z.gt.86')
          END IF
 C djw Feb 2005
 C notation changed from 'd' to 'd-' for consistency with EMSL
@@ -652,16 +694,11 @@ C
       J = 1
       IF (INTORB .GT. 0) THEN
          DO I = 0, NUMEXP
-            IF (I .EQ. NUMEXP) THEN
-               IF (INTEXP .EQ. MAXEXP) THEN
-                  READ (LUBAS,*) (ALPHA(K,NBLOCK), K = J, 
-     &                                              J - 1 + MAXEXP)
-               ELSE
-                  READ (LUBAS,*) (ALPHA(K,NBLOCK), K = J, 
-     &                                    J - 1 + MOD(INTEXP,MAXEXP))
-               END IF
+            IF (I.LT.NUMEXP .OR. MOD(INTEXP,MAXEXP).EQ.0 ) THEN
+               READ (LUBAS,*) (ALPHA(K,NBLOCK), K = J,J - 1 + MAXEXP)
             ELSE
-               READ (LUBAS,*) (ALPHA(K,NBLOCK), K = J, J + MAXEXP - 1)
+               READ (LUBAS,*) (ALPHA(K,NBLOCK), K = J, 
+     &              J - 1 + MOD(INTEXP,MAXEXP))
             END IF
             J = J + MAXEXP
          END DO

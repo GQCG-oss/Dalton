@@ -205,25 +205,28 @@ C           1s ECP
 C           1s,2s,2p ECP
             ILCORE(1) = 2
             ILCORE(2) = 1
-         ELSE IF (IQCORE .EQ. 18) THEN
-C           1s,2s,2p,3s,3p ECP
-            ILCORE(1) = 3
-            ILCORE(2) = 2
          ELSE IF (IQCORE .EQ. 28) THEN
 C           1s,2s,2p,3s,3p,3d ECP
             ILCORE(1) = 3
             ILCORE(2) = 2
-            ILCORE(3) = 1
-         ELSE IF (IQCORE .EQ. 36) THEN
-C           1s,2s,2p,3s,3p,3d,4s,4p ECP
-            ILCORE(1) = 4
-            ILCORE(2) = 3
             ILCORE(3) = 1
          ELSE IF (IQCORE .EQ. 46) THEN
 C           1s,2s,2p,3s,3p,3d,4s,4p,4d ECP
             ILCORE(1) = 4
             ILCORE(2) = 3
             ILCORE(3) = 2
+         ELSE IF (IQCORE .EQ. 60) THEN
+C           1s,2s,2p,3s,3p,3d,4s,4p,4d,4f ECP
+            ILCORE(1) = 4
+            ILCORE(2) = 3
+            ILCORE(3) = 2
+            ILCORE(4) = 1
+         ELSE IF (IQCORE .EQ. 78) THEN
+C           1s,2s,2p,3s,3p,3d,4s,4p,4d,4f,5s,5p,5d ECP
+            ILCORE(1) = 5
+            ILCORE(2) = 4
+            ILCORE(3) = 3
+            ILCORE(4) = 1
          ELSE
             WRITE(LUPRI,'(/A,I5)') 'REAANO FATAL ERROR: '//
      &         'ECP Huckel not implemented for this core charge:',IQCORE
