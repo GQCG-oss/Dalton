@@ -521,6 +521,8 @@ c         --------------------------------------------------
             iopt = 3
             call cc_wrrsp('LE ',ilstnr,isym,iopt,model,dummy,
      &                    work(k1amp),work(k2amp),work(kwrk1),lwrk1)
+C FIX OF CCSDR(3) BUG. SAVE UNIT NORM IN APPROPRIATE VECTOR
+            xnorm(ilstnr) = one
           endif
 
         end if
