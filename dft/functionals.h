@@ -187,6 +187,7 @@ extern Functional PbexFunctional;
 extern Functional SlaterFunctional;
 extern Functional VWN3Functional;
 extern Functional VWN5Functional;
+extern Functional VWNIFunctional;
 extern Functional VWNFunctional;
 extern Functional XAlphaFunctional;
 

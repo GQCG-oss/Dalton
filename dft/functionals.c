@@ -34,6 +34,7 @@ Functional* available_functionals[] = {
     &SlaterFunctional,
     &VWN3Functional,
     &VWN5Functional,
+    &VWNIFunctional,
     &VWNFunctional,
     &XAlphaFunctional,
     /* mixed functionals */

@@ -61,7 +61,7 @@ test_first(const char* fun_name, EnergyFunc func, FirstOrderFun first_func)
 { 
     int i, j, k, failed = 0;
     real drho, dgra, resp, resm, num;
-    FirstFuncDrv gga;
+    FunFirstFuncDrv gga;
     for(i=1; i<=40; i+=GRID_STEP) {
 	for(j=1; j<=40; j+=GRID_STEP) {
 	    for(k=-19; k<=19; k+=GRID_STEP) {
@@ -110,8 +110,8 @@ test_second(const char* fname,
 { 
     int i, j, k, fail = 0;
     real drho, dgra, num;
-    FirstFuncDrv m, p;
-    SecondFuncDrv d;
+    FunFirstFuncDrv m, p;
+    FunSecondFuncDrv d;
     for(i=1; i<=40; i+=GRID_STEP) {
 	for(j=1; j<=40; j+=GRID_STEP) {
 	    for(k=-19; k<=19; k+=GRID_STEP) {
@@ -228,8 +228,8 @@ test_third(const char* fun_name,
 { 
     int i, j, k, failed = 0;
     real drho, dgra, num;
-    SecondFuncDrv m, p;
-    ThirdFuncDrv d;
+    FunSecondFuncDrv m, p;
+    FunThirdFuncDrv d;
     for(i=1; i<=40; i+=GRID_STEP) {
 	for(j=1; j<=40; j+=GRID_STEP) {
 	    for(k=-19; k<=19; k+=GRID_STEP) {
@@ -373,7 +373,7 @@ main(int argc, char* argv[])
     char* arg;
     Functional* func;
     FunDensProp  dp;
-    FirstFuncDrv ds;
+    FunFirstFuncDrv ds;
 
     dp.rhoa = dp.rhob = 1.0000;
     dp.rhoa -= 0.0001;
