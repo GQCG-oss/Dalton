@@ -110,7 +110,7 @@ C
    10             READ (LUCMD,*) IPRSOR
                   IF (IPRSOR .EQ. IPRDEF) ICHANG = ICHANG - 1
                GO TO 100
-   11             READ (LUCMD, '(5I5)') IPRINT, IPRNTA, IPRNTB,
+   11             READ (LUCMD,*) IPRINT, IPRNTA, IPRNTB,
      *                                          IPRNTC, IPRNTD
                   IPRSUM = IPRNTA + IPRNTB + IPRNTC + IPRNTD
                   IF (IPRINT .EQ. IPRDEF .AND. IPRSUM .EQ. 0) THEN

@@ -128,7 +128,7 @@ C
                GO TO 100
     4             RUNINT = .FALSE.
                GO TO 100
-    5             READ (LUCMD, '(5I5)') IPRINT, IPRNTA, IPRNTB,
+    5             READ (LUCMD, *) IPRINT, IPRNTA, IPRNTB,
      *                                      IPRNTC, IPRNTD
                   IPRSUM = IPRNTA + IPRNTB + IPRNTC + IPRNTD
                   IF (IPRINT .EQ. IPRDEF .AND. IPRSUM .EQ. 0) THEN

@@ -113,7 +113,7 @@ C
                GO TO 100
    10          CONTINUE
 C                 NSYM is set to 8 since NSYM has not yet been set !!
-                  READ (LUCMD, '(8I5)') (NEXCIT(I),I=1,8)
+                  READ (LUCMD,*) (NEXCIT(I),I=1,NSYM)
                   ICHANG = ICHANG + 1
                GO TO 100
    11          CONTINUE

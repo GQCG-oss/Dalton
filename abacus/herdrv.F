@@ -1548,7 +1548,7 @@ C
                   RUNTWO = .FALSE.
                GO TO 100
     2          CONTINUE
-                  READ (LUCMD, '(5I5)') IPRTWO,
+                  READ (LUCMD, *) IPRTWO,
      &                     IPRNTA, IPRNTB, IPRNTC, IPRNTD
                   IPRSUM = IPRNTA + IPRNTB + IPRNTC + IPRNTD
                   IF (IPRTWO .EQ. IPRDEF .AND. IPRSUM .EQ. 0) THEN

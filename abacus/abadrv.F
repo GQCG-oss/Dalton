@@ -701,10 +701,10 @@ C     to be changed to new defaults here:
 C
       IF (.NOT.OPTNEW .AND. .NOT.NMWALK) THEN
 C     ... if (not .OPTIMIZE and not (.NMDDRV or .PARNMD) ) then ...
-         DOWALK = OPTWLK .AND. WRDSRC .NE. '**FINAL'
-C        ... check if converged geometry ('**FINAL') in a .WALK
+         DOWALK = OPTWLK .AND. WRDSRC .NE. '**PROPE'
+C        ... check if converged geometry ('**PROPE') in a .WALK
          MOLGRD = DOWALK
-         MOLHES = DOWALK .OR. (TOTSYM .AND. WRDSRC .EQ. '**FINAL')
+         MOLHES = DOWALK .OR. (TOTSYM .AND. WRDSRC .EQ. '**PROPE')
          IF (((V3CAL .AND. NMODIF) .OR. VIBAVE) .AND. 
      &       (WRDSRC .NE. '**START')) MOLHES = .FALSE.
          IF (VIBAVE .AND. REUSED) MOLHES = .FALSE.
@@ -713,7 +713,7 @@ C
 C     Initializing some properties depends on if this is a numerical 
 C     differentiation. If so initialization is done elsewhere.
 C      
-      IF (.NOT.NMWALK.OR.(WRDSRC .EQ. '**FINAL')) THEN
+      IF (.NOT.NMWALK.OR.(WRDSRC .EQ. '**PROPE')) THEN
          SPNSPN = .FALSE.
       END IF
       DODRCT = DIRCAL
@@ -760,7 +760,7 @@ C
       CALL DZERO(GAGORG,3)
       CALL DZERO(CAVORG,3)
       ABALNR = .FALSE.
-      IF (TOTSYM .AND. .NOT. WRDSRC .EQ. '**FINAL') THEN
+      IF (TOTSYM .AND. .NOT. WRDSRC .EQ. '**PROPE') THEN
          DOSYM(1) = .TRUE.
          DO 40 I = 2, 8
             DOSYM(I) = .FALSE.
@@ -820,8 +820,12 @@ C         such that any '**PROPER' input will now also apply for initial
 C         geometry if not overridden with '**START' /Feb 2003 hjaaj
          IF (WORD1 .EQ. '**START') THEN
             REWIND (LUCMD,IOSTAT=IOS)
-            WORD1 = '**PROPE'
+            WORD1 = '**EACH '
             GO TO 900
+ckr         ELSE IF (WORD1 .EQ. '**FINAL') THEN
+ckr            REWIND (LUCMD,IOSTAT=IOS)
+ckr            WORD1 = '**PROPE'
+ckr            GO TO 900
          END IF
          CALL INIALL
          GOTO 1
@@ -900,8 +904,8 @@ cLig <> added goto 151
                MOLGRD = .TRUE.
                MOLHES = .TRUE.
             ELSE
-               MOLGRD = .NOT.((WRDSRC .EQ. '**FINAL') .AND. OPTWLK)
-               MOLHES = .NOT.((WRDSRC .EQ. '**FINAL') .AND. OPTWLK 
+               MOLGRD = .NOT.((WRDSRC .EQ. '**PROPE') .AND. OPTWLK)
+               MOLHES = .NOT.((WRDSRC .EQ. '**PROPE') .AND. OPTWLK 
      &                         .AND. .NOT. TOTSYM)
             END IF
             IF (MOLHES) DIPDER = .TRUE.
@@ -1380,7 +1384,7 @@ cLig <<
       END IF
       IF (ABALNR) WRITE (LUPRI,'(5X,A)') ' Linear response properties'
       IF ((POPULA .OR. POLAR .OR. DIPDER .OR. VCD) .AND. 
-     &    (TOTSYM .AND. WRDSRC .NE. '**FINAL')) THEN
+     &    (TOTSYM .AND. WRDSRC .NE. '**PROPE')) THEN
          WRITE(LUPRI)
          IF (POPULA) WRITE (LUPRI,'(2(5X,A))') 
      &        ' Population incompatible with .TOTSYM.',
@@ -1730,10 +1734,9 @@ C
       END IF
       IF (QUADRU) CALL DCOPY(3,CMXYZ,1,DIPORG,1)
       IF (.NOT.NOCMC) THEN
-         IF (DNRM2(3,GAGORG,1) .GT. D0) THEN
-            IF (IPRGAG .GT. 0)
-     &           WRITE(LUPRI,'(/,A,3F12.6)') 'User defined gauge '//
-     &                    'origin used:',(GAGORG(I), I = 1, 3)
+         IF (GAGT) THEN
+            IF (IPRGAG .GT. 0) WRITE(LUPRI,'(/,A,3F12.6)') 
+     &           'User defined gauge origin used:',(GAGORG(I), I = 1, 3)
          ELSE
             CALL DCOPY(3,CMXYZ,1,GAGORG,1)
             IF (IPRGAG .GT. 0)

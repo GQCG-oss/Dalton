@@ -859,7 +859,7 @@ C
      &         ' Alternatively use .SKIP under *TROINV'
          WRITE (LUPRI,'(2A)')
      &         ' Note: These directives must be used',
-     &         ' under **START, **PROPERTIES and **FINAL.'
+     &         ' under **START, **EACH STEP and **PROPERTIES.'
          CALL QUIT('ERROR in SETDEP.')
       END IF
 C

@@ -1812,7 +1812,7 @@ C
          WRINDX = .TRUE.
 Chj aug 99: reset IPRUSR to original level
          IPRUSR = IPRUS1
-         CALL ABAINP('**FINAL',WORK(IWOFF + 2),LWORK)
+         CALL ABAINP('**PROPE',WORK(IWOFF + 2),LWORK)
          CALL EXEABA(WORK,LWORK,WRKDLM)
 C
 C     We also check to see if we have requested a RESPONSE calculations
@@ -2297,7 +2297,7 @@ C     &    .AND. .NOT. DOMC) .OR. (PARIO .AND. MYNUM .GT. 0)) THEN
             IF (ITRNMR .EQ. 0) THEN
                CALL ABAINP('**START',WORK(IWOFF + 2),LWORK)
             ELSE
-               CALL ABAINP('**PROPE',WORK(IWOFF + 2),LWORK)
+               CALL ABAINP('**EACH ',WORK(IWOFF + 2),LWORK)
             END IF
 C        *** For numerical differentiation (vibrational ***
 C        *** average), we don't nescesary calculate all ***
@@ -2362,7 +2362,7 @@ C
       IF (ITRNMR .EQ. 0) THEN
          CALL ABAINP('**START',WORK(IWOFF + 2),LWORK)
       ELSE
-         CALL ABAINP('**PROPE',WORK(IWOFF + 2),LWORK)
+         CALL ABAINP('**EACH ',WORK(IWOFF + 2),LWORK)
       END IF
 C
 C     *** For numerical differentiation (vibrational ***

@@ -365,7 +365,7 @@ C
      &      'Increase dimension with e.g. 50% with the .MAXRED option'//
      &          ' under *RESPON',
      &      'in the ABACUS module'//
-     &          ' (i.e. under **START, **PROPE, and **FINAL)'
+     &          ' (i.e. under **START, **EACH STEP, and **PROPERTIES)'
             CALL QUIT('MAXRED too small in ANRCTL.')
          END IF
          JNRSIM=JNRSIM-NSIM

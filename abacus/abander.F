@@ -112,13 +112,10 @@ C
             GOTO 100
  5       CONTINUE
             DRYRUN = .TRUE.
-            READ (LUCMD,'( I4)')  NMREDU
-            READ (LUCMD,'(6I4)') (KDRYRN(II),II=1,NMREDU)
+            READ (LUCMD,*)  NMREDU
+            READ (LUCMD,*) (KDRYRN(II),II=1,NMREDU)
             GOTO 100
  6       CONTINUE
-            DRYRUN = .TRUE.
-            READ (LUCMD,'( I4)')  NMREDU
-            READ (LUCMD,'(6I4)') (KDRYRN(II),II=1,NMREDU)
             GOTO 100
  7       CONTINUE
             NRMCRD = .TRUE.

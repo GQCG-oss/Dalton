@@ -756,7 +756,7 @@ C
                IF (ITERNR .EQ. 0) THEN
                   CALL ABAINP('**START',WORK(2),LMWORK)
                ELSE
-                  CALL ABAINP('**PROPE',WORK(2),LMWORK)
+                  CALL ABAINP('**EACH ',WORK(2),LMWORK)
                END IF
                IF (NEWWLK) THEN
                   NEWWLK = .FALSE.
@@ -851,7 +851,7 @@ C     analysis in a ROA calculation, K.Ruud and G.Hangartner, Oct.-96
 C
             WRINDX = .TRUE.
             IF (IWKTYP .EQ. 6 .AND. NUMHES) THEN
-               CALL ABAINP('**FINAL',WORK(2),LMWORK)
+               CALL ABAINP('**PROPE',WORK(2),LMWORK)
                CALL VIBCTL(WORK(2),LMWORK)
             ELSE IF (IWKTYP .EQ. 6) THEN
 ckr            IF (IWKTYP .EQ. 6) THEN
@@ -889,7 +889,7 @@ ckr            IF (IWKTYP .EQ. 6) THEN
                CALL NUCPRO(WORK(2),LMWORK)
             END IF
             END IF
-            CALL ABAINP('**FINAL',WORK(2),LMWORK)
+            CALL ABAINP('**PROPE',WORK(2),LMWORK)
             CALL EXEABA(WORK,LMWORK,WRKDLM)
 C
 C     We also check to see if we have requested a RESPONSE calculations
