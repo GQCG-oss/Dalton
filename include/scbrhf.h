@@ -15,10 +15,11 @@ C NRHFEL: number of electrons in SCF
 C INIOCC: how is initial orbital occupation determined
 C RHFCAN: generate canonical SCF orbitalsl, diagonalizing Fock matrix
 C AUTOCC: use automatic orbital occupation
-C HSORHF: High spin open-shell RHF
+C in infinp.h:
+C HSROHF: High spin open-shell RHF
 C
-      LOGICAL RHFCAN, AUTOCC, HSORHF
+      LOGICAL RHFCAN, AUTOCC
       COMMON /SCBRHF/ THRRHF,
      &                NFRRHF(8),NMVO(8),NMVOT,IOPRHF,MXHFMA,MXHFMI,
      &                MAXFCK, MXDIIS, MAXEVC, NRHFEL,INIOCC,
-     &                RHFCAN, AUTOCC, HSORHF
+     &                RHFCAN, AUTOCC
