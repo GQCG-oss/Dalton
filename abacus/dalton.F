@@ -85,7 +85,7 @@ C
       INCLUDE 'mpif.h'
       LOGICAL FINISH
 #endif
-      CHARACTER*12 FILNAM
+      CHARACTER*14 FILNAM
       PARAMETER (LWORK_DEF = INSTALL_WRKMEM)
 #if defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_DEC) || (defined (SYS_LINUX) && defined (VAR_PGF77))
       POINTER (WADDR,WORK(1))
@@ -272,7 +272,7 @@ C
          CALL GPOPEN(LUCME,'DALTON.CM','NEW',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
       ELSE
-         WRITE (FILNAM,'(A,I2.2)') 'DALTON.OUT',MYNUM
+         WRITE (FILNAM,'(A,I4.4)') 'DALTON.OUT',MYNUM
          CALL GPOPEN(LUPRI,FILNAM,'NEW',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
       END IF
@@ -288,7 +288,7 @@ C
 C        Changed format (WK/UniKA/04-11-2002).
          WRITE (LUPRI,'(T10,A,//,T26,A,/,6(/T10,A),//,T26,A,//,
      &        (T10,A))')
-     * ' This is output from DALTON (Release 2.0, ? 2001)',
+     * ' This is output from DALTON (Release 2.0, ? 2004)',
      *  ' Principal authors:',
      *  ' Trygve Helgaker,       University of Oslo,           Norway ',
      *  ' Hans Joergen Jensen,   SDU - Odense University,      Denmark',
@@ -340,7 +340,7 @@ C        Changed format (WK/UniKA/04-11-2002).
      &'responsibility for the performance of the code or for the',
      &'correctness of the results.',
      &' ',
-     &'The code (in whole or part) is provided under a license and',
+     &'The code (in whole or part) is provided under a licence and',
      &'is not to be reproduced for further distribution without',
      &'the written permission of the authors or their representatives.',
      &'See licence agreement for further information.',
@@ -364,11 +364,15 @@ C     Stamp date and time and hostname to output
 C
          CALL TSTAMP(' ',LUPRI)
 C
-#if defined (VAR_MPI)
+C     Read general input
+C
          CALL GNRLIN
          IF (TESTIN) THEN
             CALL QUIT('*** End of input test for GENERAL ***')
          END IF
+#if !defined (VAR_MPI)
+      END IF
+#else /* VAR_MPI */
          CALL RECVNAMES
 #if defined (VAR_G77)
          CALL CEXE(EXEDRV, LMWORK, WRKDLM,MASTER,MYNUM)
@@ -416,17 +420,11 @@ C
          END IF
       END IF
       CALL MPIXFINALIZE
-#else
-      END IF
 C
 C     All below is not relevant for MPI as all proc. has stopped
 C     with CALL MPI_FINALIZE(IERR)
 C
-      CALL GNRLIN
-      IF (TESTIN) THEN
-         CALL QUIT('*** End of input test for GENERAL ***')
-      END IF
-#endif
+#endif /* VAR_MPI */
 #if defined (VAR_PVM)
 C
 C     Spawn all PVM processes, as we now know how many there are
