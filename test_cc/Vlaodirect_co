@@ -141,7 +141,7 @@ ZDIPLEN XDIPLEN dh/dBY
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/sh
+echo '#!/bin/ksh
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -205,7 +205,7 @@ else
 fi                
 ' > Vlaodirect_co__1.check
 #######################################################################
-echo '#!/bin/sh
+echo '#!/bin/ksh
 log=$1
 
 if [ `uname` = Linux ]; then
