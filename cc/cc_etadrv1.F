@@ -95,7 +95,7 @@ Csonia
      & '------------------------------------',
      &                               '-------------------------------',
      & '|                 OUTPUT FROM ETA/RH',    
-     &                               'S VECTOR SECTION  Sonia       |',
+     &                               'S VECTOR SECTION  (ETADRV1)   |',
      & '------------------------------------',
      &                               '-------------------------------' 
       CALL FLSHFO(LUPRI)
@@ -440,7 +440,7 @@ C       MPERM = ??
           CALL QUIT('Insufficient work space in CC_ETADRV.')
         END IF
 
-        PRINT *, MSGDBG, 'excited state first-order properties:'
+        WRITE(LUPRI,*) MSGDBG,'excited state first-order properties:'
         DO IVEC = 1, NVEC
         IF (ISYMO(IVEC,1).EQ.1 .AND. FREQS(IVEC,1).EQ.ZERO) THEN
           ISYM = ILSTSYM(TYPE,IVEC)
