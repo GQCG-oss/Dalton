@@ -328,17 +328,30 @@ C
 #include "rspprp.h"
 #include "infpri.h"
 #include "zfs.h"
+#include "parnmr.h"
 C
       LOGICAL NEWDEF
-      PARAMETER ( NTABLE = 7 )
+      PARAMETER ( NTABLE = 10 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL
+      CHARACTER LABDAT(9*ATMNUM)*8
 C
       DATA TABLE /'.TRPPRP', '.SNGPRP', '.MAXIT ', '.THCESR',
-     *            '.PRINT ', '.G-TENS', '.ZFS   '/
+     *            '.PRINT ', '.G-TENS', '.ZFS   ', '.FCCALC',
+     *            '.ATOMS ','.SDCALC' /
 C
+C Initialize new HFC input
+      FCFLG  = .FALSE.
+      SDFLG  = .FALSE.
+      ESRNUC = 0
+      DO 50 I = 1, ATMNUM
+         DO 55 IH = 1, 7
+                ISODAT(IH,I) = 0
+ 55      CONTINUE
+ 50   CONTINUE
+C      
       NEWDEF = (WORD .EQ. '*ESR   ')
-      ICHANG = 0
+      ICHANG = 0 
       IF (NEWDEF) THEN
       ESRCAL = .TRUE.
       WORD1 = WORD
@@ -350,7 +363,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -383,6 +396,16 @@ C
                GO TO 100
     7          CONTINUE
                   ZFSCAL = .TRUE.
+               GO TO 100 
+    8          CONTINUE
+                  FCFLG = .TRUE.
+               GO TO 100
+    9          CONTINUE
+                  READ (LUCMD,*) ESRNUC
+                  READ (LUCMD,*) (NUCINF(IG), IG = 1, ESRNUC)
+               GO TO 100
+   10          CONTINUE
+                  SDFLG = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -393,7 +416,41 @@ C
             END IF
          GO TO 100
       END IF
-  300 CONTINUE
+  300 CONTINUE 
+C
+C FC labels generation
+C
+      IF (FCFLG) THEN
+      DO 400 I = 1, ESRNUC
+         CALL FCOPER(NUCINF(I),LABEL)
+         ESROPT( INDPRP(LABEL)) = .TRUE.
+ 400  CONTINUE
+      IF (.NOT. SDFLG) CALL SETDEG
+      END IF
+C
+C SD labels generation
+C
+      IF (SDFLG) THEN
+      write(lupri,*) 'NUMBER OF ATTOM', ESRNUC
+      DO 410 I = 1, ESRNUC
+         write(lupri,*) 'COUNTER', I , 'NUC.', NUCINF(I)
+         CALL SDOPER(NUCINF(I),LABDAT,INUM)
+         DO 420 IG = 1, INUM
+             ESROPT( INDPRP(LABDAT(IG))) = .TRUE.
+ 420     CONTINUE
+ 410  CONTINUE
+      END IF
+C
+C  Chek degen array
+C
+      DO 430 I = 1, ESRNUC
+         IF (DEGEN(I) .LT. 1.0) DEGEN(I)=1.0
+ 430  CONTINUE
+C
+C Setting isotopes data for HFC/pNMR printing
+C
+      CALL SETISO
+C
       WRITE(LUPRI,'(/A)')' ********* ESRINP ********'
       NTOESR = 0
       DO 500 I = 1,NPRLBL
@@ -439,6 +496,9 @@ C
       PARAMETER ( D0 = 0.0D0, DUMMY = 1.0D+20 )
       LOGICAL TRPSAVE
 C
+#include <maxorb.h>
+#include <infinp.h>
+C
 #include "priunit.h"
 #include "infpri.h"
 #include "infrsp.h"
@@ -448,8 +508,36 @@ C
 #include "inforb.h"
 #include "infesr.h"
 C
+C
+C Common blocks for HFC/pNMR printing
+C
+#include <codata.h>
+#include <gfac.h>
+#include <mxcent.h>
+#include <nuclei.h>
+#include <chrxyz.h>
+#include <parnmr.h>
+C
+C Local variables for HFC values handling
+C
+      CHARACTER*8 LABEL
+      CHARACTER*2 CTMP
+C
       CALL QENTER('RSPESR')
       CALL HEADER('Output from RSPESR module',0)
+C HFC printing counters
+      IFCIND = 0
+      REFSPIN=DBLE(ISPIN-1)
+C
+C      Zero SDVAL 
+C
+      DO 50 I = 1, ATMNUM
+         DO 55 IH = 1, 3
+             DO 60 IG = 1, 3
+                SDVAL(IG,IH,I) = 0.0D0
+ 60          CONTINUE
+ 55      CONTINUE
+ 50   CONTINUE
 C
 C DETERMINE SECOND ORDER MOLECULAR PROPERTIES
 C
@@ -532,6 +620,24 @@ C
             WRITE(LUPRI,'(/2A,3(A,F10.6))')
      *        'TRIPLET OPERATOR: "',LBESRT(KSYMOP,IOP),
      *        '" LAGRANGIAN:',FOPLG,' AVERAGE:',AVEVAL,' TOTAL:',HYPFIN
+C
+C FC and SD values arrays formation
+C
+            IF (LBESRT(KSYMOP,IOP)(1:3) .EQ. 'FC ') THEN
+                IFCIND=IFCIND+1
+                HYPVAL(IFCIND,1)=AVEVAL
+                HYPVAL(IFCIND,2)=FOPLG
+            END IF
+            IF (LBESRT(KSYMOP,IOP)(1:3) .EQ. 'SD ') THEN
+                LABEL=LBESRT(KSYMOP,IOP)
+                READ (LABEL,'(3X,I3)') INDSD1
+                CTMP=LABEL(7:8)
+                IF (CTMP .EQ. ' x') INDSD2=1
+                IF (CTMP .EQ. ' y') INDSD2=2
+                IF (CTMP .EQ. ' z') INDSD2=3
+                SDVAL(SDIND(2,INDSD1),INDSD2,SDIND(1,INDSD1))=HYPFIN
+            END IF
+C
 100      CONTINUE
          TRPLET = TRPSAVE
       END IF
@@ -565,6 +671,92 @@ C
 550      CONTINUE
 500   CONTINUE
       TRPLET = TRPSAVE
+C
+C Isotropic hyperfine coupling printing
+C
+      IF (FCFLG) THEN
+          CALL AROUND('Isotropic  Hyperfine Coupling')
+          WRITE(LUPRI,'(A)') '    Atom      Mass      G-val   '
+     *                    //'   A, Mhz        A, G    '
+          WRITE(LUPRI,'(A)') ' -----------------------------'
+     *                    //'--------------------------'
+          DO 600 ITMP = 1, ESRNUC
+              DO 610 ISONM = 1, ISODAT(1,NUCINF(ITMP))
+                  IATIS=ISODAT(ISONM+1,NUCINF(ITMP))
+                  XATGV=DISOTP(INT(CHARGE(NUCINF(ITMP))),IATIS,'GVAL')
+                  XISMAS=DISOTP(INT(CHARGE(NUCINF(ITMP))),IATIS,'MASS')
+                  HYPFIN=((HYPVAL(ITMP,1)+HYPVAL(ITMP,2))
+     *                   *XATGV*XTHZ*1.0D-6*ALPHA2)
+     *                   /(2.0D0*XPRTMAS*DEGEN(ITMP)*REFSPIN)
+                  WRITE(LUPRI,'(A,F6.2,A,F7.5,A,F9.4,A,F9.4,A)')
+     *               ' *   '//NAMN(NUCINF(ITMP))(1:4)//'  * ', XISMAS,
+     *               ' * ', XATGV,' * ',HYPFIN,'  * ',HYPFIN/2.8025D0,
+     *               ' *'
+ 610          CONTINUE
+ 600      CONTINUE
+          WRITE(LUPRI,'(A)') ' -----------------------------'
+     *                      //'--------------------------'
+          WRITE(LUPRI,'(/A)') ' *** NOTE: Results printed only for'
+     *                         //' symmetry unique atoms!'
+          CALL AROUND('R-U contributions to Isotropic hyperfine'
+     *                //' coupling')
+          WRITE(LUPRI,'(A)') '    Atom    G-val    Average, MHz '
+     *                    //' Response, MHz   Total, MHz '
+          WRITE(LUPRI,'(A)') ' ------------------------------'
+     *                    //'---------------------------------'
+          DO 601 ITMP = 1, ESRNUC
+              DO 611 ISONM = 1, ISODAT(1,NUCINF(ITMP))
+                  IATIS=ISODAT(ISONM+1,NUCINF(ITMP))
+                  XATGV=DISOTP(INT(CHARGE(NUCINF(ITMP))),IATIS,'GVAL')
+                  HYPFIN=(XATGV*XTHZ*1.0D-6*ALPHA2)
+     *                   /(2.0D0*XPRTMAS*DEGEN(ITMP)*REFSPIN)
+                  WRITE(LUPRI,'(A,F7.5,A,F11.4,A,F11.4,A,F11.4,A)')
+     *               ' *  '//NAMN(NUCINF(ITMP))(1:4)//' * ', XATGV,
+     *               ' * ',HYPFIN*HYPVAL(ITMP,1),' * ',
+     *               HYPFIN*HYPVAL(ITMP,2),'  * ',
+     *               HYPFIN*(HYPVAL(ITMP,1)+HYPVAL(ITMP,2)),'  * '
+ 611          CONTINUE
+ 601      CONTINUE
+          WRITE(LUPRI,'(A)') ' ------------------------------'
+     *                    //'---------------------------------'
+          WRITE(LUPRI,'(/A)') ' *** NOTE: Results printed only for'
+     *                         //' symmetry unique atoms!'
+      ENDIF
+C
+C Anisotropic hyperfine coupling printing
+C
+      IF (SDFLG) THEN
+            CALL AROUND('Anisotropic Hyperfine Coupling')
+      DO 700 ITMP=1,ESRNUC
+         DO 710 ISONM=1,ISODAT(1,NUCINF(ITMP))
+            IATIS=ISODAT(ISONM+1,NUCINF(ITMP))
+            XATGV=DISOTP(INT(CHARGE(NUCINF(ITMP))),IATIS,
+     *      'GVAL')
+            XISMAS=DISOTP(INT(CHARGE(NUCINF(ITMP))),IATIS,
+     *      'MASS')
+            HYPFIN=(XATGV*XTHZ*1.0D-6*ALPHA2)/
+     *             (2.0D0*XPRTMAS*DEGEN(ITMP)*REFSPIN)
+            WRITE(LUPRI,'(/A,F6.2,A,F7.5,A)')
+     *                  ' A Tensor components for '//
+     *                  NAMN(NUCINF(ITMP))(1:4)//' ( Mass =',
+     *                  XISMAS, ' G-val =', XATGV,') in MHz: '
+            WRITE(LUPRI,'(A)') ' ================================='
+     *                       //'=================================='
+            WRITE(LUPRI,'(/A)') '  '
+            WRITE(LUPRI,'(A)') '           SX          SY          SZ '
+     *                        //'     '
+            DO 720 ICRD=1,3
+               WRITE(LUPRI,'(A,F11.4,A,F11.4,A,F11.4,A)')
+     *         ' I'//CHRXYZ(ICRD)//' *  ',
+     *         HYPFIN*SDVAL(ICRD,1,NUCINF(ITMP)), ' * ',
+     *         HYPFIN*SDVAL(ICRD,2,NUCINF(ITMP)), ' * ',
+     *         HYPFIN*SDVAL(ICRD,3,NUCINF(ITMP)), ' * '
+ 720        CONTINUE
+ 710     CONTINUE
+ 700  CONTINUE
+      WRITE(LUPRI,'(/A)') ' *** NOTE: Results printed only for'
+     *                         //' symmetry unique atoms!'
+      ENDIF
 C
 C *** end of RSPESR --
       CALL QEXIT('RSPESR')
@@ -1005,3 +1197,109 @@ C
       RETURN
 C     end of solgdt.
       END
+C  /* Deck FCOPER */
+      SUBROUTINE FCOPER(ATMIND,LABINT)
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+      CHARACTER*8 LABINT
+      INTEGER ATMIND
+#include <nuclei.h>
+#include <chrnos.h>
+C
+       LABINT = 'FC '//NAMN(ATMIND)(1:3)//CHRNOS(ATMIND/10)
+     *          //CHRNOS(MOD(ATMIND,10))
+C
+      RETURN
+      END
+C  /* Deck SETDEG */
+      SUBROUTINE SETDEG
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <maxmom.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <parnmr.h>
+#include <nuclei.h>
+#include <symmet.h>
+#include <chrnos.h>
+#include <chrxyz.h>
+#include <ibtfun.h>
+C
+      DO 50 I = 1, ESRNUC
+          DEGEN(I) = 0.0D0
+          DO 100 IREP=0,MAXREP
+                ISCOR1 = IPTCNT(3*(NUCINF(I) - 1) + 1,IREP,2)
+                IF (ISCOR1 .GT. 0)  DEGEN(I)=DEGEN(I)+1.0D0
+ 100      CONTINUE
+          WRITE(LUPRI, *) 'DEGEN ', I, DEGEN(I)
+ 50   CONTINUE
+C
+      RETURN
+      END
+C  /* Deck SETISO */
+      SUBROUTINE SETISO
+#include <implicit.h>
+#include <priunit.h>
+#include <parnmr.h>
+#include <mxcent.h>
+#include <nuclei.h>
+C
+      DO 100 I=1,ESRNUC
+         IF (ISODAT(1,NUCINF(I)) .EQ. 0) THEN
+             ISODAT(1,NUCINF(I))=1
+             IATIS=1
+ 200         XATGV=DISOTP(INT(CHARGE(NUCINF(I))),IATIS,'GVAL')
+             IF (DABS(XATGV) .LT. 1.0D-5) THEN
+                 IATIS=IATIS+1
+             GO TO 200
+             ENDIF
+             ISODAT(2,NUCINF(I))=IATIS
+         ENDIF
+ 100  CONTINUE
+C
+      RETURN
+      END
+C  /* Deck SDOPER */
+      SUBROUTINE SDOPER(ATMIND,LABINT,NCOOR)
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <maxmom.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <parnmr.h>
+      INTEGER ATMIND, NCOOR
+      CHARACTER LABINT(9*ATMNUM)*8
+#include <nuclei.h>
+#include <symmet.h>
+#include <chrnos.h>
+#include <chrxyz.h>
+#include <ibtfun.h>
+C
+       NCOOR=0
+       DEGEN(ATMIND) = 0.0D0
+       DO 100 IREP=0,MAXREP
+          DO  200 ICOOR1=1,3
+              ISCOR1 = IPTCNT(3*(NUCINF(ATMIND ) - 1) + ICOOR1,IREP,2)
+              IF (ISCOR1 .GT. 0) THEN
+              DO 300 ICOOR2 = 1, 3
+                 NCOOR=NCOOR+1
+                 LABINT(NCOOR) = 'SD '//CHRNOS(ISCOR1/100)
+     *                            //CHRNOS(ISCOR1/10)
+     *                            //CHRNOS(MOD(ISCOR1,10))
+     *                            //' '//CHRXYZ(-ICOOR2)
+ 300          CONTINUE
+              IF (ICOOR1 .EQ. 1) DEGEN(ATMIND)=DEGEN(ATMIND)+1.0D0
+               WRITE(LUPRI, *) 'DEGEN ', ATMIND, DEGEN(ATMIND)
+              SDIND(1,ISCOR1)=NUCINF(ATMIND)
+              SDIND(2,ISCOR1)=ICOOR1
+              ENDIF
+ 200              CONTINUE
+ 100           CONTINUE
+C
+      RETURN
+      END
+
+
