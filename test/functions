@@ -120,10 +120,10 @@ END{exit (s==1?0:1) }' $log || ERRLIST="$ERRLIST; Hyperpolarizabilities"
 check_general_lr() {
 [ "$4" = "" ] &&  echo "not enough parameters to check_general_lr."
 awk 'function e(a,b,r){return(a-b>r||a-b<-r)} BEGIN {s=0}
-/^@'$1'.*'$2'/ { value=substr($0,21)
+/^@ -<< '$1'.*'$2'/ { value=substr($0,31)
                  gsub("D","E",value);
                  if(!e(value,'$3','$4')) s++; 
-                 else { print substr($0,21) " " '$3'; }
+                 else { print substr($0,31) " " '$3'; }
                }
 END{exit (s==1?0:1) }' $log || ERRLIST="$ERRLIST; Linear response"
 }

@@ -44,7 +44,7 @@ dalton="**DALTON INPUT
 "
 
 test="
-check_hf_energy -39.072083833207 1e-12
+check_scf_energy HF -39.072083833207 1e-12
 check_general_lr ZANGMOM 'Z.SPNORB' 1.092358543605E-04 1e-9
 check_general_lr XANGMOM 'X.SPNORB' 7.058134021302E-05 1e-9
 check_general_lr YANGMOM 'Y.SPNORB' 6.193063314014E-05 1e-9
