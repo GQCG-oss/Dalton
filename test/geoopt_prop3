@@ -68,9 +68,9 @@ cat > geoopt_prop3.dal <<'%EOF%'
  12
 .CAS SPACE
  3 3 2 1
-**PROPERTIES
+**EACH STEP
 .VIBANA
-**FINAL
+**PROPERTIES
 .VIBANA
 .MAGNET
 .SHIELD
