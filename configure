@@ -161,8 +161,8 @@ case $WHICH in
               complist='if90 if77 f90 f77'
               ccmplist='cc';;
     linux)    liblist='libacml.a libmkl_p3.a libatlas.a libblas.a'
-              complist='ifc efc pgf77 g77'
-              ccmplist='icc ecc pgcc gcc';;
+              complist='g77 ifc efc pgf77'
+              ccmplist='gcc ecc pgcc icc';;
     darwin)   liblist='libatlas.a libblas.a'
               complist='xlf g77 f77'
 #                       f77 is the Absoft v8.0 compiler
@@ -926,7 +926,7 @@ case "$WHICH" in
              fi
              cpp="-DVAR_IFC $cpp"
              opt="-O3 $proc -ip -w"
-             safe_opt="-O1 -w"
+             safe_opt="-O2 -w"
              case $CC in
                  [ie]cc) copt="-O3 $proc -ip -restrict -DRESTRICT=restrict";;
                  gcc) copt="-O3 -malign-double -std=c99 -DRESTRICT=restrict";;
@@ -1230,6 +1230,19 @@ touch gp/Makefile.depend
 touch pdpack/Makefile.depend
 touch rsp/Makefile.depend
 touch sirius/Makefile.depend
+#
+# Intel compiler seems to be a bit less optimized for certain routines, at
+# least Itanium processors
+#
+if [ $F77 = 'ifc' -o $F77 = 'efc' ]; then
+cat <<EOF>>abacus/Makefile
+her2el2.o: her2el2.F
+$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(SAFEFFLAGS) -c \$*.F 
+
+hersym.o: hersym.F
+$tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(SAFEFFLAGS) -c \$*.F 
+EOF
+fi
 #
 # Update the DALTON run-script
 #
