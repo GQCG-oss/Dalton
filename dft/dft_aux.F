@@ -273,3 +273,55 @@ c
       CALL MPI_Bcast(MULD2H,8*8,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
       END
 #endif
+      SUBROUTINE GETSHELLSCNT(nshells)
+#include <implicit.h>
+#include <maxorb.h>
+#include <shells.h>
+      nshells = kmax
+      END
+      SUBROUTINE GETSHELLNO(ISHELL,ICNT,IL,X,Y,Z,MXCONTR,
+     &                      COEFF, ALPHA)
+#include <implicit.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <aovec.h>
+c     RETURNS INFORMATION ABOUT SHELL ISHELL
+c
+      DIMENSION COEFF(MXCONTR), ALPHA(MXCONTR)
+#include <inforb.h>
+#include <onecom.h>
+#include <lmns.h>
+#include <nuclei.h>
+#include <shells.h>
+#include <symmet.h>
+#include <primit.h>
+#include <sphtrm.h>
+#include <orgcom.h>
+      NHKTA  = NHKT(ISHELL)
+      KHKTA  = KHKT(ISHELL)
+      KCKTA  = KCKT(ISHELL)
+      SPHRA  = SPHR(ISHELL)
+      NUMCFA = NUMCF(ISHELL)
+      JSTA   = JSTRT(ISHELL)
+      NUCA   = NUCO(ISHELL)
+c        dump shell:
+      ICNT = 0
+      DO IC = JSTA +1, JSTA + NUCA
+         IF(PRICCF(IC,NUMCFA).NE.0D0) ICNT = ICNT +1
+      END DO
+      IL = NHKTA - 1
+      X  = CENT(ISHELL,1,1)
+      Y  = CENT(ISHELL,2,1)
+      Z  = CENT(ISHELL,3,1)
+      IF(ICNT.LE.MXCONTR) THEN
+         IDX = 1
+         DO IC = JSTA +1, JSTA + NUCA
+            IF(PRICCF(IC,NUMCFA).NE.0D0) THEN
+               COEFF(IDX) = PRICCF(IC, NUMCFA)
+               ALPHA(IDX) = PRIEXP(IC)
+               IDX = IDX + 1
+            END IF
+         END DO
+      END IF
+      END

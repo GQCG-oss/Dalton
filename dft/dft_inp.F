@@ -37,11 +37,11 @@ C  /* Deck dftinp */
 #include <dftinf.h>
 #include <dftcom.h>
 #include <priunit.h>
-      PARAMETER ( NTABLE = 9 )
+      PARAMETER ( NTABLE = 10 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7, LINE*80
       LOGICAL ALLOPT
       DATA TABLE /'.PRINT ','.DFTELS','.DFTTHR','.RADINT','.ANGINT',
-     &            '.ANGMIN','.NOPRUN','.GRID T','.DFTAC '/
+     &            '.ANGMIN','.NOPRUN','.GRID T','.DFTAC ','.CARPAR'/
 C
       WORD1 = WORD
 C
@@ -54,7 +54,7 @@ C
             ELSE IF (PROMPT .EQ. '.') THEN
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10), I
                   END IF
  200           CONTINUE
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -106,6 +106,11 @@ c     >.DFTAC < asymptotic correction keyword
       DFTASC = .TRUE.
       DFTPOT = .TRUE.
       READ (LUCMD,*) DFTIPT, DFTBR1, DFTBR2
+      GO TO 100  
+c     >.CARPAR< cartesian grid parameters.
+ 10   CONTINUE
+      READ(LUCMD,'(A80)') LINE
+      CALL DFTCARTESIANINPUT(LINE)
       GO TO 100  
 
  300  CONTINUE

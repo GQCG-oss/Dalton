@@ -47,6 +47,11 @@ static const real CELL_SIZE = 4.0;
  * calculation's accuracy. */
 static const real WEIGHT_THRESHOLD = 1e-17;
 
+#define GRID_TYPE_STANDARD  1
+#define GRID_TYPE_CARTESIAN 2
+    
+static int gridType = GRID_TYPE_STANDARD;
+//static int gridType = GRID_TYPE_CARTESIAN;
 
 struct point {
     real x,y,z;
@@ -1269,6 +1274,8 @@ dftgridinput_(const char *line, int line_len)
             selected_partitioning = &partitioning_becke2; break;
         case 5: 
             selected_partitioning = &partitioning_block; break;
+        case 6: 
+            gridType = GRID_TYPE_CARTESIAN; break;
         default: fort_print("GRIDGEN: Unknown .GRID TYPE option ignored.\n%s",
                             line);
             /* FIXME: should I quit here? */
@@ -1657,52 +1664,94 @@ void get_grid_paras_(int *grdone, real *radint, int *angmin, int *angint);
 void set_grid_done_(void);
 
 DftGridReader*
-grid_open(int nbast, real *work, int *lwork)
+grid_open(int nbast, real *dmat, real *work, int *lwork)
 {
     DftGridReader *res = dal_malloc(sizeof(DftGridReader));
     int grdone, angmin, angint;
     real radint;
     char *fname;
 
-    get_grid_paras_(&grdone, &radint, &angmin, &angint);
-    if(!grdone) {
-        int atom_cnt, pnt_cnt;
-        int lwrk = *lwork - nbast;
-        GridGenAtom* atoms = grid_gen_atom_new(&atom_cnt);
-        struct RhoEvalData dt; /* = { grid, work, lwork, dmat, dmgao}; */
-        dt.grid =  NULL; dt.work = work+nbast; dt.lwork = &lwrk;
-        dt.dmat =  NULL; dt.dmagao = work;
+    switch(gridType)
+        {
+        case GRID_TYPE_STANDARD:
+            get_grid_paras_(&grdone, &radint, &angmin, &angint);
+            if(!grdone) {
+                int atom_cnt, pnt_cnt;
+                int lwrk = *lwork - nbast;
+                GridGenAtom* atoms = grid_gen_atom_new(&atom_cnt);
+                struct RhoEvalData dt; /* = { grid, work, lwork, dmat, dmgao}; */
+                dt.grid =  NULL; dt.work = work+nbast; dt.lwork = &lwrk;
+                dt.dmat =  NULL; dt.dmagao = work;
 
 #ifdef VAR_MPI
-        grid_par_init();
-        if(mynum == 0) {
-            pnt_cnt = grid_gen_generate("DALTON.QUAD", atom_cnt, atoms,
-                                        radint, NULL, &dt,
-                                        angmin, angint, work, lwork);
-            grid_par_shutdown();
-        } else 
-            grid_par_slave("DALTON.QUAD");
-        /* Stop on barrier here so that we know all nodes managed to save
-         * their files. */
-        MPI_Barrier(MPI_COMM_WORLD);
+                grid_par_init();
+                if(mynum == 0) {
+                    pnt_cnt = grid_gen_generate("DALTON.QUAD", atom_cnt, atoms,
+                                                radint, NULL, &dt,
+                                                angmin, angint, work, lwork);
+                    grid_par_shutdown();
+                } else 
+                    grid_par_slave("DALTON.QUAD");
+                /* Stop on barrier here so that we know all nodes managed to save
+                 * their files. */
+                MPI_Barrier(MPI_COMM_WORLD);
 #else
-        pnt_cnt = grid_gen_generate("DALTON.QUAD", atom_cnt, atoms,
-                                    radint, NULL, &dt,
-                                    angmin, angint, work, lwork);
+                pnt_cnt = grid_gen_generate("DALTON.QUAD", atom_cnt, atoms,
+                                            radint, NULL, &dt,
+                                            angmin, angint, work, lwork);
 #endif
-        free(atoms);
-	set_grid_done_();
-    }
-    fname = grid_get_fname("DALTON.QUAD", mynum);
-    res->f=fopen(fname, "rb");
-    free(fname);
-    if(res == NULL) {
-	perror("DFT quadrature grid file DALTON.QUAD not found.");
-	free(res);
-	abort();
-    }
-    return res;
+                free(atoms);
+                set_grid_done_();
+            }
+            fname = grid_get_fname("DALTON.QUAD", mynum);
+            res->f=fopen(fname, "rb");
+            free(fname);
+            if(res == NULL) {
+                perror("DFT quadrature grid file DALTON.QUAD not found.");
+                free(res);
+                abort();
+            }
+            return res;
+        case GRID_TYPE_CARTESIAN:
+#ifdef VAR_MPI
+            perror("Error: cartesian grid not implemented for MPI.\n");
+            free(res);
+            abort();
+#endif            
+            if(dmat == NULL)
+                {
+                    perror("Error: cartesian grid requested without dmat.\n");
+                    perror("(cartesian grid not implemented "
+                           "for open shell).\n");
+                    free(res);
+                    abort();
+                }
+            do_cartesian_grid(nbast, dmat, res);
+            if( (res->f=fopen("DALTON.QUAD", "rb")) == NULL) {
+                perror("DFT quadrature grid file DALTON.QUAD not found.");
+                free(res);
+                abort();
+            }
+            return res;
+        default:
+            perror("Error in grid_open: unknown grid type\n");
+            free(res);
+            abort();
+        } // END SWITCH
 }
+
+
+DftGridReader*
+grid_open_cmo(int nbast, const real *cmo, real *work, int *lwork)
+{
+    real *dmat = dal_malloc(nbast*nbast*sizeof(real));
+    DftGridReader *reader;
+    dft_get_ao_dens_mat_(cmo, dmat, work, lwork);
+    reader = grid_open(nbast, dmat, work, lwork);
+    free(dmat);
+    return reader;
+}
+
 
 /** grid_getchunk_blocked() reads grid data also with screening
     information if only nblocks and shlblocks are provided.
@@ -1767,9 +1816,9 @@ grid_close(DftGridReader *rawgrid)
 /* ------------------------------------------------------------------- */
 static DftGridReader *grid = NULL;
 void
-opnqua_(int *nbast, real *work, int *lwork)
+opnqua_(int *nbast, real *dmat, real *work, int *lwork)
 {
-    grid = grid_open(*nbast, work, lwork);
+    grid = grid_open(*nbast, dmat, work, lwork);
 }
 
 void

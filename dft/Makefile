@@ -56,6 +56,8 @@ CFILES =\
 	functionals.c	\
 	general.c	\
 	grid-gen.c	\
+	grid-gen2.c	\
+	basisinfo.c	\
 	gen-so-int.c	\
 	integrator.c	\
 	prop-eval.c	\
