@@ -1019,7 +1019,9 @@ C
 !      
                IF (CCPT) THEN
 
-                  IF (BP2EOO) THEN
+                  IF (IOPREL.EQ.3) THEN
+                  !IF ((BPH2OO).and.(IOPREL.EQ.3)) THEN
+                  !IF ((BP2EOO).and.(IOPREL.EQ.3)) THEN
                     CALL CC_DEN2_PTanti(WORK(KD2IJG_PT),WORK(KD2AIG_PT),
      &                              WORK(KD2IAG_PT),WORK(KD2ABG_PT),
      &                              WORK(KCMO),1,WORK(KEND2),LWRK2,
@@ -1352,6 +1354,8 @@ C
       IF (DAR2EL) DO2DAR = .FALSE.
       IF (IOPREL .EQ. 2) THEN
          DPTINT = .FALSE.
+      ELSE IF (IOPREL .EQ. 3) THEN
+         BPH2OO = .FALSE.
       ENDIF
 C
 C----------------------
@@ -1359,7 +1363,9 @@ C     Print out result.
 C----------------------
 C
       IF ((IOPREL .EQ. 2).OR.(IOPREL .EQ. 3)) THEN
+
          WORK(1) = RE2DAR
+
       ELSE IF ((DAR2EL).AND.(IOPREL.LT.2)) THEN
 C
          IF (IOPREL .EQ. 0) THEN

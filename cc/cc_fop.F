@@ -101,6 +101,7 @@ C
       LOGICAL CC1BSV,CC1ASV,FASAVE,CICLC,HFCLC, DAR2SA,
      *        TRPCLC,OOTV, EXCLC, RLORBS, LPROJECT, EX, TRIPLET,
      *        LDUM, ETASAV, LCCPTSV
+      LOGICAL BP2SAV
       DIMENSION WORK(LWORK), ELSEMO(3,3), SKODE(3,3), SKODN(3,3)
       CHARACTER*17 MODELPRI2
       CHARACTER*10 MODEL
@@ -1885,6 +1886,9 @@ C------------------------------------------------------------
 C
          DAR2SA = DAR2EL
          IF (DAR2EL) DAR2EL = .FALSE.
+         BP2SAV = BP2EOO
+         IF (BP2EOO) BP2EOO = .FALSE.
+
          IOPREL = 2
          if (.false.) then
             CALL CC_2EEXP(WORK(KWRK4),LWRK4,IOPREL)
@@ -1892,6 +1896,7 @@ C
             CALL CC_2EEXP_2(WORK(KWRK4),LWRK4,IOPREL)
          end if
          DAR2EL = DAR2SA
+         BP2EOO = BP2SAV
 C
          WRITE(LUPRI,*) ' '
          WRITE(LUPRI,136) 'DPTTWO:', WORK(KWRK4)
@@ -1902,32 +1907,6 @@ C
          WRITE(LUPRI,139) '--------------------------------'
 C
       ENDIF
-C
-C
-C------------------------------------------------------------
-C        Calculate the orbit-orbit two electron Hamiltonian
-C        expectation value
-C------------------------------------------------------------
-C
-      IF (BP2EOO) THEN
-         CALL AROUND(' Breit-Pauli 2e- Orbit-Orbit corrections')
-         DAR2SA = DAR2EL
-         IF (DAR2EL) DAR2EL = .FALSE.
-         IOPREL = 3
-         if (.false.) then
-            CALL CC_2EEXP(WORK(KWRK3),LWRK3,IOPREL)
-         else
-            write(lupri,*)'CC_FOP: CALLINH 2EEXP2, IOPREL =', IOPREL
-            CALL CC_2EEXP_2(WORK(KWRK3),LWRK3,IOPREL)
-         end if
-         DAR2EL = DAR2SA
-C
-         WRITE(LUPRI,*) ' '
-         WRITE(LUPRI,136) 'BP2EOO:', WORK(KWRK3)
-         WRITE(LUPRI,138) '-------'
-         WRITE(LUPRI,*) ' '
-
-      END IF
 C
 C=========================================================================
 C     Standard scalar relativistic corrections to the ground-state energy.
@@ -2065,6 +2044,34 @@ C
          end if
 !
       ENDIF
+C
+C------------------------------------------------------------
+C        Calculate the orbit-orbit two electron Hamiltonian
+C        expectation value
+C------------------------------------------------------------
+C
+      IF (BP2EOO) THEN
+         CALL AROUND(' Breit-Pauli 2e- Orbit-Orbit corrections')
+         DAR2SA = DAR2EL
+         IF (DAR2EL) DAR2EL = .FALSE.
+         !BP2SAV = BP2EOO
+         !IF (BP2EOO) BP2EOO = .FALSE.
+         IOPREL = 3
+         if (.false.) then
+            CALL CC_2EEXP(WORK(KWRK3),LWRK3,IOPREL)
+         else
+            !write(lupri,*)'CC_FOP: CALLING 2EEXP2, IOPREL =', IOPREL
+            CALL CC_2EEXP_2(WORK(KWRK3),LWRK3,IOPREL)
+         end if
+         DAR2EL = DAR2SA
+         !BP2EOO = BP2SAV
+C
+         WRITE(LUPRI,*) ' '
+         WRITE(LUPRI,136) 'BP2EOO:', WORK(KWRK3)
+         WRITE(LUPRI,138) '-------'
+         WRITE(LUPRI,*) ' '
+
+      END IF
 C
 C--------------------------------------------------------------
 C     Section for general operator APROP represented by LABEL.
