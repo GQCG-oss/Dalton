@@ -570,11 +570,11 @@ C
                IF (SPHR34) THEN
                   CALL C2CONT(CCPRIM,CCONT(1,ICMP34),CONT3,CONT4,SCR1,
      &                        SCR2,NPCO3,NPCO4,NUCS34,NHCCMP,NPNT34,
-     &                        NRED34,IPRINT)
+     &                        NRED34,IPRINT,.FALSE.)
                ELSE
                   CALL C2CONT(CCPRIM,SSINT(1,ICMP34),CONT3,CONT4,SCR1,
      &                        SCR2,NPCO3,NPCO4,NUCS34,NHCCMP,NPNT34,
-     &                        NRED34,IPRINT)
+     &                        NRED34,IPRINT,.FALSE.)
                END IF
             END IF
   150    CONTINUE
@@ -1312,11 +1312,11 @@ C
                   IF (SPHR34) THEN
                      CALL C2CONT(CCPRIM,CCONT(1,ICMP34),CONT3,CONT4,
      &                           SCR1,SCR2,NPCO3,NPCO4,NUCS34,NHCCMP,
-     &                           NPNT34,NRED34,IPRINT)
+     &                           NPNT34,NRED34,IPRINT,.FALSE.)
                   ELSE
                      CALL C2CONT(CCPRIM,SSINT(1,ICMP34),CONT3,CONT4,
      &                           SCR1,SCR2,NPCO3,NPCO4,NUCS34,NHCCMP,
-     &                           NPNT34,NRED34,IPRINT)
+     &                           NPNT34,NRED34,IPRINT,.FALSE.)
                   END IF
                END IF
   210       CONTINUE
@@ -1430,13 +1430,14 @@ C
       END
 C  /* Deck c2cont */
       SUBROUTINE C2CONT(CCPRIM,CCONT,CONT3,CONT4,SCR1,SCR2,NPCO3,NPCO4,
-     &                  NUCS34,NHCCMP,NPNT34,NRED34,IPRINT)
+     &                  NUCS34,NHCCMP,NPNT34,NRED34,IPRINT,ANTICO)
 #include <implicit.h>
 #include <priunit.h>
 C
 C     tuh Mar 1988
 C     Modified for no transformations (NOCNT) tuh Apr 1989
 C     Modified for segmented contraction tuh Feb 1992
+C     Modified for antihermitean integrals (WK/UniKA/18-11-2002).
 C
 C     Purpose: Transformation of two innermost indices
 C              Third index is next innermost
@@ -1454,8 +1455,10 @@ C
 C     Scratch: SCR1(NUCR3*NUCR4*NINT12)
 C              SCR2(NORR3*NUCR4*NINT12)
 C
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
+C     DM1 and THRESH are added for antihermitean integrals (WK/UniKA/18-11-2002).
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0, THRESH = 1.0D-13)
 #include <twoao.h>
+      LOGICAL ANTICO
       DIMENSION CCPRIM(*), CCONT(*), SCR1(*), SCR2(*),
      &          CONT3(*), CONT4(*), NPCO3(NSET3,2), NPCO4(NSET4,2),
      &          NUCS34(*), NPNT34(NUC3*NUC4,2), NRED34(*)
@@ -1513,7 +1516,25 @@ C
                   JI = NPNT34(I,2)
                   CALL DCOPY(NINT12,CCPRIM(I),NUC34,SCR1(IJ),N34Q)
                   IF (IJ .NE. JI) THEN
-                     CALL DCOPY(NINT12,CCPRIM(I),NUC34,SCR1(JI),N34Q)
+C                    Antihermitean integrals (WK/UniKA/18-11-2002).
+                     IF (ANTICO) THEN
+                        CALL VSMUL(CCPRIM(I),NUC34,DM1,
+     &                             SCR1(JI),N34Q,NINT12)
+                     ELSE
+                        CALL DCOPY(NINT12,CCPRIM(I),
+     &                             NUC34,SCR1(JI),N34Q)
+                     END IF
+                  ELSE IF (ANTICO) THEN
+                     IADS = I
+                     DO 110 INT12 = 1, NINT12
+                        IF (ABS(CCPRIM(IADS)) .GT. THRESH) THEN
+                           WRITE (LUPRI,'(A,2(1P,E14.6))')
+     &                     ' MATRIX NOT ANTI-SYMM. (C2CONT) ',
+     &                     CCPRIM(IADS), THRESH
+                           CALL QUIT('*** ERROR IN C2CONT ***')
+                        END IF
+                        IADS = IADS + NUC34
+  110                CONTINUE
                   END IF
   100          CONTINUE
             ELSE
@@ -1525,7 +1546,24 @@ C
                   JI = (J - 1)*NUC4 + I
                   CALL DCOPY(NINT12,CCPRIM(IADR),N34D,SCR1(IJ),N34Q)
                   IF (IJ .NE. JI) THEN
-                     CALL DCOPY(NINT12,CCPRIM(IADR),N34D,SCR1(JI),N34Q)
+                     IF (ANTICO) THEN
+                        CALL VSMUL(CCPRIM(IADR),N34D,DM1,
+     &                             SCR1(JI),N34Q,NINT12)
+                     ELSE
+                        CALL DCOPY(NINT12,CCPRIM(IADR),
+     &                             N34D,SCR1(JI),N34Q)
+                     END IF
+                  ELSE IF (ANTICO) THEN
+                     IADS = IADR
+                     DO 210 INT12 = 1, NINT12
+                        IF (ABS(CCPRIM(IADS)) .GT. THRESH) THEN
+                           WRITE (LUPRI,'(A,2(1P,E14.6))')
+     &                     ' MATRIX NOT ANTI-SYMM. (C2CONT) ',
+     &                     CCPRIM(IADS), THRESH
+                           CALL QUIT('*** ERROR IN C2CONT ***')
+                        END IF
+                        IADS = IADS + N34D
+  210                CONTINUE
                   END IF
                   IADR = IADR + 1
   200          CONTINUE
@@ -1584,24 +1622,32 @@ C     Case (iii): Segmented contraction
 C     =================================
 C
       ELSE
-         IOFFCN = 1
-         IOFFPR = 0
-         DO 900 I = 1, NINT12
-            DO 910 IORB34 = 1, NORB34
-               NPRIM = NUCS34(IORB34)
-               IF (NPRIM .GT. 0) THEN
-                  CNT = CCPRIM(IOFFPR+1)
-                  DO 920 J = 2, NPRIM
-                     CNT = CNT + CCPRIM(IOFFPR+J)
-  920             CONTINUE
-                  CCONT(IOFFCN) = CNT
-                  IOFFPR = IOFFPR + NPRIM
-               ELSE
-                  CCONT(IOFFCN) = D0
-               END IF
-               IOFFCN = IOFFCN + 1
-  910       CONTINUE
-  900    CONTINUE
+         IF (ANTICO .AND. TPRI34 .AND. NORB34 .GT. 1) THEN
+            CALL QUIT('*** NOT IMPLEMENTED (C2CONT) ***')
+         ELSE IF (ANTICO .AND. TPRI34) THEN
+            DO 930 I = 1, NINT12
+               CCONT(I) = D0
+  930       CONTINUE
+         ELSE
+            IOFFCN = 1
+            IOFFPR = 0
+            DO 900 I = 1, NINT12
+               DO 910 IORB34 = 1, NORB34
+                  NPRIM = NUCS34(IORB34)
+                  IF (NPRIM .GT. 0) THEN
+                     CNT = CCPRIM(IOFFPR+1)
+                     DO 920 J = 2, NPRIM
+                        CNT = CNT + CCPRIM(IOFFPR+J)
+  920                CONTINUE
+                     CCONT(IOFFCN) = CNT
+                     IOFFPR = IOFFPR + NPRIM
+                  ELSE
+                     CCONT(IOFFCN) = D0
+                  END IF
+                  IOFFCN = IOFFCN + 1
+  910          CONTINUE
+  900       CONTINUE
+         END IF
       END IF
       RETURN
       END

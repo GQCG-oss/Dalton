@@ -48,6 +48,7 @@ C
 #include <nuclei.h>
 #include <shells.h>
 #include <symmet.h>
+#include <r12int.h>
 C
       LOGICAL TRIANG, PROPRI, TOFILE, DOINT(2,2)
       CHARACTER WORD*7, LABINT(3*MXCOOR)*8
@@ -91,6 +92,12 @@ C
          DOINT(2,1) = .FALSE.
          DOINT(1,2) = .FALSE.
          DOINT(2,2) = .FALSE.
+      END IF
+C     Compute all integrals when R12 method is requested (WK/UniKA/04-11-2002).
+      IF (LMULBS) THEN
+         DOINT(2,1) = .TRUE.
+         DOINT(1,2) = .TRUE.
+         DOINT(2,2) = .TRUE.
       END IF
 C
       KLBINT = 1

@@ -55,6 +55,11 @@ C
 #include <ericom.h>
 #include <eriao.h>
 #include <hertop.h>
+#include <r12int.h>
+C     LOCU12 is a local copy of U12INT, which is set .false.
+C     for the transformation from Hermite to Cartesian functions
+C     for electron 2 (WK/UniKA/04-11-2002).
+      LOGICAL LOCU12
 C
 #include <ibtfun.h>
 C
@@ -93,6 +98,9 @@ C
          LCV4   = 0
          LC34   = 0
          LCPINT = 0
+C        Make local copy of U12INT (WK/UniKA/04-11-2002).
+         LOCU12 = U12INT
+         U12INT = .FALSE.
 C
          LFIRST = KHKT12
 C
@@ -162,7 +170,7 @@ C
          KCPINT = KCCPRM + LCCPRM
          KCCPDE = KCCPRM + LCCPRM
          KCCRDE = KCCPDE + LCCPRD
-C
+C 
          IF (IELCT2 .EQ. 1) THEN
             ICORCD = 1
             IEXPCD = 1
@@ -181,7 +189,9 @@ C
      &               WORK(KCA3),WORK(KCV3),WORK(KCA4),WORK(KCV4),
      &               NCENTR,CCFBT,WORK(KCPINT),
      &               WORK(KHPI),WORK(KP3),WORK(KP4),
-     &               NDER3,NDER4,NDIMD,IPRINT)
+     &               NDER3,NDER4,NDIMD,IPRINT,
+     &               WORK,WORK,WORK,WORK)
+         U12INT = LOCU12
 C
       RETURN
       END
@@ -195,7 +205,8 @@ C  /* Deck cr2two */
      &                  CSQ,CSA3,CSV3,CSA4,CSV4,NCENTR,
      &                  CCFBT,CPINT,
      &                  HPI,P3,P4,
-     &                  NDER3,NDER4,NDIMD,IPRINT)
+     &                  NDER3,NDER4,NDIMD,IPRINT,
+     &                  TEXPA,TEXPB,AOVERP,BOVERP)
 C
 C     tuh
 C
@@ -220,7 +231,9 @@ C
      &          CSQ(NCSQ1,NCSQ2),  NCENTR(NPQBCX,2),
      &          CSA3(KHKT3,KCKT3), CSV3(NCCCC,KHKT3,KCKT3), 
      &          CSA4(KHKT4,KCKT4), CSV4(NCCCC,KHKT4,KCKT4),
-     &          CCFBT(*), CPINT(*)
+     &          CCFBT(*), CPINT(*),
+     &          TEXPA(*), TEXPB(*), AOVERP(*), BOVERP(*)
+C               TEXPA, TEXPB, AOVERP, and BOVERP are dummies (WK/UniKA/04-11-2002).
 #include <ericom.h>
 #include <eriao.h>
 #include <hertop.h>
@@ -284,7 +297,8 @@ C
             ISCAL2 = (J4 - NHKT4 + J4D)/2
             CALL EXPCFT(ECOEF,NPP34,JMXD3,JMXD4,COOR34,EXP34,I340,HPI,
      &                  P3,P4,IRUTIN,IELCT2,J3-1,J4-1,NCNT34,IDL,
-     &                  ISCAL1,ISCAL2,IPRINT)
+     &                  ISCAL1,ISCAL2,IPRINT,
+     &                  TEXPA,TEXPB,AOVERP,BOVERP)
 C
 C           Run over components
 C

@@ -1,3 +1,18 @@
+cc_r12.o: cc_r12.F \
+  ../include/implicit.h ../include/priunit.h \
+  ../include/ccorb.h    ../include/ccsdsym.h \
+  ../include/ccsdinp.h  ../include/r12int.h \
+  ../include/ccfro.h    ../include/maxorb.h \
+  ../include/iratdef.h  ../include/ccsdio.h \
+  ../include/cclr.h     ../include/ccfdgeo.h
+
+
+cc_mkrv.o: cc_mkrv.F \
+  ../include/implicit.h ../include/priunit.h \
+  ../include/ccorb.h    ../include/ccsdsym.h \
+  ../include/ccsdinp.h  ../include/r12int.h \
+
+
 cc_1idx_d2eff.o : cc_1idx_d2eff.F \
   ../include/ccorb_dec.h  ../include/ccorb.h \
   ../include/ccsdsym_dec.h  ../include/ccsdsym.h \
@@ -759,7 +774,8 @@ cc_fropro.o : cc_fropro.F \
   ../include/ccsdsym.h  ../include/dummy.h \
   ../include/implicit.h  ../include/inftap.h \
   ../include/maxorb.h  ../include/priunit.h \
-  ../include/single.h  ../include/symsq.h
+  ../include/single.h  ../include/symsq.h \
+  ../include/r12int.h
 
 
 cc_ftst.o : cc_ftst.F \
@@ -1428,7 +1444,8 @@ ccsd_energy.o : ccsd_energy.F \
   ../include/inftap.h  ../include/iratdef.h \
   ../include/maxash.h  ../include/maxorb.h \
   ../include/mxcent.h  ../include/priunit.h \
-  ../include/single.h  ../include/symsq.h
+  ../include/single.h  ../include/symsq.h \
+  ../include/r12int.h
 
 
 ccsd_input.o : ccsd_input.F \
@@ -1454,7 +1471,8 @@ ccsd_input.o : ccsd_input.F \
   ../include/maxaqn.h  ../include/maxorb.h \
   ../include/mxcent.h  ../include/nuclei.h \
   ../include/priunit_dec.h  ../include/priunit.h \
-  ../include/single.h  ../include/symmet.h
+  ../include/single.h  ../include/symmet.h \
+  ../include/r12int.h
 
 
 ccsd_rhs3.o : ccsd_rhs3.F \
@@ -1491,7 +1509,7 @@ ccsd_rhs.o : ccsd_rhs.F \
   ../include/maxash.h  ../include/maxorb.h \
   ../include/mxcent.h  ../include/nuclei.h \
   ../include/priunit.h  ../include/single.h \
-  ../include/symsq.h
+  ../include/symsq.h   ../include/r12int.h
 
 
 ccsd_rou3.o : ccsd_rou3.F \

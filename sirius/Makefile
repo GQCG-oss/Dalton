@@ -17,7 +17,8 @@ OBJS =	ciauth.o          ciham.o           cioff.o\
 	sirset.o          sirtest.o         sirtr1.o\
 	sirtra.o          sirupd.o\
 	sirsol.o          symchk.o\
-	newtrahso.o       sirntra.o         intsort.o
+	newtrahso.o       sirntra.o         intsort.o \
+	r12aux.o
 
 libsirius.a : $(OBJS)
 	$(AR) $(ARFLAGS) $@ $?

@@ -63,6 +63,7 @@ C
 #include <cclr.h>
 #include <ccslvinf.h>
 #include <ccfdgeo.h>
+#include <r12int.h>
       LOGICAL LCONVG,RSPIM2,EX,LEXIST
       CHARACTER*5 ETY0, ETY1, ETY2
       CHARACTER MODEL*10
@@ -114,6 +115,22 @@ C
       CCP3SV = .FALSE.
       ECURR  = ZERO
       EX     = .FALSE.
+C
+C-------------------------------------------------
+C     Employ MP2-R12 method (WK/UniKA/04-11-2002).
+C-------------------------------------------------
+C
+      R12CAL = R12CAL .OR. LMULBS
+      IF (R12CAL) THEN
+#if defined (SYS_HPUX)
+         CALL CCSD_R12(WORK,LWORK,WXRK,LWXRK)
+#else
+         CALL CCSD_R12(WORK,LWORK,WORK,LWORK)
+#endif
+      ENDIF
+C
+C     Use LABEL (WK/UniKA/04-11-2002).
+      LABEL = 'TRCCINT '
 C
       IALPR  = IPRINT
 C
@@ -1205,6 +1222,9 @@ C
 #include <ccfop.h>
 #include <ccsections.h>
 #include <ccfield.h>
+#include <r12int.h>
+      INTEGER IDUM
+      LOGICAL LDUM
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -1214,14 +1234,42 @@ C-----------------------------------------
 C     Initialize the XAIBJ integral array.
 C-----------------------------------------
 C
-      CALL DZERO(XAIBJ,NT2AM(ISYMOP))
+      IF (U12INT .OR. R12SQR) THEN
+C        Zero space for non-Hermitean integrals (WK/UniKA/04-11-2002).
+         CALL DZERO(XAIBJ,NU2AM(ISYMOP))
+      ELSE
+         CALL DZERO(XAIBJ,NT2AM(ISYMOP))
+      END IF
 C
 C---------------------------------
 C     Dynamic allocation of space.
 C---------------------------------
 C
       KLAMDP = 1
-      KLAMDH = KLAMDP + NLAMDT
+      LU43 = 43 
+      IF (R12SQR) THEN
+C        Read MO coefficients from GUMAT.n for n=1,2 (WK/UniKA/04-11-2002).
+         KLAMDQ = KLAMDP + NLAMDT
+         IF (COMBSS) THEN
+            CALL GPOPEN(LU43,'GUMAT.2','UNKNOWN',' ','UNFORMATTED',
+     &                  IDUM,LDUM)
+         ELSE
+            CALL GPOPEN(LU43,'GUMAT.1','UNKNOWN',' ','UNFORMATTED',
+     &                  IDUM,LDUM)
+         END IF
+         REWIND(LU43)
+         READ(LU43) NTOTGU
+         READ(LU43) (WORK(KLAMDQ+I-1), I = 1, NTOTGU)
+         IF (R12EIN .AND. INTGAC .EQ. 4) THEN
+            CALL GPCLOSE(LU43,'KEEP')
+         ELSE
+            CALL GPCLOSE(LU43,'DELETE')
+         END IF
+         KLAMDH = KLAMDQ + NTOTGU
+      ELSE
+         KLAMDQ = KLAMDP
+         KLAMDH = KLAMDQ + NLAMDT
+      END IF
       KEND1  = KLAMDH + NLAMDT
 C
       KCMO   = KEND1
@@ -1253,7 +1301,8 @@ C
       CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
      *            IDUMMY,.FALSE.)
       REWIND(LUSIFC)
-      CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
+C     Use LABEL (WK/UniKA/04-11-2002).
+      CALL MOLLAB(LABEL,LUSIFC,LUPRI)
       READ(LUSIFC)
       READ(LUSIFC)
       READ(LUSIFC) (WORK(KCMO+I-1),I=1,NLAMDS)
@@ -1261,7 +1310,6 @@ C
 C
       CALL CMO_REORDER(WORK(KCMO),WORK(KEND1),LWRK1) 
 C
-
       CALL CC_AODENS(WORK(KCMO),WORK(KCMO),WORK(KDNSHF),1,1,
      *               WORK(KEND1),LWRK1)
 C
@@ -1277,9 +1325,10 @@ C--------------------------------------
 C     Additional work space allocation.
 C--------------------------------------
 C
-      IF ((FROIMP.OR.FROEXP) .AND. 
-     *    (RELORB .OR. (CCFOP .AND. MP2))) THEN
-C
+      IF ((FROIMP .OR. FROEXP) .AND. ((R12TRA .AND. .NOT. R12INT
+     *    .AND. .NOT. R12EIN) .OR.
+     *    (RELORB .OR. (CCFOP .AND. MP2)))) THEN
+C        Not needed for R12 integrals (WK/UniKA/04-11-2002).
          KCMO  = KEND1
          KFRIN = KCMO  + NLAMDS
          KEND1 = KFRIN + NT2FRO(1)
@@ -1433,8 +1482,10 @@ C              Calculate integrals (cJ|dk)
 C              needed for frozen core gradients.
 C-----------------------------------------------
 C
-               IF ((FROIMP.OR.FROEXP) .AND.
-     *             ((RELORB) .OR. ((CCFOP) .AND. (MP2)))) THEN
+C             Modified for R12 method (WK/UniKA/04-11-2002).
+              IF ((FROIMP .OR. FROEXP) .AND. ((R12TRA .AND. .NOT. R12INT
+     *             .AND. .NOT. R12EIN) .OR.
+     *              (RELORB .OR. (CCFOP .AND. MP2)))) THEN
 C
                   CALL CC_FRCOIN(WORK(KFRIN),WORK(KXINT),WORK(KCMO),
      *                           WORK(KEND2),LWRK2,IDEL,ISYMD)
@@ -1455,7 +1506,8 @@ C
                   IF (ISYMAI .GT. ISYMBJ) GOTO 130
 C
                   KOFF1 = KXINT  + IDSAOG(ISYMG,ISYDIS)
-                  KOFF2 = KLAMDP + ILMRHF(ISYMJ)
+C                 Use KLAMDQ instead of KLAMDP (WK/UniKA/04-11-2002).
+                  KOFF2 = KLAMDQ + ILMRHF(ISYMJ)
 C
                   IF (LWRK2 .LT. NNBST(ISYMAB)*NRHF(ISYMJ)) THEN
                      CALL QUIT('Insufficient core in CCSD_IAJB')
@@ -1501,14 +1553,20 @@ C------------------------------------------------------------------
 C                 Transform integrals and add to the result vector.
 C------------------------------------------------------------------
 C
-                  KOFF4  = IT2AM(ISYMAI,ISYMBJ) + 1
+                  IF (U12INT .OR. R12SQR) THEN
+C                    KOFF4 for non-Hermitean integrals (WK/UniKA/04-11-2002).
+                     KOFF4  = IU2AM(ISYMAI,ISYMBJ) + 1
+                  ELSE
+                     KOFF4  = IT2AM(ISYMAI,ISYMBJ) + 1
+                  END IF
 C
                   CALL CCSD_AIBJ2(WORK(KEND2),XAIBJ(KOFF4),WORK(KLAMDP),
      *                            WORK(KLAMDH),WORK(KSCR1),WORK(KSCR2),
      *                            IDEL,ISYMD,ISYMJ,ISYMAB)
 C
-                  IF (CCSDT.OR.(CCPT.OR.CCP3).OR.
-     *                (CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B )) THEN
+                  IF (.NOT. R12TRA .AND. (CCSDT.OR.(CCPT.OR.CCP3).OR.
+     *                (CCRT.OR.CCR3.OR.CCR1A.OR.CCR1B))) THEN
+C                     Not needed for R12 integrals (WK/UniKA/04-11-2002).
 C
 C------------------------------------------------------
 C                    Construct I(kd,c) for fixed alpha.
@@ -1574,13 +1632,24 @@ C
      *                        ICOUNT1
 C
         IF (IPRINT .GT. 45) THEN
-           CALL AROUND('(ia|jb) integral vector')
-           DO 250 ISYMBJ = 1,NSYM
+          CALL AROUND('(ia|jb) integral vector')
+          IF (U12INT .OR. R12SQR) THEN
+C           Output of non-Hermitean integrals (WK/UniKA/04-11-2002).
+            DO 250 ISYMBJ = 1,NSYM
+              ISYMAI = ISYMBJ
+              KOFF   = IU2AM(ISYMAI,ISYMBJ) + 1
+              NTOTAI = NT1AM(ISYMAI)
+              CALL OUTPUT(XAIBJ(KOFF),1,NTOTAI,1,NTOTAI,
+     &                    NTOTAI,NTOTAI,1,LUPRI)
+  250       CONTINUE
+          ELSE
+            DO 251 ISYMBJ = 1,NSYM
               ISYMAI = ISYMBJ
               KOFF   = IT2AM(ISYMAI,ISYMBJ) + 1
               NTOTAI = NT1AM(ISYMAI)
               CALL OUTPAK(XAIBJ(KOFF),NTOTAI,1,LUPRI)
-  250      CONTINUE
+  251       CONTINUE
+          END IF
         ENDIF
       END IF
 C
@@ -1588,8 +1657,10 @@ C-------------------------------------
 C     Write integrals (cJ|dk) to disk.
 C-------------------------------------
 C
-      IF ((FROIMP.OR.FROEXP) 
-     &     .AND. ((RELORB) .OR. ((CCFOP) .AND. (MP2)))) THEN
+C     Modified for R12 method (WK/UniKA/04-11-2002).
+      IF ((FROIMP .OR. FROEXP) .AND. ((R12TRA .AND. .NOT. R12INT
+     *    .AND. .NOT. R12EIN) .OR.
+     *    (RELORB .OR. (CCFOP .AND. MP2)))) THEN
          LUCJDK = 0
          CALL GPOPEN(LUCJDK,'INCJDK','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
@@ -1627,6 +1698,7 @@ C
 #include <priunit.h>
 #include <ccinftap.h>
 #include <ccorb.h>
+#include <r12int.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
 C
@@ -1722,10 +1794,12 @@ C
 C
             NBJ = IT1AM(ISYMB,ISYMJ) + NVIR(ISYMB)*(J-1) + B
 C
-            IF (ISYMAI .EQ. ISYMBJ) THEN
+            IF (ISYMAI .EQ. ISYMBJ .AND. .NOT.
+     &                        (U12INT .OR. R12SQR)) THEN
                NTOTAI = NBJ
                KOFF1 = NBJ*(NBJ - 1)/2 + 1
             ELSE
+C              Non-Hermitean integrals (WK/UniKA/04-11-2002).
                NTOTAI = NT1AM(ISYMAI)
                KOFF1  = NT1AM(ISYMAI)*(NBJ - 1) + 1
             ENDIF
@@ -1903,6 +1977,7 @@ C
 #include <inftap.h>
 #include <symsq.h>
 #include <ccisao.h>
+#include <r12int.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -1916,10 +1991,10 @@ C
      &            .FALSE.)
       REWIND LUSIFC
 C
-      CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
+C     LABEL is used (WK/UniKA/04-11-2002).
+      CALL MOLLAB(LABEL,LUSIFC,LUPRI)
       READ (LUSIFC) NSYM, NORBTS, NBAST, NLAMDS, (NRHFS(I),I=1,NSYM),
-     &              (NORBS(I),I=1,NSYM), (NBAS(I),I=1,NSYM), DUM, DUM
-C
+     &              (NORBS(I),I=1,NSYM), (NBAS(I),I=1,NSYM), PDUM, EDUM
 C
       IF (FREEZE) THEN
          WRITE(LUPRI,*) ' I am freezing!'
@@ -1930,8 +2005,6 @@ C
          KEND1  = KFVS   + NSYM
          LEND1  = LWORK  - KEND1
 C
-c        CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
-c        READ (LUSIFC)
          READ (LUSIFC) (WORK(KFOCKD+I-1), I=1,NORBTS)
 C
          CALL CC_FREEZER(WORK(KFOCKD),NORBTS,WORK(KFCS),WORK(KFVS),
@@ -1998,11 +2071,11 @@ c     IF (IPRINT .GT. 20) THEN
          WRITE(LUPRI,1) 'NVIRS  :',(NVIRS(I),  I=1,NSYM)
          WRITE(LUPRI,1) 'NRHFFR :',(NRHFFR(I), I=1,NSYM)
          WRITE(LUPRI,1) 'NVIRFR :',(NVIRFR(I), I=1,NSYM)
-	 WRITE(LUPRI,1) 'NORBTS :',NORBTS
-	 WRITE(LUPRI,1) 'NORBT  :',NORBT
-	 WRITE(LUPRI,1) 'N2BAST :',N2BAST
-	 WRITE(LUPRI,1) 'N2BASX :',N2BASX
-	 WRITE(LUPRI,1) 'NNBASX :',NNBASX
+         WRITE(LUPRI,1) 'NORBTS :',NORBTS
+         WRITE(LUPRI,1) 'NORBT  :',NORBT
+         WRITE(LUPRI,1) 'N2BAST :',N2BAST
+         WRITE(LUPRI,1) 'N2BASX :',N2BASX
+         WRITE(LUPRI,1) 'NNBASX :',NNBASX
 c     END IF
 C
 C-------------------------------
@@ -2092,6 +2165,9 @@ C
                NT2AMA(ISAIBJ)= NT2AM(ISAIBJ)
                NT2AMT(ISAIBJ)= NT2AM(ISAIBJ) + NT2AMA(ISAIBJ)  
             END IF
+C           For [T1+T2,r12] integrals (WK/UniKA/04-11-2002).
+            NU2AM(ISAIBJ) = NU2AM(ISAIBJ) +
+     &                      NT1AM(ISYMAI) * NT1AM(ISYMBJ)
   400    CONTINUE
   300 CONTINUE
 C
@@ -2099,6 +2175,8 @@ C
       NT1AOX = NT1AO(1)
       NT2AMX = NT2AM(1)
       NT2AOX = NT2AO(1)
+C     For [T1+T2,r12] integrals (WK/UniKA/04-11-2002).
+      NU2AMX = NU2AM(1)
 C
       ICOUN1 = 0
       DO 450 ISYM = 1,NSYM
@@ -2185,6 +2263,8 @@ C
          ICOU17 = 0
          ICOU18 = 0
          ICOU19 = 0
+C        For [T1+T2,r12] integrals (WK/UniKA/04-11-2002).
+         ICOU20 = 0
          DO 620 ISYMJ = 1,NSYM
 C
             ISYMI  = MULD2H(ISYMJ,ISYMK)
@@ -2195,6 +2275,13 @@ C
             IT1AOT(ISYMI,ISYMJ) = ICOU12
             IEMAT1(ISYMI,ISYMJ) = ICOU15
             IMATAV(ISYMI,ISYMJ) = ICOU18
+C
+            IF (ISYMJ .GE. ISYMI) THEN
+C              For [T1+T2,r12] integrals (WK/UniKA/04-11-2002).
+               IU2AM(ISYMI,ISYMJ) = ICOU20
+               IU2AM(ISYMJ,ISYMI) = ICOU20
+               ICOU20 = ICOU20 + NT1AM(ISYMI)*NT1AM(ISYMJ)
+            END IF
 C
             ICOUN1 = ICOUN1 + NRHF(ISYMJ)*NVIR(ISYMI)
             ICOUN5 = ICOUN5 + NRHF(ISYMJ)*NBAS(ISYMI)

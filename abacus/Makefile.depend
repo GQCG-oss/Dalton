@@ -1,3 +1,18 @@
+aba2eth.o : aba2eth.F \
+  ../include/priunit.h   ../include/single.h \
+  ../include/implicit.h  ../include/r12int.h \
+  ../include/iratdef.h   ../include/maxaqn.h \
+  ../include/twoao.h     ../include/twosta.h \
+  ../include/derzer.h    ../include/hertop.h \
+  ../include/twocom.h    ../include/sphtrm.h \
+  ../include/codata.h    ../include/ibtfun.h
+
+
+aba2r12.o : aba2r12.F \
+  ../include/priunit.h   ../include/single.h \
+  ../include/implicit.h  ../include/r12int.h
+
+
 aba2tex.o : aba2tex.F \
   ../include/abainf.h  ../include/aovec.h \
   ../include/cbieri.h  ../include/cbisol.h \
@@ -730,7 +745,7 @@ her1pro.o : her1pro.F \
   ../include/pgroup.h  ../include/pi.h \
   ../include/priunit.h  ../include/sdpre.h \
   ../include/shells.h  ../include/single.h \
-  ../include/symmet.h
+  ../include/symmet.h  ../include/r12int.h
 
 
 her1sym.o : her1sym.F \
@@ -766,7 +781,7 @@ her2dir.o : her2dir.F \
   ../include/implicit.h  ../include/maxmom.h \
   ../include/priunit.h  ../include/single.h \
   ../include/subdir.h  ../include/twocom.h \
-  ../include/xyzpow.h
+  ../include/xyzpow.h  ../include/r12int.h
 
 
 her2drv.o : her2drv.F \
@@ -791,7 +806,8 @@ her2drv.o : her2drv.F \
   ../include/suscpt.h  ../include/symmet.h \
   ../include/taymol.h  ../include/taysol.h \
   ../include/twoao.h  ../include/twocom.h \
-  ../include/twosta.h  ../include/veclen.h
+  ../include/twosta.h  ../include/veclen.h \
+  ../include/r12int.h
 
 
 her2el1.o : her2el1.F \
@@ -826,7 +842,8 @@ her2fck.o : her2fck.F \
   ../include/pincom.h  ../include/priunit.h \
   ../include/scalar.h  ../include/sdpre.h \
   ../include/shells.h  ../include/single.h \
-  ../include/symmet.h  ../include/twocom.h
+  ../include/symmet.h  ../include/twocom.h \
+  ../include/r12int.h
 
 
 her2gab.o : her2gab.F \
@@ -856,7 +873,8 @@ her2her.o : her2her.F \
   ../include/ivdep.h  ../include/maxaqn.h \
   ../include/pi.h  ../include/priunit.h \
   ../include/sdpre.h  ../include/single.h \
-  ../include/subdir.h  ../include/twosta.h
+  ../include/subdir.h  ../include/twosta.h \
+  ../include/r12int.h
 
 
 her2odc.o : her2odc.F \
@@ -869,7 +887,7 @@ her2odc.o : her2odc.F \
   ../include/pi.h  ../include/primit.h \
   ../include/priunit.h  ../include/sdpre.h \
   ../include/single.h  ../include/symmet.h \
-  ../include/twosta.h
+  ../include/twosta.h  ../include/r12int.h
 
 
 her2out.o : her2out.F \
@@ -966,7 +984,8 @@ herdrv.o : herdrv.F \
   ../include/orgcom.h  ../include/pgroup.h \
   ../include/pi.h  ../include/primit.h \
   ../include/priunit.h  ../include/shells.h \
-  ../include/single.h  ../include/symmet.h
+  ../include/single.h  ../include/symmet.h \
+  ../include/r12int.h
 
 
 herfckcon.o : herfckcon.F \
@@ -1046,7 +1065,8 @@ herrdn.o : herrdn.F \
   ../include/priunit.h  ../include/sdpre.h \
   ../include/shells.h  ../include/single.h \
   ../include/sphtrm.h  ../include/symmet.h \
-  ../include/thrzer.h  ../include/veclen.h
+  ../include/thrzer.h  ../include/veclen.h \
+  ../include/r12int.h
 
 
 hersol.o : hersol.F \
@@ -1070,7 +1090,7 @@ hersym.o : hersym.F \
   ../include/mxsymm.h  ../include/nuclei.h \
   ../include/numder.h  ../include/optinf.h \
   ../include/pi.h  ../include/priunit.h \
-  ../include/single.h
+  ../include/single.h  ../include/r12int.h
 
 
 hertst.o : hertst.F \

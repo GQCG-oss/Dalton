@@ -285,12 +285,27 @@ C NECgh
 #include <nuclei.h>
 #include <veclen.h>
 #include <drw2el.h>
+#include <r12int.h>
 C NECgh
 C
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWOCAL','*',103)
 C
       JTOP  = 4*(NHTYP - 1) + MAXDER
-      IF (FINDPT.OR.DPTINT) JTOP = JTOP + 2
+C
+C     For [r12,T1+T2] integrals, JTOP must be increased by 1. For
+C     r12 integrals, JTOP must be 1 for (ss|ss) integrals, but is
+C     not increased otherwise (WK/UniKA/14-11-2002).
+C
+      IF (U12INT) JTOP = JTOP + 1
+C     JTOP must be increased for integrals #5 (WK/UniKA/14-11-2002).
+      IF (INTGAC .EQ. 5) JTOP = JTOP + 1
+      IF (R12INT) JTOP = MAX(JTOP,1)
+C
+C     For two-electron integrals for relativistic Direct Perturbation
+C     Theory (DPT), JTOP must be increased by 2 (WK/UniKA/14-11-2002).
+C
+      IF (FINDPT .OR. DPTINT) JTOP = JTOP + 2
+C
       JTOP3 = (JTOP + 1)**3
       NRTOP = (JTOP + 1)*(JTOP + 2)*(JTOP + 3)/6
       KINDHR = 1
@@ -309,6 +324,19 @@ C  NECgh We allocate temporary FOCK matrices for TWOLOP
       IF (KLAST .GT. LWORK) CALL STOPIT('TWOCAL',' ',KLAST,LWORK)
       LWRK   = LWORK - KLAST + 1
       CALL HERPRP(WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR))
+C
+C     Determine number of different integrals in R12 method (WK/UniKA/19-11-2002).
+      NOPP12 = 0
+      IF (R12EIN) THEN
+         NOPP12 = NOPP12 + 1
+      ELSE
+         IF (V12INT) NOPP12 = NOPP12 + 1
+         IF (R12INT) NOPP12 = NOPP12 + 1
+         IF (U12INT) NOPP12 = NOPP12 + 1
+         IF (U21INT) NOPP12 = NOPP12 + 1
+      END IF
+      IF (NOPP12 .EQ. 0) 
+     &CALL QUIT('Wrong number of integral types in TWOCAL')
 C
 C     *******************************
 C     ***** Calculate integrals *****
@@ -423,6 +451,7 @@ C
 #include <veclen.h>
 #include <inftap.h>
 #include <gtensor.h>
+#include <r12int.h>
       DIMENSION FMAT(NBASIS,NBASIS,*)
 #if defined (VAR_VECTOR)
 C NECgh Dimensioning TFMAT adapted to always odd first dimension
@@ -543,6 +572,10 @@ C     *****************************
 C
       DO 100 ISHELA = IASTRT,IASMAX
 C
+C        Check for basis-set identifier (WK/UniKA/04-11-2002).
+         IF (.NOT. R12TRA .AND. MBSISH(ISHELA) .GT. 1) GOTO 100
+         MBSA = MBSISH(ISHELA)
+         IF (MBSA .GT. MBSMAX) GOTO 100
          ICA    = LCLASH(ISHELA)
 C
          NHKTA  = NHKTSH(ISHELA)
@@ -569,6 +602,10 @@ C        ******************************
 C
          DO 200 ISHELB = IBSTRT,ISHELA
 C
+C           Check for basis-set identifier (WK/UniKA/04-11-2002).
+            IF (.NOT. R12TRA .AND. MBSISH(ISHELB) .GT. 1) GOTO 200
+            MBSAB = MBSA + MBSISH(ISHELB)
+            IF (MBSAB .GT. MBSMAX) GOTO 200
             ICB    = LCLASH(ISHELB)
 C
             NHKTB  = NHKTSH(ISHELB)
@@ -608,6 +645,10 @@ C
             IF(I2TYP.EQ.2) ICMAX = NLRGBL
             DO 300 ISHELC = ICSTRT, ICMAX
 C
+C              Check for basis-set identifier (WK/UniKA/04-11-2002).
+               IF (.NOT. R12TRA .AND. MBSISH(ISHELC) .GT. 1) GOTO 300
+               MBSABC = MBSAB + MBSISH(ISHELC)
+               IF (MBSABC .GT. MBSMAX) GOTO 300
                ICC    = LCLASH(ISHELC)
 C
                NHKTC  = NHKTSH(ISHELC)
@@ -637,6 +678,10 @@ C
      &                  (ISHELA.EQ.ISHELC)) IDMAX = ISHELB
                DO 400 ISHELD = IDSTRT,IDMAX
 C
+C                 Check for basis-set identifier (WK/UniKA/04-11-2002).
+                  IF (.NOT. R12TRA .AND. MBSISH(ISHELD) .GT. 1) GOTO 400
+                  MBSABCD = MBSABC + MBSISH(ISHELD)
+                  IF (MBSABCD .GT. MBSMAX) GOTO 400
                   ICD    = LCLASH(ISHELD)
 C
                   NHKTD  = NHKTSH(ISHELD)
@@ -813,6 +858,7 @@ C      PARAMETER (LBUF = 600)
 #include <symmet.h>
 #include <disbuf.h>
 #include <eribuf.h>
+#include <r12int.h>
 C
       CALL QENTER('TWODSA')
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWODSA','*',103)
@@ -877,7 +923,7 @@ C     ***** First Shell Index *****
 C     *****************************
 C
       ISHELA = ISHLA
-C
+      MBSA   = MBSISH(ISHELA)
       NHKTA  = NHKTSH(ISHELA)
       KHKTA  = KHKTSH(ISHELA)
       KCKTA  = KCKTSH(ISHELA)
@@ -901,6 +947,12 @@ C     ***** Second Shell Index *****
 C     ******************************
 C
       DO 200 ISHELB = IBSTRT,IBSMAX
+C        Check for basis-set identifier (WK/UniKA/04-11-2002).
+         MBSAB = MBSA + MBSISH(ISHELB)
+         IF (ISHELB .NE. IBSMAX) THEN
+            IF (.NOT. R12TRA .AND. MBSISH(ISHELB) .GT. 1) GOTO 200
+            IF (MBSAB .GT. MBSMAX) GOTO 200
+         END IF
          NHKTB  = NHKTSH(ISHELB)
          KHKTB  = KHKTSH(ISHELB)
          KCKTB  = KCKTSH(ISHELB)
@@ -934,6 +986,12 @@ C        ***** Third Shell Index *****
 C        *****************************
 C
          DO 300 ISHELC = ICSTRT,ICSMAX
+C           Check for basis-set identifier (WK/UniKA/04-11-2002).
+            MBSABC = MBSAB + MBSISH(ISHELC)
+            IF (ISHELB .NE. IBSMAX .OR. ISHELC .NE. ICSMAX) THEN
+               IF (.NOT. R12TRA .AND. MBSISH(ISHELC) .GT. 1) GOTO 300
+               IF (MBSABC .GT. MBSMAX) GOTO 300
+            END IF
             NHKTC  = NHKTSH(ISHELC)
             KHKTC  = KHKTSH(ISHELC)
             KCKTC  = KCKTSH(ISHELC)
@@ -959,6 +1017,14 @@ C
             ICMAX = ISHELC
             IF (SPNORB .OR. DIA2SO) ICMAX = MAXSHL
             DO 400 ISHELD = IDSTRT, ICMAX
+C              Check for basis-set identifier (WK/UniKA/04-11-2002).
+               MBSABCD = MBSABC + MBSISH(ISHELD)
+               IF (ISHELB .NE. IBSMAX .OR. 
+     &             ISHELC .NE. ICSMAX .OR.
+     &             ISHELD .NE. ICMAX) THEN
+                  IF (.NOT. R12TRA .AND. MBSISH(ISHELD) .GT. 1) GOTO 400
+                  IF (MBSABCD .GT. MBSMAX) GOTO 400
+               END IF
                NHKTD  = NHKTSH(ISHELD)
                KHKTD  = KHKTSH(ISHELD)
                KCKTD  = KCKTSH(ISHELD)
@@ -1046,9 +1112,11 @@ C
 #include <twocom.h>
 #include <inforb.h>
 #include <symmet.h>
+#include <r12int.h>
       SAVE ISHLAB
 C
       CALL QENTER('TWODIS')
+      write(6,*) 'TWODIS'
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWODIS','*',103)
 C
       IF (NUMDIS .EQ. -1) THEN
@@ -1155,8 +1223,8 @@ C
      &               PERTUR,IATOM,MULE,MULTE,NODV,NOPV,NOCONT,THRESH,
      &               JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,SQ12EL,INDHSQ,
      &               IODDHR,INDHER,IFCTYP,ADISTR,JSTRSH,NPRIMS,NCONTS,
-     &               IORBSH,I2TYP)
-         ISHLAB = ISHLAB + 1
+     &               IORBSH,I2TYP,MBSAB)
+ 999     ISHLAB = ISHLAB + 1
       END IF
 C
       CALL QEXIT('TWODIS')
@@ -1169,7 +1237,8 @@ C  /* Deck dislop */
      &                  SPNORB,DIA2SO,ZFS2EL,PERTUR,IATOM,MULE,MULTE,
      &                  NODV,NOPV,NOCONT,THRESH,JPRINT,IPRNTA,IPRNTB,
      &                  IPRNTC,IPRNTD,SQ12EL,INDHSQ,IODDHR,INDHER,
-     &                  IFCTYP,ADISTR,JSTRSH,NPRIMS,NCONTS,IORBSH,I2TYP)
+     &                  IFCTYP,ADISTR,JSTRSH,NPRIMS,NCONTS,IORBSH,I2TYP,
+     &                  MBSAB)
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -1192,6 +1261,7 @@ C
 #include <inforb.h>
 #include <blocks.h>
 #include <symmet.h>
+#include <r12int.h>
 C
       IF (JPRINT .GT. 5) CALL TITLER('Output from DISLOP','*',103)
 C
@@ -1563,6 +1633,7 @@ C  /* Deck twood1 */
      &                  GABRAO,DMRAO,DMRSO,DINTSKP,IREPDM)
 #include <implicit.h>
 #include <priunit.h>
+#include <r12int.h>
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <aovec.h>
@@ -1674,22 +1745,34 @@ C
       KCORBD = KCORBC + (NORBC + 1)/IRAT
       KLAST  = KCORBD + (NORBD + 1)/IRAT
 C
-      IF (MAXDER .EQ. 0) THEN
+      IF (U12INT) THEN
+         NCFTYP = 2
+      ELSE IF (MAXDER .EQ. 0) THEN
          NCFTYP = 1
       ELSE IF (MAXDER .EQ. 1) THEN
          NCFTYP = 3
       ELSE IF (MAXDER .EQ. 2) THEN
          NCFTYP = 6
+      ELSE IF (FINDPT .OR. DPTINT) THEN
+         NCFTYP = 6
+      ELSE IF (DIA2SO) THEN
+         NCFTYP = 9
       END IF
-      IF (FINDPT.OR.DPTINT) NCFTYP = 6
-      IF (DIA2SO) NCFTYP = 9
       MXUCAB = IMXVEC(NUCTAB,NODCAB)
       MXUCCD = IMXVEC(NUCTCD,NODCCD)
       LCOFAB = MXUCAB*(JMAXA+JMAXB+1)*(JMAXA+1)*(JMAXB+1)*3*NCFTYP
       LCOFCD = MXUCCD*(JMAXC+JMAXD+1)*(JMAXC+1)*(JMAXD+1)*3*NCFTYP
-      KCOFAB = KLAST
-      KCOFCD = KCOFAB + LCOFAB
-      KLAST  = KCOFCD + LCOFCD
+      IF (U12INT) THEN
+         KCOFAB = KLAST
+         KCOFCD = KCOFAB + LCOFAB + MXUCAB
+         KLAST  = KCOFCD + LCOFCD + MXUCCD
+         CALL DZERO(WORK(KCOFAB),LCOFAB)
+         CALL DZERO(WORK(KCOFCD),LCOFCD)
+      ELSE
+         KCOFAB = KLAST
+         KCOFCD = KCOFAB + LCOFAB
+         KLAST  = KCOFCD + LCOFCD
+      END IF
 C
 C     Number of SO integrals
 C
@@ -1700,14 +1783,15 @@ C
          CALL NINTSO(MULE,LONDON,SPNORB,UNDIFF,SOFOCK,DISTRI,SQ12EL,
      &               IPRINT)
       END IF
+C
       NSOINT = NOABCD*NINTS
       LAST   = (ISHELA.EQ.IASMAX) .AND. (ISHELB.EQ.IBSMAX) .AND.
      &         (ISHELC.EQ.ICSMAX) .AND. (ISHELD.EQ.IDSMAX)
       IF (EXPECT .OR. DIRFCK .OR. SUSCEP .OR. DDFOCK .OR. DIA2SO .OR.
      &           ZFS2EL .OR. LAST .OR. (NSOINT .GT. 0)) THEN
-C
+C        NOPP12 is number of different types of operators (WK/UniKA/19-11-2002).
          KSOINT = KLAST
-         KPNTAO = KSOINT + NSOINT
+         KPNTAO = KSOINT + NSOINT*NOPP12
          KPNTOP = KPNTAO + (  NINTMX*NOPREP + 1)/IRAT
          KPNTNO = KPNTOP + (3*NINTMX*NOPREP + 1)/IRAT
          KPNTRP = KPNTNO + (4*NINTMX*NOPREP + 1)/IRAT
@@ -1725,7 +1809,7 @@ C
          MWFCAB = MAX(MWFCAB,LCOFAB)
          MWFCCD = MAX(MWFCCD,LCOFCD)
          MWPSO  = MAX(MWPSO, NPMAT)
-         MWSOIN = MAX(MWSOIN,NSOINT)
+         MWSOIN = MAX(MWSOIN,KPNTAO - KSOINT)
          LWTOT  = LWTOT + KLAST
          MWTOT  = MAX(MWTOT,LWTOT)
          CALL SYMLOP(WORK(KSOINT),FMAT,DMAT,NDMAT,GMAT,PSO,PSA,HESSEE,
@@ -1805,6 +1889,7 @@ C  /* Deck symlop */
 #include <twosta.h>
 #include <energy.h>
 #include <drw2el.h>
+#include <r12int.h>
 #include <doxyz.h>
 #include <ibtfun.h>
       IBTAXO(I,J) = IBTAND(I,IBTXOR(I,J))
@@ -2151,7 +2236,7 @@ C
                KLAST  = KAOINT + LAOINT
                LWRK   = LWORK  - KLAST + 1
                IF (KLAST.GT.LWORK) CALL STOPIT('CAOINT',' ',KLAST,LWORK)
-               MWAOIN = MAX(MWAOIN,LAOINT)
+               MWAOIN = MAX(MWAOIN,KLAST - KAOINT)
                LWTOT  = LWTOT + KLAST
                MWTOT  = MAX(MWTOT,LWTOT)
                CALL CAOINT(SOINT,DMAT,NDMAT,PSO,PSA,FMAT,WORK(KAOINT),
@@ -2573,6 +2658,8 @@ C
                ISTBSH(MAXSHL) = ISTBAO(IA)
                SEGMSH(MAXSHL) = SEGM(IA)
                SPHRSH(MAXSHL) = SPHR(IA)
+C              Basis-set identifier (WK/UniKA/04-11-2002).
+               MBSISH(MAXSHL) = MBSID(IA)
 C
 C              Make offsets for symmetry-dependent centers
 C               
@@ -3032,19 +3119,38 @@ C  /* Deck intder */
 #include <twocom.h>
 #include <twosta.h>
 #include <drw2el.h>
+#include <r12int.h>
       CALL QENTER('INTDER')
 #include <memint.h>
       IF (IPRINT .GT. 5) CALL TITLER('Output from INTDER','*',103)
 C
       JMAX   = JMAX0 + MAXDER
-      IF (FINDPT.OR.DPTINT) JMAX = JMAX + 2
+C
+C     For two-electron integrals for relativistic Direct Perturbation
+C     Theory (DPT), JMAX must be increased by 2 (WK/UniKA/14-11-2002).
+C
+      IF (FINDPT .OR. DPTINT) JMAX = JMAX + 2
+C
+C     For [r12,T1+T2] integrals, JMAX must be increased by 1. For
+C     r12 integrals, JMAX must be 1 for (ss|ss) integrals, but is
+C     not increased otherwise (WK/UniKA/14-11-2002).
+C
+      IF (U12INT) JMAX = JMAX + 1
+      IF (INTGAC .EQ. 5) JMAX = JMAX + 1
+      IF (R12INT) JMAX = MAX(JMAX,1)
+C
       NUABCD = NUCAB*NUCCD
       NRTUV  = (JMAX + 1)**3
       NTUV   = (JMAX + 1)*(JMAX + 2)*(JMAX + 3)/6
 C
 C     Allocate work space for Hermite integrals
+C     More space is needed for R12 method (WK/UniKA/14-11-2002).
 C
-      LHRINT = NUABCD*NTUV
+      IF (R12EIN .OR. R12INT .OR. U12INT) THEN
+         LHRINT = 2*NUABCD*NTUV
+      ELSE
+         LHRINT = NUABCD*NTUV
+      END IF
       CALL MEMGET('REAL',KHRINT,LHRINT,WORK,KFREE,LFREE)
       MWHRIN = MAX(MWHRIN,LHRINT)
       LWTOT  = LWTOT + KFREE
@@ -3055,7 +3161,8 @@ C
      &            NOINT,NOCONT,SPNORB,DIA2SO,ZFS2EL,MAXDER,THRESH,JMAX,
      &            ISMXYZ,ONECEN,NPCOA,NPCOB,NPCOC,NPCOD,NUCSAB,NUCSCD,
      &            SIGNT,INDHSQ,IODDHR,LMNVLS,NPNTAB,NPNTCD,
-     &            NREDAB,NREDCD)
+     &            NREDAB,NREDCD,V12INT,R12INT,U12INT,
+     &            R12EIN,U21INT)
       LWTOT  = LWTOT - KFREE
       CALL MEMREL('INTDER',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('INTDER')
@@ -3068,15 +3175,18 @@ C  /* Deck intdr1 */
      &                  IPRINT,NOINT,NOCONT,SPNORB,DIA2SO,ZFS2EL,MAXDER,
      &                  THRESH,JMAX,ISMXYZ,ONECEN,NPCOA,NPCOB,NPCOC,
      &                  NPCOD,NUCSAB,NUCSCD,SIGNT,INDHSQ,IODDHR,LMNVLS,
-     &                  NPNTAB,NPNTCD,NREDAB,NREDCD)
+     &                  NPNTAB,NPNTCD,NREDAB,NREDCD,V12INT,R12INT,
+     &                  U12INT,R12EIN,U21INT)
 C
 C     tuh
 C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-      LOGICAL NOINT,NOCONT,SPNORB,DIA2SO,PQSYM,ONECEN, ZFS2EL
-      DIMENSION HERINT(NUABCD,NTUV), INDHER(*),
+      LOGICAL R12INT, U12INT, V12INT, R12EIN
+      LOGICAL NOINT,NOCONT,SPNORB,DIA2SO,PQSYM,ONECEN, ZFS2EL, U21INT
+C     3-dimensional HERINT for r12 integrals (WK/UniKA/15-11-2002).
+      DIMENSION HERINT(NUABCD,NTUV,2), INDHER(*),
      &          AOINT(NCCINT,NINTYP), WORK(LWORK),
      &          COEFAB(*), COEFCD(*), COORAB(*), COORCD(*),
      &          EXPAB(*), EXPCD(*), FACAB(*), FACCD(*),
@@ -3142,7 +3252,7 @@ C
             NRBD  = NORBD
          END IF
          CALL DZERO(AOINT,NCCINT*NINTYP)
-         IF (DPATH1) THEN
+         IF (DPATH1 .AND. .NOT. (U12INT .AND. .NOT. U21INT)) THEN
             IF (TKTIME) CALL GETTIM(TIMSTR,DUMTIM)
             IPATH  = 1
             PATH1  = .TRUE.
@@ -3227,6 +3337,11 @@ C
             DC2E   = DC2E1
             CROSS  = CROSS1
             MAX34D = MAX34 + IDERIV
+C
+C           Special case: [T1+T2,r12] integrals (WK/UniKA/14-11-2002).
+            IF (U12INT) MAX34D = MAX34 + 1
+            IF (INTGAC .EQ. 5) MAX34D = MAX34 + 1
+C
             NTUV34 = (MAX34D + 1)*(MAX34D + 2)*(MAX34D + 3)/6
             MAX34D = MAX34 + IDERIV - 1
             KTUV34 = (MAX34D + 1)*(MAX34D + 2)*(MAX34D + 3)/6
@@ -3236,7 +3351,8 @@ C
      &                  CONTB,CONTC,CONTD,WORK,LWORK,IPRINT,NPCOA,NPCOB,
      &                  NPCOC,NPCOD,NUCSAB,NUCSCD,INDHSQ,
      &                  IODDHR(1,ISMXYZ),LMNVLS(1,1,1),LMNVLS(1,1,3),
-     &                  NPNTAB,NPNTCD,NREDAB,NREDCD)
+     &                  NPNTAB,NPNTCD,NREDAB,NREDCD,NTUV,NUABCD,
+     &                  V12INT,R12INT,U12INT,R12EIN)
             IF (TKTIME) THEN
                CALL GETTIM(TIMEND,DUMTIM)
                TPATH1 = TPATH1 + TIMEND - TIMSTR
@@ -3327,10 +3443,20 @@ C
             DC2E   = DC2E2
             CROSS  = CROSS2
             IF (DPATH1) THEN
-               CALL HERSWP(HERINT,NTUV,NUABCD,WORK,LWORK,JMAX,NUCAB,
-     &                     NUCCD,IPRINT)
+               CALL HERSWP(HERINT(1,1,1),NTUV,NUABCD,
+     &                     WORK,LWORK,JMAX,NUCAB,NUCCD,IPRINT)
+C
+C              Also swap Hermite integrals over r12 (WK/UniKA/14-11-2002).
+               IF (R12INT .OR. U12INT)
+     &         CALL HERSWP(HERINT(1,1,2),NTUV,NUABCD,
+     &                     WORK,LWORK,JMAX,NUCAB,NUCCD,IPRINT)
             END IF
             MAX34D = MAX34 + IDERIV
+C
+C           Special case: [T1+T2,r12] integrals (WK/UniKA/14-11-2002).
+            IF (U12INT) MAX34D = MAX34 + 1
+            IF (INTGAC .EQ. 5) MAX34D = MAX34 + 1
+C
             NTUV34 = (MAX34D + 1)*(MAX34D + 2)*(MAX34D + 3)/6
             MAX34D = MAX34 + IDERIV - 1
             KTUV34 = (MAX34D + 1)*(MAX34D + 2)*(MAX34D + 3)/6
@@ -3339,7 +3465,8 @@ C
      &                  CONTD,CONTA,CONTB,WORK,LWORK,IPRINT,NPCOC,NPCOD,
      &                  NPCOA,NPCOB,NUCSCD,NUCSAB,INDHSQ,
      &                  IODDHR(1,ISMXYZ),LMNVLS(1,1,3),LMNVLS(1,1,1),
-     &                  NPNTCD,NPNTAB,NREDCD,NREDAB)
+     &                  NPNTCD,NPNTAB,NREDCD,NREDAB,NTUV,NUABCD,
+     &                  V12INT,R12INT,U12INT,R12EIN)
             IF (TKTIME) THEN
                CALL GETTIM(TIMEND,DUMTIM)
                TPATH2 = TPATH2 + TIMEND - TIMSTR
@@ -3352,13 +3479,13 @@ C  /* Deck ccdriv */
       SUBROUTINE CCDRIV(AOINT,NCCINT,HERINT,INDHER,COEF12,COEF34,CONT1,
      &                  CONT2,CONT3,CONT4,WORK,LWORK,IPRINT,NPCO1,NPCO2,
      &                  NPCO3,NPCO4,NUCS12,NUCS34,INDHSQ,IODDHR,
-     &                  LMNV12,LMNV34,NPNT12,NPNT34,NRED12,NRED34)
-C
+     &                  LMNV12,LMNV34,NPNT12,NPNT34,NRED12,NRED34,
+     &                  NTUV,NUABCD,V12INT,R12INT,U12INT,R12EIN)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
 #include <iratdef.h>
-      DIMENSION HERINT(NU1234,*), INDHER(*), AOINT(NCCINT,*),
+      DIMENSION HERINT(NUABCD,NTUV,2), INDHER(*), AOINT(NCCINT,*),
      &          WORK(LWORK), COEF12(*), COEF34(*),
      &          CONT1(NORB1*NUC1,2), CONT2(NORB2*NUC2,2),
      &          CONT3(NORB3*NUC3,2), CONT4(NORB4*NUC4,2),
@@ -3370,6 +3497,7 @@ C
 #include <drw2el.h>
 #include <crsdir.h>
 #include <twosta.h>
+      LOGICAL V12INT, R12INT, U12INT, R12EIN
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CCDRIV','*',103)
 C
@@ -3392,9 +3520,35 @@ C
       KODD34 = KODD12 + (2*KCKT12 + 1)/IRAT
       KHCINT = KODD34 + (2*KCKT34 + 1)/IRAT
       KLAST  = KHCINT + LHCINT
+C
+C     Allocate work space for r12 integrals (WK/UniKA/15-11-2002).
+      IF (R12EIN) THEN
+         IDV12 = 1
+         IDU12 = 1
+         KHRINT = KHCINT
+      ELSE
+         IDV12 = 1
+         IDU12 = 1
+         KHRINT = KHCINT
+         IF (R12INT .OR. U12INT) THEN
+            IDV12 = 1
+            IDR12 = 2
+            IDU12 = 3
+            IF (.NOT. V12INT) THEN
+               IDR12 = IDR12 - 1
+               IDU12 = IDU12 - 1
+            END IF
+            IF (.NOT. R12INT) IDU12 = IDU12 - 1
+            KHRINT = KLAST
+            IF (.NOT. V12INT .AND. .NOT. U12INT) KHRINT = KHCINT
+            KLAST = KHRINT + LHCINT
+         END IF
+      END IF
+      IDU21 = IDU12 + 2 - IPATH
+C
       IF (KLAST .GT. LWORK) CALL STOPIT('CCDRIV',' ',KLAST,LWORK)
       LWRK   = LWORK - KLAST + 1
-      MWHCIN = MAX(MWHCIN,LHCINT)
+      MWHCIN = MAX(MWHCIN,KLAST - KHCINT)
       LWTOT  = LWTOT + KLAST
       MWTOT  = MAX(MWTOT,LWTOT)
 C
@@ -3413,11 +3567,16 @@ C     ... 980826-hjaaj: check if no contraction and no omissions
       ELSE
          NOCNT = .FALSE.
       END IF
-      CALL C1DRIV(HERINT,INDHER,WORK(KHCINT),COEF12,CONT1(1,2),
+      IF (R12EIN .OR. V12INT .OR. U12INT)
+     &CALL C1DRIV(HERINT(1,1,1),INDHER,WORK(KHCINT),COEF12,CONT1(1,2),
      &            CONT2(1,2),WORK(KLAST),LWRK,NPCO1,NPCO2,NUCS12,INDHSQ,
      &            IODDHR,IPRINT,LMNV12,WORK(KODD12),NPNT12,NRED12,
      &            NHCINT)
-C
+      IF ((R12INT .OR. U12INT) .AND. .NOT. R12EIN)
+     &CALL C1DRIV(HERINT(1,1,2),INDHER,WORK(KHRINT),COEF12,CONT1(1,2),
+     &            CONT2(1,2),WORK(KLAST),LWRK,NPCO1,NPCO2,NUCS12,INDHSQ,
+     &            IODDHR,IPRINT,LMNV12,WORK(KODD12),NPNT12,NRED12,
+     &            NHCINT)
       IF (.NOT. GEN34) THEN
 C     ... 980826-hjaaj: check if no contraction and no omissions
          NOCNT = .TRUE.
@@ -3431,10 +3590,19 @@ C     ... 980826-hjaaj: check if no contraction and no omissions
       ELSE
          NOCNT = .FALSE.
       END IF
-      CALL C2DRIV(AOINT,WORK(KHCINT),COEF34,INDHER,CONT3,CONT4,
+      IF (V12INT .OR. (R12EIN .AND. .NOT. U12INT))
+     &CALL C2DRIV(AOINT(1,IDV12),WORK(KHCINT),COEF34,INDHER,CONT3,CONT4,
      &            WORK(KLAST),LWRK,NPCO3,NPCO4,NUCS34,IPRINT,LMNV12,
      &            LMNV34,WORK(KODD12),WORK(KODD34),NPNT34,NRED34)
-C
+      IF (R12INT)
+     &CALL C2DRIV(AOINT(1,IDR12),WORK(KHRINT),COEF34,INDHER,CONT3,CONT4,
+     &            WORK(KLAST),LWRK,NPCO3,NPCO4,NUCS34,IPRINT,LMNV12,
+     &            LMNV34,WORK(KODD12),WORK(KODD34),NPNT34,NRED34)
+      IF (U12INT)
+     &CALL U2DRIV(AOINT(1,IDU21),
+     &            WORK(KHCINT),WORK(KHRINT),COEF34,INDHER,CONT3,CONT4,
+     &            WORK(KLAST),LWRK,NPCO3,NPCO4,NUCS34,IPRINT,LMNV12,
+     &            LMNV34,WORK(KODD12),WORK(KODD34),NPNT34,NRED34)
       LWTOT = LWTOT - KLAST
       RETURN
       END

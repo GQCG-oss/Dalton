@@ -34,23 +34,27 @@ C
 #include <single.h>
 C
 C  /* Deck cr1drv */
-      SUBROUTINE CR1DRV(HERINT,HCINT,INDHER,IODDHH,IODDHC,INDHSQ,
+      SUBROUTINE CR1DRV(HERINT,HERR12,HCINT,INDHER,IODDHH,IODDHC,INDHSQ,
      &                  LMNPWR,IPNTUV,COOR12,EXP12,CSQ,CCFBT,
      &                  WORK,LWORK,IPRINT)
+C     HERR12 integrals have been added (WK/UniKA/04-11-2002).
 C
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
 C
       LOGICAL DOREC, FRSTAO, CONTRA
-      DIMENSION HERINT(*), HCINT(*),
+      DIMENSION HERINT(*), HCINT(*), HERR12(*),
      &          INDHER(*), INDHSQ(*), IODDHH(*), IODDHC(*),
      &          LMNPWR(*), IPNTUV(*), 
      &          COOR12(NPP12,3), EXP12(NPP12,3), CSQ(*), CCFBT(*),
      &          WORK(LWORK)
+C     Call to subroutine CR1UND or CR1U12 in CR1TWO (WK/UniKA/04-11-2002).
+      EXTERNAL CR1UND, CR1U12
 #include <cbieri.h>
 #include <ericom.h>
 #include <eriao.h>
+#include <r12int.h>
 #include <ibtfun.h>
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from CR1DRV','*',103)
@@ -76,12 +80,15 @@ C
       LHPI   = 0
       LP1    = 0
       LP2    = 0
+C     Space for R12 method (WK/UniKA/04-11-2002).
+      LXA    = 0
       LEUV   = 0
       LETUV  = 0
       LHCPRM = 0
       LCPINT = 0
 C
-      IF (KHKT12 .GT. 1) THEN
+      IF (KHKT12 .GT. 1 .OR. U12INT) THEN
+C        No symmetry for [T1,r12] integrals WK/UniKA/04-11-2002).
          IF (SPHR12) THEN
             LCCONT = NCCPP*NTUV34*KCKT12
             LFCINT = NTUV34*KHKT12
@@ -92,6 +99,11 @@ C
          END IF
 C
          LECOEF = 3*NPP12*(JMAX12 + 1)*(JMAX1 + 1)*(JMAX2+1)
+         IF (U12INT) THEN
+C           Space for [T1,r12] integrals (WK/UniKA/04-11-2002).
+            LECOEF = 2*LECOEF
+            LXA    =   NPP12
+         END IF
          LHPI   =   NPP12
          LP1    = 3*NPP12
          LP2    = 3*NPP12
@@ -106,14 +118,11 @@ C
 C
       LFIRST = NTUV34
 C
-      LTOTAL = LCCONT
-     &       + MAX(
-     &              LCSINT + LFCSNT + LFCINT,
-     &              LECOEF + MAX(
-     &                           LHPI+LP1+LP2,
-     &                           LEUV+LETUV+LHCPRM+LFIRST+LCPINT
-     &                          )
-     &            )
+C     KC2MAX and LXA have been added (WK/UniKA/04-11-2002).
+      LTOTAL = LCCONT + KC2MAX
+     &       + MAX(LCSINT + LFCSNT + LFCINT,
+     &             LECOEF + 2*LXA + MAX(LHPI + LP1 + LP2 + 2*LXA,
+     &             LEUV + LETUV + LHCPRM + LFIRST + LCPINT ) )
       IF (LTOTAL.GT.LWORK) CALL STOPIT('CR1DRV','CR1TWO',KLAST,LWORK)
 C
       KODDKC = 1
@@ -121,42 +130,70 @@ C
       KCSINT = KCCONT + LCCONT
       KFCSNT = KCSINT + LCSINT
       KFCINT = KFCSNT + LFCSNT
-      KECOEF = KCCONT + LCCONT
+C
+C     KAOP and KBOP are addresses for R12 method (WK/UniKA/04-11-2002).
+      KAOP   = KCCONT + LCCONT
+      KBOP   = KAOP   + LXA
+      KECOEF = KBOP   + LXA
+C
       KHPI   = KECOEF + LECOEF
       KP1    = KHPI   + LHPI
       KP2    = KP1    + LP1
+C
+C     KXA and KXB are addresses for R12 method (WK/UniKA/04-11-2002).
+      KXA    = KP2    + LP2
+      KXB    = KXA    + LXA
+C
       KEUV   = KECOEF + LECOEF
       KETUV  = KEUV   + LEUV
       KHCPRM = KETUV  + LETUV
       KFIRST = KHCPRM + LHCPRM
       KCPINT = KFIRST + LFIRST 
 C
-      CALL CR1TWO(HERINT,INDHER,INDHER,IODDHH,IODDHC,INDHSQ,
-     &            WORK(KECOEF),WORK(KEUV),WORK(KETUV),
-     &            LMNPWR,IPNTUV,WORK(KODDKC),
-     &            COOR12,EXP12,CSQ,CCFBT,
-     &            WORK(KHPI),WORK(KP1),WORK(KP2),
-     &            HCINT,WORK(KFCINT),WORK(KHCPRM),WORK(KFIRST),
-     &            WORK(KCCONT),WORK(KCSINT),WORK(KFCSNT),
-     &            WORK(KCPINT),IPRINT)
+      IF (U12INT) THEN
+C        CALL CR1TWO with call to CR1U12 (WK/UniKA/04-11-2002).
+         CALL CR1TWO(HERINT,HERR12,INDHER,INDHER,IODDHH,IODDHC,INDHSQ,
+     &               WORK(KECOEF),WORK(KEUV),WORK(KETUV),
+     &               LMNPWR,IPNTUV,WORK(KODDKC),
+     &               COOR12,EXP12,CSQ,CCFBT,
+     &               WORK(KHPI),WORK(KP1),WORK(KP2),
+     &               HCINT,WORK(KFCINT),WORK(KHCPRM),WORK(KFIRST),
+     &               WORK(KCCONT),WORK(KCSINT),WORK(KFCSNT),
+     &               WORK(KCPINT),IPRINT,
+     &               WORK(KXA),WORK(KXB),WORK(KAOP),WORK(KBOP),CR1U12)
+      ELSE
+C        CALL CR1TWO with call to CR1UND (WK/UniKA/04-11-2002).
+         CALL CR1TWO(HERINT,HERR12,INDHER,INDHER,IODDHH,IODDHC,INDHSQ,
+     &               WORK(KECOEF),WORK(KEUV),WORK(KETUV),
+     &               LMNPWR,IPNTUV,WORK(KODDKC),
+     &               COOR12,EXP12,CSQ,CCFBT,
+     &               WORK(KHPI),WORK(KP1),WORK(KP2),
+     &               HCINT,WORK(KFCINT),WORK(KHCPRM),WORK(KFIRST),
+     &               WORK(KCCONT),WORK(KCSINT),WORK(KFCSNT),
+     &               WORK(KCPINT),IPRINT,
+     &               WORK(KXA),WORK(KXB),WORK(KAOP),WORK(KBOP),CR1UND)
+      END IF
       RETURN
       END
 C  /* Deck cr1two */
-      SUBROUTINE CR1TWO(HERINT,INDHER,INDHVC,IODDHH,IODDHC,INDHSQ,
-     &                  ECOEF,EUV,ETUV,LMNPWR,IPNTUV,IODDKC,
+      SUBROUTINE CR1TWO(HERINT,HERR12,INDHER,INDHVC,IODDHH,IODDHC,
+     &                  INDHSQ,ECOEF,EUV,ETUV,LMNPWR,IPNTUV,IODDKC,
      &                  COOR12,EXP12,CSQ,CCFBT,HPI,P1,P2,
      &                  HCINT,FCINT,HCPRIM,FRSTUV,HCCONT,
-     &                  HCSINT,FCSINT,CPINT,IPRINT)
+     &                  HCSINT,FCSINT,CPINT,IPRINT,
+     &                  TEXPA,TEXPB,AOVERP,BOVERP,CR1SUB)
+C     TEXPA,TEXPB,AOVERP,BOVERP and CR1SUB have been added (WK/UniKA/04-11-2002).
 C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
 C
+      EXTERNAL CR1SUB
       INTEGER TUV
       LOGICAL CONTRA, FRSTUV(NTUV34),
      &        FCINT(NTUV34,KHKT12), FCSINT(NTUV34,KHKT2)
 C
-      DIMENSION HERINT(NPP12,NPRF34,NTUV),
+      DIMENSION HERINT(NPP12,NPRF34,NTUV),HERR12(NPP12,NPRF34,NTUV),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP), INDHVC(0:*),
      &          IODDHH(NRTOP), IODDHC(NRTOP), INDHSQ(NRTOP),
 C
@@ -169,17 +206,14 @@ C
      &          LMNPWR(KCKMAX,NHKMAX,3), IPNTUV(KC2MAX,0:NRDER,2),
      &          COOR12(NPP12,3), EXP12(NPP12,3), 
      &          HPI(NPP12), P1(NPP12,3), P2(NPP12,3),
-     &          IODDKC(KC2MAX),
-C
-     &          CSQ(NCSQ1,NCSQ2), 
-C
-     &          CCFBT(*), CPINT(*),
-C
-     &          HCSINT(NCCPP,NTUV34,KHKT2)
+     &          IODDKC(KC2MAX), CSQ(NCSQ1,NCSQ2), CCFBT(*), CPINT(*),
+     &          HCSINT(NCCPP,NTUV34,KHKT2),
+     &          TEXPA(*),TEXPB(*),AOVERP(*),BOVERP(*)
 C
 #include <ericom.h>
 #include <eriao.h>
 #include <hertop.h>
+#include <r12int.h>
 C
 #include <ibtfun.h>
 C
@@ -191,7 +225,8 @@ C     *********************************
 C
       CONTRA = GCON12 .OR. NPRF12.NE.1
 C
-      IF (KHKT12 .EQ. 1) THEN
+      IF (KHKT12 .EQ. 1 .AND. .NOT. U12INT) THEN
+C        No symmetry for [T1,r12] integrals (WK/UniKA/04-11-2002).
          DO TUV = 1, NTUV34
             FRSTUV(TUV) = IODDHH(TUV) .NE. 0
          END DO
@@ -226,7 +261,8 @@ C
             JMAX2 = J2 - 1
             CALL EXPCFT(ECOEF,NPP12,JMAX1,JMAX2,COOR12,EXP12,I120,HPI,
      &                  P1,P2,IRUTIN,IELCT1,JMAX1,JMAX2,NCNT12,IDL,
-     &                  ISCAL1,ISCAL2,IPRINT)
+     &                  ISCAL1,ISCAL2,IPRINT,
+     &                  TEXPA,TEXPB,AOVERP,BOVERP)
 C
 C           Run over components
 C           ===================
@@ -251,10 +287,10 @@ C                 contracted spherical harmonics
 C                 ==============================
 C
                   IF (CONTRA .AND. SPHR12) THEN
-                     CALL CR1UND(HERINT,HCPRIM,L1,M1,N1,L2,M2,N2,
+                     CALL CR1SUB(HERINT,HERR12,HCPRIM,L1,M1,N1,L2,M2,N2,
      &                           INDHER,INDHVC,IODDHH,INDHSQ,
-     &                           ECOEF,EUV,ETUV,FRSTUV,
-     &                           ICOMP1,ICOMP2,IPRINT)
+     &                           ECOEF,EUV,ETUV,FRSTUV,ICOMP1,ICOMP2,
+     &                           AOVERP,IPRINT)
                      CALL ERICT1(HCPRIM,HCCONT(1,ICMP12),
      &                           CCFBT(ICMAT1),CCFBT(ICMAT2),CPINT,
      &                           IODDHC,IODDKC(ICMP12),FRSTUV,IPRINT)
@@ -263,10 +299,10 @@ C                 contracted Cartesians
 C                 =====================
 C
                   ELSE IF (CONTRA) THEN
-                     CALL CR1UND(HERINT,HCPRIM,L1,M1,N1,L2,M2,N2,
+                     CALL CR1SUB(HERINT,HERR12,HCPRIM,L1,M1,N1,L2,M2,N2,
      &                           INDHER,INDHVC,IODDHH,INDHSQ,
-     &                           ECOEF,EUV,ETUV,FRSTUV,
-     &                           ICOMP1,ICOMP2,IPRINT)
+     &                           ECOEF,EUV,ETUV,FRSTUV,ICOMP1,ICOMP2,
+     &                           AOVERP,IPRINT)
                      CALL ERICT1(HCPRIM,HCINT(1,ICMP12),
      &                           CCFBT(ICMAT1),CCFBT(ICMAT2),CPINT,
      &                           IODDHC,IODDKC(ICMP12),FRSTUV,IPRINT)
@@ -275,11 +311,11 @@ C                 primitive spherical harmonics
 C                 =============================
 C
                   ELSE IF (SPHR12) THEN
-                     CALL CR1UND(HERINT,HCCONT(1,ICMP12),
+                     CALL CR1SUB(HERINT,HERR12,HCCONT(1,ICMP12),
      &                           L1,M1,N1,L2,M2,N2,
      &                           INDHER,INDHVC,IODDHH,INDHSQ,
-     &                           ECOEF,EUV,ETUV,FRSTUV,
-     &                           ICOMP1,ICOMP2,IPRINT)
+     &                           ECOEF,EUV,ETUV,FRSTUV,ICOMP1,ICOMP2,
+     &                           AOVERP,IPRINT)
                      CALL ERICT1(HCCONT(1,ICMP12),HCCONT(1,ICMP12),
      &                           CCFBT(ICMAT1),CCFBT(ICMAT2),CPINT,
      &                           IODDHC,IODDKC(ICMP12),FRSTUV,IPRINT)
@@ -288,11 +324,11 @@ C                 primitive Cartesians
 C                 ====================
 C
                   ELSE
-                     CALL CR1UND(HERINT,HCINT(1,ICMP12),
+                     CALL CR1SUB(HERINT,HERR12,HCINT(1,ICMP12),
      &                           L1,M1,N1,L2,M2,N2,
      &                           INDHER,INDHVC,IODDHH,INDHSQ,
-     &                           ECOEF,EUV,ETUV,FRSTUV,
-     &                           ICOMP1,ICOMP2,IPRINT)
+     &                           ECOEF,EUV,ETUV,FRSTUV,ICOMP1,ICOMP2,
+     &                           AOVERP,IPRINT)
                      CALL ERICT1(HCINT(1,ICMP12),HCINT(1,ICMP12),
      &                           CCFBT(ICMAT1),CCFBT(ICMAT2),CPINT,
      &                           IODDHC,IODDKC(ICMP12),FRSTUV,IPRINT)
@@ -384,10 +420,10 @@ C
       RETURN
       END
 C  /* Deck cr1und */
-      SUBROUTINE CR1UND(HERINT,HCPRIM,L1,M1,N1,L2,M2,N2,
+      SUBROUTINE CR1UND(HERINT,HERR12,HCPRIM,L1,M1,N1,L2,M2,N2,
      &                  INDHER,INDHVC,IODDHH,INDHSQ,
      &                  ECOEF,EUV,ETUV,FRSTUV,
-     &                  ICOMP1,ICOMP2,IPRINT)
+     &                  ICOMP1,ICOMP2,AOVERP,IPRINT)
 C
 C     T. Helgaker
 C
@@ -398,12 +434,12 @@ C
       INTEGER T, U, V, TUV
       LOGICAL FRSTUV(NTUV34)
 C
-      DIMENSION HERINT(NPP12,NPRF34,NTUV),
+      DIMENSION HERINT(NPP12,NPRF34,NTUV),HERR12(NPP12,NPRF34,NTUV),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP), INDHVC(0:*),
      &          IODDHH(NRTOP), INDHSQ(NRTOP),
      &          ECOEF(NPP12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2,3),
      &          ETUV(NPP12), EUV(NPP12),
-     &          HCPRIM(NPP12,NPRF34,NTUV34)
+     &          HCPRIM(NPP12,NPRF34,NTUV34),AOVERP(NPP12)
 C
 #include <ericom.h>
 #include <eriao.h>

@@ -52,10 +52,12 @@ C  /* Deck odbchs */
 #include <iratdef.h>
 #include <odbtch.h>
 #include <odclss.h>
+#include <r12int.h>
 C
 C     Initialize
 C
-      NITCL = 20
+C     NITCL increased from 22 to 24 (WK/UniKA/04-11-2002).
+      NITCL = 22
       NITBC = 4
       NRTBC = 1
       NITPP = 0
@@ -69,6 +71,8 @@ C
       ODTRI2 = PMSCD
       ODTR12 = PMS12
       IF (ODTRI1 .NEQV. ODTRI2) ODTR12 = .FALSE.
+      IF (U12INT) ODTR12 = .FALSE.
+C     No symmetry for [T1,r12] integrals (WK/UniKA/04-11-2002).
       ODALL1 = .TRUE.
       ODALL2 = .TRUE.
 C
@@ -80,6 +84,8 @@ C
       DOSORT(6) = MAXREP .GT. 0
       DOSORT(7) = .TRUE.
       DOSORT(8) = .TRUE.
+C     Sort for basis-set identifiers (WK/UniKA/04-11-2002).
+      DOSORT(9) = LMULBS
       IF (IPRINT .GT. 5) THEN
          WRITE (LUPRI,'(2X,A,  I5)') ' NPSORT in ODBCHS ',NPSORT
          WRITE (LUPRI,'(2X,A,10L5)') ' DOSORT in ODBCHS ',
@@ -448,6 +454,8 @@ C
                IF (DOSORT(6)) NSORT(6,IBATCH) = ISTBLB
                IF (DOSORT(7)) NSORT(7,IBATCH) = ICMATA
                IF (DOSORT(8)) NSORT(8,IBATCH) = ICMATB 
+C              Sort for basis-set identifiers (WK/UniKA/04-11-2002).
+               IF (DOSORT(9)) NSORT(9,IBATCH) = MBIDAB(IA,IB)
                IPRADR = IPRADR + NPRFAB
                IF (IPRINT .GT. 5) THEN
                   WRITE (LUPRI,'(2X,A, I5)') ' IBATCH ', IBATCH
@@ -687,6 +695,7 @@ C  /* Deck clsinf */
 #include <mxcent.h>
 #include <aovec.h>
 #include <maxorb.h>
+#include <shells.h>
 #include <odbtch.h>
 #include <aobtch.h>
       DIMENSION IODBCH(NITBC,*), IODTRA(NITTR,*), IODCLS(NITCL,NODCLS),
@@ -736,6 +745,9 @@ C
          IODCLS(18,I) = NCTFBT(IB)
          IODCLS(19,I) = KCCFBT(IA)
          IODCLS(20,I) = KCCFBT(IB)
+C        Basis-set identifiers (WK/UniKA/04-11-2002).
+         IODCLS(21,I) = MBIDBT(IA)
+         IODCLS(22,I) = MBIDBT(IB)
   300 CONTINUE
 C
       IF (IPRINT .GT. 3) THEN
@@ -848,5 +860,17 @@ C
      &                                                        MAXCTC
       END IF
 C
+      RETURN
+      END
+C  /* Deck MBIDAB */
+      INTEGER FUNCTION MBIDAB(I,J)
+C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
+#include <implicit.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <aovec.h>
+#include <maxorb.h>
+#include <shells.h>
+      MBIDAB = MBIDBT(I) + MBIDBT(J) * 2
       RETURN
       END

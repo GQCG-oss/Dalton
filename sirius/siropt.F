@@ -103,6 +103,7 @@ C  INFTAP: LUIT1,?
 C  CBIHR2: IFTHRS,USRSCR
 C
 #include <maxorb.h>
+#include <r12int.h>
 #include <priunit.h>
 #include <infinp.h>
 #include <infvar.h>
@@ -1011,6 +1012,14 @@ C
 C        CALL RHFENR(IPRINT,LUPRI,FC,FV,SCRA,LSCRA)
       END IF
 C
+      IF (LMULBS .OR. R12CAL) THEN
+C        Construct orthonormal auxilliary basis sets (WK/UniKA/04-11-2002).
+         LWRKG  = LFREE  - (KWRKG-1)
+         CALL TIMER('START ',TIMSTR,TIMEND)
+         CALL R12AUX(WRK(KWRKG),LWRKG)
+         CALL TIMER('R12AUX',TIMSTR,TIMEND)
+      END IF
+C
 C     If (FLAG(25) .OR. INERSI) write LUSIFC
 C     modified hjaaj-aug99: only if this is final MO level
 C       FLAG(25) is true for .ABACUS (geometry optimization)
@@ -1034,6 +1043,7 @@ C     ... this is RHF which will be followed by MCSCF
          ELSE
             WLKREJ = .FALSE.
          END IF
+C
 Chj      if walk is rejected: do not update information on SIRIFC
          IF (.NOT.WLKREJ)
      *   CALL WRSIFC(WRK(KCMO),WRK(KDV),WRK(KPV),WRK(KFCSOL),WRK(KFV),
@@ -2317,14 +2327,17 @@ C
 #include <infdim.h>
 #include <infpri.h>
 #include <cbgetdis.h>
+#include <r12int.h>
 C
       LOGICAL     FNDLAB, ORBHES
 C
       CHARACTER*8 LAB123(3), TABLE(8), LABEOD, LABCC, LABABA
+      CHARACTER*8 LABAUX, LABUNI
       DATA LAB123/'********','********','********'/
       DATA TABLE /'CIDIAG1 ','CIDIAG2 ','ORBDIAG ','SIRFLAGS',
      *            'EXTFIELD','SOLVINFO','SOLVTMAT','CREFDETS'/
       DATA LABEOD, LABCC /'EODATA  ', 'TRCCINT '/
+      DATA LABUNI, LABAUX /'FULLBAS ', 'AUXILBAS'/
 C
       CALL QENTER('WRSIFC')
       CALL GETDAT(LAB123(2),LAB123(3))
@@ -2582,6 +2595,85 @@ C
       WRITE (LUSIFC) (WRK(KFCDIA-1+I),I=1,NORBT),(ISMO(I),I=1,NORBT),
      *               DUMMY,DUMMY,DUMMY
       WRITE (LUSIFC) (CMO(I),I=1,NCMOT4)
+C
+      IF (LMULBS .OR. R12CAL) THEN
+C        Interface for auxilliary basis set (WK/UniKA/04-11-2002).
+         LUMULB = 34
+         CALL GPOPEN(LUMULB,'AUXBAS','UNKNOWN','SEQUENTIAL',
+     &               'FORMATTED',IDUMMY,LDUMMY)
+         READ (LUMULB,*) NDUMM
+         NAUXT = 0
+         MOAUX = 0
+         NFULLT = 0
+         NMOFLT = 0
+         NOCCT = 0
+         NORBFT = 0
+         DO ISYM = 1, NSYM
+            NOCCT  = NOCCT + NOCC(ISYM)
+            NORBFT = NORBFT + NORB1(ISYM) + NORB2(ISYM)
+         END DO
+         NBASC = NBAST + NOCCT
+         NORBFT = NORBFT + NOCCT
+         IOFFEV = KFCDIA + NBASC
+         IOFFMO = IOFFEV + NBASC * 2
+         DO ISYM = 1, NSYM
+            READ (LUMULB,*) IDUMM,NORBI,NAUXI,NBASI
+            NAUXT = NAUXT + NAUXI
+            MOAUX = MOAUX + NAUXI * NBASI
+            NFULLT = NFULLT + NBASI
+            NMOFLT = NMOFLT + NBASI * (NORBI + NAUXI + NOCC(ISYM))
+            DO I = 1, NAUXI
+               READ (LUMULB,*) NDUMM
+               READ (LUMULB,'(4E30.20)') WRK(IOFFEV)
+               IOFFEV = IOFFEV + 1
+               READ (LUMULB,'(4E30.20)') (WRK(IOFFMO+K), K = 0, NBASI-1)
+               IOFFMO = IOFFMO + NBASI
+            END DO
+         END DO
+         CALL GPCLOSE(LUMULB,'KEEP')
+         WRITE (LUSIFC) LAB123, LABAUX
+         WRITE (LUSIFC) NSYM,NAUXT,NBAST,MOAUX,
+     *                  (0,I=1,NSYM),
+     *                  (NORB2(I),I=1,NSYM),
+     *                  (NBAS(I),I=1,NSYM),POTNUC,EMCSCF
+         WRITE (LUSIFC) (WRK(NBASC+I),I=1,MAX(NAUXT,4))
+         WRITE (LUSIFC) (WRK(3*NBASC+I),I=1,MAX(MOAUX,4))
+C        Interface for primary and secondary basis sets (WK/UniKA/04-11-2002).
+         IOFF1 = KFCDIA
+         IOFF2 = KFCDIA + NBASC
+         IOFFEV = IOFF2 + NBASC
+         IOFM1 = 1
+         IOFM2 = IOFFEV + NBASC
+         IOFMO = IOFM2 + NBASC*NBASC
+         NFBAST = 0
+         DO ISYM = 1, NSYM
+            CALL DCOPY(NOCC(ISYM),WRK(IOFF1),1,WRK(IOFFEV),1)
+            IOFFEV = IOFFEV + NOCC(ISYM)
+            CALL DCOPY(NORB1(ISYM),WRK(IOFF1),1,WRK(IOFFEV),1)
+            IOFFEV = IOFFEV + NORB1(ISYM)
+            IOFF1 = IOFF1 + NORB1(ISYM)
+            CALL DCOPY(NORB2(ISYM),WRK(IOFF2),1,WRK(IOFFEV),1)
+            IOFF2 = IOFF2 + NORB2(ISYM)
+            IOFFEV = IOFFEV + NORB2(ISYM)
+            NBASI = NBAS(ISYM)
+            CALL DCOPY(NOCC(ISYM)*NBASI,CMO(IOFM1),1,WRK(IOFMO),1)
+            IOFMO = IOFMO + NOCC(ISYM)*NBASI
+            CALL DCOPY(NORB1(ISYM)*NBASI,CMO(IOFM1),1,WRK(IOFMO),1)
+            IOFMO = IOFMO + NORB1(ISYM)*NBASI
+            IOFM1 = IOFM1 + NORB1(ISYM)*NBASI
+            CALL DCOPY(NORB2(ISYM)*NBASI,WRK(IOFM2),1,WRK(IOFMO),1)
+            IOFM2 = IOFM2 + NORB2(ISYM)*NBASI
+            IOFMO = IOFMO + NORB2(ISYM)*NBASI
+            NFBAST = NFBAST +
+     *      (NORB1(ISYM) + NORB2(ISYM) + NOCC(ISYM)) * NBASI
+         END DO
+         WRITE (LUSIFC) LAB123, LABUNI
+         WRITE (LUSIFC) NSYM,NORBFT,NBAST,NMOFLT,(NOCC(I),I=1,NSYM),
+     *                  (NORB1(I)+NORB2(I)+NOCC(I),I=1,NSYM),
+     *                  (NBAS(I),I=1,NSYM),POTNUC,EMCSCF
+         WRITE (LUSIFC) (WRK(2*NBASC+I),I=1,MAX(NORBFT,4))
+         WRITE (LUSIFC) (WRK((3+NBASC)*NBASC+I),I=1,MAX(NMOFLT,4))
+      END IF
 C
 C *** end of subroutine WRSIFC
 C

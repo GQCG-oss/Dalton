@@ -545,8 +545,13 @@ C
 #include <orgcom.h>
 #include <infpar.h>
 #include <numder.h>
+#include <r12int.h>
 #include <ibtfun.h>
       ZMAT = .FALSE.
+C     Initialize auxiliary basis set variables (WK/UniKA/04-11-2002).
+      LAUXBS = .FALSE.
+      MBSMAX = 4
+      NMULBS = 0
 C
 C*****************************************************************************
 C     Card 1: Keyword (INTGRL) - read in READIN
@@ -556,10 +561,11 @@ C     Card 2: If basis set library, read additional card containing basis set
 C*****************************************************************************
       IF (BASIS) THEN
          CALL RDLINE(LUINFO)
-         READ (MLINE(NMLINE),'(A)') BASNAM
-         IF (IPREAD .GT. 1) WRITE (LUPRI,'(/A/5X,A/A)') ' Basis set',
-     &      BASNAM,' from the basis set library will be used.'
+C        Read basis set BASNAM (WK/UniKA/04-11-2002).
+         CALL BASMUL(MLINE(NMLINE),BASNAM,IPREAD)
       END IF
+C     Enforce computation of Cartesian second moments (WK/UniKA/04-11-2002).
+      IF (LMULBS) CALL STCMOM
 C*****************************************************************************
 C     Card 2-3: Title cards
 C*****************************************************************************
@@ -837,8 +843,11 @@ C*****************************************************************************
 #include <huckel.h>
 #include <aosotr.h>
 #include <ecpinf.h>
+#include <r12int.h>
 #include <ibtfun.h>
 C
+C     MBSIP = basis-set identifier (WK/UniKA/04-11-2002).
+      MBSIP = 0
       NUCIND = 0
       NHTYP  = 0
       IBLOCK(1) = 1
@@ -894,18 +903,56 @@ C
          IF (DIRAC) THEN
             READ (MLINE(NMLINE),'(BN,1X,F9.0,2I5)') Q,NONT(I),NSETS
          ELSE IF (ZMTTST) THEN
+C           Z-matrix not implemented with LMULBS (WK/UniKA/04-11-2002).
+            IF (LMULBS) THEN
+               WRITE (LUPRI,'(/A)') '*** READI1 ERROR:'
+               CALL QUIT('Z-matrix not implemented with LMULBS')
+            END IF
             CALL ZMAT(NONT,KATOM)
             Q = CHARGE(NUCIND)
          ELSE IF (ATOMBA .OR. BASIS) THEN
-            READ (MLINE(NMLINE),'(BN,1X,F9.0,I5)') Q,NONT(I)
+C           Read basis-set identifier from MLINE(NMLINE)
+C           Put MBSI = 1 otherwise (WK/UniKA/04-11-2002).
+            IF (LMULBS) THEN
+               READ (MLINE(NMLINE),'(BN,1X,I2,F7.0,I5)') MBSI,Q,NONT(I)
+            ELSE
+               READ (MLINE(NMLINE),'(BN,1X,F9.0,I5)') Q,NONT(I)
+               MBSI = 1
+            END IF
          ELSE
 C ach 
             if (wrtlin) then 
                write(lupri,*) mline(nmline)
                call flush(lupri)
             endif
-            READ (MLINE(NMLINE),'(BN,1X,F9.0,I5,24I5)') Q,NONT(I),
-     &                          IQM(I,1),(JCO(J,I,1), J=1, IQM(I,1))
+C           Read basis-set identifier from MLINE(NMLINE)
+C           Put MBSI = 1 otherwise (WK/UniKA/04-11-2002).
+            IF (LMULBS) THEN
+               READ (MLINE(NMLINE),'(BN,1X,I2,F7.0,I5,24I5)') 
+     &               MBSI,Q,NONT(I),IQM(I,1),(JCO(J,I,1), J=1, IQM(I,1))
+            ELSE
+               READ (MLINE(NMLINE),'(BN,1X,F9.0,I5,24I5)') 
+     &                    Q,NONT(I),IQM(I,1),(JCO(J,I,1), J=1, IQM(I,1))
+               MBSI = 1
+            END IF
+         END IF
+C        Check MBSI (WK/UniKA/04-11-2002).
+         IF (LMULBS .AND. MBSI .LE. 0) THEN 
+            WRITE (LUPRI,'(/A)') '*** READI1 ERROR:'
+            CALL QUIT('Please provide proper basis-set identifier')
+         END IF
+C        Check MBSI (WK/UniKA/04-11-2002).
+         IF (LMULBS .AND. MBSI .LT. MBSIP) THEN 
+            WRITE (LUPRI,'(/A)') '*** READI1 ERROR:'
+            CALL QUIT('Please provide multiple basis sets in increasing'
+     &                //' order')
+         END IF
+C        Check MBSI (WK/UniKA/04-11-2002).
+         MBSIP = MBSI
+         NMULBS = MAX(MBSI,NMULBS)
+         IF (NMULBS .GT. MXMULB) THEN
+            WRITE (LUPRI,'(/A)') '*** READI1 ERROR:'
+            CALL QUIT('Too many multiple basis sets')
          END IF
 Chj - aug99: changed test from 36 to 20, because current Huckel implementation
 C            (1) gives poor orbital energies for some d-orbitals
@@ -948,7 +995,8 @@ C
             WRITE(LUPRI,'(3X,A,I5)') 'Number of symmetry '//
      &           'independent centres: ',NONT(I)
          ENDIF
-         CALL CNTINP(LUINFO,NONT(I),Q,NSYMOP,ANG)
+C        MBSI has been added (WK/UniKA/04-11-2002).
+         CALL CNTINP(LUINFO,NONT(I),Q,NSYMOP,ANG,MBSI)
 C
          DO 300 J = 1,NSETS
 C
@@ -979,7 +1027,10 @@ C         ===================================
 C
             ELSE IF ((BASIS .OR. ATOMBA .OR. (ADDSTO .AND. J .EQ. 2
      &              .AND. Q .NE. 0.0D0)) .AND. .NOT. DIRAC) THEN
-              IF (ATOMBA) THEN
+              IF (BASIS) THEN
+C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
+                 BASNAM = MULNAM(MBSI)
+              ELSE IF (ATOMBA) THEN
                  BASNAM = MLINE(NMLINE-NONT(I))(16:)
                  DO ILEN = 1, LEN(BASNAM)
                     IF (BASNAM(ILEN:ILEN) .NE. ' ') GO TO 33
@@ -1096,7 +1147,8 @@ C
          CALL QUIT('Too high angular quantum no. specified in input.')
       END
 C  /* Deck cntinp */
-      SUBROUTINE CNTINP(LUINFO,NONT,Q,NSYMOP,ANG)
+      SUBROUTINE CNTINP(LUINFO,NONT,Q,NSYMOP,ANG,MBSI)
+C     MBSI has been added (WK/UniKA/04-11-2002).
 C*****************************************************************************
 C
 C        Read and process data about symmetry independent centers
@@ -1118,6 +1170,7 @@ C
 #include <ccom.h>
 #include <nuclei.h>
 #include <symmet.h>
+#include <r12int.h>
 #include <ibtfun.h>
 C
       IF (GAUNUC.AND.(NINT(Q).NE.0)) THEN
@@ -1188,13 +1241,20 @@ C           e.g. IRIX free format read of char. var. is not defined).
   200   CONTINUE
 C
 C*****************************************************************************
+C       MULBSI  - basis-set identifier (WK/UniKA/04-11-2002).
 C       CHARGE  - charge of center
 C       NOORBT  - TRUE: no orbitals on this center
 C       GNUEXP  - exponent of Gaussian nuclear charge distribution
 C*****************************************************************************
 C
-         CHARGE(NUCIND) = Q
-         GNUEXP(NUCIND) = GEXP
+         MULBSI(NUCIND) = MAX(MBSI,1)
+         IF (MBSI .GT. 1) THEN
+            CHARGE(NUCIND) = D0
+            GNUEXP(NUCIND) = D0
+         ELSE
+            CHARGE(NUCIND) = Q
+            GNUEXP(NUCIND) = GEXP
+         END IF
   100 CONTINUE
       RETURN
 C
@@ -1448,6 +1508,7 @@ C*****************************************************************************
 #include <primit.h>
 #include <symmet.h>
 #include <aosotr.h>
+#include <r12int.h>
 #include <ibtfun.h>
 C
 C     ******************************************
@@ -1459,12 +1520,25 @@ C
          WRITE (LUPRI,'(A,I5 )') '  Number of atom types: ',NONTYP
          WRITE (LUPRI,'(A,I5/)') '  Total number of atoms:',NUCDEP
          IF (BASIS) THEN
+          IF (LMULBS) THEN
+C           Output for multiple basis sets (WK/UniKA/04-11-2002).
+            DO IMULBS = 1, NMULBS
+             DO ILEN = LEN(MULNAM(IMULBS)),1,-1
+              IF (MULNAM(IMULBS)(ILEN:ILEN) .NE. ' ') GO TO 331
+             END DO
+ 331         CONTINUE
+             WRITE (LUPRI,'(A,I2,A/)') '  Basis-set',IMULBS,
+     &      ' refers to the basis "'//MULNAM(IMULBS)(1:ILEN)//
+     &      '" from the basis-set library.'
+            ENDDO 
+          ELSE
             DO ILEN = LEN(BASNAM),1,-1
-              IF (BASNAM(ILEN:ILEN) .NE. ' ') GO TO 33
+              IF (BASNAM(ILEN:ILEN) .NE. ' ') GO TO 332
             END DO
- 33         CONTINUE
+ 332        CONTINUE
             WRITE (LUPRI,'(3A/)') '  Basis set used is "',
      &      BASNAM(1:ILEN),'" from the basis set library.'
+          END IF
          END IF
          IF (LUCME.GT.0) THEN
             WRITE (LUCME,'(A,I5 )') '  Number of atom types: ',NONTYP
@@ -1475,6 +1549,19 @@ C
       IBLCKS = 1
       ICENT  = 0
       IF (IPREAD .GT. 0) THEN
+       IF (LMULBS) THEN
+C        Output for multiple basis sets (WK/UniKA/04-11-2002).
+         WRITE (LUPRI,'(2X,A)')
+     &        'label  basis   atoms  charge'//
+     &        '   prim    cont     basis   '
+         WRITE (LUPRI,'(2X,78A1)') ('-',I=1,78)
+         IF (LUCME.GT.0) THEN
+             WRITE (LUCME,'(2X,A)')
+     &           'label  basis   atoms  charge'//
+     &           '   prim    cont     basis   '
+             WRITE (LUCME,'(2X,78A1)') ('-',I=1,78)
+         END IF
+       ELSE
          WRITE (LUPRI,'(2X,A)')
      &        'label    atoms   charge   prim    cont     basis   '
          WRITE (LUPRI,'(2X,70A1)') ('-',I=1,70)
@@ -1483,6 +1570,7 @@ C
      &        'label    atoms   charge   prim    cont     basis   '
             WRITE (LUCME,'(2X,70A1)') ('-',I=1,70)
          END IF
+       END IF
       END IF
       NCHTOT = 0
       DO 100 I = 1,NONTYP
@@ -1516,11 +1604,22 @@ C
                   WRITE (LUPRI,'(23X,2I8,6X,2A)')
      &                   NPRIMS,NBASS,'S - ',TSTRI2
                ELSE
+                IF (LMULBS) THEN
+C                 Output for multiple basis sets (WK/UniKA/04-11-2002).
+                  WRITE (LUPRI,'(2X,A4,1X,I5,4I8,6X,A)') NAMN(ICENT),
+     &                   MULBSI(ICENT),
+     &                   NUCDEG(ICENT),NCHARG,NPRIM,NBAS,TSTRING
+                  IF (LUCME.GT.0)
+     &               WRITE (LUCME,'(2X,A4,1X,I5,4I8,6X,A)') NAMN(ICENT),
+     &                   MULBSI(ICENT),
+     &                   NUCDEG(ICENT),NCHARG,NPRIM,NBAS,TSTRING
+                ELSE
                   WRITE (LUPRI,'(2X,A4,1X,4I8,6X,A)') NAMN(ICENT),
      &                   NUCDEG(ICENT),NCHARG,NPRIM,NBAS,TSTRING
                   IF (LUCME.GT.0)
      &               WRITE (LUCME,'(2X,A4,1X,4I8,6X,A)') NAMN(ICENT),
      &                   NUCDEG(ICENT),NCHARG,NPRIM,NBAS,TSTRING
+                END IF
                ENDIF
             END IF
    20    CONTINUE
@@ -1535,12 +1634,22 @@ C
             WRITE(LUPRI,'(23X,2I8,3X,A)')
      &            NPSML,NSMALL,'S - small components'
          ENDIF
-         WRITE (LUPRI,'(2X,70A1)') ('-',I=1,70)
-         WRITE (LUPRI,'(2X,A,I7,3I8)')
+         IF (LMULBS) THEN
+C           Output for multiple basis sets (WK/UniKA/04-11-2002).
+            WRITE (LUPRI,'(2X,78A1)') ('-',I=1,78)
+            WRITE (LUPRI,'(2X,A,I12,3I8)')
      &         'total:',NUCDEP,NCHTOT,NPBAS,NBASIS
-         WRITE (LUPRI,'(2X,70A1)') ('-',I=1,70)
-         IF (LUCME.GT.0) WRITE (LUCME,'(2X,A,I7,3I8,6X,/)')
+            IF (LUCME.GT.0) WRITE (LUCME,'(2X,A,I12,3I8,6X,/)')
      &         'total:',NUCDEP,NCHTOT,NPBAS,NBASIS
+            WRITE (LUPRI,'(2X,78A1)') ('-',I=1,78)
+         ELSE
+            WRITE (LUPRI,'(2X,70A1)') ('-',I=1,70)
+            WRITE (LUPRI,'(2X,A,I7,3I8)')
+     &         'total:',NUCDEP,NCHTOT,NPBAS,NBASIS
+            IF (LUCME.GT.0) WRITE (LUCME,'(2X,A,I7,3I8,6X,/)')
+     &         'total:',NUCDEP,NCHTOT,NPBAS,NBASIS
+            WRITE (LUPRI,'(2X,70A1)') ('-',I=1,70)
+         END IF
          IF (NHTYP .GT. 2) THEN
             IF(DOCART) THEN
                WRITE (LUPRI,'(A)') '  Cartesian basis used. ',
@@ -2102,6 +2211,7 @@ C
 #include <primit.h>
 #include <shells.h>
 #include <symmet.h>
+#include <r12int.h>
 #include <aosotr.h>
 #include <gnrinf.h>
 C
@@ -2163,6 +2273,8 @@ C*****************************************************************************
                      CENT(ISHELL,1,1) = CORD(1,ICENT)
                      CENT(ISHELL,2,1) = CORD(2,ICENT)
                      CENT(ISHELL,3,1) = CORD(3,ICENT)
+C                    Basis-set identifier (WK/UniKa/04-11-2002).
+                     MBSID(ISHELL) = MULBSI(ICENT)
                      IORB  = IORB  + NCOMP
                      IORBD = IORBD + NCOMP*NDEG
                      IF (.NOT. SEGM(ISHELL) .AND. LCOMP .EQ. 1)
@@ -2899,6 +3011,7 @@ C
 #include <aosotr.h>
 #include <sphtrm.h>
 #include <huckel.h>
+#include <r12int.h>
 #include <cbirea.h>
 C
 #include <ibtfun.h>
@@ -3011,7 +3124,12 @@ C
             NHKTA  = NHKT(IA)
             KHKTA  = KHKT(IA)
             NUMCFA = NUMCF(IA)
-            IC     = LCLASS(IA)
+C           IC is basis-set identifier for multiple basis sets (WK/UniKA/04-11-2002).
+            IF (LMULBS) THEN
+               IC     = MBSID(IA)
+            ELSE
+               IC     = LCLASS(IA)
+            END IF
             IF (NUMCFA .EQ. 1) IBLOCK = IBLOCK + 1
             DO 420 NA = 1, KHKTA
                NAORB = NAORB+1
@@ -3110,6 +3228,7 @@ C
 #include <cbirea.h>
 #include <aosotr.h>
       CHARACTER COMP(2)*1
+#include <r12int.h>
 #include <chrsgn.h>
 C
 #include <ibtfun.h>
@@ -3128,7 +3247,7 @@ C       S Y M M E T R Y      O R B I T A L S
 C*****************************************************************************
       IF (MAXREP.GT.0.AND.IPREAD.GT.0) THEN
          CALL HEADER('Symmetry Orbitals',1)
-         WRITE (LUPRI,'(A,6X,8I4)')
+         WRITE (LUPRI,'(A,11X,8I4)')
      *        '  Number of orbitals in each symmetry: ',
      *        (NAOS(I),I=1,MAXREP+1)
       END IF
@@ -3143,6 +3262,23 @@ C*****************************************************************************
      *          '  Number of small orbitals in each symmetry: ',
      &          (NCOS(I,2),I=1,MAXREP+1)
         END IF
+      ELSE IF (LMULBS) THEN
+C       Output for multiple basis sets. Determine total numbers of orbital-basis 
+C       (MBAS1) and auxiliary-basis (MBAS2) functions (WK/UniKA/04-11-2002).
+        COMP(1) = 'M'
+        COMP(2) = 'A'
+        IF (MAXREP.GT.0.AND.IPREAD.GT.0) THEN
+           WRITE (LUPRI,'(/A,8I4)')
+     *          '  Number of main orbitals in each symmetry:       ',
+     &          (NCOS(I,1),I=1,MAXREP+1)
+           WRITE (LUPRI,'(A,8I4)')
+     *          '  Number of auxiliary functions in each symmetry: ',
+     &          (NCOS(I,2),I=1,MAXREP+1)
+        END IF
+        DO I=1,MAXREP+1
+         MBAS1(I) = NCOS(I,1)
+         MBAS2(I) = NCOS(I,2)
+        END DO
       ELSE
         COMP(1) = ' '
         COMP(2) = ' '
@@ -5624,5 +5760,58 @@ C
          ISOMAS = IORD
       END IF
       CALL QEXIT('ISOMAS')
+      RETURN
+      END
+C  /* Deck stcmom */
+      SUBROUTINE STCMOM
+C
+C     Enforce computation of Cartesian second moments.
+C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
+C
+#include <implicit.h>
+#include <mxcent.h>
+#include <cbiher.h>
+      CARMOM = .TRUE.
+      ONEPRP = .TRUE.
+      IORCAR = MAX(2,IORCAR)
+      RETURN
+      END
+C  /* Deck basmul */
+      SUBROUTINE BASMUL(A,BASNAM,IPREAD)
+C
+C     Read basis set labels from input line.
+C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <r12int.h>
+      CHARACTER*80 A,BASNAM
+      LOGICAL NEXTMB
+      DO 20 I=1,80
+       BASNAM(I:I) = ' '
+       DO 20 J=1,MXMULB
+        MULNAM(J)(I:I) = ' '
+   20  CONTINUE
+      N = 0
+      NEXTMB = .FALSE.
+      DO 10 I=1,80
+       IF (A(I:I) .NE. ' ' .AND. .NOT. NEXTMB) THEN
+        NEXTMB = .TRUE.
+        K = I
+       ELSE IF (A(I:I) .EQ. ' ' .AND. NEXTMB) THEN
+        L = I - 1
+        NEXTMB = .FALSE.
+        N = N + 1
+        IF (N .GT. MXMULB) CALL QUIT('Too many basis sets')
+        MULNAM(N)(1:I-K) = A(K:L)
+        IF (N .EQ. 1) BASNAM(1:I-K) = A(K:L)
+        IF (IPREAD .GT. 1) THEN
+          WRITE (LUPRI,'(/A)') ' Basis set "'//
+     &    MULNAM(N)(1:I-K)//'" from the basis set library will be used.'
+        END IF
+       END IF
+   10 CONTINUE
+      LMULBS = LMULBS .OR. (N .GT. 1)
+      NMULBS = N
       RETURN
       END

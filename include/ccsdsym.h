@@ -32,6 +32,7 @@
      &                 ID2ABG(8,8),ND2IJG(8),ND2AIG(8),ND2ABG(8),
      &                 IFCKDO(8),IFCKDV(8),NDSGRH(8,8),
      &                 OMEGSQ,T2TCOR,OMEGOR,CC3LR,RSPIM,LSEC,LCOR,
-     &                 NEWGAM,INTTR,TRIPIM
+     &                 NEWGAM,INTTR,TRIPIM,NU2AMX,NU2AM(8),IU2AM(8,8)
+C     NU2AMX, NU2AM(8) and IU2AM(8,8) are used for non-Hermitean integrals (WK/UniKA/31-10-2002).
 C
       INTEGER A,B,C,D,E,F,G,P,Q,R,S,I,J,K,L,M,N

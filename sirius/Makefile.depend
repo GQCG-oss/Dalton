@@ -2,6 +2,17 @@ ciauth.o : ciauth.F \
   ../include/single.h
 
 
+r12aux.o : r12aux.F \
+  ../include/implicit.h  ../include/priunit.h \
+  ../include/infdim.h    ../include/iratdef.h \
+  ../include/dummy.h     ../include/thrldp.h \
+  ../include/maxorb.h    ../include/infinp.h \
+  ../include/inforb.h    ../include/infvar.h \
+  ../include/inftap.h    ../include/infpri.h \
+  ../include/scbrhf.h    ../include/gnrinf.h \
+  ../include/r12int.h    ../include/memint.h
+
+
 ciham.o : ciham.F \
   ../include/cbgetdis.h  ../include/ciinfo.h \
   ../include/detbas.h  ../include/implicit.h \
@@ -214,7 +225,8 @@ sircmo.o : sircmo.F \
   ../include/infopt.h  ../include/inforb.h \
   ../include/infpri.h  ../include/maxash.h \
   ../include/maxorb.h  ../include/priunit.h \
-  ../include/scbrhf.h  ../include/single.h
+  ../include/scbrhf.h  ../include/single.h \
+  ../include/r12int.h
 
 
 sirctl.o : sirctl.F \
@@ -238,7 +250,7 @@ sirdiis.o : sirdiis.F \
   ../include/infvar.h  ../include/maxash.h \
   ../include/maxorb.h  ../include/molde.h \
   ../include/priunit.h  ../include/scbrhf.h \
-  ../include/single.h
+  ../include/single.h  ../include/r12int.h
 
 
 sirfck.o : sirfck.F \
@@ -276,7 +288,8 @@ sirgrad.o : sirgrad.F \
   ../include/itinfo.h  ../include/line.h \
   ../include/maxash.h  ../include/maxorb.h \
   ../include/orbtypdef.h  ../include/priunit.h \
-  ../include/single.h  ../include/thrzer.h
+  ../include/single.h  ../include/thrzer.h \
+  ../include/r12int.h
 
 
 sirinp.o : sirinp.F \
@@ -381,7 +394,7 @@ siropt.o : siropt.F \
   ../include/maxash.h  ../include/maxorb.h \
   ../include/molde.h  ../include/priunit.h \
   ../include/scbrhf.h  ../include/single.h \
-  ../include/thrldp.h
+  ../include/thrldp.h  ../include/r12int.h
 
 
 sirorb.o : sirorb.F \
@@ -437,7 +450,7 @@ sirset.o : sirset.F \
   ../include/infvar.h  ../include/iratdef.h \
   ../include/litinfo.h  ../include/maxash.h \
   ../include/maxorb.h  ../include/priunit.h \
-  ../include/single.h
+  ../include/single.h  ../include/r12int.h
 
 
 sirsol.o : sirsol.F \

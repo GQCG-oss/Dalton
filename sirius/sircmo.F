@@ -482,6 +482,7 @@ C Output:
 C  CMO; molecular orbitals
 C
 #include <implicit.h>
+#include <priunit.h>
       DIMENSION CMO(*),SCRA(*)
       LOGICAL   DELEMO
       PARAMETER (D1=1.0D0)
@@ -489,11 +490,12 @@ C
 C Used from common blocks:
 C   INFORB : NNBAST,...
 C   INFDIM : NNBASM, NBASMA
+C   INFPRI : LUW4
 C
-#include <priunit.h>
 #include <inforb.h>
 #include <infdim.h>
 #include <infpri.h>
+#include <r12int.h>
 C
 C         CMO contains initial matrix
 C         (either unit matrix or one where 3s in d etc. are deleted).
@@ -511,47 +513,66 @@ C Read the overlap matrix in AO-basis.
 C
       CALL RDONEL('OVERLAP ',.TRUE.,SCRA(KOVLP),NNBAST)
 C
+      JCSYM = 1
       DO 200 ISYM = 1,NSYM
-         NORBI = NORB(ISYM)
-      IF (NORBI.EQ.0) GO TO 200
          NBASI = NBAS(ISYM)
          ISSYM = KOVLP + IIBAS(ISYM)
-         JCSYM = ICMO(ISYM) + 1
+         IF (LAUXBS) THEN
+            NORBI = NORB2(ISYM)
+         ELSE
+            NORBI = NORB(ISYM)
+            JCSYM = ICMO(ISYM) + 1
+         END IF
+      IF (NORBI.EQ.0) GO TO 200
+         IF (LMULBS) THEN
+            IF (LAUXBS) THEN
+              IF (.NOT. R12ECO) THEN
+C              Overlap matrix elements that belong to the 
+C              primary basis are zeroed (WK/UniKA/04-11-2002).
+               MBSYM = ISSYM 
+               MBNUL = MBAS1(ISYM) * (MBAS1(ISYM) + 1) / 2
+               CALL DZERO(SCRA(MBSYM),MBNUL)
+               MBSYM = MBSYM + MBNUL 
+               DO 202 K = 1, MBAS2(ISYM)
+                  CALL DZERO(SCRA(MBSYM),MBAS1(ISYM))
+                  MBSYM = MBSYM + MBAS1(ISYM) + K
+  202          CONTINUE
+              END IF
+            ELSE
+C              Overlap matrix elements that belong to the 
+C              secondary basis are zeroed (WK/UniKA/04-11-2002).
+               MBSYM = ISSYM + MBAS1(ISYM) * (MBAS1(ISYM) + 1) / 2
+               MBNUL = NNBAS(ISYM) - MBSYM + ISSYM
+               CALL DZERO(SCRA(MBSYM),MBNUL)
+            ENDIF
+         END IF
 C
          IF (NORBI .NE. NBASI) THEN
             CALL UTHU(SCRA(ISSYM),SCRA(KS1T),CMO(JCSYM),SCRA(KSCR1),
      *                NBASI,NORBI)
-C           CALL UTHU(H,HT,U,WRK,NAO,NMO)
          ELSE
             NNBASI = NNBAS(ISYM)
             CALL DCOPY(NNBASI,SCRA(ISSYM),1,SCRA(KS1T),1)
             CALL DUNIT(CMO(JCSYM),NBASI)
          END IF
 C
-C
          CALL JACO(SCRA(KS1T),CMO(JCSYM),NORBI,NORBI,NBASI,
      *             SCRA(KSCR1),SCRA(KSCR2))
-C        CALL JACO (F,V,NB,NMAX,NROWV,BIG,JBIG)
          II = 0
          DO 175 I = 1,NORBI
             II = II + I
             SCRA(KS1T-1+I)=SCRA(KS1T-1+II)
   175    CONTINUE
          CALL ORDER2(CMO(JCSYM),SCRA(KS1T),NORBI,NBASI)
-         IF (IPRI6 .GT. 10 .OR. P6FLAG(38)) THEN
-            WRITE (LUPRI,'(/A,I5/)')
-     &      'CMODEL: eigenvalues of overlap matrix for symmetry',ISYM
-            WRITE (LUPRI,'(1P,5D15.5)') (SCRA(KS1T-1+I),I=1,NORBI)
-         END IF
 C
 C Delete orbitals with small ( THROVL) eigenvalues
 C
          IDEL = 0
-         DO 275 I = 1, NORBI
-           EIGVAL = SCRA(KS1T-1 + I)
+         DO 275 J = 1, NORBI
+           EIGVAL = SCRA(KS1T + J -1)
            IF (EIGVAL .LT. THROVL) THEN
-              IDEL  = (NORBI + 1 - I)
-              IF (.NOT. DELEMO) THEN
+              IDEL  = (NORBI + 1 - J)
+              IF (.NOT. DELEMO) THEN        
                  NWARN = NWARN + 1
                  WRITE (LUW4,'(//A/A/A,1P,D10.2)')
      *           '@ WARNING: orbitals are deleted during canonical'//
@@ -559,34 +580,63 @@ C
      *           '@   because of detected numerical linear dependence.',
      *           '@ Eigenvalue threshold for num. lin. dep. =',THROVL
               END IF
-              DELEMO = .TRUE.
               WRITE (LUW4,'(/A,I4,A,I5/A/,(1P,5D10.2))')
      *        '@',IDEL,' MO components are deleted in symmetry',ISYM,
      *        ' Overlap eigenvalues of the deleted orbitals:',
-     *        (SCRA(KS1T + I - 2 + J),J = 1,IDEL)
+     *        (SCRA(KS1T + J - 2 + I),I = 1,IDEL)
 C
-              IF (ISYM .LT. NSYM) THEN
+              IF (LAUXBS) THEN
+                IF (ISYM .LT. NSYM) THEN
+                 ICTO  = JCSYM + (NORB2(ISYM)-IDEL)*NBASI
+                 ICFROM= JCSYM + NORB2(ISYM)*NBASI
+                 DO 260 JSYM = ISYM+1, NSYM
+                   DO 250 I = 0, NORB2(JSYM)*NBASI
+                     CMO(ICTO + I) = CMO(ICFROM + I)
+  250              CONTINUE
+                   ICTO = ICTO + NORB2(JSYM)*NBASI      
+                   ICFROM = ICFROM + NORB2(JSYM)*NBASI
+  260            CONTINUE
+                END IF
+                NORB2(ISYM) = NORB2(ISYM) - IDEL
+              ELSE
+                IF (ISYM .LT. NSYM) THEN
                  ICTO  = ICMO(ISYM) + (NORB(ISYM)-IDEL)*NBASI
                  ICFROM= ICMO(ISYM+1)
                  NCMOVE= NCMOT - ICFROM
-                 DO 250 J = 1,NCMOVE
-                    CMO(ICTO + J) = CMO(ICFROM + J)
-  250            CONTINUE
-                 DO 260 JSYM=ISYM+1,NSYM
+                 DO 251 I = 1,NCMOVE
+                    CMO(ICTO + I) = CMO(ICFROM + I)
+  251            CONTINUE
+                 DO 261 JSYM=ISYM+1,NSYM
                     ICMO(JSYM) = ICMO(JSYM) - IDEL*NBASI
-  260            CONTINUE
+  261            CONTINUE
+                END IF
+                NORB(ISYM) = NORB(ISYM) - IDEL
+                NORB1(ISYM) = NORB(ISYM)
+                NCMOT = NCMOT - IDEL*NBASI
               END IF
-              NORB(ISYM) = NORB(ISYM) - IDEL
-              NCMOT = NCMOT - IDEL*NBASI
               GO TO 280
            ELSE
               EIGVAL = D1/SQRT(EIGVAL)
-              CALL DSCAL(NBASI,EIGVAL,CMO(JCSYM+(I-1)*NBASI),1)
+              CALL DSCAL(NBASI,EIGVAL,CMO(JCSYM+(J-1)*NBASI),1)
+              IF (.NOT.LAUXBS) NORB1(ISYM) = NORB(ISYM)
            END IF
   275    CONTINUE
   280    CONTINUE
-C
+         JCSYM = JCSYM + NORB2(ISYM)*NBASI       
   200 CONTINUE
+C
+C *** OUTPUT SECTION
+C
+      IF (LAUXBS) THEN
+        WRITE(LUPRI,'(/A)') '  CANONICAL PRIMARY '//
+     *     'AND SECONDARY BASIS SETS ' 
+        WRITE(LUPRI,'(A)') '  ISYM       NORB1 MBAS1'//
+     *     '       NORB2 MBAS2'
+        DO 777 ISYM = 1, NSYM
+           WRITE(LUPRI,'(I6,6X,2I6,6X,2I6)') 
+     *     ISYM, NORB1(ISYM), MBAS1(ISYM), NORB2(ISYM), MBAS2(ISYM)
+  777   CONTINUE 
+      END IF
 C
 C *** end of subroutine DELMO
 C
@@ -854,11 +904,9 @@ C
 C
          CALL UTHU(SH1(ISSYM),SCRA(KH1T),CMO(ICSYM),SCRA(KSCR1),
      *             NBASI,NORBI)
-C        CALL UTHU(H,HT,U,WRK,NAO,NMO)
 C
          CALL JACO(SCRA(KH1T),CMO(ICSYM),NORBI,NORBI,NBASI,
      *             SCRA(KSCR1),SCRA(KSCR2))
-C        CALL JACO (F,V,NB,NMAX,NROWV,BIG,JBIG)
          II = 0
          DO 175 I = 1,NORBI
             II = II + I
@@ -1086,7 +1134,6 @@ C
 C
             CALL JACO(FC(ISSYM),CMO(ICSYM),NORBI,NORBI,NBASI,
      *                SCRA,SCRA(1+NORBI))
-C           CALL JACO (F,VEC,NB,NMAX,NROWV,BIG,JBIG)
 C
             II = ISSYM - 1
             DO 175 I=1,NORBI
@@ -1267,7 +1314,6 @@ C
          KJBIG = KBIG + NORBI
          CALL JACO(WRK(JXFC),CMO(JCMO),NORBI,NORBI,NBASI,
      *             WRK(KBIG),WRK(KJBIG))
-C        CALL JACO (F,VEC,NB,NMAX,NROWV,BIG,JBIG)
 C
          DO 175 I = 1,NORBI
             WRK(I) = WRK(JXFC-1 + IROW(I+1))

@@ -501,6 +501,7 @@ C
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+#include <r12int.h>
 C
 C----------------------------------------------
 C     Read MO-coefficients from interface file.
@@ -510,7 +511,8 @@ C
      &            .FALSE.)
       REWIND LUSIFC
 C
-      CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
+C     Use LABEL instead of 'TRCCINT ' (WK/UniKA/04-11-2002).
+      CALL MOLLAB(LABEL,LUSIFC,LUPRI)
       READ (LUSIFC)
 C
       READ (LUSIFC)

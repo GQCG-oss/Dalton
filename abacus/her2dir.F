@@ -61,6 +61,7 @@ C
       LOGICAL ONECEN, DERECC, DERECD, EXPECT, BIGVEC, SPNORB, DIA2SO,
      &        LONDON, ZFS2EL
       CHARACTER*4 ATYPE
+#include <r12int.h>
 #include <doxyz.h>
 #include <crossd.h>
 #include <subdir.h>
@@ -141,6 +142,36 @@ C
       DO 120 I = 1, 18
          DHOVEC(I) = .FALSE.
   120 CONTINUE
+C
+C     Integrals for r12 methods (WK/UniKA/15-11-2002).
+      IF (R12EIN .OR. R12INT .OR. U12INT) THEN
+         ATYPE  = 'R12 '
+         DPATH1 = .TRUE.
+         DZER   = .TRUE.
+         FZERO  = ONE
+         IZERO  = 1
+         DC101  = .TRUE.
+         DC2H1  = .TRUE.
+         IF (R12EIN) THEN
+            NINTYP = 1
+            IF (U12INT) THEN
+               DPATH2 = .TRUE.
+               DC102  = .TRUE.
+            END IF
+         ELSE
+            NINTYP = 0
+            IF (V12INT) NINTYP = NINTYP + 1
+            IF (R12INT) NINTYP = NINTYP + 1
+            IF (U21INT) NINTYP = NINTYP + 1
+            IF (U12INT) THEN
+               NINTYP = NINTYP + 1
+               DPATH2 = .TRUE.
+               DC102  = .TRUE.
+            END IF
+         END IF
+         NTOTAL = NCCINT
+         GO TO 900
+      END IF
 C
 C     Spin-orbit integrals
 C

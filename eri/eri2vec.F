@@ -34,19 +34,22 @@ C
 #include <single.h>
 C
 C  /* Deck eriexp */
-      SUBROUTINE ERIEXP(EXPAB,EXPCD,ALPHA,FACPQ,RODPE1,RODPE2,IPNTPP,
-     &                  IPRINT)
+      SUBROUTINE ERIEXP(EXPAB,EXPCD,ALPHA,FACPQ,HEXPP,HEXPQ,
+     &                  RODPE1,RODPE2,IPNTPP,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <aovec.h>
 #include <maxorb.h>
+#include <r12int.h>
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, DP5 = 0.5D0)
       INTEGER AB, CD, PQ, RST
       DIMENSION EXPAB(NPQBCS,MLTPZ,NPRFAB,3),
      &          EXPCD(NPQBCS,MLTPZ,NPRFCD,3),
      &          ALPHA(NPQBCS,MLTPZ,NPRFPQ),
+     &          HEXPP(NPQBCS,MLTPZ,NPRFPQ),
+     &          HEXPQ(NPQBCS,MLTPZ,NPRFPQ),
      &          FACPQ(NPQBCS,NPRFPQ),
      &          RODPE1(NODPP1,  2), RODPE2(NODPP2,  2),
      &          IPNTPP(MAXBCH,2)
@@ -104,12 +107,20 @@ C
             PINV = EXPAB(PQ,1,I,3) 
             QINV = EXPCD(PQ,1,J,3) 
             ALFA = D2/(PINV+QINV)
-            FACPQ(PQ,IJ) = SFAC*SQRT(PINV*QINV*ALFA)
+            IF (R12EIN) THEN
+               FACPQ(PQ,IJ) = SFAC*SQRT(D2)
+            ELSE
+               FACPQ(PQ,IJ) = SFAC*SQRT(PINV*QINV*ALFA)
+            END IF
             ALPHA(PQ,1,IJ) = -ALFA
+            HEXPP(PQ,1,IJ) = D1/PINV
+            HEXPQ(PQ,1,IJ) = D1/QINV
          END DO
          DO RST = 2, MLTPZ
          DO PQ = 1, NPQBCS
             ALPHA(PQ,RST,IJ) = ALPHA(PQ,1,IJ)
+            HEXPP(PQ,RST,IJ) = HEXPP(PQ,1,IJ)
+            HEXPQ(PQ,RST,IJ) = HEXPQ(PQ,1,IJ)
          END DO
          END DO
       END DO
@@ -124,6 +135,10 @@ C
          CALL OUTPUT(FACPQ,1,NPQBCS, 1,MLTPZ,NPQBCX,MLTPZ,1,LUPRI)
          CALL HEADER('ALPHA in ERIEXP',-1)
          CALL OUTPUT(ALPHA,1,NPPX, 1,1,NPPX, 1,1,LUPRI)
+         CALL HEADER('HEXPP in ERIEXP',-1)
+         CALL OUTPUT(HEXPP,1,NPPX, 1,1,NPPX, 1,1,LUPRI)
+         CALL HEADER('HEXPQ in ERIEXP',-1)
+         CALL OUTPUT(HEXPQ,1,NPPX, 1,1,NPPX, 1,1,LUPRI)
       END IF
 C
       RETURN

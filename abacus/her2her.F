@@ -79,46 +79,111 @@ C  /* Deck hr2dr1 */
      &                  SIGNT,IODDHR,PANAS)
 #include <implicit.h>
 #include <priunit.h>
+#include <r12int.h>
 #include <maxaqn.h>
       LOGICAL NOINT, ONECEN
 #include <twosta.h>
-      DIMENSION HERINT(NUABCD,NTUV), INDHER(*), IODDHR(*),
+C     HERINT is declared 3-dimensional 
+C     for r12 integrals (WK/UniKA/14-11-2002).
+      DIMENSION HERINT(NUABCD,NTUV,2), INDHER(*), IODDHR(*),
      &          RJ000(NUABCD,0:JMAX), WORK(LWORK),
      &          PQX(NUABCD), PQY(NUABCD), PQZ(NUABCD),
      &          COOR12(*), COOR34(*), EXP12(*), EXP34(*), FAC12(*),
      &          FAC34(*), SIGNT(*)
 C
-C     Incomplete gamma function
-C     =========================
+      IF (R12EIN) THEN
 C
-      IF (TKTIME) TIMSTR = SECOND()
-      CALL R000(RJ000,COOR12,COOR34,EXP12,EXP34,FAC12,FAC34,PQX,PQY,PQZ,
-     &          JMAX,NOINT,NUABCD,NUC1,NUC2,NUC12,NUC3,NUC4,NUC34,
-     &          THRESH,ONECEN,IPRINT,IPQ0X,IPQ0Y,IPQ0Z,SIGNT,PANAS,
-     &          WORK,LWORK)
-      IF (TKTIME) THEN
-         TIMEND = SECOND()
-         TIME = TIMEND - TIMSTR
-         TR000X(JMAX) = TR000X(JMAX) + TIME
-         TR000 = TR000 + TIME
-         TIMSTR = TIMEND
-      END IF
+C        Gaussian-damped R12 integrals (WK/UniKA/15-11-2002).
 C
-C     Hermite integrals
-C     =================
-C
-      IF (.NOT.NOINT) THEN
-C
-C        Calculate integrals
-C
-         CALL HERI(HERINT,WORK,LWORK,RJ000,PQX,PQY,PQZ,INDHER,JMAX,
-     &             MAXDER,NUABCD,NTUV,IPQ0X,IPQ0Y,IPQ0Z,IODDHR,IPRINT)
+         IF (TKTIME) TIMSTR = SECOND()
+         LRJ000 = NUABCD * (JMAX + 1)
+         LHRINT = NUABCD * NTUV
+         KFACNT = 1
+         KALPHA = KFACNT 
+         KHARGE = KALPHA + NUABCD
+         KHARGF = KHARGE + NUABCD
+         KHALPH = KHARGF + NUABCD
+         KHBETA = KHALPH + NUABCD
+         KHPRE1 = KHBETA + NUABCD
+         KHPRE2 = KHPRE1 + NUABCD
+         KHPRE3 = KHPRE2 + NUABCD
+         KRO000 = KHPRE3 + NUABCD
+         KHRIN3 = KRO000 + LRJ000
+         KHRIN4 = KHRIN3 + LHRINT
+         KHRIN5 = KHRIN4 + LHRINT
+         LSTEIN = KHRIN5 + LHRINT
+         LWKHER = LWORK - LSTEIN + 1
+         IF (LWKHER .LE. 0) CALL STOPIT('HR2DR1',' ',LSTEIN,LWORK)
+         IODS = KFACNT
+         DO IOD12 = 1, NUC12
+            FACP = FAC12(IOD12)
+            DO  IOD34 = 1, NUC34
+               WORK(IODS) = FACP * FAC34(IOD34)
+               IODS = IODS + 1
+            END DO
+         END DO
+         CALL ERIHER(HERINT(1,1,1),HERINT(1,1,2),RJ000,PQX,INDHER,
+     &              IODDHR,WORK(KFACNT),WORK(KALPHA),WORK(KHARGE),
+     &              WORK(KHARGF),WORK(KHALPH),WORK(KHBETA),
+     &              WORK(KHPRE1),WORK(KHPRE2),WORK(KHPRE3),
+     &              WORK(KRO000),WORK(KHRIN1),WORK(KHRIN2),
+     &              WORK(KHRIN3),EXP12,EXP34,WORK(LSTEIN),LWKHER,IPRINT)
          IF (TKTIME) THEN
             TIMEND = SECOND()
             TIME = TIMEND - TIMSTR
             THERIX(JMAX) = THERIX(JMAX) + TIME
             THERI = THERI + TIME
+         END IF
+      ELSE  
+C
+C        Incomplete gamma function
+C        =========================
+C
+         IF (TKTIME) TIMSTR = SECOND()
+         CALL R000(RJ000,COOR12,COOR34,EXP12,EXP34,FAC12,FAC34,PQX,PQY,
+     &             PQZ,JMAX,NOINT,NUABCD,NUC1,NUC2,NUC12,NUC3,NUC4,
+     &             NUC34,THRESH,ONECEN,IPRINT,IPQ0X,IPQ0Y,IPQ0Z,SIGNT,
+     &             PANAS,WORK,LWORK)
+         IF (TKTIME) THEN
+            TIMEND = SECOND()
+            TIME = TIMEND - TIMSTR
+            TR000X(JMAX) = TR000X(JMAX) + TIME
+            TR000 = TR000 + TIME
             TIMSTR = TIMEND
+         END IF
+C
+C        Hermite integrals
+C        =================
+C
+         IF (.NOT.NOINT) THEN
+C
+C           Calculate integrals
+C
+            CALL HERI(HERINT,WORK,LWORK,RJ000,PQX,PQY,PQZ,INDHER,JMAX,
+     &             MAXDER,NUABCD,NTUV,IPQ0X,IPQ0Y,IPQ0Z,IODDHR,IPRINT)
+C
+            IF (R12INT .OR. U12INT) THEN
+C
+C              Calculate Hermite integrals Q(t,u,v) over r12 from
+C              R(t,u,v) integrals over 1/r12 (WK/UniKA/14-11-2002).
+C
+               KWKAMA = 1
+               KWKAMB = KWKAMA + NUABCD
+               KWKLST = KWKAMB + NUABCD
+               IF (KWKLST .GT. LWORK) 
+     &         CALL STOPIT('HR2DR1','ABEQ52',KWKLST,LWORK)
+               CALL ABEQ52(HERINT(1,1,2),HERINT(1,1,1),WORK(KWKAMA),
+     &                     WORK(KWKAMB),PQX,PQY,PQZ,INDHER,JMAX,
+     &                     EXP12,EXP34,NUC12,NUC34,NUABCD,
+     &                     NTUV,IPQ0X,IPQ0Y,IPQ0Z,IODDHR,IPRINT)
+            END IF
+            IF (TKTIME) THEN
+               TIMEND = SECOND()
+               TIME = TIMEND - TIMSTR
+               THERIX(JMAX) = THERIX(JMAX) + TIME
+               THERI = THERI + TIME
+               TIMSTR = TIMEND
+            END IF
          END IF
       END IF
       RETURN

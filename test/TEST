@@ -61,9 +61,12 @@ dft_blyp_sym dft_energy_sym dft_lda_cart dft_lda_nosym dft_lda_sym \
 dft_optimize_nosym dft_optimize_sym dft_properties_nosym \
 dft_properties_sym"
 #
+R12="r12_damped r12_sym r12_nosym r12_fc_sym r12_fc_nosym \
+r12_aux_sym r12_aux_nosym r12_fc_aux_sym r12_fc_aux_nosym"
+#
 NUMDER="hfreqfromE hfreqfromg effgeom_fromE effgeom_fromE2 vibave_spinspin"
 #
-ALL="$SHORT $MEDIUM $LONG $DFT $NUMDER"
+ALL="$SHORT $MEDIUM $LONG $DFT $NUMDER $R12"
 #
 ALLCC="$SHORTCC $MEDIUMCC $LONGCC"
 #
@@ -96,6 +99,7 @@ usage: TEST [-h|-help|--help] [-keep] [-reftest] [-bell] [-benchmark]
           medium               -- run all medium length testcases
           long                 -- run all long testcases
           dft                  -- run all DFT testcases
+          r12                  -- run all R12 testcases
           numder               -- run all numerical derivatives testcases
           all                  -- run all non-parallel testcases
                                   (= short + medium + long)
@@ -182,6 +186,8 @@ elif [ "$testcase" = "allcc" ]; then
   testcase=$ALLCC
 elif [ "$testcase" = "dft" ]; then
   testcase=$DFT
+elif [ "$testcase" = "r12" ]; then
+  testcase=$R12
 elif [ "$testcase" = "numder" ]; then
   testcase=$NUMDER
 fi

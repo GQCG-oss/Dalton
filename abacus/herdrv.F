@@ -189,7 +189,8 @@ C
 #include <maxorb.h>
 #include <maxaqn.h>
 #include <efield.h>
-      PARAMETER (NDIR = 7, NTABLE = 102)
+C     NTABLE has been increased from 102 to 105 (WK/UniKA/04-11-2002).
+      PARAMETER (NDIR = 7, NTABLE = 109)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, D10 = 1.0D1)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -210,7 +211,8 @@ C
 #include <cbisor.h>
 #include <ecpinf.h>
 #include <elweak.h>
-C
+#include <r12int.h>
+C     Keywords '.R12INT', '.R12EIN' and '.MULBAS' have been added (WK/UniKA/04-11-2002).
       DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',
      &             '*SUPINT', '*ER2INT', '*SORINT'/
       DATA TABLE  /'.PRINT ', '.INPTES', '.NOSUP ', '.SPIN-O',
@@ -238,7 +240,9 @@ C
      &             '.ELGDIL', '.MNF-SO', '.DPTOVL', '.DPTPOT', 
      &             '.XDDXR3', '.AD2DAR', '.PVIOLA', '.WEINBG', 
      &             '.XXXXXX', '.FNPROP', '.PVP   ', '.1ELPOT',
-     &             '.QDBINT', '.QDBTST'/
+     &             '.QDBINT', '.QDBTST', '.R12   ', '.R12EXP',
+     &             '.AUXBAS', '.NOTV12', '.R12INT', '.U12INT',
+     &             '.U21INT'/
 C
 C     Check if input has been processed earlier.
 C
@@ -290,6 +294,7 @@ C
       ELSE IF (PROMPT .EQ. '.') THEN
          DO 99 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
+C              Labels 203-209 have been added (WK/UniKA/04-11-2002).
                GO TO (101,102,103,104,105,106,107,108,109,110,
      &                111,112,113,114,115,116,117,118,119,120,
      &                121,122,123,124,125,126,127,128,129,130,
@@ -300,7 +305,7 @@ C
      &                171,172,173,174,175,176,177,178,179,180,
      &                181,182,183,184,185,186,187,188,189,190,
      &                191,192,193,194,195,196,197,198,199,200,
-     &                201,202), I
+     &                201,202,203,204,205,206,207,208,209), I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -780,6 +785,45 @@ C&&& Nuclear model
          THETA  = .TRUE.
          ONEPRP = .TRUE.
          GOTO 100
+ 203     CONTINUE
+C           R12 calculation requested with linear r12 terms (WK/UniKA/04-11-2002).
+            R12CAL = .TRUE.
+            CARMOM = .TRUE.
+            IORCAR = MAX(IORCAR,2)
+            ONEPRP = .TRUE.
+            GOTO 100
+ 204     CONTINUE
+C           R12 calculation requested with Gaussian-damped r12 integrals (WK/UniKA/04-11-2002).
+            R12CAL = .TRUE.
+            CARMOM = .TRUE.
+            IORCAR = MAX(IORCAR,2)
+            ONEPRP = .TRUE.
+            R12EOR = .TRUE.
+            READ(LUCMD,*) GAMAC
+            GAMAD = GAMAC
+            CALL QUIT('The Gaussian-damped R12 method is '//
+     &                'not available in this version. Sorry.')
+            GOTO 100
+ 205     CONTINUE
+C           Calculation with multiple basis sets requested (WK/UniKA/04-11-2002).
+            LMULBS = .TRUE.
+            GOTO 100
+ 206     CONTINUE
+C           No calculation of 1/r12 integrals (WK/UniKA/04-11-2002).
+            NOTV12 = .TRUE.
+            GOTO 100
+ 207     CONTINUE
+C           Calculation of integrals of the operator r12 (WK/UniKA/04-11-2002).
+            R12INT = .TRUE.
+            GOTO 100
+ 208     CONTINUE
+C           Calculation of integrals of the operator U12 (WK/UniKA/04-11-2002).
+            U12INT = .TRUE.
+            GOTO 100
+ 209     CONTINUE
+C           Calculation of integrals of the operator U21 (WK/UniKA/04-11-2002).
+            U21INT = .TRUE.
+            GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 299
       ELSE
@@ -2791,6 +2835,7 @@ C/* Deck herini */
 #include <drw2el.h>
 #include <orgcom.h>
 #include <elweak.h>
+#include <r12int.h>
 C
 C     Initialize effective core potential parameters
 C
@@ -2912,6 +2957,41 @@ CTSAUE
       DPTOVL = .FALSE.
       DPTPOT = .FALSE.
       XDDXR3 = .FALSE.
+C     Initialize R12 logical variables R12CAL-LMULBS (WK/UniKA/04-11-2002).
+      R12CAL = .FALSE.
+      R12XXL = .FALSE.
+      R12OLD = .FALSE.
+      R12SQR = .FALSE.
+      R12TRA = .FALSE.
+      R12INT = .FALSE.
+      R12EIN = .FALSE.
+      R12ECO = .FALSE.
+      R12EOR = .FALSE.
+      R12NOA = .FALSE.
+      R12NOB = .FALSE.
+      R12NOP = .FALSE.
+      R12HYB = .TRUE.
+      NORXR  = .FALSE.
+      U12INT = .FALSE.
+      U21INT = U12INT
+      V12INT = .TRUE.
+      NOTV12 = .NOT. V12INT
+      NOTR12 = .NOT. R12INT
+      NOTU12 = .NOT. U12INT
+      ANTICO = .FALSE.
+      DIRSCF = .FALSE.
+      U12DIR = .FALSE.
+      R12DIR = .FALSE.
+      V12DIR = .FALSE.
+      DCCR12 = .FALSE.
+      STEPIV = .FALSE.
+      CUSP12 = .FALSE.
+      DUMR12 = .FALSE.
+      INTGAC = 0
+      INTGAD = 0
+      COMBSS = .FALSE.
+      LAUXBS = .FALSE.
+      LMULBS = .FALSE.
 C
       CALL DZERO(ORIGIN,3)
       CALL DZERO(GAGORG,3)

@@ -327,6 +327,8 @@ C
          MULTBT(IBATCH) = MULT(ISTBAO(ISHELL))
          NCNTBT(IBATCH) = NCENT(ISHELL)
          NORBBT(IBATCH) = NDIMC(IMAT)*KHKT(ISHELL)*MULT(ISTBAO(ISHELL))
+C        Basis-set identifier (WK/UniKA/04-11-2002).
+         MBIDBT(IBATCH) = MBSID(ISHELL)
 C
 C        exponents
 C

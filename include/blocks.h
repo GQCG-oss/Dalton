@@ -6,4 +6,6 @@
      &                NSTRSH(MXSHEL), NCNTSH(MXSHEL), NSETSH(MXSHEL,2),
      &                IORBSB(0:MXCORB-1), NRCSH(MXSHEL), SEGMSH(MXSHEL),
      &                LCLASH(MXSHEL), SPHRSH(MXCORB),
-     &                NLRBL,ISYMBL(MXSHEL,8),NSYMBL
+     &                NLRBL,ISYMBL(MXSHEL,8),NSYMBL,
+     &                MBSISH(MXSHEL)
+C     MBSISH has been added for multiple basis sets (WK/UniKA/31-10-2002).

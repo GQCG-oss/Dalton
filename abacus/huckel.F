@@ -397,7 +397,8 @@ C           1s,2s,3s,4s,2p,3p,4p,3d
 C
       NQ = NINT(CHARGE)
       IF (NQ .LE. 0) THEN
-            WRITE (LUPRI,'(/A,F10.5,A,I3,/A)')
+C           Output corrected (WK/UniKA/04-11-2002).
+            WRITE (LUPRI,'(/A,F10.5/A,I3,/A)')
      &           ' WARNING: No Huckel guess for charge of ',CHARGE,
      &           ' Hueckel start guess replaced'//
      &           ' with a diagonalization of H1'

@@ -4748,6 +4748,7 @@ C
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+#include <r12int.h>
 C
 C---------------------------
 C     Work space allocation.
@@ -4769,7 +4770,8 @@ C
      &            .FALSE.)
       REWIND LUSIFC
 C
-      CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
+C     LABEL is used instead of 'TRCCINT' (WK/UniKA/04-11-2002).
+      CALL MOLLAB(LABEL,LUSIFC,LUPRI)
       READ (LUSIFC)
 C
       READ (LUSIFC)
@@ -5180,6 +5182,7 @@ C
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+#include <r12int.h>
 C
       KOFF1 = 1
       KOFF2 = 1
@@ -5222,7 +5225,8 @@ C
      &               .FALSE.)
          REWIND LUSIFC
 C
-         CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
+C        Use LABEL instead of 'TRCCINT ' (WK/UniKA/04-11-2002).
+         CALL MOLLAB(LABEL,LUSIFC,LUPRI)
          READ (LUSIFC)
 C
          READ (LUSIFC)

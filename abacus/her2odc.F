@@ -872,7 +872,7 @@ C
      &            NHKT1,NHKT2,NUC1,
      &            NUC2,NUC12,MXUC12,I0X,I0Y,I0Z,DIFX,DIFY,DIFZ,THRESH,
      &            ITYPE,MAXDER,LONDON,SPNORB,DIA2UP,EL2CD,ZFS2EL,
-     &            DO1,DO2,IPRINT)
+     &            DO1,DO2,IPRINT,WORK(KLAST),LWRK)
       LWTOT  = LWTOT - KLAST
       IF (TKTIME) TEXCOE = TEXCOE + SECOND() - TIMSTR
       RETURN
@@ -883,7 +883,7 @@ C  /* Deck excoef */
      &                  BIGVEC,ONECEN,UNDIFF,NHKT1,NHKT2,NUC1,NUC2,
      &                  NUC12,MXUC12,I120X,I120Y,I120Z,DIF12X,DIF12Y,
      &                  DIF12Z,THRESH,ITYPE,MAXDER,LONDON,SPNORB,DIA2UP,
-     &                  EL2CD,ZFS2EL,DERECC,DERECD,IPRINT)
+     &                  EL2CD,ZFS2EL,DERECC,DERECD,IPRINT,WORK,LWORK)
 C
 C     TUH 84
 C
@@ -895,11 +895,21 @@ C
      &        LONDON, ZFS2EL
       DIMENSION COEF12(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2,3,*),
      &          COOR12(NUC1*NUC2,3,3), HEXPPI(*), EXP12(NUC1*NUC2,3),
-     &          COOR1(MXUC12),  ORIGO(3)
+     &          COOR1(MXUC12),  ORIGO(3), WORK(LWORK)
 #include <drw2el.h>
+#include <r12int.h>
 C
       LA = NHKT1 - 1
       LB = NHKT2 - 1
+C     Space allocation for R12 method (WK/UniKA/15-11-2002).
+      IF (U12INT) THEN
+         KAOVRP = 1
+         KBOVRP = KAOVRP + NUC12
+         KLAST  = KBOVRP + NUC12
+         IF (KLAST .GT. LWORK) CALL STOPIT('EXCOEF',' ',KLAST,LWORK)
+         LWTOT  = LWTOT + KLAST
+         MWTOT  = MAX(MWTOT,LWTOT + KLAST)
+      END IF
       IF (SPNORB) THEN
          MAXDIF = 1
       ELSE IF (FINDPT.OR.DPTINT) THEN
@@ -962,11 +972,16 @@ C     ***** Calculate undifferentiated expansion coefficients *****
 C     *************************************************************
 C
       IF ((.NOT. (UNDIFF .AND. (LA+LB .EQ. 0))) .OR. FINDPT
-     *    .OR. DPTINT ) THEN
+     *    .OR. DPTINT .OR. U12INT) THEN
 C
          DO 100 I = 1, NUC12
             HEXPPI(I) = SIGN*DP5/EXP12(I,1)
   100    CONTINUE
+C 
+C        Calculate (a-b)/(a+b) factor (WK/UniKA/15-11-2002).
+         IF (U12INT)
+     &   CALL AMINBP(COEF12(1,0,0,0,1,3),NUC12,EXP12(1,2),EXP12(1,3),
+     &               HEXPPI,SIGN,IPRINT)
 C
 C        x component
 C        ===========
@@ -974,16 +989,30 @@ C
          CALL TWOODC(COEF12(1,0,0,0,1,1),JMAX1,JMAX2,NUC12,MXUC12,MAX1,
      &               MAX2,SIGN,I120X,COOR12(1,1,2),COOR12(1,1,3),HEXPPI,
      &               'EX00',IPRINT)
+         IF (U12INT)
+     &   CALL WKEQ30(COEF12(1,0,0,0,1,1),COEF12(1,0,0,0,1,2),
+     &               JMAX1,JMAX2,NUC12,MAX1,MAX2,SIGN,
+     &               I120X,COOR12(1,1,2),COOR12(1,1,3),EXP12(1,2),
+     &               EXP12(1,3),WORK(KAOVRP),WORK(KBOVRP),HEXPPI,
+     &               'EX01',IPRINT)
 C
 C        y component
 C        ===========
 C
          IF (YEQX) THEN
             CALL DCOPY(LNG,COEF12(1,0,0,0,1,1),1,COEF12(1,0,0,0,2,1),1)
+            IF (U12INT)
+     &      CALL DCOPY(LNG,COEF12(1,0,0,0,1,2),1,COEF12(1,0,0,0,2,2),1)
          ELSE
             CALL TWOODC(COEF12(1,0,0,0,2,1),JMAX1,JMAX2,NUC12,MXUC12,
      &                  MAX1,MAX2,SIGN,I120Y,COOR12(1,2,2),
      &                  COOR12(1,2,3),HEXPPI,'EY00',IPRINT)
+            IF (U12INT)
+     &      CALL WKEQ30(COEF12(1,0,0,0,2,1),COEF12(1,0,0,0,2,2),
+     &                  JMAX1,JMAX2,NUC12,MAX1,MAX2,SIGN,
+     &                  I120Y,COOR12(1,2,2),COOR12(1,2,3),EXP12(1,2),
+     &                  EXP12(1,3),WORK(KAOVRP),WORK(KBOVRP),HEXPPI,
+     &                  'EY01',IPRINT)
          END IF
 C
 C        z component
@@ -991,12 +1020,22 @@ C        ===========
 C
          IF (ZEQX) THEN
             CALL DCOPY(LNG,COEF12(1,0,0,0,1,1),1,COEF12(1,0,0,0,3,1),1)
+            IF (U12INT)
+     &      CALL DCOPY(LNG,COEF12(1,0,0,0,1,2),1,COEF12(1,0,0,0,3,2),1)
          ELSE IF (ZEQY) THEN
             CALL DCOPY(LNG,COEF12(1,0,0,0,2,1),1,COEF12(1,0,0,0,3,1),1)
+            IF (U12INT)
+     &      CALL DCOPY(LNG,COEF12(1,0,0,0,2,2),1,COEF12(1,0,0,0,3,2),1)
          ELSE
             CALL TWOODC(COEF12(1,0,0,0,3,1),JMAX1,JMAX2,NUC12,MXUC12,
      &                  MAX1,MAX2,SIGN,I120Z,COOR12(1,3,2),
      &                  COOR12(1,3,3),HEXPPI,'EZ00',IPRINT)
+            IF (U12INT)
+     &      CALL WKEQ30(COEF12(1,0,0,0,3,1),COEF12(1,0,0,0,3,2),
+     &                  JMAX1,JMAX2,NUC12,MAX1,MAX2,SIGN,
+     &                  I120Z,COOR12(1,3,2),COOR12(1,3,3),EXP12(1,2),
+     &                  EXP12(1,3),WORK(KAOVRP),WORK(KBOVRP),HEXPPI,
+     &                  'EZ01',IPRINT)
          END IF
       END IF
 C
@@ -1819,6 +1858,7 @@ C
      &          SGNOLD(3), SGNNEW(3)
 #include <symmet.h>
 #include <drw2el.h>
+#include <r12int.h>
 #include <chrnos.h>
 #include <chrxyz.h>
       SAVE SGNOLD, DOCOMP, MAXDIF
@@ -1837,7 +1877,7 @@ C
          DOCOMP(3) = ICD0Z .EQ. 0
          IF (SPNORB .OR. DIA2SO) THEN
             MAXDIF = 1
-         ELSE IF (FINDPT.OR.DPTINT) THEN
+         ELSE IF (FINDPT .OR. DPTINT) THEN
             MAXDIF = 2
          ELSE
             MAXDIF = MAXDER
@@ -1889,16 +1929,29 @@ C
 C              and all others
 C
                ELSE
-                     DO 400 I = 0, NHKTC - 1
-                     DO 400 J = 0, NHKTD - 1
-                        DO 410 T = 0, I + J
-                        IF (MOD(I+J+T,2).EQ.1) THEN
-                           DO 420 P = 1, NUCCD
-                              COEFCD(P,T,I,J,X,1) = -COEFCD(P,T,I,J,X,1)
-  420                      CONTINUE
+                  DO 400 I = 0, NHKTC - 1
+                  DO 400 J = 0, NHKTD - 1
+                     DO 410 T = 0, I + J
+                     IF (MOD(I+J+T,2).EQ.1) THEN
+                        DO 420 P = 1, NUCCD
+                           COEFCD(P,T,I,J,X,1) = -COEFCD(P,T,I,J,X,1)
+  420                   CONTINUE
+                     END IF
+  410                CONTINUE
+  400             CONTINUE
+C                 For [r12,t1+T2] integrals (WK/UniKA/15-11-2002).
+                  IF (U12INT) THEN
+                     DO 530 I = 0, NHKTC - 1
+                     DO 530 J = 0, NHKTD - 1
+                        DO 540 T = 0, I + J
+                        IF (MOD(I+J+1-T,2).EQ.1) THEN
+                           DO 550 P = 1, NUCCD
+                              COEFCD(P,T,I,J,X,2) = -COEFCD(P,T,I,J,X,2)
+  550                      CONTINUE
                         END IF
-  410                   CONTINUE
-  400                CONTINUE
+  540                   CONTINUE
+  530                CONTINUE
+                  END IF
                   IF (MAXDIF .GT. 0) THEN
                      DO 500 I = 0, NHKTC - 1
                      DO 500 J = 0, NHKTD - 1

@@ -306,6 +306,7 @@ C
 #include <gnrinf.h>
 #include <dftcom.h>
 #include <dfterg.h>
+#include <r12int.h>
 C
       PARAMETER (THDDEF = 1.0D-5)
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, DM1 = -1.0D0)
@@ -917,6 +918,13 @@ C           form FC = FD - FV in FCAO
             CALL DZERO(WRK(KDUM),NASHT*NORBT)
          ELSE
             CALL MEMGET('REAL',KDUM,0,WRK,KFREE,LFREE)
+         END IF
+C
+         IF (LMULBS .OR. R12CAL) THEN
+C           Construct orthonormal auxilliary basis set (WK/UniKA/04-11-2002).
+            CALL TIMER('START ',TIMSTR,TIMEND)
+            CALL R12AUX(WRK(KFREE),LFREE)
+            CALL TIMER('R12AUX',TIMSTR,TIMEND)
          END IF
 C
          CALL WRSIFC(CMO,DV,WRK(KPV),FCAO,DCAO,

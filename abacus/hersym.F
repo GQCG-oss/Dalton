@@ -94,6 +94,7 @@ C  /* Deck fndsym */
 #include <mxsymm.h>
 #include <mxcent.h>
 #include <nuclei.h>
+#include <r12int.h>
 #include <priunit.h>
 #include <cbirea.h>
 #include <cbisol.h>
@@ -234,6 +235,9 @@ C ::: The reduced coordinates are moved back. :::
                CORD(J,I) = ATMARR(J,I)
  260        CONTINUE
             CHARGE(I) = CHARGE(NINT(ATMARR(5,I)))
+C           GNUEXP(I) and MULBSI(I) have been added (WK/UniKA/04-11-2002).
+            GNUEXP(I) = GNUEXP(NINT(ATMARR(5,I)))
+            MULBSI(I) = MULBSI(NINT(ATMARR(5,I)))
             NCLINE(I) = NCLINE(NINT(ATMARR(5,I)))
  250     CONTINUE
 C ::: Then the different elements are counted, and arrays updated. :::

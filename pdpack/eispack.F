@@ -9204,6 +9204,8 @@ C
       DOUBLE PRECISION A(NM,N),W(N),U(NM,N),V(NM,N),RV1(N)
       DOUBLE PRECISION C,F,G,H,S,X,Y,Z,TST1,TST2,SCALE,PYTHAG
       LOGICAL MATU,MATV
+C     To avoid compiler bug (WK/UniKA/11-11-2002).
+      INTEGER LUDUMM, IDUMMY
 C
 C     THIS SUBROUTINE IS A TRANSLATION OF THE ALGOL PROCEDURE SVD,
 C     NUM. MATH. 14, 403-420(1970) BY GOLUB AND REINSCH.
@@ -9478,6 +9480,13 @@ C
   560    CONTINUE
 C     .......... TEST FOR CONVERGENCE ..........
   565    Z = W(K)
+C        To avoid compiler bug (WK/UniKA/11-11-2002).
+         LUDUMM = 31
+         IDUMMY = 0
+         CALL GPOPEN(LUDUMM,'AODUMMY','UNKNOWN',' ','FORMATTED',IDUMMY,
+     &               .FALSE.)
+         WRITE(LUDUMM,*) ITS,L,K
+         CALL GPCLOSE(LUDUMM,'DELETE')
          IF (L .EQ. K) GO TO 650
 C     .......... SHIFT FROM BOTTOM 2 BY 2 MINOR ..........
          IF (ITS .EQ. 30) GO TO 1000

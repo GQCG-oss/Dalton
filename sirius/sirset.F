@@ -409,6 +409,7 @@ C
 #include <inforb.h>
 #include <infind.h>
 #include <infdim.h>
+#include <r12int.h>
 C
 C
 C     (1) common /INFORB/
@@ -461,6 +462,8 @@ C
          N2ORBT   = N2ORBT  + NORB(I)*NORB(I)
          N2BAST   = N2BAST  + NBAS(I)*NBAS(I)
          NCMOT    = NCMOT   + NORB(I)*NBAS(I)
+C        For multiple basis sets (WK/UniKA/04-11-2002).
+         NORB1(I) = NORB(I)       
   100 CONTINUE
 C
       IISH(1)  = 0

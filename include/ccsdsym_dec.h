@@ -26,4 +26,6 @@
      &        NT2AIJ,NMAIJK,IMAIJK,NCKASR,
      &        IMAIJA,NMAIJA,ID2IJG,ID2AIG,
      &        ID2ABG,ND2IJG,ND2AIG,ND2ABG,
-     &        IFCKDO,IFCKDV, NDSGRH
+     &        IFCKDO,IFCKDV, NDSGRH,
+     &        NU2AMX, NU2AM, IU2AM
+C     NU2AMX, NU2AM(8) and IU2AM(8,8) are used for non-Hermitean integrals (WK/UniKA/31-10-2002).

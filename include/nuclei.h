@@ -9,3 +9,6 @@
       CHARACTER NAMEX*6, NAMDEP*6, NAMDPX*6, NAMN*4
       COMMON /NUCLEC/ NAMEX(MXCOOR), NAMDEP(MXCENT), NAMDPX(MXCOOR),
      &                NAMN(MXCENT)
+      INTEGER MULBSI
+      COMMON /MULBAS/ MULBSI(MXCENT)
+C     MULBAS has been added for multiple basis sets (WK/UniKA/31-10-2002).

@@ -82,11 +82,13 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
-      PARAMETER (NTABLE = 93)
+C     Keywords have been added for R12 method (WK/UniKA/04-11-2002).
+      PARAMETER (NTABLE = 102)
       LOGICAL   SET, NEWDEF, SIRFF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*(80) LINE
 C
+#include <r12int.h>
 #include <maxorb.h>
 #include <mxcent.h>
 #include <ccorb.h>
@@ -124,7 +126,9 @@ C
      &            '*CCMCD ','.ANAAOD','.PACK  ','.CONNEC','.THRLDP',
      &            '.RCSKIP','.FCSKIP','.LCSKIP','.CO2SKI','.CX2SKI',
      &            '.CR2SKI','.CF2SKI','.CL2SKI','*DERIVA','.N2SKIP',
-     &            '.BRSKIP','.FREEZE','*CCSLV '/
+     &            '.BRSKIP','.FREEZE','*CCSLV ','.NO HYB',
+     &            '.R12   ','.NO A  ','.NO A'' ','.NO B  ','.NO RXR',
+     &            '.R12THR','.SVDTHR','.R12XXL'/
       DATA SET/.FALSE./
 C
       IF (SET) RETURN
@@ -269,6 +273,17 @@ C
       MINSCR = .TRUE.
       MINMEM = .FALSE.
 C
+C     R12 method (WK/UniKA/04-11-2002).
+C
+      R12NOA = .FALSE.
+      R12NOP = .FALSE.
+      R12NOB = .FALSE.
+      R12HYB = .TRUE. 
+      NORXR  = .FALSE.
+      VCLTHR =  0D0
+      SVDTHR =  1D-15
+      R12XXL = .FALSE.
+C
 C     If this is a restart run, we read MSYM from SIRIFC
 C
       IF (IREST .EQ. 1) THEN
@@ -319,7 +334,7 @@ C
      *                47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,
      *                62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,
      *                77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,
-     *                92,93), I
+     *                92,93,94,95,96,97,98,99,400,401,402), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -704,7 +719,43 @@ C                '.FREEZE'
 C                '*CCSLV '
                   CALL CC_SLVINP(WORD)
                GO TO 100
-
+   94          CONTINUE
+C                '.R12HYB'
+                 R12HYB = .FALSE.
+               GO TO 100
+   95          CONTINUE
+C                '.R12   '
+                 R12CAL = .TRUE.
+               GO TO 100
+   96          CONTINUE
+C                '.NO A  '
+                 R12NOA = .TRUE.
+               GO TO 100
+   97          CONTINUE
+C                '.NO A'' '
+                 R12NOP = .TRUE.
+               GO TO 100
+   98          CONTINUE
+C                '.NO B  '
+                 R12NOB = .TRUE.
+                 NORXR  = .TRUE.
+               GO TO 100
+   99          CONTINUE
+C                '.NO RXR'
+                 NORXR  = .TRUE.
+               GO TO 100
+  400          CONTINUE
+C                '.R12THR'
+                 READ (LUCMD, *) VCLTHR
+               GO TO 100
+  401          CONTINUE
+C                '.SVDTHR'
+                 READ (LUCMD, *) SVDTHR
+               GO TO 100
+  402          CONTINUE
+C                '.R12XXL'
+                 R12XXL = .TRUE.
+               GO TO 100
             ELSE
                WRITE (LUPRI,'(/3A,/)') ' Prompt "',WORD,
      *            '" not recognized in CC2INP.'

@@ -448,6 +448,8 @@ C  /* Deck pickao */
 #include <maxorb.h>
 #include <aovec.h>
 #include <mxcent.h>
+#include <r12int.h>
+#include <shells.h>
 #include <erisel.h>
 #include <aobtch.h>
 C
@@ -470,6 +472,18 @@ C
             END DO
          END IF
       END DO
+C
+      IF (LMULBS .AND. .NOT. R12TRA) THEN
+C        Do not compute integrals that involve auxilliary
+C        basis functions (WK/UniKA/04-11-2002).
+         DO I = 1, NAOBCH
+            IF (MBIDBT(I) .GT. 1) THEN
+               DO J = 1, 4
+                  ACTVBT(I,J) = .FALSE.
+               END DO
+            END IF
+         END DO
+      END IF
 C
       IF (IPRINT .GT. 3) THEN
          CALL HEADER('Output from PICKAO',-1)

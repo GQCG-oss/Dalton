@@ -6,4 +6,6 @@
      &                NUMCF(MXSHEL),    NBCH(MXSHEL),   KSTRT(MXSHEL),
      &                SEGM(MXSHEL),     LCLASS(MXSHEL),
      &                IPTSHL(MXSHEL),   NUMCFT(MXSHEL), SPHR(MXSHEL),
-     &                KMAX, NLRGSH, NSMLSH, NORBS
+     &                MBSID(MXSHEL), KMAX, NLRGSH, NSMLSH, NORBS,
+     &                MBIDBT(MXSHEL)
+C     MBSID and MBIDBT have been added for multiple basis sets (WK/UniKA/31-10-2002).

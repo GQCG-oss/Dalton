@@ -750,9 +750,11 @@ C
 #include <inftap.h>
 #include <gnrinf.h>
 C
-      STRING = BASDIR(1:LENBAS)//BASNAM
-      INQUIRE (FILE = STRING, EXIST = EXST)
-      IEND = INDEX(STRING(1:),' ')
+C     Corrected for IEND (WK/UniKA/04-11-2002).
+      IEND = INDEX(BASNAM(1:),' ') - 1
+      STRING = BASDIR(1:LENBAS)//BASNAM(1:IEND)
+      IEND = INDEX(STRING(1:),' ') - 1
+      INQUIRE (FILE = STRING(1:IEND), EXIST = EXST)
       IF (EXST) THEN
          CALL GPOPEN(LUBAS,STRING(1:IEND),'OLD',' ','FORMATTED',IDUMMY,
      &               .FALSE.)

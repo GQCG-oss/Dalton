@@ -139,6 +139,7 @@ C*****************************************************************************
 #include <maxorb.h>
 #include <mxcent.h>
 #include <nuclei.h>
+#include <r12int.h>
       PARAMETER (DP25=0.25D0,DP5=0.5D0,D1=1.0D0,D2=2.0D0,D0=0.0D0)
       INTEGER A,B,C,D
       LOGICAL NODV, SUSCEP, NOTEST,LBIT,DOC,DOE
@@ -411,7 +412,14 @@ C       Screening on exchange contributions
 C
 C   FAC is a factor to account for different definiton of
 C   integrals in twoint and eri. Here always 1.0
-      FAC = D1
+      IF (R12TRA) THEN
+C        Compute exchange operator for auxilliary basis set
+C        in R12 calculations (WK/UniKA/04-11-2002).
+         FAC = -D1
+         IY = 2
+      ELSE
+         FAC = D1
+      END IF
       CALL FCKCON(FMAT,DMAT,NDMAT,I,AOINT,IND,
      &		  NCCINT,NBUF,NBUF,IX,IY,FAC)
 C

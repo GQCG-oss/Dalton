@@ -372,6 +372,7 @@ C
 #include <maxash.h>
 #include <maxorb.h>
 #include <priunit.h>
+#include <r12int.h>
 #include <infinp.h>
 #include <inforb.h>
 #include <infind.h>
@@ -424,7 +425,10 @@ C
 C
 C ***** add one-electron contribution to FCAO
 C
-      CALL DAXPY(N2BASX,D1,WRK(KH1AO),1,FCAO,1)
+C     One one-electron contributions are not added for the construction of 
+C     the exchange operator in the auxilliary basis (WK/UniKA/04-11-2002).
+      IF (.NOT. (R12TRA .OR. R12ECO))
+     *     CALL DAXPY(N2BASX,D1,WRK(KH1AO),1,FCAO,1)
 C
 C     ***** Test output of Fock matrices *****
 C
