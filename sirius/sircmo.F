@@ -652,13 +652,17 @@ C
          JCSYM = JCSYM + NORB2(ISYM)*NBASI       
   200 CONTINUE
 C
-C *** Make sure orbitals are orthonormal /hjaaj-dec-04
+C *** Make sure primary orbitals are orthonormal /hjaaj-dec-04
 C     (there may be numerical round-off errors ...)
+C     (ORTHO cannot be used for secondary orbitals as it uses
+C      NORB(i) and not NORB2(i). )
 C
+      IF (.NOT. LAUXBS) THEN
          KSMAT = 1
          KWRK  = KSMAT + N2BASX
          LWRK  = LSCRA - KWRK
          CALL ORTHO(CMO,SCRA(KSMAT),SCRA(KWRK),LWRK)
+      END IF
 C
 C *** OUTPUT SECTION
 C
