@@ -1392,10 +1392,10 @@ C ::: products between themselves.                                      :::
 			      END IF
  170			   CONTINUE
 			   IF (V3(1)*V3(1)+V3(2)*V3(2)+V3(3)*V3(3)
-	1			.GT. TOLLRN*TOLLRN) THEN
+     &                         .GT. TOLLRN*TOLLRN) THEN
 			      DO 172 M = IORD/2, MINORD, -1
 				 IF (ROTAXS(MXM,ATMARR,TMPARR,M,
-	1			      V3,PROP)) THEN
+     &		                     V3,PROP)) THEN
 				    CALL ADD2AR(MAXAXS, DRTAXS, M, V3)
 				    CALL DLDPAX(MAXAXS, DRTAXS)
 				 END IF
