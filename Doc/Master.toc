@@ -24,7 +24,7 @@
 \contentsline {section}{\numberline {5.3}The {\sc molecule}\ input file}{23}
 \contentsline {section}{\numberline {5.4}The first calculation with {{\sc dalton}}}{24}
 \contentsline {chapter}{\numberline {6}Getting the wave function you want}{28}
-\contentsline {section}{\numberline {6.1} Necessary input to SIRIUS}{28}
+\contentsline {section}{\numberline {6.1} Necessary input to SIRIUS}{29}
 \contentsline {section}{\numberline {6.2} An input example for SIRIUS}{29}
 \contentsline {section}{\numberline {6.3} Hints on the structure of the input for the \\{\normalfont \ttfamily {**WAVE FUNCTIONS}} input module}{31}
 \contentsline {section}{\numberline {6.4} How to restart a wave function calculation}{33}
@@ -191,4 +191,4 @@
 \contentsline {section}{\numberline {26.14}Numerical Gradients {\normalfont \ttfamily {*CCGR}}}{281}
 \contentsline {part}{IV\hspace {1em}Appendix: DALTON Tool box}{282}
 \contentsline {part}{V\hspace {1em}References}{287}
-\contentsline {part}{VI\hspace {1em}Index}{299}
+\contentsline {part}{VI\hspace {1em}Index}{300}

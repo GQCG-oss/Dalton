@@ -23,6 +23,12 @@ K.~Ruud, {\mbox{P.-O.}}~{\AA}strand, and P.~R. Taylor.
   molecules.
 \newblock {\em J.~Chem.~Phys.}, 112:2668, 2000.
 
+\bibitem{krjljv}
+K.~Ruud, J.~Lounila, and J.~Vaara.
+\newblock Temperature- and isotope-effects on nuclear magnetic shielding
+  constants in polyatomic molecules.
+\newblock To be submitted.
+
 \bibitem{Coriani:MCDRSP}
 S.~Coriani, P.~J{\o}rgensen, A.~Rizzo, K.~Ruud, and J.~Olsen.
 \newblock {\it{Ab initio}} determinations of {M}agnetic {C}ircular {D}ichroism.
@@ -197,10 +203,22 @@ J.~Olsen and P.~J{\o}rgensen.
   {MCSCF} state.
 \newblock {\em J.~Chem.~Phys.}, 82:3235, 1985.
 
+\bibitem{esnpjjodjcp73}
+E.~S. Nielsen, P.~J{\o}rgensen, and J.~Oddershede.
+\newblock {\em J.~Chem.~Phys.}, 73:6238, 1980.
+
+\bibitem{jopjdycpr2}
+J.~Oddershede, P.~J{\o}rgensen, and D.~Yeager.
+\newblock {\em Comput.~Phys.~Rep.}, 2:33, 1984.
+
 \bibitem{mjpekdtehjajjojcp}
 M.~J. Packer, E.~K. Dalskov, T.~Enevoldsen, H.~J.~Aa. Jensen, and
   J.~Oddershede.
 \newblock J.~Chem.~Phys., submitted.
+
+\bibitem{ekdspasjpca102}
+E.~K. Dalskov and S.~P. A.Sauer.
+\newblock {\em J.~Phys.~Chem.~{\bf A}}, 102:5269, 1998.
 
 \bibitem{kwjfhppjacs112}
 K.~Wolinski, J.~F. Hinton, and P.~Pulay.
@@ -291,6 +309,10 @@ A.~Sch\"{a}fer, H.~Horn, and R.~Ahlrichs.
 \newblock Fully optimized contracted {G}aussian basis sets for atoms {Li} to
   {Kr}.
 \newblock {\em J.~Chem.~Phys.}, 97:2571, 1992.
+
+\bibitem{aschrajcp100}
+A.~Sch\"{a}fer, C.~Huber, and R.~Ahlrichs.
+\newblock {\em J.~Chem.~Phys.}, 100:5829, 1994.
 
 \bibitem{thmjkrcr99}
 T.~Helgaker, M.~Jaszu\'{n}ski, and K.~Ruud.
@@ -453,6 +475,10 @@ K.~Ruud, {\mbox{P.-O.}}~{\AA}strand, and P.~R. Taylor.
   contributions from {\it{ab initio}} calculations.
 \newblock {\em J.~Am.~Chem.~Soc.}, 123:4826, 2001.
 
+\bibitem{rmpnmwijqc40}
+R.~M. Pitzer and N.~M. Pitzer.
+\newblock {\em Int.~J.~Quantum Chem.}, 40:773, 1991.
+
 \bibitem{thkrprt95}
 K.~Ruud T.~Helgaker and P.~R. Taylor.
 \newblock Second-order methods for the optimization of molecular potential
@@ -510,6 +536,31 @@ K.~L. Bak, P.~J{\o}rgensen, H.~J.~Aa. Jensen, J.~Olsen, and T.~Helgaker.
 \newblock First-order nonadiabatic coupling matrix elements from
   multiconfigurational self-consistent-field response theory.
 \newblock {\em J.~Chem.~Phys.}, 97:7573, 1992.
+
+\bibitem{bahcmmuwogcpl251}
+B.~A. Hess, C.~M. Marian, U.~Wahlgren, and O.~Gropen.
+\newblock {\em Chem.~Phys.~Lett.}, 251:365, 1996.
+
+\bibitem{bahpra33}
+B.~A. Hess.
+\newblock {\em Phys.Rev.~{\bf A}}, 33:3742, 1986.
+
+\bibitem{tbphkkrjcp110}
+T.~B. Pedersen, H.~Koch, and K.~Ruud.
+\newblock Coupled cluster response calculation of natural chiroptical spectra.
+\newblock {\em J.~Chem.~Phys.}, 110:2883, 1999.
+
+\bibitem{jvkrovjcp111}
+J.~Vaara, K.~Ruud, and O.~Vahtras.
+\newblock Second- and third-order spin-orbit contributions to nuclear shielding
+  tensors.
+\newblock {\em J.~Chem.~Phys.}, 111:2900, 1999.
+
+\bibitem{jvkrovjcc20}
+J.~Vaara, K.~Ruud, and O.~Vahtras.
+\newblock Correlated response calculations of the spin-orbit interaction
+  contribution to nuclear spin-spin couplings.
+\newblock {\em J.~Comput.~Chem.}, 20:1314, 1999.
 
 \bibitem{ovhapjhjajthjojcp96}
 O.~Vahtras, H.~{\AA}gren, P.~J{\o}rgensen, H.~J.~Aa. Jensen, T.~Helgaker, and
@@ -584,6 +635,12 @@ V.~Bakken, T.~Helgaker, W.~Klopper, and K.~Ruud.
 \newblock The calculation of molecular geometrical properties in the
   {H}ellmann-{F}eynman approximation.
 \newblock {\em Mol.~Phys.}, 96:653, 1999.
+
+\bibitem{optphavckrcp260}
+O.~Plashkevych, T.~Privalov, H.~{\AA}gren, V.~Carravetta, and K.~Ruud.
+\newblock On the validity of the equivalent cores approximation for computing
+  x-ray photoemission and photoabsorption spectral bands.
+\newblock {\em Chem.~Phys.}, 260:11, 2000.
 
 \bibitem{hsijqc30}
 H.~Sellers.
