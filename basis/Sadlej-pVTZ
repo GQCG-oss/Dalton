@@ -1,6 +1,8 @@
-$Sadlej-pVTZ
+$ Basis = Sadlej-pVTZ (taken from MOLCAS)
 
-$ H Li Be C  N  O  F  Na Mg Si P  S  Cl K  Ca Br Rb Sr I
+$ Supported Elements
+$ H Li Be C N O F Na Mg Si P S Cl K Ca Ga Ge As Se Br Rb Sr 
+$ Sn Sb Te I
 $
 $ REFERENCE
 $ Elements                             References
@@ -544,7 +546,7 @@ a 17
 #A. J. Sadlej and M. Urban,
 J. Mol. Struct. (Theochem) xx, xxx (1991).
 *********************************************************************
-* Pottasium atom                                                    *
+* Potasium atom                                                    *
 * Dipole polarizability basis set                                   *
 *********************************************************************
 a 19
