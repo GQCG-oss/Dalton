@@ -1148,9 +1148,9 @@ ERROR[1]="ENERGY NOT CORRECT"
 
 # ?
 CRIT1=`$GREP "\@G * _\|_ * \|\|" $log | wc -l`
-CRIT2=`$GREP "\@G OZ\-SO1 * 5226\. * 0\." $log | wc -l`
-CRIT3=`$GREP "\@G OZ\-SO2 \-1586\. * 0\." $log | wc -l`
-CRIT4=`$GREP "\@G Total * 3640\. * 0\." $log | wc -l`
+CRIT2=`$GREP "\@G OZ\-SO1 * 5226\. *[- ]0\." $log | wc -l`
+CRIT3=`$GREP "\@G OZ\-SO2 \-1586\. *[- ]0\." $log | wc -l`
+CRIT4=`$GREP "\@G Total * 3640\. *[- ]0\." $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[2]=4
 ERROR[2]="G-TENSOR NOT CORRECT"

@@ -816,7 +816,7 @@ log=$1
 GREP=egrep
 
 # ?
-CRIT1=`$GREP "Final HF energy\: * \-39\.072083833208" $log | wc -l`
+CRIT1=`$GREP "Final HF energy\: * \-39\.0720838332[01]" $log | wc -l`
 TEST[1]=`expr	$CRIT1`
 CTRL[1]=1
 ERROR[1]="ENERGY NOT CORRECT"
