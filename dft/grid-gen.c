@@ -144,8 +144,10 @@ include_partitioning_becke2(GridGenMolGrid* mg, int catom, int point_cnt,
 static void
 include_partitioning_ssf  (GridGenMolGrid* mg, int catom, int point_cnt,
                            GridGenWork *ggw, int idx, int verbose);
-static void gen_gc2_quad (GridGenAtomGrid* grid, real thrl);
-static void gen_lmg_quad(GridGenAtomGrid* grid, real thrl);
+static void gen_gc2_quad(GridGenAtomGrid* grid, real thrl, void *quad_data);
+static void* gen_lmg_init(void);
+static void gen_lmg_quad(GridGenAtomGrid* grid, real thrl, void *quad_data);
+static void gen_lmg_free(void *quad_data);
 
 /* Trond Saue:
     The below data gives atomic radii in Angstroms and stems from table I of 
@@ -214,10 +216,22 @@ static struct partitioning_scheme_t *selected_partitioning =
 
 struct radial_scheme_t {
     char *name;
-    void (*gen_quad)(GridGenAtomGrid*, real thrl);
+    void *(*quad_init)(void);
+    void (*quad_gen)  (GridGenAtomGrid*, real thrl, void *quad_data);
+    void (*quad_free) (void *quad_data);
 };
-static struct radial_scheme_t quad_lmg = { "LMG scheme",                            gen_lmg_quad };
-static struct radial_scheme_t quad_gc2 = { "Gauss-Chebychev scheme of second kind", gen_gc2_quad };
+static struct radial_scheme_t quad_lmg = { 
+    "LMG scheme",
+    gen_lmg_init,
+    gen_lmg_quad,
+    gen_lmg_free
+};
+static struct radial_scheme_t quad_gc2 = { 
+    "Gauss-Chebychev scheme of second kind",
+    NULL,
+    gen_gc2_quad,
+    NULL
+};
 
 static struct radial_scheme_t *radial_quad = &quad_lmg;
 
@@ -697,9 +711,14 @@ static void
 set_radial_grid(GridGenMolGrid* grd, real thrl)
 {
     int atom;
+    void *data = NULL; 
+    if(radial_quad->quad_init)
+        data = radial_quad->quad_init();
     for(atom=0; atom<grd->atom_cnt; atom++) {
-        radial_quad->gen_quad(grd->atom_grids[atom], thrl);
+        radial_quad->quad_gen(grd->atom_grids[atom], thrl, data);
     }
+    if(radial_quad->quad_free)
+        radial_quad->quad_free(data);
 }
 
 /* ===================================================================
@@ -730,12 +749,12 @@ gc2_rad_cnt(int Z, real thrl)
    The grid->rad and grid->wght arrays are filled in.
 */
 static void 
-gen_gc2_quad(GridGenAtomGrid* grid, real thrl)
+gen_gc2_quad(GridGenAtomGrid* grid, real thrl, void *quad_data)
 {
     /* constants */
-    const real pi_2 = 2.0/M_PI;  
+    static const real pi_2 = 2.0/M_PI;  
+    static const real sfac = 2.0/3.0;
     const real rfac = 1.0/log(2.0);
-    const real sfac = 2.0/3.0;
     real n_one, n_pi, wfac;
     /* variables */
     real x = 0.0, angl = 0.0, w = 0.0;
@@ -762,32 +781,55 @@ gen_gc2_quad(GridGenAtomGrid* grid, real thrl)
 /* gen_lmg_quad:
  *  As proposed by Roland Lindh, Per-Aake Malmqvist and Laura
  *  Gagliardi. */
+
+struct lmg_data {
+    int  *nucorb;
+    real *aa;
+    int maxl;
+};
 void get_maxl_nucind_(int *maxl, int*nucind);
 
-static void
-gen_lmg_quad(GridGenAtomGrid* grid, real thrl)
+static void*
+gen_lmg_init(void)
 {
-    static const int MAXRAD = 2000;
-    int *nucorb, maxl, nucind;
-    real *aa;
+    int nucind;
+    struct lmg_data *lmg = dal_malloc(sizeof(struct lmg_data));
 
-    grid_gen_agrid_set_size(grid, MAXRAD); 
-    get_maxl_nucind_(&maxl, &nucind);
-    nucorb = dal_malloc(2*maxl*nucind*sizeof(int));
-    aa     = dal_malloc(4*maxl*nucind*sizeof(real));
-    if(!nucorb|| !aa) {
-        fprintf(stderr,"no enough memory. in gen_lmg_quad.\n");
+    get_maxl_nucind_(&lmg->maxl, &nucind);
+    lmg->nucorb = malloc(2*lmg->maxl*nucind*sizeof(int));
+    lmg->aa     = calloc(4*lmg->maxl*nucind,sizeof(real));
+    if(!lmg->nucorb|| !lmg->aa) {
+        fprintf(stderr,"no enough memory. in gen_lmg_init.\n");
         exit(1);
     }
-    nucbas_(nucorb, aa, &ONEI); 
+    nucbas_(lmg->nucorb, lmg->aa, &ONEI); 
+    return lmg;
+}
+
+static void
+gen_lmg_quad(GridGenAtomGrid* grid, real thrl, void *quad_data)
+{
+    static const int MAXRAD = 2000;
+    struct lmg_data *lmg = (struct lmg_data*)quad_data;
+
+    grid_gen_agrid_set_size(grid, MAXRAD); 
     radlmg_(grid->rad, grid->wght, &grid->pnt, &thrl, &MAXRAD,
-            nucorb+2*grid->uniq_no*maxl, aa+4*grid->uniq_no*maxl,
+            lmg->nucorb+2*grid->uniq_no*lmg->maxl,
+            lmg->aa    +4*grid->uniq_no*lmg->maxl,
             &ZEROI);
 
-    free(nucorb);
-    free(aa);
     grid->rad  = realloc(grid->rad,  grid->pnt*sizeof(real));
     grid->wght = realloc(grid->wght, grid->pnt*sizeof(real));
+}
+
+static void
+gen_lmg_free(void *quad_data)
+{
+    struct lmg_data *lmg = (struct lmg_data*)quad_data;
+    
+    free(lmg->nucorb);
+    free(lmg->aa);
+    free(lmg);
 }
 
 /* ===================================================================
@@ -825,7 +867,7 @@ static int
 find_opt_ang(GridGenMolGrid* mgrid, int atom, real rad, real thrl, 
              int first, GridGeneratingFunc func, void* arg, int verb)
 {
-    unsigned i = 0;
+    int i = 0;
     int next;
     real sang1 = 0.0, sang2, firsts, nexts;
     GridGenWork ggw;
@@ -839,7 +881,7 @@ find_opt_ang(GridGenMolGrid* mgrid, int atom, real rad, real thrl,
     if(fabs(firsts-nexts)>thrl) {
         if(first>next) { sang2 = firsts; i = first; }
         else           { sang2 = nexts;  i = next; }
-        if(i<ELEMENTS(leb_gen)) {
+        if(i<(int)ELEMENTS(leb_gen)) {
     do {
         sang1 = sang2;
                 sang2 = integrate_trial(mgrid, atom, rad, func, arg, i,
@@ -847,7 +889,7 @@ find_opt_ang(GridGenMolGrid* mgrid, int atom, real rad, real thrl,
                 i++;
             } while (fabs(sang2-sang1)>thrl && i<ELEMENTS(leb_gen));
         }
-        if(i>=ELEMENTS(leb_gen)) i = ELEMENTS(leb_gen)-1;
+        if(i>=(int)ELEMENTS(leb_gen)) i = ELEMENTS(leb_gen)-1;
     } else {
         if(first>next) { sang2 = nexts; i = next; }
         else           { sang2 = firsts; i = first; }
