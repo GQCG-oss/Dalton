@@ -213,7 +213,7 @@ done
 
 if [ $PASSED -eq 1 ]
 then
-  echo TEST ENDED PROPERLY
+  echo TEST ENDED AS EXPECTED
   exit 0
 else
   echo THERE IS A PROBLEM
