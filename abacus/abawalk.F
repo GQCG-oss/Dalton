@@ -2128,7 +2128,7 @@ C
       PARAMETER (D0 = 0.0D0, D100 = 100.00D00)
 C
       CHARACTER NAME*4, TMPTXT*11
-      LOGICAL BIG
+      LOGICAL VBIG, BIG
       DIMENSION COONEW(3,*)
 C
 C Used from common blocks:
@@ -2199,9 +2199,12 @@ C
          CRX = COONEW(1,N) - CCAVX
          CRY = COONEW(2,N) - CCAVY
          CRZ = COONEW(3,N) - CCAVZ
-         BIG = (ABS(CRX) .GT. D100 .OR.
-     *          ABS(CRY) .GT. D100 .OR.
-     *          ABS(CRZ) .GT. D100)
+         VBIG = (ABS(CRX) .GT. D100 .OR.
+     *           ABS(CRY) .GT. D100 .OR.
+     *           ABS(CRZ) .GT. D100)
+         BIG  = (ABS(CRX) .GT. D10 .OR.
+     *           ABS(CRY) .GT. D10 .OR.
+     *           ABS(CRZ) .GT. D10)
          NC = NCLINE(N)
          IF (NC .NE. 0) THEN
             READ  (MLINE(NC),9100) NAME
@@ -2211,8 +2214,10 @@ C
             ELSE
                TMPTXT = '           '
             END IF
-            IF (BIG) THEN
+            IF (VBIG) THEN
                WRITE (MLINE(NC),9200) NAME,CRX,CRY,CRZ,TMPTXT
+            ELSE IF (BIG) THEN
+               WRITE (MLINE(NC),9250) NAME,CRX,CRY,CRZ,TMPTXT
             ELSE
                WRITE (MLINE(NC),9300) NAME,CRX,CRY,CRZ,TMPTXT
             END IF
@@ -2223,6 +2228,7 @@ C
   100 CONTINUE
  9100 FORMAT (A4)
  9200 FORMAT (A4,3F20.10,1X,A11)
+ 9250 FORMAT (A4,3F20.15,1X,A11)
  9300 FORMAT (A4,3F20.16,1X,A11)
 C
 C Punch MOLECULE input with updated coordinates to LUMOL
