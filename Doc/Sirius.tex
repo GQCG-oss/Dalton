@@ -703,10 +703,13 @@ Handy\cite{dft:camb3lyp}.\index{CAMB3LYP}
 
 \item[PBE0] a hybrid functional of Perdew, Burke and Ernzerhof with
   0.2 weight of exact exchange, 0.75 of \verb|PBEx| functional and
-  \verb|PW91c| correlation functional \cite{dft:pbe0}.\index{PBE0}
+  \verb|PBEC| correlation functional \cite{dft:pbe0}.\index{PBE0}
 
 \item[PBE] same as above but with exchange estimated exclusively by
-  \verb|PBEx| functional \cite{dft:pbe}.\index{PBE}
+  \verb|PBEx| functional \cite{dft:pbe}.\index{PBE} This is the form
+  used by eg. CADPAC and NWChem. Observe that quantum chemistry
+  program Molpro uses \verb|PW91c| correlation functional instead of
+  \verb|PBEC|.
 
 \item[BPW91] is a sum of Slater functional, Becke88 correction and
 PW91 correlation functional.\index{BPW91}
