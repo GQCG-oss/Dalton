@@ -567,6 +567,8 @@ C  /* Deck abainp */
       SUBROUTINE ABAINP(WRDSRC,WORK,LWORK)
 C
 C     General input for ABACUS
+C     input:  WRDSRC - which ABACUS label to look for in input file
+C             (Feb 2003: one of **START, **PROPE, or **FINAL)
 C
 #include <implicit.h>
 #include <iratdef.h>
@@ -576,7 +578,7 @@ C
 #include <maxorb.h>
 #include <priunit.h>
       PARAMETER (NDIR = 28, NTABLE = 51, D0 = 0.D0)
-      LOGICAL POPULA, NOHESS, FCKEXP, GAGT
+      LOGICAL   POPULA, NOHESS, FCKEXP, GAGT
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      *          REWORD*12, RWORD*6, RSTLBL(9)*6, WORD1*7, WRDSRC*7,
      *          WORDL*12
@@ -668,16 +670,20 @@ C
       TSTINP = .FALSE.
       RESTAR = .FALSE.
 C
-C     Next lines commented out because control of the walk/geometry
+C     Initialization of MOLGRD, MOLHES, HELFEY, and DOWALK in /ABAINF/
+C     is now done in GNRLIN, because control of the walk/geometry
 C     optimization has been moved to GENERAL input processing.
+C     For .WALK (OPTWLK) and some other cases the earlier settings have
+C     to be changed to new defaults here:
 C
-      IF (.NOT. OPTNEW.AND.(.NOT.NMWALK)) THEN
-         DOWALK = OPTWLK .AND. .NOT. (WRDSRC .EQ. '**FINAL')
-         MOLGRD = OPTWLK .AND. .NOT. (WRDSRC .EQ. '**FINAL')
-         MOLHES = (OPTWLK .AND. .NOT. (WRDSRC .EQ. '**FINAL')) .OR.
-     &            (WRDSRC .EQ. '**FINAL' .AND. TOTSYM)
+      IF (.NOT.OPTNEW .AND. .NOT.NMWALK) THEN
+C     ... if (not .OPTIMIZE and not (.NMDDRV or .PARNMD) ) then ...
+         DOWALK = OPTWLK .AND. WRDSRC .NE. '**FINAL'
+C        ... check if converged geometry ('**FINAL') in a .WALK
+         MOLGRD = DOWALK
+         MOLHES = DOWALK .OR. (TOTSYM .AND. WRDSRC .EQ. '**FINAL')
          IF (((V3CAL .AND. NMODIF) .OR. VIBAVE) .AND. 
-     &            (WRDSRC .NE. '**START')) MOLHES = .FALSE.
+     &       (WRDSRC .NE. '**START')) MOLHES = .FALSE.
          IF (VIBAVE .AND. REUSED) MOLHES = .FALSE.
       END IF
 C
@@ -769,22 +775,31 @@ C
       REWIND (LUCMD,IOSTAT=IOS)
 C     ... IOSTAT to avoid program abort on some systems
 C         if reading input from a terminal
+      WORD1 = WRDSRC
   900 READ (LUCMD,'(A7)',END=910,ERR=920) WORD
-      IF (WORD .EQ. WRDSRC) THEN
+      IF (WORD .EQ. WORD1) THEN
          GO TO 930
       ELSE
          GO TO 900
       END IF
   910 CONTINUE
-         CALL INIALL
-         GOTO 1
   920 CONTINUE
+C     ... WRDSRC not found in input file;
+C         if WRDSRC .eq. '**START' we also try for '**PROPER'
+C         such that any '**PROPER' input will now also apply for initial
+C         geometry if not overridden with '**START' /Feb 2003 hjaaj
+         IF (WRDSRC .EQ. '**START') THEN
+            REWIND (LUCMD,IOSTAT=IOS)
+            WORD1 = '**PROPE'
+            GO TO 900
+         END IF
          CALL INIALL
          GOTO 1
   930 CONTINUE
       WORD1 = WORD
 C
-      CALL TITLER('Output from ABACUS input processing','*',118)
+      CALL TITLER('Output from '//WRDSRC//' input processing for ABACUS'
+     &            ,'*',118)
 C
 C
 C     ***** Process input for COMMON  /ABAINF/  *****
@@ -1297,8 +1312,8 @@ C
      &        ' Dipole gradient incompatible with .TOTSYM.',
      &        ' No dipole gradient calculated'
          IF (VCD) WRITE (LUPRI,'(2(5X,A))') 
-     &        ' VCD incompatible with .TOTSYM.',' No VCD tensors '//
-     &        'calculated'
+     &        ' VCD incompatible with .TOTSYM.',
+     &        ' No VCD tensors calculated'
          VCD = .FALSE.
          POPULA = .FALSE.
          DIPDER = .FALSE.
@@ -1306,28 +1321,28 @@ C
       END IF
       IF (INPSYM .GT. 0) THEN
          IF (NREPS .EQ. 0) THEN
-            WRITE (LUPRI,'(/,2(/,5X,A))')
+            WRITE (LUPRI,'(/2(/5X,A))')
      &           ' Input error in ABAINP.',
      &           ' No symmetries specified under .REPS'
             CALL QUIT('Input error in ABAINP.')
          ELSE IF (NREPS .EQ. 1) THEN
-            WRITE (LUPRI,'(//,A,I2,A)')
+            WRITE (LUPRI,'(//A,I2,A)')
      &           ' Only distortions belonging to symmetry',IDOSYM(1),
      &           ' are considered.'
          ELSE
-            WRITE (LUPRI,'(//,A,I1,A,I1,7(A,I1))')
+            WRITE (LUPRI,'(//A,I1,A,I1,7(A,I1))')
      &           ' Only distortions of the following ',
      &           NREPS,' symmetries are considered: ',IDOSYM(1),
      &           (',',IDOSYM(I),I=2,NREPS)
          END IF
       ELSE IF (TOTSYM) THEN
-         WRITE (LUPRI,'(//,A)')
+         WRITE (LUPRI,'(//A)')
      &        ' Only totally symmetric distortions are considered.'
       END IF
-      WRITE (LUPRI,'(//,A,I5,/)') ' Default print level:    ',IPRDEF
-      IF (TSTINP) WRITE (LUPRI,'(/,A,/)') ' Input test run only '
+      WRITE (LUPRI,'(//A,I5/)') ' Default print level:    ',IPRDEF
+      IF (TSTINP) WRITE (LUPRI,'(/A/)') ' Input test run only '
       IF (DIPDER .AND. .NOT. (MOLHES .OR. POLAR)) THEN
-         WRITE (LUPRI,'(//,2A,/,A)')
+         WRITE (LUPRI,'(//2A/A)')
      *      ' Dipole moment gradient requires either',
      *      ' molecular Hessian or polarizabilities. ',
      *      ' Set ".POLARI" or delete ".NOHESS" in input!'
@@ -1335,10 +1350,11 @@ C
      *      ('Inconsistency in input for ".DIPOLE", cannot proceed.')
       END IF
       IF (SPNSPN .AND. NASHT .LE. 1 .AND. .NOT.(ABASOP.OR.DFTRUN)) THEN
-         WRITE (LUPRI,'(2X,A,/,2X,A)')
+         NWARN = NWARN + 1
+         WRITE (LUPRI,'(/A/A)')
      &      ' >>>>> WARNING - RHF calculations of spin-spin coupling'//
-     &      ' constants are likely to give ', 
-     &                        'qualitatively incorrect results'
+     &      ' constants are likely to give', 
+     &      ' qualitatively incorrect results !!!'
       END IF
       IF (ABASOP) THEN
          IF (MOLGRD) THEN

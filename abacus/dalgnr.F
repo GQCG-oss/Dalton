@@ -1051,6 +1051,8 @@ C
       HELFEY = .FALSE.
       DOWALK = .FALSE.
 C
+C     Initialize /MOLDEN/
+C
       MOLDEN = .TRUE.
 C
 C     Initialize /GNRINF/
