@@ -35,7 +35,7 @@ C
 C
 C  /* Deck opgctl */
       SUBROUTINE OPGCTL(ORTOPG,RHSOPG,CMO,DV,SOINT,PRPACT,PRPICT,WORK,
-     &                  LWORK,IREP,NODC,NODV,AOMAT,IPRINT)
+     &                  LWORK,IREP,NODC,NODV,IPRINT)
 C
 C     tuh Dec 1989
 C
@@ -50,7 +50,7 @@ C
 #include <nuclei.h>
       DIMENSION ORTOPG(3*NUCDEP), RHSOPG(NVARPT), CMO(NCMOT),
      *          DV(NASHT,NASHT), SOINT(NBAST,NBAST), WORK(LWORK)
-      LOGICAL NODC, NODV, AOMAT
+      LOGICAL NODC, NODV
 #include <inforb.h>
 #include <inflin.h>
 C
@@ -61,14 +61,14 @@ C
       LWRK   = LWORK - KWRK + 1
       IF (KWRK .GT. LWORK) CALL STOPIT('OPGCTL',' ',KWRK,LWORK)
       CALL OPGCT1(ORTOPG,RHSOPG,CMO,DV,SOINT,WORK(KMOINT),WORK(KFCKMO),
-     &            PRPACT,PRPICT,WORK(KWRK),LWRK,IREP,NODC,NODV,AOMAT,
+     &            PRPACT,PRPICT,WORK(KWRK),LWRK,IREP,NODC,NODV,
      &            IPRINT)
       CALL QEXIT('OPGCTL')
       RETURN
       END
 C  /* Deck opgct1 */
       SUBROUTINE OPGCT1(ORTOPG,RHSOPG,CMO,DV,SOINT,DMOINT,FOCKMO,PRPACT,
-     &                  PRPICT,WORK,LWORK,IREP,NODC,NODV,AOMAT,IPRINT)
+     &                  PRPICT,WORK,LWORK,IREP,NODC,NODV,IPRINT)
 C
 C     December 1989, tuh
 C
@@ -77,7 +77,7 @@ C
 #include <mxcent.h>
 #include <nuclei.h>
 C
-      LOGICAL AOMAT, NODC, NODV
+      LOGICAL NODC, NODV
       DIMENSION CMO(NCMOT), DV(NASHT,NASHT),
      *          SOINT(NBAST,NBAST), DMOINT(NORBT,NORBT),
      *          ORTOPG(3*NUCDEP), RHSOPG(NVARPT),
@@ -99,7 +99,7 @@ C     ***** Reorthonormalization contribution *****
 C     *********************************************
 C
       IF (DIPDER) THEN
-         CALL OPGORT(CMO,FOCKMO,ORTOPG,WORK,LWORK,NODC,NODV,AOMAT,
+         CALL OPGORT(CMO,FOCKMO,ORTOPG,WORK,LWORK,NODC,NODV,
      &            IREP,IPRINT)
       END IF
 C
@@ -193,7 +193,7 @@ C
       END
 C  /* Deck opgort */
       SUBROUTINE OPGORT(CMO,FOCKMO,ORTOPG,WORK,LWORK,
-     &                  NODC,NODV,AOMAT,IREP,IPRINT)
+     &                  NODC,NODV,IREP,IPRINT)
 C
 C     Dec 89, tuh
 C
@@ -209,7 +209,6 @@ C
 #include <priunit.h>
 #include <mxcent.h>
 #include <nuclei.h>
-      LOGICAL AOMAT
       DIMENSION CMO(NCMOT), FOCKMO(NORBT,NORBT), WORK(LWORK),
      &          ORTOPG(3*NUCDEP)
 #include <inforb.h>
@@ -223,14 +222,14 @@ C
       LWRK   = LWORK  - KWRK + 1
       IF (KWRK .GE. LWORK) CALL STOPIT('OPGORT',' ',KWRK,LWORK)
       CALL OPGOR1(CMO,FOCKMO,ORTOPG,WORK(KSDSP),
-     &            WORK(KSDSQ),WORK(KWRK),LWRK,WORK(KSDSQT),AOMAT,
+     &            WORK(KSDSQ),WORK(KWRK),LWRK,WORK(KSDSQT),
      &            IREP,IPRINT)
       CALL QEXIT('OPGORT')
       RETURN
       END
 C  /* Deck opgor1 */
       SUBROUTINE OPGOR1(CMO,FOCKMO,ORTOPG,SDSP,SDSQ,WORK,LWORK,
-     &                  SDSQT,AOMAT,IREP,IPRINT)
+     &                  SDSQT,IREP,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
@@ -238,7 +237,7 @@ C  /* Deck opgor1 */
 #include <mxcent.h>
 #include <nuclei.h>
       PARAMETER (D2 = 2.0D0)
-      LOGICAL AOMAT, DERIV(3), DOTD
+      LOGICAL DERIV(3), DOTD
       DIMENSION CMO(NCMOT), FOCKMO(NORBT,NORBT), ORTOPG(3*NUCDEP),
      *          SDSP(N2BASX,3),
      *          SDSQ(NORBT,NORBT), SDSQT(NORBT,NORBT), WORK(LWORK)
@@ -263,7 +262,7 @@ C
          KEY = 'DMAT'
          IF (NODIFC) KEY = 'OMAT'
          CALL GETSD(DERIV,CMO,SDSP,WORK,LWORK,IATOM,.FALSE.,
-     *              AOMAT,KEY,DOTD,IPRINT,IPRINT)
+     *              KEY,DOTD,IPRINT,IPRINT)
          DO 200 ICOOR = 1, 3
             IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A,I5)') ' ICOOR ', ICOOR
             ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
@@ -356,11 +355,6 @@ C
          IF (NCONRF .GT. 0) THEN
             REWIND LUSIFC
             CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
-            READ (LUSIFC)
-            READ (LUSIFC)
-            READ (LUSIFC)
-            READ (LUSIFC)
-            READ (LUSIFC)
             READ (LUSIFC)
             READ (LUSIFC)
             READ (LUSIFC)
