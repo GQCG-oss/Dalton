@@ -75,7 +75,7 @@ ALLCC="$SHORTCC $MEDIUMCC $LONGCC"
 # function usage(): print usage information 
 #########################################################################
 usage() {
- cat << %EOF%
+ cat <<'%EOF%'
 usage: TEST [-h|-help|--help] [-keep] [-reftest] [-bell] [-benchmark]
             [-param "option list"] [-dalton script] [-log logfile] testcase
 
@@ -126,6 +126,7 @@ myprint(){
 #########################################################################
 # set defaults and evaluate parameters
 #########################################################################
+TESTparams="$0 $*"
 help=""
 keep="false"
 DALTON="../dalton"
@@ -209,6 +210,8 @@ fi
 myprint "#####################################################################"
 myprint "                          DALTON test suite"
 myprint "#####################################################################"
+myprint "invoked with          : $TESTparams"
+myprint "date and time         : `date`"
 myprint "dalton script         : $DALTON"
 myprint "parameter list passed : $paramlist"
 myprint "test listing          : $listing"
