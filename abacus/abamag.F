@@ -3493,14 +3493,14 @@ C
                         JX = IPTAX(IX,2)
                         JY = IPTAX(IY,2)
                         CONST = EIGVAL(I)*FACTOT
-                        GTRANT(I,J,IATOM)=GTRANT(I,J,IATOM)+EIGVEC(I,IX)
-     &                       *TOTSPR(JX,JY,IATOM)*EIGVEC(J,IY)*CONST
-                        GTRANN(I,J) = GTRANN(I,J) + EIGVEC(I,IX)
-     &                       *SPRNUC(JX,JY,IATOM)*EIGVEC(J,IY)*CONST
-                        GTRAND(I,J) = GTRAND(I,J) + EIGVEC(I,IX)
-     &                       *DIAMAT(JX,JY,IATOM)*EIGVEC(J,IY)*CONST
-                        GTRANP(I,J) = GTRANP(I,J) + EIGVEC(I,IX)
-     &                       *PARMAT(JX,JY,IATOM)*EIGVEC(J,IY)*CONST
+                        GTRANT(I,J,IATOM)=GTRANT(I,J,IATOM)+EIGVEC(IX,I)
+     &                       *TOTSPR(JX,JY,IATOM)*EIGVEC(IY,J)*CONST
+                        GTRANN(I,J) = GTRANN(I,J) + EIGVEC(IX,I)
+     &                       *SPRNUC(JX,JY,IATOM)*EIGVEC(IY,J)*CONST/D2
+                        GTRAND(I,J) = GTRAND(I,J) + EIGVEC(IX,I)
+     &                       *DIAMAT(JX,JY,IATOM)*EIGVEC(IY,J)*CONST
+                        GTRANP(I,J) = GTRANP(I,J) + EIGVEC(IX,I)
+     &                       *PARMAT(JX,JY,IATOM)*EIGVEC(IY,J)*CONST
  60               CONTINUE
  50            CONTINUE
                IF (IPRINT .GE. 0) THEN
