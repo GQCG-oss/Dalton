@@ -59,8 +59,6 @@ C
      &     CBDATA(*)
       EXTERNAL DFTENE
 C
-#include <dftinf.h>
-c
       DIMENSION VXC(NBLEN),VX(5)
       PARAMETER (DUMMY = 0D0)
 C
@@ -92,8 +90,6 @@ C
      &     CBDATA(*)
       EXTERNAL DFTENE
 C
-#include <dftinf.h>
-c
       DIMENSION VXC(2,NBLEN),VX(5)
 C
 C     Exchange-correlation contribution to Kohn-Sham matrix

@@ -148,7 +148,7 @@ fun_a(real rho, real grad)
   DftDensProp dp; real a, k, kd, kb;
   dp.rhoa = dp.rhob = rho;
   dp.grada = dp.gradb = grad;
-  kd = DiracFunctional.func(&dp);
+  kd = SlaterFunctional.func(&dp);
   kb = BeckeFunctional.func(&dp)*BECKE88_CORR_WEIGHT;
   k = -0.5*( kd + kb) * pow(rho,-4.0/3.0);
   a = MU*sqrt(k)/(6.0*sqrt(M_PI)*pow(rho,1.0/3.0));
@@ -164,12 +164,12 @@ fun_a_first(real rho, real grad, RGFirstDrv *res)
 
     dp.rhoa  = dp.rhob  = rho;
     dp.grada = dp.gradb = grad;
-    ex = 0.5*(DiracFunctional.func(&dp) +
+    ex = 0.5*(SlaterFunctional.func(&dp) +
               BeckeFunctional.func(&dp)*BECKE88_CORR_WEIGHT);
     a = fun_a(rho, grad);
     memset(&ds, 0, sizeof(ds));
     if(fabs(a)<1e-40 || fabs(ex)<1e-40) return;
-    DiracFunctional.first(&ds, 1, &dp);
+    SlaterFunctional.first(&ds, 1, &dp);
     BeckeFunctional.first(&ds, BECKE88_CORR_WEIGHT, &dp);
     res->df10 = (ds.df1000/(2*ex)-1.0/rho)*a;
     res->df01 = ds.df0010/(2*ex)*a;
@@ -184,12 +184,12 @@ fun_a_second(real rho, real grad, RGSecondDrv *res)
 
     dp.rhoa  = dp.rhob  = rho;
     dp.grada = dp.gradb = grad;
-    ex = 0.5*(DiracFunctional.func(&dp) +
+    ex = 0.5*(SlaterFunctional.func(&dp) +
               BeckeFunctional.func(&dp)*BECKE88_CORR_WEIGHT);
     a = fun_a(rho, grad);
     memset(&ds, 0, sizeof(ds));
     if(fabs(a)<1e-40 || fabs(ex)<1e-40) return;
-    DiracFunctional.second(&ds, 1, &dp);
+    SlaterFunctional.second(&ds, 1, &dp);
     BeckeFunctional.second(&ds, BECKE88_CORR_WEIGHT, &dp);
     f10 = ds.df1000/(2*ex)-1.0/rho;
     f20 = ds.df2000/(2*ex) - ds.df1000*ds.df1000/(2*ex*ex) +1/(rho*rho);
@@ -211,12 +211,12 @@ fun_a_third(real rho, real grad, RGThirdDrv *res)
 
     dp.rhoa  = dp.rhob  = rho;
     dp.grada = dp.gradb = grad;
-    ex = 0.5*(DiracFunctional.func(&dp) +
+    ex = 0.5*(SlaterFunctional.func(&dp) +
               BeckeFunctional.func(&dp)*BECKE88_CORR_WEIGHT);
     a = fun_a(rho, grad);
     memset(&ds, 0, sizeof(ds));
     if(fabs(a)<1e-15 || fabs(ex)<1e-15) return;
-    DiracFunctional.third(&ds, 1, &dp);
+    SlaterFunctional.third(&ds, 1, &dp);
     BeckeFunctional.third(&ds, BECKE88_CORR_WEIGHT, &dp);
     f10 = ds.df1000/(2*ex)-1.0/rho;
     f01 = ds.df0010/(2*ex);
@@ -476,10 +476,10 @@ camb3lyp_first_sigma(real rho, real grad, real a, RGFirstDrv *res)
     ader.df10 *= FAC; ader.df01 *= FAC;
     dp.rhoa = dp.rhob = rho;
     dp.grada = dp.gradb = grad;
-    ex = 0.5*(DiracFunctional.func(&dp) +
+    ex = 0.5*(SlaterFunctional.func(&dp) +
               BeckeFunctional.func(&dp)*BECKE88_CORR_WEIGHT);
     memset(&ds, 0, sizeof(ds));
-    DiracFunctional.first(&ds, 1, &dp);
+    SlaterFunctional.first(&ds, 1, &dp);
     BeckeFunctional.first(&ds, BECKE88_CORR_WEIGHT, &dp);
 
     res->df10 = ds.df1000*bfactor + ex*bfactor_first*ader.df10;
@@ -536,10 +536,10 @@ camb3lyp_second_sigma(real rho, real grad, real a, RGSecondDrv *res)
     
     dp.rhoa  = dp.rhob  = rho;
     dp.grada = dp.gradb = grad;
-    ex = 0.5*(DiracFunctional.func(&dp) +
+    ex = 0.5*(SlaterFunctional.func(&dp) +
               BeckeFunctional.func(&dp)*BECKE88_CORR_WEIGHT);
     memset(&ds, 0, sizeof(ds));
-    DiracFunctional.second(&ds, 1, &dp);
+    SlaterFunctional.second(&ds, 1, &dp);
     BeckeFunctional.second(&ds, BECKE88_CORR_WEIGHT, &dp);
 
     res->df10 = ds.df1000*bfactor + ex*b_first*ader.df10;
@@ -609,10 +609,10 @@ camb3lyp_third_sigma(real rho, real grad, real a, RGThirdDrv *res)
 
     dp.rhoa  = dp.rhob  = rho;
     dp.grada = dp.gradb = grad;
-    ex = 0.5*(DiracFunctional.func(&dp) +
+    ex = 0.5*(SlaterFunctional.func(&dp) +
               BeckeFunctional.func(&dp)*BECKE88_CORR_WEIGHT);
     memset(&ds, 0, sizeof(ds));
-    DiracFunctional.third(&ds, 1, &dp);
+    SlaterFunctional.third(&ds, 1, &dp);
     BeckeFunctional.third(&ds, BECKE88_CORR_WEIGHT, &dp);
 
     res->df10 = ds.df1000*bfactor + ex*b_first*ader.df10;

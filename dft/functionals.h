@@ -209,24 +209,7 @@ void dft_set_hf_weight(real w);
 
 /* The list of functionals */
 /* generic functionals */
-extern Functional XAlphaFunctional;
-extern Functional DiracFunctional;
-extern Functional PZ81Functional;
-extern Functional VWNFunctional;
-extern Functional VWN3Functional;
 extern Functional BeckeFunctional;
-extern Functional LB94Functional;
-extern Functional LYPFunctional;
-extern Functional PBEFunctional;
-extern Functional PW86xFunctional;
-extern Functional PWggaIIxFunctional;
-extern Functional PWggaIIcFunctional;
-extern Functional PWggaIIc2Functional;
-extern Functional P86cFunctional;
-extern Functional PW92Functional;
-extern Functional PW92peFunctional;
-extern Functional PW91clFunctional;
-extern Functional ExampleFunctional;
 extern Functional Example2Functional;
 extern Functional Example3Functional;
 extern Functional Example4Functional;
@@ -235,8 +218,25 @@ extern Functional Example6Functional;
 extern Functional Example7Functional;
 extern Functional Example8Functional;
 extern Functional Example9Functional;
+extern Functional ExampleFunctional;
 extern Functional KTFunctional;
+extern Functional LB94Functional;
+extern Functional LYPFunctional;
 extern Functional OPTXFunctional;
+extern Functional P86cFunctional;
+extern Functional PBEFunctional;
+extern Functional PW86xFunctional;
+extern Functional PW91clFunctional;
+extern Functional PW92Functional;
+extern Functional PW92peFunctional;
+extern Functional PWggaIIc2Functional;
+extern Functional PWggaIIcFunctional;
+extern Functional PWggaIIxFunctional;
+extern Functional PZ81Functional;
+extern Functional SlaterFunctional;
+extern Functional VWN3Functional;
+extern Functional VWNFunctional;
+extern Functional XAlphaFunctional;
 
 /* mixed functionals */
 extern Functional LDAFunctional;

@@ -40,7 +40,6 @@ C
 #include <inforb.h>
 #include <maxorb.h>
 #include <shells.h>
-#include <dftinf.h>
 #include <dftcom.h>
 #include <priunit.h>
 #ifdef VAR_MPI
@@ -68,7 +67,7 @@ C
       DOGGA = DFT_ISGGA() ! C code
       IGEODRV = NGEODRV
       IF (DOGGA) IGEODRV = IGEODRV + 1
-      CALL SETUPSOS(IGEODRV,DOLND,NTYPSO,IDUMMY)
+      CALL SETUPSOS(IGEODRV,DOLND,IDUM1,IDUM2)
       CALL OPNQUA(NBAST,DMAT,WORK,LWORK) ! C code
       NPOINTS = 0
       CALL CONSTRUCT_IORIDX(IORIDX)

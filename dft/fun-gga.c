@@ -1,7 +1,7 @@
 /*-*-mode: C; c-indentation-style: "bsd"; c-basic-offset: 4; -*-*/
 /* fun-gga.c:
    implementation of a functional being a linear combination of 
-   Dirac, VWN, Becke, LYP functionals.
+   Slater, VWN, Becke, LYP functionals.
    (c) Pawel Salek, pawsa@theochem.kth.se, sep 2001
    NOTE:
    this file may seem unnecessarily complex but the structure really pays off
@@ -242,7 +242,7 @@ xalpha_read(const char* conf_line)
     float weight;
     int res = (sscanf(conf_line, "%g", &weight)==1);
     if(res) 
-        gga_fun_list = add_functional(gga_fun_list, &DiracFunctional, 
+        gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, 
                                       1.5*weight);
     dft_set_hf_weight(0);
     return res;
@@ -258,34 +258,34 @@ lda_read(const char* conf_line)
 static real
 lda_energy(const DftDensProp* dp)
 {
-    return DiracFunctional.func(dp) + VWNFunctional.func(dp);
+    return SlaterFunctional.func(dp) + VWNFunctional.func(dp);
 }
 
 static void
 lda_first(FirstFuncDrv *ds, real factor,  const DftDensProp* dp)
 {
-    DiracFunctional.first(ds, factor, dp);
+    SlaterFunctional.first(ds, factor, dp);
     VWNFunctional  .first(ds, factor, dp);
 }
 
 static void
 lda_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
 {
-    DiracFunctional.second(ds, factor, dp);
+    SlaterFunctional.second(ds, factor, dp);
     VWNFunctional  .second(ds, factor, dp);
 }
 
 static void
 lda_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
 {
-    DiracFunctional.third(ds, factor, dp);
+    SlaterFunctional.third(ds, factor, dp);
     VWNFunctional  .third(ds, factor, dp);
 }
 
 static int
 ldagauss_read(const char* conf_line)
 {
-    gga_fun_list = add_functional(gga_fun_list, &DiracFunctional, 1.0);
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, 1.0);
     gga_fun_list = add_functional(gga_fun_list, &VWN3Functional,  1.0);
     dft_set_hf_weight(0);
     return 1;
@@ -294,7 +294,7 @@ ldagauss_read(const char* conf_line)
 static int
 blyp_read(const char* conf_line)
 {
-    gga_fun_list = add_functional(gga_fun_list, &DiracFunctional, 1.0);
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, 1.0);
     gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional, 1.0);
     gga_fun_list = add_functional(gga_fun_list, &LYPFunctional,   1.0);
     dft_set_hf_weight(0);
@@ -305,7 +305,7 @@ static int
 b3lyp_read(const char* conf_line)
 {
     static const real lypw = 0.81, dirw = 0.8;
-    gga_fun_list = add_functional(gga_fun_list, &DiracFunctional,  dirw);
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  dirw);
     gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional,  0.72);
     gga_fun_list = add_functional(gga_fun_list, &LYPFunctional,    lypw);
     gga_fun_list = add_functional(gga_fun_list, &VWNFunctional,    1-lypw);
@@ -317,7 +317,7 @@ static int
 b3lypgauss_read(const char* conf_line)
 {
     static const real lypw = 0.81, dirw = 0.8;
-    gga_fun_list = add_functional(gga_fun_list, &DiracFunctional,  dirw);
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  dirw);
     gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional,  0.72);
     gga_fun_list = add_functional(gga_fun_list, &LYPFunctional,    lypw);
     gga_fun_list = add_functional(gga_fun_list, &VWN3Functional,   1-lypw);
@@ -328,7 +328,7 @@ b3lypgauss_read(const char* conf_line)
 static int
 bp86_read(const char* conf_line)
 {
-    gga_fun_list = add_functional(gga_fun_list, &DiracFunctional, 1.0);
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, 1.0);
     gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional, 1.0);
     gga_fun_list = add_functional(gga_fun_list, &P86cFunctional,  1.0);
     dft_set_hf_weight(0);
@@ -339,7 +339,7 @@ static int
 b3p86_read(const char* conf_line)
 {
     static const real lypw = 0.81, dirw = 0.8;
-    gga_fun_list = add_functional(gga_fun_list, &DiracFunctional,  dirw);
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  dirw);
     gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional,  0.72);
     gga_fun_list = add_functional(gga_fun_list, &P86cFunctional,   lypw);
     gga_fun_list = add_functional(gga_fun_list, &VWNFunctional,    1-lypw);
@@ -351,7 +351,7 @@ static int
 kt1_read(const char* conf_line)
 {
     static const real ktgam = -0.006;
-    gga_fun_list = add_functional(gga_fun_list, &DiracFunctional, 1.0);
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, 1.0);
     gga_fun_list = add_functional(gga_fun_list, &KTFunctional,    ktgam);
     gga_fun_list = add_functional(gga_fun_list, &VWNFunctional,   1.0);
     dft_set_hf_weight(0);
@@ -363,7 +363,7 @@ kt2_read(const char* conf_line)
 {   
     static const real dirw = 1.07173, vwnw = 0.576727; 
     static const real ktgam = -0.006;
-    gga_fun_list = add_functional(gga_fun_list, &DiracFunctional, dirw);
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, dirw);
     gga_fun_list = add_functional(gga_fun_list, &KTFunctional,    ktgam);
     gga_fun_list = add_functional(gga_fun_list, &VWNFunctional,   vwnw);
     dft_set_hf_weight(0);
@@ -375,7 +375,7 @@ kt3_read(const char* conf_line)
 {
     static const real dirw = 1.092, lypw = 0.864409, optw = -0.925452;
     static const real ktgam = -0.004;
-    gga_fun_list = add_functional(gga_fun_list, &DiracFunctional, dirw);
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, dirw);
     gga_fun_list = add_functional(gga_fun_list, &KTFunctional,    ktgam);
     gga_fun_list = add_functional(gga_fun_list, &LYPFunctional,   lypw);
     gga_fun_list = add_functional(gga_fun_list, &OPTXFunctional, optw);
@@ -387,7 +387,7 @@ static int
 olyp_read(const char* conf_line)
 {
     static const real optkw = -1.43169, dirw = 1.05151;
-    gga_fun_list = add_functional(gga_fun_list, &DiracFunctional, dirw);
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, dirw);
     gga_fun_list = add_functional(gga_fun_list, &OPTXFunctional, optkw);
     gga_fun_list = add_functional(gga_fun_list, &LYPFunctional,   1.0);
     dft_set_hf_weight(0);

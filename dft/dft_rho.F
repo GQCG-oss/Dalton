@@ -47,9 +47,8 @@ C
      &           DP5 = 0.5D0)
 #include <inforb.h>
 C
-      DIMENSION DMAT(NBAST,NBAST), GSO(NBAST,NTYPSO), DMAGAO(NBAST)
+      DIMENSION DMAT(NBAST,NBAST), GSO(NBAST,*), DMAGAO(NBAST)
 C
-#include <dftinf.h>
 #include <symmet.h>
 C
 C
@@ -130,10 +129,9 @@ c     computes  <o|dmat|o'>
 c     i.e rho_a where dmat is a density matrix.
 #include <implicit.h>
 #include <inforb.h>
-#include <dftinf.h>
 #include <maxorb.h>
 #include <shells.h>
-      DIMENSION DMAT(NBAST,NBAST), GAO(NVCLEN,NBAST,NTYPSO)
+      DIMENSION DMAT(NBAST,NBAST), GAO(NVCLEN,NBAST,*)
       DIMENSION NBLOCKS(NSYM), IBLOCKS(2,LDAIB,NSYM), RHO(NVCLEN)
       DIMENSION TMP(NVCLEN,NBAST)
 #include <priunit.h>
@@ -176,8 +174,7 @@ c     but it does not use the simplification that the DMAT is symmetric.
      &                              LDAIB,TMP,NVCLEN,RHO)
 #include <implicit.h>
 #include <inforb.h>
-#include <dftinf.h>
-      DIMENSION DMAT(NBAST,NBAST), GAO(NVCLEN,NBAST,NTYPSO)
+      DIMENSION DMAT(NBAST,NBAST), GAO(NVCLEN,NBAST,*)
       DIMENSION NBLOCKS(NSYM), IBLOCKS(2,LDAIB,NSYM), RHO(NVCLEN)
       DIMENSION TMP(NVCLEN,NBAST)
 #include <priunit.h>
@@ -220,8 +217,7 @@ c     alpha/beta density.
 c     assert(NTYPSO>=NRHO)
 #include <implicit.h>
 #include <inforb.h>
-#include <dftinf.h>
-      DIMENSION DMAT(NBAST,NBAST), GAO(NVCLEN,NBAST,NTYPSO)
+      DIMENSION DMAT(NBAST,NBAST), GAO(NVCLEN,NBAST,*)
       DIMENSION NBLOCKS(NSYM),IBLOCKS(2,LDAIB,NSYM)
       DIMENSION RHO(NVCLEN), GRAD(3,NVCLEN),TMP(NVCLEN,NBAST)
 #include <priunit.h>
@@ -266,8 +262,7 @@ c     GRAD(2:4,:) contains gradient components.
 c     assert(NTYPSO>=NRHO)
 #include <implicit.h>
 #include <inforb.h>
-#include <dftinf.h>
-      DIMENSION DMAT(NBAST,NBAST), GAO(NVCLEN,NBAST,NTYPSO)
+      DIMENSION DMAT(NBAST,NBAST), GAO(NVCLEN,NBAST,*)
       DIMENSION NBLOCKS(NSYM),IBLOCKS(2,LDAIB,NSYM), GRAD(4,NVCLEN)
       DIMENSION TMP(NVCLEN,NBAST)
 #include <priunit.h>

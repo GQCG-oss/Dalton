@@ -31,8 +31,6 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-#include <single.h>
-C
 c     DFTINI
 C     intialize DFTCOM common block
 c /* deck dftini */

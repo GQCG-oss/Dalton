@@ -1,3 +1,10 @@
+2004-11-23  Pawel Salek 
+
+	* dft/Makefile: rename Dirac to Slater to follow other programs.
+	* dft/fun-{gga,cam-b3lyp,lb94}.c:
+	* dft/functionals.[hc], general.c: associated changes.
+	* dft/dft_{aux,int,ksm,rho}.F: remove unused common blocks.
+
 2004-11-13  Pawel Salek 
 
 	* configure: prefer ifc over g77.

@@ -2,7 +2,7 @@
 /* general.c:
    (c) Pawel Salek, pawsa@theochem.kth.se, 2001-08-02
    NOTES: Adding new functionals:
-   a. use fun-dirac.c as template.
+   a. use fun-slater.c as template.
    b. add 'extern Functional MyFunctional;' to functionals.h
    c. add '&MyFunctional' to available_functionals below.
    d. have a beer. Or some crackers, if you prefer.
