@@ -29,11 +29,14 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: sirinp.F,v 1.3 2001-03-20 07:47:49 vebjornb Exp $
+C$Id: sirinp.F,v 1.4 2001-03-22 14:53:40 hjj Exp $
 C
 #include <single.h>
 #ifdef UNDEF
 $Log: not supported by cvs2svn $
+Revision 1.3  2001/03/20 07:47:49  vebjornb
+Changed all references to the old f21-file to "SIRIUS.RST"
+
 Revision 1.2  2001/02/12 18:17:57  vebjornb
 First commit after CC merge
 
@@ -382,20 +385,14 @@ C
          NORB(I) = NBAS(I)
  1670 CONTINUE
 C
-      IF (INPPRC) GOTO 124
-C
 C     *********************************************
 C     ***** SET DEFAULT VALUES FOR INPUT DATA *****
 C     *********************************************
 C
-C     Section designations below correspond to the new standard
-C     Sirius input.
-C
-C     First set maximum dimensions and the like:
-C
-#include <sirdefaults.h>
 C
 C     Jump again if processed earlier
+C
+      IF (INPPRC) GOTO 124
 C
       IREST = 0
 C     IREST = 1 for a restart run
@@ -421,7 +418,7 @@ C
       DOCI  = .FALSE.
       DOMC  = .FALSE.
       DORSP = RNRESP
-      ABAIPH = RNABAC
+      ABAIPH= RNABAC
 C     ... It's followed by an abacus run
       CORHOL= .FALSE.
       CORRLX= .FALSE.
@@ -621,6 +618,7 @@ C
       ITRLVL = -6789
       ITRFIN = -6789
       IPRTRA = -1
+C     MWORK is defined in block data SBDDIM
 C
       USEDRC= .FALSE.
 C     ... USEDRC may be reset by transformation module

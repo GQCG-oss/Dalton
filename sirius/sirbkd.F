@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: sirbkd.F,v 1.1.1.1 2001-02-08 13:33:31 hjj Exp $
+C$Id: sirbkd.F,v 1.2 2001-03-22 14:53:40 hjj Exp $
 C
 #include <single.h>
 C  /* Deck sbdorb */
@@ -78,4 +78,21 @@ C
 #include <implicit.h>
 #include <inftra.h>
       DATA NEWTRA /.FALSE./
+      END
+C  /* Deck sbddim */
+      BLOCK DATA SBDDIM
+C 010321 hjaaj
+C Initialize variables in /INFDIM/
+C
+#include <implicit.h>
+#include <infdim.h>
+      DATA MWORK /8 000 000/
+C
+C     Re MWORK:
+C     default 8 mill. words for number of simultaneous AO distributions
+C     in "old" integral transformation - defined for SORTA. The size
+C     should not be bigger than resident memory, to avoid paging.
+C     If MWORK too big, then SORTA may define more simult. dist. than
+C     can be treated at later calls to TRACTL !!! /Mar 2001 hjaaj
+C
       END

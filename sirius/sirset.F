@@ -29,12 +29,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: sirset.F,v 1.3 2001-02-16 13:26:25 hjj Exp $
+C$Id: sirset.F,v 1.4 2001-03-22 14:53:41 hjj Exp $
 C
 #include <single.h>
 C
 #ifdef REVISION_LOG
 $Log: not supported by cvs2svn $
+Revision 1.3  2001/02/16 13:26:25  hjj
+improved comment about RASWOP change
+
 Revision 1.2  2001/02/16 13:01:28  hjj
 bugfix in RASWOP: the old code gave wrong active-active rotations in
 the very special case of RAS3 really being a CAS space, but RAS1 not
@@ -67,7 +70,7 @@ C
 C  2-Jan-1989 Hans Joergen Aa. Jensen
 C
 C  input/output unit numbers and buffer sizes
-C  if (.not. noopen) open luinp and luerr
+C  .. unit numbers are now defined with GPOPEN
 C  initialize IROW
 C
 #include <implicit.h>
@@ -78,13 +81,15 @@ C ... for calculating LBINFO
 C
 C Used from common blocks:
 C   INFIND : IROW(*)
+C   INFDIM : LBUFMA
+C   INFTAP : LB*
 C
 #include <maxash.h>
 #include <maxorb.h>
 #include <infind.h>
 #include <infdim.h>
 #include <inftap.h>
-#include <infpri.h>
+C#include <infpri.h>
 C
       CALL QENTER('SIRINI')
 C
@@ -118,9 +123,8 @@ C     LBONEL defined in RDONEL, if LBONEL .lt. 0 (900221)
 C     MAERKE 900108-hjaaj: LBXXXX should always be defined in routines
 C
       LBINFO=LDINFO+LIINFO/IRAT
-      LBSYMB=600
       LBONEL=600
-      LBUFMA=MAX(LBSYMB,LBONEL)
+      LBUFMA=LBONEL
 C
 C     loop to set up triangular indexing array ...
 C
@@ -131,7 +135,6 @@ C
       DO 400 I = 1,(LIROW-1)
          IROW(I+1) = IROW(I) + I
   400 CONTINUE
-C
 C
       CALL QEXIT('SIRINI')
       RETURN

@@ -29,12 +29,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abaset.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: abaset.F,v 1.2 2001-03-22 14:53:41 hjj Exp $
 C
 #include <single.h>
 #ifdef UNDEF
 /* Comdeck log */
 $Log: not supported by cvs2svn $
+Revision 1.1.1.1  2001/02/08 13:33:19  hjj
+*** Dalton Master Version *** cvs started 8-Feb-2001.
+
 Revision 1.1.1.1  2001/01/15 13:53:47  vebjornb
 Dalton 1.2
 
@@ -470,8 +473,7 @@ C
 C
 C Define remaining parameters for /INFDIM/:
 C
-#include <sirdefaults.h>
-      MAXRL  = 100
+      MAXRL  = 120
 C
 C
 C
