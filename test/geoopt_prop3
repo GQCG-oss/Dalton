@@ -125,7 +125,7 @@ CTRL[4]=1
 ERROR[4]="INITIAL HF ENERGY NOT CORRECT"
 
 # MCSCF energy, 1st iteration:
-CRIT1=`$GREP "MP2 second order energy \: * \-224\.96391384[5-6][0-9]" $log | wc -l`
+CRIT1=`$GREP "MP2 second order energy \: * \-224\.96391384.[0-9]" $log | wc -l`
 CRIT2=`$GREP "Final MCSCF energy\: * \-224\.5185239102[0-9][0-9]" $log | wc -l`
 TEST[5]=`expr $CRIT1  \+ $CRIT2`
 CTRL[5]=2
