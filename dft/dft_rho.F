@@ -333,10 +333,7 @@ c
       ISHLEN = 0
       NBLCNT = 0
       IPREV = -1111
-c     pawsa: Include also orbitals active in nearest neigbour boxes:
-c     critical for heavy atoms. Check out eg. TeC2H4 I have a feeling it
-c     should not be necessary - perhaps I am masking another bug here?
-      CELLDG = CELLSZ*SQRT(2D0)
+      CELLDG = CELLSZ*0.5D0*SQRT(3D0)
       DO 10 ISHELA=1,KMAX
          ICENT = NCENT(ISHELA)
          MULCNT = ISTBNU(ICENT)
@@ -348,9 +345,9 @@ c
                CORX = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
                CORY = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
                CORZ = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
-               PX = center(1)-CENT(ISHELA,1,1)
-               PY = center(2)-CENT(ISHELA,2,1)
-               PZ = center(3)-CENT(ISHELA,3,1)
+               PX = center(1)-CORX
+               PY = center(2)-CORY
+               PZ = center(3)-CORZ
                DST = SQRT(PX*PX + PY*PY + PZ*PZ)
 c              RSHEL2(ISHELA)
                IF(DST.LE.RSHEL(ISHELA)+CELLDG) THEN
@@ -375,7 +372,7 @@ c     &        SQRT(RSHEL2(ISHELA))
          END DO
 c         print "('shell',2I3,' at ',3F6.2,' rad. ',F6.2,' rejected')",
 c     &        ISHELA,ICENT,CORD(1,ICENT),CORD(2,ICENT),CORD(3,ICENT),
-c     &        SQRT(RSHEL2(ISHELA))
+c     &        RSHEL(ISHELA)
  10   END DO
 c      print "('cell at:',3F15.5,' blocks:',I3)", CENTER,NBLCNT
 c      print "(8('[',2I3,']'))", ((IBLCKS(I,J),I=1,2),J=1,NBLCNT)
