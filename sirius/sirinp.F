@@ -2250,7 +2250,7 @@ C *** Option 1 >FIELD TERM<   Field dependent Hamiltonian term
          NFIELD = NFIELD + 1
          IF (NFIELD .LE. MXFELT) THEN
             READ(LUCMD,*) EFIELD(NFIELD)
-            READ(LUCMD,'(1X,A8)') LFIELD(NFIELD)
+            READ(LUCMD,*) LFIELD(NFIELD)
          ELSE
             INPERR = INPERR + 1
             WRITE (LUPRI,'(/A/A,I5/)')
@@ -3516,8 +3516,8 @@ C
          WRITE(LUPRI,'(/2A)')
      &   WORD1,' INPUT ERROR: .LOCALI specified more than once'
       END IF
-      READ (LUCMD,'(A12)') REWORD
-      RWORD = REWORD(2:7)
+      READ (LUCMD,*) RWORD
+      REWORD(2:7) = RWORD
       IF (RWORD .EQ. 'BOYLOC') THEN
          BOYORB = .TRUE.
       ELSE IF (RWORD .EQ. 'PIPLOC') THEN
