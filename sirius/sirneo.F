@@ -2417,7 +2417,17 @@ C
 C        CALL NEORED (ICTL,NCSIM,NOSIM,BVECS,SVECS,BETVAL,G,
 C    *                IBNDX,NREDL,REDL,EVAL,EVEC,LBVECS)
       END IF
-      IF (ABS(EVEC(1,ISTATE)) .LT. THRZER) GO TO 910
+      IF (ABS(EVEC(1,ISTATE)) .LT. THRZER) THEN
+         IF (ISTATE.LT.NREDL) THEN
+            CALL DSWAP(NREDL,EVEC(1,ISTATE),1,EVEC(1,ISTATE+1),1)
+            EVALX = EVAL(ISTATE)
+            EVAL(ISTATE) = EVAL(ISTATE+1)
+            EVAL(ISTATE+1) = EVALX
+            WRITE(LUPRI,'(/A)') 'UPDBET: '//
+     &      'Symmetry break, will try to switch ISTATE and ISTATE+1 '
+         END IF
+         IF (ABS(EVEC(1,ISTATE)) .LT. THRZER) GO TO 910
+      END IF
       RBETL = SQRT(EVEC(1,ISTATE) ** (-2) - D1) / BETL
       WRK(ITB,1) = BETL
       WRK(ITB,2) = RBETL
@@ -2507,7 +2517,17 @@ C
      *                IDUMMY,NREDL,REDL,EVAL,EVEC,LWRK1)
 C        CALL NEORED (ICTL,NCSIM,NOSIM,BVECS,SVECS,BETVAL,G,
 C    *                IBNDX,NREDL,REDL,EVAL,EVEC,LBVECS)
-         IF (ABS(EVEC(1,ISTATE)) .LT. THRZER) GO TO 910
+         IF (ABS(EVEC(1,ISTATE)) .LT. THRZER) THEN
+            IF (ISTATE.LT.NREDL) THEN
+               CALL DSWAP(NREDL,EVEC(1,ISTATE),1,EVEC(1,ISTATE+1),1)
+               EVALX = EVAL(ISTATE)
+               EVAL(ISTATE) = EVAL(ISTATE+1)
+               EVAL(ISTATE+1) = EVALX
+               WRITE(LUPRI,'(/A)') 'UPDBET: '//
+     &         'Symmetry break, will try to switch ISTATE and ISTATE+1'
+            END IF
+            IF (ABS(EVEC(1,ISTATE)) .LT. THRZER) GO TO 910
+         END IF
          RBETL = SQRT(EVEC(1,ISTATE) ** (-2) - D1) / BETL
          WRK(ITB,1) = BETL
          WRK(ITB,2) = RBETL
@@ -2538,7 +2558,17 @@ C
      *             0,NREDL,REDL,EVAL,EVEC,LWRK1)
 C     CALL NEORED (ICTL,NCSIM,NOSIM,BVECS,SVECS,BETVAL,G,
 C    *             IBNDX,NREDL,REDL,EVAL,EVEC,LBVECS)
-      IF (ABS(EVEC(1,ISTATE)) .LT. THRZER) GO TO 910
+      IF (ABS(EVEC(1,ISTATE)) .LT. THRZER) THEN
+         IF (ISTATE.LT.NREDL) THEN
+            CALL DSWAP(NREDL,EVEC(1,ISTATE),1,EVEC(1,ISTATE+1),1)
+            EVALX = EVAL(ISTATE)
+            EVAL(ISTATE) = EVAL(ISTATE+1)
+            EVAL(ISTATE+1) = EVALX
+            WRITE(LUPRI,'(/A)') 'UPDBET: '//
+     &      'Symmetry break, will try to switch ISTATE and ISTATE+1 '
+         END IF
+         IF (ABS(EVEC(1,ISTATE)) .LT. THRZER) GO TO 910
+      END IF
       RBETL  = SQRT(EVEC(1,ISTATE) ** (-2) - D1) / BETL
       WRK(ITB,1) = BETL
       WRK(ITB,2) = RBETL
