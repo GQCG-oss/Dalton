@@ -312,7 +312,6 @@ C
                CALL CC_LAKSIB(LABELA,ISYMA,FREQA,LRLXA,
      *                        LABELB,ISYMB,FREQB,LRLXB,
      *                        WORK(KPRP2),WORK(KEND1),LEND1)
-     *
 C
             ENDIF
 
