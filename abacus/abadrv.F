@@ -234,6 +234,7 @@ C
       END IF
       CALL GETTIM(TIMDIP,TIMDUM)
       TIMDIP = TIMDIP - TIMSTR
+      IF (LUDA1 .GT. 0) CALL GPCLOSE(LUDA1,'DELETE')
 C
 C     ******************************************
 C     ***** Solve MCSCF response equations *****

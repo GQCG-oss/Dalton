@@ -1038,9 +1038,6 @@ C
 C
   100 CONTINUE
 C
-C     We do not need ABACUS.DA1 anymore
-C
-      IF (LUDA1 .GT. 0) CALL GPCLOSE(LUDA1,'DELETE')
       IF ((MCD .OR. VERDET) .AND. .NOT. NOLOND) 
      &     CALL GPCLOSE(LUFDC,'KEEP')
 C
