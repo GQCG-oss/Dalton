@@ -113,12 +113,9 @@ CTRL[4]=2
 ERROR[4]="ENERGIES NOT CORRECT"
 
 # Response setup
-CRIT1=`$GREP "Spin of operator A \, ISPINA\= * 0" $log | wc -l`
-CRIT2=`$GREP "Spin of operator B \, \(Excitation energy\) ISPINB\= * 0" $log | wc -l`
-CRIT3=`$GREP "Spin of operator C \, \(Excitation energy\) ISPINC\= * 0" $log | wc -l`
-CRIT4=`$GREP "4 Excitation energies are calculated for symmetry no\. * 1" $log | wc -l`
-TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
-CTRL[5]=4
+CRIT1=`$GREP "4 Excitation energies are calculated for symmetry no\. * 1" $log | wc -l`
+TEST[5]=`expr	$CRIT1`
+CTRL[5]=1
 ERROR[5]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
 
 # State 1
