@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: herdrv.F,v 1.12 2001-05-16 07:33:14 ruud Exp $
+C$Id: herdrv.F,v 1.13 2001-05-18 08:30:02 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -1659,7 +1659,7 @@ C
                CALL TIMER('START ',TIMSTR,TIMEND)
                CALL PR1INT('THETA  ',WORK,LWORK,IDUMMY,
      &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('THETA',TIMSTR,TIMEND)
+               CALL TIMER('THETA ',TIMSTR,TIMEND)
                CALL FLSHFO(LUPRI)
             END IF
 C

@@ -1281,7 +1281,7 @@ C
       DO 1000 IL = 1,NXGRST
          IE = IXGRST(IL) 
 CCH
-         CALL CC_FTRAN('LE',IE,'RE',IE,WORK,LWORK)
+         CALL CC_FTRAN('LE ',IE,'RE ',IE,WORK,LWORK)
 CCH      CALL CC_FGL('LE',IE,'RE',IE,'--',0,.TRUE.,WORK,LWORK)
 CCH
          KVEC  = 1
@@ -1350,7 +1350,7 @@ C
         IR   = IFN2(ILN2)
 
 CCH
-        CALL CC_FTRAN('LE',IL,'RE',IR,WORK,LWORK)
+        CALL CC_FTRAN('LE ',IL,'RE ',IR,WORK,LWORK)
 CCH     CALL CC_FGL('LE',IL,'RE',IR,'--',0,.TRUE.,WORK,LWORK)
 CCH
         K1    = 1
