@@ -369,6 +369,7 @@ done
 # final result:
 #########################################################################
 
+myprint ""
 myprint "#####################################################################"
 myprint "                              Summary"
 myprint "#####################################################################"
@@ -382,7 +383,7 @@ if [ "$benchmark" = "true" ]; then
           namelength=`expr length ${testlist[$ind]}`
           spclength=`expr 32 \- $namelength`
           spc=`expr substr "$emptystring" 1 $spclength`
-          myprint "\t${testlist[$ind]}$spc${timelist[$ind]}"
+          myprint "${testlist[$ind]}$spc${timelist[$ind]}"
           ind=`expr $ind \+ 1`
         done
         echo
