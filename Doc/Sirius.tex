@@ -88,7 +88,7 @@ keyword.
 order. In this chapter they are grouped alphabetically, although
 the short presentation below gather them according to purpose.
 
-\ifsolvent
+%\ifsolvent
 The following two input groups are used to modify the
 molecular environment by adding field-dependent
 terms in the Hamiltonian and by invoking
@@ -98,12 +98,12 @@ effects, respectively:
 Section~\ref{ref-haminp} \Sec{HAMILTONIAN}
 
 Section~\ref{ref-solinp} \Sec{SOLVENT}
-\else
-The following input group describes additional field-dependent
-terms in the Hamiltonian :
-
-Section~\ref{ref-haminp} \Sec{HAMILTONIAN}
-\fi
+%\else
+%The following input group describes additional field-dependent
+%terms in the Hamiltonian :
+%
+%Section~\ref{ref-haminp} \Sec{HAMILTONIAN}
+%\fi
 
 \noindent
 The next input group specifies the configurations included
@@ -1305,9 +1305,13 @@ Degenerate orbitals will be averaged and the "super
 symmetry"\index{supersymmetry} will be enforced in the orbitals.
 The use of "super symmetry" may be deactivated with the
 \quotekw{\Key{NOSUPSYM}} keyword, for example in finite field
-calculations where the field lowers the symmetry. \ifabacus For
+calculations where the field lowers the symmetry.
+%\ifabacus
+For
 \aba\ and \resp\ calculations, the "super symmetry" is deactivated
-unless explicitly enforced with \Key{SUPSYM}. \fi The initial
+unless explicitly enforced with \Key{SUPSYM}.
+%\fi
+The initial
 orbitals must be symmetry orbitals, and the super symmetry
 analysis is performed on the kinetic energy matrix in this basis.
 The \quotekw{.THRSSY} option is used to define when the kinetic
@@ -1468,7 +1472,7 @@ To control the printing of output.
 
 
 
-\ifsolvent
+%\ifsolvent
 \pagebreak[3]
 \subsection{\label{ref-solinp}\Sec{SOLVENT}}
 
@@ -1519,7 +1523,7 @@ will activate this model.
 One and only one of \quotekw{\Key{DIELECTRIC CONSTANT}},
 \quotekw{\Key{INERSINITIAL}}, and \quotekw{\Key{INERSFINAL}} must be
 specified.
-\fi % end of \ifsolvent
+%\fi % end of \ifsolvent
 
 
 

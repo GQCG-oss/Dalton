@@ -1711,8 +1711,8 @@
 \indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{163}
 \indexentry{NOSUP@{\normalfont  \ttfamily  {.NOSUP}}}{163}
 \indexentry{*INTEGRALS@{\normalfont  \ttfamily  {**INTEGRALS}}}{163}
-\indexentry{THRESH@{\normalfont  \ttfamily  {.THRESH}}}{163}
-\indexentry{\sc  molecule}{163}
+\indexentry{THRESH@{\normalfont  \ttfamily  {.THRESH}}}{164}
+\indexentry{\sc  molecule}{164}
 \indexentry{TWOINT@{\normalfont  \ttfamily  {*TWOINT}}}{164}
 \indexentry{two-electron integral}{164}
 \indexentry{TWOINT@{\normalfont  \ttfamily  {*TWOINT}}}{164}
@@ -1727,1201 +1727,1183 @@
 \indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{164}
 \indexentry{NOTWO@{\normalfont  \ttfamily  {.NOTWO}}}{164}
 \indexentry{*INTEGRALS@{\normalfont  \ttfamily  {**INTEGRALS}}}{164}
-\indexentry{SOFOCK@{\normalfont  \ttfamily  {.SOFOCK}}}{164}
-\indexentry{THRFAC@{\normalfont  \ttfamily  {.THRFAC}}}{164}
-\indexentry{TIME@{\normalfont  \ttfamily  {.TIME}}}{164}
-\indexentry{\sc  molecule}{165}
-\indexentry{geometry!Cartesian coordinate input}{165}
-\indexentry{Cartesian coordinate input}{165}
-\indexentry{geometry!Z-matrix input}{165}
-\indexentry{Z-matrix input}{165}
-\indexentry{\sc  molecule}{165}
-\indexentry{\sc  molecule}{165}
-\indexentry{Cartesian coordinate input}{165}
-\indexentry{Z-matrix input}{165}
-\indexentry{basis set!library}{165}
-\indexentry{ANO basis set}{165}
-\indexentry{basis set!ANO}{165}
-\indexentry{NQvD basis set}{165}
-\indexentry{basis set!NQvD}{165}
-\indexentry{EMSL basis set library service}{165}
-\indexentry{basis set!EMSL library}{165}
-\indexentry{NQvD basis set}{165}
-\indexentry{basis set!NQvD}{165}
-\indexentry{ANO basis set}{165}
-\indexentry{basis set!ANO}{165}
-\indexentry{sadlej basis set}{165}
-\indexentry{basis set!sadlej}{165}
-\indexentry{\sc  molecule}{165}
+\indexentry{SOFOCK@{\normalfont  \ttfamily  {.SOFOCK}}}{165}
+\indexentry{THRFAC@{\normalfont  \ttfamily  {.THRFAC}}}{165}
+\indexentry{TIME@{\normalfont  \ttfamily  {.TIME}}}{165}
+\indexentry{\sc  molecule}{166}
+\indexentry{geometry!Cartesian coordinate input}{166}
+\indexentry{Cartesian coordinate input}{166}
+\indexentry{geometry!Z-matrix input}{166}
+\indexentry{Z-matrix input}{166}
+\indexentry{\sc  molecule}{166}
+\indexentry{\sc  molecule}{166}
 \indexentry{Cartesian coordinate input}{166}
 \indexentry{Z-matrix input}{166}
 \indexentry{basis set!library}{166}
+\indexentry{ANO basis set}{166}
+\indexentry{basis set!ANO}{166}
+\indexentry{NQvD basis set}{166}
+\indexentry{basis set!NQvD}{166}
+\indexentry{EMSL basis set library service}{166}
+\indexentry{basis set!EMSL library}{166}
+\indexentry{NQvD basis set}{166}
+\indexentry{basis set!NQvD}{166}
+\indexentry{ANO basis set}{166}
+\indexentry{basis set!ANO}{166}
+\indexentry{sadlej basis set}{166}
+\indexentry{basis set!sadlej}{166}
 \indexentry{\sc  molecule}{166}
-\indexentry{\sc  molecule}{166}
-\indexentry{symmetry}{166}
-\indexentry{symmetry-distinct atom}{166}
-\indexentry{symmetry!generator}{166}
-\indexentry{symmetry!group}{166}
-\indexentry{tetrahedrane}{166}
-\indexentry{INTGRL}{166}
-\indexentry{Cartesian basis function}{166}
-\indexentry{basis function!Cartesian}{166}
-\indexentry{spherical basis function}{166}
-\indexentry{basis function!spherical}{166}
-\indexentry{charge of molecule}{166}
-\indexentry{HF occupation}{166}
-\indexentry{Hartree--Fock occupation}{166}
-\indexentry{symmetry!generator}{166}
-\indexentry{symmetry!automatic detection}{166}
-\indexentry{symmetry!generator}{167}
-\indexentry{reflection}{167}
-\indexentry{rotation}{167}
-\indexentry{inversion}{167}
-\indexentry{{\AA}ngstr\"{o}m}{167}
+\indexentry{Cartesian coordinate input}{167}
+\indexentry{Z-matrix input}{167}
 \indexentry{basis set!library}{167}
-\indexentry{HF}{167}
-\indexentry{MP2}{167}
-\indexentry{SCF}{167}
-\indexentry{Hartree--Fock}{167}
-\indexentry{M{\o}ller-Plesset!second-order}{167}
+\indexentry{\sc  molecule}{167}
+\indexentry{\sc  molecule}{167}
+\indexentry{symmetry}{167}
+\indexentry{symmetry-distinct atom}{167}
+\indexentry{symmetry!generator}{167}
+\indexentry{symmetry!group}{167}
+\indexentry{tetrahedrane}{167}
+\indexentry{INTGRL}{167}
+\indexentry{Cartesian basis function}{167}
+\indexentry{basis function!Cartesian}{167}
+\indexentry{spherical basis function}{167}
+\indexentry{basis function!spherical}{167}
+\indexentry{charge of molecule}{167}
 \indexentry{HF occupation}{167}
 \indexentry{Hartree--Fock occupation}{167}
+\indexentry{symmetry!generator}{167}
 \indexentry{symmetry!automatic detection}{167}
-\indexentry{SYMTHR@{\normalfont  \ttfamily  {.SYMTHR}}}{167}
-\indexentry{READIN@{\normalfont  \ttfamily  {*READIN}}}{167}
-\indexentry{MOLPRI@{\normalfont  \ttfamily  {.MOLPRI}}}{168}
-\indexentry{READIN@{\normalfont  \ttfamily  {*READIN}}}{168}
-\indexentry{MCSCF}{168}
 \indexentry{symmetry!generator}{168}
-\indexentry{Cartesian coordinate input}{168}
+\indexentry{reflection}{168}
+\indexentry{rotation}{168}
+\indexentry{inversion}{168}
+\indexentry{{\AA}ngstr\"{o}m}{168}
+\indexentry{basis set!library}{168}
+\indexentry{HF}{168}
+\indexentry{MP2}{168}
+\indexentry{SCF}{168}
+\indexentry{Hartree--Fock}{168}
+\indexentry{M{\o}ller-Plesset!second-order}{168}
+\indexentry{HF occupation}{168}
+\indexentry{Hartree--Fock occupation}{168}
+\indexentry{symmetry!automatic detection}{168}
+\indexentry{SYMTHR@{\normalfont  \ttfamily  {.SYMTHR}}}{168}
+\indexentry{READIN@{\normalfont  \ttfamily  {*READIN}}}{168}
+\indexentry{MOLPRI@{\normalfont  \ttfamily  {.MOLPRI}}}{169}
+\indexentry{READIN@{\normalfont  \ttfamily  {*READIN}}}{169}
+\indexentry{MCSCF}{169}
+\indexentry{symmetry!generator}{169}
 \indexentry{Cartesian coordinate input}{169}
-\indexentry{Z-matrix input}{169}
-\indexentry{geometry!Z-matrix input}{169}
-\indexentry{charge of atom}{169}
-\indexentry{symmetry-distinct atom}{169}
-\indexentry{shell of basis functions}{169}
-\indexentry{memory}{169}
-\indexentry{performance of integral program}{169}
-\indexentry{primitive basis function}{170}
-\indexentry{contracted basis function}{170}
-\indexentry{orbital exponent}{171}
-\indexentry{contraction coefficient}{171}
-\indexentry{geometry!Z-matrix input}{171}
-\indexentry{Z-matrix input}{171}
-\indexentry{Z-matrix input}{171}
-\indexentry{charge of atom}{172}
-\indexentry{basis set!library}{172}
-\indexentry{BASIS}{172}
-\indexentry{ATOMBASIS}{172}
-\indexentry{\sc  molecule}{172}
-\indexentry{locally dense basis set}{173}
-\indexentry{ANO basis set}{173}
-\indexentry{basis set!ANO}{173}
-\indexentry{NQvD basis set}{173}
-\indexentry{basis set!NQvD}{173}
+\indexentry{Cartesian coordinate input}{170}
+\indexentry{Z-matrix input}{170}
+\indexentry{geometry!Z-matrix input}{170}
+\indexentry{charge of atom}{170}
+\indexentry{symmetry-distinct atom}{170}
+\indexentry{shell of basis functions}{170}
+\indexentry{memory}{170}
+\indexentry{performance of integral program}{170}
+\indexentry{primitive basis function}{171}
+\indexentry{contracted basis function}{171}
+\indexentry{orbital exponent}{172}
+\indexentry{contraction coefficient}{172}
+\indexentry{geometry!Z-matrix input}{172}
+\indexentry{Z-matrix input}{172}
+\indexentry{Z-matrix input}{172}
+\indexentry{charge of atom}{173}
 \indexentry{basis set!library}{173}
-\indexentry{polarization function}{173}
+\indexentry{BASIS}{173}
 \indexentry{ATOMBASIS}{173}
-\indexentry{polarization function}{173}
-\indexentry{ANO basis set}{174}
-\indexentry{basis set!ANO}{174}
+\indexentry{\sc  molecule}{173}
+\indexentry{locally dense basis set}{174}
 \indexentry{ANO basis set}{174}
 \indexentry{basis set!ANO}{174}
 \indexentry{NQvD basis set}{174}
 \indexentry{basis set!NQvD}{174}
-\indexentry{MOLPRI@{\normalfont  \ttfamily  {.MOLPRI}}}{175}
-\indexentry{sadlej basis set}{175}
+\indexentry{basis set!library}{174}
+\indexentry{polarization function}{174}
+\indexentry{ATOMBASIS}{174}
+\indexentry{polarization function}{174}
 \indexentry{ANO basis set}{175}
-\indexentry{NQvD basis set}{175}
-\indexentry{basis set!sadlej}{175}
 \indexentry{basis set!ANO}{175}
+\indexentry{ANO basis set}{175}
+\indexentry{basis set!ANO}{175}
+\indexentry{NQvD basis set}{175}
 \indexentry{basis set!NQvD}{175}
-\indexentry{\sc  sirius}{176}
-\indexentry{\sc  sirius}{176}
-\indexentry{\sc  sirius}{176}
-\indexentry{\sc  sirius}{176}
-\indexentry{OPTIONS@{\normalfont  \ttfamily  {.OPTIONS}}}{176}
+\indexentry{MOLPRI@{\normalfont  \ttfamily  {.MOLPRI}}}{176}
+\indexentry{sadlej basis set}{176}
+\indexentry{ANO basis set}{176}
+\indexentry{NQvD basis set}{176}
+\indexentry{basis set!sadlej}{176}
+\indexentry{basis set!ANO}{176}
+\indexentry{basis set!NQvD}{176}
 \indexentry{\sc  sirius}{177}
 \indexentry{\sc  sirius}{177}
 \indexentry{\sc  sirius}{177}
-\indexentry{*WAVE FUNCTIONS@{\normalfont  \ttfamily  {**WAVE FUNCTIONS}}}{177}
-\indexentry{HAMILTONIAN@{\normalfont  \ttfamily  {*HAMILTONIAN}}}{177}
-\indexentry{SOLVENT@{\normalfont  \ttfamily  {*SOLVENT}}}{177}
-\indexentry{CONFIGURATION INPUT@{\normalfont  \ttfamily  {*CONFIGURATION INPUT}}}{177}
-\indexentry{ORBITAL INPUT@{\normalfont  \ttfamily  {*ORBITAL INPUT}}}{177}
-\indexentry{CI VECTOR@{\normalfont  \ttfamily  {*CI VECTOR}}}{177}
-\indexentry{OPTIMIZATION@{\normalfont  \ttfamily  {*OPTIMIZATION}}}{177}
-\indexentry{STEP CONTROL@{\normalfont  \ttfamily  {*STEP CONTROL}}}{177}
-\indexentry{CI INPUT@{\normalfont  \ttfamily  {*CI INPUT}}}{177}
-\indexentry{HF INPUT@{\normalfont  \ttfamily  {*HF INPUT}}}{178}
-\indexentry{MP2 INPUT@{\normalfont  \ttfamily  {*MP2 INPUT}}}{178}
-\indexentry{POPULATION ANALYSIS@{\normalfont  \ttfamily  {*POPULATION ANALYSIS}}}{178}
+\indexentry{\sc  sirius}{177}
+\indexentry{OPTIONS@{\normalfont  \ttfamily  {.OPTIONS}}}{177}
 \indexentry{\sc  sirius}{178}
-\indexentry{TRANSFORMATION@{\normalfont  \ttfamily  {*TRANSFORMATION}}}{178}
-\indexentry{PRINT LEVELS@{\normalfont  \ttfamily  {*PRINT LEVELS}}}{178}
-\indexentry{AUXILLIARY INPUT@{\normalfont  \ttfamily  {*AUXILLIARY INPUT}}}{178}
-\indexentry{CC INPUT@{\normalfont  \ttfamily  {*CC INPUT}}}{178}
-\indexentry{*MOLORB@{\normalfont  \ttfamily  {**MOLORB}}}{178}
-\indexentry{*NATORB@{\normalfont  \ttfamily  {**NATORB}}}{178}
+\indexentry{\sc  sirius}{178}
+\indexentry{\sc  sirius}{178}
 \indexentry{*WAVE FUNCTIONS@{\normalfont  \ttfamily  {**WAVE FUNCTIONS}}}{178}
-\indexentry{BASIS SET@{\normalfont  \ttfamily  {.BASIS SET}}}{178}
-\indexentry{Coupled Cluster}{178}
-\indexentry{CC}{178}
-\indexentry{CC@{\normalfont  \ttfamily  {.CC}}}{179}
-\indexentry{\sc  cc}{179}
-\indexentry{\sc  cc}{179}
-\indexentry{CC ONLY@{\normalfont  \ttfamily  {.CC ONLY}}}{179}
-\indexentry{CI}{179}
-\indexentry{Configuration Interaction}{179}
-\indexentry{CI@{\normalfont  \ttfamily  {.CI}}}{179}
-\indexentry{FLAGS@{\normalfont  \ttfamily  {.FLAGS}}}{179}
-\indexentry{HF@{\normalfont  \ttfamily  {.HF}}}{179}
-\indexentry{HF}{179}
-\indexentry{SCF}{179}
-\indexentry{Hartree--Fock}{179}
-\indexentry{open shell!HF}{179}
-\indexentry{INTERFACE@{\normalfont  \ttfamily  {.INTERFACE}}}{179}
-\indexentry{interface file}{179}
-\indexentry{MCSCF@{\normalfont  \ttfamily  {.MCSCF}}}{179}
-\indexentry{MCSCF}{179}
-\indexentry{M{\o}ller-Plesset!second-order}{179}
-\indexentry{MP2}{179}
-\indexentry{MP2@{\normalfont  \ttfamily  {.MP2}}}{179}
-\indexentry{NSYM@{\normalfont  \ttfamily  {.NSYM}}}{179}
-\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{179}
+\indexentry{HAMILTONIAN@{\normalfont  \ttfamily  {*HAMILTONIAN}}}{178}
+\indexentry{SOLVENT@{\normalfont  \ttfamily  {*SOLVENT}}}{178}
+\indexentry{CONFIGURATION INPUT@{\normalfont  \ttfamily  {*CONFIGURATION INPUT}}}{178}
+\indexentry{ORBITAL INPUT@{\normalfont  \ttfamily  {*ORBITAL INPUT}}}{178}
+\indexentry{CI VECTOR@{\normalfont  \ttfamily  {*CI VECTOR}}}{178}
+\indexentry{OPTIMIZATION@{\normalfont  \ttfamily  {*OPTIMIZATION}}}{178}
+\indexentry{STEP CONTROL@{\normalfont  \ttfamily  {*STEP CONTROL}}}{178}
+\indexentry{CI INPUT@{\normalfont  \ttfamily  {*CI INPUT}}}{178}
+\indexentry{HF INPUT@{\normalfont  \ttfamily  {*HF INPUT}}}{179}
+\indexentry{MP2 INPUT@{\normalfont  \ttfamily  {*MP2 INPUT}}}{179}
+\indexentry{POPULATION ANALYSIS@{\normalfont  \ttfamily  {*POPULATION ANALYSIS}}}{179}
 \indexentry{\sc  sirius}{179}
-\indexentry{RESTART@{\normalfont  \ttfamily  {.RESTART}}}{179}
-\indexentry{\sc  sirius}{179}
-\indexentry{restart!wave function}{179}
-\indexentry{\sc  sirius}{179}
-\indexentry{SCF@{\normalfont  \ttfamily  {.SCF}}}{179}
-\indexentry{HF@{\normalfont  \ttfamily  {.HF}}}{179}
-\indexentry{STOP@{\normalfont  \ttfamily  {.STOP}}}{179}
-\indexentry{\sc  sirius}{179}
-\indexentry{TITLE@{\normalfont  \ttfamily  {.TITLE}}}{179}
-\indexentry{WESTA@{\normalfont  \ttfamily  {.WESTA}}}{180}
-\indexentry{\sc  sirius}{180}
-\indexentry{AUXILLIARY INPUT@{\normalfont  \ttfamily  {*AUXILLIARY INPUT}}}{180}
-\indexentry{NOSUPMAT@{\normalfont  \ttfamily  {.NOSUPMAT}}}{180}
-\indexentry{CI INPUT@{\normalfont  \ttfamily  {*CI INPUT}}}{180}
-\indexentry{CIDENSITY@{\normalfont  \ttfamily  {.CIDENSITY}}}{180}
-\indexentry{natural orbital}{180}
-\indexentry{CINO@{\normalfont  \ttfamily  {.CINO}}}{180}
+\indexentry{TRANSFORMATION@{\normalfont  \ttfamily  {*TRANSFORMATION}}}{179}
+\indexentry{PRINT LEVELS@{\normalfont  \ttfamily  {*PRINT LEVELS}}}{179}
+\indexentry{AUXILLIARY INPUT@{\normalfont  \ttfamily  {*AUXILLIARY INPUT}}}{179}
+\indexentry{CC INPUT@{\normalfont  \ttfamily  {*CC INPUT}}}{179}
+\indexentry{*MOLORB@{\normalfont  \ttfamily  {**MOLORB}}}{179}
+\indexentry{*NATORB@{\normalfont  \ttfamily  {**NATORB}}}{179}
+\indexentry{*WAVE FUNCTIONS@{\normalfont  \ttfamily  {**WAVE FUNCTIONS}}}{179}
+\indexentry{BASIS SET@{\normalfont  \ttfamily  {.BASIS SET}}}{179}
+\indexentry{Coupled Cluster}{179}
+\indexentry{CC}{179}
+\indexentry{CC@{\normalfont  \ttfamily  {.CC}}}{180}
+\indexentry{\sc  cc}{180}
+\indexentry{\sc  cc}{180}
+\indexentry{CC ONLY@{\normalfont  \ttfamily  {.CC ONLY}}}{180}
 \indexentry{CI}{180}
 \indexentry{Configuration Interaction}{180}
-\indexentry{natural orbital}{180}
-\indexentry{STATE@{\normalfont  \ttfamily  {.STATE}}}{180}
-\indexentry{CIROOTS@{\normalfont  \ttfamily  {.CIROOTS}}}{180}
-\indexentry{root!CI}{180}
-\indexentry{DISKH2@{\normalfont  \ttfamily  {.DISKH2}}}{180}
-\indexentry{MAX ITERATIONS@{\normalfont  \ttfamily  {.MAX ITERATIONS}}}{180}
-\indexentry{STATE@{\normalfont  \ttfamily  {.STATE}}}{180}
-\indexentry{CIROOTS@{\normalfont  \ttfamily  {.CIROOTS}}}{180}
-\indexentry{OPTIMIZATION@{\normalfont  \ttfamily  {*OPTIMIZATION}}}{180}
-\indexentry{THRESH@{\normalfont  \ttfamily  {.THRESH}}}{181}
-\indexentry{THRPWF@{\normalfont  \ttfamily  {.THRPWF}}}{181}
-\indexentry{WEIGHTED RESIDUALS@{\normalfont  \ttfamily  {.WEIGHTED RESIDUALS}}}{181}
-\indexentry{residual}{181}
-\indexentry{ZEROELEMENTS@{\normalfont  \ttfamily  {.ZEROELEMENTS}}}{181}
-\indexentry{CI VECTOR@{\normalfont  \ttfamily  {*CI VECTOR}}}{181}
-\indexentry{PLUS COMBINATIONS@{\normalfont  \ttfamily  {.PLUS COMBINATIONS}}}{181}
-\indexentry{STARTHDIAGONAL@{\normalfont  \ttfamily  {.STARTHDIAGONAL}}}{181}
-\indexentry{DETERMINANTS@{\normalfont  \ttfamily  {.DETERMINANTS}}}{181}
-\indexentry{SELECT@{\normalfont  \ttfamily  {.SELECT}}}{181}
-\indexentry{DETERMINANTS@{\normalfont  \ttfamily  {.DETERMINANTS}}}{181}
-\indexentry{configuration!start}{181}
-\indexentry{STARTHDIAGONAL@{\normalfont  \ttfamily  {.STARTHDIAGONAL}}}{181}
-\indexentry{STARTOLDCI@{\normalfont  \ttfamily  {.STARTOLDCI}}}{182}
-\indexentry{CONFIGURATION INPUT@{\normalfont  \ttfamily  {*CONFIGURATION INPUT}}}{182}
-\indexentry{CAS SPACE@{\normalfont  \ttfamily  {.CAS SPACE}}}{182}
-\indexentry{active orbital}{182}
-\indexentry{ELECTRONS@{\normalfont  \ttfamily  {.ELECTRONS}}}{182}
-\indexentry{active electrons}{182}
-\indexentry{RAS1 ELECTRONS@{\normalfont  \ttfamily  {.RAS1 ELECTRONS}}}{182}
-\indexentry{RAS1 HOLES@{\normalfont  \ttfamily  {.RAS1 HOLES}}}{182}
-\indexentry{RAS1 HOLES@{\normalfont  \ttfamily  {.RAS1 HOLES}}}{182}
-\indexentry{electron hole}{182}
-\indexentry{RAS1 ELECTRONS@{\normalfont  \ttfamily  {.RAS1 ELECTRONS}}}{182}
-\indexentry{RAS1 SPACE@{\normalfont  \ttfamily  {.RAS1 SPACE}}}{182}
-\indexentry{RAS1 orbital space}{182}
-\indexentry{RAS2 SPACE@{\normalfont  \ttfamily  {.RAS2 SPACE}}}{182}
-\indexentry{RAS2 orbital space}{182}
-\indexentry{RAS3 ELECTRONS@{\normalfont  \ttfamily  {.RAS3 ELECTRONS}}}{182}
-\indexentry{RAS3 SPACE@{\normalfont  \ttfamily  {.RAS3 SPACE}}}{182}
-\indexentry{RAS3 orbital space}{182}
-\indexentry{SPIN MULTIPLICITY@{\normalfont  \ttfamily  {.SPIN MULTIPLICITY}}}{182}
-\indexentry{MCSCF}{182}
-\indexentry{CI}{182}
-\indexentry{Configuration Interaction}{182}
-\indexentry{spin multiplicity}{182}
-\indexentry{SYMMETRY@{\normalfont  \ttfamily  {.SYMMETRY}}}{183}
-\indexentry{symmetry}{183}
-\indexentry{INACTIVE ORBITALS@{\normalfont  \ttfamily  {.INACTIVE ORBITALS}}}{183}
-\indexentry{inactive orbital}{183}
-\indexentry{RASSCF}{183}
-\indexentry{CASSCF}{183}
-\indexentry{MCSCF}{183}
+\indexentry{CI@{\normalfont  \ttfamily  {.CI}}}{180}
+\indexentry{FLAGS@{\normalfont  \ttfamily  {.FLAGS}}}{180}
+\indexentry{HF@{\normalfont  \ttfamily  {.HF}}}{180}
+\indexentry{HF}{180}
+\indexentry{SCF}{180}
+\indexentry{Hartree--Fock}{180}
+\indexentry{open shell!HF}{180}
+\indexentry{INTERFACE@{\normalfont  \ttfamily  {.INTERFACE}}}{180}
+\indexentry{interface file}{180}
+\indexentry{MCSCF@{\normalfont  \ttfamily  {.MCSCF}}}{180}
+\indexentry{MCSCF}{180}
+\indexentry{M{\o}ller-Plesset!second-order}{180}
+\indexentry{MP2}{180}
+\indexentry{MP2@{\normalfont  \ttfamily  {.MP2}}}{180}
+\indexentry{NSYM@{\normalfont  \ttfamily  {.NSYM}}}{180}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{180}
+\indexentry{\sc  sirius}{180}
+\indexentry{RESTART@{\normalfont  \ttfamily  {.RESTART}}}{180}
+\indexentry{\sc  sirius}{180}
+\indexentry{restart!wave function}{180}
+\indexentry{\sc  sirius}{180}
+\indexentry{SCF@{\normalfont  \ttfamily  {.SCF}}}{180}
+\indexentry{HF@{\normalfont  \ttfamily  {.HF}}}{180}
+\indexentry{STOP@{\normalfont  \ttfamily  {.STOP}}}{180}
+\indexentry{\sc  sirius}{180}
+\indexentry{TITLE@{\normalfont  \ttfamily  {.TITLE}}}{180}
+\indexentry{WESTA@{\normalfont  \ttfamily  {.WESTA}}}{181}
+\indexentry{\sc  sirius}{181}
+\indexentry{AUXILLIARY INPUT@{\normalfont  \ttfamily  {*AUXILLIARY INPUT}}}{181}
+\indexentry{NOSUPMAT@{\normalfont  \ttfamily  {.NOSUPMAT}}}{181}
+\indexentry{CI INPUT@{\normalfont  \ttfamily  {*CI INPUT}}}{181}
+\indexentry{CIDENSITY@{\normalfont  \ttfamily  {.CIDENSITY}}}{181}
+\indexentry{natural orbital}{181}
+\indexentry{CINO@{\normalfont  \ttfamily  {.CINO}}}{181}
+\indexentry{CI}{181}
+\indexentry{Configuration Interaction}{181}
+\indexentry{natural orbital}{181}
+\indexentry{STATE@{\normalfont  \ttfamily  {.STATE}}}{181}
+\indexentry{CIROOTS@{\normalfont  \ttfamily  {.CIROOTS}}}{181}
+\indexentry{root!CI}{181}
+\indexentry{DISKH2@{\normalfont  \ttfamily  {.DISKH2}}}{181}
+\indexentry{MAX ITERATIONS@{\normalfont  \ttfamily  {.MAX ITERATIONS}}}{181}
+\indexentry{STATE@{\normalfont  \ttfamily  {.STATE}}}{181}
+\indexentry{CIROOTS@{\normalfont  \ttfamily  {.CIROOTS}}}{181}
+\indexentry{OPTIMIZATION@{\normalfont  \ttfamily  {*OPTIMIZATION}}}{181}
+\indexentry{THRESH@{\normalfont  \ttfamily  {.THRESH}}}{182}
+\indexentry{THRPWF@{\normalfont  \ttfamily  {.THRPWF}}}{182}
+\indexentry{WEIGHTED RESIDUALS@{\normalfont  \ttfamily  {.WEIGHTED RESIDUALS}}}{182}
+\indexentry{residual}{182}
+\indexentry{ZEROELEMENTS@{\normalfont  \ttfamily  {.ZEROELEMENTS}}}{182}
+\indexentry{CI VECTOR@{\normalfont  \ttfamily  {*CI VECTOR}}}{182}
+\indexentry{PLUS COMBINATIONS@{\normalfont  \ttfamily  {.PLUS COMBINATIONS}}}{182}
+\indexentry{STARTHDIAGONAL@{\normalfont  \ttfamily  {.STARTHDIAGONAL}}}{182}
+\indexentry{DETERMINANTS@{\normalfont  \ttfamily  {.DETERMINANTS}}}{182}
+\indexentry{SELECT@{\normalfont  \ttfamily  {.SELECT}}}{182}
+\indexentry{DETERMINANTS@{\normalfont  \ttfamily  {.DETERMINANTS}}}{182}
+\indexentry{configuration!start}{182}
+\indexentry{STARTHDIAGONAL@{\normalfont  \ttfamily  {.STARTHDIAGONAL}}}{182}
+\indexentry{STARTOLDCI@{\normalfont  \ttfamily  {.STARTOLDCI}}}{183}
+\indexentry{CONFIGURATION INPUT@{\normalfont  \ttfamily  {*CONFIGURATION INPUT}}}{183}
+\indexentry{CAS SPACE@{\normalfont  \ttfamily  {.CAS SPACE}}}{183}
+\indexentry{active orbital}{183}
+\indexentry{ELECTRONS@{\normalfont  \ttfamily  {.ELECTRONS}}}{183}
+\indexentry{active electrons}{183}
+\indexentry{RAS1 ELECTRONS@{\normalfont  \ttfamily  {.RAS1 ELECTRONS}}}{183}
+\indexentry{RAS1 HOLES@{\normalfont  \ttfamily  {.RAS1 HOLES}}}{183}
+\indexentry{RAS1 HOLES@{\normalfont  \ttfamily  {.RAS1 HOLES}}}{183}
+\indexentry{electron hole}{183}
+\indexentry{RAS1 ELECTRONS@{\normalfont  \ttfamily  {.RAS1 ELECTRONS}}}{183}
+\indexentry{RAS1 SPACE@{\normalfont  \ttfamily  {.RAS1 SPACE}}}{183}
+\indexentry{RAS1 orbital space}{183}
+\indexentry{RAS2 SPACE@{\normalfont  \ttfamily  {.RAS2 SPACE}}}{183}
+\indexentry{RAS2 orbital space}{183}
+\indexentry{RAS3 ELECTRONS@{\normalfont  \ttfamily  {.RAS3 ELECTRONS}}}{183}
+\indexentry{RAS3 SPACE@{\normalfont  \ttfamily  {.RAS3 SPACE}}}{183}
+\indexentry{RAS3 orbital space}{183}
+\indexentry{SPIN MULTIPLICITY@{\normalfont  \ttfamily  {.SPIN MULTIPLICITY}}}{183}
 \indexentry{MCSCF}{183}
 \indexentry{CI}{183}
 \indexentry{Configuration Interaction}{183}
-\indexentry{HAMILTONIAN@{\normalfont  \ttfamily  {*HAMILTONIAN}}}{183}
-\indexentry{finite field}{183}
-\indexentry{FIELD TERM@{\normalfont  \ttfamily  {.FIELD TERM}}}{183}
-\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{183}
-\indexentry{FIELD TERM@{\normalfont  \ttfamily  {.FIELD TERM}}}{183}
-\indexentry{HF INPUT@{\normalfont  \ttfamily  {*HF INPUT}}}{183}
-\indexentry{SCF}{183}
-\indexentry{HF}{183}
-\indexentry{Hartree--Fock}{183}
-\indexentry{HF@{\normalfont  \ttfamily  {.HF}}}{183}
-\indexentry{SCF@{\normalfont  \ttfamily  {.SCF}}}{183}
-\indexentry{MP2@{\normalfont  \ttfamily  {.MP2}}}{183}
-\indexentry{MP2}{183}
-\indexentry{M{\o}ller-Plesset!second-order}{183}
-\indexentry{*WAVE FUNCTIONS@{\normalfont  \ttfamily  {**WAVE FUNCTIONS}}}{183}
-\indexentry{open shell}{183}
-\indexentry{CONFIGURATION INPUT@{\normalfont  \ttfamily  {*CONFIGURATION INPUT}}}{183}
-\indexentry{AUTOCCUPATION@{\normalfont  \ttfamily  {.AUTOCCUPATION}}}{184}
+\indexentry{spin multiplicity}{183}
+\indexentry{SYMMETRY@{\normalfont  \ttfamily  {.SYMMETRY}}}{184}
+\indexentry{symmetry}{184}
+\indexentry{INACTIVE ORBITALS@{\normalfont  \ttfamily  {.INACTIVE ORBITALS}}}{184}
+\indexentry{inactive orbital}{184}
+\indexentry{RASSCF}{184}
+\indexentry{CASSCF}{184}
+\indexentry{MCSCF}{184}
+\indexentry{MCSCF}{184}
+\indexentry{CI}{184}
+\indexentry{Configuration Interaction}{184}
+\indexentry{HAMILTONIAN@{\normalfont  \ttfamily  {*HAMILTONIAN}}}{184}
+\indexentry{finite field}{184}
+\indexentry{FIELD TERM@{\normalfont  \ttfamily  {.FIELD TERM}}}{184}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{184}
+\indexentry{FIELD TERM@{\normalfont  \ttfamily  {.FIELD TERM}}}{184}
+\indexentry{HF INPUT@{\normalfont  \ttfamily  {*HF INPUT}}}{184}
 \indexentry{SCF}{184}
 \indexentry{HF}{184}
 \indexentry{Hartree--Fock}{184}
+\indexentry{HF@{\normalfont  \ttfamily  {.HF}}}{184}
+\indexentry{SCF@{\normalfont  \ttfamily  {.SCF}}}{184}
+\indexentry{MP2@{\normalfont  \ttfamily  {.MP2}}}{184}
 \indexentry{MP2}{184}
 \indexentry{M{\o}ller-Plesset!second-order}{184}
-\indexentry{starting orbitals}{184}
-\indexentry{H\"{u}ckel}{184}
-\indexentry{Hartree--Fock occupation}{184}
-\indexentry{HF occupation}{184}
-\indexentry{DIIS}{184}
-\indexentry{C2DIIS@{\normalfont  \ttfamily  {.C2DIIS}}}{184}
-\indexentry{COREHOLE@{\normalfont  \ttfamily  {.COREHOLE}}}{184}
-\indexentry{core hole}{184}
-\indexentry{OPEN SHELL@{\normalfont  \ttfamily  {.OPEN SHELL}}}{184}
-\indexentry{inactive orbital}{184}
-\indexentry{CORERELAX@{\normalfont  \ttfamily  {.CORERELAX}}}{184}
-\indexentry{COREHOLE@{\normalfont  \ttfamily  {.COREHOLE}}}{184}
-\indexentry{core hole}{184}
-\indexentry{relaxed core}{184}
-\indexentry{COREHOLE@{\normalfont  \ttfamily  {.COREHOLE}}}{184}
-\indexentry{ELECTRONS@{\normalfont  \ttfamily  {.ELECTRONS}}}{184}
-\indexentry{electrons in molecule}{184}
-\indexentry{charge of molecule}{184}
-\indexentry{HF OCCUPATION@{\normalfont  \ttfamily  {.HF OCCUPATION}}}{184}
-\indexentry{OPEN SHELL@{\normalfont  \ttfamily  {.OPEN SHELL}}}{184}
-\indexentry{FC MVO@{\normalfont  \ttfamily  {.FC MVO}}}{184}
-\indexentry{FOCK ITERATIONS@{\normalfont  \ttfamily  {.FOCK ITERATIONS}}}{184}
-\indexentry{Roothaan iteration}{184}
-\indexentry{FROZEN CORE ORBITALS@{\normalfont  \ttfamily  {.FROZEN CORE ORBITALS}}}{184}
-\indexentry{H1VIRTUALS@{\normalfont  \ttfamily  {.H1VIRTUALS}}}{185}
-\indexentry{HF OCCUPATION@{\normalfont  \ttfamily  {.HF OCCUPATION}}}{185}
-\indexentry{HF}{185}
+\indexentry{*WAVE FUNCTIONS@{\normalfont  \ttfamily  {**WAVE FUNCTIONS}}}{184}
+\indexentry{open shell}{184}
+\indexentry{CONFIGURATION INPUT@{\normalfont  \ttfamily  {*CONFIGURATION INPUT}}}{184}
+\indexentry{AUTOCCUPATION@{\normalfont  \ttfamily  {.AUTOCCUPATION}}}{185}
 \indexentry{SCF}{185}
+\indexentry{HF}{185}
 \indexentry{Hartree--Fock}{185}
 \indexentry{MP2}{185}
 \indexentry{M{\o}ller-Plesset!second-order}{185}
-\indexentry{MAX DIIS ITERATIONS@{\normalfont  \ttfamily  {.MAX DIIS ITERATIONS}}}{185}
-\indexentry{DIIS!iteration}{185}
-\indexentry{MAX ERROR VECTORS@{\normalfont  \ttfamily  {.MAX ERROR VECTORS}}}{185}
-\indexentry{DIIS!error vector}{185}
-\indexentry{MAX MACRO ITERATIONS@{\normalfont  \ttfamily  {.MAX MACRO ITERATIONS}}}{185}
-\indexentry{HF!quadratic convergent}{185}
-\indexentry{MAX MICRO ITERATIONS@{\normalfont  \ttfamily  {.MAX MICRO ITERATIONS}}}{185}
-\indexentry{HF!quadratic convergent}{185}
-\indexentry{NODIIS@{\normalfont  \ttfamily  {.NODIIS}}}{185}
+\indexentry{starting orbitals}{185}
+\indexentry{H\"{u}ckel}{185}
+\indexentry{Hartree--Fock occupation}{185}
+\indexentry{HF occupation}{185}
 \indexentry{DIIS}{185}
-\indexentry{NONCANONICAL@{\normalfont  \ttfamily  {.NONCANONICAL}}}{185}
-\indexentry{canonical orbital}{185}
-\indexentry{NOQCHF@{\normalfont  \ttfamily  {.NOQCHF}}}{185}
-\indexentry{HF!quadratic convergent}{185}
+\indexentry{C2DIIS@{\normalfont  \ttfamily  {.C2DIIS}}}{185}
+\indexentry{COREHOLE@{\normalfont  \ttfamily  {.COREHOLE}}}{185}
+\indexentry{core hole}{185}
 \indexentry{OPEN SHELL@{\normalfont  \ttfamily  {.OPEN SHELL}}}{185}
-\indexentry{open shell!HF}{185}
-\indexentry{HF!open shell}{185}
-\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{185}
-\indexentry{THRESH@{\normalfont  \ttfamily  {.THRESH}}}{185}
-\indexentry{\sc  sirius}{185}
-\indexentry{HF occupation}{186}
-\indexentry{Hartree--Fock occupation}{186}
-\indexentry{CI}{186}
-\indexentry{MCSCF}{186}
-\indexentry{Configuration Interaction}{186}
+\indexentry{inactive orbital}{185}
+\indexentry{CORERELAX@{\normalfont  \ttfamily  {.CORERELAX}}}{185}
+\indexentry{COREHOLE@{\normalfont  \ttfamily  {.COREHOLE}}}{185}
+\indexentry{core hole}{185}
+\indexentry{relaxed core}{185}
+\indexentry{COREHOLE@{\normalfont  \ttfamily  {.COREHOLE}}}{185}
+\indexentry{ELECTRONS@{\normalfont  \ttfamily  {.ELECTRONS}}}{185}
+\indexentry{electrons in molecule}{185}
+\indexentry{charge of molecule}{185}
+\indexentry{HF OCCUPATION@{\normalfont  \ttfamily  {.HF OCCUPATION}}}{185}
+\indexentry{OPEN SHELL@{\normalfont  \ttfamily  {.OPEN SHELL}}}{185}
+\indexentry{FC MVO@{\normalfont  \ttfamily  {.FC MVO}}}{185}
+\indexentry{FOCK ITERATIONS@{\normalfont  \ttfamily  {.FOCK ITERATIONS}}}{185}
+\indexentry{Roothaan iteration}{185}
+\indexentry{FROZEN CORE ORBITALS@{\normalfont  \ttfamily  {.FROZEN CORE ORBITALS}}}{185}
+\indexentry{H1VIRTUALS@{\normalfont  \ttfamily  {.H1VIRTUALS}}}{186}
+\indexentry{HF OCCUPATION@{\normalfont  \ttfamily  {.HF OCCUPATION}}}{186}
 \indexentry{HF}{186}
 \indexentry{SCF}{186}
 \indexentry{Hartree--Fock}{186}
 \indexentry{MP2}{186}
 \indexentry{M{\o}ller-Plesset!second-order}{186}
-\indexentry{H\"{u}ckel}{186}
-\indexentry{C2DIIS@{\normalfont  \ttfamily  {.C2DIIS}}}{186}
-\indexentry{HF OCCUPATION@{\normalfont  \ttfamily  {.HF OCCUPATION}}}{186}
-\indexentry{core hole}{186}
-\indexentry{COREHOLE@{\normalfont  \ttfamily  {.COREHOLE}}}{186}
-\indexentry{MOSTART@{\normalfont  \ttfamily  {.MOSTART}}}{186}
-\indexentry{COREHOLE@{\normalfont  \ttfamily  {.COREHOLE}}}{186}
-\indexentry{OPTIMIZATION@{\normalfont  \ttfamily  {*OPTIMIZATION}}}{187}
-\indexentry{CONFIGURATION INPUT@{\normalfont  \ttfamily  {*CONFIGURATION INPUT}}}{187}
-\indexentry{core hole}{187}
-\indexentry{frozen core hole}{187}
-\indexentry{relaxed core hole}{187}
-\indexentry{MP2 INPUT@{\normalfont  \ttfamily  {*MP2 INPUT}}}{187}
+\indexentry{MAX DIIS ITERATIONS@{\normalfont  \ttfamily  {.MAX DIIS ITERATIONS}}}{186}
+\indexentry{DIIS!iteration}{186}
+\indexentry{MAX ERROR VECTORS@{\normalfont  \ttfamily  {.MAX ERROR VECTORS}}}{186}
+\indexentry{DIIS!error vector}{186}
+\indexentry{MAX MACRO ITERATIONS@{\normalfont  \ttfamily  {.MAX MACRO ITERATIONS}}}{186}
+\indexentry{HF!quadratic convergent}{186}
+\indexentry{MAX MICRO ITERATIONS@{\normalfont  \ttfamily  {.MAX MICRO ITERATIONS}}}{186}
+\indexentry{HF!quadratic convergent}{186}
+\indexentry{NODIIS@{\normalfont  \ttfamily  {.NODIIS}}}{186}
+\indexentry{DIIS}{186}
+\indexentry{NONCANONICAL@{\normalfont  \ttfamily  {.NONCANONICAL}}}{186}
+\indexentry{canonical orbital}{186}
+\indexentry{NOQCHF@{\normalfont  \ttfamily  {.NOQCHF}}}{186}
+\indexentry{HF!quadratic convergent}{186}
+\indexentry{OPEN SHELL@{\normalfont  \ttfamily  {.OPEN SHELL}}}{186}
+\indexentry{open shell!HF}{186}
+\indexentry{HF!open shell}{186}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{186}
+\indexentry{THRESH@{\normalfont  \ttfamily  {.THRESH}}}{186}
+\indexentry{\sc  sirius}{186}
+\indexentry{HF occupation}{187}
+\indexentry{Hartree--Fock occupation}{187}
+\indexentry{CI}{187}
+\indexentry{MCSCF}{187}
+\indexentry{Configuration Interaction}{187}
+\indexentry{HF}{187}
+\indexentry{SCF}{187}
+\indexentry{Hartree--Fock}{187}
 \indexentry{MP2}{187}
 \indexentry{M{\o}ller-Plesset!second-order}{187}
-\indexentry{MP2 FROZEN@{\normalfont  \ttfamily  {.MP2 FROZEN}}}{187}
-\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{187}
-\indexentry{canonical orbital}{187}
-\indexentry{MP2 FROZEN@{\normalfont  \ttfamily  {.MP2 FROZEN}}}{187}
-\indexentry{correlating orbitals}{187}
-\indexentry{MCSCF}{187}
-\indexentry{MP2 FROZEN@{\normalfont  \ttfamily  {.MP2 FROZEN}}}{187}
-\indexentry{OPTIMIZATION@{\normalfont  \ttfamily  {*OPTIMIZATION}}}{187}
-\indexentry{MCSCF}{187}
-\indexentry{ABSORPTION@{\normalfont  \ttfamily  {.ABSORPTION}}}{188}
-\indexentry{orbital absorption}{188}
-\indexentry{ACTROT@{\normalfont  \ttfamily  {.ACTROT}}}{188}
-\indexentry{ALWAYS ABSORPTION@{\normalfont  \ttfamily  {.ALWAYS ABSORPTION}}}{188}
-\indexentry{orbital absorption}{188}
-\indexentry{MAXABS@{\normalfont  \ttfamily  {.MAXABS}}}{188}
-\indexentry{CORERELAX@{\normalfont  \ttfamily  {.CORERELAX}}}{188}
-\indexentry{CI PHP MATRIX@{\normalfont  \ttfamily  {.CI PHP MATRIX}}}{188}
-\indexentry{Davidson algorithm}{188}
-\indexentry{PHPRESIDUAL@{\normalfont  \ttfamily  {.PHPRESIDUAL}}}{188}
-\indexentry{COREHOLE@{\normalfont  \ttfamily  {.COREHOLE}}}{188}
+\indexentry{H\"{u}ckel}{187}
+\indexentry{C2DIIS@{\normalfont  \ttfamily  {.C2DIIS}}}{187}
+\indexentry{HF OCCUPATION@{\normalfont  \ttfamily  {.HF OCCUPATION}}}{187}
+\indexentry{core hole}{187}
+\indexentry{COREHOLE@{\normalfont  \ttfamily  {.COREHOLE}}}{187}
+\indexentry{MOSTART@{\normalfont  \ttfamily  {.MOSTART}}}{187}
+\indexentry{COREHOLE@{\normalfont  \ttfamily  {.COREHOLE}}}{187}
+\indexentry{OPTIMIZATION@{\normalfont  \ttfamily  {*OPTIMIZATION}}}{188}
+\indexentry{CONFIGURATION INPUT@{\normalfont  \ttfamily  {*CONFIGURATION INPUT}}}{188}
 \indexentry{core hole}{188}
-\indexentry{STATE@{\normalfont  \ttfamily  {.STATE}}}{188}
 \indexentry{frozen core hole}{188}
-\indexentry{REORDER@{\normalfont  \ttfamily  {.REORDER}}}{188}
-\indexentry{CORERELAX@{\normalfont  \ttfamily  {.CORERELAX}}}{189}
-\indexentry{COREHOLE@{\normalfont  \ttfamily  {.COREHOLE}}}{189}
-\indexentry{relaxed core hole}{189}
-\indexentry{NR ALWAYS@{\normalfont  \ttfamily  {.NR ALWAYS}}}{189}
-\indexentry{COREHOLE@{\normalfont  \ttfamily  {.COREHOLE}}}{189}
-\indexentry{DETERMINANTS@{\normalfont  \ttfamily  {.DETERMINANTS}}}{189}
-\indexentry{determinants}{189}
-\indexentry{EXACTDIAGONAL@{\normalfont  \ttfamily  {.EXACTDIAGONAL}}}{189}
-\indexentry{orbital Hessian}{189}
-\indexentry{FOCKDIAGONAL@{\normalfont  \ttfamily  {.FOCKDIAGONAL}}}{189}
-\indexentry{FOCKONLY@{\normalfont  \ttfamily  {.FOCKONLY}}}{189}
-\indexentry{MAX CI@{\normalfont  \ttfamily  {.MAX CI}}}{189}
-\indexentry{MAX MACRO ITERATIONS@{\normalfont  \ttfamily  {.MAX MACRO ITERATIONS}}}{189}
-\indexentry{MAX MICRO ITERATIONS@{\normalfont  \ttfamily  {.MAX MICRO ITERATIONS}}}{189}
+\indexentry{relaxed core hole}{188}
+\indexentry{MP2 INPUT@{\normalfont  \ttfamily  {*MP2 INPUT}}}{188}
+\indexentry{MP2}{188}
+\indexentry{M{\o}ller-Plesset!second-order}{188}
+\indexentry{MP2 FROZEN@{\normalfont  \ttfamily  {.MP2 FROZEN}}}{188}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{188}
+\indexentry{canonical orbital}{188}
+\indexentry{MP2 FROZEN@{\normalfont  \ttfamily  {.MP2 FROZEN}}}{188}
+\indexentry{correlating orbitals}{188}
+\indexentry{MCSCF}{188}
+\indexentry{MP2 FROZEN@{\normalfont  \ttfamily  {.MP2 FROZEN}}}{188}
+\indexentry{OPTIMIZATION@{\normalfont  \ttfamily  {*OPTIMIZATION}}}{188}
+\indexentry{MCSCF}{188}
+\indexentry{ABSORPTION@{\normalfont  \ttfamily  {.ABSORPTION}}}{189}
+\indexentry{orbital absorption}{189}
+\indexentry{ACTROT@{\normalfont  \ttfamily  {.ACTROT}}}{189}
+\indexentry{ALWAYS ABSORPTION@{\normalfont  \ttfamily  {.ALWAYS ABSORPTION}}}{189}
+\indexentry{orbital absorption}{189}
 \indexentry{MAXABS@{\normalfont  \ttfamily  {.MAXABS}}}{189}
-\indexentry{orbital absorption}{189}
-\indexentry{MAXAPM@{\normalfont  \ttfamily  {.MAXAPM}}}{189}
-\indexentry{orbital absorption}{189}
-\indexentry{NATONLY@{\normalfont  \ttfamily  {.NATONLY}}}{189}
-\indexentry{NEO ALWAYS@{\normalfont  \ttfamily  {.NEO ALWAYS}}}{190}
-\indexentry{NR ALWAYS@{\normalfont  \ttfamily  {.NR ALWAYS}}}{190}
+\indexentry{CORERELAX@{\normalfont  \ttfamily  {.CORERELAX}}}{189}
+\indexentry{CI PHP MATRIX@{\normalfont  \ttfamily  {.CI PHP MATRIX}}}{189}
+\indexentry{Davidson algorithm}{189}
+\indexentry{PHPRESIDUAL@{\normalfont  \ttfamily  {.PHPRESIDUAL}}}{189}
+\indexentry{COREHOLE@{\normalfont  \ttfamily  {.COREHOLE}}}{189}
+\indexentry{core hole}{189}
+\indexentry{STATE@{\normalfont  \ttfamily  {.STATE}}}{189}
+\indexentry{frozen core hole}{189}
+\indexentry{REORDER@{\normalfont  \ttfamily  {.REORDER}}}{189}
 \indexentry{CORERELAX@{\normalfont  \ttfamily  {.CORERELAX}}}{190}
-\indexentry{NEO ALWAYS@{\normalfont  \ttfamily  {.NEO ALWAYS}}}{190}
-\indexentry{NO ABSORPTION@{\normalfont  \ttfamily  {.NO ABSORPTION}}}{190}
+\indexentry{COREHOLE@{\normalfont  \ttfamily  {.COREHOLE}}}{190}
+\indexentry{relaxed core hole}{190}
+\indexentry{NR ALWAYS@{\normalfont  \ttfamily  {.NR ALWAYS}}}{190}
+\indexentry{COREHOLE@{\normalfont  \ttfamily  {.COREHOLE}}}{190}
+\indexentry{DETERMINANTS@{\normalfont  \ttfamily  {.DETERMINANTS}}}{190}
+\indexentry{determinants}{190}
+\indexentry{EXACTDIAGONAL@{\normalfont  \ttfamily  {.EXACTDIAGONAL}}}{190}
+\indexentry{orbital Hessian}{190}
+\indexentry{FOCKDIAGONAL@{\normalfont  \ttfamily  {.FOCKDIAGONAL}}}{190}
+\indexentry{FOCKONLY@{\normalfont  \ttfamily  {.FOCKONLY}}}{190}
+\indexentry{MAX CI@{\normalfont  \ttfamily  {.MAX CI}}}{190}
+\indexentry{MAX MACRO ITERATIONS@{\normalfont  \ttfamily  {.MAX MACRO ITERATIONS}}}{190}
+\indexentry{MAX MICRO ITERATIONS@{\normalfont  \ttfamily  {.MAX MICRO ITERATIONS}}}{190}
+\indexentry{MAXABS@{\normalfont  \ttfamily  {.MAXABS}}}{190}
 \indexentry{orbital absorption}{190}
-\indexentry{NO ACTIVE-ACTIVE ROTATIONS@{\normalfont  \ttfamily  {.NO ACTIVE-ACTIVE ROTATIONS}}}{190}
-\indexentry{NOTRACI@{\normalfont  \ttfamily  {.NOTRACI}}}{190}
-\indexentry{NR ALWAYS@{\normalfont  \ttfamily  {.NR ALWAYS}}}{190}
-\indexentry{NR ALWAYS@{\normalfont  \ttfamily  {.NR ALWAYS}}}{190}
-\indexentry{NEO ALWAYS@{\normalfont  \ttfamily  {.NEO ALWAYS}}}{190}
-\indexentry{OLSEN@{\normalfont  \ttfamily  {.OLSEN}}}{190}
-\indexentry{Davidson algorithm}{190}
-\indexentry{OPTIMAL ORBITAL TRIAL VECTORS@{\normalfont  \ttfamily  {.OPTIMAL ORBITAL TRIAL VECTORS}}}{190}
-\indexentry{optimal orbital trial vector}{190}
-\indexentry{ORB\_TRIAL VECTORS@{\normalfont  \ttfamily  {.ORB\_TRIAL VECTORS}}}{190}
-\indexentry{PHPRESIDUAL@{\normalfont  \ttfamily  {.PHPRESIDUAL}}}{190}
-\indexentry{SIMULTANEOUS ROOTS@{\normalfont  \ttfamily  {.SIMULTANEOUS ROOTS}}}{190}
-\indexentry{STATE@{\normalfont  \ttfamily  {.STATE}}}{190}
-\indexentry{MCSCF Hessian}{190}
-\indexentry{symmetry}{190}
-\indexentry{spin symmetry}{190}
-\indexentry{CONFIGURATION INPUT@{\normalfont  \ttfamily  {*CONFIGURATION INPUT}}}{190}
-\indexentry{SYM CHECK@{\normalfont  \ttfamily  {.SYM CHECK}}}{190}
-\indexentry{SIMULTANEOUS ROOTS@{\normalfont  \ttfamily  {.SIMULTANEOUS ROOTS}}}{191}
-\indexentry{THRCGR@{\normalfont  \ttfamily  {.THRCGR}}}{191}
-\indexentry{THRESH@{\normalfont  \ttfamily  {.THRESH}}}{191}
-\indexentry{TRACI@{\normalfont  \ttfamily  {.TRACI}}}{191}
-\indexentry{IPRCNO@{\normalfont  \ttfamily  {.IPRCNO}}}{191}
-\indexentry{core hole}{191}
-\indexentry{relaxed core hole}{191}
-\indexentry{frozen core hole}{191}
-\indexentry{STATE@{\normalfont  \ttfamily  {.STATE}}}{191}
+\indexentry{MAXAPM@{\normalfont  \ttfamily  {.MAXAPM}}}{190}
+\indexentry{orbital absorption}{190}
+\indexentry{NATONLY@{\normalfont  \ttfamily  {.NATONLY}}}{190}
+\indexentry{NEO ALWAYS@{\normalfont  \ttfamily  {.NEO ALWAYS}}}{191}
+\indexentry{NR ALWAYS@{\normalfont  \ttfamily  {.NR ALWAYS}}}{191}
+\indexentry{CORERELAX@{\normalfont  \ttfamily  {.CORERELAX}}}{191}
+\indexentry{NEO ALWAYS@{\normalfont  \ttfamily  {.NEO ALWAYS}}}{191}
+\indexentry{NO ABSORPTION@{\normalfont  \ttfamily  {.NO ABSORPTION}}}{191}
 \indexentry{orbital absorption}{191}
-\indexentry{orbital trial vector}{192}
-\indexentry{optimal orbital trial vector}{192}
-\indexentry{SYM CHECK@{\normalfont  \ttfamily  {.SYM CHECK}}}{192}
-\indexentry{determinants}{192}
-\indexentry{CSF}{192}
-\indexentry{configuration state function}{192}
-\indexentry{CSF}{192}
-\indexentry{configuration state function}{192}
-\indexentry{spin symmetry}{192}
-\indexentry{PLUS COMBINATIONS@{\normalfont  \ttfamily  {.PLUS COMBINATIONS}}}{192}
-\indexentry{CI VECTOR@{\normalfont  \ttfamily  {*CI VECTOR}}}{192}
-\indexentry{singlet state}{192}
-\indexentry{determinants}{192}
-\indexentry{excited state}{192}
-\indexentry{ORBITAL INPUT@{\normalfont  \ttfamily  {*ORBITAL INPUT}}}{192}
-\indexentry{molecular orbital}{192}
-\indexentry{supersymmetry}{192}
-\indexentry{frozen orbitals}{192}
-\indexentry{delete orbitals}{192}
-\indexentry{5D7F9G@{\normalfont  \ttfamily  {.5D7F9G}}}{192}
-\indexentry{\sc  hermit}{192}
-\indexentry{AO DELETE@{\normalfont  \ttfamily  {.AO DELETE}}}{192}
-\indexentry{linear dependence}{192}
-\indexentry{CMOMAX@{\normalfont  \ttfamily  {.CMOMAX}}}{192}
-\indexentry{DELETE@{\normalfont  \ttfamily  {.DELETE}}}{193}
-\indexentry{delete orbitals}{193}
-\indexentry{FREEZE@{\normalfont  \ttfamily  {.FREEZE}}}{193}
-\indexentry{frozen orbitals}{193}
-\indexentry{FROZEN CORE ORBITALS@{\normalfont  \ttfamily  {.FROZEN CORE ORBITALS}}}{193}
-\indexentry{GRAM-SCHMIDT ORTHONORMALIZATION@{\normalfont  \ttfamily  {.GRAM-SCHMIDT ORTHONORMALIZATION}}}{193}
-\indexentry{orthonormalization!Gram--Schmidt}{193}
-\indexentry{MOSTART@{\normalfont  \ttfamily  {.MOSTART}}}{193}
+\indexentry{NO ACTIVE-ACTIVE ROTATIONS@{\normalfont  \ttfamily  {.NO ACTIVE-ACTIVE ROTATIONS}}}{191}
+\indexentry{NOTRACI@{\normalfont  \ttfamily  {.NOTRACI}}}{191}
+\indexentry{NR ALWAYS@{\normalfont  \ttfamily  {.NR ALWAYS}}}{191}
+\indexentry{NR ALWAYS@{\normalfont  \ttfamily  {.NR ALWAYS}}}{191}
+\indexentry{NEO ALWAYS@{\normalfont  \ttfamily  {.NEO ALWAYS}}}{191}
+\indexentry{OLSEN@{\normalfont  \ttfamily  {.OLSEN}}}{191}
+\indexentry{Davidson algorithm}{191}
+\indexentry{OPTIMAL ORBITAL TRIAL VECTORS@{\normalfont  \ttfamily  {.OPTIMAL ORBITAL TRIAL VECTORS}}}{191}
+\indexentry{optimal orbital trial vector}{191}
+\indexentry{ORB\_TRIAL VECTORS@{\normalfont  \ttfamily  {.ORB\_TRIAL VECTORS}}}{191}
+\indexentry{PHPRESIDUAL@{\normalfont  \ttfamily  {.PHPRESIDUAL}}}{191}
+\indexentry{SIMULTANEOUS ROOTS@{\normalfont  \ttfamily  {.SIMULTANEOUS ROOTS}}}{191}
+\indexentry{STATE@{\normalfont  \ttfamily  {.STATE}}}{191}
+\indexentry{MCSCF Hessian}{191}
+\indexentry{symmetry}{191}
+\indexentry{spin symmetry}{191}
+\indexentry{CONFIGURATION INPUT@{\normalfont  \ttfamily  {*CONFIGURATION INPUT}}}{191}
+\indexentry{SYM CHECK@{\normalfont  \ttfamily  {.SYM CHECK}}}{191}
+\indexentry{SIMULTANEOUS ROOTS@{\normalfont  \ttfamily  {.SIMULTANEOUS ROOTS}}}{192}
+\indexentry{THRCGR@{\normalfont  \ttfamily  {.THRCGR}}}{192}
+\indexentry{THRESH@{\normalfont  \ttfamily  {.THRESH}}}{192}
+\indexentry{TRACI@{\normalfont  \ttfamily  {.TRACI}}}{192}
+\indexentry{IPRCNO@{\normalfont  \ttfamily  {.IPRCNO}}}{192}
+\indexentry{core hole}{192}
+\indexentry{relaxed core hole}{192}
+\indexentry{frozen core hole}{192}
+\indexentry{STATE@{\normalfont  \ttfamily  {.STATE}}}{192}
+\indexentry{orbital absorption}{192}
+\indexentry{orbital trial vector}{193}
+\indexentry{optimal orbital trial vector}{193}
+\indexentry{SYM CHECK@{\normalfont  \ttfamily  {.SYM CHECK}}}{193}
+\indexentry{determinants}{193}
+\indexentry{CSF}{193}
+\indexentry{configuration state function}{193}
+\indexentry{CSF}{193}
+\indexentry{configuration state function}{193}
+\indexentry{spin symmetry}{193}
+\indexentry{PLUS COMBINATIONS@{\normalfont  \ttfamily  {.PLUS COMBINATIONS}}}{193}
+\indexentry{CI VECTOR@{\normalfont  \ttfamily  {*CI VECTOR}}}{193}
+\indexentry{singlet state}{193}
+\indexentry{determinants}{193}
+\indexentry{excited state}{193}
+\indexentry{ORBITAL INPUT@{\normalfont  \ttfamily  {*ORBITAL INPUT}}}{193}
 \indexentry{molecular orbital}{193}
-\indexentry{*MOLORB@{\normalfont  \ttfamily  {**MOLORB}}}{193}
-\indexentry{*NATORB@{\normalfont  \ttfamily  {**NATORB}}}{193}
-\indexentry{*MOLORB@{\normalfont  \ttfamily  {**MOLORB}}}{193}
-\indexentry{*NATORB@{\normalfont  \ttfamily  {**NATORB}}}{193}
-\indexentry{\sc  sirius}{194}
-\indexentry{\sc  sirius}{194}
-\indexentry{\sc  sirius}{194}
-\indexentry{NOSUPSYM@{\normalfont  \ttfamily  {.NOSUPSYM}}}{194}
-\indexentry{supersymmetry}{194}
-\indexentry{\sc  abacus}{194}
-\indexentry{\sc  response}{194}
-\indexentry{PUNCHINPUTORBITALS@{\normalfont  \ttfamily  {.PUNCHINPUTORBITALS}}}{194}
+\indexentry{supersymmetry}{193}
+\indexentry{frozen orbitals}{193}
+\indexentry{delete orbitals}{193}
+\indexentry{5D7F9G@{\normalfont  \ttfamily  {.5D7F9G}}}{193}
+\indexentry{\sc  hermit}{193}
+\indexentry{AO DELETE@{\normalfont  \ttfamily  {.AO DELETE}}}{193}
+\indexentry{linear dependence}{193}
+\indexentry{CMOMAX@{\normalfont  \ttfamily  {.CMOMAX}}}{193}
+\indexentry{DELETE@{\normalfont  \ttfamily  {.DELETE}}}{194}
+\indexentry{delete orbitals}{194}
+\indexentry{FREEZE@{\normalfont  \ttfamily  {.FREEZE}}}{194}
+\indexentry{frozen orbitals}{194}
+\indexentry{FROZEN CORE ORBITALS@{\normalfont  \ttfamily  {.FROZEN CORE ORBITALS}}}{194}
+\indexentry{GRAM-SCHMIDT ORTHONORMALIZATION@{\normalfont  \ttfamily  {.GRAM-SCHMIDT ORTHONORMALIZATION}}}{194}
+\indexentry{orthonormalization!Gram--Schmidt}{194}
+\indexentry{MOSTART@{\normalfont  \ttfamily  {.MOSTART}}}{194}
+\indexentry{molecular orbital}{194}
 \indexentry{*MOLORB@{\normalfont  \ttfamily  {**MOLORB}}}{194}
-\indexentry{PUNCHOUTPUTORBITALS@{\normalfont  \ttfamily  {.PUNCHOUTPUTORBITALS}}}{194}
+\indexentry{*NATORB@{\normalfont  \ttfamily  {**NATORB}}}{194}
 \indexentry{*MOLORB@{\normalfont  \ttfamily  {**MOLORB}}}{194}
-\indexentry{REORDER@{\normalfont  \ttfamily  {.REORDER}}}{194}
-\indexentry{SUPSYM@{\normalfont  \ttfamily  {.SUPSYM}}}{194}
-\indexentry{supersymmetry}{194}
-\indexentry{SYMMETRIC ORTHONORMALIZATION@{\normalfont  \ttfamily  {.SYMMETRIC ORTHONORMALIZATION}}}{194}
-\indexentry{orthonormalization!symmetric}{194}
-\indexentry{THRSSY@{\normalfont  \ttfamily  {.THRSSY}}}{194}
-\indexentry{supersymmetry}{194}
-\indexentry{\sc  sirius}{194}
-\indexentry{supersymmetry}{194}
-\indexentry{symmetry!group}{194}
-\indexentry{supersymmetry}{195}
+\indexentry{*NATORB@{\normalfont  \ttfamily  {**NATORB}}}{194}
+\indexentry{\sc  sirius}{195}
+\indexentry{\sc  sirius}{195}
+\indexentry{\sc  sirius}{195}
 \indexentry{NOSUPSYM@{\normalfont  \ttfamily  {.NOSUPSYM}}}{195}
+\indexentry{supersymmetry}{195}
 \indexentry{\sc  abacus}{195}
 \indexentry{\sc  response}{195}
-\indexentry{SUPSYM@{\normalfont  \ttfamily  {.SUPSYM}}}{195}
+\indexentry{PUNCHINPUTORBITALS@{\normalfont  \ttfamily  {.PUNCHINPUTORBITALS}}}{195}
+\indexentry{*MOLORB@{\normalfont  \ttfamily  {**MOLORB}}}{195}
+\indexentry{PUNCHOUTPUTORBITALS@{\normalfont  \ttfamily  {.PUNCHOUTPUTORBITALS}}}{195}
+\indexentry{*MOLORB@{\normalfont  \ttfamily  {**MOLORB}}}{195}
 \indexentry{REORDER@{\normalfont  \ttfamily  {.REORDER}}}{195}
-\indexentry{orbital reordering}{195}
-\indexentry{POPULATION ANALYSIS@{\normalfont  \ttfamily  {*POPULATION ANALYSIS}}}{195}
-\indexentry{population analysis}{195}
-\indexentry{natural orbital}{195}
-\indexentry{ALL@{\normalfont  \ttfamily  {.ALL}}}{195}
-\indexentry{DIPMOM@{\normalfont  \ttfamily  {.DIPMOM}}}{195}
-\indexentry{dipole moment}{195}
-\indexentry{GROSSALL@{\normalfont  \ttfamily  {.GROSSALL}}}{195}
-\indexentry{population analysis}{195}
-\indexentry{GROSSMO@{\normalfont  \ttfamily  {.GROSSMO}}}{195}
-\indexentry{population analysis}{195}
-\indexentry{MULLIKEN@{\normalfont  \ttfamily  {.MULLIKEN}}}{195}
-\indexentry{population analysis}{195}
-\indexentry{population analysis!Mulliken}{195}
-\indexentry{Mulliken population analysis}{195}
-\indexentry{NETALL@{\normalfont  \ttfamily  {.NETALL}}}{196}
+\indexentry{SUPSYM@{\normalfont  \ttfamily  {.SUPSYM}}}{195}
+\indexentry{supersymmetry}{195}
+\indexentry{SYMMETRIC ORTHONORMALIZATION@{\normalfont  \ttfamily  {.SYMMETRIC ORTHONORMALIZATION}}}{195}
+\indexentry{orthonormalization!symmetric}{195}
+\indexentry{THRSSY@{\normalfont  \ttfamily  {.THRSSY}}}{195}
+\indexentry{supersymmetry}{195}
+\indexentry{\sc  sirius}{195}
+\indexentry{supersymmetry}{195}
+\indexentry{symmetry!group}{195}
+\indexentry{supersymmetry}{196}
+\indexentry{NOSUPSYM@{\normalfont  \ttfamily  {.NOSUPSYM}}}{196}
+\indexentry{\sc  abacus}{196}
+\indexentry{\sc  response}{196}
+\indexentry{SUPSYM@{\normalfont  \ttfamily  {.SUPSYM}}}{196}
+\indexentry{REORDER@{\normalfont  \ttfamily  {.REORDER}}}{196}
+\indexentry{orbital reordering}{196}
+\indexentry{POPULATION ANALYSIS@{\normalfont  \ttfamily  {*POPULATION ANALYSIS}}}{196}
 \indexentry{population analysis}{196}
-\indexentry{NETMO@{\normalfont  \ttfamily  {.NETMO}}}{196}
-\indexentry{population analysis}{196}
-\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{196}
-\indexentry{QUADRP@{\normalfont  \ttfamily  {.QUADRP}}}{196}
-\indexentry{quadrupole moment}{196}
-\indexentry{virial analysis}{196}
-\indexentry{VIRIAL@{\normalfont  \ttfamily  {.VIRIAL}}}{196}
-\indexentry{PRINT LEVELS@{\normalfont  \ttfamily  {*PRINT LEVELS}}}{196}
-\indexentry{CANONI@{\normalfont  \ttfamily  {.CANONI}}}{196}
-\indexentry{canonical orbital}{196}
 \indexentry{natural orbital}{196}
-\indexentry{IPRAVE@{\normalfont  \ttfamily  {.IPRAVE}}}{196}
-\indexentry{IPRCIX@{\normalfont  \ttfamily  {.IPRCIX}}}{196}
-\indexentry{IPRCNO@{\normalfont  \ttfamily  {.IPRCNO}}}{196}
-\indexentry{IPRDIA@{\normalfont  \ttfamily  {.IPRDIA}}}{196}
-\indexentry{IPRDNS@{\normalfont  \ttfamily  {.IPRDNS}}}{196}
-\indexentry{IPRFCK@{\normalfont  \ttfamily  {.IPRFCK}}}{196}
-\indexentry{IPRKAP@{\normalfont  \ttfamily  {.IPRKAP}}}{196}
-\indexentry{IPRSIG@{\normalfont  \ttfamily  {.IPRSIG}}}{197}
-\indexentry{IPRSOL@{\normalfont  \ttfamily  {.IPRSOL}}}{197}
-\indexentry{NOSUMMARY@{\normalfont  \ttfamily  {.NOSUMMARY}}}{197}
-\indexentry{PRINTFLAGS@{\normalfont  \ttfamily  {.PRINTFLAGS}}}{197}
-\indexentry{PRINTLEVELS@{\normalfont  \ttfamily  {.PRINTLEVELS}}}{197}
-\indexentry{PRINTLEVELS@{\normalfont  \ttfamily  {.PRINTLEVELS}}}{197}
-\indexentry{THRPWF@{\normalfont  \ttfamily  {.THRPWF}}}{197}
-\indexentry{SOLVENT@{\normalfont  \ttfamily  {*SOLVENT}}}{197}
-\indexentry{reaction field}{197}
-\indexentry{dielectric constant}{197}
-\indexentry{CAVITY@{\normalfont  \ttfamily  {.CAVITY}}}{197}
-\indexentry{cavity!radius}{197}
-\indexentry{DIELECTRIC CONSTANT@{\normalfont  \ttfamily  {.DIELECTRIC CONSTANT}}}{197}
-\indexentry{dielectric constant}{197}
-\indexentry{INERSINITIAL@{\normalfont  \ttfamily  {.INERSINITIAL}}}{197}
-\indexentry{dielectric constant}{197}
-\indexentry{inertial polarization}{197}
-\indexentry{INERSFINAL@{\normalfont  \ttfamily  {.INERSFINAL}}}{198}
+\indexentry{ALL@{\normalfont  \ttfamily  {.ALL}}}{196}
+\indexentry{DIPMOM@{\normalfont  \ttfamily  {.DIPMOM}}}{196}
+\indexentry{dipole moment}{196}
+\indexentry{GROSSALL@{\normalfont  \ttfamily  {.GROSSALL}}}{196}
+\indexentry{population analysis}{196}
+\indexentry{GROSSMO@{\normalfont  \ttfamily  {.GROSSMO}}}{196}
+\indexentry{population analysis}{196}
+\indexentry{MULLIKEN@{\normalfont  \ttfamily  {.MULLIKEN}}}{196}
+\indexentry{population analysis}{196}
+\indexentry{population analysis!Mulliken}{196}
+\indexentry{Mulliken population analysis}{196}
+\indexentry{NETALL@{\normalfont  \ttfamily  {.NETALL}}}{197}
+\indexentry{population analysis}{197}
+\indexentry{NETMO@{\normalfont  \ttfamily  {.NETMO}}}{197}
+\indexentry{population analysis}{197}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{197}
+\indexentry{QUADRP@{\normalfont  \ttfamily  {.QUADRP}}}{197}
+\indexentry{quadrupole moment}{197}
+\indexentry{virial analysis}{197}
+\indexentry{VIRIAL@{\normalfont  \ttfamily  {.VIRIAL}}}{197}
+\indexentry{PRINT LEVELS@{\normalfont  \ttfamily  {*PRINT LEVELS}}}{197}
+\indexentry{CANONI@{\normalfont  \ttfamily  {.CANONI}}}{197}
+\indexentry{canonical orbital}{197}
+\indexentry{natural orbital}{197}
+\indexentry{IPRAVE@{\normalfont  \ttfamily  {.IPRAVE}}}{197}
+\indexentry{IPRCIX@{\normalfont  \ttfamily  {.IPRCIX}}}{197}
+\indexentry{IPRCNO@{\normalfont  \ttfamily  {.IPRCNO}}}{197}
+\indexentry{IPRDIA@{\normalfont  \ttfamily  {.IPRDIA}}}{197}
+\indexentry{IPRDNS@{\normalfont  \ttfamily  {.IPRDNS}}}{197}
+\indexentry{IPRFCK@{\normalfont  \ttfamily  {.IPRFCK}}}{197}
+\indexentry{IPRKAP@{\normalfont  \ttfamily  {.IPRKAP}}}{197}
+\indexentry{IPRSIG@{\normalfont  \ttfamily  {.IPRSIG}}}{198}
+\indexentry{IPRSOL@{\normalfont  \ttfamily  {.IPRSOL}}}{198}
+\indexentry{NOSUMMARY@{\normalfont  \ttfamily  {.NOSUMMARY}}}{198}
+\indexentry{PRINTFLAGS@{\normalfont  \ttfamily  {.PRINTFLAGS}}}{198}
+\indexentry{PRINTLEVELS@{\normalfont  \ttfamily  {.PRINTLEVELS}}}{198}
+\indexentry{PRINTLEVELS@{\normalfont  \ttfamily  {.PRINTLEVELS}}}{198}
+\indexentry{THRPWF@{\normalfont  \ttfamily  {.THRPWF}}}{198}
+\indexentry{SOLVENT@{\normalfont  \ttfamily  {*SOLVENT}}}{198}
+\indexentry{reaction field}{198}
+\indexentry{dielectric constant}{198}
+\indexentry{CAVITY@{\normalfont  \ttfamily  {.CAVITY}}}{198}
+\indexentry{cavity!radius}{198}
+\indexentry{DIELECTRIC CONSTANT@{\normalfont  \ttfamily  {.DIELECTRIC CONSTANT}}}{198}
 \indexentry{dielectric constant}{198}
 \indexentry{INERSINITIAL@{\normalfont  \ttfamily  {.INERSINITIAL}}}{198}
-\indexentry{final polarization}{198}
-\indexentry{MAX L@{\normalfont  \ttfamily  {.MAX L}}}{198}
-\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{198}
-\indexentry{DIELECTRIC CONSTANT@{\normalfont  \ttfamily  {.DIELECTRIC CONSTANT}}}{198}
-\indexentry{INERSINITIAL@{\normalfont  \ttfamily  {.INERSINITIAL}}}{198}
-\indexentry{INERSFINAL@{\normalfont  \ttfamily  {.INERSFINAL}}}{198}
-\indexentry{STEP CONTROL@{\normalfont  \ttfamily  {*STEP CONTROL}}}{198}
-\indexentry{DAMPING FACTOR@{\normalfont  \ttfamily  {.DAMPING FACTOR}}}{198}
-\indexentry{damping}{198}
-\indexentry{DECREMENT FACTOR@{\normalfont  \ttfamily  {.DECREMENT FACTOR}}}{198}
-\indexentry{trust radius}{198}
-\indexentry{GOOD RATIO@{\normalfont  \ttfamily  {.GOOD RATIO}}}{198}
-\indexentry{INCREMENT FACTOR@{\normalfont  \ttfamily  {.INCREMENT FACTOR}}}{198}
-\indexentry{trust radius}{198}
-\indexentry{MAX DAMPING@{\normalfont  \ttfamily  {.MAX DAMPING}}}{199}
+\indexentry{dielectric constant}{198}
+\indexentry{inertial polarization}{198}
+\indexentry{INERSFINAL@{\normalfont  \ttfamily  {.INERSFINAL}}}{199}
+\indexentry{dielectric constant}{199}
+\indexentry{INERSINITIAL@{\normalfont  \ttfamily  {.INERSINITIAL}}}{199}
+\indexentry{final polarization}{199}
+\indexentry{MAX L@{\normalfont  \ttfamily  {.MAX L}}}{199}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{199}
+\indexentry{DIELECTRIC CONSTANT@{\normalfont  \ttfamily  {.DIELECTRIC CONSTANT}}}{199}
+\indexentry{INERSINITIAL@{\normalfont  \ttfamily  {.INERSINITIAL}}}{199}
+\indexentry{INERSFINAL@{\normalfont  \ttfamily  {.INERSFINAL}}}{199}
+\indexentry{STEP CONTROL@{\normalfont  \ttfamily  {*STEP CONTROL}}}{199}
+\indexentry{DAMPING FACTOR@{\normalfont  \ttfamily  {.DAMPING FACTOR}}}{199}
 \indexentry{damping}{199}
-\indexentry{MAX STEP LENGTH@{\normalfont  \ttfamily  {.MAX STEP LENGTH}}}{199}
-\indexentry{MIN DAMPING@{\normalfont  \ttfamily  {.MIN DAMPING}}}{199}
-\indexentry{MIN RATIO@{\normalfont  \ttfamily  {.MIN RATIO}}}{199}
-\indexentry{NO EXTRA TERMINATION TESTS@{\normalfont  \ttfamily  {.NO EXTRA TERMINATION TESTS}}}{199}
-\indexentry{REJECT THRESHOLD@{\normalfont  \ttfamily  {.REJECT THRESHOLD}}}{199}
-\indexentry{THQKVA@{\normalfont  \ttfamily  {.THQKVA}}}{199}
-\indexentry{THQLIN@{\normalfont  \ttfamily  {.THQLIN}}}{199}
-\indexentry{THQMIN@{\normalfont  \ttfamily  {.THQMIN}}}{199}
-\indexentry{TIGHT STEP CONTROL@{\normalfont  \ttfamily  {.TIGHT STEP CONTROL}}}{200}
-\indexentry{TOLERANCE@{\normalfont  \ttfamily  {.TOLERANCE}}}{200}
-\indexentry{TRUST RADIUS@{\normalfont  \ttfamily  {.TRUST RADIUS}}}{200}
-\indexentry{trust radius}{200}
-\indexentry{TRANSFORMATION@{\normalfont  \ttfamily  {*TRANSFORMATION}}}{200}
-\indexentry{integral transformation}{200}
-\indexentry{two-electron integral}{200}
-\indexentry{molecular orbital}{200}
-\indexentry{FINAL LEVEL@{\normalfont  \ttfamily  {.FINAL LEVEL}}}{200}
-\indexentry{integral transformation}{200}
-\indexentry{INTERFACE@{\normalfont  \ttfamily  {.INTERFACE}}}{200}
-\indexentry{\sc  abacus}{200}
-\indexentry{\sc  response}{200}
-\indexentry{LEVEL@{\normalfont  \ttfamily  {.LEVEL}}}{200}
-\indexentry{OLD TRANSFORMATION@{\normalfont  \ttfamily  {.OLD TRANSFORMATION}}}{200}
-\indexentry{PRESORT@{\normalfont  \ttfamily  {.PRESORT}}}{200}
-\indexentry{SORT I@{\normalfont  \ttfamily  {.SORT I}}}{200}
-\indexentry{*INTEGRALS@{\normalfont  \ttfamily  {**INTEGRALS}}}{200}
-\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{200}
-\indexentry{RESIDENT MEMORY@{\normalfont  \ttfamily  {.RESIDENT MEMORY}}}{200}
-\indexentry{\sc  sirius}{200}
+\indexentry{DECREMENT FACTOR@{\normalfont  \ttfamily  {.DECREMENT FACTOR}}}{199}
+\indexentry{trust radius}{199}
+\indexentry{GOOD RATIO@{\normalfont  \ttfamily  {.GOOD RATIO}}}{199}
+\indexentry{INCREMENT FACTOR@{\normalfont  \ttfamily  {.INCREMENT FACTOR}}}{199}
+\indexentry{trust radius}{199}
+\indexentry{MAX DAMPING@{\normalfont  \ttfamily  {.MAX DAMPING}}}{200}
+\indexentry{damping}{200}
+\indexentry{MAX STEP LENGTH@{\normalfont  \ttfamily  {.MAX STEP LENGTH}}}{200}
+\indexentry{MIN DAMPING@{\normalfont  \ttfamily  {.MIN DAMPING}}}{200}
+\indexentry{MIN RATIO@{\normalfont  \ttfamily  {.MIN RATIO}}}{200}
+\indexentry{NO EXTRA TERMINATION TESTS@{\normalfont  \ttfamily  {.NO EXTRA TERMINATION TESTS}}}{200}
+\indexentry{REJECT THRESHOLD@{\normalfont  \ttfamily  {.REJECT THRESHOLD}}}{200}
+\indexentry{THQKVA@{\normalfont  \ttfamily  {.THQKVA}}}{200}
+\indexentry{THQLIN@{\normalfont  \ttfamily  {.THQLIN}}}{200}
+\indexentry{THQMIN@{\normalfont  \ttfamily  {.THQMIN}}}{200}
+\indexentry{TIGHT STEP CONTROL@{\normalfont  \ttfamily  {.TIGHT STEP CONTROL}}}{201}
+\indexentry{TOLERANCE@{\normalfont  \ttfamily  {.TOLERANCE}}}{201}
+\indexentry{TRUST RADIUS@{\normalfont  \ttfamily  {.TRUST RADIUS}}}{201}
+\indexentry{trust radius}{201}
+\indexentry{TRANSFORMATION@{\normalfont  \ttfamily  {*TRANSFORMATION}}}{201}
+\indexentry{integral transformation}{201}
+\indexentry{two-electron integral}{201}
+\indexentry{molecular orbital}{201}
+\indexentry{FINAL LEVEL@{\normalfont  \ttfamily  {.FINAL LEVEL}}}{201}
+\indexentry{integral transformation}{201}
+\indexentry{INTERFACE@{\normalfont  \ttfamily  {.INTERFACE}}}{201}
+\indexentry{\sc  abacus}{201}
+\indexentry{\sc  response}{201}
+\indexentry{LEVEL@{\normalfont  \ttfamily  {.LEVEL}}}{201}
+\indexentry{OLD TRANSFORMATION@{\normalfont  \ttfamily  {.OLD TRANSFORMATION}}}{201}
+\indexentry{PRESORT@{\normalfont  \ttfamily  {.PRESORT}}}{201}
+\indexentry{SORT I@{\normalfont  \ttfamily  {.SORT I}}}{201}
+\indexentry{*INTEGRALS@{\normalfont  \ttfamily  {**INTEGRALS}}}{201}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{201}
+\indexentry{RESIDENT MEMORY@{\normalfont  \ttfamily  {.RESIDENT MEMORY}}}{201}
 \indexentry{\sc  sirius}{201}
-\indexentry{*MOLORB@{\normalfont  \ttfamily  {**MOLORB}}}{201}
-\indexentry{ORBITAL INPUT@{\normalfont  \ttfamily  {*ORBITAL INPUT}}}{201}
-\indexentry{\sc  sirius}{201}
-\indexentry{\sc  abacus}{202}
-\indexentry{*PROPERTIES@{\normalfont  \ttfamily  {**PROPERTIES}}}{202}
-\indexentry{geometry optimization}{202}
-\indexentry{transition state}{202}
-\indexentry{dynamics}{202}
-\indexentry{WALK@{\normalfont  \ttfamily  {*WALK}}}{202}
-\indexentry{OPTIMIZE@{\normalfont  \ttfamily  {*OPTIMIZE}}}{202}
-\indexentry{ABALNR@{\normalfont  \ttfamily  {.ABALNR}}}{202}
-\indexentry{frequency}{202}
-\indexentry{linear response}{202}
-\indexentry{response!linear}{202}
-\indexentry{polarizability}{202}
-\indexentry{Raman intensity}{202}
-\indexentry{Raman optical activity}{202}
-\indexentry{ROA}{202}
-\indexentry{SOPPA@{\normalfont  \ttfamily  {.SOPPA}}}{202}
-\indexentry{SOPPA}{202}
-\indexentry{CAVORG@{\normalfont  \ttfamily  {.CAVORG}}}{202}
-\indexentry{cavity!origin}{202}
-\indexentry{reaction field}{202}
-\indexentry{center of mass}{202}
-\indexentry{\sc  hermit}{202}
-\indexentry{DIPGRA@{\normalfont  \ttfamily  {.DIPGRA}}}{202}
-\indexentry{dipole gradient}{202}
-\indexentry{atomic polar tensor}{202}
-\indexentry{APT}{202}
-\indexentry{VIBANA@{\normalfont  \ttfamily  {.VIBANA}}}{202}
-\indexentry{IR intensity}{202}
-\indexentry{DIPORG@{\normalfont  \ttfamily  {.DIPORG}}}{203}
-\indexentry{dipole origin}{203}
-\indexentry{dipole origin}{203}
-\indexentry{finite field}{203}
-\indexentry{ECD@{\normalfont  \ttfamily  {.ECD}}}{203}
-\indexentry{electronic circular dichroism}{203}
-\indexentry{ECD}{203}
-\indexentry{electronic excitation}{203}
-\indexentry{EXCITA@{\normalfont  \ttfamily  {*EXCITA}}}{203}
-\indexentry{EXCITA@{\normalfont  \ttfamily  {.EXCITA}}}{203}
-\indexentry{electronic excitation}{203}
-\indexentry{excitation energy}{203}
+\indexentry{\sc  sirius}{202}
+\indexentry{*MOLORB@{\normalfont  \ttfamily  {**MOLORB}}}{202}
+\indexentry{ORBITAL INPUT@{\normalfont  \ttfamily  {*ORBITAL INPUT}}}{202}
+\indexentry{\sc  sirius}{202}
+\indexentry{\sc  abacus}{203}
+\indexentry{*PROPERTIES@{\normalfont  \ttfamily  {**PROPERTIES}}}{203}
+\indexentry{geometry optimization}{203}
+\indexentry{transition state}{203}
+\indexentry{dynamics}{203}
+\indexentry{WALK@{\normalfont  \ttfamily  {*WALK}}}{203}
+\indexentry{OPTIMIZE@{\normalfont  \ttfamily  {*OPTIMIZE}}}{203}
+\indexentry{ABALNR@{\normalfont  \ttfamily  {.ABALNR}}}{203}
+\indexentry{frequency}{203}
 \indexentry{linear response}{203}
 \indexentry{response!linear}{203}
-\indexentry{single residue}{203}
-\indexentry{transition moment}{203}
-\indexentry{rotatory strength}{203}
+\indexentry{polarizability}{203}
+\indexentry{Raman intensity}{203}
+\indexentry{Raman optical activity}{203}
+\indexentry{ROA}{203}
 \indexentry{SOPPA@{\normalfont  \ttfamily  {.SOPPA}}}{203}
 \indexentry{SOPPA}{203}
-\indexentry{EXPFCK@{\normalfont  \ttfamily  {.EXPFCK}}}{203}
-\indexentry{GAUGEO@{\normalfont  \ttfamily  {.GAUGEO}}}{203}
-\indexentry{gauge origin}{203}
-\indexentry{NOCMC@{\normalfont  \ttfamily  {.NOCMC}}}{203}
-\indexentry{HELLMA@{\normalfont  \ttfamily  {.HELLMA}}}{203}
-\indexentry{INPTES@{\normalfont  \ttfamily  {.INPTES}}}{203}
-\indexentry{ISOTOP@{\normalfont  \ttfamily  {.ISOTOP}}}{203}
-\indexentry{isotopic constitution}{204}
-\indexentry{gauge origin}{204}
-\indexentry{dynamics}{204}
-\indexentry{mass-weighted coordinates}{204}
-\indexentry{vibrational analysis}{204}
-\indexentry{ISOTOP@{\normalfont  \ttfamily  {.ISOTOP}}}{204}
-\indexentry{VIBANA@{\normalfont  \ttfamily  {*VIBANA}}}{204}
-\indexentry{LINEAR@{\normalfont  \ttfamily  {.LINEAR}}}{204}
-\indexentry{MAGNET@{\normalfont  \ttfamily  {.MAGNET}}}{204}
-\indexentry{magnetizability}{204}
-\indexentry{MOLGFA@{\normalfont  \ttfamily  {.MOLGFA}}}{204}
-\indexentry{rotational g tensor}{204}
-\indexentry{London orbitals}{204}
-\indexentry{NOLOND@{\normalfont  \ttfamily  {.NOLOND}}}{204}
-\indexentry{natural connection}{204}
-\indexentry{NODIFC@{\normalfont  \ttfamily  {.NODIFC}}}{204}
-\indexentry{symmetric connection}{204}
-\indexentry{gauge origin}{204}
-\indexentry{center of mass}{204}
-\indexentry{GAUGEO@{\normalfont  \ttfamily  {.GAUGEO}}}{204}
-\indexentry{NOCMC@{\normalfont  \ttfamily  {.NOCMC}}}{204}
+\indexentry{CAVORG@{\normalfont  \ttfamily  {.CAVORG}}}{203}
+\indexentry{cavity!origin}{203}
+\indexentry{reaction field}{203}
+\indexentry{center of mass}{203}
+\indexentry{\sc  hermit}{203}
+\indexentry{DIPGRA@{\normalfont  \ttfamily  {.DIPGRA}}}{203}
+\indexentry{dipole gradient}{203}
+\indexentry{atomic polar tensor}{203}
+\indexentry{APT}{203}
+\indexentry{VIBANA@{\normalfont  \ttfamily  {.VIBANA}}}{203}
+\indexentry{IR intensity}{203}
+\indexentry{DIPORG@{\normalfont  \ttfamily  {.DIPORG}}}{204}
+\indexentry{dipole origin}{204}
+\indexentry{dipole origin}{204}
+\indexentry{finite field}{204}
+\indexentry{ECD@{\normalfont  \ttfamily  {.ECD}}}{204}
+\indexentry{electronic circular dichroism}{204}
+\indexentry{ECD}{204}
+\indexentry{electronic excitation}{204}
+\indexentry{EXCITA@{\normalfont  \ttfamily  {*EXCITA}}}{204}
+\indexentry{EXCITA@{\normalfont  \ttfamily  {.EXCITA}}}{204}
+\indexentry{electronic excitation}{204}
+\indexentry{excitation energy}{204}
+\indexentry{linear response}{204}
+\indexentry{response!linear}{204}
+\indexentry{single residue}{204}
+\indexentry{transition moment}{204}
+\indexentry{rotatory strength}{204}
 \indexentry{SOPPA@{\normalfont  \ttfamily  {.SOPPA}}}{204}
 \indexentry{SOPPA}{204}
-\indexentry{SOPPA}{204}
+\indexentry{EXPFCK@{\normalfont  \ttfamily  {.EXPFCK}}}{204}
+\indexentry{GAUGEO@{\normalfont  \ttfamily  {.GAUGEO}}}{204}
+\indexentry{gauge origin}{204}
+\indexentry{NOCMC@{\normalfont  \ttfamily  {.NOCMC}}}{204}
+\indexentry{HELLMA@{\normalfont  \ttfamily  {.HELLMA}}}{204}
+\indexentry{INPTES@{\normalfont  \ttfamily  {.INPTES}}}{204}
+\indexentry{ISOTOP@{\normalfont  \ttfamily  {.ISOTOP}}}{204}
+\indexentry{isotopic constitution}{205}
+\indexentry{gauge origin}{205}
+\indexentry{dynamics}{205}
+\indexentry{mass-weighted coordinates}{205}
+\indexentry{vibrational analysis}{205}
+\indexentry{ISOTOP@{\normalfont  \ttfamily  {.ISOTOP}}}{205}
+\indexentry{VIBANA@{\normalfont  \ttfamily  {*VIBANA}}}{205}
+\indexentry{LINEAR@{\normalfont  \ttfamily  {.LINEAR}}}{205}
+\indexentry{MAGNET@{\normalfont  \ttfamily  {.MAGNET}}}{205}
+\indexentry{magnetizability}{205}
 \indexentry{MOLGFA@{\normalfont  \ttfamily  {.MOLGFA}}}{205}
 \indexentry{rotational g tensor}{205}
-\indexentry{magnetizability}{205}
-\indexentry{MAGNET@{\normalfont  \ttfamily  {.MAGNET}}}{205}
 \indexentry{London orbitals}{205}
-\indexentry{natural connection}{205}
 \indexentry{NOLOND@{\normalfont  \ttfamily  {.NOLOND}}}{205}
+\indexentry{natural connection}{205}
+\indexentry{NODIFC@{\normalfont  \ttfamily  {.NODIFC}}}{205}
+\indexentry{symmetric connection}{205}
 \indexentry{gauge origin}{205}
 \indexentry{center of mass}{205}
+\indexentry{GAUGEO@{\normalfont  \ttfamily  {.GAUGEO}}}{205}
+\indexentry{NOCMC@{\normalfont  \ttfamily  {.NOCMC}}}{205}
 \indexentry{SOPPA@{\normalfont  \ttfamily  {.SOPPA}}}{205}
 \indexentry{SOPPA}{205}
 \indexentry{SOPPA}{205}
-\indexentry{MOLGRA@{\normalfont  \ttfamily  {.MOLGRA}}}{205}
-\indexentry{gradient}{205}
-\indexentry{MOLHES@{\normalfont  \ttfamily  {.MOLHES}}}{205}
-\indexentry{Hessian}{205}
-\indexentry{gradient}{205}
-\indexentry{NACME@{\normalfont  \ttfamily  {.NACME}}}{205}
-\indexentry{non-adiabatic coupling element}{205}
-\indexentry{\sc  response}{205}
-\indexentry{NMR@{\normalfont  \ttfamily  {.NMR}}}{205}
-\indexentry{nuclear shielding}{205}
-\indexentry{spin-spin coupling}{205}
-\indexentry{SHIELD@{\normalfont  \ttfamily  {.SHIELD}}}{205}
-\indexentry{SPIN-S@{\normalfont  \ttfamily  {.SPIN-S}}}{205}
-\indexentry{NOCMC@{\normalfont  \ttfamily  {.NOCMC}}}{205}
-\indexentry{gauge origin}{205}
-\indexentry{NODARW@{\normalfont  \ttfamily  {.NODARW}}}{205}
-\indexentry{Darwin correction}{205}
-\indexentry{mass-velocity correction}{205}
-\indexentry{NODIFC@{\normalfont  \ttfamily  {.NODIFC}}}{205}
-\indexentry{natural connection}{205}
-\indexentry{symmetric connection}{205}
-\indexentry{NOHESS@{\normalfont  \ttfamily  {.NOHESS}}}{206}
-\indexentry{Hessian}{206}
-\indexentry{NOLOND@{\normalfont  \ttfamily  {.NOLOND}}}{206}
+\indexentry{MOLGFA@{\normalfont  \ttfamily  {.MOLGFA}}}{206}
+\indexentry{rotational g tensor}{206}
+\indexentry{magnetizability}{206}
+\indexentry{MAGNET@{\normalfont  \ttfamily  {.MAGNET}}}{206}
 \indexentry{London orbitals}{206}
+\indexentry{natural connection}{206}
+\indexentry{NOLOND@{\normalfont  \ttfamily  {.NOLOND}}}{206}
+\indexentry{gauge origin}{206}
+\indexentry{center of mass}{206}
+\indexentry{SOPPA@{\normalfont  \ttfamily  {.SOPPA}}}{206}
+\indexentry{SOPPA}{206}
+\indexentry{SOPPA}{206}
+\indexentry{MOLGRA@{\normalfont  \ttfamily  {.MOLGRA}}}{206}
+\indexentry{gradient}{206}
+\indexentry{MOLHES@{\normalfont  \ttfamily  {.MOLHES}}}{206}
+\indexentry{Hessian}{206}
+\indexentry{gradient}{206}
+\indexentry{NACME@{\normalfont  \ttfamily  {.NACME}}}{206}
+\indexentry{non-adiabatic coupling element}{206}
+\indexentry{\sc  response}{206}
+\indexentry{NMR@{\normalfont  \ttfamily  {.NMR}}}{206}
+\indexentry{nuclear shielding}{206}
+\indexentry{spin-spin coupling}{206}
+\indexentry{SHIELD@{\normalfont  \ttfamily  {.SHIELD}}}{206}
+\indexentry{SPIN-S@{\normalfont  \ttfamily  {.SPIN-S}}}{206}
 \indexentry{NOCMC@{\normalfont  \ttfamily  {.NOCMC}}}{206}
-\indexentry{GAUGEO@{\normalfont  \ttfamily  {.GAUGEO}}}{206}
-\indexentry{NOMASV@{\normalfont  \ttfamily  {.NOMASV}}}{206}
-\indexentry{mass-velocity correction}{206}
+\indexentry{gauge origin}{206}
+\indexentry{NODARW@{\normalfont  \ttfamily  {.NODARW}}}{206}
 \indexentry{Darwin correction}{206}
-\indexentry{NQCC@{\normalfont  \ttfamily  {.NQCC}}}{206}
-\indexentry{nuclear quadrupole coupling}{206}
-\indexentry{NQCC}{206}
-\indexentry{OPTROT@{\normalfont  \ttfamily  {.OPTROT}}}{206}
-\indexentry{PHASEO@{\normalfont  \ttfamily  {.PHASEO}}}{206}
-\indexentry{POLARI@{\normalfont  \ttfamily  {.POLARI}}}{206}
-\indexentry{polarizability}{206}
-\indexentry{ALFA@{\normalfont  \ttfamily  {.ALFA}}}{206}
-\indexentry{ABALNR@{\normalfont  \ttfamily  {*ABALNR}}}{206}
-\indexentry{POPANA@{\normalfont  \ttfamily  {.POPANA}}}{206}
-\indexentry{population analysis}{206}
-\indexentry{dipole gradient}{206}
-\indexentry{DIPGRA@{\normalfont  \ttfamily  {.DIPGRA}}}{206}
-\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{206}
-\indexentry{QUADRU@{\normalfont  \ttfamily  {.QUADRU}}}{206}
-\indexentry{quadrupole moment}{206}
-\indexentry{RAMAN@{\normalfont  \ttfamily  {.RAMAN}}}{207}
-\indexentry{Raman intensity}{207}
-\indexentry{REPS@{\normalfont  \ttfamily  {.REPS}}}{207}
-\indexentry{RESTART@{\normalfont  \ttfamily  {.RESTART}}}{207}
-\indexentry{SELECT@{\normalfont  \ttfamily  {.SELECT}}}{207}
-\indexentry{SHIELD@{\normalfont  \ttfamily  {.SHIELD}}}{207}
-\indexentry{nuclear shielding}{207}
+\indexentry{mass-velocity correction}{206}
+\indexentry{NODIFC@{\normalfont  \ttfamily  {.NODIFC}}}{206}
+\indexentry{natural connection}{206}
+\indexentry{symmetric connection}{206}
+\indexentry{NOHESS@{\normalfont  \ttfamily  {.NOHESS}}}{207}
+\indexentry{Hessian}{207}
+\indexentry{NOLOND@{\normalfont  \ttfamily  {.NOLOND}}}{207}
 \indexentry{London orbitals}{207}
-\indexentry{natural connection}{207}
-\indexentry{symmetric connection}{207}
-\indexentry{gauge origin}{207}
-\indexentry{center of mass}{207}
-\indexentry{SOPPA@{\normalfont  \ttfamily  {.SOPPA}}}{207}
-\indexentry{SOPPA}{207}
-\indexentry{SOPPA}{207}
-\indexentry{SOPPA@{\normalfont  \ttfamily  {.SOPPA}}}{208}
-\indexentry{SPIN-R@{\normalfont  \ttfamily  {.SPIN-R}}}{208}
-\indexentry{spin-rotation constant}{208}
-\indexentry{London orbitals}{208}
-\indexentry{natural connection}{208}
-\indexentry{gauge origin}{208}
-\indexentry{center of mass}{208}
-\indexentry{SPIN-S@{\normalfont  \ttfamily  {.SPIN-S}}}{208}
-\indexentry{spin-spin coupling}{208}
-\indexentry{Fermi contact}{208}
-\indexentry{spin-dipole}{208}
-\indexentry{paramagnetic spin-orbit}{208}
-\indexentry{diamagnetic spin-orbit}{208}
-\indexentry{VCD@{\normalfont  \ttfamily  {.VCD}}}{208}
-\indexentry{VCD}{208}
-\indexentry{vibrational circular dichroism}{208}
+\indexentry{NOCMC@{\normalfont  \ttfamily  {.NOCMC}}}{207}
+\indexentry{GAUGEO@{\normalfont  \ttfamily  {.GAUGEO}}}{207}
+\indexentry{NOMASV@{\normalfont  \ttfamily  {.NOMASV}}}{207}
+\indexentry{mass-velocity correction}{207}
+\indexentry{Darwin correction}{207}
+\indexentry{NQCC@{\normalfont  \ttfamily  {.NQCC}}}{207}
+\indexentry{nuclear quadrupole coupling}{207}
+\indexentry{NQCC}{207}
+\indexentry{OPTROT@{\normalfont  \ttfamily  {.OPTROT}}}{207}
+\indexentry{PHASEO@{\normalfont  \ttfamily  {.PHASEO}}}{207}
+\indexentry{POLARI@{\normalfont  \ttfamily  {.POLARI}}}{207}
+\indexentry{polarizability}{207}
+\indexentry{ALFA@{\normalfont  \ttfamily  {.ALFA}}}{207}
+\indexentry{ABALNR@{\normalfont  \ttfamily  {*ABALNR}}}{207}
+\indexentry{POPANA@{\normalfont  \ttfamily  {.POPANA}}}{207}
+\indexentry{population analysis}{207}
+\indexentry{dipole gradient}{207}
+\indexentry{DIPGRA@{\normalfont  \ttfamily  {.DIPGRA}}}{207}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{207}
+\indexentry{QUADRU@{\normalfont  \ttfamily  {.QUADRU}}}{207}
+\indexentry{quadrupole moment}{207}
+\indexentry{RAMAN@{\normalfont  \ttfamily  {.RAMAN}}}{208}
+\indexentry{Raman intensity}{208}
+\indexentry{REPS@{\normalfont  \ttfamily  {.REPS}}}{208}
+\indexentry{RESTART@{\normalfont  \ttfamily  {.RESTART}}}{208}
+\indexentry{SELECT@{\normalfont  \ttfamily  {.SELECT}}}{208}
+\indexentry{SHIELD@{\normalfont  \ttfamily  {.SHIELD}}}{208}
+\indexentry{nuclear shielding}{208}
 \indexentry{London orbitals}{208}
 \indexentry{natural connection}{208}
 \indexentry{symmetric connection}{208}
 \indexentry{gauge origin}{208}
 \indexentry{center of mass}{208}
-\indexentry{NOCMC@{\normalfont  \ttfamily  {.NOCMC}}}{208}
-\indexentry{VIBANA@{\normalfont  \ttfamily  {.VIBANA}}}{209}
-\indexentry{vibrational analysis}{209}
-\indexentry{IR intensity}{209}
-\indexentry{VROA@{\normalfont  \ttfamily  {.VROA}}}{209}
-\indexentry{Raman optical activity}{209}
-\indexentry{ROA}{209}
-\indexentry{WRTINT@{\normalfont  \ttfamily  {.WRTINT}}}{209}
-\indexentry{AAT@{\normalfont  \ttfamily  {*AAT}}}{209}
-\indexentry{atomic axial tensor}{209}
-\indexentry{AAT}{209}
-\indexentry{vibrational circular dichroism}{209}
-\indexentry{VCD}{209}
-\indexentry{INTPRI@{\normalfont  \ttfamily  {.INTPRI}}}{209}
-\indexentry{atomic axial tensor}{209}
-\indexentry{AAT}{209}
-\indexentry{NODBDR@{\normalfont  \ttfamily  {.NODBDR}}}{209}
-\indexentry{overlap!half-differentiated}{209}
-\indexentry{VCD}{209}
-\indexentry{vibrational circular dichroism}{209}
-\indexentry{NODDY@{\normalfont  \ttfamily  {.NODDY}}}{209}
-\indexentry{atomic axial tensor}{209}
-\indexentry{AAT}{209}
-\indexentry{NOELC@{\normalfont  \ttfamily  {.NOELC}}}{209}
-\indexentry{atomic axial tensor}{209}
-\indexentry{AAT}{209}
+\indexentry{SOPPA@{\normalfont  \ttfamily  {.SOPPA}}}{208}
+\indexentry{SOPPA}{208}
+\indexentry{SOPPA}{208}
+\indexentry{SOPPA@{\normalfont  \ttfamily  {.SOPPA}}}{209}
+\indexentry{SPIN-R@{\normalfont  \ttfamily  {.SPIN-R}}}{209}
+\indexentry{spin-rotation constant}{209}
+\indexentry{London orbitals}{209}
+\indexentry{natural connection}{209}
+\indexentry{gauge origin}{209}
+\indexentry{center of mass}{209}
+\indexentry{SPIN-S@{\normalfont  \ttfamily  {.SPIN-S}}}{209}
+\indexentry{spin-spin coupling}{209}
+\indexentry{Fermi contact}{209}
+\indexentry{spin-dipole}{209}
+\indexentry{paramagnetic spin-orbit}{209}
+\indexentry{diamagnetic spin-orbit}{209}
+\indexentry{VCD@{\normalfont  \ttfamily  {.VCD}}}{209}
 \indexentry{VCD}{209}
 \indexentry{vibrational circular dichroism}{209}
-\indexentry{NONUC@{\normalfont  \ttfamily  {.NONUC}}}{209}
-\indexentry{atomic axial tensor}{209}
-\indexentry{AAT}{209}
-\indexentry{NOSEC@{\normalfont  \ttfamily  {.NOSEC}}}{209}
-\indexentry{atomic axial tensor}{209}
-\indexentry{AAT}{209}
-\indexentry{VCD}{209}
-\indexentry{vibrational circular dichroism}{209}
-\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{210}
+\indexentry{London orbitals}{209}
+\indexentry{natural connection}{209}
+\indexentry{symmetric connection}{209}
+\indexentry{gauge origin}{209}
+\indexentry{center of mass}{209}
+\indexentry{NOCMC@{\normalfont  \ttfamily  {.NOCMC}}}{209}
+\indexentry{VIBANA@{\normalfont  \ttfamily  {.VIBANA}}}{210}
+\indexentry{vibrational analysis}{210}
+\indexentry{IR intensity}{210}
+\indexentry{VROA@{\normalfont  \ttfamily  {.VROA}}}{210}
+\indexentry{Raman optical activity}{210}
+\indexentry{ROA}{210}
+\indexentry{WRTINT@{\normalfont  \ttfamily  {.WRTINT}}}{210}
+\indexentry{AAT@{\normalfont  \ttfamily  {*AAT}}}{210}
 \indexentry{atomic axial tensor}{210}
 \indexentry{AAT}{210}
-\indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{210}
+\indexentry{vibrational circular dichroism}{210}
+\indexentry{VCD}{210}
+\indexentry{INTPRI@{\normalfont  \ttfamily  {.INTPRI}}}{210}
+\indexentry{atomic axial tensor}{210}
+\indexentry{AAT}{210}
+\indexentry{NODBDR@{\normalfont  \ttfamily  {.NODBDR}}}{210}
+\indexentry{overlap!half-differentiated}{210}
+\indexentry{VCD}{210}
+\indexentry{vibrational circular dichroism}{210}
+\indexentry{NODDY@{\normalfont  \ttfamily  {.NODDY}}}{210}
+\indexentry{atomic axial tensor}{210}
+\indexentry{AAT}{210}
+\indexentry{NOELC@{\normalfont  \ttfamily  {.NOELC}}}{210}
 \indexentry{atomic axial tensor}{210}
 \indexentry{AAT}{210}
 \indexentry{VCD}{210}
 \indexentry{vibrational circular dichroism}{210}
-\indexentry{STOP@{\normalfont  \ttfamily  {.STOP}}}{210}
+\indexentry{NONUC@{\normalfont  \ttfamily  {.NONUC}}}{210}
 \indexentry{atomic axial tensor}{210}
 \indexentry{AAT}{210}
-\indexentry{frequency}{210}
-\indexentry{linear response}{210}
-\indexentry{response!linear}{210}
-\indexentry{Raman optical activity}{210}
-\indexentry{ROA}{210}
-\indexentry{ALFA@{\normalfont  \ttfamily  {.ALFA}}}{210}
-\indexentry{polarizability}{210}
-\indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}}{210}
-\indexentry{frequency}{210}
-\indexentry{IPRINT@{\normalfont  \ttfamily  {.IPRINT}}}{210}
-\indexentry{MAX IT@{\normalfont  \ttfamily  {.MAX IT}}}{210}
-\indexentry{MAXPHP@{\normalfont  \ttfamily  {.MAXPHP}}}{211}
-\indexentry{MAXRED@{\normalfont  \ttfamily  {.MAXRED}}}{211}
-\indexentry{OPTORB@{\normalfont  \ttfamily  {.OPTORB}}}{211}
-\indexentry{optimal orbital trial vector}{211}
+\indexentry{NOSEC@{\normalfont  \ttfamily  {.NOSEC}}}{210}
+\indexentry{atomic axial tensor}{210}
+\indexentry{AAT}{210}
+\indexentry{VCD}{210}
+\indexentry{vibrational circular dichroism}{210}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{211}
+\indexentry{atomic axial tensor}{211}
+\indexentry{AAT}{211}
+\indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{211}
+\indexentry{atomic axial tensor}{211}
+\indexentry{AAT}{211}
+\indexentry{VCD}{211}
+\indexentry{vibrational circular dichroism}{211}
+\indexentry{STOP@{\normalfont  \ttfamily  {.STOP}}}{211}
+\indexentry{atomic axial tensor}{211}
+\indexentry{AAT}{211}
+\indexentry{frequency}{211}
 \indexentry{linear response}{211}
 \indexentry{response!linear}{211}
-\indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{211}
-\indexentry{STOP@{\normalfont  \ttfamily  {.STOP}}}{211}
-\indexentry{THRESH@{\normalfont  \ttfamily  {.THRESH}}}{211}
-\indexentry{dipole gradient}{211}
-\indexentry{AOMAT@{\normalfont  \ttfamily  {.AOMAT}}}{211}
-\indexentry{NODC@{\normalfont  \ttfamily  {.NODC}}}{211}
-\indexentry{dipole gradient}{211}
-\indexentry{NODV@{\normalfont  \ttfamily  {.NODV}}}{211}
-\indexentry{dipole gradient}{211}
-\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{212}
-\indexentry{dipole gradient}{212}
+\indexentry{Raman optical activity}{211}
+\indexentry{ROA}{211}
+\indexentry{ALFA@{\normalfont  \ttfamily  {.ALFA}}}{211}
+\indexentry{polarizability}{211}
+\indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}}{211}
+\indexentry{frequency}{211}
+\indexentry{IPRINT@{\normalfont  \ttfamily  {.IPRINT}}}{211}
+\indexentry{MAX IT@{\normalfont  \ttfamily  {.MAX IT}}}{211}
+\indexentry{MAXPHP@{\normalfont  \ttfamily  {.MAXPHP}}}{212}
+\indexentry{MAXRED@{\normalfont  \ttfamily  {.MAXRED}}}{212}
+\indexentry{OPTORB@{\normalfont  \ttfamily  {.OPTORB}}}{212}
+\indexentry{optimal orbital trial vector}{212}
+\indexentry{linear response}{212}
+\indexentry{response!linear}{212}
 \indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{212}
-\indexentry{dipole gradient}{212}
 \indexentry{STOP@{\normalfont  \ttfamily  {.STOP}}}{212}
+\indexentry{THRESH@{\normalfont  \ttfamily  {.THRESH}}}{212}
 \indexentry{dipole gradient}{212}
-\indexentry{END OF@{\normalfont  \ttfamily  {*END OF}}}{212}
-\indexentry{electronic excitation}{212}
-\indexentry{excitation energy}{212}
-\indexentry{SCF}{212}
-\indexentry{HF}{212}
-\indexentry{Hartree--Fock}{212}
-\indexentry{MCSCF}{212}
-\indexentry{oscillator strength}{212}
-\indexentry{rotatory strength}{212}
-\indexentry{electronic circular dichroism}{212}
-\indexentry{ECD}{212}
-\indexentry{electronic excitation}{212}
-\indexentry{excitation energy}{212}
-\indexentry{DIPSTR@{\normalfont  \ttfamily  {.DIPSTR}}}{212}
-\indexentry{dipole strength}{212}
-\indexentry{FNAC@{\normalfont  \ttfamily  {.FNAC}}}{212}
-\indexentry{non-adiabatic coupling element}{212}
-\indexentry{\sc  abacus}{212}
-\indexentry{INTPRI@{\normalfont  \ttfamily  {.INTPRI}}}{212}
-\indexentry{MAX IT@{\normalfont  \ttfamily  {.MAX IT}}}{213}
-\indexentry{MAXPHP@{\normalfont  \ttfamily  {.MAXPHP}}}{213}
-\indexentry{MAXRED@{\normalfont  \ttfamily  {.MAXRED}}}{213}
-\indexentry{NEXCIT@{\normalfont  \ttfamily  {.NEXCIT}}}{213}
-\indexentry{excitation energy}{213}
-\indexentry{OPTORB@{\normalfont  \ttfamily  {.OPTORB}}}{213}
-\indexentry{optimal orbital trial vector}{213}
-\indexentry{linear response}{213}
-\indexentry{response!linear}{213}
+\indexentry{AOMAT@{\normalfont  \ttfamily  {.AOMAT}}}{212}
+\indexentry{NODC@{\normalfont  \ttfamily  {.NODC}}}{212}
+\indexentry{dipole gradient}{212}
+\indexentry{NODV@{\normalfont  \ttfamily  {.NODV}}}{212}
+\indexentry{dipole gradient}{212}
 \indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{213}
-\indexentry{ROTVEL@{\normalfont  \ttfamily  {.ROTVEL}}}{213}
+\indexentry{dipole gradient}{213}
+\indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{213}
+\indexentry{dipole gradient}{213}
+\indexentry{STOP@{\normalfont  \ttfamily  {.STOP}}}{213}
+\indexentry{dipole gradient}{213}
+\indexentry{END OF@{\normalfont  \ttfamily  {*END OF}}}{213}
+\indexentry{electronic excitation}{213}
+\indexentry{excitation energy}{213}
+\indexentry{SCF}{213}
+\indexentry{HF}{213}
+\indexentry{Hartree--Fock}{213}
+\indexentry{MCSCF}{213}
+\indexentry{oscillator strength}{213}
+\indexentry{rotatory strength}{213}
 \indexentry{electronic circular dichroism}{213}
 \indexentry{ECD}{213}
-\indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{213}
-\indexentry{STOP@{\normalfont  \ttfamily  {.STOP}}}{214}
-\indexentry{SUMRUL@{\normalfont  \ttfamily  {.SUMRUL}}}{214}
-\indexentry{THRESH@{\normalfont  \ttfamily  {.THRESH}}}{214}
-\indexentry{excitation energy!triplet}{214}
-\indexentry{TRIPLE@{\normalfont  \ttfamily  {.TRIPLE}}}{214}
-\indexentry{ALL CO@{\normalfont  \ttfamily  {.ALL CO}}}{214}
-\indexentry{nuclear shielding}{214}
-\indexentry{DIASUS@{\normalfont  \ttfamily  {.DIASUS}}}{214}
-\indexentry{magnetizability}{214}
-\indexentry{London orbitals}{214}
-\indexentry{NODC@{\normalfont  \ttfamily  {.NODC}}}{214}
-\indexentry{NODV@{\normalfont  \ttfamily  {.NODV}}}{214}
-\indexentry{ELFGRA@{\normalfont  \ttfamily  {.ELFGRA}}}{214}
-\indexentry{nuclear quadrupole coupling}{214}
-\indexentry{NQCC}{214}
-\indexentry{electric field!gradient}{214}
-\indexentry{NEFIEL@{\normalfont  \ttfamily  {.NEFIEL}}}{215}
-\indexentry{electric field!at nucleus}{215}
-\indexentry{spin-rotation constant}{215}
-\indexentry{POINTS@{\normalfont  \ttfamily  {.POINTS}}}{215}
-\indexentry{Gaussian quadrature}{215}
-\indexentry{diamagnetic spin-orbit}{215}
-\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{215}
-\indexentry{QUADRU@{\normalfont  \ttfamily  {.QUADRU}}}{215}
-\indexentry{quadrupole moment}{215}
-\indexentry{SHIELD@{\normalfont  \ttfamily  {.SHIELD}}}{215}
-\indexentry{nuclear shielding}{215}
-\indexentry{London orbitals}{215}
-\indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{215}
-\indexentry{SPIN-S@{\normalfont  \ttfamily  {.SPIN-S}}}{215}
-\indexentry{diamagnetic spin-orbit}{215}
-\indexentry{spin-spin coupling}{215}
+\indexentry{electronic excitation}{213}
+\indexentry{excitation energy}{213}
+\indexentry{DIPSTR@{\normalfont  \ttfamily  {.DIPSTR}}}{213}
+\indexentry{dipole strength}{213}
+\indexentry{FNAC@{\normalfont  \ttfamily  {.FNAC}}}{213}
+\indexentry{non-adiabatic coupling element}{213}
+\indexentry{\sc  abacus}{213}
+\indexentry{INTPRI@{\normalfont  \ttfamily  {.INTPRI}}}{213}
+\indexentry{MAX IT@{\normalfont  \ttfamily  {.MAX IT}}}{214}
+\indexentry{MAXPHP@{\normalfont  \ttfamily  {.MAXPHP}}}{214}
+\indexentry{MAXRED@{\normalfont  \ttfamily  {.MAXRED}}}{214}
+\indexentry{NEXCIT@{\normalfont  \ttfamily  {.NEXCIT}}}{214}
+\indexentry{excitation energy}{214}
+\indexentry{OPTORB@{\normalfont  \ttfamily  {.OPTORB}}}{214}
+\indexentry{optimal orbital trial vector}{214}
+\indexentry{linear response}{214}
+\indexentry{response!linear}{214}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{214}
+\indexentry{ROTVEL@{\normalfont  \ttfamily  {.ROTVEL}}}{214}
+\indexentry{electronic circular dichroism}{214}
+\indexentry{ECD}{214}
+\indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{214}
 \indexentry{STOP@{\normalfont  \ttfamily  {.STOP}}}{215}
-\indexentry{GEOANA@{\normalfont  \ttfamily  {*GEOANA}}}{215}
-\indexentry{bond distance}{215}
-\indexentry{bond angle}{215}
-\indexentry{dihedral angle}{215}
-\indexentry{geometry!bond distance}{215}
-\indexentry{geometry!bond angle}{215}
-\indexentry{geometry!dihedral angle}{215}
-\indexentry{ANGLES@{\normalfont  \ttfamily  {.ANGLES}}}{216}
-\indexentry{bond angle}{216}
-\indexentry{geometry!bond angle}{216}
-\indexentry{van der Waals radius}{216}
-\indexentry{DIHEDR@{\normalfont  \ttfamily  {.DIHEDR}}}{216}
-\indexentry{dihedral angle}{216}
-\indexentry{geometry!dihedral angle}{216}
+\indexentry{SUMRUL@{\normalfont  \ttfamily  {.SUMRUL}}}{215}
+\indexentry{THRESH@{\normalfont  \ttfamily  {.THRESH}}}{215}
+\indexentry{excitation energy!triplet}{215}
+\indexentry{TRIPLE@{\normalfont  \ttfamily  {.TRIPLE}}}{215}
+\indexentry{ALL CO@{\normalfont  \ttfamily  {.ALL CO}}}{215}
+\indexentry{nuclear shielding}{215}
+\indexentry{DIASUS@{\normalfont  \ttfamily  {.DIASUS}}}{215}
+\indexentry{magnetizability}{215}
+\indexentry{London orbitals}{215}
+\indexentry{NODC@{\normalfont  \ttfamily  {.NODC}}}{215}
+\indexentry{NODV@{\normalfont  \ttfamily  {.NODV}}}{215}
+\indexentry{ELFGRA@{\normalfont  \ttfamily  {.ELFGRA}}}{215}
+\indexentry{nuclear quadrupole coupling}{215}
+\indexentry{NQCC}{215}
+\indexentry{electric field!gradient}{215}
+\indexentry{NEFIEL@{\normalfont  \ttfamily  {.NEFIEL}}}{216}
+\indexentry{electric field!at nucleus}{216}
+\indexentry{spin-rotation constant}{216}
+\indexentry{POINTS@{\normalfont  \ttfamily  {.POINTS}}}{216}
+\indexentry{Gaussian quadrature}{216}
+\indexentry{diamagnetic spin-orbit}{216}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{216}
+\indexentry{QUADRU@{\normalfont  \ttfamily  {.QUADRU}}}{216}
+\indexentry{quadrupole moment}{216}
+\indexentry{SHIELD@{\normalfont  \ttfamily  {.SHIELD}}}{216}
+\indexentry{nuclear shielding}{216}
+\indexentry{London orbitals}{216}
 \indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{216}
-\indexentry{GETSGY@{\normalfont  \ttfamily  {*GETSGY}}}{216}
-\indexentry{property gradient}{216}
-\indexentry{right-hand side}{216}
-\indexentry{ALLCOM@{\normalfont  \ttfamily  {.ALLCOM}}}{216}
-\indexentry{paramagnetic spin-orbit}{216}
-\indexentry{AOMAT@{\normalfont  \ttfamily  {.AOMAT}}}{217}
-\indexentry{DIAGTD@{\normalfont  \ttfamily  {.DIAGTD}}}{217}
-\indexentry{FCKPRI@{\normalfont  \ttfamily  {.FCKPRI}}}{217}
-\indexentry{FCKSKI@{\normalfont  \ttfamily  {.FCKSKI}}}{217}
-\indexentry{FCKTES@{\normalfont  \ttfamily  {.FCKTES}}}{217}
-\indexentry{FSTTES@{\normalfont  \ttfamily  {.FSTTES}}}{217}
-\indexentry{GDHAM@{\normalfont  \ttfamily  {.GDHAM}}}{217}
-\indexentry{GDYPRI@{\normalfont  \ttfamily  {.GDYPRI}}}{217}
-\indexentry{GDYSKI@{\normalfont  \ttfamily  {.GDYSKI}}}{217}
-\indexentry{INTPRI@{\normalfont  \ttfamily  {.INTPRI}}}{217}
-\indexentry{INTSKI@{\normalfont  \ttfamily  {.INTSKI}}}{218}
-\indexentry{MAXSIM@{\normalfont  \ttfamily  {.MAXSIM}}}{218}
-\indexentry{NODC@{\normalfont  \ttfamily  {.NODC}}}{218}
-\indexentry{NODDY@{\normalfont  \ttfamily  {.NODDY}}}{218}
-\indexentry{NODPTR@{\normalfont  \ttfamily  {.NODPTR}}}{218}
-\indexentry{NODV@{\normalfont  \ttfamily  {.NODV}}}{218}
-\indexentry{NOFD@{\normalfont  \ttfamily  {.NOFD}}}{218}
-\indexentry{NOFS@{\normalfont  \ttfamily  {.NOFS}}}{218}
-\indexentry{NOH1@{\normalfont  \ttfamily  {.NOH1}}}{218}
-\indexentry{NOH2@{\normalfont  \ttfamily  {.NOH2}}}{218}
-\indexentry{NOORTH@{\normalfont  \ttfamily  {.NOORTH}}}{218}
-\indexentry{NOPV@{\normalfont  \ttfamily  {.NOPV}}}{219}
-\indexentry{NOSSF@{\normalfont  \ttfamily  {.NOSSF}}}{219}
-\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{219}
-\indexentry{PTRPRI@{\normalfont  \ttfamily  {.PTRPRI}}}{219}
-\indexentry{PTRSKI@{\normalfont  \ttfamily  {.PTRSKI}}}{219}
-\indexentry{RETURN@{\normalfont  \ttfamily  {.RETURN}}}{219}
-\indexentry{SDRPRI@{\normalfont  \ttfamily  {.SDRPRI}}}{219}
-\indexentry{SDRSKI@{\normalfont  \ttfamily  {.SDRSKI}}}{219}
-\indexentry{SDRTES@{\normalfont  \ttfamily  {.SDRTES}}}{219}
-\indexentry{SIRPR4@{\normalfont  \ttfamily  {.SIRPR4}}}{220}
-\indexentry{\sc  sirius}{220}
-\indexentry{SIRPR6@{\normalfont  \ttfamily  {.SIRPR6}}}{220}
-\indexentry{\sc  sirius}{220}
-\indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{220}
-\indexentry{SORPRI@{\normalfont  \ttfamily  {.SORPRI}}}{220}
-\indexentry{STOP@{\normalfont  \ttfamily  {.STOP}}}{220}
-\indexentry{TIME@{\normalfont  \ttfamily  {.TIME}}}{220}
-\indexentry{TRAPRI@{\normalfont  \ttfamily  {.TRAPRI}}}{220}
-\indexentry{TRASKI@{\normalfont  \ttfamily  {.TRASKI}}}{220}
-\indexentry{TRATES@{\normalfont  \ttfamily  {.TRATES}}}{220}
-\indexentry{TWOH1@{\normalfont  \ttfamily  {.TWOH1}}}{220}
-\indexentry{UNDIF@{\normalfont  \ttfamily  {.UNDIF}}}{220}
-\indexentry{linear response}{221}
-\indexentry{response!linear}{221}
-\indexentry{EXCITA@{\normalfont  \ttfamily  {.EXCITA}}}{221}
-\indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}}{221}
-\indexentry{MAX IT@{\normalfont  \ttfamily  {.MAX IT}}}{221}
-\indexentry{MAXPHP@{\normalfont  \ttfamily  {.MAXPHP}}}{221}
-\indexentry{MAXRED@{\normalfont  \ttfamily  {.MAXRED}}}{221}
-\indexentry{NEXVAL@{\normalfont  \ttfamily  {.NEXVAL}}}{221}
-\indexentry{OPTORB@{\normalfont  \ttfamily  {.OPTORB}}}{221}
-\indexentry{optimal orbital trial vector}{221}
-\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{221}
-\indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{222}
-\indexentry{nuclear shielding}{222}
-\indexentry{spin-spin coupling}{222}
-\indexentry{magnetizability}{222}
-\indexentry{STOP@{\normalfont  \ttfamily  {.STOP}}}{222}
-\indexentry{THRESH@{\normalfont  \ttfamily  {.THRESH}}}{222}
-\indexentry{NUCREP@{\normalfont  \ttfamily  {*NUCREP}}}{222}
-\indexentry{gradient}{222}
-\indexentry{Hessian}{222}
+\indexentry{SPIN-S@{\normalfont  \ttfamily  {.SPIN-S}}}{216}
+\indexentry{diamagnetic spin-orbit}{216}
+\indexentry{spin-spin coupling}{216}
+\indexentry{STOP@{\normalfont  \ttfamily  {.STOP}}}{216}
+\indexentry{GEOANA@{\normalfont  \ttfamily  {*GEOANA}}}{216}
+\indexentry{bond distance}{216}
+\indexentry{bond angle}{216}
+\indexentry{dihedral angle}{216}
+\indexentry{geometry!bond distance}{216}
+\indexentry{geometry!bond angle}{216}
+\indexentry{geometry!dihedral angle}{216}
+\indexentry{ANGLES@{\normalfont  \ttfamily  {.ANGLES}}}{217}
+\indexentry{bond angle}{217}
+\indexentry{geometry!bond angle}{217}
+\indexentry{van der Waals radius}{217}
+\indexentry{DIHEDR@{\normalfont  \ttfamily  {.DIHEDR}}}{217}
+\indexentry{dihedral angle}{217}
+\indexentry{geometry!dihedral angle}{217}
+\indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{217}
+\indexentry{GETSGY@{\normalfont  \ttfamily  {*GETSGY}}}{217}
+\indexentry{property gradient}{217}
+\indexentry{right-hand side}{217}
+\indexentry{ALLCOM@{\normalfont  \ttfamily  {.ALLCOM}}}{217}
+\indexentry{paramagnetic spin-orbit}{217}
+\indexentry{AOMAT@{\normalfont  \ttfamily  {.AOMAT}}}{218}
+\indexentry{DIAGTD@{\normalfont  \ttfamily  {.DIAGTD}}}{218}
+\indexentry{FCKPRI@{\normalfont  \ttfamily  {.FCKPRI}}}{218}
+\indexentry{FCKSKI@{\normalfont  \ttfamily  {.FCKSKI}}}{218}
+\indexentry{FCKTES@{\normalfont  \ttfamily  {.FCKTES}}}{218}
+\indexentry{FSTTES@{\normalfont  \ttfamily  {.FSTTES}}}{218}
+\indexentry{GDHAM@{\normalfont  \ttfamily  {.GDHAM}}}{218}
+\indexentry{GDYPRI@{\normalfont  \ttfamily  {.GDYPRI}}}{218}
+\indexentry{GDYSKI@{\normalfont  \ttfamily  {.GDYSKI}}}{218}
+\indexentry{INTPRI@{\normalfont  \ttfamily  {.INTPRI}}}{218}
+\indexentry{INTSKI@{\normalfont  \ttfamily  {.INTSKI}}}{219}
+\indexentry{MAXSIM@{\normalfont  \ttfamily  {.MAXSIM}}}{219}
+\indexentry{NODC@{\normalfont  \ttfamily  {.NODC}}}{219}
+\indexentry{NODDY@{\normalfont  \ttfamily  {.NODDY}}}{219}
+\indexentry{NODPTR@{\normalfont  \ttfamily  {.NODPTR}}}{219}
+\indexentry{NODV@{\normalfont  \ttfamily  {.NODV}}}{219}
+\indexentry{NOFD@{\normalfont  \ttfamily  {.NOFD}}}{219}
+\indexentry{NOFS@{\normalfont  \ttfamily  {.NOFS}}}{219}
+\indexentry{NOH1@{\normalfont  \ttfamily  {.NOH1}}}{219}
+\indexentry{NOH2@{\normalfont  \ttfamily  {.NOH2}}}{219}
+\indexentry{NOORTH@{\normalfont  \ttfamily  {.NOORTH}}}{219}
+\indexentry{NOPV@{\normalfont  \ttfamily  {.NOPV}}}{220}
+\indexentry{NOSSF@{\normalfont  \ttfamily  {.NOSSF}}}{220}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{220}
+\indexentry{PTRPRI@{\normalfont  \ttfamily  {.PTRPRI}}}{220}
+\indexentry{PTRSKI@{\normalfont  \ttfamily  {.PTRSKI}}}{220}
+\indexentry{RETURN@{\normalfont  \ttfamily  {.RETURN}}}{220}
+\indexentry{SDRPRI@{\normalfont  \ttfamily  {.SDRPRI}}}{220}
+\indexentry{SDRSKI@{\normalfont  \ttfamily  {.SDRSKI}}}{220}
+\indexentry{SDRTES@{\normalfont  \ttfamily  {.SDRTES}}}{220}
+\indexentry{SIRPR4@{\normalfont  \ttfamily  {.SIRPR4}}}{221}
+\indexentry{\sc  sirius}{221}
+\indexentry{SIRPR6@{\normalfont  \ttfamily  {.SIRPR6}}}{221}
+\indexentry{\sc  sirius}{221}
+\indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{221}
+\indexentry{SORPRI@{\normalfont  \ttfamily  {.SORPRI}}}{221}
+\indexentry{STOP@{\normalfont  \ttfamily  {.STOP}}}{221}
+\indexentry{TIME@{\normalfont  \ttfamily  {.TIME}}}{221}
+\indexentry{TRAPRI@{\normalfont  \ttfamily  {.TRAPRI}}}{221}
+\indexentry{TRASKI@{\normalfont  \ttfamily  {.TRASKI}}}{221}
+\indexentry{TRATES@{\normalfont  \ttfamily  {.TRATES}}}{221}
+\indexentry{TWOH1@{\normalfont  \ttfamily  {.TWOH1}}}{221}
+\indexentry{UNDIF@{\normalfont  \ttfamily  {.UNDIF}}}{221}
+\indexentry{linear response}{222}
+\indexentry{response!linear}{222}
+\indexentry{EXCITA@{\normalfont  \ttfamily  {.EXCITA}}}{222}
+\indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}}{222}
+\indexentry{MAX IT@{\normalfont  \ttfamily  {.MAX IT}}}{222}
+\indexentry{MAXPHP@{\normalfont  \ttfamily  {.MAXPHP}}}{222}
+\indexentry{MAXRED@{\normalfont  \ttfamily  {.MAXRED}}}{222}
+\indexentry{NEXVAL@{\normalfont  \ttfamily  {.NEXVAL}}}{222}
+\indexentry{OPTORB@{\normalfont  \ttfamily  {.OPTORB}}}{222}
+\indexentry{optimal orbital trial vector}{222}
 \indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{222}
-\indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{222}
-\indexentry{STOP@{\normalfont  \ttfamily  {.STOP}}}{222}
-\indexentry{ONEINT@{\normalfont  \ttfamily  {*ONEINT}}}{222}
-\indexentry{gradient}{222}
-\indexentry{Hessian}{222}
-\indexentry{NCLONE@{\normalfont  \ttfamily  {.NCLONE}}}{222}
-\indexentry{NODC@{\normalfont  \ttfamily  {.NODC}}}{223}
-\indexentry{gradient}{223}
-\indexentry{Hessian}{223}
-\indexentry{NODV@{\normalfont  \ttfamily  {.NODV}}}{223}
-\indexentry{gradient}{223}
-\indexentry{Hessian}{223}
-\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{223}
-\indexentry{gradient}{223}
-\indexentry{Hessian}{223}
 \indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{223}
-\indexentry{gradient}{223}
-\indexentry{Hessian}{223}
+\indexentry{nuclear shielding}{223}
+\indexentry{spin-spin coupling}{223}
+\indexentry{magnetizability}{223}
 \indexentry{STOP@{\normalfont  \ttfamily  {.STOP}}}{223}
+\indexentry{THRESH@{\normalfont  \ttfamily  {.THRESH}}}{223}
+\indexentry{NUCREP@{\normalfont  \ttfamily  {*NUCREP}}}{223}
 \indexentry{gradient}{223}
 \indexentry{Hessian}{223}
-\indexentry{RELAX@{\normalfont  \ttfamily  {*RELAX}}}{223}
-\indexentry{NOSELL@{\normalfont  \ttfamily  {.NOSELL}}}{223}
 \indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{223}
 \indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{223}
+\indexentry{STOP@{\normalfont  \ttfamily  {.STOP}}}{223}
+\indexentry{ONEINT@{\normalfont  \ttfamily  {*ONEINT}}}{223}
+\indexentry{gradient}{223}
+\indexentry{Hessian}{223}
+\indexentry{NCLONE@{\normalfont  \ttfamily  {.NCLONE}}}{223}
+\indexentry{NODC@{\normalfont  \ttfamily  {.NODC}}}{224}
+\indexentry{gradient}{224}
+\indexentry{Hessian}{224}
+\indexentry{NODV@{\normalfont  \ttfamily  {.NODV}}}{224}
+\indexentry{gradient}{224}
+\indexentry{Hessian}{224}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{224}
+\indexentry{gradient}{224}
+\indexentry{Hessian}{224}
+\indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{224}
+\indexentry{gradient}{224}
+\indexentry{Hessian}{224}
 \indexentry{STOP@{\normalfont  \ttfamily  {.STOP}}}{224}
-\indexentry{SYMTES@{\normalfont  \ttfamily  {.SYMTES}}}{224}
-\indexentry{REORT@{\normalfont  \ttfamily  {*REORT}}}{224}
+\indexentry{gradient}{224}
+\indexentry{Hessian}{224}
+\indexentry{RELAX@{\normalfont  \ttfamily  {*RELAX}}}{224}
+\indexentry{NOSELL@{\normalfont  \ttfamily  {.NOSELL}}}{224}
 \indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{224}
 \indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{224}
-\indexentry{STOP@{\normalfont  \ttfamily  {.STOP}}}{224}
-\indexentry{RESPON@{\normalfont  \ttfamily  {*RESPON}}}{224}
-\indexentry{D1DIAG@{\normalfont  \ttfamily  {.D1DIAG}}}{224}
-\indexentry{DONEXT@{\normalfont  \ttfamily  {.DONEXT}}}{224}
-\indexentry{optimal orbital trial vector}{224}
-\indexentry{MAX IT@{\normalfont  \ttfamily  {.MAX IT}}}{224}
-\indexentry{MAXRED@{\normalfont  \ttfamily  {.MAXRED}}}{225}
-\indexentry{MAXSIM@{\normalfont  \ttfamily  {.MAXSIM}}}{225}
-\indexentry{MCHESS@{\normalfont  \ttfamily  {.MCHESS}}}{225}
-\indexentry{NEWRD@{\normalfont  \ttfamily  {.NEWRD}}}{225}
-\indexentry{NOAVER@{\normalfont  \ttfamily  {.NOAVER}}}{225}
-\indexentry{NONEXT@{\normalfont  \ttfamily  {.NONEXT}}}{225}
-\indexentry{optimal orbital trial vector}{225}
-\indexentry{NOTRIA@{\normalfont  \ttfamily  {.NOTRIA}}}{225}
-\indexentry{NRREST@{\normalfont  \ttfamily  {.NRREST}}}{225}
+\indexentry{STOP@{\normalfont  \ttfamily  {.STOP}}}{225}
+\indexentry{SYMTES@{\normalfont  \ttfamily  {.SYMTES}}}{225}
+\indexentry{REORT@{\normalfont  \ttfamily  {*REORT}}}{225}
 \indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{225}
-\indexentry{RDVECS@{\normalfont  \ttfamily  {.RDVECS}}}{225}
-\indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{226}
-\indexentry{THRESH@{\normalfont  \ttfamily  {.THRESH}}}{226}
-\indexentry{STOP@{\normalfont  \ttfamily  {.STOP}}}{226}
-\indexentry{ABUNDA@{\normalfont  \ttfamily  {.ABUNDA}}}{226}
-\indexentry{abundance}{226}
-\indexentry{NODSO@{\normalfont  \ttfamily  {.NODSO}}}{226}
-\indexentry{diamagnetic spin-orbit}{226}
-\indexentry{spin-spin coupling}{226}
-\indexentry{NOFC@{\normalfont  \ttfamily  {.NOFC}}}{226}
-\indexentry{Fermi contact}{226}
-\indexentry{spin-spin coupling}{226}
-\indexentry{NOPSO@{\normalfont  \ttfamily  {.NOPSO}}}{226}
-\indexentry{paramagnetic spin-orbit}{226}
-\indexentry{spin-spin coupling}{226}
-\indexentry{NOSD@{\normalfont  \ttfamily  {.NOSD}}}{226}
-\indexentry{spin-dipole}{226}
-\indexentry{spin-spin coupling}{226}
+\indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{225}
+\indexentry{STOP@{\normalfont  \ttfamily  {.STOP}}}{225}
+\indexentry{RESPON@{\normalfont  \ttfamily  {*RESPON}}}{225}
+\indexentry{D1DIAG@{\normalfont  \ttfamily  {.D1DIAG}}}{225}
+\indexentry{DONEXT@{\normalfont  \ttfamily  {.DONEXT}}}{225}
+\indexentry{optimal orbital trial vector}{225}
+\indexentry{MAX IT@{\normalfont  \ttfamily  {.MAX IT}}}{225}
+\indexentry{MAXRED@{\normalfont  \ttfamily  {.MAXRED}}}{226}
+\indexentry{MAXSIM@{\normalfont  \ttfamily  {.MAXSIM}}}{226}
+\indexentry{MCHESS@{\normalfont  \ttfamily  {.MCHESS}}}{226}
+\indexentry{NEWRD@{\normalfont  \ttfamily  {.NEWRD}}}{226}
+\indexentry{NOAVER@{\normalfont  \ttfamily  {.NOAVER}}}{226}
+\indexentry{NONEXT@{\normalfont  \ttfamily  {.NONEXT}}}{226}
+\indexentry{optimal orbital trial vector}{226}
+\indexentry{NOTRIA@{\normalfont  \ttfamily  {.NOTRIA}}}{226}
+\indexentry{NRREST@{\normalfont  \ttfamily  {.NRREST}}}{226}
 \indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{226}
-\indexentry{SD+FC@{\normalfont  \ttfamily  {.SD+FC}}}{227}
-\indexentry{spin-dipole}{227}
-\indexentry{Fermi contact}{227}
-\indexentry{SDxFC ONLY@{\normalfont  \ttfamily  {.SDxFC ONLY}}}{227}
-\indexentry{spin-dipole}{227}
+\indexentry{RDVECS@{\normalfont  \ttfamily  {.RDVECS}}}{226}
+\indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{227}
+\indexentry{THRESH@{\normalfont  \ttfamily  {.THRESH}}}{227}
+\indexentry{STOP@{\normalfont  \ttfamily  {.STOP}}}{227}
+\indexentry{ABUNDA@{\normalfont  \ttfamily  {.ABUNDA}}}{227}
+\indexentry{abundance}{227}
+\indexentry{NODSO@{\normalfont  \ttfamily  {.NODSO}}}{227}
+\indexentry{diamagnetic spin-orbit}{227}
+\indexentry{spin-spin coupling}{227}
+\indexentry{NOFC@{\normalfont  \ttfamily  {.NOFC}}}{227}
 \indexentry{Fermi contact}{227}
 \indexentry{spin-spin coupling}{227}
-\indexentry{spin-spin anisotropy}{227}
-\indexentry{SELECT@{\normalfont  \ttfamily  {.SELECT}}}{227}
-\indexentry{TROINV@{\normalfont  \ttfamily  {*TROINV}}}{227}
-\indexentry{translational invariance}{227}
-\indexentry{rotational invariance}{227}
-\indexentry{COMPAR@{\normalfont  \ttfamily  {.COMPAR}}}{227}
-\indexentry{translational invariance}{227}
-\indexentry{rotational invariance}{227}
-\indexentry{vibrational circular dichroism}{227}
-\indexentry{VCD}{227}
-\indexentry{GD@{\normalfont  \ttfamily  {.GD}}}{227}
-\indexentry{NOROT@{\normalfont  \ttfamily  {.NOROT}}}{227}
+\indexentry{NOPSO@{\normalfont  \ttfamily  {.NOPSO}}}{227}
+\indexentry{paramagnetic spin-orbit}{227}
+\indexentry{spin-spin coupling}{227}
+\indexentry{NOSD@{\normalfont  \ttfamily  {.NOSD}}}{227}
+\indexentry{spin-dipole}{227}
+\indexentry{spin-spin coupling}{227}
 \indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{227}
-\indexentry{RD@{\normalfont  \ttfamily  {.RD}}}{228}
-\indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{228}
-\indexentry{translational invariance}{228}
-\indexentry{rotational invariance}{228}
-\indexentry{STOP@{\normalfont  \ttfamily  {.STOP}}}{228}
-\indexentry{translational invariance}{228}
-\indexentry{rotational invariance}{228}
-\indexentry{THRESH@{\normalfont  \ttfamily  {.THRESH}}}{228}
+\indexentry{SD+FC@{\normalfont  \ttfamily  {.SD+FC}}}{228}
+\indexentry{spin-dipole}{228}
+\indexentry{Fermi contact}{228}
+\indexentry{SDxFC ONLY@{\normalfont  \ttfamily  {.SDxFC ONLY}}}{228}
 \indexentry{spin-dipole}{228}
 \indexentry{Fermi contact}{228}
 \indexentry{spin-spin coupling}{228}
-\indexentry{INTPRI@{\normalfont  \ttfamily  {.INTPRI}}}{228}
-\indexentry{MAX IT@{\normalfont  \ttfamily  {.MAX IT}}}{228}
-\indexentry{MAXPHP@{\normalfont  \ttfamily  {.MAXPHP}}}{228}
-\indexentry{MAXRED@{\normalfont  \ttfamily  {.MAXRED}}}{229}
-\indexentry{NORHS@{\normalfont  \ttfamily  {.NORHS}}}{229}
-\indexentry{spin-spin coupling}{229}
-\indexentry{NORSP@{\normalfont  \ttfamily  {.NORSP}}}{229}
-\indexentry{spin-spin coupling}{229}
-\indexentry{OPTORB@{\normalfont  \ttfamily  {.OPTORB}}}{229}
-\indexentry{optimal orbital trial vector}{229}
-\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{229}
+\indexentry{spin-spin anisotropy}{228}
+\indexentry{SELECT@{\normalfont  \ttfamily  {.SELECT}}}{228}
+\indexentry{TROINV@{\normalfont  \ttfamily  {*TROINV}}}{228}
+\indexentry{translational invariance}{228}
+\indexentry{rotational invariance}{228}
+\indexentry{COMPAR@{\normalfont  \ttfamily  {.COMPAR}}}{228}
+\indexentry{translational invariance}{228}
+\indexentry{rotational invariance}{228}
+\indexentry{vibrational circular dichroism}{228}
+\indexentry{VCD}{228}
+\indexentry{GD@{\normalfont  \ttfamily  {.GD}}}{228}
+\indexentry{NOROT@{\normalfont  \ttfamily  {.NOROT}}}{228}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{228}
+\indexentry{RD@{\normalfont  \ttfamily  {.RD}}}{229}
 \indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{229}
-\indexentry{spin-spin coupling}{229}
+\indexentry{translational invariance}{229}
+\indexentry{rotational invariance}{229}
 \indexentry{STOP@{\normalfont  \ttfamily  {.STOP}}}{229}
+\indexentry{translational invariance}{229}
+\indexentry{rotational invariance}{229}
 \indexentry{THRESH@{\normalfont  \ttfamily  {.THRESH}}}{229}
-\indexentry{TWOEXP@{\normalfont  \ttfamily  {*TWOEXP}}}{229}
-\indexentry{gradient}{229}
-\indexentry{Hessian}{229}
-\indexentry{DIRTST@{\normalfont  \ttfamily  {.DIRTST}}}{230}
-\indexentry{FIRST@{\normalfont  \ttfamily  {.FIRST}}}{230}
-\indexentry{INTPRI@{\normalfont  \ttfamily  {.INTPRI}}}{230}
-\indexentry{INTSKI@{\normalfont  \ttfamily  {.INTSKI}}}{230}
-\indexentry{NOCONT@{\normalfont  \ttfamily  {.NOCONT}}}{230}
-\indexentry{NODC@{\normalfont  \ttfamily  {.NODC}}}{230}
-\indexentry{NODV@{\normalfont  \ttfamily  {.NODV}}}{230}
-\indexentry{NOPV@{\normalfont  \ttfamily  {.NOPV}}}{230}
+\indexentry{spin-dipole}{229}
+\indexentry{Fermi contact}{229}
+\indexentry{spin-spin coupling}{229}
+\indexentry{INTPRI@{\normalfont  \ttfamily  {.INTPRI}}}{229}
+\indexentry{MAX IT@{\normalfont  \ttfamily  {.MAX IT}}}{229}
+\indexentry{MAXPHP@{\normalfont  \ttfamily  {.MAXPHP}}}{229}
+\indexentry{MAXRED@{\normalfont  \ttfamily  {.MAXRED}}}{230}
+\indexentry{NORHS@{\normalfont  \ttfamily  {.NORHS}}}{230}
+\indexentry{spin-spin coupling}{230}
+\indexentry{NORSP@{\normalfont  \ttfamily  {.NORSP}}}{230}
+\indexentry{spin-spin coupling}{230}
+\indexentry{OPTORB@{\normalfont  \ttfamily  {.OPTORB}}}{230}
+\indexentry{optimal orbital trial vector}{230}
 \indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{230}
-\indexentry{PTRNOD@{\normalfont  \ttfamily  {.PTRNOD}}}{230}
-\indexentry{PTRPRI@{\normalfont  \ttfamily  {.PTRPRI}}}{231}
-\indexentry{PTRSKI@{\normalfont  \ttfamily  {.PTRSKI}}}{231}
-\indexentry{RETURN@{\normalfont  \ttfamily  {.RETURN}}}{231}
-\indexentry{SORPRI@{\normalfont  \ttfamily  {.SORPRI}}}{231}
-\indexentry{SORSKI@{\normalfont  \ttfamily  {.SORSKI}}}{231}
-\indexentry{SECOND@{\normalfont  \ttfamily  {.SECOND}}}{231}
-\indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{231}
-\indexentry{STOP@{\normalfont  \ttfamily  {.STOP}}}{231}
-\indexentry{TIME@{\normalfont  \ttfamily  {.TIME}}}{231}
-\indexentry{VIBANA@{\normalfont  \ttfamily  {*VIBANA}}}{231}
-\indexentry{vibrational analysis}{231}
-\indexentry{vibrational circular dichroism}{231}
-\indexentry{VCD}{231}
-\indexentry{Raman intensity}{231}
-\indexentry{IR intensity}{231}
-\indexentry{Raman optical activity}{231}
-\indexentry{ROA}{231}
-\indexentry{effective geometries}{231}
-\indexentry{r$_e$ geometries}{231}
-\indexentry{vibrationally averaged properties}{231}
-\indexentry{HESFIL@{\normalfont  \ttfamily  {.HESFIL}}}{231}
-\indexentry{Hessian}{231}
-\indexentry{HESPUN@{\normalfont  \ttfamily  {.HESPUN}}}{231}
-\indexentry{VCD}{231}
-\indexentry{ROA}{231}
-\indexentry{vibrational circular dichroism}{231}
-\indexentry{Raman optical activity}{231}
-\indexentry{HESPUN@{\normalfont  \ttfamily  {.HESPUN}}}{232}
-\indexentry{Hessian}{232}
-\indexentry{first-order optimization}{232}
-\indexentry{HESFIL@{\normalfont  \ttfamily  {.HESFIL}}}{232}
-\indexentry{OPTIMIZE@{\normalfont  \ttfamily  {*OPTIMIZE}}}{232}
-\indexentry{HESFIL@{\normalfont  \ttfamily  {.HESFIL}}}{232}
-\indexentry{vibrational analysis}{232}
-\indexentry{NOCID@{\normalfont  \ttfamily  {.NOCID}}}{232}
-\indexentry{circular intensity differential}{232}
-\indexentry{CID}{232}
-\indexentry{chirality number}{232}
-\indexentry{ROA}{232}
-\indexentry{Raman optical activity}{232}
-\indexentry{ISOTOP@{\normalfont  \ttfamily  {.ISOTOP}}}{232}
-\indexentry{isotopic constitution}{232}
-\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{232}
-\indexentry{vibrational analysis}{232}
+\indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{230}
+\indexentry{spin-spin coupling}{230}
+\indexentry{STOP@{\normalfont  \ttfamily  {.STOP}}}{230}
+\indexentry{THRESH@{\normalfont  \ttfamily  {.THRESH}}}{230}
+\indexentry{TWOEXP@{\normalfont  \ttfamily  {*TWOEXP}}}{230}
+\indexentry{gradient}{230}
+\indexentry{Hessian}{230}
+\indexentry{DIRTST@{\normalfont  \ttfamily  {.DIRTST}}}{231}
+\indexentry{FIRST@{\normalfont  \ttfamily  {.FIRST}}}{231}
+\indexentry{INTPRI@{\normalfont  \ttfamily  {.INTPRI}}}{231}
+\indexentry{INTSKI@{\normalfont  \ttfamily  {.INTSKI}}}{231}
+\indexentry{NOCONT@{\normalfont  \ttfamily  {.NOCONT}}}{231}
+\indexentry{NODC@{\normalfont  \ttfamily  {.NODC}}}{231}
+\indexentry{NODV@{\normalfont  \ttfamily  {.NODV}}}{231}
+\indexentry{NOPV@{\normalfont  \ttfamily  {.NOPV}}}{231}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{231}
+\indexentry{PTRNOD@{\normalfont  \ttfamily  {.PTRNOD}}}{231}
+\indexentry{PTRPRI@{\normalfont  \ttfamily  {.PTRPRI}}}{232}
+\indexentry{PTRSKI@{\normalfont  \ttfamily  {.PTRSKI}}}{232}
+\indexentry{RETURN@{\normalfont  \ttfamily  {.RETURN}}}{232}
+\indexentry{SORPRI@{\normalfont  \ttfamily  {.SORPRI}}}{232}
+\indexentry{SORSKI@{\normalfont  \ttfamily  {.SORSKI}}}{232}
+\indexentry{SECOND@{\normalfont  \ttfamily  {.SECOND}}}{232}
 \indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{232}
-\indexentry{\sc  response}{233}
-\indexentry{*RESPONSE@{\normalfont  \ttfamily  {**RESPONSE}}}{233}
-\indexentry{\sc  response}{233}
-\indexentry{SOPPA}{233}
-\indexentry{polarization propagator}{233}
-\indexentry{linear response}{233}
-\indexentry{response!linear}{233}
-\indexentry{SOPPA@{\normalfont  \ttfamily  {.SOPPA}}}{233}
-\indexentry{END OF@{\normalfont  \ttfamily  {*END OF}}}{233}
-\indexentry{*RESPONSE@{\normalfont  \ttfamily  {**RESPONSE}}}{233}
-\indexentry{END OF@{\normalfont  \ttfamily  {*END OF}}}{233}
-\indexentry{*RESPONSE@{\normalfont  \ttfamily  {**RESPONSE}}}{233}
-\indexentry{*RESPONSE@{\normalfont  \ttfamily  {**RESPONSE}}}{233}
-\indexentry{NOAVDI@{\normalfont  \ttfamily  {.NOAVDI}}}{233}
-\indexentry{INPTES@{\normalfont  \ttfamily  {.INPTES}}}{233}
-\indexentry{HIRPA@{\normalfont  \ttfamily  {.HIRPA}}}{234}
+\indexentry{STOP@{\normalfont  \ttfamily  {.STOP}}}{232}
+\indexentry{TIME@{\normalfont  \ttfamily  {.TIME}}}{232}
+\indexentry{VIBANA@{\normalfont  \ttfamily  {*VIBANA}}}{232}
+\indexentry{vibrational analysis}{232}
+\indexentry{vibrational circular dichroism}{232}
+\indexentry{VCD}{232}
+\indexentry{Raman intensity}{232}
+\indexentry{IR intensity}{232}
+\indexentry{Raman optical activity}{232}
+\indexentry{ROA}{232}
+\indexentry{effective geometries}{232}
+\indexentry{r$_e$ geometries}{232}
+\indexentry{vibrationally averaged properties}{232}
+\indexentry{HESFIL@{\normalfont  \ttfamily  {.HESFIL}}}{232}
+\indexentry{Hessian}{232}
+\indexentry{HESPUN@{\normalfont  \ttfamily  {.HESPUN}}}{232}
+\indexentry{VCD}{232}
+\indexentry{ROA}{232}
+\indexentry{vibrational circular dichroism}{232}
+\indexentry{Raman optical activity}{232}
+\indexentry{HESPUN@{\normalfont  \ttfamily  {.HESPUN}}}{233}
+\indexentry{Hessian}{233}
+\indexentry{first-order optimization}{233}
+\indexentry{HESFIL@{\normalfont  \ttfamily  {.HESFIL}}}{233}
+\indexentry{OPTIMIZE@{\normalfont  \ttfamily  {*OPTIMIZE}}}{233}
+\indexentry{HESFIL@{\normalfont  \ttfamily  {.HESFIL}}}{233}
+\indexentry{vibrational analysis}{233}
+\indexentry{NOCID@{\normalfont  \ttfamily  {.NOCID}}}{233}
+\indexentry{circular intensity differential}{233}
+\indexentry{CID}{233}
+\indexentry{chirality number}{233}
+\indexentry{ROA}{233}
+\indexentry{Raman optical activity}{233}
+\indexentry{ISOTOP@{\normalfont  \ttfamily  {.ISOTOP}}}{233}
+\indexentry{isotopic constitution}{233}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{233}
+\indexentry{vibrational analysis}{233}
+\indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{233}
+\indexentry{\sc  response}{234}
+\indexentry{\sc  response}{234}
+\indexentry{*PROPERTIES@{\normalfont  \ttfamily  {**PROPERTIES}}}{234}
+\indexentry{*PROPERTIES@{\normalfont  \ttfamily  {**PROPERTIES}}}{234}
+\indexentry{*PROPERTIES@{\normalfont  \ttfamily  {**PROPERTIES}}}{234}
+\indexentry{\sc  response}{234}
+\indexentry{*PROPERTIES@{\normalfont  \ttfamily  {**PROPERTIES}}}{234}
+\indexentry{SOPPA}{234}
+\indexentry{polarization propagator}{234}
+\indexentry{linear response}{234}
+\indexentry{response!linear}{234}
 \indexentry{SOPPA@{\normalfont  \ttfamily  {.SOPPA}}}{234}
-\indexentry{MAXPHP@{\normalfont  \ttfamily  {.MAXPHP}}}{234}
-\indexentry{PHPRESIDUAL@{\normalfont  \ttfamily  {.PHPRESIDUAL}}}{234}
-\indexentry{MAXRM@{\normalfont  \ttfamily  {.MAXRM}}}{234}
-\indexentry{NODOIT@{\normalfont  \ttfamily  {.NODOIT}}}{234}
-\indexentry{NOITRA@{\normalfont  \ttfamily  {.NOITRA}}}{234}
-\indexentry{S0MIX@{\normalfont  \ttfamily  {.S0MIX}}}{234}
-\indexentry{*HERMIT@{\normalfont  \ttfamily  {**HERMIT}}}{234}
-\indexentry{DIPLEN@{\normalfont  \ttfamily  {.DIPLEN}}}{234}
-\indexentry{DIPVEL@{\normalfont  \ttfamily  {.DIPVEL}}}{234}
-\indexentry{basis set!quality}{234}
-\indexentry{OPTORB@{\normalfont  \ttfamily  {.OPTORB}}}{234}
-\indexentry{optimal orbital trial vector}{234}
-\indexentry{ORBSFT@{\normalfont  \ttfamily  {.ORBSFT}}}{234}
-\indexentry{orbital diagonal Hessian}{234}
-\indexentry{ORBSPC@{\normalfont  \ttfamily  {.ORBSPC}}}{235}
-\indexentry{PHPRESIDUAL@{\normalfont  \ttfamily  {.PHPRESIDUAL}}}{235}
-\indexentry{PROPAV@{\normalfont  \ttfamily  {.PROPAV}}}{235}
-\indexentry{property average}{235}
-\indexentry{QRREST@{\normalfont  \ttfamily  {.QRREST}}}{235}
-\indexentry{quadratic response}{235}
-\indexentry{response!quadratic}{235}
+\indexentry{*RESPONSE@{\normalfont  \ttfamily  {**RESPONSE}}}{234}
+\indexentry{*RESPONSE@{\normalfont  \ttfamily  {**RESPONSE}}}{234}
+\indexentry{*RESPONSE@{\normalfont  \ttfamily  {**RESPONSE}}}{235}
+\indexentry{*<something>@{\normalfont  \ttfamily  {**<something>}}}{235}
+\indexentry{*END OF INPUT@{\normalfont  \ttfamily  {**END OF INPUT}}}{235}
 \indexentry{RSPCI@{\normalfont  \ttfamily  {.RSPCI}}}{235}
 \indexentry{Configuration Interaction}{235}
 \indexentry{CI}{235}
+\indexentry{*WAVE FUNCTIONS@{\normalfont  \ttfamily  {**WAVE FUNCTIONS}}}{235}
+\indexentry{CI@{\normalfont  \ttfamily  {.CI}}}{235}
 \indexentry{SOPPA@{\normalfont  \ttfamily  {.SOPPA}}}{235}
 \indexentry{SOPPA}{235}
-\indexentry{polarization propagator}{235}
+\indexentry{polarization propagator!SOPPA}{235}
+\indexentry{response!SOPPA}{235}
 \indexentry{\sc  sirius}{235}
 \indexentry{RUN RESPONSE@{\normalfont  \ttfamily  {.RUN RESPONSE}}}{235}
 \indexentry{*DALTON@{\normalfont  \ttfamily  {**DALTON}}}{235}
@@ -2930,602 +2912,652 @@
 \indexentry{*WAVE FUNCTIONS@{\normalfont  \ttfamily  {**WAVE FUNCTIONS}}}{235}
 \indexentry{SOPW4@{\normalfont  \ttfamily  {.SOPW4}}}{235}
 \indexentry{SOPPA}{235}
-\indexentry{polarization propagator}{235}
+\indexentry{polarization propagator!SOPPA}{235}
+\indexentry{SOPPA@{\normalfont  \ttfamily  {.SOPPA}}}{235}
+\indexentry{HIRPA@{\normalfont  \ttfamily  {.HIRPA}}}{235}
+\indexentry{linear response!higher RPA}{235}
+\indexentry{SOPPA@{\normalfont  \ttfamily  {.SOPPA}}}{235}
 \indexentry{SOPPA@{\normalfont  \ttfamily  {.SOPPA}}}{235}
 \indexentry{TRPFLG@{\normalfont  \ttfamily  {.TRPFLG}}}{235}
 \indexentry{triplet response}{235}
-\indexentry{LINEAR@{\normalfont  \ttfamily  {*LINEAR}}}{235}
-\indexentry{linear response}{235}
-\indexentry{response!linear}{235}
-\indexentry{SINGLE@{\normalfont  \ttfamily  {.SINGLE}}}{235}
-\indexentry{single residue}{235}
-\indexentry{linear response}{235}
-\indexentry{response!linear}{235}
-\indexentry{transition moment}{235}
-\indexentry{DIPMAG@{\normalfont  \ttfamily  {.DIPMAG}}}{235}
-\indexentry{angular momentum}{235}
-\indexentry{DIPLEN@{\normalfont  \ttfamily  {.DIPLEN}}}{235}
-\indexentry{dipole length}{235}
-\indexentry{DIPVEL@{\normalfont  \ttfamily  {.DIPVEL}}}{235}
-\indexentry{dipole velocity}{235}
-\indexentry{SPIN-O@{\normalfont  \ttfamily  {.SPIN-O}}}{235}
-\indexentry{spin-orbit}{235}
-\indexentry{MAXIT@{\normalfont  \ttfamily  {.MAXIT}}}{235}
-\indexentry{MAXITO@{\normalfont  \ttfamily  {.MAXITO}}}{236}
+\indexentry{NOAVDI@{\normalfont  \ttfamily  {.NOAVDI}}}{235}
+\indexentry{INPTES@{\normalfont  \ttfamily  {.INPTES}}}{235}
+\indexentry{MAXPHP@{\normalfont  \ttfamily  {.MAXPHP}}}{235}
+\indexentry{PHPRESIDUAL@{\normalfont  \ttfamily  {.PHPRESIDUAL}}}{235}
+\indexentry{MAXRM@{\normalfont  \ttfamily  {.MAXRM}}}{236}
+\indexentry{NODOIT@{\normalfont  \ttfamily  {.NODOIT}}}{236}
+\indexentry{NOITRA@{\normalfont  \ttfamily  {.NOITRA}}}{236}
+\indexentry{S0MIX@{\normalfont  \ttfamily  {.S0MIX}}}{236}
+\indexentry{*HERMIT@{\normalfont  \ttfamily  {**HERMIT}}}{236}
+\indexentry{DIPLEN@{\normalfont  \ttfamily  {.DIPLEN}}}{236}
+\indexentry{DIPVEL@{\normalfont  \ttfamily  {.DIPVEL}}}{236}
+\indexentry{basis set!quality}{236}
+\indexentry{OPTORB@{\normalfont  \ttfamily  {.OPTORB}}}{236}
 \indexentry{optimal orbital trial vector}{236}
-\indexentry{ROOTS@{\normalfont  \ttfamily  {.ROOTS}}}{236}
-\indexentry{excited state}{236}
-\indexentry{excitation energy}{236}
-\indexentry{transition moment}{236}
-\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{236}
-\indexentry{PROPRT@{\normalfont  \ttfamily  {.PROPRT}}}{236}
-\indexentry{QUADMO@{\normalfont  \ttfamily  {.QUADMO}}}{236}
-\indexentry{quadrupole operator}{236}
-\indexentry{RESTPP@{\normalfont  \ttfamily  {.RESTPP}}}{236}
-\indexentry{restart!excitation energy}{236}
-\indexentry{THCPP@{\normalfont  \ttfamily  {.THCPP}}}{236}
-\indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}}{236}
-\indexentry{frequency}{236}
-\indexentry{RESTLR@{\normalfont  \ttfamily  {.RESTLR}}}{236}
-\indexentry{restart!linear response}{236}
-\indexentry{QUADRA@{\normalfont  \ttfamily  {*QUADRA}}}{236}
+\indexentry{ORBSFT@{\normalfont  \ttfamily  {.ORBSFT}}}{236}
+\indexentry{orbital diagonal Hessian}{236}
+\indexentry{ORBSPC@{\normalfont  \ttfamily  {.ORBSPC}}}{236}
+\indexentry{PHPRESIDUAL@{\normalfont  \ttfamily  {.PHPRESIDUAL}}}{236}
+\indexentry{PROPAV@{\normalfont  \ttfamily  {.PROPAV}}}{236}
+\indexentry{property average}{236}
+\indexentry{QRREST@{\normalfont  \ttfamily  {.QRREST}}}{236}
 \indexentry{quadratic response}{236}
 \indexentry{response!quadratic}{236}
-\indexentry{SINGLE@{\normalfont  \ttfamily  {.SINGLE}}}{237}
-\indexentry{single residue}{237}
-\indexentry{quadratic response}{237}
-\indexentry{response!quadratic}{237}
-\indexentry{two-photon!transition moment}{237}
-\indexentry{transition moment}{237}
-\indexentry{transition moment!two-photon}{237}
-\indexentry{DOUBLE@{\normalfont  \ttfamily  {.DOUBLE}}}{237}
-\indexentry{double residue}{237}
-\indexentry{quadratic response}{237}
-\indexentry{response!quadratic}{237}
-\indexentry{transition moment!excited states}{237}
+\indexentry{LINEAR@{\normalfont  \ttfamily  {*LINEAR}}}{237}
+\indexentry{linear response}{237}
+\indexentry{response!linear}{237}
+\indexentry{\sc  response}{237}
 \indexentry{DIPLEN@{\normalfont  \ttfamily  {.DIPLEN}}}{237}
 \indexentry{dipole length}{237}
-\indexentry{DIPLNX@{\normalfont  \ttfamily  {.DIPLNX}}}{237}
-\indexentry{dipole length}{237}
-\indexentry{DIPLNY@{\normalfont  \ttfamily  {.DIPLNY}}}{237}
-\indexentry{dipole length}{237}
-\indexentry{DIPLNZ@{\normalfont  \ttfamily  {.DIPLNZ}}}{237}
-\indexentry{dipole length}{237}
-\indexentry{KERR@{\normalfont  \ttfamily  {.KERR}}}{237}
-\indexentry{Kerr effect}{237}
+\indexentry{DIPVEL@{\normalfont  \ttfamily  {.DIPVEL}}}{237}
+\indexentry{dipole velocity}{237}
+\indexentry{DIPMAG@{\normalfont  \ttfamily  {.DIPMAG}}}{237}
+\indexentry{angular momentum}{237}
+\indexentry{QUADMOM@{\normalfont  \ttfamily  {.QUADMOM}}}{237}
+\indexentry{quadrupole operator}{237}
+\indexentry{SPIN-O@{\normalfont  \ttfamily  {.SPIN-O}}}{237}
+\indexentry{spin-orbit}{237}
+\indexentry{PROPRT@{\normalfont  \ttfamily  {.PROPRT}}}{237}
 \indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}}{237}
 \indexentry{frequency}{237}
-\indexentry{PHOSPHORESCENCE@{\normalfont  \ttfamily  {.PHOSPHORESCENCE}}}{237}
-\indexentry{phosphoresence}{237}
-\indexentry{spin-orbit}{237}
-\indexentry{singlet-triplet transition}{237}
-\indexentry{dipole length}{237}
-\indexentry{spin-orbit}{237}
-\indexentry{MCDBTERM@{\normalfont  \ttfamily  {.MCDBTERM}}}{237}
-\indexentry{magnetic circular dichroism}{237}
-\indexentry{B-term}{237}
-\indexentry{MCD}{237}
-\indexentry{dipole length}{237}
-\indexentry{angular momentum}{237}
-\indexentry{APROP@{\normalfont  \ttfamily  {.APROP}}}{237}
-\indexentry{BPROP@{\normalfont  \ttfamily  {.BPROP}}}{237}
-\indexentry{CPROP@{\normalfont  \ttfamily  {.CPROP}}}{237}
-\indexentry{quadratic response}{237}
-\indexentry{response!quadratic}{237}
-\indexentry{ASPIN@{\normalfont  \ttfamily  {.ASPIN}}}{237}
-\indexentry{BSPIN@{\normalfont  \ttfamily  {.BSPIN}}}{237}
-\indexentry{CSPIN@{\normalfont  \ttfamily  {.CSPIN}}}{237}
-\indexentry{spin rank}{237}
-\indexentry{SINGLE@{\normalfont  \ttfamily  {.SINGLE}}}{237}
-\indexentry{CSPIN@{\normalfont  \ttfamily  {.CSPIN}}}{238}
-\indexentry{DOUBLE@{\normalfont  \ttfamily  {.DOUBLE}}}{238}
-\indexentry{BSPIN@{\normalfont  \ttfamily  {.BSPIN}}}{238}
-\indexentry{CSPIN@{\normalfont  \ttfamily  {.CSPIN}}}{238}
-\indexentry{BFREQ@{\normalfont  \ttfamily  {.BFREQ}}}{238}
-\indexentry{CFREQ@{\normalfont  \ttfamily  {.CFREQ}}}{238}
-\indexentry{LINEAR@{\normalfont  \ttfamily  {*LINEAR}}}{238}
-\indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}}{238}
+\indexentry{MAXRM@{\normalfont  \ttfamily  {.MAXRM}}}{237}
+\indexentry{THCLR@{\normalfont  \ttfamily  {.THCLR}}}{237}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{237}
+\indexentry{RESTLR@{\normalfont  \ttfamily  {.RESTLR}}}{237}
+\indexentry{restart!linear response}{237}
 \indexentry{MAXIT@{\normalfont  \ttfamily  {.MAXIT}}}{238}
 \indexentry{MAXITO@{\normalfont  \ttfamily  {.MAXITO}}}{238}
 \indexentry{optimal orbital trial vector}{238}
-\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{238}
-\indexentry{SHG@{\normalfont  \ttfamily  {.SHG}}}{238}
-\indexentry{second harmonic generation}{238}
-\indexentry{THCLR@{\normalfont  \ttfamily  {.THCLR}}}{238}
-\indexentry{MAXITP@{\normalfont  \ttfamily  {.MAXITP}}}{238}
-\indexentry{linear response}{238}
-\indexentry{response!linear}{238}
-\indexentry{THCPP@{\normalfont  \ttfamily  {.THCPP}}}{238}
-\indexentry{linear response}{238}
-\indexentry{response!linear}{238}
-\indexentry{CUBIC@{\normalfont  \ttfamily  {*CUBIC}}}{238}
-\indexentry{cubic response}{238}
-\indexentry{response!cubic}{238}
-\indexentry{APROP@{\normalfont  \ttfamily  {.APROP}}}{238}
-\indexentry{BPROP@{\normalfont  \ttfamily  {.BPROP}}}{238}
-\indexentry{CPROP@{\normalfont  \ttfamily  {.CPROP}}}{238}
-\indexentry{DPROP@{\normalfont  \ttfamily  {.DPROP}}}{238}
-\indexentry{BFREQ@{\normalfont  \ttfamily  {.BFREQ}}}{238}
-\indexentry{CFREQ@{\normalfont  \ttfamily  {.CFREQ}}}{238}
-\indexentry{DFREQ@{\normalfont  \ttfamily  {.DFREQ}}}{238}
-\indexentry{frequency}{238}
 \indexentry{LINEAR@{\normalfont  \ttfamily  {*LINEAR}}}{238}
-\indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}}{238}
-\indexentry{THG@{\normalfont  \ttfamily  {.THG}}}{238}
-\indexentry{third harmonic generation}{238}
-\indexentry{DC-SHG@{\normalfont  \ttfamily  {.DC-SHG}}}{238}
-\indexentry{electric field!induced SHG}{238}
-\indexentry{DC-KER@{\normalfont  \ttfamily  {.DC-KER}}}{238}
-\indexentry{electric field!induced Kerr}{238}
-\indexentry{IDRI@{\normalfont  \ttfamily  {.IDRI}}}{239}
-\indexentry{refractive index!intensity dependent}{239}
-\indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}}{239}
-\indexentry{frequency}{239}
-\indexentry{OLDVEC@{\normalfont  \ttfamily  {.OLDVEC}}}{239}
+\indexentry{SINGLE RESIDUE@{\normalfont  \ttfamily  {.SINGLE RESIDUE}}}{238}
+\indexentry{single residue}{238}
+\indexentry{linear response!single residue}{238}
+\indexentry{response!excitations}{238}
+\indexentry{transition moment}{238}
+\indexentry{\sc  response}{238}
+\indexentry{SINGLE RESIDUE@{\normalfont  \ttfamily  {.SINGLE RESIDUE}}}{238}
+\indexentry{ROOTS@{\normalfont  \ttfamily  {.ROOTS}}}{238}
+\indexentry{excited state}{238}
+\indexentry{excitation energy}{238}
+\indexentry{transition moment}{238}
+\indexentry{MAXRM@{\normalfont  \ttfamily  {.MAXRM}}}{238}
+\indexentry{DIPLEN@{\normalfont  \ttfamily  {.DIPLEN}}}{238}
+\indexentry{dipole length}{238}
+\indexentry{DIPVEL@{\normalfont  \ttfamily  {.DIPVEL}}}{238}
+\indexentry{dipole velocity}{238}
+\indexentry{DIPMAG@{\normalfont  \ttfamily  {.DIPMAG}}}{238}
+\indexentry{angular momentum}{238}
+\indexentry{QUADMOM@{\normalfont  \ttfamily  {.QUADMOM}}}{238}
+\indexentry{quadrupole operator}{238}
+\indexentry{SPIN-O@{\normalfont  \ttfamily  {.SPIN-O}}}{238}
+\indexentry{spin-orbit}{238}
+\indexentry{PROPRT@{\normalfont  \ttfamily  {.PROPRT}}}{238}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{239}
+\indexentry{MAXIT@{\normalfont  \ttfamily  {.MAXIT}}}{239}
+\indexentry{MAXITO@{\normalfont  \ttfamily  {.MAXITO}}}{239}
+\indexentry{optimal orbital trial vector}{239}
+\indexentry{RESTPP@{\normalfont  \ttfamily  {.RESTPP}}}{239}
+\indexentry{restart!excitation energy}{239}
+\indexentry{THCPP@{\normalfont  \ttfamily  {.THCPP}}}{239}
+\indexentry{OLSEN@{\normalfont  \ttfamily  {.OLSEN}}}{239}
+\indexentry{QUADRA@{\normalfont  \ttfamily  {*QUADRA}}}{239}
+\indexentry{quadratic response}{239}
+\indexentry{response!quadratic}{239}
 \indexentry{SINGLE@{\normalfont  \ttfamily  {.SINGLE}}}{239}
 \indexentry{single residue}{239}
-\indexentry{cubic response}{239}
-\indexentry{response!cubic}{239}
-\indexentry{three-photon!absorption}{239}
+\indexentry{quadratic response}{239}
+\indexentry{response!quadratic}{239}
+\indexentry{two-photon!transition moment}{239}
+\indexentry{transition moment}{239}
+\indexentry{transition moment!two-photon}{239}
 \indexentry{DOUBLE@{\normalfont  \ttfamily  {.DOUBLE}}}{239}
 \indexentry{double residue}{239}
-\indexentry{cubic response}{239}
-\indexentry{response!cubic}{239}
-\indexentry{two-photon!transition moment!excited states}{239}
-\indexentry{excited state!polarizability}{239}
+\indexentry{quadratic response}{239}
+\indexentry{response!quadratic}{239}
+\indexentry{transition moment!excited states}{239}
 \indexentry{DIPLEN@{\normalfont  \ttfamily  {.DIPLEN}}}{239}
 \indexentry{dipole length}{239}
 \indexentry{DIPLNX@{\normalfont  \ttfamily  {.DIPLNX}}}{239}
 \indexentry{dipole length}{239}
-\indexentry{DIPLNY@{\normalfont  \ttfamily  {.DIPLNY}}}{239}
-\indexentry{dipole length}{239}
-\indexentry{DIPLNZ@{\normalfont  \ttfamily  {.DIPLNZ}}}{239}
-\indexentry{dipole length}{239}
-\indexentry{MAXIT@{\normalfont  \ttfamily  {.MAXIT}}}{239}
-\indexentry{MAXITO@{\normalfont  \ttfamily  {.MAXITO}}}{239}
-\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{239}
-\indexentry{THCLR@{\normalfont  \ttfamily  {.THCLR}}}{239}
-\indexentry{THRNRM@{\normalfont  \ttfamily  {.THRNRM}}}{239}
-\indexentry{MAXITP@{\normalfont  \ttfamily  {.MAXITP}}}{239}
-\indexentry{ROOTS@{\normalfont  \ttfamily  {.ROOTS}}}{239}
-\indexentry{THCPP@{\normalfont  \ttfamily  {.THCPP}}}{239}
-\indexentry{C6@{\normalfont  \ttfamily  {*C6}}}{240}
-\indexentry{multipole moment}{240}
-\indexentry{C6SPH@{\normalfont  \ttfamily  {.C6SPH}}}{240}
-\indexentry{C8SPH@{\normalfont  \ttfamily  {.C8SPH}}}{240}
-\indexentry{C10SPH@{\normalfont  \ttfamily  {.C10SPH}}}{240}
-\indexentry{C6SPH@{\normalfont  \ttfamily  {.C6SPH}}}{240}
-\indexentry{C8SPH@{\normalfont  \ttfamily  {.C8SPH}}}{240}
-\indexentry{C10SPH@{\normalfont  \ttfamily  {.C10SPH}}}{240}
-\indexentry{C6ATM@{\normalfont  \ttfamily  {.C6ATM}}}{240}
-\indexentry{C8ATM@{\normalfont  \ttfamily  {.C8ATM}}}{240}
-\indexentry{C10ATM@{\normalfont  \ttfamily  {.C10ATM}}}{240}
-\indexentry{C6ATM@{\normalfont  \ttfamily  {.C6ATM}}}{240}
-\indexentry{C8ATM@{\normalfont  \ttfamily  {.C8ATM}}}{240}
-\indexentry{C10ATM@{\normalfont  \ttfamily  {.C10ATM}}}{240}
-\indexentry{C6SPH@{\normalfont  \ttfamily  {.C6SPH}}}{240}
-\indexentry{C6LMO@{\normalfont  \ttfamily  {.C6LMO}}}{240}
-\indexentry{C8LMO@{\normalfont  \ttfamily  {.C8LMO}}}{240}
-\indexentry{C10LMO@{\normalfont  \ttfamily  {.C10LMO}}}{240}
-\indexentry{C6LMO@{\normalfont  \ttfamily  {.C6LMO}}}{240}
-\indexentry{C8LMO@{\normalfont  \ttfamily  {.C8LMO}}}{240}
-\indexentry{C10LMO@{\normalfont  \ttfamily  {.C10LMO}}}{240}
-\indexentry{C6SPH@{\normalfont  \ttfamily  {.C6SPH}}}{240}
-\indexentry{linear molecule}{240}
-\indexentry{multipole moment}{240}
-\indexentry{ESR@{\normalfont  \ttfamily  {*ESR}}}{240}
-\indexentry{ESR}{240}
-\indexentry{hyperfine coupling}{240}
-\indexentry{restricted-unrestricted method}{240}
+\indexentry{DIPLNY@{\normalfont  \ttfamily  {.DIPLNY}}}{240}
+\indexentry{dipole length}{240}
+\indexentry{DIPLNZ@{\normalfont  \ttfamily  {.DIPLNZ}}}{240}
+\indexentry{dipole length}{240}
+\indexentry{KERR@{\normalfont  \ttfamily  {.KERR}}}{240}
+\indexentry{Kerr effect}{240}
+\indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}}{240}
+\indexentry{frequency}{240}
+\indexentry{PHOSPHORESCENCE@{\normalfont  \ttfamily  {.PHOSPHORESCENCE}}}{240}
+\indexentry{phosphoresence}{240}
+\indexentry{spin-orbit}{240}
+\indexentry{singlet-triplet transition}{240}
+\indexentry{dipole length}{240}
+\indexentry{spin-orbit}{240}
+\indexentry{MCDBTERM@{\normalfont  \ttfamily  {.MCDBTERM}}}{240}
+\indexentry{magnetic circular dichroism}{240}
+\indexentry{B-term}{240}
+\indexentry{MCD}{240}
+\indexentry{dipole length}{240}
+\indexentry{angular momentum}{240}
+\indexentry{APROP@{\normalfont  \ttfamily  {.APROP}}}{240}
+\indexentry{BPROP@{\normalfont  \ttfamily  {.BPROP}}}{240}
+\indexentry{CPROP@{\normalfont  \ttfamily  {.CPROP}}}{240}
+\indexentry{quadratic response}{240}
+\indexentry{response!quadratic}{240}
+\indexentry{ASPIN@{\normalfont  \ttfamily  {.ASPIN}}}{240}
+\indexentry{BSPIN@{\normalfont  \ttfamily  {.BSPIN}}}{240}
+\indexentry{CSPIN@{\normalfont  \ttfamily  {.CSPIN}}}{240}
+\indexentry{spin rank}{240}
+\indexentry{SINGLE@{\normalfont  \ttfamily  {.SINGLE}}}{240}
+\indexentry{CSPIN@{\normalfont  \ttfamily  {.CSPIN}}}{240}
+\indexentry{DOUBLE@{\normalfont  \ttfamily  {.DOUBLE}}}{240}
+\indexentry{BSPIN@{\normalfont  \ttfamily  {.BSPIN}}}{240}
+\indexentry{CSPIN@{\normalfont  \ttfamily  {.CSPIN}}}{240}
+\indexentry{BFREQ@{\normalfont  \ttfamily  {.BFREQ}}}{240}
+\indexentry{CFREQ@{\normalfont  \ttfamily  {.CFREQ}}}{240}
+\indexentry{LINEAR@{\normalfont  \ttfamily  {*LINEAR}}}{240}
+\indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}}{240}
 \indexentry{MAXIT@{\normalfont  \ttfamily  {.MAXIT}}}{240}
-\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{240}
-\indexentry{SNGPRP@{\normalfont  \ttfamily  {.SNGPRP}}}{240}
-\indexentry{THCESR@{\normalfont  \ttfamily  {.THCESR}}}{240}
-\indexentry{TRPPRP@{\normalfont  \ttfamily  {.TRPPRP}}}{240}
-\indexentry{Coupled Cluster}{241}
-\indexentry{CCS}{241}
-\indexentry{CC2}{241}
-\indexentry{CCD}{241}
-\indexentry{CCSD}{241}
-\indexentry{CCSD(T)}{241}
-\indexentry{CC3}{241}
-\indexentry{\sc  cc}{241}
-\indexentry{response function}{241}
-\indexentry{gradient}{241}
-\indexentry{magnetic properties}{241}
-\indexentry{London orbitals}{241}
-\indexentry{integral direct}{241}
-\indexentry{\sc  sirius}{241}
-\indexentry{CC INPUT@{\normalfont  \ttfamily  {*CC INPUT}}}{241}
-\indexentry{CC@{\normalfont  \ttfamily  {.CC}}}{241}
-\indexentry{\sc  sirius}{241}
-\indexentry{*WAVE FUNCTIONS@{\normalfont  \ttfamily  {**WAVE FUNCTIONS}}}{241}
-\indexentry{CC INPUT@{\normalfont  \ttfamily  {*CC INPUT}}}{243}
-\indexentry{B0SKIP@{\normalfont  \ttfamily  {.B0SKIP}}}{243}
-\indexentry{CC(2)@{\normalfont  \ttfamily  {.CC(2)}}}{243}
-\indexentry{CC(3)@{\normalfont  \ttfamily  {.CC(3)}}}{243}
-\indexentry{CC(T)@{\normalfont  \ttfamily  {.CC(T)}}}{243}
-\indexentry{CCSD(T)}{243}
-\indexentry{CC2@{\normalfont  \ttfamily  {.CC2}}}{243}
-\indexentry{CC2}{243}
-\indexentry{CC3@{\normalfont  \ttfamily  {.CC3}}}{243}
-\indexentry{CC3}{243}
-\indexentry{CCD@{\normalfont  \ttfamily  {.CCD}}}{243}
-\indexentry{Coupled Cluster!Doubles}{243}
-\indexentry{CCD}{243}
-\indexentry{CIS@{\normalfont  \ttfamily  {.CIS}}}{243}
-\indexentry{Configuration Interaction!Singles}{243}
-\indexentry{CI!Singles}{243}
-\indexentry{CIS}{243}
-\indexentry{CCR(3)@{\normalfont  \ttfamily  {.CCR(3)}}}{243}
-\indexentry{CCS@{\normalfont  \ttfamily  {.CCS}}}{243}
-\indexentry{Coupled Cluster!Singles}{243}
-\indexentry{CCS}{243}
-\indexentry{CCSD@{\normalfont  \ttfamily  {.CCSD}}}{243}
-\indexentry{Coupled Cluster!Singles and Doubles}{243}
-\indexentry{CCSD}{243}
-\indexentry{CCSTST@{\normalfont  \ttfamily  {.CCSTST}}}{243}
-\indexentry{CCS}{243}
-\indexentry{finite field}{243}
-\indexentry{DEBUG@{\normalfont  \ttfamily  {.DEBUG}}}{243}
-\indexentry{E0SKIP@{\normalfont  \ttfamily  {.E0SKIP}}}{243}
-\indexentry{F1SKIP@{\normalfont  \ttfamily  {.F1SKIP}}}{243}
-\indexentry{F2SKIP@{\normalfont  \ttfamily  {.F2SKIP}}}{243}
-\indexentry{FIELD@{\normalfont  \ttfamily  {.FIELD}}}{244}
-\indexentry{finite field}{244}
-\indexentry{external field}{244}
-\indexentry{FREEZE@{\normalfont  \ttfamily  {.FREEZE}}}{244}
-\indexentry{FROIMP@{\normalfont  \ttfamily  {.FROIMP}}}{244}
-\indexentry{FROEXP@{\normalfont  \ttfamily  {.FROEXP}}}{244}
-\indexentry{FRSKIP@{\normalfont  \ttfamily  {.FRSKIP}}}{245}
-\indexentry{HERDIR@{\normalfont  \ttfamily  {.HERDIR}}}{245}
-\indexentry{integral direct}{245}
-\indexentry{\sc  hermit}{245}
-\indexentry{\sc  eri}{245}
-\indexentry{IMSKIP@{\normalfont  \ttfamily  {.IMSKIP}}}{245}
-\indexentry{L0SKIP@{\normalfont  \ttfamily  {.L0SKIP}}}{245}
-\indexentry{L1SKIP@{\normalfont  \ttfamily  {.L1SKIP}}}{245}
-\indexentry{L2SKIP@{\normalfont  \ttfamily  {.L2SKIP}}}{245}
-\indexentry{LESKIP@{\normalfont  \ttfamily  {.LESKIP}}}{245}
-\indexentry{LISKIP@{\normalfont  \ttfamily  {.LISKIP}}}{245}
-\indexentry{M1SKIP@{\normalfont  \ttfamily  {.M1SKIP}}}{245}
-\indexentry{MAX IT@{\normalfont  \ttfamily  {.MAX IT}}}{245}
-\indexentry{MAXRED@{\normalfont  \ttfamily  {.MAXRED}}}{246}
-\indexentry{MP2@{\normalfont  \ttfamily  {.MP2}}}{246}
-\indexentry{M{\o}ller-Plesset!second-order}{246}
-\indexentry{MP2}{246}
-\indexentry{MXDIIS@{\normalfont  \ttfamily  {.MXDIIS}}}{246}
-\indexentry{MXLRV@{\normalfont  \ttfamily  {.MXLRV}}}{246}
-\indexentry{NOCCIT@{\normalfont  \ttfamily  {.NOCCIT}}}{246}
-\indexentry{NSIMLE@{\normalfont  \ttfamily  {.NSIMLE}}}{246}
-\indexentry{NSYM@{\normalfont  \ttfamily  {.NSYM}}}{246}
-\indexentry{O2SKIP@{\normalfont  \ttfamily  {.O2SKIP}}}{246}
-\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{246}
-\indexentry{R1SKIP@{\normalfont  \ttfamily  {.R1SKIP}}}{246}
-\indexentry{R2SKIP@{\normalfont  \ttfamily  {.R2SKIP}}}{247}
-\indexentry{RESKIP@{\normalfont  \ttfamily  {.RESKIP}}}{247}
-\indexentry{RESTART@{\normalfont  \ttfamily  {.RESTART}}}{247}
-\indexentry{THRENR@{\normalfont  \ttfamily  {.THRENR}}}{247}
-\indexentry{THRLEQ@{\normalfont  \ttfamily  {.THRLEQ}}}{247}
-\indexentry{X2SKIP@{\normalfont  \ttfamily  {.X2SKIP}}}{247}
-\indexentry{CCFOP@{\normalfont  \ttfamily  {*CCFOP}}}{248}
-\indexentry{expectation values}{248}
-\indexentry{one-electron properties}{248}
-\indexentry{first-order properties}{248}
-\indexentry{CCFOP@{\normalfont  \ttfamily  {*CCFOP}}}{248}
-\indexentry{CCFOP@{\normalfont  \ttfamily  {*CCFOP}}}{248}
-\indexentry{*INTEGRALS@{\normalfont  \ttfamily  {**INTEGRALS}}}{248}
-\indexentry{AOPROPER}{248}
-\indexentry{orbital relaxation}{248}
-\indexentry{NONREL@{\normalfont  \ttfamily  {.NONREL}}}{248}
-\indexentry{FREEZE@{\normalfont  \ttfamily  {.FREEZE}}}{248}
-\indexentry{FROIMP@{\normalfont  \ttfamily  {.FROIMP}}}{248}
-\indexentry{2ELDAR@{\normalfont  \ttfamily  {.2ELDAR}}}{248}
-\indexentry{Darwin term!two-electron}{248}
-\indexentry{ALLONE@{\normalfont  \ttfamily  {.ALLONE}}}{248}
-\indexentry{DIPMOM@{\normalfont  \ttfamily  {.DIPMOM}}}{248}
-\indexentry{electric dipole}{248}
-\indexentry{dipole moment}{248}
-\indexentry{NONREL@{\normalfont  \ttfamily  {.NONREL}}}{248}
-\indexentry{NQCC@{\normalfont  \ttfamily  {.NQCC}}}{248}
-\indexentry{electric field!gradient}{248}
-\indexentry{OPERAT@{\normalfont  \ttfamily  {.OPERAT}}}{248}
-\indexentry{QUADRU@{\normalfont  \ttfamily  {.QUADRU}}}{249}
-\indexentry{electric quadrupole}{249}
-\indexentry{quadrupole moment}{249}
-\indexentry{RELCOR@{\normalfont  \ttfamily  {.RELCOR}}}{249}
-\indexentry{relativistic corrections!one-electron}{249}
-\indexentry{Darwin term!one-electron}{249}
-\indexentry{mass-velocity term}{249}
-\indexentry{SECMOM@{\normalfont  \ttfamily  {.SECMOM}}}{249}
-\indexentry{second moment of charge}{249}
-\indexentry{TSTDEN@{\normalfont  \ttfamily  {.TSTDEN}}}{249}
-\indexentry{CCLR@{\normalfont  \ttfamily  {*CCLR}}}{250}
-\indexentry{linear response}{250}
-\indexentry{response!linear}{250}
-\indexentry{Coupled Cluster!linear response}{250}
-\indexentry{polarizability!frequency-dependent}{250}
-\indexentry{polarizability!Coupled Cluster}{250}
-\indexentry{polarizability!static}{250}
-\indexentry{dipole polarizability}{250}
-\indexentry{dispersion coefficients}{250}
-\indexentry{Cauchy moments}{250}
-\indexentry{CCLR@{\normalfont  \ttfamily  {*CCLR}}}{250}
-\indexentry{*INTEGRALS@{\normalfont  \ttfamily  {**INTEGRALS}}}{250}
-\indexentry{ASYMSD@{\normalfont  \ttfamily  {.ASYMSD}}}{250}
-\indexentry{AVERAG@{\normalfont  \ttfamily  {.AVERAG}}}{250}
-\indexentry{dipole polarizability}{251}
-\indexentry{DIPOLE@{\normalfont  \ttfamily  {.DIPOLE}}}{251}
-\indexentry{dipole polarizability}{251}
-\indexentry{DISPCF@{\normalfont  \ttfamily  {.DISPCF}}}{251}
-\indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}}{251}
+\indexentry{MAXITO@{\normalfont  \ttfamily  {.MAXITO}}}{240}
+\indexentry{optimal orbital trial vector}{240}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{241}
+\indexentry{SHG@{\normalfont  \ttfamily  {.SHG}}}{241}
+\indexentry{second harmonic generation}{241}
+\indexentry{THCLR@{\normalfont  \ttfamily  {.THCLR}}}{241}
+\indexentry{MAXITP@{\normalfont  \ttfamily  {.MAXITP}}}{241}
+\indexentry{linear response}{241}
+\indexentry{response!linear}{241}
+\indexentry{THCPP@{\normalfont  \ttfamily  {.THCPP}}}{241}
+\indexentry{linear response}{241}
+\indexentry{response!linear}{241}
+\indexentry{CUBIC@{\normalfont  \ttfamily  {*CUBIC}}}{241}
+\indexentry{cubic response}{241}
+\indexentry{response!cubic}{241}
+\indexentry{APROP@{\normalfont  \ttfamily  {.APROP}}}{241}
+\indexentry{BPROP@{\normalfont  \ttfamily  {.BPROP}}}{241}
+\indexentry{CPROP@{\normalfont  \ttfamily  {.CPROP}}}{241}
+\indexentry{DPROP@{\normalfont  \ttfamily  {.DPROP}}}{241}
+\indexentry{BFREQ@{\normalfont  \ttfamily  {.BFREQ}}}{241}
+\indexentry{CFREQ@{\normalfont  \ttfamily  {.CFREQ}}}{241}
+\indexentry{DFREQ@{\normalfont  \ttfamily  {.DFREQ}}}{241}
+\indexentry{frequency}{241}
+\indexentry{LINEAR@{\normalfont  \ttfamily  {*LINEAR}}}{241}
+\indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}}{241}
+\indexentry{THG@{\normalfont  \ttfamily  {.THG}}}{241}
+\indexentry{third harmonic generation}{241}
+\indexentry{DC-SHG@{\normalfont  \ttfamily  {.DC-SHG}}}{241}
+\indexentry{electric field!induced SHG}{241}
+\indexentry{DC-KER@{\normalfont  \ttfamily  {.DC-KER}}}{241}
+\indexentry{electric field!induced Kerr}{241}
+\indexentry{IDRI@{\normalfont  \ttfamily  {.IDRI}}}{241}
+\indexentry{refractive index!intensity dependent}{241}
+\indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}}{241}
+\indexentry{frequency}{241}
+\indexentry{OLDVEC@{\normalfont  \ttfamily  {.OLDVEC}}}{242}
+\indexentry{SINGLE@{\normalfont  \ttfamily  {.SINGLE}}}{242}
+\indexentry{single residue}{242}
+\indexentry{cubic response}{242}
+\indexentry{response!cubic}{242}
+\indexentry{three-photon!absorption}{242}
+\indexentry{DOUBLE@{\normalfont  \ttfamily  {.DOUBLE}}}{242}
+\indexentry{double residue}{242}
+\indexentry{cubic response}{242}
+\indexentry{response!cubic}{242}
+\indexentry{two-photon!transition moment!excited states}{242}
+\indexentry{excited state!polarizability}{242}
+\indexentry{DIPLEN@{\normalfont  \ttfamily  {.DIPLEN}}}{242}
+\indexentry{dipole length}{242}
+\indexentry{DIPLNX@{\normalfont  \ttfamily  {.DIPLNX}}}{242}
+\indexentry{dipole length}{242}
+\indexentry{DIPLNY@{\normalfont  \ttfamily  {.DIPLNY}}}{242}
+\indexentry{dipole length}{242}
+\indexentry{DIPLNZ@{\normalfont  \ttfamily  {.DIPLNZ}}}{242}
+\indexentry{dipole length}{242}
+\indexentry{MAXIT@{\normalfont  \ttfamily  {.MAXIT}}}{242}
+\indexentry{MAXITO@{\normalfont  \ttfamily  {.MAXITO}}}{242}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{242}
+\indexentry{THCLR@{\normalfont  \ttfamily  {.THCLR}}}{242}
+\indexentry{THRNRM@{\normalfont  \ttfamily  {.THRNRM}}}{242}
+\indexentry{MAXITP@{\normalfont  \ttfamily  {.MAXITP}}}{242}
+\indexentry{ROOTS@{\normalfont  \ttfamily  {.ROOTS}}}{242}
+\indexentry{THCPP@{\normalfont  \ttfamily  {.THCPP}}}{242}
+\indexentry{C6@{\normalfont  \ttfamily  {*C6}}}{242}
+\indexentry{multipole moment}{242}
+\indexentry{C6SPH@{\normalfont  \ttfamily  {.C6SPH}}}{242}
+\indexentry{C8SPH@{\normalfont  \ttfamily  {.C8SPH}}}{242}
+\indexentry{C10SPH@{\normalfont  \ttfamily  {.C10SPH}}}{242}
+\indexentry{C6SPH@{\normalfont  \ttfamily  {.C6SPH}}}{242}
+\indexentry{C8SPH@{\normalfont  \ttfamily  {.C8SPH}}}{242}
+\indexentry{C10SPH@{\normalfont  \ttfamily  {.C10SPH}}}{242}
+\indexentry{C6ATM@{\normalfont  \ttfamily  {.C6ATM}}}{243}
+\indexentry{C8ATM@{\normalfont  \ttfamily  {.C8ATM}}}{243}
+\indexentry{C10ATM@{\normalfont  \ttfamily  {.C10ATM}}}{243}
+\indexentry{C6ATM@{\normalfont  \ttfamily  {.C6ATM}}}{243}
+\indexentry{C8ATM@{\normalfont  \ttfamily  {.C8ATM}}}{243}
+\indexentry{C10ATM@{\normalfont  \ttfamily  {.C10ATM}}}{243}
+\indexentry{C6SPH@{\normalfont  \ttfamily  {.C6SPH}}}{243}
+\indexentry{C6LMO@{\normalfont  \ttfamily  {.C6LMO}}}{243}
+\indexentry{C8LMO@{\normalfont  \ttfamily  {.C8LMO}}}{243}
+\indexentry{C10LMO@{\normalfont  \ttfamily  {.C10LMO}}}{243}
+\indexentry{C6LMO@{\normalfont  \ttfamily  {.C6LMO}}}{243}
+\indexentry{C8LMO@{\normalfont  \ttfamily  {.C8LMO}}}{243}
+\indexentry{C10LMO@{\normalfont  \ttfamily  {.C10LMO}}}{243}
+\indexentry{C6SPH@{\normalfont  \ttfamily  {.C6SPH}}}{243}
+\indexentry{linear molecule}{243}
+\indexentry{multipole moment}{243}
+\indexentry{ESR@{\normalfont  \ttfamily  {*ESR}}}{243}
+\indexentry{ESR}{243}
+\indexentry{hyperfine coupling}{243}
+\indexentry{restricted-unrestricted method}{243}
+\indexentry{MAXIT@{\normalfont  \ttfamily  {.MAXIT}}}{243}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{243}
+\indexentry{SNGPRP@{\normalfont  \ttfamily  {.SNGPRP}}}{243}
+\indexentry{THCESR@{\normalfont  \ttfamily  {.THCESR}}}{243}
+\indexentry{TRPPRP@{\normalfont  \ttfamily  {.TRPPRP}}}{243}
+\indexentry{Coupled Cluster}{244}
+\indexentry{CCS}{244}
+\indexentry{CC2}{244}
+\indexentry{CCD}{244}
+\indexentry{CCSD}{244}
+\indexentry{CCSD(T)}{244}
+\indexentry{CC3}{244}
+\indexentry{\sc  cc}{244}
+\indexentry{response function}{244}
+\indexentry{gradient}{244}
+\indexentry{magnetic properties}{244}
+\indexentry{London orbitals}{244}
+\indexentry{integral direct}{244}
+\indexentry{\sc  sirius}{244}
+\indexentry{CC INPUT@{\normalfont  \ttfamily  {*CC INPUT}}}{244}
+\indexentry{CC@{\normalfont  \ttfamily  {.CC}}}{244}
+\indexentry{\sc  sirius}{244}
+\indexentry{*WAVE FUNCTIONS@{\normalfont  \ttfamily  {**WAVE FUNCTIONS}}}{244}
+\indexentry{CC INPUT@{\normalfont  \ttfamily  {*CC INPUT}}}{246}
+\indexentry{B0SKIP@{\normalfont  \ttfamily  {.B0SKIP}}}{246}
+\indexentry{CC(2)@{\normalfont  \ttfamily  {.CC(2)}}}{246}
+\indexentry{CC(3)@{\normalfont  \ttfamily  {.CC(3)}}}{246}
+\indexentry{CC(T)@{\normalfont  \ttfamily  {.CC(T)}}}{246}
+\indexentry{CCSD(T)}{246}
+\indexentry{CC2@{\normalfont  \ttfamily  {.CC2}}}{246}
+\indexentry{CC2}{246}
+\indexentry{CC3@{\normalfont  \ttfamily  {.CC3}}}{246}
+\indexentry{CC3}{246}
+\indexentry{CCD@{\normalfont  \ttfamily  {.CCD}}}{246}
+\indexentry{Coupled Cluster!Doubles}{246}
+\indexentry{CCD}{246}
+\indexentry{CIS@{\normalfont  \ttfamily  {.CIS}}}{246}
+\indexentry{Configuration Interaction!Singles}{246}
+\indexentry{CI!Singles}{246}
+\indexentry{CIS}{246}
+\indexentry{CCR(3)@{\normalfont  \ttfamily  {.CCR(3)}}}{246}
+\indexentry{CCS@{\normalfont  \ttfamily  {.CCS}}}{246}
+\indexentry{Coupled Cluster!Singles}{246}
+\indexentry{CCS}{246}
+\indexentry{CCSD@{\normalfont  \ttfamily  {.CCSD}}}{246}
+\indexentry{Coupled Cluster!Singles and Doubles}{246}
+\indexentry{CCSD}{246}
+\indexentry{CCSTST@{\normalfont  \ttfamily  {.CCSTST}}}{246}
+\indexentry{CCS}{246}
+\indexentry{finite field}{246}
+\indexentry{DEBUG@{\normalfont  \ttfamily  {.DEBUG}}}{246}
+\indexentry{E0SKIP@{\normalfont  \ttfamily  {.E0SKIP}}}{246}
+\indexentry{F1SKIP@{\normalfont  \ttfamily  {.F1SKIP}}}{246}
+\indexentry{F2SKIP@{\normalfont  \ttfamily  {.F2SKIP}}}{246}
+\indexentry{FIELD@{\normalfont  \ttfamily  {.FIELD}}}{247}
+\indexentry{finite field}{247}
+\indexentry{external field}{247}
+\indexentry{FREEZE@{\normalfont  \ttfamily  {.FREEZE}}}{247}
+\indexentry{FROIMP@{\normalfont  \ttfamily  {.FROIMP}}}{247}
+\indexentry{FROEXP@{\normalfont  \ttfamily  {.FROEXP}}}{247}
+\indexentry{FRSKIP@{\normalfont  \ttfamily  {.FRSKIP}}}{248}
+\indexentry{HERDIR@{\normalfont  \ttfamily  {.HERDIR}}}{248}
+\indexentry{integral direct}{248}
+\indexentry{\sc  hermit}{248}
+\indexentry{\sc  eri}{248}
+\indexentry{IMSKIP@{\normalfont  \ttfamily  {.IMSKIP}}}{248}
+\indexentry{L0SKIP@{\normalfont  \ttfamily  {.L0SKIP}}}{248}
+\indexentry{L1SKIP@{\normalfont  \ttfamily  {.L1SKIP}}}{248}
+\indexentry{L2SKIP@{\normalfont  \ttfamily  {.L2SKIP}}}{248}
+\indexentry{LESKIP@{\normalfont  \ttfamily  {.LESKIP}}}{248}
+\indexentry{LISKIP@{\normalfont  \ttfamily  {.LISKIP}}}{248}
+\indexentry{M1SKIP@{\normalfont  \ttfamily  {.M1SKIP}}}{248}
+\indexentry{MAX IT@{\normalfont  \ttfamily  {.MAX IT}}}{248}
+\indexentry{MAXRED@{\normalfont  \ttfamily  {.MAXRED}}}{249}
+\indexentry{MP2@{\normalfont  \ttfamily  {.MP2}}}{249}
+\indexentry{M{\o}ller-Plesset!second-order}{249}
+\indexentry{MP2}{249}
+\indexentry{MXDIIS@{\normalfont  \ttfamily  {.MXDIIS}}}{249}
+\indexentry{MXLRV@{\normalfont  \ttfamily  {.MXLRV}}}{249}
+\indexentry{NOCCIT@{\normalfont  \ttfamily  {.NOCCIT}}}{249}
+\indexentry{NSIMLE@{\normalfont  \ttfamily  {.NSIMLE}}}{249}
+\indexentry{NSYM@{\normalfont  \ttfamily  {.NSYM}}}{249}
+\indexentry{O2SKIP@{\normalfont  \ttfamily  {.O2SKIP}}}{249}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{249}
+\indexentry{R1SKIP@{\normalfont  \ttfamily  {.R1SKIP}}}{249}
+\indexentry{R2SKIP@{\normalfont  \ttfamily  {.R2SKIP}}}{250}
+\indexentry{RESKIP@{\normalfont  \ttfamily  {.RESKIP}}}{250}
+\indexentry{RESTART@{\normalfont  \ttfamily  {.RESTART}}}{250}
+\indexentry{THRENR@{\normalfont  \ttfamily  {.THRENR}}}{250}
+\indexentry{THRLEQ@{\normalfont  \ttfamily  {.THRLEQ}}}{250}
+\indexentry{X2SKIP@{\normalfont  \ttfamily  {.X2SKIP}}}{250}
+\indexentry{CCFOP@{\normalfont  \ttfamily  {*CCFOP}}}{251}
+\indexentry{expectation values}{251}
+\indexentry{one-electron properties}{251}
+\indexentry{first-order properties}{251}
+\indexentry{CCFOP@{\normalfont  \ttfamily  {*CCFOP}}}{251}
+\indexentry{CCFOP@{\normalfont  \ttfamily  {*CCFOP}}}{251}
+\indexentry{*INTEGRALS@{\normalfont  \ttfamily  {**INTEGRALS}}}{251}
+\indexentry{AOPROPER}{251}
+\indexentry{orbital relaxation}{251}
+\indexentry{NONREL@{\normalfont  \ttfamily  {.NONREL}}}{251}
+\indexentry{FREEZE@{\normalfont  \ttfamily  {.FREEZE}}}{251}
+\indexentry{FROIMP@{\normalfont  \ttfamily  {.FROIMP}}}{251}
+\indexentry{2ELDAR@{\normalfont  \ttfamily  {.2ELDAR}}}{251}
+\indexentry{Darwin term!two-electron}{251}
+\indexentry{ALLONE@{\normalfont  \ttfamily  {.ALLONE}}}{251}
+\indexentry{DIPMOM@{\normalfont  \ttfamily  {.DIPMOM}}}{251}
+\indexentry{electric dipole}{251}
+\indexentry{dipole moment}{251}
+\indexentry{NONREL@{\normalfont  \ttfamily  {.NONREL}}}{251}
+\indexentry{NQCC@{\normalfont  \ttfamily  {.NQCC}}}{251}
+\indexentry{electric field!gradient}{251}
 \indexentry{OPERAT@{\normalfont  \ttfamily  {.OPERAT}}}{251}
-\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{251}
-\indexentry{CCQR@{\normalfont  \ttfamily  {*CCQR}}}{252}
-\indexentry{quadratic response}{252}
-\indexentry{response!quadratic}{252}
-\indexentry{third-order properties}{252}
-\indexentry{properties!third-order}{252}
-\indexentry{hyperpolarizabilities!first}{252}
-\indexentry{hyperpolarizabilities!dipole}{252}
-\indexentry{dispersion coefficients}{252}
-\indexentry{CCQR@{\normalfont  \ttfamily  {*CCQR}}}{252}
-\indexentry{*INTEGRALS@{\normalfont  \ttfamily  {**INTEGRALS}}}{252}
-\indexentry{OPERAT@{\normalfont  \ttfamily  {.OPERAT}}}{252}
-\indexentry{DIPOLE@{\normalfont  \ttfamily  {.DIPOLE}}}{252}
-\indexentry{AVERAG@{\normalfont  \ttfamily  {.AVERAG}}}{252}
-\indexentry{MIXFRE@{\normalfont  \ttfamily  {.MIXFRE}}}{252}
-\indexentry{SHGFRE@{\normalfont  \ttfamily  {.SHGFRE}}}{252}
-\indexentry{ORFREQ@{\normalfont  \ttfamily  {.ORFREQ}}}{252}
-\indexentry{EOPEFR@{\normalfont  \ttfamily  {.EOPEFR}}}{252}
-\indexentry{STATIC@{\normalfont  \ttfamily  {.STATIC}}}{252}
-\indexentry{DISPCF@{\normalfont  \ttfamily  {.DISPCF}}}{252}
-\indexentry{AVERAG@{\normalfont  \ttfamily  {.AVERAG}}}{252}
-\indexentry{AVERAG@{\normalfont  \ttfamily  {.AVERAG}}}{252}
-\indexentry{AVERAG@{\normalfont  \ttfamily  {.AVERAG}}}{252}
-\indexentry{OPERAT@{\normalfont  \ttfamily  {.OPERAT}}}{252}
-\indexentry{DIPOLE@{\normalfont  \ttfamily  {.DIPOLE}}}{252}
-\indexentry{CCQR@{\normalfont  \ttfamily  {*CCQR}}}{252}
-\indexentry{DIPOLE@{\normalfont  \ttfamily  {.DIPOLE}}}{252}
-\indexentry{DISPCF@{\normalfont  \ttfamily  {.DISPCF}}}{253}
+\indexentry{QUADRU@{\normalfont  \ttfamily  {.QUADRU}}}{252}
+\indexentry{electric quadrupole}{252}
+\indexentry{quadrupole moment}{252}
+\indexentry{RELCOR@{\normalfont  \ttfamily  {.RELCOR}}}{252}
+\indexentry{relativistic corrections!one-electron}{252}
+\indexentry{Darwin term!one-electron}{252}
+\indexentry{mass-velocity term}{252}
+\indexentry{SECMOM@{\normalfont  \ttfamily  {.SECMOM}}}{252}
+\indexentry{second moment of charge}{252}
+\indexentry{TSTDEN@{\normalfont  \ttfamily  {.TSTDEN}}}{252}
+\indexentry{CCLR@{\normalfont  \ttfamily  {*CCLR}}}{253}
+\indexentry{linear response}{253}
+\indexentry{response!linear}{253}
+\indexentry{Coupled Cluster!linear response}{253}
+\indexentry{polarizability!frequency-dependent}{253}
+\indexentry{polarizability!Coupled Cluster}{253}
+\indexentry{polarizability!static}{253}
+\indexentry{dipole polarizability}{253}
 \indexentry{dispersion coefficients}{253}
-\indexentry{EOPEFR@{\normalfont  \ttfamily  {.EOPEFR}}}{253}
-\indexentry{SHGFRE@{\normalfont  \ttfamily  {.SHGFRE}}}{253}
-\indexentry{Pockels effect, electro optical}{253}
-\indexentry{EOPE}{253}
-\indexentry{MIXFRE@{\normalfont  \ttfamily  {.MIXFRE}}}{253}
-\indexentry{MIXFRE@{\normalfont  \ttfamily  {.MIXFRE}}}{253}
-\indexentry{NOBMAT@{\normalfont  \ttfamily  {.NOBMAT}}}{253}
-\indexentry{OPERAT@{\normalfont  \ttfamily  {.OPERAT}}}{253}
-\indexentry{ORFREQ@{\normalfont  \ttfamily  {.ORFREQ}}}{253}
-\indexentry{SHGFRE@{\normalfont  \ttfamily  {.SHGFRE}}}{253}
-\indexentry{optical rectification}{253}
-\indexentry{OR}{253}
+\indexentry{Cauchy moments}{253}
+\indexentry{CCLR@{\normalfont  \ttfamily  {*CCLR}}}{253}
+\indexentry{*INTEGRALS@{\normalfont  \ttfamily  {**INTEGRALS}}}{253}
+\indexentry{ASYMSD@{\normalfont  \ttfamily  {.ASYMSD}}}{253}
+\indexentry{AVERAG@{\normalfont  \ttfamily  {.AVERAG}}}{253}
+\indexentry{dipole polarizability}{254}
+\indexentry{DIPOLE@{\normalfont  \ttfamily  {.DIPOLE}}}{254}
+\indexentry{dipole polarizability}{254}
+\indexentry{DISPCF@{\normalfont  \ttfamily  {.DISPCF}}}{254}
+\indexentry{FREQUE@{\normalfont  \ttfamily  {.FREQUE}}}{254}
+\indexentry{OPERAT@{\normalfont  \ttfamily  {.OPERAT}}}{254}
 \indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{254}
-\indexentry{SHGFRE@{\normalfont  \ttfamily  {.SHGFRE}}}{254}
-\indexentry{SHGFRE@{\normalfont  \ttfamily  {.SHGFRE}}}{254}
-\indexentry{second harmonic generation}{254}
-\indexentry{SHG}{254}
-\indexentry{STATIC@{\normalfont  \ttfamily  {.STATIC}}}{254}
-\indexentry{USE R2@{\normalfont  \ttfamily  {.USE R2}}}{254}
-\indexentry{XYDEGE@{\normalfont  \ttfamily  {.XYDEGE}}}{254}
-\indexentry{CCCR@{\normalfont  \ttfamily  {*CCCR}}}{255}
-\indexentry{cubic response}{255}
-\indexentry{response!cubic}{255}
-\indexentry{Coupled Cluster!cubic response}{255}
-\indexentry{fourth-order properties}{255}
-\indexentry{properties!fourth-order}{255}
-\indexentry{hyperpolarizabilities}{255}
-\indexentry{second hyperpolarizability}{255}
-\indexentry{hyperpolarizabilities!second}{255}
-\indexentry{CCCR@{\normalfont  \ttfamily  {*CCCR}}}{255}
-\indexentry{*INTEGRALS@{\normalfont  \ttfamily  {**INTEGRALS}}}{255}
-\indexentry{fourth-order properties}{255}
+\indexentry{CCQR@{\normalfont  \ttfamily  {*CCQR}}}{255}
+\indexentry{quadratic response}{255}
+\indexentry{response!quadratic}{255}
+\indexentry{third-order properties}{255}
+\indexentry{properties!third-order}{255}
+\indexentry{hyperpolarizabilities!first}{255}
+\indexentry{hyperpolarizabilities!dipole}{255}
 \indexentry{dispersion coefficients}{255}
+\indexentry{CCQR@{\normalfont  \ttfamily  {*CCQR}}}{255}
+\indexentry{*INTEGRALS@{\normalfont  \ttfamily  {**INTEGRALS}}}{255}
 \indexentry{OPERAT@{\normalfont  \ttfamily  {.OPERAT}}}{255}
 \indexentry{DIPOLE@{\normalfont  \ttfamily  {.DIPOLE}}}{255}
 \indexentry{AVERAG@{\normalfont  \ttfamily  {.AVERAG}}}{255}
 \indexentry{MIXFRE@{\normalfont  \ttfamily  {.MIXFRE}}}{255}
-\indexentry{THGFRE@{\normalfont  \ttfamily  {.THGFRE}}}{255}
-\indexentry{ESHGFR@{\normalfont  \ttfamily  {.ESHGFR}}}{255}
-\indexentry{DFWMFR@{\normalfont  \ttfamily  {.DFWMFR}}}{255}
-\indexentry{DCKERR@{\normalfont  \ttfamily  {.DCKERR}}}{255}
+\indexentry{SHGFRE@{\normalfont  \ttfamily  {.SHGFRE}}}{255}
+\indexentry{ORFREQ@{\normalfont  \ttfamily  {.ORFREQ}}}{255}
+\indexentry{EOPEFR@{\normalfont  \ttfamily  {.EOPEFR}}}{255}
 \indexentry{STATIC@{\normalfont  \ttfamily  {.STATIC}}}{255}
 \indexentry{DISPCF@{\normalfont  \ttfamily  {.DISPCF}}}{255}
 \indexentry{AVERAG@{\normalfont  \ttfamily  {.AVERAG}}}{255}
-\indexentry{AVERAG@{\normalfont  \ttfamily  {.AVERAG}}}{256}
-\indexentry{CCCR@{\normalfont  \ttfamily  {*CCCR}}}{256}
-\indexentry{OPERAT@{\normalfont  \ttfamily  {.OPERAT}}}{256}
-\indexentry{DIPOLE@{\normalfont  \ttfamily  {.DIPOLE}}}{256}
-\indexentry{DCKERR@{\normalfont  \ttfamily  {.DCKERR}}}{256}
-\indexentry{DCKERR@{\normalfont  \ttfamily  {.DCKERR}}}{256}
-\indexentry{Kerr effect, dc}{256}
-\indexentry{dc-Kerr effect}{256}
-\indexentry{DFWMFR@{\normalfont  \ttfamily  {.DFWMFR}}}{256}
-\indexentry{DFWMFR@{\normalfont  \ttfamily  {.DFWMFR}}}{256}
-\indexentry{degenerate four wave mixing}{256}
-\indexentry{DFWM}{256}
-\indexentry{DIPOLE@{\normalfont  \ttfamily  {.DIPOLE}}}{256}
+\indexentry{AVERAG@{\normalfont  \ttfamily  {.AVERAG}}}{255}
+\indexentry{AVERAG@{\normalfont  \ttfamily  {.AVERAG}}}{255}
+\indexentry{OPERAT@{\normalfont  \ttfamily  {.OPERAT}}}{255}
+\indexentry{DIPOLE@{\normalfont  \ttfamily  {.DIPOLE}}}{255}
+\indexentry{CCQR@{\normalfont  \ttfamily  {*CCQR}}}{255}
+\indexentry{DIPOLE@{\normalfont  \ttfamily  {.DIPOLE}}}{255}
 \indexentry{DISPCF@{\normalfont  \ttfamily  {.DISPCF}}}{256}
 \indexentry{dispersion coefficients}{256}
-\indexentry{ESHGFR@{\normalfont  \ttfamily  {.ESHGFR}}}{256}
-\indexentry{ESHG}{256}
-\indexentry{ESHGFR@{\normalfont  \ttfamily  {.ESHGFR}}}{256}
-\indexentry{second harmonic generation}{256}
-\indexentry{second harmonic generation!electric field induced}{256}
-\indexentry{ESHG}{256}
-\indexentry{L2 BC@{\normalfont  \ttfamily  {.L2 BC}}}{256}
-\indexentry{L2 BCD@{\normalfont  \ttfamily  {.L2 BCD}}}{256}
-\indexentry{MIXFRE@{\normalfont  \ttfamily  {.MIXFRE}}}{257}
-\indexentry{MIXFRE@{\normalfont  \ttfamily  {.MIXFRE}}}{257}
-\indexentry{general frequency mixing}{257}
-\indexentry{NO2NP1@{\normalfont  \ttfamily  {.NO2NP1}}}{257}
-\indexentry{OPERAT@{\normalfont  \ttfamily  {.OPERAT}}}{257}
+\indexentry{EOPEFR@{\normalfont  \ttfamily  {.EOPEFR}}}{256}
+\indexentry{SHGFRE@{\normalfont  \ttfamily  {.SHGFRE}}}{256}
+\indexentry{Pockels effect, electro optical}{256}
+\indexentry{EOPE}{256}
+\indexentry{MIXFRE@{\normalfont  \ttfamily  {.MIXFRE}}}{256}
+\indexentry{MIXFRE@{\normalfont  \ttfamily  {.MIXFRE}}}{256}
+\indexentry{NOBMAT@{\normalfont  \ttfamily  {.NOBMAT}}}{256}
+\indexentry{OPERAT@{\normalfont  \ttfamily  {.OPERAT}}}{256}
+\indexentry{ORFREQ@{\normalfont  \ttfamily  {.ORFREQ}}}{256}
+\indexentry{SHGFRE@{\normalfont  \ttfamily  {.SHGFRE}}}{256}
+\indexentry{optical rectification}{256}
+\indexentry{OR}{256}
 \indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{257}
+\indexentry{SHGFRE@{\normalfont  \ttfamily  {.SHGFRE}}}{257}
+\indexentry{SHGFRE@{\normalfont  \ttfamily  {.SHGFRE}}}{257}
+\indexentry{second harmonic generation}{257}
+\indexentry{SHG}{257}
 \indexentry{STATIC@{\normalfont  \ttfamily  {.STATIC}}}{257}
-\indexentry{THGFRE@{\normalfont  \ttfamily  {.THGFRE}}}{257}
-\indexentry{THGFRE@{\normalfont  \ttfamily  {.THGFRE}}}{257}
-\indexentry{third harmonic generation}{257}
-\indexentry{THG}{257}
-\indexentry{USECHI@{\normalfont  \ttfamily  {.USECHI}}}{257}
-\indexentry{USEXKS@{\normalfont  \ttfamily  {.USEXKS}}}{257}
-\indexentry{CCEXCI@{\normalfont  \ttfamily  {*CCEXCI}}}{258}
-\indexentry{linear response}{258}
-\indexentry{response!linear}{258}
-\indexentry{excitation energy!Coupled Cluster}{258}
-\indexentry{excited state!Coupled Cluster}{258}
-\indexentry{CCEXCI@{\normalfont  \ttfamily  {*CCEXCI}}}{258}
-\indexentry{CC2PIC@{\normalfont  \ttfamily  {.CC2PIC}}}{258}
-\indexentry{CCSDPI@{\normalfont  \ttfamily  {.CCSDPI}}}{258}
-\indexentry{CCSPIC@{\normalfont  \ttfamily  {.CCSPIC}}}{258}
-\indexentry{MARGIN@{\normalfont  \ttfamily  {.MARGIN}}}{258}
-\indexentry{NCCEXC@{\normalfont  \ttfamily  {.NCCEXC}}}{258}
-\indexentry{NOSCOM@{\normalfont  \ttfamily  {.NOSCOM}}}{258}
-\indexentry{OMEINP@{\normalfont  \ttfamily  {.OMEINP}}}{259}
-\indexentry{THREXC@{\normalfont  \ttfamily  {.THREXC}}}{259}
-\indexentry{TOLSC@{\normalfont  \ttfamily  {.TOLSC}}}{259}
-\indexentry{CCLRSD@{\normalfont  \ttfamily  {*CCLRSD}}}{260}
-\indexentry{linear response!Coupled Cluster}{260}
-\indexentry{response!linear}{260}
-\indexentry{oscillator strength!Coupled Cluster}{260}
-\indexentry{transition moment!Coupled Cluster}{260}
-\indexentry{transition strength!Coupled Cluster}{260}
-\indexentry{absorption strength!Coupled Cluster}{260}
-\indexentry{CCLRSD@{\normalfont  \ttfamily  {*CCLRSD}}}{260}
-\indexentry{CCLRSD@{\normalfont  \ttfamily  {*CCLRSD}}}{260}
-\indexentry{CCEXCI@{\normalfont  \ttfamily  {*CCEXCI}}}{260}
-\indexentry{DIPOLE@{\normalfont  \ttfamily  {.DIPOLE}}}{260}
-\indexentry{DIPVEL@{\normalfont  \ttfamily  {.DIPVEL}}}{260}
-\indexentry{NO2N+1@{\normalfont  \ttfamily  {.NO2N+1}}}{260}
+\indexentry{USE R2@{\normalfont  \ttfamily  {.USE R2}}}{257}
+\indexentry{XYDEGE@{\normalfont  \ttfamily  {.XYDEGE}}}{257}
+\indexentry{CCCR@{\normalfont  \ttfamily  {*CCCR}}}{258}
+\indexentry{cubic response}{258}
+\indexentry{response!cubic}{258}
+\indexentry{Coupled Cluster!cubic response}{258}
+\indexentry{fourth-order properties}{258}
+\indexentry{properties!fourth-order}{258}
+\indexentry{hyperpolarizabilities}{258}
+\indexentry{second hyperpolarizability}{258}
+\indexentry{hyperpolarizabilities!second}{258}
+\indexentry{CCCR@{\normalfont  \ttfamily  {*CCCR}}}{258}
+\indexentry{*INTEGRALS@{\normalfont  \ttfamily  {**INTEGRALS}}}{258}
+\indexentry{fourth-order properties}{258}
+\indexentry{dispersion coefficients}{258}
+\indexentry{OPERAT@{\normalfont  \ttfamily  {.OPERAT}}}{258}
+\indexentry{DIPOLE@{\normalfont  \ttfamily  {.DIPOLE}}}{258}
+\indexentry{AVERAG@{\normalfont  \ttfamily  {.AVERAG}}}{258}
+\indexentry{MIXFRE@{\normalfont  \ttfamily  {.MIXFRE}}}{258}
+\indexentry{THGFRE@{\normalfont  \ttfamily  {.THGFRE}}}{258}
+\indexentry{ESHGFR@{\normalfont  \ttfamily  {.ESHGFR}}}{258}
+\indexentry{DFWMFR@{\normalfont  \ttfamily  {.DFWMFR}}}{258}
+\indexentry{DCKERR@{\normalfont  \ttfamily  {.DCKERR}}}{258}
+\indexentry{STATIC@{\normalfont  \ttfamily  {.STATIC}}}{258}
+\indexentry{DISPCF@{\normalfont  \ttfamily  {.DISPCF}}}{258}
+\indexentry{AVERAG@{\normalfont  \ttfamily  {.AVERAG}}}{258}
+\indexentry{AVERAG@{\normalfont  \ttfamily  {.AVERAG}}}{259}
+\indexentry{CCCR@{\normalfont  \ttfamily  {*CCCR}}}{259}
+\indexentry{OPERAT@{\normalfont  \ttfamily  {.OPERAT}}}{259}
+\indexentry{DIPOLE@{\normalfont  \ttfamily  {.DIPOLE}}}{259}
+\indexentry{DCKERR@{\normalfont  \ttfamily  {.DCKERR}}}{259}
+\indexentry{DCKERR@{\normalfont  \ttfamily  {.DCKERR}}}{259}
+\indexentry{Kerr effect, dc}{259}
+\indexentry{dc-Kerr effect}{259}
+\indexentry{DFWMFR@{\normalfont  \ttfamily  {.DFWMFR}}}{259}
+\indexentry{DFWMFR@{\normalfont  \ttfamily  {.DFWMFR}}}{259}
+\indexentry{degenerate four wave mixing}{259}
+\indexentry{DFWM}{259}
+\indexentry{DIPOLE@{\normalfont  \ttfamily  {.DIPOLE}}}{259}
+\indexentry{DISPCF@{\normalfont  \ttfamily  {.DISPCF}}}{259}
+\indexentry{dispersion coefficients}{259}
+\indexentry{ESHGFR@{\normalfont  \ttfamily  {.ESHGFR}}}{259}
+\indexentry{ESHG}{259}
+\indexentry{ESHGFR@{\normalfont  \ttfamily  {.ESHGFR}}}{259}
+\indexentry{second harmonic generation}{259}
+\indexentry{second harmonic generation!electric field induced}{259}
+\indexentry{ESHG}{259}
+\indexentry{L2 BC@{\normalfont  \ttfamily  {.L2 BC}}}{259}
+\indexentry{L2 BCD@{\normalfont  \ttfamily  {.L2 BCD}}}{259}
+\indexentry{MIXFRE@{\normalfont  \ttfamily  {.MIXFRE}}}{260}
+\indexentry{MIXFRE@{\normalfont  \ttfamily  {.MIXFRE}}}{260}
+\indexentry{general frequency mixing}{260}
+\indexentry{NO2NP1@{\normalfont  \ttfamily  {.NO2NP1}}}{260}
 \indexentry{OPERAT@{\normalfont  \ttfamily  {.OPERAT}}}{260}
-\indexentry{*INTEGRALS@{\normalfont  \ttfamily  {**INTEGRALS}}}{260}
-\indexentry{SELEXC@{\normalfont  \ttfamily  {.SELEXC}}}{260}
-\indexentry{CCEXCI@{\normalfont  \ttfamily  {*CCEXCI}}}{260}
-\indexentry{CCSM@{\normalfont  \ttfamily  {*CCSM}}}{261}
-\indexentry{transition strength!two-photon}{261}
-\indexentry{two-photon!transition moment}{261}
-\indexentry{transition moment!two-photon}{261}
-\indexentry{transition moment!second-order}{261}
-\indexentry{CCSM@{\normalfont  \ttfamily  {*CCSM}}}{261}
-\indexentry{DIPOLE@{\normalfont  \ttfamily  {.DIPOLE}}}{261}
-\indexentry{*INTEGRALS@{\normalfont  \ttfamily  {**INTEGRALS}}}{261}
-\indexentry{HALFFR@{\normalfont  \ttfamily  {.HALFFR}}}{261}
-\indexentry{SELSTA@{\normalfont  \ttfamily  {.SELSTA}}}{261}
-\indexentry{OPERAT@{\normalfont  \ttfamily  {.OPERAT}}}{261}
-\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{261}
-\indexentry{SELSTA@{\normalfont  \ttfamily  {.SELSTA}}}{262}
-\indexentry{CCEXCI@{\normalfont  \ttfamily  {*CCEXCI}}}{262}
-\indexentry{CCEXCI@{\normalfont  \ttfamily  {*CCEXCI}}}{262}
-\indexentry{CCTM@{\normalfont  \ttfamily  {*CCTM}}}{263}
-\indexentry{transition moment!three-photon}{263}
-\indexentry{transition moment!third-order}{263}
-\indexentry{transition strength!three-photon}{263}
-\indexentry{transition strength!third-order}{263}
-\indexentry{three-photon!transition moment}{263}
-\indexentry{DIPOLE@{\normalfont  \ttfamily  {.DIPOLE}}}{263}
-\indexentry{OPERAT@{\normalfont  \ttfamily  {.OPERAT}}}{263}
-\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{263}
-\indexentry{SELSTA@{\normalfont  \ttfamily  {.SELSTA}}}{263}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{260}
+\indexentry{STATIC@{\normalfont  \ttfamily  {.STATIC}}}{260}
+\indexentry{THGFRE@{\normalfont  \ttfamily  {.THGFRE}}}{260}
+\indexentry{THGFRE@{\normalfont  \ttfamily  {.THGFRE}}}{260}
+\indexentry{third harmonic generation}{260}
+\indexentry{THG}{260}
+\indexentry{USECHI@{\normalfont  \ttfamily  {.USECHI}}}{260}
+\indexentry{USEXKS@{\normalfont  \ttfamily  {.USEXKS}}}{260}
+\indexentry{CCEXCI@{\normalfont  \ttfamily  {*CCEXCI}}}{261}
+\indexentry{linear response}{261}
+\indexentry{response!linear}{261}
+\indexentry{excitation energy!Coupled Cluster}{261}
+\indexentry{excited state!Coupled Cluster}{261}
+\indexentry{CCEXCI@{\normalfont  \ttfamily  {*CCEXCI}}}{261}
+\indexentry{CC2PIC@{\normalfont  \ttfamily  {.CC2PIC}}}{261}
+\indexentry{CCSDPI@{\normalfont  \ttfamily  {.CCSDPI}}}{261}
+\indexentry{CCSPIC@{\normalfont  \ttfamily  {.CCSPIC}}}{261}
+\indexentry{MARGIN@{\normalfont  \ttfamily  {.MARGIN}}}{261}
+\indexentry{NCCEXC@{\normalfont  \ttfamily  {.NCCEXC}}}{261}
+\indexentry{NOSCOM@{\normalfont  \ttfamily  {.NOSCOM}}}{261}
+\indexentry{OMEINP@{\normalfont  \ttfamily  {.OMEINP}}}{262}
+\indexentry{THREXC@{\normalfont  \ttfamily  {.THREXC}}}{262}
+\indexentry{TOLSC@{\normalfont  \ttfamily  {.TOLSC}}}{262}
+\indexentry{CCLRSD@{\normalfont  \ttfamily  {*CCLRSD}}}{263}
+\indexentry{linear response!Coupled Cluster}{263}
+\indexentry{response!linear}{263}
+\indexentry{oscillator strength!Coupled Cluster}{263}
+\indexentry{transition moment!Coupled Cluster}{263}
+\indexentry{transition strength!Coupled Cluster}{263}
+\indexentry{absorption strength!Coupled Cluster}{263}
+\indexentry{CCLRSD@{\normalfont  \ttfamily  {*CCLRSD}}}{263}
+\indexentry{CCLRSD@{\normalfont  \ttfamily  {*CCLRSD}}}{263}
 \indexentry{CCEXCI@{\normalfont  \ttfamily  {*CCEXCI}}}{263}
-\indexentry{CCEXCI@{\normalfont  \ttfamily  {*CCEXCI}}}{264}
-\indexentry{THIRDF@{\normalfont  \ttfamily  {.THIRDF}}}{264}
+\indexentry{DIPOLE@{\normalfont  \ttfamily  {.DIPOLE}}}{263}
+\indexentry{DIPVEL@{\normalfont  \ttfamily  {.DIPVEL}}}{263}
+\indexentry{NO2N+1@{\normalfont  \ttfamily  {.NO2N+1}}}{263}
+\indexentry{OPERAT@{\normalfont  \ttfamily  {.OPERAT}}}{263}
+\indexentry{*INTEGRALS@{\normalfont  \ttfamily  {**INTEGRALS}}}{263}
+\indexentry{SELEXC@{\normalfont  \ttfamily  {.SELEXC}}}{263}
+\indexentry{CCEXCI@{\normalfont  \ttfamily  {*CCEXCI}}}{263}
+\indexentry{CCSM@{\normalfont  \ttfamily  {*CCSM}}}{264}
+\indexentry{transition strength!two-photon}{264}
+\indexentry{two-photon!transition moment}{264}
+\indexentry{transition moment!two-photon}{264}
+\indexentry{transition moment!second-order}{264}
+\indexentry{CCSM@{\normalfont  \ttfamily  {*CCSM}}}{264}
+\indexentry{DIPOLE@{\normalfont  \ttfamily  {.DIPOLE}}}{264}
+\indexentry{*INTEGRALS@{\normalfont  \ttfamily  {**INTEGRALS}}}{264}
+\indexentry{HALFFR@{\normalfont  \ttfamily  {.HALFFR}}}{264}
 \indexentry{SELSTA@{\normalfont  \ttfamily  {.SELSTA}}}{264}
-\indexentry{CCMCD@{\normalfont  \ttfamily  {*CCMCD}}}{265}
-\indexentry{magnetic circular dichroism}{265}
-\indexentry{MCD}{265}
-\indexentry{transition strengths}{265}
-\indexentry{transition moment!one-photon}{265}
-\indexentry{transition moment!two-photon}{265}
-\indexentry{B-term}{265}
-\indexentry{CCMCD@{\normalfont  \ttfamily  {*CCMCD}}}{265}
-\indexentry{CCMCD@{\normalfont  \ttfamily  {*CCMCD}}}{265}
+\indexentry{OPERAT@{\normalfont  \ttfamily  {.OPERAT}}}{264}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{264}
+\indexentry{SELSTA@{\normalfont  \ttfamily  {.SELSTA}}}{265}
 \indexentry{CCEXCI@{\normalfont  \ttfamily  {*CCEXCI}}}{265}
-\indexentry{MCD@{\normalfont  \ttfamily  {.MCD}}}{265}
-\indexentry{OPERAT@{\normalfont  \ttfamily  {.OPERAT}}}{265}
-\indexentry{*INTEGRALS@{\normalfont  \ttfamily  {**INTEGRALS}}}{265}
+\indexentry{CCEXCI@{\normalfont  \ttfamily  {*CCEXCI}}}{265}
+\indexentry{CCTM@{\normalfont  \ttfamily  {*CCTM}}}{266}
+\indexentry{transition moment!three-photon}{266}
+\indexentry{transition moment!third-order}{266}
+\indexentry{transition strength!three-photon}{266}
+\indexentry{transition strength!third-order}{266}
+\indexentry{three-photon!transition moment}{266}
+\indexentry{DIPOLE@{\normalfont  \ttfamily  {.DIPOLE}}}{266}
+\indexentry{OPERAT@{\normalfont  \ttfamily  {.OPERAT}}}{266}
 \indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{266}
-\indexentry{MCDCAL@{\normalfont  \ttfamily  {*MCDCAL}}}{266}
 \indexentry{SELSTA@{\normalfont  \ttfamily  {.SELSTA}}}{266}
 \indexentry{CCEXCI@{\normalfont  \ttfamily  {*CCEXCI}}}{266}
-\indexentry{CCEXCI@{\normalfont  \ttfamily  {*CCEXCI}}}{266}
-\indexentry{CCQR2R@{\normalfont  \ttfamily  {*CCQR2R}}}{267}
-\indexentry{Coupled Cluster!quadratic response}{267}
-\indexentry{quadratic response}{267}
-\indexentry{response!quadratic}{267}
-\indexentry{oscillator strength!excited states!Coupled Cluster}{267}
-\indexentry{transition moment!excited states!Coupled Cluster}{267}
-\indexentry{transition strength!excited states!Coupled Cluster}{267}
-\indexentry{CCQR2R@{\normalfont  \ttfamily  {*CCQR2R}}}{267}
 \indexentry{CCEXCI@{\normalfont  \ttfamily  {*CCEXCI}}}{267}
-\indexentry{DIPOLE@{\normalfont  \ttfamily  {.DIPOLE}}}{267}
-\indexentry{DIPVEL@{\normalfont  \ttfamily  {.DIPVEL}}}{267}
-\indexentry{NO2N+1@{\normalfont  \ttfamily  {.NO2N+1}}}{267}
-\indexentry{OPERAT@{\normalfont  \ttfamily  {.OPERAT}}}{267}
-\indexentry{*INTEGRALS@{\normalfont  \ttfamily  {**INTEGRALS}}}{267}
-\indexentry{SELEXC@{\normalfont  \ttfamily  {.SELEXC}}}{267}
-\indexentry{CCEXGR@{\normalfont  \ttfamily  {*CCEXGR}}}{268}
-\indexentry{expectation values!excited state!Coupled Cluster}{268}
-\indexentry{one-electron properties!excited state!Coupled Cluster}{268}
-\indexentry{properties!one-electron}{268}
-\indexentry{first-order properties!excited state!Coupled Cluster}{268}
-\indexentry{properties!first-order}{268}
-\indexentry{CCEXGR@{\normalfont  \ttfamily  {*CCEXGR}}}{268}
+\indexentry{THIRDF@{\normalfont  \ttfamily  {.THIRDF}}}{267}
+\indexentry{SELSTA@{\normalfont  \ttfamily  {.SELSTA}}}{267}
+\indexentry{CCMCD@{\normalfont  \ttfamily  {*CCMCD}}}{268}
+\indexentry{magnetic circular dichroism}{268}
+\indexentry{MCD}{268}
+\indexentry{transition strengths}{268}
+\indexentry{transition moment!one-photon}{268}
+\indexentry{transition moment!two-photon}{268}
+\indexentry{B-term}{268}
+\indexentry{CCMCD@{\normalfont  \ttfamily  {*CCMCD}}}{268}
+\indexentry{CCMCD@{\normalfont  \ttfamily  {*CCMCD}}}{268}
 \indexentry{CCEXCI@{\normalfont  \ttfamily  {*CCEXCI}}}{268}
-\indexentry{CCFOP@{\normalfont  \ttfamily  {*CCFOP}}}{268}
-\indexentry{ALLONE@{\normalfont  \ttfamily  {.ALLONE}}}{268}
-\indexentry{DIPMOM@{\normalfont  \ttfamily  {.DIPMOM}}}{268}
-\indexentry{electric dipole}{268}
-\indexentry{dipole moment}{268}
-\indexentry{NQCC@{\normalfont  \ttfamily  {.NQCC}}}{268}
-\indexentry{electric field!gradient}{268}
+\indexentry{MCD@{\normalfont  \ttfamily  {.MCD}}}{268}
 \indexentry{OPERAT@{\normalfont  \ttfamily  {.OPERAT}}}{268}
-\indexentry{QUADRU@{\normalfont  \ttfamily  {.QUADRU}}}{268}
-\indexentry{electric quadrupole}{268}
-\indexentry{quadrupole moment}{268}
-\indexentry{RELCOR@{\normalfont  \ttfamily  {.RELCOR}}}{269}
-\indexentry{relativistic corrections!one-electron}{269}
-\indexentry{Darwin term!one-electron}{269}
-\indexentry{mass-velocity term}{269}
-\indexentry{SECMOM@{\normalfont  \ttfamily  {.SECMOM}}}{269}
-\indexentry{second moment of charge}{269}
-\indexentry{SELEXC@{\normalfont  \ttfamily  {.SELEXC}}}{269}
-\indexentry{CCEXLR@{\normalfont  \ttfamily  {*CCEXLR}}}{270}
-\indexentry{Coupled Cluster!linear response}{270}
-\indexentry{linear response!excited states}{270}
-\indexentry{response!linear}{270}
-\indexentry{excited state!linear response}{270}
-\indexentry{polarizability!frequency-dependent}{270}
-\indexentry{two-photon!transition moment!excited states}{270}
-\indexentry{second residues of cubic response functions}{270}
-\indexentry{second-order properties!excited states}{270}
-\indexentry{properties!second-order}{270}
-\indexentry{CCEXLR@{\normalfont  \ttfamily  {*CCEXLR}}}{270}
-\indexentry{*INTEGRALS@{\normalfont  \ttfamily  {**INTEGRALS}}}{270}
-\indexentry{ALLSTA@{\normalfont  \ttfamily  {.ALLSTA}}}{270}
+\indexentry{*INTEGRALS@{\normalfont  \ttfamily  {**INTEGRALS}}}{268}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{269}
+\indexentry{MCDCAL@{\normalfont  \ttfamily  {*MCDCAL}}}{269}
+\indexentry{SELSTA@{\normalfont  \ttfamily  {.SELSTA}}}{269}
+\indexentry{CCEXCI@{\normalfont  \ttfamily  {*CCEXCI}}}{269}
+\indexentry{CCEXCI@{\normalfont  \ttfamily  {*CCEXCI}}}{269}
+\indexentry{CCQR2R@{\normalfont  \ttfamily  {*CCQR2R}}}{270}
+\indexentry{Coupled Cluster!quadratic response}{270}
+\indexentry{quadratic response}{270}
+\indexentry{response!quadratic}{270}
+\indexentry{oscillator strength!excited states!Coupled Cluster}{270}
+\indexentry{transition moment!excited states!Coupled Cluster}{270}
+\indexentry{transition strength!excited states!Coupled Cluster}{270}
+\indexentry{CCQR2R@{\normalfont  \ttfamily  {*CCQR2R}}}{270}
+\indexentry{CCEXCI@{\normalfont  \ttfamily  {*CCEXCI}}}{270}
 \indexentry{DIPOLE@{\normalfont  \ttfamily  {.DIPOLE}}}{270}
-\indexentry{FREQ@{\normalfont  \ttfamily  {.FREQ}}}{270}
-\indexentry{HALFFR@{\normalfont  \ttfamily  {.HALFFR}}}{270}
-\indexentry{HALFFR@{\normalfont  \ttfamily  {.HALFFR}}}{270}
-\indexentry{HALFFR@{\normalfont  \ttfamily  {.HALFFR}}}{270}
-\indexentry{STATIC@{\normalfont  \ttfamily  {.STATIC}}}{270}
+\indexentry{DIPVEL@{\normalfont  \ttfamily  {.DIPVEL}}}{270}
+\indexentry{NO2N+1@{\normalfont  \ttfamily  {.NO2N+1}}}{270}
+\indexentry{OPERAT@{\normalfont  \ttfamily  {.OPERAT}}}{270}
+\indexentry{*INTEGRALS@{\normalfont  \ttfamily  {**INTEGRALS}}}{270}
+\indexentry{SELEXC@{\normalfont  \ttfamily  {.SELEXC}}}{270}
+\indexentry{CCEXGR@{\normalfont  \ttfamily  {*CCEXGR}}}{271}
+\indexentry{expectation values!excited state!Coupled Cluster}{271}
+\indexentry{one-electron properties!excited state!Coupled Cluster}{271}
+\indexentry{properties!one-electron}{271}
+\indexentry{first-order properties!excited state!Coupled Cluster}{271}
+\indexentry{properties!first-order}{271}
+\indexentry{CCEXGR@{\normalfont  \ttfamily  {*CCEXGR}}}{271}
+\indexentry{CCEXCI@{\normalfont  \ttfamily  {*CCEXCI}}}{271}
+\indexentry{CCFOP@{\normalfont  \ttfamily  {*CCFOP}}}{271}
+\indexentry{ALLONE@{\normalfont  \ttfamily  {.ALLONE}}}{271}
+\indexentry{DIPMOM@{\normalfont  \ttfamily  {.DIPMOM}}}{271}
+\indexentry{electric dipole}{271}
+\indexentry{dipole moment}{271}
+\indexentry{NQCC@{\normalfont  \ttfamily  {.NQCC}}}{271}
+\indexentry{electric field!gradient}{271}
 \indexentry{OPERAT@{\normalfont  \ttfamily  {.OPERAT}}}{271}
-\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{271}
-\indexentry{CCEXLR@{\normalfont  \ttfamily  {*CCEXLR}}}{271}
-\indexentry{SELSTA@{\normalfont  \ttfamily  {.SELSTA}}}{271}
-\indexentry{STATIC@{\normalfont  \ttfamily  {.STATIC}}}{271}
-\indexentry{USELEF@{\normalfont  \ttfamily  {.USELEF}}}{271}
-\indexentry{CCGR@{\normalfont  \ttfamily  {*CCGR}}}{272}
-\indexentry{numerical derivatives!coupled cluster}{272}
-\indexentry{NUMGD@{\normalfont  \ttfamily  {.NUMGD}}}{272}
-\indexentry{XSTNUM@{\normalfont  \ttfamily  {.XSTNUM}}}{272}
-\indexentry{XSTSYM@{\normalfont  \ttfamily  {.XSTSYM}}}{272}
-\indexentry{Hessian}{274}
-\indexentry{VCD}{274}
-\indexentry{ROA}{274}
-\indexentry{vibrational circular dichroism}{274}
-\indexentry{Raman optical activity}{274}
-\indexentry{atomic axial tensor}{274}
-\indexentry{AAT}{274}
-\indexentry{magnetizability polarizability}{276}
-\indexentry{shielding polarizability}{276}
-\indexentry{\sc  sirius}{279}
+\indexentry{QUADRU@{\normalfont  \ttfamily  {.QUADRU}}}{271}
+\indexentry{electric quadrupole}{271}
+\indexentry{quadrupole moment}{271}
+\indexentry{RELCOR@{\normalfont  \ttfamily  {.RELCOR}}}{272}
+\indexentry{relativistic corrections!one-electron}{272}
+\indexentry{Darwin term!one-electron}{272}
+\indexentry{mass-velocity term}{272}
+\indexentry{SECMOM@{\normalfont  \ttfamily  {.SECMOM}}}{272}
+\indexentry{second moment of charge}{272}
+\indexentry{SELEXC@{\normalfont  \ttfamily  {.SELEXC}}}{272}
+\indexentry{CCEXLR@{\normalfont  \ttfamily  {*CCEXLR}}}{273}
+\indexentry{Coupled Cluster!linear response}{273}
+\indexentry{linear response!excited states}{273}
+\indexentry{response!linear}{273}
+\indexentry{excited state!linear response}{273}
+\indexentry{polarizability!frequency-dependent}{273}
+\indexentry{two-photon!transition moment!excited states}{273}
+\indexentry{second residues of cubic response functions}{273}
+\indexentry{second-order properties!excited states}{273}
+\indexentry{properties!second-order}{273}
+\indexentry{CCEXLR@{\normalfont  \ttfamily  {*CCEXLR}}}{273}
+\indexentry{*INTEGRALS@{\normalfont  \ttfamily  {**INTEGRALS}}}{273}
+\indexentry{ALLSTA@{\normalfont  \ttfamily  {.ALLSTA}}}{273}
+\indexentry{DIPOLE@{\normalfont  \ttfamily  {.DIPOLE}}}{273}
+\indexentry{FREQ@{\normalfont  \ttfamily  {.FREQ}}}{273}
+\indexentry{HALFFR@{\normalfont  \ttfamily  {.HALFFR}}}{273}
+\indexentry{HALFFR@{\normalfont  \ttfamily  {.HALFFR}}}{273}
+\indexentry{HALFFR@{\normalfont  \ttfamily  {.HALFFR}}}{273}
+\indexentry{STATIC@{\normalfont  \ttfamily  {.STATIC}}}{273}
+\indexentry{OPERAT@{\normalfont  \ttfamily  {.OPERAT}}}{274}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{274}
+\indexentry{CCEXLR@{\normalfont  \ttfamily  {*CCEXLR}}}{274}
+\indexentry{SELSTA@{\normalfont  \ttfamily  {.SELSTA}}}{274}
+\indexentry{STATIC@{\normalfont  \ttfamily  {.STATIC}}}{274}
+\indexentry{USELEF@{\normalfont  \ttfamily  {.USELEF}}}{274}
+\indexentry{CCGR@{\normalfont  \ttfamily  {*CCGR}}}{275}
+\indexentry{numerical derivatives!coupled cluster}{275}
+\indexentry{NUMGD@{\normalfont  \ttfamily  {.NUMGD}}}{275}
+\indexentry{XSTNUM@{\normalfont  \ttfamily  {.XSTNUM}}}{275}
+\indexentry{XSTSYM@{\normalfont  \ttfamily  {.XSTSYM}}}{275}
+\indexentry{Hessian}{277}
+\indexentry{VCD}{277}
+\indexentry{ROA}{277}
+\indexentry{vibrational circular dichroism}{277}
+\indexentry{Raman optical activity}{277}
+\indexentry{atomic axial tensor}{277}
+\indexentry{AAT}{277}
+\indexentry{magnetizability polarizability}{279}
+\indexentry{shielding polarizability}{279}
+\indexentry{\sc  sirius}{282}

@@ -39,22 +39,23 @@
 \newcommand{\kwlabel}[1]{
 {\tt \obeyspaces \frenchspacing #1 \hfill}
 \index{#1@{\normalfont\ttfamily #1}}}
-\newenvironment{keywords}{
-  \noindent{\bf Keywords:}
-  \list{}{
-    \settowidth{\leftmargin}{\tt MM}
-    \setlength{\rightmargin}{1.0cm}
-    \setlength{\labelwidth}{\linewidth}
-      \addtolength{\labelwidth}{-\rightmargin}
-    \setlength{\labelsep}{0cm}
-    \setlength{\itemindent}{-\leftmargin}
-      \addtolength{\itemindent}{\labelwidth}
-      \addtolength{\itemindent}{\labelsep}
-    \let\makelabel\kwlabel
-  }
-}{\endlist}
-\newcommand{\bkw}{\begin{keywords}}
-\newcommand{\ekw}{\end{keywords}}
+%\newenvironment{keywords}{
+%  \noindent{\bf Keywords:}
+%  \list{}{
+%    \settowidth{\leftmargin}{\tt MM}
+%    \setlength{\rightmargin}{1.0cm}
+%    \setlength{\labelwidth}{\linewidth}
+%      \addtolength{\labelwidth}{-\rightmargin}
+%    \setlength{\labelsep}{0cm}
+%    \setlength{\itemindent}{-\leftmargin}
+%      \addtolength{\itemindent}{\labelwidth}
+%      \addtolength{\itemindent}{\labelsep}
+%    \let\makelabel\kwlabel
+%  }
+%}
+%}{\endlist}
+%\newcommand{\bkw}{\begin{keywords}}
+%\newcommand{\ekw}{\end{keywords}}
 %hjorig \newcommand{\kw}[1]{\verb+#1+}
 %hjorig \newcommand{\quotekw}[1]{``\kw{#1}\nolinebreak''}
 \newcommand{\kw}[1]{#1}
@@ -67,20 +68,19 @@
 \newenvironment{inputex}%
 { \hspace{1cm} \begin{minipage}{15cm} }%
 { \end{minipage} }
-%
-\newif\ifmetecc
-\meteccfalse
-\newif\ifddfock
-\newif\ifsolvent
-\newif\ifabacus
-\newif\ifrespons
-%
-\ifmetecc
-   \ddfockfalse \solventtrue \abacusfalse \responsfalse
-\else
-   \ddfocktrue \solventtrue \abacustrue \responstrue
-\fi
-%
+
+%\newif\ifmetecc
+%\meteccfalse
+%\newif\ifddfock
+%\newif\ifsolvent
+%\newif\ifabacus
+%\newif\ifrespons
+%\ifmetecc
+%   \ddfockfalse \solventtrue \abacusfalse \responsfalse
+%\else
+%   \ddfocktrue \solventtrue \abacustrue \responstrue
+%\fi
+
 % Sirius limits for Sirius manual:
 \def\sirver{n07 }
 \def\mxfelt{20 }
@@ -238,7 +238,7 @@ and O.~Vahtras}
 \include{ccqr2r}
 \include{ccexgr}
 \include{ccexlr}
-\include{ccslv}
+%\include{ccslv}
 \include{ccgr}
 %%%%%% end of CC %%%%%%%
 \part{Appendix: DALTON Tool box}
