@@ -43,6 +43,7 @@ c /* deck dftini */
 #include <dftcom.h>
 #include <dftacb.h>
       HFXFAC = D1
+      HFXMU  = D0 
       WDFTX  = D0
       WDFTC  = D0
       WDFTL  = D0
@@ -237,6 +238,13 @@ C
 #include <implicit.h>
 #include <dftcom.h>
       dftgethf = HFXFAC
+      END
+c
+      SUBROUTINE dftsetcam(W,BETA)
+#include <implicit.h>
+#include <dftcom.h>
+      HFXMU = W
+      HFXATT = BETA 
       END
 c
       SUBROUTINE DFT_GET_THRESHOLDS(TDFTI,TDFT0)

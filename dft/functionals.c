@@ -75,6 +75,7 @@ Functional* available_functionals[] = {
     &B3LYPGaussFunctional,
     &BP86Functional,
     &B3P86Functional,
+    &Camb3lypFunctional,
     &KT1Functional,
     &KT2Functional,
     &KT3Functional,
@@ -181,6 +182,8 @@ dftptf0_(real *rho, real *grad, real *wght, real *vx)
     DftDensProp dp;
     dp.rhoa  = dp.rhob  = *rho *0.5;
     dp.grada = dp.gradb = *grad*0.5;
+    if(dp.rhoa<1e-13) dp.rhoa = dp.rhob = 1e-13;
+    if(dp.grada<1e-13) dp.grada = dp.gradb = 1e-13;
     dp.gradab = dp.grada*dp.gradb;
     drv1_clear(&drvs);
     selected_func->first(&drvs, *wght, &dp);

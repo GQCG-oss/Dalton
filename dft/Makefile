@@ -23,6 +23,7 @@ FFILES = \
 # for the fun-tester.
 FUNFILES = \
 	fun-becke.c	\
+	fun-cam-b3lyp.c\
 	fun-dirac.c	\
 	fun-gga.c	\
 	fun-lb94.c	\

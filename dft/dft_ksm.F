@@ -38,7 +38,17 @@ C
          END DO
       END DO
       EDFTY = WORK(KENER)
+#if 0
+      DO I =1, NBAST
+         WRITE(LUPRI,*) (WORK(KKSM+(I-1)+(J-1)*NBAST),J=1,NBAST)
+      END DO
+#endif
       CALL DAXPY(N2BASX,1D0,WORK(KKSM),1, FKSM,1)
+#if 0
+      DO I =1, NBAST
+         WRITE(LUPRI,*) (FKSM(I,J),J=1,NBAST)
+      END DO
+#endif
       IF(IPRFCK.GE.0) WRITE(LUPRI,'(A,2F20.14)')
      &     'Kohn-Sham electrons/energy :', ELE, WORK(KENER)
       RETURN
@@ -105,7 +115,11 @@ C
          CBDATA(KENERG) = CBDATA(KENERG)
      &        + DFTENE(RHOA(IPNT),GRD)*WGHT(IPNT)
          VXC(1,IPNT) = VX(1)
-         VXC(2,IPNT) = VX(2)/(0.5*GRD)
+         IF(GRD.GT.1D-40) THEN
+            VXC(2,IPNT) = VX(2)/(0.5*GRD)
+         ELSE
+            VXC(2,IPNT) = 0D0
+         END IF
       END DO
       CALL DISTRGGA(NBLEN,NBLCNT,NBLOCKS,LDAIB,1,NBLEN,
      &              VXC,GAO,GRADA,CbDATA(KKOHN))

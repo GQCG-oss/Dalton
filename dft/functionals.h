@@ -246,6 +246,7 @@ extern Functional B3LYPFunctional;
 extern Functional B3LYPGaussFunctional;
 extern Functional BP86Functional;
 extern Functional B3P86Functional;
+extern Functional Camb3lypFunctional;
 extern Functional KT1Functional;
 extern Functional KT2Functional;
 extern Functional KT3Functional;
@@ -256,8 +257,10 @@ extern Functional* available_functionals[];
 
 extern void dftsethf_(real *);
 extern real dftgethf_(void);
+extern void dftsetcam_(real *, real *);
 #define dft_get_hf_weight() dftgethf_()
 #define dft_set_hf_weight(w) do{real x=w;dftsethf_(&x);}while(0)
+#define dft_set_cam_param(w,b) do{real x=w,be=b;dftsetcam_(&x, &be);}while(0)
 #endif /* _FUNCTIONALS_H_ */
 #else /* THE FORTRAN VERSION OF THE HEADERS; out of date as of 20021120 */
 

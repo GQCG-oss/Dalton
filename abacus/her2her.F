@@ -248,6 +248,7 @@ C
      &          WVALU(NUABCD), TALPHA(NUABCD), INDADR(NUABCD),
      &          SCLFAC(NUABCD)
 #include <twosta.h>
+#include <dftcom.h>
 #include <subdir.h>
 #include <sdpre.h>
 C-----------------------------------------------------------------------
@@ -285,7 +286,7 @@ C              Compute two-electron Dirac delta function
 C              (Wim Klopper, University of Utrecht, March 4, 1999)
 C              Merged into Dalton1.1 by A. Halkier 29/11/99.
 C
-               DO 112 IOD34 = 1, NUC34
+               DO IOD34 = 1, NUC34
                   IODS   = IODS + 1
                   EXPQ   = EXP34(IOD34)
                   EXPPQ  = EXPP + EXPQ
@@ -294,7 +295,7 @@ C
                   TALPHA(IODS) = - D2*EXPP*EXPQ*EXPPQI
                   SCLFAC(IODS) = FACTOR*TALPHA(IODS)
                   RJ000(IODS,0) = DRWFAC*SCLFAC(IODS)
- 112           CONTINUE
+               END DO
             ELSE IF (AD2DAR) THEN
 C
 C              Add two-electron Darwin integrals with perturbation
@@ -302,7 +303,7 @@ C              parameter DARFAC onto repulsion integrals.
 C              (Wim Klopper, University of Utrecht, March 4, 1999)
 C              Merged into Dalton1.1 by A. Halkier 29/11/99.
 C
-               DO 113 IOD34 = 1, NUC34
+               DO IOD34 = 1, NUC34
                   IODS   = IODS + 1
                   EXPQ   = EXP34(IOD34)
                   EXPPQ  = EXPP + EXPQ
@@ -311,9 +312,21 @@ C
                   TALPHA(IODS) = - D2*EXPP*EXPQ*EXPPQI
                   SCLFAC(IODS) = FACTOR*TALPHA(IODS)
                   RJ000(IODS,0) = FACTOR+DRWFAC*SCLFAC(IODS)
- 113           CONTINUE
+               END DO
+            ELSE IF (HFXMU .NE. D0) THEN
+               DO IOD34 = 1, NUC34
+                  IODS   = IODS + 1
+                  EXPQ   = EXP34(IOD34)
+                  EXPPQ  = EXPP + EXPQ
+                  EXPPQI = D1/(EXPP + EXPQ)
+                  FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQI)
+                  ALPHA  = EXPP*EXPQ*EXPPQI
+                  BETA   = HFXMU**2/(ALPHA + HFXMU**2)
+                  TALPHA(IODS) = - D2*ALPHA*BETA
+                  RJ000(IODS,0) = SQRT(BETA)*FACTOR
+               END DO
             ELSE IF (PANAS .EQ. D0) THEN
-               DO 110 IOD34 = 1, NUC34
+               DO IOD34 = 1, NUC34
                   IODS   = IODS + 1
                   EXPQ   = EXP34(IOD34)
                   EXPPQ  = EXPP + EXPQ
@@ -321,9 +334,9 @@ C
                   FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQI)
                   TALPHA(IODS) = - D2*EXPP*EXPQ*EXPPQI
                   RJ000(IODS,0) = FACTOR
- 110           CONTINUE
+               END DO
             ELSE
-               DO 111 IOD34 = 1, NUC34
+               DO IOD34 = 1, NUC34
                   IODS   = IODS + 1
                   EXPQ   = EXP34(IOD34)
                   EXPPQ  = EXPP + EXPQ
@@ -332,34 +345,34 @@ C
                   FACTOR = FAC12I*FAC34(IOD34)*SQRT(D1/EXPPQP)
                   TALPHA(IODS) = - D2*EXPP*EXPQ/EXPPQP
                   RJ000(IODS,0) = FACTOR
- 111           CONTINUE
+               END DO
             END IF
   100    CONTINUE
          IF (JMAX .GT. 0) THEN
             IF (DO2DAR .OR. S4CENT) THEN
-               DO 201 J = 1, JMAX
-                  DO 211 I = 1, NUABCD
+               DO J = 1, JMAX
+                  DO I = 1, NUABCD
                      SCLFAC(I) = TALPHA(I)*SCLFAC(I)
                      RJ000(I,J) = DRWFAC*SCLFAC(I)
-  211             CONTINUE
-  201          CONTINUE
+                  END DO
+               END DO
             ELSE IF (AD2DAR) THEN
-               DO 202 J = 1, JMAX
+               DO J = 1, JMAX
                   FAC = D1/SDPRE(2*J + 1)
-                  DO 212 I = 1, NUABCD
+                  DO I = 1, NUABCD
                      RJ000(I,J) = (FAC+DRWFAC*TALPHA(I))*SCLFAC(I)
                      SCLFAC(I) = TALPHA(I)*SCLFAC(I)
-  212             CONTINUE
-  202          CONTINUE
+                  END DO
+               END DO
             ELSE
                CALL DCOPY(NUABCD,TALPHA,1,SCLFAC,1)
-               DO 200 J = 1, JMAX
+               DO J = 1, JMAX
                   FAC = D1/SDPRE(2*J + 1)
-                  DO 210 I = 1, NUABCD
+                  DO I = 1, NUABCD
                      RJ000(I,J) = FAC*SCLFAC(I)*RJ000(I,0)
                      SCLFAC(I) = TALPHA(I)*SCLFAC(I)
-  210             CONTINUE
-  200          CONTINUE
+                  END DO
+               END DO
             END IF
          END IF
 C
@@ -398,8 +411,36 @@ C       -O2 optimization. These fixes prevent it. K.Ruud-Jan96
             PX     = SGN12X*COOR12(IOD12,1)
             PY     = SGN12Y*COOR12(IOD12,2)
             PZ     = SGN12Z*COOR12(IOD12,3)
-            IF (PANAS .EQ. D0) THEN
-               DO 310 IOD34 = 1, NUC34
+            IF (HFXMU .NE. D0) THEN
+               DO IOD34 = 1, NUC34
+#if !defined (SYS_IRIX)
+                  IODS = IODS + 1
+#endif
+                  EXPQ   = EXP34(IOD34)
+                  EXPPQI = D1/(EXPP + EXPQ)
+                  FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQI)
+                  ALPHA = EXPP*EXPQ*EXPPQI
+                  BETA = HFXMU**2/(ALPHA + HFXMU**2)
+                  SCLFAC(IODS) = SQRT(BETA)*FACTOR
+#if !defined (SYS_IRIX)
+                  NODS = NODS + 1
+#endif
+                  TALPHA(IODS) = - D2*ALPHA*BETA
+                  PQXI = PX - SGN34X*COOR34(IOD34,1)
+                  PQYI = PY - SGN34Y*COOR34(IOD34,2)
+                  PQZI = PZ - SGN34Z*COOR34(IOD34,3)
+                  PQX(IODS) = PQXI
+                  PQY(IODS) = PQYI
+                  PQZ(IODS) = PQZI
+                  WVALU(NODS)=ALPHA*BETA*(PQXI*PQXI+PQYI*PQYI+PQZI*PQZI)
+                  INDADR(NODS) = IODS
+#if defined (SYS_IRIX)
+                  IODS = IODS + 1
+                  NODS = NODS + 1
+#endif
+               END DO
+            ELSE IF (PANAS .EQ. D0) THEN
+               DO IOD34 = 1, NUC34
 #if !defined (SYS_IRIX)
                   IODS = IODS + 1
 #endif
@@ -424,9 +465,9 @@ C       -O2 optimization. These fixes prevent it. K.Ruud-Jan96
                   IODS = IODS + 1
                   NODS = NODS + 1
 #endif
- 310           CONTINUE
+               END DO
             ELSE
-               DO 311 IOD34 = 1, NUC34
+               DO IOD34 = 1, NUC34
 #if !defined (SYS_IRIX)
                   IODS = IODS + 1
 #endif
@@ -453,7 +494,7 @@ C       -O2 optimization. These fixes prevent it. K.Ruud-Jan96
                   IODS = IODS + 1
                   NODS = NODS + 1
 #endif
- 311           CONTINUE
+               END DO
             END IF
   300    CONTINUE
 #if defined (SYS_IRIX)
@@ -488,29 +529,29 @@ C
 C           Scale gamma function
 C
             IF (DO2DAR .OR. AD2DAR .OR. S4CENT) THEN
-              DO 412 I = 1, NUABCD
+              DO I = 1, NUABCD
                 WVALU(I) = DRWFAC*TALPHA(I)*EXP(-WVALU(I))
-  412         CONTINUE
+              END DO
             ENDIF
             IF (DO2DAR .OR. S4CENT) THEN
-              DO 416 J = 0, JMAX
-                DO 417 I = 1, NUABCD
+              DO J = 0, JMAX
+                DO I = 1, NUABCD
                   RJ000(I,J) = WVALU(I)
-  417           CONTINUE
-  416         CONTINUE
+                END DO
+              END DO 
             ELSE IF (AD2DAR) THEN
-              DO 413 J = 0, JMAX
-                DO 414 I = 1, NUABCD
+              DO J = 0, JMAX
+                DO I = 1, NUABCD
                   RJ000(I,J) = RJ000(I,J) + WVALU(I)
-  414           CONTINUE
-  413         CONTINUE
+                END DO
+              END DO
             END IF
-            DO 400 J = 0, JMAX
-               DO 410 I = 1, NUABCD
+            DO J = 0, JMAX
+               DO I = 1, NUABCD
                   RJ000(I,J) = SCLFAC(I)*RJ000(I,J)
                   SCLFAC(I) = TALPHA(I)*SCLFAC(I)
-  410          CONTINUE
-  400       CONTINUE
+               END DO
+            END DO
          END IF
       END IF
 C
@@ -529,15 +570,15 @@ C
          IF (IPRINT .GT. 20) THEN
             WRITE (LUPRI, 1100)
             ISTART = 0
-            DO 500 J = 0, JMAX
+            DO J = 0, JMAX
                WRITE (LUPRI, 1110) J
                IADR = 0
-               DO 510 I = 1, NUC12
+               DO I = 1, NUC12
                   WRITE (LUPRI, 1120) I
                   WRITE (LUPRI, 1130) (RJ000(IADR + K,J), K = 1, NUC34)
                   IADR = IADR + NUC34
-  510          CONTINUE
-  500       CONTINUE
+               END DO
+            END DO
          END IF
       END IF
  1000 FORMAT (//,' ********** SUBROUTINE R000 **********')

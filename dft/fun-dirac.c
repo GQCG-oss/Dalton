@@ -56,18 +56,12 @@ static real
 dirac_energy(const DftDensProp* dp)
 {
   real ea = 0.0, eb = 0.0; 
-#if TEST_FUNCTIONAL==1
-  return -0.05*(rhoa + rhob);
-#elif TEST_FUNCTIONAL==2
-  return -0.05*(rhoa*rhoa + rhob*rhob);
-#else 
   const real PREF= -3.0/4.0*pow(6/M_PI, 1.0/3.0);
   if (dp->rhoa >DIRAC_THRESHOLD)
       ea= PREF*pow(dp->rhoa,4.0/3.0);
   if (dp->rhob >DIRAC_THRESHOLD)
       eb= PREF*pow(dp->rhob,4.0/3.0);   
   return ea+eb;  
-#endif
 }
 
 static void

@@ -83,13 +83,14 @@ C           antisymmetric density matrix
         IY = IY1 - MOD(IY1,2)
       END IF
 C
-      IF (HFXFAC.EQ.D0) THEN
+      IF (HFXFAC.EQ.D0 .AND. HFXMU.EQ.D0) THEN
         IY = MOD(IY,2)
 C       ... only Coulomb contribution
       ELSE
          DP5X  =  DP5*HFXFAC
          DP25X = DP25*HFXFAC
       END IF
+      IF (HFXMU.NE.D0) IY = 2 
       IF (IY .EQ. 0) GO TO 9999
 C     ... nothing to do!
 C

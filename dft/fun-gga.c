@@ -1,5 +1,5 @@
 /*-*-mode: C; c-indentation-style: "bsd"; c-basic-offset: 4; -*-*/
-/* fun-ga.c:
+/* fun-gga.c:
    implementation of a functional being a linear combination of 
    Dirac, VWN, Becke, LYP functionals.
    (c) Pawel Salek, pawsa@theochem.kth.se, sep 2001
@@ -12,8 +12,7 @@
 #define _XOPEN_SOURCE          500
 #define _XOPEN_SOURCE_EXTENDED 1
 
-/* Use BSD's strncasecmp(); if there is a platform that has no strncasecmp()
- * ask pawsa@theochem.kth.se for replacement */
+/* Use BSD's strncasecmp() */
 #define _BSD_SOURCE 1
 
 #include <ctype.h>
@@ -28,6 +27,7 @@
 
 /* INTERFACE PART */
 static int  fun_false(void) { return 0; }
+static int  fun_true (void) { return 1; }
 static int  lda_read(const char* conf_line);
 static real lda_energy(const DftDensProp* dp);
 static void lda_first(FirstFuncDrv *ds,   real factor, const DftDensProp* dp);
@@ -438,8 +438,7 @@ gga_key_read(const char* conf_line)
             }
         }
         while(*str && !isspace((int)*str)) str++; /* skip nonws */
-    }
-    return res;
+    } return res;
 }
 
 static void
@@ -458,8 +457,12 @@ gga_energy(const DftDensProp* dp)
 {
     real res = 0;
     FuncList* lst;
-    for(lst=gga_fun_list; lst; lst=lst->next) 
-        res += lst->weight*lst->func->func(dp);
+    for(lst=gga_fun_list; lst; lst=lst->next) {
+        real contr = lst->weight*lst->func->func(dp);
+/*        fort_print("[%g,%g,w=%g] %s contributes with %g", dp->rhoa,
+                   dp->grada, lst->weight, lst->func->name, contr); */
+        res += contr;
+    }
     return res;
 }
 
@@ -467,8 +470,13 @@ static void
 gga_first(FirstFuncDrv *ds, real factor,  const DftDensProp* dp)
 {
     FuncList* lst;
-    for(lst=gga_fun_list; lst; lst=lst->next) 
+    for(lst=gga_fun_list; lst; lst=lst->next) {
+	real df10 = ds->df1000, df01 = ds->df0010;
         lst->func->first(ds, factor*lst->weight, dp);
+/*      fort_print("[%g,%g,w=%g] %s f: %g deriv (%g,%g)", dp->rhoa,
+                   dp->grada, lst->weight, lst->func->name, factor,
+		   ds->df1000-df10, ds->df0010-df01); */
+    }
 }
 
 static void

@@ -582,6 +582,7 @@ C
 #include <aovec.h>
 #include <dummy.h>
       LOGICAL   ABA
+      PARAMETER (D0 = 0.D0)
       DIMENSION FMAT(N2BASX,NDMAT), DMAT(N2BASX,NDMAT),
      &          ISYMDM(NDMAT), IFCTYP(NDMAT)
       DIMENSION WORK(LWORK)
@@ -593,6 +594,7 @@ C  GNRINF: PARCAL
 C  INFPAR: NODTOT
 C
 #include <abainf.h>
+#include <dftcom.h>
 #include <inforb.h>
 #include <cbitwo.h>
 #include <dorps.h>
@@ -707,7 +709,12 @@ C
      &      CALL SCRSTA('PARDRV',WORK(KDSKP))
       ELSE
 #endif
+C
+C        Calculate full Coulomb and exchange weighted with hfxfac 
+C
          CALL TIMER('START ',TIMSTR,TIMEND)
+         HFXM0 = HFXMU
+         HFXMU = D0
          CALL TWOINT(WORK(KFREE),LFREE,DUMMY,FMAT,DMAT,NDMAT,
      &               ISYMDM,
      &               IFCTYP,DUMMY,IDUMMY,NUMDIS,1,ITYPE,MAXDER,0,
@@ -716,6 +723,23 @@ C
      &               WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),
      &               WORK(KIORBS),ICEDIF,IFTHRS,
      &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP),.FALSE.)
+         HFXMU = HFXM0
+C
+C        Calculate attenuated exchange (hfxatt*erf(hfxmu*r12)/r12) 
+C
+         IF (HFXMU.NE.D0) THEN
+            HFXFC0 = HFXFAC
+            HFXFAC = HFXATT 
+            CALL TWOINT(WORK(KFREE),LFREE,DUMMY,FMAT,DMAT,NDMAT,
+     &               ISYMDM,
+     &               IFCTYP,DUMMY,IDUMMY,NUMDIS,1,ITYPE,MAXDER,0,
+     &               NODV,NOPV,NOCONT,TKTIME,IPRINT,IPRNTA,
+     &               IPRNTB,IPRNTC,IPRNTD,RETUR,IDUMMY,I2TYP,
+     &               WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),
+     &               WORK(KIORBS),ICEDIF,IFTHRS,
+     &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP),.FALSE.)
+            HFXFAC = HFXFC0
+         END IF
          CALL TIMER('TWOINT',TIMSTR,TIMEND)
          IF (IPRINT .GT. 0)
      &      CALL SCRSTA('TWOINT',WORK(KDSKP))
