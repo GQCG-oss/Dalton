@@ -29,38 +29,36 @@ OBJSMEM = abacus/linux_mem_allo.o
 #
 dalton.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
 	PD_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
+	echo "---------------> Linking sequential dalton.x ..."
 	$(F77) $(FFLAGS) \
-	-o dalton.x $(OBJPRG) $(OBJSIO) $(OBJSLAVE) \
-	$(OBJSAMFI) $(DALTON_LIBS) $(LIBS)
-	mv dalton.x $(INSTALLDIR)
+	-o $(INSTALLDIR)/dalton.x $(OBJPRG) $(OBJSIO) $(OBJSLAVE) \
+	$(OBJSAMFI) gp/mpi_dummy.o $(DALTON_LIBS) $(LIBS)
 #
 #       Linux version of the program
 #
 linux.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
 	PD_OBJ MEM_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
+	echo "---------------> Linking sequential dalton.x ..."
 	$(F77) $(FFLAGS) \
-	-o dalton.x $(OBJPRG) $(OBJSIO) $(OBJSMEM) \
-	$(OBJSLAVE) $(OBJSAMFI) $(DALTON_LIBS) $(LIBS)
-	mv dalton.x $(INSTALLDIR)
+	-o $(INSTALLDIR)/dalton.x $(OBJPRG) $(OBJSIO) $(OBJSMEM) \
+	$(OBJSLAVE) $(OBJSAMFI) gp/mpi_dummy.o $(DALTON_LIBS) $(LIBS)
 #
-#     Linux parallel build
+#     Linux MPI parallel build (first create sequential build dalton.x, then dalpar.x)
 #
-linuxparallel.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
-	PD_OBJ MEM_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
+linuxparallel.x: linux.x
+	echo "---------------> Linking parallel dalpar.x ..."
 	$(F77) $(FFLAGS) \
-	-o dalpar.x $(OBJPRG) $(OBJSIO) $(OBJSMEM) \
+	-o $(INSTALLDIR)/dalpar.x $(OBJPRG) $(OBJSIO) $(OBJSMEM) \
 	$(OBJSLAVE) $(OBJSAMFI) $(DALTON_LIBS) $(LIBS) \
 	$(MPI_LIB_PATH) $(MPI_LIB) 
-	mv dalpar.x $(INSTALLDIR)
 #
-#	Minimal parallel build
+#	MPI parallel build (first create sequential build dalton.x, then dalpar.x)
 #
-parallel.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
-	PD_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
+parallel.x: dalton.x
+	echo "---------------> Linking parallel dalpar.x ..."
 	$(F77) $(FFLAGS) \
-	-o dalpar.x $(OBJPRG) $(OBJSIO) $(OBJSLAVE) $(OBJSAMFI) \
+	-o $(INSTALLDIR)/dalpar.x $(OBJPRG) $(OBJSIO) $(OBJSLAVE) $(OBJSAMFI) \
 	$(DALTON_LIBS) $(LIBS) $(MPI_LIB_PATH) $(MPI_LIB)
-	mv dalpar.x $(INSTALLDIR)
 #
 #	Build with PVMe
 #	We will never need MPILIB when using PVM
@@ -69,40 +67,35 @@ parallel.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
 dalpvm.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
 	PD_OBJ MEM_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
 	$(F77) $(FFLAGS) \
-	-o dalpvm.x $(OBJPRG) $(OBJSIO) $(OBJSMEM) \
+	-o $(INSTALLDIR)/dalpvm.x $(OBJPRG) $(OBJSIO) $(OBJSMEM) \
 	$(OBJSLAVE) $(OBJSAMFI) $(LIBS) \
 	$(DALTON_LIBS) $(PVM_LIB_PATH) \
 	$(PVM_LIBS) $(PVM_INC_PATH)
-	$(F77) $(FFLAGS) -o node.x $(OBJNODE) $(OBJSLAVE) \
+	$(F77) $(FFLAGS) -o $(INSTALLDIR)/node.x $(OBJNODE) $(OBJSLAVE) \
 	$(OBJSAMFI) $(LIBS) $(DALTON_LIBS) $(PVM_LIB_PATH) \
 	$(PVM_LIBS)  $(PVM_INC_PATH)
-	mv dalpvm.x $(INSTALLDIR)
-	mv node.x $(PVM_NOD_PATH)
 #
 #	Not tested MPI on Cray yet. Thus no MPILIB, and no OBJSMXM nor
 #	OBJSEIS
 #
 cray.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ \
 	ERI_OBJ PD_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
-	$(F77) $(FFLAGS) -o dalton.x $(OBJPRG) \
+	$(F77) $(FFLAGS) -o $(INSTALLDIR)/dalton.x $(OBJPRG) \
 	$(OBJSLAVE) $(OBJSAMFI) $(LIBS) $(DALTON_LIBS)
-	mv dalton.x $(INSTALLDIR)
 #
 #	This is a proper build for the Cray-T3D
 #
 t3d.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
 	PD_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
 	$(F77) $(FFLAGS) $(MPI_LIB_PATH) $(MPI_LIB) \
-	-o dalpar.x $(OBJPRG) $(OBJSLAVE) \
+	-o $(INSTALLDIR)/dalpar.x $(OBJPRG) $(OBJSLAVE) \
 	$(LIBS) $(OBJSAMFI) $(DALTON_LIBS)
-	mv dalpar.x $(INSTALLDIR)
 
 t90.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
 	PD_OBJ CC_OBJ DFT_OBJ IO_OBJ AMFI_OBJ
 	$(F77) $(FFLAGS) $(MPI_LIB_PATH) $(MPI_LIB) \
-	-o dalpar.x $(OBJPRG) (IO_OBJS) $(OBJSLAVE) \
+	-o $(INSTALLDIR)/dalpar.x $(OBJPRG) (IO_OBJS) $(OBJSLAVE) \
 	$(LIBS) $(OBJSAMFI) $(DALTON_LIBS)
-	mv dalpar.x $(INSTALLDIR)
 #
 #	Update all dependencies
 #
