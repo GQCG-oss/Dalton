@@ -34,13 +34,12 @@ C
 #include "single.h"
 C
 #ifdef REV_LOG
-===========================================================================
-Revision 1.4  2000/05/24 18:45:09  hjj
-new getref calls with appropriate NDREF (fixing CSF and triplet)
-stop if solvent and CSF
-bugfix: too little was allocated for KGP2
-other minor changes
-===========================================================================
+C===========================================================================
+CRevision 1.4  2000/05/24 18:45:09  hjj
+Cnew getref calls with appropriate NDREF (fixing CSF and triplet)
+Cstop if solvent and CSF
+Cbugfix: too little was allocated for KGP2
+C===========================================================================
 #endif
 C  /* Deck lagran */
       SUBROUTINE LAGRAN(WORD,FC,CMO,UDV,PV,XINDX,WRK,LWRK)
@@ -513,8 +512,8 @@ C
             ELSE
                FOPLG = D0
             END IF
-            CALL PRPAVE(LBESRT(KSYMOP,IOP),AVEVAL,CMO,
-     *                  WRK(KTUDV),WRK(KWRK1),LWRK1)
+            CALL PRP1AVE(LBESRT(KSYMOP,IOP),AVEVAL,CMO,
+     *                  WRK(KTUDV),WRK(KWRK1),LWRK1,IPRRSP)
             HYPFIN = AVEVAL + FOPLG
             WRITE(LUPRI,'(/2A,3(A,F10.6))')
      *        'TRIPLET OPERATOR: "',LBESRT(KSYMOP,IOP),
@@ -534,12 +533,12 @@ C     Singlet operators:
 C
       TRPSAVE= TRPLET
       TRPLET = .FALSE.
-C     ... so PRPAVE calculates singlet expectation values /hjaaj march 2003 ...
+C     ... so PRP1AVE calculates singlet expectation values /hjaaj march 2003 ...
 C         (if TRPLET true, then inactive density matrix is omitted!)
       DO 400 IOP = 1,NESRS(KSYMOP)
-         CALL PRPAVE(LBESRS(KSYMOP,IOP),AVEVAL,CMO,
-     *               UDV,WRK(KWRK1),LWRK1)
-C        CALL PRPAVE(LABELOP,AVEVAL,CMO, UDV,WRK,LWRK)
+         CALL PRP1AVE(LBESRS(KSYMOP,IOP),AVEVAL,CMO,
+     *               UDV,WRK(KWRK1),LWRK1,IPRRSP)
+C        CALL PRP1AVE(LABELOP,AVEVAL,CMO, UDV,WRK,LWRK,IPRINT)
          WRITE(LUPRI,'(/3A,F10.6)')
      *      'SINGLET OPERATOR: "',LBESRS(KSYMOP,IOP),'" AVERAGE:',AVEVAL
 400   CONTINUE

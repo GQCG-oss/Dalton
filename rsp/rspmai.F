@@ -350,10 +350,12 @@ C
 C     Calculate expectation value properties (first order)
 C     ====================================================
 C
-      CALL AVEPRP(WRK(KCMO),WRK(KUDV),WRK(KTOT),LFREE)
       CALL MIXS0(WRK(KCMO),WRK(KUDV),WRK(KTOT),LFREE)
 C     CALL MIXS0(CMO,UDV,WRK,LWRK)
+C
+      CALL AVEPRP(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KTOT),LFREE)
       CALL FLSHFO(LUPRI)
+C
       IF (.NOT.DORESP) GO TO 9999
 C
 C Open RSPVEC for response vectors, existing file may exist for restart
@@ -664,6 +666,8 @@ C
 C  /* Deck rspinp */
       SUBROUTINE RSPINP(WORD)
 C
+C     Read general ".xxx" input options for "**RESPONSE"
+C
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -680,9 +684,8 @@ C
 #include "inftap.h"
 C
       LOGICAL NEWDEF, SET
-      PARAMETER ( NTABLE = 19 )
+      PARAMETER ( NTABLE = 20 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-      CHARACTER*8 LABEL
 C
       SAVE TABLE, SET
 C
@@ -692,14 +695,15 @@ C
      *            '.OPTORB', '.MAXPHP', '.PHPRES',
      *            '.MAXRM ', '.QRREST', '.PROPAV',
      *            '.HIRPA ', '.SOPW4 ', '.SOPPCC',
-     *            '.NODOIT'/
+     *            '.NODOIT', '.PROP2A'/
       DATA SET /.FALSE./
 C
       IF (.NOT.SET) THEN
          SET = .TRUE.
          NOITRA = DIRCAL
          MAXPHP = 100
-         NAVTOT = 0
+         N1AVTOT = 0
+         N2AVTOT = 0
       END IF
       NEWDEF = (WORD .EQ. '*RESPON')
       ICHANG = 0
@@ -714,7 +718,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,
-     *                    11,12,13,14,15,16,17,18,19), I
+     *                    11,12,13,14,15,16,17,18,19,20), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -768,16 +772,15 @@ C
                   QRREST = .TRUE.
                GO TO 100
    15          CONTINUE
-                  NAVTOT = NAVTOT + 1
-                  IF ( NAVTOT .GT. MAXAV ) THEN
+                  N1AVTOT = N1AVTOT + 1
+                  IF ( N1AVTOT .GT. MAX1AV ) THEN
                      WRITE(LUPRI,'(/,2A,I5)')
-     *               '@rspinp: NUMBER OF OPERATORS FOR AVERAGE VALUE'
+     *               '@rspinp: NUMBER OF OPERATORS FOR .PROPAV'
      *               ,'CALCULATION EXCEEDS THE ALLOWED NUMBER :'
-     *               ,MAXAV
-                    CALL QUIT('RSPINP,TOO MANY AVE OPERATORS SPECIFIED')
+     *               ,MAX1AV
+                   CALL QUIT('RSPINP, TOO MANY AVE OPERATORS SPECIFIED')
                   END IF
-                  READ(LUCMD,'( A )')LABEL
-                  LBLAV(NAVTOT) = LABEL
+                  READ(LUCMD,'( A )') LBL1AV(N1AVTOT)
                GO TO 100
    16          CONTINUE
                   HIRPA = .TRUE.
@@ -792,6 +795,18 @@ C
                GO TO 100
    19          CONTINUE
                   DIROIT = .FALSE.
+               GO TO 100
+C              .PROP2Average
+   20          CONTINUE
+                  N2AVTOT = N2AVTOT + 1
+                  IF ( N2AVTOT .GT. MAX2AV ) THEN
+                     WRITE(LUPRI,'(/2A,I5)')
+     *               '@rspinp: NUMBER OF OPERATORS FOR .PROP2AV'
+     *               ,'CALCULATION EXCEEDS THE ALLOWED NUMBER :'
+     *               ,MAX2AV
+                   CALL QUIT('RSPINP, TOO MANY AVE OPERATORS SPECIFIED')
+                  END IF
+                  READ(LUCMD,'(A/A)')LBL2AV(1,N2AVTOT),LBL2AV(2,N2AVTOT)
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -1008,6 +1023,10 @@ C  Initializing ESG
       END
 C  /* Deck ppinp */
       SUBROUTINE PPINP(WORD)
+C
+C Read input options for PP = "Polarization Propagator" excitation energies
+C                           = "Linear Response Single Residue"
+C
 #include "implicit.h"
       LOGICAL NEWDEF, SPNDEF
       PARAMETER ( NTABLE = 49 )
@@ -1367,6 +1386,9 @@ C
       END
 C  /* Deck lrinp */
       SUBROUTINE LRINP(WORD)
+C
+C Read input options for LR = "Linear Response"
+C
 C
 #include "implicit.h"
 C
@@ -2486,7 +2508,7 @@ C
             KINTRP = KINTAD + 4/IRAT
             KLAST  = KINTRP + 4/IRAT
             LWRK1  = LWRK   - KLAST
-            IF (LWRK1.LT.0) CALL ERRWRK('PRPGET',KLAST,LWRK)
+            IF (LWRK1.LT.0) CALL ERRWRK('RSPSYM',KLAST,LWRK)
             CALL GET1IN(DUMMY,PRPWRD,NCOMP,WRK(KLAST),LWRK1,LABINT,
      &                  WRK(KINTRP),WRK(KINTAD),IDUMMY,TOFILE,NPATOM,
      &                  TRIMAT,IPRRSP - 120)
@@ -2578,46 +2600,26 @@ C
   250 CONTINUE
       CALL GPCLOSE(LUPROP,'KEEP')
       IF (IPRRSP.GT.20) THEN
-         WRITE(LUPRI,'(/A)')
-     *   ' NUMBER OF PROPERTY VECTORS  '
-         WRITE(LUPRI,'(/A)')' NGPPP(I),I=1,NSYM '
-         WRITE(LUPRI,'(8I5)')( NGPPP(I),I=1,NSYM)
-         WRITE(LUPRI,'(/A)')' NGPLR(I),I=1,NSYM '
-         WRITE(LUPRI,'(8I5)')( NGPLR(I),I=1,NSYM)
-         WRITE(LUPRI,'(/A)')' NGPC6(I),I=1,NSYM '
-         WRITE(LUPRI,'(8I5)')( NGPC6(I),I=1,NSYM)
-         WRITE(LUPRI,'(/A)')' NAQROP(I),I=1,NSYM '
-         WRITE(LUPRI,'(8I5)')( NAQROP(I),I=1,NSYM)
-         WRITE(LUPRI,'(/A)')' NBQROP(I),I=1,NSYM '
-         WRITE(LUPRI,'(8I5)')( NBQROP(I),I=1,NSYM)
-         WRITE(LUPRI,'(/A)')' NCQROP(I),I=1,NSYM '
-         WRITE(LUPRI,'(8I5)')( NCQROP(I),I=1,NSYM)
-         WRITE(LUPRI,'(/A)')' NASMOP(I),I=1,NSYM '
-         WRITE(LUPRI,'(8I5)')( NASMOP(I),I=1,NSYM)
-         WRITE(LUPRI,'(/A)')' NBSMOP(I),I=1,NSYM '
-         WRITE(LUPRI,'(8I5)')( NBSMOP(I),I=1,NSYM)
-         WRITE(LUPRI,'(/A)')' NESRS(I),I=1,NSYM '
-         WRITE(LUPRI,'(8I5)')( NESRS(I),I=1,NSYM)
-         WRITE(LUPRI,'(/A)')' NESRT(I),I=1,NSYM '
-         WRITE(LUPRI,'(8I5)')( NESRT(I),I=1,NSYM)
-         WRITE(LUPRI,'(/A)')' NACROP(I),I=1,NSYM '
-         WRITE(LUPRI,'(8I5)')( NACROP(I),I=1,NSYM)
-         WRITE(LUPRI,'(/A)')' NBCROP(I),I=1,NSYM '
-         WRITE(LUPRI,'(8I5)')( NBCROP(I),I=1,NSYM)
-         WRITE(LUPRI,'(/A)')' NCCROP(I),I=1,NSYM '
-         WRITE(LUPRI,'(8I5)')( NCCROP(I),I=1,NSYM)
-         WRITE(LUPRI,'(/A)')' NDCROP(I),I=1,NSYM '
-         WRITE(LUPRI,'(8I5)')( NDCROP(I),I=1,NSYM)
-         WRITE(LUPRI,'(/A)')' NATMOP(I),I=1,NSYM '
-         WRITE(LUPRI,'(8I5)')( NATMOP(I),I=1,NSYM)
-         WRITE(LUPRI,'(/A)')' NBTMOP(I),I=1,NSYM '
-         WRITE(LUPRI,'(8I5)')( NBTMOP(I),I=1,NSYM)
-         WRITE(LUPRI,'(/A)')' NCTMOP(I),I=1,NSYM '
-         WRITE(LUPRI,'(8I5)')( NCTMOP(I),I=1,NSYM)
-         WRITE(LUPRI,'(/A)')' NATPOP(I),I=1,NSYM '
-         WRITE(LUPRI,'(8I5)')( NATPOP(I),I=1,NSYM)
-         WRITE(LUPRI,'(/A)')' NBTPOP(I),I=1,NSYM '
-         WRITE(LUPRI,'(8I5)')( NBTPOP(I),I=1,NSYM)
+        WRITE(LUPRI,'(/A/)')   ' RSPSYM: number of property vectors :'
+        WRITE(LUPRI,'(A/8I5)')' NGPPP(I) ,I=1,NSYM',(NGPPP(I) ,I=1,NSYM)
+        WRITE(LUPRI,'(A/8I5)')' NGPLR(I) ,I=1,NSYM',(NGPLR(I) ,I=1,NSYM)
+        WRITE(LUPRI,'(A/8I5)')' NGPC6(I) ,I=1,NSYM',(NGPC6(I) ,I=1,NSYM)
+        WRITE(LUPRI,'(A/8I5)')' NAQROP(I),I=1,NSYM',(NAQROP(I),I=1,NSYM)
+        WRITE(LUPRI,'(A/8I5)')' NBQROP(I),I=1,NSYM',(NBQROP(I),I=1,NSYM)
+        WRITE(LUPRI,'(A/8I5)')' NCQROP(I),I=1,NSYM',(NCQROP(I),I=1,NSYM)
+        WRITE(LUPRI,'(A/8I5)')' NASMOP(I),I=1,NSYM',(NASMOP(I),I=1,NSYM)
+        WRITE(LUPRI,'(A/8I5)')' NBSMOP(I),I=1,NSYM',(NBSMOP(I),I=1,NSYM)
+        WRITE(LUPRI,'(A/8I5)')' NESRS(I) ,I=1,NSYM',(NESRS(I) ,I=1,NSYM)
+        WRITE(LUPRI,'(A/8I5)')' NESRT(I) ,I=1,NSYM',(NESRT(I) ,I=1,NSYM)
+        WRITE(LUPRI,'(A/8I5)')' NACROP(I),I=1,NSYM',(NACROP(I),I=1,NSYM)
+        WRITE(LUPRI,'(A/8I5)')' NBCROP(I),I=1,NSYM',(NBCROP(I),I=1,NSYM)
+        WRITE(LUPRI,'(A/8I5)')' NCCROP(I),I=1,NSYM',(NCCROP(I),I=1,NSYM)
+        WRITE(LUPRI,'(A/8I5)')' NDCROP(I),I=1,NSYM',(NDCROP(I),I=1,NSYM)
+        WRITE(LUPRI,'(A/8I5)')' NATMOP(I),I=1,NSYM',(NATMOP(I),I=1,NSYM)
+        WRITE(LUPRI,'(A/8I5)')' NBTMOP(I),I=1,NSYM',(NBTMOP(I),I=1,NSYM)
+        WRITE(LUPRI,'(A/8I5)')' NCTMOP(I),I=1,NSYM',(NCTMOP(I),I=1,NSYM)
+        WRITE(LUPRI,'(A/8I5)')' NATPOP(I),I=1,NSYM',(NATPOP(I),I=1,NSYM)
+        WRITE(LUPRI,'(A/8I5)')' NBTPOP(I),I=1,NSYM',(NBTPOP(I),I=1,NSYM)
       END IF
       NTOTLR = 0
       NTOTC6 = 0
@@ -2629,15 +2631,11 @@ C
       IF ( (NTOTRS.GT.0) .AND. (HYPCAL.OR.SOMOM.OR.EXMOM) ) THEN
          WRITE(LUPRI,'(/A/)')
      *   '@ INPUT SPECIFICATION FOR BOTH LINEAR AND QUADRATIC RESPONSE'
-     *   ,'CALCULATION NOT ALLOWED'
-         IF (NTOTLR.GT.0) THEN
-            WRITE(LUPRI,'(A)')
+     *   ,'CALCULATIONS NOT ALLOWED'
+         IF (NTOTLR.GT.0) WRITE(LUPRI,'(A)')
      *      '@ OPERATORS SPECIFIED IN *RSPLR SECTION'
-         END IF
-         IF (NTOTC6.GT.0) THEN
-            WRITE(LUPRI,'(A)')
+         IF (NTOTC6.GT.0) WRITE(LUPRI,'(A)')
      *      '@ OPERATORS SPECIFIED IN *RSPC6 SECTION'
-         END IF
          WRITE(LUPRI,'(A)')
      *      '@ THESE OPERATORS MUST NOT BE SPECIFIED TOGETHER WITH '
          IF (HYPCAL) WRITE(LUPRI,'(/A)')'@ .HYPCAL'
@@ -2648,16 +2646,16 @@ C
       IF ( (CRCAL.OR.TOMOM.OR.TPAMP).AND.(HYPCAL.OR.SOMOM.OR.EXMOM) )
      *   WRITE(LUPRI,'(/A/)')
      *   '@ INPUT SPECIFICATION FOR BOTH QUADRATIC AND CUBIC RESPONSE'
-     *   ,'CALCULATION NOT ALLOWED'
+     *   ,'CALCULATIONS NOT ALLOWED'
       IF ( (NTOTRS.GT.0) .AND. (CRCAL.OR.TOMOM) ) THEN
          WRITE(LUPRI,'(/A/)')
      *   '@ INPUT SPECIFICATION FOR BOTH LINEAR AND CUBIC RESPONSE'
-     *   ,'CALCULATION NOT ALLOWED'
+     *   ,'CALCULATIONS NOT ALLOWED'
       END IF
 C
       IF (CRCAL) THEN
 C
-C SET UP POINTER FOR LINEAR RESPONSE EQUATIONS
+C SET UP POINTERS FOR LINEAR RESPONSE EQUATIONS
 C
          CALL CR1IND
          CALL CR2IND
@@ -2665,7 +2663,7 @@ C
 C
       IF (TOMOM) THEN
 C
-C SET UP POINTER FOR LINEAR RESPONSE EQUATIONS
+C SET UP POINTERS FOR LINEAR RESPONSE EQUATIONS
 C AND EXCITATION ENERGIES
 C
          CALL TM1IND
@@ -2674,7 +2672,7 @@ C
 C
       IF (TPAMP) THEN
 C
-C SET UP POINTER FOR LINEAR RESPONSE EQUATIONS
+C SET UP POINTERS FOR LINEAR RESPONSE EQUATIONS
 C AND EXCITATION ENERGIES
 C
          CALL TP1IND
@@ -2686,11 +2684,11 @@ C
      * '** CALCULATION OF TRANSITION MOMENTS BETWEEN EXCITED STATES **'
          CALL ANASYM(NGPPP,NPPCNV,NPPCNV,WRK)
 C
-C SET UP POINTER FOR EXCITATION ENERGIES
+C SET UP POINTERS FOR EXCITATION ENERGIES
 C
          CALL EXIIND(NPPCNV)
 C
-C SET UP POINTER FOR LINEAR RESPONSE EQUATIONS
+C SET UP POINTERS FOR LINEAR RESPONSE EQUATIONS
 C
          CALL EXMIND
       END IF
@@ -2718,17 +2716,17 @@ C
       END IF
       IF (HYPCAL) THEN
 C
-C SET UP POINTER FOR LINEAR RESPONSE EQUATIONS
+C SET UP POINTERS FOR LINEAR RESPONSE EQUATIONS
 C
          CALL HYPIND
       END IF
       IF (SOMOM) THEN
 C
-C SET UP POINTER FOR EXCITATION ENERGIES
+C SET UP POINTERS FOR EXCITATION ENERGIES
 C
          CALL EXIIND(NSMCNV)
 C
-C SET UP POINTER FOR LINEAR RESPONSE EQUATIONS
+C SET UP POINTERS FOR LINEAR RESPONSE EQUATIONS
 C
          CALL SOMIND
       END IF
@@ -2975,15 +2973,15 @@ C
 C  /* Deck anasym */
       SUBROUTINE ANASYM(NAOPNU,NBOPNU,NCOPNU,IWRK)
 C
+C THIS ROUTINE ANALYZES IF OPERATORS THAT ARE SPECIFIED IN QUADRATIC
+C RESPONSE CALCULATIONS HAVE NO MATCHING PARTNERS DUE TO SYMMETRY.
+C SUCH OPERATORS ARE REMOVED FROM THE CALCULATION IN THIS ROUTINE.
+C
 #include "implicit.h"
 C
 #include "priunit.h"
 #include "inforb.h"
 #include "infrsp.h"
-C
-C THIS ROUTINE ANALYZES IF OPERATORS THAT ARE SPECIFIED IN QUADRATIC
-C RESPONSE CALCULATIONS HAVE NO MATCHING PARTNERS DUE TO SYMMETRY.
-C SUCH OPERATORS ARE REMOVED FROM THE CALCULATION IN THIS ROUTINE.
 C
       DIMENSION NAOPNU(*),NBOPNU(*),NCOPNU(*),IWRK(NSYM,*)
       IF (IPRRSP.GT.10) THEN
@@ -3059,6 +3057,10 @@ C
       END
 C  /* Deck rspvar */
       SUBROUTINE RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
+C
+C Purpose: this subroutine must be called in the RESPONSE module
+C each time the operator symmetry KSYMOP changes;
+C here variables which depend on KSYMOP are defined. /hjaaj sep 2003
 C
 #include "implicit.h"
 #include "dummy.h"

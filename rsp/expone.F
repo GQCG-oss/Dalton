@@ -34,7 +34,7 @@ C
 #include "single.h"
 C
 C  /* Deck aveprp */
-      SUBROUTINE AVEPRP(CMO,UDV,WRK,LWRK)
+      SUBROUTINE AVEPRP(CMO,UDV,PVX,WRK,LWRK)
 C
 C Calculate average value (expectation value) of properties
 C specified with .PROPAV under **RESPONS
@@ -44,27 +44,40 @@ C
 #include "implicit.h"
 #include "priunit.h"
 C
+C infrsp.h: IPRRSP
 #include "infave.h"
+#include "infrsp.h"
 C
-      DIMENSION CMO(*),UDV(*),WRK(*)
+      DIMENSION CMO(*),UDV(*),PVX(*),WRK(*)
 C
-      IF (NAVTOT.LE.0) RETURN
       CALL QENTER('AVEPRP')
 C
-      CALL HEADER('Calculation of electronic expectation values',0)
-      WRITE (LUPRI,'(A/A)')
-     &  ' (note that to get e.g. a dipole moment you must multiply the',
+      IF (N1AVTOT.GT.0) THEN
+        CALL HEADER(
+     &  'Calculation of electronic one-electron expectation values',0)
+        WRITE (LUPRI,'(A/A)')
+     &  ' (Note that to get e.g. a dipole moment you must multiply the',
      &  '  electronic number by -1 and add the nuclear contribution.)'
 C
-      DO 100 IOP    = 1,NAVTOT
-         CALL PRPAVE(LBLAV(IOP),ONETOT,CMO,UDV,WRK,LWRK)
- 100  CONTINUE
+        DO IOP    = 1,N1AVTOT
+          CALL PRP1AVE(LBL1AV(IOP),AVEVAL,CMO,UDV,WRK,LWRK,IPRRSP)
+        END DO
+      END IF
+C
+      IF (N2AVTOT.GT.0) THEN
+        CALL HEADER(
+     &  'Calculation of electronic two-electron expectation values',0)
+        DO IOP    = 1,N2AVTOT
+          write (lupri,'(2X,A)') (LBL2AV(i,IOP),i=1,2)
+chj       CALL PRP2AVE(LBL2AV(1,IOP),AVEVAL,CMO,UDV,PVX,WRK,LWRK,IPRRSP)
+        END DO
+      END IF
 C
       CALL QEXIT('AVEPRP')
       RETURN
       END
-C  /* Deck prpave */
-      SUBROUTINE PRPAVE(LBLAVE,AVEVAL,CMO,UDV,WRK,LWRK)
+C  /* Deck prp1ave */
+      SUBROUTINE PRP1AVE(LBLAVE,AVEVAL,CMO,UDV,WRK,LWRK,IPRINT)
 C
 C Calculate average value (expectation value) of property
 C with label 'LBLAVE' on AOPROPER
@@ -72,106 +85,50 @@ C
 C Revised March 2003, Hans Joergen Aa. Jensen.
 C
 #include "implicit.h"
+#include "priunit.h"
 #include "dummy.h"
 C
-      PARAMETER ( D1 = 1.0D0 , D2 = 2.0D0 , D8 = 8.0D0, D0 = 0.0D0 )
-      PARAMETER ( D1INF = 0.999999D0 , CKMXPR = 1.0D-12 )
+      PARAMETER ( D0 = 0.0D0 ,  CKMXPR = 1.0D-12 )
 C
-#include "maxorb.h"
-#include "maxash.h"
-#include "priunit.h"
 #include "inforb.h"
-#include "infrsp.h"
-#include "infind.h"
-#include "wrkrsp.h"
-#include "inftap.h"
 C
+      CHARACTER*8 LBLAVE
       DIMENSION CMO(*),UDV(*),WRK(*)
-      CHARACTER*8 LBLAVE, RTNLBL(2)
-      LOGICAL FNDLB2
 C
-      CALL QENTER('PRPAVE')
+      CALL QENTER('PRP1AVE')
 C
-C Allocate work spacE
+C Allocate work space
 C
-      KMO    = 1
-      KWRK1  = KMO    + NBAST*NBAST
-C     ... sufficient space for N2BASX if "SQUARE" below
-      LWRK1  = LWRK   - KWRK1
-      IF (LWRK1.LT.0) CALL ERRWRK('PRPAVE',KWRK1-1,LWRK)
+      KPMO   = 1
+      KWRK1  = KPMO  + N2ORBX
+      LWRK1  = LWRK  - KWRK1
+      IF (LWRK1.LT.0) CALL ERRWRK('PRP1AVE',KWRK1-1,LWRK)
 C
-C Read AO property integrals for LBLAVE and check for antisymmetry and
-C for spatial symmetry (as identified by abs largest element).
+C Read AO property integrals for LBLAVE and check for antisymmetry
+C and for spatial symmetry (as identified by abs largest element).
 C
-      IF (LUPROP .LE. 0) CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
-     &                               'UNFORMATTED',IDUMMY,.FALSE.)
-      REWIND (LUPROP)
-      IF ( FNDLB2(LBLAVE,RTNLBL,LUPROP)) THEN
-         IF (RTNLBL(2).EQ.'SQUARE  ') THEN
-            CALL READT(LUPROP,N2BASX,WRK)
-            IND = IDAMAX(N2BASX,WRK,1)
-         ELSE IF (RTNLBL(2).EQ.'SYMMETRI') THEN
-            CALL READT(LUPROP,NNBASX,WRK)
-            IND = IDAMAX(NNBASX,WRK,1)
-         ELSE IF (RTNLBL(2).EQ.'ANTISYMM') THEN
-            WRITE(LUPRI,'(/3A)')
-     *         ' Property ',LBLAVE,' is antisymmetric'//
-     *         ' and has therefore average value ZERO'
-            GO TO 100
-         ELSE
-            CALL QUIT('PRPAVE : No antisymmetry label on LUPROP')
-         END IF
-         IF (ABS(WRK(IND)).GT.CKMXPR) THEN
-            IF (RTNLBL(2).NE.'SQUARE  ') THEN
-C              triangular matrix
-C              find solution to iind*(iind+1)/2 = ind :
-               IIND  = INT( (SQRT(D1+D8*IND) - D1INF)/ D2 )
-C              ... use D1INF to avoid round-off errors for diagonal elements
-               IIMAX = IIND*(IIND+1)/2
-               IF ( IIMAX .EQ. IND ) THEN
-                  JIND = IIND
-               ELSE
-                  IIND = IIND + 1
-                  JIND = IND  - IIMAX
-               END IF
-            ELSE
-C              square matrix
-               IIND = 1 + (IND-1)/NBAST
-               JIND = IND - (IIND-1)*NBAST
-            END IF
-            KSYMPT = MULD2H( ISAO(IIND) , ISAO(JIND) )
-            IF ( KSYMPT .EQ. 1 ) THEN
+      KSYMP = -1
+      CALL PRPGET (LBLAVE,CMO,WRK(KPMO),KSYMP,ANTSYM,
+     &             WRK(KWRK1),LWRK1,IPRINT)
+C     CALL PRPGET (WORD,CMO,PRPMO,KSYMP,ANTSYM,WRK,LWRK,IPRINT)
 C
-C Read AO property integrals and transform to MO basis.
 C Calculate average value of one electron operator.
 C
-               KSYMOP = KSYMPT
-               CALL PRPGET (LBLAVE,CMO,WRK(KMO),ANTSYM,WRK(KWRK1),LWRK1)
-C              CALL PRPGET (WORD,CMO,PRPMO,ANTSYM,WRK,LWRK)
-C
-               IPRONE = 0
-               CALL PRPONE(WRK(KMO),UDV,AVEVAL,IPRONE,LBLAVE)
-            ELSE
-               WRITE(LUPRI,'(/3A,I3,A)')
-     *         ' Property ',LBLAVE,' has symmetry',KSYMPT,
-     *         ' and has therefore average value ZERO.'
-            END IF
-         ELSE
-               NWARN = NWARN + 1
-               WRITE(LUPRI,'(/A/3A,1P,D10.2)')
-     *        ' ** WARNING ** Average value of property not calculated',
-     *        ' - all elements on property file AOPROPER with label: ',
-     *           LBLAVE,' are abs smaller than :',CKMXPR
-            END IF
-         ELSE
-            NWARN  = NWARN + 1
-            WRITE(LUPRI,'(/A/3A)')
-     *        ' ** WARNING ** Average value of property not calculated',
-     *        ' - Label ',LBLAVE,' was not found on AOPROPER.'
-         END IF
- 100  CONTINUE
-      IF (LUPROP .GT. 0) CALL GPCLOSE(LUPROP,'KEEP')
-      CALL QEXIT('PRPAVE')
+      IF (ANTSYM .GT. D0) THEN
+         AVEVAL = D0
+         WRITE(LUPRI,'(/3A)')
+     &      ' Property "',LBLAVE,'" is antisymmetric'//
+     &      ' and has therefore average value ZERO'
+      ELSE IF ( KSYMP .EQ. 1 ) THEN
+          IPRONE = 0
+          CALL PRPONE(WRK(KPMO),UDV,AVEVAL,IPRONE,LBLAVE)
+      ELSE
+         AVEVAL = D0
+         WRITE(LUPRI,'(/3A,I3,A)')
+     &      ' Property "',LBLAVE,'" has symmetry',KSYMP,
+     &      ' and has therefore average value ZERO.'
+      END IF
+      CALL QEXIT('PRP1AVE')
       RETURN
       END
 C  /* Deck prpone */
@@ -227,8 +184,8 @@ C
                ONEINA = ONEINA + TMP
             END DO
          END IF
-         DO 60 IA = 1,NASHI
-            DO 70 JA = 1,NASHJ
+         DO 60 JA = 1,NASHJ
+            DO 70 IA = 1,NASHI
                TMP = UDV(IASHI+IA,IASHJ+JA) *
      *               PRPMO(IORBI+NISHI+IA,IORBJ+NISHJ+JA)
                IF (IPRRSP.GT.IPRORB .AND. TMP .NE. D0)
@@ -294,13 +251,14 @@ C
       DIMENSION CMO(*),UDV(*),WRK(*)
 C
       IF (NOS0MX) RETURN
+      CALL QENTER('MIXS0 ')
       CALL HEADER(' ** S(0) sum rule in mixed representation **',0)
 C
 C ALLOCATE WORK SPACE
 C
       KDLEN  = 1
-      KDVEL  = KDLEN  + NORBT*NORBT
-      KWRK1  = KDVEL  + NORBT*NORBT
+      KDVEL  = KDLEN  + N2ORBX
+      KWRK1  = KDVEL  + N2ORBX
       LWRK1  = LWRK   - KWRK1
       IF (LWRK1.LT.0) CALL ERRWRK('MIXS0',KWRK1-1,LWRK)
       DO 100 JSYMOP = 1,NSYM
@@ -309,12 +267,15 @@ C
 C
 C Read AO property integrals and transform to MO basis.
 C
-         KSYMOP = JSYMOP
+         KSYMP1 = -1
+         KSYMP2 = -1
          CALL PRPGET (LBLS0(JSYMOP,IOP,1),
-     *                CMO,WRK(KDLEN),ANTSYM,WRK(KWRK1),LWRK1)
+     *                CMO,WRK(KDLEN),KSYMP1,ASM,WRK(KWRK1),LWRK1,IPRRSP)
          CALL PRPGET (LBLS0(JSYMOP,IOP,2),
-     *                CMO,WRK(KDVEL),ANTSYM,WRK(KWRK1),LWRK1)
-C        CALL PRPGET (WORD,CMO,PRPMO,WRK,LWRK)
+     *                CMO,WRK(KDVEL),KSYMP2,ASM,WRK(KWRK1),LWRK1,IPRRSP)
+C        CALL PRPGET (WORD,CMO,PRPMO,KSYMP,ANTSYM,WRK,LWRK,IPRINT)
+         IF (KSYMP1 .NE. JSYMOP .OR. KSYMP2 .NE. JSYMOP)
+     &   CALL QUIT('MIXS0: unexpeted symmetry of property matrix')
 C
 C Calculate [ d/dx , x ]
 C
@@ -346,5 +307,6 @@ C
          IPRONE = 0
          CALL PRPONE(WRK(KWRK1),UDV,ONETOT,IPRONE,'S(0) MIXED')
  100  CONTINUE
+      CALL QEXIT('MIXS0 ')
       RETURN
       END
