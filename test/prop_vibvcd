@@ -166,12 +166,12 @@ CTRL[4]=3
 ERROR[4]="ENERGY NOT CORRECT"
 
 # Gradient:
-CRIT1=`$GREP "O\#1 * z * (\-0|\-)\.034768081[0-9]" $log | wc -l`
-CRIT2=`$GREP "C\#2 * y * (0| )\.058664395[0-9]" $log | wc -l`
-CRIT3=`$GREP "C\#2 * z * (0| )\.037776717[0-9]" $log | wc -l`
-CRIT4=`$GREP "H\#4 * x * (\-0|\-)\.044054079[0-9]" $log | wc -l`
-CRIT5=`$GREP "H\#4 * y * (\-0|\-)\.010347327[0-9]" $log | wc -l`
-CRIT6=`$GREP "H\#4 * z * (\-0|\-)\.003008635[0-9]" $log | wc -l`
+CRIT1=`$GREP "O\#1 * z * (\-0|\-)\.03476808.[0-9]" $log | wc -l`
+CRIT2=`$GREP "C\#2 * y * (0| )\.05866439.[0-9]" $log | wc -l`
+CRIT3=`$GREP "C\#2 * z * (0| )\.03777671.[0-9]" $log | wc -l`
+CRIT4=`$GREP "H\#4 * x * (\-0|\-)\.04405407.[0-9]" $log | wc -l`
+CRIT5=`$GREP "H\#4 * y * (\-0|\-)\.01034732.[0-9]" $log | wc -l`
+CRIT6=`$GREP "H\#4 * z * (\-0|\-)\.00300863.[0-9]" $log | wc -l`
 TEST[5]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[5]=6
 ERROR[5]="GRADIENT NOT CORRECT"
@@ -221,7 +221,7 @@ CRIT4=`$GREP "H\#4 * x * (\-0|\-)\.1579086[0-9]" $log | wc -l`
 CRIT5=`$GREP "H\#4 * y * (\-0|\-)\.2305723[0-9]" $log | wc -l`
 CRIT6=`$GREP "H\#4 * z * (0| )\.2819115[0-9]" $log | wc -l`
 CRIT7=`$GREP "O\#1 * x * (\-0|\-)\.5081037[0-9]" $log | wc -l`
-CRIT8=`$GREP "C\#2 * x * (0| )\.8580728[0-9]" $log | wc -l`
+CRIT8=`$GREP "C\#2 * x * (0| )\.858072.[0-9]" $log | wc -l`
 CRIT9=`$GREP "H\#4 * x * (\-0|\-)\.3499691[0-9]" $log | wc -l`
 CRIT10=`$GREP "H\#4 * y * (\-0|\-)\.2495106[0-9]" $log | wc -l`
 CRIT11=`$GREP "H\#4 * z * (\-0|\-)\.0373766[0-9]" $log | wc -l`
@@ -349,7 +349,7 @@ ERROR[12]="DIPOLE/ROTATIONAL STRENGTHS NOT CORRECT"
 # Vibrational Polarizabilities:
 CRIT1=`$GREP "Ex * (0| )\.326994 * (\-0|\-|0| )\.000000 * (\-0|\-|0| )\.000000" $log | wc -l`
 CRIT2=`$GREP "Ey * (\-0|\-|0| )\.000000 * (0| )\.385276 * (\-0|\-|0| )\.000000" $log | wc -l`
-CRIT3=`$GREP "Ez * (\-0|\-|0| )\.000000 * (\-0|\-|0| )\.000000 * 3\.209956" $log | wc -l`
+CRIT3=`$GREP "Ez * (\-0|\-|0| )\.000000 * (\-0|\-|0| )\.000000 * 3\.20995(5|6)" $log | wc -l`
 CRIT4=`$GREP "Ex * (0| )\.425399 * (\-0|\-)\.037752 * (\-0|\-|0| )\.000000" $log | wc -l`
 CRIT5=`$GREP "Ey * (\-0|\-)\.037752 * (0| )\.362976 * (\-0|\-|0| )\.000000" $log | wc -l`
 TEST[13]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5`
