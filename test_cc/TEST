@@ -156,7 +156,7 @@ do
   passed=`echo $checkout | grep "TEST ENDED PROPERLY"`
   if [ -n "$passed" ]; then
     if [ "$keep" = "false" ]; then
-      rm -f $item.dal $item.mol $item.check $item.log $item.info
+      rm -f $item.dal $item.mol $item.check $item.log $item.info $item.molden
     fi
   else
     passedall="THERE IS A PROBLEM IN TEST CASE"
