@@ -293,6 +293,19 @@ C
      &            WORK(KGRDN),WORK(KDGRAD),WORK(KCAAT),
      &            WORK(KWRK1),LWRK1,NATOMS,NCORD,DIPDER,DOVCD,IPRINT,
      &            HESPUN)
+      IF (NUMHES) THEN
+         KCOOR0 = KWRK1
+         KGRAD0 = KCOOR0 + 3*NUCIND
+         KHESS0 = KGRAD0 + NCORD
+         KGRADF = KHESS0 + NCORD*NCORD
+         CALL REANMHES(WORK(KCOOR0),WORK(KGRAD0),WORK(KHESS0),
+     &                 WORK(KGRADF),WORK(KHESS),NCORD,3*NUCIND)
+C
+C        Note that the Hessian is not back-transformed to non-symmetry
+C        basis, since it is assumed that the VROA and/or Raman calculation
+C        is anyway done without the use of symmetry.\kr\
+C
+      END IF
 C
 C     If vibrational analysis is based on Hessian read from file,
 C     we overwrite the Hessian information, K.Ruud and G.Hangartner, Oct.-96
@@ -382,7 +395,7 @@ C     ********************************
 C     ***** VIBRATIONAL ANALYSIS *****
 C     ********************************
 C
-      IF (MAXDIF .EQ. 2 .OR. HESFIL) THEN
+      IF (MAXDIF .EQ. 2 .OR. HESFIL .OR. NUMHES) THEN
 C
 C        ***** Check if minimum geometry *****
 C
@@ -1225,6 +1238,7 @@ C
      &          EVAL(NCORD), EVEC(NCORD,NCORD), EVECS(NCORD,NCORD),
      &          WRK(LWRK)
 C
+#include <abainf.h>
 #include <symmet.h>
 C
 C     *******************************************
@@ -1276,9 +1290,11 @@ C     *******************************************
 C
       NZER = 0
       NNEG = 0
+      VALTHR = THRSH1
+      IF (NUMHES) VALTHR = 1.0D-10
       DO 400 I = 1, NCORD
-         IF (ABS(EVAL(I)) .LE.  THRSH1) NZER = NZER + 1
-         IF (    EVAL(I)  .LT. -THRSH1) NNEG = NNEG + 1
+         IF (ABS(EVAL(I)) .LE.  VALTHR) NZER = NZER + 1
+         IF (    EVAL(I)  .LT. -VALTHR) NNEG = NNEG + 1
  400  CONTINUE
       CALL ORDER2(EVEC,EVAL,NCORD,NCORD)
       IZERO  = NCORD - NNEG - NZER + 1
@@ -4478,5 +4494,26 @@ C
          ENDIF
          QCENT(I)=PREFAC*FF/E(I)**2
  90   CONTINUE
+      RETURN
+      END
+C /*  Deck reanmhes */
+      SUBROUTINE REANMHES(COOR0,GRAD0,HESS0,GRADF,HESS,NCART,NCRIND)
+C
+C     Read numerical Hessian from LUWLK
+C
+#include "implicit.h"
+#include "dummy.h"
+      DIMENSION COOR0(NCRIND), GRAD0(NCART), HESS0(NCART,NCART),
+     &          GRADF(NCART), HESS(NCART,NCART)
+#include "inftap.h"
+C
+      CALL GPOPEN(LUWLK,ABAWLK,'OLD','SEQUENTIAL','UNFORMATTED',IDUMMY,
+     &            .FALSE.)
+      REWIND LUWLK
+      READ (LUWLK)
+      READ (LUWLK)
+      READ (LUWLK) COOR0, GRAD0, HESS0, GRADF, HESS
+      CALL GPCLOSE(LUWLK,'KEEP')
+C
       RETURN
       END

@@ -1193,7 +1193,7 @@ C
             CALL WLKNUM(GRDCAR,HESCAR,DIPG0,GRAD0,HESS0,GRADF,HESSF,
      &                  DIPGF,WORK,ERGMOL,ESTART,DIPM,DIPM0,DISPLC,
      &                  LWORK,DODIP,NXYZ,NCRTOT,N2CRT,NCART,IPOINT,
-     &                  IPRWLK)
+     &                  NUMHES,IPRWLK)
          ELSE
             CALL WLKROA(ROAAFD,ROAGND,ROAGLD,ROAAD,ROAAFU,ROAGNU,ROAGLU,
      &                  ROAAU,POLDD,POLDQ,POLDL,POLDA,WORK,LWORK,NXYZ,
@@ -3384,7 +3384,7 @@ C  /* Deck wlknum */
       SUBROUTINE WLKNUM(GRDCAR,HESCAR,DIPG0,GRAD0,HESS0,GRADF,HESSF,
      *                  DIPGF,WORK,ERGMOL,ESTART,DIPM,DIPM0,DISPLC,
      *                  LWORK,DODIP,NXYZ,NCRTOT,N2CRT,NCART,IPOINT,
-     *                  IPRINT)
+     *                  NUMHES,IPRINT)
 C
 C     Numerical differentiation
 C
@@ -3395,7 +3395,7 @@ C
 #include <maxorb.h>
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
 C
-      LOGICAL FINAL, DODIP
+      LOGICAL FINAL, DODIP, NUMHES
       CHARACTER*9 TYPE
       DIMENSION GRDCAR(NCRTOT), HESCAR(N2CRT), GRAD0(NCART),
      *          HESS0(NCART,NCART), GRADF(NCART), HESSF(NCART,NCART),
@@ -3440,6 +3440,7 @@ C
 C
 C     ***** Print *****
 C
+      IF (.NOT. NUMHES) THEN
       CALL TITLER('ABACUS - NUMERICAL DIFFERENTIATION','*',118)
       IF (MAXREP .GT.0) THEN
          WRITE (LUPRI,'(A,/)')
@@ -3555,6 +3556,7 @@ C
      *            DIFMAX
             END IF
          END IF
+      END IF
       END IF
       RETURN
       END

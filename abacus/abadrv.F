@@ -638,7 +638,7 @@ cLig <> added CTOCD in the 51st position
      &             '.DIPGRA', '.POLARI', '.MOLHES',
      &             '.INPTES', '.VIBANA', '.RESTAR',
      &             '.OPTROT', '.LINEAR', '.REPS  ',
-     &             '.XXXXXX', '.POPANA', '.XXXXXX',
+     &             '.NUMHES', '.POPANA', '.XXXXXX',
      &             '.EXCITA', '.SHIELD', '.VCD   ',
      &             '.MAGNET', '.SPIN-S', '.NMR   ',
      &             '.NACME ', '.NOLOND', '.NOHESS',
@@ -728,6 +728,7 @@ C
       NODIFC = .FALSE.
       MOLGFA = .FALSE.
       SPINRO = .FALSE.
+      NUMHES = .FALSE.
       MASSVE = .TRUE.
       DARWIN = .TRUE.
       NOCMC  = .FALSE.
@@ -888,7 +889,7 @@ cLig <> added goto 151
             VIB    = .TRUE.
             IF (IWKTYP .EQ. 6) THEN
                MOLGRD = .TRUE.
-               MOLHES = .TRUE.
+               MOLHES = .NOT.NUMHES
             ELSE
                MOLGRD = .NOT.((WRDSRC .EQ. '**FINAL') .AND. OPTWLK)
                MOLHES = .NOT.((WRDSRC .EQ. '**FINAL') .AND. OPTWLK 
@@ -935,6 +936,7 @@ cLig <> added goto 151
             INPSYM = INPSYM + 1
          GO TO 100
   113    CONTINUE
+            NUMHES = .TRUE.
          GO TO 100
   114    CONTINUE
             POPULA = .TRUE.
@@ -1219,7 +1221,7 @@ cs
       END IF
       IF ((VROA .OR. RAMAN) .AND.DOWALK) THEN
          MOLHES = .FALSE.
-         MOLGRD = GRDINP
+         MOLGRD = GRDINP .OR. NUMHES
          IF (DIPDER) POLAR = .TRUE.
       END IF
       IF (ABASOP) THEN
@@ -1312,6 +1314,9 @@ cLig <<
      &            ' Vibrational Raman intensities and optical activity'
       IF (RAMAN)  WRITE (LUPRI,'(5X,A)')
      &            ' Vibrational Raman intensities'
+      IF (NUMHES .AND. (VROA .OR. RAMAN))  WRITE (LUPRI,'(5X,A)')
+     &            ' A numerically calculated Hessian will be used '//
+     &            'for the frequency analysis'
       IF (OPTROT) WRITE (LUPRI,'(5X,A)')
      &            ' Optical rotation strengths'
       IF (SPINRO) WRITE(LUPRI,'(5X,A)') ' Spin-rotation constants'
