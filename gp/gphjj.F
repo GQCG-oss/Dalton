@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: gphjj.F,v 1.3 2001-03-15 14:45:06 ruud Exp $
+C$Id: gphjj.F,v 1.4 2001-03-18 21:53:35 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck flshfo */
@@ -58,7 +58,7 @@ C
       CALL FLUSH(IUNIT)
 #endif
 #if defined (SYS_HPUX)
-C     HP_UX flush as communicated by T.Saue
+C     HP-UX flush as communicated by T.Saue
       CALL FLUSH(IUNIT)
 #endif
 #if defined (SYS_AIX)
@@ -626,7 +626,7 @@ C
       WRITE(LUPRI,*) 'Linux has no obvious system traceback facility.'
 #endif
 #if defined (SYS_HPUX)
-      WRITE(LUPRI,*) 'HP_UX has no obvious system traceback facility.'
+      WRITE(LUPRI,*) 'HP-UX has no obvious system traceback facility.'
 #endif
 #if defined (SYS_CONVEX)
       CALL TRACEBACK

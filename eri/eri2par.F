@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2par.F,v 1.2 2001-02-12 18:17:54 vebjornb Exp $
+C$Id: eri2par.F,v 1.3 2001-03-18 21:53:34 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck pardrv */
@@ -930,7 +930,7 @@ C
       CALL DZERO(WORK(KFMAT),N2BASX)
 C
       CALL HRFCK2(WORK(KFMAT),WORK(KDMAT),NDMAT,ISYMDM,IFCTYP,IPRINT,
-     &            WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
+     &            WORK(KCCFBT),WORK(KINDXB),WORK(KFCKPT),
      &            WORK(KLAST),LWRK)
 C
 C     Send overall timings if requested.

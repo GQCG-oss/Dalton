@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: herdrv.F,v 1.4 2001-03-01 12:41:44 vebjornb Exp $
+C$Id: herdrv.F,v 1.5 2001-03-18 21:53:34 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -3001,6 +3001,7 @@ C
 #include <ccom.h>
 #include <mxsymm.h>
 #include <cbirea.h>
+#include <cbiher.h>
       THRS = 1.0D-15
 C
       IPREAD = IPRDEF

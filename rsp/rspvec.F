@@ -29,11 +29,14 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rspvec.F,v 1.2 2001-02-12 18:17:57 vebjornb Exp $
+C$Id: rspvec.F,v 1.3 2001-03-18 21:53:36 vebjornb Exp $
 C
 #include <single.h>
 #ifdef REVLOG
 $Log: not supported by cvs2svn $
+Revision 1.2  2001/02/12 18:17:57  vebjornb
+First commit after CC merge
+
 Revision 1.1.1.1  2001/01/15 13:53:43  vebjornb
 Dalton 1.2
 
@@ -2120,7 +2123,12 @@ c
      *                                              WRK(KFREE),LFREE)
 
                                 TM1 = DDOT(KZYVAR,WRK(KFREE),1,VECC,1)
-                                BCONTR = SMOM*TM1*D05
+C
+C VB mar 2001:
+C     Assuming D05 should be DP5? (D05 is uninitialized)
+C
+C                                BCONTR = SMOM*TM1*D05
+                                BCONTR = SMOM*TM1*DP5
 c
                       WRITE(LUPRI,'(/A,(/A,5X,A,2I5),/A,5X,I8,2I5)')
      *   ' First order moment in a.u. for',

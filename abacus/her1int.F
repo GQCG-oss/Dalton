@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: her1int.F,v 1.3 2001-02-26 15:34:46 ruud Exp $
+C$Id: her1int.F,v 1.4 2001-03-18 21:53:33 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -1064,7 +1064,7 @@ C
      &    .OR. (INTTYP.EQ.74)
       ADDNAI = (INTTYP.EQ. 5) .OR. (INTTYP.EQ.19) .OR. (INTTYP.EQ.20)
      &    .OR. (INTTYP.EQ.24) .OR. (INTTYP.EQ.25) .OR. (INTTYP.EQ.51)
-     &    .OR. (INTTYP.EQ.57) .OR. (INTTYP.EQ.61) .OR. (INTYTP.EQ.62)
+     &    .OR. (INTTYP.EQ.57) .OR. (INTTYP.EQ.61) .OR. (INTTYP.EQ.62)
      &    .OR. (INTTYP.EQ.63) .OR. (INTTYP.EQ.64) .OR. (INTTYP.EQ.72)
      &    .OR. (INTTYP.EQ.73)
 C

@@ -32,6 +32,11 @@ C
 C
 #ifdef REV_LOG
 $Log: not supported by cvs2svn $
+Revision 1.2  2001/03/13 08:43:36  vebjornb
+- Reshuffled include statements and a couple of common blocks to
+  more in line with ANSI Fortran (only ABACUS files)
+- Updated one of the test jobs
+
 Revision 1.1.1.1  2001/02/08 13:33:19  hjj
 *** Dalton Master Version *** cvs started 8-Feb-2001.
 
@@ -1565,13 +1570,17 @@ C
      &           DSTEP(4) = (DINTSKP(2,4)/DINTSKP(1,4))*DA
 C
 #ifndef PRG_DIRAC
-      IF (IPRINT.GT.0) THEN
+C
+C VB mar 2001:
+C     SCRSTA is only entered if IPRINT > 0, so no need to check
+C
+C      IF (IPRINT.GT.0) THEN
          WRITE(LUPRI,'(A)') '* Screening statistics:'
          WRITE(LUPRI,'(6X,4(5X,A8))') 'Step1   ','Step2   ',
      &        'Coulomb ','Exchange'
          WRITE(LUPRI,'(A6,4(6X,F6.2,A1))') 
      &        TEXT,(DSTEP(I),'%',I=1,4)
-      END IF
+C      END IF
 #else /* PRG_DIRAC */
       INTTID = SECTID(CPUSEC)
       WRITE(LUPRI,'(A9,4(6X,F6.2,A1),3X,A12)') 

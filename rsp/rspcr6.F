@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rspcr6.F,v 1.2 2001-02-12 18:17:56 vebjornb Exp $
+C$Id: rspcr6.F,v 1.3 2001-03-18 21:53:36 vebjornb Exp $
 C
 #include <single.h>
       SUBROUTINE T4DRV(IBCDEQ,ISYMA,ISYMB,ISYMC,ISYMD,VECA,VECB,VECC,
@@ -174,6 +174,7 @@ C
 C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0 )
 C
+#include <priunit.h>
 #include <infdim.h>
 #include <maxorb.h>
 #include <maxash.h>
