@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abarint.F,v 1.2 2001-03-13 08:43:29 vebjornb Exp $
+C$Id: abarint.F,v 1.3 2001-05-29 16:13:30 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -3306,7 +3306,7 @@ C
      &        TMPMAT(16*MXCENT+1),TMPMT2(1),
      &        TMPMT2(MX2CRD+1),TMPMT2(2*MX2CRD+1),TMPMT2(3*MX2CRD+1),
      &        TMPMT2(4*MX2CRD+1),CSTEP,BMTRAN,BMTINV,TMPMT3(1),
-     &        TMPMT3(1+MXCOOR*MXCOOR),.FALSE.)
+     &        TMPMT3(1+MXCOOR*MXCOOR),.TRUE.)
          IF (IPRINT .GE. IPRMAX) THEN
             CALL HEADER('Internal values before step',-1)
             CALL OUTPUT(TMPMT2(1),1,1,1,IINTCR,1,MX2CRD,1,LUPRI)
