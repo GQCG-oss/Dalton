@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: eri2cft.F,v 1.5 2001-05-31 06:38:24 vebjornb Exp $
+C$Id: eri2cft.F,v 1.6 2002-02-14 17:35:32 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck expcft */
@@ -763,9 +763,9 @@ C
          WRITE (LUPRI,'(2X,A,3I5)') 'IDL, IABO, X', IDL,IAB0,X
          WRITE (LUPRI,'(2X,A,2I5)') 'MAXI,MAXJ   ', MAXI, MAXJ
          IF (IPRINT .GT. 20) THEN
-            IF (X .EQ. 1) WORD = 'EX00(I,J,T)'
-            IF (X .EQ. 2) WORD = 'EY00(I,J,T)'
-            IF (X .EQ. 3) WORD = 'EZ00(I,J,T)'
+            IF (X .EQ. 1) WORD = 'EX00'
+            IF (X .EQ. 2) WORD = 'EY00'
+            IF (X .EQ. 3) WORD = 'EZ00'
             DO I = 0, MAXI
             DO J = 0, MAXJ
             DO T = 0, I + J
@@ -817,9 +817,9 @@ C
          IF (IPRINT .GT. 20) THEN
             CALL HEADER('ETIJ in ERISCL',-1)
             DO X = 1, 3
-               IF (X .EQ. 1) WORD = 'EX00(I,J,T)'
-               IF (X .EQ. 2) WORD = 'EY00(I,J,T)'
-               IF (X .EQ. 3) WORD = 'EZ00(I,J,T)'
+               IF (X .EQ. 1) WORD = 'EX00'
+               IF (X .EQ. 2) WORD = 'EY00'
+               IF (X .EQ. 3) WORD = 'EZ00'
                DO I = 0, MAX1
                DO J = 0, MAX2
                DO T = 0, I + J
