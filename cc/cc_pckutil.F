@@ -53,17 +53,17 @@ C
       INTEGER IB1, IW1, IW2, IT1, L, I, OFF, MBYTE
       INTEGER*4 MASK1, MASK2, HBITS, ISIGN, ITMP
 C
-#if defined (SYS_LINUX)
+#if defined (SYS_LINUX) || (SYS_DEC)
       PARAMETER (IT1 = 1) 
       PARAMETER (IB1 = 8) 
       PARAMETER (IW1 = 2, IW2 = 1) 
-#elif defined (SYS_AIX) || (SYS_IRIX) 
+#elif defined (SYS_AIX) || (SYS_IRIX) || (SYS_HPUX)
       PARAMETER (IT1 = 4) 
       PARAMETER (IB1 = 1) 
       PARAMETER (IW1 = 1, IW2 = 2) 
 #endif
 C
-#if defined (SYS_LINUX) || defined (SYS_AIX) || (SYS_IRIX) 
+#if defined (SYS_LINUX) || defined (SYS_AIX) || (SYS_IRIX) || (SYS_HPUX) || (SYS_DEC)
       PARAMETER (MASK1 = z'C0000000')
       PARAMETER (MASK2 = z'3FFFFFFF')
 #else
@@ -97,7 +97,7 @@ C
 C
          R8WORD      = BUFFER(I)
 C
-#if defined (SYS_LINUX) || defined (SYS_AIX) || (SYS_IRIX) 
+#if defined (SYS_LINUX) || defined (SYS_AIX) || (SYS_IRIX) || (SYS_HPUX) || (SYS_DEC)
          ISIGN       = IAND(I4WORD(IW1),MASK1)
          I4WORD(IW1) = ISHFT(I4WORD(IW1),4)
          I4WORD(IW1) = IAND(I4WORD(IW1),MASK2)
@@ -115,12 +115,12 @@ C
 C
          MBYTE = IPCKTABLE(ITAB)
 C
-#if defined (SYS_LINUX)
+#if defined (SYS_LINUX) || (SYS_DEC)
          OFF = 8 - MBYTE
          DO L = 1, MBYTE
            BUFPCK(NBYTE+L) = L1BYTE(OFF+L)
          END DO
-#elif defined (SYS_AIX) || (SYS_IRIX) 
+#elif defined (SYS_AIX) || (SYS_IRIX) || (SYS_HPUX)
          OFF = MBYTE + 1
          DO L = 1, MBYTE
            BUFPCK(NBYTE+L) = L1BYTE(OFF-L)
@@ -199,17 +199,17 @@ C
       INTEGER IB1, IB4, IW1, IW2, IT1, L, OFF, KBYTE, MBYTE, MDATA
       INTEGER*4 MASK1, MASK3, MASK4, MASK5, HBITS, ISIGN, ITMP
 C
-#if defined (SYS_LINUX)
+#if defined (SYS_LINUX) || (SYS_DEC)
       PARAMETER (IT1 = 1) 
       PARAMETER (IB1 = 8) 
       PARAMETER (IW1 = 2, IW2 = 1) 
-#elif defined (SYS_AIX) || (SYS_IRIX) 
+#elif defined (SYS_AIX) || (SYS_IRIX) || (SYS_HPUX)
       PARAMETER (IT1 = 4) 
       PARAMETER (IB1 = 1) 
       PARAMETER (IW1 = 1, IW2 = 2) 
 #endif
 C
-#if defined (SYS_LINUX) || defined (SYS_AIX) || (SYS_IRIX) 
+#if defined (SYS_LINUX) || defined (SYS_AIX) || (SYS_IRIX) || (SYS_HPUX) || (SYS_DEC)
       PARAMETER (MASK1 = z'C0000000')
       PARAMETER (MASK3 = z'3C000000')
       PARAMETER (MASK4 = z'C3FFFFFF')
@@ -242,16 +242,16 @@ C
 C
          IF (LOCDBG) CALL I4BITREP(ITAB)
 C
-#if defined (SYS_LINUX) || defined (SYS_AIX) || (SYS_IRIX) 
+#if defined (SYS_LINUX) || defined (SYS_AIX) || (SYS_IRIX) || (SYS_HPUX) || (SYS_DEC)
          KBYTE = IPCKTABLE(ITAB)
 C
-#if defined (SYS_LINUX) 
+#if defined (SYS_LINUX) || (SYS_DEC)
          MBYTE = MBYTE - KBYTE
          OFF = 8 - KBYTE
          DO L = 1, KBYTE
            L1BYTE(OFF+L) = BUFPCK(MBYTE+L) 
          END DO
-#elif defined (SYS_AIX) || (SYS_IRIX) 
+#elif defined (SYS_AIX) || (SYS_IRIX) || (SYS_HPUX)
          DO L = 1, KBYTE
            L1BYTE(L) = BUFPCK(MBYTE+1-L)
          END DO
@@ -340,13 +340,13 @@ C
 C
       INTEGER IW1, IW2, L
 C
-#if defined (SYS_LINUX)
+#if defined (SYS_LINUX) || (SYS_DEC)
       PARAMETER (IW1 = 2, IW2 = 1) 
-#elif defined (SYS_AIX) || (SYS_IRIX) 
+#elif defined (SYS_AIX) || (SYS_IRIX) || (SYS_HPUX)
       PARAMETER (IW1 = 1, IW2 = 2) 
 #endif
 C
-#if defined (SYS_LINUX) || defined (SYS_AIX) || (SYS_IRIX) 
+#if defined (SYS_LINUX) || defined (SYS_AIX) || (SYS_IRIX) || (SYS_HPUX) || (SYS_DEC)
       PARAMETER (JMASK = z'3C000000')
 C
       DATA IMASK / z'00000000', z'000FF000',
