@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2car2.F,v 1.5 2001-04-09 07:11:59 helgaker Exp $
+C$Id: eri2car2.F,v 1.6 2001-04-29 12:54:10 ruud Exp $
 C
 #include <single.h>
 C  /* Deck cr2drv */
@@ -269,7 +269,7 @@ C
          DO 100 J4 = NHKT4 + J4U, MAX(NHKT4 - J4D,1), -J4I
 C
             IF (IPRINT.GT. 10) THEN
-               WRITE (LUPRI,'(//,2X,A,2I5/,)') ' Angular levels:',
+               WRITE (LUPRI,'(//,2X,A,2I5/)') ' Angular levels:',
      &               J3 - NHKT3, J4 - NHKT4
             END IF
             KCKT3 = J3*(J3 + 1)/2
