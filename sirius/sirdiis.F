@@ -1664,11 +1664,11 @@ C find homo energy. tuh 16.05.03
 C
       EHOMO  = -DBIG
       DO ISYM = 1,NSYM
-      IF (NORB(ISYM).GT.0) THEN
          II = NOCC(ISYM)
-         EHOMOI = FD(IIORB(ISYM) + IROW(II) + II)
-         EHOMO = MAX(EHOMO,EHOMOI)
-      END IF
+         IF (II.GT.0) THEN
+            EHOMOI = FD(IIORB(ISYM) + IROW(II) + II)
+            EHOMO = MAX(EHOMO,EHOMOI)
+         END IF
       END DO
       RETURN
       END
