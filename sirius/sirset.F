@@ -356,15 +356,8 @@ C
 C
 C     ***** Check LUSUPM
 C
-cch
-      write(luerr,*) 'LUSUPM = ',LUSUPM
-cch
       IF (LUSUPM .NE. -1) THEN
          CALL GPINQ(FNSUPM,'EXIST',FEXIST)
-cch
-      write(luerr,*) 'FNSUPM = ',FNSUPM
-      write(luerr,*) 'FEXIST = ',FEXIST
-cch
          IF (.NOT.FEXIST) THEN
             NINFO  = NINFO + 1
             WRITE (LUERR,'(/3A/A/)')
