@@ -96,8 +96,11 @@ CBS   write(LUPRI,*) 'Symmetry adapation of the SO-integrals'
       read(isymunit,'(A3)') END   
       enddo    
 CBS   write(LUPRI,*) 'there are totally ',numboffunct,' functions' 
-      if (numboffunct.gt.maxorbs) 
-     *CALL QUIT('increase maxorbs in symtrafo')
+      if (numboffunct.gt.maxorbs) THEN
+         write(LUPRI,*) 'there are totally ',numboffunct,' functions'
+         write(LUPRI,*) 'but maxorbs=',maxorbs
+         CALL QUIT('increase maxorbs in symtrafo')
+      endif
       rewind isymunit 
       read(isymunit,*)   
       read(isymunit,*)
