@@ -31,13 +31,14 @@ cat > rsp_ecp.info <<'%EOF%'
 #######################################################################
 cat > rsp_ecp.mol <<'%EOF%'
 ATOMBASIS
-ECP test
+ECP test on H2O
 
-    2    2  X  Y
+    2
         8.    1   ECP  
-O          0.0000000000          0.0000000000           -0.1492124362
-        1.    1   6-31G*
+O       0.000000000000           0.0000000000           -0.1492124362
+        1.    2   6-31G*
 H       0.000000000000           1.3457079896            0.8883234861       
+H       0.000000000000          -1.3457079896            0.8883234861       
 %EOF%
 
 #######################################################################
@@ -91,9 +92,9 @@ CTRL[1]=5
 ERROR[1]="ECP ON OXYGEN NOT SET UP CORRECTLY"
 
 # Basis set
-CRIT1=`$GREP "O * 1 * 6 * 16 * 8 * \[4s4p\|2s2p\]" $log | wc -l`
+CRIT1=`$GREP "O * 1 * 8 * 16 * 8 * \[4s4p\|2s2p\]" $log | wc -l`
 CRIT2=`$GREP "H * 2 * 1 * 4 * 2 * \[4s\|2s\]" $log | wc -l`
-CRIT3=`$GREP "total\: * 3 * 8 * 24 * 12" $log | wc -l`
+CRIT3=`$GREP "total\: * 3 * 10 * 24 * 12" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[2]=3
 ERROR[2]="BASIS SET NOT SET UP CORRECTLY"
@@ -101,13 +102,13 @@ ERROR[2]="BASIS SET NOT SET UP CORRECTLY"
 # Geometry
 CRIT1=`$GREP "1 * O * x * (0| )\.0000000000" $log | wc -l`
 CRIT2=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
-CRIT3=`$GREP "3 * z * (\-0| \-)\.1492124362" $log | wc -l`
+CRIT3=`$GREP "3 * z * (\-0| \-)\.1161156955" $log | wc -l`
 CRIT4=`$GREP "4 * H * 1 * x * (0| )\.0000000000" $log | wc -l`
 CRIT5=`$GREP "5 * y * 1\.3457079896" $log | wc -l`
-CRIT6=`$GREP "6 * z * (0| )\.8883234861" $log | wc -l`
+CRIT6=`$GREP "6 * z * (0| )\.9214202268" $log | wc -l`
 CRIT7=`$GREP "7 * H * 2 * x * (0| )\.0000000000" $log | wc -l`
 CRIT8=`$GREP "8 * y * \-1\.3457079896" $log | wc -l`
-CRIT9=`$GREP "9 * z * (0| )\.888323486" $log | wc -l`
+CRIT9=`$GREP "9 * z * (0| )\.9214202268" $log | wc -l`
 TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9`
 CTRL[3]=9
