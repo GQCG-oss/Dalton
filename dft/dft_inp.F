@@ -117,36 +117,21 @@ c     >.CARPAR< cartesian grid parameters.
 
       CALL HEADER('Settings for DFT calculation:',0)
 c     code goes here
-C#if 0
          IF (DFTHRS) THEN
-            WRITE (IWUNIT,'(4X,A,17X,3D12.2)')
+            WRITE (LUPRI,'(4X,A,17X,3D12.2)')
      &        ' Redefined thresholds:', DFTHR0, DFTHRL, DFTHRI 
          ELSE
-            WRITE (IWUNIT,'(4X,A,17X,3D12.2)')
+            WRITE (LUPRI,'(4X,A,17X,3D12.2)')
      &        ' Default thresholds:  ', DFTHR0, DFTHRL, DFTHRI 
          END IF
          IF (DFTHRS) THEN
-            WRITE (IWUNIT,'(4X,A,17X,3D12.2)')
+            WRITE (LUPRI,'(4X,A,17X,3D12.2)')
      &        ' Redefined threshold for number of electrons: ', DFTELS 
          ELSE
-            WRITE (IWUNIT,'(4X,A,17X,3D12.2)')
+            WRITE (LUPRI,'(4X,A,17X,3D12.2)')
      &        ' Default threshold for number of electrons:   ', DFTELS 
          END IF
-         WRITE (IWUNIT,'(4X,A,E10.2,I4)')
+         WRITE (LUPRI,'(4X,A,E10.2,I4)')
      $        ' DFT radial quadrature accuracy/ang. expansion order:',
      &        RADINT,ANGINT
-         IF (DFTPOT) WRITE (IWUNIT,'(/,A)')
-     &        ' Kohn-Sham matrix calculated from potential.'
-         IF (DFTASC) THEN
-            WRITE (IWUNIT,'(/,4X,A)') ' Asymptotic correction applied'
-            WRITE (IWUNIT,'(10X,A,F10.5)')
-     &        ' Ionization potential used: ', DFTIPT      
-            WRITE (IWUNIT,'(10X,A,2F10.5)')
-     &        ' Radius factors:            ', DFTBR1, DFTBR2      
-         END IF 
-         IF (DFTHES) THEN
-            WRITE (IWUNIT,'(/,4X,A)') 
-     &        ' DFT electronic Hessian constructed.'
-         END IF
-C#endif
       END

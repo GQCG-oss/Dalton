@@ -1,3 +1,9 @@
+2004-10-26  Pawel Salek 
+
+	* dft/dft_aux.F: 
+	* dft/dft_rho.F: improve orbital selection.
+	* dft/dft_inp.F: send config data to proper logical unit.
+
 2004-10-06  Pawel Salek 
 
 	* abacus/abamag.F: correct statement order.

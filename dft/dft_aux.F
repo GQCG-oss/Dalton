@@ -50,7 +50,7 @@ c /* deck dftini */
       WDFTB  = D0
       DFTHR0 = 1.0D-9
       DFTHRL = 1.0D-10
-      DFTHRI = 1.0D-13 
+      DFTHRI = 2.0D-12
       DFTELS = 1.0D-3
       RADINT = 1.0D-13
       ANGINT = 35

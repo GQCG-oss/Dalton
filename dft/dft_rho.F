@@ -149,12 +149,12 @@ c         print *,"block ", IBL,IBLOCKS(1,IBL,ISYM),IBLOCKS(2,IBL,ISYM)
             JTOP = MIN(IBLOCKS(2,JBL,ISYM),IDX-1)
             DO JDX=IBLOCKS(1,JBL,ISYM), JTOP
                DO K = 1, NVCLEN
-                  TMP(K,JDX) = TMP(K,JDX) + 2*GAO(K,IDX,1)*DMAT(IDX,JDX)
+                  TMP(K,JDX) = TMP(K,JDX) + GAO(K,IDX,1)*DMAT(IDX,JDX)
                END DO
             END DO
             END DO
             DO K = 1, NVCLEN
-               TMP(K,IDX) = TMP(K,IDX) + GAO(K,IDX,1)*DMAT(IDX,IDX)
+               TMP(K,IDX) = TMP(K,IDX) + GAO(K,IDX,1)*DMAT(IDX,IDX)*0.5
             END DO
          END DO
          END DO
@@ -164,7 +164,7 @@ c         print *,"block ", IBL,IBLOCKS(1,IBL,ISYM),IBLOCKS(2,IBL,ISYM)
          DO IBL=1, NBLOCKS(ISYM)
          DO IDX=IBLOCKS(1,IBL,ISYM), IBLOCKS(2,IBL,ISYM)
             DO K = 1, NVCLEN
-               RHO(K) = RHO(K) + GAO(K,IDX,1)*TMP(K,IDX)
+               RHO(K) = RHO(K) + GAO(K,IDX,1)*TMP(K,IDX)*2D0
             END DO
          END DO
          END DO
@@ -305,7 +305,7 @@ c      CALL DZERO(TMP,NVCLEN*NBAST)
       END DO
       END
 c
-      SUBROUTINE GETBLOCKS(X,Y,Z,CELLSZ,RSHEL2,NBLCNT,IBLCKS)
+      SUBROUTINE GETBLOCKS(X,Y,Z,CELLSZ,RSHEL,NBLCNT,IBLCKS)
 c     get blocks of active SHELLS in cube of CELLSZ size centered at
 C     (X,Y,Z).
 c
@@ -326,7 +326,7 @@ c
 #include <inforb.h>
 #include <maxaqn.h>
 #include <symmet.h>
-      DIMENSION RSHEL2(KMAX), IBLCKS(2,NBAST)
+      DIMENSION RSHEL(KMAX), IBLCKS(2,NBAST)
       DIMENSION  ISSS(KMAX)
 #include <ibtfun.h>
 #if 0
@@ -338,8 +338,7 @@ c
       ISHLEN = 0
       NBLCNT = 0
       IPREV = -1111
-c     rcell2 should have a prefactor of 0.25
-      RCELL2 = CELLSZ*CELLSZ
+      CELLDG = CELLSZ/SQRT(2D0)
       DO 10 ISHELA=1,KMAX
          ICENT = NCENT(ISHELA)
          MULCNT = ISTBNU(ICENT)
@@ -354,9 +353,9 @@ c
                PX = X-CENT(ISHELA,1,1)
                PY = Y-CENT(ISHELA,2,1)
                PZ = Z-CENT(ISHELA,3,1)
-               DST2 = PX*PX + PY*PY + PZ*PZ
+               DST = SQRT(PX*PX + PY*PY + PZ*PZ)
 c              RSHEL2(ISHELA)
-               IF(DST2.LE.RSHEL2(ISHELA)+RCELL2) THEN
+               IF(DST.LE.RSHEL(ISHELA)+CELLDG) THEN
 c                 accepted...
                   IF(ISHELA.NE.IPREV+1) THEN
                      NBLCNT = NBLCNT + 1
@@ -384,9 +383,8 @@ c      print "('cell at:',3F15.5,' blocks:',I3)", X,Y,Z,NBLCNT
 c      print "(8('[',2I3,']'))", ((IBLCKS(I,J),I=1,2),J=1,NBLCNT)
       END
 c
-      SUBROUTINE GTEXTS(RSHEL2)
-c     get squared extents of all shells as defined by specified
-c     threshold.
+      SUBROUTINE GTEXTS(RSHEL)
+c     get radii of all shells as defined by specified threshold DFTHRI.
 #include <implicit.h>
 #include <aovec.h>
 #include <maxorb.h>
@@ -397,21 +395,21 @@ c     threshold.
 cdebug below
 #include <mxcent.h>
 #include <nuclei.h>
-      DIMENSION RSHEL2(KMAX)
-      THLOG = 2*LOG(DFTHRI)
-c     factor 4 works for c20h22-2, factor 2 or 1.5 is sufficient.
-c     We should really remove it and change the default for DFTTHRI
-c     instead.
+      DIMENSION RSHEL(KMAX)
+      THLOG = LOG(DFTHRI)
       DO ISHELA=1,KMAX
          JSTA = JSTRT(ISHELA)
-         RSHEL2(ISHELA) =  0D0
+         RSHEL(ISHELA) =  0D0
          NUMCFA = NUMCF(ISHELA)
          DO IAOS = JSTA+1, JSTA + NUCO(ISHELA)
             IF(ABS(PRICCF(IAOS,NUMCFA)).GT.0D0) THEN
-               R = (LOG(ABS(PRICCF(IAOS,NUMCFA)))-THLOG)/PRIEXP(IAOS)
-               IF(RSHEL2(ISHELA).LT.R) RSHEL2(ISHELA) = R
+               R2 = (LOG(ABS(PRICCF(IAOS,NUMCFA)))-THLOG)/PRIEXP(IAOS)
+               IF(RSHEL(ISHELA).LT.R2) RSHEL(ISHELA) = R2
             END IF
          END DO
+      END DO
+      DO ISHELA=1,KMAX
+         RSHEL(ISHELA) = SQRT(RSHEL(ISHELA))
       END DO
       END
 c
