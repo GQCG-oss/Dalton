@@ -219,6 +219,7 @@ C
 C
 #include <ibtfun.h>
 C
+      CALL QENTER('PR1IN1')
       CALL MEMGET('REAL',KATOM,NUCDEP,WORK,KFREE,LFREE)
 C
 C     **************************
@@ -1898,6 +1899,7 @@ C
  1020       CONTINUE
          END IF
       END IF
+      CALL QEXIT('PR1IN1')
       RETURN
       END
 C  /* Deck ioden */
@@ -1921,6 +1923,7 @@ C
 #include <symmet.h>
 #include <cbiher.h>
 C
+      CALL QENTER('SETATM')
       SPIN = INTTYP .EQ.  9 .OR. INTTYP .EQ. 10 .OR.
      &       INTTYP .EQ. 11 .OR. INTTYP .EQ. 12 .OR. INTTYP .EQ. 13 .OR.
      &       INTTYP .EQ. 26 .OR. INTTYP .EQ. 27 .OR. INTTYP .EQ. 28 .OR.
@@ -1946,6 +1949,7 @@ C
             DOATOM(IATOM) = .TRUE.
   300    CONTINUE
       END IF
+      CALL QEXIT('SETATM')
       RETURN
       END
 C  /* Deck ntypts */
