@@ -32,28 +32,21 @@ usage (){
           echo  "[-m mem] [-N nodes] [-o file] [-t directory] [-v] [-w directory] dal{.$DALEXT} mol{.$MOLEXT}"
           echo
           echo 'Options:'
-          echo ' a        copy auxiliary files from WRKDIR to TMPDIR before calculation starts'
-          echo ' A        copy auxiliary files to WRKDIR after calculation stops'
 	  echo ' b dir    change directory where basis sets are searched for to dir'
           echo ' d        delete TMPDIR before calculation starts'
           echo ' D        do not delete TMPDIR after calculation stops'
           echo ' ext log  change default output extension to log'
-          echo ' f        copy SIRIUS.RST/RESULTS.RSP/RSPVEC from WRKDIR to TMPDIR before calculation starts'
-          echo ' F        copy SIRIUS.RST/RESULTS.RSP/RSPVEC from TMPDIR to WRKDIR after calculation stops'
-          echo ' i f1 f2  copy SIRIFCs from WRKDIR to TMPDIR before calculation starts'
-          echo ' I        copy SIRIFC from TMPDIR to WRKDIR after calculation stops'
-          echo ' m mem    set scratch memory to mem words'
+          echo ' f        copy dal_mol.tar.gz file from WRKDIR to TMPDIR before calculation starts'
+          echo ' m mem    set scratch memory to mem Mwords'
+          echo ' M mem    set scratch memory to mem Mb'
           echo ' N num    use MPI version with num nodes'
           echo ' o file   redirect output from program to this file in WRKDIR'
           echo ' t dir    change TMPDIR from default to dir'
-          echo ' v        copy Molden and any VRML files from TMPDIR to WRKDIR after the calculation'
           echo ' w dir    change WRKDIR from default to dir'
           echo
          }
 while [ -n "`echo $1 | grep '^-'`" ]; do
     case $1 in
-      -a ) opta=1;;
-      -A ) optA=1;;
       -b ) BASDIR=$2
            export BASDIR
 	   shift;;
@@ -62,28 +55,6 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -ext ) OUTEXT=$2
            shift;;
       -f ) optf=1;;
-      -F ) optF=1;;
-      -stex ) optstex=1
-           sirifc1=$2.ifc
-           sirifc2=$3.ifc
-           shift
-           shift;;
-      -fro ) frl=fro;;
-      -loc ) optloc=1
-           sirifc_gs=$2.ifc
-           sirifc_lo=$3.ifc
-           shift
-           shift;;
-      -vibro ) optvib=1
-           abavib=$2.nca
-           shift;;
-      -hes ) opthes=1
-           hesres=$2.HES
-           shift;;
-      -i ) opti=1
-           sirifc_i=$2.ifc
-           shift;;
-      -I ) optI=1;;
       -N ) optn=$2
            shift;;
       -m ) WRKMEM=$2
@@ -100,16 +71,26 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
 	   shift;;
       -w ) WRKDIR=`pwd`/$2
 	   shift;;
-      -v ) optv=1;;
       * ) usage; exit 1;;
    esac
    shift
 done
 # check for correct input
-if [ -z "$1" -o -z "$2" ]; then
+if [ -z "$1" ]; then
    echo 'Input file[s] not specified'
    usage
    exit 1
+fi
+if [ -z "$2" ]; then
+   molfil=$1
+   outnam=$1
+else
+   molfil=$2
+   if [ "$1" = "$2" ]; then
+      outnam=$1
+   else
+      outnam=$1_$2
+   fi
 fi
 #
 export TMPDIR
@@ -124,11 +105,11 @@ echo;
 echo "   Invocation: $0 $paramlist"
 echo; echo "   `date`"
 echo;
-echo "   Calculation: $1_$2  (input files: $1.dal and $2.mol)"
+echo "   Calculation: $1_$molfil  (input files: $1.dal and $molfil.mol)"
 echo "   PID        : $$"
 echo "   Input dir  : $WRKDIR"
-echo "   Scratch dir: $TMPDIR/$2"
-#echo "   Work memory: $WRKMEM"
+echo "   Scratch dir: $TMPDIR/$outnam"
+#echo "  Work memory: $WRKMEM"
 echo;
 #
 if [ ! -d "$TMPDIR" ]; then
@@ -139,93 +120,33 @@ fi
 
 if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
    if [ $optd -eq 1 ] ; then
-      rm -rf $TMPDIR/$2
+      rm -rf $TMPDIR/$outnam
    fi
-   if [ ! -d "$TMPDIR/$2" ]; then
-      mkdir -p $TMPDIR/$2
+   if [ ! -d "$TMPDIR/$outnam" ]; then
+      mkdir -p $TMPDIR/$outnam
    fi
-   cd $TMPDIR/$2
+   cd $TMPDIR/$outnam
    if [ -s $WRKDIR/$1.$DALEXT -a -r $WRKDIR/$1.$DALEXT ]; then
       cp $WRKDIR/$1.$DALEXT DALTON.INP
    else
       echo "$WRKDIR/$1.$DALEXT does not exist or is not readable"
       exit 1
    fi
-   if [ -s $WRKDIR/$2.$MOLEXT -a -r $WRKDIR/$2.$MOLEXT ]; then
-      cp $WRKDIR/$2.$MOLEXT MOLECULE.INP
+   if [ -s $WRKDIR/$molfil.$MOLEXT -a -r $WRKDIR/$molfil.$MOLEXT ]; then
+      cp $WRKDIR/$molfil.$MOLEXT MOLECULE.INP
    else
-      echo "$WRKDIR/$2.$MOLEXT does not exist or is not readable"
+      echo "$WRKDIR/$molfil.$MOLEXT does not exist or is not readable"
       exit 1
    fi
    if [ $optf -eq 1 ] ; then
-      if [ -s $WRKDIR/$1_$2.RST -a -r $WRKDIR/$1_$2.RST ]; then
-         cp $WRKDIR/$1_$2.RST SIRIUS.RST
+      if [ -s $WRKDIR/$outnam.tar.gz -a -r $WRKDIR/$outnam.tar.gz ] ; then
+         cp $WRKDIR/$outnam.RST $outnam.tar.gz
+	 gunzip $outnam.tar.gz
+	 tar xf $outnam.tar
       else
-         echo "$WRKDIR/$1_$2.RST does not exist or is not readable"
+         echo "$WRKDIR/$outnam.tar.gz does not exist or is not readable"
          exit 1
       fi
-      if [ -s $WRKDIR/RESULTS.RSP -a -r $WRKDIR/RESULTS.RSP ]; then
-         cp $WRKDIR/RESULTS.RSP RESULTS.RSP
-      else
-         echo "$WRKDIR/RESULTS.RSP does not exist or is not readable"
-      fi
-      if [ -s $WRKDIR/RSPVEC -a -r $WRKDIR/RSPVEC ]; then
-         cp $WRKDIR/RSPVEC RSPVEC
-      else
-         echo "$WRKDIR/RSPVEC does not exist or is not readable"
-      fi
-   fi
-   if [ $optstex -eq 1 ] ; then
-      if [ -s $WRKDIR/$sirifc1 -a -r $WRKDIR/$sirifc1 ]; then
-         cp $WRKDIR/$sirifc1 SIRIFC1
-      else
-         echo "$WRKDIR/$sirifc1 does not exist or is not readable"
-         exit 1
-      fi
-      if [ -s $WRKDIR/$sirifc2 -a -r $WRKDIR/$sirifc2 ]; then
-         cp $WRKDIR/$sirifc2 SIRIFC2
-      else
-         echo "$WRKDIR/$sirifc2 does not exist or is not readable"
-         exit 1
-      fi
-   fi
-   if [ $optloc -eq 1 ] ; then
-      if [ -s $WRKDIR/$sirifc_gs -a -r $WRKDIR/$sirifc_gs ]; then
-         cp $WRKDIR/$sirifc_gs SIRIFC
-      else
-         echo "$WRKDIR/$sirifc_gs does not exist or is not readable"
-         exit 1
-      fi
-   fi
-   if [ $opthes -eq 1 ] ; then
-      if [ -s $WRKDIR/$hesres -a -r $WRKDIR/$hesres ]; then
-         echo "cp $WRKDIR/$hesres $SCRATCHDIR/DALTON.HES"
-         cp $WRKDIR/$hesres $SCRATCHDIR/DALTON.HES
-      else
-         echo "$WRKDIR/$hesres does not exist or is not readable"
-         exit 1
-      fi
-   fi
-   if [ $opti -eq 1 ] ; then
-      if [ -s $WRKDIR/$sirifc_i -a -r $WRKDIR/$sirifc_i ]; then
-         cp $WRKDIR/$sirifc_i SIRIFC
-      else
-         echo "$WRKDIR/$sirifc_i does not exist or is not readable"
-         exit 1
-      fi
-   fi
-   if [ $optA -eq 1 ]; then
-      for ext in $AUXEXT ; do
-         if [ "$1" = "$2" ]; then
-            if [ -s $WRKDIR/$1.$ext ]; then
-               cp $WRKDIR/$1.$ext DALTON.$ext
-            fi
-	 else
-            if [ -s $WRKDIR/$1_$2.$ext ]; then
-               cp $WRKDIR/$1_$2.$ext DALTON.$ext
-	    fi
-         fi
-      done
    fi
 else
    echo "$TMPDIR does not exist or is not writeable"
@@ -253,117 +174,44 @@ else
    fi
 fi
 
-if [ $optF -eq 1 ] ; then
-   if [ -s SIRIUS.RST -a -r SIRIUS.RST ]; then
-      cp SIRIUS.RST $WRKDIR/$1_$2.RST
-   else
-      echo "SIRIUS.RST does not exist or is not readable"
-   fi
-   if [ -s RESULTS.RSP -a -r RESULTS.RSP ]; then
-      cp RESULTS.RSP $WRKDIR/RESULTS.RSP
-   else
-      echo "RESULTS.RSP does not exist or is not readable"
-   fi
-   if [ -s RSPVEC -a -r RSPVEC ]; then
-      cp RSPVEC $WRKDIR/RSPVEC
-   else
-      echo "RSPVEC does not exist or is not readable"
-   fi
-fi
-if [ $optI -eq 1 ] ; then
-   if [ -s SIRIFC -a -r SIRIFC ]; then
-      cp SIRIFC $WRKDIR/$1_$2.ifc
-   else
-      echo "SIRIFC does not exist or is not readable"
-      exit 1
-   fi
-fi
-if [ $optloc -eq 1 ] ; then
-   if [ -s SIRIFC -a -r SIRIFC ]; then
-      cp SIRIFC $WRKDIR/$sirifc_lo
-   else
-      echo "SIRIFC does not exist or is not readable"
-      exit 1
-   fi
-fi
-if [ $optvib -eq 1 ] ; then
-   if [ -s DALTON.NCA ]; then
-      cp DALTON.NCA $WRKDIR/$abavib
-      echo "Copying DALTON.NCA to $WRKDIR/$abavib"
-   else
-      echo "DALTON.NCA does not exist or is not readable"
-      exit 1
-   fi
-fi
-if [ $optstex -eq 1 ] ; then
-   if [ -s UNIT1 -a -r UNIT1 ]; then
-      cp UNIT1 $WRKDIR/$1.$2.$frl.stexint
-   else
-      echo "UNIT1 does not exist or is not readable"
-#     exit 1
-   fi
-   if [ -s UNIT2 -a -r UNIT2 ]; then
-      cp UNIT2 $WRKDIR/$1.$2.$frl.mo
-   else 
-      echo "UNIT2 does not exist or is not readable"
-#     exit 1
-   fi
-fi
-if [ $opta -eq 1 ] ; then
-   for ext in $AUXEXT ; do
-      if [ -s DALTON.$ext ]; then
-         if [ "$1" = "$2" ]; then
-            cp DALTON.$ext $WRKDIR/$1.$ext
-	 else
-            cp DALTON.$ext $WRKDIR/$1_$2.$ext
-	 fi
-      fi
-   done
-fi
-if [ "$1" = "$2" ]; then
-   if [ -s $WRKDIR/$1.$OUTEXT ];then
-      cp $WRKDIR/$1.$OUTEXT $WRKDIR/$1.$OUTEXT.bak
-      echo "Existing file $WRKDIR/$1.$OUTEXT renamed to  
-   $WRKDIR/$1.$OUTEXT.bak"
-   fi
-   if [ $opto -eq 1 ] ; then
-      if [ "$OUTFIL" != "$1.$OUTEXT" ] ; then
-         if [ -s $WRKDIR/$OUTFIL -a -r $WRKDIR/$OUTFIL ]; then
-            cp $WRKDIR/$OUTFIL $WRKDIR/$1.$OUTEXT
-            rm -rf $WRKDIR/$OUTFIL
-         else	
-            echo "$WRKDIR/$OUTFIL has not been created from the present run"
-         fi
-      fi
-   else
-      if [ -s DALTON.OUT -a -r DALTON.OUT ]; then
-         cp DALTON.OUT $WRKDIR/$1.$OUTEXT
-      else
-         echo "DALTON.OUT has not been created from the present run"
-      fi
-   fi
-   if [ -s DALTON.BAS -a -r DALTON.BAS ]; then
-      cp DALTON.BAS $WRKDIR/$1.BAS
-   else
-      echo "DALTON.BAS has not been created from the present run"
-   fi
-   if [ $optv -eq 1 ] ; then
-      if [ -s molden.inp -a -r molden.inp ]; then
-         cp molden.inp $WRKDIR/$1.molden
-      fi
-      if [ -s *.wrl -a -r *.wrl ]; then
-         cp -f *.wrl $WRKDIR/.
-      fi
-   fi
+filelist="SIRIUS.RST RESULTS.RSP RSPVEC SIRIFC DALTON.NCA UNIT1 UNIT2 DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp"
+
+for i in $filelist ; do
+	if [ -s $i -a -r $i ] ; then
+   	   tarfilelist=$tarfilelist" "$i
+	fi
+done
+
+if [ -s "first.wrl" -a -r "first.wrl" ] ; then
+	tar cf $outnam.tar $tarfilelist *wrl
 else
-   if [ -s $WRKDIR/$1_$2.$OUTEXT ];then
-      cp $WRKDIR/$1_$2.$OUTEXT $WRKDIR/$1_$2.$OUTEXT.bak
-      echo "Existing file $WRKDIR/$1_$2.$OUTEXT renamed to $WRKDIR/$1_$2.$OUTEXT.bak"
+	tar af $outnam.tar *wrl
+fi
+
+if [ -s $outnam.tar ] ; then
+   gzip $outnam.tar
+else
+    echo "$outnam.tar has not been created"
+fi
+
+if [ -s $outnam.tar.gz ] ; then
+	if [ -s $WRKDIR/$outnam.tar.gz ] ; then
+	   cp  $WRKDIR/$outnam.tar.gz $WRKDIR/$outnam.tar.gz.bak
+      echo "Existing file $WRKDIR/$outnam.tar.gz renamed to $WRKDIR/$outnam.tar.gz.bak"
+	fi
+   cp $outnam.tar.gz $WRKDIR
+else
+    echo "$outnam.tar.gz does not exist and has not been copied to working directory"
+fi
+
+   if [ -s $WRKDIR/$outnam.$OUTEXT ];then
+      cp $WRKDIR/$outnam.$OUTEXT $WRKDIR/$outnam.$OUTEXT.bak
+      echo "Existing file $WRKDIR/$outnam.$OUTEXT renamed to $WRKDIR/$outnam.$OUTEXT.bak"
    fi
    if [ $opto -eq 1 ] ; then
-      if [ "$OUTFIL" != "$1_$2.$OUTEXT" ]; then
+      if [ "$OUTFIL" != "$outnam.$OUTEXT" ]; then
          if [ -s $WRKDIR/$OUTFIL -a -r $WRKDIR/$OUTFIL ]; then
-            cp $WRKDIR/$OUTFIL $WRKDIR/$1_$2.$OUTEXT
+            cp $WRKDIR/$OUTFIL $WRKDIR/$outnam.$OUTEXT
             rm -rf $WRKDIR/$OUTFIL
          else	
             echo "$WRKDIR/$OUTFIL has not been created from the present run"
@@ -371,26 +219,12 @@ else
       fi
    else
       if [ -s DALTON.OUT -a -r DALTON.OUT ]; then
-         cp DALTON.OUT $WRKDIR/$1_$2.$OUTEXT
+         cp DALTON.OUT $WRKDIR/$outnam.$OUTEXT
       else
          echo "DALTON.OUT has not been created from the present run"
       fi
    fi
-   if [ -s DALTON.BAS -a -r DALTON.BAS ]; then
-      cp DALTON.BAS $WRKDIR/$1_$2.BAS
-   else
-      echo "DALTON.BAS has not been created from the present run"
-   fi
-   if [ $optv -eq 1 ] ; then
-      if [ -s molden.inp -a -r molden.inp ]; then
-         cp molden.inp $WRKDIR/$1_$2.molden
-      fi
-      if [ -s *.wrl -a -r *.wrl ]; then
-         cp -f *.wrl $WRKDIR/.
-      fi
-   fi
-fi
 cd $WRKDIR
 if [ $optD -eq 1 ] ; then
-   rm -rf $TMPDIR/$2
+   rm -rf $TMPDIR/$outnam
 fi

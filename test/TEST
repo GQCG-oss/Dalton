@@ -350,7 +350,7 @@ do
       passed=`echo $checkout | grep "TEST ENDED PROPERLY"`
       if [ -n "$passed" ]; then
         if [ "$keep" = "false" ]; then
-          rm -f $dalfile.dal $dalfile.BAS $checkfile $logfile $item.info
+          rm -f $dalfile.dal $dalfile.BAS $checkfile $logfile $item.info $dalfile.tar.gz
         fi
       else
         trouble=`expr $trouble \+ 1`
