@@ -275,6 +275,8 @@ C
       IF (MYNUM .EQ. 0) THEN
          CALL GPOPEN(LUPRI,'DALTON.OUT','NEW',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
+C        ... GPOPEN will change name from DALTON.OUT to $WRKDIR/$OUTFIL
+C            if OUTFIL is an environment variable
          CALL GPOPEN(LUCME,'DALTON.CM','NEW',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
       ELSE
@@ -294,7 +296,7 @@ C
 C        Changed format (WK/UniKA/04-11-2002).
          WRITE (LUPRI,'(T10,A,//,T26,A,/,6(/T10,A),//,T26,A,//,
      &        (T10,A))')
-     * ' This is output from DALTON (Release 2.0 rev. 0, ? 2004)',
+     * ' This is output from DALTON (Release 2.0 rev. 0, Feb. 2005)',
      *  ' Principal authors:',
      *  ' Trygve Helgaker,       University of Oslo,           Norway ',
      *  ' Hans Joergen Jensen,   SDU - Odense University,      Denmark',
