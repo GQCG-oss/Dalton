@@ -931,77 +931,112 @@ C
 C error branches
 C
  9001 CONTINUE
-      WRITE (6,'(//A/A/A//A)')
+      IF (LUPRI .GE. 0) THEN
+         LUGPPRI = LUPRI
+      ELSE
+         LUGPPRI = 6
+      END IF
+      WRITE (LUGPPRI,'(//A/A/A//A)')
      &   '--> ERROR (GPOPEN) NO MORE AVAILABLE FILENUMBERS!',
      &   '--> THIS CALCULATION EITHER NEEDS TOO MANY SIMULTANEOUS '//
      &   'FILES OR', 
      &   '--> SOMEBODY HAS FORGOTTEN TO CLOSE FILES IN THE SOURCE CODE',
      &   '### Please report the problem to dalton-admin@kjemi.uio.no'
-      CALL QTRACE(6)
+      CALL QTRACE(LUGPPRI)
       CALL QUIT('ERROR (GPOPEN) NO MORE FILE NUMBERS')
 C
  9002 CONTINUE
-      WRITE (6,'(//A/A,I3/A//2A//A)')
+      IF (LUPRI .GE. 0) THEN
+         LUGPPRI = LUPRI
+      ELSE
+         LUGPPRI = 6
+      END IF
+      WRITE (LUGPPRI,'(//A/A,I3/A//2A//A)')
      &   '--> ERROR (GPOPEN) TRYING TO OPEN AN ILLEGAL FILE NUMBER',
      &   '--> SOMEBODY HAS TRIED TO OPEN UNIT',LUNIT,
      &   '--> THE PROGRAM DOES NOT ALLOW THE USE OF THIS RESERVED'//
      &   'UNIT NUMBER',
      &   '--> Name of offending file (if any): ',FILENM(1:FILELN),
      &   '### Please report the problem to dalton-admin@kjemi.uio.no'
-      CALL QTRACE(6)
+      CALL QTRACE(LUGPPRI)
       CALL QUIT('ERROR (GPOPEN) ILLEGAL FILE NUMBER REQUESTED')
 C
  9003 CONTINUE
-      WRITE (6,'(//A/A//A,I5/2A//A)')
+      IF (LUPRI .GE. 0) THEN
+         LUGPPRI = LUPRI
+      ELSE
+         LUGPPRI = 6
+      END IF
+      WRITE (LUGPPRI,'(//A/A//A,I5/2A//A)')
      &   '--> ERROR (GPOPEN) TRYING TO OPEN A FILE ALREADY IN USE',
      &   '--> SOMEBODY IS TRYING TO USE A FILENUMBER THAT IS '//
      &   'ALREADY IN USE',
      &   '--> Offending UNIT number: ',LUNIT,
      &   '--> Name of offending file (if any): ', FILENM(1:FILELN),
      &   '### Please report the problem to dalton-admin@kjemi.uio.no'
-      CALL QTRACE(6)
+      CALL QTRACE(LUGPPRI)
       CALL QUIT('ERROR (GPOPEN) TRYING TO OPEN A FILE ALREADY IN USE')
 C
  9004 CONTINUE
-      WRITE (6,'(//A,I3/2A/A,I7)')
+      IF (LUPRI .GE. 0) THEN
+         LUGPPRI = LUPRI
+      ELSE
+         LUGPPRI = 6
+      END IF
+      WRITE (LUGPPRI,'(//A,I3/2A/A,I7)')
      &   '--> ERROR (GPOPEN) UPON TRYING TO OPEN FILE ON UNIT',LUNIT,
      &   '--> with filename ',FILENM(1:FILELN),
      &   '--> IOSTAT ERROR CODE RETURNED ',IOS
-      CALL QTRACE(6)
+      CALL QTRACE(LUGPPRI)
       CALL QUIT('ERROR (GPOPEN) UPON OPENING A FILE')
 C
  9005 CONTINUE
-      WRITE (6,'(//A/A/A//A)')
+      IF (LUPRI .GE. 0) THEN
+         LUGPPRI = LUPRI
+      ELSE
+         LUGPPRI = 6
+      END IF
+      WRITE (LUGPPRI,'(//A/A/A//A)')
      &   '--> ERROR (GPOPEN) TRYING TO OPEN A NON-EXISTING OLD FILE',
      &   '--> A FILE HAS BEEN SPECIFIED TO BE OLD, BUT THE TABLE',
      &   '--> ENTRY INDICATES THAT IT DOES NOT EXIST',
      &   '### Please report the problem to dalton-admin@kjemi.uio.no'
-      CALL QTRACE(6)
+      CALL QTRACE(LUGPPRI)
       CALL QUIT('ERROR (GPOPEN) TRYING TO OPEN A NON-EXISTING '//
      &          'FILE AS OLD')
 C
  9006 CONTINUE
-      WRITE (6,'(//A/A/A//A,I5/2A//A)')
+      IF (LUPRI .GE. 0) THEN
+         LUGPPRI = LUPRI
+      ELSE
+         LUGPPRI = 6
+      END IF
+      WRITE (LUGPPRI,'(//A/A/A//A,I5/2A//A)')
      &   '--> ERROR (GPOPEN) TRYING TO OPEN AN EXISTING NEW FILE',
      &   '--> A FILE HAS BEEN SPECIFIED TO BE NEW, BUT THE TABLE',
      &   '--> ENTRY INDICATES THAT IT ALREADY EXISTS',
      &   '--> Offending UNIT number: ',LUNIT,
      &   '--> Name of offending file (if any): ',FILENM(1:FILELN),
      &   '### Please report the problem to dalton-admin@kjemi.uio.no'
-      CALL QTRACE(6)
+      CALL QTRACE(LUGPPRI)
       CALL QUIT('ERROR (GPOPEN) TRYING TO OPEN AN EXISTING '//
      &          'FILE AS NEW')
 C
  9007 CONTINUE
-      WRITE (6,'(//A/A/A//A,I5/2A//A)')
+      IF (LUPRI .GE. 0) THEN
+         LUGPPRI = LUPRI
+      ELSE
+         LUGPPRI = 6
+      END IF
+      WRITE (LUGPPRI,'(//A/A/A//A,I5/2A//A)')
      &   '--> ERROR (GPOPEN) TRYING TO OPEN A NON-EXISTING OLD FILE',
      &   '--> A FILE HAS BEEN SPECIFIED TO BE OLD,',
      &   '--> BUT THE FILE DOES NOT EXIST',
      &   '--> Offending UNIT number: ',LUNIT,
      &   '--> Name of offending file (if any): ',FILENM(1:FILELN),
      &   '### Please report the problem to dalton-admin@kjemi.uio.no'
-      CALL QTRACE(6)
-      CALL QUIT('ERROR (GPOPEN) TRYING TO OPEN A NON_EXISTING '//
+      CALL QTRACE(LUGPPRI)
+      CALL QUIT('ERROR (GPOPEN) TRYING TO OPEN A NON-EXISTING '//
      &          'FILE AS OLD')
 C
 C end of GPOPEN
@@ -1130,30 +1165,45 @@ C
 C error branches
 C
  9001 CONTINUE
-      WRITE (6,'(//A/A,I15/A//A)')
+      IF (LUPRI .GE. 0) THEN
+         LUGPPRI = LUPRI
+      ELSE
+         LUGPPRI = 6
+      END IF
+      WRITE (LUGPPRI,'(//A/A,I15/A//A)')
      &   '--> ERROR (GPCLOSE) TRYING TO CLOSE AN ILLEGAL FILE NUMBER',
      &   '--> SOMEBODY HAS TRIED TO CLOSE UNIT',LUNIT,
      &   '--> THE PROGRAM DOES NOT ALLOW THE USE OF THIS UNIT NUMBER',
      &   '### Please report the problem to dalton-admin@kjemi.uio.no'
-      CALL QTRACE(6)
+      CALL QTRACE(LUGPPRI)
       CALL QUIT('ERROR (GPCLOSE) ILLEGAL FILE NUMBER REQUESTED')
 C
  9002 CONTINUE
-      WRITE (6,'(//A/A,I15//A)')
+      IF (LUPRI .GE. 0) THEN
+         LUGPPRI = LUPRI
+      ELSE
+         LUGPPRI = 6
+      END IF
+      WRITE (LUGPPRI,'(//A/A,I15//A)')
      &   '--> ERROR (GPCLOSE) TRYING TO CLOSE A FILE NOT IN USE',
      &   '--> SOMEBODY IS TRYING TO USE A FILENUMBER THAT HAS '//
      &   'NOT BEEN USED :',LUNIT,
      &   '### Please report the problem to dalton-admin@kjemi.uio.no'
-      CALL QTRACE(6)
+      CALL QTRACE(LUGPPRI)
       CALL QUIT('ERROR (GPCLOSE) TRYING TO CLOSE A FILE NOT IN USE')
 C
  9003 CONTINUE
-      WRITE (6,'(//A/A/A//A)')
+      IF (LUPRI .GE. 0) THEN
+         LUGPPRI = LUPRI
+      ELSE
+         LUGPPRI = 6
+      END IF
+      WRITE (LUGPPRI,'(//A/A/A//A)')
      &   '--> ERROR (GPCLOSE) TRYING TO KEEP A SCRATCH FILE',
      &   '--> A FILE HAS BEEN INDICATED TO BE CLOSED AND KEPT,',
      &   '--> BUT IT APPEARS THE FILE IS A SCRATCH FILE',
      &   '### Please report the problem to dalton-admin@kjemi.uio.no'
-      CALL QTRACE(6)
+      CALL QTRACE(LUGPPRI)
       CALL QUIT('ERROR (GPCLOSE) TRYING TO CLOSE A SCRATCH FILE ')
 C
 C end of GPCLOSE
