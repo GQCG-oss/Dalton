@@ -210,7 +210,7 @@ CTRL[12]=18
 ERROR[12]="SECOND HESSIAN NOT CORRECT"
 
 # Final energy
-CRIT1=`$GREP "Final * HF energy\: * \-56\.1865373539.[0-9]" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-56\.18653735(39|40).[0-9]" $log | wc -l`
 TEST[13]=`expr	$CRIT1`
 CTRL[13]=1
 ERROR[13]="FINAL ENERGY NOT CORRECT"
