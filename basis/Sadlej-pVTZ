@@ -6,8 +6,8 @@ $ --------                             ----------
 $     H, C-F : A. J. Sadlej, Collec. Czech. Chem. Commun. 53, 1995 (1988)
 $Li-Be,Na,Mg : A. J. Sadlej and M. Urban, J. Mol. Struct.
 $ K-Ca,Rb,Sr :             (THEOCHEM) 234, 147 (1991)
-$ Si-Cl,K-Ca : A. J. Sadlej, Theor. Chim. Acta 79, 123 (1992)
-$  Br, Rb-Sr : A. J. Sadlej, Theor. Chim. Acta 81,  45 (1992)
+$      Si-Cl : A. J. Sadlej, Theor. Chim. Acta 79, 123 (1991)
+$         Br : A. J. Sadlej, Theor. Chim. Acta 81,  45 (1992)
 $       Sn-I : A. J. Sadlej, Theor. Chim. Acta 81, 339 (1992)
 $
 *******************************************************************
@@ -351,7 +351,7 @@ a 12
 *********************************************************************
 /Si.Pol.Sadlej.13s10p4d.7s5p2d.
 #A. J. Sadlej,
-Theor. Chim. Acta xx, xxx 1992.
+Theor. Chim. Acta xx, xxx 1991.
 *********************************************************************
 * Silicon atom                                                      *
 * Dipole polarizability basis set                                   *
@@ -398,7 +398,7 @@ a 14
 *********************************************************************
 /P.Pol.Sadlej.13s10p4d.7s5p2d.
 #A. J. Sadlej,
-Theor. Chim. Acta xx, xxx 1992.
+Theor. Chim. Acta xx, xxx 1991.
 *********************************************************************
 * Phosphorous atom                                                  *
 * Dipole polarizability basis set                                   *
@@ -445,7 +445,7 @@ a 15
 *********************************************************************
 /S.Pol.Sadlej.13s10p4d.7s5p2d.
 #A. J. Sadlej,
-Theor. Chim. Acta xx, xxx 1992.
+Theor. Chim. Acta xx, xxx 1991.
 *********************************************************************
 * Sulphur atom                                                      *
 * Dipole polarizability basis set                                   *
@@ -492,7 +492,7 @@ a 16
 *********************************************************************
 /Cl.Pol.Sadlej.13s10p4d.7s5p2d.
 #A. J. Sadlej,
-Theor. Chim. Acta xx, xxx 1992.
+Theor. Chim. Acta xx, xxx 1991.
 *********************************************************************
 * Chlorine atom                                                     *
 * Dipole polarizability basis set                                   *
@@ -670,7 +670,7 @@ a 20
 *********************************************************************
 /Ge.Pol.Sadlej.15s12p9d.9s7p4d.
 #A. J. Sadlej,
-Theor. Chim. Acta, xx, xxx (1992).
+Theor. Chim. Acta, xx, xxx (1991).
 *********************************************************************
 * Germanium atom                                                    *
 * Basis set for electric properties                                 *
@@ -740,7 +740,7 @@ a 32
 *********************************************************************
 /As.Pol.Sadlej.15s12p9d.9s7p4d.
 #A. J. Sadlej,
-Theor. Chim. Acta, xx, xxx (1992).
+Theor. Chim. Acta, xx, xxx (1991).
 *********************************************************************
 * Arsenic atom                                                      *
 * Basis set for electric properties                                 *
@@ -810,7 +810,7 @@ a 33
 *********************************************************************
 /Se.Pol.Sadlej.15s12p9d.9s7p4d.
 #A. J. Sadlej,
-Theor. Chim. Acta, xx, xxx (1992).
+Theor. Chim. Acta, xx, xxx (1991).
 *********************************************************************
 * Selenium atom                                                     *
 * Basis set for electric properties                                 *

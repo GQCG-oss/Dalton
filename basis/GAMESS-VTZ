@@ -1,9 +1,11 @@
 $GAMESS VTZ
 
+$Elements supported
+$H Be B C N O F Ne 
 $
 $  REFERENCE
 $ T. H. DUNNING, JR., J. CHEM. PHYS. 55, 716 (1971)                            
-$ A.D. MCCLEAN AND G.S. CHANDLER, J. CHEM. PHYS. 72, 5639 (1980)               
+$ A.D. MCLEAN AND G.S. CHANDLER, J. CHEM. PHYS. 72, 5639 (1980)               
 $ A.J.H. WATCHERS, J. CHEM. PHYS. 52, 1033 (1970).                             
 a 1
 $ HYDROGEN     (5s) -> [3s]                                      
@@ -176,9 +178,6 @@ $ P-TYPE FUNCTIONS
       0.2566000  0.00000000  0.00000000  1.00000000
 
 
-$Elements supported
-
-$H Be B C N O F Ne 
 
 
 

@@ -1,5 +1,8 @@
 $sad-J
 $
+$Elements supported
+$H C N O S 
+$
 $  REFERENCE   P. F. Provasi, G. A. Aucar and S. P. A. Sauer, J. Chem. Phys. 115, 1324 (2001) 
 $              A. J. Sadlej, Coll. Czech. Chem. Commun. 53,1995 (1988).
 $              A. J. Sadlej, Theor. Chim. Acta 79, 123 (1991).
@@ -232,6 +235,3 @@ $ D-TYPE FUNCTIONS
       0.0363000  0.00000000  0.00000000  0.00000000  0.00000000  0.00000000  1.00000000
 
 
-$Elements supported
-
-$H C N O S 

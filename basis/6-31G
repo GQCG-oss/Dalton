@@ -1,5 +1,7 @@
 $6-31G
 
+$Elements supported
+$H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar Zn
 $
 $ REFERENCE
 $ Elements                             References                                
@@ -499,7 +501,4 @@ $ d functions
      2.73838300  0.68966080  0.    
      0.73029400  0.          1.000000000    
 
-$Elements supported
-
-$H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar Zn
 

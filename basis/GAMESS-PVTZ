@@ -1,5 +1,7 @@
 $GAMESS PVTZ
-
+$
+$Elements supported
+$H Be B C N O F Ne 
 $
 $  REFERENCE
 $ T. H. DUNNING, JR., J. CHEM. PHYS. 55, 716 (1971)                            
@@ -211,6 +213,3 @@ $ D-TYPE FUNCTIONS
       2.0000000  1.00000000
 
 
-$Elements supported
-
-$H Be B C N O F Ne 
