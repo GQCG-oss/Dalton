@@ -29,12 +29,16 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rspmai.F,v 1.5 2001-05-04 08:52:39 hjj Exp $
+C$Id: rspmai.F,v 1.6 2001-05-13 14:50:30 ruud Exp $
 C
 #include <single.h>
 #ifdef REVISIONLOG
 /* Comdeck revision_log */
 $Log: not supported by cvs2svn $
+Revision 1.5  2001/05/04 08:52:39  hjj
+Revised RSPMC such that RESPONS now also works for CSF in Sirius and triplet
+response with solvent. Changed LUERR to LUPRI. /HJAaJ
+
 Revision 1.4  2001/05/03 13:14:05  hjj
 - bugfix: define MZCONF(1) properly for cref vector in qr and cr calculations
   with no totally symmetric perturbations /hjaaj
@@ -3214,6 +3218,7 @@ C
 #include <implicit.h>
 #include <infdim.h>
 C
+      LOGICAL FOUND
       DIMENSION CMO(*),UDV(*),PV(*),XINDX(LCINDX),
      *          FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*),WRK(*)
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
@@ -3380,7 +3385,7 @@ C                      (this should also catch SUPSYM inconsistencies)
 C
 C READ IN MATRICES NEEDED IN RESPONSE CALCULATION
 C
-      CALL READT (LUSIFC,NCMOT,CMO)
+      CALL RDSIFC('CMO',FOUND,CMO,WRK,LWRK)
       IF (NASHT .GT. 0) THEN
 C        read and unpack DV
          CALL READT (LUSIFC,NNASHX,WRK)

@@ -29,12 +29,16 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: sirtra.F,v 1.2 2001-03-22 14:47:04 hjj Exp $
+C$Id: sirtra.F,v 1.3 2001-05-13 14:50:31 ruud Exp $
 C
 #include <single.h>
 #ifdef UNDEF
 /* Comdeck rev_log */
 $Log: not supported by cvs2svn $
+Revision 1.2  2001/03/22 14:47:04  hjj
+Safer code: made max no of chains a parameter.
+Corrected calculation of minimum memory for TRACD in sirtra.F
+
 Revision 1.1.1.1  2001/02/08 13:33:31  hjj
 *** Dalton Master Version *** cvs started 8-Feb-2001.
 
@@ -242,6 +246,7 @@ C
          IF (FEXIST) THEN
             IF (LUINTM .LE. 0) CALL GPOPEN(LUINTM,FNINTM,'OLD',' ',
      &                                     'UNFORMATTED',IDUMMY,.FALSE.)
+            REWIND (LUINTM)
             IF (.NOT.FNDLAB('MOLTWOEL',LUINTM)) THEN
                ICASE    = 2
                FLAG(14) = .FALSE.

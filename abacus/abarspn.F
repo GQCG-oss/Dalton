@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abarspn.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: abarspn.F,v 1.2 2001-05-13 14:50:30 ruud Exp $
 C
 #include <single.h>
 C  /* Deck abarsp */
@@ -297,8 +297,9 @@ C
 C     ... suppress printing of SCF/MCSCF energy for IPRRSP .gt. 0
 C         for normal print levels (.le. 5) /960905-hjaaj
       CALL RSPMC(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KFOCK),WRK(KFC),
-     *           WRK(KFV),WRK(KFCAC),WRK(KH2AC),WRK(KINDX),WRK(KWRK1))
-C     CALL RSPMC(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,IADR1,WRK)
+     *           WRK(KFV),WRK(KFCAC),WRK(KH2AC),WRK(KINDX),WRK(KWRK1),
+     *           LWRK1)
+C     CALL RSPMC(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,IADR1,WRK,LWRK)
       IPRRSP = IPRCLC - 2
 C
       IF (TDHF .NEQV. HFCLC) THEN
