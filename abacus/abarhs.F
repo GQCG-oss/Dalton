@@ -626,14 +626,13 @@ C           K.Ruud comment: FDC and FDV should be of dimension N2ORBX.
 C           However, in order to save memory, they are used as temporary
 C           arrays for AO-matrices in GETFD
 C
+            KDFTFD = KDV    + NNASHX
             IF (DFTADD) THEN
-               KDFTFD = KDV    + NNASHX
                KFDC   = KDFTFD + 3*N2BASX
-               KFDV   = KFDC   + 3*N2BASX
             ELSE
-               KFDC   = KDV    + NNASHX
-               KFDV   = KFDC   + 3*N2BASX
+               KFDC   = KDFTD
             END IF
+            KFDV   = KFDC   + 3*N2BASX
 C
 C           Calculated in GETSD:
 C
