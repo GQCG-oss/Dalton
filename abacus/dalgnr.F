@@ -458,7 +458,6 @@ C  /* Deck exesir */
 #include <inftra.h>
 #include <cbihr2.h>
 #include <inftap.h>
-#include <trunit.h>
 #include <huckel.h>
 #include <gnrinf.h>
 C
@@ -474,9 +473,6 @@ C
       CALL SIRINI
 C
       WRINDX = .TRUE.
-c     HJAAJ sep 2003: I think the next two lines are the wrong place ...
-      IF (LUORDA .GT. 0) CALL DARMOV(LUORDA)
-      IF (LUMINT .GT. 0) CALL DARMOV(LUMINT)
       CALL SIRCTL(ICONV,WORK(IWOFF+2),LMWORK)
       CALL BNDCHK(WORK, LMWORK, IWOFF, WRKDLM, 'SIRIUS')
 C
@@ -499,8 +495,6 @@ C
       CALL GPCLOSE(LUIT3,'DELETE')
       CALL GPCLOSE(LUIT5,'DELETE')
       IF (LUINTM .GT. 0) CALL GPCLOSE(LUINTM,'KEEP')
-      IF (LUMINT .GT. 0) CALL DACLOS(LUMINT)
-      IF (LUORDA .GT. 0) CALL DACLOS(LUORDA)
       WRITE(LUPRI, '(/A)') '- End of Wave Function Section'
       IF (.NOT. USRSCR) IFTHRS = 10
       IF (ICONV .LT. 1 .AND. .NOT.WLKREJ) THEN

@@ -1270,6 +1270,9 @@ C
       LUINF  = -9306
       LUH2AC = -9307
       LUSIFC = -9308
+C     next two for NEWTRA
+      LUORDA = -9309
+      LUMINT = -9310
 C
       FNSOL  = 'AOSOLINT'
       ABARDR = 'ABACUS.RD'

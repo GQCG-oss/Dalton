@@ -70,8 +70,6 @@ TRALVL: 'MOFCFV' is not defined any more.
 920529-hjaaj:
 TR2CTL: fixed error in LTUPQ calculation (s/NOCR/NOCQ/)
         use NOCOUL in LTUPQ calculation
--- version n03 --
-910724-hjaaj: modified TRAUTH
 -- version m02 --
 901024-hjaaj: renamed LUAINT to LUORDA
 901016-hjaaj: TRA2: a) return immediately if DOTUPQ,DORUPQ,DOUSPQ all
@@ -90,7 +88,7 @@ TR2CTL: fixed error in LTUPQ calculation (s/NOCR/NOCQ/)
 ===========================================================================
 #endif
 C /* Deck n_tractl */
-      SUBROUTINE N_TRACTL(ITRSIR,CMO,WORK,KWORK,MWORK)
+      SUBROUTINE N_TRACTL(ITRSIR,CMO,WORK,KWORK)
 C
 C Mar 1990 Hans Joergen Aa. Jensen
 C last revision 940727-hjaaj
@@ -103,14 +101,14 @@ C
 C Used from common blocks:
 C   INFORB : NCMOT
 C   INFTRA : IPRTRA,USEDRC
-C   TRUNIT : LUORDA
 C CBGETDIS : IAD*
+C   INFTAP : LUORDA
 C
 #include <priunit.h>
 #include <inforb.h>
 #include <inftra.h>
-#include <trunit.h>
 #include <cbgetdis.h>
+#include <inftap.h>
 C
       LOGICAL NOCOUL,NOEXCH,NOTUVX,MCOPT,DELORD
 C
@@ -130,6 +128,7 @@ C
       JTRSIR = ABS(ITRSIR)
       IF (JTRSIR .GE. 1 .AND. JTRSIR .LE. 4) USEDRC = .TRUE.
 C     ... USEDRC must be true for second order transformation
+C         can be true by input for higher order (e.g. for MP2 and RESPONS)
 C
 C     Translate from SIRIUS convention for transformation level
 C     to the convention used in this program.
@@ -161,7 +160,7 @@ C
 C
       CALL TRACT2(NTRLVL,NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,DUMMY,
      &            WORK,KWORK)
-C     CALL TRACT2(ITRLVL,NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,TUVX,
+C     CALL TRACT2(NTRLVL,NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,TUVX,
 C    &            WRK,MEMX)
 C
       IF (IPRTRA .GT. 0) THEN
@@ -189,7 +188,7 @@ C
       RETURN
       END
 C  /* Deck tract2 */
-      SUBROUTINE TRACT2(ITRLVL,NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,TUVX,
+      SUBROUTINE TRACT2(NTRLVL,NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,TUVX,
      &                  WRK,MEMX)
 C
 C     26-Aug-1989 Hans Joergen Aa. Jensen
@@ -226,12 +225,11 @@ C
 C
 C     Set MO loop limits for the four integral indices
 C
-cele      CALL TRALIM(ITRLVL,WRK(KCDTRA),WRK(KTRTYP))
-      CALL TRALIM(WRK(KCDTRA),WRK(KTRTYP))
+      CALL TRALIM(NTRLVL,WRK(KCDTRA),WRK(KTRTYP))
 C
 C     Initialize output integral file : LUMINT
 C
-      CALL TRAINI(ITRLVL,CMO,WRK(KCDTRA),WRK(KTRTYP))
+      CALL TRAINI(NTRLVL,CMO,WRK(KCDTRA),WRK(KTRTYP))
 C
 C     Now we are ready for the transformation
 C
@@ -267,14 +265,14 @@ C
 #include <implicit.h>
 C
 C Used from common blocks:
-C   INFTAP : LUMINT
+C   INFTAP : LUORDA,LUMINT
 C
-#include <trunit.h>
+#include <inftap.h>
 #if defined (VAR_DARECL)
       CALL DARECL(LUORDA,8*8*1024)
 #endif
       IF (LUORDA .LE. 0) CALL DAINTF(LUORDA,'AOORDINT')
-      IF (LUINTM .LE. 0) CALL DAINTF(LUMINT,'MOTWOINT')
+      IF (LUMINT .LE. 0) CALL DAINTF(LUMINT,'MOTWOINT')
       RETURN
       END
 C  /* Deck n_nxth2m */
@@ -292,7 +290,7 @@ C    where (cd) distribution is needed according to NEEDTP(ITYPCD)
 C
 C Usage:
 C    Set IDIST = 0 before first call of NXTH2M.
-C    DO NOT CHANGE IDIST or WRK(KFREE1:KFREE2-1) in calling routine
+C    Do NOT change IDIST or WRK(KFREE1:KFREE2-1) in calling routine
 C    until last distribution has been read (signalled by IDIST .eq. -1)
 C    Prototype code:
 C     IDIST = 0
@@ -420,7 +418,7 @@ C
 C Used from common blocks:
 C   INFORB : NORBX,NORBT,NSYM
 C   INFIND : IROW(*)
-C   TRUNIT : LUMINT
+C   INFTAP : LUMINT
 C   INFPRI : IPRSIR
 C
 #include <maxash.h>
@@ -428,7 +426,7 @@ C
 #include <priunit.h>
 #include <inforb.h>
 #include <infind.h>
-#include <trunit.h>
+#include <inftap.h>
 #include <infpri.h>
 C
 #include <orbtypdef.h>
@@ -457,9 +455,9 @@ C        MAERKE put this in a new NX0H2M ???
          LIADRM = 3*1297
          CALL DAFILE(LUMINT,DAREAD,IADRM,LIADRM,IAD13)
          NLIST  = 4
-         CALL GSLIST(LISTGS,NLIST,ITRLV1,1,INTSY1,1,MSYM,1,LCMO,1)
+         CALL GSLIST(LISTGS,NLIST,NTRLV1,1,INTSY1,1,MSYM,1,LCMO,1)
 C        NLIST = 10
-C        CALL GSLIST(LISTGS,NLIST,ITRLVL,1,INTSYM,1,MSYM,1,LCMO,1,
+C        CALL GSLIST(LISTGS,NLIST,NTRLVL,1,INTSYM,1,MSYM,1,LCMO,1,
 C    &               MFRO,8,MISH,8,MASH,8,MORB,8,MBAS,8,ITRTYP,MXCORB)
          CALL DAFILE(LUMINT,DASREA,LISTGS,NLIST,IAD13)
          CALL TRAADR(IADRM,IADFRE,IADCMO,IADCDT)
@@ -469,7 +467,7 @@ C            and ICDTRA address
          CALL DAFILE(LUMINT,DAREAD,ICDTRA,NNORBX,IAD13)
          IF (IPRSIR .GT. 50) THEN
             WRITE (LUPRI,*) 'Test output from NX2H2M for IDIST = 0'
-            WRITE (LUPRI,*) 'ITRLVL from LUMINT :',ITRLV1
+            WRITE (LUPRI,*) 'NTRLVL from LUMINT :',NTRLV1
             WRITE (LUPRI,*) 'NSYM   from LUMINT :',MSYM
             WRITE (LUPRI,*) 'INTSYM from LUMINT :',INTSY1
             WRITE (LUPRI,*) 'ICDTRA matrix:'
@@ -800,7 +798,7 @@ C
 #include <priunit.h>
 #include <inforb.h>
 #include <infind.h>
-#include <trunit.h>
+#include <inftap.h>
 #include <infpri.h>
 C
 #include <orbtypdef.h>
@@ -829,9 +827,9 @@ C        MAERKE put this in a new NX0H2D ???
          LIADRM = 3*1297
          CALL DAFILE(LUMINT,DAREAD,IADRM,LIADRM,IAD13)
          NLIST  = 4
-         CALL GSLIST(LISTGS,NLIST,ITRLV1,1,INTSY1,1,MSYM,1,LCMO,1)
+         CALL GSLIST(LISTGS,NLIST,NTRLV1,1,INTSY1,1,MSYM,1,LCMO,1)
 C        NLIST = 10
-C        CALL GSLIST(LISTGS,NLIST,ITRLVL,1,INTSYM,1,MSYM,1,LCMO,1,
+C        CALL GSLIST(LISTGS,NLIST,NTRLVL,1,INTSYM,1,MSYM,1,LCMO,1,
 C    &               MFRO,8,MISH,8,MASH,8,MORB,8,MBAS,8,ITRTYP,MXCORB)
          CALL DAFILE(LUMINT,DASREA,LISTGS,NLIST,IAD13)
          CALL TRAADR(IADRM,IADFRE,IADCMO,IADCDT)
@@ -840,7 +838,7 @@ C        ... retrieve ICDTRA address in IADCDT
          CALL DAFILE(LUMINT,DAREAD,ICDTRA,NNORBX,IAD13)
          IF (IPRSIR .GT. 50) THEN
             WRITE (LUPRI,*) 'Test output from NX2H2D for IDIST = 0'
-            WRITE (LUPRI,*) 'ITRLVL from LUMINT :',ITRLV1
+            WRITE (LUPRI,*) 'NTRLVL from LUMINT :',NTRLV1
             WRITE (LUPRI,*) 'NSYM   from LUMINT :',MSYM
             WRITE (LUPRI,*) 'INTSYM from LUMINT :',INTSY1
             WRITE (LUPRI,*) 'ICDTRA matrix:'
@@ -1086,7 +1084,7 @@ ABACUS new transf: soerg for alt i TRASET, TRALIM, TRAINI er i orden!
   - #include <dacodes.h> and use symbolic names for DAFILE operations.
   - #include <dalistgs.h> for gslist.
 890826-hjaaj
-   s/LUINTA/LUAINT/ and s/LUMINT/LUMINT/
+   s/LUINTA/LUAINT/ and s/LUINTM/LUMINT/
    moved IDATA(352),KEEP(18) to TRUNIT (was local to TR2CTL)
    changed IADOUT(3888) to IADOUT(3,LIADUT), LIADUT = 1296
    new IDATA(LIDATA), LIDATA = 1296=36*36 for absolute addressing
@@ -1110,11 +1108,7 @@ ABACUS new transf: soerg for alt i TRASET, TRALIM, TRAINI er i orden!
 890619-hjaaj-t11.2
    NOTUVX option
    Check that MEMX .gt. 0
-890612-hjaaj-t11.1
-   Corrected TR2CTL to handle MORB(i) .ne. MBAS(i)
 ================
-890611-hjaaj-t10.3
-   Print date and time, new print of IADOUT in CHECK2
 890610-hjaaj-t10.2
    Corrected error in CHECK2 (calculation of PQRS address)
    Count non-zero integrals in test in CHECK2
@@ -1124,10 +1118,6 @@ ABACUS new transf: soerg for alt i TRASET, TRALIM, TRAINI er i orden!
      used when VECTOR=UNIT
    INTSYM in common TRINP, use INTSYM in CHECK/CHECK2
 ================
-890607-hjaaj-t09.3
-   Print of CMO
-890606-hjaaj-t09.2
-   Introduced IPRFIO.   New vector option: UNIT
 890605-hjaaj-t09.1
    Introduced ITRLVL in parameter lists, value not used yet.
    Check for INTSYM from LUINTA in KEEP(2)
@@ -1173,12 +1163,14 @@ C  TRINP  : INTSYM
 C  TRUNIT : LIDATA,IDATA,KEEP, LIADUT,IADOUT, ?
 C  TRINFO : LX2X3, ?
 C  INFTRA : IPRTRA
+C  INFTAP : LUMINT
 C
 #include <priunit.h>
 #include <trinp.h>
 #include <trunit.h>
 #include <trinfo.h>
 #include <inftra.h>
+#include <inftap.h>
 C
 #include <ibtfun.h>
 C
@@ -1547,15 +1539,17 @@ C
 C
 C Used from common blocks:
 C   TRINP  : ?,ITUSYM,?
-C   TRUNIT : LUORDA,?
+C   TRUNIT : ?
 C   TRINFO : NSYMP, LX2X3, ?
 C   INFTRA : IPRTRA
+C   INFTAP : LUORDA,?
 C
 #include <priunit.h>
 #include <trinp.h>
 #include <trunit.h>
 #include <trinfo.h>
 #include <inftra.h>
+#include <inftap.h>
 C
       LOGICAL   DOTUPQ,DORUPQ,DOUSPQ
 C
@@ -2007,15 +2001,17 @@ C
 #include <dacodes.h>
 C
 C Used from common blocks:
-C   TRUNIT : LUPRI, ?
+C   TRUNIT : ?
 C   TRINFO : NSYMP, ?
 C   INFTRA : IPRTRA
+C   INFTAP : LUMINT
 C
 #include <priunit.h>
 #include <trinp.h>
 #include <trunit.h>
 #include <trinfo.h>
 #include <inftra.h>
+#include <inftap.h>
 C
 C
       CALL QENTER('TRA2E1')
@@ -2698,7 +2694,7 @@ C
       RETURN
       END
 C  /* Deck traini */
-      SUBROUTINE TRAINI(ITRLVL,CMO,ICDTRA,ITRTYP)
+      SUBROUTINE TRAINI(NTRLVL,CMO,ICDTRA,ITRTYP)
 C
 C Dec 1989 Hans Joergen Aa. Jensen
 C
@@ -2712,10 +2708,12 @@ C MAERKE ??      LOGICAL   NOTUVX, NOEXCH, MCOPT
 C
 C Used from common blocks:
 C  TRINP  : LCMO, MMORBX, MSYM, MBAS(), INTSYM, ...
-C  TRUNIT : LUMINT,LIADUT,IADOUT
+C  TRUNIT : LIADUT,IADOUT
+C  INFTAP : LUMINT
 C
 #include <trinp.h>
 #include <trunit.h>
+#include <inftap.h>
 C
       CALL QENTER('TRAINI')
 C
@@ -2732,7 +2730,7 @@ C
       CALL DAFILE(LUMINT,DASKIP,IADOUT,3*LIADUT,IDISKM)
       NLIST = 10
 C     MAERKE skal flere med i GSLIST?
-      CALL GSLIST(LISTGS,NLIST,ITRLVL,1,INTSYM,1,MSYM,1,LCMO,1,
+      CALL GSLIST(LISTGS,NLIST,NTRLVL,1,INTSYM,1,MSYM,1,LCMO,1,
      &            MFRO,8,MISH,8,MASH,8,MORB,8,MBAS,8,
      &            ITRTYP,MXCORB)
       CALL DAFILE(LUMINT,DAGWRI,LISTGS,NLIST,IDISKM)
@@ -2763,9 +2761,7 @@ C
 C
 C Used from common blocks:
 C   INFORB : NSYM, ..., NBAS(), NNORBX,NCMOT
-C   INFTAP : LUDA,?
 C   TRINP  : MSYM, ..., MBAS(), MMORBX,LCMO, ITUSYM
-C   TRUNIT :
 C   TRINFO : LX2X3
 C   TRBINS : LMSBIN
 C   INFTRA : IPRTRA
@@ -2773,12 +2769,9 @@ C
 #include <priunit.h>
 #include <inforb.h>
 #include <trinp.h>
-#include <trunit.h>
 #include <trinfo.h>
 #include <trbins.h>
-#include <trhso.h>
 #include <inftra.h>
-#include <inftap.h>
 C
 C     Local variables
 C
@@ -2827,8 +2820,6 @@ C
          ITUSYM = -1
          LX2X3  = 2*600
 C MAERKE: husk at rette her naar ny DSOUT2
-         LUORDA = LUAHSO
-         LUMINT = LUMHSO
          CALL TRASE2
       ELSE
          WRITE (LUPRI,*) 'ERROR TRASET: Illegal IRDAO =',IRDAO
@@ -2854,13 +2845,15 @@ C
 C
 C Used from common blocks:
 C  TRINP  : MSYM, MBAS(), INTSYM
-C  TRUNIT : LUORDA,LIDATA,IDATA,KEEP, ?
+C  TRUNIT : LIDATA,IDATA,KEEP, ?
 C  INFTRA : IPRTRA
+C  INFTAP : LUORDA
 C
 #include <priunit.h>
 #include <trinp.h>
 #include <trunit.h>
 #include <inftra.h>
+#include <inftap.h>
 C
       CALL QENTER('TRASE0')
 C
@@ -2922,8 +2915,7 @@ C
       RETURN
       END
 C  /* Deck tralim */
-cele      SUBROUTINE TRALIM(ITRLVL,ICDTRA,ITRTYP)
-      SUBROUTINE TRALIM(ICDTRA,ITRTYP)
+      SUBROUTINE TRALIM(NTRLVL,ICDTRA,ITRTYP)
 C
 C 24-Aug-1989 Hans Joergen Aa. Jensen
 C
@@ -2932,8 +2924,8 @@ C
 C     Used both for Coulomb (Mulliken) integrals : (1 2 | 3 4)
 C                 and exchange (Dirac) integrals : <1 2 | 3 4 >
 C
-C     JTRLVL = MOD(ITRLVL,100)
-C     KTRLVL = ITRLVL/100
+C     JTRLVL = MOD(NTRLVL,100)
+C     KTRLVL = NTRLVL/100
 C
 C     KTRLVL = 0 : a designates inactive+active orbitals
 C                  g designates general non-frozen orbitals
@@ -2948,8 +2940,9 @@ C
 C     JTRLVL  INDEX 1  INDEX 2  INDEX 3  INDEX 4   comment
 C        0       a        a        a        a      CI calc. (0. ord.)
 C        1       a        a        a        g      first-order
-C        2       a        a        g        g      Sirius (2. ord.)
-C       10       g        g        g        g      full transf.
+C        2       a        g        a        g      Sirius (2. ord.)
+C        3       a        g        g        g      third-order
+C       >3       g        g        g        g      full transf.
 C
 C     ITRTYP(1:NORBT) = number of integral indices in which this orbital
 C     enters (i.e. 0,1,2,3, or 4)
@@ -2965,7 +2958,6 @@ C
 #include <trinp.h>
 #include <inftra.h>
 #include <maxorb.h>
-#include <infinp.h>
 C
       CHARACTER*35 EXTPRM(3)
       DATA EXTPRM/'inactive + active orbitals         ',
@@ -2973,10 +2965,8 @@ C
      &            'frozen + inactive + active orbitals'/
 C
       CALL QENTER('TRALIM')
-      JTRLVL = MOD(ITRLVL,100)
-      KTRLVL = ITRLVL/100
-C Cele Deb
-      if (DONEVPT) jtrlvl=3
+      JTRLVL = MOD(NTRLVL,100)
+      KTRLVL = NTRLVL/100
 C
       IF (KTRLVL .LT. 0 .OR. KTRLVL .GT. 2) THEN
          WRITE (LUPRI,*) 'Illegal KTRLVL in TRALIM, KTRLVL =',KTRLVL
@@ -3080,7 +3070,7 @@ C
 C     JTRLVL  INDEX 1  INDEX 2  INDEX 3  INDEX 4   comment
 C        0       a        a        a        a      CI calc. (0. ord.)
 C        1       a        a        a        g      first-order
-C        2       a        a        g        g      Sirius (2. ord.)
+C        2       a        g        a        g      Sirius (2. ord.)
 C        3       a        g        g        g      third-order
 C        4       g        g        g        g      full transf.
 C
@@ -3090,7 +3080,7 @@ C
       CALL QENTER('TRALVL')
       JTRLVL = ABS(ITRSIR)
 #if defined (VAR_OLDCODE)
- --- 931201-hjaaj: MOFCFV does not exist any more
+c --- 931201-hjaaj: MOFCFV does not exist any more
       IF (MOFCFV) THEN
          KTRLVL = 0
       ELSE

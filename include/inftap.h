@@ -1,9 +1,11 @@
+C     Most file variables used in Dalton
+C     ("TAP" for tapes here for historical reasons)
       INTEGER         LUCME, LUMOL, LUPROP, LUSOL, LUINTA,
      &                LUONEL, LUSUPM, LUTLM, LUDA1, LUITMP,
      &                LU2DER, LUDASP, LURDR, LURDI, LUGDR, LUGDI,
      &                LUGDT, LURDT, LUDFCK, LUSFDA, LUFDC, LUWLK,
      &                LUPAO, LUPAS, LUNR1, LUNR3, LUNR5,
-     &                LUINTR, LUMOLDEN, LUR12
+     &                LUINTR, LUMOLDEN, LUR12, LUORDA, LUMINT
       INTEGER         LUAHSO, LUCRV1, LUCRV2, LUXYVE, LUCRVE,
      &                LURSP3, LURSP4, LURSP5, LUMHSO, LURSP
       INTEGER         LUINTM, LUIT1, LUIT2, LUIT3, LUIT5, LUINF,
@@ -18,7 +20,7 @@
      &                LU2DER, LUDASP, LURDR, LURDI, LUGDR, LUGDI,
      &                LUGDT, LURDT, LUDFCK, LUSFDA, LUFDC, LUWLK,
      &                LUPAO, LUPAS, LUNR1, LUNR3, LUNR5,
-     &                LUINTR, LUMOLDEN, LUR12(20)
+     &                LUINTR, LUMOLDEN, LUR12(20), LUORDA, LUMINT
       COMMON /RSPTAP/ LUAHSO, LUCRV1, LUCRV2, LUXYVE, LUCRVE,
      &                LURSP3, LURSP4, LURSP5, LUMHSO, LURSP
       COMMON /SIRTAP/ LUINTM, LUIT1, LUIT2, LUIT3, LUIT5, LUINF,

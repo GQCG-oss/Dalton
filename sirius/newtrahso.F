@@ -55,12 +55,14 @@ C
 C Used from common blocks:
 C   INFDIM : MWORK
 C   INFTRA : IPRTRA
+C   TRUNIT : LUORDA, LUMINT
 C
 #include <priunit.h>
 #include <inftap.h>
 #include <inftra.h>
 #include <infdim.h>
 #include <trhso.h>
+#include <trunit.h>
 C
 C
       LOGICAL NOCOUL,NOEXCH,NOTUVX,MCOPT, FOPEN
@@ -102,6 +104,13 @@ C        no, ERRFIX=FIRM changes unit number to error code, if error.
       END IF
 C
       IF (LUMHSO .LT. 0) CALL DAINTF(LUMHSO,'MOHSOINT')
+C
+C     save LUORDA, LUMINT (may point to normal integrals)
+      LUORDASV = LUORDA
+      LUORDA   = LUAHSO
+      LUMINTSV = LUMINT
+      LUMINT   = LUMHSO
+C
       CALL TRASET(JRDAO)
       IF (IPRFIO .GE. 3) CALL FASTIO('STATUS')
 C
@@ -128,6 +137,9 @@ C
          WRITE (LUPRI,'(/A,F10.2)')
      &      ' Total CPU time used in spin-orbit transformation:',TRATIM
       END IF
+C     restore LUORDA, LUMINT (may point to normal integrals)
+      LUORDA   = LUORDASV
+      LUMINT   = LUMINTSV
       CALL QEXIT('TRAHSO')
       RETURN
       END
@@ -179,7 +191,7 @@ C
          IDATA(I,2) = NPQ
   200 CONTINUE
       IF (IPRTRA .GT. 1) WRITE(LUPRI,'(/A,I8)')
-     *   ' Symmetry of spin-orbit integrals from LUAINT :',INTSYM
+     *   ' Symmetry of spin-orbit integrals from LUAHSO :',INTSYM
       CALL QEXIT('TRASE2')
       RETURN
       END

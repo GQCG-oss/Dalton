@@ -172,9 +172,14 @@ C     **********************************
 C     ***** Integral sorting       *****
 C     **********************************
 C
-C     Integrals on AOORDINT
+C     Integrals on AOORDINT,
+C     first remove any from previous geometry
 C
       IF (RNINTS) THEN
+         IF (LUORDA .LE. 0) CALL DAINTF(LUORDA,'AOORDINT')
+                            CALL DARMOV(LUORDA)
+         IF (LUMINT .LE. 0) CALL DAINTF(LUMINT,'MOTWOINT')
+                            CALL DARMOV(LUMINT)
          CALL TIMER('START ',TIMSTR,TIMEND)
          CALL SORTAO(WORK,LWORK)
          CALL TIMER('SORTAO',TIMSTR,TIMEND)
