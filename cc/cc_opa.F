@@ -208,7 +208,7 @@ c /* deck CC_OPA */
       CALL CC_XIETA( WORK(KXE1TRAN), NXE1TRAN, IOPT, IORDER, 'L0 ',
      &               'LE ',WORK(KX1DOTS),WORK(KX1CONS),
      &               'RE ',WORK(KE1DOTS),WORK(KE1CONS),
-     &               MXVEC, WORK(KEND0), LEND0 )
+     &               .FALSE.,MXVEC, WORK(KEND0), LEND0 )
 
       TIMXE1 = SECOND() - TIM1
       IF (NXE1TRAN.GT.0) WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') 
@@ -227,7 +227,7 @@ c /* deck CC_OPA */
       CALL CC_XIETA( WORK(KXE2TRAN), NXE2TRAN, IOPT, IORDER, 'L0 ',
      &               'M1 ',WORK(KX2DOTS),WORK(KX2CONS),
      &               '---',IDUMMY,DUMMY,
-     &               MXVEC, WORK(KEND0), LEND0 )
+     &               .FALSE.,MXVEC, WORK(KEND0), LEND0 )
 
       TIMXE2 = SECOND() - TIM1
       IF (NXE2TRAN.GT.0) WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') 

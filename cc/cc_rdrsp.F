@@ -387,7 +387,7 @@ C
         WRITE (LUPRI,'(A,I5)') 'ISYM   = ',ISYM
         WRITE (LUPRI,'(A,I5)') 'ILSTSYM returned :',
      &       ILSTSYM(LIST,IDXLST)
-        CALL QUIT('Symmetry mismatch in CC_RDRSP.')
+        CALL QUIT('Symmetry mismatch in CC_RWPRE.')
       END IF
 
 *---------------------------------------------------------------------*
@@ -1441,9 +1441,7 @@ C    &        (VEC2(NT2AM(ISYM)+I),I=1,NT2AMA(ISYM))
       END IF
 
       IF (IOPT.LT.1 .OR. IOPT .GT. 32) THEN
-         WRITE (LUPRI,*) 'IOPT = ',IOPT
-         KDUM = -9999999
-         WRITE (LUPRI,*) VEC(KDUM)
+         WRITE (LUPRI,*) 'Illegal option in CC_RVRSP: IOPT = ',IOPT
          CALL QUIT('Triples not implemented in CC_RVRSP.')
       END IF
 

@@ -505,7 +505,7 @@ C       ---------------------------------------
 
         CALL DZERO(WORK(KWYINT),NT1AMX*NT1AMX*NT1AMX)
 
-        IF (LISTR.EQ.'RE ') THEN
+        IF (LISTR.EQ.'RE '.OR.LISTR.EQ.'RC ') THEN
           CALL CCSDT_T31_NODDY(WORK(KWYINT),LISTR,IDLSTR,FREQR,.FALSE.,
      &                         .FALSE.,WORK(KINT1S0),WORK(KINT2S0),
      &                         .FALSE.,DUMMY,DUMMY,

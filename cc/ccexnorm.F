@@ -840,7 +840,8 @@ C           ----------------------------------
      &                          work(kwrk2),lwrk2)  
 
 
-        else if (listl.eq.'RE ' .or. listl.eq.'R1 ') then
+        else if (listl.eq.'RE ' .or. listl.eq.'R1 ' .or.
+     &           listl.eq.'RC '                         ) then
           kint1sc = kwrk1
           kint2sc = kint1sc + nt1amx*nvirt*nvirt
           klampc  = kint2sc + nt1amx*nrhft*nrhft
@@ -936,7 +937,8 @@ C           ----------------------------------
               do_intxy = .false.
               do_intt0 = .false.
             
-            else if (listr(1:2).eq.'RE ' .or. listr(1:3).eq.'R1 ') then
+            else if (listr(1:2).eq.'RE ' .or. listr(1:3).eq.'R1 ' .or.
+     &               listr(1:2).eq.'RC '                         ) then
               kint1sc = kwrk1
               kint2sc = kint1sc + nt1amx*nvirt*nvirt
               klampc  = kint2sc + nt1amx*nrhft*nrhft

@@ -324,7 +324,8 @@ C     ---------------------------------------------------
 *     compute triples response amplitudes and its contributions
 *     to the result vector
 *---------------------------------------------------------------------*
-      IF      (LISTC(1:3).EQ.'R1 ' .OR. LISTC(1:3).EQ.'RE ') THEN
+      IF      (LISTC(1:3).EQ.'R1 ' .OR. LISTC(1:3).EQ.'RE ' .OR.
+     &         LISTC(1:3).EQ.'RC '                              ) THEN
 
 C       -----------------------------------------
 C       calculate first-order triples amplitudes:
@@ -389,7 +390,6 @@ C     -------------------------------------------
         write(lupri,*)'CCSDT_AA_NODDY> vector type:',listc
         write(lupri,*)'CCSDT_AA_NODDY> idlst:',idlstc
         write(lupri,*)'CCSDT_AA_NODDY> freq:',freqres
-        write(lupri,*) 'KWMATXY in ccsdt_aa_noddy '
         call ccsdt_clean_t3(work(komega3),nt1amx,nvirt,nrhft)
         call print_pt3_noddy(work(komega3))
       end if

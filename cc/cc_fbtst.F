@@ -279,7 +279,7 @@ c
 c        CALL CC_XIETA(IXETRAN, NXETRAN, IOPTRES, IORDER, LISTL,
 c     &                FILXI,  IXDOTS, XCONS,
 c     &                FILETA, IEDOTS, ECONS,
-c     &                0,  WORK(KEND1), LWRK1 )
+c     &                .FALSE.,0,  WORK(KEND1), LWRK1 )
 c
 c        WRITE (LUPRI,*) 'returned from CC_XIETA... WORK(0) :',WORK(KEND1)
 c        CALL FLSHFO(LUPRI)

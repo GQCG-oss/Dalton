@@ -37,7 +37,7 @@ C
        SUBROUTINE CC_XIETA( IXETRAN, NXETRAN, IOPTRES, IORDER, LISTL, 
      &                      FILXI,   IXDOTS, XCONS, 
      &                      FILETA,  IEDOTS, ECONS, 
-     &                      MXVEC,   WORK,    LWORK           )
+     &                      LCAUCHY, MXVEC,   WORK,    LWORK         )
 *---------------------------------------------------------------------*
 *
 *    Purpose: batched loop over Xi and Eta vector calculations
@@ -78,6 +78,7 @@ C
 
 
       CHARACTER*(*) LISTL, FILXI, FILETA
+      LOGICAL LCAUCHY
       INTEGER IOPTRES, IORDER
       INTEGER NXETRAN, LWORK
       INTEGER IXETRAN(MXDIM_XEVEC,NXETRAN)
@@ -194,7 +195,7 @@ C
         END IF
 
         CALL CC_XIETA1( IXETRAN(1,IFIRST),NTRAN,IOPTRES,
-     &                  IORDER,LISTL,MXVEC,
+     &                  IORDER,LISTL,MXVEC,LCAUCHY,
      &                  FILXI, IXDOTS(1,IFIRST),XCONS(1,IFIRST), 
      &                  FILETA,IEDOTS(1,IFIRST),ECONS(1,IFIRST), 
      &                  WORK(ISTART),   WORK(IEND),    WORK(IADRX0),
@@ -309,7 +310,7 @@ C
 c /* deck cc_xieta1 */
 *=====================================================================*
        SUBROUTINE CC_XIETA1( IXETRAN, NXETRAN, IOPTRES, 
-     &                       IORDER,   LISTL,   MXVEC,
+     &                       IORDER,   LISTL,   MXVEC,  LCAUCHY,
      &                       FILXI,   IXDOTS,  XCONS,  
      &                       FILETA,  IEDOTS,  ECONS, 
      &                       ISTART,  IEND,    IADRX0,
@@ -340,6 +341,7 @@ c /* deck cc_xieta1 */
 *              -- general one-electron perturbations T-bar response "X1"
 *              -- geometrical first-derivatives T-bar response "X1"
 *              -- magnetic first-derivatives T-bar response "X1"
+*              -- Cauchy expansion of one-electron T response "CO1"
 *
 *  <mu|exp(-T^0) Hbar^(1) |CC> and/or <L|exp(-T^0)[Hbar^(1),mu]|CC>
 *
@@ -370,6 +372,9 @@ c /* deck cc_xieta1 */
 *    FILETA   -- list type of the Eta result vectors (IOPTRES=3,4) or
 *                of the vectors which are dotted on the Eta vectors
 *                (IOPTRES=5)
+*
+*    LCAUCHY  -- compute rhs vectors for the Cauchy expansion of T1
+*                (used for CC3 where "effective" rhs vectors needed)
 *
 *    IXCONS   -- indices of vectors to be dotted on the Xi vectors
 *    IECONS   -- indices of vectors to be dotted on the Eta vectors
@@ -448,6 +453,7 @@ c /* deck cc_xieta1 */
 #include <dummy.h>
 #include <ccnoddy.h>
 #include <cch2d.h>
+#include <ccrc1rsp.h>
 
 * local parameters:
       LOGICAL LOCDBG
@@ -499,6 +505,7 @@ c /* deck cc_xieta1 */
 
       CHARACTER*(*) LISTL, FILXI, FILETA
       CHARACTER*8 LABELH, LAB1, LABEL1, LABEL2
+      LOGICAL LCAUCHY
       INTEGER LWORK, NXETRAN, IOPTRES, MAXSIM, MXVEC, IORDER
       INTEGER IXETRAN(MXDIM_XEVEC,NXETRAN)
       INTEGER IXDOTS(MXVEC,NXETRAN), IEDOTS(MXVEC,NXETRAN)
@@ -557,7 +564,7 @@ c /* deck cc_xieta1 */
       INTEGER IRELAX, IRELAX1, IRELAX2, IRELAX2_OLD, LEN, IOPTWE
       INTEGER KGAMMA, KEMAT1, KEMAT2, ISY0IAJ, ISY1IAJ, KXIAJB, KDPK0
       INTEGER K1XINT, K0XINT, KEND3, LWRK3, IDLSTL, KXAIBJ
-      INTEGER KD1PRHF, KD0PRHF, KD1HRHF, KD0HRHF
+      INTEGER KD1PRHF, KD0PRHF, KD1HRHF, KD0HRHF, ICAU
       INTEGER KZETA1, KZETA2, KEND2, LWRK2, ISYCTR, ISYETA
       INTEGER KEND0, LWRK0, KEND1, LWRK1, KG0IM, KR0IM, KFOCKBAO
       INTEGER KMINT, KEND4, LWRK4, NGIM, IDLSTL_OLD, MAXDIF, IVEC
@@ -572,6 +579,7 @@ c /* deck cc_xieta1 */
       INTEGER ILSTSYM
       INTEGER IROPER
       INTEGER IROPER2
+      INTEGER ILRCAMP
 
       CALL QENTER('CC_XIETA1')
 
@@ -2393,7 +2401,12 @@ C                ----------------------------------------------------
 
 
 C       SKIPXI = ( IXETRAN(3,ITRAN) .EQ. -1 )
-        SKIPXI = .FALSE.
+C       SKIPXI = .FALSE.
+
+        ! for the Cauchy vectors we need not to compute the usual
+        ! CCSD part of the Xi vectors but just some intermediates
+        ! as e.g. F^B Fock matrix
+        SKIPXI = LCAUCHY  
 C
 
         IF (.NOT. SKIPETA) THEN
@@ -2478,6 +2491,10 @@ C
      &             IT2DEL0, IT2DELB(1,ITRAN), IADRI0,
      &             LRELAX,  LTWOEL,  WORK(KEND2), LWRK2)
 
+        ! redefine SKIPXI: things are only skip if the result vectors
+        ! for this section are not needed/wanted.
+        SKIPXI = ( IXETRAN(3,ITRAN) .EQ. -1 )
+
         IF (CCR12 .AND. CCS) THEN
           CONTINUE
         ELSE IF (CCR12) THEN
@@ -2495,7 +2512,26 @@ C
         END IF
         
 
-        SKIPXI = ( IXETRAN(3,ITRAN) .EQ. -1 )
+
+        IF (LCAUCHY) THEN
+          ! for the right Cauchy vectors "CO1" the situation is 
+          ! slightly different: the right hand side vectors are then
+          ! identical with the solution vectors with the Cauchy order
+          ! decreased by 1 --> we don't need extra files for the right
+          ! hand side vectors but use those for the solution vectors
+
+          ! decremented Cauchy order
+          ICAU = ILRCAU(IXETRAN(3,ITRAN))-1 
+
+          ! list number for the vector with Cauchy order decreased by 1
+          IFILE = ILRCAMP(LABELH,ICAU,ISYRES)
+
+          ! initialize the SD part of the vector with C(n-1)
+          IOPT = 3
+          CALL CC_RDRSP(FILXI,IFILE,ISYRES,IOPT,MODEL,
+     &                  WORK(KXI1),WORK(KXI2))
+          CALL CCLR_DIASCL(WORK(KXI2),TWO,ISYRES)
+        END IF
 
         IF (CCSDT .AND. (.NOT.SKIPXI)) THEN
 #if !defined CC_AARHUS
@@ -2514,7 +2550,7 @@ C
           ! find the associated frequency
           IF (IOPTRES.EQ.5) THEN
             FREQ  = 0.0D0
-          ELSE
+          ELSE IF (.NOT.LCAUCHY) THEN
             IFILE = IXETRAN(3,ITRAN)
             FREQ  = FREQLST(FILXI,IFILE)
           END IF
@@ -2540,9 +2576,6 @@ C
 C
             CALL DZERO(WORK(KXI2EFF),NT2AM(ISYRES))
 
-C           ECURRSAV = ECURR
-C           ECURR    = 0.0d0
-
             CALL CC3_XISD(WORK(KXI1),WORK(KXI2),
      *                  WORK(KXI1EFF),WORK(KXI2EFF),
      *                  ISYRES,
@@ -2553,9 +2586,6 @@ C           ECURR    = 0.0d0
      *                  LUTOC,FNTOC,LU3VI,FN3VI,LU3VI2,FN3VI2,
      *                  WORK(KEND2),LWRK2)
  
-C           ECURR    = ECURRSAV
-C
-
             CALL WCLOSE2(LUDELD,FNDELD,'KEEP')
             CALL WCLOSE2(LUCKJD,FNCKJD,'KEEP')
             CALL WCLOSE2(LUTOC,FNTOC,'KEEP')
@@ -2567,7 +2597,8 @@ C
      &               (.NOT.(IOPTRES.EQ.5 .AND. NODDY_XI_ALTER))) THEN
             CALL CCSDT_XI_NODDY(IOPTRES,WORK(KXI1),WORK(KXI2),
      &                          WORK(KXI1EFF),WORK(KXI2EFF),
-     &                          WORK(KFOCKB(ITRAN)),FREQ,
+     &                          LABELH,WORK(KFOCKB(ITRAN)),
+     &                          FREQ,ICAU,LCAUCHY,
      &                          WORK(KLAMP0),WORK(KLAMH0),
      &                          IXDOTS,XCONS,FILXI,ITRAN,
      &                          NXETRAN,MXVEC,WORK(KEND2),LWRK2)
@@ -2602,11 +2633,14 @@ C
             IF (CCSDT.OR.CCR12) CALL QUIT('Problem in CC_XIETA')
           ELSE IF (IOPTRES.EQ.3) THEN
             IFILE  = IXETRAN(3,ITRAN)
+            IF (LCAUCHY) IFILE = ILRCAMP(LABELH,ICAU,ISYRES)
             IF (ILSTSYM(FILXI,IFILE).NE.ISYRES) THEN
               CALL QUIT('Symmetry mismatch for Xi vector in CC_XIETA.')
             END IF
-            CALL CC_WRRSP(FILXI,IFILE,ISYRES,IOPTW,MODELW,DUMMY,
-     &                    WORK(KXI1),WORK(KXI2),WORK(KEND2),LWRK2)
+            IF (.NOT.LCAUCHY) THEN
+              CALL CC_WRRSP(FILXI,IFILE,ISYRES,IOPTW,MODELW,DUMMY,
+     &                      WORK(KXI1),WORK(KXI2),WORK(KEND2),LWRK2)
+            END IF
             IF (CCR12 .AND. IOPTWR12.EQ.32) THEN
               CALL CC_WRRSP(FILXI,IFILE,ISYRES,IOPTWR12,MODELW,DUMMY,
      &                   DUMMY,WORK(KXIR12),WORK(KEND2),LWRK2)
@@ -2617,11 +2651,14 @@ C
             END IF
           ELSE IF (IOPTRES.EQ.4) THEN
             IFILE  = IXETRAN(3,ITRAN)
+            IF (LCAUCHY) IFILE = ILRCAMP(LABELH,ICAU,ISYRES)
             IF (ILSTSYM(FILXI,IFILE).NE.ISYRES) THEN
               CALL QUIT('Symmetry mismatch for Xi vector in CC_XIETA.')
             END IF
-            CALL CC_WARSP(FILXI,IFILE,ISYRES,IOPTW,MODELW,DUMMY,
-     &                    WORK(KXI1),WORK(KXI2),WORK(KEND2),LWRK2)
+            IF (.NOT.LCAUCHY) THEN
+              CALL CC_WARSP(FILXI,IFILE,ISYRES,IOPTW,MODELW,DUMMY,
+     &                      WORK(KXI1),WORK(KXI2),WORK(KEND2),LWRK2)
+            END IF
             IF (CCR12 .AND. IOPTWR12.EQ.32) THEN
               CALL CC_WARSP(FILXI,IFILE,ISYRES,IOPTWR12,MODELW,DUMMY,
      &                   DUMMY,WORK(KXIR12),WORK(KEND2),LWRK2)

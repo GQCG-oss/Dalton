@@ -456,7 +456,7 @@ C     ---------------------------------
       CALL CC_XIETA(IXETRAN, NXETRAN, IOPTRES, IORDER, LISTL,
      &              FILXI,  IDUM, RDUM,
      &              FILETA, IDUM, RDUM,
-     &              0, WORK(KEND0), LWRK0 )
+     &              .FALSE.,0, WORK(KEND0), LWRK0 )
 
 C     IOPT   = 3
 C     IVEC   = IXETRAN(4,1)
@@ -517,7 +517,7 @@ C     ---------------------------------
       CALL CC_XIETA(IXETRAN, NXETRAN, IOPTRES, IORDER, LISTL,
      &              FILXI,  IDUM, RDUM,
      &              FILETA, IDUM, RDUM,
-     &              0, WORK(KEND0), LWRK0 )
+     &              .FALSE.,0, WORK(KEND0), LWRK0 )
 
 C     IOPT   = 3
 C     IVEC   = IXETRAN(4,1)
@@ -721,7 +721,7 @@ C     ---------------------------------
       CALL CC_XIETA(IXETRAN, NXETRAN, IOPTRES, IORDER, LISTL,
      &              FILXI,  IDUM, RDUM,
      &              FILETA, IDUM, RDUM,
-     &              0, WORK(KEND0), LWRK0 )
+     &              .FALSE.,0, WORK(KEND0), LWRK0 )
 
 C     IOPT   = 3
 C     IVEC   = IXETRAN(4,1)
@@ -782,7 +782,7 @@ C     ---------------------------------
       CALL CC_XIETA(IXETRAN, NXETRAN, IOPTRES, IORDER, LISTL,
      &              FILXI,  IDUM, RDUM,
      &              FILETA, IDUM, RDUM,
-     &              0, WORK(KEND0), LWRK0 )
+     &              .FALSE.,0, WORK(KEND0), LWRK0 )
 
 C     IOPT   = 3
 C     IVEC   = IXETRAN(4,1)

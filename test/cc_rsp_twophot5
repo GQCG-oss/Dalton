@@ -69,7 +69,7 @@ cat > cc_rsp_twophot5.dal <<'%EOF%'
 .NCCEXCI
  0 5 
 .THREXC
- 1.0d-9
+ 1.0d-8
 *CCOPA
 .DIPLEN
 *CCTPA

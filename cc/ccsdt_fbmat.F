@@ -120,65 +120,6 @@ C
      *          FNDKBCR4 = 'CCSDT_FBMAT5')
 C
       CALL QENTER('CCSDT_FBMAT')
-cfp
-c     write(lupri,*)'entered CCSDT_FBMAT with: '
-c     WRITE(LUPRI,*)'LISTL = ', LISTL
-c     WRITE(LUPRI,*)'LISTB = ', LISTB
-c     WRITE(LUPRI,*)'LISTC = ', LISTC
-
-cfp
-C
-C     Lists check
-C
-*     IF (LISTL(1:3).EQ.'L1 ')  THEN
-*        IF ( (LISTB(1:3).EQ.'R1 ') .AND. 
-*    *        ( (LISTC(1:3).EQ.'R1 ') .OR. (LISTC(1:3).EQ.'R2 ') )) THEN
-*           CONTINUE
-*        ELSE IF ( (LISTB(1:3).EQ.'RE ') .AND.
-*    *        (LISTC(1:3).EQ.'R1 ') ) THEN
-*        ELSE IF ( (LISTB(1:3).EQ.'R1 ') .AND.
-*    *        (LISTC(1:3).EQ.'RE ') ) THEN
-*           CONTINUE
-*        ELSE
-*           WRITE(LUPRI,*)'LISTL = ', LISTL
-*           WRITE(LUPRI,*)'LISTB = ', LISTB
-*           WRITE(LUPRI,*)'LISTC = ', LISTC
-*           WRITE(LUPRI,*)'CCSDT_FBMAT: not implemented for this set'
-*    *                     //' of lists(1) '
-*           CALL QUIT('Case not implemented in CCSDT_FBMAT(1)')
-*        END IF
-*     ELSE IF  (LISTL(1:3).EQ.'LE ')  THEN
-*        IF ( ( (LISTB(1:3).EQ.'R1 ') .AND. (LISTC(1:3).EQ.'R1 ') )
-*    *     .OR. ( (LISTB(1:3).EQ.'RE ') .AND. (LISTC(1:3).EQ.'R1 ') )
-*    *     .OR. ( (LISTB(1:3).EQ.'R1 ') .AND. (LISTC(1:3).EQ.'RE ') ) ) 
-*    *   THEN
-*            CONTINUE
-*        ELSE
-*           WRITE(LUPRI,*)'LISTL = ', LISTL
-*           WRITE(LUPRI,*)'LISTB = ', LISTB
-*           WRITE(LUPRI,*)'LISTC = ', LISTC
-*           WRITE(LUPRI,*)'CCSDT_FBMAT: not implemented for this set'
-*    *                     //' of lists(2) '
-*           CALL QUIT('Case not implemented in CCSDT_FBMAT(2)')
-*        END IF
-*     ELSE IF (LISTL(1:3).EQ.'M1 ') THEN
-*        IF ( (LISTB(1:3).EQ.'R1 ') .AND. (LISTC(1:3).EQ.'R1 ') ) THEN
-*           CONTINUE
-*        ELSE
-*           WRITE(LUPRI,*)'LISTL = ', LISTL
-*           WRITE(LUPRI,*)'LISTB = ', LISTB
-*           WRITE(LUPRI,*)'LISTC = ', LISTC
-*           WRITE(LUPRI,*)'CCSDT_FBMAT: not implemented for this set'
-*    *                     //' of lists(2) '
-*           CALL QUIT('Case not implemented in CCSDT_FBMAT(3)')
-*        END IF
-*     ELSE
-*        WRITE(LUPRI,*)'LISTL = ', LISTL
-*        WRITE(LUPRI,*)'LISTB = ', LISTB
-*        WRITE(LUPRI,*)'LISTC = ', LISTC
-*        WRITE(LUPRI,*)'CCSDT_FBMAT: not implemented for this LISTL '
-*        CALL QUIT('Unknown LISTL in CCSDT_FBMAT')
-*     END IF
 C
 C--------------------------
 C     Save and set flags.
@@ -1270,12 +1211,7 @@ C--------------------------------------------
 C
          IOPT = 2
          CALL CC_RDRSP(LISTL,IDLSTL,ISYML,IOPT,MODEL,DUMMY,WORK(KEND1))
-cfff
-c     write(lupri,*)'passed 5'
-C
-c        IF ( (LISTL(1:3).NE.'LE ') .AND. (LISTL(1:3).NE.'ME ') ) THEN
             CALL CCLR_DIASCL(WORK(KEND1),HALF,ISYML)
-c        END IF
 C
          TCON = DDOT(NT2AM(ISYRES),WORK(KOMEG2),1,WORK(KEND1),1)
 C

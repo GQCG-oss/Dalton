@@ -122,7 +122,7 @@ C
      &        ILSTNR, ISYM, KT1, KT2, KEND1, LEND1, IDXM, IDXRE, IDXF,
      &        NTAMP, KETA, LWRK1, KBEVC, KEND2, LWRK2, IDXRC, KVEC1,
      &        KVEC2, NCAU, IVEC, INUM, IDXLC, IDXL2, IDXR2, IDXL3, 
-     &        IDXR3
+     &        IDXR3, NLRCLBLSAVE
 C
       LOGICAL R1HFSKIP, O1SKIP, X1SKIP
       SAVE    R1HFSKIP, O1SKIP, X1SKIP
@@ -328,8 +328,8 @@ C     precalculate first-order chi vectors "X1" for those first-order
 C======================================================================
       IF ( .NOT. O1SKIP ) THEN
  
-          CALL CCRHSVEC('O1 ',LBLO1,IDUMMY,IDUMMY,DUMMY,ISYO1,
-     &                  FRQO1,LORXO1,IDUMMY,NO1LBL,MAXO1LBL,WORK,LWORK)
+          CALL CCRHSVEC('O1 ',LBLO1,IDUMMY,IDUMMY,DUMMY,ISYO1,FRQO1,
+     &                  LORXO1,IDUMMY,NO1LBL,MAXO1LBL,0,WORK,LWORK)
  
       ELSE
         WRITE (LUPRI,*)
@@ -841,8 +841,9 @@ C======================================================================
 
        IF (NEWCAU) THEN
 
-* make sure that RC files are initialized:
-* if no restart vector available on file, use next lower order RC vect.
+        ! make sure that RC files are initialized:
+        ! if no restart vector available on file, 
+        ! use next lower order RC vect.
         DO IDXRC = 1, NLRCLBL
           ISYM  = ISYLRC(IDXRC)
           KVEC1 = 1
@@ -876,11 +877,23 @@ C======================================================================
         END DO
        END IF
 
+       ! Put zeroth-order Cauchy moments at the end of the list,
+       ! but without increasing the number of equations that will
+       ! solved. The read routine CC_RDRSP will matp these vectors
+       ! onto the first-order amplitude response vectors which are
+       ! available from the R1 section above.
+       NLRCLBLSAVE = NLRCLBL
+       LRC1OPN = .TRUE. ! open list
+       DO IVEC = 1, NLRCLBLSAVE
+         INUM = ILRCAMP(LRCLBL(IVEC),0,ISYLRC(IVEC))
+       END DO
+       LRC1OPN = .FALSE. ! close list
+
 
        CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,
      &                IDUMMY, IDUMMY, DUMMY, LDUMMY,
      &                ISYLRC, LRCLBL, DUMMY, ILRCAU,
-     &                ISYOFC, NLRCLBL, MAXCLBL, WORK, LWORK)
+     &                ISYOFC, NLRCLBLSAVE, MAXCLBL, WORK, LWORK)
 
       ELSE
         WRITE (LUPRI,*) 'Skipped first-order right Cauchy equations'
@@ -1005,8 +1018,8 @@ C======================================================================
 
       IF ( .NOT. O2SKIP ) THEN
 
-      CALL CCRHSVEC('O2 ',LBLO2,IDUMMY,IDUMMY,DUMMY,ISYO2,
-     &              FRQO2,LORXO2,IDUMMY,NO2LBL,MAXO2LBL,WORK,LWORK)
+      CALL CCRHSVEC('O2 ',LBLO2,IDUMMY,IDUMMY,DUMMY,ISYO2,FRQO2,
+     &              LORXO2,IDUMMY,NO2LBL,MAXO2LBL,0,WORK,LWORK)
 
       ELSE
         WRITE (LUPRI,*)
@@ -1058,8 +1071,8 @@ C======================================================================
 
       IF ( .NOT. CO2SKIP ) THEN
 
-        CALL CCRHSVEC('CO2',LBLCO2,IDUMMY,IDUMMY,DUMMY,ISYCO2,
-     &                DUMMY,LDUMMY,ICO2CAU,NCO2LBL,MAXCO2LBL,WORK,LWORK)
+        CALL CCRHSVEC('CO2',LBLCO2,IDUMMY,IDUMMY,DUMMY,ISYCO2,DUMMY,
+     &                LDUMMY,ICO2CAU,NCO2LBL,MAXCO2LBL,0,WORK,LWORK)
 
       ELSE
         WRITE (LUPRI,*)
@@ -1337,8 +1350,8 @@ C===================================================================
 C     precalculate right hand side vectors for third-order
 C     cluster amplitude response equations.
 C===================================================================
-      CALL CCRHSVEC('O3 ',LBLO3,IDUMMY,IDUMMY,DUMMY,ISYO3,
-     &              FRQO3,LORXO3,IDUMMY,NO3LBL,MAXO3LBL,WORK,LWORK)
+      CALL CCRHSVEC('O3 ',LBLO3,IDUMMY,IDUMMY,DUMMY,ISYO3,FRQO3,
+     &              LORXO3,IDUMMY,NO3LBL,MAXO3LBL,0,WORK,LWORK)
 
 
 C===================================================================
@@ -1415,8 +1428,8 @@ C===================================================================
 C     precalculate right hand side vectors for first-order
 C     right eigenvector response equations.
 C===================================================================
-      CALL CCRHSVEC('EO1',LBLER1,ISYSER1,ISTER1,EIGER1,ISYOER1,
-     &              FRQER1,LORXER1,IDUMMY,NER1LBL,MAXER1LBL,WORK,LWORK)
+      CALL CCRHSVEC('EO1',LBLER1,ISYSER1,ISTER1,EIGER1,ISYOER1,FRQER1,
+     &              LORXER1,IDUMMY,NER1LBL,MAXER1LBL,0,WORK,LWORK)
 
 
 C===================================================================
@@ -1443,8 +1456,8 @@ C===================================================================
 C     precalculate right hand side vectors for second-order
 C     right eigenvector response equations.
 C===================================================================
-      CALL CCRHSVEC('EO2',LBLER2,ISYSER2,ISTER2,EIGER2,ISYOER2,
-     &              FRQER2,LORXER2,IDUMMY,NER2LBL,MAXER2LBL,WORK,LWORK)
+      CALL CCRHSVEC('EO2',LBLER2,ISYSER2,ISTER2,EIGER2,ISYOER2,FRQER2,
+     &              LORXER2,IDUMMY,NER2LBL,MAXER2LBL,0,WORK,LWORK)
 
 
 C===================================================================
@@ -1633,7 +1646,7 @@ C
 
       INTEGER NSTAT, ORDER, MAXVEC, NVEC, ISIDE, LWORK
       INTEGER ISYOF(8), KT12, NCCVAR
-      INTEGER ISYM, KT1, KT2, IOPT, ILSTNR, KEND1, LEND1
+      INTEGER ISYM, KT1, KT2, IOPT, ILSTNR, KEND1, LEND1, NTAMP
 
       LOGICAL LPROJ(MAXVEC)
       CHARACTER*8 LABEL(MAXVEC,ORDER)

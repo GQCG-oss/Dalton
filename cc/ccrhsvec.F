@@ -36,7 +36,7 @@ C
 c /* deck CCRHSVEC */
 *=====================================================================*
       SUBROUTINE CCRHSVEC(TYPE,LABEL,ISYMS,ISTAT,EIGV,ISYMO,
-     &                    FREQS,LORX,ICAU,NVEC,MAXVEC,
+     &                    FREQS,LORX,ICAU,NVEC,MAXVEC,IOFFV,
      &                    WORK,LWORK)
 *---------------------------------------------------------------------*
 *
@@ -49,7 +49,7 @@ c /* deck CCRHSVEC */
 *
 *     implemented:  T:   ORDER = 1, 2, 3, 4 
 *                   RE:  ORDER = 1, 2
-*                   CR:  ORDER = 2
+*                   CR:  ORDER = 1, 2
 *
 *    Written by Christof Haettig maj 1997, extension to RE july '97
 *                                          extension to CR march '98
@@ -73,12 +73,13 @@ c /* deck CCRHSVEC */
       CHARACTER*(18) MSGDBG
       PARAMETER (MSGDBG = '[debug] CCRHSVEC> ')
       LOGICAL LOCDBG
-      PARAMETER (LOCDBG = .TRUE. )
+      PARAMETER (LOCDBG = .FALSE. )
 
 
-      CHARACTER TYPE*(*)
 
-      INTEGER NVEC, MAXVEC, LWORK
+      CHARACTER TYPE*(*), LISTR*3
+
+      INTEGER NVEC, MAXVEC, IOFFV, LWORK
       INTEGER ISYMS(MAXVEC,*), ISYMO(MAXVEC,*)
       INTEGER ISTAT(MAXVEC,*), ICAU(MAXVEC,*)
       LOGICAL LORX(MAXVEC,*)
@@ -108,10 +109,10 @@ c /* deck CCRHSVEC */
       INTEGER KCATRAN, KBA2TRAN, KAA2TRAN
       INTEGER NCATRAN, NBA2TRAN, NAA2TRAN
       INTEGER KEND0, LEND0, LMAX1, LMAX2, KRHS1, KRHS2, KEND1, LEND1
-      INTEGER KLHS1, KLHS2, KEND2, LEND2
+      INTEGER KLHS1, KLHS2, KEND2, LEND2, IDXVEC
 
 * external functions:
-      INTEGER ILSTSYM
+      INTEGER ILSTSYM, ILRCAMP
 
 
 *---------------------------------------------------------------------*
@@ -170,6 +171,10 @@ c /* deck CCRHSVEC */
         MPERM = 2
         WRITE (LUPRI,*) 'warning: rhs vectors ',TYPE(1:3),
      &       ' not tested!!!.'
+      ELSE IF (TYPE(1:3).EQ.'CO1') THEN
+        ORDER = 1
+        NSTAT = 0
+        MPERM = 1
       ELSE IF (TYPE(1:3).EQ.'CO2') THEN
         ORDER = 2
         NSTAT = 0
@@ -223,7 +228,7 @@ c /* deck CCRHSVEC */
 * set up lists for D, C, B, B{O} and A{O} transformations:
 *---------------------------------------------------------------------*
       CALL CC_RHS_SETUP(TYPE,NSTAT,ORDER,LABEL,ISTAT,EIGV,ISYMO,FREQS,
-     &                  LORX, ICAU, NVEC, MAXVEC, MXTRAN, 
+     &                  LORX, ICAU, NVEC, MAXVEC, IOFFV, MXTRAN, 
      &                  NEW_RHS,
      &                  WORK(KDTRAN),  NDTRAN,
      &                  WORK(KCTRAN),  NCTRAN,
@@ -239,7 +244,8 @@ c /* deck CCRHSVEC */
 *---------------------------------------------------------------------*
 * initialize rhs vector files:
 *---------------------------------------------------------------------*
-      IF( TYPE(1:3).NE.'O1 ' .AND. TYPE(1:3).NE.'X1 ' ) THEN
+      IF( TYPE(1:3).NE.'O1 ' .AND. TYPE(1:3).NE.'X1 ' .and.
+     &    TYPE(1:3).NE.'CO1'                                ) THEN
 
         LMAX1 = 0
         LMAX2 = 0
@@ -280,7 +286,7 @@ c /* deck CCRHSVEC */
            CALL QUIT('Unkown coupled cluster model in CCRHSVEC.')
         END IF
 
-        DO IVEC = 1, NVEC
+        DO IVEC = IOFFV+1, IOFFV+NVEC
          ISYM = ILSTSYM(TYPE,IVEC)
          CALL CC_WRRSP(TYPE,IVEC,ISYM,IOPT,MODEL,IDUMMY,
      &                 WORK(KRHS1),WORK(KRHS2),WORK(KEND1),LEND1)
@@ -289,8 +295,6 @@ c /* deck CCRHSVEC */
      &                   WORK(KRHS1),WORK(KRHS2),WORK(KEND1),LEND1)
            CALL CC_RDRSP(TYPE,IVEC,ISYM,IOPTE,MODEL,
      &                   WORK(KRHS1),WORK(KRHS2))
-*          write(lupri,*) 'initialized effective vector:',
-*    &      ddot(nt1am(isym)+nt2am(isym),work(krhs1),1,work(krhs1),1)
          END IF
         END DO
       
@@ -306,10 +310,11 @@ c /* deck CCRHSVEC */
      &               IDUM, RDUM, 0, WORK(KEND0), LEND0 )
       END IF
 
-      IF (LOCDBG .AND. TYPE(1:3).NE.'O1 '.AND. TYPE(1:3).NE.'X1 ') THEN
+      IF (LOCDBG .AND. TYPE(1:3).NE.'O1 '.AND. TYPE(1:3).NE.'X1 '
+     &           .AND. TYPE(1:3).NE.'CO1'                        ) THEN
         WRITE (LUPRI,*) MSGDBG,
      &        'NORM^2 of RHS vectors after D matrix terms:'
-        DO IVEC = 1, NVEC
+        DO IVEC = IOFFV+1, IOFFV+NVEC
           IOPT = 3
           ISYM = ILSTSYM(TYPE,IVEC)
           CALL CC_RDRSP(TYPE,IVEC,ISYM,IOPT,MODEL,
@@ -339,10 +344,11 @@ c /* deck CCRHSVEC */
      &               IDUM, RDUM, 0, WORK(KEND0), LEND0 )
       END IF
 
-      IF (LOCDBG .AND. TYPE(1:3).NE.'O1 '.AND. TYPE(1:3).NE.'X1 ') THEN
+      IF (LOCDBG .AND. TYPE(1:3).NE.'O1 '.AND. TYPE(1:3).NE.'X1 '
+     &           .AND. TYPE(1:3).NE.'CO1'                        ) THEN
         WRITE (LUPRI,*) MSGDBG,
      &        'NORM^2 of RHS vectors after C matrix terms:'
-        DO IVEC = 1, NVEC
+        DO IVEC = IOFFV+1, IOFFV+NVEC
           IOPT = 3
           IF (CC3) IOPT = 24
           ISYM = ILSTSYM(TYPE,IVEC)
@@ -390,10 +396,11 @@ c /* deck CCRHSVEC */
      &                  IDUM, RDUM, 0, .FALSE.,WORK(KEND0), LEND0 ) 
       END IF
 
-      IF (LOCDBG .AND. TYPE(1:3).NE.'O1 '.AND. TYPE(1:3).NE.'X1 ') THEN
+      IF (LOCDBG .AND. TYPE(1:3).NE.'O1 '.AND. TYPE(1:3).NE.'X1 '
+     &           .AND. TYPE(1:3).NE.'CO1'                        ) THEN
         WRITE (LUPRI,*) MSGDBG,
      &        'NORM^2 of RHS vectors after B matrix terms:'
-        DO IVEC = 1, NVEC
+        DO IVEC = IOFFV+1, IOFFV+NVEC
           IOPT = 3
           IF (CC3) IOPT = 24
           ISYM = ILSTSYM(TYPE,IVEC)
@@ -436,10 +443,11 @@ c    &                IOPT, TYPE, IDUM, RDUM, 0, WORK(KEND0), LEND0 )
      &                TYPE, IDUM, RDUM, 0,WORK(KEND0), LEND0 )
       END IF
 
-      IF (LOCDBG .AND. TYPE(1:3).NE.'O1 '.AND. TYPE(1:3).NE.'X1 ') THEN
+      IF (LOCDBG .AND. TYPE(1:3).NE.'O1 '.AND. TYPE(1:3).NE.'X1 '
+     &           .AND. TYPE(1:3).NE.'CO1'                        ) THEN
         WRITE (LUPRI,*) MSGDBG,
      &        'NORM^2 of RHS vectors after B{O} matrix terms:'
-        DO IVEC = 1, NVEC
+        DO IVEC = IOFFV+1, IOFFV+NVEC
           IOPT = 3
           IF (CC3) IOPT = 24
           ISYM = ILSTSYM(TYPE,IVEC)
@@ -490,10 +498,11 @@ c    &                IOPT, TYPE, IDUM, RDUM, 0, WORK(KEND0), LEND0 )
      &                IDUMMY,DUMMY,1,WORK(KEND0), LEND0 )
       END IF
 
-      IF (LOCDBG .AND. TYPE(1:3).NE.'O1 '.AND. TYPE(1:3).NE.'X1 ') THEN
+      IF (LOCDBG .AND. TYPE(1:3).NE.'O1 '.AND. TYPE(1:3).NE.'X1 '
+     &           .AND. TYPE(1:3).NE.'CO1'                        ) THEN
         WRITE (LUPRI,*) MSGDBG,
      &        'NORM^2 of RHS vectors after A{O} matrix terms:'
-        DO IVEC = 1, NVEC
+        DO IVEC = IOFFV+1, IOFFV+NVEC
           IOPT = 3
           IF (CC3) IOPT = 24
           ISYM = ILSTSYM(TYPE,IVEC)
@@ -513,12 +522,17 @@ c    &                IOPT, TYPE, IDUM, RDUM, 0, WORK(KEND0), LEND0 )
         IOPT = 3
         CALL CC_XIETA(WORK(KXETRAN),NXETRAN,IOPT, ORDER, 'L0 ',
      &                'O1 ', IDUM, RDUM, 'X1 ', IDUM, RDUM,
-     &                0, WORK(KEND0),LEND0)
+     &                .FALSE.,0, WORK(KEND0),LEND0)
       ELSE IF ( TYPE(1:2).EQ.'O2' .OR. TYPE(1:2).EQ.'X2' ) THEN
         IOPT = 3
         CALL CC_XIETA(WORK(KXETRAN),NXETRAN,IOPT, ORDER, 'L0 ',
      &                'O2 ', IDUM, RDUM, 'X2 ', IDUM, RDUM,
-     &                0, WORK(KEND0),LEND0)
+     &                .FALSE.,0, WORK(KEND0),LEND0)
+      ELSE IF ( TYPE(1:3).EQ.'CO1' ) THEN
+        IOPT = 3
+        CALL CC_XIETA(WORK(KXETRAN),NXETRAN,IOPT, ORDER, 'L0 ',
+     &                'RC ', IDUM, RDUM, '---', IDUM, RDUM,
+     &                .TRUE.,0, WORK(KEND0),LEND0)
       END IF
 
       IF (LOCDBG) THEN
@@ -542,11 +556,19 @@ c    &                IOPT, TYPE, IDUM, RDUM, 0, WORK(KEND0), LEND0 )
 
         WRITE (LUPRI,*) MSGDBG,
      &       'NORM^2 of RHS vectors after Xi{O} matrix terms:'
-        DO IVEC = 1, NVEC
+        LISTR = TYPE(1:3)
+        IF (TYPE.EQ.'CO1') LISTR ='RC '
+        DO IVEC = IOFFV+1, IOFFV+NVEC
           IOPT = 3
           IF (CC3) IOPT = 24
-          ISYM = ILSTSYM(TYPE,IVEC)
-          CALL CC_RDRSP(TYPE,IVEC,ISYM,IOPT,MODEL,
+          ISYM = ILSTSYM(LISTR,IVEC)
+          IF (TYPE.EQ.'CO1') THEN
+           WRITE(LUPRI,*) 'Cauchy order:',ICAU(IVEC,1)
+           IDXVEC=ILRCAMP(LABEL(IVEC,1),ICAU(IVEC,1)-1,ISYM)
+          ELSE
+           IDXVEC= IVEC
+          END IF
+          CALL CC_RDRSP(LISTR,IDXVEC,ISYM,IOPT,MODEL,
      &                  WORK(KRHS1),WORK(KRHS2))
           XNORM = DDOT(NT1AM(ISYM),WORK(KRHS1),1,WORK(KRHS1),1)
           IF (.NOT. CCS)
@@ -578,7 +600,7 @@ c    &                IOPT, TYPE, IDUM, RDUM, 0, WORK(KEND0), LEND0 )
         END IF
 
         WRITE (LUPRI,*) MSGDBG, 'excited state first order properties:'
-        DO IVEC = 1, NVEC
+        DO IVEC = IOFFV+1, IOFFV+NVEC
         IF (ISYMO(IVEC,1).EQ.1 .AND. FREQS(IVEC,1).EQ.ZERO) THEN
           IOPT = 3
           ISYM = ILSTSYM(TYPE,IVEC)
@@ -613,7 +635,7 @@ c /* deck CC_RHS_SETUP */
 *=====================================================================*
       SUBROUTINE CC_RHS_SETUP(TYPE,NSTAT,ORDER,LAB,ISTAT,
      &                        EIGV,ISYMO,FREQ,LORX,ICAU,
-     &                        NVEC,MAXVEC,MXTRAN, 
+     &                        NVEC,MAXVEC,IOFFV,MXTRAN, 
      &                        NEW_RHS,
      &                        IDTRAN,  NDTRAN,
      &                        ICTRAN,  NCTRAN,
@@ -659,7 +681,7 @@ c /* deck CC_RHS_SETUP */
       PARAMETER (MXORD2 = MXORD *(MXORD-1)/2 )
       PARAMETER (MXORD3 = MXORD2*(MXORD-2)/3 )
 
-      INTEGER MXTRAN, NSTAT, ORDER, MAXVEC, NVEC
+      INTEGER MXTRAN, NSTAT, ORDER, MAXVEC, NVEC, IOFFV
  
       CHARACTER*(*) TYPE
     
@@ -761,7 +783,7 @@ c /* deck CC_RHS_SETUP */
 * start loop over all requested rhs-vectors:
 *---------------------------------------------------------------------*
  
-      DO IVEC = 1, NVEC
+      DO IVEC = IOFFV+1, IOFFV+NVEC
 
 * eigenvectors that contribute:
       IF (NSTAT.EQ.1) THEN
@@ -1189,6 +1211,16 @@ C         END IF
             IXETRAN(7,NXETRAN) = 0
             IXETRAN(8,NXETRAN) = 0
           END IF                    
+        ELSE IF ( TYPE(1:3).EQ.'CO1') THEN
+            NXETRAN = NXETRAN + 1
+            IXETRAN(1,NXETRAN) = IOP(A)
+            IXETRAN(2,NXETRAN) = 0      ! L0 for first-order ETA vec.
+            IXETRAN(3,NXETRAN) = IVEC
+            IXETRAN(4,NXETRAN) = -1
+            IXETRAN(5,NXETRAN) = IRELAX(A)
+            IXETRAN(6,NXETRAN) = 0
+            IXETRAN(7,NXETRAN) = 0
+            IXETRAN(8,NXETRAN) = 0
         END IF
 
 *---------------------------------------------------------------------*

@@ -376,9 +376,6 @@ c /* deck CC_2HYP */
        CALL CCQR_FADRV('L0 ','o1 ','R1 ','R2 ',N0FATRAN, MXVEC2,
      &                  WORK(K0FATRAN),WORK(K0FADOTS),WORK(K0FACONS),
      &                  WORK(KEND0), LEND0, 'DOTP' )
-C      CALL CCQR_FADRV('L0 ','o1 ','R2 ','R1 ',N0FATRAN, MXVEC2,
-C    &                  WORK(K0FATRAN),WORK(K0FADOTS),WORK(K0FACONS),
-C    &                  WORK(KEND0), LEND0, 'DOTP' )
       END IF
 
       IF (.NOT.L_USE_XKS3) THEN
@@ -400,15 +397,12 @@ C    &                  WORK(KEND0), LEND0, 'DOTP' )
 
       IF (.NOT. (L_USE_CHI2 .OR. L_USE_XKS3) ) THEN
 
-C      CALL CCQR_EADRV('L1 ','o1 ','R2 ',NAEATRAN, MXVEC2,
-C    &                  WORK(KAEATRAN),WORK(KAEADOTS),WORK(KAEACONS),
-C    &                  WORK(KEND0), LEND0, 'DOTP' )
        IOPT   = 5
        IORDER = 1
        CALL CC_XIETA( WORK(KAEATRAN), NAEATRAN, IOPT, IORDER, 'L1 ',
      &                '---',IDUMMY,       DUMMY,
      &                'R2 ',WORK(KAEADOTS),WORK(KAEACONS),
-     &                MXVEC2, WORK(KEND0), LEND0 )        
+     &                .FALSE.,MXVEC2, WORK(KEND0), LEND0 )        
 
       END IF
 
@@ -426,9 +420,6 @@ C    &                  WORK(KEND0), LEND0, 'DOTP' )
         CALL CC_DOTDRV('X2B','R2 ',NXTRAN,MXVEC2,
      &                 WORK(KXTRAN), WORK(KXDOTS), WORK(KXCONS),
      &                 WORK(KEND0), LEND0 )
-C       CALL CC_DOTDRV('L2 ','O2 ',NXTRAN,MXVEC2,
-C    &                 WORK(KXTRAN), WORK(KXDOTS), WORK(KXCONS),
-C    &                 WORK(KEND0), LEND0 )
 
         TIMX2 = SECOND() - TIM1
         WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
@@ -714,16 +705,12 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
           EAACON(P)   = ZERO
           EAACON(6+P) = ZERO
         ELSE
-C         CALL CCQR_SETEA(WORK(KAEATRAN),WORK(KAEADOTS),MXTRAN2,MXVEC2, 
-C    &                    IZT(I1(P)),IOP(I2(P)),IR2(IP(P)),ITRAN,IVEC)
           CALL CC_SETXE('Eta',WORK(KAEATRAN),WORK(KAEADOTS), !1x2x3,4
      &                  MXTRAN2,MXVEC2,
      &                  IZT(I1(P)),IOP(I2(P)),IKAP(I2(P)),0,0,0,
      &                  IR2(IP(P)),ITRAN,IVEC)
           EAACON(P) = WORK(KAEACONS-1 + (ITRAN-1)*MXVEC2 + IVEC)
 
-C         CALL CCQR_SETEA(WORK(KAEATRAN),WORK(KAEADOTS),MXTRAN2,MXVEC2, 
-C    &                    IZT(I2(P)),IOP(I1(P)),IR2(IP(P)),ITRAN,IVEC)
           CALL CC_SETXE('Eta',WORK(KAEATRAN),WORK(KAEADOTS), !2x1x3,4
      &                  MXTRAN2,MXVEC2,
      &                  IZT(I2(P)),IOP(I1(P)),IKAP(I1(P)),0,0,0,

@@ -260,7 +260,8 @@ C
          CALL QUIT('Insufficient space in CCSDT_FMAT_NODDY (2)')
       ENDIF
 
-      IF      (LISTB(1:3).EQ.'R1 ' .OR. LISTB(1:3).EQ.'RE ') THEN
+      IF      (LISTB(1:3).EQ.'R1 ' .OR. LISTB(1:3).EQ.'RE ' .OR.
+     &         LISTB(1:3).EQ.'RC '                              ) THEN
         CALL CCSDT_T31_NODDY(WORK(KTB3AM),LISTB,IDLSTB,FREQB,XI_ONLY,
      &                       .FALSE.,WORK(KINT1S0),WORK(KINT2S0),
      &                       .FALSE.,WORK(KINT1T0),WORK(KINT2T0),
@@ -1685,7 +1686,8 @@ c       -------------------------------
          CALL QUIT('Insufficient space in CCSDT_FBC_NODDY')
       ENDIF
 
-      IF (LISTB(1:3).EQ.'R1 ' .OR. LISTB(1:3).EQ.'RE ') THEN
+      IF (LISTB(1:3).EQ.'R1 ' .OR. LISTB(1:3).EQ.'RE ' .OR.
+     &    LISTB(1:3).EQ.'RC '                               ) THEN
         CALL CCSDT_T31_NODDY(WORK(KTB3AM),LISTB,IDLSTB,FREQB,XI_ONLY,
      &                       .FALSE.,WORK(KINT1S0),WORK(KINT2S0),
      &                       .FALSE.,WORK(KINT1T0),WORK(KINT2T0),

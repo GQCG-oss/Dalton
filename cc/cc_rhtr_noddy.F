@@ -570,7 +570,8 @@
         ISYMC  = ILSTSYM(LISTDP,IDLSTC)
 
         IF (.NOT.SKIP_T3) THEN
-         IF     (LISTDP(1:3).EQ.'R1 '.OR.LISTDP(1:3).EQ.'RE '    ) THEN
+         IF     (LISTDP(1:3).EQ.'R1 '.OR.LISTDP(1:3).EQ.'RE '.OR.
+     &           LISTDP(1:3).EQ.'RC '                            ) THEN
            KLAMPC  = KEND1
            KLAMHC  = KLAMPC  + NLAMDT
            KFOCKC  = KLAMHC  + NLAMDT
@@ -641,7 +642,7 @@
             Call CC_RDRSP(LISTDP,IDLSTC,ISYMC,IOPT,MODEL,
      &                    WORK(KLC1AM),WORK(KLC3AM))
             IF (LISTDP(1:3).EQ.'R1 '.OR.LISTDP(1:3).EQ.'RE '.OR.
-     &          LISTDP(1:3).EQ.'R2 '                            ) THEN
+     &          LISTDP(1:3).EQ.'R2 '.OR.LISTDP(1:3).EQ.'RC '    ) THEN
                ! for right response vectors scale diagonal with 2
                Call CCLR_DIASCL(WORK(KLC3AM),TWO,ISYMC)
             ELSEIF (LISTDP(1:3).EQ.'L1 '.OR.LISTDP(1:3).EQ.'LE '.OR.

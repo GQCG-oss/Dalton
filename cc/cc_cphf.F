@@ -160,7 +160,7 @@ C     PARAMETER (MXFRVAL = 1)  ! switch off simultaneous equations
 
 * print some debug/info output
       IF (IPRINT .GT. 10 .OR. LOCDBG) THEN
-        WRITE(LUPRI,*) 'CCRHSVEC Workspace:',LWORK
+        WRITE(LUPRI,*) 'CC_CPHF Workspace:',LWORK
       END IF
   
       CALL FLSHFO(LUPRI)
@@ -421,7 +421,7 @@ C         --------------------------------------------
       RETURN
       END
 *=====================================================================*
-*              END OF SUBROUTINE CCRHSVEC                             *
+*              END OF SUBROUTINE CC_CPHF                              *
 *=====================================================================*
 c /* deck cc_sirinf */
 *=====================================================================*

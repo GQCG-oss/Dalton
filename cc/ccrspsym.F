@@ -2251,17 +2251,6 @@ c /* deck cc_lrind */
 *      b) effective Fock operators to be calculated
 *      c) nuclear contributions to be calculated
 *---------------------------------------------------------------------*
-      IF (CC3) THEN
-        WRITE(LUPRI,'(/5x,A/)')
-     &   'Prepare CC3 linear response calculation.'
-        IF (CAUCHY) THEN
-          CAUCHY  = .FALSE.
-          NLRDISP = 0
-          WRITE(LUPRI,'(/5x,A//)') 
-     &    'Cauchy moments are switched off for CC3.'
-        END IF
-      END IF
-
       DIFDIP = .FALSE.
 
       DO IOPER = 1, NLROP
@@ -2354,6 +2343,11 @@ C
 C     Note: this is required to get CAUCHY vectors in correct order.
 C
       IF (CAUCHY) THEN
+
+        ! switch off a special treatment of cauchy vectors in the
+        ! solver which cannot be used with CC3
+        IF (CC3) NEWCAU = .FALSE.
+
         DO ISYM = 1, NSYM
           DO ICAUCH  = 1, NLRDISP
             DO IOPER = 1, NLROP
@@ -2381,11 +2375,11 @@ C
               END IF
 
               IF ((ISYMA.EQ.ISYMB).AND.(ISYM.EQ.ISYMA)) THEN
-                INUM  = ILRCAMP(LABELA,ICAUCH,ISYMA)
                 INUM  = ILRCAMP(LABELB,ICAUCH,ISYMB)
                 IF (ASYMSD) THEN
-                  INUM  = ILC1AMP(LABELA,ICAUCH,ISYMA)
                   INUM  = ILC1AMP(LABELB,ICAUCH,ISYMB)
+                ELSE
+                  INUM  = ILRCAMP(LABELA,ICAUCH,ISYMA)
                 END IF
               END IF
             END DO
@@ -4667,13 +4661,13 @@ c /* deck cc_exlrind */
 * for CC3 we can switch off USE_O2/USE_EL1 since it can not be used: 
 *---------------------------------------------------------------------*
       IF (CC3 .AND. USE_O2) THEN
-        WRITE(LUPRI,*) 'Info: the .USE O2 option cannot be used for '
+        WRITE(LUPRI,*) 'Info: the .USE O2 option cannot be use for '
         WRITE(LUPRI,*) '      in *CCEXLR for CC3... it is turned off' 
         USE_O2 = .FALSE.
       END IF
 
       IF (CC3 .AND. USE_EL1) THEN
-        WRITE(LUPRI,*) 'Info: the .USELEF option cannot be used for '
+        WRITE(LUPRI,*) 'Info: the .USELEF option cannot be use for '
         WRITE(LUPRI,*) '      in *CCEXLR for CC3... it is turned off' 
         USE_EL1 = .FALSE.
       END IF

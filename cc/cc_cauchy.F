@@ -60,6 +60,7 @@ c /* deck cc_cauchy */
 #include <ccroper.h>
 #include <ccrc1rsp.h>
 #include <cclc1rsp.h>
+#include <cclists.h>
 
 * local parameters:
       LOGICAL LOCDBG
@@ -70,11 +71,11 @@ c /* deck cc_cauchy */
     
 
 #if defined (SYS_CRAY)
-      REAL ZERO, ONE
+      REAL ZERO, ONE, TWO
 #else
-      DOUBLE PRECISION ZERO, ONE
+      DOUBLE PRECISION ZERO, ONE, TWO
 #endif
-      PARAMETER (ZERO = 0.0d0, ONE = 1.0d0)
+      PARAMETER (ZERO = 0.0d0, ONE = 1.0d0, TWO = 2.0D0)
 
       CHARACTER*80 STRING
       CHARACTER*10 MODEL
@@ -85,16 +86,15 @@ c /* deck cc_cauchy */
       INTEGER ISYMB, IRCVECB, ILCVECB, IOPERB, ISAMB, ISACAU
       INTEGER MXTRAN, MXVEC, MXDOTS, NBCAUCHY, LEND0, KEND0, KRESULT
       INTEGER MXFTRAN, KFCTRAN, KFCDOTS, KFCCONS, NFCTRAN
-      INTEGER MXETRAN, KECTRAN, KECDOTS, KECCONS, NECTRAN
-      INTEGER MXXTRAN, KXCTRAN, KXCDOTS, KXCCONS, NXCTRAN
-      INTEGER KTRK, ISTRT
+      INTEGER MXXETRAN,KXETRAN,KECDOTS,KECCONS,KXCDOTS,KXCCONS,NXETRAN
+      INTEGER KTRK, ISTRT, IORDER, IDISP0
 
 #if defined (SYS_CRAY)
       REAL WORK(LWORK)
-      REAL TRKBAS, SMOM, SIGN 
+      REAL TRKBAS, SMOM, SIGN, ECONAB, ECONBA, FCON, XCONAB
 #else
       DOUBLE PRECISION WORK(LWORK)
-      DOUBLE PRECISION TRKBAS, SMOM, SIGN
+      DOUBLE PRECISION TRKBAS, SMOM, SIGN, ECONAB, ECONBA, FCON, XCONAB
 #endif
 
 * external functions:
@@ -117,9 +117,12 @@ c /* deck cc_cauchy */
      &                               '*******************************'
 
 *---------------------------------------------------------------------*
-      IF (.NOT. (CCS .OR. CC2 .OR. CCSD) ) THEN
+      IF (.NOT. (CCS .OR. CC2 .OR. CCSD .OR. CC3) ) THEN
          CALL QUIT('CC_CAUCHY called for unknown Coupled Cluster.')
       END IF
+
+      IF (ASYMSD .AND. CC3)
+     &  CALL QUIT('Assymmetric formula not (yet) implemented  for CC3')
 
 * print some debug/info output
       IF (IPRINT .GT. 10) WRITE(LUPRI,*) 'CC_CAUCHY Workspace:',LWORK
@@ -142,26 +145,30 @@ c /* deck cc_cauchy */
         LABELB = LBLOPR(IOPERB)
         IF (ISYMA.EQ.ISYMB) THEN
           IVEC = ILRCAMP(LABELA, 0,ISYMA)
-          IVEC = ILRCAMP(LABELA,-1,ISYMA)
-          IVEC = ILRCAMP(LABELA,-2,ISYMA)
-          IVEC = ILRCAMP(LABELA,-3,ISYMA)
-          IVEC = ILRCAMP(LABELA,-4,ISYMA)
           IVEC = ILRCAMP(LABELB, 0,ISYMB)
+          IF (.NOT.CC3) THEN
+          IVEC = ILRCAMP(LABELA,-1,ISYMA)
           IVEC = ILRCAMP(LABELB,-1,ISYMB)
+          IVEC = ILRCAMP(LABELA,-2,ISYMA)
           IVEC = ILRCAMP(LABELB,-2,ISYMB)
+          IVEC = ILRCAMP(LABELA,-3,ISYMA)
           IVEC = ILRCAMP(LABELB,-3,ISYMB)
+          IVEC = ILRCAMP(LABELA,-4,ISYMA)
           IVEC = ILRCAMP(LABELB,-4,ISYMB)
+          END IF
           IF (ASYMSD) THEN
             IVEC = ILC1AMP(LABELA, 0,ISYMA)
-            IVEC = ILC1AMP(LABELA,-1,ISYMA)
-            IVEC = ILC1AMP(LABELA,-2,ISYMA)
-            IVEC = ILC1AMP(LABELA,-3,ISYMA)
-            IVEC = ILC1AMP(LABELA,-4,ISYMA)
             IVEC = ILC1AMP(LABELB, 0,ISYMB)
+            IF (.NOT.CC3) THEN
+            IVEC = ILC1AMP(LABELA,-1,ISYMA)
             IVEC = ILC1AMP(LABELB,-1,ISYMB)
+            IVEC = ILC1AMP(LABELA,-2,ISYMA)
             IVEC = ILC1AMP(LABELB,-2,ISYMB)
+            IVEC = ILC1AMP(LABELA,-3,ISYMA)
             IVEC = ILC1AMP(LABELB,-3,ISYMB)
+            IVEC = ILC1AMP(LABELA,-4,ISYMA)
             IVEC = ILC1AMP(LABELB,-4,ISYMB)
+            END IF
           END IF
         ENDIF
       END DO
@@ -171,7 +178,7 @@ c /* deck cc_cauchy */
       LLC1OPN = .FALSE.
 
 * calculate cauchy vectors for negative orders:
-      CALL CCCM_VEC(WORK,LWORK)
+      IF (.NOT.CC3) CALL CCCM_VEC(WORK,LWORK)
 
 *---------------------------------------------------------------------*
 * allocate & initialize work space for Cauchy moments
@@ -183,31 +190,32 @@ c /* deck cc_cauchy */
       MXVEC   = NLRCLBL
       MXDOTS  = MXVEC * MXTRAN
 
-      MXFTRAN = 3 * MXTRAN
-      MXETRAN = 3 * MXTRAN
-      MXXTRAN = 1 * MXTRAN
+      MXFTRAN  = MXDIM_FTRAN * MXTRAN
+      MXXETRAN = MXDIM_XEVEC * MXTRAN
 
       KTRK    = 1
       KRESULT = KTRK    + NLROP
       KFCTRAN = KRESULT + NBCAUCHY
       KFCDOTS = KFCTRAN + MXFTRAN
       KFCCONS = KFCDOTS + MXDOTS
-      KECTRAN = KFCCONS + MXDOTS
-      KECDOTS = KECTRAN + MXETRAN
+      KXETRAN = KFCCONS + MXDOTS
+      KECDOTS = KXETRAN + MXXETRAN
       KECCONS = KECDOTS + MXDOTS
-      KXCTRAN = KECCONS + MXDOTS 
-      KXCDOTS = KXCTRAN + MXXTRAN
+      KXCDOTS = KECCONS + MXDOTS 
       KXCCONS = KXCDOTS + MXDOTS
       KEND0   = KXCCONS + MXDOTS
+
       LEND0   = LWORK - KEND0
 
 *---------------------------------------------------------------------*
 * set up lists F transformations and ETA vectors:
 *---------------------------------------------------------------------*
-      CALL CCCM_SETUP(MXTRAN, MXVEC,
+      IDISP0 = -4
+      IF (CC3) IDISP0 = 0
+
+      CALL CCCM_SETUP(MXTRAN, MXVEC, IDISP0,
      &                WORK(KFCTRAN),WORK(KFCDOTS),NFCTRAN,
-     &                WORK(KECTRAN),WORK(KECDOTS),NECTRAN,
-     &                WORK(KXCTRAN),WORK(KXCDOTS),NXCTRAN )
+     &                WORK(KXETRAN),WORK(KECDOTS),WORK(KXCDOTS),NXETRAN)
 
 *---------------------------------------------------------------------*
 * calculate F matrix contributions of the type F x RC x RC:
@@ -218,20 +226,19 @@ c /* deck cc_cauchy */
      &                WORK(KEND0),LEND0) 
 
 *---------------------------------------------------------------------*
-* calculate ETA{O} vector contributions of the type ETA{O} x RC:
+* calculate ETA{O} vector contributions of the type ETA{O} x RC
+* and the LC x XKSI{O} vector dot products:
 *---------------------------------------------------------------------*
-      CALL CCQR_EADRV('L0 ','o1 ','RC ',NECTRAN, MXVEC,
-     &                WORK(KECTRAN),WORK(KECDOTS),WORK(KECCONS),
-     &                WORK(KEND0), LEND0, 'DOTP' )
 
-*---------------------------------------------------------------------*
-* calculate LC x XKSI{O} vector dot products:
-*---------------------------------------------------------------------*
-      IF (ASYMSD) THEN
-        CALL CC_DOTDRV('LC ','O1 ',NXCTRAN,MXVEC,
-     &                 WORK(KXCTRAN), WORK(KXCDOTS), WORK(KXCCONS),
-     &                 WORK(KEND0), LEND0 )
-      END IF
+      CALL DZERO(WORK(KXCCONS),MXVEC*NXETRAN)
+      CALL DZERO(WORK(KECCONS),MXVEC*NXETRAN)
+
+      IOPT = 5
+      IORDER = 1
+      CALL CC_XIETA( WORK(KXETRAN), NXETRAN, IOPT, IORDER, 'L0 ',
+     &               'LC ',WORK(KXCDOTS),WORK(KXCCONS),
+     &               'RC ',WORK(KECDOTS),WORK(KECCONS),
+     &               .FALSE.,MXVEC, WORK(KEND0), LEND0 )
 
 *=====================================================================*
 * collect all contributions and add them up to Cauchy moments:
@@ -256,44 +263,58 @@ c /* deck cc_cauchy */
 *---------------------------------------------------------------------*
 * calculate the Cauchy moments S(+2):
 *---------------------------------------------------------------------*
+       IF (.NOT.CC3) THEN
        IF (ISAPROP.EQ.1 .OR. ISAPROP.EQ.0 .OR. ALLLRDSPCF) THEN
 
         SMOM = ZERO 
 
-* Eta{B} x Jacobian x C^A(-4):
+        ! Eta{B} x Jacobian x C^A(-4):
         IRCVECB = ILRCAMP(LABELB,-4,IDUM)
-        CALL CCQR_SETEA(WORK(KECTRAN),WORK(KECDOTS),NECTRAN,MXVEC,
-     &                  0,IOPERA,IRCVECB,ITRAN,IVEC)
+        CALL CC_SETXE('Eta',WORK(KXETRAN),WORK(KECDOTS),NXETRAN,MXVEC,
+     &                0,IOPERA,0,0,0,0,IRCVECB,ITRAN,IVEC)
         SMOM = SMOM + WORK(KECCONS-1 + (ITRAN-1)*MXVEC + IVEC)
 
-* Eta{A} x Jacobian x C^B(-4):
-        IRCVECA = ILRCAMP(LABELA,-4,IDUM)
-        CALL CCQR_SETEA(WORK(KECTRAN),WORK(KECDOTS),NECTRAN,MXVEC,
-     &                  0,IOPERB,IRCVECA,ITRAN,IVEC)
-        SMOM = SMOM + WORK(KECCONS-1 + (ITRAN-1)*MXVEC + IVEC)
+        ! Eta{A} x Jacobian x C^B(-4) (symmetric formula only):
+        IF (.NOT.ASYMSD) THEN
+          IRCVECA = ILRCAMP(LABELA,-4,IDUM)
+          CALL CC_SETXE('Eta',WORK(KXETRAN),WORK(KECDOTS),NXETRAN,MXVEC,
+     &                  0,IOPERB,0,0,0,0,IRCVECA,ITRAN,IVEC)
+          SMOM = SMOM + WORK(KECCONS-1 + (ITRAN-1)*MXVEC + IVEC)
+        END IF
 
-* F x C^A(-1) x C^B(-3):
-        IRCVECA = ILRCAMP(LABELA,-1,IDUM)
-        IRCVECB = ILRCAMP(LABELB,-3,IDUM)
-        CALL CCQR_SETF(WORK(KFCTRAN),WORK(KFCDOTS),NFCTRAN,MXVEC,
-     &                 0,IRCVECA,IRCVECB,ITRAN,IVEC)
-        SMOM = SMOM + WORK(KFCCONS-1 + (ITRAN-1)*MXVEC + IVEC)
+        ! F matrix contributions (symmetric formula only):
+        IF (.NOT.ASYMSD) THEN
+          ! F x C^A(-1) x C^B(-3):
+          IRCVECA = ILRCAMP(LABELA,-1,IDUM)
+          IRCVECB = ILRCAMP(LABELB,-3,IDUM)
+          CALL CCQR_SETF(WORK(KFCTRAN),WORK(KFCDOTS),NFCTRAN,MXVEC,
+     &                   0,IRCVECA,IRCVECB,ITRAN,IVEC)
+          SMOM = SMOM + WORK(KFCCONS-1 + (ITRAN-1)*MXVEC + IVEC)
 
-* F x C^A(-2) x C^B(-2):
-        IRCVECA = ILRCAMP(LABELA,-2,IDUM)
-        IRCVECB = ILRCAMP(LABELB,-2,IDUM)
-        CALL CCQR_SETF(WORK(KFCTRAN),WORK(KFCDOTS),NFCTRAN,MXVEC,
-     &                 0,IRCVECA,IRCVECB,ITRAN,IVEC)
-        SMOM = SMOM - WORK(KFCCONS-1 + (ITRAN-1)*MXVEC + IVEC)
+          ! F x C^A(-2) x C^B(-2):
+          IRCVECA = ILRCAMP(LABELA,-2,IDUM)
+          IRCVECB = ILRCAMP(LABELB,-2,IDUM)
+          CALL CCQR_SETF(WORK(KFCTRAN),WORK(KFCDOTS),NFCTRAN,MXVEC,
+     &                   0,IRCVECA,IRCVECB,ITRAN,IVEC)
+          SMOM = SMOM - WORK(KFCCONS-1 + (ITRAN-1)*MXVEC + IVEC)
+          
+          ! F x C^A(-3) x C^B(-1):
+          IRCVECA = ILRCAMP(LABELA,-3,IDUM)
+          IRCVECB = ILRCAMP(LABELB,-1,IDUM)
+          CALL CCQR_SETF(WORK(KFCTRAN),WORK(KFCDOTS),NFCTRAN,MXVEC,
+     &                   0,IRCVECA,IRCVECB,ITRAN,IVEC)
+          SMOM = SMOM + WORK(KFCCONS-1 + (ITRAN-1)*MXVEC + IVEC)
+        END IF
 
-* F x C^A(-3) x C^B(-1):
-        IRCVECA = ILRCAMP(LABELA,-3,IDUM)
-        IRCVECB = ILRCAMP(LABELB,-1,IDUM)
-        CALL CCQR_SETF(WORK(KFCTRAN),WORK(KFCDOTS),NFCTRAN,MXVEC,
-     &                 0,IRCVECA,IRCVECB,ITRAN,IVEC)
-        SMOM = SMOM + WORK(KFCCONS-1 + (ITRAN-1)*MXVEC + IVEC)
+        ! Xksi{A} x Cbar^B(-4) (assymmetric formula only):
+        IF (ASYMSD) THEN
+          ILCVECB = ILC1AMP(LABELB,-4,IDUM)
+          CALL CC_SETXE('Xi ',WORK(KXETRAN),WORK(KXCDOTS),NXETRAN,MXVEC,
+     &                  0,IOPERA,0,0,0,0,ILCVECB,ITRAN,IVEC)
+          SMOM = SMOM + WORK(KXCCONS-1 + (ITRAN-1)*MXVEC + IVEC)
+        END IF
 
-* store the result:
+        ! store the result:
         IDXSMOM = (IOPER-1)*(NLRDISP+5) + 1
         WORK(KRESULT-1+IDXSMOM) = SMOM
 
@@ -302,130 +323,76 @@ c /* deck cc_cauchy */
      &     LABELA,LABELB,IDXSMOM,'S(',2,')=', WORK(KRESULT-1+IDXSMOM)
         END IF
 
-        IF (ASYMSD) THEN
 
-* Eta{A} x C^B(-4):
-        IRCVECB = ILRCAMP(LABELB,-4,IDUM)
-        CALL CCQR_SETEA(WORK(KECTRAN),WORK(KECDOTS),NECTRAN,MXVEC,
-     &                  0,IOPERA,IRCVECB,ITRAN,IVEC)
-        SMOM = WORK(KECCONS-1 + (ITRAN-1)*MXVEC + IVEC)
-        IF (LOCDBG) WRITE (LUPRI,*) 'Eta{A} x C^B:',
-     &       WORK(KECCONS-1+(ITRAN-1)*MXVEC+IVEC)
-
-* Xksi{A} x Cbar^B(-4)
-        ILCVECB = ILC1AMP(LABELB,-4,IDUM)
-        CALL CC_SETDOT(WORK(KXCTRAN),WORK(KXCDOTS),NXCTRAN,MXVEC,
-     &                ILCVECB,IOPERA,ITRAN,IVEC)
-        SMOM = SMOM + WORK(KXCCONS-1 + (ITRAN-1)*MXVEC + IVEC)
-        IF (LOCDBG) THEN
-          WRITE (LUPRI,*) 'Xksi{A} x LC^B:',
-     &       WORK(KXCCONS-1+(ITRAN-1)*MXVEC+IVEC)
-          WRITE(LUPRI,'(5X,3A,I2,5X,A,I3,A,E20.10)') 'ASYM1: ', LABELA,
-     &      LABELB, IDXSMOM,'S(',2,')=', SMOM
-        END IF
-
-
-* Eta{B} x C^A(-4):
-        IRCVECA = ILRCAMP(LABELA,-4,IDUM)
-        CALL CCQR_SETEA(WORK(KECTRAN),WORK(KECDOTS),NECTRAN,MXVEC,
-     &                  0,IOPERB,IRCVECA,ITRAN,IVEC)
-        SMOM = + WORK(KECCONS-1 + (ITRAN-1)*MXVEC + IVEC)
-
-* Xksi{B} x Cbar^A(-4)
-        ILCVECA = ILC1AMP(LABELA,-4,IDUM)
-        CALL CC_SETDOT(WORK(KXCTRAN),WORK(KXCDOTS),NXCTRAN,MXVEC,
-     &                ILCVECA,IOPERB,ITRAN,IVEC)
-        SMOM = SMOM + WORK(KXCCONS-1 + (ITRAN-1)*MXVEC + IVEC)
-
-        IF (LOCDBG) WRITE(LUPRI,'(5X,3A,I2,5X,A,I3,A,E20.10)') 
-     &   'ASYM2: ', LABELA,LABELB, IDXSMOM,'S(',2,')=', SMOM
-
-
-        END IF
+       END IF 
        END IF 
 
 *---------------------------------------------------------------------*
 * calculate zeroth-order Cauchy moments (TRK sum rules):
 *---------------------------------------------------------------------*
+       IF (.NOT.CC3) THEN
        IF (ISAPROP.EQ.1 .OR. ISAPROP.EQ.0 .OR. ALLLRDSPCF) THEN
         SMOM = ZERO 
 
-* Eta{A} x C^B(-2):
+        ! Eta{A} x C^B(-2):
         IRCVECB = ILRCAMP(LABELB,-2,IDUM)
-        CALL CCQR_SETEA(WORK(KECTRAN),WORK(KECDOTS),NECTRAN,MXVEC,
-     &                  0,IOPERA,IRCVECB,ITRAN,IVEC)
-        SMOM = SMOM + WORK(KECCONS-1 + (ITRAN-1)*MXVEC + IVEC)
+        CALL CC_SETXE('Eta',WORK(KXETRAN),WORK(KECDOTS),NXETRAN,MXVEC,
+     &                0,IOPERA,0,0,0,0,IRCVECB,ITRAN,IVEC)
+        ECONAB = WORK(KECCONS-1 + (ITRAN-1)*MXVEC + IVEC)
+        SMOM = SMOM + ECONAB
+        IF (LOCDBG) WRITE(LUPRI,*) 'ECONAB:',ECONAB
 
 
-* Eta{B} x C^A(-2):
-        IRCVECA = ILRCAMP(LABELA,-2,IDUM)
-        CALL CCQR_SETEA(WORK(KECTRAN),WORK(KECDOTS),NECTRAN,MXVEC,
-     &                  0,IOPERB,IRCVECA,ITRAN,IVEC)
-        SMOM = SMOM + WORK(KECCONS-1 + (ITRAN-1)*MXVEC + IVEC)
-
-
-* F x C^A(-1) x C^B(-1):
-        IRCVECA = ILRCAMP(LABELA,-1,IDUM)
-        IRCVECB = ILRCAMP(LABELB,-1,IDUM)
-        CALL CCQR_SETF(WORK(KFCTRAN),WORK(KFCDOTS),NFCTRAN,MXVEC,
-     &                 0,IRCVECA,IRCVECB,ITRAN,IVEC)
-        SMOM = SMOM + WORK(KFCCONS-1 + (ITRAN-1)*MXVEC + IVEC)
-
-
-* for CCS calculate also pure basis set number ( = RPA result):
-        IF (CCS) THEN
-          WORK(KTRK-1+IOPER) = 
-     &              SMOM + WORK(KFCCONS-1 + (ITRAN-1)*MXVEC + IVEC)
+        ! Eta{B} x C^A(-2) (symmetric formula only):
+        IF (.NOT.ASYMSD) THEN
+          IRCVECA = ILRCAMP(LABELA,-2,IDUM)
+          CALL CC_SETXE('Eta',WORK(KXETRAN),WORK(KECDOTS),NXETRAN,MXVEC,
+     &                  0,IOPERB,0,0,0,0,IRCVECA,ITRAN,IVEC)
+          ECONBA = WORK(KECCONS-1 + (ITRAN-1)*MXVEC + IVEC)
+          SMOM = SMOM + ECONBA
         END IF
 
-* store coupled cluster number:
+
+        ! F x C^A(-1) x C^B(-1) (assymmetric formula only):
+        IF (.NOT.ASYMSD) THEN
+          IRCVECA = ILRCAMP(LABELA,-1,IDUM)
+          IRCVECB = ILRCAMP(LABELB,-1,IDUM)
+          CALL CCQR_SETF(WORK(KFCTRAN),WORK(KFCDOTS),NFCTRAN,MXVEC,
+     &                   0,IRCVECA,IRCVECB,ITRAN,IVEC)
+          FCON = WORK(KFCCONS-1 + (ITRAN-1)*MXVEC + IVEC)
+          SMOM = SMOM + FCON
+
+        END IF
+
+        ! Xksi{A} x Cbar^B(-2)
+        IF (ASYMSD) THEN
+          ILCVECB = ILC1AMP(LABELB,-2,IDUM)
+          CALL CC_SETXE('Xi ',WORK(KXETRAN),WORK(KXCDOTS),NXETRAN,MXVEC,
+     &                  0,IOPERA,0,0,0,0,ILCVECB,ITRAN,IVEC)
+          XCONAB = WORK(KXCCONS-1 + (ITRAN-1)*MXVEC + IVEC)
+          SMOM = SMOM + XCONAB
+          IF (LOCDBG) WRITE(LUPRI,*) 'XCONAB:',XCONAB
+        END IF
+
+        ! store coupled cluster number:
         IDXSMOM = (IOPER-1)*(NLRDISP+5) + 3
         WORK(KRESULT-1+IDXSMOM) = SMOM
+
+        ! for CCS calc. also pure basis set number ( = RPA result):
+        IF (CCS) THEN
+          IF (ASYMSD) THEN
+            WORK(KTRK-1+IOPER) = TWO * XCONAB
+          ELSE
+            WORK(KTRK-1+IOPER) = ECONAB + ECONBA + TWO*FCON
+          END IF
+        END IF
 
         IF (LOCDBG) THEN
          WRITE(LUPRI,'(5X,2A,I2,5X,A,I3,A,E20.10)')
      &     LABELA,LABELB,IDXSMOM,'S(',0,')=', WORK(KRESULT-1+IDXSMOM)
         END IF
 
-        IF (ASYMSD) THEN
-
-* Eta{A} x C^B(-2):
-        IRCVECB = ILRCAMP(LABELB,-2,IDUM)
-        CALL CCQR_SETEA(WORK(KECTRAN),WORK(KECDOTS),NECTRAN,MXVEC,
-     &                  0,IOPERA,IRCVECB,ITRAN,IVEC)
-        SMOM = WORK(KECCONS-1 + (ITRAN-1)*MXVEC + IVEC)
-        IF (LOCDBG) WRITE (LUPRI,*) 'Eta{A} x C^B:',
-     &       WORK(KECCONS-1+(ITRAN-1)*MXVEC+IVEC)
-
-* Xksi{A} x Cbar^B(-2)
-        ILCVECB = ILC1AMP(LABELB,-2,IDUM)
-        CALL CC_SETDOT(WORK(KXCTRAN),WORK(KXCDOTS),NXCTRAN,MXVEC,
-     &                ILCVECB,IOPERA,ITRAN,IVEC)
-        SMOM = SMOM + WORK(KXCCONS-1 + (ITRAN-1)*MXVEC + IVEC)
-        IF (LOCDBG) THEN
-          WRITE (LUPRI,*) 'Xksi{A} x LC^B:',
-     &       WORK(KXCCONS-1+(ITRAN-1)*MXVEC+IVEC)
-          WRITE(LUPRI,'(5X,3A,I2,5X,A,I3,A,E20.10)') 
-     &       'ASYM1: ', LABELA,LABELB, IDXSMOM,'S(',0,')=', SMOM
-        END IF
-
-
-* Eta{B} x C^A(-2):
-        IRCVECA = ILRCAMP(LABELA,-2,IDUM)
-        CALL CCQR_SETEA(WORK(KECTRAN),WORK(KECDOTS),NECTRAN,MXVEC,
-     &                  0,IOPERB,IRCVECA,ITRAN,IVEC)
-        SMOM = + WORK(KECCONS-1 + (ITRAN-1)*MXVEC + IVEC)
-
-* Xksi{B} x Cbar^A(-2)
-        ILCVECA = ILC1AMP(LABELA,-2,IDUM)
-        CALL CC_SETDOT(WORK(KXCTRAN),WORK(KXCDOTS),NXCTRAN,MXVEC,
-     &                ILCVECA,IOPERB,ITRAN,IVEC)
-        SMOM = SMOM + WORK(KXCCONS-1 + (ITRAN-1)*MXVEC + IVEC)
-
-        IF (LOCDBG) WRITE(LUPRI,'(5X,3A,I2,5X,A,I3,A,E20.10)') 
-     &     'ASYM2: ', LABELA,LABELB, IDXSMOM,'S(',0,')=', SMOM
-        END IF
-
+       END IF 
        END IF 
 
 *---------------------------------------------------------------------*
@@ -440,29 +407,59 @@ c /* deck cc_cauchy */
 
         SMOM = ZERO
 
-        IRCVECA = ILRCAMP(LABELA,IDISP,IDUM)
+c       --------------
+c       Eta{A} x RC^B: 
+c       --------------
         IRCVECB = ILRCAMP(LABELB,IDISP,IDUM)
-        SIGN    = DBLE(ISACAU)
 
-        CALL CCQR_SETEA(WORK(KECTRAN),WORK(KECDOTS),NECTRAN,MXVEC,
-     &                  0,IOPERA,IRCVECB,ITRAN,IVEC)
-        SMOM = SMOM + WORK(KECCONS-1 + (ITRAN-1)*MXVEC + IVEC)
+        CALL CC_SETXE('Eta',WORK(KXETRAN),WORK(KECDOTS),NXETRAN,MXVEC,
+     &                0,IOPERA,0,0,0,0,IRCVECB,ITRAN,IVEC)
+        ECONAB = WORK(KECCONS-1 + (ITRAN-1)*MXVEC + IVEC)
+        SMOM = SMOM + ECONAB
+        IF (LOCDBG) WRITE(LUPRI,*) 'ECONAB:',ECONAB
 
-        CALL CCQR_SETEA(WORK(KECTRAN),WORK(KECDOTS),NECTRAN,MXVEC,
-     &                  0,IOPERB,IRCVECA,ITRAN,IVEC)
-        SMOM = SMOM + SIGN * WORK(KECCONS-1 + (ITRAN-1)*MXVEC + IVEC)
+c       --------------
+c       Eta{B} x RC^A: 
+c       --------------
+        IF (.NOT.ASYMSD) THEN
+          IRCVECA = ILRCAMP(LABELA,IDISP,IDUM)
+          SIGN    = DBLE(ISACAU)
+
+          CALL CC_SETXE('Eta',WORK(KXETRAN),WORK(KECDOTS),NXETRAN,MXVEC,
+     &                  0,IOPERB,0,0,0,0,IRCVECA,ITRAN,IVEC)
+          ECONBA = SIGN * WORK(KECCONS-1 + (ITRAN-1)*MXVEC + IVEC)
+          SMOM = SMOM + ECONBA
+          IF (LOCDBG) WRITE(LUPRI,*) 'ECONBA:',ECONBA
+        END IF
 
 
-        SIGN = ONE
-        DO N = 0, IDISP
-          IRCVECA = ILRCAMP(LABELA,      N,IDUM)
-          IRCVECB = ILRCAMP(LABELB,IDISP-N,IDUM)
+c       ----------------
+c       F x RC^A x RC^B: 
+c       ----------------
+        IF (.NOT.ASYMSD) THEN
+          SIGN = ONE
+          DO N = 0, IDISP
+            IRCVECA = ILRCAMP(LABELA,      N,IDUM)
+            IRCVECB = ILRCAMP(LABELB,IDISP-N,IDUM)
 
-          CALL CCQR_SETF(WORK(KFCTRAN),WORK(KFCDOTS),NFCTRAN,MXVEC,
-     &                   0,IRCVECA,IRCVECB,ITRAN,IVEC)
-          SMOM = SMOM + SIGN * WORK(KFCCONS-1 + (ITRAN-1)*MXVEC + IVEC)
-          SIGN = -SIGN
-        END DO
+            CALL CCQR_SETF(WORK(KFCTRAN),WORK(KFCDOTS),NFCTRAN,MXVEC,
+     &                     0,IRCVECA,IRCVECB,ITRAN,IVEC)
+            FCON = SIGN * WORK(KFCCONS-1+(ITRAN-1)*MXVEC+IVEC)
+            SMOM = SMOM + FCON
+            IF (LOCDBG) WRITE(LUPRI,*) 'N,FCON:',N,FCON
+            SIGN = -SIGN
+          END DO
+        END IF
+
+c       ----------------
+c       Xi{A} x LC^B: 
+c       ----------------
+        IF (ASYMSD) THEN
+          ILCVECB = ILC1AMP(LABELB,IDISP,IDUM)
+          CALL CC_SETXE('Xi ',WORK(KXETRAN),WORK(KXCDOTS),NXETRAN,MXVEC,
+     &                  0,IOPERA,0,0,0,0,ILCVECB,ITRAN,IVEC)
+          SMOM = SMOM + WORK(KXCCONS-1 + (ITRAN-1)*MXVEC + IVEC)
+        END IF
 
         IDXSMOM = (IOPER-1)*(NLRDISP+5) + IDISP+5
         WORK(KRESULT-1+IDXSMOM) = SMOM
@@ -470,41 +467,6 @@ c /* deck cc_cauchy */
         IF (LOCDBG) THEN
          WRITE(LUPRI,'(5X,2A,I2,5X,A,I3,A,E20.10)') LABELA,LABELB,
      &     IDXSMOM,'S(',-IDISP-2,')=', WORK(KRESULT-1+IDXSMOM)
-        END IF
-
-        IF (ASYMSD) THEN
-          IRCVECA = ILRCAMP(LABELA,IDISP,IDUM)
-          IRCVECB = ILRCAMP(LABELB,IDISP,IDUM)
-          ILCVECA = ILC1AMP(LABELA,IDISP,IDUM)
-          ILCVECB = ILC1AMP(LABELB,IDISP,IDUM)
-
-          CALL CCQR_SETEA(WORK(KECTRAN),WORK(KECDOTS),NECTRAN,MXVEC,
-     &                    0,IOPERA,IRCVECB,ITRAN,IVEC)
-          SMOM = WORK(KECCONS-1 + (ITRAN-1)*MXVEC + IVEC)
-          
-          CALL CC_SETDOT(WORK(KXCTRAN),WORK(KXCDOTS),NXCTRAN,MXVEC,
-     &                  ILCVECB,IOPERA,ITRAN,IVEC)
-          SMOM = SMOM + WORK(KXCCONS-1 + (ITRAN-1)*MXVEC + IVEC)
-
-          IF (LOCDBG) THEN
-            WRITE(LUPRI,'(5X,3A,I2,5X,A,I3,A,E20.10)') 
-     &       'ASYM1: ', LABELA,LABELB, IDXSMOM,'S(',-IDISP-2,')=', SMOM
-          END IF
-
-
-          CALL CCQR_SETEA(WORK(KECTRAN),WORK(KECDOTS),NECTRAN,MXVEC,
-     &                    0,IOPERB,IRCVECA,ITRAN,IVEC)
-          SMOM = WORK(KECCONS-1 + (ITRAN-1)*MXVEC + IVEC)
-          
-          CALL CC_SETDOT(WORK(KXCTRAN),WORK(KXCDOTS),NXCTRAN,MXVEC,
-     &                  ILCVECA,IOPERB,ITRAN,IVEC)
-          SMOM = SMOM + WORK(KXCCONS-1 + (ITRAN-1)*MXVEC + IVEC)
-
-          IF (LOCDBG) THEN
-            WRITE(LUPRI,'(5X,3A,I2,5X,A,I3,A,E20.10)') 
-     &       'ASYM1: ', LABELA,LABELB, IDXSMOM,'S(',-IDISP-2,')=', SMOM
-          END IF
-
         END IF
 
        END IF
@@ -529,6 +491,8 @@ c /* deck cc_cauchy */
          CALL AROUND( BLANKS//'FINAL CC2'//STRING(1:45)//BLANKS )
       ELSE IF (CCSD) THEN
          CALL AROUND( BLANKS//'FINAL CCSD'//STRING(1:45)//BLANKS )
+      ELSE IF (CC3) THEN
+         CALL AROUND( BLANKS//'FINAL CC3'//STRING(1:45)//BLANKS )
       ELSE
          CALL QUIT('CC_CAUCHY called for an unkown '//
      &             'Coupled Cluster model.')
@@ -562,6 +526,7 @@ c /* deck cc_cauchy */
 
         ISTRT = +1
         IF (ISAPROP.EQ.1 .OR. ISAPROP.EQ.0 .OR. ALLLRDSPCF) ISTRT=-4
+        IF (CC3) ISTRT = MAX(ISTRT,0)
 
       IF (ISYMA.EQ.ISYMB) THEN
 
@@ -604,10 +569,9 @@ c /* deck cc_cauchy */
 *---------------------------------------------------------------------*
 c /* deck cccm_setup */
 *=====================================================================*
-      SUBROUTINE CCCM_SETUP(MXTRAN, MXVEC,
+      SUBROUTINE CCCM_SETUP(MXTRAN, MXVEC, IDISP0,
      &                      IFCTRAN, IFCDOTS, NFCTRAN,
-     &                      IECTRAN, IECDOTS, NECTRAN,
-     &                      IXCTRAN, IXCDOTS, NXCTRAN )
+     &                      IXETRAN, IECDOTS, IXCDOTS, NXETRAN)
 *---------------------------------------------------------------------*
 *
 *    Purpose: set up for CCLR Cauchy moment section
@@ -618,6 +582,7 @@ c /* deck cccm_setup */
 *     Written by Christof Haettig, december 1996.
 *     modified for ASYMSD option, C.H., october 1997.
 *     odd dispersion coefficients, C.H., februar 1999.
+*     restructured and updated for CC3, C.H., april 2004.
 *
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
@@ -630,6 +595,7 @@ c /* deck cccm_setup */
 #include <cclrinf.h>
 #include <ccroper.h>
 #include <ccrc1rsp.h>
+#include <cclists.h>
 
 * local parameters:
       CHARACTER*(20) MSGDBG
@@ -639,17 +605,16 @@ c /* deck cccm_setup */
 
       INTEGER MXVEC, MXTRAN
 
-      INTEGER IFCTRAN(3,MXTRAN)
+      INTEGER IFCTRAN(MXDIM_FTRAN,MXTRAN)
       INTEGER IFCDOTS(MXVEC,MXTRAN)
-      INTEGER IECTRAN(3,MXTRAN)
+      INTEGER IXETRAN(MXDIM_XEVEC,MXTRAN)
       INTEGER IECDOTS(MXVEC,MXTRAN)
-      INTEGER IXCTRAN(1,MXTRAN)
       INTEGER IXCDOTS(MXVEC,MXTRAN)
 
-      INTEGER NFRTRAN, NFCTRAN, NXCTRAN, NECTRAN, NCAUMOM
+      INTEGER NFRTRAN, NFCTRAN, NXETRAN, NCAUMOM, MXEVEC, MFCVEC
 
       INTEGER ISYMA,  ISYMB, ITRAN, IVEC, ISYML, IDUM, I, N, IDISP
-      INTEGER IRCVECA, IRCVECB, IOPERA, IOPERB, ISAMA, ISAMB
+      INTEGER IRCVECA, IRCVECB, IOPERA, IOPERB, ISAMA, ISAMB, IDISP0
       INTEGER ILCVECA, ILCVECB, INUM, IOPER, ILROP, ISAPROP, ISACAU
       INTEGER IRHSA, IRHSB
 
@@ -664,12 +629,11 @@ c /* deck cccm_setup */
 * initializations:
 *---------------------------------------------------------------------*
       DO ITRAN = 1, MXTRAN
-       DO I = 1, 3
+       DO I = 1, MXDIM_FTRAN
         IFCTRAN(I,ITRAN) = 0
-        IECTRAN(I,ITRAN) = 0
        END DO
-       DO I = 1, 1
-        IXCTRAN(I,ITRAN) = 0
+       DO I = 1, MXDIM_XEVEC
+        IXETRAN(I,ITRAN) = 0
        END DO
 
        DO IVEC  = 1, MXVEC
@@ -680,8 +644,7 @@ c /* deck cccm_setup */
       END DO
 
       NFCTRAN = 0
-      NECTRAN = 0
-      NXCTRAN = 0
+      NXETRAN = 0
       NCAUMOM = 0
  
 *---------------------------------------------------------------------*
@@ -712,32 +675,38 @@ C
 *---------------------------------------------------------------------*
 * set up list of ETA vector calculations:
 *---------------------------------------------------------------------*
-        DO IDISP = -4 , NLRDISP
+        DO IDISP = IDISP0, NLRDISP
 
           ! flag: +1: even, -1: odd 
           ISACAU = 2 * ( (IDISP/2)*2 - IDISP ) + 1
 
           IF (ISACAU.EQ.ISAPROP .OR. ISAPROP.EQ.0 .OR. ALLLRDSPCF) THEN
-
-            IRCVECA = ILRCAMP(LABELA,IDISP,IDUM)
-            IRCVECB = ILRCAMP(LABELB,IDISP,IDUM)
      
-            CALL CCQR_SETEA(IECTRAN,IECDOTS,MXTRAN,MXVEC,
-     &                      0,IOPERA,IRCVECB,ITRAN,IVEC)
-            NECTRAN = MAX(NECTRAN,ITRAN)
+            ! we need allways Eta{A} x RC^B
+            IRCVECB = ILRCAMP(LABELB,IDISP,IDUM)
+            CALL CC_SETXE('Eta',IXETRAN,IECDOTS,MXTRAN,MXVEC,
+     &                    0,IOPERA,0,0,0,0,IRCVECB,ITRAN,IVEC)
+            NXETRAN = MAX(NXETRAN,ITRAN)
+            MXEVEC  = MAX(MXEVEC, IVEC)
 
-            CALL CCQR_SETEA(IECTRAN,IECDOTS,MXTRAN,MXVEC,
-     &                      0,IOPERB,IRCVECA,ITRAN,IVEC)
-            NECTRAN = MAX(NECTRAN,ITRAN)
+            ! for symmetric formula also Eta{B} x RC^A is needed
+            IF (.NOT.ASYMSD) THEN
+              IRCVECA = ILRCAMP(LABELA,IDISP,IDUM)
+              CALL CC_SETXE('Eta',IXETRAN,IECDOTS,MXTRAN,MXVEC,
+     &                      0,IOPERB,0,0,0,0,IRCVECA,ITRAN,IVEC)
+              NXETRAN = MAX(NXETRAN,ITRAN)
+              MXEVEC  = MAX(MXEVEC, IVEC)
+            END IF
 
           END IF
 
         END DO
 
 *---------------------------------------------------------------------*
-* set up list of F matrix transformations:
+* set up list of F matrix transformations (symmetric formula only):
 *---------------------------------------------------------------------*
-        DO IDISP = -4, -2
+        IF (.NOT.ASYMSD) THEN
+         DO IDISP = IDISP0, -2
           ISACAU = 2 * ( (IDISP/2)*2 - IDISP ) + 1
           IF (ISACAU.EQ.ISAPROP .OR. ISAPROP.EQ.0 .OR. ALLLRDSPCF) THEN
             DO N = IDISP+1, -1
@@ -750,9 +719,9 @@ C
               NFCTRAN = MAX(NFCTRAN,ITRAN)
             END DO
           END IF
-        END DO
+         END DO
 
-        DO IDISP = 0, NLRDISP
+         DO IDISP = MAX(IDISP0,0), NLRDISP
           ISACAU = 2 * ( (IDISP/2)*2 - IDISP ) + 1
           IF (ISACAU.EQ.ISAPROP .OR. ISAPROP.EQ.0 .OR. ALLLRDSPCF) THEN
             DO N = 0, IDISP
@@ -763,29 +732,24 @@ C
      &                       0,MIN(IRCVECA,IRCVECB),
      &                         MAX(IRCVECA,IRCVECB),ITRAN,IVEC)
               NFCTRAN = MAX(NFCTRAN,ITRAN)
+              MFCVEC  = MAX(MFCVEC, IVEC)
             END DO
           END IF
-        END DO
+         END DO
+        END IF
 
 *---------------------------------------------------------------------*
-* set up list of XKSI x LC dot products:
+* set up list of XKSI x LC dot products (asymmetric formula only):
 *---------------------------------------------------------------------*
         IF (ASYMSD) THEN
-          DO IDISP = -4, NLRDISP
+          DO IDISP = IDISP0, NLRDISP
             ISACAU = 2 * ( (IDISP/2)*2 - IDISP ) + 1
             IF (ISACAU.EQ.ISAPROP.OR.ISAPROP.EQ.0.OR.ALLLRDSPCF) THEN
-              ILCVECA = ILC1AMP(LABELA,IDISP,IDUM)
               ILCVECB = ILC1AMP(LABELB,IDISP,IDUM)
-              IRHSA   = IRHSR1(LABELA,.FALSE.,0.0D0,IDUM)
-              IRHSB   = IRHSR1(LABELB,.FALSE.,0.0D0,IDUM)
-       
-              CALL CC_SETDOT(IXCTRAN,IXCDOTS,MXTRAN,MXVEC,
-     &                       ILCVECA,IRHSB,ITRAN,IVEC)
-              NXCTRAN = MAX(NXCTRAN,ITRAN)
-
-              CALL CC_SETDOT(IXCTRAN,IXCDOTS,MXTRAN,MXVEC,
-     &                       ILCVECB,IRHSA,ITRAN,IVEC)
-              NXCTRAN = MAX(NXCTRAN,ITRAN)
+              CALL CC_SETXE('Xi ',IXETRAN,IXCDOTS,MXTRAN,MXVEC,
+     &                      0,IOPERA,0,0,0,0,ILCVECB,ITRAN,IVEC)
+              NXETRAN = MAX(NXETRAN,ITRAN)
+              MXEVEC  = MAX(MXEVEC, IVEC)
             END IF
           END DO
         END IF
@@ -804,41 +768,35 @@ C
      &      ' Cauchy moments'
       WRITE (LUPRI,'((8X,A,I3,A))') 
      & ' - ',NFCTRAN,' F matrix transformations with Cauchy vectors',
-     & ' - ',NECTRAN,' ETA vector calculations '
+     & ' - ',NXETRAN,' ETA and XKSI vector calculations '
       WRITE (LUPRI,'(3X,A,/,/)') 'will be performed.'
 
       IF (LOCDBG) THEN
 
-* list of cauchy vectors:
-      WRITE(LUPRI,'(/A)')' LIST OF REQUIRED RIGHT CAUCHY VECTORS:'
-      DO I = 1, NLRCLBL
-         WRITE(LUPRI,'(I5,3X,A8,I5,2X,1P,I5)') 
-     &          I, LRCLBL(I), ISYLRC(I), ILRCAU(I)
-      END DO
+        ! list of cauchy vectors:
+        WRITE(LUPRI,'(/A)')' LIST OF REQUIRED RIGHT CAUCHY VECTORS:'
+        DO I = 1, NLRCLBL
+           WRITE(LUPRI,'(I5,3X,A8,I5,2X,1P,I5)') 
+     &            I, LRCLBL(I), ISYLRC(I), ILRCAU(I)
+        END DO
 
-* F matrix transformations:
-      WRITE (LUPRI,*)'List of F matrix transformations:'
-      DO ITRAN = 1, NFCTRAN
-        WRITE(LUPRI,'(A,2I5,5X,(25I3,20X))') MSGDBG,
-     &   (IFCTRAN(I,ITRAN),I=1,2),(IFCDOTS(I,ITRAN),I=1,MXVEC)
-      END DO
-      WRITE (LUPRI,*)
+        ! F matrix transformations:
+        WRITE (LUPRI,*)'List of F matrix transformations:'
+        DO ITRAN = 1, NFCTRAN
+          WRITE(LUPRI,'(A,2I5,5X,(25I3,20X))') MSGDBG,
+     &     (IFCTRAN(I,ITRAN),I=1,2),(IFCDOTS(I,ITRAN),I=1,MFCVEC)
+        END DO
+        WRITE (LUPRI,*)
 
-* ETA{O} vector calculations:
-      WRITE (LUPRI,*) 'List of ETA{O} vector calculations:'
-      DO ITRAN = 1, NECTRAN
-        WRITE(LUPRI,'(A,2I5,5X,(25I3,20X))') MSGDBG,
-     &   (IECTRAN(I,ITRAN),I=1,2),(IECDOTS(I,ITRAN),I=1,MXVEC)
-      END DO
-      WRITE (LUPRI,*)
-
-* XKSI{O} x LC dot products:
-      WRITE (LUPRI,*) 'List O1 x LC dot products:'
-      DO ITRAN = 1, NXCTRAN
-        WRITE(LUPRI,'(A,2I5,5X,(25I3,20X))') MSGDBG,
-     &   IXCTRAN(1,ITRAN),(IXCDOTS(I,ITRAN),I=1,MXVEC)
-      END DO
-      WRITE (LUPRI,*)
+        ! Xi{O} and ETA{O} vector calculations:
+        WRITE (LUPRI,*) 'List of Xi{O} and ETA{O} vector calculations:'
+        DO ITRAN = 1, NXETRAN
+           WRITE(LUPRI,'(A,5I5,5X,(25I3,20X))') MSGDBG,
+     &      (IXETRAN(I,ITRAN),I=1,5),(IXCDOTS(I,ITRAN),I=1,MXEVEC)
+           WRITE(LUPRI,'(A,25X,5X,(25I3,20X))') MSGDBG,
+     &                               (IECDOTS(I,ITRAN),I=1,MXEVEC)
+        END DO
+        WRITE (LUPRI,*)
 
       END IF
 
@@ -859,6 +817,8 @@ c /* deck CCCM_VEC */
 *
 *    Written by Christof Haettig March 1997
 *    Left Cauchy vectors introduced, October 1997, Christof Haettig
+*    Restructured to compute every vector on the list only once and
+*    to introduce CC3, March 2004, Christof Haettig
 *
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
@@ -881,39 +841,43 @@ c /* deck CCCM_VEC */
       PARAMETER (MSGDBG = '[debug] CCCM_VEC> ')
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
-      LOGICAL INCORE
-      PARAMETER (INCORE = .TRUE.)
 
       INTEGER LWORK
 
 #if defined (SYS_CRAY)
-      REAL WORK(LWORK)
+      REAL WORK(LWORK), ZERO, ONE
 #else
-      DOUBLE PRECISION WORK(LWORK)
+      DOUBLE PRECISION WORK(LWORK), ZERO, ONE
 #endif
+      PARAMETER (ZERO=0.0d0, ONE=1.0d0)
 
-      CHARACTER*(10) MODEL
-      CHARACTER*(8)  LABELA, LABELB
-      INTEGER ILROP, IVECR, IVECR1, IVECL, IVECL1, KAXI1, KAXI2, KEND1
-      INTEGER LEND1, ISYML, IOPT, IOPERA, IOPERB, ISYMA, ISYMB, KAXI0
+      CHARACTER MODEL*10, MODELW*10, LABEL*8
+      INTEGER IOPT, IOPTW, IDLSTRC, IDLSTLC, NCAU, ISYM, ICAU,
+     &        KSING, KDOUB, KORB, KEND1, LEND1, NAMP, IDXLST
+    
  
 * external functions:
       INTEGER ILSTSYM
       INTEGER ILRCAMP
       INTEGER ILC1AMP
+      INTEGER IRHSR1
+      INTEGER IETA1
 
 *---------------------------------------------------------------------*
 * initializations:
 *---------------------------------------------------------------------*
       IF (CCS) THEN
-        MODEL = 'CCS       '
-        IOPT  = 1
+        MODELW = 'CCS       '
+        IOPTW  = 1
       ELSE IF (CC2) THEN
-        MODEL = 'CC2       '
-        IOPT  = 3
+        MODELW = 'CC2       '
+        IOPTW  = 3
       ELSE IF (CCSD) THEN
-        MODEL = 'CCSD      '
-        IOPT  = 3
+        MODELW = 'CCSD      '
+        IOPTW  = 3
+      ELSE IF (CC3) THEN
+        MODELW = 'CC3       '
+        IOPTW  = 3
       ELSE
         WRITE (LUPRI,*)'CCCM_VEC> called for unkown coupled '//
      &        'cluster model...'
@@ -921,401 +885,165 @@ c /* deck CCCM_VEC */
      &            'coupled cluster model...')
       END IF
   
+
+*---------------------------------------------------------------------*
+* start loop over right cauchy vectors:
+*---------------------------------------------------------------------*
+      IF (LOCDBG) THEN
+        WRITE (LUPRI,'(/A)')
+     &    ' LIST OF REQUIRED FIRST-ORDER RIGHT CAUCHY VECTORS:'
+        DO IDLSTRC = 1, NLRCLBL
+           WRITE(LUPRI,'(I5,3X,A8,I5,2X,1P,I5)') 
+     &       IDLSTRC,LRCLBL(IDLSTRC),ISYLRC(IDLSTRC),ILRCAU(IDLSTRC)
+        END DO
+      END IF
+
+      DO ICAU = -1, -4, -1
+       DO IDLSTRC = 1, NLRCLBL
+        NCAU  = ILRCAU(IDLSTRC)
+        ISYM  = ISYLRC(IDLSTRC)
+        LABEL = LRCLBL(IDLSTRC)
+
+        IF (ICAU.EQ.NCAU) THEN
+
+          ! allocate work space for one vector:
+          KSING = 1                    ! singles
+          KDOUB = KSING + NT1AM(ISYM)  ! doubles
+          KEND1 = KDOUB + NT2AM(ISYM)
+          IF (CCS) KEND1 = KDOUB
+
+          LEND1 = LWORK - KEND1
+          IF (LEND1 .LT. 0) THEN
+            CALL QUIT('Insufficient work space in CCCM_VEC.')
+          END IF
+
+          KORB = -999999
+ 
+          NAMP = NT1AM(ISYM)
+          IF (.NOT. CCS) NAMP = NAMP + NT2AM(ISYM)
+        
+          IF (NCAU.EQ.-1) THEN
+c           -------------
+c           C(-1) = -Xksi
+c           -------------
+            IOPT = 3
+            IDXLST = IRHSR1(LABEL,.FALSE.,ZERO,ISYM)
+            CALL CC_RDRSP('O1 ',IDXLST,ISYM,IOPT,MODEL,
+     &                    WORK(KSING),WORK(KDOUB))
+     
+            CALL DSCAL(NAMP,-ONE,WORK(KSING),1)
+
+            CALL CC_WRRSP('RC ',IDLSTRC,ISYM,IOPTW,MODELW,WORK(KORB),
+     &                    WORK(KSING),WORK(KDOUB),WORK(KEND1),LEND1)
+
+          ELSE IF (NCAU.LT.-1) THEN
+c           -------------------
+c           C(-n) = A x C(-n+1)
+c           -------------------
+            IOPT = 3
+            IDXLST = ILRCAMP(LABEL,NCAU+1,ISYM)
+            CALL CC_RDRSP('RC ',IDXLST,ISYM,IOPT,MODEL,
+     &                    WORK(KSING),WORK(KDOUB))
+            
+            ! Transform XiB vector with Jacobian. Xib is stored at 
+            ! the beginning of WORK and will be replaced by the
+            ! transformed vector.
+            CALL CC_ATRR(ZERO,ISYM,1,WORK(KSING),LWORK,.FALSE.,DUMMY)
+            
+            CALL CC_WRRSP('RC ',IDLSTRC,ISYM,IOPTW,MODELW,WORK(KORB),
+     &                    WORK(KSING),WORK(KDOUB),WORK(KEND1),LEND1)
+          ELSE 
+            CALL QUIT('Illegal Cauchy order in CCCM_VEC.')
+          END IF
+
+        END IF ! (ICAU.EQ.NCAU)
+       END DO ! IDLSTRC
+      END DO ! ICAU
+
+*---------------------------------------------------------------------*
+* start loop over left cauchy vectors:
+*---------------------------------------------------------------------*
       IF (LOCDBG) THEN
        WRITE (LUPRI,'(/A)')
-     &   ' LIST OF REQUIRED FIRST-ORDER RIGHT CAUCHY VECTORS:'
-       DO I = 1, NLRCLBL
-          WRITE(LUPRI,'(I5,3X,A8,I5,2X,1P,I5)') 
-     &          I, LRCLBL(I), ISYLRC(I), ILRCAU(I)
-       END DO
-       WRITE (LUPRI,'(/A)')
      &   ' LIST OF REQUIRED FIRST-ORDER LEFT CAUCHY VECTORS:'
-       DO I = 1, NLRCLBL
+       DO IDLSTLC = 1, NLC1LBL
           WRITE(LUPRI,'(I5,3X,A8,I5,2X,1P,I5)') 
-     &          I, LBLLC1(I), ISYLC1(I), ILRCAU(I)
+     &       IDLSTLC, LBLLC1(IDLSTLC), ISYLC1(IDLSTLC), ILRCAU(IDLSTLC)
        END DO
       END IF
-*---------------------------------------------------------------------*
-* start loop over operator labels for A operators:
-*---------------------------------------------------------------------*
 
-      DO ILROP = 1, NLROP
-        IOPERA = IALROP(ILROP)
-        IOPERB = IBLROP(ILROP)
-        ISYMA  = ISYOPR(IOPERA)
-        ISYMB  = ISYOPR(IOPERB)
-        LABELA = LBLOPR(IOPERA)
-        LABELB = LBLOPR(IOPERB)
+      DO ICAU = -1, -4, -1
+       DO IDLSTLC = 1, NLC1LBL
+        NCAU  = ILC1CAU(IDLSTLC)
+        ISYM  = ISYLC1(IDLSTLC)
+        LABEL = LBLLC1(IDLSTLC)
 
-C       WRITE (LUPRI,*) MSGDBG, 'LABELA:',LABELA
+        IF (ICAU.EQ.NCAU) THEN
 
-* allocate work space for one vector:
-        KAXI1 = 1                     ! Xi, singles
-        KAXI2 = KAXI1 + NT1AM(ISYMA)  ! Xi, doubles
-        KEND1 = KAXI2 + NT2AM(ISYMA)
-C       IF (CCS) KEND1 = KAXI2
-        LEND1 = LWORK - KEND1
-      
-        IF (LEND1 .LT. 0) THEN
-          CALL QUIT('Insufficient work space in CCCM_VEC.')
-        END IF
+          ! allocate work space for one vector:
+          KSING = 1                    ! singles
+          KDOUB = KSING + NT1AM(ISYM)  ! doubles
+          KEND1 = KDOUB + NT2AM(ISYM)
+          IF (CCS) KEND1 = KDOUB
 
-        KAXI0 = -999999
+          LEND1 = LWORK - KEND1
+          IF (LEND1 .LT. 0) THEN
+            CALL QUIT('Insufficient work space in CCCM_VEC.')
+          END IF
+
+          KORB = -999999
  
-*---------------------------------------------------------------------*
-*       C(-1) = -Xksi
-*---------------------------------------------------------------------*
-        CALL CC_XKSI(WORK(KAXI1),LABELA,ISYMA,0,DUMMY,WORK(KEND1),LEND1)
-        CALL DSCAL(NT1AM(ISYMA),-1.0d0,WORK(KAXI1),1)
-        IF (.NOT.CCS) CALL DSCAL(NT2AM(ISYMA),-1.0d0,WORK(KAXI2),1)
+          NAMP = NT1AM(ISYM)
+          IF (.NOT. CCS) NAMP = NAMP + NT2AM(ISYM)
+        
+          IF (NCAU.EQ.-1) THEN
+c           ---------------
+c           Cbar(-1) = +Eta
+c           ---------------
+            IOPT   = 3
+            IDXLST = IETA1(LABEL,.FALSE.,ZERO,ISYM)
+            CALL CC_RDRSP('X1 ',IDXLST,ISYM,IOPT,MODEL,
+     &                    WORK(KSING),WORK(KDOUB))
      
-        IVECR = ILRCAMP(LABELA,-1,ISYMA)
-        CALL CC_WRRSP('RC',IVECR,ISYMA,IOPT,MODEL,WORK(KAXI0),
-     &                WORK(KAXI1),WORK(KAXI2),WORK(KEND1),LEND1)
+            CALL CC_WRRSP('LC ',IDLSTLC,ISYM,IOPTW,MODELW,WORK(KORB),
+     &                     WORK(KSING),WORK(KDOUB),WORK(KEND1),LEND1)
 
-*---------------------------------------------------------------------*
-*       Cbar(-1) = Eta
-*---------------------------------------------------------------------*
-        IF (ASYMSD) THEN
-          CALL CC_ETAC(ISYMA,LABELA,WORK(KAXI1),'L0',0,0,DUMMY,
-     &                 WORK(KEND1),LEND1)
-     
-          IVECL = ILC1AMP(LABELA,-1,ISYMA)
-          CALL CC_WRRSP('LC',IVECL,ISYMA,IOPT,MODEL,WORK(KAXI0),
-     &                   WORK(KAXI1),WORK(KAXI2),WORK(KEND1),LEND1)
-        END IF
-*---------------------------------------------------------------------*
-*       C(-2) = A x C(-1)
-*---------------------------------------------------------------------*
-*       Transform XiB vector with Jacobian. Xib is stored at the 
-*       beginning of WORK and will be replaced by transformed vector.
+          ELSE IF (NCAU.LT.-1) THEN
+c          -----------------------------------
+c          Cbar(-n) = - FC(-n+1) - Cbar(-n+1)A
+c          -----------------------------------
 
-        IVECR1 = ILRCAMP(LABELA,-1,ISYMA)
-        CALL CC_RDRSP('RC',IVECR1,ISYMA,IOPT,MODEL,
-     &                WORK(KAXI1),WORK(KAXI2))
+            ! calculate - F C(-1):
+            IDXLST = ILRCAMP(LABEL,NCAU+1,ISYM)
+            CALL CC_FTRAN('L0 ',0,'RC ',IDXLST,WORK(KSING),LWORK)
+            CALL DSCAL(NAMP,-ONE,WORK(KSING),1)
+            
+            ! store as Cbar(-2):
+            CALL CC_WRRSP('LC ',IDLSTLC,ISYM,IOPTW,MODELW,WORK(KORB),
+     &                     WORK(KSING),WORK(KDOUB),WORK(KEND1),LEND1)
+            
+            ! read Cbar(-1) and calculate  - Cbar(-1) A:
+            IOPT   = 3
+            IDXLST = ILC1AMP(LABEL,NCAU+1,ISYM)
+            CALL CC_RDRSP('LC ',IDXLST,ISYM,IOPT,MODEL,
+     &                     WORK(KSING),WORK(KDOUB))
+            
+            CALL CC_ATRR(ZERO,ISYM,-1,WORK(KSING),LWORK,.FALSE.,DUMMY)
+            CALL DSCAL(NAMP,-ONE,WORK(KSING),1)
+            
+            ! add to Cbar(-2) vector on file:
+            CALL CC_WARSP('LC',IDLSTLC,ISYM,IOPTW,MODELW,WORK(KORB),
+     &                     WORK(KSING),WORK(KDOUB),WORK(KEND1),LEND1)
+          ELSE 
+            CALL QUIT('Illegal Cauchy order in CCCM_VEC.')
+          END IF
 
-        CALL CC_ATRR(0.0D0,ISYMA,1,WORK(KAXI1),LWORK,.FALSE.,DUMMY)
- 
-        IVECR = ILRCAMP(LABELA,-2,ISYMA)
-        CALL CC_WRRSP('RC',IVECR,ISYMA,IOPT,MODEL,WORK(KAXI0),
-     &                WORK(KAXI1),WORK(KAXI2),WORK(KEND1),LEND1)
-
-*---------------------------------------------------------------------*
-*       Cbar(-2) = - FC(-1) - Cbar(-1)A
-*---------------------------------------------------------------------*
-        IF (ASYMSD) THEN 
-
-* calculate - F C(-1):
-          IVECR = ILRCAMP(LABELA,-1,ISYMA)
-          CALL CC_FTRAN('L0 ',0,'RC ',IVECR,WORK(KAXI1),LWORK)
-          CALL DSCAL(NT1AM(ISYMA),-1.0d0,WORK(KAXI1),1)
-          IF (.NOT.CCS) CALL DSCAL(NT2AM(ISYMA),-1.0d0,WORK(KAXI2),1)
-
-* store as Cbar(-2):
-          IVECL = ILC1AMP(LABELA,-2,ISYMA)
-          CALL CC_WRRSP('LC',IVECL,ISYMA,IOPT,MODEL,WORK(KAXI0),
-     &                   WORK(KAXI1),WORK(KAXI2),WORK(KEND1),LEND1)
-
-* read Cbar(-1) and calculate  - Cbar(-1) A:
-          IVECL1 = ILC1AMP(LABELA,-1,ISYMA)
-          CALL CC_RDRSP('LC',IVECL1,ISYMA,IOPT,MODEL,
-     &                   WORK(KAXI1),WORK(KAXI2))
-          
-          CALL CC_ATRR(0.0D0,ISYMA,-1,WORK(KAXI1),LWORK,.FALSE.,DUMMY)
-          CALL DSCAL(NT1AM(ISYMA),-1.0d0,WORK(KAXI1),1)
-          IF (.NOT.CCS) CALL DSCAL(NT2AM(ISYMA),-1.0d0,WORK(KAXI2),1)
-
-* add to Cbar(-2) vector on file:
-          IVECL = ILC1AMP(LABELA,-2,ISYMA)
-          CALL CC_WARSP('LC',IVECL,ISYMA,IOPT,MODEL,WORK(KAXI0),
-     &                   WORK(KAXI1),WORK(KAXI2),WORK(KEND1),LEND1)
-        END IF
-*---------------------------------------------------------------------*
-*       C(-3) = A x C(-2)
-*---------------------------------------------------------------------*
-*       Transform XiB vector with Jacobian. Xib is stored at the 
-*       beginning of WORK and will be replaced by transformed vector.
-
-        IVECR1 = ILRCAMP(LABELA,-2,ISYMA)
-        CALL CC_RDRSP('RC',IVECR1,ISYMA,IOPT,MODEL,
-     &                WORK(KAXI1),WORK(KAXI2))
-
-        CALL CC_ATRR(0.0D0,ISYMA,1,WORK(KAXI1),LWORK,.FALSE.,DUMMY)
- 
-        IVECR = ILRCAMP(LABELA,-3,ISYMA)
-        CALL CC_WRRSP('RC',IVECR,ISYMA,IOPT,MODEL,WORK(KAXI0),
-     &                WORK(KAXI1),WORK(KAXI2),WORK(KEND1),LEND1)
-
-*---------------------------------------------------------------------*
-*       Cbar(-3) = - FC(-2) - Cbar(-2)A  
-*---------------------------------------------------------------------*
-        IF (ASYMSD) THEN 
-
-* calculate - F C(-2):
-          IVECR = ILRCAMP(LABELA,-2,ISYMA)
-          CALL CC_FTRAN('L0 ',0,'RC ',IVECR,WORK(KAXI1),LWORK)
-          CALL DSCAL(NT1AM(ISYMA),-1.0d0,WORK(KAXI1),1)
-          IF (.NOT.CCS) CALL DSCAL(NT2AM(ISYMA),-1.0d0,WORK(KAXI2),1)
-
-* store as Cbar(-3):
-          IVECL = ILC1AMP(LABELA,-3,ISYMA)
-          CALL CC_WRRSP('LC',IVECL,ISYMA,IOPT,MODEL,WORK(KAXI0),
-     &                   WORK(KAXI1),WORK(KAXI2),WORK(KEND1),LEND1)
-
-* read Cbar(-2) and calculate  - Cbar(-2) A:
-          IVECL1 = ILC1AMP(LABELA,-2,ISYMA)
-          CALL CC_RDRSP('LC',IVECL1,ISYMA,IOPT,MODEL,
-     &                   WORK(KAXI1),WORK(KAXI2))
-          
-          CALL CC_ATRR(0.0D0,ISYMA,-1,WORK(KAXI1),LWORK,.FALSE.,DUMMY)
-          CALL DSCAL(NT1AM(ISYMA),-1.0d0,WORK(KAXI1),1)
-          IF (.NOT.CCS) CALL DSCAL(NT2AM(ISYMA),-1.0d0,WORK(KAXI2),1)
-
-* add to Cbar(-3) vector on file:
-          IVECL = ILC1AMP(LABELA,-3,ISYMA)
-          CALL CC_WARSP('LC',IVECL,ISYMA,IOPT,MODEL,WORK(KAXI0),
-     &                   WORK(KAXI1),WORK(KAXI2),WORK(KEND1),LEND1)
-        END IF
-*---------------------------------------------------------------------*
-*       C(-4) = A x C(-3)
-*---------------------------------------------------------------------*
-*       Transform XiB vector with Jacobian. Xib is stored at the 
-*       beginning of WORK and will be replaced by transformed vector.
-
-        IVECR1 = ILRCAMP(LABELA,-3,ISYMA)
-        CALL CC_RDRSP('RC',IVECR1,ISYMA,IOPT,MODEL,
-     &                WORK(KAXI1),WORK(KAXI2))
-
-        CALL CC_ATRR(0.0D0,ISYMA,1,WORK(KAXI1),LWORK,.FALSE.,DUMMY)
- 
-        IVECR = ILRCAMP(LABELA,-4,ISYMA)
-        CALL CC_WRRSP('RC',IVECR,ISYMA,IOPT,MODEL,WORK(KAXI0),
-     &                WORK(KAXI1),WORK(KAXI2),WORK(KEND1),LEND1)
-
-*---------------------------------------------------------------------*
-*       Cbar(-4) = - FC(-3) - Cbar(-3)A
-*---------------------------------------------------------------------*
-        IF (ASYMSD) THEN 
-
-* calculate - F C(-3):
-          IVECR = ILRCAMP(LABELA,-3,ISYMA)
-          CALL CC_FTRAN('L0 ',0,'RC ',IVECR,WORK(KAXI1),LWORK)
-          CALL DSCAL(NT1AM(ISYMA),-1.0d0,WORK(KAXI1),1)
-          IF (.NOT.CCS) CALL DSCAL(NT2AM(ISYMA),-1.0d0,WORK(KAXI2),1)
-
-* store as Cbar(-4):
-          IVECL = ILC1AMP(LABELA,-4,ISYMA)
-          CALL CC_WRRSP('LC',IVECL,ISYMA,IOPT,MODEL,WORK(KAXI0),
-     &                   WORK(KAXI1),WORK(KAXI2),WORK(KEND1),LEND1)
-
-* read Cbar(-3) and calculate  - Cbar(-3) A:
-          IVECL1 = ILC1AMP(LABELA,-3,ISYMA)
-          CALL CC_RDRSP('LC',IVECL1,ISYMA,IOPT,MODEL,
-     &                   WORK(KAXI1),WORK(KAXI2))
-          
-          CALL CC_ATRR(0.0D0,ISYMA,-1,WORK(KAXI1),LWORK,.FALSE.,DUMMY)
-          CALL DSCAL(NT1AM(ISYMA),-1.0d0,WORK(KAXI1),1)
-          IF (.NOT.CCS) CALL DSCAL(NT2AM(ISYMA),-1.0d0,WORK(KAXI2),1)
-
-* add to Cbar(-4) vector on file:
-          IVECL = ILC1AMP(LABELA,-4,ISYMA)
-          CALL CC_WARSP('LC',IVECL,ISYMA,IOPT,MODEL,WORK(KAXI0),
-     &                   WORK(KAXI1),WORK(KAXI2),WORK(KEND1),LEND1)
-        END IF
-*---------------------------------------------------------------------*
-      END DO
-
-
-*---------------------------------------------------------------------*
-* start loop over operator labels for B operators:
-*---------------------------------------------------------------------*
-      DO ILROP = 1, NLROP
-        IOPERA = IALROP(ILROP)
-        IOPERB = IBLROP(ILROP)
-        ISYMA  = ISYOPR(IOPERA)
-        ISYMB  = ISYOPR(IOPERB)
-        LABELA = LBLOPR(IOPERA)
-        LABELB = LBLOPR(IOPERB)
-
-C       WRITE (LUPRI,*) MSGDBG, 'LABELB:',LABELB
-
-* allocate work space for one vector:
-        KAXI1 = 1                    ! Xi, singles
-        KAXI2 = KAXI1 + NT1AM(ISYMB)  ! Xi, doubles
-        KEND1 = KAXI2 + NT2AM(ISYMB)
-C       IF (CCS) KEND1 = KAXI2
-        LEND1 = LWORK - KEND1
-      
-        IF (LEND1 .LT. 0) THEN
-          CALL QUIT('Insufficient work space in CCCM_VEC.')
-        END IF
- 
-*---------------------------------------------------------------------*
-*       C(-1) = -Xksi
-*---------------------------------------------------------------------*
-        CALL CC_XKSI(WORK(KAXI1),LABELB,ISYMB,0,DUMMY,WORK(KEND1),LEND1)
-        CALL DSCAL(NT1AM(ISYMB),-1.0d0,WORK(KAXI1),1)
-        IF (.NOT.CCS) CALL DSCAL(NT2AM(ISYMB),-1.0d0,WORK(KAXI2),1)
-     
-        IVECR = ILRCAMP(LABELB,-1,ISYMB)
-        CALL CC_WRRSP('RC',IVECR,ISYMB,IOPT,MODEL,WORK(KAXI0),
-     &                WORK(KAXI1),WORK(KAXI2),WORK(KEND1),LEND1)
-
-*---------------------------------------------------------------------*
-*       Cbar(-1) = Eta
-*---------------------------------------------------------------------*
-        IF (ASYMSD) THEN
-          CALL CC_ETAC(ISYMB,LABELB,WORK(KAXI1),'L0',0,0,DUMMY,
-     &                 WORK(KEND1),LEND1)
-     
-          IVECL = ILC1AMP(LABELB,-1,ISYMB)
-          CALL CC_WRRSP('LC',IVECL,ISYMB,IOPT,MODEL,WORK(KAXI0),
-     &                   WORK(KAXI1),WORK(KAXI2),WORK(KEND1),LEND1)
-        END IF
-*---------------------------------------------------------------------*
-*       C(-2) = A x C(-1)
-*---------------------------------------------------------------------*
-*       Transform XiB vector with Jacobian. Xib is stored at the 
-*       beginning of WORK and will be replaced by transformed vector.
-
-        IVECR1 = ILRCAMP(LABELB,-1,ISYMB)
-        CALL CC_RDRSP('RC',IVECR1,ISYMB,IOPT,MODEL,
-     &                WORK(KAXI1),WORK(KAXI2))
-
-        CALL CC_ATRR(0.0D0,ISYMB,1,WORK(KAXI1),LWORK,.FALSE.,DUMMY)
- 
-        IVECR = ILRCAMP(LABELB,-2,ISYMB)
-        CALL CC_WRRSP('RC',IVECR,ISYMB,IOPT,MODEL,WORK(KAXI0),
-     &                WORK(KAXI1),WORK(KAXI2),WORK(KEND1),LEND1)
-
-*---------------------------------------------------------------------*
-*       Cbar(-2) = - FC(-1) - Cbar(-1)A
-*---------------------------------------------------------------------*
-        IF (ASYMSD) THEN 
-
-* calculate - F C(-1):
-          IVECR = ILRCAMP(LABELB,-1,ISYMB)
-          CALL CC_FTRAN('L0 ',0,'RC ',IVECR,WORK(KAXI1),LWORK)
-          CALL DSCAL(NT1AM(ISYMB),-1.0d0,WORK(KAXI1),1)
-          IF (.NOT.CCS) CALL DSCAL(NT2AM(ISYMB),-1.0d0,WORK(KAXI2),1)
-
-* store as Cbar(-2):
-          IVECL = ILC1AMP(LABELB,-2,ISYMB)
-          CALL CC_WRRSP('LC',IVECL,ISYMB,IOPT,MODEL,WORK(KAXI0),
-     &                   WORK(KAXI1),WORK(KAXI2),WORK(KEND1),LEND1)
-
-* read Cbar(-1) and calculate  - Cbar(-1) A:
-          IVECL1 = ILC1AMP(LABELB,-1,ISYMB)
-          CALL CC_RDRSP('LC',IVECL1,ISYMB,IOPT,MODEL,
-     &                   WORK(KAXI1),WORK(KAXI2))
-          
-          CALL CC_ATRR(0.0D0,ISYMB,-1,WORK(KAXI1),LWORK,.FALSE.,DUMMY)
-          CALL DSCAL(NT1AM(ISYMB),-1.0d0,WORK(KAXI1),1)
-          IF (.NOT.CCS) CALL DSCAL(NT2AM(ISYMB),-1.0d0,WORK(KAXI2),1)
-
-* add to Cbar(-2) vector on file:
-          IVECL = ILC1AMP(LABELB,-2,ISYMB)
-          CALL CC_WARSP('LC',IVECL,ISYMB,IOPT,MODEL,WORK(KAXI0),
-     &                   WORK(KAXI1),WORK(KAXI2),WORK(KEND1),LEND1)
-        END IF
-*---------------------------------------------------------------------*
-*       C(-3) = A x C(-2)
-*---------------------------------------------------------------------*
-*       Transform XiB vector with Jacobian. Xib is stored at the 
-*       beginning of WORK and will be replaced by transformed vector.
-
-        IVECR1 = ILRCAMP(LABELB,-2,ISYMB)
-        CALL CC_RDRSP('RC',IVECR1,ISYMB,IOPT,MODEL,
-     &                WORK(KAXI1),WORK(KAXI2))
-
-        CALL CC_ATRR(0.0D0,ISYMB,1,WORK(KAXI1),LWORK,.FALSE.,DUMMY)
- 
-        IVECR = ILRCAMP(LABELB,-3,ISYMB)
-        CALL CC_WRRSP('RC',IVECR,ISYMB,IOPT,MODEL,WORK(KAXI0),
-     &                WORK(KAXI1),WORK(KAXI2),WORK(KEND1),LEND1)
-
-*---------------------------------------------------------------------*
-*       Cbar(-3) = - FC(-2) - Cbar(-2)A 
-*---------------------------------------------------------------------*
-        IF (ASYMSD) THEN 
-
-* calculate - F C(-2):
-          IVECR = ILRCAMP(LABELB,-2,ISYMB)
-          CALL CC_FTRAN('L0 ',0,'RC ',IVECR,WORK(KAXI1),LWORK)
-          CALL DSCAL(NT1AM(ISYMB),-1.0d0,WORK(KAXI1),1)
-          IF (.NOT.CCS) CALL DSCAL(NT2AM(ISYMB),-1.0d0,WORK(KAXI2),1)
-
-* store as Cbar(-3):
-          IVECL = ILC1AMP(LABELB,-3,ISYMB)
-          CALL CC_WRRSP('LC',IVECL,ISYMB,IOPT,MODEL,WORK(KAXI0),
-     &                   WORK(KAXI1),WORK(KAXI2),WORK(KEND1),LEND1)
-
-* read Cbar(-2) and calculate  - Cbar(-2) A:
-          IVECL1 = ILC1AMP(LABELB,-2,ISYMB)
-          CALL CC_RDRSP('LC',IVECL1,ISYMB,IOPT,MODEL,
-     &                   WORK(KAXI1),WORK(KAXI2))
-          
-          CALL CC_ATRR(0.0D0,ISYMB,-1,WORK(KAXI1),LWORK,.FALSE.,DUMMY)
-          CALL DSCAL(NT1AM(ISYMB),-1.0d0,WORK(KAXI1),1)
-          IF (.NOT.CCS) CALL DSCAL(NT2AM(ISYMB),-1.0d0,WORK(KAXI2),1)
-
-* add to Cbar(-3) vector on file:
-          IVECL = ILC1AMP(LABELB,-3,ISYMB)
-          CALL CC_WARSP('LC',IVECL,ISYMB,IOPT,MODEL,WORK(KAXI0),
-     &                   WORK(KAXI1),WORK(KAXI2),WORK(KEND1),LEND1)
-        END IF
-*---------------------------------------------------------------------*
-*       C(-4) = A x C(-3)
-*---------------------------------------------------------------------*
-*       Transform XiB vector with Jacobian. Xib is stored at the 
-*       beginning of WORK and will be replaced by transformed vector.
-
-        IVECR1 = ILRCAMP(LABELB,-3,ISYMB)
-        CALL CC_RDRSP('RC',IVECR1,ISYMB,IOPT,MODEL,
-     &                WORK(KAXI1),WORK(KAXI2))
-
-        CALL CC_ATRR(0.0D0,ISYMB,1,WORK(KAXI1),LWORK,.FALSE.,DUMMY)
- 
-        IVECR = ILRCAMP(LABELB,-4,ISYMB)
-        CALL CC_WRRSP('RC',IVECR,ISYMB,IOPT,MODEL,WORK(KAXI0),
-     &                WORK(KAXI1),WORK(KAXI2),WORK(KEND1),LEND1)
-
-*---------------------------------------------------------------------*
-*       Cbar(-4) = - FC(-3) - Cbar(-3)A
-*---------------------------------------------------------------------*
-        IF (ASYMSD) THEN 
-
-* calculate - F C(-3):
-          IVECR = ILRCAMP(LABELB,-3,ISYMB)
-          CALL CC_FTRAN('L0 ',0,'RC ',IVECR,WORK(KAXI1),LWORK)
-          CALL DSCAL(NT1AM(ISYMB),-1.0d0,WORK(KAXI1),1)
-          IF (.NOT.CCS) CALL DSCAL(NT2AM(ISYMB),-1.0d0,WORK(KAXI2),1)
-
-* store as Cbar(-4):
-          IVECL = ILC1AMP(LABELB,-4,ISYMB)
-          CALL CC_WRRSP('LC',IVECL,ISYMB,IOPT,MODEL,WORK(KAXI0),
-     &                   WORK(KAXI1),WORK(KAXI2),WORK(KEND1),LEND1)
-
-* read Cbar(-3) and calculate  - Cbar(-3) A:
-          IVECL1 = ILC1AMP(LABELB,-3,ISYMB)
-          CALL CC_RDRSP('LC',IVECL1,ISYMB,IOPT,MODEL,
-     &                   WORK(KAXI1),WORK(KAXI2))
-          
-          CALL CC_ATRR(0.0D0,ISYMB,-1,WORK(KAXI1),LWORK,.FALSE.,DUMMY)
-          CALL DSCAL(NT1AM(ISYMB),-1.0d0,WORK(KAXI1),1)
-          IF (.NOT.CCS) CALL DSCAL(NT2AM(ISYMB),-1.0d0,WORK(KAXI2),1)
-
-* add to Cbar(-4) vector on file:
-          IVECL = ILC1AMP(LABELB,-4,ISYMB)
-          CALL CC_WARSP('LC',IVECL,ISYMB,IOPT,MODEL,WORK(KAXI0),
-     &                   WORK(KAXI1),WORK(KAXI2),WORK(KEND1),LEND1)
-        END IF
-*---------------------------------------------------------------------*
-      END DO
+        END IF ! (ICAU.EQ.NCAU)
+       END DO ! IDLSTLC
+      END DO ! ICAU
 
       RETURN
       END
-
 *---------------------------------------------------------------------*
 *              END OF SUBROUTINE CCCM_VEC                             *
 *---------------------------------------------------------------------*

@@ -6300,7 +6300,6 @@ C
       RETURN
       END
 *---------------------------------------------------------------------*
-*---------------------------------------------------------------------*
       SUBROUTINE CC_PUT1OP(INDOP,NOP,MAXOP,OPERATOR,ROUTINE)
 C
       CHARACTER*(*) ROUTINE, OPERATOR
@@ -6344,14 +6343,13 @@ C
         WRITE(LUPRI,'(2(/,A,I5),/)')
      &  ' NB. OF OPERATORS SPECIFIED         : ',NOP+NEWOP,
      &  ' IS GREATER THAN THE ALLOWED NUMBER : ',MXOP
-        CALL QUIT('TO MANY OPERATORS IN ',ROUTINE,'.')
+        CALL QUIT('TO MANY OPERATORS IN '//ROUTINE//'.')
       ELSE
         NOP = NOP + NEWOP
       END IF
 
       RETURN
       END
-*---------------------------------------------------------------------*
 *---------------------------------------------------------------------*
       SUBROUTINE CC_PUT2OP(INDOP1,INDOP2,NOP,MAXOP,OPERATOR,ROUTINE)
 C
@@ -6396,7 +6394,7 @@ C
         WRITE(LUPRI,'(2(/,A,I5),/)')
      &  ' NB. OF OPERATORS SPECIFIED         : ',NOP+NEWOP,
      &  ' IS GREATER THAN THE ALLOWED NUMBER : ',MXOP
-        CALL QUIT('TO MANY OPERATORS IN ',ROUTINE,'.')
+        CALL QUIT('TO MANY OPERATORS IN '//ROUTINE//'.')
       ELSE
         DO IDX1 = 1, NEWOP
           DO IDX2 = 1, NEWOP
@@ -6410,7 +6408,6 @@ C
 
       RETURN
       END
-*---------------------------------------------------------------------*
 *---------------------------------------------------------------------*
 c /* deck cc_exlrinp */
 *=====================================================================*

@@ -419,29 +419,29 @@ C       MPERM = ??
         IOPT1 = 4
         CALL CC_XIETA(WORK(KEATRAN),NEATRAN,IOPT1, ORDER, 'L1 ',
      &                CDUM, IDUM, RDUM, TYPE, IDUM, RDUM,
-     &                0, WORK(KEND0),LEND0)
+     &                .FALSE.,0, WORK(KEND0),LEND0)
       ELSE IF (TYPE(1:3).EQ.'CX2') THEN
         IOPT1 = 4
         CALL CC_XIETA(WORK(KEATRAN),NEATRAN,IOPT1, ORDER, 'LC ',
      &                CDUM, IDUM, RDUM, TYPE, IDUM, RDUM,
-     &                0, WORK(KEND0),LEND0)
+     &                .FALSE.,0, WORK(KEND0),LEND0)
       ELSE IF (TYPE(1:2).EQ.'X3') THEN
         IOPT1 = 4
         CALL CC_XIETA(WORK(KEATRAN),NEATRAN,IOPT1, ORDER, 'L2 ',
      &                CDUM, IDUM, RDUM, TYPE, IDUM, RDUM,
-     &                0, WORK(KEND0),LEND0)
+     &                .FALSE.,0, WORK(KEND0),LEND0)
       ELSE IF (TYPE(1:3).EQ.'EX2') THEN
         IOPT1 = 4
         CALL CC_XIETA(WORK(KEATRAN),NEATRAN,IOPT1, ORDER, 'EL1',
      &                CDUM, IDUM, RDUM, TYPE, IDUM, RDUM,
-     &                0, WORK(KEND0),LEND0)
+     &                .FALSE.,0, WORK(KEND0),LEND0)
       ELSE IF (TYPE(1:3).EQ.'EX1') THEN
         !sonia
         WRITE(LUPRI,*) 'CC_ETADRV1: I am entering CC_XIETA'
         IOPT1 = 4
         CALL CC_XIETA(WORK(KEATRAN),NEATRAN,IOPT1, ORDER, 'LE ',
      &                CDUM, IDUM, RDUM, TYPE, IDUM, RDUM,
-     &                0, WORK(KEND0),LEND0)
+     &                .FALSE.,0, WORK(KEND0),LEND0)
 
       END IF
 

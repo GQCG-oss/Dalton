@@ -427,6 +427,25 @@ C                  END DO
                  END IF
                END DO
     
+               IF (CC3) THEN
+                 IF (LOCDBG) THEN
+                   WRITE(LUPRI,*) 'GET CAUCHY RHS VECTORS:' 
+                   WRITE(LUPRI,*) 'VECTOR LIST :',LIST(1:3)
+                   WRITE(LUPRI,*) 'CAUCHY ORDER:',ICAUS
+                 END IF
+
+                 IF (LIST(1:2).EQ.'RC') THEN
+                    CALL CCRHSVEC('CO1',LABEL,
+     &                            IDUMMY,IDUMMY,DUMMY,
+     &                            ISYMO,DUMMY,LDUMMY,
+     &                            ICAU,NSIMR,MAXVEC,IRST-1,
+     &                            WORK,LWORK)
+                 ELSE
+                    CALL QUIT('Wrong Cauchy vector list in CC_SOLDRV.')
+                 END IF
+
+               END IF
+
                IF (LOCDBG) THEN
                  WRITE(LUPRI,*) 'SOLVE FOR CAUCHY VECTORS:' 
                  WRITE(LUPRI,*) 'VECTOR LIST :',LIST(1:3)

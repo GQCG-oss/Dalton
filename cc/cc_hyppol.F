@@ -324,7 +324,7 @@ c /* deck cc_hyppol */
         CALL CC_XIETA( WORK(KEATRAN), NEATRAN, IOPT, IORDER, 'L1 ',
      &                 '---',IDUMMY,       DUMMY,
      &                 'R1 ',WORK(KEADOTS),WORK(KEACONS),
-     &                 MXVEC, WORK(KEND0), LEND0 )        
+     &                 .FALSE.,MXVEC, WORK(KEND0), LEND0 )        
 
         TIMEA = SECOND() - TIM1
         WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
@@ -395,7 +395,7 @@ c    &                 WORK(KEND0), LEND0 )
       CALL CC_XIETA( WORK(KXETRAN), NXETRAN, IOPT, IORDER, 'L0 ',
      &               'L1 ',WORK(KXDOTS),WORK(KXCONS),
      &               'R1 ',WORK(KEDOTS),WORK(KECONS),
-     &               MXVEC, WORK(KEND0), LEND0 )        
+     &               .FALSE.,MXVEC, WORK(KEND0), LEND0 )        
 
       TIMXE = SECOND() - TIM1
       WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') '>>> Time used for',

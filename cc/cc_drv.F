@@ -506,9 +506,6 @@ C
    31     CONTINUE
 C
 C          ! no energy in gradient step for geometry optimization
-!SONIA SONIA
-!SONIA SONIA Missing integrals then for CCSD(T)?
-!SONIA SONIA
            IF (.NOT.MOLGRD) THEN
 
               CALL CCSD_ENERGY(LSORT,WORK,LWORK)
@@ -529,10 +526,6 @@ C          ***** CC Lambda vector *****
 C          ****************************
 C--------------------------------------
 C
-!
-!SONIA SONIA SONIA: this has changed, but HOW????????????????
-!
-!
 
            IF ((CCFOP.OR.LTBAR0)
      *       .AND.(.NOT.
@@ -543,11 +536,6 @@ C
               WRITE(LUPRI,*) 'will be ignored...'
              ELSE
               IF (.NOT. (CCSDT .AND. (.NOT. CC3))) THEN
-                 !...................................
-                 !SONIA: I am not sure but let us try
-                 !...................................
-                 !IF ( I .EQ. 10 ) CALL CC3_FILOP()
-                 !...................................
                  CALL CC_FOP(WORK,LWORK)
               ENDIF
              END IF
@@ -587,9 +575,6 @@ C----------------------------------------------------------------------*
 C
          IF (CCDERI .OR. MOLGRD) THEN
             CALL CC_GRADIENT(WORK,LWORK)
-!SONIA SONIA
-!SONIA SONIA
-!SONIA SONIA
             IGRDCCPT = IGRDCCPT + 1
 
             IF (MOLGRD) GOTO 100
@@ -723,9 +708,9 @@ C
          END IF
 
 #if defined CC_AARHUS
-         IF (CCOPA) THEN
-           IF (CCS .or. CC2 .or. CCSD .or. CC3) THEN
-            CALL CC_OPA(WORK,LWORK)
+         IF (CCOPA) THEN 
+           IF (CCS .or. CC2 .or. CCSD .or. (CC3.AND.CC3RSP)) THEN
+            CALL CC_OPA(WORK,LWORK)  
            ELSE
             WRITE(LUPRI,*) 'One-photon absorption strengths'//
      &         ' are not implemented for the requested model.'
@@ -750,7 +735,7 @@ C
 
 #if defined CC_AARHUS
          IF (CCXOPA) THEN
-           IF (CCS .or. CC2 .or. CCSD .or. CC3) THEN
+           IF (CCS .or. CC2 .or. CCSD .or. (CC3.AND.CC3RSP)) THEN
             CALL CC_XOPA(WORK,LWORK)
            ELSE
             WRITE(LUPRI,*) 'One-photon absorption strengths'//
@@ -766,7 +751,7 @@ C        ***********************************************
 C-------------------------------------------------------
 C
          IF (CCTPA) THEN 
-           IF (CCS .or. CC2 .or. CCSD .or. CC3) THEN
+           IF (CCS .or. CC2 .or. CCSD .or. (CC3.AND.CC3RSP)) THEN
             CALL CC_TPA(WORK,LWORK)  
            ELSE
             WRITE(LUPRI,*) 'two-photon absorption strengths'//
@@ -833,7 +818,7 @@ C        *****************************
 C-----------------------------------------
 C
          IF ( CCLR .AND. CAUCHY) THEN
-           IF (CCS .or. CC2 .or. CCSD) THEN
+           IF (CCS .or. CC2 .or. CCSD .OR. (CC3.AND.CC3RSP)) THEN
              CALL CC_CAUCHY(WORK,LWORK)
            ELSE
              WRITE(LUPRI,'(/,1X,2A)') 'Cauchy moments',
@@ -881,7 +866,7 @@ C---------------------------------------------------
 C
          IF ( CCCR ) THEN
 C
-            IF (CCS .or. CC2 .or. CCSD .or. CC3) THEN
+            IF (CCS .or. CC2 .or. CCSD .or. (CC3.AND.CC3RSP)) THEN
                CALL CC_2HYP(WORK,LWORK)
             ELSE
               WRITE(LUPRI,'(/,1X,A)')

@@ -285,7 +285,8 @@
 *---------------------------------------------------------------------*
       if (listb(1:3).eq.'R1 ') then
 
-        if (lista(1:3).eq.'R1 ' .OR. lista(1:3).eq.'RE ') then
+        if (lista(1:3).eq.'R1 ' .or. lista(1:3).eq.'RE ' .or.
+     &      lista(1:3).eq.'RC '                              ) then
           call ccsdt_t31_noddy(work(kta3am),lista,idlsta,freqa,.false.,
      &                         .false.,xint1s0,xint2s0,
      &                         .false.,dummy,dummy,
@@ -343,7 +344,8 @@ c    &   ddot(nt1amx**3,tab3am,1,tab3am,1)
 *---------------------------------------------------------------------*
       if (lista(1:3).eq.'R1 ') then
 
-        if (listb(1:3).eq.'R1 ' .OR. listb(1:3).eq.'RE ') then
+        if (listb(1:3).eq.'R1 ' .or. listb(1:3).eq.'RE ' .or.
+     &      listb(1:3).eq.'RC '                              ) then
           call ccsdt_t31_noddy(work(ktb3am),listb,idlstb,freqb,.false.,
      &                         .false.,xint1s0,xint2s0,
      &                         .false.,dummy,dummy,

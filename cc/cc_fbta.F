@@ -728,7 +728,7 @@ cstest
       ELSE IF (CC2 .OR. CCSD) THEN
         MSCRATCH1 = MAX(2*MT2ORT,MT2AM) + MEMAT1 + 2*M2BST
       ELSE
-        CALL QUIT('Unknown CC model in CC_XIETA.')
+        CALL QUIT('Unknown CC model in CC_FBTA1.')
       END IF
 
       IF (LOCDBG) THEN

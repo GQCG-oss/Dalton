@@ -447,7 +447,7 @@ C     ---------------------------------
       CALL CC_XIETA(IXETRAN, NXETRAN, IOPTRES, IORDER, LISTL,
      &              FILXI,  IDUM, RDUM,
      &              FILETA, IDUM, RDUM,
-     &              0, WORK(KEND0), LWRK0 )
+     &              .FALSE.,0, WORK(KEND0), LWRK0 )
 
       LEN       = NT1AMX + NT2AMX
       IADRF_XI  = IXETRAN(3,1)
@@ -500,7 +500,7 @@ C     ---------------------------------
       CALL CC_XIETA(IXETRAN, NXETRAN, IOPTRES, IORDER, LISTL,
      &              FILXI,  IDUM, RDUM,
      &              FILETA, IDUM, RDUM,
-     &              0, WORK(KEND0), LWRK0 )
+     &              .FALSE.,0, WORK(KEND0), LWRK0 )
 
       LEN       = NT1AMX + NT2AMX
       IADRF_XI  = IXETRAN(4,1)

@@ -372,16 +372,21 @@ C----------------------------------------------------------------------
      *           ' Label: ',LRCLBL(ILSTNR),' Symmetry: ', 
      *            ISYLRC(ILSTNR)
          ENDIF
-         CALL CC_CAURHS(GD,ILSTNR,LIST,WORK,LWORK)
+         CALL CC_CAURHS(GD,ILSTNR,LIST,IOPTRDG,WORK,LWORK)
          ISYMGD = ILSTSYM(LIST,ILSTNR)
          NTAMP = NT1AM(ISYMGD) + NT2AM(ISYMGD)
          IF ( CCS ) NTAMP = NT1AM(ISYMGD)
+         ! ---> turn sign for right Cauchy vectors <---
+         ! this is done because we want to solve A C(n) = +C(n-1),
+         ! thus the gradient vector has the opposite sign that in
+         ! the standard formula A t = -X
          CALL DSCAL(NTAMP,XMONE,GD,1)
 
 C----------------------------------------------------------------------
 C 'CR2' second-order right Cauchy vectors:
 C----------------------------------------------------------------------
       ELSE IF (LIST(1:3) .EQ. 'CR2') THEN
+         IF (CC3) CALL QUIT('CR2 vectors not yet implemented for CC3!')
          IF (ISIDE .NE. 1)
      &        CALL QUIT('Mismatch ISIDE and LIST in CC_GETGD')
          ISYMGD = ILSTSYM(LIST,ILSTNR)
@@ -402,6 +407,7 @@ C----------------------------------------------------------------------
 C 'CL2' second-order left Cauchy vectors:
 C----------------------------------------------------------------------
       ELSE IF (LIST(1:3) .EQ. 'CL2') THEN
+         IF (CC3) CALL QUIT('CR2 vectors not yet implemented for CC3!')
          IF (ISIDE .NE. -1)
      &        CALL QUIT('Mismatch ISIDE and LIST in CC_GETGD')
          ISYMGD = ILSTSYM(LIST,ILSTNR)
@@ -422,6 +428,7 @@ C----------------------------------------------------------------------
 C 'LC ' first-order left Cauchy vectors:
 C----------------------------------------------------------------------
       ELSE IF (LIST(1:2) .EQ. 'LC') THEN
+         IF (CC3) CALL QUIT('CR2 vectors not yet implemented for CC3!')
          IF (ISIDE .NE. -1)
      &        CALL QUIT('Mismatch ISIDE and LIST in CC_GETGD')
          ISYMGD = ISYLC1(ILSTNR)
@@ -524,7 +531,7 @@ C----------------------------------------------------------------------
      *            ISYPL1(ILSTNR)
          ENDIF
          CALL CC_LGD(GD,LBLPL1(ILSTNR),ISYPL1(ILSTNR),
-     *               FRQPL1(ILSTNR),LORXPL1(ILSTNR),WORK,IOPTRDG,LWORK)
+     *               FRQPL1(ILSTNR),LORXPL1(ILSTNR),IOPTRDG,WORK,LWORK)
          NTAMP = NT1AM(ISYPL1(ILSTNR)) + NT2AM(ISYPL1(ILSTNR))
          IF ( CCS ) NTAMP = NT1AM(ISYPL1(ILSTNR))
          IF ( CCR12 ) CALL QUIT('No R12 for X1+F1 as used for PL1')
@@ -607,7 +614,7 @@ C
      *      CALL QUIT('Insufficient space for allocation in CC_LGD -1')
 C
 C-----------------------------------------
-C     Calculate first (etaC) contribution.
+C     get eta^C contribution.
 C-----------------------------------------
 C
       ! find operator index
@@ -615,20 +622,20 @@ C
       IOPER = IROPER(LBLC,ISYM)
       IF (ISYM.NE.ISYMC) CALL QUIT('Symmetry mismatch in CC_LGD.')
 C
-      IF ( LORX .OR. LPDBSOP(IOPER) .OR. CCSDT) THEN
-        ! if the orbitals are allowed to relax in the field or if the
-        ! basis set depends on the perturbation, read ETA from file,
-        ! also if we the 'effective' ETA vector for a triples model
-        ! read this vector from file
+C     IF ( LORX .OR. LPDBSOP(IOPER) .OR. CCSDT) THEN
+C       ! if the orbitals are allowed to relax in the field or if the
+C       ! basis set depends on the perturbation, read ETA from file,
+C       ! also if we the 'effective' ETA vector for a triples model
+C       ! read this vector from file
         ILSTETA = IETA1(LBLC,LORX,FRQ,ISYMC)
         IOPT    = IOPTR
         CALL CC_RDRSP('X1 ',ILSTETA,ISYMC,IOPT,MODEL,GD(1),
      *                GD(1+NT1AM(ISYMC)))
-      ELSE
-        ! if it is a simple unrelaxed one-electron perturbation
-        ! calculate the ETA vector in CC_ETAC
-        CALL CC_ETAC(ISYMC,LBLC,GD,'L0 ',1,0,DUMMY,WORK,LWORK)
-      END IF
+C     ELSE
+C       ! if it is a simple unrelaxed one-electron perturbation
+C       ! calculate the ETA vector in CC_ETAC
+C       CALL CC_ETAC(ISYMC,LBLC,GD,'L0 ',1,0,DUMMY,WORK,LWORK)
+C     END IF
 C
       IF ( DEBUG ) THEN
          X    = DDOT(NTAMP,GD,1,GD,1)
@@ -693,7 +700,7 @@ C
    1  FORMAT(1x,A35,1X,E20.10)
       END
 c*DECK CC_CAURHS
-      SUBROUTINE CC_CAURHS(GD,ILSTNR,LIST,WORK,LWORK)
+      SUBROUTINE CC_CAURHS(GD,ILSTNR,LIST,IOPTRDG,WORK,LWORK)
 C
 C-----------------------------------------------------------------------
 C
@@ -725,7 +732,6 @@ C
       ISYM = ISYLRC(ILSTNR)
       KT1 = 1
       KT2 = KT1 + NT1AM(ISYM)
-      IOPT = 3
 C
       IF (ILRCAU(ILSTNR).EQ.1) THEN
 C
@@ -735,7 +741,8 @@ C-----------------------------------------------------------
 C
         FRQ   = 0.0D0
         INUM  = IR1TAMP(LRCLBL(ILSTNR),.FALSE.,FRQ,ISYM)
-        CALL CC_RDRSP('R1 ',INUM,ISYM,IOPT,MODEL1,GD(KT1),GD(KT2))
+        CALL CC_RDRSP('R1 ',INUM,ISYM,IOPTRDG,MODEL1,GD(KT1),GD(KT2))
+C
       ELSE 
 C
 C---------------------------
@@ -744,7 +751,8 @@ C---------------------------
 C
         KPREV = ILRCAU(ILSTNR)-1
         INUM  = ILRCAMP(LRCLBL(ILSTNR),KPREV,ISYM) 
-        CALL CC_RDRSP('RC ',INUM,ISYM,IOPT,MODEL1,GD(KT1),GD(KT2))
+        CALL CC_RDRSP('RC ',INUM,ISYM,IOPTRDG,MODEL1,GD(KT1),GD(KT2))
+C
       ENDIF
       TIMEC = SECOND()
       END

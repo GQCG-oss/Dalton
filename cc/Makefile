@@ -8,7 +8,7 @@ cc_exci.o      cc_lr.o        cc_fop.o       cc_pqi.o      \
 cc_exgr.o      cc_rhtr.o      cc_lhtr.o      cceq_solv.o   \
 cc_fmat.o      cc_landf.o     cc_landf2.o    cc_landf3.o   \
 cc_den.o       cc_d1ao.o      ccsd_diis.o    cc_grad2e.o   \
-cc_grad0.o  \
+cc_grad0.o     cc_opa.o       cc_xopa.o      cc_tpa.o      \
 cc_solrsp.o    cc_getgd.o     cc_rdrsp.o     cc_wrrsp.o    \
 ccrspsym.o     cclr_util.o    cc_util.o      ccmcd_setup.o \
 cc_hyppol.o    cc_2hyp.o      cc_3hyp.o      cc_gmat.o     \
@@ -53,13 +53,12 @@ ccsdt_f_noddy.o ccsdt_ints_noddy.o \
 ccsdt_eta_noddy.o ccsdt_b_noddy.o ccsdt_ba_noddy.o \
 ccsdt_eta_cont.o cc3_bfmat.o  cc3_fmat.o   ccsdt_fbmat.o  \
 cc3_etasd.o cc3_ft3b.o cc3_fmatsd.o cc3_xi_cont.o \
-cc3_init.o ccexnorm.o cc_opa.o ccsdt_aden_noddy.o cc3_aden.o \
+cc3_init.o ccexnorm.o ccsdt_aden_noddy.o cc3_aden.o \
 cc3_fbmatt3zu.o cc3_hmat.o \
 cc3_aden_cub.o cc3_aden_cub_t0.o \
 cc_foppt_sc.o cc_r12.o  cc_mkrv.o cc_rhtr_noddy.o \
 cc_2eexp_1.o  cc_grad_1.o   cc_2eexp_2.o   asqr.o \
 ccsdt_t32_noddy.o ccsdt_o32_noddy.o \
-cc_tpa.o cc_xopa.o \
 ccsoppa.o  cc_r12dummies.o
 
 F_CPPS = $(F_OBJS:.o=.i)

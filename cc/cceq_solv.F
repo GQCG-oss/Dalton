@@ -528,7 +528,7 @@ C        ----------------------------------------------
             IF (IOPT .EQ. 33) THEN
                NEWSTR = .TRUE.
                WRITE(LUPRI,'(1X,A,I3,3A,I3,A)') 'Vector nr.',ILSTNR,
-     &         'of type ',LIST(1:3),' and symmetry',ISYM,
+     &         ' of type ',LIST(1:3),' and symmetry',ISYM,
      &         ' was not found on file.'
             ELSE
                NEWSTR = .FALSE.

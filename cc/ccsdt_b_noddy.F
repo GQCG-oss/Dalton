@@ -255,7 +255,8 @@ C
 *     Compute corrections to triples vector T^A_3, and corresponding 
 *     lambda matrices and the XINT1SA,XINT2SA integrals and set FREQA:
 *---------------------------------------------------------------------*
-      IF (LISTA(1:3).EQ.'R1 ' .or. LISTA(1:3).EQ.'RE ') THEN
+      IF (LISTA(1:3).EQ.'R1 ' .or. LISTA(1:3).EQ.'RE ' .or.
+     &    LISTA(1:3).EQ.'RC '                              ) THEN
 
         CALL CCSDT_T31_NODDY(WORK(KTA3AM),LISTA,IDLSTA,FREQA,.FALSE.,
      &                       .FALSE.,WORK(KINT1S0),WORK(KINT2S0),
@@ -303,7 +304,8 @@ C
 *     Compute corrections to triples vector T^B_3, and corresponding 
 *     lambda matrices and the XINT1SB,XINT2SB integrals and set FREQB:
 *---------------------------------------------------------------------*
-      IF (LISTB(1:3).EQ.'R1 ' .or. LISTB(1:3).EQ.'RE ') THEN
+      IF (LISTB(1:3).EQ.'R1 ' .or. LISTB(1:3).EQ.'RE ' .or.
+     &    LISTB(1:3).EQ.'RC '                              ) THEN
 
         CALL CCSDT_T31_NODDY(WORK(KTB3AM),LISTB,IDLSTB,FREQB,.FALSE.,
      &                       .FALSE.,WORK(KINT1S0),WORK(KINT2S0),

@@ -216,7 +216,7 @@ c /* deck CC_SOP */
       CALL CC_XIETA( WORK(KXETRAN), NXETRAN, IOPT, IORDER, 'L0 ',
      &               'L1 ',WORK(KXDOTS),WORK(KXCONS),
      &               'R1 ',WORK(KEDOTS),WORK(KECONS),
-     &               MXVEC, WORK(KEND0), LEND0 )
+     &               .FALSE.,MXVEC, WORK(KEND0), LEND0 )
 
       TIMXE = SECOND() - TIM1
       IF (NXETRAN.GT.0) WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') 

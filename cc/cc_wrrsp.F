@@ -176,7 +176,7 @@ C---------------------------------------------------------------------*
 
       LOGICAL LEXISTS
       INTEGER IOS, NVEC, LWORK, KORBITAL, KSINGLE, KDOUBLE, KR12DBLE,
-     &        KSINGLEFF, KDOUBLEFF, NVECR, IBIT32
+     &        KSINGLEFF, KDOUBLEFF, NVECR, IBIT32, IDXVEC
       INTEGER IDXLST, ISYM, IMUL, IDXFIL, IOPT, KEND, LWRK, NWRITE
 
 #if defined (SYS_CRAY)
@@ -191,67 +191,11 @@ C---------------------------------------------------------------------*
       INTEGER IDXSYM
       INTEGER ILSTSYM
 
-C----------------------------------------------------------------------
-C     Check symmetry and list index range:
-C----------------------------------------------------------------------
-      IF (ISYM .NE. ILSTSYM(LIST,IDXLST) ) THEN
-        WRITE (LUPRI,*) 'symmetry mismatch in CC_WRRSP.'
-        WRITE (LUPRI,*) 'LIST:',LIST
-        WRITE (LUPRI,*) 'input symmetry:',ISYM
-        WRITE (LUPRI,*) 'symmetry returned form ILSTSYM:',
-     &       ILSTSYM(LIST,IDXLST)
-        CALL QUIT('symmetry mismatch in CC_WRRSP.')
-      END IF
-
-C----------------------------------------------------------------------
-C     Make symmetry-adapted filenames and 
-C     find symmetry reduced list numbers.
-C----------------------------------------------------------------------
-      IF ( LIST(1:2).EQ.'R0' .OR. LIST(1:2).EQ.'L0' .OR.
-     &     LIST(1:2).EQ.'R1' .OR. LIST(1:2).EQ.'L1' .OR.
-     &     LIST(1:2).EQ.'R2' .OR. LIST(1:2).EQ.'L2' .OR.
-     &     LIST(1:2).EQ.'R3' .OR. LIST(1:2).EQ.'L3' .OR.
-     &     LIST(1:2).EQ.'R4' .OR. LIST(1:2).EQ.'L4' .OR.
-     &     LIST(1:3).EQ.'O1 '.OR. LIST(1:3).EQ.'X1 '.OR.
-     &     LIST(1:2).EQ.'O2' .OR. LIST(1:2).EQ.'X2' .OR.
-     &     LIST(1:2).EQ.'O3' .OR. LIST(1:2).EQ.'X3' .OR.
-     &     LIST(1:2).EQ.'O4' .OR. LIST(1:2).EQ.'X4' .OR.
-     &     LIST(1:2).EQ.'F1' .OR. LIST(1:2).EQ.'F2' .OR.
-     &     LIST(1:2).EQ.'F3' .OR. LIST(1:2).EQ.'F4' .OR.
-     &     LIST(1:2).EQ.'RC' .OR. LIST(1:2).EQ.'LC' .OR.
-     &     LIST(1:2).EQ.'RE' .OR. LIST(1:2).EQ.'LE' .OR.
-     &     LIST(1:2).EQ.'E0' .OR. LIST(1:2).EQ.'BE' .OR.
-     &     LIST(1:2).EQ.'N2' .OR. LIST(1:2).EQ.'BR' .OR.
-     &     LIST(1:2).EQ.'FR' .OR. LIST(1:2).EQ.'M1' .OR.
-     &     LIST(1:2).EQ.'FC' .OR. LIST(1:2).EQ.'D0'      ) THEN
-
-        LISTI = LIST(1:2)//'_'
-      ELSE
-        LISTI = LIST(1:3)
-      END IF
-
-      IF (ISYM .EQ. 1) LISTI = LISTI(1:3)//'1'
-      IF (ISYM .EQ. 2) LISTI = LISTI(1:3)//'2'
-      IF (ISYM .EQ. 3) LISTI = LISTI(1:3)//'3'
-      IF (ISYM .EQ. 4) LISTI = LISTI(1:3)//'4'
-      IF (ISYM .EQ. 5) LISTI = LISTI(1:3)//'5'
-      IF (ISYM .EQ. 6) LISTI = LISTI(1:3)//'6'
-      IF (ISYM .EQ. 7) LISTI = LISTI(1:3)//'7'
-      IF (ISYM .EQ. 8) LISTI = LISTI(1:3)//'8'
-      IDXFIL = IDXSYM(LIST,ISYM,IDXLST)
-
+      CALL QENTER('CC_WRRSP')
 *---------------------------------------------------------------------*
-* build file name:
+*     get file name and modified LIST label and IDXVEC:
 *---------------------------------------------------------------------*
-      WRITE(FILEX,'(A2,A4,1X,I3)') 'CC', LISTI(1:4), IDXFIL
-      DO I = 1, 10
-        IF ( FILEX(I:I) .EQ. ' ' ) FILEX(I:I) = '_'
-      END DO
-
-* dummy vector:
-      IF ( LIST(1:2) .EQ. 'D0' ) THEN
-        FILEX = 'CCDUMMY'
-      END IF
+      CALL CC_RWPRE(LIST,IDXLST,ISYM,LISTI,IDXVEC,FILEX)
 
 *---------------------------------------------------------------------*
 * check compatibility of IOPT with the MODFIL, if not reset IOPT:   
@@ -296,8 +240,8 @@ C----------------------------------------------------------------------
       IMUL = 1
 
       ! for excited states we get it from the common block:
-      IF (LIST(1:2).EQ.'RE'  .OR. LIST(1:2).EQ.'LE') THEN
-         IMUL = IMULTE(IDXLST)
+      IF (LISTI(1:2).EQ.'RE'  .OR. LISTI(1:2).EQ.'LE') THEN
+         IMUL = IMULTE(IDXVEC)
       END IF                              
 
 *---------------------------------------------------------------------*
@@ -318,7 +262,7 @@ C----------------------------------------------------------------------
       KDOUBLEFF = 1
       KEND      = 1
 
-      IF (LEXISTS .AND. LIST(1:2).NE.'R0') THEN
+      IF (LEXISTS .AND. LISTI(1:2).NE.'R0') THEN
 C
 C        check model and how many vectors were stored on file
 C
@@ -478,7 +422,7 @@ C
       REWIND(LUSAVE,IOSTAT=IOS,ERR=992)
 
 *=====================================================================*
-* write a 'LIST' and index specific header to the file:
+* write a 'LISTI' and index specific header to the file:
 *=====================================================================*
 
 *.....................................................................*
@@ -486,299 +430,299 @@ C
 * 'L0' - zeroth-order lagrangian multipliers:
 * 'D0' - dummy vector
 *.....................................................................*
-      IF ( LIST(1:2) .EQ. 'R0' .OR. LIST(1:2) .EQ. 'L0' .OR.
-     &     LIST(1:2) .EQ. 'D0'                               ) THEN
+      IF ( LISTI(1:2) .EQ. 'R0' .OR. LISTI(1:2) .EQ. 'L0' .OR.
+     &     LISTI(1:2) .EQ. 'D0'                               ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL
 
 *.....................................................................*
 * 'R1' - first-order response t amplitudes:
 * 'F1' - F transformed first-order response t amplitudes:
 *.....................................................................*
-      ELSE IF ( LIST(1:2) .EQ. 'R1' .OR. LIST(1:2) .EQ. 'F1' ) THEN
+      ELSE IF ( LISTI(1:2) .EQ. 'R1' .OR. LISTI(1:2) .EQ. 'F1' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL,
-     &    LISTI(1:3), LRTLBL(IDXLST), ISYLRT(IDXLST), FRQLRT(IDXLST),
-     &    LORXLRT(IDXLST)
+     &    LISTI(1:3), LRTLBL(IDXVEC), ISYLRT(IDXVEC), FRQLRT(IDXVEC),
+     &    LORXLRT(IDXVEC)
 
 *.....................................................................*
 * 'R2' - second-order response t amplitudes:
 * 'F2' - F transformed second-order response t amplitudes:
 *.....................................................................*
-      ELSE IF ( LIST(1:2) .EQ. 'R2' .OR. LIST(1:2) .EQ. 'F2' ) THEN
+      ELSE IF ( LISTI(1:2) .EQ. 'R2' .OR. LISTI(1:2) .EQ. 'F2' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3), 
-     &       LBLR2T(IDXLST,1), ISYR2T(IDXLST,1), FRQR2T(IDXLST,1),
-     &       LBLR2T(IDXLST,2), ISYR2T(IDXLST,2), FRQR2T(IDXLST,2)
+     &       LBLR2T(IDXVEC,1), ISYR2T(IDXVEC,1), FRQR2T(IDXVEC,1),
+     &       LBLR2T(IDXVEC,2), ISYR2T(IDXVEC,2), FRQR2T(IDXVEC,2)
 
 *.....................................................................*
 * 'R3' - third-order response t amplitudes:
 * 'F3' - F transformed third-order response t amplitudes:
 *.....................................................................*
-      ELSE IF ( LIST(1:2) .EQ. 'R3' .OR. LIST(1:2) .EQ. 'F3' ) THEN
+      ELSE IF ( LISTI(1:2) .EQ. 'R3' .OR. LISTI(1:2) .EQ. 'F3' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3), 
-     &       LBLR3T(IDXLST,1), ISYR3T(IDXLST,1), FRQR3T(IDXLST,1),
-     &       LBLR3T(IDXLST,2), ISYR3T(IDXLST,2), FRQR3T(IDXLST,2),
-     &       LBLR3T(IDXLST,3), ISYR3T(IDXLST,3), FRQR3T(IDXLST,3)
+     &       LBLR3T(IDXVEC,1), ISYR3T(IDXVEC,1), FRQR3T(IDXVEC,1),
+     &       LBLR3T(IDXVEC,2), ISYR3T(IDXVEC,2), FRQR3T(IDXVEC,2),
+     &       LBLR3T(IDXVEC,3), ISYR3T(IDXVEC,3), FRQR3T(IDXVEC,3)
 
 *.....................................................................*
 * 'R4' - fourth-order response t amplitudes:
 * 'F4' - F transformed fourth-order response t amplitudes:
 *.....................................................................*
-      ELSE IF ( LIST(1:2) .EQ. 'R4' .OR. LIST(1:2) .EQ. 'F4' ) THEN
+      ELSE IF ( LISTI(1:2) .EQ. 'R4' .OR. LISTI(1:2) .EQ. 'F4' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3), 
-     &       LBLR4T(IDXLST,1), ISYR4T(IDXLST,1), FRQR4T(IDXLST,1),
-     &       LBLR4T(IDXLST,2), ISYR4T(IDXLST,2), FRQR4T(IDXLST,2),
-     &       LBLR4T(IDXLST,3), ISYR4T(IDXLST,3), FRQR4T(IDXLST,3),
-     &       LBLR4T(IDXLST,4), ISYR4T(IDXLST,4), FRQR4T(IDXLST,4)
+     &       LBLR4T(IDXVEC,1), ISYR4T(IDXVEC,1), FRQR4T(IDXVEC,1),
+     &       LBLR4T(IDXVEC,2), ISYR4T(IDXVEC,2), FRQR4T(IDXVEC,2),
+     &       LBLR4T(IDXVEC,3), ISYR4T(IDXVEC,3), FRQR4T(IDXVEC,3),
+     &       LBLR4T(IDXVEC,4), ISYR4T(IDXVEC,4), FRQR4T(IDXVEC,4)
 
 *.....................................................................*
 * 'RE' - Right eigenvector.
 *.....................................................................*
-      ELSE IF ( LIST(1:2) .EQ. 'RE' ) THEN
+      ELSE IF ( LISTI(1:2) .EQ. 'RE' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL,
-     &    LISTI(1:3), ISYEXC(IDXLST), IMULTE(IDXLST), EIGVAL(IDXLST)
+     &    LISTI(1:3), ISYEXC(IDXVEC), IMULTE(IDXVEC), EIGVAL(IDXVEC)
 
 *.....................................................................*
 * 'ER1' - Right eigenvector, first-order response
 * 'EO1' - RHS for right eigenvector, first-order response
 *.....................................................................*
-      ELSE IF ( LIST(1:3) .EQ. 'ER1' .OR. LIST(1:3) .EQ. 'EO1' ) THEN
+      ELSE IF ( LISTI(1:3) .EQ. 'ER1' .OR. LISTI(1:3) .EQ. 'EO1' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3),
-     &    ISTER1(IDXLST), ISYSER1(IDXLST), EIGER1(IDXLST),
-     &    LBLER1(IDXLST), ISYOER1(IDXLST), FRQER1(IDXLST)
+     &    ISTER1(IDXVEC), ISYSER1(IDXVEC), EIGER1(IDXVEC),
+     &    LBLER1(IDXVEC), ISYOER1(IDXVEC), FRQER1(IDXVEC)
 
 *.....................................................................*
 * 'ER2' - Right eigenvector, second-order response
 * 'EO2' - RHS for right eigenvector, second-order response
 *.....................................................................*
-      ELSE IF ( LIST(1:3) .EQ. 'ER2' .OR. LIST(1:3) .EQ. 'EO2' ) THEN
+      ELSE IF ( LISTI(1:3) .EQ. 'ER2' .OR. LISTI(1:3) .EQ. 'EO2' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3),
-     &    ISTER2(IDXLST),   ISYSER2(IDXLST),   EIGER2(IDXLST),
-     &    LBLER2(IDXLST,1), ISYOER2(IDXLST,1), FRQER2(IDXLST,1),
-     &    LBLER2(IDXLST,2), ISYOER2(IDXLST,2), FRQER2(IDXLST,2)
+     &    ISTER2(IDXVEC),   ISYSER2(IDXVEC),   EIGER2(IDXVEC),
+     &    LBLER2(IDXVEC,1), ISYOER2(IDXVEC,1), FRQER2(IDXVEC,1),
+     &    LBLER2(IDXVEC,2), ISYOER2(IDXVEC,2), FRQER2(IDXVEC,2)
 
 *.....................................................................*
 * 'EL1' - Left eigenvector, first-order response
 * 'EX1' - chi vector for left eigenvector, first-order response
 *.....................................................................*
-      ELSE IF ( LIST(1:3) .EQ. 'EL1' .OR. LIST(1:3) .EQ. 'EX1' ) THEN
+      ELSE IF ( LISTI(1:3) .EQ. 'EL1' .OR. LISTI(1:3) .EQ. 'EX1' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3),
-     &    ISTEL1(IDXLST), ISYSEL1(IDXLST), EIGEL1(IDXLST),
-     &    LBLEL1(IDXLST), ISYOEL1(IDXLST), FRQEL1(IDXLST)
+     &    ISTEL1(IDXVEC), ISYSEL1(IDXVEC), EIGEL1(IDXVEC),
+     &    LBLEL1(IDXVEC), ISYOEL1(IDXVEC), FRQEL1(IDXVEC)
 
 *.....................................................................*
 * 'EL2' - Left eigenvector, second-order response
 * 'EX2' - chi vector for left eigenvector, second-order response
 *.....................................................................*
-      ELSE IF ( LIST(1:3) .EQ. 'EL2' .OR. LIST(1:3) .EQ. 'EX2' ) THEN
+      ELSE IF ( LISTI(1:3) .EQ. 'EL2' .OR. LISTI(1:3) .EQ. 'EX2' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3),
-     &    ISTEL2(IDXLST),   ISYSEL2(IDXLST),   EIGEL2(IDXLST),
-     &    LBLEL2(IDXLST,1), ISYOEL2(IDXLST,1), FRQEL2(IDXLST,1),
-     &    LBLEL2(IDXLST,2), ISYOEL2(IDXLST,2), FRQEL2(IDXLST,2)
+     &    ISTEL2(IDXVEC),   ISYSEL2(IDXVEC),   EIGEL2(IDXVEC),
+     &    LBLEL2(IDXVEC,1), ISYOEL2(IDXVEC,1), FRQEL2(IDXVEC,1),
+     &    LBLEL2(IDXVEC,2), ISYOEL2(IDXVEC,2), FRQEL2(IDXVEC,2)
 
 *.....................................................................*
 * 'RC' - Right Cauchy vector.
 * 'FC' - F transformed right Cauchy vector.
 *.....................................................................*
-      ELSE IF ( LIST(1:2) .EQ. 'RC' .OR. LIST(1:2) .EQ. 'FC' ) THEN
+      ELSE IF ( LISTI(1:2) .EQ. 'RC' .OR. LISTI(1:2) .EQ. 'FC' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL,
-     &    LISTI(1:3), LRCLBL(IDXLST), ISYLRC(IDXLST), ILRCAU(IDXLST)
+     &    LISTI(1:3), LRCLBL(IDXVEC), ISYLRC(IDXVEC), ILRCAU(IDXVEC)
 
 *.....................................................................*
 * 'Rx' - x-th. order response t amplitudes:
 *.....................................................................*
-      ELSE IF ( LIST(1:1) .EQ. 'R' ) THEN
-         CALL QUIT ( LIST(1:2)//'-th. order t amplit.'//
+      ELSE IF ( LISTI(1:1) .EQ. 'R' ) THEN
+         CALL QUIT ( LISTI(1:2)//'-th. order t amplit.'//
      &             ' not yet available' )
 
 *.....................................................................*
 * 'CR2' - second-order right Cauchy vectors
 * 'CF2' - F-transformed second-order right Cauchy vectors
 *.....................................................................*
-      ELSE IF (LIST(1:3).EQ.'CR2' .OR. LIST(1:3).EQ.'CF2' ) THEN
+      ELSE IF (LISTI(1:3).EQ.'CR2' .OR. LISTI(1:3).EQ.'CF2' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3),
-     &    LBLCR2(IDXLST,1), ISYCR2(IDXLST,1), ICR2CAU(IDXLST,1),
-     &    LBLCR2(IDXLST,2), ISYCR2(IDXLST,2), ICR2CAU(IDXLST,2)
+     &    LBLCR2(IDXVEC,1), ISYCR2(IDXVEC,1), ICR2CAU(IDXVEC,1),
+     &    LBLCR2(IDXVEC,2), ISYCR2(IDXVEC,2), ICR2CAU(IDXVEC,2)
 
 *.....................................................................*
 * 'CO2' - RHS for second-order right Cauchy vectors
 *.....................................................................*
-      ELSE IF ( LIST(1:3) .EQ. 'CO2' ) THEN
+      ELSE IF ( LISTI(1:3) .EQ. 'CO2' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3),
-     &    LBLCO2(IDXLST,1), ISYCO2(IDXLST,1), ICO2CAU(IDXLST,1),
-     &    LBLCO2(IDXLST,2), ISYCO2(IDXLST,2), ICO2CAU(IDXLST,2)
+     &    LBLCO2(IDXVEC,1), ISYCO2(IDXVEC,1), ICO2CAU(IDXVEC,1),
+     &    LBLCO2(IDXVEC,2), ISYCO2(IDXVEC,2), ICO2CAU(IDXVEC,2)
 
 *.....................................................................*
 * 'CL2' - second-order left Cauchy vectors
 *.....................................................................*
-      ELSE IF ( LIST(1:3) .EQ. 'CL2' ) THEN
+      ELSE IF ( LISTI(1:3) .EQ. 'CL2' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3),
-     &    LBLCL2(IDXLST,1), ISYCL2(IDXLST,1), ICL2CAU(IDXLST,1),
-     &    LBLCL2(IDXLST,2), ISYCL2(IDXLST,2), ICL2CAU(IDXLST,2)
+     &    LBLCL2(IDXVEC,1), ISYCL2(IDXVEC,1), ICL2CAU(IDXVEC,1),
+     &    LBLCL2(IDXVEC,2), ISYCL2(IDXVEC,2), ICL2CAU(IDXVEC,2)
 
 *.....................................................................*
 * 'CX2' - second-order Cauchy eta vectors
 *.....................................................................*
-      ELSE IF ( LIST(1:3) .EQ. 'CX2' ) THEN
+      ELSE IF ( LISTI(1:3) .EQ. 'CX2' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3),
-     &    LBLCX2(IDXLST,1), ISYCX2(IDXLST,1), ICX2CAU(IDXLST,1),
-     &    LBLCX2(IDXLST,2), ISYCX2(IDXLST,2), ICX2CAU(IDXLST,2)
+     &    LBLCX2(IDXVEC,1), ISYCX2(IDXVEC,1), ICX2CAU(IDXVEC,1),
+     &    LBLCX2(IDXVEC,2), ISYCX2(IDXVEC,2), ICX2CAU(IDXVEC,2)
 
 *.....................................................................*
 * 'E0' and 'BE' - zeroth order lagrangian multipliers and rhs.
 *.....................................................................*
-      ELSE IF ((LIST(1:2).EQ.'E0').OR.(LIST(1:2).EQ.'BE')) THEN
+      ELSE IF ((LISTI(1:2).EQ.'E0').OR.(LISTI(1:2).EQ.'BE')) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL
 
 *.....................................................................*
 * 'N2' and 'BR' - zeroth order lagrangian multipliers and rhs.
 *.....................................................................*
-      ELSE IF ((LIST(1:2).EQ.'N2').OR.(LIST(1:2).EQ.'BR')) THEN
+      ELSE IF ((LISTI(1:2).EQ.'N2').OR.(LISTI(1:2).EQ.'BR')) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3),
-     &       IIN2(IDXLST), ISYIN2(IDXLST), FRQIN2(IDXLST),
-     &       IFN2(IDXLST), ISYFN2(IDXLST), FRQFN2(IDXLST)
+     &       IIN2(IDXVEC), ISYIN2(IDXVEC), FRQIN2(IDXVEC),
+     &       IFN2(IDXVEC), ISYFN2(IDXVEC), FRQFN2(IDXVEC)
 
 *.....................................................................*
 * 'L1' - first-order response lagrangian multipliers:
 *.....................................................................*
-      ELSE IF ( LIST(1:2) .EQ. 'L1' ) THEN
+      ELSE IF ( LISTI(1:2) .EQ. 'L1' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL,
-     &    LISTI(1:3), LRZLBL(IDXLST), ISYLRZ(IDXLST), FRQLRZ(IDXLST),
-     &    LORXLRZ(IDXLST)
+     &    LISTI(1:3), LRZLBL(IDXVEC), ISYLRZ(IDXVEC), FRQLRZ(IDXVEC),
+     &    LORXLRZ(IDXVEC)
 
 *.....................................................................*
 * 'L2' - second-order response lagrangian multipliers:
 *.....................................................................*
-      ELSE IF ( LIST(1:2) .EQ. 'L2' ) THEN
+      ELSE IF ( LISTI(1:2) .EQ. 'L2' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3), 
-     &       LBLL2(IDXLST,1), ISYL2(IDXLST,1), FRQL2(IDXLST,1),
-     &       LBLL2(IDXLST,2), ISYL2(IDXLST,2), FRQL2(IDXLST,2)
+     &       LBLL2(IDXVEC,1), ISYL2(IDXVEC,1), FRQL2(IDXVEC,1),
+     &       LBLL2(IDXVEC,2), ISYL2(IDXVEC,2), FRQL2(IDXVEC,2)
 
 *.....................................................................*
 * 'L3' - third-order response lagrangian multipliers:
 *.....................................................................*
-      ELSE IF ( LIST(1:2) .EQ. 'L3' ) THEN
+      ELSE IF ( LISTI(1:2) .EQ. 'L3' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3), 
-     &       LBLL3(IDXLST,1), ISYL3(IDXLST,1), FRQL3(IDXLST,1),
-     &       LBLL3(IDXLST,2), ISYL3(IDXLST,2), FRQL3(IDXLST,2),
-     &       LBLL3(IDXLST,3), ISYL3(IDXLST,3), FRQL3(IDXLST,3)
+     &       LBLL3(IDXVEC,1), ISYL3(IDXVEC,1), FRQL3(IDXVEC,1),
+     &       LBLL3(IDXVEC,2), ISYL3(IDXVEC,2), FRQL3(IDXVEC,2),
+     &       LBLL3(IDXVEC,3), ISYL3(IDXVEC,3), FRQL3(IDXVEC,3)
 
 *.....................................................................*
 * 'L4' - third-order response lagrangian multipliers:
 *.....................................................................*
-      ELSE IF ( LIST(1:2) .EQ. 'L4' ) THEN
+      ELSE IF ( LISTI(1:2) .EQ. 'L4' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3), 
-     &       LBLL4(IDXLST,1), ISYL4(IDXLST,1), FRQL4(IDXLST,1),
-     &       LBLL4(IDXLST,2), ISYL4(IDXLST,2), FRQL4(IDXLST,2),
-     &       LBLL4(IDXLST,3), ISYL4(IDXLST,3), FRQL4(IDXLST,3),
-     &       LBLL4(IDXLST,4), ISYL4(IDXLST,4), FRQL4(IDXLST,4)
+     &       LBLL4(IDXVEC,1), ISYL4(IDXVEC,1), FRQL4(IDXVEC,1),
+     &       LBLL4(IDXVEC,2), ISYL4(IDXVEC,2), FRQL4(IDXVEC,2),
+     &       LBLL4(IDXVEC,3), ISYL4(IDXVEC,3), FRQL4(IDXVEC,3),
+     &       LBLL4(IDXVEC,4), ISYL4(IDXVEC,4), FRQL4(IDXVEC,4)
 
 *.....................................................................*
 * 'LE' - Left eigenvector.
 *.....................................................................*
-      ELSE IF ( LIST(1:2) .EQ. 'LE' ) THEN
+      ELSE IF ( LISTI(1:2) .EQ. 'LE' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL,
-     &    LISTI(1:3), ISYEXC(IDXLST), IMULTE(IDXLST), EIGVAL(IDXLST)
+     &    LISTI(1:3), ISYEXC(IDXVEC), IMULTE(IDXVEC), EIGVAL(IDXVEC)
 
 *.....................................................................*
 * 'LC' - first-order left Cauchy vector.
 *.....................................................................*
-      ELSE IF ( LIST(1:2) .EQ. 'LC' ) THEN
+      ELSE IF ( LISTI(1:2) .EQ. 'LC' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL,
-     &    LISTI(1:3), LBLLC1(IDXLST), ISYLC1(IDXLST), ILC1CAU(IDXLST)
+     &    LISTI(1:3), LBLLC1(IDXVEC), ISYLC1(IDXVEC), ILC1CAU(IDXVEC)
 
 *.....................................................................*
 * 'Lx' - x-th. order response lagrangian multipliers:
 *.....................................................................*
-      ELSE IF ( LIST(1:1) .EQ. 'L' ) THEN
-         CALL QUIT ( LIST(1:2)//'-th. order lagrang. multip.'//
+      ELSE IF ( LISTI(1:1) .EQ. 'L' ) THEN
+         CALL QUIT ( LISTI(1:2)//'-th. order lagrang. multip.'//
      &             ' not yet available' )
 
 *.....................................................................*
 * 'O1' - rhs vectors for first-order amplitude equations:
 *.....................................................................*
-      ELSE IF ( LIST(1:2) .EQ. 'O1' ) THEN
+      ELSE IF ( LISTI(1:2) .EQ. 'O1' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3), 
-     &     LBLO1(IDXLST), ISYO1(IDXLST), FRQO1(IDXLST), LORXO1(IDXLST)
+     &     LBLO1(IDXVEC), ISYO1(IDXVEC), FRQO1(IDXVEC), LORXO1(IDXVEC)
 
 *.....................................................................*
 * 'O2' - rhs vectors for second-order amplitude equations:
 *.....................................................................*
-      ELSE IF ( LIST(1:2) .EQ. 'O2' ) THEN
+      ELSE IF ( LISTI(1:2) .EQ. 'O2' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3), 
-     &       LBLO2(IDXLST,1), ISYO2(IDXLST,1), FRQO2(IDXLST,1),
-     &       LBLO2(IDXLST,2), ISYO2(IDXLST,2), FRQO2(IDXLST,2)
+     &       LBLO2(IDXVEC,1), ISYO2(IDXVEC,1), FRQO2(IDXVEC,1),
+     &       LBLO2(IDXVEC,2), ISYO2(IDXVEC,2), FRQO2(IDXVEC,2)
 
 *.....................................................................*
 * 'O3' - rhs vectors for third-order amplitude equations:
 *.....................................................................*
-      ELSE IF ( LIST(1:2) .EQ. 'O3' ) THEN
+      ELSE IF ( LISTI(1:2) .EQ. 'O3' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3), 
-     &       LBLO3(IDXLST,1), ISYO3(IDXLST,1), FRQO3(IDXLST,1),
-     &       LBLO3(IDXLST,2), ISYO3(IDXLST,2), FRQO3(IDXLST,2),
-     &       LBLO3(IDXLST,3), ISYO3(IDXLST,3), FRQO3(IDXLST,3)
+     &       LBLO3(IDXVEC,1), ISYO3(IDXVEC,1), FRQO3(IDXVEC,1),
+     &       LBLO3(IDXVEC,2), ISYO3(IDXVEC,2), FRQO3(IDXVEC,2),
+     &       LBLO3(IDXVEC,3), ISYO3(IDXVEC,3), FRQO3(IDXVEC,3)
 
 *.....................................................................*
 * 'O4' - rhs vectors for fourth-order amplitude equations:
 *.....................................................................*
-      ELSE IF ( LIST(1:2) .EQ. 'O4' ) THEN
+      ELSE IF ( LISTI(1:2) .EQ. 'O4' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3), 
-     &       LBLO4(IDXLST,1), ISYO4(IDXLST,1), FRQO4(IDXLST,1),
-     &       LBLO4(IDXLST,2), ISYO4(IDXLST,2), FRQO4(IDXLST,2),
-     &       LBLO4(IDXLST,3), ISYO4(IDXLST,3), FRQO4(IDXLST,3),
-     &       LBLO4(IDXLST,4), ISYO4(IDXLST,4), FRQO4(IDXLST,4)
+     &       LBLO4(IDXVEC,1), ISYO4(IDXVEC,1), FRQO4(IDXVEC,1),
+     &       LBLO4(IDXVEC,2), ISYO4(IDXVEC,2), FRQO4(IDXVEC,2),
+     &       LBLO4(IDXVEC,3), ISYO4(IDXVEC,3), FRQO4(IDXVEC,3),
+     &       LBLO4(IDXVEC,4), ISYO4(IDXVEC,4), FRQO4(IDXVEC,4)
 
 *.....................................................................*
 * 'X1' - first-order chi/eta vectors
 *.....................................................................*
-      ELSE IF ( LIST(1:2) .EQ. 'X1' ) THEN
+      ELSE IF ( LISTI(1:2) .EQ. 'X1' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3), 
-     &     LBLX1(IDXLST), ISYX1(IDXLST), FRQX1(IDXLST), LORXX1(IDXLST)
+     &     LBLX1(IDXVEC), ISYX1(IDXVEC), FRQX1(IDXVEC), LORXX1(IDXVEC)
 
 *.....................................................................*
 * 'X2' - second-order chi vectors:
 *.....................................................................*
-      ELSE IF ( LIST(1:2) .EQ. 'X2' ) THEN
+      ELSE IF ( LISTI(1:2) .EQ. 'X2' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3), 
-     &       LBLX2(IDXLST,1), ISYX2(IDXLST,1), FRQX2(IDXLST,1),
-     &       LBLX2(IDXLST,2), ISYX2(IDXLST,2), FRQX2(IDXLST,2)
+     &       LBLX2(IDXVEC,1), ISYX2(IDXVEC,1), FRQX2(IDXVEC,1),
+     &       LBLX2(IDXVEC,2), ISYX2(IDXVEC,2), FRQX2(IDXVEC,2)
 
 *.....................................................................*
 * 'X3' - third-order chi vectors:
 *.....................................................................*
-      ELSE IF ( LIST(1:2) .EQ. 'X3' ) THEN
+      ELSE IF ( LISTI(1:2) .EQ. 'X3' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3), 
-     &       LBLX3(IDXLST,1), ISYX3(IDXLST,1), FRQX3(IDXLST,1),
-     &       LBLX3(IDXLST,2), ISYX3(IDXLST,2), FRQX3(IDXLST,2),
-     &       LBLX3(IDXLST,3), ISYX3(IDXLST,3), FRQX3(IDXLST,3)
+     &       LBLX3(IDXVEC,1), ISYX3(IDXVEC,1), FRQX3(IDXVEC,1),
+     &       LBLX3(IDXVEC,2), ISYX3(IDXVEC,2), FRQX3(IDXVEC,2),
+     &       LBLX3(IDXVEC,3), ISYX3(IDXVEC,3), FRQX3(IDXVEC,3)
 
 *.....................................................................*
 * 'X4' - fourth-order chi vectors:
 *.....................................................................*
-      ELSE IF ( LIST(1:2) .EQ. 'X4' ) THEN
+      ELSE IF ( LISTI(1:2) .EQ. 'X4' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL, LISTI(1:3), 
-     &       LBLX4(IDXLST,1), ISYX4(IDXLST,1), FRQX4(IDXLST,1),
-     &       LBLX4(IDXLST,2), ISYX4(IDXLST,2), FRQX4(IDXLST,2),
-     &       LBLX4(IDXLST,3), ISYX4(IDXLST,3), FRQX4(IDXLST,3),
-     &       LBLX4(IDXLST,4), ISYX4(IDXLST,4), FRQX4(IDXLST,4)
+     &       LBLX4(IDXVEC,1), ISYX4(IDXVEC,1), FRQX4(IDXVEC,1),
+     &       LBLX4(IDXVEC,2), ISYX4(IDXVEC,2), FRQX4(IDXVEC,2),
+     &       LBLX4(IDXVEC,3), ISYX4(IDXVEC,3), FRQX4(IDXVEC,3),
+     &       LBLX4(IDXVEC,4), ISYX4(IDXVEC,4), FRQX4(IDXVEC,4)
 
 *.....................................................................*
 * 'M1' and 'FR' - first order response t amplitudes:
 *.....................................................................*
-      ELSE IF ((LIST(1:2).EQ.'M1').OR.(LIST(1:2).EQ.'FR')) THEN
+      ELSE IF ((LISTI(1:2).EQ.'M1').OR.(LISTI(1:2).EQ.'FR')) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL,
-     &    LISTI(1:3), ILRM(IDXLST), ISYLRM(IDXLST), FRQLRM(IDXLST)
+     &    LISTI(1:3), ILRM(IDXVEC), ISYLRM(IDXVEC), FRQLRM(IDXVEC)
 
 *.....................................................................*
 * 'PL1' - projected first-order response lagrangian multipliers:
 *.....................................................................*
-      ELSE IF ( LIST(1:3) .EQ. 'PL1' ) THEN
+      ELSE IF ( LISTI(1:3) .EQ. 'PL1' ) THEN
         WRITE(LUSAVE,IOSTAT=IOS,ERR=993) NWRITE, MODFIL,
-     &    LISTI(1:3), LBLPL1(IDXLST), ISYPL1(IDXLST), FRQPL1(IDXLST),
-     &    LORXPL1(IDXLST)
+     &    LISTI(1:3), LBLPL1(IDXVEC), ISYPL1(IDXVEC), FRQPL1(IDXVEC),
+     &    LORXPL1(IDXVEC)
 *.....................................................................*
 * unknown list:
 *.....................................................................*
       ELSE
-         CALL QUIT ('unknown list '//LIST(1:2)//' in '//SUBRNAME)
+         CALL QUIT ('unknown list '//LISTI(1:2)//' in '//SUBRNAME)
       END IF
 
 *---------------------------------------------------------------------*
@@ -790,6 +734,7 @@ C
 
       CALL GPCLOSE(LUSAVE,'KEEP')
 
+      CALL QEXIT('CC_WRRSP')
       RETURN
 
 *---------------------------------------------------------------------*

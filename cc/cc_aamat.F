@@ -205,11 +205,9 @@ c          --------------------------------------------------
              LWRK1    = LWORK - KEND1
              IF (LWRK1.LT.0) 
      &          CALL QUIT('Insufficient memory in CC_AAMAT. (2)')
-C 
+
              CALL DZERO(WORK(KRES1EFF),NT1AM(ISYRES))
              CALL DZERO(WORK(KRES2EFF),NT2AM(ISYRES))
-
-
 
              IF (NODDY_AAMAT) THEN
                CALL CCSDT_AAMAT_NODDY(IOPTRES,FREQ,LABEL,ISYOPE,
@@ -225,7 +223,6 @@ C
                WRITE(LUPRI,*)'CC_BMAT module. Check NEW_RHS flag '
                WRITE(LUPRI,*)'in CCRHSVEC.'
                CALL QUIT('Real code for AAMATSD not called here...')
-
 
              END IF
 

@@ -319,7 +319,7 @@ C      PARAMETER (DUMMY = -12345.67890)
       CALL CC_XIETA( WORK(KEATRAN), NEATRAN, IOPT, IORDER, 'LE ',
      &               '---',IDUMMY,       DUMMY,
      &               'R1 ',WORK(KEADOTS),WORK(KEACONS),
-     &                MXVEC, WORK(KEND0), LEND0 )
+     &                .FALSE.,MXVEC, WORK(KEND0), LEND0 )
 
       IF (LUSEPL1) THEN
          CALL DZERO(WORK(KEACON1),MXEADOTS)
@@ -329,14 +329,14 @@ C      PARAMETER (DUMMY = -12345.67890)
          CALL CC_XIETA( WORK(KEATRA1), NEATRA1, IOPT, IORDER, 'M1 ',
      &                '---',IDUMMY,       DUMMY,
      &                'R1 ',WORK(KEADOT1),WORK(KEACON1),
-     &                 MXVEC, WORK(KEND0), LEND0 )
+     &                 .FALSE.,MXVEC, WORK(KEND0), LEND0 )
          CALL FLSHFO(LUPRI)
          IOPT   = 5
          IORDER = 1
          CALL CC_XIETA( WORK(KEATRA2), NEATRA2, IOPT, IORDER, 'PL1',
      &                '---',IDUMMY,       DUMMY,
      &                'RE ',WORK(KEADOT2),WORK(KEACON2),
-     &                 MXVEC, WORK(KEND0), LEND0 )
+     &                 .FALSE.,MXVEC, WORK(KEND0), LEND0 )
 
       END IF
 
@@ -372,11 +372,11 @@ C      PARAMETER (DUMMY = -12345.67890)
         CALL CC_XIETA( WORK(KXE2TRA), NXE2TRA, IOPT, IORDER, 'L0 ',
      &               'M1 ',WORK(KX2DOTS),WORK(KX2CONS),
      &               'RE ',WORK(KE2DOTS),WORK(KE2CONS),
-     &               MXVEC, WORK(KEND0), LEND0 )
+     &               .FALSE.,MXVEC, WORK(KEND0), LEND0 )
         CALL CC_XIETA( WORK(KX2TRAN), NX2TRAN, IOPT, IORDER, 'L0 ',
      &               'LE ',WORK(KX2DOT1),WORK(KX2CON1),
      &               '---',IDUMMY,DUMMY,
-     &               MXVEC, WORK(KEND0), LEND0 )
+     &               .FALSE.,MXVEC, WORK(KEND0), LEND0 )
       END IF
 
 *---------------------------------------------------------------------*

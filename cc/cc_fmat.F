@@ -2080,6 +2080,7 @@ C            ---------------------------------------------
                IF (LWRK3 .LT. 0) THEN
                  CALL QUIT('Insufficient work space in CC_FMAT. (9b)')
                END IF
+
              ELSE
                KEND3 = KEND2
                LWRK3 = LWRK2
@@ -2087,15 +2088,6 @@ C            ---------------------------------------------
  
              CALL DZERO(WORK(KTHETA1EFF),NT1AM(ISYRES))
              CALL DZERO(WORK(KTHETA2EFF),NT2AM(ISYRES))
- 
-c            CALL CC3_FMAT(LISTL,IDLSTL,LISTR,IDLSTR,IOPTRES,
-c    *                     WORK(KTHETA1),   WORK(KTHETA2),
-c    *                     WORK(KTHETA1EFF),WORK(KTHETA2EFF),
-c    *                     IFDOTS,FCONS,FILFMA,ITRAN,
-c    *                     NFTRAN,MXVEC,WORK(KEND2),LWRK2,
-c    *                     LUCKJD,FNCKJD,LUDKBC,FNDKBC,LUTOC,FNTOC,
-c    *                     LU3VI,FN3VI,LUDKBC3,FNDKBC3,
-c    *                     LU3FOPX,FN3FOPX,LU3FOP2X,FN3FOP2X)
 
              CALL CC3_BFMAT(LISTL,IDLSTL,LISTR,IDLSTR,
      *                     WORK(KTHETA1),   WORK(KTHETA2),
@@ -2201,20 +2193,8 @@ C            ------------------------------------------
         END IF
 
       ELSE IF ( IOPTRES .EQ. 3 .OR. IOPTRES .EQ. 4 ) THEN
-
-*        write to a sequential file by a call to CC_WRRSP/CC_WARSP,
-*        use FILFMA as LIST type and IFTRAN(3,ITRAN) as index
-
-COMMENT COMMENT COMMENT COMMENT 
-C       write(lupri,*) 'KTHETA1EFF before writting to file'
-C       do i = 1,nt1am(isyres) 
-C           write(lupri,*) i,WORK(KTHETA1EFF-1+i)
-C       end do
-COMMENT COMMENT COMMENT COMMENT 
-C     write(lupri,*) 'KTHETA2EFF  before writting to file'
-C     call outpak(WORK(KTHETA2EFF),NT1AM(isyres),1,lupri)
-COMMENT COMMENT COMMENT COMMENT 
-
+         ! write to a sequential file by a call to CC_WRRSP/CC_WARSP,
+         ! use FILFMA as LIST type and IFTRAN(3,ITRAN) as index
          IF (IOPTRES.EQ.3) THEN
            CALL CC_WRRSP(FILFMA,IFTRAN(3,ITRAN),ISYRES,IOPTW,MODELW,
      &                   WORK(KTHETA0),WORK(KTHETA1),WORK(KTHETA2),

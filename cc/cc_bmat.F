@@ -2081,14 +2081,14 @@ c
      &                     WORK(KTHETA2EFF),WORK(KEND2),LWRK2)
            END IF
          ELSE IF (IOPTRES.EQ.4) THEN
-           CALL CC_WARSP(FILBMA,IBTRAN(3,ITRAN),ISYMAB,IOPTW,MODELW,
-     &                   WORK(KTHETA0),WORK(KTHETA1),WORK(KTHETA2),
-     &                   WORK(KEND2),LWRK2)
            IF (CCSDT) THEN
              CALL CC_WARSP(FILBMA,IBTRAN(3,ITRAN),ISYMAB,IOPTWE,MODELW,
      &                     WORK(KTHETA0),WORK(KTHETA1EFF),
      &                     WORK(KTHETA2EFF),WORK(KEND2),LWRK2)
            END IF
+           CALL CC_WARSP(FILBMA,IBTRAN(3,ITRAN),ISYMAB,IOPTW,MODELW,
+     &                   WORK(KTHETA0),WORK(KTHETA1),WORK(KTHETA2),
+     &                   WORK(KEND2),LWRK2)
          END IF
 
          IF (LOCDBG) THEN

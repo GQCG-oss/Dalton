@@ -326,7 +326,7 @@ c /* deck CC_TPA */
         CALL CC_XIETA(WORK(KAA3TRAN), NAA3TRAN, IOPT, IORDER, 'L1 ',
      &                '---',IDUMMY,        DUMMY,
      &                'RE ',WORK(KAA3DOTS),WORK(KAA3CONS),
-     &                MXVEC, WORK(KEND0), LEND0 )
+     &                .FALSE.,MXVEC, WORK(KEND0), LEND0 )
       END IF
 
       IF (.NOT. LTPA_USE_O2) THEN
@@ -336,7 +336,7 @@ c /* deck CC_TPA */
         CALL CC_XIETA(WORK(KAA2TRAN), NAA2TRAN, IOPT, IORDER, 'LE ',
      &                '---',IDUMMY,        DUMMY,
      &                'R1 ',WORK(KAA2DOTS),WORK(KAA2CONS),
-     &                MXVEC, WORK(KEND0), LEND0 )
+     &                .FALSE.,MXVEC, WORK(KEND0), LEND0 )
       END IF
 
       IF (.NOT. LTPA_USE_O2) THEN
@@ -346,7 +346,7 @@ c /* deck CC_TPA */
         CALL CC_XIETA(WORK(KAA1TRAN), NAA1TRAN, IOPT, IORDER, 'M1 ',
      &                '---',IDUMMY,        DUMMY,
      &                'R1 ',WORK(KAA1DOTS),WORK(KAA1CONS),
-     &                MXVEC, WORK(KEND0), LEND0 )
+     &                .FALSE.,MXVEC, WORK(KEND0), LEND0 )
       END IF
 
       TIMAA = SECOND() - TIM1
@@ -408,6 +408,11 @@ c /* deck CC_TPA */
 *---------------------------------------------------------------------*
       LADD = .TRUE.
 
+cch
+c     call dcopy(mxvec*mxtran,1.234d0,0,work(kaa1cons),1)
+c     call dcopy(mxvec*mxtran,1.234d0,0,work(kaa2cons),1)
+c     call dcopy(mxvec*mxtran,1.234d0,0,work(kaa3cons),1)
+cch
 
       CALL CCTPA_SETUP(MXTRAN,  MXVEC,
      &       WORK(KGTRAN),   WORK(KGDOTS),   WORK(KGCONS),   NGTRAN,
@@ -791,8 +796,6 @@ c /* deck cctpa_setup */
 *---------------------------------------------------------------------*
 * initialize lists of transformations and dots products:
 *---------------------------------------------------------------------*
-cfp
-c     write(lupri,*)'LADD = ', LADD
       IF (.NOT. LADD) THEN
         NGTRAN   = 0
         NFATRAN  = 0
@@ -853,8 +856,6 @@ c     write(lupri,*)'LADD = ', LADD
           IO2DOTS(IVEC,ITRAN)  = 0
          END DO
         END DO
-
-      END IF  
         
         MXGVEC   = 0
         MXFAVEC  = 0
@@ -867,6 +868,7 @@ c     write(lupri,*)'LADD = ', LADD
         MXXVEC   = 0
         MXO1VEC  = 0
         MXO2VEC  = 0
+      END IF
 
 *---------------------------------------------------------------------*
 * initialize array with final results:
@@ -968,12 +970,7 @@ c     write(lupri,*)'LADD = ', LADD
             CALL CC_SETG112(IGTRAN,IGDOTS,MXTRAN,MXVEC,   
      &                      0,IR1AM,IR1BM,IRE0,ITRAN,IVEC)
             NGTRAN = MAX(NGTRAN,ITRAN)
-cfp
-c     write(lupri,*) 'MXGVEC (2) ', MXGVEC
-c     write(lupri,*) 'IVEC (2) ', IVEC
             MXGVEC = MAX(MXGVEC,IVEC) 
-cfp
-c     write(lupri,*) 'MXGVEC (1) ', MXGVEC
             GCON   = GCONS(IVEC,ITRAN)
           END IF
 
@@ -1158,14 +1155,6 @@ c     write(lupri,*) 'MXGVEC (1) ', MXGVEC
 *---------------------------------------------------------------------*
 *       range checking:
 *---------------------------------------------------------------------*
-cfp
-*       write(lupri,*)'happy birthday'
-*       write(lupri,*)'NGTRAN = ', NGTRAN
-*       write(lupri,*)'MXTRAN = ', MXTRAN
-*       write(lupri,*)'MXGVEC = ', MXGVEC
-*       write(lupri,*)'MXVEC = ', MXVEC
-*       call flshfo(lupri)
-
         IF (NGTRAN.GT.MXTRAN .OR. MXGVEC.GT.MXVEC) 
      &   CALL QUIT('Out of range for G trans. in CCTPA_SETUP')
         IF (NFATRAN.GT.MXTRAN .OR. MXFAVEC.GT.MXVEC) 

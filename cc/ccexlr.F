@@ -90,13 +90,13 @@ c /* deck ccexlr */
       PARAMETER ( ZERO = 0.0d0 )
 
       INTEGER NBEXLR, MXTRAN, MXVEC 
-      INTEGER MXGTRAN, MXFTRAN, MXBTRAN, MXFATRAN, MXEATRAN, MXOTRAN
-      INTEGER MXGDOTS, MXFDOTS, MXBDOTS, MXFADOTS, MXEADOTS, MXODOTS
+      INTEGER MXGTRAN, MXFTRAN, MXF1TRAN, MXFATRAN, MXEATRAN, MXOTRAN
+      INTEGER MXGDOTS, MXFDOTS, MXF1DOTS, MXFADOTS, MXEADOTS, MXODOTS
       INTEGER NGTRAN,  NFTRAN,  NF1TRAN,  NFATRAN,  NEATRAN,  NOTRAN
       INTEGER KGTRAN,  KFTRAN,  KF1TRAN,  KFATRAN,  KEATRAN,  KOTRAN
       INTEGER KGDOTS,  KFDOTS,  KF1DOTS,  KFADOTS,  KEADOTS,  KODOTS
       INTEGER KGCONS,  KFCONS,  KF1CONS,  KFACONS,  KEACONS,  KOCONS
-      INTEGER MXAATRAN, MXAADOTS, NAATRAN, KAATRAN, KAADOTS, KAACONS
+      INTEGER NAATRAN, KAATRAN, KAADOTS,  KAACONS
       INTEGER KEND0, LEND0, KEXLRPRP, IOPT, IORDER
 
 * external functions
@@ -139,17 +139,15 @@ c /* deck ccexlr */
 
       MXGTRAN  = MXDIM_GTRAN  * MXTRAN
       MXFTRAN  = MXDIM_FTRAN  * MXTRAN
-      MXBTRAN  = MXDIM_BTRAN  * MXTRAN
+      MXF1TRAN = MXDIM_FTRAN  * MXTRAN
       MXFATRAN = MXDIM_FATRAN * MXTRAN
-      MXAATRAN = MXDIM_AATRAN * MXTRAN
       MXEATRAN = MXDIM_XEVEC  * MXTRAN
       MXOTRAN  = 1 * MXTRAN
 
       MXGDOTS  = MXVEC * MXTRAN
       MXFDOTS  = MXVEC * MXTRAN
-      MXBDOTS  = MXVEC * MXTRAN
+      MXF1DOTS = MXVEC * MXTRAN
       MXFADOTS = MXVEC * MXTRAN
-      MXAADOTS = MXVEC * MXTRAN
       MXEADOTS = MXVEC * MXTRAN
       MXODOTS  = MXVEC * MXTRAN
 
@@ -160,30 +158,16 @@ c /* deck ccexlr */
       KFTRAN  = KGCONS  + MXGDOTS
       KFDOTS  = KFTRAN  + MXFTRAN
       KFCONS  = KFDOTS  + MXFDOTS
-C
-c     KBTRAN  = KFCONS  + MXFDOTS
-c     KBDOTS  = KBTRAN  + MXBTRAN
-c     KBCONS  = KBDOTS  + MXBDOTS
-c     KFATRAN = KBCONS  + MXBDOTS
-C
-      KF1TRAN  = KFCONS  + MXFDOTS
-      KF1DOTS  = KF1TRAN  + MXTRAN * MXDIM_FTRAN
-      KF1CONS  = KF1DOTS  +  MXVEC  * MXTRAN
-      KFATRAN = KF1CONS  +  MXVEC  * MXTRAN
-C
+      KF1TRAN = KFCONS  + MXFDOTS
+      KF1DOTS = KF1TRAN + MXF1TRAN
+      KF1CONS = KF1DOTS + MXF1DOTS
+      KFATRAN = KF1CONS + MXF1DOTS
       KFADOTS = KFATRAN + MXFATRAN
       KFACONS = KFADOTS + MXFADOTS
-C
-c     KAATRAN = KFACONS + MXFADOTS
-c     KAADOTS = KAATRAN + MXAATRAN
-c     KAACONS = KAADOTS + MXAADOTS 
-c     KEATRAN = KAACONS + MXAADOTS
-C
       KAATRAN = KFACONS + MXFADOTS
       KAADOTS = KAATRAN + MXTRAN * MXDIM_XEVEC
       KAACONS = KAADOTS + MXVEC  * MXTRAN
       KEATRAN = KAACONS + MXVEC  * MXTRAN
-C
       KEADOTS = KEATRAN + MXEATRAN
       KEACONS = KEADOTS + MXEADOTS
       KOTRAN  = KEACONS + MXEADOTS
@@ -205,7 +189,7 @@ C
       CALL CCEXLR_SETUP(MXTRAN, MXVEC,
      &            WORK(KGTRAN), WORK(KGDOTS), WORK(KGCONS), NGTRAN,
      &            WORK(KFTRAN), WORK(KFDOTS), WORK(KFCONS), NFTRAN,
-     &            WORK(KF1TRAN), WORK(KF1DOTS), WORK(KF1CONS), NF1TRAN,
+     &            WORK(KF1TRAN),WORK(KF1DOTS),WORK(KF1CONS),NF1TRAN,
      &            WORK(KFATRAN),WORK(KFADOTS),WORK(KFACONS),NFATRAN,
      &            WORK(KAATRAN),WORK(KAADOTS),WORK(KAACONS),NAATRAN,
      &            WORK(KEATRAN),WORK(KEADOTS),WORK(KEACONS),NEATRAN,
@@ -252,17 +236,13 @@ C
       CALL FLSHFO(LUPRI) 
       
 *---------------------------------------------------------------------*
-* calculate B matrix contributions:
+* calculate more F matrix contributions:
 *---------------------------------------------------------------------*
       TIMB = ZERO
 
       IF (.NOT. USE_O2) THEN
         TIM1 = SECOND()
 
-c       IOPT = 5
-c       CALL CC_BMATRIX(WORK(KBTRAN),NBTRAN,'R1 ','R1 ',IOPT,'N2 ',
-c    &               WORK(KBDOTS),WORK(KBCONS),MXVEC,
-c    &               .FALSE.,WORK(KEND0),LEND0) 
         IOPT = 5
         CALL CC_FMATRIX(WORK(KF1TRAN),NF1TRAN,'N2 ','R1 ',IOPT,'R1 ',
      &                  WORK(KF1DOTS),WORK(KF1CONS),MXVEC,
@@ -300,15 +280,10 @@ c    &               .FALSE.,WORK(KEND0),LEND0)
 
         IOPT   = 5
         IORDER = 1
-c       CALL CC_AAMAT(WORK(KAATRAN),NAATRAN,'o1 ','R1 ',IOPT,'N2 ',
-c    &                WORK(KAADOTS),WORK(KAACONS),
-c    &                MXVEC, WORK(KEND0), LEND0 )
-C
         CALL CC_XIETA(WORK(KAATRAN), NAATRAN, IOPT, IORDER, 'N2 ',
      &                '---',IDUMMY,        DUMMY,
      &                'R1 ',WORK(KAADOTS),WORK(KAACONS),
-     &                MXVEC, WORK(KEND0), LEND0 )
-C
+     &                .FALSE.,MXVEC, WORK(KEND0), LEND0 )
 
         TIMAA = SECOND() - TIM1
  
@@ -323,25 +298,19 @@ C
       TIM1 = SECOND()
 
       IF (.NOT. USE_EL1) THEN
-C       CALL CCQR_EADRV('LE ','o1 ','ER1 ',NEATRAN, MXVEC,
-C    &                   WORK(KEATRAN),WORK(KEADOTS),WORK(KEACONS),
-C    &                   WORK(KEND0), LEND0, 'DOTP' )
         IOPT   = 5
         IORDER = 1
         CALL CC_XIETA( WORK(KEATRAN), NEATRAN, IOPT, IORDER, 'LE ',
      &                 '---',IDUMMY,       DUMMY,
      &                 'ER1',WORK(KEADOTS),WORK(KEACONS),
-     &                 MXVEC, WORK(KEND0), LEND0 ) 
+     &                 .FALSE.,MXVEC, WORK(KEND0), LEND0 ) 
       ELSE
-C       CALL CCQR_EADRV('EL1 ','o1 ','RE ',NEATRAN, MXVEC,
-C    &                   WORK(KEATRAN),WORK(KEADOTS),WORK(KEACONS),
-C    &                   WORK(KEND0), LEND0, 'DOTP' )
         IOPT   = 5
         IORDER = 1
         CALL CC_XIETA( WORK(KEATRAN), NEATRAN, IOPT, IORDER, 'EL1',
      &                 '---',IDUMMY,       DUMMY,
      &                 'RE ',WORK(KEADOTS),WORK(KEACONS),
-     &                 MXVEC, WORK(KEND0), LEND0 ) 
+     &                 .FALSE.,MXVEC, WORK(KEND0), LEND0 ) 
       END IF
 
       TIMEA = SECOND() - TIM1
@@ -372,7 +341,7 @@ C    &                   WORK(KEND0), LEND0, 'DOTP' )
       CALL CCEXLR_SETUP(MXTRAN, MXVEC,
      &            WORK(KGTRAN), WORK(KGDOTS), WORK(KGCONS), NGTRAN,
      &            WORK(KFTRAN), WORK(KFDOTS), WORK(KFCONS), NFTRAN,
-     &            WORK(KF1TRAN), WORK(KF1DOTS), WORK(KF1CONS), NF1TRAN,
+     &            WORK(KF1TRAN),WORK(KF1DOTS),WORK(KF1CONS),NF1TRAN,
      &            WORK(KFATRAN),WORK(KFADOTS),WORK(KFACONS),NFATRAN,
      &            WORK(KAATRAN),WORK(KAADOTS),WORK(KAACONS),NAATRAN,
      &            WORK(KEATRAN),WORK(KEADOTS),WORK(KEACONS),NEATRAN,
@@ -673,7 +642,7 @@ c /* deck ccexlr_setup */
       SUBROUTINE CCEXLR_SETUP(MXTRAN,  MXVEC,
      &                        IGTRAN,  IGDOTS,  WG,  NGTRAN,
      &                        IFTRAN,  IFDOTS,  WF,  NFTRAN,
-     &                        IF1TRAN,  IF1DOTS,  F1CONS,  NF1TRAN,
+     &                        IF1TRAN, IF1DOTS, F1CONS, NF1TRAN,
      &                        IFATRAN, IFADOTS, WFA, NFATRAN,
      &                        IAATRAN, IAADOTS, WAA, NAATRAN,
      &                        IEATRAN, IEADOTS, WEA, NEATRAN,
@@ -966,16 +935,12 @@ c /* deck ccexlr_setup */
         FACON2 = WFA(IVEC,ITRAN)
 
 *---------------------------------------------------------------------*
-* set up list of ETA{O} vector calculations, 2 permutations
+* set up list of generalized ETA{O} vector calculations, 2 permutations
 *---------------------------------------------------------------------*
         IF (.NOT. USE_EL1) THEN
-C         CALL CCQR_SETEA(IEATRAN,IEADOTS,MXTRAN,MXVEC,
-C    &                    IEL,IOPA,IERB,ITRAN,IVEC)
           CALL CC_SETXE('Eta',IEATRAN,IEADOTS,MXTRAN,MXVEC,
      &                  IEL,IOPA,0,0,0,0,IERB,ITRAN,IVEC)
         ELSE
-C         CALL CCQR_SETEA(IEATRAN,IEADOTS,MXTRAN,MXVEC,
-C    &                    IELB,IOPA,IER,ITRAN,IVEC)
           CALL CC_SETXE('Eta',IEATRAN,IEADOTS,MXTRAN,MXVEC,
      &                  IELB,IOPA,0,0,0,0,IER,ITRAN,IVEC)
         END IF
@@ -984,13 +949,9 @@ C    &                    IELB,IOPA,IER,ITRAN,IVEC)
         EACON1 = WEA(IVEC,ITRAN)
 
         IF (.NOT. USE_EL1) THEN
-C         CALL CCQR_SETEA(IEATRAN,IEADOTS,MXTRAN,MXVEC,
-C    &                    IEL,IOPB,IERA,ITRAN,IVEC)
           CALL CC_SETXE('Eta',IEATRAN,IEADOTS,MXTRAN,MXVEC,
      &                  IEL,IOPB,0,0,0,0,IERA,ITRAN,IVEC)
         ELSE
-C         CALL CCQR_SETEA(IEATRAN,IEADOTS,MXTRAN,MXVEC,
-C    &                    IELA,IOPB,IER,ITRAN,IVEC)
           CALL CC_SETXE('Eta',IEATRAN,IEADOTS,MXTRAN,MXVEC,
      &                  IELA,IOPB,0,0,0,0,IER,ITRAN,IVEC)
         END IF
@@ -1012,7 +973,7 @@ C    &                    IELA,IOPB,IER,ITRAN,IVEC)
         END IF
 
 *---------------------------------------------------------------------*
-* set up list of B matrix transformations, 1 permutation
+* set up list of F matrix transformations, 1 permutation
 *---------------------------------------------------------------------*
         F1CON = ZERO
 
@@ -1025,22 +986,18 @@ C    &                    IELA,IOPB,IER,ITRAN,IVEC)
         END IF
 
 *---------------------------------------------------------------------*
-* set up list of A{O} matrix transformations, 2 permutation
+* set up list of generalized Eta{O} vector calculations, 2 permutation
 *---------------------------------------------------------------------*
         AACON1 = ZERO
         AACON2 = ZERO
  
         IF (.NOT. USE_O2) THEN
-c         CALL CC_SETAA(IAATRAN,IAADOTS,MXTRAN,MXVEC,
-c    &                  IN2,IOPA,ITB,ITRAN,IVEC)
           CALL CC_SETXE('Eta',IAATRAN,IAADOTS,MXTRAN,MXVEC,
      &                   IN2,IOPA,0,0,0,0,ITB,ITRAN,IVEC)
           NAATRAN = MAX(NAATRAN,ITRAN)
           MXAA    = MAX(MXAA,IVEC) 
           AACON1  = WAA(IVEC,ITRAN)
 
-c         CALL CC_SETAA(IAATRAN,IAADOTS,MXTRAN,MXVEC,
-c    &                  IN2,IOPB,ITA,ITRAN,IVEC)
           CALL CC_SETXE('Eta',IAATRAN,IAADOTS,MXTRAN,MXVEC,
      &                   IN2,IOPB,0,0,0,0,ITA,ITRAN,IVEC)
           NAATRAN = MAX(NAATRAN,ITRAN)
@@ -1102,9 +1059,9 @@ c    &                  IN2,IOPB,ITA,ITRAN,IVEC)
         WRITE(LUPRI,'((8X,A,I3,A))') 
      &     ' - ',NGTRAN,  ' generalized G matrix transformations ',
      &     ' - ',NFTRAN,  ' generalized F matrix transformations ',
-     &     ' - ',NF1TRAN, ' B matrix as F matrix transformations ',
+     &     ' - ',NF1TRAN, ' generalized F matrix transformations ',
      &     ' - ',NFATRAN, ' generalized F{O} matrix transformations ',
-     &     ' - ',NAATRAN, ' ETA{O} replaces A{O} matrix transform. ',
+     &     ' - ',NAATRAN, ' generalized ETA{O} vecotr calculations ',
      &     ' - ',NEATRAN, ' generalized ETA{O} vector calculations ',
      &     ' - ',NOTRAN,  ' N2 x O2 dot products calculations '
         WRITE(LUPRI,'(3X,A,/,/)') 'will be performed.'
@@ -1131,7 +1088,7 @@ c    &                  IN2,IOPB,ITA,ITRAN,IVEC)
         WRITE (LUPRI,*)
       END IF
 
-* B matrix transformations:
+* more F matrix transformations:
       IF (LOCDBG .AND. .NOT.LADD) THEN
         WRITE (LUPRI,*) MSGDBG, 'List of F matrix transformations:'
         DO ITRAN = 1, NF1TRAN
@@ -1151,9 +1108,9 @@ c    &                  IN2,IOPB,ITA,ITRAN,IVEC)
         WRITE (LUPRI,*)
       END IF
 
-* A{O} matrix transformations:
+* more ETA{O} vectors calculations:
       IF (LOCDBG .AND. .NOT.LADD) THEN
-        WRITE (LUPRI,*) MSGDBG, 'List of A{O} as ETA{0} matrix trans:'
+        WRITE (LUPRI,*) MSGDBG, 'List of ETA{O} vector calculations:'
         DO ITRAN = 1, NAATRAN
           WRITE(LUPRI,'(A,5I5,5X,(12I5,20X))') MSGDBG,
      &     (IAATRAN(I,ITRAN),I=1,5),(IAADOTS(I,ITRAN),I=1,MXAA)

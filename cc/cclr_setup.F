@@ -131,10 +131,10 @@ c /* deck cclr_setup */
 * initializations:
 *---------------------------------------------------------------------*
       DO ITRAN = 1, MXTRAN
-       DO I = 1, 5
+       DO I = 1, MXDIM_XEVEC
         IXETRAN(I,ITRAN)  = 0
        END DO
-       DO I = 1, 3
+       DO I = 1, MXDIM_FTRAN
         IFTRAN(I,ITRAN)  = 0
        END DO
        DO I = 1, 1

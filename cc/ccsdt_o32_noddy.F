@@ -810,7 +810,7 @@ C     END IF
      &                   LUDELD,FNDELD,LUDKBC,FNDKBC,LUCKJD,FNCKJD,
      &                   WORK,LWORK)
 
-      ELSE IF (LISTY(1:3).EQ.'RE ') THEN
+      ELSE IF (LISTY(1:3).EQ.'RE ' .OR. LISTY(1:3).EQ.'RC ') THEN
 
         KEND2   = 1
 
@@ -911,7 +911,7 @@ C     END IF
      &                   LUDELD,FNDELD,LUDKBC,FNDKBC,LUCKJD,FNCKJD,
      &                   WORK,LWORK)
 
-      ELSE IF (LISTX(1:3).EQ.'RE ') THEN
+      ELSE IF (LISTX(1:3).EQ.'RE ' .OR. LISTX(1:3).EQ.'RC ') THEN
 
         KEND2   = 1
 
