@@ -4699,6 +4699,7 @@ C
             KOFFB = KFOCKD + IVIR(ISYMB) + B - 1
             DO 150 A = B+1,NVIR(ISYMA)
                KOFFA = KFOCKD + IVIR(ISYMA) + A - 1
+               DENOM = WORK(KOFFB) - WORK(KOFFA)
                IF (ABS(DENOM) .GT. THRDNM) THEN
                   NAB = IMATAB(ISYMA,ISYMB) + NVIR(ISYMA)*(B - 1) + A
                   NBA = IMATAB(ISYMB,ISYMA) + NVIR(ISYMB)*(A - 1) + B
