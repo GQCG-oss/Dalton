@@ -29,12 +29,21 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: dalton.F,v 1.3 2001-02-21 13:22:54 vebjornb Exp $
+C$Id: dalton.F,v 1.4 2001-04-06 17:21:41 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
 C
 $Log: not supported by cvs2svn $
+Revision 1.3  2001/02/21 13:22:54  vebjornb
+- Converted 50 Dalton (non-CC) test jobs to the automatic testing system
+- Added Perl-script maketest in tools-directory, should help in setting
+  up automatic test jobs
+- Several minor bug-fixes in coupled-cluster code with regards to
+  file units and initialization of variables
+- Minor changes in configure script
+- Tidied up the printing of the author-list
+
 Revision 1.2  2001/02/12 18:17:51  vebjornb
 First commit after CC merge
 
@@ -122,6 +131,10 @@ C
 #include <infpri.h>
 #include <gnrinf.h>
 #include <inftap.h>
+#if defined (VAR_MPI)
+      INCLUDE 'mpif.h'
+      LOGICAL FINISH
+#endif
 #if defined (VAR_G77)
       INTEGER(KIND=2) IWOFF
 #endif
@@ -429,7 +442,7 @@ C
 C     Send ending signal to slaves
 C
             FINISH = .TRUE.
-            CALL MPI_BCAST(FINISH,1,MPI_LOGICAL,NODEID(MOTHER),
+            CALL MPI_BCAST(FINISH,1,MPI_LOGICAL,NODEID(MASTER),
      &           MPI_COMM_WORLD,IERR)       
             CALL GPCLOSE(LUCME,'KEEP')
             CALL GPCLOSE(LUERR,'KEEP')

@@ -293,7 +293,7 @@ C     We let the slaves wait for the Master to tell them whether to pick up
 C     a new geometry or to end this calculation
 C
       IF (MYNUM .GT. 0) THEN
-         CALL MPI_BCAST(NTASK,1,MPI_INTEGER,NODEID(MOTHER),
+         CALL MPI_BCAST(NTASK,1,MPI_INTEGER,NODEID(MASTER),
      &                 MPI_COMM_WORLD,IERR)
          IF (NTASK .EQ. 1) THEN
             CALL PARION
@@ -301,7 +301,7 @@ C
             CALL READIN(WORK(IWOFF),LWORK,.FALSE.)
             GOTO 8
          ELSE IF (NTASK .EQ. 0) THEN
-            CALL MPI_BCAST(FINISH,1,MPI_LOGICAL,NODEID(MOTHER),
+            CALL MPI_BCAST(FINISH,1,MPI_LOGICAL,NODEID(MASTER),
      &                  MPI_COMM_WORLD,IERR)
             CALL MPI_FINALIZE(IERR)
 #if defined (SYS_CRAY)
@@ -1159,9 +1159,9 @@ C
             END DO
          END DO
       ELSE
-         CALL MPI_SEND(MYNUM,1,MPI_INTEGER,NODEID(MOTHER),
+         CALL MPI_SEND(MYNUM,1,MPI_INTEGER,NODEID(MASTER),
      &                 65,MPI_COMM_WORLD,IERR)
-         CALL MPI_SEND(FTVAL,NDIME,MPI_DOUBLE_PRECISION,NODEID(MOTHER),
+         CALL MPI_SEND(FTVAL,NDIME,MPI_DOUBLE_PRECISION,NODEID(MASTER),
      &                 65,MPI_COMM_WORLD,IERR)
       END IF
 #else

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abaopt.F,v 1.5 2001-03-24 17:36:13 vebjornb Exp $
+C$Id: abaopt.F,v 1.6 2001-04-06 17:21:40 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -1203,7 +1203,7 @@ C
 #if defined (VAR_MPI)
       IF (NODTOT .GT. 1 .AND. MYNUM .EQ. 0) THEN
          IJOB = 0
-         CALL MPI_BCAST(IJOB,1,MPI_INTEGER,NODEID(MOTHER),
+         CALL MPI_BCAST(IJOB,1,MPI_INTEGER,NODEID(MASTER),
      &                  MPI_COMM_WORLD,IERR)
       END IF
 #endif      
@@ -7210,7 +7210,7 @@ C
             FIRST = .FALSE.
          ELSE
             IJOB = 1
-            CALL MPI_BCAST(IJOB,1,MPI_INTEGER,NODEID(MOTHER),
+            CALL MPI_BCAST(IJOB,1,MPI_INTEGER,NODEID(MASTER),
      &                     MPI_COMM_WORLD,IERR)
             CALL PARIOT
          END IF
