@@ -5,9 +5,18 @@
 \index{Z-matrix input}
 
 The {\mol}-style input is originally based on the input for the {\mol}
-integral program by Alml\"{o}f~\cite{moleculeref}. However, except for
-some lines still requiring formatted input, there are few remnants of
-the original input structure.
+integral program by Alml\"{o}f~\cite{moleculeref}. However, there are
+few remnants of the original input structure. For users of earlier
+releases of the Dalton program, note should be taken of the fact that
+there been major changes in the input structure for the {\mol\} file,
+  though backward compatibility has in most cases been
+  retained\footnote{The two exceptions to the backward are that when
+    using the {\tt ATOMBASIS} keyword, the basis set name has to be
+    preceded by \" Basis=\" . When specifying the Cartesian
+    coordinates of the atoms, it is no longer required that the
+    coordinates start at position 5. However, blanks are no longer
+    allowed in the names of atoms, and the atom names are still
+    restricted to 4 characters.}.
 The program supports both Cartesian\index{Cartesian coordinate input}
 and Z-matrix input\index{Z-matrix input} of the
 molecular coordinates. However, the Z-matrix input provided is only a
@@ -62,7 +71,7 @@ such information as molecular symmetry\index{symmetry}, number of
 symmetry distinct atoms\index{symmetry-distinct atom}, generators of a
 given molecular point group\index{symmetry!generator}\index{symmetry!group}, and so on.
 This information usually constitutes the four/five first lines of the
-input, and is {\em formatted}.
+input.
 
 The input is best described by an example.
 The following is the first lines of an input for
@@ -76,7 +85,7 @@ column spacings.
  1:INTGRL
  2:        Tetrahedrane, Td_symmetric geometry
  3:                 4-31G** basis
- 4:    2    2  X  Y  Z   1.00D-15
+ 4:Atomtypes=2 Generators=2 X Y Integrals=1.00D-15
 \end{verbatim}
 
 We now define the input line-by-line.  The {\tt FORMAT} is given
@@ -84,32 +93,41 @@ in parentheses.
 \begin{description}
 \item[1] The word \verb|INTGRL|\index{INTGRL} {\tt (A6)}.
 \item[2-3] Two arbitrary title lines {\tt (A72)}.
-\item[4]
-\verb|CRT, NONTYP, KCHARG, SYMTXT, ((KASYM(I,J), I = 1,3), J = 1,3), ID3, THRS|
-\\ \verb|(A1,I4,I3,A2,10A1,D10.2)|.
+\item[4] General instructions about the molecule.
+
+This line keyword-driven. The general structure of the input is
+\verb|Keyword=|. The input is case sensitive, but it will recognize
+the keywords whether specified with only three characters (minimum) or
+the full name (or any intermediate option). The order of the keywords
+is arbitrary. The following keywords are
+recognized for this line:
 \begin{description}
-\item[CRT] By giving a small or capital 'C' in this
-position, the program will use Cartesian Gaussian basis
-functions\index{Cartesian basis function}\index{basis function!Cartesian}
-instead of the default, which is Spherical Gaussian basis
-functions\index{spherical basis function}\index{basis function!spherical}.
-\item[NONTYP] Number of atom types (number of atoms specified
+\item[Angstrom] Indicates that the atomic Cartesian coordinates are
+  given in \AA ngstr\"{o}m, and not in bohr (atomic units) which is
+  the default.
+\item[Atomtypes] \verb|(Integer)|. {\em This keyword is
+  required\/}. Number of atom types (number of atoms specified 
 in separate blocks). For a Z-matrix input this will be the total
 number of atoms in the molecule, the Z-matrix module will then
 extract the number of atom types.
-\item[KCHARG] The charge of the molecule\index{charge of molecule}.
-Will be used  by the program to determine the Hartree--Fock
-occupation\index{HF occupation}\index{Hartree--Fock occupation}. A zero
-is assumed if no number is given here.
-\item[SYMTXT] Number of symmetry generators\index{symmetry!generator}.
-If this field is
-left blank, the automatic symmetry detection\index{symmetry!automatic detection}
-routines of the program will be
+\item[Cartesian] Indicates that a Cartesian Gaussian basis set will be
+  used in the calculations.\index{Cartesian basis function}\index{basis function!Cartesian}
+\item[Charge] \verb|(Integer)|. The charge of the molecule\index{charge
+  of molecule}. Will be used  by the program to determine the Hartree--Fock
+occupation\index{HF occupation}\index{Hartree--Fock occupation}.
+\item[Generators] \verb|(Integer|+\verb|Character)|. Number of symmetry
+  generators\index{symmetry!generator}. If this keyword is not
+  specified (and \verb|Nosymmetry| not invoked)
+  the automatic symmetry detection routines of the program will be
 invoked. Symmetry can be turned off (needed for instance if starting a
 walk at a highly symmetric structure which one knows will break
-symmetry) by typing a zero in this place. Any other number will be
-interpreted as the number of symmetry generators (1--3).
-\item[KASYM] Symmetry generators\index{symmetry!generator}.  {\tt X}
+symmetry) using the keyword \verb|Nosymmetry|. \dalton\ is restricted
+  to the Abelian subgroups of D$_{2h}$, and thus there can be 1 to 3
+  generating elements.
+
+The number of generators\index{symmetry!generator} is followed the
+equally many blocks of characters specifying which Cartesian axis
+change sign during each of the generators. {\tt X}
 is reflection\index{reflection}
 in the \mbox{$yz$-plane}, {\tt XY} is rotation\index{rotation} about
 the \mbox{$z$-axis},
@@ -117,14 +135,17 @@ and {\tt XYZ} denotes inversion\index{inversion}. Due to the handling
 of symmetry in
 the program, it is recommended to use mirror planes as symmetry
 generating elements if possible.
-
-\item[ID3] A non-blank character in this place indicates that the
-coordinates of the atoms will be read in
-{\AA}ngstr\"{o}m\index{{\AA}ngstr\"{o}m}, and not in
-atomic units which is the default.
-\item[THR] Threshold for neglect of final integrals. Default
-is 1.0D-15, which will be used if no input is given here. A threshold
+\item[Integrals] \verb|(Real)|. Indicates the threshold for which
+  integrals smaller than this will be considered to be zero. If not
+  specified, a threshold of 1.0D-15 will be used. A threshold
 of 1.0D-15 will give integrals correct to approximately 1.0D-13.
+\item[Nosymmetry] Indicates that the calculation is to be run without
+  the use of point-group symmetry. Automatic symmetry detection will
+  also be disabled.\index{symmetry!automatic detection}
+\item[Own] Indicates that a user-supplied scheme for generating
+  transformed angular momentum basis functions will be used.
+\item[Spherical] Default. Indicates that a spherical Gaussian basis
+  set will be used in the calculations.\index{spherical basis function}\index{basis function!spherical}.
 \end{description}
 \end{description}
 
@@ -156,8 +177,13 @@ Hartree--Fock occupation\index{HF occupation}\index{Hartree--Fock occupation}
 will be taken care of by the program. Thus
 this line could in the above example be reduced to
 \begin{verbatim}
- 4:    2
+ 4:Atomtypes=2
 \end{verbatim}
+or even more concisely (though not more readable) as
+\begin{verbatim}
+ 4:Ato=2
+\end{verbatim}
+
 
 Let us finally give some remarks about the symmetry
 detection\index{symmetry!automatic detection}
@@ -178,9 +204,9 @@ coordinates. Furthermore, if there are symmetry equivalent nuclei,
 these will be removed from the input, and a new, standardized
 molecule input file will be generated and used in subsequent
 iterations of for instance a geometry optimization. This
-standardized input file (including basis set) can be printed to
-the file \verb|DALTON.BAS| by using the keyword \Key{MOLPRI} in
-the \Sec{READIN} submodule.
+standardized input file (including basis set) is printed to the file
+\verb|DALTON.BAS|, which is among the files copied back after the end
+of a calculation.
 
 \dalton\ can only take advantage of point groups that are subgroups
 of D$_{2h}$. If symmetry higher than that is detected, the program
@@ -213,7 +239,7 @@ ourselves, in order to present the input format for the basis set.
 
 For tetrahedrane, the input would then look like
 \begin{verbatim}
- 5:        6.    2    3    1    1    1
+ 5:Charge=6.0 Atoms=2 Blocks=3 1 1 1
  6:C1    1.379495419          .0                 0.975450565
  7:C2     .0                 1.379495419         -.975450565
  8:    8    3
@@ -232,7 +258,7 @@ For tetrahedrane, the input would then look like
 21:.1835578             1.000000
 22:    1    1
 23:0.8        1.0
-24:        1.    2    2    1    1
+24:Charge=1.0 Atoms=2 Blocks=2 1 1
 25:H1    3.020386510         .0                  2.1357357837
 26:H2     .0                 3.020386510         -2.1357357837
 27:    4    2
@@ -246,19 +272,28 @@ For tetrahedrane, the input would then look like
 
 The different lines are:
 \begin{description}
-\item[5] \verb| CHARGE, NUMBER, MAXLP1, (NGRP(I),I=1,MAXLP1)|{\tt (F10.0,25I5)}.
+\item[5] This line keyword-driven. The general structure of the input is
+\verb|Keyword=|. The input is case sensitive, but it will recognize
+the keywords whether specified with only three characters (minimum) or
+the full name (or any intermediate option). The order of the keywords
+is arbitrary. The following keywords are
+recognized for this line:
 \begin{description}
-\item[CHARGE] Charge of this atom\index{charge of atom} or point charge.
-\item[NUMBER] Number of {\em symmetry-distinct}\index{symmetry-distinct atom} atoms of
+\item[Atoms] \verb|(Integer)|. Number of {\em
+  symmetry-distinct}\index{symmetry-distinct atom} atoms of 
 this type (or, if the symmetry detection routines are being used, all
 atoms of this kind).
-\item[MAXLP1] Maximum angular quantum number + 1 used in the
+\item[Basis] \verb|(Character)|. If \verb|ATOMBASIS| has been specified,
+  the keyword is required, and have to be followed by the name of the
+  basis set that is to be used for this group of atoms, {\it e.g.\/}
+  \verb|Basis=6-31G**|.
+\item[Blocks] \verb|(Integers)|. Maximum angular quantum number + 1 used in the
 basis set for this atom type ($s=1$, $p=2$, etc.).
-Ignored if library basis sets are being used
-(\verb|BASIS| or \verb|ATOMBASIS| in first line),
-for \verb|ATOMBASIS| the basis set name starts here.
-Use \verb|MAXPL1 = 0| for point charges (and first line cannot be \verb|BASIS|).
-\item[NGRP(I)] Number of groups (blocks) of generally contracted
+Ignored if library basis sets are being used (\verb|BASIS| or
+\verb|ATOMBASIS| in first line). This number is followed by one
+integer for each angular momentum used in the basis, indicating 
+
+for \verb|ATOMBASIS| the basis set name starts here. Number of groups (blocks) of generally contracted
 functions of angular quantum number~{\tt I-1}.
 Ignored if the basis set library is used. \newline
 It is noteworthy that
@@ -274,20 +309,35 @@ by splitting
 basis functions of the quantum number into different blocks. However,
 this will decrease the performance of the
 integral\index{performance of integral program} calculation.
+%Use \verb|MAXPL1 = 0| for point charges (and first line cannot be
+%\verb|BASIS|).
+\item[Charge] \verb|(Real)|. {\em This keyword is required\/}. Charge of this atom\index{charge of atom}
+  or point charge. 
+\item[Pol] \verb|(Integer+real)|. This keyword adds single, primtive
+  basis function of a given quantum number (quantum number + 1 given
+  in the input) and a given exponent. An arbitrary number of
+  polarization functions can be given. For instance, we can add a $p$
+  function with exponent $0.05$ and a $d$ function with exponents
+  $0.6$ we can write \verb|Pol 2 0.05 3 0.6|.
+\item[Set] \verb|(Integer)|. Indicates whether the basis set specified
+  is the ordinary orbital basis or the auxiliray basis set needed for
+  instance in certain r12 calculations, see
+  Sec.~\ref{sec:auxbasis}. The keyword is only active when the keyword
+  \Key{AUXBAS} has been specified in the  \Sec{*INTEGRALS} input section.
 \end{description}
-\item[6] \verb|NAME, X, Y, Z, FLAG| {\tt (A4,3F20.15)}
+\item[6] \verb|NAME, X, Y, Z|
 \begin{description}
 \item[NAME] Atom name.  A different name should be used for
-each atom of the same type, although this is not required.
+each atom of the same type, although this is not required. Note that
+only the first four characters of the atom name will be used by the
+program, and that no spaces are allowed in naming the atom.
 \item[X] $x$-coordinate (in atomic units, unless \AA ngstr\"{o}m
 has been requested on line $4$ of the input).
 \item[Y] $y$-coordinate.
 \item[Z] $z$-coordinate.
 \end{description}
 The Cartesian coordinates may
-be given in free format. However, {\em the name of the atom must still be
-left four places}, and no coordinates must enter the four first
-positions.
+be given in free format.
 \item[7] This is the other symmetry-distinct center of this type.
 \item[8] \verb|FRMT, NPRIM, NCONT, NOINT| {\tt (A1,I4,2I5)}.
 \begin{description}
@@ -357,10 +407,10 @@ punch ones own basis set, but must instead resort to one of the basis sets
 provided with the basis set library (i.e. {\tt BASIS} in first line).
 Finally, you cannot explicitly specify higher symmetry in input line 4
 when using Z-matrix input,
-you can only request no symmetry ($C_1$) with {\tt SYMTXT = ' 0'}
-or specify that Dalton should detect the symmetry with {\tt SYMTXT = '  '}.
+you can only request no symmetry ($C_1$) with \verb|Nosymmetry|
+or allow \dalton\ to detect symmetry automatically.
 
-The input format is free, with, once more,
+The input format is free, with
 the restriction that the name of each atom must be given a space
 of 4 characters, and none of the other input variables needed must be
 placed in these positions.
@@ -377,7 +427,7 @@ BASIS
 6-31G**
    Test Z-matrix input of ammonia
    6-31G** basis set
-    4
+Atomtypes=4
 ZMAT
 N   1 7.0
 H1  2 1 1.0116 1.0
@@ -439,11 +489,11 @@ to:
  2:6-31G**
  3:        Tetrahedrane, Td_symmetric geometry
  4:                 4-31G** basis
- 5:    2    2  X  Y  Z   1.00D-15
- 6:        6.    2
+ 5:Atomtypes=2 Generators=2 X Y Integrals=1.00D-15
+ 6:Charge=6.0 Atoms=2
  7:C1    1.379495419          .0                 0.975450565
  8:C2     .0                 1.379495419         -.975450565
- 9:        1.    2
+ 9:Charge=1.0 Atoms=2
 10:H1    3.020386510         .0                  2.1357357837
 11:H2     .0                 3.020386510         -2.1357357837
 \end{verbatim}
@@ -453,7 +503,7 @@ The use of the basis set library is indicated by the presence of the
 \verb|INTGRL|.
 
 An alternative approach would be to use different basis sets for
-different atoms, e.g. the concept of locally
+different atoms, {\it e.g.\/} the concept of locally
 dense\index{locally dense basis set} basis sets
 introduced in NMR calculations by Chesnut {\it et
 al.\/}~\cite{dbcberkdmdaejcc14}. This is for instance also required
@@ -472,11 +522,11 @@ as
  1:ATOMBASIS
  2:        Tetrahedrane, Td_symmetric geometry
  3:    Mixed basis (6-31G* on C and 4-31G** on H)
- 4:    2    2  X  Y  Z   1.00D-15
- 5:        6.    2 6-31G*
+ 4:Atomtypes=2 Generators=2 X Y Integrals=1.00D-15
+ 5:Charge=6.0 Atoms=2 Basis=6-31G*
  6:C1    1.379495419          .0                 0.975450565
  7:C2     .0                 1.379495419         -.975450565
- 8:        1.    2 4-31G Pol 2 0.75D0
+ 8:Charge=1.0 Atoms=2 Basis=4-31G Pol 2 0.75D0
  9:H1    3.020386510         .0                  2.1357357837
 10:H2     .0                 3.020386510         -2.1357357837
 \end{verbatim}
@@ -509,11 +559,11 @@ through an input like
  1:ATOMBASIS
  2:        Tetrahedrane, Td_symmetric geometry
  3:    Mixed basis (6-31G* on C and 4-31G** on H)
- 4:    2    2  X  Y  Z   1.00D-15
- 5:        6.    2 ano-1 3 2 0 0 Pol 3 0.8
+ 4:Atomtypes=2 Generators=2 X Y Integrals=1.00D-15
+ 5:Charge=6.0 Atoms=2 Basis=ano-1 3 2 0 0 Pol 3 0.8
  6:C1    1.379495419          .0                 0.975450565
  7:C2     .0                 1.379495419         -.975450565
- 8:        1.    2 ano-1 2 0 0 Pol 2 0.75D0
+ 8:Charge=1.0 Atoms=2 Basis=ano-1 2 0 0 Pol 2 0.75D0
  9:H1    3.020386510         .0                  2.1357357837
 10:H2     .0                 3.020386510         -2.1357357837
 \end{verbatim}
@@ -555,11 +605,11 @@ look like
  1:ATOMBASIS
  2:        Tetrahedrane, Td_symmetric geometry
  3:    Mixed basis (6-31G* on C and 4-31G** on H)
- 4:    2    2  X  Y  Z   1.00D-15
- 5:        6.    2 NQvD 8 4 3 2 Pol 3 0.8D0
+ 4:Atomtypes=2 Generators=2 X Y Integrals=1.00D-15
+ 5:Charge=6.0 Atoms=2 Basis=NQvD 8 4 3 2 Pol 3 0.8D0
  6:C1    1.379495419          .0                 0.975450565
  7:C2     .0                 1.379495419         -.975450565
- 8:        1.    2 NQvD 4 2 Pol 2 0.75D0
+ 8:Charge=1.0 Atoms=2 Basis=NQvD 4 2 Pol 2 0.75D0
  9:H1    3.020386510         .0                  2.1357357837
 10:H2     .0                 3.020386510         -2.1357357837
 \end{verbatim}
@@ -571,11 +621,12 @@ stage.
 
 The only limitations to the use of polarization functions when {\tt
 ATOMBASIS} is used, is that the length of the line must note exceed 80
-characters. If that happens, we recommend dumping a standard basis set
-to \verb|DALTON.BAS| using the keyword \Key{MOLPRI}, and then adding
+characters. If that happens, we recommend collecting a standard basis set
+from the file \verb|DALTON.BAS|, and then adding
 functions to this set.
 
 \section{Auxiliary basis sets}
+\label{sec:auxbasis}
 
 It is possible to specify more than one basis set. For example, by typing
 \begin{verbatim}
@@ -584,14 +635,9 @@ It is possible to specify more than one basis set. For example, by typing
 \end{verbatim}
 the basis set 6-311++G(3df,3pd) will be used as an auxiliary basis.
 When using an auxiliary basis, each atom line must contain a basis-set
-identifier, which at present may take the values {\tt MBSI = 1} (orbital basis) or 
-{\tt MBSI = 2} (auxiliary basis). Basis sets with {\tt MBSI = 1} must be read first,
-basis sets with {\tt MBSI = 2} thereafter.
-An atom line hence reads
-\begin{description}
-\item[5] \verb|ZMATL, MBSI, CHARGE, NUMBER, MAXLP1, (NGRP(I),I=1,MAXLP1)|\break
-\noindent{\tt (BN,A1,I2,F7.0,25I5)}.
-\end{description}
+identifier, which at present may take the values \verb|Set=1| (orbital basis) or 
+\verb|Set=2| (auxiliary basis). Basis sets with \verb|Set=1| must be read first,
+basis sets with \verb|Set=2| thereafter.
 The above also applies to the \verb|ATOMBASIS| and \verb|INTGRL| input modes.
 Examples are provided by the following input files:
 \begin{verbatim}
@@ -599,31 +645,31 @@ Examples are provided by the following input files:
  2:cc-pVDZ cc-pCVQZ
  3:Direct MP2-R12/cc-pVDZ calculation on H2O
  4:Auxiliary basis: cc-pCVQZ
- 5:    4    1  X
- 6: 1      8.    1
+ 5:Atomtypes=1 Generators=1 X
+ 6:Charge=8.0 Atoms=1 Set=1
  7:O       .000000000000000    .000000000000000  -0.124309000000000       *
- 8: 1      1.    1
+ 8:Charge=1.0 Atoms=1 Set=1
  9:H      1.427450200000000    .000000000000000   0.986437000000000       *
-10: 2      8.    1
+10:Charge=8.0 Atoms=1 Set=2
 11:O       .000000000000000    .000000000000000  -0.124309000000000       *
-12: 2      1.    1
+12:Charge=1.0 Atoms=1 Set=2
 13:H      1.427450200000000    .000000000000000   0.986437000000000       *
 \end{verbatim}
 \begin{verbatim}
  1:ATOMBASIS
  2:Direct MP2-R12/cc-pVDZ calculation on H2O
  3:Auxiliary basis: cc-pCVQZ
- 4:    4    1  X
- 5: 1      8.    1 cc-pVDZ
+ 4:Atomtypes=4 Generators=1 X
+ 5:Charge=8.0 Atoms=1 Set=1 Basis=cc-pVDZ
  6:O       .000000000000000    .000000000000000  -0.124309000000000       *
- 7: 1      1.    1 cc-pVDZ
+ 7:Charge=1.0 Atoms=1 Set=1 Basis=cc-pVDZ
  8:H      1.427450200000000    .000000000000000   0.986437000000000       *
- 9: 2      8.    1 cc-pCVQZ
+ 9:Charge=8.0 Atoms=1 Set=2 Basis=cc-pCVQZ
 10:O       .000000000000000    .000000000000000  -0.124309000000000       *
-11: 2      1.    1 cc-pCVQZ
+11:Charge=1.0 Atoms=1 Set=2 Basis=cc-pCVQZ
 12:H      1.427450200000000    .000000000000000   0.986437000000000       *
 \end{verbatim}
-Note that the key \Key{AUXBAS} must be specified in the 
+Note that the keyword \Key{AUXBAS} must be specified in the 
 \Sec{*INTEGRALS} input section to be able to read the above inputs.
 
 \section{The basis sets supplied with \dalton }
