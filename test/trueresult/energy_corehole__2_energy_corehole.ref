@@ -1,0 +1,1111 @@
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+    This is output from DALTON (Release 2.0 rev. 0, Mar. 2005)
+
+    Celestino Angeli,         University of Ferrara,        Italy      
+    Keld L. Bak,              UNI-C,                        Denmark    
+    Vebjoern Bakken,          University of Oslo,           Norway     
+    Ove Christiansen,         Aarhus University,            Denmark    
+    Renzo Cimiraglia,         University of Ferrara,        Italy      
+    Sonia Coriani,            University of Trieste,        Italy      
+    Paal Dahle,               University of Oslo,           Norway     
+    Erik K. Dalskov,          UNI-C,                        Denmark    
+    Thomas Enevoldsen,        SDU - Odense University,      Denmark    
+    Berta Fernandez,          U. of Santiago de Compostela, Spain      
+    Christof Haettig,         Forschungszentrum Karlsruhe,  Germany    
+    Kasper Hald,              Aarhus University,            Denmark    
+    Asger Halkier,            Aarhus University,            Denmark    
+    Hanne Heiberg,            University of Oslo,           Norway     
+    Trygve Helgaker,          University of Oslo,           Norway     
+    Hinne Hettema,            University of Auckland,       New Zealand
+    Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark    
+    Dan Jonsson,              KTH Stockholm,                Sweden     
+    Poul Joergensen,          Aarhus University,            Denmark    
+    Sheela Kirpekar,          SDU - Odense University,      Denmark    
+    Wim Klopper,              University of Karlsruhe,      Germany    
+    Rika Kobayashi,           ANU Supercomputer Facility,   Australia  
+    Henrik Koch,              University of Trondheim,      Norway     
+    Ola B. Lutnaes,           University of Oslo,           Norway     
+    Kurt V. Mikkelsen,        University of Copenhagen,     Denmark    
+    Patrick Norman,           University of Linkoeping,     Sweden     
+    Jeppe Olsen,              Aarhus University,            Denmark    
+    Martin J. Packer,         University of Sheffield,      UK         
+    Thomas B. Pedersen,       University of Lund,           Sweden     
+    Zilvinas Rinkevicius,     KTH Stockholm,                Sweden     
+    Elias Rudberg,            KTH Stockholm,                Sweden     
+    Torgeir A. Ruden,         University of Oslo,           Norway     
+    Kenneth Ruud,             University of Tromsoe,        Norway     
+    Pawel Salek,              KTH Stockholm,                Sweden     
+    Alfredo Sanchez de Meras, University of Valencia,       Spain      
+    Trond Saue,               University of Strasbourg,     France     
+    Stephan P. A. Sauer,      University of Copenhagen,     Denmark    
+    Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Sweden     
+    K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark    
+    Peter R. Taylor,          University of Warwick,        UK         
+    Olav Vahtras,             KTH Stockholm,                Sweden     
+    David J. Wilson,          University of Oslo,           Norway     
+    Hans Agren,               KTH Stockholm,                Sweden     
+
+ ---------------------------------------------------------------------
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF and CC wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "Dalton, a molecular electronic structure program, Release 2.0
+     (2005), see http://www.kjemi.uio.no/software/dalton/dalton.html"
+
+     Date and time (Linux)  : Thu Mar  3 21:05:20 2005
+     Host name              : pi.biotech.kth.se                       
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed
+
+Starting in Wave Function Section -
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Thu Mar  3 21:05:20 2005
+     Host name              : pi.biotech.kth.se                       
+
+ Title lines from integral program:
+     Calculation of core-hole excitations using both a frozen and a relaxed  
+     core orbital. This is a three step job                                  
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     MC-SCF optimization.
+
+               Type: restricted active space calculation (RAS)
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART NEWORB" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons          4
+     Number of electrons in active shells     10
+     Total charge of the molecule            -14
+
+     Number of active orbitals                 9
+     Total number of orbitals                 64
+
+     Spin multiplicity                         1
+     Total number of symmetries                4
+     Reference state symmetry                  2
+
+     Number of active orbitals in RAS1, RAS2, and RAS3 :   1   8   0
+
+     Minimum number of electrons in RAS1 :   1 (maximum   1 holes)
+     Maximum number of electrons in RAS1 :   1 (minimum   1 holes)
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1   2   3   4
+                                       --  --  --  --
+     Inactive orbitals                  2   0   0   0
+     Active orbitals in RAS1            1   0   0   0
+     Active orbitals in RAS2            4   2   2   0
+     Secondary orbitals                23  12  12   6
+     Total number of orbitals          30  14  14   6
+     Number of basis functions         30  14  14   6
+
+     Optimization information
+     ========================
+     Number of determinants             1960
+     Number of orbital rotations         194
+     ---------------------------------------
+     Total number of variables          2154
+
+     Maximum number of macro iterations      30
+     Maximum number of micro iterations     720
+     Threshold for gradient            1.00E-05
+     Number of initial trial vectors          1
+     Number of initial CI iterations         20
+     Number of simultaneous trial vectors     1
+
+     This calculation converges to the lowest state
+     for the specified symmetry and spin species.
+
+     Maximum number of NEO/NR iterations  24
+
+     Number of orbitals frozen with ".FREEZE"  1
+
+     Orbital  Symmetry   No. in   Type
+       no.              symmetry
+         3         1         3   active   
+
+
+        SIRIUS MCSCF optimization (SIROPT)
+ ================================================
+
+
+String information written on SIRIUS.STRINGINFO for use by WESTA program
+
+
+ <<<<< Output from SIRIUS CI module (CICTL) >>>>>
+
+
+
+
+
+ >>> SIRCI.CIST1: plus combination of all degenerate
+                 configurations is used as start vectors.
+
+
+ (CIST1)  8 lowest diagonal elements:
+
+ Element no. Config.no.    Active energy      Total energy
+
+         1 :       1034    -43.7556090705   -101.5561934555
+         2 :       1393    -43.7556090705   -101.5561934555
+         3 :        597    -42.9650761051   -100.7656604901
+         4 :         30    -42.9650761051   -100.7656604901
+         5 :       1041    -42.9620227313   -100.7626071163
+         6 :       1561    -42.9620227313   -100.7626071163
+         7 :       1202    -42.9492910339   -100.7498754190
+         8 :       1405    -42.9492910339   -100.7498754190
+
+
+ Convergence threshold for CI optimization :     0.00000500
+
+
+ The requested root number is now converged.
+
+
+ *** CI converged in  7 iterations.
+
+
+
+ CI energies and residuals:
+    1     -101.574321548900315       7.82E-07
+
+   <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
+
+
+ "Occupations" of RAS pseudo-natural orbitals:
+
+ Norm of zeroed RAS1-RAS2 block:   0.000000E+00
+ Norm of zeroed RAS1-RAS3 block:   0.000000E+00
+ Norm of zeroed RAS2-RAS3 block:   0.000000E+00
+
+ Symmetry  1
+
+   1.000000000   1.999975681   1.999802676   0.000207296   0.000019995
+
+ Symmetry  2
+
+   1.999837332   1.000123995
+
+ Symmetry  3
+
+   1.999639756   0.000393269
+
+
+ <<< MACRO ITERATION  1 >>>
+ --------------------------
+
+ Total MCSCF energy       :     -101.574321548900272       (MACRO    1)
+
+ Norm of total gradient   :        2.586465973286
+ -    of CI gradient      :        0.000001563705
+ -    of orbital gradient :        2.586465973286
+
+ (SIRNEO) iteration (  1,  3)
+ Micro iteration termination criterion met, EVAL(ISTATE+1) = -3.64E-01
+
+   <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
+
+
+ "Occupations" of RAS pseudo-natural orbitals:
+
+ Norm of zeroed RAS1-RAS2 block:   0.000000E+00
+ Norm of zeroed RAS1-RAS3 block:   0.000000E+00
+ Norm of zeroed RAS2-RAS3 block:   0.000000E+00
+
+ Symmetry  1
+
+   1.000000000   1.999975681   1.999802676   0.000207296   0.000019995
+
+ Symmetry  2
+
+   1.999837332   1.000123995
+
+ Symmetry  3
+
+   1.999639756   0.000393269
+
+
+ <<< MACRO ITERATION  2 >>>
+ --------------------------
+
+ Total MCSCF energy       :     -102.058983681768524       (MACRO    2)
+
+ Norm of total gradient   :        1.444484377294
+ -    of CI gradient      :        0.092410045229
+ -    of orbital gradient :        1.441525407264
+
+ Residual norm when dim(red L) =   5
+ NEO root     CSF        orbital          total
+    1     0.18587651     0.08486439     0.20433316 converged
+
+ (NEONEX) NEO vector is converged.
+
+   <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
+
+
+ "Occupations" of RAS pseudo-natural orbitals:
+
+ Norm of zeroed RAS1-RAS2 block:   0.000000E+00
+ Norm of zeroed RAS1-RAS3 block:   0.000000E+00
+ Norm of zeroed RAS2-RAS3 block:   0.000000E+00
+
+ Symmetry  1
+
+   1.000000000   1.999975681   1.999802676   0.000207296   0.000019995
+
+ Symmetry  2
+
+   1.999837332   1.000123995
+
+ Symmetry  3
+
+   1.999639756   0.000393269
+
+
+ <<< MACRO ITERATION  3 >>>
+ --------------------------
+
+ Total MCSCF energy       :     -102.138931258237378       (MACRO    3)
+
+ Norm of total gradient   :        0.347813597513
+ -    of CI gradient      :        0.140254275214
+ -    of orbital gradient :        0.318281380069
+
+ (SIRNEO) iteration (  3,  3)
+ Micro iteration termination criterion met, EVAL(ISTATE+1) = -4.97E-03
+
+   <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
+
+
+ "Occupations" of RAS pseudo-natural orbitals:
+
+ Norm of zeroed RAS1-RAS2 block:   0.000000E+00
+ Norm of zeroed RAS1-RAS3 block:   0.000000E+00
+ Norm of zeroed RAS2-RAS3 block:   0.000000E+00
+
+ Symmetry  1
+
+   1.000000000   1.999637109   1.997606808   0.002332254   0.000216543
+
+ Symmetry  2
+
+   1.978181718   1.021709479
+
+ Symmetry  3
+
+   1.977435833   0.022880255
+
+
+ <<< MACRO ITERATION  4 >>>
+ --------------------------
+
+ Total MCSCF energy       :     -102.179057137639674       (MACRO    4)
+
+ Norm of total gradient   :        1.188243414508
+ -    of CI gradient      :        0.201635283501
+ -    of orbital gradient :        1.171010514286
+
+ Residual norm when dim(red L) =   5
+ NEO root     CSF        orbital          total
+    1     0.17684191     0.05071976     0.18397162 converged
+
+ (NEONEX) NEO vector is converged.
+
+   <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
+
+
+ "Occupations" of RAS pseudo-natural orbitals:
+
+ Norm of zeroed RAS1-RAS2 block:   0.000000E+00
+ Norm of zeroed RAS1-RAS3 block:   0.000000E+00
+ Norm of zeroed RAS2-RAS3 block:   0.000000E+00
+
+ Symmetry  1
+
+   1.000000000   1.995110603   1.982315808   0.013937221   0.002014244
+
+ Symmetry  2
+
+   1.969481843   1.029922110
+
+ Symmetry  3
+
+   1.933688403   0.073529768
+
+
+ <<< MACRO ITERATION  5 >>>
+ --------------------------
+
+ Total MCSCF energy       :     -102.219447589361977       (MACRO    5)
+
+ Norm of total gradient   :        1.007590522405
+ -    of CI gradient      :        0.221715737483
+ -    of orbital gradient :        0.982894090221
+
+ Residual norm when dim(red L) =   7
+ NEO root     CSF        orbital          total
+    1     0.18787237     0.04121877     0.19234088 converged
+
+ (NEONEX) NEO vector is converged.
+
+   <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
+
+
+ "Occupations" of RAS pseudo-natural orbitals:
+
+ Norm of zeroed RAS1-RAS2 block:   0.000000E+00
+ Norm of zeroed RAS1-RAS3 block:   0.000000E+00
+ Norm of zeroed RAS2-RAS3 block:   0.000000E+00
+
+ Symmetry  1
+
+   1.000000000   1.966760510   1.983872362   0.009051869   0.032982365
+
+ Symmetry  2
+
+   1.971071556   1.028180922
+
+ Symmetry  3
+
+   1.923266044   0.084814372
+
+
+ <<< MACRO ITERATION  6 >>>
+ --------------------------
+
+ Total MCSCF energy       :     -102.164441831435340       (MACRO    6)
+
+ Norm of total gradient   :        6.200294968182
+ -    of CI gradient      :        1.268122481285
+ -    of orbital gradient :        6.069227550926
+
+ (SIRSTP) Energy difference;
+ actual, predicted and ratio:   0.0550057579  -0.0491807098   -1.118442
+
+ (SIRSTP) step is too large -- backstep
+
+   <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
+
+
+ "Occupations" of RAS pseudo-natural orbitals:
+
+ Norm of zeroed RAS1-RAS2 block:   0.000000E+00
+ Norm of zeroed RAS1-RAS3 block:   0.000000E+00
+ Norm of zeroed RAS2-RAS3 block:   0.000000E+00
+
+ Symmetry  1
+
+   1.000000000   1.980301830   1.987282962   0.006868899   0.018447395
+
+ Symmetry  2
+
+   1.972945651   1.026412311
+
+ Symmetry  3
+
+   1.930350834   0.077390118
+
+
+ Optimization control: Step was too large, we backstep
+
+
+ <<< MACRO ITERATION  6 BACKSTEP NO.  1 >>>
+
+ Total MCSCF energy       :     -102.223767325482441       (MACRO    6)
+
+ Norm of total gradient   :        2.126011221515
+ -    of CI gradient      :        0.421909348015
+ -    of orbital gradient :        2.083726521419
+
+ (SIRSTP) Energy difference;
+ actual, predicted and ratio:  -0.0043197361  -0.0285626822    0.151237
+
+ (SIRSTP) step is too large -- backstep
+
+   <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
+
+
+ "Occupations" of RAS pseudo-natural orbitals:
+
+ Norm of zeroed RAS1-RAS2 block:   0.000000E+00
+ Norm of zeroed RAS1-RAS3 block:   0.000000E+00
+ Norm of zeroed RAS2-RAS3 block:   0.000000E+00
+
+ Symmetry  1
+
+   1.000000000   1.989609895   1.985051212   0.012718792   0.005666591
+
+ Symmetry  2
+
+   1.973505664   1.025896213
+
+ Symmetry  3
+
+   1.933330933   0.074220702
+
+
+ Optimization control: Step was too large, we backstep
+
+
+ <<< MACRO ITERATION  6 BACKSTEP NO.  2 >>>
+
+ Total MCSCF energy       :     -102.232043347345353       (MACRO    6)
+
+ Norm of total gradient   :        0.838834699346
+ -    of CI gradient      :        0.168160591173
+ -    of orbital gradient :        0.821806344831
+
+ Residual norm when dim(red L) =   6
+ NEO root     CSF        orbital          total
+    1     0.14849383     0.00656583     0.14863891 converged
+
+ (NEONEX) NEO vector is converged.
+
+   <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
+
+
+ "Occupations" of RAS pseudo-natural orbitals:
+
+ Norm of zeroed RAS1-RAS2 block:   0.000000E+00
+ Norm of zeroed RAS1-RAS3 block:   0.000000E+00
+ Norm of zeroed RAS2-RAS3 block:   0.000000E+00
+
+ Symmetry  1
+
+   1.000000000   1.989609895   1.985051212   0.012718792   0.005666591
+
+ Symmetry  2
+
+   1.973505664   1.025896213
+
+ Symmetry  3
+
+   1.933330933   0.074220702
+
+
+ <<< MACRO ITERATION  7 >>>
+ --------------------------
+
+ Total MCSCF energy       :     -102.249558092411050       (MACRO    7)
+
+ Norm of total gradient   :        0.127577935160
+ -    of CI gradient      :        0.103436882809
+ -    of orbital gradient :        0.074678918139
+
+ Residual norm when dim(red L) =   8
+ NEO root     CSF        orbital          total
+    1     0.01569604     0.00705152     0.01720726 converged
+
+ (NEONEX) NEO vector is converged.
+
+   <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
+
+
+ "Occupations" of RAS pseudo-natural orbitals:
+
+ Norm of zeroed RAS1-RAS2 block:   0.000000E+00
+ Norm of zeroed RAS1-RAS3 block:   0.000000E+00
+ Norm of zeroed RAS2-RAS3 block:   0.000000E+00
+
+ Symmetry  1
+
+   1.000000000   1.978088255   1.983462922   0.022176594   0.009789758
+
+ Symmetry  2
+
+   1.976223401   1.022992004
+
+ Symmetry  3
+
+   1.927786570   0.079480495
+
+
+ <<< MACRO ITERATION  8 >>>
+ --------------------------
+
+ Total MCSCF energy       :     -102.267325185210836       (MACRO    8)
+
+ Norm of total gradient   :        0.055585150289
+ -    of CI gradient      :        0.035151584009
+ -    of orbital gradient :        0.043058972053
+
+ Residual norm when dim(red L) =  11
+ NEO root     CSF        orbital          total
+    1     0.00651773     0.00322682     0.00727277 converged
+
+ (NEONEX) NEO vector is converged.
+
+   <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
+
+
+ "Occupations" of RAS pseudo-natural orbitals:
+
+ Norm of zeroed RAS1-RAS2 block:   0.000000E+00
+ Norm of zeroed RAS1-RAS3 block:   0.000000E+00
+ Norm of zeroed RAS2-RAS3 block:   0.000000E+00
+
+ Symmetry  1
+
+   1.000000000   1.972291936   1.981143176   0.027803877   0.012948372
+
+ Symmetry  2
+
+   1.977288534   1.021773103
+
+ Symmetry  3
+
+   1.929187902   0.077563102
+
+
+ <<< MACRO ITERATION  9 >>>
+ --------------------------
+
+ Total MCSCF energy       :     -102.282294440192203       (MACRO    9)
+
+ Norm of total gradient   :        0.044078783041
+ -    of CI gradient      :        0.035245713155
+ -    of orbital gradient :        0.026470338467
+
+ Residual norm when dim(red L) =  11
+ NEO root     CSF        orbital          total
+    1     0.00653855     0.00520874     0.00835964 converged
+
+ (NEONEX) NEO vector is converged.
+
+   <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
+
+
+ "Occupations" of RAS pseudo-natural orbitals:
+
+ Norm of zeroed RAS1-RAS2 block:   0.000000E+00
+ Norm of zeroed RAS1-RAS3 block:   0.000000E+00
+ Norm of zeroed RAS2-RAS3 block:   0.000000E+00
+
+ Symmetry  1
+
+   1.000000000   1.971024312   1.980534183   0.028193600   0.015246942
+
+ Symmetry  2
+
+   1.977542316   1.021482411
+
+ Symmetry  3
+
+   1.927417448   0.078558789
+
+
+ <<< MACRO ITERATION 10 >>>
+ --------------------------
+
+ Total MCSCF energy       :     -102.287902712289366       (MACRO   10)
+
+ Norm of total gradient   :        0.048454715618
+ -    of CI gradient      :        0.044482931586
+ -    of orbital gradient :        0.019212710977
+
+ Residual norm when dim(red L) =  10
+ NEO root     CSF        orbital          total
+    1     0.00239170     0.00061656     0.00246989 converged
+
+ (NEONEX) NEO vector is converged.
+
+   <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
+
+
+ "Occupations" of RAS pseudo-natural orbitals:
+
+ Norm of zeroed RAS1-RAS2 block:   0.000000E+00
+ Norm of zeroed RAS1-RAS3 block:   0.000000E+00
+ Norm of zeroed RAS2-RAS3 block:   0.000000E+00
+
+ Symmetry  1
+
+   1.000000000   1.973125811   1.982483403   0.026487931   0.012791526
+
+ Symmetry  2
+
+   1.977388106   1.021669336
+
+ Symmetry  3
+
+   1.926981040   0.079072848
+
+
+ <<< MACRO ITERATION 11 >>>
+ --------------------------
+
+ Total MCSCF energy       :     -102.288284687853888       (MACRO   11)
+
+ Norm of total gradient   :        0.003128952823
+ -    of CI gradient      :        0.002877814965
+ -    of orbital gradient :        0.001228220989
+
+ Residual norm when dim(red L) =  15
+ NEO root     CSF        orbital          total
+    1     0.00006242     0.00001814     0.00006501 converged
+
+ (NEONEX) NEO vector is converged.
+
+   <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
+
+
+ "Occupations" of RAS pseudo-natural orbitals:
+
+ Norm of zeroed RAS1-RAS2 block:   0.000000E+00
+ Norm of zeroed RAS1-RAS3 block:   0.000000E+00
+ Norm of zeroed RAS2-RAS3 block:   0.000000E+00
+
+ Symmetry  1
+
+   1.000000000   1.973132258   1.982490788   0.026468789   0.012755169
+
+ Symmetry  2
+
+   1.977402572   1.021652042
+
+ Symmetry  3
+
+   1.926973951   0.079124430
+
+
+ <<< MACRO ITERATION 12 >>>
+ --------------------------
+
+ Total MCSCF energy       :     -102.288287199715072       (MACRO   12)
+
+ Norm of total gradient   :        0.000077139141
+ -    of CI gradient      :        0.000067809307
+ -    of orbital gradient :        0.000036774244
+
+ Residual norm when dim(red L) =   7
+ NEO root     CSF        orbital          total
+    1     0.00000638     0.00000674     0.00000928 converged
+
+ (NEONEX) NEO vector is converged.
+
+   <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
+
+
+ "Occupations" of RAS pseudo-natural orbitals:
+
+ Norm of zeroed RAS1-RAS2 block:   0.000000E+00
+ Norm of zeroed RAS1-RAS3 block:   0.000000E+00
+ Norm of zeroed RAS2-RAS3 block:   0.000000E+00
+
+ Symmetry  1
+
+   1.000000000   1.973134492   1.982492899   0.026467855   0.012752844
+
+ Symmetry  2
+
+   1.977401560   1.021652858
+
+ Symmetry  3
+
+   1.926972025   0.079125468
+
+
+ <<< MACRO ITERATION 13 >>>
+ --------------------------
+
+ Total MCSCF energy       :     -102.288287200473661       (MACRO   13)
+
+ Norm of total gradient   :        0.000009275881
+ -    of CI gradient      :        0.000006376493
+ -    of orbital gradient :        0.000006736639
+
+ *** Optimization control: MCSCF converged ***
+     Number of macro iterations used           13
+     Number of micro iterations used           75
+     Total number of CPU seconds used        16.41
+
+
+               >>> SIRIUS OPTIMIZATION STATISTICS <<<
+
+ 
+     Date and time (Linux)  : Thu Mar  3 21:05:36 2005
+     Host name              : pi.biotech.kth.se                       
+
+
+  ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
+ ---------------------------------------------------------------------
+    1    3   -101.574321548900   2.5864659733  0.000000   0.7446942130
+    2    4   -102.058983681769   1.4444843773  0.719405   0.7498685916
+    3    3   -102.138931258237   0.3478135975  0.589968   0.6967509713
+    4    4   -102.179057137640   1.1882434145  0.797630   0.7015972292
+    5    6   -102.219447589362   1.0075905224  0.702379   0.7506091928
+    6    0   -102.164441831435   6.2002949682 -1.118442   0.0000000000
+    6    0   -102.223767325482   2.1260112215  0.151237   0.0000000000
+    6    5   -102.232043347345   0.8388346993  0.653254   0.3194866091
+    7    6   -102.249558092411   0.1275779352  0.958644   0.3886395988
+    8    9   -102.267325185211   0.0555851503  0.915222   0.4861822546
+    9    9   -102.282294440192   0.0440787830  0.875419   0.5850346728
+   10    8   -102.287902712289   0.0484547156  0.817452   0.0674127694
+   11   13   -102.288284687854   0.0031289528  1.019721   0.0081278241
+   12    5   -102.288287199715   0.0000771391  1.001999   0.0000656866
+   13    0   -102.288287200474   0.0000092759  1.001202   0.0000000000
+
+
+  ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
+ ------------------------------------------------------------------------------
+    1   1323    0.000000    0.000002    171    0.802663    2.586466    2.586466
+    2   1567    0.032186    0.092410    100    1.254281    1.441525    1.444484
+    3   1567    0.059219    0.140254     82    0.079181    0.318281    0.347814
+    4   1209    0.103697    0.201635    100    0.883018    1.171011    1.188243
+    5   1055   -0.046989    0.221716    100   -0.940224    0.982894    1.007591
+    6   1493   -0.346100    1.268122    146    5.914809    6.069228    6.200295
+    6   1493   -0.116024    0.421909    146    1.953954    2.083727    2.126011
+    6   1418    0.037158    0.168161    123    0.702496    0.821806    0.838835
+    7   1064   -0.018343    0.103437     54   -0.062555    0.074679    0.127578
+    8   1443    0.010848    0.035152    102   -0.025814    0.043059    0.055585
+    9   1064    0.011200    0.035246    101   -0.014434    0.026470    0.044079
+   10   1468    0.009611    0.044483      8   -0.009094    0.019213    0.048455
+   11   1493   -0.000669    0.002878     76   -0.000528    0.001228    0.003129
+   12   1090   -0.000010    0.000068     76   -0.000018    0.000037    0.000077
+   13   1399   -0.000002    0.000006     99   -0.000002    0.000007    0.000009
+
+
+  ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
+ ------------------------------------------------------------------------------
+
+    1     3     0     3      0.94      0.49      0.37      0.31      0.12
+    2     4     0     4      1.05      0.49      0.48      0.42      0.12
+    3     3     1     3      0.98      0.49      0.41      0.35      0.14
+    4     4     1     3      1.00      0.49      0.43      0.37      0.11
+    5     6     2     4      1.16      0.49      0.59      0.53      0.10
+    6     0     0     0      0.62      0.49      0.00      0.00
+    6     0     0     0      0.62      0.49      0.00      0.00
+    6     5     0     5      1.14      0.48      0.59      0.53      0.12
+    7     6     4     3      1.14      0.49      0.57      0.51      0.10
+    8     9     6     4      1.36      0.49      0.79      0.73      0.09
+    9     9     6     4      1.36      0.49      0.80      0.73      0.09
+   10     8     5     4      1.32      0.49      0.75      0.68      0.09
+   11    13     9     5      1.66      0.50      1.08      1.01      0.08
+   12     5     4     2      1.04      0.50      0.47      0.41      0.09
+   13     0     0     0      0.57      0.49      0.00      0.00
+
+
+ ITER         EMY                 EACTIV              EMCSCF
+
+    1    -80.314655679616    -43.773737163844   -101.574321548900
+    2    -80.381948421487    -44.191106554841   -102.058983681769
+    3    -80.339304534463    -44.313698018334   -102.138931258237
+    4    -80.373897031757    -44.319231400442   -102.179057137640
+    5    -80.418479876625    -44.315039007296   -102.219447589362
+    6    -80.131266587467    -44.547246538528   -102.164441831435
+    6    -80.231004543549    -44.506834076492   -102.223767325482
+    6    -80.286185139219    -44.459929502685   -102.232043347345
+    7    -80.050847669230    -44.712781717740   -102.249558092411
+    8    -79.618235214804    -45.163161264966   -102.267325185211
+    9    -78.858254671500    -45.938111063251   -102.282294440192
+   10    -78.037974595616    -46.763999411232   -102.287902712289
+   11    -78.111750239644    -46.690605742769   -102.288284687854
+   12    -78.118051508637    -46.684306985637   -102.288287199715
+   13    -78.118087594289    -46.684270900744   -102.288287200474
+
+
+ ITER         DEPRED              DEACT               RATIO
+
+    1      0.000000000000      0.000000000000      0.000000000000
+    2     -0.673698506206     -0.484662132868      0.719405087593
+    3     -0.135511677888     -0.079947576469      0.589968168903
+    4     -0.050306385899     -0.040125879402      0.797629936744
+    5     -0.057505198674     -0.040390451722      0.702379135347
+    6     -0.049180709812      0.055005757927     -1.118441725155
+    6     -0.028562682245     -0.004319736120      0.151237061120
+    6     -0.019281558244     -0.012595757983      0.653254152183
+    7     -0.018270334721     -0.017514745066      0.958643907373
+    8     -0.019412874824     -0.017767092800      0.915222137947
+    9     -0.017099527193     -0.014969254981      0.875419233079
+   10     -0.006860670877     -0.005608272097      0.817452432562
+   11     -0.000374588309     -0.000381975565      1.019720998332
+   12     -0.000002506849     -0.000002511861      1.001999273155
+   13     -0.000000000758     -0.000000000759      1.001201761452
+
+
+ ITER    BETA           GAMMA             STPLNG              RTRUST
+
+    1      1.14956130  1.00000000      0.744694213041      0.700000000000
+    2      0.81725294  1.00000000      0.749868591610      0.700000000000
+    3      1.43880408  1.00000000      0.696750971282      0.700000000000
+    4      1.42146296  1.00000000      0.701597229169      0.700000000000
+    5      1.69955954  1.00000000      0.750609192789      0.700000000000
+    6      0.00000000  0.00000000      0.000000000000      0.469000000000
+    6      0.00000000  0.00000000      0.000000000000      0.313162509321
+    6      2.44947426  1.00000000      0.319486609054      0.313162509321
+    7      2.44947426  1.00000000      0.388639598835      0.375795011185
+    8      1.85565512  1.00000000      0.486182254622      0.450954013422
+    9      0.57908408  1.00000000      0.585034672833      0.541144816106
+   10      0.20000000  1.00000000      0.067412769435      0.649373779327
+   11      0.20000000  1.00000000      0.008127824105      0.700000000000
+   12      0.20000000  1.00000000      0.000065686577      0.700000000000
+   13      0.00000000  0.00000000      0.000000000000      0.700000000000
+
+
+ Reduced L root no.  1
+ ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
+ ----------------------------------------------------------------------------
+    1   -1.027535200976    0.759658546394   -0.262528363500   -0.590226444366
+    2   -0.131594906657    0.852628188759   -0.095240128249   -0.271300345779
+    3   -0.103883327997    0.706227639174   -0.234065823958   -0.602358440730
+    4   -0.116507315890   -0.708063974880    0.026934512092    0.590550902485
+    5   -0.108135305316   -0.616928705409    0.030969111037    0.039930860524
+    6    0.000000000000    0.000000000000    0.000000000000    0.000000000000
+    6    0.000000000000    0.000000000000    0.000000000000    0.000000000000
+    6   -0.135970104589    0.787518176289   -0.053193877428   -0.545996017090
+    7   -0.122205184987    0.724289203888   -0.111956404515   -0.600870917376
+    8   -0.064921052907    0.742486333175    0.003680764702   -0.597147504210
+    9   -0.004127553385    0.947123108215   -0.000384989743   -0.289577701306
+   10   -0.000029961618    0.999909122760   -0.001925652128   -0.011868512465
+   11   -0.000000200547    0.999998678772   -0.000134577974   -0.001548919593
+   12   -0.000000000061    0.999999999914   -0.000005291825   -0.000010117029
+   13    0.000000000000    0.000000000000    0.000000000000    0.000000000000
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            2
+     Total charge of molecule:  -14
+     State number:                1
+
+     Final MCSCF energy:         -102.288287200474
+     Nuclear repulsion:            22.514071294559
+     Electronic energy:          -124.802358495033
+
+     Final gradient norm:           0.000009275881
+
+ 
+     Date and time (Linux)  : Thu Mar  3 21:05:36 2005
+     Host name              : pi.biotech.kth.se                       
+
+String information written on SIRIUS.STRINGINFO for use by WESTA program
+
+
+ Occupancies of natural orbitals
+ -------------------------------
+
+ Symmetry  1
+
+   2.000000000   2.000000000   1.982492899   1.973134492   1.000000000
+   0.026467855   0.012752844
+
+ Sum =           8.994848090
+
+ Symmetry  2
+
+   1.977401560   1.021652858
+
+ Sum =           2.999054418
+
+ Symmetry  3
+
+   1.926972025   0.079125468
+
+ Sum =           2.006097492
+
+ Symmetry  4
+
+   No occupied orbitals
+
+  >>> NOTE THAT THE OCCUPATION NUMBERS ARE FOR ANALYSIS PURPOSE ONLY
+  >>> The orbital coefficients have NOT been transformed
+  >>> to ordered natural orbitals.
+
+String information written on SIRIUS.STRINGINFO for use by WESTA program
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3        4        5        6        7
+   1  O#1 1s    -0.9998  -0.0022  -0.0002   0.0006  -0.0113   0.0861  -0.0243
+   2  O#1 1s    -0.0002   0.9354   0.0019   0.2648   0.0061   0.7397  -0.1651
+   3  O#1 1s     0.0000   0.0000   0.0000   0.0000   0.0000  -0.0003   0.0001
+   4  O#1 1s     0.0005   0.0205  -0.0005  -0.0917  -0.1706  -0.0549  -0.2785
+   5  O#1 1s     0.0003   0.0158  -0.0018   0.0130  -0.0627   0.0403  -0.2307
+   6  O#1 2pz    0.0063   0.3215  -0.0016  -0.6040  -0.4891  -1.0962   0.5223
+   7  O#1 2pz   -0.0040  -0.0094   0.0005   0.0161   0.0197   0.0935   0.0150
+   8  O#1 2pz   -0.0018  -0.0011  -0.0002   0.1190   0.1292   0.2945  -0.1258
+   9  O#1 2pz   -0.0001   0.0074   0.0003  -0.0094   0.0163  -0.0077   0.0016
+  10  O#1 3d0   -0.0003  -0.0007   0.0002   0.0146   0.0125   0.0016  -0.0113
+  11  O#1 3d2+  -0.0001   0.0002   0.0000  -0.0001  -0.0003  -0.0011   0.0029
+  12  O#1 3d0    0.0004  -0.0003  -0.0006   0.0151   0.0155   0.0052  -0.0473
+  13  O#1 3d2+  -0.0001  -0.0005   0.0000  -0.0008  -0.0015   0.0070   0.0190
+  14  O#1 3d0   -0.0001  -0.0105   0.0005  -0.0239  -0.0111  -0.0173  -0.0020
+  15  O#1 3d2+   0.0000   0.0001   0.0000   0.0012  -0.0015   0.0103   0.0241
+  16  C   1s    -0.0003  -0.0220   0.9985   0.0040  -0.0852  -0.0979  -0.5118
+  17  C   1s    -0.0022   0.0618  -0.0026  -0.2690   0.8436  -0.6096  -0.0142
+  18  C   1s    -0.0002   0.0119   0.0019  -0.0331   0.1558   0.0534   1.2461
+  19  C   1s     0.0012  -0.0251   0.0025  -0.2137  -0.0559  -0.1289  -0.4406
+  20  C   1s     0.0000  -0.0002   0.0005  -0.0181   0.0171  -0.0163   0.0481
+  21  C   2pz   -0.0026   0.0114   0.0084   1.1105   0.0409  -2.1112  -0.3390
+  22  C   2pz   -0.0001  -0.0197  -0.0057  -0.2860  -0.0211   0.7289   0.4777
+  23  C   2pz    0.0013  -0.0350  -0.0018  -0.3499  -0.0354   0.7394   0.4703
+  24  C   2pz    0.0000  -0.0008   0.0002  -0.0026   0.0024  -0.0030   0.0212
+  25  C   3d0   -0.0002   0.0084   0.0012   0.0405   0.0174   0.0190   0.1774
+  26  C   3d2+   0.0000  -0.0002   0.0000  -0.0006  -0.0014  -0.0242  -0.1651
+  27  C   3d0   -0.0005   0.0002  -0.0004  -0.0002  -0.0032   0.0207   0.1578
+  28  C   3d2+   0.0000  -0.0008   0.0000  -0.0028   0.0020  -0.0412  -0.1503
+  29  C   3d0    0.0002  -0.0100   0.0005  -0.0064  -0.0012   0.0021   0.0535
+  30  C   3d2+   0.0000  -0.0001   0.0000  -0.0017   0.0023  -0.0069  -0.0149
+
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1        2
+   1  O#1 2px    0.7005  -0.7586
+   2  O#1 2px    0.0062  -0.0126
+   3  O#1 2px   -0.0422  -0.0647
+   4  O#1 2px   -0.0025  -0.0745
+   5  O#1 3d1+  -0.0126  -0.0056
+   6  O#1 3d1+  -0.0328  -0.0059
+   7  O#1 3d1+  -0.0088  -0.0104
+   8  C   2px    0.8638   1.0011
+   9  C   2px   -0.1739  -0.0741
+  10  C   2px   -0.2069  -0.0194
+  11  C   2px    0.0032   0.0342
+  12  C   3d1+   0.0309  -0.0076
+  13  C   3d1+   0.0104  -0.0044
+  14  C   3d1+  -0.0083   0.0083
+
+     Molecular orbitals for symmetry species   3
+
+ Orbital          1        2
+   1  O#1 2py    0.7452  -0.9367
+   2  O#1 2py    0.0085   0.0592
+   3  O#1 2py   -0.0308   0.2409
+   4  O#1 2py    0.0057   0.0056
+   5  O#1 3d1-  -0.0131   0.0026
+   6  O#1 3d1-  -0.0368  -0.0043
+   7  O#1 3d1-  -0.0121   0.0022
+   8  C   2py    0.7913   1.4658
+   9  C   2py   -0.1695  -0.3506
+  10  C   2py   -0.2175  -0.4333
+  11  C   2py   -0.0011  -0.0049
+  12  C   3d1-   0.0344   0.0152
+  13  C   3d1-   0.0191   0.0235
+  14  C   3d1-  -0.0056   0.0039
+
+String information written on SIRIUS.STRINGINFO for use by WESTA program
+
+
+ Printout of CI-coefficients larger than 0.05000 for root  1
+
+ (this is the reference state)
+
+
+
+  Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
+  ==============================================================
+
+  Coefficient of determinant     1034 is -.68020713E+00
+  alpha-string:   2   3   6   7   8
+   beta-string:   1   2   3   6   8
+
+  Coefficient of determinant     1393 is -.68020713E+00
+  alpha-string:   1   2   3   6   8
+   beta-string:   2   3   6   7   8
+
+
+  Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
+  ==============================================================
+    ( no coefficients )
+
+
+  Printout of coefficients in interval  0.5000E-01 to 0.1000E+00
+  ==============================================================
+
+  Coefficient of determinant     1125 is 0.66538588E-01
+  alpha-string:   2   3   6   7   9
+   beta-string:   1   2   3   7   8
+
+  Coefficient of determinant     1209 is 0.97110121E-01
+  alpha-string:   2   3   6   7   9
+   beta-string:   1   2   3   6   9
+
+  Coefficient of determinant     1286 is 0.55651069E-01
+  alpha-string:   2   3   6   7   8
+   beta-string:   1   2   3   7   9
+
+  Coefficient of determinant     1411 is 0.55651069E-01
+  alpha-string:   1   2   3   7   9
+   beta-string:   2   3   6   7   8
+
+  Coefficient of determinant     1567 is 0.66538588E-01
+  alpha-string:   1   2   3   7   8
+   beta-string:   2   3   6   7   9
+
+  Coefficient of determinant     1573 is 0.97110121E-01
+  alpha-string:   1   2   3   6   9
+   beta-string:   2   3   6   7   9
+
+
+  Norm of printed CI vector ..      0.95927308
+
+   Magnitude of CI coefficients 
+  ==============================
+
+   ( Ranges are relative to norm of vector :  1.00E+00 )
+
+  10- 1 to 10- 0         2    0.92536348E+00    0.92536348E+00
+  10- 2 to 10- 1        90    0.70060556E-01    0.99542404E+00
+  10- 3 to 10- 2       376    0.44257307E-02    0.99984977E+00
+  10- 4 to 10- 3       810    0.14866769E-03    0.99999844E+00
+  10- 5 to 10- 4       546    0.15606512E-05    0.10000000E+01
+  10- 6 to 10- 5       120    0.43357428E-08    0.10000000E+01
+  10- 7 to 10- 6        12    0.44643512E-11    0.10000000E+01
+  10- 8 to 10- 7         4    0.19680852E-13    0.10000000E+01
+  Number of coefficients less than 10^-11 times norm is   0
+
+
+
+ >>>> Total CPU  time used in SIRIUS :     16.44 seconds
+ >>>> Total wall time used in SIRIUS :     16.00 seconds
+
+ 
+     Date and time (Linux)  : Thu Mar  3 21:05:36 2005
+     Host name              : pi.biotech.kth.se                       
+
+- End of Wave Function Section
+
+ >>>> Total CPU  time used in DALTON:  16.44 seconds
+ >>>> Total wall time used in DALTON:  16.00 seconds
+
+ 
+     Date and time (Linux)  : Thu Mar  3 21:05:36 2005
+     Host name              : pi.biotech.kth.se                       

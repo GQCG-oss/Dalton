@@ -1,0 +1,1452 @@
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+    This is output from DALTON (Release 2.0 rev. 0, Mar. 2005)
+
+    Celestino Angeli,         University of Ferrara,        Italy      
+    Keld L. Bak,              UNI-C,                        Denmark    
+    Vebjoern Bakken,          University of Oslo,           Norway     
+    Ove Christiansen,         Aarhus University,            Denmark    
+    Renzo Cimiraglia,         University of Ferrara,        Italy      
+    Sonia Coriani,            University of Trieste,        Italy      
+    Paal Dahle,               University of Oslo,           Norway     
+    Erik K. Dalskov,          UNI-C,                        Denmark    
+    Thomas Enevoldsen,        SDU - Odense University,      Denmark    
+    Berta Fernandez,          U. of Santiago de Compostela, Spain      
+    Christof Haettig,         Forschungszentrum Karlsruhe,  Germany    
+    Kasper Hald,              Aarhus University,            Denmark    
+    Asger Halkier,            Aarhus University,            Denmark    
+    Hanne Heiberg,            University of Oslo,           Norway     
+    Trygve Helgaker,          University of Oslo,           Norway     
+    Hinne Hettema,            University of Auckland,       New Zealand
+    Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark    
+    Dan Jonsson,              KTH Stockholm,                Sweden     
+    Poul Joergensen,          Aarhus University,            Denmark    
+    Sheela Kirpekar,          SDU - Odense University,      Denmark    
+    Wim Klopper,              University of Karlsruhe,      Germany    
+    Rika Kobayashi,           ANU Supercomputer Facility,   Australia  
+    Henrik Koch,              University of Trondheim,      Norway     
+    Ola B. Lutnaes,           University of Oslo,           Norway     
+    Kurt V. Mikkelsen,        University of Copenhagen,     Denmark    
+    Patrick Norman,           University of Linkoeping,     Sweden     
+    Jeppe Olsen,              Aarhus University,            Denmark    
+    Martin J. Packer,         University of Sheffield,      UK         
+    Thomas B. Pedersen,       University of Lund,           Sweden     
+    Zilvinas Rinkevicius,     KTH Stockholm,                Sweden     
+    Elias Rudberg,            KTH Stockholm,                Sweden     
+    Torgeir A. Ruden,         University of Oslo,           Norway     
+    Kenneth Ruud,             University of Tromsoe,        Norway     
+    Pawel Salek,              KTH Stockholm,                Sweden     
+    Alfredo Sanchez de Meras, University of Valencia,       Spain      
+    Trond Saue,               University of Strasbourg,     France     
+    Stephan P. A. Sauer,      University of Copenhagen,     Denmark    
+    Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Sweden     
+    K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark    
+    Peter R. Taylor,          University of Warwick,        UK         
+    Olav Vahtras,             KTH Stockholm,                Sweden     
+    David J. Wilson,          University of Oslo,           Norway     
+    Hans Agren,               KTH Stockholm,                Sweden     
+
+ ---------------------------------------------------------------------
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF and CC wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "Dalton, a molecular electronic structure program, Release 2.0
+     (2005), see http://www.kjemi.uio.no/software/dalton/dalton.html"
+
+     Date and time (Linux)  : Thu Mar  3 21:02:18 2005
+     Host name              : pi.biotech.kth.se                       
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed
+
+Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated:
+          - overlap integrals
+          - traceless quadrupole moment integrals
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  Quadrupole convergence calculations                                     
+  for HF in CM coor. system                                               
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 2
+
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C2v
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E 
+    C2z | C2z   E 
+    Oxz | Oxz  Oyz   E 
+    Oyz | Oyz  Oxz  C2z   E 
+
+   * Character table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B1   B2   A2 
+   -----+--------------------
+    A1  | A1 
+    B1  | B1   A1 
+    B2  | B2   A2   A1 
+    A2  | A2   B2   B1   A1 
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           H           1.007825
+                           F          18.998403
+
+                       Total mass:    20.006228 amu
+                       Natural abundance:  99.985 %
+
+ Center-of-mass coordinates (A):    0.000000    0.000000    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    2
+
+  Basis set used is "aug-cc-pVDZ" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis
+  ----------------------------------------------------------------------
+  H           1       1      11       9      [5s2p|3s2p]                                  
+  F           1       9      35      23      [10s5p2d|4s3p2d]                             
+  ----------------------------------------------------------------------
+  total:      2      10      46      32
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for integrals:  1.00E-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  6
+
+   1   H        x      0.0000000000
+   2            y      0.0000000000
+   3            z      1.6455844400
+
+   4   F        x      0.0000000000
+   5            y      0.0000000000
+   6            z     -0.0872947800
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:   2  2  2  0
+
+  Symmetry  A1  ( 1)
+
+   1   H     z    3
+   2   F     z    6
+
+  Symmetry  B1  ( 2)
+
+   3   H     x    1
+   4   F     x    4
+
+  Symmetry  B2  ( 3)
+
+   5   H     y    2
+   6   F     y    5
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            H           F     
+            ------      ------
+ H     :    0.000000
+ F     :    0.917000    0.000000
+
+
+  Max interatomic separation is    0.9170 Angstroms
+  between atoms "F     " and "H     ".
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  F          H            0.917000
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    0.000000          0.000000    0.000000    1.000000
+   IB    0.804778          0.000000    1.000000    0.000000
+   IC    0.804778          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is linear.
+
+               B =       627973.53 MHz     (   20.946942 cm-1)
+
+
+  Nuclear repulsion energy :    5.193668373495
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:              16   7   7   2
+
+
+  Symmetry  A1 ( 1)
+
+    1     H        1s         1
+    2     H        1s         2
+    3     H        1s         3
+    4     H        2pz        6
+    5     H        2pz        9
+    6     F        1s        10
+    7     F        1s        11
+    8     F        1s        12
+    9     F        1s        13
+   10     F        2pz       16
+   11     F        2pz       19
+   12     F        2pz       22
+   13     F        3d0       25
+   14     F        3d2+      27
+   15     F        3d0       30
+   16     F        3d2+      32
+
+
+  Symmetry  B1 ( 2)
+
+   17     H        2px        4
+   18     H        2px        7
+   19     F        2px       14
+   20     F        2px       17
+   21     F        2px       20
+   22     F        3d1+      26
+   23     F        3d1+      31
+
+
+  Symmetry  B2 ( 3)
+
+   24     H        2py        5
+   25     H        2py        8
+   26     F        2py       15
+   27     F        2py       18
+   28     F        2py       21
+   29     F        3d1-      24
+   30     F        3d1-      29
+
+
+  Symmetry  A2 ( 4)
+
+   31     F        3d2-      23
+   32     F        3d2-      28
+
+  Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
+
+  Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in HUCKEL is   0.00 seconds
+
+
+ >>> Time used in OVERLA is   0.00 seconds
+
+
+ >>> Time used in THETA  is   0.01 seconds
+
+
+ >>> Time used in ONEDRV is   0.00 seconds
+
+
+ Number of two-electron integrals written:       30407 ( 21.8% )
+ Megabytes written:                              0.350
+
+
+
+ >>> Time used in TWOINT is   0.05 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.08 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
+
+- End of Integral Section
+
+
+Starting in Wave Function Section -
+
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          T
+     Using EHT  model:          F
+     Number of Huckel orbitals each symmetry:    4    1    1    0
+
+ EWMO - Energy Weighted Maximum Overlap - is a Huckel type method,
+ which normally is better than Extended Huckel Theory.
+ Reference: Linderberg and Ohrm, Propagators in Quantum Chemistry (Wiley, 1973)
+
+ Huckel EWMO eigenvalues for symmetry :  1
+          -26.387703      -1.709136      -0.817461      -0.242217
+
+ Huckel EWMO eigenvalues for symmetry :  2
+           -0.717123
+
+ Huckel EWMO eigenvalues for symmetry :  3
+           -0.717123
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Thu Mar  3 21:02:18 2005
+     Host name              : pi.biotech.kth.se                       
+
+ Title lines from integral program:
+     Quadrupole convergence calculations                                     
+     for HF in CM coor. system                                               
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+      (Integral direct) CC calculation.
+
+
+     This is a combination run starting with
+
+               a RHF calculation
+
+
+ The molecule is placed in a static field.
+ Field strength (a.u.)          Field operator
+ ---------------------          --------------
+    2.00000000E-05                  ZZTHETA 
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EWMO  " input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         10
+     Number of electrons in active shells      0
+     Total charge of the molecule              0
+
+     Number of active orbitals                 0
+     Total number of orbitals                 32
+
+     Spin multiplicity                         1
+     Total number of symmetries                4
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1   2   3   4
+                                       --  --  --  --
+     Occupied SCF orbitals              3   1   1   0
+     Secondary orbitals                13   6   6   2
+     Total number of orbitals          16   7   7   2
+     Number of basis functions         16   7   7   2
+
+     Optimization information
+     ========================
+     Number of configurations              1
+     Number of orbital rotations          51
+     ---------------------------------------
+     Total number of variables            52
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     15
+     Threshold for SCF convergence     5.00E-10
+
+
+ Changes of defaults for CC:
+ ---------------------------
+
+
+ -Implicit frozen core calculation
+ -Calculation with finite fields:
+ Field strenths:   0.000020Field Label:  ZZTHETA 
+Center of charge:    0.00000000    0.00000000    0.08599314
+Charge correction to interaction with electric field:    0.00000000
+
+  
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ Iter      Total energy        Error norm    Delta(E)  DIIS dim.
+ ---------------------------------------------------------------
+
+ Precalculated two-electron integrals are transformed to P-supermatrix elements.
+ Threshold for discarding integrals :  1.00E-15
+
+ >>> Time used in FRMSUP is   0.01 seconds
+
+    1      -99.926640034599    1.43279E+00   -9.99E+01    1
+    2     -100.028133527873    3.34626E-01   -1.01E-01    2
+    3     -100.032652098446    1.22080E-01   -4.52E-03    3
+    4     -100.033351572623    3.60669E-02   -6.99E-04    4
+    5     -100.033438823607    6.30898E-03   -8.73E-05    5
+    6     -100.033445078138    1.09507E-03   -6.25E-06    6
+    7     -100.033445235562    1.32085E-04   -1.57E-07    7
+    8     -100.033445237679    1.70613E-05   -2.12E-09    8
+    9     -100.033445237701    1.94908E-06   -2.21E-11    9
+   10     -100.033445237701    1.31581E-07   -1.96E-13   10
+   11     -100.033445237701    1.60268E-08   -2.58E-14   10
+   12     -100.033445237701    1.23028E-09    3.11E-14   10
+   13     -100.033445237701    1.70291E-10   -2.58E-14   10
+ DIIS converged in  13 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    3    1    1    0
+
+ Hartree-Fock orbital energies, symmetry 1
+
+       -26.31092599    -1.60755426    -0.77129630     0.03590280     0.19463499
+         0.25667995     0.36108951     0.66177607
+
+ Hartree-Fock orbital energies, symmetry 2
+
+        -0.65076264     0.24395223     0.40302579     1.43194942     1.67075063
+         2.16191992
+
+ Hartree-Fock orbital energies, symmetry 3
+
+        -0.65076264     0.24395223     0.40302579     1.43194942     1.67075063
+         2.16191992
+
+ Hartree-Fock orbital energies, symmetry 4
+
+         1.34625219     4.85230887
+
+    E(LUMO) :     0.03590280 au (symmetry 1)
+  - E(HOMO) :    -0.65076264 au (symmetry 3)
+  ------------------------------------------
+    gap     :     0.68666544 au
+
+ >>> Writing SIRIFC interface file <<<
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+ The molecule is placed in a static field.
+ Field strength (a.u.)          Field operator
+ ---------------------          --------------
+    2.00000000E-05                  ZZTHETA 
+
+
+     Final HF energy:            -100.033445237701
+     Nuclear repulsion:             5.193668373495
+     Electronic energy:          -105.227113611196
+
+     Final gradient norm:           0.000000000170
+
+ 
+     Date and time (Linux)  : Thu Mar  3 21:02:18 2005
+     Host name              : pi.biotech.kth.se                       
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3
+   1  H   1s    -0.0019  -0.3428   0.6961
+   2  H   1s    -0.0047   0.2720  -0.3548
+   3  H   1s    -0.0002   0.0017   0.0003
+   4  H   2pz    0.0000   0.0501  -0.0688
+   5  H   2pz    0.0023  -0.0267   0.0237
+   6  F   1s    -1.0006   0.0009   0.0006
+   7  F   1s    -0.0026  -0.9494  -0.2241
+   8  F   1s     0.0046   0.0708  -0.1362
+   9  F   1s     0.0041  -0.0970  -0.0013
+  10  F   2pz   -0.0016  -0.0902   0.8128
+  11  F   2pz    0.0024   0.0547  -0.1063
+  12  F   2pz    0.0012  -0.0291   0.0468
+  13  F   3d0    0.0000  -0.0087   0.0189
+  14  F   3d2+   0.0000   0.0000   0.0000
+  15  F   3d0    0.0004   0.0192  -0.0179
+  16  F   3d2+   0.0000   0.0000   0.0000
+
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1
+   1  H   2px    0.0250
+   2  H   2px    0.0134
+   3  F   2px    0.9603
+   4  F   2px    0.0064
+   5  F   2px    0.0543
+   6  F   3d1+   0.0091
+   7  F   3d1+   0.0158
+
+     Molecular orbitals for symmetry species   3
+
+ Orbital          1
+   1  H   2py    0.0250
+   2  H   2py    0.0134
+   3  F   2py    0.9603
+   4  F   2py    0.0064
+   5  F   2py    0.0543
+   6  F   3d1-   0.0091
+   7  F   3d1-   0.0158
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.04 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
+
+ 
+     Date and time (Linux)  : Thu Mar  3 21:02:18 2005
+     Host name              : pi.biotech.kth.se                       
+
+- End of Wave Function Section
+
+
+Starting Coupled Cluster -
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                    START OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+ LWORK =        20000000
+
+
+
+                        +--------------------------+
+                        ! Information from CCSDSYM !
+                        +--------------------------+
+
+   NNBST  :     195     126     126      81
+   NT1AM  :      38      27      27      16
+   NT2AM  :    1633    1458    1458    1337
+   NG1AM  :       0       0       0       0
+   NH1AM  :      38      27      27      16
+   NH2AM  :    1633    1458    1458    1337
+   NDISAO :    5046    4200    4200    3450
+   NDSRHF :     642     528     528     414
+   ILMRHF :       0      32      39      46
+   ILMVIR :      46     254     296     338
+   NT1AO  :      46      32      32      18
+   NT2AO  :    2308    2048    2048    1852
+   N2BST  :     358     252     252     162
+   NT2BCD :     130     108     108      86
+   NT2BGD :     156     128     128     100
+   NMATIJ :       6       4       4       2
+   NGAMMA :      44      32      32      28
+   NEMAT1 :     296     213     213     142
+   NMATAB :     245     180     180     124
+   NT2AOS :    4488    4096    4096    3704
+   NT2SQ  :    3158    2916    2916    2674
+   NMIJP  :       5       2       2       1
+   NT2ORT :    1560    1308    1308    1104
+   NGLMDT :     342     245     245     160
+   NGLMRH :      46      32      32      18
+   NLRHFR :      44      31      31      18
+
+   IDSAOG :       0       0       0       0
+   IDSAOG :    3120    2016    2016    1296
+   IDSAOG :    4002    3381    2583    2178
+   IDSAOG :    4884    3948    3948    3060
+
+   IT1AM  :       0      12      14      16
+   IT1AM  :       0      26      10      27
+   IT1AM  :       0       4      32      27
+   IT1AM  :       0      12      25      38
+
+   IH1AM  :       0      12      14      16
+   IH1AM  :       0      26      10      27
+   IH1AM  :       0       4      32      27
+   IH1AM  :       0      12      25      38
+
+   IT2AM  :       0       0       0     729
+   IT2AM  :       0     741       0    1026
+   IT2AM  :       0       0    1119    1026
+   IT2AM  :     729    1026    1026    1497
+
+   IT1AO  :       0      14      16      18
+   IT1AO  :       0      32      11      32
+   IT1AO  :       0       4      39      32
+   IT1AO  :       0      14      30      46
+
+   IT2AO  :       0       0       0    1024
+   IT2AO  :       0    1081       0    1472
+   IT2AO  :       0       0    1609    1472
+   IT2AO  :    1024    1472    1472    2137
+
+   IT2SQ  :       0    1026    1458    2066
+   IT2SQ  :       0    1444    1337    2484
+   IT2SQ  :       0     608    2173    2484
+   IT2SQ  :       0    1026    2052    2902
+
+   IAODIS :       0     112     126     130
+   IAODIS :       0     256      81     238
+   IAODIS :       0      32     305     238
+   IAODIS :       0     112     224     354
+
+   IT2BCD :       0      54      70      86
+   IT2BCD :       0      76      59     108
+   IT2BCD :       0      32     103     108
+   IT2BCD :       0      54      92     130
+
+   IT2BGD :       0      64      82     100
+   IT2BGD :       0      92      68     128
+   IT2BGD :       0      36     124     128
+   IT2BGD :       0      64     110     156
+
+   IMATIJ :       0       2       2       2
+   IMATIJ :       0       4       1       4
+   IMATIJ :       0       0       5       4
+   IMATIJ :       0       2       4       6
+
+   IGAMMA :       0       0       0      16
+   IGAMMA :       0      21       0      24
+   IGAMMA :       0       0      31      24
+   IGAMMA :      16      24      24      41
+
+   IDSRHF :       0     252     333     414
+   IDSRHF :       0     390     288     528
+   IDSRHF :       0     162     516     528
+   IDSRHF :       0     252     447     642
+
+   IT1AMT :       0      13      13      12
+   IT1AMT :       0      26       6      25
+   IT1AMT :       0       0      32      25
+   IT1AMT :       0      13      25      38
+
+   IT1AOT :       0      16      16      14
+   IT1AOT :       0      32       7      30
+   IT1AOT :       0       0      39      30
+   IT1AOT :       0      16      30      46
+
+   IT2BCT :       0      38      38      54
+   IT2BCT :       0      76      27      92
+   IT2BCT :       0       0     103      92
+   IT2BCT :       0      38      92     130
+
+   IT2BGT :       0      46      46      64
+   IT2BGT :       0      92      32     110
+   IT2BGT :       0       0     124     110
+   IT2BGT :       0      46     110     156
+
+   IFCRHF :       0      14      16      18
+   IFCRHF :       0      30      11      31
+   IFCRHF :       0       4      37      31
+   IFCRHF :       0      14      29      44
+
+   IFCVIR :      44     122     134     128
+   IFCVIR :      31     239      86     224
+   IFCVIR :      31      44     281     224
+   IFCVIR :      18     122     212     323
+
+   IEMAT1 :       0      96     110     116
+   IEMAT1 :       0     208      74     201
+   IEMAT1 :       0      32     250     201
+   IEMAT1 :       0      96     187     292
+
+   IMATAB :       0      78      90      98
+   IMATAB :       0     169      62     168
+   IMATAB :       0      26     205     168
+   IMATAB :       0      78     156     241
+
+   IT2AOS :       0    1472    2048    2876
+   IT2AOS :       0    2116    1852    3520
+   IT2AOS :       0     828    3140    3520
+   IT2AOS :       0    1472    2944    4164
+
+   IMIJP  :       0       0       0       1
+   IMIJP  :       0       3       0       2
+   IMIJP  :       0       0       4       2
+   IMIJP  :       1       2       2       5
+
+   IT2ORT :       0     630     792     909
+   IT2ORT :       0     975     657    1182
+   IT2ORT :       0     405    1227    1182
+   IT2ORT :       0     630    1020    1479
+
+   IGLMRH :       0      14      16      18
+   IGLMRH :       0      32      11      32
+   IGLMRH :       0       4      39      32
+   IGLMRH :       0      14      30      46
+
+   IGLMVI :      46     123     135     128
+   IGLMVI :      32     254      86     231
+   IGLMVI :      32      44     296     231
+   IGLMVI :      18     123     219     338
+
+   NT2MMO :     130     108     108      86
+   NT2MMO :     108     130      86     108
+   NT2MMO :     108      86     130     108
+   NT2MMO :      86     108     108     130
+
+   NT2MAO :     156     128     128     100
+   NT2MAO :     128     156     100     128
+   NT2MAO :     128     100     156     128
+   NT2MAO :     100     128     128     156
+   NDSGRH :     642     528     528     414
+   NDSGRH :     528     642     414     528
+   NDSGRH :     528     414     642     528
+   NDSGRH :     414     528     528     642
+
+   NLAMDS :     358
+   NLRHSI :      62
+   NLAMDT :     342
+   NLMRHF :      46
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :        38
+          Number of t2 amplitudes                 :      1633
+          Total number of amplitudes in ccsd      :      1671
+
+packing routines not enabled for this architecture...
+...the integral packing is switched off...
+
+
+                    +---------------------------------+
+                    ! Largest amplitudes in MP2 guess !
+                    +---------------------------------+
+
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :               0.0000 %
+
+          Double Excitation Contribution :             100.0000 %
+
+          ||T1||/||T2||                  :               0.0000
+
+          Tau1 diagnostic                :               0.0000
+
+          Norm of Total Amplitude Vector :               0.1461
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ +-----------------------------------------------------------------------------+
+ | 1 1 1 1 |   6   6   2   2 |       19       19 |          190 |   -0.021784  |
+ | 1 1 1 1 |   8   8   2   2 |       21       21 |          231 |   -0.017374  |
+ | 2 2 2 2 |   4   1   1   1 |       30       27 |          462 |   -0.017631  |
+ | 2 2 2 2 |   4   4   1   1 |       30       30 |          465 |   -0.034358  |
+ | 3 2 3 2 |   4   4   1   1 |       36       30 |          660 |   -0.026672  |
+ | 3 3 3 3 |   4   1   1   1 |       36       33 |          663 |   -0.017631  |
+ | 3 3 3 3 |   4   4   1   1 |       36       36 |          666 |   -0.034358  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.0669
+
+
+          Printed all single excitations greater than 0.010000
+
+
+          Printed all double excitations greater than 0.016667
+ Iter.  1: Coupled cluster MP2   energy :    -100.2557162769457051
+     Conventional correlation energy:    -0.2222710392444611
+
+       Iteration no.:  1
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.03 seconds
+       Norm of t1am   after ccvec:         0.0000000000E+00
+       Norm of t2am   after ccvec:         0.2133769502E-01
+       Norm of omega1 after ccvec:         0.1418540075E-02
+       Norm of omega2 after ccvec:         0.5095279990E-02
+ Iter.  1: Coupled cluster CCSD  energy :    -100.2545590154079207
+     Conventional correlation energy:    -0.2211137777066767
+
+       Iteration no.:  2
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.03 seconds
+       Norm of t1am   after ccvec:         0.9802293265E-03
+       Norm of t2am   after ccvec:         0.2201907389E-01
+       Norm of omega1 after ccvec:         0.5251242608E-04
+       Norm of omega2 after ccvec:         0.7200794851E-03
+ Iter.  2: Coupled cluster CCSD  energy :    -100.2584205728269922
+     Conventional correlation energy:    -0.2249753351257482
+
+       Iteration no.:  3
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.03 seconds
+       Norm of t1am   after ccvec:         0.8902100518E-03
+       Norm of t2am   after ccvec:         0.2359630326E-01
+       Norm of omega1 after ccvec:         0.1668017316E-04
+       Norm of omega2 after ccvec:         0.6216985262E-04
+ Iter.  3: Coupled cluster CCSD  energy :    -100.2595409932511217
+     Conventional correlation energy:    -0.2260957555498777
+
+       Iteration no.:  4
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.03 seconds
+       Norm of t1am   after ccvec:         0.1193718874E-02
+       Norm of t2am   after ccvec:         0.2428394069E-01
+       Norm of omega1 after ccvec:         0.2299260592E-06
+       Norm of omega2 after ccvec:         0.2193659729E-05
+ Iter.  4: Coupled cluster CCSD  energy :    -100.2594413770875121
+     Conventional correlation energy:    -0.2259961393862682
+
+       Iteration no.:  5
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.03 seconds
+       Norm of t1am   after ccvec:         0.1232096070E-02
+       Norm of t2am   after ccvec:         0.2431111836E-01
+       Norm of omega1 after ccvec:         0.2122799986E-07
+       Norm of omega2 after ccvec:         0.1567742712E-06
+ Iter.  5: Coupled cluster CCSD  energy :    -100.2594230419375236
+     Conventional correlation energy:    -0.2259778042362797
+
+       Iteration no.:  6
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.03 seconds
+       Norm of t1am   after ccvec:         0.1237098616E-02
+       Norm of t2am   after ccvec:         0.2430578082E-01
+       Norm of omega1 after ccvec:         0.1728251211E-08
+       Norm of omega2 after ccvec:         0.6006329829E-08
+ Iter.  6: Coupled cluster CCSD  energy :    -100.2594260654770295
+     Conventional correlation energy:    -0.2259808277757855
+
+       Iteration no.:  7
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.03 seconds
+       Norm of t1am   after ccvec:         0.1239484510E-02
+       Norm of t2am   after ccvec:         0.2430658947E-01
+       Norm of omega1 after ccvec:         0.1242852832E-09
+       Norm of omega2 after ccvec:         0.7469065647E-09
+ Iter.  7: Coupled cluster CCSD  energy :    -100.2594253567964557
+     Conventional correlation energy:    -0.2259801190952118
+
+       Iteration no.:  8
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.03 seconds
+       Norm of t1am   after ccvec:         0.1239825953E-02
+       Norm of t2am   after ccvec:         0.2430579086E-01
+       Norm of omega1 after ccvec:         0.8151617734E-11
+       Norm of omega2 after ccvec:         0.4058800625E-10
+ Iter.  8: Coupled cluster CCSD  energy :    -100.2594249839140872
+     Conventional correlation energy:    -0.2259797462128432
+
+       Iteration no.:  9
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.03 seconds
+       Norm of t1am   after ccvec:         0.1239859134E-02
+       Norm of t2am   after ccvec:         0.2430552674E-01
+       Norm of omega1 after ccvec:         0.5084455269E-12
+       Norm of omega2 after ccvec:         0.3629740839E-11
+ Iter.  9: Coupled cluster CCSD  energy :    -100.2594249844073460
+     Conventional correlation energy:    -0.2259797467061020
+
+ CCSD  energy converged to within   0.50E-09 is   -100.259424984
+
+
+                +------------------------------------------+
+                ! Largest amplitudes in converged solution !
+                +------------------------------------------+
+
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :               4.8536 %
+
+          Double Excitation Contribution :              95.1464 %
+
+          ||T1||/||T2||                  :               0.2259
+
+          Tau1 diagnostic                :               0.0124
+
+          Norm of Total Amplitude Vector :               0.1598
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   2   |   1       1     |       27          |              |    0.019455  |
+ | 3   3   |   1       1     |       33          |              |    0.019455  |
+ +-----------------------------------------------------------------------------+
+ | 1 1 1 1 |   2   2   2   2 |       15       15 |          120 |   -0.017989  |
+ | 1 1 1 1 |   5   2   2   2 |       18       15 |          168 |    0.016778  |
+ | 1 1 1 1 |   5   5   2   2 |       18       18 |          171 |   -0.018170  |
+ | 1 1 1 1 |   6   6   2   2 |       19       19 |          190 |   -0.024575  |
+ | 1 1 1 1 |   8   8   2   2 |       21       21 |          231 |   -0.017455  |
+ | 2 2 2 2 |   1   1   1   1 |       27       27 |          378 |   -0.016401  |
+ | 2 2 2 2 |   4   1   1   1 |       30       27 |          462 |   -0.019397  |
+ | 2 2 2 2 |   4   4   1   1 |       30       30 |          465 |   -0.035993  |
+ | 3 2 3 2 |   4   4   1   1 |       36       30 |          660 |   -0.025318  |
+ | 3 3 3 3 |   1   1   1   1 |       33       33 |          561 |   -0.016401  |
+ | 3 3 3 3 |   4   1   1   1 |       36       33 |          663 |   -0.019397  |
+ | 3 3 3 3 |   4   4   1   1 |       36       36 |          666 |   -0.035993  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.0844
+
+
+          Printed all single excitations greater than 0.018359
+
+
+          Printed all double excitations greater than 0.016257
+
+
+
+
+
+         +-------------------------------------------------------+
+         ! Final results from the Coupled Cluster energy program !
+         +-------------------------------------------------------+
+
+
+
+            Total SCF   energy:                  -100.0334452377
+
+            Total MP2   energy:                  -100.2557162769
+
+            Total CCSD  energy:                  -100.2594249844
+
+ *******************************************************************
+
+ Ground state energy is target 
+
+ Ecorr =                   -100.25942498440734595988
+
+ *******************************************************************
+
+
+                        +--------------------------+
+                        ! Information from CCSDSYM !
+                        +--------------------------+
+
+   NNBST  :     195     126     126      81
+   NT1AM  :      38      27      27      16
+   NT2AM  :    1633    1458    1458    1337
+   NG1AM  :       0       0       0       0
+   NH1AM  :      38      27      27      16
+   NH2AM  :    1633    1458    1458    1337
+   NDISAO :    5046    4200    4200    3450
+   NDSRHF :     642     528     528     414
+   ILMRHF :       0      32      39      46
+   ILMVIR :      46     254     296     338
+   NT1AO  :      46      32      32      18
+   NT2AO  :    2308    2048    2048    1852
+   N2BST  :     358     252     252     162
+   NT2BCD :     130     108     108      86
+   NT2BGD :     156     128     128     100
+   NMATIJ :       6       4       4       2
+   NGAMMA :      44      32      32      28
+   NEMAT1 :     296     213     213     142
+   NMATAB :     245     180     180     124
+   NT2AOS :    4488    4096    4096    3704
+   NT2SQ  :    3158    2916    2916    2674
+   NMIJP  :       5       2       2       1
+   NT2ORT :    1560    1308    1308    1104
+   NGLMDT :     342     245     245     160
+   NGLMRH :      46      32      32      18
+   NLRHFR :      44      31      31      18
+
+   IDSAOG :       0       0       0       0
+   IDSAOG :    3120    2016    2016    1296
+   IDSAOG :    4002    3381    2583    2178
+   IDSAOG :    4884    3948    3948    3060
+
+   IT1AM  :       0      12      14      16
+   IT1AM  :       0      26      10      27
+   IT1AM  :       0       4      32      27
+   IT1AM  :       0      12      25      38
+
+   IH1AM  :       0      12      14      16
+   IH1AM  :       0      26      10      27
+   IH1AM  :       0       4      32      27
+   IH1AM  :       0      12      25      38
+
+   IT2AM  :       0       0       0     729
+   IT2AM  :       0     741       0    1026
+   IT2AM  :       0       0    1119    1026
+   IT2AM  :     729    1026    1026    1497
+
+   IT1AO  :       0      14      16      18
+   IT1AO  :       0      32      11      32
+   IT1AO  :       0       4      39      32
+   IT1AO  :       0      14      30      46
+
+   IT2AO  :       0       0       0    1024
+   IT2AO  :       0    1081       0    1472
+   IT2AO  :       0       0    1609    1472
+   IT2AO  :    1024    1472    1472    2137
+
+   IT2SQ  :       0    1026    1458    2066
+   IT2SQ  :       0    1444    1337    2484
+   IT2SQ  :       0     608    2173    2484
+   IT2SQ  :       0    1026    2052    2902
+
+   IAODIS :       0     112     126     130
+   IAODIS :       0     256      81     238
+   IAODIS :       0      32     305     238
+   IAODIS :       0     112     224     354
+
+   IT2BCD :       0      54      70      86
+   IT2BCD :       0      76      59     108
+   IT2BCD :       0      32     103     108
+   IT2BCD :       0      54      92     130
+
+   IT2BGD :       0      64      82     100
+   IT2BGD :       0      92      68     128
+   IT2BGD :       0      36     124     128
+   IT2BGD :       0      64     110     156
+
+   IMATIJ :       0       2       2       2
+   IMATIJ :       0       4       1       4
+   IMATIJ :       0       0       5       4
+   IMATIJ :       0       2       4       6
+
+   IGAMMA :       0       0       0      16
+   IGAMMA :       0      21       0      24
+   IGAMMA :       0       0      31      24
+   IGAMMA :      16      24      24      41
+
+   IDSRHF :       0     252     333     414
+   IDSRHF :       0     390     288     528
+   IDSRHF :       0     162     516     528
+   IDSRHF :       0     252     447     642
+
+   IT1AMT :       0      13      13      12
+   IT1AMT :       0      26       6      25
+   IT1AMT :       0       0      32      25
+   IT1AMT :       0      13      25      38
+
+   IT1AOT :       0      16      16      14
+   IT1AOT :       0      32       7      30
+   IT1AOT :       0       0      39      30
+   IT1AOT :       0      16      30      46
+
+   IT2BCT :       0      38      38      54
+   IT2BCT :       0      76      27      92
+   IT2BCT :       0       0     103      92
+   IT2BCT :       0      38      92     130
+
+   IT2BGT :       0      46      46      64
+   IT2BGT :       0      92      32     110
+   IT2BGT :       0       0     124     110
+   IT2BGT :       0      46     110     156
+
+   IFCRHF :       0      14      16      18
+   IFCRHF :       0      30      11      31
+   IFCRHF :       0       4      37      31
+   IFCRHF :       0      14      29      44
+
+   IFCVIR :      44     122     134     128
+   IFCVIR :      31     239      86     224
+   IFCVIR :      31      44     281     224
+   IFCVIR :      18     122     212     323
+
+   IEMAT1 :       0      96     110     116
+   IEMAT1 :       0     208      74     201
+   IEMAT1 :       0      32     250     201
+   IEMAT1 :       0      96     187     292
+
+   IMATAB :       0      78      90      98
+   IMATAB :       0     169      62     168
+   IMATAB :       0      26     205     168
+   IMATAB :       0      78     156     241
+
+   IT2AOS :       0    1472    2048    2876
+   IT2AOS :       0    2116    1852    3520
+   IT2AOS :       0     828    3140    3520
+   IT2AOS :       0    1472    2944    4164
+
+   IMIJP  :       0       0       0       1
+   IMIJP  :       0       3       0       2
+   IMIJP  :       0       0       4       2
+   IMIJP  :       1       2       2       5
+
+   IT2ORT :       0     630     792     909
+   IT2ORT :       0     975     657    1182
+   IT2ORT :       0     405    1227    1182
+   IT2ORT :       0     630    1020    1479
+
+   IGLMRH :       0      14      16      18
+   IGLMRH :       0      32      11      32
+   IGLMRH :       0       4      39      32
+   IGLMRH :       0      14      30      46
+
+   IGLMVI :      46     123     135     128
+   IGLMVI :      32     254      86     231
+   IGLMVI :      32      44     296     231
+   IGLMVI :      18     123     219     338
+
+   NT2MMO :     130     108     108      86
+   NT2MMO :     108     130      86     108
+   NT2MMO :     108      86     130     108
+   NT2MMO :      86     108     108     130
+
+   NT2MAO :     156     128     128     100
+   NT2MAO :     128     156     100     128
+   NT2MAO :     128     100     156     128
+   NT2MAO :     100     128     128     156
+   NDSGRH :     642     528     528     414
+   NDSGRH :     528     642     414     528
+   NDSGRH :     528     414     642     528
+   NDSGRH :     414     528     528     642
+
+   NLAMDS :     358
+   NLRHSI :      62
+   NLAMDT :     342
+   NLMRHF :      46
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :        38
+          Number of t2 amplitudes                 :      1633
+          Total number of amplitudes in ccsd      :      1671
+
+ Iter.  1: Coupled cluster RSTAR energy :    -100.2594249844073460
+     Conventional correlation energy:    -0.2259797467061020
+
+       Iteration no.:  1
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.03 seconds
+       Norm of t1am   after ccvec:         0.1239872642E-02
+       Norm of t2am   after ccvec:         0.2430552133E-01
+       Norm of omega1 after ccvec:         0.1051552635E-12
+       Norm of omega2 after ccvec:         0.4722677146E-12
+ Iter.  1: Coupled cluster CCSD  energy :    -100.2594249866178018
+     Conventional correlation energy:    -0.2259797489165578
+
+       Iteration no.:  2
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.03 seconds
+       Norm of t1am   after ccvec:         0.1239877131E-02
+       Norm of t2am   after ccvec:         0.2430551720E-01
+       Norm of omega1 after ccvec:         0.2656215119E-13
+       Norm of omega2 after ccvec:         0.8184832158E-13
+ Iter.  2: Coupled cluster CCSD  energy :    -100.2594249882018858
+     Conventional correlation energy:    -0.2259797505006418
+
+       Iteration no.:  3
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.03 seconds
+       Norm of t1am   after ccvec:         0.1239880111E-02
+       Norm of t2am   after ccvec:         0.2430551445E-01
+       Norm of omega1 after ccvec:         0.3946724807E-14
+       Norm of omega2 after ccvec:         0.1606382993E-13
+ Iter.  3: Coupled cluster CCSD  energy :    -100.2594249889613565
+     Conventional correlation energy:    -0.2259797512601125
+
+       Iteration no.:  4
+       -----------------
+
+       Time used in   RHS - TOTAL  :       0.03 seconds
+       Norm of t1am   after ccvec:         0.1239881875E-02
+       Norm of t2am   after ccvec:         0.2430551265E-01
+       Norm of omega1 after ccvec:         0.6662795766E-16
+       Norm of omega2 after ccvec:         0.5945297388E-15
+ Iter.  4: Coupled cluster CCSD  energy :    -100.2594249886853817
+     Conventional correlation energy:    -0.2259797509841377
+
+ CCSD  energy converged to within   0.50E-09 is   -100.259424989
+
+
+                +------------------------------------------+
+                ! Largest amplitudes in converged solution !
+                +------------------------------------------+
+
+
+
+          CC_PRAM:Overall Contribution of the Different Components
+          --------------------------------------------------------
+
+
+
+          Single Excitation Contribution :               4.8536 %
+
+          Double Excitation Contribution :              95.1464 %
+
+          ||T1||/||T2||                  :               0.2259
+
+          Tau1 diagnostic                :               0.0124
+
+          Norm of Total Amplitude Vector :               0.1598
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   2   |   1       1     |       27          |              |    0.019455  |
+ | 3   3   |   1       1     |       33          |              |    0.019455  |
+ +-----------------------------------------------------------------------------+
+ | 1 1 1 1 |   2   2   2   2 |       15       15 |          120 |   -0.017989  |
+ | 1 1 1 1 |   5   2   2   2 |       18       15 |          168 |    0.016778  |
+ | 1 1 1 1 |   5   5   2   2 |       18       18 |          171 |   -0.018170  |
+ | 1 1 1 1 |   6   6   2   2 |       19       19 |          190 |   -0.024575  |
+ | 1 1 1 1 |   8   8   2   2 |       21       21 |          231 |   -0.017455  |
+ | 2 2 2 2 |   1   1   1   1 |       27       27 |          378 |   -0.016401  |
+ | 2 2 2 2 |   4   1   1   1 |       30       27 |          462 |   -0.019397  |
+ | 2 2 2 2 |   4   4   1   1 |       30       30 |          465 |   -0.035993  |
+ | 3 2 3 2 |   4   4   1   1 |       36       30 |          660 |   -0.025318  |
+ | 3 3 3 3 |   1   1   1   1 |       33       33 |          561 |   -0.016401  |
+ | 3 3 3 3 |   4   1   1   1 |       36       33 |          663 |   -0.019397  |
+ | 3 3 3 3 |   4   4   1   1 |       36       36 |          666 |   -0.035993  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.0844
+
+
+          Printed all single excitations greater than 0.018359
+
+
+          Printed all double excitations greater than 0.016257
+
+
+                       +---------------------------+
+                       ! Time estimate for Triples !
+                       +---------------------------+
+
+
+                     Time for the first d :       0.62
+                     Total time estimate  :      16.68
+                     Total memory usage(w):  149030544
+
+
+                       +---------------------------+
+                       ! Time estimate for Triples !
+                       +---------------------------+
+
+
+                     Time for the first d :       0.00
+                     Total time estimate  :       0.13
+                     Total memory usage(w):      10715
+       Time used in   RHS - TOTAL  :       0.17 seconds
+
+
+
+
+
+         +-------------------------------------------------------+
+         ! Final results from the Coupled Cluster energy program !
+         +-------------------------------------------------------+
+
+
+
+            Total SCF   energy:                  -100.0334452377
+
+            Total RSTAR energy:                  -100.2594249844
+
+            Total CCSD  energy:                  -100.2594249887
+
+
+                     Perturbative triples corrections
+                     --------------------------------
+
+            The E4 doubles and triples:            -0.0047249654
+            The E5 singles and triples:             0.0005856481
+
+            Total energy CCSD(T):                -100.2635643060
+
+ *******************************************************************
+
+ Ground state energy is target 
+
+ Ecorr =                   -100.26356430599564362183
+
+ *******************************************************************
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                   SUMMARY OF COUPLED CLUSTER CALCULATION                    *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+                                                                                
+                                                                                
+            Total SCF   energy:                  -100.0334452377                
+            Total MP2   energy:                  -100.2557162769                
+            Total CCSD  energy:                  -100.2594249844                
+                                                                                
+                                                                                
+            Total SCF   energy:                  -100.0334452377                
+            Total RSTAR energy:                  -100.2594249844                
+            Total CCSD  energy:                  -100.2594249887                
+                                                                                
+                                                                                
+                     Perturbative triples corrections                           
+                     --------------------------------                           
+                                                                                
+            The E4 doubles and triples:            -0.0047249654                
+            The E5 singles and triples:             0.0005856481                
+                                                                                
+            Total energy CCSD(T):                -100.2635643060                
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                      END OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+- End of Coupled Cluster
+
+ >>>> Total CPU  time used in DALTON:   0.75 seconds
+ >>>> Total wall time used in DALTON:   0.00 seconds
+
+ 
+     Date and time (Linux)  : Thu Mar  3 21:02:18 2005
+     Host name              : pi.biotech.kth.se                       

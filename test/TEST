@@ -241,14 +241,14 @@ done
 # nonportable characters in the directory name removed. /pawsa
 #########################################################################
 if [ "$reftest" = "true" ]; then
-   testdir=`pwd`
-#   testdir=`pwd`/trueresult
+#   testdir=`pwd`
+   testdir=`pwd`/trueresult
 else
    testdir="`date +'%Y-%m-%dT%H_%M'`-testjob"
-   mkdir $testdir
-   cp functions $testdir
-   cd $testdir
+   mkdir $testdir 
 fi
+cp functions $testdir
+cd $testdir || exit 1
 
 
 #########################################################################
@@ -285,7 +285,7 @@ do
   myprint "###########################################################"
   myprint "start now with test $item:"
   myprint "-----------------------------------------------------------"
-  chmod +x ../$item
+  chmod +x ../$item || exit 1
   ../$item
   if [ -f $item.info ]; then
     cat $item.info
@@ -356,6 +356,9 @@ do
           fi
           if [ "$compressed" = "true" ]; then
               gzip -f --best $reffile
+          fi
+          if [ "$checkout" = "TEST ENDED AS EXPECTED" ]; then
+              checkout="TEST ENDED PROPERLY"
           fi
       else
           failed=false
