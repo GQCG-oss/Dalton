@@ -23,7 +23,7 @@ c /* deck ccmcd_setup */
 *
 *    Written by:       Sonia Coriani 1997-98
 *    Restructured by:  Sonia Coriani 26/01-2000
-*    Orbital relaxation for B operator introduced March 2000. SC
+*    Orbital relaxation for B operator introduced March 2000. Sonia
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
@@ -337,16 +337,16 @@ c                 ENDIF
 * print the lists: 
 *---------------------------------------------------------------------*
 * general statistics:
-      WRITE(LUPRI,'(/,/3X,A,I3,A)') 'For the requested',NBTERMS,
-     &      ' contributions for B terms  of magn.circ.dichr. '
+      WRITE(LUPRI,'(/,/3X,A,I3,A)') 'For the requested ',NBTERMS,
+     &      ' contributions to B terms of magn.circ.dichr. '
       WRITE(LUPRI,'((8X,A,I3,A))') 
      &   ' - ',NGTRAN,  ' G matrix transformations ',
      &   ' - ',NFATRAN, ' F{O} matrix transformations ',
      &   ' - ',NEATRAN, ' ETA{O} vector calculations ', 
      &   ' - ',NEATRA1, ' extra ETA{O} vector calculations (1)', 
      &   ' - ',NEATRA2, ' extra ETA{O} vector calculations (2)', 
-     &   ' - ',NFTRAN, '  extra B matrix transformation (1)', 
-     &   ' - ',NFTRA1, '  extra B matrix transformation (2)(1)' 
+     &   ' - ',NFTRAN,  ' extra B matrix transformation (1)', 
+     &   ' - ',NFTRA1,  ' extra B matrix transformation (2)(1)' 
       WRITE(LUPRI,'(3X,A,/,/)') 'will be performed.'
 
 
