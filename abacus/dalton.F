@@ -194,32 +194,22 @@ C
       END IF
 #endif
 C
-      IF (BASDIR(1:1) .NE. '/') THEN
+      IF (INDEX(BASDIR,
+     &INSTALL_BASDIR
+     &) .LE. 0) THEN
+         IEND = INDEX(BASDIR,' ') - 1
 C
 #if defined (VAR_ABSOFT)
          BASDIR="Insert basis-directory path here"
 C        Example:
 C        BASDIR="/Users/helgaker/Dalton/basis/"
 #else
-         BASDIR=
+         BASDIR=BASDIR(1:IEND)//':'//
      &INSTALL_BASDIR
 #endif
-         WRITE(LUERR,'(/A,/8X,A)') ' Default basis set library used:',
-     &                              BASDIR
-      ELSE
-         WRITE(LUERR,'(/A,/8X,A)') ' User supplied basis '//
-     &                               'set directory :',BASDIR
       END IF
-      LENBAS = 0
-      DO 43 I = 1, 60
-         IF (BASDIR(I:I) .EQ. ' ') GO TO 44
-         LENBAS = LENBAS + 1
- 43   CONTINUE
- 44   CONTINUE
-      IF (BASDIR(LENBAS:LENBAS) .NE. '/') THEN
-         LENBAS = LENBAS + 1
-         BASDIR(LENBAS:LENBAS) = '/'
-      END IF
+      WRITE(LUERR,'(/A/8X,A)') ' Directories for basis set searches:',
+     &                         BASDIR
 C
 C     Set memory traps and initialize unit numbers
 C
@@ -470,7 +460,7 @@ C
       SUBROUTINE GETMMBAS(LMWORK,BASDIR,LBASDR)
 #include <implicit.h>
 #include <priunit.h>
-      CHARACTER*70 BASDIR
+      CHARACTER*(*) BASDIR
 #if defined(SYS_AIX)||defined(SYS_CRAY)||defined(SYS_IRIX)||defined(SYS_NEC)||defined(SYS_CONVEX)||defined(SYS_T3D)||defined(SYS_SUN)||defined (SYS_LINUX)||defined(SYS_HPUX)||defined(SYS_HAL)||defined(SYS_T90)||defined(SYS_DEC)
       CHARACTER*20 WRKMEM
 #if defined (VAR_MPI)

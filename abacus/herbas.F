@@ -101,7 +101,7 @@ C
      &         '                                        '
       BASSAV = BASNAM
       INTQ   = NINT(Q)
-      LUBAS  = 0
+      LUBAS  = -1
       NBLOCK = 0
       IAUG   = 0
       ANO    = .FALSE.
@@ -109,9 +109,6 @@ C
       NQVD   = .FALSE.
       IF (BASNAM(1:6) .EQ. 'HUCKEL') THEN
 C jan 2000 hjaaj:
-#ifdef STO3G_HUCKEL
-         BASTMP = 'Huckel       '
-#else
 C
 C hjaaj jan 2000:
 C        New Huckel based on ano-4 instead of STO-3G.
@@ -155,7 +152,6 @@ C           ...  Ga, Ge, As, Se, Br, Kr
          ELSE
             CALL QUIT('BASLIB error: Huckel not defined for Z.gt.36')
          END IF
-#endif   /* STO3G-HUCKEL */
 C djw Feb 2005
 C notation changed from 'd' to 'd-' for consistency with EMSL
       ELSE
@@ -317,25 +313,9 @@ C
 C
 C Normalizing CPRIMU for (angular quantumnumber + 1).
 C
-#ifdef STO3G_HUCKEL
-C Not needed for Huckel orbitals.
-C hj-aug99: YES it is, otherwise the Huckel matrix will be wrong !!!!!
-C kr-sep99: Nope, I insist on not doing this. The orbitals in the Huckel
-C           file is proper for the Huckel calculation. Messing with this
-C           does, for instance, give very wrong occupations for C8H10 (took
-C           me half a day to figure out......)
-C
-            IF (BASNAM(1:6) .NE. 'HUCKEL') THEN
-#endif
-               CALL NRMORB(NBLOCK, NRC(NBLOCK), NUC(NBLOCK), 
-     +                     ALPHA(1,NBLOCK),CPRIM(1, 1, NBLOCK), 
-     +                     CPRIMU(1,1, NBLOCK),  KPRIM, NBLOCK)
-#ifdef STO3G_HUCKEL
-            ELSE
-               CALL DCOPY(KPRIM*KPRIM,CPRIMU(1,1,NBLOCK),1,
-     &                    CPRIM(1,1,NBLOCK),1)
-            END IF
-#endif
+             CALL NRMORB(NBLOCK, NRC(NBLOCK), NUC(NBLOCK), 
+     +                   ALPHA(1,NBLOCK),CPRIM(1, 1, NBLOCK), 
+     +                   CPRIMU(1,1, NBLOCK),  KPRIM, NBLOCK)
 C
 C Define the type of the next relevant line in file
 C
@@ -804,73 +784,40 @@ C* This is the subroutine that searches through the file *
 C* and finds the element in question.                    *
 C*********************************************************
 C/* Deck findel */
-      SUBROUTINE FINDEL(BASNAM, INTQ,LUBAS)
+      SUBROUTINE FINDEL(BASNAM,INTQ,LUBAS)
 #include <implicit.h>
 #include <priunit.h>
-#include <dummy.h>
 C*********************************************************
 C* Variable declarations:                                *
-C*     BASNAM - The name of the basisfile                *
+C*     BASNAM - The name of the basis file               *
 C*     STRING - A character variable that helps bullet-  *
 C*              proofing the subroutine.                 *
-C*     EXST - Logical variable that helps inquire if     *
-C*            there exists a file with that name.        *
 C*********************************************************
 C
       CHARACTER*(*) BASNAM
       CHARACTER*140 STRING
       CHARACTER SIGN
-      LOGICAL EXST
-#include <inftap.h>
-#include <gnrinf.h>
 C
-C     Corrected for IEND (WK/UniKA/04-11-2002).
-      IEND = INDEX(BASNAM(1:),' ') - 1
-      STRING = BASDIR(1:LENBAS)//BASNAM(1:IEND)
-      IEND = INDEX(STRING(1:),' ') - 1
-      INQUIRE (FILE = STRING(1:IEND), EXIST = EXST)
-      IF (EXST) THEN
-         CALL GPOPEN(LUBAS,STRING(1:IEND),'OLD',' ','FORMATTED',IDUMMY,
-     &               .FALSE.)
-C
+      CALL  FIND_BASFIL(BASNAM,LUBAS)
 C
 C Searching the file for the element.
 C
- 20      CONTINUE
+ 20   CONTINUE
          READ(LUBAS,'(A88)', IOSTAT = IOERR, ERR = 2000, END = 200)
      +       STRING
          READ (STRING, '(A1)') SIGN
          IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN
             READ (STRING, 110) SIGN, NUCEL
  110        FORMAT (BN, A1, I4)
-            IF (INTQ .EQ. NUCEL) THEN
-               RETURN
-            ELSE
-               GOTO 20
-            END IF
-         ELSE 
-            GOTO 20
-         END IF 
-      ELSE
-         LSTR=1
-         DO J = 140,1,-1
-            IF (STRING(J:J) .NE. ' ') THEN
-               LSTR = J
-               GO TO 300
-            END IF
-         END DO
-  300    WRITE (LUPRI,'(/,3A)')
-     +      'Basis "',STRING(1:LSTR),'" doesn''t exist'
-         IF (BASNAM(1:6) .EQ. 'Huckel') THEN
-            WRITE (LUPRI,'(A)')
-     +      'NB! Basis Huckel must be available to use Huckel guess!'
+            IF (INTQ .EQ. NUCEL) RETURN
          END IF
-         CALL QUIT('Non-existing basis set in HERBAS')
-      END IF
+      GOTO 20
 C
-C Errormessages 
+C Error messages 
 C
  2000 CONTINUE
+      INQUIRE (UNIT = LUBAS, NAME = STRING)
+      IEND = INDEX(STRING(1:),' ') - 1
       WRITE (LUPRI,'(/2A/A,I5)')
      &   'FINDEL: Error when reading from basis file ',STRING(1:IEND),
      &   ' IOSTAT =',IOERR
@@ -892,15 +839,13 @@ C* Variable declarations:                                *
 C*     BASNAM - The name of the basisfile                *
 C*     STRING - A character variable that helps bullet-  *
 C*              proofing the subroutine.                 *
-C*     EXST - Logical variable that helps inquire if     *
-C*            there exists a file with that name.        *
 C*********************************************************
 C
 C
       CHARACTER*(*) BASNAM
       CHARACTER*140 STRING
       CHARACTER SIGN
-      LOGICAL EXST, POLFUN, SEG, SEGEJ, BLANK, UNCONT
+      LOGICAL   POLFUN, SEG, SEGEJ, BLANK, UNCONT
       DIMENSION ALPHA(KPRIM,KAOVEC), CPRIMU(KPRIM,KPRIM,KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC), NUC(KAOVEC), NRC(KAOVEC),
      &          SEG(KAOVEC)
@@ -923,17 +868,12 @@ C     ... force uncontracted irrespective of .mol file
             CALL FREFRM(BASNAM,ISTART,IPCONT,DUMMY,'INT',IERR)
          END IF
       END IF
-      STRING = BASDIR(1:LENBAS)//'NQvD'
-      INQUIRE (FILE = STRING, EXIST = EXST)
-      IEND = INDEX(STRING(1:),' ')
-      IF (EXST) THEN
-         CALL GPOPEN(LUBAS,STRING(1:IEND),'OLD',' ','FORMATTED',
-     &               IDUMMY,.FALSE.)
 C
+      CALL  FIND_BASFIL('NQvD',LUBAS)
 C
 C Searching the file for the element.
 C
- 20      CONTINUE
+ 20   CONTINUE
          READ(LUBAS,'(A88)', IOSTAT = IOERR, ERR = 2000, END = 200)
      +       STRING
          READ (STRING, '(A1)') SIGN
@@ -1072,18 +1012,6 @@ C
          ELSE 
             GOTO 20
          END IF 
-      ELSE
-         LSTR=1
-         DO J = 140,1,-1
-            IF (STRING(J:J) .NE. ' ') THEN
-               LSTR = J
-               GO TO 300
-            END IF
-         END DO
-  300    WRITE (LUPRI,'(/,3A)')
-     +      'Basis "',STRING(1:LSTR),'" doesn''t exist'
-         CALL QUIT('Non-existing basis set in HERBAS')
-      END IF
 C
 C Error messages 
 C
@@ -1183,4 +1111,96 @@ C
       WRITE (LUPRI,'(/A,I5)') 'Error in reading file, your basis '//
      &     'is not complete. IOSTAT code:',IOERR
       CALL QUIT('Incomplete basis set file in HERBAS')
+      END
+C/* Deck FIND_BASFIL */
+      SUBROUTINE FIND_BASFIL(BASNAM,LUBAS)
+C
+C     Joern Thyssen and Hans Joergen Aa. Jensen.
+C     Last revision Feb. 2005
+C
+#include <implicit.h>
+#include "priunit.h"
+C*********************************************************
+C* Variable declarations:                                *
+C*     BASNAM - The name of the basisfile                *
+C*     STRING - A character variable that helps bullet-  *
+C*              proofing the subroutine.                 *
+C*     EXST   - Logical variable that helps inquire if   *
+C*              there exists a file with that name.      *
+C*********************************************************
+C
+      CHARACTER*(*) BASNAM
+      CHARACTER*140 STRING
+      LOGICAL EXST
+#if defined (PRG_DIRAC)
+#include "dcbgen.h"
+#else
+#include "gnrinf.h"
+#endif
+C
+C     The environment variable is a : separated string, e.g.:
+C     /programs/Dirac/basis:/programs/Dalton/basis:.
+C
+C     We loop over these directories in search for the basis set and
+C     element given.
+C
+      EXST = .FALSE.
+      ISTART = 1
+C
+ 10   CONTINUE
+C
+C     Find next colon in BASDIR
+C
+      ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:), ':' )
+C
+C     In there are no colons, we are the last directory in BASDIR
+C
+      IF ( ICOLON .EQ. ISTART - 1 ) THEN
+C
+C        Find end of string
+C
+         ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:), ' ' )
+C
+C        If end of string = start of string there are no more
+C        directories, so we gracefully die...
+C
+         IF ( ICOLON .EQ. ISTART ) GOTO 300
+      END IF
+      IEND = ICOLON - 1
+      STRING = BASDIR(ISTART:IEND)
+      ISTART = ICOLON + 1
+C
+C     Add trailing slash if not present.
+C
+      IEND = INDEX ( STRING(1:), ' ') - 1
+      IF ( STRING(IEND:IEND) .NE. '/' ) THEN
+         IEND = IEND + 1
+         STRING(IEND:IEND) = '/'
+      END IF
+      STRING = STRING(1:IEND)//BASNAM
+      IEND = INDEX(STRING(1:),' ') - 1
+Cluuk Activate when debugging basis set search (should not be on by default)
+CLuuk WRITE(LUPRI,'(A/,A1,A,A1)')
+CLuuk&     ' Searching basis : trying file: ','"',STRING(1:IEND),'"'
+C
+C     Inquire if "/path/basis-set" exists.
+C
+      INQUIRE (FILE = STRING(1:IEND), EXIST = EXST)
+      IF (EXST) THEN
+         CALL GPOPEN(LUBAS,STRING(1:IEND),'OLD',' ','FORMATTED',IDUMMY,
+     &               .FALSE.)
+         RETURN
+      ELSE
+         GO TO 10
+      END IF
+C
+  300 IEND = INDEX ( BASNAM(1:), ' ') - 1
+      WRITE (LUPRI,'(/3A)')
+     +      'Basis "',BASNAM(1:IEND),'" doesn''t exist'
+      IF (BASNAM(1:6) .EQ. 'Huckel') THEN
+         WRITE (LUPRI,'(/A)')
+     +   'NB! Basis Huckel must be available to use Huckel guess!'
+      END IF
+      CALL QUIT('Non-existing basis set in HERBAS')
+
       END
