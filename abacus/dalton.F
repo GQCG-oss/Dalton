@@ -95,16 +95,16 @@ C
 #endif
       CHARACTER*12 FILNAM
       PARAMETER (LWORK = INSTALL_WRKMEM)
-#if !defined (SYS_CONVEX) && !defined (SYS_HAL) 
+#if !defined (SYS_HAL) 
       PARAMETER (IWOFF = 0)
 #endif
-#if defined (SYS_AIX) || defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_CONVEX) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_DEC)
+#if defined (SYS_AIX) || defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_DEC)
       CHARACTER*20 WRKMEM
 #endif
 #if defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_DEC) || (defined (SYS_LINUX) && defined (VAR_PGF77))
       POINTER (WADDR,WORK(1))
 #else
-#if defined (SYS_CONVEX) || (defined (SYS_LINUX) && defined (VAR_G77))
+#if (defined (SYS_LINUX) && defined (VAR_G77))
       DIMENSION WORK(2)
 #else
 #if defined (SYS_NEC) || defined (SYS_AIX) || (defined (SYS_LINUX) && defined (VAR_IFC))
@@ -138,7 +138,7 @@ C
          LUERR = 0
       END IF
       LMWORK = 0
-#if defined (SYS_AIX) || defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_CONVEX) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_DEC)
+#if defined (SYS_AIX) || defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_DEC)
 C
 C     Dynamic memory allocation; check for WRKMEM in environment
 C     The T3D thingie might work for DEC_ALPHA as well? Try it out, kr-dec96

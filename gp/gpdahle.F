@@ -527,7 +527,7 @@ C  /* Deck getname */
 #include <implicit.h>
       CHARACTER*(20) HSTNAM
 C
-#if defined (SYS_LINUX) || defined (SYS_UNIX) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_AIX)
+#if defined (SYS_LINUX) || defined (SYS_UNIX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_AIX)
       CALL HOSTNM(HSTNAM)
 #endif
 #if defined (SYS_HAL)
@@ -539,7 +539,7 @@ C
 C  /* Deck getdate */
       SUBROUTINE GETDATE
 #include <implicit.h>
-#if defined (SYS_UNIX) || defined (SYS_CONVEX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_LINUX)
+#if defined (SYS_UNIX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_LINUX)
 #if !defined (VAR_G77)
       CHARACTER*(24) FDATE
 #endif
@@ -555,9 +555,6 @@ C  /* Deck getdate */
       CTIME = CLOCK()
       WRITE (LUPRIN,'(T6,A,A8,1X,A8)')
      *   'Date and time (CRAY) : ',CDATE,CTIME
-#endif
-#if defined (SYS_CONVEX)
-      WRITE (LUPRIN,'(T6,2A)') 'Date and time (Convex) : ',FDATE()
 #endif
 #if defined (SYS_HAL)
       CALL FDATE(CFDATE)

@@ -223,7 +223,7 @@ C
       CALL TSTAMP('  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---',
      &   LUPRIN)
       WRITE (LUPRIN,'(/2A/)') ' Reason: ',TEXT
-#if defined (SYS_CRAY) || defined (SYS_CONVEX) || defined (SYS_UNIX) || defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_DEC) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_T90)
+#if defined (SYS_CRAY) || defined (SYS_UNIX) || defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_DEC) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_T90)
 C     Write to stderr
       WRITE (0,'(/A/1X,A)')
      *   '  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---',TEXT
@@ -326,9 +326,8 @@ C
          ENDIF
   600 CONTINUE
 #endif
-#if defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HAL)
+#if defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HAL)
 C
-C     Assume same for CONVEX --  1-Nov-1989 hjaaj
 C     Assume same for IBM-AIX--  1-Oct-1990 hjaaj
 C     Assume same for HP-UX  -- 21-Aug-1991 hjaaj
 C     Assume same for DEC    -- 21-May-1992 hjaaj
@@ -375,7 +374,7 @@ C
          OLDDX = .FALSE.
   600  CONTINUE
 #endif
-#if !defined (SYS_CRAY) && !defined (SYS_CONVEX) && !defined (SYS_AIX) && !defined (SYS_HPUX) && !defined (SYS_DEC) && !defined (SYS_IRIX) && !defined (SYS_NEC) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HAL) && !defined (SYS_T90)
+#if !defined (SYS_CRAY) && !defined (SYS_AIX) && !defined (SYS_HPUX) && !defined (SYS_DEC) && !defined (SYS_IRIX) && !defined (SYS_NEC) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HAL) && !defined (SYS_T90)
  >>>>> insert appropriate OPEN statements in OPENDX.
 #endif
       RETURN

@@ -10,7 +10,6 @@ C*  FPS-VER:  84-12-06                                                 *
 C*  IBM-VER:  86-11-17                                                 *
 C*  88-12-02  Hans Joergen Aa. Jensen -- Alliant version
 C*            also changed IREC = IDISK/4 + 1 to = IDISK + 1
-C*  93-09-20 hjaaj: defined ISTEOF for Cray, Convex
 C*  93-10-05 hjaaj: LDISK byte storage where LDISK = 8/IRAT
 C*                  Cray: LDISK = 8, i*4 machines: LDISK = 4
 C*  94-05-20 hjaaj: DATEMP unformatted (was formatted !)
@@ -83,7 +82,6 @@ C*  FPS-VER:  84-12-06                                                 *
 C*  IBM-VER:  86-11-17                                                 *
 C*  Alliant:  88-12-02 Hans Joergen Aa. Jensen                         *
 C*                     also changed IREC = IDISK/4 + 1 to = IDISK + 1  *
-C*            93-09-20 hjaaj: defined ISTEOF for Cray, Convex          *
 C*            93-10-05 hjaaj: 8 byte storage for Cray                  *
 C*                            (defined from IRAT)                      *
 C*                                                                     *
@@ -770,14 +768,14 @@ C*  ERROR HANDLING SECTION                                             *
 C*                                                                     *
 C***********************************************************************
 900   CONTINUE
-#if defined (SYS_AIX) || defined (SYS_CONVEX) || defined (SYS_LINUX) || defined (SYS_IRIX) || defined (SYS_HAL) || defined (SYS_HPUX)
+#if defined (SYS_AIX) || defined (SYS_LINUX) || defined (SYS_IRIX) || defined (SYS_HAL) || defined (SYS_HPUX)
       ISTEOF = -1
 #endif
 #if defined (SYS_CRAY) || defined (SYS_T90)
 C     eof value for Cray from Trygve Sep.93 /hjaaj
       ISTEOF = 2
 #endif
-#if !defined (SYS_AIX) && !defined (SYS_CONVEX) && !defined (SYS_LINUX) && !defined (SYS_IRIX) && !defined (SYS_HAL) && !defined (SYS_HPUX) && !defined (SYS_CRAY) && !defined (SYS_T90)
+#if !defined (SYS_AIX) && !defined (SYS_LINUX) && !defined (SYS_IRIX) && !defined (SYS_HAL) && !defined (SYS_HPUX) && !defined (SYS_CRAY) && !defined (SYS_T90)
       CALL QUIT('FASTIO ERROR: ISTEOF has not been '//
      &          'defined for this computer')
 #endif

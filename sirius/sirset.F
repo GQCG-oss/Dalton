@@ -370,7 +370,6 @@ C
 C     ***** Open other files
 C
 C
-C     Convex file opening
 C     CRAY file opening
 C     IBM AIX file opening
 C     Digital DECstation (ULTRIX) file opening

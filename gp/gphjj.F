@@ -53,7 +53,7 @@ C This subroutine may be a dummy routine.
 C
       IF (IUNIT .GE. 0) THEN
 C     ... do not try to flush unused units (e.g. LUPRI on a slave) /hjaaj
-#if  defined (SYS_AIX) || defined (SYS_CONVEX) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_HPUX)
+#if  defined (SYS_AIX) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_HPUX)
 C
 C        Force transfer of all buffered output to the file or device
 C        associated with logical unit IUNIT.
@@ -78,7 +78,7 @@ C
       WRITE (CDATE,'(A8)') IDATE
       WRITE (CTIME,'(A8)') ITIME
 #endif
-#if defined (SYS_CONVEX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_LINUX)
+#if defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_LINUX)
       CHARACTER*(24) FFDATE
 #if defined (SYS_LINUX) || defined(SYS_AIX)
       CALL FDATE(FFDATE)
@@ -95,7 +95,7 @@ C
       CDATE  = FFDATE(9:10)//FFDATE(5:7)//FFDATE(23:24)//' '
       CTIME  = FFDATE(12:19)
 #endif
-#if !defined (SYS_CRAY) && !defined (SYS_CONVEX) && !defined (SYS_AIX) && !defined (SYS_DEC) && !defined (SYS_IRIX) && !defined (SYS_NEC) && !defined (SYS_SUN) && !defined (SYS_LINUX) && !defined (SYS_HAL) && !defined (SYS_T90)
+#if !defined (SYS_CRAY) && !defined (SYS_AIX) && !defined (SYS_DEC) && !defined (SYS_IRIX) && !defined (SYS_NEC) && !defined (SYS_SUN) && !defined (SYS_LINUX) && !defined (SYS_HAL) && !defined (SYS_T90)
       CDATE = ' -date- '
       CTIME = ' -time- '
 #endif
@@ -195,9 +195,8 @@ C
       itimwl = time() - iwall0
       TIMWAL = itimwl
 #endif
-#if defined (SYS_CONVEX)
-C...  CONVEX code
-      integer stime
+#if (defined (SYS_LINUX) && defined (VAR_IFC))
+      integer time,darr(9)
       real*4  etime, tarray(2)
       logical first
       save    first,iwall0,TCPU0
@@ -206,10 +205,12 @@ C
       if (first) then
          first = .false.
          TCPU0 = etime(tarray)
-         iwall0 = stime()
+          call gettimeofday(darr,err)
+          iwall0 = darr(1)
       end if
       TIMCPU = etime(tarray) - TCPU0
-      itimwl = stime() - iwall0
+      call gettimeofday(darr,err)
+      itimwl = darr(1) - iwall0
       TIMWAL = itimwl
 #endif
 #if defined (SYS_LINUX) && defined (VAR_G77)
@@ -227,7 +228,7 @@ C
       TIMWAL = time8() - TWALL0
       TIMCPU = second() - TCPU0
 #endif
-#if !defined (SYS_DEC) && !defined (SYS_CRAY) && !defined (SYS_CONVEX) && !defined (SYS_AIX) && !defined (SYS_HPUX) && !defined (SYS_IRIX) && !defined (SYS_NEC) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HAL) && !defined (SYS_T90)
+#if !defined (SYS_DEC) && !defined (SYS_CRAY) && !defined (SYS_AIX) && !defined (SYS_HPUX) && !defined (SYS_IRIX) && !defined (SYS_NEC) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HAL) && !defined (SYS_T90)
       PARAMETER (D0 = 0.0D0)
       logical first
       save    TWALL0,TCPU0
@@ -246,7 +247,7 @@ C
       RETURN
       END
 C  /* Deck settim */
-#if defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HAL) || (defined (SYS_LINUX) && defined (VAR_PGF77)) || defined (SYS_CONVEX) || defined (SYS_AIX)
+#if defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HAL) || (defined (SYS_LINUX) && defined (VAR_PGF77))||(defined (SYS_LINUX) && defined (VAR_IFC)) || defined (SYS_AIX)
       SUBROUTINE SETTIM
 C
 C  Unix timing routines emulating Lund IBM timing routines
@@ -354,7 +355,7 @@ C
 #include <implicit.h>
       CHARACTER*(*) TEXT
 C
-#if defined (SYS_UNIX) || defined (SYS_CONVEX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_LINUX)
+#if defined (SYS_UNIX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_LINUX)
       CHARACTER*(40) HSTNAM
 #if !defined (VAR_G77)
       CHARACTER*(24) FDATE
@@ -383,9 +384,6 @@ C
       CTIME = CLOCK()
       WRITE (LUPRIN,'(T6,A,A8,1X,A8)')
      *   'Date and time (CRAY) : ',CDATE,CTIME
-#endif
-#if defined (SYS_CONVEX)
-      WRITE (LUPRIN,'(T6,2A)') 'Date and time (Convex) : ',FDATE()
 #endif
 #if defined (SYS_HAL)
       CALL FDATE(CFDATE)
@@ -416,7 +414,7 @@ C     &     CTIME(1:2),':',CTIME(3:4),':',CTIME(5:6)
 #if defined (SYS_LINUX)
       WRITE (LUPRIN,'(T6,2A)') 'Date and time (Linux)  : ',FDATE()
 #endif
-#if defined (SYS_AIX) || (SYS_LINUX) || defined (SYS_UNIX) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN)
+#if defined (SYS_AIX) || (SYS_LINUX) || defined (SYS_UNIX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN)
       CALL HOSTNM(HSTNAM)
       WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
 #endif
@@ -575,7 +573,7 @@ C Written 4-Dec-1983 hjaaj
 C
 #include <implicit.h>
 #include <priunit.h>
-#if !defined (VAR_SECSEC) && !defined (SYS_CRAY) && !defined (SYS_CONVEX) && !defined (SYS_AIX) && !defined (SYS_IRIX) && !defined (SYS_NEC) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HPUX) && !defined (SYS_HAL) && !defined (SYS_T90)
+#if !defined (VAR_SECSEC) && !defined (SYS_CRAY) && !defined (SYS_AIX) && !defined (SYS_IRIX) && !defined (SYS_NEC) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HPUX) && !defined (SYS_HAL) && !defined (SYS_T90)
       INTEGER A,B,C
       SAVE    A,B,C
       DATA    A/1/,B/0/,C/0/
@@ -592,9 +590,6 @@ C
 #endif
 #if defined (SYS_HPUX)
       WRITE(LUPRI,*) 'HP-UX has no obvious system traceback facility.'
-#endif
-#if defined (SYS_CONVEX)
-      CALL TRACEBACK
 #endif
 #if defined (SYS_HAL)
       WRITE(LUPRI,*) 'HAL has no obvious system traceback facility.'
@@ -1721,7 +1716,7 @@ C
 C  /* Deck second */
 #if !defined (SYS_CRAY) && !defined (VAR_SECSEC) && !defined (SYS_T90) && !defined (VAR_G77)
       FUNCTION SECOND ()
-#if defined(SYS_AIX) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_DEC) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_HAL) || (defined (SYS_LINUX) && defined (VAR_PGF77))
+#if defined(SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_DEC) || defined (SYS_SUN) || defined (SYS_T3D) || defined (SYS_HAL) || (defined (SYS_LINUX) && defined (VAR_PGF77))||(defined (SYS_LINUX) && defined (VAR_IFC))
 #include <implicit.h>
       real*4 etime,tarray(2)
 #if !defined (SYS_T3D)

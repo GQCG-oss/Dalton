@@ -1,4 +1,4 @@
-#if defined (SYS_CONVEX) || defined (SYS_HAL)
+#if defined (SYS_HAL)
 C$DIR PREFER_VECTOR
 #else
 Cvectorization note --> prefer vectorization over this loop

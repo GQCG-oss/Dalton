@@ -1091,7 +1091,7 @@ C
 C        Expectation value of undifferentiated elements
 C
          SAVR0  = D0
-#if defined (SYS_CONVEX) || defined (SYS_HAL)
+#if defined (SYS_HAL)
 #include <scalar.h>
 #endif
          DO 200 ICOMP = 1, KHKTAB

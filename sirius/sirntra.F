@@ -1225,7 +1225,7 @@ C     890826: This is not neccessary now because we have switched
 C             to absolute addressing of a given quadruplet.
 C
       IF (IPRTRA .GE. 2 .AND. IPRTRA .LT. 5) WRITE(LUPRI,2000)
-#if defined (SYS_UNIX) || defined (SYS_CONVEX) || defined (SYS_CRAY) || defined (SYS_AIX) || defined (SYS_T3D) || defined (SYS_HAL) || defined (SYS_T90)
+#if defined (SYS_UNIX) || defined (SYS_CRAY) || defined (SYS_AIX) || defined (SYS_T3D) || defined (SYS_HAL) || defined (SYS_T90)
  2000 FORMAT(/1X,'SYMMETRY BASIS FUNCTION  ORBITALS',3X,
      &       'MEMLFT   LTUPQ  USER(SEC) SYS(SEC)')
 #else
@@ -1442,7 +1442,7 @@ C
          CALL TIMING(CPT,CPE,TIOT,TIOE)
          WRITE(LUPRI,2200) CPT,TIOT
       END IF
-#if defined (SYS_UNIX) || defined (SYS_CONVEX) || defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_HAL) || defined (SYS_T90)
+#if defined (SYS_UNIX) || defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_HAL) || defined (SYS_T90)
  2200 FORMAT(/1X,'TOTAL USER TIME(SEC)',F9.3,
      &        ' TOTAL SYSTEM TIME(SEC)',F9.3)
 #else

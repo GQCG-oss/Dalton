@@ -66,7 +66,7 @@ C     but has no problem with NaN /931022-hjaaj
 #endif
 #endif
 #if !defined (VAR_ESSL) && !defined (VAR_F90)
-#if defined (SYS_CONVEX) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_AIX) || defined (VAR_BLAS3) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_HPUX) || defined (SYS_HAL)
+#if defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_AIX) || defined (VAR_BLAS3) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_HPUX) || defined (SYS_HAL)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
 C
 C     Necessary to zero out because of NaN, tuh
@@ -107,7 +107,7 @@ C
       RETURN
       END
 #endif
-#if defined (SYS_CONVEX) || defined (VAR_ESSL) || defined (VAR_BLAS3) || defined (SYS_HAL)
+#if defined (VAR_ESSL) || defined (VAR_BLAS3) || defined (SYS_HAL)
       SUBROUTINE MXMD(A,NAR,NARA,B,NAC,NACA,C,NBC)
 C     890905 tuh
 #include <implicit.h>
@@ -118,7 +118,7 @@ C     890905 tuh
       RETURN
       END
 #endif
-#if !defined (SYS_CONVEX) && !defined (VAR_ESSL) && !defined (VAR_F90) && !defined (VAR_BLAS3) && !defined (SYS_HAL)
+#if !defined (VAR_ESSL) && !defined (VAR_F90) && !defined (VAR_BLAS3) && !defined (SYS_HAL)
       SUBROUTINE MXMD(A,NAR,NARA,B,NAC,NACA,C,NBC)
 C
 C     Modified MXM by Trygve U. Helgaker

@@ -1194,13 +1194,13 @@ C
          END IF
 C
 C-------------------------------------------------------
-C        Open file for effective two electron densities.
+C        Open file for efffective two electron densities.
 C-------------------------------------------------------
 C
 #if defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_DEC)
          NFRL = 2
 #endif
-#if defined (SYS_LINUX) || defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_PARAGON) || defined (SYS_ALLIANT) \
+#if defined (SYS_LINUX) || defined (SYS_AIX) || defined (SYS_PARAGON) || defined (SYS_ALLIANT) \
 || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL)
          NFRL = 8
 #endif
