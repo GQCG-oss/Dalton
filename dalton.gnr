@@ -112,6 +112,10 @@ else
 fi
 #
 export TMPDIR
+if [ ! -d "$TMPDIR" ]; then
+   mkdir -p $TMPDIR
+fi
+SCRATCHDIR=$TMPDIR/$outnam
 #
 echo
 echo "   ***************************************** "
@@ -130,18 +134,15 @@ echo "   Scratch dir: $SCRATCHDIR"
 #echo "  Work memory: $WRKMEM"
 echo;
 #
-if [ ! -d "$TMPDIR" ]; then
-   mkdir -p $TMPDIR
-fi
 
-SCRATCHDIR=$TMPDIR/$outnam
 
 ierr=0
 if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
-   if [ $optd -eq 1 ] ; then
-      rm -rf $SCRATCHDIR
-   fi
-   if [ ! -d "$SCRATCHDIR" ]; then
+   if [ -d "$SCRATCHDIR" ]; then
+      if [ $optd -eq 1 ] ; then
+         rm -rf $SCRATCHDIR
+      fi
+   else
       mkdir -p $SCRATCHDIR
    fi
    cd $SCRATCHDIR
@@ -242,16 +243,6 @@ else
     echo "$outnam.tar.gz has not been created and has thus not been copied to $WRKDIR"
 fi
 
-if [ -s DALTON.ERR -a -r DALTON.ERR ]; then
-  if [ `grep -c -i WARNING DALTON.ERR` -gt 0 ] ; then
-   echo; echo "WARNINGS have been issued by Dalton, output from 'grep -n -i WARNING DALTON.ERR' :"   grep -n -i WARNING DALTON.ERR
-  fi
-  if [ `grep -c INFO DALTON.ERR` -gt 0 ] ; then
-   echo; echo "INFO messages have been issued by Dalton, output from 'grep -n INFO DALTON.ERR' :"
-   grep -n INFO DALTON.ERR
-  fi
-fi
-
 if [ $opto -eq 1 ] ; then
    if [ -s $WRKDIR/$OUTFIL -a -r $WRKDIR/$OUTFIL ]; then
       echo "Output is in $WRKDIR/$OUTFIL as requested in input."
@@ -296,15 +287,34 @@ if [ $ierr -ne 0 -o $NERR -gt 0 ] ; then
 fi
 
 if [ `grep -c -i WARNING $OUTFIL` -gt 0 ] ; then
-   echo; echo "WARNINGS have been issued by Dalton, output from 'grep -n -i WARNING' :"
+   echo; echo "WARNINGS have been issued by Dalton"
+   echo"Output from 'grep -n -i WARNING' :"
    grep -n -i WARNING $OUTFIL
 fi
 
-if [ `grep -c INFO $OUTFIL` -gt 0 ] ; then
-   echo; echo "INFO messages have been issued by Dalton, output from 'grep -n INFO' :"
-   grep -n INFO $OUTFIL
+n
+if [ `grep -c '[^"]INFO' $OUTFIL` -gt 0 ] ; then
+   echo; echo "Informational messages have been issued by Dalton"
+   echo" output from 'grep -n INFO' :"
+   grep -n INFO $OUTFIL | grep -v 'Check output, result, and error'
 fi
 
+
+# Disabled check of DALTON.ERR, it is generally duplication
+# of the warnings etc. in DALTON.OUT /hjaaj
+
+#if [ -s DALTON.ERR -a -r DALTON.ERR ]; then
+#  if [ `grep -c -i WARNING DALTON.ERR` -gt 0 ] ; then
+#   echo; echo "WARNINGS have been issued by Dalton in DALTON.ERR file"
+#   echo "output from 'grep -n -i WARNING DALTON.ERR' :"
+#   grep -n -i WARNING DALTON.ERR
+#  fi
+#  if [ `grep -c INFO DALTON.ERR` -gt 0 ] ; then
+#   echo; echo "INFO messages have been issued by Dalton in DALTON.ERR file"
+#  echo "output from 'grep -n INFO DALTON.ERR' :"
+#  grep -n INFO DALTON.ERR
+#  fi
+#fi
 
 
 if [ $optD -eq 1 ] ; then
