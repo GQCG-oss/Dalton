@@ -25,7 +25,7 @@ can only be calculated via \Sec{*PROPERTIES}.
 
 Calculations of coupled cluster response properties are performed
 by different modules and are described
-in the chapter on coupled cluster calculations.
+in Chapter~\ref{ch:CC} on coupled cluster calculations.
 
 In addition, SOPPA\index{SOPPA}\index{polarization propagator}
 (Second-Order Polarization Propagator 
@@ -85,7 +85,7 @@ calculation has generated the CCSD amplitudes and written them to disk
 Chapter~\ref{ch:starting}.
 
 \item{\Key{SOPW4}}
-Calculate explicitly the W4 term described by Odderhede {\it et
+Calculate explicitly the W4 term described by Oddershede {\it et
 al.\/}~\cite{jopjdycpr2}. This term is already included in the normal
 SOPPA\index{SOPPA}\index{polarization propagator!SOPPA} or 
 SOPPA(CCSD)\index{SOPPA(CCSD)} result, and used mostly for comparing to older
@@ -506,7 +506,7 @@ reference state and the excited states.
 Remember to increase \Key{MAXRM} if many frequencies are specified.
 
 \item{\Key{PHOSPHORESCENCE}}
-Specifies a phosphoresence\index{phosphoresence} calculation, i.e.,
+Specifies a phosphorescence\index{phosphorescence} calculation, i.e.,
 the spin-orbit\index{spin-orbit} 
 induced singlet-triplet transition\index{singlet-triplet transition}. This keyword sets up the  
 calculation so that no further response input is required except \Key{ROOTS}; the
@@ -518,7 +518,7 @@ The reference state {\em must} be a singlet spin state.
 
 \item{\Key{MCDBTERM}}
 Specifies the calculation of all individual components to the 
-${\cal{B}}(0\to f)$ term of magnetic circular dicrhoism
+${\cal{B}}(0\to f)$ term of magnetic circular dichroism
 (MCD)\index{magnetic circular dichroism}\index{B-term}\index{MCD}.
 This keyword sets up the calculation so that no further response input is required except \Key{ROOTS}. 
 The $A$ operator is set equal to the $\alpha$ component of dipole 
@@ -555,7 +555,7 @@ Frequencies.
 Spin symmetry of $A$-operators (ISPINA), $B$-operators (ISPINB),
 and the excitation operator (ISPINC): "0" for singlet and "1" for triplet.
 Default is "0,0,0", i.e. all of singlet spin symmetry.
-Note: triplet operators are only implemented for singlet reference states.
+{\bf Note: triplet operators are only implemented for singlet reference states.}
 %hjaaj June 2001: .ASPIN etc. should be defined for .SINGLE
 %\item[\Key{ASPIN}, \Key{BSPIN}, \Key{CSPIN}]
 %\index{quadratic response}\index{response!quadratic}
@@ -624,7 +624,7 @@ $\langle\!\langle A;B,C \rangle\!\rangle_{\omega_b,\omega_c}$
 Computes the double residue\index{quadratic response!double residue}
 of the quadratic
 response function\index{double residue!quadratic response}\index{response!quadratic, double residue}.
-Double residues of the quadratic repsonse function correspond to transition
+Double residues of the quadratic response function correspond to transition
 moments between excited states\index{transition moment!between excited states},
 $\langle B \mid A \mid C \rangle$. 
 
@@ -652,7 +652,7 @@ Spin symmetry of $A$-operators (ISPINA)
 and the left and right excitation operators (ISPINB and ISPINC):
 "0" for singlet and "1" for triplet.
 Default is "0,0,0", i.e. all of singlet spin symmetry.
-Note: triplet operators are only implemented for singlet reference states.
+{\bf Note: triplet operators are only implemented for singlet reference states.}
 %hjaaj June 2001: .ASPIN etc. should be defined for .DOUBLE
 %\item[\Key{ASPIN}, \Key{BSPIN}, \Key{CSPIN}]
 %\index{quadratic response}\index{response!quadratic}
@@ -754,15 +754,15 @@ Sets $A$, $B$, $C$, and $D$ to the $y$ dipole operator\index{dipole length}.
 Sets $A$, $B$, $C$ and $D$ to the $z$ dipole operator\index{dipole length}.
 
 \item{\Key{MAXIT }}
-Maximum nuber of iterations for solving linear equations, default value is 20.
+Maximum number of iterations for solving linear equations, default value is 20.
 
 \item{\Key{MAXITO}}
 Maximum number of ORPCTL-microiterations, default value is 10.
 
 \item{\Key{PRINT}}
 Print flag for output, default value is 2. Timer information is printed
-out if printflag greater than 5. Response vectors printed out if
-printflag greater than 10.
+out if print flag greater than 5. Response vectors printed out if
+print flag greater than 10.
 
 \item{\Key{THCLR}}
 Threshold for convergence of response vectors, default value is $10^{-4}$.
@@ -831,15 +831,15 @@ Sets $A$, $B$, $C$, and $D$ to the $y$ dipole operator\index{dipole length}.
 Sets $A$, $B$, $C$ and $D$ to the $z$ dipole operator\index{dipole length}.
 
 \item{\Key{MAXIT}}
-Maximum nuber of iterations for solving linear equations, default value is 20.
+Maximum number of iterations for solving linear equations, default value is 20.
 
 \item{\Key{MAXITO}}
 Maximum number of ORPCTL-microiterations, default value is 10.
 
 \item{\Key{PRINT}}
 Print flag for output, default value is 2. Timer information is printed
-out if printflag greater than 5. Response vectors printed out if
-printflag greater than 10.
+out if print flag greater than 5. Response vectors printed out if
+print flag greater than 10.
 
 \item{\Key{THCLR}}
 Threshold for convergence of response vectors, default value is $10^{-4}$.
@@ -923,15 +923,15 @@ Sets $A$ and $B$ to the $y$ dipole operator\index{dipole length}.
 Sets $A$ and $B$ to the $z$ dipole operator\index{dipole length}.
 
 \item{\Key{MAXIT}}
-Maximum nuber of iterations for solving linear equations, default value is 60.
+Maximum number of iterations for solving linear equations, default value is 60.
 
 \item{\Key{MAXITO}}
 Maximum number of ORPCTL-microiterations, default value is 10.
 
 \item{\Key{PRINT}}
 Print flag for output, default value is 2. Timer information is printed
-out if printflag greater than 5. Response vectors printed out if
-printflag greater than 10.
+out if print flag greater than 5. Response vectors printed out if
+print flag greater than 10.
 
 \item{\Key{THCLR}}
 Threshold for convergence of response vectors, default value is $10^{-4}$.
@@ -945,34 +945,47 @@ Threshold for convergence of eigenvector, default value is $10^{-6}$.
 
 \end{description}
 
+\subsection{Module for C6, C8, C10 coefficients and more\Sec{C6}}
 
-\subsection{Spherical multipole moments: \Sec{C6}}\index{multipole moment}
-%hjaaj: wrong name!
 
 \begin{description}
 
 \item{\Key{C6SPH}, \Key{C8SPH}, \Key{C10SPH}}
 Specification of one of \Key{C6SPH}, \Key{C8SPH}, \Key{C10SPH}
-calculates and writes to an interface file (LURSP7) the spherical multipole
+calculates and writes to a formatted interface file (RESPONSE.C8) the spherical multipole
 moments in the specified/default grid points needed for C6, C8, and C10
-coefficients, respectively $(L=1, L=1,2,$ or $L=1,2,3$; all for $M_L =
--L,...,0,...,L)$.
+coefficients, respectively ($L=1$, $L=1,2,3$, or $L=1,2,3,4,5$;
+all for $M_L = -L,\ldots,0,\ldots,L$).
 
 \item{\Key{C6ATM}, \Key{C8ATM}, \Key{C10ATM}}
 \Key{C6ATM}, \Key{C8ATM}, \Key{C10ATM} do the same as \Key{C6SPH} etc. for
 atoms. Only $M_L=0$ is
-calculated and written to file (all $M_L$ vaules give same multipole moment 
-for 
-atoms).
+calculated and written to file (all $M_L$ values give same multipole moment 
+for atoms).
 
 \item{\Key{C6LMO}, \Key{C8LMO}, \Key{C10LMO}}
 \Key{C6LMO}, \Key{C8LMO}, \Key{C10LMO} is \Key{C6SPH} etc. for linear
 molecules\index{linear molecule}. Only
 multipole moments\index{multipole moment} with zero or positive $M_L$
-is calculated and written to 
-file.
+are calculated and written to file.
 
 \end{description}
+
+
+\noindent{\bf Comments:}
+
+You must tell the integral module to calculate the necessary one-electron integrals.
+For \Key{C8SPH}, \Key{C8ATM}, or \Key{C8LMO} you will need
+
+\begin{verbatim}
+**INTEGRALS
+.SPHMOM
+   3
+\end{verbatim}
+
+which calculate spherical moments for $L = 0, \ldots, 3$.
+For the \Key{C6xxx} and the \Key{C10xxx} options
+you will need $L = 0, 1$ and $L = 0, \ldots, 5$, respectively.
 
 \subsection{Electron Spin Resonance: \Sec{ESR}}
 
@@ -985,7 +998,7 @@ the Restricted-Unrestricted Approach\index{restricted-unrestricted method}.
 
 \begin{description}
 \item{\Key{FCCALC}} \\
-Calculate the isotroppic Fermi-contact contributions to hyperfine coupling tensors
+Calculate the isotropic Fermi-contact contributions to hyperfine coupling tensors
 \item{\Key{SDCALC}} \\
 Calculate the spin-dipole contributions to the hyperfine coupling tensor
 \item{\Key{ATOMS}} \\
@@ -1024,7 +1037,7 @@ atoms is established units.
 
 \end{description}
 
-\subsubsection{Zero-fieldl splitting: \Key{ZFS}}
+\subsubsection{Zero-field splitting: \Key{ZFS}}
 
 Calculation of the spin-spin contribution to the zero-field splitting
 tensor:
