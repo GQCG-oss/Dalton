@@ -64,8 +64,10 @@ C
       ELSE
          NGEODRV = 0
       END IF
+      CALL KICK_SLAVES_BRHS(NGEODRV,DOVB,NBAST,WORK(KDMAT),IPRINT)
       CALL DFTINT(WORK(KDMAT),1,NGEODRV,.TRUE.,WORK(KLAST),LWRK,
      &            DFTBRHS1,WORK(KFMAT),ELE)
+      CALL DFT_BRHS_COLLECT(WORK(KFMAT),N2BASX,WORK(KLAST),LWRK)
       DO K = 1, 3
          DO I = 1, NBAST
          DO J = 1, I - 1
@@ -561,4 +563,75 @@ C
 C
       RETURN
       END
-
+C
+      SUBROUTINE KICK_SLAVES_BRHS(NGEODRV,DOVB,NBAST,DMAT,IPRINT)
+#if defined (VAR_MPI)
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "mpif.h"
+C
+      LOGICAL DOVB
+      DIMENSION DMAT(NBAST,NBAST)
+C
+      IF (MYNUM .EQ. MASTER) THEN
+         IPRTYP = 7
+         CALL MPI_BCAST(IPRTYP,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(IPRINT,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(DOVB,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(NGEODRV,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,
+     &                  IERR)
+         CALL DFTINTBCAST
+         CALL KSMSYNC(DMAT)
+      END IF
+      RETURN
+#endif
+      END
+C
+#if defined (VAR_MPI)
+      SUBROUTINE DFT_BRHS_SLAVE(WORK,LWORK,IPRINT)
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "inforb.h"
+#include "dftbrhs.h"
+C
+      DIMENSION WORK(LWORK)
+#include "dftcom.h"
+#include "mpif.h"
+      EXTERNAL DFTBRHS1
+      LOGICAL DFT_ISGGA
+      EXTERNAL DFT_ISGGA
+C
+      KDMAT = 1
+      KFMAT = KDMAT + N2BASX
+      KLAST = KFMAT + N2BASX*3
+      LWRK  = LWORK - KLAST + 1
+      IF (KLAST .GT. LWORK) CALL QUIT('Out of memory in DFT_BRHS_SLAVE')
+      CALL MPI_BCAST(DOVB,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(NGEODRV,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+      CALL DFTINTBCAST
+      CALL KSMSYNC(WORK(KDMAT))
+      CALL DZERO(WORK(KFMAT),3*N2BASX)
+      CALL DFTINT(WORK(KDMAT),1,NGEODRV,.TRUE.,WORK(KLAST),LWRK,
+     &            DFTBRHS1,WORK(KFMAT),ELE)
+      CALL DFT_BRHS_COLLECT(WORK(KFMAT),N2BASX,WORK(KLAST),LWRK)
+      RETURN
+      END
+#endif
+C
+      SUBROUTINE DFT_BRHS_COLLECT(FMAT,N2BASX,WORK,LWORK)
+#if defined (VAR_MPI)
+#include "implicit.h"
+#include "mxcent.h"
+#include "mpif.h"
+      DIMENSION FMAT(3*N2BASX), WORK(LWORK)
+      CALL DCOPY(3*N2BASX,FMAT,1,WORK,1)
+      CALL MPI_REDUCE(WORK,FMAT,3*N2BASX,MPI_DOUBLE_PRECISION,
+     &                MPI_SUM,0,MPI_COMM_WORLD,IERR)
+      RETURN
+#endif
+      END
