@@ -33,63 +33,64 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
+C     FILE : intsort.F
+C
 #define VAR_AOCANORDER
 #define VAR_STAR2
-#ifdef UNDEF
-===========================================================================
-961213-hjaaj
-    removed check for LSORT .ge. 8*1024**2 (see MAERKE)
-    : This check is not necessary, but instead we outght to
-    : check that buffer length is greater than a minimum !!
-961112-hjaaj
-    delete SORINT after use
-951025-ov
-    Optional subroutine called from DALTON
-    Renamed subroutine ORDER (conflict with DALTON subroutine) to N_ORDER
-    Renamed common block SORT (conflict with DALTON subroutine) to N_SORT
-951013-ov
-    Replaced update with cpp
---- version n05 ---
-9412230hjaaj:
-  - SORTAO: initialize IPRINT,IPRFIO,INTSYM w/o DATA because in common
-940727-hjaaj
-  - SORTA: new code for finding canonical order
-  - SORTA: new namelist parameter DELAO, default true
-           if (DELAO) then delete AOTWOINT after sorting.
---- version n04 ---
-940407-hjaaj
-  - corrected error in WRITE(LUPRI,9000) in ORDER
-  - removed FPS code
-  - moved LSORT parameter to cdk LSORT
-  - modified some formats to print higher integer numbers
-901221-hjaaj
-  - corrected error in writing to LUORD
-  - added VCLR and READI
-901023-hjaaj-l04
-  - use XI4LAB(1:2) instead of XI2LAB(3:4) for LUSORT
-890826-hjaaj-t10.1
-  - Absolute addressing of IADUT in subroutine ORDER
-    giving absolute addressing of each symmetry quadruplet on
-    file LUORD
-    Initialize IADUT to -2 (error code if accessed in TR2CTL)
-    (old relative addressing may be obtained with *DEFINE RELADR)
-890619-hjaaj-t9.1
-  - Check for sufficient RINT allocation in ORDER
-  (and increased LRINT to LRECAO in cdk file)
-  - Transfer LUPRI to ORDER via common /SORT/
-890606-hjaaj
-  removed DARECL on LUORD unless *DEFINE DARECL
-890510-hjaaj
-  corrected code in DECK ORDER for INTSYM .ne. 1
-  -- note that INTSYM .ne. 1 has never been tested yet
-  stop if NBAST .gt. MXCORB or 2*NBUF .gt. LRINT
-890501-hjaaj
-  idea: dynamic LUORD buffer length?
-890104-hjaaj
-  IPRINT,INTSYM,THRQ parameters + more
-  save INTSYM as IDATA(2) on LUORD
-  set KEEP(I)=1 if NBAS(I)=0  
-===========================================================================
+#ifdef OLD_REV_LOG
+!===========================================================================
+!961213-hjaaj
+!    removed check for LSORT .ge. 8*1024**2 (see MAERKE)
+!    : This check is not necessary, but instead we outght to
+!    : check that buffer length is greater than a minimum !!
+!961112-hjaaj
+!    delete SORINT after use
+!951025-ov
+!    Optional subroutine called from DALTON
+!    Renamed subroutine ORDER (conflict with DALTON subroutine) to N_ORDER
+!    Renamed common block SORT (conflict with DALTON subroutine) to N_SORT
+!951013-ov
+!    Replaced update with cpp
+!--- version n05 ---
+!9412230hjaaj:
+!  - SORTAO: initialize IPRINT,IPRFIO,INTSYM w/o DATA because in common
+!940727-hjaaj
+!  - SORTA: new code for finding canonical order
+!  - SORTA: new namelist parameter DELAO, default true
+!           if (DELAO) then delete AOTWOINT after sorting.
+!--- version n04 ---
+!940407-hjaaj
+!  - corrected error in WRITE(LUPRI,9000) in ORDER
+!  - removed FPS code
+!  - moved LSORT parameter to cdk LSORT
+!  - modified some formats to print higher integer numbers
+!901221-hjaaj
+!  - corrected error in writing to LUORD
+!  - added VCLR and READI
+!901023-hjaaj-l04
+!  - use XI4LAB(1:2) instead of XI2LAB(3:4) for LUSORT
+!890826-hjaaj-t10.1
+!  - Absolute addressing of IADUT in subroutine ORDER
+!    giving absolute addressing of each symmetry quadruplet on file LUORD
+!    Initialize IADUT to -2 (error code if accessed in TR2CTL)
+!    (old relative addressing may be obtained with *DEFINE RELADR)
+!890619-hjaaj-t9.1
+!  - Check for sufficient RINT allocation in ORDER
+!  (and increased LRINT to LRECAO in cdk file)
+!  - Transfer LUPRI to ORDER via common /SORT/
+!890606-hjaaj
+!  removed DARECL on LUORD unless *DEFINE DARECL
+!890510-hjaaj
+!  corrected code in DECK ORDER for INTSYM .ne. 1
+!  -- note that INTSYM .ne. 1 has never been tested yet
+!  stop if NBAST .gt. MXCORB or 2*NBUF .gt. LRINT
+!890501-hjaaj
+!  idea: dynamic LUORD buffer length?
+!890104-hjaaj
+!  IPRINT,INTSYM,THRQ parameters + more
+!  save INTSYM as IDATA(2) on LUORD
+!  set KEEP(I)=1 if NBAS(I)=0  
+!===========================================================================
 #endif
       SUBROUTINE SORTAO(SCR,LSORT)
 C
@@ -173,8 +174,9 @@ C
 #include <ibtdef.h>
 C
       WRITE(LUPRI,1000)
- 1000 FORMAT(10X,'AO INTEGRAL SORT PROGRAM ACTIVE - RELEASE 86 '
-     *       ,'12 01',//,11X,'Sirius release Jan 1989/April 1994')
+ 1000 FORMAT(10X,'AO INTEGRAL SORT PROGRAM ACTIVE - RELEASE 86 12 01',
+     &      /10X,'Author: Bjoern Roos',
+     &     //10X,'Sirius release Jan 1989/April 1994')
 C
       IF (IRAT .NE. 2 .OR. IRAT2 .NE. 4) THEN
          WRITE(LUPRI,'(/,3(/A))') 
@@ -192,7 +194,10 @@ C
 C
 C     Read input
 C
+#ifdef TIMING
+! hjaaj: SETTIM/TIMING is not working on unix /Oct. 2004
       CALL SETTIM
+#endif
 C
 C     MINUS ONE AS A R*8 PACKED NUMBER
       XLABEL = D0
@@ -275,12 +280,12 @@ C
 C
       WRITE(LUPRI,1151) (NBAS(I),I = 1,NSYM)
       WRITE(LUPRI,1152) (KEEP(I),I = 1,NSYM)
- 1150 FORMAT(//10X,'NUMBER OF SYMMETRIES',I4,
-     *        /10X,'SYMMETRY SPECIES',20X,8I4)
- 1151 FORMAT(  10X,'NUMBER OF BASIS FUNCTIONS',11X,8I4)
- 1152 FORMAT(  10X,'SYMMETRIES DELETED',18X,8I4)
+ 1150 FORMAT(//' NUMBER OF SYMMETRIES',I4,
+     *        /' SYMMETRY SPECIES',20X,8I4)
+ 1151 FORMAT(  ' NUMBER OF BASIS FUNCTIONS',11X,8I4)
+ 1152 FORMAT(  ' SYMMETRIES DELETED',18X,8I4)
 C
-      WRITE(LUPRI,'(1P,/A,D10.2)')
+      WRITE(LUPRI,'(/A,1P,D10.2)')
      *   ' Threshold for omitting integrals            :',THRQ2
       IF (ABS(THRQ2-THRQD).GT.1.0D-3*THRQD) WRITE(LUPRI,'(1P,A,D10.2)')
      *   ' Threshold has been reset, default value was :',THRQD
@@ -300,10 +305,10 @@ C     TEST ON LIMITS OF NSYM
 C
       IF (NSYM.LT.1 .OR. NSYM.GT.8) THEN
          WRITE(LUPRI,1100) NSYM
-         CALL QUIT(' ')
+         CALL QUIT('INTSORT ERROR: invalid number of symmetries')
       END IF
- 1100 FORMAT(//10X,'NUMBER OF SYMMETRY SPECIES',I3,' IS NOT WITHIN'
-     *      ,' ACCEPTED LIMITS'/10X,'NO SORT WILL BE PERFORMED')
+ 1100 FORMAT(//' NUMBER OF SYMMETRY SPECIES',I5,' IS NOT WITHIN'
+     *      ,' ACCEPTED LIMITS'/' NO SORT WILL BE PERFORMED')
 C
 C     COMPUTE VECTOR IT(I) = I*(I-1)/2
 C
@@ -417,10 +422,10 @@ C     BATCH SIZE
       LBATCH=2*LINT+2
       LBATC2=IRAT*LBATCH
       WRITE(LUPRI,1200) NBATCH,LBATCH,LSORTX,NSTEP
- 1200 FORMAT(//10X,'NUMBER OF BATCHES',I8/
-     *         10X,'BATCH LENGTH     ',I8/
-     *         10X,'TOTAL SORT AREA  ',I8/
-     *         10X,'NUMBER OF STEPS  ',I8)
+ 1200 FORMAT(/' NUMBER OF BATCHES',I10/
+     *        ' BATCH LENGTH     ',I10/
+     *        ' TOTAL SORT AREA  ',I10/
+     *        ' NUMBER OF STEPS  ',I10)
 C
 C     NBP IS THE NUMBER OF BATCHES  LBATCH IS THE LENGTH OF EACH BATCH
 C
@@ -447,7 +452,7 @@ C
       NBP2=NBP2+NBP
       IF(NBP2.GT.NBATCH) NBP2=NBATCH
       WRITE(LUPRI,1130) ISTEP,NBP1,NBP2
- 1130 FORMAT(/10X,'STEP',I3,'  NBP RANGE',2I4)
+ 1130 FORMAT(/' STEP',I3,'  NBP RANGE',2I5)
 C
 C     INITIALIZE THE BATCHES
 C
@@ -650,11 +655,11 @@ C
       WRITE(LUPRI,1250) NINTAO,NINTSO,NCHAIN
       WRITE(LUPRI,1260) (NREC(I),I=1,NBATCH)
       WRITE(LUPRI,1261) (NSOINT(I),I=1,NBATCH)
- 1250 FORMAT(//10X,'NUMBER OF INTEGRALS READ',I12,
-     *        /10X,'NUMBER OF INTEGRALS SORTED',I10,
-     *        /10X,'NUMBER OF BUFFERS ON LUSORT',I9)
- 1260 FORMAT(//10X,'NUMBER OF RECORDS IN EACH CHAIN'/,(8X,10I7))
- 1261 FORMAT(/10X,'NUMBER OF INTEGRALS IN EACH CHAIN'/,(8X,10I7))
+ 1250 FORMAT(/' NUMBER OF INTEGRALS READ',I12,
+     *       /' NUMBER OF INTEGRALS SORTED',I10,
+     *       /' NUMBER OF BUFFERS ON LUSORT',I9)
+ 1260 FORMAT(/' NUMBER OF RECORDS IN EACH CHAIN'/,(10I8))
+ 1261 FORMAT(/' NUMBER OF INTEGRALS IN EACH CHAIN'/,(10I8))
       IF (DELAO) THEN
          CALL GPCLOSE(LUINTA,'DELETE')
          WRITE (LUPRI,*) 'AOTWOINT deleted.'
@@ -668,14 +673,16 @@ C     ORDER INTEGRALS IN EACH BLOCK CANONICALLY. ALSO SQUARE
 C
       CALL N_ORDER(SCR(1),LUSORT,LSORT)
       IF (IPRFIO .GE. 1) CALL FASTIO('STATUS')
+      CALL DARMOV(LUSORT)
 C
+#ifdef TIMING
       CALL TIMING(TCP,ECP,TIO,EIO)
       TCP=TCP/60
       TIO=TIO/60
       WRITE(LUPRI,1300) TCP,TIO
- 1300 FORMAT(//10X,'CPU TIME USED (MINUTES)',F9.3,
-     *        /10X,'I/O TIME USED (MINUTES)',F9.3)
-      CALL DARMOV(LUSORT)
+ 1300 FORMAT(//' CPU TIME USED (MINUTES)',F9.3,
+     *        /' I/O TIME USED (MINUTES)',F9.3)
+#endif
       RETURN
 C
 C     ERROR MESSAGE
@@ -714,10 +721,10 @@ C     *********** MAXIMUM SIZE OF OUTPUT BUFFER CORRESPONDS TO 28K BYTES
 C
 C     WRITE(LUPRI,1000)
       IF (IPRINT.GE.5) WRITE(LUPRI,1000)
- 1000 FORMAT(1H1,10X,'AO INTEGRAL ORDERING PROGRAM ACTIVE - '
-     *      ,'RELEASE 86 12 01',/1X,'SYMMETRY   BASIS     CHAIN LADX '
+ 1000 FORMAT(' AO INTEGRAL ORDERING PROGRAM ACTIVE - '
+     *      ,'RELEASE 86 12 01',/' SYMMETRY   BASIS     CHAIN LADX '
      *      ,'NRECX LPQ NPQ NBUF LBUF   LX   NOINTX NOINT IOUTCH'
-     *      ,' NRECUT IADUT'/3X,'BLOCK   FUNCTIONS   IN')
+     *      ,' NRECUT IADUT'/'   BLOCK   FUNCTIONS   IN')
       LBATC2=IRAT*LBATCH
       IF (LBATCH .GT. LRINT) THEN
          WRITE (LUPRI,'(/A/2(A,I8))')
