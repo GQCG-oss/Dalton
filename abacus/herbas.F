@@ -227,9 +227,9 @@ C
             ANO = .TRUE.
             BASTMP(1:5) = 'raf-r'
             ISTART = 6
-         ELSE IF (BASNAM(1:6) .EQ. 'sadlej') THEN
+         ELSE IF (BASNAM(1:11) .EQ. 'Sadlej-pVTZ') THEN
             SADLEJ = .TRUE.
-            BASTMP = 'sadlej'
+            BASTMP = 'Sadlej-pVTZ'
          ELSE IF (BASNAM(1:4) .EQ. 'NQvD') THEN
             NQVD = .TRUE.
             BASTMP = 'NQvD'
