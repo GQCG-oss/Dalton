@@ -29,7 +29,7 @@ cat > dpt_hbr_finm.info <<%EOF%
 #######################################################################
 cat > dpt_hbr_finm.mol <<%EOF%
 BASIS
-AhlrichsVDZ      
+Ahlrichs-VDZ      
 First-order relativistic corrections (frozen core)
 
     2    2  X  Y      1.00D-15
