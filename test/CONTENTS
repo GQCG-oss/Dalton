@@ -847,6 +847,20 @@ Wave Function:    MCSCF (CAS) = FCI / STO-3G
 Test Purpose:     B term (components) of Magnetic circular dichroism
 
 
+rsp_mnf
+-------
+Molecule:         O2
+Wave Function:    MCSCF (CAS) / ANO (Atombasis)
+Test Purpose:     Atomic mean field (AMFI) linear response spin-orbit
+
+
+rsp_mnfphosph
+-------------
+Molecule:         C2H4
+Wave Function:    MCSCF (CAS) / ANO (Atombasis)
+Test Purpose:     Atomic mean field (AMFI) spin-orbit and phosphorescence
+
+
 rsp_phosph
 ----------
 Molecule:         LiH

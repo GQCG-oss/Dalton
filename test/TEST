@@ -19,7 +19,7 @@ geoopt_preopt geoopt_prop geoopt_prop2 geoopt_redintmin geoopt_vrml \
 prop_ecd prop_exci prop_nolondon prop_spinspin prop_spinspin2 \
 prop_spinspin3 prop_spinspin4 prop_vibvcd rsp_2ndharm rsp_3rdharm \
 rsp_3rdmom rsp_dresqr rsp_ecp rsp_exci rsp_excipolar2 rsp_hyperpolar \
-rsp_lrso rsp_lrso2 rsp_phosph rsp_polar rsp_mcdbterm rsp_propave \
+rsp_lrso rsp_lrso2 rsp_mcdbterm rsp_mnf rsp_phosph rsp_polar rsp_propave \
 rsp_socorr rsp_solvhyper rsp_soppa1excinosymm rsp_soppa1excisymm \
 rsp_soppa3excinosymm rsp_soppa3excisymm rsp_soppafcnosymm rsp_soppafcsymm \
 rsp_soppapolar rsp_soppapolarnosymm rsp_soppapolarsymm rsp_sreslrso \
@@ -40,7 +40,7 @@ SHORT="$SHORT $SHORTCC"
 MEDIUM="energy_corehole energy_solv geoopt_cartmin geoopt_dckerr \
 geoopt_delintmin geoopt_exci geoopt_mp2froz geoopt_redintsad \
 geoopt_symbrk prop_nucquad prop_roa rsp_dckerr rsp_esr rsp_esr2 \
-rsp_solvesr walk_polar2"
+rsp_mnfphosph rsp_solvesr walk_polar2"
 #
 MEDIUMCC="cc_rsp_alpha cc_rsp_gamma2 cc_rsp_gammadirect cc_rsp_oddisp \
 cc_energy_triplet cc_rsp_twophotdirect"
