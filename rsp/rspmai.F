@@ -29,12 +29,16 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rspmai.F,v 1.3 2001-03-08 13:49:36 hjj Exp $
+C$Id: rspmai.F,v 1.4 2001-05-03 13:14:05 hjj Exp $
 C
 #include <single.h>
 #ifdef REVISIONLOG
 /* Comdeck revision_log */
 $Log: not supported by cvs2svn $
+Revision 1.3  2001/03/08 13:49:36  hjj
+- bugfix: define MZCONF(1) for cref vector qr and cr calculations
+  (was undefined if no totally symmetric perturbations!)
+
 Revision 1.2  2001/02/12 18:17:56  vebjornb
 First commit after CC merge
 
@@ -3237,11 +3241,6 @@ C
       IREFSY = LSYMRF
       DETERM = FLAG(27)
 C
-      MZCONF(1) = NCONRF
-C     ... MZCONF(1) is used in qr and cr for cref vector and
-C         it will not be defined in qr/cr modules if no
-C         perturbation operators of symmetry 1. /hjaaj Mar 2001
-C
 C     Find out if TDHF or not :
 C
       TDHF = (NASHT.EQ.0 .OR. (NASHT.EQ.1 .AND. NACTEL.EQ.1))
@@ -3271,6 +3270,20 @@ C
      *        NISHT,NASHT,NORBT,NBAST,NCREF,IREFSY
       IF (RSPSUP) WRITE (LUPRI,'(/A)')
      &   '@ Super symmetry will be used in perturbation symmetry 1'
+C
+C     Define MZCONF(1)
+C     ... MZCONF(1) is used in qr and cr for cref vector and
+C         it will not be defined in qr/cr modules if no
+C         perturbation operators of symmetry 1. /hjaaj Mar 2001
+C
+      IF (TDHF) THEN
+         MZCONF(1) = 0
+      ELSE
+         CALL SETCI2(NDETX,IREFSY,TRPFLG,0)
+C...     TRPFLG and not TRPLET because we must use determinants
+C        in qr and cr if any operator is triplet ! /hjaaj-may2001
+         MZCONF(1) = NDETX
+      END IF
 C
 C CHECK INFORMATION FROM LUSIFC WITH CORRESPONDING INFORMATION FROM
 C SIRINP
