@@ -1239,7 +1239,7 @@ C
 C
 c      DO 1700 IINDCT = 1, KINDCT
 c         IF ((FCLASS(1:1).EQ.'S').OR.(FCLASS(3:3).EQ.'d')) THEN
-c            IYCOOR = 3*(NSTBCT(IINDCT)-1) + 1
+c            IYCOOR = 3*(NSTBCT(INDCT)-1) + 1
 c         ELSE
 c            IYCOOR = 3*(NSTBCT(IINDCT)-1) + 2
 c         END IF
@@ -2453,7 +2453,7 @@ C     /* Deck frthfc*/
      &          ICRIRP(NCOOR,2),IDEP(ITHDDM,ITHDDM), 
      &          IDXTST(NMORDR,ITHDDM), ICRWMX(ITHDDM,4), ITLRGR(ITHDDM)
 C
-      iprint = 55
+c      iprint = 55
       NLDPST = NLDPMX
       DO 100 IC4 = 1, NDCOOR
       DO 100 IC3 = 1, IC4

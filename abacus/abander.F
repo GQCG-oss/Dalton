@@ -672,6 +672,7 @@ C  /* Deck numdr1 */
      &        NSPNBK
       CHARACTER*80 MBKLIN, PRTEXT
       CHARACTER*8 ANDER
+      CHARACTER*6 TXT
       DIMENSION MBKLIN(NMLINE)
       DIMENSION DERIV(NDERIV), FUVAL(NINTIN,NDIME), CSTART(3*NCOOR), 
      &          COOR(3*NCOOR), SYMCOR(NCOOR,NCOOR), 
@@ -907,7 +908,15 @@ C
      &           WORK(KBKPGD),WORK(KBKPHS),WORK(KLAST),LWRK,
      &           IWOFF,WRKDLM,IPRINT)
          END IF
-C     
+C
+C     *** Reevaluate restart parameter ***
+C
+         IF (RESTRT.AND.RSTDON) THEN
+            RESTRT = .FALSE.
+            RSTDON = .FALSE.
+         END IF
+C
+C
          IF ((NAORDR+NMORDR).GT.1) THEN
             IF (.NOT.DRYRUN) THEN
                IF (HARMON) THEN
@@ -921,13 +930,6 @@ C
      &                        IPRINT)
                END IF
 C
-c               IF (PREHES.AND..NOT.NRMCRD) THEN
-c                  KHSSIN = 1
-c                  KLAST  = KHSSIN + NCOOR**2
-c                  LWRK   = LWORK - KLAST + 1
-c                  CALL RDHESS(SYMCOR,CSTART,GRIREP,CHRCTR,WORK(KHSSIN),
-c     &                        WORK(KLAST),ICRIRP,LWRK,IPRINT,SYMDET)
-c               END IF
 C
 C              *** If we are not doing things in normal coordinates ***
 C              *** we need to save the symmetry coordinates.        ***
@@ -940,24 +942,27 @@ C
                   KEIGNV = IWOFF + 2
                END IF
 C
-               KEGNVC = KEIGNV + NCOOR
-               KHSMWT = KEGNVC + NCOOR**2
-               KMT1TP = KHSMWT + NCOOR*(NCOOR+1)/2
-               KMT2TP = KMT1TP + NCOOR**2
-               KAMASS = KMT2TP + NCOOR**2
-               KHTSTM = KAMASS + NATOMS
-               KNATYP = KHTSTM + NCOOR**2
-               KNMSSP = KNATYP + NATOMS
-               KCRTMP = KNMSSP + NCOOR
-               KLAST  = KCRTMP + NCOOR
+               IF (.NOT.RESTRT) THEN
+                  KEGNVC = KEIGNV + NCOOR
+                  KHSMWT = KEGNVC + NCOOR**2
+                  KMT1TP = KHSMWT + NCOOR*(NCOOR+1)/2
+                  KMT2TP = KMT1TP + NCOOR**2
+                  KAMASS = KMT2TP + NCOOR**2
+                  KHTSTM = KAMASS + NATOMS
+                  KNATYP = KHTSTM + NCOOR**2
+                  KNMSSP = KNATYP + NATOMS
+                  KCRTMP = KNMSSP + NCOOR
+                  KLAST  = KCRTMP + NCOOR
 C
-               LWRK   = LWORK  - KLAST + 1
-               IF (KLAST.GT.LWORK)CALL QUIT('Memory exceeded in MKNRMC')
-               CALL MKNRMC(SYMCOR,CSTART,TRNCCR,TRAMSS,WORK(KEIGNV),
-     &              WORK(KEGNVC),WORK(KHSMWT),WORK(KMT1TP),WORK(KMT2TP),
-     &              WORK(KAMASS),DKIN,WORK(KHTSTM),FREQ,RNNORM,
-     &              WORK(KCRTMP),WORK(KLAST),ICRIRP,WORK(KNATYP),
-     &              WORK(KNMSSP),LWRK,IPRINT)
+                  LWRK   = LWORK  - KLAST + 1
+                  IF (KLAST.GT.LWORK)
+     &                        CALL QUIT('Memory exceeded in MKNRMC')
+                  CALL MKNRMC(SYMCOR,CSTART,TRNCCR,TRAMSS,WORK(KEIGNV),
+     &                 WORK(KEGNVC),WORK(KHSMWT),WORK(KMT1TP),
+     &                 WORK(KMT2TP),WORK(KAMASS),DKIN,WORK(KHTSTM),FREQ,
+     &                 RNNORM,WORK(KCRTMP),WORK(KLAST),ICRIRP,
+     &                 WORK(KNATYP),WORK(KNMSSP),LWRK,IPRINT)
+               END IF
 C
 C              *** Debug printing. *** 
 C
@@ -986,13 +991,6 @@ C
          END IF
       END IF
 C
-C     *** Reevaluate restart parameter ***
-C
-      IF (RESTRT.AND.RSTDON) THEN
-         RESTRT = .FALSE.
-         RSTDON = .FALSE.
-      END IF
-C
       IF (NRMCRD .AND. ((NAORDR+NMORDR).GT.2)) THEN
          FRSTNM = .FALSE.
 C
@@ -1015,6 +1013,20 @@ C
             IDIMIN = 2
             CALL RERSTR(FUVAL,SYMCOR,RNNORM,FREQ,ICRIRP,NDIME,NINTIN,
      &                  KEND,IDIMAX,IDIMIN,LURSTR,IPRINT,RSTDON)
+
+C     
+C           *** Writing to sepctro file if requested. ***
+C
+            IF (SPECTR) THEN
+               NTIME = 1
+               IF (NRMCRD) THEN
+                  TXT  = 'normal'
+               ELSE
+                  TXT  = 'cartes'
+               END IF
+               CALL WRISPC(FREQ,RNNORM,DUMMY,DUMMY,TXT,NCOOR,NDCOOR,
+     &                     NTIME,IPRINT)
+            END IF
          ELSE
 C
 C           *** Open restart file. A 1 first in the file ***
@@ -3408,7 +3420,8 @@ C
          END DO
          WRITE (LUPRI,'(A)') '                                        '
       END DO
-C
+
+C     
 C     *** Writing to sepctro file if requested. ***
 C
       IF (SPECTR) THEN
@@ -5697,8 +5710,8 @@ C
 C     *** If only numerical derivatives of energy then ***
 C     *** the molecule is free to rotate.              ***
 C
-c      IF ((NAORDR.EQ.0).AND.(NMORDR.NE.1).AND.(.NOT.NPRPDR)) 
-c     &                                         NOMOVE = .FALSE.
+      IF ((NAORDR.EQ.0).AND.(NMORDR.NE.1).AND.(.NOT.NPRPDR)) 
+     &                                         NOMOVE = .FALSE.
 C
 C     *** Different circumstances where molecule ***
 C     *** is not allowed to rotate.              ***
