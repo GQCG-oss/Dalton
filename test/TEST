@@ -27,7 +27,7 @@ rsp_sresqr walk_gradex walk_image walk_modeflw walk_polar walk_vibave \
 walk_vibave2 energy_zmat r12_sym dpt_h2s prop_ctocd prop_soppactocd \
 rsp_ctocdhyper prop_spinspin5 prop_nolondon_soppacc rsp_soppaccexci \
 rsp_soppaccpolar prop_newtrasoppa prop_newtrasoppacc prop_newtramcscf \
-dft_qr_sym"
+dft_qr_sym energy_hsrohf energy_hsrohf_qc"
 
 #
 SHORTCC="cc_rsp_alpha2 cc_rsp_beta cc_rsp_beta2 cc_rsp_betafreq \
