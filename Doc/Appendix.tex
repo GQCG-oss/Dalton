@@ -29,8 +29,8 @@ Universit\"{a}t Freiburg, Switzerland}
 
 \noindent 
 {\bf Purpose:} Reads the Formatted Checkpoint file of Gaussian  
-     and creates a DALTON.HES file with Hessian and Atomic coordinates
-     as well as a dummy MOLECULE.INP file.
+     and creates a \verb|DALTON.HES| file with Hessian and Atomic coordinates
+     as well as a dummy \verb|MOLECULE.INP| file.
 
 \smallskip
 \noindent
@@ -47,14 +47,14 @@ Universit\"{a}t Freiburg, Switzerland}
 
 If symmetry is used: Hessian\index{Hessian} will be in standard(Gaussian) orientation,
         but geometry will be in input orientation. So do not use the
-        MOLECULE.INP file from this utility, neither the coordinates in the
-        end of DALTON.HES.
+        \verb|MOLECULE.INP| file from this utility, 
+        neither the coordinates in the end of \verb|DALTON.HES|.
         Use either the standard-orientation from Gaussian outputfile, or
         use the converted checkpointfile (created with the command
         "formchk checkpointfilename convertedfilename") as an input for
         this program. Anyway, this will not lead to the geometry you 
         specified in the input, and the Hessian will be incompatible with the
-        calculation you want to do in DALTON. (If this was already carried
+        calculation you want to do in \siraba. (If this was already carried
         out at the input orientation ...)
 
 The only way to get the geometry orientation you want is to turn
@@ -110,7 +110,7 @@ nuclear shielding calculations.
 \noindent
 {\bf Commandline:} odcprog
 
-Requires the existence of a readmg.dat file, and $n$ DALTON.CM files,
+Requires the existence of a readmg.dat file, and $n$ \verb|DALTON.CM| files,
 where $n$ is the number of finite field output files.
 
 \smallskip
@@ -133,12 +133,12 @@ where
 \item[ISSYM] Site symmetry of the atom for which the shielding
                polarizabilities are required
 \item[NIST] First atom of which shielding polarizabilities must be computed
-               (of those in  the DALTON.CM files)
+               (of those in  the \verb|DALTON.CM| files)
 \item[NLAST] Last atom of which shielding polarizabilities must be computed
-               (of those in  the DALTON.CM files)
+               (of those in  the \verb|DALTON.CM| files)
 \item[NSTEP] Step to go from nist to nlast in the do-loop for
                shielding polarizabilities
-\item[FILEn] $n$th DALTON.CM file (current name and location)
+\item[FILEn] $n$th \verb|DALTON.CM| file (current name and location)
 \end{itemize}
 
 \smallskip
@@ -241,8 +241,7 @@ Need     x  0  z
 %\noindent
 %{\bf Commandline:} arturo
 %
-%Requires the existence of a readmg.dat file, and n DALTON.CM files,
-%where n is the number of finite field output files.
+%Requires the existence of 
 %
 %\smallskip
 %\noindent

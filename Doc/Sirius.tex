@@ -1,12 +1,12 @@
-\chapter{\label{chap:inpref} Molecular wave functions, SIRIUS }
+\chapter{\label{chap:inpref} Molecular wave functions, \sir }
 
-\section{\label{sec:ref-notes} General notes for the SIRIUS input reference
+\section{\label{sec:ref-notes} General notes for the \sir \ input reference
 manual}
 
-SIRIUS is the part of the code that computes the wave function.
+\sir is the part of the code that computes the wave function.
 
 The following sections contain a list of all generally relevant keywords to
-SIRIUS, only currently inactive keywords and some special debug
+\sir, only currently inactive keywords and some special debug
 options are omitted.
 
 \begin{enumerate}
@@ -272,8 +272,8 @@ input.
 \item \hspace{2em} \quotekw{ AFTER GRADIENT}
 \end{enumerate}
 
-\item[\Key{TITLE}]
-  \verb"READ (LUINP,'(A)') TITLE(NTIT)" \\
+\item[\Key{TITLE}] 
+  \verb"READ (LUINP,'(A)') TITLE(NTIT)" 
   Any number of title lines (until next line beginning with
   \quotekw{.} or \quotekw{*} prompt).
   Up to 6 title lines will be saved and used in the output, additional
