@@ -324,14 +324,16 @@ C     No active orbitals
 C
       IF (NASHT .EQ. 0) NODV = .TRUE.
       IF (NASHT .LT. 2 .OR. HSROHF) THEN
-         RUNPTR = .FALSE.
-         RUNSOR = .FALSE.
          NOPV   = .TRUE.
          IF (HSROHF .AND. (DIPDER .OR. MOLHES)) THEN
             WRITE(LUPRI,'(/A)') ' Dipole gradients and molecular '//
      &           'not implmented for high-spin restricted open-shell HF'
             CALL QUIT('Option not available for HSROHF in TWOEXP')
          END IF 
+      END IF
+      IF (NOPV) THEN
+         RUNPTR = .FALSE.
+         RUNSOR = .FALSE.
       END IF
 C
 C     *******************************************************
