@@ -1635,7 +1635,7 @@ C
        RETURN
       END
 C  /* Deck getsd */
-      SUBROUTINE GETSD(DERIV,CMO,TD,WORK,LWORK,IATOM,DIAGTD,AOMAT,
+      SUBROUTINE GETSD(DERIV,CMO,TD,WORK,LWORK,IATOM,DIAGTD,
      &                 KEY,DOTD,IPRINT,INTPRI)
 C
 C     This subroutine calculates the AO-differentiated overlap matrices
@@ -1652,14 +1652,14 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-      LOGICAL DERIV(3), AOMAT, DIAGTD, DIVIDE, DOTD
+      LOGICAL DERIV(3), DIAGTD, DIVIDE, DOTD
       PARAMETER (D1 = 1.0D0)
       CHARACTER*4 KEY
 #include <abainf.h>
 #include <inforb.h>
       DIMENSION CMO(*), TD(N2BASX,3), WORK(LWORK)
       CALL QENTER('GETSD')
-      IF (IPRINT .GT. 05 .OR. AOMAT) THEN
+      IF (IPRINT .GT. 05) THEN
          CALL TITLER('Output from GETSD','*',103)
       END IF
       IF (IPRINT .GT. 05) THEN
@@ -1667,7 +1667,6 @@ C
          WRITE (LUPRI, '(A,I10)') ' LWORK ', LWORK
          WRITE (LUPRI, '(A,I5)')  ' IATOM ', IATOM
          WRITE (LUPRI, '(A,L5)')  ' DIAGTD', DIAGTD
-         WRITE (LUPRI, '(A,L5)')  ' AOMAT ', AOMAT
       END IF
       CALL DZERO(TD,3*N2BASX)
       CALL ONEDRL(KEY,TD(1,1),TD(1,2),TD(1,3),IATOM,
@@ -1689,7 +1688,7 @@ C
       IF (KGETSD.GT.LWORK) CALL STOPIT('GETSD',' ',KGETSD,LWORK)
       DO 100 ICOOR = 1, 3
          IF (DERIV(ICOOR)) THEN
-            IF (IPRINT .GE. 10 .OR. AOMAT) THEN
+            IF (IPRINT .GE. 10) THEN
                IF (ICOOR. EQ. 1) THEN
                   CALL TITLER('Differentiation in x direction',' ',200)
                ELSE IF (ICOOR. EQ. 2) THEN
@@ -1701,14 +1700,13 @@ C
             CALL ONETRA(CMO,WORK(KSMOSQ),TD(1,ICOOR),WORK(KGETSD),
      &                  LGETSD,IATOM,ICOOR,IPRINT)
             CALL DCOPY(N2ORBX,WORK(KSMOSQ),1,TD(1,ICOOR),1)
-            IF (KEY .EQ. 'SMAT' .OR. KEY .EQ. 'OMAT') THEN
-               DIVIDE = .TRUE.
-            ELSE
-               DIVIDE = .FALSE.
-            END IF
             IF (DOTD) THEN
-               CALL GETTD(TD(1,ICOOR),NORBT,DIAGTD,
-     &                    DIVIDE,IPRINT)
+               IF (KEY .EQ. 'SMAT' .OR. KEY .EQ. 'OMAT') THEN
+                  DIVIDE = .TRUE.
+               ELSE
+                  DIVIDE = .FALSE.
+               END IF
+               CALL GETTD(TD(1,ICOOR),NORBT,DIAGTD,DIVIDE,IPRINT)
                IF (IPRINT .GE. 10) THEN
                   CALL HEADER('TD matrix',-1)
                   CALL OUTPUT(TD(1,ICOOR),1,NORBT,1,NORBT,NORBT,NORBT,
