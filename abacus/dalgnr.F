@@ -850,7 +850,11 @@ C     We need to read in starting geometry before doing the vibrational
 C     analysis in a ROA calculation, K.Ruud and G.Hangartner, Oct.-96
 C
             WRINDX = .TRUE.
-            IF (IWKTYP .EQ. 6) THEN
+            IF (IWKTYP .EQ. 6 .AND. NUMHES) THEN
+               CALL ABAINP('**FINAL',WORK(2),LMWORK)
+               CALL VIBCTL(WORK,LMWORK)
+            ELSE IF (IWKTYP .EQ. 6) THEN
+ckr            IF (IWKTYP .EQ. 6) THEN
                RDINPC = .FALSE.
                SOLVNT = .FALSE.
                CALL EXEHER(WORK,LMWORK,WRKDLM)
