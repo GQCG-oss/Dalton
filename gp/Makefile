@@ -8,13 +8,16 @@ F_CPPS = $(F_OBJS:.o=.i)
 
 pre: $(F_CPPS)
 
+ftnchek: pre
+	ftnchek $(CHEKFLAGS) *.i > gp.ftnchek
+
 all: libgp.a
 
 libgp.a: $(F_OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 
 clean : 
-	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a
+	$(RM) -f *.o *~ *.lst *.i *.L i.*.f v.i.*.f *.a
 
 depend:
 	../tools/check_depend $(INCLUDE_DIR) > Makefile.depend

@@ -9,11 +9,14 @@ F_CPPS = $(F_OBJS:.o=.i)
 
 pre: $(F_CPPS)
 
+ftnchek: pre
+	ftnchek $(CHEKFLAGS) *.i > dft.ftnchek
+
 libdft.a: $(F_OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 
 clean :
-	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a
+	$(RM) -f *.o *~ *.lst *.i *.L i.*.f v.i.*.f *.a
 
 depend:
 	../tools/check_depend $(INCLUDE_DIR) > Makefile.depend

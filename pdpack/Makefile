@@ -8,6 +8,9 @@ F_CPPS = $(F_OBJS:.o=.i)
 
 pre: $(F_CPPS)
 
+ftnchek: pre
+	ftnchek $(CHEKFLAGS) *.i > pdpack.ftnchek
+
 libpdpack.a: $(F_OBJS) $(PDPACK_EXTRAS)
 	 $(AR) $(ARFLAGS) $@ $?
 
@@ -17,7 +20,7 @@ eispack.o: eispack.F
 	$(F77) $(SAFEOPTFLAGS) -c $*.F
 
 clean :
-	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a
+	$(RM) -f *.o *~ *.lst *.i *.L i.*.f v.i.*.f *.a
 
 depend:
 	../tools/check_depend $(INCLUDE_DIR) > Makefile.depend

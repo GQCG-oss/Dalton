@@ -62,6 +62,9 @@ cc3_gmat.o cc3_bfmat.o
 F_CPPS = $(F_OBJS:.o=.i)
 
 pre: $(F_CPPS)
+
+ftnchek: pre
+	ftnchek $(CHEKFLAGS) *.i > cc.ftnchek
   
 # cc_pckcr8.o    cc_pckutil.o   
 io : crayio.o
@@ -70,7 +73,7 @@ libcc.a: $(F_OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 
 clean : 
-	$(RM) -f *.o *~ *.f *.lst *.i tags TAGS *.a
+	$(RM) -f *.o *~ *.lst *.i *.L i.*.f v.i.*.f *.a
 
 tags:;          $(RM) -f tags ; etags  *.F
 

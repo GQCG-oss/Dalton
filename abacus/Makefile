@@ -26,6 +26,9 @@ F_CPPS = $(F_OBJS:.o=.i) dalton.i
 
 pre: $(F_CPPS)
 
+ftnchek: pre
+	ftnchek $(CHEKFLAGS) *.i > abacus.ftnchek
+
 libabacus.a: $(F_OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 
@@ -36,7 +39,7 @@ slave : herpar.o
 linuxmem : linux_mem_allo.o
 
 clean :	
-	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a
+	$(RM) -f *.o *~ *.lst *.i *.L i.*.f v.i.*.f *.a
 
 depend:
 	../tools/check_depend $(INCLUDE_DIR) > Makefile.depend
