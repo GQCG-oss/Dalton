@@ -2032,7 +2032,7 @@ C     Punch MOLECULE input with updated coordinates to LUMOL
 C     (And DALTON.OUT if manual is set.)
 C
       IF (MANUAL) THEN
-         WRITE (LUPRI,'(5X,A,)') 'Molecular geometry as requested:'
+         WRITE (LUPRI,'(5X,A)') 'Molecular geometry as requested:'
          WRITE (LUPRI,'(5X,A,I5)') 'Number of lines printed', NMLINE 
       END IF
       CALL GPOPEN(LUMOL,'MOLECULE.INP','OLD',' ','FORMATTED',IDUMMY,
