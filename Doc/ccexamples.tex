@@ -1,16 +1,17 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Examples of coupled cluster calculations}\label{sec:ccexamples}
+\chapter{Examples of coupled cluster calculations}
+\label{sec:ccexamples}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-We collect in this Chapter a few examples of input files (DALTON.INP) 
+We collect in this Chapter a few examples of input files (\verb|DALTON.INP|) 
 for calculations one might want to carry 
 out with the \cc\ modules of the Dalton program.
 Other examples may be found in the test suite. 
 
 It should be stressed that in difference to the \resp \ code,
-all the response modules in \cc \ can be used 
-simultaneously---assuming they are available for all 
-chosen wavefunction model(s).
+all modules in \cc \ can be used 
+simultaneously---assuming they are all implemented
+for the chosen wavefunction model(s).
 For instance,  linear, quadratic and cubic response functions 
 can be obtained within the same calculation.
 
@@ -153,7 +154,7 @@ ZDIPLEN ZDIPLEN ZDIPLEN ZDIPLEN
  6
 *END OF INPUT
 \end{verbatim}
-Obviously, linear, quadratic and cubic response modules can be also 
+Obviously, linear, quadratic and cubic response modules can also be
 run separately. 
 
 \section{Excitation energies and oscillator strengths}
