@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abavib.F,v 1.7 2001-10-01 13:22:11 vebjornb Exp $
+C$Id: abavib.F,v 1.8 2001-10-08 18:26:40 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -2831,7 +2831,6 @@ C  /* Deck vibv3 */
 #include <mxcent.h>
 #include <mxorb.h>
 #include <codata.h>
-      LOGICAL NMODIF
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, D24 = 24.0D0, D36 = 36.0D0)
       DIMENSION EVEC(NCORD,NCORD), FREQAU(NCORD), 
