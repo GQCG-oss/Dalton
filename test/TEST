@@ -145,7 +145,7 @@ myprint(){
 TESTparams="$0 $*"
 help=""
 keep="false"
-DALTON="../dalton"
+DALTON="`pwd`/../dalton"
 paramlist=""
 reftest=""
 bell=""
@@ -231,6 +231,16 @@ if [  -s $listing ]; then
    fi
 fi
 
+# create a unique directory for test output /hjaaj
+if [ "$reftest" = "true" ]; then
+   testdir=`pwd`
+else
+   testdir="`date +'%Y-%m-%dT%H:%M'`-testjob"
+   mkdir $testdir
+   cp functions $testdir
+   cd $testdir
+fi
+
 myprint "#####################################################################"
 myprint "                          DALTON test suite"
 myprint "#####################################################################"
@@ -240,6 +250,7 @@ myprint "dalton script         : $DALTON"
 myprint "parameter list passed : $paramlist"
 myprint "test listing          : $listing"
 myprint "test cases            : $testcase"
+myprint "test job directory    : $testdir"
 
 #########################################################################
 # loop over test cases:
@@ -253,8 +264,8 @@ do
   myprint "###########################################################"
   myprint "start now with test $item:"
   myprint "-----------------------------------------------------------"
-  chmod +x ./$item
-  ./$item
+  chmod +x ../$item
+  ../$item
   if [ -f $item.info ]; then
     cat $item.info | tee -a $listing
   fi
