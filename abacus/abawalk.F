@@ -1051,6 +1051,7 @@ C
      *                     IPOINT,IPRWLK)
             END IF
             CALL WLKMOL(COOR)
+            ERGSEC = 0.0D0
             IF (WFPRED) CALL WLKSAV(ERGSEC,COOR,WORK,LWORK)
          END IF
 C
@@ -4876,13 +4877,11 @@ C     *****************************
 C
       ERGSEC = DDOT(NINTER,GRDDIA,1,STPDIA,1)
      *       + DP5*DV3DOT(NINTER,STPDIA,EVAL,STPDIA)
-      IF (IPRINT .GT. 2) THEN
-         WRITE (LUPRI,'(/A,F25.15)') ' Predicted energy change', ERGSEC
-      END IF
 C
 C     ***** Print *****
 C
       IF (IPRINT .GT. 2) THEN
+         WRITE (LUPRI,'(/A,F25.15)') ' Predicted energy change', ERGSEC
          CALL HEADER('Step in diagonal representation'//
      *               ' (eigenvalue order)',1)
          CALL OUTPUT(STPDIA,1,1,1,NVEC,1,NCART,1,LUPRI)
