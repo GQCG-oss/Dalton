@@ -60,6 +60,9 @@ c     LEBMIN is in the common block but is used only internall in dftgrd
       DFTHES = .FALSE.
       DFTHRS = .FALSE.
       NOPRUN = .FALSE.
+      DOVWN3 = .FALSE.
+      DOVWNI = .TRUE.
+      RETURN
       END
 C
 C /* Deck dftexc */
@@ -196,6 +199,7 @@ C
 #include <orgcom.h>
 #include <maxorb.h>
 #include <infpar.h>
+#include <expopt.h>
 C
       INTEGER A, B
       LOGICAL DOERG, DOGRD, DODRC, DOVWN, DOBCK, DOLYP, 
@@ -234,7 +238,6 @@ C
 C
       IF (DOERG) EXCTRO = DP5*DDOT(NBAST*NBAST,DMAT,1,EXCMAT,1)
       IF (DOGRD) CALL DZERO(GRADFT,MXCOOR)
-c      intpri = 10000
 C
       FROMVX = DOGGA .AND. DFTPOT
 C
@@ -385,8 +388,15 @@ C              Exchange-correlation contribution to molecular gradient
 C              =======================================================
 C
                IF (DOGRD) THEN
-                   CALL DFTFRC(DMAT,GSO(KSO0),GSO(KSO1),GSO(KSO2),
-     &                         VXC,VXB,RHG(1),RHG(2),RHG(3),DOGGA)
+                   IF (EXPGRA) THEN
+                      CALL DFTEXP(DMAT,GSO(KSO0),GSO(KSO1),GSO(KSO2),
+     &                            VXC,VXB,RHG(1),RHG(2),RHG(3),
+     &                            CORX(IPNT),CORY(IPNT),CORZ(IPNT),
+     &                            DOGGA)
+                   ELSE
+                      CALL DFTFRC(DMAT,GSO(KSO0),GSO(KSO1),GSO(KSO2),
+     &                            VXC,VXB,RHG(1),RHG(2),RHG(3),DOGGA)
+                   END IF
                END IF
 C
 C              London contributions to Kohn-Sham matrix 
@@ -462,11 +472,13 @@ C
          END IF
       END IF 
       IF (DOLND) THEN
+         DO K = 1, 3
          DO I = 1, NBAST
          DO J = 1, I - 1 
-            AVERAG = DP5*(EXCMAT(I,J,1) - EXCMAT(J,I,1))
-            EXCMAT(I,J,1) =   AVERAG 
-            EXCMAT(J,I,1) = - AVERAG 
+            AVERAG = DP5*(EXCMAT(I,J,K) - EXCMAT(J,I,K))
+            EXCMAT(I,J,K) =   AVERAG 
+            EXCMAT(J,I,K) = - AVERAG 
+         END DO
          END DO
          END DO
       END IF 

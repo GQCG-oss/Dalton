@@ -480,7 +480,7 @@ C
      &            JSTRA,JSTRB,TCONAB,TPRAB,GENAB,12,THRESH,MAXDER,
      &            MULA,MULB,NODCAB,NORTAB,NINDAB,NPNTAB,NREDAB,
      &            KHKTA,KHKTB,EXPECT,DIRFCK,WORK(KFREE),LFREE,
-     &            RPRIAB,RCNTAB,IPRINT)
+     &            RPRIAB,RCNTAB,IDUMMY,IPRINT)
       IF (ISUM(NODCAB,NUCTAB,1) .EQ. 0) GOTO 100
 C
 C     Electron 2
@@ -501,7 +501,7 @@ C
      &            JSTRC,JSTRD,TCONCD,TPRCD,GENCD,34,THRESH,MAXDER,
      &            MULC,MULD,NODCCD,NORTCD,NINDCD,NPNTCD,NREDCD,
      &            KHKTC,KHKTD,EXPECT,DIRFCK,WORK(KFREE),LFREE,
-     &            RPRICD,RCNTCD,IPRINT)
+     &            RPRICD,RCNTCD,IDUMMY,IPRINT)
       IF (ISUM(NODCCD,NUCTCD,1) .EQ. 0) GOTO 100
 C
 C
@@ -610,6 +610,7 @@ C
 #include <dorps.h>
 #include <nuclei.h>
 #include <twosta.h>
+#include <expopt.h>
 #ifdef PRG_DIRAC
 #include <dcbgrd.h>
 #else
@@ -690,7 +691,7 @@ c     between AB and CD, and must therefore not be included in GAB/YAB matrix.
 c     HKABCD = FMULT(IBTAND(MULAB,MULCD)). /Feb 19 1998 - jth
       HKABCD = D1
       IF (SPNORB) HKABCD = - HKABCD
-      IF (UNDIFF .OR. LONDON .OR. SPNORB) THEN
+      IF (UNDIFF .OR. LONDON .OR. SPNORB .OR. EXPGRA) THEN
          DOX = .TRUE.
          DOY = .TRUE.
          DOZ = .TRUE.
@@ -835,7 +836,7 @@ C             ==================================================
 C
               CALL EXCSGN(COEFCD,JMAXC,JMAXD,NHKTC,NHKTD,NUCCD,
      &                    MXUCCD,ICD0X,ICD0Y,ICD0Z,MAXDER,LONDON,
-     &                    SPNORB,DIA2SO,ISYMT,IPRINT)
+     &                    SPNORB,DIA2SO,EXPGRA,ISYMT,IPRINT)
 C
 C             Check whether this integral gives zero contribution
 C             ===================================================
@@ -858,7 +859,7 @@ C
      &                 (ICENTA .NE. 0)
               ONECEN = ONECEN .AND. .NOT. DOGAB
               IF (ONECEN) THEN
-                IF (MAXDER .EQ. 0) THEN
+                IF (MAXDER .EQ. 0 .OR. EXPGRA) THEN
                   IF (IBTAND(JMAX0,1).EQ.1)              GO TO 100
                 ELSE
                   IF (PERTUR .OR. EXPECT .OR. LONDON)    GO TO 100
@@ -921,7 +922,7 @@ C
      &                   SIGNAX,SIGNAY,SIGNAZ,SIGNBX,SIGNBY,SIGNBZ,
      &                   SIGNCX,SIGNCY,SIGNCZ,SIGNDX,SIGNDY,SIGNDZ,
      &                   NCCINT,MAXDER,EXPECT,LONDON,SPNORB,DIA2SO,
-     &                   ZFS2EL,IATOM,MULTE,NINTYP,IPRINT)
+     &                   ZFS2EL,EXPGRA,IATOM,MULTE,NINTYP,IPRINT)
 C
 C            ************************
 C            ***** AO integrals *****
@@ -949,7 +950,7 @@ C
      &                   SIGNT,INDHSQ,IODDHR,INDHER,LMNVLS,NINDAB,
      &                   NINDCD,NPNTAB(1,1,NSYMR),NPNTCD(1,1,NSYMS),
      &                   NREDAB,NREDCD,IDUMMY,DUMMY,DUMMY,DUMMY,
-     &                   NSOINT)
+     &                   IDUMMY,IDUMMY)
 C
 C            ********************************
 C            ***** Process AO integrals *****
@@ -1030,11 +1031,11 @@ C
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <aovec.h>
-#include <nuclei.h>
       DIMENSION GABM(NBASIS,NBASIS),
      &          SO(*),IPNTNO(4,*),
      &          IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2),NINDCD(NORBC*NORBD,2)
+#include <nuclei.h>
 #include <twocom.h>
 #include <symmet.h>
 C
@@ -1111,7 +1112,6 @@ C*****************************************************************************
 #include <aovec.h>
 #include <maxorb.h>
 #include <mxcent.h>
-#include <nuclei.h>
       PARAMETER(D1 = 1.0D0)
       INTEGER A,B,C,D
       LOGICAL SUSCEP
@@ -1124,6 +1124,7 @@ C*****************************************************************************
 #include <twocom.h>
 #include <expcom.h>
 #include <symmet.h>
+#include <nuclei.h>
 #include <blocks.h>
 C
 #include <ibtfun.h>

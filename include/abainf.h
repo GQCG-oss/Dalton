@@ -13,7 +13,8 @@ C
      &        SUPMAT, MOLGFA, OPTROT, SPINRO, MASSVE,
      &        DARWIN, ABALNR, VROA,   NOCMC,  EXPFCK,
      &        RAMAN,  QUADRU, NQCC,   HYPER,  VERDET,
-     &        MCD,    HELFEY, LINCPL, ABASOP, SKIPAB
+     &        MCD,    HELFEY, LINCPL, ABASOP, SKIPAB,
+     &        EXPGRD
       COMMON /ABAINF/ NTCSY(8), NSCSY(8), IPRDEF, NWNABA, 
      &                MOLGRD, MOLHES, DIPDER, POLAR,  TSTINP,
      &                VIB,    RESTAR, DOWALK, GDALL,  CCSD,
@@ -23,4 +24,5 @@ C
      &                SUPMAT, MOLGFA, OPTROT, SPINRO, MASSVE,
      &                DARWIN, ABALNR, VROA,   NOCMC,  EXPFCK,
      &                RAMAN,  QUADRU, NQCC,   HYPER,  VERDET,
-     &                MCD,    HELFEY, LINCPL, ABASOP, SKIPAB
+     &                MCD,    HELFEY, LINCPL, ABASOP, SKIPAB,
+     &                EXPGRD

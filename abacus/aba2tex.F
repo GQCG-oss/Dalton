@@ -231,6 +231,8 @@ C
          MAXDIF = 2
       ELSE IF ((MOLGRD .OR. DIPDER) .AND. .NOT. HELFEY) THEN
          MAXDIF = 1
+      ELSE IF (EXPGRD) THEN
+         MAXDIF = 2
       ELSE
          SKIP = .TRUE.
       END IF
@@ -281,6 +283,7 @@ C
 #include <taymol.h>
 #include <taysol.h>
 #include <energy.h>
+#include <expopt.h>
 C
       PARAMETER (MXDMAT = 2*MXCOOR)
       LOGICAL DDFOCK, NOBLK
@@ -509,7 +512,7 @@ C
          END IF
 #endif
 CTROND
-         IF (.NOT.DOERI) THEN
+         IF (.NOT.DOERI .AND..NOT.EXPGRA) THEN
             CALL SKLFCK(WORK(KFMAT),WORK(KHESEE),WORK(KLAST),LWRK,
      &                  IPRINT,.FALSE.,
      &                  DDFOCK,.TRUE.,.FALSE.,NODV,MAXDIF,.FALSE.,NDMAT,
@@ -525,32 +528,38 @@ C
          IF (KLAST .GT. LWORK) 
      &        CALL STOPIT('TWOLOP','PRINT ',KLAST,LWORK)
          IF (IPRINT .GT. 0) THEN
-            CALL HEADER('Two-electron integral gradient',-1)
-            CALL PRIGRD(GRADEE,WORK(KCSTRA),WORK(KSCTRA))
-            CALL HEADER('Potential energy (NN + NE + EE) gradient',-1)
-            CALL ZERGRD
-            CALL ADDGRD(GRADNN)
-            CALL ADDGRD(GRADNA)
-            CALL ADDGRD(GRADEE)
-            CALL PRIGRD(GRDMOL,WORK(KCSTRA),WORK(KSCTRA))
-            CALL HEADER('Molecular gradient',-1)
-            CALL ADDGRD(GRADFS)
-            CALL ADDGRD(GRADKE)
-            IF (SOLVNT) THEN
-               CALL ADDGRD(GSOLTT)
-               CALL ADDGRD(GSOLNN)
-            END IF
-            CALL PRIGRD(GRDMOL,WORK(KCSTRA),WORK(KSCTRA))
-            NCDEP3 = 3*NUCDEP
-            GRDNRM = DDOT(NCDEP3,GRDMOL,1,GRDMOL,1)
-            GRDNRM = SQRT(GRDNRM)
-            WRITE (LUPRI,'(/19X,A,1P,E10.2)')
-     *         'Molecular gradient norm:', GRDNRM
-            CALL ZERGRD
-            IF (MOLHES) THEN
-               CALL HEADER('Two-electron integral Hessian',-1)
-               CALL PRIHES(WORK(KHESEE),'CENTERS',WORK(KCSTRA),
-     &                     WORK(KSCTRA))
+            IF (EXPGRA) THEN
+               CALL HEADER('Alpha gradient',-1)
+               WRITE (LUPRI,'(2X,5F12.8)') (ALPGRD(I),I=1,NPBAS)
+            ELSE
+               CALL HEADER('Two-electron integral gradient',-1)
+               CALL PRIGRD(GRADEE,WORK(KCSTRA),WORK(KSCTRA))
+               CALL HEADER
+     &              ('Potential energy (NN + NE + EE) gradient',-1)
+               CALL ZERGRD
+               CALL ADDGRD(GRADNN)
+               CALL ADDGRD(GRADNA)
+               CALL ADDGRD(GRADEE)
+               CALL PRIGRD(GRDMOL,WORK(KCSTRA),WORK(KSCTRA))
+               CALL HEADER('Molecular gradient',-1)
+               CALL ADDGRD(GRADFS)
+               CALL ADDGRD(GRADKE)
+               IF (SOLVNT) THEN
+                  CALL ADDGRD(GSOLTT)
+                  CALL ADDGRD(GSOLNN)
+               END IF
+               CALL PRIGRD(GRDMOL,WORK(KCSTRA),WORK(KSCTRA))
+               NCDEP3 = 3*NUCDEP
+               GRDNRM = DDOT(NCDEP3,GRDMOL,1,GRDMOL,1)
+               GRDNRM = SQRT(GRDNRM)
+               WRITE (LUPRI,'(/19X,A,1P,E10.2)')
+     *            'Molecular gradient norm:', GRDNRM
+               CALL ZERGRD
+               IF (MOLHES) THEN
+                  CALL HEADER('Two-electron integral Hessian',-1)
+                  CALL PRIHES(WORK(KHESEE),'CENTERS',WORK(KCSTRA),
+     &                        WORK(KSCTRA))
+               END IF
             END IF
          END IF
 CTROND

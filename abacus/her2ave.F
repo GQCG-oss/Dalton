@@ -38,7 +38,7 @@ C  /* Deck intexp */
      &                  NINDCD,NCCINT,NINTYP,WORK,LWORK,ISYMR,ISYMS,
      &                  ISYMT,ICORBA,ICORBB,ICORBC,ICORBD,THRESH,SYMFAC,
      &                  IPRINT,NOPMAT,NODV,EXPECT,LONDON,SUSCEP,DIA2SO,
-     &                  ZFS2EL,DDFOCK)
+     &                  ZFS2EL,DDFOCK,IXPAB,IXPCD)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
@@ -47,7 +47,7 @@ C  /* Deck intexp */
       DIMENSION PSO(*), PSA(*), DMAT(*), AOINT(NCCINT,NINTYP),
      &          ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBD),
      &          WORK(LWORK), NINDAB(*), NINDCD(*), FT(*), FV(*),
-     &          HESSEE(*)
+     &          HESSEE(*), IXPAB(*), IXPCD(*)
 #include <twocom.h>
 #include <twosta.h>
 C
@@ -79,7 +79,7 @@ C
      &            ICORBA,ICORBB,ICORBC,ICORBD,THRESH,
      &            SYMFAC,IPRINT,NOPMAT,NODV,NUCABQ,NUCCDQ,
      &            NINDAB,NINDCD,EXPECT,LONDON,SUSCEP,DIA2SO,ZFS2EL,
-     &            DDFOCK)
+     &            DDFOCK,IXPAB,IXPCD)
       LWTOT  = LWTOT - KLAST
       RETURN
       END
@@ -89,7 +89,7 @@ C  /* Deck intex1 */
      &                  ISYMR,ISYMS,ISYMT,ICORBA,ICORBB,ICORBC,ICORBD,
      &                  THRESH,SYMFAC,IPRINT,NOPMAT,NODV,NUCABQ,NUCCDQ,
      &                  NINDAB,NINDCD,EXPECT,LONDON,SUSCEP,DIA2SO,
-     &                  ZFS2EL,DDFOCK)
+     &                  ZFS2EL,DDFOCK,IXPAB,IXPCD)
 C
 C     Calculates expectation values and Fock matrices
 C     of differentiated integrals
@@ -100,7 +100,6 @@ C
 #include <aovec.h>
 #include <maxorb.h>
 #include <mxcent.h>
-#include <nuclei.h>
       PARAMETER (DP25 = 0.25 D00, DP5 = 0.5 D00,
      &           D1 = 1.0 D00, D2 = 2.0 D00, ZERADD = 1.D-15,
      &           D0 = 0.0 D00, DP125 = 0.125D00, D3=3.0D0, D4=4.0D0)
@@ -116,11 +115,14 @@ C
      &          DMAT(NBASIS,NBASIS,NDMAT), WORK(LWORK),
      &          FT(NBASIS,NBASIS,*), FV(NBASIS,NBASIS,*), DINT(12),
      &          NCART(12), PINT(NCCINT,3), QINT(NCCINT,3),
-     &          DIFAB(3), DIFCD(3), HESSEE(*)
+     &          DIFAB(3), DIFCD(3), HESSEE(*),
+     &          IXPAB(NUCA*NUCB,2), IXPCD(NUCC*NUCD,2)
 #include <twocom.h>
 #include <dftcom.h>
 #include <symmet.h>
+#include <nuclei.h>
 #include <expcom.h>
+#include <expopt.h>
 #include <dirprt.h>
 #include <ibtfun.h>
       XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
@@ -355,10 +357,26 @@ C
      &                                  + PAOVAL)
                               END IF
                               IF (ABS(PVAL) .GT. THRSH) THEN
-                                 NODER = .FALSE.
-                                 DO 700 I = 1, NINTYP
-                                    DERIV(I)=DERIV(I)+PVAL*AOINT(INT,I)
-  700                            CONTINUE
+                                 IF (EXPGRA) THEN
+                                    NODER = .FALSE.
+                                    IA = IXPAB(IORBAB,1)
+                                    IB = IXPAB(IORBAB,2)
+                                    IC = IXPCD(IORBCD,1)
+                                    ID = IXPCD(IORBCD,2)
+                                    ALPGRD(IA) = ALPGRD(IA)
+     &                                         + PVAL*AOINT(INT,1)
+                                    ALPGRD(IB) = ALPGRD(IB)
+     &                                         + PVAL*AOINT(INT,2)
+                                    ALPGRD(IC) = ALPGRD(IC)
+     &                                         + PVAL*AOINT(INT,3)
+                                    ALPGRD(ID) = ALPGRD(ID)
+     &                                         + PVAL*AOINT(INT,4)
+                                 ELSE
+                                    NODER = .FALSE.
+                                    DO 700 I = 1, NINTYP
+                                     DERIV(I)=DERIV(I)+PVAL*AOINT(INT,I)
+  700                               CONTINUE
+                                 END IF
                               END IF
                            END IF
 C
@@ -670,7 +688,7 @@ C    &                           (AOINT(INT,I),I=1,NINTYP)
   200    CONTINUE
   100 CONTINUE
       IF (.NOT.NODER) THEN
-         IF (.NOT.LONDON .AND. EXPECT) THEN
+         IF (.NOT.LONDON .AND. EXPECT .AND. .NOT.EXPGRA) THEN
             CALL DEROUT(DERIV,HESSEE,NINTYP,IPRINT)
          END IF
          IF (SUSCEP) THEN

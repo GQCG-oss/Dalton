@@ -31,7 +31,6 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-#include <single.h>
 C
 C  /* Deck avena1 */
       SUBROUTINE AVENA1(ADER,NATOMC,SECDER,NCENTC,JCENTC,MAXCMP,JSYMC,
@@ -1196,5 +1195,39 @@ C
   500       CONTINUE
          END IF
       END IF
+      RETURN
+      END
+C  /* Deck aveexp */
+      SUBROUTINE AVEEXP(EXPDER,DSHELL,FSHELL)
+C
+C     tuh & fj feb 2002
+C
+#include <implicit.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <maxaqn.h>
+      PARAMETER (D0 = 0.00 D00)
+      DIMENSION DSHELL(KHKTAB), FSHELL(KHKTAB), 
+     &          EXPDER(KCKTAB,2,2,NUCA,NUCB)
+#include <onecom.h>
+#include <symmet.h>
+#include <expopt.h>
+C
+      DO I = 1, NUCA
+      DO J = 1, NUCB
+         DERA  = D0
+         DERB  = D0
+         DO K = 1, KHKTAB
+            DENS  = DSHELL(K)
+            FOCK  = FSHELL(K)
+            DERA = DERA - FOCK*EXPDER(K,1,1,I,J) 
+     &                  + DENS*EXPDER(K,1,2,I,J)
+            DERB = DERB - FOCK*EXPDER(K,2,1,I,J) 
+     &                  + DENS*EXPDER(K,2,2,I,J)
+         END DO
+         ALPGRD(JSTA+I) = ALPGRD(JSTA+I) + DERA
+         ALPGRD(JSTB+J) = ALPGRD(JSTB+J) + DERB
+      END DO
+      END DO
       RETURN
       END

@@ -43,6 +43,7 @@ C  /* Deck onesop */
 #include <priunit.h>
 #include <mxcent.h>
 #include <iratdef.h>
+#include <maxorb.h>
 C
       LOGICAL SECDER, DIFDIP, PROPTY, NCLONE
       DIMENSION WORK(LWORK)
@@ -53,9 +54,10 @@ C
       DIMENSION HESSKE(*), HESSNA(*), HESFS2(*), HSOLT2(*), HSOLNN(*)
 #include <cbisol.h>
 #include <onecom.h>
+#include <expopt.h>
 C
       CALL QENTER('ONESOP')
-      IF (PROPTY) THEN
+      IF (PROPTY .AND. .NOT. EXPGRA) THEN
          NADER = 28*NATOMC*KCKTAB
       ELSE
          NADER = KCKTAB
@@ -69,6 +71,10 @@ C
       KDSHEL = KDINT1 +  9*KCKTAB
       KFSHEL = KDSHEL +    KHKTAB
       KLAST  = KFSHEL +    KHKTAB
+      IF (EXPGRA) THEN
+         KXPDER = KLAST
+         KLAST  = KXPDER + 4*KCKTAB*NUCA*NUCB
+      END IF
       IF (SOLVNT) THEN
          IF (MAXDIF .EQ. 0) THEN
             KRLMNT = KLAST
@@ -101,7 +107,7 @@ C
      &            SECDER,NATOMC,TOLOG,TOLS,JSYMC,JCENTC,NCENTC,SIGNC,
      &            NNBASX,WORK(KDSHEL),WORK(KFSHEL),WORK(KRLMNT),
      &            WORK(KRLMTB),FCM,TLMD,WORK(KLMNO),HESSKE,HESSNA,
-     &            HESFS2,HSOLT2,HSOLNN,NCLONE)
+     &            HESFS2,HSOLT2,HSOLNN,NCLONE,WORK(KXPDER))
       CALL QEXIT('ONESOP')
       RETURN
       END
@@ -112,7 +118,7 @@ C  /* Deck oneso1 */
      &                  CORBZ0,DIFDIP,SECDER,NATOMC,TOLOG,TOLS,JSYMC,
      &                  JCENTC,NCENTC,SIGNC,NNBASX,DSHELL,FSHELL,
      &                  RLMINT,RLMTAB,FCM,TLMD,LMNO,HESSKE,HESSNA,
-     &                  HESFS2,HSOLT2,HSOLNN,NCLONE)
+     &                  HESFS2,HSOLT2,HSOLNN,NCLONE,EXPDER)
 #include <implicit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
@@ -125,7 +131,7 @@ C
       LOGICAL SECDER, DIFDIP, PROPTY, FULMAT, ANTI, NCLONE
       DIMENSION WORK(LWORK)
       DIMENSION STHMAT(NNBASX,3), STDER0(KCKTAB,2), STDER1(KCKTAB,3,2),
-     &          STDER2(KCKTAB,6,2), ADER(*),
+     &          STDER2(KCKTAB,6,2), ADER(*), EXPDER(*),
      &          DSHELL(KHKTAB),FSHELL(KHKTAB),
      &          SINT0(KCKTAB), DINT1(KCKTAB,3,3),
      &          DENMAT(NNBASX),FOCMAT(NNBASX),
@@ -139,6 +145,7 @@ C
 #include <nuclei.h>
 #include <symmet.h>
 #include <cbisol.h>
+#include <expopt.h>
 C
 #include <ibtfun.h>
       ITRI(I,J) = MAX(I,J)*(MAX(I,J) - 1)/2 + MIN(I,J)
@@ -174,14 +181,17 @@ C
          CALL ONEPRM(STDER0,STDER1,STDER2,ADER,SINT0,DINT1,
      &               RLMINT,RLMTAB,FCM,WORK,LWORK,IPRINT,PROPTY,MAXDIF,
      &               NATOMC,TOLOG,TOLS,SECDER,DIFDIP,FACINT,COORC,
-     &               GNUEXP,JCENTC,NCENTC,NCLONE)
+     &               GNUEXP,JCENTC,NCENTC,NCLONE,EXPDER)
 C
 C        *************************************************
 C        ***** Transform to spherical harmonic basis *****
 C        *************************************************
 C
          IF (SPHRAB) THEN
-            IF (PROPTY) THEN
+            IF (EXPGRA) THEN
+               CALL SPHRM1(EXPDER,EXPDER,4*NUCA*NUCB,WORK,LWORK,
+     &                     PROPTY,IPRINT)
+            ELSE IF (PROPTY) THEN
                IF (ONECEN) THEN
                   CALL SPHRM1(ADER,ADER,10*NATOMC,WORK,LWORK,PROPTY,
      &                        IPRINT)
@@ -240,7 +250,12 @@ C
   250          CONTINUE
   200       CONTINUE
 C
-            IF (ONECEN) THEN
+            IF (EXPGRA) THEN
+C
+C              Orbital-exponent gradient 
+C
+               CALL AVEEXP(EXPDER,DSHELL,FSHELL)
+            ELSE IF (ONECEN) THEN
 C
 C              Nuclear attraction
 C

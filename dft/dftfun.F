@@ -81,7 +81,7 @@ C     Correlation energy (G. J. Laming)
 C
 #include <implicit.h>
 C
-      CALL WVWN(VA1,RHO,RHO13,E1,.FALSE.,.TRUE.)
+      CALL WVWN(VA1,RHO,RHO13,E1,.FALSE.,.TRUE.,.FALSE.)
       ECV = E1*RHO
       RETURN
       END
@@ -89,13 +89,13 @@ C
 C  /* Deck vvwn */
       SUBROUTINE VVWN(VA,RHO,RHO13)
 #include <implicit.h>
-      CALL WVWN(VA,RHO,RHO13,E1,.TRUE.,.TRUE.)
+      CALL WVWN(VA,RHO,RHO13,E1,.TRUE.,.TRUE.,.FALSE.)
       RETURN
       END
 C
 C
 C  /* Deck wvwn */
-      SUBROUTINE WVWN(VA1,RHO,RHO13,E1,POTENT,SPNCMP)
+      SUBROUTINE WVWN(VA1,RHO,RHO13,E1,POTENT,SPNCMP,SPNINT)
 C
 C     C. W. MURRAY & G. J. LAMING
 C
@@ -116,21 +116,47 @@ C    &           X0I=-0.10498D0,
 C    &           Q    = DSQRT(D4*CI - BI**2),
 C    &           XF0I = X0I*X0I + BI*X0I + CI,
 C    &           YF0I = Q/(BI + 2*X0I))
-      LOGICAL POTENT,SPNCMP
+      LOGICAL POTENT,SPNCMP, SPNINT
+#include <dftcom.h>
       DCRS = (D3/(D4*PI))**(D1/D6)
 C
-C     See Table 5 in VWN paper
+      IF (SPNINT) THEN
+         AI  = -0.0337737D0
+         BI  =  1.13107D0
+         CI  = 13.0045D0
+         X0I = -0.0047584D0
+      ELSE 
 C
-      IF (SPNCMP) THEN
-         AI  =  0.0621814D0
-         X0I = -0.10498D0
-         BI  =  3.72744D0
-         CI  = 12.9352D0
-      ELSE
-         AI  =  0.0310907D0
-         X0I = -0.32500D0
-         BI  =  7.06042D0 
-         CI  = 18.0578D0
+C        Gaussian version
+C
+         IF (DOVWN3) THEN
+            IF (SPNCMP) THEN
+               AI   =  0.0621814D0
+               BI   = 13.0720D0
+               CI   = 42.7198D0
+               X0I  = -0.409286D0
+            ELSE
+               AI  =   0.0310907D0
+               BI  =  20.1231D0 
+               CI  = 101.578D0
+               X0I =  -0.743294D0
+            END IF
+C
+C        standard version
+C
+         ELSE
+            IF (SPNCMP) THEN
+               AI  =  0.0621814D0
+               BI  =  3.72744D0
+               CI  = 12.9352D0
+               X0I = -0.10498D0
+            ELSE
+               AI  =  0.0310907D0
+               BI  =  7.06042D0 
+               CI  = 18.0578D0
+               X0I = -0.32500D0
+            END IF
+         END IF
       END IF
       Q    = DSQRT(D4*CI - BI**2)
       XF0I = X0I*X0I + BI*X0I + CI
@@ -218,10 +244,16 @@ C  /* Deck vtvwn */
 #include <implicit.h>
       PARAMETER(D1 = 1.0D0, D2 = 2.0D0, DP3 = 1.0D0/3.0D0, 
      &          D8D9 = 8.0D0/9.0D0)
-      FAC = -D8D9/(D2**DP3 - D1)
-      CALL WVWN(VA,RHO,RHO13,E0,.FALSE.,.TRUE.)
-      CALL WVWN(VA,RHO,RHO13,E1,.FALSE.,.FALSE.)
-      VD1 = FAC*(E0 - E1)/RHO
+#include <dftcom.h>
+      IF (DOVWNI) THEN
+         FAC = -D8D9/(D2**DP3 - D1)
+         CALL WVWN(VA,RHO,RHO13,E0,.FALSE.,.TRUE.,.FALSE.)
+         CALL WVWN(VA,RHO,RHO13,E1,.FALSE.,.FALSE.,.FALSE.)
+         VD1 = FAC*(E0 - E1)/RHO
+      ELSE
+         CALL WVWN(VA,RHO,RHO13,EI,.FALSE.,.FALSE.,.TRUE.)
+         VD1 = D2*EI/RHO
+      END IF
       RETURN
       END
 C     *****************

@@ -39,7 +39,7 @@ C  /* Deck odcvec */
      &                  NPCO2,NUCS12,JSTR1,JSTR2,TCON12,TPR12,GEN12,
      &                  ITYPE,THRESH,MAXDER,MUL1,MUL2,NODC12,NORT12,
      &                  NIND12,NPNT12,NRED12,KHKT1,KHKT2,EXPECT,DIRFCK,
-     &                  WORK,LWORK,RPRI12,RCNT12,IPRINT)
+     &                  WORK,LWORK,RPRI12,RCNT12,IXP12,IPRINT)
 C
 C     TUH Apr 11 1988
 C
@@ -50,7 +50,8 @@ C
       LOGICAL TPR12, TCON12, GEN12, EXPECT, DIRFCK, RPRI12, RCNT12
       DIMENSION NPCO1(*), NPCO2(*), JSTR1(*), JSTR2(*), COOR12(*),
      &          EXP12(*), FAC12(*), CONT1(*), CONT2(*), NUCS12(*),
-     &          NUCT12(*), NORT12(*), NIND12(*), NPNT12(*), WORK(LWORK)
+     &          NUCT12(*), NORT12(*), NIND12(*), NPNT12(*), IXP12(*),
+     &          WORK(LWORK)
 #include <twosta.h>
       IF (TKTIME) TIMSTR = SECOND()
       IF (GEN12) THEN
@@ -84,7 +85,7 @@ C
          CALL ODCSEG(COOR12,EXP12,FAC12,NUC1,NUC2,NORB1,NORB2,NSET1,
      &               NSET2,NPCO1,NPCO2,NUCS12,JSTR1,JSTR2,NUCT12,TCON12,
      &               TPR12,THRESH,ITYPE,MUL1,MUL2,NODC12,NORT12,
-     &               NIND12,KHKT1,KHKT2,EXPECT,DIRFCK,IPRINT)
+     &               NIND12,KHKT1,KHKT2,EXPECT,DIRFCK,IXP12,IPRINT)
       END IF
       IF (TKTIME) THEN
          TIMEND = SECOND()
@@ -536,7 +537,7 @@ C  /* Deck odcseg */
      &                  NSET1,NSET2,NPCO1,NPCO2,NUCS12,JSTR1,JSTR2,
      &                  NUCT12,TCON12,TPR12,THRESH,ITYPE,MUL1,MUL2,
      &                  NODC12,NORT12,NIND12,KHKT1,KHKT2,EXPECT,DIRFCK,
-     &                  IPRINT)
+     &                  IXP12,IPRINT)
 C
 C     TUH 84
 C
@@ -552,13 +553,15 @@ C
       LOGICAL TCON12, TPR12, DIAG12, ALLSYM, EXPECT, DIRFCK, DOTHIS
 #include <primit.h>
 #include <symmet.h>
+#include <expopt.h>
       COMMON /MAXOLD/ OLDMAX
       DIMENSION NPCO1(NSET1,2), NPCO2(NSET2,2), JSTR1(*), JSTR2(*),
      &          COOR12(NUC1*NUC2,3,3,NODC12),
      &          EXP12(NUC1*NUC2,3,NODC12),
      &          FAC12(NUC1*NUC2,NODC12), NUCT12(NODC12),
      &          NUCS12(NORB1*NORB2,NODC12), NPRI12(8),
-     &          NIND12(NORB1*NORB2,2), NORT12(8)
+     &          NIND12(NORB1*NORB2,2), NORT12(8),
+     &          IXP12(NUC1*NUC2,2,NODC12)
 #include <ibtfun.h>
       XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
       YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
@@ -656,6 +659,10 @@ C                 screening test:
                         EXP12 (IPRIM,1,NSYMOP)   = EXPP
                         EXP12 (IPRIM,2,NSYMOP)   = D2*EXP1
                         EXP12 (IPRIM,3,NSYMOP)   = D2*EXP2
+                        IF (EXPGRA) THEN
+                           IXP12(ISET12+1,1,NSYMOP) = IPRIM1 
+                           IXP12(ISET12+1,2,NSYMOP) = IPRIM2 
+                        END IF
                         FAC12 (IPRIM,NSYMOP)     = FAC12I
                         COOR12(IPRIM,1,1,NSYMOP) = CORPX
                         COOR12(IPRIM,2,1,NSYMOP) = CORPY
@@ -741,6 +748,10 @@ Chj                  IF (DOTHIS) THEN
                         EXP12 (IPRIM,1,NSYMOP)   = EXPP
                         EXP12 (IPRIM,2,NSYMOP)   = D2*EXP1
                         EXP12 (IPRIM,3,NSYMOP)   = D2*EXP2
+                        IF (EXPGRA) THEN
+                           IXP12(ISET12+1,1,NSYMOP) = IPRIM1 
+                           IXP12(ISET12+1,2,NSYMOP) = IPRIM2 
+                        END IF
                         FAC12 (IPRIM,NSYMOP)     = FAC12I
                         COOR12(IPRIM,1,1,NSYMOP) = CORPX
                         COOR12(IPRIM,2,1,NSYMOP) = CORPY
@@ -890,6 +901,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
+#include <maxorb.h>
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
       LOGICAL YEQX, ZEQX, ZEQY, ONECEN, DER1, DER2, DER12,
      &        DERECC, DERECD, BIGVEC, UNDIFF, SPNORB, DIA2UP, EL2CD,
@@ -898,6 +910,7 @@ C
      &          COOR12(NUC1*NUC2,3,3), HEXPPI(*), EXP12(NUC1*NUC2,3),
      &          COOR1(MXUC12),  ORIGO(3), WORK(LWORK)
 #include <twosta.h>
+#include <expopt.h>
 #include <drw2el.h>
 #include <r12int.h>
 C
@@ -912,7 +925,9 @@ C     Space allocation for R12 method (WK/UniKA/15-11-2002).
          LWTOT  = LWTOT + KLAST
          MWTOT  = MAX(MWTOT,LWTOT + KLAST)
       END IF
-      IF (SPNORB) THEN
+      IF (EXPGRA) THEN
+         MAXDIF = 2
+      ELSE IF (SPNORB) THEN
          MAXDIF = 1
       ELSE IF (FINDPT.OR.DPTINT) THEN
          MAXDIF = 2
@@ -1058,6 +1073,19 @@ C
          CALL DER1AB(COEF12(1,0,0,0,3,1),COEF12(1,0,0,0,3,2),
      &               NUC12,MXUC12,JMAX1,JMAX2,
      &               EXP12(1,2),EXP12(1,3),LA,LB,'EZ  ',I120Z,IPRINT)
+      ELSE IF (EXPGRA) THEN
+         CALL DEREXP(COEF12(1,0,0,0,1,1),
+     &               COEF12(1,0,0,0,1,2),COEF12(1,0,0,0,1,3),
+     &               NUC12,MXUC12,JMAX1,JMAX2,
+     &               EXP12(1,2),EXP12(1,3),LA,LB,'EX  ',I120X,IPRINT)
+         CALL DEREXP(COEF12(1,0,0,0,2,1),
+     &               COEF12(1,0,0,0,2,2),COEF12(1,0,0,0,2,3),
+     &               NUC12,MXUC12,JMAX1,JMAX2,
+     &               EXP12(1,2),EXP12(1,3),LA,LB,'EX  ',I120Y,IPRINT)
+         CALL DEREXP(COEF12(1,0,0,0,3,1),
+     &               COEF12(1,0,0,0,3,2),COEF12(1,0,0,0,3,3),
+     &               NUC12,MXUC12,JMAX1,JMAX2,
+     &               EXP12(1,2),EXP12(1,3),LA,LB,'EX  ',I120Z,IPRINT)
       ELSE
 C
 C
@@ -1841,10 +1869,66 @@ C
       RETURN
  1100 FORMAT (/,1X,A4,'(',I1,',',I1,';',I1,')',/)
       END
+C  /* Deck derexp */
+      SUBROUTINE DEREXP(UCOEF,ACOEF,BCOEF,NUC12,MXUC12,JMAX1,JMAX2,AXP,
+     &                  BXP,MAX1,MAX2,WORD,I120,IPRINT)
+C
+C     TUH 92
+C
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER (DP25 =0.25 D00, DP5 = 0.50 D0, D2 = 2.0 D0)
+      CHARACTER WORD*4
+      INTEGER A, B, AB, T
+      DIMENSION UCOEF(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2),
+     &          ACOEF(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2),
+     &          BCOEF(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2),
+     &          AXP(*), BXP(*)
+#include <ibtfun.h>
+#include <sdpre.h>
+C
+      DO A = 0, MAX1
+      DO B = 0, MAX2
+         DO T = 0, A + B 
+         IF (IBTAND(A + B - T,I120) .EQ. 0) THEN
+            DO I = 1, NUC12
+               AINV = D2*AXP(I)**(-1)
+               BINV = D2*BXP(I)**(-1)
+               ACOEF(I,T,A,B) = (DP5*A + DP25)*AINV*UCOEF(I,T,A,B)
+               BCOEF(I,T,A,B) = (DP5*B + DP25)*BINV*UCOEF(I,T,A,B)
+            END DO
+         END IF
+         END DO
+      END DO
+      END DO
+C
+C     *************************
+C     ***** PRINT SECTION *****
+C     *************************
+C
+      IF (IPRINT .GT. 10) THEN
+         CALL HEADER('Scaled expansion coefficients in DEREXP',-1)
+         WRITE (LUPRI,'(1X,A,2I5)') ' MAX1/2 ', MAX1, MAX2
+         WRITE (LUPRI,'(1X,A, I5)') ' NUC12  ', NUC12
+         DO A = 0, MAX1
+         DO B = 0, MAX2
+            DO T = 0, A + B
+            IF (IBTAND(A + B - T,I120) .EQ. 0) THEN
+               WRITE (LUPRI,1100) WORD, A, B, T
+               WRITE(LUPRI,'(1X,6F12.8)')(ACOEF(I,T,A,B),I=1,NUC12)
+               WRITE(LUPRI,'(1X,6F12.8)')(BCOEF(I,T,A,B),I=1,NUC12)
+            END IF
+            END DO
+         END DO
+         END DO
+      END IF
+      RETURN
+ 1100 FORMAT (/,1X,A4,'(',I1,',',I1,';',I1,')',/)
+      END
 C  /* Deck excsgn */
       SUBROUTINE EXCSGN(COEFCD,JMAXC,JMAXD,NHKTC,NHKTD,NUCCD,MXUCCD,
      &                  ICD0X,ICD0Y,ICD0Z,MAXDER,LONDON,SPNORB,DIA2SO,
-     &                  ISYMT,IPRINT)
+     &                  EXPGRA,ISYMT,IPRINT)
 C
 C     tuh March 92
 C
@@ -1855,7 +1939,7 @@ C
 #include <maxaqn.h>
       PARAMETER (D1 = 1.0D0)
       INTEGER X, T, P
-      LOGICAL DOCOMP(3), SPNORB, DIA2SO, LONDON
+      LOGICAL DOCOMP(3), SPNORB, DIA2SO, LONDON, EXPGRA
       DIMENSION COEFCD(MXUCCD,0:JMAXC+JMAXD,0:JMAXC,0:JMAXD,3,*),
      &          SGNOLD(3), SGNNEW(3)
 #include <symmet.h>
@@ -1894,7 +1978,32 @@ C
 C
 C              London orbitals
 C
-               IF (LONDON) THEN
+               IF (EXPGRA) THEN
+                  DO I = 0, NHKTC + 1
+                  DO J = 0, NHKTD + 1
+                     DO T = 0, I + J
+                     IF (MOD(I+J-T,2).EQ.1) THEN
+                        DO P = 1, NUCCD
+                           COEFCD(P,T,I,J,X,1) = -COEFCD(P,T,I,J,X,1)
+                        END DO
+                     END IF
+                     END DO
+                  END DO
+                  END DO
+C
+                  DO I = 0, NHKTC - 1
+                  DO J = 0, NHKTD - 1
+                     DO T = 0, I + J
+                     IF (MOD(I+J-T,2).EQ.1) THEN
+                        DO P = 1, NUCCD
+                           COEFCD(P,T,I,J,X,2) = -COEFCD(P,T,I,J,X,2)
+                           COEFCD(P,T,I,J,X,3) = -COEFCD(P,T,I,J,X,3)
+                        END DO
+                     END IF
+                     END DO
+                  END DO
+                  END DO
+               ELSE IF (LONDON) THEN
                   DO 300 M = 0, MAXDIF
                      IF (M .EQ. 0) MM = 1
                      IF (M .EQ. 1) MM = 2

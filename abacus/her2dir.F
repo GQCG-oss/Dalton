@@ -40,7 +40,7 @@ C  /* Deck direct */
      &                  SIGNAX,SIGNAY,SIGNAZ,SIGNBX,SIGNBY,SIGNBZ,
      &                  SIGNCX,SIGNCY,SIGNCZ,SIGNDX,SIGNDY,SIGNDZ,
      &                  NCCINT,MAXDER,EXPECT,LONDON,SPNORB,DIA2SO,
-     &                  ZFS2EL,IATOM,MULATM,NINTYP,IPRINT)
+     &                  ZFS2EL,EXPGRA,IATOM,MULATM,NINTYP,IPRINT)
 C
 C     This subroutine determines type of two-electron integral
 C     and sets directives for integral calculation.
@@ -59,7 +59,7 @@ C
 #endif
 #include <priunit.h>
       LOGICAL ONECEN, DERECC, DERECD, EXPECT, BIGVEC, SPNORB, DIA2SO,
-     &        LONDON, ZFS2EL
+     &        LONDON, ZFS2EL, EXPGRA
       CHARACTER*4 ATYPE
 #include <r12int.h>
 #include <doxyz.h>
@@ -143,8 +143,23 @@ C
          DHOVEC(I) = .FALSE.
   120 CONTINUE
 C
-C     Integrals for r12 methods (WK/UniKA/15-11-2002).
-      IF (R12EIN .OR. R12INT .OR. U12INT) THEN
+C     Orbital-exponent derivatives
+C
+      IF (EXPGRA) THEN
+         ATYPE  = 'EXPG'
+         DPATH1 = .TRUE.
+         DPATH2 = .TRUE.
+         DC101  = .TRUE.
+         DC2H1  = .TRUE.
+         DC102  = .TRUE.
+         DC2H2  = .TRUE.
+         NINTYP = 4
+         NTOTAL = NINTYP*NCCINT
+         GO TO 900
+C
+C     Integrals for r12 methods (WK/UniKA/15-11-2002)
+C
+      ELSE IF (R12EIN .OR. R12INT .OR. U12INT) THEN
          ATYPE  = 'R12 '
          DPATH1 = .TRUE.
          DZER   = .TRUE.
@@ -167,11 +182,10 @@ C     Integrals for r12 methods (WK/UniKA/15-11-2002).
          END IF
          NTOTAL = NCCINT
          GO TO 900
-      END IF
 C
 C     Spin-orbit integrals
 C
-      IF (SPNORB) THEN
+      ELSE IF (SPNORB) THEN
          ATYPE  = 'SO  '
          DPATH1 = .TRUE.
          DC101  = .TRUE.

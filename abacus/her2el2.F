@@ -127,6 +127,7 @@ C
 #include <priunit.h>
       PARAMETER (D1 = 1.00 D00)
 #include <maxaqn.h>
+#include <maxorb.h>
       LOGICAL DORDER(2), DHOVEC
       DIMENSION IXDER(6), IYDER(6), IZDER(6), IDHO(2,2), LMNV34(*)
       DIMENSION AOINT(*), IODD12(KCKT12,2), IODD34(KCKT34,2),
@@ -138,6 +139,7 @@ C
 #include <twosta.h>
 #include <derzer.h>
 #include <drw2el.h>
+#include <expopt.h>
       COMMON /COMC2H/ JODDIF(27), ITADD(27), IUADD(27), IVADD(27),
      &                FACTOR(27), IOFFHC(27), IOFFCC(27)
       COMMON /DHCINF/ IDHC(10), IHCSYM(10)
@@ -182,40 +184,55 @@ C
          IOFFCC(ICOOR) = IZERO
          FACTOR(ICOOR) = FZERO
       END IF
-      DORDER(1) = IDERIV .GE. 1
-      DORDER(2) = IDERIV .EQ. 2
-      IF (IDERIV .GT. 0) THEN
-         DO 100 IORDER = 1, IDERIV
-            IF (DORDER(IORDER)) THEN
-               IF (PATH1 .AND. (IORDER .EQ. 1)) THEN
-                  SGN = - D1
-               ELSE
-                  SGN = D1
-               END IF
-               JDHO = IDHO(IPATH,IORDER)
-               DO 110 ICOOR2 = 1, (IORDER + 1)*(IORDER + 2)/2
-                  IX = IORDER - IXDER(ICOOR2)
-                  IY = IYDER(ICOOR2)
-                  IZ = IZDER(ICOOR2)
-                  JODD2=IBTAND(IHRSYM,MOD(IX,2)+2*MOD(IY,2)+4*MOD(IZ,2))
-                  IADRHO = JDHO + ICOOR2
-C
-C                 Differentiation on a single electron
-C
-                  IADRHC = 1
-                  IF (DHOVEC(IADRHO)) THEN
-                     ICOOR = ICOOR + 1
-                     ITADD(ICOOR) = IX
-                     IUADD(ICOOR) = IY
-                     IVADD(ICOOR) = IZ
-                     IOFFHC(ICOOR) = IDHC(IADRHC)
-                     JODDIF(ICOOR) = JODD2
-                     IOFFCC(ICOOR) = IHOVEC(IADRHO)
-                     FACTOR(ICOOR) = SGN*FHOVEC(IADRHO)
-                  END IF
-  110          CONTINUE
+      IF (EXPGRA) THEN
+         DO I = 1, 2
+            ICOOR = ICOOR + 1
+            IOFFHC(ICOOR) = IDHC(1)
+            JODDIF(ICOOR) = 0
+            IF (PATH1) THEN
+               IOFFCC(ICOOR) = I + 2
+            ELSE
+               IOFFCC(ICOOR) = I 
             END IF
-  100    CONTINUE
+            FACTOR(ICOOR) = D1 
+         END DO
+      ELSE
+         DORDER(1) = IDERIV .GE. 1
+         DORDER(2) = IDERIV .EQ. 2
+         IF (IDERIV .GT. 0) THEN
+            DO 100 IORDER = 1, IDERIV
+               IF (DORDER(IORDER)) THEN
+                  IF (PATH1 .AND. (IORDER .EQ. 1)) THEN
+                     SGN = - D1
+                  ELSE
+                     SGN = D1
+                  END IF
+                  JDHO = IDHO(IPATH,IORDER)
+                  DO 110 ICOOR2 = 1, (IORDER + 1)*(IORDER + 2)/2
+                     IX = IORDER - IXDER(ICOOR2)
+                     IY = IYDER(ICOOR2)
+                     IZ = IZDER(ICOOR2)
+                     JODD2 = IBTAND(
+     &                       IHRSYM,MOD(IX,2)+2*MOD(IY,2)+4*MOD(IZ,2))
+                     IADRHO = JDHO + ICOOR2
+C
+C                    Differentiation on a single electron
+C
+                     IADRHC = 1
+                     IF (DHOVEC(IADRHO)) THEN
+                        ICOOR = ICOOR + 1
+                        ITADD(ICOOR) = IX
+                        IUADD(ICOOR) = IY
+                        IVADD(ICOOR) = IZ
+                        IOFFHC(ICOOR) = IDHC(IADRHC)
+                        JODDIF(ICOOR) = JODD2
+                        IOFFCC(ICOOR) = IHOVEC(IADRHO)
+                        FACTOR(ICOOR) = SGN*FHOVEC(IADRHO)
+                     END IF
+  110             CONTINUE
+               END IF
+  100       CONTINUE
+         END IF
       END IF
       NCOOR = ICOOR
 C
@@ -362,6 +379,7 @@ C
 #include <priunit.h>
       PARAMETER (D0 = 0.0D0, DP25 = 0.25D0)
 #include <maxaqn.h>
+#include <maxorb.h>
       INTEGER T, U, V
       COMMON /COMC2H/ JODDIF(27), ITADD(27), IUADD(27), IVADD(27),
      &                FACTOR(27), IOFFHC(27), IOFFCC(27)
@@ -381,9 +399,11 @@ C
 #include <sphtrm.h>
 #include <codata.h>
 #include <drw2el.h>
-      DIMENSION INCDPT(3,3), ITYDPT(3,3)
+#include <expopt.h>
+      DIMENSION INCDPT(3,3), ITYDPT(3,3), INCEXP(3,0:3)
       DATA INCDPT/2, 0, 0, 0, 2, 0, 0, 0, 2/
       DATA ITYDPT/5, 1, 1, 1, 5, 1, 1, 1, 5/
+      DATA INCEXP/0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2/
 #include <ibtfun.h>
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from C2HIN1','*',103)
@@ -412,7 +432,8 @@ C              *******************************
 C
                JODD34 = IODD34(ICMP34,1)
                CALL DZERO(CCPRIM,NHCCMP*NCCPP)
-               IF ((KHKT34 .EQ. 1).AND.(.NOT.(FINDPT.OR.DPTINT))) THEN
+               IF ((KHKT34 .EQ. 1).AND.
+     &             (.NOT.(FINDPT.OR.DPTINT.OR.EXPGRA))) THEN
                   ICCTYP = 1
                   DO 200 ICOOR = 1, NCOOR
                      IODDIF= JODDIF(ICOOR)
@@ -519,6 +540,67 @@ C                          ===================
   301                   CONTINUE
   333                CONTINUE
                      END IF
+C
+C                 Exponent gradient
+C                 =================
+C
+                  ELSE IF (EXPGRA) THEN
+                     DO K = 0, 3
+                     DO V = MINV, MAXV + INCEXP(3,K), INCRMV
+                     DO U = MINU, MAXU + INCEXP(2,K), INCRMU
+                     DO T = MINT, MAXT + INCEXP(1,K), INCRMT
+                        ICCTYP = 1
+                        DO ICOOR = 1, 2
+C
+C                          Expansion coefficients
+C                          ======================
+C
+                           DO I = 1, NUC34
+                              IF (K.EQ.0) THEN
+                                 ECX = COEF34(I,T,L3,L4,1,1+ICOOR)
+     &                               * COEF34(I,U,M3,M4,2,1)
+     &                               * COEF34(I,V,N3,N4,3,1)
+                                 ECY = COEF34(I,T,L3,L4,1,1)
+     &                               * COEF34(I,U,M3,M4,2,1+ICOOR)
+     &                               * COEF34(I,V,N3,N4,3,1)
+                                 ECZ = COEF34(I,T,L3,L4,1,1)
+     &                               * COEF34(I,U,M3,M4,2,1)
+     &                               * COEF34(I,V,N3,N4,3,1+ICOOR)
+                                 ECF = ECX + ECY + ECZ
+                              ELSE IF (ICOOR.EQ.1) THEN
+                                 ECF =-COEF34(I,T,L3+INCEXP(1,K),L4,1,1)
+     &                                *COEF34(I,U,M3+INCEXP(2,K),M4,2,1)
+     &                                *COEF34(I,V,N3+INCEXP(3,K),N4,3,1)
+                              ELSE
+                                 ECF =-COEF34(I,T,L3,L4+INCEXP(1,K),1,1)
+     &                                *COEF34(I,U,M3,M4+INCEXP(2,K),2,1)
+     &                                *COEF34(I,V,N3,N4+INCEXP(3,K),3,1)
+                              END IF
+                              IJ = I
+                              DO J = 1, NORB12
+                                 ETUV(IJ) = ECF
+                                 IJ = IJ + NUC34
+                              END DO
+                           END DO
+C
+C                          Cartesian integrals
+C                          ===================
+C
+                           ITUV = INDHER(T,U,V)
+                           DO I = 1, KHKT12
+                           IF (IODD12(I,2) .EQ. JODD34) THEN
+                              DO J = 1, NCCPP
+                                 CCPRIM(J,ICCTYP) = CCPRIM(J,ICCTYP)
+     &                              + ETUV(J)*HCINT(J,ITUV,I,1)
+                              END DO
+                              ICCTYP = ICCTYP + 1
+                           END IF
+                           END DO
+                        END DO
+                     END DO
+                     END DO
+                     END DO
+                     END DO
                   ELSE
                      DO 400 V = MINV, MAXV, INCRMV
                      DO 400 U = MINU, MAXU, INCRMU
@@ -1455,7 +1537,8 @@ C
 C     Scratch: SCR1(NUCR3*NUCR4*NINT12)
 C              SCR2(NORR3*NUCR4*NINT12)
 C
-C     DM1 and THRESH are added for antihermitean integrals (WK/UniKA/18-11-2002).
+C     DM1 and THRESH are added for antihermitean 
+C     integrals (WK/UniKA/18-11-2002).
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0, THRESH = 1.0D-13)
 #include <twoao.h>
       LOGICAL ANTICO

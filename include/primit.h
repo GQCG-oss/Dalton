@@ -1,3 +1,3 @@
       COMMON /PRIMIT/ PRIEXP(MXPRIM), PRICCF(MXPRIM,MXCONT),
      &                PRICRX(MXPRIM), PRICRY(MXPRIM), PRICRZ(MXPRIM),
-     &                NPSHEL
+     &                IPRSHL(MXPRIM), NPSHEL

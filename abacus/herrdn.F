@@ -214,7 +214,7 @@ C
                   READ (LUCMD,*) ZCMVAL
                GO TO 100
  9             CONTINUE
-c ach easier to debug intgrl input. 
+C ach easier to debug intgrl input. 
                   WRTLIN= .TRUE.
                GO TO 100
    10          CONTINUE
@@ -921,10 +921,10 @@ C           Put MBSI = 1 otherwise (WK/UniKA/04-11-2002).
             END IF
          ELSE
 C ach 
-            if (wrtlin) then 
-               write(lupri,*) mline(nmline)
-               call flush(lupri)
-            endif
+            IF (WRTLIN) THEN 
+               WRITE(LUPRI,*) MLINE(NMLINE)
+               CALL FLUSH(LUPRI)
+            ENDIF
 C           Read basis-set identifier from MLINE(NMLINE)
 C           Put MBSI = 1 otherwise (WK/UniKA/04-11-2002).
             IF (LMULBS) THEN
@@ -1025,7 +1025,7 @@ C
 C         Get basis set from basis set library
 C         ===================================
 C
-            ELSE IF ((BASIS .OR. ATOMBA .OR. (ADDSTO .AND. J .EQ. 2
+           ELSE IF ((BASIS .OR. ATOMBA .OR. (ADDSTO .AND. J .EQ. 2
      &              .AND. Q .NE. 0.0D0)) .AND. .NOT. DIRAC) THEN
               IF (BASIS) THEN
 C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
@@ -2067,11 +2067,10 @@ C
      &                       CPRIMU(L,M),'REA')
               END DO
 #else
-              if (wrtlin) then 
-                 write(lupri,*) mline(nmline)
-                 call flush(lupri)
-              endif
-              
+              IF (WRTLIN) THEN 
+                 WRITE(LUPRI,*) MLINE(NMLINE)
+                 CALL FLUSH(LUPRI)
+              ENDIF
               READ (MLINE(NMLINE),*) ALPHA(L), (CPRIMU(L,M),M=1,NRCIJ)
 #endif
            ELSE
@@ -2297,6 +2296,7 @@ C*****************************************************************************
                      PRICRX(IPRIM) = CORD(1,ICENT)
                      PRICRY(IPRIM) = CORD(2,ICENT)
                      PRICRZ(IPRIM) = CORD(3,ICENT)
+                     IPRSHL(IPRIM) = ISHELL
                      IPRIMD = IPRIMD + NCOMP*NDEG
    60             CONTINUE
 C
@@ -3594,7 +3594,7 @@ C
                   IF (ISCOOR .GT. 0) THEN
                      NB = 0
                      DO 600 I = 1, NCOOR
-                        IADR = ISTRT + (I - 1)*NCOOR + ISCOOR
+                        IADR = ISTRT + (I - 1)*NCOOR + ISCOOR - 1
                         NSGN = NINT(WORK(IADR))
                         IF (NSGN .NE. 0) THEN
                            NB = NB + 1
@@ -5183,6 +5183,7 @@ C
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <codata.h>
+#include <maxorb.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
       PARAMETER (DSM = 1.0D-30)
       PARAMETER (AR=PI/180.0D+00)
@@ -5204,7 +5205,6 @@ C
 #include <molinp.h>
 #include <cbisol.h>
 Cjth - these files are included to make Huckel work
-#include <maxorb.h>
 #include <huckel.h>
     1 FORMAT(/,2X,' INTERNAL COORDINATES'/)
     2 FORMAT(2X,I3,67X,F15.5)

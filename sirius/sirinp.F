@@ -2302,7 +2302,7 @@ C 13-May-1995 K.Ruud, added keyword .ELECTRONS.
 C 1999 Helgaker, DFT input added 
 C
 #include <implicit.h>
-      PARAMETER (NTABLE = 38)
+      PARAMETER (NTABLE = 40)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      *          REWORD*12
@@ -2337,7 +2337,7 @@ C
      *            '.ELECTR','.AUTOCC','.FC MVO','.HFXFAC','.LDA   ',
      *            '.BLYP  ','.B3LYP ','.FROMVX','.WAH   ','.DFTWEI',
      *            '.DFTAC ','.DFTHES','.DFTTHR','.DFTELS','.RADINT',
-     *            '.ANGINT','.ANGMIN','.NOPRUN'/
+     *            '.ANGINT','.ANGMIN','.NOPRUN','.VWN3  ','.VWNT5 '/
 C
 C     ***** PROCESS INPUT FOR RHFINP *****
 C
@@ -2357,7 +2357,7 @@ C
                   GO TO (101,102,103,104,105,106,107,108,109,110,
      &                   111,112,113,114,115,116,117,118,119,120,
      &                   121,122,123,124,125,126,127,128,129,130,
-     &                   131,132,133,134,135,136,137,138),II
+     &                   131,132,133,134,135,136,137,138,139,140),II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -2614,6 +2614,12 @@ C&&& ANGMIN: Set minimum order of Lebedev scheme after pruning
 C&&& NOPRUN: Turn off pruning of angular grid.
  138  CONTINUE
       NOPRUN = .TRUE.
+      GO TO 100
+ 139  CONTINUE
+      DOVWN3 = .TRUE.
+      GO TO 100
+ 140  CONTINUE
+      DOVWNI = .FALSE.
       GO TO 100
 C
  2000 CONTINUE
@@ -4727,6 +4733,10 @@ C
          WRITE (IWUNIT,'(4X,A,2F12.6)')
      &        ' WVN and LYP correlation weights:      ',
      &          WDFTC, WDFTL
+         IF (DOVWN3) WRITE (IWUNIT,'(/,A)')
+     &        ' The VWN3 functional is used in place of VWN5.'
+         IF (.NOT.DOVWNI) WRITE (IWUNIT,'(/,A)')
+     &        ' For triplet VWN, form V is used in place of form I.'
          IF (DFTHRS) THEN
             WRITE (IWUNIT,'(4X,A,17X,3D12.2)')
      &        ' Redefined thresholds:', DFTHR0, DFTHRL, DFTHRI 

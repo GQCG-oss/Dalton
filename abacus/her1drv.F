@@ -152,6 +152,8 @@ C
          MAXDIF = 2
       ELSE IF (DIPDER .OR. MOLGRD) THEN
          MAXDIF = 1
+      ELSE IF (EXPGRD) THEN
+         MAXDIF = 0
       ELSE
          SKIP = .TRUE.
       END IF
@@ -307,7 +309,6 @@ C
 #include <maxorb.h>
 #include <iratdef.h>
 #include <priunit.h>
-#include <nuclei.h>
       PARAMETER (D0 = 0.00 D00)
 C
       LOGICAL NODC, NODV, FRSDER, SECDER, DIFDIP, PROPTY, DOINT(2,2),
@@ -326,6 +327,7 @@ C
 #include <dipole.h>
 #include <taysol.h>
 #include <ccom.h>
+#include <nuclei.h>
 #include <shells.h>
 #include <symmet.h>
 #include <dorps.h>
@@ -334,6 +336,7 @@ C
 #include <cbisol.h>
 #include <dftcom.h>
 #include <gnrinf.h>
+#include <expopt.h>
 C
 #include <ibtfun.h>
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEDR1','*',103)
@@ -353,11 +356,13 @@ C
 C
 C     ***** Nuclear contributions *****
 C
-      IF (PROPTY) CALL DIPNUC(CSTRA,SCTRA,IPRINT,DIFDIP)
+      IF (PROPTY.AND..NOT.EXPGRA) CALL DIPNUC(CSTRA,SCTRA,IPRINT,DIFDIP)
 C
 C     Gradient and Hessian elements equal to zero
 C
-      IF (PROPTY) THEN
+      IF (EXPGRA) THEN
+         CALL DZERO(ALPGRD,KMAX)
+      ELSE IF (PROPTY) THEN
          ENERKE = D0
          ENERNA = D0
          CALL DZERO(GRADKE,3*NUCDEP)
@@ -549,7 +554,11 @@ C
 C        Initialization for nuclear attraction integrals
 C
          JMAX = NHKTAB - 2
-         IF (PROPTY) JMAX = JMAX + MAXDIF
+         IF (EXPGRA) THEN
+            JMAX = JMAX + 2
+         ELSE IF (PROPTY) THEN
+            JMAX = JMAX + MAXDIF
+         END IF
          ISTEPU = JMAX + 1
          ISTEPV = ISTEPU*ISTEPU
          NAHGTF = ISTEPU*ISTEPV
@@ -676,51 +685,57 @@ C     *************************
 C     ***** Print Section *****
 C     *************************
 C
-      IF (PROPTY .AND. (IPRINT .GT. 0)) THEN
-         KCSTRA = 1
-         KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
-         KLAST  = KSCTRA + 9*NUCDEP*NUCDEP
-         IF (KLAST .GT. LWORK) 
-     &        CALL STOPIT('ONEDR1','TRACOR',KLAST,LWORK)
-         CALL HEADER('Kinetic energy integral gradient',-1)
-         CALL PRIGRD(GRADKE,WORK(KCSTRA),WORK(KSCTRA))
-         CALL HEADER('Nuclear attraction integral gradient',-1)
-         CALL PRIGRD(GRADNA,WORK(KCSTRA),WORK(KSCTRA))
-         CALL HEADER('Reorthonormalization gradient',-1)
-         CALL PRIGRD(GRADFS,WORK(KCSTRA),WORK(KSCTRA))
-         IF (SOLVNT) THEN
-            CALL HEADER('Solvent energy contributions',-1)
-            WRITE(LUPRI,'(3(/A,F15.10))')
-     &         ' Nuclear solvent energy:',ESOLNN,
-     &         ' Electr. solvent energy:',ESOLTT,
-     &         ' Total   solvent energy:',ESOLNN+ESOLTT
-            CALL HEADER('Electronic solvent part of gradient',-1)
-            CALL PRIGRD(GSOLTT,WORK(KCSTRA),WORK(KSCTRA))
-            CALL HEADER('Nuclear solvent part of gradient',-1)
-            CALL PRIGRD(GSOLNN,WORK(KCSTRA),WORK(KSCTRA))
-         END IF
-         IF (DFTRUN) THEN
-            CALL HEADER('DFT contribution to gradient',-1)
-            CALL PRIGRD(GRADFT,WORK(KCSTRA),WORK(KSCTRA))
-         END IF
-         IF (SECDER) THEN
-            CALL HEADER('Kinetic energy integral Hessian',-1)
-            CALL PRIHES(HESSKE,'CENTERS',WORK(KCSTRA),WORK(KSCTRA))
-            CALL HEADER('Nuclear attraction integral Hessian',-1)
-            CALL PRIHES(HESSNA,'CENTERS',WORK(KCSTRA),WORK(KSCTRA))
-            CALL HEADER('Highest order reorthonormalization Hessian',-1)
-            CALL PRIHES(HESFS2,'CENTERS',WORK(KCSTRA),WORK(KSCTRA))
+      IF (IPRINT .GT. 0) THEN
+         IF (EXPGRA) THEN
+            CALL HEADER('One-electron part of alpha gradient',-1)
+            WRITE (LUPRI,'(2X,5F12.8)') (ALPGRD(I),I=1,KMAX)
+         ELSE IF (PROPTY) THEN
+            KCSTRA = 1
+            KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
+            KLAST  = KSCTRA + 9*NUCDEP*NUCDEP
+            IF (KLAST .GT. LWORK) 
+     &           CALL STOPIT('ONEDR1','TRACOR',KLAST,LWORK)
+            CALL HEADER('Kinetic energy integral gradient',-1)
+            CALL PRIGRD(GRADKE,WORK(KCSTRA),WORK(KSCTRA))
+            CALL HEADER('Nuclear attraction integral gradient',-1)
+            CALL PRIGRD(GRADNA,WORK(KCSTRA),WORK(KSCTRA))
+            CALL HEADER('Reorthonormalization gradient',-1)
+            CALL PRIGRD(GRADFS,WORK(KCSTRA),WORK(KSCTRA))
             IF (SOLVNT) THEN
-               CALL HEADER('HSOLT2 part of solvent Hessian',-1)
-               CALL PRIHES(HSOLT2,'CENTERS',WORK(KCSTRA),WORK(KSCTRA))
-               CALL HEADER('HSOLNN part of solvent Hessian',-1)
-               CALL PRIHES(HSOLNN,'CENTERS',WORK(KCSTRA),WORK(KSCTRA))
+               CALL HEADER('Solvent energy contributions',-1)
+               WRITE(LUPRI,'(3(/A,F15.10))')
+     &            ' Nuclear solvent energy:',ESOLNN,
+     &            ' Electr. solvent energy:',ESOLTT,
+     &            ' Total   solvent energy:',ESOLNN+ESOLTT
+               CALL HEADER('Electronic solvent part of gradient',-1)
+               CALL PRIGRD(GSOLTT,WORK(KCSTRA),WORK(KSCTRA))
+               CALL HEADER('Nuclear solvent part of gradient',-1)
+               CALL PRIGRD(GSOLNN,WORK(KCSTRA),WORK(KSCTRA))
             END IF
-         END IF
-         IF (DIFDIP) THEN
-            CALL HEADER('Electronic contributions to static part'//
-     &                  ' of dipole gradient',-1)
-            CALL FCPRI(DDIPE,'APT',WORK(KCSTRA),WORK(KSCTRA))
+            IF (DFTRUN) THEN
+               CALL HEADER('DFT contribution to gradient',-1)
+               CALL PRIGRD(GRADFT,WORK(KCSTRA),WORK(KSCTRA))
+            END IF
+            IF (SECDER) THEN
+               CALL HEADER('Kinetic energy integral Hessian',-1)
+               CALL PRIHES(HESSKE,'CENTERS',WORK(KCSTRA),WORK(KSCTRA))
+               CALL HEADER('Nuclear attraction integral Hessian',-1)
+               CALL PRIHES(HESSNA,'CENTERS',WORK(KCSTRA),WORK(KSCTRA))
+               CALL HEADER('Highest order reorthonormalization Hessian',
+     &                      -1)
+               CALL PRIHES(HESFS2,'CENTERS',WORK(KCSTRA),WORK(KSCTRA))
+               IF (SOLVNT) THEN
+                 CALL HEADER('HSOLT2 part of solvent Hessian',-1)
+                 CALL PRIHES(HSOLT2,'CENTERS',WORK(KCSTRA),WORK(KSCTRA))
+                 CALL HEADER('HSOLNN part of solvent Hessian',-1)
+                 CALL PRIHES(HSOLNN,'CENTERS',WORK(KCSTRA),WORK(KSCTRA))
+               END IF
+            END IF
+            IF (DIFDIP) THEN
+               CALL HEADER('Electronic contributions to static part'//
+     &                     ' of dipole gradient',-1)
+               CALL FCPRI(DDIPE,'APT',WORK(KCSTRA),WORK(KSCTRA))
+            END IF
          END IF
       END IF
 C
@@ -1122,12 +1137,12 @@ C  /* Deck tlmwr1 */
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <nuclei.h>
 #include <iratdef.h>
       PARAMETER (DM1 = -1.0D00, THRSH = 1.0D-07)
       LOGICAL ERRORE, ERRORN
       DIMENSION TLMD(LMNTOT,3*NUCDEP,2), FCM(LMNTOT), GRADE(*),
      &          GRADN(*), GDIFE(*), GDIFN(*), WORK(LWORK)
+#include <nuclei.h>
 #include <inftap.h>
 #include <cbisol.h>
 #include <taysol.h>

@@ -38,10 +38,11 @@ C  /* Deck oneprm */
      &                  RLMINT,RLMTAB,FCM,
      &                  WORK,LWORK,IPRINT,PROPTY,MAXDIF,NATOMC,TOLOG,
      &                  TOLS,SECDER,DIFDIP,FACINT,COORC,
-     &                  GNUEXP,JCENTC,NCENTC,NCLONE)
+     &                  GNUEXP,JCENTC,NCENTC,NCLONE,EXPDER)
 C
 #include <implicit.h>
 #include <priunit.h>
+#include <maxorb.h>
 C
       LOGICAL PROPTY, SECDER, DIFDIP, NCLONE
       DIMENSION WORK(LWORK)
@@ -49,14 +50,19 @@ C
      &          STDER2(KCKTAB,6,2),
      &          SINT0(KCKTAB), DINT1(KCKTAB,3,3),
      &          ADER(*), FACINT(*), COORC(3,*), JCENTC(*), NCENTC(*),
-     &          RLMINT(*), RLMTAB(*), FCM(*), GNUEXP(*)
+     &          RLMINT(*), RLMTAB(*), FCM(*), GNUEXP(*), EXPDER(*)
 #include <onecom.h>
+#include <expopt.h>
 C
       JMAXD = 2
-      IF (PROPTY .AND. .NOT.ONECEN) JMAXD = 4
+      IF (PROPTY .AND. .NOT.ONECEN .AND. .NOT.EXPGRA) JMAXD = 4
 C
       JMAXA = NHKTA - 1
       JMAXB = NHKTB - 1
+      IF (EXPGRA) THEN
+         JMAXA = JMAXA + 2
+         JMAXB = JMAXB + 2
+      END IF
       JMAXT = JMAXA + JMAXB + JMAXD
       JMAXM = 0
 C
@@ -71,7 +77,7 @@ C
      &            WORK(KAHGTF),WORK(KODC),JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
      &            IPRINT,PROPTY,MAXDIF,NATOMC,TOLOG,TOLS,SECDER,DIFDIP,
      &            FACINT,COORC,GNUEXP,JCENTC,NCENTC,NHKTAP,NCLONE,
-     &            WORK(KLAST),LWRK)
+     &            EXPDER,WORK(KLAST),LWRK)
       RETURN
       END
 C  /* Deck onepr1 */
@@ -80,7 +86,7 @@ C  /* Deck onepr1 */
      &                  AHGTF,ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,IPRINT,
      &                  PROPTY,MAXDIF,NATOMC,TOLOG,TOLS,SECDER,DIFDIP,
      &                  FACINT,COORC,GNUEXP,JCENTC,NCENTC,NHKTAP,NCLONE,
-     &                  WORK,LWORK)
+     &                  EXPDER,WORK,LWORK)
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -97,7 +103,7 @@ C
      &          STDER2(KCKTAB,6,2), RLMINT(*), RLMTAB(*), FCM(*),
      &          SINT0(KCKTAB), DINT1(KCKTAB,3,3),
      &          ADER(*), AHGTF(*), NCENTC(*), FACINT(*), COORC(3,*),
-     &          GNUEXP(*), JCENTC(*)
+     &          GNUEXP(*), JCENTC(*), EXPDER(KCKTAB,2,2,NUCA,NUCB)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 C
 #include <cbisol.h>
@@ -106,6 +112,7 @@ C
 #include <clsfmm.h>
 #include <primit.h>
 #include <ecpinf.h>
+#include <expopt.h>
 C
       IF (IPRINT .GT. 4) CALL TITLER('Output from ONEPR1','*',103)
 C
@@ -115,7 +122,7 @@ C
       DISTAB = DIFABX*DIFABX + DIFABY*DIFABY + DIFABZ*DIFABZ
 C
       NATOT  = 0
-      IF (PROPTY) THEN
+      IF (PROPTY .AND..NOT.EXPGRA) THEN
          IF (ONECEN) THEN
             IA0000 =  1
             IA000X =  2
@@ -172,6 +179,9 @@ C
       IF (PROPTY) THEN
          CALL DZERO(SINT0,  KCKTAB)
          CALL DZERO(DINT1,9*KCKTAB)
+      END IF
+      IF (EXPGRA) THEN
+         CALL DZERO(EXPDER,4*KCKTAB*NUCA*NUCB)
       END IF
       IF (SOLVNT) THEN
          IF (MAXDIF .EQ. 0) THEN
@@ -255,9 +265,17 @@ C           Expansion coefficients for undifferentiated orbitals
 C
             KINODC = .NOT.PROPTY
             IDUMMY = 0
-            CALL GETODC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,PROPTY,KINODC,
-     &                  ONECEN,EXPA,EXPB,IPRINT,SAAB13,EXPPI,WORK,LWORK,
-     &                  CORPX,CORPY,CORPZ,.TRUE.,.FALSE.,ORIGIN,IDUMMY)
+            IF (.NOT.EXPGRA) THEN
+               CALL GETODC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,PROPTY,
+     &                  KINODC,ONECEN,EXPA,EXPB,IPRINT,SAAB13,EXPPI,
+     &                  WORK,LWORK,CORPX,CORPY,CORPZ,.TRUE.,.FALSE.,
+     &                  ORIGIN,IDUMMY)
+            ELSE
+              CALL GETODC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,.FALSE.,
+     &                    .TRUE.,ONECEN,EXPA,EXPB,IPRINT,SAAB13,EXPPI,
+     &                    WORK,LWORK,CORPX,CORPY,CORPZ,.TRUE.,.FALSE.,
+     &                    ORIGIN,IDUMMY)
+            END IF
 C
 C           **********************************************
 C           ***** Calculation of Hermitian integrals *****
@@ -272,7 +290,8 @@ C
             IADR = 1
             DO 300 IATOMC = 1,NATOMC
                ICENTC = NCENTC(IATOMC)
-               IF(.NOT.(PROPTY.AND.ONECEN.AND.ICENTA.EQ.ICENTC)) THEN
+               IF(.NOT.(PROPTY.AND.ONECEN.AND.ICENTA.EQ.ICENTC).OR.
+     &            EXPGRA) THEN
                   FACTOR = FACINT(IATOMC)
                   IF (NCLONE .AND. CLASIC(IATOMC)) FACTOR = D0
                   DIFCPX = COORC(1,IATOMC) - CORPX
@@ -300,7 +319,11 @@ C           **********************************************
 C           ***** Calculation of Cartesian integrals *****
 C           **********************************************
 C
-            IF (PROPTY) THEN
+            IF (EXPGRA) THEN
+               CALL CINTAB(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,EXPA,EXPB,
+     &                     EXPDER(1,1,1,IPRIMA,IPRIMB),SHGTF,AHGTF,
+     &                     NATOMC)
+            ELSE IF (PROPTY) THEN
                IF (ONECEN) THEN
                   CALL CINT1(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,ADER,
      &                       AHGTF,NCENTC,NATOMC,SECDER)
@@ -989,6 +1012,138 @@ C
                DINT1(INT1,3,3) = DINT1(INT1,3,3) + SX0*SY0*DZ1
             END IF
          END IF
+  100 CONTINUE
+      RETURN
+      END
+C  /* Deck cintab */
+      SUBROUTINE CINTAB(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,EXPA,EXPB,
+     &                  EXPDER,SHGTF,AHGTF,NATOMC)
+C
+C     TUH
+C
+#include <implicit.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+      PARAMETER (DP5 = 0.5 D00, D1 = 1.0D00, DP75 = 0.75 D00)
+      DIMENSION EXPDER(KCKTAB,2,2), AHGTF(*)
+      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
+#include <onecom.h>
+#include <ader.h>
+#include <lmns.h>
+C
+      AINV = D1/EXPA
+      BINV = D1/EXPB
+C
+      INT = 0
+      DO 100 ICOMPA = 1,KCKTA
+         LVALA = LVALUA(ICOMPA)
+         MVALA = MVALUA(ICOMPA)
+         NVALA = NVALUA(ICOMPA)
+      DO 100 ICOMPB = 1,KCKTB
+         LVALB = LVALUB(ICOMPB)
+         MVALB = MVALUB(ICOMPB)
+         NVALB = NVALUB(ICOMPB)
+C
+         INT = INT + 1
+C
+C    ***************************************
+C    ***** CALCULATE OVERLAP INTEGRALS *****
+C    ***************************************
+C
+         S0X = SHGTF*ODC(LVALA,  LVALB  ,0,0,0,1)
+         S0Y = SHGTF*ODC(MVALA,  MVALB  ,0,0,0,2)
+         S0Z = SHGTF*ODC(NVALA,  NVALB  ,0,0,0,3)
+         SAX = SHGTF*ODC(LVALA+2,LVALB  ,0,0,0,1)
+         SAY = SHGTF*ODC(MVALA+2,MVALB  ,0,0,0,2)
+         SAZ = SHGTF*ODC(NVALA+2,NVALB  ,0,0,0,3)
+         SBX = SHGTF*ODC(LVALA,  LVALB+2,0,0,0,1)
+         SBY = SHGTF*ODC(MVALA,  MVALB+2,0,0,0,2)
+         SBZ = SHGTF*ODC(NVALA,  NVALB+2,0,0,0,3)
+C
+         AFAC = (DP5*(LVALA + MVALA + NVALA) + DP75)*AINV
+         BFAC = (DP5*(LVALB + MVALB + NVALB) + DP75)*BINV
+         EXPDER(INT,1,1) = EXPDER(INT,1,1) + AFAC*S0X*S0Y*S0Z 
+     &                   - SAX*S0Y*S0Z - S0X*SAY*S0Z - S0X*S0Y*SAZ 
+         EXPDER(INT,2,1) = EXPDER(INT,2,1) + BFAC*S0X*S0Y*S0Z
+     &                   - SBX*S0Y*S0Z - S0X*SBY*S0Z - S0X*S0Y*SBZ 
+C
+C     ***************************************
+C     ***** CALCULATE KINETIC INTEGRALS *****
+C     ***************************************
+C
+         THGTF = - DP5*SHGTF
+         T0X = THGTF*ODC(LVALA,  LVALB  ,0,2,0,1)
+         T0Y = THGTF*ODC(MVALA,  MVALB  ,0,2,0,2)
+         T0Z = THGTF*ODC(NVALA,  NVALB  ,0,2,0,3)
+         TAX = THGTF*ODC(LVALA+2,LVALB  ,0,2,0,1)
+         TAY = THGTF*ODC(MVALA+2,MVALB  ,0,2,0,2)
+         TAZ = THGTF*ODC(NVALA+2,NVALB  ,0,2,0,3)
+         TBX = THGTF*ODC(LVALA,  LVALB+2,0,2,0,1)
+         TBY = THGTF*ODC(MVALA,  MVALB+2,0,2,0,2)
+         TBZ = THGTF*ODC(NVALA,  NVALB+2,0,2,0,3)
+C
+         AINT = (T0X*S0Y*S0Z + S0X*T0Y*S0Z + S0X*S0Y*T0Z)*AFAC
+     &        - (TAX*S0Y*S0Z + SAX*T0Y*S0Z + SAX*S0Y*T0Z)
+     &        - (T0X*SAY*S0Z + S0X*TAY*S0Z + S0X*SAY*T0Z)
+     &        - (T0X*S0Y*SAZ + S0X*T0Y*SAZ + S0X*S0Y*TAZ)
+         BINT = (T0X*S0Y*S0Z + S0X*T0Y*S0Z + S0X*S0Y*T0Z)*BFAC
+     &        - (TBX*S0Y*S0Z + SBX*T0Y*S0Z + SBX*S0Y*T0Z)
+     &        - (T0X*SBY*S0Z + S0X*TBY*S0Z + S0X*SBY*T0Z)
+     &        - (T0X*S0Y*SBZ + S0X*T0Y*SBZ + S0X*S0Y*TBZ)
+C
+C     **************************************************
+C     ***** CALCULATE NUCLEAR ATTRACTION INTEGRALS *****
+C     **************************************************
+C
+         MAXT = LVALA + LVALB
+         MAXU = MVALA + MVALB
+         MAXV = NVALA + NVALB
+         IADRAV = 1
+         DO IV = 0, MAXV + 2
+            E0Z = ODC(NVALA,  NVALB  ,IV,0,0,3)
+            EAZ = ODC(NVALA+2,NVALB  ,IV,0,0,3)
+            EBZ = ODC(NVALA,  NVALB+2,IV,0,0,3)
+            IADRAU = IADRAV
+            DO IU = 0, MAXU + 2
+               E0Y = ODC(MVALA,  MVALB  ,IU,0,0,2)
+               EAY = ODC(MVALA+2,MVALB  ,IU,0,0,2)
+               EBY = ODC(MVALA,  MVALB+2,IU,0,0,2)
+               DO IT = 0, MAXT + 2
+               IF (IT+IU+IV .LE. MAXT+MAXU+MAXV+2) THEN
+                  E0X = ODC(LVALA,  LVALB  ,IT,0,0,1)
+                  EAX = ODC(LVALA+2,LVALB  ,IT,0,0,1)
+                  EBX = ODC(LVALA,  LVALB+2,IT,0,0,1)
+                  E0XY = E0X*E0Y
+                  E0XZ = E0X*E0Z
+                  E0YZ = E0Y*E0Z
+                  IF      (IT.GT.MAXT) THEN
+                     AE = - EAX*E0YZ 
+                     BE = - EBX*E0YZ 
+                  ELSE IF (IU.GT.MAXU) THEN
+                     AE = - EAY*E0XZ 
+                     BE = - EBY*E0XZ 
+                  ELSE IF (IV.GT.MAXV) THEN
+                     AE = - EAZ*E0XY
+                     BE = - EBZ*E0XY
+                  ELSE
+                     AE = AFAC*E0XY*E0Z - EAX*E0YZ - EAY*E0XZ - EAZ*E0XY
+                     BE = BFAC*E0XY*E0Z - EBX*E0YZ - EBY*E0XZ - EBZ*E0XY
+                  END IF
+                  IADR00 = IADRAU + IT
+                  IADD = - NAHGTF
+                  DO IATOM = 1,NATOMC
+                     IADD = IADD + NAHGTF
+                     AINT = AINT + AE*AHGTF(IADR00 + IADD)
+                     BINT = BINT + BE*AHGTF(IADR00 + IADD)
+                  END DO
+               END IF
+               END DO
+               IADRAU = IADRAU + ISTEPU
+            END DO
+            IADRAV = IADRAV + ISTEPV
+         END DO
+         EXPDER(INT,1,2) = EXPDER(INT,1,2) + AINT
+         EXPDER(INT,2,2) = EXPDER(INT,2,2) + BINT
   100 CONTINUE
       RETURN
       END

@@ -910,6 +910,7 @@ C     ***** First Shell Index *****
 C     *****************************
 C
       ISHELA = ISHLA
+C
       MBSA   = MBSISH(ISHELA)
       NHKTA  = NHKTSH(ISHELA)
       KHKTA  = KHKTSH(ISHELA)
@@ -1103,7 +1104,6 @@ C
       SAVE ISHLAB
 C
       CALL QENTER('TWODIS')
-      write(6,*) 'TWODIS'
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWODIS','*',103)
 C
       IF (NUMDIS .EQ. -1) THEN
@@ -1391,6 +1391,7 @@ C  /* Deck twoods */
 #include <blocks.h>
 #include <twosta.h>
 #include <drw2el.h>
+#include <expopt.h>
 #if defined (VAR_SPLITFILES)
       CHARACTER*80 FNNAME, FNNM2
 #include <chrnos.h>
@@ -1541,12 +1542,21 @@ C
       KJSTRD = KJSTRC + (NSETC + 1)/IRAT
       KLAST  = KJSTRD + (NSETD + 1)/IRAT
 C
+      IF (EXPGRA) THEN
+         LIXPAB = (2*NUCA*NUCB*NODCAB + 1)/IRAT
+         LIXPCD = (2*NUCC*NUCD*NODCCD + 1)/IRAT
+      ELSE
+         LIXPAB = 0
+         LIXPCD = 0
+      END IF
       KCKMAX = MAX(KCKTA,KCKTB,KCKTC,KCKTD)
       KCORAB = KLAST
       KCORCD = KCORAB + 9*NUCA*NUCB*NODCAB
       KEXPAB = KCORCD + 9*NUCC*NUCD*NODCCD
       KEXPCD = KEXPAB + 3*NUCA*NUCB*NODCAB
-      KFACAB = KEXPCD + 3*NUCC*NUCD*NODCCD
+      KIXPAB = KEXPCD + 3*NUCC*NUCD*NODCCD
+      KIXPCD = KIXPAB +   LIXPAB 
+      KFACAB = KIXPCD +   LIXPCD 
       KFACCD = KFACAB +   NUCA*NUCB*NODCAB
       KLMNVL = KFACCD +   NUCC*NUCD*NODCCD
       KLAST  = KLMNVL + (20*KCKMAX  + 1)/IRAT
@@ -1601,7 +1611,8 @@ C
      &            INDHSQ,IODDHR,INDHER,WORK(KLMNVL),
      &            WORK(KPNTAB),WORK(KPNTCD),WORK(KREDAB),WORK(KREDCD),
      &            IFCTYP,ADISTR,JSTRSH,NPRIMS,NCONTS,IORBSH,WRKBUF,
-     &            GABRAO,DMRAO,DMRSO,DINTSKP,IREPDM)
+     &            GABRAO,DMRAO,DMRSO,DINTSKP,IREPDM,
+     &            WORK(KIXPAB),WORK(KIXPCD))
       LWTOT  = LWTOT - KLAST
       RETURN
       END
@@ -1617,7 +1628,7 @@ C  /* Deck twood1 */
      &                  NINDCD,INDHSQ,IODDHR,INDHER,LMNVLS,NPNTAB,
      &                  NPNTCD,NREDAB,NREDCD,IFCTYP,ADISTR,JSTRSH,
      &                  NPRIMS,NCONTS,IORBSH,WRKBUF,
-     &                  GABRAO,DMRAO,DMRSO,DINTSKP,IREPDM)
+     &                  GABRAO,DMRAO,DMRSO,DINTSKP,IREPDM,IXPAB,IXPCD)
 #include <implicit.h>
 #include <priunit.h>
 #include <r12int.h>
@@ -1647,7 +1658,8 @@ C  /* Deck twood1 */
      &          NREDAB(*), NREDCD(*), WRKBUF(*), IORBSH(MXSHEL,MXAOVC),
      &          JSTRSH(MXSHEL,MXAOVC,2), NPRIMS(MXSHEL,MXAOVC,2),
      &          NCONTS(MXSHEL,MXAOVC,2),GABRAO(*),
-     &          DMRAO(*),DMRSO(*),DINTSKP(*),IREPDM(*)
+     &          DMRAO(*),DMRSO(*),DINTSKP(*),IREPDM(*),
+     &          IXPAB(*),IXPCD(*)
 #include <drw2el.h>
 #include <twocom.h>
 #include <inftap.h>
@@ -1696,7 +1708,7 @@ C
      &            JSTRA,JSTRB,TCONAB,TPRAB,GENAB,12,THRESH,MAXDER,
      &            MULA,MULB,NODCAB,NORTAB,NINDAB,NPNTAB,NREDAB,
      &            KHKTA,KHKTB,EXPECT,DIRFCK,WORK,LWORK,RPRIAB,RCNTAB,
-     &            IPRINT)
+     &            IXPAB,IPRINT)
       IF (ISUM(NODCAB,NUCTAB,1) .EQ. 0) RETURN
 C
 C     Overlap distributions for second electron
@@ -1708,7 +1720,7 @@ C
      &            JSTRC,JSTRD,TCONCD,TPRCD,GENCD,34,THRESH,MAXDER,
      &            MULC,MULD,NODCCD,NORTCD,NINDCD,NPNTCD,NREDCD,
      &            KHKTC,KHKTD,EXPECT,DIRFCK,WORK,LWORK,RPRICD,RCNTCD,
-     &            IPRINT)
+     &            IXPCD,IPRINT)
       IF (ISUM(NODCCD,NUCTCD,1) .EQ. 0) RETURN
 C
       CALL GETLMN(LMNVLS,IPRINT)
@@ -1813,7 +1825,8 @@ C
      &               WORK(KPNTRP),WORK(KPNTLG),NUCTAB,NUCTCD,INDHSQ,
      &               IODDHR,INDHER,LMNVLS,NPNTAB,NPNTCD,NREDAB,NREDCD,
      &               IFCTYP,ADISTR,IORBSH,WRKBUF,
-     &               GABRAO,DMRAO,DMRSO,DINTSKP,WORK(KDNSBF),IREPDM)
+     &               GABRAO,DMRAO,DMRSO,DINTSKP,WORK(KDNSBF),IREPDM,
+     &               IXPAB,IXPCD)
          LWTOT = LWTOT - KLAST
       END IF
       RETURN
@@ -1832,14 +1845,14 @@ C  /* Deck symlop */
      &                  IPNTRP,IPNTLG,NUCTAB,NUCTCD,INDHSQ,IODDHR,
      &                  INDHER,LMNVLS,NPNTAB,NPNTCD,NREDAB,NREDCD,
      &                  IFCTYP,ADISTR,IORBSH,WRKBUF,
-     &                  GABRAO,DMRAO,DMRSO,DINTSKP,DNSBUF,IREPDM)
+     &                  GABRAO,DMRAO,DMRSO,DINTSKP,DNSBUF,IREPDM,
+     &                  IXPAB,IXPCD)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <aovec.h>
 #include <maxorb.h>
-#include <blocks.h>
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0)
       CHARACTER COMP(2)*1,SPDCAR*1
       LOGICAL AACDX, AACDY, AACDZ, ABCCX, ABCCY, ABCCZ, NOPV, NODV,
@@ -1868,13 +1881,16 @@ C  /* Deck symlop */
      &          NREDAB(*), NREDCD(*), WRKBUF(*), IORBSH(MXSHEL,MXAOVC),
      &          IEFFB(0:7), IEFFC(0:7), IEFFD(0:7),
      &          GABRAO(NSYMBL,NSYMBL),DMRAO(NSYMBL,NSYMBL,NDMAT),
-     &          DMRSO(*),DNSBUF(2,NDMAT),DINTSKP(2,4),IREPDM(*)
+     &          DMRSO(*),DNSBUF(2,NDMAT),DINTSKP(2,4),IREPDM(*),
+     &          IXPAB(NUCA*NUCB,2,NODCAB), IXPCD(NUCC*NUCD,2,NODCCD)
 #include <twocom.h>
+#include <blocks.h>
 #include <symmet.h>
 #include <dorps.h>
 #include <nuclei.h>
 #include <twosta.h>
 #include <energy.h>
+#include <expopt.h>
 #include <drw2el.h>
 #include <r12int.h>
 #include <doxyz.h>
@@ -1912,8 +1928,8 @@ C
       HKABCD = FMULT(IBTAND(MULAB,MULCD))
       IF (FINDPT.OR.DPTINT) HKABCD = D2*HKABCD 
       IF (SPNORB) HKABCD = - HKABCD
-      IF (UNDIFF .OR. LONDON .OR. SPNORB .OR. 
-     &    DIRFCK .OR. DISTRI .OR. SOFOCK .OR. DIA2SO .OR. ZFS2EL) THEN
+      IF (UNDIFF .OR. LONDON .OR. SPNORB .OR. DIRFCK .OR. 
+     &    DISTRI .OR. SOFOCK .OR. DIA2SO .OR. ZFS2EL .OR. EXPGRA) THEN
          DOX = .TRUE.
          DOY = .TRUE.
          DOZ = .TRUE.
@@ -2067,7 +2083,7 @@ C              ==================================================
 C
                CALL EXCSGN(COEFCD,JMAXC,JMAXD,NHKTC,NHKTD,NUCCD,
      &                     MXUCCD,ICD0X,ICD0Y,ICD0Z,MAXDER,LONDON,
-     &                     SPNORB,DIA2SO,ISYMT,IPRINT)
+     &                     SPNORB,DIA2SO,EXPGRA,ISYMT,IPRINT)
 ckr           Do we need anything fancy changing of sign for ZFS2EL
 C
 C
@@ -2138,7 +2154,7 @@ C
      &                  (ICENTA .EQ. ICENTD) .AND.
      &                  (ICENTA .NE. 0)
                IF (ONECEN) THEN
-                  IF (MAXDER .EQ. 0) THEN
+                  IF (MAXDER .EQ. 0 .OR. EXPGRA) THEN
                      IF (IBTAND(JMAX0,1).EQ.1)              GO TO 300
                   ELSE
                      IF (PERTUR .OR. EXPECT .OR. LONDON)    GO TO 300
@@ -2212,7 +2228,7 @@ C
      &                     SIGNAX,SIGNAY,SIGNAZ,SIGNBX,SIGNBY,SIGNBZ,
      &                     SIGNCX,SIGNCY,SIGNCZ,SIGNDX,SIGNDY,SIGNDZ,
      &                     NCCINT,MAXDER,EXPECT,LONDON,SPNORB,DIA2SO,
-     &                     ZFS2EL,IATOM,MULTE,NINTYP,IPRINT)
+     &                     ZFS2EL,EXPGRA,IATOM,MULTE,NINTYP,IPRINT)
 C
 C              ************************
 C              ***** AO integrals *****
@@ -2246,7 +2262,7 @@ C
      &                     SIGNT,INDHSQ,IODDHR,INDHER,LMNVLS,NINDAB,
      &                     NINDCD,NPNTAB(1,1,NSYMR),NPNTCD(1,1,NSYMS),
      &                     NREDAB,NREDCD,IFCTYP,HESSEE,DNSBUF,DINTSKP,
-     &                     NSOINT)
+     &                     NSOINT,IXPAB(1,1,NSYMR),IXPCD(1,1,NSYMS))
                LWTOT  = LWTOT - KLAST
             END IF
   300       CONTINUE
@@ -2365,14 +2381,12 @@ C  /* Deck caoint */
      &                  IPNTAO,IPNTOP,NPCOA,NPCOB,NPCOC,NPCOD,NUCSAB,
      &                  NUCSCD,SIGNT,INDHSQ,IODDHR,INDHER,LMNVLS,NINDAB,
      &                  NINDCD,NPNTAB,NPNTCD,NREDAB,NREDCD,IFCTYP,
-     &                  HESSEE,DNSBUF,DINTSKP,NSOINT)
+     &                  HESSEE,DNSBUF,DINTSKP,NSOINT,IXPAB,IXPCD)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxorb.h>
 #include <maxaqn.h>
-#include <nuclei.h>
-#include <r12int.h>
       LOGICAL NOPV, NODV, PERTUR, EXPECT, NOINT, DDFOCK, DIRFCK, DISTRI,
      &        INTS, UNDIFF, NOCONT, SPNORB, DIA2SO, BIGVEC, ONECEN,
      &        SQ12EL, SOP000, LONDON, SUSCEP, SOFOCK, ZFS2EL
@@ -2385,7 +2399,10 @@ C  /* Deck caoint */
      &          SIGNT(3), INDHSQ(*), IODDHR(*), INDHER(*), LMNVLS(*),
      &          NPNTAB(*), NPNTCD(*), NREDAB(*), NREDCD(*),
      &          FMAT(NBASIS,NBASIS,*), DMAT(NBASIS,NBASIS,*), IFCTYP(*),
-     &          HESSEE(*), DNSBUF(*),DINTSKP(*),WORK(LWORK)
+     &          HESSEE(*), DNSBUF(*),DINTSKP(*), IXPAB(*), IXPCD(*),
+     &          WORK(LWORK)
+#include <nuclei.h>
+#include <r12int.h>
 #include <ccom.h>
 #include <symmet.h>
 #include <twocom.h>
@@ -2522,7 +2539,7 @@ C
      &                     NINDCD,NCCINT,NINTYP,WORK,LWORK,ISYMR,ISYMS,
      &                     ISYMT,ICORBA,ICORBB,ICORBC,ICORBD,THRESH,
      &                     HKABCD,IPRINT,NOPV,NODV,EXPECT,LONDON,SUSCEP,
-     &                     DIA2SO,ZFS2EL,DDFOCK)
+     &                     DIA2SO,ZFS2EL,DDFOCK,IXPAB,IXPCD)
                IF (TKTIME) THEN
                   CALL GETTIM(TIMEND,DUMTIM)
                   TINTEX = TINTEX + TIMEND - TIMSTR
@@ -2546,7 +2563,7 @@ C
      &                  NINTYP,WORK,LWORK,ISYMR,ISYMS,ISYMT,ICORBA,
      &                  ICORBB,ICORBC,ICORBD,THRESH,HKABCD,IPRINT,
      &                  NOPV,NODV,EXPECT,LONDON,SUSCEP,DIA2SO,ZFS2EL,
-     &                  DDFOCK)
+     &                  DDFOCK,IXPAB,IXPCD)
             IF (TKTIME) THEN
                CALL GETTIM(TIMEND,DUMTIM)
                TINTEX = TINTEX + TIMEND - TIMSTR
@@ -2576,7 +2593,7 @@ C
      &                  NINTYP,WORK,LWORK,ISYMR,ISYMS,ISYMT,ICORBA,
      &                  ICORBB,ICORBC,ICORBD,THRESH,HKABCD,IPRINT,
      &                  NOPV,NODV,EXPECT,LONDON,SUSCEP,DIA2SO,ZFS2EL,
-     &                  DDFOCK)
+     &                  DDFOCK,IXPAB,IXPCD)
             IF (TKTIME) THEN
                CALL GETTIM(TIMEND,DUMTIM)
                TINTEX = TINTEX + TIMEND - TIMSTR
@@ -2592,7 +2609,7 @@ C
      &                  NINTYP,WORK,LWORK,ISYMR,ISYMS,ISYMT,ICORBA,
      &                  ICORBB,ICORBC,ICORBD,THRESH,HKABCD,IPRINT,
      &                  NOPV,NODV,EXPECT,LONDON,SUSCEP,DIA2SO,ZFS2EL,
-     &                  DDFOCK)
+     &                  DDFOCK,IXPAB,IXPCD)
             IF (TKTIME) THEN
                CALL GETTIM(TIMEND,DUMTIM)
                TINTEX = TINTEX + TIMEND - TIMSTR
@@ -4200,6 +4217,7 @@ C  /* Deck whtrep */
 #include <dorps.h>
 #include <symmet.h>
 #include <twocom.h>
+#include <expopt.h>
 #include <ibtfun.h>
 C
       DO 100 I = 0, MAXREP
@@ -4208,7 +4226,7 @@ C
 C
 C     Undifferentiated integrals written on file
 C
-      IF (ITYPE .EQ. 0) THEN
+      IF (ITYPE .EQ. 0 .OR. EXPGRA) THEN
          DOPREP(0) = .TRUE.
 C
 C     Differentiated integrals written on file (atom JATOM)

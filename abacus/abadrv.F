@@ -72,6 +72,7 @@ C
 #include <infinp.h>
 #include <numder.h>
 #include <dftcom.h>
+#include <expopt.h>
 C
 C
       LOGICAL PROPTY, OLDDX, DFTADX
@@ -116,12 +117,13 @@ C
       CALL FLSHFO(LUPRI)
 C
 C     *********************************************************
-C     ***** One-Electron Expectation Values and Integrals *****C
+C     ***** One-Electron Expectation Values and Integrals *****
 C     *********************************************************
 C
       CALL GETTIM(TIMSTR,TIMDUM)
       IF (.NOT.PASONE) THEN
          PROPTY = .TRUE.
+         EXPGRA = EXPGRD
          CALL ONEINT(WORK,LWORK,PASONE,PROPTY)
          IF (PASONE) CALL WRITRS
          CALL FLSHFO(LUPRI)
@@ -573,7 +575,7 @@ C
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <priunit.h>
-      PARAMETER (NDIR = 28, NTABLE = 50, D0 = 0.D0)
+      PARAMETER (NDIR = 28, NTABLE = 51, D0 = 0.D0)
       LOGICAL POPULA, NOHESS, FCKEXP, GAGT
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      *          REWORD*12, RWORD*6, RSTLBL(9)*6, WORD1*7, WRDSRC*7,
@@ -632,7 +634,7 @@ C
      &             '.EXPFCK', '.GAUGEO', '.DIPORG',
      &	           '.RAMAN ', '.QUADRU', '.NQCC  ',
      &             '.CAVORG', '.HYPER ', '.VERDET',
-     &             '.MCD   ', '.SOPPA '/
+     &             '.MCD   ', '.SOPPA ', '.EXPGRA'/
       DATA RSTLBL /'ORTREL', 'DIPCTL', 'RESPON', 'RELAX ',
      &             'DIPREL', 'TROINV', 'CCRHS ', 'CCTRES',
      &             'CCRELA'/
@@ -717,6 +719,7 @@ C
       OPTROT = .FALSE.
       LINCPL = .FALSE.
       SKIPAB = .FALSE.
+      EXPGRD = .FALSE.
       CALL DZERO(ORIGIN,3)
       CALL DZERO(CMXYZ,3)
       CALL DZERO(DIPORG,3)
@@ -798,7 +801,8 @@ C
      &                111,112,113,114,115,116,117,118,119,120,
      &                121,122,123,124,125,126,127,128,129,130,
      &                131,132,133,134,135,136,137,138,139,140,
-     &                141,142,143,144,145,146,147,148,149,150),I
+     &                141,142,143,144,145,146,147,148,149,150,
+     &                151),I
             END IF
    99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1016,6 +1020,9 @@ cs
          GOTO 100
  150     CONTINUE 
             ABASOP = .TRUE.
+         GOTO 100
+ 151     CONTINUE 
+            EXPGRD = .TRUE.
          GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 999
@@ -1240,7 +1247,8 @@ C
       IF (OPTROT) WRITE (LUPRI,'(5X,A)')
      &            ' Optical rotation strengths'
       IF (SPINRO) WRITE(LUPRI,'(5X,A)') ' Spin-rotation constants'
-      IF (MOLGFA) WRITE(LUPRI,'(5X,A)') ' Molecular g-tensor'
+      IF (MOLGFA) WRITE(LUPRI,'(5X,A)') ' Molecular g-factor'
+      IF (EXPGRD) WRITE(LUPRI,'(5X,A)') ' Orbital-exponent gradient' 
       IF (.NOT. MASSVE) WRITE(LUPRI,'(5X,A)')
      &     ' No mass-velocity correction calculated'
       IF (.NOT. DARWIN) WRITE(LUPRI,'(5X,A)')
@@ -1671,9 +1679,10 @@ C
 #include <maxorb.h>
 #include <maxaqn.h>
 #include <codata.h>
+#include <aovec.h>
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0,
      *            D3 = 3.0D0, D100 = 100.0D0)
-      CHARACTER NAME*6
+      CHARACTER NAME*6, SPDCAR*1
       DIMENSION PRAPOL(3,3), PRVPOL(6), CSTRA(*), SCTRA(*), POLDD(*),
      *          POLDL(*), POLDA(*), WORK(LWORK)
       DIMENSION SPNDSO(MXCOOR,MXCOOR), SPNPSO(MXCOOR,MXCOOR),
@@ -1681,17 +1690,20 @@ C
      &          SPSDFC(MXCOOR,MXCOOR)
       DIMENSION TRLEN(*), TRVEL(*), TRLON(*), TRMAG(*), BSRLON(*),
      &          EXENG(*), FONAC(*), FONA2(*)
-      LOGICAL OD
+      LOGICAL OD, FIRST
 #include <abainf.h>
 #include <taymol.h>
 #include <nuclei.h>
 #include <inftap.h>
+#include <shells.h>
 #include <symmet.h>
 #include <helfey.h>
 #include <moldip.h>
 #include <sigma.h>
 #include <relcor.h>
 #include <aatens.h>
+#include <expopt.h>
+#include <primit.h>
 C
 C     Heading
 C
@@ -1771,7 +1783,103 @@ C
 C
 C     Gradient
 C
-         IF (MOLGRD) THEN
+         IF (EXPGRD) THEN
+            CALL HEADER(
+     &         'Orbital-exponent gradient for all atoms (au)',-1)
+            WRITE (LUPRI,'(4X,2AA)') ' #   atom Z   deg l       ',
+     &          '        exponent           grad           grad ln'
+            WRITE (LUPRI,'()')
+            JCNT = 1
+            ALPNRM = D0
+            ALPNRL = D0
+            DO I = 1, KMAX
+               ISHELL = IPRSHL(I)
+               LVAL = NHKT(ISHELL) - 1
+               ICNT = NCENT(ISHELL)
+               MLT = MULT(ISTBAO(ISHELL))
+               ICHRG = NINT(CHARGE(ICNT))
+               IF (JCNT .NE. ICNT) WRITE (LUPRI,'()')
+               JCNT = ICNT
+               GRAD = ALPGRD(I)/FLOAT(MLT)
+               GRDL = GRAD*PRIEXP(I)
+C              WRITE (LUPRI,'(5X,A,I3,3X,A,I2,I5,4X,A,3F17.10)')
+               WRITE (LUPRI,'(1X,A,I3,3X,A,I2,I5,2X,A,F23.10,2F17.10)')
+     &              '##',I,NAMDEP(ICNT)(1:4),ICHRG,
+     &               MLT,SPDCAR(LVAL),PRIEXP(I), GRAD,GRDL
+               ALPNRM = ALPNRM + FLOAT(MLT)*GRAD*GRAD 
+               ALPNRL = ALPNRL + FLOAT(MLT)*GRDL*GRDL 
+            END DO
+            ALPNRM = SQRT(ALPNRM)
+            ALPNRL = SQRT(ALPNRL)
+            WRITE (LUPRI,'(/,5X,A,19X,E12.6,5X,E12.6)')
+     &         '##     Norm of gradient:   ',ALPNRM,ALPNRL
+C
+            MAXZ = 0
+            DO I = 1, KMAX
+               MAXZ = MAX(MAXZ,NINT(CHARGE(NCENT(IPRSHL(I)))))
+            END DO
+            DO K = 1, MAXZ
+               FIRST = .TRUE.
+               DO I = 1, KMAX
+               IF (NINT(CHARGE(NCENT(IPRSHL(I)))).EQ.K) THEN
+C
+                  IPRV = -1 
+                  IF (I.GT.1) IPRV = NCENT(IPRSHL(I-1))
+                  ICNT = NCENT(IPRSHL(I))
+                  INXT = -1
+                  IF (I.LT.KMAX) INXT = NCENT(IPRSHL(I+1))
+C
+                  IF (FIRST) THEN
+                     IF (IPRV.NE.ICNT) IREF = I 
+                     IF (INXT.NE.ICNT) FIRST = .FALSE.
+                  ELSE
+                     IF (IPRV.NE.ICNT) IOFF = I
+                     J = IREF - IOFF + I
+                     ALPGRD(J) = ALPGRD(J) + ALPGRD(I)
+                     ALPGRD(I) = D0 
+                  END IF
+               END IF 
+               END DO
+            END DO
+            CALL HEADER('Orbital-exponent gradient (au)',-1)
+            WRITE (LUPRI,'(7X,2AA)')  'Z    l            ',
+     &       '    exponent                grad             grad ln'
+            WRITE (LUPRI,'()')
+            ALPNRM = D0
+            ALPNRL = D0
+            DO K = 1, MAXZ
+               FIRST = .TRUE.
+               DO I = 1, KMAX
+               IF (NINT(CHARGE(NCENT(IPRSHL(I)))).EQ.K) THEN
+C
+                  ICNT = NCENT(IPRSHL(I))
+                  INXT = -1
+                  IF (I.LT.KMAX) INXT = NCENT(IPRSHL(I+1))
+C
+                  IF (FIRST) THEN
+                     ISHELL = IPRSHL(I)
+                     LVAL = NHKT(ISHELL) - 1
+                     GRAD = ALPGRD(I)
+                     GRDL = GRAD*PRIEXP(I)
+C                    WRITE (LUPRI,'(5X,A,I5,4X,A,3F20.10)')
+                     WRITE (LUPRI,'(1X,A,I5,4X,A,F24.10,2F20.10)')
+     &                    '@@',K,SPDCAR(LVAL),PRIEXP(I), GRAD,GRDL
+                     ALPNRM = ALPNRM + GRAD*GRAD 
+                     ALPNRL = ALPNRL + GRDL*GRDL 
+                     IF (INXT.NE.ICNT) THEN
+                        FIRST = .FALSE.
+                        WRITE (LUPRI,'()')
+                     END IF
+                  END IF
+               END IF 
+               END DO
+            END DO
+            ALPNRM = SQRT(ALPNRM)
+            ALPNRL = SQRT(ALPNRL)
+            WRITE (LUPRI,'(5X,A,17X,E12.6,8X,E12.6)')
+     &         '@@    Norm of gradient:',ALPNRM,ALPNRL
+C
+         ELSE IF (MOLGRD) THEN
             CALL HEADER('Molecular gradient (au)',-1)
             CALL PRIGRD(GRDMOL,CSTRA,SCTRA)
          END IF
