@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rspcr8.F,v 1.1.1.1 2001-02-08 13:33:13 hjj Exp $
+C$Id: rspcr8.F,v 1.2 2001-04-30 15:34:32 vebjornb Exp $
 C
 #include <single.h>
 C
@@ -591,7 +591,7 @@ C
          ICMO1  = ICMO(ISYM1)
          ICMO2  = ICMO(ISYM2)
 C
-         IF ((NBAS2 .NE. 0) .AND. (NVIR2 .NE. 0)) THEN
+         IF (NBAS1*NBAS2*NOCC1*NVIR2 .NE. 0) THEN
             CALL DGEMM('N','T',NBAS2,NOCC1,NVIR2,1.D0,
      &                 CMO(ICMO2+NOCC2*NBAS2+1),NBAS2,
      &                 ZYM(IOCC1+1,IVIR2+1),NORBT,0.D0,
@@ -600,6 +600,8 @@ C
      &                 CMO(ICMO1+1),NBAS1,
      &                 TMP(IBAS2+1,IOCC1+1),NBAST,1.D0,
      &                 DAO(IBAS1+1,IBAS2+1),NBAST)
+         END IF
+         IF (NBAS1*NBAS2*NOCC2*NVIR1 .NE. 0) THEN
             CALL DGEMM('N','T',NBAS2,NVIR1,NOCC2,1.D0,
      &                 CMO(ICMO2+1),NBAS2,
      &                 ZYM(IVIR1+1,IOCC2+1),NORBT,0.D0,
@@ -666,7 +668,7 @@ C
          ICMO1  = ICMO(ISYM1)
          ICMO2  = ICMO(ISYM2)
 C
-         IF ((NBAS2 .NE. 0) .AND. (NOCC2 .NE. 0)) THEN
+         IF (NBAS1*NBAS2*NOCC1*NOCC2 .NE. 0) THEN
             CALL DGEMM('N','T',NBAS2,NOCC1,NOCC2,1.D0,
      &                 CMO(ICMO2+1),NBAS2,
      &                 ZYM(IOCC1+1,IOCC2+1),NORBT,0.D0,
@@ -675,6 +677,8 @@ C
      &                 CMO(ICMO1+1),NBAS1,
      &                 TMP(IBAS2+1,IOCC1+1),NBAST,1.D0,
      &                 DAO(IBAS1+1,IBAS2+1),NBAST)
+         END IF
+         IF (NBAS1*NBAS2*NVIR1*NVIR2 .NE. 0) THEN
             CALL DGEMM('N','T',NBAS2,NVIR1,NVIR2,1.D0,
      &                 CMO(ICMO2+NOCC2*NBAS2+1),NBAS2,
      &                 ZYM(IVIR1+1,IVIR2+1),NORBT,0.D0,
