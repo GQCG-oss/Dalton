@@ -280,8 +280,10 @@ C
       KC1   = KC0   + NC0
       KC2   = KC1   + 3*NC0
       KDGA  = KC2   + NC0
-      KHES  = KDGA  + NBAST
-      KLST  = KHES  + NOCCT*NVIRT*NOCCT*NVIRT
+      KLST  = KDGA  + NBAST
+      KHES = KLST
+CKR      KHES  = KDGA  + NBAST
+CKR      KLST  = KHES  + NOCCT*NVIRT*NOCCT*NVIRT
       LWORK  = LWORK - KLST + 1
 C
 C     Set Zero: only the masters excmat is going to be updated 
