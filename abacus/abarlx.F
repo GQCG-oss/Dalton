@@ -780,18 +780,54 @@ C
 #include <symmet.h>
 #include <ibtfun.h>
 C
+      CALL DZERO(SPNSD,MXCOOR*MXCOOR)
       IF (DOSD .OR. DOSDFC) THEN
-         DO 100 ICOOR1 = 1, 3*NUCDEP
-            DO 200 ICOOR2 = 1, 3*NUCDEP
-               CONT = 0
-               IADDR1 = 3*(ICOOR1 - 1)
-               IADDR2 = 3*(ICOOR2 - 1)
-               DO 300 I = 1, 3
-                  CONT = CONT + WRKSD(IADDR1 + I,IADDR2 + I)
- 300           CONTINUE
-               SPNSD(ICOOR1,ICOOR2) = CONT
- 200        CONTINUE
- 100     CONTINUE
+         JATOM1 = 0
+         DO IREP = 0, MAXREP
+         DO IATOM1 = 1, NUCIND
+            IF (IBTAND(IREP,ISTBNU(IATOM1)).EQ.0) THEN
+               JATOM1 = JATOM1 + 1
+               JATOM2 = 0
+               DO  IREP1 = 0, MAXREP
+               DO  IATOM2 = 1, NUCIND
+                  IF (IBTAND(IREP1,ISTBNU(IATOM2)).EQ.0) THEN
+                     JATOM2 = JATOM2 + 1
+                     DO ICOOR = 1, 3
+                        IREP2 = IBTXOR(ISYMAX(ICOOR,2),IREP)
+                        ISCOR1 = IPTCNT(3*(IATOM1 - 1) + ICOOR,IREP2,2)
+                        DO JCOOR = 1, 3
+                           IREP3 = IBTXOR(ISYMAX(JCOOR,2),IREP1)
+                           ISCOR2 = IPTCNT(3*(IATOM2-1)+JCOOR,IREP3,2)
+                           IF (ISCOR1 .GT. 0 .AND. ISCOR2 .GT. 0) THEN
+                              DO KCOOR = 1, 3
+                                 IF (KCOOR .GT. ICOOR) THEN
+                                   IREP4 = IBTXOR(ISYMAX(KCOOR,2),IREP)
+                                   ISCOR3 = IPTCNT(3*(IATOM1-1)+KCOOR,
+     &                                             IREP4,2)
+                                   IADR1 = 3*(ISCOR3 - 1) + ICOOR
+                                 ELSE
+                                    IADR1 = 3*(ISCOR1 - 1) + KCOOR
+                                 END IF
+                                 IF (KCOOR .GT. JCOOR) THEN
+                                   IREP4 = IBTXOR(ISYMAX(KCOOR,2),IREP1)
+                                   ISCOR3 = IPTCNT(3*(IATOM2-1)+KCOOR,
+     &                                             IREP4,2)
+                                   IADR2 = 3*(ISCOR3 - 1) + JCOOR
+                                 ELSE
+                                    IADR2 = 3*(ISCOR2 - 1) + KCOOR
+                                 END IF
+                             SPNSD(ISCOR1,ISCOR2) = SPNSD(ISCOR1,ISCOR2)
+     &                                            + WRKSD(IADR1,IADR2)
+                              END DO
+                           END IF
+                        END DO
+                     END DO
+                  END IF
+               END DO
+            END DO
+            END IF
+         END DO
+         END DO
       END IF
       IF (DOFC) THEN
          JATOM1 = 0
@@ -836,10 +872,22 @@ C
                            IREP3 = IBTXOR(ISYMAX(JCOOR,2),IREP1)
                            ISCOR2 = IPTCNT(3*(IATOM2-1)+JCOOR,IREP3,2)
                            IF (ISCOR1 .GT. 0 .AND. ISCOR2 .GT. 0) THEN
-                            IADR1 = 3*(ISCOR1 - 1) + JCOOR
-                            IREP4 = IBTXOR(ISYMAX(ICOOR,2),IREP1)
-                            ISCOR3 = IPTCNT(3*(IATOM2-1)+ICOOR,IREP4,2)
-                            IADR2 = 3*(ISCOR3 - 1) + JCOOR
+                              IF (JCOOR .GT. ICOOR) THEN
+                                 IREP4 = IBTXOR(ISYMAX(JCOOR,2),IREP)
+                                 ISCOR3 = IPTCNT(3*(IATOM1-1)+JCOOR,
+     &                                             IREP4,2)
+                                 IADR1 = 3*(ISCOR3 - 1) + ICOOR
+                                 IREP4 = IBTXOR(ISYMAX(JCOOR,2),IREP1)
+                                 ISCOR3 = IPTCNT(3*(IATOM2-1)+JCOOR,
+     &                                           IREP4,2)
+                                 IADR2 = 3*(ISCOR3 - 1) + ICOOR
+                              ELSE
+                                 IADR1 = 3*(ISCOR1 - 1) + JCOOR
+                                 IREP4 = IBTXOR(ISYMAX(ICOOR,2),IREP1)
+                                 ISCOR3 = IPTCNT(3*(IATOM2-1)+ICOOR,
+     &                                           IREP4,2)
+                                 IADR2 = 3*(ISCOR3 - 1) + JCOOR
+                              END IF
                             SPSDFC(ISCOR1,ISCOR2) = WRKSDF(IADR1,JATOM2)
      &                                            + WRKSDF(IADR2,JATOM1)
                            END IF

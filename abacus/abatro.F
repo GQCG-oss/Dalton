@@ -472,7 +472,7 @@ C
                      DO 427 ICOOR1 = 1, 3
                         ISCOR1 = IPTCNT(3*(JATOM - 1) + ICOOR1,IREP2,2)
                         IF (ISCOR1 .GT. 0) THEN
-                        DO 429 ICOOR2 = 1, 3
+                        DO 429 ICOOR2 = 1, ICOOR1
                            ISYM = IBTXOR(IREP2,ISYMAX(ICOOR2,2))
                            IF (ISYM .EQ. IREP1) THEN
                               NSYMCR = NSYMCR + 1

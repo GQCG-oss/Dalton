@@ -2556,7 +2556,6 @@ C
                IF (DOPERT(I1,2)) THEN
       IATOM2 = 0
       DO 85 I2 = 1, I1
-         IF (.NOT.(NCSPNI(I1) .OR. NCSPNI(I2))) GOTO 85
          IF (I2 .EQ. I1) THEN
             MAXSYM = ISYM1 - 1
          ELSE
@@ -2565,6 +2564,7 @@ C
          DO 87 ISYM2 = 0, MAXSYM
             IF (IBTAND(ISTBNU(I2),ISYM2) .EQ. 0) THEN
                IATOM2 = IATOM2 + 1
+               IF (.NOT.(NCSPNI(I1) .OR. NCSPNI(I2))) GOTO 87
                IF (DOPERT(I2,2)) THEN
                   IATIJ = IATOM1*(IATOM1 -1 )/2 + IATOM2
                   NZ1 = NINT(CHARGE(I1))
