@@ -463,7 +463,7 @@ fi
 
 # Try to find paths to special libraries
 if [ $WHICH = "linux" ]; then
-	testdir=`locate libmkl.so`
+	testdir=`locate libmkl.so libmkl_p3.a`
 	for i in $testdir; do
 	  dn=`dirname $i`; dirlist="$dn $dirlist"
 	done
