@@ -45,12 +45,14 @@ The last directive of the \Sec{*INTEGRALS} input may be \Sec{END OF}.
 
 \subsection{General: \Sec{*INTEGRALS}}
 
+
+
 General-purpose directives are given in the \Sec{*INTEGRALS}
 section. This mainly includes requests for different atomic integrals,
 as well as some
 directives affecting the outcome of such an integral evaluation. Note
-that although not explicitly stated, all test options do {\em not}
-work with symmetry.
+that although not explicitly stated, {\em all test options do not
+work with symmetry}.
 
 For all atomic integrals, the proper expression for the integral is
 given, together with the labels written on the file
@@ -64,10 +66,30 @@ integral\index{property integral} is
 requested in this module, the overlap integrals will also be
 calculated. Note also, that unless the Huckel starting guess is turned
 off, this overlap matrix will not only be calculated for the requested
-basis set, but also for ``ghost'' STO-3G basis set appended to the
+basis set, but also for ``ghost'' ano-4 basis set appended to the
 original set in order to do the Huckel starting guess.
 
 \begin{description}
+\item[\Key{1ELPOT}] One-electron potential energy integrals.
+
+\begin{list}{}{}
+\item Integral:
+\sum_K\left<\chi_{\mu}\left|\frac{Z_K}{r_{K}}\right|\chi_{\nu}\right>$ 
+\item Property label: \verb|POTENERG|
+\end{list}
+
+\item[\Key{AD2DAR}]\verb| |\newline
+\verb|READ (LUCMD,*) DARFAC|
+
+\begin{list}{}{}
+\item Integral:
+\frac{\alpha^2}{4}\left<\chi_{\mu}\chi_{\nu}\left|\delta\left({\mathbf
+r}_{12}\right)\right|\chi_{\rho}\chi_\sigma\right>$ 
+\end{list}
+
+Add two-electron Darwin integrals to the standard electron-repulsion
+integrals with a perturbation factor \verb|DARFAC|.
+
 \item[\Key{ANGLON}] Contribution to the one-electron contribution of
 the magnetic moment\index{magnetic moment} using London orbitals
 \index{London orbitals} arising from the differentiation on the
@@ -76,7 +98,7 @@ London phase factors, see Ref.~\cite{thpjjcp95}.
 \begin{list}{}{}
 \item Integral: $Q_{MN}\left<\chi_{\mu}\left|{\bf
 r}h\right|\chi_{\nu}\right>$
-\item Property label: \verb|XANGLON |, \verb|YANGLON |, \verb|ZANGLON |
+\item Property labels: \verb|XANGLON |, \verb|YANGLON |, \verb|ZANGLON |
 \end{list}
 
 \item[\Key{ANGMOM}] Angular momentum\index{angular momentum} around the molecular origin.
@@ -85,7 +107,7 @@ the \Key{GAUGEO} keyword.
 
 \begin{list}{}{}
 \item Integral: $\left<\chi_{\mu}\left|{\bf L}_{O}\right|\chi_{\nu}\right>$
-\item Property label: \verb|XANGMOM |, \verb|YANGMOM |, \verb|ZANGMOM |
+\item Property labels: \verb|XANGMOM |, \verb|YANGMOM |, \verb|ZANGMOM |
 \end{list}
 
 \item[\Key{CARMOM}]\verb| |\newline
@@ -98,9 +120,9 @@ line specifying order. See also the keyword \Key{SPHMOM}.
 \begin{list}{}{}
 \item Integral:
 $\left<\chi_{\mu}\left|x^{i}y^{j}z^{k}\right|\chi_{\nu}\right>$
-\item Property label: \verb|CMiijjkk|
+\item Property labels: \verb|CMiijjkk|
 \end{list}
-where $i+j+k =$\verb|IORDER|.
+where $ii+jj+kk =$\verb|IORDER|, and where \verb|ii| = (i/10)*10+mod(i,10)
 
 \item[\Key{CM-1}]\verb| |\newline
 \verb|READ (LUCMD, '(A7)') FIELD1|
@@ -115,12 +137,15 @@ include \verb|X-FIELD|, \verb|Y-FIELD|, and \verb|Z-FIELD|.
 \begin{list}{}{}
 \item Integral: $Q_{MN}\left<\chi_{\mu}\left|{\bf
 r}D\right|\chi_{\nu}\right>$
-\item Property label: \verb|D-CM1 X |, \verb|D-CM1 Y |, \verb|D-CM1 Z |
+\item Property labels: \verb|D-CM1 X |, \verb|D-CM1 Y |, \verb|D-CM1 Z |
 \end{list}
 where $D$ is the direction of the applied electric field as specified in
 the input.
 
-\item[\Key{CM-2}] Second derivative electric dipole\index{electric
+\item[\Key{CM-2}]\verb| |\newline
+\verb|READ (LUCMD, '(A7)') FIELD2|
+
+Second derivative electric dipole\index{electric
 dipole} operator
 with respect to an external magnetic field\index{magnetic field} due
 to differentiation of
@@ -132,7 +157,7 @@ include \verb|X-FIELD|, \verb|Y-FIELD|, and \verb|Z-FIELD|.
 \begin{list}{}{}
 \item Integral: $Q_{MN}\left<\chi_{\mu}\left|{\bf
 rr}^{T}D\right|\chi_{\nu}\right>Q_{MN}$
-\item Property label: \verb|D-CM2 XX|, \verb|D-CM2 XY|, \verb|D-CM2 XZ|,
+\item Property labels: \verb|D-CM2 XX|, \verb|D-CM2 XY|, \verb|D-CM2 XZ|,
 \verb|D-CM2 YY|, \verb|D-CM2 YZ|, \verb|D-CM2 ZZ|
 \end{list}
 where $D$ is the direction of the applied electric field as specified in
@@ -147,27 +172,61 @@ r}\right)\right|\chi_{\nu}\right>$
 \item Property label: \verb|DARWIN  |
 \end{list}
 
+\item[\Key{DEROVL}] Geometrical first derivatives of overlap
+integrals.
+
+\begin{list}{}{}
+\item Integral: $\frac{\partial}{\partial {\mathbf
+R}_K}\left<\chi_{\mu}\mid\chi_{\nu}\right>$ 
+\item Property labels: \verb|1DOVLxyz|
+\end{list}
+where $xyz$ is the symmetry adapted nuclear coordinate.
+
+\item[\Key{DERHAM}] Geometrical first derivatives of the one-electron
+Hamiltonian matrix.
+
+\begin{list}{}{}
+\item Integral: $\frac{\partial}{\partial {\mathbf
+R}_K}\left<\chi_{\mu}\left|\sum_K\frac{Z_K}{r_K}-\frac{1}{2}\nabla^2\right|\chi_{\nu}\right>$ 
+\item Property labels: \verb|1DHAMxyz|
+\end{list}
+where $xyz$ is the symmetry adapted nuclear coordinate.
 
 \item[\Key{DIASUS}] Diamagnetic magnetizability\index{diamagnetic
 magnetizability} integrals, as
-calculated with London atomic orbitals, see Ref.~\cite{thpjjcp95}.
+calculated with London atomic orbitals, see
+Ref.~\cite{thpjjcp95}. It is calculated as the sum of the three
+contributions \verb|DSUSLH|, \verb|DSUSLL|, and \verb|DSUSNL|.
 
 \begin{list}{}{}
-\item Integral: $\frac{1}{4}\left<\chi_{\mu}\left|r^{2}_{N}I - {\bf r}_{N}
-{\bf r}_{N}^{T}\right|\chi_{\nu}\right> +\frac{1}{4}
+\item Integral: $\frac{1}{4}\left[\left<\chi_{\mu}\left|r^{2}_{N}I - {\bf r}_{N}
+{\bf r}_{N}^{T}\right|\chi_{\nu}\right> +
 \overline{Q_{MN}\left<\chi_{\mu}\left|{\bf r}{\bf
 L}_{N}^{T}\right|\chi_{\nu}\right>} +
-\frac{1}{4}Q_{MN}\left<\chi_{\mu}\left|{\bf r}{\bf
+Q_{MN}\left<\chi_{\mu}\left|{\bf r}{\bf
 r}^{T}h\right|\chi_{\nu}\right>Q_{MN}$
 \item Property label: \verb|XXdh/dB2|, \verb|XYdh/dB2|,
 \verb|XZdh/dB2|, \verb|YYdh/dB2|, \verb|YZdh/dB2|, \verb|ZZdh/dB2|
 \end{list}
 
+\item[\Key{DIPGRA}]
+
+Calculate dipole gradient integrals, that is, the geometrical first
+derivatives of the dipole length integrals.
+
+\begin{list}{}{}
+\item Integral: $\frac{\partial}{\partial {\mathbf
+R}_K}\left<\chi_{\mu}\left|{\mathbf r}\right|\chi_{\nu}\right>$ 
+\item Property labels: \verb|xy DPG z|
+\end{list}
+where $xy$ is the symmetry adapted nuclear coordinate, and z the
+direction (x/y/z) of the dipole moment.
+
 \item[\Key{DIPLEN}] Dipole length\index{dipole length} integrals.
 
 \begin{list}{}{}
 \item Integral: $\left<\chi_{\mu}\left|{\bf r}\right|\chi_{\nu}\right>$
-\item Property label: \verb|XDIPLEN |, \verb|YDIPLEN |, \verb|ZDIPLEN |
+\item Property labels: \verb|XDIPLEN |, \verb|YDIPLEN |, \verb|ZDIPLEN |
 \end{list}
 
 \item[\Key{DIPORG}]\verb| |\newline
@@ -184,7 +243,11 @@ line containing the three Cartesian components (*). Default is~(0,0,0).
 \item Property label: \verb|XDIPVEL |, \verb|YDIPVEL |, \verb|ZDIPVEL |
 \end{list}
 
-\item[\Key{DSO}] Diamagnetic spin-orbitindex{diamagnetic spin-orbit}
+\item[\Key{DPTOVL}] 
+
+\item[\Key{DPTPOT}]
+
+\item[\Key{DSO}] Diamagnetic spin-orbit\index{diamagnetic spin-orbit}
 integrals. These are
 calculated using Gaussian quadrature\index{Gaussian quadrature} as
 described in
@@ -193,7 +256,7 @@ the keyword \Key{POINTS}.
 
 \begin{list}{}{}
 \item Integral: $\left<\chi_{\mu}\left|\frac{{\bf r}_K^T{\bf r}_LI - {\bf r}_K{\bf r}_L^T}{r_K^3r_L^3}\right|\chi_{\nu}\right>$
-\item Property label: \verb|DSO abcd| where \verb|ab| is the symmetry
+\item Property labels: \verb|DSO abcd| where \verb|ab| is the symmetry
 coordinate of a given component for the symmetry-adapted nucleus K,
 and \verb|cd| is in a similar fashion the symmetry coordinate for the
 symmetry-adapted nucleus L.
@@ -208,7 +271,7 @@ phase-factors, see Ref.~\cite{thpjjcp95}.
 \begin{list}{}{}
 \item Integral:$\frac{1}{4}Q_{MN}\left<\chi_{\mu}\left|{\bf
 r}{\bf r}^{T}h\right|\chi_{\nu}\right>Q_{MN}$
-\item Property label: \verb|XXDSUSLH|, \verb|XYDSUSLH|,
+\item Property labels: \verb|XXDSUSLH|, \verb|XYDSUSLH|,
 \verb|XZDSUSLH|, \verb|YYDSUSLH|, \verb|YZDSUSLH|, \verb|ZZDSUSLH|
 \end{list}
 
@@ -220,7 +283,7 @@ orbitals}, see Ref.~\cite{thpjjcp95}.
 \begin{list}{}{}
 \item Integral: $\frac{1}{4}\overline{Q_{MN}\left<\chi_{\mu}\left|{\bf
 r}{\bf L}_{N}^{T}\right|\chi_{\nu}\right>}$
-\item Property label: \verb|XXDSUSLL|, \verb|XYDSUSLL|,
+\item Property labels: \verb|XXDSUSLL|, \verb|XYDSUSLL|,
 \verb|XZDSUSLL|, \verb|YYDSUSLL|, \verb|YZDSUSLL|, \verb|ZZDSUSLL|
 \end{list}
 
@@ -234,7 +297,7 @@ Ref.~\cite{thpjjcp95}.
 \begin{list}{}{}
 \item Integral: $\frac{1}{4}\left<\chi_{\mu}\left|r^{2}_{N}I - {\bf r}_{N}
 {\bf r}_{N}^{T}\right|\chi_{\nu}\right>$
-\item Property label: \verb|XXDSUSNL|, \verb|XYDSUSNL|,
+\item Property labels: \verb|XXDSUSNL|, \verb|XYDSUSNL|,
 \verb|XZDSUSNL|, \verb|YYDSUSNL|, \verb|YZDSUSNL|, \verb|ZZDSUSNL|
 \end{list}
 
@@ -248,7 +311,7 @@ integrals\index{electric field gradient}.
 \begin{list}{}{}
 \item Integral: $\frac{1}{3}\left<\chi_{\mu}\left|\frac{3{\bf
 r}_K{\bf r}_K^T - {\bf r}_K^T{\bf r}_KI}{r_K^5}\right|\chi_{\nu}\right>$
-\item Property label: \verb|xyEFGabc|, where \verb|x| and \verb|y| are
+\item Property labels: \verb|xyEFGabc|, where \verb|x| and \verb|y| are
 the cartesian directions, \verb|ab| the number of the symmetry
 independent center, and \verb|c| that centers c'th symmetry-generated
 atom.
@@ -258,6 +321,26 @@ atom.
 field gradient}
 integrals. Obtained by transforming the Cartesian electric-field
 gradient integrals (see \Key{EFGCAR}) to spherical basis.
+
+\item[\Key{ELGDIA}] Diamagnetic one-electron spin-orbit integrals
+without London orbitals.
+
+\begin{list}{}{}
+\item Integral: 
+\item Property labels: \verb|D1-SO XX|, \verb|D1-SO XY|, \verb|D1-SO
+XZ|, \verb|D1-SO YX|, \verb|D1-SO YY|, \verb|D1-SO YZ|, \verb|D1-SO
+ZX|, \verb|D1-SO ZY|, \verb|D1-SO ZZ|
+\end{list}
+
+\item[\Key{ELGDIL}] Diamagnetic one-electron spin-orbit integrals
+with London orbitals.
+
+\begin{list}{}{}
+\item Integral: 
+\item Property labels: \verb|D1-SO XX|, \verb|D1-SO XY|, \verb|D1-SO
+XZ|, \verb|D1-SO YX|, \verb|D1-SO YY|, \verb|D1-SO YZ|, \verb|D1-SO
+ZX|, \verb|D1-SO ZY|, \verb|D1-SO ZZ|
+\end{list}
 
 \item[\Key{EXPIKR}]\verb| |\newline
 \verb|READ (LUCMD, *) (EXPKR(I), I = 1, 3)|
@@ -285,6 +368,7 @@ Specify the gauge origin\index{gauge origin} to be used in the
 calculation. Read one more line containing the three Cartesian
 components (*). Default is~(0,0,0).
 
+\item[\Key{GFACDI}] 
 \item[\Key{HBDO}] Geometric half-differentiated overlap
 matrix\index{overlap, half-differentiated}
 differentiated once more with respect to magnetic field as given in Eq.~(59)
@@ -797,7 +881,7 @@ the reaction field.
 
 \subsection{General: \Sec{READIN}}\label{sec:herrdn}
 
-Directives to control the reading of input appear in the
+Directives to control the reading of the molecule input appear in the
 \Sec{READIN} section.
 \begin{description}
 \item[\Key{CM FUN}]\verb| |\newline
@@ -821,17 +905,14 @@ will be ignored.
 
 Set maximum number of primitives\index{primitive orbitals} in any
 contraction.  Read one more line containing number.  Default
-is~22.
+is~25, except for the Cray-T3D/E, where the default is 14.
 
 \item[\Key{MOLINP}] Indicates that the molecular input comes on the
-end of the current file. Default is that the molecular input is to be
-read from unit~9.
+end of the current file. 
+%Default is that the molecular input is to be
+%read from unit~9.
 
-\item[\Key{MOLPRI}] Requests that a copy of a standardized molecular
-input file is to be dumped on the file \verb|DALTON.BAS|. This file
-will include also a dump of the basis set. This basis set takes
-advantage of the formatted input of the program in
-order to get as high numerical accuracy.
+\item[\Key{OLDNORM}] Use the normalization scheme for AO's used in \siraba\ 1./1. In \siraba\ 1.2 all components of the cartesian and spherical AO's are normalized to 1. This was not the case in \siraba\ 1.1.
 
 \item[\Key{PRINT}]\verb| |\newline
 \verb|READ (LUCMD,*) IPREAD|
@@ -841,18 +922,13 @@ print level. Default is the \verb|IPRDEF| from the \Sec{*INTEGRALS} input
 module.
 
 \item[\Key{SYMTHR}]\verb| |\newline
-\verb|READ (LUCMD,*) SYMTHR|
+\verb|READ (LUCMD,*) TOLLRN|
 
 Read threshold for considering atoms to be related by symmetry. Used
 in the automatic symmetry detection routines. Default is $5.0\cdot
 10^{-6}$.
 
-\item[\Key{UNIT}]\verb| |\newline
-\verb|READ (LUCMD,*) LUMLCL|
-
-Set unit number for reading input. Default value is~9.  Read one more
-line containing unit number. If the molecular input comes on the
-end of the current file, this is signaled by the keyword \Key{MOLINP}.
+\item[\Key{UNCONT}] Force the program to use the basis set as a primitive (completely decontracted) set.
 
 \item[\Key{ZCMVAL}]\verb| |\newline
 \verb|READ (LUCMD,*) ZCMVAL|
@@ -860,11 +936,6 @@ end of the current file, this is signaled by the keyword \Key{MOLINP}.
 Read the charge of the center of the Rydberg basis functions specified
 by the \Key{CM FUN} keyword. Default is a charge of one.
 
-%\item[\Key{BIGVEC}] Allow ``superatoms'' --- grouping of
-%functions on different centres --- to enhance performance.
-%DISABLED: DO NOT USE.
-%\item[\Key{GENCON}] Generally contracted basis sets.  This is
-%currently the default.
 \end{description}
 
 \subsection{Integral sorting: \Sec{SORINT}}
@@ -878,6 +949,10 @@ calculation you will in general not need to change any of the
 default settings.
 
 \begin{description}
+\item[\Key{COMND}]
+
+\item[\Key{DELAO}]
+
 \item[\Key{INTSYM}]\verb| |\newline
 \verb|READ (LUCMD, *) ISNTSYM|
 
@@ -888,14 +963,18 @@ Default is totally-symmetric two-electron integrals (\verb|INTSYM|
 \item[\Key{IO PRI}]\verb| |\newline
 \verb|READ (LUCMD, *) ISPRFIO|
 
-Set the print level in the fast-I/O routines.
+Set the print level in the fast-I/O routines. Default is a print level of 0.
+
+\item[\Key{KEEP}]
 
 \item[\Key{PRINT}]\verb| |\newline
 \verb|READ (LUCMD, *) ISPRINT|
 
 Print level in the integral sorting routines.
 
-\item[\Key{THRQ}]]\verb| |\newline
+\item[\Key{SORST}]
+
+\item[\Key{THRQ}]\verb| |\newline
 \verb|READ (LUCMD, *) THRQ|
 
 Threshold for setting an integral to zero. By default this threshold
@@ -913,8 +992,8 @@ in the \Sec{SUPINT} section.
 \begin{description}
 \item[\Key{NOSYMM}] No advantage is taken of integral symmetry in the
 construction of the supermatrix file. This may increase the disc space
-requirements as well as  CPU time. As long as \aba\ do not use the
-supermatrix file (which it in the current version do not), this
+requirements as well as  CPU time. Since \aba\ do not use the
+supermatrix file (which it in the current version does not), this
 keyword is mainly for debugging purposes.
 
 \item[\Key{OLDSUP}] An old output format for the supermatrix file
@@ -936,8 +1015,8 @@ module.
 
 Threshold for the supermatrix integrals. Read one more line containing
 the threshold. Default is the same as the threshold for
-discarding the two-electron integrals (see the Chapter describing the
-\mol input format, Ch.~\ref{ch:molinp}).
+discarding the two-electron integrals (see the chapter describing the
+\mol\ input format, Ch.~\ref{ch:molinp}).
 \end{description}
 
 \subsection{Two-electron integrals: \Sec{TWOINT}}
@@ -954,15 +1033,14 @@ contributions to the Fock
 matrix in direct and parallel calculations. The thresholds for the
 integrals will ten to the power of these numbers. By default the same
 screening threshold will be used for Coulomb and exchange
-contribution with a default value of $10^{-9}$.
+contribution which will change dynamically as the wave function converges more and more tightly.
 
 \item[\Key{IFTHRS}]\verb| |\newline
 \verb|READ (LUCMD,*) IFTHRS|
 
 Screening threshold\index{integral screening} used in direct and
 parallel calculations. The integral threshold will be ten to the
-negative power of this number. Default value is 9, corresponding
-to an integral accuracy of $10^{-9}$.
+negative power of this number. The default is that this value will change dynamically as the wave function converges more and more tightly.
 
 \item[\Key{PANAS}] Calculates scaled two-electron integrals as
 proposed by Panas as a simple way of introducing electron
@@ -974,8 +1052,7 @@ correlation in calculations of molecular energies~\cite{ipcpl245}.
 Set print level for the derivative integral calculation of a particular shell
 quadruplet.  Read one more line containing print level and the four
 shell indices~(5I5).  The print level is changed from the default
-for this quadruplet only. Default value is the value of \verb|IPRDEF|
-from the \Sec{*INTEGRALS} input module.
+for this quadruplet only.
 
 \item[\Key{RETURN}] Stop after the shell quadruplet specified
 under \Key{PRINT} above. Mainly for debugging purposes.
@@ -985,7 +1062,7 @@ integrals. An alternative keyword is \Key{NOTWO} in the \Sec{*INTEGRALS}
 input module.
 
 \item[\Key{SOFOCK}] Construct the Fock matrix in symmetry-orbital
-basis during a direct or parallel calculation. Currently not implemented.
+basis during a direct or parallel calculation. Currently not active.
 
 \item[\Key{THRFAC}] Not used in \siraba .
 
