@@ -1,0 +1,191 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > dft_b3lyp_molhes_nosym.info <<'%EOF%'
+   dft_b3lyp_molhes_nosym 
+   ----------------------
+   Molecule:         LiOH
+   Wave Function:    DFT (B3LYP) / 6-31G** 
+   Test Purpose:     Test analytical molecular hessian and dipole
+                     gradient with spherical basis functions  
+                     
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > dft_b3lyp_molhes_nosym.mol <<'%EOF%'
+BASIS
+6-31G**
+LiOH
+B3LYP/6-31G** 
+    3   0
+        3.    1
+Li  .0000000000             .0000000000           -2.1946269792
+        8.    1
+O   .0000000000             .0000000000             .7986363667
+        1.    1
+H   .0000000000             .0000000000            2.6039702557
+
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > dft_b3lyp_molhes_nosym.dal <<'%EOF%'
+**DALTON INPUT
+.RUN WAVE FUNCTION
+.PROPERTIES
+**WAVE FUNCTIONS
+.DFT
+ B3LYP
+**PROPERTIES
+.MOLGRA
+.MOLHES
+.DIPGRA
+.VIBANA
+*END OF INPUT
+%EOF%
+#######################################################################
+
+ 
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >dft_b3lyp_molhes_nosym.check
+cat >>dft_b3lyp_molhes_nosym.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# Basis set
+CRIT1=`$GREP "Li * 1 * 3 * 27 * 14 * \[10s4p1d\|3s2p1d\]" $log | wc -l`
+CRIT2=`$GREP "O * 1 * 8 * 27 * 14 * \[10s4p1d\|3s2p1d\]" $log | wc -l`
+CRIT3=`$GREP "H * 1 * 1 * 7 * 5 * \[4s1p\|2s1p\]" $log | wc -l`
+CRIT4=`$GREP "total\: * 3 * 12 * 61 * 33" $log | wc -l`
+CRIT5=`$GREP "Spherical harmonic basis used\." $log | wc -l`
+TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
+CTRL[1]=5
+ERROR[1]="BASIS SET NOT READ CORRECTLY"
+
+# GEOMETRY 
+CRIT1=`$GREP "Total number of coordinates\: * 9" $log | wc -l`
+CRIT2=`$GREP "1 * Li * x * (0| )\.0000000000" $log | wc -l`
+CRIT3=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
+CRIT4=`$GREP "3 * z * \-2\.1946269792" $log | wc -l`
+CRIT5=`$GREP "4 * O * x * (0| )\.0000000000" $log | wc -l`
+CRIT6=`$GREP "5 * y * (0| )\.0000000000" $log | wc -l`
+CRIT7=`$GREP "6 * z * (0| )\.7986363667" $log | wc -l`
+CRIT8=`$GREP "7 * H * x * (0| )\.0000000000" $log | wc -l`
+CRIT9=`$GREP "8 * y * (0| )\.0000000000" $log | wc -l`
+CRIT10=`$GREP "9 * z * 2\.6039702557" $log | wc -l`
+TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10`
+CTRL[2]=10
+ERROR[2]="GEOMETRY NOT READ CORRECTLY"
+
+# Energy
+CRIT1=`$GREP "Final * DFT energy\: * \-83\.32870705[6-7][0,9][0-9][0-9]" $log | wc -l`
+TEST[3]=`expr	$CRIT1`
+CTRL[3]=1
+ERROR[3]="DFT ENERGY NOT CORRECT"
+
+# Gradient
+CRIT1=`$GREP "Li *  (0| )\.0000000000 * (0| )\.0000000000 * (0| )\.00001218[7-8][0-9]" $log | wc -l`
+CRIT2=`$GREP "O *  (0| )\.0000000000 * (0| )\.0000000000 * (0| )\.00003972[0-1][0-9]" $log | wc -l`
+CRIT3=`$GREP "H *  (0| )\.0000000000 * (0| )\.0000000000 * (0| )\.00000087[8-9][0-9]" $log | wc -l`
+TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[4]=3
+ERROR[4]="MOLECULAR GRADIENT NOT CORRECT"
+
+# Hessian
+CRIT1=`$GREP "Li * x * (0| )\.000[7-8][0,9][0-9]" $log | wc -l`
+CRIT2=`$GREP "Li * y * (0| )\.000000 * (0| )\.000[7-8][0,9][0-9]" $log | wc -l`
+CRIT3=`$GREP "Li * z * (0| )\.000000 * (0| )\.000000 * (0| )\.1934[4-5][0-9]" $log | wc -l`
+CRIT4=`$GREP "O * x * (\-0|\-)\.0021[2-3][0-9] * (0| )\.000000 * (0| )\.000000 * (0| )\.005[6,7][0,9][0-9]" $log | wc -l`
+CRIT5=`$GREP "O * y * (0| )\.000000 * (\-0|\-)\.0021[2-3][0-9] * (0| )\.000000 * (0| )\.000000 * (0| )\.005[6,7][0,9][0-9]" $log | wc -l`
+CRIT6=`$GREP "O * z * (0| )\.000000 * (0| )\.000000 * (\-0|\-)\.1932[4-5][0-9] * (0| )\.000000 * (0| )\.000000 * (0| )\.7653[7-8][0-9]" $log | wc -l`
+CRIT7=`$GREP "H * x * (0| )\.00133[0-9] * (0| )\.000000 * (0| )\.000000 * (\-0|\-)\.00354[0-9] * (0| )\.000000 * (0| )\.000000" $log | wc -l`
+CRIT8=`$GREP "H * y * (0| )\.000000 * (0| )\.00133[0-9] * (0| )\.000000 * (0| )\.000000 * (\-0|\-)\.00354[0-9] * (0| )\.000000" $log | wc -l`
+CRIT9=`$GREP "H * z * (0| )\.000000 * (0| )\.000000 * (\-0|\-)\.0002[0-1][0-9] * (0| )\.000000 * (0| )\.000000 * (\-0|\-)\.5721[2-3][0-9]" $log | wc -l`
+CRIT10=`$GREP "H * x * (0| )\.0022[0-1][0-9]" $log | wc -l`
+CRIT11=`$GREP "H * y * (0| )\.000000 * (0| )\.0022[0-1][0-9]" $log | wc -l`
+CRIT12=`$GREP "H * z * (0| )\.000000 * (0| )\.000000 * (0| )\.5723[2-3][0-9]" $log | wc -l`
+TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12`
+CTRL[5]=12
+ERROR[5]="HESSIAN NOT CORRECT"
+
+#Dipole moment gradient
+CRIT1=`$GREP "Li * x * (0| )\.644820[6-8][0-9] * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
+CRIT2=`$GREP "Li * y * (0| )\.00000000 * (0| )\.644820[6-8][0-9] * (0| )\.00000000" $log | wc -l`
+CRIT3=`$GREP "Li * z * (0| )\.00000000 * (0| )\.00000000 * (0| )\.69499[6-7][0-9][0-9]" $log | wc -l`
+CRIT4=`$GREP "O * x * (\-0|\-)\.915910[8-9][0-9] * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
+CRIT5=`$GREP "O * y * (0| )\.00000000 * (\-0|\-)\.915910[8-9][0-9] * (0| )\.00000000" $log | wc -l`
+CRIT6=`$GREP "O * z * (0| )\.00000000 * (0| )\.00000000 * (\-0|\-)\.817427[2-3][0-9]" $log | wc -l`
+CRIT7=`$GREP "H * x * (0| )\.271090[1-2][0-9] * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
+CRIT8=`$GREP "H * y * (0| )\.00000000 * (0| )\.271090[1-2][0-9] * (0| )\.00000000" $log | wc -l`
+CRIT9=`$GREP "H * z * (0| )\.00000000 * (0| )\.00000000 * (0| )\.122430[3-4][0-9]" $log | wc -l`
+TEST[6]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+                $CRIT7 \+ $CRIT8 \+ $CRIT9`
+CTRL[6]=9
+ERROR[6]="DIPOLE GRADIENT NOT CORRECT"
+
+# Rotational constants
+CRIT1=`$GREP "35507\.2[0-9] MHz * \( * 1\.18439[0-9] * cm\-1" $log | wc -l`
+TEST[7]=`expr	$CRIT1`
+CTRL[7]=2
+ERROR[7]="ROTATIONAL CONSTANTS NOT CORRECT"
+
+# Vibrational frequencies and intensities 
+CRIT1=`$GREP "1 * A * 3996\.[3-4][0-9] * (0| )\.0182[0-1][0-9] * 28\.4[6-7][0-9] * (0| )\.67[3-4][0-9]" $log | wc -l`
+CRIT2=`$GREP "2 * A * 1013\.[8-9][0-9] * (0| )\.0046[1-2][0-9] * 93\.8[6-7][0-9] * 2\.22[0-2][0-9]" $log | wc -l`
+CRIT3=`$GREP "3 * A * 265\.[4-5][0-9] * (0| )\.0012[0-1][0-9] * 140\.1[7-8][0-9] * 3\.31[6-7][0-9]" $log | wc -l`
+CRIT3=`$GREP "4 * A * 265\.[4-5][0-9] * (0| )\.0012[0-1][0-9] * 140\.1[7-8][0-9] * 3\.31[6-7][0-9]" $log | wc -l`
+TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[8]=4
+ERROR[8]="VIBRATIONAL FREQUENCIES OR INTENSITIES NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4 5 6 7 8
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo ${ERROR[i]}
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+%EOF%
+#######################################################################
+#######################################################################
