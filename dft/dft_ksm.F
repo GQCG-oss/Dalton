@@ -38,19 +38,10 @@ C
          END DO
       END DO
       EDFTY = WORK(KENER)
-#if 0
-      DO I =1, NBAST
-         WRITE(LUPRI,*) (WORK(KKSM+(I-1)+(J-1)*NBAST),J=1,NBAST)
-      END DO
-#endif
       CALL DAXPY(N2BASX,1D0,WORK(KKSM),1, FKSM,1)
-#if 0
-      DO I =1, NBAST
-         WRITE(LUPRI,*) (FKSM(I,J),J=1,NBAST)
-      END DO
-#endif
-      IF(IPRFCK.GE.0) WRITE(LUPRI,'(A,2F20.14)')
-     &     'Kohn-Sham electrons/energy :', ELE, WORK(KENER)
+      IF(IPRFCK.GE.0) WRITE(LUPRI,'(A,2F20.14,A,E8.2)')
+     &     'K-S electrons/energy :', ELE, WORK(KENER),
+     &     ' err:', ELE-2D0*NRHFT
       RETURN
       END
 C
