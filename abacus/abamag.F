@@ -33,13 +33,6 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef UNDEF
-===========================================================================
-/* Comdeck notes */
-950501-hjaaj
-move CMMASS to hergp.u
-===========================================================================
-#endif
 C  /* Deck maginp */
       SUBROUTINE MAGINP(WORD)
 C
@@ -412,8 +405,8 @@ C
       KSTHMA = 1
       KEXPVA = KSTHMA + NNBASX*NCOMP
       KINTRP = KEXPVA + NCOMP
-      KINTAD = KINTRP + (9*MXCENT**2)/IRAT
-      KOVERL = KINTAD + (9*MXCENT**2)/IRAT
+      KINTAD = KINTRP + (9*MXCENT**2+1)/IRAT
+      KOVERL = KINTAD + (9*MXCENT**2+1)/IRAT
       KFMOVL = KOVERL + 6*NNBASX
       KLAST  = KFMOVL + 6
       LWRK   = LWORK - KLAST + 1
@@ -502,7 +495,6 @@ C
      &                  IPRINT,WORD,LABINT,SIGN)
  61      CONTINUE
       ELSE IF (WORD .EQ. 'DSO    ') THEN
-         print *, allcom
          IF (ALLCOM) THEN
             NPATOM = 1
             CALL GET1IN(STHMAT,WORD,NCOMP,WORK(1),LWORK,LABINT,INTREP,
@@ -843,8 +835,10 @@ C
       IF (KLAST .GT. LWORK) CALL STOPIT('GET1PR',' ',KLAST,LWORK)
       LWRK   = LWORK - KLAST + 1
       CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     7            .FALSE.)
-      CALL PR1IN1(WORK(KLAST),LWRK,WORK(KINTRP),WORK(KINTAD),
+     &            .FALSE.)
+      KFREE = 1
+      LFREE = LWRK
+      CALL PR1IN1(WORK(KLAST),KFREE,LFREE,WORK(KINTRP),WORK(KINTAD),
      &            LABINT,WORD,IORDER,IDUMMY,TRIANG,
      &            PROPRI,IPRINT,SINTMA,NCOMP,TOFILE,MTFORM,DOINT)
       CALL GPCLOSE(LUPROP,'KEEP')
@@ -930,7 +924,9 @@ C
 C
       CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
-      CALL PR1IN1(WORK,LWORK,INTREP,INTADR,LABINT,
+      KFREE = 1
+      LFREE = LWORK
+      CALL PR1IN1(WORK,KFREE,LFREE,INTREP,INTADR,LABINT,
      &            WORD,IORDER,MPQUAD,TRIANG,PROPRI,
      &            NPRINT,SINTMA,NCOMP,TOFILE,'TRIANG',DOINT)
       CALL GPCLOSE(LUPROP,'KEEP')
@@ -975,6 +971,8 @@ C
 C
       CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
+      KFREE = 1
+      LFREE = LWORK
       DO INUC = 1, NUCIND
          DO JNUC = 1, INUC
             IF (INUC .EQ. JNUC) THEN
@@ -985,7 +983,7 @@ C
             END IF
             IPATOM(1) = INUC
             ALLATM = .FALSE.
-            CALL PR1IN1(WORK,LWORK,INTREP,INTADR,LABINT,
+            CALL PR1IN1(WORK,KFREE,LFREE,INTREP,INTADR,LABINT,
      &                  WORD,IDUMMY,MPQUAD,TRIANG,PROPRI,
      &                  NPRINT,STHMAT,NCOMP,TOFILE,'TRIANG',DOINT)
             CALL MAGAVE(SPNDSO,STHMAT,DENMAT,EXPVAL,NCOMP,WORK,LWORK,
@@ -1499,8 +1497,8 @@ C
 C
       IF (SKIP) RETURN
       IF (IPRTRP .GT. 0) CALL TIMER('START ',TIMEIN,TIMOUT)
-      IF (IPRTRP .GT. 0) WRITE (LUPRI,'(A,/)')
-     &    '1 <<<<<<<<<< Output from TRPDRV >>>>>>>>>> '
+      IF (IPRTRP .GT. 0) WRITE (LUPRI,'(A/)')
+     &    ' <<<<<<<<<< Output from TRPDRV >>>>>>>>>> '
 C
 C     Allocate necessary work space to TRPRH1
 C

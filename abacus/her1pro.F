@@ -1,3 +1,5 @@
+Chjaaj 11 July 2002: started progamming new structure for getting right number of types
+C  and checking if enough memory allocated.
 C
 C...   Copyright (c) 2001 by the authors of Dalton (see below).
 C...   All Rights Reserved.
@@ -54,16 +56,7 @@ C
       CHARACTER WORD*7, LABINT(3*MXCOOR)*8
       DIMENSION WORK(LWORK)
 C
-C     MAXTYP is needed for allocation of INTREP AND INTADR
-C     The actual number of elements in these arrays is later
-C     tested for in NTYPTS.
-C
-      MAXTYP = 3*MXCOOR
-C
-C     For DSO integrals the following number of elements are
-C     needed. NTYPTS is therefore not called.
-C
-      IF (WORD .EQ. 'DSO    ') MAXTYP = (3*NUCDEP)**2
+      CALL QENTER('PR1INT')
 C
       NCOMP    = 0
       TOFILE   = .TRUE.
@@ -100,24 +93,37 @@ C     Compute all integrals when R12 method is requested (WK/UniKA/04-11-2002).
          DOINT(2,2) = .TRUE.
       END IF
 C
-      KLBINT = 1
-      IF (WORD .EQ. 'DSO    ') THEN
-         KINTRP = KLBINT +  (3*NUCDEP)**2
-      ELSE
-         KINTRP = KLBINT +  3*MXCOOR
-      END IF
-      KINTAD = KINTRP + (MAXTYP + 1)/IRAT
+C     MAXTYP is needed for allocation of INTREP and INTADR
+C     The actual number of elements in these arrays is later
+C     tested for in NTYPTS.
+C
+      MAXTYP = 3*MXCOOR
+C
+C     For DSO integrals the following number of elements are
+C     needed. NTYPTS is therefore not called.
+C
+      IF (WORD .EQ. 'DSO    ') MAXTYP = (3*NUCDEP)**2
+C
+C     HJAaJ July 2002: use MEMGET and MEMCHK (inside MEMREL)
+C     to check if sufficient space is allocated for 
+C     LABINT, INTREP, and INTADR -- much simpler than the
+C     previous use of NTYPTS and more safe.
+C
+      KFREE = 1
+      LFREE = LWORK
+      CALL MEMGET('REAL',KLBINT,MAXTYP,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KINTRP,MAXTYP,WORK,KFREE,LFREE)
       IF (WORD .EQ. 'ELFGRDC' .OR. WORD .EQ. 'ELFGRDS') THEN
-         KLAST = KINTAD + 9*NUCIND*(MAXREP + 1)
+         LINTAD = 9*NUCIND*(MAXREP + 1)
       ELSE
-         KLAST = KINTAD + (MAXTYP + 1)/IRAT
+         LINTAD = MAXTYP
       END IF
-      IF (KLAST .GT. LWORK) CALL STOPIT('PR1INT',' ',KLAST,LWORK)
-      LWRK   = LWORK - KLAST + 1
-      CALL PR1IN1(WORK(KLAST),LWRK,WORK(KINTRP),WORK(KINTAD),
+      CALL MEMGET('INTE',KINTAD,LINTAD,WORK,KFREE,LFREE)
+      CALL PR1IN1(WORK,KFREE,LFREE,WORK(KINTRP),WORK(KINTAD),
      &            WORK(KLBINT),WORD,IORDER,NPQUAD,TRIANG,
      &            PROPRI,IPRINT,DUMMY,NCOMP,TOFILE,'TRIANG',
      &            DOINT)
+      CALL MEMREL('after PR1IN1 '//WORD,WORK,1,1,KFREE,LFREE)
       IF (ADDSTO .AND. WORD .EQ. 'OVERLAP') THEN
          KMAX   = NLRGSH
          NBASIS = NLARGE
@@ -131,10 +137,11 @@ C
          CALL SYMPRO(WORK(KKVAL),WORK(KMVAL),WORK(KNVAL),WORK(KIREP),
      &               .FALSE.)
       END IF
+      CALL QEXIT('PR1INT')
       RETURN
       END
 C  /* Deck pr1in1 */
-      SUBROUTINE PR1IN1(WORK,LWORK,INTREP,INTADR,LABINT,WORD,
+      SUBROUTINE PR1IN1(WORK,KFREE,LFREE,INTREP,INTADR,LABINT,WORD,
      &                  IORDER,NPQUAD,TRIANG,PROPRI,IPRINT,
      &                  SINTMA,NCOMP,TOFILE,MTFORM,DOINT)
 C
@@ -179,7 +186,7 @@ C
       CHARACTER LABINT(*)*8, WORD*7, TABLE(NTABLE)*7, MTFORM*6,
      &          EFDIR*1
       CHARACTER*8  RTNLBL(2)
-      DIMENSION WORK(LWORK), INTREP(*), INTADR(*), SINTMA(*)
+      DIMENSION WORK(*), INTREP(*), INTADR(*), SINTMA(*)
 C
 #include <shells.h>
 #include <symmet.h>
@@ -212,9 +219,7 @@ C
 C
 #include <ibtfun.h>
 C
-      KATOM = 1
-      KLAST = KATOM + NUCDEP
-      IF (KLAST .GT. LWORK) CALL STOPIT('PR1IN1','ATM',KLAST,LWORK)
+      CALL MEMGET('REAL',KATOM,NUCDEP,WORK,KFREE,LFREE)
 C
 C     **************************
 C     ***** Integral types *****
@@ -501,7 +506,6 @@ C
          CALL SETATM(WORK(KATOM),NATOM,INTTYP)
          CALL DSOTYP(NOPTYP,INTREP,LABINT,INTADR,WORK(KATOM),NATOM,
      &               TRIANG)
-         write (0,*) intadr(7)
          ANTI = .FALSE.
       GO TO 200
 C
@@ -1729,10 +1733,10 @@ C
 C     ***** Print section *****
 C
       IF (IPRINT .GT. 5) THEN
-         WRITE (LUPRI,'(/,A,I5)') ' Integral type:', INTTYP
-         WRITE (LUPRI,'(/,A,L5)') ' TRASPH:', TRASPH
-         WRITE (LUPRI,'(/,A,L5)') ' SQUARE:', SQUARE
-         WRITE (LUPRI,'(/,A,L5)') ' SOLVNT:', SOLVNT
+         WRITE (LUPRI,'(/A,I5,2X,A)')' Integral type:', INTTYP, WORD
+         WRITE (LUPRI,'(A,L5)') ' TRASPH:', TRASPH
+         WRITE (LUPRI,'(A,L5)') ' SQUARE:', SQUARE
+         WRITE (LUPRI,'(A,L5)') ' SOLVNT:', SOLVNT
          WRITE (LUPRI,'(A,I5)') ' Number of operator components:',NOPTYP
          DO 300 I = 1, NOPTYP
             WRITE (LUPRI,'(2A)')   ' Molecule label: ', LABINT(I)
@@ -1758,15 +1762,18 @@ C
       IF (SQUARE) NELMNT = NBAST*NBAST
 C
 C     *******************************
+C     Check if too little was allocated for
+C     LABINT, INTYP, and INTREP:
+C     *******************************
+C
+      CALL MEMCHK('PR1IN1 labels for '//WORD,WORK,1)
+C
+C     *******************************
 C     ***** Calculate integrals *****
 C     *******************************
 C
-      KSOINT = KLAST
-      KWRK   = KSOINT + NOPTYP*NELMNT
-      LWRK   = LWORK - KWRK + 1
-      KLAST  = KWRK
-      IF (KWRK .GT. LWORK) CALL STOPIT('PR1IN1','NE12',KWRK,LWORK)
-      CALL PR1DRV(WORK(KSOINT),NELMNT,WORK(KWRK),LWRK,
+      CALL MEMGET('REAL',KSOINT,NOPTYP*NELMNT,WORK,KFREE,LFREE)
+      CALL PR1DRV(WORK(KSOINT),NELMNT,WORK(KFREE),LFREE,
      &            NPQUAD,LABINT,INTTYP,INTREP,NOPTYP,NBAST,ANTI,
      &            IORDER,WORK(KATOM),INTADR,TRIANG,NATOM,SQUARE,
      &            IPRINT,DOINT)
@@ -1776,7 +1783,7 @@ C     ***** Transform from Cartesian to spherical moments *****
 C     *********************************************************
 C
       IF (TRASPH) THEN
-         CALL SPHTRA(WORK(KSOINT),WORK(KWRK),LWRK,IORDER,NELMNT,
+         CALL SPHTRA(WORK(KSOINT),WORK(KFREE),LFREE,IORDER,NELMNT,
      &               NBAST,NOPTYP,IPRINT)
          CALL SMTYP(IORDER,NOPTYP,INTREP,LABINT)
       END IF
@@ -1786,7 +1793,7 @@ C     ***** Transform from Cartesian to Spherical EFG's *****
 C     *******************************************************
 C
       IF (INTTYP .EQ. 31) THEN
-         CALL EFGSPH(WORK(KSOINT),WORK(KWRK),LWRK,NELMNT,NBAST,
+         CALL EFGSPH(WORK(KSOINT),WORK(KFREE),LFREE,NELMNT,NBAST,
      &               NOPTYP,WORK(KATOM),NATOM,IPRINT)
          CALL FGSTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM)
       END IF
@@ -1796,9 +1803,7 @@ C     ***** Test diamagnetic spin-orbit integrals *****
 C     *************************************************
 C
       IF (INTTYP .EQ. 12 .AND. .NOT.TRIANG) THEN
-         KDIFF = KLAST
-         KLAST = KDIFF + NELMNT
-         IF (KLAST .GT. LWORK) CALL STOPIT('PR1IN1','TST',KLAST,LWORK)
+         CALL MEMGET('REAL',KDIFF,NELMNT,WORK,KFREE,LFREE)
          CALL DSOTST(WORK(KSOINT),WORK(KDIFF),NBAST,NELMNT,NOPTYP,
      &               LABINT,WORK(KATOM),NPQUAD,INTADR,IPRINT)
       END IF
@@ -1948,9 +1953,9 @@ C  /* Deck ntypts */
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-      IF (NOPTYP .GT. 9*MXCENT) THEN
+      IF (NOPTYP .GT. 3*MXCOOR) THEN
          WRITE (LUPRI,'(/A,I5)') ' NOPTYP too large in NTYPTS '
-         WRITE (LUPRI,'(/A,I5)') ' MAXTYP: ', 9*MXCENT
+         WRITE (LUPRI,'(/A,I5)') ' MAXTYP: ', 3*MXCOOR
          WRITE (LUPRI,'(/A,I5)') ' NOPTYP: ', NOPTYP
          CALL QUIT('ERROR in NTYPTS, NOPTYP out of range')
       END IF
@@ -2229,8 +2234,6 @@ C  /* Deck frmtyp */
 #include <symmet.h>
 #include <chrnos.h>
 #include <ibtfun.h>
-      NOPTYP = NATOM
-      CALL NTYPTS(NOPTYP)
       ITYP = 0
       DO 100 IREP = 0, MAXREP
          DO 200 IATOM = 1, NUCIND
@@ -2245,6 +2248,8 @@ C  /* Deck frmtyp */
             END IF
   200    CONTINUE
   100 CONTINUE
+      NOPTYP = ITYP
+      CALL NTYPTS(NOPTYP)
       RETURN
       END
 C  /* Deck nsttyp */
@@ -2263,7 +2268,6 @@ C  /* Deck nsttyp */
 #include <chrnos.h>
 #include <chrxyz.h>
 #include <ibtfun.h>
-      NOPTYP = 0
       ITYP = 0
       DO 100 IREP = 0, MAXREP
          DO 200 IATOM = 1, NUCIND
@@ -2282,13 +2286,13 @@ C  /* Deck nsttyp */
                         INTREP(ITYP) = IBTXOR(IREP,ISYMAX(ICOOR,2))
                         LSCOOR = 3*(ISCOOR - 1) + ICOOR
                         INTADR(LSCOOR) = ITYP
-                        NOPTYP = NOPTYP + 1
  400                 CONTINUE
                   END IF
  300           CONTINUE
             END IF
  200     CONTINUE
  100  CONTINUE
+      NOPTYP = ITYP
       CALL NTYPTS(NOPTYP)
       RETURN
       END
@@ -2307,8 +2311,6 @@ C  /* Deck psotyp */
 #include <symmet.h>
 #include <chrnos.h>
 #include <ibtfun.h>
-      NOPTYP = 3*NATOM
-      CALL NTYPTS(NOPTYP)
       ITYP = 0
       DO 100 IREP = 0, MAXREP
          DO 200 IATOM = 1, NUCIND
@@ -2329,6 +2331,8 @@ C  /* Deck psotyp */
          END IF
   200    CONTINUE
   100 CONTINUE
+      NOPTYP = ITYP
+      CALL NTYPTS(NOPTYP)
       RETURN
       END
 C  /* Deck sdtyp */
@@ -2347,8 +2351,6 @@ C  /* Deck sdtyp */
 #include <chrnos.h>
 #include <chrxyz.h>
 #include <ibtfun.h>
-      NOPTYP = 9*NATOM
-      CALL NTYPTS(NOPTYP)
       ITYP = 0
       DO 100 IREP = 0, MAXREP
          DO 200 IATOM = 1, NUCIND
@@ -2381,6 +2383,12 @@ C  /* Deck sdtyp */
          END IF
   200    CONTINUE
   100 CONTINUE
+C
+C     IF all DOATOM(IATOM) true then NOPTYP = 9*NATOM,
+C     but no reason to allocate memory for types not used ! /hjaaj July 2002
+C
+      NOPTYP = ITYP
+      CALL NTYPTS(NOPTYP)
       RETURN
       END
 C  /* Deck dsotyp */
@@ -2406,16 +2414,6 @@ C
 #include <symmet.h>
 #include <chrnos.h>
 #include <ibtfun.h>
-C
-      IF (TRIANG) THEN
-         NOPTYP = (3*NATOM*(3*NATOM + 1)/2)
-      ELSE
-         NOPTYP = 9*NATOM*NATOM
-      END IF
-C
-C     no check since the allocations of INTADR and INTREP are exact!
-C
-C     CALL NTYPTS(NOPTYP)
 C
       ITYP = 0
 C
@@ -2466,7 +2464,13 @@ C
   200    CONTINUE
   100 CONTINUE
       NOPTYP = ITYP
-      CALL NTYPTS(NOPTYP)
+C
+Chj   CALL NTYPTS(NOPTYP)
+C     ... Check disabled since the allocations of INTADR and INTREP
+C     are sufficient for all DOATOM(I) true and .not.triang,
+C     and NTYPTS does not check the special DSO allocation
+C     (see MAXTYP in PR1INT). /HJAaJ Nov 2002
+C
       RETURN
       END
 C  /* Deck hdbtyp */
@@ -2485,8 +2489,6 @@ C  /* Deck hdbtyp */
 #include <chrnos.h>
 #include <chrxyz.h>
 #include <ibtfun.h>
-      NOPTYP = 9*NATOM
-      CALL NTYPTS(NOPTYP)
       ITYP = 0
       DO 100 IREP = 0, MAXREP
          DO 200 IATOM = 1, NUCIND
@@ -2508,6 +2510,8 @@ C  /* Deck hdbtyp */
             END IF
  200     CONTINUE
  100  CONTINUE
+      NOPTYP = ITYP
+      CALL NTYPTS(NOPTYP)
       RETURN
       END
 C  /* Deck dpgtyp */
@@ -2526,8 +2530,6 @@ C  /* Deck dpgtyp */
 #include <chrnos.h>
 #include <chrxyz.h>
 #include <ibtfun.h>
-      NOPTYP = 9*NATOM
-      CALL NTYPTS(NOPTYP)
       ITYP = 0
       DO 100 IREP = 0, MAXREP
          DO 200 IATOM = 1, NUCIND
@@ -2556,6 +2558,8 @@ CCH
             END IF
  200     CONTINUE
  100  CONTINUE
+      NOPTYP = ITYP
+      CALL NTYPTS(NOPTYP)
       RETURN
       END
 C  /* Deck qugtyp */
@@ -2574,8 +2578,6 @@ C  /* Deck qugtyp */
 #include <chrnos.h>
 #include <chrxyz.h>
 #include <ibtfun.h>
-      NOPTYP = 18*NATOM
-      CALL NTYPTS(NOPTYP)
       ITYP = 0
       DO 100 IREP = 0, MAXREP
          DO 200 IATOM = 1, NUCIND
@@ -2601,6 +2603,9 @@ C  /* Deck qugtyp */
             END IF
  200     CONTINUE
  100  CONTINUE
+C     NOPTYP = 18*NATOM
+      NOPTYP = ITYP
+      CALL NTYPTS(NOPTYP)
       RETURN
       END
 C  /* Deck ocgtyp */
