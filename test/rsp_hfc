@@ -18,7 +18,7 @@ fi
 #  TEST DESCRIPTION
 #######################################################################
 cat > rsp_hfc.info <<'%EOF%'
-   rsp_esr
+   rsp_hfc
    -------
    Molecule:         TiF3
    Wave Function:    Restricted open-shell DFT:BP86  
