@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: mxmpack.F,v 1.1.1.1 2001-02-08 13:33:12 hjj Exp $
+C$Id: mxmpack.F,v 1.2 2001-05-09 12:44:58 hjj Exp $
 C
 #include <single.h>
 C  /* Deck mxm */
@@ -46,7 +46,7 @@ C
       RETURN
       END
 #endif
-#if !defined (SYS_CRAY) && !defined (SYS_T3D) && !defined (VAR_MOTECC) && !defined (SYS_T90)
+#if !defined (SYS_CRAY) && !defined (SYS_T3D)  && !defined (SYS_T90)
       SUBROUTINE MXM(A,NAR,B,NAC,C,NBC)
 #include <implicit.h>
       DIMENSION A(NAR,NAC), B(NAC,NBC), C(NAR,NBC)
@@ -94,7 +94,6 @@ C
 C  /* Deck mxmd */
 #if defined (VAR_NOTUSED  )
 C930522-hjaaj: MXMD not used in Hermit/Abacus any more
-#if !defined (VAR_MOTECC)
 #if defined (VAR_F90)
       SUBROUTINE MXMD(A,NAR,NARA,B,NAC,NACA,C,NBC)
 C
@@ -141,6 +140,5 @@ C
 C
       RETURN
       END
-#endif
 #endif
 #endif

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: gphjj.F,v 1.8 2001-04-24 16:30:02 vebjornb Exp $
+C$Id: gphjj.F,v 1.9 2001-05-09 12:44:58 hjj Exp $
 C
 #include <single.h>
 C  /* Deck flshfo */
@@ -276,25 +276,34 @@ C
       RETURN
       END
 C  /* Deck settim */
-#if !defined (VAR_MOTECC)
-#if defined (SYS_CONVEX) || defined (SYS_HAL)
+#if defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HAL) || (defined (SYS_LINUX) && defined (VAR_PGF77)) || defined (SYS_CONVEX) || defined (SYS_AIX)
       SUBROUTINE SETTIM
 C
-C  Alliant and Convex timing routines emulating Lund IBM timing routines
+C  Unix timing routines emulating Lund IBM timing routines
 C  5-Dec-1988 hjaaj
 C
       REAL*4 ECPU, ESYST, ETCPU
       REAL*4 SCPU, SSYST, STCPU
       REAL*4 PCPU, PSYST, PTCPU
-      REAL*4 ETIME,SECNDS,TARRAY(2)
+#ifdef SYS_AIX
+      integer*4 itime(4),times,iwall
+#else
+      REAL*4 ETIME,TARRAY(2)
+#endif
       REAL*8 CPUE, CPUA, TIOE, TIOA
       SAVE   SCPU, SSYST, STCPU
       SAVE   PCPU, PSYST, PTCPU
 C
-C     STIME  = SECNDS()
+#ifdef SYS_AIX
+      iwall  = times(itime)
+C     iwall  = elapsed time, itime(1:2) = system and user time
+      SCPU   = dfloat (itime(1)) * 0.01d0
+      SSYST  = dfloat (itime(2)) * 0.01d0
+#else
       STCPU  = ETIME(TARRAY)
       SCPU   = TARRAY(1)
       SSYST  = TARRAY(2)
+#endif
       PCPU   = SCPU
       PSYST  = SSYST
       PTCPU  = STCPU
@@ -303,10 +312,16 @@ C
 C     ----- entry timing -----
 C
       ENTRY TIMING(CPUA,CPUE,TIOA,TIOE)
-C     ETIME  = SECNDS()
+#ifdef SYS_AIX
+      iwall  = times(itime)
+C     iwall  = elapsed time, itime(1:2) = system and user time
+      ECPU   = dfloat (itime(1)) * 0.01d0
+      ESYST  = dfloat (itime(2)) * 0.01d0
+#else
       ETCPU  = ETIME(TARRAY)
       ECPU   = TARRAY(1)
       ESYST  = TARRAY(2)
+#endif
       CPUA   = ECPU - SCPU
       CPUE   = ECPU - PCPU
       PCPU   = ECPU
@@ -321,17 +336,16 @@ C
 #include <implicit.h>
 #include <priunit.h>
       PARAMETER ( D0 = 0.0D0 )
-      WRITE (LUPRI,*) 'DUMMY SETTIM called'
+c     WRITE (LUPRI,*) 'DUMMY SETTIM called'
       RETURN
       ENTRY TIMING(CPUA,CPUE,TIOA,TIOE)
       CPUA = D0
       CPUE = D0
       TIOA = D0
       TIOE = D0
-      WRITE (LUPRI,*) 'DUMMY TIMING called'
+      WRITE (LUPRI,*) 'Dummy TIMING routine called'
       RETURN
       END
-#endif
 #endif
 C  /* Deck timtxt */
       SUBROUTINE TIMTXT(TEXT,TIMUSD,LUPRIN)
