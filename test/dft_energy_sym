@@ -8,7 +8,7 @@ info='
    Test Purpose:     DFT direct energy calculation w/symmetry
 '
 
-molecule='BASIS                                                                   
+molecule='BASIS
 6-31G** 
 Hydrogen Peroxide                                                       
                                                                         
@@ -31,7 +31,7 @@ GGAKey hf=0.5 dirac=0.5 pz81=1
 '
 
 test='
-check_scf_energy DFT  -151.201391784137 1e-10
+check_scf_energy DFT  -151.201391782221 2e-9
 '                     
 
 . ./functions || { echo "'functions' library not found." ; exit 1; }

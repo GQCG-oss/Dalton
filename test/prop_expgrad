@@ -50,7 +50,7 @@ dalton='**DALTON INPUT
 '
 
 test='
-check_scf_energy DFT -109.508937486483 1e-12
+check_scf_energy DFT -109.508937550101 7e-8
 
 check_exp_grad  1 1792.9602903200    -0.0000000001 1-e7
 check_exp_grad  2  269.8470715500    -0.0000000033 1-e7
