@@ -870,23 +870,13 @@ c              compute DFT_SO integrals
                   DFT_SO = .TRUE.
                GO TO 100
 C              .PROP2Average
-                  N2AVTOT = N2AVTOT + 1
-                  IF ( N2AVTOT .GT. MAX2AV ) THEN
-                     WRITE(LUPRI,'(/A,I5)')
-     *               '@rspinp: NUMBER OF OPERATORS FOR .PROP2AV'//
-     *               'CALCULATION EXCEEDS THE ALLOWED NUMBER :',MAX2AV
-                   CALL QUIT('RSPINP, TOO MANY 2AV OPERATORS SPECIFIED')
-                  END IF
-                  READ(LUCMD,'(A)') LBL2AV(1,N2AVTOT)
-                  READ(LUCMD,'(A)') LBL2AV(2,N2AVTOT)
  21            CONTINUE
                   N2AVTOT = N2AVTOT + 1
                   IF ( N2AVTOT .GT. MAX2AV ) THEN
-                     WRITE(LUPRI,'(/2A,I5)')
-     *               '@rspinp: NUMBER OF OPERATORS FOR .PROP2AV'
-     *               ,'CALCULATION EXCEEDS THE ALLOWED NUMBER :'
-     *               ,MAX2AV
-                   CALL QUIT('RSPINP, TOO MANY AVE OPERATORS SPECIFIED')
+                   WRITE(LUPRI,'(//A,I5)')
+     &               '@RSPINP: Number of operators for .PROP2AV '//
+     &               'calculation exceeds the allowed number :',MAX2AV
+                   CALL QUIT('RSPINP, TOO MANY 2AV OPERATORS SPECIFIED')
                   END IF
                   READ(LUCMD,'(A/A)')LBL2AV(1,N2AVTOT),LBL2AV(2,N2AVTOT)
                GO TO 100
@@ -894,7 +884,7 @@ C              .PROP2Average
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') '@PROMPT "',WORD,
-     *            '" NOT RECOGNIZED IN RSPINP.'
+     &            '" NOT RECOGNIZED IN RSPINP.'
                CALL QUIT(' ILLEGAL PROMPT IN RSPINP ')
             END IF
       END IF
@@ -1969,7 +1959,6 @@ C
    20          CONTINUE
                   READ(LUCMD,'(A)')LABEL
                   LC6OP( INDPRP(LABEL)) = .TRUE.
-               GO TO 100
                GO TO 100
 C     .C6SPH
    21          CONTINUE
