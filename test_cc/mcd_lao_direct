@@ -98,29 +98,35 @@ CTRL[1]=6
 ERROR[1]="SCF, MP2 OR CCSD ENERGY NOT CORRECT"
 
 # Unrelaxed CCSD B term components:
-CRIT1=`$GREP "For transition \|o> \-> \|f\(  (0| )\.74812\)>, of symm\. 2" $log | wc -l`
+CRIT1=`$GREP "For transition \|o> \-> \|f\(  (0| )\.74812\)>, of symm\. 1" $log | wc -l`
 CRIT2=`$GREP "B term contribution \(au\)\: * \-1\.161889(39|40|41|42) \(antisym\)" $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2`
 CTRL[2]=5
 ERROR[2]="UNRELAXED CCSD B TERM COMPONENTS NOT CORRECT"
 
 # Relaxed MCD-Bterm components:
-CRIT1=`$GREP "For transition \|o> \-> \|f\(  (0| )\.74812\)>, of symm\. 2" $log | wc -l`
+CRIT1=`$GREP "For transition \|o> \-> \|f\(  (0| )\.74812\)>, of symm\. 1" $log | wc -l`
 CRIT2=`$GREP "B term contribution \(au\)\: * \-1\.161889(39|40|41|42) \(antisym\)" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2`
 CTRL[3]=5
 ERROR[3]="RELAXED CCSD B TERM COMPONENTS NOT CORRECT"
 
 # LAO+Relaxed MCD-Bterm components:
-CRIT1=`$GREP "For transition \|o> \-> \|f\(  (0| )\.74812\)>, of symm\. 2" $log | wc -l`
+CRIT1=`$GREP "For transition \|o> \-> \|f\(  (0| )\.74812\)>, of symm\. 1" $log | wc -l`
 CRIT2=`$GREP "B term contribution \(au\)\: * \-1\.42531056 \(antisym\)" $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2`
 CTRL[4]=4
 ERROR[4]="LAO+RELAXED CCSD B TERM COMPONENTS NOT CORRECT"
 
+# Dummy check that it was a direct calculation
+CRIT1=`$GREP "Direct calculation" $log | wc -l`
+TEST[5]=`expr $CRIT1`
+CTRL[5]=1
+ERROR[5]="DIRECT MCD_LAO WAS NOT RUN DIRECT"
+
 
 PASSED=1
-for i in 1 2 3 4
+for i in 1 2 3 4 5
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo ${ERROR[i]}
