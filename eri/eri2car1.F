@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: eri2car1.F,v 1.4 2001-05-31 06:38:23 vebjornb Exp $
+C$Id: eri2car1.F,v 1.5 2002-02-12 08:19:26 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck cr1drv */
@@ -537,16 +537,8 @@ C
                END DO
             ELSE
                IF (GCON12) THEN
-                  DO K = 1, NPRF34
-                     CALL DGEMM('T','T',NCTF1,NPQBCX*NPRF2,NPRF1,
-     &                           D1,CMAT1,NPRF1,
-     &                           PPINT(1,1,K,TUV),NPQBCX*NPRF2,
-     &                           D0,CPINT,NCTF1)
-                     CALL DGEMM('T','T',NCTF2,NCTF1*NPQBCX,NPRF2,
-     &                           D1,CMAT2,NPRF2,
-     &                           CPINT,NCTF1*NPQBCX,
-     &                           D0,CCINT(1,K,TUV),NCTF2)
-                  END DO
+                  CALL CONT12(PPINT(1,1,1,TUV),CCINT(1,1,TUV),
+     &                 CMAT1,CMAT2,CPINT)
                ELSE
                   DO K = 1, NPRF34
                      DO J = 1, NPQBCX
@@ -597,5 +589,34 @@ C
          END DO
       END IF
 C
+      RETURN
+      END
+
+C  /* Deck cont12 */
+      SUBROUTINE CONT12(PPINT,CCINT,CMAT1,CMAT2,CPINT)
+#include <implicit.h>
+      DIMENSION CMAT1(NPRF1,NCTF1)
+      DIMENSION CMAT2(NPRF2,NCTF2)
+      DIMENSION PPINT(NPQBCX*NPRF2,NPRF1,NPRF34)
+      DIMENSION CPINT(NCTF1,NPQBCX,NPRF2)
+      DIMENSION CCINT(NCTF2,NCTF1*NPQBCX,NPRF34)
+#include <ericom.h>
+#include <eriao.h>
+      DO L = 1, NPRF34
+         CALL DZERO(CPINT,NCTF1*NPQBCX*NPRF2)
+         DO 200 K = 1, NPRF1
+            DO 200 M = 1, NCTF1
+               DO 200 N = 1, NPQBCX*NPRF2
+                  CPINT(M,N,1) = CPINT(M,N,1) +
+     &                 CMAT1(K,M)*PPINT(N,K,L)
+ 200     CONTINUE
+         CALL DZERO(CCINT(1,1,L),NCTF2*NCTF1*NPQBCX)
+         DO 300 K = 1, NPRF2
+            DO 300 M = 1, NCTF2
+               DO 300 N = 1, NCTF1*NPQBCX
+                  CCINT(M,N,L) = CCINT(M,N,L) + 
+     &                 CMAT2(K,M)*CPINT(N,1,K)
+ 300     CONTINUE
+      END DO
       RETURN
       END

@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: eri2car2.F,v 1.7 2001-05-31 06:38:23 vebjornb Exp $
+C$Id: eri2car2.F,v 1.8 2002-02-12 08:19:27 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck cr2drv */
@@ -562,13 +562,8 @@ C
                END DO
             ELSE
                IF (GCON34) THEN
-                  CALL DGEMM('T','T',NCTF3,NCC12*NPRF4,NPRF3,
-     &                       D1,CMAT3,NPRF3,
-     &                       PPINT(1,1,ICMP12),NCC12*NPRF4,
-     &                       D0,CPINT,NCTF3)
-                  CALL DGEMM('T','T',NCTF4,NCTF3*NCC12,NPRF4,
-     &                       D1,CMAT4,NPRF4,CPINT,NCTF3*NCC12,
-     &                       D0,CCINT(1,1,ICMP12),NCTF4)
+                  CALL CONT34(NCC12,PPINT(1,1,ICMP12),
+     &                 CCINT(1,1,ICMP12),CMAT3,CMAT4,CPINT)
                ELSE
                   DO J = 1, NCCCC
                      CCINT(J,1,ICMP12) = PPINT(J,1,ICMP12)
@@ -615,5 +610,32 @@ C
   800    CONTINUE
       END IF
 C
+      RETURN
+      END
+
+C  /* Deck cont34 */
+      SUBROUTINE CONT34(NCC12,PPINT,CCINT,CMAT3,CMAT4,CPINT)
+#include <implicit.h>
+      DIMENSION CMAT3(NPRF3,NCTF3)
+      DIMENSION CMAT4(NPRF4,NCTF4)
+      DIMENSION PPINT(NCC12*NPRF4,NPRF3)
+      DIMENSION CCINT(NCTF4,NCC12*NCTF3)
+      DIMENSION CPINT(NCTF3,NCC12,NPRF4)
+#include <ericom.h>
+#include <eriao.h>
+      CALL DZERO(CPINT,NCTF3*NCC12*NPRF4)
+      DO 200 K = 1, NPRF3
+         DO 200 M = 1, NCTF3
+            DO 200 N = 1, NCC12*NPRF4
+               CPINT(M,N,1) = CPINT(M,N,1) +
+     &              CMAT3(K,M)*PPINT(N,K)
+ 200  CONTINUE
+      CALL DZERO(CCINT(1,1),NCTF3*NCC12*NCTF4)
+      DO 300 K = 1, NPRF4
+         DO 300 M = 1, NCTF4
+            DO 300 N = 1, NCTF3*NCC12
+               CCINT(M,N) = CCINT(M,N) + 
+     &              CMAT4(K,M)*CPINT(N,1,K)
+ 300  CONTINUE
       RETURN
       END
