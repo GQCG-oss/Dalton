@@ -29,11 +29,14 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rspvec.F,v 1.3 2001-03-18 21:53:36 vebjornb Exp $
+C$Id: rspvec.F,v 1.4 2001-03-29 08:06:45 hjj Exp $
 C
 #include <single.h>
 #ifdef REVLOG
 $Log: not supported by cvs2svn $
+Revision 1.3  2001/03/18 21:53:36  vebjornb
+Fixed several uninitialized variables
+
 Revision 1.2  2001/02/12 18:17:57  vebjornb
 First commit after CC merge
 
@@ -3078,7 +3081,7 @@ C
       CHARACTER*8 BLANK
       PARAMETER ( D1 = 1.0D0, BLANK = '        ', D0 = 0.0D0 )
       DIMENSION CMO(*),UDV(*),PV(*),FOCK(*),FC(*),FCAC(*),H2AC(*)
-      DIMENSION XINDX(*),VECA(*),VECB(*),WRK(*)
+      DIMENSION XINDX(*),VECA(*),VECB(*),MJWOP(*),WRK(*)
 C
 #include <infrsp.h>
 #include <maxorb.h>
