@@ -931,7 +931,7 @@ case "$WHICH" in
                  [ie]cc) copt="-O3 $proc -ip -restrict -DRESTRICT=restrict";;
                  gcc) copt="-O3 -malign-double -std=c99 -DRESTRICT=restrict";;
              esac
-             LIBS="$LIBS -Vaxlib -lsvml"
+             LIB="$LIB -Vaxlib"
              ;;
           pgf77)
              cpp="-DVAR_PGF77 $cpp"
