@@ -1116,13 +1116,23 @@ C  /* Deck readdi */
 C  /* Deck readt */
       SUBROUTINE READT (IT,N,X)
 #include "implicit.h"
+#include "priunit.h"
+      CHARACTER*20 FNAME
       DIMENSION X(N)
+      IF (IT .LE. 0) GOTO 30
       READ (IT,END=10,ERR=20) X
       RETURN
  10   CONTINUE
+      INQUIRE(UNIT=IT,NAME=FNAME)
+      WRITE (LUPRI,*) 'READT: END reading file ',FNAME, 'length ',N
       CALL QUIT('READT: END reading file')
  20   CONTINUE
+      INQUIRE(UNIT=IT,NAME=FNAME)
+      WRITE (LUPRI,*) 'READT: ERROR reading file ',FNAME, 'length ',N
       CALL QUIT('READT: Error reading file')
+ 30   CONTINUE
+      WRITE (LUPRI,*) 'READT ERRROR: non-positive file unit number ',IT
+      CALL QUIT('READT ERRROR: non-positive file unit number')
       END
 C  /* Deck writi */
       SUBROUTINE WRITI (IT,N,INTX)
@@ -2031,3 +2041,17 @@ C
   140 CONTINUE
       RETURN
       END
+      SUBROUTINE COMPOFF(WRK, WORK, KBASE)
+C
+C     Nov. 2004 Hans Joergen Aa. Jensen
+C
+C     COMPOFF - Compute off-set from WORK to WRK
+C               i.e. WRK(I) = WORK(KBASE+I)
+C
+      REAL*8 WRK(*), WORK(*)
+      KADDR = LOC(WRK) - LOC(WORK) + 1
+      KBASE = KADDR / 8
+C     write (6,*) 'COMPOFF: KADDR, KBASE', KADDR, KBASE
+      RETURN
+      END
+
