@@ -557,7 +557,7 @@ C
 C
       INMTRX = 0
 C
-C     *** Check how atoms are conected by the main rotation ***
+C     *** Check how atoms are connected by the main rotation ***
 C
       IF (MROTAX) THEN
          INMTRX = INMTRX + 1
@@ -928,22 +928,31 @@ C
 C     
       ISYMCO = 0
       IPLACE = 1
-      i = 0
+      i = 0      
       DO 2100 IREP   = 1, NIREP
-      DO 2100 ICENT  = 1, KINDCT
-      DO 2100 ICOOR2 = 3*(NSTBCT(ICENT)-1)+1, 3*(NSTBCT(ICENT)-1)+3 
+         NSDIM = 1
+         IF (IREP.GT.N1DIME) NSDIM = 2
+      DO 2101 IPL = 1, NSDIM
+      DO 2101 ICENT  = 1, KINDCT
+      DO 2101 ICOOR2 = 3*(NSTBCT(ICENT)-1)+1, 3*(NSTBCT(ICENT)-1)+3 
          i = i + 1
          CALL DZERO(TMPSYM,NCOOR)
-         IF (IREP .LE. N1DIME+1) THEN
-            IPLACE = IREP
+         IF (IREP .LE. N1DIME) THEN
+            IPLACE1 = IREP
          ELSE
-            IPLACE = (N1DIME + 1) + 4*(IREP - N1DIME - 1)
+            IF (IPL.EQ.1) THEN
+               IPLACE1 = (N1DIME + 1) + 4*(IREP - N1DIME - 1)
+               IPLACE2 = IPLACE1 + 1
+            ELSE
+               IPLACE1 = N1DIME + 4*(IREP - N1DIME)
+               IPLACE2 = IPLACE1 - 1
+            END IF
          END IF
 C
          DO 2200 ICOOR1 = 1, NCOOR
          DO 2200 IGORDR = 1, NGORDR
             TMPSYM(ICOOR1) = TMPSYM(ICOOR1)
-     &                     + GRIREP(IGORDR,IPLACE)
+     &                     + GRIREP(IGORDR,IPLACE1)
      &                      *TRAMTX(ICOOR1,ICOOR2,IGORDR)
  2200    CONTINUE
 C
@@ -973,12 +982,27 @@ C
             IF (EXIST) GOTO 2700
  2400    CONTINUE
 C
+C        *** We have now found a new symmetry coordinate, and find ***
+C        *** an adress for it.                                     ***
+C
          ISYMCO = ISYMCO + 1
+C
+C        *** If the projection operator for the second row is used  ***
+C        *** then we need to put the symmetry coordinate 1 index on ***
+C
+         IF ((IREP.GT.N1DIME).AND.(IPL.EQ.2)) THEN
+            KSYMC = ISYMCO + 1
+         ELSE
+            KSYMC = ISYMCO
+         END IF
+C
+         ICRIRP(KSYMC,2) = IPL-1
+         ICRIRP(KSYMC,1) = IREP
          DO 2600 ICOOR1 = 1, NCOOR
-            SYMCOR(ICOOR1,ISYMCO) = TMPSYM(ICOOR1)
+            SYMCOR(ICOOR1,KSYMC) = TMPSYM(ICOOR1)
  2600    CONTINUE
-         ICRIRP(ISYMCO,1) = IREP
-         ICRIRP(ISYMCO,2) = 0
+C
+C        *** Using the shift function to create a partner function. ***
 C
          IF (IREP .GT. N1DIME) THEN
             CALL DZERO(TMPSYM,NCOOR)
@@ -989,11 +1013,11 @@ C
                DO 2900 ICOO1 = 1, NCOOR
                   TMPVEC(ICOO2) = TMPVEC(ICOO2)
      &                          + TRAMTX(ICOO1,ICOO2,IGORDR)
-     &                           *SYMCOR(ICOO1,ISYMCO)
+     &                           *SYMCOR(ICOO1,KSYMC)
  2900          CONTINUE
 C
                TMPSYM(ICOO2) = TMPSYM(ICOO2)
-     &                       + GRIREP(IGORDR,IPLACE+1)
+     &                       + GRIREP(IGORDR,IPLACE2)
      &                        *TMPVEC(ICOO2)
  2800       CONTINUE
 C
@@ -1002,15 +1026,31 @@ C
                RNORM2 = RNORM2 + TMPSYM(ICOOR1)**2
  3100       CONTINUE
 C
+C           *** Index for partner geometry. ***
+C
             ISYMCO = ISYMCO + 1
+C
+C           *** If the shift operator for the first row is used,  ***
+C           *** we need to put the symmetry coordinate in ISYMCO-1***
+C           *** In addition ICRIRP needs to show that it is first ***
+C           *** row (i.e. ICRIRP(is,2) = 0                        ***
+C
+            IF ((IREP.GT.N1DIME).AND.(IPL.EQ.2)) THEN
+               KSYMC = ISYMCO - 1
+               ICRIRP(KSYMC,2) = 0
+            ELSE
+               KSYMC = ISYMCO
+               ICRIRP(KSYMC,2) = 1
+            END IF
+C            
             DO 3200 ICOOR1 = 1, NCOOR
-               SYMCOR(ICOOR1,ISYMCO) = TMPSYM(ICOOR1)/SQRT(RNORM2)
+               SYMCOR(ICOOR1,KSYMC) = TMPSYM(ICOOR1)/SQRT(RNORM2)
  3200       CONTINUE
-            ICRIRP(ISYMCO,1) = IREP
-            ICRIRP(ISYMCO,2) = 1
+            ICRIRP(KSYMC,1) = IREP
          END IF
 C
  2700    CONTINUE
+ 2101 CONTINUE
  2100 CONTINUE
 C
       CALL ORTSCP(SYMCOR,ICRIRP,IPRINT)
@@ -1029,7 +1069,7 @@ C
          ISTRT = 10*(I-1) + 1
          IEND  =(ISTRT-1) + MIN(ILEFT,10)
          WRITE (LUPRI,'(A,I4,10I8)') 'Symmetry', 
-     &                              (ICRIRP(ICOOR2,1),ICOOR2=ISTRT,IEND)
+     &            (ICRIRP(ICOOR2,1),ICOOR2=ISTRT,IEND)
          DO ICOOR1 = 1, NCOOR
             WRITE (LUPRI,'(A,10F8.4)') '      ',
      &                (SYMCOR(ICOOR1,ICOOR2),ICOOR2=ISTRT,IEND)
@@ -1197,31 +1237,31 @@ C
  1600    CONTINUE
  1400 CONTINUE
 C
-      DO 1700 IINDCT = 1, KINDCT
-         IF ((FCLASS(1:1).EQ.'S').OR.(FCLASS(3:3).EQ.'d')) THEN
-            IYCOOR = 3*(NSTBCT(IINDCT)-1) + 1
-         ELSE
-            IYCOOR = 3*(NSTBCT(IINDCT)-1) + 2
-         END IF
-C
-         IF (ABS(COOR(IYCOOR)) .LT. DTHR) THEN
-C
-            DO 1800 IORDR = 2, NGORDR
-C
-               DO 1900 IATOM = 1, NUCDEP
-                  TMPVEC(IATOM) = TRAMTX(NSTBCT(IINDCT),IATOM,IORDR)
-                  IF (ABS(TMPVEC(IATOM)).GT.DTHR) 
-     &                                          NSTBCT(IINDCT) = IATOM
- 1900          CONTINUE
-C
-               IYCOOR = 3*(NSTBCT(IINDCT)-1) + 2
-               IF (ABS(COOR(IYCOOR)).GT.DTHR) GOTO 2100
- 1800       CONTINUE
-         END IF
-C     
- 2100    CONTINUE
-C
- 1700 CONTINUE
+c      DO 1700 IINDCT = 1, KINDCT
+c         IF ((FCLASS(1:1).EQ.'S').OR.(FCLASS(3:3).EQ.'d')) THEN
+c            IYCOOR = 3*(NSTBCT(IINDCT)-1) + 1
+c         ELSE
+c            IYCOOR = 3*(NSTBCT(IINDCT)-1) + 2
+c         END IF
+cC
+c         IF (ABS(COOR(IYCOOR)) .LT. DTHR) THEN
+cC
+c            DO 1800 IORDR = 2, NGORDR
+cC
+c               DO 1900 IATOM = 1, NUCDEP
+c                  TMPVEC(IATOM) = TRAMTX(NSTBCT(IINDCT),IATOM,IORDR)
+c                  IF (ABS(TMPVEC(IATOM)).GT.DTHR) 
+c     &                                          NSTBCT(IINDCT) = IATOM
+c 1900          CONTINUE
+cC
+c               IYCOOR = 3*(NSTBCT(IINDCT)-1) + 2
+c               IF (ABS(COOR(IYCOOR)).GT.DTHR) GOTO 2100
+c 1800       CONTINUE
+c         END IF
+cC     
+c 2100    CONTINUE
+cC
+c 1700 CONTINUE
 C
       IF (IPRINT .GT. 20) THEN
          WRITE (LUPRI,'(A)') 'Atom transformation matrices:'
@@ -1294,7 +1334,8 @@ C        *** Check if it is possible to construct a force-constant ***
 C        *** with two additional equal and arbitary indices. This  ***
 C        *** force constant will contain this energy value.        ***
 C 
-         IF (((NMORDR-IORDR).GE.2).AND.(.NOT.CLNRGY)) THEN
+         IF (((NMORDR-IORDR).GE.2).AND.(.NOT.CLNRGY)
+     &                            .AND.(.NOT.SCND  )) THEN
             ISTRT = IRSRDR + 1 
             INUM = (NMORDR-IORDR)/2
 C
@@ -2412,6 +2453,7 @@ C     /* Deck frthfc*/
      &          ICRIRP(NCOOR,2),IDEP(ITHDDM,ITHDDM), 
      &          IDXTST(NMORDR,ITHDDM), ICRWMX(ITHDDM,4), ITLRGR(ITHDDM)
 C
+      iprint = 55
       NLDPST = NLDPMX
       DO 100 IC4 = 1, NDCOOR
       DO 100 IC3 = 1, IC4
@@ -2629,12 +2671,12 @@ C           *** Finding the dependent components ***
 C
             NSTART = NLDPMX
             IF (.NOT.EXIST) THEN
-               DO 1100 IROW = 1, NROW-1
+               DO 1100 IROW = 1, NROW-NIDEP
                   DO 1200 ILNGTH = 1, ICIJKL
                      IF (ILNGTH.EQ.IDEP(IROW,1)) THEN
 C
-C                       *** Checking whether there are several equal solutions for  ***
-C                       *** one dependent force constant.                           ***
+C                       *** Checking whether there are several equal    ***
+C                       *** solutions for one dependent force constant. ***
 C
 C
                         IDP4 = ICRWMX(IDEP(IROW,1),1)
@@ -2668,6 +2710,7 @@ C
                            KDPMTX(NLDPMX,3,1) = IDP2
                            KDPMTX(NLDPMX,4,1) = IDP1
                            NMIDPC(NLDPMX    ) = NIDEP 
+                           write (lupri,*) 'hallo', NLDPMX
                            DO 1400 IDP = 1, NIDEP
                               KDPMTX(NLDPMX,1,IDP+1) = IDXTST(1,IDP)
                               KDPMTX(NLDPMX,2,IDP+1) = IDXTST(2,IDP)
@@ -2703,6 +2746,7 @@ C
                   WRITE (LUPRI,'(5X,A)') 'Dependent components      ' //
      &                          'Independent components     Coeffisient'
                   DO II = NLDPMX-NROW+NIDEP+1, NLDPMX
+                     write (lupri,*) 'component', ii
                      WRITE (LUPRI,'(A,4I4,A,4I4,A,F8.4)') 
      &                   '        ', (KDPMTX(II,IX,1),IX=1,4), '      ',
      &                    (KDPMTX(II,IX,2),IX=1,4), '             ', 
@@ -2738,6 +2782,7 @@ C
          END IF
 C
  100  CONTINUE
+      iprint = 0
 C
       RETURN
       END
@@ -3248,7 +3293,7 @@ C
                      DO 1600 IDP2 = 1, NIDEP
                         IF (IDP2 .NE. IMIN) THEN
                            DCOEFF(ICMP2,IDP2) = DCOEFF(ICMP2,IDP2)
-     &                                        - DCOEFF(ICMP2,IMIN)
+     &                                        + DCOEFF(ICMP2,IMIN)
      &                                         *DCOEFF(ICMP ,IDP2) 
                         END IF
  1600                CONTINUE

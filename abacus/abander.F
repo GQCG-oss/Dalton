@@ -921,6 +921,14 @@ C
      &                        IPRINT)
                END IF
 C
+c               IF (PREHES.AND..NOT.NRMCRD) THEN
+c                  KHSSIN = 1
+c                  KLAST  = KHSSIN + NCOOR**2
+c                  LWRK   = LWORK - KLAST + 1
+c                  CALL RDHESS(SYMCOR,CSTART,GRIREP,CHRCTR,WORK(KHSSIN),
+c     &                        WORK(KLAST),ICRIRP,LWRK,IPRINT,SYMDET)
+c               END IF
+C
 C              *** If we are not doing things in normal coordinates ***
 C              *** we need to save the symmetry coordinates.        ***
 C
@@ -931,9 +939,10 @@ C
                ELSE
                   KEIGNV = IWOFF + 2
                END IF
+C
                KEGNVC = KEIGNV + NCOOR
                KHSMWT = KEGNVC + NCOOR**2
-               KMT1TP = KHSMWT + NCOOR**2
+               KMT1TP = KHSMWT + NCOOR*(NCOOR+1)/2
                KMT2TP = KMT1TP + NCOOR**2
                KAMASS = KMT2TP + NCOOR**2
                KHTSTM = KAMASS + NATOMS
@@ -941,7 +950,7 @@ C
                KNMSSP = KNATYP + NATOMS
                KCRTMP = KNMSSP + NCOOR
                KLAST  = KCRTMP + NCOOR
-C     
+C
                LWRK   = LWORK  - KLAST + 1
                IF (KLAST.GT.LWORK)CALL QUIT('Memory exceeded in MKNRMC')
                CALL MKNRMC(SYMCOR,CSTART,TRNCCR,TRAMSS,WORK(KEIGNV),
@@ -1207,7 +1216,7 @@ C
      &               IPRINT)
          SYMDET = .FALSE.
       END IF
-C
+C     
 C     *** Finding force constants that are dependent on each-other ***
 C
       NLDPMX = 0
@@ -2474,6 +2483,26 @@ C
                   HINV    =  D1/(DISPLC**2)
                   DO 300 IX2 = 1, NDCOOR
                   DO 300 IX1 = 1, IX2
+C
+                     CALL IZERO(INDSTP,NMORDR)
+                     INDSTP(1) = IX2
+                     INDSTP(2) = IX1
+C
+C                    *** Checking whether this component should *** 
+C                    *** not be calculated, due to symmetry.    ***
+C
+                     KIDTMP = 1
+                     KIDDBT = KIDTMP + NORDR
+                     KIRPDG = KIDDBT + NORDR
+                     KIRPST = KIRPDG + NORDR
+                     KLAST  = KIRPST + NORDR
+                     LWRK   = LWORK - KLAST + 1
+                     CALL FCSCRN(GRIREP,WORK(KLAST),KDPMTX,INDSTP,
+     &                    ICRIRP,IDUMMY,WORK(KIDTMP),WORK(KIDDBT),
+     &                    WORK(KIRPDG),WORK(KIRPST),IDUMMY,LWORK,NLDPMX,
+     &                    LDPMTX,IFRSTD,IORDR,IORDR-1,IDUMMY,IDUMMY,
+     &                    IDUMMY,IPRINT,CLFVAL,.FALSE.,.FALSE.,.TRUE.)
+C
                      MX = IMIN(1)
                      IF (IX1 .EQ. IX2) MX = IMAX(1)
                      DO 400 I2 = IMAX(1), IMIN(1),-1
@@ -2491,12 +2520,14 @@ C
                            ITYPE       = 3
                            BCOEFF      = COEFF(I1,1)*COEFF(I2,1)
                         END IF
-C
+C     
                         IF (BCOEFF**2 .GT. DMIN) THEN
                            ICNT(ITYPE) = ICNT(ITYPE) + 1
-                           HESMOL(IX2,IX1) = HESMOL(IX2,IX1) 
+                           IF (CLFVAL) THEN
+                              HESMOL(IX2,IX1) = HESMOL(IX2,IX1) 
      &                             + BCOEFF*HINV
      &                             * FUNVAL(1,IADRSS(ITYPE)+ICNT(ITYPE))
+                           END IF
                         END IF
  400                 CONTINUE
  300              CONTINUE
@@ -2873,7 +2904,7 @@ C
 
 C
 C    /*Deck tratdr*/  
-      SUBROUTINE TRATDR(TRACOR,CR1TDR,CR2TDR,NMCOR1,NMCOR2,NCOOR,TEXT,
+      SUBROUTINE TRATDR(TRCOOR,CR1TDR,CR2TDR,NMCOR1,NMCOR2,NCOOR,TEXT,
      &                  LTXT,IPRINT)
 C     ***********************************************************
 C     *** Transforming a third derivative into another set of ***
@@ -2883,7 +2914,7 @@ C     ***********************************************************
 #include <priunit.h>
       CHARACTER*80 TEXT
       DIMENSION CR1TDR(NCOOR,NCOOR,NCOOR), CR2TDR(NCOOR,NCOOR,NCOOR), 
-     &          TRACOR(NCOOR,NCOOR)
+     &          TRCOOR(NCOOR,NCOOR)
 C
       CALL DZERO(CR2TDR,NCOOR**3)
 C
@@ -2892,7 +2923,7 @@ C
       DO 100 ICR1C1 = 1, NMCOR1
       DO 100 ICR2C1 = 1, NMCOR2
          CR2TDR(ICR2C1,ICR1C2,ICR1C3) = CR2TDR(ICR2C1,ICR1C2,ICR1C3)
-     &              + TRACOR(ICR2C1,ICR1C1)*CR1TDR(ICR1C1,ICR1C2,ICR1C3)
+     &              + TRCOOR(ICR2C1,ICR1C1)*CR1TDR(ICR1C1,ICR1C2,ICR1C3)
  100  CONTINUE
 C
       CALL DZERO(CR1TDR,NCOOR**3)
@@ -2901,7 +2932,7 @@ C
       DO 200 ICR2C2 = 1, NMCOR2
       DO 200 ICR2C1 = 1, NMCOR2
          CR1TDR(ICR2C1,ICR2C2,ICR1C3) = CR1TDR(ICR2C1,ICR2C2,ICR1C3)
-     &              + TRACOR(ICR2C2,ICR1C2)*CR2TDR(ICR2C1,ICR1C2,ICR1C3)
+     &              + TRCOOR(ICR2C2,ICR1C2)*CR2TDR(ICR2C1,ICR1C2,ICR1C3)
  200  CONTINUE
 C
       CALL DZERO(CR2TDR,NCOOR**3)
@@ -2910,10 +2941,12 @@ C
       DO 300 ICR2C2 = 1, NMCOR2
       DO 300 ICR2C1 = 1, NMCOR2
          CR2TDR(ICR2C1,ICR2C2,ICR2C3) = CR2TDR(ICR2C1,ICR2C2,ICR2C3)
-     &              + TRACOR(ICR2C3,ICR1C3)*CR1TDR(ICR2C1,ICR2C2,ICR1C3)
+     &              + TRCOOR(ICR2C3,ICR1C3)*CR1TDR(ICR2C1,ICR2C2,ICR1C3)
  300  CONTINUE
 C
       IF (IPRINT .GT.6) THEN
+         WRITE (LUPRI,'(A)') 'Transformation tensor: '
+         CALL PRTRMA(TRCOOR,NCOOR,NCOOR,NMCOR2,NMCOR1,LUPRI) 
          CALL PRTDER(CR2TDR,NCOOR,NMCOR2,TEXT,LTXT,IPRINT)
       END IF
 C
@@ -3008,7 +3041,7 @@ C
       END
 C
 C    /*Deck trafdr*/  
-      SUBROUTINE TRAFDR(TRACOR,CR1FDR,CR2FDR,NMCOR1,NMCOR2,NCOOR,TEXT,
+      SUBROUTINE TRAFDR(TRCOOR,CR1FDR,CR2FDR,NMCOR1,NMCOR2,NCOOR,TEXT,
      &                  LTXT,IPRINT)
 C     **********************************************************
 C     *** Transforming quartic force field to another set of ***
@@ -3018,7 +3051,7 @@ C     **********************************************************
 #include <priunit.h>
       CHARACTER*80 TEXT
       DIMENSION CR1FDR(NCOOR,NCOOR,NCOOR,NCOOR), 
-     &          CR2FDR(NCOOR,NCOOR,NCOOR,NCOOR), TRACOR(NCOOR,NCOOR)
+     &          CR2FDR(NCOOR,NCOOR,NCOOR,NCOOR), TRCOOR(NCOOR,NCOOR)
 C
       KDIM = NCOOR**4
 C
@@ -3030,7 +3063,7 @@ C
       DO 100 ICR2C1 = 1, NMCOR2
          CR2FDR(ICR2C1,ICR1C2,ICR1C3,ICR1C4) = 
      &         CR2FDR(ICR2C1,ICR1C2,ICR1C3,ICR1C4)
-     &       + TRACOR(ICR2C1,ICR1C1)*CR1FDR(ICR1C1,ICR1C2,ICR1C3,ICR1C4)
+     &       + TRCOOR(ICR2C1,ICR1C1)*CR1FDR(ICR1C1,ICR1C2,ICR1C3,ICR1C4)
  100  CONTINUE
 C
       CALL DZERO(CR1FDR,KDIM)
@@ -3041,7 +3074,7 @@ C
       DO 200 ICR2C1 = 1, NMCOR2
          CR1FDR(ICR2C1,ICR2C2,ICR1C3,ICR1C4) = 
      &         CR1FDR(ICR2C1,ICR2C2,ICR1C3,ICR1C4)
-     &       + TRACOR(ICR2C2,ICR1C2)*CR2FDR(ICR2C1,ICR1C2,ICR1C3,ICR1C4)
+     &       + TRCOOR(ICR2C2,ICR1C2)*CR2FDR(ICR2C1,ICR1C2,ICR1C3,ICR1C4)
  200  CONTINUE
 C
       CALL DZERO(CR2FDR,KDIM)
@@ -3052,7 +3085,7 @@ C
       DO 300 ICR2C1 = 1, NMCOR2
          CR2FDR(ICR2C1,ICR2C2,ICR2C3,ICR1C4) = 
      &         CR2FDR(ICR2C1,ICR2C2,ICR2C3,ICR1C4)
-     &       + TRACOR(ICR2C3,ICR1C3)*CR1FDR(ICR2C1,ICR2C2,ICR1C3,ICR1C4)
+     &       + TRCOOR(ICR2C3,ICR1C3)*CR1FDR(ICR2C1,ICR2C2,ICR1C3,ICR1C4)
  300  CONTINUE
 C
       CALL DZERO(CR1FDR,KDIM)
@@ -3063,7 +3096,7 @@ C
       DO 400 ICR2C1 = 1, NMCOR2
          CR1FDR(ICR2C1,ICR2C2,ICR2C3,ICR2C4) = 
      &        CR1FDR(ICR2C1,ICR2C2,ICR2C3,ICR2C4)
-     &       + TRACOR(ICR2C4,ICR1C4)*CR2FDR(ICR2C1,ICR2C2,ICR2C3,ICR1C4)
+     &       + TRCOOR(ICR2C4,ICR1C4)*CR2FDR(ICR2C1,ICR2C2,ICR2C3,ICR1C4)
  400  CONTINUE
 C
       CALL DCOPY(KDIM,CR1FDR,1,CR2FDR,1)
@@ -3220,7 +3253,7 @@ C
 C     *** HESMWT is the mass-weighted hessian. ***
 C
       IC12 = 0
-      CALL DZERO(HESMWT,KDIM)
+      CALL DZERO(HESMWT,NCOOR*(NCOOR+1)/2)
       DO 800 IC2 = 1, NCOOR
       DO 800 IC1 = 1, IC2
          IC12 = IC12 + 1
@@ -3247,12 +3280,12 @@ C
          END IF
 C
          CALL HEADER('Mass weighted Hessian in symmetry coordinates',-1)
-         NUMTIM = (NCOOR-1)/9 + 1
+         NUMTIM = (NCOOR-1)/6 + 1
          DO 1200 ITIM = 1, NUMTIM
-            ISTART =     9*(ITIM-1) + 1
-            IEND   = MIN(9* ITIM  ,NCOOR)
+            ISTART =     6*(ITIM-1) + 1
+            IEND   = MIN(6* ITIM  ,NCOOR)
             DO 1300 IC1 = 1, NCOOR
-               WRITE (LUPRI,'(9F12.7)')(HTESTM(IC1,IC2),IC2=ISTART,IEND)
+               WRITE(LUPRI,'(6F17.14)')(HTESTM(IC1,IC2),IC2=ISTART,IEND)
  1300       CONTINUE
             WRITE (LUPRI,'(A)') '                                  '
  1200    CONTINUE
@@ -3262,8 +3295,10 @@ C     *** Diagonalizing the mass weighted Hessian. ***
 C
       KWRK  = 1
       KIWRK = KWRK + NCOOR
+      CALL DZERO(EGNVCT,NCOOR**2)
       CALL DUNIT(EGNVCT,NCOOR)
       CALL JACO(HESMWT,EGNVCT,NCOOR,NCOOR,NCOOR,WORK(KWRK),WORK(KIWRK))
+
 C
 C     *** Storing the transformation matrix for later isotope-studies. ****
 C
@@ -3411,6 +3446,15 @@ C        *** Mass-weighted hessian. ***
 C
          CALL HEADER('Diagonalized mass weighted hessian.',-1)
 C
+         IJ = 0
+         DO J = 1, NCOOR
+         DO I = 1, J
+            IJ = IJ + 1
+            TM2TMP(I,J) = HESMWT(IJ)
+            TM2TMP(J,I) = HESMWT(IJ)
+         END DO
+         END DO
+C
          BEGIN = 1
          KCOL  = 6
          LAST  = MIN(NCOOR,KCOL)
@@ -3422,7 +3466,7 @@ C
 C
             DO ICOOR = BEGIN, NCOOR
                WRITE (LUPRI,2000) ICRIRP(ICOOR,1), 
-     &                        (HESMOL(ICOOR,I),I=BEGIN,MIN(LAST,ICOOR))
+     &                        (TM2TMP(ICOOR,I),I=BEGIN,MIN(LAST,ICOOR))
             END DO
             WRITE (LUPRI,'(A)') '                                 '
             BEGIN = BEGIN + KCOL
@@ -4807,6 +4851,7 @@ C
 C
 C     *** Print! ***
 C
+      iprint = 8
       IF (IPRINT .GT. 7) THEN
          CALL HEADER ('Final hessian from RDHESS',0)
 C
@@ -4826,6 +4871,7 @@ C
             WRITE (LUPRI,'(A)') '                              '
          END DO
       END IF
+      iprint = 0
 C
       RETURN
       END
@@ -5651,8 +5697,8 @@ C
 C     *** If only numerical derivatives of energy then ***
 C     *** the molecule is free to rotate.              ***
 C
-      IF ((NAORDR.EQ.0).AND.(NMORDR.NE.1).AND.(.NOT.NPRPDR)) 
-     &                                         NOMOVE = .FALSE.
+c      IF ((NAORDR.EQ.0).AND.(NMORDR.NE.1).AND.(.NOT.NPRPDR)) 
+c     &                                         NOMOVE = .FALSE.
 C
 C     *** Different circumstances where molecule ***
 C     *** is not allowed to rotate.              ***
