@@ -138,7 +138,7 @@ C
      &           ' properties calculated.'
             WRITE (LUPRI,'(A)') '                                  '
             WRITE (LUPRI,'(5X,A)') 'Vibrational averages of the ' //
-     &           'folowing properties:'
+     &           'following properties:'
             IF (NSPNSP) THEN
                WRITE (LUPRI,'(5X,A)') 'Spin-spin couplings.'
             END IF
@@ -154,7 +154,7 @@ C
 
          END IF
          IF (MDEANA) THEN
-            WRITE (LUPRI,'(5X,A)') 'A analysis of the vibrational ' //
+            WRITE (LUPRI,'(5X,A)') 'An analysis of the vibrational ' //
      &            'modes will be performed.'
          END IF
       END IF
