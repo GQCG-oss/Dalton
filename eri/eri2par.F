@@ -513,6 +513,7 @@ C
       DIMENSION NPOS(0:MAXCL2+1)
       SAVE NPOS
 C
+      CALL QENTER('ERI_PARDR1')
       IF (IPRINT .GT. 3) CALL TITLER('Output from ERI_PARDR1','*',103)
 C
 C     Take calculation time of each (I|J) pair?
@@ -547,6 +548,7 @@ C
 C     NB! Array TMPMAT is only used as
 C         workspace for array SORTED.
 C
+      CALL QEXIT('ERI_PARDR1')
       RETURN
       END
 C  /* Deck dopar */
@@ -567,6 +569,7 @@ C  INFPAR : NODTOT, NODEID(), NTASK, NCODE
 C
 #include <infpar.h>
 C
+      CALL QENTER('DOPAR')
       IF (IPRINT .GT. 3) CALL TITLER('Output from DOPAR','*',103)
 C
       CALL IZERO(NSTAT,NODTOT)
@@ -633,6 +636,7 @@ C
 #endif
   200 CONTINUE
 C
+      CALL QEXIT('DOPAR')
       RETURN
       END
 C  /* Deck eri_rvres */
