@@ -31,11 +31,20 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+C     File: mpi_dummy.F
+C
+C     A set of dummy mpi routines for creating a sequential
+C     dalton.x together with a parallel dalmpi.x
+C     (See main Makefile) - hjaaj Mar 2005
+C
+C
+#define LUPRI_MPI 0
+C
       SUBROUTINE MPI_INIT(IERR)
          IERR = 0
+#ifdef MPI_DEBUG
          WRITE (LUPRI_MPI,*)
      &      'info: dummy MPI_INIT called, nothing done'
-#ifdef MPI_DEBUG
          CALL QTRACE(LUPRI_MPI)
 #endif
       RETURN
@@ -60,12 +69,13 @@ C
       END
       SUBROUTINE MPI_FINALIZE(IERR)
          IERR = 0
+#ifdef MPI_DEBUG
          WRITE (LUPRI_MPI,*)
      &      'info: dummy MPI_FINALIZE called, exiting ...'
-#ifdef MPI_DEBUG
          CALL QTRACE(LUPRI_MPI)
 #endif
-         CALL QUIT('dummy MPI_FINALIZE called, exiting ...')
+         STOP
+C        ... normal exit of sequential calculation
       RETURN
       END
       SUBROUTINE MPI_ABORT()
