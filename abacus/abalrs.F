@@ -50,8 +50,8 @@ C
 #include <nuclei.h>
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ','.MAX IT','.THRESH',
-     *            '.MAXRED', '.MAXPHP','.EXCITA','.FREQUE',
-     *            '.OPTORB', '.NEXVAL','.XXXXXX','.XXXXXX',
+     *            '.MAXRED', '.MAXPHP','.XXXXXX','.XXXXXX',
+     *            '.OPTORB', '.XXXXXX','.XXXXXX','.XXXXXX',
      *            '.XXXXXX', '.XXXXXX','.STOP  '/
       DATA SET/.FALSE./
 C
@@ -109,16 +109,14 @@ C
     6          CONTINUE
                   READ (LUCMD,*) MXPHP
                GO TO 100
-    7             EXCLC  = .TRUE.
+    7             CONTINUE
                GO TO 100
     8          CONTINUE
-                  READ (LUCMD,*) NEXVAL
-                  READ (LUCMD,*) (FREQUE(I), I = 1,NEXVAL)
+                  CONTINUE
                GO TO 100
     9             OOTV   = .TRUE.
                GO TO 100
    10             CONTINUE
-                  READ (LUCMD,*) NEXVAL
                GO TO 100
    11              CONTINUE
                GO TO 100
