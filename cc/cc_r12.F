@@ -1788,6 +1788,7 @@ C
 c
 c     Write out amplitudes for CC2-R12 model (HF/UniKA/25-06-2003).
 c
+      WRITE (LU45,'(A8)') 'NOTEOFLB'
       IF (LUMULX .EQ. LUMULO) THEN
          WRITE(LU45,'(2I3)') 0,IPDD
       ELSE
@@ -1887,6 +1888,7 @@ c
       END IF
   999 CONTINUE
       WRITE (LU44,'(A8)') 'EOFLABEL'
+      WRITE (LU45,'(A8)') 'EOFLABEL'
       CALL GPCLOSE(LU44,'KEEP')
       CALL GPCLOSE(LU45,'KEEP')
       RETURN
