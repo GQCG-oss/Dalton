@@ -33,131 +33,128 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef UNDEF
-===========================================================================
-/* Comdeck rev_log */
-Revision 1.3  2000/05/24 12:55:16  hjj
-inserted two missing priunit.h (ftnchek)
-
-Revision 1.2  2000/05/02 13:11:45  hjj
-changed checks for GPOPEN from LU* .EQ. 0 to LU* .LE. 0
-
----
-971201-hjaaj: TRACTL: make check for transformation already there
-              also work when AOSRTINT.DA has been deleted !!!
-951219-hjaaj: TRACTL: defined DM1=-1.0D0 (was undefined); never
-   modify input KTRLVL (was ITRLVL, which is abs(KTRLVL))
-950830-hjaaj: LRECL in *4 words for direct access under IRIX
-941115-hjaaj: SIROPI: included FLAG(34) in def. of OLDTRA
-940927-hjaaj: SIROPI: s/FLAG(8)/DOMP2/ and s/FLAG(9)/DORSP/
-940909-hjaaj: added PARAGON define label (same code as AIX)
-940517-hjaaj: Ide: gem integraler paa LUINTM uden labels (afhaengigt af ITRLVL)
-   Brug ITRLVL til at bestemme LBINTM (ikke NMORBT men f.eks. NMOCCT + ...)
-   Beregn ogsaa LBINTD v.hj.af LBMXSQ ??
-MAERKE 930305: usikkert,indfoer USEDRC el. LVLDRC i parameterliste til TRACTL
-MAERKE 900111: reconsider in SIROPI (allow flag(14) also when flag(34?)
--------- Revision n05 ends here ---------
-940517-hjaaj
-TRACTL: removed obsolete calculation of NRINTM
-SORTA,SORTB: changed NTRI to NMBASX (was = NMBASX); removed old TAYLSPACE
---*-- : added HPUX and IRIX define labels (same code as AIX)
-SIROPI: deleted write DUMMY for CRAY; attempt open old LUINTM file if FLAG(14)
-        true, irrespective of FLAG(34); fixed ICASE print error on Cray
-        by extending IF (OPINTM) THEN to after ICASE print
-TRAAB : removed unused DUMMY parameter statement
--------- Revision n04 ends here ---------
-931201-hjaaj
-TRACTL: corrected error for TRAAB; LRBUF for 600 but LBINTM could be up to 1024
- new parameter LBMXSQ specifying max buffer length for seq. files, used for
- calculating LBINTM and as buffer length for LUHALF
-930720-hjaaj
-TRACTL: new parameter PROCC false in CALL PRORB
-921203-hjaaj revision n04 (based on revision m02)
-- added define label DEC (same selection as AIX); removed define label FPS
-SORTA : LDAMIN = LDAMAX / 4 (was LDAMAX / 2)
-TRACTL: print KWORK,MWORK when IPRTRA .gt. 5 (was .ge. 20);
-        SAVE LRBUF; LRBUF defined for 600 integrals/buffer in AO file
-910319-hjaaj
-SORTA,SORTB: reduced NBLOCK to max NTRI, thus only calling DZERO with
-  what is used later; at the same time this gives the most even
-  distribution of distributions per chain.
-TRACD,TRAAB: insert symmetry check in write-to-file loop, gprof showed
-  for Neon that a lot of time was used in skipping zero integrals.
-910130-hjaaj
-TRACD,TRAAB,TRACTL: test print for IPRTRA.ge.100 (from Hinne)
-901028-hjaaj
- TRACTL: new MFRO(1:NSYM) = 0 because wrong integral indices are
-    written to LUINTM if MFRO(isym) .ne. 0
-901025-hjaaj
- TRACTL: JTER=1 only if IPRTRA.gt.1, print TIME IN SORTA if iprtra.gt.0
-901005-hjaaj
- TRACTL: s/CMO(NCMOT)/(CMO(I),I=1,NCMOT)/ ; error in write (luintm)
-   -- This wasn't discovered on Alliant because it didn't stop for end
-   of record (a small test program showed that reading more than one
-   variable read the label in the next record and so on; however, after
-   the reading the pointer was at the beginning of next record!)
-900912-hjaaj
- TRACTL: call flshfo(lupri) before return
-900801-hjaaj
- Removed FASTIO file openings (FASTIO was never implemented).
- Define AIX for file openings.
- Moved writing of pre-MOLTWOEL information on LUINTM from TRAAB to TRACTL;
-   added NSYM,NORB,NBAS and CMO to information.
- TRACTL: check ITRLVL,CMO against LUINTM information, abandon transformation
-   if the needed mo integrals already available.
- SIROPI: revised ITRLVL check against LUINTM for levels 2 and 3;
-   rationalized file openings for different computer types;
-   write warning if flag(14) and integrals not found.
-900307-hjaaj
- TRACTL: empty LUINTM in beginning of transformation to give more disk
- space for temporary files during the transformation.
-900305-hjaaj
- TRACTL: only call drcctl if ITRLVL.gt.0 (not ci) and usedrc
- MAERKE: usikkert,indfoer USEDRC el. LVLDRC i parameterliste til TRACTL
-900302-hjaaj
- TRACTL: reset /CBGETD/ to tell any H2AC on disk now obsolete.
-900226-hjaaj
- TRACTL: if (usedrc) then call DRCCTL
-900221-hjaaj
- added drcctl routines as module drcctl.u
-900115-hjaaj
- NXTH2M,NXTH2D: needtp(ityp) .lt. 0 now means at least one distribution
- of that type needed, but not all (in that case needtp(ityp) .gt. 0)
-900111-hjaaj
- SIROPI: local logical variable OPINTM, added FLAG(8:9) [RESPONSE and
-   MP2] to cases when LUINTM is opened.
-900108-hjaaj
- NXTH2D: read LBINTD,LVLDRC after label DRCINFO on LUINTD
-891213-hjaaj
- inserted *CALL MAXASH in all decks with INFIND
- inserted *CALL MXCORB in all decks with INFIND or INFINP
-891208-hjaaj
- SORTA,TRACD,TRAAB: print threshold for discarding integrals
- TRACTL: if (thrp.le.0) thrp=1.d-12 (was 1.d-9)
-         if (thrq.le.0) thrq=1.d-12 (was 1.d-8)
-891127-hjaaj
- %s/ICDTYP/ITYPCD/
-891117-hjaaj
- TRAUTH added
-891116-hjaaj
- NXTH2M,NXTH2D: more tests that buffers are allocated/have not been
-   corrupted. Release buffer allocation when no more buffers.
-891107-hjaaj
- SIRTRA.U extracted from sir.l02.su
- NXTH2*,NX2H2* appended
-890710-hjaaj
- Write label 'END INTM' at end of LUINTM in TRAAB
- Write total time in tracd,sortb,traab in tractl if iprtra .gt.0
-    and only write TRANSFORMATION level each time if iprtra .gt. 0
-    and corrected 890615 tractl output error (wrt. ITRSAV) in TRACTL
-890615-hjaaj
- disabled FIRST=.FALSE. in TRACTL so it can be used in combination runs.
-890220-hjaaj
- sortb -- fejl for ITRLVL = 10; indfoert MAXD
- traab,tracd -- NOSYNC directive for read direct access to TRI(*)
-C--- 891117: END is for use of fsplit to extract decks
-      END
-===========================================================================
+#ifdef OLD_REV_OLG
+!===========================================================================
+!Revision 1.3  2000/05/24 12:55:16  hjj
+!inserted two missing priunit.h (ftnchek)
+!
+!Revision 1.2  2000/05/02 13:11:45  hjj
+!changed checks for GPOPEN from LU* .EQ. 0 to LU* .LE. 0
+!
+!---
+!971201-hjaaj: TRACTL: make check for transformation already there
+!              also work when AOSRTINT.DA has been deleted !!!
+!951219-hjaaj: TRACTL: defined DM1=-1.0D0 (was undefined); never
+!   modify input KTRLVL (was ITRLVL, which is abs(KTRLVL))
+!950830-hjaaj: LRECL in *4 words for direct access under IRIX
+!941115-hjaaj: SIROPI: included FLAG(34) in def. of OLDTRA
+!940927-hjaaj: SIROPI: s/FLAG(8)/DOMP2/ and s/FLAG(9)/DORSP/
+!940909-hjaaj: added PARAGON define label (same code as AIX)
+!940517-hjaaj: Ide: gem integraler paa LUINTM uden labels (afhaengigt af ITRLVL)
+!   Brug ITRLVL til at bestemme LBINTM (ikke NMORBT men f.eks. NMOCCT + ...)
+!   Beregn ogsaa LBINTD v.hj.af LBMXSQ ??
+!MAERKE 930305: usikkert,indfoer USEDRC el. LVLDRC i parameterliste til TRACTL
+!MAERKE 900111: reconsider in SIROPI (allow flag(14) also when flag(34?)
+!-------- Revision n05 ends here ---------
+!940517-hjaaj
+!TRACTL: removed obsolete calculation of NRINTM
+!SORTA,SORTB: changed NTRI to NMBASX (was = NMBASX); removed old TAYLSPACE
+!--*-- : added HPUX and IRIX define labels (same code as AIX)
+!SIROPI: deleted write DUMMY for CRAY; attempt open old LUINTM file if FLAG(14)
+!        true, irrespective of FLAG(34); fixed ICASE print error on Cray
+!        by extending IF (OPINTM) THEN to after ICASE print
+!TRAAB : removed unused DUMMY parameter statement
+!-------- Revision n04 ends here ---------
+!931201-hjaaj
+!TRACTL: corrected error for TRAAB; LRBUF for 600 but LBINTM could be up to 1024
+! new parameter LBMXSQ specifying max buffer length for seq. files, used for
+! calculating LBINTM and as buffer length for LUHALF
+!930720-hjaaj
+!TRACTL: new parameter PROCC false in CALL PRORB
+!921203-hjaaj revision n04 (based on revision m02)
+!- added define label DEC (same selection as AIX); removed define label FPS
+!SORTA : LDAMIN = LDAMAX / 4 (was LDAMAX / 2)
+!TRACTL: print KWORK,MWORK when IPRTRA .gt. 5 (was .ge. 20);
+!        SAVE LRBUF; LRBUF defined for 600 integrals/buffer in AO file
+!910319-hjaaj
+!SORTA,SORTB: reduced NBLOCK to max NTRI, thus only calling DZERO with
+!  what is used later; at the same time this gives the most even
+!  distribution of distributions per chain.
+!TRACD,TRAAB: insert symmetry check in write-to-file loop, gprof showed
+!  for Neon that a lot of time was used in skipping zero integrals.
+!910130-hjaaj
+!TRACD,TRAAB,TRACTL: test print for IPRTRA.ge.100 (from Hinne)
+!901028-hjaaj
+! TRACTL: new MFRO(1:NSYM) = 0 because wrong integral indices are
+!    written to LUINTM if MFRO(isym) .ne. 0
+!901025-hjaaj
+! TRACTL: JTER=1 only if IPRTRA.gt.1, print TIME IN SORTA if iprtra.gt.0
+!901005-hjaaj
+! TRACTL: s/CMO(NCMOT)/(CMO(I),I=1,NCMOT)/ ; error in write (luintm)
+!   -- This wasn't discovered on Alliant because it didn't stop for end
+!   of record (a small test program showed that reading more than one
+!   variable read the label in the next record and so on; however, after
+!   the reading the pointer was at the beginning of next record!)
+!900912-hjaaj
+! TRACTL: call flshfo(lupri) before return
+!900801-hjaaj
+! Removed FASTIO file openings (FASTIO was never implemented).
+! Define AIX for file openings.
+! Moved writing of pre-MOLTWOEL information on LUINTM from TRAAB to TRACTL;
+!   added NSYM,NORB,NBAS and CMO to information.
+! TRACTL: check ITRLVL,CMO against LUINTM information, abandon transformation
+!   if the needed mo integrals already available.
+! SIROPI: revised ITRLVL check against LUINTM for levels 2 and 3;
+!   rationalized file openings for different computer types;
+!   write warning if flag(14) and integrals not found.
+!900307-hjaaj
+! TRACTL: empty LUINTM in beginning of transformation to give more disk
+! space for temporary files during the transformation.
+!900305-hjaaj
+! TRACTL: only call drcctl if ITRLVL.gt.0 (not ci) and usedrc
+! MAERKE: usikkert,indfoer USEDRC el. LVLDRC i parameterliste til TRACTL
+!900302-hjaaj
+! TRACTL: reset /CBGETD/ to tell any H2AC on disk now obsolete.
+!900226-hjaaj
+! TRACTL: if (usedrc) then call DRCCTL
+!900221-hjaaj
+! added drcctl routines as module drcctl.u
+!900115-hjaaj
+! NXTH2M,NXTH2D: needtp(ityp) .lt. 0 now means at least one distribution
+! of that type needed, but not all (in that case needtp(ityp) .gt. 0)
+!900111-hjaaj
+! SIROPI: local logical variable OPINTM, added FLAG(8:9) [RESPONSE and
+!   MP2] to cases when LUINTM is opened.
+!900108-hjaaj
+! NXTH2D: read LBINTD,LVLDRC after label DRCINFO on LUINTD
+!891213-hjaaj
+! inserted *CALL MAXASH in all decks with INFIND
+! inserted *CALL MXCORB in all decks with INFIND or INFINP
+!891208-hjaaj
+! SORTA,TRACD,TRAAB: print threshold for discarding integrals
+! TRACTL: if (thrp.le.0) thrp=1.d-12 (was 1.d-9)
+!         if (thrq.le.0) thrq=1.d-12 (was 1.d-8)
+!891127-hjaaj
+! %s/ICDTYP/ITYPCD/
+!891117-hjaaj
+! TRAUTH added
+!891116-hjaaj
+! NXTH2M,NXTH2D: more tests that buffers are allocated/have not been
+!   corrupted. Release buffer allocation when no more buffers.
+!891107-hjaaj
+! SIRTRA.U extracted from sir.l02.su
+! NXTH2*,NX2H2* appended
+!890710-hjaaj
+! Write label 'END INTM' at end of LUINTM in TRAAB
+! Write total time in tracd,sortb,traab in tractl if iprtra .gt.0
+!    and only write TRANSFORMATION level each time if iprtra .gt. 0
+!    and corrected 890615 tractl output error (wrt. ITRSAV) in TRACTL
+!890615-hjaaj
+! disabled FIRST=.FALSE. in TRACTL so it can be used in combination runs.
+!890220-hjaaj
+! sortb -- fejl for ITRLVL = 10; indfoert MAXD
+! traab,tracd -- NOSYNC directive for read direct access to TRI(*)
+!===========================================================================
 #endif
 C  /* Deck trauth */
       SUBROUTINE TRAUTH(IWUNIT)
@@ -1755,7 +1752,7 @@ C     ***** WRITE LAST BUFFER *****
       RETURN
       END
 C  /* Deck tractl */
-      SUBROUTINE TRACTL(KTRLVL,CMO,WORK,KWORK,MWORK)
+      SUBROUTINE TRACTL(KTRLVL,CMO,WORK,KWORK)
 C
 C Revisions
 C   18-Apr-1984 hjaaj / 4-Dec-1983 hjaaj
@@ -1803,10 +1800,12 @@ C
 C
 C Used from common blocks:
 C CBGETDIS : IAD*
+C INFDIM   : MWORK
 C
 #include <priunit.h>
 #include <inforb.h>
 #include <exeinf.h>
+#include "infdim.h"
 #include <inttra.h>
 #include <inftra.h>
 #include <inftap.h>

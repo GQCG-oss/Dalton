@@ -63,7 +63,7 @@ C
 C  INFINP : FLAG(*),ISTATE,ITRLVL,?
 C  INFTAP : ?
 C  INFOPT : ITMAC, RTRUST
-C  INFDIM : MWORK,NWOPMA
+C  INFDIM : NWOPMA
 C  INFORB : N2BAST,..
 C  INFPRI : LUERR,?
 C
@@ -271,8 +271,8 @@ C
 C           Transform integrals
 C
             IF (.NOT. FLAG(14)) THEN
-               CALL TRACTL(JTRLVL,CMO,WRK(KWRK0),LWRK0,MWORK)
-C              CALL TRACTL(ITRLVL,CMO,WRK,LFREE,MWORK)
+               CALL TRACTL(JTRLVL,CMO,WRK(KWRK0),LWRK0)
+C              CALL TRACTL(ITRLVL,CMO,WRK,LFREE)
 C
 C              Tell SIROPT to skip integral transformation
 C              (if transformation level is sufficient),
