@@ -656,7 +656,7 @@ C
       DIMENSION DXCAO(N2BASX,*),DXVAO(N2BASX,*),DTVAO(N2BASX,*)
       DIMENSION FXCAO(N2BASX,*),FXVAO(N2BASX,*),FTVAO(N2BASX,*)
       DIMENSION WRK(*)
-      LOGICAL   AODRCT, P6SAVE
+      LOGICAL   AODRCT, P6SAVE, DFTADX
 C
 #include <dummy.h>
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0)
@@ -683,6 +683,10 @@ C
 C
 #if defined (VAR_DEBUG)
 #include <idbg.h>
+#endif
+#ifndef FOR_THE_FUTURE
+c  this is a hack, to transfer KSYMOP to DEQ27 inside DFTATR
+#include "wrkrsp.h"
 #endif
 C
       CALL QENTER('TR1FCY')
@@ -770,10 +774,7 @@ C ***** of the inactive Fock matrix above).
 C
       IF (NDMAT .GT. 0) THEN
          CALL DZERO(FXCAO,NDMAT*N2BASX)
-      IF (LUSUPM .NE. -1) THEN
-         IF (DFTRUN) THEN
-            CALL QUIT('P supermatrix integrals not implemented for DFT')
-         END IF
+      IF (LUSUPM .NE. -1 .AND. .NOT.DFTRUN) THEN
          CALL RDSUPM(NDMAT,FXCAO,DXCAO,WRK(KFREE),LFREE)
 C        CALL RDSUPM(NSIM,FMAT,DMAT,WORK,LFREE)
       ELSE
@@ -781,14 +782,33 @@ C        CALL RDSUPM(NSIM,FMAT,DMAT,WORK,LFREE)
             ISYMDM(IDMAT) = JWOPSY
             IFCTYP(IDMAT) = 13
   400    CONTINUE
+         DFTADX = DFTADD
+         DFTADD = .FALSE.
          CALL SIRFCK(FXCAO,DXCAO,NDMAT,ISYMDM,IFCTYP,
-     *      AODRCT,WRK(KFREE),LFREE)
+     *               AODRCT,WRK(KFREE),LFREE)
 C        ... if (AODRCT) construct Fock matrix directly
 C            else construct Fock matrix from LUINTA
 C            ISYMDM : symmetry of density matrix (DUNP)
 C            IFCTYP = 13 : singlet Fock matrix and DUNP symmetric
+         DFTADD = DFTADX
       END IF
       END IF
+#ifdef FOR_THE_FUTURE
+C
+C add DFT contribution in AO BASIS
+C
+      call quit(' sss ')
+      IF (DFTADD) THEN
+         IF (NASHT.GT.0) CALL QUIT('TR1FCY: open shell DFT not yet')
+         DFTIMG = .FALSE.
+C           DXCAO contains effective
+            CALL DFTATR_new_in_ao(NDMAT,FXCAO,DXCAO,CMO,.FALSE.,
+     &                    JWOPSY,WRK(KFREE),LFREE)
+c-rsp       CALL DFTATR(FCONE(1,1,IOSIM),CMO,ZYMAT(1,IOSIM),TRPLET,
+c-rsp&                    KSYMOP,WRK(KWRK0),LFREE)
+      END IF      
+#endif
+C
 C
       IF (P6FLAG(24) .OR. IPRLIN.GE.24) THEN
         DO 210 ICSIM = 1,NCSIM
@@ -864,6 +884,20 @@ C
             END IF
   300    CONTINUE
 C
+#ifndef FOR_THE_FUTURE
+C
+C     add DFT contribution in MO BASIS
+C
+      IF (DFTADD) THEN
+         IF (NASHT.GT.0) CALL QUIT('TR1FCY: open shell DFT not yet')
+         DFTIMG = .FALSE.
+         ksymop = jwopsy
+         CALL DFTATR(FXC(1,1),CMO,UBO(1,1),.false.,
+     &               JWOPSY,WRK(KFREE),LFREE)
+c-rsp    CALL DFTATR(FCONE(1,1,IOSIM),CMO,ZYMAT(1,IOSIM),TRPLET,
+c-rsp&               KSYMOP,WRK(KWRK0),LFREE)
+      END IF      
+#endif
  5900 CONTINUE
 C
 C *** End of subroutine TR1FCY
