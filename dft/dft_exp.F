@@ -1,5 +1,42 @@
+      SUBROUTINE DEXPDRV(DMAT,IPRINT,WORK,LFREE)
+#include <implicit.h>
+#include <dummy.h>
+      EXTERNAL DEXPGC
+      CALL DFTINT(DMAT,1,0,.FALSE.,WORK,LFREE,
+     &            DEXPGC,DMAT,ELE)
+      IF(IPRFCK.GE.0) WRITE(LUPRI,'(A,F20.14)')
+     &     'Orbital gradient integration, electrons:', ELE
+      END
+
 C /* Deck dftexp */
-      SUBROUTINE DFTEXP(DMAT,GAO,GAO1,GAO2,VXC,VXB,RHX,RHY,RHZ,
+      SUBROUTINE DEXPGC(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,
+     &                  RHOA,GRADA,COORD,WGHT,DMAT)
+#include <implicit.h>
+      PARAMETER (D2 = 2D0)
+#include <inforb.h>
+      DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN),WGHT(NBLEN),
+     &          RHOA(NBLEN), GRADA(3,NBLEN),
+     &          NBLCNT(8),NBLOCKS(2,LDAIB,8),
+     &          DMAT(NBAST,NBAST)
+      LOGICAL DFT_ISGGA,DOGGA
+      EXTERNAL DFT_ISGGA
+      DIMENSION VX(5)
+C     
+      DOGGA = DFT_ISGGA()
+c     
+      DO I= 1, NBLEN
+         GRDNRM = SQRT(GRADA(1,I)**2 + GRADA(2,I)**2 + GRADA(3,I)**2)
+         CALL DFTPTF0(RHOA(I),GRDNRM,WGHT(I),VX)
+         VXC = D2*VX(1)
+         VXB = D2*VX(2)/GRDNRM
+         CALL DFTEXP(DMAT,GAO(I,1,1),GAO(I,1,2),NBLEN,
+     &               VXC,VXB,
+     &               GRADA(1,I),GRADA(2,I),GRADA(3,I),
+     &               COORD(1,I),COORD(2,I),COORD(3,I),DOGGA)
+      END DO
+      END
+      SUBROUTINE DFTEXP(DMAT,GAO,GAO1,NGSTRIDE,NBLCNT,NBLOCKS,LDAIB,
+     &                  VXC,VXB,RHX,RHY,RHZ,
      &                  CORPX,CORPY,CORPZ,DOGGA)
 C
 C     Exchange-correlation contribution to orbital-exponent gradient
@@ -19,7 +56,8 @@ C
 C
       LOGICAL DOGGA 
       DIMENSION DMAT(NBAST,NBAST), 
-     &          GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6)
+     &          GAO(NGSTRIDE,NBAST), GAO1(NGSTRIDE,NBAST,3),
+     &          NBLCNT(8),NBLOCKS(2,LDAIB,8)
       DIMENSION GA10(MXAQN), GB00VC(MXAQN), 
      &          GA11(MXAQN), GB00VB(MXAQN), GB01VB(MXAQN)
 C
@@ -40,8 +78,11 @@ C
 #include <ibtfun.h>
 C
       DO IREPA = 0, MAXREP
-         ISTR = IBAS(IREPA+1) + 1
-         IEND = IBAS(IREPA+1) + NBAS(IREPA+1)
+      DO IBL = 1, NBLCNT(IREPA+1)
+c         ISTR = IBAS(IREPA+1) + 1
+c         IEND = IBAS(IREPA+1) + NBAS(IREPA+1)
+         ISTR  = NBLOCKS(1,IBL,IREPA+1)
+         IEND  = NBLOCKS(2,IBL,IREPA+1)
          IORBA = 0
          DO ISHELA = 1, KMAX
             NHKTA  = NHKT(ISHELA)
@@ -63,17 +104,17 @@ C
                   IA = IPTSYM(IORBA+ICOMPA,IREPA)
                   GD = D0 
                   DO IB = ISTR, IEND 
-                     GD = GD + GAO(IB)*DMAT(IB,IA)
+                     GD = GD + GAO(1,IB)*DMAT(IB,IA)
                   END DO
                   GB00VC(ICOMPA) = D2*FAC*VXC*GD
                   IF (DOGGA) THEN
                      G0 = D0 
                      G1 = D0 
                      DO IB = ISTR, IEND 
-                        G0 = G0 + DMAT(IB,IA)*GAO(IB)
-                        G1 = G1 + DMAT(IB,IA)*(RHX*GAO1(IB,1) 
-     &                                       + RHY*GAO1(IB,2)
-     &                                       + RHZ*GAO1(IB,3))
+                        G0 = G0 + DMAT(IB,IA)*GAO(1,IB)
+                        G1 = G1 + DMAT(IB,IA)*(RHX*GAO1(1,IB,1) 
+     &                                       + RHY*GAO1(1,IB,2)
+     &                                       + RHZ*GAO1(1,IB,3))
                      END DO
                      GB00VB(ICOMPA) = FAC*VXB*G0
                      GB01VB(ICOMPA) = FAC*VXB*G1
@@ -159,6 +200,7 @@ C
             END DO
             IORBA = IORBA + KHKTA
          END DO
+      END DO
       END DO
       RETURN
       END

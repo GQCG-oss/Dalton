@@ -66,6 +66,9 @@ grid_getchunk_blocked(DftGridReader* rawgrid, int maxlen,
        (grid_getchunk_blocked((r),(m),NULL,NULL,(coor),(w)))
 void grid_close(DftGridReader *rawgrid);
 
+/* CARTESIAN GRID ROUTINES */
+void do_cartesian_grid(int nbast, const real* dmat, DftGridReader* res);
+
 #endif /* !defined(GRID_GEN_H) */
 
  

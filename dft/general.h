@@ -14,9 +14,10 @@
 #endif
 
 /* Match Fortran name mangling. If the Fortran compiler does not
- * mangle names, define NO_UNDERSCORE in CFLAGS.
- * g77 and compaq fort (cryptically referred to with HAVE_GCPP below) for linux-alpha
- * both insert a second underscore if routine name contains at least one underscore /hjaaj Oct04 */
+ * mangle names, define NO_UNDERSCORE in CFLAGS.  g77 and compaq fort
+ * (cryptically referred to with HAVE_GCPP below) for linux-alpha both
+ * insert a second underscore if routine name contains at least one
+ * underscore /hjaaj Oct04 */
 #ifdef NO_UNDERSCORE
 #define FSYM(a) a
 #define FSYM2(a) a
@@ -136,7 +137,7 @@ void getrho_(const real*dmat, const real* atv, real* rho, real* dmagao,
 void dftgrd_(real* work, int* lwork, const int* d1, const int* log1);
 void dftdns_(real* dmat, real* work,int *lwork,int* iprint);
 void gtdmso_(real* udv, real* cmo, real* di, real* dv, real* work);
-int ishell_cnt_(void);
+int FSYM2(ishell_cnt)(void);
 void dalton_quit(const char* format, ...);
 
 /* BLAS and other linear algebra routines */
@@ -166,9 +167,10 @@ void dgemm_(const char* transa, const char* transb, const int* nrowc,
 
 real* alloc_mat_MO(int cnt);
 
-void dft_get_ao_dens_mat_(real* cmo, real* dmat, real* work, int* lwork);
-void dft_get_ao_dens_matab_(real* cmo, real* dmata, real* dmatb,
-                            real* work, int* lwork);
+void FSYM2(dft_get_ao_dens_mat)(const real* cmo, real* dmat,
+                                real* work, int* lwork);
+void FSYM2(dft_get_ao_dens_matab)(real* cmo, real* dmata, real* dmatb,
+                                  real* work, int* lwork);
 
 /* useful  constants for fortran interfacing */
 extern const int  ZEROI, ONEI, THREEI, FOURI;
