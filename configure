@@ -782,7 +782,7 @@ case $WHICH in
 	    fi
 	    inc='-I../include'
             cpp=${cpp}" -DIMPLICIT_NONE"
-            opt='-O4 -fpe2';;
+            opt='-fast -fpe3 -warn nouncalled';;
     sun4) if [ "$mesp" = "dummy" ]; then
            if [ $split = 'true' ] ; then
               cpp="-DSYS_SUN -DNO_F90 -DVAR_SPLITFILES -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR= \"$basdir\"'"
