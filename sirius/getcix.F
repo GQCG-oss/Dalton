@@ -384,7 +384,9 @@ C                  symmetries or triplet in ABACUS and RESPONSE
          LCINDX = LCINSV
       ELSE
 C     ... NASHT .le. 1 (Hartree-Fock)
-         IF (NASHT .EQ. 1) THEN
+         IF (HSROHF .OR. DOMC) THEN
+            JCSYM = LSYM
+         ELSE IF (NASHT .EQ. 1) THEN
             JCSYM = IOPRHF
          ELSE IF (HSROHF) THEN
             JCSYM = LSYM
