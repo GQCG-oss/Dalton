@@ -73,7 +73,7 @@ C
          KIOFCM = 1
          KLAST  = 1
       ELSE IF (GDER .OR. BDER) THEN
-         CALL ERISDS(IPNTCR,INDXBT)
+         CALL ERISDM(IPNTCR,INDXBT)
          LBIN   = NCCT*KHKTA*KHKTB*KHKTC*KHKTD
          KBIN   = 1
          KIBIN  = KBIN   +  LBIN
@@ -90,7 +90,7 @@ C
          KIOFCM = KJADDC + 64*MXAQN*MXAQN
          KLAST  = KIOFCM + MXAQN*MXAQN*MXAQN*MXAQN
       ELSE IF (DODIST) THEN
-         CALL ERISDS(IPNTCR,INDXBT)
+         CALL ERISDM(IPNTCR,INDXBT)
          LBIN   = NCCT*KHKTA*KHKTB*KHKTC*KHKTD
          KBIN   = 1
          KIBIN  = KBIN   +  LBIN
@@ -1183,6 +1183,8 @@ C
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERISRT',-1)
 C
+      CALL ERISDS(IPNTCR,INDXBT)
+C
       CALL ERICHN(INDORB,NBTCHX,LBTCHX,IPNBCH,
      &            IODDCC,IPNTUV,NBITS,NIBUF,IOFCMP,ICART,IPRINT)
 C
@@ -1236,7 +1238,28 @@ C /* Deck erisds */
          END DO
       END DO
       NDST = IDIST
-      LPNBCH = NDST*MLTPX*KHKTAB*KHKTCD
+      RETURN
+      END
+C /* Deck erisdm */
+      SUBROUTINE ERISDM(IPNTCR,INDXBT)
+#include <implicit.h>
+#include <priunit.h>
+#include <aovec.h>
+#include <mxcent.h>
+#include <maxaqn.h>
+#include <maxorb.h>
+#include <eridst.h>
+      DIMENSION IPNTCR(MAXBCH,4)
+      DIMENSION INDXBT(MXSHEL*MXCONT,0:7)
+#include <ericom.h>
+#include <aobtch.h>
+C
+      LPNBCH = 0
+      DO IRPDST = 0, MAXREP
+         CALL ERISDS(IPNTCR,INDXBT)
+         LPNBCH = MAX(LPNBCH,NDST)
+      END DO
+      LPNBCH = LPNBCH*MLTPX*KHKTAB*KHKTCD
       RETURN
       END
 C  /* Deck erichn */
