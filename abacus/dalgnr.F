@@ -584,7 +584,6 @@ C  /* Deck exedrv */
 #include <maxorb.h>
 #include <mxorb.h>
       PARAMETER (D0 = 0.0D0)
-#include <sirrun.h>
 #include <siripc.h>
 #include <nuclei.h>
 #include <infinp.h>
@@ -606,7 +605,6 @@ C  /* Deck exedrv */
       CALL QENTER('DALTON')
       CALL GETTIM(CSTR,WSTR)
       WLKREJ = .FALSE.
-      SIRRUN = .FALSE.
       IF (OPTNEW) THEN
          RNABAC = .TRUE.
          DOWALK = .FALSE.
