@@ -203,7 +203,9 @@ geometry optimization, and there exists three different \aba\ input
 modules for geometry optimizations: \Sec{*START}, \Sec{*PROPERTIES},
 \Sec{*FINAL}. \Sec{*START} gives input for the initial point,
 \Sec{*PROPERTIES} gives input options during the optimization of the
-molecular geometry, and \Sec{*FINAL} gives input options for the
+molecular geometry
+(and for the initial point if no \Sec{*START} was specified),
+and \Sec{*FINAL} gives input options for the
 analysis that is to be done at the optimized geometry. In this way one
 may start a calculation at an experimental geometry, evaluating a set
 of molecular properties of interest, do an ordinary geometry
@@ -211,8 +213,9 @@ optimization without any properties evaluated during the geometry
 optimization, and then recalculate the same set of molecular
 properties (or others) at the optimized geometry in one single run. We
 note that if one only does a single point calculation, input
-options to \aba\ is to be given in the \Sec{*PROPERTIES} input
-module. Note that is a \verb|**RESPONSE| module present in a geometry optimization, the \resp\ calculations will only be performed at the optimized geometry.
+options to \aba\ is to be given in the \Sec{*PROPERTIES} input module.
+Note that is a \verb|**RESPONSE| module present in a geometry optimization,
+the \resp\ calculations will only be performed at the optimized geometry.
 
 The input file must end with the keyword \Sec{END OF}.
 
