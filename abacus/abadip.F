@@ -44,7 +44,7 @@ C  /* Deck dipinp */
 #include <abainf.h>
 #include <cbidip.h>
       DATA TABLE /'.SKIP  ', '.PRINT ', '.NODC  ', '.NODV  ',
-     *            '.XXXXXX', '.XXXXXX', '.STOP  '/
+     *            'xXXXXXX', 'xXXXXXX', '.STOP  '/
 C
       NEWDEF = (WORD .EQ. '*DIPCTL')
       ICHANG = 0
@@ -133,7 +133,6 @@ C
       NODC   = .FALSE.
       NODV   = .FALSE.
       TEST   = .FALSE.
-      AOMAT  = .FALSE.
       SKIP = .NOT.(DIPDER .OR. POLAR)
       CUT  = .FALSE.
 C
@@ -232,14 +231,13 @@ C
 C     ***** Read one-electron density *****
 C
       IF (NASHT .GT. 0) THEN
+         READ (LUSIFC)
          CALL READI(LUSIFC,IRAT*NNASHX,DVSP)
          CALL DSPTSI(NASHT,DVSP,DV)
-      ELSE
-         READ (LUSIFC)
-      END IF
-      IF ((IPRINT .GT. 10) .AND. (NASHT .GT. 0)) THEN
-         CALL HEADER('Active density matrix in DIPCT1',-1)
-         CALL OUTPUT(DV,1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
+         IF (IPRINT .GT. 10) THEN
+            CALL HEADER('Active density matrix in DIPCT1',-1)
+            CALL OUTPUT(DV,1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
+         END IF
       END IF
 C
 C     ***** Read SO integrals *****
@@ -298,7 +296,7 @@ C
 C
 C                 ***** Reorthonormalization and right-hand side *****
                   CALL OPGCTL(DIPREO,DIPRHS,CMO,DV,SOINT,DIPACT,DIPICT,
-     &                           WORK,LWORK,IREP,NODC,NODV,AOMAT,IPRINT)
+     &                           WORK,LWORK,IREP,NODC,NODV,IPRINT)
                   CALL CHKPRP(' Testing property: '//CHRXYZ(-ICOOR)//
      &                        ' component of dipole moment',
      &                         DIPME(ICOOR),DIPICT,DIPACT,IPRINT)
