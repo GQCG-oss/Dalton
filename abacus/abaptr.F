@@ -33,36 +33,34 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef UNDEF
-===========================================================================
-/* Comdeck comments */
-  950505-hjaaj: changed print such that no print if IPRINT .le. 2
-  *** PRT_COMMENTS
-  910207  PSORG/PSRT error for cases in which NBLOCK is very large
-          but NUMP is relatively small (many centres with small
-          basis sets).  This is a failure to reset the slice and pass
-          counts (if necessary) if the number of blocks in one
-          slice exceeds MAXLOC.  This involves extending the tests
-          in the loop nest in PSORG and changing pointer assignments
-          in PSRT
-  910105  Corrected error in PSORG (PSRT was called with MEMS
-          as available memory instead of MEMMAX) and two errors
-          in PSRT.  First was test on computed ITAB(ITABI), which
-          was reset if .LT. 0 --- should have been .LE. 0.
-          Second was that if LASTAD() was -1, the whole write of
-          the P block was skipped --- must write zero block.  We
-          need to look at compression for this.  Also, HJJ:s comment
-          of 890529 should be looked at closely.
-  *** hj_comments
-  900508: Corrected error in PSRT. IPQRS set to 0 at 1000
-  890529: something is very fishy about PSRT for multiple passes,
-          (I think), from a quick glance it seems as if IPQRS is
-          only compared to a lower limit:
-                  IF (IPQRS .LT. IPQRST) GOTO 40
-          which must give problems if multiple passes.
-          Determination of NPASS in PSIZE was wrong, has been corrected.
-===========================================================================
-#endif
+c===========================================================================
+c/* Comdeck comments */
+c  950505-hjaaj: changed print such that no print if IPRINT .le. 2
+c  *** PRT_COMMENTS
+c  910207  PSORG/PSRT error for cases in which NBLOCK is very large
+c          but NUMP is relatively small (many centres with small
+c          basis sets).  This is a failure to reset the slice and pass
+c          counts (if necessary) if the number of blocks in one
+c          slice exceeds MAXLOC.  This involves extending the tests
+c          in the loop nest in PSORG and changing pointer assignments
+c          in PSRT
+c  910105  Corrected error in PSORG (PSRT was called with MEMS
+c          as available memory instead of MEMMAX) and two errors
+c          in PSRT.  First was test on computed ITAB(ITABI), which
+c          was reset if .LT. 0 --- should have been .LE. 0.
+c          Second was that if LASTAD() was -1, the whole write of
+c          the P block was skipped --- must write zero block.  We
+c          need to look at compression for this.  Also, HJJ:s comment
+c          of 890529 should be looked at closely.
+c  *** hj_comments
+c  900508: Corrected error in PSRT. IPQRS set to 0 at 1000
+c  890529: something is very fishy about PSRT for multiple passes,
+c          (I think), from a quick glance it seems as if IPQRS is
+c          only compared to a lower limit:
+c                  IF (IPQRS .LT. IPQRST) GOTO 40
+c          which must give problems if multiple passes.
+c          Determination of NPASS in PSIZE was wrong, has been corrected.
+c===========================================================================
 C  /* Deck ptran */
       SUBROUTINE PTRAN(NODPTR,WORK,LWORK,JPRINT,ANTI,PANTI,
      &                 DIA2SO,ZFS2EL)
@@ -2046,7 +2044,7 @@ C
       RETURN
       END
 C  /* Deck ptrtst */
-      SUBROUTINE PTRTST(WORK,LWORK,ANTI,PANTI,DIA2SO,ZFS2L,IPRINT)
+      SUBROUTINE PTRTST(WORK,LWORK,ANTI,PANTI,DIA2SO,ZFS2EL,IPRINT)
 C
 #include <implicit.h>
 #include <priunit.h>
