@@ -1,5 +1,7 @@
 $MINI (Huzinaga)
 
+$Elements supported
+$H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca 
 $
 $  REFERENCE
 $ S. HUZINAGA, ED.,J. ANDZELM, M. KLOBUKOWSKI, E. RADZIO-ANDZELM, Y. SAKAI,    
@@ -341,6 +343,3 @@ $ P-TYPE FUNCTIONS
       0.2843190  0.00000000  0.28766600
 
 
-$Elements supported
-
-$H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca 
