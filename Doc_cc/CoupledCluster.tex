@@ -1,12 +1,11 @@
 \documentclass[12pt]{report}  
 \usepackage{html}
-%\usepackage{makeidx}
+\usepackage{makeidx}
 \usepackage{supertabular}
 % Specifies the document style.
 
 \typeout{***               }
-\typeout{***   Manual for the Coupled Cluster Program: }
-\typeout{***   version 1.0 by Christof Haettig, March 1998 }
+\typeout{***   Manual for the Coupled Cluster Program }
 \typeout{***               }
 
 \makeindex
@@ -29,6 +28,14 @@
 % dalton manual with some clean up to eliminate some problems
 % with latex2html-98.1
 %
+\newcommand{\siraba}{{\sc dalton}}
+\newcommand{\her}{{\sc hermit}\index{\sc hermit}}
+\newcommand{\sir}{{\sc sirius}\index{\sc sirius}}
+\newcommand{\aba}{{\sc abacus}\index{\sc abacus}}
+\newcommand{\resp}{{\sc response}\index{\sc response}}
+\newcommand{\mol}{{\sc molecule}\index{\sc molecule}}
+\newcommand{\cc}{{\sc cc}\index{\sc cc}}
+\newcommand{\eri}{{\sc eri}\index{\sc eri}} 
 \newcommand{\Key}[1]{{\ttfamily .#1}\index{#1@{\ttfamily .#1}}}
 \newcommand{\Keym}[1]{{\ttfamily .#1}\index{#1@{\ttfamily .#1}|textbf}}
 \newcommand{\Sec}[1]{{\ttfamily *#1}\index{#1@{\ttfamily *#1}}}
@@ -66,7 +73,7 @@ A.~Halkier,
 C.~H{\"a}ttig, 
 P.~J{\o}rgensen,
 H.~Koch, 
-T.B.~Pedersen,
+T.~B.~Pedersen,
 A.~Sanchez
 }  
 
@@ -79,15 +86,14 @@ A.~Sanchez
 
 % that should be Pouls or Henriks work...or maybe we take simply
 % the preface from DALTON
-% \include{ccpreface}
-\include{ccintro}
+% \input{ccpreface}
 
 %
 % someone should write at sometime the
 %
 % \part{Installation Guide for the Coupled Cluster Program}
-% \include{ccinstall}
-% \include{ccmaintain}
+% \input{ccinstall}
+% \input{ccmaintain}
 %
 % but for the moment we post pone that ...
 %
@@ -95,31 +101,31 @@ A.~Sanchez
 % 
 % this is another awfull lot of work... i guess...
 %
-% \part{CC User's Guide}
-%\include{Starting}
-%\include{ccexci_guide}
-%\include{cclr_guide}
+%\part{CC User's Guide}
+%\input{Starting}
+%\input{ccexci_guide}
+%\input{cclr_guide}
 % ...
 \part{CC Reference Manual}
-\include{ccgeneral}
-\include{ccfop}
-\include{cclr}
-\include{ccqr}
-\include{cccr}
-%\include{cc4r}
-%\include{cc5r}
-\include{ccexci}
-\include{cclrsd}
-%\include{ccsm}
-%\include{cctm}
-\include{ccmcd}
-\include{ccqr2r}
-\include{ccgr}
-\include{ccexgr}
-\include{ccexlr}
-%\part{References}
-%\bibliography{ccbibliography}
-%
-%\part{Index}
-%\printindex
+\input{../Doc/ccintro}
+\newpage \input{../Doc/ccgeneral}
+\newpage \input{../Doc/ccfop}
+\newpage \input{../Doc/cclr}
+\newpage \input{../Doc/ccqr}
+\newpage \input{../Doc/cccr}
+\newpage \input{cc4r}
+\newpage \input{cc5r}
+\newpage \input{../Doc/ccexci}
+\newpage \input{../Doc/cclrsd}
+\newpage \input{../Doc/ccsm}
+\newpage \input{../Doc/cctm}
+\newpage \input{../Doc/ccmcd}
+\newpage \input{../Doc/ccqr2r}
+\newpage \input{../Doc/ccgr}
+\newpage \input{../Doc/ccexgr}
+\newpage \input{../Doc/ccexlr}
+\part{References}
+\bibliography{../Doc/cc}
+\part{Index}
+\printindex
 \end{document}
