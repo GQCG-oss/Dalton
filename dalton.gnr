@@ -286,16 +286,19 @@ if [ $ierr -ne 0 -o $NERR -gt 0 ] ; then
    [ $NERR -gt 0 ] && ( echo "Output from 'grep -n ERROR' :"; grep -n ERROR $OUTFIL )
 fi
 
-if [ `grep -c -i WARNING $OUTFIL` -gt 0 ] ; then
-   echo; echo "WARNINGS have been issued by Dalton"
-   echo"Output from 'grep -n -i WARNING' :"
-   grep -n -i WARNING $OUTFIL
+nwrn=`grep -c -i WARNING $OUTFIL`
+if [ $nwrn -gt 0 ] ; then
+   echo
+   echo "$nwrn WARNINGS have been issued by Dalton,"
+   echo "output from 'grep -n -i WARNING'  (max 5 warnings):"
+   grep -n -i "WARNING" $OUTFIL | head -5
 fi
 
 if [ `grep -c '[^"]INFO' $OUTFIL` -gt 0 ] ; then
-   echo; echo "Informational messages have been issued by Dalton"
-   echo" output from 'grep -n INFO' :"
-   grep -n INFO $OUTFIL | grep -v 'Check output, result, and error'
+   echo
+   echo "Informational messages have been issued by Dalton,"
+   echo "output from 'grep -n INFO'  (max 5 lines):"
+   grep -n INFO $OUTFIL | grep -v 'Check output, result, and error' | head -5
 fi
 
 
