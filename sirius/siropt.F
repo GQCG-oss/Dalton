@@ -1542,9 +1542,8 @@ C           CALL TRACTL(ITRLVL,CMO,WRK,LFREE)
 C
          IF (ICHECK .GT. 0) THEN
             IF (MAXCIT .LE. 0) THEN
-               NWARN = NWARN + 1
                WRITE (LUPRI,'(//A/A)')
-     &         ' >>> WARNING OPTST, symmetry check of CI vectors'//
+     &         ' >>> INFO OPTST, symmetry check of CI vectors'//
      &         ' only works after CI iterations.',
      &         ' ".MAX CI ITERATIONS" reset to 3'
                MAXCIT = 3
@@ -1713,10 +1712,9 @@ C     We do not complain about lack of GEOWALK if .OPTIMI, K.Ruud, Nov.29-96
 C     OK! But we must anyway reset ICSTRT and ICI0 to 4 hjaaj/961213.
 C
             IF (.NOT. OPTNEW) THEN
-               NWARN = NWARN + 1
                WRITE (LUPRI,'(//A/A/)')
-     *         '@@ WARNING : Label "GEOWALK " not found on SIRIUS.RST,',
-     *         '@@ WARNING : calculation continues without'//
+     *         '@@ INFO : Label "GEOWALK " not found on SIRIUS.RST,',
+     *         '@@ INFO : calculation continues without'//
      *         ' test for rejection of geometry change.'
             END IF
             ICSTRT = 4
@@ -1746,9 +1744,9 @@ C        "UPDSAVE" restart
      *      //T16,'Ratios for rejecting walk,',
      *       /T16,'  Minimum :',F14.5,
      *       /T16,'  Maximum :',F14.5)
- 6008 FORMAT(//' (OPTST) WARNING: Newton-Raphson used in geometry walk',
+ 6008 FORMAT(//' (OPTST) INFO: Newton-Raphson used in geometry walk',
      *         ' for state no.',I3/
-     *         '         WARNING: no absolute guarantee for staying',
+     *         '         INFO: no absolute guarantee for staying',
      *         ' on same electronic surface'//)
  6010 FORMAT(//' (OPTST) ERROR, ICSTRT = 6 is not',
      *         ' allowed for NEO excited state optimization')

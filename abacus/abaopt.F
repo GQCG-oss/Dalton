@@ -598,11 +598,8 @@ C
          END IF
          FSTORD = .TRUE.
       ELSE IF (ITYP .GT. 1) THEN
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,'(A)') ' WARNING! More than one ' //
+         WRITE(LUPRI,'(/A)') ' WARNING! More than one ' //
      &        'optimization method has been selected.'
-         WRITE(LUPRI,'(A)') ' Aborting.'
-         WRITE(LUPRI,*)
          CALL QUIT
      &        ('More than one optimization method chosen in OPINPU.')
       END IF
@@ -641,11 +638,8 @@ C
      &           'in Cartesian coordinates.'
          END IF
       ELSE IF (ITYP .GT. 1) THEN
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,'(A)') ' WARNING! More than one ' //
+         WRITE(LUPRI,'(/A)') ' WARNING! More than one ' //
      &        'coordinate system has been selected.'
-         WRITE(LUPRI,'(A)') ' Aborting.'
-         WRITE(LUPRI,*)
          CALL QUIT
      &        ('More than one coordinate system chosen in OPINPU.')
       END IF
@@ -2176,9 +2170,9 @@ C
          THRSTP = GRDTHR
          THRERG = GRDTHR
          THRSYM = SQRT(THRERG)
-         WRITE (LUPRI,'(/A)') ' WARNING>>>> Due to convergence '//
+         WRITE (LUPRI,'(/A)') ' INFO>>>> Due to convergence '//
      &        'thresholds for the wave function'
-         WRITE (LUPRI,'(A)') ' WARNING>>>> thresholds for convergence'
+         WRITE (LUPRI,'(A)') ' INFO>>>> thresholds for convergence'
      &        //' of geometry optimization has been reset'
          WRITE (LUPRI,'(/A,/,3(/,20X,A,F10.8))') ' New thresholds:',
      &        'Gradient norm  ',GRDTHR,'Step norm      ',THRSTP,
@@ -2194,7 +2188,7 @@ C     as quadratic as the ground state, and thus we should not walk to far
 C     away. This is necessary for instance to get test15 through....
 C
       IF (ISTATE .GT. 1 .AND. ITRNMR .EQ. 0) THEN
-         WRITE (LUPRI,'(/A)') ' WARNING >>>> As this is an excited '//
+         WRITE (LUPRI,'(/A)') ' INFO >>>> As this is an excited '//
      &        'optimization I have updated some thresholds'
          IF (TRSTRA .EQ. 0.5D0) TRSTRA = 0.25D0
          IF (TRSTIN .EQ. 1.2D0) TRSTIN = 1.00D0
@@ -7417,9 +7411,9 @@ C
          THRSTP = GRDTHR
          THRERG = GRDTHR
          THRSYM = SQRT(THRERG)
-         WRITE (LUPRI,'(/A)') ' WARNING>>>> Due to limitations '//
+         WRITE (LUPRI,'(/A)') ' INFO >>>> Due to limitations '//
      &        'of the accuracy of the numerical gradients'
-         WRITE (LUPRI,'(A)') ' WARNING>>>> thresholds for convergence'
+         WRITE (LUPRI,'(A)') ' INFO >>>> thresholds for convergence'
      &        //' of geometry optimization has been reset'
          WRITE (LUPRI,'(/A,/,3(/,20X,A,F10.8))') ' New thresholds:',
      &        'Gradient norm  ',GRDTHR,'Step norm      ',THRSTP,
