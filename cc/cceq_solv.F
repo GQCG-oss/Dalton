@@ -1275,10 +1275,6 @@ C GETGD bruger GD + 3 exxtra. NCCVAR - skal vaere foerst i memory.
                   ILSTNR = ISTRVE + IVEC -1 + INUM - 1 
                   CALL CC_GETGD(WRK(LGDVEC),ILSTNR,ISIDE,LIST,
      *                          WRK(KWRK1),LWRK1)
-c
-      write(lupri,*)'ILSTNR,ISIDE,LIST ',ILSTNR,ISIDE,LIST
-      xnormval = ddot(NCCVAR,WRK(LGDVEC),1,WRK(LGDVEC),1)
-      write(lupri,*)' norm of LGDVEC ',xnormval
 C
 cs ------------------
 C            Project from gradient
