@@ -9,6 +9,7 @@
 #include <stdarg.h>
 #include "general.h"
 #include "basisinfo.h"
+#include "pi.h"
 
 
 static int    global_outputLevel       = 1;
@@ -562,7 +563,6 @@ multiply_polynomials(real result[],
 
 
 
-
 int
 get_product_simple_prims(DistributionSpecStruct* primA,
 			 DistributionSpecStruct* primB,
@@ -570,7 +570,6 @@ get_product_simple_prims(DistributionSpecStruct* primA,
 			 int maxCount)
 {
   /* use the Gaussian product rule */
-#include "pi.h"
   real sum = 0;
   int k;
   for(k = 0; k < 3; k++)

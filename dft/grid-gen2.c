@@ -534,20 +534,6 @@ print_box(BoxStruct* box, int prio)
 
 
 static int 
-check_box_overlap(BoxStruct* box1, BoxStruct* box2)
-{
-  int i;
-  for(i = 0; i < 3; i++)
-    {
-      if(box1->min[i] > box2->max[i])
-	return 0;
-      if(box1->max[i] < box2->min[i])
-	return 0;
-    } /* END FOR i */
-  return 1;
-} /* END check_box_overlap */
-
-static int 
 get_distribution_box(BoxStruct* box, 
 		     DistributionSpecStruct* distr, 
 		     real targetRhoError)
@@ -3217,7 +3203,7 @@ do_cartesian_grid(int nbast, const real* dmat, DftGridReader* res)
     {
 
       // check dmat
-      real maxabs;
+      real maxabs = 0;
       int i;
       for(i = 0; i < nbast*nbast; i++)
 	{
