@@ -159,8 +159,8 @@ eriprg.o : eriprg.F \
   ../include/priunit.h
 erisph.o : erisph.F \
   ../include/ccom.h  ../include/ericom.h \
-  ../include/ibtfun.h  ../include/implicit.h \
-  ../include/maxaqn.h  ../include/mxcent.h \
-  ../include/mxdr.h  ../include/mxorb.h \
-  ../include/nuclei.h  ../include/priunit.h \
-  ../include/single.h  ../include/symmet.h
+  ../include/implicit.h  ../include/maxaqn.h \
+  ../include/mxcent.h  ../include/mxdr.h \
+  ../include/mxorb.h  ../include/nuclei.h \
+  ../include/priunit.h  ../include/single.h \
+  ../include/symmet.h  ../include/ibtfun.h
