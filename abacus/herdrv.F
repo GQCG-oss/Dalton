@@ -809,8 +809,6 @@ C&&& Nuclear model
             IF (NFIELD .GT. MXFELT) CALL QUIT('Too many finite fields')
             EFIELD(NFIELD) = DPTFAC * ALPHAC**2
             LFIELD(NFIELD) = 'DERXXPVP'
-            write(*,*) ' WMK: NFIELD', NFIELD, 
-     &                   EFIELD(NFIELD), LFIELD(NFIELD)
             GOTO 100 
  198     CONTINUE
             READ (LUCMD, *) X10FNP
