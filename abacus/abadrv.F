@@ -1813,7 +1813,7 @@ C
          IF (EXPGRD) THEN
             CALL HEADER(
      &         'Orbital-exponent gradient for all atoms (au)',-1)
-            WRITE (LUPRI,'(4X,2AA)') ' #   atom Z   deg l       ',
+            WRITE (LUPRI,'(4X,2A)') ' #   atom Z   deg l       ',
      &          '        exponent           grad           grad ln'
             WRITE (LUPRI,'()')
             JCNT = 1
@@ -1869,7 +1869,7 @@ C
                END DO
             END DO
             CALL HEADER('Orbital-exponent gradient (au)',-1)
-            WRITE (LUPRI,'(7X,2AA)')  'Z    l            ',
+            WRITE (LUPRI,'(7X,2A)')  'Z    l            ',
      &       '    exponent                grad             grad ln'
             WRITE (LUPRI,'()')
             ALPNRM = D0
