@@ -1,4 +1,4 @@
-#DEFINE LUPRI_MPI 0
+#define LUPRI_MPI 0
       SUBROUTINE MPI_INIT(IERR)
          IERR = 0
          WRITE (LUPRI_MPI,*)
