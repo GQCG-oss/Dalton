@@ -63,10 +63,9 @@ C
          ECP = .TRUE.
       END IF
 C
-      STRING = BASDIR(1:LENBAS)//'ecp-sdd-pseudo'
+      STRING = 'ecp-sdd-pseudo'
       LU = 0
-      CALL GPOPEN(LU,STRING,'OLD','SEQUENTIAL','FORMATTED',
-     &     IDUMMY,.FALSE.)
+      CALL FIND_BASFIL(STRING,LU)
 C
 C     Search for label identfying atom
 C
