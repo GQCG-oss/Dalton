@@ -188,7 +188,9 @@ if [ $WHICH = 'rs6000' ]; then
 fi
 
 #
-# For SGI we need to know if this is a 64 or 32 bits computer
+# For SGI and HP we need to know if this is a 64 or 32 bits computer
+# If one wants 32-bit code on a 64-bit machine, just answer 'n' to
+# the question.
 #
 
 if [ $WHICH = 'iris4d' ]; then
@@ -209,6 +211,26 @@ if [ $WHICH = 'iris4d' ]; then
         opsys='IRIX'
       else
         opsys='IRIX64'
+      fi
+    fi
+elif [ $WHICH = 'hp' ]; then
+    spec=`uname -m`
+    if [ $spec = '9000/800' ]; then
+      bit='64'
+    else
+      bit='32'
+    fi
+    answer=
+    while [ "$answer" != "y" -a "$answer" != "n" ]
+    do
+      $ECHO "This appears to be a $bit-bit architecture. Is this correct? [y/n] \c"
+      read answer
+    done
+    if [ "$answer" = "n" ]; then
+      if [ $bit = '64' ]; then
+        bit='32'
+      else
+        bit='64'
       fi
     fi
 fi
@@ -781,13 +803,17 @@ case $WHICH in
           inc='-I../include'
           cpp=${cpp}" -DIMPLICIT_NONE"
           if [ $F77 = 'f90' ]; then
-              opt='+O2 +U77'
-              safe_opt='+O1 +U77'
+              case $bit in
+                  64) opt='+DA2.0W +O2 +U77 +Onolimit +Ofastaccess +noppu'
+                      copt='+DA2.0W +O3 +Onolimit +Ofastaccess';;
+                  *)  opt='+DA2.0 +O2 +U77 +Onolimit +Ofastaccess'
+                      copt='+DA2.0 +O3 +Onolimit +Ofastaccess';;
+              esac
           else
               opt='+O2 +U77 +E4 +E5'
               safe_opt='+O1 +U77 +E4 +E5'
+              copt='-D_FILE_OFFSET_BITS=64 +O3'
           fi
-          copt='-D_FILE_OFFSET_BITS=64 +O3'
           LIB="-lV7 $LIB";;
      linux-alpha)  
 	  if [ "$mesp" = "dummy" ]; then
