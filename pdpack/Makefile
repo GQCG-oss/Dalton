@@ -24,6 +24,6 @@ clean :
 	$(RM) -f *.o *~ *.lst *.i *.L i.*.f v.i.*.f *.a
 
 depend:
-	../tools/check_depend $(INCLUDES) > Makefile.depend
+	../tools/check_depend $(INCLUDES) -I../dft > Makefile.depend
 
 include Makefile.depend
