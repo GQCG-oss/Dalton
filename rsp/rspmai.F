@@ -586,8 +586,8 @@ C
      $        .NOT. (NMORDR.GT.0 .AND. NARDRP.EQ.0)) THEN 
           ESGTIM_XVECS = TIMPP
           CALL RSPESG(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KFOCK),
-     *                 WRK(KFC),WRK(KFV),WRK(KFCAC),WRK(KH2AC),
-     *                 WRK(KINDX),WRK(KWRK1),LWRK1)
+     *                WRK(KFC),WRK(KFV),WRK(KFCAC),WRK(KH2AC),
+     *                WRK(KINDX),WRK(KWRK1),LWRK1)
          END IF
   100 CONTINUE
       CALL GPCLOSE(LUSIFC,'KEEP')
@@ -4008,7 +4008,7 @@ C
       CALL ESGGRINP(WORD)
       RETURN
 C
- 2100 CALL QUIT('Final "**<something>" not found in DALTON input')
+ 2100 CALL QUIT('ESGINP: "*ESG" not found in DALTON input')
 C
       RETURN
       END
@@ -4073,10 +4073,6 @@ C
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT(' ILLEGAL KEYWORD IN ESG INPUT ')
                GO TO 100
-C
-               LPPOP( INDPRP('XDIPLEN ')) = .TRUE.
-               LPPOP( INDPRP('YDIPLEN ')) = .TRUE.
-               LPPOP( INDPRP('ZDIPLEN ')) = .TRUE.
 C
  1             CONTINUE
                NPPTOT = 0
@@ -4156,19 +4152,19 @@ C
          END IF
 C
          WRITE(LUPRI,'(A,I4)')
-     *      ' Print level                                    : IPRPP  ='
+     *      ' Print level for eigenval.eqs.                  : IPRPP  ='
      *       ,IPRPP
          WRITE(LUPRI,'(A,I4)')
-     *      ' Maximum number of iterations                   : MAXITL ='
-     *       ,MAXITL
-         WRITE(LUPRI,'(A,I4)')
-     *      ' Maximum number of iterations                   : MAXITP ='
+     *      ' Maximum number of iterations for eigenval.eqs. : MAXITP ='
      *       ,MAXITP
          WRITE(LUPRI,'(A,1P,D10.3)')
-     *      ' Threshold for convergence                      : THCPP  ='
+     *      ' Threshold for convergence of eigenval.eqs.     : THCPP  ='
      *      ,THCPP
+         WRITE(LUPRI,'(A,I4)')
+     *      ' Maximum number of linear response iterations   : MAXITL ='
+     *       ,MAXITL
          WRITE(LUPRI,'(A,1P,D10.3)')
-     *      ' Threshold for convergence                      : THCLR  ='
+     *      ' Threshold for linear response convergence      : THCLR  ='
      *      ,THCLR
          WRITE(LUPRI,'(A,I4)')
      *      ' Maximum iterations in optimal orbital algorithm: MAXITO ='
