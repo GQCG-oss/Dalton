@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: sirfck.F,v 1.1.1.1 2001-02-08 13:33:31 hjj Exp $
+C$Id: sirfck.F,v 1.2 2001-03-28 07:00:52 haettig Exp $
 C
 #include <single.h>
 C  /* Deck sirfck */
@@ -129,6 +129,7 @@ C        IFCTYP 02: factor -0.5 from exchange integral
   100    CONTINUE
 C
 C
+         LUINTA = -1
          CALL GPOPEN(LUINTA,'AOTWOINT','OLD',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
 C
