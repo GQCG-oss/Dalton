@@ -120,7 +120,7 @@ C
             KFS2 = KFS1 + MXCOOR**2
             KFS  = KFS2 + MXCOOR**2
             KLAST= KFS  + MXCOOR**2
-            LLEFT = LWRK - KLAST
+            LLEFT = LWRK1 - KLAST
             IF (LLEFT.LT.0) CALL ERRWRK('RSPVEC 2',LLEFT-1,LWRK)
          ELSE
             KFC1 = KWRK1
@@ -133,6 +133,7 @@ C
             KFS2 = KWRK1
             KFS  = KWRK1
             KLAST= KWRK1
+            LLEFT=LWRK1
          END IF
          CALL QRHYP(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,
      *                 XINDX,WRK(KVECB),WRK(KVECC),WRK(KMJWOP),
