@@ -32,12 +32,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: sirtra.F,v 1.4 2001-05-31 06:38:37 vebjornb Exp $
+C$Id: sirtra.F,v 1.5 2001-11-15 10:32:53 hjj Exp $
 C
 #include <single.h>
 #ifdef UNDEF
 /* Comdeck rev_log */
 $Log: not supported by cvs2svn $
+Revision 1.4  2001/05/31 06:38:37  vebjornb
+Updated copyright, authors and reference in all Fortran-files - VB
+
 Revision 1.3  2001/05/13 14:50:31  ruud
 Fixes to solve CSF and triplet operator problems
 
@@ -2181,8 +2184,14 @@ C
      *          /'         work space increased to',I10/)
  9000    FORMAT(/' WORK SPACE IN TRACD,',I10,', IS MUCH TOO SMALL.')
       END IF
+C
+C     Allocate sorting area for SORTA/SORTB.
+C     hjaaj nov 2001: Now allow SORTA/SORTB to use all memory
+C     (i.e. KWORK) for sorting (LWORK is the memory available
+C     for TRACD, based on MWORK))
+C
       KWORK1 = 1 + LRBUF
-      LWORK1 = LWORK - KWORK1
+      LWORK1 = KWORK - KWORK1
 C
 C calculate LPQRS,  max. number of ao integrals
 C
