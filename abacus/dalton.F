@@ -118,8 +118,8 @@ C
 #endif
       CALL GPIOIN
       IF (MYNUM .EQ. 0) THEN
-      CALL GPOPEN(LUERR,'DALTON.ERR','UNKNOWN',' ','FORMATTED',IDUMMY,
-     &            .FALSE.)
+         CALL GPOPEN(LUERR,'DALTON.ERR','UNKNOWN',' ','FORMATTED',
+     &               IDUMMY,.FALSE.)
       ELSE
          LUERR = 0
       END IF
@@ -294,7 +294,7 @@ C
 C        Changed format (WK/UniKA/04-11-2002).
          WRITE (LUPRI,'(T10,A,//,T26,A,/,6(/T10,A),//,T26,A,//,
      &        (T10,A))')
-     * ' This is output from DALTON (Release 2.0, ? 2004)',
+     * ' This is output from DALTON (Release 2.0 rev. 0, ? 2004)',
      *  ' Principal authors:',
      *  ' Trygve Helgaker,       University of Oslo,           Norway ',
      *  ' Hans Joergen Jensen,   SDU - Odense University,      Denmark',
@@ -339,33 +339,26 @@ C        Changed format (WK/UniKA/04-11-2002).
 C
 C        Changed format (WK/UniKA/04-11-2002).
          WRITE (LUPRI,'(/1X,69A1/)') ('-',I=1,69)
-         WRITE (LUPRI,'(/,(5X,A))')
+         WRITE (LUPRI,'(5X,A)')
      &'NOTE:',
      &' ',
      &'This is an experimental code for the evaluation of molecular',
-     &'properties using (MC)SCF wave functions. The authors accept no',
-     &'responsibility for the performance of the code or for the',
-     &'correctness of the results.',
+     &'properties using (MC)SCF and CC wave functions. The authors',
+     &'accept no responsibility for the performance of the code or',
+     &'for the correctness of the results.',
      &' ',
      &'The code (in whole or part) is provided under a licence and',
      &'is not to be reproduced for further distribution without',
      &'the written permission of the authors or their representatives.',
-     &'See licence agreement for further information.',
      &' ',
-     &'If results obtained with this code are published, an',
-     &'appropriate citation would be:',
+     &'See the home page "http://www.kjemi.uio.no/software/dalton"',
+     &'for further information.',
      &' ',
-     &'"Dalton, a molecular electronic structure program, Release 1.2',
-     &'(2001), written by T. Helgaker, H. J. Aa. Jensen, ' //
-     &'P. Joergensen,',
-     &'J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,',
-     &'O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,',
-     &'T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,',
-     &'H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, W. Klopper,',
-     &'R. Kobayashi, H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,'
-     &,'T. B. Pedersen, T. A. Ruden, P. Salek, A. Sanchez, T. Saue, ',
-     &'S. P. A. Sauer, B. Schimmelpfennig, K. O. Sylvester-Hvid, ',
-     &'P. R. Taylor and O. Vahtras"'
+     &'If results obtained with this code are published,',
+     &'an appropriate citation would be:',
+     &' ',
+     &'"Dalton, a molecular electronic structure program, Release 2.0',
+     &'(2004), written by <INSERT AUTHOR LIST>"'
 C
 C     Stamp date and time and hostname to output
 C
