@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abadrv.F,v 1.6 2001-04-21 12:11:58 ruud Exp $
+C$Id: abadrv.F,v 1.7 2001-05-16 09:56:50 ruud Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -639,6 +639,7 @@ C
       PASDIP = .FALSE.
       PASONE = .FALSE.
       PASRES = .FALSE.
+      PASTRP = .FALSE.
       PASLRS = .FALSE.
       PASREL = .FALSE.
       PASRTR = .FALSE.
@@ -1047,6 +1048,7 @@ C
             PASDIP = .FALSE.
             PASONE = .FALSE.
             PASRES = .FALSE.
+            PASTRP = .FALSE.
             PASREL = .FALSE.
             PASRTR = .FALSE.
             PASCRS = .FALSE.
