@@ -158,7 +158,7 @@ esac
 # thus define only two for each computer type.
 # Check first local libraries (hoping they were installed there for a
 # reason), then system-provided libraries.
-dirlist='/lib /usr/local/lib /usr/lib /usr/local/lib/ATLAS'
+dirlist='/lib /usr/local/lib /usr/lib /usr/local/lib/ATLAS /lib64 /usr/lib64 /usr/local/lib64'
 
 case $WHICH in
     rs6000)   liblist='libessl.a libesslp2.a libblas.a'
