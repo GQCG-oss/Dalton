@@ -1479,10 +1479,12 @@ C  /* Deck trprh1 */
 #include <iratdef.h>
 #include <dummy.h>
 #include <mxcent.h>
+#include <maxaqn.h>
 #include <maxorb.h>
 C
       PARAMETER (DM1 = -1.0D0)
-      CHARACTER OPLBL(8)*8, SDLAB(*)*8, FCLAB(*)*8, LABEL*8
+      CHARACTER OPLBL(8)*8, SDLAB(9*MXCENT)*8, FCLAB(MXCENT)*8,
+     &          LABEL(9*MXCENT)*8
       LOGICAL OLDDX, FOUND
       DIMENSION ISDREP(*), IFCREP(*), WORK(LWORK), INTADR(*),
      &          XINDX(*), CMO(*), UDV(*), PV(*)
@@ -1497,6 +1499,7 @@ C
 #include <inflin.h>
 #include <infrsp.h>
 #include <infvar.h>
+#include <symmet.h>
 #include <wrkrsp.h>
 #include <gdvec.h>
 #include <abares.h>
@@ -1590,12 +1593,40 @@ C
 C
       NREC = 0
       IF (DOSD) THEN
-         NPATOM = 0
          NCOMP  = 0
-         CALL GET1IN(DUMMY,'SPIN-DI',NCOMP,WORK,LWORK,SDLAB,
-     &               ISDREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,
-     &               INTPRI)
-         NREC = NREC + 6*NUCDEP
+         IF (DODRCT) THEN
+            NPATOM = 2
+            ISTRT  = 1
+            DO I = 1, NUCIND
+               CALL GET1IN(DUMMY,'SPIN-DI',NCOMP,WORK,LWORK,LABEL,
+     &                     ISDREP,INTADR,I,.TRUE.,NPATOM,.TRUE.,INTPRI)
+               ITYP  = 0
+               ITYP2 = 0
+               DO J = 0, MAXREP
+                  DO K = 1, NUCIND
+                     DO L = 1, 3
+                        ISCOOR = IPTCNT(3*(K - 1) + L,J, 2)
+                        IF (ISCOOR .GT. 0) THEN
+                           DO M = 1, 3
+                              ITYP = ITYP + 1
+                              IF (I .EQ. K) THEN
+                                 ITYP2 = ITYP2 + 1
+                                 SDLAB(ITYP) = LABEL(ITYP2)
+                              END IF
+                           END DO
+                        END IF
+                     END DO
+                  END DO
+               END DO
+            END DO
+            NREC = NREC + 6*NUCDEP
+         ELSE
+            NPATOM = 0
+            CALL GET1IN(DUMMY,'SPIN-DI',NCOMP,WORK,LWORK,SDLAB,
+     &                  ISDREP,INTADR,IDUMMY,.TRUE.,NPATOM,.TRUE.,
+     &                  INTPRI)
+            NREC = NREC + 6*NUCDEP
+         END IF
       END IF
       IF (DOFC) THEN
          NCOMP  = 0
@@ -1650,17 +1681,17 @@ C
             IREC  = ITRREC(LREC,ISYM)
             ICOOR = ITRCOR(LREC,ISYM)
             IF (ICOOR .LT. 0) THEN
-               LABEL = FCLAB(ABS(ICOOR))
+               LABEL(1) = FCLAB(ABS(ICOOR))
             ELSE
-               LABEL = SDLAB(ICOOR)
+               LABEL(1) = SDLAB(ICOOR)
                ICOOR1 = ICOOR/3
                ICOOR2 = MOD(ICOOR,3)
             END IF
 C
-            CALL GETGPV(LABEL,DUMMY,CMO,UDV,PV,XINDX,
+            CALL GETGPV(LABEL(1),DUMMY,CMO,UDV,PV,XINDX,
      &                  ANTSYM,WORK,LWORK)
 C
-            TRPLAB(IREC) = LABEL
+            TRPLAB(IREC) = LABEL(1)
             CALL DSCAL(KZVAR,DM1,WORK,1)
             IF (IPRTRP .GE. 05) THEN
                IF (ICOOR .GT. 0) THEN
