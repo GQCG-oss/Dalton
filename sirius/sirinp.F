@@ -994,7 +994,9 @@ C               Find out if any orbitals deleted
                NERROR = -1
                READ (LUSIFC) XPOTNC,EMY,EACTIV,EMCSCF,
      &               JSTATE,JSPIN,MACTEL,LXSYM,KXAVER
-            IF (INIOCC .LE. 0 .AND. MACTEL .LE. 1) THEN
+C              READ (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,
+C    *               ISTATE,ISPIN,NACTEL,LSYM
+             IF (INIOCC .LE. 0 .AND. MACTEL .LE. 1) THEN
                READ (LUSIFC) (IDUM,I=1,13),MSYM,(IDUM,I=1,64),
      &            NRHF,(IDUM,I=1,24),NORB,MBAS
                IF (MACTEL .EQ. 1) THEN
@@ -1003,27 +1005,18 @@ C               Find out if any orbitals deleted
                   IOPRHF = 0
                END IF
                INIOCC = 3
-            ELSE
+             ELSE
                READ (LUSIFC) (IDUM,I=1,13),MSYM,(IDUM,I=1,96),NORB,MBAS
-            END IF
-C              READ (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,
-C    *               ISTATE,ISPIN,NACTEL,LSYM
 C              READ (LUSIFC) NISHT,NASHT,NOCCT,NORBT,NBAST,NCONF,NWOPT,
 C    *               NWOPH,NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT,
 C    *               NSYM,MULD2H, NRHF,NFRO,
 C    *               NISH,NASH,NORB,NBAS,
 C    *               NELMN1, NELMX1, NELMN3, NELMX3, MCTYPE,
 C    *               NAS1, NAS2, NAS3
-#if defined (VAR_SECSEC)
-hvordan ved vi om vi vil have samme beregning,
-eller om vi vil bruge orbitalerne ved f.eks. en ny geometri
-eller en ny tilstand
-               NERR = 0
-               IF (XPOTNC .NE. POTNUC) NERR = NERR + 1
-               IF (NERR .GT. 0) THEN
-                  INPERR = INPERR + 1
-               END IF
-#endif
+             END IF
+C            IF (XPOTNC .NE. POTNUC) INPERR = INPERR + 1
+C              ... we cannot use this test because we
+C                  may have a new geometry (geometry optimization)
             ELSE
                INPERR = INPERR + 1
                WRITE (LUPRI,'(/2A/3A)')
@@ -1036,14 +1029,14 @@ eller en ny tilstand
          IF (NERROR .EQ. -1) THEN
 C           test NSYM,NBAS information from LUIT1 or LUSIFC
             NERROR = 0
-C           IF (MSYM .NE. NSYM) THEN
-C              NERROR = NERROR + 1
-C           ELSE
-C              DO 40 ISYM = 1,NSYM
-C                 IF (NBAS(ISYM) .NE. MBAS(ISYM)) NERROR = NERROR + 1
-C                 NDELT = NDELT + (NBAS(ISYM) - NORB(ISYM))
-C  40          CONTINUE
-C           END IF
+            IF (MSYM .NE. NSYM) THEN
+               NERROR = NERROR + 1
+            ELSE
+               DO 40 ISYM = 1,NSYM
+                  IF (NBAS(ISYM) .NE. MBAS(ISYM)) NERROR = NERROR + 1
+                  NDELT = NDELT + (NBAS(ISYM) - NORB(ISYM))
+   40          CONTINUE
+            END IF
          END IF
          IF (NERROR .GT. 0) THEN
             INPERR = INPERR + 1
@@ -1811,7 +1804,7 @@ C
 #endif
       DATA TABLE /'.CI    ','.FLAGS ','.MCSCF ','.CC    ','.RESTAR',
      *            '.HF    ','.STOP  ','.PRINT ','.TITLE ','.MP2   ',
-     *            '.NSYM  ','.CC ONL','.WESTA ','.INTERF','.BASIS ',
+     *            'xxxxxxx','.CC ONL','.WESTA ','.INTERF','.BASIS ',
      *            '.SCF   ','.DFT   '/
 C
 C
@@ -1981,18 +1974,8 @@ C *** Option  10 >MP2  <  Moller-Pleset PT2 calculation
         FLAG(3)  = .FALSE.
       GO TO 100
 C
-C *** Option 11 >NSYM  < Number of symmetries.
-C    Specified by integral program, used for consistency check.
+C *** Option 11 
   111 CONTINUE
-         READ (LUCMD,*) MSYM
-         IF (MSYM .NE. NSYM) THEN
-            INPERR = INPERR + 1
-            WRITE (LUPRI,'(/A,2I5/A)')
-     *   ' >>> GENINP-ERROR, NSYM from LUONEL .ne. NSYM from input:',
-     *      NSYM,MSYM,
-     &   '     NSYM from input used in reading remaining input.'
-            NSYM = MSYM
-         END IF
       GO TO 100
 C
 C *** Option 12 >CC ONL<  Write information to ABACUS on unit LUSIFC
@@ -2315,9 +2298,12 @@ C INFINP : THRRHF,FLAG(*),DIRFCK,MXDIIS
 C INFORB : NRHF(8)
 C INFTAP : LUSUPM
 C INFPRI : IPRSIR,IPRRHF
+C DFTACB : DFTIPT, DFTBR1, DFTBR2
 C
-#include <maxorb.h>
 #include <priunit.h>
+#include <mxcent.h>
+#include <maxorb.h>
+C
 #include <scbrhf.h>
 #include <infinp.h>
 #include <inforb.h>
@@ -2325,6 +2311,7 @@ C
 #include <infpri.h>
 #include <dftcom.h>
 #include <dfterg.h>
+#include <dftacb.h>
 C
       LOGICAL NODIIS,SET,ELECTR
       SAVE SET,ELECTR
@@ -4435,10 +4422,13 @@ C   INFIND : ISMO(),?
 C   INFDIM : MAXPHP
 C   SCBRHF : IOPRHF,NFRRHF(*)
 C   INFMP2 : NFRMP2(*)
+C   DFTACB : DFTIPT, DFTBR1, DFTBR2
 C
+#include <priunit.h>
+#include <mxcent.h>
 #include <maxash.h>
 #include <maxorb.h>
-#include <priunit.h>
+C
 #include <infinp.h>
 #include <infvar.h>
 #include <infind.h>
@@ -4452,6 +4442,7 @@ C
 #include <gnrinf.h>
 #include <dftcom.h>
 #include <dfterg.h>
+#include <dftacb.h>
 C
       CHARACTER*6 RDMOLB(11)
       DATA RDMOLB/'CANORB','MOLORB','FORM18','FORM12','--5-- ',
