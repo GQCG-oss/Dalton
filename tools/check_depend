@@ -3,8 +3,7 @@
 set ORI = `pwd`
 set DIR = '/tmp'
 
-echo $* '.' | sed -e 's/-WF//g' | sed -e 's/-I//g' | sed -e 's/,/ /g' > $DIR/tmp.$$
-set dirlist = `cat $DIR/tmp.$$ | awk '{ for (i = NF; i > 0; --i) print $i }' `
+set dirlist = `echo '.' $* | sed -e 's/-WF//g' -e 's/-I//g' -e 's/,/ /g' `
 
 echo 'BEGIN{'  > $DIR/awk.tmp$$
 foreach dir ( $dirlist )
@@ -15,27 +14,32 @@ foreach dir ( $dirlist )
   end
   cd $ORI
 end
-echo ' n = 2 }'  >> $DIR/awk.tmp$$
-
+echo ' n = 0 }'  >> $DIR/awk.tmp$$
 
 cat >> $DIR/awk.tmp$$ <<!
-  \$1 != prev { 
-    path = dir[\$1];
-    if      ( n == 1 && path ) {printf("  %s%s",path,\$1);       n++  }
-    else {if ( n == 2 && path ) {printf(" \\\\\n  %s%s",path,\$1); n = 1}}
-    prev = \$1 }
+  { path = dir[\$1];
+    if       ( n < 3 && path ) {printf("  %s%s",path,\$1);       n++  }
+    else {if ( n == 3 && path ) {printf(" \\\\\n  %s%s",path,\$1); n = 1}} }
+
 END{printf("\n");}
 !
 
 foreach file (*.F)
   set root   = $file:r
-  set object = $root.o
-  echo "$object  $file" | awk '{printf("%s : %s",$1,$2)}'
-  grep 'include' $file  | grep '#' | sed -e 's/[#<>"]//g'   | \
-                          sed -e 's/include//g' | sort     | \
-                          awk -f $DIR/awk.tmp$$
+  set object = "$root.o $root.i"
+  echo "$object : $file \"
+  sed -n -e '/^ *# *include/p' $file | \
+           sed -e 's/include//g' -e 's/[#<>" ]//g' | sort | uniq | \
+           awk -f $DIR/awk.tmp$$
+## hjaaj: old code with grep below, on linux Redhat 8.0 this code
+## required 24s for the abacus directory, new code only used 2s !
+## The problem seems to be that grep has a slow output routine,
+## if few matches then grep was also quite fast.
+# grep '^ *# *include' $file  | \
+#          sed -e 's/include//g' -e 's/[#<>" ]//g' | sort | uniq | \
+#          awk -f $DIR/awk.tmp$$
   echo
-  echo 
+  echo
 end
 
 rm -f $DIR/awk.tmp$$ $DIR/tmp.$$ 
