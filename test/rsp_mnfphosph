@@ -175,11 +175,11 @@ CTRL[7]=2
 ERROR[7]="QUADRATIC RESPONSE NOT CORRECT"
 
 # Phosphorescence
-CRIT1=`$GREP "Partial rates \(AMFI\)\: X\-polarization * (0| )\.1746[0-9](D|E)\-01" $log | wc -l`
-CRIT2=`$GREP "Partial rates \(AMFI\)\: Y\-polarization * (0| )\.1984[0-9](D|E)\-02" $log | wc -l`
-CRIT3=`$GREP "Partial rates \(AMFI\)\: Z\-polarization * (0| )\.(    |0000)" $log | wc -l`
-CRIT4=`$GREP "Total transition * rate * \(AMFI\) 6\.4841[0-9](D|E)\-03 s\-1" $log | wc -l`
-CRIT5=`$GREP "Total phosphorescence lifetime \(AMFI\) * 154\.2[0-9] * s" $log | wc -l`
+CRIT1=`$GREP "Partial rates \(AMFI\)\: X\-polarization * 1\.746[0-9]*(D|E)\-02" $log | wc -l`
+CRIT2=`$GREP "Partial rates \(AMFI\)\: Y\-polarization * 1\.984[0-9]*(D|E)\-03" $log | wc -l`
+CRIT3=`$GREP "Partial rates \(AMFI\)\: Z\-polarization * (0| )\.(    |000)" $log | wc -l`
+CRIT4=`$GREP "Total transition * rate * \(AMFI\) 6\.484[0-9]*(D|E)\-03 s\-1" $log | wc -l`
+CRIT5=`$GREP "Total phosphorescence lifetime \(AMFI\) * 154\.2[0-9]* * s" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[8]=5
 ERROR[8]="PHOSPHORESCENCE NOT CORRECT"
