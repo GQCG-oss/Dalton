@@ -816,6 +816,7 @@ C  /* Deck mg1ts1 */
 #include <aovec.h>
 #include <maxaqn.h>
 #include <primit.h>
+#include <nuclei.h>
       PARAMETER (D0 = 0.D0)
       PARAMETER (PRTHRS = 1D-13, D2 = 2.D0, DP5 = 0.5D0)
       LOGICAL FNDLAB, DIFFER
@@ -832,7 +833,6 @@ C
 C
 #include <inftap.h>
 #include <shells.h>
-#include <nuclei.h>
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
 C
@@ -1065,6 +1065,7 @@ C  /* Deck mg1ts2 */
 #include <aovec.h>
 #include <maxaqn.h>
 #include <primit.h>
+#include <nuclei.h>
       PARAMETER (D0 = 0.D0, DP25 = 0.25D0)
       PARAMETER (PRTHRS = 1D-13, D2 = 2.D0, D4 = 4.D0)
       CHARACTER*8 LABEL, LABELT(3)
@@ -1079,7 +1080,6 @@ C
 C
 #include <inftap.h>
 #include <shells.h>
-#include <nuclei.h>
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
       DATA ((IZ(I,J), J = 1,6), I = 1,6) /0,1,2,3,4,5,0,2,3,5,6,7,
@@ -1312,6 +1312,7 @@ C  /* Deck hdbts1 */
 #include <aovec.h>
 #include <maxaqn.h>
 #include <primit.h>
+#include <nuclei.h>
       PARAMETER (D0 = 0.D0)
       PARAMETER (PRTHRS = 1D-13, D2 = 2.D0, DP5 = 0.5D0)
       LOGICAL FNDLAB, DIFFER
@@ -1328,7 +1329,6 @@ C
 C
 #include <inftap.h>
 #include <shells.h>
-#include <nuclei.h>
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
 C
@@ -1525,6 +1525,7 @@ C  /* Deck susts1 */
 #include <aovec.h>
 #include <maxaqn.h>
 #include <primit.h>
+#include <nuclei.h>
       PARAMETER (D0 = 0.D0, DP25 = 0.25D0)
       PARAMETER (PRTHRS = 1D-13, D2 = 2.D0)
       CHARACTER*8 LABEL(3), LABELT(6)
@@ -1540,7 +1541,6 @@ C
 C
 #include <inftap.h>
 #include <shells.h>
-#include <nuclei.h>
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
 C
@@ -1750,6 +1750,7 @@ C  /* Deck ns1ts1 */
 #include <aovec.h>
 #include <maxaqn.h>
 #include <primit.h>
+#include <nuclei.h>
       PARAMETER (D0 = 0.D0, DP5 = 0.5D0)
       PARAMETER (PRTHRS = 1D-13, D2 = 2.D0)
       CHARACTER*8 LABEL(NOPTYP), LABELT(NOPTY2)
@@ -1765,7 +1766,6 @@ C
 C
 #include <inftap.h>
 #include <shells.h>
-#include <nuclei.h>
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
 C
@@ -1985,6 +1985,7 @@ C  /* Deck ns1ts2 */
 #include <aovec.h>
 #include <maxaqn.h>
 #include <primit.h>
+#include <nuclei.h>
       PARAMETER (DP5 = 0.5D0)
       PARAMETER (PRTHRS = 1D-13, D2 = 2.D0)
       CHARACTER*8 LABEL(NOPTYP), LABELT(NOPTY2)
@@ -2000,7 +2001,6 @@ C
 C
 #include <inftap.h>
 #include <shells.h>
-#include <nuclei.h>
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
 C
@@ -2209,6 +2209,7 @@ C  /* Deck ns1ts3 */
 #include <aovec.h>
 #include <maxaqn.h>
 #include <primit.h>
+#include <nuclei.h>
       PARAMETER (D0 = 0.D0, DP5 = 0.5D0)
       PARAMETER (PRTHRS = 1D-13)
       CHARACTER*8 LABEL(NOPTYP), LABELT(NOPTYP), LABELS(NOPTYP)
@@ -2224,7 +2225,6 @@ C
 C
 #include <inftap.h>
 #include <shells.h>
-#include <nuclei.h>
 C
       ICOUN2 = NBASIS*(NBASIS + 1)/2
 C
@@ -2439,6 +2439,7 @@ C
 #include <aovec.h>
 #include <maxmom.h>
 #include <primit.h>
+#include <nuclei.h>
       PARAMETER (D0 = 0.D0, D2 = 2.D0, DP5 = 0.5D0)
       LOGICAL FNDLAB, DIFFER, FIRST, DONE(NCOUNT,NCOUNT,NCOUNT,NCOUNT,3)
       CHARACTER LABEL*8, COOR(3)*1
@@ -2451,7 +2452,6 @@ C
 C
 #include <inftap.h>
 #include <shells.h>
-#include <nuclei.h>
       DATA COOR /'X','Y','Z'/
       DATA ((IY(I,J), J = 1, 3), I = 1, 6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                      0,3,4,0,3,4/
@@ -2764,10 +2764,10 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
+#include <nuclei.h>
       LOGICAL FNDLAB
       DIMENSION NONTVC(NUCIND), IQM(NUCIND), JCO(NUCIND,4)
 #include <inftap.h>
-#include <nuclei.h>
 C
       REWIND (LUONEL)
       IF (.NOT. FNDLAB('TESTDATA',LUONEL)) THEN

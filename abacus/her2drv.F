@@ -1839,6 +1839,7 @@ C  /* Deck symlop */
 #include <mxcent.h>
 #include <aovec.h>
 #include <maxorb.h>
+#include <blocks.h>
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0)
       CHARACTER COMP(2)*1,SPDCAR*1
       LOGICAL AACDX, AACDY, AACDZ, ABCCX, ABCCY, ABCCZ, NOPV, NODV,
@@ -1869,7 +1870,6 @@ C  /* Deck symlop */
      &          GABRAO(NSYMBL,NSYMBL),DMRAO(NSYMBL,NSYMBL,NDMAT),
      &          DMRSO(*),DNSBUF(2,NDMAT),DINTSKP(2,4),IREPDM(*)
 #include <twocom.h>
-#include <blocks.h>
 #include <symmet.h>
 #include <dorps.h>
 #include <nuclei.h>
@@ -2371,6 +2371,7 @@ C  /* Deck caoint */
 #include <mxcent.h>
 #include <maxorb.h>
 #include <maxaqn.h>
+#include <nuclei.h>
 #include <r12int.h>
       LOGICAL NOPV, NODV, PERTUR, EXPECT, NOINT, DDFOCK, DIRFCK, DISTRI,
      &        INTS, UNDIFF, NOCONT, SPNORB, DIA2SO, BIGVEC, ONECEN,
@@ -2387,7 +2388,6 @@ C  /* Deck caoint */
      &          HESSEE(*), DNSBUF(*),DINTSKP(*),WORK(LWORK)
 #include <ccom.h>
 #include <symmet.h>
-#include <nuclei.h>
 #include <twocom.h>
 #include <twosta.h>
 C

@@ -83,6 +83,7 @@ C
 C
 #include <implicit.h>
 #include <dummy.h>
+#include <infvar.h>
       DIMENSION VEC(NCONF,*),TMAT(LROOTS,*)
       INTEGER   CCHECK
 C
@@ -97,7 +98,6 @@ C
 #include <maxorb.h>
 #include <priunit.h>
 #include <infinp.h>
-#include <infvar.h>
 #include <inftap.h>
 #include <infpri.h>
 C

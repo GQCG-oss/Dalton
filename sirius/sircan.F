@@ -259,6 +259,7 @@ C   AOCC  : occupation of natural active orbitals
 C
 C
 #include <implicit.h>
+#include <infvar.h>
       CHARACTER*6 KEYCNO
       DIMENSION CVECS(NCONF,*),  CMO(*), AOCC(*), INDXCI(*), WRK(*)
 C
@@ -279,7 +280,6 @@ C
 #include <maxorb.h>
 #include <priunit.h>
 #include <infinp.h>
-#include <infvar.h>
 #include <inforb.h>
 #include <infind.h>
 #include <infdim.h>

@@ -669,6 +669,7 @@ C
 #include <maxorb.h>
 #include <mxcent.h>
 #include <nuclei.h>
+#include <symmet.h>
       PARAMETER (D1 = 1.0D0,D2I = 0.5D0)
       PARAMETER (D4I = 0.25D0, D8I = 0.125D0)
       INTEGER A, B, AP, BP
@@ -679,7 +680,6 @@ C
      &          PTFACT(NMAT,0:MAXREP), ISYMDM(NMAT), IFCTYP(NMAT)
 #include <pincom.h>
 #include <shells.h>
-#include <symmet.h>
 #include <ibtfun.h>
 #include <sdpre.h>
 C
@@ -985,13 +985,13 @@ C
 #include <maxorb.h>
 #include <mxcent.h>
 #include <nuclei.h>
+#include <symmet.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       INTEGER A, B, AP, BP
       DIMENSION SKLTON(MXCOOR,MXCOOR), HESSEE(MXCOOR,MXCOOR),
      &          INDEX(NUCIND,3,0:MAXREP), FACTOR(3*NUCDEP,0:MAXREP),
      &          IPOINT(3*NUCDEP,0:MAXREP), CSTRA(*), SCTRA(*)
 #include <energy.h>
-#include <symmet.h>
 #include <ibtfun.h>
 #include <sdpre.h>
 C
@@ -1170,6 +1170,7 @@ C
 #include <maxorb.h>
 #include <mxcent.h>
 #include <nuclei.h>
+#include <symmet.h>
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
       INTEGER A, B, AP, BP, X
       DIMENSION FMAT(NBASIS,NBASIS,3), SKLTON(NBASIS,NBASIS,3),
@@ -1177,7 +1178,6 @@ C
      &          IPOINT(NBASIS,0:MAXREP)
 #include <pincom.h>
 #include <shells.h>
-#include <symmet.h>
 #include <ibtfun.h>
 #include <sdpre.h>
 C

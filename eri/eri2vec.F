@@ -277,6 +277,7 @@ C  /* Deck eripfs */
 #include <mxcent.h>
 #include <aovec.h>
 #include <maxorb.h>
+#include <symmet.h>
       INTEGER AB, CD, PQ, RST
       DIMENSION FACINT(NPQBCS,MLTPZ,NPRFPQ),
      &          FACPQ(NPQBCS,NPRFPQ), 
@@ -291,7 +292,6 @@ C  /* Deck eripfs */
 #include <hertop.h>
 #include <aobtch.h>
 #include <erisop.h>
-#include <symmet.h>
 C
       IF (IPRINT .GT. 10) THEN
          CALL TITLER('Output from ERIPFS','*',103)

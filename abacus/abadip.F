@@ -195,6 +195,7 @@ C
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <mxcent.h>
+#include <nuclei.h>
 #include <iratdef.h>
       PARAMETER (DM1 = -1.0D0)
 C
@@ -211,7 +212,6 @@ C
 #include <dorps.h>
 #include <abainf.h>
 #include <linaba.h>
-#include <nuclei.h>
 #include <inftap.h>
 #include <infvar.h>
 #include <inforb.h>

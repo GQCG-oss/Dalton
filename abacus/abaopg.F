@@ -47,10 +47,10 @@ C     orbitals (CMO) and one-electron active density (DV).
 C
 #include <implicit.h>
 #include <mxcent.h>
+#include <nuclei.h>
       DIMENSION ORTOPG(3*NUCDEP), RHSOPG(NVARPT), CMO(NCMOT),
      *          DV(NASHT,NASHT), SOINT(NBAST,NBAST), WORK(LWORK)
       LOGICAL NODC, NODV, AOMAT
-#include <nuclei.h>
 #include <inforb.h>
 #include <inflin.h>
 C
@@ -75,6 +75,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
+#include <nuclei.h>
 C
       LOGICAL AOMAT, NODC, NODV
       DIMENSION CMO(NCMOT), DV(NASHT,NASHT),
@@ -83,7 +84,6 @@ C
      *          FOCKMO(NORBT,NORBT), WORK(LWORK)
 C
 #include <abainf.h>
-#include <nuclei.h>
 #include <inforb.h>
 #include <inflin.h>
 C
@@ -208,10 +208,10 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
+#include <nuclei.h>
       LOGICAL AOMAT
       DIMENSION CMO(NCMOT), FOCKMO(NORBT,NORBT), WORK(LWORK),
      &          ORTOPG(3*NUCDEP)
-#include <nuclei.h>
 #include <inforb.h>
 C
       CALL QENTER('OPGORT')
@@ -236,6 +236,7 @@ C  /* Deck opgor1 */
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <mxcent.h>
+#include <nuclei.h>
       PARAMETER (D2 = 2.0D0)
       LOGICAL AOMAT, DERIV(3), DOTD
       DIMENSION CMO(NCMOT), FOCKMO(NORBT,NORBT), ORTOPG(3*NUCDEP),
@@ -243,7 +244,6 @@ C  /* Deck opgor1 */
      *          SDSQ(NORBT,NORBT), SDSQT(NORBT,NORBT), WORK(LWORK)
       CHARACTER*4 KEY
 #include <abainf.h>
-#include <nuclei.h>
 #include <symmet.h>
 #include <inforb.h>
 C
@@ -443,6 +443,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <maxorb.h>
+#include <infvar.h>
       PARAMETER (D2 = 2.0D0)
       DIMENSION FOCKMO(NORBT,NORBT), ORBGRD(NWOPT)
 C
@@ -450,7 +451,6 @@ C Used from common blocks:
 C   INFVAR : NWOPT,JWOP(2,*)
 C   INFORB : NORBT
 C
-#include <infvar.h>
 #include <inforb.h>
 C
       DO 100 IG = 1, NWOPT

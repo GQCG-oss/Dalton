@@ -1627,6 +1627,7 @@ C         and for the reduced L-matrix (section 2)
 C         dimension: NVAR and NREDL*(NREDL+1)/2+2*NREDL, rsp.
 C
 #include <implicit.h>
+#include <infvar.h>
       DIMENSION BVECS(*),SVECS(NVAR,*), REDL(*),IBNDX(*),G(*)
       DIMENSION EVEC(NREDL,*),EVAL(*)
 #include <ibndxdef.h>
@@ -1638,7 +1639,6 @@ C   INFTAP : LUIT3
 C
 #include <maxash.h>
 #include <maxorb.h>
-#include <infvar.h>
 #include <infind.h>
 #include <inftap.h>
 C

@@ -434,10 +434,10 @@ C
 #include <priunit.h>
 #include <dummy.h>
 #include <ibtpar.h>
+#include <ccorb.h>
       DIMENSION XINT(LENGTH,*),IBUF(LBUF,NIBUF),RBUF(LBUF)
       DIMENSION KAOAB(NBAST,NBAST),KAOGDER(NBAST,NSYM,NSYM,*)
       INTEGER ITYPE
-#include <ccorb.h>
 C
 #include <inftap.h>
 #include <ibtfun.h>
@@ -578,12 +578,12 @@ C               and given symmetry
 C
 *----------------------------------------------------------------------*
 #include <implicit.h>
+#include <ccorb.h>
       DIMENSION KAOAB(NBAST,NBAST)
       DIMENSION KAOG(NBAST,NSYM)
       DIMENSION KAOGDER(NBAST,NSYM,NSYM,MXCOMP)
       LOGICAL LDISTRIB, LDERINT(8,MXCOMP)
       DIMENSION NDIMAB(8)
-#include <ccorb.h>
 #include <ccsdsym.h>
  
 *----------------------------------------------------------------------*

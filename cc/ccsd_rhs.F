@@ -4621,6 +4621,9 @@ C
 #include <priunit.h>
 #include <dummy.h>
 #include <ibtpar.h>
+#include <ccorb.h>
+#include <mxcent.h>
+#include <eribuf.h>
       DIMENSION XINT(*)
       DIMENSION KADR1(NBAST),KADR2(NBAST,NBAST)
       DIMENSION IBUF(LBUF,NIBUF),RBUF(LBUF)
@@ -4630,9 +4633,6 @@ C
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
 #include <ccinftap.h>
-#include <ccorb.h>
-#include <mxcent.h>
-#include <eribuf.h>
 #include <nuclei.h>
 #include <inftap.h>
 #include <chrnos.h>
@@ -7118,11 +7118,11 @@ C
 C     Purpose: Construct index arrays for CCRDAO
 C
 #include <implicit.h>
+#include <priunit.h>
+#include <ccorb.h>
 C
       DIMENSION KADR1(NBAST),KADR2(NBAST,NBAST)
 C
-#include <priunit.h>
-#include <ccorb.h>
 #include <ccsdsym.h>
 C
       ICOUN1 = 0

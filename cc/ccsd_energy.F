@@ -2982,9 +2982,9 @@ C     First occupied orbitals in different symmetries and then
 C     the virtuals in different symmetries.
 C
 #include <implicit.h>
-      DIMENSION FOCK(NORBT),WORK(LWORK)
 #include <priunit.h>
 #include <ccorb.h>
+      DIMENSION FOCK(NORBT),WORK(LWORK)
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 C

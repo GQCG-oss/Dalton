@@ -734,10 +734,10 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
+#include <nuclei.h>
       DIMENSION REL(NOP,NOP), WRKSD(9*NUCDEP,9*NUCDEP),
      &          WRKFC(NUCDEP,NUCDEP), WRKSDF(9*NUCDEP,NUCDEP)
 #include <abainf.h>
-#include <nuclei.h>
 #include <energy.h>
 #include <inflin.h>
 #include <gdvec.h>
@@ -771,10 +771,10 @@ C
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <maxorb.h>
+#include <nuclei.h>
       DIMENSION WRKSD(9*NUCDEP,9*NUCDEP), WRKFC(NUCDEP,NUCDEP),
      &          WRKSDF(9*NUCDEP,NUCDEP), SPNSD(MXCOOR,MXCOOR),
      &          SPNFC(MXCOOR,MXCOOR), SPSDFC(MXCOOR,MXCOOR)
-#include <nuclei.h>
 #include <cbitrp.h>
 #include <spnout.h>
 #include <symmet.h>

@@ -3664,6 +3664,7 @@ C  /* Deck psono1 */
 #include <dummy.h>
 #include <priunit.h>
 #include <mxcent.h>
+#include <nuclei.h>
       LOGICAL NODV
       INTEGER P, Q, R, S, A, B, C, D
       DIMENSION  PSOAO(NBAST,NBAST,3*NUCDEP),
@@ -3677,7 +3678,6 @@ C  /* Deck psono1 */
      &           GRAD(NORBT,NORBT), WORK(LWORK)
 #include <abainf.h>
 #include <inforb.h>
-#include <nuclei.h>
 C
 C     Read in MO's
 C     ============

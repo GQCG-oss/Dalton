@@ -1521,6 +1521,7 @@ C ******************************************************************
 C Calculate norm of the gradient
 C
 #include <implicit.h>
+#include <infvar.h>
       DIMENSION GNORM(3), GTOT(NVAR)
       PARAMETER ( D0 = 0.0D0 )
 C
@@ -1529,7 +1530,6 @@ C   INFVAR : NCONF, NWOPT, NVAR
 C   ITINFO : DINFO(*), IINFO(*)
 C
 #include <maxorb.h>
-#include <infvar.h>
 #include <itinfo.h>
 C
       CALL QENTER('GRDINF')

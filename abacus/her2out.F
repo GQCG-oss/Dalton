@@ -1268,13 +1268,13 @@ C
 #include <maxaqn.h>
 #include <aovec.h>
 #include <eribuf.h>
+#include <nuclei.h>
       LOGICAL DCMPCD, DRCLTD, FIRST, LAST, IPNTLG(3,*), NOTEST,
      &        DOINDX
       DIMENSION SO(*), BUF(LBUF,NDIST), IBUF(LBUF,2,NDIST),
      &          IPNTNO(4,*), IPNTRP(3,*), NCOUNT(NDIST),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          IDSORB(NDIST), IORBDS(NBASIS), IORBSH(*)
-#include <nuclei.h>
 #include <twocom.h>
 #include <symmet.h>
 C

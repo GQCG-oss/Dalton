@@ -1006,6 +1006,7 @@ C  BCNRVE are used for B vectors from unit LUIT3 (section 1)
 C  SNRVEC is used for reduced PROJECTED HESSIAN matrix (section 2)
 C
 #include <implicit.h>
+#include <infvar.h>
       DIMENSION REDH(*),REDG(*),SOLNR(*),G(*)
       DIMENSION IBNDX(*),BCNRVE(*),BONRVE(*),SNRVEC(NVAR,*)
 C
@@ -1017,7 +1018,6 @@ C
 #include <maxorb.h>
 #include <priunit.h>
 #include <infinp.h>
-#include <infvar.h>
 #include <infind.h>
 #include <inftap.h>
 #include <infpri.h>

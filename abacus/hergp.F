@@ -1515,10 +1515,10 @@ C
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <maxorb.h>
+#include <nuclei.h>
       DIMENSION GEOM(3*NATOMS), AMASS(NATOMS), NATTYP(NATOMS),
      &          NUMIS(NATOMS)
 #include <orgcom.h>
-#include <nuclei.h>
 #include <cbisol.h>
 #include <symmet.h>
 #include <ibtfun.h>

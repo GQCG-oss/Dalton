@@ -100,6 +100,7 @@ C
 #include <aovec.h>
 #include <maxorb.h>
 #include <mxcent.h>
+#include <nuclei.h>
       PARAMETER (DP25 = 0.25 D00, DP5 = 0.5 D00,
      &           D1 = 1.0 D00, D2 = 2.0 D00, ZERADD = 1.D-15,
      &           D0 = 0.0 D00, DP125 = 0.125D00, D3=3.0D0, D4=4.0D0)
@@ -119,7 +120,6 @@ C
 #include <twocom.h>
 #include <dftcom.h>
 #include <symmet.h>
-#include <nuclei.h>
 #include <expcom.h>
 #include <dirprt.h>
 #include <ibtfun.h>

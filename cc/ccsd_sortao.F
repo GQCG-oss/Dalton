@@ -257,9 +257,9 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <ibtpar.h>
+#include <ccorb.h>
       DIMENSION XINT(LENGTH,*),IBUF(LBUF,NIBUF),RBUF(LBUF)
       DIMENSION KAOAB(NBAST,NBAST),KAOG(NBAST,NSYM)
-#include <ccorb.h>
 #include <ccsdsym.h>
 #include <ibtfun.h>
 C
@@ -412,8 +412,8 @@ C     Set up indexing arrays
 C
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION KAOAB(NBAST,NBAST),KAOG(NBAST,NSYM)
 #include <ccorb.h>
+      DIMENSION KAOAB(NBAST,NBAST),KAOG(NBAST,NSYM)
 #include <ccsdsym.h>
 C
 C

@@ -2008,6 +2008,7 @@ C  /* Deck shire1 */
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <maxorb.h>
+#include <nuclei.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       CHARACTER DIAPAR*12
       DIMENSION TMAT(3,3,MXCENT), DMAT(3,3,MXCENT), PMAT(3,3,MXCENT),
@@ -2015,7 +2016,6 @@ C  /* Deck shire1 */
      &          ANIS(NUCDEP), ASYM(NUCDEP), SPAR(NUCDEP), APAR(NUCDEP),
      &          ANIS2(NUCDEP), ASYM2(NUCDEP), SKEW(NUCDEP),
      &          SPAN(NUCDEP), CSTRA(*), SCTRA(*)
-#include <nuclei.h>
 #include <symmet.h>
 #include <sigma.h>
 #include <cbisol.h>
@@ -2844,9 +2844,9 @@ C
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <maxorb.h>
+#include <nuclei.h>
       PARAMETER (D3 = 3.0D0)
       DIMENSION GEOM(3*NATOMS)
-#include <nuclei.h>
 #include <symmet.h>
 #include <nqcc.h>
 #include <ibtfun.h>
@@ -2910,9 +2910,9 @@ C
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <maxorb.h>
+#include <nuclei.h>
       PARAMETER (DP5 = 0.50D0, D3 = 3.0D0)
       DIMENSION ORIGIN(3), GEOM(3*NATOMS)
-#include <nuclei.h>
 #include <symmet.h>
 #include <quadru.h>
 #include <ibtfun.h>
@@ -2962,11 +2962,11 @@ C     Calculate nuclear contribution to molecular g-factors
 C     K.Ruud, June-94
 C
 #include <implicit.h>
-      DIMENSION ORIGIN(3), GEOM(3*(NATOMS+NFLOAT))
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <maxorb.h>
 #include <nuclei.h>
+      DIMENSION ORIGIN(3), GEOM(3*(NATOMS+NFLOAT))
 #include <symmet.h>
 #include <molgfa.h>
 #include <ibtfun.h>
@@ -3017,10 +3017,10 @@ C
 #include <mxcent.h>
 #include <maxorb.h>
 #include <maxaqn.h>
+#include <nuclei.h>
       PARAMETER (D1 = 1.0D0, D0 = 0.D0)
       DIMENSION GEOM(3*NATOMS), ORIGIN(3)
 #include <abainf.h>
-#include <nuclei.h>
 #include <symmet.h>
 #include <spinro.h>
 #include <ibtfun.h>
@@ -3547,9 +3547,9 @@ C
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <maxorb.h>
-      DIMENSION TEMP(3,3,NUCDEP), EXPVAL(NCOMP)
 #include <nqcc.h>
 #include <nuclei.h>
+      DIMENSION TEMP(3,3,NUCDEP), EXPVAL(NCOMP)
 #include <symmet.h>
 #include <ibtfun.h>
 C
@@ -3605,9 +3605,9 @@ C
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <maxorb.h>
+#include <nuclei.h>
       DIMENSION EXPVAL(3*NUCDEP), ELFLD(3,NUCDEP),
      &          CSTRA(3*NUCDEP,3*NUCDEP), SCTRA(3*NUCDEP,3*NUCDEP)
-#include <nuclei.h>
 #include <abainf.h>
 #include <symmet.h>
 #include <spinro.h>

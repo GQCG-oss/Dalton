@@ -2608,6 +2608,7 @@ C ****************************************************************
 C
 #include <implicit.h>
 #include <iratdef.h>
+#include <inftap.h>
       DIMENSION H2CD(NORBT,NORBT),BUF(LBINTM), IBUF(LBINTM)
 #include <priunit.h>
       DIMENSION NEEDTP(6)
@@ -2622,7 +2623,6 @@ C
 #include <maxorb.h>
 #include <inforb.h>
 #include <infind.h>
-#include <inftap.h>
 C
 #include <orbtypdef.h>
 C
@@ -2873,6 +2873,7 @@ C
 C ****************************************************************
 C
 #include <implicit.h>
+#include <inftap.h>
       DIMENSION H2CD(NORBT,NORBT),BUF(LBINTD),IBUF(LBINTD)
       DIMENSION NEEDTP(6)
 C
@@ -2886,7 +2887,6 @@ C
 #include <maxorb.h>
 #include <inforb.h>
 #include <infind.h>
-#include <inftap.h>
 C
 #include <orbtypdef.h>
 C

@@ -304,14 +304,6 @@ C  /* Deck excit1 */
 #include <iratdef.h>
 #include <priunit.h>
 #include <cbilrs.h>
-      DIMENSION WORK(LWORK)
-      DIMENSION TRLEN(3,NSYM,MXNEXI), TRVEL(3,NSYM,MXNEXI)
-      DIMENSION TRLON(3,NSYM,MXNEXI), TRMAG(3,NSYM,MXNEXI)
-      DIMENSION BSRLON(3,NSYM,MXNEXI),EXENG(NSYM,MXNEXI)
-      DIMENSION FONAC(3*NATOMS,NSYM,MXNEXI),FONA2(3*NATOMS,NSYM,MXNEXI)
-      CHARACTER*8 LABEL, LABINT(3*MXCOOR)
-      LOGICAL   FOUND
-C
 #include <cbiexc.h>
 #include <inforb.h>
 #include <nuclei.h>
@@ -326,6 +318,14 @@ C
 #include <abainf.h>
 #include <gnrinf.h>
 #include <infsop.h>
+C
+      DIMENSION WORK(LWORK)
+      DIMENSION TRLEN(3,NSYM,MXNEXI), TRVEL(3,NSYM,MXNEXI)
+      DIMENSION TRLON(3,NSYM,MXNEXI), TRMAG(3,NSYM,MXNEXI)
+      DIMENSION BSRLON(3,NSYM,MXNEXI),EXENG(NSYM,MXNEXI)
+      DIMENSION FONAC(3*NATOMS,NSYM,MXNEXI),FONA2(3*NATOMS,NSYM,MXNEXI)
+      CHARACTER*8 LABEL, LABINT(3*MXCOOR)
+      LOGICAL   FOUND
 C
 C     Get reference state
 C     ===================

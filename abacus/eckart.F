@@ -52,6 +52,7 @@ C
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <maxorb.h>      
+#include <nuclei.h>
 C
       PARAMETER (NUCMAX = 15,NSTMAX = 10,NTRIAL = 1500,
      &     TOLX = 1.0D-12,TOLF = 1.0D-12)
@@ -70,7 +71,6 @@ C
      &          FRVAL(NFRVAL), WORK(LWORK)
 C
 #include <orgcom.h>
-#include <nuclei.h>
 #include <cbiwlk.h>
 C
 C     Define instantaneous geometry

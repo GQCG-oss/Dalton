@@ -546,6 +546,7 @@ C Scratch:
 C   UDV; dimension: NASHT*NASHT
 C
 #include <implicit.h>
+#include <infvar.h>
       DIMENSION SCVECS(NVAR,*), SOVECS(*)
       DIMENSION DTV(*), FC(*), FTV(NORBT,NORBT,*),
      &          FTQ(NORBT,NASHDI,*)
@@ -564,7 +565,6 @@ C   INFDIM : NASHDI
 C
 #include <maxash.h>
 #include <maxorb.h>
-#include <infvar.h>
 #include <inforb.h>
 #include <infind.h>
 #include <infdim.h>

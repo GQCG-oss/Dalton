@@ -40,13 +40,13 @@ C     T. Helgaker
 C
 #include <implicit.h>
 #include <mxcent.h>
+#include <nuclei.h>
       PARAMETER (D0 = 0.0D0) 
       LOGICAL INSIDE 
       DIMENSION DST(NATOMS)
 #include <dfterg.h>
 #include <dftcom.h>
 #include <dftacb.h>
-#include <nuclei.h>
 #include <codata.h>
 C
       DIMENSION RADIUS(0:18)

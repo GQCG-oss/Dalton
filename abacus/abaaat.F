@@ -674,11 +674,11 @@ C     Based on UPKWOP
 C
 #include <implicit.h>
       LOGICAL ANTI
-      DIMENSION UNPACK(NORBT,NORBT),PACKED(NWOPT)
 #include <inforb.h>
 #include <maxorb.h>
 #include <infvar.h>
 #include <inflin.h>
+      DIMENSION UNPACK(NORBT,NORBT),PACKED(NWOPT)
       CALL DZERO(UNPACK,N2ORBX)
       IF (ANTI) THEN
          DO 100 IG = 1,NWOPPT

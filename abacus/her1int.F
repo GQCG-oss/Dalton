@@ -685,12 +685,12 @@ C  /* Deck pr1sop */
 #include <priunit.h>
 #include <iratdef.h>
 #include <mxcent.h>
+#include <nuclei.h>
       LOGICAL ANTI, DOATOM(NUCIND), TRIANG, SQUARE, DONUC1, DOMOM1
       CHARACTER LABINT(NOPTYP)*8
       DIMENSION SOINT(NELMNT,NOPTYP), WORK(LWORK), INTREP(NOPTYP),
      &          WEIGHT(NPOINT), ABSCIS(NPOINT), INTADR(*)
 #include <onecom.h>
-#include <nuclei.h>
 C
       KSHINT = 1
       KSYMC  = KSHINT + KCKTAB*NSHINT
@@ -726,6 +726,7 @@ C  /* Deck pr1so1 */
 #include <mxcent.h>
 #include <maxorb.h>
 #include <maxaqn.h>
+#include <nuclei.h>
 C
       LOGICAL FULMAT, ANTI, DOATOM(NUCIND), TRIANG, SQUARE, DONUC1,
      &        MULCHA, DOMOM1, HUCORB
@@ -739,7 +740,6 @@ C
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
 C
 #include <onecom.h>
-#include <nuclei.h>
 #include <shells.h>
 #include <huckel.h>
 #include <symmet.h>
@@ -1783,6 +1783,7 @@ C  /* Deck pr1prd */
 #include <aovec.h>
 #include <maxorb.h>
 #include <maxaqn.h>
+#include <nuclei.h>
       PARAMETER (D1 = 1.00 D00, D3 = 3.00 D00, D3INV = D1/D3)
 C
       LOGICAL DOATOM(NUCIND), TRIANG, SAMECD, DONUC1, DOMOM1
@@ -1794,7 +1795,6 @@ C
 C
 #include <onecom.h>
 #include <orgcom.h>
-#include <nuclei.h>
 #include <primit.h>
 #include <symmet.h>
 C
@@ -4148,6 +4148,7 @@ C
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <maxorb.h>
+#include <nuclei.h>
 C
       PARAMETER (D0 = 0.0D0, D4 = 4.0D0, D3 = 3.0D0)
       PARAMETER (DFAC = D4*GFAC*PI/D3)
@@ -4156,7 +4157,6 @@ C
 #include <onecom.h>
 #include <lmns.h>
 #include <symmet.h>
-#include <nuclei.h>
 C
 #include <ibtfun.h>
       INT = 0
@@ -5193,13 +5193,13 @@ C
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <maxorb.h>
+#include <nuclei.h>
+#include <symmet.h>
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          NPETBL(NUCIND,0:MAXREP)
 #include <onecom.h>
-#include <symmet.h>
-#include <nuclei.h>
 #include <ibtfun.h>
       FULMAT = .TRUE.
       ITYP = 0
@@ -5282,13 +5282,13 @@ C  /* Deck efgtra */
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <maxorb.h>
+#include <nuclei.h>
+#include <symmet.h>
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          IFGTBL(NUCIND,6,0:MAXREP)
 #include <onecom.h>
-#include <nuclei.h>
-#include <symmet.h>
 #include <ibtfun.h>
 C
       FULMAT = .TRUE.
@@ -5332,12 +5332,12 @@ C  /* Deck dsotra */
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <maxorb.h>
+#include <nuclei.h>
       LOGICAL FULMAT, ANTI, DOATOM(NUCIND), SAMECD, TRIANG, TRICR
       DIMENSION SHLINT(KCKTAB,NSHINT), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
 #include <onecom.h>
 #include <symmet.h>
-#include <nuclei.h>
 #include <ibtfun.h>
       FULMAT = .TRUE.
 C

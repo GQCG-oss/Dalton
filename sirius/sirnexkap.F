@@ -254,6 +254,7 @@ C
 C Output:
 C
 #include <implicit.h>
+#include <infvar.h>
       DIMENSION REDO(*),REDGO(*),EOVEC(*),SOVEC(NWOPT,*),BOVEC(NWOPT,*)
       DIMENSION GDM(*),DIAOR(*), CMO(*),GORB(*),DV(*),PV(*),FC(*),FV(*)
       DIMENSION WRK(*), EOVAL(*)
@@ -266,7 +267,6 @@ C   INFVAR : NWOPT
 C
 #include <maxorb.h>
 #include <priunit.h>
-#include <infvar.h>
 #include <infpri.h>
 C
       LOGICAL DONEO
@@ -448,6 +448,7 @@ C
 C
 C
 #include <implicit.h>
+#include <infvar.h>
       DIMENSION EOVEC(*),GDM(*),REDGO(*),DIAOR(*)
       DIMENSION BOVEC(NWOPT,*),SOVEC(NWOPT,*)
       LOGICAL   DONEO
@@ -460,7 +461,6 @@ C  INFVAR: NWOPT,?
 C
 #include <maxorb.h>
 #include <priunit.h>
-#include <infvar.h>
 #include <infpri.h>
 C
 C
@@ -664,6 +664,7 @@ C  EOVEC :.not.doneo SOLUTION TO LINEAR SET OF EQUATIONS
 C        :     doneo LOWEST EIGENVECTOR (NEO)
 C
 #include <implicit.h>
+#include <infvar.h>
       DIMENSION REDO(*),REDGO(*),EOVEC(*)
       DIMENSION GDM(*),BOVEC(NWOPT,*),SOVEC(NWOPT,*)
       DIMENSION WRK(*)
@@ -678,7 +679,6 @@ C
 #include <maxash.h>
 #include <maxorb.h>
 #include <priunit.h>
-#include <infvar.h>
 #include <infind.h>
 #include <infpri.h>
 C
@@ -835,6 +835,7 @@ C THE RESULTING NBOVEC VECTORS ARE CONSTRUCTED FROM LUFIL3 AND
 C LUFIL5 WHEN IGDM=1 AND FROM PREVIOUS ITERATIONS OTHERWISE
 C
 #include <implicit.h>
+#include <infvar.h>
       DIMENSION REDO(*),REDGO(*),IBNDX(*),GDM(*),DIAOR(*)
       DIMENSION CMO(*), GORB(*), DV(*),   PV(*), FC(*),FV(*)
       DIMENSION BOVEC(NWOPT,*),  SOVEC(NWOPT,*), WRK(*)
@@ -849,7 +850,6 @@ C Used from common blocks:
 C
 #include <maxorb.h>
 #include <priunit.h>
-#include <infvar.h>
 #include <inforb.h>
 #include <infpri.h>
 C
@@ -988,6 +988,7 @@ C DAMP    INITAL DAMPING FACTOR FOR SIMULTANEOUS ROOT OPTIMIZATION
 C         (MAX(DAMP,D1) WILL BE USED) .
 C
 #include <implicit.h>
+#include <infvar.h>
       DIMENSION GDM(NWOPT,*),IBNDX(*),THRKAP(*),EVAL(*),DIAOR(*)
       DIMENSION CMO(*),GORB(*),DV(*),PV(*),FC(*),FV(*), 
      &          WRK(*)
@@ -1006,7 +1007,6 @@ C
 #include <maxorb.h>
 #include <priunit.h>
 #include <inforb.h>
-#include <infvar.h>
 #include <infind.h>
 #include <infdim.h>
 #include <infpri.h>

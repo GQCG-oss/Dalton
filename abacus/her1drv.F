@@ -307,6 +307,7 @@ C
 #include <maxorb.h>
 #include <iratdef.h>
 #include <priunit.h>
+#include <nuclei.h>
       PARAMETER (D0 = 0.00 D00)
 C
       LOGICAL NODC, NODV, FRSDER, SECDER, DIFDIP, PROPTY, DOINT(2,2),
@@ -325,7 +326,6 @@ C
 #include <dipole.h>
 #include <taysol.h>
 #include <ccom.h>
-#include <nuclei.h>
 #include <shells.h>
 #include <symmet.h>
 #include <dorps.h>
@@ -1122,12 +1122,12 @@ C  /* Deck tlmwr1 */
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
+#include <nuclei.h>
 #include <iratdef.h>
       PARAMETER (DM1 = -1.0D00, THRSH = 1.0D-07)
       LOGICAL ERRORE, ERRORN
       DIMENSION TLMD(LMNTOT,3*NUCDEP,2), FCM(LMNTOT), GRADE(*),
      &          GRADN(*), GDIFE(*), GDIFN(*), WORK(LWORK)
-#include <nuclei.h>
 #include <inftap.h>
 #include <cbisol.h>
 #include <taysol.h>
