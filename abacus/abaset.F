@@ -33,40 +33,39 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef UNDEF
-===========================================================================
-/* Comdeck log */
-Revision 1.4  2000/05/01 12:02:22  hjj
-removed obsolete KAVER,KSYM(4) from READ(LUSIFC)
-
-revision 1.3 2000/05/01 09:38:59 hjj
-added (work,lfree) to CALL SETWOP (work space for new "local" KLWOP)
-----------------------------
-revision 1.2
-11:47:09 hjj
-now no parameters to CALL SIRINI
-=============================================================================
-891108-hjaaj: do not open LUONEL (done in RDONEL)
-900105-hjaaj: flag(27) true se MAERKE, to do: transfer flags from Sirius
-900216-hjaaj: call siropi to open luintm, revised check if luintm ok.
-900221-hjaaj: removed *CALL CBESPN from NSETUP -- was not used.
-900229-hjaaj: NSETUP: +,NUMRUN in CALL PRTINP(IWUNIT,NUMRUN)
-900402-tuh:   H2MO defined according to info from LUSIFC
-900418-hjaaj: NSETUP: call sirini
-901203-hjaaj: SETSIR: FLAG now read from SIRIUS
-910214-hjaaj: SETSIR: IPRERR = MAX(IPRIN4,IPRIN6), var altid = 1
-              SETSIR: THRP/THRQ = 1.0D-12, var = 1.0D-10
-              SETSIR: print RAS parameters after reading LUSIFC
-920113-hjaaj: SETSIR: IPRDNS=IPRCIX=...=IPRSIR=MAX(IPRIN4,IPRIN6)
-920226-hjaaj: NSETUP: check if NCONF from SETCI same as NCONF from LUSIFC
-921014-hjaaj: SETSIR: CBISOL added, get SOLVNT information
-921216-hjaaj: SETSIR: read solvent information; check SUPSYM
-931126-hjaaj: SETSIR: use IPRINT instead of IPRNTR for local print.
-931209-hjaaj: NSETUP: IPRNTR in param.list; define /INFTRA/ for abarsp
-  moved all set /INFDIM/ to NSETUP from SETSIR
-950824-hjaaj: SETSIR: removed initialization of obsolete ORICAV(3)
-  s/H1VORB/FCVORB/
-===========================================================================
+#ifdef OLD_LOG
+!===========================================================================
+!Revision 1.4  2000/05/01 12:02:22  hjj
+!removed obsolete KAVER,KSYM(4) from READ(LUSIFC)
+!
+!revision 1.3 2000/05/01 09:38:59 hjj
+!added (work,lfree) to CALL SETWOP (work space for new "local" KLWOP)
+!----------------------------
+!revision 1.2
+!11:47:09 hjj
+!now no parameters to CALL SIRINI
+!=============================================================================
+!891108-hjaaj: do not open LUONEL (done in RDONEL)
+!900105-hjaaj: flag(27) true se MAERKE, to do: transfer flags from Sirius
+!900216-hjaaj: call siropi to open luintm, revised check if luintm ok.
+!900221-hjaaj: removed *CALL CBESPN from NSETUP -- was not used.
+!900229-hjaaj: NSETUP: +,NUMRUN in CALL PRTINP(IWUNIT,NUMRUN)
+!900402-tuh:   H2MO defined according to info from LUSIFC
+!900418-hjaaj: NSETUP: call sirini
+!901203-hjaaj: SETSIR: FLAG now read from SIRIUS
+!910214-hjaaj: SETSIR: IPRERR = MAX(IPRIN4,IPRIN6), var altid = 1
+!              SETSIR: THRP/THRQ = 1.0D-12, var = 1.0D-10
+!              SETSIR: print RAS parameters after reading LUSIFC
+!920113-hjaaj: SETSIR: IPRDNS=IPRCIX=...=IPRSIR=MAX(IPRIN4,IPRIN6)
+!920226-hjaaj: NSETUP: check if NCONF from SETCI same as NCONF from LUSIFC
+!921014-hjaaj: SETSIR: CBISOL added, get SOLVNT information
+!921216-hjaaj: SETSIR: read solvent information; check SUPSYM
+!931126-hjaaj: SETSIR: use IPRINT instead of IPRNTR for local print.
+!931209-hjaaj: NSETUP: IPRNTR in param.list; define /INFTRA/ for abarsp
+!  moved all set /INFDIM/ to NSETUP from SETSIR
+!950824-hjaaj: SETSIR: removed initialization of obsolete ORICAV(3)
+!  s/H1VORB/FCVORB/
+!===========================================================================
 #endif
 C  /* Deck setsir */
       SUBROUTINE SETSIR(WORK,LWORK)
@@ -211,10 +210,8 @@ C     end if
 C
       REWIND LUSIFC
       IF (FNDLAB('SOLVINFO',LUSIFC)) THEN
-         IF (.NOT.FLAG(16)) THEN
-            CALL QUIT(
-     &           ' ERROR in SETSIR - "SOLVINFO" but FLAG(16) false.')
-         END IF
+         IF (.NOT.FLAG(16)) CALL QUIT(
+     &      'ABACUS.SETSIR error - "SOLVINFO" but FLAG(16) false.')
          READ (LUSIFC) EPSOL,EPSTAT,RSOL,LSOLMX
          READ (LUSIFC) GRDNRM,POTNUC,EMY,EACTIV,ESOLT,EMCSCF
 C        CALL READT (LUSIFC,NLMSOL,ERLM(1,1))
@@ -231,19 +228,13 @@ C        NCNTCV is defined in READIN
          RCAV(2)   = RSOL(2)
          RCAV(3)   = RSOL(3)
          EPDIEL    = EPSOL
-         IF (EPSTAT .NE. EPSOL) THEN
-            CALL QUIT(
-     &           'SETSIR error: solvent EPSTAT .ne. EPSOL')
-         END IF
-         IF (LCAVMX+1 .GT. MXQNM) THEN
-            CALL QUIT(
-     &           'SETSIR error: solvent l_max .gt. MXQNM parameter')
-         END IF
+         IF (EPSTAT .NE. EPSOL) CALL QUIT(
+     &      'ABACUS.SETSIR error: solvent EPSTAT .ne. EPSOL')
+         IF (LCAVMX+1 .GT. MXQNM) CALL QUIT(
+     &      'ABACUS.SETSIR error: solvent l_max .gt. MXQNM parameter')
       ELSE
-         IF (FLAG(16)) THEN
-            CALL QUIT(
-     &           ' ERROR in SETSIR - no "SOLVINFO" but FLAG(16) true.')
-         END IF
+         IF (FLAG(16)) CALL QUIT(
+     &      'ABACUS.SETSIR error - no "SOLVINFO" but FLAG(16) true.')
          SOLVNT = .FALSE.
       END IF
 C
@@ -251,56 +242,56 @@ C        Check that no frozen orbitals are used
 C
       DO 50 I = 1, NSYM
          IF (NFRO(I).NE.0) THEN
-            WRITE (LUPRI,'(/,A,/)') ' >>> ERROR in SETSIR '//
+            WRITE (LUPRI,'(/A/)') ' >>> ERROR in SETSIR '//
      *           ' - Frozen orbitals not allowed in ABACUS.'
             WRITE (LUPRI,'(A,8I5)') ' NFRO:', (NFRO(J),J=1,NSYM)
-            CALL QUIT(' ERROR in SETSIR - frozen orbitals used.')
+            CALL QUIT(' ERROR in ABACUS.SETSIR - frozen orbitals used.')
          END IF
  50   CONTINUE
       CALL SETORB
       IF (FLAG(17)) THEN
-         CALL QUIT('SETSIR ERROR: supsym CALL AVESET not implemented.')
+         CALL QUIT('SETSIR ERROR: .SUPSYM not implemented in ABACUS.')
       ELSE
          CALL AVESE0
       END IF
       IF (IPRINT .GT. 5) THEN
          CALL HEADER('Information from LUSIFC in SETSIR',-1)
-         WRITE (LUPRI,'(/1X,A,I5)') ' NISHT  ', NISHT
-         WRITE (LUPRI,'(1X,A,8I5)') ' NISH() ', (NISH(I),I=1,NSYM)
-         WRITE (LUPRI,'(1X,A,8I5)') ' IISH() ', (IISH(I),I=1,NSYM)
-         WRITE (LUPRI,'(1X,A,8I5)') ' IIISH()', (IIISH(I),I=1,NSYM)
-         WRITE (LUPRI,'(/1X,A,I5)') ' NASHT  ', NASHT
-         WRITE (LUPRI,'(1X,A,8I5)') ' NASH() ', (NASH(I),I=1,NSYM)
-         WRITE (LUPRI,'(1X,A,8I5)') ' IASH() ', (IASH(I),I=1,NSYM)
-         WRITE (LUPRI,'(1X,A,8I5)') ' IIASH()', (IIASH(I),I=1,NSYM)
-         WRITE (LUPRI,'(/1X,A,I5)') ' NOCCT  ', NOCCT
-         WRITE (LUPRI,'(1X,A,8I5)') ' NOCC() ', (NOCC(I),I=1,NSYM)
-         WRITE (LUPRI,'(1X,A,8I5)') ' IOCC() ', (IOCC(I),I=1,NSYM)
-         WRITE (LUPRI,'(/1X,A,I5)') ' NORBT  ', NORBT
-         WRITE (LUPRI,'(1X,A,8I5)') ' NORB() ', (NORB(I),I=1,NSYM)
-         WRITE (LUPRI,'(1X,A,8I5)') ' IORB() ', (IORB(I),I=1,NSYM)
-         WRITE (LUPRI,'(1X,A,8I5)') ' IIORB()', (IIORB(I),I=1,NSYM)
-         WRITE (LUPRI,'(/1X,A,I5)') ' NNORBT ', NNORBT
-         WRITE (LUPRI,'(1X,A,8I5)') ' NNORB()', (NNORB(I),I=1,NSYM)
-         WRITE (LUPRI,'(/1X,A,I5)') ' N2ORBT ', N2ORBT
-         WRITE (LUPRI,'(1X,A,8I5)') ' N2ORB()', (N2ORB(I),I=1,NSYM)
-         WRITE (LUPRI,'(1X,A,8I5)') ' I2ORB()', (I2ORB(I),I=1,NSYM)
-         WRITE (LUPRI,'(/1X,A,I5)') ' NBAST  ', NBAST
-         WRITE (LUPRI,'(1X,A,8I5)') ' NBAS() ', (NBAS(I),I=1,NSYM)
-         WRITE (LUPRI,'(1X,A,8I5)') ' IBAS() ', (IBAS(I),I=1,NSYM)
-         WRITE (LUPRI,'(1X,A,8I5)') ' IIBAS()', (IIBAS(I),I=1,NSYM)
-         WRITE (LUPRI,'(1X,A,8I5)') ' N2BAS()', (N2BAS(I),I=1,NSYM)
-         WRITE (LUPRI,'(/1X,A,8I5)') ' ICMO() ', (ICMO(I),I=1,NSYM)
-         WRITE (LUPRI,'(/1X,A,I5)') ' NWOPT  ', NWOPT
-         WRITE (LUPRI,'( 1X,A,I5)') ' NWOPH  ', NWOPH
-         WRITE (LUPRI,'(/1X,A,I5)') ' MCTYPE ', MCTYPE
-         WRITE (LUPRI,'(/1X,A,I5)') ' NELMN1 ', NELMN1
-         WRITE (LUPRI,'( 1X,A,I5)') ' NELMX1 ', NELMX1
-         WRITE (LUPRI,'( 1X,A,I5)') ' NELMN3 ', NELMN3
-         WRITE (LUPRI,'( 1X,A,I5)') ' NELMX3 ', NELMX3
-         WRITE (LUPRI,'(/1X,A,8I5)') ' NAS1() ', (NAS1(I),I=1,NSYM)
-         WRITE (LUPRI,'( 1X,A,8I5)') ' NAS2() ', (NAS2(I),I=1,NSYM)
-         WRITE (LUPRI,'( 1X,A,8I5)') ' NAS3() ', (NAS3(I),I=1,NSYM)
+         WRITE (LUPRI,'(/A,I5)') ' NISHT  ', NISHT
+         WRITE (LUPRI,'(A,8I5)') ' NISH() ', (NISH(I),I=1,NSYM)
+         WRITE (LUPRI,'(A,8I5)') ' IISH() ', (IISH(I),I=1,NSYM)
+         WRITE (LUPRI,'(A,8I5)') ' IIISH()', (IIISH(I),I=1,NSYM)
+         WRITE (LUPRI,'(/A,I5)') ' NASHT  ', NASHT
+         WRITE (LUPRI,'(A,8I5)') ' NASH() ', (NASH(I),I=1,NSYM)
+         WRITE (LUPRI,'(A,8I5)') ' IASH() ', (IASH(I),I=1,NSYM)
+         WRITE (LUPRI,'(A,8I5)') ' IIASH()', (IIASH(I),I=1,NSYM)
+         WRITE (LUPRI,'(/A,I5)') ' NOCCT  ', NOCCT
+         WRITE (LUPRI,'(A,8I5)') ' NOCC() ', (NOCC(I),I=1,NSYM)
+         WRITE (LUPRI,'(A,8I5)') ' IOCC() ', (IOCC(I),I=1,NSYM)
+         WRITE (LUPRI,'(/A,I5)') ' NORBT  ', NORBT
+         WRITE (LUPRI,'(A,8I5)') ' NORB() ', (NORB(I),I=1,NSYM)
+         WRITE (LUPRI,'(A,8I5)') ' IORB() ', (IORB(I),I=1,NSYM)
+         WRITE (LUPRI,'(A,8I5)') ' IIORB()', (IIORB(I),I=1,NSYM)
+         WRITE (LUPRI,'(/A,I5)') ' NNORBT ', NNORBT
+         WRITE (LUPRI,'(A,8I5)') ' NNORB()', (NNORB(I),I=1,NSYM)
+         WRITE (LUPRI,'(/A,I5)') ' N2ORBT ', N2ORBT
+         WRITE (LUPRI,'(A,8I5)') ' N2ORB()', (N2ORB(I),I=1,NSYM)
+         WRITE (LUPRI,'(A,8I5)') ' I2ORB()', (I2ORB(I),I=1,NSYM)
+         WRITE (LUPRI,'(/A,I5)') ' NBAST  ', NBAST
+         WRITE (LUPRI,'(A,8I5)') ' NBAS() ', (NBAS(I),I=1,NSYM)
+         WRITE (LUPRI,'(A,8I5)') ' IBAS() ', (IBAS(I),I=1,NSYM)
+         WRITE (LUPRI,'(A,8I5)') ' IIBAS()', (IIBAS(I),I=1,NSYM)
+         WRITE (LUPRI,'(A,8I5)') ' N2BAS()', (N2BAS(I),I=1,NSYM)
+         WRITE (LUPRI,'(/A,8I5)') ' ICMO() ', (ICMO(I),I=1,NSYM)
+         WRITE (LUPRI,'(/A,I5)') ' NWOPT  ', NWOPT
+         WRITE (LUPRI,'( A,I5)') ' NWOPH  ', NWOPH
+         WRITE (LUPRI,'(/A,I5)') ' MCTYPE ', MCTYPE
+         WRITE (LUPRI,'(/A,I5)') ' NELMN1 ', NELMN1
+         WRITE (LUPRI,'( A,I5)') ' NELMX1 ', NELMX1
+         WRITE (LUPRI,'( A,I5)') ' NELMN3 ', NELMN3
+         WRITE (LUPRI,'( A,I5)') ' NELMX3 ', NELMX3
+         WRITE (LUPRI,'(/A,8I5)') ' NAS1() ', (NAS1(I),I=1,NSYM)
+         WRITE (LUPRI,'( A,8I5)') ' NAS2() ', (NAS2(I),I=1,NSYM)
+         WRITE (LUPRI,'( A,8I5)') ' NAS3() ', (NAS3(I),I=1,NSYM)
       END IF
 C
 C
@@ -355,9 +346,12 @@ C
      &      ' ABACUS cannot continue because MC orbital gradient',
      &      ' may be non-zero without super symmetry averaging.'
       ELSE
-         WRITE (LUPRI,'(/,A,2(/A,I5,A,I5))') ' >>> (SETSIR) ERROR',
+         WRITE(LUPRI,'(/A,2(/A,I5,A,I5))') ' >>> (ABACUS.SETSIR) ERROR',
      &      ' NWOPT from SETUP:',NWOPT,' and NWOPT from LUSIFC:',MWOPT,
      &      ' NWOPH from SETUP:',NWOPH,' and NWOPH from LUSIFC:',MWOPH
+         WRITE(LUPRI,'(/A)') 'The JWOP array (with a zero vector):'
+         CALL DZERO(WORK,NWOPT)
+         CALL PRWOP(WORK,LUPRI)
       END IF
          CALL QUIT('SETSIR: inconsistency found for orbital rotations')
       END IF
@@ -427,7 +421,7 @@ C Used from common blocks:
 C   INFINP : ISTATE,LSYM,MCTYPE,?
 C   INFORB : NISH(8),...
 C   INFVAR : NCONF,NWOPT,NVAR,JWOPSY,JWOP(2,*),NWOP(8)
-C   INFDIM : NCONMA,NWOPMA,NVARMA,NWOPDI,MWORK,MAXRL
+C   INFDIM : NCONMA,NWOPMA,NVARMA,NWOPDI,MAXRL
 C   INFOPT : ?
 C   INFTRA : ITRLVL,THRP,THRQ
 C   INFTAP : LUINP,LUINDX,...
@@ -479,13 +473,13 @@ C
 C   If not CI, call setwop to set-up JWOP pointer for orbital operators
 C   and all related information.
 C
+      JWOPSY = 1
       IF (FLAG(4)) THEN
 C     ... this is a CI calculation
          NWOPT  = 0
          NWOPH  = 0
          NWOPMA = 0
          NWOPDI = MAX(1,NWOPT)
-         JWOPSY = 1
       ELSE
          CALL SETWOP(WORK,LFREE)
       ENDIF
