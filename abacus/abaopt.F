@@ -2246,7 +2246,6 @@ C     &    .AND. .NOT. DOMC) .OR. (PARIO .AND. MYNUM .GT. 0)) THEN
          ELSE
             CALL ABAINP('**PROPE',WORK(IWOFF + 2),LWORK)
          END IF
-C
 C        *** For numerical differentiation (vibrational ***
 C        *** average), we don't nescesary calculate all ***
 C        *** properties.                                ***

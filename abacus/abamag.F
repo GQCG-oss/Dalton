@@ -258,7 +258,7 @@ C
       KLAST  = KFOCMA + NNBASX
       LWRK   = LWORK - KLAST + 1
       IF (KLAST .GT. LWORK) CALL STOPIT('MAGINT',' ',KLAST,LWORK)
-C
+C 
       CALL DZERO(WORK(KDENMA),NNBASX)
       CALL DZERO(WORK(KFOCMA),NNBASX)
       CALL DSOFSO(WORK(KDENMA),WORK(KFOCMA),WORK(KLAST),LWRK,MPRINT,
@@ -404,7 +404,7 @@ C
 #include <symmet.h>
 #include <inforb.h>
 C
-#include <ibtfun.h>
+#include <ibtfun.h>       
 C
       MAXTYP = 3*MXCOOR
       IF (WORD .EQ. 'DSO    ') MAXTYP = (3*NUCDEP)**2
@@ -413,8 +413,8 @@ C
       KEXPVA = KSTHMA + NNBASX*NCOMP
       KLBINT = KEXPVA + NCOMP
       KINTRP = KLBINT + MAXTYP
-      KINTAD = KLBINT + (9*MXCENT + 1)/IRAT
-      KOVERL = KINTAD + (9*MXCENT + 1)/IRAT
+      KINTAD = KINTRP + (9*MXCENT**2)/IRAT
+      KOVERL = KINTAD + (9*MXCENT**2)/IRAT
       KFMOVL = KOVERL + 6*NNBASX
       KLAST  = KFMOVL + 6
       LWRK   = LWORK - KLAST + 1
@@ -448,7 +448,7 @@ C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       INTEGER TMAT
       LOGICAL NODC, NODV
-      CHARACTER WORD*7, LABINT(*)*8
+      CHARACTER WORD*7, LABINT(3*MXCOOR)*8
       DIMENSION STHMAT(NNBASX,NCOMP), SPNDSO(*),
      &          DENMAT(NNBASX), INTREP(*), INTADR(*),
      &          FOCMAT(NNBASX), EXPVAL(NCOMP), OVERLP(NNBASX,6),
@@ -503,6 +503,7 @@ C
      &                  IPRINT,WORD,LABINT,SIGN)
  61      CONTINUE
       ELSE IF (WORD .EQ. 'DSO    ') THEN
+         print *, allcom
          IF (ALLCOM) THEN
             NPATOM = 1
             CALL GET1IN(STHMAT,WORD,NCOMP,WORK(1),LWORK,LABINT,INTREP,

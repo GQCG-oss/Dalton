@@ -198,6 +198,8 @@ C     ************************************************
 C
 #include <prpndr.h>
 #include <abainf.h>
+#include <magone.h>
+#include <spnout.h>
 C
       IF (IPRINT.GT.20) THEN
          CALL HEADER('No properties calculated in this geometry of ' //
@@ -210,6 +212,11 @@ C
       END IF
 C
       SPNSPN = .FALSE.
+      SST    = .FALSE.
+      DODSO  = .FALSE.
+      DOPSO  = .FALSE.
+      DOSD   = .FALSE.
+      DOFC   = .FALSE.
 C
       RETURN
       END
