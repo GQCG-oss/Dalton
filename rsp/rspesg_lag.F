@@ -420,6 +420,7 @@ C
 #include <infpri.h>
 #include <maxorb.h>
 #include <infinp.h>
+#include <infspi.h>
 #include <inftap.h>
 #include <inflr.h>
 #include <wrkrsp.h>
@@ -488,7 +489,8 @@ c      write(lupri,*)  kvecxn,kvecxt,kvect,kft,kfree,kmjwop
       CALL DZERO(WRK(KVECT),KZYVT)
       CALL E3INIT(WRK(KVECXN),WRK(KVECXT),DUMMY,.FALSE.,IBEQC,
      *            WRK(KVECT),XINDX,UDV,PV,WRK(KFREE),LFREE,
-     *           KZYVT,KZYVX,KZYVX,ISYMT,ISYMX,ISYMX,CMO,FC,WRK(KMJWOP))
+     *           KZYVT,KZYVX,KZYVX,ISYMT,ISYMX,ISYMX,ISPINA,ISPINB,
+     *            ISPINC,CMO,FC,FV,WRK(KMJWOP))
 C     Scale by -1
       CALL DSCAL(KZYVT,-D1,WRK(KVECT),1)
       CALL PRINTVEC2( 'TVECS E3INIT   ',1,KZVT,WRK(KVECT))
