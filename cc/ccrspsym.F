@@ -4813,7 +4813,7 @@ C
      *                  ' IS NOT AVAILABLE.'
         WRITE(LUPRI,'(/A)') ' LIST OF FIRST-ORDER KAPPA VECTORS:'
         DO I = 1, NLRTHFLBL
-           WRITE(LUPRI,'(I5,3X,A8,L3,I5,2X,1P,D15.6)') 
+           WRITE(LUPRI,'(I5,3X,A8,I5,2X,1P,D15.6)') 
      &            I, LRTHFLBL(I), ISYLRTHF(I), FRQLRTHF(I)
         END DO
         IR1KAPPA = -1

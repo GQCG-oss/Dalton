@@ -619,7 +619,7 @@ C
                NSCF = NSCF + 1
                KPRP = KPOLSCF + IOFSGN + NBLRFR*(IOPER-1) + IFREQ - 1
 
-               IDXR = IR1KAPPA(LABELA,LRLXA,+FREQA,ISYMA)
+               IDXR = IR1KAPPA(LABELA,+FREQA,ISYMA)
                CALL CC_GETHFGD(IDXR,'R1 ',LRTHFLBL,IDUM,IDUM,RDUM,
      *                         ISYLRTHF,FRQLRTHF,IDUM,NLRTHFLBL,
      *                         MAXTLBL,IREAL,WORK(KCMO),WORK(KUDV),
@@ -631,7 +631,7 @@ C
                XRLXAB=DDOT(2*NALLAI(ISYMB),WORK(KAPPA1),1,WORK(KG1),1)
 
 
-               IDXR = IR1KAPPA(LABELB,LRLXB,+FREQB,ISYMB)
+               IDXR = IR1KAPPA(LABELB,+FREQB,ISYMB)
                CALL CC_GETHFGD(IDXR,'R1 ',LRTHFLBL,IDUM,IDUM,RDUM,
      *                         ISYLRTHF,FRQLRTHF,IDUM,NLRTHFLBL,
      *                         MAXTLBL,IREAL,WORK(KCMO),WORK(KUDV),
