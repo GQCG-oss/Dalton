@@ -48,7 +48,7 @@ C
 #endif
 C     choose reasonably large. Exceeding this limit means that boxes are
 C     too large.
-      PARAMETER(NBUFLEN=50000)
+      PARAMETER(NBUFLEN=70000)
 C
       DIMENSION DMAT(NBAST,NBAST,NDMAT), WORK(LWORK), CBDATA(*)
       EXTERNAL CB
@@ -111,7 +111,7 @@ C
          print *,"ERROR=",ERROR,ELECTRONS
          WRITE (LUPRI,'(4(/2X,A,F14.6),/2X,A)')
      &   ' Number of electrons from numerical integration:',ELECTRONS,
-     &   ' Number of electrons from orbial occupations:   ',ELCTRX,
+     &   ' Number of electrons from orbital occupations:  ',ELCTRX,
      &   ' Error in the number of electrons:              ',ERROR,
      &   ' Error larger than DFTELS (set input):          ',DFTELS,
      &   ' Calculation aborted.'

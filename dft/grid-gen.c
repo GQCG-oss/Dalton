@@ -78,7 +78,7 @@ static const real CELL_SIZE = 1.5;
 /* the weight threshold:: a grid point will be ignored if has a weight
  * lower than the WEIGHT_THRESHOLD. This should probably depend on the
  * calculation's accuracy. */
-static const real WEIGHT_THRESHOLD = 1e-17;
+static const real WEIGHT_THRESHOLD = 1e-20;
 
 enum { GRID_TYPE_STANDARD, GRID_TYPE_CARTESIAN };
     

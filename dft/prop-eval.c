@@ -1564,8 +1564,8 @@ FSYM2(dft_lin_respf)(int *nosim, real* fmat, real *cmo, real *zymat, int *trplet
     }
 
     free(lr_data.dmat);
-    free(lr_data.kappa);
     free(lr_data.res);
+    free(lr_data.kappa);
     free(lr_data.vt);
     free(lr_data.dtgao);
     times(&endtm);
