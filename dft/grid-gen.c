@@ -1033,7 +1033,7 @@ boxify_save_batch(FILE *f, int cnt, int nbl, int shlbl[][2],
         int bcnt = i+PARBLLEN<cnt ? PARBLLEN : cnt - i;
         last = (last+1) % nodes;
         if( last == 0)
-            save_final_batch_local(f, bcnt, nbl, shlbl, coor + i*3, w+i);
+            boxify_save_batch_local(f, bcnt, nbl, shlbl, coor + i*3, w+i);
         else {
             int arr[2]; arr[0] = bcnt; arr[1] = nbl;
             M(MPI_Send(arr,     2,      MPI_INT,   last, 1, MPI_COMM_WORLD));
