@@ -2,19 +2,19 @@
 
 \section{General}\label{sec:herminf}
 
-	\her\ is the integral evaluation part of the code. In ordinary
+    \her\ is the integral evaluation part of the code. In ordinary
 calculations there is no need to think about integral evaluation, as
 this will be automatically taken care of by the program. However,
 \her\ has an extensive set of atomic one- and two-electron
-integrals\index{one-electron integral}\index{two-electron integral}, 
+integrals\index{one-electron integral}\index{two-electron integral},
 and some users may find it useful to generate explicit integrals using
 \her . This is for instance necessary if the \resp\ program (dynamic
 properties) is to be
 used, as described in Chapter~\ref{ch:response}. Disc usage may also
-be reduced by not calculating the 
+be reduced by not calculating the
 supermatrix\index{supermatrix}, and this is also controlled in the
-\Sec{*INTEGRALS} input section. 
- 
+\Sec{*INTEGRALS} input section.
+
 It is worth noticing that the two-electron part of \her\ is actually
 two integral programs. One --- \her\ --- is general and invoked by default in
 sequential calculations as well as in calculations using generally
@@ -23,16 +23,15 @@ code with orientation towards integral distributions. This code will
 be invoked in direct calculations using segmented basis sets for
 totally-symmetric Fock matrices.
 
-	Input to integral evaluation is
-indicated by the keyword \Sec{*INTEGRALS}, and the section may be ended
-with \Sec{END OF} or any keyword starting with two stars (like
-e.g. \Sec{*WAVE FUNCTIONS}). 
-The intermediate input is divided into two sections: one general input
-section describing what molecular integrals is to be evaluated, and
-then a set of modules controling the different parts of the
-calculation of undifferentiated atomic integrals and the (possible)
-formation of a supermatrix as defined in for
-instance~\cite{pemsjaahborjcp74}.
+    Input to integral evaluation is
+indicated by the keyword \Sec{*INTEGRALS}, and the section may be
+ended with \Sec{END OF} or any keyword starting with two stars
+(like e.g. \Sec{*WAVE FUNCTIONS}). The intermediate input is
+divided into two sections: one general input section describing
+what molecular integrals is to be evaluated, and then a set of
+modules controlling the different parts of the calculation of
+undifferentiated atomic integrals and the (possible) formation of
+a supermatrix as defined in for instance~\cite{pemsjaahborjcp74}.
 
 \section{\Sec{*INTEGRALS} directives}\label{sec:herinp}
 
@@ -48,7 +47,7 @@ The last directive of the \Sec{*INTEGRALS} input may be \Sec{END OF}.
 
 General-purpose directives are given in the \Sec{*INTEGRALS}
 section. This mainly includes requests for different atomic integrals,
-as well as some 
+as well as some
 directives affecting the outcome of such an integral evaluation. Note
 that although not explicitly stated, all test options do {\em not}
 work with symmetry.
@@ -70,9 +69,9 @@ original set in order to do the Huckel starting guess.
 
 \begin{description}
 \item[\Key{ANGLON}] Contribution to the one-electron contribution of
-the magnetic moment\index{magnetic moment} using London
-orbitalsindex{London orbitals} arising from the differentiation on
-the London phase factors, see Ref.~\cite{thpjjcp95}. 
+the magnetic moment\index{magnetic moment} using London orbitals
+\index{London orbitals} arising from the differentiation on the
+London phase factors, see Ref.~\cite{thpjjcp95}.
 
 \begin{list}{}{}
 \item Integral: $Q_{MN}\left<\chi_{\mu}\left|{\bf
@@ -93,12 +92,12 @@ the \Key{GAUGEO} keyword.
 \verb|READ (LUCMD,*) IORCAR|
 
 Cartesian multipole integrals\index{multipole integral} to order
-\verb|IORCAR|. Read one more 
+\verb|IORCAR|. Read one more
 line specifying order. See also the keyword \Key{SPHMOM}.
 
 \begin{list}{}{}
 \item Integral:
-$\left<\chi_{\mu}\left|x^{i}y^{j}z^{k}\right|\chi_{\nu}\right>$ 
+$\left<\chi_{\mu}\left|x^{i}y^{j}z^{k}\right|\chi_{\nu}\right>$
 \item Property label: \verb|CMiijjkk|
 \end{list}
 where $i+j+k =$\verb|IORDER|.
@@ -107,7 +106,7 @@ where $i+j+k =$\verb|IORDER|.
 \verb|READ (LUCMD, '(A7)') FIELD1|
 
 First derivative of the  electric dipole operator\index{electric
-dipole} with respect to an 
+dipole} with respect to an
 external magnetic field\index{magnetic field} due to differentiation of the London phase
 factors, see Ref.~\cite{arthkrabmjpjjcp102}. Read one more line giving
 the direction of the electric field~(A7)\index{electric field, external}. These
@@ -115,42 +114,42 @@ include \verb|X-FIELD|, \verb|Y-FIELD|, and \verb|Z-FIELD|.
 
 \begin{list}{}{}
 \item Integral: $Q_{MN}\left<\chi_{\mu}\left|{\bf
-r}D\right|\chi_{\nu}\right>$ 
+r}D\right|\chi_{\nu}\right>$
 \item Property label: \verb|D-CM1 X |, \verb|D-CM1 Y |, \verb|D-CM1 Z |
 \end{list}
 where $D$ is the direction of the applied electric field as specified in
 the input.
 
 \item[\Key{CM-2}] Second derivative electric dipole\index{electric
-dipole} operator 
+dipole} operator
 with respect to an external magnetic field\index{magnetic field} due
-to differentiation of 
+to differentiation of
 the London phase factors, see Ref.~\cite{arthkrabmjpjjcp102}. Read one
 more line giving the direction of the electric
-field~(A7)\index{electric field, external}. These  
+field~(A7)\index{electric field, external}. These
 include \verb|X-FIELD|, \verb|Y-FIELD|, and \verb|Z-FIELD|.
 
 \begin{list}{}{}
 \item Integral: $Q_{MN}\left<\chi_{\mu}\left|{\bf
-rr}^{T}D\right|\chi_{\nu}\right>Q_{MN}$ 
-\item Property label: \verb|D-CM2 XX|, \verb|D-CM2 XY|, \verb|D-CM2 XZ|, 
+rr}^{T}D\right|\chi_{\nu}\right>Q_{MN}$
+\item Property label: \verb|D-CM2 XX|, \verb|D-CM2 XY|, \verb|D-CM2 XZ|,
 \verb|D-CM2 YY|, \verb|D-CM2 YZ|, \verb|D-CM2 ZZ|
 \end{list}
 where $D$ is the direction of the applied electric field as specified in
 the input.
 
 \item[\Key{DARWIN}] One-electron Darwin integrals\index{Darwin
-integral}~\cite{skjohjajjcp103}. 
+integral}~\cite{skjohjajjcp103}.
 
 \begin{list}{}{}
 \item Integral: $\frac{\pi\alpha^{2}}{2}\left<\chi_{\mu}\left|\delta\left({\bf
-r}\right)\right|\chi_{\nu}\right>$ 
+r}\right)\right|\chi_{\nu}\right>$
 \item Property label: \verb|DARWIN  |
 \end{list}
 
 
 \item[\Key{DIASUS}] Diamagnetic magnetizability\index{diamagnetic
-magnetizability} integrals, as 
+magnetizability} integrals, as
 calculated with London atomic orbitals, see Ref.~\cite{thpjjcp95}.
 
 \begin{list}{}{}
@@ -159,7 +158,7 @@ calculated with London atomic orbitals, see Ref.~\cite{thpjjcp95}.
 \overline{Q_{MN}\left<\chi_{\mu}\left|{\bf r}{\bf
 L}_{N}^{T}\right|\chi_{\nu}\right>} +
 \frac{1}{4}Q_{MN}\left<\chi_{\mu}\left|{\bf r}{\bf
-r}^{T}h\right|\chi_{\nu}\right>Q_{MN}$ 
+r}^{T}h\right|\chi_{\nu}\right>Q_{MN}$
 \item Property label: \verb|XXdh/dB2|, \verb|XYdh/dB2|,
 \verb|XZdh/dB2|, \verb|YYdh/dB2|, \verb|YZdh/dB2|, \verb|ZZdh/dB2|
 \end{list}
@@ -175,7 +174,7 @@ r}^{T}h\right|\chi_{\nu}\right>Q_{MN}$
 \verb|READ (LUCMD, *) (DIPORG(I), I = 1, 3)|
 
 Specify the dipole origin\index{dipole origin} to be used in the
-calculation. Read one more 
+calculation. Read one more
 line containing the three Cartesian components (*). Default is~(0,0,0).
 
 \item[\Key{DIPVEL}] Dipole velocity\index{dipole velocity} integrals.
@@ -186,11 +185,11 @@ line containing the three Cartesian components (*). Default is~(0,0,0).
 \end{list}
 
 \item[\Key{DSO}] Diamagnetic spin-orbitindex{diamagnetic spin-orbit}
-integrals. These are 
+integrals. These are
 calculated using Gaussian quadrature\index{Gaussian quadrature} as
-described in 
+described in
 Ref.~\cite{dmtajcp73}. The number of quadrature point is controled by
-the keyword \Key{POINTS}. 
+the keyword \Key{POINTS}.
 
 \begin{list}{}{}
 \item Integral: $\left<\chi_{\mu}\left|\frac{{\bf r}_K^T{\bf r}_LI - {\bf r}_K{\bf r}_L^T}{r_K^3r_L^3}\right|\chi_{\nu}\right>$
@@ -203,7 +202,7 @@ symmetry-adapted nucleus L.
 \item[\Key{DSUSLH}] The contribution to diamagnetic
 magnetizability\index{diamagnetic magnetizability}
 integrals from the differentiation of the London orbital\index{London
-orbitals} 
+orbitals}
 phase-factors, see Ref.~\cite{thpjjcp95}.
 
 \begin{list}{}{}
@@ -220,7 +219,7 @@ orbitals}, see Ref.~\cite{thpjjcp95}.
 
 \begin{list}{}{}
 \item Integral: $\frac{1}{4}\overline{Q_{MN}\left<\chi_{\mu}\left|{\bf
-r}{\bf L}_{N}^{T}\right|\chi_{\nu}\right>}$ 
+r}{\bf L}_{N}^{T}\right|\chi_{\nu}\right>}$
 \item Property label: \verb|XXDSUSLL|, \verb|XYDSUSLL|,
 \verb|XZDSUSLL|, \verb|YYDSUSLL|, \verb|YZDSUSLL|, \verb|ZZDSUSLL|
 \end{list}
@@ -228,13 +227,13 @@ r}{\bf L}_{N}^{T}\right|\chi_{\nu}\right>}$
 \item[\Key{DSUSNL}] The contribution to the diamagnetic
 magnetizability\index{diamagnetic magnetizability} integrals using
 London orbitals\index{London
-orbitals} but with 
+orbitals} but with
 contributions from the differentiation of the Hamiltonian only, see
-Ref.~\cite{thpjjcp95}. 
+Ref.~\cite{thpjjcp95}.
 
 \begin{list}{}{}
 \item Integral: $\frac{1}{4}\left<\chi_{\mu}\left|r^{2}_{N}I - {\bf r}_{N}
-{\bf r}_{N}^{T}\right|\chi_{\nu}\right>$ 
+{\bf r}_{N}^{T}\right|\chi_{\nu}\right>$
 \item Property label: \verb|XXDSUSNL|, \verb|XYDSUSNL|,
 \verb|XZDSUSNL|, \verb|YYDSUSNL|, \verb|YZDSUSNL|, \verb|ZZDSUSNL|
 \end{list}
@@ -248,7 +247,7 @@ integrals\index{electric field gradient}.
 
 \begin{list}{}{}
 \item Integral: $\frac{1}{3}\left<\chi_{\mu}\left|\frac{3{\bf
-r}_K{\bf r}_K^T - {\bf r}_K^T{\bf r}_KI}{r_K^5}\right|\chi_{\nu}\right>$ 
+r}_K{\bf r}_K^T - {\bf r}_K^T{\bf r}_KI}{r_K^5}\right|\chi_{\nu}\right>$
 \item Property label: \verb|xyEFGabc|, where \verb|x| and \verb|y| are
 the cartesian directions, \verb|ab| the number of the symmetry
 independent center, and \verb|c| that centers c'th symmetry-generated
@@ -268,11 +267,11 @@ Read one more line containing the wave numbers in the three Cartesian
 directions. The center of expansion is always~(0,0,0).
 
 \item[\Key{FC}] Fermi-contact\index{Fermi contact} integrals, see
-Ref.~\cite{ovhapjhjajsbpthjcp96}. 
+Ref.~\cite{ovhapjhjajsbpthjcp96}.
 
 \begin{list}{}{}
 \item Integral: $\frac{4\pi g_e}{3}\left<\chi_{\mu}\left|\delta\left({\bf
-r}_K\right)\right|\chi_{\nu}\right>$ 
+r}_K\right)\right|\chi_{\nu}\right>$
 \item Property label: \verb|FC NAMab|, where \verb|NAM| is the three
 first letters in the name of this atom, as given in the
 \verb|MOLECULE.INP| file, and \verb|ab| is the number of the
@@ -284,7 +283,7 @@ symmetry-adapted nucleus.
 
 Specify the gauge origin\index{gauge origin} to be used in the
 calculation. Read one more line containing the three Cartesian
-components (*). Default is~(0,0,0). 
+components (*). Default is~(0,0,0).
 
 \item[\Key{HBDO}] Geometric half-differentiated overlap
 matrix\index{overlap, half-differentiated}
@@ -293,19 +292,19 @@ in Ref.~\cite{klbpjthkrhjajjcp98}.
 
 \item[\Key{HDO}] Symmetrized, half-differentiated
 overlap integrals with respect to geometric distortions\index{overlap,
-half-differentiated}, see 
+half-differentiated}, see
 Ref.~\cite{klbpjhjajjothjcp97}. Differentiation on the ket-vector.
 
 \begin{list}{}{}
 \item Integral: $\left<\frac{\partial \chi_{\mu}}{\partial
 R_{ab}}\mid\chi_{\nu}\right> -
-\left<\chi_{\mu}\mid\frac{\partial\chi_{\nu}}{\partial R_{ab}}\right>$  
+\left<\chi_{\mu}\mid\frac{\partial\chi_{\nu}}{\partial R_{ab}}\right>$
 \item Property label: \verb|HDO ab  |, where \verb|ab| is the number
 of the symmetry-adapted coordinate being differentiated.
 \end{list}
 
 \item[\Key{HDOBR}] Geometric half-differentiated overlap
-matrix\index{overlap, half-differentiated} 
+matrix\index{overlap, half-differentiated}
 differentiated once more on the ket-vector with respect to external
 magnetic field as given in Eq.~(60) of Ref.~\cite{klbpjthkrhjajjcp98}.
 
@@ -334,22 +333,22 @@ orbital\index{London orbitals} phase factors, see Ref.~\cite{thpjjcp95}.
 
 \begin{list}{}{}
 \item Integral:
-$\frac{1}{4}Q_{MN}\left<\chi_{\mu}\left|{\bf r}h\right|\chi_{\nu}\right>$ 
+$\frac{1}{4}Q_{MN}\left<\chi_{\mu}\left|{\bf r}h\right|\chi_{\nu}\right>$
 \item Property label: \verb|XLONMOM |, \verb|YLONMOM |, \verb|ZLONMOM |.
 \end{list}
 
 \item[\Key{MAGMOM}] One-electron contribution to the magnetic
 moment\index{magnetic moment}
-around the nuclei to which the 
+around the nuclei to which the
 atomic orbitals are attached. This is the London atomic
 orbital\index{London orbitals}
 magnetic moment\index{magnetic moment} as defined in Eq.~(35) of
-Ref.~\cite{krthklbpjhjajjcp99}. 
+Ref.~\cite{krthklbpjhjajjcp99}.
 
 \begin{list}{}{}
 \item Integral:
 $\left<\chi_{\mu}\left|\frac{1}{2}{\bf L}_N + \frac{1}{4}Q_{MN}{\bf
-r}h\right|\chi_{\nu}\right>$ 
+r}h\right|\chi_{\nu}\right>$
 \item Property label: \verb|dh/dBX  |, \verb|dh/dBY  |, \verb|dh/dBZ  |.
 \end{list}
 
@@ -379,7 +378,7 @@ Set the threshold for which two-electron integrals should be tested
 
 \begin{list}{}{}
 \item Integral:
-$\left<\chi_{\mu}\left|\frac{{\bf r}_K}{r_{K}^3}\right|\chi_{\nu}\right>$ 
+$\left<\chi_{\mu}\left|\frac{{\bf r}_K}{r_{K}^3}\right|\chi_{\nu}\right>$
 where $K$ is the nucleus of interest.
 \item Property label: \verb|NEF ab  |, where \verb|ab| is the number
 of the symmetry-adapted nuclear coordinate.
@@ -388,7 +387,7 @@ of the symmetry-adapted nuclear coordinate.
 \item[\Key{NO HAM}] Do not calculate ordinary Hamiltonian integrals.
 
 \item[\Key{NOSUP}] Do not calculate the supermatrix\index{supermatrix}
-integral file. 
+integral file.
 This may be required in order to reduce the amount of disc space used
 in the calculation (to approximately one-third before entering the
 evaluation of molecular properties).
@@ -412,14 +411,14 @@ keyword \Key{NSTNOL}. Mainly for debugging purposes.
 
 \item[\Key{NST}] Calculate the one-electron contribution to the
 diamagnetic nuclear shielding\index{diamagnetic nuclear shielding}
-tensor integrals using London atomic 
+tensor integrals using London atomic
 orbitals\index{London orbitals}, see Ref.~\cite{thpjjcp95}.
 
 \begin{list}{}{}
 \item Integral:
 $\frac{1}{2}\left<\chi_{\mu}\left|\frac{{\bf r}_N^T{\bf r}_K -
 {\bf r}_N{\bf r}_K^T}{r_{K}^3} + Q_{MN}\frac{{\bf r}_N^T{\bf
-l}_K}{r_{K}^3}\right|\chi_{\nu}\right>$ 
+l}_K}{r_{K}^3}\right|\chi_{\nu}\right>$
 where $K$ is the nucleus of interest.
 \item Property label: \verb|NST  ab c|, where \verb|ab| is the number
 of the symmetry-adapted nuclear magnetic moment coordinate, and
@@ -427,8 +426,9 @@ of the symmetry-adapted nuclear magnetic moment coordinate, and
 \end{list}
 
 \item[\Key{NSTCGO}] Calculate the diamagnetic nuclear shielding\index{diamagnetic nuclear shielding}
-ytensor integrals without using London atomic orbitals\index{London orbitals}. Note that the
-gauge origin is controled by the keyword \Key{GAUGEO}.
+tensor integrals without using London atomic orbitals\index{London
+orbitals}. Note that the gauge origin is controlled by the keyword
+\Key{GAUGEO}.
 
 \begin{list}{}{}
 \item Integral:
@@ -448,7 +448,7 @@ phase-factors\index{London orbitals}, see Ref.~\cite{thpjjcp95}.
 \begin{list}{}{}
 \item Integral:
 $\frac{1}{2}Q_{MN}\left<\chi_{\mu}\left|\frac{{\bf r}_N^T{\bf
-l}_K}{r_{K}^3}\right|\chi_{\nu}\right>$ 
+l}_K}{r_{K}^3}\right|\chi_{\nu}\right>$
 where $K$ is the nucleus of interest.
 \item Property label: \verb|NSLOab c|, where \verb|ab| is the number
 of the symmetry-adapted nuclear magnetic moment coordinate, and
@@ -456,7 +456,8 @@ of the symmetry-adapted nuclear magnetic moment coordinate, and
 \end{list}
 
 \item[\Key{NSTNOL}] Calculate the contribution to the nuclear
-shielding tensor\index{diamagnetic nuclear shielding} from the differentiation of the Hamiltonian alone\index{London orbitals}, see Ref.~\cite{thpjjcp95}.
+shielding tensor\index{diamagnetic nuclear shielding} from the
+differentiation of the Hamiltonian alone\index{London orbitals}, see Ref.~\cite{thpjjcp95}.
 
 \begin{list}{}{}
 \item Integral:
@@ -470,7 +471,7 @@ of the symmetry-adapted nuclear magnetic moment coordinate, and
 
 \item[\Key{NSTTST}] Test the calculation of the one-electron
 diamagnetic  nuclear shielding\index{diamagnetic nuclear shielding}
-tensor using London atomic orbitals\index{London orbitals}.  
+tensor using London atomic orbitals\index{London orbitals}.
 
 \item[\Key{NUCMOD}]\verb| |\newline
 \verb|READ (LUCMD, *) INUC|
@@ -486,10 +487,10 @@ symmetry.\index{potential energy at nucleus}
 \item Integral:
 $\left<\chi_{\mu}\left|\frac{Z_K}{r_{K}}\right|\chi_{\nu}\right>$
 where $K$ is the nucleus of interest.
-\item Property label: \verb|POT.E ab|, where \verb|ab| is the two
-first letters in the name of this nuclei. Thus note that in order to
-distinguish between integrals, the fisrt to letters in an atoms name
-must be unique.
+\item Property label: \verb|POT.E ab|, where \verb|ab| are the two
+first letters in the name of this nuclei. Thus note that in order
+to distinguish between integrals, the first two letters in an
+atom's name must be unique.
 \end{list}
 
 \item[\Key{PHASEO}]\verb| |\newline
@@ -503,14 +504,14 @@ Default is~(0,0,0).
 \verb|READ (LUCMD,*) NPQUAD|
 
 Read the number of quadrature points\index{Gaussian quadrature} to be
-used in the evaluation of 
+used in the evaluation of
 the diamagnetic spin-orbit\index{diamagnetic spin-orbit} integrals, as
-requested by the keyword 
+requested by the keyword
 \Key{DSO}. Read one more line containing the number of quadrature
 points. Default is~40.
 
 \item[\Key{PRINT}]\verb| |\newline
-\verb|READ (LUCMD,*) IPRDEF| 
+\verb|READ (LUCMD,*) IPRDEF|
 
 Set default print level during the integral evaluation.  Read one more line
 containing print level. Default is the value of \verb|IPRDEF|
@@ -519,7 +520,7 @@ from the general input module for \siraba .
 \item[\Key{PROPRI}] Print all one-electron property integrals requested.
 
 \item[\Key{PSO}] Paramagnetic spin-orbit integrals\index{paramagnetic
-spin-orbit}, see 
+spin-orbit}, see
 Ref.~\cite{ovhapjhjajsbpthjcp96}.
 
 \begin{list}{}{}
@@ -536,7 +537,7 @@ defined by Buckingham~\cite{adbacp12}, see the keyword \Key{THETA}.
 
 \begin{list}{}{}
 \item Integral: $\frac{1}{4}\left<\chi_{\mu}\left|{\bf r}_{O}{\bf
-r}_{O}^{T} - r^{2}_{O}I\right|\chi_{\nu}\right>$ 
+r}_{O}^{T} - r^{2}_{O}I\right|\chi_{\nu}\right>$
 \item Property label: \verb|XXQUADRU|, \verb|XYQUADRU|,
 \verb|XZQUADRU|, \verb|YYQUADRU|, \verb|YZQUADRU|, \verb|ZZQUADRU|
 \end{list}
@@ -547,26 +548,26 @@ anti-Hermiticity.
 
 \item[\Key{S1MAG}] Calculate the first derivative overlap
 matrix\index{overlap, magnetic field derivative} with respect to an
-external magnetic field by differentiation 
+external magnetic field by differentiation
 of the London phase factors\index{London orbitals}, see Ref.~\cite{thpjjcp95}.
 
 \begin{list}{}{}
 \item Integral: $\frac{1}{2}Q_{MN}\left<\chi_{\mu}\left|{\bf
-r}\right|\chi_{\nu}\right>$   
+r}\right|\chi_{\nu}\right>$
 \item Property label: \verb|dS/dBX  |, \verb|dS/dBY  |,
 \verb|dS/dBZ  |
 \end{list}
 
 \item[\Key{S1MAGL}] Calculate the first magnetic half-differentiated overlap
 matrix\index{overlap, magnetic field derivative} with respect to an
-external magnetic field as needed with the 
+external magnetic field as needed with the
 natural connection\index{natural connection}, see
-Ref.~\cite{krthklbpjjocp195}. Differentiated 
+Ref.~\cite{krthklbpjjocp195}. Differentiated
 on the bra-vector.
 
 \begin{list}{}{}
 \item Integral: $\frac{1}{2}Q_{MO}\left<\chi_{\mu}\left|{\bf
-r}\right|\chi_{\nu}\right>$   
+r}\right|\chi_{\nu}\right>$
 \item Property label: \verb|d<S|/dBX|, \verb|d<S|/dBY|,
 \verb|d<S|/dBZ|
 \end{list}
@@ -578,7 +579,7 @@ the ket-vector.
 
 \begin{list}{}{}
 \item Integral: $\frac{1}{2}Q_{ON}\left<\chi_{\mu}\left|{\bf
-r}\right|\chi_{\nu}\right>$   
+r}\right|\chi_{\nu}\right>$
 \item Property label: \verb|d|S>/dBX|, \verb|d|S>/dBZ|,
 \verb|d|S>/dBZ|
 \end{list}
@@ -592,13 +593,13 @@ r}\right|\chi_{\nu}\right>$
 \item[\Key{S1MRT}] Test the integrals calculated with the keyword
 \Key{S1MAGR}. Mainly for debugging purposes.
 
-\item[\Key{S2MAG}] Calculate the second derivate of the overlap
+\item[\Key{S2MAG}] Calculate the second derivative of the overlap
 matrix\index{overlap, magnetic field derivative} with respect to an external magnetic field by differentiation
 of the London phase factors\index{London orbitals}, see Ref.~\cite{thpjjcp95}.
 
 \begin{list}{}{}
 \item Integral: $\frac{1}{4}Q_{MN}\left<\chi_{\mu}\left|{\bf r}{\bf
-r}^{T}\right|\chi_{\nu}\right>Q_{MN}$  
+r}^{T}\right|\chi_{\nu}\right>Q_{MN}$
 \item Property label: \verb|dS/dB2XX|, \verb|dS/dB2XY|,
 \verb|dS/dB2XZ|, \verb|dS/dB2YY|, \verb|dS/dB2YZ|, \verb|dS/dB2ZZ|
 \end{list}
@@ -607,11 +608,11 @@ r}^{T}\right|\chi_{\nu}\right>Q_{MN}$
 \Key{S2MAG}. Mainly for debugging purposes.
 
 \item[\Key{SD}] Spin-dipole integrals\index{spin-dipole}, see
-Ref.~\cite{ovhapjhjajsbpthjcp96}. 
+Ref.~\cite{ovhapjhjajsbpthjcp96}.
 
 \begin{list}{}{}
 \item Integral: $\frac{g_e}{2}\left<\chi_{\mu}\left|\frac{3{\bf
-r}_K^T{\bf r}_K - r_K^2}{r_{K}^5}\right|\chi_{\nu}\right>$  
+r}_K^T{\bf r}_K - r_K^2}{r_{K}^5}\right|\chi_{\nu}\right>$
 \item Property label: \verb|SD  ab c|, where \verb|ab| is the number
 of the first symmetry-adapted coordinate (corresponding to
 symmetry-adapted nuclear magnetic moments) and \verb|c| is the x, y,
@@ -633,11 +634,11 @@ or z component of the magnetic moment with respect to spin coordinates.
 \end{list}
 
 \item[\Key{SECMOM}] Second-moment integrals\index{multipole
-integral}\index{second-moment}. 
+integral}\index{second-moment}.
 
 \begin{list}{}{}
 \item Integral: $\left<\chi_{\mu}\left|{\bf r}{\bf
-r}^{T}\right|\chi_{\nu}\right>$  
+r}^{T}\right|\chi_{\nu}\right>$
 \item Property label: \verb|XXSECMOM|, \verb|XYSECMOM|,
 \verb|XZSECMOM|, \verb|YYSECMOM|, \verb|YZSECMOM|, \verb|ZZSECMOM|
 \end{list}
@@ -647,17 +648,16 @@ r}^{T}\right|\chi_{\nu}\right>$
 \verb|READ (LUCMD, *) (IPATOM(I), I = 1, NPATOM|
 
 Select which atoms for which a given atomic integral is to be
-calculated. This applies mainly to property integrals for which there
-exist a set of integrals for each nuclei. Read one more line
+calculated. This applies mainly to property integrals for which
+there exist a set of integrals for each nuclei. Read one more line
 containing the number of atoms selected, and then another line
 containing the numbers of the atoms selected. Most useful when
 calculating diamagnetic spin-orbit\index{diamagnetic spin-orbit}
-integrals, as this is a rather 
-time-consuming calculation. The numbering is of symmetry-independent
-nuclei. 
+integrals, as this is a rather time-consuming calculation. The
+numbering is of symmetry-independent nuclei.
 
 \item[\Key{SORT I}]\index{integral sort} Requests that the
-two-electron integrals should be 
+two-electron integrals should be
 sorted for later use in \sir . See also keywords \Key{PRESORT} in the
 \Sec{*DALTON} and \Sec{TRANSFORMATION} input sections.
 
@@ -668,7 +668,7 @@ requested by the keyword \Key{SPIN-O}.
 \verb|READ (LUCMD,*) IORSPH|
 
 Spherical multipole\index{multipole integral} integrals to order
-\verb|IORSPH|. Read one more 
+\verb|IORSPH|. Read one more
 line specifying order. See also the keyword \Key{CARMOM}.
 
 \begin{list}{}{}
@@ -679,7 +679,7 @@ where $i+j+k =$\verb|IORDER|.
 \item[\Key{SPIN-O}] Spatial spin-orbit\index{spatial spin-orbit}
 integrals, see Ref.~\cite{ovhapjhjajthjojcp96}. Both the one- and the
 two-electron integrals are calculated, the latter stored on the file
-\verb|AO2SOINT|. 
+\verb|AO2SOINT|.
 
 \begin{list}{}{}
 \item One-electron Integral:
@@ -694,8 +694,8 @@ $\left<\chi_{\mu}\chi_{\nu}\left|\frac{{\bf l}_{12}}{r_{12}^{3}}\right|\chi_{\rh
 
 %\item[\Key{SQHDOL}] Square, non-symmetrized half differentiated
 %overlap integrals\index{overlap, half-differentiated} with respect to
-%geometric distortions, see 
-%Ref.~\cite{klbpjhjajjothjcp97}. Differentiation on the bra-vector. 
+%geometric distortions, see
+%Ref.~\cite{klbpjhjajjothjcp97}. Differentiation on the bra-vector.
 %
 %\begin{list}{}{}
 %\item Integral: $\left<\frac{\partial \chi_{\mu}}{\partial
@@ -706,29 +706,29 @@ $\left<\chi_{\mu}\chi_{\nu}\left|\frac{{\bf l}_{12}}{r_{12}^{3}}\right|\chi_{\rh
 
 \item[\Key{SQHDOR}] Square, non-symmetrized half differentiated
 overlap integrals with respect to geometric distortions\index{overlap,
-half-differentiated}, see 
+half-differentiated}, see
 Ref.~\cite{klbpjhjajjothjcp97}. Differentiation on the ket-vector.
 
 \begin{list}{}{}
 \item Integral: $\left<\chi_{\mu}\mid\frac{\partial\chi_{\nu}}{\partial
-R_{ab}}\right>$  
+R_{ab}}\right>$
 \item Property label: \verb|SQHDORab|, where \verb|ab| is the number
 of the symmetry-adapted coordinate being differentiated.
 \end{list}
 
 \item[\Key{SUPONL}] Only calculate the supermatrix. Requires the
 presence of the two-electron integral file\index{two-electron
-integral}\index{supermatrix}. 
+integral}\index{supermatrix}.
 
 \item[\Key{SUSCGO}] Diamagnetic magnetizability\index{diamagnetic
-magnetizability} integrals calculated 
+magnetizability} integrals calculated
 without the use of London atomic orbitals. The choice of gauge
-origin\index{gauge origin} 
+origin\index{gauge origin}
 can be controled by the keyword \Key{GAUGEO}.
 
 \begin{list}{}{}
 \item Integral: $\frac{1}{4}\left<\chi_{\mu}\left|r^{2}_{O}I - {\bf r}_{O}
-{\bf r}_{O}^{T}\right|\chi_{\nu}\right>$ 
+{\bf r}_{O}^{T}\right|\chi_{\nu}\right>$
 \item Property label: \verb|XXSUSCGO|, \verb|XYSUSCGO|,
 \verb|XZSUSCGO|, \verb|YYSUSCGO|, \verb|YZSUSCGO|, \verb|ZZSUSCGO|
 \end{list}
@@ -738,7 +738,7 @@ moment, trcaeless} integrals as defined by Buckingham~\cite{adbacp12}.
 
 \begin{list}{}{}
 \item Integral: $\frac{1}{5}\left<\chi_{\mu}\left|3r^{2}I - {\bf r}
-{\bf r}^{T}\right|\chi_{\nu}\right>$ 
+{\bf r}^{T}\right|\chi_{\nu}\right>$
 \item Property label: \verb|XXTHETA |, \verb|XYTHETA |,
 \verb|XZTHETA |, \verb|YYTHETA |, \verb|YZTHETA |, \verb|ZZTHETA |
 \end{list}
@@ -748,14 +748,14 @@ moment, trcaeless} integrals as defined by Buckingham~\cite{adbacp12}.
 \subsection{One-electron integrals: \Sec{ONEINT}}
 
 Directives affecting the one-electron undifferentiated Hamiltonian
-integral calculation appear in the \Sec{ONEINT} section. 
+integral calculation appear in the \Sec{ONEINT} section.
 \begin{description}
 \item[\Key{CAVORG}]\verb| |\newline
 \verb|READ (LUCMD,*) (CAVORG(I), I = 1, 3|
 
 Read one more line containing the origin to be used for the origin of
 the cavity\index{cavity origin} in self-consistent reaction field
-calculations. The default 
+calculations. The default
 is that this origin is chosen to be the center of mass\index{center of
 mass}of the molecule.
 
@@ -782,17 +782,17 @@ integrals. Mainly for debugging purposes.
 $\left<\chi_{\mu}\left|x^iy^jz^k\right|\chi_{\nu}\right>$ for all
 integrals where $i+j+k\leq$\verb|LMAX|.
 \item Property label: Not extractable. Integrals written to file
-\verb|AOSOLINT| 
+\verb|AOSOLINT|
 \end{list}
 
 Calculate the necessary integrals needed to model the effects of a
 dielectric medium\index{dielectric medium} by a
-reaction-field\index{reaction field} method as 
-described in 
+reaction-field\index{reaction field} method as
+described in
 Ref.~\cite{kvmhahjajthjcp89}.  Read one more line containing maximum
-angular quantum 
+angular quantum
 number for the multipole integrals\index{multipole integral} used for
-the reaction field. 
+the reaction field.
 \end{description}
 
 \subsection{General: \Sec{READIN}}\label{sec:herrdn}
@@ -804,7 +804,7 @@ Directives to control the reading of input appear in the
 \verb|READ (LUCMD,*) LCMMAX, CMSTR, CMEND|
 
 Use Rydberg basis functions\index{Rydberg basis function} (center of
-mass functions\index{center of mass function}) as suggested by  
+mass functions\index{center of mass function}) as suggested by
 Kaufman {\it et al.\/}~\cite{kkwbmjjpbamop22}. \verb|LCMMAX| denoted
 the maximum quantum number of the Rydberg functions, basis functions
 for all quantum up to and including \verb|LCMMAX| will be generated
@@ -827,7 +827,7 @@ is~22.
 end of the current file. Default is that the molecular input is to be
 read from unit~9.
 
-\item[\Key{MOLPRI}] Requests that a copy of a standarized molecular
+\item[\Key{MOLPRI}] Requests that a copy of a standardized molecular
 input file is to be dumped on the file \verb|DALTON.BAS|. This file
 will include also a dump of the basis set. This basis set takes
 advantage of the formatted input of the program in
@@ -871,17 +871,18 @@ by the \Key{CM FUN} keyword. Default is a charge of one.
 
 Affects the sorting of the two-electron integrals\index{integrals
 sort}. Note that in order for \sir\ to use the sorted integrals
-generated with the keyword \Key{SORT I}, the keyword \Key{PRESORTED}
-has to used in the \Sec{TRANSFORMATION} input module of the \Sec{*WAVE
-FUNCTION} input section. For standard calculation you will in general
-not need to change any of the deafult settings.
+generated with the keyword \Key{SORT I}, the keyword
+\Key{PRESORTED} has to used in the \Sec{TRANSFORMATION} input
+module of the \Sec{*WAVE FUNCTION} input section. For standard
+calculation you will in general not need to change any of the
+default settings.
 
 \begin{description}
 \item[\Key{INTSYM}]\verb| |\newline
 \verb|READ (LUCMD, *) ISNTSYM|
 
-Symmetry of the two-electron integrals that are to
-be sorted. Default is totally-symmetric two-electron integrals (INTSYM
+Symmetry of the two-electron integrals that are to be sorted.
+Default is totally-symmetric two-electron integrals (\verb|INTSYM|
 = 1).
 
 \item[\Key{IO PRI}]\verb| |\newline
@@ -901,12 +902,12 @@ Threshold for setting an integral to zero. By default this threshold
 is 1.0D-15.
 
 \end{description}
- 
+
 \subsection{Construction of the supermatrix file:
-\Sec{SUPINT}}\label{sec:supint} 
+\Sec{SUPINT}}\label{sec:supint}
 
 Directives affecting the construction of the
-supermatrix\index{supermatrix} file is given 
+supermatrix\index{supermatrix} file is given
 in the \Sec{SUPINT} section.
 
 \begin{description}
@@ -914,7 +915,7 @@ in the \Sec{SUPINT} section.
 construction of the supermatrix file. This may increase the disc space
 requirements as well as  CPU time. As long as \aba\ do not use the
 supermatrix file (which it in the current version do not), this
-keyword is mainly for debugging purposes. 
+keyword is mainly for debugging purposes.
 
 \item[\Key{OLDSUP}] An old output format for the supermatrix file
 will be used. Obsolete keyword. Do not use.
@@ -942,14 +943,14 @@ discarding the two-electron integrals (see the Chapter describing the
 \subsection{Two-electron integrals: \Sec{TWOINT}}
 
 Directives affecting the two-electron\index{two-electron integral}
-undifferentiated Hamiltonian 
+undifferentiated Hamiltonian
 integral calculation appear in the \Sec{TWOINT} section.
 \begin{description}
 \item[\Key{ICEDIF}]\verb| |\newline
 \verb|READ (LUCMD,*) ICDIFF,IEDIFF|
 
 Screening\index{intgral screening} threshold for Coulomb and exchange
-contributions to the Fock 
+contributions to the Fock
 matrix in direct and parallel calculations. The thresholds for the
 integrals will ten to the power of these numbers. By default the same
 screening threshold will be used for Coulomb and exchange
@@ -960,8 +961,8 @@ contribution with a default value of $10^{-9}$.
 
 Screening threshold\index{integral screening} used in direct and
 parallel calculations. The integral threshold will be ten to the
-negative power of this number. Defalt value is 9, corresponding to an
-integral accuracy of $10^{-9}$.
+negative power of this number. Default value is 9, corresponding
+to an integral accuracy of $10^{-9}$.
 
 \item[\Key{PANAS}] Calculates scaled two-electron integrals as
 proposed by Panas as a simple way of introducing electron
@@ -974,7 +975,7 @@ Set print level for the derivative integral calculation of a particular shell
 quadruplet.  Read one more line containing print level and the four
 shell indices~(5I5).  The print level is changed from the default
 for this quadruplet only. Default value is the value of \verb|IPRDEF|
-from the \Sec{*INTEGRALS} input module. 
+from the \Sec{*INTEGRALS} input module.
 
 \item[\Key{RETURN}] Stop after the shell quadruplet specified
 under \Key{PRINT} above. Mainly for debugging purposes.
