@@ -1,13 +1,13 @@
 c     DFTKSM - compute exchange-correlation contribution to the KS
 c     matrix.
-      SUBROUTINE DFTKSMb(DMAT,KSM,EDFTY,WORK,LWORK,IPRFCK)
+      SUBROUTINE DFTKSMb(DMAT,FKSM,EDFTY,WORK,LWORK,IPRFCK)
 C
 C     P. Salek and T. Helgaker October 2003
 C
 #include <implicit.h>
 #include <inforb.h>
 #include <priunit.h>
-      DIMENSION DMAT(NBAST,NBAST),KSM(NBAST,NBAST),WORK(LWORK)
+      DIMENSION DMAT(NBAST,NBAST),FKSM(NBAST,NBAST),WORK(LWORK)
       EXTERNAL DFTKSMGGA,DFTKSMLDA
       LOGICAL DOGGA, DFT_ISGGA
       EXTERNAL DFT_ISGGA
@@ -36,7 +36,7 @@ C
          END DO
       END DO
       EDFTY = WORK(KENER)
-      CALL DAXPY(N2BASX,1D0,WORK(KKSM),1, KSM,1)
+      CALL DAXPY(N2BASX,1D0,WORK(KKSM),1, FKSM,1)
       IF(IPRFCK.GT.0) WRITE(LUPRI,'(A,2F20.14)')
      &     'Kohn-Sham electrons/energy :', ELE, WORK(KENER)
       RETURN
