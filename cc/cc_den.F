@@ -1506,7 +1506,7 @@ C
      *        'Insufficient space for fourth allocation in CC_DEN2')
       ENDIF
 C
-      CALL DZERO(WORK(KD2IAJ),NT2BCD(ISYDEN))
+      CALL DZERO(WORK(KD2IAJ),NT2BCD(ISYD2H))
 C
       IF (CCSD) THEN
 C

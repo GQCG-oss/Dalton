@@ -1831,7 +1831,7 @@ C--------------------------------
 C     Calculate the contribution.
 C--------------------------------
 C
-      KOFF1  = I3ORHF(ISYIJK,ISYMD) + 1
+      KOFF1  = I3ORHF(ISYIJK,ISYML) + 1
       KOFF2  = IGLMRH(ISYMD,ISYML) + IDEL - IBAS(ISYMD)
 C
       NTOIJK = MAX(NMAIJK(ISYIJK),1)
@@ -2339,7 +2339,10 @@ C
         CALL QUIT('Symmetry mismatch in DIAJ24.')
       END IF
 C
-      IF (NVIR(ISYMB) .EQ. 0) RETURN 
+      IF (NVIR(ISYMB) .EQ. 0) THEN
+        CALL QEXIT('DIAJ24')
+        RETURN 
+      END IF
 C
 C-------------------------------
 C     Work space allocation one.

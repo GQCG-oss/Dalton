@@ -93,6 +93,7 @@ C
 #include <ccr1rsp.h>
 #include <chrxyz.h>
 #include <ccinftap.h>
+#include <cch2d.h>
 C
       LOGICAL LOCDBG 
       PARAMETER( LOCDBG = .FALSE. )
@@ -104,13 +105,16 @@ C
       INTEGER LWORK
       DIMENSION WORK(LWORK)
       LOGICAL LDERINT(8,3)
-      LOGICAL DIRINT, SYM1ONLY
+      LOGICAL DIRINT, SYM1ONLY, DIRSAV
       CHARACTER*8 LABEL, LABELH
 C
       CHARACTER LSTRLX*(3), FILFCK*(8), MODEL*(10)
       LOGICAL LDOTHISATOM, LANYTHING, LEXPEC, LFOCK, LTWO, SQRINT
 C
       CALL QENTER('CC_GRAD2')
+ 
+      ! save the present value of the DIRECT flag
+      DIRSAV = DIRECT
 C
       IF (LOCDBG) WRITE(LUPRI,*) 'WORK:',LWORK,WORK(1),WORK(LWORK)
 C
@@ -171,8 +175,8 @@ C---------------------------------------------------------------
 C
       DO IDX = 1, N1DXFLBL
          IF (LST1DXFCK(IDX)(1:2).EQ.'R1') THEN
-            IRELAX1DX(IDX) = IR1TAMP(LABRLX(IDX),.TRUE.,FRQRLX(IDX),
-     &                                                  ISYMRLX(IDX))
+            IRELAX1DX(IDX) = IR1KAPPA(LABRLX(IDX),FRQRLX(IDX),
+     &                               ISYMRLX(IDX))
          ELSE
             CALL QUIT('Unkown List in CC_GRAD2.')
          END IF
@@ -501,15 +505,26 @@ C
          IF (.NOT.LDOTHISATOM) GOTO 90
          
          IF ( LABELH(1:5).EQ.'1DHAM' .OR. LABELH(1:5).EQ.'dh/dB') THEN
-C           WRITE (LUPRI,*) 'CC_GRAD2> IATOM,LABEL:',IATOM,LABEL
+            ! for derivative integrals use the DIRGRD flag to
+            ! switch between direct/non-direct mode
+            DIRECT = DIRGRD 
+
             ! set dorps.h common blocks... 
             ! this has to be adapted for symmetry...
-            SYM1ONLY = .TRUE.
+            SYM1ONLY = .FALSE.
             CALL CC_SETDORPS(LABELH,SYM1ONLY,0)
+
+            IF (LOCDBG) THEN
+               WRITE (LUPRI,'(A,I3,2X,A,2X,L3)') 
+     &           'CC_GRAD2> IATOM,LABEL,DIRECT:',IATOM,LABEL,DIRECT
+            END IF
+
             ! precalculate and sort derivative integrals for this atom
             IF (.NOT.DIRECT) THEN
               CALL CCDER1(IATOM,LABELH,LDERINT,WORK(KEND1),LWRK1)
             END IF
+         ELSE
+            DIRECT = DIRSAV
          END IF
 
          IF (DIRECT) THEN
@@ -654,10 +669,10 @@ C             ELSE
                  IF (LOCDBG) THEN
                    WRITE(LUPRI,*) 'call ERIDI2> ILLL = ',ILLL,NTOT
                    WRITE(LUPRI,*)'NGDER,NBDER,NFIL:',NGDER,NBDER,NFILES
-                   IF ((NGDER+NBDER).EQ.1) THEN
-                     INTPRI = .true.
-                     WRITE(LUPRI,*) 'INTPRI switched on:',INTPRI
-                   END IF
+C                  IF ((NGDER+NBDER).EQ.1) THEN
+C                    INTPRI = .true.
+C                    WRITE(LUPRI,*) 'INTPRI switched on:',INTPRI
+C                  END IF
                  END IF
                  CALL ERIDI2(ILLL,INDEXA,NUMDIS,NGDER,NBDER,
      *                       WORK(KODCL1),WORK(KODCL2),
@@ -684,14 +699,12 @@ C             END IF
               END IF
  
               CALL RDERILBS(WORK(KRECNR),WORK(KNRECS),NBUFMX,NFILES)
-CCH
+
               IF (LOCDBG) THEN
-              WRITE(LUPRI,*) 'NUMDIS,NBUFMX:',NUMDIS,NBUFMX
-              WRITE(LUPRI,*) 'INDEXA:',(INDEXA(I),I=1,NUMDIS)
-              ! WRITE(LUPRI,*) 'NBUFX:', NBUFX
-              CALL FLSHFO(LUPRI)
+                WRITE(LUPRI,*) 'NUMDIS,NBUFMX:',NUMDIS,NBUFMX
+                WRITE(LUPRI,*) 'INDEXA:',(INDEXA(I),I=1,NUMDIS)
+                CALL FLSHFO(LUPRI)
               END IF
-CCH
   
             ELSE
               NUMDIS = 1
@@ -713,7 +726,7 @@ C
                  IDEL  = IBAS(ISYMD1) + ILLL
                  ISYMD = ISYMD1
                END IF
-CCH
+
                IF (LOCDBG) THEN
                  WRITE(LUPRI,*) 'IATOM:',IATOM
                  WRITE(LUPRI,*) 'ILLL,NUMDIS:',ILLL,NUMDIS
@@ -722,14 +735,12 @@ CCH
                  WRITE(LUPRI,*) 'IDEL:',IDEL
                  WRITE(LUPRI,*) 'ISYMD:',ISYMD
                END IF
-CCH
 C
 C----------------------------------------
 C              Work space allocation two.
 C----------------------------------------
 C
                ISYDEN = ISYMD
-               ISYDNB = MULD2H(ISYDEN,ISYRLX)
 C
                KD2IJG = KEND1A
                KD2AIG = KD2IJG + ND2IJG(ISYDEN)
@@ -1004,7 +1015,7 @@ C
               LFOCK  = .TRUE.
               LSTRLX = LST1DXFCK(IDLST)
               IDXRLX = IRELAX1DX(IDLST)
-              ISYRLX = ILSTSYM(LSTRLX,IDXRLX)
+              ISYRLX = ILSTSYMRLX(LSTRLX,IDXRLX)
               ISYFCK = MULD2H(ISYMOPR,ISYRLX)
             END IF
             IF (LEXPEC.AND.LFOCK) THEN
@@ -1056,10 +1067,12 @@ C
       CALL WCLOSE2(LUFCK,FILFCK,'KEEP')
 C
 CCH  switch of print of integrals
-      INTPRI = .false.
+C     INTPRI = .false.
 CCH
 C
-C
+      ! restore the DIRECT flag 
+      DIRECT = DIRSAV
+
       CALL QEXIT('CC_GRAD2')
       RETURN
       END

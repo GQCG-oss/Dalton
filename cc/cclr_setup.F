@@ -117,6 +117,7 @@ c /* deck cclr_setup */
 
 * external functions:
       INTEGER IR1TAMP
+      INTEGER IR1KAPPA
       INTEGER IL1ZETA
       INTEGER IETA1
       INTEGER IEXPECT
@@ -196,7 +197,7 @@ c /* deck cclr_setup */
            IR1VECB = IR1TAMP(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
 C          IEATA1A =   IETA1(LABELA,LORXA,SIGN*ALRFR(IFREQ),IDUM)
            IF (LORXA) THEN
-             IKAPA = IR1TAMP(LABELA,LORXA,SIGN*ALRFR(IFREQ),IDUM)
+             IKAPA = IR1KAPPA(LABELA,SIGN*ALRFR(IFREQ),IDUM)
            ELSE
              IKAPA = 0
            END IF
@@ -214,19 +215,19 @@ C          IEATA1A =   IETA1(LABELA,LORXA,SIGN*ALRFR(IFREQ),IDUM)
               IR1VECA = IR1TAMP(LABELA,LORXA,SIGN*ALRFR(IFREQ),IDUM)
 C             IEATA1B =   IETA1(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
               IF (LORXB) THEN
-                IKAPB = IR1TAMP(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
+                IKAPB = IR1KAPPA(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
               ELSE
                 IKAPB = 0
               END IF
 
-              IF (.NOT.CIS) THEN
+              IF (CIS) THEN
+                 WF     = ZERO
+              ELSE
                  CALL CCQR_SETF(IFTRAN,IFDOTS,MXTRAN,MXVEC,
      &                          0,IR1VECA,IR1VECB,ITRAN,IVEC)
                  NFTRAN = MAX(NFTRAN,ITRAN)
                  MFVEC  = MAX(MFVEC, IVEC)
                  WF     = FCONS(IVEC,ITRAN)
-              ELSE
-                 WF     = ZERO
               END IF
 
               CALL CC_SETXE('Eta',IXETRAN,IEDOTS,MXTRAN,MXVEC,
@@ -262,11 +263,11 @@ C             IEATA1B =   IETA1(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
 
            IF (LORXB.OR.LPDBSB) THEN
 
-              IR1VECA = IR1TAMP(LABELA,LORXA,SIGN*ALRFR(IFREQ),IDUM)
-              IR1VECB = IR1TAMP(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
+              IKAPA = IR1KAPPA(LABELA,SIGN*ALRFR(IFREQ),IDUM)
+              IKAPB = IR1KAPPA(LABELB,SIGN*BLRFR(IFREQ),IDUM)
 
               CALL CC_SETDOT(IXITRAN,IXIDOTS,MXTRAN,MXVEC,
-     &                       IR1VECA,IR1VECB,ITRAN,IVEC)
+     &                       IKAPA,IKAPB,ITRAN,IVEC)
               NXITRAN = MAX(NXITRAN,ITRAN)
               MXIVEC  = MAX(MXIVEC, IVEC)
               WXI1    = WXI1 + XICONS(IVEC,ITRAN)
@@ -277,11 +278,11 @@ C             IEATA1B =   IETA1(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
 
            IF (LORXA.OR.LPDBSA) THEN
 
-              IR1VECA = IR1TAMP(LABELA,LORXA,SIGN*ALRFR(IFREQ),IDUM)
-              IR1VECB = IR1TAMP(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
+              IKAPA = IR1KAPPA(LABELA,SIGN*ALRFR(IFREQ),IDUM)
+              IKAPB = IR1KAPPA(LABELB,SIGN*BLRFR(IFREQ),IDUM)
 
               CALL CC_SETDOT(IXITRAN,IXIDOTS,MXTRAN,MXVEC,
-     &                       IR1VECB,IR1VECA,ITRAN,IVEC)
+     &                       IKAPB,IKAPA,ITRAN,IVEC)
               NXITRAN = MAX(NXITRAN,ITRAN)
               MXIVEC  = MAX(MXIVEC, IVEC)
               WXI2    = WXI2 + XICONS(IVEC,ITRAN)
@@ -294,11 +295,11 @@ C             IEATA1B =   IETA1(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
 *---------------------------------------------------------------------*
            IF ( (LPDBSA .AND. LORXB) .OR. (LPDBSB .AND. LORXA) ) THEN
 
-              IR1VECA = IR1TAMP(LABELA,LORXA,SIGN*ALRFR(IFREQ),IDUM)
-              IR1VECB = IR1TAMP(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
+              IKAPA = IR1KAPPA(LABELA,SIGN*ALRFR(IFREQ),IDUM)
+              IKAPB = IR1KAPPA(LABELB,SIGN*BLRFR(IFREQ),IDUM)
 
               CALL CC_SETDOT(IRTRAN,IRDOTS,MXTRAN,MXVEC,
-     &                       IR1VECB,IR1VECA,ITRAN,IVEC)
+     &                       IKAPB,IKAPA,ITRAN,IVEC)
               NRTRAN = MAX(NRTRAN,ITRAN)
               MXRVEC = MAX(MXRVEC,IVEC)
               WREO   = RCONS(IVEC,ITRAN)
@@ -338,6 +339,8 @@ C             IEATA1B =   IETA1(LABELB,LORXB,SIGN*BLRFR(IFREQ),IDUM)
               RESULT(IDX) = WXE1+WXE2+WF + WXI1+WXI2+WREO - WSTAT-WNUCL
 
               IF (LOCDBG) THEN
+                 WRITE (LUPRI,*) 'LABELA,LABELB:',LABELA,LABELB
+                 WRITE (LUPRI,*) 'IFREQ:',IFREQ
                  WRITE (LUPRI,*) 'IDX = ',IDX
                  WRITE (LUPRI,*) 'WSTAT,WNUCL:',WSTAT,WNUCL
                  WRITE (LUPRI,*) 'WXI1,WXI2,WREO:', WXI1, WXI2, WREO

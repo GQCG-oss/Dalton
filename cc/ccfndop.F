@@ -75,7 +75,7 @@ C
       LOGICAL FOUND, LOPNSAVE
       INTEGER LWORK, ISYSOP, INUM, IMATRIX, IERR, KPROPAO
       INTEGER KEND1, LWRK1, ISIGN
-      INTEGER ISYMA, ISYMB, INUMA, INUMB
+      INTEGER ISYMA, ISYMB, INUMA, INUMB, INUMAB
 
 #if defined (SYS_CRAY)
       REAL WORK(LWORK)
@@ -266,6 +266,11 @@ C
             INUMB   = IROPER(LABELB,ISYMB)
             ISYSOP  = MULD2H(ISYMA,ISYMB)
             IMATRIX = ISYMAT(INUMA) * ISYMAT(INUMB) 
+            IF (LOCDBG) THEN
+              WRITE(LUPRI,*) 'LABELA,ISYMA,INUMA:',LABELA,ISYMA,INUMA
+              WRITE(LUPRI,*) 'LABELB,ISYMB,INUMB:',LABELB,ISYMB,INUMB
+              WRITE(LUPRI,*) 'IMAT:',ISYMAT(INUMA),ISYMAT(INUMB)
+            END IF
          END IF
 
          IF (LOCDBG) THEN
@@ -293,6 +298,11 @@ C
 
          ! save symmetry of integral matrix on common blocks
          ISYMAT2(INUM) = IMATRIX
+
+         ! get index of operator on IROPER list and
+         ! set symmetry of integral matrix correct for this list:
+         INUMAB = IROPER(LABSOP,ISYSOP)
+         ISYMAT(INUMAB) = IMATRIX
 
          LOPR2OPN = LOPNSAVE
       ELSE

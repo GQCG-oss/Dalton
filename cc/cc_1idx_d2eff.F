@@ -51,6 +51,7 @@ C
 *           B2DHFAO --  DHFAO  with second  index transformed
 *           B2KABAO --  ZKABAO with second  index transformed
 *           ISYMQ   --  symmetry of B1DHFAO, B1KABAO, B2DHFAO, B2KABAO
+*           ISYM0   --  1, not passed, symetry of DHFAO and ZKABAO
 *
 *     Christof Haettig, March 1999, based on Asgers CC_D2EFF routine
 *
@@ -119,43 +120,61 @@ C     ------------------------------------------------------
 *     Add exchange terms:  
 *---------------------------------------------------------------------*
 
+
+C     --------------------------------
+C     - D^HF_alp,del D^zeta_gambar,bet 
+C     --------------------------------
+      ISYMA = MULD2H(ISYMD,ISYM0)
       ISYMB = MULD2H(ISYMG,ISYMQ)
-      ISYMA = MULD2H(ISYMD,ISYMQ)
-
       DO B = 1, NBAS(ISYMB)
-
          KOFFGB = IAODIS(ISYMG,ISYMB) + NBAS(ISYMG)*(B-1) + G
          KOFFAD = IAODIS(ISYMA,ISYMD) + NBAS(ISYMA)*(D-1) + 1
          KOFFAB = IAODIS(ISYMA,ISYMB) + NBAS(ISYMA)*(B-1) + 1
-
-C        --------------------------------
-C        - D^HF_alp,del D^zeta_gambar,bet 
-C        --------------------------------
          FAC2 = -B1KABAO(KOFFGB) * FACI
          CALL DAXPY(NBAS(ISYMA),FAC2,DHFAO(KOFFAD),1,
      &                               BAODEN(KOFFAB),1)
+       END DO
 
-C        --------------------------------
-C        - D^HF_alp,delbar D^zeta_gam,bet 
-C        --------------------------------
+C     --------------------------------
+C     - D^HF_alp,delbar D^zeta_gam,bet 
+C     --------------------------------
+      ISYMA = MULD2H(ISYMD,ISYMQ)
+      ISYMB = MULD2H(ISYMG,ISYM0)
+      DO B = 1, NBAS(ISYMB)
+         KOFFGB = IAODIS(ISYMG,ISYMB) + NBAS(ISYMG)*(B-1) + G
+         KOFFAD = IAODIS(ISYMA,ISYMD) + NBAS(ISYMA)*(D-1) + 1
+         KOFFAB = IAODIS(ISYMA,ISYMB) + NBAS(ISYMA)*(B-1) + 1
          FAC2 = -ZKABAO(KOFFGB) * FACI
          CALL DAXPY(NBAS(ISYMA),FAC2,B2DHFAO(KOFFAD),1,
      &                               BAODEN(KOFFAB),1)
+      END DO
 
-C        --------------------------------
-C        - D^zeta_alp,del D^HF_gambar,bet 
-C        --------------------------------
+C     --------------------------------
+C     - D^zeta_alp,del D^HF_gambar,bet 
+C     --------------------------------
+      ISYMA = MULD2H(ISYMD,ISYM0)
+      ISYMB = MULD2H(ISYMG,ISYMQ)
+      DO B = 1, NBAS(ISYMB)
+         KOFFGB = IAODIS(ISYMG,ISYMB) + NBAS(ISYMG)*(B-1) + G
+         KOFFAD = IAODIS(ISYMA,ISYMD) + NBAS(ISYMA)*(D-1) + 1
+         KOFFAB = IAODIS(ISYMA,ISYMB) + NBAS(ISYMA)*(B-1) + 1
          FAC2 = -B1DHFAO(KOFFGB) * FACI
          CALL DAXPY(NBAS(ISYMA),FAC2,ZKABAO(KOFFAD),1,
      &                               BAODEN(KOFFAB),1)
+      END DO
 
-C        --------------------------------
-C        - D^zeta_alp,delbar D^HF_gam,bet 
-C        --------------------------------
+C     --------------------------------
+C     - D^zeta_alp,delbar D^HF_gam,bet 
+C     --------------------------------
+      ISYMA = MULD2H(ISYMD,ISYMQ)
+      ISYMB = MULD2H(ISYMG,ISYM0)
+      DO B = 1, NBAS(ISYMB)
+         KOFFGB = IAODIS(ISYMG,ISYMB) + NBAS(ISYMG)*(B-1) + G
+         KOFFAD = IAODIS(ISYMA,ISYMD) + NBAS(ISYMA)*(D-1) + 1
+         KOFFAB = IAODIS(ISYMA,ISYMB) + NBAS(ISYMA)*(B-1) + 1
          FAC2 = -DHFAO(KOFFGB) * FACI
          CALL DAXPY(NBAS(ISYMA),FAC2,B2KABAO(KOFFAD),1,
      &                               BAODEN(KOFFAB),1)
-
       END DO
 
       RETURN

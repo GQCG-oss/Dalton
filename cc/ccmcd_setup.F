@@ -134,6 +134,7 @@ c /* deck ccmcd_setup */
 
 * external functions:
       INTEGER IR1TAMP
+      INTEGER IR1KAPPA
       INTEGER IPL1ZETA
       INTEGER ILRMAMP
       INTEGER IROPER
@@ -244,8 +245,8 @@ c
                  ITAMPB = IR1TAMP(LABELB,LORXB,ZERO,ISYMB)
                  IKAPA  = 0
                  IKAPB  = 0
-                 IF (LORXA) IKAPA = ITAMPA
-                 IF (LORXB) IKAPB = ITAMPB
+                 IF (LORXA) IKAPA = IR1KAPPA(LABELA,-EIGVAF,ISYMA) 
+                 IF (LORXB) IKAPB = IR1KAPPA(LABELB,ZERO,ISYMB) 
     
                  IF (LOCDBG) THEN
                     WRITE (LUPRI,*) 'CCMCD_SETUP> LABELA: ', LABELA, 

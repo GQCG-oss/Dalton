@@ -89,10 +89,20 @@ C
          LABELH = LBLOPR(IOPER)
          ISYOPH = ISYOPR(IOPER)
          LPDBS  = LPDBSOP(IOPER)
+         IF (LOCDBG) THEN
+           WRITE(LUPRI,*) 'CC_GET_RMAT> ORDER:',ORDER
+           WRITE(LUPRI,*) 'CC_GET_RMAT> IOPER,LABELH,ISYOPH,LPDBS:',
+     &                                  IOPER,LABELH,ISYOPH,LPDBS
+         END IF
       ELSE IF (ORDER.EQ.2) THEN
          LABELH = LBLOP2(IOPER,3)
          ISYOPH = ISYOP2(IOPER)
          LPDBS  = LPDBSOP2(IOPER)
+         IF (LOCDBG) THEN
+           WRITE(LUPRI,*) 'CC_GET_RMAT> ORDER:',ORDER
+           WRITE(LUPRI,*) 'CC_GET_RMAT> IOPER,LABELH,ISYOPH,LPDBS:',
+     &                                  IOPER,LABELH,ISYOPH,LPDBS
+         END IF
       ELSE
          WRITE (LUPRI,*) 'CC_GET_RMAT> illegal operator order:',ORDER
          CALL QUIT('CC_GET_RMAT> illegal value for operator order.')

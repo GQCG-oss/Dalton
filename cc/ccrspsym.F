@@ -146,6 +146,7 @@ c /* deck ccrspsym */
       INTEGER IRHSR2
       INTEGER IRHSR3
       INTEGER IRHSR4
+      INTEGER IR1KAPPA
       INTEGER IR1TAMP
       INTEGER IR2TAMP
       INTEGER IR3TAMP
@@ -174,6 +175,26 @@ c /* deck ccrspsym */
       
 
 *---------------------------------------------------------------------*
+* print header:
+*---------------------------------------------------------------------*
+      WRITE (LUPRI,'(3X,A,/)') '  '
+      WRITE (LUPRI,'(3X,A)')
+     *'*********************************************************'//
+     *'**********'
+      WRITE (LUPRI,'(3X,A)')
+     *'*                                                        '//
+     *'         *'
+      WRITE (LUPRI,'(3X,A)')
+     *'*<<<<<<<<   OUTPUT FROM PROPERTY AND SYMMETRY ANALYSIS   '//
+     *'>>>>>>>>>*'
+      WRITE (LUPRI,'(3X,A)')
+     *'*                                                        '//
+     *'         *'
+      WRITE (LUPRI,'(3X,A,/)')
+     *'*********************************************************'//
+     *'**********'
+
+*---------------------------------------------------------------------*
 * initializations
 *---------------------------------------------------------------------*
 * init number of response operators:
@@ -191,6 +212,9 @@ c /* deck ccrspsym */
       NL2LBL  = 0
       NL3LBL  = 0
       NL4LBL  = 0
+
+* init number of groud state response equations for kappa:
+      NLRTHFLBL = 0
 
 * init number of ground state response equations for projected zeta:
       NPL1LBL = 0
@@ -317,13 +341,13 @@ C          ----------------------------------------------------
       LOPR2OPN = .FALSE.  ! close list for extension
       LQUIET   = .FALSE.  ! warn if problems in IROPER2
 
-       IF (NRSOLBL.GT.0) THEN
-         WRITE(LUPRI,'(/A)') ' UNSORTED LIST OF REQUIRED OPERATORS:'
-         DO I = 1, NRSOLBL
-           WRITE(LUPRI,'(I5,3X,A8,2I5,L3,I5)') I, LBLOPR(I), 
-     &              ISYOPR(I), ISYMAT(I), LPDBSOP(I), IATOPR(I)
-         END DO
-       END IF
+      IF (LOCDBG .AND. NRSOLBL.GT.0) THEN
+        WRITE(LUPRI,'(/A)') ' UNSORTED LIST OF REQUIRED OPERATORS:'
+        DO I = 1, NRSOLBL
+          WRITE(LUPRI,'(I5,3X,A8,2I5,L3,I5)') I, LBLOPR(I), 
+     &             ISYOPR(I), ISYMAT(I), LPDBSOP(I), IATOPR(I)
+        END DO
+      END IF
 
       CALL CCLSTSORT('o1 ',IDUM, IDUM, RDUM, ISYOPR,LBLOPR,RDUM,IDUM,
      &                    LDUM, ISYOFO,  NRSOLBL, MAXOLBL, LDUM )
@@ -770,10 +794,8 @@ C          ----------------------------------------------------
 * request right hand side vector for first-order Lagrangian multiplier
 * response equations for all entries in the L1 and PL1 lists:
 *---------------------------------------------------------------------*
-
       DO IVEC = 1, NLRZLBL
         INUM=IETA1(LRZLBL(IVEC),LORXLRZ(IVEC),FRQLRZ(IVEC),ISYLRZ(IVEC))
-C       INUM=IETA1(LBLEL1(IVEC),.FALSE.,     FRQEL1(IVEC),ISYOEL1(IVEC))
       END DO
       DO IVEC = 1, NPL1LBL
         INUM=IETA1(LBLPL1(IVEC),LORXPL1(IVEC),FRQPL1(IVEC),ISYPL1(IVEC))
@@ -783,22 +805,35 @@ C       INUM=IETA1(LBLEL1(IVEC),.FALSE.,     FRQEL1(IVEC),ISYOEL1(IVEC))
 * request right hand side vector for first-order amplitude response 
 * equations for all entries in the R1 list:
 *---------------------------------------------------------------------*
-
       DO IVEC = 1, NLRTLBL
        INUM=IRHSR1(LRTLBL(IVEC),LORXLRT(IVEC),FRQLRT(IVEC),ISYLRT(IVEC))
       END DO
 
 *---------------------------------------------------------------------*
-* for all relaxed response amplitudes request corresponding effective
-* Fock matrix:
+* for all elements of the O1 and X1 lists request the corresponding
+* CPHF response equations:
 *---------------------------------------------------------------------*
-      ISYM0 = 1
-
-      DO IVEC = 1, NLRTLBL
-        IF (LORXLRT(IVEC)) THEN
-          INUM = IEFFFOCK(LRTLBL(IVEC),ISYLRT(IVEC),1)
-          INUM = IEFFFOCK('HAM0    ',  ISYM0,1)
+      DO IVEC = 1, NX1LBL
+        IF (LORXX1(IVEC)) THEN
+          INUM = IR1KAPPA(LBLX1(IVEC),FRQX1(IVEC),ISYX1(IVEC))
         END IF
+      END DO
+
+      DO IVEC = 1, NO1LBL
+        IF (LORXO1(IVEC)) THEN
+          INUM = IR1KAPPA(LBLO1(IVEC),FRQO1(IVEC),ISYO1(IVEC))
+        END IF
+      END DO
+
+*---------------------------------------------------------------------*
+* for all CPHF equations request RHS vectors:
+*---------------------------------------------------------------------*
+      IF (NLRTHFLBL.GT.0) THEN
+        INUM = IEFFFOCK('HAM0    ',1,1)
+      END IF
+
+      DO IVEC = 1, NLRTHFLBL
+        INUM = IEFFFOCK(LRTHFLBL(IVEC),ISYLRTHF(IVEC),1)
       END DO
 
 *=====================================================================*
@@ -930,226 +965,318 @@ C       INUM=IETA1(LBLEL1(IVEC),.FALSE.,     FRQEL1(IVEC),ISYOEL1(IVEC))
 
 * print sorted lists to output:
        IF (NRSOLBL.GT.0) THEN
-         WRITE(LUPRI,'(/A)') ' LIST OF REQUIRED PROPERTY OPERATORS:'
+         CALL AROUND('REQUESTED PROPERTY OPERATORS:')
+         WRITE(LUPRI,'(13X,A,/,13X,50("-"))')
+     &     'Index   Oper. Label  Symmetry  Transp.  PDBS  Atom'
          DO I = 1, NRSOLBL
-           WRITE(LUPRI,'(I5,3X,A8,2I5,L3)') 
-     &      I, LBLOPR(I), ISYOPR(I), ISYMAT(I), LPDBSOP(I)
+           WRITE(LUPRI,'(12X,I5,5X,A8,4X,I5,4X,I5,4X,L3,2X,I5)') 
+     &      I, LBLOPR(I), ISYOPR(I), ISYMAT(I), LPDBSOP(I),IATOPR(I)
          END DO
+         WRITE(LUPRI,'(13X,50("-"),//)')
        END IF
 
        IF (NEXPFCKLBL.GT.0) THEN
-         WRITE(LUPRI,'(/A)') ' LIST OF REQUIRED EXPECTATION VALUES:'
+         CALL AROUND('REQUESTED EXPECTATION VALUES:')
+         WRITE(LUPRI,'(23X,A,/,23X,29("-"))')
+     &     'Index   Oper. Label  Symmetry'
          DO I = 1, NEXPFCKLBL
-            IF (LEXPFCK(1,I)) WRITE(LUPRI,'(I5,3X,A8,I5)')
+            IF (LEXPFCK(1,I)) WRITE(LUPRI,'(22X,I5,5X,A8,4X,I5)')
      &             I, LBLEXPFCK(I), ISYEXPFCK(I)
          END DO
+         WRITE(LUPRI,'(23X,29("-"),//)')
        END IF
 
        IF (NEXPFCKLBL.GT.0) THEN
-         WRITE(LUPRI,'(/A)')
-     &         ' LIST OF REQUIRED EFFECTIVE FOCK MATRICES:'
+         CALL AROUND('REQUESTED EFFECTIVE FOCK MATRICES:')
+         WRITE(LUPRI,'(23X,A,/,23X,29("-"))')
+     &     'Index   Oper. Label  Symmetry'
          DO I = 1, NEXPFCKLBL
-            IF (LEXPFCK(2,I)) WRITE(LUPRI,'(I5,3X,A8,I5)')
+            IF (LEXPFCK(2,I)) WRITE(LUPRI,'(22X,I5,5X,A8,4X,I5)')
      &             I, LBLEXPFCK(I), ISYEXPFCK(I)
          END DO
+         WRITE(LUPRI,'(23X,29("-"),//)')
        END IF
 
        IF (N1DXFLBL.GT.0) THEN
-         WRITE(LUPRI,'(/A)')
-     &         ' LIST OF REQUIRED 1-IDX-TRAN EFF. FOCK M.:'
+         CALL AROUND('REQUESTED 1-IDX-TRAN EFF. FOCK M.:')
+         WRITE(LUPRI,'(22X,A,/,22X,32("-"))')
+     &     'Index   Oper. Label  Type  Index'
          DO I = 1, N1DXFLBL
-            WRITE(LUPRI,'(I5,3X,A8,1X,A3,I5)')
+            WRITE(LUPRI,'(21X,I5,5X,A8,6X,A3,I5)')
      &       I, LBL1DXFCK(I), LST1DXFCK(I), IRELAX1DX(I)
          END DO
+         WRITE(LUPRI,'(22X,32("-"),//)')
+       END IF
+
+       IF (NLRTHFLBL.GT.0) THEN
+         CALL AROUND('REQUESTED FIRST ORDER KAPPA VECTORS:')
+         WRITE(LUPRI,'(18X,A,/,18X,41("-"))')
+     &     'Index   Oper. Label   Sym.    Frequency'
+         DO I = 1, NLRTHFLBL
+           WRITE(LUPRI,'(18X,I4,6X,A8,I6,2X,1P,D15.6)') 
+     &            I, LRTHFLBL(I), ISYLRTHF(I), FRQLRTHF(I)
+         END DO
+         WRITE(LUPRI,'(18X,41("-"),//)')
        END IF
 
        IF (NO1LBL.GT.0) THEN
-         WRITE(LUPRI,'(/A)') ' LIST OF REQUIRED FIRST ORDER XI VECTORS:'
+         CALL AROUND('REQUESTED FIRST ORDER XI VECTORS:')
+         WRITE(LUPRI,'(13X,A,/,13X,50("-"))')
+     &     'Index   Oper. Label  relaxed  Sym.     Frequency'
          DO I = 1, NO1LBL
-           WRITE(LUPRI,'(I5,3X,A8,L3,I5,2X,1P,D15.6)') 
+           WRITE(LUPRI,'(13X,I4,6X,A8,5X,L3,I6,3X,1P,D15.6)') 
      &            I, LBLO1(I), LORXO1(I), ISYO1(I), FRQO1(I)
          END DO
+         WRITE(LUPRI,'(13X,50("-"),//)')
        END IF
 
        IF (NLRTLBL.GT.0) THEN
-         WRITE(LUPRI,'(/A)') ' LIST OF REQUIRED FIRST ORDER T VECTORS:'
+         CALL AROUND('REQUESTED FIRST ORDER T VECTORS:')
+         WRITE(LUPRI,'(13X,A,/,13X,50("-"))')
+     &     'Index   Oper. Label  relaxed  Sym.     Frequency'
          DO I = 1, NLRTLBL
-           WRITE(LUPRI,'(I5,3X,A8,L3,I5,2X,1P,D15.6)') 
+           WRITE(LUPRI,'(13X,I4,6X,A8,5X,L3,I6,3X,1P,D15.6)') 
      &            I, LRTLBL(I), LORXLRT(I), ISYLRT(I), FRQLRT(I)
          END DO
+         WRITE(LUPRI,'(13X,50("-"),//)')
        END IF
 
        IF (NX1LBL.GT.0) THEN
-         WRITE(LUPRI,'(/A)')' LIST OF REQUIRED FIRST ORDER ETA VECTORS:'
+         CALL AROUND('REQUESTED FIRST ORDER ETA VECTORS:')
+         WRITE(LUPRI,'(13X,A,/,13X,50("-"))')
+     &     'Index   Oper. Label  relaxed  Sym.     Frequency'
          DO I = 1, NX1LBL
-            WRITE(LUPRI,'(I5,3X,A8,L3,I5,2X,1P,D15.6)') 
+           WRITE(LUPRI,'(13X,I4,6X,A8,5X,L3,I6,3X,1P,D15.6)') 
      &            I, LBLX1(I), LORXX1(I), ISYX1(I), FRQX1(I)
          END DO
+         WRITE(LUPRI,'(13X,50("-"),//)')
        END IF
 
        IF (NLRZLBL.GT.0) THEN
-         WRITE(LUPRI,'(/A)')
-     &         ' LIST OF REQUIRED FIRST ORDER ZETA VECTORS:'
+         CALL AROUND('REQUESTED FIRST ORDER ZETA VECTORS:')
+         WRITE(LUPRI,'(13X,A,/,13X,50("-"))')
+     &     'Index   Oper. Label  relaxed  Sym.     Frequency'
          DO I = 1, NLRZLBL
-            WRITE(LUPRI,'(I5,3X,A8,L3,I5,2X,1P,D15.6)') 
+           WRITE(LUPRI,'(13X,I4,6X,A8,5X,L3,I6,3X,1P,D15.6)') 
      &            I, LRZLBL(I), LORXLRZ(I), ISYLRZ(I), FRQLRZ(I)
          END DO
+         WRITE(LUPRI,'(13X,50("-"),//)')
        END IF
 
        IF (NLRM.GT.0) THEN
-         WRITE(LUPRI,'(/A)')' LIST OF REQUIRED FIRST ORDER M-VECTORS:'
+         CALL AROUND('REQUESTED FIRST ORDER M-VECTORS:')
+         WRITE(LUPRI,'(15X,A,/,15X,50("-"))')
+     &     'Index   State Symmetry  Frequency'
          DO I = 1, NLRM   
-            WRITE(LUPRI,'(I5,3X,I8,I5,2X,1P,D15.6)') 
+            WRITE(LUPRI,'(14X,I5,6X,I8,I5,2X,1P,D15.6)') 
      &            I, ILRM(I), ISYLRM(I), FRQLRM(I)
          END DO
+         WRITE(LUPRI,'(15X,50("-"),//)')
        END IF
 
        IF (NLRCLBL.GT.0) THEN
-         WRITE(LUPRI,'(/A)')
-     &     ' LIST OF REQUIRED FIRST-ORDER RIGHT CAUCHY VECTORS:'
+         CALL AROUND(
+     &    'REQUESTED FIRST-ORDER RIGHT CAUCHY VECTORS:')
+         WRITE(LUPRI,'(15X,A,/,15X,50("-"))')
+     &     'Index   Oper. Label  Symmetry  Cauchy Order'
          DO I = 1, NLRCLBL
-            WRITE(LUPRI,'(I5,3X,A8,I5,2X,1P,I5)') 
+            WRITE(LUPRI,'(14X,I5,6X,A8,I5,2X,1P,I5)') 
      &            I, LRCLBL(I), ISYLRC(I), ILRCAU(I)
          END DO
+         WRITE(LUPRI,'(15X,50("-"),//)')
        END IF
 
        IF (NLC1LBL.GT.0) THEN
-         WRITE(LUPRI,'(/A)')
-     &     ' LIST OF REQUIRED FIRST-ORDER LEFT CAUCHY VECTORS:'
+         CALL AROUND(
+     &    'REQUESTED FIRST-ORDER LEFT CAUCHY VECTORS:')
+         WRITE(LUPRI,'(15X,A,/,15X,50("-"))')
+     &     'Index   Oper. Label  Symmetry  Cauchy Order'
          DO I = 1, NLC1LBL
-            WRITE(LUPRI,'(I5,3X,A8,I5,2X,1P,I5)') 
+            WRITE(LUPRI,'(14X,I5,6X,A8,I5,2X,1P,I5)') 
      &            I, LBLLC1(I), ISYLC1(I), ILC1CAU(I)
          END DO
+         WRITE(LUPRI,'(15X,50("-"),//)')
        END IF
 
        IF (NO2LBL.GT.0) THEN
-         WRITE(LUPRI,'(/A)')
-     &         ' LIST OF REQUIRED SECOND-ORDER XKSI VECTORS:'
+         CALL AROUND('REQUESTED SECOND-ORDER XKSI VECTORS:')
+         WRITE(LUPRI,'(5X,2A,/,5X,70("-"))')
+     &     'Index    Oper. Label  Symmetry  Frequency',
+     &           '   Oper. Label  Symmetry  Frequency  Symmetry'
          DO I = 1, NO2LBL
            WRITE(LUPRI,'(I5,2(3X,A8,I3,2X,1P,D15.6),I3)') 
      &            I, LBLAO2(I), ISYAO2(I), FRQAO2(I),
      &               LBLBO2(I), ISYBO2(I), FRQBO2(I),
      &            MULD2H(ISYAO2(I),ISYBO2(I))
          END DO
+         WRITE(LUPRI,'(5X,70("-"),//)')
        END IF 
 
        IF (NX2LBL.GT.0) THEN
-         WRITE(LUPRI,'(/A)')
-     &         ' LIST OF REQUIRED SECOND-ORDER ETA VECTORS:'
+         CALL AROUND('REQUESTED SECOND-ORDER ETA VECTORS:')
+         WRITE(LUPRI,'(5X,2A,/,5X,70("-"))')
+     &     'Index    Oper. Label  Symmetry  Frequency',
+     &           '   Oper. Label  Symmetry  Frequency  Symmetry'
          DO I = 1, NX2LBL
            WRITE(LUPRI,'(I5,2(3X,A8,I3,2X,1P,D15.6),I3)') 
      &            I, LBLAX2(I), ISYAX2(I), FRQAX2(I),
      &               LBLBX2(I), ISYBX2(I), FRQBX2(I),
      &            MULD2H(ISYAX2(I),ISYBX2(I))
          END DO
+         WRITE(LUPRI,'(5X,70("-"),//)')
        END IF
 
        IF (NR2TLBL.GT.0) THEN
-         WRITE(LUPRI,'(/A)') ' LIST OF REQUIRED SECOND-ORDER T VECTORS:'
+         CALL AROUND('REQUESTED SECOND-ORDER T VECTORS:')
+         WRITE(LUPRI,'(5X,2A,/,5X,70("-"))')
+     &     'Index    Oper. Label  Symmetry  Frequency',
+     &           '   Oper. Label  Symmetry  Frequency  Symmetry'
          DO I = 1, NR2TLBL
            WRITE(LUPRI,'(I5,2(3X,A8,I3,2X,1P,D15.6),I3)') 
      &            I, LBLAR2T(I), ISYAR2T(I), FRQAR2T(I),
      &               LBLBR2T(I), ISYBR2T(I), FRQBR2T(I),
      &            MULD2H(ISYAR2T(I),ISYBR2T(I))
          END DO
+         WRITE(LUPRI,'(5X,70("-"),//)')
        END IF
 
        IF (NL2LBL.GT.0) THEN
-         WRITE(LUPRI,'(/A)')
-     &         ' LIST OF REQUIRED SECOND-ORDER ZETA VECTORS:'
+         CALL AROUND('REQUESTED SECOND-ORDER ZETA VECTORS:')
+         WRITE(LUPRI,'(5X,2A,/,5X,70("-"))')
+     &     'Index    Oper. Label  Symmetry  Frequency',
+     &           '   Oper. Label  Symmetry  Frequency  Symmetry'
          DO I = 1, NL2LBL
            WRITE(LUPRI,'(I5,2(3X,A8,I3,2X,1P,D15.6),I3)') 
      &            I, LBLAL2(I), ISYAL2(I), FRQAL2(I),
      &               LBLBL2(I), ISYBL2(I), FRQBL2(I),
      &            MULD2H(ISYAL2(I),ISYBL2(I))
          END DO
+         WRITE(LUPRI,'(5X,70("-"),//)')
        END IF
 
        IF (NCR2LBL.GT.0) THEN
-         WRITE(LUPRI,'(/2A)') ' LIST OF REQUIRED SECOND-ORDER RIGHT',
-     &                    ' CAUCHY VECTORS:'
+         CALL AROUND('REQUESTED SECOND-ORDER RIGHT'//
+     &                    ' CAUCHY VECTORS:')
+         WRITE(LUPRI,'(5X,3A,/,5X,70("-"))')
+     &     'Index   Oper. Label  Symmetry  Cauchy Order',
+     &          '   Oper. Label  Symmetry  Cauchy Order',
+     &                        '  Symmetry  Cauchy Order'
          DO I = 1, NCR2LBL
            WRITE(LUPRI,'(I5,2(3X,A8,I3,2X,1P,I5),I3)') 
      &            I, LBLCR2(I,1), ISYCR2(I,1), ICR2CAU(I,1),
      &               LBLCR2(I,2), ISYCR2(I,2), ICR2CAU(I,2),
      &            MULD2H(ISYCR2(I,1),ISYCR2(I,2))
          END DO
+         WRITE(LUPRI,'(5X,70("-"),//)')
        END IF
 
        IF (NCO2LBL.GT.0) THEN
-         WRITE(LUPRI,'(/2A)') ' LIST OF REQUIRED SECOND-ORDER CAUCHY',
-     &                    ' XKSI VECTORS:'
+         CALL AROUND('REQUESTED SECOND-ORDER CAUCHY'//
+     &                    ' XKSI VECTORS:')
+         WRITE(LUPRI,'(5X,3A,/,5X,70("-"))')
+     &     'Index   Oper. Label  Symmetry  Cauchy Order',
+     &          '   Oper. Label  Symmetry  Cauchy Order',
+     &                        '  Symmetry  Cauchy Order'
          DO I = 1, NCO2LBL
            WRITE(LUPRI,'(I5,2(3X,A8,I3,2X,1P,I5),I3)') 
      &            I, LBLCO2(I,1), ISYCO2(I,1), ICO2CAU(I,1),
      &               LBLCO2(I,2), ISYCO2(I,2), ICO2CAU(I,2),
      &            MULD2H(ISYCO2(I,1),ISYCO2(I,2))
          END DO
+         WRITE(LUPRI,'(5X,70("-"),//)')
        END IF
 
        IF (NCL2LBL.GT.0) THEN
-         WRITE(LUPRI,'(/2A)') ' LIST OF REQUIRED SECOND-ORDER LEFT',
-     &                    ' CAUCHY VECTORS:'
+         CALL AROUND('REQUESTED SECOND-ORDER LEFT'//
+     &                    ' CAUCHY VECTORS:')
+         WRITE(LUPRI,'(5X,3A,/,5X,70("-"))')
+     &     'Index   Oper. Label  Symmetry  Cauchy Order',
+     &          '   Oper. Label  Symmetry  Cauchy Order',
+     &                        '  Symmetry  Cauchy Order'
          DO I = 1, NCL2LBL
            WRITE(LUPRI,'(I5,2(3X,A8,I3,2X,1P,I5),I3)') 
      &            I, LBLCL2(I,1), ISYCL2(I,1), ICL2CAU(I,1),
      &               LBLCL2(I,2), ISYCL2(I,2), ICL2CAU(I,2),
      &            MULD2H(ISYCL2(I,1),ISYCL2(I,2))
          END DO
+         WRITE(LUPRI,'(5X,70("-"),//)')
        END IF
 
        IF (NCX2LBL.GT.0) THEN
-         WRITE(LUPRI,'(/2A)') ' LIST OF REQUIRED SECOND-ORDER CAUCHY',
-     &                    ' ETA VECTORS:'
+         CALL AROUND('REQUESTED SECOND-ORDER CAUCHY'//
+     &                    ' ETA VECTORS:')
+         WRITE(LUPRI,'(5X,3A,/,5X,70("-"))')
+     &     'Index   Oper. Label  Symmetry  Cauchy Order',
+     &          '   Oper. Label  Symmetry  Cauchy Order',
+     &                        '  Symmetry  Cauchy Order'
          DO I = 1, NCX2LBL
            WRITE(LUPRI,'(I5,2(3X,A8,I3,2X,1P,I5),I3)') 
      &            I, LBLCX2(I,1), ISYCX2(I,1), ICX2CAU(I,1),
      &               LBLCX2(I,2), ISYCX2(I,2), ICX2CAU(I,2),
      &            MULD2H(ISYCX2(I,1),ISYCX2(I,2))
          END DO
+         WRITE(LUPRI,'(5X,70("-"),//)')
        END IF
 
        IF (NO3LBL.GT.0) THEN
-         WRITE(LUPRI,'(/A)')
-     &         ' LIST OF REQUIRED THIRD-ORDER XKSI VECTORS:'
+         CALL AROUND('REQUESTED THIRD-ORDER XKSI VECTORS:')
+         WRITE(LUPRI,'(5X,3A,/,5X,70("-"))')
+     &     'Index    Oper. Label  Symmetry  Frequency',
+     &           '   Oper. Label  Symmetry  Frequency',
+     &           '   Oper. Label  Symmetry  Frequency  Symmetry'
          DO I = 1, NO3LBL
            WRITE(LUPRI,'(I5,3(3X,A8,I3,2X,1P,D15.6),I3)') 
      &            I, (LBLO3(I,J), ISYO3(I,J), FRQO3(I,J), J=1, 3),
      &            ILSTSYM('O3',I)
          END DO
+         WRITE(LUPRI,'(5X,70("-"),//)')
        END IF
 
        IF (NR3TLBL.GT.0) THEN
-         WRITE(LUPRI,'(/A)')' LIST OF REQUIRED THIRD-ORDER T VECTORS:'
+         CALL AROUND('REQUESTED THIRD-ORDER T VECTORS:')
+         WRITE(LUPRI,'(5X,3A,/,5X,70("-"))')
+     &     'Index    Oper. Label  Symmetry  Frequency',
+     &           '   Oper. Label  Symmetry  Frequency',
+     &           '   Oper. Label  Symmetry  Frequency  Symmetry'
          DO I = 1, NR3TLBL
            WRITE(LUPRI,'(I5,3(3X,A8,I3,2X,1P,D15.6),I3)') 
      &            I, (LBLR3T(I,J), ISYR3T(I,J), FRQR3T(I,J), J=1, 3),
      &            ILSTSYM('R3',I)
          END DO
+         WRITE(LUPRI,'(5X,70("-"),//)')
        END IF
 
        IF (NX3LBL.GT.0) THEN
-         WRITE(LUPRI,'(/A)')' LIST OF REQUIRED THIRD-ORDER ETA VECTORS:'
+         CALL AROUND('REQUESTED THIRD-ORDER ETA VECTORS:')
+         WRITE(LUPRI,'(5X,3A,/,5X,70("-"))')
+     &     'Index    Oper. Label  Symmetry  Frequency',
+     &           '   Oper. Label  Symmetry  Frequency',
+     &           '   Oper. Label  Symmetry  Frequency  Symmetry'
          DO I = 1, NX3LBL
            WRITE(LUPRI,'(I5,3(3X,A8,I3,2X,1P,D15.6),I3)') 
      &            I, (LBLX3(I,J), ISYX3(I,J), FRQX3(I,J), J=1, 3),
      &            ILSTSYM('X3',I)
          END DO
+         WRITE(LUPRI,'(5X,70("-"),//)')
        END IF
 
        IF (NL3LBL.GT.0) THEN
-         WRITE(LUPRI,'(/A)')
-     &         ' LIST OF REQUIRED THIRD-ORDER ZETA VECTORS:'
+         CALL AROUND('REQUESTED THIRD-ORDER ZETA VECTORS:')
+         WRITE(LUPRI,'(5X,3A,/,5X,70("-"))')
+     &     'Index    Oper. Label  Symmetry  Frequency',
+     &           '   Oper. Label  Symmetry  Frequency',
+     &           '   Oper. Label  Symmetry  Frequency  Symmetry'
          DO I = 1, NL3LBL
            WRITE(LUPRI,'(I5,3(3X,A8,I3,2X,1P,D15.6),I3)') 
      &            I, (LBLL3(I,J), ISYL3(I,J), FRQL3(I,J), J=1, 3),
      &            ILSTSYM('L3',I)
          END DO
+         WRITE(LUPRI,'(5X,70("-"),//)')
        END IF
        
        IF (NER1LBL.GT.0) THEN
-         WRITE (LUPRI,'(/3X,2A)')' LIST OF REQUIRED FIRST-ORDER RIGHT',
-     &                 ' EIGENVECTOR RESPONSES:'
+         CALL AROUND('REQUESTED FIRST-ORDER RIGHT'//
+     &                 ' EIGENVECTOR RESPONSES:')
          WRITE (LUPRI,'(3x,69("-"),/3x,2A,/3x,69("-"))')
      &      'IDX STATE/SYM   EXC. ENERGY    OPE',
      &                  'RATOR/SYM    FREQUENCY    SYM R  P'
@@ -1160,12 +1287,13 @@ C       INUM=IETA1(LBLEL1(IVEC),.FALSE.,     FRQEL1(IVEC),ISYOEL1(IVEC))
      &             LBLER1(I), ISYOER1(I), FRQER1(I), ILSTSYM('ER1',I),
      &             LPRER1(I)
          END DO
-         WRITE(LUPRI,'(3x,69("-"),/)')
+         WRITE(LUPRI,'(3x,69("-"),//)')
        END IF
        
        IF (NER2LBL.GT.0) THEN
-         WRITE (LUPRI,'(/2A)') ' LIST OF REQUIRED SECOND-ORDER RIGHT',
-     &               ' EIGENVECTOR RESPONSES:'
+         CALL AROUND('REQUESTED SECOND-ORDER RIGHT'//
+     &               ' EIGENVECTOR RESPONSES:')
+         WRITE(LUPRI,'(3x,69("-"),/)')
          DO I = 1, NER2LBL
           WRITE (LUPRI,'(I5,3X,2I3,2X,1P,D15.6,2(3X,A8,I3,2X,1P,
      &           D15.6),I3,L3)')
@@ -1174,11 +1302,12 @@ C       INUM=IETA1(LBLEL1(IVEC),.FALSE.,     FRQEL1(IVEC),ISYOEL1(IVEC))
      &           LBLER2(I,2),ISYOER2(I,2),FRQER2(I,2),ILSTSYM('ER2',I),
      &           LPRER2(I)
          END DO
+         WRITE(LUPRI,'(3x,69("-"),//)')
        END IF
 
        IF (NEL1LBL.GT.0) THEN
-         WRITE (LUPRI,'(/3X,2A)') ' LIST OF REQUIRED FIRST-ORDER LEFT',
-     &                '  EIGENVECTOR RESPONSES:'
+         CALL AROUND('REQUESTED FIRST-ORDER LEFT'//
+     &                ' EIGENVECTOR RESPONSES:')
          WRITE (LUPRI,'(3x,69("-"),/3x,2A,/3x,69("-"))')
      &     'IDX STATE/SYM   EXC. ENERGY    OPE',
      &                  'RATOR/SYM    FREQUENCY    SYM R  P'
@@ -1189,12 +1318,13 @@ C       INUM=IETA1(LBLEL1(IVEC),.FALSE.,     FRQEL1(IVEC),ISYOEL1(IVEC))
      &             LBLEL1(I), ISYOEL1(I), FRQEL1(I), ILSTSYM('EL1',I),
      &             LORXEL1(I),LPREL1(I)
          END DO
-         WRITE(LUPRI,'(3x,69("-"),/)')
+         WRITE(LUPRI,'(3x,69("-"),//)')
        END IF
 
        IF (NEL2LBL.GT.0) THEN
-         WRITE (LUPRI,'(/2A)') ' LIST OF REQUIRED SECOND-ORDER LEFT',
-     &                '  EIGENVECTOR RESPONSES:'
+         CALL AROUND('REQUESTED SECOND-ORDER LEFT'//
+     &                ' EIGENVECTOR RESPONSES:')
+         WRITE(LUPRI,'(3x,69("-"))')
          DO I = 1, NEL2LBL
           WRITE (LUPRI,'(I5,3X,2I3,2X,1P,D15.6,2(3X,A8,I3,2X,1P,
      &           D15.6),I3,L3)')
@@ -1203,10 +1333,11 @@ C       INUM=IETA1(LBLEL1(IVEC),.FALSE.,     FRQEL1(IVEC),ISYOEL1(IVEC))
      &           LBLEL2(I,2),ISYOEL2(I,2),FRQEL2(I,2),ILSTSYM('EL2',I),
      &           LPREL2(I)
          END DO
+         WRITE(LUPRI,'(3x,69("-"),//)')
        END IF
        
        IF (NQRN2.GT.0) THEN
-         WRITE(LUPRI,'(/A)')' LIST OF REQUIRED N(i,f) VECTORS:'
+         CALL AROUND('REQUESTED N(i,f) VECTORS:')
          WRITE(LUPRI,'(/3x,69("-"),/3x,2A,/3x,69("-"))')
      &    'IDX STATE/SYM    EXC. ENERGY',
      &      '  STATE/SYM    EXC. ENERGY SYM'
@@ -1216,13 +1347,12 @@ C       INUM=IETA1(LBLEL1(IVEC),.FALSE.,     FRQEL1(IVEC),ISYOEL1(IVEC))
      &               IFN2(I), ISYFN2(I), FRQFN2(I),
      &            MULD2H(ISYIN2(I),ISYFN2(I))
          END DO
-         WRITE(LUPRI,'(3x,69("-"),/)')
+         WRITE(LUPRI,'(3x,69("-"),//)')
        END IF
 
        IF (NPL1LBL.GT.0) THEN
-         WRITE (LUPRI,'(/2A)') 
-     &                 ' LIST OF REQUIRED PROJECTED FIRST-ORDER',
-     &                 ' ZETA VECTORS:'
+         CALL AROUND('REQUESTED PROJECTED FIRST-ORDER ZETA VECTORS:')
+         WRITE(LUPRI,'(3x,69("-"))')
          DO I = 1, NPL1LBL
           WRITE (LUPRI,'(I5,3X,I3,I3,2X,1P,D15.6,3X,A8,I3,2X,1P,D15.6,
      &           I3,L3)')
@@ -1230,6 +1360,7 @@ C       INUM=IETA1(LBLEL1(IVEC),.FALSE.,     FRQEL1(IVEC),ISYOEL1(IVEC))
      &             LBLPL1(I), ISYPL1(I), FRQPL1(I), ISYPL1(I),
      &             LPRPL1(I)
          END DO
+         WRITE(LUPRI,'(3x,69("-"),//)')
        END IF
 
       RETURN
@@ -1966,24 +2097,22 @@ c /* deck cc_lrind */
             FREQB  = SIGN * BLRFR(IFREQ)
 
             INUM  = IR1TAMP(LABELB,LRLXB,FREQB,ISYMB)
-C           INUM  = IETA1(  LABELA,LRLXA,FREQA,ISYMA)
-            IF (CCSLV) INUM  = IL1ZETA(LABELB,LRLXB,FREQB,ISYMB)
+            IF (LRLXB.OR.LPDBSB) INUM = IETA1(LABELB,LRLXB,FREQB,ISYMB)
+            IF (CCSLV)        INUM  = IL1ZETA(LABELB,LRLXB,FREQB,ISYMB)
             IF (.NOT. ASYMSD) THEN
-               INUM  = IR1TAMP(LABELA,LRLXA,FREQA,ISYMA)
-C              INUM  = IETA1(  LABELB,LRLXB,FREQB,ISYMB)
-               IF (CCSLV) INUM  = IL1ZETA(LABELA,LRLXA,FREQA,ISYMA)
+              INUM = IR1TAMP(LABELA,LRLXA,FREQA,ISYMA)
+              IF (LRLXA.OR.LPDBSA) INUM=IETA1(LABELA,LRLXA,FREQA,ISYMA)
+              IF (CCSLV)         INUM=IL1ZETA(LABELA,LRLXA,FREQA,ISYMA)
             ELSE
                INUM  = IL1ZETA(LABELB,LRLXB,FREQB,ISYMB)
             ENDIF
 
 
             IF (LRLXB .OR. LPDBSB) THEN
-               INUM = IETA1(LABELB,LRLXB,FREQB,ISYMB)
                INUM = IEFFFOCK(LABELA,ISYMA,1)
                INUM =  IEXPECT(LABELA,ISYMA,1)
             END IF
             IF (LRLXA .OR. LPDBSA) THEN
-               INUM = IETA1(LABELA,LRLXA,FREQA,ISYMA)
                INUM = IEFFFOCK(LABELB,ISYMB,1)
                INUM =  IEXPECT(LABELB,ISYMB,1)
             END IF
@@ -2170,8 +2299,10 @@ c /* deck cc_qrind */
         LORXB   = LBQLRX(IOPER)
         LORXC   = LCQLRX(IOPER)
 
+        IF (LOCDBG) THEN
           WRITE(LUPRI,'(/2X,A,3(1X,A),A)')
      &     'CHECK TRIPLE:',LABELA, LABELB, LABELC
+        END IF
 
         IF ( IOPA.LT.0 .OR. IOPB.LT.0 .OR. IOPC.LT.0 ) THEN
           WRITE(LUPRI,'(/2X,7A,/2X,2A)')
@@ -4559,7 +4690,7 @@ C
 #include <ccr1rsp.h>
 #include <priunit.h>
  
-      LOGICAL LORX, LORXI,LEQV
+      LOGICAL LORX, LORXI
       INTEGER ISYM
 #if defined (SYS_CRAY)
       REAL FRQNEW,TOL
@@ -4612,6 +4743,80 @@ C
      &            'FRQNEW=FRQLRT:',(ABS(FRQNEW-FRQLRT(I)) .LT. TOL) 
         END DO
         IR1TAMP = -1
+      END IF
+
+      RETURN
+      END
+*=====================================================================*
+C  /* Deck ir1kappa */
+      INTEGER FUNCTION IR1KAPPA(NEWLBL,FRQNEW,ISYM)
+*---------------------------------------------------------------------*
+C
+C maintain the list of first order orbital responses
+C
+C   if vector is on the list return list index and set ISYM
+C   if vector is NOT on the list:
+C        LR1OPN=.true.  --> extend list, and return index
+C        LR1OPN=.false. --> return -1
+C
+C        NEWLBL -- operator label
+C        FRQNEW -- frequency (ignored for unrelaxed orbitals)
+C        ISYM   -- symmetry
+C
+C   Note that this list shares common block with IR1TAMP list
+C
+C Christof Haettig, July 2003
+C
+*---------------------------------------------------------------------*
+      IMPLICIT NONE
+#include <ccr1rsp.h>
+#include <priunit.h>
+ 
+      INTEGER ISYM
+#if defined (SYS_CRAY)
+      REAL FRQNEW,TOL
+#else
+      DOUBLE PRECISION FRQNEW,TOL
+#endif
+      PARAMETER(TOL=1.0D-12)
+
+      CHARACTER*8 NEWLBL
+      INTEGER I
+
+      DO I = 1,NLRTHFLBL
+         IF ( NEWLBL .EQ.  LRTHFLBL(I) .AND. 
+     *       (ABS(FRQNEW-FRQLRTHF(I)) .LT. TOL) ) THEN
+            IR1KAPPA = I
+            ISYM     = ISYLRTHF(IR1KAPPA)
+            RETURN
+         END IF
+      END DO  
+
+      IF (LR1OPN) THEN
+        NLRTHFLBL = NLRTHFLBL + 1
+
+        IF (NLRTHFLBL.GT.MAXTLBL) THEN
+          WRITE(LUPRI,'(A,/A,I5,A,I5)')
+     *    '@ NUMBER OF SPECIFIED EQUATIONS EXCEED THE MAXIMUM ALLOWED',
+     *    '@ MAXTLBL =',MAXTLBL,' NLRTHFLBL= ',NLRTHFLBL
+          CALL QUIT(' IR1KAPPA: TOO MANY EQUATIONS SPECIFIED')
+        END IF
+
+        LRTHFLBL(NLRTHFLBL) = NEWLBL
+        FRQLRTHF(NLRTHFLBL) = FRQNEW
+        ISYLRTHF(NLRTHFLBL) = ISYM
+        IR1KAPPA            = NLRTHFLBL
+
+      ELSE
+        WRITE(LUPRI,'(/3A,1P,D12.5,2A)')
+     *   '@ WARNING: R1 KAPPA VECTOR FOR ',NEWLBL,'(',FRQNEW,')',
+     *                  ' IS NOT AVAILABLE.'
+        WRITE(LUPRI,'(/A)') ' LIST OF FIRST-ORDER KAPPA VECTORS:'
+        DO I = 1, NLRTHFLBL
+           WRITE(LUPRI,'(I5,3X,A8,L3,I5,2X,1P,D15.6)') 
+     &            I, LRTHFLBL(I), ISYLRTHF(I), FRQLRTHF(I)
+        END DO
+        IR1KAPPA = -1
       END IF
 
       RETURN
@@ -5627,6 +5832,61 @@ C        WRITE (LUPRI,*) LIST(-999999:-999999)
       IF (ILSTSYM.LT.1 .OR. ILSTSYM.GT.NSYM) THEN
         WRITE (LUPRI,*) 'warning from ILSTSYM: symmetry out of range:'
         WRITE (LUPRI,*) 'LIST,INDEX,ILSTSYM:',LIST(1:3),INDEX,ILSTSYM
+      END IF
+
+      RETURN
+      END
+*=====================================================================*
+*=====================================================================*
+C  /* Deck ilstsymrlx */
+*=====================================================================*
+      INTEGER FUNCTION ILSTSYMRLX(LIST,INDEX)
+*---------------------------------------------------------------------*
+* PURPOSE: get symmetry for orbital relaxation vector on list
+*
+*          LIST : list type
+*          INDEX: index of the vector on the list
+*
+* Christof Haettig, November 1996
+* PL1 introduced Sonia
+*=====================================================================*
+      IMPLICIT NONE
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccr1rsp.h>
+
+      CHARACTER*(3) LIST
+      INTEGER INDEX
+      LOGICAL LEOOR
+
+      LEOOR = .FALSE.
+
+* begin:
+      IF (LIST(1:2).EQ.'o1') THEN
+         CALL QUIT('Illegal list in ILSTSYMRLX.')
+      ELSE IF (LIST(1:2).EQ.'R1') THEN
+         IF (INDEX.LE.0 .OR. INDEX.GT.NLRTHFLBL) LEOOR = .TRUE.
+         ILSTSYMRLX = ISYLRTHF(INDEX)
+      ELSE
+         WRITE(LUPRI,*) 'Unknown LIST in ILSTSYM:"',LIST(1:3),'"'
+C to force a core dump:
+C        WRITE (LUPRI,*) LIST(999999:999999)
+         CALL QUIT('Unknown LIST in ILSTSYM.')
+      END IF
+
+      IF (LEOOR) THEN  
+        WRITE (LUPRI,*) 'INDEX out of range in ILSTSYMRLX:'
+        WRITE (LUPRI,*) 'LIST,INDEX:',LIST(1:3),INDEX
+C to force a core dump:
+C        WRITE (LUPRI,*) LIST(-999999:-999999)
+        CALL QUIT('INDEX out of range in ILSTSYMRLX.')
+      END IF
+
+      IF (ILSTSYMRLX.LT.1 .OR. ILSTSYMRLX.GT.NSYM) THEN
+        WRITE (LUPRI,*) 
+     &    'warning from ILSTSYMRLX: symmetry out of range:'
+        WRITE (LUPRI,*) 'LIST,INDEX,ILSTSYMRLX:',
+     &    LIST(1:3),INDEX,ILSTSYMRLX
       END IF
 
       RETURN

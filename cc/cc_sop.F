@@ -134,8 +134,8 @@ c /* deck CC_SOP */
 *---------------------------------------------------------------------*
       NBSOP = NLROP * NBLRFR
 
-      MXTRAN  = NLRTLBL
-      MXVEC   = NLRTLBL
+      MXTRAN  = MAX(NLRTLBL,NLRTHFLBL)
+      MXVEC   = MAX(NLRTLBL,NLRTHFLBL)
 
       MXFTRAN  = MXDIM_FTRAN * MXTRAN
       MXXITRAN = 1 * MXTRAN
@@ -273,6 +273,25 @@ c /* deck CC_SOP */
 
       CALL FLSHFO(LUPRI)
 
+*---------------------------------------------------------------------*
+* print dipole gradients and APT (Cioslowski) population analysis
+*---------------------------------------------------------------------*
+      IF (IDIGRA .GT. 0) THEN
+         IF (CCS) THEN
+            CALL AROUND('CCS Dipole Gradients')
+         ELSE IF (CC2) THEN
+            CALL AROUND('CC2 Dipole Gradients')
+         ELSE IF (CC3) THEN
+            CALL AROUND('CC3 Dipole Gradients')
+         ELSE IF (CCSD) THEN
+            CALL AROUND('CCSD Dipole Gradients')
+         ELSE
+            CALL QUIT('CC_SOP called for unknown Coupled Cluster.')
+         END IF
+         LEND0 = LWORK - KFTRAN + 1
+         CALL CCDIPGRAPR(WORK(KRESULT),WORK(KFTRAN),LEND0)
+      ENDIF
+
 C     IF (NQRDISP.EQ.0) THEN
         RETURN
 C     END IF
@@ -303,6 +322,7 @@ c /* deck ccsopprt */
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdinp.h>
+       LOGICAL DIPGRA
 #include <cclrinf.h>
 #include <ccroper.h>
 
@@ -628,3 +648,212 @@ c /* deck ccsopprt */
 *---------------------------------------------------------------------*
 *              END OF SUBROUTINE CCSOPPRT                             *
 *---------------------------------------------------------------------*
+C  /* Deck ccdipgrapr */
+      SUBROUTINE CCDIPGRAPR(SOPROP,WORK,LWORK)
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <abainf.h>
+#include <mxcent.h>
+#include <nuclei.h>
+#include <ccorb.h>
+#include <cclrinf.h>
+#include <ccroper.h>
+
+      DIMENSION SOPROP(NBLRFR,NLROP,2)
+      DIMENSION WORK(LWORK)
+
+      LOGICAL DOSYMS(8)
+
+      CHARACTER*10 SECNAM
+      PARAMETER (SECNAM = 'CCDIPGRAPR')
+
+C     Return if nothing to do.
+C     ------------------------
+
+      IF (IDIGRA .LE. 0) RETURN
+
+C     Set DOSYM for abacus printing.
+C     ------------------------------
+
+      DO I = 1,8
+         DOSYMS(I) = DOSYM(I)
+         DOSYM(I)  = .TRUE.
+      END DO
+
+C     Allocation.
+C     -----------
+
+      NCOOR  = 3*NUCDEP
+      NDIGRA = NCOOR*3
+
+      KDIGRA = 1
+      KCSTRA = KDIGRA + NDIGRA*NBLRFR
+      KSCTRA = KCSTRA + NCOOR*NCOOR
+      KEND   = KSCTRA + NCOOR*NCOOR
+      LWRK   = LWORK  - KEND + 1
+
+      KSCR  = KCSTRA
+      KEND0 = KSCR  + NDIGRA
+      LWRK0 = LWORK - KCSTRA + 1
+
+      LTST = MIN(LWRK,LWRK0)
+      IF (LTST .LT. 0) CALL QUIT('Insuf. mem. in '//SECNAM)
+
+C     Extract dipole gradients (APTs).
+C     --------------------------------
+
+      CALL CC_GETDGR(SOPROP,WORK(KDIGRA),IDIGRA)
+
+C     Transpose the APTs.
+C     -------------------
+
+      CALL CCTRSP12(WORK(KDIGRA),3*NUCDEP,3,NBLRFR,WORK(KSCR),NDIGRA)
+
+C     Print.
+C     ------
+
+      DO IFREQ = 1,NBLRFR
+         IF (ABS(BLRFR(IFREQ)) .GT. 1.0D-8) THEN
+            WRITE(LUPRI,'(/,8X,A)')
+     &      'NB: APTs for non-zero frequency follows!!'
+            WRITE(LUPRI,'(8X,A,1P,D14.6,A,/)')
+     &      'Frequency: ',BLRFR(IFREQ),' Hartree'
+         END IF
+         KOFF = KDIGRA + NDIGRA*(IFREQ - 1)
+         CALL FCPRI(WORK(KOFF),'APT',WORK(KCSTRA),WORK(KSCTRA)) 
+         CALL APTPOP(WORK(KOFF),WORK(KEND),
+     &               WORK(KCSTRA),WORK(KSCTRA),
+     &               WORK(KEND),WORK(KEND),LWRK)
+      END DO
+
+C     Restore DOSYM.
+C     --------------
+
+      DO I = 1,8
+         DOSYM(I) = DOSYMS(I)
+      END DO
+
+      RETURN
+      END
+C  /* Deck cctrsp12 */
+      SUBROUTINE CCTRSP12(XMAT,N1,N2,N3,SCR,LSCR)
+C
+#include <implicit.h>
+      DIMENSION XMAT(N1*N2*N3)
+      DIMENSION SCR(LSCR)
+
+      N12 = N1*N2
+      IF (N12*N3 .LE. 0) RETURN
+      IF (LSCR .LT. N12) CALL QUIT('Insufficient memory in CCTRSP12')
+
+      DO I3 = 1,N3
+
+         KOFFX = N12*(I3 - 1) + 1
+         CALL DCOPY(N12,XMAT(KOFFX),1,SCR,1)
+
+         DO I2 = 1,N2
+            DO I1 = 1,N1
+               I12 = N1*(I2 - 1) + I1
+               I21 = N2*(I1 - 1) + I2
+               XMAT(KOFFX+I21-1) = SCR(I12)
+            END DO
+         END DO
+
+      END DO
+
+      RETURN
+      END
+C  /* Deck cc_getdgr */
+      SUBROUTINE CC_GETDGR(SOPROP,PROP,IPROP)
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <ccorb.h>
+#include <cclrinf.h>
+#include <ccroper.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <maxaqn.h>
+#include <symmet.h>
+#include <chrxyz.h>
+#include <nuclei.h>
+
+      DIMENSION SOPROP(NBLRFR,NLROP,2)
+      DIMENSION PROP(3*NUCDEP,3,NBLRFR)
+      INTEGER   IDIP(3)
+
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG = .FALSE.)
+
+      IOFFAX = 0
+      DO IREP = 0,MAXREP
+
+         NAXIS = NAXREP(IREP,1)
+
+         IF (LOCDBG) THEN
+            WRITE (LUPRI,*) 'IPTXYZ: ',
+     &      (IPTXYZ(I,IREP,1), I=1,NAXIS)
+         END IF
+
+         DO I = 1,NAXIS 
+            IDIP(IPTXYZ(I,IREP,1)) = IOFFAX + I 
+         END DO
+
+         IOFFAX = IOFFAX + NAXIS
+
+         IF (LOCDBG) THEN
+            WRITE (LUPRI,'(23X,3(2A,13X))')
+     &      ('E',CHRXYZ(-IPTXYZ(I,IREP,1)),I=1,NAXIS)
+            WRITE(LUPRI,*) 'Temporary IDIP for sym. ',IREP+1,':'
+            WRITE(LUPRI,*) (IDIP(IPTXYZ(I,IREP,1)), I=1,NAXIS)
+         END IF
+
+      END DO
+
+      IF (LOCDBG) THEN
+         WRITE(LUPRI,*) 'Final IDIP: ',(IDIP(I),I=1,3)
+      ENDIF
+
+      IOPER = IPROP - 1
+      DO IAXIS = 1,3
+         DO ICOOR = 1,3*NUCDEP
+
+            IOPER = IOPER + 1
+
+            ISYMA = ISYOPR(IALROP(IOPER))
+            ISYMB = ISYOPR(IBLROP(IOPER))
+
+            ISAMA = ISYMAT(IALROP(IOPER))
+            ISAMB = ISYMAT(IBLROP(IOPER))
+
+            ISAPROP = ISAMA * ISAMB
+            SIGN    = DBLE(ISAPROP)
+            IF (ISAPROP.EQ.0) SIGN = +ONE
+
+            IF (ISYMA.EQ.ISYMB) THEN
+               DO IFREQ = 1,NBLRFR
+                  PROP(ICOOR,IDIP(IAXIS),IFREQ) = 
+     &            -0.5D0*(SOPROP(IFREQ,IOPER,1)
+     &            + SIGN* SOPROP(IFREQ,IOPER,2))
+               END DO
+            ELSE
+               DO IFREQ = 1,NBLRFR
+                  PROP(ICOOR,IDIP(IAXIS),IFREQ) = 0.0D0
+               END DO
+            END IF
+
+            IF (LOCDBG) THEN
+               WRITE(LUPRI,*) 'LABELA,LABELB: ',
+     &                   LBLOPR(IALROP(IOPER)),',',LBLOPR(IBLROP(IOPER))
+               DO IFREQ = 1,NBLRFR
+                  WRITE(LUPRI,*) '   ICOOR,IAXIS,FREQ,LR: ',
+     &            ICOOR,IAXIS,BLRFR(IFREQ),PROP(ICOOR,IDIP(IAXIS),IFREQ)
+               END DO
+            END IF
+
+         END DO
+      END DO
+
+      RETURN
+      END

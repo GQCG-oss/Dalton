@@ -368,10 +368,8 @@ C-------------------------------------------------------------------
      &                         FREQA,WORK(KCMO),WORK(KEND2),LWRK2)
 
                  IF (LRLXB) THEN
-                    IOPT = 1
-                    IKAPPA = IR1TAMP(LABELB,LRLXB,FREQB,ISYMB)
-                    CALL CC_RDHFRSP('R1',IKAPPA,ISYMB,IOPT,MODEL,
-     &                              WORK(KAPB))
+                    IKAPPA = IR1KAPPA(LABELB,FREQB,ISYMB)
+                    CALL CC_RDHFRSP('R1 ',IKAPPA,ISYMB,WORK(KAPB))
                  ELSE
                     CALL DZERO(WORK(KAPB),2*NALLAI(ISYMB))
                  END IF
@@ -477,10 +475,8 @@ C-------------------------------------------------------------------
      &                         FREQB,WORK(KCMO),WORK(KEND2),LWRK2)
 
                  IF (LRLXA) THEN
-                    IOPT = 1
-                    IKAPPA = IR1TAMP(LABELA,LRLXA,FREQA,ISYMA)
-                    CALL CC_RDHFRSP('R1',IKAPPA,ISYMA,IOPT,MODEL,
-     &                              WORK(KAPA))
+                    IKAPPA = IR1KAPPA(LABELA,FREQA,ISYMA)
+                    CALL CC_RDHFRSP('R1 ',IKAPPA,ISYMA,WORK(KAPA))
                  ELSE
                     CALL DZERO(WORK(KAPA),2*NALLAI(ISYMA))
                  END IF
@@ -623,28 +619,26 @@ C
                NSCF = NSCF + 1
                KPRP = KPOLSCF + IOFSGN + NBLRFR*(IOPER-1) + IFREQ - 1
 
-               IDXR = IR1TAMP(LABELA,LRLXA,+FREQA,ISYMA)
-               CALL CC_GETHFGD(IDXR,'R1 ',LRTLBL,IDUM,IDUM,RDUM,
-     *                         ISYLRT,FRQLRT,LORXLRT,IDUM,NLRTLBL,
+               IDXR = IR1KAPPA(LABELA,LRLXA,+FREQA,ISYMA)
+               CALL CC_GETHFGD(IDXR,'R1 ',LRTHFLBL,IDUM,IDUM,RDUM,
+     *                         ISYLRTHF,FRQLRTHF,IDUM,NLRTHFLBL,
      *                         MAXTLBL,IREAL,WORK(KCMO),WORK(KUDV),
      *                         WORK(KXINDX),FRVAL,WORK(KG1),LWRKG1)
 
-               IOPT = 1
-               IDXR = IR1TAMP(LABELB,LRLXB,+FREQB,ISYMB)
-               CALL CC_RDHFRSP('R1',IDXR,ISYMB,IOPT,MODEL,WORK(KAPPA1))
+               IDXR = IR1KAPPA(LABELB,+FREQB,ISYMB)
+               CALL CC_RDHFRSP('R1 ',IDXR,ISYMB,WORK(KAPPA1))
 
                XRLXAB=DDOT(2*NALLAI(ISYMB),WORK(KAPPA1),1,WORK(KG1),1)
 
 
-               IDXR = IR1TAMP(LABELB,LRLXB,+FREQB,ISYMB)
-               CALL CC_GETHFGD(IDXR,'R1 ',LRTLBL,IDUM,IDUM,RDUM,
-     *                         ISYLRT,FRQLRT,LORXLRT,IDUM,NLRTLBL,
+               IDXR = IR1KAPPA(LABELB,LRLXB,+FREQB,ISYMB)
+               CALL CC_GETHFGD(IDXR,'R1 ',LRTHFLBL,IDUM,IDUM,RDUM,
+     *                         ISYLRTHF,FRQLRTHF,IDUM,NLRTHFLBL,
      *                         MAXTLBL,IREAL,WORK(KCMO),WORK(KUDV),
      *                         WORK(KXINDX),FRVAL,WORK(KG1),LWRKG1)
 
-               IOPT = 1
-               IDXR = IR1TAMP(LABELA,LRLXA,+FREQA,ISYMA)
-               CALL CC_RDHFRSP('R1',IDXR,ISYMA,IOPT,MODEL,WORK(KAPPA1))
+               IDXR = IR1KAPPA(LABELA,+FREQA,ISYMA)
+               CALL CC_RDHFRSP('R1 ',IDXR,ISYMA,WORK(KAPPA1))
 
                XRLXBA=DDOT(2*NALLAI(ISYMA),WORK(KAPPA1),1,WORK(KG1),1)
 
@@ -653,8 +647,8 @@ C
                ERROR = XRLXBA - DBLE(ISAPROP) * XRLXAB
 
                IF (LOCDBG.OR.DABS(ERROR).GT.THRLEQ.OR.IPRINT.GT.1) THEN
-                  WRITE (LUPRI,*) 'CC_LR>', LABELA,FREQA,LABELB,FREQB
-                  WRITE (LUPRI,*) 'CC_LR> ',XRLXAB ,XRLXBA, ERROR, THRLEQ
+                  WRITE (LUPRI,*)'CC_LR>', LABELA,FREQA,LABELB,FREQB
+                  WRITE (LUPRI,*)'CC_LR> ',XRLXAB,XRLXBA,ERROR,THRLEQ
                   IF (ERROR.GT.THRLEQ) THEN
                      WRITE (LUPRI,*) 
      *                     'Warning: large errors in SCF second-',
@@ -861,7 +855,7 @@ C
      *            'the non-symmetric CC parametrization.'
               ELSE IF (ISAPROP .EQ. -1) THEN
                 WRITE(LUPRI,'(1X,2A,/1X,2A)') 
-     *            'the anitsymmetric contribution corresponds to ',
+     *            'the antisymmetric contribution corresponds to ',
      *            'the imaginary part of the physical result,',
      *            'the symmetric contribution is an artifact of ',
      *            'the non-symmetric CC parametrization.'
@@ -891,8 +885,8 @@ C
      *                   BLRFR(IFREQ),BLRFR(IFREQ),BLRFR(IFREQ),ISYMAB)
          END DO
 
-         IF (DIPPOL.AND.(LABELA(2:4).EQ.'DIP')
-     *             .AND.(LABELB(2:4).EQ.'DIP')) THEN
+         IF (DIPPOL.AND.(LABELA(2:7).EQ.'DIPLEN')
+     *             .AND.(LABELB(2:7).EQ.'DIPLEN')) THEN
            DO 6000 IFREQ = 1, NBLRFR
              KPRP1P = KPOL +          NBLRFR*(IOPER-1) + IFREQ - 1
              KPRP1M = KPOL + NLRPRP + NBLRFR*(IOPER-1) + IFREQ - 1

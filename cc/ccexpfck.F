@@ -94,13 +94,14 @@ C
 
 * external functions:
       INTEGER IROPER
-      INTEGER ILSTSYM
+      INTEGER ILSTSYM, ILSTSYMRLX
 #if defined (SYS_CRAY)
       REAL DDOT
 #else
       DOUBLE PRECISION DDOT
 #endif
 
+      CALL QENTER('EFFFOCK1')
 *---------------------------------------------------------------------*
 * if LOCDBG set, print some debug output:
 *---------------------------------------------------------------------*
@@ -197,12 +198,17 @@ C
            LFOCK  = .TRUE.                  ! flag for eff. Fock mat.
            LSTRLX = LST1DXFCK(IDLST)        ! list type for relx. vec.
            IDXRLX = IRELAX1DX(IDLST)        ! list index for relx. vec.
-           ISYRLX = ILSTSYM(LSTRLX,IDXRLX)  ! symmetry of relx. vec.
+           ISYRLX = ILSTSYMRLX(LSTRLX,IDXRLX)  ! symmetry of relx. vec.
            ISYFCK = MULD2H(ISYMOPR,ISYRLX)  ! symmetry of eff Fock mat.
 
            ! initialize IADR1DXF
            IADR1DXF(1,IDLST) = 0
            IADR1DXF(2,IDLST) = 0
+           IF (LOCDBG) THEN
+             WRITE(LUPRI,*)'CCEFFFOCK1> I1DXORD=1'
+             WRITE(LUPRI,*)'LABEL,IOPER:',LABEL,IOPER
+             WRITE(LUPRI,*)'LSTRLX,IDXRLX,ISYRLX:',LSTRLX,IDXRLX,ISYRLX
+           END IF
         ELSE
            CALL QUIT('Illegal value of I1DXORD in CCEFFFOCK1.')
         END IF                                            
@@ -288,16 +294,14 @@ c       CALL CC_PRONELAO(WORK(K1INT),ISYMOPR)
 
          ! retrieve orbital relaxation vector
          IF (IDXRLX.GE.1) THEN
-           IOPT = 1
-           CALL CC_RDHFRSP(LSTRLX,IDXRLX,ISYRLX,IOPT,MODEL,
-     &                     WORK(KKAPPA))
+           CALL CC_RDHFRSP(LSTRLX,IDXRLX,ISYRLX,WORK(KKAPPA))
          ELSE
            CALL DZERO(WORK(KKAPPA),2*NALLAI(ISYRLX))
          END IF
 
          ! retrieve orbital connection matrix
          IF (LSTRLX(1:2).EQ.'R1') THEN
-            IOPRMAT = IROPER(LRTLBL(IDXRLX),ISYRMAT)
+            IOPRMAT = IROPER(LRTHFLBL(IDXRLX),ISYRMAT)
          ELSE
             WRITE (LUPRI,*) 'IOPRMAT problem in CCEFFFOCK1.'
             CALL QUIT('IOPRMAT problem in CCEFFFOCK1.')
@@ -329,6 +333,7 @@ c       CALL CC_PRONELAO(WORK(K1INT),ISYMOPR)
      &       DDOT(N2BST(ISYM0),WORK(KAODSY),1,WORK(KAODSY),1)
            WRITE (LUPRI,*) 'norm^2(kbaodsy):',
      &       DDOT(N2BST(ISYRLX),WORK(KBAODSY),1,WORK(KBAODSY),1)
+           CALL FLSHFO(LUPRI)
          END IF
       END IF                        
 
@@ -416,6 +421,7 @@ c            CALL CC_PRONELAO(WORK(K1INT),ISYFCK)
       ! close file for effective Fock matrices
       CALL WCLOSE2(LUFCK,FILFCK,'KEEP')
 
+      CALL QEXIT('EFFFOCK1')
       RETURN
       END
 *=====================================================================*
@@ -515,6 +521,7 @@ c            CALL CC_PRONELAO(WORK(K1INT),ISYFCK)
          WRITE (LUPRI,*) 'entered CCEFFFOCK2... I1DXORD = ',I1DXORD
          WRITE (LUPRI,*) 'LABEL,LEXPEC,LFOCK:',LABEL,LEXPEC,LFOCK
          WRITE (LUPRI,*) 'ICORSY,ISYRLX,ISYMOPR:',ICORSY,ISYRLX,ISYMOPR
+         WRITE (LUPRI,*) 'ISCOOR,ICOOR:',ISCOOR,ICOOR
          WRITE (LUPRI,*) 'ISYMG,ISYMD:',ISYMG,ISYMD
          WRITE (LUPRI,*) 'ISYFCK,ISYDEN:',ISYFCK,ISYDEN
       END IF
@@ -603,7 +610,7 @@ c      WRITE(LUPRI,*)'returned from CC_RDAOD...'
 *---------------------------------------------------------------------*
 * backtransform last remaining 2 indeces 2e- density to AO basis:
 *---------------------------------------------------------------------*
-      IF (NSYM.EQ.1) THEN
+C     IF (NSYM.EQ.1) THEN
         CALL DZERO(WORK(KAODEN),N2BST(ISYMPQ))
         CALL CC_DENAO(WORK(KAODEN),ISYMPQ,
      *                D2GAI,D2GAB,D2GIJ,D2GIA,ISYMPQ,
@@ -620,7 +627,7 @@ c      WRITE(LUPRI,*)'returned from CC_RDAOD...'
      *                 D2GAIB2,D2GABB2,D2GIJB2,D2GIAB2,ISYPQ1,
      *                 XLAMDP,1,XLAMDH,1,WORK(KEND1),LWRK1)
         END IF
-      END IF
+C     END IF
 
 *---------------------------------------------------------------------*
 * build SCF 2-electron density matrix:
@@ -634,7 +641,6 @@ c      WRITE(LUPRI,*)'returned from CC_RDAOD...'
 *---------------------------------------------------------------------*
 * add relaxation terms to set up effective 2e- densities:
 *---------------------------------------------------------------------*
-      IF (NSYM.EQ.1) THEN
        ICON = 1
        CALL CC_D2EFF(WORK(KAODEN),G,ISYMG,IDEL,ISYMD,XKAPAO,D1HFAO,ICON)
 
@@ -652,7 +658,6 @@ c      WRITE(LUPRI,*)'returned from CC_RDAOD...'
      &               XKAPAO,D1HFAO,XKAPAOB1,D1HFAOB1,XKAPAOB2,D1HFAOB2)
 
        END IF
-      END IF
 
 *---------------------------------------------------------------------*
 * calculate the two-electron contributions to the expectation values:
@@ -726,13 +731,22 @@ c       --------------------------------------------------------
              WRITE (LUPRI,*) 'read CPHF rhs, TRACE = ',FTRACE
            END IF
         END IF                                       
+        IF (LOCDBG) THEN
+          WRITE(LUPRI,*) 'ccefffock2>  FCKEF matrix before ',label
+          WRITE(LUPRI,*) 'ccefffock2>  norm:',
+     &       DDOT(N2BST(ISYFCK),WORK(KFCKEF),1,WORK(KFCKEF),1)
+          CALL CC_PRONELAO(WORK(KFCKEF),ISYFCK)
+          IF (I1DXORD.EQ.0) THEN
+            WRITE(LUPRI,*) 'ccefffock2>  FCK1D matrix before ',label
+            CALL CC_PRONELAO(WORK(KFCK1D),ISYFCK)
+          END IF
+        END IF
 
 c       -------------------------------------------------------
 c       usual CC effective Fock matrices and SCF Fock matrices:
 c       -------------------------------------------------------
         IF (I1DXORD.EQ.0) THEN
 
-         IF (NSYM.EQ.1) THEN
           ! effective Fock matrix calculated from
           ! the usual density matrix
           IF (SQRINT) THEN
@@ -756,7 +770,6 @@ CORIGINAL
      &                     WORK(KINTAO),ISYMAB,ONE,WORK(KFCKEF),ISYFCK)
 
           END IF
-         END IF
        
           ! Coulomb contribution to HF Fock matrix
           IF (ISYMAB.EQ.1) THEN
@@ -772,11 +785,39 @@ CORIGINAL
           KOFFGB = IAODIS(ISYMG,ISYMB) + (G-1)
           KOFFAB = IAODIS(ISYMA,ISYMB)
           NBASA  = MAX(NBAS(ISYMA),1)
+          IF (MULD2H(ISYMG,ISYMB).NE.ISYFCK) 
+     &      CALL QUIT('symmetry problem...')
 
           CALL DGEMV('T',NBAS(ISYMA),NBAS(ISYMB),
      &               -ONE,WORK(KINTAO+KOFFAB),NBASA,D1HFAO(KOFFAD),1,
      &               +ONE,WORK(KFCK1D+KOFFGB),NBAS(ISYMG))
+          
+C         DO A = 1, NBAS(ISYMA)
+C          DO B = 1, NBAS(ISYMB)
+C            WORK(KFCK1D+KOFFGB+NBAS(ISYMG)*(B-1)) = 
+C    &          WORK(KFCK1D+KOFFGB+NBAS(ISYMG)*(B-1)) -
+C    &           WORK(KINTAO+KOFFAB+NBAS(ISYMA)*(B-1)+A-1) * 
+C    &             D1HFAO(KOFFAD+NBAS(ISYMA)*(D-1)+A-1) 
+C            IF (B.EQ.3 .AND. G.EQ.1) THEN
+C              WRITE(LUPRI,*) 'Integral:', 
+C    &             WORK(KINTAO+KOFFAB+NBAS(ISYMA)*(B-1)+A-1)
+C              WRITE(LUPRI,*) 'density:', 
+C    &             D1HFAO(KOFFAD+NBAS(ISYMA)*(D-1)+A)
+C              WRITE(LUPRI,*) 'fock matrix:', 
+C    &              WORK(KFCK1D+KOFFGB+NBAS(ISYMG)*(B-1))
+C            END IF 
+C          END DO
+C         END DO
 
+          IF (LOCDBG) THEN
+            WRITE(LUPRI,*) 'ccefffock2>  ISYMAB,ISYMA:',ISYMAB,ISYMA
+            WRITE(LUPRI,*) 'ccefffock2>  FCK1D matrix after 1',label
+            CALL CC_PRONELAO(WORK(KFCK1D),ISYFCK)
+            WRITE(LUPRI,*) 'ccefffock2>  integral matrix at 1'
+            CALL CC_PRONELAO(WORK(KINTAO),ISYFCK)
+            WRITE(LUPRI,*) 'ccefffock2>  density matrix at 1'
+            CALL CC_PRONELAO(D1HFAO,1)
+          END IF
 c       -------------------------------------------------
 c       1-index transformed effective Fock matrices:
 c       -------------------------------------------------
@@ -847,6 +888,12 @@ c       --------------------------------------------------------
            END DO
            WRITE (LUPRI,*) 'written: FTRACE = ',FTRACE
         END IF
+        IF (LOCDBG) THEN
+          WRITE(LUPRI,*) 'ccefffock2>  FCKEF matrix before ',label
+          WRITE(LUPRI,*) 'ccefffock2>  norm:',
+     &       DDOT(N2BST(ISYFCK),WORK(KFCKEF),1,WORK(KFCKEF),1)
+          CALL CC_PRONELAO(WORK(KFCKEF),ISYFCK)
+        END IF
 
 c       --------------------------------------------------------
 c       calculate the contribution of the zeroth-order integrals
@@ -900,7 +947,7 @@ c         CALL CC_PRONELAO(DNS1D,ISYFCK)
 c         XNORM = DDOT(N2BST(ISYFCK),DNS1D,1,DNS1D,1)
 c         WRITE(LUPRI,*) 'ccefffock2> norm^2 of DNS1D:',XNORM
           IF (LOCDBG) THEN
-             WRITE(LUPRI,*) 'ccefffock2>  FCK1D matrix for ',label
+             WRITE(LUPRI,*) 'ccefffock2>  FCK1D matrix after 2',label
              CALL CC_PRONELAO(WORK(KFCK1D),ISYFCK)
           END IF
 
@@ -1276,8 +1323,8 @@ C  /* Deck i1dxfck */
 #endif
       PARAMETER(TOL=1.0D-12)            
 
-      INTEGER I
-      INTEGER IR1TAMP
+      INTEGER I, INUM, ISYMO
+      INTEGER IR1KAPPA, IROPER
 
       DO I = 1, N1DXFLBL
          IF ( NEWLBL .EQ. LBL1DXFCK(I) .AND.
@@ -1310,8 +1357,13 @@ C  /* Deck i1dxfck */
         I1DXFCK              = N1DXFLBL
 
         IF (LST1DXFCK(N1DXFLBL)(1:2).EQ.'R1') THEN
-           IRELAX1DX(N1DXFLBL) = IR1TAMP(LABELX,.TRUE.,FREQX,ISYMX)
+           IRELAX1DX(N1DXFLBL) = IR1KAPPA(LABELX,FREQX,ISYMX)
+        ELSE
+           CALL QUIT('Unkown list in I1DXFCK.')
         END IF
+
+        ISYMO = 0
+        INUM = IROPER(LABELX,ISYMO)
 
       ELSE
         WRITE(LUPRI,'(/3A,A3,1X,A8,1P,D12.5,A)')
@@ -1503,7 +1555,10 @@ C  /* Deck ccefffockhlp2 */
       CHARACTER LSTRLX*3, MODEL*10, LAB1*5
       INTEGER IDXRLX, IOPT, IOPRMAT, ISYRMAT, JSCOOR, JCOOR
       INTEGER IREAL, KOFDIJ, KOFDAB, KOFDAI, KOFDIA, ISDEN
-      INTEGER IROPER, ILSTSYM
+      INTEGER IROPER, ILSTSYM, ILSTSYMRLX
+
+
+      CALL QENTER('FCKHLP2')
 
       LABEL  = LBL1DXFCK(IDLST) 
       IOPER  = IROPER(LABEL,ISYMOPR)
@@ -1513,7 +1568,7 @@ C  /* Deck ccefffockhlp2 */
       LFOCK  = .TRUE.
       LSTRLX = LST1DXFCK(IDLST)
       IDXRLX = IRELAX1DX(IDLST)
-      ISYRLX = ILSTSYM(LSTRLX,IDXRLX)
+      ISYRLX = ILSTSYMRLX(LSTRLX,IDXRLX)
       ISYFCK = MULD2H(ISYRLX,ISYMOPR)
       
       ! if the atom doesn't fit, there is nothing more to do
@@ -1521,15 +1576,14 @@ C  /* Deck ccefffockhlp2 */
 
       ! retrieve orbital relaxation vector
       IF (IDXRLX.GE.1) THEN
-        IOPT = 1
-        CALL CC_RDHFRSP(LSTRLX,IDXRLX,ISYRLX,IOPT,MODEL,KAPPA)
+        CALL CC_RDHFRSP(LSTRLX,IDXRLX,ISYRLX,KAPPA)
       ELSE
         CALL DZERO(KAPPA,2*NALLAI(ISYRLX))
       END IF
 
       ! retrieve orbital connection matrix
       IF (LSTRLX(1:2).EQ.'R1') THEN
-        IOPRMAT = IROPER(LRTLBL(IDXRLX),ISYRMAT)
+        IOPRMAT = IROPER(LRTHFLBL(IDXRLX),ISYRMAT)
       ELSE
         WRITE (LUPRI,*) 'IOPRMAT problem in CCEFFFOCKHLP2.'
         CALL QUIT('IOPRMAT problem in CCEFFFOCKHLP2.')
@@ -1653,6 +1707,7 @@ c       WRITE (LUPRI,*) 'B2KABAO:'
 c       CALL CC_PRONELAO(B2KABAO,ISYRLX)
       END IF
 
+      CALL QEXIT('FCKHLP2')
       RETURN
       END
 *=====================================================================*
@@ -1706,12 +1761,16 @@ C  /* Deck ccefffockhlp3 */
       INTEGER IOPERA, IOPERB, JCOOR, JSCOOR, ISYMA, ISYMB, ISYM
       INTEGER IROPER, IROPER2
 
+* test if anything to do:
       IF (LOCDBG) WRITE (LUPRI,*) 'entered CCEFFFOCKHLP3...'
 
       LEXPEC = LEXPFCK(1,IDLST)
       LFOCK  = LEXPFCK(2,IDLST)
 
       IF ( .NOT. (LEXPEC.OR.LFOCK) ) RETURN
+
+* ok, enter routine:
+      CALL QENTER('FCKHLP3')
 
       LABEL  = LBLEXPFCK(IDLST)
       IORDER = ORDEXPFCK(IDLST)
@@ -1794,6 +1853,7 @@ C  /* Deck ccefffockhlp3 */
 
       END IF
 
+      CALL QEXIT('FCKHLP3')
       RETURN
       END
 *=====================================================================*

@@ -117,7 +117,11 @@ C
       ELSE IF (ITYPE.EQ.1) THEN
         KCOOR  = JCOOR
         KCORSY = JCORSY
-        KSCOOR = JCOOR  ! symmetry coordinate = coordinate index
+        IF (DIRINT) THEN
+           KSCOOR = JSCOOR 
+        ELSE
+           KSCOOR = JCOOR  ! symmetry coordinate = coordinate index
+        END IF 
         MAXCMP = MXCOMP
         MCSYM  = NSYM
       ELSE IF (ITYPE.EQ.5) THEN
@@ -349,6 +353,7 @@ C
      &                    //CHRNOS(MOD(KSCOOR,10))
          CALL GPOPEN(UNIAO2,FAODER,'OLD','DIRECT',
      &               'UNFORMATTED',LRECL,OLDDX)
+         IF (LOCDBG) WRITE(LUPRI,*) 'CC_RDAOD> opened file:',FAODER
 C
 C        read integrals and close file
 C
@@ -384,7 +389,7 @@ C
       ENDIF
 
       IF (LOCDBG) THEN
-        WRITE(LUPRI,*) 'leaveing CC_RDAOD> '
+        WRITE(LUPRI,*) 'leaving CC_RDAOD> '
       END IF
 
       RETURN

@@ -97,7 +97,7 @@ C
 
 * external functions:
       INTEGER IEFFFOCK
-      INTEGER ILSTSYM
+      INTEGER ILSTSYM, ILSTSYMRLX
       INTEGER IROPER
 #if defined (SYS_CRAY)
       REAL DDOT
@@ -181,11 +181,11 @@ C
       DO IDXREO = 1, NREO
 
          IKAPPA = IREO(IDXREO)
-         ISYMA  = ILSTSYM('R1',IKAPPA)
-         LABELA = LRTLBL(IKAPPA)
+         ISYMA  = ILSTSYMRLX('R1',IKAPPA)
+         LABELA = LRTHFLBL(IKAPPA)
          IOPERA = IROPER(LABELA,ISYMA)
          ISAMA  = ISYMAT(IOPERA)
-         LORXA  = LORXLRT(IKAPPA)
+         LORXA  = .TRUE.
          LPDBSA = LPDBSOP(IOPERA)
 
          IF (LOCDBG) THEN
@@ -215,8 +215,7 @@ C
          END IF
  
          IF (LORXA) THEN
-           IOPT = 1
-           CALL CC_RDHFRSP('R1',IKAPPA,ISYMA,IOPT,MODEL,WORK(KAPPAA))
+           CALL CC_RDHFRSP('R1 ',IKAPPA,ISYMA,WORK(KAPPAA))
            CALL CCKAPPASQ(WORK(KAPASQ),WORK(KAPPAA),ISYMA,'N')
          END IF
 
@@ -236,14 +235,14 @@ C
 
          DO WHILE (IRDOTS(IVEC,IDXREO).NE.0 .AND. IVEC.LE.MXVEC)
 
-           WRITE (LUPRI,*) 'CCREO2CON> IVEC = ',IVEC
+C          WRITE (LUPRI,*) 'CCREO2CON> IVEC = ',IVEC
       
            IKAPPB = IRDOTS(IVEC,IDXREO)
-           ISYMB  = ILSTSYM('R1',IKAPPB)
-           LABELB = LRTLBL(IKAPPB)
+           ISYMB  = ILSTSYMRLX('R1',IKAPPB)
+           LABELB = LRTHFLBL(IKAPPB)
            IOPERB = IROPER(LABELB,ISYMB)
            ISAMB  = ISYMAT(IOPERB)
-           LORXB  = LORXLRT(IKAPPB)
+           LORXB  = .TRUE.
            LPDBSB = LPDBSOP(IOPERB)
 
            IF (LOCDBG) THEN
@@ -260,12 +259,11 @@ C
            END IF
 
            IF (LORXB) THEN
-             IOPT = 1
-             CALL CC_RDHFRSP('R1',IKAPPB,ISYMB,IOPT,MODEL,WORK(KAPPAB))
+             CALL CC_RDHFRSP('R1 ',IKAPPB,ISYMB,WORK(KAPPAB))
              CALL CCKAPPASQ(WORK(KAPBSQ),WORK(KAPPAB),ISYMB,'N')
            END IF
 
-           IF (LPDBSA) THEN
+           IF (LPDBSB) THEN
              CALL CC_GET_RMAT(WORK(KSCR1),IOPERB,1,ISYMB,
      &                        WORK(KEND2),LWRK2)
 
@@ -297,7 +295,7 @@ C
 
            RCONS(IVEC,IDXREO) = TWO*DDOT(N2BST(ISYM0),WORK(KR2EFF),1,
      &                                                WORK(KFOCK0),1)
-           WRITE (LUPRI,*) 'CCREO2CON>',RCONS(IVEC,IDXREO)
+C          WRITE (LUPRI,*) 'CCREO2CON>',RCONS(IVEC,IDXREO)
 
            IVEC = IVEC + 1
          END DO

@@ -211,6 +211,8 @@ C======================================================================
 
       WRITE(LUPRI,'(1X,A1,70("-"),A1)') '+','+'
 
+      IF (NLRTHFLBL.GT.0)WRITE(LUPRI,2)'|',' R1 ','|',NLRTHFLBL,'|',
+     &   'first-order orbtial response                       ','|'
       IF (NLRTLBL.GT.0) WRITE(LUPRI,2) '|',' R1 ','|', NLRTLBL,'|',
      &   'first-order amplitude response                     ','|'
       IF (NLRZLBL.GT.0) WRITE(LUPRI,2) '|',' L1 ','|', NLRZLBL,'|',
@@ -283,9 +285,9 @@ C      we solve them only the first time we enter this routine)
 C======================================================================
       IF ( .NOT. R1HFSKIP ) THEN
 
-         CALL CC_CPHF('R1 ',LRTLBL,IDUM,IDUM,RDUM,
-     &                ISYLRT,FRQLRT,IDUM,NLRTLBL,MAXTLBL,
-     &                LORXLRT,WORK,LWORK) 
+         CALL CC_CPHF('R1 ',LRTHFLBL,IDUM,IDUM,RDUM,
+     &                ISYLRTHF,FRQLRTHF,IDUM,NLRTHFLBL,MAXTLBL,
+     &                WORK,LWORK)
 
          R1HFSKIP = .TRUE.
 
@@ -296,17 +298,17 @@ C    Calculate effective Fock matrices from Kappa^(1) one-index
 C    transformed integrals:
 C======================================================================
 
-      IF (NSYM.EQ.1) THEN
+C     IF (NSYM.EQ.1) THEN
         I1DXORD = 1
         IOPREL  = 0
         CALL CC_GRAD2(I1DXORD,WORK,LWORK)
 C       CALL CCEFFFOCK(I1DXORD,IOPREL,WORK,LWORK)
-      ELSE
-        WRITE (LUPRI,*) 'Warning: no 1-index transformed eff. Fock '
-        WRITE (LUPRI,*) 'matrices calculated... '
-        WRITE (LUPRI,*) 
-     *             'RELAXED second-order properties will be wrong!.'
-      END IF
+C     ELSE
+C       WRITE (LUPRI,*) 'Warning: no 1-index transformed eff. Fock '
+C       WRITE (LUPRI,*) 'matrices calculated... '
+C       WRITE (LUPRI,*) 
+C    *             'RELAXED second-order properties will be wrong!.'
+C     END IF
 
 C======================================================================
 C     precalculate right-hand-sides vectors "O1" and the eta vectors 

@@ -1136,9 +1136,7 @@ C         --------------------------------------------------------------
 * same index  list as R1 vector
 
             IF (IRELAX.GE.1) THEN
-               IOPT = 1
-               CALL CC_RDHFRSP('R1',IRELAX,ISYHOP,IOPT,MODEL,
-     &                                                 WORK(KKAPPA))
+               CALL CC_RDHFRSP('R1 ',IRELAX,ISYHOP,WORK(KKAPPA))
             ELSE
                CALL DZERO(WORK(KKAPPA),2*NALLAI(ISYHOP))
             END IF
@@ -1156,7 +1154,7 @@ C         --------------------------------------------------------------
             CALL CC_GET_RMAT(WORK(KRMAT),IOPERB,IORDER,ISYHOP,
      &                                           WORK(KEND2),LWRK2)
             IOPT = 1
-            CALL CC_LAMBDAQ(WORK(KLAMDPQ(ITRAN)),WORK(KLAMDHQ(ITRAN)),   
+            CALL CC_LAMBDAQ(WORK(KLAMDPQ(ITRAN)),WORK(KLAMDHQ(ITRAN)),
      &                      WORK(KCMOPQ(ITRAN)), WORK(KCMOHQ(ITRAN)),
      &                      ISYHOP,WORK(KT1AMP0),
      &                      WORK(KKAPPA),WORK(KRMAT),IREAL,IOPT,

@@ -175,7 +175,6 @@ C
       CALL CC_MAOMAO('N','N',ONE,WORK(KQAO),ISYMQ,SAO,ISYM0,
      &               ZERO,QAOS,ISYMQ)
 
-
       RETURN
       END
 *=====================================================================*

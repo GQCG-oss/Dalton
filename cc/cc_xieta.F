@@ -59,7 +59,7 @@ C
 #include <ccnoddy.h>
 
       LOGICAL LOCDBG
-      PARAMETER (LOCDBG=.FALSE.)
+      PARAMETER (LOCDBG = .FALSE.)
  
       INTEGER MAXXETRAN, MXVEC
       PARAMETER (MAXXETRAN = 100)
@@ -443,6 +443,7 @@ c /* deck cc_xieta1 */
 #include <chrxyz.h>
 #include <dummy.h>
 #include <ccnoddy.h>
+#include <cch2d.h>
 
 * local parameters:
       LOGICAL LOCDBG
@@ -532,8 +533,8 @@ c /* deck cc_xieta1 */
 
       CHARACTER*10 MODELW
       LOGICAL LDERINT(8,3), LNEWXI, SKIPXI, SYM1ONLY, SKIPETA
-      LOGICAL LTWOEL, LRELAX, LLTWOEL, LLRELAX, NEWTYPE, DIRINT, LZERO
-      LOGICAL LZEROIMDONE, LZEROLFT, SQRINT, LPDBS1, LPDBS2
+      LOGICAL LTWOEL, LRELAX, LLTWOEL, LLRELAX, NEWTYPE, LZERO
+      LOGICAL LZEROIMDONE, LZEROLFT, SQRINT, LPDBS1, LPDBS2, DIRSAV
       INTEGER MT2BGD, MT2ORT, MT2BCD, MT2AM, MT2SQ, M2BST, MEMAT1,MT1AO
       INTEGER MDISAO, MGAMMA, MSCRATCH0, MSCRATCH1, MWORK, NBATCH,MT1AM
       INTEGER ISYM, IATOM, ITRAN, IOPER, IBATCH, IOPT, IFIELD, ILLL
@@ -586,6 +587,9 @@ C     END IF
       END IF
 
       CALL FLSHFO(LUPRI)
+
+      ! save the present value of the DIRECT flag
+      DIRSAV = DIRECT
 
       IF (LOCDBG) THEN
         ITST = 0
@@ -757,7 +761,11 @@ C     END IF
 
         IF (LABELH(1:5).EQ.'1DHAM') THEN
 
-           NEWTYPE = (IATOPR(IOPER).NE.IATOM .OR. IOPTYP.NE.1)
+           IF (DIRECT) THEN
+             NEWTYPE = (IOPTYP.NE.1)
+           ELSE
+             NEWTYPE = (IATOPR(IOPER).NE.IATOM .OR. IOPTYP.NE.1)
+           END IF
            IATOM   = IATOPR(IOPER)
            IOPTYP  = 1
            IF ( (NEWTYPE .AND. ITRAN.GT.1) .OR. 
@@ -997,9 +1005,9 @@ C       -----------------------------------------
 
              ! get info about the different contributing perturbations
              LABEL1 = '?'
-             IF (IRELAX  .GE. 1) LABEL1 = LRTLBL(IRELAX)
+             IF (IRELAX  .GE. 1) LABEL1 = LRTHFLBL(IRELAX)
              LABEL2 = '?'
-             IF (IRELAX2 .GE. 1) LABEL2 = LRTLBL(IRELAX2)
+             IF (IRELAX2 .GE. 1) LABEL2 = LRTHFLBL(IRELAX2)
               
              IF (IORDER.EQ.2) THEN
                 INUM   = IROPER2(LABEL1,LABEL2,LABELH,ISIGNH,ISYM)
@@ -1116,9 +1124,7 @@ C         -----------------------------------------------------------
              END IF
 
              IF (IORDER.EQ.1 .AND. IRELAX.GE.1) THEN
-               IOPT = 1
-               CALL CC_RDHFRSP('R1',IRELAX,ISYHOP,IOPT,
-     &                         MODEL,WORK(KKAPPA))
+               CALL CC_RDHFRSP('R1 ',IRELAX,ISYHOP,WORK(KKAPPA))
              ELSE IF (IORDER.GT.1) THEN
                CALL QUIT(
      &            'IORDER > 1 not fully implemented in CC_XIETA.')
@@ -1322,9 +1328,9 @@ C            END IF
 
             ! get info about the different contributing perturbations
             LABEL1 = '?'
-            IF (IRELAX  .GE. 1) LABEL1 = LRTLBL(IRELAX)
+            IF (IRELAX  .GE. 1) LABEL1 = LRTHFLBL(IRELAX)
             LABEL2 = '?'
-            IF (IRELAX2 .GE. 1) LABEL2 = LRTLBL(IRELAX2)
+            IF (IRELAX2 .GE. 1) LABEL2 = LRTHFLBL(IRELAX2)
              
             IF (IORDER.EQ.2) THEN
                INUM   = IROPER2(LABEL1,LABEL2,LABELH,ISIGNH,ISYM)
@@ -1455,9 +1461,9 @@ C        LZERO  = (ITRAN.EQ.ISTART(IBATCH)) ! 0.-order intermediates
 
             ! get info about the different contributing perturbations
             LABEL1 = '?'
-            IF (IRELAX  .GE. 1) LABEL1 = LRTLBL(IRELAX)
+            IF (IRELAX  .GE. 1) LABEL1 = LRTHFLBL(IRELAX)
             LABEL2 = '?'
-            IF (IRELAX2 .GE. 1) LABEL2 = LRTLBL(IRELAX2)
+            IF (IRELAX2 .GE. 1) LABEL2 = LRTHFLBL(IRELAX2)
              
             IF (IORDER.EQ.2) THEN
                INUM   = IROPER2(LABEL1,LABEL2,LABELH,ISIGNH,ISYM)
@@ -1512,6 +1518,10 @@ C        LZERO  = (ITRAN.EQ.ISTART(IBATCH)) ! 0.-order intermediates
       IF (LLTWOEL .AND. 
      &    (LABELH(1:5).EQ.'1DHAM' .OR. LABELH(1:5).EQ.'dh/dB') ) THEN
          
+         ! for derivative integrals use the DIRGRD flag to
+         ! switch between direct/non-direct mode
+         DIRECT = DIRGRD 
+
          SYM1ONLY = .FALSE.
          CALL CC_SETDORPS(LABELH,SYM1ONLY,0)
 
@@ -1522,9 +1532,11 @@ C        LZERO  = (ITRAN.EQ.ISTART(IBATCH)) ! 0.-order intermediates
            CALL CCDER1(IATOM,LABELH,LDERINT,WORK(KEND2),LWRK2)
          END IF
 
+      ELSE
+         DIRECT = DIRSAV
       END IF
 
-      IF (LLRELAX .OR. LABELH(1:5).EQ.'HAM0 ') THEN
+      IF (LLTWOEL .OR. LLRELAX .OR. LABELH(1:5).EQ.'HAM0 ') THEN
 
          IF (DIRECT) THEN
             NTOSYM = 1
@@ -1756,10 +1768,9 @@ C
             END DO
           END DO
 
-          DIRINT = DIRECT
           CALL CC_RDAOD(WORK(K0XINT),0,1,1,IGAM,IDEL,NUMG,NUMD,
      &                  WORK(KEND4),LWRK4,WORK(KRECNR),WORK(KNRECS),
-     &                  NBUFMX,NFILES,DIRINT,0,1,LDERINT)
+     &                  NBUFMX,NFILES,DIRECT,0,1,LDERINT)
 
           IOPT = 0
           CALL CCTRBT2(WORK(K0XINT),WORK(KD0PRHF),WORK(KLAMP0),ISYM0,
@@ -1816,11 +1827,10 @@ C
                END DO
              END DO
 
-             DIRINT = DIRECT
              CALL CC_RDAOD(WORK(K1XINT),ISCOOR,ICOOR,ICORSY,
      &                     IGAM,IDEL,NUMG,NUMD,
      &                     WORK(KEND4),LWRK4,WORK(KRECNR),WORK(KNRECS),
-     &                     NBUFMX,NFILES,DIRINT,ITYPE,MXCOMP,LDERINT)
+     &                     NBUFMX,NFILES,DIRECT,ITYPE,MXCOMP,LDERINT)
 
              IOPT = 0
              CALL CCTRBT2(WORK(K1XINT),WORK(KD1PRHF),WORK(KLAMP0),ISYM0,
@@ -2335,9 +2345,9 @@ C                ----------------------------------------------------
 
            ! get info about the different contributing perturbations
            LABEL1 = '?'
-           IF (IRELAX1 .GE. 1) LABEL1 = LRTLBL(IRELAX1)
+           IF (IRELAX1 .GE. 1) LABEL1 = LRTHFLBL(IRELAX1)
            LABEL2 = '?'
-           IF (IRELAX2 .GE. 1) LABEL2 = LRTLBL(IRELAX2)
+           IF (IRELAX2 .GE. 1) LABEL2 = LRTHFLBL(IRELAX2)
             
            IF (IORDER.EQ.2) THEN
               INUM   = IROPER2(LABEL1,LABEL2,LABELH,ISIGNH,ISYM)
@@ -2904,6 +2914,9 @@ C          END IF
      &        'return now.'
         CALL FLSHFO(LUPRI)
       END IF
+
+      ! restore the DIRECT flag 
+      DIRECT = DIRSAV 
 
       CALL FLSHFO(LUPRI)
       CALL QEXIT('CC_XIETA1')

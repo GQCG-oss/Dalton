@@ -624,6 +624,7 @@ c /* deck CC_ETA_SETUP1 */
 * external functions:
       INTEGER IROPER
       INTEGER IR1TAMP
+      INTEGER IR1KAPPA
       INTEGER IR2TAMP
       INTEGER IL1ZETA
       INTEGER IL2ZETA
@@ -669,7 +670,7 @@ c /* deck CC_ETA_SETUP1 */
         NRELAX = 0
         DO IDXA = 1, ORDER
          IF ( LORX(IVEC,IDXA) ) THEN
-           IRELAX(IDXA) = IR1TAMP(LAB(IVEC,IDXA),LORX(IVEC,IDXA),
+           IRELAX(IDXA) = IR1KAPPA(LAB(IVEC,IDXA),
      &                            FREQ(IVEC,IDXA),ISYM(IDXA))
            NRELAX = NRELAX + 1
          ELSE

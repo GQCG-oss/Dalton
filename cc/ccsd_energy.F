@@ -2007,13 +2007,9 @@ C
 C  /* Deck inidat */
       BLOCK DATA INIDAT
 C
-C     Initialize MULD2H, FRORHF and FROVIR in common block /CCORB/
+C     Initialize MULD2H in common block /CCORB/
 C
 #include <ccorb.h>
-C
-      PARAMETER (NLIST = 8*MAXFRO)
-      DATA FRORHF /NLIST * .FALSE./
-      DATA FROVIR /NLIST * .FALSE./
 C
       DATA MULD2H/1,2,3,4,5,6,7,8,
      *            2,1,4,3,6,5,8,7,
@@ -2033,6 +2029,7 @@ C
 C     Set up indexing arrays
 C
 C     FREEZE OC230899
+C     Frozen orbital bug-fix, tbp July 2003.
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -2150,9 +2147,10 @@ c     IF (IPRINT .GT. 20) THEN
          WRITE(LUPRI,1) 'NNBASX :',NNBASX
 c     END IF
 C
-C-------------------------------
-C     Construct frozen matrices.
-C-------------------------------
+C--------------------------------------------------------
+C     Construct implicitly frozen matrices.
+C     (Matrices for FROEXP constructed in input routine.)
+C--------------------------------------------------------
 C
       IF (FROIMP) THEN
 C
@@ -2165,8 +2163,7 @@ C
             END IF
 C
             DO 51 I = 1,NRHFFR(ISYM)
-                  FRORHF(I,ISYM) = .TRUE.
-                  KFRRHF(I,ISYM) = I
+               KFRRHF(I,ISYM) = I
    51       CONTINUE
 C
             IF (NVIRFR(ISYM) .GT. MAXFRO) THEN
@@ -2177,27 +2174,10 @@ C
 C
             DO 52 I = 1,NVIRFR(ISYM)
                JORB = NVIRS(ISYM) - I + 1
-               FROVIR(JORB,ISYM) = .TRUE.
-               KFRVIR(I,ISYM)    = JORB
+               KFRVIR(I,ISYM) = JORB
    52       CONTINUE
 C
    50    CONTINUE
-C
-      ELSE IF (FROEXP) THEN
-C
-         DO 60 ISYM = 1,NSYM
-C
-            DO 61 I = 1,NRHFFR(ISYM)
-               II = KFRRHF(I,ISYM)
-               FRORHF(II,ISYM) = .TRUE.
-   61       CONTINUE
-C
-            DO 62 I = 1,NVIRFR(ISYM)
-               II = KFRVIR(I,ISYM)
-               FROVIR(II,ISYM) = .TRUE.
-   62       CONTINUE
-C
-   60    CONTINUE
 C
       END IF
 C
@@ -3196,6 +3176,8 @@ C
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 C
+      LOGICAL FRORHF, FROVIR
+C
       CALL QENTER('CMO_REORDER')
 C
 C-----------------------
@@ -3808,6 +3790,8 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 C
+      LOGICAL FRORHF, FROVIR
+C
       CALL QENTER('CCSD_DELFRO')
 C
       IF (LWORK .LT. NORBT) THEN
@@ -3949,7 +3933,6 @@ C
             CALL QUIT('Too many frozen orbitals')
          END IF
          DO I = 1,NRHFFR(ISYM)
-            FRORHF(I,ISYM) = .TRUE.
             KFRRHF(I,ISYM) = I
          ENDDO
 
@@ -3960,8 +3943,7 @@ C
          END IF
          DO I = 1,NVIRFR(ISYM)
             JORB = NVIRS(ISYM) - I + 1
-            FROVIR(JORB,ISYM) = .TRUE.
-            KFRVIR(I,ISYM)    = JORB
+            KFRVIR(I,ISYM) = JORB
          ENDDO
 
       ENDDO    
@@ -4196,5 +4178,98 @@ C
       WRITE(LUPRI,'(/A5,7X,4F15.9 )') ' SUM ',EET1S,EET1T,EET2S,EET2T
       WRITE(LUPRI,'(/A5,7X, F15.9/)') ' TOT.',EE
       CALL FLSHFO(LUPRI)
+      RETURN
+      END
+C  /* Deck frorhf */
+      LOGICAL FUNCTION FRORHF(I,ISYM)
+C
+C     Thomas Bondo Pedersen, July 2003.
+C
+C     Returns .TRUE. if occupied orbital I of symmetry ISYM is frozen.
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
+
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG = .FALSE.)
+
+      FRORHF = .FALSE.
+
+      IF (FROIMP) THEN
+
+         IF (I .LE. NRHFFR(ISYM)) FRORHF = .TRUE.
+
+      ELSE IF (FROEXP) THEN
+
+         DO II = 1,NRHFFR(ISYM)
+            IF (I .EQ. KFRRHF(II,ISYM)) THEN
+               FRORHF = .TRUE.
+               GO TO 100
+            END IF
+         END DO
+  100    CONTINUE
+
+      END IF
+
+      IF (LOCDBG) THEN
+         IF (FRORHF) THEN
+            WRITE(LUPRI,'(A,I6,A,I2,A)')
+     &      'Occupied orbital',I,' of sym.' ,ISYM,' is frozen'
+         ELSE
+            WRITE(LUPRI,'(A,I6,A,I2,A)')
+     &      'Occupied orbital',I,' of sym.' ,ISYM,' is NOT frozen'
+         END IF
+      END IF
+
+      RETURN
+      END
+C  /* Deck frovir */
+      LOGICAL FUNCTION FROVIR(A,ISYM)
+C
+C     Thomas Bondo Pedersen, July 2003.
+C
+C     Returns .TRUE. if virtual orbital A of symmetry ISYM is frozen.
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
+
+      INTEGER A
+      INTEGER AA
+
+      LOGICAL LOCDBG
+      PARAMETER (LOCDBG = .FALSE.)
+
+      FROVIR = .FALSE.
+
+      IF (FROIMP) THEN
+
+         IF (A .GT. NVIR(ISYM)) FROVIR = .TRUE.
+
+      ELSE IF (FROEXP) THEN
+
+         DO AA = 1,NVIRFR(ISYM)
+            IF (A .EQ. KFRVIR(AA,ISYM)) THEN
+               FROVIR = .TRUE.
+               GO TO 100
+            END IF
+         END DO
+  100    CONTINUE
+
+      END IF
+
+      IF (LOCDBG) THEN
+         IF (FROVIR) THEN
+            WRITE(LUPRI,'(A,I6,A,I2,A)')
+     &      'Virtual  orbital',A,' of sym.' ,ISYM,' is frozen'
+         ELSE
+            WRITE(LUPRI,'(A,I6,A,I2,A)')
+     &      'Virtual  orbital',A,' of sym.' ,ISYM,' is NOT frozen'
+         END IF
+      END IF
+
       RETURN
       END

@@ -100,12 +100,12 @@ C
 C
       CALL DZERO(AODEN,N2BST(ISYDEN))
 C
-      IF (ISYMH.NE.1 .OR. ISYMP.NE.1) THEN
-         WRITE (LUPRI,*) 'CC_DHFAO only implemented for '//
-     &        'total symmetric CMO.'
-         WRITE (LUPRI,*) 'ISYMH, ISYMP:',ISYMH,ISYMP
-         CALL QUIT('CC_DHFAO only implemented for total symmetric CMO.')
-      END IF
+C     IF (ISYMH.NE.1 .OR. ISYMP.NE.1) THEN
+C        WRITE (LUPRI,*) 'CC_DHFAO only implemented for '//
+C    &        'total symmetric CMO.'
+C        WRITE (LUPRI,*) 'ISYMH, ISYMP:',ISYMH,ISYMP
+C        CALL QUIT('CC_DHFAO only implemented for total symmetric CMO.')
+C     END IF
 C
       ISYDMO = 1
       CALL CC_DENAO(AODEN,ISYDAO,WORK(KONEAI),WORK(KONEAB),

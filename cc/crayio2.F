@@ -125,6 +125,8 @@ c/* Deck PUTWA2 */
         WRITE (LUPRI,*) 'I/O ERROR IN PUTWA2:'
         WRITE (LUPRI,*) 'FILE:', FILE
         WRITE (LUPRI,*) 'UNIT:', LUNIT
+        WRITE (LUPRI,*) 'IADR:', IADR
+        WRITE (LUPRI,*) 'LEN:',  LEN
         CALL QUIT('I/O ERROR IN PUTWA2.')
       END IF
 

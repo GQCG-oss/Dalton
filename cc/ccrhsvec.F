@@ -705,6 +705,7 @@ c /* deck CC_RHS_SETUP */
       INTEGER IROPER2 
       INTEGER IETA1
       INTEGER ICHI2
+      INTEGER IR1KAPPA
       INTEGER IR1TAMP
       INTEGER IR2TAMP
       INTEGER IR3TAMP
@@ -750,7 +751,7 @@ c /* deck CC_RHS_SETUP */
         NRELAX = 0
         DO IDXA = 1, ORDER
          IF ( LORX(IVEC,IDXA) ) THEN
-           IRELAX(IDXA) = IR1TAMP(LAB(IVEC,IDXA),LORX(IVEC,IDXA),
+           IRELAX(IDXA) = IR1KAPPA(LAB(IVEC,IDXA),
      &                            FREQ(IVEC,IDXA),ISYM(IDXA))
            NRELAX = NRELAX + 1
          ELSE

@@ -87,7 +87,7 @@ c/* Deck CC_FBTST */
       INTEGER IFBTRAN(5,MXFBTRAN), NFBTRAN
       INTEGER ISYM0, ISYHOP, ISYOPA, IOPERB
       INTEGER ITEST, IREAL, IRELAX, IOPT, ILEFT, IRIGHT, IDXR1
-      INTEGER IDETA1, IDRHSR1
+      INTEGER IDETA1, IDRHSR1, IDXR1HF
       INTEGER IDUM, IDTA1
 
       CHARACTER*(3) LISTL, LISTR
@@ -108,6 +108,7 @@ c/* Deck CC_FBTST */
       INTEGER ILSTSYM
       INTEGER IROPER
       INTEGER IR1TAMP
+      INTEGER IR1KAPPA
       INTEGER IL1ZETA
       INTEGER IRHSR1
       INTEGER IETA1
@@ -239,7 +240,7 @@ c        LX1OPN  = .TRUE.
 c        LR1OPN  = .TRUE.
 c        IRELAX = 0
 c        IF (LORXB) THEN
-c          IRELAX = IR1TAMP(LABELB,LORXB,FREQB,ISYHOP)
+c          IRELAX = IR1KAPPA(LABELB,FREQB,ISYHOP)
 c        END IF
 c
 c        LPDBSOP(IROPER(LABELB,ISYHOP)) = LTWO
@@ -294,7 +295,7 @@ c     would be saved a value of 0 indicates `unrelaxed'
 
       IRELAX = 0
       IF (LORXB) THEN
-        IRELAX = IR1TAMP(LABELB,LORXB,FREQB,ISYHOP)      !it could be frequency dep
+        IRELAX = IR1KAPPA(LABELB,FREQB,ISYHOP)      !it could be frequency dep
       END IF                                             
 
 c     set logical for perturbation-dependent basis sets (for B); this will
@@ -321,12 +322,14 @@ c     choose finite difference path:
          ! inside of CC_XIETA/CC_FBTA as a zero one-electr. operator,
          ! but associated with a orb.-relax. (kappa) vector.
 
-         IDXR1  = IR1TAMP(LABELB,LORXB,FREQB,ISYHOP)              !index for a R1 type vect for LABELB operator (B)
-         KT0   = 1                                                !at this stage LABEL is still ZDIPLEN
+         ! index for a R1 type vect for LABELB operator (B)
+         IDXR1   = IR1TAMP(LABELB,LORXB,FREQB,ISYHOP)
+         ! index for correponding CPHF vector
+         IDXR1HF = IR1KAPPA(LABELB,FREQB,ISYHOP)
+         KT0   = 1
          KEND1 = KT0   + 2*NALLAI(ISYHOP)
          LWRK1 = LWORK - KEND1
-         IOPT = 1
-         CALL CC_RDHFRSP('R1 ',IDXR1,ISYHOP,IOPT,MODEL,WORK(KT0))
+         CALL CC_RDHFRSP('R1 ',IDXR1HF,ISYHOP,WORK(KT0))
 
          IDRHSR1 = IRHSR1(LABELB,LORXB,FREQB,ISYHOP)          !index for O1, RHS of R1 equations (TB), dvs csi^B (O1)
          IDETA1  = IETA1(LABELB,LORXB,FREQB,ISYHOP)           !index for X1, the Eta^B vector (X1)
@@ -339,7 +342,7 @@ c     choose finite difference path:
 * substitute DUMMY to ZDIPLEN on file  for Kappa (use IOPT = 4)
 *
          IOPT = 4
-         CALL CC_WRRSP('R1 ',IDXR1,ISYHOP,IOPT,MODEL,WORK(KT0),
+         CALL CC_WRRSP('R1 ',IDXR1HF,ISYHOP,IOPT,MODEL,WORK(KT0),
      &                 DUMMY,DUMMY,WORK(KEND1),LWRK1)
  
          WRITE (LUPRI,*) 'CC_FBTST: orbital relaxation vector:'
@@ -431,8 +434,7 @@ c
           CALL DZERO(WORK(KKAPPA),2*NALLAI(ISYHOP))
         ELSE
       CALL FLSHFO(LUPRI)
-          IOPT = 1
-          CALL CC_RDHFRSP('R1',IRELAX,ISYHOP,IOPT,MODEL,WORK(KKAPPA))
+          CALL CC_RDHFRSP('R1 ',IRELAX,ISYHOP,WORK(KKAPPA))
       CALL FLSHFO(LUPRI)
         END IF
       ELSE

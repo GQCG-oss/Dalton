@@ -1,6 +1,6 @@
-include ../Makefile.config
-
 all : libcc.a
+
+include ../Makefile.config
 
 F_OBJS = herdirect_cc.o  cc_drv.o       ccsd_input.o   ccsd_energy.o \
 ccsd_sortao.o  ccsd_rhs.o     cc3_t3int.o    cc3_omeg.o    \

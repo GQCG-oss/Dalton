@@ -150,6 +150,7 @@ C      PARAMETER (DUMMY = -12345.67890)
 * external functions
       INTEGER IROPER
       INTEGER IR1TAMP
+      INTEGER IR1KAPPA
       INTEGER IRHSR2
       INTEGER IER1AMP
       INTEGER IEL1AMP
@@ -449,13 +450,13 @@ C------------------------------------------------------------------
                ITAMPB = IR1TAMP(LABELB,LORXB, ZERO,  ISYMB)     
                IKAPA  = 0
                IKAPB  = 0
-               IF (LORXA) IKAPA = ITAMPA
-               IF (LORXB) IKAPB = ITAMPB
+               IF(LORXA)IKAPA=IR1KAPPA(LABELA,-FREQEX,ISYMA)
+               IF(LORXB)IKAPB=IR1KAPPA(LABELB, ZERO,  ISYMB)
 
                IF (.NOT.LUSE2N1) THEN
                  ITAMPC = IR1TAMP(LABELC,LORXC, FREQEX,ISYMC)     
                  IKAPC  = 0
-                 IF (LORXC) IKAPC = ITAMPC
+                 IF (LORXC) IKAPC = IR1KAPPA(LABELC, FREQEX,ISYMC)
                  IFTAMC = ITAMPC
                END IF
 

@@ -47,6 +47,7 @@ C
 C     1994-96 input flags by Ove Christiansen
 C     for excitation energies, linear response 
 C     and various CC models; 
+C     Keywords have been added for R12 method (WK/UniKA/04-11-2002).
 C
 C     Overview over all keywords:
 C
@@ -82,12 +83,6 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
-C     Keywords have been added for R12 method (WK/UniKA/04-11-2002).
-      PARAMETER (NTABLE = 100)
-      LOGICAL   SET, NEWDEF, SIRFF
-      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-      CHARACTER*(80) LINE
-C
 #include <r12int.h>
 #include <maxorb.h>
 #include <mxcent.h>
@@ -106,12 +101,17 @@ C
 #include <eribuf.h>
 #include <cbieri.h>
 #include <ccroper.h>
+#include <cch2d.h>
+      PARAMETER (NTABLE = 100)
+      LOGICAL   SET, NEWDEF, SIRFF
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      CHARACTER*(80) LINE
 C
       SAVE SET
       DATA TABLE /'.SKIP  ','.PRINT ','.DIRECT','.RESTAR','.CC3   ',
      &            '*CCEXCI','*CCLRSD','.CCSTST','.NSYM  ','.MAXRED',
      &            '*CCEXGR','.R1SKIP','.L1SKIP','.RESKIP','.LESKIP',
-     &            '.F1SKIP','.MAX IT','.XXXXXX','.E0SKIP','.L0SKIP',
+     &            '.F1SKIP','.MAX IT','.DIRDER','.E0SKIP','.L0SKIP',
      &            '.LISKIP','.CC2   ','.MP2   ','.CC(2) ','.CC1B  ',
      &            '.CC(T) ','.CC(3) ','.CCS   ','.FCORE ','.FSECON',
      &            '.CCD   ','.CC1A  ','.CIS   ','.THRENR','.NOCCIT',
@@ -260,9 +260,8 @@ C
       NPRLBL = 0
 C
 C     Default for evaluation of first derivative integrals
-C     (for the time being, on non-direct integrals available)
 C
-      DIRGRD = .FALSE.
+      DIRGRD = DIRCAL
 C
 C     Default values based on gnrinf common block
 C
@@ -426,6 +425,7 @@ cch
                   READ (LUCMD, '(I5)') MAXITE
                GO TO 1000
    18          CONTINUE
+                  DIRGRD = .TRUE. 
                GO TO 1000
    19          CONTINUE
                   E0SKIP = .TRUE.
@@ -768,6 +768,9 @@ C
          IF (DIRECT) MINMEM = .FALSE.
       ENDIF
       IF ( .NOT. MINSCR ) MINMEM = .TRUE.
+
+      DIRGRD = ( DIRGRD .OR. DIRECT )
+
       RETURN
       END
 C  /* Deck CC_PRTI */
@@ -3314,6 +3317,8 @@ C#endif
 #include <ccsdsym.h>
 #include <cclrinf.h>
 #include <ccrspprp.h>
+#include <mxcent.h>
+#include <nuclei.h>
 
 * local parameters:
       CHARACTER SECNAM*(8)
@@ -3338,8 +3343,8 @@ C#endif
       CHARACTER*8 LABELA,LABELB
       CHARACTER TABLE(NTABLE)*(8)
 
-      LOGICAL LRELAX
-      INTEGER IDX, IJUMP, IDIP(3)
+      LOGICAL LRELAX, LRELAS
+      INTEGER IDX, IJUMP, IDIP(3), IGRA(MXCOOR)
 
 * external function:
       INTEGER INDPRPCC
@@ -3348,7 +3353,7 @@ C#endif
       DATA SET /.FALSE./
       DATA TABLE /'.RELAXE','.UNRELA','.FREQUE','.DIPOLE','.ALLDSP',
      *            '.OLD_LR','.ASYMSD','.DISPCF','.OPERAT','.AVERAG',
-     *            '.PRINT ','.STATIC','.XXXXXX','.XXXXXX','.XXXXXX'/ 
+     *            '.PRINT ','.STATIC','.DIPGRA','.XXXXXX','.XXXXXX'/ 
 
 *---------------------------------------------------------------------*
 * begin:
@@ -3375,6 +3380,7 @@ C
       DIPPOL = .FALSE.
       ASYMSD = .FALSE.
       LRELAX = .FALSE.
+      IDIGRA = 0
       ICHANG = 0
 
       OLDLR  = .FALSE.
@@ -3627,14 +3633,62 @@ C
                 BLRFR(NBLRFR) = 0.0D0
               END IF
             GO TO 100
+C
+C           -------------------------------------------------
+C           .DIPGRA: Dipole gradients and Cioslowski charges.
+C           -------------------------------------------------
+C
+13          CONTINUE
+               NDIP   = 3
+               NCOOR  = 3*NUCDEP
+               IDIGRA = NLROP + 1
+               NTOT   = NDIP*NCOOR
+               IF (NLROP+NTOT .GT. MXLROP) THEN
+                  WRITE(LUPRI,'(2(/A,I5),/)')
+     &            ' NB. OF OPERATOR DOUBLES SPECIFIED  : ',NLROP+NTOT,
+     &            ' IS GREATER THAN THE ALLOWED NUMBER : ',MXLROP
+                  CALL QUIT('TOO MANY OPERATOR DOUBLES IN CCLR')
+               ENDIF
+               IF (NCOOR .GT. 999) THEN
+                  WRITE(LUPRI,*) 'Too many centers in CCLR'
+                  WRITE(LUPRI,*)
+     &            'Unable to construct labels for gradient ints'
+                  CALL QUIT('Too many centers in CCLR')
+               ENDIF
+               IF (NCOOR .GT. MXCOOR) THEN
+                  WRITE(LUPRI,*) 'IGRA dimension error in CC_LRINP:'
+                  WRITE(LUPRI,*) ' NCOOR: ',NCOOR
+                  WRITE(LUPRI,*) 'MXCOOR: ',MXCOOR
+                  CALL QUIT('Error in CC_LRINP')
+               ENDIF
+               DO I = 1,NCOOR
+                  WRITE(LABELA,'(A5,I3)') '1DHAM',I
+                  DO J = 6,8
+                     IF (LABELA(J:J) .EQ. ' ') LABELA(J:J) = '0'
+                  ENDDO
+                  IGRA(I) = INDPRPCC(LABELA)
+               ENDDO
+               IDIP(1) = INDPRPCC('XDIPLEN ')
+               IDIP(2) = INDPRPCC('YDIPLEN ')
+               IDIP(3) = INDPRPCC('ZDIPLEN ')
+               DO IDXB = 1,NDIP
+                  DO IDXA = 1,NCOOR
+                     IDX = NLROP + NCOOR*(IDXB - 1) + IDXA
+                     IALROP(IDX) = IGRA(IDXA)
+                     IBLROP(IDX) = IDIP(IDXB)
+                     LALORX(IDX) = .TRUE.  ! Force orbital relaxation for dipole
+                     LBLORX(IDX) = .TRUE.  ! Force orbital relaxation for gradient
+                  ENDDO
+               ENDDO
+               NLROP = NLROP + NTOT
+            GO TO 100
 C                                                                     
 C           -------------------------------------------------
 C           .XXXXXXX unused keywords
 C           -------------------------------------------------
 C
-13           CONTINUE
-14           CONTINUE
-15           CONTINUE
+14          CONTINUE
+15          CONTINUE
             GO TO 100                 
 C
           ELSE

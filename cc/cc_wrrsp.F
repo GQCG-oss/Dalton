@@ -972,7 +972,7 @@ C---------------------------------------------------------------------*
      &              WORK(KVEC1),WORK(KVEC2))
       
 C     IF ( IAND(IOPT,4).EQ.4 ) THEN
-C        CALL CC_RDHFRSP(LIST,IDXLST,ISYM,MODFIL,WORK(KVEC0))
+C        CALL CC_RDHFRSP(LIST,IDXLST,ISYM,WORK(KVEC0))
 C        IOPTRW = IOPTRW + 4
 C     END IF
 

@@ -102,9 +102,13 @@ C
          IF      (TRANSB(1:1).EQ.'N' .OR. TRANSB(1:1).EQ.'n') THEN
             ISYB2  = ISYC2
             ISYB1  = MULD2H(ISYB2,ISYMB)
+            IF (NBAS(ISYB1).NE.LENK) 
+     &          CALL QUIT('SYMMETRY PROBLEM IN CC_MAOMAO')
          ELSE IF (TRANSB(1:1).EQ.'T' .OR. TRANSB(1:1).EQ.'t') THEN
-            ISYB1  = ISYC1
+            ISYB1  = ISYC2
             ISYB2  = MULD2H(ISYB1,ISYMB)
+            IF (NBAS(ISYB2).NE.LENK) 
+     &          CALL QUIT('SYMMETRY PROBLEM IN CC_MAOMAO')
          END IF
 
          LDA = MAX(NBAS(ISYA1),1)
@@ -114,6 +118,13 @@ C
          KOFF1 = IAODIS(ISYA1,ISYA2) + 1
          KOFF2 = IAODIS(ISYB1,ISYB2) + 1
          KOFF3 = IAODIS(ISYC1,ISYC2) + 1
+ctest
+c        write(lupri,*) 'transa,transb:',transa,transb
+c        write(lupri,*) 'nbas(isyc1),nbas(isyc2):',
+c    &          nbas(isyc1),nbas(isyc2)
+c        write(lupri,*) 'lenk:',lenk
+c        write(lupri,*) 'lda,ldb,ldc:',lda,ldb,ldc
+ctest
 
          CALL DGEMM(TRANSA,TRANSB,NBAS(ISYC1),NBAS(ISYC2),LENK,
      &              ALPHA,AMAT(KOFF1),LDA,BMAT(KOFF2),LDB,

@@ -79,7 +79,7 @@ C
       PARAMETER( LABEL0 = 'HAM0    ' )
 
       LOGICAL LORX, LFOCK0, LORXQ, LPDBS
-      CHARACTER*(*) LISTQ
+      CHARACTER*(3) LISTQ
       INTEGER ISYXIM, LWORK, NXIM, MXVEC
 
       INTEGER IXIM(NXIM), IXDOTS(MXVEC,NXIM)
@@ -106,10 +106,9 @@ C
 * external functions:
       INTEGER IEFFFOCK
       INTEGER IEXPECT
-      INTEGER IR1TAMP
       INTEGER IROPER
       INTEGER I1DXFCK
-      INTEGER ILSTSYM
+      INTEGER ILSTSYMRLX
 #if defined (SYS_CRAY)
       REAL DDOT
 #else
@@ -199,11 +198,11 @@ C
       DO IDXXIM = 1, NXIM
 
          IKAPPA = IXIM(IDXXIM)
-         LABEL  = LRTLBL(IKAPPA)
+         LABEL  = LRTHFLBL(IKAPPA)
          IOPER  = IROPER(LABEL,ISYXIM)
-         LORX   = LORXLRT(IKAPPA)
+         LORX   = .TRUE.
          LPDBS  = LPDBSOP(IOPER)
-         ISYXIM = ILSTSYM('R1',IKAPPA)
+         ISYXIM = ILSTSYMRLX('R1',IKAPPA)
 
          IF (LOCDBG) THEN
             WRITE (LUPRI,*) 'CCXIMCON> IDXXIM:',IDXXIM
@@ -293,8 +292,7 @@ C
            END IF
 
            IF (LORX) THEN
-             IOPT = 1
-             CALL CC_RDHFRSP('R1',IKAPPA,ISYXIM,IOPT,MODEL,WORK(KAPPA))
+             CALL CC_RDHFRSP('R1 ',IKAPPA,ISYXIM,WORK(KAPPA))
            ELSE
              CALL DZERO(WORK(KAPPA),2*NALLAI(ISYXIM))
            END IF
@@ -341,7 +339,7 @@ C
 
            ! read contribution from 'one-index' transformed density
            ! from file
-           FREQ  = FRQLRT(IKAPPA)
+           FREQ  = FRQLRTHF(IKAPPA)
            IFCK1 = I1DXFCK('HAM0    ','R1 ',LABEL,FREQ,ISYXIM)
            IADRF = IADR1DXF(1,IFCK1)
            CALL WOPEN2(LUFCK,FIL1DXFCK,64,0)
@@ -392,16 +390,16 @@ C
 
       
            IFILE = IXDOTS(IVEC,IDXXIM)
-           ISYMQ = ILSTSYM(LISTQ,IFILE)
+           ISYMQ = ILSTSYMRLX(LISTQ,IFILE)
 
            IF (ISYMQ.NE.ISYXIM) THEN
               WRITE (LUPRI,*) IDXXIM, ISYXIM, LISTQ, IFILE, ISYMQ
               CALL QUIT('symmetry mismatch in CCXIMCON.')
            END IF
 
-           IF (LISTQ(1:2).EQ.'R1') THEN
-              LORXQ  = LORXLRT(IFILE)
-              LABELQ = LRTLBL(IFILE)
+           IF (LISTQ(1:3).EQ.'R1 ') THEN
+              LORXQ  = .TRUE.
+              LABELQ = LRTHFLBL(IFILE)
            ELSE
               CALL QUIT('Unkown LISTQ in CCXIMCON.')
            END IF
@@ -410,8 +408,7 @@ C
            IREAL  = ISYMAT(IOPERQ)
 
            IF (LORXQ) THEN
-             IOPT = 1
-             CALL CC_RDHFRSP(LISTQ,IFILE,ISYMQ,IOPT,MODEL,WORK(KAPPA))
+             CALL CC_RDHFRSP(LISTQ,IFILE,ISYMQ,WORK(KAPPA))
            ELSE
              CALL DZERO(WORK(KAPPA),2*NALLAI(ISYMQ))
            END IF

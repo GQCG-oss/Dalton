@@ -170,7 +170,7 @@ C
       INTEGER NFOCKLBL, IROPER, IDXRLX
 
 * external functions:
-      INTEGER IR1TAMP, ILSTSYM
+      INTEGER IR1KAPPA, ILSTSYM
 C
       CALL QENTER('CCEFFFOCK')
 C
@@ -229,7 +229,7 @@ C
         DO IDX = 1, N1DXFLBL
           IF (LST1DXFCK(IDX)(1:2) .EQ. 'R1') THEN
             IRELAX1DX(IDX) = 
-     &          IR1TAMP(LABRLX(IDX),.TRUE.,FRQRLX(IDX),ISYMRLX(IDX))
+     &          IR1KAPPA(LABRLX(IDX),FRQRLX(IDX),ISYMRLX(IDX))
           ELSE
             CALL QUIT('Unknown List in CCEFFFOCK.')
           END IF

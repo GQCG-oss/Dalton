@@ -36,7 +36,7 @@ C
 c /* deck cc_gethfgd */
 *=====================================================================*
       SUBROUTINE CC_GETHFGD(IVEC,TYPE,LABEL,ISYMS,ISTAT,EIGV,ISYMO,
-     &                      FREQS,LORX,ICAU,NVEC,MAXVEC,IREAL,
+     &                      FREQS,ICAU,NVEC,MAXVEC,IREAL,
      &                      CMO,UDV,XINDX,FRVAL,WORK,LWORK)
 *---------------------------------------------------------------------*
 *
@@ -74,7 +74,6 @@ c /* deck cc_gethfgd */
       INTEGER ISYMS(MAXVEC,*), ISYMO(MAXVEC,*)
       INTEGER ISTAT(MAXVEC,*), ICAU(MAXVEC,*)
 
-      LOGICAL LORX(MAXVEC,*)
       CHARACTER*8 LABEL(MAXVEC,*)
 
 #if defined (SYS_CRAY)
@@ -91,7 +90,6 @@ c /* deck cc_gethfgd */
       PARAMETER (ZERO = 0.0d0, ONE = 1.0d0, TWO = 2.0d0)
 
       CHARACTER*8 LABL1
-      LOGICAL LORX1
       INTEGER ISYM, IOPER, IOPT, IADR1, IADR0
       INTEGER ISYM0, ISYM1, ISYM2, ICOUNT, ICMO(8,8), NCMO(8)
       INTEGER KOFF1, KOFF2, KOFF3, KOFF4, KOFF5, KOFF6, KOFF7
@@ -105,6 +103,7 @@ c /* deck cc_gethfgd */
       INTEGER IROPER
       INTEGER IEFFFOCK
 
+      CALL QENTER('GETHFGP')
 *---------------------------------------------------------------------*
 * initialize some symmetry arrays:
 *---------------------------------------------------------------------*
@@ -125,7 +124,6 @@ c /* deck cc_gethfgd */
       IF (TYPE(1:2).EQ.'R1') THEN
 
         LABL1 = LABEL(IVEC,1)
-        LORX1 = LORX(IVEC,1)
         FRVAL = FREQS(IVEC,1)
         IOPER = IROPER(LABL1,ISYM)
         IREAL = ISYMAT(IOPER)
@@ -134,7 +132,6 @@ c /* deck cc_gethfgd */
            WRITE (LUPRI,*) 'CC_GETHFGD> TYPE:',TYPE
            WRITE (LUPRI,*) 'CC_GETHFGD> IVEC:',IVEC
            WRITE (LUPRI,*) 'CC_GETHFGD> LABL1:',LABL1
-           WRITE (LUPRI,*) 'CC_GETHFGD> LORX1:',LORX1
            WRITE (LUPRI,*) 'CC_GETHFGD> FRVAL:',FRVAL
            WRITE (LUPRI,*) 'CC_GETHFGD> IOPER:',IOPER
            WRITE (LUPRI,*) 'CC_GETHFGD> IREAL:',IREAL
@@ -142,6 +139,8 @@ c /* deck cc_gethfgd */
         END IF
 
         IF (LWORK.LT.NALLAI(ISYM)) THEN
+           WRITE(LUPRI,*) 'have:',LWORK
+           WRITE(LUPRI,*) 'need:',NALLAI(ISYM)
            CALL QUIT('Insufficient memory in CC_GETHFGD.')
         END IF
 
@@ -161,6 +160,8 @@ c /* deck cc_gethfgd */
         LWRK1  = LWORK  - KEND1
 
         IF (LWRK1.LT.0) THEN
+           WRITE(LUPRI,*) 'have:',LWORK
+           WRITE(LUPRI,*) 'need:',KEND1
            CALL QUIT('Insufficient memory in CC_GETHFGD.')
         END IF
  
@@ -328,6 +329,7 @@ C    &                ONE, WORK(KFCKMO+KOFF7), NVIRA)
         CALL QUIT('required rhs CPHF vectors not implemented.')
       END IF
 
+      CALL QEXIT('GETHFGP')
       RETURN
       END
 
