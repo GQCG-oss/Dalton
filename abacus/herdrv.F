@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: herdrv.F,v 1.6 2001-03-18 22:02:48 vebjornb Exp $
+C$Id: herdrv.F,v 1.7 2001-03-21 10:50:48 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -3003,14 +3003,12 @@ C
 #include <cbirea.h>
       THRS = 1.0D-15
 C
-      IPREAD = IPRDEF
       LUMLCL = 0
       MAXPRI = MAXPRD
       UNCONT = .TRUE.
       BIGVC  = .FALSE.
       DIRAC  = .FALSE.
       GENCON = .TRUE.
-      INPTST = TSTINP
       BASIS  = .FALSE.
       ATOMBA = .FALSE.
       PRIBAS = .FALSE.
@@ -3018,6 +3016,10 @@ C
       TOLLRN = 0.0D0
       ZCMVAL = 1.0D0
       LCMMAX = -1
+C
+C     We also need two variables from cbiher.h
+C
+      CALL RDCBIH(IPREAD, INPTST)
       RETURN
       END
 C/* Deck dkdriv */
@@ -3624,5 +3626,16 @@ C
          CALL WRTPRO(AOINT,NELMNT,LABINT(I),RTNLBL,IPRINT)
  600  CONTINUE
 C     
+      RETURN
+      END
+C/* Deck rdcbih */
+      SUBROUTINE RDCBIH(IPDF, INTST)
+C
+#include <implicit.h>
+#include <mxcent.h>
+#include <cbiher.h>
+      LOGICAL INTST
+      IPDF  = IPRDEF
+      INTST = TSTINP
       RETURN
       END
