@@ -93,7 +93,7 @@ C
 #if (defined (SYS_LINUX))
       DIMENSION WORK(2)
 #else
-#if defined (SYS_NEC) || defined (SYS_AIX) || (defined (SYS_LINUX) && defined (VAR_IFC))
+#if defined (SYS_NEC) || defined (SYS_AIX)
 #if defined (NO_F90)
       POINTER (WADDR,WORK(1))
 #else
@@ -155,7 +155,7 @@ C
       WADDR = MALLOC(NBYTES)
 #endif
 
-#if defined (SYS_NEC) || defined (SYS_AIX)||(defined (SYS_LINUX) && defined (VAR_IFC))
+#if defined (SYS_NEC) || defined (SYS_AIX)
 #if defined (NO_F90)
       WADDR = MALLOC(NBYTES)
 #else
