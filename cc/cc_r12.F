@@ -2822,13 +2822,25 @@ C
          IF (R12LEV .NE. D0) WRITE(LUPRI,'(1X,A,G13.6)')
      *     'Level-shift in local-MP2-R12 solver        =',R12LEV
          WRITE(LUPRI,'(1X,78A1)') ('*',I=1,78)
-         WRITE(LUPRI,'(1X,A,2(/1X,A))')
-     *    'The MP2-R12/A and MP2-R12/B energies'//
-     *    ' are computed as described in:',
-     *    'W. Klopper and C. C. M. Samson,'//
-     *    ' J. Chem. Phys. 116, 6397-6410 (2002).',
-     *    '----------------------------------------'//
-     *    '--------------------------------------'
+         IF (R12HYB) THEN
+         WRITE(LUPRI,'(1X,A,4(/1X,A))')
+     *       'The MP2-R12/A and MP2-R12/B energies'//
+     *       ' are computed as described in:',
+     *       'W. Klopper,'//
+     *       ' J. Chem. Phys. 120, 10890-10895 (2004).',
+     *       'To avoid the hybride scheme, the keyword ''.NO HYB''',
+     *       'must be specified in the Dalton input file.',
+     *       '----------------------------------------'//
+     *       '--------------------------------------'
+         ELSE
+            WRITE(LUPRI,'(1X,A,2(/1X,A))')
+     *       'The MP2-R12/A and MP2-R12/B energies'//
+     *       ' are computed as described in:',
+     *       'W. Klopper and C. C. M. Samson,'//
+     *       ' J. Chem. Phys. 116, 6397-6410 (2002).',
+     *       '----------------------------------------'//
+     *       '--------------------------------------'
+         ENDIF
          IF (R12NOA) THEN
             WRITE(APPROX,'(A10)') ' B.       '
          ELSE IF (R12NOB) THEN
@@ -2849,15 +2861,6 @@ C
      *       ' Ansaetze 1 and 2 are used and results are'//
      *       ' printed for approximation'//APPROX
          END IF
-         IF (R12HYB) WRITE(LUPRI,'(/A,5(/A))')
-     *    ' Note that in the present implementation,'//
-     *    ' two-electron four-center integrals',
-     *    ' that involve two or more auxiliary basis'//
-     *    ' functions are  n o t  computed,',
-     *    ' neither in approximation A, nor in approximation B.'//
-     *    ' To reproduce the results',' of the aforementioned'//
-     *    ' article, the keyword ''.NO HYB'' must'//
-     *    ' be specified in the',' Dalton input file.'
          IF (R12EOR) WRITE(LUPRI,'(1X,A,3(/1X,A))')
      *    '----------------------------------------'//
      *    '--------------------------------------',
