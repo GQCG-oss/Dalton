@@ -414,9 +414,12 @@ C
          KWRK1  = KSOLEQ + MAXRED*MAXRED
 
          IF (CCSDT .AND. CCSDT_DIIS) THEN
-            KREDS = KWRK1 
-            KAMAT = KREDS + MAXRED*MAXRED
-            KWRK1 = KAMAT + (MXDIIS+1)*(MXDIIS+1)*NSIM
+            KREDS  = KWRK1 
+            KAMAT  = KREDS  + MAXRED*MAXRED
+            KITRAN = KAMAT  + (MXDIIS+1)*(MXDIIS+1)*NSIM
+            KCONV  = KITRAN + NSIM
+            KRNORM = KCONV  + NSIM
+            KWRK1  = KRNORM + NSIM
          END IF
 
          LWRK1  = LWORK  - KWRK1
@@ -488,6 +491,7 @@ C
      *                     TRIPLET,ISIDE,NSIMR,NUPVEC,
      *                     NREDH,WORK(KREDH),WORK(KREDS),WORK(KEIVAL),
      *                     WORK(KSOLEQ),WORK(KAMAT),
+     *                     WORK(KITRAN),WORK(KCONV),WORK(KRNORM),
      *                     WORK(KWRK1),LWRK1)
          ELSE
            CALL CCEQ_SOL(FRHO1,LUFR1,FRHO2,LUFR2,

@@ -36,7 +36,7 @@ C  /* Deck ccdiis_sol */
      *                    FC1AM,LUFC1,FC2AM,LUFC2,LIST,ISTART,
      *                    TRIPLET,ISIDE,NVEC,NUPVEC,
      *                    NREDH,REDH,REDS,EIVAL,SOLEQ,
-     *                    AMAT,WRK,LWRK)
+     *                    AMAT,ITRAN,CONVERGED,RNORM,WRK,LWRK)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C 
@@ -71,10 +71,10 @@ C
       CHARACTER*(*)  FRHO1,FRHO2,FC1AM,FC2AM
       CHARACTER*(*) LIST
       DIMENSION REDH(*), REDS(*), SOLEQ(*)
-      DIMENSION EIVAL(*), AMAT((MXDIIS+1)*(MXDIIS+1),NVEC)
-      DIMENSION WRK(LWRK), RNORM(NVEC)
-      LOGICAL TRIPLET, CONVERGED(NVEC)
-      INTEGER ITRAN(NVEC)
+      DIMENSION EIVAL(*), AMAT((MXDIIS+1)*(MXDIIS+1),*)
+      DIMENSION WRK(LWRK), RNORM(*)
+      LOGICAL TRIPLET, CONVERGED(*)
+      INTEGER ITRAN(*)
 C
       CALL QENTER('CCDIIS_SOL')
       IF (IPRLE .GT. 3 ) THEN
@@ -591,7 +591,7 @@ C
          IF (IPRLE.GT.105) THEN
             WRITE (LUPRI,'(/A)')
      *      ' CCNEX: solution vectors'
-            CALL PROVLP(WRK(KSOL),NCCVAR,NBX,WRK(KWRK2),LUPRI)
+            CALL PROVLP(WRK(KSOL),NCCVAR,NBX,WRK(KWRK1),LUPRI)
             CALL OUTPUT(WRK(KSOL),1,NCCVAR,1,NBX,NCCVAR,NBX,
      *                  1,LUPRI)
          END IF
