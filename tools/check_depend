@@ -14,7 +14,7 @@ foreach dir ( $dirlist )
   end
   cd $ORI
 end
-echo ' n = 0 }'  >> $DIR/awk.tmp$$
+echo ' n = 3 }'  >> $DIR/awk.tmp$$
 
 cat >> $DIR/awk.tmp$$ <<!
   { path = dir[\$1];
@@ -26,8 +26,8 @@ END{printf("\n");}
 
 foreach file (*.F)
   set root   = $file:r
-  set object = "$root.o $root.i"
-  echo "$object : $file \"
+  echo "$root.o $root.i $file" | awk '{printf("%s %s : %s ",$1,$2,$3)}'
+#  use awk to remove newline character from echo
   sed -n -e '/^ *# *include/p' $file | \
            sed -e 's/include//g' -e 's/[#<>" ]//g' | sort | uniq | \
            awk -f $DIR/awk.tmp$$
@@ -38,8 +38,8 @@ foreach file (*.F)
 # grep '^ *# *include' $file  | \
 #          sed -e 's/include//g' -e 's/[#<>" ]//g' | sort | uniq | \
 #          awk -f $DIR/awk.tmp$$
-  echo
-  echo
+  echo " "
+  echo " "
 end
 
 rm -f $DIR/awk.tmp$$ $DIR/tmp.$$ 
