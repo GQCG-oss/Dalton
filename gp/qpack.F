@@ -203,9 +203,9 @@ C
       IF (LEVELQ .EQ. 0) GO TO 9000
       WRITE (LUPRI,'(//A)') ' QTRACE dump of internal trace stack'
       WRITE (LUPRI,'(3(/A))')
-     *   ' ====================',
+     *   ' ========================',
      *   '      level    module',
-     *   ' ===================='
+     *   ' ========================'
       DO 100 I = LEVELQ,1,-1
          IF (I .LE. MXQLVL) THEN
             WRITE (LUPRI,'(I11,4X,A)') I,QNAMES(I)
@@ -213,7 +213,7 @@ C
             WRITE (LUPRI,'(I11,4X,A)') I,'not recorded'
          END IF
   100 CONTINUE
-      WRITE (LUPRI,'(A/)') ' ===================='
+      WRITE (LUPRI,'(A/)') ' ========================'
 C920522-hjaaj: do not call TRACE because it will abort on some computers
 C9000 CALL TRACE
  9000 CONTINUE
