@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abadtra.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: abadtra.F,v 1.2 2001-05-16 15:38:48 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -1281,10 +1281,11 @@ C
          IORBA1 = IORB(IASYM) + 1
          IBASA1 = IBAS(IASYM) + 1
          JCMOA1 = ICMO(IASYM) + 1
-         CALL DGEMM('T','N',NORBA,NASHK,NBASA,1.D0,
-     &              CMO(JCMOA1),NBASA,
-     &              FQAOAC(IBASA1,IASHK1),NBAST,0.D0,
-     &              FQD(IORBA1,IASHK1),NORBT)
+         IF (NORBA*NBASA .NE. 0) 
+     &        CALL DGEMM('T','N',NORBA,NASHK,NBASA,1.D0,
+     &                   CMO(JCMOA1),NBASA,
+     &                   FQAOAC(IBASA1,IASHK1),NBAST,0.D0,
+     &                   FQD(IORBA1,IASHK1),NORBT)
   800 CONTINUE
       RETURN
       END

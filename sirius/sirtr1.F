@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: sirtr1.F,v 1.2 2001-02-28 10:01:01 vebjornb Exp $
+C$Id: sirtr1.F,v 1.3 2001-05-16 15:38:49 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -432,19 +432,23 @@ C         in inner loop in order to improve vectorization)
 C        DXV(p,u) = sum(v) DV(v,u) Bo(v,p) = sum(v) DV(u,v) Bo(v,p)
 C        DXVAO(a,b) =
 C        sum(u) CMO(b,u) ( sum(v) (sum(p) CMO(a,p) Bo(v,p)) DV(v,u) )
-         CALL DGEMM('N','T',NBASJ,NASHI,NORBJ,1.D0,
-     &              CMO(ICMOJ+1),NBASJ,
-     &              UBO(IORBI+NISHI+1,IORBJ+1),NORBT,0.D0,
-     &              WRK(KDXAO1),NBASJ)
-         CALL DGEMM('N','N',NBASJ,NASHI,NASHI,1.D0,
-     &              WRK(KDXAO1),NBASJ,
-     &              WRK(KUDV+(NASHT+1)*IASHI),NASHT,0.D0,
-     &              WRK(KDXV1),NBASJ)
+         IF (NBASJ*NASHI*NORBJ .NE. 0) THEN
+            CALL DGEMM('N','T',NBASJ,NASHI,NORBJ,1.D0,
+     &                 CMO(ICMOJ+1),NBASJ,
+     &                 UBO(IORBI+NISHI+1,IORBJ+1),NORBT,0.D0,
+     &                 WRK(KDXAO1),NBASJ)
+            CALL DGEMM('N','N',NBASJ,NASHI,NASHI,1.D0,
+     &                 WRK(KDXAO1),NBASJ,
+     &                 WRK(KUDV+(NASHT+1)*IASHI),NASHT,0.D0,
+     &                 WRK(KDXV1),NBASJ)
+         END IF
          IOFMOV = ICMOI + 1 + NISHI*NBASI
-         CALL DGEMM('N','T',NBASJ,NBASI,NASHI,1.D0,
-     &              WRK(KDXV1),NBASJ,
-     &              CMO(IOFMOV),NBASI,0.D0,
-     &              DXVAO(1+IBAS(JSYM),1+IBAS(ISYM)),NBAST)
+C
+         IF (NBASJ*NBASI*NASHI .NE. 0)
+     &        CALL DGEMM('N','T',NBASJ,NBASI,NASHI,1.D0,
+     &                   WRK(KDXV1),NBASJ,
+     &                   CMO(IOFMOV),NBASI,0.D0,
+     &                   DXVAO(1+IBAS(JSYM),1+IBAS(ISYM)),NBAST)
 C **  this symmetry block finished
  2000 CONTINUE
 C **  add transposed matrix to get final result
