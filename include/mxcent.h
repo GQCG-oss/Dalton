@@ -1,6 +1,2 @@
       INTEGER MXCENT, MXCOOR
-#if defined (VAR_ABASMALL)
-      PARAMETER (MXCENT = 20, MXCOOR = 3*MXCENT)
-#else
       PARAMETER (MXCENT = 120, MXCOOR = 3*MXCENT)
-#endif
