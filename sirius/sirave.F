@@ -33,54 +33,54 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef UNDEF
-===========================================================================
- look for HJMAERKE; (1) symort of UMAT should be done
-
-Revision 1.2  2001/01/17 10:41:32  vebjornb
-Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
-
-Revision 1.4  2000/05/18 13:46:43  hjj
-Bugfix in AVERSS, it is strange if this bug hasn't caused errors before!
- KLWOP was referenced out of bounds for inactive orbitals (a check was
- missing), this could lead to any value and in a test today it lead to
- bus error.
-
-Revision 1.3  2000/05/01 13:13:37  hjj
-(1) removed AVEOLD, AVECMO, AVECHO connected with old KAVER option
-    (now removed)
-(2) dynamically allocate KLWOP in AVERSS
-
-revision 1.2 dec 1999 hjj
-improved error messages for super symmetry errors
-
-961213-hjaaj:
-AVESET: disable SUPSYM if no supersymmetry found
-        HJMAERKE: this means that debug SUPSYM for abelian group
-        cannot be performed without commenting new code in AVESET!
-941215-hjaaj:
-renamed ICKDIA to NOFDIA; moved NOFDIA to gp
-940909-hjaaj: CALL SCALSUB2 after SUBROUTINE for CRAY (see 940427 comment)
- changed CALL SCALSUB to CALL SCALSUB1 before SUBROUTINE
-940823-hjaaj:
-AVESE1: print if IPHCHA .gt. 0 and IPRAVE .ge. 4
-940818-hjaaj:
-AVERSS,AVEPHA,AVEDEG: more print before certain STOPs to aid user
-940815-hjaaj:
-AVESE1,AVEDEG,AVEGTU,AVEPHA: use THRSSY from INFINP (new in INFINP)
-   instead of THREQL parameter; include INFINP
-AVESE1: Check and reset THRSSY if needed; more print if disentangling
-940427-hjaaj: SCALAR directives for Cray (as SCALSUB does not work
-  for Cray because directive has to be after SUBROUTINE statement)
-931028-hjaaj
-AVEPRT: rettet print
-930715-hjaaj
-AVESE0: define MXDGSS and NINFSS(*,3)
-AVEDEG: define MXDGSS
-AVESET: removed call to AVEPRT (moved to PRTINP)
-930625-hjaaj
-  inserted some more print before two stop statements.
-===========================================================================
+#ifdef OLD_REV_LOG
+!===========================================================================
+! look for HJMAERKE; (1) symort of UMAT should be done
+!
+!Revision 1.2  2001/01/17 10:41:32  vebjornb
+!Calls to *MPA*B* in arhpack.F have been replaced with DGEMM calls
+!
+!Revision 1.4  2000/05/18 13:46:43  hjj
+!Bugfix in AVERSS, it is strange if this bug hasn't caused errors before!
+! KLWOP was referenced out of bounds for inactive orbitals (a check was
+! missing), this could lead to any value and in a test today it lead to
+! bus error.
+!
+!Revision 1.3  2000/05/01 13:13:37  hjj
+!(1) removed AVEOLD, AVECMO, AVECHO connected with old KAVER option
+!    (now removed)
+!(2) dynamically allocate KLWOP in AVERSS
+!
+!revision 1.2 dec 1999 hjj
+!improved error messages for super symmetry errors
+!
+!961213-hjaaj:
+!AVESET: disable SUPSYM if no supersymmetry found
+!        HJMAERKE: this means that debug SUPSYM for abelian group
+!        cannot be performed without commenting new code in AVESET!
+!941215-hjaaj:
+!renamed ICKDIA to NOFDIA; moved NOFDIA to gp
+!940909-hjaaj: CALL SCALSUB2 after SUBROUTINE for CRAY (see 940427 comment)
+! changed CALL SCALSUB to CALL SCALSUB1 before SUBROUTINE
+!940823-hjaaj:
+!AVESE1: print if IPHCHA .gt. 0 and IPRAVE .ge. 4
+!940818-hjaaj:
+!AVERSS,AVEPHA,AVEDEG: more print before certain STOPs to aid user
+!940815-hjaaj:
+!AVESE1,AVEDEG,AVEGTU,AVEPHA: use THRSSY from INFINP (new in INFINP)
+!   instead of THREQL parameter; include INFINP
+!AVESE1: Check and reset THRSSY if needed; more print if disentangling
+!940427-hjaaj: SCALAR directives for Cray (as SCALSUB does not work
+!  for Cray because directive has to be after SUBROUTINE statement)
+!931028-hjaaj
+!AVEPRT: rettet print
+!930715-hjaaj
+!AVESE0: define MXDGSS and NINFSS(*,3)
+!AVEDEG: define MXDGSS
+!AVESET: removed call to AVEPRT (moved to PRTINP)
+!930625-hjaaj
+!  inserted some more print before two stop statements.
+!===========================================================================
 #endif
 C  /* Deck averag */
       SUBROUTINE AVERAG (VECS,NVDIM,NVSIM)
@@ -309,8 +309,8 @@ C
   100          CONTINUE
                IF (JSYM .GT. 1) GO TO 300
   200       CONTINUE
-            IF (IPRAVE .GE. 3) THEN
-               WRITE(LUPRI,'(/5X,A)') 'AVESET: No supersymmetry found.'
+            IF (IPRAVE .GE. 1) THEN
+               WRITE(LUPRI,'(/A)')' AVESET: No "super symmetry" found.'
             END IF
             SUPSYM = .FALSE.
             GO TO 300
@@ -423,6 +423,8 @@ C         operator which is very unlikely to have
 C         accidental zeroes (we use the kinetic energy).
 C
       CALL AVETK(TKMO,CMO,WRK,KFREE,LFREE)
+C     Note: this can give problems for FINITE FIELD (NFIELD.gt.0)
+C     because the TKMO will reflect the symmetry without the finite field(s)!
 C
 C Step 1: Find super symmetry of each MO
 C         Define ISSMO(i)  = super sym. of m.o. no. i
@@ -598,6 +600,54 @@ C
   902 CONTINUE
       CALL QUIT('AVESE1: Inconsistent NORBSS(NSSYM) code 902')
       END
+C  /* Deck aveord */
+      SUBROUTINE AVEORD()
+C
+C Aug. 2004 hjaaj - create ISSORD() from ISSMO()
+C
+C The order of the super symmetry orbitals may be changed
+C in ORDRSS and ORD2SS calls, thus we need to remake ISSORD()
+C to be sure it is correct.
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxash.h>
+#include <maxorb.h>
+#include <infind.h>
+#include <inforb.h>
+#include <infpri.h>
+C
+      CALL QENTER('AVEORD')
+      IMOSS = 0
+      IORBSS(1) = 0
+      DO ISSYM = 1,NSSYM
+         IF (IORBSS(ISSYM) .NE. IMOSS) THEN
+            CALL AVEDMP(LUPRI)
+            CALL QUIT('AVEORD: Inconsistent IORBSS(ISSYM)')
+         END IF
+         DO IMO = 1,NORBT
+            IF (ISSMO(IMO) .EQ. ISSYM) THEN
+               IMOSS = IMOSS + 1
+               ISSORD(IMOSS) = IMO
+            END IF
+         END DO
+         IF ( (IMOSS - IORBSS(ISSYM)) .NE. NORBSS(ISSYM) ) THEN
+            CALL AVEDMP(LUPRI)
+            CALL QUIT('AVEORD: Inconsistent NORBSS(ISSYM)')
+         END IF
+      END DO
+C
+C  In case of debugging, get out some print
+C
+      IF ( IPRAVE .GE. 3) THEN
+         WRITE(LUPRI,'(/A/A/)')
+     *      ' After remake of ISSORD() in AVEORD  ',
+     *      ' ===================================='
+         CALL AVEDMP(LUPRI)
+      END IF
+      CALL QEXIT('AVEORD')
+      RETURN
+      END
 C  /* Deck avetk */
       SUBROUTINE AVETK(TKMO,CMO,WRK,KFREE,LFREE)
 C
@@ -759,7 +809,7 @@ C
      &' (1) include more digits in nuclear coordinates',
      &' (2) attempt to force super symmetry by making .THRSSY larger',
      &' (3) attempt to avoid degeneracy error by making .THRSSY smaller'
-     &,' (4) disable supersymmetry with .NOSUPSYM'
+     &,' (4) disable supersymmetry by removing .SUPSYM'
          END IF
          WRITE(LUPRI,'(4(/A))')
      &   ' NINFSS(i,1) = degeneracy of MOs in supsym_i',
