@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abaedrv.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: abaedrv.F,v 1.2 2001-05-09 09:52:57 ruud Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -65,7 +65,7 @@ C
 #include <dorps.h>
 #include <infind.h>
 #include <nuclei.h>
-      DATA TABLE /'.SKIP  ', '.PRINT ','.MAXITE','.THRESH',
+      DATA TABLE /'.SKIP  ', '.PRINT ','.MAX IT','.THRESH',
      *            '.MAXSIM', '.NEWRD ','.NOTRIA','.RDVECS',
      *            '.NONEXT', '.NRREST','.NOAVER','.D1DIAG',
      *            '.MCHESS', '.DONEXT','.STOP  ','.MAXRED'/
@@ -251,7 +251,7 @@ C
 C     Initialize /ANRINF/
 C
       THRNR  = 1.D-03
-      MAXNR  = 50
+      MAXNR  = 60
 C
       THRNRD = THRNR
       MAXNRD = MAXNR

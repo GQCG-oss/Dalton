@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abaexc.F,v 1.2 2001-03-13 08:43:26 vebjornb Exp $
+C$Id: abaexc.F,v 1.3 2001-05-09 09:52:57 ruud Exp $
 C
 #include <single.h>
 C  /* Deck excinp */
@@ -48,7 +48,7 @@ C
 #include <anrinf.h>
 #include <dorps.h>
 #include <nuclei.h>
-      DATA TABLE /'.SKIP  ', '.IPRINT','.MAXITE','.THREXC',
+      DATA TABLE /'.SKIP  ', '.INTPRI','.MAX IT','.THRESH',
      *            '.MAXRED', '.MAXPHP','.TRIPLE','.XXXXXX',
      *            '.OPTORB', '.NEXCIT','.DIPSTR','.PRINT ',
      *            '.ROTVEL', '.FNAC  ','.STOP  ','.SUMRUL'/

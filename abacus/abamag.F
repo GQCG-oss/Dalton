@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abamag.F,v 1.4 2001-04-26 08:10:13 helgaker Exp $
+C$Id: abamag.F,v 1.5 2001-05-09 09:52:58 ruud Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -1200,7 +1200,7 @@ C
 #include <dorps.h>
 #include <nuclei.h>
 #include <spnout.h>
-      DATA TABLE /'.SKIP  ', '.PRINT ','.MAXITE','.THRESH',
+      DATA TABLE /'.SKIP  ', '.PRINT ','.MAX IT','.THRESH',
      *            '.MAXRED', '.MAXPHP','.NORHS ','.NORSP ',
      *            '.OPTORB', '.INTPRI','.XXXXXX','.STOP  '/
 C

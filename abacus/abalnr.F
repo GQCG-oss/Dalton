@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abalnr.F,v 1.1.1.1 2001-02-08 13:33:20 hjj Exp $
+C$Id: abalnr.F,v 1.2 2001-05-09 09:52:57 ruud Exp $
 C
 #include <single.h>
 C  /* Deck lnrinp */
@@ -53,7 +53,7 @@ C
 #include <anrinf.h>
 #include <dorps.h>
 #include <nuclei.h>
-      DATA TABLE /'.SKIP  ', '.XXXXXX','.MAXITE','.THRLNR',
+      DATA TABLE /'.SKIP  ', '.XXXXXX','.MAX IT','.THRESH',
      *            '.MAXRED', '.MAXPHP','.XXXXXX','.XXXXXX',
      *            '.OPTORB', '.FREQUE','.ALFA  ','.IPRINT',
      *            '.XXXXXX','.STOP  '/

@@ -45,7 +45,7 @@ C
 #include <dorps.h>
 #include <nuclei.h>
       SAVE SET
-      DATA TABLE /'.SKIP  ', '.PRINT ','.MAXITE','.THRESH',
+      DATA TABLE /'.SKIP  ', '.PRINT ','.MAX IT','.THRESH',
      *            '.MAXRED', '.MAXPHP','.EXCITA','.FREQUE',
      *            '.OPTORB', '.NEXVAL','.XXXXXX','.XXXXXX',
      *            '.XXXXXX', '.XXXXXX','.STOP  '/
