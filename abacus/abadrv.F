@@ -1282,6 +1282,7 @@ C
          WRITE (LUPRI,'(5X,A)') 'This option is currently not working'//
      &        ' correctly, program will stop'
          CALL QUIT('Hellmann-Feynman approximation not working')
+      END IF
       IF (POLAR .AND. .NOT.POPULA)
      &            WRITE (LUPRI,'(5X,A)') ' Static polarizabilities'
       IF (HYPER)  WRITE (LUPRI,'(5X,A)') 
