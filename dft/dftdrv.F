@@ -86,7 +86,7 @@ C
 #include <dfterg.h>
 C
       IPRINT = 5
-      NBUF   = 100000
+      NBUF   = 1000000
 C
 C     Square DMAT if necessary
 C 
@@ -234,7 +234,7 @@ C
 C
       IF (DOERG) EXCTRO = DP5*DDOT(NBAST*NBAST,DMAT,1,EXCMAT,1)
       IF (DOGRD) CALL DZERO(GRADFT,MXCOOR)
-      intpri = 10000
+c      intpri = 10000
 C
       FROMVX = DOGGA .AND. DFTPOT
 C
