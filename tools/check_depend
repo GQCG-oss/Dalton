@@ -30,7 +30,8 @@ foreach file (*.F *.f *.c *.cc)
   #  use awk to remove newline character from echo
   echo "$root.o $root.i $file" | awk '{printf("%s %s : %s ",$1,$2,$3)}'
   sed -n -e '/^ *# *include/p' $file | \
-           sed -e 's/include//g' -e 's/[#<>" ]//g' | sort | uniq > $DIR/tmp.$$
+           sed -e 's/include//g' -e 's/[#<>" ]//g' -e 's/\.h.*/.h/g' | \
+           sort | uniq > $DIR/tmp.$$
   # strip path information from the strings extracted from the source files
   # by passing the file names through 'basename' (this needs a for loop since
   # for some reasons 'basename' doesn't work if invoked between pipes...)
