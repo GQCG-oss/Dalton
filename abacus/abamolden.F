@@ -35,13 +35,6 @@ C
 C
 C     Original: abamolden  alex a auer 5.2.99
 C
-CRevision 1.2  2001/02/01 19:15:52  vebjornb
-CMinor bugfixes incl. missing line in abaptr.F and optimization of eispack.F
-C
-CRevision 1.1.1.1  2001/01/15 13:53:45  vebjornb
-CDalton 1.2
-C
-C
 C this file contains all output routines thar write parts of the molden.inp 
 C file which will be read by MOLDEN.
 C infos about MOLDEN can be obtained at :
@@ -60,9 +53,10 @@ C
       DONEIV=.FALSE.
       DONEIW=.FALSE.
       DONEIX=.FALSE.
-      IXYZPRINTS = 1 
+      IXYZPRINTS = 0 
       CALL GPOPEN(LUMOLDEN,'molden.inp','UNKNOWN',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
+      REWIND LUMOLDEN
       WRITE(LUMOLDEN,'(A)') '[Molden Format]'
       CALL FLSHFO(LUMOLDEN)
       RETURN
@@ -87,7 +81,7 @@ C
 #include <primit.h>
 
 
-      CHARACTER CHRSEG*10, GTOTMP*4
+      CHARACTER CHRSEG*10, GTOTMP*1, SPDCAR*1
       LOGICAL SEG, NRMPRI
       DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
@@ -109,6 +103,7 @@ C
                KBCH  = IBLOCK
                ILL   = 0
                DO 200 J = 1, IQM(I)
+                  GTOTMP = SPDCAR(J-1)
                DO 200 K = 1, JCO(J,I)
                   KBCH = KBCH + 1
                   NNUC  = NUC(KBCH)
@@ -121,25 +116,13 @@ C
                   DO 420 INNRC = 1, NNRC
                   DO 400 L = 1, NDEG
 
-                     GTOTMP = GTOTYP(ITYP)
-                     DO ILEN = 1, 4
-                        IF(GTOTMP(ILEN:ILEN).EQ.'s') 
-     &                       GTOTMP='s'
-                        IF(GTOTMP(ILEN:ILEN).EQ.'p')
-     &                       GTOTMP='p'
-                        IF(GTOTMP(ILEN:ILEN).EQ.'d')
-     &                       GTOTMP='d'
-                        IF(GTOTMP(ILEN:ILEN).EQ.'f')
-     &                       GTOTMP='f'
-                     END DO
                      IF (.NOT. INON .EQ. I .OR. .NOT. ILL .EQ. L )
-     &                    WRITE (LUMOLDEN,'(/1X,I2,A2)') ICENT+L-1,' 0'
+     &                    WRITE (LUMOLDEN,'(/I5,A2)') ICENT+L-1,' 0'
                      INON = I      
                      ILL  = L
 
-
-                        WRITE (LUMOLDEN,'(1X,A3,1X,I2,1X,A3)')
-     &                       GTOTMP, NNUC, '1.00'
+                     WRITE (LUMOLDEN,'(1X,A1,1X,I3,A5)')
+     &                       GTOTMP, NNUC, ' 1.00'
 
                      DO 410 INNUC = 1, NNUC
 
@@ -165,15 +148,16 @@ C
       SUBROUTINE MOATOMS(WORD)
 C          
 #include <implicit.h>
+#include <priunit.h>
 #include <maxorb.h>
 #include <maxaqn.h>
 #include <mxcent.h>
+#include <codata.h>
 
-      CHARACTER*4 NAME
+      CHARACTER*6 NAME
       CHARACTER*4 WORD
 
 #include <molde.h>
-#include <priunit.h>
 #include <nuclei.h>
 #include <symmet.h>
 #include <pgroup.h>
@@ -204,50 +188,59 @@ C     1 'Md', 'No', 'Lr' /
        IF (.NOT. DONEIU .OR. WORD .EQ. 'XYZ' .OR. WORD .EQ. 'FREQ') THEN
 
           NCOOR = 3*NUCDEP
-          IF (WORD .EQ. 'XYZ ') WRITE(LUMOLDEN,'(I3/)') NUCIND 
+          IF (WORD .EQ. 'XYZ ') WRITE(LUMOLDEN,'(I5/)') NUCDEP 
           IF (WORD .EQ. 'ATOM') WRITE(LUMOLDEN,'(A)') '[Atoms] AU' 
-          IF(WORD .EQ. 'FREQ') WRITE(LUMOLDEN,'(A)') ' [FR-COORD]' 
+          IF (WORD .EQ. 'FREQ') WRITE(LUMOLDEN,'(/A)')'[FR-COORD]' 
        
-
-          ICRX = 1
-          ICRY = 2
-          ICRZ = 3
-          IATOM = 1
+          IATOM = 0
           DO 100 ICENT = 1, NUCIND
              MULCNT = ISTBNU(ICENT)
-             NAME   = NAMEX(3*ICENT)(1:4)
-             IF (MULT(MULCNT) .EQ. 1) THEN
-                ICHARGE = NINT(CHARGE(ICENT))
-                IF (WORD .EQ. 'ATOM') THEN
-                   WRITE (LUMOLDEN,'(A,1X,I2,3X,I2,6X,F15.10,
-     &                    5X,F15.10,5X,F15.10)')
-     &                    NAME,IATOM,ICHARGE,(CORD(K,ICENT),K=1,3)
-                   IATOM = IATOM + 1
-                ELSE IF (WORD .EQ. 'FREQ' .OR. WORD .EQ. 'XYZ ') THEN
-                   WRITE (LUMOLDEN,'(A,3(5X,F15.10))')
-     &                    NAME,(CORD(K,ICENT),K=1,3)
+             NAME   = '      '
+             J = 0
+             DO I = 1,4
+                IF (NAMN(ICENT)(I:I) .NE. ' ') THEN
+                   J = J + 1
+                   NAME(J:J) = NAMN(ICENT)(I:I)
                 END IF
-                ICRX = ICRX + 3
-                ICRY = ICRY + 3
-                ICRZ = ICRZ + 3
+             END DO
+             IF (MULT(MULCNT) .EQ. 1) THEN
+                IF (WORD .EQ. 'ATOM') THEN
+                   ICHARGE = NINT(CHARGE(ICENT))
+C FIXME ?          hjaaj Oct 2003: should we remove point charges ??
+                   IATOM = IATOM + 1
+                   WRITE (LUMOLDEN,'(A,1X,I5,1X,I5,3(1X,F20.10))')
+     &                    NAME,IATOM,ICHARGE,(CORD(K,ICENT),K=1,3)
+                ELSE IF (WORD .EQ. 'FREQ') THEN
+                   WRITE (LUMOLDEN,'(A,3(1X,F20.10))')
+     &                    NAME,(CORD(K,ICENT),K=1,3)
+                ELSE IF (WORD .EQ. 'XYZ ') THEN
+                   WRITE (LUMOLDEN,'(A,3(1X,F20.10))')
+     &                    NAME,(XTANG*CORD(K,ICENT),K=1,3)
+                END IF
              ELSE
                 JATOM = 0
+                J = J + 1
+                NAME(J:J) = '_'
+                J = J + 1
                 DO 200 ISYMOP = 0, MAXOPR
                    IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
                       JATOM = JATOM + 1
-                      ICHARGE = NINT(CHARGE(ICENT))
+                      NAME(J:J) = CHRNOS(JATOM)
+                      CRX = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+                      CRY = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+                      CRZ = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
                       IF (WORD .EQ. 'ATOM') THEN
-        WRITE (LUMOLDEN,'(A,1X,I2,3X,I2,6X,F15.10,5X,F15.10,5X,F15.10)')
-     &                        NAME,IATOM,ICHARGE,
-     &            ((PT(IBTAND(ISYMAX(K,1),ISYMOP))*CORD(K,ICENT)),K=1,3)
+                         ICHARGE = NINT(CHARGE(ICENT))
                          IATOM = IATOM + 1
+                         WRITE (LUMOLDEN,'(A,1X,I5,1X,I5,3(1X,F20.10))')
+     &                        NAME,IATOM,ICHARGE,CRX,CRY,CRZ
                       ELSE IF (WORD .EQ. 'FREQ') THEN
-                         WRITE (LUMOLDEN,'(A,3(5X,F15.10))') NAME,
-     &           ((PT(IBTAND(ISYMAX(K,1),ISYMOP))*CORD(K,ICENT)),K=1,3)
+                         WRITE (LUMOLDEN,'(A,3(1X,F20.10))')
+     &                        NAME,CRX,CRY,CRZ
+                      ELSE IF (WORD .EQ. 'XYZ ') THEN
+                         WRITE (LUMOLDEN,'(A,3(1X,F20.10))')
+     &                        NAME,XTANG*CRX,XTANG*CRY,XTANG*CRZ
                       END IF
-                      ICRX = ICRX + 3
-                      ICRY = ICRY + 3
-                      ICRZ = ICRZ + 3
                    END IF
  200            CONTINUE
              END IF        
@@ -277,6 +270,7 @@ C           2 save orbital energies in ORVAL
 #include <inforb.h>
 #include <nuclei.h>
 #include <symmet.h>
+#include <pgroup.h>
     
       LOGICAL WRTELEM,WRTZERO
       DIMENSION ORVAL(*), OCCUP(*)
@@ -291,14 +285,15 @@ C           2 save orbital energies in ORVAL
            JOCC  = 0
            IADD  = 0
            ICMMO = 1
-           DO 10 ISYMCLAS = 1,NSYM
+           DO 10 ISYM = 1,NSYM
 
-             NOCCI = NOCC(ISYMCLAS)
-             DO 1 I=1,NORB(ISYMCLAS)
+             NOCCI = NOCC(ISYM)
+             DO 1 I=1,NORB(ISYM)
 
-               II = IORB(ISYMCLAS) + I         
+               II = IORB(ISYM) + I         
+               WRITE(LUMOLDEN,'(2A)')     'Sym= ',REP(ISYM-1)
                WRITE(LUMOLDEN,'(A,F9.4)') 'Ene= ',OREN(II)
-               WRITE(LUMOLDEN,'(A)') 'Spin= Alpha'
+               WRITE(LUMOLDEN,'(A)')      'Spin= Alpha'
 
 C              note OCCUP(NOCCT) only over occupied orbitals
                IF (I .LE. NOCCI) THEN
@@ -313,7 +308,7 @@ C              note OCCUP(NOCCT) only over occupied orbitals
                   WRTELEM = .FALSE.
                   WRTZERO = .TRUE.
 
-                  DO 2 K=1,NAOS(ISYMCLAS)
+                  DO 2 K=1,NAOS(ISYM)
 
                      DO 3 J=1,NUCDEG(IPCEN(K+IADD))
                         IF (M.EQ.ITRAN(K+IADD,J))THEN
@@ -322,15 +317,14 @@ C              note OCCUP(NOCCT) only over occupied orbitals
                               WRTELEM = .TRUE.
                            ELSE 
                               WRTZERO = .FALSE.
-                              
                            END IF
 
                            IF (CHRSGN(NINT(CTRAN(K+IADD,J))).EQ.'+')THEN
-                              WRITE(LUMOLDEN,'(1X,I4,1X,F10.6)')
+                              WRITE(LUMOLDEN,'(I5,1X,F15.6)')
      &                             M,ORVAL(ICMMO)
                            ELSE
-                              WRITE(LUMOLDEN,'(1X,I4,1X,F10.6)')
-     &                             M,-1.0D0*ORVAL(ICMMO)
+                              WRITE(LUMOLDEN,'(I5,1X,F15.6)')
+     &                             M,-ORVAL(ICMMO)
                            END IF
                         END IF
  3                   CONTINUE
@@ -339,13 +333,13 @@ C              note OCCUP(NOCCT) only over occupied orbitals
                   IF(WRTELEM) THEN
                      ICMMO = ICMMO+1
                   ELSE IF(WRTZERO) THEN
-                     WRITE(LUMOLDEN,'(1X,I4,1X,A)')M,'  0.000000'
+                     WRITE(LUMOLDEN,'(I5,A)')M,'  0.000000'
                   END IF
 
  4             CONTINUE
 
  1           CONTINUE
-             IADD = IADD + NAOS(ISYMCLAS)
+             IADD = IADD + NAOS(ISYM)
  10        CONTINUE
 
            CALL MOATOMS('ATOM') 
@@ -354,7 +348,6 @@ C              note OCCUP(NOCCT) only over occupied orbitals
          DONEIV = .TRUE.
 
       END IF
-  
 
       IF (ITASK .EQ. 2) THEN
        
@@ -375,23 +368,22 @@ C              note OCCUP(NOCCT) only over occupied orbitals
 #include <molde.h>
 #include <inftap.h>
 
-       DIMENSION EVEC(NCORD,NCORD),
-     &          FREQAU(NCORD)
-       SXFAMU = SQRT(XFAMU)
-       WRITE(LUMOLDEN,'(A)') ' [FREQ]'
+      DIMENSION EVEC(NCORD,NCORD), FREQAU(NCORD)
+      SXFAMU = SQRT(XFAMU)
+      WRITE(LUMOLDEN,'(A)') '[FREQ]'
 
-      DO 5 IMODE = 1, NUMMOD
+      DO IMODE = 1, NUMMOD
          WRITE(LUMOLDEN,'(F10.2)') FREQAU(IMODE)*XTKAYS
-5       CONTINUE 
+      END DO
 
-       CALL MOATOMS('FREQ')       
+      CALL MOATOMS('FREQ')       
 
-       WRITE(LUMOLDEN,'(/A)') '[FR-NORM-COORD]'
-      DO 10 IMODE = 1, NUMMOD
-         WRITE(LUMOLDEN,'(1X,A,10X,I2)') 'Vibration',IMODE 
-         WRITE(LUMOLDEN,'(3X,F17.8,3X,F17.8,3X,F17.8)') 
+      WRITE(LUMOLDEN,'(/A)') '[FR-NORM-COORD]'
+      DO IMODE = 1, NUMMOD
+         WRITE(LUMOLDEN,'(A,I10)') 'Vibration ',IMODE 
+         WRITE(LUMOLDEN,'(3(1X,F20.8))') 
      &    (SXFAMU*EVEC(I,IMODE),I=1,NCORD)
- 10   CONTINUE 
+      END DO
       CALL FLSHFO(LUMOLDEN)
       END
 
@@ -404,24 +396,20 @@ C              note OCCUP(NOCCT) only over occupied orbitals
 #include <inftap.h>
         LOGICAL WRITENOW
         IF(WRITENOW)THEN
-            IF (.NOT. DONEIW) THEN 
+           IF (.NOT. DONEIW) THEN 
          
-         WRITE(LUMOLDEN,'(A)') '[SCFCONV]'
-         WRITE(LUMOLDEN,'(A,I2)') 'scf-first  1  THROUGH ',ITER
+              WRITE(LUMOLDEN,'(A)') '[SCFCONV]'
+              WRITE(LUMOLDEN,'(A,I3)') 'scf-first  1  THROUGH ',ITER
+              WRITE(LUMOLDEN,'(F20.10)') (OROC(I),I=1,ITER)
+              CALL FLSHFO(LUMOLDEN)
 
-         DO 100 I=1,ITER
-          WRITE(LUMOLDEN,'(F20.10)') OROC(I)
-  100    CONTINUE
-            
            END IF 
            DONEIW = .TRUE.
 
         ELSE
-        OROC(ITER)=EMCSCF
-        
+           OROC(ITER)=EMCSCF
         ENDIF
 
-        CALL FLSHFO(LUMOLDEN)
         RETURN
       END
 
@@ -438,21 +426,19 @@ C              note OCCUP(NOCCT) only over occupied orbitals
          WRITE(LUMOLDEN,'(A)') '[GEOCONV]'
          WRITE(LUMOLDEN,'(A)') 'energy'
 
-         DO 100 I=1,IXYZPRINTS-1
+         DO 100 I=1,IXYZPRINTS
             WRITE(LUMOLDEN,'(F20.10)') EMCEN(I)
  100     CONTINUE
             
-
       ELSE
          IF (.NOT. DONEIX) THEN  
             WRITE(LUMOLDEN,'(A)') '[GEOMETRIES] XYZ'
             DONEIX = .TRUE.
          END IF
 
-
          CALL MOATOMS('XYZ ')
-         EMCEN(IXYZPRINTS) = EMCSCF
          IXYZPRINTS = IXYZPRINTS + 1
+         EMCEN(IXYZPRINTS) = EMCSCF
       ENDIF
       CALL FLSHFO(LUMOLDEN)
       RETURN

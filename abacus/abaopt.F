@@ -33,13 +33,8 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef UNDEF
-===========================================================================
-/* Comdeck log */
-950915-vebjornb: New module taking care of optimizations.
-                 It uses both the old cbiwlk.h and the new optinf.h
-===========================================================================
-#endif
+C 950915-vebjornb: New module taking care of optimizations.
+C                  It uses both the old cbiwlk.h and the new optinf.h
 C  /* Deck opinpu */
       SUBROUTINE OPINPU(WORD)
 #include <implicit.h>
@@ -1352,6 +1347,10 @@ C
      &        WORK(KEVC1),WORK(KEVC2))
       END IF
 C
+C     Save initial geometry and energy to MOLDEN file
+C
+      IF (MOLDEN) CALL MOGECON(.FALSE.,ENERGY)
+C
 C     Count coordinates.
 C
       CALL CNTCRD
@@ -1481,6 +1480,10 @@ C
       IF (ABS(GEINFO(0,6)) .GT. 1.0D-3) GECONV = .FALSE.
       CALL PRIALL(CSTEP,WORK(KTEMP1))
 C
+C     Save this geometry and energy to MOLDEN file
+C
+      IF (MOLDEN) CALL MOGECON(.FALSE.,ENERGY)
+C
       NEWSTP = .FALSE.
 C
 C     To allow reinitialization
@@ -1508,9 +1511,7 @@ C
          CALL GETINT(IATOM,MXRCRD,WORK(KTEMP1),CRDINT)
          CALL HEADER('New internal coordinates',-1) 
          CALL OUTPUT(CRDINT,1,1,1,IINTCR,1,MXRCRD,1,LUPRI)
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,*)
+         WRITE(LUPRI,'(//)')
       END IF
 C
 C     If the step has failed
@@ -1682,14 +1683,17 @@ C
          GECONV = MINEND(MXRCRD,SCLVEC,BMTRAN,WORK(KTEMP1),WORK(KTEMP2))
          IF (ABS(GEINFO(ITRNMR,6)) .GT. 1.0D-3) GECONV = .FALSE.
          CALL PRIALL(CSTEP,WORK(KTEMP1))
+C
+C        save this geometry and energy to MOLDEN file
+C
+         IF (MOLDEN) CALL MOGECON(.FALSE.,ENERGY)
+C
          IF (REDINT .AND. (IPRINT .GE. 1)) THEN
             CALL ATMINI(WORK(KTEMP1),IATOM,.TRUE.)
             CALL GETINT(IATOM,MXRCRD,WORK(KTEMP1),CRDINT)
             CALL HEADER('New internal coordinates',-1) 
             CALL OUTPUT(CRDINT,1,1,1,IINTCR,1,MXRCRD,1,LUPRI)
-            WRITE(LUPRI,*)
-            WRITE(LUPRI,*)
-            WRITE(LUPRI,*)
+            WRITE(LUPRI,'(//)')
          END IF
          NEWSTP = .FALSE.
          IF ((.NOT. GECONV) .AND. ((.NOT. BRKSYM) .OR. NOBRKS))
@@ -2225,8 +2229,7 @@ Cdj moved from gtgrad
       END
 
 C  /* Deck gtgrad */
-      SUBROUTINE GTGRAD(EGRAD,EXHER,EXSIR,EXABA,
-     &                             WORK,LWORK,IWOFF,WRKDLM)
+      SUBROUTINE GTGRAD(EGRAD,EXHER,EXSIR,EXABA,WORK,LWORK,IWOFF,WRKDLM)
 C
 C     Retreives the energy and gradient of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
