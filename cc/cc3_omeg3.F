@@ -49,6 +49,14 @@ C
 C
       IMPLICIT NONE
 C
+#include <iratdef.h>
+#include <dummy.h>
+#include <inftap.h>
+#include <priunit.h>
+#include <ccinftap.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
+#include <ccsdsym.h>
 C
       INTEGER LWORK, ISYMTR, ISYMT1, ISYMT2, ISYRES, ISINT1, ISINT2
       INTEGER ISYMIM, KEND0, LWRK0, KEND1, LWRK1, KEND2, LWRK2
@@ -71,7 +79,6 @@ C
       REAL RHO2N, ECURR
       REAL DTIME, TITRAN, TISORT, TISMAT, TIQMAT, TICONT
       REAL TIOME1, TICONV, TICONO, DDOT, XMONE, ONE, MFACTOR
-      REAL SECOND
 #else
       DOUBLE PRECISION OMEGA1(*),OMEGA2P(*),OMEGA2M(*),T1AM(*),T2TP(*)
       DOUBLE PRECISION FOCK(*),XLAMDP(*),XLAMDH(*),WORK(LWORK)
@@ -81,18 +88,8 @@ C
       DOUBLE PRECISION RHO2N, ECURR
       DOUBLE PRECISION DTIME, TITRAN, TISORT, TISMAT, TIQMAT, TICONT
       DOUBLE PRECISION TIOME1, TICONV, TICONO, DDOT, XMONE, ONE, MFACTOR
-      DOUBLE PRECISION SECOND
 #endif
       PARAMETER (XMONE = -1.0D0, ONE = 1.0D0)
-C
-#include <iratdef.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <priunit.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
 C
       CHARACTER*(*) FN3SRT, FNTOC, FNCKJD
       CHARACTER*11 FNDELD, FNDKBC
@@ -874,6 +871,11 @@ C     K. Hald, Jan. 2001 : Adapted to triplet.
 C
       IMPLICIT NONE
 C
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
+#include <ccsdsym.h>
+C
       INTEGER ISYMIM, ISYINT, LENSQ, LWORK, ISYMIB, IB, ISYMID, ID
       INTEGER ISYRES, ISYMB, ISYMC, ISYMK, ISYMBC, ISYAIJ
       INTEGER ISYMCK, LENGTH, NCK, NTOAIJ, NTOTC, ISYMI
@@ -894,11 +896,6 @@ C
 #endif
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, HALF = 0.5D0)
-C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -1256,6 +1253,10 @@ C     K. Hald, Jan 2001 : Adapted to triplet.
 C
       IMPLICIT NONE
 C
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+C
       INTEGER ISYMB, ISYRES, ISYAIJ, ISYMJ, ISYMAI, ISYMBJ
       INTEGER NBJ, NBJJ, NAI, KOFF1, KOFF2, KOFF5, KOFF6, IOPT
       INTEGER INDEX
@@ -1268,10 +1269,6 @@ C
       DOUBLE PRECISION ZERO, HALF, TWO, FACT
 #endif
       PARAMETER (TWO = 2.0D0, HALF = 0.5D0, ZERO = 0.0D0)
-C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -1402,6 +1399,11 @@ C     K. Hald, Jan 2001, Adapted to triplet.
 C
       IMPLICIT NONE
 C
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
+#include <ccsdsym.h>
+C
       INTEGER ISYMIM, ISYINT, LWORK, LENSQ, ISYMIB, IB, ISYMID, ID
       INTEGER ISYRES, ISYMB, ISYMJ, ISYMBJ, ISYMC, ISYMBC, ISYCKL
       INTEGER ISYMA, ISYMI, ISYMAI, ISYMAB, ISYMKL, ISYKLJ, JSAIKL
@@ -1419,11 +1421,6 @@ C
       DOUBLE PRECISION XRMAT, XTMAT, DDOT, ZERO, ONE, TWO, HALF
 #endif
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, HALF = 0.5D0)
-C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -1749,6 +1746,11 @@ C     K. Hald, Jan 2001, Adapted to triplet.
 C
       IMPLICIT NONE
 C
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
+#include <ccsdsym.h>
+C
       INTEGER ISYMIM, ISYINT, LWORK, LENSQ, ISYMB, ISYMD
       INTEGER KOFF1, KOFF2, KOFF3, LENGTH
       INTEGER KSCR1, KEND1, LWRK1
@@ -1766,11 +1768,6 @@ C
 #endif
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
-C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -1971,6 +1968,15 @@ C     but contains name correct integrals after virtint
 C
       IMPLICIT NONE
 C
+#include <iratdef.h>
+#include <dummy.h>
+#include <inftap.h>
+#include <priunit.h>
+#include <ccinftap.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
+#include <ccsdsym.h>
+C
       INTEGER ISYMT1, ISYMT2, ISYMC2, ISYMT12, LWORK, ISYMTR, ISYMTR2
       INTEGER KEND0, LWRK0, KEND1, LWRK1, KEND2, LWRK2, KEND3, LWRK3
       INTEGER KEND4, LWRK4, BSTART, BEND, IOPT
@@ -2002,7 +2008,6 @@ C
       REAL TITRAN, TISORT, TISMAT, TICONV, TICONO, TIIO, TIVINT, TIOME1
       REAL TIME1P, TIME2P,TIME3P, TIME1M, TIME2M, TSORTP, TSORTM
       REAL XTIME, DTIME, DDOT, XMONE, FACTOR, ONE, ECURR
-      REAL SECOND
 #else
       DOUBLE PRECISION OMEGA1(*), OMEGA2P(*), OMEGA2M(*), T1AM(*)
       DOUBLE PRECISION T2TP(*), C2AMP(*), C2AMM(*),FOCK(*),XLAMDP(*)
@@ -2015,19 +2020,9 @@ C
       DOUBLE PRECISION TIME1P, TIME2P,TIME3P, TIME1M, TIME2M
       DOUBLE PRECISION TSORTP, TSORTM
       DOUBLE PRECISION XTIME, DTIME, DDOT, XMONE, FACTOR, ONE, ECURR
-      DOUBLE PRECISION SECOND
 #endif
 C
       PARAMETER (XMONE = -1.0D0, ONE = 1.0D0)
-C
-#include <iratdef.h>
-#include <dummy.h>
-#include <inftap.h>
-#include <priunit.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
 C
       LOGICAL LDEBUG
 C
@@ -3476,6 +3471,11 @@ C                   and ISYMC2 is the symmetry of C2AMP and C2AMM.
 C
       IMPLICIT NONE
 C
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
+#include <ccsdsym.h>
+C
       INTEGER ISYMT2, ISYMC2, ISYINT, ISYINT2, LENSQ, INDSQ(LENSQ,6)
       INTEGER ISYMB, ISYMC, LENGTH, ISYMA, ISYMAJ, ISYAIK, ISYMBC
       INTEGER KOFF, KOFF1, KOFF2, KOFF3
@@ -3507,11 +3507,6 @@ C
 C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, XMONE = -1.0D0)
       PARAMETER(TWO = 2.0D0, HALF = 0.5D0, XMHALF = -0.5D0)
-C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
 C
       LOGICAL LDEBUG
 C
@@ -4217,6 +4212,11 @@ C     Sort virtual integrals for perturbative triples.
 C
       IMPLICIT NONE
 C
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccinftap.h>
+#include <ccsdsym.h>
+!
       INTEGER LWORK, ISYINT, MAXCK, ISYMCK, ISYMD, ISYCKB, LENMIN
       INTEGER NDISTR, NBATCH, KSCR1, KSCR2, KSCR3, KSCR4, KSCR5, KSCR6
       INTEGER KEND1, NUMD, IBATCH, ID1, LENGTH, IOFF, ISYMB, ISYCKD
@@ -4233,11 +4233,6 @@ C
 #endif
 !
       PARAMETER (ONE = 1.0D0, XMONE = -1.0D0)
-!
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccinftap.h>
-#include <ccsdsym.h>
 !
       CHARACTER*(*) FN3SRT2, FN3SRT3, FNDELD2, FNDELD3
 !
@@ -4499,6 +4494,11 @@ C                       ISYRES = ISYMIM*ISYINT
 C
       IMPLICIT NONE
 C
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
+#include <ccsdsym.h>
+C
       INTEGER ISYMIM, ISYINT, LENSQ, LWORK, ISYMIB, IB, ISYMID, ID
       INTEGER ISYRES, ISYMB, ISYMC, ISYMK, ISYMBC, ISYAIJ
       INTEGER ISYMCK, LENGTH, NCK, NTOAIJ, NTOTC, ISYMI
@@ -4525,11 +4525,6 @@ C
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, HALF = 0.5D0)
       PARAMETER (XMTWO = -2.0D0, XMONE = -1.0D0)
-C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
 C
       LOGICAL LDEBUG
 C
@@ -5032,11 +5027,11 @@ C
 C     Sort virtual integrals for perturbative triples.
 C
 #include <implicit.h>
-      DIMENSION WORK(LWORK)
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccinftap.h>
 #include <ccsdsym.h>
+      DIMENSION WORK(LWORK)
 C
       CALL QENTER('CC3_SORT2')
 C
@@ -5175,6 +5170,11 @@ C     Debugged for ISYINT .NE. 1 Ove Christiansen 11-1-1996
 C
       IMPLICIT NONE
 C
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccsdinp.h>
+C
       INTEGER LWORK, ISYINT, KOFF1, KOFF2, KOFF3, ISYMD, ISYMK
       INTEGER ISYAIJ, NTOIAJ, NBASD, ISYMJ, ISYMAI, ISYAIK, ISYMI
       INTEGER ISYMA, ISYMJI, ISYJIK, NTOJIK, ISYMJK
@@ -5187,11 +5187,6 @@ C
       DOUBLE PRECISION WORK(LWORK), XTROC, DDOT, ZERO, ONE
 #endif
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
-C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
 C
       CALL QENTER('CC3_TROCC3')
 C
@@ -5352,6 +5347,11 @@ C     KH April 2001: Adapted to triplet.
 C
       IMPLICIT NONE
 C
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccsdinp.h>
+C
       INTEGER ISYINT, LWORK, KOFF1, KOFF2, ISYMC, ISYKLJ, ISYMJ
       INTEGER ISYCKL, ISYCJL, ISYMKL
       INTEGER ISYMCL, ISYML, ISYMK, ISYMCK
@@ -5365,11 +5365,6 @@ C
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
-C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
 C
       CALL QENTER('CCSDT_SRTOC3')
 C
@@ -5509,6 +5504,11 @@ C     Changed to triplet. Kasper Hald          April 2001
 C
       IMPLICIT NONE
 C
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
+#include <ccsdsym.h>
+C
       INTEGER LWORK, ISYMIM, ISYINT, LENSQ, ISYMIB, IB, ISYMID, ID
       INTEGER IOPT, KOFF1, KOFF2, KOFF3, KOFF5, KOFF6, LENGTH
       INTEGER ISYRES, INDEX
@@ -5532,11 +5532,6 @@ C
 #endif
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, XMONE = -1.0D0)
-C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
 C
       LOGICAL LDEBUG
 C
@@ -6123,6 +6118,7 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
+#include <second.h>
 C
       INTEGER LWORK, ISYMIM, ISYINT, LENSQ, ISYMB1, B1
       INTEGER ISYMD1, D1, IOPT, ISYRES, ISYMBD, ISCKIJ, LENGTH, ISYMJ 
@@ -6140,7 +6136,7 @@ C
       REAL TRVIR2(*), TRVIR3(*), WORK(LWORK)
       REAL FACT, FACT2, ZERO, ONE, TWO, XMONE, XDOT, DDOT
       REAL TIME1P, TIME2P, TIME3P, TIME1M, TIME2M, DTIME
-      REAL TSORTP, TSORTM, SECOND
+      REAL TSORTP, TSORTM
 #else
       DOUBLE PRECISION RES2P(*), RES2M(*)
       DOUBLE PRECISION OMEGA2P(*), OMEGA2M(*), RMAT1(*), RMAT2(*)
@@ -6148,7 +6144,7 @@ C
       DOUBLE PRECISION TRVIR1(*), TRVIR2(*), TRVIR3(*), WORK(LWORK)
       DOUBLE PRECISION FACT, FACT2, ZERO, ONE, TWO, XMONE, XDOT, DDOT
       DOUBLE PRECISION TIME1P, TIME2P, TIME3P, TIME1M, TIME2M, DTIME
-      DOUBLE PRECISION TSORTP, TSORTM, SECOND
+      DOUBLE PRECISION TSORTP, TSORTM
 #endif
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, XMONE = -1.0D0)

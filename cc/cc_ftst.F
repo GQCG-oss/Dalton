@@ -3321,6 +3321,7 @@ C----------------------------------------------------------------------
 #include <ccsdinp.h>
 #include <iratdef.h>
 #include <dummy.h>
+#include <second.h>
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -3333,12 +3334,12 @@ C----------------------------------------------------------------------
 #if defined (SYS_CRAY)
       REAL ONE, TWO, THREE, HALF, XNORM, DDOT, ZERO
       REAL WORK(*)
-      REAL SECOND, TIMET, TIMIO, TIMZWV, TIMTAM, DTIME, TIMTI
+      REAL TIMET, TIMIO, TIMZWV, TIMTAM, DTIME, TIMTI
       REAL TIMZET,TIMSCL
 #else
       DOUBLE PRECISION ONE, TWO, THREE, HALF, XNORM, DDOT, ZERO
       DOUBLE PRECISION WORK(*)
-      DOUBLE PRECISION SECOND,TIMET,TIMIO,TIMTI,TIMZWV,TIMTAM,DTIME
+      DOUBLE PRECISION TIMET,TIMIO,TIMTI,TIMZWV,TIMTAM,DTIME
       DOUBLE PRECISION TIMZET,TIMSCL
 #endif
       PARAMETER(ONE=1.0D0,TWO=2.0D0,THREE=3.0D0,HALF=0.5D0,ZERO=0.0D0)

@@ -492,6 +492,7 @@ c/* Deck CC_FMATNEW */
 #include <blocks.h>
 #include <ccslvinf.h>
 #include <ccnoddy.h>
+#include <second.h>
 
 * local parameters:
       CHARACTER MSGDBG*(16)
@@ -610,12 +611,9 @@ C     DOUBLE PRECISION ECURRSAV
       INTEGER ILSTSYM
 
 #if defined (SYS_CRAY) 
-      REAL DDOT, SECOND
+      REAL DDOT
 #else 
       DOUBLE PRECISION DDOT
-#if !defined (VAR_G77)
-      DOUBLE PRECISION SECOND
-#endif
 #endif 
   
       CALL QENTER('CC_FMATNEW')
@@ -2454,6 +2452,7 @@ C  /* Deck ccfpreint */
 #include <ccsdinp.h>
 #include <cciccset.h>
 #include <ccfield.h>
+#include <second.h>
 
       INTEGER ISYM0
       PARAMETER (ISYM0 = 1)
@@ -2468,14 +2467,11 @@ C  /* Deck ccfpreint */
 #if defined (SYS_CRAY)
       REAL WORK(LWORK), XLAMDP(*), XLAMDH(*)
       REAL TIMXYM, TIMBF, TIMIO, TIMPQ, DTIME
-      REAL TWO, ONE, ZERO, DDOT, SECOND, DUMMY, XNORM
+      REAL TWO, ONE, ZERO, DDOT, DUMMY, XNORM
 #else
       DOUBLE PRECISION WORK(LWORK), XLAMDP(*), XLAMDH(*)
       DOUBLE PRECISION TIMXYM, TIMBF, TIMIO, TIMPQ, DTIME
       DOUBLE PRECISION TWO, ONE, ZERO, DUMMY
-#if !defined (VAR_G77)
-      DOUBLE PRECISION SECOND
-#endif
 #endif
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
  
@@ -3393,6 +3389,7 @@ c/* Deck CCFINT2 */
 #include <ccsdsym.h>
 #include <maxorb.h>
 #include <ccorb.h>
+#include <second.h>
 
 * local parameters:
       LOGICAL LOCDBG
@@ -3415,16 +3412,13 @@ c/* Deck CCFINT2 */
       REAL XLAMP0(*), XLAMH0(*), XLAMPA(*), XLAMHA(*)
       REAL XMGDL(*), ZDEN(*), FIM(*), GIM(*), RHO1(*)
       REAL TIMBF, TIMGZ, TIMIO, TIMFG, TIMFCK
-      REAL DUMMY, DTIME, SECOND
+      REAL DUMMY, DTIME
 #else
       DOUBLE PRECISION WORK(LWORK), XINT(*), BFRHF(*), X3OINT(*)
       DOUBLE PRECISION XLAMP0(*), XLAMH0(*), XLAMPA(*), XLAMHA(*)
       DOUBLE PRECISION XMGDL(*), ZDEN(*), FIM(*), GIM(*), RHO1(*)
       DOUBLE PRECISION TIMBF, TIMGZ, TIMIO, TIMFG, TIMFCK
       DOUBLE PRECISION DUMMY, DTIME
-#if !defined (VAR_G77)
-      DOUBLE PRECISION SECOND
-#endif
 #endif
 
 

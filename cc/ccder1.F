@@ -733,6 +733,7 @@ c /* deck ccgeth2d */
 #include <cch2d.h>
 #include <inftap.h>
 #include <dummy.h>
+#include <second.h>
 
 * local parameters:
       CHARACTER*(19) MSGDBG
@@ -769,10 +770,8 @@ c /* deck ccgeth2d */
 
 * external functions
 #if defined (SYS_CRAY)
-      REAL SECOND
       REAL BUF(NBUFS)
 #else
-      DOUBLE PRECISION SECOND
       DOUBLE PRECISION BUF(NBUFS)
 #endif
 

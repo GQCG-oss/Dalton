@@ -51,6 +51,14 @@ C     S. Coriani, December 2001/January 2002
 C-----------------------------------------------------------------------------
 C
       IMPLICIT NONE
+#include <priunit.h>
+#include <dummy.h>
+#include <iratdef.h>
+#include <ccsdsym.h>
+#include <inftap.h>
+#include <ccinftap.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
 
       INTEGER LUPTIAJB, LUAIJK, LUIAJK, LUABI1, LUABI3, LWORK
       INTEGER LUIJKAS, LUIAJKS, LUAIJKS, LUABICS, LUAIBCS, LUIABCS
@@ -81,23 +89,13 @@ C
 #if defined (SYS_CRAY)
       REAL WORK(LWORK)
       REAL ZERO, ONE, TWO, FACT
-      REAL DTIME, SECOND
       real ddot,xnorm2,xnorm,xnabi1,xnabi3
 #else
       DOUBLE PRECISION WORK(LWORK)
       DOUBLE PRECISION ZERO, ONE, TWO, FACT
-      DOUBLE PRECISION DTIME, SECOND
       double precision ddot,xnorm2,xnorm,xnabi1,xnabi3
 #endif
 
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
 
       CHARACTER MODEL*10
       CHARACTER MODELPRI*4, MODELPRI2*14

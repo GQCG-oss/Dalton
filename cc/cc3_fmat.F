@@ -47,6 +47,16 @@ C
 C
       IMPLICIT NONE
 C
+#include <priunit.h>
+#include <dummy.h>
+#include <ccsdsym.h>
+#include <inftap.h>
+#include <ccsdinp.h>
+#include <ccorb.h>
+#include <iratdef.h>
+#include <ccinftap.h>
+#include <second.h>
+C
       INTEGER IDLSTL, IDLSTB, IOPTRES, ITRAN, NFTRAN, MXVEC, LWORK
       INTEGER LUCKJD, LUDKBC, LUTOC, LU3VI, LUDKBC3, LU3FOPX, LU3FOP2X
       INTEGER IDOTS(MXVEC,NFTRAN)
@@ -83,26 +93,13 @@ C
       REAL TITRAN, TISORT, TISMAT, TIQMAT, TICONT, TIOME1
       REAL HALF, ONE, TWO
       REAL DTIME, DDOT, XNORM
-      REAL SECOND
 #else
       DOUBLE PRECISION OMEGA1(*), OMEGA2(*), OMEGA1EFF(*), OMEGA2EFF(*)
       DOUBLE PRECISION DOTPROD(MXVEC,NFTRAN), WORK(LWORK)
       DOUBLE PRECISION TITRAN, TISORT, TISMAT, TIQMAT, TICONT, TIOME1
       DOUBLE PRECISION HALF, ONE, TWO
       DOUBLE PRECISION DTIME, DDOT, XNORM
-#if !defined (VAR_G77)
-      DOUBLE PRECISION SECOND
 #endif
-#endif
-C
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <ccinftap.h>
 C
       CHARACTER*(*) FNCKJD, FNDKBC, FNTOC, FN3VI, FNDKBC3, FN3FOPX
       CHARACTER*(*) FN3FOP2X

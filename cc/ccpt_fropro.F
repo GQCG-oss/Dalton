@@ -57,6 +57,9 @@ C  /* Deck ccpt_fckd1 */
 #include <priunit.h>
 #include <iratdef.h>
 #include <dummy.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccsdinp.h>
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, HALF= 0.5D0)
       DIMENSION FOCK(*),DEN1E(*),WORK(LWORK)
       DIMENSION ETAB(*),ETIJ(*),ETAI(*)
@@ -64,9 +67,6 @@ C  /* Deck ccpt_fckd1 */
 * local parameters:
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
 
       KSTART = 1
 *
@@ -258,16 +258,16 @@ C              integrals and densities. Densities and integrals refer
 C              d_pq and g_pq for given gamma and delta
 C
 #include <implicit.h>
-      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
-      DIMENSION ETAAI(*), DSAB(*), DAI(*), DIA(*), DSIJ(*)
-      DIMENSION XFIJ(*), XFJI(*)
-      DIMENSION XFAI(*), XFIA(*), XFII(*), WORK(LWORK)
 #include <priunit.h>      
 #include <maxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccfro.h>
+      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
+      DIMENSION ETAAI(*), DSAB(*), DAI(*), DIA(*), DSIJ(*)
+      DIMENSION XFIJ(*), XFJI(*)
+      DIMENSION XFAI(*), XFIA(*), XFII(*), WORK(LWORK)
 C
       DO 100 ISYMA = 1,NSYM
 C
@@ -339,16 +339,16 @@ C              eta^(T)_iJ-0. ISYM is the symmetry of the
 C              integrals and densities 
 C
 #include <implicit.h>
-      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
-      DIMENSION ETAIJ(*), DIJ(*), DAB(*), DAI(*), DIA(*)
-      DIMENSION XFIJ(*), XFJI(*)
-      DIMENSION XFAI(*), XFIA(*), XFII(*), WORK(LWORK)
 #include <priunit.h>
 #include <maxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccfro.h>
+      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
+      DIMENSION ETAIJ(*), DIJ(*), DAB(*), DAI(*), DIA(*)
+      DIMENSION XFIJ(*), XFJI(*)
+      DIMENSION XFAI(*), XFIA(*), XFII(*), WORK(LWORK)
 C
       DO 100 ISYMI = 1,NSYM
 C
@@ -415,6 +415,12 @@ C     OBS: FACTOR 2 TO BE SETTLED!!!!!
 C
 
       IMPLICIT NONE
+#include <priunit.h>
+#include <maxorb.h>
+#include <ccsdinp.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccfro.h>
 
       INTEGER LUN1, LWORK
       INTEGER IOFF, ISYMD, ISYJKI, ISYMA, ISYMJK, ISYMI, ISYDEN
@@ -430,21 +436,13 @@ C
       REAL WORK(LWORK)
       REAL CMO(*), D1PTIA(*), ETAIFJ(*)
       REAL ZERO, ONE, TWO, HALF
-      REAL DTIME, SECOND
 #else
       DOUBLE PRECISION WORK(LWORK)
       DOUBLE PRECISION ZERO, ONE, TWO, HALF
-      DOUBLE PRECISION DTIME, SECOND
       DOUBLE PRECISION CMO(*), D1PTIA(*), ETAIFJ(*)
 #endif
 
       PARAMETER (ZERO = 0.0D0, TWO = 2.0D0, ONE = 1.0D0, HALF = 0.5D0)
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
 C
       LOGICAL LOCDBG
       PARAMETER(LOCDBG = .FALSE. )
@@ -587,6 +585,12 @@ C     To calculate D^(T)*P_integrals contributions to eta_aI
 C
 #include <implicit.h>
 #include <dummy.h>
+#include <priunit.h>
+#include <maxorb.h>
+#include <ccsdinp.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccfro.h>
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0)
       PARAMETER (FOUR = 4.0D0)
@@ -596,12 +600,6 @@ C
       PARAMETER (LOCDBG = .FALSE. )
       
 C
-#include <priunit.h>
-#include <maxorb.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
-#include <ccfro.h>
 C
 C---------------------------
 C     Work space allocation.
@@ -749,16 +747,16 @@ C     To calculate the integrals (cd|kJ) needed for frozen-core gradients.
 C     AO integrals are assumed totally symmetric.
 C
 #include <implicit.h>
-C
-      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
-      DIMENSION XFRIN(*), XINT(*), CMO(*), WORK(LWORK)
-C
 #include <priunit.h>
 #include <maxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccfro.h>
+C
+      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0)
+      DIMENSION XFRIN(*), XINT(*), CMO(*), WORK(LWORK)
+C
 C
 C---------------------------------------
 C     Initial symmetries and allocation.
@@ -918,13 +916,13 @@ C     \sum_\a\b CMO_\am F_\a\b CMO_\bI
 C     and contract with D^(T)_ma to get eta_aI
 C
 #include <implicit.h>
-      PARAMETER (ONE = 1.0D0, HALF= 0.5D0, ZERO = 0.0D0)
-      DIMENSION ETAAIF(*),ETAIJF(*) 
-      DIMENSION FOCKAO(*), D1PTIA(*), CMOF(*),WORK(LWORK)
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccfro.h>
+      PARAMETER (ONE = 1.0D0, HALF= 0.5D0, ZERO = 0.0D0)
+      DIMENSION ETAAIF(*),ETAIJF(*) 
+      DIMENSION FOCKAO(*), D1PTIA(*), CMOF(*),WORK(LWORK)
 C
 
       DO 100 ISYMI = 1,NSYM
@@ -1081,14 +1079,14 @@ C     Purpose: To calculate the contributions to d(T)(pq,gam;del)
 C              where at least one of the two indices p & q is frozen.
 C
 #include <implicit.h>
-      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
-      DIMENSION D2II(*), D2IJ(*), D2JI(*), D2AI(*), D2IA(*)
-      DIMENSION D1IA(*), CMO(*), CMOF(*)
-      DIMENSION WORK(LWORK)
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccfro.h>
+      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
+      DIMENSION D2II(*), D2IJ(*), D2JI(*), D2AI(*), D2IA(*)
+      DIMENSION D1IA(*), CMO(*), CMOF(*)
+      DIMENSION WORK(LWORK)
 C
       CALL QENTER('CCPT_FD2BL')
 C
@@ -1270,11 +1268,11 @@ C     Purpose: To calculate the contributions to d(T)(pq,gam;del) where
 C              gamma has been backtransformed from a frozen index.
 C
 #include <implicit.h>
-      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
-      DIMENSION D2GIA(*), D1IA(*), CMOF(*)
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
+      DIMENSION D2GIA(*), D1IA(*), CMOF(*)
 C
       CALL QENTER('CCPT_D2GAF')
 C
@@ -1313,16 +1311,16 @@ C              IOPT controls the one
 C              and two electron contributions.
 C
 #include <implicit.h>
-      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, HALF = 0.5D0)
-      DIMENSION ETAFI(*), ETIFJ(*), DIA(*)
-      DIMENSION XFIJ(*), XFJI(*)
-      DIMENSION XFAI(*), XFIA(*), WORK(LWORK)
 #include <priunit.h>
 #include <maxorb.h>
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccfro.h>
+      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, HALF = 0.5D0)
+      DIMENSION ETAFI(*), ETIFJ(*), DIA(*)
+      DIMENSION XFIJ(*), XFJI(*)
+      DIMENSION XFAI(*), XFIA(*), WORK(LWORK)
 C
 !      IF (LETIJ) THEN
          DO 100 ISYMI = 1,NSYM

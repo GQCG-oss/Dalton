@@ -21,7 +21,7 @@ cc_aamat.o     cc_soldrv.o    cc_batst.o     cc_fdba.o     \
 cc_4hyp.o      cc_smcal.o     cc_cauchy.o    cc_bfden.o    \
 cc_hmat.o      cc_tmcal.o     ccexlr.o                     \
 cc_aofock2.o   crayio2.o      ccder1.o       cc_pckutil.o  \
-cc_iajb.o      cc_xieta.o     cc_xetst.o     ccqr_fdrv.o   \
+cc_iajb.o      cc_xieta.o     cc_xetst.o     \
 cc_fmattst.o   cc_grad2.o     cc_rdaod.o                   \
 ccrlxxim.o     cckappasq.o    cc_1idxtran.o  cc_effckmo.o  \
 cc_trdrv.o     cc_rhtr3.o     ccsd_rou3.o    ccsd_rhs3.o   \

@@ -56,6 +56,7 @@ C
 #include <ccinftap.h>
 #include <ccorb.h>
 #include <ccsdinp.h>
+#include <second.h>
 C
       INTEGER ISYMT1, ISYMT2, ISYMC2, LWORK
       INTEGER ISYMTR, ISYRES, ISINT2, ISYMIM, KFOCKD, KEND0, LWRK0, KCMO
@@ -72,15 +73,11 @@ C
       REAL XLAMDH(*), XLAMDP(*), WORK(LWORK)
       REAL TITRAN, TISORT, TISMAT, TIQMAT, TIOME1
       REAL DTIME, XNORM, DDOT, ECURR
-      REAL SECOND
 #else
       DOUBLE PRECISION OMEGA1(*), T1AM(*), T2TP(*), C2TP(*)
       DOUBLE PRECISION XLAMDH(*), XLAMDP(*), WORK(LWORK)
       DOUBLE PRECISION TITRAN, TISORT, TISMAT, TIQMAT, TIOME1
       DOUBLE PRECISION DTIME, XNORM, DDOT, ECURR
-#if !defined (VAR_G77)
-      DOUBLE PRECISION SECOND
-#endif
 #endif
 C
       CHARACTER*(*) FN3SRT, FNCKJD
@@ -1433,6 +1430,15 @@ C     Isyres is symmetry of Omega{1,2}
 C
       IMPLICIT NONE
 C
+#include <priunit.h>
+#include <dummy.h>
+#include <ccsdsym.h>
+#include <inftap.h>
+#include <ccsdinp.h>
+#include <ccorb.h>
+#include <iratdef.h>
+#include <ccinftap.h>
+C
       INTEGER ISYML1, ISYML2, ISYMT2, ISYRES, LWORK
       INTEGER ISYMTR, ISINT1, ISINT2, ISYMIM, KFOCKD, KCMO, KFCKBA
       INTEGER KEND0, LWRK0, KEND1, LWRK1, KEND2, LWRK2, ISYMC, ISYMK
@@ -1452,7 +1458,6 @@ C
       REAL TITRAN, TISORT, TISMAT, TIQMAT, TICONT, TIOME1
       REAL DTIME, XL2TP, XIAJB, XINT, XTROC0, XTRVI, XSMAT
       REAL RHO1N, RHO2N, XDIA, DDOT, HALF, ONE, ECURR
-      REAL SECOND
 #else
       DOUBLE PRECISION L1AM(*), L2TP(*), T2TP(*)
       DOUBLE PRECISION OMEGA1(*), OMEGA2(*), XINT4O(*)
@@ -1460,19 +1465,7 @@ C
       DOUBLE PRECISION TITRAN, TISORT, TISMAT, TIQMAT, TICONT, TIOME1
       DOUBLE PRECISION DTIME, XL2TP, XIAJB, XINT, XTROC0, XTRVI, XSMAT
       DOUBLE PRECISION RHO1N, RHO2N, XDIA, DDOT, HALF, ONE, ECURR
-#if !defined (VAR_G77)
-      DOUBLE PRECISION SECOND
 #endif
-#endif
-C
-#include <priunit.h>
-#include <dummy.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccsdinp.h>
-#include <ccorb.h>
-#include <iratdef.h>
-#include <ccinftap.h>
 C
       CHARACTER*(*) FNCKJD, FNDKBC, FNTOC, FN3VI, FN4V
       CHARACTER*(*) FNDKBC3, FN3FOPX, FN3FOP2X

@@ -60,6 +60,7 @@ c /* deck CC_2HYP */
 #include <ccr1rsp.h>
 #include <ccrc1rsp.h>
 #include <cccperm.h>
+#include <second.h>
 
 * local parameters:
       CHARACTER*(19) MSGDBG
@@ -128,11 +129,6 @@ c /* deck CC_2HYP */
       INTEGER ICHI2
       INTEGER IRHSR2
       INTEGER IRHSR3
-#if defined (SYS_CRAY)
-      REAL SECOND
-#else
-      DOUBLE PRECISION SECOND
-#endif
 
 
 *---------------------------------------------------------------------*

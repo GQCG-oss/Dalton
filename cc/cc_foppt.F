@@ -1080,6 +1080,11 @@ C                       ISYMT1 / ISYMT2 is symmetry of T1AM / (T2TP,T2TCME).
 C
       IMPLICIT NONE
 C
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
+#include <ccsdsym.h>
+C
       INTEGER ISYMT1, ISYMT2, ISINT1, LWORK, LENSQ, ISYMB, ISYMC
       INTEGER ISINT2, ISYMBC, ISYRES, JSAIKJ, ISYMDK, LENGTH, ISYMK
       INTEGER ISYMD, ISYAIJ, KOFF1, KOFF2, KOFF3, NTOAIJ, NVIRD, ISYAKD
@@ -1098,22 +1103,17 @@ C
       REAL SMAT(*), WORK(LWORK), XSMAT, EPSIBC, T2TCME(*)
       REAL TROCC2(*), TRVIR4(*), TRVIR5(*)
       REAL ZERO, ONE, TWO, FOUR, ECURR
-      REAL DDOT, SECOND
+      REAL DDOT
 #else
       DOUBLE PRECISION T1AM(*), TMAT(*), XIAJB(*), FOCK(*)
       DOUBLE PRECISION TRVIR(*), TRVIR2(*), TROCC(*), FOCKD(*), DIAG(*)
       DOUBLE PRECISION SMAT(*), WORK(LWORK), XSMAT, EPSIBC, T2TCME(*)
       DOUBLE PRECISION TROCC2(*), TRVIR4(*), TRVIR5(*)
       DOUBLE PRECISION ZERO, ONE, TWO, FOUR, ECURR
-      DOUBLE PRECISION DDOT, SECOND
+      DOUBLE PRECISION DDOT
 #endif
 C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, FOUR = 4.0D0)
-C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -1962,6 +1962,11 @@ C     Calculate QMAT for t3-bar.
 C
       IMPLICIT NONE
 C
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
+#include <ccsdsym.h>
+C
       INTEGER ISYMT1, ISYMT2, ISINT1, ISINT2, LWORK, LENSQ
       INTEGER ISYMB, ISYMD
       INTEGER INDSQ(LENSQ,6), INDEX
@@ -1983,11 +1988,6 @@ C
       DOUBLE PRECISION TMAT(*), QMAT(*), WORK(LWORK), EPSIBD, ECURR
       DOUBLE PRECISION ZERO, ONE, TWO, FOUR, XQMAT, DDOT
 #endif
-C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, FOUR = 4.0D0)
 C
@@ -2438,16 +2438,16 @@ C                       ISYRES = ISYMIM*ISYINT
 C
 #include <implicit.h>
 C
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
+#include <ccsdsym.h>
+C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       DIMENSION RMAT(*),SMAT(*),QMAT(*)
       DIMENSION TMAT(*),TRVIR(*),TRVIR1(*)
       DIMENSION WORK(LWORK),INDSQ(LENSQ,6)
-C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -2599,15 +2599,15 @@ C                       ISYRES = ISYMIM*ISYINT
 C
 #include <implicit.h>
 C
-      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
-C
-      DIMENSION OMEGA2(*),RMAT1(*),RMAT2(*),SMAT(*),TMAT(*)
-      DIMENSION TROCC(*),TROCC1(*),WORK(LWORK),INDSQ(LENSQ,6)
-C
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+C
+      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
+C
+      DIMENSION OMEGA2(*),RMAT1(*),RMAT2(*),SMAT(*),TMAT(*)
+      DIMENSION TROCC(*),TROCC1(*),WORK(LWORK),INDSQ(LENSQ,6)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -4860,6 +4860,11 @@ C                       ISYRES = ISYMIM*ISYINT
 C
       IMPLICIT NONE
 C
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
+#include <ccsdsym.h>
+C
       INTEGER ISYMIM, ISYINT, LENSQ, LWORK, ISYMIB, IB, ISYMID, ID
       INTEGER ISYRES, ISYMB, ISYMC, ISYMK, ISYMBC, JSAIKJ
       INTEGER ISYAIJ, ISYMCK, LENGTH, NCK, KOFF1, NTOAIJ
@@ -4877,11 +4882,6 @@ C
       DOUBLE PRECISION TMAT(*), WORK(LWORK)
       DOUBLE PRECISION ZERO, ONE, TWO
 #endif
-C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
@@ -5750,6 +5750,11 @@ C
 C
       IMPLICIT NONE
 C
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
+#include <ccsdsym.h>
+C
       INTEGER ISYMT2, ISYMIM, LENSQ, LWORK, ISYMIB, IB, ISYMID, ID
       INTEGER ISYRES, ISYMB, ISYMC, ISYMI, ISYAKJ, ISYMJ, ISYMBJ, ISYMAK
       INTEGER NBJ, NAK, NAKBJ, NAKJ, NTOTC, NTOAKJ, KOFF1, KOFF2
@@ -5766,11 +5771,6 @@ C
 #endif
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
-C
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
@@ -6661,6 +6661,11 @@ C               U^{bd}(ck,i,j) = t2(bi,cl) (dj|lk) - t2(bi,dk) (dj|cd)
 C
       IMPLICIT NONE
 C
+#include <priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
+C
       INTEGER ISYMT2, ISYINT, LWORK, LENSQ, ISYMB, ISYMD
       INTEGER INDSQ(LENSQ,6)
       INTEGER ISYRES, ISYMBD, ISCIKJ, ISYCJF, ISYFIK, LENGTH
@@ -6680,11 +6685,6 @@ C
       DOUBLE PRECISION DDOT, ZERO, ONE,ECURR
 #endif
       LOGICAL LDEBUG
-C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
 C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       PARAMETER(LDEBUG = .FALSE.)
@@ -6895,6 +6895,11 @@ C               U^{bd}(ck,i,j) = t2(bi,cl) (dj|lk) - t2(bi,dk) (dj|cd)
 C
       IMPLICIT NONE
 C
+#include <priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
+C
       INTEGER ISYMT1, ISYMT2, ISINT1, ISYINT, LWORK, LENSQ, ISYMB, ISYMD
       INTEGER INDSQ(LENSQ,6), INDEX
       INTEGER ISYRES, ISYMBD, ISCIKJ, ISYCJF, ISYFIK, LENGTH
@@ -6918,11 +6923,6 @@ C
       DOUBLE PRECISION UMAT(*), TMAT(*), WORK(LWORK), EPSIBD, XUMAT
       DOUBLE PRECISION DDOT, ZERO, ONE, TWO, ECURR
 #endif
-C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
 C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
 C
@@ -7375,6 +7375,10 @@ C     IOPT = 2 : Sort FROM akjl TO ljka
 C
       IMPLICIT NONE
 C
+#include <priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+C
       INTEGER ISYINT, IOPT, KOFF1, KOFF2
       INTEGER ISYMA, ISYLJK, ISYMK, ISYMLJ, ISYMAK, ISYMJ
       INTEGER ISYML, ISYAKJ
@@ -7385,10 +7389,6 @@ C
 #else
       DOUBLE PRECISION INT1(*), INT2(*)
 #endif
-C
-#include <priunit.h>
-#include <ccsdsym.h>
-#include <ccorb.h>
 C
       CALL QENTER('CCFOP_SORT')
 C

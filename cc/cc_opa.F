@@ -55,6 +55,7 @@ c /* deck CC_OPA */
 #include <ccopainf.h>
 #include <ccsdinp.h>
 #include <dummy.h>
+#include <second.h>
 
 * local parameters:
       CHARACTER*(16) MSGDBG
@@ -73,11 +74,9 @@ c /* deck CC_OPA */
 #if defined (SYS_CRAY)
       REAL WORK(LWORK)
       REAL TIM0, TIM1, TIMF, TIMXE1, TIMXE2
-      REAL SECOND
 #else
       DOUBLE PRECISION WORK(LWORK)
       DOUBLE PRECISION TIM0, TIM1, TIMF, TIMXE1, TIMXE2
-      DOUBLE PRECISION SECOND
 #endif
 
       LOGICAL LADD

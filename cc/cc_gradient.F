@@ -62,6 +62,7 @@ C=====================================================================*
 #include <energy.h>
 #include <taymol.h>
 #include <cch2d.h>
+#include <second.h>
 
 * local parameters:
 
@@ -88,10 +89,8 @@ C=====================================================================*
 
 * external functions
 #if defined (SYS_CRAY)
-      REAL SECOND
       REAL DDOT
 #else
-      DOUBLE PRECISION SECOND
       DOUBLE PRECISION DDOT
 #endif
 

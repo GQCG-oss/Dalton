@@ -47,6 +47,14 @@ C     S. Coriani, January 2002
 C-----------------------------------------------------------------------------
 C
       IMPLICIT NONE
+#include <priunit.h>
+#include <dummy.h>
+#include <iratdef.h>
+#include <ccsdsym.h>
+#include <inftap.h>
+#include <ccinftap.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
 
       INTEGER LWORK
       integer LUDENSTY, LUDEN4MO
@@ -58,23 +66,13 @@ C
 #if defined (SYS_CRAY)
       REAL WORK(LWORK),XCMO(*)
       REAL ZERO, ONE, TWO
-      REAL DTIME, SECOND
       real ddot,xtest,xnorm,xnorm1
 #else
       DOUBLE PRECISION WORK(LWORK),XCMO(*)
       DOUBLE PRECISION ZERO, ONE, TWO
-      DOUBLE PRECISION DTIME, SECOND
       double precision ddot,xtest,xnorm,xnorm1
 #endif
 
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
 
       CHARACTER*9 FNDENSTY, FNDEN4MO
 
@@ -209,6 +207,15 @@ C     S. Coriani, February 2002
 C-----------------------------------------------------------------------------
 C
       IMPLICIT NONE
+#include <priunit.h>
+#include <dummy.h>
+#include <iratdef.h>
+#include <ccsdsym.h>
+#include <inftap.h>
+#include <ccinftap.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
+
 
       INTEGER LWORK
       INTEGER LUDENSTY, LUDEN4MO
@@ -222,23 +229,12 @@ C
 #if defined (SYS_CRAY)
       REAL WORK(LWORK),XCMO(*)
       REAL ZERO, ONE, TWO
-      REAL DTIME, SECOND
       REAL DDOT,XTEST,XNORM,XNORM1
 #else
       DOUBLE PRECISION WORK(LWORK),XCMO(*)
       DOUBLE PRECISION ZERO, ONE, TWO
-      DOUBLE PRECISION DTIME, SECOND
       double precision ddot,xtest,xnorm,xnorm1
 #endif
-
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
 
 
       LOGICAL LOCDBG
@@ -374,6 +370,14 @@ C     S. Coriani, February 2002
 C-----------------------------------------------------------------------------
 C
       IMPLICIT NONE
+#include <priunit.h>
+#include <dummy.h>
+#include <iratdef.h>
+#include <ccsdsym.h>
+#include <inftap.h>
+#include <ccinftap.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
 
       INTEGER LWORK
       INTEGER ISYRES, KSTART, ISYDEN
@@ -392,28 +396,15 @@ C
 #if defined (SYS_CRAY)
       REAL WORK(LWORK),XCMO(*),XDENS(*)
       REAL ZERO, ONE, TWO
-      REAL DTIME, SECOND
       real ddot,xnorm2,xnorm
 #else
       DOUBLE PRECISION WORK(LWORK),XCMO(*),XDENS(*)
       DOUBLE PRECISION ZERO, ONE, TWO
-      DOUBLE PRECISION DTIME, SECOND
       double precision ddot,xnorm2,xnorm
 #endif
 
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
 
-      CHARACTER MODEL*10
-      CHARACTER MODELPRI*4, MODELPRI2*14
-      CHARACTER LABEL*8, FNDENSTY*9
-      CHARACTER*3 LIST
+      CHARACTER FNDENSTY*9
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .false.)
@@ -505,6 +496,14 @@ C     S. Coriani, February 2002
 C-----------------------------------------------------------------------------
 C
       IMPLICIT NONE
+#include <priunit.h>
+#include <dummy.h>
+#include <iratdef.h>
+#include <ccsdsym.h>
+#include <inftap.h>
+#include <ccinftap.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
 
       INTEGER LWORK, IOPT
       INTEGER ISYRES, KSTART, ISYDEN
@@ -529,28 +528,15 @@ C
 #if defined (SYS_CRAY)
       REAL WORK(LWORK),XCMO(*),XDENS1(*),XDENS2(*)
       REAL ZERO, ONE, TWO
-      REAL DTIME, SECOND
       real ddot,xnorm2,xnorm
 #else
       DOUBLE PRECISION WORK(LWORK),XCMO(*),XDENS1(*),XDENS2(*)
       DOUBLE PRECISION ZERO, ONE, TWO
-      DOUBLE PRECISION DTIME, SECOND
       double precision ddot,xnorm2,xnorm
 #endif
 
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
 
-      CHARACTER MODEL*10
-      CHARACTER MODELPRI*4, MODELPRI2*14
-      CHARACTER LABEL*8, FNDENSTY*9
-      CHARACTER*3 LIST
+      CHARACTER FNDENSTY*9
 
       logical locdbg
       parameter (locdbg = .false.)
@@ -662,6 +648,14 @@ C     S. Coriani, December 2001
 C-----------------------------------------------------------------------------
 C
       IMPLICIT NONE
+#include <priunit.h>
+#include <dummy.h>
+#include <iratdef.h>
+#include <ccsdsym.h>
+#include <inftap.h>
+#include <ccinftap.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
 
       INTEGER LWORK,IOPT
       INTEGER ISYRES, KSTART, ISYDEN
@@ -685,23 +679,13 @@ C
 #if defined (SYS_CRAY)
       REAL WORK(LWORK),XCMO(*),XDENS(*)
       REAL ZERO, ONE, TWO
-      REAL DTIME, SECOND
       real ddot,xnorm2,xnorm
 #else
       DOUBLE PRECISION WORK(LWORK),XCMO(*),XDENS(*)
       DOUBLE PRECISION ZERO, ONE, TWO
-      DOUBLE PRECISION DTIME, SECOND
       double precision ddot,xnorm2,xnorm
 #endif
 
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
 
       CHARACTER FNDENSTY*9
 

@@ -62,6 +62,7 @@ c /* deck CC_SOP */
 #include <ccrc1rsp.h>
 #include <ccroper.h>
 #include <cclists.h>
+#include <second.h>
 
 * local parameters:
       CHARACTER*(17) MSGDBG
@@ -98,11 +99,6 @@ c /* deck CC_SOP */
 * external functions:
       INTEGER IR1TAMP
       INTEGER IL1ZETA
-#if defined (SYS_CRAY)
-      REAL SECOND
-#else
-      DOUBLE PRECISION SECOND
-#endif
 
 *---------------------------------------------------------------------*
 * print header for second-order property section:

@@ -180,6 +180,7 @@ C  /* Deck cc_bfden */
 #include <ccorb.h>
 #include <maxorb.h>
 #include <ccsdsym.h>
+#include <second.h>
 C
       LOGICAL LO3BF
       CHARACTER*(*) FILNAM
@@ -191,11 +192,11 @@ C
 #if defined (SYS_CRAY)
       REAL XLAMD1(*),XLAMD2(*),XLAMD3(*),XLAMD4(*)
       REAL T2AM(*), MINT(*), WORK(*)
-      REAL TIMIO, DTIME, ZERO, ONE, SECOND, DDOT, XNORM
+      REAL TIMIO, DTIME, ZERO, ONE, DDOT, XNORM
 #else
       DOUBLE PRECISION XLAMD1(*),XLAMD2(*),XLAMD3(*),XLAMD4(*)  
       DOUBLE PRECISION T2AM(*), MINT(*), WORK(*)
-      DOUBLE PRECISION TIMIO, DTIME, ZERO, ONE, SECOND, DDOT, XNORM
+      DOUBLE PRECISION TIMIO, DTIME, ZERO, ONE, DDOT, XNORM
 #endif
 C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)

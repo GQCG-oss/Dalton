@@ -62,6 +62,7 @@ c /* deck cc_hyppol */
 #include <ccrc1rsp.h>
 #include <ccroper.h>
 #include <cclists.h>
+#include <second.h>
 
 * local parameters:
       CHARACTER*(19) MSGDBG
@@ -126,11 +127,6 @@ c /* deck cc_hyppol */
       INTEGER IL1ZETA
       INTEGER IR2TAMP
       INTEGER IROPER
-#if defined (SYS_CRAY)
-      REAL SECOND
-#else
-      DOUBLE PRECISION SECOND
-#endif
 
 *---------------------------------------------------------------------*
 * print header for hyperpolarizability section
