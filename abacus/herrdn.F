@@ -1474,7 +1474,7 @@ C
  5040 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
      *  ' >>> BASPRO error, # of shells when adding Huckel orbitals',
-     &     ISHEL,
+     &     ISHELL,
      *  '                   current maximum number                 ',
      &     MXSHEL
         CALL QUIT('BASPRO: Too many shells')
