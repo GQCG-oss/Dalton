@@ -587,7 +587,42 @@ hyperfine coupling tensors~\cite{bfpjcpl232}.
 of hyperfine coupling tensors is wanted, we refer the reader to the
 sections describing the options available.
 
+\section{Electronic g-tensors}
 
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item O.Vahtras, B.  Minaev and H.Ågren
+\newblock {\em Chem.Phys.Lett.}, {\bf
+281},\hspace{0.25em}186, (1997).
+\end{list}
+}}
+\end{center}
+
+The calculation of electronic g-tensors\index{g-tensor} is invoked 
+with the keyword \Key{G-TENSOR} in the 
+\Sec{ESR} section of the \Sec{*RESPONSE} input module
+A sample input is thus
+
+\begin{verbatim}
+**DALTON INPUT
+.RUN RESPONSE
+**WAVE FUNCTIONS
+.HARTREE-FOCK
+**RESPON
+*ESR
+.G-TENSOR
+**END OF DALTON INPUT
+\end{verbatim}
+
+which gives by default all contributions to the g-tensor to second order in
+the fine-structure parameter. Keywords following the \Key{G-TENSOR} keyword
+will be interpreted as g-tensor options, which are defined in section
+\ref{sec:g-tensor}
 
 \section{CTOCD-DZ calculations}\label{sec:ctocd}
 

@@ -41,165 +41,170 @@
 \contentsline {subsection}{\numberline {7.2.1}Intrinsic reaction coordinates}{54}
 \contentsline {subsection}{\numberline {7.2.2}Doing a dynamical walk}{55}
 \contentsline {subsection}{\numberline {7.2.3}Calculating relative translational energy release}{58}
-\contentsline {section}{\numberline {7.3}Geometry optimization using non-variational wave functions}{59}
+\contentsline {section}{\numberline {7.3}Geometry optimization using non-variational wave functions}{58}
 \contentsline {chapter}{\numberline {8}Molecular vibrations and rotations}{60}
 \contentsline {section}{\numberline {8.1}Vibrational frequencies}{60}
 \contentsline {section}{\numberline {8.2}Infrared (IR) intensities}{61}
-\contentsline {section}{\numberline {8.3}Dipole gradient based population analysis}{62}
+\contentsline {section}{\numberline {8.3}Dipole-gradient based population analysis}{62}
 \contentsline {section}{\numberline {8.4}Raman intensities}{63}
-\contentsline {chapter}{\numberline {9}Electric properties}{67}
-\contentsline {section}{\numberline {9.1}Dipole moment}{67}
-\contentsline {section}{\numberline {9.2}Quadrupole moment}{67}
-\contentsline {section}{\numberline {9.3}Nuclear quadrupole coupling constants}{68}
-\contentsline {section}{\numberline {9.4}Static and frequency dependent polarizabilities}{69}
-\contentsline {chapter}{\numberline {10}Calculation of magnetic properties}{71}
-\contentsline {section}{\numberline {10.1}Magnetizabilities}{72}
-\contentsline {section}{\numberline {10.2}Nuclear shielding constants}{74}
-\contentsline {section}{\numberline {10.3}Rotational {\em g} tensor}{75}
-\contentsline {section}{\numberline {10.4}Nuclear spin--rotation constants}{76}
-\contentsline {section}{\numberline {10.5}Indirect nuclear spin--spin coupling constants}{77}
-\contentsline {section}{\numberline {10.6}Hyperfine Coupling Tensors}{79}
-\contentsline {section}{\numberline {10.7}CTOCD-DZ calculations}{81}
-\contentsline {subsection}{\numberline {10.7.1}General considerations}{81}
-\contentsline {subsection}{\numberline {10.7.2}Input description}{82}
-\contentsline {chapter}{\numberline {11}Calculation of optical and Raman properties}{85}
-\contentsline {section}{\numberline {11.1}Vibrational Circular Dichroism calculations}{85}
-\contentsline {section}{\numberline {11.2}Electronic circular dichroism (ECD) and electronic absorption calculations}{87}
-\contentsline {section}{\numberline {11.3}Optical Rotation}{89}
-\contentsline {section}{\numberline {11.4}Vibrational Raman Optical Activity (VROA)}{90}
-\contentsline {chapter}{\numberline {12}Getting the property you want}{96}
-\contentsline {section}{\numberline {12.1}General considerations}{96}
-\contentsline {section}{\numberline {12.2}Input description}{97}
-\contentsline {subsection}{\numberline {12.2.1}Linear response}{97}
-\contentsline {subsection}{\numberline {12.2.2}Quadratic response}{99}
-\contentsline {subsection}{\numberline {12.2.3}Cubic response}{101}
-\contentsline {chapter}{\numberline {13}Direct and parallel calculations}{103}
-\contentsline {section}{\numberline {13.1}Direct methods}{103}
-\contentsline {section}{\numberline {13.2}Parallel methods}{104}
-\contentsline {chapter}{\numberline {14}Finite field calculations}{106}
-\contentsline {section}{\numberline {14.1}General considerations}{106}
-\contentsline {section}{\numberline {14.2}Input description}{107}
-\contentsline {chapter}{\numberline {15}Solvent calculations}{109}
-\contentsline {section}{\numberline {15.1}General considerations}{109}
-\contentsline {section}{\numberline {15.2}Input description}{110}
-\contentsline {subsection}{\numberline {15.2.1}Geometry optimization}{112}
-\contentsline {subsection}{\numberline {15.2.2}Non-equilibrium solvation}{112}
-\contentsline {chapter}{\numberline {16}Vibrational corrections}{114}
-\contentsline {section}{\numberline {16.1}Effective geometries}{114}
-\contentsline {section}{\numberline {16.2}Vibrational averaged geometries}{116}
-\contentsline {chapter}{\numberline {17}Relativistic Effects}{119}
-\contentsline {chapter}{\numberline {18}SOPPA and SOPPA(CCSD) calculations}{122}
-\contentsline {section}{\numberline {18.1}General considerations}{122}
-\contentsline {section}{\numberline {18.2}Input description}{123}
-\contentsline {chapter}{\numberline {19}NEVPT2 calculations}{126}
-\contentsline {section}{\numberline {19.1}General considerations}{126}
-\contentsline {section}{\numberline {19.2}Input description}{127}
-\contentsline {chapter}{\numberline {20}Examples of coupled cluster calculations}{128}
-\contentsline {section}{\numberline {20.1}Multiple model energy calculations}{128}
-\contentsline {section}{\numberline {20.2}First-order property calculation}{129}
-\contentsline {section}{\numberline {20.3}Static and frequency-dependent dipole polarizabilities and corresponding dispersion coefficients}{129}
-\contentsline {section}{\numberline {20.4}Static and frequency-dependent dipole hyperpolarizabilities and corresponding dispersion coefficients}{130}
-\contentsline {section}{\numberline {20.5}Excitation energies and oscillator strengths}{131}
-\contentsline {section}{\numberline {20.6}Gradient calculation, geometry optimization}{132}
-\contentsline {section}{\numberline {20.7}R12 methods}{133}
-\contentsline {part}{III\hspace {1em}DALTON Reference Manual}{134}
-\contentsline {chapter}{\numberline {21}General input module}{135}
-\contentsline {section}{\numberline {21.1}General input to DALTON : {\normalfont \ttfamily {**DALTON}}}{135}
-\contentsline {subsection}{\numberline {21.1.1}General: {\normalfont \ttfamily {*OPTIMIZE}}}{138}
-\contentsline {subsection}{\numberline {21.1.2}Parallel calculations : {\normalfont \ttfamily {*PARALLEL}}}{147}
-\contentsline {subsection}{\numberline {21.1.3}Geometry optimization: {\normalfont \ttfamily {*WALK}}}{148}
-\contentsline {section}{\numberline {21.2}Numerical differentiation : {\normalfont \ttfamily {**NMDDRV}}}{153}
-\contentsline {subsection}{\numberline {21.2.1}Vibrational averaging of molecular properties: {\normalfont \ttfamily {*PROPAV}}}{156}
-\contentsline {subsection}{\numberline {21.2.2}Vibrational analysis: {\normalfont \ttfamily {*VIBANA}}}{157}
-\contentsline {chapter}{\numberline {22}Integral evaluation, {{\sc hermit}}}{158}
-\contentsline {section}{\numberline {22.1}General}{158}
-\contentsline {section}{\numberline {22.2}{\normalfont \ttfamily {**INTEGRALS}} directives}{159}
-\contentsline {subsection}{\numberline {22.2.1}End of input: {\normalfont \ttfamily {*END OF}}}{159}
-\contentsline {subsection}{\numberline {22.2.2}General: {\normalfont \ttfamily {**INTEGRALS}}}{159}
-\contentsline {subsection}{\numberline {22.2.3}One-electron integrals: {\normalfont \ttfamily {*ONEINT}}}{173}
-\contentsline {subsection}{\numberline {22.2.4}General: {\normalfont \ttfamily {*READIN}}}{174}
-\contentsline {subsection}{\numberline {22.2.5}Integral sorting: {\normalfont \ttfamily {*SORINT}}}{175}
-\contentsline {subsection}{\numberline {22.2.6}Construction of the supermatrix file: {\normalfont \ttfamily {*SUPINT}}}{176}
-\contentsline {subsection}{\numberline {22.2.7}Two-electron integrals using {{\sc twoint}}: {\normalfont \ttfamily {*TWOINT}}}{176}
-\contentsline {subsection}{\numberline {22.2.8}Two-electron integrals using {{\sc eri}}: {\normalfont \ttfamily {*ER2INT}}}{177}
-\contentsline {chapter}{\numberline {23}{\sc molecule}\ input style}{180}
-\contentsline {section}{\numberline {23.1}General {\sc molecule}\ input}{181}
-\contentsline {section}{\numberline {23.2}Cartesian geometry input}{183}
-\contentsline {section}{\numberline {23.3}Z-matrix input}{186}
-\contentsline {section}{\numberline {23.4}Using the basis set library}{187}
-\contentsline {section}{\numberline {23.5}Auxiliary basis sets}{190}
-\contentsline {section}{\numberline {23.6}The basis sets supplied with {\sc dalton}}{191}
-\contentsline {chapter}{\numberline {24} Molecular wave functions, {{\sc sirius}}}{192}
-\contentsline {section}{\numberline {24.1} General notes for the {{\sc sirius}} input reference manual}{192}
-\contentsline {section}{\numberline {24.2} Main input groups in the **WAVE FUNCTIONS input module}{193}
-\contentsline {subsection}{\numberline {24.2.1}{\normalfont \ttfamily {**WAVE FUNCTIONS}}}{194}
-\contentsline {subsection}{\numberline {24.2.2}{\normalfont \ttfamily {*AUXILIARY INPUT}}}{196}
-\contentsline {subsection}{\numberline {24.2.3}{\normalfont \ttfamily {*CI INPUT}}}{196}
-\contentsline {subsection}{\numberline {24.2.4}{\normalfont \ttfamily {*CI VECTOR}}}{197}
-\contentsline {subsection}{\numberline {24.2.5}{\normalfont \ttfamily {*CONFIGURATION INPUT}}}{198}
-\contentsline {subsection}{\numberline {24.2.6}{\normalfont \ttfamily {*HAMILTONIAN}}}{199}
-\contentsline {subsection}{\numberline {24.2.7}{\normalfont \ttfamily {*SCF INPUT}}}{200}
-\contentsline {subsection}{\numberline {24.2.8}{\normalfont \ttfamily {*MP2 INPUT}}}{204}
-\contentsline {subsection}{\numberline {24.2.9}{\normalfont \ttfamily {*NEVPT2 INPUT}}}{204}
-\contentsline {subsection}{\numberline {24.2.10}{\normalfont \ttfamily {*OPTIMIZATION}}}{205}
-\contentsline {subsection}{\numberline {24.2.11}{\normalfont \ttfamily {*ORBITAL INPUT}}}{210}
-\contentsline {subsection}{\numberline {24.2.12}{\normalfont \ttfamily {*POPULATION ANALYSIS}}}{213}
-\contentsline {subsection}{\numberline {24.2.13}{\normalfont \ttfamily {*PRINT LEVELS}}}{213}
-\contentsline {subsection}{\numberline {24.2.14}{\normalfont \ttfamily {*SOLVENT}}}{215}
-\contentsline {subsection}{\numberline {24.2.15}{\normalfont \ttfamily {*STEP CONTROL}}}{216}
-\contentsline {subsection}{\numberline {24.2.16}{\normalfont \ttfamily {*TRANSFORMATION}}}{217}
-\contentsline {section}{\numberline {24.3} {\normalfont \ttfamily {**MOLORB}} input module}{219}
-\contentsline {chapter}{\numberline {25}Molecular properties, ABACUS}{220}
-\contentsline {section}{\numberline {25.1}Directives for evaluation of molecular properties}{220}
-\contentsline {subsection}{\numberline {25.1.1}General: {\normalfont \ttfamily {**PROPERTIES}}}{220}
-\contentsline {subsection}{\numberline {25.1.2}Calculation of Atomic Axial Tensors (AATs): {\normalfont \ttfamily {*AAT}}}{228}
-\contentsline {subsection}{\numberline {25.1.3}Linear response calculation: {\tt *ABALNR}}{229}
-\contentsline {subsection}{\numberline {25.1.4}Dipole moment and dipole gradient contributions: {\tt *DIPCTL}}{230}
-\contentsline {subsection}{\numberline {25.1.5}End of input: {\normalfont \ttfamily {*END OF}}}{231}
-\contentsline {subsection}{\numberline {25.1.6}Calculation of excitation energies: {\tt *EXCITA}}{231}
-\contentsline {subsection}{\numberline {25.1.7}One-electron expectation values: {\tt *EXPECT}}{233}
-\contentsline {subsection}{\numberline {25.1.8}Geometry analysis: {\normalfont \ttfamily {*GEOANA}}}{234}
-\contentsline {subsection}{\numberline {25.1.9}Right-hand sides for response equations: {\normalfont \ttfamily {*GETSGY}}}{235}
-\contentsline {subsection}{\numberline {25.1.10}Linear response calculation: {\tt *LINRES}}{239}
-\contentsline {subsection}{\numberline {25.1.11}Nuclear contributions: {\normalfont \ttfamily {*NUCREP}}}{241}
-\contentsline {subsection}{\numberline {25.1.12}One-electron integrals: {\normalfont \ttfamily {*ONEINT}}}{241}
-\contentsline {subsection}{\numberline {25.1.13}Relaxation contribution to Hessian: {\normalfont \ttfamily {*RELAX}}}{242}
-\contentsline {subsection}{\numberline {25.1.14}Reorthonormalization contributions: {\normalfont \ttfamily {*REORT}}}{243}
-\contentsline {subsection}{\numberline {25.1.15}Response calculation: {\normalfont \ttfamily {*RESPON}}}{243}
-\contentsline {subsection}{\numberline {25.1.16}Indirect nuclear spin-spin couplings: {\tt *SPIN-S}}{245}
-\contentsline {subsection}{\numberline {25.1.17}Translational and rotational invariance: {\normalfont \ttfamily {*TROINV}}}{246}
-\contentsline {subsection}{\numberline {25.1.18}Response equations for triplet operators: {\tt *TRPRSP}}{247}
-\contentsline {subsection}{\numberline {25.1.19}Two-electron contributions: {\normalfont \ttfamily {*TWOEXP}}}{248}
-\contentsline {subsection}{\numberline {25.1.20}Vibrational analysis: {\normalfont \ttfamily {*VIBANA}}}{250}
-\contentsline {chapter}{\numberline {26}Linear and non-linear response functions, RESPONSE}{252}
-\contentsline {section}{\numberline {26.1}Directives for evaluation of molecular response functions}{252}
-\contentsline {subsection}{\numberline {26.1.1}General: {\normalfont \ttfamily {**RESPONSE}}}{253}
-\contentsline {subsection}{\numberline {26.1.2}Linear response calculation: {\normalfont \ttfamily {*LINEAR}}}{255}
-\contentsline {subsection}{\numberline {26.1.3}Linear response excitation energies calculation: {\normalfont \ttfamily {*LINEAR}} with {\normalfont \ttfamily {.SINGLE RESIDUE}}}{256}
-\contentsline {subsection}{\numberline {26.1.4}Quadratic response calculation: {\normalfont \ttfamily {*QUADRA}}}{258}
-\contentsline {subsection}{\numberline {26.1.5}Quadratic response calculation of second order transition moments: {\normalfont \ttfamily {*QUADRA}} with {\normalfont \ttfamily {.SINGLE RESIDUE}}}{259}
-\contentsline {subsection}{\numberline {26.1.6}Quadratic response calculation of transition moments between excited states: {\normalfont \ttfamily {*QUADRA}} with {\normalfont \ttfamily {.DOUBLE RESIDUE}}}{261}
-\contentsline {subsection}{\numberline {26.1.7}Cubic response calculation: {\normalfont \ttfamily {*CUBIC}}}{262}
-\contentsline {subsection}{\numberline {26.1.8}Cubic response calculation of third-order transition moments: {\normalfont \ttfamily {*CUBIC}} with {\normalfont \ttfamily {.SINGLE RESIDUE}}}{263}
-\contentsline {subsection}{\numberline {26.1.9}Cubic response calculation of second order moments between excited states and excited state polarizabilities: {\normalfont \ttfamily {*CUBIC}} with {\normalfont \ttfamily {.DOUBLE RESIDUE}}}{264}
-\contentsline {subsection}{\numberline {26.1.10}Spherical multipole moments: {\normalfont \ttfamily {*C6}}}{265}
-\contentsline {subsection}{\numberline {26.1.11}Hyperfine Coupling Elements: {\normalfont \ttfamily {*ESR}}}{266}
-\contentsline {chapter}{\numberline {27}Coupled Cluster calculations, CC}{267}
-\contentsline {section}{\numberline {27.1}General input for CC: {\normalfont \ttfamily {*CC INPUT}}}{269}
-\contentsline {section}{\numberline {27.2}Ground state first-order properties: {\normalfont \ttfamily {*CCFOP}}}{274}
-\contentsline {section}{\numberline {27.3}Linear response functions: {\normalfont \ttfamily {*CCLR}}}{276}
-\contentsline {section}{\numberline {27.4}Quadratic response functions: {\normalfont \ttfamily {*CCQR}}}{278}
-\contentsline {section}{\numberline {27.5}Cubic response functions: {\normalfont \ttfamily {*CCCR}}}{281}
-\contentsline {section}{\numberline {27.6}Calculation of excitation energies: {\normalfont \ttfamily {*CCEXCI}}}{284}
-\contentsline {section}{\numberline {27.7}Ground state--excited state transition moments: {\normalfont \ttfamily {*CCLRSD}}}{286}
-\contentsline {section}{\numberline {27.8}Ground state--excited state two-photon transition moments: {\normalfont \ttfamily {*CCTPA}}}{287}
-\contentsline {section}{\numberline {27.9}Ground state--excited state three-photon transition moments: {\normalfont \ttfamily {*CCTM}}}{289}
-\contentsline {section}{\numberline {27.10}Magnetic circular dichroism: {\normalfont \ttfamily {*CCMCD}}}{291}
-\contentsline {section}{\numberline {27.11}Transition moments between two excited states: {\normalfont \ttfamily {*CCQR2R}}}{293}
-\contentsline {section}{\numberline {27.12}Excited state first-order properties: {\normalfont \ttfamily {*CCEXGR}}}{294}
-\contentsline {section}{\numberline {27.13}Excited state linear response functions and two-photon transition moments between two excited states: {\normalfont \ttfamily {*CCEXLR}}}{296}
-\contentsline {section}{\numberline {27.14}Numerical Gradients {\normalfont \ttfamily {*CCGR}}}{298}
-\contentsline {section}{\numberline {27.15}R12 methods: {\normalfont \ttfamily {*R12}}}{299}
-\contentsline {part}{IV\hspace {1em}Appendix: DALTON Tool box}{301}
-\contentsline {part}{V\hspace {1em}References}{306}
-\contentsline {part}{VI\hspace {1em}Index}{320}
+\contentsline {chapter}{\numberline {9}Electric properties}{66}
+\contentsline {section}{\numberline {9.1}Dipole moment}{66}
+\contentsline {section}{\numberline {9.2}Quadrupole moment}{66}
+\contentsline {section}{\numberline {9.3}Nuclear quadrupole coupling constants}{67}
+\contentsline {section}{\numberline {9.4}Static and frequency dependent polarizabilities}{68}
+\contentsline {chapter}{\numberline {10}Calculation of magnetic properties}{70}
+\contentsline {section}{\numberline {10.1}Magnetizabilities}{71}
+\contentsline {section}{\numberline {10.2}Nuclear shielding constants}{73}
+\contentsline {section}{\numberline {10.3}Rotational {\em g} tensor}{74}
+\contentsline {section}{\numberline {10.4}Nuclear spin--rotation constants}{75}
+\contentsline {section}{\numberline {10.5}Indirect nuclear spin--spin coupling constants}{76}
+\contentsline {section}{\numberline {10.6}Hyperfine Coupling Tensors}{78}
+\contentsline {section}{\numberline {10.7}Electronic g-tensors}{79}
+\contentsline {section}{\numberline {10.8}CTOCD-DZ calculations}{80}
+\contentsline {subsection}{\numberline {10.8.1}General considerations}{80}
+\contentsline {subsection}{\numberline {10.8.2}Input description}{81}
+\contentsline {chapter}{\numberline {11}Calculation of optical and Raman properties}{84}
+\contentsline {section}{\numberline {11.1}Vibrational Circular Dichroism calculations}{84}
+\contentsline {section}{\numberline {11.2}Electronic circular dichroism (ECD) and electronic absorption calculations}{86}
+\contentsline {section}{\numberline {11.3}Optical Rotation}{88}
+\contentsline {section}{\numberline {11.4}Vibrational Raman Optical Activity (VROA)}{89}
+\contentsline {chapter}{\numberline {12}Getting the property you want}{94}
+\contentsline {section}{\numberline {12.1}General considerations}{94}
+\contentsline {section}{\numberline {12.2}Input description}{95}
+\contentsline {subsection}{\numberline {12.2.1}Linear response}{95}
+\contentsline {subsection}{\numberline {12.2.2}Quadratic response}{97}
+\contentsline {subsection}{\numberline {12.2.3}Cubic response}{99}
+\contentsline {chapter}{\numberline {13}Direct and parallel calculations}{101}
+\contentsline {section}{\numberline {13.1}Direct methods}{101}
+\contentsline {section}{\numberline {13.2}Parallel methods}{102}
+\contentsline {chapter}{\numberline {14}Finite field calculations}{103}
+\contentsline {section}{\numberline {14.1}General considerations}{103}
+\contentsline {section}{\numberline {14.2}Input description}{104}
+\contentsline {chapter}{\numberline {15}Solvent calculations}{106}
+\contentsline {section}{\numberline {15.1}General considerations}{106}
+\contentsline {section}{\numberline {15.2}Input description}{107}
+\contentsline {subsection}{\numberline {15.2.1}Geometry optimization}{109}
+\contentsline {subsection}{\numberline {15.2.2}Non-equilibrium solvation}{109}
+\contentsline {chapter}{\numberline {16}Vibrational corrections}{111}
+\contentsline {section}{\numberline {16.1}Effective geometries}{111}
+\contentsline {section}{\numberline {16.2}Vibrational averaged geometries}{113}
+\contentsline {chapter}{\numberline {17}Relativistic Effects}{115}
+\contentsline {chapter}{\numberline {18}SOPPA and SOPPA(CCSD) calculations}{117}
+\contentsline {section}{\numberline {18.1}General considerations}{117}
+\contentsline {section}{\numberline {18.2}Input description}{118}
+\contentsline {chapter}{\numberline {19}NEVPT2 calculations}{121}
+\contentsline {section}{\numberline {19.1}General considerations}{121}
+\contentsline {section}{\numberline {19.2}Input description}{122}
+\contentsline {chapter}{\numberline {20}Examples of coupled cluster calculations}{123}
+\contentsline {section}{\numberline {20.1}Multiple model energy calculations}{123}
+\contentsline {section}{\numberline {20.2}First-order property calculation}{124}
+\contentsline {section}{\numberline {20.3}Static and frequency-dependent dipole polarizabilities and corresponding dispersion coefficients}{124}
+\contentsline {section}{\numberline {20.4}Static and frequency-dependent dipole hyperpolarizabilities and corresponding dispersion coefficients}{125}
+\contentsline {section}{\numberline {20.5}Excitation energies and oscillator strengths}{126}
+\contentsline {section}{\numberline {20.6}Gradient calculation, geometry optimization}{127}
+\contentsline {section}{\numberline {20.7}R12 methods}{128}
+\contentsline {part}{III\hspace {1em}DALTON Reference Manual}{129}
+\contentsline {chapter}{\numberline {21}General input module}{130}
+\contentsline {section}{\numberline {21.1}General input to DALTON : {\normalfont \ttfamily {**DALTON}}}{130}
+\contentsline {subsection}{\numberline {21.1.1}General: {\normalfont \ttfamily {*OPTIMIZE}}}{133}
+\contentsline {subsection}{\numberline {21.1.2}Parallel calculations : {\normalfont \ttfamily {*PARALLEL}}}{142}
+\contentsline {subsection}{\numberline {21.1.3}Geometry optimization: {\normalfont \ttfamily {*WALK}}}{143}
+\contentsline {section}{\numberline {21.2}Numerical differentiation : {\normalfont \ttfamily {**NMDDRV}}}{148}
+\contentsline {subsection}{\numberline {21.2.1}Vibrational averaging of molecular properties: {\normalfont \ttfamily {*PROPAV}}}{151}
+\contentsline {subsection}{\numberline {21.2.2}Vibrational analysis: {\normalfont \ttfamily {*VIBANA}}}{152}
+\contentsline {chapter}{\numberline {22}Integral evaluation, {{\sc hermit}}}{153}
+\contentsline {section}{\numberline {22.1}General}{153}
+\contentsline {section}{\numberline {22.2}{\normalfont \ttfamily {**INTEGRALS}} directives}{154}
+\contentsline {subsection}{\numberline {22.2.1}End of input: {\normalfont \ttfamily {*END OF}}}{154}
+\contentsline {subsection}{\numberline {22.2.2}General: {\normalfont \ttfamily {**INTEGRALS}}}{154}
+\contentsline {subsection}{\numberline {22.2.3}One-electron integrals: {\normalfont \ttfamily {*ONEINT}}}{168}
+\contentsline {subsection}{\numberline {22.2.4}General: {\normalfont \ttfamily {*READIN}}}{169}
+\contentsline {subsection}{\numberline {22.2.5}Integral sorting: {\normalfont \ttfamily {*SORINT}}}{170}
+\contentsline {subsection}{\numberline {22.2.6}Construction of the supermatrix file: {\normalfont \ttfamily {*SUPINT}}}{171}
+\contentsline {subsection}{\numberline {22.2.7}Two-electron integrals using {{\sc twoint}}: {\normalfont \ttfamily {*TWOINT}}}{171}
+\contentsline {subsection}{\numberline {22.2.8}Two-electron integrals using {{\sc eri}}: {\normalfont \ttfamily {*ER2INT}}}{172}
+\contentsline {chapter}{\numberline {23}{\sc molecule}\ input style}{175}
+\contentsline {section}{\numberline {23.1}General {\sc molecule}\ input}{176}
+\contentsline {section}{\numberline {23.2}Cartesian geometry input}{179}
+\contentsline {section}{\numberline {23.3}Z-matrix input}{182}
+\contentsline {section}{\numberline {23.4}Using the basis set library}{183}
+\contentsline {section}{\numberline {23.5}Auxiliary basis sets}{186}
+\contentsline {section}{\numberline {23.6}The basis sets supplied with {\sc dalton}}{187}
+\contentsline {chapter}{\numberline {24} Molecular wave functions, {{\sc sirius}}}{188}
+\contentsline {section}{\numberline {24.1} General notes for the {{\sc sirius}} input reference manual}{188}
+\contentsline {section}{\numberline {24.2} Main input groups in the **WAVE FUNCTIONS input module}{189}
+\contentsline {subsection}{\numberline {24.2.1}{\normalfont \ttfamily {**WAVE FUNCTIONS}}}{190}
+\contentsline {subsection}{\numberline {24.2.2}{\normalfont \ttfamily {*AUXILIARY INPUT}}}{192}
+\contentsline {subsection}{\numberline {24.2.3}{\normalfont \ttfamily {*CI INPUT}}}{192}
+\contentsline {subsection}{\numberline {24.2.4}{\normalfont \ttfamily {*CI VECTOR}}}{193}
+\contentsline {subsection}{\numberline {24.2.5}{\normalfont \ttfamily {*CONFIGURATION INPUT}}}{194}
+\contentsline {subsection}{\numberline {24.2.6}{\normalfont \ttfamily {*HAMILTONIAN}}}{195}
+\contentsline {subsection}{\numberline {24.2.7}{\normalfont \ttfamily {*SCF INPUT}}}{196}
+\contentsline {subsection}{\numberline {24.2.8}{\normalfont \ttfamily {*MP2 INPUT}}}{200}
+\contentsline {subsection}{\numberline {24.2.9}{\normalfont \ttfamily {*NEVPT2 INPUT}}}{200}
+\contentsline {subsection}{\numberline {24.2.10}{\normalfont \ttfamily {*OPTIMIZATION}}}{201}
+\contentsline {subsection}{\numberline {24.2.11}{\normalfont \ttfamily {*ORBITAL INPUT}}}{206}
+\contentsline {subsection}{\numberline {24.2.12}{\normalfont \ttfamily {*POPULATION ANALYSIS}}}{209}
+\contentsline {subsection}{\numberline {24.2.13}{\normalfont \ttfamily {*PRINT LEVELS}}}{210}
+\contentsline {subsection}{\numberline {24.2.14}{\normalfont \ttfamily {*SOLVENT}}}{211}
+\contentsline {subsection}{\numberline {24.2.15}{\normalfont \ttfamily {*STEP CONTROL}}}{212}
+\contentsline {subsection}{\numberline {24.2.16}{\normalfont \ttfamily {*TRANSFORMATION}}}{214}
+\contentsline {section}{\numberline {24.3} {\normalfont \ttfamily {**MOLORB}} input module}{215}
+\contentsline {chapter}{\numberline {25}Molecular properties, ABACUS}{216}
+\contentsline {section}{\numberline {25.1}Directives for evaluation of molecular properties}{216}
+\contentsline {subsection}{\numberline {25.1.1}General: {\normalfont \ttfamily {**PROPERTIES}}}{216}
+\contentsline {subsection}{\numberline {25.1.2}Calculation of Atomic Axial Tensors (AATs): {\normalfont \ttfamily {*AAT}}}{223}
+\contentsline {subsection}{\numberline {25.1.3}Linear response calculation: {\tt *ABALNR}}{224}
+\contentsline {subsection}{\numberline {25.1.4}Dipole moment and dipole gradient contributions: {\tt *DIPCTL}}{226}
+\contentsline {subsection}{\numberline {25.1.5}End of input: {\normalfont \ttfamily {*END OF}}}{226}
+\contentsline {subsection}{\numberline {25.1.6}Calculation of excitation energies: {\tt *EXCITA}}{226}
+\contentsline {subsection}{\numberline {25.1.7}One-electron expectation values: {\tt *EXPECT}}{228}
+\contentsline {subsection}{\numberline {25.1.8}Geometry analysis: {\normalfont \ttfamily {*GEOANA}}}{230}
+\contentsline {subsection}{\numberline {25.1.9}Right-hand sides for response equations: {\normalfont \ttfamily {*GETSGY}}}{231}
+\contentsline {subsection}{\numberline {25.1.10}Linear response calculation: {\tt *LINRES}}{235}
+\contentsline {subsection}{\numberline {25.1.11}Nuclear contributions: {\normalfont \ttfamily {*NUCREP}}}{236}
+\contentsline {subsection}{\numberline {25.1.12}One-electron integrals: {\normalfont \ttfamily {*ONEINT}}}{236}
+\contentsline {subsection}{\numberline {25.1.13}Relaxation contribution to Hessian: {\normalfont \ttfamily {*RELAX}}}{237}
+\contentsline {subsection}{\numberline {25.1.14}Reorthonormalization contributions: {\normalfont \ttfamily {*REORT}}}{238}
+\contentsline {subsection}{\numberline {25.1.15}Response calculation: {\normalfont \ttfamily {*RESPON}}}{238}
+\contentsline {subsection}{\numberline {25.1.16}Second-order polarization propagator approximation: {\tt *SOPPA}}{240}
+\contentsline {subsection}{\numberline {25.1.17}Indirect nuclear spin-spin couplings: {\tt *SPIN-S}}{240}
+\contentsline {subsection}{\numberline {25.1.18}Translational and rotational invariance: {\normalfont \ttfamily {*TROINV}}}{241}
+\contentsline {subsection}{\numberline {25.1.19}Response equations for triplet operators: {\tt *TRPRSP}}{242}
+\contentsline {subsection}{\numberline {25.1.20}Two-electron contributions: {\normalfont \ttfamily {*TWOEXP}}}{243}
+\contentsline {subsection}{\numberline {25.1.21}Vibrational analysis: {\normalfont \ttfamily {*VIBANA}}}{245}
+\contentsline {chapter}{\numberline {26}Linear and non-linear response functions, RESPONSE}{247}
+\contentsline {section}{\numberline {26.1}Directives for evaluation of molecular response functions}{247}
+\contentsline {subsection}{\numberline {26.1.1}General: {\normalfont \ttfamily {**RESPONSE}}}{248}
+\contentsline {subsection}{\numberline {26.1.2}Linear response calculation: {\normalfont \ttfamily {*LINEAR}}}{250}
+\contentsline {subsection}{\numberline {26.1.3}Linear response excitation energies calculation: {\normalfont \ttfamily {*LINEAR}} with {\normalfont \ttfamily {.SINGLE RESIDUE}}}{251}
+\contentsline {subsection}{\numberline {26.1.4}Quadratic response calculation: {\normalfont \ttfamily {*QUADRA}}}{253}
+\contentsline {subsection}{\numberline {26.1.5}Quadratic response calculation of second order transition moments: {\normalfont \ttfamily {*QUADRA}} with {\normalfont \ttfamily {.SINGLE RESIDUE}}}{254}
+\contentsline {subsection}{\numberline {26.1.6}Quadratic response calculation of transition moments between excited states: {\normalfont \ttfamily {*QUADRA}} with {\normalfont \ttfamily {.DOUBLE RESIDUE}}}{256}
+\contentsline {subsection}{\numberline {26.1.7}Cubic response calculation: {\normalfont \ttfamily {*CUBIC}}}{257}
+\contentsline {subsection}{\numberline {26.1.8}Cubic response calculation of third-order transition moments: {\normalfont \ttfamily {*CUBIC}} with {\normalfont \ttfamily {.SINGLE RESIDUE}}}{258}
+\contentsline {subsection}{\numberline {26.1.9}Cubic response calculation of second order moments between excited states and excited state polarizabilities: {\normalfont \ttfamily {*CUBIC}} with {\normalfont \ttfamily {.DOUBLE RESIDUE}}}{259}
+\contentsline {subsection}{\numberline {26.1.10}Spherical multipole moments: {\normalfont \ttfamily {*C6}}}{260}
+\contentsline {subsection}{\numberline {26.1.11}Electron Spin Resonance: {\normalfont \ttfamily {*ESR}}}{261}
+\contentsline {subsubsection}{Hyperfine coupling}{261}
+\contentsline {subsubsection}{Zero-fieldl splitting: {\normalfont \ttfamily {.ZFS}}}{261}
+\contentsline {subsubsection}{Electronic g-tensors: {\normalfont \ttfamily {.G-TENSOR}}}{261}
+\contentsline {chapter}{\numberline {27}Coupled Cluster calculations, CC}{263}
+\contentsline {section}{\numberline {27.1}General input for CC: {\normalfont \ttfamily {*CC INPUT}}}{265}
+\contentsline {section}{\numberline {27.2}Ground state first-order properties: {\normalfont \ttfamily {*CCFOP}}}{270}
+\contentsline {section}{\numberline {27.3}Linear response functions: {\normalfont \ttfamily {*CCLR}}}{272}
+\contentsline {section}{\numberline {27.4}Quadratic response functions: {\normalfont \ttfamily {*CCQR}}}{274}
+\contentsline {section}{\numberline {27.5}Cubic response functions: {\normalfont \ttfamily {*CCCR}}}{277}
+\contentsline {section}{\numberline {27.6}Calculation of excitation energies: {\normalfont \ttfamily {*CCEXCI}}}{280}
+\contentsline {section}{\numberline {27.7}Ground state--excited state transition moments: {\normalfont \ttfamily {*CCLRSD}}}{282}
+\contentsline {section}{\numberline {27.8}Ground state--excited state two-photon transition moments: {\normalfont \ttfamily {*CCTPA}}}{283}
+\contentsline {section}{\numberline {27.9}Ground state--excited state three-photon transition moments: {\normalfont \ttfamily {*CCTM}}}{285}
+\contentsline {section}{\numberline {27.10}Magnetic circular dichroism: {\normalfont \ttfamily {*CCMCD}}}{287}
+\contentsline {section}{\numberline {27.11}Transition moments between two excited states: {\normalfont \ttfamily {*CCQR2R}}}{289}
+\contentsline {section}{\numberline {27.12}Excited state first-order properties: {\normalfont \ttfamily {*CCEXGR}}}{290}
+\contentsline {section}{\numberline {27.13}Excited state linear response functions and two-photon transition moments between two excited states: {\normalfont \ttfamily {*CCEXLR}}}{292}
+\contentsline {section}{\numberline {27.14}Numerical Gradients {\normalfont \ttfamily {*CCGR}}}{294}
+\contentsline {section}{\numberline {27.15}R12 methods: {\normalfont \ttfamily {*R12}}}{295}
+\contentsline {part}{IV\hspace {1em}Appendix: DALTON Tool box}{297}
+\contentsline {part}{V\hspace {1em}References}{302}
+\contentsline {part}{VI\hspace {1em}Index}{316}

@@ -822,7 +822,7 @@ H.~Koch, O.~Christiansen, P.~J{\o}rgensen, A.~S{\'a}nchez {de Mer{\'a}s}, , and
 \newblock {\em J.~Chem.~Phys.}, 106:1808, 1997.
 
 \bibitem{Halkier:CCFOP}
-A.~Halkier, H.~Koch, O.~Christiansen, Poul J{\o}rgensen, and Trygve Helgaker.
+A.~Halkier, H.~Koch, O.~Christiansen, P.~J{\o}rgensen, and T.~Helgaker.
 \newblock First-order one-electron properties in the integral-direct coupled
   cluster singles and doubles model.
 \newblock {\em J.~Chem.~Phys.}, 107:849, 1997.
@@ -831,6 +831,12 @@ A.~Halkier, H.~Koch, O.~Christiansen, Poul J{\o}rgensen, and Trygve Helgaker.
 A.~Halkier and S.~Coriani.
 \newblock Relaxed {CC2} first-order properties.
 \newblock (Technical notes), 2000.
+
+\bibitem{Hald:CCPTFOP}
+K.~Hald, A.~Halkier, P.~J{\o}rgensen, S.~Coriani, and T.~Helgaker.
+\newblock A {L}agrangian, integral-density direct formulation and
+  implementation of the analytic {CCSD} and {CCSD(T)} gradients.
+\newblock {\em J.~Chem.~Phys.}, 118:2985, 2003.
 
 \bibitem{Christiansen:CCLR}
 O.~Christiansen, A.~Halkier, H.~Koch, P.~J{\o}rgensen, and T.~Helgaker.

@@ -974,9 +974,13 @@ file.
 
 \end{description}
 
-\subsection{Hyperfine Coupling Elements: \Sec{ESR}}
+\subsection{Electron Spin Resonance: \Sec{ESR}}
 
-Calculation of ESR properties\index{ESR}\index{hyperfine coupling}: hyperfine coupling tensors using 
+Calculation of ESR parameters\index{ESR}
+
+\subsubsection{Hyperfine coupling}
+
+Default\index{hyperfine coupling}: hyperfine coupling tensors using 
 the Restricted-Unrestricted Approach\index{restricted-unrestricted method}.
 
 \begin{description}
@@ -1004,6 +1008,58 @@ the Restricted-Unrestricted Approach\index{restricted-unrestricted method}.
 
 \end{description}
 
+\subsubsection{Zero-fieldl splitting: \Key{ZFS}}
 
+Calculation of the spin-spin contribution to the zero-field splitting
+tensor:
+
+\begin{description}
+  \item{\Key{ZFS}} \\
+\end{description}
+
+\subsubsection{Electronic g-tensors:  \Key{G-TENSOR}}
+\label{sec:g-tensor}
+Calculation of the electronic g-tensor:
+
+\begin{description}
+  \item{\Key{G-TENSOR}} \\
+   Initializes input block for g-tensor related options
+\end{description}
+The default is to calculate all contributions. The following
+options selects individual contributions
+\begin{description}
+   \item{\Key{RMC}}
+   Relativistic mass correction
+   \item{\Key{OZSO1}}
+   Second-order (paramagnetic) orbital-Zeeman + 1-electron spin-orbit contributions
+   \item{\Key{OZSO2}}
+   Second-order (paramagnetic) orbital-Zeeman + 2-electron spin-orbit contributions
+   \item{\Key{GC1}}
+   1-electron gauge correction (diamagnetic) contributions
+   \item{\Key{GC2}}
+   2-electron gauge correction (diamagnetic) contributions
+   \item{\Key{ECC}}
+   Choose electron center of charge (ECC) as gauge origin.
+\end{description}
+The following are utility options for modifying the default calculational
+procedure.
+\begin{description}
+   \item{\Key{ZERO}}
+   \verb|READ(LUCMD,'(A80)')G_LINE |\\
+   This option is mainly for linear molecules in a $\Sigma$ state.
+   Specifying e.g. "ZZ" on the input line instructs the program
+   to skip the calculation of the paramagnetic contribution to $g_{zz}$.
+   \item{\Key{MEAN-FIELD}}
+   Uses the approximate atomic mean field (AMFI) spin-orbit operator
+   for evaluating the paramagnetic contributions.
+   \item{\Key{SCALED}}
+   Uses the approximate 1-electron spin-orbit operator with scaled nuclear
+   charges for evaluating the paramagnetic contributions.
+   \item{\Key{ADD-SO}}
+   Adds the 1- and 2-electron spin-orbit operators. This 
+   option may be used when one is not interested in the individual
+   1- and 2-electron contribution to the paramagnetic g-tensor,
+   since it reduces the number of response equations to be solved.
+\end{description}
 
 
