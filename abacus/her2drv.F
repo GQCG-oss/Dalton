@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: her2drv.F,v 1.7 2001-05-31 06:38:06 vebjornb Exp $
+C$Id: her2drv.F,v 1.8 2001-06-11 07:56:54 hjj Exp $
 C
 #include <single.h>
 C  /* Deck twoint */
@@ -2241,6 +2241,8 @@ C        D) Direct calculation of Fock matrices in SO basis
 C        ==================================================
 C
          ELSE IF (SOFOCK) THEN
+            CALL QUIT(
+     &      'SOFOCK call of FCKOUT not implemented in this version')
             IF (TKTIME) CALL GETTIM(TIMSTR,DUMTIM)
 CSCR            CALL FCKOUT(FMAT,DMAT,NDMAT,SOINT,IPNTNO,IPNTRP,IPNTLG,
 CSCR     &                  NINDAB,NINDCD,IFCTYP,DINTSKP,IREPDM,
@@ -2255,6 +2257,8 @@ C        E) Calculation of distributions
 C        ===============================
 C
          ELSE IF (DISTRI) THEN
+            CALL QUIT(
+     &      'DISTRI call of FCKOUT not implemented in this version')
             IF (TKTIME) CALL GETTIM(TIMSTR,DUMTIM)
 C     Note: Make FCKOUT general enough to handle distributions
 C           CALL FCKOUT(FMAT,DMAT,NDMAT,GMAT,SOINT,DIRFCK,DISTRI,
