@@ -10,21 +10,21 @@ integrals\index{one-electron integral}\index{two-electron integral},
 and some users may find it useful to generate explicit integrals using
 \her . This is for instance necessary if the \resp\ program (dynamic
 properties) is to be
-used, as described in Chapter~\ref{ch:response}. Disc usage may also
+used, as described in Chapter~\ref{ch:response}. Disk usage may also
 be reduced by not calculating the
 supermatrix\index{supermatrix}, and this is also controlled in the
 \Sec{*INTEGRALS} input section.
 
 It is worth noticing that the two-electron part of {\her} is actually
-two integral programs. One, {\twoint}, is general and invoked by
-default in sequential calculations. The other, {\eri} (Electron Repulsion
-Integrals), is a highly vectorized two-electron integral code with
-orientation towards integral distributions. This code is
+two integral programs. {\twoint} is the more general one and is invoked by
+default in sequential calculations; {\eri} (Electron Repulsion
+Integrals) is a highly vectorized two-electron integral code with
+orientation towards integral distributions. {\eri} is
 invoked by default in integral-direct coupled-cluster calculations and
 may in other cases be invoked by specifying the \Key{RUNERI} keyword
-in the \Sec{*GENERAL} input section. This keyword ensures that {\eri}
+in the \Sec{*GENERAL} input section, which ensures that {\eri}
 rather than {\twoint} is called whenever {\eri} has the required
-functionality. {\dalton} will, however, automatically switch to
+functionality. {\dalton} will, however, automatically revert to
 {\twoint} for any two-electron integral not available in {\eri}:
 {{\eri} cannot be used in parallel
 calculations and it contains only first-derivatives (for
@@ -38,7 +38,7 @@ ended with \Sec{END OF} or any keyword starting with two stars
 divided into two sections: one general input section describing
 what molecular integrals is to be evaluated, and then a set of
 modules controlling the different parts of the calculation of
-undifferentiated atomic integrals and the (possible) formation of
+atomic integrals and the (possible) formation of
 a supermatrix as defined in for instance~\cite{pemsjaahborjcp74}.
 
 
@@ -1154,7 +1154,7 @@ integral calculation appear in the \Sec{TWOINT} section.
 Screening\index{integral screening} threshold for Coulomb and exchange
 contributions to the Fock
 matrix in direct and parallel calculations. The thresholds for the
-integrals will ten to the power of these numbers. By default the same
+integrals are ten to the power of these numbers. By default the same
 screening threshold will be used for Coulomb and exchange
 contribution which will change dynamically as the wave function
 converges more and more tightly.
@@ -1199,7 +1199,6 @@ two-electron integral calculation.
 
 Directives controlling the two-electron integral calculation with {\eri}
 are specified in the \Sec{ER2INT} section.
-
 By default {\eri} is only used for integral-direct coupled-cluster
 calculations. However, {\eri} can also be invoked by specifying the
 \Key{RUNERI} keyword in the \Sec{*GENERAL} input section. Note that
@@ -1252,12 +1251,15 @@ orbitals of electron 2.
 \item[\Key{NOWRIT}] Do not write integrals to disk.
 
 \item[\Key{OFFCNT}] During sorting of OD batches, treat batches
-containing one and two AO centers as equivalent.
+containing one and two distinct AO centers as equivalent.
 
 \item[\Key{PRINT}]\verb| |\newline
 \verb|READ (LUCMD,'(I5)') IPRERI|
 
 Print level for {\eri}.
+
+\item[\Key{RETURN}] Stop after the shell quadruplet specified
+under \Key{PRINT} above. Mainly for debugging purposes.
 
 \item[\Key{SELCT1}]\verb| |\newline
 \verb|READ (LUCMD,'(  I5)') NSELCT(1)|\newline
@@ -1271,4 +1273,9 @@ first AO.
 \item[\Key{SELCT3}] Same as \Key{SELCT1} but for the third AO.
 
 \item[\Key{SELCT4}] Same as \Key{SELCT1} but for the fourth AO.
+
+\item[\Key{SKIP}] Skip the calculation of two-electron Hamiltonian
+integrals. An alternative keyword is \Key{NOTWO} in the \Sec{*INTEGRALS}
+input module.
 \end{description}
+

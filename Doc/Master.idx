@@ -1454,6 +1454,7 @@
 \indexentry{\sc  hermit}{148}
 \indexentry{\sc  twoint}{148}
 \indexentry{\sc  eri}{148}
+\indexentry{\sc  eri}{148}
 \indexentry{RUNERI@{\normalfont  \ttfamily  {.RUNERI}}}{148}
 \indexentry{*GENERAL@{\normalfont  \ttfamily  {**GENERAL}}}{148}
 \indexentry{\sc  eri}{148}
@@ -1776,6 +1777,8 @@
 \indexentry{OFFCNT@{\normalfont  \ttfamily  {.OFFCNT}}}{168}
 \indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{168}
 \indexentry{\sc  eri}{168}
+\indexentry{RETURN@{\normalfont  \ttfamily  {.RETURN}}}{168}
+\indexentry{PRINT@{\normalfont  \ttfamily  {.PRINT}}}{168}
 \indexentry{SELCT1@{\normalfont  \ttfamily  {.SELCT1}}}{168}
 \indexentry{SELCT2@{\normalfont  \ttfamily  {.SELCT2}}}{168}
 \indexentry{SELCT1@{\normalfont  \ttfamily  {.SELCT1}}}{168}
@@ -1783,6 +1786,9 @@
 \indexentry{SELCT1@{\normalfont  \ttfamily  {.SELCT1}}}{168}
 \indexentry{SELCT4@{\normalfont  \ttfamily  {.SELCT4}}}{168}
 \indexentry{SELCT1@{\normalfont  \ttfamily  {.SELCT1}}}{168}
+\indexentry{SKIP@{\normalfont  \ttfamily  {.SKIP}}}{168}
+\indexentry{NOTWO@{\normalfont  \ttfamily  {.NOTWO}}}{168}
+\indexentry{*INTEGRALS@{\normalfont  \ttfamily  {**INTEGRALS}}}{168}
 \indexentry{\sc  molecule}{169}
 \indexentry{geometry!Cartesian coordinate input}{169}
 \indexentry{Cartesian coordinate input}{169}

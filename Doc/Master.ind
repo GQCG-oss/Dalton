@@ -8,7 +8,7 @@
   \item {\normalfont  \ttfamily  {**GENERAL}}, 128, 148, 167
   \item {\normalfont  \ttfamily  {**HERMIT}}, 239
   \item {\normalfont  \ttfamily  {**INTEGRALS}}, 18, 21, 103, 107, 
-		148, 149, 154, 163--166, 204, 259, 261, 263, 266, 
+		148, 149, 154, 163--166, 168, 204, 259, 261, 263, 266, 
 		271, 272, 276, 278, 281
   \item {\normalfont  \ttfamily  {**MOLORB}}, 34, 182, 197, 198, 205
   \item {\normalfont  \ttfamily  {**NATORB}}, 34, 182, 197
@@ -926,7 +926,7 @@
   \item {\normalfont  \ttfamily  {.NOTRACI}}, 194
   \item {\normalfont  \ttfamily  {.NOTRIA}}, 229
   \item {\normalfont  \ttfamily  {.NOTRUS}}, 136
-  \item {\normalfont  \ttfamily  {.NOTWO}}, 156, 166
+  \item {\normalfont  \ttfamily  {.NOTWO}}, 156, 166, 168
   \item {\normalfont  \ttfamily  {.NOWRIT}}, 167
   \item {\normalfont  \ttfamily  {.NPOTST}}, 156
   \item NQCC, 68, 69, 210, 218
@@ -1203,7 +1203,7 @@
   \item {\normalfont  \ttfamily  {.RESTLR}}, 241
   \item {\normalfont  \ttfamily  {.RESTPP}}, 242
   \item restricted-unrestricted method, 80, 250
-  \item {\normalfont  \ttfamily  {.RETURN}}, 166, 223, 235
+  \item {\normalfont  \ttfamily  {.RETURN}}, 166, 168, 223, 235
   \item {\normalfont  \ttfamily  {.REUSE}}, 146
   \item {\normalfont  \ttfamily  {.RF}}, 135, 137--139
   \item right-hand side, 220
@@ -1302,7 +1302,7 @@
   \item SIRIUS.RST, 26, 33--36
   \item {\normalfont  \ttfamily  {.SIRPR4}}, 224
   \item {\normalfont  \ttfamily  {.SIRPR6}}, 224
-  \item {\normalfont  \ttfamily  {.SKIP}}, 163, 165, 166, 214--217, 
+  \item {\normalfont  \ttfamily  {.SKIP}}, 163, 165, 166, 168, 214--217, 
 		219, 220, 224, 226--228, 230, 232, 233, 235, 236
   \item slave, 100, 141, 142
   \item slave program, 11

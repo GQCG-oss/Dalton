@@ -95,7 +95,6 @@
 \contentsline {section}{\numberline {19.4}Static and frequency-dependent dipole hyperpolarizabilities and corresponding dispersion coefficients}{123}
 \contentsline {section}{\numberline {19.5}Excitation energies and oscillator strengths}{124}
 \contentsline {section}{\numberline {19.6}Gradient calculation, geometry optimization}{125}
-\contentsline {section}{\numberline {19.7}Excited state geometry optimization}{126}
 \contentsline {part}{III\hspace {1em}DALTON Reference Manual}{127}
 \contentsline {chapter}{\numberline {20}General input module}{128}
 \contentsline {section}{\numberline {20.1}General input to DALTON : {\normalfont \ttfamily {**DALTON}}}{128}
