@@ -201,8 +201,8 @@ C
 #include <infpri.h>
 C
 C
-#include <memint.h>
 #include <dftcom.h>
+#include <memint.h>
       CALL QENTER('SIRFCK2')
 C
 C     Transfer constant factors to DMAT
@@ -216,7 +216,7 @@ C     IFCTYP 02   : factor -0.5 from exchange integral
          IF (IFCTYP(I) .EQ. 11 .OR. IFCTYP(I) .EQ. 13) THEN
             CALL DSCAL(N2BASX,D4,DMAT(1,I),1)
          ELSE IF (IFCTYP(I) .EQ. 2) THEN
-            IF (HFXFAC .EQ. D0) 
+            IF (HFXFAC .EQ. D0) THEN
 C This exchange-only matrix is zero
                IFCTYP(I) = 0
             ELSE
