@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: eri2par.F,v 1.3 2001-03-18 21:53:34 vebjornb Exp $
+C$Id: eri2par.F,v 1.4 2001-04-04 14:19:10 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck pardrv */
@@ -682,6 +682,13 @@ C
          ELSE
             CALL MPIXRECV(MEMADD,3,'INTEGER',NWHO,MTAG7)
             CALL MPIXRECV(LWORK ,1,'INTEGER',NWHO,MTAG7)
+            IF (MEMADD .GT. MAXADD) THEN
+               IABMAX = MODAB
+               ICDMAX = MODCD
+               IWORK  = LWORK
+               MAXADD = MEMADD
+            END IF
+            NOTMEM = .TRUE.
 #endif
 #if defined (VAR_PVM)
          CALL PVMXRECV(-1,MTAG7)
