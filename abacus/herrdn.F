@@ -646,10 +646,9 @@ C***********************************************************************
          IF (THRS .GE. 0.0D0) THEN
 C        ... THRS .lt. 0.0D0 is code from LINE4 that
 C            user has not specified THRS
-            WRITE (LUPRI,'(/2X,A)') '*** WARNING from READIN ***'
-            WRITE (LUPRI,'(2(/2X,A,1P,D12.2))')
-     &      'Threshold for discarding integrals was',THRS,
-     &      'Threshold is reset to minimum value   ',THRMIN
+            WRITE (LUPRI,'(1P,2(/2X,A,D12.2))')
+     &'INFO from READIN: Threshold for discarding integrals was',THRS,
+     &'INFO from READIN: Threshold is reset to minimum value   ',THRMIN
          END IF
          THRS = THRMIN
 C        note that her2drv.F has explicit THRESH = MAX(THRS,1.0D-15)
@@ -6129,7 +6128,7 @@ C
          NWARN = NWARN + 1
          RUNERI = .FALSE.
          WRITE (LUPRI,'(A)')
-     &' WARNING: Only spherical-harmonic basis is implemented in ERI.'//
+     &' INFO: Only spherical-harmonic basis is implemented in ERI.'//
      &' HERMIT module (TWOINT) is used instead.'
       END IF
       RETURN
