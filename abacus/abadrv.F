@@ -1896,7 +1896,8 @@ C
             CALL HEADER(
      &         'Orbital-exponent gradient for all atoms (au)',-1)
             WRITE (LUPRI,'(4X,2A)') ' #   atom Z   deg l       ',
-     &          '        exponent           grad           grad ln'
+     &          '        exponent           grad'//
+     &          '           grad ln          grad ln'
             WRITE (LUPRI,'()')
             JCNT = 1
             ALPNRM = D0
@@ -1912,9 +1913,10 @@ C
                GRAD = ALPGRD(I)/FLOAT(MLT)
                GRDL = GRAD*PRIEXP(I)
 C              WRITE (LUPRI,'(5X,A,I3,3X,A,I2,I5,4X,A,3F17.10)')
-               WRITE (LUPRI,'(1X,A,I3,3X,A,I2,I5,2X,A,F23.10,2F17.10)')
+               WRITE (LUPRI,
+     &              '(1X,A,I3,3X,A,I2,I5,2X,A,F23.10,2F17.10,1P,D17.8)')
      &              '##',I,NAMDEP(ICNT)(1:4),ICHRG,
-     &               MLT,SPDCAR(LVAL),PRIEXP(I), GRAD,GRDL
+     &               MLT,SPDCAR(LVAL),PRIEXP(I), GRAD,GRDL,GRDL
                ALPNRM = ALPNRM + FLOAT(MLT)*GRAD*GRAD 
                ALPNRL = ALPNRL + FLOAT(MLT)*GRDL*GRDL 
             END DO
@@ -1951,8 +1953,9 @@ C
                END DO
             END DO
             CALL HEADER('Orbital-exponent gradient (au)',-1)
-            WRITE (LUPRI,'(7X,2A)')  'Z    l            ',
-     &       '    exponent                grad             grad ln'
+            WRITE (LUPRI,'(7X,A)')  'Z    l            '//
+     &       '    exponent                grad             grad ln'//
+     &       '             grad ln'
             WRITE (LUPRI,'()')
             ALPNRM = D0
             ALPNRL = D0
@@ -1971,8 +1974,9 @@ C
                      GRAD = ALPGRD(I)
                      GRDL = GRAD*PRIEXP(I)
 C                    WRITE (LUPRI,'(5X,A,I5,4X,A,3F20.10)')
-                     WRITE (LUPRI,'(1X,A,I5,4X,A,F24.10,2F20.10)')
-     &                    '@@',K,SPDCAR(LVAL),PRIEXP(I), GRAD,GRDL
+                     WRITE (LUPRI,
+     &                    '(1X,A,I5,4X,A,F24.10,2F20.10,1P,D20.8)')
+     &                    '@@',K,SPDCAR(LVAL),PRIEXP(I), GRAD,GRDL,GRDL
                      ALPNRM = ALPNRM + GRAD*GRAD 
                      ALPNRL = ALPNRL + GRDL*GRDL 
                      IF (INXT.NE.ICNT) THEN
@@ -1985,7 +1989,7 @@ C                    WRITE (LUPRI,'(5X,A,I5,4X,A,3F20.10)')
             END DO
             ALPNRM = SQRT(ALPNRM)
             ALPNRL = SQRT(ALPNRL)
-            WRITE (LUPRI,'(5X,A,17X,E12.6,8X,E12.6)')
+            WRITE (LUPRI,'(5X,A,17X,1P,E12.6,8X,E12.6)')
      &         '@@    Norm of gradient:',ALPNRM,ALPNRL
 C
          ELSE IF (MOLGRD) THEN
