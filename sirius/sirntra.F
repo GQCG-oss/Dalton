@@ -621,7 +621,7 @@ C
             END IF
             IF (ITYPCD.EQ.0) THEN
 C           ... skip this record
-               CALL DASKIP(LUMINT,DUMMY,LREC,IADCD(ISYMA))
+               CALL DASKIP(LUMINT,LREC,IADCD(ISYMA))
             ELSE
                NINT = NINT + 1
                CALL DAREAD(LUMINT,BUF(IBUF2),LREC,IADCD(ISYMA))
