@@ -642,7 +642,9 @@ valence.\index{LB94}
 
 \item[OPTX] exchange functional of Handy \cite{dft:optx}.\index{OPTX}
 
-\item[P86] correlation functional of Perdew \cite{dft:p86}.\index{P86}
+\item[P86] non-local part of the correlation functional of Perdew
+  \cite{dft:p86}. PZ81 is usually used for the local part of the
+  functional. \index{P86}
 
 \item[PBEx] exchange functional \index{PBEx}
 
@@ -693,12 +695,13 @@ program.\index{B3LYP-G} This functional can be explicitely set up by
 
 \item[BP86] Becke88 exchange functional and Perdew86 correlation
   functional. The explicit form is:
-  \funexample{GGAKey slater=1 becke=1 p86=1}
+  \funexample{GGAKey slater=1 becke=1 pz81=1 p86c=1}
   \index{BP86}
 
 
-\item[B3P86] variant of \verb|B3LYP| with P86 used to get correlation.
-  \funexample{GGAKey hf=0.2 slater=0.8 becke=0.72 p86=0.81 vwn3=0.19}
+\item[B3P86] variant of \verb|B3LYP| with VWN3 used for local
+  correlation  and P86 for the nonlocal part.
+  \funexample{GGAKey hf=0.2 slater=0.8 becke=0.72 p86c=0.81 vwn3=1}
   \index{B3P86}
 
 \item[CAMB3LYP] Coulomb Attenuated Method Functional of Yanai, Tew and
