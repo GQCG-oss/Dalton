@@ -880,13 +880,31 @@ C
          ICMATA = IODCL1(IODAB,19)
          ICMATB = IODCL1(IODAB,20)
 C 
+         IF (ONEAUX .AND. MBSMAX .EQ. 5) THEN
+             IF (.NOT. (R12HYB .AND. COMBSS)) THEN
+                IF (IODCL1(IODAB,22) .EQ. 2) THEN
+                   MAXCD = 0
+                   GOTO 1919
+                END IF
+             ELSE
+                IF (IODCL1(IODAB,21) .EQ. 2) THEN
+                   MAXCD = 0
+                   GOTO 1919
+                END IF
+            END IF
+         END IF
+C
 C        Sum of basis-set identifiers for a and b (WK/UniKA/04-11-2002).
          MBSMAB = IODCL1(IODAB,21) + IODCL1(IODAB,22)
-C
          MAXCD = NODCL2
          IF (ODTR12) MAXCD = IODAB
 C
-         DO IODCD = 1, MAXCD
+         DO 1918 IODCD = 1, MAXCD
+         IF (ONEAUX .AND. MBSMAX .EQ. 5) THEN
+            IF (.NOT. (R12HYB .AND. COMBSS)) THEN
+               IF (IODCL2(IODCD,21) + IODCL2(IODCD,22) .NE. 2) GOTO 1918
+            END IF
+         END IF
          IF (NACTCD(IODCD) .GT. 0) THEN
             NODSCD = NACTCD(IODCD)
 C
@@ -1134,7 +1152,8 @@ C
             END IF
          END IF
          END IF
-         END DO
+ 1918    CONTINUE
+ 1919    CONTINUE
       END IF
       END DO
 C

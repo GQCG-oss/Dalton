@@ -2,10 +2,10 @@
      &        NDISAO, NDSRHF, IDSAOG, ILMRHF, NDISAOSQ, NDSRHFSQ,
      &        ILMVIR, IT1AM, IT2AM, IAODIS, IDSAOGSQ,
      &        NLAMDT, NLMRHF, IRHF, IVIR , NEMAT1,
-     &        IEMAT1, NGAMMA, NT1AO, NT2AO,
+     &        IEMAT1, NGAMMA, NGAMSQ,NT1AO, NT2AO,
      &        IT1AO, IT2AO, N2BST, NT2BCD,
      &        IT2BCD, NT2BGD, IT2BGD, IT2SQ,
-     &        NMATIJ, IMATIJ, IGAMMA,IDSRHF,IDSRHFSQ,
+     &        NMATIJ, IMATIJ, IGAMMA,IDSRHF,IDSRHFSQ,IGAMSQ,
      &        IT1AOT, IT1AMT, IT2BCT,
      &        IT2BGT, IFCVIR, IFCRHF,
      &        IMATAB, NMATAB, NT2AOS, IT2AOS,
@@ -35,7 +35,9 @@
      &        IMAAB_CI,NMAAB_CI,IMAJBAI,
      &        IMAAOBCI,NMAAOBCI,IMAJBAIT,
      &        IMAIAB,NMAIAB,IMAIAJ,NMAIAJ,
-     &        IMAAOBI,NMAAOBI
+     &        IMAAOBI,NMAAOBI,IG1AM,NG1AM,
+     &        NH1AMX,NH1AM,IH1AM,NH2AMX,NH2AM,IH2AM,
+     &        NVAJKL,IVAJKL
       LOGICAL OMEGSQ,T2TCOR,OMEGOR,CC3LR,RSPIM,LSEC,LCOR,NEWGAM,INTTR,
      &        TRIPIM
       COMMON /CCSDSYM/ NT1AMX, NT2AMX, NT1AM(8), NT2AM(8), NT2AMA(8),
@@ -45,9 +47,10 @@
      &                 ILMRHF(8),ILMVIR(8), IT1AM(8,8), IT2AM(8,8), 
      &                 NLAMDT, NLMRHF, IRHF(8), IVIR(8) , NEMAT1(8),
      &                 IEMAT1(8,8), NGAMMA(8), NT1AO(8), NT2AO(8),
+     &                 NGAMSQ(8),
      &                 IT1AO(8,8), IT2AO(8,8), N2BST(8), NT2BCD(8),
      &                 IT2BCD(8,8), NT2BGD(8), IT2BGD(8,8), IT2SQ(8,8),
-     &                 NMATIJ(8), IMATIJ(8,8), IGAMMA(8,8),
+     &                 NMATIJ(8), IMATIJ(8,8), IGAMMA(8,8),IGAMSQ(8,8),
      &                 IT1AOT(8,8),IT1AMT(8,8),IT2BCT(8,8),IT2BGT(8,8), 
      &                 IFCVIR(8,8), IFCRHF(8,8),IAODIS(8,8),
      &                 IMATAB(8,8), NMATAB(8), NT2AOS(8), IT2AOS(8,8),
@@ -80,6 +83,9 @@
      &                 IMAAB_CI(8,8),NMAAB_CI(8),IMAJBAI(8,8),
      &                 IMAAOBCI(8,8),NMAAOBCI(8),IMAJBAIT(8,8),
      &                 IMAIAB(8,8),NMAIAB(8),IMAIAJ(8,8),NMAIAJ(8),
-     &                 IMAAOBI(8,8),NMAAOBI(8)
+     &                 IMAAOBI(8,8),NMAAOBI(8),NH1AMX,NH1AM(8),
+     &                 IH1AM(8,8),NH2AMX,NH2AM(8),IH2AM(8,8),
+     &                 IG1AM(8,8),NG1AM(8),
+     &                 NVAJKL(8),IVAJKL(8,8)
 C
       INTEGER A,B,C,D,E,F,G,P,Q,R,S,I,J,K,L,M,N

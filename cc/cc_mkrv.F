@@ -39,14 +39,14 @@ C  /* Deck makerv*/
      *                  VS11,US11,BS11,WS11,
      *                  QS11,RS11,VT11,UT11,BT11,WT11,QT11,RT11,
      *                  NICDIM,NOCDIM,NSPAIR,NTPAIR,ES,ET,FS,FT,EVS,
-     *                  CNINV,QQ2,QQ4,QQ6)            
+     *                  CNINV,QQ2,QQ4,QQ6,CS11,CT11)            
 C
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
 C
 #include <implicit.h>
 #include <priunit.h>
       PARAMETER (D0 = 0D0, D1 = 1D0, D2 = 2D0, D3 = 3D0, D1P5 = 1.5D0, 
-     *           DP5 = 0.5D0, DP25 = 0.25D0, DP75 = 0.75D0)
+     *           DP5 = 0.5D0, DP25 = 0.25D0, DP75 = 0.75D0, DELTA=0.0D0)
       REAL*8  SU, US, SV, VU, VR, RR, UR, RU, UT, TU, QQIJKL, QQIJLK,
      *        EIJAB, EKLAB, EIJ, EMN, EKL, EIJKL, EAB,
      *        SAIBJ, RAKBL, UAKBL, SAKBL, RAIBJ, VAIBJ, UAIBJ,
@@ -72,18 +72,38 @@ C
       DIMENSION VT11(NSPAIR,NSPAIR),UT11(NSPAIR,NSPAIR)
       DIMENSION QT11(NSPAIR,NSPAIR),RT11(NSPAIR,NSPAIR)
       DIMENSION ES(NSPAIR),ET(NSPAIR),FS(NSPAIR),FT(NSPAIR)
-      DIMENSION EVS(NSPAIR),CNINV(NSPAIR,8)
+      DIMENSION EVS(NSPAIR),CNINV(NSPAIR,10)
       DIMENSION QQ11(NICDIM,NICDIM,NICDIM,NICDIM)
+      DIMENSION CS11(NSPAIR,NSPAIR),CT11(NSPAIR,NSPAIR)
       LOGICAL DOA, DOB, DOAP, DOBP, ASTRIX, DONINV, LDUM
       INTEGER IDUM
+      CHARACTER*3 APPROX(14,2), IPCC
 #include <r12int.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
+      DATA APPROX 
+     &/'A  ','A  ','A'' ','A* ','A* ','A*''','B  ',
+     & 'B  ','xxx','xxx','B* ','B* ','xxx','xxx',
+     & 'A  ','A  ','A'' ','A* ','A* ','A*''','B'' ',
+     & 'B'' ','B  ','B  ','B*''','B*''','B* ','B* '/
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
       FF = D1 / SQRT(D2)
 C
+      CALL AROUND('Auxiliary-basis MP2-R12 method')
       DO 999 IPDD = 1, 14
+      IF (R12HYB) THEN
+        IPCC = APPROX(IPDD,1)
+      ELSE
+        IPCC = APPROX(IPDD,2)
+      END IF
+      IF (.NOT. R12XXL) THEN
+         IF (NORXR) THEN
+            IF (IPDD .NE. 5 .AND. IPDD .NE. 12) GOTO 999
+         ELSE
+            IF (IPDD .NE. 5 .AND. IPDD .NE. 14) GOTO 999
+         END IF
+      END IF
 C
       DOA = IPDD .LE. 6 
       DOB = .NOT. DOA               
@@ -130,6 +150,7 @@ C
       E2T = D0
       DO 101 ISYMIA = 1, NSYM
          ISYMJB = ISYMIA
+         JBOFF = NH1AM(ISYMJB) * (NH1AM(ISYMJB) + 1) / 2
          DO 102 ISYMI = 1, NSYM
             ISYMA = MULD2H(ISYMI,ISYMIA)
             DO 103 ISYMJ = 1, NSYM
@@ -147,18 +168,33 @@ C
                         DO 204 B = NRHFS(ISYMB) + 1, NORB1(ISYMB)
                            ISYMIB = MULD2H(ISYMI,ISYMB)
                            KOFFB = IVIR(ISYMB) + B
-                           NAI = IT1AM(ISYMA,ISYMI) +
-     *                           NVIR(ISYMA)*(I-1) + A
-                           NBJ = IT1AM(ISYMB,ISYMJ) +
-     *                           NVIR(ISYMB)*(J-1) + B
-                           NAIBJ = IT2AM(ISYMIA,ISYMJB) +
-     *                             INDEX(NAI,NBJ)
-                           NAJ = IT1AM(ISYMA,ISYMJ) +
-     *                           NVIR(ISYMA)*(J-1) + A
-                           NBI = IT1AM(ISYMB,ISYMI) +
-     *                           NVIR(ISYMB)*(I-1) + B
-                           NAJBI = IT2AM(ISYMJA,ISYMIB) +
-     *                             INDEX(NAJ,NBI)
+                           IF (ONEAUX) THEN
+                              NAI = IH1AM(ISYMA,ISYMI) +
+     *                              NORB1(ISYMA)*(I-1) + A
+                              NBJ = IH1AM(ISYMB,ISYMJ) +
+     *                              NORB1(ISYMB)*(J-1) + B
+                              NAIBJ = IH2AM(ISYMIA,ISYMJB) +
+     *                                INDEX(NAI,NBJ)
+                              NAJ = IH1AM(ISYMA,ISYMJ) +
+     *                              NORB1(ISYMA)*(J-1) + A
+                              NBI = IH1AM(ISYMB,ISYMI) +
+     *                              NORB1(ISYMB)*(I-1) + B
+                              NAJBI = IH2AM(ISYMJA,ISYMIB) +
+     *                                INDEX(NAJ,NBI)
+                           ELSE
+                              NAI = IT1AM(ISYMA,ISYMI) +
+     *                              NVIR(ISYMA)*(I-1) + A
+                              NBJ = IT1AM(ISYMB,ISYMJ) +
+     *                              NVIR(ISYMB)*(J-1) + B
+                              NAIBJ = IT2AM(ISYMIA,ISYMJB) +
+     *                                INDEX(NAI,NBJ)
+                              NAJ = IT1AM(ISYMA,ISYMJ) +
+     *                              NVIR(ISYMA)*(J-1) + A
+                              NBI = IT1AM(ISYMB,ISYMI) +
+     *                              NVIR(ISYMB)*(I-1) + B
+                              NAJBI = IT2AM(ISYMJA,ISYMIB) +
+     *                                INDEX(NAJ,NBI)
+                           END IF
                            VAIBJ = V2AM(NAIBJ)
                            VAJBI = V2AM(NAJBI)
                            VV = VAIBJ * (D2 * VAIBJ - VAJBI)
@@ -177,6 +213,7 @@ C
 C
                DO 104 ISYMKA = 1, NSYM
                   ISYMLB = ISYMKA 
+                  LBOFF = NH1AM(ISYMLB) * (NH1AM(ISYMLB) + 1) / 2
                   ISYMK = MULD2H(ISYMA,ISYMKA)
                   ISYML = MULD2H(ISYMB,ISYMLB)
                   DO 105 I = 1, NRHF(ISYMI)
@@ -185,26 +222,66 @@ C
                         KOFFK = IRHF(ISYMK) + K
                         DO 107 A = 1, NVIR(ISYMA)
                            KOFFA = IVIR(ISYMA) + A
-                           NAI = IT1AM(ISYMA,ISYMI) +
-     *                           NVIR(ISYMA)*(I-1) + A
-                           NAK = IT1AM(ISYMA,ISYMK) +
-     *                           NVIR(ISYMA)*(K-1) + A
+                           IF (ONEAUX) THEN
+                              IF (A. LE. NORB1(ISYMA)) THEN
+                                 NAI = IH1AM(ISYMA,ISYMI) +
+     *                                 NORB1(ISYMA)*(I-1) + A
+                                 NAK = IH1AM(ISYMA,ISYMK) +
+     *                                 NORB1(ISYMA)*(K-1) + A
+                              ELSE
+                                 NA1 = A - NORB1(ISYMA)
+                                 NAI = IG1AM(ISYMA,ISYMI) +
+     *                                 NORB2(ISYMA)*(I-1) + NA1
+                                 NAK = IG1AM(ISYMA,ISYMK) +
+     *                                 NORB2(ISYMA)*(K-1) + NA1
+                              END IF
+                           ELSE
+                              NAI = IT1AM(ISYMA,ISYMI) +
+     *                              NVIR(ISYMA)*(I-1) + A
+                              NAK = IT1AM(ISYMA,ISYMK) +
+     *                              NVIR(ISYMA)*(K-1) + A
+                           END IF
                            DO 108 J = 1, NRHF(ISYMJ)
                               KOFFJ = IRHF(ISYMJ) + J
                               DO 109 L = 1, NRHF(ISYML)
                                  KOFFL = IRHF(ISYML) + L
                                  EIJKL = EV(KOFFI) + EV(KOFFJ)
      *                                 - EV(KOFFK) - EV(KOFFL)
-                                 DO 110 B = 1, NVIR(ISYMB)
+                                 IF (ONEAUX) THEN
+                                    NBEND = NORB1(ISYMB)
+                                 ELSE
+                                    NBEND = NVIR(ISYMB)
+                                 END IF
+                                 DO 110 B = 1, NBEND
                                     KOFFB = IVIR(ISYMB) + B
-                                    NBJ = IT1AM(ISYMB,ISYMJ) +
-     *                                    NVIR(ISYMB)*(J-1) + B
-                                    NBL = IT1AM(ISYMB,ISYML) +
-     *                                    NVIR(ISYMB)*(L-1) + B
-                                    NAIBJ = IT2AM(ISYMIA,ISYMJB) +
-     *                                      INDEX(NAI,NBJ)
-                                    NAKBL = IT2AM(ISYMKA,ISYMLB) +
-     *                                      INDEX(NAK,NBL)
+                                    IF (ONEAUX) THEN
+                                       NBJ = IH1AM(ISYMB,ISYMJ) +
+     *                                       NORB1(ISYMB)*(J-1) + B
+                                       NBL = IH1AM(ISYMB,ISYML) +
+     *                                       NORB1(ISYMB)*(L-1) + B
+                                       IF (A .GT. NORB1(ISYMA)) THEN
+                                          NAIBJ = IH2AM(ISYMIA,ISYMJB) +
+     *                                            JBOFF + NBJ +
+     *                                            NH1AM(ISYMJB)*(NAI-1)
+                                          NAKBL = IH2AM(ISYMKA,ISYMLB) +
+     *                                            LBOFF + NBL +
+     *                                            NH1AM(ISYMLB)*(NAK-1)
+                                       ELSE
+                                          NAIBJ = IH2AM(ISYMIA,ISYMJB) +
+     *                                            INDEX(NAI,NBJ)
+                                          NAKBL = IH2AM(ISYMKA,ISYMLB) +
+     *                                            INDEX(NAK,NBL)
+                                       END IF
+                                    ELSE
+                                       NBJ = IT1AM(ISYMB,ISYMJ) +
+     *                                       NVIR(ISYMB)*(J-1) + B
+                                       NBL = IT1AM(ISYMB,ISYML) +
+     *                                       NVIR(ISYMB)*(L-1) + B
+                                       NAIBJ = IT2AM(ISYMIA,ISYMJB) +
+     *                                         INDEX(NAI,NBJ)
+                                       NAKBL = IT2AM(ISYMKA,ISYMLB) +
+     *                                         INDEX(NAK,NBL)
+                                    END IF
 C
                                     EIJAB = EV(KOFFI) + EV(KOFFJ)
      *                                    - EV(KOFFA) - EV(KOFFB)
@@ -284,6 +361,14 @@ C
      *                                 U11(KOFFI,KOFFJ,KOFFK,KOFFL) + UR
                                        Q11(KOFFI,KOFFJ,KOFFK,KOFFL) =
      *                                 Q11(KOFFI,KOFFJ,KOFFK,KOFFL) + RR
+                                       IF (ONEAUX) THEN
+                                       V11(KOFFJ,KOFFI,KOFFL,KOFFK) =
+     *                                 V11(KOFFJ,KOFFI,KOFFL,KOFFK) + VR
+                                       U11(KOFFJ,KOFFI,KOFFL,KOFFK) =
+     *                                 U11(KOFFJ,KOFFI,KOFFL,KOFFK) + UR
+                                       Q11(KOFFJ,KOFFI,KOFFL,KOFFK) =
+     *                                 Q11(KOFFJ,KOFFI,KOFFL,KOFFK) + RR
+                                       END IF
 C
                                     ELSE IF (A. GT. NRHFS(ISYMA) .AND.
      *                                       A .LE. NORB1(ISYMA) .AND.
@@ -312,7 +397,9 @@ C
 C
 C                                            RU := (Em+En-Ea-Eb) * <ab|r12|kl>
 C                                            UR := (Em+En-Ea-Eb) * <ab|r12|ij>
-C
+Cmanby  write(lupri,'(2i3,3F20.14)')
+C    &  koffa,koffb,UAKBL, UAKBL - SAKBL, EKLAB * RAKBL
+Cmanby / for debugging Fred Manby's code
                                              RU = SU + EKL * RAKBL
                                              UR = US + EIJ * RAIBJ
                                              IF (DOA) THEN
@@ -532,6 +619,18 @@ C
       CALL OUTPUT(UT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
       CALL AROUND('Triplet <S@> matrix') 
       CALL OUTPUT(QT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+      CALL AROUND('Singlet <B#> matrices') 
+      DO MN = 1, NSPAIR 
+         WRITE(LUPRI,'(A,I4)') ' PAIR =', MN
+         CALL OUTPUT(BS11(1,1,MN),1,
+     &   NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+      END DO
+      CALL AROUND('Triplet <B#> matrices') 
+      DO MN = 1, NSPAIR 
+         WRITE(LUPRI,'(A,I4)') ' PAIR =', MN
+         CALL OUTPUT(BT11(1,1,MN),1,
+     &   NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+      END DO
 C
   998 IJ = 0
       DO 490 I = 1, NOCDIM
@@ -576,40 +675,14 @@ C
         END IF
       END IF   
 C
-      IF (IPDD .EQ. 1) THEN
-        WRITE(LUPRI,'(/A/)') ' SECOND-ORDER NONINVARIANT R12/A'//
+      IF (IPDD .EQ.  1 .OR. IPDD .EQ.  4 .OR. IPDD .EQ.  7 .OR.
+     &    IPDD .EQ.  9 .OR. IPDD .EQ. 11 .OR. IPDD .EQ. 13) THEN
+       WRITE(LUPRI,'(/A/)') ' SECOND-ORDER NONINVARIANT R12/'//IPCC//
      *                   ' PAIR ENERGIES:'
-      ELSE IF (IPDD .EQ. 2) THEN 
-        WRITE(LUPRI,'(/A/)') ' SECOND-ORDER R12/A PAIR ENERGIES:'
-      ELSE IF (IPDD .EQ. 3) THEN 
-        WRITE(LUPRI,'(/A/)') ' SECOND-ORDER R12/A'' PAIR ENERGIES:'
-      ELSE IF (IPDD .EQ. 4) THEN
-        WRITE(LUPRI,'(/A/)') ' SECOND-ORDER NONINVARIANT R12/A*'//
-     *                   ' PAIR ENERGIES:'
-      ELSE IF (IPDD .EQ. 5) THEN 
-        WRITE(LUPRI,'(/A/)') ' SECOND-ORDER R12/A* PAIR ENERGIES:'
-      ELSE IF (IPDD .EQ. 6) THEN 
-        WRITE(LUPRI,'(/A/)') ' SECOND-ORDER R12/A*'' PAIR ENERGIES:'
-      ELSE IF (IPDD .EQ. 7) THEN
-        WRITE(LUPRI,'(/A/)') ' SECOND-ORDER NONINVARIANT R12/B'//
-     *                   ' PAIR ENERGIES:'
-      ELSE IF (IPDD .EQ. 8) THEN
-        WRITE(LUPRI,'(/A/)') ' SECOND-ORDER R12/B PAIR ENERGIES:'
-      ELSE IF (IPDD .EQ. 9) THEN
-        WRITE(LUPRI,'(/A/)') ' SECOND-ORDER NONINVARIANT R12/B'''//
-     *                   ' PAIR ENERGIES:'
-      ELSE IF (IPDD .EQ. 10) THEN
-        WRITE(LUPRI,'(/A/)') ' SECOND-ORDER R12/B'' PAIR ENERGIES:'
-      ELSE IF (IPDD .EQ. 11) THEN
-        WRITE(LUPRI,'(/A/)') ' SECOND-ORDER NONINVARIANT R12/B*'//
-     *                   ' PAIR ENERGIES:'
-      ELSE IF (IPDD .EQ. 12) THEN
-        WRITE(LUPRI,'(/A/)') ' SECOND-ORDER R12/B* PAIR ENERGIES:'
-      ELSE IF (IPDD .EQ. 13) THEN
-        WRITE(LUPRI,'(/A/)') ' SECOND-ORDER NONINVARIANT R12/B*'''//
-     *                   ' PAIR ENERGIES:'  
-      ELSE IF (IPDD .EQ. 14) THEN
-        WRITE(LUPRI,'(/A/)') ' SECOND-ORDER R12/B*'' PAIR ENERGIES:'  
+       INVAR = 0
+      ELSE
+       WRITE(LUPRI,'(/A/)')' SECOND-ORDER R12/'//IPCC//' PAIR ENERGIES:'
+       INVAR = 1
       END IF
       CALL DZERO(FS,NSPAIR)
       CALL DZERO(FT,NSPAIR)
@@ -621,33 +694,52 @@ C
             IJ = IJ + 1
             CNINV(IJ,1) = WS11(IJ,IJ)
             CNINV(IJ,2) = BS11(IJ,IJ,IJ)
-            IF (ABS(CNINV(IJ,2)) .GT. VCLTHR) THEN
+            CNINV(IJ,9) = -BS11(IJ,IJ,IJ) / RS11(IJ,IJ)
+            IF (CNINV(IJ,2) .LT. -VCLTHR) THEN
                CNINV(IJ,3) = CNINV(IJ,1) / CNINV(IJ,2)
             ELSE
+               WRITE(LUPRI,'(/A,E15.8,I4/)')
+     &       ' @ WARNING: NEGATIVE DIAGONAL ELEMENT OF SINGLET'//
+     &       ' B MATRIX',CNINV(IJ,2),IJ
                CNINV(IJ,3) = D0
-            END IF  
+            END IF
             CNINV(IJ,4) = CNINV(IJ,1) * CNINV(IJ,3)
             IF (I .NE. J) THEN
                CNINV(IJ,5) = WT11(IJ,IJ)
                CNINV(IJ,6) = BT11(IJ,IJ,IJ)
-               IF (ABS(CNINV(IJ,6)) .GT. VCLTHR) THEN
+               CNINV(IJ,10) = -BT11(IJ,IJ,IJ) / RT11(IJ,IJ)
+               IF (CNINV(IJ,6) .LT. -VCLTHR) THEN
                   CNINV(IJ,7) = CNINV(IJ,5) / CNINV(IJ,6)
                ELSE
+            WRITE(LUPRI,'(/A,E15.8,I4/)')
+     &       ' @ WARNING: NEGATIVE DIAGONAL ELEMENT OF TRIPLET'//
+     &       ' B MATRIX',CNINV(IJ,6),IJ
                   CNINV(IJ,7) = D0
-               END IF  
-               CNINV(IJ,8) = CNINV(IJ,5) * CNINV(IJ,7) 
+               END IF
+               CNINV(IJ,8) = CNINV(IJ,5) * CNINV(IJ,7)
             ELSE
                CNINV(IJ,5) = D0
                CNINV(IJ,6) = D0
                CNINV(IJ,7) = D0
                CNINV(IJ,8) = D0
-            END IF 
-            FS(IJ) = CNINV(IJ,4) 
-            FT(IJ) = CNINV(IJ,8) 
+               CNINV(IJ,10) = D0
+            END IF
+            FS(IJ) = CNINV(IJ,4)
+            FT(IJ) = CNINV(IJ,8)
             IF (.NOT. DONINV) THEN
-            CALL R12MP2(WS11(1,IJ),WT11(1,IJ),RS11,RT11,EVS(IJ),
-     *      NOCDIM,NSPAIR,FS(IJ),FT(IJ),VS11,VT11,QS11,QT11,
-     *      BS11(1,1,IJ),BT11(1,1,IJ),EVS,XPDD,QQ11,IJ,WSMIN,WTMIN)
+             IF (R12SVD) THEN
+              CALL R12MP2(WS11(1,IJ),WT11(1,IJ),WS11(1,IJ),WT11(1,IJ),
+     *        RS11,RT11,EVS(IJ),NOCDIM,NSPAIR,FS(IJ),FT(IJ),VS11,VT11,
+     *        QS11,QT11,BS11(1,1,IJ),BT11(1,1,IJ),EVS,XPDD,QQ11,IJ,
+     *        WSMIN,WTMIN,DELTA,CS11(1,IJ),CT11(1,IJ))
+             ELSE IF (R12DIA) THEN
+              CALL MP2R12(WS11(1,IJ),WT11(1,IJ),WS11(1,IJ),WT11(1,IJ),
+     *        RS11,RT11,EVS(IJ),NOCDIM,NSPAIR,FS(IJ),FT(IJ),VS11,VT11,
+     *        QS11,QT11,BS11(1,1,IJ),BT11(1,1,IJ),EVS,XPDD,QQ11,IJ,
+     *        WSMIN,WTMIN,DELTA,CS11(1,IJ),CT11(1,IJ))
+             ELSE
+              CALL QUIT('No solver selected (R12SVD or R12DIA)')
+             END IF
             WRITE(LUPRI,'(I4,4F15.9,2G16.6)') IJ,ES(IJ),ES(IJ)+FS(IJ),
      *                                       ET(IJ),ET(IJ)+FT(IJ),
      *                                       WSMIN,WTMIN 
@@ -660,9 +752,9 @@ C
   501    CONTINUE
   500 CONTINUE 
       WRITE(LUPRI,'(/4X,6F15.9)') E2S,E2S+F2S,E2T,E2T+F2T
-      IF (IPDD .EQ. 1) THEN
+      IF (INVAR .EQ. 0) THEN
          WRITE(LUPRI,'(/A,F15.9//A/)') 
-     * ' Noninvariant MP2-R12/A   correlation energy =',
+     * ' Noninvariant MP2-R12/'//IPCC//' correlation energy =',
      *   E2S+E2T+F2S+F2T,
      * '  IJ    V(IJ)       U(IJ)       C(IJ)   '//
      *     '    V(IJ)       U(IJ)       C(IJ)   '
@@ -670,112 +762,15 @@ C
          DO 600 I = 1, NOCDIM
             DO 601 J = 1, I       
             IJ = IJ + 1
-            WRITE(LUPRI,'(I4,6E12.4)') IJ,(CNINV(IJ,K),K=1,3),
-     *                                (CNINV(IJ,K),K=5,7)
+            WRITE(LUPRI,'(I4,8E12.4)') IJ,(CNINV(IJ,K),K=1,3),
+     *                                (CNINV(IJ,K),K=5,7),
+     *                                 CNINV(IJ,9),CNINV(IJ,10)
   601       CONTINUE
   600    CONTINUE
-      ELSE IF (IPDD .EQ. 2) THEN
+      ELSE 
          WRITE(LUPRI,'(/A,F15.9 )') 
-     * '              MP2-R12/A   correlation energy =',
+     * '              MP2-R12/'//IPCC//' correlation energy =',
      *   E2S+E2T+F2S+F2T
-      ELSE IF (IPDD .EQ. 3) THEN
-         WRITE(LUPRI,'(/A,F15.9 )') 
-     * '              MP2-R12/A''  correlation energy =',
-     *   E2S+E2T+F2S+F2T
-      ELSE IF (IPDD .EQ. 4) THEN
-         WRITE(LUPRI,'(/A,F15.9//A/)')
-     * ' Noninvariant MP2-R12/A*  correlation energy =',
-     *   E2S+E2T+F2S+F2T,
-     * '  IJ    V(IJ)       U(IJ)       C(IJ)   '//
-     *     '    V(IJ)       U(IJ)       C(IJ)   '
-         IJ = 0
-         DO 602 I = 1, NOCDIM
-            DO 603 J = 1, I
-            IJ = IJ + 1
-            WRITE(LUPRI,'(I4,6E12.4)') IJ,(CNINV(IJ,K),K=1,3),
-     *                                (CNINV(IJ,K),K=5,7)
-  603       CONTINUE
-  602    CONTINUE
-      ELSE IF (IPDD .EQ. 5) THEN
-         WRITE(LUPRI,'(/A,F15.9 )')
-     * '              MP2-R12/A*  correlation energy =',
-     *   E2S+E2T+F2S+F2T
-      ELSE IF (IPDD .EQ. 6) THEN
-         WRITE(LUPRI,'(/A,F15.9 )')
-     * '              MP2-R12/A*'' correlation energy =',
-     *   E2S+E2T+F2S+F2T  
-      ELSE IF (IPDD .EQ. 7) THEN
-         WRITE(LUPRI,'(/A,F15.9//A/)') 
-     * ' Noninvariant MP2-R12/B   correlation energy =',
-     *   E2S+E2T+F2S+F2T,
-     * '  IJ    V(IJ)       U(IJ)       C(IJ)   '//
-     *     '    V(IJ)       U(IJ)       C(IJ)   '
-         IJ = 0
-         DO 604 I = 1, NOCDIM
-            DO 605 J = 1, I       
-            IJ = IJ + 1
-            WRITE(LUPRI,'(I4,6E12.4)') IJ,(CNINV(IJ,K),K=1,3),
-     *                                (CNINV(IJ,K),K=5,7)
-  605       CONTINUE
-  604    CONTINUE
-      ELSE IF (IPDD .EQ. 8) THEN
-         WRITE(LUPRI,'(/A,F15.9 )') 
-     * '              MP2-R12/B   correlation energy =',
-     *   E2S+E2T+F2S+F2T
-      ELSE IF (IPDD .EQ. 9) THEN
-         WRITE(LUPRI,'(/A,F15.9//A/)')
-     * ' Noninvariant MP2-R12/B''  correlation energy =',
-     *   E2S+E2T+F2S+F2T,
-     * '  IJ    V(IJ)       U(IJ)       C(IJ)   '//
-     *     '    V(IJ)       U(IJ)       C(IJ)   '
-         IJ = 0
-         DO 610 I = 1, NOCDIM
-            DO 611 J = 1, I
-            IJ = IJ + 1
-            WRITE(LUPRI,'(I4,6E12.4)') IJ,(CNINV(IJ,K),K=1,3),
-     *                                (CNINV(IJ,K),K=5,7)
-  611       CONTINUE
-  610    CONTINUE
-      ELSE IF (IPDD .EQ. 10) THEN
-         WRITE(LUPRI,'(/A,F15.9 )') 
-     * '              MP2-R12/B''  correlation energy =',
-     *   E2S+E2T+F2S+F2T
-      ELSE IF (IPDD .EQ. 11) THEN
-         WRITE(LUPRI,'(/A,F15.9//A/)')
-     * ' Noninvariant MP2-R12/B*  correlation energy =',
-     *   E2S+E2T+F2S+F2T,
-     * '  IJ    V(IJ)       U(IJ)       C(IJ)   '//
-     *     '    V(IJ)       U(IJ)       C(IJ)   '
-         IJ = 0
-         DO 606 I = 1, NOCDIM
-            DO 607 J = 1, I
-            IJ = IJ + 1
-            WRITE(LUPRI,'(I4,6E12.4)') IJ,(CNINV(IJ,K),K=1,3),
-     *                                (CNINV(IJ,K),K=5,7)
-  607       CONTINUE
-  606    CONTINUE
-      ELSE IF (IPDD .EQ. 12) THEN
-         WRITE(LUPRI,'(/A,F15.9 )')
-     * '              MP2-R12/B*  correlation energy =',
-     *   E2S+E2T+F2S+F2T
-      ELSE IF (IPDD .EQ. 13) THEN
-         WRITE(LUPRI,'(/A,F15.9//A/)')
-     * ' Noninvariant MP2-R12/B*'' correlation energy =',
-     *   E2S+E2T+F2S+F2T,
-     * '  IJ    V(IJ)       U(IJ)       C(IJ)   '//
-     *     '    V(IJ)       U(IJ)       C(IJ)   '
-         IJ = 0
-         DO 608 I = 1, NOCDIM
-            DO 609 J = 1, I
-            IJ = IJ + 1
-            WRITE(LUPRI,'(I4,6E12.4)') IJ,(CNINV(IJ,K),K=1,3),
-     *                                (CNINV(IJ,K),K=5,7)
-  609       CONTINUE
-  608    CONTINUE
-      ELSE IF (IPDD .EQ. 14) THEN
-         WRITE(LUPRI,'(/A,F15.9 )')
-     * '              MP2-R12/B*'' correlation energy =',
-     *   E2S+E2T+F2S+F2T  
       END IF
   999 CONTINUE
       RETURN
@@ -1430,7 +1425,12 @@ C
       CALL GPOPEN(LUMULB,'AUXFCK','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
       READ (LUMULB,'(4E30.20)') (SF(I), I = 1, NNBASF)
       CALL GPCLOSE(LUMULB,'KEEP')
+      IF (IPRINT. GE. 10) CALL AROUND('Exchange matrices')
       DO 200 ISYM = 1, NSYM
+         IF (IPRINT. GE. 10) THEN
+            WRITE (LUPRI,'(A,I2)') ' Symmetry =', ISYM
+            CALL OUTPAK(SF(ISB(ISYM)+1),NVIR(ISYM),1,LUPRI)
+         END IF
          DO 210 I = NORB1(ISYM) + 2,  NVIR(ISYM)
             DO 220 J = NORB1(ISYM) + 1 , I - 1
                IJ = ISB(ISYM) + INDEX(I,J)
@@ -1446,77 +1446,173 @@ C
   210    CONTINUE
   200 CONTINUE
 C
-      DO 401 ISYMIA = 1, NSYM
-         ISYMJB = ISYMIA
-         NAIBJ = IT2AM(ISYMIA,ISYMJB)
-         KOFFU = IU2AM(ISYMIA,ISYMJB)
-         NTOTAI = NT1AM(ISYMIA)
-         DO 402 IA = 1, NTOTAI
-            DO 403 JB = 1, IA
-               NAIBJ = NAIBJ + 1
-               T2AM(NAIBJ) = V2AM(KOFFU + (IA-1)*NTOTAI + JB) +
-     &                       V2AM(KOFFU + (JB-1)*NTOTAI + IA)
-  403        CONTINUE
-  402    CONTINUE
-  401 CONTINUE
-C  
-      DO 301 ISYMKA = 1, NSYM
-         ISYMLB = ISYMKA
-         DO 302 ISYMK = 1, NSYM
-            ISYMA = MULD2H(ISYMK,ISYMKA)
-            ISYMC = ISYMA
-            ISYMKC = ISYMKA
-            DO 303 ISYML = 1, NSYM
-               ISYMB = MULD2H(ISYML,ISYMLB)
-               ISYMD = ISYMB
-               ISYMLD = ISYMLB
-               DO 304 K = 1, NRHF(ISYMK)
-                  DO 305 L = 1, NRHF(ISYML)
-                     DO 306 A = 1,  NORB1(ISYMA)
-                        NSTRC = NORB1(ISYMC) + 1
-                        NENDC = NVIR(ISYMC)
-                        NAK = IT1AM(ISYMA,ISYMK)
-     *                      + NVIR(ISYMA)*(K-1) + A
-                        DO 307 B = 1, NORB1(ISYMB) 
-                           NSTRD = NORB1(ISYMD) + 1
-                           NENDD = NVIR(ISYMD)
-                           NBL = IT1AM(ISYMB,ISYML)
-     *                         + NVIR(ISYMB)*(L-1) + B
-C
-                           IF (NBL .GT. NAK) GOTO 307
-C
-                           NAKBL = IT2AM(ISYMKA,ISYMLB)
+      IF (ONEAUX) THEN
+         DO II = 1, NH2AMX
+            T2AM(II) = V2AM(II)
+         END DO
+         DO 311 ISYMKA = 1, NSYM
+            ISYMLB = ISYMKA
+            LBOFF = NH1AM(ISYMLB) * (NH1AM(ISYMLB) + 1) / 2
+            KAOFF = LBOFF
+            DO 312 ISYMK = 1, NSYM
+               ISYMA = MULD2H(ISYMK,ISYMKA)
+               ISYMC = ISYMA
+               ISYMKC = ISYMKA
+               DO 313 ISYML = 1, NSYM
+                  ISYMB = MULD2H(ISYML,ISYMLB)
+                  ISYMD = ISYMB
+                  ISYMLD = ISYMLB
+                  DO 314 K = 1, NRHF(ISYMK)
+                     DO 315 L = 1, NRHF(ISYML)
+                        DO 316 A = 1, NORB1(ISYMA)
+                           NSTRC = NORB1(ISYMC) + 1
+                           NENDC = NVIR(ISYMC)
+                           NAK = IH1AM(ISYMA,ISYMK)
+     *                         + NORB1(ISYMA)*(K-1) + A
+                           DO 317 B = 1, NORB1(ISYMB) 
+                              NSTRD = NORB1(ISYMD) + 1
+                              NENDD = NVIR(ISYMD)
+                              NBL = IH1AM(ISYMB,ISYML)
+     *                            + NORB1(ISYMB)*(L-1) + B
+                              IF (NBL .GT. NAK) GOTO 317
+                              NAKBL = IH2AM(ISYMKA,ISYMLB)
+     *                              + INDEX(NAK,NBL)
+                              DSM = D0
+                              DO 318 C = NSTRC, NENDC       
+                                 NCK = IG1AM(ISYMC,ISYMK)
+     *                               + NORB2(ISYMC)*(K-1)
+     *                               - NORB1(ISYMC) + C
+                                 NCKBL = IH2AM(ISYMKC,ISYMLB)
+     *                                 + NH1AM(ISYMLB)*(NCK - 1) 
+     *                                 + NBL + LBOFF
+                                 RR = R2AM(NCKBL)
+                                 XAC = SF(ISB(ISYMA)+INDEX(A,C))
+                                 DSM = DSM + XAC * RR
+  318                         CONTINUE
+                              S2AM(NAKBL) = T2AM(NAKBL) - DSM
+                              DSM = D0     
+                              DO 319 D = NSTRD, NENDD
+                                 NDL = IG1AM(ISYMD,ISYML)
+     *                               + NORB2(ISYMD)*(L-1)
+     *                               - NORB1(ISYMD) + D
+                                 NDLAK = IH2AM(ISYMLD,ISYMKA)
+     *                                 + NH1AM(ISYMKA)*(NDL - 1) 
+     *                                 + NAK + KAOFF
+                                 RR = R2AM(NDLAK)
+                                 XBD = SF(ISB(ISYMB)+INDEX(B,D))
+                                 DSM = DSM + XBD * RR
+  319                         CONTINUE
+                              S2AM(NAKBL) = S2AM(NAKBL) - DSM         
+  317                      CONTINUE
+  316                   CONTINUE
+  315                CONTINUE
+  314             CONTINUE
+  313          CONTINUE
+  312       CONTINUE
+  311    CONTINUE
+      ELSE
+         DO 401 ISYMIA = 1, NSYM
+            ISYMJB = ISYMIA
+            NAIBJ = IT2AM(ISYMIA,ISYMJB)
+            KOFFU = IU2AM(ISYMIA,ISYMJB)
+            NTOTAI = NT1AM(ISYMIA)
+            DO 402 IA = 1, NTOTAI
+               DO 403 JB = 1, IA
+                  NAIBJ = NAIBJ + 1
+                  T2AM(NAIBJ) = V2AM(KOFFU + (IA-1)*NTOTAI + JB) +
+     &                          V2AM(KOFFU + (JB-1)*NTOTAI + IA)
+  403           CONTINUE
+  402       CONTINUE
+  401    CONTINUE
+         DO 301 ISYMKA = 1, NSYM
+            ISYMLB = ISYMKA
+            DO 302 ISYMK = 1, NSYM
+               ISYMA = MULD2H(ISYMK,ISYMKA)
+               ISYMC = ISYMA
+               ISYMKC = ISYMKA
+               DO 303 ISYML = 1, NSYM
+                  ISYMB = MULD2H(ISYML,ISYMLB)
+                  ISYMD = ISYMB
+                  ISYMLD = ISYMLB
+                  DO 304 K = 1, NRHF(ISYMK)
+                     DO 305 L = 1, NRHF(ISYML)
+                        DO 306 A = 1, NORB1(ISYMA)
+                           NSTRC = NORB1(ISYMC) + 1
+                           NENDC = NVIR(ISYMC)
+                           NAK = IT1AM(ISYMA,ISYMK)
+     *                         + NVIR(ISYMA)*(K-1) + A
+                           DO 307 B = 1, NORB1(ISYMB) 
+                              NSTRD = NORB1(ISYMD) + 1
+                              NENDD = NVIR(ISYMD)
+                              NBL = IT1AM(ISYMB,ISYML)
+     *                            + NVIR(ISYMB)*(L-1) + B
+                              IF (NBL .GT. NAK) GOTO 307
+                              NAKBL = IT2AM(ISYMKA,ISYMLB)
      *                           + INDEX(NAK,NBL)
-                           DSM = D0
-                           DO 308 C = NSTRC, NENDC       
-                              NCK = IT1AM(ISYMC,ISYMK)
-     *                            + NVIR(ISYMC)*(K-1) + C 
-                              NCKBL = IT2AM(ISYMKC,ISYMLB)
-     *                              + INDEX(NCK,NBL) 
-                              RR = R2AM(NCKBL)
-                              XAC = SF(ISB(ISYMA)+INDEX(A,C))
-                              DSM = DSM + XAC * RR
-  308                      CONTINUE
-                           S2AM(NAKBL) = T2AM(NAKBL) - DSM
-                           DSM = D0     
-                           DO 309 D = NSTRD, NENDD
-                              NDL = IT1AM(ISYMD,ISYML)
-     *                            + NVIR(ISYMD)*(L-1) + D
-                              NAKDL = IT2AM(ISYMKA,ISYMLD)
-     *                              + INDEX(NAK,NDL)
-                              RR = R2AM(NAKDL)
-                              XBD = SF(ISB(ISYMB)+INDEX(B,D))
-                              DSM = DSM + XBD * RR
-  309                      CONTINUE
-                           S2AM(NAKBL) = S2AM(NAKBL) - DSM         
-C
-  307                   CONTINUE
-  306                CONTINUE
-  305             CONTINUE
-  304          CONTINUE
-  303       CONTINUE
-  302    CONTINUE
-  301 CONTINUE
-C   
+                              DSM = D0
+                              DO 308 C = NSTRC, NENDC       
+                                 NCK = IT1AM(ISYMC,ISYMK)
+     *                               + NVIR(ISYMC)*(K-1) + C 
+                                 NCKBL = IT2AM(ISYMKC,ISYMLB)
+     *                                 + INDEX(NCK,NBL) 
+                                 RR = R2AM(NCKBL)
+                                 XAC = SF(ISB(ISYMA)+INDEX(A,C))
+                                 DSM = DSM + XAC * RR
+  308                         CONTINUE
+                              S2AM(NAKBL) = T2AM(NAKBL) - DSM
+                              DSM = D0     
+                              DO 309 D = NSTRD, NENDD
+                                 NDL = IT1AM(ISYMD,ISYML)
+     *                               + NVIR(ISYMD)*(L-1) + D
+                                 NAKDL = IT2AM(ISYMKA,ISYMLD)
+     *                                 + INDEX(NAK,NDL)
+                                 RR = R2AM(NAKDL)
+                                 XBD = SF(ISB(ISYMB)+INDEX(B,D))
+                                 DSM = DSM + XBD * RR
+  309                         CONTINUE
+                              S2AM(NAKBL) = S2AM(NAKBL) - DSM         
+  307                      CONTINUE
+  306                   CONTINUE
+  305                CONTINUE
+  304             CONTINUE
+  303          CONTINUE
+  302       CONTINUE
+  301    CONTINUE
+      END IF
+C  
+      IF (IPRINT .GE. 10) THEN
+         CALL AROUND('<pq|r12*(K1+K2)|ij> integrals')
+         IF (ONEAUX) THEN
+            DO ISYM = 1, NSYM
+               WRITE(LUPRI,'(A,I2)') ' Symmetry =',ISYM
+               NTOT = NH1AM(ISYM)
+               KOFF = IH2AM(ISYM,ISYM) + 1
+               CALL OUTPAK(T2AM(KOFF),NTOT,1,LUPRI)
+            END DO
+         ELSE
+            DO ISYM = 1, NSYM
+               WRITE(LUPRI,'(A,I2)') ' Symmetry =',ISYM
+               NTOT = NT1AM(ISYM)
+               KOFF = IT2AM(ISYM,ISYM) + 1
+               CALL OUTPAK(T2AM(KOFF),NTOT,1,LUPRI)
+            END DO
+         END IF
+         CALL AROUND('-<pq|(K1+K2)*r12|ij> integrals')
+         IF (ONEAUX) THEN
+            DO ISYM = 1, NSYM
+               WRITE(LUPRI,'(A,I2)') ' Symmetry =',ISYM
+               NTOT = NH1AM(ISYM)
+               KOFF = IH2AM(ISYM,ISYM) + 1
+               CALL OUTPAK(S2AM(KOFF),NTOT,1,LUPRI)
+            END DO
+         ELSE
+            DO ISYM = 1, NSYM
+               WRITE(LUPRI,'(A,I2)') ' Symmetry =',ISYM
+               NTOT = NT1AM(ISYM)
+               KOFF = IT2AM(ISYM,ISYM) + 1
+               CALL OUTPAK(S2AM(KOFF),NTOT,1,LUPRI)
+            END DO
+         END IF
+      END IF
       RETURN
       END 

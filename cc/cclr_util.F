@@ -34,365 +34,286 @@ C
 #include <single.h>
 C
 C  /* Deck cclr_dia */
-      SUBROUTINE CCLR_DIA(DIAA,DIAB,TRIPLET,WORK,LWORK)
+      SUBROUTINE CCLR_DIA(DIAA,ISYMTR,TRIPLET,WORK,LWORK)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Written by Ove Christiansen 4-9-1994
-C     Modified 22-11 to use Ematrices from
-C     calculation of the CCSD vector.
-C     NB no symmetry in E part 26-1-1995
-C     For CCS and CC2 it uses Fock diagonal.
 C     Triplet extensions by Christof Haettig & Kasper Hald, May 1999
+C     R12 extension by Christof Haettig, Jun 2003
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
+      IMPLICIT NONE
 #include <dummy.h>
-      PARAMETER (ONE = 1.0D0, IZERO = 0, HALF = 0.5D00, TMPKH= 1.0D08)
 #include <priunit.h>
 #include <inftap.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
-#include <cclr.h>
-#include <iratdef.h>
-#include <leinf.h>
-      DIMENSION WORK(LWORK),DIAA(*),DIAB(*)
-      LOGICAL FOCKDI,EMATDI,TRIPLET
+
+      LOGICAL TRIPLET, LOCDBG
+      PARAMETER (LOCDBG = .FALSE.)
+      INTEGER LWORK
+
+#if defined (SYS_CRAY)
+      REAL WORK(*), DIAA(*)
+      REAL ONE, HALF, TMPKH
+#else
+      DOUBLE PRECISION WORK(*), DIAA(*)
+      DOUBLE PRECISION ONE, HALF, TMPKH
+#endif
+      PARAMETER (ONE = 1.0D0, HALF = 0.5D00, TMPKH= 1.0D08)
+C
+      INTEGER KOFF1, KOFF2, KOFF2P, KOFF2M, KOFF12, KFOCKD, KEND1, 
+     &        LWRK1, ISYMA, ISYMI, MI, MA, KAI, ISYMBJ, ISYMAI, 
+     &        ISYMB, ISYMJ, MJ, MB, NAI, NBJ, NAIBJ, NAIAI, ISYMTR, 
+     &        INDEX
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) -3 )/2 + I + J
 C
-C-------------------------------------------
-C     Testoptions.
-C     Use fock diagonal for the moment.
-C-------------------------------------------
-C
       CALL QENTER('CCLR_DIA')
-      EMATDI = .FALSE.
-      FOCKDI = .TRUE.
-      IF (CCS.OR.CCP2.OR.CC2 ) THEN
-         FOCKDI = .TRUE.
-         EMATDI = .FALSE.
+
+C     ----------------------------------------------------
+C     set start addresses for the individual blocks parts:
+C     (singles, doubles, R12 doubles)
+C     ----------------------------------------------------
+      KOFF1  = 1
+      KOFF2  = KOFF1  + NT1AM(ISYMTR)
+      IF (TRIPLET) THEN
+        KOFF2P = KOFF2
+        KOFF2M = KOFF2P + NT2AM(ISYMTR)
+        KOFF12 = KOFF2M + NT2AMA(ISYMTR)
+      ELSE
+        KOFF12 = KOFF2  + NT2AM(ISYMTR)
+      END IF
+C
+C-----------------------------
+C     Allocation of workspace.
+C-----------------------------
+C
+      KFOCKD  = 1
+      KEND1   = KFOCKD  + NORBTS
+      LWRK1   = LWORK   - KEND1
+C
+      IF ( LWRK1 .LT. 0 ) THEN
+         CALL QUIT('Insufficient space in CCLR_DIA ')
       ENDIF
 C
-      IF (FOCKDI) THEN
+C-------------------------------------
+C     Read canonical orbital energies.
+C-------------------------------------
+      CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
+     &            .FALSE.)
+      REWIND LUSIFC
+      CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
+      READ (LUSIFC)
+      READ (LUSIFC) (WORK(KFOCKD+I-1), I=1,NORBTS)
+      CALL GPCLOSE(LUSIFC,'KEEP')
 C
-C--------------------------------
-C        Allocation of workspace.
-C--------------------------------
+      IF (IPRINT.GT.100) THEN
+         CALL AROUND('FOCK DIAGONAL ')
+         CALL OUTPUT(WORK(KFOCKD),1,NORBTS,1,1,NORBTS,1,1,LUPRI)
+      ENDIF
 C
-         KFOCKD  = 1
-         KEND1   = KFOCKD  + NORBTS
-         LWRK1   = LWORK   - KEND1
-C
-         IF ( LWRK1 .LT. 0 ) THEN
-            CALL QUIT('Insufficient space in CCLR_DIA ')
-         ENDIF
-C
-C----------------------------------------
-C        Read canonical orbital energies.
-C----------------------------------------
-c
-         CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
-     &               .FALSE.)
-         REWIND LUSIFC
-C
-         CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
-         READ (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,ISTATE,ISPIN,NACTEL,
-     *                 LSYM
-C
-         CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
-         READ (LUSIFC)
-         READ (LUSIFC) (WORK(KFOCKD+I-1), I=1,NORBTS)
-C
-         CALL GPCLOSE(LUSIFC,'KEEP')
-C
-         IF (IPRINT.GT.100) THEN
-            CALL AROUND('FOCK DIAGONAL ')
-            CALL OUTPUT(WORK(KFOCKD),1,NORBTS,1,1,NORBTS,1,1,LUPRI)
-         ENDIF
-C
-         IF (FROIMP .OR. FROEXP)
-     *      CALL CCSD_DELFRO(WORK(KFOCKD),WORK(KEND1),LWRK1)
-C
-C---------------------------------------------------
-C        FOCK based  approximative  A(1,1) diagonal.
-C---------------------------------------------------
-C
-         DO 100 ISYMA = 1,NSYM
-C
-            ISYMI  = MULD2H(ISYMA,ISYMTR)
-C
-            DO 110 I = 1,NRHF(ISYMI)
-C
-               MI = IORB(ISYMI) + I
-C
-               DO 120 A = 1,NVIR(ISYMA)
-C
-                   MA = IORB(ISYMA) + NRHF(ISYMA) +  A
-C
-                   KAI = IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I-1) + A
-C
-                   DIAA(KAI) = WORK(MA) - WORK(MI)
-C
-  120          CONTINUE
-C
-  110       CONTINUE
-C
-  100    CONTINUE
-C
-         IF (IPRINT.GT. 20 .OR. DEBUG) THEN
-            CALL AROUND('FOCK BASED DIAGONAL single exc. ')
-            CALL OUTPUT(DIAA,1,NT1AM(ISYMTR),1,1,NT1AM(ISYMTR),1,1,
-     &           LUPRI)
-         ENDIF
-C
-C-----------------------------------
-C     Approximative A(2,2) diagonal.
-C     Skip This for CCS!
-C-----------------------------------
-C
-         IF (CCS.OR.CCP2) THEN
-            DO 190 I =1,LETYPA-NT1AM(ISYMTR)
-               DIAA(NT1AM(ISYMTR)+I) = 1.0D08
-  190       CONTINUE
-            CALL QEXIT('CCLR_DIA')
-            RETURN
-         ENDIF
-C
-         DO 200 ISYMBJ = 1,NSYM
-C
-            ISYMAI = MULD2H(ISYMBJ,ISYMTR)
-C
-            DO 210 ISYMJ = 1,NSYM
-C
-               ISYMB = MULD2H(ISYMJ,ISYMBJ)
-C
-               DO 220 ISYMI = 1,NSYM
-C
-                  ISYMA = MULD2H(ISYMI,ISYMAI)
-C
-                  DO 230 J = 1,NRHF(ISYMJ)
-C
-                     MJ = IORB(ISYMJ) + J
-C
-                     DO 240 B = 1,NVIR(ISYMB)
-C
-                        NBJ = IT1AM(ISYMB,ISYMJ)
-     *                   + NVIR(ISYMB)*(J - 1) + B
-C
-                        MB = IORB(ISYMB) + NRHF(ISYMB) + B
-C
-                        DO 250 I = 1,NRHF(ISYMI)
-C
-                           MI = IORB(ISYMI) + I
-C
-                           DO 260 A = 1,NVIR(ISYMA)
-C
-                              NAI = IT1AM(ISYMA,ISYMI)
-     *                         + NVIR(ISYMA)*(I - 1) + A
-C
-                              MA = IORB(ISYMA) + NRHF(ISYMA) +  A
-C
+      IF (FROIMP .OR. FROEXP)
+     *   CALL CCSD_DELFRO(WORK(KFOCKD),WORK(KEND1),LWRK1)
 
-CCH
-CCH                           old stuff... seems to be bugy...
-CCH
-C                             IF ((ISYMAI.EQ.ISYMBJ).AND.
-C    *                            (NAI .LT. NBJ)) GOTO 260
+C------------------------------------------------
+C     FOCK based  approximative  A(1,1) diagonal.
+C------------------------------------------------
+      DO ISYMA = 1,NSYM
+         ISYMI = MULD2H(ISYMA,ISYMTR)
+         DO I = 1,NRHF(ISYMI)
+            MI = IORB(ISYMI) + I
+            DO A = 1,NVIR(ISYMA)
+                MA = IORB(ISYMA) + NRHF(ISYMA) +  A
+                KAI = IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I-1) + A
+                DIAA(KAI) = WORK(MA) - WORK(MI)
+            END DO
+         END DO
+      END DO
 C
-C                             IF (ISYMAI.EQ.ISYMBJ) THEN
-C                                NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-C    *                                + INDEX(NAI,NBJ)
-C                             ELSE
-C                                NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-C    *                               + NT1AM(ISYMAI)*(NBJ-1) + NAI
-C                             ENDIF
-
-CCH
-CCH                           new version... hopefully correct...
-CCH
-                              IF (ISYMAI.EQ.ISYMBJ) THEN
-                                 NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-     *                               + INDEX(NAI,NBJ)
-                              ELSE IF (ISYMAI.LT.ISYMBJ) THEN
-                                 NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-     *                               + NT1AM(ISYMAI)*(NBJ-1) + NAI
-                              ELSE IF (ISYMAI.GT.ISYMBJ) THEN
-                                 NAIBJ = IT2AM(ISYMBJ,ISYMAI)
-     *                               + NT1AM(ISYMBJ)*(NAI-1) + NBJ
-                              ENDIF
+      IF (IPRINT.GT.20 .OR. DEBUG .OR. LOCDBG) THEN
+         CALL AROUND('FOCK BASED DIAGONAL single exc. ')
+         CALL OUTPUT(DIAA,1,NT1AM(ISYMTR),1,1,NT1AM(ISYMTR),1,1,
+     &        LUPRI)
+      ENDIF
 C
-                              DIAA(NAIBJ+NT1AM(ISYMTR)) =
-     *                          WORK(MA)+WORK(MB)-WORK(MI)-WORK(MJ)
+      IF (CCS .OR. CIS) GOTO 9999
 C
-  260                      CONTINUE
-  250                   CONTINUE
-  240                CONTINUE
-  230             CONTINUE
-  220          CONTINUE
-  210       CONTINUE
-  200    CONTINUE
+C------------------------------------------------
+C     FOCK based approximative A(2,2) diagonal.
+C------------------------------------------------
+      DO 200 ISYMBJ = 1,NSYM
 C
-         IF (TRIPLET) THEN
-            KOFF1  = 1
-            KOFF2P = KOFF1  + NT1AM(ISYMTR)
-            KOFF2M = KOFF2P + NT2AM(ISYMTR)
-
-C           --------------------------------------------------------
-C           2- block as for singlet vector, but with the ai,ai 
-C           diagonal set to a huge value to ensure that the
-C           corresponding elements in the trial vectors are zero.
-C           --------------------------------------------------------
-            CALL DCOPY(NT2AM(ISYMTR),DIAA(KOFF2P),1,DIAA(KOFF2M),1)
-            IF (ISYMTR.EQ.1) THEN
-             DO ISYMAI = 1,NSYM
-               DO ISYMI = 1,NSYM
-                  ISYMA = MULD2H(ISYMI,ISYMAI)
-                  DO I = 1,NRHF(ISYMI)
-                     MI = IORB(ISYMI) + I
-                     DO A = 1,NVIR(ISYMA)
-                        MA  = IORB(ISYMA) + NRHF(ISYMA) +  A
-                        NAI = IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I-1)+A
-                        NAIAI = IT2AM(ISYMAI,ISYMAI) + INDEX(NAI,NAI)
-                        DIAA(KOFF2M-1+NAIAI) = 1.0D08
-                  END DO
-                  END DO
-               END DO
-             END DO
-            END IF
-
-C           -----------------------------------------------------------
-C           2+ block as for singlet vector, but times a factor of 0.5
-C           and with the elements a<=b or i<=j set to huge value
-C           to ensure that the corresponding elements in the trial
-C           vectors are zero 
-C           -----------------------------------------------------------
-!
-            CALL DCOPY(NT2AM(ISYMTR),TMPKH,0,DIAA(KOFF2P),1)
-!
-            DO ISYMBJ = 1,NSYM
-               ISYMAI = MULD2H(ISYMBJ,ISYMTR)
+         ISYMAI = MULD2H(ISYMBJ,ISYMTR)
 C
-               IF (ISYMAI .LE. ISYMBJ) THEN
-!
-               DO ISYMI = 1,NSYM
+         DO 210 ISYMJ = 1,NSYM
+C
+            ISYMB = MULD2H(ISYMJ,ISYMBJ)
+C
+            DO 220 ISYMI = 1,NSYM
+C
                ISYMA = MULD2H(ISYMI,ISYMAI)
-               DO ISYMJ = 1,NSYM
-                  ISYMB = MULD2H(ISYMJ,ISYMBJ)
 C
-                  DO I = 1,NRHF(ISYMI)
-                  DO J = 1,NRHF(ISYMJ)
+               DO 230 J = 1,NRHF(ISYMJ)
 C
-                     MI = IORB(ISYMI) + I
-                     MJ = IORB(ISYMJ) + J
-                     IF (MI .NE. MJ) THEN
+                  MJ = IORB(ISYMJ) + J
 C
-                     DO A = 1,NVIR(ISYMA)
-                     DO B = 1,NVIR(ISYMB)
+                  DO 240 B = 1,NVIR(ISYMB)
 C
-                        MA = IORB(ISYMA) + NRHF(ISYMA) +  A
-                        MB = IORB(ISYMB) + NRHF(ISYMB) + B
-                        IF (MA .NE. MB) THEN
+                     NBJ = IT1AM(ISYMB,ISYMJ)
+     *                + NVIR(ISYMB)*(J - 1) + B
 C
-                        NBJ = IT1AM(ISYMB,ISYMJ)+NVIR(ISYMB)*(J-1)+B
-                        NAI = IT1AM(ISYMA,ISYMI)+NVIR(ISYMA)*(I-1)+A
+                     MB = IORB(ISYMB) + NRHF(ISYMB) + B
+C
+                     DO 250 I = 1,NRHF(ISYMI)
+C
+                        MI = IORB(ISYMI) + I
+C
+                        DO 260 A = 1,NVIR(ISYMA)
+C
+                           NAI = IT1AM(ISYMA,ISYMI)
+     *                      + NVIR(ISYMA)*(I - 1) + A
+C
+                           MA = IORB(ISYMA) + NRHF(ISYMA) +  A
 C
                            IF (ISYMAI.EQ.ISYMBJ) THEN
-C
-                             IF ((NAI .LT. NBJ) .AND.
-     *                           (MA .LT. MB)) THEN
-C
                               NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-     *                               + INDEX(NAI,NBJ)
+     *                            + INDEX(NAI,NBJ)
+                           ELSE IF (ISYMAI.LT.ISYMBJ) THEN
+                              NAIBJ = IT2AM(ISYMAI,ISYMBJ)
+     *                            + NT1AM(ISYMAI)*(NBJ-1) + NAI
+                           ELSE IF (ISYMAI.GT.ISYMBJ) THEN
+                              NAIBJ = IT2AM(ISYMBJ,ISYMAI)
+     *                            + NT1AM(ISYMBJ)*(NAI-1) + NBJ
+                           ENDIF
+C
+                           DIAA(NAIBJ+NT1AM(ISYMTR)) =
+     *                       WORK(MA)+WORK(MB)-WORK(MI)-WORK(MJ)
+C
+  260                   CONTINUE
+  250                CONTINUE
+  240             CONTINUE
+  230          CONTINUE
+  220       CONTINUE
+  210    CONTINUE
+  200 CONTINUE
+C
+      IF (TRIPLET) THEN
+C        --------------------------------------------------------
+C        2- block as for singlet vector, but with the ai,ai 
+C        diagonal set to a huge value to ensure that the
+C        corresponding elements in the trial vectors are zero.
+C        --------------------------------------------------------
+         CALL DCOPY(NT2AM(ISYMTR),DIAA(KOFF2P),1,DIAA(KOFF2M),1)
+         IF (ISYMTR.EQ.1) THEN
+          DO ISYMAI = 1,NSYM
+            DO ISYMI = 1,NSYM
+               ISYMA = MULD2H(ISYMI,ISYMAI)
+               DO I = 1,NRHF(ISYMI)
+                  MI = IORB(ISYMI) + I
+                  DO A = 1,NVIR(ISYMA)
+                     MA  = IORB(ISYMA) + NRHF(ISYMA) +  A
+                     NAI = IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I-1)+A
+                     NAIAI = IT2AM(ISYMAI,ISYMAI) + INDEX(NAI,NAI)
+                     DIAA(KOFF2M-1+NAIAI) = 1.0D08
+               END DO
+               END DO
+            END DO
+          END DO
+         END IF
+
+C        -----------------------------------------------------------
+C        2+ block as for singlet vector, but times a factor of 0.5
+C        and with the elements a<=b or i<=j set to huge value
+C        to ensure that the corresponding elements in the trial
+C        vectors are zero 
+C        -----------------------------------------------------------
+         CALL DCOPY(NT2AM(ISYMTR),TMPKH,0,DIAA(KOFF2P),1)
+         DO ISYMBJ = 1,NSYM
+            ISYMAI = MULD2H(ISYMBJ,ISYMTR)
+C
+            IF (ISYMAI .LE. ISYMBJ) THEN
+!
+            DO ISYMI = 1,NSYM
+            ISYMA = MULD2H(ISYMI,ISYMAI)
+            DO ISYMJ = 1,NSYM
+               ISYMB = MULD2H(ISYMJ,ISYMBJ)
+C
+               DO I = 1,NRHF(ISYMI)
+               DO J = 1,NRHF(ISYMJ)
+C
+                  MI = IORB(ISYMI) + I
+                  MJ = IORB(ISYMJ) + J
+                  IF (MI .NE. MJ) THEN
+C
+                  DO A = 1,NVIR(ISYMA)
+                  DO B = 1,NVIR(ISYMB)
+C
+                     MA = IORB(ISYMA) + NRHF(ISYMA) +  A
+                     MB = IORB(ISYMB) + NRHF(ISYMB) + B
+                     IF (MA .NE. MB) THEN
+C
+                     NBJ = IT1AM(ISYMB,ISYMJ)+NVIR(ISYMB)*(J-1)+B
+                     NAI = IT1AM(ISYMA,ISYMI)+NVIR(ISYMA)*(I-1)+A
+C
+                        IF (ISYMAI.EQ.ISYMBJ) THEN
+C
+                          IF ((NAI .LT. NBJ) .AND.
+     *                        (MA .LT. MB)) THEN
+C
+                           NAIBJ = IT2AM(ISYMAI,ISYMBJ)
+     *                            + INDEX(NAI,NBJ)
+                           DIAA(NT1AM(ISYMTR)+NAIBJ) =
+     *                          DIAA(KOFF2M-1+NAIBJ)
+!
+                          ENDIF
+                        ELSE IF (ISYMAI.LT.ISYMBJ) THEN
+!
+                          IF (((MA .LT. MB) .AND.
+     *                         (MI .LT. MJ)) .OR.
+     *                        ((MA .GT. MB) .AND.
+     *                         (MI .GT. MJ))) THEN
+!
+                              NAIBJ = IT2AM(ISYMAI,ISYMBJ)
+     *                            + NT1AM(ISYMAI)*(NBJ-1) + NAI
                               DIAA(NT1AM(ISYMTR)+NAIBJ) =
      *                             DIAA(KOFF2M-1+NAIBJ)
 !
-                             ENDIF
-                           ELSE IF (ISYMAI.LT.ISYMBJ) THEN
-!
-                             IF (((MA .LT. MB) .AND.
-     *                            (MI .LT. MJ)) .OR.
-     *                           ((MA .GT. MB) .AND.
-     *                            (MI .GT. MJ))) THEN
-!
-                                 NAIBJ = IT2AM(ISYMAI,ISYMBJ)
-     *                               + NT1AM(ISYMAI)*(NBJ-1) + NAI
-                                 DIAA(NT1AM(ISYMTR)+NAIBJ) =
-     *                                DIAA(KOFF2M-1+NAIBJ)
-!
-                             ENDIF
-                           ENDIF
-
+                          ENDIF
                         ENDIF
-!
-                     END DO  
-                     END DO  
-!
+
                      ENDIF
-C
+!
                   END DO  
                   END DO  
+!
+                  ENDIF
 C
                END DO  
                END DO  
 C
-!
-            ENDIF
-!
+            END DO  
             END DO  
 C
-         END IF
-C
-      ENDIF
-C
-      IF (EMATDI) THEN
-C
-C--------------------------------
-C        Allocation of workspace.
-C--------------------------------
-C
-         KEI1    = 1
-         KEI2   = KEI1 + NMATAB(ISYMOP)
-         KEND1  = KEI2 + NMATIJ(ISYMOP)
-         LWRK1  = LWORK - KEND1
-C
-         IF ( LWRK1 .LT. 0 ) THEN
-            CALL QUIT('Insufficient spaces in CCLR_DIA ')
+!
          ENDIF
-C
-C-------------------------
-C        Readin Ematrices.
-C-------------------------
-C
-         LUE1 = 0
-         CALL GPOPEN(LUE1,'CC_E1IM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     &               .FALSE.)
-         REWIND(LUE1)
-         READ (LUE1)(WORK(KEI1+ J-1),J = 1,NMATAB(ISYMOP))
-         CALL GPCLOSE(LUE1,'KEEP')
-C
-         LUE2 = 0
-         CALL GPOPEN(LUE2,'CC_E2IM','UNKNOWN',' ','UNFORMATTED',IDUMMY,
-     &               .FALSE.)
-         REWIND(LUE2)
-         READ (LUE2)(WORK(KEI2+ J-1),J = 1,NMATIJ(ISYMOP))
-         CALL GPCLOSE(LUE2,'KEEP' )
-C
-C---------------------------------------------------
-C        EMAT based  approximative  A(1,1) diagonal.
-C---------------------------------------------------
-C
-C        old crap deleted - write new if you want E diagonal.
-C
-C-----------------------------------
-C     Approximative A(2,2) diagonal.
-C-----------------------------------
+!
+         END DO  
 C
       ENDIF
 C
-      IF (IPRINT.GT. 20 .OR. DEBUG) THEN
+      IF (CCR12) THEN
+C       CALL CCLR_DIAR12(DIAA(KOFF12),WORK,LWORK)
+C       CALL QUIT('Missing subroutine in CCLR_DIA...')
+c       Write(LUPRI,*)'Warning Missing subroutine in CCLR_DIA...'
+c       Write(LUPRI,*)'Set R12 Jacobian diagonal to 1.0D01...'
+        CALL DCOPY(NGAMMA(ISYMTR),1.0D01,0,DIAA(KOFF12),1)
+      END IF
+C
+      IF (IPRINT.GT. 20 .OR. DEBUG .OR. LOCDBG) THEN
          CALL AROUND('APPROXIMATIVE  DIAGONAL 22 BLOCK ')
          IF (TRIPLET) THEN
            CALL OUTPUT(DIAA(1+NT1AM(ISYMTR)),1,2*NT2AM(ISYMTR),
@@ -401,7 +322,14 @@ C
            CALL OUTPUT(DIAA(1+NT1AM(ISYMTR)),1,1*NT2AM(ISYMTR),
      *                 1,1,1*NT2AM(ISYMTR),1,1,LUPRI)
          END IF
+         IF (CCR12) THEN
+           WRITE(LUPRI,*) 'R12 doubles part:'
+           CALL OUTPUT(DIAA(KOFF12),1,NGAMMA(ISYMTR),
+     *                 1,1,NGAMMA(ISYMTR),1,1,LUPRI)
+         END IF
       ENDIF
+C
+ 9999 CONTINUE
 C
       CALL QEXIT('CCLR_DIA')
       RETURN
@@ -602,6 +530,7 @@ C
 C
       LOGICAL   RSPIM2
       DIMENSION WORK(LWORK)
+      CHARACTER*24 CBLOCK
 C
 #include <ccsdinp.h>
 #include <cclr.h>
@@ -641,8 +570,16 @@ c        ENDIF
          NC1VEC = NT1AM(ISYMTR)
          NC2VEC = NT2AM(ISYMTR)
       ENDIF
-      NTEMP  = NT1AM(ISYMTR) + NT2AM(ISYMTR)
-      NTEMP2 = NTEMP*(NC1VEC + NC2VEC)
+      IF (CCR12) THEN
+        NTEMP  = NT1AM(ISYMTR) + NT2AM(ISYMTR) + NGAMMA(ISYMTR)
+        NTEMP2 = NTEMP*(NC1VEC + NC2VEC + NGAMMA(ISYMTR))
+      ELSE
+        NTEMP  = NT1AM(ISYMTR) + NT2AM(ISYMTR)
+        NTEMP2 = NTEMP*(NC1VEC + NC2VEC)
+      END IF
+C
+      KEND1 = 1
+      LWRK1 = LWORK
 C
 C------------------------------------------------------------
 C     Calculate Jacobian by Transformation with unit vectors.
@@ -651,14 +588,16 @@ C------------------------------------------------------------
 C
       IF (IPRINT.GT.10) WRITE(LUPRI,*) 'CCLR_JAC Workspace:',LWORK
 C     
-      KEND1 = 1
-      LWRK1 = LWORK
       IF (JACTST) THEN
-         KJACAN  = 1
-         KEND1   = 1 + NTEMP2
-         LWRK1   = LWORK - KEND1
-         IF ( LWRK1 .LE. 0 )
-     &        CALL QUIT('Too little workspace in CCLR_JAC')
+         KJACAN  = KEND1
+         KEND1   = KJACAN + NTEMP2
+         LWRK1   = LWORK  - KEND1
+         IF ( LWRK1 .LE. 0 ) THEN
+           WRITE(LUPRI,*) 'out of memory:'
+           WRITE(LUPRI,*) 'need:',KEND1
+           WRITE(LUPRI,*) 'have:',LWORK
+           CALL QUIT('Too little workspace in CCLR_JAC')
+         END IF
          CALL AROUND( 'Calculation of analytical CC Jacobian')
          CALL CCLR_JACAN(NC1VEC,NC2VEC,WORK(KJACAN),LWORK)
       ENDIF
@@ -669,13 +608,15 @@ C     both for jactst and jacexp.
 C     First elements in workspace contains the jacobian.
 C-------------------------------------------------------
 C
-      write(LUPRI,*) 'lwork,ntemp2,ken1',lwork,ntemp2,kend1
       KFDJAC  = KEND1
       KEND2   = KFDJAC + NTEMP2
       LWRK2   = LWORK - KEND2
-      write(LUPRI,*) 'lwrk2,ken2',lwrk2,kend2
-      IF ( LWRK2 .LE. 0 )
-     &     CALL QUIT('Too little workspace in CCLR_JAC-2')
+      IF ( LWRK2 .LE. 0 ) THEN
+           WRITE(LUPRI,*) 'out of memory:'
+           WRITE(LUPRI,*) 'need:',KEND1
+           WRITE(LUPRI,*) 'have:',LWORK
+           CALL QUIT('Too little workspace in CCLR_JAC-2')
+      END IF
       CALL AROUND( 'Calculation of finite difference  CC Jacobian')
       RSPIM2 =  RSPIM
       RSPIM  = .FALSE.
@@ -688,21 +629,40 @@ C--------------------------------------------------------
 C
       IF (JACTST) THEN
          CALL DAXPY(NTEMP2,-1.0D00,WORK(KFDJAC),1,WORK(KJACAN),1)
-         IF ( IPRINT .GT. 40) THEN
-            CALL AROUND( 'DIFFERENCE. CC JACOBIANT - 11 & 21 PART  ' )
+         IDXMX = IDAMAX(NTEMP2,WORK(KJACAN),1) 
+         IDXCOL = 1 + (IDXMX-1)/NTEMP
+         IDXROW = IDXMX - ((IDXCOL-1)*NTEMP)
+         IF (IDXCOL.LE.NC1VEC) THEN
+            CBLOCK = 'singles block:'
+         ELSE IF (IDXCOL.LE.(NC1VEC+NC2VEC)) THEN
+            CBLOCK = 'doubles block:'
+            IDXCOL = IDXCOL - NC1VEC
+         ELSE IF (IDXCOL.LE.NCCVAR) THEN
+            CBLOCK = 'R12 doubles block:'
+            IDXCOL = IDXCOL - NC1VEC - NC2VEC
+         ELSE
+            CALL QUIT('Error in CCLR_JAC')
+         END IF
+         IF ( IPRINT .GE. 5) THEN
+            CALL AROUND( 'DIFFERENCE. CC JACOBIAN - singles PART  ' )
             CALL OUTPUT(WORK(KJACAN),1,NTEMP,1,NC1VEC,NTEMP,NC1VEC,1,
      &           LUPRI)
-            CALL AROUND( 'DIFFERENCE. CC JACOBIANT - 12 & 22 PART  ' )
+            CALL AROUND( 'DIFFERENCE. CC JACOBIAN - doubles PART  ' )
             CALL OUTPUT(WORK(KJACAN+NTEMP*NC1VEC),1,NTEMP,1,NC2VEC,
      *                  NTEMP,NC2VEC,1,LUPRI)
+            IF (CCR12) THEN
+              CALL AROUND('DIFFERENCE. CC JACOBIAN - R12 doubles PART')
+              CALL OUTPUT(WORK(KJACAN+NTEMP*(NC1VEC+NC2VEC)),
+     *                    1,NTEMP,1,NGAMMA(1),NTEMP,NGAMMA(1),1,LUPRI)
+            END IF
          ENDIF
          DIFNOR  = DDOT(NTEMP2,WORK(KJACAN),1,WORK(KJACAN),1)
-         WRITE(LUPRI,*) '  '
-         WRITE(LUPRI,*) ' The norm of the difference between fd and '//
-     *               ' ana jacobiant is ',SQRT(DIFNOR)
-         WRITE(LUPRI,*) '  '
-         WRITE(LUPRI,*) ' END OF JACTST TEST'
-         WRITE(LUPRI,*) '  '
+         WRITE(LUPRI,'(/A,E20.10/)') ' The norm of the difference'//
+     *        ' between fd and analytical jacobian is ',SQRT(DIFNOR)
+         WRITE(LUPRI,'(/2A/,3I5,E20.10/)') 
+     *        ' Largest element in difference is in ',
+     *         CBLOCK, IDXMX, IDXCOL, IDXROW, WORK(KJACAN-1+IDXMX)
+         WRITE(LUPRI,'(A/)') ' END OF JACTST TEST'
       ENDIF
 C
       IF (IPRINT .GT. 10) THEN
@@ -745,10 +705,21 @@ C----------------------------
 C     Work space allocations.
 C----------------------------
 C
-      NTAMP      = NT1AMX + NT2AMX
-      NTAMP2     = NTAMP*(NC1VEC + NC2VEC )
+      ISYMTR     = 1
+      IF (CCR12) THEN
+        NTAMP      = NT1AM(ISYMTR) + NT2AM(ISYMTR) + NGAMMA(ISYMTR)
+        NTAMP2     = NTAMP*(NC1VEC + NC2VEC + NGAMMA(ISYMTR))
+      ELSE
+        NTAMP      = NT1AMX + NT2AMX
+        NTAMP2     = NTAMP*(NC1VEC + NC2VEC )
+      END IF
+
       KJACOBI    = 1
       KEND1      = 1 + NTAMP2
+      IF (CCR12) THEN
+        KMETRIC = KEND1
+        KEND1   = KMETRIC + NTAMP2
+      END IF
       LWRK1      = LWORK - KEND1
       IF (LWRK1 .LT. NT1AMX + NT2AMX) 
      *        CALL QUIT('INSUFFICIENT WORK SPACE IN CCLR_JACAN')
@@ -757,9 +728,16 @@ C--------------------------------------------------------------
 C     Put up nc1vec C1 unit vectors and nc2vec C2 unit vectors.
 C--------------------------------------------------------------
 C
-      KC1 = KJACOBI
-      KC2 = KC1 + (NT1AMX + NT2AMX)*NC1VEC
-      CALL CCLR_UNIT(NC1VEC,NC2VEC,WORK(KC1),WORK(KC2))
+      KC1  = KJACOBI
+      KC2  = KC1 + NTAMP*NC1VEC
+      KC12 = KC2 + NTAMP*NC2VEC
+      CALL CCLR_UNIT(NTAMP,NC1VEC,NC2VEC,
+     &               WORK(KC1),WORK(KC2),WORK(KC12))
+
+      IF (CCR12) THEN
+        ! for R12 initialize Metric with the same unit vectors:
+        CALL DCOPY(NTAMP2,WORK(KJACOBI),1,WORK(KMETRIC),1)
+      END IF
 C
 C---------------------------------------------------------
 C     Make the transformation of the unit vectors.
@@ -768,14 +746,19 @@ C     elements in work.
 C     Work follows immediately after vectors as it should.
 C---------------------------------------------------------
 C
-      DO 100 I = 1, NC1VEC + NC2VEC
-         CALL DCOPY(NTAMP,WORK(KC1 + (NT1AMX + NT2AMX)*(I-1)),1,
-     *              WORK(KEND1),1)
+      DO I = 1, NC1VEC + NC2VEC + NGAMMA(1)
+         CALL DCOPY(NTAMP,WORK(KC1+NTAMP*(I-1)),1,WORK(KEND1),1)
          ISIDE = 1
-         CALL CC_ATRR(0.0D0,ISYMOP,ISIDE,WORK(KEND1),LWRK1)
-         CALL DCOPY(NTAMP,WORK(KEND1),1,
-     *              WORK(KC1 + (NT1AMX + NT2AMX)*(I-1)),1) 
-  100 CONTINUE
+         CALL CC_ATRR(0.0D0,ISYMOP,ISIDE,WORK(KEND1),LWRK1,
+     &                .FALSE.,DUMMY)
+         CALL DCOPY(NTAMP,WORK(KEND1),1,WORK(KC1+NTAMP*(I-1)),1)
+  
+         IF (CCR12) THEN  
+           KS12AM = KEND1 + NTAMP
+           KM12AM = KMETRIC + NT1AM(ISYMTR)+NT2AM(ISYMTR)+NTAMP*(I-1)
+           CALL DCOPY(NGAMMA(1),WORK(KS12AM),1,WORK(KM12AM),1)
+         END IF
+      END DO
 C
 C----------------------------------------------------------------
 C     Calculate norms to compare with finite difference jacobian.
@@ -787,29 +770,39 @@ C
       WRITE(LUPRI,*) ' NORM OF UNIT VEC. TRA. JAC.', SQRT(XNJ)
       WRITE(LUPRI,*) '  '
 C
-      CALL CCLR_NORMS(X11,X21,X12,X22,WORK(KJACOBI),NC1VEC,NC2VEC)
+      CALL CCLR_NORMS(X11,X21,XR1,X12,X22,XR2,X1R,X2R,XRR,
+     &                WORK(KJACOBI),NTAMP,NC1VEC,NC2VEC)
 C
       WRITE(LUPRI,*) 'NORM OF 11 PART OF UNIT VECT. JAC. ', SQRT(X11)
       WRITE(LUPRI,*) 'NORM OF 21 PART OF UNIT VECT. JAC. ', SQRT(X21)
+      WRITE(LUPRI,*) 'NORM OF R1 PART OF UNIT VECT. JAC. ', SQRT(XR1)
       WRITE(LUPRI,*) 'NORM OF 12 PART OF UNIT VECT. JAC. ', SQRT(X12)
       WRITE(LUPRI,*) 'NORM OF 22 PART OF UNIT VECT. JAC. ', SQRT(X22)
+      WRITE(LUPRI,*) 'NORM OF R2 PART OF UNIT VECT. JAC. ', SQRT(XR2)
+      WRITE(LUPRI,*) 'NORM OF 1R PART OF UNIT VECT. JAC. ', SQRT(X1R)
+      WRITE(LUPRI,*) 'NORM OF 2R PART OF UNIT VECT. JAC. ', SQRT(X2R)
+      WRITE(LUPRI,*) 'NORM OF RR PART OF UNIT VECT. JAC. ', SQRT(XRR)
 C
 C------------------------------------------------
-C     Print the columbs of the jacobian obtained.
+C     Print the columns of the jacobian obtained.
 C------------------------------------------------
 C
-      IF (IPRINT .GT. 40) THEN
-C
+      IF (IPRINT .GE. 5) THEN
          CALL AROUND( 'CC JACOBIANT I PRESUME - A*C1 PART ' )
          CALL OUTPUT(WORK(KJACOBI),1,NTAMP,1,NC1VEC,NTAMP,NC1VEC,1,
      &        LUPRI)
          CALL AROUND( 'CC JACOBIANT I PRESUME - A*C2 PART ' )
          CALL OUTPUT(WORK(KJACOBI+NTAMP*NC1VEC),1,NTAMP,1,NC2VEC,
      *               NTAMP,NC2VEC,1,LUPRI)
-C
-      ENDIF
-C
-      IF (IPRINT .GT. 10) THEN
+         IF ( CCR12) THEN
+           CALL AROUND( 'CC JACOBIANT I PRESUME - A*C12 PART ' )
+           CALL OUTPUT(WORK(KJACOBI+NTAMP*(NC1VEC+NC2VEC)),1,NTAMP,
+     *                 1,NGAMMA(1),NTAMP,NGAMMA(1),1,LUPRI)
+           CALL AROUND( 'CC-R12 METRIC') 
+           CALL OUTPUT(WORK(KMETRIC),1,NTAMP,1,NC1VEC+NC2VEC+NGAMMA(1),
+     *                 NTAMP,NC1VEC+NC2VEC+NGAMMA(1),1,LUPRI)
+         END IF
+
          CALL AROUND(' END OF CCLR_JACAN ')
       ENDIF
 C
@@ -817,7 +810,7 @@ C
       END
 C
 c*DECK CCLR_UNIT
-      SUBROUTINE CCLR_UNIT(NC1VEC,NC2VEC,C1AM,C2AM)
+      SUBROUTINE CCLR_UNIT(NTAMP,NC1VEC,NC2VEC,C1AM,C2AM,C12AM)
 C
 C     Put up the first NC1VEC and NC2VEC unit vectors in the single and double
 C     excitation space respectively.
@@ -827,48 +820,61 @@ C
 #include <ccsdinp.h>
 #include <cclr.h>
 C
-      DIMENSION C1AM(NT1AMX+ NT2AMX,NC1VEC),C2AM(NT1AMX + NT2AMX,NC2VEC)
+      DIMENSION C1AM(NTAMP,NC1VEC),C2AM(NTAMP,NC2VEC)
+      DIMENSION C12AM(NTAMP,NGAMMA(1))
 C
 C--------------------------------------
 C     Put up the required unit vectors.
 C--------------------------------------
 C
-      DO 100 J = 1, NC1VEC
-C
-            CALL DZERO(C1AM(1,J),NT1AMX + NT2AMX)
-            C1AM(J,J) = 1.0D00
-C
- 100  CONTINUE
-C
-      DO 200 J = 1, NC2VEC
-C
-            CALL DZERO(C2AM(1,J),NT1AMX + NT2AMX)
-            C2AM(J + NT1AMX,J) = 1.0D00
-C
- 200  CONTINUE
+      DO J = 1, NC1VEC
+        CALL DZERO(C1AM(1,J),NTAMP)
+        C1AM(J,J) = 1.0D00
+      END DO
+
+      DO J = 1, NC2VEC
+        CALL DZERO(C2AM(1,J),NTAMP)
+        C2AM(J + NT1AMX,J) = 1.0D00
+      END DO
+
+      IF (CCR12) THEN
+        DO J = 1, NGAMMA(1)
+          CALL DZERO(C12AM(1,J),NTAMP)
+          C12AM(J + NT1AMX+NT2AMX,J) = 1.0D00
+        END DO
+      END IF
 C
       RETURN
       END
 c*DECK CCLR_NORMS
-      SUBROUTINE CCLR_NORMS(X11,X21,X12,X22,XJAC,NC1VEC,NC2VEC)
+      SUBROUTINE CCLR_NORMS(X11,X21,XR1,X12,X22,XR2,X1R,X2R,XRR,
+     &                      XJAC,NTAMP,NC1VEC,NC2VEC)
 #include <implicit.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
 #include <cclr.h>
 C
-      DIMENSION XJAC(NT1AMX + NT2AMX,NC1VEC + NC2VEC)
+      DIMENSION XJAC(NTAMP,*)
 C
-      NTAMP = NT1AMX + NT2AMX
       X11 = 0.0D00
       X12 = 0.0D00
+      X1R = 0.0D00
       X21 = 0.0D00
       X22 = 0.0D00
+      X2R = 0.0D00
+      XR1 = 0.0D00
+      XR2 = 0.0D00
+      XRR = 0.0D00
 C
       DO 100 I = 1, NC1VEC
 C
          X11 = X11 + DDOT(NT1AMX,XJAC(1,I),1,XJAC(1,I),1)
          X21 = X21 + DDOT(NT2AMX,XJAC(1 + NT1AMX,I),1,
      *                    XJAC(1 + NT1AMX,I),1)
+         IF (CCR12) THEN
+           XR1 = XR1 + DDOT(NGAMMA(1),XJAC(1+NT1AMX+NT2AMX,I),1,
+     *                                XJAC(1+NT1AMX+NT2AMX,I),1)
+         END IF
 C
  100  CONTINUE
 C
@@ -877,8 +883,22 @@ C
          X12 = X12 + DDOT(NT1AMX,XJAC(1,I),1,XJAC(1,I),1)
          X22 = X22 + DDOT(NT2AMX,XJAC(1 + NT1AMX,I),1,
      *                    XJAC(1 + NT1AMX,I),1)
+         IF (CCR12) THEN
+           XR2 = XR2 + DDOT(NGAMMA(1),XJAC(1+NT1AMX+NT2AMX,I),1,
+     *                                XJAC(1+NT1AMX+NT2AMX,I),1)
+         END IF
 C
  200  CONTINUE
+
+      IF (CCR12) THEN
+       DO I = NC1VEC+NC2VEC+1,NC1VEC+NC2VEC+NGAMMA(1)
+         X1R = X1R + DDOT(NT1AMX,XJAC(1,I),1,XJAC(1,I),1)
+         X2R = X2R + DDOT(NT2AMX,XJAC(1 + NT1AMX,I),1,
+     *                           XJAC(1 + NT1AMX,I),1)
+         XRR = XRR + DDOT(NGAMMA(1),XJAC(1+NT1AMX+NT2AMX,I),1,
+     *                              XJAC(1+NT1AMX+NT2AMX,I),1)
+       END DO
+      END IF
 C
       RETURN
       END
@@ -895,89 +915,156 @@ C
 100   CONTINUE
       RETURN
       END
+C-----------------------------------------------------------------------
 c*DECK CCLR_FDJAC
       SUBROUTINE CCLR_FDJAC(NC1VEC,NC2VEC,WORK,LWORK)
-C
-C-------------------------------------------------------------------------
-C     Test routine for calculating the CC Jacobian by finite difference on
-C     the cc-vector.
+C-----------------------------------------------------------------------
+C     Test routine for calculating the CC Jacobian by finite 
+C     difference on the CC vector function.
 C     IF JACTST then first elements in work contains the jacobian.
 C     calculates the first nc1vec rows of the C1 blocks
 C     and nc2vec of the rows of the c2 blocks.
 C     Written by Ove Christiansen 26-5-1994
-C-------------------------------------------------------------------------
-C
-#include <implicit.h>
+C     Changes for R12 by Christof Haettig 21-5-2003
+C-----------------------------------------------------------------------
+      IMPLICIT NONE
 #include <maxorb.h>
-#include <dummy.h>
-#include <iratdef.h>
 #include <ccorb.h>
-#include <aovec.h>
+#include <ccsdsym.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <second.h>
 #include <ccsdinp.h>
 #include <cclr.h>
-#include <ccsdsym.h>
-#include <ccsdio.h>
-#include <leinf.h>
-#include <priunit.h>
-C
-      DIMENSION WORK(LWORK)
-      PARAMETER (XHALF = 0.5D00,XMTWO = -2.0D00, DELTA = 1.0D-08)
+#include <r12int.h>
+
+ 
+      INTEGER NC1VEC, NC2VEC, LWORK
+   
+#if defined (SYS_CRAY)
+      REAL WORK(LWORK)
+      REAL XHALF, XMTWO, DELTA
+      REAL TI,X11,X12,X21,X22,XNJ,X1R,XR1,X2R,XR2,XRR,DDOT
+#else
+      DOUBLE PRECISION WORK(LWORK)
+      DOUBLE PRECISION XHALF, XMTWO, DELTA, DELTAI
+      DOUBLE PRECISION TI,X11,X12,X21,X22,XNJ,X1R,XR1,X2R,XR2,XRR,DDOT
+#endif 
+      PARAMETER (XHALF = 0.5D00,XMTWO = -2.0D00, 
+     &           DELTA = 1.0D-05, DELTAI = 1.0D00/DELTA)
       CHARACTER*10 MODEL
+      CHARACTER*8 FC12AM, FS12AM
+      PARAMETER (FC12AM='CCR_C12M',FS12AM='CCR_S12M')
+
+      INTEGER NTAMP,NTAMP2,KJACOBI,KJACCO,KRHO1,KRHO2,KRHO1D,KRHO2D,
+     &        KC1AM,KC2AM,KEND1,LWRK1,KJACOBI2,IOPT,LUJAC, KJACOBIR,
+     &        NAI, NBJ, NKI, NLJ, KCR12AM, KRHOR12, KRHOR12D, NRHFTRIA,
+     &        N2, KR12TRIP, KR12SING, IJ, LUNIT, LUFC12, LUFS12, LUMET
 C
+      INTEGER INDEX
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
-C
-      IF (IPRINT .GT. 10) THEN
-         CALL AROUND(' START OF CCLR_FDJAC ')
-      ENDIF
+ 
+      IF (OMEGSQ) CALL QUIT('CCLR_FDJAC incompatible with OMEGSQ.')
+      IF (LCOR.OR.LSEC) 
+     &   CALL QUIT('CCLR_FDJAC incompatible with FCORE and FSECON.')
 C
       IF (IPRINT.GT.5) THEN
          CALL AROUND( 'IN CCLR_FDJAC: MAKING FINITE DIFF. CC JACOBIANT')
+         WRITE(LUPRI,*) 'Number of single excitations:',NC1VEC
+         WRITE(LUPRI,*) 'Number of double excitations:',NC2VEC
+         IF (CCR12) THEN
+           WRITE(LUPRI,*) 'This is a CC-R12 calculation...'
+           WRITE(LUPRI,*) 'Number of R12 double excitations:',NGAMMA(1)
+         END IF
       ENDIF
+C 
+C--------------------------------------------------
+C     Write the jacobian to disk if FDJAC is done.
+C--------------------------------------------------
 C
-      IF (FDJAC .AND.(IPRINT.GT.5)) THEN
-         WRITE(LUPRI,'(3x,a40,//)') 
-     &        'FINITE DIFF. JACOBIAN WRITTEN TO DISK'
+      IF (FDJAC ) THEN
+         LUJAC = 0
+         CALL GPOPEN(LUJAC,'CCLR_JAC','UNKNOWN',' ','UNFORMATTED',
+     *               IDUMMY,.FALSE.)
+         IF (IPRINT.GT.5) WRITE(LUPRI,'(3X,A,//)') 
+     &        'FINITE DIFF. JACOBIAN WILL BE WRITTEN TO DISK'
+         IF (CCR12) THEN
+           LUMET = 0
+           CALL GPOPEN(LUMET,'CCLR_MET','UNKNOWN',' ','UNFORMATTED',
+     *                 IDUMMY,.FALSE.)
+           IF (IPRINT.GT.5) WRITE(LUPRI,'(3X,A,//)') 
+     &        'METRIC MATRIX WILL BE WRITTEN TO DISK'
+           LUFC12 = 0 
+           CALL WOPEN2(LUFC12,FC12AM,64,0)
+           LUFS12 = 0 
+           CALL WOPEN2(LUFS12,FS12AM,64,0)
+         END IF
       ENDIF
 C
 C----------------------------
 C     Work space allocations.
 C----------------------------
 C
-      NTAMP      = NT1AM(ISYMTR) + NT2AM(ISYMTR)
-      NTAMP2     = NTAMP*(NC1VEC + NC2VEC )
-      KJACOBI    = 1
+      ISYMTR     = 1
+      IF (CCR12) THEN
+        NTAMP      = NT1AM(ISYMTR) + NT2AM(ISYMTR) + NGAMMA(1)
+        NTAMP2     = NTAMP*(NC1VEC + NC2VEC + NGAMMA(1))
+      ELSE
+        NTAMP      = NT1AM(ISYMTR) + NT2AM(ISYMTR)
+        NTAMP2     = NTAMP*(NC1VEC + NC2VEC)
+      END IF
+
+      KEND1 = 1
+
       IF (JACTST) THEN
-         KJACCO  = KJACOBI  + NTAMP2
+         KJACOBI = KEND1
+         KEND1   = KJACOBI  + NTAMP2
       ELSE
-         KJACCO  = KJACOBI
+         KJACOBI = -999999
       ENDIF
+
       IF (FDJAC ) THEN
-         KRHO1   = KJACCO   + NT1AMX + NT2AMX
+         KJACCO  = KEND1
+         KEND1   = KJACCO   + NTAMP
       ELSE
-         KRHO1   = KJACCO
+         KJACCO  = -999999
       ENDIF
+
+      KRHO1      = KEND1
       KRHO2      = KRHO1    + NT1AMX
-      IF (OMEGSQ) THEN
-         KC1AM   = KRHO2
-     *         + MAX(NT2AMX,NT2AM(ISYMOP),NT2AO(ISYMOP),NT2AOS(ISYMOP))
-      ELSE
-         KC1AM   = KRHO2
-     *        + MAX(NT2AMX,NT2AM(ISYMOP),NT2AO(ISYMOP),2*NT2ORT(ISYMOP))
-      ENDIF
+      KC1AM      = KRHO2    + MAX(NT2AMX,NT2AO(ISYMOP),2*NT2ORT(ISYMOP))
       KRHO1D     = KC1AM    + NT1AMX
       KRHO2D     = KRHO1D   + NT1AM(ISYMOP)
-      IF (OMEGSQ) THEN
-         KC2AM  = KRHO2D
-     *         + MAX(NT2AMX,NT2AM(ISYMOP),NT2AO(ISYMOP),NT2AOS(ISYMOP))
+      KC2AM      = KRHO2D   + MAX(NT2AMX,NT2AO(ISYMOP),2*NT2ORT(ISYMOP))
+      KEND1      = KC2AM    + NT2SQ(ISYMOP)
+
+      IF (CCR12) THEN
+        NRHFTRIA = NRHFT*(NRHFT+1)/2
+        N2       = NRHFTRIA * NRHFTRIA
+  
+        KCR12AM  = KEND1 
+        KRHOR12  = KCR12AM  + NGAMMA(1)
+        KRHOR12D = KRHOR12  + NGAMMA(1)
+        KR12SING = KRHOR12D + NGAMMA(1)
+        KR12TRIP = KR12SING + N2
+        KEND1    = KR12TRIP + N2
       ELSE
-         KC2AM   = KRHO2D
-     *        + MAX(NT2AMX,NT2AM(ISYMOP),NT2AO(ISYMOP),2*NT2ORT(ISYMOP))
+        KCR12AM  = -999999
+        KRHOR12  = -999999
+        KRHOR12D = -999999
+      ENDIF 
+
+      LWRK1      = LWORK    - KEND1
+
+      IF (LWRK1.LT.0) THEN
+         WRITE (LUPRI,*) 'Too little work space in cc_jacfd '
+         WRITE (LUPRI,*) 'AVAILABLE: LWORK   =  ',LWORK
+         WRITE (LUPRI,*) 'NEEDED (AT LEAST)  =  ',KEND1
+         CALL QUIT('TOO LITTLE WORKSPACE IN CCLR_FDJAC ')
       ENDIF
-      KSCR1      = KC2AM      + NT2AMX
-      KEND1      = KSCR1      + NT2AMX + NT1AMX
-      LWRK1      = LWORK      - KEND1
-      IF (IPRINT .GT. 100 ) THEN
+
+      IF (IPRINT .GT. 15) THEN
          WRITE (LUPRI,*) ' IN CCLR_FDJAC: KJACOBI =  ',KJACOBI
          WRITE (LUPRI,*) ' IN CCLR_FDJAC: KJACCO  =  ',KJACCO
          WRITE (LUPRI,*) ' IN CCLR_FDJAC: KRHO1   =  ',KRHO1
@@ -986,30 +1073,31 @@ C
          WRITE (LUPRI,*) ' IN CCLR_FDJAC: KRHO1D  =  ',KRHO1D
          WRITE (LUPRI,*) ' IN CCLR_FDJAC: KRHO2D  =  ',KRHO2D
          WRITE (LUPRI,*) ' IN CCLR_FDJAC: KC2AM   =  ',KC2AM
-         WRITE (LUPRI,*) ' IN CCLR_FDJAC: KSCR1   =  ',KSCR1
+         WRITE (LUPRI,*) ' IN CCLR_FDJAC: KCR12AM =  ',KCR12AM
+         WRITE (LUPRI,*) ' IN CCLR_FDJAC: KRHOR12 =  ',KRHOR12
+         WRITE (LUPRI,*) ' IN CCLR_FDJAC: KRHOR12D=  ',KRHOR12D
          WRITE (LUPRI,*) ' IN CCLR_FDJAC: KEND1   =  ',KEND1
       ENDIF
-      IF (LWRK1.LT.0 ) THEN
-         WRITE (LUPRI,*) 'Too little work space in cc_jacfd '
-         WRITE (LUPRI,*) 'AVAILABLE: LWORK   =  ',LWORK
-         WRITE (LUPRI,*) 'NEEDED (AT LEAST)  =  ',KEND1
-         CALL QUIT('TOO LITTLE WORKSPACE IN CCLR_FDJAC ')
-      ENDIF
-      KJACOBI2   = KJACOBI + NC1VEC*NTAMP
+
+      KJACOBI2   = KJACOBI  + NC1VEC*NTAMP
+      KJACOBIR   = KJACOBI2 + NC2VEC*NTAMP
 C
 C---------------------
 C     Initializations.
 C---------------------
 C
-      CALL DZERO(WORK(KC1AM),NT1AMX)
-      CALL DZERO(WORK(KC2AM),NT2AMX)
-      CALL DZERO(WORK(KJACOBI),NTAMP2)
-      DELTAI = 1.0D00/DELTA
+      IF (JACTST) CALL DZERO(WORK(KJACOBI),NTAMP2)
+      IF (FDJAC ) CALL DZERO(WORK(KJACCO),NTAMP)
+
       X11 = 0.0D00
       X12 = 0.0D00
+      X1R = 0.0D00
       X21 = 0.0D00
       X22 = 0.0D00
-      XNJ = 0.0D00
+      X2R = 0.0D00
+      XR1 = 0.0D00
+      XR2 = 0.0D00
+      XRR = 0.0D00
 C
 C------------------------------------------------
 C     Read the CC reference amplitudes From disk.
@@ -1017,106 +1105,123 @@ C------------------------------------------------
 C
       IOPT = 3
       CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KC1AM),WORK(KC2AM))
-C
-C--------------------------------------------------
-C     Write the jacobian to disk if FDJAC  is done.
-C--------------------------------------------------
-C
-      IF (FDJAC ) THEN
-         LUJAC = 0
-         CALL GPOPEN(LUJAC,'CCLR_JAC','UNKNOWN',' ','UNFORMATTED',
-     *               IDUMMY,.FALSE.)
-      ENDIF
-C
-C----------------------------
-C     Different test options.
-C----------------------------
-C
-c     CALL DZERO(WORK(KC1AM),NT1AMX)
-c     CALL DZERO(WORK(KC2AM),NT2AMX)
-c     CALL CCLR_DX(WORK(KC1AM),1.0D-2,NT1AMX)
-c     CALL CCLR_DX(WORK(KC2AM),1.0D-2,NT2AMX)
+
 C
 C--------------------------------------
 C     Calculate reference omega vector.
 C--------------------------------------
 C
-      IF (IPRINT.GT.125) THEN
-         CALL AROUND( 'C1AM ' )
-         CALL OUTPUT(WORK(KC1AM),1,NVIRT,1,NRHFT,NVIRT,NRHFT,1,LUPRI)
-         CALL AROUND( 'C2AM ' )
-         CALL OUTPAK(WORK(KC2AM),NT1AMX,1,LUPRI)
-      ENDIF
+      RSPIM = .FALSE.
 C
+      if (.false.) then
       CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),WORK(KC2AM),
      *            WORK(KEND1),LWRK1)
 C
-C----------------------------------------------
-C     Zero out components in the trial vectors.
-C----------------------------------------------
-C
-      IF (LCOR .OR. LSEC) THEN
-C
-         CALL CC_CORE(WORK(KRHO1D),WORK(KRHO2D),ISYMTR)
-C
-      ENDIF
-C
       CALL DCOPY(NT1AMX,WORK(KRHO1D),1,WORK(KRHO1),1)
       CALL DCOPY(NT2AMX,WORK(KRHO2D),1,WORK(KRHO2),1)
+      IF (CCR12) THEN
+        LUNIT = 0
+        CALL GPOPEN(LUNIT,'CC_OMEGAR12','UNKNOWN',' ','FORMATTED',
+     &                     IDUMMY,.FALSE.)
+        READ(LUNIT,'(4E30.20)') (WORK(KR12SING+IJ), IJ = 0, N2-1 )
+        READ(LUNIT,'(4E30.20)') (WORK(KR12TRIP+IJ), IJ = 0, N2-1 )
+        CALL GPCLOSE(LUNIT,'KEEP') 
+        CALL CCR12PCK(WORK(KRHOR12),1,WORK(KR12SING),WORK(KR12TRIP))
+      END IF
 C
       IF (IPRINT.GT.125) THEN
-         CALL AROUND( 'RHO1 ' )
+         CALL AROUND( 'RHO1' )
          CALL OUTPUT(WORK(KRHO1),1,NVIRT,1,NRHFT,NVIRT,NRHFT,1,LUPRI)
-         CALL AROUND( 'RHO2 ' )
+         CALL AROUND( 'RHO2' )
          CALL OUTPAK(WORK(KRHO2),NT1AMX,1,LUPRI)
+         IF (CCR12) THEN
+           CALL AROUND( 'RHO-R12' )
+           CALL OUTPAK(WORK(KRHOR12),NMATIJ(1),1,LUPRI)
+         END IF
       ENDIF
+      end if
 C
 C---------------------------------------------
 C     Calculate Jacobiant by finite difference.
 C---------------------------------------------
 C
-      DO 100 I = 1, NC1VEC
-C
+      DO I = 1, NC1VEC
          TI   = SECOND()
+
+C        Compute Omega(t - 0.5 delta)
+         WORK(KC1AM +I -1) = WORK(KC1AM +I -1 ) - 0.5D0*DELTA
+
+         CALL CCRHSN(WORK(KRHO1),WORK(KRHO2),WORK(KC1AM),WORK(KC2AM),
+     *               WORK(KEND1),LWRK1)
+         IF (CCR12) THEN
+           LUNIT = 0
+           CALL GPOPEN(LUNIT,'CC_OMEGAR12','UNKNOWN',' ','FORMATTED',
+     &                     IDUMMY,.FALSE.)
+           READ(LUNIT,'(4E30.20)') (WORK(KR12SING+IJ), IJ = 0, N2-1 )
+           READ(LUNIT,'(4E30.20)') (WORK(KR12TRIP+IJ), IJ = 0, N2-1 )
+           CALL GPCLOSE(LUNIT,'KEEP') 
+           CALL CCR12PCK(WORK(KRHOR12),1,WORK(KR12SING),WORK(KR12TRIP))
+         END IF
+
+C        Compute Omega(t + 0.5 delta)
          WORK(KC1AM +I -1) = WORK(KC1AM +I -1 ) + DELTA
-         IF (LCOR .OR. LSEC) THEN
-            CALL CC_CORE(WORK(KC1AM),WORK(KC2AM),ISYMTR)
-         ENDIF
+
          CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),WORK(KC2AM),
      *               WORK(KEND1),LWRK1)
-C
-         IF (LCOR .OR. LSEC) THEN
-            CALL CC_CORE(WORK(KRHO1D),WORK(KRHO2D),ISYMTR)
-         ENDIF
-C
-         WORK(KC1AM +I -1) = WORK(KC1AM +I -1) - DELTA
+
+C        Restore t amplitudes
+         WORK(KC1AM +I -1) = WORK(KC1AM +I -1) - 0.5D0*DELTA
+
          IF (IPRINT.GT.125) THEN
-            CALL AROUND( 'RHO1D ' )
-            CALL OUTPUT(WORK(KRHO1D),1,NVIRT,1,NRHFT,NVIRT,NRHFT,1,
-     &           LUPRI)
-            CALL AROUND( 'RHO2D ' )
-            CALL OUTPAK(WORK(KRHO2D),NT1AMX,1,LUPRI)
+           CALL AROUND( 'RHO1D ' )
+           CALL OUTPUT(WORK(KRHO1D),1,NVIRT,1,NRHFT,NVIRT,NRHFT,1,LUPRI)
+           CALL AROUND( 'RHO2D ' )
+           CALL OUTPAK(WORK(KRHO2D),NT1AMX,1,LUPRI)
          ENDIF
+
+C        Calculate [Omega(t+0.5delta)-(omegat-0.5delta)]/delta
          CALL DAXPY(NT1AMX,-1.0D00,WORK(KRHO1),1,WORK(KRHO1D),1)
          CALL DAXPY(NT2AMX,-1.0D00,WORK(KRHO2),1,WORK(KRHO2D),1)
          CALL CCLR_DIASCL(WORK(KRHO2D),XHALF,ISYMTR)
          CALL DSCAL(NT1AMX,DELTAI,WORK(KRHO1D),1)
          CALL DSCAL(NT2AMX,DELTAI,WORK(KRHO2D),1)
+
+         IF (CCR12) THEN
+           LUNIT = 0
+           CALL GPOPEN(LUNIT,'CC_OMEGAR12','UNKNOWN',' ','FORMATTED',
+     &                     IDUMMY,.FALSE.)
+           READ(LUNIT,'(4E30.20)') (WORK(KR12SING+IJ), IJ = 0, N2-1 )
+           READ(LUNIT,'(4E30.20)') (WORK(KR12TRIP+IJ), IJ = 0, N2-1 )
+           CALL GPCLOSE(LUNIT,'KEEP') 
+           CALL CCR12PCK(WORK(KRHOR12D),1,WORK(KR12SING),WORK(KR12TRIP))
+           IF (IPRINT.GT.125) THEN
+             CALL AROUND( 'RHO-R12' )
+             CALL OUTPAK(WORK(KRHO2),NMATIJ(1),1,LUPRI)
+           END IF
+           CALL DAXPY(NGAMMA(1),-1.0D0,WORK(KRHOR12),1,WORK(KRHOR12D),1)
+           CALL CCLR_DIASCLR12(WORK(KRHOR12D),BRASCL,1)
+           CALL DSCAL(NGAMMA(1),DELTAI,WORK(KRHOR12D),1)
+         END IF
+
          IF (JACTST) THEN
             CALL DCOPY(NT1AMX,WORK(KRHO1D),1,
      *                 WORK(KJACOBI+NTAMP*(I-1)),1)
             CALL DCOPY(NT2AMX,WORK(KRHO2D),1,
      *                WORK(KJACOBI+NTAMP*(I-1)+NT1AMX),1)
+            IF (CCR12) CALL DCOPY(NGAMMA(1),WORK(KRHOR12D),1,
+     *              WORK(KJACOBI+NTAMP*(I-1)+NT1AMX+NT2AMX),1)
          ENDIF
          IF (FDJAC ) THEN
-            CALL DCOPY(NT1AMX,WORK(KRHO1D),1,
-     *                 WORK(KJACCO),1)
-            CALL DCOPY(NT2AMX,WORK(KRHO2D),1,
-     *                WORK(KJACCO+NT1AMX),1)
+            CALL DCOPY(NT1AMX,WORK(KRHO1D),1,WORK(KJACCO),1)
+            CALL DCOPY(NT2AMX,WORK(KRHO2D),1,WORK(KJACCO+NT1AMX),1)
+            IF (CCR12) CALL DCOPY(NGAMMA(1),WORK(KRHOR12D),1,
+     *                                WORK(KJACCO+NT1AMX+NT2AMX),1)
             WRITE(LUJAC) (WORK(KJACCO +J-1), J = 1, NTAMP)
          ENDIF
          X11 = X11 + DDOT(NT1AMX,WORK(KRHO1D),1,WORK(KRHO1D),1)
          X21 = X21 + DDOT(NT2AMX,WORK(KRHO2D),1,WORK(KRHO2D),1)
+         IF (CCR12) 
+     *    XR1 = XR1 + DDOT(NGAMMA(1),WORK(KRHOR12D),1,WORK(KRHOR12D),1)
 C
          TI   = SECOND() - TI
          IF (IPRINT.GT.5 ) THEN
@@ -1124,7 +1229,7 @@ C
             WRITE(LUPRI,*) 'FDJAC ROW NR. ',I,' DONE IN ',TI,' SEC.'
          ENDIF
 C
- 100  CONTINUE
+      END DO
 C
 C----------------------------------------------------------------
 C     Loop over T2 amplitudes. Take care of diagonal t2 elements
@@ -1132,24 +1237,36 @@ C     is in a different convention in the energy code.
 C     Factor 1/2 from right , and factor 2 from left.
 C----------------------------------------------------------------
 C
-      DO 200 NAI = 1, NT1AMX
-        DO 300 NBJ = 1, NAI
+      DO NAI = 1, NT1AMX
+        DO NBJ = 1, NAI
          I = INDEX(NAI,NBJ)
 C
          IF (I.LE.NC2VEC) THEN
-C
            TI   = SECOND()
+
+C          Compute Omega(t - 0.5 delta)
+           WORK(KC2AM + I -1) = WORK(KC2AM+I -1) - 0.5D0*DELTA
+
+           CALL CCRHSN(WORK(KRHO1),WORK(KRHO2),WORK(KC1AM),
+     *               WORK(KC2AM),WORK(KEND1),LWRK1)
+           IF (CCR12) THEN
+            LUNIT = 0
+            CALL GPOPEN(LUNIT,'CC_OMEGAR12','UNKNOWN',' ','FORMATTED',
+     &                      IDUMMY,.FALSE.)
+            READ(LUNIT,'(4E30.20)') (WORK(KR12SING+IJ), IJ = 0, N2-1 )
+            READ(LUNIT,'(4E30.20)') (WORK(KR12TRIP+IJ), IJ = 0, N2-1 )
+            CALL GPCLOSE(LUNIT,'KEEP') 
+            CALL CCR12PCK(WORK(KRHOR12),1,WORK(KR12SING),WORK(KR12TRIP))
+           END IF
+ 
+C          Compute Omega(t + 0.5 delta)
            WORK(KC2AM + I -1) = WORK(KC2AM+I -1) + DELTA
-           IF (LCOR .OR. LSEC) THEN
-             CALL CC_CORE(WORK(KC1AM),WORK(KC2AM),ISYMTR)
-           ENDIF
+
            CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),
      *               WORK(KC2AM),WORK(KEND1),LWRK1)
-C
-           IF (LCOR .OR. LSEC) THEN
-              CALL CC_CORE(WORK(KRHO1D),WORK(KRHO2D),ISYMTR)
-           ENDIF
-           WORK(KC2AM + I -1) = WORK(KC2AM+I -1) - DELTA
+ 
+C          Restore t amplitudes
+           WORK(KC2AM + I -1) = WORK(KC2AM+I -1) - 0.5D0*DELTA
 C
            IF (IPRINT.GT.125) THEN
               CALL AROUND( 'RHO1D ' )
@@ -1159,17 +1276,36 @@ C
               CALL OUTPAK(WORK(KRHO2D),NT1AMX,1,LUPRI)
            ENDIF
 C
+C          Calculate [Omega(t+0.5delta)-(omegat-0.5delta)]/delta
            CALL DAXPY(NT1AMX,-1.0D00,WORK(KRHO1),1,WORK(KRHO1D),1)
            CALL DAXPY(NT2AMX,-1.0D00,WORK(KRHO2),1,WORK(KRHO2D),1)
            CALL CCLR_DIASCL(WORK(KRHO2D),XHALF,ISYMTR)
            CALL DSCAL(NT1AMX,DELTAI,WORK(KRHO1D),1)
            CALL DSCAL(NT2AMX,DELTAI,WORK(KRHO2D),1)
+
+           IF (CCR12) THEN
+             LUNIT = 0
+             CALL GPOPEN(LUNIT,'CC_OMEGAR12','UNKNOWN',' ','FORMATTED',
+     &                     IDUMMY,.FALSE.)
+             READ(LUNIT,'(4E30.20)') (WORK(KR12SING+IJ), IJ = 0, N2-1 )
+             READ(LUNIT,'(4E30.20)') (WORK(KR12TRIP+IJ), IJ = 0, N2-1 )
+             CALL GPCLOSE(LUNIT,'KEEP') 
+             CALL CCR12PCK(WORK(KRHOR12D),1,
+     &                     WORK(KR12SING),WORK(KR12TRIP))
+             IF (IPRINT.GT.125) THEN
+               CALL AROUND( 'RHO-R12' )
+               CALL OUTPAK(WORK(KRHO2),NMATIJ(1),1,LUPRI)
+             END IF
+             CALL DAXPY(NGAMMA(1),-1.0D0,WORK(KRHOR12),1,
+     *                                   WORK(KRHOR12D),1)
+             CALL CCLR_DIASCLR12(WORK(KRHOR12D),BRASCL,1)
+             CALL DSCAL(NGAMMA(1),DELTAI,WORK(KRHOR12D),1)
+           END IF
 C
            IF (NAI.EQ.NBJ) THEN
-C
               CALL DSCAL(NT1AMX,2.0D00,WORK(KRHO1D),1)
               CALL DSCAL(NT2AMX,2.0D00,WORK(KRHO2D),1)
-C
+              IF (CCR12) CALL DSCAL(NGAMMA(1),2.0D00,WORK(KRHOR12D),1)
            ENDIF
 C
            IF (JACTST) THEN
@@ -1177,18 +1313,24 @@ C
      *                 WORK(KJACOBI2+NTAMP*(I-1)),1)
               CALL DCOPY(NT2AMX,WORK(KRHO2D),1,
      *                 WORK(KJACOBI2+NTAMP*(I-1)+NT1AMX),1)
+              IF (CCR12) CALL DCOPY(NGAMMA(1),WORK(KRHOR12D),1,
+     *                WORK(KJACOBI2+NTAMP*(I-1)+NT1AMX+NT2AMX),1)
            ENDIF
 C
            IF (FDJAC ) THEN
-              CALL DCOPY(NT1AMX,WORK(KRHO1D),1,
-     *                   WORK(KJACCO ),1)
+              CALL DCOPY(NT1AMX,WORK(KRHO1D),1,WORK(KJACCO ),1)
               CALL DCOPY(NT2AMX,WORK(KRHO2D),1,
-     *                  WORK(KJACCO +NT1AMX),1)
+     *                  WORK(KJACCO+NT1AMX),1)
+              IF (CCR12) CALL DCOPY(NGAMMA(1),WORK(KRHOR12D),1,
+     *                  WORK(KJACCO+NT1AMX+NT2AMX),1)
               WRITE(LUJAC) (WORK(KJACCO +J-1), J = 1, NTAMP)
            ENDIF
 C
            X12 = X12 + DDOT(NT1AMX,WORK(KRHO1D),1,WORK(KRHO1D),1)
            X22 = X22 + DDOT(NT2AMX,WORK(KRHO2D),1,WORK(KRHO2D),1)
+           IF (CCR12)
+     *      XR2=XR2 + DDOT(NGAMMA(1),WORK(KRHOR12D),1,WORK(KRHOR12D),1)
+
            TI   = SECOND() - TI
            IF (IPRINT.GT.5 ) THEN
               WRITE(LUPRI,*) '  '
@@ -1198,31 +1340,226 @@ C
 C
          ENDIF
 C
- 300    CONTINUE
- 200  CONTINUE
+        END DO
+      END DO
+C
+C----------------------------------------------------------------
+C     Loop over R12 doubles amplitudes. 
+C       Take care of the diagonal elements, which are in a 
+C       different convention than in the energy code:
+C          factor 1/2 from right , and factor 2 from left.
+C     (Analogous to the conventional doubles amplitudes t^ab_ij)
+C----------------------------------------------------------------
+C
+      IF (CCR12) THEN
+       ! read R12 doubles amplitudes from file
+       LUNIT = 0
+       CALL GPOPEN(LUNIT,'CCR12_C','UNKNOWN',' ','FORMATTED',
+     &               IDUMMY,.FALSE.)
+       READ(LUNIT,'(4E30.20)') (WORK(KR12SING+IJ), IJ = 0, N2-1 )
+       READ(LUNIT,'(4E30.20)') (WORK(KR12TRIP+IJ), IJ = 0, N2-1 )
+       CALL GPCLOSE(LUNIT,'KEEP') 
+       CALL CCR12PCK(WORK(KCR12AM),1,WORK(KR12SING),WORK(KR12TRIP))
+
+       ! make copy from which correct amplitudes can be 
+       ! restored after finite difference calculation
+       LUNIT = 0
+       CALL GPOPEN(LUNIT,'CCR12_TEMP','UNKNOWN',' ','FORMATTED',
+     &               IDUMMY,.FALSE.)
+       WRITE(LUNIT,'(4E30.20)') (WORK(KR12SING+IJ), IJ = 0, N2-1 )
+       WRITE(LUNIT,'(4E30.20)') (WORK(KR12TRIP+IJ), IJ = 0, N2-1 )
+       CALL GPCLOSE(LUNIT,'KEEP') 
+
+       DO NKI = 1, NMATIJ(1)
+        DO NLJ = 1, NKI
+         I = INDEX(NKI,NLJ)
+C
+           TI   = SECOND()
+
+C          Compute Omega(t - 0.5 delta)
+           WORK(KCR12AM + I -1) = WORK(KCR12AM+I -1) - 0.5D0*DELTA
+           CALL CCR12UNPCK(WORK(KCR12AM),1,
+     &                     WORK(KR12SING),WORK(KR12TRIP))
+           LUNIT = 0
+           CALL GPOPEN(LUNIT,'CCR12_C','UNKNOWN',' ','FORMATTED',
+     &                        IDUMMY,.FALSE.)
+           WRITE(LUNIT,'(4E30.20)') (WORK(KR12SING+IJ), IJ = 0, N2-1 )
+           WRITE(LUNIT,'(4E30.20)') (WORK(KR12TRIP+IJ), IJ = 0, N2-1 )
+           CALL GPCLOSE(LUNIT,'KEEP') 
+
+           CALL CCRHSN(WORK(KRHO1),WORK(KRHO2),WORK(KC1AM),
+     *               WORK(KC2AM),WORK(KEND1),LWRK1)
+           LUNIT = 0
+           CALL GPOPEN(LUNIT,'CC_OMEGAR12','UNKNOWN',' ','FORMATTED',
+     &             IDUMMY,.FALSE.)
+           READ(LUNIT,'(4E30.20)') (WORK(KR12SING+IJ), IJ = 0, N2-1 )
+           READ(LUNIT,'(4E30.20)') (WORK(KR12TRIP+IJ), IJ = 0, N2-1 )
+           CALL GPCLOSE(LUNIT,'KEEP') 
+           CALL CCR12PCK(WORK(KRHOR12),1,
+     &                   WORK(KR12SING),WORK(KR12TRIP))
+ 
+C          Compute Omega(t + 0.5 delta)
+           WORK(KCR12AM + I -1) = WORK(KCR12AM+I -1) + DELTA
+           CALL CCR12UNPCK(WORK(KCR12AM),1,
+     &                     WORK(KR12SING),WORK(KR12TRIP))
+           LUNIT = 0
+           CALL GPOPEN(LUNIT,'CCR12_C','UNKNOWN',' ','FORMATTED',
+     &                        IDUMMY,.FALSE.)
+           WRITE(LUNIT,'(4E30.20)') (WORK(KR12SING+IJ), IJ = 0, N2-1 )
+           WRITE(LUNIT,'(4E30.20)') (WORK(KR12TRIP+IJ), IJ = 0, N2-1 )
+           CALL GPCLOSE(LUNIT,'KEEP') 
+
+           CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),
+     *               WORK(KC2AM),WORK(KEND1),LWRK1)
+ 
+C          Restore t amplitudes
+           WORK(KCR12AM + I -1) = WORK(KCR12AM+I -1) - 0.5D0*DELTA
+C
+           IF (IPRINT.GT.125) THEN
+              CALL AROUND( 'RHO1D ' )
+              CALL OUTPUT(WORK(KRHO1D),1,NVIRT,1,NRHFT,NVIRT,NRHFT,1,
+     &             LUPRI)
+              CALL AROUND( 'RHO2D ' )
+              CALL OUTPAK(WORK(KRHO2D),NT1AMX,1,LUPRI)
+           ENDIF
+ 
+C          Calculate [Omega(t+0.5delta)-(omegat-0.5delta)]/delta
+           CALL DAXPY(NT1AMX,-1.0D00,WORK(KRHO1),1,WORK(KRHO1D),1)
+           CALL DAXPY(NT2AMX,-1.0D00,WORK(KRHO2),1,WORK(KRHO2D),1)
+           CALL CCLR_DIASCL(WORK(KRHO2D),XHALF,ISYMTR)
+           CALL DSCAL(NT1AMX,DELTAI,WORK(KRHO1D),1)
+           CALL DSCAL(NT2AMX,DELTAI,WORK(KRHO2D),1)
+
+           LUNIT = 0
+           CALL GPOPEN(LUNIT,'CC_OMEGAR12','UNKNOWN',' ','FORMATTED',
+     &             IDUMMY,.FALSE.)
+           READ(LUNIT,'(4E30.20)') (WORK(KR12SING+IJ), IJ = 0, N2-1 )
+           READ(LUNIT,'(4E30.20)') (WORK(KR12TRIP+IJ), IJ = 0, N2-1 )
+           CALL GPCLOSE(LUNIT,'KEEP') 
+           CALL CCR12PCK(WORK(KRHOR12D),1,
+     &                   WORK(KR12SING),WORK(KR12TRIP))
+           IF (IPRINT.GT.125) THEN
+             CALL AROUND( 'RHO-R12' )
+             CALL OUTPAK(WORK(KRHO2),NMATIJ(1),1,LUPRI)
+           END IF
+           CALL DAXPY(NGAMMA(1),-1.0D0,WORK(KRHOR12),1,
+     *                                 WORK(KRHOR12D),1)
+           CALL CCLR_DIASCLR12(WORK(KRHOR12D),BRASCL,1)
+           CALL DSCAL(NGAMMA(1),DELTAI,WORK(KRHOR12D),1)
+C
+           IF (NKI.EQ.NLJ) THEN
+              CALL DSCAL(NT1AMX,KETSCL,WORK(KRHO1D),1)
+              CALL DSCAL(NT2AMX,KETSCL,WORK(KRHO2D),1)
+              IF (CCR12) CALL DSCAL(NGAMMA(1),KETSCL,WORK(KRHOR12D),1)
+           ENDIF
+C
+           IF (JACTST) THEN
+              CALL DCOPY(NT1AMX,WORK(KRHO1D),1,
+     *                 WORK(KJACOBIR+NTAMP*(I-1)),1)
+              CALL DCOPY(NT2AMX,WORK(KRHO2D),1,
+     *                 WORK(KJACOBIR+NTAMP*(I-1)+NT1AMX),1)
+              IF (CCR12) CALL DCOPY(NGAMMA(1),WORK(KRHOR12D),1,
+     *                WORK(KJACOBIR+NTAMP*(I-1)+NT1AMX+NT2AMX),1)
+           ENDIF
+C
+           IF (FDJAC ) THEN
+              CALL DCOPY(NT1AMX,WORK(KRHO1D),1,WORK(KJACCO ),1)
+              CALL DCOPY(NT2AMX,WORK(KRHO2D),1,
+     *                  WORK(KJACCO+NT1AMX),1)
+              CALL DCOPY(NGAMMA(1),WORK(KRHOR12D),1,
+     *                  WORK(KJACCO+NT1AMX+NT2AMX),1)
+              WRITE(LUJAC) (WORK(KJACCO +J-1), J = 1, NTAMP)
+
+              ! make unit vector for this element and compute
+              ! S * R_12 and store on file CCLR_MET:
+              CALL DZERO(WORK(KRHOR12D),NGAMMA(1))
+              WORK(KRHOR12D + I -1) = 1.0D0
+              CALL CC_WVEC(LUFC12,FC12AM,NGAMMA(1),NGAMMA(1),1,
+     &                     WORK(KRHOR12D))
+              CALL CC_R12METRIC(1,WORK(KEND1),LWRK1,
+     &             FC12AM,LUFC12,FS12AM,LUFS12,1)
+              CALL CC_RVEC(LUFS12,FS12AM,NGAMMA(1),NGAMMA(1),1,
+     &                     WORK(KRHOR12D))
+        
+              WRITE(LUMET) (WORK(KRHOR12D +J-1), J = 1, NGAMMA(1))
+           ENDIF
+C
+           X1R = X1R + DDOT(NT1AMX,WORK(KRHO1D),1,WORK(KRHO1D),1)
+           X2R = X2R + DDOT(NT2AMX,WORK(KRHO2D),1,WORK(KRHO2D),1)
+           XRR = XRR + DDOT(NGAMMA(1),WORK(KRHOR12D),1,WORK(KRHOR12D),1)
+
+           TI   = SECOND() - TI
+           IF (IPRINT.GT.5 ) THEN
+              WRITE(LUPRI,*) '  '
+              WRITE(LUPRI,*) 'FDJAC ROW NR. ',I+NT1AMX+NT2AMX,
+     *                  ' DONE IN ',TI,' SEC.'
+           ENDIF
+C
+        END DO
+       END DO
+
+       ! restore R12 amplitudes
+       LUNIT = 0
+       CALL GPOPEN(LUNIT,'CCR12_TEMP','UNKNOWN',' ','FORMATTED',
+     &         IDUMMY,.FALSE.)
+       READ(LUNIT,'(4E30.20)') (WORK(KR12SING+IJ), IJ = 0, N2-1 )
+       READ(LUNIT,'(4E30.20)') (WORK(KR12TRIP+IJ), IJ = 0, N2-1 )
+       CALL GPCLOSE(LUNIT,'KEEP') 
+       LUNIT = 0
+       CALL GPOPEN(LUNIT,'CCR12_C','UNKNOWN',' ','FORMATTED',
+     &         IDUMMY,.FALSE.)
+       WRITE(LUNIT,'(4E30.20)') (WORK(KR12SING+IJ), IJ = 0, N2-1 )
+       WRITE(LUNIT,'(4E30.20)') (WORK(KR12TRIP+IJ), IJ = 0, N2-1 )
+       CALL GPCLOSE(LUNIT,'KEEP') 
+      END IF
 C
       WRITE(LUPRI,*) '    '
       WRITE(LUPRI,*) '**  FINITE DIFF WITH DELTA ',DELTA, '**'
       WRITE(LUPRI,*) '    '
       IF (FDJAC) CALL GPCLOSE(LUJAC,'KEEP')
-      IF ((IPRINT .GT. 40).AND.(JACTST)) THEN
-         CALL AROUND( 'FINITE DIFF. CC JACOBIANT - 11 & 21 PART  ' )
+      IF (FDJAC .AND. CCR12) THEN
+          CALL GPCLOSE(LUMET,'KEEP')
+          CALL WCLOSE2(LUFC12,FC12AM,'DELETE')
+          CALL WCLOSE2(LUFS12,FS12AM,'DELETE')
+      END IF
+      IF (IPRINT.GE.5 .AND. JACTST) THEN
+         CALL AROUND( 'FINITE DIFF. CC JACOBIANT - singles PART  ' )
          CALL OUTPUT(WORK(KJACOBI),1,NTAMP,1,NC1VEC,NTAMP,NC1VEC,1,
      &        LUPRI)
-         CALL AROUND( 'FINITE DIFF. CC JACOBIANT - 12 & 22 PART  ' )
-         CALL OUTPUT(WORK(KJACOBI+NTAMP*NC1VEC),1,NTAMP,1,NC2VEC,
+         CALL AROUND( 'FINITE DIFF. CC JACOBIANT - doubles PART  ' )
+         CALL OUTPUT(WORK(KJACOBI2),1,NTAMP,1,NC2VEC,
      *               NTAMP,NC2VEC,1,LUPRI)
+         IF (CCR12) THEN
+           CALL AROUND( 'FINITE DIFF. CC JACOBIANT - R12 doubles PART')
+           CALL OUTPUT(WORK(KJACOBIR),1,NTAMP,1,NGAMMA(1),
+     *                 NTAMP,NGAMMA(1),1,LUPRI)
+         END IF
       ENDIF
       IF (JACTST) THEN
-         XNJ = X11 + X12 + X21 + X22
+         XNJ = X11 + X12 + X1R + X21 + X22 + X2R + XR1 + XR2 + XRR
          WRITE(LUPRI,*) '  '
          WRITE(LUPRI,*) ' NORM OF FIN. DIFF. JAC.', SQRT(XNJ)
          WRITE(LUPRI,*) '  '
          WRITE(LUPRI,*) 'NORM OF 11 PART OF FIN. DIFF. JAC. ', SQRT(X11)
          WRITE(LUPRI,*) 'NORM OF 21 PART OF FIN. DIFF. JAC. ', SQRT(X21)
+         WRITE(LUPRI,*) 'NORM OF R1 PART OF FIN. DIFF. JAC. ', SQRT(XR1)
          WRITE(LUPRI,*) 'NORM OF 12 PART OF FIN. DIFF. JAC. ', SQRT(X12)
          WRITE(LUPRI,*) 'NORM OF 22 PART OF FIN. DIFF. JAC. ', SQRT(X22)
+         WRITE(LUPRI,*) 'NORM OF R2 PART OF FIN. DIFF. JAC. ', SQRT(XR2)
+         WRITE(LUPRI,*) 'NORM OF 1R PART OF FIN. DIFF. JAC. ', SQRT(X1R)
+         WRITE(LUPRI,*) 'NORM OF 2R PART OF FIN. DIFF. JAC. ', SQRT(X2R)
+         WRITE(LUPRI,*) 'NORM OF RR PART OF FIN. DIFF. JAC. ', SQRT(XRR)
       ENDIF
+C
+C-----------------------------------
+C     restore intermediates on disk:
+C-----------------------------------
+C
+      IOPT = 3
+      RSPIM = .TRUE.
+      CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KC1AM),WORK(KC2AM))
+      CALL CCRHSN(WORK(KRHO1D),WORK(KRHO2D),WORK(KC1AM),WORK(KC2AM),
+     *            WORK(KEND1),LWRK1)
 C
       IF (IPRINT .GT. 10) THEN
          CALL AROUND(' END OF CCLR_FDJAC ')
@@ -1230,9 +1567,9 @@ C
 C
       RETURN
       END
+C-----------------------------------------------------------------------
 c*DECK CCLR_DUMTRR
-      SUBROUTINE CCLR_DUMTRR(CVEC1,RHO1,RHO2,WORK,LWORK)
-C
+      SUBROUTINE CCLR_DUMTRR(CVEC1,RHO1,RHO2,RHO12,S12AM,WORK,LWORK)
 C-------------------------------------------------------------------
 C     Written by Ove Christiansen 21-11-1994
 C
@@ -1254,8 +1591,9 @@ C
 #include <aovec.h>
 #include <leinf.h>
       PARAMETER ( TWO = 2.0D00,XHALF=0.5D00 )
+      CHARACTER*1 TRANS
       DIMENSION CVEC1(*),WORK(LWORK)
-      DIMENSION RHO1(*),RHO2(*)
+      DIMENSION RHO1(*),RHO2(*), RHO12(*), S12AM(*)
 C
       IF (IPRINT .GT. 10) THEN
          CALL AROUND(' START OF CCLR_DUMTRR ')
@@ -1265,12 +1603,16 @@ C----------------------------------
 C        Print transformed vectors.
 C----------------------------------
 C
-      IF (IPRINT .GT.110) THEN
-         CALL AROUND(' CCLR_DUMTRR: vectors to be transformed ')
+      IF (IPRINT.GT.10) THEN
+         CALL AROUND(' CCLR_DUMTRR: vector to be transformed ')
          CALL CC_PRP(CVEC1,CVEC1(1+NT1AM(ISYMTR)),ISYMTR,1,1)
+         CALL AROUND('R12 double excitation part of vector:')
+         CALL OUTPUT(CVEC1(1+NT1AM(ISYMTR)+NT2AM(ISYMTR)),1,
+     *               NGAMMA(ISYMTR),1,1,NGAMMA(ISYMTR),1,1,LUPRI)
       ENDIF
 C
       NTAMP = NT1AM(ISYMTR) + NT2AM(ISYMTR)
+      IF (CCR12) NTAMP = NTAMP + NGAMMA(ISYMTR)
 C
 C------------------------
 C     Open Jacobian file.
@@ -1349,14 +1691,69 @@ C
          RHO2(I) = DDOT(NTAMP,WORK(KJACCR),1,CVEC1,1)
 C
  200  CONTINUE
+
+      IF (CCR12) THEN
+       DO I = 1, NGAMMA(ISYMTR)
+         IF (NSIDE.EQ.-1) THEN
+            READ(LUJAC) (WORK(KJACCR+K-1),K=1,NTAMP)
+            IF (IPRINT.GT.110) THEN
+               WRITE (LUPRI,*) 'THE',I+NT1AM(ISYMTR)+NT2AM(ISYMTR),
+     *                    '-th coulumn of the jacobian '
+               CALL OUTPUT(WORK(KJACCR),1,NTAMP,1,1,NTAMP,1,1,LUPRI)
+            ENDIF
+         ELSE IF (NSIDE.EQ.1) THEN
+            CALL CCLR_JACCR(WORK(KJACCR),I+NT1AMX+NT2AMX,LUJAC,
+     *                      WORK(KEND1),LWRK1)
+            IF (IPRINT.GT.110) THEN
+               WRITE (LUPRI,*) 'THE ',I+NT1AM(ISYMTR)+NT2AM(ISYMTR),
+     *                    '-th row of the jacobian '
+               CALL OUTPUT(WORK(KJACCR),1,NTAMP,1,1,NTAMP,1,1,LUPRI)
+            ENDIF
+         ENDIF
+         RHO12(I) = DDOT(NTAMP,WORK(KJACCR),1,CVEC1,1)
+       END DO
+      
+       KSMAT = 1
+       KEND1 = KSMAT + NGAMMA(ISYMTR)*NGAMMA(ISYMTR)
+       LWRK1 = LWORK - KEND1
+       IF (LWRK1 .LT. 0)
+     &     CALL QUIT(' INSUFFICIENT WORK SPACE IN CCLR_DUMTRR ')
+
+       LUMET = 0
+       CALL GPOPEN(LUMET,'CCLR_MET','UNKNOWN',' ','UNFORMATTED',
+     *             IDUMMY,.FALSE.)
+       CALL DZERO(WORK(KSMAT),NGAMMA(ISYMTR)*NGAMMA(ISYMTR))
+       DO I = 1, NGAMMA(1)
+         IOFFS = KSMAT-1+NGAMMA(ISYMTR)*(I-1)
+         READ(LUMET) (WORK(IOFFS+J),J=1,NGAMMA(ISYMTR))
+       END DO
+       CALL GPCLOSE(LUMET,'KEEP')
+
+       IF (NSIDE.EQ.1) THEN
+         TRANS = 'N'
+       ELSE IF (NSIDE.EQ.-1) THEN
+         TRANS = 'T'
+       ELSE
+         CALL QUIT('Illegal NSIDE in CCLR_DUMTRR.')
+       END IF
+       KR12 = NT1AM(ISYMTR)+NT2AM(ISYMTR)+1
+       CALL DGEMV(TRANS,NGAMMA(ISYMTR),NGAMMA(ISYMTR),1.0D0,WORK(KSMAT),
+     *            NGAMMA(ISYMTR),CVEC1(KR12),1,0.0D0,S12AM,1)
+      END IF
 C
 C----------------------------------
 C        Print transformed vectors.
 C----------------------------------
 C
-      IF (IPRINT .GT.110) THEN
+      IF (IPRINT .GT. 10) THEN
          CALL AROUND(' CCLR_DUMTRR: transformed vectors ')
          CALL CC_PRP(RHO1,RHO2,ISYMTR,1,1)
+         CALL AROUND('R12 double excitation part of vector:')
+         CALL OUTPUT(RHO12,1,NGAMMA(ISYMTR),1,1,
+     *               NGAMMA(ISYMTR),1,1,LUPRI)
+         CALL AROUND('R12 double excitation part of metric:')
+         CALL OUTPUT(S12AM,1,NGAMMA(ISYMTR),1,1,
+     *               NGAMMA(ISYMTR),1,1,LUPRI)
       ENDIF
 C
       IF (IPRINT .GT. 10) THEN
@@ -1389,6 +1786,7 @@ C
       DIMENSION XJACCR(*),WORK(LWORK)
 C
       NTAMP = NT1AM(ISYMTR) + NT2AM(ISYMTR)
+      IF (CCR12) NTAMP = NTAMP + NGAMMA(ISYMTR)
 C
 C---------------------------
 C     Work space allocation.
@@ -1549,7 +1947,6 @@ C
 #include <ccsdinp.h>
 #include <priunit.h>
 C
-CCH   DIMENSION T1AM(NT1AM(ISYM),NT1),T2AM(NT2AM(ISYM),NT2)
       DIMENSION T1AM(*),T2AM(*)
 C
 C------------------------------------
@@ -1596,7 +1993,6 @@ C
 C
             ISYMAI = MULD2H(ISYMBJ,ISYM)
 C
-CCH         KOFF = IT2AM(ISYMAI,ISYMBJ) + 1
             KOFF = LT2AM*(I-1) + IT2AM(ISYMAI,ISYMBJ) + 1
 
             IF (ISYMAI.EQ.ISYMBJ) THEN
@@ -1636,7 +2032,6 @@ C
 #include <ccsdinp.h>
 #include <priunit.h>
 C
-CCH   DIMENSION T1AM(NT1AM(ISYM),NT1),T2AM(NT2SQ(ISYM),NT2)
       DIMENSION T1AM(*),T2AM(*)
 
 C
@@ -1725,6 +2120,7 @@ C
 C
       LOGICAL OPNSTA
       DIMENSION WORK(LWORK)
+      PARAMETER (THRZER = 1.0D-99)
 C
 #include <leinf.h>
 C
@@ -1733,10 +2129,12 @@ C     Header of Excitation Energy calculation.
 C---------------------------------------------
 C
       CALL TIMER('START ',TIMEIN,TIMOUT)
+
       IF (IPRINT .GT. 0) THEN
          WRITE (LUPRI,'(A,/)') '  '
          WRITE (LUPRI,'(A,/)')
      *    '1 <<<<<<<<<< Output from CCLR_FDEXCI >>>>>>>>> '
+         IF (CCR12) WRITE (LUPRI,'(A,/)') 'This is a R12 run.'
          WRITE (LUPRI,'(A,/)') '  '
       ENDIF
 C
@@ -1747,11 +2145,17 @@ C
       MATZ    = 1
       NREDH   = NT1AMX + NT2AMX
       NTAMP   = NT1AMX + NT2AMX
+      IF (CCR12) THEN
+        NREDH = NREDH + NGAMMA(1)
+        NTAMP = NTAMP + NGAMMA(1)
+      END IF
 C
 C----------------------------
 C     Alloction of Workspace.
 C----------------------------
 C
+      IF (NTAMP.GT.MAXRED .OR. NREDH.GT.MAXRED)
+     &  CALL QUIT('MAXRED too small in CCLR_FDEXCI.')
 C
       KWI     = 1
       KAMAT   = KWI  + MAXRED
@@ -1763,6 +2167,11 @@ C
       KSOLEQ  = KEIVAL + MAXRED
       KAMAT2  = KSOLEQ + MAXRED*MAXRED
       KWRK1   = KAMAT2 + MAXRED*MAXRED
+      IF (CCR12) THEN
+        KDENOM = KWRK1
+        KSMAT  = KDENOM + MAXRED 
+        KWRK1  = KSMAT  + MAXRED*MAXRED
+      END IF
       LWRK1   = LWORK - KWRK1
       IF (LWRK1.LT. 0)
      &     CALL QUIT('TOO LITTLE WORK SPACE IN CCLR_FDEXCI ')
@@ -1771,26 +2180,46 @@ C---------------------
 C     Readin Jacobian.
 C---------------------
 C
-      CALL CCLR_JACIN(WORK(KSOLEQ))
+      CALL CCLR_JACIN(WORK(KSOLEQ),WORK(KSMAT))
 C
-      IF (IPRINT .GT. 100) THEN
-C
+      IF (IPRINT .GE. 10) THEN
          CALL AROUND( 'FIN. DIF. CC JACOBIANT - A*C1 PART ' )
          CALL OUTPUT(WORK(KSOLEQ),1,NTAMP,1,NT1AMX,MAXRED,NTAMP,1,LUPRI)
          CALL AROUND( 'FIN. DIF. CC JACOBIANT - A*C2 PART ' )
          CALL OUTPUT(WORK(KSOLEQ +MAXRED*NT1AMX),1,NTAMP,1,NT2AMX,
      *              MAXRED,NT2AMX,1,LUPRI)
-C
+         IF (CCR12) THEN
+          CALL AROUND( 'FIN. DIF. CC JACOBIANT - A*CR12 PART ' )
+          CALL OUTPUT(WORK(KSOLEQ +MAXRED*(NT1AMX+NT2AMX)),1,NTAMP,
+     *               1,NGAMMA(1),MAXRED,NGAMMA(1),1,LUPRI)
+          CALL AROUND( 'CC METRIC' )
+          CALL OUTPUT(WORK(KSMAT),1,NTAMP,1,NTAMP,MAXRED,NTAMP,1,LUPRI)
+         END IF
       ENDIF
 C
 C---------------------------
 C     Solve for eigenvalues.
 C---------------------------
 C
-      CALL DCOPY(MAXRED*MAXRED,WORK(KSOLEQ),1,WORK(KAMAT),1)
-      CALL DCOPY(MAXRED*MAXRED,WORK(KSOLEQ),1,WORK(KAMAT2),1)
-      CALL RG(MAXRED,NREDH,WORK(KAMAT),WORK(KEIVAL),WORK(KWI),MATZ,
-     *        WORK(KSOLEQ),WORK(KIV1),WORK(KFV1),IERR)
+      IF (CCR12) THEN
+        CALL DCOPY(MAXRED*MAXRED,WORK(KSOLEQ),1,WORK(KAMAT),1)
+        CALL RGG(MAXRED,NREDH,WORK(KAMAT),WORK(KSMAT),WORK(KEIVAL),
+     *           WORK(KWI),WORK(KDENOM),MATZ,WORK(KSOLEQ),IERR)
+        DO I = 1, NREDH
+          IF (ABS(WORK(KDENOM-1+I)).GT.THRZER) THEN
+            WORK(KEIVAL-1+I)  = WORK(KEIVAL-1+I)/WORK(KDENOM-1+I)
+            WORK(KWI-1+I)     = WORK(KWI-1+I)   /WORK(KDENOM-1+I)
+          ELSE
+            WORK(KEIVAL-1+I)  = 1.0D0/THRZER
+            WORK(KWI-1+I)     = WORK(KWI-1+I)/THRZER
+          END IF
+        END DO
+      ELSE
+        CALL DCOPY(MAXRED*MAXRED,WORK(KSOLEQ),1,WORK(KAMAT),1)
+        CALL DCOPY(MAXRED*MAXRED,WORK(KSOLEQ),1,WORK(KAMAT2),1)
+        CALL RG(MAXRED,NREDH,WORK(KAMAT),WORK(KEIVAL),WORK(KWI),MATZ,
+     *          WORK(KSOLEQ),WORK(KIV1),WORK(KFV1),IERR)
+      END IF
 C
       IF (IPRINT .GE. 70 .OR. IERR .NE. 0) THEN
          WRITE (LUPRI,'(/A)') ' EIGENVALUES real part:'
@@ -1857,7 +2286,7 @@ C
       RETURN
       END
 c*DECK CCLR_JACIN
-      SUBROUTINE CCLR_JACIN(FDJACO)
+      SUBROUTINE CCLR_JACIN(FDJACO,SMATRIX)
 C
 C-------------------------------------------------------------------
 C     Written by Ove Christiansen 21-11-1994
@@ -1875,10 +2304,13 @@ C
 #include <cclr.h>
 #include <ccsdio.h>
 #include <aovec.h>
+#include <r12int.h>
 C
       DIMENSION FDJACO(MAXRED,MAXRED)
+      DIMENSION SMATRIX(MAXRED,MAXRED)
 C
       NTAMP = NT1AMX + NT2AMX
+      IF (LMULBS) NTAMP = NTAMP + NGAMMA(1)
 C
 C------------------------
 C     Open Jacobian file.
@@ -1889,13 +2321,26 @@ C
      &            .FALSE.)
       REWIND(LUJAC)
 C
-      DO 100 I = 1, NTAMP
-C
+      DO I = 1, NTAMP
          READ(LUJAC) (FDJACO(J,I),J=1,NTAMP)
-C
-  100 CONTINUE
+      END DO
 C
       CALL GPCLOSE(LUJAC,'KEEP')
+
+
+      IF (CCR12) THEN
+        LUMET = 0
+        CALL GPOPEN(LUMET,'CCLR_MET','UNKNOWN',' ','UNFORMATTED',
+     *              IDUMMY,.FALSE.)
+        CALL DZERO(SMATRIX,MAXRED*MAXRED)
+        DO I = 1, NT1AMX+NT2AMX
+          SMATRIX(I,I) = 1.0D0
+        END DO
+        DO I = NT1AMX+NT2AMX+1, NT1AMX+NT2AMX+NGAMMA(1)
+          READ(LUMET) (SMATRIX(NT1AMX+NT2AMX+J,I),J=1,NGAMMA(1))
+        END DO
+        CALL GPCLOSE(LUMET,'KEEP')
+      END IF
 C
       RETURN
 C

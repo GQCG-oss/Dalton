@@ -29,6 +29,7 @@
 
       LOGICAL FDEXCI, FDJAC, JACTST, STVEC, OMEINP, STSD, OMESC
       LOGICAL CCSPIC,CC2PIC,CCSDPI,MARGIN,SQROVLP,CCSDTRENRM
+      LOGICAL EXCI_CONT
 
       INTEGER NCCEXCI(8,3), NOMINP(8,3)
       INTEGER IOMINP(MAXOME,8,3), ISTVEC(MAXOME,8)
@@ -46,6 +47,7 @@ C     INTEGER NCC(8,3)
      &                 NCCEXCI, NOMINP, IOMINP, ISTVEC,
      &                 FDEXCI, FDJAC, JACTST, STVEC, 
      &                 OMEINP, STSD, OMESC,
-     &                 CCSPIC,CC2PIC,CCSDPI,MARGIN,SQROVLP,CCSDTRENRM
+     &                 CCSPIC,CC2PIC,CCSDPI,MARGIN,SQROVLP,CCSDTRENRM,
+     &                 EXCI_CONT
       COMMON /OMEPIC/ OMPCCS,OMPCC2,OMPCCSD,XMARGIN
 *---------------------------------------------------------------------*

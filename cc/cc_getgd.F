@@ -47,6 +47,8 @@ C     left Cauchy vectors, Christof Haettig, Oct. 1997
 C     second-order Cauchy vectors, Christof Haettig, Feb. 1998
 C     CCSLV98,OC mai 98.
 C     projected 1st-order lagrang. multipl. (PL1), Sonia Coriani, 2000  
+C     changes for CC3 response, Christof Haettig, Spring 2002
+C     changes for CCr12 response, Christof Haettig, Summer 2003
 C
 C----------------------------------------------------------------------
 C
@@ -106,15 +108,21 @@ C     -------------------------------------------------
       IOPTRDG = 3
       IF (CC3) IOPTRDG = 24
       IF (CCS .OR. CIS) IOPTRDG = 1
+      IOPTR12 = 32
 
 C     ---------------------------------------------------------------
 C     set the start addresses of the single and the double excitation 
 C     parts of the gradient vector and the total length of the vector
 C     ---------------------------------------------------------------
-      IADR1 = 1
-      IADR2 = IADR1 + NT1AM(ISYMGD)
+      IADR1  = 1
+      IADR2  = IADR1 + NT1AM(ISYMGD)
+      IADR12 = IADR2 + NT2AM(ISYMGD)
       NTAMP = NT1AM(ISYMGD) + NT2AM(ISYMGD)
-      IF ( CCS ) NTAMP = NT1AM(ISYMGD)
+      IF ( CCS ) THEN
+        NTAMP = NT1AM(ISYMGD)
+      ELSE IF ( CCR12 ) THEN
+        NTAMP = NTAMP + NGAMMA(ISYMGD) 
+      END IF
  
 C----------------------------------------------------------------------
 C 'R3 ' third-order response t amplitudes:  --> 'O3 '
@@ -130,8 +138,6 @@ C----------------------------------------------------------------------
      *         ' and labels: ',(LBLR3T(ILSTNR,I),I=1,3),
      *         ' and symmetries: ',(ISYR3T(ILSTNR,I),I=1,3), ISYMGD
          END IF
-         IADR1 = 1
-         IADR2 = IADR1 + NT1AM(ISYMGD)
          IDLSTO3  = IRHSR3(LBLR3T(ILSTNR,1),FRQR3T(ILSTNR,1),ISYM1,
      &                     LBLR3T(ILSTNR,2),FRQR3T(ILSTNR,2),ISYM2,
      &                     LBLR3T(ILSTNR,3),FRQR3T(ILSTNR,3),ISYM3)
@@ -140,6 +146,7 @@ C----------------------------------------------------------------------
          CALL CCLR_DIASCL(GD(IADR2),0.5d0,ISYMGD)
          NTAMP = NT1AM(ISYMGD) + NT2AM(ISYMGD)
          IF ( CCS ) NTAMP = NT1AM(ISYMGD)
+         IF ( CCR12 ) CALL QUIT('No R12 for O3')
 
 C----------------------------------------------------------------------
 C 'R2 ' second-order response t amplitudes:  --> 'O2 '
@@ -159,6 +166,7 @@ C----------------------------------------------------------------------
          CALL CC_R2GD(GD,ILSTNR,WORK,LWORK)
          NTAMP = NT1AM(ISYMGD) + NT2AM(ISYMGD)
          IF ( CCS ) NTAMP = NT1AM(ISYMGD)
+         IF ( CCR12 ) CALL QUIT('No R12 for O2')
  
 C----------------------------------------------------------------------
 C 'R1 ' first-order response t amplitudes:  --> 'O1 '
@@ -180,10 +188,15 @@ C----------------------------------------------------------------------
 
          CALL CC_RDRSP('O1 ',ILSTGD,ISYMGD,IOPTRDG,MODEL,
      &                  GD(IADR1),GD(IADR2))
+         IF (CCR12) THEN
+           CALL CC_RDRSP('O1 ',ILSTGD,ISYMGD,IOPTR12,MODEL,
+     &                   DUMMY,GD(IADR12))
+         END IF
 
          IF (CCSLV) THEN
             ! SLV98, OC
             IF (CCSDT) CALL QUIT('Solvent not implemented for triples')
+            IF (CCR12) CALL QUIT('Solvent not implemented for CCR12')
             CALL CC_PTB(GD,LRTLBL(ILSTNR),ISYLRT(ILSTNR),
      *                  FRQLRT(ILSTNR),LORXLRT(ILSTNR),
      *                  WORK,LWORK)
@@ -210,6 +223,7 @@ C----------------------------------------------------------------------
          CALL CC_L3GD(GD,ILSTNR,WORK,LWORK)
          NTAMP = NT1AM(ISYMGD) + NT2AM(ISYMGD)
          IF ( CCS ) NTAMP = NT1AM(ISYMGD)
+         IF ( CCR12 ) CALL QUIT('No R12 for X3+F3')
 
 C----------------------------------------------------------------------
 C 'L2 ' second-order response Lagrangian multipliers: --> 'X2 ' + 'F2 '
@@ -229,6 +243,7 @@ C----------------------------------------------------------------------
          CALL CC_L2GD(GD,ILSTNR,WORK,LWORK)
          NTAMP = NT1AM(ISYMGD) + NT2AM(ISYMGD)
          IF ( CCS ) NTAMP = NT1AM(ISYMGD)
+         IF ( CCR12 ) CALL QUIT('No R12 for X2+F2')
 
 C----------------------------------------------------------------------
 C 'L1 ' first-order response Lagrangian multipliers: --> 'X1 ' + 'F1 '
@@ -249,6 +264,7 @@ C----------------------------------------------------------------------
          NTAMP = NT1AM(ISYLRZ(ILSTNR)) + NT2AM(ISYLRZ(ILSTNR))
          IF ( CCS ) NTAMP = NT1AM(ISYLRZ(ILSTNR))
          ISYMGD = ISYLRZ(ILSTNR)
+         IF ( CCR12 ) CALL QUIT('No R12 for X1+F1')
 
 C----------------------------------------------------------------------
 C 'L0 ' zero-order response Lagrangian multipliers:
@@ -258,6 +274,11 @@ C----------------------------------------------------------------------
      &        CALL QUIT('Mismatch ISIDE and LIST in CC_GETGD')
 
          CALL CC_ETA(GD,WORK,LWORK)
+C        IF ( CCR12 ) CALL QUIT('No R12 for Eta^(0)')
+         IF ( CCR12 ) THEN
+           CALL DZERO(GD(IADR12),NGAMMA(ISYMGD))
+           WRITE(LUPRI,*) 'Warning: set R12 part of Eta^(0) to zero!!!'
+         END IF
 
 C----------------------------------------------------------------------
 C 'N2 ' Lagrangian multipliers:
@@ -278,6 +299,7 @@ C----------------------------------------------------------------------
 
          CALL CC_RDRSP('BR ',ILSTNR,ISYMGD,IOPTRDG,MODEL,
      &                  GD(IADR1),GD(IADR2))
+         IF ( CCR12 ) CALL QUIT('No R12 for BR')
 
          IF (LOCDBG) THEN
            WRITE(LUPRI,*)'CC_GETGD> RHS vector "BR":',ISYMGD,NTAMP
@@ -302,6 +324,7 @@ C----------------------------------------------------------------------
 
          CALL CC_RDRSP('FR ',ILSTNR,ISYMGD,IOPTRDG,MODEL,
      &                 GD(IADR1),GD(IADR2))
+         IF ( CCR12 ) CALL QUIT('No R12 for FR')
 
          IF (LOCDBG) THEN
            WRITE(LUPRI,*)'CC_GETGD> RHS vector "FR":',ISYMGD,NTAMP
@@ -326,6 +349,7 @@ C----------------------------------------------------------------------
 
          CALL CC_RDRSP('BE ',ILSTNR,ISYMGD,IOPTRDG,MODEL,
      &                 GD(IADR1),GD(IADR2))
+         IF ( CCR12 ) CALL QUIT('No R12 for BE')
 
          IF (LOCDBG) THEN
            WRITE(LUPRI,*)'CC_GETGD> RHS vector "BE":',ISYMGD,NTAMP
@@ -422,14 +446,13 @@ C----------------------------------------------------------------------
          IF (IPRINT .GT.2) THEN
             WRITE(LUPRI,'(/,1x,A)') 'Finding gradient for ER1 response:'
          END IF
-         IADR1 = 1
-         IADR2 = IADR1 + NT1AM(ISYMGD)
          IDLSTEO1 = ILSTNR
          CALL CC_RDRSP('EO1',IDLSTEO1,ISYMGD,IOPTRDG,MODEL,
      &                 GD(IADR1),GD(IADR2))
          CALL CCLR_DIASCL(GD(IADR2),0.5d0,ISYMGD)
          NTAMP = NT1AM(ISYMGD) + NT2AM(ISYMGD)
          IF ( CCS ) NTAMP = NT1AM(ISYMGD)
+         IF ( CCR12 ) CALL QUIT('No R12 for EO1')
 
 C----------------------------------------------------------------------
 C 'ER2' second-order right excited state response vector: --> 'EO2'
@@ -441,14 +464,13 @@ C----------------------------------------------------------------------
          IF (IPRINT .GT.2) THEN
             WRITE(LUPRI,'(/,1x,A)') 'Finding gradient for ER2 response:'
          END IF
-         IADR1 = 1
-         IADR2 = IADR1 + NT1AM(ISYMGD)
          IDLSTEO2 = ILSTNR
          CALL CC_RDRSP('EO2',IDLSTEO2,ISYMGD,IOPTRDG,MODEL,
      &                 GD(IADR1),GD(IADR2))
          CALL CCLR_DIASCL(GD(IADR2),0.5d0,ISYMGD)
          NTAMP = NT1AM(ISYMGD) + NT2AM(ISYMGD)
          IF ( CCS ) NTAMP = NT1AM(ISYMGD)
+         IF ( CCR12 ) CALL QUIT('No R12 for EO2')
 
 C----------------------------------------------------------------------
 C 'EL1' first-order left excited state response vector: --> 'EX1'
@@ -460,14 +482,13 @@ C----------------------------------------------------------------------
          IF (IPRINT .GT.2) THEN
             WRITE(LUPRI,'(/,1x,A)') 'Finding gradient for EL1 response:'
          END IF
-         IADR1 = 1
-         IADR2 = IADR1 + NT1AM(ISYMGD)
          IDLSTEX1 = ILSTNR
          CALL CC_RDRSP('EX1',IDLSTEX1,ISYMGD,IOPTRDG,MODEL,
      &                 GD(IADR1),GD(IADR2))
 C        CALL CCLR_DIASCL(GD(IADR2),0.5d0,ISYMGD)
          NTAMP = NT1AM(ISYMGD) + NT2AM(ISYMGD)
          IF ( CCS ) NTAMP = NT1AM(ISYMGD)
+         IF ( CCR12 ) CALL QUIT('No R12 for EX1')
 
 C----------------------------------------------------------------------
 C 'EL2' second-order left excited state response vector: --> 'EX2'
@@ -479,14 +500,14 @@ C----------------------------------------------------------------------
          IF (IPRINT .GT.2) THEN
             WRITE(LUPRI,'(/,1x,A)') 'Finding gradient for EL2 response:'
          END IF
-         IADR1 = 1
-         IADR2 = IADR1 + NT1AM(ISYMGD)
          IDLSTEX2 = ILSTNR
          CALL CC_RDRSP('EX2',IDLSTEX2,ISYMGD,IOPTRDG,MODEL,
      &                 GD(IADR1),GD(IADR2))
 C        CALL CCLR_DIASCL(GD(IADR2),0.5d0,ISYMGD)
          NTAMP = NT1AM(ISYMGD) + NT2AM(ISYMGD)
          IF ( CCS ) NTAMP = NT1AM(ISYMGD)
+         IF ( CCR12 ) CALL QUIT('No R12 for EX2')
+
 C----------------------------------------------------------------------
 C 'PL1 ' projected 1st-order respons Lagrang. multipls: --> 'X1 '+'F1 '
 C----------------------------------------------------------------------
@@ -506,6 +527,7 @@ C----------------------------------------------------------------------
      *               FRQPL1(ILSTNR),LORXPL1(ILSTNR),WORK,LWORK)
          NTAMP = NT1AM(ISYPL1(ILSTNR)) + NT2AM(ISYPL1(ILSTNR))
          IF ( CCS ) NTAMP = NT1AM(ISYPL1(ILSTNR))
+         IF ( CCR12 ) CALL QUIT('No R12 for X1+F1 as used for PL1')
          ISYMGD = ISYPL1(ILSTNR)
 C----------------------------------------------------------------------
       ELSE
@@ -514,23 +536,24 @@ C----------------------------------------------------------------------
       ENDIF
 C
       IF (CCSTST) THEN
-         CALL DZERO(GD(1+NT1AM(ISYMGD)),NT2AM(ISYMGD))
+         CALL DZERO(GD(1+NT1AM(ISYMGD)),NTAMP-NT1AM(ISYMGD))
       ENDIF
 C
-C     WRITE (LUPRI,*) 'CC_GETGD> LIST:',LIST
-C     WRITE (LUPRI,*) 'CC_GETGD> NTAMP:',NTAMP
-C     CALL FLSHFO(LUPRI)
-      IF (NTAMP.LE.0) WRITE (LUPRI,*) 'strange number of amplitudes:',
-     &     NTAMP
-      XGD   = DDOT(NTAMP,GD,1,GD,1)
-      IF ( DEBUG .OR. LOCDBG) THEN
-         WRITE(LUPRI,1) 'CC_GETGD: Norm of GD vector:       ',XGD
-      ENDIF
-      IF ( XGD .LT. 1.0D-14) THEN
-         WRITE(LUPRI,'(1X,A,A)') 'WARNING: Zero gradient ???? '
+      IF (NTAMP.LE.0) 
+     &  WRITE (LUPRI,*) 'strange number of amplitudes:',NTAMP
+
+      IF (DEBUG .OR. LOCDBG) THEN
+         WRITE (LUPRI,*) 'CC_GETGD> LIST:',LIST
+         WRITE (LUPRI,*) 'CC_GETGD> NTAMP:',NTAMP
+         XGD   = DDOT(NTAMP,GD,1,GD,1)
+         WRITE(LUPRI,'(1X,A,1X,E20.10)') 
+     &      'CC_GETGD: Norm of GD vector:       ',XGD
+         IF ( XGD .LT. 1.0D-14) THEN
+            WRITE(LUPRI,'(1X,A)') 'WARNING: Zero gradient ???? '
+         ENDIF
+         CALL FLSHFO(LUPRI)
       ENDIF
 C
-   1  FORMAT(1x,A35,1X,E20.10)
       CALL QEXIT('CC_GETGD')
       RETURN
       END

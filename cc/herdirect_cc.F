@@ -161,6 +161,7 @@ C
 #include <symmet.h>
 #include <blocks.h>
 #include <eribuf.h>
+#include <r12int.h>
 C
       IF (LUAORC(0) .LE. 0) THEN
          LBFINP = LBUF
@@ -187,6 +188,11 @@ C
 #endif
          CALL GPOPEN(LUAORC(0),'AO2DIS00','UNKNOWN','DIRECT',
      &        'UNFORMATTED',LRECL,OLDDX)
+         IF (U21INT) THEN
+            LU21INT = 0
+            CALL GPOPEN(LU21INT,'AOTDIS00','UNKNOWN','DIRECT',
+     &                  'UNFORMATTED',LRECL,OLDDX)
+         END IF
       END IF
 C
       KJSTRS = 1
@@ -249,6 +255,7 @@ C
       IF (IPRFCK.GT.0) CALL TIMER('TWOINT',TIMSTR,TIMEND)
 C
       CALL GPCLOSE(LUAORC(0),'KEEP')
+      IF (U21INT) CALL GPCLOSE(LU21INT,'KEEP')
 C
       RETURN
       END

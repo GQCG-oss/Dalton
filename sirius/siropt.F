@@ -1012,6 +1012,11 @@ C        then remember to add FCSOL and FV to FD for RHFENR call
 C        CALL RHFENR(IPRINT,LUPRI,FD,SCRA,LSCRA)
       END IF
 C
+C
+C *** LOCALIZATION
+C
+      IF (BOYORB.OR.PIPORB) CALL SIRLOC(WRK(KCMO),WRK(KWRKG),LWRKG)
+C
       IF (LMULBS .OR. R12CAL) THEN
 C        Construct orthonormal auxiliary basis sets (WK/UniKA/04-11-2002).
          LWRKG  = LFREE  - (KWRKG-1)
@@ -2351,7 +2356,7 @@ C
 #include <cbgetdis.h>
 #include <r12int.h>
 C
-      LOGICAL     FNDLAB, ORBHES
+      LOGICAL     FNDLAB, ORBHES, LGLOCAL
 C
       CHARACTER*8 LAB123(3), TABLE(8), LABEOD, LABCC, LABABA
       CHARACTER*8 LABAUX, LABUNI
@@ -2362,6 +2367,7 @@ C
       DATA LABUNI, LABAUX /'FULLBAS ', 'AUXILBAS'/
 C
       CALL QENTER('WRSIFC')
+      LGLOCAL = BOYORB.OR.PIPORB
       CALL GETDAT(LAB123(2),LAB123(3))
 C     ... place date in LAB123(2) and time in LAB123(3)
 C
@@ -2611,12 +2617,35 @@ C
 C
 C     Interface for CC modules
 C
-      WRITE (LUSIFC) LAB123, LABCC
-      WRITE (LUSIFC) NSYM,NORBT,NBAST,NCMOT,(NOCC(I),I=1,NSYM),
-     *               (NORB(I),I=1,NSYM),(NBAS(I),I=1,NSYM),POTNUC,EMCSCF
-      WRITE (LUSIFC) (WRK(KFCDIA-1+I),I=1,NORBT),(ISMO(I),I=1,NORBT),
-     *               DUMMY,DUMMY,DUMMY
-      WRITE (LUSIFC) (CMO(I),I=1,NCMOT4)
+      IF (LMULBS) THEN
+         IOFF1 = 1
+         IOFF2 = 1 + NORBT
+         NBAST1 = 0
+         NCMOT1 = 0
+         DO ISYM = 1, NSYM
+            NBAST1 = NBAST1 + MBAS1(ISYM)
+            NCMOT1 = NCMOT1 + MBAS1(ISYM) * NORB(ISYM)
+            DO I = 1, NORB(ISYM)
+               CALL DCOPY(MBAS1(ISYM),CMO(IOFF1),1,WRK(IOFF2),1)
+               IOFF1 = IOFF1 + NBAS(ISYM)
+               IOFF2 = IOFF2 + MBAS1(ISYM)
+            ENDDO
+         ENDDO
+         NCMOTX = MAX(4,NCMOT1)
+         WRITE (LUSIFC) LAB123, LABCC
+         WRITE (LUSIFC) NSYM,NORBT,NBAST1,NCMOT1,(NOCC(I),I=1,NSYM),
+     *        (NORB(I),I=1,NSYM),(MBAS1(I),I=1,NSYM),POTNUC,EMCSCF
+         WRITE (LUSIFC) (WRK(KFCDIA-1+I),I=1,NORBT),(ISMO(I),I=1,NORBT),
+     *                  DUMMY,DUMMY,DUMMY
+         WRITE (LUSIFC) (WRK(I),I=1+NORBT,NCMOTX+NORBT)
+      ELSE
+         WRITE (LUSIFC) LAB123, LABCC
+         WRITE (LUSIFC) NSYM,NORBT,NBAST,NCMOT,(NOCC(I),I=1,NSYM),
+     *        (NORB(I),I=1,NSYM),(NBAS(I),I=1,NSYM),POTNUC,EMCSCF
+         WRITE (LUSIFC) (WRK(KFCDIA-1+I),I=1,NORBT),(ISMO(I),I=1,NORBT),
+     *                  DUMMY,DUMMY,DUMMY
+         WRITE (LUSIFC) (CMO(I),I=1,NCMOT4)
+      END IF
 C
       IF (LMULBS .OR. R12CAL) THEN
 C        Interface for auxiliary basis set (WK/UniKA/04-11-2002).
@@ -2661,40 +2690,70 @@ C        Interface for auxiliary basis set (WK/UniKA/04-11-2002).
          WRITE (LUSIFC) (WRK(NBASC+I),I=1,MAX(NAUXT,4))
          WRITE (LUSIFC) (WRK(3*NBASC+I),I=1,MAX(MOAUX,4))
 C        Interface for primary and secondary basis sets (WK/UniKA/04-11-2002).
-         IOFF1 = KFCDIA
-         IOFF2 = KFCDIA + NBASC
-         IOFFEV = IOFF2 + NBASC
-         IOFM1 = 1
-         IOFM2 = IOFFEV + NBASC
-         IOFMO = IOFM2 + NBASC*NBASC
-         NFBAST = 0
-         DO ISYM = 1, NSYM
-            CALL DCOPY(NOCC(ISYM),WRK(IOFF1),1,WRK(IOFFEV),1)
-            IOFFEV = IOFFEV + NOCC(ISYM)
-            CALL DCOPY(NORB1(ISYM),WRK(IOFF1),1,WRK(IOFFEV),1)
-            IOFFEV = IOFFEV + NORB1(ISYM)
-            IOFF1 = IOFF1 + NORB1(ISYM)
-            CALL DCOPY(NORB2(ISYM),WRK(IOFF2),1,WRK(IOFFEV),1)
-            IOFF2 = IOFF2 + NORB2(ISYM)
-            IOFFEV = IOFFEV + NORB2(ISYM)
-            NBASI = NBAS(ISYM)
-            CALL DCOPY(NOCC(ISYM)*NBASI,CMO(IOFM1),1,WRK(IOFMO),1)
-            IOFMO = IOFMO + NOCC(ISYM)*NBASI
-            CALL DCOPY(NORB1(ISYM)*NBASI,CMO(IOFM1),1,WRK(IOFMO),1)
-            IOFMO = IOFMO + NORB1(ISYM)*NBASI
-            IOFM1 = IOFM1 + NORB1(ISYM)*NBASI
-            CALL DCOPY(NORB2(ISYM)*NBASI,WRK(IOFM2),1,WRK(IOFMO),1)
-            IOFM2 = IOFM2 + NORB2(ISYM)*NBASI
-            IOFMO = IOFMO + NORB2(ISYM)*NBASI
-            NFBAST = NFBAST +
-     *      (NORB1(ISYM) + NORB2(ISYM) + NOCC(ISYM)) * NBASI
-         END DO
-         WRITE (LUSIFC) LAB123, LABUNI
-         WRITE (LUSIFC) NSYM,NORBFT,NBAST,NMOFLT,(NOCC(I),I=1,NSYM),
-     *                  (NORB1(I)+NORB2(I)+NOCC(I),I=1,NSYM),
-     *                  (NBAS(I),I=1,NSYM),POTNUC,EMCSCF
-         WRITE (LUSIFC) (WRK(2*NBASC+I),I=1,MAX(NORBFT,4))
-         WRITE (LUSIFC) (WRK((3+NBASC)*NBASC+I),I=1,MAX(NMOFLT,4))
+         IF (LGLOCAL) THEN
+            NOCL = NOCC(1)
+            NBASL = NBAS(1)
+            NORB1L = NORB1(1)
+            NORB2L = NORB2(1)
+            NORBFTL = NORB1L + NORB2L + NOCL
+            NMOFLTL = NORBFTL * NBASL 
+            IEIGL = IOFFMO
+            IOCCL = IEIGL + NORBFTL
+            ICMOL = IOCCL + NBASL * NOCL
+            CALL DZERO(WRK(IEIGL),NORBFTL)
+            OPEN(99,FILE='LOCMO',FORM='FORMATTED')
+            IJ = 0
+            DO IJ = 1, NBASL * NORB1L
+              READ(99,'(D30.20)') WRK(ICMOL+IJ-1)
+            END DO
+            CLOSE(99)
+            CALL DCOPY(NBASL*NOCL,WRK(ICMOL),1,WRK(IOCCL),1)
+            CALL DCOPY(NBASL*NORB1L,WRK(ICMOL),1,WRK(ICMOL),1)
+            CALL DCOPY(NORB2L*NBASL,WRK(3*NBASC+1),1,
+     *           WRK(IOCCL+NBASL*(NORB1L+NOCL)),1)
+            WRITE (LUSIFC) LAB123, LABUNI
+            WRITE (LUSIFC) 1,NORBFTL,NBAST,NMOFLTL,NOCL,NORB1L+
+     *                     NORB2L+NOCL,NBASL,POTNUC,EMCSCF
+            WRITE (LUSIFC) (WRK(IEIGL+I-1),I=1,MAX(NORBFTL,4))
+            WRITE (LUSIFC) (WRK(IOCCL+I-1),I=1,MAX(NMOFLTL,4))
+            write(lupri,*) 'WMK: NBASL,NORB1L,NORB2L,NOCL,NMOFLTL  =',
+     &                           NBASL,NORB1L,NORB2L,NOCL,NMOFLTL
+         ELSE
+            IOFF1 = KFCDIA
+            IOFF2 = KFCDIA + NBASC
+            IOFFEV = IOFF2 + NBASC
+            IOFM1 = 1
+            IOFM2 = IOFFEV + NBASC
+            IOFMO = IOFM2 + NBASC*NBASC
+            NFBAST = 0
+            DO ISYM = 1, NSYM
+               CALL DCOPY(NOCC(ISYM),WRK(IOFF1),1,WRK(IOFFEV),1)
+               IOFFEV = IOFFEV + NOCC(ISYM)
+               CALL DCOPY(NORB1(ISYM),WRK(IOFF1),1,WRK(IOFFEV),1)
+               IOFFEV = IOFFEV + NORB1(ISYM)
+               IOFF1 = IOFF1 + NORB1(ISYM)
+               CALL DCOPY(NORB2(ISYM),WRK(IOFF2),1,WRK(IOFFEV),1)
+               IOFF2 = IOFF2 + NORB2(ISYM)
+               IOFFEV = IOFFEV + NORB2(ISYM)
+               NBASI = NBAS(ISYM)
+               CALL DCOPY(NOCC(ISYM)*NBASI,CMO(IOFM1),1,WRK(IOFMO),1)
+               IOFMO = IOFMO + NOCC(ISYM)*NBASI
+               CALL DCOPY(NORB1(ISYM)*NBASI,CMO(IOFM1),1,WRK(IOFMO),1)
+               IOFMO = IOFMO + NORB1(ISYM)*NBASI
+               IOFM1 = IOFM1 + NORB1(ISYM)*NBASI
+               CALL DCOPY(NORB2(ISYM)*NBASI,WRK(IOFM2),1,WRK(IOFMO),1)
+               IOFM2 = IOFM2 + NORB2(ISYM)*NBASI
+               IOFMO = IOFMO + NORB2(ISYM)*NBASI
+               NFBAST = NFBAST +
+     *         (NORB1(ISYM) + NORB2(ISYM) + NOCC(ISYM)) * NBASI
+            END DO
+            WRITE (LUSIFC) LAB123, LABUNI
+            WRITE (LUSIFC) NSYM,NORBFT,NBAST,NMOFLT,(NOCC(I),I=1,NSYM),
+     *                     (NORB1(I)+NORB2(I)+NOCC(I),I=1,NSYM),
+     *                     (NBAS(I),I=1,NSYM),POTNUC,EMCSCF
+            WRITE (LUSIFC) (WRK(2*NBASC+I),I=1,MAX(NORBFT,4))
+            WRITE (LUSIFC) (WRK((3+NBASC)*NBASC+I),I=1,MAX(NMOFLT,4))
+         END IF
       END IF
 C
 C *** end of subroutine WRSIFC

@@ -89,7 +89,7 @@ else
 fi
 
 # B3LYP ENERGY                        -73.176325851294
-CRIT1=`$GREP "Final * HF energy\: * \-73\.1763258....." $log | wc -l`
+CRIT1=`$GREP "Final DFT energy\: * \-73\.1763258....." $log | wc -l`
 TEST[1]=`expr	$CRIT1`
 CTRL[1]=1
 ERROR[1]="B3LYP ENERGY NOT CORRECT"

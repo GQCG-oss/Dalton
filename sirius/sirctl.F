@@ -319,6 +319,7 @@ C     ... flag(11) definitely not needed after DIIS /hjaaj.apr2000
 C
 C        Call SIROPT to perform QC-SCF iterations
 C
+         ICONVI = ICONV 
          IF (FLAG(21) .AND. ICONV .LE. 0) THEN
             FLAG( 2) = .TRUE.
             FLAG( 5) = FLAGSV(5)

@@ -2,7 +2,8 @@
      &        NALLAI,IALLAI,IRHFS,IVIRS,  NOFROO,IOFROO,NF2IJG,NFROIJ,
      &        IFROIJ,IF2IJG,NFRIJK,IFRIJK,NFROFR,IFROFR,NCOFRF,ICOFRF,
      &        IOFOAO,IOFFAO,
-     &        ICDKFR
+     &        ICDKFR,
+     &        NF1FRO,IF1FRO,NF2FRO,IF2FRO
       COMMON /CCFRO/ NT1FRO(8),IT1FRO(8,8),NT2FRO(8),IT2FRO(8,8),
      &               NDSFRO(8),IDSFRO(8,8),NCOFRO(8),ICOFRO(8,8),
      &               NALLAI(8),IALLAI(8,8),IRHFS(8),IVIRS(8),
@@ -10,4 +11,5 @@
      &               IFROIJ(8,8),IF2IJG(8,8),NFRIJK(8),IFRIJK(8,8),
      &               NFROFR(8),IFROFR(8,8),NCOFRF(8),ICOFRF(8,8),
      &               IOFOAO(8,8),IOFFAO(8,8),
-     &               ICDKFR(8,8)
+     &               ICDKFR(8,8),
+     &               NF1FRO(8),IF1FRO(8,8),NF2FRO(8),IF2FRO(8,8)

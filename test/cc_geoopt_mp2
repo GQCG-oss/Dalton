@@ -111,7 +111,7 @@ else
 fi
 
 # SCF, MP2 and CCSD energies of 0 iteration:
-CRIT1=`$GREP "Final    HF energy: * -100\.01388196" $log | wc -l`
+CRIT1=`$GREP "Final HF energy: * -100\.01388196" $log | wc -l`
 CRIT2=`$GREP "Total MP2   energy: * -100\.22012568" $log | wc -l`
 CRIT3=`$GREP " H * ( |0)\.0000000000 * ( |0)\.0000000000 * ( |0)\.054453" $log | wc -l`
 CRIT4=`$GREP " F * ( |0)\.0000000000 * ( |0)\.0000000000 * ( \-|\-0)\.054453" $log | wc -l`
@@ -124,7 +124,7 @@ ERROR[1]="INITIAL ITERATION IS ALLREADY NOT CORRECT"
 
 
 # SCF, MP2 and CCSD energies of 1 iteration:
-CRIT1=`$GREP "Final    HF energy: *-100\.01858250" $log | wc -l`
+CRIT1=`$GREP "Final HF energy: *-100\.01858250" $log | wc -l`
 CRIT3=`$GREP "Total MP2   energy: *-100\.22301642" $log | wc -l`
 CRIT4=`$GREP " H * ( |0)\.0000000000 * ( |0)\.0000000000 * ( |0)\.014716" $log | wc -l`
 CRIT5=`$GREP " F * ( |0)\.0000000000 * ( |0)\.0000000000 * ( \-|\-0)\.014716" $log | wc -l`
@@ -137,7 +137,7 @@ ERROR[2]="FIRST ITERATION IS ALLREADY NOT CORRECT"
 
 
 # SCF, MP2 and CCSD energies of 2 iteration:
-CRIT1=`$GREP "Final    HF energy: *-100\.01943291" $log | wc -l`
+CRIT1=`$GREP "Final HF energy: *-100\.01943291" $log | wc -l`
 CRIT3=`$GREP "Total MP2   energy: *-100\.22318964" $log | wc -l`
 CRIT4=`$GREP " H * ( |0)\.0000000000 * ( |0)\.0000000000 * ( \-|\-0)\.003535" $log | wc -l`
 CRIT5=`$GREP " F * ( |0)\.0000000000 * ( |0)\.0000000000 * ( |0)\.003535" $log | wc -l`

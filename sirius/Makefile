@@ -19,7 +19,7 @@ F_OBJS = \
 	sirtra.o          sirupd.o\
 	sirsol.o          symchk.o\
 	newtrahso.o       sirntra.o         intsort.o \
-	r12aux.o\
+	r12aux.o          sirloc.o\
 	koopro4.o         dalcip.o          dypc.o
 
 F_CPPS = $(F_OBJS:.o=.i)

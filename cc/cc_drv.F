@@ -121,10 +121,9 @@ C
 #include <ccfop.h>
 #include <ccfro.h>
 #include <eribuf.h>
-!
-!SONIA SONIA
+#include <r12int.h>
 #include <grdccpt.h>
-!
+
       PARAMETER(NMODEL = 18)
       LOGICAL   LCCSAV(0:NMODEL), LTCEXC, LPTEXC
       LOGICAL   LTBAR0, LRSPSYM, LLEFTEIG
@@ -239,6 +238,19 @@ C
          IMULTE2(IEX) = IMULTE(IEX)
       ENDDO
       NPRPC = 0
+C
+C---------------------------------------------------
+C     Set some logicals needed for R12 calculations:
+C---------------------------------------------------
+C
+      R12CAL = R12CAL .OR. LMULBS
+
+      ! request that some intermediates needed for CC2-R12
+      ! are calculated during MP2-R12 calculation
+      CC2R12INT = R12CAL .AND. CC2
+
+      ! switch on R12 flag used in CC routines
+      CCR12 = R12CAL
 C
 C-------------------------------------
 C     Set logicals: 4,6,8 is obsolete.
@@ -410,6 +422,10 @@ C
          IF ((I.GT.15).AND.(.NOT.CCSD)) THEN
             CCSDT  =  .TRUE.
          ENDIF
+C
+         IF (CCR12 .AND. .NOT. MP2) THEN
+           CALL QUIT('R12 not yet implemented for this CC model')
+         END IF
 
 C        -----------------------------------------------------------
 C        in geometry optimization runs compute the gradient only
@@ -428,6 +444,35 @@ C
          IF (CCP2) CCS = .FALSE.
          IF (CCR3) CCP3 = .TRUE.
 C
+C+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+C        Start loop over R12 ansaetze and approximations
+C+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+         IANR12 = 0
+         IAPR12 = 0
+ 9001    IANR12 = IANR12 + 1
+ 9002    IAPR12 = IAPR12 + 1
+         IPDD = IAPR12
+         IF (CCR12) THEN
+          IF (IANR12 .EQ. 1) THEN
+           IF (NORXR) THEN
+              IF (.NOT. R12XXL .AND.
+     *       (IPDD .NE. 2 .AND. IPDD .NE. 3 .AND. IPDD .NE. 5))GOTO 9003
+           ELSE
+              IF (.NOT. R12XXL .AND.
+     *       (IPDD .NE. 2 .AND. IPDD .NE. 3 .AND. IPDD .NE. 7))GOTO 9003
+           END IF
+           IF (IPDD .LE. 3 .AND. R12NOA) GOTO 9003
+           IF (IPDD .EQ. 3 .AND. R12NOP) GOTO 9003
+           IF (IPDD .GE. 4 .AND. R12NOB) GOTO 9003
+           IF (IPDD .GE. 6 .AND. NORXR)  GOTO 9003
+          END IF
+C
+C         Noninvariant forms not implemented: goto 9003
+          IF (IPDD .EQ. 1 .OR. IPDD .EQ. 4 .OR. IPDD .EQ. 6) GOTO 9003
+          WRITE(LUPRI,'(//A,I3)') ' CCR12 ANSATZ = ',IANR12
+          WRITE(LUPRI,'(/A,I3/)') ' CCR12 APPROX = ',IAPR12
+         END IF
+
 C+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 C        1. Start loop over different solvents.
 C        2. Start loop for self-consistent CC solvent
@@ -492,6 +537,10 @@ C
      *       .AND.(.NOT.
      *       (CCR3.OR.CCR1A.OR.CCR1B.OR.CCRT.OR.CCR3))) THEN
 C
+             IF (CCR12) THEN
+              WRITE(LUPRI,*) 'CC_FOP not adapted for CCR12...'
+              WRITE(LUPRI,*) 'will be ignored...'
+             ELSE
               IF (.NOT. (CCSDT .AND. (.NOT. CC3))) THEN
                  !...................................
                  !SONIA: I am not sure but let us try
@@ -500,6 +549,7 @@ C
                  !...................................
                  CALL CC_FOP(WORK,LWORK)
               ENDIF
+             END IF
 C
            ENDIF
 C
@@ -903,6 +953,19 @@ C
 C SLV98,OC End of solvent loop
 C
  9999    CONTINUE
+C
+ 9003    CONTINUE
+         IF (CCR12) THEN
+           IF (IANR12 .EQ. 1) THEN
+             IF (IAPR12 .LE. 6) GOTO 9002
+C for ansatz 2:
+C            IAPR12 = 0
+C            GOTO 9001
+C          ELSE 
+C            IF (IAPR12) .LE. 13) GOTO 9002
+           END IF
+          
+         END IF
 C
 C-------------------------------------------------
 C        Close files used in triples calculations.

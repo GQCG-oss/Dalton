@@ -872,6 +872,7 @@ C
       IF (ADDSTO) NSETS = 2
 C     If (ADDSTO) use second set for STO-3G for Huckel guess
       BSET = 'Basis'
+      MBSI = 1
 C
 C     Run over atomic centers
 C     =======================

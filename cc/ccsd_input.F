@@ -137,6 +137,7 @@ C
 C
 C     Initialize /CCSDINP/ ,/CCLR / and /CCSDSYM/
 C
+      LGLO = .FALSE.
       SKIP   = .FALSE.
       CCRSTR = .FALSE.
       CCSDT  = .FALSE.
@@ -288,15 +289,19 @@ C
       MINSCR = .TRUE.
       MINMEM = .FALSE.
       CCPAIR = .FALSE.
+      MKVAJKL = .FALSE.
 ckr      R12CAL = .TRUE.
 ckr      R12NOA = .FALSE.
 ckr      R12NOP = .FALSE.
 ckr      R12NOB = .FALSE.
 ckr      R12HYB = .TRUE.
 ckr      NORXR  = .FALSE.
-      VCLTHR =  0D0
-      SVDTHR =  1D-15
+cwk      VCLTHR =  0D0
+cwk      SVDTHR =  1D-15
 ckr      R12XXL = .FALSE.
+
+      BRASCL = 0.5D0
+      KETSCL = 2.0D0
 C
 C     If this is a restart run, we read MSYM from SIRIFC
 C
@@ -356,10 +361,9 @@ C
                 GO TO 1000
                END IF
                IF (WORD(1:1) .EQ. '*') THEN
-cch
-c                either '*END OF' for '**CC   ' section or a sirius
-c                keyword. in the former case read next input line
-cch
+   
+                 ! either '*END OF' for '**CC   ' section or a sirius
+                 ! keyword. in the former case read next input line
                  IF (WORD.EQ.'*END OF' .AND. WORD1.EQ.'**CC   ') THEN
                    READ (LUCMD, '(A7)') WORD
                  END IF
@@ -1128,7 +1132,7 @@ C=====================================================================*
 
       LOGICAL LSTVEC
       INTEGER NTABLE
-      PARAMETER (NTABLE = 20)
+      PARAMETER (NTABLE = 25)
 
       DIMENSION NSTAR(8)
 
@@ -1146,7 +1150,8 @@ C=====================================================================*
       DATA TABLE /'.NCCEXC','.R3DIIS','.FDJAC ','.FDEXCI','.JACEXP',
      *            '.JACTST','.LHTR  ','.NOSCOM','.STSD  ','.TOLSC ',
      *            '.OMEINP','.STVEC ','.STOLD ','.CCTREN','.THREXC',
-     *            '.CCSPIC','.CC2PIC','.CCSDPI','.MARGIN','.SQROVL'/
+     *            '.CCSPIC','.CC2PIC','.CCSDPI','.MARGIN','.SQROVL',
+     *            '.ANALYS','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 
 *---------------------------------------------------------------------*
 * begin:
@@ -1177,6 +1182,7 @@ C
       OMPCC2 = 0.0D0
       OMPCCSD= 0.0D0
       MARGIN = .FALSE.
+      EXCI_CONT = .FALSE.
       XMARGIN = 1.0
 C
       SQROVLP    = .FALSE.
@@ -1214,8 +1220,8 @@ c         table look up:
 c         jump to the appropiate input section:
           IF (IJUMP .LE. NTABLE) THEN
             ICHANG = ICHANG + 1
-            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20),
-     *              IJUMP
+            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,
+     *            21,22,23,24,25),IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_EXCINP.')
       
 C           -------------------------------------------
@@ -1435,7 +1441,42 @@ C
 20          CONTINUE
                SQROVLP = .TRUE.
             GO TO 100
-
+C
+C----------------------------------------------------------------
+C           .ANALYS  unused
+C----------------------------------------------------------------
+C
+21          CONTINUE
+               EXCI_CONT = .TRUE.
+            GO TO 100
+C
+C----------------------------------------------------------------
+C           .XXXXXX  unused
+C----------------------------------------------------------------
+C
+22          CONTINUE
+            GO TO 100
+C
+C----------------------------------------------------------------
+C           .XXXXXX  unused
+C----------------------------------------------------------------
+C
+23          CONTINUE
+            GO TO 100
+C
+C----------------------------------------------------------------
+C           .XXXXXX  unused
+C----------------------------------------------------------------
+C
+24          CONTINUE
+            GO TO 100
+C
+C----------------------------------------------------------------
+C           .XXXXXX  unused
+C----------------------------------------------------------------
+C
+25          CONTINUE
+            GO TO 100
 C
           ELSE
            WRITE (LUPRI,'(/,5A,/)') ' Prompt "',WORD,
@@ -1567,7 +1608,6 @@ C
       IF (NEXCI .EQ. 0) WRITE(LUPRI,'(/1X,A)')
      *'No excitation energy requested even though CCEXCI is set-right?'
 C                                                          
-
       RETURN
       END
 C=====================================================================*
@@ -7243,12 +7283,15 @@ C     Written by Wim Klopper (University of Karlsruhe, 22 November 2002).
       LOGICAL SET
       CHARACTER SECNAM*(8)
       PARAMETER (SECNAM='CC_R12IN')
-      PARAMETER (NTABLE = 8)
+      PARAMETER (NTABLE = 16, D0 = 0.0D0)
       CHARACTER WORD*(7)
       CHARACTER TABLE(NTABLE)*(7)
       DATA TABLE /'.NO HYB','.NO A  ','.NO A'' ','.NO B  ',
-     &            '.NO RXR','.R12THR','.SVDTHR','.R12XXL'/
+     &            '.NO RXR','.R12THR','.SVDTHR','.R12XXL',
+     &            '.R12DIA','.R12SVD','.R12LEV','.R12RST',
+     &            '.BASSCL','.R12PRP','.NO 1  ','.NO 2  '/
       DATA SET/.FALSE./
+      R12LEV = D0
       IF (SET) RETURN
       SET    = .TRUE.
       IF (WORD(1:4) .EQ. '*R12') THEN
@@ -7263,7 +7306,7 @@ C     Written by Wim Klopper (University of Karlsruhe, 22 November 2002).
             IJUMP = IJUMP + 1
           END DO
           IF (IJUMP .LE. NTABLE) THEN
-            GOTO (1,2,3,4,5,6,7,8), IJUMP
+            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_R12IN.')
     1       CONTINUE
                R12HYB = .FALSE.
@@ -7289,6 +7332,32 @@ C     Written by Wim Klopper (University of Karlsruhe, 22 November 2002).
     8       CONTINUE
                R12XXL = .TRUE.
             GO TO 100
+    9       CONTINUE
+               R12DIA = .TRUE.
+               R12SVD = .FALSE.
+            GO TO 100
+   10       CONTINUE
+               R12SVD = .TRUE.
+               R12DIA = .FALSE.
+            GO TO 100
+   11       CONTINUE
+               READ (LUCMD, *) R12LEV
+            GO TO 100
+   12       CONTINUE
+               R12RST = .TRUE.
+            GO TO 100
+   13       CONTINUE
+               READ (LUCMD, *) BRASCL, KETSCL
+            GO TO 100
+   14       CONTINUE
+               R12PRP = .TRUE.
+            GO TO 100
+   15       CONTINUE
+               NOTONE = .TRUE.
+            GO TO 100
+   16       CONTINUE
+               NOTTWO = .TRUE.
+            GO TO 100
           ELSE
            WRITE (LUPRI,'(/5A,/)') ' Prompt "',WORD,
      &             '" not recognized in ',SECNAM,'.'
@@ -7306,5 +7375,10 @@ C     Written by Wim Klopper (University of Karlsruhe, 22 November 2002).
         END IF
       END IF
   200 CONTINUE
+
+      write(lupri,*)'Scale factors for CC excitations manifolds:'
+      write(lupri,*)'for bra states (projection manifold):',brascl
+      write(lupri,*)'for ket states (operator manifold)  :',ketscl
+
       RETURN
       END

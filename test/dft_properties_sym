@@ -84,7 +84,7 @@ else
 fi
 
 # Energy                              -76.383052152909
-CRIT1=`$GREP "Final * HF energy\: * \-76\.3830521....." $log | wc -l`
+CRIT1=`$GREP "Final DFT energy\: * \-76\.3830521....." $log | wc -l`
 CRIT2=`$GREP "Nuclear repulsion\: * 9\.218170507..." $log | wc -l`
 CRIT3=`$GREP "Electronic energy\: * \-85\.6012226....." $log | wc -l`
 TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`

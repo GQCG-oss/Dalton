@@ -1588,7 +1588,7 @@ C ::: First we check all planes perpendicular to one atompos. :::
             V1(1) = ATMARR(1,I)
             V1(2) = ATMARR(2,I)
             V1(3) = ATMARR(3,I)
-            IF ((V1(1)*V1(1)+V1(1)*V1(1)+V1(1)*V1(1).GT.TOLLRN*TOLLRN)
+            IF ((V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3).GT.TOLLRN*TOLLRN)
      &                   .AND. (MIRMOL(MXM, ATMARR, TMPARR, V1))) THEN
                CALL ADD2AR(MAXMIR, DMRARR, 0, V1)
                CALL DLDPAX(MAXMIR, DMRARR)
@@ -1932,7 +1932,7 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::
 #include <priunit.h>
          DIMENSION ATMARR(6, 0:MXM), EXTARR(7, 0:MXM)
          DIMENSION TMPARR(6, 0:MXM), V1(3), V2(3), V3(3)
-         CHARACTER STRING*9, SYMELM*(*)
+         CHARACTER STRING*9, SYMELM*9
          LOGICAL MIRMOL, ROTAXS, INVMOL, NECESS, GENELM
          N = NINT(ATMARR(1,0))
          EXTARR(1,0) = 1.0D0*N

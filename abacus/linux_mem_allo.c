@@ -43,7 +43,7 @@
  ******************************************************/
 #include <stdio.h>
 #include <stdlib.h>
-
+  
 typedef void (*DaltonDriver)(double* work, int* lmwork, double* wrkdlm,
                              int* master, int* mynum);
 extern DaltonDriver nodstr_;

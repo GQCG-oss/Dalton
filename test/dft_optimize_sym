@@ -88,7 +88,7 @@ CTRL[2]=5
 ERROR[2]="EXCHANGE $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 PART NOT CORRECT"
 
 # Energy                              -76.342046237274
-CRIT1=`$GREP "Final * HF energy\: * \-76\.34204623...." $log | wc -l`
+CRIT1=`$GREP "Final DFT energy\: * \-76\.34204623...." $log | wc -l`
 TEST[3]=`expr	$CRIT1`
 CTRL[3]=1
 ERROR[3]="HF ENERGY NOT CORRECT"

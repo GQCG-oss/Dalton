@@ -946,6 +946,7 @@ C
 #include <infinp.h>
 #include <inforb.h>
 #include <inftap.h>
+#include <r12int.h>
 C     Local arrays
       PARAMETER ( LBUF = 600 )
       DIMENSION BUF(LBUF), DBUF(LBUF,3), QBUF(LBUF,6), IBUF(LBUF)
@@ -1039,12 +1040,23 @@ C        Read one electron part, in symmetry blocked triangular form
   501    READ (LUONEL) DBUF,IBUF,NUT
          IF (NUT.EQ.0)   GO TO 501
          IF (NUT.LT.0)   GO TO 502
-         DO 510 I=1,NUT
-            J = IBUF(I)
-            A(J,1) = DBUF(I,1)
-            A(J,2) = DBUF(I,2)
-            A(J,3) = DBUF(I,3)
-  510    CONTINUE
+         IF (NOAUXB) THEN
+            DO I=1,NUT
+               CALL INOAUX(IBUF(I),IR12)
+               IF (IR12 .GT. 0) THEN
+                  A(IR12,1) = DBUF(I,1)
+                  A(IR12,2) = DBUF(I,2)
+                  A(IR12,3) = DBUF(I,3)
+               END IF
+            END DO 
+         ELSE
+            DO I=1,NUT
+               J = IBUF(I)
+               A(J,1) = DBUF(I,1)
+               A(J,2) = DBUF(I,2)
+               A(J,3) = DBUF(I,3)
+            END DO 
+         END IF
          GO TO 501
   502    CONTINUE
       ELSE IF(KEY.EQ.'QUADRP  ') THEN
@@ -1059,11 +1071,23 @@ C        Read one electron part, in symmetry blocked triangular form
   601    READ (LUONEL) QBUF,IBUF,NUT
          IF (NUT.EQ.0)   GO TO 601
          IF (NUT.LT.0)   GO TO 602
-         DO 610 I=1,NUT
-            J = IBUF(I)
-            DO 610 ICOMP = 1,6
-               A(J,ICOMP) = QBUF(I,ICOMP)
-  610    CONTINUE
+         IF (NOAUXB) THEN
+            DO I=1,NUT
+               CALL INOAUX(IBUF(I),IR12)
+               IF (IR12 .GT. 0) THEN
+                  DO ICOMP = 1,6
+                     A(IR12,ICOMP) = QBUF(I,ICOMP)
+                  END DO
+               END IF
+            END DO
+         ELSE
+            DO I=1,NUT
+               J = IBUF(I)
+               DO ICOMP = 1,6
+                  A(J,ICOMP) = QBUF(I,ICOMP)
+               END DO
+            END DO
+         END IF
          GO TO 601
   602    CONTINUE
       ELSE IF(KEY.EQ.'ISORDK  ') THEN
@@ -1097,15 +1121,86 @@ C        Read one electron part, in symmetry blocked triangular form
          END IF
          CALL DZERO(A,NNBAST)
  2100    READ (LUONEL) (BUF(I),I=1,LBONEL),(IBUF(I),I=1,LBONEL),LENGTH
-         DO 2200 I = 1,LENGTH
-            A( IBUF(I) , 1 ) = BUF(I)
- 2200    CONTINUE
+         IF (NOAUXB) THEN
+            DO I = 1, LENGTH
+               CALL INOAUX(IBUF(I),IR12)
+               IF (IR12 .GT. 0) A( IR12 , 1 ) = BUF(I)
+            END DO
+         ELSE
+            DO I = 1, LENGTH
+               A( IBUF(I) , 1 ) = BUF(I)
+            END DO
+         END IF
          IF (LENGTH .GE. 0) GO TO 2100
          REWIND LUONEL
       END IF
       CALL GPCLOSE(LUONEL,'KEEP')
 C
  9999 CALL QEXIT('RDONEL')
+      RETURN
+      END
+C  /* Deck ijkaux */
+      SUBROUTINE IJKAUX(II,JJ,KK)
+#include <implicit.h>
+#include <priunit.h>
+#include <ccorb.h>
+#include <maxorb.h>
+#include <r12int.h>
+      LOGICAL FIRST
+      DATA FIRST /.TRUE./
+      DIMENSION IJ(MXCORB)
+      SAVE IJ
+      IF (FIRST) THEN
+         KL = 0
+         MN = 0
+         DO ISYM = 1, NSYM
+            DO I = 1, MBAS1(ISYM) + MBAS2(ISYM)
+               KL = KL + 1
+               IF (I .LE. MBAS1(ISYM)) THEN
+                  MN = MN + 1
+                  IJ(KL) = MN
+               ELSE
+                  IJ(KL) = -1
+               END IF
+            END DO
+         END DO
+         FIRST = .FALSE.
+      END IF
+      II = IJ(II)
+      JJ = IJ(JJ)
+      KK = IJ(KK)
+      RETURN
+      END
+C  /* Deck inoaux */
+      SUBROUTINE INOAUX(II,JJ)
+#include <implicit.h>
+#include <priunit.h>
+#include <ccorb.h>
+#include <maxorb.h>
+#include <r12int.h>
+      LOGICAL FIRST
+      DATA FIRST /.TRUE./
+      DIMENSION IJ(MXORBT)
+      SAVE IJ
+      IF (FIRST) THEN
+         KL = 0
+         MN = 0
+         DO ISYM = 1, NSYM
+            DO I = 1, MBAS1(ISYM) + MBAS2(ISYM)
+               DO J = 1, I
+                  KL = KL + 1
+                  IF (I. LE. MBAS1(ISYM) .AND. J .LE. MBAS1(ISYM)) THEN
+                     MN = MN + 1
+                     IJ(KL) = MN
+                  ELSE
+                     IJ(KL) = -1
+                  END IF
+               END DO
+            END DO
+         END DO
+         FIRST = .FALSE.
+      END IF
+      JJ = IJ(II)
       RETURN
       END
 C  /* Deck rdsupm */

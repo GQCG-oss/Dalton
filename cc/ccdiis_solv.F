@@ -71,6 +71,7 @@ C
       PARAMETER (D0 = 0.0D0 )
 C
       CHARACTER*(*)  FRHO1,FRHO2,FC1AM,FC2AM
+      CHARACTER*8 FS12AM
       CHARACTER*(*) LIST
       DIMENSION REDH(*), REDS(*), SOLEQ(*)
       DIMENSION EIVAL(*), AMAT((MXDIIS+1)*(MXDIIS+1),*)
@@ -90,6 +91,8 @@ C
          WRITE(LUPRI,*) 'CCDIIS_SOL: NUPVEC  =    ',NUPVEC
          WRITE(LUPRI,*) 'CCDIIS_SOL: NCCVAR  =    ',NCCVAR
       ENDIF
+C
+      IF (CCR12) CALL QUIT('No R12 yet in CCDIIS_SOL.')
 C
       IF (NUPVEC.NE.NVEC) 
      *  CALL QUIT('Not enough start vectors in CCDIIS_SOLV.')
@@ -157,7 +160,7 @@ C
 C
          CALL CC_TRDRV(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,
      *                 FC1AM,LUFC1,FC2AM,LUFC2,TRIPLET,
-     *                 .TRUE.,ITRAN,EIVAL,
+     *                 .TRUE.,ITRAN,EIVAL,FS12AM,IDUMMY,
      *                 ISIDE,0,NUPVEC,WRK,LWRK)
 C
          CALL FLSHFO(LUPRI)

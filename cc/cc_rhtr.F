@@ -34,10 +34,10 @@ C
 #include <single.h>
 C
 c*DECK CC_RHTR
-      SUBROUTINE CC_RHTR(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,
-     *                   FC1AM,LUFC1,FC2AM,LUFC2,
+      SUBROUTINE CC_RHTR(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
+     *                   FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
      *                   RHO1,RHO2,C1AM,C2AM,WORK,
-     *                   LWORK,NSIMTR,IVEC,ITR,LRHO1)
+     *                   LWORK,NSIMTR,IVEC,ITR,LRHO1,LCONT,CONT)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
@@ -81,17 +81,18 @@ C
 #include <eribuf.h>
 #include <ccslvinf.h>
 #include <ccnoddy.h>
+#include <r12int.h>
 C
       DIMENSION INDEXA(MXCORB)
       DIMENSION RHO1(LRHO1,NSIMTR),C1AM(LRHO1,NSIMTR)
-      DIMENSION RHO2(*),C2AM(*),WORK(LWORK)
+      DIMENSION RHO2(*),C2AM(*),WORK(LWORK),CONT(20,*)
       CHARACTER*10 MODEL, FN3SRTR
-      CHARACTER*8 FRHO1, FRHO2, FC1AM, FC2AM, FNDELDR
+      CHARACTER*8 FRHO1, FRHO2, FC1AM, FC2AM, FNDELDR, FRHO12, FC12AM
       CHARACTER*8 FNCKJDR, FN3VI2, FNTOC
       CHARACTER*6 CFIL, DFIL, CTFIL, DTFIL, FNDKBCR, FN3VI
       CHARACTER*1 LR
 C
-      LOGICAL FCKCON,NEWGS,CC1BSA,ETRAN
+      LOGICAL FCKCON,NEWGS,CC1BSA,ETRAN,LCONT
 C
       IF (IPRINT .GT. 15) THEN
          CALL AROUND(' START OF CC_RHTR ')
@@ -187,8 +188,10 @@ C
       TIMC      = 0.0D00
       TIMD      = 0.0D00
       TIME      = 0.0D00
+      TIMEP     = 0.0D00
       TIMF      = 0.0D00
       TIMG      = 0.0D00
+      TIMGP     = 0.0D00
       TIMH      = 0.0D00
       TIMI      = 0.0D00
       TIMEI     = 0.0D00
@@ -267,7 +270,7 @@ C
       IF ( IPRINT .GT. 25)
      *   WRITE(LUPRI,*) ' In CC_RHTR 1. alloc. work. left:',LWRK1
 C
-      IF (LWRK1 .LE. 0) CALL QUIT('Too little workspace in cclr_rhtr')
+      IF (LWRK1 .LE. 0) CALL QUIT('Too little workspace in cc_rhtr')
 C
 C---------------------------------------
 C     Initialize t1am and intermediates.
@@ -537,6 +540,10 @@ C
                KEI1   = KEMAT1 + NEMAT1(ISYMTR)*(IV-1)
                KEI2   = KEMAT2 + NMATIJ(ISYMTR)*(IV-1)
 C
+               IF (DEBUG) THEN
+                 WRITE(LUPRI,*) 'ILLL,IV:',ILLL,IV
+               END IF 
+C
                IF ((.NOT.MINSCR).AND.(.NOT.CCS)) THEN
 C
 C--------------------------------------------
@@ -576,6 +583,8 @@ C
 C
                   IF (IPRINT.GT.50) THEN
                      CALL AROUND('CC_RHTR: RHO2  ) vector readin')
+                      WRITE(LUPRI,1) 'Norm of Rho1 :',RHO1N
+                      WRITE(LUPRI,1) 'Norm of Rho2 :',RHO2N
                      CALL CC_PRP(RHO1(1,IV),RHO2,ISYMTR,1,1)
                   ENDIF
 C
@@ -603,6 +612,10 @@ C
 C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IDEL,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL
@@ -650,6 +663,11 @@ C
      *                     WORK(KRECNR),DIRECT)
                DTIME   = SECOND() - DTIME
                TIMRDAO = TIMRDAO  + DTIME
+               IF (DEBUG) THEN
+                 WRITE(LUPRI,*) 'Norm^2(XINT) for IDEL2,IDEL,ISYMD:',
+     &              IDEL2,IDEL,ISYMD,
+     &              DDOT(NDISAO(ISYDIS),WORK(KXINT),1,WORK(KXINT),1)
+               END IF
 C
 C-----------------------------------------------------------
 C              Calculate transformed integrals used in t3am.
@@ -773,7 +791,8 @@ C
                   CALL CC_MOFCON(WORK(KXINT),RHO2,WORK(KLAMDP),
      *                           WORK(KLAMDH),WORK(KLPC1),
      *                           WORK(KLHC1),WORK(KEND4),LWRK4,
-     *                           IDEL,ISYMD,ISYMTR,IOPT)
+     *                           IDEL,ISYMD,ISYMTR,IOPT,
+     *                           DUMMY,.FALSE.,DUMMY,.FALSE.,TIMFP)
                   DTIME   = SECOND() - DTIME
                   TIMF    = TIMF     + DTIME
 C
@@ -781,6 +800,13 @@ C
                      CALL AROUND(' AFTER CC_MOFCON in loop RHTR: RHO')
                      CALL CC_PRP(RHO1(1,IV),RHO2,ISYMTR,0,1)
                   ENDIF
+                  IF (DEBUG) THEN
+                    RHO1N=DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,RHO1(1,IV),1)
+                    RHO2N=DDOT(NT2AM(ISYMTR),RHO2,1,RHO2,1)
+                    WRITE(LUPRI,*) 'IDEL,ISYMD:',IDEL,ISYMD
+                    WRITE(LUPRI,1) 'Norm of Rho1 - after MOFCON:',RHO1N
+                    WRITE(LUPRI,1) 'Norm of Rho2 - after MOFCON:',RHO2N
+                  END IF
 C
                ENDIF
 C
@@ -934,11 +960,14 @@ C
                   ELSE IF (.NOT. CCS) THEN
                     RHO2N = DDOT(NT2AM(ISYMTR),RHO2,1,RHO2,1)
                   ENDIF
+               ENDIF
+               IF (DEBUG) THEN
+                  WRITE(LUPRI,*) 'IDEL,ISYMD:',IDEL,ISYMD
                   WRITE(LUPRI,1) 'Norm of Rho1 -in loop:             ',
      &                 RHO1N
                   WRITE(LUPRI,1) 'Norm of Rho2 -in loop:             ',
      &                 RHO2N
-               ENDIF
+               END IF
 C
   130       CONTINUE
 C
@@ -972,7 +1001,7 @@ C
          KEND1  = KGAMMC + NGAMMA(ISYMTR)*NSIMTR
          LWRK1  = LWORK  - KEND1
 C
-         IF (LWRK1 .LT. 0) CALL QUIT('Insufficient memory in cclr_rhtr')
+         IF (LWRK1 .LT. 0) CALL QUIT('Insufficient memory in cc_rhtr')
 C
       END IF
 C
@@ -1023,6 +1052,9 @@ C
          KFCKC1 = KFOCKC + N2BST(ISYMTR)*(IV-1)
          KGAMC1 = KGAMMC + NGAMMA(ISYMTR)*(IV-1)
 C
+         IF (LCONT) THEN
+           CONT(3,IV) = DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,C1AM(1,IV),1)
+         END IF
 C
 C===============================================================
 C     After Loop CCSD and CC2 Contributions with C2SQ in memory.
@@ -1146,12 +1178,29 @@ C-----------------------------------
 C
       IF (CC2.AND..NOT.(ONLY21)) THEN
 C
+         IF (LCONT) THEN
+           IF(LWRK1.LT.NT2AM(ISYMTR))CALL QUIT('Out of memory CC_RHTR')
+           CALL CC_RVEC(LUFC2,FC2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
+     *                  IVEC+IV-1,WORK(KEND1))
+           CALL CCLR_DIASCL(WORK(KEND1),XHALF,ISYMTR)
+           CONT(7,IV) = DDOT(NT2AM(ISYMTR),WORK(KEND1),1,RHO2,1)
+         END IF
+C
          DTIME = SECOND()
          ISIDE = 1
          CALL CC2_FCK(RHO2,C2AM,WORK(KEND1),LWRK1,ISYMTR,
      *                WORK(KLAMDP),WORK(KLAMDH),ISIDE)
          DTIME = SECOND() - DTIME
          TIMFCK = TIMFCK + DTIME
+C
+         IF (LCONT) THEN
+           IF(LWRK1.LT.NT2AM(ISYMTR))CALL QUIT('Out of memory CC_RHTR')
+           CALL CC_RVEC(LUFC2,FC2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
+     *                  IVEC+IV-1,WORK(KEND1))
+           CALL CCLR_DIASCL(WORK(KEND1),XHALF,ISYMTR)
+           CONT(8,IV) = 
+     *         DDOT(NT2AM(ISYMTR),WORK(KEND1),1,RHO2,1) - CONT(7,IV)
+         END IF
 C
          IF (IPRINT .GT. 120) THEN
             CALL AROUND(' AFTER CC2_FCK cont. CCLR:RHO ')
@@ -1197,10 +1246,19 @@ C----------------------------------------------------------
 C
       IF (CCS) CALL DZERO(RHO1(1,IV),NT1AM(ISYMTR))
 C
+      IF (LCONT) THEN
+        CONT(1,IV) = - DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,C1AM(1,IV),1)
+      END IF
+C
       DTIME = SECOND()
       CALL CCLR_1C1F(RHO1(1,IV),WORK(KFCKC1),ISYMTR)
       DTIME = SECOND() - DTIME
       TIM1C1F = TIM1C1F + DTIME
+C
+      IF (LCONT) THEN
+        CONT(1,IV) = CONT(1,IV) + 
+     &                   DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,C1AM(1,IV),1)
+      END IF
 C
       IF (IPRINT .GT. 120) THEN
          CALL AROUND('After  1C1F:  CCLR:RHO ')
@@ -1262,13 +1320,53 @@ C
       ENDIF
 C
 C---------------------------------------------------
-C     Readin E-intermediates: EI1(t1,t2),EI2(t1,t2).
+C     Allocate E-intermediates: EI1(t1,t2),EI2(t1,t2).
 C---------------------------------------------------
 C
       KEI1   = KEND1
       KEI2   = KEI1 + NMATAB(ISYMOP)
       KEND2  = KEI2 + NMATIJ(ISYMOP)
       LWRK2  = LWORK - KEND2
+C
+C---------------------------------------------------------
+C     If ccs then put fock matrix into the EI matrices.
+C---------------------------------------------------------
+C
+      IF (CCS .OR. LCONT) THEN
+C
+         FCKCON = .TRUE.
+         ETRAN  = .FALSE.
+         ISYMEI = 1
+         DTIME = SECOND()
+         CALL CCRHS_EFCK(WORK(KEI1),WORK(KEI2),WORK(KLAMDH),
+     *                   WORK(KFOCK),WORK(KEND2),LWRK2,FCKCON,
+     *                   ETRAN,ISYMEI)
+         DTIME = SECOND() - DTIME
+         TIMEFCK = TIMEFCK + DTIME
+C
+         IF (IPRINT.GT.150) THEN
+            CALL AROUND( 'E-intermediates from from EFCK ')
+            CALL CC_PREI(WORK(KEI1),WORK(KEI2),ISYMOP,1)
+         ENDIF
+C
+      ENDIF
+C
+      IF (LCONT) THEN
+        KRHO1P = KEND2
+        KEND3  = KRHO1P + NT1AM(ISYMTR)
+        LWRK3  = LWORK - KEND3
+        IF (LWRK3.LT.0) CALL QUIT('Out of memory in CC_RHTR.')
+
+        CALL DZERO(WORK(KRHO1P),NT1AM(ISYMTR))
+        ISYMIM = 1
+        CALL CCLR_E1C1(WORK(KRHO1P),C1AM(1,IV),WORK(KEI1),WORK(KEI2),
+     *                 WORK(KEND2),LWRK2,ISYMTR,ISYMIM,'N')
+        CONT(2,IV) = DDOT(NT1AM(ISYMTR),WORK(KRHO1P),1,C1AM(1,IV),1)
+      END IF
+C
+C---------------------------------------------------
+C     Readin E-intermediates: EI1(t1,t2),EI2(t1,t2).
+C---------------------------------------------------
 C
       IF ( RSPIM.AND.((.NOT.(ONLY21)).AND.(.NOT.CCS))) THEN
 C
@@ -1298,34 +1396,14 @@ C
 C
       ENDIF
 C
-      IF (CCS) THEN
-C
-C---------------------------------------------------------
-C        If ccs then put fock matrix into the EI matrices.
-C---------------------------------------------------------
-C
-         FCKCON = .TRUE.
-         ETRAN  = .FALSE.
-         ISYMEI = 1
-         DTIME = SECOND()
-         CALL CCRHS_EFCK(WORK(KEI1),WORK(KEI2),WORK(KLAMDH),
-     *                   WORK(KFOCK),WORK(KEND2),LWRK2,FCKCON,
-     *                   ETRAN,ISYMEI)
-         DTIME = SECOND() - DTIME
-         TIMEFCK = TIMEFCK + DTIME
-C
-         IF (IPRINT.GT.150) THEN
-            CALL AROUND( 'E-intermediates from from EFCK ')
-            CALL CC_PREI(WORK(KEI1),WORK(KEI2),ISYMOP,1)
-         ENDIF
-C
-      ENDIF
-C
 C-----------------------------------------------------
 C     Calculate E contributions to rho1: C1*EI(t1,t2).
 C-----------------------------------------------------
 C
       IF (.NOT.(ONLY21)) THEN
+         IF (LCONT) THEN
+           CONT(4,IV) = - DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,C1AM(1,IV),1)
+         END IF
 C
          DTIME = SECOND()
          ISYMIM = 1
@@ -1339,6 +1417,41 @@ C
             CALL CC_PRP(RHO1(1,IV),RHO2,ISYMTR,1,0)
          ENDIF
 C
+         IF (LCONT) THEN
+           CONT(4,IV) = CONT(4,IV) - CONT(2,IV) +
+     *                    DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,C1AM(1,IV),1)
+         END IF
+C
+         IF (LCONT .AND. CCR12 .AND. (.NOT.CCS)) THEN
+           KEI1P  = KEND2
+           KEI2P  = KEI1P  + NMATAB(ISYMOP)
+           KRHO1P = KEI2P  + NMATIJ(ISYMOP)
+           KEND3  = KRHO1P + NT1AM(ISYMTR)
+           LWRK3  = LWORK - KEND3
+           IF(LWRK3.LE.0)CALL QUIT('Too little workspace in CC_RHTR')
+
+           ! initialize "result" vector with zeros
+           CALL DZERO(WORK(KRHO1P),NT1AM(ISYMTR))
+
+           ! the r12 contribution to E^(1) is zero
+           CALL DZERO(WORK(KEI1P),NMATAB(ISYMOP))
+
+           ! read the r12 contribution to E^(2) 
+           LUE2P = 0
+           CALL GPOPEN(LUE2P,'CC_E2PIM','UNKNOWN',' ','UNFORMATTED',
+     *                 IDUMMY,.FALSE.)
+           REWIND(LUE2P)
+           READ(LUE2P)(WORK(KEI2P+ I-1),I = 1,NMATIJ(ISYMOP))
+           CALL GPCLOSE(LUE2P,'KEEP' )
+
+           ISYMIM = 1
+           CALL CCLR_E1C1(WORK(KRHO1P),C1AM(1,IV),
+     *                    WORK(KEI1P),WORK(KEI2P),
+     *                    WORK(KEND3),LWRK3,ISYMTR,ISYMOP,'N')
+
+           CONT(15,IV)=DDOT(NT1AM(ISYMTR),WORK(KRHO1P),1,C1AM(1,IV),1)
+           CONT(4,IV) = CONT(4,IV) - CONT(15,IV)
+         END IF
       ENDIF
 C
 C-----------------------------------------------------------
@@ -1503,6 +1616,10 @@ C     Calculate I-term.
 C----------------------
 C
       IF ( .NOT. CCS ) THEN
+         IF (LCONT) THEN
+           CONT(5,IV) = - DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,C1AM(1,IV),1)
+         END IF
+
          DTIME    = SECOND()
          CALL CCRHS_I(RHO1(1,IV),C2AM,WORK(KFOCK),WORK(KEND1),LWRK1,
      *                ISYMTR,1)
@@ -1512,6 +1629,11 @@ C
             CALL AROUND(' AFTER I-term :RHO ')
             CALL CC_PRP(RHO1(1,IV),RHO2,ISYMTR,1,0)
          ENDIF
+
+         IF (LCONT) THEN
+           CONT(5,IV) = CONT(5,IV) +
+     *                    DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,C1AM(1,IV),1)
+         END IF
       ENDIF
 C
 C---------------------------------------------------------------------
@@ -1601,6 +1723,92 @@ C
          KEI1   = KEMAT1 + NEMAT1(ISYMTR)*(IV-1)
          KEI2   = KEMAT2 + NMATIJ(ISYMTR)*(IV-1)
          KGAMC1 = KGAMMC + NGAMMA(ISYMTR)*(IV-1)
+C
+C--------------------------------------------------------------------
+C        Compute R12 contributions
+C          we have in memory:
+C          Trial vector number IV
+C          WORK(KLPC1)   Lambda-Bar^p  
+C          WORK(KLHC1)   Lambda-Bar^h  
+C          WORK(KLAMDP)  Lambda^p
+C          WORK(KLAMDH)  Lambda^h
+C          C1AM(1,IV)    singles part of trial vector
+C          RHO1(1,IV)    singles part of result vector
+C--------------------------------------------------------------------
+C
+         IF (CCR12) THEN
+            IF ( DEBUG ) THEN
+               RHO1N = DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,RHO1(1,IV),1)
+               RHO2N = DDOT(NT2AM(ISYMTR),RHO2,1,RHO2,1)
+               WRITE(LUPRI,*) 'Trial vector:',IV
+               WRITE(LUPRI,1) 'Norm of Rho1 -before R12:  ',RHO1N
+               WRITE(LUPRI,1) 'Norm of Rho2 -before R12:  ',RHO2N
+            ENDIF
+
+c           -------------------------
+c           Calculate the F'+E' term:
+c           -------------------------
+            DTIME = SECOND()
+
+            ! allocate memory for V intermediates
+            KVMUJTKL = KEND1
+            KVIJKL   = KVMUJTKL + NVAJKL(1)
+            KEND2    = KVIJKL   + NGAMSQ(ISYMTR)
+            LWRK2    = LWORK    - KEND2
+            IF (LWRK2 .LT.0) THEN
+              CALL QUIT('Insufficient work space in cc_rhtr')
+            END IF
+
+            ! read V(mu jt,kl)
+            LUVAJKL = 0
+            CALL GPOPEN(LUVAJKL,'CCR12VAJTKL','UNKNOWN',' '
+     &           ,'UNFORMATTED', IDUMMY,.FALSE.) 
+            REWIND(LUVAJKL)
+            READ(LUVAJKL) (WORK(KVMUJTKL+I-1), I = 1,NVAJKL(1))
+            CALL GPCLOSE(LUVAJKL,'KEEP')
+
+            ! make P*V(it,jt,k,l) and R*B
+            CALL CC_R12MKVIJKL(WORK(KVMUJTKL),WORK(KLHC1),ISYMTR,
+     &                         WORK(KEND2),LWRK2,.TRUE.,WORK(KVIJKL))
+            CALL DSCAL(NGAMSQ(ISYMTR),2.0D0,WORK(KVIJKL),1)
+            IFILE = IV + IVEC -1 
+            CALL CCRHS_EP(WORK(KVIJKL),ISYMTR,LCONT,CONT(17,IV),
+     &                    WORK(KEND2),LWRK2,
+     &                    .TRUE.,FC12AM,LUFC12,FRHO12,LUFR12,IFILE)
+
+            TIMEP = TIMEP + ( SECOND() - DTIME )
+
+c           -------------------------
+c           Calculate G'(R2') term:
+c           -------------------------
+            IF (LCONT) THEN
+              CONT(16,IV) =
+     *           - DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,C1AM(1,IV),1)
+            END IF
+
+            DTIME = SECOND()
+            IFILE = IV + IVEC -1 
+            CALL CCRHS_GP(RHO1(1,IV),WORK(KLAMDP),WORK(KEND2),
+     &                    LWRK2,.TRUE.,ISYMTR,FC12AM,LUFC12,IFILE)
+            TIMGP = TIMGP + ( SECOND() - DTIME )
+
+            IF (LCONT) THEN
+              CONT(16,IV) = CONT(16,IV) +
+     *             DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,C1AM(1,IV),1)
+            END IF
+
+            IF ( DEBUG ) THEN
+               RHO1N = DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,RHO1(1,IV),1)
+               RHO2N = DDOT(NT2AM(ISYMTR),RHO2,1,RHO2,1)
+               WRITE(LUPRI,1) 'Norm of Rho1 -after R12:  ',RHO1N
+               WRITE(LUPRI,1) 'Norm of Rho2 -after R12:  ',RHO2N
+               WRITE(LUPRI,1) 'Norm of Vmujkl         :  ',
+     &           DDOT(NVAJKL(1),WORK(KVMUJTKL),1,WORK(KVMUJTKL),1)
+               WRITE(LUPRI,1) 'Norm of Vijkl          :  ',
+     &           DDOT(NGAMSQ(ISYMTR),WORK(KVIJKL),1,WORK(KVIJKL),1)
+            ENDIF
+         END IF
+
 C
 C------------------------------------
 C        Readin T2 amplitude in RHO2.
@@ -1810,6 +2018,10 @@ C     Calculate I-tilde-term.
 C----------------------------
 C
       IF ( .NOT. CCS ) THEN
+         IF (LCONT) THEN
+           CONT(6,IV) = - DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,C1AM(1,IV),1)
+         END IF
+
          DTIME    = SECOND()
          CALL CCRHS_I(RHO1(1,IV),C2AM,WORK(KFCKC1),WORK(KEND1),LWRK1,
      *                1,ISYMTR)
@@ -1819,6 +2031,11 @@ C
             CALL AROUND(' AFTER CCLR_I tilde contribution: RHO ')
             CALL CC_PRP(RHO1(1,IV),RHO2,ISYMTR,1,0)
          ENDIF
+
+         IF (LCONT) THEN
+           CONT(6,IV) = CONT(6,IV) +
+     *                     DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,C1AM(1,IV),1)
+         END IF
 C
          IF ( DEBUG ) THEN
             RHO1N = DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,RHO1(1,IV),1)
@@ -2263,10 +2480,10 @@ C
 C
       IF ( DEBUG ) THEN
          RHO1N = DDOT(NT1AM(ISYMTR),RHO1(1,IV),1,RHO1(1,IV),1)
-         WRITE(LUPRI,1) 'Norm of Rho1 -end of cclr_rhtr:    ',RHO1N
+         WRITE(LUPRI,1) 'Norm of Rho1 -end of cc_rhtr:    ',RHO1N
          IF ( .NOT. CCS) THEN
             RHO2N = DDOT(NT2AM(ISYMTR),RHO2,1,RHO2,1)
-            WRITE(LUPRI,1) 'Norm of Rho2 -end of cclr_rhtr:    ',RHO2N
+            WRITE(LUPRI,1) 'Norm of Rho2 -end of cc_rhtr:    ',RHO2N
          ENDIF
       ENDIF
 C
@@ -2279,8 +2496,8 @@ C
       IF (IPRINT .GT. 4) THEN
          TIMCCSD = TIMA    + TIMBF    + TIMC    + TIMD    + TIME  +
      *             TIMF    + TIMG     + TIMH    + TIMI    + TIMEI +
-     *             TIMEFCK + TIME1C1  + TIM1C1F + TIMCIO  +
-     *             TIMDIO  + TIMLAM   + TIMAOD  + TIMTRBT +
+     *             TIMEFCK + TIME1C1  + TIM1C1F + TIMCIO  + TIMEP +
+     *             TIMDIO  + TIMLAM   + TIMAOD  + TIMTRBT + TIMGP +
      *             TIMT2AO + TIMTCME  + TIMT2TR + TIMT2BT +
      *             TIMT2MO + TIMFCKMO + TIMFCK  + TIMT2SQ
          WRITE(LUPRI,'(/)')
@@ -2312,6 +2529,10 @@ C
             WRITE(LUPRI,9999) 'H               ', TIMH
             WRITE(LUPRI,9999) 'I               ', TIMI
             WRITE(LUPRI,9999) 'EI              ', TIMEI
+            IF (CCR12) THEN
+              WRITE(LUPRI,9999) 'FP + EP         ', TIMEP
+              WRITE(LUPRI,9999) 'GP              ', TIMGP
+            END IF
          ENDIF
          WRITE(LUPRI,9999) 'EFCK            ', TIMEFCK
          WRITE(LUPRI,9999) 'E1C1            ', TIME1C1

@@ -88,7 +88,7 @@ else
 fi
 
 # SCF, MP2 and CCSD energies:
-CRIT1=`$GREP "Final    HF energy:" $log | $GREP "\-76.82577561" | wc -l`
+CRIT1=`$GREP "Final HF energy:" $log | $GREP "\-76.82577561" | wc -l`
 CRIT2=`$GREP "Total MP2   energy:                   \-77.08583480" $log | wc -l`
 CRIT3=`$GREP "Total CC2   energy:                   \-77.08936011" $log | wc -l`
 CRIT4=`$GREP "Total CCSD  energy:                   \-77.10253064" $log | wc -l`

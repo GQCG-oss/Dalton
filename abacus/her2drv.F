@@ -570,9 +570,11 @@ C
       DO 100 ISHELA = IASTRT,IASMAX
 C
 C        Check for basis-set identifier (WK/UniKA/04-11-2002).
-         IF (.NOT. R12TRA .AND. MBSISH(ISHELA) .GT. 1) GOTO 100
          MBSA = MBSISH(ISHELA)
-         IF (MBSA .GT. MBSMAX) GOTO 100
+         IF (ISHELA .NE. IASMAX) THEN
+            IF (.NOT. R12TRA .AND. MBSISH(ISHELA) .GT. 1) GOTO 100
+            IF (MBSA .GT. MBSMAX) GOTO 100
+         END IF
          ICA    = LCLASH(ISHELA)
 C
          NHKTA  = NHKTSH(ISHELA)
@@ -600,9 +602,11 @@ C
          DO 200 ISHELB = IBSTRT,ISHELA
 C
 C           Check for basis-set identifier (WK/UniKA/04-11-2002).
-            IF (.NOT. R12TRA .AND. MBSISH(ISHELB) .GT. 1) GOTO 200
             MBSAB = MBSA + MBSISH(ISHELB)
-            IF (MBSAB .GT. MBSMAX) GOTO 200
+            IF (ISHELB .NE. IBSMAX) THEN
+               IF (MBSAB .GT. MBSMAX) GOTO 200
+               IF (.NOT. R12TRA .AND. MBSISH(ISHELB) .GT. 1) GOTO 200
+            END IF
             ICB    = LCLASH(ISHELB)
 C
             NHKTB  = NHKTSH(ISHELB)
@@ -643,9 +647,11 @@ C
             DO 300 ISHELC = ICSTRT, ICMAX
 C
 C              Check for basis-set identifier (WK/UniKA/04-11-2002).
-               IF (.NOT. R12TRA .AND. MBSISH(ISHELC) .GT. 1) GOTO 300
                MBSABC = MBSAB + MBSISH(ISHELC)
-               IF (MBSABC .GT. MBSMAX) GOTO 300
+               IF (ISHELC .NE. ICSMAX) THEN
+                  IF (.NOT. R12TRA .AND. MBSISH(ISHELC) .GT. 1) GOTO 300
+                  IF (MBSABC .GT. MBSMAX) GOTO 300
+               END IF
                ICC    = LCLASH(ISHELC)
 C
                NHKTC  = NHKTSH(ISHELC)
@@ -676,9 +682,11 @@ C
                DO 400 ISHELD = IDSTRT,IDMAX
 C
 C                 Check for basis-set identifier (WK/UniKA/04-11-2002).
-                  IF (.NOT. R12TRA .AND. MBSISH(ISHELD) .GT. 1) GOTO 400
                   MBSABCD = MBSABC + MBSISH(ISHELD)
-                  IF (MBSABCD .GT. MBSMAX) GOTO 400
+                  IF (ISHELD .NE. IDSMAX) THEN
+                     IF (.NOT.R12TRA.AND.MBSISH(ISHELD) .GT. 1) GOTO 400
+                     IF (MBSABCD .GT. MBSMAX) GOTO 400
+                  END IF
                   ICD    = LCLASH(ISHELD)
 C
                   NHKTD  = NHKTSH(ISHELD)
@@ -906,7 +914,12 @@ C
       CALL AINDEX(ISHLA,NDIST,IDUMMY,DOINDX,IORBSH,JPRINT)
       LDSBUF = LBUF
       KDSBF  = 1
-      KDSIBF = KDSBF + NDIST*LDSBUF
+      IF (U21INT) THEN
+        KDUBF = KDSBF + NDIST*LDSBUF
+      ELSE
+        KDUBF = KDSBF
+      END IF
+      KDSIBF = KDUBF + NDIST*LDSBUF
       KDSNCT = KDSIBF + (2*NDIST*LDSBUF - 1)/IRAT + 1
       KDSORB = KDSNCT + (NDIST          - 1)/IRAT + 1
       KORBDS = KDSORB + (NDIST          - 1)/IRAT + 1
@@ -950,7 +963,10 @@ C
 C        Check for basis-set identifier (WK/UniKA/04-11-2002).
          MBSAB = MBSA + MBSISH(ISHELB)
          IF (ISHELB .NE. IBSMAX) THEN
-            IF (.NOT. R12TRA .AND. MBSISH(ISHELB) .GT. 1) GOTO 200
+            IF (.NOT. (R12HYB .AND. COMBSS)) THEN
+            IF ((.NOT. R12TRA .OR. ONEAUX) 
+     &           .AND. MBSISH(ISHELB) .GT. 1) GOTO 200
+            END IF
             IF (MBSAB .GT. MBSMAX) GOTO 200
          END IF
          NHKTB  = NHKTSH(ISHELB)
@@ -989,7 +1005,10 @@ C
 C           Check for basis-set identifier (WK/UniKA/04-11-2002).
             MBSABC = MBSAB + MBSISH(ISHELC)
             IF (ISHELB .NE. IBSMAX .OR. ISHELC .NE. ICSMAX) THEN
-               IF (.NOT. R12TRA .AND. MBSISH(ISHELC) .GT. 1) GOTO 300
+               IF (.NOT. (R12HYB .AND. COMBSS)) THEN
+               IF ((.NOT. R12TRA .OR. ONEAUX)
+     &             .AND. MBSISH(ISHELC) .GT. 1) GOTO 300
+               END IF
                IF (MBSABC .GT. MBSMAX) GOTO 300
             END IF
             NHKTC  = NHKTSH(ISHELC)
@@ -1022,7 +1041,10 @@ C              Check for basis-set identifier (WK/UniKA/04-11-2002).
                IF (ISHELB .NE. IBSMAX .OR.
      &             ISHELC .NE. ICSMAX .OR.
      &             ISHELD .NE. ICMAX) THEN
-                  IF (.NOT. R12TRA .AND. MBSISH(ISHELD) .GT. 1) GOTO 400
+                  IF (.NOT. (R12HYB .AND. COMBSS)) THEN
+                  IF ((.NOT. R12TRA .OR. ONEAUX) 
+     &                 .AND. MBSISH(ISHELD) .GT. 1) GOTO 400
+                  END IF
                   IF (MBSABCD .GT. MBSMAX) GOTO 400
                END IF
                NHKTD  = NHKTSH(ISHELD)
@@ -1055,8 +1077,11 @@ C              Check for basis-set identifier (WK/UniKA/04-11-2002).
                END IF
 C
                SHAEQB = .FALSE.
-               SHCEQD = ISHELC .EQ. ISHELD
-               IF (BPH2OO) SHCEQD = .FALSE.
+               IF (U21INT .OR. BPH2OO) THEN
+                  SHCEQD = .FALSE.
+               ELSE
+                  SHCEQD = ISHELC .EQ. ISHELD
+               END IF
                SHABAB = .FALSE.
 C
 C              *******************************
@@ -1799,6 +1824,15 @@ C
       IF (EXPECT .OR. DIRFCK .OR. SUSCEP .OR. DDFOCK .OR. DIA2SO .OR.
      &           ZFS2EL .OR. LAST .OR. (NSOINT .GT. 0)) THEN
 C        NOPP12 is number of different types of operators (WK/UniKA/19-11-2002).
+         NOPP12 = 0
+         IF (R12EIN) THEN
+            NOPP12 = NOPP12 + 1
+         ELSE
+            IF (V12INT) NOPP12 = NOPP12 + 1
+            IF (R12INT) NOPP12 = NOPP12 + 1
+            IF (U12INT) NOPP12 = NOPP12 + 1
+            IF (U21INT) NOPP12 = NOPP12 + 1
+         END IF
          KSOINT = KLAST
          KPNTAO = KSOINT + NSOINT*NOPP12
          KPNTOP = KPNTAO + (  NINTMX*NOPREP + 1)/IRAT
@@ -2303,8 +2337,15 @@ C
      &                        THRESH,NINDAB,NINDCD,IPRINT)
                END IF
             ELSE
-               CALL DS2OUT(SOINT,WRKBUF,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,
-     &                     THRESH,NINDAB,NINDCD,IORBSH,IPRINT)
+               IF (U21INT) THEN
+                  CALL US2OUT(SOINT,NSOINT,WRKBUF,IPNTNO,IPNTRP,IPNTLG,
+     &                        FIRST,LAST,THRESH,NINDAB,NINDCD,
+     &                        IORBSH,IPRINT)
+               ELSE
+                  CALL DS2OUT(SOINT,WRKBUF,IPNTNO,IPNTRP,IPNTLG,
+     &                        FIRST,LAST,THRESH,NINDAB,NINDCD,
+     &                        IORBSH,IPRINT)
+               END IF
             END IF
             IF (TKTIME) THEN
                CALL GETTIM(TIMEND,DUMTIM)

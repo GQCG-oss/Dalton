@@ -21,6 +21,14 @@ key \Key{R12} must be specified in the \Sec{*INTEGRALS} section.
 
 \begin{description}
 
+\item[\Key{NO 1}]
+
+Results for Ansatz 1 of the MP2-R12 method are not computed.
+
+\item[\Key{NO 2}]
+
+Results for Ansatz 2 of the MP2-R12 method are not computed.
+
 \item[\Key{NO A}]
 
 Results for approximation A of the MP2-R12 method are not printed.
@@ -35,8 +43,9 @@ Results for approximation B are not computed and not printed.
 
 \item[\Key{NO RXR}]
 
-Those terms are ignored, which occur in approximation B when an auxiliary basis set
-is invoked for the resolution-of-identity (RI) approximation.
+Those extra terms are ignored, which occur in approximation B when an auxiliary basis set
+is invoked for the resolution-of-identity (RI) approximation. If they are included, 
+the results are marked as B$^\prime$.
 
 \item[\Key{NO HYB}]
 
@@ -50,6 +59,18 @@ be specified. Then, two-electron integrals with up to two
 auxiliary basis functions are calculated but the calculation becomes 
 more time-consuming.
 
+\item[\Key{R12DIA}]
+The MP2-R12 equations are solved by diagonalizing the matrix representation 
+of the Fock operator in the basis of R12 double replacements. If 
+negative eigenvalues occur,
+a warning is issued. When this happens, the results should not trusted,
+since the RI approximation appears to be insuffiently accurate.
+This diagonalizing is the default.
+
+\item[\Key{R12SVD}]
+The MP2-R12 equations are solved by single value decomposition
+(the use of this keyword is not recommended).
+
 \item[\Key{R12XXL}]
 
 All possible output from the MP2-R12 approach is generated (the 
@@ -57,7 +78,7 @@ use of this keyword is not recommended).
 
 \item[\Key{SVDTHR}]  \verb| | \newline
 \verb|READ (LUCMD,*) SVDTHR|\newline
-Threshold for singular value decomposition (default = $10^{-15}$).
+Threshold for singular value decomposition (default = $10^{-12}$).
 
 \item[\Key{VCLTHR}]  \verb| | \newline
 \verb|READ (LUCMD,*) SVDTHR|\newline

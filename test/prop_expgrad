@@ -96,7 +96,7 @@ CTRL[1]=2
 ERROR[1]="BASIS SET NOT READ CORRECTLY"
 
 # Energy
-CRIT1=`$GREP "Final * HF energy\: * \-109\.5089380479[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Final HF energy\: * \-109\.5089380479[0-9][0-9]" $log | wc -l`
 TEST[2]=`expr	$CRIT1`
 CTRL[2]=1
 ERROR[2]="ENERGY NOT CORRECT"

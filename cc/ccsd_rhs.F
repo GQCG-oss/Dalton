@@ -74,20 +74,23 @@ C
 #include <cbieri.h>
 #include <eribuf.h>
 #include <ccnoddy.h>
+#include <r12int.h>
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (XMHALF = -0.5D0, XMONE= -1.0D0 )
 C
-      LOGICAL FCKCON,CC1BSA,ETRAN
+      LOGICAL FCKCON,CC1BSA,ETRAN,CC2R12
 C
       DIMENSION INDEXA(MXCORB)
       DIMENSION OMEGA1(*),OMEGA2(*),T1AM(*),T2AM(*),WORK(LWORK)
 C
-      CHARACTER CFIL*6,DFIL*6, FN3SRT*8, FNDELD*6
+      CHARACTER CFIL*6,DFIL*6, FN3SRT*8, FNDELD*6, CDUMMY*8
       CHARACTER FNCKJD*6, FNDKBC*4, FNTOC*8, FN3VI*6, FN3VI2*8
 C
-C
       CALL QENTER('CCRHSN')
+C
+      CC2R12 = CC2 .AND. LMULBS
+      MKVAJKL = CC2R12 .AND. RSPIM
 C
 C-----------------------------------------------------------
 C     For energy calculation trial vector is totalsymmetric.
@@ -163,8 +166,11 @@ C
       TIMC    = 0.0D00
       TIMD    = 0.0D00
       TIME    = 0.0D00
+      TIMEP   = 0.0D00
       TIMF    = 0.0D00
+      TIMFP   = 0.0D00
       TIMG    = 0.0D00
+      TIMGP   = 0.0D00
       TIMH    = 0.0D00
       TIMI    = 0.0D00
       TIMJ    = 0.0D00
@@ -181,6 +187,8 @@ C
       TIMT2TR = 0.0D00
       TIMT2BT = 0.0D00
       TIMTRBT = 0.0D00
+      TIMRDAOR12 = 0.0D00
+      TIMINTR12  = 0.0D00
 C
 C---------------------------
 C     Check inconsistencies.
@@ -218,6 +226,14 @@ C
         KFCKHF = KEND1
         KEND1  = KFCKHF + N2BAST
       END IF
+      IF (CC2R12) THEN
+         KVIJKL = KEND1
+         KEND1  = KVIJKL + NGAMSQ(1)
+      END IF
+      IF (MKVAJKL) THEN
+         KVAJKL = KEND1
+         KEND1  = KVAJKL + NVAJKL(1)
+      END IF
       LWRK1  = LWORK  - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
@@ -250,6 +266,16 @@ C-----------------------------------------
 C
       IF (.NOT. DUMPCD)
      *   CALL CCSD_INVLDP(WORK(KLAMDP),WORK(KLAMIP),WORK(KEND1),LWRK1)
+C
+C----------------------------------
+C     initialize R12 intermediates
+C----------------------------------
+      IF (CC2R12) THEN
+       CALL CC_R12MKVIJKL0(WORK(KVIJKL))
+      END IF
+      IF (MKVAJKL) THEN
+       CALL CC_R12MKVAMKL0(WORK(KVAJKL),WORK(KLAMDP),WORK(KEND1),LWRK1)
+      END IF
 C
 C-------------------------------
 C     Prepare the t2-amplitudes.
@@ -334,7 +360,7 @@ C
          DTIME  = SECOND()
          FF = EFIELD(IF)
          CALL CC_ONEP(WORK(KFOCK),WORK(KEND1),LWRK1,FF,1,LFIELD(IF))
-         DTIME  = DTIME - SECOND()
+         DTIME  = SECOND() - DTIME
          TIMFCK = TIMFCK + DTIME
  13   CONTINUE
 C
@@ -454,6 +480,10 @@ C
 C
                IF (DIRECT) THEN
                   IDEL  = INDEXA(IDEL2)
+                  IF (NOAUXB) THEN
+                     IDUM = 1
+                     CALL IJKAUX(IDEL,IDUM,IDUM)
+                  END IF
                   ISYMD = ISAO(IDEL)
                ELSE
                   IDEL  = IBAS(ISYMD1) + ILLL
@@ -556,14 +586,16 @@ C              Calculate the F-term in MO basis for CC2.
 C-------------------------------------------------------
 C
                IF ( CC2 ) THEN
-                  DTIME   = SECOND()
+                  DTIME = SECOND() - TIMFP
                   IOPT = 1
                   CALL CC_MOFCON(WORK(KXINT),OMEGA2,
      *                           WORK(KLAMDP),WORK(KLAMDH),
      *                           WORK(KLAMDP),WORK(KLAMDH),
      *                           WORK(KEND3),LWRK3,IDEL,
-     *                           ISYMD,ISYMTR,IOPT)
-                  DTIME   = SECOND() - DTIME
+     *                           ISYMD,ISYMTR,IOPT,
+     *                           WORK(KVIJKL),CC2R12,
+     *                           WORK(KVAJKL),MKVAJKL,TIMFP)
+                  DTIME   = (SECOND() - TIMFP) - DTIME
                   TIMF    = TIMF     + DTIME
                ENDIF
 C
@@ -785,6 +817,40 @@ C
          KEND1 = KENDS2
          LWRK1 = LWRKS2
       ENDIF
+C
+C-------------------------------------------------
+C     for CC2-R12:
+C-------------------------------------------------
+C
+      IF (CC2R12) THEN
+        CALL CC_MOFCONR12(WORK(KLAMDH),ISYMTR,WORK(KVIJKL),
+     &                    WORK(KVAJKL),TIMRDAOR12,TIMFP,TIMINTR12,
+     &                    WORK(KEND1),LWRK1)
+
+        DTIME = SECOND()
+        ISYMV = 1 
+        CALL CCRHS_EP(WORK(KVIJKL),ISYMV,.FALSE.,DUMMY,
+     &                WORK(KEND1),LWRK1,.FALSE.,
+     &                CDUMMY,IDUMMY,CDUMMY,IDUMMY,IDUMMY)
+        TIMEP = TIMEP + ( SECOND() - DTIME ) 
+
+        DTIME = SECOND()
+        CALL CCRHS_GP(OMEGA1,WORK(KLAMDP),
+     &                WORK(KEND1),LWRK1,.FALSE.,1,IDUMMY)
+        TIMGP = TIMGP + ( SECOND() - DTIME ) 
+      END IF
+C
+C     -----------------------------------------
+C     write V(alpha jtilde,kl) to disk
+C     -----------------------------------------
+      IF (MKVAJKL) THEN
+         LUVAJKL = 0
+         CALL GPOPEN(LUVAJKl,'CCR12VAJTKL','UNKNOWN',' ','UNFORMATTED',
+     &               IDUMMY,.FALSE.)
+         REWIND(LUVAJKL)
+         WRITE(LUVAJKL) (WORK(KVAJKL+I-1), I = 1,NVAJKL(1))
+         CALL GPCLOSE(LUVAJKL,'KEEP')
+      END IF
 C
 C-------------------------------------------------
 C     Transform the Omega2 vector to the MO basis.
@@ -1154,6 +1220,21 @@ C
      *                   WORK(KFOCK),WORK(KEND2),LWRK2,FCKCON,
      *                   ETRAN,ISYMEI)
 C
+         IF (CC2R12) THEN
+           KEMAT2P = KEND2
+           KEND3   = KEMAT2P + NMATIJ(ISYMOP)
+           LWRK3   = LWORK - KEND3
+           IF (LWRK3.LT.0) CALL QUIT('Insufficient memory in CCSD_RHS')
+
+           CALL DZERO(WORK(KEMAT2P),NMATIJ(ISYMOP))
+    
+           CALL CCRHS_EINTP(WORK(KEMAT2P),WORK(KLAMDP),
+     &                      WORK(KEND3),LWRK3) 
+          
+           ! add to R12 contribution to usual E intermediate
+           CALL DAXPY(NMATIJ(ISYMOP),ONE,WORK(KEMAT2P),1,WORK(KEMAT2),1)
+         END IF
+C
          IF ( RSPIM ) THEN
 C
             LUE1 = 0
@@ -1170,6 +1251,15 @@ C
             WRITE(LUE2)(WORK(KEMAT2+ I-1),I = 1,NMATIJ(ISYMOP))
             CALL GPCLOSE(LUE2,'KEEP' )
 C
+            IF (CC2R12) THEN
+             LUE2P = 0
+             CALL GPOPEN(LUE2P,'CC_E2PIM','UNKNOWN',' ','UNFORMATTED',
+     *                   IDUMMY,.FALSE.)
+             REWIND(LUE2P)
+             WRITE(LUE2P)(WORK(KEMAT2P+ I-1),I = 1,NMATIJ(ISYMOP))
+             CALL GPCLOSE(LUE2P,'KEEP' )
+            END IF
+C
             IF (IPRINT.GT.40) THEN
                CALL AROUND( 'E-intermediates written to disk ')
                CALL CC_PREI(WORK(KEMAT1),WORK(KEMAT2),ISYMOP,1)
@@ -1179,6 +1269,10 @@ C
                XNORM2 = DDOT(NMATIJ(1),WORK(KEMAT2),1,WORK(KEMAT2),1)
                WRITE(LUPRI,*) 'Norm of E1 intermediate:',XNORM1
                WRITE(LUPRI,*) 'Norm of E2 intermediate:',XNORM2
+               IF (CC2R12) THEN
+                 XNORM2=DDOT(NMATIJ(1),WORK(KEMAT2P),1,WORK(KEMAT2P),1)
+                 WRITE(LUPRI,*) 'Norm of E2P intermediate:',XNORM2
+               END IF
             END IF
 C
          ENDIF
@@ -1317,6 +1411,13 @@ C
          WRITE(LUPRI,9999) 'CCRHS_TRBT ', TIMTRBT
          WRITE(LUPRI,9999) 'CCRHS_T2TR ', TIMT2TR
          WRITE(LUPRI,9999) 'CCRHS_T2BT ', TIMT2BT
+         IF (CCR12) THEN
+            WRITE(LUPRI,9999) 'CCRHS_FP   ', TIMFP
+            WRITE(LUPRI,9999) 'CCRHS_EP   ', TIMEP
+            WRITE(LUPRI,9999) 'CCRHS_GP   ', TIMGP
+            WRITE(LUPRI,9999) 'INTEG. R12 ', TIMINTR12
+            WRITE(LUPRI,9999) 'RDAO   R12 ', TIMRDAOR12
+         END IF
       ENDIF
 9999  FORMAT(7x,'Time used in',2x,A12,2x,': ',f10.2,' seconds')
 C
@@ -4580,11 +4681,17 @@ C
       CHARACTER*8 NAME(8)
 C
 #include <ccorb.h>
-#include <infind.h>
+C
+C   #include <infind.h> replaced by: #include <ccisao.h>
+C   (WK/UniKA/28-04-2003).
+C
+#include <ccisao.h>
+C
 #include <ccsdsym.h>
 #include <cbieri.h>
 #include <eribuf.h>
 #include <ccpack.h>
+#include <r12int.h>
 C
       SAVE FIRST
       DATA FIRST /.TRUE./
@@ -4645,7 +4752,11 @@ C--------------------
 C     Construct XINT.
 C--------------------
 C
-      CALL DZERO(XINT,NDISAO(ISYDIS))
+      IF (U21INT) THEN
+        CALL DZERO(XINT,2*NDISAO(ISYDIS))
+      ELSE
+        CALL DZERO(XINT,NDISAO(ISYDIS))
+      END IF
 C
       IBIT1 = 2**NBITS     - 1
       IBIT2 = 2**(2*NBITS) - 1
@@ -4695,6 +4806,7 @@ C
 #include <nuclei.h>
 #include <inftap.h>
 #include <chrnos.h>
+#include <r12int.h>
 C
 #include <ibtfun.h>
 C
@@ -4741,15 +4853,21 @@ C
             FAODER = 'AO2DIS'//CHRNOS(0)//CHRNOS(0)
             CALL GPOPEN(LUAORC(0),FAODER,'UNKNOWN','DIRECT',
      &           'UNFORMATTED',LRECL,OLDDX)
+            IF (U21INT)
+     &      CALL GPOPEN(LU21INT,'AOTDIS00','UNKNOWN','DIRECT',
+     &           'UNFORMATTED',LRECL,OLDDX)
       END IF
 C
       ICOUNT = 0
+      IDUM = 1
 C
       IF (NIBUF .EQ. 1) THEN
 C
          DO 100 J = 1,NBUFX(0)
 C
-            IF (IRECNR(J) .EQ. IDELTA) THEN
+            IRECJ = IRECNR(J)
+            IF (NOAUXB.AND..NOT.LOOPDP) CALL IJKAUX(IRECJ,IDUM,IDUM)
+            IF (IRECJ .EQ. IDELTA) THEN
                ICOUNT = ICOUNT + 1
                NREC   = J
                READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF,LENGTH
@@ -4757,9 +4875,21 @@ C
                   IP = IBTAND(       IBUF(I,1)         ,IBIT1)
                   IQ = IBTAND(IBTSHR(IBUF(I,1),  NBITS),IBIT1)
                   IR = IBTAND(IBTSHR(IBUF(I,1),2*NBITS),IBIT1)
+                  IF (NOAUXB) CALL IJKAUX(IP,IQ,IR)
                   IADR = KADR1(IR) + KADR2(IP,IQ) + 1
                   XINT(IADR) = RBUF(I)
   110          CONTINUE
+               IF (U21INT) THEN
+               READ(LU21INT,ERR=2000,REC=NREC) RBUF,IBUF,LENGTH
+               DO 115 I = 1,LENGTH
+                  IP = IBTAND(       IBUF(I,1)         ,IBIT1)
+                  IQ = IBTAND(IBTSHR(IBUF(I,1),  NBITS),IBIT1)
+                  IR = IBTAND(IBTSHR(IBUF(I,1),2*NBITS),IBIT1)
+                  IF (NOAUXB) CALL IJKAUX(IP,IQ,IR)
+                  IADR = KADR1(IR) + KADR2(IP,IQ) + 1
+                  XINT(IADR + IOFFU21) = RBUF(I)
+  115          CONTINUE
+               ENDIF
             ENDIF
 C
   100    CONTINUE
@@ -4768,7 +4898,9 @@ C
 C
          DO 120 J = 1,NBUFX(0)
 C
-            IF (IRECNR(J) .EQ. IDELTA) THEN
+            IRECJ = IRECNR(J)
+            IF (NOAUXB.AND..NOT.LOOPDP) CALL IJKAUX(IRECJ,IDUM,IDUM)
+            IF (IRECJ .EQ. IDELTA) THEN
                ICOUNT = ICOUNT + 1
                NREC   = J
                READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF,LENGTH
@@ -4776,9 +4908,21 @@ C
                   IP = IBTAND(       IBUF(I,2)       ,IBIT1)
                   IQ = IBTAND(IBTSHR(IBUF(I,2),NBITS),IBIT1)
                   IR = IBTAND(       IBUF(I,1)       ,IBIT1)
+                  IF (NOAUXB) CALL IJKAUX(IP,IQ,IR)
                   IADR = KADR1(IR) + KADR2(IP,IQ) + 1
                   XINT(IADR) = RBUF(I)
   130          CONTINUE
+               IF (U21INT) THEN
+               READ(LU21INT,ERR=2000,REC=NREC) RBUF,IBUF,LENGTH
+               DO 135 I = 1,LENGTH
+                  IP = IBTAND(       IBUF(I,2)       ,IBIT1)
+                  IQ = IBTAND(IBTSHR(IBUF(I,2),NBITS),IBIT1)
+                  IR = IBTAND(       IBUF(I,1)       ,IBIT1)
+                  IF (NOAUXB) CALL IJKAUX(IP,IQ,IR)
+                  IADR = KADR1(IR) + KADR2(IP,IQ) + 1
+                  XINT(IADR + IOFFU21) = RBUF(I)
+  135          CONTINUE
+               ENDIF
             ENDIF
 C
   120    CONTINUE
@@ -4786,6 +4930,7 @@ C
       ENDIF
 C
       CALL GPCLOSE(LUAORC(0),'KEEP')
+      IF (U21INT) CALL GPCLOSE(LU21INT,'KEEP')
 C
       RETURN
  2000 CALL QUIT('Error in CCRDA1 reading Integral distribution')
@@ -5110,19 +5255,23 @@ C
 C
       IF (LWRK .LT. NNBST(ISYMOP))
      *           CALL QUIT('Insufficient space in CCRHS_ONEAO')
-      CALL DZERO(WORK,NNBST(ISYMOP))
+CWMK  
+C     Code below replaced by call to RDONEL
 C
-      CALL GPOPEN(LUONEL,'AOONEINT','OLD',' ','UNFORMATTED',IDUMMY,
-     &            .FALSE.)
-      REWIND LUONEL
-      CALL MOLLAB('ONEHAMIL',LUONEL,LUPRI)
- 2100 READ (LUONEL) (BUF(I),I=1,LBUF),(IBUF(I),I=1,LBUF),LENGTH
-      DO 2200 I = 1,LENGTH
-         WORK(IBUF(I)) = BUF(I)
- 2200 CONTINUE
-      IF (LENGTH .GE. 0) GO TO 2100
-      CALL GPCLOSE(LUONEL,'KEEP')
+C     CALL DZERO(WORK,NNBST(ISYMOP))
 C
+C     CALL GPOPEN(LUONEL,'AOONEINT','OLD',' ','UNFORMATTED',IDUMMY,
+C    &            .FALSE.)
+C     REWIND LUONEL
+C     CALL MOLLAB('ONEHAMIL',LUONEL,LUPRI)
+C2100 READ (LUONEL) (BUF(I),I=1,LBUF),(IBUF(I),I=1,LBUF),LENGTH
+C     DO 2200 I = 1,LENGTH
+C        WORK(IBUF(I)) = BUF(I)
+C2200 CONTINUE
+C     IF (LENGTH .GE. 0) GO TO 2100
+C     CALL GPCLOSE(LUONEL,'KEEP')
+CWMK
+      CALL RDONEL('ONEHAMIL',.TRUE.,WORK,NNBST(ISYMOP))
       CALL CCSD_SYMSQ(WORK,ISYMOP,FOCK)
 C
       IF (IPRCC .GT. 20) THEN
@@ -7569,7 +7718,8 @@ C
       END
 C  /* Deck cc_mofcon */
       SUBROUTINE CC_MOFCON(XINT,OMEGA2,XLAMDP,XLAMDH,XLAMPC,XLAMHC,
-     *                     WORK,LWORK,IDEL,ISYMD,ISYMTR,IOPT)
+     *                     WORK,LWORK,IDEL,ISYMD,ISYMTR,IOPT,
+     *                     VIJKL,CC2R12,VAJKL,MKVAJKL,TIMR12)
 C
 C     Written by Asger Halkier and Henrik Koch 3-5-95.
 C
@@ -7583,18 +7733,34 @@ C          not be used directly for calculations with London-orbitals!!!
 C
 #include <implicit.h>
 #include <maxorb.h>
-      PARAMETER(ZERO = 0.0D0,ONE = 1.0D0,XMONE=-1.0D0,TWO = 2.0D0)
-      DIMENSION XINT(*),OMEGA2(*)
-      DIMENSION XLAMPC(*),XLAMHC(*),XLAMDH(*),XLAMDP(*)
-      DIMENSION WORK(LWORK)
 #include <priunit.h>
 #include <ccorb.h>
 #include <symsq.h>
 #include <ccsdsym.h>
+#include <dummy.h>
+      PARAMETER(ZERO = 0.0D0,ONE = 1.0D0,XMONE=-1.0D0,TWO = 2.0D0)
+      LOGICAL CC2R12,MKVAJKL
+      DIMENSION XINT(*),OMEGA2(*)
+      DIMENSION XLAMPC(*),XLAMHC(*),XLAMDH(*),XLAMDP(*)
+      DIMENSION WORK(LWORK),VIJKL(*),VAJKL(*)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
 C
       ISYDIS = MULD2H(ISYMD,ISYMOP)
+      
+      KEND0 = 1
+             
+      IF (CC2R12) THEN 
+         KGAIJD = KEND0 
+         KEND0 = KGAIJD + ND2IJG(ISYDIS)
+      END IF
+     
+      LWRK0 = LWORK - KEND0
+C
+      IF (LWRK0 .LT. 0) THEN
+         WRITE(LUPRI,*) 'Lwrk0 = ',LWRK0
+         CALL QUIT('Insufficient work space area in CC_MOFCON')
+      ENDIF
 C
       DO 100 ISYMG = 1,NSYM
 C
@@ -7608,7 +7774,7 @@ C-----------------------------------------
 C        Dynamic allocation of work space.
 C-----------------------------------------
 C
-         KSCR1 = 1
+         KSCR1 = KEND0
          KSCR2 = KSCR1 + NNBST(ISALBE)*NRHF(ISYMJ)
          KSCR3 = KSCR2 + N2BST(ISALBE)
          KSCR4 = KSCR3 + NT1AM(ISYMAI)
@@ -7633,6 +7799,31 @@ C
          CALL DGEMM('N','N',NNBST(ISALBE),NRHF(ISYMJ),NBAS(ISYMG),
      *              ONE,XINT(KOFF1),NTALBE,XLAMDH(KOFF2),NTOTG,
      *              ZERO,WORK(KSCR1),NTALBE)
+
+C---------------------------------------------------------
+C                 compute contributions to V(alpha j,kl)
+C---------------------------------------------------------
+         IF (MKVAJKL) THEN
+          DTIME = SECOND() 
+          IF (NBAS(ISYMG).GT.0 .OR. NRHF(ISYMJ).GT.0) THEN
+            KGABJD = KSCR1
+            KSCR5 = KGABJD + NNBST(ISALBE)*NRHF(ISYMJ)
+            KEND2 = KSCR5 + NBAST*NBAST
+            LWRK2 = LWORK - KEND2
+
+            IF (LWRK2 .LT. 0) THEN
+               CALL QUIT('Insufficient space in CC_MOFCON')
+            END IF
+
+            KOFF1 = 1 + IDSAOG(ISYMG,ISYDIS)
+
+            CALL R12MKVAMKL(WORK(KGABJD),VAJKL,
+     &           XLAMDH,XINT(KOFF1),IDEL,ISYMD,ISYMJ,
+     &           ISALBE,ISYMG,WORK(KSCR5),IDUMMY,.FALSE.,
+     &           WORK(KEND2),LWRK2)
+          END IF
+          TIMR12 = TIMR12 + (SECOND()-DTIME)
+         END IF
 C
 C-----------------------------------
 C        Last index transformations.
@@ -7650,7 +7841,10 @@ C
                ISYMAL = MULD2H(ISYMBE,ISALBE)
                ISYMA  = MULD2H(ISYMAL,ISYMTR)
 C
-               IF (LWRK1 .LT. NBAS(ISYMAL)*NRHF(ISYMI)) THEN
+               KSCR5 = KEND1 
+               KEND2 = KSCR5 + NBAS(ISYMAL)*NRHF(ISYMI)
+               LWRK2 = LWORK - KEND2 
+               IF (LWRK2 .LT. 0) THEN
                   CALL QUIT('Insufficient space for 2. trf. '//
      &                 'in CC_MOFCON')
                ENDIF
@@ -7666,12 +7860,33 @@ C
 C
                CALL DGEMM('N','N',NBAS(ISYMAL),NRHF(ISYMI),NBAS(ISYMBE),
      *                    ONE,WORK(KOFF2),NTOTAL,XLAMDH(KOFF3),NTOTBE,
-     *                    ZERO,WORK(KEND1),NTOTAL)
+     *                    ZERO,WORK(KSCR5),NTOTAL)
 C
                CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NBAS(ISYMAL),
-     *                    ONE,XLAMPC(KOFF4),NTOTAL,WORK(KEND1),NTOTAL,
+     *                    ONE,XLAMPC(KOFF4),NTOTAL,WORK(KSCR5),NTOTAL,
      *                    ZERO,WORK(KOFF5),NTOTA)
 C
+C              -----------------------------------------
+C                 save g(aijd) as three index array 
+C              ----------------------------------------
+C
+               IF (CC2R12) THEN
+                  DTIME = SECOND()
+
+                  ISYMIJ = MULD2H(ISYMI,ISYMJ)
+                  DO I = 1, NRHF(ISYMI)
+                     DO A = 1, NBAS(ISYMAL)
+                        IDXAI = NBAS(ISYMAL)*(I-1)+A
+                        IDXIJ = IMATIJ(ISYMI,ISYMJ)+NRHF(ISYMI)*(J-1)+I
+                        IDXAIJ = ID2IJG(ISYMIJ,ISYMAL)+
+     &                          NBAS(ISYMAL)*(IDXIJ-1)+A 
+                        WORK(KGAIJD-1+IDXAIJ) = WORK(KSCR5-1+IDXAI) 
+                     END DO
+                  END DO
+
+                  TIMR12 = TIMR12 + (SECOND()-DTIME)
+               END IF          
+
                IF (IOPT .EQ. 2) THEN
 C
                   ISYMBE = MULD2H(ISYMI,ISYMTR)
@@ -7775,7 +7990,16 @@ C
   110    CONTINUE
 C
   100 CONTINUE
-C
+
+      IF (CC2R12) THEN
+         DTIME = SECOND()
+
+         CALL CC_R12MKVKL(WORK(KGAIJD),VIJKL,ISYMD,IDEL,
+     &     IDUMMY,.FALSE.,WORK(KEND0),LWRK0)
+
+         TIMR12 = TIMR12 + (SECOND()-DTIME)
+      END IF      
+ 
       RETURN
       END
 C  /* Deck cc_onep */

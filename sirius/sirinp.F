@@ -3155,7 +3155,7 @@ C
 C
 C -- local variables and constants
 C
-      PARAMETER (NTABLE = 16)
+      PARAMETER (NTABLE = 17)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      &          REWORD*12, RWORD*7
       PARAMETER (MAXNRT = 40)
@@ -3176,9 +3176,11 @@ C
       DATA TABLE /'XXXXXXX','.5D7F9G','.DELETE','.MOSTAR','.FREEZE',
      *            '.GRAM-S','.SYMMET','.PUNCHI','.PUNCHO','.REORDE',
      *            '.FROZEN','.AO DEL','.CMOMAX','.NOSUPS','.SUPSYM',
-     *            '.THRSSY'/
+     *            '.THRSSY','.LOCALI'/
 C
       INDEL = 0
+      BOYORB = .FALSE.
+      PIPORB = .FALSE.
 C
 C     ***** PROCESS INPUT FOR ORBINP *****
 C
@@ -3191,7 +3193,7 @@ C
             DO 1102 II = 1, NTABLE
                IF (TABLE(II) .EQ. WORD) THEN
                   GO TO (101,102,103,104,105,106,107,108,109,110,
-     *                   111,112,113,114,115,116), II
+     *                   111,112,113,114,115,116,117), II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -3432,6 +3434,22 @@ C *** Option 15 >SUPSYM< do use super symmetry
 C
 C *** Option 16 >THRSSY< read super symmetry threshold
   116 READ(LUCMD,*) THRSSY
+      GO TO 100
+C
+*** Option 17 >LOCALI< localize molecular orbitals
+  117 SUPSYM = .FALSE.
+      READ (LUCMD,'(A12)') REWORD
+      RWORD = REWORD(2:7)
+      IF (RWORD .EQ. 'BOYLOC') THEN
+          BOYORB = .TRUE.
+      ELSE IF (RWORD .EQ. 'PIPLOC') THEN
+           PIPORB = .TRUE.
+           CALL QUIT('PIPEK localization not yet implemented')
+      ELSE
+           WRITE(LUPRI,'(4A/A)') '"',REWORD(1:7),'" IS INCORRECT INPUT',
+     *         ' AFTER ".LOCALI"',' Select .BOYLOC or .PIPLOC'
+           CALL QUIT(' INPUT ERROR IN ORBINP')
+      END IF
       GO TO 100
 C
       END

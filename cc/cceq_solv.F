@@ -1,4 +1,4 @@
-C
+
 C...   Copyright (c) 2001 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
@@ -34,9 +34,10 @@ C
 #include <single.h>
 C
 C  /* Deck cceq_sol */
-      SUBROUTINE CCEQ_SOL(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,
-     *                    FC1AM,LUFC1,FC2AM,LUFC2,LIST,
-     *                    LPROJECT,ISTATPRJ,
+      SUBROUTINE CCEQ_SOL(LIST,LPROJECT,ISTATPRJ,ECURR,
+     *                    FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
+     *                    FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *                    LREDS,REDS,FS12AM,LUFS12,
      *                    LINQCC,TRIPLET,ISIDE,ISTRVE,NVEC,NUPVEC,
      *                    NREDH,REDH,EIVAL,SOLEQ,
      *                    WRK,LWRK)
@@ -45,10 +46,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C 
 C input
 C
-C   FRHO1,FRHO2,FC1AM,FC2AM is file names for files where
-C   transformed vectors (rho1,rho2) and trial vectors (c1am,c2am) are
-C   stored.
-C   LUFR1,LUFR2,LUFC1,LUFC2 is the corresponding unit numbers.
+C   FRHO1,FRHO2,FRHO12,FC1AM,FC2AM,FC12AM are file names for files where
+C   transformed vectors (rho1,rho2,rhor12) and trial vectors 
+C   (c1am,c2am,cr12am) are stored.
+C   LUFR1,LUFR2,LUFR12,LUFC1,LUFC2,LUFC12 are the corresponding unit 
+C   numbers.
 C
 C   TRIPLET.EQ.T solve triplet equations
 C          .EQ.F solve singlet equations
@@ -110,15 +112,16 @@ C
 C
 C----------------------------------------------------------------
 C CC_TRDRV carry out linear transformations on new trial vectors 
-C          on LUFC1,LUFC2 and return linear transformed trial 
-C          vectors on LUFR1,LUFR2
+C          on LUFC1,LUFC2,LUFC12 and return linear transformed 
+C          trial vectors on LUFR1,LUFR2,LUFR12
 C CCRED finds the solution in reduced space.
 C CCNEX finds residual and the next trial vectors (saved on disk)
+C
 C Work space flow:
 C  The whole work space is released after each routine is called
 C  all communication takes place via file with trial vectors
-C  and linear transformed vectors on LUFC1,LUFC2 and 
-C  LUFR1,LUFR2 respectively
+C  and linear transformed vectors on LUFC1,LUFC2,LUFC12 and 
+C  LUFR1,LUFR2,LUFR12 respectively
 C
 C  MAXLE:  MAXIMUM NUMBER OF MICROITERATIONS
 C          from common LEINF
@@ -134,12 +137,12 @@ C
 #include <leinf.h>
       PARAMETER (D0 = 0.0D0 )
 C
-      CHARACTER*(*)  FRHO1,FRHO2,FC1AM,FC2AM
+      CHARACTER*(*) FRHO1,FRHO2,FC1AM,FC2AM,FRHO12,FC12AM,FS12AM
       CHARACTER*(*) LIST
-      DIMENSION REDH(2), SOLEQ(2)
-      DIMENSION EIVAL(2)
-      DIMENSION WRK(2)
-      LOGICAL LINQCC, LPROJECT, TRIPLET
+      DIMENSION REDH(*), SOLEQ(*), REDS(*)
+      DIMENSION EIVAL(*)
+      DIMENSION WRK(*)
+      LOGICAL LINQCC, LPROJECT, TRIPLET, LREDS
 C
       CALL QENTER('CCEQ_SOL')
       IF (IPRLE .GT. 3 ) THEN
@@ -199,9 +202,9 @@ C
          ENDIF                      
 C
          IST = NREDH - NUPVEC + 1
-         CALL CC_TRDRV(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,
-     *                 FC1AM,LUFC1,FC2AM,LUFC2,TRIPLET,
-     *                 .FALSE.,IDUMMY,DUMMY,
+         CALL CC_TRDRV(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
+     *                       FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *                 TRIPLET,.FALSE.,IDUMMY,DUMMY,FS12AM,LUFS12,
      *                 ISIDE,IST,NUPVEC,WRK,LWRK)
 C
          CALL FLSHFO(LUPRI)
@@ -217,10 +220,11 @@ C--------------------------------
 C
          TIMRED = TIMRED - SECOND()
 
-         CALL CCRED(FRHO1,LUFR1,FRHO2,LUFR2,
-     *              FC1AM,LUFC1,FC2AM,LUFC2,
+         CALL CCRED(FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
+     *              FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *              CCR12,FS12AM,LUFS12,
      *              LINQCC,TRIPLET,ISIDE,LIST,
-     *              LPROJECT,ISTATPRJ,
+     *              LPROJECT,ISTATPRJ,LREDS,REDS,
      *              REDH,NREDH,ISTRVE,NUPVEC,NVEC,
      *              EIVAL,SOLEQ,WRK,LWRK,DEBUG)
          CALL FLSHFO(LUPRI)
@@ -245,12 +249,12 @@ C     Find the next trial vector.
 C--------------------------------
 C
          TIMNEX = TIMNEX - SECOND()
-         CALL CCNEX(FRHO1,LUFR1,FRHO2,LUFR2,
-     *              LPROJECT,ISTATPRJ,
-     *              FC1AM,LUFC1,FC2AM,LUFC2,LIST,ITLE,
+         CALL CCNEX(LIST,ITLE,LPROJECT,ISTATPRJ,
+     *              FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
+     *              FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *              FS12AM,LUFS12,
      *              LINQCC,TRIPLET,ISIDE,NREDH,ISTRVE,
-     *              NVEC,NUPVEC,JCONV,
-     *              EIVAL,SOLEQ,WRK,LWRK,RMXNORM)
+     *              NVEC,NUPVEC,JCONV,EIVAL,SOLEQ,WRK,LWRK,RMXNORM)
 C
 C-----------------------------------------------------
 C     Print timing & convergence statistic
@@ -295,7 +299,6 @@ C           ( LINEAR DEPENDENCE BETWEEN ALL NEW TRIAL VECTORS )
      *         '     LINEAR DEPENDENCE BETWEEN ALL NEW TRIAL VECTORS'
          ELSE IF (JCONV.GT.0) THEN
 C           (CONVERGED)
-cch         IF (IPRLE .GT. 0) THEN
             IF (IPRLE .GT. 10) THEN
                WRITE(LUPRI,'(/,(A,I4,A,A,I4,A))')
      *         ' MICROITERATIONS CONVERGED FOR',NVEC,
@@ -385,11 +388,10 @@ C
       RETURN
       END
 C  /* Deck cceq_str */
-      SUBROUTINE CCEQ_STR(FC1AM,LUFC1,FC2AM,LUFC2,
+      SUBROUTINE CCEQ_STR(FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
      *                    LPROJECT,ISTATPRJ,
      *                    TRIPLET,ISIDE,ISTRVE,NVEC,NUPVEC,
-     *                    NREDH,EIVAL,IPLACE,WORK,
-     *                    LWORK,LIST)
+     *                    NREDH,EIVAL,IPLACE,WORK,LWORK,LIST)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
@@ -413,9 +415,11 @@ C
 #include <leinf.h>
 #include <ccinf.h>
 #include <ccexci.h>
+#include <dummy.h>
 C
-      CHARACTER*(*)  FC1AM,FC2AM,MODEL*10
+      CHARACTER*(*)  FC1AM,FC2AM,FC12AM
       CHARACTER*(*) LIST
+      CHARACTER*10  MODEL
       DIMENSION IPLACE(*) , WORK(*),EIVAL(*)
       LOGICAL NEWSTR, LPROJECT, TRIPLET
 C
@@ -443,15 +447,14 @@ C
         IMULT = 1
       ENDIF
 C
-C---------------------------------
-C     Initialize NUPVEC and NREDH.
-C---------------------------------
-C
+C     ----------------------------
+C     Initialize NUPVEC and NREDH:
+C     ----------------------------
       NUPVEC = 0
       NREDH  = 0
 C
       KV    = 1
-      KEND1 = KV   + NCCVAR
+      KEND1 = KV    + NCCVAR
       LEND1 = LWORK - KEND1
 C
       KDIA  = KEND1
@@ -459,32 +462,29 @@ C
       LEND2 = LWORK  - KEND2
       IF (LEND2 .LT. 0) CALL QUIT('Too little workspace in CCEQ_STR-1')
 C
-C------------------------------------------------------------------
-C     Calculate an approximate diagonal from Eterms in CCSD vector.
-C     Ove Christiansen 5-9-1994.
-C------------------------------------------------------------------
-C
+C     -------------------------------------
+C     Get an approximate diagonal Jacobian:
+C     -------------------------------------
       IF (LIST(2:2) .EQ.'E') THEN
-        CALL CCLR_DIA(WORK(KDIA),DUMMY,TRIPLET,WORK(KEND2),LEND2)
+        CALL CCLR_DIA(WORK(KDIA),ISYMTR,TRIPLET,WORK(KEND2),LEND2)
+        IF (IPRLE.GT.20) THEN
+           CALL AROUND(' CCEQ_STR:  approximate diagonal Jacobian')
+           CALL OUTPUT(WORK(KDIA),1,NCCVAR,1,1,NCCVAR,1,1,LUPRI)
+        ENDIF
       ENDIF
 C
-      IF ((IPRLE.GT.50).AND.(LIST(2:2) .EQ. 'E')) THEN
-         CALL AROUND(' CCLR_EVALST:  CC DIAGONAL ')
-         CALL OUTPUT(WORK(KDIA),1,NCCVAR,1,1,NCCVAR,1,1,LUPRI)
-         WRITE(LUPRI,*) 'NCCVAR = ', NCCVAR
-      ENDIF
-C
-C     test - ove problem med eigenvaerdi.
-C
+C     ---------------------------------------------------------------
+C     For eigenvalue problems select elements for unit start vectors:
+C     ---------------------------------------------------------------
       IF (STVEC.AND.(LIST(2:2) .EQ.'E')) THEN
          WRITE (LUPRI,'(/A/A/A)')
      *      ' CC elements selected for start vectors:',
      *      ' =======================================',
      *      ' Start vector no.      CC element no.'
-         DO 80 I = 1,NVEC       
+         DO I = 1,NVEC       
             IPLACE(I) = ISTVEC(I,ISYMTR)
             WRITE (LUPRI,'(I10,I20)') I,IPLACE(I)
-   80    CONTINUE
+         END DO
       ELSE IF (LIST(2:2) .EQ.'E') THEN
          MXELMN = MIN(NVEC+3,NCCVAR,MAXRED)
          CALL FNDMN3(WORK(KDIA),NCCVAR,MXELMN,IPLACE,
@@ -507,63 +507,87 @@ C     Add one vector at the time to list of startvectors.
 C--------------------------------------------------------
 C
       DO 100 I = 1,NVEC       
-C
-C---------------------------------------------
-C        RESTART or calc. new gradient vector.
-C        Restart:
-C---------------------------------------------
-C
          NEWSTR = .TRUE.
+C
+C        ----------------------------------------------
+C        try to restart from vectors available on file: 
+C        ----------------------------------------------
          IF (CCRSTR) THEN
-            IOPT = 33
+            IOPT   = 33
             ILSTNR = ISTRVE + I - 1
-            CALL CC_GETSAV(WORK(KV),ILSTNR,LIST,IOPT)
-C
-C------------------------------------------------------------------
-C           check readin of vector was succesfull - else calc. new.
-C------------------------------------------------------------------
-C
-            IF (IOPT.NE. 33) NEWSTR = .FALSE.
-            IF (IOPT.EQ. 33) NEWSTR = .TRUE.
+            ISYM   = ILSTSYM(LIST,ILSTNR)
+            CALL DZERO(WORK(KV),NCCVAR)
+            CALL CC_RDRSP(LIST,ILSTNR,ISYM,IOPT,MODEL,
+     &                    WORK(KV),WORK(KV+NT1AM(ISYM)))
+            IF (CCR12 .AND. IOPT.NE.33) THEN
+              IOPTR12 = -32
+              CALL CC_RDRSP(LIST,ILSTNR,ISYM,IOPTR12,MODEL,
+     &                      DUMMY,WORK(KV+NT1AM(ISYM)+NT2AM(ISYM)))
+            END IF
+            ! check if readin of vector was succesfull - else calc. new.
+            IF (IOPT .EQ. 33) THEN
+               NEWSTR = .TRUE.
+               WRITE(LUPRI,'(1X,A,I3,3A,I3,A)') 'Vector nr.',ILSTNR,
+     &         'of type ',LIST(1:3),' and symmetry',ISYM,
+     &         ' was not found on file.'
+            ELSE
+               NEWSTR = .FALSE.
+               WRITE(LUPRI,'(1X,A,I3,A,I3,A)') 'Vector nr.',ILSTNR,
+     &         ' of symmetry',ISYM,' found on file - RESTART SUCCESS'
+               WRITE(LUPRI,'(1X,A,A13,A)') 'Start vector is a ',
+     &         MODEL//LIST(1:3),' vector'
+            ENDIF
          ENDIF
 C
-C-------------------------------------------------------
-C        Try start left vectors from right eigenvectors.
-C-------------------------------------------------------
-C
+C        -----------------------------------------------------------
+C        for left eigenvectors try to start from right eigenvectors:
+C        -----------------------------------------------------------
          IF (NEWSTR .AND. (LIST .EQ. 'LE')) THEN
             IOPT   = 33
             ILSTNR = ISTRVE + I - 1
-            WRITE(LUPRI,*) 
-     * 'Start left vector eigenvalue equation from right eigenvectors.'
-            CALL CC_GETSAV(WORK(KV),ILSTNR,'RE ',IOPT)
-            IF (IOPT.NE. 33) NEWSTR = .FALSE.
-            IF (IOPT.EQ. 33) NEWSTR = .TRUE.
+            ISYM   = ILSTSYM(LIST,ILSTNR)
+            WRITE(LUPRI,'(2A)') 'Try to use right eigenvector as start',
+     &         'for a left eigenvector.'
+            CALL DZERO(WORK(KV),NCCVAR)
+            CALL CC_RDRSP('RE ',ILSTNR,ISYM,IOPT,MODEL,
+     &                    WORK(KV),WORK(KV+NT1AM(ISYM)))
+            IF (CCR12 .AND. IOPT.NE.33) THEN
+              IOPTR12 = -32
+              CALL CC_RDRSP('RE ',ILSTNR,ISYM,IOPTR12,MODEL,
+     &                      DUMMY,WORK(KV+NT1AM(ISYM)+NT2AM(ISYM)))
+            END IF
+            IF (IOPT .EQ. 33) THEN
+               NEWSTR = .TRUE.
+               WRITE(LUPRI,'(1X,A,I3,A,I3,A)') 'Vector nr.',ILSTNR,
+     *         ' of type RE and symmetry',ISYM,' was ot found on file.'
+            ELSE
+               NEWSTR = .FALSE.
+               WRITE(LUPRI,'(1X,A,I3,A,I3,A)') 'Vector nr.',ILSTNR,
+     *         ' of symmetry',ISYM,' found on file - RESTART SUCCESS'
+               WRITE(LUPRI,'(1X,A,A13,A)') 'Start vector is a ',
+     *         MODEL//'RE',' vector'
+            ENDIF
          ENDIF
 C
-C----------------------------------
-C        New vector from gradients:
-C----------------------------------
-C
+C        ------------------------------------------------------------
+C        if a restart was not possible generate a trial vector from
+C        the gradient vector (for lin.eq.) or by choosing a unit vec.
+C        ------------------------------------------------------------
          IF (NEWSTR) THEN
-C 
-C--------------------------------------------------------------------
-C           For excited state pick unit vector according to diagonal.
-C--------------------------------------------------------------------
-C
-            CALL DZERO(WORK,NCCVAR)
-            IF (LIST(2:2) .EQ.'E') THEN
-               WRITE(LUPRI,'(1X,A)') 'Start vector guessed '//
-     &              'from diagonal'
-               WRITE(LUPRI,'(1X,A,I3)')'... selected element no.',
+
+           IF (LIST(2:2) .EQ.'E') THEN
+C             ---------------------------------------------------------
+C             for excited state pick unit vector according to diagonal:
+C             ---------------------------------------------------------
+              WRITE(LUPRI,'(1X,A)')'Start vector guessed from diagonal'
+              WRITE(LUPRI,'(1X,A,I3)')'... selected element no.',
      &              IPLACE(I)
-               WORK(IPLACE(I)) = D1
-            ELSE 
-C 
-C-------------------------------
-C              Get gradient vector.
-C-------------------------------
-C
+              CALL DZERO(WORK(KV),NCCVAR)
+              WORK(KV-1+IPLACE(I)) = D1
+           ELSE 
+C              --------------------
+C              get gradient vector:
+C              --------------------
                ILSTNR = ISTRVE + I - 1
                CALL CC_GETGD(WORK(KV),ILSTNR,ISIDE,LIST,
      *                       WORK(KEND1),LEND1)
@@ -577,29 +601,30 @@ C
      *               ' of symmetry',ISYMTR,' generated from gradient'
                  END IF
                END IF
-C 
-C--------------------------------------------------------
+
+C              ------------------------------------------
 C              Scale with diagonal.(including frequency).
 C              (not for Cauchy vectors. CH.H. 20-11-97)
-C--------------------------------------------------------
-C
+C              ------------------------------------------
                IF ( LIST(1:2).NE.'RC' .AND. LIST(1:2).NE.'LC' .AND.
      *              LIST(1:3).NE.'CRC'.AND. LIST(1:3).NE.'CLC' ) THEN
-                 KOMEG1 = 1
-                 KOMEG2 = 1 + NT1AM(ISYMTR)
+                 KOMEG1 = KV
+                 KOMEG2 = KV + NT1AM(ISYMTR)
                  CALL CC_VSCAL(WORK(KOMEG1),WORK(KOMEG2),EIVAL(I),
      *                         WORK(KEND1),LEND1,ISYMTR)
                ENDIF
-            ENDIF
+           ENDIF
+
          ENDIF
 C
-         RHO = DDOT(NCCVAR,WORK,1,WORK,1)
          IF ( DEBUG ) THEN
-            WRITE(LUPRI,1) 'Norm of Start vector before CCORT: ',RHO
+            RHO = DDOT(NCCVAR,WORK(KV),1,WORK(KV),1)
+            WRITE(LUPRI,*) 'Norm of Start vector before CCORT: ',RHO
          ENDIF
 C
-         IF (IPRLE.GT.100 ) THEN
-            CALL AROUND(' CCEQ_STR:VECTORS BEFORE CCORT: ')
+         IF (IPRLE.GT.100) THEN
+            CALL AROUND(' CCEQ_STR:VECTORS BEFORE CCORT/PRJDRV: ')
+            WRITE(LUPRI,*) 'this is vector number:',I
             CALL OUTPUT(WORK(KV),1,NCCVAR,1,1,NCCVAR,1,1,LUPRI)
          ENDIF
 
@@ -621,14 +646,13 @@ C
      *                             WORK(KV),WORK(KPRJC)) 
          ENDIF
 C
-         CALL CCORT(LUFC1,FC1AM,LUFC2,FC2AM,TRIPLET,
-     *              NFIN,NREDH,NCCVAR, 
-     *              WORK(KV),THRLDP,
-     *              WORK(KEND1),LEND1,IPRLE)
+         CALL CCORT(LUFC1,FC1AM,LUFC2,FC2AM,LUFC12,FC12AM,
+     *              TRIPLET,NFIN,NREDH,NCCVAR, 
+     *              WORK(KV),THRLDP,WORK(KEND1),LEND1,IPRLE)
          NUPVEC = NUPVEC + NFIN
          IF ( DEBUG ) THEN
-            RHO = DDOT(NCCVAR,WORK,1,WORK,1)
-            WRITE(LUPRI,1) 'Norm of Start vectors after CCORT; ',RHO
+            RHO = DDOT(NCCVAR,WORK(KV),1,WORK(KV),1)
+            WRITE(LUPRI,*) 'Norm of Start vectors after CCORT:',RHO
          ENDIF
 C
  100  CONTINUE
@@ -639,13 +663,12 @@ C
           CALL AROUND( ' END OF CCEQ_STR ' )
       ENDIF
 C
-   1  FORMAT(1x,A35,1X,E20.10)
       CALL QEXIT('CCEQ_STR')
       RETURN
       END
 C  /* Deck ccconv */
-      SUBROUTINE CCCONV(LUFC1,C1FIL,LUFC2,C2FIL,TRIPLET,
-     *                  NREDH,LST,LED,SOLEQ,RD,WRK)
+      SUBROUTINE CCCONV(LUFC1,C1FIL,LUFC2,C2FIL,LUFC12,C12FIL,
+     *                  TRIPLET,CCR12,NREDH,LST,LED,SOLEQ,RD,WRK)
 C
 C PURPOSE:
 C  Calculate converged solutions to the LED sets of linear
@@ -656,38 +679,38 @@ C
 #include <cclr.h>
 #include <leinf.h>
 C
-      CHARACTER*(*) C1FIL,C2FIL      
-      LOGICAL TRIPLET
+      CHARACTER*(*) C1FIL,C2FIL,C12FIL
+      LOGICAL TRIPLET,CCR12
 C
-      DIMENSION SOLEQ(MAXRED,2),RD(NCCVAR,2),WRK(2)
+      DIMENSION SOLEQ(MAXRED,*),RD(NCCVAR,*),WRK(*)
 C
       CALL QENTER('CCCONV')
-C
       CALL DZERO(RD,LED*NCCVAR)
-      DO 100 I = 1,NREDH
-         CALL CC_GETVEC(LUFC1,C1FIL,LUFC2,C2FIL,TRIPLET,I,WRK)
-         DO 200 K=1,LED
+      DO I = 1, NREDH
+         CALL CC_GETVEC(LUFC1,C1FIL,LUFC2,C2FIL,LUFC12,C12FIL,
+     *                  TRIPLET,I,WRK)
+         DO K = 1, LED
             KVENU = LST -1 + K
             CALL DAXPY(NCCVAR,SOLEQ(I,KVENU),WRK,1,RD(1,K),1)
- 200        CONTINUE
- 100  CONTINUE
+         END DO
+      END DO
       CALL QEXIT('CCCONV')
       RETURN
       END
 C  /* Deck ccnex */
-      SUBROUTINE CCNEX(FRHO1,LUFR1,FRHO2,LUFR2,
-     *                 LPROJECT,ISTATPRJ,
-     *                 FC1AM,LUFC1,FC2AM,LUFC2,LIST,ITLE,
-     *                 LINQCC,TRIPLET,ISIDE,NREDH,ISTRVE,NVEC,NUPVEC,
-     *                 JCONV,EIVAL,SOLEQ,
-     *                 WRK,LWRK,RMXNORM)
+      SUBROUTINE CCNEX(LIST,ITLE,LPROJECT,ISTATPRJ,
+     *                 FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
+     *                 FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *                 FS12AM,LUFS12,
+     *                 LINQCC,TRIPLET,ISIDE,NREDH,ISTRVE,
+     *                 NVEC,NUPVEC,JCONV,EIVAL,SOLEQ,WRK,LWRK,RMXNORM)
 C
 C PURPOSE: 1) Construct residual (A)*X(I) - EIVAL(I)*X(I) + F
 C             for solution X(I) of reduced  equations
 C             ( F is zero for eigenvalue equation )
 C          2) Test for convergence of solutions
 C             convergence criterium:
-C             //((A)*X(I) - EIVAL(I)*X(I) + F// / //X// .LE. THRLE
+C             ||((A)*X(I) - EIVAL(I)*X(I) + F|| / ||X|| .LE. THRLE
 C          3) Use generalized conjugate gradient algorithm
 C             or davidson (for eigenvalue equation)
 C             to determine next guess of trial vectors
@@ -708,13 +731,13 @@ C
 #include <cclr.h>
 #include <ccfro.h>
 #include <leinf.h>
-      PARAMETER (  THRLDP = 1.D-20 )
+      PARAMETER ( THRLDP = 1.D-20 )
       PARAMETER ( DTEST = 1.0D-04 )
       PARAMETER ( DM1=-1.0D0,D1 =1.0D0, D0=0.0D0 )
 C
-      CHARACTER*(*)  FRHO1,FRHO2,FC1AM,FC2AM
+      CHARACTER*(*) FRHO1,FRHO2,FRHO12,FC1AM,FC2AM,FC12AM,FS12AM
       CHARACTER*(*) LIST
-      LOGICAL   LINQCC,CCRSTRS,LPROJECT,TRIPLET
+      LOGICAL LINQCC,CCRSTRS,LPROJECT,TRIPLET
       DIMENSION EIVAL(2), SOLEQ(MAXRED,2),WRK(2)
 C
 C
@@ -722,9 +745,8 @@ C Space for CCNEX:
 C
 C MAXNEX: Maximum number of simultaneous vectors in CCNEX
 C
-      IF (DEBUG)  THEN 
-         CALL AROUND(' Start of CCNEX ')
-      ENDIF
+      IF (DEBUG)  CALL AROUND(' Start of CCNEX ')
+
       MAXNEX = (LWRK-3*NCCVAR)/NCCVAR
       NUPVEC = 0
       NOTCON = 0
@@ -739,54 +761,44 @@ C
          KTST  = KRES + NBX*NCCVAR 
          KWRK1 = KTST + NBX
          LWRK1 = LWRK - KWRK1
+
          IF (LINQCC) THEN
             LGD = KRES
-            DO 50 JR = 1,NBX 
-C
-C-------------------------------
-C           Get gradient vector.
-C-------------------------------
-C
+            DO JR = 1,NBX 
+
+C              ---------------------
+C              Get gradient vectors:
+C              ---------------------
                IVENU  = ISIMC-1+JR
                ILSTNR = IVENU + ISTRVE - 1
-C
-C GETGD bruger GD + 3 exxtra. NCCVAR - skal vaere foerst i memory.
-C
+
                CALL CC_GETGD(WRK(LGD),ILSTNR,ISIDE,LIST,
      *                       WRK(KWRK1),LWRK1)
 C
-C-----------------------------------
-C              Project from gradient
-C              SC-1997
-C-----------------------------------
+C              ----------------------
+C              Project from gradient:
+C              ----------------------
                IF (LPROJECT) THEN
                   ISYPR = ILSTSYM(LIST,ILSTNR)
-                  IF (DEBUG) THEN
-                   WRITE(LUPRI,*)
+                  IF (DEBUG) WRITE(LUPRI,*)
      &                    '--- CCNEX projection from gradient --- '
-                  END IF
                   CALL PRJDRV(ISIDE,ISTATPRJ,ISYPR,1,NCCVAR,
      *                            WRK(LGD),WRK(KWRK1))
                END IF
-C ------------------
                LGD = LGD + NCCVAR
- 50         CONTINUE
+            END DO
          ELSE
             CALL DZERO(WRK(KRES),NBX*NCCVAR)
          END IF
+
          IF (IPRLE.GT.110) THEN
              WRITE(LUPRI,*) ' RESIDUAL AFTER GD CONTRIBUTION'
-             CALL OUTPUT(WRK(KRES),1,NCCVAR,1,NBX,NCCVAR,NBX,
-     *                     1,LUPRI)
+             CALL OUTPUT(WRK(KRES),1,NCCVAR,1,NBX,NCCVAR,NBX,1,LUPRI)
          END IF
 C
-C
-C-------------------------------
-C  add -EIVAL(I)*X(I) 
-C-------------------------------
-C 
-C WORK SPACE ALLOCATION
-C
+C        -----------------------------------------------------------
+C        add -EIVAL(I)*X(I), where X(I) is the i'th solution vector:
+C        -----------------------------------------------------------
          ISYM = ILSTSYM(LIST,ISTRVE)
          NVARPT = NCCVAR + 2*NALLAI(ISYM)
          MAXBVE = ( LWRK1 - NVARPT )/NCCVAR
@@ -798,78 +810,85 @@ C
             IF (LWRK2 .LT. 0 ) THEN 
                CALL QUIT('Too little work in CCNEX xx')
             END IF
-C
+
+C           ----------------------------------------------------------
+C           Construct the solution vectors in full space:
+C             Save norm of solution vector in WRK(KTST) and the
+C             vectors itself for restart on the files CC//LIST//{ivec}
+C           ----------------------------------------------------------
             IVECNU = ISIMC -1 + JR
-            CALL CCCONV(LUFC1,FC1AM,LUFC2,FC2AM,TRIPLET,NREDH,
-     *                  IVECNU,NBVEC,SOLEQ,WRK(KB),WRK(KWRK2))
-C
-C           Save norm of solution vector in WRK(KTST)
-C
-            DO 65 IBVEC = 1, NBVEC
+            CALL CCCONV(LUFC1,FC1AM,LUFC2,FC2AM,LUFC12,FC12AM,TRIPLET,
+     *               CCR12,NREDH,IVECNU,NBVEC,SOLEQ,WRK(KB),WRK(KWRK2))
+
+            DO IBVEC = 1, NBVEC
                WRK(KTST+JR-1+IBVEC-1) = 
      *         DNORM2(NCCVAR,WRK(KB+(IBVEC-1)*NCCVAR),1)
-   65       CONTINUE
-C
-            IF (IPRLE.GT.105) THEN
-               WRITE (LUPRI,'(/A)')
-     *         ' CCNEX: solution vectors'
-               CALL PROVLP(WRK(KB),NCCVAR,NBVEC,WRK(KWRK2),LUPRI)
-               CALL OUTPUT(WRK(KB),1,NCCVAR,1,NBVEC,NCCVAR,NBVEC,
-     *                     1,LUPRI)
-            END IF
-C
-C---------------------------------------------
-C           Make residual vector,
-C           Save solution vectors for restart.
-C           File = CC//LIST///{ivec}  
-C---------------------------------------------
-C
-            DO 70 IBVEC = 1,NBVEC
-C
                IVEC = ISIMC - 1 + JR -1 + IBVEC   
-               IVEOFF = JR -1 + IBVEC -1
                CALL CC_SAVE(WRK(KB+(IBVEC-1)*NCCVAR),IVEC+ISTRVE-1,
      *                      LIST,WRK(KWRK2),LWRK2)
+            END DO
+
+            IF (IPRLE.GT.105) THEN
+             WRITE (LUPRI,'(/A)')' CCNEX: solution vectors'
+             CALL OUTPUT(WRK(KB),1,NCCVAR,1,NBVEC,NCCVAR,NBVEC,1,LUPRI)
+             CALL PROVLP(WRK(KB),NCCVAR,NBVEC,WRK(KWRK2),LUPRI)
+            END IF
+
+C           ----------------------------------------------------------
+C           Construct S * X in full space and add - Eval * S * X to
+C           the residual vectors:
+C             Note for conventional CC the metric S is a unit matrix
+C             and thus S * X are the solution vectors already
+C             constructed above. Only for CCR12 we need to construct
+C             S * X from the transformations with the metric matrix
+C           ----------------------------------------------------------
+            IF (CCR12) THEN
+             IVECNU = ISIMC -1 + JR
+             CALL CCCONV(LUFC1,FC1AM,LUFC2,FC2AM,LUFS12,FS12AM,TRIPLET,
+     *               CCR12,NREDH,IVECNU,NBVEC,SOLEQ,WRK(KB),WRK(KWRK2))
+            END IF
+
+            DO IBVEC = 1,NBVEC
+               IVEC = ISIMC - 1 + JR -1 + IBVEC   
+               IVEOFF = JR -1 + IBVEC -1
                CALL DAXPY(NCCVAR,-EIVAL(IVEC),WRK(KB+(IBVEC-1)*NCCVAR),
      *                    1,WRK(KRES+IVEOFF*NCCVAR),1)
- 70         CONTINUE
+            END DO
 C
  60      CONTINUE
+
          IF (IPRLE.GT.110) THEN
-           WRITE(LUPRI,*)' RESIDUAL AFTER eival CONTRIBUTION'
-               CALL OUTPUT(WRK(KRES),1,NCCVAR,1,NBX,NCCVAR,NBX,
-     *                     1,LUPRI)
+           WRITE(LUPRI,*)' RESIDUAL AFTER - w * S * X CONTRIBUTION'
+           CALL OUTPUT(WRK(KRES),1,NCCVAR,1,NBX,NCCVAR,NBX,1,LUPRI)
          END IF
-C
-C------------------------------------------------
-C Add  (A)*X(I) where X(I) is the solution to the
-C I'th set of Newton-Raphson equations
-C------------------------------------------------
-C
-         DO 900 K = 1,NREDH
-            CALL CC_GETVEC(LUFR1,FRHO1,LUFR2,FRHO2,TRIPLET,K,WRK(KWRK1))
-            DO 700 JR = 1,NBX
+
+C        -----------------------------------------------
+C        Add A * X(I) where X(I) is the solution to the
+C        I'th set of Newton-Raphson equations
+C        -----------------------------------------------
+         DO K = 1,NREDH
+            CALL CC_GETVEC(LUFR1,FRHO1,LUFR2,FRHO2,LUFR12,FRHO12,
+     *                     TRIPLET,K,WRK(KWRK1))
+            DO JR = 1,NBX
                JROOTJ = ISIMC - 1 + JR
                EVAL1  = SOLEQ(K,JROOTJ)
                CALL DAXPY(NCCVAR,EVAL1,WRK(KWRK1),1,
      *                       WRK(KRES+(JR-1)*NCCVAR),1)
- 700        CONTINUE
- 900     CONTINUE
-C
-C-------------------------------
-C Residual is now in WRK(KRES) 
-C-------------------------------
-C
+            END DO
+         END DO
+
+C        -------------------------------
+C        Residual is now in WRK(KRES) 
+C        -------------------------------
          IF (IPRLE.GT.45) THEN
-            WRITE (LUPRI,'(/A)')
-     *         ' CCNEX: residual vectors '
-               CALL PROVLP(WRK(KRES),NCCVAR,NBX,WRK(KWRK1),LUPRI)
-               CALL OUTPUT(WRK(KRES),1,NCCVAR,1,NBX,NCCVAR,NBX,
-     *                     1,LUPRI)
+            WRITE (LUPRI,'(/A)') ' CCNEX: residual vectors '
+            CALL OUTPUT(WRK(KRES),1,NCCVAR,1,NBX,NCCVAR,NBX,1,LUPRI)
+            CALL PROVLP(WRK(KRES),NCCVAR,NBX,WRK(KWRK1),LUPRI)
          END IF
-C-----------------------------------------
-C Projection of eigenvectors from residual
-C-----------------------------------------
+
+C        -----------------------------------------
+C        Projection of eigenvectors from residual:
+C        -----------------------------------------
          IF (DEBUG) WRITE (LUPRI,*) 'CCNEX> LPROJECT = ', LPROJECT
          IF (LPROJECT) THEN
            KPRJ   = KWRK2
@@ -882,10 +901,9 @@ C-----------------------------------------
      *                             WRK(KRES),WRK(KWRK2))
          ENDIF
 C
-C------------------------------------------
-C Test for convergence of the N-R solutions
-C------------------------------------------
-C
+C        ------------------------------------------
+C        Test for convergence of the N-R solutions:
+C        ------------------------------------------
          RMXNORM = 0.0D0
          NFIN  = 0
          IF (IPRLE .GT. 1) WRITE(LUPRI,*) ' '
@@ -917,51 +935,40 @@ C
 C
          IF (NFIN.EQ.0 .OR. JCONV.LT.0) GO TO 3999
 C
-C---------------------------------------------
-C Use generalized conjugate gradient algorithm
-C to form new trial vectors
-C---------------------------------------------
+C        --------------------------------------------
+C        Use generalized conjugate gradient algorithm
+C        to form new trial vectors
+C        --------------------------------------------
+C        KDIA   = KWRK1
+C        KWRK2  = KDIA  + NCCVAR
+C        LWRK2  = LWRK  - KWRK2 
+C        IF (LWRK2 .LT. 0 ) THEN 
+C           CALL QUIT('Too little work in CCNEX')
+C        END IF
+C        CALL CCLR_DIA(WRK(KDIA),ISYMTR,TRIPLET,WRK(KWRK2),LWRK2)
+C        CALL LEDIAG(NCCVAR,WRK(KDIA),DTEST)
 C
-         KDIA   = KWRK1
-         KWRK2  = KDIA  + NCCVAR
-         LWRK2  = LWRK  - KWRK2 
-         IF (LWRK2 .LT. 0 ) THEN 
-            CALL QUIT('Too little work in CCNEX')
-         END IF
-         CALL CCLR_DIA(WRK(KDIA),DUMMY,TRIPLET,WRK(KWRK2),LWRK2)
-         CALL LEDIAG(NCCVAR,WRK(KDIA),DTEST)
+C        DO JR = 1,NFIN
+C           IOFF = (JR-1)*NCCVAR
+C           DO I=1,NCCVAR
+C              WRK(IOFF+I) = WRK(IOFF+I)*WRK(KDIA-1+I)
+C           END DO
+C        END DO
 C
-         DO 1300 JR = 1,NFIN
-            IOFF = (JR-1)*NCCVAR
-            DO 1400 I=1,NCCVAR
-               WRK(IOFF+I) = WRK(IOFF+I)*WRK(KDIA-1+I)
- 1400       CONTINUE
- 1300    CONTINUE
-C
-C--------------------------------------------------------------
-C Orthogonalize trial vectors and examine for linear dependence
-C--------------------------------------------------------------
-C
-         IF (IPRLE.GT.105) THEN
-            IF (NFIN .GT. 0) THEN
-               WRITE (LUPRI,'(/I4,1X,A)')
-     *            NFIN,' CCNEX: trial vectors before CCORT:'
-               CALL PROVLP(WRK(KRES),NCCVAR,NFIN,WRK(KWRK1),LUPRI) 
-               CALL OUTPUT(WRK(KRES),1,NCCVAR,1,NFIN,NCCVAR,NFIN,
-     *                     1,LUPRI)
-            END IF
-         END IF
-         CALL FLSHFO(LUPRI)
+         CALL CC_PRECOND(WRK,NFIN,NCCVAR,ISYMTR,TRIPLET,
+     &                   WRK(KWRK1),LWRK1)
 
-C--------------------------------
-C  Projection from updated trials
-C--------------------------------
-         IF (DEBUG) THEN
-           WRITE (LUPRI,*) '--- We are in CCNEX before CCORT --- '
-           WRITE (LUPRI,*) 'LPROJECT = ', LPROJECT
-         ENDIF
+         IF (IPRLE.GT.105 .AND. NFIN .GT. 0) THEN
+           WRITE(LUPRI,'(/I4,1X,A)') NFIN,
+     *         'new trial vectors before CCORT/PRJDRV:'
+           CALL OUTPUT(WRK(KRES),1,NCCVAR,1,NFIN,NCCVAR,NFIN,1,LUPRI)
+           CALL PROVLP(WRK(KRES),NCCVAR,NFIN,WRK(KWRK1),LUPRI) 
+           CALL FLSHFO(LUPRI)
+         END IF
 
-cs ILSTNR not defined at this stage..
+C        ------------------------------
+C        Projection from updated trials
+C        ------------------------------
          IF (LPROJECT) THEN
            KPRJ   = KWRK2
            ISYMPR = ILSTSYM(LIST,ISTRVE)
@@ -974,48 +981,43 @@ cs ILSTNR not defined at this stage..
      *                             WRK(KRES),WRK(KPRJ))
          ENDIF
 
-         CALL CCORT(LUFC1,FC1AM,LUFC2,FC2AM,TRIPLET,
-     *              NFIN,NREDH,NCCVAR,
-     *              WRK(KRES),THRLDP,
-     *              WRK(KWRK1),LWRK1,IPRLE)
+C        --------------------------------------------------------------
+C        Orthogonalize trial vectors and examine for linear dependence:
+C        --------------------------------------------------------------
+         CALL CCORT(LUFC1,FC1AM,LUFC2,FC2AM,LUFC12,FC12AM,
+     *              TRIPLET,NFIN,NREDH,NCCVAR,
+     *              WRK(KRES),THRLDP,WRK(KWRK1),LWRK1,IPRLE)
 C
-         IF (IPRLE.GT.105) THEN 
-            IF (NFIN .GT. 0) THEN
-               WRITE (LUPRI,'(/I4,1X,A)')
-     *            NFIN,' CCNEX: trial vectors after CCORT:'
-               CALL OUTPUT(WRK(KRES),1,NCCVAR,1,NFIN,NCCVAR,NFIN,
-     *                     1,LUPRI)
-            END IF
+         IF (IPRLE.GT.105  .AND. NFIN.GT.0) THEN
+            WRITE (LUPRI,'(/I4,1X,A)') NFIN,
+     *       'new trial vectors after CCORT/PRJDRV:'
+            CALL OUTPUT(WRK(KRES),1,NCCVAR,1,NFIN,NCCVAR,NFIN,1,LUPRI)
+            CALL PROVLP(WRK(KRES),NCCVAR,NFIN,WRK(KWRK1),LUPRI)
          END IF
+
  3999    CONTINUE
          NUPVEC = NUPVEC + NFIN
  4000 CONTINUE
 
-C
-C NUPVEC : Number of vectors not converged.
-C 
-C ---
-C
-C Output:
-C
+C we have now:
+C NUPVEC : number of new trial vectors
+C NOTCON : number of equations not yet converged
 C
       IF (NOTCON .EQ. 0 .AND. NUPVEC.EQ.0) THEN 
-C        ALL EQUATIONS HAVE CONVERGED
-cch      IF (IPRLE .GT. 0) WRITE(LUPRI,5030)
-         IF (IPRLE .GT. 10) WRITE(LUPRI,5030)
+         ! ALL EQUATIONS HAVE CONVERGED
+         IF (IPRLE.GT.10) WRITE(LUPRI,'(A)') ' *** EQUATIONS CONVERGED'
          JCONV = 1
          RETURN
       END IF
- 5030 FORMAT(/' *** EQUATIONS CONVERGED')
 C
-C Do NOT calculate new trial vectors
+C     Do NOT calculate new trial vectors
 C
       IF (JCONV .LT. 0) THEN
          JCONV = 0
          RETURN
       END IF
 C
-C Linear dependence between trial vectors
+C     Linear dependence between trial vectors
 C
       IF (NUPVEC .EQ. 0 .AND. NOTCON.GT.0) THEN
          WRITE(LUPRI,5010)
@@ -1061,7 +1063,7 @@ C
          KIPLAC = 1
          KWRK1  = KIPLAC + MAXRED
          LWRK1  = LWRK   - KWRK1
-         CALL CCEQ_STR(FC1AM,LUFC1,FC2AM,LUFC2,
+         CALL CCEQ_STR(FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
      *                 LPROJECT,ISTATPRJ,
      *                 TRIPLET,ISIDE,ISTRVE,NVEC,NUPVEC,
      *                 NREDH,EIVAL,WRK(KIPLAC),
@@ -1088,43 +1090,46 @@ C
       RETURN
       END
 C  /* Deck ccred */
-      SUBROUTINE CCRED(FRHO1,LUFR1,FRHO2,LUFR2,
-     *                 FC1AM,LUFC1,FC2AM,LUFC2,
+      SUBROUTINE CCRED(FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
+     *                 FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *                 CCR12,FS12AM,LUFS12,
      *                 LINQCC,TRIPLET,ISIDE,LIST,
-     *                 LPROJECT,ISTATPRJ,
+     *                 LPROJECT,ISTATPRJ,LREDS,REDS,
      *                 REDH,NREDH,ISTRVE,NUPVEC,NVEC,
      *                 EIVAL,SOLEQ,WRK,LWRK,DEBUG)
 C
 C
 C Input:
 C  ISIDE, 1 for right transformation ,-1 for left
-C  NREDH,  dimension of new reduced PROJECTED HESSIAN matrix, NREDH is
-C          not changed in CCRED
+C  NREDH,  dimension of the (updated) Hessian/Jacobian matrix in the
+C          reduced space (NREDH is not changed in CCRED)
 C  ISTRVE  is startnumber on list of equations to be solved.
-C  NUPVEC,      number of new b-vectors for which REDH is extended
-C  NVEC,    number of linear equations or roots to be solved for in red space
+C  NUPVEC, number of new b-vectors for which REDH is extended
+C  NVEC,   number of linear equations or roots to be solved for 
+C          in the reduced space
 C  
-C  LINQCC.EQ.T ,solve nvec set of linear equations 
-C  EIVAL CONTAINS NVEC FREQUENCIES 
-C  EIVAL( ISTRVE ... (ISTRVE+NVEC-1) )
+C  LINQCC.EQ.T : solve nvec set of linear equations 
+C                EIVAL contains NVEC frequencies 
+C                EIVAL( ISTRVE ... (ISTRVE+NVEC-1) )
 C
-C  LINQCC.EQ.T ,solve for NVEC lowest eigenvalues
+C  LINQCC.EQ.F : solve for NVEC lowest eigenvalues
 C  
 C  (The reduced PROJECTED HESSIAN matrix is the projection
 C   on the basis of b-vectors.
 C   REDH(I,J) = B(I) * S(J)   )
 C
 C Output:
-C  REDH,   the new, extended reduced PROJECTED HESSIAN matrix
-C          (dimension: NREDH)
+C  REDH,   Jacobian in reduced space (dimension: NREDH)
+C  REDS,   overlap in reduced space (dimension: NREDH)
 C  SOLEQ,  solutions to the NVEC set of NEWTON equations
 C          or eigenvalue equations
 C  EIVAL,  eigenvalues or frequencies
 C
 C Flow:
-C 1. if NUPVEC gt 0 update reduced hessian with nupvec vektorer
-C 2. determine NVEC solution vectors , returned in SOLEQ
-C    for eigenvalue equation the reduced eigenvalues are returned in EIVAL
+C 1. if NUPVEC gt 0 update reduced jacobian (and metric) with nupvec 
+C    vectors
+C 2. determine NVEC solution vectors, returned in SOLEQ for eigenvalue 
+C    equation the reduced eigenvalues are returned in EIVAL
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -1133,96 +1138,150 @@ C
 #include <leinf.h>
 #include <ccrc1rsp.h>
 C
-      PARAMETER (D1 = 1.0D0 , D0 = 0.0D0 )
+      PARAMETER (D1 = 1.0D0 , D0 = 0.0D0, THRZER = 1.0D-99 )
 C
-      CHARACTER*(*)  FRHO1,FRHO2,FC1AM,FC2AM
+      CHARACTER*(*) FRHO1,FRHO2,FC1AM,FC2AM,FRHO12,FC12AM,FS12AM
       CHARACTER*(*) LIST
-      LOGICAL   LINQCC, LPROJECT, TRIPLET, DEBUG
-      DIMENSION REDH(*),SOLEQ(MAXRED,*)
+      LOGICAL   LINQCC, LPROJECT, TRIPLET, DEBUG, CCR12, LREDS, LOCDBG
+      PARAMETER (LOCDBG = .FALSE.)
+      DIMENSION REDH(*),SOLEQ(MAXRED,*),REDS(*)
       DIMENSION EIVAL(*),WRK(*)
-C
 C
 C **************************************************************
 C Section 1:
 C extend reduced PROJECTED HESSIAN matrix with NUPVEC new b-vectors
 C **************************************************************
 C
-C 
-C
       IF (IPRLE.GT.5) THEN
          WRITE(LUPRI,*)' CCRED  '
          WRITE(LUPRI,*)' ISIDE  ',ISIDE
+         WRITE(LUPRI,*)' LREDS  ',LREDS
          WRITE(LUPRI,*)' NREDH  ',NREDH
          WRITE(LUPRI,*)' ISTRVE ',ISTRVE
          WRITE(LUPRI,*)' NUPVEC ',NUPVEC
          WRITE(LUPRI,*)' NVEC   ',NVEC
          WRITE(LUPRI,*)' LWRK   ',LWRK
       END IF
-      MAXVEC =  (LWRK-NCCVAR)/NCCVAR
 C
       IF (NUPVEC.GT.0) THEN 
+         IF (LREDS) THEN
+           MAXVEC = (LWRK-NCCVAR)/(2*NCCVAR)
+         ELSE
+           MAXVEC = (LWRK-NCCVAR)/NCCVAR
+         END IF
+         
          IREDH  = NREDH - NUPVEC 
-C
-C read in sig vectors in batches
-C   
          DO 100 IVEC = 1,NUPVEC,MAXVEC 
             NSIM = MIN(MAXVEC,NUPVEC+1-IVEC)
 C
-C work space allocation
+C           work space allocation
 C
-            KSVEC = 1
-            KBVEC = KSVEC + NSIM*NCCVAR
+            KSVEC  = 1
+            KBVEC  = KSVEC + NSIM*NCCVAR
+            KSBVEC = KBVEC + NCCVAR
 C
+C           read in sig vectors in batches
+C   
             LSVEC = KSVEC
-            DO 200 INUM = 1,NSIM
-               IVENU = IREDH + IVEC -1 + INUM
-               CALL CC_GETVEC(LUFR1,FRHO1,LUFR2,FRHO2,
+            DO INUM = 1,NSIM
+               IVENU = IREDH + IVEC-1 + INUM
+               CALL CC_GETVEC(LUFR1,FRHO1,LUFR2,FRHO2,LUFR12,FRHO12,
      *                        TRIPLET,IVENU,WRK(LSVEC))
                LSVEC = LSVEC + NCCVAR
- 200        CONTINUE
+            END DO
+            IF (LOCDBG) THEN
+               WRITE(LUPRI,'(a,i3,a,i3)')
+     *           'A * C for ',IVEC,' - ',IVEC+NSIM-1
+               CALL OUTPUT(WRK(KSVEC),1,NCCVAR,1,NSIM,
+     *                     NCCVAR,NSIM,1,LUPRI)
+            END IF
+
+            IF (LREDS) THEN
+              ! read in S * b vectors in batches, assumes that the
+              ! conventional CC amplitudes are in the orthogonal basis
+              LSVEC = KSBVEC
+              DO INUM = 1,NSIM
+                 IVENU = IREDH + IVEC-1 + INUM
+                 CALL CC_GETVEC(LUFC1,FC1AM,LUFC2,FC2AM,LUFS12,FS12AM,
+     *                          TRIPLET,IVENU,WRK(LSVEC))
+                 LSVEC = LSVEC + NCCVAR
+              END DO
+              IF (LOCDBG) THEN
+                 WRITE(LUPRI,'(a,i3,a,i3)') 
+     *             'S * C for ',IVEC,' - ',IVEC+NSIM-1
+                 CALL OUTPUT(WRK(KSBVEC),1,NCCVAR,1,NSIM,
+     *                       NCCVAR,NSIM,1,LUPRI)
+              END IF
+            END IF
 C
-C read in b vectors and extend coulomn vectors of projected matrix
+C           read in b vectors and extend colomns of the Jacobian 
+C           (and the metric) in the reduces space
 C
-            DO 300 I = 1,NREDH
-               CALL CC_GETVEC(LUFC1,FC1AM,LUFC2,FC2AM,
+            DO I = 1,NREDH
+               CALL CC_GETVEC(LUFC1,FC1AM,LUFC2,FC2AM,LUFC12,FC12AM,
      *                        TRIPLET,I,WRK(KBVEC))
-               DO 400 JNUM = 1,NSIM
+               DO JNUM = 1,NSIM
                   J = IREDH + IVEC -1 + JNUM
                   REDH( I + (J-1)*MAXRED ) =
      *            DDOT(NCCVAR,WRK(KBVEC),1,WRK(KSVEC+(JNUM-1)*NCCVAR),1)
- 400           CONTINUE
- 300        CONTINUE
+                  IF (LREDS) THEN
+                    REDS( I + (J-1)*MAXRED ) = DDOT(NCCVAR,
+     *                   WRK(KBVEC),1,WRK(KSBVEC+(JNUM-1)*NCCVAR),1)
+                  END IF
+               END DO
+            END DO
+
  100     CONTINUE
 C
-C extend with row vectors in reduced matrix  if IREDH gt 0
+C        extend row vectors in reduced spaces matrices if IREDH gt 0
 C
          IF (IREDH.GT.0) THEN
+            IF (LREDS) THEN
+              MAXVEC = (LWRK-2*NCCVAR)/NCCVAR
+            ELSE
+              MAXVEC = (LWRK-NCCVAR)/NCCVAR
+            END IF
+
             DO 600 IVEC = 1,NUPVEC,MAXVEC 
                NSIM = MIN(MAXVEC,NUPVEC+1-IVEC)
 C
-               KBVEC = 1
-               KSVEC = KBVEC + NSIM*NCCVAR
+               KBVEC  = 1
+               KSVEC  = KBVEC + NSIM*NCCVAR
+               KSBVEC = KSVEC + NCCVAR
 C
                LBVEC = KBVEC
-               DO 700 INUM = 1,NSIM
+               DO INUM = 1,NSIM
                   IVENU = IREDH + IVEC -1 + INUM
-                  CALL CC_GETVEC(LUFC1,FC1AM,LUFC2,FC2AM,
+                  CALL CC_GETVEC(LUFC1,FC1AM,LUFC2,FC2AM,LUFC12,FC12AM,
      *                           TRIPLET,IVENU,WRK(LBVEC))
                   LBVEC = LBVEC + NCCVAR
- 700           CONTINUE
+               END DO
+               IF (LOCDBG) THEN
+                 WRITE(LUPRI,'(a,i3,a,i3)')'C for ',IVEC,'-',IVEC+NSIM-1
+                 CALL OUTPUT(WRK(KBVEC),1,NCCVAR,1,NSIM,
+     *                       NCCVAR,NSIM,1,LUPRI)
+               END IF
 C
-C read in s vectors and extend coulomn vectors of projected matrix
+C              read in s vectors and extend rows of projected matrices
 C
-               DO 800 J = 1,IREDH
-                  CALL CC_GETVEC(LUFR1,FRHO1,LUFR2,FRHO2,
+               DO J = 1,IREDH
+                  CALL CC_GETVEC(LUFR1,FRHO1,LUFR2,FRHO2,LUFR12,FRHO12,
      *                           TRIPLET,J,WRK(KSVEC))
-                  DO 900 INUM = 1,NSIM
+                  IF (LREDS) THEN
+                   CALL CC_GETVEC(LUFC1,FC1AM,LUFC2,FC2AM,LUFS12,FS12AM,
+     *                            TRIPLET,J,WRK(KSBVEC))
+                  END IF
+                  DO INUM = 1,NSIM
                      I = IREDH + IVEC -1 + INUM
-                     REDH( I + (J-1)*MAXRED ) =
-     *               DDOT(NCCVAR,WRK(KSVEC),1,
-     *                    WRK(KBVEC+(INUM-1)*NCCVAR),1)
- 900              CONTINUE
- 800           CONTINUE
+                     REDH( I + (J-1)*MAXRED ) = DDOT(NCCVAR,
+     *                   WRK(KSVEC),1, WRK(KBVEC+(INUM-1)*NCCVAR),1)
+                     IF (LREDS) THEN
+                       REDS( I + (J-1)*MAXRED ) = DDOT(NCCVAR,
+     *                   WRK(KSBVEC),1,WRK(KBVEC+(INUM-1)*NCCVAR),1)
+                     END IF
+                  END DO
+               END DO
+
  600        CONTINUE
          END IF
 C     
@@ -1301,7 +1360,7 @@ C
 C read in b vectors and set up reduced gradient in SOLEQ
 C
                DO 1200 I = 1,NREDH
-                  CALL CC_GETVEC(LUFC1,FC1AM,LUFC2,FC2AM,
+                  CALL CC_GETVEC(LUFC1,FC1AM,LUFC2,FC2AM,LUFC12,FC12AM,
      *                           TRIPLET,I,WRK(KBVEC))
                   DO 1300 JNUM = 1,NSIM
                      J =  IVEC -1 + JNUM
@@ -1341,6 +1400,9 @@ C
          KMA = MAXRED*MAXRED
          DO 2100 IVEC = 1,NVEC
             CALL DCOPY(KMA,REDH, 1,WRK,1)
+            IF (CCR12 .AND. DABS(EIVAL(IVEC)).GT.1.0D-15) THEN
+              CALL QUIT('CC-R12 problem for LINQCC in CCRED')
+            END IF
             DO 2200 I = 1,NREDH
 	       IADR = (I-1)*MAXRED + I
                WRK(IADR) = WRK(IADR) - EIVAL(IVEC)
@@ -1385,8 +1447,8 @@ C
           IF (LWRK1 .LT. 0) THEN
             CALL QUIT('Out of memory in CCRED')
           END IF 
-            CALL CCCONV(LUFC1,FC1AM,LUFC2,FC2AM,TRIPLET,NREDH,
-     *                  IVEC,NBVEC,SOLEQ,WRK(1),WRK(KWRK1))
+            CALL CCCONV(LUFC1,FC1AM,LUFC2,FC2AM,LUFC12,FC12AM,TRIPLET,
+     *                  CCR12,NREDH,IVEC,NBVEC,SOLEQ,WRK(1),WRK(KWRK1))
           DO I = 1, NBVEC
             IDX = IVEC-1+I
             CALL CC_SAVE(WRK(1+(I-1)*NCCVAR),ISTRVE-1+IDX,
@@ -1403,20 +1465,44 @@ C **************************************************************
 C Section 2: Solve reduced generalized eigenvalue problem in subspace
 C **************************************************************
 C
-C        Use EISPACK routine for real general matrices in
-C        generalized eigenvalue problem
-C
          MATZ = 1
          KWI  = 1
          KAMAT= KWI  + MAXRED
          KIV1 = KAMAT+ MAXRED*MAXRED
          KFV1 = KIV1 + MAXRED
          KEND = KFV1 + MAXRED
-         LEND    = LWRK - KEND
+         IF (LREDS) THEN
+           KSMAT  = KEND
+           KEND   = KSMAT  + MAXRED*MAXRE
+           KDENOM = KFV1
+         END IF
+
+         LEND = LWRK - KEND
          IF (KEND .GT. LWRK) CALL ERRWRK('LERED.RG',KEND,LWRK)
-         CALL DCOPY(MAXRED*MAXRED,REDH,1,WRK(KAMAT),1)
-         CALL RG(MAXRED,NREDH,WRK(KAMAT),EIVAL,WRK,MATZ,SOLEQ,
-     *           WRK(KIV1),WRK(KFV1),IERR)
+
+         IF (LREDS) THEN
+           ! solve generalized eigenvalue problem for a real general
+           ! jacobian and a nontrivial metric 
+           CALL DCOPY(MAXRED*MAXRED,REDH,1,WRK(KAMAT),1)
+           CALL DCOPY(MAXRED*MAXRED,REDS,1,WRK(KSMAT),1)
+           CALL RGG(MAXRED,NREDH,WRK(KAMAT),WRK(KSMAT),EIVAL,
+     *              WRK(KWI),WRK(KDENOM),MATZ,SOLEQ,IERR)
+           DO I = 1, NREDH
+             IF (ABS(WRK(KDENOM-1+I)).GT.THRZER) THEN
+               EIVAL(I) = EIVAL(I)/WRK(KDENOM-1+I)
+               WRK(KWI-1+i) = WRK(KWI-1+I)/WRK(KDENOM-1+I)
+             ELSE
+               EIVAL(I) = D1/THRZER
+               WRK(KWI-1+i) = WRK(KWI-1+I)/THRZER
+             END IF
+           END DO
+         ELSE
+           ! solve eigenvalue problem for a real general jacobian
+           CALL DCOPY(MAXRED*MAXRED,REDH,1,WRK(KAMAT),1)
+           CALL RG(MAXRED,NREDH,WRK(KAMAT),EIVAL,WRK(KWI),MATZ,SOLEQ,
+     *             WRK(KIV1),WRK(KFV1),IERR)
+         END IF
+
          IF (IPRLE .GE. 70 .OR. IERR .NE. 0) THEN
             WRITE (LUPRI,'(/A)') ' REDUCED EIGENVALUES real part:'
             WRITE (LUPRI,'(A)') ' before sort of eigenvalues'
@@ -1424,7 +1510,7 @@ C
             WRITE (LUPRI,'(/A)')
      *           ' REDUCED EIGENVALUES imaginary part:'
             WRITE (LUPRI,'(A)') ' before sort of eigenvalues'
-            CALL OUTPUT(WRK,1,NREDH,1,1,NREDH,MAXRED,1,LUPRI)
+            CALL OUTPUT(WRK(KWI),1,NREDH,1,1,NREDH,MAXRED,1,LUPRI)
             WRITE (LUPRI,'(/A)') ' REDUCED EIGENVECTORS :'
             WRITE (LUPRI,'(A)') ' before sort of eigenvalues'
             CALL OUTPUT(SOLEQ,1,NREDH,1,NREDH,MAXRED,MAXRED,1,LUPRI)
@@ -1435,30 +1521,30 @@ C
                CALL QUIT(' CCRED: EIGENVALUE EQUATION NOT CONVERGED ')
          END IF
 C
-         CALL RGORD(MAXRED,NREDH,EIVAL,WRK,SOLEQ)
+         CALL RGORD(MAXRED,NREDH,EIVAL,WRK(KWI),SOLEQ)
 C
          ICPLX = 0
-         DO 3000 I=1,NVEC
+         DO I=1,NVEC
             IF (WRK(I) .NE. D0) THEN
                ICPLX = ICPLX + 1
                WRITE(LUPRI,'(I10,1P,2D15.8,A/)') I,EIVAL(I),WRK(I),
      *            ' *** CCRED  WARNING **** COMPLEX VALUE.'
             END IF
- 3000    CONTINUE
+         END DO
 C
          IF (IPRLE .GE.1 .OR. ICPLX .GT. 0) THEN
             WRITE (LUPRI,'(/A)') ' REDUCED EIGENVALUES real part:'
-            CALL OUTPUT(EIVAL,1,NVEC,1,1,NREDH,MAXRED,1,LUPRI)
+            CALL OUTPUT(EIVAL,1,NVEC,1,1,MAXRED,1,1,LUPRI)
          ENDIF
 C
          IF (IPRLE .GE.11 .OR. ICPLX .GT. 0) THEN
             WRITE (LUPRI,'(/A)') ' REDUCED EIGENVALUES imaginary part:'
-            CALL OUTPUT(WRK,1,NVEC,1,1,NREDH,MAXRED,1,LUPRI)
+            CALL OUTPUT(WRK(KWI),1,NVEC,1,1,MAXRED,1,1,LUPRI)
          END IF
 C
          IF (IPRLE .GE. 15) THEN
             WRITE (LUPRI,'(/A)') ' REDUCED EIGENVECTORS :'
-            CALL OUTPUT(SOLEQ,1,NVEC,1,NVEC,MAXRED,MAXRED,1,LUPRI)
+            CALL OUTPUT(SOLEQ,1,NREDH,1,NVEC,MAXRED,MAXRED,1,LUPRI)
          END IF
 C
          IF (ICPLX .GT. 0)
@@ -1467,8 +1553,12 @@ C
       END IF
 C
       IF (IPRLE.GE.15 ) THEN
-         WRITE(LUPRI,'(/A)')' *** REDUCED HESSIAN MATRIX ***'
-         CALL OUTPUT(REDH,1,NVEC,1,NVEC,MAXRED,MAXRED,1,LUPRI)
+         WRITE(LUPRI,'(/A)')' REDUCED HESSIAN MATRIX:'
+         CALL OUTPUT(REDH,1,NREDH,1,NREDH,MAXRED,MAXRED,1,LUPRI)
+	 IF (LREDS) THEN
+           WRITE(LUPRI,'(/A)')' REDUCED METRIC MATRIX:'
+           CALL OUTPUT(REDS,1,NREDH,1,NREDH,MAXRED,MAXRED,1,LUPRI)
+	 END IF 
       END IF
 C
 C *** End of subroutine CCRED
@@ -1518,8 +1608,8 @@ C
       RETURN
       END
 C  /* Deck ccort */
-      SUBROUTINE CCORT(LUFC1,C1FIL,LUFC2,C2FIL,TRIPLET,
-     *                 NBADD,NBPREV,NCCVAR,
+      SUBROUTINE CCORT(LUFC1,C1FIL,LUFC2,C2FIL,LUFC12,C12FIL,
+     *                 TRIPLET,NBADD,NBPREV,NCCVAR,
      *                 BVECS,THRLDP,WRK,LWRK,IPRLE)
 C 
 C Modified version of ORTBVLE of Hans Jorgen Aa Jensen
@@ -1532,12 +1622,13 @@ C  (Orthogonalization is performed twice if round-off is large,
 C   if larger than THRRND).
 C
 C Input:
-C  LUFC1, file with C1 trial vectors with name C1FIL
-C  LUFC2, file with C2 trial vectors with name C2FIL
-C  BVECS, non-orthogonal  b-vectors
-C  NBADD,    number of BVECS
-C  NBPREV,   number of trial vectors on LUB
-C  THRLDP, threshold for linear dependence
+C  LUFC1  - file with singles parts of trial vectors with name C1FIL
+C  LUFC2  - file with doubles parts of trial vectors with name C2FIL
+C  LUFC12 - file with R12 doubles parts of trial vec. with name C12FIL
+C  BVECS  - non-orthogonal  b-vectors
+C  NBADD  - number of BVECS
+C  NBPREV - number of trial vectors on LUB
+C  THRLDP - threshold for linear dependence
 C  
 C
 C Output:
@@ -1551,8 +1642,8 @@ C
 #include <priunit.h>
 #include <ccsdinp.h>
 C
-      CHARACTER C1FIL*(*),C2FIL*(*)
-      DIMENSION BVECS(NCCVAR,2),WRK(NCCVAR)
+      CHARACTER C1FIL*(*),C2FIL*(*),C12FIL*(*)
+      DIMENSION BVECS(NCCVAR,*),WRK(NCCVAR)
       LOGICAL TRIPLET
       PARAMETER (THRRND=1.D-4, THRTT=1.D-6, THRZER=1.0D-35)
       PARAMETER (D1 = 1.0D0)
@@ -1562,14 +1653,14 @@ C
       NSAVE = NBADD
 C
       IF (IPRLE .GT. 20) THEN
-         WRITE (LUPRI,'(//A/)') ' >>> Test output from CCORT <<<'
+         WRITE (LUPRI,'(//A/)') ' >>> Debug output from CCORT <<<'
       END IF
 C
 C     Normalize input BVECS and remove
 C     vectors with norm .le. THRZER
 C
       NNUM = 0
-      DO 100 I = 1,NBADD
+      DO I = 1, NBADD
          TT = DDOT(NCCVAR,BVECS(1,I),1,BVECS(1,I),1)
          IF (IPRLE .GT. 20) THEN
             WRITE (LUPRI,*) ' I, initial norm  of BVECS(1,I) :',I,TT
@@ -1592,7 +1683,7 @@ C
                CALL DCOPY(NCCVAR,BVECS(1,I),1,BVECS(1,NNUM),1)
             END IF
          END IF
-  100 CONTINUE
+      END DO
 C
       IF (NBADD.NE.NNUM) THEN
          WRITE(LUPRI,*)NNUM-NBADD,' vectors with norm le:',
@@ -1607,18 +1698,20 @@ C
 C
 C work space allocation
 C
-      KBPRE = 1
+      KBPRE  = 1
       IROUND = 0
       ITURN  = 0
- 1500 ITURN  = ITURN + 1
+
+ 1500 CONTINUE
+      ITURN  = ITURN + 1
 C
 C     Orthogonalize new b-vectors against previous b-vectors
 C
-      DO 2000 K=1,NBPREV
+      DO K = 1, NBPREV
          IF (NBADD .GT. 0) THEN
-            CALL CC_GETVEC(LUFC1,C1FIL,LUFC2,C2FIL,
+            CALL CC_GETVEC(LUFC1,C1FIL,LUFC2,C2FIL,LUFC12,C12FIL,
      *                     TRIPLET,K,WRK(KBPRE))
-            DO 1910 J = 1,NBADD
+            DO J = 1, NBADD
                TT = -DDOT(NCCVAR,WRK(KBPRE),1,BVECS(1,J),1)
                IF (IPRLE .GT. 20) THEN
                   WRITE (LUPRI,*)
@@ -1626,19 +1719,19 @@ C
      *            K,J,TT
                END IF
                CALL DAXPY(NCCVAR,TT,WRK(KBPRE),1,BVECS(1,J),1)
- 1910       CONTINUE
+            END DO
          ELSE
             WRITE (LUPRI,'(/1X,A,2I5)')
      *        'CCORT, number vectors added is zero , NBADD :',NBADD
          END IF
- 2000 CONTINUE
+      END DO
 C
 C     Normalize and orthogonalize new vectors against each other
 C     and remove vectors that are linear dependent 
 C
       NNUM = 0
-      DO 2400 I = 1,NBADD
-         DO 2300 J = 1,NNUM
+      DO I = 1, NBADD
+         DO J = 1, NNUM
             T1 =  DDOT(NCCVAR,BVECS(1,J),1,BVECS(1,J),1)
             TT = -DDOT(NCCVAR,BVECS(1,J),1,BVECS(1,I),1)
             IF (IPRLE .GT. 20) THEN
@@ -1648,7 +1741,7 @@ C
             END IF
             TT = TT / T1
             CALL DAXPY(NCCVAR,TT,BVECS(1,J),1,BVECS(1,I),1)
- 2300    CONTINUE
+         END DO
          TT = DDOT(NCCVAR,BVECS(1,I),1,BVECS(1,I),1)
          IF (IPRLE .GT. 20) THEN
             WRITE (LUPRI,*)
@@ -1675,7 +1768,7 @@ C
                CALL DCOPY(NCCVAR,BVECS(1,I),1,BVECS(1,NNUM),1)
             END IF
          END IF
- 2400 CONTINUE
+      END DO
 C
       IF (NBADD.NE.NNUM) THEN
          IF (IPRLE.GT.2) THEN
@@ -1690,11 +1783,11 @@ C
 C Save new vector together with old ones on LUS
 C
       NLAST = NBPREV + NBADD 
-      DO 4300 I = 1,NBADD
+      DO I = 1, NBADD
          IVENU = NBPREV + I
-         CALL CC_PUTVEC(LUFC1,C1FIL,LUFC2,C2FIL,TRIPLET,
-     *                  IVENU,BVECS(1,I))
- 4300 CONTINUE
+         CALL CC_PUTVEC(LUFC1,C1FIL,LUFC2,C2FIL,LUFC12,C12FIL,
+     *                  TRIPLET,IVENU,BVECS(1,I))
+      END DO
 C
 C     update NBPREV
 C
@@ -1715,10 +1808,11 @@ C
          LWRK1 = LWRK - KWRK1
          IF ( LWRK1 .LE.0) CALL QUIT('CCORT TOO LITTLE WRK')
          LVEC = KVEC
-         DO 5000 I = 1 , NBPREV
-            CALL CC_GETVEC(LUFC1,C1FIL,LUFC2,C2FIL,TRIPLET,I,WRK(LVEC))
+         DO I = 1, NBPREV
+            CALL CC_GETVEC(LUFC1,C1FIL,LUFC2,C2FIL,LUFC12,C12FIL,
+     *                     TRIPLET,I,WRK(LVEC))
             LVEC = LVEC + NCCVAR
- 5000    CONTINUE
+         END DO
          WRITE(LUPRI,*)'*** CCORT TEST ****'
          WRITE(LUPRI,*)' OVERLAP BETWEEN',NBPREV,' TRIAL VECTORS'
          CALL PROVLP(WRK(KVEC),NCCVAR,NBPREV,WRK(KOLP),LUPRI)
@@ -1730,6 +1824,10 @@ C
 C
 C *** End of subroutine CCORT
 C
+      IF (IPRLE .GT. 20) THEN
+        WRITE (LUPRI,'(/A//)')' >>> End of debug output from CCORT <<<'
+      END IF
+
       RETURN
       END
 C  /* Deck provlp */
@@ -1790,18 +1888,26 @@ C
 #include <ccsdinp.h>
 C
       CHARACTER*(*) LIST
-      CHARACTER*10  MODEL
+      CHARACTER*14  MODEL, LABR12
 C
       DIMENSION VEC(*), WORK(LWORK)
 C
       INTEGER ILSTSYM
 C
-      MODEL = 'CCSD'
-      IF (CCS) MODEL = 'CCS'
-      IF (CC2) MODEL = 'CC2'
-      IF (CC3) MODEL = 'CC3'
-      IF (CC1A) MODEL = 'CCSDT-1A'
-      IF (CC1B) MODEL = 'CCSDT-1B'
+      IF (CCR12 .AND. (.NOT.(CCS.OR.CIS))) THEN
+        ILEN   = 4
+        LABR12 = '-R12'
+      ELSE
+        ILEN = 1
+        LABR12 = ' '
+      END IF 
+
+      MODEL = 'CCSD'//LABR12(1:ILEN)
+      IF (CCS)  MODEL = 'CCS'
+      IF (CC2)  MODEL = 'CC2'//LABR12(1:ILEN)
+      IF (CC3)  MODEL = 'CC3'//LABR12(1:ILEN)
+      IF (CC1A) MODEL = 'CCSDT-1A'//LABR12(1:ILEN)
+      IF (CC1B) MODEL = 'CCSDT-1B'//LABR12(1:ILEN)
 C
       ISYM = ILSTSYM(LIST,ILSTNR)
 C
@@ -1811,57 +1917,13 @@ C
       IOPT   = 3
       CALL CC_WRRSP(LIST,ILSTNR,ISYM,IOPT,MODEL,DUMMY,VEC(KT1),
      *              VEC(KT2),WORK,LWORK)
+      IF (CCR12 .AND. (.NOT.(CCS.OR.CIS))) THEN
+        IOPT = 32
+        KT12 = KT2 + NT2AM(ISYM)
+        CALL CC_WRRSP(LIST,ILSTNR,ISYM,IOPT,MODEL,DUMMY,DUMMY,
+     *                VEC(KT12),WORK,LWORK)
+      END IF
 C
-      END 
-C  /* Deck cc_getsav */
-      SUBROUTINE CC_GETSAV(VEC,ILSTNR,LIST,IOPT)
-C
-C     Ove Christiansen 14-11-1996
-C     Get saved vector to file based on list and list number.
-C
-#include <implicit.h>
-#include <priunit.h>
-#include <cclr.h>
-#include <ccorb.h>
-#include <leinf.h>
-#include <ccsdsym.h>
-#include <ccsdinp.h>
-#include <ccexci.h>
-C
-      CHARACTER*(*) LIST
-      CHARACTER*10  MODEL
-C
-      DIMENSION VEC(*)
-C
-      INTEGER ILSTSYM
-C
-      WRITE (LUPRI,*) 'CC_GETSAV> IOPT = ',IOPT
-C
-      ISYM = ILSTSYM(LIST,ILSTNR)
-C
-      IMUL = 1
-      IF (LIST(1:2).EQ.'RE' .OR. LIST(1:2).EQ.'LE') THEN
-         IMUL = IMULTE(ILSTNR)
-      END IF               
-C
-      KT1   = 1
-      KT2   = 1 + NT1AM(ISYM)
-      KT2M  = KT2 + NT2AM(ISYM)   
-      IF (.NOT. CCS) THEN
-         CALL DZERO(VEC(KT2),NT2AM(ISYM))
-         IF (IMUL.EQ.3) CALL DZERO(VEC(KT2M),NT2AM(ISYM)) 
-      ENDIF
-      CALL CC_RDRSP(LIST,ILSTNR,ISYM,IOPT,MODEL,VEC(KT1),
-     *              VEC(KT2))
-      IF (IOPT .EQ. 33) THEN
-         WRITE(LUPRI,'(1X,A,I3,A,I3,A)') 'Vector nr.',ILSTNR,
-     *   ' of symmetry',ISYM,' NOT found on file.'
-      ELSE
-         WRITE(LUPRI,'(1X,A,I3,A,I3,A)') 'Vector nr.',ILSTNR,
-     *   ' of symmetry',ISYM,' found on file - RESTART SUCCESS'
-         WRITE(LUPRI,'(1X,A,A13,A)') 'Start vector is a ',
-     *   MODEL//LIST(1:3),' vector'
-      ENDIF
       END 
 *=====================================================================*
       SUBROUTINE PRJDRV(ISIDE,ISTATPRJ,ISYMPRJ,NVECS,NDIM,VECT,WORK)
@@ -1881,6 +1943,7 @@ C
 #include <ccsdinp.h>
 #include <ccexci.h>
 #include <ccsdsym.h>
+#include <r12int.h>
 *
       DIMENSION VECT(*), WORK(*)
       CHARACTER*10 MODFIL
@@ -1896,6 +1959,8 @@ C
          WRITE(LUPRI,*) 'PRJDRV: NVECS  =    ',NVECS
       ENDIF
 *
+      IF (LMULBS) CALL QUIT('PRJDRV not yet adapted for CC-R12')
+
       IF (CCS) THEN
         IOPT = 1
       ELSE
@@ -1952,7 +2017,7 @@ c
           CHECKR = DDOT(NDIMV,VECT(KOFFV),1,WORK(KREVT1),1)
           IF (LOCDBG) THEN
             WRITE(LUPRI,*) 'After PRJECT from right: <LE|VP> = ', CHECKL
-            WRITE(LUPRI,*) 'After PRJECT from right: <RET|VP> = ', CHECKR
+            WRITE(LUPRI,*) 'After PRJECT from right: <RET|VP> = ',CHECKR
           END IF
 *
         ELSE 
@@ -1969,7 +2034,7 @@ ccs          CHECKR = DDOT(NDIMV,VECT,1,WORK(KREVT1),1)
 ccs          CHECKL = DDOT(NDIMV,VECT,1,WORK(KLEVT1),1)
           IF (LOCDBG) THEN
             WRITE(LUPRI,*) 'After PRJECT from left: <VP|RE> = ', CHECKR
-            WRITE(LUPRI,*) 'After PRJECT from left: <VP|LET> = ', CHECKL
+            WRITE(LUPRI,*) 'After PRJECT from left: <VP|LET> = ',CHECKL
           END IF
         ENDIF
       END DO
@@ -2012,3 +2077,78 @@ ccs          CHECKL = DDOT(NDIMV,VECT,1,WORK(KLEVT1),1)
 *
       RETURN
       END
+*======================================================================*
+      SUBROUTINE CC_PRECOND(VECTORS,NVEC,NCCVAR,ISYMTR,TRIPLET,
+     &                      WORK,LWORK)
+      IMPLICIT NONE
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
+#include <ccsdinp.h>
+#include <dummy.h>
+
+      LOGICAL TRIPLET, LCCEQ
+      INTEGER NVEC, NCCVAR, ISYMTR, LWORK
+
+#if defined (SYS_CRAY)
+      REAL VECTORS(NCCVAR,NVEC), WORK(*), DTEST
+#else
+      DOUBLE PRECISION VECTORS(NCCVAR,NVEC), WORK(*), DTEST
+#endif
+      PARAMETER ( DTEST = 1.0D-04 )
+
+      INTEGER KDIA, KEND1, N2, NRHFTRIA, KSING, KTRIP,
+     &        KSCRS, KSCRT, LWRK1, NCCVAR0, JVEC
+
+      KDIA  = 1
+      KEND1 = KDIA  + NCCVAR
+
+      IF (CCR12) THEN
+        NRHFTRIA = NRHFT*(NRHFT+1)/2
+        N2       = NRHFTRIA * NRHFTRIA
+
+        KSING    = KEND1
+        KTRIP    = KSING + N2
+        KSCRS    = KTRIP + N2
+        KSCRT    = KSCRS + N2
+        KEND1    = KSCRT + N2 
+      END IF
+  
+      LWRK1 = LWORK - KEND1
+      IF (LWRK1.LT.0) THEN
+        CALL QUIT('Too little work space in CC_PRECOND')
+      END IF
+
+      CALL CCLR_DIA(WORK(KDIA),ISYMTR,TRIPLET,WORK(KEND1),LWRK1)
+      CALL LEDIAG(NCCVAR,WORK(KDIA),DTEST)
+
+      IF (CCS) THEN
+        NCCVAR0 = NT1AM(ISYMTR)
+      ELSE
+        NCCVAR0 = NT1AM(ISYMTR) + NT2AM(ISYMTR)
+        IF (TRIPLET) NCCVAR0 = NCCVAR0 + NT2AMA(ISYMTR)
+      END IF
+
+      DO JVEC = 1,NVEC
+         ! for conventional part divide by orbital energy differences
+         DO I=1,NCCVAR0
+            VECTORS(I,JVEC) = VECTORS(I,JVEC)*WORK(KDIA-1+I)
+         END DO
+
+         IF (CCR12) THEN
+            ! for R12 part divide by B matrix
+            CALL CCR12UNPCK(VECTORS(NCCVAR0+1,JVEC),ISYMTR,
+     &                      WORK(KSING),WORK(KTRIP))
+            LCCEQ = .FALSE.
+            CALL CC_R12NXTAM(WORK(KSING),WORK(KTRIP),
+     &                       WORK(KSCRS),WORK(KSCRT),LCCEQ,
+     &                       DUMMY,DUMMY,IPRINT,WORK(KEND1),LWRK1)
+            CALL CCR12PCK(VECTORS(NCCVAR0+1,JVEC),ISYMTR,
+     &                    WORK(KSING),WORK(KTRIP))
+            CALL DSCAL(NGAMMA(ISYMTR),-1.0D0,VECTORS(NCCVAR0+1,JVEC),1)
+         END IF 
+      END DO
+
+      RETURN
+      END
+*======================================================================*

@@ -1493,6 +1493,7 @@ C
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
+#include <dummy.h>
 C
       LOGICAL TRIPLET
       PARAMETER (TRIPLET= .FALSE.)       
@@ -1500,7 +1501,7 @@ C
       CHARACTER LIST*(3)
 
       INTEGER NSTAT, ORDER, MAXVEC, NVEC, ISIDE, LWORK
-      INTEGER ISYOF(8)
+      INTEGER ISYOF(8), KT12, NCCVAR
       INTEGER ISYM, KT1, KT2, IOPT, ILSTNR, KEND1, LEND1
 
       LOGICAL LPROJ(MAXVEC)
@@ -1512,11 +1513,11 @@ C
 #if defined (SYS_CRAY)
       REAL FREQS(MAXVEC,ORDER), EIGVAL(MAXVEC,NSTAT)
       REAL WORK(LWORK)
-      REAL X1, X2, DDOT
+      REAL X1, X2, X12, DDOT
 #else
       DOUBLE PRECISION FREQS(MAXVEC,ORDER), EIGVAL(MAXVEC,NSTAT)
       DOUBLE PRECISION WORK(LWORK)
-      DOUBLE PRECISION X1, X2, DDOT
+      DOUBLE PRECISION X1, X2, X12, DDOT
 #endif
                                                             
       INTEGER ILSTSYM
@@ -1532,7 +1533,7 @@ C
            WRITE (LUPRI,'(//1X,3A,I3,A,/1X,A)') 'Testing ',LIST,
      &        ' list with',NVEC, ' elements on it:',
      &        'List Nr.  Label     Symmetry      Frequency'
-     &      //'      T1-norm        T2-norm'     
+     &      //"      T1-norm        T2-norm     T2'-norm"     
 
          ELSEIF (LIST(1:1).NE.'C'.AND.ORDER.EQ.2.AND.NSTAT.EQ.0) THEN
         
@@ -1585,12 +1586,15 @@ C
  
            ISYM = ILSTSYM(LIST,ILSTNR)
            KT1  = 1 
-           KT2  = KT1  + NT1AM(ISYM)
+           KEND1= KT1  + NT1AM(ISYM)
            IF (.NOT. CCS) THEN
-              KEND1= KT2  + NT2AM(ISYM)
-           ELSE  
-              KEND1= KT2
+              KT2   = KEND1
+              KEND1 = KT2  + NT2AM(ISYM)
            ENDIF 
+           IF (CCR12) THEN
+              KT12  = KEND1
+              KEND1 = KT12  + NGAMMA(ISYM)
+           END IF
            LEND1= LWORK - KEND1
            IF (LEND1 .LE. 0) THEN
                WRITE (LUPRI,*) 'Insufficient workspace in CC_TSTLST '
@@ -1608,11 +1612,19 @@ C
               X2 = DDOT(NT2AM(ISYM),WORK(KT2),1,WORK(KT2),1)
            ENDIF
 
+           IF (CCR12) THEN
+            IOPT = 32
+            CALL CC_RDRSP(LIST,ILSTNR,ISYM,IOPT,MODEL,DUMMY,WORK(KT12))
+            X12 = DDOT(NGAMMA(ISYM),WORK(KT12),1,WORK(KT12),1)
+           ELSE
+            X12 = 0.0D0
+           END IF
+
            IF     (LIST(2:2).NE.'C'.AND.ORDER.EQ.1.AND.NSTAT.EQ.0) THEN
         
              ! ground state freq.-dep. first order response
-             WRITE (LUPRI,'(1X,I5,5X,A8,2X,I4,6X,F15.10,F15.10,F15.10)')
-     &            ILSTNR,LABEL(ILSTNR,1),ISYM,FREQS(ILSTNR,1),X1,X2
+             WRITE (LUPRI,'(1X,I5,5X,A8,2X,I4,4X,4(2X,F15.10))')
+     &            ILSTNR,LABEL(ILSTNR,1),ISYM,FREQS(ILSTNR,1),X1,X2,X12
 
            ELSEIF (LIST(1:1).NE.'C'.AND.ORDER.EQ.2.AND.NSTAT.EQ.0) THEN
         

@@ -118,23 +118,29 @@ C
       PARAMETER (ZERO = 0.0d0, ONE = 1.0d0)
 #endif
 
-      CHARACTER*8 FC1AM,FC2AM,FRHO1,FRHO2
-      PARAMETER (FC1AM='CCR_C1AM',FC2AM='CCR_C2AM')
-      PARAMETER (FRHO1='CCR_RHO1',FRHO2='CCR_RHO2')
+      CHARACTER*8 FC1AM,FC2AM,FRHO1,FRHO2,FRHO12,FC12AM,FS12AM
+      PARAMETER (FC1AM ='CCR_C1AM',FC2AM ='CCR_C2AM')
+      PARAMETER (FRHO1 ='CCR_RHO1',FRHO2 ='CCR_RHO2')
+      PARAMETER (FRHO12='CCR_RH12',FC12AM='CCR_C12M',FS12AM='CCR_S12M')
 
       LOGICAL LINQCC
       PARAMETER (LINQCC = .TRUE.) 
 
       DIMENSION WORK(LWORK)
       CHARACTER MODEL*10
-      LOGICAL LTAKE, LPROJECT
+      LOGICAL LTAKE, LPROJECT, LREDS
 
 C
       CALL QENTER('CC_SOLDRV')
-      LUFC1 = 0
-      LUFC2 = 0
-      LUFR1 = 0
-      LUFR2 = 0
+      LUFC1  = 0
+      LUFC2  = 0
+      LUFC12 = 0
+      LUFR1  = 0
+      LUFR2  = 0
+      LUFR12 = 0
+      LUFS12 = 0
+C
+      LREDS = CCR12
 C
       IF (LOCDBG) THEN
         WRITE (LUPRI,*) 'LIST  :',LIST
@@ -171,10 +177,18 @@ C     Initialize Leinfi and variables.
 C-------------------------------------
 C
       IPRLE = IPRINT 
-      MODEL = 'CCSD      '
-      IF (CCS) MODEL = 'CCS       '
-      IF (CC2) MODEL = 'CC2       '
-      IF (CC3) MODEL = 'CC3       '
+      MODEL = 'xxxxxxxxxx'
+      IF (CCR12) THEN
+        IF (CCS)             MODEL = 'CCS       '
+        IF (CC2 .AND. CCR12) MODEL = 'CC2-R12   '
+        IF (CCSD.AND. CCR12) MODEL = 'CCSD-R12  '
+        IF (CC3 .AND. CCR12) MODEL = 'CC3-R12   '
+      ELSE
+        IF (CCS)  MODEL = 'CCS       '
+        IF (CC2)  MODEL = 'CC2       '
+        IF (CCSD) MODEL = 'CCSD      '
+        IF (CC3)  MODEL = 'CC3       '
+      END IF
 C
       IF (.NOT.(CCS.OR.CC2.OR.CCSD.OR.CC3)) THEN
          WRITE(LUPRI,'(A)') ' CC_SOLRSP: Do not want to calculate '
@@ -202,8 +216,12 @@ C        Initialize Variables.
 C-----------------------------
  
          ISYMTR = ISYM
-         NCCVAR = NT1AM(ISYMTR) + NT2AM(ISYMTR)
-         IF ( CCS) NCCVAR = NT1AM(ISYMTR)
+         IF (CCS) THEN
+           NCCVAR = NT1AM(ISYMTR)
+         ELSE
+           NCCVAR = NT1AM(ISYMTR) + NT2AM(ISYMTR)
+           IF (CCR12) NCCVAR = NCCVAR + NGAMMA(ISYMTR)
+         END IF
          CALL CCLR_LEINFI(TRIPLET)
          THRLE = THRLEQ
       IF (LETYPA .GT.0) THEN
@@ -460,6 +478,10 @@ C
             KEIVAL = KREDGD + MAXRED*NSIMR
             KSOLEQ = KEIVAL + MAXRED
             KWRK1  = KSOLEQ + MAXRED*MAXRED
+            IF (LREDS) THEN
+              KREDS = KWRK1 
+              KWRK1 = KREDS + MAXRED*MAXRED
+            END IF
             LWRK1  = LWORK  - KWRK1
 C
             IF (LWRK1.LT. 0 )
@@ -498,8 +520,9 @@ C----------------------
 C           Open files.
 C----------------------
 C
-            CALL CC_FILOP(FRHO1,LUFR1,FRHO2,LUFR2,
-     *                    FC1AM,LUFC1,FC2AM,LUFC2)
+            CALL CC_FILOP(FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
+     *                    FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *                    FS12AM,LUFS12)
 C-------------------------------------------------------------------
 C           check for projection: if we solve projected equations
 C                                 set flat LPROJECT and store excited
@@ -523,8 +546,8 @@ C--------------------------------
 C           Create start vectors.
 C--------------------------------
 C
-            CALL CCEQ_STR(FC1AM,LUFC1,FC2AM,LUFC2,
-     *                    LPROJECT, ISTATPRJ,
+            CALL CCEQ_STR(FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *                    LPROJECT,ISTATPRJ,
      *                    TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
      *                    NREDH,WORK(KEIVAL),WORK(KIPLAC),
      *                    WORK(KWRK1),LWRK1,LIST)
@@ -537,9 +560,10 @@ C---------------------------------------------
 C
             IF (LINQCC .AND. CCSDT) ECURR = WORK(KEIVAL)
 C
-            CALL CCEQ_SOL(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,
-     *                    FC1AM,LUFC1,FC2AM,LUFC2,LIST,
-     *                    LPROJECT, ISTATPRJ,
+            CALL CCEQ_SOL(LIST,LPROJECT,ISTATPRJ,ECURR,
+     *                    FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
+     *                    FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *                    LREDS,WORK(KREDS),FS12AM,LUFS12,
      *                    LINQCC,TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
      *                    NREDH,WORK(KREDH),WORK(KEIVAL),
      *                    WORK(KSOLEQ),WORK(KWRK1),LWRK1)
@@ -561,8 +585,8 @@ C
 C
            DO I = 1,NBATCH
               IOFF2 = MIN(NSIMUL,NSIMR  - (I-1)*NSIMUL)
-              CALL CCCONV(LUFC1,FC1AM,LUFC2,FC2AM,TRIPLET,NREDH,
-     *                    IOFF1,IOFF2,WORK(KSOLEQ),
+              CALL CCCONV(LUFC1,FC1AM,LUFC2,FC2AM,LUFC12,FC12AM,
+     *                    TRIPLET,CCR12,NREDH,IOFF1,IOFF2,WORK(KSOLEQ),
      *                    WORK(KWRK2),WORK(KWRK1))
               IF (DEBUG) THEN
                  WRITE(LUPRI,*) 'After CCCONV '
@@ -576,16 +600,16 @@ C
               ENDIF
 C
               IF ( IPRINT .GT. 30 ) THEN
-                 CALL AROUND('CC_SOLRSP: response vector in mo basis' )
-                 CALL OUTPUT(WORK(KWRK2),1,LETOT,1,NSIMUL,
-     *                       LETOT,NPT ,1,LUPRI)
+                 CALL AROUND('CC_SOLRSP: response vectors in mo basis')
+                 CALL OUTPUT(WORK(KWRK2),1,NCCVAR,1,IOFF2,
+     *                       NCCVAR,IOFF2,1,LUPRI)
               ENDIF
 C
               DO J = 1,IOFF2
                  ICOUNT = ICOUNT + 1
 C
                  KT1 = KWRK2 + (ICOUNT-1)*LETOT
-                 KT2 = KWRK2 + (ICOUNT-1)*LETOT + NT1AM(ISYM)
+                 KT2 = KT1 + NT1AM(ISYM)
                  IF (IPRINT .GT. 1) THEN
                     WRITE(LUPRI,'(//1X,A)')
      *         'Analysis of CC Response/Cauchy vector:'
@@ -611,7 +635,7 @@ C                Save response vectors on file.
 C----------------------------------------------
 C
                  KT1    = KWRK2 + (ICOUNT-1)*LETOT
-                 KT2    = KWRK2 + (ICOUNT-1)*LETOT + NT1AM(ISYMTR)
+                 KT2    = KT1 + NT1AM(ISYMTR)
 
                  IF (CCSTST) THEN
                    CALL DZERO(WORK(KT2),NT2AM(ISYMTR))
@@ -620,6 +644,12 @@ C
                  IOPT   = 3
                  CALL CC_WRRSP(LIST,ILSTNR,ISYM,IOPT,MODEL,DUMMY,
      *                  WORK(KT1),WORK(KT2),WORK(KWRK1),NVARPT)
+                 IF (CCR12) THEN 
+                   IOPT = 32
+                   KT12 = KT2 + NT2AM(ISYMTR)
+                   CALL CC_WRRSP(LIST,ILSTNR,ISYM,IOPT,MODEL,DUMMY,
+     *                    DUMMY,WORK(KT12),WORK(KWRK1),NVARPT)
+                 END IF
                  ILSTNR = ILSTNR + 1
 C
               END DO
@@ -630,8 +660,9 @@ C---------------------------------
 C          Close and delete files.
 C---------------------------------
 C
-           CALL CC_FILCL(FRHO1,LUFR1,FRHO2,LUFR2,
-     *                   FC1AM,LUFC1,FC2AM,LUFC2)
+           CALL CC_FILCL(FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
+     *                   FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *                   FS12AM,LUFS12)
 C
          END DO
 
@@ -655,79 +686,108 @@ C-------------------------------------------------------------
       END
 C--------------------------------------------------------------------
 C  /* Deck cc_getvec */
-      SUBROUTINE CC_GETVEC(LUC1,FC1AM,LUC2,FC2AM,TRIPLET,IVEC,VEC)
+      SUBROUTINE CC_GETVEC(LUC1,FC1AM,LUC2,FC2AM,LUC12,FC12AM,
+     *                     TRIPLET,IVEC,VEC)
 C
 C     Ove Christiansen 5-11-1996:
 C
-C            Get vector nr. IVEC from singles file 
-C            (name: FC1AM, nr: LUC1) and doubles file 
-C            (name: FC2AM, nr: LUC2) and put into vec.
+C     Get vector nr. IVEC from files 
+C            FC1AM  (LUC1)  singles part
+C            FC2AM  (LUC2)  doubles part
+C            FC12AM (LUC12) R12 doubles part
 C
-C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+      IMPLICIT NONE
+C#include <implicit.h>
+C#include <priunit.h>
+C#include <iratdef.h>
 #include <cclr.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
-      DIMENSION VEC(*)
+
+#if defined (SYS_CRAY)
+      REAL VEC(*)
+#else
+      DOUBLE PRECISION VEC(*)
+#endif
+
       LOGICAL TRIPLET
-      CHARACTER FC1AM*(*),FC2AM*(*)
+      CHARACTER FC1AM*(*), FC2AM*(*), FC12AM*(*)
+      INTEGER LUC1, LUC2, LUC12, IVEC, NT2VAR, NT12VAR, IADR
 C
-      CALL CC_RVEC(LUC1,FC1AM,NT1AM(ISYMTR),NT1AM(ISYMTR),
-     *             IVEC,VEC(1))
-      IF ( .NOT. CCS) THEN
+      CALL CC_RVEC(LUC1,FC1AM,NT1AM(ISYMTR),NT1AM(ISYMTR),IVEC,VEC(1))
+      IF (.NOT. CCS) THEN
          IF (TRIPLET) THEN
             NT2VAR = NT2AMT(ISYMTR)
          ELSE
             NT2VAR = NT2AM(ISYMTR)
          END IF                          
-         CALL CC_RVEC(LUC2,FC2AM,NT2VAR,NT2VAR,
-     *                IVEC,VEC(1+NT1AM(ISYMTR)))
-         IF (CCSTST) CALL DZERO(VEC(1+NT1AM(ISYMTR)),NT2VAR)
+         IADR = 1 + NT1AM(ISYMTR)
+         CALL CC_RVEC(LUC2,FC2AM,NT2VAR,NT2VAR,IVEC,VEC(IADR))
+         IF (CCR12) THEN
+            NT12VAR = NGAMMA(ISYMTR)
+            IADR    = 1 + NT1AM(ISYMTR) + NT2VAR
+            CALL CC_RVEC(LUC12,FC12AM,NT12VAR,NT12VAR,IVEC,VEC(IADR))
+         END IF
+         IF (CCSTST) 
+     *     CALL DZERO(VEC(1+NT1AM(ISYMTR)),NCCVAR-NT1AM(ISYMTR))
       ENDIF
+
       RETURN
       END
 C  /* Deck cc_putvec */
-      SUBROUTINE CC_PUTVEC(LUC1,FC1AM,LUC2,FC2AM,TRIPLET,IVEC,VEC)
+      SUBROUTINE CC_PUTVEC(LUC1,FC1AM,LUC2,FC2AM,LUC12,FC12AM,
+     *                     TRIPLET,IVEC,VEC)
 C
 C     Ove Christiansen 22-1-1996:
 C
 C            put vector nr. IVEC to 
-C                singles file (name: FC1AM, nr: LUC1)
-C            and doubles file (name: FC2AM, nr: LUC2)
+C                singles file (name: FC1AM,  nr: LUC1)
+C                doubles file (name: FC2AM,  nr: LUC2)
+C            R12 doubles file (name: FC12AM, nr: LUC12)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+      IMPLICIT NONE
+C#include <implicit.h>
+C#include <priunit.h>
+C#include <iratdef.h>
 #include <cclr.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
-      DIMENSION VEC(*)
+
+#if defined (SYS_CRAY)
+      REAL VEC(*)
+#else
+      DOUBLE PRECISION VEC(*)
+#endif
+
       LOGICAL TRIPLET
-      CHARACTER FC1AM*(*),FC2AM*(*)
-C
-C     write vector nr. IVEC to singles file (name: FC1AM, nr: LUC1)
-C     and doubles file (name: FC2AM, nr: LUC2), and put into vec.
+      CHARACTER FC1AM*(*),FC2AM*(*),FC12AM
+      INTEGER LUC1, LUC2, LUC12, IVEC, NT2VAR, NT12VAR, IADR
 C
       CALL CC_WVEC(LUC1,FC1AM,NT1AM(ISYMTR),NT1AM(ISYMTR),
      *             IVEC,VEC(1))
       IF ( .NOT. CCS) THEN
+         IF (CCSTST) 
+     *     CALL DZERO(VEC(1+NT1AM(ISYMTR)),NCCVAR-NT1AM(ISYMTR))
          IF (TRIPLET) THEN
             NT2VAR = NT2AMT(ISYMTR)
          ELSE
             NT2VAR = NT2AM(ISYMTR)
          END IF                              
-         IF (CCSTST) CALL DZERO(VEC(1+NT1AM(ISYMTR)),NT2VAR)
-         CALL CC_WVEC(LUC2,FC2AM,NT2VAR,NT2VAR,
-     *                IVEC,VEC(1+NT1AM(ISYMTR)))
+         IADR = 1 + NT1AM(ISYMTR)
+         CALL CC_WVEC(LUC2,FC2AM,NT2VAR,NT2VAR,IVEC,VEC(IADR))
+         IF (CCR12) THEN
+            NT12VAR = NGAMMA(ISYMTR)
+            IADR    = 1 + NT1AM(ISYMTR) + NT2VAR
+            CALL CC_WVEC(LUC12,FC12AM,NT12VAR,NT12VAR,IVEC,VEC(IADR))
+         END IF
       ENDIF
 C
       RETURN
       END
 C  /* Deck cc_filop  */
-      SUBROUTINE CC_FILOP(FRHO1,LUFR1,FRHO2,LUFR2,
-     *                    FC1AM,LUFC1,FC2AM,LUFC2)
+      SUBROUTINE CC_FILOP(FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
+     *                    FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *                    FS12AM,LUFS12)
 C
 C     Ove Christiansen 22-1-1996:
 C                Open files for linear solver.
@@ -736,7 +796,7 @@ C
 #include <implicit.h>
 #include <iratdef.h>
 #include <ccsdinp.h>
-      CHARACTER*8 FRHO1,FRHO2,FC1AM,FC2AM
+      CHARACTER*8 FRHO1,FRHO2,FC1AM,FC2AM,FRHO12,FC12AM,FS12AM
 C
       CALL WOPEN2(LUFC1,FC1AM,64,0)
       CALL WOPEN2(LUFR1,FRHO1,64,0)
@@ -746,10 +806,17 @@ C
          CALL WOPEN2(LUFR2,FRHO2,64,0)
       ENDIF
 C
+      IF ( CCR12 ) THEN
+         CALL WOPEN2(LUFR12,FRHO12,64,0)
+         CALL WOPEN2(LUFC12,FC12AM,64,0)
+         CALL WOPEN2(LUFS12,FS12AM,64,0)
+      END IF
+C
       END
 C  /* Deck cc_filcl  */
-      SUBROUTINE CC_FILCL(FRHO1,LUFR1,FRHO2,LUFR2,
-     *                    FC1AM,LUFC1,FC2AM,LUFC2)
+      SUBROUTINE CC_FILCL(FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
+     *                    FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *                    FS12AM,LUFS12)
 C
 C     Ove Christiansen 22-1-1996:
 C
@@ -757,7 +824,7 @@ C
 #include <iratdef.h>
 #include <ccsdinp.h>
 C
-      CHARACTER*8 FRHO1,FRHO2,FC1AM,FC2AM
+      CHARACTER*8 FRHO1,FRHO2,FC1AM,FC2AM,FRHO12,FC12AM,FS12AM
 C
 C-----------------
 C     Close files.
@@ -770,6 +837,12 @@ C
          IF (LUFC2 .GT. 0) CALL WCLOSE2(LUFC2,FC2AM,'DELETE')
          IF (LUFR2 .GT. 0) CALL WCLOSE2(LUFR2,FRHO2,'DELETE')
       ENDIF
+C
+      IF ( CCR12 ) THEN
+         CALL WCLOSE2(LUFR12,FRHO12,'DELETE')
+         CALL WCLOSE2(LUFC12,FC12AM,'DELETE')
+         CALL WCLOSE2(LUFS12,FS12AM,'DELETE')
+      END IF
 C
       END
 C--------------------------------------------------------------------

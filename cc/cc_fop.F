@@ -2248,8 +2248,9 @@ C
          IT1 = 1
          ITER = 0
          CALL CCSD_ECCSD(WORK(KT1AM),WORK(KT2AM),WORK(KFOCKD),
+     *                   DUMMY,DUMMY,
      *                   WORK(KEND1),LWRK1,EN2,POTNUC,ESCF,
-     *                   ETY1,IALPR,IT1,ITER)
+     *                   ETY1,0.0D0,0.0D0,.FALSE.,IALPR,IT1,ITER)
 C
          NTAMP = NT1AMX + NT2AMX
 C

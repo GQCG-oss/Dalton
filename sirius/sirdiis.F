@@ -1111,12 +1111,9 @@ C           make FQ matrix zero matrix for open shell RHF
          END IF
          CALL MEMGET('REAL',KDUM,0,WRK,KFREE,LFREE)
 C
-         IF (LMULBS .OR. R12CAL) THEN
-C           Construct orthonormal auxiliary basis set (WK/UniKA/04-11-2002).
-            CALL TIMER('START ',TIMSTR,TIMEND)
-            CALL R12AUX(WRK(KFREE),LFREE)
-            CALL TIMER('R12AUX',TIMSTR,TIMEND)
-         END IF
+C *** LOCALIZATION
+C
+         IF (BOYORB.OR.PIPORB) CALL SIRLOC(CMO,WRK(KFREE),LFREE)
 C
          IF (LMULBS .OR. R12CAL) THEN
 C           Construct orthonormal auxiliary basis set (WK/UniKA/04-11-2002).

@@ -46,9 +46,12 @@ C             - MODFILE is written to file header as a Label to
 C               identify the CC model.
 C             - IOPT is used as bit wise flags to determine 
 C               which parts of the vector are to be written on file:
-C                 1.bit (1): singles part   VEC2
-C                 2.bit (2): double part    VEC1
-C                 3.bit (4): cphf part      VEC0
+C                 1.bit  (1): singles part   VEC2
+C                 2.bit  (2): doubles part   VEC1
+C                 3.bit  (4): cphf part      VEC0
+C                 4.bit  (8): CC3 eff. singles part VEC1
+C                 5.bit (16): CC3 eff. doubles part VEC2
+C                 6.bit (32): R12 doubles part VEC2
 C
 C  implemented LISTs:
 C
@@ -120,11 +123,13 @@ C          'D0': dummy vector (used f.x. in CCLR_FANA)
 C
 C  Christof Haettig, october 1996, restructered in november 1998
 C  PL1 vectors introduced in March 2000 by Sonia Coriani
-C
+C  CC3 effective vectors introduced 2002 by Christof Haettig
+C  R12 vectors introduced Jun 2003 by Christof Haettig
 C---------------------------------------------------------------------*
       IMPLICIT NONE
 #include <priunit.h>
 #include <ccsdsym.h>
+#include <ccsdinp.h>
 #include <ccfro.h>
 #include <ccer1rsp.h>
 #include <ccer2rsp.h>
@@ -168,8 +173,8 @@ C---------------------------------------------------------------------*
       CHARACTER LABELA*(8)
 
       LOGICAL LEXISTS
-      INTEGER IOS, NVEC, LWORK, KORBITAL, KSINGLE, KDOUBLE,
-     &        KSINGLEFF, KDOUBLEFF, NVECR
+      INTEGER IOS, NVEC, LWORK, KORBITAL, KSINGLE, KDOUBLE, KR12DBLE,
+     &        KSINGLEFF, KDOUBLEFF, NVECR, IBIT32
       INTEGER IDXLST, ISYM, IMUL, IDXFIL, IOPT, KEND, LWRK, NWRITE
 
 #if defined (SYS_CRAY)
@@ -250,6 +255,9 @@ C----------------------------------------------------------------------
 * check compatibility of IOPT with the MODFIL, if not reset IOPT:   
 * set number of components that have to be written:
 *---------------------------------------------------------------------*
+      IBIT32 = 0
+      IF (CCR12) IBIT32 = 32
+
       IF (MODFIL(1:3).EQ.'SCF') THEN
         IOPT   = IAND(IOPT,4) 
         NWRITE = 1
@@ -260,8 +268,8 @@ C----------------------------------------------------------------------
       ELSE IF (MODFIL(1:3).EQ.'MP2'.OR.MODFIL(1:3).EQ.'CC2'.OR.
      *         MODFIL(1:3).EQ.'CCD'.OR.MODFIL(1:4).EQ.'CCSD'
      *        ) THEN
-        IOPT   = IAND(IOPT,1+2+4)
-        NWRITE = 3
+        IOPT   = IAND(IOPT,1+2+4+IBIT32)
+        NWRITE = 4
       ELSE IF (MODFIL(1:3).EQ.'CC3'      .OR.
      *         MODFIL(1:8).EQ.'CCSDT-1a' .OR.
      *         MODFIL(1:8).EQ.'CCSDT-1B' .OR.
@@ -272,8 +280,8 @@ C----------------------------------------------------------------------
      *         MODFIL(1:9).EQ.'CCSDR(1A)'.OR.
      *         MODFIL(1:9).EQ.'CCSDR(1B)'   
      *        ) THEN
-        IOPT   = IAND(IOPT,1+2+4+8+16)
-        NWRITE = 5
+        IOPT   = IAND(IOPT,1+2+4+8+16+IBIT32)
+        NWRITE = 6
       ELSE 
         WRITE (LUPRI,*) 'unkown model in CC_WRRSP:',MODFIL
         CALL QUIT('MODEL not yet implemented in CC_WRRSP.')
@@ -327,8 +335,8 @@ C
          IF ( NVEC.GE.1 .AND. IAND(IOPT,4).EQ.0 ) THEN
             KORBITAL = KEND
             KEND     = KORBITAL + 2*NALLAI(ISYM)
-            IF (LWORK.LT.KEND) THEN
-               CALL QUIT('Insufficient memory in CC_WRRSP.')
+            IF (LWORK.LT.KEND-1) THEN
+               CALL QUIT('Insufficient memory in CC_WRRSP (cphf).')
             END IF
             READ(LUSAVE,ERR=888,END=888) 
      &            (WORK(KORBITAL-1+I),I=1,2*NALLAI(ISYM))
@@ -342,8 +350,8 @@ C
          IF (NVEC.GE.2 .AND. IAND(IOPT,1).EQ.0 ) THEN
             KSINGLE  = KEND
             KEND     = KSINGLE  + NT1AM(ISYM)
-            IF (LWORK.LT.KEND) THEN
-               CALL QUIT('Insufficient memory in CC_WRRSP.')
+            IF (LWORK.LT.KEND-1) THEN
+               CALL QUIT('Insufficient memory in CC_WRRSP (singles).')
             END IF
             READ(LUSAVE,ERR=888,END=888) 
      &            (WORK(KSINGLE-1+I),I=1,NT1AM(ISYM))
@@ -357,8 +365,8 @@ C
          IF (NVEC.GE.3 .AND. IAND(IOPT,2).EQ.0 ) THEN
             KDOUBLE  = KEND
             KEND     = KDOUBLE  + NT2AM(ISYM)
-            IF (LWORK.LT.KEND) THEN
-               CALL QUIT('Insufficient memory in CC_WRRSP.')
+            IF (LWORK.LT.KEND-1) THEN
+               CALL QUIT('Insufficient memory in CC_WRRSP (doubles).')
             END IF
             READ(LUSAVE,ERR=888,END=888) 
      &            (WORK(KDOUBLE-1+I),I=1,NT2AM(ISYM))
@@ -366,34 +374,58 @@ C
               KEND     = KDOUBLE  + NT2AM(ISYM)+NT2AMA(ISYM)
               READ(LUSAVE,ERR=888,END=888) 
      &            (WORK(KDOUBLE+NT2AM(ISYM)-1+I),I=1,NT2AMA(ISYM))
+            ELSE
+              READ(LUSAVE,ERR=888,END=888) 
             END IF
          ELSE
+            READ(LUSAVE,ERR=888,END=888) 
             READ(LUSAVE,ERR=888,END=888) 
          END IF
          NVECR = 3
 C
+C        read CC R12 doubles vector... 
+C
+         IF (NVEC.GE.4 .AND. IAND(IOPT,32).EQ.0 .AND. CCR12) THEN
+            KR12DBLE = KEND
+            KEND     = KR12DBLE  + NGAMMA(ISYM)
+            IF (LWORK.LT.KEND-1) THEN
+               CALL QUIT('Insufficient memory in CC_WRRSP (r12 dbls).')
+            END IF
+            READ(LUSAVE,ERR=888,END=888) 
+     &            (WORK(KR12DBLE-1+I),I=1,NGAMMA(ISYM))
+            IF (IMUL.EQ.3) THEN
+              CALL QUIT('Triplet for R12 not implemented in CC_WRRSP.')
+C             KEND     = KDOUBLE  + NT2AM(ISYM)+NT2AMA(ISYM)
+C             READ(LUSAVE,ERR=888,END=888) 
+C    &            (WORK(KDOUBLE+NT2AM(ISYM)-1+I),I=1,NT2AMA(ISYM))
+            END IF
+         ELSE
+            READ(LUSAVE,ERR=888,END=888) 
+         END IF
+         NVECR = 4
+C
 C        read CC singles of effective vector... 
 C
-         IF (NVEC.GE.4 .AND. IAND(IOPT,8).EQ.0 ) THEN
+         IF (NVEC.GE.5 .AND. IAND(IOPT,8).EQ.0 ) THEN
             KSINGLEFF  = KEND
             KEND       = KSINGLEFF  + NT1AM(ISYM)
-            IF (LWORK.LT.KEND) THEN
-               CALL QUIT('Insufficient memory in CC_WRRSP.')
+            IF (LWORK.LT.KEND-1) THEN
+              CALL QUIT('Insufficient memory in CC_WRRSP (eff. sgls.).')
             END IF
             READ(LUSAVE,ERR=888,END=888) 
      &            (WORK(KSINGLEFF-1+I),I=1,NT1AM(ISYM))
          ELSE
             READ(LUSAVE,ERR=888,END=888) 
          END IF
-         NVECR = 4
+         NVECR = 5
 C
 C        read CC doubles of effective vector... 
 C
-         IF (NVEC.GE.5 .AND. IAND(IOPT,16).EQ.0 ) THEN
+         IF (NVEC.GE.6 .AND. IAND(IOPT,16).EQ.0 ) THEN
             KDOUBLEFF  = KEND
             KEND       = KDOUBLEFF  + NT2AM(ISYM)
-            IF (LWORK.LT.KEND) THEN
-               CALL QUIT('Insufficient memory in CC_WRRSP.')
+            IF (LWORK.LT.KEND-1) THEN
+               CALL QUIT('Insufficient memory in CC_WRRSP (eff. dbls).')
             END IF
             READ(LUSAVE,ERR=888,END=888) 
      &            (WORK(KDOUBLEFF-1+I),I=1,NT2AM(ISYM))
@@ -405,19 +437,26 @@ C
          ELSE
             READ(LUSAVE,ERR=888,END=888) 
          END IF
-         NVECR = 5
+         NVECR = 6
 
 888      CONTINUE
     
          ! for some vectors we don't have an 'effective' triples part
          ! and we won't write zero vectors instead:
-         IF (NWRITE.EQ.5 .AND. IOPT.LT.8 .AND. NVEC.LT.4) NWRITE = 3
+         IF (NWRITE.EQ.6 .AND. IAND(IOPT,24).LT.8 .AND. NVEC.LT.5) THEN
+           NWRITE = 4
+         END IF
 
       ELSE
          ! for some vectors we don't have an 'effective' triples part
          ! and we won't write zero vectors instead:
-         IF (NWRITE.EQ.5 .AND. IOPT.LT.8) NWRITE = 3
+         IF (NWRITE.EQ.6 .AND. IAND(IOPT,24).LT.8) NWRITE = 4
       END IF
+
+      ! if there are not effective singles and doubles (vectors 5,6)
+      ! and this is not an R12 run, there is no need to worry about
+      ! the R12 part, which is stored on file in record 4
+      IF (NWRITE.EQ.4 .AND. (.NOT.CCR12)) NWRITE = 3
 
       REWIND(LUSAVE,IOSTAT=IOS,ERR=992)
 
@@ -728,9 +767,9 @@ C
 *---------------------------------------------------------------------*
 * write the vectors, close file & return:
 *---------------------------------------------------------------------*
-      CALL CC_WVRSP( ISYM, IMUL, IOPT, NWRITE, LUSAVE, VEC0, VEC1, VEC2,
-     &               WORK(KORBITAL),WORK(KSINGLE),WORK(KDOUBLE),
-     &               WORK(KSINGLEFF),WORK(KDOUBLEFF))
+      CALL CC_WVRSP(ISYM,IMUL,IOPT,NWRITE,LUSAVE,CCR12,VEC0,VEC1,VEC2,
+     &              WORK(KORBITAL),WORK(KSINGLE),WORK(KDOUBLE),
+     &              WORK(KR12DBLE),WORK(KSINGLEFF),WORK(KDOUBLEFF))
 
       CALL GPCLOSE(LUSAVE,'KEEP')
 
@@ -767,8 +806,8 @@ C
 *                    END OF SUBROUTINE CC_WRRSP
 *---------------------------------------------------------------------*
 c/* Deck cc_wvrsp */
-      SUBROUTINE CC_WVRSP(ISYM,IMUL,IOPT,NWRITE,LUSAVE,
-     *                    VEC0,VEC1,VEC2,VS0,VS1,VS2,VS3,VS4)
+      SUBROUTINE CC_WVRSP(ISYM,IMUL,IOPT,NWRITE,LUSAVE,CCR12,
+     *                    VEC0,VEC1,VEC2,VS0,VS1,VS2,VS2P,VS3,VS4)
 C---------------------------------------------------------------------*
 C
 C   Purpose:  Write a vector with symmetry ISYM to unit LUSAVE
@@ -782,15 +821,17 @@ C---------------------------------------------------------------------*
 C
       INTEGER LUSAVE
 C
+      LOGICAL CCR12
       INTEGER ISYM, IOPT
 
       DIMENSION VEC0(*),VEC1(*),VEC2(*)
-      DIMENSION VS0(*),VS1(*),VS2(*),VS3(*),VS4(*)
+      DIMENSION VS0(*),VS1(*),VS2(*),VS2P(*),VS3(*),VS4(*)
 C
       INTEGER IOS
 
 
 * write vector components to file:
+      ! CPHF part for orbital relaxed response 
       IF (NWRITE.GE.1) THEN
          IF ( IAND(IOPT,4).EQ.4 ) THEN
            WRITE(LUSAVE,IOSTAT=IOS,ERR=993) (VEC0(I),I=1,2*NALLAI(ISYM))
@@ -801,6 +842,7 @@ C
             WRITE(LUSAVE,IOSTAT=IOS,ERR=993) 
       END IF
   
+      ! singles cluster amplitudes
       IF (NWRITE.GE.2) THEN
          IF ( IAND(IOPT,1).EQ.1 ) THEN
             WRITE(LUSAVE,IOSTAT=IOS,ERR=993) (VEC1(I),I=1,NT1AM(ISYM))
@@ -811,6 +853,7 @@ C
             WRITE(LUSAVE,IOSTAT=IOS,ERR=993) 
       END IF
 
+      ! doubles cluster amplitudes
       IF (NWRITE.GE.3) THEN
          IF ( IAND(IOPT,2).EQ.2 ) THEN
             WRITE(LUSAVE,IOSTAT=IOS,ERR=993) (VEC2(I),I=1,NT2AM(ISYM))
@@ -834,7 +877,34 @@ C
             WRITE(LUSAVE,IOSTAT=IOS,ERR=993) 
       END IF
 
-      IF (NWRITE.GE.4) THEN
+      ! R12 doubles cluster amplitudes
+      IF (NWRITE.GE.4 .AND. CCR12) THEN
+         IF ( IAND(IOPT,32).EQ.32 ) THEN
+            WRITE(LUSAVE,IOSTAT=IOS,ERR=993) (VEC2(I),I=1,NGAMMA(ISYM))
+            IF (IMUL.EQ.3) THEN
+              CALL QUIT('Triplet not implemented for R12 in CC_WVRSP')
+C             WRITE(LUSAVE,IOSTAT=IOS,ERR=993)
+C    &            (VEC2(NT2AM(ISYM)+I),I=1,NT2AMA(ISYM))     
+            ELSE
+              WRITE(LUSAVE,IOSTAT=IOS,ERR=993)   
+            END IF
+         ELSE
+            WRITE(LUSAVE,IOSTAT=IOS,ERR=993) (VS2P(I),I=1,NGAMMA(ISYM))
+            IF (IMUL.EQ.3) THEN
+              CALL QUIT('Triplet not implemented for R12 in CC_WVRSP')
+C             WRITE(LUSAVE,IOSTAT=IOS,ERR=993)
+C    &            (VS2(NT2AM(ISYM)+I),I=1,NT2AMA(ISYM))     
+            ELSE
+              WRITE(LUSAVE,IOSTAT=IOS,ERR=993)   
+            END IF
+         END IF
+      ELSE
+            WRITE(LUSAVE,IOSTAT=IOS,ERR=993) 
+            WRITE(LUSAVE,IOSTAT=IOS,ERR=993) 
+      END IF
+
+      ! effective singles amplitudes for CC3 RHS vectors
+      IF (NWRITE.GE.5) THEN
          IF ( IAND(IOPT,8).EQ.8 ) THEN
             WRITE(LUSAVE,IOSTAT=IOS,ERR=993) (VEC1(I),I=1,NT1AM(ISYM))
          ELSE 
@@ -844,7 +914,8 @@ C
             WRITE(LUSAVE,IOSTAT=IOS,ERR=993) 
       END IF
 
-      IF (NWRITE.GE.5) THEN
+      ! effective doubles amplitudes for CC3 RHS vectors
+      IF (NWRITE.GE.6) THEN
          IF ( IAND(IOPT,16).EQ.16 ) THEN
             WRITE(LUSAVE,IOSTAT=IOS,ERR=993) (VEC2(I),I=1,NT2AM(ISYM))
             IF (IMUL.EQ.3) THEN
@@ -899,6 +970,10 @@ C                 2.bit  (2): doubles part
 C                 3.bit  (4): cphf part
 C                 4.bit  (8): singles part of effective vector
 C                 5.bit (16): doubles part of effective vector
+C                 6.bit (32): R12 doubles part 
+C
+C               allowed values are 1, 2, 8, 16, 32 and 
+C               the combinations 1+2, 8+16
 C
 C             for further input description see routines
 C             CC_RDRSP and CC_WRRSP
@@ -950,24 +1025,41 @@ C---------------------------------------------------------------------*
         CALL QUIT('CC_WARSP> triplet vector not yet implemented.')
       END IF
 
-
-      KVEC0 = 1
-      KVEC1 = KVEC0 + 2*NALLAI(ISYM)
-      KVEC2 = KVEC1 + NT1AM(ISYM)
-      KEND  = KVEC2 + NT2AM(ISYM)
-      LEND  = LWORK - KEND
-    
-      IF (LEND .LT. 0) THEN
-        CALL QUIT('Insufficient work space in CC_WARSP.')
-      END IF
-
-      IF (IOPT.NE.IAND(IOPT,1+2) .AND. IOPT.NE.IAND(IOPT,8+16))THEN
+      IF (IOPT.NE.IAND(IOPT,1+2) .AND. IOPT.NE.IAND(IOPT,8+16) .AND.
+     &    IOPT.NE.IAND(IOPT,32)  ) THEN
         WRITE(LUPRI,*) 'CC_WARSP> IOPT = ',IOPT
         CALL QUIT('IOPT not implemented in CC_WARSP.')
       END IF
 
-      IOPTRW = 3
-      IF (IOPT.GT.7) IOPT = 24
+   
+      IF (IOPT.EQ.IAND(IOPT,1+2) .OR. IOPT.EQ.IAND(IOPT,8+16)) THEN
+        KVEC0 = 1
+        KVEC1 = KVEC0 + 2*NALLAI(ISYM)
+        KVEC2 = KVEC1 + NT1AM(ISYM)
+        KEND  = KVEC2 + NT2AM(ISYM)
+      ELSE IF (IOPT.EQ.32) THEN
+        KVEC1 = -999 999
+        KVEC2 = 1
+        KEND  = KVEC2 + NGAMMA(ISYM)
+      ELSE
+        CALL QUIT('Illegal case in CC_WARSP.')
+      END IF
+    
+      LEND  = LWORK - KEND
+      IF (LEND .LT. 0) THEN
+        CALL QUIT('Insufficient work space in CC_WARSP.')
+      END IF
+
+      IF      (IOPT.EQ.IAND(IOPT,1+2)) THEN
+         IOPTRW = 3
+      ELSE IF (IOPT.EQ.IAND(IOPT,8+16)) THEN
+         IOPTRW = 24
+      ELSE IF (IOPT.EQ.32) THEN
+         IOPTRW = 32
+      ELSE
+        CALL QUIT('Illegal case in CC_WARSP.')
+      END IF
+
       CALL CC_RDRSP(LIST,IDXLST,ISYM,IOPTRW,MODFIL,
      &              WORK(KVEC1),WORK(KVEC2))
       
@@ -991,6 +1083,9 @@ C     END IF
       END IF
       IF ( IAND(IOPT,2+16).NE.0 ) THEN
         CALL DAXPY(NT2AM(ISYM),1.0d0,VEC2,1,WORK(KVEC2),1)
+      END IF
+      IF ( IAND(IOPT,32).NE.0 ) THEN
+        CALL DAXPY(NGAMMA(ISYM),1.0d0,VEC2,1,WORK(KVEC2),1)
       END IF
 C     IF ( IAND(IOPT,4).NE.0 ) THEN
 C       CALL DAXPY(2*NALLAI(ISYM),1.0d0,VEC0,1,WORK(KVEC0),1)

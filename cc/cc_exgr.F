@@ -80,14 +80,15 @@ C
 #include <quadru.h>
 #include <nqcc.h>
 C
-      LOGICAL LINQCC, LPROJECT, TRIPLET
+      LOGICAL LINQCC, LPROJECT, TRIPLET, LREDS
       DIMENSION WORK(LWORK), ELSEMO(3,3), SKODE(3,3), SKODN(3,3)
-      CHARACTER*8 FC1AM,FC2AM,FRHO1,FRHO2
-      PARAMETER (FC1AM='CCR_C1AM',FC2AM='CCR_C2AM')
-      PARAMETER (FRHO1='CCR_RHO1',FRHO2='CCR_RHO2')
+      CHARACTER*8 FC1AM,FC2AM,FRHO1,FRHO2,FRHO12,FC12AM,FS12AM
+      PARAMETER (FC1AM ='CCR_C1AM',FC2AM ='CCR_C2AM')
+      PARAMETER (FRHO1 ='CCR_RHO1',FRHO2 ='CCR_RHO2')
+      PARAMETER (FRHO12='CCR_RH12',FC12AM='CCR_C12M',FS12AM='CCR_S12M')
       CHARACTER MODEL*10
       CHARACTER MODELPRI*4, MODELPRI2*30
-      CHARACTER LABEL*8
+      CHARACTER LABEL*8, LABR12*3
       CHARACTER*2 LIST
 C
 #include <leinf.h>
@@ -100,10 +101,18 @@ C------------------------------------
 C
 C     CALL TIMER('START ',TIMEIN,TIMOUT)
 C
-      LUFC1 = 0
-      LUFC2 = 0
-      LUFR1 = 0
-      LUFR2 = 0
+      LUFC1  = 0
+      LUFC2  = 0
+      LUFC12 = 0
+      LUFR1  = 0
+      LUFR2  = 0
+      LUFR12 = 0
+      LUFS12 = 0
+
+      LABR12 = ''
+      IF (CCR12) LABR12 = '-R12'
+C
+      IF (CCR12) CALL QUIT('R12 not yet implemented in CC_EXGR.')
 C      
       WRITE (LUPRI,'(1X,A,/)') '  '
       WRITE (LUPRI,'(1X,A)')
@@ -132,7 +141,7 @@ C
 C
       MODEL = 'CCSD'
       IF (CC2) THEN
-         CALL AROUND('Coupled Cluster model is: CC2')
+         CALL AROUND('Coupled Cluster model is: CC2'//LABR12)
          MODEL = 'CC2'
          MODELPRI = ' CC2'
       ENDIF
@@ -147,12 +156,12 @@ C
          MODELPRI = ' CIS'
       ENDIF
       IF (CCD) THEN
-         CALL AROUND('Coupled Cluster model is: CCD')
+         CALL AROUND('Coupled Cluster model is: CCD'//LABR12)
          MODEL = 'CCD'
          MODELPRI = ' CCD'
       ENDIF
       IF (CC3  ) THEN
-         CALL AROUND('Coupled Cluster model is: CC3')
+         CALL AROUND('Coupled Cluster model is: CC3'//LABR12)
          MODEL = 'CC3'
          MODELPRI = ' CC3'
          WRITE(LUPRI,*) 
@@ -160,26 +169,28 @@ C
          RETURN
       ENDIF
       IF (CC1A) THEN
-         CALL AROUND('Coupled Cluster model is: CCSDT-1a')
+         CALL AROUND('Coupled Cluster model is: CCSDT-1a'//LABR12)
          MODEL = 'CCSDT-1a'
          WRITE(LUPRI,*) 
      *    'CCSDT-1a X-state first order properties not implemented'
          RETURN
       ENDIF
       IF (CC1B) THEN
-         CALL AROUND('Coupled Cluster model is: CCSDT-1b')
+         CALL AROUND('Coupled Cluster model is: CCSDT-1b'//LABR12)
          MODEL = 'CCSDT-1b'
          WRITE(LUPRI,*) 
      *    'CCSDT-1b X-state first order properties not implemented'
          RETURN
       ENDIF
       IF (CCSD) THEN
-         CALL AROUND('Coupled Cluster model is: CCSD')
+         CALL AROUND('Coupled Cluster model is: CCSD'//LABR12)
          MODEL = 'CCSD'
          MODELPRI = 'CCSD'
       ENDIF
 C
       NSIDIN = NSIDE
+C
+      LREDS = CCR12
 C
       IF (IPRINT.GT.10) WRITE(LUPRI,*) 'CC_EXGR-1: Workspace:',LWORK
 C
@@ -189,8 +200,12 @@ C-----------------------------
 C
       ISYM = ISYMOP
       ISYMTR = ISYMOP
-      NCCVAR = NT1AM(ISYM) + NT2AM(ISYM)
-      IF (CCS) NCCVAR = NT1AM(ISYM)
+      IF (CCS) THEN
+        NCCVAR = NT1AM(ISYM)
+      ELSE      
+        NCCVAR = NT1AM(ISYM) + NT2AM(ISYM)
+        IF (CCR12) NCCVAR = NCCVAR + NGAMMA(ISYM)
+      END IF
       TRIPLET = .FALSE.
       CALL CCLR_LEINFI(TRIPLET)
       THRLE = THRLEQ
@@ -301,6 +316,10 @@ C
          KEIVAL = KREDGD + MAXRED
          KSOLEQ = KEIVAL + MAXRED
          KWRK1  = KSOLEQ + MAXRED*MAXRED
+         IF (LREDS) THEN
+           KREDS = KWRK1
+           KWRK1 = KREDS + MAXRED*MAXRED
+         END IF
          LWRK1  = LWORK  - KWRK1
 C
          IF (LWRK1.LT. 0 )
@@ -316,8 +335,9 @@ C-------------------
 C        Open files.
 C-------------------
 C
-         CALL CC_FILOP(FRHO1,LUFR1,FRHO2,LUFR2,
-     *                 FC1AM,LUFC1,FC2AM,LUFC2)
+         CALL CC_FILOP(FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
+     *                 FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *                 FS12AM,LUFS12)
 C
 C-----------------------------
 C        Create start vectors.
@@ -325,7 +345,7 @@ C-----------------------------
 C
          TRIPLET  = .FALSE.
          LPROJECT = .FALSE.
-         CALL CCEQ_STR(FC1AM,LUFC1,FC2AM,LUFC2,
+         CALL CCEQ_STR(FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
      *                 LPROJECT,ISTATPRJ,
      *                 TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
      *                 NREDH,WORK(KEIVAL),WORK(KIPLAC),
@@ -337,9 +357,10 @@ C------------------------------------------
 C
          write(LUPRI,*) 'exgr, irst:',irst
          ECURR = 0.0D0
-         CALL CCEQ_SOL(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,
-     *                 FC1AM,LUFC1,FC2AM,LUFC2,LIST,
-     *                 LPROJECT,ISTATPRJ,
+         CALL CCEQ_SOL(LIST,LPROJECT,ISTATPRJ,ECURR,
+     *                 FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
+     *                 FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *                 LREDS,WORK(KREDS),FS12AM,LUFS12,
      *                 LINQCC,TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
      *                 NREDH,WORK(KREDH),WORK(KEIVAL),
      *                 WORK(KSOLEQ),WORK(KWRK1),LWRK1)
@@ -362,8 +383,8 @@ C
 C
          DO 500 I = 1,NBATCH
             IOFF2 = MIN(NSIMUL,NSIM - (I-1)*NSIMUL)
-            CALL CCCONV(LUFC1,FC1AM,LUFC2,FC2AM,TRIPLET,NREDH,
-     *                  IOFF1,IOFF2,WORK(KSOLEQ),
+            CALL CCCONV(LUFC1,FC1AM,LUFC2,FC2AM,LUFC12,FC12AM,
+     *                  TRIPLET,CCR12,NREDH,IOFF1,IOFF2,WORK(KSOLEQ),
      *                  WORK(KWRK2),WORK(KWRK1))
 C
             IF ( IPRINT .GT. 10 ) THEN
@@ -414,8 +435,9 @@ C-------------------------------
 C        Close and delete files.
 C-------------------------------
 C
-         CALL CC_FILCL(FRHO1,LUFR1,FRHO2,LUFR2,
-     *                 FC1AM,LUFC1,FC2AM,LUFC2)
+         CALL CC_FILCL(FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
+     *                 FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *                 FS12AM,LUFS12)
          CALL FLSHFO(LUPRI)
 C
  2000 CONTINUE

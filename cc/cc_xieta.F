@@ -565,7 +565,7 @@ c /* deck cc_xieta1 */
       INTEGER KKAPPA, KRMAT, IDXR, IERR, KDPKHF0, JCOOR, JSCOOR, ISCOOR
       INTEGER INUM, ISIGNH, IOPER1, IOPER2, ISYOP1, ISYOP2, IREAL
       INTEGER KRBIMOLD, KFOCK0MO, KXI1EFF, KXI2EFF, KETA1EFF,KETA2EFF
-      INTEGER LUDKBC3, LU3FOPX, LU3FOP2X
+      INTEGER LUDKBC3, LU3FOPX, LU3FOP2X, IOPTWR12, KXIR12, KETAR12
     
 
 * external functions:
@@ -615,6 +615,7 @@ C     END IF
          CALL WOPEN2(LUETA,FILETA,64,0)
          IADRF_XI  = 1
          IADRF_ETA = 1
+         IF (CCSDT.OR.CCR12) CALL QUIT('Problem in CC_XIETA.')
       ELSE IF (IOPTRES.EQ.2) THEN
          CALL QUIT('IOPTRES=2 option not implemented in CC_XIETA.')
       ELSE IF (IOPTRES.EQ.3 .OR. IOPTRES.EQ.4) THEN
@@ -629,17 +630,32 @@ C     END IF
          CALL QUIT('Illegel value of IOPTRES in CC_XIETA.')
       END IF
 
+      IOPTWR12 = 0
       IF (CCS) THEN
          MODELW = 'CCS       '
          IOPTW  = 1
       ELSE IF (CC2) THEN
          MODELW = 'CC2       '
+         IF (CCR12) THEN
+           MODELW = 'CC2-R12   '
+           IOPTWR12 = 32
+         END IF
          IOPTW  = 3
       ELSE IF (CCSD) THEN
          MODELW = 'CCSD      '
+         IF (CCR12) THEN
+           MODELW = 'CCSD-R12  '
+           IOPTWR12 = 32
+           CALL QUIT('No CCSD-R12 yet in CC_XIETA!')
+         END IF
          IOPTW  = 3
       ELSE IF (CC3) THEN
          MODELW = 'CC3       '
+         IF (CCR12) THEN
+           MODELW = 'CC3-R12   '
+           IOPTWR12 = 32
+           CALL QUIT('No CC3-R12 yet in CC_XIETA!')
+         END IF
          IOPTW  = 3
          IOPTWE = 24
       ELSE
@@ -2462,6 +2478,23 @@ C
      &             IT2DEL0, IT2DELB(1,ITRAN), IADRI0,
      &             LRELAX,  LTWOEL,  WORK(KEND2), LWRK2)
 
+        IF (CCR12 .AND. CCS) THEN
+          CONTINUE
+        ELSE IF (CCR12) THEN
+          KXIR12 = KEND2
+          KEND2  = KXIR12 + NGAMMA(ISYRES)
+          LWRK2  = LWORK - KEND2
+          IF (LWRK2 .LT. 0) THEN
+            CALL QUIT('Insufficient work space in CC_XIETA. (1b-R12)')
+          END IF
+
+          CALL DZERO(WORK(KXIR12),NGAMMA(ISYRES))
+
+          WRITE(LUPRI,*) 'Warning> R12 part of Xi vector is set to 0'
+
+        END IF
+        
+
         SKIPXI = ( IXETRAN(3,ITRAN) .EQ. -1 )
 
         IF (CCSDT .AND. (.NOT.SKIPXI)) THEN
@@ -2567,6 +2600,7 @@ C
               CALL PUTWA2(LUXI,FILXI,WORK(KXI2),IADRF_XI,NT2AM(ISYRES))
               IADRF_XI = IADRF_XI + NT2AM(ISYRES)
             END IF
+            IF (CCSDT.OR.CCR12) CALL QUIT('Problem in CC_XIETA')
           ELSE IF (IOPTRES.EQ.3) THEN
             IFILE  = IXETRAN(3,ITRAN)
             IF (ILSTSYM(FILXI,IFILE).NE.ISYRES) THEN
@@ -2574,6 +2608,10 @@ C
             END IF
             CALL CC_WRRSP(FILXI,IFILE,ISYRES,IOPTW,MODELW,DUMMY,
      &                    WORK(KXI1),WORK(KXI2),WORK(KEND2),LWRK2)
+            IF (CCR12 .AND. IOPTWR12.EQ.32) THEN
+              CALL CC_WRRSP(FILXI,IFILE,ISYRES,IOPTWR12,MODELW,DUMMY,
+     &                   DUMMY,WORK(KXIR12),WORK(KEND2),LWRK2)
+            END IF
             IF (CCSDT) THEN
               CALL CC_WRRSP(FILXI,IFILE,ISYRES,IOPTWE,MODELW,DUMMY,
      &                   WORK(KXI1EFF),WORK(KXI2EFF),WORK(KEND2),LWRK2)
@@ -2585,6 +2623,10 @@ C
             END IF
             CALL CC_WARSP(FILXI,IFILE,ISYRES,IOPTW,MODELW,DUMMY,
      &                    WORK(KXI1),WORK(KXI2),WORK(KEND2),LWRK2)
+            IF (CCR12 .AND. IOPTWR12.EQ.32) THEN
+              CALL CC_WARSP(FILXI,IFILE,ISYRES,IOPTWR12,MODELW,DUMMY,
+     &                   DUMMY,WORK(KXIR12),WORK(KEND2),LWRK2)
+            END IF
             IF (CCSDT) THEN
               CALL CC_WARSP(FILXI,IFILE,ISYRES,IOPTWE,MODELW,DUMMY,
      &                   WORK(KXI1EFF),WORK(KXI2EFF),WORK(KEND2),LWRK2)
@@ -2604,6 +2646,8 @@ C
             CALL CCDOTRSP(IXDOTS,XCONS,IOPTW,FILXI,ITRAN,NXETRAN,MXVEC,
      &                    WORK(KXI1),WORK(KXI2),ISYRES,
      &                    WORK(KEND2),LWRK2)
+
+            IF (CCR12) CALL QUIT('Problem in CC_XIETA!')
 
             IF (LOCDBG) THEN
              IVEC = 1
@@ -2690,6 +2734,21 @@ C
      &                LISTL,IDLSTL,LABELH,ISYHOP,
      &                LTWOEL,LRELAX,WORK(KEND2), LWRK2)
 
+          IF (CCR12 .AND. CCS) THEN
+            CONTINUE
+          ELSE IF (CCR12) THEN
+            KETAR12 = KEND2
+            KEND2   = KETAR12 + NGAMMA(ISYRES)
+            LWRK2   = LWORK - KEND2
+            IF (LWRK2 .LT. 0) THEN
+              CALL QUIT('Insufficient work space in CC_XIETA.(ETA-R12)')
+            END IF
+  
+            CALL DZERO(WORK(KETAR12),NGAMMA(ISYRES))
+  
+            WRITE(LUPRI,*) 'Warning> R12 part of Eta^1 is set to 0!!!'
+  
+          END IF
    
           IF (CCSDT) THEN
 #if !defined CC_AARHUS
@@ -2701,7 +2760,7 @@ C
             KEND2    = KETA2EFF + NT2AM(ISYRES)
             LWRK2    = LWORK - KEND2
             IF (LWRK2 .LT. 0) THEN
-              CALL QUIT('Insufficient work space in CC_XIETA. (1c)')
+              CALL QUIT('Insufficient work space in CC_XIETA.(1c-eta)')
             END IF
 C
             CALL DZERO(WORK(KETA1EFF),NT1AM(ISYRES))
@@ -2789,6 +2848,7 @@ C             ------------
      &                    NT2AM(ISYRES))
               IADRF_ETA = IADRF_ETA + NT2AM(ISYRES)
             END IF
+            IF (CCSDT.OR.CCR12) CALL QUIT('Problem in CC_XIETA')
           ELSE IF (IOPTRES.EQ.3) THEN
            IFILE  = IXETRAN(4,ITRAN)
            IF (ILSTSYM(FILETA,IFILE).NE.ISYRES) THEN
@@ -2796,6 +2856,10 @@ C             ------------
            END IF
            CALL CC_WRRSP(FILETA,IFILE,ISYRES,IOPTW,MODELW,DUMMY,
      &                   WORK(KETA1),WORK(KETA2),WORK(KEND2),LWRK2)
+           IF (CCR12 .AND. IOPTWR12.EQ.32) THEN
+             CALL CC_WRRSP(FILETA,IFILE,ISYRES,IOPTWR12,MODELW,DUMMY,
+     &                  DUMMY,WORK(KETAR12),WORK(KEND2),LWRK2)
+           END IF
            IF (CCSDT) THEN
              CALL CC_WRRSP(FILETA,IFILE,ISYRES,IOPTWE,MODELW,DUMMY,
      &                 WORK(KETA1EFF),WORK(KETA2EFF),WORK(KEND2),LWRK2)
@@ -2807,6 +2871,10 @@ C             ------------
            END IF
            CALL CC_WARSP(FILETA,IFILE,ISYRES,IOPTW,MODELW,DUMMY,
      &                   WORK(KETA1),WORK(KETA2),WORK(KEND2),LWRK2)
+           IF (CCR12 .AND. IOPTWR12.EQ.32) THEN
+             CALL CC_WARSP(FILETA,IFILE,ISYRES,IOPTWR12,MODELW,DUMMY,
+     &                  DUMMY,WORK(KETAR12),WORK(KEND2),LWRK2)
+           END IF
            IF (CCSDT) THEN
             CALL CC_WARSP(FILETA,IFILE,ISYRES,IOPTWE,MODELW,DUMMY,
      &                 WORK(KETA1EFF),WORK(KETA2EFF),WORK(KEND2),LWRK2)
@@ -2826,6 +2894,8 @@ C             ------------
            CALL CCDOTRSP(IEDOTS,ECONS,IOPTW,FILETA,ITRAN,NXETRAN,MXVEC,
      &                   WORK(KETA1),WORK(KETA2),ISYRES,
      &                   WORK(KEND2),LWRK2)
+
+           IF (CCR12) CALL QUIT('Problem in CC_XIETA!')
 
            IF (LOCDBG) THEN
              IVEC = 1

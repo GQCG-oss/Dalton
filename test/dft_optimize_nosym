@@ -88,7 +88,7 @@ CTRL[2]=63
 ERROR[2]="EXCHANGE PART NOT CORRECT"
 
 # Energy     Final    HF energy:      -76.342046237254
-CRIT1=`$GREP "Final * HF energy\: * \-76\.3420462....." $log | wc -l`
+CRIT1=`$GREP "Final DFT energy\: * \-76\.3420462....." $log | wc -l`
 TEST[3]=`expr	$CRIT1`
 CTRL[3]=1
 ERROR[3]="HF ENERGY NOT CORRECT"

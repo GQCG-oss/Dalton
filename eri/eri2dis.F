@@ -184,7 +184,7 @@ C     Open files
 C
       IF (LUINTR.EQ.0) CALL GPOPEN(LUINTR,'AOTWODIS','UNKNOWN',' ',
      &     'UNFORMATTED',IDUMMY,.FALSE.)
-#if defined (SYS_CRAY) || defined (SYS_T90) || (defined (SYS_AIX) && defined (VAR_INT64)) 
+#if defined (SYS_CRAY) || defined (SYS_T90) || (defined (SYS_AIX) && defined (VAR_INT64))
       LRECL = LBFINP + LBFINP + 1
 #endif
 #if (defined (SYS_AIX) && !defined (VAR_INT64)) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_LINUX)
@@ -230,7 +230,11 @@ C     Transfer information
 C     ====================
 C
       NUMDIS = NDISTR
-      CALL ICOPY(NUMDIS,INDDST,1,INDEXA,1)
+!fox
+!fox  25-04-2003
+!fox  CALL ICOPY(NUMDIS,INDDST,1,INDEXA,1)
+      IF (NUMDIS .GT. 0) CALL ICOPY(NUMDIS,INDDST,1,INDEXA,1)
+!fox
       IF ( IPRINT .GT. 2 ) THEN
          CALL HEADER('Output from ERIDI2',2)
          WRITE (LUPRI,'(2X,I3,A,8I5/,(40X,8I5))')
@@ -241,7 +245,7 @@ C
 C     Calculate integrals
 C     ===================
 C
-      IF (.NOT.INTSKP) THEN
+      IF (.NOT. INTSKP) THEN
          CALL TIMER('START ',TIMSTR,TIMEND)
          CALL ODCDRV(IODCL1,IODCL2,
      &               IODBC1,IODBC2,RODBC1,RODBC2,
@@ -469,7 +473,18 @@ C
          END IF
       END DO
 C
-      IF (LMULBS .AND. .NOT. R12TRA) THEN
+      IF (LMULBS .AND. LOOPDP) THEN
+         DO I = 1, NAOBCH
+            IF (MBIDBT(I) .GT. 1) THEN
+               DO J = 2, 4
+                  ACTVBT(I,J) = .FALSE.
+               END DO
+            END IF
+            IF (MBIDBT(I) .EQ. 1) THEN
+               ACTVBT(I,1) = .FALSE.
+            END IF
+         END DO
+      ELSE IF (LMULBS .AND. .NOT. R12TRA) THEN
 C        Do not compute integrals that involve auxiliary
 C        basis functions (WK/UniKA/04-11-2002).
          DO I = 1, NAOBCH

@@ -52,18 +52,24 @@ C
 C                   1  :  read the single excitation part
 C                   2  :  read the double excitation part
 C                   3  :  read both single and double excitation part
-C                   4  :  read the CPHF part
+C                   4  :  read the CPHF part (not available here...)
 C                   8  :  read the single excitation part 
 C                         of the 'effective' vector for triples models
 C                  16  :  read the double excitation part 
 C                         of the 'effective' vector for triples models
 C                  24  :  read both single and double excitation part
 C                         of the 'effective' vector for triples models
+C                  32  :  read the R12 double excitation part
 C
 C                  33  :  read both single and double excitation part
 C                         SUCCES: IOPT is returned as 1 or 3.
 C                         NO SUCCES: opening file fails, 
 C                         it will not stop but return IOPT 33.
+C                         (out dated, use -IOPT instead)
+C
+C                -IOPT :  as IOPT, but does not stop on failure,
+C                         instead it returns IOPT=33, 
+C                         on succes IOPT is returned with positive sign
 C
 C                  if IOPT=3 is obtained, but the double excitation
 C                  part is not available (f.x. because it is a CCS
@@ -142,6 +148,8 @@ C
 C
 C  Christof Haettig, October 1996, restructered in May 1997
 C  PL1 vectors introduced in March 2000 by Sonia Coriani
+C  CC3 effective vectors introduced 2002 by Christof Haettig
+C  R12 double excitation part introduced Jun 2003 by Christof Haettig
 C---------------------------------------------------------------------*
       IMPLICIT NONE
 #include <priunit.h>
@@ -159,7 +167,7 @@ C
 C
       CHARACTER FILEX*(10), MODFIL*(10)
       LOGICAL LEXIST
-      INTEGER IOS, IMUL, NVEC, IOPTSV
+      INTEGER IOS, IMUL, NVEC, IOPTSV, IOPTIN
 
 #if defined (SYS_CRAY)
       REAL VEC1(*), VEC2(*)
@@ -185,9 +193,13 @@ C
       IF (IOPT .EQ. 33) THEN
          IOPTSV = 33
          IOPT   = 3
+      ELSE IF (IOPT.LT.0) THEN
+         IOPTSV = 33
+         IOPT   = -IOPT
       ELSE
          IOPTSV = 0
       ENDIF
+      IOPTIN = IOPT
 
 *---------------------------------------------------------------------*
 * return a fake zero vector for CCS R0/L0 vector:
@@ -218,8 +230,19 @@ C
       IF (IOPT.LT.0) GOTO 993
 
       IF (IOPT.EQ.0) THEN
-        WRITE (LUPRI,'(2A)') ' no appropriate vector found on file ',
-     &        FILEX
+        IF (IAND(IOPTIN,3).GT.0) THEN
+         WRITE (LUPRI,'(1X,2A)') 
+     &    'no appropriate singles/doubles vector found on file ',FILEX
+        ELSE IF (IAND(IOPTIN,24).GT.0) THEN
+         WRITE (LUPRI,'(1X,2A)') 
+     &    'no appropriate eff. CC3 rhs vector found on file ',FILEX
+        ELSE IF (IAND(IOPTIN,32).GT.0) THEN
+         WRITE (LUPRI,'(1X,2A)') 
+     &    'no appropriate R12 doubles vector found on file ',FILEX
+        ELSE
+         WRITE (LUPRI,'(1X,2A)') 
+     &    'no appropriate vector found on file ',FILEX
+        END IF
         GOTO 996
       END IF
 
@@ -539,7 +562,7 @@ c/* Deck cc_rcrsp */
       PARAMETER (THRDIFF = 1.0d-08)
 
       LOGICAL LSYM, LLBL, LFRQ, LIND, LORX
-      INTEGER ORDER, IOP
+      INTEGER ORDER, IOP, IBIT32
   
 
 *=====================================================================*
@@ -1249,6 +1272,7 @@ Cold    TYPE(3:3)  = '_'
 
       IF (LOCDBG) THEN
         WRITE (LUPRI,'(2A)')       'FILE  :',FILEX
+        WRITE (LUPRI,'(2A)')       'MODFIL:',MODFIL
         WRITE (LUPRI,'(A,I5)')     'IDXLST:',IDXLST
         WRITE (LUPRI,'(A,I5)')     'IOPT  :',IOPT
         WRITE (LUPRI,'(A,10I5)')   'ISYLST:',(ISYLST(IOP),IOP=1,ORDER)
@@ -1266,6 +1290,18 @@ Cold    TYPE(3:3)  = '_'
 *=====================================================================*
 * check compatibility of IOPT with the MODFIL flag, if not reset IOPT:
 *=====================================================================*
+      IF (MODFIL(4:7)  .EQ.'-R12'.OR.
+     *    MODFIL(5:8)  .EQ.'-R12'.OR.
+     *    MODFIL(6:9)  .EQ.'-R12'.OR.
+     *    MODFIL(7:10) .EQ.'-R12'.OR.
+     *    MODFIL(8:10) .EQ.'-R1' .OR.
+     *    MODFIL(9:10) .EQ.'-R'  .OR.
+     *    MODFIL(10:10).EQ.'-'       ) THEN
+        IBIT32=32
+      ELSE
+        IBIT32 = 0
+      END IF
+
       IF (MODFIL(1:3).EQ.'SCF') THEN
         IOPT = IAND(IOPT,4)
       ELSE IF ((MODFIL(1:3).EQ.'CCS').AND.
@@ -1274,7 +1310,7 @@ Cold    TYPE(3:3)  = '_'
       ELSE IF (MODFIL(1:3).EQ.'MP2'.OR.MODFIL(1:3).EQ.'CC2'.OR.
      *         MODFIL(1:3).EQ.'CCD'.OR.MODFIL(1:4).EQ.'CCSD'
      *        ) THEN
-        IOPT = IAND(IOPT,1+2+4)
+        IOPT = IAND(IOPT,1+2+4+IBIT32)
       ELSE IF (MODFIL(1:3).EQ.'CC3'      .OR.
      *         MODFIL(1:8).EQ.'CCSDT-1a' .OR.
      *         MODFIL(1:8).EQ.'CCSDT-1B' .OR.
@@ -1285,7 +1321,7 @@ Cold    TYPE(3:3)  = '_'
      *         MODFIL(1:9).EQ.'CCSDR(1A)'.OR.
      *         MODFIL(1:9).EQ.'CCSDR(1B)'
      *        ) THEN
-        IOPT   = IAND(IOPT,1+2+4+8+16)
+        IOPT   = IAND(IOPT,1+2+4+8+16+IBIT32)
       ELSE
         WRITE (LUPRI,*) 'MODFIL:"',MODFIL,'"'
         CALL QUIT('Model not yet implemented in CC_RDRSP.')
@@ -1340,19 +1376,22 @@ C
         CALL QUIT('ERROR IN CC_RVRSP: SYMMETRY OUT OF RANGE.')
       END IF
 
-* read vector:
+* read vector(s):
+      ! CPHF part for orbital relaxed response 
       IF ( IOPT.EQ.4 ) THEN
          READ(LUSAVE,IOSTAT=IOS,ERR=993) (VEC0(I),I=1,2*NALLAI(ISYM))
       ELSE
          READ(LUSAVE,IOSTAT=IOS,ERR=993) 
       END IF
 
+      ! singles cluster amplitudes
       IF ((IOPT.EQ.1).OR.(IOPT.EQ.3)) THEN
          READ(LUSAVE,IOSTAT=IOS,ERR=993) (VEC1(I),I=1,NT1AM(ISYM))
       ELSE IF (IOPT.GT.1) THEN
          READ(LUSAVE,IOSTAT=IOS,ERR=993) 
       END IF
 
+      ! doubles cluster amplitudes
       IF ((IOPT.EQ.2).OR.(IOPT.EQ.3)) THEN
          READ(LUSAVE,IOSTAT=IOS,ERR=993) (VEC2(I),I=1,NT2AM(ISYM))
          IF (IMUL.EQ.3) THEN
@@ -1366,12 +1405,29 @@ C
          READ(LUSAVE,IOSTAT=IOS,ERR=993)
       END IF
 
+      ! R12 doubles cluster amplitudes
+      IF (IOPT.EQ.32) THEN
+         READ(LUSAVE,IOSTAT=IOS,ERR=993) (VEC2(I),I=1,NGAMMA(ISYM))
+         IF (IMUL.EQ.3) THEN
+           CALL QUIT('Triplet not yet implemented for R12 in CC_RVRSP')
+C          READ(LUSAVE,IOSTAT=IOS,ERR=993)
+C    &        (VEC2(NT2AM(ISYM)+I),I=1,NT2AMA(ISYM))
+         ELSE
+           READ(LUSAVE,IOSTAT=IOS,ERR=993)
+         END IF                                     
+      ELSE
+         READ(LUSAVE,IOSTAT=IOS,ERR=993) 
+         READ(LUSAVE,IOSTAT=IOS,ERR=993)
+      END IF
+
+      ! effective singles amplitudes for CC3 RHS vectors
       IF ((IOPT.EQ.8).OR.(IOPT.EQ.24)) THEN
          READ(LUSAVE,IOSTAT=IOS,ERR=993) (VEC1(I),I=1,NT1AM(ISYM))
       ELSE IF (IOPT.GT.8) THEN
          READ(LUSAVE,IOSTAT=IOS,ERR=993) 
       END IF
 
+      ! effective doubles amplitudes for CC3 RHS vectors
       IF ((IOPT.EQ.16).OR.(IOPT.EQ.24)) THEN
          READ(LUSAVE,IOSTAT=IOS,ERR=993) (VEC2(I),I=1,NT2AM(ISYM))
          IF (IMUL.EQ.3) THEN
@@ -1380,17 +1436,16 @@ C
          ELSE
            CONTINUE
          END IF                                     
-      ELSE 
+      ELSE IF (IOPT .GT. 24) THEN
          CONTINUE
       END IF
 
-      IF (IOPT.LT.1 .OR. IOPT .GT. 24) THEN
+      IF (IOPT.LT.1 .OR. IOPT .GT. 32) THEN
          WRITE (LUPRI,*) 'IOPT = ',IOPT
          KDUM = -9999999
          WRITE (LUPRI,*) VEC(KDUM)
          CALL QUIT('Triples not implemented in CC_RVRSP.')
       END IF
-
 
       RETURN
 

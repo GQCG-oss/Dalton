@@ -326,7 +326,7 @@ cLig <> added go to 211 and 212
      &                171,172,173,174,175,176,177,178,179,180,
      &                181,182,183,184,185,186,187,188,189,190,
      &                191,192,193,194,195,196,197,198,199,200,
-     &                201,202,203,204,205,206,207,208,208,209,
+     &                201,202,203,204,205,206,207,208,209,210,
      &                211,212), I
             END IF
   99    CONTINUE
@@ -851,9 +851,12 @@ C           Calculation of integrals of the operator r12 (WK/UniKA/04-11-2002).
  208     CONTINUE
 C           Calculation of integrals of the operator U12 (WK/UniKA/04-11-2002).
             U12INT = .TRUE.
-            U21INT = .TRUE.
             GOTO 100
  209     CONTINUE
+C           Calculation of integrals of the operator U21 (WK/UniKA/04-11-2002).
+            U21INT = .TRUE.
+            GOTO 100
+ 210     CONTINUE
 C           Integrals are computed for DIRCCR12 program (WK/UniKA/25-11-2002).
             DCCR12 = .TRUE.
             SUPMAT = .FALSE.
@@ -906,6 +909,12 @@ cLig <>
          IF (NOTWO) WRITE (LUPRI,'(/A)')
      &          ' Two-electron integrals not calculated.'
       END IF
+      IF (R12INT) WRITE (LUPRI,'(A)')
+     &    ' Calculation of two-electron integrals over r12.'
+      IF (U12INT) WRITE (LUPRI,'(A)')
+     &    ' Calculation of two-electron integrals over [T1,r12].'
+      IF (U21INT) WRITE (LUPRI,'(A)')
+     &    ' Calculation of two-electron integrals over [T2,r12].'
       IF (AD2DAR) WRITE (LUPRI,'(/A/A,F18.14/)')
      &    ' Two-electron Darwin integrals are added to standard',
      &    ' repulsion integrals with perturbation parameter:',DARFAC
@@ -3038,6 +3047,14 @@ C#endif
       DPTPOT = .FALSE.
       XDDXR3 = .FALSE.
 C     Initialize R12 logical variables R12CAL-LMULBS (WK/UniKA/04-11-2002).
+      R12DIA = .TRUE.
+      R12SVD = .FALSE.
+      NOAUXB = .FALSE.
+      R12PRP = .FALSE.
+      NOTONE = .FALSE.
+      NOTTWO = .FALSE.
+      R12LEV = 0.D0
+      R12RST = .FALSE.
       R12CAL = .FALSE.
       R12XXL = .FALSE.
       R12OLD = .FALSE.
@@ -3067,11 +3084,14 @@ C     Initialize R12 logical variables R12CAL-LMULBS (WK/UniKA/04-11-2002).
       STEPIV = .FALSE.
       CUSP12 = .FALSE.
       DUMR12 = .FALSE.
+      ONEAUX = .FALSE.
       INTGAC = 0
       INTGAD = 0
       COMBSS = .FALSE.
       LAUXBS = .FALSE.
       LMULBS = .FALSE.
+      VCLTHR =  0D0
+      SVDTHR =  1D-12
 cLig >> setting RANGMO and RPSO false
       RANGMO = .FALSE.
       RPSO   = .FALSE.
