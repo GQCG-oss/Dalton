@@ -909,6 +909,7 @@ C
 C
 c     GAO(1..NVCLEN, 1..KCKTA,1..4) is set
       DIMENSION GAO(NVCLEN,NBAST,4)
+      PARAMETER (I0=1,IX=2,IY=3,IZ=4)
       DIMENSION PA(3,NVCLEN), PA2(NVCLEN)
 c      
       DIMENSION CAO(NVCLEN,MXAQN), CAOX(NVCLEN,MXAQN),
@@ -924,7 +925,6 @@ C
 #include <primit.h>
 C
 #include <sdpre.h>
-      PARAMETER (I0=1,IX=2,IY=3,IZ=4)
 C
 C     loop over primitives
 C
