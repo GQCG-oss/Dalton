@@ -1,16 +1,19 @@
 \chapter{Introduction}\label{ch:cc_intro}
 
-The {\AA}rhus coupled cluster program is designed for large-scale
-correlated calculations of energies and properties using a
-hierachy of coupled cluster models.
+The coupled cluster program is designed for large-scale
+correlated calculations of energies and properties using the
+hierachy of coupled cluster models: CCS,CC2,CCSD and CC3.
+The program offers allmost the same options as the other
+parts of the Dalton program for SCF and MCSCF wave functions.
+It thus contains a wave function optmization section and a response function section
+where linear, quadratic and cubic response functions are calculated.
+However,for CC3 it is only possible to calculate the wave function and singlet excitation 
+energies. At the moment molecular gradients are available only up to the CCSD level.
+London orbitals have so far not been implemented for the calculation of magnetic properties. 
+In the manual more details can be found about the specific implementations.
 
-\section{General description of the manual}
+An additional feature of the program is that all levels of correlation
+treatment has been implemented using integral-direct techniques making
+it possible to run calculations using large basis sets.  
 
-The manual contains at present only Reference Manual describing
-the different input sections and the keywords defined therein.
-
-% \section{Acknowledgement}
-% We are grateful to many people i guess...
-% and maybe also to a list of different institutions
-% Is anybody able to list them?
 

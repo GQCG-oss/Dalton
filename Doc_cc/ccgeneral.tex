@@ -4,29 +4,27 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 In this chapter the general structure of the input for the 
-coupled cluster program is described, as well as the possible 
-input keywords that can be specified in the \Sec{*CC INPUT} 
-input section. 
+coupled cluster program is described.
+
 The complete input for the coupled cluster program appears as
 sections in the input for the Sirius program, with the general
 input in \Sec{*CC INPUT}. 
 
 \section{General input for CC: \Sec{*CC INPUT}}\label{sec:ccgeneral}
 
-In this section appears some general input for the coupled
-cluster program, defining in particular the coupled cluster 
-model(s) used in the calcualtions and other parameters common 
-to all coupled submodules.
+In this section keywords for the coupled
+cluster program are defined. In particular the coupled cluster 
+model(s) and other parameters common to all submodules are specified.
 
 \begin{description}
 \item[\Key{CCS   }] 
         Run calculation for Coupled Cluster Singles (CCS) model. 
 %
-\item[\Key{CC1A  }]   
-        Run calculation for CC1A (?) model. 
+%\item[\Key{CC1A  }]   
+%        Run calculation for CC1A (?) model. 
 %
-\item[\Key{CC1B  }]    
-        Run calculation for CC1B (?) model. 
+%\item[\Key{CC1B  }]    
+%        Run calculation for CC1B (?) model. 
 %
 \item[\Key{CIS   }]    
         Run calculation for CI Singles (CIS) method. 
@@ -38,8 +36,8 @@ to all coupled submodules.
 \item[\Key{CC2   }]    
         Run calculation for CC2 model. 
 %
-\item[\Key{CC(2) }]  
-        Run calculation for CC(2) model. 
+%\item[\Key{CC(2) }]  
+%        Run calculation for CC(2) model. 
 %
 \item[\Key{CCD   }]    
         Run calculation for Coupled Cluster Doubles (CCD) model. 
@@ -47,20 +45,20 @@ to all coupled submodules.
 \item[\Key{CCSD  }]   
         Run calculation for Coupled Cluster Singles and Doubles model.
 %
-\item[\Key{CCR(A)}] 
-        Run calculation for CCR(A) (?) model.
+%\item[\Key{CCR(A)}] 
+%        Run calculation for CCR(A) (?) model.
 %
-\item[\Key{CCR(B)}]  
-        Run calculation for CCR(A) (?) model.
+%\item[\Key{CCR(B)}]  
+%        Run calculation for CCR(A) (?) model.
 %
-\item[\Key{CC(3) }]  
+%\item[\Key{CC(3) }]  
         Run calculation for CC(3) (?) model.
-%
+
 \item[\Key{CCR(3)}] 
         Run calculation for CCR(3) (?) model.
 %
-\item[\Key{CCR(T)}] 
-        Run calculation for CCR(T) (?) model.
+%\item[\Key{CCR(T)}] 
+%        Run calculation for CCR(T) (?) model.
 %
 \item[\Key{CC(T) }]  
         Run calculation for CCSD(T) (Coupled Cluster Singles and 
@@ -76,19 +74,17 @@ to all coupled submodules.
        (default is to take the value \verb+IPRUSR+, set in the general
        input section of dalton).
 %
-\item[\Key{DIRECT}] 
-       Run coupled cluster program AO integral direct
-       (default is to run the program only AO integral direct
+\item[\Key{HERDIR}] 
+       Run coupled cluster program AO integral direct using HERMIT
+       (Default is to run the program only AO integral direct
        if the \verb+DIRECT+ keyword was set in the general
-       input section of dalton).
+       input section of dalton. If \verb+HERDIR+ is not specified the ERI
+       program is used as integral generator.) 
 %
 \item[\Key{RESTAR}] 
        Try to restart the calculation from the cluster amplitudes,
        Lagrange multipliers, response amplitudes etc.\ stored on
        disk.
-%
-\item[\Key{RESTLR}] 
-       seems to be unused...!?
 %
 \item[\Key{NSYM  }] \verb| |\newline
        \verb|READ (LUCMD,'(I5)') MSYM2|
@@ -157,14 +153,15 @@ to all coupled submodules.
 \item[\Key{MAXITE}] \verb| |\newline
   \verb|READ (LUCMD,'(I5)') MAXITE|
 
-  Maximum number of iterations for what?
+  Maximum number of iterations for wave function optimization.
   (default is \verb+MAXITE = 40+).
  
 \item[\Key{MXDIIS}] \verb| |\newline
   \verb|READ (LUCMD,'(I5)') MXDIIS|
 
   Maximum number of iterations for DIIS algorithm
-  for the solution of what? energy or linear equations?
+  before wave function information is discarded and a new DIIS 
+  sequence is started. 
   (default is \verb+MXDIIS = 8+).
  
 \item[\Key{MXLRV}] \verb| |\newline
@@ -176,11 +173,6 @@ to all coupled submodules.
   Jacobian are skipped and the iterative procedure for the solution
   linear (i.e. the response) equations is restarted from the current 
   optimal solution. 
- (The program should really find the optimal value for
-  this variable automatically... Why should anyone want the program
-  to stop instead of restarting the solver?... Isn't the
-  optimal value \verb+MXLRV = MAXRED - NSIMLE+? Or the current
-  number of equations if \verb+NSIMLE = 0+...
  
 \item[\Key{FIELD }] \verb| |\newline
     \verb|READ (LUCMD,*) EFIELD|\newline
@@ -197,24 +189,12 @@ to all coupled submodules.
 \item[\Key{DEBUG }]  
    Test option: print additional debug output.
 %
-\item[\Key{NOT2TC}] ?
-%
-\item[\Key{FSECON}] ? 
-%
-\item[\Key{FCORE }] ? 
-%
-\item[\Key{NOCCIT}] ?  
-%
-\item[\Key{MINSCR}] ?
-%
-\item[\Key{MINMEM}]  ?
+\item[\Key{NOCCIT}]
+   No iterations in the wave function optimization is carried out.
 %
 %\item[\Key{NEWCAU}] % unfinished  option !
 %   Solve Cauchy equations with different Cauchy order simultaneous. 
 %   (The algorithm behind this is still in the test phase...)
-%
-\item[\Key{SKIP  }]  
-   Skip the calculation of what ? 
 %
 \item[\Key{IMSKIP}] 
    Skip the calculation of some response intermediates
@@ -293,7 +273,8 @@ to all coupled submodules.
    Skip the calculation of the second-order responses of the 
    ground-state Lagrange multipliers in a restarted run.
 \end{description}
-All the special skip options for the restart of response calculations
-would better be placed in a seperate input subsection.
-(And the corresponding logical variables on a seperate 
-common block.)
+
+%All the special skip options for the restart of response calculations
+%would better be placed in a seperate input subsection.
+%(And the corresponding logical variables on a seperate 
+%common block.)
