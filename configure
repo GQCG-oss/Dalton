@@ -464,29 +464,26 @@ fi
 # Try to find paths to special libraries
 if [ $WHICH = "linux" ]; then
 	testdir=`locate libmkl_p3.a`
-	if [ "$testdir" != "" ]; then
-	  testdir=`dirname $testdir`
-	  dirlist="$testdir $dirlist"
-          echo "dirlist=$dirlist"
-	fi
+	for i in $testdir; do
+	  dn=`dirname $i`; dirlist="$dn $dirlist"
+	done
 	testdir=`locate libatlas.a`
-	if [ "$testdir" != "" ]; then
-	  testdir=`dirname $testdir`
-	  dirlist="$testdir $dirlist"
-          echo "dirlist=$dirlist"
-	fi
+	for i in $testdir; do
+	  dn=`dirname $i`; dirlist="$dn $dirlist"
+	done
         if [ ! -z $PGI ]; then
 	if [ $PGI != "" ]; then
 	  dirlist="$PGI/linux86/lib $PGI/linux86-64/*/lib $dirlist"
-          echo "dirlist=$dirlist"
 	fi
         fi
 fi
-
+# prepend LIBDIRS environment variable to add user library dirs.
+dirlist="$LIBDIRS $dirlist"
 LIB=''
 LIBDIR=''
-$ECHO "\n Testing existence of libraries in this order:"
+$ECHO "\nTesting existence of libraries in this order:"
 $ECHO   " $liblist"
+$ECHO   "dirlist=$dirlist"
 if [ -n "$liblist" ]; then
 for testlib in $liblist; do
    for testdir in $dirlist; do
@@ -927,7 +924,7 @@ case "$WHICH" in
             set_parallel_def $mesp
           fi
           case $F77 in
-          [ei]fc)
+          [ei]fc|ifort)
              if  grep -q sse2 /proc/cpuinfo 2>/dev/null; then
                  proc='-xW'
              elif [ $prc = 'i686' ]; then
