@@ -630,7 +630,7 @@ C
             IF (DFTADD) THEN
                KFDC   = KDFTFD + 3*N2BASX
             ELSE
-               KFDC   = KDFTD
+               KFDC   = KDFTFD
             END IF
             KFDV   = KFDC   + 3*N2BASX
 C
