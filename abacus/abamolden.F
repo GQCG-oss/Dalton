@@ -87,7 +87,7 @@ C
 #include <primit.h>
 
 
-      CHARACTER*10 CHRSEG
+      CHARACTER CHRSEG*10, GTOTMP*4
       LOGICAL SEG, NRMPRI
       DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
@@ -122,15 +122,16 @@ C
                   DO 420 INNRC = 1, NNRC
                   DO 400 L = 1, NDEG
 
-                     DO ILEN = 1, LEN( GTOTYP(ITYP))
-                        IF(GTOTYP(ITYP)(ILEN:ILEN).EQ.'s') 
-     &                       GTOTYP(ITYP)='s'
-                        IF(GTOTYP(ITYP)(ILEN:ILEN).EQ.'p')
-     &                       GTOTYP(ITYP)='p'
-                        IF(GTOTYP(ITYP)(ILEN:ILEN).EQ.'d')
-     &                       GTOTYP(ITYP)='d'
-                        IF(GTOTYP(ITYP)(ILEN:ILEN).EQ.'f')
-     &                       GTOTYP(ITYP)='f'
+                     GTOTMP = GTOTYP(ITYP)
+                     DO ILEN = 1, 4
+                        IF(GTOTMP(ILEN:ILEN).EQ.'s') 
+     &                       GTOTMP='s'
+                        IF(GTOTMP(ILEN:ILEN).EQ.'p')
+     &                       GTOTMP='p'
+                        IF(GTOTMP(ILEN:ILEN).EQ.'d')
+     &                       GTOTMP='d'
+                        IF(GTOTMP(ILEN:ILEN).EQ.'f')
+     &                       GTOTMP='f'
                      END DO
                      IF (.NOT. INON .EQ. I .OR. .NOT. ILL .EQ. L )
      &                    WRITE (LUMOLDEN,'(/1X,I2,A2)') ICENT+L-1,' 0'
@@ -139,7 +140,7 @@ C
 
 
                         WRITE (LUMOLDEN,'(1X,A3,1X,I2,1X,A3)')
-     &                       GTOTYP(ITYP), NNUC, '1.00'
+     &                       GTOTMP, NNUC, '1.00'
 
                      DO 410 INNUC = 1, NNUC
 
