@@ -51,8 +51,6 @@ gradient). The input file for such a calculation will look like:
 .HF & We start with HF\\
 .MP2 & Then MP2 (for starting orbitals for MCSCF)\\
 .MCSCF & Request an MCSCF\\
-.NSYM & Number of irrep's\\
- 4 & C$_{2v}$ symmetry\\
 **HF INPUT & HF input\\
 .HF OCCUPATION\\
  3 1 1 0\\
@@ -106,8 +104,6 @@ functions and properties\\
 .HF\\
 .MP2\\
 .MCSCF\\
-.NSYM\\
- 4\\
 **RHF INPUT\\
 .HF OCCUPATION\\
  3 1 1 0\\
@@ -121,9 +117,9 @@ functions and properties\\
 .RAS1 SPACE & Number orbitals in RAS1 space\\
  0 0 0 0\\
 .RAS2 SPACE & The ``Cas Space''\\
- 3 1 1 0\\
+ 3 2 1 0\\
 .RAS3 SPACE\\
- 3 2 2 1\\
+ 3 1 2 1\\
 .RAS1 HOLES & \# electrons that may be removed from RAS1\\
  0 0\\
 .RAS3 ELECTRONS & From 0 to 2 electrons excited into here\\
@@ -136,8 +132,8 @@ functions and properties\\
 
 \subsection{A parallel cubic response calculation}\index{parallel calculation}
 
-In the final example of a \verb|DALTON.INP| input file, we assume that
-the program has been compiled with MPI options, and request the SCF
+In this example of a \verb|DALTON.INP| input file, we assume that
+the program has been compiled with MPI options, and request a SCF
 calculation of the second hyperpolarizability\index{second
 hyperpolarizability}  ($\gamma_{xxxx}$) using
 the cubic response solver\index{cubic response} of the \resp\
@@ -147,8 +143,8 @@ number of nodes\index{node} used is determined when submitting the
 job, and how
 this is done depends on the computer on which the job is run.
 
-All treatment  of symmetry, including the Hartree-Fock
-occupation\index{HF occupation}\index{Hartree-Fock occupation} is
+All treatment  of symmetry, as well as the Hartree-Fock
+occupation,\index{HF occupation}\index{Hartree-Fock occupation} is
 automatically taken care of by the program, and we thus only need to
 specify that we are to do a Hartree-Fock calculation.
 
@@ -217,7 +213,7 @@ optimization, and then recalculate the same set of molecular
 properties (or others) at the optimized geometry in one single run. We
 note that if one only does a single point calculation, input
 options to \aba\ is to be given in the \Sec{*PROPERTIES} input
-module.
+module. Note that is a \verb|**RESPONSE| module present in a geometry optimization, the \resp\ calculations will only be performed at the optimized geometry.
 
 The input file must end with the keyword \Sec{END OF}.
 
@@ -289,7 +285,7 @@ assume that most users will exploit the basis sets provided in the basis
 set library as opposed to punching them in. The punching
 format for basis sets are described in detail in Sec.~\ref{sec:molcart}.
 
-Let us first start with an input for water using Cartesian coordinates,
+Let us first start with an input for water using Cartesian coordinates in bohr,
 and the very popular 6-31G** basis set.
 
 \begin{verbatim}
@@ -352,7 +348,7 @@ H   2 1 0.97 1.0
 H   3 1 0.97 2 104.5 1.0
 \end{verbatim}
 
-The numbers on the fourth row denote respectively the number of atoms
+The numbers on the fourth row denote, respectively, the number of atoms
 in the molecule (3), the charge\index{molecular charge} of the
 molecule ($+2$), and the zero
 tells that symmetry is not to be used in this calculation. Note that

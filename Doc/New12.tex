@@ -1,0 +1,97 @@
+\chapter{New features in Dalton 1.2}
+%\pagestyle{myheadings}
+%\markboth{ }
+%{ }
+%\markright{ }
+%\addcontentsline{toc}{chapter}{New features in Dalton 1.2}
+
+Dalton 1.2 includes several large modules that has been added in order
+to increase the possibilities for user applications of the code. In
+addition, several improvements in the general performance of the code
+has been made relative to Dalton~1.1. The most important new features
+and improvements are presented here.
+
+\begin{enumerate}
+\item {\bf Coupled Cluster:} The most important and largest improvement is the addition of a
+a complete integral-direct coupled cluster module, capable of
+calculating all common coupled cluster models, most of them in an
+integral-direct manner. Frequency-dependent response functions have
+also been implemented up to the cubic response functions for the CCS,
+CC2, and CCSD models. Several models for calculating molecular
+properties of excited states are also available. Geometry optimization
+using analytical gradients for electronic ground states using
+first-order optimization methods are also available.
+
+\item {\bf Non-equilibrium solvation} Non-equilibrium
+solvation linear, quadratic, and cubic response functions have been
+implemented, and this
+makes for instance solvent shifts on excitation energies directly
+accessible in a one-step calculation. Solvent effects on non-linear
+optical processes can also be calculated with this approach.
+
+\item {\bf SOPPA} The Second-Order Polarization Propagator Approach (SOPPA) has
+been introduced in the \aba\ module, allowing for convenient and easy
+calculations of second-order properties such as polarizabilities,
+indirect spin--spin coupling constants, nuclear shieldings and
+magnetizabilities, the latter two only without London orbitals.
+
+\item {\bf CSF} Configurations State Functions can now be used also in
+property calculations in both the \resp\ and \aba\ modules, allowing
+for better control of the spin-state of the reference wave function
+also in property calculations.
+
+\item {\bf AMFI} An Atomic Mean-Field Approximation of the spin-orbit
+integrals have been implemented. Even though this mean-field
+spin-orbit approximation only involves one-electron integrals, it has
+proven to be a very good approximation to the full one- and
+two-electron Breit-Pauli spin--orbit operator.
+
+\item {\bf ECP} Effective Core Potentials can now be used for calculations
+of energies and response functions in which the basis set does not
+depend on the applied perturbations. That is, molecular gradients and
+Hessians, as well as London orbital-based magnetic properties, can not
+be calculated with ECPs.
+
+\item {\bf Douglas-Kroll} The Douglas-Kroll scalar relativistic Hamiltonian
+has been implemented to second-order. It can be used to account for
+scalar relativistic effects in molecular energies and response
+functions, and although molecular gradients and Hessians can be
+calculated, they are not strictly correct, as they use the
+non-relativistic derivatives of the one-electron Hamiltonian.
+
+\item {\bf Linear coupling model} The linear coupling model used for
+estimating Franck-Condon factors.
+
+\item  {\bf Vibrational averaging} A new approach for calculating
+zero-point~\cite{poakrprtjcp112,krpoaprtjcp112} or
+temperature-dependent~\cite{krjljv} vibrational averaged molecular 
+properties. For general properties, this have to be in a two-step
+procedure in which the first step determines the vibrational averaged
+geometry, and the second calculates the average of the molecular
+property over a harmonic oscillator approximation for the different
+vibrational modes. 
+
+\item {\bf MCD} The \cal{B}(0$\rightarrow$ f) term contributing to
+magnetic circular dichroism (MCD) have been
+implemented~\cite{scarkrjopjcpl300}. 
+
+\item {\bf Two-photon absorption} Although possible to calculate also with
+Dalton~1.1, the input required for calculating two-photon absorption
+has been significantly improved.
+
+\item {\bf File splitting} For file-system where the maximum file length is
+2~Gb, Dalton will automatically split large files  so that
+calculations can be performed on these systems even though some files
+may be longer than 2~Gb. Currently the implementation limits the
+maximum file size is limited to 22~Gb.
+
+\item {\bf Restart features in \resp } Assuming that the files
+\verb|RESULTS.RSP| and \verb|RSPVEC| are available, the \resp\ program
+can now be restarted at any point of a linear, quadratic or cubic
+response calculation. At the most a few micro-iterations of a solution
+of a linear set of equations will be lost. One can now also reuse the
+converged response vectors of a quadratic response calculation in a
+cubic response vector, making it significantly more computationally
+efficient to determine both linear, quadratic and cubic response
+functions using SCF or MCSCF wave functions.
+\end{enumerate}

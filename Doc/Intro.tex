@@ -3,20 +3,28 @@
 
           The \siraba\ program system is designed to allow
 convenient, automated determination of a large number of molecular
-properties based on an SCF, MP2, or MCSCF reference wave function.
+properties based on an SCF, MP2, Coupled Cluster, or MCSCF reference wave function.
  The program consists
-of four separate components, developed more or less independently.
+of six separate components, developed more or less independently.
 \her\ is the integral generator, generating ordinary
 atomic\index{atomic integrals} and molecular integrals appearing
 in the time-independent, non-relativistic Schr\"{o}dinger
 equation, as well as an extensive number of integrals related to
-different molecular properties. \sir\ is the (MC)SCF wave function
+different molecular properties. \eri\ is a vectorized and
+distribution-oriented integral generator that may be invoked in
+certain calculations, in particular in integral-direct coupled-cluster
+calculations. \sir\ is the (MC)SCF wave function 
 optimization part, and is described comprehensively in the
 METECC-94 book~\cite{hjajhajomotecc}. \aba\ evaluates the
-molecular properties of interest. \resp\ is a general purpose
+second-order molecular properties of interest for SCF and MCSCF wave
+functions, in particular second-order static molecular properties in
+which the basis set depends on the applied pertturbation. \resp\ is a general-purpose
 program for evaluating response functions, up to cubic response
 functions for (MC)SCF wave functions and linear response for the
-Second-Order Polarization Propagator Approach (SOPPA).
+Second-Order Polarization Propagator Approach (SOPPA). New for this is
+release is a coupled cluster program that can calculate
+coupled-cluster energies and response properties for a number of
+coupled-cluster approximations. 
 
 Throughout this manual there will be references to articles
 describing the implementation of a specific molecular property or
@@ -25,9 +33,10 @@ theoretical understanding of the current implementation. Only one
 reference otherwise not mentioned in the text, the treatment of
 symmetry\index{symmetry}, is given here~\cite{prttca69}.
 
-\siraba\ is in many respects an ``expert's'' program. This is first
+\siraba\ is in many respects an ``expert's'' program. This is most
 noticeable in the range and selection of molecular properties that may
-be calculated. As described in the individual sections, the range of
+be calculated and the flexibility and stability of the wave function
+implementations available. As described in the individual sections, the range of
 molecular properties, some of which are highly non-standard, is fairly
 large. On the other hand, several common properties can perhaps more
 easily be calculated using other, commercially available, quantum
