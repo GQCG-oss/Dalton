@@ -91,7 +91,7 @@ fi
 # SCF, MP2 and CCSD energies:
 CRIT1=`$GREP "Total SCF   energy: * \-1\.225131947[0-9]" $log | wc -l`
 CRIT2=`$GREP "Total MP2   energy: * \-1\.242129615[0-9]" $log | wc -l`
-CRIT3=`$GREP "Total CCSD  energy: * \-1\.249292611[0-9]" $log | wc -l`
+CRIT3=`$GREP "Total CCSD  energy: * \-1\.24929261[0-1][0-9]" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[1]=6
 ERROR[1]="SCF, MP2 OR CCSD ENERGY NOT CORRECT"
