@@ -52,7 +52,7 @@ by Knut F\ae gri for this distribution~\cite{nqvdref}.
 We note that each file containing a given basis sets contains the
 proper reference to be used when doing a calculation with a given
 basis set. We will give proper references for all basis sets in a
-subsequent chapter describing the input for the basis  set library.
+subsequent chapter describing the input for the basis set library.
 
 The description of the \mol\ input is divided into four parts.
 Section~\ref{sec:molgeneral} describes the general section of the
@@ -522,7 +522,7 @@ NQvD\index{NQvD basis set}\index{basis set!NQvD}
 basis sets. Another option is to use
 standards basis sets from the basis set 
 library\index{basis set!library} and add your own sets
-of diffuse, thight or polarizing\index{polarization function} basis
+of diffuse, tight or polarizing\index{polarization function} basis
 functions. Returning to
 tetrahedrane, we could for instance use the 6-31G* basis sets on
 carbon and the 4-31G** basis sets on hydrogen. This could be achieved
@@ -555,6 +555,16 @@ exponent must be given. Thus, in the above input we indicate that
 we add a $p$ function with exponent 0.75 to the hydrogen basis
 set. The order of these functions are arbitrary (that is, a $p$
 function can be given before an $s$ function and so on).
+
+Augmenting the correlation-consistent\index{basis!correlation-consistent} 
+sets of Dunning may be done in a simple manner in \dalton. 
+The aug-cc-pVXZ basis sets are extended in an even-tempered manner 
+by including a 'd', 't' or 'q' prefix to give doubly, triply or quadruply 
+augmented basis sets, respectively. For example, specifying Basis=daug-cc-pVDZ will
+produce a doubly augmented cc-pVDZ basis. These basis sets are not listed 
+explicitly in the library\index{basis set!library}, 
+but are automatically generated within \dalton from the respective 
+aug-cc-pVXZ basis. 
 
 The ANO basis sets require that you give the number of contracted
 functions you would like to use for each of the primitive sets defined
