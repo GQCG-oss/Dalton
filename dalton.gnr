@@ -292,7 +292,6 @@ if [ `grep -c -i WARNING $OUTFIL` -gt 0 ] ; then
    grep -n -i WARNING $OUTFIL
 fi
 
-n
 if [ `grep -c '[^"]INFO' $OUTFIL` -gt 0 ] ; then
    echo; echo "Informational messages have been issued by Dalton"
    echo" output from 'grep -n INFO' :"
