@@ -1094,7 +1094,9 @@ C
       IF ((EXPALPHA*RPQ2).EQ.D0) THEN
          R000 = 1 !F_n(0) = 1/(2n +1); here n=0
       ELSE
-         R000 =SQRT(PI/(D4*EXPALPHA*RPQ2))*ERF(SQRT(EXPALPHA*RPQ2))
+         CALL QUIT('Noddy code temporarily disabled')
+cluuk    Error function call disabled since not all linkers will find this c-routine
+cluuk    R000 =SQRT(PI/(D4*EXPALPHA*RPQ2))*ERF(SQRT(EXPALPHA*RPQ2))
       END IF
       RTUV = R000
 C
