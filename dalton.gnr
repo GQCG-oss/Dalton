@@ -6,33 +6,22 @@ paramlist="$*"
 OUTEXT="out"
 DALEXT="dal"
 MOLEXT="mol"
-AUXEXT="MOL NCA ORB IRC TRJ CM HES MOPUN WLK"
 #deafult values for options
-opta=0
-optA=0
 optd=0
 optD=1
 optf=0
-optF=0
 optn=0
 optlam=
 opti=0
 opto=0
-optstex=0
-optvib=0
-opthes=0
-optloc=0
-optI=0
-optv=0
-optw=0
 frl=rel
 #
 # Define usage message
 #
 usage (){
 	  echo
-	  echo "Usage:    dalton [-b directory] [-d] [-D] [-ext log | -o file] [-f] [-m mem | -M mem]"
-	  echo  "[-N nodes] [-lam file] [-o file] [-t directory] [-w directory] dal{.$DALEXT} mol{.$MOLEXT}"
+	  echo "Usage:    dalton [-b directory] [-d] [-D] [-ext log | -o file] [-f dalmol] [-m mem | -M mem]"
+	  echo  "[-N num] [-lam file] [-o file] [-t directory] [-w directory] dal{.$DALEXT} mol{.$MOLEXT}"
 	  echo
 	  echo 'Options:'
 	  echo ' -b dir    change directory where basis sets are searched for to dir'
@@ -40,13 +29,13 @@ usage (){
 	  echo ' -D        do not delete TMPDIR after calculation stops'
 	  echo ' -ext log  change output extension from ".out" to ".log"'
 	  echo ' -o file   redirect output from program to this file in WRKDIR'
-	  echo ' -f        copy dal_mol.tar.gz file from WRKDIR to TMPDIR before calculation starts'
-	  echo ' -m mem    set scratch memory to mem Mwords'
-	  echo ' -M mem    set scratch memory to mem Mb'
+          echo ' -f dalmol copy dalmol.tar.gz file from WRKDIR to TMPDIR before calculation starts'
+	  echo ' -m mem    set scratch memory to mem double precision words'
+	  echo ' -M mem    set scratch memory to mem Megabytes'
 	  echo ' -N num    use MPI version with num nodes'
 	  echo ' -lam file call "lamboot file" and "wipe file" before and after mpirun'
-	  echo ' -t dir    change TMPDIR from default to dir'
-	  echo ' -w dir    change WRKDIR from default to dir'
+          echo ' -t dir    change TMPDIR to dir. Default: ' $TMPDIR
+          echo ' -w dir    change WRKDIR to dir. Default: ' $WRKDIR
 	  echo
 	 }
 #
@@ -79,7 +68,7 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -d ) optd=1;;
       -D ) optD=0;;
       -ext ) OUTEXT=$2; shift;;
-      -f ) optf=1;;
+      -f ) optf=$2; shift;;
       -N ) optn=$2; shift;;
       -lam* ) optlam=$2; shift;;
       -m ) WRKMEM=$2; export WRKMEM; shift;;
@@ -97,6 +86,7 @@ if [ -z "$1" ]; then
    usage
    exit 1
 fi
+dalfil=${1%\.$DALEXT}
 if [ -z "$2" ]; then
 #  remove .mol, if added by user
    molfil=`basename $1 .mol`
@@ -120,12 +110,12 @@ echo "   ***************************************** "
 echo "   **** OUTPUT FROM DALTON SHELL SCRIPT **** "
 echo "   ***************************************** "
 echo
-echo "   Dalton Release 2.0 (? 2001)"
+echo "   Dalton Release 2.0 (Feb. 2005)"
 echo;
 echo "   Invocation: $0 $paramlist"
 echo; echo "   `date`"
 echo;
-echo "   Calculation: $outnam  (input files: $dalfil and $molfil)"
+echo "   Calculation: $outnam  (input files: $dalfil.dal and $molfil.mol)"
 echo "   PID        : $$"
 echo "   Input dir  : $WRKDIR"
 echo "   Scratch dir: $TMPDIR/$outnam"
@@ -138,6 +128,7 @@ fi
 
     SCRATCHDIR=$TMPDIR/$2;
 
+ierr=0
 if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
    if [ $optd -eq 1 ] ; then
       rm -rf $TMPDIR/$outnam
@@ -150,24 +141,28 @@ if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
       cp $WRKDIR/$dalfil.$DALEXT DALTON.INP
    else
       echo "$WRKDIR/$dalfil.$DALEXT does not exist or is not readable"
-      exit 1
+      ierr=1
    fi
    if [ -s $WRKDIR/$molfil.$MOLEXT -a -r $WRKDIR/$molfil.$MOLEXT ]; then
       cp $WRKDIR/$molfil.$MOLEXT MOLECULE.INP
    else
       echo "$WRKDIR/$molfil.$MOLEXT does not exist or is not readable"
-      exit 1
+      ierr=1
    fi
-   if [ $optf -eq 1 ] ; then
-      if [ -s $WRKDIR/$outnam.tar.gz -a -r $WRKDIR/$outnam.tar.gz ] ; then
-	 gunzip < $WRKDIR/$outnam.tar.gz | tar xvf -
+   if [ "$optf" != "0" ] ; then
+      if [ -s $WRKDIR/$optf.tar.gz -a -r $WRKDIR/$optf.tar.gz ] ; then
+         echo "The '-f' option is active, now unpacking $optf.tar.gz into:"
+	 gunzip < $WRKDIR/$optf.tar.gz | tar xvf -
       else
-	 echo "$WRKDIR/$outnam.tar.gz does not exist or is not readable"
-	 exit 1
+         echo "$WRKDIR/$optf.tar.gz does not exist or is not readable"
+         ierr=1
       fi
    fi
 else
    echo "$TMPDIR does not exist or is not writeable"
+   ierr=1
+fi
+if [ $ierr = 1 ]; then
    exit 1
 fi
 #
@@ -177,10 +172,17 @@ if [ $optn -gt 1 ] ; then
 	 if [ -n "$optlam" ] ; then
 	    lamboot -v  $WRKDIR/$optlam
 	    $MPIRUN -np $optn $DALMPI
+            ierr=$?
 	    wipe    -v  $WRKDIR/$optlam
 	 else
 	    $MPIRUN -np $optn $DALMPI
+            ierr=$?
 	 fi
+         if [ $ierr -ne 0 ];then
+            echo "Error in $MPIRUN -np $optn $DALMPI, exit code $ierr"
+#           No "exit $ierr" here, because we want to save output and 
+#           tar-file for restart possibilities.
+         fi
       else
 	 echo "$DALMPI does not exist or is not executeable"
 	 exit 1
@@ -192,6 +194,12 @@ if [ $optn -gt 1 ] ; then
 else
    if [ -s $DALTON -a -x $DALTON ]; then
       $DALTON
+      ierr=$?
+      if [ $ierr -ne 0 ];then
+         echo "Error in $DALTON, exit code $ierr"
+#        No "exit $ierr" here, because we want to save output and 
+#        tar-file for restart possibilities.
+      fi
    else
       echo "$DALTON does not exist or is not executeable"
       exit 1
@@ -207,6 +215,7 @@ for i in $filelist ; do
 done
 
 if [ -s "first.wrl" -a -r "first.wrl" ] ; then
+#  include ALL *.wrl files if first.wrl exists
    tar cf - $tarfilelist *wrl | gzip -9 > $outnam.tar.gz
 else
    tar cf - $tarfilelist | gzip -9 > $outnam.tar.gz
@@ -248,3 +257,8 @@ cd $WRKDIR
 if [ $optD -eq 1 ] ; then
    rm -rf $TMPDIR/$outnam
 fi
+
+if [ $ierr -ne 0 ]; then
+   exit $ierr
+fi
+# last line of dalton script
