@@ -225,6 +225,7 @@ C
 #include <ibtfun.h>
 C
       CALL QENTER('PR1IN1')
+      KFRSAV = KFREE
       CALL MEMGET('REAL',KATOM,NUCDEP,WORK,KFREE,LFREE)
       RCHRG  = .FALSE.
       RGAUGE = .FALSE. 
@@ -2056,6 +2057,7 @@ C     Reset gauge origin and nuclear charges
       IF (RCHRG)  CALL DCOPY(NUCIND,WORK(KCHRG),1,CHARGE,1)
       IF (RGAUGE) CALL DCOPY(3,GAGSAV,1,GAGORG,1)
  9999 CONTINUE
+      CALL MEMREL('PR1IN1 word='//WORD,WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('PR1IN1')
       RETURN
       END
