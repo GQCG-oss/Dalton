@@ -1165,6 +1165,8 @@ C
       VALCON =  D0
       EHOMO  = -DBIG
       IHOMO  = 0
+      ESOMO  = -DBIG
+      ISOMO  = 0
       ELUMO  =  DBIG
       ILUMO  = 0
       DO 200 ISYM = 1,NSYM
@@ -1174,6 +1176,7 @@ C
          IORBI = IORB(ISYM)
          ISSYM = IIORB(ISYM)
          EHOMOI= EHOMO
+         ESOMOI= ESOMO
          ELUMOI= ELUMO
          DO 300 I = 1,NORBI
             IJOFF = ISSYM + IROW(I)
@@ -1189,13 +1192,13 @@ C              ... closed shell (inactive) orbital
                   END DO
                ELSE IF (IW.LE.NOCCT) THEN
 C              ... open shell (active) orbital
-                  EHOMOI = MAX(EHOMOI,SCRA(IORBI+I))
+                  ESOMOI = MAX(ESOMOI,SCRA(IORBI+I))
 C                 No 'canonical' test for the open shell active orbitals
 C                 because the Fock matrix is not zero for these
                ELSE
 C              ... virtual (secondary) orbital
                   ELUMOI = MIN(ELUMOI,SCRA(IORBI+I))
-                  DO J = NFRHFI+1,NISHT
+                  DO J = NFRHFI+1,I-1
                      VALCON = MAX(VALCON,ABS(FD(IJOFF+J)))
                   END DO
 C                 ... skipping the open shell active orbitals
@@ -1209,6 +1212,10 @@ C                     because the Fock matrix is not zero for these
          IF (EHOMOI .GT. EHOMO) THEN
             EHOMO = EHOMOI
             IHOMO = ISYM
+         END IF
+         IF (ESOMOI .GT. ESOMO) THEN
+            ESOMO = ESOMOI
+            ISOMO = ISYM
          END IF
          IF (ELUMOI .LT. ELUMO) THEN
             ELUMO = ELUMOI
@@ -1239,12 +1246,16 @@ C                     because the Fock matrix is not zero for these
      &   '  - E(HOMO) :',EHOMO,' au (symmetry',IHOMO,')',
      &   '  ------------------------------------------',
      &   '    gap     :',ELUMO-EHOMO,' au'
+      IF (NASHT .GT. 0) THEN
+         WRITE (LUPRI,'(/A,F15.8,A,I2,A)')
+     &   'and E(SOMO) :',ESOMO,' au (symmetry',ISOMO,')'
+      END IF
       IF (ELUMO-EHOMO .LT. GAPMIN) THEN
          WRITE(LUPRI,'(/A)')
      &   ' INFO: E(LUMO) - E(HOMO) small or negative.'
       END IF
       IF ( VALCON .GT. EMYCNV ) THEN
-         WRITE(LUPRI,'(/A,//A,1P,D10.2)') ' NOTE:'//
+         WRITE(LUPRI,'(/A//A,1P,D10.2)') ' NOTE:'//
      *   ' MOLECULAR ORBITALS ARE NOT CANONICAL HARTREE-FOCK ORBITALS',
      *   ' Largest off-diagonal Fock matrix element is',VALCON
          IF (IPRINT .GT. 10) THEN
