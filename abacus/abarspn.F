@@ -335,7 +335,7 @@ C
          CALL GETREF(WRK(KCREF),NCREF)
          IF ( IPRRSP.GT.110 ) THEN
             WRITE(LUPRI,'(/A)')' ***** ONE BODY DENSITY MATRIX '//
-     &                         'FROM LUSIFC'
+     &                         'from SIRIFC file'
             CALL OUTPUT(WRK(KUDV),1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
          END IF
          ISPIN1 = 0
@@ -358,7 +358,7 @@ C
          END IF
 C
          IF ( IPRRSP.GT.110 ) THEN
-            WRITE(LUPRI,'(/A)')' ** ONE BODY DENSITY MATRIX FROM RSPDM'
+            WRITE(LUPRI,'(/A)') ' ** ONE BODY DENSITY MATRIX FROM RSPDM'
             CALL OUTPUT(WRK(KUDV),1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
          END IF
 C
@@ -427,7 +427,7 @@ C
 C       CALL RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
         IF ( KZVAR.EQ.0) THEN
            NWARN = NWARN + 1
-           WRITE(LUPRI,'(/2A)')' ****WARNING******',
+           WRITE(LUPRI,'(/2A)')' ****ABARSP WARNING******',
      *           ' NUMBER OF VARIABLES IN THIS SYMMETRY IS ZERO'
            GO TO 100
         END IF
@@ -710,7 +710,7 @@ C
      &           'LINEAR EQUATIONS')
          ENDIF
  9100    FORMAT(/' RSPLLE, work space too small for 3 (z,y)-vectors',
-     &        /'         had:',I10,', need more than:',I10)
+     &          /'         had:',I10,', need more than:',I10)
 C     WORK SPACE FOR RSPEVE AND RSPRES
 C     WORK SPACE EACH TIME RSPRES IS CALLED
          MWRK   = KZYVAR
