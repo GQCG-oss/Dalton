@@ -33,17 +33,10 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef UNDEF
-===========================================================================
-/* Comdeck notes */
-970923-vb
-Improved symmetry classification of normal modes through procedure DETIRP.
-Added VRML visualization of normal modes.
-970409-hjaaj
-renamed GETC to GETCMAT to avoid name conflict with system routine GETC
-950501-hjaaj
-move VIBMAS to hergp.u (VIBMAS called by CMMASS called by HERINP)
-===========================================================================
+#ifdef REV_LOG
+c970923-vb
+cImproved symmetry classification of normal modes through procedure DETIRP.
+cAdded VRML visualization of normal modes.
 #endif
 C  /* Deck vibinp */
       SUBROUTINE VIBINP(WORD)
@@ -1177,9 +1170,7 @@ C
 C
 C     Print formats
 C
- 1000 FORMAT (6X,A6,(T13,5F12.6))
- 1005 FORMAT (7X,2A,(T13,5F12.6))
- 1010 FORMAT (4X,I1,2X,2A,(T13,5F12.6))
+ 1000 FORMAT (4X,A,(T13,5F12.6))
  2000 FORMAT (2X,I2,5X,A5,F10.2,A,2X,F9.6,A,2X,F8.3,F9.4,
      &     10X,I1,7(A,I1))
  2050 FORMAT (2X,I2,5X,A5,F10.2,A,2X,F9.6,A,29X,I1,7(A,I1))
