@@ -33,7 +33,7 @@ C  /* Deck sirloc */
 C     Written by Claire C.M. Samson (University of Karlsruhe, 28 April 2003).
  
 #include <implicit.h>
-      PARAMETER (D0 = 0.0D0, D2P = 0.5D0, THRES = 1.0D-10)
+      PARAMETER (THRES = 1.0D-10)
 #include <priunit.h>
 #include <maxorb.h>
 #include <maxash.h>
@@ -47,12 +47,12 @@ C     Written by Claire C.M. Samson (University of Karlsruhe, 28 April 2003).
  
       CALL TITLER('BOYS LOCALIZATION','*',125)
       CALL NUMLOC(NOC,NBA,NB1,NB2)
-      CALL FROLOC(NCO,NSYM)
+      CALL FROLOC(NCO)
 
 C Parameters are set for valence orbitals only
  
       NOC = NOC - NCO
-      NTR  = (NOC-1)*NOC*D2P
+      NTR  = ((NOC-1)*NOC)/2
       NN   = NBA*NBA
       NOC3 = NOC*3
       NTR3 = NTR*3
@@ -229,25 +229,23 @@ C     Written by Claire C.M. Samson (University of Karlsruhe, 28 April 2003).
 C  /* Deck numloc  */
       SUBROUTINE NUMLOC(NOC,NBA,NB1,NB2)
 C     Written by Claire C.M. Samson (University of Karlsruhe, 28 April 2003).
+C     Revised by hjaaj Aug 2004: set NOC = NISHT instead of NOC = NOCCT
+
 #include <implicit.h>
-#include <priunit.h>
-#include <maxorb.h>
-#include <maxash.h>
-#include <infinp.h>
 #include <inforb.h>
-#include <infind.h>
-#include <infvar.h>
 #include <r12int.h>
 
 C INFORMATION ON CANONICAL OCCUPIED ORBITALS
-C Symmetry is swtiched off
+C Symmetry is switched off
  
       NOC = 0
       NBA = 0
       NB1 = 0
       NB2 = 0
       DO ISYM = 1,NSYM
-         NOC  = NOC + NOCC(ISYM)
+         NOC  = NOC + NISH(ISYM)
+C        ... localize all doubly occupied orbitals
+C            but not the active orbitals. /hjaaj aug 2004
          NBA  = NBA + NBAS(ISYM)
          NB1  = NB1 + NORB1(ISYM)
          NB2  = NB2 + NORB2(ISYM)
@@ -257,21 +255,29 @@ C Symmetry is swtiched off
       END
 
 C  /* Deck froloc  */
-      SUBROUTINE FROLOC(NCO,MSYM)
+      SUBROUTINE FROLOC(NCO)
 C     Written by Claire C.M. Samson (University of Karlsruhe, 28 April 2003).
+C
+C     Revised by hjaaj Aug 2004 to use NFRO(ISYM) from inforb.h instead
+C     of NRHFFR(ISYM) from ccorb.h which is not defined yet in Sirius!
+C     NOTE that NRHFFR(isym) frozen orbitals from CC from ccorb.h not
+C     necessarily are the first, thus also for that reason it cannot be used.
+C     This will also work for MCSCF.
 #include <implicit.h>
-#include <ccorb.h>
+#include <inforb.h>
 
-      LGLO = .TRUE.
+C     LGLO = .TRUE.
+C     hjaaj aug 2004: is in ccorb.h but is never used in cc/, thus
+C     I just disabled the definition.
       NCO = 0
-      DO ISYM = 1, MSYM
-         NCO = NCO + NRHFFR(ISYM)
+      DO ISYM = 1, NSYM
+         NCO = NCO + NFRO(ISYM)
       END DO
          
       RETURN
       END
 
-C  /* Deck boyorb */ 
+C  /* Deck boyloc */ 
       SUBROUTINE BOYLOC(CMO,DIPXYZ,ILIFQ,IKY,MAXI0,MINI0,RI,RIJ,CL,B,
      &                  QPIX,QPJX,NCMO,NDIP,NTR,NOC,NBA,WORK,LWORK)
 C Purpose :
