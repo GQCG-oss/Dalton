@@ -555,7 +555,7 @@ C     *** original geometry (IMPCAL=1), need not to be    ***
 C     *** calculated. Only when force constants are       ***
 C     *** calculated from energies.                       ***
 C
-      IF (SPNSPN.AND.(NAORDR.GT.0)) THEN
+      IF (SPNSPN) THEN
          KSPTMP = 1
          KLAST  = KSPTMP + NCOOR**2
          IF (KLAST.GT.LWORK) CALL QUIT('Memory exceeded in OTRTEN')
@@ -613,7 +613,8 @@ C
          DO IMPCAL = 1, NMPCAL
             WRITE (LUPRI,'(5X,A,I6)')'Molecular geometry number:',IMPCAL
             WRITE (LUPRI,'(A)') '                             '
-            CALL PRTRMA(TRAMAT(1,1,IMPCAL),NCOOR,NCOOR,LUPRI)
+            CALL PRTRMA(TRAMAT(1,1,IMPCAL),NCOOR,NCOOR,NCOOR,NCOOR,
+     &                  LUPRI)
          END DO
       END IF
 C
@@ -852,7 +853,6 @@ C
       REWIND(LUNDPR)
 C
       KNMPRP = NMEPRP-1
-      IF (NAORDR.EQ.0) KNMPRP = NMEPRP
       DO IEPRP = 1, KNMPRP
          READ (LUNDPR,'(A)') PRPTXT
          READ (LUNDPR,'(4I7)') NDIM1, NDIM2, NDIM3, KGRB
@@ -1070,7 +1070,8 @@ C
          KLAST  = KCMPVB + NDIM1*NDIM2*NDIM3*NDCOOR
          LWRK1  = LWORK  - KLAST + 1
          CALL MODEAN(DERIVA,FREQ,TDER,VIBAVE,RNNORM,FUNVAL,WORK(KCMPVB),
-     &               WORK(KLAST),NDIM1,NDIM2,NDIM3,NPPDER,LWRK1,PRPTXT)
+     &               WORK(KLAST),NDIM1,NDIM2,NDIM3,NPPDER,LWRK1,IPRINT,
+     &               PRPTXT)
       END IF
 C
 C     *** Contribution from the harmonic part ***
@@ -1277,7 +1278,8 @@ C
 C
 C     /* Deck modean */
       SUBROUTINE MODEAN(DERIVA,FREQ,TDER,VIBAVE,RNNORM,FUNVAL,CMPVIB,
-     &                  WORK,NDIM1,NDIM2,NDIM3,NPPDER,LWORK,PRPTXT)
+     &                  WORK,NDIM1,NDIM2,NDIM3,NPPDER,LWORK,IPRINT,
+     &                  PRPTXT)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>

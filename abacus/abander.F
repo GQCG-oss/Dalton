@@ -1197,9 +1197,10 @@ C
 #include <fcsym.h>
 #include <abainf.h>
 #include <taymol.h>
+#include <pvibav.h>
 C
       LOGICAL CALCMP, CLNRGY, LASTE, NOSYM, TOTSYM, SYMDET, RSTDON, 
-     &        ALRCAL, PRTNR, DODIPS
+     &        ALRCAL, PRTNR, DODIPS, CPRPBK
       CHARACTER*80 MBKLIN
       DIMENSION MBKLIN(NMBKLN)
       DIMENSION FUVAL(NINTIN,NDIME), COOR(NCOOR), CSTART(NCOOR),
@@ -1495,12 +1496,19 @@ C        *** Preliminary constants to derivatives ***
 C        ********************************************
 C     
          MXCOEF = INT(NMORDR/2) + 1
+C         
+C        ****************************************************
+C        *** Calculating force field. Property derivative ***
+C        *** needs to be reset for call for NMNDER.       ***
+C        ****************************************************
+C
+         CPRPBK = CNMPRP
+         CNMPRP = .FALSE.
 C      
 C        ***********************************
 C        *** Calculating the derivatives ***
 C        ***********************************
 C
-c         if (.not.frstnm) stop ' '
          NFINNR = 1
          KCOEF  = 1
          KIMAX  = KCOEF  + (2*MXCOEF+1)*(NMORDR+1)
@@ -1516,6 +1524,12 @@ c         if (.not.frstnm) stop ' '
      &        WORK(KIMIN),WORK(KICNT),WORK(KNCVAL),WORK(KIDDCP),MXCOEF,
      &        NMORDR,NDIME,NTYPE,NDERIV,NINTIN,LDPMTX,IFRSTD,NLDPMX,
      &        LWRK1,.TRUE.)
+C
+C        **************************************
+C        *** Resetting property derivative. ***
+C        **************************************
+C
+         CNMPRP = CPRPBK
 C
 C        **********************************************************
 C        *** Assigning values to the dependent force constants. ***
@@ -3081,7 +3095,7 @@ C
          IF (MOD(NDCOOR,KCOL).NE.0) NCOL = NCOL + 1
 C
          DO ICOL = 1, NCOL
-            DO ICOOR = ISTRT, NDCOOR
+            DO ICOOR = 1, NDCOOR
                WRITE (LUPRI,'(5X,6F12.6)')
      &                        (SYMTDR(ICOOR,I,I),I=ISTRT,LAST)
             END DO
@@ -5925,6 +5939,7 @@ C     **************************************************************
 #include <nuclei.h>
 #include <pvibav.h>
 #include <numder.h>
+#include <cbinum.h>
        LOGICAL FOUND
        CHARACTER*9 PRPTXT
        DIMENSION TRAMAT(NCOOR,NCOOR), COOR(NCOOR), CRTPRG(NCOOR)
@@ -5975,7 +5990,8 @@ C
 C     *** If property derivative is calculated, we need to save ***
 C     *** the transformation matrix in the property-file.       ***
 C
-      IF (CNMPRP.AND.(NAORDR.GT.0)) THEN
+      write (lupri,*) 'Dette er en test', CNMPRP
+      IF (CNMPRP) THEN
          NDIM3  = 1
          PRPTXT = 'CART-TRAN'
          CALL WRAVFL(TRAMAT,NCOOR,NCOOR,NDIM3,PRPTXT,IPRINT)
