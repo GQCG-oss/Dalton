@@ -97,7 +97,7 @@ C
 #if defined (NO_F90)
       POINTER (WADDR,WORK(1))
 #else
-      REAL , ALLOCATABLE , DIMENSION(:) :: WORK
+      DOUBLE PRECISION , ALLOCATABLE , DIMENSION(:) :: WORK
       INTEGER                           :: WADDR
 #endif
 #else
@@ -161,6 +161,12 @@ C
 #else
       WADDR = 1
       ALLOCATE (WORK(LMWORK+2),STAT=I)
+      IF (I .NE. 0) THEN
+         WRITE (LUERR,*) 'ALLOCATE command failed to allocate the '//
+     &        'requested memory'
+         WRITE (LUERR,*) 'Reduce the memory demands and be welcome back'
+         CALL QUIT('Failed to allocate memory')
+      END IF
 #endif
 #endif
 #if (defined (SYS_LINUX))
