@@ -17,8 +17,11 @@ else
    CHECK_SHELL='#!/bin/sh'
 fi
 
-# awk on Sun does not support functions, need to sue nawk for this
-if nawk '{print 1}'</dev/null>& /dev/null; then
+# Prefer gawk - we know exactly what it can do.
+# awk on Sun does not support functions, need to use nawk for this
+if gawk '{print 1}'</dev/null>& /dev/null; then
+   AWK=gawk
+elif nawk '{print 1}'</dev/null>& /dev/null; then
    AWK=nawk
 else
    AWK=awk
@@ -167,9 +170,93 @@ exit( e(a[1]-('$3'),'$6') || e(a[2]-('$4'),'$6') || e(a[3]-('$5'),'$6'))
 ' $log || ERRLIST="$ERRLIST; molecular gradient"
 }
 
+# check_dip_gradient:
+# check molecular gradient of dipole moment for given atom
+# $1 - number of atoms to check
+# $2 - tolerance
+# $3 - components following format
+# <label1> x <dxx> <dyx> <dzx>
+# <label1> y <dxy> <dyy> <dzy>
+# <label1> z <dxz> <dyz> <dzz>
+# <label2> x <dxx> <dyx> <dzx>
+# ...., ie. same as in the output file.
+check_dip_gradient() {
+if [ "$3" = "" ]; then
+    echo "not enough parameters to check_dip_gradient."; return 1
+fi
+p=`echo $3`
+$AWK 'function e(v,r){#print "mol_grad: checking " v,",", r;
+return(v>r||v<-r)}
+ BEGIN {s=0;c=0}
+/Dipole moment gradient \(au\)/ {
+getline; # ---------------------------
+getline; #
+getline; #  Ex             Ey             Ez
+getline; #
+atoms='$1'; tol='$2';
+split("'"$p"'",arr," ");
+idx=1;
+failed=0;
+for(a=0; a<atoms; a++) {
+for(cor=0;cor<3; cor++) {
+  lbl=arr[idx++]; coor=arr[idx++];
+  x=arr[idx++];y=arr[idx++]; z=arr[idx++];
+  getline;
+  if($1 != lbl || $2 != coor ||
+     e(x-$3,tol) || e(y-$4,tol) || e(z-$5,tol)) {
+     print $0;
+     print "match on ",lbl,":",coor,":", x,":", y,":", z," failed";
+     failed++;
+  }
+}
+  getline; #empty
+}
+}
+END {exit(failed)}
+' $log || ERRLIST="$ERRLIST; Dipole moment gradient"
+}
+
+# check_mol_hessian:
+# check the molecular hessian.
+# $1 - tolerance
+# $2 - the hessian
+# checking is tricky because of the large amount of data to be verified.
+# we compare all the numbers in the string with given tolerance.
+check_mol_hessian() {
+if [ "$3" = "" ]; then
+    echo "not enough parameters to check_vibr_freq."; return 1
+fi
+p=`echo $3`
+$AWK 'function e(v,r){#print "mol_hessian: checking " v,",", r;
+return(v>r||v<-r)}
+ BEGIN {s=0;c=0}
+/Molecular Hessian \(au\)/ {
+getline; # ---------------------------
+getline; #
+tol='$1';
+split("'"$p"'",arr," ");
+idx=1;
+failed=0;
+while(arr[idx] != "") {
+getline; split($0,l," ");
+for(i=1; l[i]!= ""; i++) {
+ #print "Expected:",arr[idx]," Found:",l[i]
+ if(l[i] ~ /-?[.0-9]+/) {
+   if(e(arr[idx]-l[i],tol)) failed++;
+ else
+   if(arr[idx] != l[i])     failed++
+  } 
+  idx++
+}
+if(failed>5) break
+}
+}
+END {exit(failed)}
+' $log || ERRLIST="$ERRLIST; Molecular Hessian"
+}
 
 # check_final_geometry:
-# $1 - 6-character atom label inculding symmetry equivalence number
+# $1 - 6-character atom label including symmetry equivalence number
 # $2:$4 - coordinates.
 # $5    - tolerance
 check_final_geometry() {
@@ -199,6 +286,58 @@ $AWK 'function e(v,r){#print "checking ",v, r;
 return(v>r||v<-r)}
 /Energy at final geometry is/ { exit(e($7-('$1'),'$2'))  }
 ' $log || ERRLIST="$ERRLIST; final energy"
+}
+
+# check_rot_constants:
+# check rotational constant
+# $1 - expected value in MHz
+# $2 - expected value in cm-1 
+# Tested for a linear molecule.
+check_rotational_const() {
+if [ "$2" = "" ]; then
+    echo "not enough parameters to check_rotational_const."; return 1
+fi
+$AWK '
+/ B = /{if($3!='$1'||$6 != '$2')failed++}
+END    {exit(failed)}
+'  $log || ERRLIST="$ERRLIST; ROTATIONAL CONSTANTS $1"
+}
+
+# check_vibr_freqs:
+# check the vibrational frequencies and intensities.
+# $1 - tolerance
+# $2 - the IR freq and intensity data
+# use the same method as in molecular hessian. 
+check_vibr_freqs() {
+if [ "$2" = "" ]; then
+    echo "not enough parameters to check_vibr_freq."; return 1
+fi
+p=`echo $2`
+$AWK 'function e(v,r){#print "vibr_freq: checking " v,",", r;
+return(v>r||v<-r)}
+ BEGIN {s=0;c=0}
+/ Vibrational Frequencies and IR Intensities/ {
+for(i=0; i<8; i++) getline;
+tol='$1';
+split("'"$p"'",arr," ");
+idx=1;
+failed=0;
+while(arr[idx] != "") {
+getline; split($0,l," ");
+for(i=1; l[i]!= ""; i++) {
+ #print "Expected:",arr[idx]," Found:",l[i]
+ if(l[i] ~ /-?[.0-9]+/) {
+   if(e(arr[idx]-l[i],tol)) {failed++;print "a"}
+ else
+   if(arr[idx] != l[i])     {failed++;print "b"}
+  } 
+  idx++
+}
+if(failed>5) break
+}
+}
+END {exit(failed)}
+' $log || ERRLIST="$ERRLIST; Vibrational Frequencies"
 }
 
 # check_exp_grad:
