@@ -312,7 +312,7 @@ if [ "$answer" = "y" ]; then
             parlib='no'
         else
             complist="mpif77 $complist"
-            ccmplist="mpicc  $complist"
+            ccmplist="mpicc  $ccmplist"
             parlib='yes'
         fi
 #
