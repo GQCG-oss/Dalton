@@ -126,6 +126,7 @@ C
 C
 #if defined (VAR_MPI)
       CALL MPIXINIT
+      PARIO = .FALSE.
 #else
       MYNUM = 0
 #endif
