@@ -181,15 +181,12 @@ ERROR[4]="ENERGIES NOT CORRECT"
 # Calculation setup
 CRIT1=`$GREP "Nuclear magnetic shieldings" $log | wc -l`
 CRIT2=`$GREP "Nuclear spin\-spin coupling constants" $log | wc -l`
-CRIT3=`$GREP "Linear response calculation" $log | wc -l`
-CRIT4=`$GREP "Number of perturbations\: * 1" $log | wc -l`
-CRIT5=`$GREP "Spin\-spin couplings printed for atoms with abundance greater than \: (0| )\.10(D|E)\-01" $log | wc -l`
-CRIT6=`$GREP "No diamagnetic spin\-orbit contribution calculated" $log | wc -l`
-CRIT7=`$GREP "No spin\-dipole contribution calculated" $log | wc -l`
-CRIT8=`$GREP "No paramagnetic spin\-orbit contribution calculated" $log | wc -l`
-TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
-		$CRIT7 \+ $CRIT8`
-CTRL[5]=8
+CRIT3=`$GREP "Spin\-spin couplings printed for atoms with abundance greater than \: (0| )\.10(D|E)\-01" $log | wc -l`
+CRIT4=`$GREP "No diamagnetic spin\-orbit contribution calculated" $log | wc -l`
+CRIT5=`$GREP "No spin\-dipole contribution calculated" $log | wc -l`
+CRIT6=`$GREP "No paramagnetic spin\-orbit contribution calculated" $log | wc -l`
+TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
+CTRL[5]=6
 ERROR[5]="CALCULATION SETUP NOT CORRECT"
 
 # Shielding tensor

@@ -1813,7 +1813,6 @@ C     Heading
 C
       IF (IPRDEF .GE. 0) 
      &     CALL TITLER('FINAL RESULTS FROM ABACUS','*',124)
-      write(2,*) 'molgrd',molgrd
 C
 C     Time and date
 C
