@@ -3,12 +3,14 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# energy_direct
 #*# -------------
 #*# Molecule:         H2O
 #*# Wave Function:    Direct SCF
 #*# Test Purpose:     Check energy calculated directly (using TWOINT) and
 #*#                   with symmetry
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT
@@ -49,14 +51,11 @@ cat > energy_direct.dal <<%EOF%
 echo '#!/bin/ksh
 log=$1
 
-if [ `uname` = IRIX64 ]; then
-   GREP="egrep"
-else
+if [ `uname` = Linux ]; then
    GREP="egrep -a"
+else
+   GREP="egrep"
 fi
-
-CRIT1=`$GREP "" $log | wc -l`
-
 
 # Symmetry:
 CRIT1=`$GREP "Symmetry class found: C.2v." $log | wc -l`

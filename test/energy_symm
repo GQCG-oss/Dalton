@@ -65,10 +65,10 @@ cat > energy_symm.dal <<%EOF%
 echo '#!/bin/ksh
 log=$1
 
-if [ `uname` = IRIX64 ]; then
-   GREP="egrep"
-else
+if [ `uname` = Linux ]; then
    GREP="egrep -a"
+else
+   GREP="egrep"
 fi
 
 # Reading from basis set library:
@@ -78,15 +78,15 @@ CTRL[1]=1
 ERROR[1]="BASIS SET LIBRARY NOT SET UP CORRECTLY"
 
 # Reading molecular geometry:
-CRIT1=`$GREP "1 * O * x *  0.0000000000" $log | wc -l`
-CRIT2=`$GREP "2 *     y *  0.0000000000" $log | wc -l`
-CRIT3=`$GREP "3 *     z * \-0.7496859287" $log | wc -l`
-CRIT4=`$GREP "4 * H * 1 * x *  0.0000000000" $log | wc -l`
-CRIT5=`$GREP "5 *         y *  1.4523500000" $log | wc -l`
-CRIT6=`$GREP "6 *         z *  0.3748429643" $log | wc -l`
-CRIT7=`$GREP "7 * H * 2 * x *  0.0000000000" $log | wc -l`
-CRIT8=`$GREP "8 *         y * \-1.4523500000" $log | wc -l`
-CRIT9=`$GREP "9 *         z *  0.3748429643" $log | wc -l`
+CRIT1=`$GREP "1 * O * x * (0| )\.0000000000" $log | wc -l`
+CRIT2=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
+CRIT3=`$GREP "3 * z * (\-0|\-)\.7496859287" $log | wc -l`
+CRIT4=`$GREP "4 * H * 1 * x * (0| )\.0000000000" $log | wc -l`
+CRIT5=`$GREP "5 * y * 1\.4523500000" $log | wc -l`
+CRIT6=`$GREP "6 * z * (0| )\.3748429643" $log | wc -l`
+CRIT7=`$GREP "7 * H * 2 * x * (0| )\.0000000000" $log | wc -l`
+CRIT8=`$GREP "8 * y * \-1\.4523500000" $log | wc -l`
+CRIT9=`$GREP "9 * z * (0| )\.3748429643" $log | wc -l`
 CRIT10=`$GREP "Total number of coordinates: * 9" $log | wc -l`
 TEST[2]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
               $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9  \+ $CRIT10`
@@ -141,9 +141,9 @@ CTRL[8]=1
 ERROR[8]="MCSCF ENERGY NOT CORRECT"
 
 # Occupancy of orbitals:
-CRIT1=`$GREP "2.00000000[0-9] * 1.98908074[0-9] * 1.97643675[0-9] * 0.02420935[0-9] * 0.01125111[0-9]" $log | wc -l`
-CRIT2=`$GREP "1.98138083[0-9] * 0.01779858[0-9]" $log | wc -l`
-CRIT3=`$GREP "1.97462771[0-9] * 0.02521490[0-9]" $log | wc -l`
+CRIT1=`$GREP "2.00000000[0-9] * 1.98908074[0-9] * 1.97643675[0-9] * (0| ).02420935[0-9] * (0| ).01125111[0-9]" $log | wc -l`
+CRIT2=`$GREP "1.98138083[0-9] * (0| ).01779858[0-9]" $log | wc -l`
+CRIT3=`$GREP "1.97462771[0-9] * (0| ).02521490[0-9]" $log | wc -l`
 CRIT4=`$GREP "No occupied orbitals" $log | wc -l`
 TEST[9]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[9]=6

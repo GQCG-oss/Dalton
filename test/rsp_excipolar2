@@ -73,10 +73,10 @@ cat > rsp_excipolar2.dal <<%EOF%
 echo '#!/bin/ksh
 log=$1
 
-if [ `uname` = IRIX64 ]; then
-   GREP="egrep"
-else
+if [ `uname` = Linux ]; then
    GREP="egrep -a"
+else
+   GREP="egrep"
 fi
 
 # Basis set
@@ -89,12 +89,12 @@ ERROR[1]="BASIS SET NOT READ CORRECTLY"
 
 # Geometry
 CRIT1=`$GREP "Total number of coordinates\: * 6" $log | wc -l`
-CRIT2=`$GREP "1 * H * x * 0\.0000000000" $log | wc -l`
-CRIT3=`$GREP "2 * y * 0\.0000000000" $log | wc -l`
+CRIT2=`$GREP "1 * H * x * (0| )\.0000000000" $log | wc -l`
+CRIT3=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
 CRIT4=`$GREP "3 * z * 2\.0969699107" $log | wc -l`
-CRIT5=`$GREP "4 * Li * x * 0\.0000000000" $log | wc -l`
-CRIT6=`$GREP "5 * y * 0\.0000000000" $log | wc -l`
-CRIT7=`$GREP "6 * z * \-0\.9969699107" $log | wc -l`
+CRIT5=`$GREP "4 * Li * x * (0| )\.0000000000" $log | wc -l`
+CRIT6=`$GREP "5 * y * (0| )\.0000000000" $log | wc -l`
+CRIT7=`$GREP "6 * z * (\-0|\-)\.9969699107" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7`
 CTRL[2]=7
@@ -130,9 +130,9 @@ CRIT1=`$GREP "Na T\[4\] Nb Nc Nd * 263\.506738[0-9][0-9] * 263\.506738[0-9][0-9]
 CRIT2=`$GREP "Na T\[3\] Nx Nyz * \-185\.588445[0-9][0-9] * 77\.918292[0-9][0-9]" $log | wc -l`
 CRIT3=`$GREP "Na X\[3\] Ny Nz * \-33\.531307[0-9][0-9] * 44\.386984[0-9][0-9]" $log | wc -l`
 CRIT4=`$GREP "Nx A\[3\] Ny Nz * \-25\.023064[0-9][0-9] * 19\.363920[0-9][0-9]" $log | wc -l`
-CRIT5=`$GREP "Na X\[2\] Nyz * \-19\.928114[0-9][0-9] * \-0\.564194[0-9][0-9]" $log | wc -l`
+CRIT5=`$GREP "Na X\[2\] Nyz * \-19\.928114[0-9][0-9] * (\-0|\-)\.564194[0-9][0-9]" $log | wc -l`
 CRIT6=`$GREP "Nx A\[2\] Nyz * 15\.392107[0-9][0-9] * 14\.827913[0-9][0-9]" $log | wc -l`
-CRIT7=`$GREP "\@ State no\.\, symmetry\, excitation energy\: * 1 * 1 * 0\.11958[0-9]" $log | wc -l`
+CRIT7=`$GREP "\@ State no\.\, symmetry\, excitation energy\: * 1 * 1 * (0| )\.11958[0-9]" $log | wc -l`
 CRIT8=`$GREP "\@ < e \| AB \| f > * \= * 14\.827913[0-9][0-9]" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
@@ -146,7 +146,7 @@ CRIT3=`$GREP "Na X\[3\] Ny Nz * 27\.813142[0-9][0-9] * 43\.836312[0-9][0-9]" $lo
 CRIT4=`$GREP "Nx A\[3\] Ny Nz * 34\.788308[0-9][0-9] * 78\.624621[0-9][0-9]" $log | wc -l`
 CRIT5=`$GREP "Na X\[2\] Nyz * \-18\.273626[0-9][0-9] * 60\.350995[0-9][0-9]" $log | wc -l`
 CRIT6=`$GREP "Nx A\[2\] Nyz * \-154\.548069[0-9][0-9] * \-94\.197074[0-9][0-9]" $log | wc -l`
-CRIT7=`$GREP "\@ State no\.\, symmetry\, excitation energy\: * 2 * 1 * 0\.27218[0-9]" $log | wc -l`
+CRIT7=`$GREP "\@ State no\.\, symmetry\, excitation energy\: * 2 * 1 * (0| )\.27218[0-9]" $log | wc -l`
 CRIT8=`$GREP "\@ < e \| AB \| f > * \= * \-94\.197074[0-9][0-9]" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
@@ -160,7 +160,7 @@ CRIT3=`$GREP "Na X\[3\] Ny Nz * 13\.413961[0-9][0-9] * 92\.183688[0-9][0-9]" $lo
 CRIT4=`$GREP "Nx A\[3\] Ny Nz * 26\.948724[0-9][0-9] * 119\.132412[0-9][0-9]" $log | wc -l`
 CRIT5=`$GREP "Na X\[2\] Nyz * \-44\.507955[0-9][0-9] * 74\.624456[0-9][0-9]" $log | wc -l`
 CRIT6=`$GREP "Nx A\[2\] Nyz * \-372\.949496[0-9][0-9] * \-298\.325039[0-9][0-9]" $log | wc -l`
-CRIT7=`$GREP "\@ State no\.\, symmetry\, excitation energy\: * 1 * 1 * 0\.11958[0-9]" $log | wc -l`
+CRIT7=`$GREP "\@ State no\.\, symmetry\, excitation energy\: * 1 * 1 * (0| )\.11958[0-9]" $log | wc -l`
 CRIT8=`$GREP "\@ < e \| AB \| f > * \= * \-298\.325039[0-9][0-9]" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
@@ -174,7 +174,7 @@ CRIT3=`$GREP "Na X\[3\] Ny Nz * 15\.784417[0-9][0-9] * 55\.810071[0-9][0-9]" $lo
 CRIT4=`$GREP "Nx A\[3\] Ny Nz * 27\.529106[0-9][0-9] * 83\.339177[0-9][0-9]" $log | wc -l`
 CRIT5=`$GREP "Na X\[2\] Nyz * \-36\.459116[0-9][0-9] * 46\.880060[0-9][0-9]" $log | wc -l`
 CRIT6=`$GREP "Nx A\[2\] Nyz * \-51\.782017[0-9][0-9] * \-4\.901956[0-9][0-9]" $log | wc -l`
-CRIT7=`$GREP "\@ State no\.\, symmetry\, excitation energy\: * 2 * 1 * 0\.27218[0-9]" $log | wc -l`
+CRIT7=`$GREP "\@ State no\.\, symmetry\, excitation energy\: * 2 * 1 * (0| )\.27218[0-9]" $log | wc -l`
 CRIT8=`$GREP "\@ < e \| AB \| f > * \= * \-4\.901956[0-9][0-9]" $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
@@ -188,7 +188,7 @@ CRIT3=`$GREP "Na X\[3\] Ny Nz * 13\.413961[0-9][0-9] * 92\.183688[0-9][0-9]" $lo
 CRIT4=`$GREP "Nx A\[3\] Ny Nz * 26\.948724[0-9][0-9] * 119\.132412[0-9][0-9]" $log | wc -l`
 CRIT5=`$GREP "Na X\[2\] Nyz * \-44\.507955[0-9][0-9] * 74\.624456[0-9][0-9]" $log | wc -l`
 CRIT6=`$GREP "Nx A\[2\] Nyz * \-372\.949496[0-9][0-9] * \-298\.325039[0-9][0-9]" $log | wc -l`
-CRIT7=`$GREP "\@ State no\.\, symmetry\, excitation energy\: * 1 * 1 * 0\.11958[0-9]" $log | wc -l`
+CRIT7=`$GREP "\@ State no\.\, symmetry\, excitation energy\: * 1 * 1 * (0| )\.11958[0-9]" $log | wc -l`
 CRIT8=`$GREP "\@ < e \| AB \| f > * \= * \-298\.325039[0-9][0-9]" $log | wc -l`
 TEST[10]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
@@ -202,7 +202,7 @@ CRIT3=`$GREP "Na X\[3\] Ny Nz * 15\.784417[0-9][0-9] * 55\.810071[0-9][0-9]" $lo
 CRIT4=`$GREP "Nx A\[3\] Ny Nz * 27\.529106[0-9][0-9] * 83\.339177[0-9][0-9]" $log | wc -l`
 CRIT5=`$GREP "Na X\[2\] Nyz * \-36\.459116[0-9][0-9] * 46\.880060[0-9][0-9]" $log | wc -l`
 CRIT6=`$GREP "Nx A\[2\] Nyz * \-51\.782017[0-9][0-9] * \-4\.901956[0-9][0-9]" $log | wc -l`
-CRIT7=`$GREP "\@ State no\.\, symmetry\, excitation energy\: * 2 * 1 * 0\.27218[0-9]" $log | wc -l`
+CRIT7=`$GREP "\@ State no\.\, symmetry\, excitation energy\: * 2 * 1 * (0| )\.27218[0-9]" $log | wc -l`
 CRIT8=`$GREP "\@ < e \| AB \| f > * \= * \-4\.901956[0-9][0-9]" $log | wc -l`
 TEST[11]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
@@ -216,7 +216,7 @@ CRIT3=`$GREP "Na X\[3\] Ny Nz * 1\.088859[0-9][0-9] * 41\.752737[0-9][0-9]" $log
 CRIT4=`$GREP "Nx A\[3\] Ny Nz * 10\.163959[0-9][0-9] * 51\.916696[0-9][0-9]" $log | wc -l`
 CRIT5=`$GREP "Na X\[2\] Nyz * \-29\.126203[0-9][0-9] * 22\.790493[0-9][0-9]" $log | wc -l`
 CRIT6=`$GREP "Nx A\[2\] Nyz * \-8\.900989[0-9][0-9] * 13\.889503[0-9][0-9]" $log | wc -l`
-CRIT7=`$GREP "\@ State no\.\, symmetry\, excitation energy\: * 1 * 2 * 0\.15776[0-9]" $log | wc -l`
+CRIT7=`$GREP "\@ State no\.\, symmetry\, excitation energy\: * 1 * 2 * (0| )\.15776[0-9]" $log | wc -l`
 CRIT8=`$GREP "\@ < e \| AB \| f > * \= * 13\.889503[0-9][0-9]" $log | wc -l`
 TEST[12]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
@@ -230,7 +230,7 @@ CRIT3=`$GREP "Na X\[3\] Ny Nz * 90\.816400[0-9][0-9] * 105\.144161[0-9][0-9]" $l
 CRIT4=`$GREP "Nx A\[3\] Ny Nz * 112\.101307[0-9][0-9] * 217\.245469[0-9][0-9]" $log | wc -l`
 CRIT5=`$GREP "Na X\[2\] Nyz * \-57\.292367[0-9][0-9] * 159\.953101[0-9][0-9]" $log | wc -l`
 CRIT6=`$GREP "Nx A\[2\] Nyz * 174\.688801[0-9][0-9] * 334\.641903[0-9][0-9]" $log | wc -l`
-CRIT7=`$GREP "\@ State no\.\, symmetry\, excitation energy\: * 1 * 2 * 0\.15776[0-9]" $log | wc -l`
+CRIT7=`$GREP "\@ State no\.\, symmetry\, excitation energy\: * 1 * 2 * (0| )\.15776[0-9]" $log | wc -l`
 CRIT8=`$GREP "\@ < e \| AB \| f > * \= * 334\.641903[0-9][0-9]" $log | wc -l`
 TEST[13]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`
@@ -244,7 +244,7 @@ CRIT3=`$GREP "Na X\[3\] Ny Nz * 36\.702195[0-9][0-9] * 89\.183184[0-9][0-9]" $lo
 CRIT4=`$GREP "Nx A\[3\] Ny Nz * 53\.717768[0-9][0-9] * 142\.900953[0-9][0-9]" $log | wc -l`
 CRIT5=`$GREP "Na X\[2\] Nyz * \-57\.292367[0-9][0-9] * 85\.608585[0-9][0-9]" $log | wc -l`
 CRIT6=`$GREP "Nx A\[2\] Nyz * \-57\.262344[0-9][0-9] * 28\.346241[0-9][0-9]" $log | wc -l`
-CRIT7=`$GREP "\@ State no\.\, symmetry\, excitation energy\: * 1 * 2 * 0\.15776[0-9]" $log | wc -l`
+CRIT7=`$GREP "\@ State no\.\, symmetry\, excitation energy\: * 1 * 2 * (0| )\.15776[0-9]" $log | wc -l`
 CRIT8=`$GREP "\@ < e \| AB \| f > * \= * 28\.346241[0-9][0-9]" $log | wc -l`
 TEST[14]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8`

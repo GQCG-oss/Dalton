@@ -66,10 +66,10 @@ cat > energy_nosymm.dal <<%EOF%
 echo '#!/bin/ksh
 log=$1
 
-if [ `uname` = IRIX64 ]; then
-   GREP="egrep"
-else
+if [ `uname` = Linux ]; then
    GREP="egrep -a"
+else
+   GREP="egrep"
 fi
 
 # Reading ATOMBASIS:
@@ -79,15 +79,15 @@ CTRL[1]=1
 ERROR[1]="ATOMBASIS NOT READ CORRECTLY"
 
 # Reading moleculat geometry:
-CRIT1=`$GREP "1 * O * x *   0.0000000000" $log | wc -l`
-CRIT2=`$GREP "2 *     y * \-0.2249058930" $log | wc -l`
-CRIT3=`$GREP "3 *     z *   0.0000000000" $log | wc -l`
-CRIT4=`$GREP "4 * H * x *   1.4523500000" $log | wc -l`
-CRIT5=`$GREP "5 *     y *   0.8996230000" $log | wc -l`
-CRIT6=`$GREP "6 *     z *   0.0000000000" $log | wc -l`
-CRIT7=`$GREP "7 * H * x * \-1.4523500000" $log | wc -l`
-CRIT8=`$GREP "8 *     y *   0.8996230000" $log | wc -l`
-CRIT9=`$GREP "9 *     z *   0.0000000000" $log | wc -l`
+CRIT1=`$GREP "1 * O * x * (0| )\.0000000000" $log | wc -l`
+CRIT2=`$GREP "2 * y * (\-0|\-)\.2249058930" $log | wc -l`
+CRIT3=`$GREP "3 * z * (0| )\.0000000000" $log | wc -l`
+CRIT4=`$GREP "4 * H * x * 1\.4523500000" $log | wc -l`
+CRIT5=`$GREP "5 * y * (0| )\.8996230000" $log | wc -l`
+CRIT6=`$GREP "6 * z * (0| )\.0000000000" $log | wc -l`
+CRIT7=`$GREP "7 * H * x * \-1\.4523500000" $log | wc -l`
+CRIT8=`$GREP "8 * y * (0| )\.8996230000" $log | wc -l`
+CRIT9=`$GREP "9 * z * (0| )\.0000000000" $log | wc -l`
 CRIT10=`$GREP "Total number of coordinates: * 9" $log | wc -l`
 TEST[2]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
               $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9  \+ $CRIT10`
@@ -133,7 +133,7 @@ ERROR[7]="MCSCF ENERGY NOT CORRECT"
 
 # Occupancy of naturalorbitals:
 CRIT1=`$GREP "2.00000000[0-9] * 1.98908074[0-9] * 1.98138083[0-9] * 1.97643675[0-9] * 1.97462771[0-9]" $log | wc -l`
-CRIT2=`$GREP "0.02521490[0-9] * 0.02420935[0-9] * 0.01779858[0-9] * 0.01125111[0-9]" $log | wc -l`
+CRIT2=`$GREP "(0| ).02521490[0-9] * (0| ).02420935[0-9] * (0| ).01779858[0-9] * (0| ).01125111[0-9]" $log | wc -l`
 TEST[8]=`expr $CRIT1 \+ $CRIT2`
 CTRL[8]=2
 ERROR[8]="OCCUPANCY NOT CORRECT"

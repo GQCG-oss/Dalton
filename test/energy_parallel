@@ -3,12 +3,14 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# energy_parallel
 #*# ---------------
 #*# Molecule:         H2O
 #*# Wave Function:    Parallel SCF
 #*# Test Purpose:     Check energy calculated in parallel (using TWOINT) and
 #*#                   with symmetry
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT
@@ -48,10 +50,10 @@ cat > energy_parallel.dal <<%EOF%
 echo '#!/bin/ksh
 log=$1
 
-if [ `uname` = IRIX64 ]; then
-   GREP="egrep"
-else
+if [ `uname` = Linux ]; then
    GREP="egrep -a"
+else
+   GREP="egrep"
 fi
 
 CRIT1=`$GREP "" $log | wc -l`

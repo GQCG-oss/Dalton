@@ -78,10 +78,10 @@ Z2SPNORB
 echo '#!/bin/ksh
 log=$1
 
-if [ `uname` = IRIX64 ]; then
-   GREP="egrep"
-else
+if [ `uname` = Linux ]; then
    GREP="egrep -a"
+else
+   GREP="egrep"
 fi
 
 # Basis set
@@ -94,11 +94,11 @@ ERROR[1]="BASIS SET NOT READ CORRECTLY"
 
 # Geometry
 CRIT1=`$GREP "Total number of coordinates\: * 6" $log | wc -l`
-CRIT2=`$GREP "1 * O * 1 * x * 0\.0000000000" $log | wc -l`
-CRIT3=`$GREP "2 * y * 0\.0000000000" $log | wc -l`
+CRIT2=`$GREP "1 * O * 1 * x * (0| )\.0000000000" $log | wc -l`
+CRIT3=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
 CRIT4=`$GREP "3 * z * 1\.1405000000" $log | wc -l`
-CRIT5=`$GREP "4 * O * 2 * x * 0\.0000000000" $log | wc -l`
-CRIT6=`$GREP "5 * y * 0\.0000000000" $log | wc -l`
+CRIT5=`$GREP "4 * O * 2 * x * (0| )\.0000000000" $log | wc -l`
+CRIT6=`$GREP "5 * y * (0| )\.0000000000" $log | wc -l`
 CRIT7=`$GREP "6 * z * \-1\.1405000000" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7`
@@ -138,8 +138,8 @@ TEST[7]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[7]=2
 ERROR[7]="TRANSITION MOMENTS NOT CORRECT"
 
-# EXCITATION ENERGY
-CRIT1=`$GREP "\@Excitation energy \: \-0\.1070602[0-9] * au" $log | wc -l`
+# Excitation energy
+CRIT1=`$GREP "\@Excitation energy \: (\-0| \-)\.1070602[0-9] * au" $log | wc -l`
 TEST[8]=`expr	$CRIT1`
 CTRL[8]=1
 ERROR[8]="EXCITATION ENERGY NOT CORRECT"

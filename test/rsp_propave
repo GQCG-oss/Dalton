@@ -53,10 +53,10 @@ ZDIPLEN
 echo '#!/bin/ksh
 log=$1
 
-if [ `uname` = IRIX64 ]; then
-   GREP="egrep"
-else
+if [ `uname` = Linux ]; then
    GREP="egrep -a"
+else
+   GREP="egrep"
 fi
 
 # Integral setup
@@ -81,11 +81,11 @@ ERROR[2]="BASIS SET NOT READ CORRECTLY"
 
 # Geometry
 CRIT1=`$GREP "Total number of coordinates\: * 6" $log | wc -l`
-CRIT2=`$GREP "1 * Li * x * 0\.0000000000" $log | wc -l`
-CRIT3=`$GREP "2 * y * 0\.0000000000" $log | wc -l`
-CRIT4=`$GREP "3 * z * 0\.7581192283" $log | wc -l`
-CRIT5=`$GREP "4 * H * x * 0\.0000000000" $log | wc -l`
-CRIT6=`$GREP "5 * y * 0\.0000000000" $log | wc -l`
+CRIT2=`$GREP "1 * Li * x * (0| )\.0000000000" $log | wc -l`
+CRIT3=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
+CRIT4=`$GREP "3 * z * (0| )\.7581192283" $log | wc -l`
+CRIT5=`$GREP "4 * H * x * (0| )\.0000000000" $log | wc -l`
+CRIT6=`$GREP "5 * y * (0| )\.0000000000" $log | wc -l`
 CRIT7=`$GREP "6 * z * \-2\.2743576849" $log | wc -l`
 TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7`
@@ -108,9 +108,9 @@ ERROR[5]="ENERGY NOT CORRECT"
 # Response setup
 CRIT1=`$GREP "Variable settings for Cubic Response calculation" $log | wc -l`
 CRIT2=`$GREP "Second hyperpolarizability calculation \: * CRCAL\= T" $log | wc -l`
-CRIT3=`$GREP "1 B\-frequencies * 0\.000000(D|E)\+00" $log | wc -l`
-CRIT4=`$GREP "1 C\-frequencies * 0\.000000(D|E)\+00" $log | wc -l`
-CRIT5=`$GREP "1 D\-frequencies * 0\.000000(D|E)\+00" $log | wc -l`
+CRIT3=`$GREP "1 B\-frequencies * (0| )\.000000(D|E)\+00" $log | wc -l`
+CRIT4=`$GREP "1 C\-frequencies * (0| )\.000000(D|E)\+00" $log | wc -l`
+CRIT5=`$GREP "1 D\-frequencies * (0| )\.000000(D|E)\+00" $log | wc -l`
 CRIT6=`$GREP "1 A OPERATORS OF SYMMETRY NO\: * 1 AND LABELS\:" $log | wc -l`
 CRIT7=`$GREP "1 B OPERATORS OF SYMMETRY NO\: * 1 AND LABELS\:" $log | wc -l`
 CRIT8=`$GREP "1 C OPERATORS OF SYMMETRY NO\: * 1 AND LABELS\:" $log | wc -l`

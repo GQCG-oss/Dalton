@@ -68,10 +68,10 @@ cat > rsp_exci.dal <<%EOF%
 echo '#!/bin/ksh
 log=$1
 
-if [ `uname` = IRIX64 ]; then
-   GREP="egrep"
-else
+if [ `uname` = Linux ]; then
    GREP="egrep -a"
+else
+   GREP="egrep"
 fi
 
 # Basis set
@@ -84,12 +84,12 @@ ERROR[1]="BASIS SET NOT READ CORRECTLY"
 
 # Geometry
 CRIT1=`$GREP "Total number of coordinates\: * 6" $log | wc -l`
-CRIT2=`$GREP "1 * H * x * 0\.0000000000" $log | wc -l`
-CRIT3=`$GREP "2 * y * 0\.0000000000" $log | wc -l`
+CRIT2=`$GREP "1 * H * x * (0| )\.0000000000" $log | wc -l`
+CRIT3=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
 CRIT4=`$GREP "3 * z * 2\.0969699107" $log | wc -l`
-CRIT5=`$GREP "4 * Li * x * 0\.0000000000" $log | wc -l`
-CRIT6=`$GREP "5 * y * 0\.0000000000" $log | wc -l`
-CRIT7=`$GREP "6 * z * \-0\.9969699107" $log | wc -l`
+CRIT5=`$GREP "4 * Li * x * (0| )\.0000000000" $log | wc -l`
+CRIT6=`$GREP "5 * y * (0| )\.0000000000" $log | wc -l`
+CRIT7=`$GREP "6 * z * (\-0|\-)\.9969699107" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7`
 CTRL[2]=7
@@ -125,7 +125,7 @@ ERROR[5]="RESPONSE CALCULATION NOT SETP UP CORRECTLY"
 
 # Excitation energy (ZDIPLEN)
 CRIT1=`$GREP "\@STATE NO\: * 1 \*TRANSITION MOMENT\: * (\-| )1\.071342[0-9] * \*ENERGY\(eV\)\: * 3\.254334[0-9]" $log | wc -l`
-CRIT2=`$GREP "\@Excitation energy \: * 0\.1195945[0-9] * au" $log | wc -l`
+CRIT2=`$GREP "\@Excitation energy \: * (0| )\.1195945[0-9] * au" $log | wc -l`
 CRIT3=`$GREP "\@Total energy \: * \-7\.874535[0-9] * au" $log | wc -l`
 CRIT4=`$GREP "\@Oscillator strength \(LENGTH\) * \: * 9\.1511734[0-9]E\-02" $log | wc -l`
 CRIT5=`$GREP "Transition moment * \(LENGTH\) * \: * (\-| )1\.071342[0-9]" $log | wc -l`
@@ -135,10 +135,10 @@ ERROR[6]="EXCITATION ENERGY (ZDIPLEN) NOT CORRECT"
 
 # Excitation energy (XDIPLEN)
 CRIT1=`$GREP "\@STATE NO\: * 1 \*TRANSITION MOMENT\: * (\-| )1\.586109[0-9] * \*ENERGY\(eV\)\: * 4\.293016[0-9]" $log | wc -l`
-CRIT2=`$GREP "\@Excitation energy \: * 0\.1577654[0-9] * au" $log | wc -l`
+CRIT2=`$GREP "\@Excitation energy \: * (0| )\.1577654[0-9] * au" $log | wc -l`
 CRIT3=`$GREP "\@Total energy \: * \-7\.836365[0-9] * au" $log | wc -l`
 CRIT4=`$GREP "\@Operator type\: * XDIPLEN " $log | wc -l`
-CRIT5=`$GREP "\@Oscillator strength \(LENGTH\) * \: * 0\.2645983[0-9]" $log | wc -l`
+CRIT5=`$GREP "\@Oscillator strength \(LENGTH\) * \: * (0| )\.2645983[0-9]" $log | wc -l`
 CRIT6=`$GREP "Transition moment * \(LENGTH\) * \: * (\-| )1\.586109[0-9]" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[7]=6

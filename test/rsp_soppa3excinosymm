@@ -59,10 +59,10 @@ cat > rsp_soppa3excinosymm.dal <<%EOF%
 echo '#!/bin/ksh
 log=$1
 
-if [ `uname` = IRIX64 ]; then
-   GREP="egrep"
-else
+if [ `uname` = Linux ]; then
    GREP="egrep -a"
+else
+   GREP="egrep"
 fi
 
 # Integral setup
@@ -90,15 +90,15 @@ ERROR[2]="BASIS SET NOT READ CORRECTLY"
 
 # Geometry
 CRIT1=`$GREP "Total number of coordinates\: * 9" $log | wc -l`
-CRIT2=`$GREP "1 * O * x * 0\.0000000000" $log | wc -l`
-CRIT3=`$GREP "2 * y * \-0\.2249058930" $log | wc -l`
-CRIT4=`$GREP "3 * z * 0\.0000000000" $log | wc -l`
+CRIT2=`$GREP "1 * O * x * (0| )\.0000000000" $log | wc -l`
+CRIT3=`$GREP "2 * y * (\-0|\-)\.2249058930" $log | wc -l`
+CRIT4=`$GREP "3 * z * (0| )\.0000000000" $log | wc -l`
 CRIT5=`$GREP "4 * H * x * 1\.4523500000" $log | wc -l`
-CRIT6=`$GREP "5 * y * 0\.8996230000" $log | wc -l`
-CRIT7=`$GREP "6 * z * 0\.0000000000" $log | wc -l`
+CRIT6=`$GREP "5 * y * (0| )\.8996230000" $log | wc -l`
+CRIT7=`$GREP "6 * z * (0| )\.0000000000" $log | wc -l`
 CRIT8=`$GREP "7 * H * x * \-1\.4523500000" $log | wc -l`
-CRIT9=`$GREP "8 * y * 0\.8996230000" $log | wc -l`
-CRIT10=`$GREP "9 * z * 0\.0000000000" $log | wc -l`
+CRIT9=`$GREP "8 * y * (0| )\.8996230000" $log | wc -l`
+CRIT10=`$GREP "9 * z * (0| )\.0000000000" $log | wc -l`
 TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10`
 CTRL[3]=10
@@ -121,7 +121,7 @@ CTRL[5]=4
 ERROR[5]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
 
 # State 1
-CRIT1=`$GREP "\@Excitation energy \: * 0\.2589029[0-9] * au" $log | wc -l`
+CRIT1=`$GREP "\@Excitation energy \: * (0| )\.2589029[0-9] * au" $log | wc -l`
 CRIT2=`$GREP "\@Total energy \: * \-75\.766779 * au" $log | wc -l`
 CRIT3=`$GREP "\@SOPPA * p\-h * weight in excitation operator\: * 95\.75 \%" $log | wc -l`
 CRIT4=`$GREP "\@SOPPA 2p\-2h weight in excitation operator\: * 4\.25 \%" $log | wc -l`
@@ -130,7 +130,7 @@ CTRL[6]=4
 ERROR[6]="STATE 1 NOT CORRECT"
 
 # State 2
-CRIT1=`$GREP "\@Excitation energy \: * 0\.3434040[0-9] * au" $log | wc -l`
+CRIT1=`$GREP "\@Excitation energy \: * (0| )\.3434040[0-9] * au" $log | wc -l`
 CRIT2=`$GREP "\@Total energy \: * \-75\.682277 * au" $log | wc -l`
 CRIT3=`$GREP "\@SOPPA * p\-h * weight in excitation operator\: * 95\.92 \%" $log | wc -l`
 CRIT4=`$GREP "\@SOPPA 2p\-2h weight in excitation operator\: * 4\.08 \%" $log | wc -l`
@@ -139,7 +139,7 @@ CTRL[7]=4
 ERROR[7]="STATE 2 NOT CORRECT"
 
 # State 3
-CRIT1=`$GREP "\@Excitation energy \: * 0\.3473645[0-9] * au" $log | wc -l`
+CRIT1=`$GREP "\@Excitation energy \: * (0| )\.3473645[0-9] * au" $log | wc -l`
 CRIT2=`$GREP "\@Total energy \: * \-75\.678317 * au" $log | wc -l`
 CRIT3=`$GREP "\@SOPPA * p\-h * weight in excitation operator\: * 96\.29 \%" $log | wc -l`
 CRIT4=`$GREP "\@SOPPA 2p\-2h weight in excitation operator\: * 3\.71 \%" $log | wc -l`
@@ -148,7 +148,7 @@ CTRL[8]=4
 ERROR[8]="STATE 3 NOT CORRECT"
 
 # State 4
-CRIT1=`$GREP "\@Excitation energy \: * 0\.4219158[0-9] * au" $log | wc -l`
+CRIT1=`$GREP "\@Excitation energy \: * (0| )\.4219158[0-9] * au" $log | wc -l`
 CRIT2=`$GREP "\@Total energy \: * \-75\.603766 * au" $log | wc -l`
 CRIT3=`$GREP "\@SOPPA * p\-h * weight in excitation operator\: * 96\.78 \%" $log | wc -l`
 CRIT4=`$GREP "\@SOPPA 2p\-2h weight in excitation operator\: * 3\.22 " $log | wc -l`

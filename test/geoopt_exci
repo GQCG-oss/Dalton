@@ -82,10 +82,10 @@ cat > geoopt_exci.dal <<%EOF%
 echo '#!/bin/ksh
 log=$1
 
-if [ `uname` = IRIX64 ]; then
-   GREP="egrep"
-else
+if [ `uname` = Linux ]; then
    GREP="egrep -a"
+else
+   GREP="egrep"
 fi
 
 # Geometry optimization
@@ -114,62 +114,62 @@ CTRL[3]=3
 ERROR[3]="INITIAL ENERGY NOT CORRECT"
 
 # Initial gradient
-CRIT1=`$GREP "H * y * \-0\.1445009633" $log | wc -l`
-CRIT2=`$GREP "H * z * 0\.0274284107" $log | wc -l`
-CRIT3=`$GREP "O * z * \-0\.0274284107" $log | wc -l`
+CRIT1=`$GREP "H * y * (\-0|\-)\.1445009633" $log | wc -l`
+CRIT2=`$GREP "H * z * (0| )\.0274284107" $log | wc -l`
+CRIT3=`$GREP "O * z * (\-0|\-)\.0274284107" $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=3
 ERROR[4]="INITIAL GRADIENT NOT CORRECT"
 
 # Initial Hessian
-CRIT1=`$GREP "H * y * 0\.763250" $log | wc -l`
-CRIT2=`$GREP "H * z * 0\.391205 * 0\.354459" $log | wc -l`
-CRIT3=`$GREP "O * z * \-0\.391205 * \-0\.354459 * 0\.354459" $log | wc -l`
-CRIT4=`$GREP "H * x * 0\.024391" $log | wc -l`
-CRIT5=`$GREP "O * x * \-0\.024391 * 0\.024391" $log | wc -l`
-CRIT6=`$GREP "H * y * 0\.547394" $log | wc -l`
-CRIT7=`$GREP "H * z * 0\.404952 * 0\.214053" $log | wc -l`
-CRIT8=`$GREP "O * y * \-0\.547394 * \-0\.404952 * 0\.547394" $log | wc -l`
-CRIT9=`$GREP "H * x * \-0\.099495" $log | wc -l`
+CRIT1=`$GREP "H * y * (0| )\.763250" $log | wc -l`
+CRIT2=`$GREP "H * z * (0| )\.391205 * (0| )\.354459" $log | wc -l`
+CRIT3=`$GREP "O * z * (\-0|\-)\.391205 * (\-0|\-)\.354459 * (0| )\.354459" $log | wc -l`
+CRIT4=`$GREP "H * x * (0| )\.024391" $log | wc -l`
+CRIT5=`$GREP "O * x * (\-0|\-)\.024391 * (0| )\.024391" $log | wc -l`
+CRIT6=`$GREP "H * y * (0| )\.547394" $log | wc -l`
+CRIT7=`$GREP "H * z * (0| )\.404952 * (0| )\.214053" $log | wc -l`
+CRIT8=`$GREP "O * y * (\-0|\-)\.547394 * (\-0|\-)\.404952 * (0| )\.547394" $log | wc -l`
+CRIT9=`$GREP "H * x * (\-0|\-)\.099495" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9`
 CTRL[5]=9
 ERROR[5]="INITIAL HESSIAN NOT CORRECT"
 
 # First step
-CRIT1=`$GREP "H * 1 * 0\.0000000000 * 1\.6040874[8-9][0-9][0-9] * 0\.3224797[1-2][0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "H * 2 * 0\.0000000000 * \-1\.6040874[8-9][0-9][0-9] * 0\.3224797[1-2][0-9][0-9]" $log | wc -l`
-CRIT3=`$GREP "O * 0\.0000000000 * 0\.0000000000 * \-0\.6449594[3-4][0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "H * 1 * (0| )\.0000000000 * 1\.6040874[8-9][0-9][0-9] * (0| )\.3224797[1-2][0-9][0-9]" $log | wc -l`
+CRIT2=`$GREP "H * 2 * (0| )\.0000000000 * \-1\.6040874[8-9][0-9][0-9] * (0| )\.3224797[1-2][0-9][0-9]" $log | wc -l`
+CRIT3=`$GREP "O * (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.6449594[3-4][0-9][0-9]" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[6]=3
 ERROR[6]="FIRST STEP NOT CORRECT"
 
 # Second iteration
 CRIT1=`$GREP "Energy at this geometry is * \: * \-75\.816478" $log | wc -l`
-CRIT2=`$GREP "Norm of gradient * \: * 0\.076191" $log | wc -l`
+CRIT2=`$GREP "Norm of gradient * \: * (0| )\.076191" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[7]=2
 ERROR[7]="SECOND ITERATION NOT CORRECT"
 
 # Third iteration
 CRIT1=`$GREP "Energy at this geometry is * \: * \-75\.832980" $log | wc -l`
-CRIT2=`$GREP "Norm of gradient * \: * 0\.058136" $log | wc -l`
+CRIT2=`$GREP "Norm of gradient * \: * (0| )\.058136" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[8]=2
 ERROR[8]="THIRD ITERATION NOT CORRECT"
 
 # Last geometry
-CRIT1=`$GREP "H * 1 * 0\.0000000000 * 2\.4776485[4-6][0-9][0-9] * 0\.00003663[4-6][0-9]" $log | wc -l`
-CRIT2=`$GREP "H * 2 * 0\.0000000000 * \-2\.4776485[4-6][0-9][0-9] * 0\.00003663[4-6][0-9]" $log | wc -l`
-CRIT3=`$GREP "O * 0\.0000000000 * 0\.0000000000 * \-0\.00007327[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "H * 1 * (0| )\.0000000000 * 2\.4776485[4-6][0-9][0-9] * (0| )\.00003663[4-6][0-9]" $log | wc -l`
+CRIT2=`$GREP "H * 2 * (0| )\.0000000000 * \-2\.4776485[4-6][0-9][0-9] * (0| )\.00003663[4-6][0-9]" $log | wc -l`
+CRIT3=`$GREP "O * (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.00007327[0-9][0-9]" $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[9]=3
 ERROR[9]="LAST GEOMETRY NOT CORRECT"
 
 # Last iteration
 CRIT1=`$GREP "Energy at this geometry is * \: * \-75\.889480" $log | wc -l`
-CRIT2=`$GREP "Norm of gradient * \: * 0\.002774" $log | wc -l`
-CRIT3=`$GREP "Norm of step * \: * 0\.031315" $log | wc -l`
+CRIT2=`$GREP "Norm of gradient * \: * (0| )\.002774" $log | wc -l`
+CRIT3=`$GREP "Norm of step * \: * (0| )\.031315" $log | wc -l`
 TEST[10]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[10]=3
 ERROR[10]="LAST ITERATION NOT CORRECT"

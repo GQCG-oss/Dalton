@@ -658,7 +658,7 @@ case $WHICH in
                    cpp=${cpp}" -DIMPLICIT_NONE";;
                 *) if [ "$mesp" = "dummy" ]; then
 		     if [ $split = 'true' ] ; then
-                       cpp="-WF,-DSYS_AIX,-DVAR_SIRBIG,-DVAR_MFDS,-D'INSTALL_WRKMEM=$memsiz',-D'INSTALL_BASDIR=\"$basdir\"'"
+                       cpp="-WF,-DSYS_AIX,-DVAR_SIRBIG,-DVAR_MFDS,-DVAR_SPLITFILES,-D'INSTALL_WRKMEM=$memsiz',-D'INSTALL_BASDIR=\"$basdir\"'"
 		     else
                        cpp="-WF,-DSYS_AIX,-DVAR_SIRBIG,-DVAR_MFDS,-D'INSTALL_WRKMEM=$memsiz',-D'INSTALL_BASDIR=\"$basdir\"'"
 		     fi
@@ -673,6 +673,7 @@ case $WHICH in
 		   inc='-WF,-I../include,-I../include_cc'
                    cpp=${cpp}",-DIMPLICIT_NONE"
             esac
+            copt="-I../include -I../include_cc -DSYS_AIX"
             opt='-O3 -qstrict -qarch=auto -qtune=auto -qmaxmem=-1 -bmaxdata:0x40000000 -bmaxstack:0x10000000';;
     iris4d) case $opsys in
                IRIX64) opt='-O2 -64 -mips4 -G 0 -OPT:Olimit=0';;
@@ -955,10 +956,7 @@ $tab\$(F77) \$(OPTFLAGS) -c \$*.f
 $tab\$(RM) \$*.f
 
 .c.o:
-$tab\$(CPP) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$*.c
-$tab mv \$*.i \$*.f
-$tab\$(CC) \$(CFLAGS) -c \$*.f 
-$tab\$(RM) \$*.f
+$tab\$(CC) \$(CFLAGS) \$(OPTFLAGS) -c \$*.c
 EOF
     else cat <<EOF>> Makefile.config
 #
@@ -970,7 +968,7 @@ EOF
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F 
 
 .c.o:
-$tab\$(CC) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(CFLAGS) -c \$*.c 
+$tab\$(CC) \$(CFLAGS) \$(OPTFLAGS) -c \$*.c 
 EOF
     fi
 elif [ $WHICH = 'linux' ]; then

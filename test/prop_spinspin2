@@ -121,10 +121,10 @@ cat > prop_spinspin2.dal <<%EOF%
 echo '#!/bin/ksh
 log=$1
 
-if [ `uname` = IRIX64 ]; then
-   GREP="egrep"
-else
+if [ `uname` = Linux ]; then
    GREP="egrep -a"
+else
+   GREP="egrep"
 fi
 
 # Basis set
@@ -138,15 +138,15 @@ ERROR[1]="BASIS SET NOT READ CORRECTLY"
 
 # Geometry
 CRIT1=`$GREP "Total number of coordinates\: * 9" $log | wc -l`
-CRIT2=`$GREP "1 * O * x * 0\.0000000000" $log | wc -l`
-CRIT3=`$GREP "2 * y * 0\.0000000000" $log | wc -l`
-CRIT4=`$GREP "3 * z * \-0\.2249058930" $log | wc -l`
+CRIT2=`$GREP "1 * O * x * (0| )\.0000000000" $log | wc -l`
+CRIT3=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
+CRIT4=`$GREP "3 * z * (\-0|\-)\.2249058930" $log | wc -l`
 CRIT5=`$GREP "4 * H1 * 1 * x * 1\.4523499293" $log | wc -l`
-CRIT6=`$GREP "5 * y * 0\.0000000000" $log | wc -l`
-CRIT7=`$GREP "6 * z * 0\.8996235720" $log | wc -l`
+CRIT6=`$GREP "5 * y * (0| )\.0000000000" $log | wc -l`
+CRIT7=`$GREP "6 * z * (0| )\.8996235720" $log | wc -l`
 CRIT8=`$GREP "7 * H1 * 2 * x * \-1\.4523499293" $log | wc -l`
-CRIT9=`$GREP "8 * y * 0\.0000000000" $log | wc -l`
-CRIT10=`$GREP "9 * z * 0\.8996235720" $log | wc -l`
+CRIT9=`$GREP "8 * y * (0| )\.0000000000" $log | wc -l`
+CRIT10=`$GREP "9 * z * (0| )\.8996235720" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10`
 CTRL[2]=10
@@ -170,12 +170,12 @@ ERROR[4]="ENERGIES NOT CORRECT"
 # Spin-spin coupling
 CRIT1=`$GREP "Isotropic coupling * \: * \-12\.8653 Hz" $log | wc -l`
 CRIT2=`$GREP "Anistropic coupling * \: * \-34\.0161 Hz" $log | wc -l`
-CRIT3=`$GREP "Asymmetry * \: * \-0\.0316" $log | wc -l`
+CRIT3=`$GREP "Asymmetry * \: * (\-0|\-)\.0316" $log | wc -l`
 CRIT4=`$GREP "S parameter * \: * 34\.0218 Hz" $log | wc -l`
-CRIT5=`$GREP "A parameter * \: * 0\.6617 Hz" $log | wc -l`
+CRIT5=`$GREP "A parameter * \: * (0| )\.6617 Hz" $log | wc -l`
 CRIT6=`$GREP "Isotropic DSO contribution\: * \-6\.7673 Hz" $log | wc -l`
 CRIT7=`$GREP "Isotropic PSO contribution\: * 7\.8265 Hz" $log | wc -l`
-CRIT8=`$GREP "Isotropic SD contribution \: * 0\.0000 Hz" $log | wc -l`
+CRIT8=`$GREP "Isotropic SD contribution \: * (0| )\.0000 Hz" $log | wc -l`
 CRIT9=`$GREP "Isotropic FC contribution \: * \-13\.9246 Hz" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9`

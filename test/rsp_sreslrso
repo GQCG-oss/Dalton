@@ -3,12 +3,14 @@
 #  TEST DESCRIPTION
 #######################################################################
 #
+#*#
 #*# rsp_sreslrso
 #*# ------------
 #*# Molecule:         LiH
 #*# Wave Function:    MCSCF (CAS)
 #*# Test Purpose:     Single residue of the linear response function and
 #*#                   spin-orbit operator
+#*#
 #
 #######################################################################
 #  MOLECULE INPUT
@@ -73,10 +75,10 @@ cat > rsp_sreslrso.dal <<%EOF%
 echo '#!/bin/ksh
 log=$1
 
-if [ `uname` = IRIX64 ]; then
-   GREP="egrep"
-else
+if [ `uname` = Linux ]; then
    GREP="egrep -a"
+else
+   GREP="egrep"
 fi
 
 # Basis set
@@ -89,12 +91,12 @@ ERROR[1]="BASIS SET NOT READ CORRECTLY"
 
 # Geometry
 CRIT1=`$GREP "Total number of coordinates\: * 6" $log | wc -l`
-CRIT2=`$GREP "1 * H * x * 0\.0000000000" $log | wc -l`
-CRIT3=`$GREP "2 * y * 0\.0000000000" $log | wc -l`
+CRIT2=`$GREP "1 * H * x * (0| )\.0000000000" $log | wc -l`
+CRIT3=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
 CRIT4=`$GREP "3 * z * 2\.0969699107" $log | wc -l`
-CRIT5=`$GREP "4 * Li * x * 0\.0000000000" $log | wc -l`
-CRIT6=`$GREP "5 * y * 0\.0000000000" $log | wc -l`
-CRIT7=`$GREP "6 * z * \-0\.9969699107" $log | wc -l`
+CRIT5=`$GREP "4 * Li * x * (0| )\.0000000000" $log | wc -l`
+CRIT6=`$GREP "5 * y * (0| )\.0000000000" $log | wc -l`
+CRIT7=`$GREP "6 * z * (\-0|\-)\.9969699107" $log | wc -l`
 TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7`
 CTRL[2]=7
@@ -130,19 +132,19 @@ CTRL[5]=8
 ERROR[5]="RESPONSE CALCULATION NOT SET UP CORRECLY"
 
 # Excitation energy
-CRIT1=`$GREP "\@Excitation energy \: * 0\.1006360[0-9] * au" $log | wc -l`
+CRIT1=`$GREP "\@Excitation energy \: * (0| )\.1006360[0-9] * au" $log | wc -l`
 CRIT2=`$GREP "\@Total energy \: * \-7\.893494[0-9] * au" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[6]=2
 ERROR[6]="EXCITATION ENERGY NOT CORRECT"
 
 # Transition moment
-CRIT1=`$GREP "\@STATE NO\: * 1 \*TRANSITION MOMENT\: * 2\.4147208[0-9](D|E)\-07 \*ENERGY\(eV\)\: * 3\.937210[0-9]" $log | wc -l`
-CRIT2=`$GREP "\@Excitation energy \: * 0\.1446898[0-9] * au" $log | wc -l`
+CRIT1=`$GREP "\@STATE NO\: * 1 \*TRANSITION MOMENT\: (\-| )2\.4147208[0-9](D|E)\-07 \*ENERGY\(eV\)\: * 3\.937210[0-9]" $log | wc -l`
+CRIT2=`$GREP "\@Excitation energy \: * (0| )\.1446898[0-9] * au" $log | wc -l`
 CRIT3=`$GREP "\@Total energy \: * \-7\.849440[0-9] * au" $log | wc -l`
 CRIT4=`$GREP "\@Operator type\: * Y SPNORB" $log | wc -l`
-CRIT5=`$GREP "\@Spin\-orbit coupling constant \(Y SPNORB\) \: * 5\.2996997[0-9](D|E)\-02 cm\-1" $log | wc -l`
-CRIT6=`$GREP "2\.4147208[0-9](D|E)\-07 au" $log | wc -l`
+CRIT5=`$GREP "\@Spin\-orbit coupling constant \(Y SPNORB\) \: (\-| )5\.2996997[0-9](D|E)\-02 cm\-1" $log | wc -l`
+CRIT6=`$GREP "(\-| )2\.4147208[0-9](D|E)\-07 au" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[7]=6
 ERROR[7]="TRANSITION MOMENT NOT CORRECT"

@@ -65,10 +65,10 @@ cat > rsp_solvhyper.dal <<%EOF%
 echo '#!/bin/ksh
 log=$1
 
-if [ `uname` = IRIX64 ]; then
-   GREP="egrep"
-else
+if [ `uname` = Linux ]; then
    GREP="egrep -a"
+else
+   GREP="egrep"
 fi
 
 # Integral setup
@@ -93,15 +93,15 @@ ERROR[2]="ATOMBASIS NOT READ CORRECTLY"
 
 # Geometry
 CRIT1=`$GREP "Total number of coordinates\: * 9" $log | wc -l`
-CRIT2=`$GREP "1 * O * x * 0\.0000000000" $log | wc -l`
+CRIT2=`$GREP "1 * O * x * (0| )\.0000000000" $log | wc -l`
 CRIT3=`$GREP "2 * y * 1\.0000000000" $log | wc -l`
-CRIT4=`$GREP "3 * z * 0\.0000000000" $log | wc -l`
+CRIT4=`$GREP "3 * z * (0| )\.0000000000" $log | wc -l`
 CRIT5=`$GREP "4 * H * 1 * x * 1\.4344154111" $log | wc -l`
 CRIT6=`$GREP "5 * y * 2\.1075628725" $log | wc -l`
-CRIT7=`$GREP "6 * z * 0\.0000000000" $log | wc -l`
+CRIT7=`$GREP "6 * z * (0| )\.0000000000" $log | wc -l`
 CRIT8=`$GREP "7 * H * 2 * x * \-1\.4344154111" $log | wc -l`
 CRIT9=`$GREP "8 * y * 2\.1075628725" $log | wc -l`
-CRIT10=`$GREP "9 * z * 0\.0000000000" $log | wc -l`
+CRIT10=`$GREP "9 * z * (0| )\.0000000000" $log | wc -l`
 TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10`
 CTRL[3]=10
@@ -115,7 +115,7 @@ CTRL[4]=2
 ERROR[4]="SYMMETRY NOT CORRECT"
 
 # Cavity center
-CRIT1=`$GREP "Cavity center \(center of mass\)\: * 0\.000000 * 1\.12395[0-9] * 0\.000000" $log | wc -l`
+CRIT1=`$GREP "Cavity center \(center of mass\)\: * (0| )\.000000 * 1\.12395[0-9] * (0| )\.000000" $log | wc -l`
 TEST[5]=`expr	$CRIT1`
 CTRL[5]=1
 ERROR[5]="CAVITY CENTER NOT CORRECT"
@@ -140,8 +140,8 @@ CRIT2=`$GREP "First hyperpolarizability calculation \: HYPCAL\= T" $log | wc -l`
 CRIT3=`$GREP "Spin of operator A \, ISPINA\= * 0" $log | wc -l`
 CRIT4=`$GREP "Spin of operator B \, ISPINB\= * 0" $log | wc -l`
 CRIT5=`$GREP "Spin of operator C \, ISPINC\= * 0" $log | wc -l`
-CRIT6=`$GREP "2 B\-frequencies * 0\.000000(D|E)\+00 * 6\.560000(D|E)\-02" $log | wc -l`
-CRIT7=`$GREP "2 C\-frequencies * 0\.000000(D|E)\+00 * 6\.560000(D|E)\-02" $log | wc -l`
+CRIT6=`$GREP "2 B\-frequencies * (0| )\.000000(D|E)\+00 * 6\.560000(D|E)\-02" $log | wc -l`
+CRIT7=`$GREP "2 C\-frequencies * (0| )\.000000(D|E)\+00 * 6\.560000(D|E)\-02" $log | wc -l`
 CRIT8=`$GREP "Non\-equilibrium solvent model requested * \: INERSI \= T" $log | wc -l`
 CRIT9=`$GREP "Static dielectric constant * \: EPSTAT \= 78\.4500" $log | wc -l`
 CRIT10=`$GREP "Optical dielectric constant * \: EPSOL * \= * 1\.8000" $log | wc -l`
@@ -167,20 +167,20 @@ CTRL[9]=6
 ERROR[9]="LINEAR RESPONSE NOT CORRECT"
 
 # First hyperpolarizabilities
-CRIT1=`$GREP "\@ B\-freq \= 0\.000000 * C\-freq \= 0\.000000 * beta\(Y\;Y\,Y\) \= * 1\.351202[0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "\@ B\-freq \= 0\.065600 * C\-freq \= 0\.065600 * beta\(Y\;Y\,Y\) \= * 1\.499653[0-9][0-9]" $log | wc -l`
-CRIT3=`$GREP "\@ B\-freq \= 0\.000000 * C\-freq \= 0\.000000 * beta\(X\;X\,Y\) \= * \-9\.147352[0-9][0-9]" $log | wc -l`
-CRIT4=`$GREP "\@ B\-freq \= 0\.065600 * C\-freq \= 0\.065600 * beta\(X\;X\,Y\) \= * \-10\.162363[0-9][0-9]" $log | wc -l`
-CRIT5=`$GREP "\@ B\-freq \= 0\.000000 * C\-freq \= 0\.000000 * beta\(Z\;Z\,Y\) \= * 2\.931332[0-9][0-9]" $log | wc -l`
-CRIT6=`$GREP "\@ B\-freq \= 0\.065600 * C\-freq \= 0\.065600 * beta\(Z\;Z\,Y\) \= * 2\.922036[0-9][0-9]" $log | wc -l`
-CRIT7=`$GREP "\@ B\-freq \= 0\.000000 * C\-freq \= 0\.000000 * beta\(X\;Y\,X\) \= beta\(X\,X\,Y\)" $log | wc -l`
-CRIT8=`$GREP "\@ B\-freq \= 0\.065600 * C\-freq \= 0\.065600 * beta\(X\;Y\,X\) \= beta\(X\,X\,Y\)" $log | wc -l`
-CRIT9=`$GREP "\@ B\-freq \= 0\.000000 * C\-freq \= 0\.000000 * beta\(Y\;X\,X\) \= beta\(X\,X\,Y\)" $log | wc -l`
-CRIT10=`$GREP "\@ B\-freq \= 0\.065600 * C\-freq \= 0\.065600 * beta\(Y\;X\,X\) \= * \-10\.059860[0-9][0-9]" $log | wc -l`
-CRIT11=`$GREP "\@ B\-freq \= 0\.000000 * C\-freq \= 0\.000000 * beta\(Z\;Y\,Z\) \= beta\(Z\,Z\,Y\)" $log | wc -l`
-CRIT12=`$GREP "\@ B\-freq \= 0\.065600 * C\-freq \= 0\.065600 * beta\(Z\;Y\,Z\) \= beta\(Z\,Z\,Y\)" $log | wc -l`
-CRIT13=`$GREP "\@ B\-freq \= 0\.000000 * C\-freq \= 0\.000000 * beta\(Y\;Z\,Z\) \= beta\(Z\,Z\,Y\)" $log | wc -l`
-CRIT14=`$GREP "\@ B\-freq \= 0\.065600 * C\-freq \= 0\.065600 * beta\(Y\;Z\,Z\) \= * 3\.934938[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "\@ B\-freq \= (0| )\.000000 * C\-freq \= (0| )\.000000 * beta\(Y\;Y\,Y\) \= * 1\.351202[0-9][0-9]" $log | wc -l`
+CRIT2=`$GREP "\@ B\-freq \= (0| )\.065600 * C\-freq \= (0| )\.065600 * beta\(Y\;Y\,Y\) \= * 1\.499653[0-9][0-9]" $log | wc -l`
+CRIT3=`$GREP "\@ B\-freq \= (0| )\.000000 * C\-freq \= (0| )\.000000 * beta\(X\;X\,Y\) \= * \-9\.147352[0-9][0-9]" $log | wc -l`
+CRIT4=`$GREP "\@ B\-freq \= (0| )\.065600 * C\-freq \= (0| )\.065600 * beta\(X\;X\,Y\) \= * \-10\.162363[0-9][0-9]" $log | wc -l`
+CRIT5=`$GREP "\@ B\-freq \= (0| )\.000000 * C\-freq \= (0| )\.000000 * beta\(Z\;Z\,Y\) \= * 2\.931332[0-9][0-9]" $log | wc -l`
+CRIT6=`$GREP "\@ B\-freq \= (0| )\.065600 * C\-freq \= (0| )\.065600 * beta\(Z\;Z\,Y\) \= * 2\.922036[0-9][0-9]" $log | wc -l`
+CRIT7=`$GREP "\@ B\-freq \= (0| )\.000000 * C\-freq \= (0| )\.000000 * beta\(X\;Y\,X\) \= beta\(X\,X\,Y\)" $log | wc -l`
+CRIT8=`$GREP "\@ B\-freq \= (0| )\.065600 * C\-freq \= (0| )\.065600 * beta\(X\;Y\,X\) \= beta\(X\,X\,Y\)" $log | wc -l`
+CRIT9=`$GREP "\@ B\-freq \= (0| )\.000000 * C\-freq \= (0| )\.000000 * beta\(Y\;X\,X\) \= beta\(X\,X\,Y\)" $log | wc -l`
+CRIT10=`$GREP "\@ B\-freq \= (0| )\.065600 * C\-freq \= (0| )\.065600 * beta\(Y\;X\,X\) \= * \-10\.059860[0-9][0-9]" $log | wc -l`
+CRIT11=`$GREP "\@ B\-freq \= (0| )\.000000 * C\-freq \= (0| )\.000000 * beta\(Z\;Y\,Z\) \= beta\(Z\,Z\,Y\)" $log | wc -l`
+CRIT12=`$GREP "\@ B\-freq \= (0| )\.065600 * C\-freq \= (0| )\.065600 * beta\(Z\;Y\,Z\) \= beta\(Z\,Z\,Y\)" $log | wc -l`
+CRIT13=`$GREP "\@ B\-freq \= (0| )\.000000 * C\-freq \= (0| )\.000000 * beta\(Y\;Z\,Z\) \= beta\(Z\,Z\,Y\)" $log | wc -l`
+CRIT14=`$GREP "\@ B\-freq \= (0| )\.065600 * C\-freq \= (0| )\.065600 * beta\(Y\;Z\,Z\) \= * 3\.934938[0-9][0-9]" $log | wc -l`
 TEST[10]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
 		$CRIT13 \+ $CRIT14`

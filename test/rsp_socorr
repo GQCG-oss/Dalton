@@ -102,10 +102,10 @@ X2SPNORB
 echo '#!/bin/ksh
 log=$1
 
-if [ `uname` = IRIX64 ]; then
-   GREP="egrep"
-else
+if [ `uname` = Linux ]; then
    GREP="egrep -a"
+else
+   GREP="egrep"
 fi
 
 # Integral setup
@@ -135,12 +135,12 @@ ERROR[2]="BASIS SET NOT READ CORRECTLY"
 
 # Geometry
 CRIT1=`$GREP "Total number of coordinates\: * 6" $log | wc -l`
-CRIT2=`$GREP "1 * He * x * 0\.0000000000" $log | wc -l`
-CRIT3=`$GREP "2 * y * 0\.0000000000" $log | wc -l`
-CRIT4=`$GREP "3 * z * \-0\.7000000000" $log | wc -l`
-CRIT5=`$GREP "4 * H * x * 0\.0000000000" $log | wc -l`
-CRIT6=`$GREP "5 * y * 0\.0000000000" $log | wc -l`
-CRIT7=`$GREP "6 * z * 0\.7000000000" $log | wc -l`
+CRIT2=`$GREP "1 * He * x * (0| )\.0000000000" $log | wc -l`
+CRIT3=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
+CRIT4=`$GREP "3 * z * (\-0|\-)\.7000000000" $log | wc -l`
+CRIT5=`$GREP "4 * H * x * (0| )\.0000000000" $log | wc -l`
+CRIT6=`$GREP "5 * y * (0| )\.0000000000" $log | wc -l`
+CRIT7=`$GREP "6 * z * (0| )\.7000000000" $log | wc -l`
 TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7`
 CTRL[3]=7
@@ -165,8 +165,8 @@ CRIT2=`$GREP "First hyperpolarizability calculation \: HYPCAL\= T" $log | wc -l`
 CRIT3=`$GREP "Spin of operator A \, ISPINA\= * 0" $log | wc -l`
 CRIT4=`$GREP "Spin of operator B \, ISPINB\= * 1" $log | wc -l`
 CRIT5=`$GREP "Spin of operator C \, ISPINC\= * 1" $log | wc -l`
-CRIT6=`$GREP "1 B\-frequencies * 0\.000000(D|E)\+00" $log | wc -l`
-CRIT7=`$GREP "1 C\-frequencies * 0\.000000(D|E)\+00" $log | wc -l`
+CRIT6=`$GREP "1 B\-frequencies * (0| )\.000000(D|E)\+00" $log | wc -l`
+CRIT7=`$GREP "1 C\-frequencies * (0| )\.000000(D|E)\+00" $log | wc -l`
 CRIT8=`$GREP "2 A OPERATORS OF SYMMETRY * 2 NOT INCLUDED" $log | wc -l`
 CRIT9=`$GREP "2 A OPERATORS OF SYMMETRY * 4 NOT INCLUDED" $log | wc -l`
 CRIT10=`$GREP "2 A OPERATORS OF SYMMETRY NO\: * 3 AND LABELS\:" $log | wc -l`
@@ -178,18 +178,18 @@ CTRL[6]=12
 ERROR[6]="RESPONSE CALCUALTION NOT SET UP CORRECTLY"
 
 # Quadratic response
-CRIT1=`$GREP "\@omega B\, omega C\, QR value \: * 0\.00000000 * 0\.00000000 * \-0\.0004785[0-9]" $log | wc -l`
-CRIT2=`$GREP "\@omega B\, omega C\, QR value \: * 0\.00000000 * 0\.00000000 * 0\.0005050[0-9]" $log | wc -l`
-CRIT3=`$GREP "\@omega B\, omega C\, QR value \: * 0\.00000000 * 0\.00000000 * 0\.0001464[0-9]" $log | wc -l`
-CRIT4=`$GREP "\@omega B\, omega C\, QR value \: * 0\.00000000 * 0\.00000000 * \-0\.0001540[0-9]" $log | wc -l`
-CRIT5=`$GREP "\@omega B\, omega C\, QR value \: * 0\.00000000 * 0\.00000000 * \-0\.0003498[0-9]" $log | wc -l`
-CRIT6=`$GREP "\@omega B\, omega C\, QR value \: * 0\.00000000 * 0\.00000000 * 0\.0003072[0-9]" $log | wc -l`
-CRIT7=`$GREP "\@omega B\, omega C\, QR value \: * 0\.00000000 * 0\.00000000 * 0\.0001044[0-9]" $log | wc -l`
-CRIT8=`$GREP "\@omega B\, omega C\, QR value \: * 0\.00000000 * 0\.00000000 * \-0\.0000899[0-9]" $log | wc -l`
-CRIT9=`$GREP "\@omega B\, omega C\, QR value \: * 0\.00000000 * 0\.00000000 * \-0\.0001286[0-9]" $log | wc -l`
-CRIT10=`$GREP "\@omega B\, omega C\, QR value \: * 0\.00000000 * 0\.00000000 * 0\.0001978[0-9]" $log | wc -l`
-CRIT11=`$GREP "\@omega B\, omega C\, QR value \: * 0\.00000000 * 0\.00000000 * 0\.0000420[0-9]" $log | wc -l`
-CRIT12=`$GREP "\@omega B\, omega C\, QR value \: * 0\.00000000 * 0\.00000000 * \-0\.0000641[0-9]" $log | wc -l`
+CRIT1=`$GREP "\@omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (\-0|\-)\.0004785[0-9]" $log | wc -l`
+CRIT2=`$GREP "\@omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (0| )\.0005050[0-9]" $log | wc -l`
+CRIT3=`$GREP "\@omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (0| )\.0001464[0-9]" $log | wc -l`
+CRIT4=`$GREP "\@omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (\-0|\-)\.0001540[0-9]" $log | wc -l`
+CRIT5=`$GREP "\@omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (\-0|\-)\.0003498[0-9]" $log | wc -l`
+CRIT6=`$GREP "\@omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (0| )\.0003072[0-9]" $log | wc -l`
+CRIT7=`$GREP "\@omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (0| )\.0001044[0-9]" $log | wc -l`
+CRIT8=`$GREP "\@omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (\-0|\-)\.0000899[0-9]" $log | wc -l`
+CRIT9=`$GREP "\@omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (\-0|\-)\.0001286[0-9]" $log | wc -l`
+CRIT10=`$GREP "\@omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (0| )\.0001978[0-9]" $log | wc -l`
+CRIT11=`$GREP "\@omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (0| )\.0000420[0-9]" $log | wc -l`
+CRIT12=`$GREP "\@omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (\-0|\-)\.0000641[0-9]" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12`
 CTRL[7]=12

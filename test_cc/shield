@@ -1,5 +1,6 @@
+
 #######################################################################
-#  INTEGRAL INPUT
+#  MOLECULE INPUT
 #######################################################################
 cat > shield.mol <<%EOF%
 BASIS
@@ -75,10 +76,10 @@ PSO 03  dh/dBZ
 echo '#!/bin/ksh
 log=$1
 
-if [ `uname` = IRIX64 ]; then
-   GREP="egrep"
-else
+if [ `uname` = Linux ]; then
    GREP="egrep -a"
+else
+   GREP="egrep"
 fi
 
 # SCF, MP2 and CCSD energies:
@@ -91,25 +92,25 @@ ERROR[1]="ENERGIES NOT CORRECT"
 
 
 # SCF shieldings
-CRIT1=`$GREP "<<PSO 01  ,dh/dBX  >>\( 0.000000\) = * ..4096282." $log | wc -l`
-CRIT2=`$GREP "<<PSO 02  ,dh/dBY  >>\( 0.000000\) = * ..5309353." $log | wc -l`
-CRIT3=`$GREP "<<PSO 03  ,dh/dBZ  >>\( 0.000000\) = * ..3677086." $log | wc -l`
+CRIT1=`$GREP "<<PSO 01  ,dh/dBX  >>\( (0| ).000000\) = * ..4096282." $log | wc -l`
+CRIT2=`$GREP "<<PSO 02  ,dh/dBY  >>\( (0| ).000000\) = * ..5309353." $log | wc -l`
+CRIT3=`$GREP "<<PSO 03  ,dh/dBZ  >>\( (0| ).000000\) = * ..3677086." $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
 CTRL[2]=3
 ERROR[2]="SCF SHIELDINGS NOT CORRECT"
 
 # CCSD shieldings
-CRIT1=`$GREP "<<PSO 01  ,dh/dBX  >>\( 0.000000\) = * ..3889442.      20.7118095." $log | wc -l`
-CRIT2=`$GREP "<<PSO 02  ,dh/dBY  >>\( 0.000000\) = * ..3630439.      19.3325859." $log | wc -l`
-CRIT3=`$GREP "<<PSO 03  ,dh/dBZ  >>\( 0.000000\) = * ..4260690.      22.6887582." $log | wc -l`
+CRIT1=`$GREP "<<PSO 01  ,dh/dBX  >>\( (0| ).000000\) = * ..3889442.      20.7118095." $log | wc -l`
+CRIT2=`$GREP "<<PSO 02  ,dh/dBY  >>\( (0| ).000000\) = * ..3630439.      19.3325859." $log | wc -l`
+CRIT3=`$GREP "<<PSO 03  ,dh/dBZ  >>\( (0| ).000000\) = * ..4260690.      22.6887582." $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[3]=3
 ERROR[3]="CCSD SHIELDINGS NOT CORRECT"
 
 
 # SCF and CCSD shieldings
-CRIT1=`$GREP "<<PSO 02  ,dh/dBX  >>\( 0.000000\) = * ..0000000." $log | wc -l`
-CRIT2=`$GREP "<<PSO 03  ,dh/dBY  >>\( 0.000000\) = * ..0000000." $log | wc -l`
+CRIT1=`$GREP "<<PSO 02  ,dh/dBX  >>\( (0| ).000000\) = * ..0000000." $log | wc -l`
+CRIT2=`$GREP "<<PSO 03  ,dh/dBY  >>\( (0| ).000000\) = * ..0000000." $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2`
 CTRL[4]=6
 ERROR[4]="SYMMETRY IN SCF AND CCSD SHIELDINGS NOT CORRECT"
