@@ -3,9 +3,17 @@
 #
 # Shell script for running DALTON test suite
 #
-# by Christof Haettig and Kasper Hald, Sep. 2000
+# First version by Christof Haettig and Kasper Hald, Sep. 2000
 #
 #########################################################################
+
+# Note: DALTON points to the default installation directory,
+#       in the 'configure' script. If the person installing
+#       Dalton has chosen another installation directory when
+#       he/she ran 'configure', the you should modify the
+#       DALTON definition to pint to that place.
+
+DALTON="`pwd`/../bin/dalton"
 
 #########################################################################
 # define all the different test suites
@@ -145,7 +153,6 @@ myprint(){
 TESTparams="$0 $*"
 help=""
 keep="false"
-DALTON="`pwd`/../bin/dalton"
 paramlist=""
 reftest=""
 bell=""
@@ -181,9 +188,18 @@ if [ $help ]; then
 fi
 
 if [ ! -x $DALTON ]; then
-   echo '---> ERROR, dalton script "'$DALTON'" not found.'
-   echo '--->        Please specify where script is with -dalton option'
-   usage
+   echo ' '
+   echo '----> ERROR, the "dalton" job script '
+   echo    '"'$DALTON'"'
+   echo '  does not exist or is not executable.'
+   echo 'The person who installed dalton has probably selected'
+   echo '  another place for the "dalton" job script.'
+   echo 'Please modify the DALTON variable in this script (i.e. '$0')'
+   echo '  to point to that place.    Alternatively, you may'
+   echo '  specify where the dalton script is with the -dalton option'
+   echo ' '
+#  usage
+   exit 1
 fi
 
 #########################################################################
