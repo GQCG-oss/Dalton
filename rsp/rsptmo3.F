@@ -115,6 +115,7 @@ C
       DIMENSION XINDX(2),WRK(2)
 C
       CHARACTER*8 BLANK
+      PARAMETER (D0 = 0.0D0)
       PARAMETER   (BLANK='        ')
       PARAMETER ( MAXSIM = 15 )
 C
