@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rspsoppa.F,v 1.1.1.1 2001-02-08 13:33:14 hjj Exp $
+C$Id: rspsoppa.F,v 1.2 2001-05-09 11:59:44 hjj Exp $
 C
 #include <single.h>
 C  /* Deck setsoppa */
@@ -1746,7 +1746,7 @@ C
      &                       ABSYM
             WRITE (LUPRI,*) 'IG,DISC',IG,DISC
             WRITE (LUPRI,*) 'ABTADR array:'
-            CALL IWRTMA(ABTADR,NP,NP,MAXORB,MAXORB)
+            CALL IWRTMA(ABTADR,NP,NP,NORBT,NORBT)
             WRITE (LUPRI,*) 'IJTADR(*,*,ISYMV) array:'
             CALL IWRTMA(IJTADR(1,1,ISYMV),NH,NH,MAXOCC,MAXOCC)
 C           CALL IWRTMA(IMAT,NROW,NCOL,MAXROW,MAXCOL)
@@ -1805,7 +1805,7 @@ C
             WRITE (LUPRI,*) 'A,B,IJSYM,ABSYM',A,B,IJSYM,ABSYM
             WRITE (LUPRI,*) 'IG,DISC',IG,DISC
             WRITE (LUPRI,*) 'ABSADR array:'
-            CALL IWRTMA(ABSADR,NP,NP,MAXORB,MAXORB)
+            CALL IWRTMA(ABSADR,NP,NP,NORBT,NORBT)
             WRITE (LUPRI,*) 'IJSADR(*,*,ISYMV) array:'
             CALL IWRTMA(IJSADR(1,1,ISYMV),NH,NH,MAXOCC,MAXOCC)
 C           CALL IWRTMA(IMAT,NROW,NCOL,MAXROW,MAXCOL)
@@ -1867,7 +1867,7 @@ C
      &                       ABSYM
             WRITE (LUPRI,*) 'IG,DISC',IG,DISC
             WRITE (LUPRI,*) 'ABTADR array:'
-            CALL IWRTMA(ABTADR,NP,NP,MAXORB,MAXORB)
+            CALL IWRTMA(ABTADR,NP,NP,NORBT,NORBT)
             WRITE (LUPRI,*) 'IJ3ADR(*,*,ISYMV) array:'
             CALL IWRTMA(IJ3ADR(1,1,ISYMV),NH,NH,MAXOCC,MAXOCC)
 C           CALL IWRTMA(IMAT,NROW,NCOL,MAXROW,MAXCOL)
@@ -1927,7 +1927,7 @@ C
             WRITE (LUPRI,*) 'A,B,IJSYM,ABSYM',A,B,IJSYM,ABSYM
             WRITE (LUPRI,*) 'IG,DISC',IG,DISC
             WRITE (LUPRI,*) 'ABSADR array:'
-            CALL IWRTMA(ABSADR,NP,NP,MAXORB,MAXORB)
+            CALL IWRTMA(ABSADR,NP,NP,NORBT,NORBT)
             WRITE (LUPRI,*) 'IJ2ADR(*,*,ISYMV) array:'
             CALL IWRTMA(IJ2ADR(1,1,ISYMV),NH,NH,MAXOCC,MAXOCC)
 C           CALL IWRTMA(IMAT,NROW,NCOL,MAXROW,MAXCOL)
@@ -1986,7 +1986,7 @@ C
      &                       ABSYM
             WRITE (LUPRI,*) 'IG,DISC',IG,DISC
             WRITE (LUPRI,*) 'ABTADR array:'
-            CALL IWRTMA(ABTADR,NP,NP,MAXORB,MAXORB)
+            CALL IWRTMA(ABTADR,NP,NP,NORBT,NORBT)
             WRITE (LUPRI,*) 'IJ1ADR(*,*,ISYMV) array:'
             CALL IWRTMA(IJ1ADR(1,1,ISYMV),NH,NH,MAXOCC,MAXOCC)
 C           CALL IWRTMA(IMAT,NROW,NCOL,MAXROW,MAXCOL)

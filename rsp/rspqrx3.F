@@ -29,11 +29,14 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rspqrx3.F,v 1.1.1.1 2001-02-08 13:33:13 hjj Exp $
+C$Id: rspqrx3.F,v 1.2 2001-05-09 11:59:44 hjj Exp $
 C
 #include <single.h>
 #ifdef REVLOG
 $Log: not supported by cvs2svn $
+Revision 1.1.1.1  2001/02/08 13:33:13  hjj
+*** Dalton Master Version *** cvs started 8-Feb-2001.
+
 Revision 1.3  2001/01/17 16:09:34  vebjornb
 Added dimension checks before calls to DGEMM in response module
 
@@ -67,7 +70,6 @@ C
 C
       PARAMETER ( D0 = 0.0D0 , DM1 = -1.0D0 , DEM10 = 1.0D-10 )
 C
-#include <maxorb.h>
 #include <priunit.h>
 #include <thrzer.h>
 #include <infvar.h>
@@ -84,7 +86,7 @@ C
       DIMENSION WRK(*)
       DIMENSION XINDX(*)
       DIMENSION UDV(*)
-      DIMENSION PV(*), MJWOP(2,MAXORB,8)
+      DIMENSION PV(*), MJWOP(2,MAXWOP,8)
       DIMENSION VECB(*)
       DIMENSION VECC(*)
       DIMENSION VECA(*)
@@ -327,7 +329,6 @@ C
       PARAMETER ( D0 = 0.0D0, DH = 0.5D0 , D1 = 1.0D0 , D2 = 2.0D0 )
       PARAMETER ( DM1=-1.0D0 )
 C
-#include <maxorb.h>
 #include <priunit.h>
 #include <infdim.h>
 #include <inforb.h>
@@ -904,7 +905,6 @@ C     Layout the core for RSP2GR
 C
 #include <implicit.h>
 C
-#include <maxorb.h>
 #include <infdim.h>
 #include <inforb.h>
 #include <infvar.h>
@@ -2107,7 +2107,6 @@ C
 #include <implicit.h>
 #include <infdim.h>
 #include <inforb.h>
-#include <maxorb.h>
 #include <maxash.h>
 #include <infvar.h>
 #include <infrsp.h>
@@ -2674,7 +2673,6 @@ C
 #include <implicit.h>
 #include <infdim.h>
 #include <inforb.h>
-#include <maxorb.h>
 #include <maxash.h>
 #include <priunit.h>
 #include <infvar.h>
@@ -3028,7 +3026,6 @@ C
 C     Layout the core for the calculation of A2 times one vector
 C
 #include <implicit.h>
-#include <maxorb.h>
 #include <maxash.h>
 #include <priunit.h>
 #include <infdim.h>
@@ -3393,7 +3390,6 @@ C
 #include <implicit.h>
 #include <infdim.h>
 #include <inforb.h>
-#include <maxorb.h>
 #include <priunit.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
