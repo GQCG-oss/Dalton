@@ -29,11 +29,16 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: herrdn.F,v 1.4 2001-03-13 08:43:38 vebjornb Exp $
+C$Id: herrdn.F,v 1.5 2001-03-28 06:54:54 haettig Exp $
 C
 #include <single.h>
 #ifdef REVISION_LOG
 $Log: not supported by cvs2svn $
+Revision 1.4  2001/03/13 08:43:38  vebjornb
+- Reshuffled include statements and a couple of common blocks to
+  more in line with ANSI Fortran (only ABACUS files)
+- Updated one of the test jobs
+
 Revision 1.3  2001/02/26 15:34:47  ruud
 Removed redundant and unused files from amfi directory
 
@@ -541,6 +546,7 @@ C******************************************************************************
 #include <maxaqn.h>
 #include <codata.h>
       PARAMETER (D0 = 0.0D0, THRMIN = 1.D-15)
+#include <clsfmm.h>
 #include <cbirea.h>
       LOGICAL SEG,HERMIT,DOOWN,ZMAT
       DIMENSION NONT(KATOM),IQM(KATOM,2),NBLCK(KATOM,2),
@@ -719,6 +725,8 @@ C
          WRITE (LUPRI,'(A)') (MLINE(I), I = 1, NMLINE)
          WRITE (LUPRI,'(/)')
       END IF
+C
+      THRCLS = THRS
 C
 C     ****************************************
 C     ***** Output on LUONEL *****************
@@ -3720,17 +3728,16 @@ C
 #include <ibtfun.h>
 C
       IORB = 0
-      DO 100 ISHELL = 1, KMAX
-         ICENT  = NCENT(ISHELL)
-         ISTABO = ISTBAO(ISHELL)
-         DO 200 ICMP = 1, KHKT(ISHELL)
-            DO 300 JSYMOP = 0, MAXREP
-            IF (IBTAND(JSYMOP,ISTABO) .EQ. 0) THEN
+      DO 100 LA = 0, MAXREP
+      DO 200 IA = 1, KMAX
+         DO 300 NA = 1, KHKT(IA)
+            IVARB = IBTXOR(LA,ISYMAO(NHKT(IA),NA))
+            IF (IBTAND(ISTBAO(IA),IVARB) .EQ. 0) THEN
                IORB = IORB + 1
-               ICNTAO(IORB) = NUCNUM(ICENT,JSYMOP+1)
+               ICNTAO(IORB)  = NCENT(IA)
             END IF
-  300       CONTINUE
-  200    CONTINUE
+  300    CONTINUE
+  200 CONTINUE
   100 CONTINUE
 C
       IF (IPRINT .GE. 10) THEN

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abadrv.F,v 1.3 2001-03-26 09:37:03 ruud Exp $
+C$Id: abadrv.F,v 1.4 2001-03-28 06:54:53 haettig Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -173,6 +173,12 @@ C
       END IF
       CALL GETTIM(TIMTEX,TIMDUM)
       TIMTEX = TIMTEX - TIMSTR
+C
+C     *********************************
+C     ***** Fast Multipole Method *****
+C     *********************************
+C
+CCH   CALL FMMDRV(WORK(KLAST),LWRK)
 C
 C     *****************************************************************
 C     ***** Sort undifferentiated integrals as Dirac distribution *****
@@ -595,7 +601,7 @@ C
       DATA TABDIR /'*END OF', '*READIN', '*NUCREP',
      &             '*ONEINT', '*TWOEXP', '*GETSGY',
      &             '*EXCITA', '*REORT ', '*RESPON',
-     &             '*TROINV', '*XXXXXX', '*DIPCTL',
+     &             '*TROINV', '*FMM   ', '*DIPCTL',
      &             '*RELAX ', '*GEOANA', '*VIBANA',
      &             '*FLOAT ', '*XXXXXX', '*XXXXXX',
      &             '*XXXXXX', '*XXXXXX', '*SOPPA ',
@@ -1450,7 +1456,7 @@ cs
       GO TO 200
    10   CALL TROINP(WORD)
       GO TO 200
-   11   CONTINUE
+   11   CALL FMMINP(WORD)
       GO TO 200
    12   CALL DIPINP(WORD)
       GO TO 200
@@ -2594,6 +2600,7 @@ C
       CALL ORTINI
       CALL RESINI
       CALL TROINI
+      CALL FMMINI
       CALL DIPINI
       CALL RLXINI
       CALL ANAINI

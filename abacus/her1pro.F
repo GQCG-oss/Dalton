@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: her1pro.F,v 1.4 2001-03-26 09:37:05 ruud Exp $
+C$Id: her1pro.F,v 1.5 2001-03-28 06:54:54 haettig Exp $
 C
 #include <single.h>
 C  /* Deck pr1int */
@@ -148,7 +148,7 @@ C
 #include <mxorb.h>
 #include <iratdef.h>
 #include <efield.h>
-      PARAMETER (NTABLE = 71)
+      PARAMETER (NTABLE = 72)
       PARAMETER (D2 = 2.D0)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, PROPRI, SQUARE,
@@ -182,7 +182,7 @@ C
      &            'OCTGRA ', 'ROTSTR ', 'THRMOM ', 'SOFIELD',
      &            'SOMAGMO', 'DEROVLP', 'DERHAMI', 'ELGDIAN',
      &            'ELGDIAL', 'DPTOVL ', 'DPTPO1 ', 'DPTPO2 ',
-     &            'XDDXR3 ', 'PVPINT ', 'POTENER'/
+     &            'XDDXR3 ', 'PVPINT ', 'POTENER', 'SPHMOML'/
 C
 #include <ibtfun.h>
 C
@@ -203,7 +203,7 @@ C
      &             19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,
      &             34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
      &             49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,
-     &             64,65,66,67,68,69,70,71), I
+     &             64,65,66,67,68,69,70,71,72), I
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -1594,6 +1594,30 @@ C
          CALL SETATM(WORK(KATOM),NATOM,INTTYP)
          LABINT(1) = 'POTENERG'
          INTREP(1) = 0
+         ANTI = .FALSE.
+      GO TO 200
+C
+C     Spherical moments integrals with local origins
+C     ----------------------------------------------
+C
+   72 CONTINUE
+         INTTYP = 8
+         TRASPH = .TRUE.
+         FMMORI = .TRUE.
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A,I2,A/)')
+     &      ' Calculation of spherical multipole moment '/
+     &      /'integrals of order',IORDER,'.'
+         IF (IORDER .GT. MXQNM - 1) THEN
+            WRITE (LUPRI,'(2X,A)')
+     &         ' Maximum multipole moment order exceeded in PR1IN1.'
+            WRITE (LUPRI,'(2X,A,I5,/,A,I5,/,A,I3)')
+     &         ' Order requested:',IORDER,
+     &         ' Maximum order:  ',MXQNM-1,
+     &         ' Increase MXQNM to',IORDER + 1,' and recompile.'
+            CALL QUIT('Multipole moment order exceeded in PR1IN1.')
+         END IF
+         CALL SETATM(WORK(KATOM),NATOM,INTTYP)
+         CALL CMTYP(IORDER,NOPTYP,INTREP,LABINT)
          ANTI = .FALSE.
       GO TO 200
 C

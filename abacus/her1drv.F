@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: her1drv.F,v 1.3 2001-02-26 15:34:46 ruud Exp $
+C$Id: her1drv.F,v 1.4 2001-03-28 06:54:53 haettig Exp $
 C
 #include <single.h>
 C  /* Deck oneinp */
@@ -46,7 +46,7 @@ C
 #include <abainf.h>
 #include <cbione.h>
       SAVE SET
-      DATA TABLE /'.SKIP  ', '.PRINT ','XXXXXXX',
+      DATA TABLE /'.SKIP  ', '.PRINT ','.NCLONE',
      *            '.NODC  ', '.NODV  ','.STOP  '/
       DATA SET/.FALSE./
 C
@@ -93,7 +93,7 @@ C
                   READ (LUCMD,*) IPRINT
                   IF (IPRINT .EQ. IPRDEF) ICHANG = ICHANG - 1
                GO TO 100
-    3             CONTINUE
+    3             NCLONE = .TRUE.
                GO TO 100
     4             NODC = .TRUE.
                GO TO 100
@@ -123,6 +123,8 @@ C
      *      ' density matrix neglected in ONEINT.'
             IF (NODV) WRITE (LUPRI,'(/,2A)') ' Active one-electron',
      *      ' density matrix neglected in ONEINT.'
+            IF (NCLONE) WRITE (LUPRI,'(/,2A)') ' Only classical',
+     *      ' contributions to nuclear-attraction integrals calculated.'
             IF (CUT) THEN
                WRITE (LUPRI,'(/,A)') ' Program is stopped after ONEINT.'
             END IF
@@ -156,6 +158,7 @@ C
       NODC   = .FALSE.
       NODV   = .FALSE.
       DIFDIP = DIPDER .OR. (MOLGRD .AND. NFIELD .GT. 0)
+      NCLONE = .FALSE.
       RETURN
       END
 C  /* Deck oneint */
@@ -173,7 +176,7 @@ C
       IF (IPRINT .GT. 2) CALL TITLER('Output from ONEINT','*',103)
       PROPTY = .TRUE.
       CALL ONEDRV(WORK,LWORK,IPRINT,PROPTY,MAXDIF,DIFINT,NODC,NODV,
-     &            DIFDIP,HFONLY)
+     &            DIFDIP,HFONLY,NCLONE)
       IF (IPRINT .GE. 2) CALL TIMER ('ONEINT',TIMSTR,TIMEND)
       PASS = .TRUE.
       IF (CUT) THEN
@@ -186,7 +189,7 @@ C
       END
 C  /* Deck onedrv */
       SUBROUTINE ONEDRV(WORK,LWORK,IPRINT,PROPTY,MAXDIF,DIFINT,NODC,
-     &                  NODV,DIFDIP,HFONLY)
+     &                  NODV,DIFDIP,HFONLY,NCLONE)
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -195,7 +198,8 @@ C
 #include <mxorb.h>
 #include <iratdef.h>
 C
-      LOGICAL DIFINT, NODC, NODV, DIFDIP, PROPTY, DOINT(2,2), HFONLY
+      LOGICAL DIFINT, NODC, NODV, DIFDIP, PROPTY, DOINT(2,2), HFONLY,
+     &        NCLONE
       DIMENSION WORK(LWORK)
 #include <nuclei.h>
 #include <shells.h>
@@ -273,7 +277,7 @@ C
      &            WORK(KLAST),LWRK,IPRINT,PROPTY,MAXDIF,
      &            NODC,NODV,DIFDIP,NBAST,NNBASX,NNBAST,DOINT,.TRUE.,
      &            WORK(KHESKE),WORK(KHESNA),WORK(KHESFS),WORK(KHSOLT),
-     &            WORK(KHSOLN),HFONLY)
+     &            WORK(KHSOLN),HFONLY,NCLONE)
       CALL QEXIT('ONEDRV')
       RETURN
       END
@@ -282,7 +286,7 @@ C  /* Deck onedr1 */
      &                  JSYMC,JCENTC,TLMD,CSTRA,SCTRA,WORK,LWORK,IPRINT,
      &                  PROPTY,MAXDIF,NODC,NODV,DIFDIP,NBAST,NNBASX,
      &                  NNBAST,DOINT,TOFILE,HESSKE,HESSNA,HESFS2,HSOLT2,
-     &                  HSOLNN,HFONLY)
+     &                  HSOLNN,HFONLY,NCLONE)
 C
 C     TUH
 C
@@ -305,7 +309,7 @@ C
       PARAMETER (D0 = 0.00 D00)
 C
       LOGICAL NODC, NODV, FRSDER, SECDER, DIFDIP, PROPTY, DOINT(2,2),
-     &        TOFILE, HFONLY, FOUND
+     &        TOFILE, HFONLY, NCLONE, FOUND
       DIMENSION DENMAT(NNBASX), FOCMAT(NNBASX), STHMAT(NNBASX,3),
      &          FACINT(NUCDEP), WORK(LWORK), COORC(3,NUCDEP),
      &          SIGNC(3,NUCDEP), NCENTC(NUCDEP), JSYMC(NUCDEP),
@@ -577,7 +581,7 @@ C
      &               IPRINT,PROPTY,MAXDIF,IDENB0,CORBX0,CORBY0,CORBZ0,
      &               DIFDIP,SECDER,NATOMC,TOLOG,TOLS,JSYMC,JCENTC,
      &               NCENTC,SIGNC,NNBASX,WORK(KFCM),TLMD(1,1),
-     &               HESSKE,HESSNA,HESFS2,HSOLT2,HSOLNN)
+     &               HESSKE,HESSNA,HESFS2,HSOLT2,HSOLNN,NCLONE)
   110    IDENB0 = IDENB0 + KHKTB*MULTB
          IDENA = IDENA + KHKTA*MULTA
   100 CONTINUE

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: her1int.F,v 1.4 2001-03-18 21:53:33 vebjornb Exp $
+C$Id: her1int.F,v 1.5 2001-03-28 06:54:53 haettig Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -918,8 +918,7 @@ C
          ELSE IF (INTTYP .EQ. 12 .OR. INTTYP .EQ. 58) THEN
             CALL DSOTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,DOATOM,
      &                  KAB,TRIANG,NATOM,INTADR,NSHINT,INTTYP,IPRINT)
-         ELSE IF ((INTTYP .EQ. 14) .OR. (INTTYP .EQ. 44) .OR.
-     &            (INTTYP .EQ. 59)) THEN    
+         ELSE IF ((INTTYP .EQ. 14) .OR. (INTTYP .EQ. 44)) THEN
             CALL HDOTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,IORBA,IORBB,
      &                  NBAST,INTTYP,IPRINT)
          ELSE IF ((INTTYP .EQ. 26) .OR. (INTTYP .EQ. 27) .OR.
@@ -949,6 +948,8 @@ C
          ELSE IF (INTTYP .EQ. 54) THEN
             CALL OCGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
      &                  INTADR,IPRINT)                     
+         ELSE IF (INTTYP .EQ. 59) THEN
+            CALL S1HTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,IPRINT)
          ELSE IF (INTTYP .EQ. 70) THEN
             CALL G1HTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NCENTC,NATOMC,
      &                  ISYMOP,NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
@@ -1111,6 +1112,7 @@ C     1) A certain nuclei
 C     2) Dipole origin
 C     3) Gauge origin
 C     4) Operator center ("molecular" origin)
+C     5) Center P of overlap distribution
 C
          IF ((INTTYP .EQ. 17) .OR. (INTTYP .EQ. 20) .OR.
      &       (INTTYP .EQ. 22) .OR. (INTTYP .EQ. 26)) THEN
@@ -1287,6 +1289,11 @@ C        Multipole moment integrals
 C        --------------------------
 C
          ELSE IF (INTTYP .EQ. 8) THEN
+            IF (FMMORI) THEN
+               DIPORG(1) = CORPX
+               DIPORG(2) = CORPY
+               DIPORG(3) = CORPZ
+            END IF
             CALL MOMINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                  CORPX,CORPY,CORPZ,EXPPI,DIPORG,IORDER,WORK,
      &                  LWORK)
@@ -4712,6 +4719,69 @@ C
          END IF
 200      CONTINUE
 100   CONTINUE
+      RETURN
+      END
+C  /* Deck s1htra */
+      SUBROUTINE S1HTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,IPRINT)
+C
+C     tuh
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <mxorb.h>
+      LOGICAL FULMAT, ANTI
+      DIMENSION SHLINT(KCKTAB,3), SOINT(NELMNT,NOPTYP)
+#include <onecom.h>
+#include <symmet.h>
+#include <ibtfun.h>
+C
+      FULMAT = .TRUE.
+C
+C     Loops over ireps and Cartesian coordinats
+C
+      DO 100 IREP = 0, MAXREP
+      DO 100 ICOOR = 1, 3
+C
+C        Center A
+C        ========
+C 
+         ISCORA = IPTCNT(3*(NCENTA - 1) + ICOOR,IREP,1)
+         IF (ISCORA .GT. 0) THEN
+            FC = HKAB 
+            IF (IREP .EQ. 0) THEN
+               CALL SYM1S(SHLINT(1,ICOOR),SOINT(1,ISCORA),
+     &                    ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
+     &                    FC,LDIAG,FULMAT,DUM,IDUM,IPRINT)
+            ELSE
+               CALL SYM1N(SHLINT(1,ICOOR),SOINT(1,ISCORA),
+     &                    IREP,ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
+     &                    FC,LDIAG,FULMAT,ANTI,DUM,IDUM,IPRINT)
+            END IF
+         END IF
+C
+C        Center B
+C        ========
+C
+         ISCORB = IPTCNT(3*(NCENTB - 1) + ICOOR,IREP,1)
+         IF (ISCORB .GT. 0) THEN
+            FC = -HKAB*PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
+     &               *PT(IBTAND(IREP,ISYMOP))
+            IF (IREP .EQ. 0) THEN
+               CALL SYM1S(SHLINT(1,ICOOR),SOINT(1,ISCORB),
+     &                    ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
+     &                    FC,LDIAG,FULMAT,DUM,IDUM,IPRINT)
+            ELSE
+               CALL SYM1N(SHLINT(1,ICOOR),SOINT(1,ISCORB),
+     &                    IREP,ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
+     &                    FC,LDIAG,FULMAT,ANTI,DUM,IDUM,IPRINT)
+            END IF
+         END IF
+C
+  100 CONTINUE
+C
       RETURN
       END
 C  /* Deck h1dtra */

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: her1sym.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: her1sym.F,v 1.2 2001-03-28 06:54:54 haettig Exp $
 C
 #include <single.h>
 C  /* Deck onesop */
@@ -37,13 +37,13 @@ C  /* Deck onesop */
      &                  IPRINT,PROPTY,MAXDIF,IDENB0,CORBX0,CORBY0,
      &                  CORBZ0,DIFDIP,SECDER,NATOMC,TOLOG,TOLS,JSYMC,
      &                  JCENTC,NCENTC,SIGNC,NNBASX,FCM,TLMD,
-     &                  HESSKE,HESSNA,HESFS2,HSOLT2,HSOLNN)
+     &                  HESSKE,HESSNA,HESFS2,HSOLT2,HSOLNN,NCLONE)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
 #include <iratdef.h>
 C
-      LOGICAL SECDER, DIFDIP, PROPTY
+      LOGICAL SECDER, DIFDIP, PROPTY, NCLONE
       DIMENSION WORK(LWORK)
       DIMENSION STHMAT(NNBASX,3), DENMAT(NNBASX), FOCMAT(NNBASX),
      &          FACINT(*), COORC(3,*), JSYMC(*),
@@ -100,7 +100,7 @@ C
      &            SECDER,NATOMC,TOLOG,TOLS,JSYMC,JCENTC,NCENTC,SIGNC,
      &            NNBASX,WORK(KDSHEL),WORK(KFSHEL),WORK(KRLMNT),
      &            WORK(KRLMTB),FCM,TLMD,WORK(KLMNO),HESSKE,HESSNA,
-     &            HESFS2,HSOLT2,HSOLNN)
+     &            HESFS2,HSOLT2,HSOLNN,NCLONE)
       CALL QEXIT('ONESOP')
       RETURN
       END
@@ -111,7 +111,7 @@ C  /* Deck oneso1 */
      &                  CORBZ0,DIFDIP,SECDER,NATOMC,TOLOG,TOLS,JSYMC,
      &                  JCENTC,NCENTC,SIGNC,NNBASX,DSHELL,FSHELL,
      &                  RLMINT,RLMTAB,FCM,TLMD,LMNO,HESSKE,HESSNA,
-     &                  HESFS2,HSOLT2,HSOLNN)
+     &                  HESFS2,HSOLT2,HSOLNN,NCLONE)
 #include <implicit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
@@ -121,7 +121,7 @@ C  /* Deck oneso1 */
 #include <dummy.h>
       PARAMETER (D1 = 1.0D0, DP5 = 0.5D0)
 C
-      LOGICAL SECDER, DIFDIP, PROPTY, FULMAT, ANTI
+      LOGICAL SECDER, DIFDIP, PROPTY, FULMAT, ANTI, NCLONE
       DIMENSION WORK(LWORK)
       DIMENSION STHMAT(NNBASX,3), STDER0(KCKTAB,2), STDER1(KCKTAB,3,2),
      &          STDER2(KCKTAB,6,2), ADER(*),
@@ -173,7 +173,7 @@ C
          CALL ONEPRM(STDER0,STDER1,STDER2,ADER,SINT0,DINT1,
      &               RLMINT,RLMTAB,FCM,WORK,LWORK,IPRINT,PROPTY,MAXDIF,
      &               NATOMC,TOLOG,TOLS,SECDER,DIFDIP,FACINT,COORC,
-     &               GNUEXP,JCENTC,NCENTC)
+     &               GNUEXP,JCENTC,NCENTC,NCLONE)
 C
 C        *************************************************
 C        ***** Transform to spherical harmonic basis *****

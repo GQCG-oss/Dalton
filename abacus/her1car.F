@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: her1car.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: her1car.F,v 1.2 2001-03-28 06:54:53 haettig Exp $
 C
 #include <single.h>
 C  /* Deck oneprm */
@@ -37,12 +37,12 @@ C  /* Deck oneprm */
      &                  RLMINT,RLMTAB,FCM,
      &                  WORK,LWORK,IPRINT,PROPTY,MAXDIF,NATOMC,TOLOG,
      &                  TOLS,SECDER,DIFDIP,FACINT,COORC,
-     &                  GNUEXP,JCENTC,NCENTC)
+     &                  GNUEXP,JCENTC,NCENTC,NCLONE)
 C
 #include <implicit.h>
 #include <priunit.h>
 C
-      LOGICAL PROPTY, SECDER, DIFDIP
+      LOGICAL PROPTY, SECDER, DIFDIP, NCLONE
       DIMENSION WORK(LWORK)
       DIMENSION STDER0(KCKTAB,2), STDER1(KCKTAB,3,2),
      &          STDER2(KCKTAB,6,2),
@@ -69,7 +69,7 @@ C
      &            RLMINT,RLMTAB,FCM,
      &            WORK(KAHGTF),WORK(KODC),JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
      &            IPRINT,PROPTY,MAXDIF,NATOMC,TOLOG,TOLS,SECDER,DIFDIP,
-     &            FACINT,COORC,GNUEXP,JCENTC,NCENTC,NHKTAP,
+     &            FACINT,COORC,GNUEXP,JCENTC,NCENTC,NHKTAP,NCLONE,
      &            WORK(KLAST),LWRK)
       RETURN
       END
@@ -78,7 +78,7 @@ C  /* Deck onepr1 */
      &                  RLMINT,RLMTAB,FCM,
      &                  AHGTF,ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,IPRINT,
      &                  PROPTY,MAXDIF,NATOMC,TOLOG,TOLS,SECDER,DIFDIP,
-     &                  FACINT,COORC,GNUEXP,JCENTC,NCENTC,NHKTAP,
+     &                  FACINT,COORC,GNUEXP,JCENTC,NCENTC,NHKTAP,NCLONE,
      &                  WORK,LWORK)
 C
 #include <implicit.h>
@@ -88,10 +88,10 @@ C
 #include <maxaqn.h>
 #include <aovec.h>
 #include <mxorb.h>
-      PARAMETER (D1 = 1.00 D00, D3 = 3.00 D00, THIRD = D1/D3,
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D3 = 3.0D0, THIRD = D1/D3,
      &           GNUTHR = 1.D-4)
 C
-      LOGICAL PROPTY, KINODC, SECDER, DIFDIP
+      LOGICAL PROPTY, KINODC, SECDER, DIFDIP, NCLONE, CLASIC(MXCENT)
       DIMENSION WORK(LWORK), STDER0(KCKTAB,2), STDER1(KCKTAB,3,2),
      &          STDER2(KCKTAB,6,2), RLMINT(*), RLMTAB(*), FCM(*),
      &          SINT0(KCKTAB), DINT1(KCKTAB,3,3),
@@ -102,6 +102,7 @@ C
 #include <cbisol.h>
 #include <onecom.h>
 #include <ader.h>
+#include <clsfmm.h>
 #include <primit.h>
 #include <ecpinf.h>
 C
@@ -180,6 +181,39 @@ C
          END IF
       END IF
 C
+C     Non-classical contributions
+C
+      IF (NCLONE) THEN
+         FAC = ERFCIV(THRCLS)
+         DO IATOMC = 1, NATOMC
+            CLASIC(IATOMC) = .TRUE.
+         END DO
+         DO IPRIMA = 1,NUCA
+            JPRIMA = JSTA + IPRIMA
+            CONTA = PRICCF(JPRIMA,NUMCFA)
+            EXPA = PRIEXP(JPRIMA)
+            DO IPRIMB = 1,NUCB
+               JPRIMB = JSTB + IPRIMB
+               CONTB = PRICCF(JPRIMB,NUMCFB)
+               EXPB = PRIEXP(JPRIMB)
+               EXPP = EXPA + EXPB
+               EXPPI = D1/EXPP
+               EXPAPI = EXPA*EXPPI
+               EXPBPI = EXPB*EXPPI
+               CORPX  = EXPAPI*CORAX + EXPBPI*CORBX
+               CORPY  = EXPAPI*CORAY + EXPBPI*CORBY
+               CORPZ  = EXPAPI*CORAZ + EXPBPI*CORBZ
+               EP     = FAC*SQRT(EXPPI)
+               DO IATOMC = 1,NATOMC
+                  RPQ = SQRT((COORC(1,IATOMC) - CORPX)**2 +
+     &                       (COORC(2,IATOMC) - CORPY)**2 +
+     &                       (COORC(3,IATOMC) - CORPZ)**2)
+                  IF (RPQ .LE. EP) CLASIC(IATOMC) = .FALSE.
+               END DO
+            END DO
+         END DO
+      END IF 
+C
 C     ****************************************
 C     ***** Loop over primitive orbitals *****
 C     ****************************************
@@ -239,6 +273,7 @@ C
                ICENTC = NCENTC(IATOMC)
                IF(.NOT.(PROPTY.AND.ONECEN.AND.ICENTA.EQ.ICENTC)) THEN
                   FACTOR = FACINT(IATOMC)
+                  IF (NCLONE .AND. CLASIC(IATOMC)) FACTOR = D0
                   DIFCPX = COORC(1,IATOMC) - CORPX
                   DIFCPY = COORC(2,IATOMC) - CORPY
                   DIFCPZ = COORC(3,IATOMC) - CORPZ

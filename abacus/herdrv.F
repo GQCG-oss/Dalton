@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: herdrv.F,v 1.7 2001-03-21 10:50:48 vebjornb Exp $
+C$Id: herdrv.F,v 1.8 2001-03-28 06:54:54 haettig Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -1588,7 +1588,7 @@ C
          IF (HAMILT) THEN
             CALL TIMER('START ',TIMSTR,TIMEND)
             CALL ONEDRV(WORK,LWORK,IPRONE,.FALSE.,0,.FALSE.,.TRUE.,
-     &                  .TRUE.,.FALSE.,.FALSE.)
+     &                  .TRUE.,.FALSE.,.FALSE.,.FALSE.)
             CALL TIMER('ONEDRV',TIMSTR,TIMEND)
             CALL FLSHFO(LUPRI)
          END IF

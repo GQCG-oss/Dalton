@@ -1002,6 +1002,8 @@ C
 #include <exeinf.h>
 #include <inftra.h>
 #include <huckel.h>
+#include <orgcom.h>
+#include <clsfmm.h>
 #include <cbieri.h>
 #include <veclen.h>
 #include <numder.h>

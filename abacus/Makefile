@@ -19,7 +19,8 @@ OBJS = 	dalgnr.o     aba2tex.o    abaaat.o     abadip.o\
 	her2gab.o    hersym.o     hertst.o\
 	abaopt.o     abavrml.o    abaqr.o      abarint.o\
 	abander.o    abandsym.o   herfckcon.o  abaop2.o\
-	abasop.o     abamolden.o  eckart.o     ecp.o
+	abasop.o     abamolden.o  eckart.o     ecp.o\
+        abafmm.o
 
 libabacus.a: $(OBJS)
 	$(AR) $(ARFLAGS) $@ $?
