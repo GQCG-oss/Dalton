@@ -1098,7 +1098,7 @@ C                not in basis library for some atoms.
      &                  CPRIMU(1,1,IBLOCK(J),J),
      &                  NBLOCK,KAOVEC,KPRIM,Q,J,DSM)
                  IF (BASNAM(1:3) .EQ. 'ECP') THEN
-C     Read effective core potantial information from file for atom. 
+C     Read effective core potential information from file for atom. 
 C     The charge of atom type is set to be the effective charge.
                     CALL ECPINP(Q,QEFF,I,IPREAD)
                     DO INONT=1,NONT(I)
