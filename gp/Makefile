@@ -2,10 +2,12 @@ all: libgp.a
 
 include ../Makefile.config
 
-F_OBJS =	gphjj.o    gpjeppe.o  gptrygve.o     mempkg.o \
+F_OBJS = gphjj.o    gpjeppe.o  gptrygve.o     mempkg.o \
 	qpack.o    graphic.o  vcraypack.o    gpsaue.o \
 	mpimacro.o pvmmacro.o gpdahle.o      intf7790.o \
 	gpsimen.o $(GP_EXTRAS)
+
+C_OBJS = gpc.o
 
 F_CPPS = $(F_OBJS:.o=.i)
 
@@ -16,13 +18,15 @@ ftnchek: pre
 
 all: libgp.a mpi_dummy.o
 
-libgp.a: $(F_OBJS)
+gphjj.o: ../compinfo.h gphjj.F
+
+libgp.a: $(F_OBJS) $(C_OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 
 clean : 
 	$(RM) -f *.o *~ *.lst *.i *.L i.*.f v.i.*.f *.a
 
-Makefile.depend depend: ../include/*.h
+Makefile.depend depend: *.h ../include/*.h
 	../tools/check_depend $(INCLUDES) > Makefile.depend
 
 include Makefile.depend
