@@ -121,13 +121,12 @@ C
       DIMENSION WORK(LWORK)
       LOGICAL LDERINT(8,MXCOMP)
 C
-      INTEGER LENGTH(8)
+      INTEGER LENGTH(8), LUAODR(8)
 C
       CHARACTER*8 NAME(8)
 C
       DATA NAME  /'CCAODER1','CCAODER2','CCAODER3','CCAODER4',
      *            'CCAODER5','CCAODER6','CCAODER7','CCAODER8'/
-      COMMON/SORTIO/LUAOIN(8),LUAODR(8)
 #include <ccorb.h>
 #include <ccsdsym.h>
 
@@ -286,7 +285,7 @@ c              END DO
 c           END DO
 C
             CALL CCSORTDER2(WORK(KEND1),IOFF2,INUMBA,
-     *                      LENGTH(ISYMD),ISYMD)
+     *                      LENGTH(ISYMD),ISYMD,NAME,LUAODR)
 C
             IF ( (IPRINT.GT.50) .OR. LOCDBG ) THEN
                CALL AROUND('Integral distribution')
@@ -494,7 +493,7 @@ C
       END
 *======================================================================*
 C  /* Deck ccsortder2 */
-      SUBROUTINE CCSORTDER2(XINT,IOFF,INUMBA,LENGTH,ISYM)
+      SUBROUTINE CCSORTDER2(XINT,IOFF,INUMBA,LENGTH,ISYM,NAME,LUAODR)
 *----------------------------------------------------------------------*
 C
 C     Written by Christof Haettig 06-May-1998
@@ -504,16 +503,10 @@ C
 #include <implicit.h>
       DIMENSION XINT(*)
 C
+      INTEGER LUAODR(8)
       CHARACTER*8 NAME(8)
 C
-      DATA NAME  /'CCAODER1','CCAODER2','CCAODER3','CCAODER4',
-     *            'CCAODER5','CCAODER6','CCAODER7','CCAODER8'/
-      COMMON/SORTIO/LUAOIN(8),LUAODR(8)
-
-C
-      NFILE = LUAODR(ISYM)
-C
-      CALL PUTWA2(NFILE,NAME(ISYM),XINT,IOFF,LENGTH*INUMBA)
+      CALL PUTWA2(LUAODR(ISYM),NAME(ISYM),XINT,IOFF,LENGTH*INUMBA)
       IOFF = IOFF + LENGTH*INUMBA
 C
       RETURN
