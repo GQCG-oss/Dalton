@@ -911,7 +911,7 @@ C     &      ' S^of_C,AB = M^C*_of x M^AB*_fo(0.0) = ', XMC_MAB
             WRITE(LUPRI,'(/1X,A,F16.6,A,F16.8,A)')
      &     ' B term contribution (au): ', D05*BTERM_A, ' (antisym) ', 
      &                                    D05*BTERM_S, ' (symm)    '
-            WRITE(LUPRI,'(1X,69("-")')
+            WRITE(LUPRI,'(1X,69("-"))')
          ELSE
             WRITE(LUPRI,'(/1X,A,F16.8,A)')
      &     ' B term contribution (au): ', D05*BTERM_A, ' (antisym) ' 
