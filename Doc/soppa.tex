@@ -1,13 +1,14 @@
 \chapter{SOPPA and SOPPA(CCSD) calculations}\label{ch:soppa}
 
-The Dalton program system can also be used to perform Second Order
+The Dalton program system can also be used to perform Second-Order
 Polarization Propagator Approximation (SOPPA) \index{SOPPA}
 \index{polarization propagator} calculations
-\cite{esnpjjodjcp73,mjpekdtehjajjojcp,spascpl260,tejospastcan100} or Second
-Order Polarization Propgator Approximation with Coupled Cluster Singles and
-Doubles Amplitudes -- SOPPA(CCSD) \index{SOPPA(CCSD)} calculations of optical
-properties like singlet or triplet excitation energies\index{electronic
-  excitation} and oscillator strenghts\index{transition moment} as well as the
+\cite{esnpjjodjcp73,mjpekdtehjajjojcp,spascpl260,tejospastcan100} or
+Second-Order Polarization Propgator Approximation with Coupled Cluster
+Singles and Doubles Amplitudes -- SOPPA(CCSD) \index{SOPPA(CCSD)}
+calculations of optical properties like singlet or triplet excitation
+energies\index{electronic   excitation} and oscillator
+strenghts\index{transition moment} as well as the 
 following list of electric and magnetic properties :
 \begin{center}
 \begin{list}{}{}
@@ -25,9 +26,9 @@ as well as all the linear response functions described in chapter
 
 \section{General considerations}\label{sec:soppageneral}
 
-The Second Order Polarization Propagator Approximation is a generalization of
+The Second-Order Polarization Propagator Approximation is a generalization of
 the SCF linear response function
-\cite{esnpjjodjcp73,jopjdycpr2,mjpekdtehjajjojcp}. In SOPPA the SCF reference
+\cite{esnpjjodjcp73,jopjdycpr2,mjpekdtehjajjojcp}. In SOPPA, the SCF reference
 wavefunction in the linear response function or polarization propagator is
 replaced by an M{\o}ller-Plesset wavefunction and all matrix elements in the
 response function are then evaluted through second order in the fluctuation
@@ -43,8 +44,8 @@ correlation coefficients are replaced by the corresponding Coupled Cluster
 Singles and Doubles Amplitudes
 \cite{soppaccsd,ekdspasjpca102,tejospastcan100,ctocd}. SOPPA(CCSD) is not a
 Coupled Cluster linear response function as they are implemented in the CC
-modules of Dalton program. The equations are essentially the same as for
-SOPPA.  
+modules of Dalton program. However, the equations are essentially the
+same as for SOPPA.  
 
 
 \section{Input description}\label{sec:soppainput}
@@ -80,7 +81,7 @@ and Stephan P.~A. Sauer.
 A prerequisite for any SOPPA calculation is that the calculation of
 the MP2 energy and wavefunction is invoked by the keyword \Key{MP2} in
 the \Sec{*WAVE FUNCTIONS} input module. Furthermore in the
-\Sec{*PROPERTIES} or \Sec{*RESPONSE} input modules it has to specified 
+\Sec{*PROPERTIES} or \Sec{*RESPONSE} input modules it has to be specified 
 by the keyword \Key{SOPPA} that a SOPPA calculation of the properties
 should be carried out.
 
@@ -98,7 +99,6 @@ spin-spin coupling constants of a molecule will be:
 .SPIN-S
 **END OF DALTON INPUT
 \end{verbatim}
-
 whereas as typical input file for the calculation of triplet
 excitation energies\index{electronic excitation} with the
 \Sec{*RESPONSE} module will be: 
@@ -125,7 +125,7 @@ once in the \Sec{*WAVE FUNCTIONS} module.
 A prerequisite for any SOPPA(CCSD) calculation is that the calculation of
 the CCSD amplitudes for the SOPPA program is invoked by the keyword \Key{CC}
 in the \Sec{*WAVE FUNCTIONS} input module together with the \Key{SOPPA(CCSD)}
-option in the \Sec{CC INPUT} section. Furthermore in the \Sec{*PROPERTIES} or
+option in the \Sec{CC INPUT} section. Furthermore, in the \Sec{*PROPERTIES} or
 \Sec{*RESPONSE} input modules it has to specified by the keyword \Key{SOPPA(CCSD)}
 that a SOPPA(CCSD) calculation of the properties should be carried out. 
 
