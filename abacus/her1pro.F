@@ -80,7 +80,7 @@ C
          NHUCBA = 0
          DO 14 I = 1, MAXREP + 1
             NHUCBA = NHUCBA + NHUCAO(I)
- 14      CONTINUE 
+ 14      CONTINUE
       ELSE
          DOINT(2,1) = .FALSE.
          DOINT(1,2) = .FALSE.
@@ -105,7 +105,7 @@ C
       IF (WORD .EQ. 'DSO    ') MAXTYP = (3*NUCDEP)**2
 C
 C     HJAaJ July 2002: use MEMGET and MEMCHK (inside MEMREL)
-C     to check if sufficient space is allocated for 
+C     to check if sufficient space is allocated for
 C     LABINT, INTREP, and INTADR -- much simpler than the
 C     previous use of NTYPTS and more safe.
 C
@@ -211,7 +211,7 @@ cLig <> added RAGMO and RPSO
      &            'NUCPOT ', 'HBDO   ', 'SQHDO  ', 'DSUSCGO',
      &            'NSTCGO ', 'EXPIKR ', 'MASSVEL', 'DARWIN ',
      &            'CM1    ', 'CM2    ', 'SQHDOR ', 'SQOVLAP',
-     &            'LONSOL1', 'LONSOL2', 'NSTCGOS', 'S1ELE  ', 
+     &            'LONSOL1', 'LONSOL2', 'NSTCGOS', 'S1ELE  ',
      &            'S1ELB  ', 'ONEELD ', 'DPLGRA ', 'QUAGRA ',
      &            'OCTGRA ', 'ROTSTR ', 'THRMOM ', 'SOFIELD',
      &            'SOMAGMO', 'DEROVLP', 'DERHAMI', 'ELGDIAN',
@@ -1285,7 +1285,7 @@ Cori     ANTI = .TRUE.
          ANTI = .FALSE.
 CCH
          SQUARE = .FALSE.
-      GOTO 200                             
+      GOTO 200
 C
 C     Quadrupole gradient integrals
 C     -----------------------------
@@ -1301,7 +1301,7 @@ Cori     ANTI = .TRUE.
          ANTI = .FALSE.
 CCH
          SQUARE = .FALSE.
-      GOTO 200                              
+      GOTO 200
 C
 C     Octupole gradient integrals
 C     ---------------------------
@@ -1317,7 +1317,7 @@ Cori     ANTI = .TRUE.
          ANTI = .FALSE.
 CCH
          SQUARE = .FALSE.
-      GOTO 200                             
+      GOTO 200
 C
 C     Rotational strength integrals
 C     -----------------------------
@@ -1343,7 +1343,7 @@ C
          INTREP(6) = 0
          ANTI = .TRUE.
          SQUARE = .FALSE.
-      GOTO 200                                   
+      GOTO 200
 C
 C     Third moments integrals
 C     -----------------------
@@ -1377,7 +1377,7 @@ C
          INTREP(10) = ISYMAX(3,1)
          ANTI = .FALSE.
          SQUARE = .FALSE.
-      GO TO 200                       
+      GO TO 200
 C
 C     Magnetic-field correction to spin-orbit integrals
 C     -------------------------------------------------
@@ -1409,7 +1409,7 @@ C
          INTREP(9) = 0
          ANTI = .FALSE.
          SQUARE = .FALSE.
-      GOTO 200                                      
+      GOTO 200
 C
 C     Magnetic-moment correction to spin-orbit integrals
 C     --------------------------------------------------
@@ -1450,7 +1450,7 @@ C
      &               INTTYP)
          ANTI = .FALSE.
          SQUARE = .FALSE.
-      GO TO 200                                 
+      GO TO 200
 C
 C     Diamagnetic one-electron spin-orbit integrals (No-London)
 C     ---------------------------------------------------------
@@ -1517,7 +1517,7 @@ C
       GOTO 200
 C     Overlap integrals for the small component in dpt ( <opG|opG> )
 C     --------------------------------------------------------------
-C     ACH     
+C     ACH
  66   CONTINUE
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &     'Calculation of small-component 1 el. overlap '
@@ -1530,7 +1530,7 @@ C     ACH
          LABINT(3) = 'dd/dxdz '
          LABINT(4) = 'dd/dydy '
          LABINT(5) = 'dd/dydz '
-         LABINT(6) = 'dd/dzdz '        
+         LABINT(6) = 'dd/dzdz '
 C
          INTREP(1) = 0
          INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
@@ -1543,7 +1543,7 @@ C
 C
 C     Pot energy integrals for the small component in dpt ( <opG|V|opG> )
 C     ---------------------------------------------------------------.---
-C     ACH     
+C     ACH
  67   CONTINUE
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &     'Calculation of small-component 1 el. pot. integrals'
@@ -1634,7 +1634,7 @@ C
 C
 C     Parity violation
 C     ----------------
-C 
+C
    72 CONTINUE
       IF (IPRINT .GT. 0) THEN
           WRITE (LUPRI,'(/A/)')
@@ -1670,7 +1670,7 @@ C
         INTREP(1) = ISYMAX(1,1)
         INTREP(2) = ISYMAX(2,1)
         INTREP(3) = ISYMAX(3,1)
-        ANTI = .TRUE. 
+        ANTI = .TRUE.
       GO TO 200
 C
 C     Spherical moments integrals with local origins
@@ -1716,7 +1716,7 @@ C
             INTREP(1) = ISYMAX(1,2)
             INTREP(2) = ISYMAX(2,2)
             INTREP(3) = ISYMAX(3,2)
-         ELSE 
+         ELSE
             IF (FIELD3(1:2) .EQ. 'XY') THEN
                IRP = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
             ELSE IF (FIELD3(1:2) .EQ. 'XZ') THEN
@@ -1761,7 +1761,7 @@ C
          INTREP(7) = ISYMAX(2,1)
          INTREP(8) = ISYMAX(1,1)
          INTREP(9) = IBTXOR(ISYMAX(3,1),IBTXOR(ISYMAX(1,1),ISYMAX(2,1)))
-c        
+c
          ANTI = .FALSE.
          SQUARE = .TRUE.
       GO TO 200
@@ -1779,7 +1779,7 @@ C
          CALL SETATM(WORK(KATOM),NATOM,INTTYP)
          CALL NSTTYP(NOPTYP,INTREP,LABINT,WORK(KATOM),NATOM,'RPSO',
      &               INTADR)
-c        
+c
          ANTI = .FALSE.
          SQUARE = .TRUE.
       GO TO 200
@@ -2240,7 +2240,7 @@ C
      &              //CHRNOS(NY/10)//CHRNOS(MOD(NY,10))
      &              //CHRNOS(NZ/10)//CHRNOS(MOD(NZ,10))
                INTREP(I) = IBTXOR(ISYMC,IBTXOR(ISYMAX(2,2),ISYMAX(3,2)))
-            ELSE 
+            ELSE
                LABINT(I) = 'ZZ'//CHRNOS(NX/10)//CHRNOS(MOD(NX,10))
      &              //CHRNOS(NY/10)//CHRNOS(MOD(NY,10))
      &              //CHRNOS(NZ/10)//CHRNOS(MOD(NZ,10))
@@ -2356,8 +2356,8 @@ C  /* Deck nsttyp */
                         INTREP(ITYP) = IBTXOR(IREP,ISYMAX(ICOOR,2))
 cLig >> changed the symmetri for RPSO
                         IF(LABEL.EQ.'RPSO')
-     &                    INTREP(ITYP) = IBTXOR(IREP,ISYMAX(ICOOR,1)) 
-cLig <<    
+     &                    INTREP(ITYP) = IBTXOR(IREP,ISYMAX(ICOOR,1))
+cLig <<
                         LSCOOR = 3*(ISCOOR - 1) + ICOOR
                         INTADR(LSCOOR) = ITYP
  400                 CONTINUE
@@ -2776,7 +2776,7 @@ C  /* Deck hdotyp */
      &                              //CHRNOS(MOD((MOD(ISCOOR,100)),10))
                         ELSE IF (INTTYP .EQ. 70) THEN
                            LABINT(ITYP) = '1DHAM'//CHRNOS(ISCOOR/100)
-     &                              //CHRNOS(MOD(ISCOOR,100)/10)   
+     &                              //CHRNOS(MOD(ISCOOR,100)/10)
      &                              //CHRNOS(MOD((MOD(ISCOOR,100)),10))
                         ELSE
                            LABINT(ITYP) = 'SQHDR'//CHRNOS(ISCOOR/100)
@@ -2856,20 +2856,20 @@ C
                      ITYP = ITYP + 1
                      IF (INTTYP .EQ. 70) THEN
                         LABINT(ITYP) = '1DHAM'//CHRNOS(ISCOOR/100)
-     &                           //CHRNOS(MOD(ISCOOR,100)/10)   
-     &                           //CHRNOS(MOD((MOD(ISCOOR,100)),10))
+     &                           //CHRNOS(MOD(ISCOOR,100)/10)
+     &                           //CHRNOS(MOD(ISCOOR,10))
                      ELSE
-                        LABINT(ITYP) = 'NEF '//CHRNOS(ISCOOR/10)
-     &                                       //CHRNOS(MOD(ISCOOR,10))
-     &                                       //'  '
-                     END IF                                                   
+                        LABINT(ITYP) = 'NEF '//CHRNOS(ISCOOR/100)
+     &                           //CHRNOS(MOD(ISCOOR,100)/10)
+     &                           //CHRNOS(MOD(ISCOOR,10))//' '
+                     END IF
                      INTREP(ITYP) = IREP
                      INTADR(ISCOOR) = ITYP
                   END IF
  200           CONTINUE
             END IF
  100     CONTINUE
- 50   CONTINUE 
+ 50   CONTINUE
       RETURN
       END
 C  /* Deck efgtyp */
@@ -3310,7 +3310,7 @@ C     MORDER ne 0 : M_l order -LVAL, ..., -1, 0, 1, ..., +LVAL
 C
 C     MINTEG eq 0 : old Hermit normalization
 C     MINTEG eq 1 : the smallest coefficient is one (abs.val.).
-C     MINTEG eq 2 : the spherical components are normalized to unity 
+C     MINTEG eq 2 : the spherical components are normalized to unity
 C
 C     tuh 11.10.90
 C
@@ -3472,7 +3472,7 @@ C
          END DO
          IF (FACUL2 .EQ. SDPRE(0)) THEN
             WRITE (LUPRI,'(/,A,I10,/A)')
-     &            ' Double factorial undefined for ',N, 
+     &            ' Double factorial undefined for ',N,
      &            ' Program cannot continue.'
             CALL QUIT('Illegal argument in FACUL2')
          ELSE
@@ -3487,8 +3487,8 @@ C
 C     N > 0
 C
       ELSE
-        FACUL2 = SDPRE(N) 
-        DO I = N - 2, 1, -2 
+        FACUL2 = SDPRE(N)
+        DO I = N - 2, 1, -2
            FACUL2 = FACUL2*SDPRE(I)
         END DO
       END IF
@@ -3555,7 +3555,7 @@ C
 C     We add an extra label to signify EOF
 C
       CALL NEWLB2('EOFLABEL',RTNLBL,LUPROP,LUPRI)
-C      
+C
       RETURN
       END
 C  /* Deck dsotst */
@@ -3651,11 +3651,11 @@ C  /* Deck alftyp */
       DO 100 IREP = 0, MAXREP
          DO 200 IATOM = 1, NUCIND
             IF (DOATOM(IATOM)) THEN
-               DO 300 ICOOR1 = 1, 3               
+               DO 300 ICOOR1 = 1, 3
                   ISCOR1 = IPTCNT(3*(IATOM - 1) + ICOOR1,IREP,2)
                   IF (ISCOR1 .GT. 0) THEN
                      DO 400 ICOOR2 = 1, 3
-                        ITYP = ITYP + 1                        
+                        ITYP = ITYP + 1
                         LABINT(ITYP) = 'ALF '//CHRXYZ(ICOOR1)//
      &                       CHRXYZ(ICOOR2)//
      &                       CHRNOS(ITYP/10)//CHRNOS(MOD(ITYP,10))
