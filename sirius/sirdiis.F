@@ -791,8 +791,8 @@ Chj-sep99: and change index arrays to new occupation (for RHFENR and ?)
          END IF
          GO TO 100
  4210 FORMAT(/' DIIS has changed occupation numbers',I2,' times now.'
-     &      /' Program aborts because this indicates problems with'//
-     &       ' automatic occupation.')
+     &       /' Program aborts because this indicates problems with'//
+     &        ' automatic occupation.')
 C
 C 1000: converged
 C 1100: not converged
@@ -843,7 +843,7 @@ C
       END IF
 C
       IPRENR = 0
-      IF (ONLYFC .AND. ICONV .NE. 0. .AND. (IPRDIS .GT. 0 .OR.
+      IF (ICONV .NE. 0. .AND. (IPRDIS .GT. 0 .OR.
      &    .NOT.(DOMP2 .OR. DOCI .OR. DOMC)) ) IPRENR = 1
       IWRIFC = 0
 Chj aug99:
@@ -856,13 +856,13 @@ Chj MAERKE
 C
       IF (IPRENR .GT. 0 .OR. IWRIFC .GT. 0) THEN
 C
+C        Construct FDAO (FDAO saved in DCAO)
 C        Transform FDAO to FD (FD saved in FCAO).
-C        Zero FV (in DCAO)
 C
-         CALL DAXPY(NNBAST,D1,H1AO,1,FAOSAV(1,INDEVC,1),1)
-         CALL UTHUB(FAOSAV(1,INDEVC,1),FCAO,CMO,WRK(KFREE),
+         CALL DCOPY(NNBAST,FAOSAV(1,INDEVC,1),1,DCAO,1)
+         CALL DAXPY(NNBAST,D1,H1AO,1,DCAO,1)
+         CALL UTHUB(DCAO,FCAO,CMO,WRK(KFREE),
      &              NSYM,NBAS,NORB)
-         CALL DZERO(DCAO,NNORBT)
 Chj from siropt.F, should be modified
        END IF
 C
@@ -870,14 +870,12 @@ C
          WRITE (LUW4,'(//A)') ' *** RHF orbital energy analysis ***'
          IF (FLAG(16))
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
-         CALL RHFENR(IPRI4,LUW4,FCAO,DCAO, WRK(KFREE),LFREE)
-Chj      CALL RHFENR(IPRI4,LUW4,WRK(KFCSOL),WRK(KFV),
-Chj  &               WRK(KFREE),LFREE)
+         CALL RHFENR(IPRI4,LUW4,FCAO, WRK(KFREE),LFREE)
          IF (LUPRI .NE. LUW4) THEN
             WRITE (LUPRI,'(//A)') ' *** RHF orbital energy analysis ***'
             IF (FLAG(16))
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
-            CALL RHFENR(IPRI6,LUPRI,FCAO,DCAO, WRK(KFREE),LFREE)
+            CALL RHFENR(IPRI6,LUPRI,FCAO, WRK(KFREE),LFREE)
          END IF
 C        CALL RHFENR(IPRINT,LUPRI,FC,FV,SCRA,LSCRA)
       END IF
@@ -890,6 +888,8 @@ C       INERSI is true if this is initial state calculation
 C              in a solvent calculation with inertial polarization
 C
       IF ( IWRIFC .EQ. 1 ) THEN
+         IF (IPRI6 .GE. 0) WRITE (LUPRI,'(/A)')
+     *      ' >>> Writing SIRIFC interface file <<<'
          IF (ICI0 .EQ. 6) THEN
 Chj      ... if (GEOWLK) then
             IF (.NOT. OPTNEW)
@@ -941,14 +941,11 @@ C        if converged and if not followed by higher level.
 C
       IF (ICONV .NE. 0 .AND. ABS(ITRFIN) .LE. 10 .AND.
      &    .NOT.(DOMP2 .OR. DOCI .OR. DOMC) ) THEN
-         IF (IPRI6 .GE. 5) WRITE (LUPRI,'(/2A,I3,A)')
-     *      ' >>> Transforming integrals for Abacus/response with',
-     *      ' ITRLVL =',ITRFIN,' <<<'
+         IF (IPRI6 .GE. 0) WRITE (LUPRI,'(/A,I3,A)')
+     *      ' >>> Transforming 2-el. integrals acc. to'//
+     *      ' .FINAL TRANSFORMATION =',ITRFIN,' <<<'
          JTRLVL = ITRFIN
-         KCMO   = KFREE
-         KWRK10 = KCMO  + NCMOT
-         LWRK10 = LFREE + 1 - KWRK10
-         CALL TRACTL(JTRLVL,WRK(KCMO),WRK(KWRK10),LWRK10,MWORK)
+         CALL TRACTL(JTRLVL,CMO,WRK(KFREE),LFREE,MWORK)
       END IF
 C
 C ***********************************************************

@@ -997,19 +997,19 @@ C
          KFCSOL = KFC
       END IF
       IF (NASHT .EQ. 0) THEN
-         WRITE (LUW4,'(//A)') ' *** HF orbital energy analysis ***'
+C        hjaaj dec 2002: if extended to cover nasht.eq.1 as in sirdiis.F
+C        then remember to add FCSOL and FV to FD for RHFENR call
+         WRITE (LUW4,'(//A)') ' *** RHF orbital energy analysis ***'
          IF (SOLVNT)
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
-         CALL RHFENR(IPRI4,LUW4,WRK(KFCSOL),WRK(KFV),
-     &               WRK(KWRKG),LWRKG)
+         CALL RHFENR(IPRI4,LUW4,WRK(KFCSOL), WRK(KWRKG),LWRKG)
          IF (LUPRI .NE. LUW4) THEN
-            WRITE (LUPRI,'(//A)') ' *** HF orbital energy analysis ***'
+            WRITE (LUPRI,'(//A)') ' *** RHF orbital energy analysis ***'
             IF (SOLVNT)
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
-            CALL RHFENR(IPRI6,LUPRI,WRK(KFCSOL),WRK(KFV),
-     &                  WRK(KWRKG),LWRKG)
+            CALL RHFENR(IPRI6,LUPRI,WRK(KFCSOL), WRK(KWRKG),LWRKG)
          END IF
-C        CALL RHFENR(IPRINT,LUPRI,FC,FV,SCRA,LSCRA)
+C        CALL RHFENR(IPRINT,LUPRI,FD,SCRA,LSCRA)
       END IF
 C
       IF (LMULBS .OR. R12CAL) THEN
@@ -1096,25 +1096,22 @@ C *** end of subroutine SIROPT
       RETURN
       END
 C  /* Deck rhfenr */
-      SUBROUTINE RHFENR(IPRINT,LUPRI,FC,FV,SCRA,LSCRA)
+      SUBROUTINE RHFENR(IPRINT,LUPRI,FD,SCRA,LSCRA)
 C
-C 27-Oct-1990 Hans Joergen Aa. Jensen
+C 27-Oct-1990 Hans Joergen Aa. Jensen (revised 17-Dec-2002 hjaaj)
 C
 C Purpose:
 C  Check if orbitals are canonical Hartree-Fock orbitals
 C  and print orbital energies
-C  ADD INACTIVE and ACTIVE FOCK MATRICES AND CHECK IF ORBITALS ARE
-C  CANONICAL HARTREE-FOCK ORBITALS
 C
 C Input:
-C  FC; the inactive Fock matrix
-C  FV; the active Fock matrix
+C  FD; the total inactive + active Fock matrix
 C
 C Scratch:
 C  SCRA; general scratch area
 C
 #include <implicit.h>
-      DIMENSION FC(*),FV(*),SCRA(*)
+      DIMENSION FD(*),SCRA(*)
 C
 C
       PARAMETER (D0 = 0.0D0,    EMYCNV = 1.D-4,
@@ -1139,11 +1136,18 @@ C
       CALL QENTER('RHFENR')
 C
       IF (NASHT .GT. 0) THEN
-         WRITE (LUPRI,'(/A)')
-     *      ' Orbital energy analysis skipped for open-shell systems'
-         GO TO 9999
-CMAERKE : FV is in parameter list so that
-C         EKT orbital energies may be defined later.
+C        hjaaj Dec 2002:
+C        allow printing of orbital energies for open-shell systems.
+         WRITE (LUPRI,'(/A/A/A/A)')
+     &' Orbital energy analysis for an open-shell system.',
+     &' Orbital energies are not well-defined for open-shell systems',
+     &'   here is used block diagonalization of'//
+     &  ' the FD=FC+FV Fock matrix.',
+     &" NOTE that Koopmans' theorem is not fulfilled for this case."
+C        WRITE (LUPRI,'(/A)')
+C    *      ' Orbital energy analysis skipped for open-shell systems'
+C        GO TO 9999
+C hjaaj TODO:   EKT orbital energies may be defined later.
       END IF
       IF (IPRINT .LT. 10) WRITE (LUPRI,'(/A)') ' Only the five'//
      &   ' lowest virtual orbital energies printed in each symmetry.'
@@ -1151,23 +1155,13 @@ C         EKT orbital energies may be defined later.
      *   ' Number of electrons :',2*NISHT,
      *   ' Orbital occupations :',(NISH(I),I=1,NSYM)
 C
-      KFD    = 1
-      KORBEN = KFD + NNORBT
-      LNEED  = KORBEN + NORBT
+      KORBEN = 1
+      LNEED  = KORBEN + NORBT 
       IF (LNEED .GT. LSCRA) CALL ERRWRK('RHFENR',LNEED,LSCRA)
-      IF (NASHT .GT. 0) THEN
-         DO 100 I = 1,NNORBT
-            SCRA(I) = FC(I) + FV(I)
-  100    CONTINUE
-      ELSE
-         DO 101 I = 1, NNORBT
-            SCRA(I) = FC(I)
-  101    CONTINUE
-      END IF
+      CALL DZERO(SCRA,NORBT)
 C
 C     Check if orbitals are canonical orbitals
 C
-      CALL DZERO(SCRA(KORBEN),NORBT)
       VALCON =  D0
       EHOMO  = -DBIG
       IHOMO  = 0
@@ -1183,18 +1177,35 @@ C
          ELUMOI= ELUMO
          DO 300 I = 1,NORBI
             IJOFF = ISSYM + IROW(I)
-            SCRA(KORBEN-1+IORBI+I) = SCRA(IJOFF+I)
+            SCRA(IORBI+I) = FD(IJOFF+I)
             IF (I .GT. NFRHFI) THEN
-               DO 400 J = NFRHFI+1,I-1
-                  VALCON = MAX(VALCON,ABS(SCRA(IJOFF+J)))
-400            CONTINUE
-               IF (ISW(IORBI+I) .LE. NOCCT) THEN
-                  EHOMOI = MAX(EHOMOI,SCRA(KORBEN-1+IORBI+I))
+C           ... not frozen
+               IW = ISW(IORBI+I)
+               IF (IW.LE.NISHT) THEN 
+C              ... closed shell (inactive) orbital
+                  EHOMOI = MAX(EHOMOI,SCRA(IORBI+I))
+                  DO J = NFRHFI+1,I-1
+                     VALCON = MAX(VALCON,ABS(FD(IJOFF+J)))
+                  END DO
+               ELSE IF (IW.LE.NOCCT) THEN
+C              ... open shell (active) orbital
+                  EHOMOI = MAX(EHOMOI,SCRA(IORBI+I))
+C                 No 'canonical' test for the open shell active orbitals
+C                 because the Fock matrix is not zero for these
                ELSE
-                  ELUMOI = MIN(ELUMOI,SCRA(KORBEN-1+IORBI+I))
+C              ... virtual (secondary) orbital
+                  ELUMOI = MIN(ELUMOI,SCRA(IORBI+I))
+                  DO J = NFRHFI+1,NISHT
+                     VALCON = MAX(VALCON,ABS(FD(IJOFF+J)))
+                  END DO
+C                 ... skipping the open shell active orbitals
+C                     because the Fock matrix is not zero for these
+                  DO J = NOCCT+1,I-1
+                     VALCON = MAX(VALCON,ABS(FD(IJOFF+J)))
+                  END DO
                END IF
             END IF
-300      CONTINUE
+  300    CONTINUE
          IF (EHOMOI .GT. EHOMO) THEN
             EHOMO = EHOMOI
             IHOMO = ISYM
@@ -1217,12 +1228,12 @@ C
      &      ' Note: the first',NFRHFI,' orbitals are frozen'
          IF (SUPSYM) THEN
             WRITE (LUPRI,1751)
-     &         (SCRA(KORBEN-1+IORBI+I),ISSMO(IORBI+I),I=1,NLAST)
+     &         (SCRA(IORBI+I),ISSMO(IORBI+I),I=1,NLAST)
          ELSE
-            WRITE (LUPRI,1750) (SCRA(KORBEN-1+IORBI+I),I=1,NLAST)
+            WRITE (LUPRI,1750) (SCRA(IORBI+I),I=1,NLAST)
          END IF
-200   CONTINUE
-      IF (MOLDEN) CALL MOMOS(2,SCRA(KORBEN),DUMMY)
+  200 CONTINUE
+      IF (MOLDEN) CALL MOMOS(2,SCRA,DUMMY)
       WRITE (LUPRI,'(2(/A,F15.8,A,I2,A)/A/A,F15.8,A)')
      &   '    E(LUMO) :',ELUMO,' au (symmetry',ILUMO,')',
      &   '  - E(HOMO) :',EHOMO,' au (symmetry',IHOMO,')',
@@ -1238,7 +1249,7 @@ C
      *   ' Largest off-diagonal Fock matrix element is',VALCON
          IF (IPRINT .GT. 10) THEN
             WRITE(LUPRI,'(/A)') ' THE TOTAL FOCK MATRIX :'
-            CALL OUTPKB(SCRA(1),NORB,NSYM,1,LUPRI)
+            CALL OUTPKB(FD,NORB,NSYM,1,LUPRI)
          END IF
       ELSE IF (IPRINT .GT. 10) THEN
          WRITE(LUPRI,'(/A/A,1P,D10.2)')

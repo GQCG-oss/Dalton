@@ -875,7 +875,8 @@ C Step 1: Schmidt orthogonalize atomic orbitals
 C         (code: flag(32) false)
 C
 C         CMO contains initial matrix
-C         (either unit matrix or one where 3s in d etc. are deleted).
+C         - either unit matrix or one where some orbitals are deleted
+C           (because of e.g. num. lin. dep. or removal of 3s in d).
 C
       LSAVE1    = P4FLAG(12)
       LSAVE2    = P6FLAG(6)
