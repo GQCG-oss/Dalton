@@ -1101,10 +1101,10 @@ C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
      &                                                             '=')
                            IF (IPOS4 .EQ. 0 .OR. (IPOS4 .GT. 11)) THEN
                               WRITE (LUPRI,*) 'Incorrect input for '//
-     &                             'auxilliary basis set name'
+     &                             'auxiliary basis set name'
                               WRITE (LUPRI,*) 'Format is "Aux=?"'
                               CALL QUIT('Incorrect input for '//
-     &                             'auxilliary basis set name')
+     &                             'auxiliary basis set name')
                            ELSE
                              AUXNAM = MLINE(NMLINE-NONT(I))
      &                                                ((IPOS3+IPOS4):)
@@ -1112,10 +1112,10 @@ C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
      &                                                       :IPOS3-1)
                            ENDIF
                          ELSE
-                           WRITE (LUPRI,'(A,I4)') 'No auxilliary ' //
+                           WRITE (LUPRI,'(A,I4)') 'No auxiliary ' //
      &                          'basis set given for atom kind # ', I
                            CALL QUIT('Incorrect input for '//
-     &                          'auxilliary basis set name')
+     &                          'auxiliary basis set name')
                          ENDIF
                        ELSE
                          BASNAM = MLINE(NMLINE-NONT(I))((IPOS+IPOS2):)
@@ -1159,7 +1159,7 @@ C                Basis-set name for identifier MBSI (WK/UniKA/04-11-2002).
      &                 ' from the basis set library will be used.'
                     ELSE IF (ATOMDF) THEN
                        WRITE (LUPRI,'(/A,I3,A/5X,A/A)')
-     &                 ' For atomic type no.',I,' the auxilliary ' //
+     &                 ' For atomic type no.',I,' the auxiliary ' //
      &                 'basis set',AUXNAM,
      &                 ' from the basis set library will be used.'
                     ELSE
@@ -1217,7 +1217,7 @@ C
      &                  ALPHA(1,IBLOCK(J),J),
      &                  CPRIM(1,1,IBLOCK(J),J),
      &                  CPRIMU(1,1,IBLOCK(J),J),
-     &                  NBLOCK,KAOVEC,KPRIM,Q,QEFF,J,DSM)
+     &                  NBLOCK,KAOVEC,KPRIM,Q,QEFF,DSM)
 C
                  IF (ATOMDF .AND. (J .EQ. 3)) THEN
                     BASNAM     = BASNAMSAVE
@@ -1634,7 +1634,7 @@ C
          NPSML   = IPRIMD - NPLRG
       END IF
 C*****************************************************************************
-C       Process orbital data for auxilliary basis (density fitting)
+C       Process orbital data for auxiliary basis (density fitting)
 C*****************************************************************************
       IF (ATOMDF) THEN
          LCOMP = 3
@@ -2506,7 +2506,7 @@ C
                      KKK = KKK + 1
                      ISHELL = ISHELL + 1
                      !set the pointer to the first shell for density-fitting
-                     !auxilliary basis
+                     !auxiliary basis
                      IF ( (LCOMP.EQ.3) .AND. (IFSTSHAUX.EQ.0) ) THEN
                         IFSTSHAUX = ISHELL
                      END IF
