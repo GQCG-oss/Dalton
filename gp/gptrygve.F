@@ -29,12 +29,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: gptrygve.F,v 1.2 2001-02-13 18:35:03 vebjornb Exp $
+C$Id: gptrygve.F,v 1.3 2001-03-26 09:37:06 ruud Exp $
 C
 #include <single.h>
 C
 #ifdef REV_LOG
 $Log: not supported by cvs2svn $
+Revision 1.2  2001/02/13 18:35:03  vebjornb
+Lots of minor bug-fixes + CC documentation
+
 Revision 1.1.1.1  2001/02/08 13:33:12  hjj
 *** Dalton Master Version *** cvs started 8-Feb-2001.
 
@@ -1275,7 +1278,7 @@ C
       ABADFK = 'ABACUS.DFK'
       ABASF  = 'ABACUS.SF'
       ABATLM = 'ABACUS.TLM'
-      ABAWLK = 'ABACUS.WLK'
+      ABAWLK = 'DALTON.WLK'
       ABANR1 = 'ABAENR.RST'
       ABANR3 = 'ABAENR.BVC'
       ABANR5 = 'ABAENR.SVC'

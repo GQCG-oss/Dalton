@@ -29,11 +29,16 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abawalk.F,v 1.4 2001-03-13 08:43:30 vebjornb Exp $
+C$Id: abawalk.F,v 1.5 2001-03-26 09:37:04 ruud Exp $
 C
 #include <single.h>
 #ifdef REVLOG
 $Log: not supported by cvs2svn $
+Revision 1.4  2001/03/13 08:43:30  vebjornb
+- Reshuffled include statements and a couple of common blocks to
+  more in line with ANSI Fortran (only ABACUS files)
+- Updated one of the test jobs
+
 Revision 1.3  2001/02/23 15:34:23  ruud
 Added temperature dependence and centrifugal distortions to the calculation of
 effective geometries and (indirectly) vibrational property averages, K.Ruud
@@ -57,12 +62,12 @@ C  /* Deck wlkinp */
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-      PARAMETER ( NTABLE = 40, NWKTYP = 7, NSCTYP = 3,
+      PARAMETER ( NTABLE = 41, NWKTYP = 7, NSCTYP = 3,
      *            D0 = 0.0D0, D1 = 1.0D0 )
       PARAMETER ( TRSTI = 1.2D0, TRSTD = 0.7D0, TRSTDR = 0.5D0 )
 C
       LOGICAL NEWDEF, SETRAD
-      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7, WRDTMP*4
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION IDOREP(0:7), IWKVEC(NWKTYP), ISCVEC(NSCTYP)
 #include <abainf.h>
 #include <nuclei.h>
@@ -78,7 +83,8 @@ C
      &            '.NOGRAD', '.MOMENT', '.NUMERI', '.HARMON',
      &            '.FRAGME', '.IMAGE ', '.ISOTOP', '.IRC   ',
      &            '.MAXTRU', '.NOORTH', '.NATCON', '.VIBAVE',
-     &            '.NORMAL', '.ECKART', '.TEMPER', '.NO CEN'/
+     &            '.NORMAL', '.ECKART', '.TEMPER', '.NO CEN',
+     &            '.REUSE '/
       DATA WLKTYP /'Level-shifted Newton walk (mode following)',
      *             'Gradient-extremal walk                    ',
      *             'Dynamic walk                              ',
@@ -115,7 +121,8 @@ C
                      GO TO ( 1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                      11,12,13,14,15,16,17,18,19,20,
      &                      21,22,23,24,25,26,27,28,29,30,
-     &                      31,32,33,34,35,36,37,38,39,40), I
+     &                      31,32,33,34,35,36,37,38,39,40,
+     &                      41), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -280,6 +287,9 @@ C
  40            CONTINUE
                   DOCENT = .FALSE.
                   GO TO 100
+ 41            CONTINUE
+                  REUSED = .TRUE.
+                  GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -379,6 +389,15 @@ C
      &           //' the following Eckart frame'
             CALL PRIGEO(ECKGEO)
          END IF
+         IF (DOTEMP) THEN
+            WRITE (LUPRI,'(/A)') ' Vibrational corrections will be '//
+     &           'calculated for the temperatures (in K):'
+            DO ITMP = 1, NTEMP
+               WRITE (LUPRI,'(3X,F8.2)') TEMP(ITMP)
+            END DO
+         END IF
+         IF (REUSED) WRITE(LUPRI,'(A)') ' Property derivatives from '//
+     &        'a previous geometry will be used'
       END IF
       IF (IMAGE) THEN
          WRITE (LUPRI,'(A)') ' Minimization of image surface '
@@ -583,6 +602,7 @@ C
       ECKART = .FALSE.
       DOTEMP = .FALSE.
       DOCENT = .TRUE.
+      REUSED = .FALSE.
       CALL DZERO(ECKGEO,MXCOOR)
       NSTMOM = 0
       IWKIND = 0
@@ -863,7 +883,8 @@ C     ***********************************************
 C     ***** Read information from previous step *****
 C     ***********************************************
 C
-      OLDREA = OLD .AND. (IWKTYP.LT.4 .OR. IWKTYP.GE.6)
+      OLDREA = (OLD .AND. (IWKTYP.LT.4 .OR. IWKTYP.GE.6))
+      IF (VIBAVE .AND. REUSED) OLDREA = .TRUE.
       IF (OLDREA) THEN
          CALL WLKREA(EVALX,EVECX,PMCARX,GRAD0,HESS0,DIPM0,DIPG0,COOR0,
      &               GRADF,HESSF,DIPGF,ERGMLX,GRDNRX,ERGSCX,TRUSTX,
@@ -877,9 +898,15 @@ C
      &               SSJF,NUMMOD,IPRWLK)
          IMODE  = IMODEX
          TRUSTR = TRUSTX
-         IF (VIBAVE .OR. NMODIF) THEN
+         IF ((VIBAVE .AND. OLD) .OR. NMODIF) THEN
             CALL DCOPY(NCART*NCART,EVECX,1,EVEC,1)
             CALL DCOPY(NCART,EVALX,1,EVAL,1)
+         ELSE IF (VIBAVE) THEN
+C
+C     Need to reset a couple of variables read in from WLKREA
+C
+            IPOINT = 0
+            ESTART = ERGMOL
          END IF
       ELSE
          TRUSTX = TRUSTR
@@ -3819,7 +3846,6 @@ C
      &               WORK(KGEOM2),IPRINT,WORK(KLAST),LWRK)
       END IF
       IF (IPOINT .EQ. 0) THEN
-         FINAL = .FALSE.
          CALL DCOPY (NCART,GRDCAR,1,GRAD0,1)
          CALL DCOPY (NCART*NCART,HESCAR,1,HESS0,1)
          CALL DZERO(HESSF,NCART*NCART)
@@ -3846,6 +3872,7 @@ C
          I = (IPOINT+1)/2
          IF (MOD(IPOINT,2) .EQ. 1) THEN
             HESSF(I,1) = (ERGMOL - ESTART)/DISPLC**2
+            IF (.NOT. REUSED) THEN
             DO ICOOR = 1, 3
                DIPMF(ICOOR,I) = (DIP0(ICOOR)-DIPM0(ICOOR))/DISPLC**2
             END DO
@@ -3947,9 +3974,11 @@ C
                END DO
                END DO
             END IF
+            END IF
          ELSE
             HESSF(I,1) = HESSF(I,1)
      &                     + (ERGMOL - ESTART)/DISPLC**2
+            IF (.NOT. REUSED) THEN
             DO ICOOR = 1, 3
                DIPMF(ICOOR,I) = DIPMF(ICOOR,I)
      &                        + (DIP0(ICOOR)-DIPM0(ICOOR))/DISPLC**2
@@ -4063,6 +4092,7 @@ C
                END DO
                END DO
             END IF
+            END IF
          END IF
       END IF
 C
@@ -4169,7 +4199,7 @@ C
      *         ' Coordinate displaced in this calculation:    ',
      *         NAMEX(IPTCOR(ICUR,1)),
      *         ' Displacement:', CHRSGN(2*MOD(IPOINT,2)-1), DISPLC
-         IF (IPRINT .GE. 4) THEN
+         IF (IPRINT .GE. 4 .AND. .NOT. REUSED) THEN
             CALL HEADER('Dipole moment at displaced '//
      &                  'geometry',1)
             CALL OUTPUT(DIP0,1,1,1,3,1,3,1,LUPRI)
@@ -4265,6 +4295,15 @@ C
             WRITE (LUPRI,'(/A)')
      *       ' All displacements are now done'//
      *       ' - numerical differentiation is complete.'
+            IF (REUSED) THEN
+               WRITE (LUPRI,'(A)') ' New harmonic force '//
+     &              'field, but derivatives read in from file'
+C
+C     We can either check what the user want (by reading input file), 
+C     since the user need to calculate properties in new effective geometry
+C
+               CALL ABAINP('**START',WORK,LWORK)
+            END IF
             WRITE (LUPRI,'(/A,/A)') 
      &           ' Dipole moment second derivatives:',
      &           ' ---------------------------------'
@@ -7366,7 +7405,7 @@ C  /* Deck ircpot */
       DIMENSION COOR(MXCOOR), CGRAD(MXCOOR), CHESS(MXCOOR,MXCOOR),
      &          DMASS(MXCENT)
       LUTRJ = 0
-      CALL GPOPEN(LUTRJ,'ABACUS.IRC','OLD','SEQUENTIAL','UNFORMATTED',
+      CALL GPOPEN(LUTRJ,'DALTON.IRC','OLD','SEQUENTIAL','UNFORMATTED',
      &            IDUMMY,.FALSE.)
       NPOINT = 2
       REWIND LUTRJ

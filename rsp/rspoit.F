@@ -145,6 +145,7 @@ C    IDAXO .eq. 0 refers to untransformed integrals.
 C If IDAXN .gt. 0 then open new unit.
 C
 #include <implicit.h>
+#include <iratdef.h>
 C
 C Used from common blocks:
 C   CBDAX  : *
@@ -192,7 +193,7 @@ C
          END IF
          IF (IOPEN(IDAXO) .EQ. 0) THEN
             CALL GPOPEN(LUDAX(IDAXO),' ','OLD','DIRECT','UNFORMATTED',
-     &                  LRDAX,OLDDX)
+     &                  IRAT*LRDAX,OLDDX)
             IOPEN(IDAXO) = 1
          END IF
       ELSE IF (IDAXO .EQ. 0) THEN
@@ -202,8 +203,8 @@ C
       END IF
 C
       IF (IDAXN1 .GT. 0) THEN
-         LUDAXN = 0
-         CALL GPOPEN(LUDAXN,' ','NEW','DIRECT','UNFORMATTED',LRDAX,
+         LUDAXN = -9999
+         CALL GPOPEN(LUDAXN,' ','NEW','DIRECT','UNFORMATTED',IRAT*LRDAX,
      &               OLDDX)
          LUDAX(IDAXN) = LUDAXN
          IOPEN(IDAXN) = 1

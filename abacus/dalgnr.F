@@ -790,7 +790,15 @@ C     We may have more DOSYM under **START than under **PROPE
             DO I = 0, 7
                DOREPW(I) = DOSYM(I + 1) .AND. DOREPW(I)
             END DO
-            CALL EXEABA(WORK,LMWORK,IWOFF,WRKDLM)
+            IF (REUSED .AND. ITERNR .GT. 0) THEN
+               REWIND (LUSIFC)
+               CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
+               READ (LUSIFC) POTNUC,EMY,EACTIV,ERGMOL
+               CALL WLKDRV(DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
+     &                     WORK(IWOFF + 2),LMWORK)
+            ELSE
+               CALL EXEABA(WORK,LMWORK,IWOFF,WRKDLM)
+            END IF
             IF (.NOT. USRIPR .AND. ((IWKTYP .EQ. 3) 
      &           .OR. (IWKTYP .EQ. 6))) THEN
                IF (MOD(ITERNR+2,10) .EQ. 0) THEN

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abadrv.F,v 1.2 2001-03-13 08:43:25 vebjornb Exp $
+C$Id: abadrv.F,v 1.3 2001-03-26 09:37:03 ruud Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -232,19 +232,6 @@ C
       CALL GETTIM(TIMRES,TIMDUM)
       TIMRES = TIMRES - TIMSTR
 C
-C     ***************************
-C     ***** Linear response *****
-C     ***************************
-C
-      CALL GETTIM(TIMSTR,TIMDUM)
-      IF ((DOLRES .OR. VCD .OR. SPNSPN .OR. MAGSUS .OR. SHIELD .OR.
-     &    SPINRO .OR. MOLGFA) .AND. .NOT. PASLRS) THEN
-         CALL LRSDRV(WORK(KLAST),LWRK,PASLRS)
-         CALL FLSHFO(LUPRI)
-      END IF
-      CALL GETTIM(TIMLRS,TIMDUM)
-      TIMLRS = TIMLRS - TIMSTR
-C
 C     *****************************************************************
 C     ***** Construct triplet operator right-hand sides and solve *****
 C     *****                response equations                     *****
@@ -257,6 +244,19 @@ C
       END IF
       CALL GETTIM(TIMTRP,TIMDUM)
       TIMTRP = TIMTRP - TIMSTR
+C
+C     ***************************
+C     ***** Linear response *****
+C     ***************************
+C
+      CALL GETTIM(TIMSTR,TIMDUM)
+      IF ((DOLRES .OR. VCD .OR. SPNSPN .OR. MAGSUS .OR. SHIELD .OR.
+     &    SPINRO .OR. MOLGFA) .AND. .NOT. PASLRS) THEN
+         CALL LRSDRV(WORK(KLAST),LWRK,PASLRS)
+         CALL FLSHFO(LUPRI)
+      END IF
+      CALL GETTIM(TIMLRS,TIMDUM)
+      TIMLRS = TIMLRS - TIMSTR
 C
 C     **************************************
 C     ***** Relaxation terms (singlet) *****

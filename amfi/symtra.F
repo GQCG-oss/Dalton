@@ -25,7 +25,7 @@ CBS   namelist /SYMTRA/ none
      *Lhighcent(maxcent),Lcent(maxorbs,maxcent),Mcent(maxorbs,maxcent), 
      *ncontcent(0:Lmax,maxcent),ipC(3,Maxcent),
      *numballcart(maxcent),ifirstLM(0:Lmax,-Lmax:Lmax,maxcent)  ,
-     *ncount(maxcent)
+     *ncount(maxorbs)
       Character Label*8
 c###############################################################################
       IPNT(I,J)=(max(i,j)*max(i,j)-max(i,j))/2 +min(i,j) 

@@ -29,12 +29,16 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: siropt.F,v 1.5 2001-03-22 14:42:54 hjj Exp $
+C$Id: siropt.F,v 1.6 2001-03-26 09:37:07 ruud Exp $
 C
 #include <single.h>
 C
 #ifdef REV_LOG
 $Log: not supported by cvs2svn $
+Revision 1.5  2001/03/22 14:42:54  hjj
+Stop after gradient if max macro iter reached
+(waste of time to calculate step and then exit!)
+
 Revision 1.4  2001/03/20 07:47:49  vebjornb
 Changed all references to the old f21-file to "SIRIUS.RST"
 
@@ -2350,6 +2354,7 @@ C *** Now create LUSIFC and write ...
 C
       IF (LUSIFC .LE. 0) CALL GPOPEN(LUSIFC,FNSIFC,
      &            'UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
+      REWIND (LUSIFC)
 C     If (INERSI but not the interface flag flag(25)) go to solvent part
       IF (INERSI .AND. .NOT. FLAG(25)) THEN
          IF (IPRI6 .GE. 1) WRITE (LUPRI,'(/A)')

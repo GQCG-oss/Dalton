@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: gphjj.F,v 1.4 2001-03-18 21:53:35 vebjornb Exp $
+C$Id: gphjj.F,v 1.5 2001-03-26 09:37:05 ruud Exp $
 C
 #include <single.h>
 C  /* Deck flshfo */
@@ -1118,7 +1118,11 @@ C
 C (30-Jan-1984) hjaaj
 C
       DIMENSION INTX(N)
-      IF (N .GT. 0) READ (IT,END = 10) INTX
+      IF (N .GT. 0) THEN
+         READ (IT,END = 10) INTX
+      ELSE
+         READ (IT,END = 10)
+      END IF
       RETURN
    10 CONTINUE
       INTX(N)=-1

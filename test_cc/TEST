@@ -135,7 +135,7 @@ do
   myprint "start now with test $item:"
   myprint "--------------------------"
   chmod +x $item
-  $item
+  ./$item
   rm -f $item.log
   chmod +x $item.check
 
@@ -143,7 +143,7 @@ do
       myprint ""
       myprint "evaluate reference output file $item.ref:"
       myprint "-----------------------------------------"
-      checkout=`$item.check $item.ref | tee -a $listing`
+      checkout=`./$item.check $item.ref | tee -a $listing`
   else
     $DALTON $paramlist -ext log $item $item | \
       grep -v '\*\*\**' | \
@@ -152,7 +152,7 @@ do
       myprint ""
       myprint "evaluate output file $item.log:"
       myprint "-------------------------------"
-      checkout=`$item.check $item.log | tee -a $listing`
+      checkout=`./$item.check $item.log | tee -a $listing`
   fi
   echo $checkout
   passed=`echo $checkout | grep "TEST ENDED PROPERLY"`

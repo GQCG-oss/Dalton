@@ -207,11 +207,13 @@ if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
    fi
    if [ $optA -eq 1 ]; then
       for ext in $AUXEXT ; do
-         if [ -s DALTON.$ext ]; then
-            if [ "$1" = "$2" ]; then
-               cp $WRKDIR/DALTON.$ext $1.$ext
-	    else
-               cp $WRKDIR/DALTON.$ext $1_$2.$ext
+         if [ "$1" = "$2" ]; then
+            if [ -s $WRKDIR/$1.$ext ]; then
+               cp $WRKDIR/$1.$ext DALTON.$ext
+            fi
+	 else
+            if [ -s $WRKDIR/$1_$2.$ext ]; then
+               cp $WRKDIR/$1_$2.$ext DALTON.$ext
 	    fi
          fi
       done

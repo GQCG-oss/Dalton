@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: her1pro.F,v 1.3 2001-02-26 15:34:47 ruud Exp $
+C$Id: her1pro.F,v 1.4 2001-03-26 09:37:05 ruud Exp $
 C
 #include <single.h>
 C  /* Deck pr1int */
@@ -2545,17 +2545,21 @@ C  /* Deck hdotyp */
      &                                    //CHRNOS(MOD(ISCOOR,10))//'  '
                      ELSE
                         IF (INTTYP .EQ. 14) THEN
-                           LABINT(ITYP) = 'SQHDO '//CHRNOS(ISCOOR/10)
-     &                                        //CHRNOS(MOD(ISCOOR,10))
+                           LABINT(ITYP) = 'SQHDO'//CHRNOS(ISCOOR/100)
+     &                              //CHRNOS(MOD(ISCOOR,100)/10)
+     &                              //CHRNOS(MOD((MOD(ISCOOR,100)),10))
                         ELSE IF (INTTYP .EQ. 59) THEN
-                           LABINT(ITYP) = '1DOVL '//CHRNOS(ISCOOR/10)
-     &                                        //CHRNOS(MOD(ISCOOR,10))
+                           LABINT(ITYP) = '1DOVL'//CHRNOS(ISCOOR/100)
+     &                              //CHRNOS(MOD(ISCOOR,100)/10)
+     &                              //CHRNOS(MOD((MOD(ISCOOR,100)),10))
                         ELSE IF (INTTYP .EQ. 70) THEN
-                           LABINT(ITYP) = '1DHAM '//CHRNOS(ISCOOR/10)
-     &                                        //CHRNOS(MOD(ISCOOR,10))   
+                           LABINT(ITYP) = '1DHAM'//CHRNOS(ISCOOR/10)
+     &                              //CHRNOS(MOD(ISCOOR,100)/10)   
+     &                              //CHRNOS(MOD((MOD(ISCOOR,100)),10))
                         ELSE
-                           LABINT(ITYP) = 'SQHDOR'//CHRNOS(ISCOOR/10)
-     &                                        //CHRNOS(MOD(ISCOOR,10))
+                           LABINT(ITYP) = 'SQHDR'//CHRNOS(ISCOOR/100)
+     &                              //CHRNOS(MOD(ISCOOR,100)/10)
+     &                              //CHRNOS(MOD((MOD(ISCOOR,100)),10))
                         END IF
                      END IF
                      INTREP(ITYP) = IREP

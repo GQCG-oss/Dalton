@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abavib.F,v 1.3 2001-03-13 08:43:29 vebjornb Exp $
+C$Id: abavib.F,v 1.4 2001-03-26 09:37:03 ruud Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -2823,6 +2823,7 @@ C  /* Deck vibv3 */
      &                 POS,AMASS,WORK,LWORK,NCORD,NUMMOD)
 #include <implicit.h>
 #include <dummy.h>
+#include <thrzer.h>
 #include <priunit.h>
 #include <mxcent.h>
 #include <mxorb.h>
@@ -2918,7 +2919,7 @@ C
 C     In case centrifugal distortions are to be included, calculate 
 C     contributions to the effective geometry here
 C     
-            WRITE (LUPRI,'(////A,1X,A,F12.6,A,/A)') 
+            WRITE (LUPRI,'(////A,/1X,A,F12.6,A,/A)') 
      &           '----------------------------'//
      &           '------------------------------',
      &           'Vibrational corrections for temperature T = ',
@@ -2953,8 +2954,12 @@ C
                PFACI = D1/PFAC
                TMP = D0
                DO MMOD = 1, NUMMOD
-                  TFAC  = FREQAU(MMOD)*AUTK/(D2*TEMP(ITMP))
-                  TFAC2 = D1/DTANH(TFAC)
+                  IF (TEMP(ITMP) .LT. THRZER) THEN
+                     TFAC2 = D1
+                  ELSE
+                     TFAC  = FREQAU(MMOD)*AUTK/(D2*TEMP(ITMP))
+                     TFAC2 = D1/DTANH(TFAC)
+                  END IF
                   TMP = TMP + (FMATT(MMOD,MMOD,IMOD)/FREQAU(MMOD))*TFAC2
                END DO
                CORR(IMOD) = - TMP*PFACI
@@ -3688,12 +3693,13 @@ C
 #include <implicit.h>
 #include <codata.h>
 #include <pi.h>
+#include <thrzer.h>
 #include <priunit.h>
 #include <mxcent.h>
 #include <mxorb.h>
 #include <maxaqn.h>
       PARAMETER (D1 = 1.0D0, D4 = 4.0D0, PMASS = 1.007275D0,
-     &           THRESH = 1.0D-5, D0 = 0.0D0)
+     &           THRESH = 1.0D-5, D0 = 0.0D0, D2 = 2.0D0)
       PARAMETER (FAC = ALPHA2/(PMASS*XFAMU*XFAMU)*6.5796838999D12)
       PARAMETER (FACTOR = (288.0D-30)*(PI**2)*XFMOL*(XTANG**4),
      &           D3 = 3.0D0)
@@ -3717,6 +3723,7 @@ C
      &          CSTRA(*), SCTRA(*)
 C
 #include <symmet.h>
+#include <cbiwlk.h>
 #include <abainf.h>
 #include <orgcom.h>
 #include <ibtfun.h>
@@ -3733,9 +3740,34 @@ C
       IF (INEG .GT. 0) THEN
          NUMMOD = NUMMOD - INEG
          WRITE (LUPRI,'(/A,I3,A,/A)') ' WARNING: There are ',INEG,
-     &        ' negative frequencies as effective geometry',
+     &        ' negative frequencies at effective geometry',
      &        ' These are ignored in the following analysis'
       END IF
+C
+C     Print output header
+C
+      CALL TITLER('Vibrationally averaged molecular properties','*',108)
+C
+      IF (.NOT. DOTEMP) THEN
+         NTEMP = 1
+         TEMP(NTEMP) = 0.0D0
+      END IF
+      CALL HEADER('Vibrational Frequencies',1)
+      WRITE (LUPRI,'(2X,A,/,2X,A)')
+     &     ' mode   cm-1     hartrees ',
+     &     '--------------------------'
+      DO IMODE = 1, NUMMOD
+         WRITE (LUPRI,'(2X,I2,F10.2,3X,F10.6)') 
+     &        IMODE,XTKAYS*EVAL(IMODE)*SQRT(XFAMU),
+     &        EVAL(IMODE)*SQRT(XFAMU)
+      END DO
+      DO ITMP = 1, NTEMP
+            WRITE (LUPRI,'(////A,/1X,A,F12.6,A,/A)') 
+     &           '----------------------------'//
+     &           '------------------------------',
+     &           'Vibrational corrections for temperature T = ',
+     &           TEMP(ITMP),' K','----------------------------'//
+     &           '------------------------------'
 C
 C     Dipole moment
 C
@@ -3743,9 +3775,15 @@ C
       DIPAVY = D0
       DIPAVZ = D0
       DO IMOD = 1, NUMMOD
-         DIPAVX = DIPAVX + DIPMF(1,IMOD)/SQRT(EVAL(IMOD))
-         DIPAVY = DIPAVY + DIPMF(2,IMOD)/SQRT(EVAL(IMOD))
-         DIPAVZ = DIPAVZ + DIPMF(3,IMOD)/SQRT(EVAL(IMOD))
+         IF (TEMP(ITMP) .LT. THRZER) THEN
+            TFAC2 = D1/SQRT(EVAL(IMOD))
+         ELSE
+            TFAC  = SQRT(EVAL(IMOD))*AUTK/(D2*TEMP(ITMP))
+            TFAC2 = D1/(DTANH(TFAC)*SQRT(EVAL(IMOD)))
+         END IF
+         DIPAVX = DIPAVX + DIPMF(1,IMOD)*TFAC2
+         DIPAVY = DIPAVY + DIPMF(2,IMOD)*TFAC2
+         DIPAVZ = DIPAVZ + DIPMF(3,IMOD)*TFAC2
       END DO
       DIPAVX = DIPAVX*PREFAC
       DIPAVY = DIPAVY*PREFAC
@@ -3756,10 +3794,16 @@ C
       IF (MAGSUS) THEN
          CALL DZERO(SUSAV,9)
          DO IMOD = 1, NUMMOD
+            IF (TEMP(ITMP) .LT. THRZER) THEN
+               TFAC2 = D1/SQRT(EVAL(IMOD))
+            ELSE
+               TFAC  = SQRT(EVAL(IMOD))*AUTK/(D2*TEMP(ITMP))
+               TFAC2 = D1/(DTANH(TFAC)*SQRT(EVAL(IMOD)))
+            END IF
             DO ICOOR = 1, 3
                DO JCOOR = 1, 3
                   SUSAV(ICOOR,JCOOR) = SUSAV(ICOOR,JCOOR) 
-     &                 + SUSTF(ICOOR,JCOOR,IMOD)/SQRT(EVAL(IMOD))
+     &                 + SUSTF(ICOOR,JCOOR,IMOD)*TFAC2
                END DO
             END DO
          END DO
@@ -3771,10 +3815,16 @@ C
       IF (MOLGFA) THEN
          CALL DZERO(GFACAV,9)
          DO IMOD = 1, NUMMOD
+            IF (TEMP(ITMP) .LT. THRZER) THEN
+               TFAC2 = D1/SQRT(EVAL(IMOD))
+            ELSE
+               TFAC  = SQRT(EVAL(IMOD))*AUTK/(D2*TEMP(ITMP))
+               TFAC2 = D1/(DTANH(TFAC)*SQRT(EVAL(IMOD)))
+            END IF
             DO ICOOR = 1, 3
                DO JCOOR = 1, 3
                   GFACAV(ICOOR,JCOOR) = GFACAV(ICOOR,JCOOR) 
-     &                 + GFACF(ICOOR,JCOOR,IMOD)/SQRT(EVAL(IMOD))
+     &                 + GFACF(ICOOR,JCOOR,IMOD)*TFAC2
                END DO
             END DO
          END DO
@@ -3786,10 +3836,16 @@ C
       IF (QUADRU) THEN
          CALL DZERO(QUADAV,9)
          DO IMOD = 1, NUMMOD
+            IF (TEMP(ITMP) .LT. THRZER) THEN
+               TFAC2 = D1/SQRT(EVAL(IMOD))
+            ELSE
+               TFAC  = SQRT(EVAL(IMOD))*AUTK/(D2*TEMP(ITMP))
+               TFAC2 = D1/(DTANH(TFAC)*SQRT(EVAL(IMOD)))
+            END IF
             DO ICOOR = 1, 3
                DO JCOOR = 1, 3
                   QUADAV(ICOOR,JCOOR) = QUADAV(ICOOR,JCOOR) 
-     &                 + QUADF(ICOOR,JCOOR,IMOD)/SQRT(EVAL(IMOD))
+     &                 + QUADF(ICOOR,JCOOR,IMOD)*TFAC2
                END DO
             END DO
          END DO
@@ -3801,11 +3857,17 @@ C
       IF (SHIELD) THEN
          CALL DZERO(SIGMAV,9*MXCENT)
          DO IMOD = 1, NUMMOD
+            IF (TEMP(ITMP) .LT. THRZER) THEN
+               TFAC2 = D1/SQRT(EVAL(IMOD))
+            ELSE
+               TFAC  = SQRT(EVAL(IMOD))*AUTK/(D2*TEMP(ITMP))
+               TFAC2 = D1/(DTANH(TFAC)*SQRT(EVAL(IMOD)))
+            END IF
             DO IATOM = 1, NUCDEP
                DO ICOOR = 1, 3
                   DO JCOOR = 1, 3
                      SIGMAV(ICOOR,JCOOR,IATOM)=SIGMAV(ICOOR,JCOOR,IATOM) 
-     &                 + SIGMAF(ICOOR,JCOOR,IATOM,IMOD)/SQRT(EVAL(IMOD))
+     &                 + SIGMAF(ICOOR,JCOOR,IATOM,IMOD)*TFAC2
                   END DO
                END DO
             END DO
@@ -3818,11 +3880,17 @@ C
       IF (SPINRO) THEN
          CALL DZERO(SRCAV,9*MXCENT)
          DO IMOD = 1, NUMMOD
+            IF (TEMP(ITMP) .LT. THRZER) THEN
+               TFAC2 = D1/SQRT(EVAL(IMOD))
+            ELSE
+               TFAC  = SQRT(EVAL(IMOD))*AUTK/(D2*TEMP(ITMP))
+               TFAC2 = D1/(DTANH(TFAC)*SQRT(EVAL(IMOD)))
+            END IF
             DO IATOM = 1, NUCDEP
                DO ICOOR = 1, 3
                   DO JCOOR = 1, 3
                      SRCAV(ICOOR,JCOOR,IATOM) = SRCAV(ICOOR,JCOOR,IATOM)
-     &                 + SRCF(ICOOR,JCOOR,IATOM,IMOD)/SQRT(EVAL(IMOD))
+     &                 + SRCF(ICOOR,JCOOR,IATOM,IMOD)*TFAC2
                   END DO
                END DO
             END DO
@@ -3835,10 +3903,16 @@ C
       IF (POLAR) THEN
          CALL DZERO(POLAV,9)
          DO IMOD = 1, NUMMOD
+            IF (TEMP(ITMP) .LT. THRZER) THEN
+               TFAC2 = D1/SQRT(EVAL(IMOD))
+            ELSE
+               TFAC  = SQRT(EVAL(IMOD))*AUTK/(D2*TEMP(ITMP))
+               TFAC2 = D1/(DTANH(TFAC)*SQRT(EVAL(IMOD)))
+            END IF
             DO ICOOR = 1, 3
                DO JCOOR = 1, 3
                   POLAV(ICOOR,JCOOR) = POLAV(ICOOR,JCOOR)
-     &                 + POLARF(ICOOR,JCOOR,IMOD)/SQRT(EVAL(IMOD))
+     &                 + POLARF(ICOOR,JCOOR,IMOD)*TFAC2
                END DO
             END DO
          END DO
@@ -3847,11 +3921,17 @@ C
       IF (ALFA) THEN
          CALL DZERO(ALFAV,9*MXFR)
          DO IMOD = 1, NUMMOD
+            IF (TEMP(ITMP) .LT. THRZER) THEN
+               TFAC2 = D1/SQRT(EVAL(IMOD))
+            ELSE
+               TFAC  = SQRT(EVAL(IMOD))*AUTK/(D2*TEMP(ITMP))
+               TFAC2 = D1/(DTANH(TFAC)*SQRT(EVAL(IMOD)))
+            END IF
             DO IFRQR = 1, NFRVAL
                DO ICOOR = 1, 3
                   DO JCOOR = 1, 3
                      ALFAV(ICOOR,JCOOR,IFRQR) = ALFAV(ICOOR,JCOOR,IFRQR)
-     &                  + ALFAF(ICOOR,JCOOR,IFRQR,IMOD)/SQRT(EVAL(IMOD))
+     &                  + ALFAF(ICOOR,JCOOR,IFRQR,IMOD)*TFAC2
                   END DO
                END DO
             END DO
@@ -3864,11 +3944,17 @@ C
       IF (NQCC) THEN
          CALL DZERO(EFGAV,9*MXCENT)
          DO IMOD = 1, NUMMOD
+            IF (TEMP(ITMP) .LT. THRZER) THEN
+               TFAC2 = D1/SQRT(EVAL(IMOD))
+            ELSE
+               TFAC  = SQRT(EVAL(IMOD))*AUTK/(D2*TEMP(ITMP))
+               TFAC2 = D1/(DTANH(TFAC)*SQRT(EVAL(IMOD)))
+            END IF
             DO IATOM = 1, NUCDEP
                DO ICOOR = 1, 3
                DO JCOOR = 1, 3
                   EFGAV(ICOOR,JCOOR,IATOM) = EFGAV(ICOOR,JCOOR,IATOM) +
-     &                 EFGF(ICOOR,JCOOR,IATOM,IMOD)/SQRT(EVAL(IMOD))
+     &                 EFGF(ICOOR,JCOOR,IATOM,IMOD)*TFAC2
                END DO
                END DO
             END DO
@@ -3881,10 +3967,16 @@ C
       IF (SPNSPN) THEN
          CALL DZERO(SSJAV,MXCOOR*MXCOOR)
          DO IMOD = 1, NUMMOD
+            IF (TEMP(ITMP) .LT. THRZER) THEN
+               TFAC2 = D1/SQRT(EVAL(IMOD))
+            ELSE
+               TFAC  = SQRT(EVAL(IMOD))*AUTK/(D2*TEMP(ITMP))
+               TFAC2 = D1/(DTANH(TFAC)*SQRT(EVAL(IMOD)))
+            END IF
             DO ICOOR = 1, 3*NUCDEP
                DO JCOOR = 1, 3*NUCDEP
                   SSJAV(ICOOR,JCOOR) = SSJAV(ICOOR,JCOOR) +
-     &                 SSJF(ICOOR,JCOOR,IMOD)/SQRT(EVAL(IMOD))
+     &                 SSJF(ICOOR,JCOOR,IMOD)*TFAC2
                END DO
             END DO
          END DO
@@ -3897,13 +3989,19 @@ C
          CALL DZERO(ROANLA,9*MXFR)
          CALL DZERO(ROALOA,9*MXFR)
          DO IMOD = 1, NUMMOD
+            IF (TEMP(ITMP) .LT. THRZER) THEN
+               TFAC2 = D1/SQRT(EVAL(IMOD))
+            ELSE
+               TFAC  = SQRT(EVAL(IMOD))*AUTK/(D2*TEMP(ITMP))
+               TFAC2 = D1/(DTANH(TFAC)*SQRT(EVAL(IMOD)))
+            END IF
             DO IFRQ = 1, NFRVAL
             DO ICOOR = 1, 3
                DO JCOOR = 1, 3
                   ROANLA(ICOOR,JCOOR,IFRQ) = ROANLA(ICOOR,JCOOR,IFRQ) +
-     &                 ROANLF(ICOOR,JCOOR,IFRQ,IMOD)/SQRT(EVAL(IMOD))
+     &                 ROANLF(ICOOR,JCOOR,IFRQ,IMOD)*TFAC2
                   ROALOA(ICOOR,JCOOR,IFRQ) = ROALOA(ICOOR,JCOOR,IFRQ) +
-     &                 ROALOF(ICOOR,JCOOR,IFRQ,IMOD)/SQRT(EVAL(IMOD))
+     &                 ROALOF(ICOOR,JCOOR,IFRQ,IMOD)*TFAC2
                END DO
             END DO
             END DO
@@ -3911,11 +4009,6 @@ C
          CALL DSCAL(9*MXFR,PREFAC,ROANLA,1)
          CALL DSCAL(9*MXFR,PREFAC,ROALOA,1)
       END IF
-
-C
-C     Print results
-C
-      CALL TITLER('Vibrationally averaged molecular properties','*',108)
 C
 C     Dipole moments
 C
@@ -4200,6 +4293,7 @@ C
      &           ALPHN0, ALPHNA, ALPHN0+ALPHNA
          END DO
       END IF
+      END DO
       RETURN
       END
 C /* Deck centrif */
