@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/ksh 
 #########################################################################
 #
 # Shell script for running DALTON test suite
@@ -17,7 +17,14 @@ mcd_lao_direct oddisp2 shield verdet_h2 verdet_hf verdet_hf_direct"
 MEDIUM="Vlao_h2o2 Vlaodirect_co Vlaodirect_h2o2 dpt dpt1 mcdlao_c2h4tw \
 mcdlao_ch2o mcdlao_h2o2 triplet_cc3"
 LONG="alpha2 mcdlaodir_c2h4tw mcdlaodir_ch2o mcdlaodir_h2o2 triplet2"
-ALL="$SHORT $MEDIUM $LONG"
+
+
+CC3="LIH1s1p_pol LIH1s1p_asym_pol CARBON_pol CARBON_asym_pol LIH1s1p_tmom \
+LIH1s1p_tmom_no2np1 HF_631G_pol HF_631G_asym_pol LIH_431G_tmom \
+LIH_431G_tmom_no2np1 HF_ccpVDZ_pol HF_ccpVDZ_asym_pol HF_ccpVDZ_tmom \
+HF_ccpVDZ_tmom_no2np1"
+
+ALL="$SHORT $MEDIUM $LONG $CC3"
 #
 #########################################################################
 # function usage(): print usage information 
@@ -45,8 +52,9 @@ usage: TEST [-h|-help|--help] [-keep] [-reftest] [-bell] [-benchmark]
           short                -- run all short testcases
           medium               -- run all medium length testcases
           long                 -- run all long testcases
+          cc3                  -- run all cc3 testcases
           all                  -- run all non-parallel testcases
-                                  (= short + medium + long)
+                                  (= short + medium + long + cc3)
           <case1 [case2] ...>  -- run only the specified testcase(s)
 %EOF%
 exit 1
@@ -114,6 +122,8 @@ elif [ "$testcase" = "medium" ]; then
   testcase=$MEDIUM
 elif [ "$testcase" = "long" ]; then
   testcase=$LONG
+elif [ "$testcase" = "cc3" ]; then
+  testcase=$CC3
 elif [ "$testcase" = "all" ]; then
   testcase=$ALL
 fi
