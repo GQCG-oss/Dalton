@@ -128,17 +128,17 @@ CTRL[5]=3
 ERROR[5]="SHIELDINGS O NOT CORRECT"
 
 # H1 shieldings
-CRIT1=`$GREP "H * 1x * 25\.0155....  * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
-CRIT2=`$GREP "H * 1y * (0| )\.00000000 * 39\.5312.... * 9\.0775...." $log | wc -l`
-CRIT3=`$GREP "H * 1z * (0| )\.00000000 * 6\.5836.... * 31\.4199...." $log | wc -l`
+CRIT1=`$GREP "H * 1 *x * 25\.0155....  * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
+CRIT2=`$GREP "H * 1 *y * (0| )\.00000000 * 39\.5312.... * 9\.0775...." $log | wc -l`
+CRIT3=`$GREP "H * 1 *z * (0| )\.00000000 * 6\.5836.... * 31\.4199...." $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[6]=3
 ERROR[6]="SHIELDINGS H1 NOT CORRECT"
 
 # H2 shieldings
-CRIT1=`$GREP "H * 2x * 25\.0155....  * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
-CRIT2=`$GREP "H * 2y * (0| )\.00000000 * 39\.5312.... * \-9\.0775...." $log | wc -l`
-CRIT3=`$GREP "H * 2z * (0| )\.00000000 * \-6\.5836.... * 31\.4199...." $log | wc -l`
+CRIT1=`$GREP "H * 2 *x * 25\.0155....  * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
+CRIT2=`$GREP "H * 2 *y * (0| )\.00000000 * 39\.5312.... * \-9\.0775...." $log | wc -l`
+CRIT3=`$GREP "H * 2 *z * (0| )\.00000000 * \-6\.5836.... * 31\.4199...." $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[7]=3
 ERROR[7]="SHIELDINGS H2 NOT CORRECT"

@@ -157,7 +157,7 @@ TEST[5]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[5]=2
 ERROR[5]="EXCITATION ENERGIES NOT CORRECT"
 
-# H-O shieldings
+# H and O shieldings
 CRIT1=`$GREP "Shielding constant\: * 347\.058. ppm" $log | wc -l`
 CRIT2=`$GREP "Anisotropy\: * \-27\.930. ppm" $log | wc -l`
 CRIT3=`$GREP "Asymmetry\: * (0| )\.746." $log | wc -l`
@@ -170,9 +170,9 @@ CRIT9=`$GREP "Asymmetry\: * (0| )\.133." $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9`
 CTRL[6]=15
-ERROR[6]="H-O SHIELDINGS NOT CORRECT"
+ERROR[6]="SHIELDINGS NOT CORRECT"
 
-# H-H shieldings
+# H-H spin-spin coupling
 CRIT1=`$GREP "Isotropic coupling * \: * \-2\.5081 Hz" $log | wc -l`
 CRIT2=`$GREP "Anisotropic coupling * \: * \-36\.6354 Hz" $log | wc -l`
 CRIT3=`$GREP "Asymmetry * \: * (\-0| \-)\.0891" $log | wc -l`
@@ -185,7 +185,7 @@ CRIT9=`$GREP "Isotropic FC contribution \: * \-3\.6808 Hz" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9`
 CTRL[7]=9
-ERROR[7]="H-H SHIELDINGS NOT CORRECT"
+ERROR[7]="H-H SPIN-SPIN COUPLING NOT CORRECT"
 
 PASSED=1
 for i in 1 2 3 4 5 6 7
