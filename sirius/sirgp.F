@@ -32,12 +32,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: sirgp.F,v 1.2 2001-05-31 06:38:35 vebjornb Exp $
+C$Id: sirgp.F,v 1.3 2001-06-08 11:46:52 hjj Exp $
 C
 #include <single.h>
 C
 #ifdef REVISION_LOG
 $Log: not supported by cvs2svn $
+Revision 1.2  2001/05/31 06:38:35  vebjornb
+Updated copyright, authors and reference in all Fortran-files - VB
+
 Revision 1.1.1.1  2001/02/08 13:33:31  hjj
 *** Dalton Master Version *** cvs started 8-Feb-2001.
 
@@ -1063,7 +1066,7 @@ C        Read one electron part, in symmetry blocked triangular form
             WRITE(LUPRI,'(/A,2(/A,I8))')
      *         ' ERROR RDONEL, LBONEL .ne. local LBUF for QUADRP  ',
      *         ' LBONEL =',LBONEL,' LBUF   =',LBUF
-            CALL QUIT('RDONEL ERROR, LBONEL .ne. LBUF for key DIPOLMOM')
+            CALL QUIT('RDONEL ERROR, LBONEL .ne. LBUF for key QUADRP')
          END IF
   601    READ (LUONEL) QBUF,IBUF,NUT
          IF (NUT.EQ.0)   GO TO 601
