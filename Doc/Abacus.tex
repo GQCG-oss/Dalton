@@ -1,22 +1,46 @@
-\chapter{Molecular properties, ABACUS}\label{ch:abacus}
+\chapter{HF, SOPPA, and MCSCF molecular properties, ABACUS}\label{ch:abacus}
 
-\section{Directives for evaluation of molecular properties}\label{sec:abainp}
+\section{Directives for evaluation of HF, SOPPA, and MCSCF molecular properties}
+\label{sec:abainp}
 
-          The following directives may be included in the input to
-\aba.  They are organized according to the program section (module) names
-in which they can appear.  
+  The following directives may be included in the input to \aba.
+They are organized according to the program section (module) names
+in which they can appear.
 
 \subsection{General: \Sec{*PROPERTIES}}\label{subsec:abacus}
 
-This module controls the main features of the property calculation, that is,
-which properties is to be calculated. In addition it includes
+This module controls the main features of the HF, SOPPA, and MCSCF property calculations,
+that is, which properties is to be calculated.
+In addition it includes
 directives affecting the performance of several of the program
-sections. It should be noted, however, that the specification of what
+sections.
+This includes HF and MCSCF molecular gradients and Hessians.
+It should be noted, however, that the specification of what
 kind of walk (minimization\index{geometry optimization}, location of
 transition states\index{transition state}, dynamical  
 walks\index{dynamics}) is given in the \Sec{WALK} or \Sec{OPTIMIZE}
-submodules in the 
-general input  module. See also Chapter~\ref{ch:geometrywalks}. 
+submodules in the general input  module. See also Chapter~\ref{ch:geometrywalks}. 
+
+See Chapter~\ref{ch:CC} for specification of CC property calculations.
+
+Note that \resp\ (Chapter~\ref{ch:response})
+is the most general part of the code for calculating
+many different electronic linear, quadratic, or cubic molecular
+response properties based on SCF or MCSCF or CI wave functions.
+Some of these SCF/MCSCF properties can also be requested
+from the \Sec{*PROPERTIES} input modules described here.
+NOTE: for such properties you should request them either here or
+in \Sec{*RESPONSE}, otherwise you will calculate them twice!
+Usually the output is nicest here in
+the \Sec{*PROPERTIES} module (e.g. collected in tables and in
+often used units, most properties are only given in atomic
+units in \resp), and nuclear contributions are included if relevant.
+No nuclear contributions are added in \resp\.
+Some specific properties, especially those involving nuclear derivatives,
+can only be calculated via \Sec{*PROPERTIES}.
+Other properties, for example quadratic and cubic molecular response functions
+can only be calculated in the \Sec{*RESPONSE} module.
+
 
 \begin{description}
 
@@ -201,13 +225,13 @@ molecular gradient as \index{gradient}described in Ref.~\cite{tuhjahjajpjjcp84}.
 molecular Hessian\index{Hessian} and gradient\index{gradient} as
 described in Ref.~\cite{tuhjahjajpjjcp84}. 
 
-\item[\Key{NACME}] Invokes the calculation of non-adiabatic
-coupling\index{non-adiabatic coupling element} matrix elements as
-described in 
-Ref.~\cite{klbpjhjajjothjcp97}. Presently, complete non-adiabatic
-coupling matrix elements cannot be obtained from this keyword alone,
-but has to be combined with subsequent calculations in the
-\resp\ program. Currently inactive option.
+%\item[\Key{NACME}] Invokes the calculation of non-adiabatic
+%coupling\index{non-adiabatic coupling element} matrix elements as
+%described in 
+%Ref.~\cite{klbpjhjajjothjcp97}. Presently, complete non-adiabatic
+%coupling matrix elements cannot be obtained from this keyword alone,
+%but has to be combined with subsequent calculations in the
+%\resp\ program. Currently inactive option.
 
 \item[\Key{NMR}] Invokes the calculation of both parameters
 entering the NMR spin-Hamiltonian, that is nuclear
@@ -753,8 +777,8 @@ circular dichroism}\index{ECD} in Electronic
 Circular Dichroism (ECD) without using London orbitals.
 
 \item[\Key{SKIP}] Skip the calculation of electronic excitation
-energies. This will give wrong results for ECD and first-order
-non-adiabatic coupling matrix elements (NACME).
+energies. This will give wrong results for ECD.
+%and first-order non-adiabatic coupling matrix elements (NACME).
 Mainly for debugging purposes.
 
 \item[\Key{STOP}] Stops the program after finishing the 
@@ -772,7 +796,7 @@ containing the convergence threshold. The default value is
 $1\cdot10^{-4}$.
 
 \item[\Key{TRIPLE}]
-\index{excitation energy!triplet}
+\index{excitation energies!triplet}
 Indicates that it is triplet excitation energies that is to be
 calculated.
 \end{description}
@@ -1465,13 +1489,13 @@ spin-spin coupling constants that are to be calculated.
 \item[\Key{ABUNDA}]\verb| |\newline
 \verb|READ (LUCMD,*) ABUND|
 
-Set the natural abundance\index{abundance} threshold for discarding
-couplings between 
-certain nuclei. By default all isotopes in the molecule with a natural
+Set the natural abundance\index{abundance!spin-spin} threshold in per cent
+for discarding couplings between certain nuclei.
+By default all isotopes in the molecule with a natural
 abundance above this limit will be included in the list of nuclei for which
 spin-spin coupling constants will be calculated. Read one more line
-containing the abundance threshold. The default value is~1.0,
-which includes both proton and $^{13}$C nuclei.
+containing the abundance threshold in per cent. The default value is~1.0 (i.e. 1\%),
+which includes both protons and $^{13}$C nuclei.
 
 \item[\Key{NODSO}] Do not calculate diamagnetic
 spin-orbit\index{diamagnetic spin-orbit}
