@@ -60,8 +60,8 @@
      &  CALL QUIT('No symmetry yet implemented in CC_RHTR_NODDY!')
 
       IF (LOCDBG) THEN
-        WRITE(LUPRI,*), 'CC_RHTR_NODDY> RESULT VECTOR ON INPUT:'
-        WRITE(LUPRI,*), 'NORM^2 = ',
+        WRITE(LUPRI,*) 'CC_RHTR_NODDY> RESULT VECTOR ON INPUT:'
+        WRITE(LUPRI,*) 'NORM^2 = ',
      &         DDOT(NT1AMX+NT2AMX,OMEGA1,1,OMEGA1,1)
         CALL CC_PRP(OMEGA1,OMEGA2,1,1,1)
       END IF
@@ -317,9 +317,9 @@
 *     Print debug output and return:
 *---------------------------------------------------------------------*
       IF (LOCDBG) THEN
-        WRITE(LUPRI,*),'CC_RHTR_NODDY> RESULT VECTOR ON OUTPUT:'
-        WRITE(LUPRI,*),'NORM^2(OMEGA1)=',DDOT(NT1AMX,OMEGA1,1,OMEGA1,1)
-        WRITE(LUPRI,*),'NORM^2(OMEGA2)=',DDOT(NT2AMX,OMEGA2,1,OMEGA2,1)
+        WRITE(LUPRI,*)'CC_RHTR_NODDY> RESULT VECTOR ON OUTPUT:'
+        WRITE(LUPRI,*)'NORM^2(OMEGA1)=',DDOT(NT1AMX,OMEGA1,1,OMEGA1,1)
+        WRITE(LUPRI,*)'NORM^2(OMEGA2)=',DDOT(NT2AMX,OMEGA2,1,OMEGA2,1)
         CALL CC_PRP(OMEGA1,OMEGA2,1,1,1)
       END IF
 

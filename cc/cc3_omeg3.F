@@ -57,6 +57,7 @@ C
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+#include <second.h>
 C
       INTEGER LWORK, ISYMTR, ISYMT1, ISYMT2, ISYRES, ISINT1, ISINT2
       INTEGER ISYMIM, KEND0, LWRK0, KEND1, LWRK1, KEND2, LWRK2
@@ -1976,6 +1977,7 @@ C
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+#include <second.h>
 C
       INTEGER ISYMT1, ISYMT2, ISYMC2, ISYMT12, LWORK, ISYMTR, ISYMTR2
       INTEGER KEND0, LWRK0, KEND1, LWRK1, KEND2, LWRK2, KEND3, LWRK3

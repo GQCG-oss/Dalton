@@ -1438,6 +1438,7 @@ C
 #include <ccorb.h>
 #include <iratdef.h>
 #include <ccinftap.h>
+#include <second.h>
 C
       INTEGER ISYML1, ISYML2, ISYMT2, ISYRES, LWORK
       INTEGER ISYMTR, ISINT1, ISINT2, ISYMIM, KFOCKD, KCMO, KFCKBA
