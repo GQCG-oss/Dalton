@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <errno.h>
 #include <memory.h>
-#include <pthread.h>
 #include <time.h>
 #include <stdarg.h>
 #include "general.h"
