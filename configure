@@ -808,7 +808,7 @@ case $WHICH in
               fi
               inc='-I../include'
               cpp=${cpp}" -DIMPLICIT_NONE"
-              opt='-O5 -Nc50';;
+              opt='-fast';;
     hp) if [ "$mesp" = "dummy" ]; then
               cpp="-DSYS_HPUX -D'INSTALL_WRKMEM=$memsiz' -D'INSTALL_BASDIR=\"$basdir\"'"
           else
@@ -1115,6 +1115,18 @@ $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) -E \$*.F > \$*.i
 EOF
 fi
 #
+# Make sure Makefile.depend files exist
+#
+touch abacus/Makefile.depend
+touch amfi/Makefile.depend
+touch cc/Makefile.depend
+touch dft/Makefile.depend
+touch eri/Makefile.depend
+touch gp/Makefile.depend
+touch pdpack/Makefile.depend
+touch rsp/Makefile.depend
+touch sirius/Makefile.depend
+#
 # Update the DALTON run-script
 #
 
@@ -1151,7 +1163,7 @@ MPIRUN="mpirun"
 EOF
 cat dalton.gnr >> $INSTALL_DIR/dalton
 
-chmod 700 $INSTALL_DIR/dalton
+chmod 755 $INSTALL_DIR/dalton
 
 $ECHO '\n   The configuration of DALTON has finished succesfully.'
 $ECHO '   Check compiler flags etc. in Makefile.config and run "make" to get executable.\n'
