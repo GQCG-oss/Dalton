@@ -2279,17 +2279,21 @@ C
       LWRKS2 = LWRK1
 C
       IF (DIRECT) THEN
-         KCCFB1 = KEND1
-         KINDXB = KCCFB1 + MXPRIM*MXCONT
-         KEND1  = KINDXB + (8*MXSHEL*MXCONT + 1)/IRAT
-         LWRK1  = LWORK  - KEND1
+         IF (HERDIR) THEN
+           CALL HERDI1(WORK(KEND1),LWRK1,IPRERI)
+         ELSE 
+           KCCFB1 = KEND1
+           KINDXB = KCCFB1 + MXPRIM*MXCONT
+           KEND1  = KINDXB + (8*MXSHEL*MXCONT + 1)/IRAT
+           LWRK1  = LWORK  - KEND1
+           CALL ERIDI1(KODCL1,KODCL2,KODBC1,KODBC2,KRDBC1,KRDBC2,
+     *                 KODPP1,KODPP2,KRDPP1,KRDPP2,
+     *                 KFREE,LFREE,KEND1,WORK(KCCFB1),WORK(KINDXB),
+     *                 WORK(KEND1),LWRK1,IPRERI)
+           KEND1 = KFREE
+           LWRK1 = LFREE
+         END IF
          NTOSYM = 1
-         CALL ERIDI1(KODCL1,KODCL2,KODBC1,KODBC2,KRDBC1,KRDBC2,
-     *               KODPP1,KODPP2,KRDPP1,KRDPP2,
-     *               KFREE,LFREE,KEND1,WORK(KCCFB1),WORK(KINDXB),
-     *               WORK(KEND1),LWRK1,IPRERI)
-         KEND1 = KFREE
-         LWRK1 = LFREE
       ELSE
          NTOSYM = NSYM
       ENDIF
@@ -2301,7 +2305,11 @@ C
       DO 100 ISYMD1 = 1,NTOSYM
 C
          IF (DIRECT) THEN
-            NTOT = MXCALL
+            IF (HERDIR) THEN
+              NTOT = MAXSHL
+            ELSE
+              NTOT = MXCALL
+            END IF
          ELSE
             NTOT = NBAS(ISYMD1)
          ENDIF
@@ -2318,14 +2326,19 @@ C
                LWRK1 = LWRKSV
 C
                DTIME  = SECOND()
-               CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0,
-     *                     WORK(KODCL1),WORK(KODCL2),
-     *                     WORK(KODBC1),WORK(KODBC2),
-     *                     WORK(KRDBC1),WORK(KRDBC2),
-     *                     WORK(KODPP1),WORK(KODPP2),
-     *                     WORK(KRDPP1),WORK(KRDPP2),
-     *                     WORK(KCCFB1),WORK(KINDXB),
-     *                     WORK(KEND1), LWRK1,IPRERI)
+               IF (HERDIR) THEN
+                 CALL HERDI2(WORK(KEND1),LWRK1,INDEXA,ILLL,NUMDIS,
+     &                       IPRERI)
+               ELSE
+                 CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0,
+     *                       WORK(KODCL1),WORK(KODCL2),
+     *                       WORK(KODBC1),WORK(KODBC2),
+     *                       WORK(KRDBC1),WORK(KRDBC2),
+     *                       WORK(KODPP1),WORK(KODPP2),
+     *                       WORK(KRDPP1),WORK(KRDPP2),
+     *                       WORK(KCCFB1),WORK(KINDXB),
+     *                       WORK(KEND1), LWRK1,IPRERI)
+               END IF
                DTIME   = SECOND() - DTIME
                TIMHE2 = TIMHE2 + DTIME
 C
@@ -3765,17 +3778,21 @@ C
       LWRKS2 = LWRK1
 C
       IF (DIRECT) THEN
-         KCCFB1 = KEND1
-         KINDXB = KCCFB1 + MXPRIM*MXCONT
-         KEND1  = KINDXB + (8*MXSHEL*MXCONT + 1)/IRAT
-         LWRK1  = LWORK  - KEND1
+         IF (HERDIR) THEN
+           CALL HERDI1(WORK(KEND1),LWRK1,IPRERI)
+         ELSE
+           KCCFB1 = KEND1
+           KINDXB = KCCFB1 + MXPRIM*MXCONT
+           KEND1  = KINDXB + (8*MXSHEL*MXCONT + 1)/IRAT
+           LWRK1  = LWORK  - KEND1
+           CALL ERIDI1(KODCL1,KODCL2,KODBC1,KODBC2,KRDBC1,KRDBC2,
+     *                 KODPP1,KODPP2,KRDPP1,KRDPP2,
+     *                 KFREE,LFREE,KEND1,WORK(KCCFB1),WORK(KINDXB),
+     *                 WORK(KEND1),LWRK1,IPRERI)
+           KEND1 = KFREE
+           LWRK1 = LFREE
+         END IF
          NTOSYM = 1
-         CALL ERIDI1(KODCL1,KODCL2,KODBC1,KODBC2,KRDBC1,KRDBC2,
-     *               KODPP1,KODPP2,KRDPP1,KRDPP2,
-     *               KFREE,LFREE,KEND1,WORK(KCCFB1),WORK(KINDXB),
-     *               WORK(KEND1),LWRK1,IPRERI)
-         KEND1 = KFREE
-         LWRK1 = LFREE
       ELSE
          NTOSYM = NSYM
       ENDIF
@@ -3787,7 +3804,11 @@ C
       DO 100 ISYMD1 = 1,NTOSYM
 C
          IF (DIRECT) THEN
-            NTOT = MXCALL
+            IF (HERDIR) THEN
+              NTOT = MAXSHL
+            ELSE
+              NTOT = MXCALL
+            END IF
          ELSE
             NTOT = NBAS(ISYMD1)
          ENDIF
@@ -3804,14 +3825,19 @@ C
                LWRK1 = LWRKSV
 C
                DTIME  = SECOND()
-               CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0,
-     *                     WORK(KODCL1),WORK(KODCL2),
-     *                     WORK(KODBC1),WORK(KODBC2),
-     *                     WORK(KRDBC1),WORK(KRDBC2),
-     *                     WORK(KODPP1),WORK(KODPP2),
-     *                     WORK(KRDPP1),WORK(KRDPP2),
-     *                     WORK(KCCFB1),WORK(KINDXB),
-     *                     WORK(KEND1), LWRK1,IPRERI)
+               IF (HERDIR) THEN
+                 CALL HERDI2(WORK(KEND1),LWRK1,INDEXA,ILLL,NUMDIS,
+     &                       IPRERI)
+               ELSE
+                 CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0,
+     *                       WORK(KODCL1),WORK(KODCL2),
+     *                       WORK(KODBC1),WORK(KODBC2),
+     *                       WORK(KRDBC1),WORK(KRDBC2),
+     *                       WORK(KODPP1),WORK(KODPP2),
+     *                       WORK(KRDPP1),WORK(KRDPP2),
+     *                       WORK(KCCFB1),WORK(KINDXB),
+     *                       WORK(KEND1), LWRK1,IPRERI)
+               END IF
                DTIME   = SECOND() - DTIME
                TIMHE2 = TIMHE2 + DTIME
 C
@@ -4542,17 +4568,21 @@ C
       LWRKS2 = LWRK1
 C
       IF (DIRECT) THEN
-         KCCFB1 = KEND1
-         KINDXB = KCCFB1 + MXPRIM*MXCONT
-         KEND1  = KINDXB + (8*MXSHEL*MXCONT + 1)/IRAT
-         LWRK1  = LWORK  - KEND1
+         IF (HERDIR) THEN
+           CALL HERDI1(WORK(KEND1),LWRK1,IPRERI)
+         ELSE
+           KCCFB1 = KEND1
+           KINDXB = KCCFB1 + MXPRIM*MXCONT
+           KEND1  = KINDXB + (8*MXSHEL*MXCONT + 1)/IRAT
+           LWRK1  = LWORK  - KEND1
+           CALL ERIDI1(KODCL1,KODCL2,KODBC1,KODBC2,KRDBC1,KRDBC2,
+     *                 KODPP1,KODPP2,KRDPP1,KRDPP2,
+     *                 KFREE,LFREE,KEND1,WORK(KCCFB1),WORK(KINDXB),
+     *                 WORK(KEND1),LWRK1,IPRERI)
+           KEND1 = KFREE
+           LWRK1 = LFREE
+         END IF
          NTOSYM = 1
-         CALL ERIDI1(KODCL1,KODCL2,KODBC1,KODBC2,KRDBC1,KRDBC2,
-     *               KODPP1,KODPP2,KRDPP1,KRDPP2,
-     *               KFREE,LFREE,KEND1,WORK(KCCFB1),WORK(KINDXB),
-     *               WORK(KEND1),LWRK1,IPRERI)
-         KEND1 = KFREE
-         LWRK1 = LFREE
       ELSE
          NTOSYM = NSYM
       ENDIF
@@ -4564,7 +4594,11 @@ C
       DO 100 ISYMD1 = 1,NTOSYM
 C
          IF (DIRECT) THEN
-            NTOT = MXCALL
+            IF (HERDIR) THEN
+              NTOT = MAXSHL
+            ELSE
+              NTOT = MXCALL
+            END IF
          ELSE
             NTOT = NBAS(ISYMD1)
          ENDIF
@@ -4581,14 +4615,19 @@ C
                LWRK1 = LWRKSV
 C
                DTIME  = SECOND()
-               CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0,
-     *                     WORK(KODCL1),WORK(KODCL2),
-     *                     WORK(KODBC1),WORK(KODBC2),
-     *                     WORK(KRDBC1),WORK(KRDBC2),
-     *                     WORK(KODPP1),WORK(KODPP2),
-     *                     WORK(KRDPP1),WORK(KRDPP2),
-     *                     WORK(KCCFB1),WORK(KINDXB),
-     *                     WORK(KEND1), LWRK1,IPRERI)
+               IF (HERDIR) THEN
+                 CALL HERDI2(WORK(KEND1),LWRK1,INDEXA,ILLL,NUMDIS,
+     &                       IPRERI)
+               ELSE
+                 CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0,
+     *                       WORK(KODCL1),WORK(KODCL2),
+     *                       WORK(KODBC1),WORK(KODBC2),
+     *                       WORK(KRDBC1),WORK(KRDBC2),
+     *                       WORK(KODPP1),WORK(KODPP2),
+     *                       WORK(KRDPP1),WORK(KRDPP2),
+     *                       WORK(KCCFB1),WORK(KINDXB),
+     *                       WORK(KEND1), LWRK1,IPRERI)
+               END IF
                DTIME   = SECOND() - DTIME
                TIMHE2 = TIMHE2 + DTIME
 C
