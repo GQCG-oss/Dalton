@@ -9,6 +9,7 @@
 # $4 - dalton file.
 # $5 - list of test check routines.
 check_gen_input() {
+testname=`basename $1`
 if [ -x /bin/ksh ]; then
    CHECK_SHELL='#!/bin/ksh'
 elif [ -x /bin/bash ]; then
@@ -19,27 +20,27 @@ fi
 
 # Prefer gawk - we know exactly what it can do.
 # awk on Sun does not support functions, need to use nawk for this
-if gawk '{print 1}'</dev/null 2>&1 /dev/null; then
+if gawk '{print 1}'</dev/null > /dev/null 2>&1; then
    AWK=gawk
-elif nawk '{print 1}'</dev/null 2>&1 /dev/null; then
+elif nawk '{print 1}'</dev/null > /dev/null 2>&1; then
    AWK=nawk
 else
    AWK=awk
 fi
     if [ "$5" = "" ]; then echo "empty test check file. Test $1 broken."; fi
-    echo "$2" > $1.info
-    echo "$3" > $1.mol
-    echo "$4" > $1.dal
-    echo "$CHECK_SHELL" >"$1.check"
-    echo "AWK=$AWK" >> "$1.check"
-    cat >>"$1.check" <<'%EOF%'
+    echo "$2" > $testname.info
+    echo "$3" > $testname.mol
+    echo "$4" > $testname.dal
+    echo "$CHECK_SHELL" >"$testname.check"
+    echo "AWK=$AWK" >> "$testname.check"
+    cat >>"$testname.check" <<'%EOF%'
 log=$1
 ERRLIST=""
 . ./functions || { echo "current dir is not the test dir" ; exit 1; }
 %EOF%
 
-    echo "$5" >> "$1.check"
-    cat >>"$1.check" <<'%EOF%'
+    echo "$5" >> "$testname.check"
+    cat >>"$testname.check" <<'%EOF%'
 if [ "$ERRLIST" = "" ]; then
   echo TEST ENDED PROPERLY
   exit 0
