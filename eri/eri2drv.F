@@ -1206,7 +1206,7 @@ C
       IF (WRTINT) THEN
          LAST = .TRUE.
          CALL ERIOUT(DUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,BUF,IBUF,INDXBT,
-     &               NCOUNT,WORK,LWORK,IPRINT)
+     &               NCOUNT,0,WORK,LWORK,IPRINT)
       END IF
 C
       IF (IPRINT .GT.  1) THEN
@@ -1666,6 +1666,7 @@ C  /* Deck erint0 */
 #include <hertop.h>
 #include <nuclei.h>
 #include <aobtch.h>
+#include <symmet.h>
 #include <r12int.h>
 C
       IF (IPRINT .GT. 10) THEN
@@ -1854,7 +1855,7 @@ C        Symmetrize
 C        ==========
 C
          IF (MLTPX.GT.1) THEN
-            CALL ERISYM(WORK(KAOINT),WORK(KSOINT),0,0,
+            CALL ERISYM(WORK(KAOINT),WORK(KSOINT),0,0,0,
      &                  IODDHR(1,ICCXYZ),IPNTUV,IPRINT)
          END IF
 C
@@ -1863,7 +1864,7 @@ C        ===================
 C
          IF (WRTINT) THEN
             CALL ERIOUT(WORK(KSOINT),IDUMMY,IPNTCR,IODDHR(1,ICCXYZ),
-     &                  IPNTUV,BUF,IBUF,INDXBT,NCOUNT,WORK(LSTOUT),
+     &                  IPNTUV,BUF,IBUF,INDXBT,NCOUNT,0,WORK(LSTOUT),
      &                  LWKOUT,IPRINT)
          END IF
 C
@@ -1918,51 +1919,79 @@ C
 C        Symmetrization
 C        ==============
 C
-         IF (MLTPX.GT.1) THEN
-            KADD = 0
-            DO I = 1, NINTYP
-               ICRB = MOD(I-1,3)+1
-               IATOM = (I + 2)/3 
-               IF (UNDIFF .AND. I.EQ.NINTYP) ICRB = 0
-               CALL ERISYM(WORK(KAOINT+KADD),WORK(KSOINT+KADD),
-     &                     IATOM,ICRB,IODDHR(1,ICCXYZ),IPNTUV,IPRINT)
-               KADD = KADD + NAOINT
-            END DO
-            KINT = KSOINT
-         ELSE
-            KINT = KAOINT
-         END IF
-C
-C        Write integrals
-C        ===============
-C
-         IF (WRTINT) THEN
-            IF (GDER .OR. BDER) THEN
-               CALL ERIOUT(WORK(KINT),I,IPNTCR,IODDHR(1,ICCXYZ),
-     &                     IPNTUV,BUF,IBUF,INDXBT,NCOUNT,WORK(LSTOUT),
-     &                     LWKOUT,IPRINT)
-            ELSE
-               KADD = 0
-               DO I = 1, 3
-                  CALL ERIOUT(WORK(KINT+KADD),I,IPNTCR,IODDHR(1,ICCXYZ),
-     &                        IPNTUV,BUF,IBUF,INDXBT,NCOUNT,
+         IF (WRTINT .AND. GDER) THEN
+            IF (MLTPX.GT.1) THEN
+               DO IREPE = 0, MAXREP
+                  KADD = 0
+                  DO I = 1, NINTYP
+                     ICRB = MOD(I-1,3)+1
+                     IATOM = (I + 2)/3 
+                     IF (UNDIFF .AND. I.EQ.NINTYP) ICRB = 0
+                     CALL ERISYM(WORK(KAOINT+KADD),WORK(KSOINT+KADD),
+     &                           IATOM,ICRB,IREPE,IODDHR(1,ICCXYZ),
+     &                           IPNTUV,IPRINT)
+                     KADD = KADD + NAOINT
+                  END DO
+                  KINT = KSOINT
+                  CALL ERIOUT(WORK(KINT),I,IPNTCR,IODDHR(1,ICCXYZ),
+     &                        IPNTUV,BUF,IBUF,INDXBT,NCOUNT,IREPE,
      &                        WORK(LSTOUT),LWKOUT,IPRINT)
-                  KADD = KADD + NAOINT
-               END DO 
+              END DO
+            ELSE
+               KINT = KAOINT
+               DO IREPE = 0, MAXREP
+                  CALL ERIOUT(WORK(KINT),I,IPNTCR,IODDHR(1,ICCXYZ),
+     &                        IPNTUV,BUF,IBUF,INDXBT,NCOUNT,IREPE,
+     &                        WORK(LSTOUT),LWKOUT,IPRINT)
+               END DO
             END IF
-         END IF
+         ELSE
 C
-C        Expectation value
-C        =================
+C           Symmetrization
+C           ==============
 C
-         IF (EXPERI) THEN
-            KPMAT = KINT  + LAOINT
-            KLAST = KPMAT + NAOINT
-            LWRK  = LWORK - KLAST + 1
-            IF(KLAST.GT.LWORK) CALL STOPIT('ERINT0','ERIAVE',LWRK,LWORK)
-            CALL ERIAVE(WORK(KINT),WORK(KPMAT),DMAT,D2MAT,ID2MAT,
-     &                  IPNTCR,IODDHR(1,ICCXYZ),IPNTUV,INDXBT,
-     &                  WORK(KLAST),LWRK,IPRINT)
+            IF (MLTPX.GT.1) THEN
+               KADD = 0
+               DO I = 1, NINTYP
+                  ICRB = MOD(I-1,3)+1
+                  IATOM = (I + 2)/3 
+                  IF (UNDIFF .AND. I.EQ.NINTYP) ICRB = 0
+                  CALL ERISYM(WORK(KAOINT+KADD),WORK(KSOINT+KADD),
+     &                        IATOM,ICRB,0,IODDHR(1,ICCXYZ),IPNTUV,
+     &                        IPRINT)
+                  KADD = KADD + NAOINT
+               END DO
+               KINT = KSOINT
+            ELSE
+               KINT = KAOINT
+            END IF
+C
+C           Write integrals
+C           ===============
+C
+            IF (WRTINT) THEN
+               IF (GDER .OR. BDER) THEN
+                  CALL ERIOUT(WORK(KINT),I,IPNTCR,IODDHR(1,ICCXYZ),
+     &                        IPNTUV,BUF,IBUF,INDXBT,NCOUNT,0,
+     &                        WORK(LSTOUT),LWKOUT,IPRINT)
+               ELSE
+                  CALL QUIT('Fix code for this case before ERIOUT')
+               END IF
+            END IF
+C
+C           Expectation value
+C           =================
+C
+            IF (EXPERI) THEN
+               KPMAT = KINT  + LAOINT
+               KLAST = KPMAT + NAOINT
+               LWRK  = LWORK - KLAST + 1
+               IF (KLAST.GT.LWORK) CALL STOPIT('ERINT0','ERIAVE',
+     &                                          LWRK,LWORK)
+               CALL ERIAVE(WORK(KINT),WORK(KPMAT),DMAT,D2MAT,ID2MAT,
+     &                     IPNTCR,IODDHR(1,ICCXYZ),IPNTUV,INDXBT,
+     &                     WORK(KLAST),LWRK,IPRINT)
+            END IF
          END IF
       END IF
 C

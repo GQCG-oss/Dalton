@@ -35,7 +35,7 @@ C
 C
 C  /* Deck eriout */
       SUBROUTINE ERIOUT(SO,ITYPE,IPNTCR,IODDCC,IPNTUV,BUF,IBUF,INDXBT,
-     &                  NCOUNT,WORK,LWORK,IPRINT)
+     &                  NCOUNT,IREPE,WORK,LWORK,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
@@ -132,14 +132,14 @@ C
      &               IODDCC,IPNTUV,NINTS,NCOUNT,WORK(KBIN),WORK(KIBIN),
      &               LBIN,BUF,IBUF,WORK(KJCMPA),WORK(KJCMPC),
      &               WORK(KJADDA),WORK(KJADDC),WORK(KIOFCM),INDXBT,
-     &               IPRINT)
+     &               IREPE,IPRINT)
       ELSE
          CALL ERIOU1(SO,WORK(KSOPRT),ITYPE,WORK(KNDORB),WORK(KLABEL),
      &               WORK(KPNBCH),WORK(KNDALL),WORK(KNDXTR),IPNTCR,
      &               IODDCC,IPNTUV,NINTS,NCOUNT,WORK(KBIN),WORK(KIBIN),
      &               LBIN,BUF,IBUF,WORK(KJCMPA),WORK(KJCMPC),
      &               WORK(KJADDA),WORK(KJADDC),WORK(KIOFCM),INDXBT,
-     &               IPRINT)
+     &               IREPE,IPRINT)
       END IF
 C
       RETURN
@@ -148,7 +148,7 @@ C  /* Deck eriou1 */
       SUBROUTINE ERIOU1(SO,SOPRT,ITYPE,INDORB,LABEL,IPNBCH,INDALL,
      &                  INDXTR,IPNTCR,IODDCC,IPNTUV,NINTS,NCOUNT,
      &                  BIN,IBIN,LBIN,BUF,IBUF,JCMPAB,JCMPCD,JADDAB,
-     &                  JADDCD,IOFCMP,INDXBT,IPRINT)
+     &                  JADDCD,IOFCMP,INDXBT,IREPE,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
@@ -198,56 +198,47 @@ C     Geometrical derivatives in distributions
 C     ========================================
 C
       ELSE IF (GDER .OR. BDER) THEN
-C
-C        construct labels and determine atoms (for GDER)
-C
-         CALL ERILBD(LABEL,INDORB,IPNTCR,IODDCC,IPNTUV,INDXBT,
-     &               INDXTR,0,0,IPRINT)
-C
-C        loop over Cartesian directions
-C
-         ISTART = 1
-         IF (UNDIFF) ISTART = 0
-         DO ISCOOR = ISTART, NPERTS 
-            IF (IPRINT.GT.10) THEN
-               WRITE (LUPRI,'(2X,A,I5)') ' ISCOOR in ERIOU1 ', ISCOOR
-            END IF
-            IATOM = (ISCOOR + 2)/3
-            ICART = MOD(ISCOOR - 1,3) + 1
-C
-C           construct derivatives and labels (for BDER)
-C
-            IF (ISCOOR .GT. 0) THEN
-               IF (GDER) THEN
-                  CALL ERIGDR(SO,IATOM,ICART,SOPRT,LABEL)
-               ELSE
-                  CALL ERILBD(LABEL,INDORB,IPNTCR,IODDCC,IPNTUV,
-     &                        INDXBT,INDXTR,ISYMAX(ICART,2),1,IPRINT)
+         IRPDST = IREPE
+         IF (UNDIFF .AND. IREPE.EQ.0) THEN
+            CALL ERILBD(LABEL,INDORB,IPNTCR,IODDCC,IPNTUV,INDXBT,
+     &                  INDXTR,0,0,IPRINT)
+            CALL ERISRT(BIN,IBIN,LBIN,NIBUF,INDORB,SOPRT,IPNTCR,IODDCC,
+     &                  IPNTUV,IPNBCH,NBITS,NINTS,IOFCMP,INDXBT,
+     &                  0,IPRINT)
+            CALL ERIWRT(0,NINTS,NCOUNT,BIN,IBIN,LBIN,
+     &                  BUF(1,1,0),IBUF(1,1,1,0),IPRINT)
+         END IF
+         IF (GDER) THEN
+            DO IATOM = 1, NUCIND 
+            DO ICART = 1, 3
+               ISCOOR = IPTCNT(3*(IATOM - 1) + ICART,IREPE,1)
+               IF (ISCOOR.GT.0) THEN
+                  CALL ERILBD(LABEL,INDORB,IPNTCR,IODDCC,IPNTUV,INDXBT,
+     &                        INDXTR,IREPE,0,IPRINT)
+                  CALL ERIGDR(SO,IATOM,ICART,SOPRT,LABEL,IPRINT)
+                  CALL ERISRT(BIN,IBIN,LBIN,NIBUF,INDORB,SOPRT,
+     &                        IPNTCR,IODDCC,IPNTUV,IPNBCH,NBITS,
+     &                        NINTS,IOFCMP,INDXBT,ICART,IPRINT)
+                  CALL ERIWRT(ISCOOR,NINTS,NCOUNT,BIN,IBIN,LBIN,
+     &                        BUF(1,1,ISCOOR),IBUF(1,1,1,ISCOOR),
+     &                        IPRINT)
+               END IF
+            END DO
+            END DO
+         ELSE  
+            DO ICART = 1, 3
+               CALL ERILBD(LABEL,INDORB,IPNTCR,IODDCC,IPNTUV,INDXBT,
+     &                     INDXTR,ISYMAX(ICART,2),1,IPRINT)
+               DO ISCOOR = ICART, 6, 3
                   CALL ERIBDR(SO,ISCOOR,SOPRT)
-               END IF
-               IF (IPRINT .GT. 10) THEN
-                  CALL HEADER('SOPRT in ERIOU1',-1)
-                  CALL ERIPRI(SOPRT,INDORB,NAOINT,NIBUF,NAOINT,NBITS,0,
-     &                        IDUMMY,ISCOOR)
-               END IF
-            END IF
-C
-C           sort distributions
-C
-            IF (.TRUE.) THEN
-               CALL ERISOR(BIN,IBIN,LBIN,NIBUF,NBITS,INDORB,SO,NINTS,
-     &                     IODDCC,IPNTUV,ICART,IPRINT)
-            ELSE
-               CALL ERISRT(BIN,IBIN,LBIN,NIBUF,INDORB,SOPRT,IPNTCR,
-     &                     IODDCC,IPNTUV,IPNBCH,NBITS,NINTS,IOFCMP,
-     &                     INDXBT,ICART,IPRINT)
-            END IF
-C
-C           write integrals
-C
-            CALL ERIWRT(ISCOOR,NINTS,NCOUNT,BIN,IBIN,LBIN,
-     &                  BUF(1,1,ISCOOR),IBUF(1,1,1,ISCOOR),IPRINT)
-         END DO
+                  CALL ERISRT(BIN,IBIN,LBIN,NIBUF,INDORB,SOPRT,IPNTCR,
+     &                        IODDCC,IPNTUV,IPNBCH,NBITS,NINTS,IOFCMP,
+     &                        INDXBT,ICART,IPRINT)
+                  CALL ERIWRT(ISCOOR,NINTS,NCOUNT,BIN,IBIN,LBIN,
+     &                        BUF(1,1,ISCOOR),IBUF(1,1,1,ISCOOR),IPRINT)
+               END DO
+            END DO
+         END IF
 C
 C     Undifferentiated integrals in distributions 
 C     ===========================================
@@ -1466,6 +1457,7 @@ C
             WRITE (LUPRI,'(2X,A,2I5)') ' NPQBCS,NPPBCS ',NPQBCS,NPPBCS
          END IF
       END IF
+      CALL IZERO(INDORB,NCCS*MLTPR*MLTPS*MLTPT*KHKTAB*KHKTCD*NIBUF)
 C
       CALL PRPREP(DOREP(0,1),NHKTA,KHKTA,ISTBLA)
       CALL PRPREP(DOREP(0,2),NHKTB,KHKTB,ISTBLB)
@@ -1680,7 +1672,7 @@ C
       RETURN
       END
 C  /* Deck erigdr */
-      SUBROUTINE ERIGDR(SO,IATOM,ICART,SOPRT,LABEL)
+      SUBROUTINE ERIGDR(SO,IATOM,ICART,SOPRT,LABEL,IPRINT)
 C
 C     T. Helgaker
 C
@@ -1705,6 +1697,10 @@ C
          IF (LABEL(I,3) .EQ. IATOM) GINT = GINT + SO(I,ICART,3) 
          IF (LABEL(I,4) .EQ. IATOM) GINT = GINT + SO(I,ICART,4) 
          SOPRT(I) = GINT
+         IF (IPRINT.GT.10) THEN
+            WRITE (LUPRI,*) ' I, LAB',I,(LABEL(I,J),J=1,4)
+            WRITE (LUPRI,*) ' I, SO ',I,(SO(I,ICART,J),J=1,4),SOPRT(I)
+         end if
       END DO
 C
       RETURN
@@ -1807,6 +1803,7 @@ C  /* Deck prprep */
 C
       DO A = 0, MAXREP
          DOREP(A) = .FALSE.
+         DOREP(A) = .TRUE.
       END DO
 C
       DO ICMP = 1, KHKTA
@@ -2106,26 +2103,33 @@ C  /* Deck eripri */
 #include <ibtpar.h>
       DIMENSION BUF(NDIM), IBUF(NDIM,NIBUF)
 #include <ibtfun.h>
+      ITRI(I,J) = MAX(I,J)*(MAX(I,J) - 1)/2 + MIN(I,J)
       IBIT1 = 2**NBITS - 1
       DO INT = 1, ICOUNT
          IF (NIBUF .EQ. 1) THEN
-            I = IBTAND(IBTSHR(IBUF(INT,1),3*NBITS),IBIT1)
-            J = IBTAND(IBTSHR(IBUF(INT,1),2*NBITS),IBIT1)
-            K = IBTAND(IBTSHR(IBUF(INT,1),  NBITS),IBIT1)
-            L = IBTAND(       IBUF(INT,1),         IBIT1)
+            I0 = IBTAND(IBTSHR(IBUF(INT,1),3*NBITS),IBIT1)
+            J0 = IBTAND(IBTSHR(IBUF(INT,1),2*NBITS),IBIT1)
+            K0 = IBTAND(IBTSHR(IBUF(INT,1),  NBITS),IBIT1)
+            L0 = IBTAND(       IBUF(INT,1),         IBIT1)
          ELSE
-            I = IBTAND(IBTSHR(IBUF(INT,1),NBITS),IBIT1)
-            J = IBTAND(       IBUF(INT,1),       IBIT1)
-            K = IBTAND(IBTSHR(IBUF(INT,2),NBITS),IBIT1)
-            L = IBTAND(       IBUF(INT,2),       IBIT1)
+            I0 = IBTAND(IBTSHR(IBUF(INT,1),NBITS),IBIT1)
+            J0 = IBTAND(       IBUF(INT,1),       IBIT1)
+            K0 = IBTAND(IBTSHR(IBUF(INT,2),NBITS),IBIT1)
+            L0 = IBTAND(       IBUF(INT,2),       IBIT1)
          END IF
-         IF (NDISTR .GT. 1) THEN
-            WRITE (LUPRI,'(10X,A,2X,I5,5X,4I4,5X,1P,D16.8,5X,I5)')
-     &                   ' @@ ', ISCOOR, I, J, K, L, BUF(INT), IDIST
+         IF (ITRI(I0,J0).GE.ITRI(K0,L0)) THEN
+            I = MAX(I0,J0)
+            J = MIN(I0,J0)
+            K = MAX(K0,L0)
+            L = MIN(K0,L0)
          ELSE
-            WRITE (LUPRI,'(10X,A,2X,I5,5X,4I4,5X,1P,D16.8)')
-     &                   ' @@ ', ISCOOR, I, J, K, L, BUF(INT)
+            I = MAX(K0,L0)
+            J = MIN(K0,L0)
+            K = MAX(I0,J0)
+            L = MIN(I0,J0)
          END IF
+         WRITE (LUPRI,'(10X,A,2X,I5,5X,4I4,5X,1P,D16.8)')
+     &                ' @@ ', ISCOOR, I, J, K, L, BUF(INT)
       END DO
       RETURN
       END

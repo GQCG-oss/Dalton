@@ -34,7 +34,7 @@ C
 #include <single.h>
 C
 C  /* Deck erisym */
-      SUBROUTINE ERISYM(AO,SO,IATOM,ICRB,IODDCC,IPNTUV,IPRINT)
+      SUBROUTINE ERISYM(AO,SO,IATOM,ICRB,IREPE,IODDCC,IPNTUV,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
@@ -45,6 +45,7 @@ C  /* Deck erisym */
      &          SO(NCCS,MLTPR,MLTPS,MLTPT,KHKTAB,KHKTCD),
      &          RMAT(64,0:7), SMAT(64,0:7), TMAT(64,0:7),
      &          IPNTUV(KC2MAX,0:NRDER,2), IODDCC(NRTOP)
+      DIMENSION TMP(NCCS,MLTPR,MLTPS,MLTPT)
 #include <ericom.h>
 #include <maxorb.h>
 #include <symmet.h>
@@ -73,7 +74,7 @@ C
       CALL ERITRA(TMAT,MLTPT,ISTBLT)
 C
       IPARE = 0
-      IF (GDER.AND.ICRB.GT.0) IPARE = ISYMAX(ICRB,1)
+      IF (GDER.AND.ICRB.GT.0) IPARE = IBTXOR(IREPE,ISYMAX(ICRB,1))
 C
 C     Run over components
 C     ===================
@@ -127,7 +128,7 @@ C
                CALL DGEMM('N','N',NCCS*MLTPR,MLTPS,MLTPS,
      &                    D1,SO(1,1,1,T,ICMPAB,ICMPCD),NCCS*MLTPR,
      &                    SMAT(1,IPARD),MLTPS,
-     &                    D0,AO(1,1,1,T,ICMPAB,ICMPCD),NCCS*MLTPR)
+     &                    D0,TMP(1,1,1,T),NCCS*MLTPR)
   400       CONTINUE
 C
 C           Transform R
@@ -135,7 +136,7 @@ C
             DO 500 T = 1, MLTPT
             DO 500 S = 1, MLTPS
                CALL DGEMM('N','N',NCCS,MLTPR,MLTPR,
-     &                    D1,AO(1,1,S,T,ICMPAB,ICMPCD),NCCS,
+     &                    D1,TMP(1,1,S,T),NCCS,
      &                    RMAT(1,IPARB),MLTPR,
      &                    D0,SO(1,1,S,T,ICMPAB,ICMPCD),NCCS)
   500       CONTINUE
