@@ -82,7 +82,7 @@ C
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
      *            '" not recognized in LNRINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in LNRINP.')
+               CALL QUIT('Illegal keyword under *ABALNR.')
     1          CONTINUE
                   SKIP = .TRUE.
                   ICHANG = ICHANG + 1
@@ -134,7 +134,8 @@ C
                GO TO 100
    10             CONTINUE
                   READ (LUCMD,*) NFRVAL
-                  READ (LUCMD,*) (FRVAL(I),I=1,NFRVAL)
+                  J = MIN(NFRVAL,MXFR)
+                  READ (LUCMD,*) (FRVAL(I),I=1,J)
                   ICHANG = ICHANG + 1
                GO TO 100
    11             CONTINUE
@@ -158,7 +159,7 @@ C
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
      *            '" not recognized in LNRINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in LNRINP.')
+               CALL QUIT('Illegal prompt under *ABALNR.')
             END IF
       END IF
   300 CONTINUE
@@ -188,10 +189,20 @@ C
             WRITE (LUPRI,'(A)') ' LNRABA skipped in this run.'
          ELSE
             IF (NFRVAL .GT. 0) THEN
+               J = MIN(MXFR,NFRVAL)
                WRITE (LUPRI,'(A,I4/A,5F10.6:/,(28X,5F10.6))')
      &            ' Number of frequencies     :',NFRVAL,
      &            ' Frequencies               :',
-     &            (FRVAL(I), I=1,NFRVAL)
+     &            (FRVAL(I), I=1,J)
+             IF (NFRVAL .GT. MXFR) THEN
+               WRITE(LUPRI,'(/A/A,I5/A)')
+     &         'You have asked for too many frequencies under *ABALNR',
+     &         'Current maximum is MXFR =',MXFR,
+     &         'Reduce number of frequencies or increase'//
+     &         ' MXFR in cbilnr.h and recompile.'
+               CALL QUIT(
+     &         'You have asked for too many frequencies under *ABALNR')
+             END IF
             END IF
             WRITE (LUPRI,'(A,I4)')
      &         ' Print level in LNRABA     :',IPRLNR
