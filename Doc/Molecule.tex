@@ -4,15 +4,15 @@
 \index{geometry!Z-matrix input}
 \index{Z-matrix input}
 
-The {\mol}-style input is originally based on the input for the {\mol}
+The {\mol}-style input is originally based on the input for the \mol\
 integral program by Alml\"{o}f~\cite{moleculeref}. However, there are
 few remnants of the original input structure. For users of earlier
 releases of the Dalton program, note should be taken of the fact that
-the input structure for the {\mol\} file has undergone major changes,
+the input structure for the \mol\ file has undergone major changes,
 however, backward compatibility has in most cases been
 retained\footnote{The two exceptions to the backward are that when
 using the {\tt ATOMBASIS} keyword, the basis set name has to be
-preceded by \" Basis=\". When specifying the Cartesian
+preceded by ``Basis=''. When specifying the Cartesian
 coordinates of the atoms, it is no longer required that the
 coordinates start at position 5. However, blanks are no longer
 allowed in the names of atoms, and the atom names are still
@@ -45,7 +45,7 @@ Only six of the basis sets were obtained from different sources:
 downloaded from the MOLCAS
 home-page\index{NQvD basis set}\index{basis set!NQvD}\index{ANO basis set}\index{basis set!ANO}\index{sadlej basis set}\index{basis set!sadlej}
 (http://garm.teokem.lu.se/MOLCAS/).
-\item The NQvD (The Not Quite van Duijneveldt) basis sets, constructed
+\item The NQvD (The Not Quite van Duijneveldt) basis sets were constructed
 by Knut F\ae gri for this distribution~\cite{nqvdref}.
 \end{list}
 
@@ -144,7 +144,7 @@ of 1.0D-15 will give integrals correct to approximately 1.0D-13.
 \item[Own] Indicates that a user-supplied scheme for generating
   transformed angular momentum basis functions will be used.
 \item[Spherical] Default. Indicates that a spherical Gaussian basis
-  set will be used in the calculations.\index{spherical basis function}\index{basis function!spherical}.
+  set will be used in the calculations.\index{spherical basis function}\index{basis function!spherical}
 \end{description}
 \end{description}
 
@@ -297,8 +297,7 @@ basis set for this atom type ($s=1$, $p=2$, etc.).
 Ignored if library basis sets are being used (\verb|BASIS| or
 \verb|ATOMBASIS| in first line). This number is followed by one
 integer for each angular momentum used in the basis, indicating 
-
-for \verb|ATOMBASIS| the basis set name starts here. Number of groups (blocks) of generally contracted
+the number of groups (blocks) of generally contracted
 functions of angular quantum number~{\tt I-1}.
 Ignored if the basis set library is used. \newline
 It is noteworthy that
@@ -318,7 +317,7 @@ integral\index{performance of integral program} calculation.
 %\verb|BASIS|).
 \item[Charge] \verb|(Real)|. {\em This keyword is required\/}. Charge of this atom\index{charge of atom}
   or point charge. 
-\item[Pol] \verb|(Integer+real)|. This keyword adds single, primtive
+\item[Pol] \verb|(Integer+real)|. This keyword adds single, primitive
   basis function of a given quantum number (quantum number + 1 given
   in the input) and a given exponent. An arbitrary number of
   polarization functions can be given. For instance, we can add a $p$
@@ -373,7 +372,7 @@ no line can therefore exceed 80 characters.
 
 One may also give the format {\tt H} or {\tt h}. This corresponds to
 high precision format {\tt (4F20.8)}, where the first column again is
-reserved for the orbital exponents, and the three next lines are
+reserved for the orbital exponents, and the three next columns are
 designated to the contraction coefficients. If no number is given, a zero
 is assumed. If there are more than three contracted orbitals in a
 given block, the contraction coefficients may be continued on the next
@@ -546,9 +545,7 @@ as
 Thus, when using {\tt ATOMBASIS}\index{ATOMBASIS} the name of the
 basis set for a given
 set of identical atoms is given on the same line as the nuclear
-charge, following right after the number of symmetry-distinct atoms of
-this type. Everything following position 15 (the number of
-symmetry-distinct atoms) is in free format.
+charge, indicated by the keyword ``Basis=''.
 
 The string {\tt Pol} denotes that the rest of the line specifies
 diffuse, tight or polarizing\index{polarization function}

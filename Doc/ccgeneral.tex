@@ -87,18 +87,18 @@ model(s) and other parameters common to all submodules are specified.
 
     Add an external finite field (operator label \verb+LFIELD+)
     of strength \verb+EFIELD+ to the Hamiltonian
-    (same input format as in \ref{ref-haminp}).
+    (same input format as in Sec.~\ref{ref-haminp}).
     These fields are only included in the CC calculation and 
     not in the calculation of the SCF reference state 
-    (i.e. the orbitals). 
+    ({\it i.e.\/} the orbitals). 
     Using this option in the calculation of numerical derivatives 
     thus gives so-called orbital-unrelaxed energy derivatives, 
     which is standard in coupled cluster response function theory.
     Note that this way of adding an external field does not work for 
-    models including triples excitations (most notably CCSD(T), CC3).
+    models including triples excitations (most notably CCSD(T) and CC3).
     For finite field calculations of orbital-relaxed energy 
     derivatives the field must be included in the SCF calculation.
-    Use for this input section \Sec{HAMILTONIAN} (\ref{ref-haminp}).
+    For such calculations, use the input section \Sec{HAMILTONIAN} (Sec.~\ref{ref-haminp}).
     \index{finite field}
     \index{external field}
  
@@ -192,7 +192,7 @@ model(s) and other parameters common to all submodules are specified.
   (default is \verb+MAXITE = 40+).
  
 \item[\Key{MAXRED}] \verb| |\newline 
-  \verb|READ (LUCMD,'(I5)') MAXRED|
+  \verb|READ (LUCMD,*) MAXRED|
 
   Maximum dimension of the reduced space for the 
   solution of linear equations (default is \verb+MAXRED = 200+).
@@ -208,7 +208,7 @@ Run calculation for second-order M{\o}ller-Plesset perturbation theory
 (MP2)\index{M{\o}ller-Plesset!second-order}\index{MP2} method.
 
 \item[\Key{MXDIIS}] \verb| |\newline
-  \verb|READ (LUCMD,'(I5)') MXDIIS|
+  \verb|READ (LUCMD,*) MXDIIS|
 
   Maximum number of iterations for DIIS algorithm
   before wave function information is discarded and a new DIIS 
@@ -237,7 +237,7 @@ Run calculation for second-order M{\o}ller-Plesset perturbation theory
   are solved simultaneously.
  
 \item[\Key{NSYM}] \verb| |\newline
-       \verb|READ (LUCMD,'(I5)') MSYM2|
+       \verb|READ (LUCMD,*) MSYM2|
 
        Set number of irreducibel representations. 
 %       Due to difficulties to parse the number of irrep's from

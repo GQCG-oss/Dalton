@@ -11,6 +11,10 @@ P.~R. Taylor.
 \newblock Symmetry-adapted integral derivatives.
 \newblock {\em Theor.~Chim.~Acta}, 69:447, 1986.
 
+\bibitem{pndmbhjajjojcp115}
+P.~Norman, D.~M. Bishop, H.~J.~Aa. Jensen, and J.~Oddershede.
+\newblock {\em J.~Chem.~Phys.}, 115:10323, 2001.
+
 \bibitem{poakrprtjcp112}
 {\mbox{P.-O.}}~{\AA}strand, K.~Ruud, and P.~R. Taylor.
 \newblock Calculation of the vibrational wave function of polyatomic molecules.
@@ -50,6 +54,7 @@ H.~J.~Aa. Jensen, P.~J{\o}rgensen, H.~{\AA}gren, and J.~Olsen.
   configuration and orbital generator in multiconfiguration self-consistent
   field calculations.
 \newblock {\em J.~Chem.~Phys.}, 88:3834, 1988.
+\newblock Erratum {\bf 89}, 5354 (1988).
 
 \bibitem{hjajpjhajcp87}
 H.~J.~Aa. Jensen, P.~J{\o}rgensen, and H.~{\AA}gren.
@@ -449,6 +454,10 @@ P.~Norman, D.~Jonsson, H.~{\AA}gren, P.~Dahle, K.~Ruud, T.~Helgaker, and
   of the second hyperpolarizability of polyacenes.
 \newblock {\em Chem.~Phys.~Lett.}, 253:1, 1996.
 
+\bibitem{mptskrarjcp121}
+M.~Pecul, T.~Saue, K.~Ruud, and A.~Rizzo.
+\newblock {\em J.~Chem.~Phys.}, 121:xxxx, 2004.
+
 \bibitem{arthkrabmjpjjcp102}
 A.~Rizzo, T.~Helgaker, K.~Ruud, A.~Barszczewicz, M.~Jaszu\'{n}ski, and
   P.~J{\o}rgensen.
@@ -514,6 +523,10 @@ K.~Ruud, {\mbox{P.-O.}}~{\AA}strand, and P.~R. Taylor.
 \bibitem{rmpnmwijqc40}
 R.~M. Pitzer and N.~M. Pitzer.
 \newblock {\em Int.~J.~Quantum Chem.}, 40:773, 1991.
+
+\bibitem{bahcmmuwogcpl251}
+B.~A. Hess, C.~M. Marian, U.~Wahlgren, and O.~Gropen.
+\newblock {\em Chem.~Phys.~Lett.}, 251:365, 1996.
 
 \bibitem{nevpt1}
 C.~Angeli, R.~Cimiraglia, S.~Evangelisti, T.~Leininger, and J.~P. Malrieu.
@@ -598,10 +611,6 @@ K.~L. Bak, P.~J{\o}rgensen, H.~J.~Aa. Jensen, J.~Olsen, and T.~Helgaker.
   multiconfigurational self-consistent-field response theory.
 \newblock {\em J.~Chem.~Phys.}, 97:7573, 1992.
 
-\bibitem{bahcmmuwogcpl251}
-B.~A. Hess, C.~M. Marian, U.~Wahlgren, and O.~Gropen.
-\newblock {\em Chem.~Phys.~Lett.}, 251:365, 1996.
-
 \bibitem{bahpra33}
 B.~A. Hess.
 \newblock {\em Phys.Rev.~{\bf A}}, 33:3742, 1986.
@@ -671,6 +680,106 @@ F.~B. van Duijneveldt.
 \newblock {\mbox{IBM Res.~ Rep.~ RJ945}}.
 \newblock Technical report, IBM, 1971.
 
+\bibitem{dft:becke88}
+A.D. Becke.
+\newblock a.
+\newblock {\em Phys. Rev. A}, 38:3098, 1988.
+
+\bibitem{dft:kt12}
+T.W. Keal and D.J. Tozer.
+\newblock The exchange-correlation potential in kohn-sham nuclear magnetic
+  resonance shielding calculations.
+\newblock {\em jcp}, 119:3015, 2003.
+
+\bibitem{dft:lb94}
+R.~van Leeuwen and E.J. Baerends.
+\newblock Exchange-correlation potential with correct asymptotic behavior.
+\newblock {\em pra}, 1994.
+
+\bibitem{dft:lyp1}
+C.~Lee, W.~Yang, and R.G. Parr.
+\newblock a.
+\newblock {\em prb}, 57:785, 1988.
+
+\bibitem{dft:lyp2}
+B.~Miehlich, A.~Savin, H.~Stoll, and H.~Preuss.
+\newblock a.
+\newblock {\em cpl}, 157:200, 1989.
+
+\bibitem{dft:optx}
+N.C. Handy and A.J Cohen.
+\newblock a.
+\newblock {\em Mol. Phys.}, 99:403, 2001.
+
+\bibitem{dft:p86}
+J.P. Perdew.
+\newblock a.
+\newblock {\em prb}, 33:8822, 1986.
+
+\bibitem{dft:pw86x}
+J.P. Perdew and Y.~Wang.
+\newblock a.
+\newblock {\em prb}, 33:8800, 1986.
+
+\bibitem{dft:pw91}
+J.P. Perdew, J.~A. Chevary, S.H. Vosko, K.A. Jackson, M.R. Pederson, and
+  C.~Fiolhais.
+\newblock a.
+\newblock {\em prb}, 46:6671, 1992.
+
+\bibitem{dft:pz81}
+J.P. Perdew and A.~Zunger.
+\newblock a.
+\newblock {\em prb}, 23:5048, 1981.
+
+\bibitem{dft:hohenberg}
+P.~Hohenberg and W.~Kohn.
+\newblock a.
+\newblock {\em pr}, 136:B864, 1964.
+
+\bibitem{dft:kohn}
+W.~Kohn and L.J. Sham.
+\newblock a.
+\newblock {\em pr}, 140:A1133, 1965.
+
+\bibitem{dft:vwn}
+S.H. Vosko, L.~Wilk, and M.~Nusair.
+\newblock a.
+\newblock {\em Can. J. Phys}, 58:1200, 1980.
+
+\bibitem{dft:b3lyp}
+A.D. Becke.
+\newblock a.
+\newblock {\em jcp}, 98:5648, 1993.
+
+\bibitem{dft:camb3lyp}
+T.~Yanai, D.P. Tw, and N.C. Handy.
+\newblock A new hybrid exchange-correlation functional using the
+  \mbox{Coulomb}-attenuating method (cam-b3lyp).
+\newblock {\em cpl}, 393:51, 2004.
+
+\bibitem{dft:kt12a}
+T.W. Keal~D.J. Tozer and T.~Helgaker.
+\newblock Giao shielding constants and indirect spin-spin coupling constants:
+  performance of density functional methods.
+\newblock {\em cpl}, 391:374, 2004.
+
+\bibitem{dft:kt3}
+Keal and Tozer.
+\newblock A semi-empirical generalised gradient approximation
+  exchange-correlation functional.
+\newblock {\em jcp}, 121:5654, 2004.
+
+\bibitem{dft:pbe0}
+C.~Adamo and V.~Barone.
+\newblock a.
+\newblock {\em jcp}, 110:6158, 1999.
+
+\bibitem{dft:pbe}
+J.P. Perdew, K.~Burke, and M.~Ernzerhof.
+\newblock a.
+\newblock {\em prl}, 77(3865), 1996.
+
 \bibitem{cwbjcp72}
 C.~W. Bauschlicher.
 \newblock The construction of modified virtual orbitals ({MVO}'s) which are
@@ -703,10 +812,6 @@ O.~Plashkevych, T.~Privalov, H.~{\AA}gren, V.~Carravetta, and K.~Ruud.
   x-ray photoemission and photoabsorption spectral bands.
 \newblock {\em Chem.~Phys.}, 260:11, 2000.
 
-\bibitem{pndmbhjajjojcp115}
-P.~Norman, D.~M. Bishop, H.~J.~Aa. Jensen, and J.~Oddershede.
-\newblock {\em J.~Chem.~Phys.}, 115:10323, 2001.
-
 \bibitem{pnkrthjcp120}
 P.~Norman, K.~Ruud, and T.~Helgaker.
 \newblock {\em J.~Chem.~Phys.}, 120:5027, 2004.
@@ -723,6 +828,16 @@ J.~Rose, T.~Shibuya, and V.~McKoy.
 T.~Shibuya, J.~Rose, and V.~McKoy.
 \newblock {\em J.~Chem.~Phys.}, 58:500, 1973.
 
+\bibitem{erdjcp17}
+E.~R. Davidson.
+\newblock {\em J.~Chem.~Phys.}, 17:87, 1975.
+
+\bibitem{ovhahjajjcc15}
+O.~Vahtras, H.~{\AA}gren, and H.~J.~Aa. Jensen.
+\newblock Direct one-index transformations in multiconfiguration response
+  calculations.
+\newblock {\em J.~Comput.~Chem.}, 15:573, 1994.
+
 \bibitem{jodlypjjcp91}
 J.~Olsen, D.~L. Yeager, and P.~J{\o}rgensen.
 \newblock Triplet excitation properties in large scale multiconfigurational
@@ -735,16 +850,6 @@ O.~Vahtras, H.~{\AA}gren, P.~J{\o}rgensen, H.~J.~Aa. Jensen, T.~Helgaker, and
 \newblock Multiconfigurational quadratic response functions for singlet and
   triplet perturbations: the phosphoresence lifetime of formaldehyde.
 \newblock {\em J.~Chem.~Phys.}, 97:9178, 1992.
-
-\bibitem{erdjcp17}
-E.~R. Davidson.
-\newblock {\em J.~Chem.~Phys.}, 17:87, 1975.
-
-\bibitem{ovhahjajjcc15}
-O.~Vahtras, H.~{\AA}gren, and H.~J.~Aa. Jensen.
-\newblock Direct one-index transformations in multiconfiguration response
-  calculations.
-\newblock {\em J.~Comput.~Chem.}, 15:573, 1994.
 
 \bibitem{pjhjajjojcp89}
 P.~J{\o}rgensen, H.~J.~Aa. Jensen, and J.~Olsen.

@@ -1,17 +1,17 @@
-\chapter{Molecular vibrations and rotations}\label{ch:vibrot}
+\chapter{Molecular vibrations}\label{ch:vibrot}
 
 In this chapter we discuss properties related  to the
-vibrational and rotational motions of a molecule. This includes
+vibrational motions of a molecule. This includes
 vibrational frequencies and the associated infrared
 (IR)\index{IR intensity} and Raman intensities\index{Raman intensity}.
 
 \section{Vibrational frequencies}\label{sec:vibfreq}
 
 The calculation of vibrational frequencies\index{vibrational
-frequency} and rotational constants\index{rotation constant} are
+frequency} are
 controlled by the keyword \Key{VIBANA}. Thus, in order to
-calculate the vibrational frequencies and the rotational constants
-of a molecule all that is is needed is the input:
+calculate the vibrational frequencies
+of a molecule, all that is is needed is the input:
 
 \begin{verbatim}
 **DALTON INPUT
@@ -185,7 +185,7 @@ Faraday Discuss.}, {\bf 99},\hspace{0.25em}165, (1994).
 
 \index{Raman intensity} Calculating Raman intensities is by no means
 a trivial task, and
-because of the computational cost of such calculations, and there are
+because of the computational cost of such calculations, there are
 therefore few theoretical investigations of basis set requirements and
 correlation effects on calculated Raman intensities. The Raman
 intensities calculated are the ones obtained within the Placzek
@@ -221,7 +221,7 @@ in Section~\ref{sec:vroa}
 .FREQUE
      2
 0.0 0.09321471
-**PROPERTIES
+**EACH STEP
 .RAMAN
 *ABALNR
 .THRESH
@@ -229,7 +229,7 @@ in Section~\ref{sec:vroa}
 .FREQUE
      2
 0.0 0.09321471
-**FINAL
+**PROPERTIES
 .RAMAN
 .VIBANA
 *RESPONSE
@@ -250,13 +250,9 @@ in Section~\ref{sec:vroa}
 **END OF DALTON INPUT
 \end{verbatim}
 
-The keyword \Key{ABALNR} in the general input module indicates that
-a frequency dependent linear response\index{linear response}\index{response!linear}
-calculation is to be done, in
-this case the calculation of the frequency-dependent
-polarizability\index{polarizability} as
-specified by the \Key{ALFA} keyword in the \Sec{ABALNR} input
-module. The keyword \Key{RAMAN} indicates that we are only
+The keyword \Key{RAMAN} in the general input module indicates that
+a frequency-dependent polarizability \index{polarizability}\index{response!linear}
+calculation is to be done. The keyword \Key{RAMAN} indicates that we are only
 interested in the Raman intensities\index{Raman intensity} and
 depolarization ratios\index{depolarization ratio}. Note
 that these parameters are also obtainable by using the keyword
@@ -302,6 +298,6 @@ a.u., and this step length may be adjusted by the keyword
 in the Cartesian directions and
 not along normal modes. This enables us to study the Raman intensities
 of a large number of isotopically substituted molecules at once. This
-is done in the \Sec{*FINAL} input section, where we
+is done in the \Sec{*PROPERTIES} input section, where we
 have requested one isotopically substituted species in addition to the
 isotopic species containing the most abundant isotope of each element.

@@ -576,7 +576,7 @@ coupling\index{hyperfine coupling} tensors
 using the Restricted-Unrestricted\index{restricted-unrestricted method}
 methodology~\cite{bfpjjbjothhjajjcp97}. In this approach, the
 unperturbed molecular system is described with a spin-restricted MCSCF
-wave function, and when the perturbation---Fermi Contact\index{Fermi
+wave function or spin-restricted Kohn--Sham DFT, and when the perturbation---Fermi Contact\index{Fermi
 contact} or Spin Dipole\index{spin-dipole}
 operators---is turned on, the wave function spin relaxes and all
 first-order molecular properties are evaluated as the sum of the
@@ -626,7 +626,6 @@ with the keyword \Key{G-TENSOR} in the
 .G-TENSOR
 **END OF DALTON INPUT
 \end{verbatim}
-
 which gives by default all contributions to the g-tensor to second order in
 the fine-structure parameter. Keywords following the \Key{G-TENSOR} keyword
 will be interpreted as g-tensor options, which are defined in section
@@ -660,7 +659,7 @@ with the keyword \Key{ZFS} in the
 .ZFS
 **END OF DALTON INPUT
 \end{verbatim}
-Note that only the first-order electron spin-spin contribution
+Note that only the first-order, two-electron, electronic spin--spin contribution
 is implemented.
 
 \section{CTOCD-DZ calculations}\label{sec:ctocd}

@@ -19,23 +19,23 @@ where linear, quadratic and cubic response functions and electronic
 transition properties are calculated.
 For CC3 however, it is only possible to calculate the wave function and 
 singlet excitation energies\index{response function}.
-At the moment molecular gradients are available 
-only up to the CCSD level~\cite{}\index{gradient} for ground states.  
+At the moment, molecular gradients are available 
+up to the CCSD(T) level~\cite{??}\index{gradient} for ground states.  
 London orbitals have so far not been implemented 
 for the calculation of magnetic
 properties\index{magnetic properties}\index{London orbitals}.
-In the manual more details can be found about the specific implementations.
+In the manual, more details can be found about the specific implementations.
 
 An additional feature of the program is that all levels of correlation
 treatment have been implemented using integral-direct techniques making
 it possible to run calculations using large basis
-sets~\cite{}\index{integral direct}.
+sets~\cite{???}\index{integral direct}.
 
 In this chapter the general structure of the input for the
 coupled cluster program is described.
 The complete input for the coupled cluster program appears as
 sections in the input for the \sir\ program, with the general
-input in \Sec{CC INPUT}. In order to get into the CC program
+input in the input section \Sec{CC INPUT}. In order to get into the CC program
 one has to specify the \Key{CC} keyword in the general input
 section of \sir\ \Sec{*WAVE FUNCTIONS}. For instance, a minimal
 input file for a CCSD(T) energy calculation would be:
@@ -65,4 +65,4 @@ the various input sections in the *CC INPUT section
 as detailed in the following sections.
 
 There is also a possibility for performing cavity coupled cluster
-self-consistent-reaction field calculations for solvent modelling~\cite{}.
+self-consistent-reaction field calculations for solvent modelling~\cite{???}.

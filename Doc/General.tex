@@ -46,7 +46,7 @@ and no calculation will be executed.
 
 \item[\Key{INTEGRALS}] Invoke the {\her} and/or the {\eri} program for generating molecular one-
 and two-electron integrals. See
-Chapter~\ref{ch:hermit} and the Chapter~\ref{ch:eri}\index{one-electron integral}\index{two-electron integral}.
+Chapter~\ref{ch:hermit} for the \her\ and Section~\ref{ch:eri}\index{one-electron integral}\index{two-electron integral} \eri\ programs, respectively.
 
 \item[\Key{ITERATION}]\verb| |\newline
 \verb|READ (LUCMD, '(I5)') ITERNR|
@@ -65,13 +65,13 @@ calculation (\verb|DALTON.IRC|) or a dynamical trajectory walk (\verb|DALTON.TRJ
 
 Change the maximum number of geometry iterations\index{iteration number!geometry, max}\index{geometry iterations!max}\index{geometry optimization!max number of iterations}\index{convergence!geometry, max iterations}
 that can be done. Default
-is~20. This number has to be increased in Intrinsic Reaction Coordinate
-(IRC)\index{IRC}\index{intrinsic reaction coordinate} or dynamical
-trajectory studies\index{dynamics}. For numerical
+is~20.  For numerical
 differentiation/vibrational averaging, the number of iterations will
 be reset to $6N+1$ (where $N$ is the number of nuclei) as the number
 of required iterations for these calculations are well
-defined. However, changing this variable will override this reset
+defined. This number has to be increased in Intrinsic Reaction Coordinate
+(IRC)\index{IRC}\index{intrinsic reaction coordinate} or dynamical
+trajectory studies\index{dynamics}. However, changing this variable will override this reset
 option.
 
 %\item[\Key{MINIMIZE}] Alternative keyword to \verb|.OPTIMIZE|. Obsolete,
@@ -104,7 +104,7 @@ implies that the calculation is
 done without writing two-electron integrals to disc. This keyword only
 applies to SCF\index{SCF}\index{HF}\index{Hartree--Fock} wave
 functions and DFT calculations\index{DFT}\index{Density Functional Theory}, but all two-electron integral
-evaluations in an SCF calculation will be done parallel. More details
+evaluations in an SCF calculation will be done parallel as well as the integration of the exchange-correlation functionals and kernels. More details
 about the parallelization strategy in \siraba\ can be found
 in Ref.~\cite{pndjhapdkrthhkcpl253}.
 
@@ -129,7 +129,7 @@ at least 2 is needed in the \Sec{PARALLEL} submodule.
 \item[\Key{PRESORT}]\index{integral sort} Requests that the
 two-electron integrals should be
 sorted and that the integral transformation routines of Bj\o rn
-Roos should be used during execution of the program. 
+Roos should be used during execution of the program. The keyword is needed if one attempts an MCSCF, CI or MP2 (run through the \sir\ module and not using the Coupled-Cluster module) with more than 255 basis functions.
 %This will only
 %work on 32-bit architectures, but is needed in order to be able to run
 %with more than 255 basis functions.
@@ -175,7 +175,7 @@ Invoke the programs {\her} and {\sir} for a single point energy calculation.
 
 %\item[\Key{RUNABA}] Alternative keyword to \verb|.RUN PROPERTIES|. Obsolete, do not use.
 
-\item[\Key{RUNERI}] Force the use of the new, vectorized integral code {\eri} where possible.
+\item[\Key{RUNERI}] Force the use of the vectorized integral code {\eri} where possible.
 
 %\item[\Key{RUNRSP}] Alternative keyword to \verb|.RUN RESPONSE|. Obsolete, do not use.
 
@@ -194,7 +194,7 @@ electric-field perturbations requested through the keyword \Key{POLARI}.
 Set the number of Fock matrices to be used during Fock-matrix constructions in 
 direct calculations. This function is only of interest for vector machines.
 The default is 128. The larger the number, the more memory will be required 
-in the calculations.
+in the calculation.
 
 \item[\Key{WALK}] 
 Do a geometry walk\index{geometry walk}. If no
@@ -202,7 +202,7 @@ input is given in the
 \Sec{WALK} input submodule, an optimization of the molecular
 geometry\index{geometry optimization} to a stationary point with no
 negative Hessian eigenvalues\index{Hessian} (a
-local minimum) will be done using the a second-order method with
+local minimum) will be done using a second-order method with
 analytical Hessians. However, this may be changed by appropriate
 keywords in the submodule \Sec{WALK}, and we refer to examples in
 the chapter on potential energy surfaces
@@ -243,7 +243,7 @@ included~\cite{VRML}.
 \item[\Key{1STORD}]
 Use default first-order method\index{first-order optimization}\index{geometry optimization!first-order}.
 This means that the BFGS update will\index{BFGS update}\index{Hessian update!BFGS}
-be used, and that the optimization carried out in redundant internal
+be used, and that the optimization is carried out in redundant internal
 coordinates\index{redundant internal coordinates}. Same effect as the
 combination of the two keywords \Key{BFGS} and \Key{REDINT}. Since the
 \Key{BFGS} method ensures a positive definite Hessian, the
@@ -259,7 +259,7 @@ to specifying the keywords \Key{NEWTON} and \Key{CARTES}.
 
 \item[\Key{BAKER}]
 Activates the convergence criteria of Baker \cite{Baker}. The minimum
-is then said to be found, when the largest element of the gradient
+is then said to be found when the largest element of the gradient
 vector (in Cartesian or redundant internal coordinates) falls below
 $3.0\cdot 10^{-4}$ and either the energy change from the last
 iteration is less than $1.0\cdot 10^{-6}$ or the largest element of
@@ -328,7 +328,7 @@ follows with the individual coordinate numbers. The coordinate numbers
 can be found by first running \dalton\ with the \Key{FINDRE}
 keyword. Any number of bonds, angles and dihedral angles may be
 frozen. NOTE: Symmetry takes precedence over constraints, if you
-e.g. want to freeze just one of several symmetric bonds, symmetry
+{\it e.g.\/} want to freeze just one of several symmetric bonds, symmetry
 must be lowered or switched off.
 
 \item[\Key{DELINT}]
@@ -372,7 +372,7 @@ internal coordinates are needed.
 \item[\Key{GDIIS}]
 Use the Geometrical DIIS\cite{pcppjms114}\index{geometrical DIIS}
 algorithm to control the
-step. Works in much the same way as DIIS for wave-functions. However,
+step. Works in much the same way as DIIS for wave functions. However,
 the rational function and level-shifted Newton methods are generally
 more robust and more efficient. Can only be used for minimizations.
 
@@ -417,12 +417,12 @@ optimization is interrupted, it can be restarted with the
 last geometry and the Hessian in \verb|DALTON.HES|, minimizing the
 loss of information. Another useful possibility, is to transfer
 the Hessian from a calculation on the same molecule with another
-(smaller) basis and/or a cheaper wave-function. Finally, one can go in
+(smaller) basis and/or a cheaper wave function. Finally, one can go in
 and edit the file directly to set up a specific force field.
 
 \item[\Key{INIMOD}]
 \index{model Hessian}\index{Hessian!model}\index{initial Hessian}\index{Hessian!initial}
-Use a simple model Hessian\cite{rlabgkpamcpl241} diagonal in redundant
+Use a simple model Hessian~\cite{rlabgkpamcpl241} diagonal in redundant
 internal coordinates as the initial Hessian. All diagonal elements are
 determined based on an extremely simplified molecular mechanics model,
 yet this model provides Hessians that are good starting points for
@@ -446,7 +446,7 @@ The default initial Hessian for first-order
 minimizations\index{first-order optimization} is the
 identity matrix when Cartesian coordinates are used, and a diagonal
 matrix when redundant internal coordinates are used. If \Key{INITEV}
-is used all the diagonal elements (and therefore the eigenvalues) are
+is used, all the diagonal elements (and therefore the eigenvalues) are
 set equal to the value EVLINI. This option only has effect when
 first-order methods are used and \Key{INITHE} and \Key{HESFIL} are
 non-present.
@@ -510,7 +510,7 @@ in each iterations, default is 3.
 Only has effect when doing saddle point optimizations\index{mode following}\index{geometry optimization!mode following}.
 Determines which Hessian eigenmode should be maximized (inverted in the image
 method). By default this is the mode corresponding to the lowest
-eigenvalue, {\bf i.e.} mode number 1. If an optimization does not end up at
+eigenvalue, {\it i.e.\/} mode 1. If an optimization does not end up at
 the correct transition state, it may be worthwhile following other modes
 (only the lower ones are usually interesting).
 
@@ -522,9 +522,9 @@ only a relatively crude approximation to the analytical Hessian.
 
 \item[\Key{NEWTON}]
 Specifies that a second-order Newton method should be used for\index{geometry optimization!second-order}
-optimization, that is the analytical Hessian will be calculated at
+optimization---that is, the analytical Hessian will be calculated at
 every geometry. By default the level-shifted trust region method will
-be used, but it's possible to override this by using one of the two
+be used, but it is possible to override this by using one of the two
 keywords \Key{RF} or \Key{GDIIS}.
 
 \item[\Key{NOAUX}]
@@ -599,7 +599,7 @@ level output.
 
 \item[\Key{PSB}]
 Specifies that a first-order method\index{first-order optimization} with the
-Powell-symmetric-Broyden (PSB)\index{PSB update}\index{Hessian update!PSB}
+Powell-Symmetric-Broyden (PSB)\index{PSB update}\index{Hessian update!PSB}
 update formula should be used for optimization.
 
 %\item[\Key{QUADSD}]
@@ -739,7 +739,7 @@ trust radius\index{trust radius} respectively. Default values are
 \verb|READ(LUCMD,*) RTENBD, RTENGD, RTRJMN, RTRJMX|
 
 Read four limits for the ratio between the actual and predicted
-energies. This ratio indicates how good the step is, that is how
+energies. This ratio indicates how good the step is---that is, how
 accurately the quadratic model describes the true energy
 surface. If the ratio is below \verb|RTRJMN| or above
 \verb|RTRJMX|, the step is rejected. With a ratio between
@@ -825,7 +825,7 @@ vibrational analysis has been requested.
 This submodule controls the performance of the parallel
 version\index{parallel calculation}
 of \siraba . The implementation has been described
-elsewhere~\cite{pndjhapdkrthhkcpl253}. \dalton\ only support MPI as
+elsewhere~\cite{pndjhapdkrthhkcpl253}. \dalton\ only supports MPI as
 message passing interface in the current release.
 %When PVM\index{PVM} is used as
 %message passing interface\index{message passing}, the
@@ -1107,7 +1107,7 @@ at a finite temperature.
 \verb|READ (LUCMD, *) NZEROG|\newline
 \verb|READ (LUCMD, *) (IZEROG(I), I = 1, NZEROG)|
 
- Set some gradient elements to set to zero.  Read
+ Set some gradient elements  to zero.  Read
 one more line specifying how many elements to zero, then one
 or more lines listing their sequence numbers.
 
@@ -1189,7 +1189,7 @@ the atomic coordinates.
 %\item[\Key{STRICT}] Strict mode following. Obsolete keyword. Do not use.
 
 \item[\Key{TEMPERATURES}]\verb| |\newline
-\verb|  READ (LUCMD, *) NTEMP|
+\verb|  READ (LUCMD, *) NTEMP|\newline
 \verb|  READ (LUCMD, *) (TEMP(ITMP), ITMP=1,NTEMP)|
 
 Read a set of temperatures for which the
@@ -1240,7 +1240,7 @@ state.
 
 \section{Numerical differentiation : \Sec{*NMDDRV}}\label{sec:nmddrv}
 
-This modules can calculate any geometrical derivative of the energy
+This module can calculate any geometrical derivative of the energy
 using either as high analytical derivatives as possible, or using the
 specified level of analytical derivatives (assuming implemented for
 the choice of wave function). Also performs vibrational averaging over
@@ -1266,17 +1266,17 @@ would be \verb|2  2|, since you would like to get 2.order numerical
 derivatives from 2.order analytical derivatives.
 
 \item[\Key{DRYRUN}]\verb| |\newline
-\verb|READ (LUCMD,'(I4)') NMREDU|
-\verb|READ (LUCMD,'(6I4)')| (KDRYRN(II),II=1,NMREDU)
+\verb|READ (LUCMD,*) NMREDU|\newline
+\verb|READ (LUCMD,*)| (KDRYRN(II),II=1,NMREDU)
 
 The numerical derivatives will not be calculated, and the program will
-just set up the required displacement. An option number of redundant
-coordinates can be specified, corresponding to translational and
+just set up the required displacement. An optional number of redundant
+coordinate displacements can be specified, corresponding to translational and
 rotational degrees of freedom.
 
 \item[\Key{HARMONIC FORCE FIELD}]\verb| |\newline
 
-At the end of the calculation, perform an vibrational analysis using
+At the end of the calculation, perform a vibrational analysis using
 the calculated Hessian matrix.
 
 \item[\Key{MANUAL}]\verb| |\newline
@@ -1298,7 +1298,7 @@ Use a precalculated Hessian available on the \verb|DALTON.HES| file
 when defining normal coordinates. Only active in combination with the
 keyword \Key{NORMAL}.
 
-\item[\Key{SYMMET}]\verb| |\newline
+\item[\Key{PRINT}]\verb| |\newline
 \verb|READ (LUCMD,*) IDRPRI|
 
 Control the print level in the numerical derivative routines. Default
@@ -1361,7 +1361,7 @@ for symmetry use, when differentiating from energies.
 \item[\Key{TEST N}]\verb| |\newline
 
 Test if the normal coordinates used for calculated geometrical
-derivatives gives rise to force fields with appropriate
+derivatives give rise to force fields with appropriate
 symmetries. Mainly for debugging purposes.
 
 \end{description}
@@ -1408,7 +1408,7 @@ to the total zero-point vibrational corrections to a molecular property.
 \item[\Key{SPIN-SPIN COUPLINGS}]\verb| |\newline
 
 Requests the calculation of indirect spin--spin coupling constants.
-If combined wit the keywords \Key{HARM-P} and \Key{ANHA-P}, the
+If combined with the keywords \Key{HARM-P} and \Key{ANHA-P}, the
 zero-point vibrational corrections to these coupling constants will be
 calculated. 
 

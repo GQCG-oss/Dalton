@@ -38,7 +38,7 @@ are available by adding the \verb|.DOUGLAS-KROLL|   keyword
 See also the \verb|energy_douglaskroll| example in the test suite.
 
   NOTE: Exact analytical gradients and Hessians are not available 
-at the moment, the approximate gradient and Hessians does however give fairly accurate geometries.  For this approach, only basis sets should be used 
+at the moment, the approximate gradient and Hessians does, however, give fairly accurate geometries.  For this approach, only basis sets should be used 
 where the contraction coefficients were optimized including the Douglas-Kroll 
 operators. DALTON currently provides:  DK-Pol (relativistic version of Sadlej's POL basis sets), raf-r for some heavy elements, and the relativistically recontracted correlation-consistent basis sets of Dunning (cc-pVXZ-DK, X=D,T,Q,5). The combination with 
 property operators should be done with care, {\it e.g.\/} the standard
@@ -61,7 +61,7 @@ magnetic property operators are not suitable in this case.
 for either replacing the Breit-Pauli spin-orbit operator, or as an operator 
 with suitable relativistic corrections in combination with the Douglas-Kroll 
 approach. It is based on an effective one-electron operator, where the two-electron
-terms are summed in a way comparable to the Fock operator. As all multi-center 
+terms are summed in a way comparable to the Fock operator~\cite{bahcmmuwogcpl251}. As all multi-center 
 integrals are neglected, this scheme is very fast, avoids the storage of the 
 two-electron spin-orbit integrals, and can therefore be used for large systems. 
 
@@ -74,7 +74,7 @@ two-electron spin-orbit integrals, and can therefore be used for large systems.
 
 For properties, the same substitution should be made, in the case of special 
 components, \verb|X1SPNORB| labels are replaced by \verb|X1MNF-SO| and so on, whereas the 
-two-electron terms will be skipped totally. For calculating phosphorescence with 
+two-electron terms will be skipped completely. For calculating phosphorescence with 
 the quadratic response scheme, \verb|.PHOSPHORESENCE| should be just replaced by 
 \verb|.MNFPHO| which takes care of choosing the appropriate integrals. 
 

@@ -23,7 +23,7 @@ J.~Chem.~Phys.} {\bf 108}, 7973 (1998).
 }}
 \end{center}
 
-The entire SCF\index{SCF}\index{HF}\index{Hartree--Fock} part
+The entire SCF\index{SCF}\index{HF}\index{Hartree--Fock} and Kohn--Sham DFT\index{Density Functional Theory}\index{DFT} part
 of the \dalton\ code is direct, including all derivative two-electron
 integrals, and all the way up to the cubic response function. To
 perform a direct\index{direct calculation} calculation, all that is
@@ -50,8 +50,8 @@ tighter integral screening threshold during the SCF iterations. Thus,
 direct calculations calculated using integral screening will, when
 converged, be almost as exact as the results obtained with integral
 screening turned off. The thresholds can be changed with the
-keywords \Key{IFTHRS} and \Key{ICEDIF}\index{integral screening}. To
-turn of integral screening in direct or parallel calculations
+keywords \Key{IFTHRS} and \Key{ICEDIF}\index{integral screening} in the \Sec{TWOINT} section of the \Sec{*INTEGRALS} input module. To
+turn off integral screening in direct or parallel calculations
 altogether, \Key{IFTHRS} should be set to 20 or larger.
 
 \section{Parallel methods}\label{sec:parallel}
@@ -70,7 +70,7 @@ and H.~Koch. \newblock {\em Chem.~Phys.~Lett.}, {\bf
 }}
 \end{center}
 
-As for direct methods, the entire Hartree--Fock part of the \dalton\
+As for direct methods, the entire Hartree--Fock and Kohn--Sham DFT parts of the \dalton\
 program has been parallelized using MPI\index{MPI}\index{message passing} as
 message passing interface. The use of the parallel code requires,
 however, that the code has been installed as a parallel

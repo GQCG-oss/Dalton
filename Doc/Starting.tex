@@ -32,7 +32,7 @@ of {\dalton}.
 We start by a simple geometry optimization\index{geometry optimization} 
 of a water molecule using a Complete 
 Active Space (CAS)\index{CASSCF} wave function, where we use C$_{2v}$ symmetry
-keeping the 1s-orbital on oxygen inactive and distributing the valence
+keeping the 1s orbital on oxygen inactive and distributing the valence
 electrons  into 8 orbitals. At the starting geometry we
 evaluate the nuclear magnetic shielding constants\index{nuclear shielding} 
 and the magnetizability\index{magnetizability} of the water
@@ -89,7 +89,7 @@ RAS3 space.
 
 In this input we once more use water as input molecule,
 where we keep
-the 1s inactive, correlate 8 electrons in 6 orbitals (Full-Valence
+the 1s orbital inactive, correlate 8 electrons in 6 orbitals (Full-Valence
 CAS) and in addition allow single- and double-excitations into
 7 additional orbitals.
 
@@ -250,9 +250,9 @@ A general input structure for {\dalton} will look like
 ...
 **START
 ...
-**PROPERTIES
+**EACH STEP
 ...
-**FINAL
+**PROPERTIES
 ...
 **RESPONSE
 *CUBIC
@@ -285,7 +285,7 @@ automatic symmetry detection\index{symmetry!automatic detection} and
 the other using Cartesian coordinates and where we explicitly give the
 symmetry elements. Finally we show the \mol\ input for H$_{2}$O$^{2+}$
 using Z-matrix input\index{Z-matrix input}. In
-all cases the basis set library of {\dalton} have been used, as we
+all cases the basis set library of {\dalton} has been used, as we
 assume that most users will exploit the basis sets provided in the basis
 set library as opposed to punching them in. The punching
 format for basis sets are described in detail in Sec.~\ref{sec:molcart}.
@@ -308,7 +308,7 @@ H    -1.4523499293         .8996235720         .0000000000
 
 On the fifth line the number of different atomtypes or more correctly,
 the number of  blocks of atoms,
-in this case two, oxygen and hydrogen. There are one oxygen with
+in this case two, oxygen and hydrogen, are given. There are one oxygen with
 charge 8, and two hydrogens with charge 1. The symmetry of the system
 will be detected by the program during the input processing unless
 turned off as shown in the last of the input examples for the \mol\
@@ -361,7 +361,7 @@ total charge\index{molecular charge} of the
 molecule ($+2$), and the keyword \verb|Nosymmetry| indicates that
 symmetry is not to be used in this calculation. Note that
 unlike Cartesian coordinate input, which by default is in atomic units, the
-Z-matrix input is always to be in \AA ngstr\o ms.
+Z-matrix input is always to be in \AA ngstr\"{o}m.
 
 \section{The first calculation with {\dalton}}\label{sec:firstcalc}
 
@@ -394,7 +394,7 @@ molecule input available as \verb|hcl.mol|, you would type
 assuming \verb|dalton| is available in your path. When the job is
 finished, the output is copied back as \verb|beta_hcl.out|. In case that the
 dalton- and molecule-input has the same name we may write
-\verb|dalton energy_nosymm|), and the corresponding output file will
+\verb|dalton energy_nosymm|, and the corresponding output file will
 be named \verb|energy_nosymm.out|. In addition, the program will copy
 back a file named \verb|beta_hcl.tar.gz|. This file contains, in
 tar'ed and gzip'ed form, a number of useful interface and
@@ -428,9 +428,12 @@ mem Mwords.
 memory\index{scratch memory} space to
 mem Mbytes.
 \item[-N nodes] Number of nodes to be used in a parallel MPI calculation
-controlled by running mpirun.
+controlled by running mpirun (or using mpiexec).
 \item[-o filename] Redirect the output normally printed in the
-  \verb|DALTON.INP| file to the file ``filename'' in the WRKDIR directory.
+  \verb|DALTON.OUT| file to the file ``filename'' in the WRKDIR
+  directory. On a computer system with distributed scratch disk but a
+  commonly mounted home directory, this allows you to follow the
+  calculation without having to log into the compute nodes.
 \item[-t tmpdir] Change the \verb|TMPDIR| (the scratch disc area) to
 \verb|tmpdir| from the default scratch directory determined at
 install-time.
@@ -447,18 +450,18 @@ tar'ed and gzip'ed file. This file may include the following set of
 different files:
 
 \begin{description}
-\item[DALTON.BAS] Contains a dump of a complete molecule input file
-obtainable by the keyword \Key{MOLPRI}. This file take maximum
+\item[DALTON.BAS] Contains a dump of a complete molecule input file.
+ This file take maximum
 advantage of formatted input, yet differences may occur compared to
 the basis sets obtained from the basis set library due to the
-restricted number of digits available in the standard-form output.
+restricted number of digits available in the standard-format output.
 
 \item[DALTON.CM] An output file that contains the most essential
 information needed for calculation of shielding polarizabilities
 and magnetizability polarizabilities. Most easily used together
 with the analyzing program \verb|ODCPRG.f| supplied in
 the\index{shielding polarizability}\index{magnetizability polarizability}\index{Cotton-Mouton}
-tool-directory.
+tools directory.
 
 \item[DALTON.HES] If the keyword \Key{HESPUN} has been specified in
 the \Sec{VIBANA} input module, the molecular Hessian\index{Hessian}
@@ -469,10 +472,10 @@ optimization, or as input to a ROA  or
 VCD\index{ROA}\index{Raman optical activity}\index{VCD}\index{vibrational circular dichroism}
 analysis with different basis sets/level of correlation for the
 intensity operators and the force field. See also the
-\verb|FChk2HES.f| program in the tool-directory.
+\verb|FChk2HES.f| program in the tools directory.
 
 \item[DALTON.IRC] Contains information obtained from an Intrinsic
-reaction Coordinate (IRC) calculation, as described in
+Reaction Coordinate (IRC) calculation, as described in
 Sec.~\ref{sec:irc}\index{IRC}\index{intrinsic reaction coordinate}.
 
 \item[DALTON.MOL] Contains the information needed by the
@@ -504,7 +507,7 @@ needed when restarting a walk (e.g. a numerical differentiation).
   (http://). Please also note that Jmol (http://jmol.sourceforge.net)
   also can visualize many aspects of a \dalton\ calculation, including an
   intrisic reaction coordinate calculation. Jmol uses the \dalton\ output
-  file for it's visualization.
+  file (DALTON.OUT) for it's visualization.
 
 \item[RESULTS.RSP] Contains a brief summary of the results obtained
   form the response functions that have finished. The program may use

@@ -26,16 +26,16 @@ See Chapter~\ref{ch:CC} for specification of CC property calculations.
 Note that \resp\ (Chapter~\ref{ch:response})
 is the most general part of the code for calculating
 many different electronic linear, quadratic, or cubic molecular
-response properties based on SCF or MCSCF or CI wave functions.
+response properties based on SCF, MCSCF, or CI wave functions or Kohn--Sham DFT.
 Some of these SCF/MCSCF properties can also be requested
 from the \Sec{*PROPERTIES} input modules described here.
 NOTE: for such properties you should request them either here or
 in \Sec{*RESPONSE}, otherwise you will calculate them twice!
 Usually the output is nicest here in
-the \Sec{*PROPERTIES} module (e.g. collected in tables and in
+the \Sec{*PROPERTIES} module ({\it e.g.\/} collected in tables and in
 often used units, most properties are only given in atomic
 units in \resp), and nuclear contributions are included if relevant.
-No nuclear contributions are added in \resp\.
+No nuclear contributions are added in \resp .
 Some specific properties, especially those involving nuclear derivatives,
 can only be calculated via \Sec{*PROPERTIES}.
 Other properties, for example quadratic and cubic molecular response functions
@@ -45,7 +45,7 @@ can only be calculated in the \Sec{*RESPONSE} module.
 \begin{description}
 
 \item[\Key{ALPHA}] Invokes the calculation of frequency dependent
-polarizabilities\index{frequency}\index{polarizability}
+polarizabilities\index{frequency}\index{polarizability}.
  Combined with the 
 keyword \Key{SOPPA} or \Key{SOPPA(CCSD)} it invokes a SOPPA\index{SOPPA} or SOPPA(CCSD) 
 \index{SOPPA(CCSD)} calculation of the frequency dependent polarizability.
@@ -61,8 +61,8 @@ undifferentiated solvent integrals in the {\her} section, see Chapter~\ref{sec:o
 
 \item[\Key{CTOCD}] Starts the calculation of the magnetic properties with the
 CTOCD-DZ\index{CTOCD-DZ} method (Ref.~\cite{paololazz1,paololazz2,ctocd}). This sets also 
-automatically the .NOLOND option since the CTOCD-DZ formalism is already truely gauge 
-independent (for Nuclear Magnetic Shieldings). The default gauge origin is choosen to be 
+automatically the .NOLOND option since the CTOCD-DZ formalism is gauge 
+independent for Nuclear Magnetic Shieldings. The default gauge origin is choosen to be 
 the center of mass.  \Key{CTOCD} and \Key{SOPPA} or \Key{SOPPA(CCSD)} can be combined to 
 perform CTOCD calculations at the SOPPA\index{SOPPA} or SOPPA(CCSD)\index{SOPPA(CCSD)} level.
 
@@ -81,10 +81,10 @@ affect properties in
 which changes in the dipole origin\index{dipole origin} is canceled by
 similar changes in the 
 nuclear part. It should also be used with care, as the same dipole
-origin must be used during the integral evaluation sections , in
+origin must be used during the integral evaluation sections, in
 particular if one is doing numerical 
 differentiation with respect to electric field perturbations. For such
-finite-field calculations\index{finite field} we refer to Chapter
+finite-field calculations\index{finite field}, we refer to Chapter
 \ref{ch:finite}, which deals with finite field calculations. It is
 primarily used for debugging.  
 
@@ -133,7 +133,7 @@ of gauge origin breaks the symmetry of the molecule.
 \item[\Key{HELLMA}]
 Tells the program to use the Hellman--Feynman approximation when
 calculating the molecular gradients and
-Hessians~\cite{hhbook,rpfpr56,vbthwkkrmp96} that is, all 
+Hessians~\cite{hhbook,rpfpr56,vbthwkkrmp96}---that is, all 
 contributions to the molecular gradient and Hessians from
 differentiation of the orbitals are ignored. Requires large basis sets
 in order to give reliable results, but does not require any
@@ -167,16 +167,16 @@ Ref.~\cite{krthklbpjhjajjcp99}. The use of London
 orbitals can be disabled by the keyword \Key{NOLOND}.
 
 Furthermore, the natural connection\index{natural connection}
-(Ref.~\cite{joklbkrthpjtca90,krthjopjklbcpl235}) is default in order to ensure
+(Ref.~\cite{joklbkrthpjtca90,krthjopjklbcpl235}) is the default in order to ensure
 numerically stable results. The natural
-connection can be turned off by the keyword \Key{NODIFC} in which case
+connection can be turned off by the keyword \Key{NODIFC}, in which case
 the symmetric connection\index{symmetric connection} will be used.
 
-The gauge origin\index{gauge origin} are chosen to be the center of
+The gauge origin\index{gauge origin} is chosen to be the center of
 mass\index{center of mass} of the molecule. 
 This origin can be changed by the two keywords \Key{GAUGEO} and
 \Key{NOCMC}. This will of course not affect the total magnetizability,
-only the size of the dia- and paramagnetic terms.
+only the magnitude of the dia- and paramagnetic terms.
 
 Combined with the keyword \Key{SOPPA} or \Key{SOPPA(CCSD)} it invokes a SOPPA\index{SOPPA} 
 or SOPPA(CCSD)\index{SOPPA(CCSD)} calculation of the magnetizability and the rotational 
@@ -281,7 +281,7 @@ corrections\index{Darwin correction}, are calculated
 perturbatively.
 
 \item[\Key{NQCC}] Calculates the nuclear quadrupole moment
-coupling constant\index{nuclear quadrupole coupling}\index{NQCC}. 
+coupling constants\index{nuclear quadrupole coupling}\index{NQCC}. 
 
 \item[\Key{NUMHES}] In VROA or Raman intensity calculations, use the
   numerical Hessian calculated from the analytical gradients instead
@@ -312,7 +312,7 @@ polarizabilities.
 
 \item[\Key{POPANA}] Invokes a population analysis\index{population analysis}\index{dipole gradient} based on the 
 dipole gradient as first introduced by Cioslowski \cite{jcjacs111}.
-This flag also invokes the \Key{DIPGRA} flag and the \Key{POLARI} flags.
+This flag also invokes the \Key{DIPGRA} flag and the \Key{POLARI} flags. Note that the charges obtained in this approach is not without conceptual problems (as are the Mulliken charges)~\cite{hskrpeojcp???}.
 
 \item[\Key{PRINT}]\verb| |
 \newline
@@ -371,7 +371,7 @@ Ref.~\cite{kwjfhppjacs112,krthrkpjklbhjajjcp100}. The use of London
 orbitals can be disabled by the keyword \verb|.NOLOND|.
 
 Furthermore, the natural connection\index{natural connection}
-(Ref.~\cite{joklbkrthpjtca90,krthjopjklbcpl235}) is default in order to ensure
+(Ref.~\cite{joklbkrthpjtca90,krthjopjklbcpl235}) is the default in order to ensure
 numerically stable results as well as physically interpretable
 results for the paramagnetic and diamagnetic terms. The natural
 connection can be turned off by the keyword \verb|.NODIFC| in which
@@ -438,10 +438,7 @@ contributions (Fermi contact, dia- and paramagnetic spin-orbit and
 spin-dipole)\index{Fermi contact}\index{spin-dipole}\index{paramagnetic spin-orbit}\index{diamagnetic spin-orbit}. The implementation is described in 
 Ref.~\cite{ovhapjhjajsbpthjcp96}. 
 
-As this is a very time consuming property, as well as requiring MCSCF
-wave functions (or MP2 wave functions used together with the keyword
-\verb|.SOPPA| or CCSD wave functions used together with the keyword \verb|.SOPPA(CCSD)|) 
-in order to get reliable results, it is recommended to 
+As this is a very time consuming property, it is recommended to 
 consult the chapter describing the calculation of NMR-parameters
 (Ch.~\ref{ch:magnetic}). The main control of which
 contributions and which nuclei to calculate spin-spin couplings
@@ -689,7 +686,7 @@ the \verb|*EXCITA| input
 module. For SCF\index{SCF}\index{HF}\index{Hartree--Fock} wave
 functions the properties are calculated using the 
 random phase approximation (RPA) and for MCSCF\index{MCSCF} wave functions the
-multiconfigurational (MC)-RPA is used. Implemented electronic transition
+multiconfigurational (MC)-RPA is used. In the case of Kohn--Sham DFT, time-dependent linear response theory is used in the adiabatic approximation with the exact functional kernel. Implemented electronic transition
 properties are at the moment:
 
 \begin{enumerate}
@@ -832,14 +829,6 @@ value is \verb|TRUE| if
 magnetizability has been requested in the general input module,
 otherwise \verb|FALSE|.
 
-\item[\Key{NODC}] Do not calculate contributions from the inactive
-one-electron density matrix. This will give wrong results for the
-one-electron expectation values. Mainly for debugging purposes.
-
-\item[\Key{NODV}] Do not calculate contributions from the active
-one-electron density matrix. This will give wrong results for the
-one-electron expectation values. Mainly for debugging purposes.
-
 \item[\Key{ELFGRA}] Invokes the calculation of the electronic
 contribution to the nuclear quadrupole moment coupling
 tensor\index{nuclear quadrupole coupling}\index{NQCC} (that
@@ -848,6 +837,14 @@ is, the electric field
 gradient). Default value is \verb|TRUE| if 
 nuclear quadrupole coupling constants have been requested in the
 general input module, otherwise \verb|FALSE|.
+
+\item[\Key{NODC}] Do not calculate contributions from the inactive
+one-electron density matrix. This will give wrong results for the
+one-electron expectation values. Mainly for debugging purposes.
+
+\item[\Key{NODV}] Do not calculate contributions from the active
+one-electron density matrix. This will give wrong results for the
+one-electron expectation values. Mainly for debugging purposes.
 
 \item[\Key{NEFIEL}] Invokes the evaluation of the electric
 field at the individual nuclei\index{electric field!at nucleus}. Default
@@ -858,7 +855,7 @@ module, otherwise \verb|FALSE|. In the current implementation,
 symmetry dependent nuclei cannot be used when calculating this property.
 
 \item[\Key{POINTS}]\verb| |\newline
-\verb|READ (LUCMD,*)|
+\verb|READ (LUCMD,*) NPOINT|
 
 Set the number of integration points to be used in the Gaussian
 quadrature\index{Gaussian quadrature}
@@ -934,8 +931,7 @@ purposes.
 \subsection{Geometry analysis: \Sec{GEOANA}}
 
 Directives controlling the calculation and printing of bond angles\index{bond distance}\index{bond angle}\index{dihedral angle}\index{geometry!bond distance}\index{geometry!bond angle}\index{geometry!dihedral angle}
-and dihedral angles appear in the \verb|*GEOANA| section. By default all
-bond distances will be calculated. The program will also define atoms
+and dihedral angles appear in the \verb|*GEOANA| section. The program will also define atoms 
 to be bonded to each other depending on their bond distance. For all atoms
 defined to be bonded to each other, the bond distance and bond angles
 will be printed.
@@ -982,7 +978,7 @@ value, but it is overwritten by the keywords \verb|.ANGLES| and
 
 Directives affecting the construction of the right-hand
 sides~(RHS)\index{property gradient}\index{right-hand side}---that is,
-gradient terms---for the response 
+property gradient terms---for the response 
 calculation as well as some matrices needed for reorthonormalization
 contributions appear in the \verb|*GETSGY| section. 
 
@@ -1030,11 +1026,11 @@ properties. This will give wrong results for these properties. Mainly
 for debugging purposes.
 
 \item[\Key{INTPRI}]\verb| |\newline
-\verb|READ (LUCMD, '(5I5)') IPRINT, IPRNTA, IPRNTB, IPRNTC, IPRNTD|
+\verb|READ (LUCMD, *) IPRINT, IPRNTA, IPRNTB, IPRNTC, IPRNTD|
 
 Set print level for the derivative integral calculation for a particular shell
 quadruplet.  Read one more line containing print level and the four
-shell indices~(5I5).  The print level is changed from the default
+shell indices.  The print level is changed from the default
 for this quadruplet only. Default value is the value of \verb|IPRDEF|
 from the general input module. Note that the print level of all shell
 quadruplets can be changed by the keyword \verb|.PRINT |.
@@ -1191,7 +1187,7 @@ Directives to control the calculation of frequency-independent linear
 response functions\index{linear response}\index{response!linear}. At
 present these directives only affect the 
 calculation of frequency-independent linear response functions appearing
-in connection with singlet, magnetic perturbations. 
+in connection with singlet, magnetic imaginary perturbations. 
 
 \begin{description}
 \item[\Key{MAX IT}]\verb| |\newline
@@ -1233,8 +1229,8 @@ the general input module.
 
 \item[\Key{SKIP}] Skip the calculation of the frequency-independent
 response functions. This will give wrong results for shielding,
-magnetizabilities, and spin-spin coupling constants\index{nuclear
-shielding}\index{spin-spin coupling}\index{magnetizability}. Mainly for
+magnetizabilities, optical rotation, VCD, VROA and spin-spin coupling constants\index{nuclear
+shielding}\index{spin-spin coupling}\index{magnetizability}\index{optical rotation}\index{vcd}\index{vroa}. Mainly for
 debugging purposes.
 
 \item[\Key{STOP}] Stops the program after finishing the
@@ -1317,7 +1313,7 @@ Hessians has been evaluated\index{gradient}\index{Hessian}. Mainly for debugging
 \subsection{Relaxation contribution to Hessian: \Sec{RELAX}}
 
 Directives controlling the calculation of the relaxation
-contributions (i.e., those from the response terms) to the different
+contributions ({\it i.e.\/} those from the response terms) to the different
 second-order molecular properties, appear in the \verb|*RELAX| section.
 \begin{description}
 \item[\Key{NOSELL}] Do not use Sellers' method \cite{hsijqc30}. This method
@@ -1471,7 +1467,7 @@ using the second-order polarization propagator approximation, see
 Chapter~\ref{ch:soppa}. 
 
 \begin{description}
-\item[\Key{HIRPA}] Use thehigher-order RPA Polarization Propagator
+\item[\Key{HIRPA}] Use the higher-order RPA Polarization Propagator
   Approximation.
 
 \item[\Key{SOPW4}] Requests that the W4 term in the SOPPA expressions
@@ -1489,12 +1485,12 @@ spin-spin coupling constants that are to be calculated.
 \item[\Key{ABUNDA}]\verb| |\newline
 \verb|READ (LUCMD,*) ABUND|
 
-Set the natural abundance\index{abundance!spin-spin} threshold in per cent
+Set the natural abundance\index{abundance!spin-spin} threshold in percent
 for discarding couplings between certain nuclei.
 By default all isotopes in the molecule with a natural
 abundance above this limit will be included in the list of nuclei for which
 spin-spin coupling constants will be calculated. Read one more line
-containing the abundance threshold in per cent. The default value is~1.0 (i.e. 1\%),
+containing the abundance threshold in percent. The default value is~1.0 ({\it i.e.\/} 1\%),
 which includes both protons and $^{13}$C nuclei.
 
 \item[\Key{COUPLING NUCLEUS}]\verb| |\newline
@@ -1723,11 +1719,11 @@ second derivatives. This is default if only molecular gradients and
 not the molecular Hessian has been requested.
 
 \item[\Key{INTPRI}]\verb| |\newline
-\verb|READ (LUCMD, '(5I5)') IPRINT, IPRNTA, IPRNTB, IPRNTC, IPRNTD|
+\verb|READ (LUCMD,*) IPRINT, IPRNTA, IPRNTB, IPRNTC, IPRNTD|
 
 Set print level for the derivative integral calculation for a particular shell
 quadruplet.  Read one more line containing print level and the four
-shell indices~(5I5).  The print level is changed from the default
+shell indices.  The print level is changed from the default
 for this quadruplet only. Default value is the value of \verb|IPRDEF|
 from the general input module. Note that the print level of all shell
 quadruplets can be changed by the keyword \verb|.PRINT |.

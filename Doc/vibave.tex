@@ -41,7 +41,7 @@ calculated from a knowledge of part of the cubic force field
 where the summation runs over all normal modes in the molecule and
 where $\omega_i$ is the harmonic frequency of normal mode $i$ and
 $V^{\left(3\right)}_{ijj}$ is the cubic force field. A typical input
-for determining (ro)vibrationally averages Hartree--Fock geometries
+for determining (ro)vibrationally averaged Hartree--Fock geometries
 for different water isotopomers will look like
 
 \begin{verbatim}
@@ -63,11 +63,11 @@ for different water isotopomers will look like
 *RESPONS
 .THRESH
  1.0D-5
-**PROPERTIES
+**EACH STEP
 *RESPONS
 .THRESH
  1.0D-5
-**FINAL
+**PROPERTIES
 .VIBANA
 *RESPONS
 .THRESH
@@ -92,7 +92,7 @@ number of atoms in the molecules. Although expensive, it allows
 species, in the above 
 example for H$_2\;^{16}$O, HD$\;^{16}$O, D$_2\;^{16}$O,
 H$_2\;^{18}$O. This is directed by the keyword \verb|.ISOTOP|. We
-note that the most abundant isotope will always be calculated, and are
+note that the most abundant isotope will always be calculated, and is
 therefore not included in the list above.
 
 We have requested that rovibrationally averaged geometries be
@@ -118,7 +118,7 @@ be set to 0.0075~\cite{poakrprtjcp112}. We note that we will still need to calcu
 analytical Hessian in order to determine the normal coordinates.
 
 The default maximum number of iterations is 20. However, \dalton\ will
-automatically reset the maximum number of iterations to 6$N$+1 in case
+automatically reset the maximum number of iterations to 6$K$+1 in case
 of vibrational averaging calculations. The maximum number of
 iterations can also be set explicitly by using
 the keyword \verb|.MAX IT| in the \verb|**DALTON INPUT| module.
@@ -161,7 +161,7 @@ nuclear shielding constants can be obtained from the following input
 *RESPONS
 .THRESH
  1.0D-5
-**PROPERTIES
+**EACH STEP
 .SHIELD
 *LINRES
 .THRESH
@@ -189,7 +189,7 @@ order to determine the harmonic force field.
 
 
 The default maximum number of iterations is 20. However, \dalton\ will
-automatically reset the maximum number of iterations to 6$N$+1 in case
+automatically reset the maximum number of iterations to 6$K$+1 in case
 of vibrational averaging calculations. The maximum number of
 iterations can also be set explicitly by using
 the keyword \verb|.MAX IT| in the \verb|**DALTON INPUT| module.
@@ -241,6 +241,6 @@ the equilibrium geometry of the molecule, and both the harmonic and
 anharmonic contributions are included. The approach is very similar to
 that presented in the previous two sections, and a detailed
 description of the two approaches and a comparison of the two methods
-are given in Ref.~\cite{XXXXXX}. For information about the special input
+are given in Ref.~\cite{tarkr}. For information about the special input
 modules used in the above input example, we refer to
 Sec.~\ref{sec:nmddrv}. 

@@ -82,7 +82,7 @@ Sec.~\ref{sec:solventgeoopt}.
 \item 2.nd-order methods: T.U.Helgaker, J.Alml\"{o}f, H.J.Aa.Jensen,
 and P.J{\o}rgensen.\newblock {\em J.Chem.Phys.}, {\bf
 84},\hspace{0.25em}6266, (1986).
-\item 1.st-order methods: V.Bakken, and T.Helgaker, To be published.
+\item 1.st-order methods: V.Bakken, and T.Helgaker, \newblock {\em J.Chem.Phys.}, {\bf 117},\hspace{0.15em} 9160 (2002).
 \item Excited-state optimization: A.Cesar, H.\AA gren, T.Helgaker, P.J\o rgensen, and H.J.Aa.Jensen.\newblock {\em J.Chem.Phys.}, {\bf
 95},\hspace{0.25em}5906, (1991).
 \item Solvent Hessian: P.-O.\AA strand, K.V.Mikkelsen, K.Ruud and
@@ -109,7 +109,7 @@ geometry, will look like
 .2NDORD
 **WAVE FUNCTIONS
 .HF
-**FINAL
+**PROPERTIES
 .VIBANA
 .SHIELD
 **END OF DALTON INPUT
@@ -130,8 +130,8 @@ first-order methods, and fewer steps will usually be needed to reach
 the minimum~\cite{vbthjcp117}. However, the price one has to pay for this, is that each
 iteration uses significantly more CPU time. Another advantage of
 second-order methods, is that the program will automatically break the symmetry\index{symmetry!breaking}\index{geometry optimization!symmetry breaking}
-of the molecule, if needed in order to reach a minimum
-(unless the user specifies that symmetry not should be broken). If
+of the molecule, if needed, in order to reach a minimum
+(unless the user specifies that symmetry should not be broken). If
 one wants to minimize a water molecule starting from a linear
 geometry and using molecular symmetry, a first-order method will
 ``happily'' yield a linear geometry with optimized bond lengths, whereas
@@ -154,7 +154,7 @@ input:
 .TOTSYM
 **WAVE FUNCTIONS
 .HF
-**FINAL
+**PROPERTIES
 .VIBANA
 .SHIELD
 **END OF DALTON INPUT
@@ -187,7 +187,7 @@ optimization\index{first-order optimization}\index{geometry optimization!first-o
 .OPTIMIZE
 **WAVE FUNCTIONS
 .HF
-**FINAL
+**PROPERTIES
 .VIBANA
 .SHIELD
 **END OF DALTON INPUT
@@ -352,8 +352,8 @@ which part of the calculation that module controls. The reader is
 referred to the section describing each module for a closer
 description of the different options. These sections may, with the
 exception of the \Sec{OPTIMIZE} and \Sec{WALK} section, be specified
-in any of the modules \Sec{*START}, \Sec{*PROPERTIES}
-and \Sec{*FINAL}. The \Sec{OPTIMIZE} and \Sec{WALK} is
+in any of the modules \Sec{*START}, \Sec{*EACH STEP}
+and \Sec{*PROPERTIES}. The \Sec{OPTIMIZE} and \Sec{WALK} is
 to be placed in the \Sec{*DALTON} module, and will apply to the
 entire calculation.
 
@@ -931,7 +931,7 @@ basis set superposition errors\index{BSSE}\index{basis set!superposition error}
 become apparent. We will below return to how
 one then calculates translational energy release of the reaction.
 
-During the whole calculation a file
+During the whole calculation, a file
 \texttt{DALTON.TRJ}\index{DALTON.TRJ} is updated. This
 file contains information from the entire dynamic walk. If a
 walk is restarted from a given point, the new information will be
@@ -985,8 +985,8 @@ structure.
 functions}\label{sec:nonvargeom}
 
 \dalton\ do not have any support for the calculation of molecular
-gradients and Hessians for the non-variational wave functions like
-CI\index{CI}\index{Configuration Interaction}. However, in order to
+gradients and Hessians for the non-variational wave functions such as
+CI and NEVPT2\index{CI}\index{Configuration Interaction}\index{NEVPT2}. However, in order to
 exploit the facilities of the first-order
 geometry optimization routines in {\dalton}, a numerical
 gradient\index{numerical gradient} based
@@ -1007,7 +1007,7 @@ module}, the only input needed is
 
 The size of the displacements used during the evaluation of the
 numerical gradient can be controlled through the keyword
-\Key{DISPLA} in the \Sec{OPTIIMI} input module. Default value is
+\Key{DISPLA} in the \Sec{OPTIMI} input module. Default value is
 $1.0\cdot 10^{-3}$ a.u. By default, the threshold for convergence
 of the geometry will be changed because of estimated inaccuracies
 in the numerical gradients. However, if the threshold for

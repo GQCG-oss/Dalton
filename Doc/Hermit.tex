@@ -34,7 +34,7 @@ Hessians or to calculate MCSCF gradients.}
     Input to integral evaluation is
 indicated by the keyword \Sec{*INTEGRALS}, and the section may be
 ended with \Sec{END OF} or any keyword starting with two stars
-(like e.g. \Sec{*WAVE FUNCTIONS}). The intermediate input is
+(like {\it e.g.\/} \Sec{*WAVE FUNCTIONS}). The intermediate input is
 divided into two sections: one general input section describing
 what molecular integrals are to be evaluated, and then a set of
 modules controlling the different parts of the calculation of
@@ -60,7 +60,7 @@ General-purpose directives are given in the \Sec{*INTEGRALS}
 section. This mainly includes requests for different atomic integrals,
 as well as some
 directives affecting the outcome of such an integral evaluation. Note
-that although not explicitly stated, {\em all test options do not
+that although not explicitly stated, {\em none of the test options
 work with symmetry}.
 
 For all atomic integrals, the proper expression for the integral is
@@ -73,10 +73,10 @@ non-{\dalton} programs).
 We also note that as long as any single atomic property
 integral\index{property integral} is
 requested in this module, the overlap integrals will also be
-calculated. Note also, that unless the Huckel starting guess is turned
+calculated. Note also, that unless the H\"{u}ckel starting guess is turned
 off, this overlap matrix will not only be calculated for the requested
-basis set, but also for ``ghost'' ano-4 basis set appended to the
-original set in order to do the Huckel starting guess.
+basis set, but also for a ``ghost'' ano-4 basis set appended to the
+original set in order to do the H\"{u}ckel starting guess.
 
 \begin{description}
 \item[\Key{1ELPOT}] One-electron potential energy integrals.
@@ -101,8 +101,7 @@ integrals with a perturbation factor \verb|DARFAC|.
 
 \item[\Key{ANGLON}] Contribution to the one-electron contribution of
 the magnetic moment\index{magnetic moment} using London orbitals
-\index{London orbitals} arising from the differentiation on the
-London phase factors, see Ref.~\cite{thpjjcp95}.
+\index{London orbitals} arising from the differentiation of London-orbital transformed Hamiltonian, see Ref.~\cite{thpjjcp95}.
 
 \begin{list}{}{}
 \item Integral: $\left<\chi_{\mu}\left|{\bf
@@ -257,7 +256,7 @@ line containing the three Cartesian components (*). Default is~(0,0,0).
 \item Property label: \verb|XDIPVEL |, \verb|YDIPVEL |, \verb|ZDIPVEL |
 \end{list}
 
-\item[\Key{DNS-KE}] Kinetic-energy correction to diamagnetic
+\item[\Key{DNS-KE}] Kinetic-energy correction to the diamagnetic
 contribution to nuclear shielding constants with a common gauge
 origin, see Ref.~\cite{pmpljvkrjcp119}.
 
@@ -270,7 +269,7 @@ of the symmetry-adapted nuclear magnetic moment coordinate, and
 is the gauge origin.
 \end{list}
 
-\item[\Key{DPTOVL}] DPT integrals: Small-component one-electron
+\item[\Key{DPTOVL}] DPT (Direct Perturbation Theory) integrals: Small-component one-electron
 overlap integrals.
 
 \begin{list}{}{}
@@ -280,7 +279,7 @@ r}^2}\right|\chi_{\nu}\right>$
 \verb|dd/dxdz|, \verb|dd/dydy|, \verb|dd/dydz|, \verb|dd/dzdz|
 \end{list}
 
-\item[\Key{DPTPOT}] DPT integrals: Small-component one-electron
+\item[\Key{DPTPOT}] DPT  (Direct Perturbation Theory) integrals: Small-component one-electron
 potential energy integrals.
 
 \begin{list}{}{}
@@ -291,7 +290,7 @@ r}}\right|\chi_{\nu}\right>$
 \verb|DERXZ+ZX|, \verb|DERYY|, \verb|DERYZ+ZY|, \verb|DERZZ|
 \end{list}
 
-\item[\Key{DPTPXP}] DPT integrals: Small-component dipole length
+\item[\Key{DPTPXP}] DPT  (Direct Perturbation Theory) integrals: Small-component dipole length
   integrals for Direct Perturbation Theory.
 
 \begin{list}{}{}
@@ -382,7 +381,7 @@ integrals\index{electric field!gradient}.
 \item Integral: $\frac{1}{3}\left<\chi_{\mu}\left|\frac{3{\bf
 r}_K{\bf r}_K^T - {\bf r}_K^T{\bf r}_KI}{r_K^5}\right|\chi_{\nu}\right>$
 \item Property labels: \verb|xyEFGabc|, where \verb|x| and \verb|y| are
-the Cartesian directions, \verb|ab| the number of the symmetry
+the Cartesian directions, \verb|abc| the number of the symmetry
 independent center, and \verb|c| that centers c'th symmetry-generated
 atom.
 \end{list}
@@ -529,7 +528,7 @@ around the nuclei to which the
 atomic orbitals are attached. This is the London atomic
 orbital\index{London orbitals}
 magnetic moment\index{magnetic moment} as defined in Eq.~(35) of
-Ref.~\cite{krthklbpjhjajjcp99}.
+Ref.~\cite{krthklbpjhjajjcp99}. The integral is calculated as the sum of \Key{LONMOM} and \Key{ANGLON}.
 
 \begin{list}{}{}
 \item Integral:
@@ -711,7 +710,7 @@ component (x/y/z) of the third moment tensor. Currently, this integral
 does not work with symmetry.
 
 \item[\Key{OZ-KE}] Calculates the kinetic energy correction to the
-  orbital Zeeman operator, see Ref.~\ref{pmpljvkrjcp119}.
+  orbital Zeeman operator, see Ref.~\cite{pmpljvkrjcp119}.
 
 \begin{list}{}{}
 \item Integral: $\left<\chi_{\mu}\left|\left[\nabla^2,{\mathbf
@@ -805,7 +804,7 @@ $\left<\chi_{\mu}\left|\nabla\left(\sum_K\frac{Z_K}{r_iK}\right)\nabla\right|\ch
 \verb|READ (LUCMD,'(A7)') FIELD3|
 
 London orbital corrections arising from the second-moment of charge
-operator in finite-perturbation calculations involving and external
+operator in finite-perturbation calculations involving an external
 electric field gradient. Possible values for the perturbation (FIELD3)
 may be XX/XY/XZ/YY/YZ/ZZ-FGRD.
 
@@ -813,7 +812,7 @@ may be XX/XY/XZ/YY/YZ/ZZ-FGRD.
 \item Integral: 
 \item Property labels: \verb|ab-QDB X|, \verb|ab-QDB Y|,
   \verb|ab-QDB Z|, where $ab$ is the component of the electric field
-  gradient operator read in in the variable FIELD3.
+  gradient operator read in the variable FIELD3.
 \end{list}
 
 \item[\Key{QDBTST}] Test of the \Key{QDBINT} integrals, mainly for
@@ -1016,7 +1015,7 @@ r}^{T}\right|\chi_{\nu}\right>$
 
 Select which atoms for which a given atomic integral is to be
 calculated. This applies mainly to property integrals for which
-there exist a set of integrals for each nuclei. Read one more line
+there exist a set of integrals for each nucleus. Read one more line
 containing the number of atoms selected, and then another line
 containing the numbers of the atoms selected. Most useful when
 calculating diamagnetic spin-orbit\index{diamagnetic spin-orbit}
@@ -1144,13 +1143,13 @@ integral}\index{third-moment}.
 \end{list}
 
 \item[\Key{U12INT}] Calculation of two-electron integrals over
-  $\left[T1,r12\right]$.
+  $\left[T1,r_{12}\right]$.
 
 \item[\Key{U21INT}] Calculation of two-electron integrals over
-  $\left[T2,r12\right]$.
+  $\left[T2,r_{12}\right]$.
 
 \item[\Key{WEINBG}]\verb| |\newline
-\verb|READ (LUCMD,*) BGWEIN|
+\verb|READ (LUCMD,*) BGWEIN|\newline
 Read in the square of the sin of the Weinberg angle appearing in the
 definition of parity-violating integrals, see \Key{PVIOLA}. The
 Weinberg angle factor will if this keyword is used be set to
@@ -1247,13 +1246,13 @@ Set maximum number of primitives\index{primitive orbitals} in any
 contraction.  Read one more line containing number.  Default
 is~25, except for the Cray-T3D/E, where the default is 14.
 
-\item[\Key{MOLINP}] Indicates that the molecular input comes on the
+\item[\Key{MOLINP}] Indicates that the molecular input comes at the
 end of the current file. 
 %Default is that the molecular input is to be
 %read from unit~9.
 
 \item[\Key{OLDNORM}] Use the normalization scheme for spherical AO's used in {\dalton} 1.0.
-From {\dalton} 1.1 all components of spherical AO's are normalized to 1.
+From {\dalton} 1.1, all components of spherical AO's are normalized to 1.
 This was not the case in {\dalton} 1.0, and this option is needed to read 
 MO's correctly from an old file generated by {\dalton} 1.0 if spherical AO's were used.
 (Cartesian AO's are still not all normalized to 1 for $d$-orbitals and higher $l$'s.)
@@ -1317,7 +1316,7 @@ Default is totally-symmetric two-electron integrals
 Set the print level in the fast-I/O routines. Default is a print level of 0.
 
 \item[\Key{KEEP}]\verb| |\newline
-\verb|READ (LUCMD, *) (ISKEEP(I),I=1,8)|
+\verb|READ (LUCMD, *) (ISKEEP(I),I=1,8)|\newline
 Allowed values: 0 and 1.
 A value of "1" indicates that the basis functions of this symmetry will
 not be used and the integrals with these basis functions are omitted.
@@ -1382,7 +1381,7 @@ integral calculation appear in the \Sec{TWOINT} section.
 Screening\index{integral screening} threshold for Coulomb and exchange
 contributions to the Fock
 matrix in direct and parallel calculations. The thresholds for the
-integrals are ten to the power of these numbers. By default the same
+integrals are ten to the negative power of these numbers. By default the same
 screening threshold will be used for Coulomb and exchange
 contribution which will change dynamically as the wave function
 converges more and more tightly.
@@ -1399,11 +1398,11 @@ proposed by Panas as a simple way of introducing electron
 correlation in calculations of molecular energies~\cite{ipcpl245}.
 
 \item[\Key{PRINT}]\verb| |\newline
-\verb|READ (LUCMD, '(5I5)') IPRINT, IPRNTA, IPRNTB, IPRNTC, IPRNTD|
+\verb|READ (LUCMD, *) IPRINT, IPRNTA, IPRNTB, IPRNTC, IPRNTD|
 
 Set print level for the derivative integral calculation of a particular shell
 quadruplet.  Read one more line containing print level and the four
-shell indices~(5I5).  The print level is changed from the default
+shell indices.  The print level is changed from the default
 for this quadruplet only.
 
 \item[\Key{RETURN}] Stop after the shell quadruplet specified
@@ -1439,7 +1438,7 @@ available in {\eri}.
 \verb|READ (LUCMD,*) IAOBCH| 
 
 Only integrals with the first integral index belonging to AO batch
-number \verb|IAOBCH| will be calculated|.
+number \verb|IAOBCH| will be calculated.
 
 \item[\Key{BUFFER}]\verb| |\newline
 \verb|READ (LUCMD,*) LBFINP|
@@ -1458,9 +1457,9 @@ is 600. Longer buffer lengths may give more efficient I/O.
   of two-electron integrals instead of TWOINT.
 
 \item[\Key{EXTPRI}]\verb| |\newline
-\verb|READ (LUCMD,'(2I5)') IPROD1, IPROD2|
+\verb|READ (LUCMD,*) IPROD1, IPROD2|
 
-Full print for OD classes \verb|IPROD1| and \verb|IPROD2|.
+Full print for overlap distribution (OD) classes \verb|IPROD1| and \verb|IPROD2|.
 
 \item[\Key{GENCON}] Treat all AOs as generally contracted during
 integral evaluation.
@@ -1477,17 +1476,17 @@ debugging).
 \item[\Key{MAXDIS}]\verb| |\newline
 \verb|READ (LUCMD,*) MAXDST|  
 
-Read in the maximimum number of integral distribution calculated in
+Read in the maximimum number of integral distributions calculated in
 each call to the integral code. Default value is 40.
 
 \item[\Key{MXBCH}]\verb| |\newline
 \verb|READ (LUCMD,*) MXBCH|
 
-Read in the maximum number of integral batches to treat
+Read in the maximum number of integral batches to be treated
 simultaneously, and thus determines the vector lengths. Default value
 is 1000000000.
 
-\item[\Key{NCLERI}] Calculate only integrals with nonclassiscal
+\item[\Key{NCLERI}] Calculate only integrals with non-classical
 contributions.
 
 \item[\Key{NEWCR1}] Use an old transformation routine for the
@@ -1540,8 +1539,8 @@ for these overlap distributions, after which the program will exit.
 under \Key{PRINT} above. Mainly for debugging purposes.
 
 \item[\Key{SELCT1}]\verb| |\newline
-\verb|READ (LUCMD,'(  I5)') NSELCT(1)|\newline
-\verb|READ (LUCMD,'(15I5)') (NACTAO(I,1),I=1,NSELCT(1))|
+\verb|READ (LUCMD,*) NSELCT(1)|\newline
+\verb|READ (LUCMD,*) (NACTAO(I,1),I=1,NSELCT(1))|
 
 Calculate only integrals containing indices \verb|NACTAO(I,1)| for the
 first AO.

@@ -32,7 +32,7 @@ MP2 orbitals is requested as starting orbitals for the MCSCF
 optimization, the solvent model will not be added before entering the
 MCSCF optimization stage, so MP2 gas-phase orbitals can be used as
 starting guess even though the solvent model has not been implemented
-for this wave function. Note also that differential densities will be
+for this wave function model. Note also that differential densities will be
 disabled in direct calculations when the solvent model is employed.
 
 As regards molecular properties, the solvent model has so far been
@@ -52,7 +52,7 @@ solvation\index{non-equilibrium solvation} model has been implemented
 for molecular energies~\cite{kvmachahjajjcp103}. This model in needed
 when studying processes where the charge distribution of the solute
 cannot be expected to be in equilibrium with the charge distribution
-of the solvent, e.g. when comapring with experiments where light has
+of the solvent, {\it e.g.\/} when comparing with experiments where light has
 been used as a perturbation.
 
 In the \aba\ program, the solvent model has been implemented for
@@ -164,7 +164,7 @@ through the keyword \Key{DIELECTRIC CONSTANT}, a cavity radius of 3.98 atomic
 units with the keyword \Key{CAVITY}, and the multipole expansion is to
 include all terms up to $L=10$, as can be seen from the keyword
 \Key{MAX L}. Note that this number cannot be larger than the number given for
-\Key{MAX L} in the \Sec{ONEINT} input module.
+\Key{SOLVENT} in the \Sec{ONEINT} input module.
 
 \subsection{Geometry optimization}\label{sec:solventgeoopt}
 
@@ -188,7 +188,14 @@ would look like:
  10
 **WAVE FUNCTIONS
 .HF
-**FINAL
+*SOLVENT
+.DIELECTRIC CONSTANT
+ 78.5
+.MAX L
+ 10
+.CAVITY
+ 3.98
+**PROPERTIES
 .VIBANA
 .SHIELD
 **END OF DALTON INPUT

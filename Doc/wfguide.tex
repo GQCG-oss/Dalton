@@ -5,9 +5,11 @@ Currently the following wave function types are implemented in DALTON:
 
 \begin{description}
 
-\item[RHF] Closed-shell singlet and Open-shell doublet (only one open shell)
-restricted Hartree--Fock (SCF, self-consistent
+\item[RHF] Closed-shell singlet and spin-restricted high-spin
+Hartree--Fock (SCF, self-consistent
 field)\index{HF}\index{SCF}\index{Hartree--Fock}.
+
+\item[DFT] Density functional theory, closed shell and spin-restricted high-spin Kohn--Sham DFT, allowing for both local density functionals (LDA), generalized gradient approximation (GGA) functionals and hybrid functionals.\index{DFT}\index{Density Functional Theory}.
 
 \item[MP2]
 \index{MP2}\index{M{\o}ller-Plesset!second-order} 
@@ -15,7 +17,7 @@ M{\o}ller-Plesset second-order perturbation theory which is based on
 closed-shell restricted Hartree--Fock.  Energy, second-order one-electron
 density matrix and first-order wave function (for SOPPA) may be
 calculated, as well as first-order geometry optimizations using
-numerical gradients. MP2 is also part of CC~\ref{ch:CC}.
+numerical gradients. MP2 is also part of CC (see Chapter~\ref{ch:CC}).
 First-order properties and geometry optimization are available through
 this module.  
 
@@ -164,6 +166,14 @@ input modules through indentation
        ...
      *ORBITAL INPUT        (2)
      *STEP CONTROL         (if QCSCF)
+  .DFT
+     Functional name
+     *SCF INPUT
+       .DOUBLY OCCUPIED
+     *DFT INPUT
+       ...
+     *ORBITAL INPUT        (2)
+     *STEP CONTROL         (if QCSCF)
   .MP2
      *MP2 INPUT
      *ORBITAL INPUT        (2)
@@ -308,7 +318,7 @@ experience any dramatic changes with respect to the DALTON input,
 although a few minor differences exist in order to create a more
 user-friendly environment. The input sections are the same as
 before starting with a wavefunction specification, currently,
-including options for SCF, MP2, MCSCF, and CC reference states.
+including options for SCF, DFT, MP2, MCSCF, and CC reference states.
 Depending on this choice of reference state the following input
 sections take different form, from the simplest SCF input to the
 more complex MCSCF input. Minimal SCF and SCF+MP2\index{HF}\index{Hartree--Fock}\index{SCF}\index{MP2}\index{M{\o}ller-Plesset!second-order}
@@ -337,8 +347,8 @@ spin-adapted configurations
 %when determinants\index{determinants} will be used. 
 The three
 following examples illustrate calculations on and excited
-state\index{excited state}, on a core hole\index{core hole} state
-with frozen core orbital\index{frozen core} and on a core hole
+state\index{excited state}, on a core-hole\index{core hole} state
+with frozen core orbital\index{frozen core} and on a core-hole
 state with relaxed core\index{relaxed core} orbital. The last
 example shows an MCSCF calculation of non-equilibrium solvation
 energy\index{non-equilibrium solvation}. For examples on how to run CC
@@ -395,9 +405,9 @@ file, as indicated in the following example:
 \end{verbatim}
 \label{sirius_ex2}
 
-Running \index{DFT} calculations is very similar to Hartree-Fock, except for
-functional specification: The \verb|.DFT| keyword is followed by a
-line describing the functional to be used. Simple input below will
+Running DFT~\index{DFT} calculations is very similar to Hartree-Fock, except for
+the specification of the functional: The \Key{DFT} keyword is followed by a
+line describing the functional to be used. The simple input below will
 start a B3LYP geometry optimization:
 \begin{verbatim}
 **DALTON INPUT
@@ -407,7 +417,7 @@ start a B3LYP geometry optimization:
  B3LYP
 **END OF DALTON INPUT
 \end{verbatim}
-Complete list of available functionals can be found in the Reference Guide.
+A complete list of available functionals can be found in the Reference Guide, see Sec.~\ref{ref-dft}
 
 \begin{center}
 \fbox{
@@ -551,11 +561,11 @@ Ref.~\cite{hjajpjhajcp87}. Such an input would look like:
 *ORBITAL INPUT
 .MOSTART
  NEWORB
- *CI VECTOR
- .STARTHDIAGONAL    | compute start vector from Hessian CI-diagonal
- *OPTIMIZATION
- .THRESH
-  1.D-07
+*CI VECTOR
+.STARTHDIAGONAL    | compute start vector from Hessian CI-diagonal
+*OPTIMIZATION
+.THRESH
+ 1.D-07
 .SIMULTANEOUS ROOTS
   2 2
 .STATE

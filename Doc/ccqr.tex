@@ -11,7 +11,7 @@
 \index{hyperpolarizabilities!dipole}
 \index{dispersion coefficients}
 
-In the \Sec{CCQR} section you have to specify the input for
+In the \Sec{CCQR} section you  specify the input for
 coupled cluster quadratic response calculations. This section
 includes:
 \begin{itemize}
@@ -92,7 +92,7 @@ dipole hyperpolarizability (max. 27 components).
 
    Input for the electro optical Pockels effect
    $\beta_{ABC}(-\omega;\omega,0)$:
-   on the first line following \Key{SHGFRE} the number of different
+   on the first line following \Key{EOPEFR} the number of different
    frequencies is read, from the second line the input for 
    $\omega_B = \omega$ is read. $\omega_C$ is set to $0$ and
    $\omega_A$ to $\omega_A = -\omega$.
@@ -136,7 +136,7 @@ combination will be ignored during the calculation.
    \verb|READ (LUCMD,*) (BQRFR(IDX),IDX=NQRFREQ+1,NQRFREQ+MFREQ)|
 
    Input for optical rectification $\beta_{ABC}(0;\omega,-\omega)$:
-   on the first line following \Key{SHGFRE} the number of different
+   on the first line following \Key{ORFREQ} the number of different
    frequencies is read, from the second line the input for 
    $\omega_B = \omega$ is read. $\omega_C$ is set to $\omega_C = -\omega$ and
    $\omega_A$ to $0$.

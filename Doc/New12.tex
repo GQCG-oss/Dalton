@@ -9,7 +9,7 @@
 
 There are several new additions introduced in the Dalton~2.0. The most
 important and largest extension to the code is the addition of a
-complete Density Functional Theory (DFT) module, including up to cubic
+complete Density Functional Theory (DFT) module, including up to quadratic
 response properties as well as an extensive open-shell
 (spin-restricted) module. The main new features and changes are
 summarized below:
@@ -20,7 +20,7 @@ summarized below:
 The largest new extension to Dalton~2.0 is the addition of a complete
 Density Functional Theory (DFT) module. It contains 24 different
 exchange-correlation  functions (and in addition the
-Coulomb-Attenuated Method~\cite{}), and is implemented for energies,
+Coulomb-Attenuated Method~\cite{??}), and is implemented for energies,
 linear and quadratic response functions (for both singlet and triplet
 perturbing operators) and geometric Hessians, nuclear shielding
 tensors, and magnizabilities as well as indirect spin--spin coupling
@@ -34,12 +34,12 @@ for spin-restricted, high-spin DFT ({\em vide infra\/}).
   second-order MP2 energy corrections to an MCSCF reference wave
   function. The approach used here, the ``n-electron valence space
   second-order perturbation theory'' approach (NEVPT2), is similar to
-  CASPT2~\cite{}, but is based on a two-electron zeroth-order
-  Hamiltonian (the Dyall Hamiltonian~\cite{}) and thus rarely displays
-  problems with intruder states~\cite{}.
+  CASPT2~\cite{??}, but is based on a two-electron zeroth-order
+  Hamiltonian (the Dyall Hamiltonian~\cite{??}) and thus rarely displays
+  problems with intruder states~\cite{??}.
 
 \item{\bf R12 methods:} The R12 approach for obtaining basis-set limit
-MP2 energies are available in a couple of  approximations~\cite{}.
+MP2 energies are available in a couple of  approximations~\cite{??}.
 
 \item{\bf Excited-state gradients:} Excited-state gradients are
   available for singlet excited states for a Hartree--Fock reference
@@ -49,7 +49,7 @@ MP2 energies are available in a couple of  approximations~\cite{}.
   optimization schemes.
 
 \item{\bf Absorption in linear response:} The linear reponse code now
-  allows finite lifetimes for excited states, allowing both scattering
+  allows finite lifetimes for excited states~\cite{pndmbhjajjojcp115}, allowing both scattering
   and absorptions processes to be taken into account simultaneously.
 
 \item{\bf Improvements for 64-bit machines:} The code can now also
@@ -61,10 +61,10 @@ MP2 energies are available in a couple of  approximations~\cite{}.
   and analytical gradients are now available.
 
 \item{\bf Orbital exponent gradients:} Gradients of the orbital
-  gradients can now be calculated~\cite{}.
+exponents can now be calculated for closed-shell molecular species~\cite{}.
 
 \item{\bf New \mol\ input format:} There is now a new input structure
-  for the \mol\ input files. The new formet is keyword-driven and
+  for the \mol\ input file. The new format is keyword driven and
   contains no fixed-format input lines unless the basis set is
   explicitely given in the input file. However, with the exception of
   the \verb|ATOMBASIS| option, the input file is fully backward
@@ -77,14 +77,14 @@ MP2 energies are available in a couple of  approximations~\cite{}.
 \item{\bf Changes to DALTON.INP:} To harmonize the input for
   single-point and geometry optimization calculations, the labels for
   calculating   molecular properties during a geometry optimization is
-  changes such that
+  changed such that
 
 \begin{center}
 \begin{tabular}{|l|l|}\hline
 Old label & New label\\\hline
 **START & **START\\
-**PROPERTIES & **EACH STEP\\
-**FINAL & **PROPERTIES\\\hline
+****PROPERTIES & **EACH STEP\\
+****FINAL & **PROPERTIES\\\hline
 \end{tabular}
 \end{center}
 
@@ -102,6 +102,10 @@ Old label & New label\\\hline
 %  wave function as well as DFT, including also linear and quadratic
 %  respons functions. This module is av
 
+%\item{\bf Higher-order Douglas--Kroll--He\ss :}
+
+%
+\item{\bf Numerical Hessian in VROA/Raman calculations:}
 \end{enumerate}
 
 \section{New features in Dalton~1.2}
@@ -154,7 +158,7 @@ Hessians, as well as London orbital-based magnetic properties, can not
 be calculated with ECPs.
 
 \item {\bf Douglas-Kroll} The Douglas-Kroll scalar relativistic Hamiltonian
-has been implemented to second-order. It can be used to account for
+has been implemented to second order. It can be used to account for
 scalar relativistic effects in molecular energies and response
 functions, and although molecular gradients and Hessians can be
 calculated, they are not strictly correct, as they use the
@@ -187,7 +191,7 @@ only the second-order geometry optimization routines in the
 \verb|*WALK| module will be able to do geometry optimizations with the
 solvent model.
 
-\item {\bf File splitting} For file-system where the maximum file length is
+\item {\bf File splitting} For file systems where the maximum file length is
 2~Gb, {\dalton} will automatically split large files  so that
 calculations can be performed on these systems even though some files
 may be longer than 2~Gb. Currently the implementation limits the

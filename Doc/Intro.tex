@@ -3,18 +3,18 @@
 
 The \dalton\ program system is designed to allow convenient,
 automated determination of a large number of molecular properties
-based on an SCF, MP2, Coupled Cluster, or MCSCF reference wave
+based on an SCF, DFT, MP2, Coupled Cluster, or MCSCF reference wave
 function. Additions to the Dalton~2.0 release include
-density functional theory implemented fully up to cubic response
+density functional theory implemented fully up to quadratic response
 theory for closed-shell systems, as well as second derivatives for
 properties involving perturbation-dependent basis sets such a
-molecular Hessians and magnetizabilities and nuclear shieldings. Also
+molecular Hessians, magnetizabilities and nuclear shieldings. Also
 available is the NEVPT2 approach
 (the $n$-electron valence second-order perturbation theory) for
 calculating  accurate energetics of
 multireference-based systems including also dynamic electron
-correlation, and highly accurate MP2-R12 and 
-CC-R12 methods are available for high-accuracy energetics of
+correlation, and highly accurate MP2-R12
+ methods are available for high-accuracy energetics of
 single-reference dominated closed-shell systems.
 
  The program consists
@@ -30,15 +30,15 @@ calculations. \sir\ is the (MC)SCF wave function
 optimization part, and is described comprehensively in the
 METECC-94 book~\cite{hjajhajomotecc}. \aba\ evaluates the
 second-order molecular properties of interest for SCF and MCSCF wave
-functions, in particular second-order static molecular properties in
+functions as well density-functional theory, in particular second-order static molecular properties in
 which the basis set depends on the applied perturbation. \resp\ is a
 general-purpose program for evaluating response functions, up to cubic
-response functions for (MC)SCF wave functions and linear response for
+response functions for (MC)SCF wave functions, quadratic response for DFT, and linear response for
 the Second-Order Polarization Propagator Approximation (SOPPA) and Second-Order
 Polarization Propagator Approximation with Coupled Cluster Singles and Doubles
 Amplitudes - SOPPA(CCSD). A new density functional theory module has
 been added in the 2.0 release of the program. Existing modules have
-been extended with the NEVPT2 and the MP2-R12 and CC-R12 methodologies.
+been extended with the NEVPT2 and the MP2-R12 methodologies.
 %New for
 %this release is {\cc}, a Coupled Cluster program that can calculate
 %coupled-cluster energies and response properties for a number of

@@ -9,7 +9,7 @@ CAS--CI wavefunctions. The term NEVPT is an acronym for
 refer the reader to the pertinent
 literature~\cite{nevpt1,nevpt2,nevpt3,nevpt4}, we limit ourselves to
 recalling here that the most relevant feature of NEVPT2 consists in
-that the first-order correction to the wavefunction is expanded over a
+that the first order correction to the wave function is expanded over a
 set of properly chosen \emph{multireference} functions which correctly
 take into consideration the two--electron interactions occurring among
 the active electrons. Among the properties ensured by NEVPT2 we quote:
@@ -31,13 +31,13 @@ the active electrons. Among the properties ensured by NEVPT2 we quote:
   for the core and virtual orbitals (the default choice) ensure that
   the results coincide with those of an enlarged version of the theory
   fully invariant under rotations in the core and virtual orbital
-  spaces, respectively\cite{nevpt4}
-\item NEVPT2 coincides with MP2 in the case of a HF wavefunction
+  spaces, respectively~\cite{nevpt4}
+\item NEVPT2 coincides with MP2 in the case of a HF wave function
 \end{itemize}
 
 NEVPT2 has been implemented in two variants both of which are present
-in \dalton, {\it i.e.\/} the \emph{strongly contracted} (SC) and the
-\emph{partially contracted} (PC) variant. The two variants differ by
+in \dalton, these are the \emph{strongly contracted} (SC) and the
+\emph{partially contracted} (PC) variants. The two variants differ by
 the number of perturber functions employed in the perturbation
 summation. The PC--NEVPT2 uses a richer function space and is
 in general more accurate than the SC--NEVPT2. The results of
@@ -69,7 +69,7 @@ another.
 NEVPT2 must follow a CAS--SCF or CAS--CI calculation. The keyword
 \Key{NEVPT2} has to be specified in the \Sec{*WAVE FUNCTIONS} data
 section. Furthermore a small {*NEVPT2} data group
- can be specified preceding the few input data that can
+ can be specified providing the few input data that can
 optionally be provided by the user:
 \Key{THRESH},
 the threshold to discard small coefficients in the CAS wavefunction
@@ -81,8 +81,7 @@ freezing) and
 \Key{STATE},
 the state in a CASCI calculation. This keyword is unnecessary
 (ignored) in the CASSCF case.
-
-An example could be the following:
+An example of a NEVPT2 calculation is
 
 \begin{verbatim}
 **DALTON INPUT

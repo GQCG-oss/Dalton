@@ -145,7 +145,7 @@ the keyword \Key{ECD} in the \aba\ input module. However,
 it is also necessary to specify the number of electronic
 excitations\index{electronic excitation} in 
 each symmetry. As ECD only is observed for chiral molecules, such
-calculations will in general not employ any symmetry, and a complete
+calculations will in general not employ any symmetry,  a complete
 input for a molecule without symmetry will thus look like:
 
 \begin{verbatim}
@@ -214,7 +214,7 @@ CCSD calculation has to be requested by the keyword \Key{CC} in the \Sec{*WAVE
   FUNCTIONS} input module with the \Sec{CC INPUT} option
 \Key{SOPPA(CCSD)}.
 
-The two properties may of course be combined in a single run, with an
+The two properties may of course be combined in a single run with an
 input that would then look like (where we also request the rotatory
 strength to be calculated without the use of London orbitals):
 
@@ -288,7 +288,6 @@ be:
 .HF
 **PROPERTIES
 .OPTROT
-.ABALNR
 *ABALNR
 .FREQUENCY
  2
@@ -300,8 +299,8 @@ be:
 
 \dalton\ will always calculate the optical rotation both with and
 without London atomic orbitals as this has a negligible computational
-cost compared to the calculation using London atomic orbitals only
-since we will enyway have to solve only three response equations
+cost compared to the calculation using London atomic orbitals only,
+since we will anyway have to solve only three response equations
 corresponding to the perturbing electric field. The optical rotation
 will only be 
 observed for molecules without symmetry, and by definition the optical
@@ -384,7 +383,7 @@ polarizabilities. This may be achieved by the following input:
 .FREQUE
      2
 0.0 0.09321471
-**PROPERTIES
+**EACH STEP
 .VROA
 *ABALNR
 .THRESH
@@ -392,7 +391,7 @@ polarizabilities. This may be achieved by the following input:
 .FREQUE
      2
 0.0 0.09321471
-**FINAL
+**PROPERTIES
 .VROA
 .VIBANA
 *ABALNR
@@ -477,7 +476,7 @@ large number of
 isotopically substituted\index{isotopic constitution} molecules at
 once, as the London orbital \index{London orbitals}
 results for ROA does not depend on the choice of gauge origin. This is
-done in the \Sec{*FINAL} input module, but as only one isotopic
+done in the \Sec{*PROPERTIES} input module, but as only one isotopic
 substituted species show optical activity, we have only requested a
 vibrational analysis for this species.
 
@@ -493,7 +492,7 @@ the VROA parameters obtained with a given basis set through the input:
  31
 *WALK
 .NUMERI
-**FINAL
+**PROPERTIES
 .VROA
 .VIBANA
 *ABALNR
