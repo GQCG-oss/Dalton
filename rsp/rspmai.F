@@ -1125,7 +1125,7 @@ C
      *            '.QUADYY', '.QUADYZ', '.QUADZZ', '.SPIN-O',
      *            '.SPNORX', '.SPNORY', '.SPNORZ', '.PROPRT',
      *            '.ROOTS ', '.MAX IT', '.THCPP ', '.OLSEN ',
-     *            '.MAXITO', '.LRSTVE', '.ANTTES', '.RESTPP',
+     *            '.MAXITO', '.XXXXXX', '.ANTTES', '.RESTPP',
      *            '.ABCHK ', '.ABSYM ', '.PRINT ',
      *            '.IPREXM', '.E3TEST', '.EXMTES', '.ISPABC',
      *            '.NODOIT', '.X2TEST', '.A2TEST',
@@ -1287,7 +1287,6 @@ C
                READ (LUCMD,*) MAXITO
                GO TO 100
  30            CONTINUE
-               LRSTVE = .TRUE.
                GO TO 100
  31            CONTINUE
                ANTTES = .TRUE.
@@ -1488,8 +1487,8 @@ C
      *            '.SPNORX', '.SPNORY', '.SPNORZ', '.PROPRT',
      *            '.MAX IT', '.THCLR ', '.MAXITO',
      *            '.PRINT ', '.FREQUE', '.ABOCHK', '.ISTOCK',
-     *            '.MAXOCK', '.SOPRSY', '.RESTLR', '.DIROIT',
-     *            '.TRIPLE', '.PV PSO', '.PV SO ', '.PV SO2',
+     *            '.MAXOCK', '.SOPRSY', '.RESTLR', '.NODOIT',
+     *            '.TRIPLE', '.PV PSO', '.PV SO1', '.PV SO2',
      *            '.FERMI ', '.SPIN-D'/
 C
 C
