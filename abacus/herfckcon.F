@@ -80,11 +80,11 @@ C
       ELSE
 C       ... No Coulomb contribution for
 C           antisymmetric density matrix
-        IY = MOD(IY1,2)
+        IY = IY1 - MOD(IY1,2)
       END IF
 C
       IF (HFXFAC.EQ.D0) THEN
-        IY = IY - MOD(IY,2)
+        IY = MOD(IY,2)
 C       ... only Coulomb contribution
       ELSE
          DP5X  =  DP5*HFXFAC

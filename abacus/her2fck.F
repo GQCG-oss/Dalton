@@ -150,6 +150,7 @@ C*****************************************************************************
      &          DNSBUF(2,NDMAT),IND(NNBUF,4),DINTSKP(2,4)
 #include <twocom.h>
 #include <expcom.h>
+#include <dftcom.h>
 #include <symmet.h>
 #include <ibtfun.h>
 C
@@ -381,6 +382,8 @@ C         X indicates symmetry about diagonal
 C           X = 0 No symmetry
 C           X = 1 Symmetric
 C           X = 2 Anti-symmetric
+C           X = 3 Mixed symmetric and anti-symmetric symmetry blocks
+C                 (for relativistic calculations)
 C         Y indicates contributions
 C           Y = 0 no contribution!
 C           Y = 1 Coulomb
@@ -397,6 +400,9 @@ C
         IX = (IFCTYP(I)-IY)/10
         IC = MOD(IY,2)
         IE = IY - IC
+        IF (IX.EQ.2) IC = 0
+C       ... no Coulomb term for antisymmetric density matrix
+        IF (HFXFAC.EQ.D0) IE = 0
 C       Screening on Coulomb contributions
         IF(DOC.AND.IC.EQ.1.AND.FCM.LT.FCKTHR) THEN
           IC = 0
@@ -524,21 +530,29 @@ C  /* Deck sklfck */
 #include <symmet.h>
 #include <inftap.h>
 C
+      CALL QENTER('SKLFCK')
+      KFREE  = 1
+      LFREE  = LWORK
+      KFRSAV = KFREE
+C
 C     Undifferentiated Fock matrix
 C     ============================
 C
       IF (DIRFCK) THEN
-         NMAT = NDMAT
-         KSKLTN = 1
-         KFAC   = KSKLTN + N2BASX
-         KINDEX = KFAC   + NBAST*(MAXREP + 1)
-         KPOINT = KINDEX + (KMAX*(MAXREP + 1)*KHK(NHTYP) + 1)/IRAT
-         KLAST  = KPOINT + (NBAST*(MAXREP + 1) + 1)/IRAT
-         IF (KLAST .GT. LWORK) CALL STOPIT('SKLFCK',' ',KLAST,LWORK)
+C
+         CALL MEMGET('REAL',KSKLTN,N2BASX,WORK,KFREE,LFREE)
+         LENMEM = NBAST*(MAXREP + 1)
+         CALL MEMGET('REAL',KFAC  ,LENMEM,WORK,KFREE,LFREE)
+         LENMEM = KMAX*(MAXREP + 1)*KHK(NHTYP)
+         CALL MEMGET('INTE',KINDEX,LENMEM,WORK,KFREE,LFREE)
+         LENMEM = NBAST*(MAXREP + 1)
+         CALL MEMGET('INTE',KPOINT,LENMEM,WORK,KFREE,LFREE)
+C
          IXYZ = 0
          CALL SKLFC1(FMAT,WORK(KSKLTN),WORK(KFAC),WORK(KINDEX),
      &               WORK(KPOINT),DUMMY,DUMMY,DUMMY,IDUMMY,IXYZ,
-     &               NMAT,ISYMDM,IFCTYP,IPRINT)
+     &               NDMAT,ISYMDM,IFCTYP,IPRINT)
+         CALL MEMREL('SKLFC1 for DIRFCK',WORK,1,KFRSAV,KFREE,LFREE)
       END IF
 C
 C     Derivative Fock matrices
@@ -652,6 +666,7 @@ C
             CALL DCOPY(NNBASX,WORK(KSKLTN),1,FMAT(1,N),1)
   510    CONTINUE
       END IF
+      CALL QEXIT('SKLFCK')
       RETURN
       END
 C  /* Deck sklfc1 */
