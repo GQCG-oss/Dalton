@@ -532,9 +532,10 @@ C
 C     *** Transformation of all the matrices/vectors back ***
 C     *** to original cartesian coordinates. Matrix in the***
 C     *** original geometry (IMPCAL=1), need not to be    ***
-C     *** calculated.                                     ***
+C     *** calculated. Only when force constants are       ***
+C     *** calculated from energies.                       ***
 C
-      IF (SPNSPN) THEN
+      IF (SPNSPN.AND.(NAORDR.EQ.0)) THEN
          KSPTMP = 1
          KLAST  = KSPTMP + NCOOR**2
          IF (KLAST.GT.LWORK) CALL QUIT('Memory exceeded in OTRTEN')
@@ -778,7 +779,9 @@ C
      &            IDUMMY,.FALSE.)
       REWIND(LUNDPR)
 C
-      DO IEPRP = 1, NMEPRP-1
+      KNMPRP = NMEPRP-1
+      IF (NAORDR.GT.0) KNMPRP = NMEPRP
+      DO IEPRP = 1, KNMPRP
          READ (LUNDPR,'(A)') PRPTXT
          READ (LUNDPR,'(3I7)') NDIM1, NDIM2, NDIM3
 C

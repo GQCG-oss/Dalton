@@ -328,15 +328,8 @@ C
      &    CCR1A .OR. CCR1B .OR. CCR1B.OR. CCT .OR. 
      &   (MP2.AND..NOT.DOCCSD)) THEN
          NAORDR = 0
-C      ELSE IF (CCSD .OR. CCS .OR. CC2 .OR. (MP2.AND..NOT.MCSCF) .OR. 
-C     &                                                   DFTRUN) THEN
-C
-C     *** Temporary code while waiting bug fix for cc analytical ***
-C     *** gradients.                                             ***
-C
-      ELSE IF (CCSD .OR. CCS .OR. CC2 .OR. (DMP2.AND..NOT.MCSCF)) THEN 
-         NAORDR = 0
-      ELSE IF (DFTRUN) THEN
+      ELSE IF (CCSD .OR. CCS .OR. CC2 .OR. (DMP2.AND..NOT.MCSCF).OR.
+     &                                                   DFTRUN) THEN
          NAORDR = 1
       ELSE
          NAORDR = 2
@@ -1495,7 +1488,8 @@ C
             WRITE (LUPRI,'(A)') '                                      '
             WRITE (LUPRI,'(A)') 
      &        'Test "equal energy for partner geometries" is complete.'
-            WRITE (LUPRI,'(A,F20.12)') 'Maximum error in energy is:', EMAX
+            WRITE (LUPRI,'(A,F20.12)') 'Maximum error in energy is:', 
+     &             EMAX
             WRITE (LUPRI,'(A,F20.12)') 'Relative error: '
             DO IRDR = 1, NMORDR
                WRITE (LUPRI,'(I2,A,F14.8)') IRDR, '. derivative: ', 
@@ -3125,10 +3119,6 @@ C     /* Deck mknrmc */
      &          CORTMP(NCOOR), WORK(LWORK)
       DIMENSION ICRIRP(NCOOR,2), NATTYP(NATOMS), NMSYSP(NCOOR)
 C
-      DO 100 I = 1, NATOMS
-         ISOTOP(I) = 1
- 100  CONTINUE
-C
 C     *** Calculating center of mass, and mass of each center ***
 C
       CALL DCOPY(NCOOR,CSTART,1,CORTMP,1)
@@ -4659,6 +4649,8 @@ C     *** of the numerical derivatives.    ***
 C     ****************************************
 #include <implicit.h>
 #include <priunit.h>
+#include <mxcent.h>
+#include <abainf.h>
 #include <cbinum.h>
 #include <prpndr.h>
 C
@@ -4669,7 +4661,7 @@ C
       WRITE (LUPRI,'(A)') '                                      '
       IF (NUMVIB) WRITE (LUPRI,'(A)') ' Frequency analysis and ' //
      &                              'efficient geometry.'
-      IF (NSPNSP) WRITE (LUPRI,'(A)') ' Vibrational average of ' //
+      IF (SPNSPN) WRITE (LUPRI,'(A)') ' Vibrational average of ' //
      &                              ' spin-spin coupling constants'
 C
       RETURN
@@ -5158,6 +5150,7 @@ C     **************************************************************
       PARAMETER (D1 = 1.0D0, DMTHR=1.0D-4)
 #include <symmet.h>
 #include <nuclei.h>
+#include <numder.h>
 #include <pvibav.h>
       LOGICAL FOUND
        CHARACTER*9 PRPTXT
@@ -5209,7 +5202,7 @@ C
 C     *** If property derivative is calculated, we need to save ***
 C     *** the transformation matrix in the property-file.       ***
 C
-      IF (CNMPRP) THEN
+      IF (CNMPRP.AND.(NAORDR.EQ.0)) THEN
          NDIM3  = 1
          PRPTXT = 'CART-TRAN'
          CALL WRAVFL(TRAMAT,NCOOR,NCOOR,NDIM3,PRPTXT,IPRINT)
