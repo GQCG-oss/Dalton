@@ -186,8 +186,8 @@ C
 C        DFT contribution
 C
          IF (DFTADD) THEN
+            CALL DZERO(FDFTD,3*N2BASX)
             IF (IATOM.GT.0) THEN
-               CALL DZERO(FDFTD,3*N2BASX)
                CALL DFTHED(IATOM,FCD(1,1),FCD(1,2),FCD(1,3),
      &              FDFTD(1,1),FDFTD(1,2),FDFTD(1,3),
      &              WORK,LWORK,IPRINT)
