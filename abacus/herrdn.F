@@ -887,13 +887,11 @@ C
          IF (I .EQ. 1 .AND. .NOT. DIRAC) THEN
            READ (MLINE(NMLINE),'(A1)') ZMATL
            IF (ZMATL .NE. ' ') THEN
-              ZMTTST = .TRUE.
-              WRITE (LUPRI,'(/A)')
-     &        'Atoms and their geometry are read in Z-matrix format.'
-              IF (.NOT. BASIS) THEN
-                 WRITE (LUPRI,'(/A)') '*** READI1 ERROR:'
-                 CALL QUIT('Z-matrix only implemented with BASIS')
-              END IF
+             ZMTTST = .TRUE.
+             WRITE (LUPRI,'(/A)')
+     &         'Atoms and their geometry are read in Z-matrix format.'
+             IF (.NOT. BASIS)
+     &         CALL QUIT('READI1: Z-matrix only implemented with BASIS')
            END IF
          END IF
 C
@@ -902,14 +900,23 @@ C        ===================================
 C
          IF (DIRAC) THEN
             READ (MLINE(NMLINE),'(BN,1X,F9.0,2I5)') Q,NONT(I),NSETS
+            IF (LMULBS) THEN
+               CALL QUIT('READI1: LMULBS not implemented for Dirac yet')
+            ELSE
+               MBSI = 1
+            END IF
          ELSE IF (ZMTTST) THEN
 C           Z-matrix not implemented with LMULBS (WK/UniKA/04-11-2002).
             IF (LMULBS) THEN
-               WRITE (LUPRI,'(/A)') '*** READI1 ERROR:'
-               CALL QUIT('Z-matrix not implemented with LMULBS')
+               CALL QUIT('READI1: Z-matrix not implemented with LMULBS')
+            ELSE
+               MBSI = 1
             END IF
             CALL ZMAT(NONT,KATOM)
             Q = CHARGE(NUCIND)
+            ISOTOP(NUCIND) = 1
+C           ... "Isotope=#" not implemented for ZMAT yet,
+C               thus always use isotope no. 1 /hjaaj feb 2003
          ELSE IF (ATOMBA .OR. BASIS) THEN
 C           Read basis-set identifier from MLINE(NMLINE)
 C           Put MBSI = 1 otherwise (WK/UniKA/04-11-2002).
@@ -923,7 +930,7 @@ C           Put MBSI = 1 otherwise (WK/UniKA/04-11-2002).
 C ach 
             IF (WRTLIN) THEN 
                WRITE(LUPRI,*) MLINE(NMLINE)
-               CALL FLUSH(LUPRI)
+               CALL FLSHFO(LUPRI)
             ENDIF
 C           Read basis-set identifier from MLINE(NMLINE)
 C           Put MBSI = 1 otherwise (WK/UniKA/04-11-2002).
@@ -937,31 +944,27 @@ C           Put MBSI = 1 otherwise (WK/UniKA/04-11-2002).
             END IF
          END IF
 C        Check MBSI (WK/UniKA/04-11-2002).
-         IF (LMULBS .AND. MBSI .LE. 0) THEN 
-            WRITE (LUPRI,'(/A)') '*** READI1 ERROR:'
-            CALL QUIT('Please provide proper basis-set identifier')
-         END IF
+         IF (LMULBS .AND. MBSI .LE. 0) CALL QUIT(
+     &      'READI1: Please provide proper basis-set identifier')
 C        Check MBSI (WK/UniKA/04-11-2002).
-         IF (LMULBS .AND. MBSI .LT. MBSIP) THEN 
-            WRITE (LUPRI,'(/A)') '*** READI1 ERROR:'
-            CALL QUIT('Please provide multiple basis sets in increasing'
-     &                //' order')
-         END IF
+         IF (LMULBS .AND. MBSI .LT. MBSIP) CALL QUIT('READI1: '//
+     &      'Please provide multiple basis sets in increasing order')
 C        Check MBSI (WK/UniKA/04-11-2002).
          MBSIP = MBSI
          NMULBS = MAX(MBSI,NMULBS)
-         IF (NMULBS .GT. MXMULB) THEN
-            WRITE (LUPRI,'(/A)') '*** READI1 ERROR:'
-            CALL QUIT('Too many multiple basis sets')
-         END IF
-Chj - aug99: changed test from 36 to 20, because current Huckel implementation
-C            (1) gives poor orbital energies for some d-orbitals
-C                because of normalization of x2, y2, z2 to three
-C                (instead of one)
-C            (2) and breaks symmetry between e.g. x2-y2 and xy because of (1)
+         IF (NMULBS .GT. MXMULB)
+     &      CALL QUIT('READI1: Too many multiple basis sets')
+C
+C        ---> Check for Huckel :
+C
+Chj aug99: changed test from 36 to 20, because current Huckel implementation
+C       (1) gives poor orbital energies for some d-orbitals
+C           because of normalization of x2, y2, z2 to three
+C           (instead of one)
+C       (2) and breaks symmetry between e.g. x2-y2 and xy because of (1)
 C
          IF (OLDNRM) THEN
-C        ... Here oldnrm is only false if sperical, i.e. the only case
+C        ... Here oldnrm is only false if spherical, i.e. the only case
 C            where we know the 5 d's have same norm.
             MXQHUCK = 20
          ELSE
@@ -2069,7 +2072,7 @@ C
 #else
               IF (WRTLIN) THEN 
                  WRITE(LUPRI,*) MLINE(NMLINE)
-                 CALL FLUSH(LUPRI)
+                 CALL FLSHFO(LUPRI)
               ENDIF
               READ (MLINE(NMLINE),*) ALPHA(L), (CPRIMU(L,M),M=1,NRCIJ)
 #endif
