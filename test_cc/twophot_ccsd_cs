@@ -1,5 +1,16 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > twophot_ccsd_cs.info <<%EOF%
+   twophot_ccsd_cs
+   ---------------
+   Molecule:       HF in C2
+   Wave Function:  CCSD
+   Test Purpose:   twophoton transition moments
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > twophot_ccsd_cs.mol <<%EOF%

@@ -1,5 +1,16 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > triples_direct.info <<%EOF%
+   triples_direct
+   --------------
+   Molecule:       HF in C2
+   Wave Function:  CCSD(T)
+   Test Purpose:   integral direct energy calculation using ERI.
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > triples_direct.mol <<%EOF%

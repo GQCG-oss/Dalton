@@ -1,5 +1,16 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > twophotb.info <<%EOF%
+   twophotb
+   --------
+   Molecule:       HF in C2
+   Wave Function:  CC2
+   Test Purpose:   finite difference on one-photon transition moments
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > twophotb.mol <<%EOF%

@@ -1,5 +1,16 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > threephot.info <<%EOF%
+   threephot
+   ---------
+   Molecule:       HF in C2v
+   Wave Function:  CCS, CC2, CCSD
+   Test Purpose:   threephoton transition moments
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > threephot.mol <<%EOF%

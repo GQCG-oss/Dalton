@@ -1,5 +1,16 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > twophot_ccs_cs.info <<%EOF%
+   twophot_ccs_cs
+   --------------
+   Molecule:       HF in C2
+   Wave Function:  CCS
+   Test Purpose:   twophoton transition moments
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > twophot_ccs_cs.mol <<%EOF%

@@ -1,5 +1,17 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+
+cat > oddisp2.info <<%EOF%
+   oddisp2
+   -------
+   Molecule:       Ne in D2h
+   Wave Function:  CCS, CCSD
+   Test Purpose:   dispersion coefficients for pure imaginary
+                   quadratic response properties
+%EOF
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > oddisp2.mol <<%EOF%

@@ -1,5 +1,17 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > optco.info <<%EOF%
+   optco
+   -----
+   Molecule:       CO in C1
+   Wave Function:  CCSD
+   Test Purpose:   geometry optimization using the analytic CCSD
+                   gradient and the *optimize module
+%EOF
+
+#######################################################################
 #  MOLECULE INPUT
 #######################################################################
 cat > optco.mol <<%EOF%

@@ -1,5 +1,17 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > verdet_hf_direct.info <<%EOF%
+   verdet_hf_direct
+   ----------------
+   Molecule:       HF in C1
+   Wave Function:  CCSD
+   Test Purpose:   verdet constant with London orbitals
+                   integral direct calculation
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > verdet_hf_direct.mol <<%EOF%

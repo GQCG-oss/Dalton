@@ -1,5 +1,17 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > oddisp.info <<%EOF%
+   oddisp
+   ------
+   Molecule:       HF in C2
+   Wave Function:  CCS, CCSD
+   Test Purpose:   dispersion coefficients for pure imaginary
+                   quadratic response functions
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > oddisp.mol <<%EOF%

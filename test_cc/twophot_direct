@@ -1,5 +1,17 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > twophot_direct.info <<%EOF%
+   twophot_direct
+   --------------
+   Molecule:       HF in C2v
+   Wave Function:  CCS, CC2, CCSD
+   Test Purpose:   integral-direct calculation of twophoton
+                   transition moments
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > twophot_direct.mol <<%EOF%

@@ -1,5 +1,17 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > triplet2.info <<%EOF%
+   triplet2
+   --------
+   Molecule:       CH
+   Wave Function:  CCS, CC2, CCSD
+   Test Purpose:   integral-direct calculation of triplet excitation
+                   energies
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > triplet2.mol <<%EOF%

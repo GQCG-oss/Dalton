@@ -1,5 +1,15 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > triples_direri.info <<%EOF%
+   triples_direri
+   --------------
+   Molecule:       HF in C2
+   Wave Function:  CCSD(T)
+   Test Purpose:   integral direct calculation of CCSD(T) energy
+%EOF
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > triples_direri.mol <<%EOF%

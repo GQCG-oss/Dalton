@@ -1,5 +1,16 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > solvh2mini.info <<%EOF%
+   solvh2mini
+   ----------
+   Molecule:       HS in C2v
+   Wave Function:  CCSD
+   Test Purpose:   solvent for CCSD excitation energies
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > solvh2smini.mol <<%EOF%

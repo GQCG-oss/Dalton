@@ -1,5 +1,16 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > verdet_hf.info <<%EOF%
+   verdet_hf
+   ---------
+   Molecule:       HF in C1
+   Wave Function:  CCSD / DunningDZ
+   Test Purpose:   verdet constant with London orbitals
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > verdet_hf.mol <<%EOF%

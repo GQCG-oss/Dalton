@@ -1,5 +1,16 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > hyp4_ccsd.info <<%EOF%
+   hyp4_ccsd
+   ---------
+   Molecule:       HF in C2
+   Wave Function:  CCSD
+   Test Purpose:   static third and fourth hyperpolarizabilities
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > hyp4_ccsd.mol <<%EOF%

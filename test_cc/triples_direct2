@@ -1,5 +1,17 @@
 
 #######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > triples_direct2.info <<%EOF%
+   triples_direct2
+   ---------------
+   Molecule:       HF in C2
+   Wave Function:  CCSD(T)
+   Test Purpose:   integral direct calculation of CCSD(T) energy
+                   using HERMIT as integral program.
+%EOF
+
+#######################################################################
 #  INTEGRAL INPUT
 #######################################################################
 cat > triples_direct2.mol <<%EOF%
