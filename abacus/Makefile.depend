@@ -1,15 +1,16 @@
 aba2tex.o : aba2tex.F \
   ../include/abainf.h  ../include/aovec.h \
-  ../include/cbisol.h  ../include/cbitwo.h \
-  ../include/dummy.h  ../include/energy.h \
-  ../include/exeinf.h  ../include/gnrinf.h \
-  ../include/implicit.h  ../include/inforb.h \
-  ../include/infpar.h  ../include/inftap.h \
-  ../include/iratdef.h  ../include/maxaqn.h \
-  ../include/mxcent.h  ../include/mxorb.h \
-  ../include/nuclei.h  ../include/priunit.h \
-  ../include/single.h  ../include/symmet.h \
-  ../include/taymol.h  ../include/taysol.h
+  ../include/cbieri.h  ../include/cbisol.h \
+  ../include/cbitwo.h  ../include/dummy.h \
+  ../include/energy.h  ../include/exeinf.h \
+  ../include/gnrinf.h  ../include/implicit.h \
+  ../include/inforb.h  ../include/infpar.h \
+  ../include/inftap.h  ../include/iratdef.h \
+  ../include/maxaqn.h  ../include/mxcent.h \
+  ../include/mxorb.h  ../include/nuclei.h \
+  ../include/priunit.h  ../include/single.h \
+  ../include/symmet.h  ../include/taymol.h \
+  ../include/taysol.h
 abaaat.o : abaaat.F \
   ../include/aatens.h  ../include/abainf.h \
   ../include/cbiaat.h  ../include/dummy.h \
@@ -509,21 +510,21 @@ abawfn.o : abawfn.F \
   ../include/sphtrm.h  ../include/symmet.h
 dalgnr.o : dalgnr.F \
   ../include/abainf.h  ../include/cbieri.h \
-  ../include/cbihr2.h  ../include/cbisol.h \
-  ../include/cbiwlk.h  ../include/clsfmm.h \
-  ../include/dummy.h  ../include/exeinf.h \
-  ../include/gnrinf.h  ../include/huckel.h \
-  ../include/implicit.h  ../include/infinp.h \
-  ../include/infpar.h  ../include/infpri.h \
-  ../include/inftap.h  ../include/inftra.h \
-  ../include/inpbak.h  ../include/maxorb.h \
-  ../include/molde.h  ../include/molinp.h \
-  ../include/mxcent.h  ../include/mxorb.h \
-  ../include/nuclei.h  ../include/numder.h \
-  ../include/orgcom.h  ../include/pario.h \
-  ../include/past.h  ../include/pastbk.h \
-  ../include/pribak.h  ../include/priunit.h \
-  ../include/siripc.h  \
+  ../include/cbihr2.h  ../include/cbirea.h \
+  ../include/cbisol.h  ../include/cbiwlk.h \
+  ../include/clsfmm.h  ../include/dummy.h \
+  ../include/exeinf.h  ../include/gnrinf.h \
+  ../include/huckel.h  ../include/implicit.h \
+  ../include/infinp.h  ../include/infpar.h \
+  ../include/infpri.h  ../include/inftap.h \
+  ../include/inftra.h  ../include/inpbak.h \
+  ../include/maxorb.h  ../include/molde.h \
+  ../include/molinp.h  ../include/mxcent.h \
+  ../include/mxorb.h  ../include/nuclei.h \
+  ../include/numder.h  ../include/orgcom.h \
+  ../include/pario.h  ../include/pastbk.h \
+  ../include/past.h  ../include/pribak.h \
+  ../include/priunit.h  ../include/siripc.h \
   ../include/taymol.h  ../include/trunit.h \
   ../include/veclen.h
 dalton.o : dalton.F \
@@ -897,8 +898,7 @@ hersym.o : hersym.F \
   ../include/mxsymm.h  ../include/nuclei.h \
   ../include/numder.h  ../include/optinf.h \
   ../include/pi.h  ../include/priunit.h \
-  ../include/single.h  ../include/implicit.h \
-  ../include/priunit.h
+  ../include/single.h
 hertst.o : hertst.F \
   ../include/aovec.h  ../include/cotabs.h \
   ../include/dummy.h  ../include/ibtfun.h \

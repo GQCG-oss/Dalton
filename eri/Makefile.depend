@@ -6,6 +6,16 @@ eri2aob.o : eri2aob.F \
   ../include/primit.h  ../include/priunit.h \
   ../include/shells.h  ../include/single.h \
   ../include/symmet.h  ../include/veclen.h
+eri2ave.o : eri2ave.F \
+  ../include/aobtch.h  ../include/aovec.h \
+  ../include/cbieri.h  ../include/energy.h \
+  ../include/eribuf.h  ../include/ericom.h \
+  ../include/erithr.h  ../include/hertop.h \
+  ../include/ibtfun.h  ../include/implicit.h \
+  ../include/iratdef.h  ../include/maxaqn.h \
+  ../include/mxcent.h  ../include/mxorb.h \
+  ../include/nuclei.h  ../include/priunit.h \
+  ../include/symmet.h
 eri2car1.o : eri2car1.F \
   ../include/cbieri.h  ../include/eriao.h \
   ../include/ericom.h  ../include/hertop.h \
@@ -85,16 +95,15 @@ eri2odb.o : eri2odb.F \
 eri2out.o : eri2out.F \
   ../include/aobtch.h  ../include/aovec.h \
   ../include/cbieri.h  ../include/chrnos.h \
-  ../include/dummy.h  ../include/energy.h \
-  ../include/eribuf.h  ../include/ericom.h \
-  ../include/eridst.h  ../include/erithr.h \
-  ../include/hertop.h  ../include/ibtfun.h \
-  ../include/ibtpar.h  ../include/implicit.h \
-  ../include/inftap.h  ../include/iratdef.h \
-  ../include/maxaqn.h  ../include/mxcent.h \
-  ../include/mxorb.h  ../include/nuclei.h \
-  ../include/priunit.h  ../include/single.h \
-  ../include/symmet.h
+  ../include/dummy.h  ../include/eribuf.h \
+  ../include/ericom.h  ../include/eridst.h \
+  ../include/erithr.h  ../include/hertop.h \
+  ../include/ibtfun.h  ../include/ibtpar.h \
+  ../include/implicit.h  ../include/inftap.h \
+  ../include/iratdef.h  ../include/maxaqn.h \
+  ../include/mxcent.h  ../include/mxorb.h \
+  ../include/nuclei.h  ../include/priunit.h \
+  ../include/single.h  ../include/symmet.h
 eri2par.o : eri2par.F \
   ../include/aobtch.h  ../include/aovec.h \
   ../include/cbieri.h  ../include/ccom.h \
@@ -150,8 +159,8 @@ eriprg.o : eriprg.F \
   ../include/priunit.h
 erisph.o : erisph.F \
   ../include/ccom.h  ../include/ericom.h \
-  ../include/implicit.h  ../include/maxaqn.h \
-  ../include/mxcent.h  ../include/mxdr.h \
-  ../include/mxorb.h  ../include/nuclei.h \
-  ../include/priunit.h  ../include/symmet.h \
-  ../include/ibtfun.h
+  ../include/ibtfun.h  ../include/implicit.h \
+  ../include/maxaqn.h  ../include/mxcent.h \
+  ../include/mxdr.h  ../include/mxorb.h \
+  ../include/nuclei.h  ../include/priunit.h \
+  ../include/single.h  ../include/symmet.h

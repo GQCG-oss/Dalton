@@ -102,17 +102,29 @@ t90.x: MAIN_OBJ ABA_OBJ SIR_OBJ RSP_OBJ GP_OBJ SLAVE_OBJ ERI_OBJ \
 	$(LIB_LIST) $(OBJSAMFI) $(DALTON_LIBS)
 	mv dalpar.x $(INSTALLDIR)
 #
+#	Update all dependencies
+#
+depend :
+	cd abacus && $(MAKE) depend
+	cd amfi   && $(MAKE) depend
+	cd cc     && $(MAKE) depend
+	cd eri    && $(MAKE) depend
+	cd gp     && $(MAKE) depend
+	cd pdpack && $(MAKE) depend
+	cd rsp    && $(MAKE) depend
+	cd sirius && $(MAKE) depend
+#
 #	Make it a bit cleaner, remover all .o/.lst/*.f -files
 #
-clean   :
+clean :
 	cd abacus && $(MAKE) clean
-	cd sirius && $(MAKE) clean
-	cd rsp    && $(MAKE) clean
-	cd gp     && $(MAKE) clean
-	cd eri    && $(MAKE) clean
 	cd amfi   && $(MAKE) clean
-	cd pdpack && $(MAKE) clean
 	cd cc     && $(MAKE) clean
+	cd eri    && $(MAKE) clean
+	cd gp     && $(MAKE) clean
+	cd pdpack && $(MAKE) clean
+	cd rsp    && $(MAKE) clean
+	cd sirius && $(MAKE) clean
 	$(RM) -f *~
 #
 #	We remove the entire source code as well if we do not plan to debug
