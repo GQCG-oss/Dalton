@@ -2261,4 +2261,110 @@ C
       RETURN
       END
 C
-
+C  /* Deck sort_t2_ij */
+      SUBROUTINE SORT_T2_IJ(XIJ,ISYMA,A,ISYMB,B,T2TP,ISYMT2)
+C
+C   XIJ^AB(ij) = t2tp(aijb)
+C
+      IMPLICIT NONE
+C
+#include <priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+C
+      INTEGER ISYMA, ISYMB, ISYMT2
+      INTEGER ISYMAB, ISYMIJ, ISYMI, ISYMJ, ISYMAIJ, ISYMAI
+      INTEGER KOFF1, KOFF2
+#if defined (SYS_CRAY)
+      REAL XIJ(*), T2TP(*)
+#else
+      DOUBLE PRECISION XIJ(*), T2TP(*)
+#endif
+C
+      CALL QENTER('SORT_T2_IJ')
+C
+      ISYMAB = MULD2H(ISYMA,ISYMB)
+      ISYMIJ = MULD2H(ISYMT2,ISYMAB)
+      DO ISYMI = 1,NSYM
+         ISYMJ = MULD2H(ISYMIJ,ISYMI)
+         ISYMAIJ = MULD2H(ISYMA,ISYMIJ)
+         ISYMAI  = MULD2H(ISYMA,ISYMI)
+         DO I = 1,NRHF(ISYMI)
+            DO J = 1,NRHF(ISYMJ)
+               KOFF1 =  IMATIJ(ISYMI,ISYMJ)
+     *                + NRHF(ISYMI)*(J-1)
+     *                + I
+C
+               KOFF2 = IT2SP(ISYMAIJ,ISYMB)
+     *                + NCKI(ISYMAIJ)*(B-1)
+     *                + ICKI(ISYMAI,ISYMJ)
+     *                + NT1AM(ISYMAI)*(J-1)
+     *                + IT1AM(ISYMA,ISYMI)
+     *                + NVIR(ISYMA)*(I-1)
+     *                + A
+C
+                     XIJ(KOFF1) = T2TP(KOFF2)
+            END DO
+         END DO
+      END DO
+C
+      CALL QEXIT('SORT_T2_IJ')
+C
+      RETURN
+      END
+C  /* Deck sort_t2_aji */
+      SUBROUTINE  SORT_T2_AJI(XAJI,ISYMB,B,T2TP,ISYMT2) 
+C
+C     t2tp(aijb) as I^I(AJI)
+C
+      IMPLICIT NONE
+C
+#include <priunit.h>
+#include <ccsdsym.h>
+#include <ccorb.h>
+C
+      INTEGER ISYMI, ISYMT2
+      INTEGER ISYMAJI, ISYMJ, ISYMAJ, ISYMB, ISYMA, ISYMAIJ, ISYMAI
+      INTEGER KOFF1, KOFF2
+#if defined (SYS_CRAY)
+      REAL XAJI(*), T2TP(*) 
+#else
+      DOUBLE PRECISION XAJI(*), T2TP(*) 
+#endif
+C
+      CALL QENTER('SORT_T2_AJI')
+C
+      ISYMAIJ = MULD2H(ISYMT2,ISYMB)
+      ISYMAJI = MULD2H(ISYMT2,ISYMB)
+      DO ISYMJ = 1,NSYM
+         ISYMAI = MULD2H(ISYMAJI,ISYMJ)
+         DO ISYMA = 1,NSYM 
+            ISYMAJ = MULD2H(ISYMJ,ISYMA)
+            ISYMI = MULD2H(ISYMAI,ISYMA)
+            DO J = 1,NRHF(ISYMJ)
+               DO I = 1,NRHF(ISYMI)
+                  DO A = 1,NVIR(ISYMA)
+                     KOFF1 = ISAIK(ISYMAJ,ISYMI)
+     *                      + NT1AM(ISYMAJ)*(I-1)
+     *                      + IT1AM(ISYMA,ISYMJ)
+     *                      + NVIR(ISYMA)*(J-1) + A
+C
+                     KOFF2 = IT2SP(ISYMAIJ,ISYMB)
+     *                     + NCKI(ISYMAIJ)*(B-1)
+     *                     + ICKI(ISYMAI,ISYMJ)
+     *                     + NT1AM(ISYMAI)*(J-1)
+     *                     + IT1AM(ISYMA,ISYMI)
+     *                     + NVIR(ISYMA)*(I-1)
+     *                     + A
+C
+                     XAJI(KOFF1) = T2TP(KOFF2)
+                  END DO
+               END DO
+            END DO
+         END DO
+      END DO
+C
+      CALL QEXIT('SORT_T2_AJI')
+C
+      RETURN
+      END
