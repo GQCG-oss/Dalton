@@ -1290,8 +1290,10 @@ C     *******************************************
 C
       NZER = 0
       NNEG = 0
-      VALTHR = THRSH1
-      IF (NUMHES) VALTHR = 1.0D-10
+C/djw/ VALTHR set to 1.0D-10
+C     VALTHR = THRSH1
+C     IF (NUMHES) VALTHR = 1.0D-10
+      VALTHR = 1.0D-10
       DO 400 I = 1, NCORD
          IF (ABS(EVAL(I)) .LE.  VALTHR) NZER = NZER + 1
          IF (    EVAL(I)  .LT. -VALTHR) NNEG = NNEG + 1
