@@ -23,7 +23,7 @@ C
 #include <dummy.h>
 #include <maxorb.h>
       LOGICAL LOCDBG
-      PARAMETER (LOCDBG = .TRUE.)
+      PARAMETER (LOCDBG = .FALSE.)
       PARAMETER (TOLFRQ=1.0D-08,ONE=1.0D0,XMONE=-1.0D0,THR=1.0D-08)
       INTEGER LUFCK
       PARAMETER (HALF = 0.5D0, ZERO = 0.0D0)
@@ -130,15 +130,6 @@ C
      *             ' linear response properties ')
 C
       IF (IPRINT.GT.10) WRITE(LUPRI,*) 'CC_LR Workspace:',LWORK
-C
-      IF (FTST) THEN
-C       IF (.NOT. CCS) CALL CCLR_FTST(WORK,LWORK)
-C       IF (CCS) WRITE(LUPRI,'(/,1X,A,/)') 'WARNING: No F-test for CCS'
-C    *           //' - request ignored.'
-        WRITE (LUPRI,*) 'FTST is ignored... option no longer available.'
-      ENDIF
-      FTSAV = FTST
-      FTST = .FALSE.
 C
       CALL FLSHFO(LUPRI)
 C
@@ -901,11 +892,6 @@ C
       ENDIF
 C
 C-------------
-C     Restore.
-C-------------
-C
-      FTST  = FTSAV
-C
       END
 c*DECK CC_EATB
       SUBROUTINE CC_EATB(LABELA,ISYMA,FREQA,LRLXA,LPDBSA,
@@ -2232,12 +2218,8 @@ C
       CALL CC_ONEP(WORK(KONEP),WORK(KEND1),LWRK1,FF,1,LBL)
 C
       IF (.NOT.CCS) THEN
-         LUTAM = 0
-         CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
-     &               IDUMMY,.FALSE.)
-         REWIND(LUTAM)
-         READ(LUTAM) (WORK(KT1AM - 1 + J), J = 1,NT1AMX)
-         CALL GPCLOSE(LUTAM,'KEEP')
+         IOPT = 1
+         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),DUMMY)
       ELSE IF (CCS ) THEN
          CALL DZERO(WORK(KT1AM),NT1AMX)
       ENDIF
@@ -2359,13 +2341,8 @@ C
       CALL DZERO(WORK(KT1AM),NT1AM(1))
 C
       IF (.NOT.(CCS.OR.CCP2)) THEN
-         LUTAM = 0
-         CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
-     *               IDUMMY,.FALSE.)
-         REWIND(LUTAM)
-         READ(LUTAM) (WORK(KT1AM - 1 + J), J = 1, NT1AMX )
-         READ(LUTAM) (WORK(KT2PK - 1 + J), J = 1, NT2AMX )
-         CALL GPCLOSE(LUTAM,'KEEP')
+         IOPT = 3
+         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),WORK(KT2PK))
          CALL CC_T2SQ(WORK(KT2PK),WORK(KT2AM),1)
       ENDIF
 C
@@ -2609,11 +2586,8 @@ C-----------------------
 C
       CALL DZERO(WORK(KT1AM),NT1AM(1))
       IF ( .NOT. CCS) THEN
-         LUTAM = 0
-         CALL GPOPEN(LUTAM,'CCSD_TAM','UNKNOWN',' ','UNFORMATTED',
-     *               IDUMMY,.FALSE.)
-         REWIND(LUTAM)
-         READ(LUTAM) (WORK(KT1AM - 1 + J), J = 1, NT1AMX )
+         IOPT = 1
+         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),DUMMY)
       ENDIF
 C
       CALL LAMMAT(WORK(KLAMDP),WORK(KLAMDH),WORK(KT1AM),
@@ -2713,8 +2687,8 @@ C     Put T2 amplitudes in etac2.
 C--------------------------------
 C
       IF (.NOT. CCS) THEN
-         READ(LUTAM) (WORK(KT2AM + J - 1), J = 1, NT2AMX )
-         CALL GPCLOSE(LUTAM,'KEEP')
+         IOPT = 2
+         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KT2AM))
       ENDIF
 C
 C--------------------------------
