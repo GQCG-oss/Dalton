@@ -359,11 +359,6 @@ C
       ESRCAL = .FALSE.
       GCALC  = .FALSE.
       ZFSCAL = .FALSE.
-      IF (ISPIN .EQ. 1) THEN
-        CALL QUIT(
-     &   'ESRINP: Singlet reference state has no ESR properties'
-     &       )
-      END IF
       IF (NEWDEF) THEN
          WORD1 = WORD
   100    CONTINUE
@@ -450,7 +445,7 @@ C
  410  CONTINUE
       END IF
 C
-C  Chek degen array
+C  Check degen array
 C
       DO 430 I = 1, ESRNUC
          IF (DEGEN(I) .LT. 1.0) DEGEN(I)=1.0
@@ -512,6 +507,17 @@ C
       ELSE
          WRITE (LUPRI,'(/A)')
      *      ' *ESR   input ignored because no operators requested.'
+      END IF
+      IF (ISPIN .EQ. 1) THEN
+        NWARN = NWARN + 1
+         WRITE (LUPRI,'(/A/A)')
+     *      ' WARNING: *ESR   input ignored because',
+     &      ' singlet reference state has no ESR properties !!!'
+        ESRCAL = .FALSE.
+        FCFLG  = .FALSE.
+        SDFLG  = .FALSE.
+        GCALC  = .FALSE.
+        ZFSCAL = .FALSE.
       END IF
 C
 C *** END OF ESRINP
