@@ -1,0 +1,1462 @@
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+               This is output from DALTON (Release 1.2, April 2001)
+
+                          Principal authors:
+
+            Trygve Helgaker,       University of Oslo,         Norway 
+            Hans Joergen Jensen,   SDU - Odense University,    Denmark
+            Poul Joergensen,       Aarhus University,          Denmark
+            Jeppe Olsen,           Aarhus University,          Denmark
+            Kenneth Ruud,          San Diego Superc. Center,   USA    
+            Hans Aagren,           KTH Stockholm,              Sweden 
+
+                          Contributors:
+
+            Keld L. Bak,           UNI-C,                      Denmark
+            Vebjoern Bakken,       University of Oslo,         Norway 
+            Ove Christiansen,      University of Lund,         Sweden 
+            Sonia Coriani,         University of Trieste,      Italy  
+            Paal Dahle,            University of Oslo,         Norway 
+            Erik K. Dalskov,       UNI-C,                      Denmark
+            Thomas Enevoldsen,     SDU - Odense University,    Denmark
+            Berta Fernandez,       U.of Santiago de Compostela,Spain  
+            Christof Haettig,      Forschungszentrum Karlsruhe,Germany
+            Kasper Hald,           Aarhus University,          Denmark
+            Asger Halkier,         Aarhus University,          Denmark
+            Hanne Heiberg,         University of Oslo,         Norway 
+            Hinne Hettema,         University of Auckland,     NZ     
+            Dan Jonsson,           San Diego Superc. Center,   USA    
+            Sheela Kirpekar,       SDU - Odense University,    Denmark
+            Rika Kobayashi,        Cambridge University,       England
+            Henrik Koch,           SDU - Odense University,    Denmark
+            Kurt V.Mikkelsen,      University of Copenhagen,   Denmark
+            Patrick Norman,        University of Linkoeping,   Sweden 
+            Martin J. Packer,      University of Sheffield,    UK     
+            Torgeir A. Ruden,      University of Oslo,         Norway 
+            Trond Saue,            University of Toulouse,     France 
+            Stephan P. A. Sauer,   University of Copenhagen,   Denmark
+            Bernd Schimmelpfennig, KTH Stockholm,              Sweden 
+            K. O. Sylvester-Hvid,  University of Copenhagen,   Denmark
+            Peter R.Taylor,        San Diego Superc. Center,   USA    
+            Olav Vahtras,          PDC, Stockholm,             Sweden 
+------------------------------------------------------------------------
+
+
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF wave functions. The authors accept no
+     responsibility for the performance of the code or for the
+     correctness of the results.
+      
+     The code (in whole or part) is provided under a license and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+     See licence agreement for further information.
+      
+     If results obtained with this code are published, an
+     appropriate citation would be:
+      
+     T. Helgaker, H.J.Aa. Jensen, P. Joergensen, J. Olsen, K. Ruud,
+     H. Aagren, K.L. Bak, V. Bakken, O. Christiansen, S. Coriani,
+     P. Dahle, E.K. Dalskov, T. Enevoldsen, B. Fernandez, C. Haettig,
+     K. Hald, A. Halkier, H. Heiberg, H. Hettema, D. Jonsson,
+     S. Kirpekar, R. Kobayashi, H. Koch, K.V. Mikkelsen, P. Norman,
+     M.J. Packer, T.A. Ruden, T. Saue, S.P.A. Sauer, B. Schimmelpfennig,
+     K. O. Sylvester-Hvid, P.R. Taylor, and O. Vahtras:
+     "Dalton release 1.2 (2001), an electronic structure program"
+
+ 
+     Date and time (Linux)  : Mon Apr 23 17:09:20 2001
+     Host name              : dschcoriani.univ.trieste.it             
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Direct calculation
+    Integral sections will be executed
+    Wave function sections will be executed
+    Starting in Integral Section -
+
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated:
+          - overlap integrals
+          - dipole length integrals
+          - electronic angular momentum around the origin
+          - one-electron contribution to magnetic moment
+          - Ket-differentiated overlap matrix with respect to B
+          - First order magnetic derivative of electric field
+            Electric field applied in X-direction
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  Verdet constant of H2O2                                                 
+      start geom from "the book". Dihedric angle 111.93                   
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 1
+
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C2 
+
+   * The point group was generated by:
+
+      Rotation about the z-axis
+
+   * Group multiplication table
+
+        |  E   C2z
+   -----+----------
+     E  |  E 
+    C2z | C2z   E 
+
+   * Character table
+
+        |  E   C2z
+   -----+----------
+    A   |   1    1
+    B   |   1   -1
+
+   * Direct product table
+
+        | A    B  
+   -----+----------
+    A   | A  
+    B   | B    A  
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    4
+
+  Basis set used is "DunningDZ" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  O           2       8      24      10      [9s5p|4s2p]                                  
+  H           2       1       4       2      [4s|2s]                                      
+  ----------------------------------------------------------------------
+  total:      4      18      56      24
+  ----------------------------------------------------------------------
+
+  Threshold for integrals:  1.00E-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates: 12
+
+
+   1   O    1   x      1.3700514471
+   2            y      0.0000000000
+   3            z     -0.4999836957
+
+   4   O    2   x     -1.3700514471
+   5            y      0.0000000000
+   6            z     -0.4999836957
+
+   7   H    1   x      1.6850730466
+   8            y     -1.4805134201
+   9            z      0.4999836950
+
+  10   H    2   x     -1.6850730466
+  11            y      1.4805134201
+  12            z      0.4999836950
+
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:   6  6
+
+
+  Symmetry 1
+
+   1   O     x    [  1  -   4 ]/2
+   2   O     y    [  2  -   5 ]/2
+   3   O     z    [  3  +   6 ]/2
+   4   H     x    [  7  -  10 ]/2
+   5   H     y    [  8  -  11 ]/2
+   6   H     z    [  9  +  12 ]/2
+
+
+  Symmetry 2
+
+   7   O     x    [  1  +   4 ]/2
+   8   O     y    [  2  +   5 ]/2
+   9   O     z    [  3  -   6 ]/2
+  10   H     x    [  7  +  10 ]/2
+  11   H     y    [  8  +  11 ]/2
+  12   H     z    [  9  -  12 ]/2
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O  1        O  2        H  1        H  2
+
+   O  1    0.000000
+   O  2    1.450000    0.000000
+   H  1    0.960000    1.872842    0.000000
+   H  2    1.872842    0.960000    2.373970    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    O  2       O  1                           1.450000
+  bond distance:    H  1       O  1                           0.960000
+  bond distance:    H  2       O  2                           0.960000
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       O  2       O  1       H  1                 100.000
+  bond angle:       O  1       O  2       H  2                 100.000
+
+
+  Nuclear repulsion energy :   36.920164531242
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:         12  12
+
+
+  Symmetry  A  ( 1)
+
+    1     O        1s         1  +   2
+    2     O        1s         3  +   4
+    3     O        1s         5  +   6
+    4     O        1s         7  +   8
+    5     O        2px        9  -  10
+    6     O        2py       11  -  12
+    7     O        2pz       13  +  14
+    8     O        2px       15  -  16
+    9     O        2py       17  -  18
+   10     O        2pz       19  +  20
+   11     H        1s        21  +  22
+   12     H        1s        23  +  24
+
+
+  Symmetry  B  ( 2)
+
+   13     O        1s         1  -   2
+   14     O        1s         3  -   4
+   15     O        1s         5  -   6
+   16     O        1s         7  -   8
+   17     O        2px        9  +  10
+   18     O        2py       11  +  12
+   19     O        2pz       13  -  14
+   20     O        2px       15  +  16
+   21     O        2py       17  +  18
+   22     O        2pz       19  -  20
+   23     H        1s        21  -  22
+   24     H        1s        23  -  24
+
+  Symmetries of electric field:  B  (2)  B  (2)  A  (1)
+
+  Symmetries of magnetic field:  B  (2)  B  (2)  A  (1)
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in ONEDRV is   0.01 seconds
+
+
+ >>> Time used in OVERLA is   0.01 seconds
+
+
+ >>> Time used in DIPLEN is   0.00 seconds
+
+
+ >>> Time used in S1MAGR is   0.01 seconds
+
+
+ >>> Time used in ANGMOM is   0.01 seconds
+
+
+ >>> Time used in MAGMOM is   0.05 seconds
+
+
+ >>> Time used in CM1    is   0.03 seconds
+
+
+ >>> Time used in GABGEN is   0.03 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.17 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
+
+- End of Integral Section
+     Starting Wave Function Section -
+
+ ************************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program  *Apr 96*
+ ************************************************************************
+
+ 
+     Date and time (Linux)  : Mon Apr 23 17:09:20 2001
+     Host name              : dschcoriani.univ.trieste.it             
+
+ Title lines from integral program:
+     Verdet constant of H2O2                                                 
+         start geom from "the book". Dihedric angle 111.93                   
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+      (Integral direct) CC calculation.
+
+
+     This is a combination run starting with
+
+               a RHF calculation
+
+               Fock matrices are calculated directly
+               without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         18
+     Number of electrons in active shells      0
+     Number of active orbitals                 0
+     Total number of orbitals                 24
+
+     Spin multiplicity                         1
+     Total number of symmetries                2
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1   2
+                                       --  --
+     Occupied HF orbitals               5   4
+     Secondary orbitals                 7   8
+     Total number of orbitals          12  12
+     Number of basis functions         12  12
+
+     Optimization information
+     ========================
+     Number of configurations              1
+     Number of orbital rotations          67
+     ---------------------------------------
+     Total number of variables            68
+
+     Maximum number of Fock  iterations       0
+     Maximum number of DIIS  iterations      30
+     Maximum number of QC-HF iterations      15
+     Threshold for HF convergence      5.00E-11
+
+
+ Changes of defaults for CC:
+ ---------------------------
+
+
+ -This is a direct atomic orbital integral based
+  calculation for coupled cluster wave function
+
+ Quadratic response properties calculated
+
+ Dipole moment calculated
+  
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ Iter      Total energy        Error norm    Delta(E)
+ ----------------------------------------------------
+ Screening settings in next iteration (IFTHRS/DIFDEN)    7    T
+
+ >>> Time used in TWOINT is   0.26 seconds
+
+    1     -150.186628984437    4.58723E+00   -1.50E+02
+ Screening settings in next iteration (IFTHRS/DIFDEN)    7    T
+
+ >>> Time used in TWOINT is   0.24 seconds
+
+    2     -150.715327308534    6.25594E-01   -5.29E-01
+ Screening settings in next iteration (IFTHRS/DIFDEN)    9    F
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+    3     -150.749574148810    2.65242E-01   -3.42E-02
+ Screening settings in next iteration (IFTHRS/DIFDEN)    9    T
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+    4     -150.753795748447    7.56100E-02   -4.22E-03
+ Screening settings in next iteration (IFTHRS/DIFDEN)    9    T
+
+ >>> Time used in TWOINT is   0.24 seconds
+
+    5     -150.754600392092    1.77440E-02   -8.05E-04
+ Screening settings in next iteration (IFTHRS/DIFDEN)   11    F
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+    6     -150.754687777357    5.84476E-03   -8.74E-05
+ Screening settings in next iteration (IFTHRS/DIFDEN)   11    T
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+    7     -150.754699507569    1.87468E-03   -1.17E-05
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    F
+
+ >>> Time used in TWOINT is   0.24 seconds
+
+    8     -150.754700766367    5.48170E-04   -1.26E-06
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+    9     -150.754700869189    4.86475E-05   -1.03E-07
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+   10     -150.754700869564    8.58694E-06   -3.76E-10
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+   11     -150.754700869577    1.40730E-06   -1.29E-11
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.26 seconds
+
+   12     -150.754700869578    3.15327E-07   -4.19E-13
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.24 seconds
+
+   13     -150.754700869578    4.75597E-08    7.11E-15
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.24 seconds
+
+   14     -150.754700869578    9.89232E-09    3.55E-14
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.24 seconds
+
+   15     -150.754700869578    8.84855E-10    7.11E-15
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+   16     -150.754700869578    2.17096E-10    7.11E-15
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    T
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+   17     -150.754700869578    4.95999E-11    7.11E-15
+ DIIS converged in  17 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   18
+ Orbital occupations :    5    4
+
+ Hartree-Fock orbital energies, symmetry 1
+
+       -20.63048913    -1.49812240    -0.71892411    -0.60902245    -0.51968105
+         0.22151313     0.84203238     0.92878208     0.94025372     1.21045010
+
+ Hartree-Fock orbital energies, symmetry 2
+
+       -20.63019672    -1.22968245    -0.70957695    -0.49360401     0.20180173
+         0.29546657     0.80332039     0.88403948     0.98575474
+
+    E(LUMO) :     0.20180173 au (symmetry 2)
+  - E(HOMO) :    -0.49360401 au (symmetry 2)
+  ------------------------------------------
+    gap     :     0.69540574 au
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+
+     Final    HF energy:         -150.754700869578
+     Nuclear repulsion:            36.920164531242
+     Electronic energy:          -187.674865400820
+
+     Final gradient norm:           0.000000000050
+
+ 
+     Date and time (Linux)  : Mon Apr 23 17:09:24 2001
+     Host name              : dschcoriani.univ.trieste.it             
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3        4        5
+   1  O   1s     0.4109  -0.0930   0.0113  -0.0184  -0.0221
+   2  O   1s     0.3262  -0.1288   0.0156  -0.0259  -0.0306
+   3  O   1s    -0.0001   0.3631  -0.0421   0.0862   0.0901
+   4  O   1s     0.0011   0.3032  -0.0826   0.0801   0.1529
+   5  O   2px   -0.0008  -0.0914   0.2304   0.3677   0.2459
+   6  O   2py   -0.0007  -0.0463  -0.1819  -0.1379   0.4413
+   7  O   2pz    0.0006   0.0426   0.3463  -0.3137   0.1370
+   8  O   2px    0.0004  -0.0159   0.0761   0.1610   0.1166
+   9  O   2py    0.0003  -0.0146  -0.0518  -0.0496   0.2310
+  10  O   2pz   -0.0002   0.0162   0.1256  -0.1665   0.0678
+  11  H   1s     0.0001   0.0857   0.1940   0.0468  -0.1053
+  12  H   1s    -0.0001  -0.0119   0.0922   0.0577  -0.0215
+
+     Molecular orbitals for symmetry species   2
+
+ Orbital          1        2        3        4
+   1  O   1s     0.4109  -0.0946  -0.0340   0.0135
+   2  O   1s     0.3262  -0.1315  -0.0475   0.0190
+   3  O   1s    -0.0006   0.3781   0.1466  -0.0606
+   4  O   1s     0.0021   0.3712   0.1604  -0.0685
+   5  O   2px   -0.0007   0.0742   0.0471  -0.0264
+   6  O   2py   -0.0007  -0.0947   0.4277   0.1415
+   7  O   2pz    0.0006   0.0600  -0.0676   0.5288
+   8  O   2px   -0.0004   0.0013   0.0518  -0.0372
+   9  O   2py    0.0002  -0.0177   0.1685   0.0903
+  10  O   2pz   -0.0002   0.0146  -0.0140   0.2767
+  11  H   1s    -0.0001   0.1375  -0.1504   0.0836
+  12  H   1s     0.0000   0.0150  -0.0703   0.0614
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      4.29 seconds
+ >>>> Total wall time used in SIRIUS :      4.00 seconds
+
+ 
+     Date and time (Linux)  : Mon Apr 23 17:09:24 2001
+     Host name              : dschcoriani.univ.trieste.it             
+
+- End of Wave Function Section
+     Starting Coupled Cluster -
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                    START OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+
+                         +------------------------+
+                         ! Information from CCORB !
+                         +------------------------+
+
+   NBAS   :      12      12
+   IBAS   :       0      12
+   NRHF   :       5       4
+   NVIR   :       7       8
+   NRHFS  :       5       4
+   NVIRS  :       7       8
+   NRHFFR :       0       0
+   NVIRFR :       0       0
+   NORBTS :      24
+   NORBT  :      24
+   N2BAST :     288
+   N2BASX :     576
+   NNBASX :     300
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :        67
+          Number of t2 amplitudes                 :      4624
+          Total number of amplitudes in ccsd      :      4691
+
+ Iter.  1: Coupled cluster MP2   energy :    -151.0268782344002148
+ Iter.  1: Coupled cluster CCSD  energy :    -151.0257870021858935
+ Iter.  2: Coupled cluster CCSD  energy :    -151.0349508653637827
+ Iter.  3: Coupled cluster CCSD  energy :    -151.0368716862436713
+ Iter.  4: Coupled cluster CCSD  energy :    -151.0371311718380696
+ Iter.  5: Coupled cluster CCSD  energy :    -151.0371554429774505
+ Iter.  6: Coupled cluster CCSD  energy :    -151.0371332292514808
+ Iter.  7: Coupled cluster CCSD  energy :    -151.0371295346760974
+ Iter.  8: Coupled cluster CCSD  energy :    -151.0371294412213956
+ Iter.  9: Coupled cluster CCSD  energy :    -151.0371293771845274
+ Iter. 10: Coupled cluster CCSD  energy :    -151.0371293376740027
+ Iter. 11: Coupled cluster CCSD  energy :    -151.0371293242746731
+ Iter. 12: Coupled cluster CCSD  energy :    -151.0371293380399607
+ Iter. 13: Coupled cluster CCSD  energy :    -151.0371293438622615
+ Iter. 14: Coupled cluster CCSD  energy :    -151.0371293399633146
+ Iter. 15: Coupled cluster CCSD  energy :    -151.0371293406637392
+
+ CCSD  energy converged to within   0.10E-08 is   -151.037129341
+
+
+
+
+
+         +-------------------------------------------------------+
+         ! Final results from the Coupled Cluster energy program !
+         +-------------------------------------------------------+
+
+
+
+            Total SCF   energy:                  -150.7547008696
+
+            Total MP2   energy:                  -151.0268782344
+
+            Total CCSD  energy:                  -151.0371293407
+
+
+
+
+              +---------------------------------------------+
+              ! Calculating singlet intermediates for CCLR  !
+              +---------------------------------------------+
+
+
+
+            E-intermediates calculated 
+            Fock-intermediate calculated 
+            Gamma-intermediate calculated 
+            BF-intermediate calculated 
+            C-intermediate calculated 
+            D-intermediate calculated 
+
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER RESPONSE  >>>>>>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<<<    CALCULATION OF FIRST ORDER PROPERTIES    >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                     +--------------------------------+
+                     ! Coupled Cluster model is: CCSD !
+                     +--------------------------------+
+
+
+
+              Constructing right-hand-side for CCSD-kappa-0
+              ---------------------------------------------
+
+ CC_FOP> Norm of RHS vector:  0.000303187643
+
+
+                  Solving for orbital relaxation vector
+                  -------------------------------------
+
+
+ >>> Time used in TWOINT is   0.31 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.24 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.24 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.24 seconds
+
+  
+   Equations converged to residual less than:  0.000001
+
+
+                       +---------------------------+
+                       ! CCSD  Natural Occupations !
+                       +---------------------------+
+
+  
+   Symmetry block number:  1
+   ---------------------
+  
+   1.99974988   1.98977243   1.98219635   1.96781882   1.92945508
+   0.02758278   0.01978481   0.01207197   0.00492895   0.00206219
+   0.00046651   0.00019568
+  
+   Sum in this symmetry class:   9.936085
+  
+   Symmetry block number:  2
+   ---------------------
+  
+   1.99974991   1.98546700   1.97942610   1.96969468   0.06995379
+   0.02795404   0.01745582   0.01038377   0.00233116   0.00088886
+   0.00041288   0.00019652
+  
+   Sum in this symmetry class:   8.063915
+  
+  
+   Total Sum of natural occupation numbers:  18.000000
+  
+   Dynamical correlation move: 0.196670 electrons
+  
+
+
+          +------------------------------------------------------+
+          !   Relaxed CCSD First-order one-electron properties:  !
+          +------------------------------------------------------+
+
+
+
+                        +--------------------------+
+                        !  Electric Dipole Moment  !
+                        +--------------------------+
+
+
+
+                      Total Molecular Dipole Moment
+                      -----------------------------
+
+                               au             Debye
+
+                    z      0.93860822      2.38572622
+
+                        1 a.u. =   2.54177 Debye 
+
+
+
+
+ UNSORTED LIST OF REQUIRED OPERATORS:
+    1   XDIPLEN     2    1  F    0
+    2   YDIPLEN     2    1  F    0
+    3   ZANGMOM     1   -1  F    0
+    4   ZDIPLEN     1    1  F    0
+    5   YANGMOM     2   -1  F    0
+    6   XANGMOM     2   -1  F    0
+    7   dh/dBZ      1   -1  T    0
+    8   dh/dBY      2   -1  T    0
+    9   dh/dBX      2   -1  T    0
+   10   HAM0        1    1  T    0
+
+  CHECK TRIPLE: XDIPLEN  YDIPLEN  ZANGMOM 
+
+  PUT TRIPLE: XDIPLEN  YDIPLEN  ZANGMOM  ON THE LIST.
+
+  CHECK TRIPLE: ZDIPLEN  XDIPLEN  YANGMOM 
+
+  PUT TRIPLE: ZDIPLEN  XDIPLEN  YANGMOM  ON THE LIST.
+
+  CHECK TRIPLE: YDIPLEN  ZDIPLEN  XANGMOM 
+
+  PUT TRIPLE: YDIPLEN  ZDIPLEN  XANGMOM  ON THE LIST.
+
+  CHECK TRIPLE: YDIPLEN  XDIPLEN  ZANGMOM 
+
+  PUT TRIPLE: YDIPLEN  XDIPLEN  ZANGMOM  ON THE LIST.
+
+  CHECK TRIPLE: XDIPLEN  ZDIPLEN  YANGMOM 
+
+  PUT TRIPLE: XDIPLEN  ZDIPLEN  YANGMOM  ON THE LIST.
+
+  CHECK TRIPLE: ZDIPLEN  YDIPLEN  XANGMOM 
+
+  PUT TRIPLE: ZDIPLEN  YDIPLEN  XANGMOM  ON THE LIST.
+
+  CHECK TRIPLE: XDIPLEN  YDIPLEN  ZANGMOM 
+
+  PUT TRIPLE: XDIPLEN  YDIPLEN  ZANGMOM  ON THE LIST.
+
+  CHECK TRIPLE: ZDIPLEN  XDIPLEN  YANGMOM 
+
+  PUT TRIPLE: ZDIPLEN  XDIPLEN  YANGMOM  ON THE LIST.
+
+  CHECK TRIPLE: YDIPLEN  ZDIPLEN  XANGMOM 
+
+  PUT TRIPLE: YDIPLEN  ZDIPLEN  XANGMOM  ON THE LIST.
+
+  CHECK TRIPLE: YDIPLEN  XDIPLEN  ZANGMOM 
+
+  PUT TRIPLE: YDIPLEN  XDIPLEN  ZANGMOM  ON THE LIST.
+
+  CHECK TRIPLE: XDIPLEN  ZDIPLEN  YANGMOM 
+
+  PUT TRIPLE: XDIPLEN  ZDIPLEN  YANGMOM  ON THE LIST.
+
+  CHECK TRIPLE: ZDIPLEN  YDIPLEN  XANGMOM 
+
+  PUT TRIPLE: ZDIPLEN  YDIPLEN  XANGMOM  ON THE LIST.
+
+  CHECK TRIPLE: XDIPLEN  YDIPLEN  dh/dBZ  
+
+  PUT TRIPLE: XDIPLEN  YDIPLEN  dh/dBZ   ON THE LIST.
+
+  CHECK TRIPLE: ZDIPLEN  XDIPLEN  dh/dBY  
+
+  PUT TRIPLE: ZDIPLEN  XDIPLEN  dh/dBY   ON THE LIST.
+
+  CHECK TRIPLE: YDIPLEN  ZDIPLEN  dh/dBX  
+
+  PUT TRIPLE: YDIPLEN  ZDIPLEN  dh/dBX   ON THE LIST.
+
+  CHECK TRIPLE: YDIPLEN  XDIPLEN  dh/dBZ  
+
+  PUT TRIPLE: YDIPLEN  XDIPLEN  dh/dBZ   ON THE LIST.
+
+  CHECK TRIPLE: XDIPLEN  ZDIPLEN  dh/dBY  
+
+  PUT TRIPLE: XDIPLEN  ZDIPLEN  dh/dBY   ON THE LIST.
+
+  CHECK TRIPLE: ZDIPLEN  YDIPLEN  dh/dBX  
+
+  PUT TRIPLE: ZDIPLEN  YDIPLEN  dh/dBX   ON THE LIST.
+
+ LIST OF REQUIRED PROPERTY OPERATORS:
+    1   HAM0        1    1  T
+    2   ZANGMOM     1   -1  F
+    3   ZDIPLEN     1    1  F
+    4   dh/dBZ      1   -1  T
+    5   XANGMOM     2   -1  F
+    6   XDIPLEN     2    1  F
+    7   YANGMOM     2   -1  F
+    8   YDIPLEN     2    1  F
+    9   dh/dBX      2   -1  T
+   10   dh/dBY      2   -1  T
+   11   X-CM1 Z     2    1  F
+   12   Y-CM1 Z     2    1  F
+   13   Z-CM1 Y     2    1  F
+   14   X-CM1 Y     1    1  F
+   15   Y-CM1 X     1    1  F
+   16   Z-CM1 X     2    1  F
+
+ LIST OF REQUIRED EXPECTATION VALUES:
+
+ LIST OF REQUIRED EFFECTIVE FOCK MATRICES:
+    1   HAM0        1
+    2   dh/dBX      2
+    3   dh/dBY      2
+    4   dh/dBZ      1
+    5   ZANGMOM     1
+    6   YANGMOM     2
+    7   XANGMOM     2
+
+ LIST OF REQUIRED FIRST ORDER XI VECTORS:
+    1   ZANGMOM   T    1     0.000000E+00
+    2   ZANGMOM   F    1     0.000000E+00
+    3   ZDIPLEN   F    1     0.000000E+00
+    4   dh/dBZ    T    1     0.000000E+00
+    5   XANGMOM   T    2     0.000000E+00
+    6   XANGMOM   F    2     0.000000E+00
+    7   XDIPLEN   F    2     0.000000E+00
+    8   YANGMOM   T    2     0.000000E+00
+    9   YANGMOM   F    2     0.000000E+00
+   10   YDIPLEN   F    2     0.000000E+00
+   11   dh/dBX    T    2     0.000000E+00
+   12   dh/dBY    T    2     0.000000E+00
+
+ LIST OF REQUIRED FIRST ORDER T VECTORS:
+    1   ZANGMOM   T    1     0.000000E+00
+    2   ZANGMOM   F    1     0.000000E+00
+    3   ZDIPLEN   F    1    -1.139100E-01
+    4   ZDIPLEN   F    1     1.139100E-01
+    5   dh/dBZ    T    1     0.000000E+00
+    6   XANGMOM   T    2     0.000000E+00
+    7   XANGMOM   F    2     0.000000E+00
+    8   XDIPLEN   F    2    -1.139100E-01
+    9   XDIPLEN   F    2     1.139100E-01
+   10   YANGMOM   T    2     0.000000E+00
+   11   YANGMOM   F    2     0.000000E+00
+   12   YDIPLEN   F    2    -1.139100E-01
+   13   YDIPLEN   F    2     1.139100E-01
+   14   dh/dBX    T    2     0.000000E+00
+   15   dh/dBY    T    2     0.000000E+00
+
+ LIST OF REQUIRED FIRST ORDER ETA VECTORS:
+    1   ZANGMOM   T    1     0.000000E+00
+    2   ZANGMOM   F    1     0.000000E+00
+    3   ZDIPLEN   F    1     0.000000E+00
+    4   dh/dBZ    T    1     0.000000E+00
+    5   XANGMOM   T    2     0.000000E+00
+    6   XANGMOM   F    2     0.000000E+00
+    7   XDIPLEN   F    2     0.000000E+00
+    8   YANGMOM   T    2     0.000000E+00
+    9   YANGMOM   F    2     0.000000E+00
+   10   YDIPLEN   F    2     0.000000E+00
+   11   dh/dBX    T    2     0.000000E+00
+   12   dh/dBY    T    2     0.000000E+00
+
+ LIST OF REQUIRED FIRST ORDER ZETA VECTORS:
+    1   ZANGMOM   T    1     0.000000E+00
+    2   ZANGMOM   F    1     0.000000E+00
+    3   ZDIPLEN   F    1    -1.139100E-01
+    4   ZDIPLEN   F    1     1.139100E-01
+    5   dh/dBZ    T    1     0.000000E+00
+    6   XANGMOM   T    2     0.000000E+00
+    7   XANGMOM   F    2     0.000000E+00
+    8   XDIPLEN   F    2    -1.139100E-01
+    9   XDIPLEN   F    2     1.139100E-01
+   10   YANGMOM   T    2     0.000000E+00
+   11   YANGMOM   F    2     0.000000E+00
+   12   YDIPLEN   F    2    -1.139100E-01
+   13   YDIPLEN   F    2     1.139100E-01
+   14   dh/dBX    T    2     0.000000E+00
+   15   dh/dBY    T    2     0.000000E+00
+ IDEL2,INDEXA: 1 1
+ IDEL,ISAO: 1 1
+ IDEL2,INDEXA: 2 13
+ IDEL,ISAO: 13 2
+ IDEL2,INDEXA: 1 11
+ IDEL,ISAO: 11 1
+ IDEL2,INDEXA: 2 23
+ IDEL,ISAO: 23 2
+ IDEL2,INDEXA: 1 2
+ IDEL,ISAO: 2 1
+ IDEL2,INDEXA: 2 3
+ IDEL,ISAO: 3 1
+ IDEL2,INDEXA: 3 4
+ IDEL,ISAO: 4 1
+ IDEL2,INDEXA: 4 14
+ IDEL,ISAO: 14 2
+ IDEL2,INDEXA: 5 15
+ IDEL,ISAO: 15 2
+ IDEL2,INDEXA: 6 16
+ IDEL,ISAO: 16 2
+ IDEL2,INDEXA: 1 12
+ IDEL,ISAO: 12 1
+ IDEL2,INDEXA: 2 24
+ IDEL,ISAO: 24 2
+ IDEL2,INDEXA: 1 5
+ IDEL,ISAO: 5 1
+ IDEL2,INDEXA: 2 6
+ IDEL,ISAO: 6 1
+ IDEL2,INDEXA: 3 7
+ IDEL,ISAO: 7 1
+ IDEL2,INDEXA: 4 17
+ IDEL,ISAO: 17 2
+ IDEL2,INDEXA: 5 18
+ IDEL,ISAO: 18 2
+ IDEL2,INDEXA: 6 19
+ IDEL,ISAO: 19 2
+ IDEL2,INDEXA: 1 8
+ IDEL,ISAO: 8 1
+ IDEL2,INDEXA: 2 9
+ IDEL,ISAO: 9 1
+ IDEL2,INDEXA: 3 10
+ IDEL,ISAO: 10 1
+ IDEL2,INDEXA: 4 20
+ IDEL,ISAO: 20 2
+ IDEL2,INDEXA: 5 21
+ IDEL,ISAO: 21 2
+ IDEL2,INDEXA: 6 22
+ IDEL,ISAO: 22 2
+      
+
+    *******************************************************************
+    *          SOLVING COUPLED CLUSTER RESPONSE EQUATIONS             *
+    *******************************************************************
+
+
+
+ +======================================================================+
+ !                     RHS & ETA VECTORS TO COMPUTE:                    !
+ +======================================================================+
+ | TYPE | # VEC. |  NEEDED FOR:                                         |
+ +----------------------------------------------------------------------+
+ |  O1  |   12   |  first-order amplitude equations                     |
+ |  X1  |   12   |  first-order multipliers equations                   |
+ +======================================================================+
+
+
+
+ +======================================================================+
+ !                       LINEAR EQUATIONS TO SOLVE:                     !
+ +======================================================================+
+ | TYPE | # VEC. |  EQUATION:                                           |
+ +----------------------------------------------------------------------+
+ |  R1  |   15   |  first-order amplitude response                      |
+ |  L1  |   15   |  first-order multiplier response                     |
+ +======================================================================+
+
+
+
+ +======================================================================+
+ !                F MATRIX TRANSFORMATIONS TO COMPUTE:                  !
+ +======================================================================+
+ | TYPE | # VEC. |  TRANSFORMED:                                        |
+ +----------------------------------------------------------------------+
+ |  F1  |   15   |  first-order amplitude response (R1) vector          |
+ +======================================================================+
+
+
+
+
+ -------------------------------------------------------------------
+ |                   OUTPUT FROM CPHF SECTION                      |
+ -------------------------------------------------------------------
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.24 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.38 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.24 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.24 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.24 seconds
+
+
+ >>> Time used in TWOINT is   0.24 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.26 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.47 seconds
+
+
+ >>> Time used in TWOINT is   0.24 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.24 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.24 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.26 seconds
+
+
+ >>> Time used in TWOINT is   0.26 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.23 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.24 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.26 seconds
+
+
+ >>> Time used in TWOINT is   0.26 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.26 seconds
+
+
+ >>> Time used in TWOINT is   0.24 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.24 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+
+ >>> Time used in TWOINT is   0.25 seconds
+
+ Warning: no 1-index transformed eff. Fock 
+ matrices calculated... 
+ Relaxed second-order properties will be wrong!.
+
+ -------------------------------------------------------------------
+ |          OUTPUT FROM AMPLITUDE RHS VECTOR SECTION               |
+ -------------------------------------------------------------------
+
+
+
+   For the requested 12 1th.-order amplitude rhs vectors "O1 ".
+         -   0 D matrix transformations 
+         -   0 C matrix transformations 
+         -   0 B matrix transformations 
+         -   0 C{O} matrix transformations 
+         -   0 B{O} matrix transformations 
+         -   0 A{O} matrix transformations 
+         -  12Xi{O} vector calculations    
+   will be performed.
+
+
+
+ Solution of CC response equations completed.
+
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<< OUTPUT FROM COUPLED CLUSTER QUADRATIC RESPONSE >>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<     CALCULATION OF CC HYPERPOLARIZABILITIES    >>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+   For the requested 18 quadratic response functions 
+         -   6 G matrix transformations 
+         -  42 B matrix transformations 
+         -   0 F matrix transformations 
+         -  33 F{O} matrix transformations 
+         -  66 ETA{O} vector calculations 
+         -  12 Xksi{O2} x L1 and Eta{O2} x R1 dot products
+         -   0 X1 x R2 dot products 
+   will be performed.
+
+
+ +--------------------------------------------------+
+ | total time for   6 G transforms.:      2.27 secs.|
+ +--------------------------------------------------+
+ |  % of time used in ERI          :     45.37      |
+ |  % of time used in CCRDAO       :      1.32      |
+ |  % of time used in CCTRBT       :      1.76      |
+ |  % of time used in CCG_21CD     :     16.74      |
+ |  % of time used in Fock interm. :      0.00      |
+ |  % of time used in CCS part     :      0.00      |
+ |  % of time used in 21 CCSD part :     22.91      |
+ |  % of time used in doubles part :     11.45      |
+ |  % of time used in I/O          :      0.00      |
+ +==================================================+
+
+
+
+>>> Time used for    6 G matrix transformations:        2.27 seconds.
+ +--------------------------------------------------+
+ | total time for  42 B transforms.:      7.16 secs.|
+ +--------------------------------------------------+
+ |  % of time used in start up org.:      0.70      |
+ |  % of time used in Fock interm. :      0.14      |
+ |  % of time used in ERI          :     14.11      |
+ |  % of time used in CCRDAO       :      0.28      |
+ |  % of time used in (**|k del)   :      0.14      |
+ |  % of time used in singles part :      0.28      |
+ |  % of time used in A term       :     11.59      |
+ |  % of time used in BF term      :     15.92      |
+ |  % of time used in F term       :     12.01      |
+ |  % of time used in E term       :      3.77      |
+ |  % of time used in C term       :     15.22      |
+ |  % of time used in D term       :     14.67      |
+ |  % of time used in I/O          :      8.38      |
+ +==================================================+
+
+
+
+>>> Time used for   42 B matrix transformations:        7.16 seconds.
+ Warning:ISYRES.NE.ISYFCK1. Replace FOCK1 in output?
+ Warning:ISYRES.NE.ISYFCK1. Replace FOCK1 in output?
+ Warning:ISYRES.NE.ISYFCK1. Replace FOCK1 in output?
+ Warning:ISYRES.NE.ISYFCK1. Replace FOCK1 in output?
+ Warning:ISYRES.NE.ISYFCK1. Replace FOCK1 in output?
+ Warning:ISYRES.NE.ISYFCK1. Replace FOCK1 in output?
+ Warning:ISYRES.NE.ISYFCK1. Replace FOCK1 in output?
+ Warning:ISYRES.NE.ISYFCK1. Replace FOCK1 in output?
+
+>>> Time used for   33 F{O} matrix transform.:         51.13 seconds.
+
+>>> Time used for   66 ETA{O} vector calculat.:        40.36 seconds.
+
+>>> Time used for   12 Xksi{O} and Eta{O2} vector calculat.:         0.25 seconds.
+
+>>> Total time for  18 quadratic response func.:      101.18 seconds.
+
+
+                 +---------------------------------------------------------------------------------------+
+                 !                FINAL CCSD RESULTS FOR THE FIRST HYPERPOLARIZABILITIES                 !
+                 +---------------------------------------------------------------------------------------+
+
+
+  A operator                  B operator                  C operator                     property 
+------------------------------------------------------------------------------------------------------
+
+ XDIPLEN  (unrel.) -0.1139   YDIPLEN  (unrel.)  0.1139   ZANGMOM  (unrel.)  0.0000      1.5695199    
+
+ ZDIPLEN  (unrel.) -0.1139   XDIPLEN  (unrel.)  0.1139   YANGMOM  (unrel.)  0.0000     0.33595393    
+
+ YDIPLEN  (unrel.) -0.1139   ZDIPLEN  (unrel.)  0.1139   XANGMOM  (unrel.)  0.0000      2.9236745    
+
+ YDIPLEN  (unrel.) -0.1139   XDIPLEN  (unrel.)  0.1139   ZANGMOM  (unrel.)  0.0000     -1.5695199    
+
+ XDIPLEN  (unrel.) -0.1139   ZDIPLEN  (unrel.)  0.1139   YANGMOM  (unrel.)  0.0000    -0.33595393    
+
+ ZDIPLEN  (unrel.) -0.1139   YDIPLEN  (unrel.)  0.1139   XANGMOM  (unrel.)  0.0000     -2.9236745    
+
+ XDIPLEN  (unrel.) -0.1139   YDIPLEN  (unrel.)  0.1139   ZANGMOM  (relax.)  0.0000      1.6573696    
+
+ ZDIPLEN  (unrel.) -0.1139   XDIPLEN  (unrel.)  0.1139   YANGMOM  (relax.)  0.0000     0.40461152    
+
+ YDIPLEN  (unrel.) -0.1139   ZDIPLEN  (unrel.)  0.1139   XANGMOM  (relax.)  0.0000      2.9186528    
+
+ YDIPLEN  (unrel.) -0.1139   XDIPLEN  (unrel.)  0.1139   ZANGMOM  (relax.)  0.0000     -1.6573696    
+
+ XDIPLEN  (unrel.) -0.1139   ZDIPLEN  (unrel.)  0.1139   YANGMOM  (relax.)  0.0000    -0.40461152    
+
+ ZDIPLEN  (unrel.) -0.1139   YDIPLEN  (unrel.)  0.1139   XANGMOM  (relax.)  0.0000     -2.9186528    
+
+ XDIPLEN  (unrel.) -0.1139   YDIPLEN  (unrel.)  0.1139   dh/dBZ   (relax.)  0.0000      1.7532413    
+
+ ZDIPLEN  (unrel.) -0.1139   XDIPLEN  (unrel.)  0.1139   dh/dBY   (relax.)  0.0000      1.1022158    
+
+ YDIPLEN  (unrel.) -0.1139   ZDIPLEN  (unrel.)  0.1139   dh/dBX   (relax.)  0.0000      2.0397973    
+
+ YDIPLEN  (unrel.) -0.1139   XDIPLEN  (unrel.)  0.1139   dh/dBZ   (relax.)  0.0000     -1.7532413    
+
+ XDIPLEN  (unrel.) -0.1139   ZDIPLEN  (unrel.)  0.1139   dh/dBY   (relax.)  0.0000     -1.1022158    
+
+ ZDIPLEN  (unrel.) -0.1139   YDIPLEN  (unrel.)  0.1139   dh/dBX   (relax.)  0.0000     -2.0397973    
+
+
+------------------------------------------------------------------------------------------------------
+
+
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                   SUMMARY OF COUPLED CLUSTER CALCULATION                    *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+                                                                                
+                                                                                
+            Total SCF   energy:                  -150.7547008696                
+            Total MP2   energy:                  -151.0268782344                
+            Total CCSD  energy:                  -151.0371293407                
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                      END OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+- End of Coupled Cluster
+ >>>> Total CPU  time used in DALTON:  6 minutes 32 seconds
+ >>>> Total wall time used in DALTON:  6 minutes 55 seconds
+
+ 
+     Date and time (Linux)  : Mon Apr 23 17:16:15 2001
+     Host name              : dschcoriani.univ.trieste.it             
