@@ -1,3 +1,17 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
 
 #######################################################################
 #  TEST DESCRIPTION
@@ -71,7 +85,8 @@ cat > cc_fop_cc3.dal <<%EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/ksh
+echo $CHECK_SHELL >cc_fop_cc3.check
+cat >>cc_fop_cc3.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -81,7 +96,7 @@ else
 fi
 
 # SCF, MP2 and CCSD energies:
-CRIT1=`$GREP "Final    HF energy: * -99\.98340896237" $log | wc -l`
+CRIT1=`$GREP "Final    HF energy: * -99\.983408962374" $log | wc -l`
 CRIT2=`$GREP "Total MP2   energy: * -100\.111083370" $log | wc -l`
 CRIT3=`$GREP "Total CC3   energy: * -100\.114449803" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
@@ -139,5 +154,8 @@ else
   exit 1
 fi
 
-' > cc_fop_cc3.check
+exit 0
+
+%EOF%
+chmod +x cc_fop_cc3.check
 #######################################################################
