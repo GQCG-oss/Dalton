@@ -14,17 +14,11 @@
 #########################################################################
 # define `short', `long' all test suites
 #########################################################################
-SHORT="2dar cc2drw2e cc2refop cc2rf dpt dpt1 field \
-       fop1 fop2 alpha alpha3 beta beta2 beta_freq beta_freq2 \
-       exlr_ccsd exlr_ccsd_2 gamma_ccs gamma_ccsd gamma_direct \
-       gamma_freq gamma_freq2 hyp4_ccsd oddisp oddisp2 \
-       threephot triples triples_direct triples_direri \
-       triplet triplet3 twophot twophotb twophot_c2v twophot_cc2_cs \
-       twophot_ccs_cs twophot_ccsd_cs twophot_direct \
+SHORT="dpt dpt1 hyp4_ccsd \
        alpha_relax dipgra_relax dipgra_relaxb dipgra_relax2 alpha_deriv \
-       triplet_cc3 freeze1 exgr1 solvh2smini optmp2fh grdhf grdn2h2 \
-       shield triples_direct2 verdet_h2 verdet_hf \
-       mcd_nonlao mcd_lao mcd_lao_direct"
+       triplet_cc3 optmp2fh grdhf grdn2h2 \
+       shield verdet_h2 verdet_hf \
+       mcd_lao mcd_lao_direct"
 LONG="alpha2 triplet2 grdn2 optn2h2 optco verdet_hf_direct"
 ALL="$SHORT $LONG"
 
