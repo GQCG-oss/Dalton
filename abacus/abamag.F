@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abamag.F,v 1.9 2001-10-01 13:22:09 vebjornb Exp $
+C$Id: abamag.F,v 1.10 2001-11-21 08:41:05 hjj Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -403,7 +403,7 @@ C
       KSTHMA = 1
       KEXPVA = KSTHMA + NNBASX*NCOMP
       KLBINT = KEXPVA + NCOMP
-      KINTRP = KLBINT + MAXTYP 
+      KINTRP = KLBINT + MAXTYP
       KINTAD = KLBINT + (9*MXCENT + 1)/IRAT
       KOVERL = KINTAD + (9*MXCENT + 1)/IRAT
       KFMOVL = KOVERL + 6*NNBASX
@@ -507,7 +507,7 @@ C
             CALL GET1IN(STHMAT,WORD,NCOMP,WORK(1),LWORK,LABINT,INTREP,
      &               INTADR,MPQUAD,.FALSE.,NPATOM,.TRUE.,IPRINT)
          END IF
-C     
+C
 C     Add contribution from electric field, KRu, Aug.-93
 C
          IF (IPRINT .GE. 15) THEN
@@ -670,13 +670,13 @@ C
             IJ = IJ + 1
             SUSCOM(IPTAX(J,2),IPTAX(I,2)) = EXPVAL(IJ)
             SUSCOM(IPTAX(I,2),IPTAX(J,2)) = EXPVAL(IJ)
-            GFACDI(IPTAX(J,2),IPTAX(I,2)) = 
+            GFACDI(IPTAX(J,2),IPTAX(I,2)) =
      &           GFACDI(IPTAX(J,2),IPTAX(I,2)) - EXPVAL(IJ)
             IF (I .NE. J) THEN
-               GFACDI(IPTAX(I,2),IPTAX(J,2)) = 
+               GFACDI(IPTAX(I,2),IPTAX(J,2)) =
      &              GFACDI(IPTAX(I,2),IPTAX(J,2)) - EXPVAL(IJ)
             END IF
- 101     CONTINUE 
+ 101     CONTINUE
       END IF
       IF (WORD .EQ. 'THETA  ') THEN
          IJ = 0
@@ -705,7 +705,7 @@ C
          CALL SPNTRA(SPNDSO,EXPVAL,WORK(KCSTRA),WORK(KSCTRA),NCOMP,
      &               LABINT,IPRINT)
       END IF
-      IF (WORD .EQ. 'NUCSHI ' .OR. WORD .EQ. 'NSTCGO ' .OR. 
+      IF (WORD .EQ. 'NUCSHI ' .OR. WORD .EQ. 'NSTCGO ' .OR.
      &    WORD .EQ. 'NSTCGOS') THEN
          NROW = NUCDEP
          KIVEC  = 1
@@ -1135,7 +1135,7 @@ C
                   DOSD  = .FALSE.
                   DOFC  = .FALSE.
                GOTO 100
- 9             CONTINUE 
+ 9             CONTINUE
                   ANISON = .TRUE.
                GOTO 100
  10            CONTINUE
@@ -1495,7 +1495,7 @@ C
 C
 C
 C     SOPPA :
-C     reads second order one particle density matrix 
+C     reads second order one particle density matrix
 C     and doubles correlation coefficients.
 C
       IF (ABASOP) THEN
@@ -1736,7 +1736,7 @@ C
                ICOOR = ITRCOR(I,ISYM)
 C
 C     If we only want to calculate the coupled FC-SD anisotropies we
-C     only solve the response equation for the FC, 
+C     only solve the response equation for the FC,
 C     Added by K.Ruud after a suggestion by J.Vaara, March-96
 C
                IF (ICOOR .GT. 0 .AND. ANISON) GO TO 10
@@ -1763,7 +1763,7 @@ C
                END IF
 C
 C     Solve response equations. In order to improve restart options, we only
-C     send one vector at a time to the response program (no loss in 
+C     send one vector at a time to the response program (no loss in
 C     efficiency anyway). K.Ruud, Feb.-96
 C
                NABATY(1) = 1
@@ -1809,7 +1809,7 @@ C
                   WRITE (LUPRI,'(A,I5)') ' Record:    ',IREC
                   DN1 = DNRM2(NVARPT,WORK,1)
                   DN2 = DNRM2(NVARPT,WORK(1+NVARPT),1)
-                  WRITE (LUPRI,'(A,2(D20.14,2X))') 
+                  WRITE (LUPRI,'(A,2(D20.14,2X))')
      &                   ' Norms:     ',DN1,DN2
                END IF
                IF (IPRTRP .GT. 10) THEN
@@ -1871,7 +1871,7 @@ C  /* Deck shire1 */
       DIMENSION TMAT(3,3,MXCENT), DMAT(3,3,MXCENT), PMAT(3,3,MXCENT),
      &          AVETOT(NUCDEP), AVEDIA(NUCDEP), AVEPAR(NUCDEP),
      &          ANIS(NUCDEP), ASYM(NUCDEP), SPAR(NUCDEP), APAR(NUCDEP),
-     &          ANIS2(NUCDEP), ASYM2(NUCDEP), SKEW(NUCDEP), 
+     &          ANIS2(NUCDEP), ASYM2(NUCDEP), SKEW(NUCDEP),
      &          SPAN(NUCDEP), CSTRA(*), SCTRA(*)
 #include <nuclei.h>
 #include <symmet.h>
@@ -2064,7 +2064,7 @@ csonia 04/10/95
          WRITE (LUCME,'(A,A)') 'Chemical shielding for ',NAME
          WRITE (LUCME,'(A)') 'Total shielding tensor (ppm):'
       END IF
-csonia 04/10/95  
+csonia 04/10/95
       WRITE (LUPRI,'(18X,3(A,13X),/)') 'Bx', 'By', 'Bz'
       DO 400 ICOOR = 1, 3
          WRITE (LUPRI,'(2X,A6,3F15.8)')
@@ -2205,7 +2205,6 @@ C
 C
 C Print individual contributions, if requested
 C
-      isppri = 11
       IF (ISPPRI .GE. 10) THEN
          CALL HEADER('DSO-part of coupling constants',1)
          CALL PRIHES (SPNDSO,'SPNSPN',CSTRA,SCTRA)
@@ -2222,7 +2221,6 @@ C
          NCOOR = 3*NUCDEP
          CALL PR2DER(CHESS(1,1,1),NCOOR,NCOOR,LUPRI)
       END IF
-      isppri = 0
 C
 C     *** Final indirect spin-spin coupling analysis. ***
 C
@@ -2606,7 +2604,7 @@ C
             END IF
  82      CONTINUE
  80   CONTINUE
-C    
+C
       RETURN
       END
 C  /* Deck spiana */
@@ -2902,7 +2900,7 @@ C
      &                                + (XDIF*XDIF + ZDIF*ZDIF)*PFAC
                                  SPRNUC(3,3,NATOM1) = SPRNUC(3,3,NATOM1)
      &                                + (XDIF*XDIF + YDIF*YDIF)*PFAC
-                                 SPRNUC(2,1,NATOM1) = SPRNUC(2,1,NATOM1) 
+                                 SPRNUC(2,1,NATOM1) = SPRNUC(2,1,NATOM1)
      &                                - YDIF*XDIF*PFAC
                                  SPRNUC(3,1,NATOM1) = SPRNUC(3,1,NATOM1)
      &                                - ZDIF*XDIF*PFAC
@@ -2918,14 +2916,14 @@ C
                               LL = LL + 3
                            END IF
                         END IF
- 40                  CONTINUE 
- 30               CONTINUE 
+ 40                  CONTINUE
+ 30               CONTINUE
                   KK = KK + 3
                END IF
                NATOM1 = NATOM1 + 1
             END IF
- 20      CONTINUE 
- 10   CONTINUE 
+ 20      CONTINUE
+ 10   CONTINUE
 C
       IF (IPRINT .GE. 2) THEN
         CALL HEADER('Nuclear contribution to spin-rotation constants',1)
@@ -2959,7 +2957,7 @@ C
       D12 = .FALSE.
       D23 = .FALSE.
 C
-      IF (IPRINT .GE. 0) 
+      IF (IPRINT .GE. 0)
      &     CALL TITLER('ABACUS - MOLECULAR g-FACTOR','*',124)
       CALL DZERO(TOTMGF,9)
 C
@@ -2970,7 +2968,7 @@ C
          DO 10 J = 1, 3
             GFACDI(I,J) = GFACDI(I,J) + SUS2EL(I,J) + SUSFS(I,J)
      &                  + SUSFSY(I,J)
- 10      CONTINUE 
+ 10      CONTINUE
       END IF
       DO 200 I = 1, 3
          ANGMOM(I) = D1
@@ -3214,7 +3212,7 @@ C  /* Deck sprres */
       DIMENSION ANGMOM(3), TINERT(9), OMEGA(3,3), WORK(LWORK),
      &          EIGVAL(3), EIGVEC(3,3),
      &          GTRANN(3,3), GTRAND(3,3), GEOM(KATOM,3), AMASS(KATOM),
-     &          GVAL(KATOM), GTRANP(3,3), PARMAT(3,3,KATOM), 
+     &          GVAL(KATOM), GTRANP(3,3), PARMAT(3,3,KATOM),
      &          DIAMAT(3,3,KATOM)
 #include <abainf.h>
 #include <nuclei.h>
@@ -3232,7 +3230,7 @@ C
       CALL DZERO(TOTSPR,3*MXCOOR)
       CALL DZERO(GTRANT,9*MXCENT)
 C
-C     We need to transform the dia- and paramagnetic part 
+C     We need to transform the dia- and paramagnetic part
 C     of the spin-rotation constant
 C
       CALL DAXPY(9*NUCDEP,D1,SIGMAS,1,ELSPRD,1)
@@ -3259,7 +3257,7 @@ C
                TOTSPR(I,J,IATOM) = DIAMAT(I,J,IATOM) + PARMAT(I,J,IATOM)
      &                           + SPRNUC(I,J,IATOM)/D2
  200        CONTINUE
- 99   CONTINUE 
+ 99   CONTINUE
 C
 C     Determine principal moments of inertia
 C
@@ -3270,7 +3268,7 @@ C
          DO 110 ISYMOP = 0, MAXOPR
             IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                AMASS(JATOM) = DISOTP(NATTYP,NUMIS,'MASS')
-               GVAL(JATOM)  = DISOTP(NATTYP,NUMIS,'GVAL') 
+               GVAL(JATOM)  = DISOTP(NATTYP,NUMIS,'GVAL')
                DO 120 ICOOR = 1, 3
                   GEOM(JATOM,ICOOR) = PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
      &                               *CORD(ICOOR,IATOM) - CMXYZ(ICOOR)
@@ -3282,7 +3280,7 @@ C
       CALL WLKDIN(GEOM,AMASS,KATOM,ANGMOM,TINERT,OMEGA,EIGVAL,EIGVEC,
      &            .TRUE.,PLANAR,LINEAR)
 C
-C     Transform each spin-rotation constant to principal axis system, 
+C     Transform each spin-rotation constant to principal axis system,
 C     and multiply by inverse moment of inertia and various constants
 C
 C     All components of the moment of inertia not defined for linear molecules
@@ -3323,7 +3321,7 @@ C
      &              ' Diamagnetic part of spin-rotation  :',AVEDIA,
      &              ' Paramagnetic part of spin-rotation :',AVEPAR
             END IF
- 98      CONTINUE 
+ 98      CONTINUE
       ELSE
          IF (IPRINT .GE. 0) THEN
             CALL HEADER
@@ -3387,7 +3385,7 @@ C
      &                 'C', (GTRANT(I,3,IATOM),I = 1,3)
                END IF
             END IF
- 45      CONTINUE 
+ 45      CONTINUE
       END IF
       RETURN
       END
@@ -3458,7 +3456,7 @@ C
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <mxorb.h>
-      DIMENSION EXPVAL(3*NUCDEP), ELFLD(3,NUCDEP), 
+      DIMENSION EXPVAL(3*NUCDEP), ELFLD(3,NUCDEP),
      &          CSTRA(3*NUCDEP,3*NUCDEP), SCTRA(3*NUCDEP,3*NUCDEP)
 #include <nuclei.h>
 #include <abainf.h>
@@ -3504,8 +3502,8 @@ C
                SPRDNL(3,2,NATOM) =  ELFLD(2,NATOM)*COORZ
                NATOM = NATOM + 1
             END IF
- 20      CONTINUE 
- 10   CONTINUE 
+ 20      CONTINUE
+ 10   CONTINUE
 C
       IF (IPRINT .GE. 2) THEN
         CALL HEADER('Diamagnetic contribution to '//
