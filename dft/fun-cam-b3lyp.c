@@ -496,13 +496,14 @@ camb3lyp_first(FirstFuncDrv *ds, real factor, const DftDensProp *dp)
     ds->df1000 += factor*res.df10;
     ds->df0010 += factor*res.df01;
 
-    if(fabs(dp->rhoa-dp->rhob)>1e-40 || fabs(dp->grada-dp->gradb)>1e-40) {
-        a = fun_a(dp->rhob, dp->gradb);
-        camb3lyp_first_sigma(dp->rhob, dp->gradb, a, &res);
+    if(dp->rhob>10e-13) {
+        if(fabs(dp->rhoa-dp->rhob)>1e-40 || fabs(dp->grada-dp->gradb)>1e-40) {
+            a = fun_a(dp->rhob, dp->gradb);
+            camb3lyp_first_sigma(dp->rhob, dp->gradb, a, &res);
+        }
+        ds->df0100 += factor*res.df10;
+        ds->df0001 += factor*res.df01;
     }
-    ds->df0100 += factor*res.df10;
-    ds->df0001 += factor*res.df01;
-
 #if ADD_CORRELATION
     LYPFunctional.first(ds, LYP_WEIGHT*factor, dp);
     VWNFunctional.first(ds, VWN_WEIGHT*factor, dp);
