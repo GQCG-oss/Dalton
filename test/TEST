@@ -12,7 +12,7 @@
 #########################################################################
 ESSENTIAL=""
 #
-SHORT="energy_direct energy_douglaskroll energy_nosymm energy_restart \
+SHORTNOCC="energy_direct energy_douglaskroll energy_nosymm energy_restart \
 energy_symm geoopt_cartsad geoopt_cartsad2 geoopt_constrain1a \
 geoopt_constrain1b geoopt_delintsad geoopt_exci2 geoopt_numgrd \
 geoopt_preopt geoopt_prop geoopt_prop2 geoopt_redintmin geoopt_vrml \
@@ -38,7 +38,7 @@ cc_energy_triplesdirect2 cc_energy_triplesdirect3 cc_energy_triplet2 \
 cc_rsp_twophot cc_rsp_twophot2 cc_rsp_twophot3 cc_rsp_twophot4 \
 cc_rsp_twophot5 cc_rsp_twophotb cc_grad cc_geoopt_mp2 cc_fop_cc3 cc_rsp_ctocd"
 #
-SHORT="$SHORT $SHORTCC"
+SHORT="$SHORTNOCC $SHORTCC"
 #
 MEDIUM="energy_corehole energy_solv geoopt_cartmin geoopt_dckerr \
 geoopt_delintmin geoopt_exci geoopt_mp2froz geoopt_redintsad \
@@ -120,7 +120,7 @@ exit 1
 }
 
 #########################################################################
-# function mypring(string): print to stdout and $listing
+# function myprint(string): print to stdout and $listing
 #########################################################################
 myprint(){
  echo "$1";
@@ -159,7 +159,7 @@ while [ -n "`echo $1 | grep '-'`" ]; do
      "-dalton" )  shift; DALTON=$1; shift;;
      "-log" ) shift; listing=$1; shift;;
      "-keep" ) keep="true"; shift;;
-     "-param" ) shift; paramlist="$1"; shift;;
+     -param* ) shift; paramlist="$1"; shift;;
      "-reftest" ) reftest="true"; shift;;
      "-bell" ) bell="true"; shift;;
      "-benchmark" ) benchmark="true"; shift;;
@@ -181,6 +181,10 @@ if   [ "$testcase" = "" ]; then
   usage
 elif [ "$testcase" = "essential" ]; then
   testcase=$ESSENTIAL
+elif [ "$testcase" = "short_nocc" ]; then
+  testcase=$SHORTNOCC
+elif [ "$testcase" = "shortcc" ]; then
+  testcase=$SHORTCC
 elif [ "$testcase" = "short" ]; then
   testcase=$SHORT
 elif [ "$testcase" = "medium" ]; then
@@ -385,14 +389,14 @@ if [ "$benchmark" = "true" ]; then
           namelength=`expr length ${testlist[$ind]}`
           spclength=`expr 32 \- $namelength`
           spc=`expr substr "$emptystring" 1 $spclength`
-          myprint "${testlist[$ind]}$spc${timelist[$ind]}"
+          myprint "	${testlist[$ind]}$spc${timelist[$ind]}"
           ind=`expr $ind \+ 1`
         done
         echo
     fi
 fi
 
-echo $passedall | tee -a $listing
-echo $problems | tee -a $listing
+myprint "$passedall"
+myprint "$problems"
 
 exit 0
