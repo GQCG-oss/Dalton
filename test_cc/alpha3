@@ -49,6 +49,7 @@ cat > alpha3.dal <<%EOF%
 !*CCFOP
 !.DIPMOM
 *CCLR
+.OLD_LR
 .OPERATOR
 ZDIPLEN ZDIPLEN
 .FREQUENCIES
@@ -132,4 +133,5 @@ fi
 exit 0
 
 ' > alpha3.check
+chmod +x alpha3.check
 #######################################################################

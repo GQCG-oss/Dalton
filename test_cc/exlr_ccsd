@@ -111,4 +111,5 @@ else
   exit 1
 fi                
 ' > exlr_ccsd.check
+chmod +x exlr_ccsd.check
 #######################################################################

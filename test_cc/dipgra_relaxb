@@ -118,4 +118,5 @@ else
 fi
 
 ' > dipgra_relaxb.check
+chmod +x dipgra_relaxb.check
 #######################################################################

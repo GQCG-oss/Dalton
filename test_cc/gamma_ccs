@@ -117,4 +117,5 @@ else
   exit 1
 fi                
 ' > gamma_ccs.check
+chmod +x gamma_ccs.check
 #######################################################################

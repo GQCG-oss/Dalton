@@ -43,6 +43,7 @@ cat > dipgra_relax.dal <<%EOF%
 *CCFOP
 .DIPMOM
 *CCLR
+.OLD_LR
 .RELAXED
 .ASYMSD
 .OPERATOR
@@ -145,4 +146,5 @@ else
 fi
 
 ' > dipgra_relax.check
+chmod +x dipgra_relax.check
 #######################################################################

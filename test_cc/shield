@@ -50,6 +50,7 @@ NATURAL
 .OPERATOR
 ZDIPLEN
 *CCLR
+.OLD_LR
 .RELAXED
 .OPERATOR
 PSO 01  dh/dBX   
@@ -135,4 +136,5 @@ else
 fi
 
 ' > shield.check
+chmod +x shield.check
 #######################################################################

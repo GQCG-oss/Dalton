@@ -46,6 +46,7 @@ cat > alpha_relax.dal <<%EOF%
 *CCFOP
 .DIPMOM
 *CCLR
+.OLD_LR
 .PRINT
   5
 !------------
@@ -145,4 +146,5 @@ else
 fi
 
 ' > alpha_relax.check
+chmod +x alpha_relax.check
 #######################################################################

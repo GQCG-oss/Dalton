@@ -137,4 +137,5 @@ else
   exit 1
 fi                
 ' > twophot_c2v.check
+chmod +x twophot_c2v.check
 #######################################################################

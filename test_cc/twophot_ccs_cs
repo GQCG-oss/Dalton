@@ -115,4 +115,5 @@ else
   exit 1
 fi                
 ' > twophot_ccs_cs.check
+chmod +x twophot_ccs_cs.check
 #######################################################################

@@ -45,6 +45,7 @@ cat > alpha.dal <<%EOF%
 .PRINT
  1
 *CCLR
+.OLD_LR
 .OPERATOR
 ZDIPLEN ZDIPLEN
 XDIPLEN XDIPLEN
@@ -174,4 +175,5 @@ fi
 exit 0
 
 ' > alpha.check
+chmod +x alpha.check
 #######################################################################

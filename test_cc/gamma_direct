@@ -43,6 +43,7 @@ cat > gamma_direct.dal <<%EOF%
 .THRLEQ
  1.0d-10
 *CCLR
+.OLD_LR
 .DIPOLE
 *CCQR
 .AVERAGE

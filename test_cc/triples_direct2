@@ -92,4 +92,5 @@ else
   exit 1
 fi                
 ' > triples_direct2.check
+chmod +x triples_direct2.check
 #######################################################################

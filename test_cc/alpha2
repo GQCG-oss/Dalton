@@ -44,6 +44,7 @@ cat > alpha2.dal <<%EOF%
 *CCFOP
 .DIPMOM
 *CCLR
+.OLD_LR
 .OPERATOR
 ZDIPLEN ZDIPLEN
 XDIPLEN XDIPLEN
@@ -161,4 +162,5 @@ else
 fi
 exit 0
 ' > alpha2.check
+chmod +x alpha2.check
 #######################################################################

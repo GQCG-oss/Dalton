@@ -61,6 +61,7 @@ cat > exlr_ccsd_2.dal <<%EOF%
 *CCFOP
 .DIPMOM
 *CCLR
+.OLD_LR
 .DIPOLE
 *CCEXLR
 .USELEFT
@@ -169,4 +170,5 @@ else
   exit 1
 fi                
 ' > exlr_ccsd_2.check
+chmod +x exlr_ccsd_2.check
 #######################################################################

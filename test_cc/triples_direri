@@ -87,4 +87,5 @@ else
   exit 1
 fi                
 ' > triples_direri.check
+chmod +x triples_direri.check
 #######################################################################

@@ -127,4 +127,5 @@ else
   exit 1
 fi                
 ' > triplet_cc3.check
+chmod +x triplet_cc3.check
 #######################################################################

@@ -64,6 +64,7 @@ cat > solvh2smini.dal <<%EOF%
 .DIPMOM
 .NONREL
 *CCLR
+.OLD_LR
 .DIPOLE
 .FREQUE
  2
@@ -200,4 +201,5 @@ else
   exit 1
 fi                
 ' > solvh2smini.check
+chmod +x solvh2smini.check
 #######################################################################

@@ -143,4 +143,5 @@ else
   exit 1
 fi                
 ' > gamma_ccsd.check
+chmod +x gamma_ccsd.check
 #######################################################################

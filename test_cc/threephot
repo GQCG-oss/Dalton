@@ -148,4 +148,5 @@ else
   exit 1
 fi                
 ' > threephot.check
+chmod +x threephot.check
 #######################################################################

@@ -113,4 +113,5 @@ else
   exit 1
 fi                
 ' > twophotb.check
+chmod +x twophotb.check
 #######################################################################
