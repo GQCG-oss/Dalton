@@ -197,8 +197,6 @@ real dftenergy_(const real* rho, const real* grad);
 void dftpot0_(FirstDrv *ds, const real* w, const DftDensProp* dp);
 void dftpot1_(SecondDrv*ds, const real* w, const DftDensProp* dp,
               const int* triplet); 
-void newdftpot1_(SecondDrv*ds, const real* w, const DftDensProp* dp,
-              const int* triplet);
 void dftpot2_(ThirdDrv *ds, real factor, const DftDensProp* dp, int isgga,
               int triplet);
 
