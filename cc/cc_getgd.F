@@ -47,6 +47,7 @@ C
 C
       CHARACTER MODEL*(10), LIST*(*)
 C
+      CALL QENTER('CC_GETGD')
       IF ( IPRINT .GT. 10 ) THEN
          CALL AROUND( 'CC_GD: Constructing GD vector ')
          CALL FLSHFO(LUPRI)
@@ -459,6 +460,8 @@ C     CALL FLSHFO(LUPRI)
       ENDIF
 C
    1  FORMAT(1x,A35,1X,E20.10)
+      CALL QEXIT('CC_GETGD')
+      RETURN
       END
 c*DECK CC_LGD 
       SUBROUTINE CC_LGD(GD,LBLC,ISYMC,FRQ,LORX,WORK,LWORK)

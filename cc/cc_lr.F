@@ -66,6 +66,7 @@ C------------------------------------
 C     Header of Property calculation.
 C------------------------------------
 C
+      CALL QENTER('CC_LR')
       WRITE (LUPRI,'(1X,A,/)') '  '
       WRITE (LUPRI,'(1X,A)')
      *'*********************************************************'//
@@ -104,16 +105,19 @@ C
       IF (CC3  ) THEN
          MODEL = 'CC3'
          WRITE(LUPRI,'(/,1x,A)') 'CC3 Polari not implemented yet'
+         CALL QEXIT('CC_LR')
          RETURN
       ENDIF
       IF (CC1A) THEN
          MODEL = 'CCSDT-1a'
          WRITE(LUPRI,'(/,1x,A)') 'CC1A Polari not implemented yet'
+         CALL QEXIT('CC_LR')
          RETURN
       ENDIF
       IF (CC1B) THEN
          MODEL = 'CCSDT-1b'
          WRITE(LUPRI,'(/,1x,A)') 'CC1B Polari not implemented yet'
+         CALL QEXIT('CC_LR')
          RETURN
       ENDIF
       IF (CCSD) THEN
@@ -892,6 +896,8 @@ C
       ENDIF
 C
 C-------------
+      CALL QEXIT('CC_LR')
+      RETURN
       END
 c*DECK CC_EATB
       SUBROUTINE CC_EATB(LABELA,ISYMA,FREQA,LRLXA,LPDBSA,

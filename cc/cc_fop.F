@@ -416,8 +416,9 @@ C
          CALL DZERO(WORK(KSOLUT),NALLAI(1))
 C
          IF (MP2) THEN
-            CALL MP2_ZKDIA(WORK(KZKAM),WORK(KWRK2),LWRK2)
-            CALL MP2_KANEW(WORK(KETAAI),WORK(KZKAM),WORK(KWRK2),LWRK2)
+            CALL MP2_ZKDIA(MODEL,WORK(KZKAM),WORK(KWRK2),LWRK2)
+            CALL MP2_KANEW(MODEL,WORK(KETAAI),WORK(KZKAM),
+     &           WORK(KWRK2),LWRK2)
          ELSE IF (CC2) THEN
             IOPT = 1
             CALL CC2_DEN(WORK(KETAAI),WORK(KZKAM),WORK(KWRK2),LWRK2,
@@ -3213,7 +3214,7 @@ C
       RETURN
       END
 C  /* Deck mp_zkdia */
-      SUBROUTINE MP2_ZKDIA(ZKDIA,WORK,LWORK)
+      SUBROUTINE MP2_ZKDIA(MODEL,ZKDIA,WORK,LWORK)
 C
 C     Written by Asger Halkier 20/3 - 1998
 C
@@ -3229,6 +3230,7 @@ C
 #include <implicit.h>
 #include <dummy.h>
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
+      CHARACTER MODEL*10
       DIMENSION ZKDIA(*), WORK(LWORK)
 #include <priunit.h>
 #include <maxorb.h>
@@ -3569,7 +3571,7 @@ C
       RETURN
       END
 C  /* Deck mp2_kanew */
-      SUBROUTINE MP2_KANEW(ETAAI,ZKDIA,WORK,LWORK)
+      SUBROUTINE MP2_KANEW(MODEL,ETAAI,ZKDIA,WORK,LWORK)
 C
 C     Written by Asger Halkier 23/3 - 1998
 C
@@ -3592,6 +3594,7 @@ C
 #include <aovec.h>
 #include <iratdef.h>
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
+      CHARACTER MODEL*10
       DIMENSION INDEXA(MXCORB)
       DIMENSION ETAAI(*), ZKDIA(*), WORK(LWORK)
 #include <ccorb.h>

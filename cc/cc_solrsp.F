@@ -93,6 +93,7 @@ C-------------------------------------
 C     Initialize Leinfi and variables.
 C-------------------------------------
 C
+      CALL QENTER('CC_SOLRSP')
       LUFC1 = 0
       LUFC2 = 0
       LUFR1 = 0
@@ -1368,6 +1369,7 @@ C
       WRITE (LUPRI,*) 
       CALL FLSHFO(LUPRI)
 C
+      CALL QEXIT('CC_SOLRSP')
       RETURN
 C
    2  FORMAT ((1X,A1,1X,A4,1X,A1,1X,I4,3X,A1,1X,A52,1X,A1))

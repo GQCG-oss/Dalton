@@ -33,6 +33,7 @@ C     Testoptions.
 C     Use fock diagonal for the moment.
 C-------------------------------------------
 C
+      CALL QENTER('CCLR_DIA')
       EMATDI = .FALSE.
       FOCKDI = .TRUE.
       IF (CCS.OR.CCP2.OR.CC2 ) THEN
@@ -121,6 +122,7 @@ C
             DO 190 I =1,LETYPA-NT1AM(ISYMTR)
                DIAA(NT1AM(ISYMTR)+I) = 1.0D08
   190       CONTINUE
+            CALL QEXIT('CCLR_DIA')
             RETURN
          ENDIF
 C
@@ -366,6 +368,7 @@ C
          END IF
       ENDIF
 C
+      CALL QEXIT('CCLR_DIA')
       RETURN
       END
 C  /* Deck cclr_diascl */

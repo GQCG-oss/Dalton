@@ -89,6 +89,7 @@ C-------------------------
 C     Save and initialize.
 C-------------------------
 C
+      CALL QENTER('CC_TRDRV')
       MSCRS = MINSCR
       IF ( CCSDT .OR. (ISIDE .EQ. 2)) THEN
          MINSCR = .TRUE.
@@ -475,5 +476,6 @@ C
       ENDIF
 C
    1  FORMAT(1x,A35,1X,E20.10)
+      CALL QEXIT('CC_TRDRV')
       RETURN
       END

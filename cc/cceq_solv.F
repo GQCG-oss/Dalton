@@ -106,6 +106,7 @@ C
       DIMENSION WRK(2)
       LOGICAL LINQCC, LPROJECT, TRIPLET
 C
+      CALL QENTER('CCEQ_SOL')
       IF (IPRLE .GT. 3 ) THEN
          WRITE(LUPRI,*) 'CCEQ_SOL: IPRLE   =    ',IPRLE
          WRITE(LUPRI,*) 'CCEQ_SOL: TRIPLET =    ',TRIPLET
@@ -345,6 +346,7 @@ C
       END IF
       CALL FLSHFO(LUPRI)
 C
+      CALL QEXIT('CCEQ_SOL')
       RETURN
       END
 C  /* Deck cceq_str */
@@ -382,6 +384,7 @@ C
       DIMENSION IPLACE(*) , WORK(*),EIVAL(*)
       LOGICAL NEWSTR, LPROJECT, TRIPLET
 C
+      CALL QENTER('CCEQ_STR')
       IF (IPRLE. GT. 10 ) THEN
           CALL AROUND( ' START OF CCEQ_STR ' )
           WRITE(LUPRI,*) 'CCEQ_STR: LIST     =',LIST(1:3)
@@ -602,6 +605,7 @@ C
       ENDIF
 C
    1  FORMAT(1x,A35,1X,E20.10)
+      CALL QEXIT('CCEQ_STR')
       RETURN
       END
 C  /* Deck ccconv */

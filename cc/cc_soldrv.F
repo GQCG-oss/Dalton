@@ -94,6 +94,7 @@ C
       LOGICAL LTAKE, LPROJECT
 
 C
+      CALL QENTER('CC_SOLDRV')
       LUFC1 = 0
       LUFC2 = 0
       LUFR1 = 0
@@ -123,7 +124,10 @@ C
         END IF
       END IF
 
-      IF (NVEC.EQ.0) RETURN
+      IF (NVEC.EQ.0) THEN
+         CALL QEXIT('CC_SOLDRV')
+         RETURN
+      END IF
 
 C
 C-------------------------------------
@@ -585,6 +589,7 @@ C
 C-------------------------------------------------------------
 C     finished
 C-------------------------------------------------------------
+      CALL QEXIT('CC_SOLDRV')
       RETURN
       END
 C--------------------------------------------------------------------

@@ -48,12 +48,14 @@ C----------------------------------------
 C     Initialization of timing parameter.
 C----------------------------------------
 C
+      CALL QENTER('CC_D1AO')
       TIMTOT = ZERO
       TIMTOT = SECOND()
 C
       IF ((CC2) .AND. (RELORB)) THEN
 C
          CALL CC2_D1AO(AODEN,ZKAM,WORK,LWORK)
+         CALL QEXIT('CC_D1AO')
          RETURN
 C
       ELSE IF (MP2) THEN
@@ -346,7 +348,10 @@ C
 C
       ENDIF
 C
-      IF (FROIMP) RETURN
+      IF (FROIMP) THEN
+         CALL QEXIT('CC_D1AO')
+         RETURN
+      END IF
 C
 C-----------------------------------------------------------------
 C     Calculate additional terms to the one electron density
@@ -354,7 +359,10 @@ C     needed for the evaluation of the natural occupation numbers.
 C     Only if NO else skip.
 C-----------------------------------------------------------------
 C
-      IF (.NOT. NO) RETURN
+      IF (.NOT. NO) THEN
+         CALL QEXIT('CC_D1AO')
+         RETURN
+      END IF
 C
       IF (.NOT. MP2) THEN
 C
@@ -433,6 +441,7 @@ C
          WRITE(LUPRI,*) 'Total time used in CC_D1AO:', TIMTOT
       ENDIF
 C
+      CALL QEXIT('CC_D1AO')
       RETURN
       END
 C  /* Deck cc_denao */
