@@ -33,7 +33,7 @@ C /* Deck ecktrn */
      &            GTRANT,POLARS,POLDD,DIANQC,SPNTOT,
      &            MAGSUS,MOLGFA,QUADRU,SHIELD,SPINRO,POLAR,ALFA,NQCC,
      &            SPNSPN,NCART,NCRTOT,MXFR,NFRVAL,FRVAL,GEOM,
-     &            AMASS,NATTYP,ECK,GEOM2,IPRINT,WORK,LWORK)
+     &            AMASS,NATTYP,ECK,GEOM2,IPRINT,HESSIA,WORK,LWORK)
 C     
 C     Define an Eckart frame, and transform properties to this frame.
 C     Based on the program ECKART by Juha Vaara:
@@ -52,7 +52,7 @@ C
      &     TOLX = 1.0D-12,TOLF = 1.0D-12)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       LOGICAL MAGSUS, MOLGFA, QUADRU, SHIELD, SPINRO, POLAR, ALFA,
-     &        NQCC, SPNSPN, PLANAR, LINEAR
+     &        NQCC, SPNSPN, PLANAR, LINEAR, HESSIA
 C
       DIMENSION GEOM(3,MXCENT), AMASS(MXCENT), NATTYP(MXCENT),
      &          ECK(3,MXCENT), GEOM2(NUCDEP,3), EQCM(3), XN(3)
@@ -212,11 +212,6 @@ C
       ECKP(2) = 1.0D-9
       ECKP(3) = 1.0D-9
 C
-ckr
-ckr OBSOBSOBS
-ckr
-      call dzero(bvec,3)
-      call dzero(xjmat,9)
       CALL MNEWT(NTRIAL,ECKP,3,BVEC,XJMAT,TOLX,TOLF)
       XN(1) = SIN(ECKP(1))*COS(ECKP(2))
       XN(2) = SIN(ECKP(1))*SIN(ECKP(2))
@@ -316,30 +311,41 @@ C
          ENDIF
       END IF
 C
-ckr      IF (GRDIEN) THEN
-ckr         DO I = 1, 3*NUCDEP, 3
-ckr            CALL MPAB(CMAT,3,3,3,3,GRDCAR(I),3,3,3,3,OMEGA,3,3)
-ckr            CALL MPABT(OMEGA,3,3,3,3,CMAT,3,3,3,3,GRDCAR(I),3,3)
-ckr         END DO
-ckr         IF (IPRINT .GE. 2) THEN
-ckr            CALL HEADER('Molecular gradient in the Eckart frame:',0)
-ckr            CALL PRIGRD()
-ckr         END IF
-ckr      END IF
 C
-ckr      IF (HESSIA) THEN
-ckr         DO I = 1, NCART, 3
-ckr         DO J = 1, NCART, 3
-ckr           CALL MPAB(CMAT,3,3,3,3,HESCAR(I,J),3,3,NCART,NCART,OMEGA,3,3)
-ckr          CALL MPABT(OMEGA,3,3,3,3,CMAT,3,3,3,3,HESCAR(I,J),NCART,NCART)
-ckr         END DO
-ckr         END DO
-ckr      call output(hescar,1,ncart,1,ncart,ncart,ncart,1,lupri)
-ckr         IF (IPRINT .GE. 2) THEN
-ckr            CALL HEADER('Molecular Hessian in the Eckart frame:',0)
-ckr            CALL PRIHES()
-ckr         END IF
-ckr      END IF
+      IF (HESSIA) THEN
+C
+C     Gradient
+C
+         DO I = 1, 3*NUCDEP, 3
+            CALL DGEMM('N','N',3,3,3,1.0D0,
+     &                 CMAT,3,
+     &           GRDCAR(I),3,0.0D0,
+     &           OMEGA,3)
+            CALL DGEMM('N','T',3,3,3,1.0D0,
+     &                 OMEGA,3,
+     &                 CMAT,3,0.0D0,
+     &                 GRDCAR(I),3)
+         END DO
+C
+C     Hessian
+C
+         DO I = 1, NCART, 3
+         DO J = 1, NCART, 3
+            CALL DGEMM('N','N',3,3,3,1.0D0,
+     &                 CMAT,3,
+     &           HESCAR(I,J),3,0.0D0,
+     &           OMEGA,3)
+            CALL DGEMM('N','T',3,3,3,1.0D0,
+     &                 OMEGA,3,
+     &                 CMAT,3,0.0D0,
+     &                 HESCAR(I,J),3)
+         END DO
+         END DO
+         IF (IPRINT .GE. 2) THEN
+            CALL HEADER('Molecular Hessian in the Eckart frame:',0)
+            CALL OUTPAK(HESCAR,NCART,1,LUPRI)
+         END IF
+      END IF
 C
       IF (SHIELD) THEN
          DO I =1 , NUCDEP

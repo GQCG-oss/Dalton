@@ -29,11 +29,20 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abawalk.F,v 1.5 2001-03-26 09:37:04 ruud Exp $
+C$Id: abawalk.F,v 1.6 2001-04-21 12:11:58 ruud Exp $
 C
 #include <single.h>
 #ifdef REVLOG
 $Log: not supported by cvs2svn $
+Revision 1.5  2001/03/26 09:37:04  ruud
+Various small bug fixes, among them now allowing for more than 100
+geometry perturbations with natural connection, a OPTORB problem is rsp,
+and inconsistent record length in non-direct response calculations.
+
+In addition, added temperature dependence to the harmonic vibrational average
+and the possibility of reusing property derivatives. In this connection changed
+the name of some ABACUS interface files. K.Ruud
+
 Revision 1.4  2001/03/13 08:43:30  vebjornb
 - Reshuffled include statements and a couple of common blocks to
   more in line with ANSI Fortran (only ABACUS files)
@@ -282,6 +291,12 @@ C
  39            CONTINUE
                   DOTEMP = .TRUE.
                   READ (LUCMD, *) NTEMP
+                  IF (NTEMP .GT. MAXTMP) THEN
+                     WRITE (LUPRI,'(/A)') 'Too many temperatures '//
+     &                    'requested. Increase MAXTMP in cbiwlk.h'//
+     &                    ' and recompile'
+                     CALL QUIT('Too many temperatures requested')
+                  END IF
                   READ (LUCMD, *) (TEMP(ITMP), ITMP=1,NTEMP)
                   GOTO 100
  40            CONTINUE
@@ -627,6 +642,7 @@ C
       DO 410 I = 1, MXCENT
          ISOTPS(I) = 1
   410 CONTINUE
+      NTEMP = 0
 C
       NOORTH = .FALSE.
       NATCON = .FALSE.
@@ -907,6 +923,8 @@ C     Need to reset a couple of variables read in from WLKREA
 C
             IPOINT = 0
             ESTART = ERGMOL
+            CALL DCOPY(NCART*NCART,EVECX,1,EVEC,1)
+            CALL DCOPY(NCART,EVALX,1,EVAL,1)
          END IF
       ELSE
          TRUSTX = TRUSTR
@@ -947,7 +965,8 @@ C
      &               DOREPW,NCRTOT,N2CRT,NTMAT,ISCTYP,IWKTYP,PRJTRO,
      &               ISOTPS,IPRWLK)
       END IF
-      IF (IWKTYP .EQ. 6 .AND. (VIBAVE .OR. NMODIF) .AND. START) THEN
+      IF (IWKTYP .EQ. 6 .AND. ((VIBAVE .AND. .NOT. REUSED) .OR. NMODIF)
+     &     .AND. START) THEN
 C
 C        Generate normal coordinates for numerical differentiation
 C
@@ -992,7 +1011,7 @@ C
          end if
          CALL CMMASS(WORK(KGEOM),WORK(KAMASS),WORK(KNATYP),
      &               ISOTOP,IPRWLK)
-C
+C     
 C     Project out translation and rotational motion from the Hessian
 C
          CALL VIBHES(IPRWLK,NCART,WORK(KGEOM),KTRRO,GRDCAR,HESCAR,
@@ -3843,7 +3862,7 @@ C
      &               SHIELD,SPINRO,POLAR,ALFA,NQCC,SPNSPN,
      &               NCART,NCRTOT,MXFR,NFRVAL,FRVAL,WORK(KGEOMI),
      &               WORK(KAMASS),WORK(KNATTY),WORK(KECKGE),
-     &               WORK(KGEOM2),IPRINT,WORK(KLAST),LWRK)
+     &               WORK(KGEOM2),IPRINT,.FALSE.,WORK(KLAST),LWRK)
       END IF
       IF (IPOINT .EQ. 0) THEN
          CALL DCOPY (NCART,GRDCAR,1,GRAD0,1)

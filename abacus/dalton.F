@@ -29,12 +29,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: dalton.F,v 1.4 2001-04-06 17:21:41 vebjornb Exp $
+C$Id: dalton.F,v 1.5 2001-04-21 12:11:59 ruud Exp $
 C
 #include <single.h>
 #ifdef UNDEF
 C
 $Log: not supported by cvs2svn $
+Revision 1.4  2001/04/06 17:21:41  vebjornb
+MPI bugfixes from Patrick - VB
+
 Revision 1.3  2001/02/21 13:22:54  vebjornb
 - Converted 50 Dalton (non-CC) test jobs to the automatic testing system
 - Added Perl-script maketest in tools-directory, should help in setting
@@ -329,8 +332,10 @@ C
 C     Back to old version...   vb jan-01
 C
       CALL GPIOIN
-      CALL GPOPEN(LUPRI,'DALTON.OUT',' ',' ','FORMATTED',IDUMMY,.FALSE.)
-      CALL GPOPEN(LUCME,'DALTON.CM',' ',' ','FORMATTED',IDUMMY,.FALSE.)
+      CALL GPOPEN(LUPRI,'DALTON.OUT','NEW',' ','FORMATTED',
+     &            IDUMMY,.FALSE.)
+      CALL GPOPEN(LUCME,'DALTON.CM','NEW',' ','FORMATTED',
+     &            IDUMMY,.FALSE.)
       CALL MEMINI(LUPRI,LUERR)
 #if defined (VAR_MPI)
       CALL MPIXINIT

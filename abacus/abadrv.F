@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abadrv.F,v 1.5 2001-04-03 14:25:07 vebjornb Exp $
+C$Id: abadrv.F,v 1.6 2001-04-21 12:11:58 ruud Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -669,6 +669,7 @@ C
      &            (WRDSRC .EQ. '**FINAL' .AND. TOTSYM)
          IF (((V3CAL .AND. NMODIF) .OR. VIBAVE) .AND. 
      &            (WRDSRC .NE. '**START')) MOLHES = .FALSE.
+         IF (VIBAVE .AND. REUSED) MOLHES = .FALSE.
       END IF
       DODRCT = DIRCAL
       FCKEXP = .FALSE.
@@ -2213,15 +2214,15 @@ C  /* Deck qdrres */
 #include <abainf.h>
 C
       CALL TITLER('ABACUS - Molecular quadrupole moments','*',113)
-      CALL DSCAL(9,DM1,QDREL,1)
+      CALL DCOPY(9,QDREL,1,QUADRT,1)
+      CALL DSCAL(9,DM1,QUADRT,1)
       IF (IPRINT .GE. 2) THEN
          CALL HEADER('Nuclear contribution (au)',-1)
          CALL POLPRI(QDRNUC,'   ',1)
          CALL HEADER('Electronic contribution (au)',-1)
-         CALL POLPRI(QDREL,'   ',1)
+         CALL POLPRI(QUADRT,'   ',1)
       END IF
-      CALL DCOPY(9,QDRNUC,1,QUADRT,1)
-      CALL DAXPY(9,D1,QDREL,1,QUADRT,1)
+      CALL DAXPY(9,D1,QDRNUC,1,QUADRT,1)
       CALL HEADER('Total quadrupole moments (au)',-1)
       CALL POLPRI(QUADRT,'   ',1)
       CALL HEADER('Total quadrupole moments (cgs, Debye*AAngstroem)',-1)

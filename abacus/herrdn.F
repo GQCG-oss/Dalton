@@ -29,11 +29,14 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: herrdn.F,v 1.7 2001-04-03 14:25:08 vebjornb Exp $
+C$Id: herrdn.F,v 1.8 2001-04-21 12:11:59 ruud Exp $
 C
 #include <single.h>
 #ifdef REVISION_LOG
 $Log: not supported by cvs2svn $
+Revision 1.7  2001/04/03 14:25:08  vebjornb
+Changes to ERI (symmetry and general contraction) tuh
+
 Revision 1.6  2001/03/28 07:33:46  ruud
 Added a relativistically contracted ANO basis set. Changed a couple of
 dimension and fixed a couple of typo's in the last cc_grad0.F.
@@ -714,8 +717,6 @@ C     ***************************************************
 C     ***** Process orbital and geometry input data *****
 C     ****************************************************
 C
-      IF (LWORK .LT. MXPRIM*MXCORB) CALL STOPIT('READI1 ','BASPRO',
-     &                                          MXPRIM*MXCORB,LWORK)
       CALL BASPRO(WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,NRC,
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,KPRIM,
      &            KAOVEC,DOOWN)
@@ -1246,6 +1247,7 @@ C
 #include <shells.h>
 #include <symmet.h>
 #include <primit.h>
+#include <gnrinf.h>
 #include <huckel.h>
 #include <aosotr.h>
 #include <veclen.h>
@@ -1291,13 +1293,24 @@ C*****************************************************************************
       CALL ORBPRO(NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),NUC(1,1),
      &            NRC(1,1),SEG(1,1),
      &            ALPHA(1,1,1),CPRIM(1,1,1,1),CPRIMU(1,1,1,1),
-     &            WORK,KATOM,KANG,KBLOCK,KPRIM,ISHELL,
+     &            KATOM,KANG,KBLOCK,KPRIM,ISHELL,
      &            IPRIM,IPRIMD,IORB,IORBD,LCOMP)
       NLRGSH = ISHELL
       NLARGE = IORBD
       NORBL  = IORB
       NPLRG  = IPRIMD
       NPLSH  = IPRIM
+C
+C     Set up a contraction matrix in case of Douglas-Kroll integrals
+C
+      IF (DKTRAN) THEN
+         IF (LWORK .LT. NPLRG*NLARGE) CALL STOPIT('READI1 ','BASPRO',
+     &                                             NPLRG*NLARGE,LWORK)
+         CALL DKPRO(NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),
+     &              NUC(1,1),NRC(1,1),SEG(1,1),ALPHA(1,1,1),
+     &              CPRIM(1,1,1,1),WORK,KATOM,KANG,KBLOCK,KPRIM,
+     &              NPLRG,NLARGE)
+      END IF
 C*****************************************************************************
 C       Process orbital data for small components
 C*****************************************************************************
@@ -1305,7 +1318,7 @@ C*****************************************************************************
       CALL ORBPRO(NONTYP,NONT,IQM(1,2),NBLCK(1,2),JCO(1,1,2),NUC(1,2),
      &            NRC(1,2),SEG(1,2),
      &            ALPHA(1,1,2),CPRIM(1,1,1,2),CPRIMU(1,1,1,2),
-     &            WORK,KATOM,KANG,KBLOCK,KPRIM,
+     &            KATOM,KANG,KBLOCK,KPRIM,
      &            ISHELL,IPRIM,IPRIMD,IORB,IORBD,LCOMP)
       IF (ADDSTO) THEN
          IF (ISHELL .GT. MXSHEL) GOTO 5040
@@ -2137,7 +2150,7 @@ C
       END
 C  /* Deck orbpro */
       SUBROUTINE ORBPRO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
-     &           ALPHA,CPRIM,CPRIMU,CONTC,KATOM,KANG,KBLOCK,KPRIM,
+     &           ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,KPRIM,
      &           ISHELL,IPRIM,IPRIMD,IORB,IORBD,LCOMP)
 C******************************************************************************
 C
@@ -2160,7 +2173,6 @@ C
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
      &          SEG(KBLOCK),ALPHA(KPRIM,KBLOCK),
      &          CPRIM(KPRIM,KPRIM,KBLOCK),CPRIMU(KPRIM,KPRIM,KBLOCK)
-      DIMENSION CONTC(MXPRIM,MXCORB)
 #include <ccom.h>
 #include <nuclei.h>
 #include <primit.h>
@@ -2173,9 +2185,6 @@ C
 #include <ibtfun.h>
       ICENT  = 0
       IBLOCK = 0
-      IPR    = 1
-      IRB    = 1
-      CALL DZERO(CONTC,MXPRIM*MXCORB)
       DO 10 I = 1,NONTYP
          DO 20 N = 1,NONT(I)
             ICENT = ICENT + 1
@@ -2255,51 +2264,11 @@ C*****************************************************************************
                      IPRIMD = IPRIMD + NCOMP*NDEG
    60             CONTINUE
 C
-C     In case we need to contract from the primitive basis, the 
-C     raw contraction matrix may come in handy
-C
-                  IF (LCOMP .EQ. 1) THEN
-                     DO ICOMP = 1, NCOMP
-                        IF (ICOMP .GT. 1) THEN
-                           IPR = IPR - NDEG*(NCOMP*NUC(KBCH) - 1)
-                           IRB = IRB - NDEG*NCONT*NCOMP + 1
-                        END IF
-                        DO L = 1, NUC(KBCH)
-                           IF (L .GT. 1) IRB = IRB - NCONT*NCOMP*NDEG
-     &                                             - (NDEG - 1)
-                           PRFA  = ((D2*PI)**(DP75))
-     &                           *((D4*ALPHA(L,KBCH))**(-DP5*(J + DP5)))
-                           DO IDEG = 1, NDEG
-                              IF (IDEG .GT. 1) IRB =IRB
-     &                                             -NCONT*NCOMP*NDEG + 1
-                              DO M = 1, NCONT
-                                 CONTC(IPR,IRB) = CPRIM(L,M,KBCH)*PRFA
-                                 IRB = IRB + NCOMP*NDEG
-                              END DO
-                              IPR = IPR + 1
-                           END DO
-                           IPR = IPR + NDEG*NCOMP - NDEG
-                        END DO
-                     END DO
-                     IPR = IPR - NCOMP*NDEG + NDEG
-                     IRB = IRB - NCOMP*NDEG + 1
-                  END IF
-C
    40          CONTINUE
    30       CONTINUE
    20    CONTINUE
          IBLOCK = IBLOCK + NBLCK(I)
    10 CONTINUE
-C
-      IF (LCOMP .EQ. 1) THEN
-         LUCNMT = -9000
-         IPR = IPR - 1
-         IRB = IRB - 1
-         CALL GPOPEN(LUCNMT,'CNTMAT','NEW',' ','FORMATTED',
-     &               IDUMMY,.FALSE.)
-         WRITE (LUCNMT,*) ((CONTC(I,J),I=1,IPRIMD),J=1,IORBD)
-         CALL GPCLOSE(LUCNMT,'KEEP')
-      END IF
 C
       RETURN
 C
@@ -2312,6 +2281,105 @@ C
      *   '                  '//
      *   ' current maximum number                  ',MXCONT
       CALL QUIT('Too many contracted per AO-block')
+      END
+C  /* Deck dkpro */
+      SUBROUTINE DKPRO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
+     &           ALPHA,CPRIM,CONTC,KATOM,KANG,KBLOCK,KPRIM,
+     &           IPRIMD,IORBD)
+C******************************************************************************
+C
+C     Set up a contraction matrix for use in contraction of 
+C     Douglas-Kroll integrals
+C
+C******************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <pi.h>
+#include <mxcent.h>
+#include <mxorb.h>
+#include <aovec.h>
+#include <maxaqn.h>
+      PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0, DP5 = 0.50D0,
+     &           DP75 = 0.75D0)
+C
+#include <cbirea.h>
+      LOGICAL SEG,SPHER
+      DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
+     &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
+     &          SEG(KBLOCK),ALPHA(KPRIM,KBLOCK),
+     &          CPRIM(KPRIM,KPRIM,KBLOCK)
+      DIMENSION CONTC(IPRIMD,IORBD)
+#include <ccom.h>
+#include <nuclei.h>
+#include <primit.h>
+#include <shells.h>
+#include <symmet.h>
+#include <aosotr.h>
+#include <gnrinf.h>
+C
+C
+#include <ibtfun.h>
+      ICENT  = 0
+      IBLOCK = 0
+      IPR    = 1
+      IRB    = 1
+      CALL DZERO(CONTC,IPRIMD*IORBD)
+      DO 10 I = 1,NONTYP
+         DO 20 N = 1,NONT(I)
+            ICENT = ICENT + 1
+            KBCH = IBLOCK
+            NDEG = NUCDEG(ICENT)
+            DO 30 J = 1,IQM(I)
+               KKK = 0
+               NCOMP = KHK(J)
+               NCCMP = KCK(J)
+               SPHER = SPH(J)
+               DO 40 K = 1, JCO(J,I)
+                  KBCH = KBCH + 1
+                  NCONT = NRC(KBCH)
+C
+C     Core for setting up contraction matrix
+C
+                  DO ICOMP = 1, NCOMP
+                     IF (ICOMP .GT. 1) THEN
+                        IPR = IPR - NDEG*(NCOMP*NUC(KBCH) - 1)
+                        IRB = IRB - NDEG*NCONT*NCOMP + 1
+                     END IF
+                     DO L = 1, NUC(KBCH)
+                        IF (L .GT. 1) IRB = IRB - NCONT*NCOMP*NDEG
+     &                       - (NDEG - 1)
+                        PRFA  = ((D2*PI)**(DP75))
+     &                       *((D4*ALPHA(L,KBCH))**(-DP5*(J + DP5)))
+                        DO IDEG = 1, NDEG
+                           IF (IDEG .GT. 1) IRB =IRB
+     &                          -NCONT*NCOMP*NDEG + 1
+                           DO M = 1, NCONT
+                              CONTC(IPR,IRB) = CPRIM(L,M,KBCH)*PRFA
+                              IRB = IRB + NCOMP*NDEG
+                           END DO
+                           IPR = IPR + 1
+                        END DO
+                        IPR = IPR + NDEG*NCOMP - NDEG
+                     END DO
+                  END DO
+                  IPR = IPR - NCOMP*NDEG + NDEG
+                  IRB = IRB - NCOMP*NDEG + 1
+C
+   40          CONTINUE
+   30       CONTINUE
+   20    CONTINUE
+         IBLOCK = IBLOCK + NBLCK(I)
+ 10   CONTINUE
+C
+C     Write contraction matrix to file
+C
+      LUCNMT = -9000
+      CALL GPOPEN(LUCNMT,'CNTMAT','NEW',' ','FORMATTED',
+     &            IDUMMY,.FALSE.)
+      WRITE (LUCNMT,*) ((CONTC(I,J),I=1,IPRIMD),J=1,IORBD)
+      CALL GPCLOSE(LUCNMT,'KEEP')
+C
+      RETURN
       END
 C  /* Deck orbout */
       SUBROUTINE ORBOUT(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,

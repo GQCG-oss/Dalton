@@ -48,7 +48,7 @@
 #endif
 
 /* for some machines we have to add an underscore to the routine names:  */
-#if defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_AIX)
+#if defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_AIX) || defined (SYS_SUN)
 #define WOPEN wopen_
 #define WCLOSE wclose_
 #define GETWA getwa_
