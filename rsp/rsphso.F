@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rsphso.F,v 1.6 2004-01-23 15:46:29 jkp Exp $
+C$Id: rsphso.F,v 1.7 2004-09-01 13:28:02 vahtras Exp $
 C
 #include <single.h>
 C  /* Deck hsoctl */
@@ -93,11 +93,13 @@ C-- common blocks:
 #include <inflr.h>
 #include <qrinf.h>
 #include <cbihr2.h>
+#include "infesr.h"
+#include <dftcom.h>
 C
       CALL QENTER('HSOCTL')
 C
       IF (SOPPA) CALL QUIT('HSOCTL: SOPPA not implemented yet!')
-      IPRHSO=IPRRSP
+      IPRHSO=MAX(IPRRSP,IPRPP,IPRLR,IPRESR)
       KSYMSO=KSYMOP
       CALL DZERO(GP,KZYVAR)
       HSOFAC=ALPHAC**2/4
@@ -1432,9 +1434,9 @@ C
 C /* Deck hsofckao */
 C
       SUBROUTINE HSOFCKAO(WORD,CMO,UDV,FC,FV,WRK,KFREE,LFREE)
-#include <implicit.h>
+      IMPLICIT NONE
       CHARACTER*(*) WORD
-      DIMENSION CMO(*), UDV(*), FC(*), FV(*), WRK(*)
+      REAL*8    CMO(*), UDV(*), FC(*), FV(*), WRK(*)
       INTEGER KFREE,LFREE
 C
 C Build HSO inactive fockmatrix from AO integrals
@@ -1452,20 +1454,23 @@ C
 #include <dummy.h>
 #include <priunit.h>
 #include <symmet.h>
+#include <dftcom.h>
 #ifdef VAR_DEBUG
 #define DEBUG .TRUE.
 #else
 #define DEBUG .FALSE.
 #endif
+      REAL*8 D1
       PARAMETER (D1=1.0D0)
-      INTEGER NDMAT,KDMAO,KFMAO,KDMSO,IPRINT,I
+      INTEGER NDMAT,KDMAO,KFMAO,KDMSO,I
       INTEGER KDC,KDV,KFC,KFV,KFMO,KFAO
       INTEGER KJSTRS , KNPRIM , KNCONT , KIORBS , KJORBS , NPAO , KKORBS
       INTEGER I2TYP
       INTEGER IPRTWO,IPRNTA,IPRNTB,IPRNTC,IPRNTD
       INTEGER IRNTYP , NUMDIS, IFCTYP(2), ISYMDM(2)
-cF90   REAL(DOUBLE) TIMEND,TIMSTR,SO1WAL,SO1CPU
-cF90   REAL(DOUBLE) SO2WAL,SO2CPU,SOCPU,SOWAL
+      REAL*8  TIMEND,TIMSTR,SO1WAL,SO1CPU
+      REAL*8  SO2WAL,SO2CPU,SOCPU,SOWAL
+      REAL*8  HFXSAV
       LOGICAL TKTIME,RTNTWO
       LOGICAL TRIPLET(2)
       CALL QENTER('HSOFCKAO')
@@ -1486,6 +1491,12 @@ C
             CALL DSWAP(N2BASX,WRK(KDC),1,WRK(KDV),1)
          END IF
       END IF
+      IF (DEBUG) THEN
+         CALL MAOPRI(WRK(KDC),'HSOFCKAO:Input  D1')
+         IF (NASHT.GT.0) THEN
+            CALL MAOPRI(WRK(KDC+N2BASX),'HSOFCKAO:Input  D2')
+         END IF
+      END IF
       IF (DIRFCK) THEN
          IF (WORD(1:1).EQ.'X') IFCTYP(1)=1
          IF (WORD(1:1).EQ.'Y') IFCTYP(1)=2
@@ -1495,9 +1506,9 @@ C
 C
 C        Transform density to AO basis 
 C
-         CALL DSOTAO(WRK(KDC),WRK(KFC),NBAST,0,IPRINT)
+         CALL DSOTAO(WRK(KDC),WRK(KFC),NBAST,0,IPRRSP)
          IF (NASHT.GT.0) THEN
-            CALL DSOTAO(WRK(KDV),WRK(KFV),NBAST,0,IPRINT)
+            CALL DSOTAO(WRK(KDV),WRK(KFV),NBAST,0,IPRRSP)
          END IF
          CALL DCOPY(NDMAT*N2BASX,WRK(KFC),1,WRK(KDC),1)
 C
@@ -1521,6 +1532,10 @@ C
          IPRTWO = 0
          TKTIME = .FALSE.
          CALL DZERO(WRK(KFC),NDMAT*N2BASX)
+         IF (DFTRUN) THEN
+            HFXSAV=HFXFAC
+            HFXFAC=D1
+         END IF
          CALL TWOINT(WRK(KFREE),LFREE,WRK(KFREE),
      &               WRK(KFC),WRK(KDC),NDMAT,
      &               IDUMMY, IFCTYP,
@@ -1531,15 +1546,31 @@ C
      &               IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
      &               .FALSE.)
          CALL MEMREL('HSOFCKAO.TWOINT',WRK,KFC,KJSTRS,KFREE,LFREE)
+         IF (DEBUG) THEN
+            CALL MAOPRI(WRK(KFC),':TWOINT:Calculated F1')
+            IF (NASHT.GT.0) THEN
+               CALL MAOPRI(WRK(KFC+N2BASX),':TWOINT:Calculated F2')
+            END IF
+         END IF
+         IF (DFTRUN) THEN
+            HFXFAC=HFXSAV
+         END IF
 C
 C  Transform to SO
 C
          ISYMDM(1)=0
+         ISYMDM(2)=0
          CALL SKLFCK(WRK(KFC),DUMMY,WRK(KFREE),LFREE,
      &               IPRTWO,.FALSE.,
      &               .FALSE.,.FALSE.,.FALSE.,.TRUE.,IDUMMY,.TRUE.,NDMAT,
      &               ISYMDM,IFCTYP,IDUMMY,.TRUE.)
 C
+         IF (DEBUG) THEN
+            CALL MAOPRI(WRK(KFC),':SKLFCK:Calculated F1')
+            IF (NASHT.GT.0) THEN
+               CALL MAOPRI(WRK(KFC+N2BASX),':SKLFCK:Calculated F2')
+            END IF
+         END IF
          CALL MEMCHK('HSOFCKAO.SKLFCK',WRK,KFC)
          CALL GETTIM(SO2CPU,SO2WAL)
          SOCPU=SO2CPU-SO1CPU
@@ -1559,6 +1590,12 @@ C
          TRIPLET(2) = .NOT.TRPLET
          CALL DZERO(WRK(KFC),NDMAT*N2BASX)
          CALL GETFMATX(WORD,TRIPLET,WRK(KFC),WRK(KDC),NDMAT)
+      END IF
+      IF (DEBUG) THEN
+         CALL MAOPRI(WRK(KFC),'HSOFCKAO:Calculated F1')
+         IF (NASHT.GT.0) THEN
+            CALL MAOPRI(WRK(KFC+N2BASX),'HSOFCKAO:Calculated F2')
+         END IF
       END IF
 C
 C Reorder matrices to match gradient routine

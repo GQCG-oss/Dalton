@@ -36,7 +36,7 @@ C /* Deck gdrv */
       SUBROUTINE GDRV(WORK,LWORK)
 #include <implicit.h>
       INTEGER LWORK
-      DIMENSION WORK(LWORK)
+      REAL*8 WORK(LWORK)
 #include <infdim.h>
 #include <inforb.h>
 #include <infrsp.h>
@@ -90,10 +90,10 @@ C
          CALL GETREF(WORK(KCREF),NCREF)
          CALL RSPDM(IREFSY,IREFSY,NCREF,NCREF,WORK(KCREF),WORK(KCREF),
      &      WORK(KUDV),WORK(KPVX),0,0,.FALSE.,.FALSE.,WORK(KINDX),
-     &      WORK,KWRK1,LWRK1)
+     &      WORK(KWRK1),1,LWRK1)
          CALL RSPDM(IREFSY,IREFSY,NCREF,NCREF,WORK(KCREF),WORK(KCREF),
      &     WORK(KUDV),WORK(KPVX+LPVMAT),1,1,.FALSE.,.FALSE.,WORK(KINDX),
-     &      WORK,KWRK1,LWRK1)
+     &      WORK(KWRK1),1,LWRK1)
       END IF
 C
 C Calculate first-order properties
@@ -121,7 +121,7 @@ C
      &      WORK(KFCAC),WORK(KH2AC),WORK(KINDX),WORK(KWRK1),LWRK1
      &      )
             CALL MEMCHK('GDRV<-RSPLR',WORK,1)
-            CALL GSET2(WORK(KCMO),WORK(KUDV),WORK(KPV),WORK(KXINDX),
+            CALL GSET2(WORK(KCMO),WORK(KUDV),WORK(KPVX),WORK(KINDX),
      &         WORK(KWRK1),LWRK1)
          END IF
   100 END DO
@@ -143,8 +143,10 @@ C
       REAL*8 CMO(*), UDV(*), PV(*), XINDX(*), WORK(*)
       INTEGER LWORK
 C
-      REAL*8 DDOT
-      EXTERNAL DDOT
+      REAL*8 DDOT, DNRM2
+      EXTERNAL DDOT, DNRM2
+      INTEGER INDPRP
+      EXTERNAL INDPRP
 #include <gtensor.h>
 #include <qrinf.h>
 #include <inforb.h>
@@ -158,7 +160,7 @@ C
       INTEGER KFREE, LFREE
       LOGICAL LDUMMY, FOUND, CONV
       INTEGER I, J, KLEN, LU, KANG, ISYM, IPRP, ISO
-      REAL*8 RESID, ANTSYM, D0
+      REAL*8 RESID, ANTSYM, D0, DNORM
       PARAMETER (D0=0.0D0)
       CHARACTER*8 BLANK
       DATA BLANK/'        '/
@@ -171,13 +173,15 @@ C
       CALL MEMGET('REAL',KANG,KZYVAR,WORK,KFREE,LFREE)
       DO IPRP=1,NGPLR(KSYMOP)
          DO I=1,3
-            IF (ANGLBL(I).EQ.LBLLR(KSYMOP,IPRP)) THEN
+            IF (ANGLBL(I).EQ.LBLLR(KSYMOP,IPRP)
+     &         .AND. LLROP(INDPRP(ANGLBL(I)))) THEN
                CALL REARSP(LU,KLEN,WORK(KANG),ANGLBL(I),BLANK,
      &            D0,DUMMY,KSYMOP, IDUMMY, THCLR,FOUND,CONV,ANTSYM)
                IF (KLEN.NE.KZYVAR) THEN
                   CALL QUIT('GSET2:Serious error reading RSPVEC')
                END IF
-               IF (FOUND .AND. CONV) THEN
+               DNORM = DNRM2(KLEN,WORK(KANG),1)
+               IF (FOUND .AND. CONV .AND. DNORM.GT.THRNRM) THEN
                   DO ISO=1,NSO
                      DO J=1,3
                         IF (KSYMOP.EQ.(ISYMAX(J,2)+1)) THEN
@@ -209,6 +213,7 @@ C /* Deck ginit */
 #include <infinp.h>
 #include <inflr.h>
 #include "infave.h"
+#include <priunit.h>
       LOGICAL FNDLB2
       EXTERNAL FNDLB2
       LQRGP = .TRUE.
@@ -664,31 +669,6 @@ C              CALL QUIT(' ILLEGAL KEYWORD IN GINP ')
          GO TO 100
       END IF
   300 CONTINUE
-      IF (ICHANG .GT. 0) THEN
-         CALL HEADER('CHANGES OF DEFAULTS FOR GINP:',0)
-         IF (.NOT.G_ALL) WRITE(LUPRI,'(/A)')
-     *      ' Components of g-tensor set to zero :'//G_LINE
-         IF (ECC) WRITE(LUPRI,'(A)')
-     *      ' Electronic charge centroid used as gauge origin'
-         IF (MNFSO) WRITE(LUPRI,'(A)')
-     *      ' Mean-field spin-orbit approximation is used'
-         IF (SCALED_CHARGES) WRITE(LUPRI,'(A)')
-     *      ' Two-electron spin-orbit by scaled nuclear charges'
-         IF (.NOT.DOALL) THEN
-            WRITE(LUPRI,'(/A)')
-     &      ' Selected contributions to electronic g_tensor:'
-            IF (DORMC) WRITE(LUPRI,'(/A)') 
-     &         '   Relativistic mass correction'
-            IF (DOGC1) WRITE(LUPRI,'(/A)') 
-     &         '   One-electron gauge correction'
-            IF (DOGC2) WRITE(LUPRI,'(/A)') 
-     &         '   Two-electron gauge correction'
-            IF (DOOZSO1) WRITE(LUPRI,'(/A)') 
-     &         '   One-electron spin-orbit + orbital Zeeman correction'
-            IF (DOOZSO2) WRITE(LUPRI,'(/A)') 
-     &         '   Two-electron spin-orbit + orbital Zeeman correction'
-         END IF
-      END IF
       IF (DOALL) THEN
          DORMC = .TRUE.
          DOGC1 = .TRUE.
@@ -1096,7 +1076,7 @@ C
 C
       IF (.NOT.GCALC) RETURN
       CALL QENTER('GPRINT')
-      IF (REFSPIN.NE.0) THEN
+      IF (NINT(REFSPIN).NE.0) THEN
          CALL TITLER(' Electronic g-tensor (ppm)','=',3)
 C
          IF (ECC) THEN

@@ -328,6 +328,9 @@ C
 #include "rspprp.h"
 #include "infpri.h"
 #include "zfs.h"
+#include "gtensor.h"
+#include "maxorb.h"
+#include "infinp.h"
 #include "parnmr.h"
 C
       LOGICAL NEWDEF
@@ -351,10 +354,17 @@ C Initialize new HFC input
  50   CONTINUE
 C      
       NEWDEF = (WORD .EQ. '*ESR   ')
-      ICHANG = 0 
+      ICHANG = 0
+      ESRCAL = .FALSE.
+      GCALC  = .FALSE.
+      ZFSCAL = .FALSE.
+      IF (ISPIN .EQ. 1) THEN
+        CALL QUIT(
+     &   'ESRINP: Singlet reference state has no ESR properties',
+     &       )
+      END IF
       IF (NEWDEF) THEN
-      ESRCAL = .TRUE.
-      WORD1 = WORD
+         WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
             PROMPT = WORD(1:1)
@@ -450,26 +460,57 @@ C
       CALL SETISO
 C
       WRITE(LUPRI,'(/A)')' ********* ESRINP ********'
+C
+C
       NTOESR = 0
       DO 500 I = 1,NPRLBL
          IF (ESROPS(I)) NTOESR = NTOESR + 1
          IF (ESROPT(I)) NTOESR = NTOESR + 1
  500  CONTINUE
-      IF ( NTOESR.EQ. 0) THEN
+      ESRCAL = NTOESR .GT. 0 .OR. FCFLG .OR. SDFLG
+      IF (ESRCAL .OR. GCALC .OR. ZFSCAL) THEN
+         CALL HEADER('Changes of defaults under *ESR   :',0)
+         IF ( ESRCAL ) THEN
+            WRITE (LUPRI,'(/A)')
+     *         ' ESR - hyperfine calculation carried out'
+            IF (MAXESR.NE.20) WRITE(LUPRI,'(/A,I6)')
+     *         ' MAXIMUM NUMBER OF ITERATIONS. MAXESR =',MAXESR
+            IF (THCESR.NE.1.0D-5) WRITE(LUPRI,'(/A,D12.6)')
+     *         ' THRESHOLD FOR CONVERGENCE. THCESR =',THCESR
+            IF (IPRESR.NE.2) WRITE(LUPRI,'(/A,I5)')
+     *         ' PRINT LEVEL IN ESR ROUTINES. IPRESR =',IPRESR
+         END IF
+         IF (ZFSCAL) THEN
+            WRITE (LUPRI,'(/A)')
+     *         ' ESR - zero-field splitting  calculation carried out'
+         END IF
+         IF (GCALC) THEN 
+            WRITE (LUPRI,'(/A)')
+     *         ' ESR - g-tensor calculation carried out'
+            IF (ECC) WRITE(LUPRI,'(A)')
+     *         ' Electronic charge centroid used as gauge origin'
+            IF (MNFSO) WRITE(LUPRI,'(A)')
+     *         ' Mean-field spin-orbit approximation is used'
+            IF (SCALED_CHARGES) WRITE(LUPRI,'(A)')
+     *         ' Two-electron spin-orbit by scaled nuclear charges'
+            IF (.NOT.DOALL) THEN
+               WRITE(LUPRI,'(/A)')
+     *         ' Selected contributions to electronic g_tensor:'
+               IF (DORMC) WRITE(LUPRI,'(/A)') 
+     *            '   Relativistic mass correction'
+               IF (DOGC1) WRITE(LUPRI,'(/A)') 
+     *            '   One-electron gauge correction'
+               IF (DOGC2) WRITE(LUPRI,'(/A)') 
+     *            '   Two-electron gauge correction'
+               IF (DOOZSO1) WRITE(LUPRI,'(/A)') 
+     *          '   One-electron spin-orbit + orbital Zeeman correction'
+               IF (DOOZSO2) WRITE(LUPRI,'(/A)') 
+     *          '   Two-electron spin-orbit + orbital Zeeman correction'
+            END IF
+         END IF
+      ELSE
          WRITE (LUPRI,'(/A)')
      *      ' *ESR   input ignored because no operators requested.'
-         ESRCAL = .FALSE.
-      ELSE
-         CALL HEADER('Changes of defaults under *ESR   :',0)
-         IF (ESRCAL) WRITE (LUPRI,'(/A,L1)')
-     *      ' ESR - calculation carried out : ESRCAL='
-     *      ,ESRCAL
-         IF (MAXESR.NE.20) WRITE(LUPRI,'(/A,I6)')
-     *      ' MAXIMUM NUMBER OF ITERATIONS. MAXESR =',MAXESR
-         IF (THCESR.NE.1.0D-5) WRITE(LUPRI,'(/A,D12.6)')
-     *      ' THRESHOLD FOR CONVERGENCE. THCESR =',THCESR
-         IF (IPRESR.NE.2) WRITE(LUPRI,'(/A,I5)')
-     *      ' PRINT LEVEL IN ESR ROUTINES. IPRESR =',IPRESR
       END IF
 C
 C *** END OF ESRINP
