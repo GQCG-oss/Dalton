@@ -889,6 +889,7 @@ C     TUH 84
 C
 #include <implicit.h>
 #include <priunit.h>
+#include <maxaqn.h>
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
       LOGICAL YEQX, ZEQX, ZEQY, ONECEN, DER1, DER2, DER12,
      &        DERECC, DERECD, BIGVEC, UNDIFF, SPNORB, DIA2UP, EL2CD,
@@ -896,6 +897,7 @@ C
       DIMENSION COEF12(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2,3,*),
      &          COOR12(NUC1*NUC2,3,3), HEXPPI(*), EXP12(NUC1*NUC2,3),
      &          COOR1(MXUC12),  ORIGO(3), WORK(LWORK)
+#include <twosta.h>
 #include <drw2el.h>
 #include <r12int.h>
 C
