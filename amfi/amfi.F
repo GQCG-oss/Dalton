@@ -1914,11 +1914,13 @@ cbs   including kinematic factors and even exponents as factors
       DIMENSION WRK(LWRK)
       common /nucleus/ charge,Exp_Finite
       double precision normasHERMIT(-Lmax:Lmax,0:Lmax)
-      data ((normasHERMIT(ml,l),ml=-l,l),l=0,lmax) /1.0d0,
-     &     1.0d0,1.0d0,1.0d0,
-     &     1.0d0,1.0d0,3.46410162d0,1.0d0,2.0d0,
-     &     4.8989795d0,1.0d0,6.3245553d0,-2.5819889d0,6.3245553d0,
-     &     2.0d0,-1.6329932d0,
+      data ((normasHERMIT(ml,l),ml=-lmax,lmax),l=0,lmax) 
+     &     /0.0d0,0.0d0,0.0d0,0.0d0,1.0d0,0.0d0,0.0d0,0.0d0,0.0d0,
+     &     0.0d0,0.0d0,0.0d0,1.0d0,1.0d0,1.0d0,0.0d0,0.0d0,0.0d0,
+     &     0.0d0,0.0d0,1.0d0,1.0d0,3.46410162d0,
+     &     1.0d0,2.0d0,0.0d0,0.0d0,
+     &     0.0d0,4.8989795d0,1.0d0,6.3245553d0,-2.5819889d0,6.3245553d0,
+     &     2.0d0,-1.6329932d0,0.0d0,
      &     3.4641016d0,4.89897949d0,9.16515139d0,4.3204938d0,
      &   -3.4156503d0,4.3204938d0,18.330303d0,-1.6329932d0,-6.9282032d0/   
       IPNT(I,J)=(J*J-J)/2+I 
