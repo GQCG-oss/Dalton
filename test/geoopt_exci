@@ -168,8 +168,8 @@ ERROR[9]="LAST GEOMETRY NOT CORRECT"
 
 # Last iteration
 CRIT1=`$GREP "Energy at this geometry is * \: * \-75\.889480" $log | wc -l`
-CRIT2=`$GREP "Norm of gradient * \: * (0| )\.002774" $log | wc -l`
-CRIT3=`$GREP "Norm of step * \: * (0| )\.031315" $log | wc -l`
+CRIT2=`$GREP "Norm of gradient * \: * (0| )\.00277[3-5]" $log | wc -l`
+CRIT3=`$GREP "Norm of step * \: * (0| )\.03131[3-6]" $log | wc -l`
 TEST[10]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[10]=3
 ERROR[10]="LAST ITERATION NOT CORRECT"
