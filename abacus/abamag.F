@@ -1927,7 +1927,7 @@ C
                REWIND LUSOVE
                REWIND LUREVE
                IF (ZERNRM(I)) THEN
-                  CALL DZERO(WORK,NVARPT)
+                  CALL DZERO(WORK,2*NVARPT)
                ELSE
                   CALL READT(LUSOVE,NVARPT,WORK)
                   CALL READT(LUREVE,NVARPT,WORK(NVARPT+1))
