@@ -914,7 +914,7 @@ case "$WHICH" in
 	  cpp="-DVAR_IFC $cpp"
 	  opt="-O3 $proc -ip -w"
 	  safe_opt="-O1 -w"
-          case $cc in
+          case $CC in
               icc) copt="-O3 $proc -ip -restrict -DRESTRICT=restrict";;
               gcc) copt="-O3 -malign-double -std=c99 -DRESTRICT=restrict";;
           esac
