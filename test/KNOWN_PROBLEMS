@@ -13,3 +13,6 @@ linux g77
 
   test cases rsp_lrso, rsp_lrso2, rsp_phosph, rsp_socorr and
   rsp_sreslrso do not work due to a problem with FASTIO
+
+  test case energy_douglaskroll gives an energy that is slightly wrong
+  and the test therefore fails
