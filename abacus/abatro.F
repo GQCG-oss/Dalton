@@ -45,7 +45,7 @@ C  /* Deck troinp */
       LOGICAL NEWDEF
 C
       DATA TABLE /'.SKIP  ', '.PRINT ', '.STOP  ', '.THRESH', '.COMPAR',
-     *            'XXXXXXX', '.GD    ', '.RD    ', '.NOROT '/
+     *            'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX'/
 C
       NEWDEF = (WORD .EQ. '*TROINV')
       THRSHD = THRESH
@@ -88,14 +88,11 @@ C
     5             COMPAR = .TRUE.
                GO TO 100
     6          GO TO 100
-    7             GDTRO = .TRUE.
-                  GDALL = .TRUE.
+    7             CONTINUE
                GO TO 100
-    8             RDTRO = .TRUE.
-C                 -- currently RDTRO only possible if NOROT
-                  NOROT1 = .TRUE.
+    8             CONTINUE
                GO TO 100
-    9             NOROT1 = .TRUE.
+    9             CONTINUE
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -119,14 +116,8 @@ C                 -- currently RDTRO only possible if NOROT
                WRITE(LUPRI,'(A,D12.6)')
      *            ' Threshold for linear dependence: ',THRESH
             END IF
-            IF (NOROT1) WRITE (LUPRI,'(/,A,/)')
-     *         ' Rotational symmetry not used.'
             IF (COMPAR) WRITE (LUPRI,'(/,2A)') ' Translational and',
      *         ' rotational symmetry will be used for comparison.'
-            IF (GDTRO) WRITE(LUPRI,'(/,2A)')' Differentiated gradients',
-     *         ' will be calculated using symmetry.'
-            IF (RDTRO) WRITE (LUPRI,'(/,2A)') ' Solution vectors',
-     *         ' will be calculated using symmetry.'
             IF (CUT) THEN
                WRITE (LUPRI,'(/,A)') ' Program is stopped after TROINV.'
             END IF
