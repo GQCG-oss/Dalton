@@ -191,7 +191,6 @@ C   INFORB : NNORBT
 C   INFDIM : LBUFMA
 C   INFTRA : LSRTAO
 C   INFTAP : LU*
-C   INFPRI : ?
 C
 #include <maxorb.h>
 #include <priunit.h>
@@ -200,7 +199,6 @@ C
 #include <infdim.h>
 #include <inftra.h>
 #include <inftap.h>
-#include <infpri.h>
 C
       LOGICAL OPINTM, FNDLAB, OLDTRA, FEXIST
 C
@@ -267,14 +265,14 @@ C           no old luintm opened, then old integrals not available
          END IF
          IF (OLDTRA .AND. ICASE .GT. 0) THEN
             NWARN = NWARN + 1
-            WRITE (LUERR,'(/A,I2,3(/A))')
+            WRITE (LUPRI,'(/A,I2,3(/A))')
      *         ' WARNING SIROPI, old integral transformation not found'
      *       //' as expected, ICASE =',ICASE,
      *         ' if ICASE = 1: mo integral file LUINTM does not exist',
      *         ' if ICASE = 2: no mo integrals on LUINTM',
      *         ' if ICASE = 3: transformation level on LUINTM'
      *       //' not sufficient'
-            IF (ICASE .EQ. 3) WRITE(LUERR,'(A,2I5)')
+            IF (ICASE .EQ. 3) WRITE(LUPRI,'(A,2I5)')
      *         ' ITRLVL requested, ITRLVL on LUINTM :',ITRLVL,JTRLVL
          END IF
          LBUFMA = MAX(LBUFMA,NNORBT,LBINTM)
@@ -2528,11 +2526,11 @@ C        level 4 is needed if all inac-inac or all inac-sec
 C        distributions must be available (needtp .gt. 0).
          IF (NEEDTP(6).NE.0) LVLMIN = 10
          IF (LVLMOL .LT. LVLMIN) THEN
-            WRITE (LUERR,*)
+            WRITE (LUPRI,*)
      &         'NXTH2M error, LVLMOL on LUINTM too small'
-            WRITE (LUERR,*) 'LVLMOL =',LVLMOL
-            WRITE (LUERR,*) 'need   :',LVLMIN
-            CALL QTRACE(LUERR)
+            WRITE (LUPRI,*) 'LVLMOL =',LVLMOL
+            WRITE (LUPRI,*) 'need   :',LVLMIN
+            CALL QTRACE(LUPRI)
             CALL QUIT('NXTH2M error, LVLMOL too small')
          END IF
 C
@@ -2548,24 +2546,24 @@ C
 C        ... check that BUF,IBUF has not been destroyed by calling
 C            routine.
          IF (KNEXT.EQ. -1  ) THEN
-            WRITE (LUERR,*)
+            WRITE (LUPRI,*)
      &         'NXTH2M error, IDIST must be zero in first call'
-            WRITE (LUERR,*) 'IDIST =',IDIST
-            CALL QTRACE(LUERR)
+            WRITE (LUPRI,*) 'IDIST =',IDIST
+            CALL QTRACE(LUPRI)
             CALL QUIT('NXTH2M error, IDIST must be zero in first call')
          END IF
          IF (KFREE.LT.KNEXT) THEN
-            WRITE (LUERR,*)
+            WRITE (LUPRI,*)
      &         'NXTH2M error, KFREE lower than buffer allocation'
-            WRITE (LUERR,*) 'KFREE ',KFREE
-            WRITE (LUERR,*) 'KBUF  ',KBUF
-            WRITE (LUERR,*) 'KIBUF ',KIBUF
-            WRITE (LUERR,*) 'KNEXT ',KNEXT,
+            WRITE (LUPRI,*) 'KFREE ',KFREE
+            WRITE (LUPRI,*) 'KBUF  ',KBUF
+            WRITE (LUPRI,*) 'KIBUF ',KIBUF
+            WRITE (LUPRI,*) 'KNEXT ',KNEXT,
      &         ' ( next avail. address after buffers)'
          END IF
          CALL MEMCHK('IDIST .ne. 0 MEMCHK in NXTH2M',WRK,KBUF)
          IF (KFREE.LT.KNEXT) THEN
-            CALL QTRACE(LUERR)
+            CALL QTRACE(LUPRI)
             CALL QUIT('NXTH2M error:KFREE lower than buffer allocation')
          END IF
       END IF
@@ -2619,14 +2617,12 @@ C Used from common blocks:
 C   INFORB : NORBT
 C   INFIND : JTACT,JTSEC,ISW(*),...
 C   INFTAP : LUINTM,LBINTM
-C   INFPRI : LUERR
 C
 #include <maxash.h>
 #include <maxorb.h>
 #include <inforb.h>
 #include <infind.h>
 #include <inftap.h>
-#include <infpri.h>
 C
 #include <orbtypdef.h>
 C
@@ -2642,7 +2638,7 @@ C
       IF (IDIST .EQ. 0) THEN
          JBUF = 2521*IRAT + 256 + NCMOT
          CALL REWSPL(LUINTM)
-         CALL MOLLAB('MOLTWOEL',LUINTM,LUERR)
+         CALL MOLLAB('MOLTWOEL',LUINTM,LUPRI)
  100     CONTINUE
 #if defined (VAR_SPLITFILES)
          CALL READSI(LUINTM,LBINTM*IRAT,BUF,JBUF)
@@ -2653,9 +2649,9 @@ C
 #endif
          IF (LENGTH.EQ.0) GOTO 100
          IF (LENGTH.EQ.-1) THEN
-            WRITE (LUERR,'(/A)')
+            WRITE (LUPRI,'(/A)')
      &         ' **** NXTH2M-ERROR *** no MO integrals on LUINTM'
-            CALL QTRACE(LUERR)
+            CALL QTRACE(LUPRI)
             CALL QUIT('*** ERROR ***(NXTH2M) no mo integrals on LUINTM')
          END IF
          INDCDN = IBTAND(IBTSHR(IBUF(1),16),IBT16)
@@ -2776,10 +2772,8 @@ C
 C
 C Used from common blocks:
 C   INFTAP : LUINTD,LBINTD
-C   INFPRI : LUERR
 C
 #include <inftap.h>
-#include <infpri.h>
 #include <inftra.h>
 C
       SAVE KBUF, KIBUF, KNEXT
@@ -2798,18 +2792,18 @@ C     and allocate space for buffers.
 C
       IF (IDIST .EQ. 0) THEN
          REWIND LUINTD
-         CALL MOLLAB('DRCINFO ',LUINTD,LUERR)
+         CALL MOLLAB('DRCINFO ',LUINTD,LUPRI)
          READ (LUINTD) LBINTD, LVLDRC
          LVLMIN = 0
          IF (NEEDTP(1).NE.0 .OR. NEEDTP(2).NE.0) LVLMIN = 1
          IF (NEEDTP(4).NE.0 .OR. NEEDTP(5).NE.0 .OR.
      &       NEEDTP(6).NE.0) LVLMIN = 2
          IF (LVLDRC .LT. LVLMIN) THEN
-            WRITE (LUERR,*)
+            WRITE (LUPRI,*)
      &         'NXTH2D error, LVLDRC on LUINTD too small'
-            WRITE (LUERR,*) 'LVLDRC =',LVLDRC
-            WRITE (LUERR,*) 'need   :',LVLMIN
-            CALL QTRACE(LUERR)
+            WRITE (LUPRI,*) 'LVLDRC =',LVLDRC
+            WRITE (LUPRI,*) 'need   :',LVLMIN
+            CALL QTRACE(LUPRI)
             CALL QUIT('NXTH2D error, LVLDRC too small')
          END IF
          CALL MEMGET('REAL',KBUF ,LBINTD,WRK,KFREE,LFREE)
@@ -2819,24 +2813,24 @@ C
 C        ... check that BUF,IBUF has not been destroyed by calling
 C            routine.
          IF (KNEXT.EQ. -1  ) THEN
-            WRITE (LUERR,*)
+            WRITE (LUPRI,*)
      &         'NXTH2D error, IDIST must be zero in first call'
-            WRITE (LUERR,*) 'IDIST =',IDIST
-            CALL QTRACE(LUERR)
+            WRITE (LUPRI,*) 'IDIST =',IDIST
+            CALL QTRACE(LUPRI)
             CALL QUIT('NXTH2D error, IDIST must be zero in first call')
          END IF
          IF (KFREE.LT.KNEXT) THEN
-            WRITE (LUERR,*)
+            WRITE (LUPRI,*)
      &         'NXTH2D error, KFREE lower than buffer allocation'
-            WRITE (LUERR,*) 'KFREE ',KFREE
-            WRITE (LUERR,*) 'KBUF  ',KBUF
-            WRITE (LUERR,*) 'KIBUF ',KIBUF
-            WRITE (LUERR,*) 'KNEXT ',KNEXT,
+            WRITE (LUPRI,*) 'KFREE ',KFREE
+            WRITE (LUPRI,*) 'KBUF  ',KBUF
+            WRITE (LUPRI,*) 'KIBUF ',KIBUF
+            WRITE (LUPRI,*) 'KNEXT ',KNEXT,
      &         ' ( next avail. address after buffers)'
          END IF
          CALL MEMCHK('IDIST .ne. 0 MEMCHK in NXTH2D',WRK,KBUF)
          IF (KFREE.LT.KNEXT) THEN
-            CALL QTRACE(LUERR)
+            CALL QTRACE(LUPRI)
             CALL QUIT('NXTH2D error:KFREE lower than buffer allocation')
          END IF
       END IF
@@ -2887,14 +2881,12 @@ C Used from common blocks:
 C   INFORB : NORBT
 C   INFIND : JTACT,JTSEC,ISW(*),...
 C   INFTAP : LUINTD,LBINTD
-C   INFPRI : LUERR
 C
 #include <maxash.h>
 #include <maxorb.h>
 #include <inforb.h>
 #include <infind.h>
 #include <inftap.h>
-#include <infpri.h>
 C
 #include <orbtypdef.h>
 C
@@ -2909,13 +2901,13 @@ C     then setup for reading MO integrals ...
 C
       IF (IDIST .EQ. 0) THEN
          REWIND LUINTD
-         CALL MOLLAB('DRCTWOEL',LUINTD,LUERR)
+         CALL MOLLAB('DRCTWOEL',LUINTD,LUPRI)
   100    READ (LUINTD) BUF,IBUF,LENGTH
          IF (LENGTH.EQ.0) GOTO 100
          IF (LENGTH.EQ.-1) THEN
-            WRITE (LUERR,'(/A)')
+            WRITE (LUPRI,'(/A)')
      &         ' **** NXTH2D-ERROR *** no MO integrals on LUINTD'
-            CALL QTRACE(LUERR)
+            CALL QTRACE(LUPRI)
             CALL QUIT('*** ERROR ***(NXTH2D) no mo integrals on LUINTD')
          END IF
          INDCDN = IBTAND(IBTSHR(IBUF(1),16),IBT16)
