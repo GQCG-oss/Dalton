@@ -58,8 +58,6 @@ cat > cc_rsp_beta2.dal <<'%EOF%'
   - A & B coefficients  (2. and 4. order dispersion coefficients)
   - core orbital frozen
 .CC
-*ORBITALS 
-.NOSUPSYM
 *SCF INPUT 
 .THRESH
  1.0d-12

@@ -49,15 +49,11 @@ cat > dft_energy_sym.dal <<'%EOF%'
 **GENERAL
 .RUN RESPONSE
 .DIRECT 
-**INTEGRAL 
-.NOSUP
 **WAVE FUNCTIONS
 .HF
-*ORBITALS
-.NOSUPSYM
-*HF INPUT
+*SCF INPUT
 .B3LYP
-*END OF 
+**END OF 
 %EOF%
 #######################################################################
 

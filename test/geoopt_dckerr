@@ -53,8 +53,8 @@ cat > geoopt_dckerr.dal <<'%EOF%'
 .MCSCF
 .NSYM
  4
-*HF INPUT
-.HF OCC
+*SCF INPUT
+.DOUBLY OCCUPIED
  6 4 1 1
 *CONFIGURATION INPUT
 .SYMMETRY
@@ -203,8 +203,8 @@ CTRL[11]=12
 ERROR[11]="FINAL GEOMETRY NOT CORRECT"
 
 # Gamma values
-CRIT1=`$GREP "\@ gamma\(Z\;Z\,Z\,Z\) * 207\.46[0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "\@ gamma\(Z\;Z\,Z\,Z\) * 214\.81[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "\@ *gamma\(Z\;Z\,Z\,Z\) * 207\.46[0-9][0-9]" $log | wc -l`
+CRIT2=`$GREP "\@ *gamma\(Z\;Z\,Z\,Z\) * 214\.81[0-9][0-9]" $log | wc -l`
 TEST[12]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[12]=2
 ERROR[12]="GAMMA VALUES NOT CORRECT"

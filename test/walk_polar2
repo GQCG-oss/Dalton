@@ -55,8 +55,8 @@ cat > walk_polar2.dal <<'%EOF%'
 .MCSCF
 .NSYM
  4
-*HF INPUT
-.HF OCC
+*SCF INPUT
+.DOUBLY OCCUPIED
  6 4 1 1
 *CONFIGURATION INPUT
 .SYMMETRY
@@ -343,12 +343,12 @@ CTRL[26]=2
 ERROR[26]="MO INTEGRALS NOT AVAILABLE"
 
 # Linear response:
-CRIT1=`$GREP "Value of linear response\: * 12.12432224[0-9][0-9][0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "Value of linear response\: * 12.21733587[0-9][0-9][0-9][0-9]" $log | wc -l`
-CRIT3=`$GREP "Value of linear response\: * 28.32674889[0-9][0-9][0-9][0-9]" $log | wc -l`
-CRIT4=`$GREP "Value of linear response\: * 29.35422768[0-9][0-9][0-9][0-9]" $log | wc -l`
-CRIT5=`$GREP "Value of linear response\: * 10.07596290[0-9][0-9][0-9][0-9]" $log | wc -l`
-CRIT6=`$GREP "Value of linear response\: * 10.13089196[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Value of linear response.*\: * 12.12432224[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT2=`$GREP "Value of linear response.*\: * 12.21733587[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT3=`$GREP "Value of linear response.*\: * 28.32674889[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT4=`$GREP "Value of linear response.*\: * 29.35422768[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT5=`$GREP "Value of linear response.*\: * 10.07596290[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT6=`$GREP "Value of linear response.*\: * 10.13089196[0-9][0-9][0-9][0-9]" $log | wc -l`
 TEST[27]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ $CRIT6`
 CTRL[27]=6
 ERROR[27]="LINEAR RESPONSE NOT CORRECT"

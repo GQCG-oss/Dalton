@@ -57,7 +57,7 @@ cat > vibave_spinspin.dal <<'%EOF%'
 .ANHA-P
 **WAVE FUNCTIONS
 .HF
-*HF INPUT
+*SCF INPUT
 .THRESH
  1.0D-12
 **PROPERTIES

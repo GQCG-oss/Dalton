@@ -54,7 +54,7 @@ cat > walk_vibave2.dal <<'%EOF%'
  F          0.0000000000            0.0000000000            0.0255388031
 **WAVE FUNCTIONS
 .HF
-*HF INPUT
+*SCF INPUT
 .THRESH
  1.0D-10
 **START

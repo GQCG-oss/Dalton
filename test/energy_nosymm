@@ -50,8 +50,8 @@ cat > energy_nosymm.dal <<'%EOF%'
 .HF
 .MP2
 .MCSCF
-*HF INPUT
-.HF OCC
+*SCF INPUT
+.DOUBLY OCCUPIED
  5
 *CONFIGURATION INPUT
 .SYMMETRY
@@ -64,9 +64,7 @@ cat > energy_nosymm.dal <<'%EOF%'
  8
 .CAS SPACE
  8
-*ORBITAL
-.NOSUPSYM
-*END OF INPUT
+**END OF INPUT
 %EOF%
 #######################################################################
 

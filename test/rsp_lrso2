@@ -52,8 +52,8 @@ cat > rsp_lrso2.dal <<'%EOF%'
 .HF
 .MP2
 .MCSCF
-*HF INPUT
-.HF OCCUPATION
+*SCF INPUT
+.DOUBLY OCCUPIED
  2 0 0 0
 *CONFIGURATION INPUT
 .INACTIVE
@@ -136,9 +136,9 @@ CTRL[5]=6
 ERROR[5]="NOT CORRECT"
 
 # Linear response
-CRIT1=`$GREP "\@Y SPNORB * Y SPNORB * 2\.634010349[0-9][0-9][0-9](D|E)\-12" $log | wc -l`
-CRIT2=`$GREP "\@X SPNORB * X SPNORB * 2\.634010349[0-9][0-9][0-9](D|E)\-12" $log | wc -l`
-CRIT3=`$GREP "\@ \*\*\*\*WARNING\*\*\*\*\*\* NUMBER OF VARIABLES IN THIS SYMMETRY IS ZERO" $log | wc -l`
+CRIT1=`$GREP "\@.*Y SPNORB .* Y SPNORB .* 2\.634010349[0-9][0-9][0-9](D|E)\-12" $log | wc -l`
+CRIT2=`$GREP "\@.*X SPNORB .* X SPNORB .* 2\.634010349[0-9][0-9][0-9](D|E)\-12" $log | wc -l`
+CRIT3=`$GREP "\@.*\*\*\*\*WARNING\*\*\*\*\*\* NUMBER OF VARIABLES IN THIS SYMMETRY IS ZERO" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[6]=3
 ERROR[6]="LINEAR RESPONSE NOT CORRECT"

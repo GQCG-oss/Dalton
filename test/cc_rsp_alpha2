@@ -52,8 +52,6 @@ cat > cc_rsp_alpha2.dal <<'%EOF%'
   linear polarizability for the Ne atom
   for CCS, CC2 and CCSD wavefunctions
 .CC
-*ORBITALS 
-.NOSUPSYM
 *SCF INPUT 
 .THRESH
  1.0d-12

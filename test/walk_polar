@@ -371,12 +371,12 @@ CTRL[29]=2
 ERROR[29]="MO INTEGRALS NOT AVAILABLE"
 
 # Linear response:
-CRIT1=`$GREP "Value of linear response\: * 5\.84951933[0-9][0-9][0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "Value of linear response\: * 5\.90860075[0-9][0-9][0-9][0-9]" $log | wc -l`
-CRIT3=`$GREP "Value of linear response\: * 7\.42069344[0-9][0-9][0-9][0-9]" $log | wc -l`
-CRIT4=`$GREP "Value of linear response\: * 7\.47837166[0-9][0-9][0-9][0-9]" $log | wc -l`
-CRIT5=`$GREP "Value of linear response\: * 5\.50117162[0-9][0-9][0-9][0-9]" $log | wc -l`
-CRIT6=`$GREP "Value of linear response\: * 5\.57615391[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Value of linear response.*\: * 5\.84951933[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT2=`$GREP "Value of linear response.*\: * 5\.90860075[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT3=`$GREP "Value of linear response.*\: * 7\.42069344[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT4=`$GREP "Value of linear response.*\: * 7\.47837166[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT5=`$GREP "Value of linear response.*\: * 5\.50117162[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT6=`$GREP "Value of linear response.*\: * 5\.57615391[0-9][0-9][0-9][0-9]" $log | wc -l`
 TEST[30]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ $CRIT6`
 CTRL[30]=6
 ERROR[30]="LINEAR RESPONSE NOT CORRECT"

@@ -52,8 +52,6 @@ cat > cc_geoopt.dal <<'%EOF%'
 .DERHAM
 **WAVEFUNCTION
 .CC
-*ORBITALS
-.NOSUPSYM
 *SCF INPUT
 .THRESH
  1.0D-10

@@ -93,8 +93,6 @@ cat > cc_grad2.dal <<'%EOF%'
 .DERHAM
 **SIRIUS
 .CC
-*ORBITALS
-.NOSUPSYM
 *SCF INPUT
 .THRESH
  1.0D-10

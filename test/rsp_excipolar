@@ -65,8 +65,8 @@ cat > rsp_excipolar.dal <<'%EOF%'
 .HF
 .MP2
 .MCSCF
-*HF INPUT
-.HF OCCUPATION
+*SCF INPUT
+.DOUBLY OCCUPIED
  6    4    1    1
 *CONFIGURATION INPUT
 .INACTIVE

@@ -52,10 +52,8 @@ cat > cc_energy_triplet2.dal <<'%EOF%'
 .TITLE
   Triplet excitation energies
 .CC
-*ORBITALS 
-.NOSUPSYM
-*HF INPUT 
-.HF OCC
+*SCF INPUT 
+.DOUBLY OCCUPIED
  3 1 1 0 
 *CC INPUT 
 .CCS
@@ -65,8 +63,6 @@ cat > cc_energy_triplet2.dal <<'%EOF%'
  1.0d-10
 .PRINT
   0
-.NSYM
-  4
 *CCEXCI
 .NCCEXCI
  1 1 1 1 

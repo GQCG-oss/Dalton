@@ -95,10 +95,8 @@ cat > rsp_solvesr.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 .MCSCF
-.NSYM
- 2
-*HF INPUT
-.HF OCC
+*SCF INPUT
+.DOUBLY OCCUPIED
  3 1
 .OPEN SH
  1

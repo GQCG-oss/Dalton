@@ -50,9 +50,7 @@ cat > cc_energy_triplet.dal <<'%EOF%'
 .TITLE
   Triplet excitation energies
 .CC
-*ORBITALS 
-.NOSUPSYM
-*HF INPUT 
+*SCF INPUT 
 .THRESH
  1.0D-10
 *CC INPUT 
@@ -63,8 +61,6 @@ cat > cc_energy_triplet.dal <<'%EOF%'
  1.0d-10
 .PRINT
   1
-.NSYM
-  8
 *CCEXCI
 .NCCEXCI
  1 2 1 2 1 2 0 1 

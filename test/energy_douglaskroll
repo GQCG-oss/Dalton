@@ -48,14 +48,12 @@ cat > energy_douglaskroll.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
 .DOUGLAS-KROLL
-**INTEGRALS
 **WAVE FUNCTION
 .HF
 *ORBITAL
 .MOSTART
  H1DIAG
-.NOSUPSYM
-*END OF INPUT
+**END OF INPUT
 %EOF%
 #######################################################################
 

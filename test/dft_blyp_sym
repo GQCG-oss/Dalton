@@ -48,16 +48,10 @@ N   0.3   0.0     1.5
 cat > dft_blyp_sym.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE 
-**INTEGRALS
-.NOSUP
 **WAVE FUNCTIONS
-.HF
-*HF INPUT
+.DFT
+*SCF INPUT
 .BLYP
-*ORBITAL
-.NOSUPSYM
-*AUXILLIAR
-.NOSUPMAT
 *END OF INPUT
 %EOF%
 #######################################################################

@@ -53,7 +53,7 @@ cat > geoopt_mp2froz.dal <<'%EOF%'
 **SIRIUS
 .HF
 .MP2
-*HF INPUT
+*SCF INPUT
 *MP2 INPUT
 .MP2 FROZEN
  2 1 2 1 0 0 0 0

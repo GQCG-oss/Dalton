@@ -216,18 +216,18 @@ CTRL[13]=1
 ERROR[13]="FINAL ENERGY NOT CORRECT"
 
 # Convergence
-CRIT1=`$GREP "\@ Geometry optimization has converged\." $log | wc -l`
+CRIT1=`$GREP "\@ * Geometry optimization has converged\." $log | wc -l`
 TEST[14]=`expr	$CRIT1`
 CTRL[14]=1
 ERROR[14]="OPTIMIZATION NOT CONVERGED"
 
 # Hessian eigenvalues
-CRIT1=`$GREP "\@ 1 * 1 * (\-0|\-)\.00000000[0-9][0-9] * (\-0|\-)\.10374710[0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "\@ 1 * 2 * (0| )\.00000007[0-9][0-9] * (0| )\.15784134[0-9][0-9]" $log | wc -l`
-CRIT3=`$GREP "\@ 1 * 3 * (0| )\.00000000[0-9][0-9] * (0| )\.15784144[0-9][0-9]" $log | wc -l`
-CRIT4=`$GREP "\@ 1 * 4 * (\-0|\-)\.00000039[0-9][0-9] * (0| )\.56253909[0-9][0-9]" $log | wc -l`
-CRIT5=`$GREP "\@ 1 * 5 * (\-0|\-)\.00000048[0-9][0-9] * 1\.47291684[0-9][0-9]" $log | wc -l`
-CRIT6=`$GREP "\@ 1 * 6 * (0| )\.00000000[0-9][0-9] * 1\.47291902[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "\@ * 1 * 1 * (\-0|\-)\.00000000[0-9][0-9] * (\-0|\-)\.10374710[0-9][0-9]" $log | wc -l`
+CRIT2=`$GREP "\@ * 1 * 2 * (0| )\.00000007[0-9][0-9] * (0| )\.15784134[0-9][0-9]" $log | wc -l`
+CRIT3=`$GREP "\@ * 1 * 3 * (0| )\.00000000[0-9][0-9] * (0| )\.15784144[0-9][0-9]" $log | wc -l`
+CRIT4=`$GREP "\@ * 1 * 4 * (\-0|\-)\.00000039[0-9][0-9] * (0| )\.56253909[0-9][0-9]" $log | wc -l`
+CRIT5=`$GREP "\@ * 1 * 5 * (\-0|\-)\.00000048[0-9][0-9] * 1\.47291684[0-9][0-9]" $log | wc -l`
+CRIT6=`$GREP "\@ * 1 * 6 * (0| )\.00000000[0-9][0-9] * 1\.47291902[0-9][0-9]" $log | wc -l`
 TEST[15]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[15]=6
 ERROR[15]="FINAL GRADIENT AND HESSIAN EIGENVALUES NOT CORRECT"

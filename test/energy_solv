@@ -58,8 +58,8 @@ cat > energy_solv.dal <<'%EOF%'
 .SCF
 .MP2
 .MCSCF
-*HF INP
-.HF OCCUPATION
+*SCF INP
+.DOUBLY OCCUPIED
  5 1 2 0
 *MP2 IN
 .PRINT
@@ -87,14 +87,13 @@ cat > energy_solv.dal <<'%EOF%'
 *ORBITAL
 .MOSTART
  H1DIAG
-.NOSUPSYM
 *OPTIMIZATION
 .THRESHOLD
   1.D-06
 .OPTIMAL ORBITAL TRIAL VECTORS
 *CI VECTOR
 .STARTHDIAG      | Compute start vector from Hessian CI-diagonal
-*END OF SIRIUS
+**END OF DALTON INPUT
 %EOF%
 #######################################################################
 

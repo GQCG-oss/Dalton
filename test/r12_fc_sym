@@ -49,7 +49,7 @@ cat > r12_fc_sym.dal <<'%EOF%'
 .R12
 **WAVE FUNCTIONS
 .CC
-*HF INPUT
+*SCF INPUT
 .THRESHOLD
  1D-10
 *CC INPUT

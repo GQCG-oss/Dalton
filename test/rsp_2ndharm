@@ -50,8 +50,8 @@ cat > rsp_2ndharm.dal <<'%EOF%'
 .HF
 .MP2
 .MCSCF
-*HF INPUT
-.HF OCCUPATION
+*SCF INPUT
+.DOUBLY OCCUPIED
  2 0 0 0
 *CONFIGURATION INPUT
 .INACTIVE
@@ -154,10 +154,10 @@ CTRL[5]=18
 ERROR[5]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
 
 # Linear response
-CRIT1=`$GREP "Value of linear response\: * 27\.1965572.[0-9][0-9][0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "Value of linear response\: * 28\.52015057[0-9][0-9][0-9][0-9]" $log | wc -l`
-CRIT3=`$GREP "Value of linear response\: * 32\.01644696[0-9][0-9][0-9][0-9]" $log | wc -l`
-CRIT4=`$GREP "Value of linear response\: * 33\.21286320[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Value of linear response.*\: * 27\.1965572.[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT2=`$GREP "Value of linear response.*\: * 28\.52015057[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT3=`$GREP "Value of linear response.*\: * 32\.01644696[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT4=`$GREP "Value of linear response.*\: * 33\.21286320[0-9][0-9][0-9][0-9]" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[6]=6
 ERROR[6]="LINEAR RESPONSE NOT CORRECT"

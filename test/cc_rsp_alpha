@@ -57,8 +57,6 @@ cat > cc_rsp_alpha.dal <<'%EOF%'
   polarizabilities for the HF molecule
   for CCS and CCSD wavefunctions
 .CC
-*ORBITALS 
-.NOSUPSYM
 *SCF INPUT 
 .THRESH
  1.0d-12

@@ -53,9 +53,7 @@ cat > cc_rsp_mcdbterm.dal <<'%EOF%'
  0.0 0.0 0.0
 **SIRIUS
 .CC
-*ORBITAL
-.NOSUPSYM
-*HF INPUT
+*SCF INPUT
 .THRESH
   1.0d-12
 *CC INPUT

@@ -56,7 +56,7 @@ cat > hfreqfromE.dal <<'%EOF%'
 .NORMAL
 **WAVE FUNCTIONS
 .HF
-*HF INP
+*SCF INP
 .THRESH
  1.0D-12
 **PROPERTIES

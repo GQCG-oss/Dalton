@@ -56,13 +56,11 @@ cat > cc_energy_field.dal <<'%EOF%'
 .FIELD
  2.0D-05
  ZZTHETA
-*HF INP
+*SCF INP
 .THRESH
  5.0D-10
-.HF OCCUPATION
+.DOUBLY OCCUPIED
  3 1 1 0
-*ORBITAL INPUT
-.NOSUPSYM
 *CC INP
 .PACK
 1.0D-14
@@ -72,8 +70,6 @@ cat > cc_energy_field.dal <<'%EOF%'
  6
 .THRENR
 5.0D-10
-.NSYM
-4
 .FROIMP
 1 0 0 0
 0 0 0 0

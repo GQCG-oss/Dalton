@@ -48,17 +48,11 @@ N   0.3   0.0     1.5
 cat > dft_lda_cart.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE 
-**INTEGRALS
-.NOSUP
 **WAVE FUNCTIONS
-.HF
-*HF INPUT
+.DFT
+*SCF INPUT
 .LDA
-*ORBITAL
-.NOSUPSYM
-*AUXILLIAR
-.NOSUPMAT
-*END OF INPUT
+**END OF INPUT
 %EOF%
 #######################################################################
 

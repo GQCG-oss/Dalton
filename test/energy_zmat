@@ -56,9 +56,7 @@ cat > energy_zmat.dal <<'%EOF%'
 .RUN WAVE FUNCTION
 **WAVE FUNCTIONS
 .HF
-*ORBITAL
-.NOSUPSYM
-*END OF INPUT
+**END OF INPUT
 %EOF%
 #######################################################################
 

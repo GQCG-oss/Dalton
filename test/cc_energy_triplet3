@@ -52,10 +52,8 @@ cat > cc_energy_triplet3.dal <<'%EOF%'
 .TITLE
 Triplet excitation energies, CH2 test
 .CC
-*ORBITALS
-.NOSUPSYM
-*HF INPUT
-#.HF OCC
+*SCF INPUT
+#.DOUBLY OCCUPIED
 # 3 1 0 0
 .THRESHOLD
  1.0D-9

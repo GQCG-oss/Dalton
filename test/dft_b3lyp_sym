@@ -64,16 +64,10 @@ H2   -1.430    0.0  1.1
 cat > dft_b3lyp_sym.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE 
-**INTEGRALS
-.NOSUP
 **WAVE FUNCTIONS
-.HF
-*HF INPUT
+.DFT
+*SCF INPUT
 .B3LYP
-*ORBITAL
-.NOSUPSYM
-*AUXILLIAR
-.NOSUPMAT
 *END OF INPUT
 %EOF%
 #######################################################################

@@ -56,7 +56,7 @@ cat > r12_damped_herdir.dal <<'%EOF%'
 .123
 **WAVE FUNCTIONS
 .CC
-*HF INPUT
+*SCF INPUT
 .THRESHOLD
  1D-10
 *CC INPUT

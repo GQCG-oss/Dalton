@@ -58,8 +58,8 @@ cat > rsp_socorr.dal <<'%EOF%'
 .PSO
 **WAVE FUNCTION
 .HF
-*HF INPUT
-.HF OCCUPATION
+*SCF INPUT
+.DOUBLY OCCUPIED
  1 0 0 0
 **RESPONSE
 .TRPFLG
@@ -195,18 +195,18 @@ CTRL[6]=12
 ERROR[6]="RESPONSE CALCUALTION NOT SET UP CORRECTLY"
 
 # Quadratic response
-CRIT1=`$GREP "\@omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (\-0|\-)\.0004785[0-9]" $log | wc -l`
-CRIT2=`$GREP "\@omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (0| )\.0005050[0-9]" $log | wc -l`
-CRIT3=`$GREP "\@omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (0| )\.0001464[0-9]" $log | wc -l`
-CRIT4=`$GREP "\@omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (\-0|\-)\.0001540[0-9]" $log | wc -l`
-CRIT5=`$GREP "\@omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (\-0|\-)\.0003498[0-9]" $log | wc -l`
-CRIT6=`$GREP "\@omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (0| )\.0003072[0-9]" $log | wc -l`
-CRIT7=`$GREP "\@omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (0| )\.0001044[0-9]" $log | wc -l`
-CRIT8=`$GREP "\@omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (\-0|\-)\.0000899[0-9]" $log | wc -l`
-CRIT9=`$GREP "\@omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (\-0|\-)\.0001286[0-9]" $log | wc -l`
-CRIT10=`$GREP "\@omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (0| )\.0001978[0-9]" $log | wc -l`
-CRIT11=`$GREP "\@omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (0| )\.0000420[0-9]" $log | wc -l`
-CRIT12=`$GREP "\@omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (\-0|\-)\.0000641[0-9]" $log | wc -l`
+CRIT1=`$GREP "\@ *omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (\-0|\-)\.0004785[0-9]" $log | wc -l`
+CRIT2=`$GREP "\@ *omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (0| )\.0005050[0-9]" $log | wc -l`
+CRIT3=`$GREP "\@ *omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (0| )\.0001464[0-9]" $log | wc -l`
+CRIT4=`$GREP "\@ *omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (\-0|\-)\.0001540[0-9]" $log | wc -l`
+CRIT5=`$GREP "\@ *omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (\-0|\-)\.0003498[0-9]" $log | wc -l`
+CRIT6=`$GREP "\@ *omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (0| )\.0003072[0-9]" $log | wc -l`
+CRIT7=`$GREP "\@ *omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (0| )\.0001044[0-9]" $log | wc -l`
+CRIT8=`$GREP "\@ *omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (\-0|\-)\.0000899[0-9]" $log | wc -l`
+CRIT9=`$GREP "\@ *omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (\-0|\-)\.0001286[0-9]" $log | wc -l`
+CRIT10=`$GREP "\@ *omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (0| )\.0001978[0-9]" $log | wc -l`
+CRIT11=`$GREP "\@ *omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (0| )\.0000420[0-9]" $log | wc -l`
+CRIT12=`$GREP "\@ *omega B\, omega C\, QR value \: * (0| )\.00000000 * (0| )\.00000000 * (\-0|\-)\.0000641[0-9]" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12`
 CTRL[7]=12

@@ -172,12 +172,12 @@ CTRL[8]=20
 ERROR[8]="NOT CORRECT"
 
 # linear response
-CRIT1=`$GREP "Value of linear response\: * 8\.7197667426[0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "Value of linear response\: * 8\.8231056187[0-9][0-9]" $log | wc -l`
-CRIT3=`$GREP "Value of linear response\: * 9\.3435396051[0-9][0-9]" $log | wc -l`
-CRIT4=`$GREP "Value of linear response\: * 9\.4338975212[0-9][0-9]" $log | wc -l`
-CRIT5=`$GREP "Value of linear response\: * 8\.2756458809[0-9][0-9]" $log | wc -l`
-CRIT6=`$GREP "Value of linear response\: * 8\.4023727187[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Value of linear response.*\: * 8\.7197667426[0-9][0-9]" $log | wc -l`
+CRIT2=`$GREP "Value of linear response.*\: * 8\.8231056187[0-9][0-9]" $log | wc -l`
+CRIT3=`$GREP "Value of linear response.*\: * 9\.3435396051[0-9][0-9]" $log | wc -l`
+CRIT4=`$GREP "Value of linear response.*\: * 9\.4338975212[0-9][0-9]" $log | wc -l`
+CRIT5=`$GREP "Value of linear response.*\: * 8\.2756458809[0-9][0-9]" $log | wc -l`
+CRIT6=`$GREP "Value of linear response.*\: * 8\.4023727187[0-9][0-9]" $log | wc -l`
 TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[9]=6
 ERROR[9]="LINEAR RESPONSE NOT CORRECT"

@@ -50,22 +50,16 @@ cat > dft_parallell_properties.dal <<'%EOF%'
 .RUN PROPERTIES
 .PARALL
 .DIRECT
-**INTEGRALS 
-.NOSUP
 **WAVE FUNCTIONS
-.HF
-*HF INPUT
+.DFT
+*SCF INPUT
 .B3LYP
 .THRESH
  1.0d-10
-*ORBITAL
-.NOSUPSYM
-*AUXILLIAR
-.NOSUPMAT
 **PROPERTIES 
 .SPIN-SPIN
 .MOLGRA
-*END OF INPUT
+**END OF INPUT
 %EOF%
 #######################################################################
 

@@ -207,7 +207,7 @@ cat > benchmark_her_r12xxl.dal <<'%EOF%'
 .AUXBAS
 **WAVE FUNCTIONS
 .CC
-*HF INPUT
+*SCF INPUT
 .THRESHOLD
  1D-9
 *CC INPUT

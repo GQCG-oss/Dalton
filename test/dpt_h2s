@@ -57,11 +57,9 @@ cat > dpt_h2s.dal <<%EOF%
 *END OF GENERAL
 **WAVE FUNCTION
 .CC
-*HF INP
+*SCF INP
 .THRESH
  1.0D-10
-*ORBITAL INPUT
-.NOSUPSYM
 *CC INP
 .CCS
 .CCSD
@@ -75,7 +73,7 @@ cat > dpt_h2s.dal <<%EOF%
 .ALLONE
 .DPTECO
 .2ELDAR
-*END OF
+**END OF
 %EOF%
 #######################################################################
 

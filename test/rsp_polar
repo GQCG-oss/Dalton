@@ -50,8 +50,8 @@ cat > rsp_polar.dal <<'%EOF%'
 .HF
 .MP2
 .MCSCF
-*HF INPUT
-.HF OCCUPATION
+*SCF INPUT
+.DOUBLY OCCUPIED
  2 0 0 0
 *CONFIGURATION INPUT
 .INACTIVE
@@ -136,17 +136,17 @@ CTRL[5]=5
 ERROR[5]="NOT CORRECT"
 
 # Static polarizabilities
-CRIT1=`$GREP "\@ZDIPLEN * ZDIPLEN * 2\.71965353[0-9][0-9][0-9][0-9](D|E)\+01" $log | wc -l`
-CRIT2=`$GREP "\@XDIPLEN * XDIPLEN * 3\.20164463[0-9][0-9][0-9][0-9](D|E)\+01" $log | wc -l`
-CRIT3=`$GREP "\@YDIPLEN * YDIPLEN * 3\.20164463[0-9][0-9][0-9][0-9](D|E)\+01" $log | wc -l`
+CRIT1=`$GREP "\@.*ZDIPLEN .* ZDIPLEN .* 2\.71965353[0-9][0-9][0-9][0-9](D|E)\+01" $log | wc -l`
+CRIT2=`$GREP "\@.*XDIPLEN .* XDIPLEN .* 3\.20164463[0-9][0-9][0-9][0-9](D|E)\+01" $log | wc -l`
+CRIT3=`$GREP "\@.*YDIPLEN .* YDIPLEN .* 3\.20164463[0-9][0-9][0-9][0-9](D|E)\+01" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[6]=3
 ERROR[6]="STATIC POLARIZABILITIES NOT CORRECT"
 
 # Frequency-dependant polarizabilities
-CRIT1=`$GREP "\@ZDIPLEN * ZDIPLEN * 2\.85201030[0-9][0-9][0-9][0-9](D|E)\+01" $log | wc -l`
-CRIT2=`$GREP "\@XDIPLEN * XDIPLEN * 3\.32128625[0-9][0-9][0-9][0-9](D|E)\+01" $log | wc -l`
-CRIT3=`$GREP "\@YDIPLEN * YDIPLEN * 3\.32128625[0-9][0-9][0-9][0-9](D|E)\+01" $log | wc -l`
+CRIT1=`$GREP "\@.*ZDIPLEN .* ZDIPLEN .* 2\.85201030[0-9][0-9][0-9][0-9](D|E)\+01" $log | wc -l`
+CRIT2=`$GREP "\@.*XDIPLEN .* XDIPLEN .* 3\.32128625[0-9][0-9][0-9][0-9](D|E)\+01" $log | wc -l`
+CRIT3=`$GREP "\@.*YDIPLEN .* YDIPLEN .* 3\.32128625[0-9][0-9][0-9][0-9](D|E)\+01" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[7]=3
 ERROR[7]="FREQUENCY-DEPENDANT POLARIZABILITIES NOT CORRECT"

@@ -57,8 +57,6 @@ cat > cc_rsp_betafreq2.dal <<'%EOF%'
   - ZZZ, XXZ, XZX, ZXX components
   - static and for two non-zero frequencies
 .CC
-*ORBITALS 
-.NOSUPSYM
 *SCF INPUT 
 .THRESH
  1.0d-12

@@ -61,7 +61,7 @@ cat > r12_aux_nosym.dal <<'%EOF%'
 .R12
 **WAVE FUNCTIONS
 .CC
-*HF INPUT
+*SCF INPUT
 .THRESHOLD
  1D-10
 *CC INPUT

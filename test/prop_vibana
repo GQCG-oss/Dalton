@@ -54,8 +54,8 @@ cat > prop_vibana.dal <<'%EOF%'
 .RUN PROPERTIES
 **WAVE FUNCTIONS
 .HF
-*HF INP
-.HF OCCUP
+*SCF INP
+.DOUBLY OCCUPIED
 11    6    2    1
 .OPEN SHELL
  2

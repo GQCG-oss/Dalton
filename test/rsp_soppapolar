@@ -151,9 +151,9 @@ CTRL[5]=4
 ERROR[5]="SOPPA SETUP NOT CORRECT"
 
 # Polarizabilities
-CRIT1=`$GREP "\@YDIPLEN * YDIPLEN * 1\.16454644[3-4]...(D|E)\+01" $log | wc -l`
-CRIT2=`$GREP "\@XDIPLEN * XDIPLEN * 1\.16454644[3-4]...(D|E)\+01" $log | wc -l`
-CRIT3=`$GREP "\@ZDIPLEN * ZDIPLEN * 1\.16454644[3-4]...(D|E)\+01" $log | wc -l`
+CRIT1=`$GREP "\@.*YDIPLEN .* YDIPLEN .* 1\.16454644[3-4]...(D|E)\+01" $log | wc -l`
+CRIT2=`$GREP "\@.*XDIPLEN .* XDIPLEN .* 1\.16454644[3-4]...(D|E)\+01" $log | wc -l`
+CRIT3=`$GREP "\@.*ZDIPLEN .* ZDIPLEN .* 1\.16454644[3-4]...(D|E)\+01" $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[6]=3
 ERROR[6]="SOPPA POLARIZABILITIES NOT CORRECT"

@@ -54,8 +54,6 @@ cat > cc_energy_triplesdirect2.dal <<'%EOF%'
 .TITLE
   CCSD and CCSD(T) energy for HF molecule
 .CC
-*ORBITALS 
-.NOSUPSYM
 *SCF INPUT 
 .THRESH
  1.0d-12

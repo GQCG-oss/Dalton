@@ -95,20 +95,16 @@ cat > energy_corehole__1.dal <<'%EOF%'
 .WAVE FUNCTIONS
 **WAVE FUNCTIONS
 .HF
-.NSYM
-  4
-*HF INPUT
-.HF OCCUPATION
+*SCF INPUT
+.DOUBLY OCCUPIED
    5 1 1 0
 .THRESHOLD
   1.D-04
 .NONCANONICAL
-*ORBITAL
-.NOSUPSYM
 *OPTIMIZATION
 .NEO ALWAYS
 .DETERMIN
-*END OF SIRIUS INPUT
+**END OF INPUT
 %EOF%
 
 cat > energy_corehole__2.dal <<'%EOF%'
@@ -117,8 +113,6 @@ cat > energy_corehole__2.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .MCSCF
 .WESTA
-.NSYM
- 4
 *CONFIGURATION INPUT
 .INACTIVE
  2 0 0 0
@@ -139,7 +133,6 @@ cat > energy_corehole__2.dal <<'%EOF%'
 *ORBITA
 .MOSTART
  NEWORB
-.NOSUPSYM
 .REORDER
  2 0 0 0
  2 3 3 2
@@ -156,7 +149,7 @@ cat > energy_corehole__2.dal <<'%EOF%'
 *CI VEC
 .PLUS COMBINATIONS
 .STARTHDIAGONAL
-**END OF SIRIUS INPUT
+**END OF INPUT
 %EOF%
 
 cat > energy_corehole__3.dal <<'%EOF%'
@@ -165,8 +158,6 @@ cat > energy_corehole__3.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .MCSCF
 .WESTA
-.NSYM
- 4
 *CONFIGURATION INPUT
 .INACTIVE
  2 0 0 0
@@ -187,7 +178,6 @@ cat > energy_corehole__3.dal <<'%EOF%'
 *ORBITA
 .MOSTART
  NEWORB
-.NOSUPSYM
 *OPTIMI
 .NR ALWAYS
 .TRACI
@@ -199,7 +189,7 @@ cat > energy_corehole__3.dal <<'%EOF%'
 *CI VEC
 .PLUS COMBINATIONS
 .STARTO
-**END OF SIRIUS INPUT
+**END OF INPUT
 %EOF%
 #######################################################################
 

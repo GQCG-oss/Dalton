@@ -49,18 +49,12 @@ H    -1.430    0.0  1.1
 cat > dft_properties_sym.dal <<'%EOF%'
 **DALTON INPUT
 .RUN PROPERTIES
-**INTEGRALS 
-.NOSUP
 **WAVE FUNCTIONS
-.HF
-*HF INPUT
+.DFT
+*SCF INPUT
 .B3LYP
 .THRESH
  1.0d-10
-*ORBITAL
-.NOSUPSYM
-*AUXILLIAR
-.NOSUPMAT
 **PROPERTIES 
 .SHIELDINGS
 .EXCITA
@@ -68,7 +62,7 @@ cat > dft_properties_sym.dal <<'%EOF%'
 *EXCITA
 .NEXCIT
  2 
-*END OF INPUT
+**END OF INPUT
 %EOF%
 #######################################################################
 

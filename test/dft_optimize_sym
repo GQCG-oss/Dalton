@@ -47,17 +47,11 @@ H    -1.430    0.0  0.8
 cat > dft_optimize_sym.dal <<'%EOF%'
 **DALTON INPUT
 .OPTIMIZE
-**INTEGRALS
-.NOSUP
 **WAVE FUNCTIONS
-.HF
-*HF INPUT
+.DFT
+*SCF INPUT
 .B3LYP
-*ORBITAL
-.NOSUPSYM
-*AUXILLIAR
-.NOSUPMAT
-*END OF INPUT
+**END OF INPUT
 %EOF%
 #######################################################################
 
