@@ -34,9 +34,9 @@ dalton="**DALTON
 #1e-15
 #.ANGINT
 #41
-.HF OCC
+.DOUBLY
  2 0 0 0 
-.HSROHF
+.SINGLY
  1 1 1 0 
 **END OF
 

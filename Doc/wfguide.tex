@@ -419,6 +419,26 @@ start a B3LYP geometry optimization:
  B3LYP
 **END OF DALTON INPUT
 \end{verbatim}
+
+We finish this list of examples with a high-spin open-shell DFT input.
+We need to specify the number of singly as well as doubly occupied orbitals 
+in each symmetry in the \Sec{*SCF INPUT} section using the \Key{SINGLY OCCUPIED}
+and \Key{DOUBLY OCCUPIED} keywords respectivly
+(here assuming $D_{2h}$ symmetry):
+\begin{verbatim}
+**DALTON
+.RUN WAVE FUNCTIONS
+**WAVE FUNCTION
+.DFT
+ B3LYP
+*SCF INPUT
+.DOUBLY OCCUPIED
+ 3 1 1 0 2 0 0 0
+.SINGLY OCCUPIED
+ 0 0 0 0 0 1 1 0
+**END OF DALTON INPUT
+\end{verbatim}
+
 A complete list of available functionals can be found in the Reference Guide, see Sec.~\ref{ref-dft}
 
 \begin{center}

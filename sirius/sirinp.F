@@ -2496,7 +2496,7 @@ C
      *            '.PRINT ','.OPEN S','.MAX MA','.MAX MI','.NONCAN',
      *            '.FROZEN','.DIRFOC','.NODIIS','.MAX DI','.C2DIIS',
      *            '.MAX ER','.XXXXXX','.COREHO','.CORERE','.HF OCC',
-     *            '.ELECTR','.AUTOCC','.FC MVO','.HSROHF','.SHIFT '/
+     *            '.ELECTR','.AUTOCC','.FC MVO','.SINGLY','.SHIFT '/
 C
 C     ***** PROCESS INPUT FOR SCFINP *****
 C
