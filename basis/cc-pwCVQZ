@@ -1,4 +1,4 @@
-$ Basis =cc-pwCVQZ                                                              
+$ Basis = cc-pwCVQZ                                                              
 $
 $Elements supported
 $ H He B C N O F Ne Al Si P S Cl Ar
@@ -16,6 +16,7 @@ $--------                             ----------
 $B  - Ne: K.A. Peterson and T.H. Dunning, Jr. J. Chem. Phys. 117, 10548 (2002)
 $Al - Ar:
 $
+************************************************************************
 a 1
 $ HYDROGEN     (6s,3p,2d,1f) -> [4s,3p,2d,1f]
 $ S-TYPE FUNCTIONS

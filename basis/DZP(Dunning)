@@ -1,5 +1,7 @@
-$DZP (Dunning)
+$Basis = DZP(Dunning)
 
+$Elements supported
+$H B C N O F Ne Al Si P S Cl 
 $
 $  REFERENCE
 $ T.H. DUNNING, JR., J. CHEM. PHYS. 53, 2823 (1970).                           
@@ -319,6 +321,3 @@ $ D-TYPE FUNCTIONS
       0.7500000  1.00000000
 
 
-$Elements supported
-
-$H B C N O F Ne Al Si P S Cl 

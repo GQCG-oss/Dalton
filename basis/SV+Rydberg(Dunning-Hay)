@@ -1,3 +1,7 @@
+$Basis = SV+Rydberg(Dunning-Hay)
+
+$Elements supported
+$H Li Be B C N O F Ne 
 $
 $  REFERENCE
 $ T.H. DUNNING JR. AND P.J. HAY, IN METHODS OF ELECTRONIC STRUCTURE THEORY,    
@@ -6,6 +10,7 @@ $
 $  POLARIZATION AND/OR DIFFUSE FUNCTIONS
 $ T.H. DUNNING, JR. AND P.J. HARRISON, IN MODERN THEORETICAL CHEMISTRY, VOL.2  
 $ ED. H.F. SCHAEFER III (PLENUM PRESS, NEW YORK, 1977).                        
+$
 a 1
 $ HYDROGEN     (4s) -> [2s]                                      
 $ S-TYPE FUNCTIONS
@@ -219,8 +224,5 @@ $ D-TYPE FUNCTIONS
       0.0150000  1.00000000
 
 
-$Elements supported
-
-$H Li Be B C N O F Ne 
 
 

@@ -1,4 +1,4 @@
-$ Basis =pV7Z                                                                   
+$ Basis = pV7Z                                                                   
 $
 $Supported Elements
 $ H C N O F S
@@ -11,6 +11,7 @@ $           D. Feller and J.A. Sordo, J. Chem. Phys. 113, 485 (2000)
 $           and Ed Valeev (k function exponents)                                
 $Ne         K. A. Peterson (to be published)                                    
 $
+************************************************************************
 a 1
 $ HYDROGEN     (14s,6p,5d,4f,3g,2h,1i) -> [7s,6p,5d,4f,3g,2h,1i]                
 $ S-TYPE FUNCTIONS

@@ -1,5 +1,7 @@
-$6-311++G(2d,2p)
+$Basis = 6-311++G(2d,2p)
 
+$Elements supported
+$H He Li Be B C N O F Ne 
 $
 $  REFERENCE
 $Elements                             References                                
@@ -298,6 +300,3 @@ $ D-TYPE FUNCTIONS
       1.1520000  0.00000000  1.00000000
 
 
-$Elements supported
-
-$H He Li Be B C N O F Ne 

@@ -1,5 +1,9 @@
-$STO-6G
+$Basis = STO-6G
 
+$Elements supported
+$ H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca 
+$ Sc Ti V Cr Mn Fe Co Ni Cu Zn
+$
 $ REFERENCE
 $ Elements                             References                                
 $ --------                             ----------                                
@@ -1166,8 +1170,4 @@ $ D-TYPE FUNCTIONS
       0.8673257  0.05389057
 
 
-$Elements supported
-
-$ H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca 
-$ Sc Ti V Cr Mn Fe Co Ni Cu Zn
 

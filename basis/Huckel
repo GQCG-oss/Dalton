@@ -1,12 +1,15 @@
-$Huckel (STO-3G exponents)
+$ Basis = Huckel (STO-3G exponents)
 
+$Elements supported
+$H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe Co Ni Cu 
+$ Zn Ga Ge As Se Br Kr Rb Sr Y Zr Nb Mo Tc Rh Rh Pd Ag Cd 
+$
+$ NOTES
 $ aug 99 -- hjaaj:
 $ 1) removed functions for which Huckel parameter is not defined in herbas.F
 $    (i.e. removed last p for Li, Be, Na, Mg, K, CA)
 $ 2) 19 .le. Z .le. 30 changed from 3p to 2p because HUCFUN only works with 2p
-
 $
-$  REFERENCE
 A 1
 $ HYDROGEN     (3S) -> [1S]                                      
 $ S-TYPE FUNCTIONS
@@ -14,7 +17,6 @@ $ S-TYPE FUNCTIONS
       3.4252509  .2769343597
       0.6239137  .2678388414
       0.1688554  .0834736694 
-
 A 2
 $ HELIUM       (3S) -> [1S]                                      
 $ S-TYPE FUNCTIONS
@@ -1384,27 +1386,6 @@ $ D-TYPE FUNCTIONS
       3.6429640  0.00000000  0.12506621
       1.4185513  0.00000000  0.66867856
       0.6244498  0.00000000  0.30524682
-
-
-$Elements supported
-
-$H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe Co Ni Cu 
-$ Zn Ga Ge As Se Br Kr Rb Sr Y Zr Nb Mo Tc Rh Rh Pd Ag Cd 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

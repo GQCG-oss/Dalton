@@ -1,8 +1,11 @@
-$TZ (Dunning)
+$Basis = TZ(Dunning)
 
+$Elements supported
+$H Li Be B C N O F Ne 
 $
-$  REFERENCE
+$ REFERENCE
 $ T.H. DUNNING, JR., J. CHEM. PHYS. 55, 716 (1971).                            
+************************************************************************
 a 1
 $ HYDROGEN     (5s) -> [3s]                                      
 $ S-TYPE FUNCTIONS
@@ -181,9 +184,6 @@ $ P-TYPE FUNCTIONS
       0.2566000  0.00000000  0.00000000  1.00000000
 
 
-$Elements supported
-
-$H Li Be B C N O F Ne 
 
 
 

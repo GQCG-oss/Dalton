@@ -1,4 +1,5 @@
-$pV6Z
+$Basis = pV6Z
+$
 $Elements supported
 $H C N O
 $
@@ -19,6 +20,7 @@ $O:         (s,p) set from H. Partridge, (d,f,g) from T.H. Dunning, Jr.,
 $           (h,i) from D. Feller.
 $N:         C.W. Bauschlicher, Jr. and H. Partridge, J. Chem. Phys. 100,
 $           4329 (1994).
+************************************************************************
 a 1
 $ HYDROGEN     (10s,5p,4d,3f,2g,1h) -> [6s,5p,4d,3f,2g,1h]
 $ S-TYPE FUNCTIONS

@@ -1,5 +1,7 @@
-3-21G*
+$ Basis = 3-21G*
 
+$ Elements supported
+$ H He Li Be B C N O F Ne Na Mg Al Si P S Cl 
 $
 $ REFERENCE
 $ Elements                             References
@@ -329,11 +331,6 @@ $ P-TYPE FUNCTIONS
 $ D-TYPE FUNCTIONS
     1    1    0
       0.7500000  1.00000000
-
-
-$Elements supported
-
-$H He Li Be B C N O F Ne Na Mg Al Si P S Cl 
 
 
 

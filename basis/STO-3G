@@ -1,5 +1,8 @@
-$STO-3G
+$Basis = STO-3G
 
+$Elements supported
+$ H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe Co Ni Cu 
+$ Zn Ga Ge As Se Br Kr Rb Sr Y Zr Nb Mo Tc Rh Rh Pd Ag Cd 
 $
 $  REFERENCE
 $  Elements      Contraction                       References                     
@@ -11,6 +14,7 @@ $  K,Ca - : (12s,9p)    -> [4s,3p]    W.J. Pietro, B.A. Levy, W.J. Hehre and R.F
 $  Ga - Kr                            Stewart, Inorg. Chem. 19, 2225 (1980). 
 $  Sc - Zn: (12s,9p,3d) -> [4s,3p,1d] W.J. Pietro and W.J. Hehre, J. Comp. Chem.  
 $  Y - Cd: (15s,12p,6d) -> [5s,4p,2d] 4, 241 (1983).                              
+$
 A 1
 $ HYDROGEN     (3S) -> [1S]                                      
 $ S-TYPE FUNCTIONS
@@ -1384,26 +1388,6 @@ $ D-TYPE FUNCTIONS
       3.6429640  0.00000000  0.12506621
       1.4185513  0.00000000  0.66867856
       0.6244498  0.00000000  0.30524682
-
-
-$Elements supported
-
-$ H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe Co Ni Cu 
-$ Zn Ga Ge As Se Br Kr Rb Sr Y Zr Nb Mo Tc Rh Rh Pd Ag Cd 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

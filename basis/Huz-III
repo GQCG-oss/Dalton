@@ -1,7 +1,10 @@
-$HIII
+$Basis = HIII
 
+$Elements supported
+$H C N O F P S 
 $
 $  REFERENCE
+$
 a 1
 $ HYDROGEN     (6s,2p) -> [4s,2p]                                
 $ S-TYPE FUNCTIONS
@@ -275,6 +278,3 @@ $ D-TYPE FUNCTIONS
      0.8000      0.00000000  1.0000000   0.0
      0.2000      0.00000000  0.0000000   1.0
 
-$Elements supported
-
-$H C N O F P S 

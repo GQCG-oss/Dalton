@@ -1,5 +1,7 @@
-4-31G
+$ Basis = 4-31G
 
+$ Elements supported
+$ H He Li Be B C N O F Ne P S Cl 
 $
 $  REFERENCE
 $  Elements                             References                                
@@ -249,7 +251,4 @@ $ P-TYPE FUNCTIONS
       0.1956594  0.00000000  0.00000000  1.00000000
 
 
-$Elements supported
-
-$H He Li Be B C N O F Ne P S Cl 
 

@@ -1,4 +1,4 @@
-$aug-cc-pVTZ
+$Basis = aug-cc-pVTZ
 
 $Elements supported
 $H He B C N O F Ne Al Si P S Cl Ar Ga Ge As Se Br Kr

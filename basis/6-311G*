@@ -1,5 +1,7 @@
-$6-311G*
+$Basis = 6-311G*
 
+$Elements supported
+$H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar Br I
 $
 $  REFERENCE
 $Elements                             References                                
@@ -655,8 +657,5 @@ $ D-TYPE FUNCTIONS
       0.302000   0.00000000  0.00000000  0.00000000  0.00000000  1.00000000
 
 
-$Elements supported
-
-$H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar Br I
 
 

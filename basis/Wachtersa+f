@@ -1,4 +1,4 @@
-$Wachters+f
+$Basis = Wachtersa+f
 
 $Elements supported
 $Sc Ti V Cr Mn Fe Co Ni Cu 
@@ -11,6 +11,7 @@ $         A. J. H. Wachters, IBM Tech. Rept. RJ584 (1969)
 $         F exponents: C. W. Bauschlicher, Jr. S. R. Langhoff and L. A. Barnes, 
 $                      J. Chem. Phys. 91, 2399 (1989).
 $
+************************************************************************
 a 21
 $ SCANDIUM     (14s,11p,6d,3f) -> [8s,6p,4d,1f]                  
 $ S-TYPE FUNCTIONS

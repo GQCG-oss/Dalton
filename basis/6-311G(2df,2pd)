@@ -1,6 +1,7 @@
-$6-311G(2df,2pd)
+$Basis = 6-311G(2df,2pd)
 
-$
+$Elements supported
+$H He Li Be B C N O F Ne 
 $
 $  REFERENCE
 $Elements                             References
@@ -297,6 +298,3 @@ $ F-TYPE FUNCTIONS
       2.5000000  1.00000000
 
 
-$Elements supported
-
-$H He Li Be B C N O F Ne 

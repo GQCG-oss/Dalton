@@ -1,4 +1,4 @@
-$ Basis =Ahlrichs-SVP
+$ Basis = Turbomole-SVP
 
 $ Elements supported
 $ H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca 
@@ -13,6 +13,7 @@ $Elements                             References
 $--------                             ----------                                
 $H - Kr: R. Ahlrichs and coworkers, (mostly unpublished)                        
 $
+************************************************************************
 a 1
 $ HYDROGEN     (4s) -> [2s]                                                     
 $ HYDROGEN     (1p)                                                             

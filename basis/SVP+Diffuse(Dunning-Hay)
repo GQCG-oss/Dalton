@@ -1,5 +1,7 @@
-$SVP + Diffuse (Dunning-Hay)
+$Basis = SVP+Diffuse(Dunning-Hay)
 
+$Elements supported
+$H Li Be B C N O F Ne 
 $
 $  REFERENCE
 $ T.H. DUNNING JR. AND P.J. HAY, IN METHODS OF ELECTRONIC STRUCTURE THEORY,    
@@ -13,6 +15,7 @@ $
 $  POLARIZATION AND/OR DIFFUSE FUNCTIONS
 $ T.H. DUNNING JR. AND P.J. HAY, IN METHODS OF ELECTRONIC STRUCTURE THEORY,    
 $ VOL. 2, H.F. SCHAEFER III, ED., PLENUM PRESS (1977).                         
+************************************************************************
 a 1
 $ HYDROGEN     (4s) -> [2s]                                      
 $ HYDROGEN     (1p)                                              
@@ -245,6 +248,3 @@ $ D-TYPE FUNCTIONS
       0.9500000  1.00000000
 
 
-$Elements supported
-
-$H Li Be B C N O F Ne 

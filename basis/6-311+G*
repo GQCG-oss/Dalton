@@ -1,9 +1,11 @@
-$6-311+G*
+$Basis = 6-311+G*
 
+$Elements supported
+$H He Li Be B C N O F Ne 
 $
-$  REFERENCE
-$Elements                             References                                
-$--------                             ----------                                
+$ REFERENCE
+$ Elements                             References                                
+$ --------                             ----------                                
 $H, Li - Ne: R. Krishnan, J.S. Binkley, R. Seeger and J.A. Pople,               
 $            J. Chem. Phys. 72, 650 (1980)                                      
 $Na - Ar:    A.D. McLean and G.S. Chandler J. Chem. Phys. 72, 5639, (1980).     
@@ -285,7 +287,4 @@ $ D-TYPE FUNCTIONS
       2.3040000  1.00000000
 
 
-$Elements supported
-
-$H He Li Be B C N O F Ne 
 

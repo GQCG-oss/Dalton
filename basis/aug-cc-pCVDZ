@@ -1,4 +1,4 @@
-$aug-cc-pCVDZ
+$Basis = aug-cc-pCVDZ
 
 $Elements supported
 $H He B C N O F Al Si P S Cl Ar

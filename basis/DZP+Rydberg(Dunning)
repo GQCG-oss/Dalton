@@ -1,5 +1,7 @@
-$DZP + Rydberg (Dunning)
+$Basis = DZP+Rydberg(Dunning)
 
+$Elements supported
+$H B C N O F Ne Al Si P S Cl 
 $
 $  REFERENCE
 $ T.H. DUNNING, JR., J. CHEM. PHYS. 53, 2823 (1970).                           
@@ -431,6 +433,3 @@ $ D-TYPE FUNCTIONS
       0.0150000  0.00000000  1.00000000
 
 
-$Elements supported
-
-$H B C N O F Ne Al Si P S Cl 

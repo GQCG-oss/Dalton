@@ -1,5 +1,7 @@
-$DZP + Diffuse (Dunning)
+$Basis = DZP+Diffuse (Dunning)
 
+$Elements supported
+$H B C N O F Ne 
 $
 $  REFERENCE
 $ T.H. DUNNING, JR., J. CHEM. PHYS. 53, 2823 (1970).                           
@@ -14,6 +16,7 @@ $
 $  POLARIZATION AND/OR DIFFUSE FUNCTIONS
 $ T.H. DUNNING JR. AND P.J. HAY, IN METHODS OF ELECTRONIC STRUCTURE THEORY,    
 $ VOL. 2, H.F. SCHAEFER III, ED., PLENUM PRESS (1977).                         
+$
 a 1
 $ HYDROGEN     (4s) -> [2s]                                      
 $ HYDROGEN     (1p)                                              
@@ -187,7 +190,4 @@ $ D-TYPE FUNCTIONS
       0.9500000  1.00000000
 
 
-$Elements supported
-
-$H B C N O F Ne 
 

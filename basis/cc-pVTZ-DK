@@ -1,4 +1,4 @@
-$cc-pVTZ-DK
+$Basis = cc-pVTZ-DK
 
 $Elements supported
 $ H He B C N O F Ne Al Si P S Cl Ar Ga Ge As Se Br Kr
@@ -16,6 +16,7 @@ $**
 $Recontraction for use in Douglas-Kroll calculations:
 $W.A. de Jong, to be published.
 $     
+************************************************************************
 a 1
 $ HYDROGEN     (5s,2p,1d) -> [3s,2p,1d]                          
 $ S-TYPE FUNCTIONS

@@ -1,11 +1,10 @@
-From olabl@gridur.ntnu.no Wed Dec 19 15:43:05 2001
-Date: Wed, 19 Dec 2001 15:40:56 +0100 (MET)
-From: Ola Berg Lutnas <olabl@gridur.ntnu.no>
+$Basis = Huz-IVsu4
 
-$Huz-IVsu4
-
+$Elements supported
+$H C N O F P S
 $
 $  REFERENCE
+$
 a 1
 $ HYDROGEN     (10s,3p,1d) -> [10s,3p,1d]
 $ S-TYPE FUNCTIONS
@@ -492,6 +491,3 @@ $ F-TYPE FUNCTIONS
      1.50000000  1.0         0.000000000
      0.5         0.00000000  1.000000000
 
-$Elements supported
-
-$H C N O F P S

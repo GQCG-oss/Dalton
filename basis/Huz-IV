@@ -1,7 +1,10 @@
-$Huz-IV
+$Basis = Huz-IV
 
+$Elements supported
+$H C N O F P S 
 $
 $  REFERENCE
+$
 a 1
 $ HYDROGEN     (6s,3p,1d) -> [5s,3p,1d]                                
 $ S-TYPE FUNCTIONS
@@ -333,6 +336,3 @@ $ F-TYPE FUNCTIONS
      1.50000000  1.0         0.000000000
      0.5         0.00000000  1.000000000
 
-$Elements supported
-
-$H C N O F P S 

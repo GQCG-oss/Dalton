@@ -1,4 +1,4 @@
-$ Basis =aug-cc-pV(5+d)Z                                                        
+$ Basis = aug-cc-pV(5+d)Z                                                        
 $
 $ Supported Elements
 $ Al Si P S Cl Ar
@@ -15,6 +15,7 @@ $ --------                             ---------
 $ Al- Ar:    T.H. Dunning, Jr., K.A. Peterson and A.K. Wilson,      
 $            J. Chem. Phys., 114, 9244 (2001)  
 $
+************************************************************************
 a 13
 $ ALUMINUM     (20s,12p,5d,3f,2g,1h) -> [7s,6p,5d,3f,2g,1h]                     
 $ ALUMINUM     (1s,1p,1d,1f,1g,1h)                                              

@@ -1,5 +1,7 @@
-$SV + Double Rydberg (Dunning-Hay)
+$Basis = SV+DoubleRydberg(Dunning-Hay)
 
+$Elements supported
+$H Li Be B C N O F Ne 
 $
 $  REFERENCE
 $ T.H. DUNNING JR. AND P.J. HAY, IN METHODS OF ELECTRONIC STRUCTURE THEORY,    
@@ -239,6 +241,3 @@ $ D-TYPE FUNCTIONS
       0.0032000  0.00000000  1.00000000
 
 
-$Elements supported
-
-$H Li Be B C N O F Ne 

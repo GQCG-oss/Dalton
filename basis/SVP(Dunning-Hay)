@@ -1,5 +1,7 @@
-$SVP (Dunning-Hay)
+$Basis = SVP(Dunning-Hay)
 
+$Elements supported
+$H Li Be B C N O F Ne 
 $
 $  REFERENCE
 $ T.H. DUNNING JR. AND P.J. HAY, IN METHODS OF ELECTRONIC STRUCTURE THEORY,    
@@ -222,7 +224,4 @@ $ D-TYPE FUNCTIONS
       0.9500000  1.00000000
 
 
-$Elements supported
-
-$H Li Be B C N O F Ne 
 

@@ -1,12 +1,16 @@
+$Basis = STO-2G
 
-$STO-2G
-
+$Elements supported
+$ H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sr 
 $
-$  REFERENCE
-$ Elements                             References --------                     
-$         ----------  H - He: W.J. Hehre, R.F. Stewart and J.A. Pople, J. Chem.
-$  Phys. 2657 (1969). Li - Ne: Na - Ar: W.J. Hehre, R. Ditchfield, R.F. Stewart
-$ , J.A. Pople, J. Chem. Phys.  K - Kr: 52, 2769 (1970).                       
+$ REFERENCE
+$ Elements                             References 
+$ --------                             ----------  
+$  H - He: W.J. Hehre, R.F. Stewart and J.A. Pople, J. Chem.Phys. 2657 (1969). 
+$ Li - Ne, W.J. Hehre, R. Ditchfield, R.F. Stewart, J.A. Pople, 
+$ Na - Ar, J. Chem. Phys. 52, 2769 (1970).
+$  K - Kr:
+$
 a 1
 $ HYDROGEN     (2S) -> [1S]                                      
 $ S-TYPE FUNCTIONS
@@ -313,7 +317,4 @@ $ D-TYPE FUNCTIONS
       3.8797320  0.52920406
 
 
-$Elements supported
-
-$ H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sr 
 

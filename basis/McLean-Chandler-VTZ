@@ -1,10 +1,11 @@
-$McLean/Chandler VTZ
+$Basis = McLean/Chandler VTZ
 
 $Elements supported
 $Na Mg Al Si P S Cl Ar 
 $
-$  REFERENCE
+$ REFERENCE
 $ A.D. MCLEAN AND G.S. CHANDLER, CHEM. PHYS. 72, 5639, (1980)                  
+$
 a 11
 $ SODIUM       (12s,9p) -> [6s,5p]                               
 $ S-TYPE FUNCTIONS

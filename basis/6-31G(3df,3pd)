@@ -1,5 +1,7 @@
-$6-31G(3df,3pd)
+$Basis = 6-31G(3df,3pd)
 
+$Elements supported
+$H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar 
 $
 $  REFERENCE
 $  Elements                             References                                
@@ -617,7 +619,4 @@ $ F-TYPE FUNCTIONS
       0.8000000  1.00000000
 
 
-$Elements supported
-
-$H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar 
 

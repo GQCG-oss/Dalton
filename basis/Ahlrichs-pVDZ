@@ -1,17 +1,18 @@
-$ Basis =Ahlrichs pVDZ                                                          
+$Basis = Ahlrichs pVDZ                                                          
 
 $Elements supported
 $H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe Co Ni Cu
 $Zn Ga Ge As Se Br Kr
 $
-$Elements                             References                                
-$--------                             ----------                                
-$H - Kr: A. Schafer, H. Horn and R. Ahlrichs, J. Chem. Phys. 97, 2571 (1992).   
+$ REFERENCES
+$ Elements                             References                                
+$ --------                             ----------                                
+$ H - Kr: A. Schafer, H. Horn and R. Ahlrichs, J. Chem. Phys. 97, 2571 (1992).   
 $                                                                               
 $  Polarization and/or diffuse functions                                        
-$Elements                             References                                
-$--------                             ----------                                
-$H - Kr: R. Ahlrichs and coworkers, (mostly unpublished)                        
+$ Elements                             References                                
+$ --------                             ----------                                
+$ H - Kr: R. Ahlrichs and coworkers, (mostly unpublished)                        
 $
 a 1
 $ HYDROGEN     (4s) -> [2s]                                                     

@@ -1,7 +1,8 @@
-$6-311++G**
+$Basis = 6-311++G**
 
+$Elements supported
+$H He Li Be B C N O F Ne 
 $
-$  REFERENCE
 $  REFERENCE
 $Elements                             References
 $--------                             ----------
@@ -290,7 +291,4 @@ $ D-TYPE FUNCTIONS
       2.3040000  1.00000000
 
 
-$Elements supported
-
-$H He Li Be B C N O F Ne 
 
