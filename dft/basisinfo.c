@@ -1,3 +1,4 @@
+#define __CVERSION__
 /* Written by Elias Rudberg, KTH, Stockholm */
 #include <stdlib.h>
 #include <math.h>
@@ -570,6 +571,7 @@ get_product_simple_prims(DistributionSpecStruct* primA,
 			 int maxCount)
 {
   /* use the Gaussian product rule */
+#include "pi.h"
   real sum = 0;
   int k;
   for(k = 0; k < 3; k++)
@@ -682,7 +684,7 @@ get_product_simple_prims(DistributionSpecStruct* primA,
 	    {
 	      real newCoeff = AiAj * CxCyCz * poly0[k] * poly1[l] * poly2[m];
 
-	      real sqrtValue = sqrt(M_PI / alphaNew);
+	      real sqrtValue = sqrt(pi / alphaNew);
 	      real absvalue = newCoeff * sqrtValue * sqrtValue * sqrtValue;
 	      if(absvalue < 0) absvalue *= -1;
 
