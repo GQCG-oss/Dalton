@@ -61,12 +61,8 @@ int linux_mem_allo__(INT * waddr,int * nbytes,double *wrk)
  
   if(where==NULL)
     {
-      (void)fprintf(stderr,"Memory allocation failure");
-      if( (errno>0) && (errno<sys_nerr) )
-      {
-        (void)fprintf(stderr," (%s) ",sys_errlist[errno]);
-      }
-      (void)fprintf(stderr," \n");
+      fprintf(stderr,"Allocation of %d MB of memory failed.\n", 
+	      (*nbytes)/(1024*1024));
       return(0);
     }
 
