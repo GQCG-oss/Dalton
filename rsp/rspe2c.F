@@ -32,11 +32,14 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: rspe2c.F,v 1.3 2001-05-31 06:38:29 vebjornb Exp $
+C$Id: rspe2c.F,v 1.4 2002-01-17 09:02:28 alfch Exp $
 C
 #include <single.h>
 #ifdef UNDEF
 $Log: not supported by cvs2svn $
+Revision 1.3  2001/05/31 06:38:29  vebjornb
+Updated copyright, authors and reference in all Fortran-files - VB
+
 Revision 1.2  2001/02/12 18:17:56  vebjornb
 First commit after CC merge
 
@@ -1671,6 +1674,8 @@ C
 #include <infrsp.h>
 #include <wrkrsp.h>
 #include <infpri.h>
+#include <mxcent.h>
+#include <elweak.h>
 C
       DIMENSION FC(*),CMO(*),UDV(*),PV(*),XINDX(*),WRK(*)
       DIMENSION SOPR(NFREQ,NOP,*)
@@ -1720,7 +1725,7 @@ C
       DO 500 IFREQ = 1,NFREQ
          IF ( FREQ(IFREQ).LT.DTOL ) THEN
             WRITE(LUPRI,'(/A/)')
-     *      '@FREQUENCY INDEPENDENT SECOND ORDER PROPERTIES'
+     *           '@FREQUENCY INDEPENDENT SECOND ORDER PROPERTIES'
          ELSE
             WRITE(LUPRI,'(/A/,5(/A,1P,D15.7),/)')
      *  '@FREQUENCY DEPENDENT SECOND ORDER PROPERTIES WITH FREQUENCY :',
@@ -1730,6 +1735,7 @@ C
      *      '  kJ/mol.:',XKJMOL*FREQ(IFREQ),
      *      ' Angstrom:',1.0D8/(XTKAYS*FREQ(IFREQ))
          END IF
+
          DO 400 IOP = 1,NOP
             IF (SOPRSY) THEN
                JST = 1
@@ -1740,11 +1746,12 @@ C
                CALL GETGP(LBLLR(KSYMOP,IOP),FC,CMO,UDV,PV,XINDX,ANTSYM,
      *                    WRK(KGP),LWRKGP)
                CALL SOPDW4(WRK(KGP),WRK(KISOL),WRK(KJSOL),FREQ(IFREQ))
-            END IF
+            END IF            
+c ach            
             DO 600 JOP = JST,NOP
                XPROP = SOPR(IFREQ,IOP,JOP)
                WRITE(LUPRI,'(A,A,3X,A,1P,D20.12)')
-     *         '@',LBLLR(KSYMOP,IOP), LBLLR(KSYMOP,JOP),XPROP
+     *         '@',LBLLR(KSYMOP,IOP), LBLLR(KSYMOP,JOP),XPROP                              
                IF (SOPW4) THEN
                   CALL GETGP(LBLLR(KSYMOP,JOP),FC,CMO,UDV,PV,XINDX,
      *                       ANTSYM,WRK(KGP),LWRKGP)
@@ -1754,6 +1761,7 @@ C
                END IF
  600        CONTINUE
  400     CONTINUE
+         if (elweak) call printelweak(nop,sopr,ksymop)
  500  CONTINUE
       RETURN
       END
@@ -5311,3 +5319,97 @@ C
 C
       RETURN
       END
+        
+      subroutine printelweak(nop,sopr,ksymop)
+#include <implicit.h>
+#include <priunit.h>
+#include <alphac.h>
+#include <inflr.h>
+#include <mxcent.h>
+#include <nuclei.h>
+#include <chrnos.h>
+#include <elweak.h>
+      dimension sopr(1,nop,nop),pvodd(natoms)
+      character*8 lab1, lab2
+      character*3 prelab,num
+      write(lupri,*) pvso,pvpso,natoms      
+      tot=0.0d0
+      if (PVSO) THEN
+      do I=1,NOP
+         do j=1,NOP
+            lab1=lbllr(ksymop,i)
+            lab2=lbllr(ksymop,j)
+            if (lab1.eq.'X1SPNORB' .and. lab2 .eq.'PVIOLA X') then
+               tot=tot+sopr(ksymop,i,j)
+            endif
+            if (lab1.eq.'Y1SPNORB' .and. lab2 .eq.'PVIOLA Y') then
+               tot=tot+sopr(ksymop,i,j)
+            endif
+            if (lab1.eq.'Z1SPNORB' .and. lab2 .eq.'PVIOLA Z') then
+               tot=tot+sopr(ksymop,i,j)
+            endif
+         enddo
+      enddo
+      write(lupri,*)
+      write(lupri,*) 'PV-interaction:'
+      write(lupri,*) tot*2867.081D0,' *10^-20 Eh'
+      write(lupri,*)
+      endif
+      IF (PVPSO) THEN
+         tot=0.0d0
+         call dzero(pvodd,natoms)
+         do I=1,NOP
+            do j=1,NOP               
+               lab1=lbllr(ksymop,i)
+               lab2=lbllr(ksymop,j)
+               read(lab2(1:3),'(A3)') PRELAB               
+C
+               if (lab1.eq.'PVIOLA X' .and.PRELAB.eq.'PSO') then
+                  read(lab2(5:8),'(I4)') INUM                
+                  iatom=((inum-1)/3)+1
+                  if (mod(inum,3).eq.1) then
+C                     write(0,*) lab1, lab2,inum,iatom,mod(inum,3)
+                     pvodd(iatom)= pvodd(iatom)+sopr(ksymop,i,j)
+                  endif
+               endif            
+               if (lab1.eq.'PVIOLA Y' .and.PRELAB.eq.'PSO') then
+                  read(lab2(5:8),'(I4)') INUM                
+                  iatom=((inum-1)/3)+1
+                  if (mod(inum,3).eq.2) then
+                     pvodd(iatom)= pvodd(iatom)+sopr(ksymop,i,j)
+C                     write(0,*) lab1,lab2,inum,iatom,mod(inum,3)
+                  endif
+               endif            
+               if (lab1.eq.'PVIOLA Z' .and.PRELAB.eq.'PSO') then
+                  read(lab2(5:8),'(I4)') INUM                
+                  iatom=((inum-1)/3)+1
+                  if (mod(inum,3).eq.0) then
+C                     write(0,*)lab1,lab2,inum,iatom,mod(inum,3)
+                     pvodd(iatom)= pvodd(iatom)+sopr(ksymop,i,j)
+                  endif
+               endif            
+            enddo
+         enddo
+         write(lupri,*) 
+         write(lupri,*) 'PV-interaction:'
+         write(lupri,*) 
+         write(lupri,*) 'Name  Charge     PV '
+         do iatom=1,natoms
+            pvodd(iatom) = pvodd(iatom)*charge(iatom)/4.0d0
+            pvodd(iatom) = pvodd(iatom)*2867.081D0*alpha2
+            write(lupri,*) namn(iatom),' ',charge(iatom)
+     &           ,' ',pvodd(iatom),' * 10^-20 Eh'
+            tot = tot +  pvodd(iatom)
+         enddo
+         write(lupri,*) 
+         write(lupri,*) tot,' * 10^-20 Eh'
+      endif
+      return 
+      end
+
+
+
+
+
+
+

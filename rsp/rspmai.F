@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: rspmai.F,v 1.13 2002-01-15 12:20:58 ruden Exp $
+C$Id: rspmai.F,v 1.14 2002-01-17 09:02:28 alfch Exp $
 C
 #include <single.h>
 #ifdef REVISIONLOG
@@ -869,6 +869,8 @@ C
 #include <infcr.h>
 #include <inftmo.h>
 #include <inftpa.h>
+#include <mxcent.h>
+#include <elweak.h>
 C
 C     Initialization of RSPINP
       DATA INPTES/.FALSE./, AVDIA /.TRUE./
@@ -955,6 +957,8 @@ C  Initializing INFTPA
       DATA NBTPFR/1/
       DATA BTPFR(1)/0.0D0/
       DATA IPRTPA/2/
+C INITIALIZING ELWEAK
+      DATA PVSO/.FALSE./, PVPSO/.FALSE./,ELWEAK/.FALSE./
       END
 C  /* Deck ppinp */
       SUBROUTINE PPINP(WORD)
@@ -1330,11 +1334,15 @@ C
 #include <maxorb.h>
 #include <infinp.h>
 #include <inftap.h>
+#include <mxcent.h>
+#include <nuclei.h>
+#include <chrnos.h>
+#include <elweak.h>
 C
       LOGICAL NEWDEF, SPNDEF
-      PARAMETER ( NTABLE = 36 )
+      PARAMETER ( NTABLE = 38 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-      CHARACTER*8 LABEL
+      CHARACTER*8 LABEL,psolab
 C
       DATA TABLE /'.DIPLEN', '.DIPLNX', '.DIPLNY', '.DIPLNZ',
      *            '.DIPVEL', '.DIPVLX', '.DIPVLY', '.DIPVLZ',
@@ -1342,10 +1350,10 @@ C
      *            '.QUADMO', '.QUADXX', '.QUADXY', '.QUADXZ',
      *            '.QUADYY', '.QUADYZ', '.QUADZZ', '.SPIN-O',
      *            '.SPNORX', '.SPNORY', '.SPNORZ', '.PROPRT',
-     *            '.MAXIT ', '.THCLR ', '.MAXITO',
+     *            '.MAXIT ', '.THCLR ', '.MAXITO', 
      *            '.PRINT ', '.FREQUE', '.ABOCHK', '.ISTOCK',
      *            '.MAXOCK', '.SOPRSY', '.RESTLR', '.DIROIT',
-     *            '.TRIPLE'/
+     *            '.TRIPLE', '.PV PSO', '.PV SO' /
 C
       DATA SPNDEF/.FALSE./
 C
@@ -1366,7 +1374,7 @@ C
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
      *                      16,17,18,19,20,21,22,23,24,25,26,27,
-     *                      28,29,30,31,32,33,34,35,35,36), I
+     *                      28,29,30,31,32,33,34,35,36,37,38),I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1522,6 +1530,48 @@ C
                   TRPLET=.TRUE.
                   TRPFLG=.TRUE.
                GO TO 100
+c ach
+ 37            CONTINUE
+                  TRPLET=.TRUE.
+                  TRPFLG=.TRUE.
+                  ELWEAK= .TRUE.
+                  PVPSO =.TRUE.
+C PV from pso                                  
+
+                  LLROP( INDPRP('PVIOLA X')) = .TRUE.
+                  LLROP( INDPRP('PVIOLA Y')) = .TRUE.
+                  LLROP( INDPRP('PVIOLA Z')) = .TRUE.
+C for pv  er det aldri symetri ? 
+C                  if (NSYM .ne 1 ) call QUIT('PV-cannot be calculated'
+C#     &                 // ' with symmetry' )
+C
+                  ILAB=0
+                  DO  IATOM = 1, Natoms
+                     DO  ICOOR = 1, 3
+                        ILAB = ILAB+1
+                        IFIRST = ILAB/100
+                        ISECND = MOD(ILAB,100)/10
+                        ITHIRD = MOD(MOD(ILAB,100),10)
+                        LLROP( INDPRP(
+     &                       'PSO '//CHRNOS(IFIRST)//CHRNOS(ISECND)
+     &                       //CHRNOS(ITHIRD)//' '))=.TRUE.
+                     enddo
+                  enddo               
+               GO TO 100
+ 38            CONTINUE
+C PV from spin-orbit                
+                  PVSO =.TRUE.                
+                  TRPLET=.TRUE.
+                  TRPFLG=.TRUE.
+                  ELWEAK = .TRUE.
+                  LLROP( INDPRP('X1SPNORB')) = .TRUE.
+                  LLROP( INDPRP('Y1SPNORB')) = .TRUE.
+                  LLROP( INDPRP('Z1SPNORB')) = .TRUE.
+                  LLROP( INDPRP('PVIOLA X')) = .TRUE.
+                  LLROP( INDPRP('PVIOLA Y')) = .TRUE.
+                  LLROP( INDPRP('PVIOLA Z')) = .TRUE.
+               GO TO 100
+C
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -1532,6 +1582,7 @@ C
       END IF
   300 CONTINUE
       NLRTOT = 0
+      write(lupri,*) ichang
       IF (ICHANG .GT. 0) THEN
          DO 500 I = 1,NPRLBL
             IF (LLROP(I)) NLRTOT = NLRTOT + 1
@@ -2616,6 +2667,7 @@ C SET UP POINTER FOR LINEAR RESPONSE EQUATIONS
 C
          CALL SOMIND
       END IF
+D
       IF (NTOTRS.GT.0) THEN
          DO 330 ISYM = 1,NSYM
             IF (NGPLR(ISYM).GT.0) THEN
