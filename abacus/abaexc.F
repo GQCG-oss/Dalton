@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abaexc.F,v 1.6 2002-02-12 08:17:21 vebjornb Exp $
+C$Id: abaexc.F,v 1.7 2002-02-14 09:36:27 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck excinp */
@@ -989,7 +989,7 @@ C
                NMDTXT(1:4) = 'EXEN'
                CALL WRAVFL(EXENG(ISYM,IEXVAL),1,1,1,NMDTXT,IPRINT)
                IF (DIPSTR) THEN
-                  NMDTXT(1:4) = 'TRDP' // CHAR(ISYM) // CHAR(IEXVAL)
+                  NMDTXT(1:6) = 'TRDP' // CHAR(ISYM) // CHAR(IEXVAL)
                   CALL WRAVFL(TRLEN(1,ISYM,IEXVAL),3,1,1,NMDTXT,IPRINT)
                END IF
             END DO
