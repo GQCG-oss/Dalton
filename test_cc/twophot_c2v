@@ -76,10 +76,10 @@ XDIPLEN YDIPLEN XDIPLEN YDIPLEN
 echo '#!/bin/ksh
 log=$1
 
-if [ `uname` = IRIX64 ]; then
-   GREP="egrep"
-else
+if [ `uname` = Linux ]; then
    GREP="egrep -a"
+else
+   GREP="egrep"
 fi
 
 # SCF, MP2 and CCSD energies:
