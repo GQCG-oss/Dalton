@@ -534,6 +534,7 @@ C
 #include <ibtfun.h>
 C
       IF (DODIST) THEN
+         NCTDST = 0
          NDISTR = 0
          NACDST = 0
          FIRST  = .TRUE.

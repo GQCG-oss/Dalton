@@ -3090,6 +3090,7 @@ C     Initialize R12 logical variables R12CAL-LMULBS (WK/UniKA/04-11-2002).
       COMBSS = .FALSE.
       LAUXBS = .FALSE.
       LMULBS = .FALSE.
+      LOOPDP = .FALSE.
       VCLTHR =  0D0
       SVDTHR =  1D-12
 cLig >> setting RANGMO and RPSO false
