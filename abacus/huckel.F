@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: huckel.F,v 1.2 2001-05-31 06:38:09 vebjornb Exp $
+C$Id: huckel.F,v 1.3 2001-08-21 09:34:41 hjj Exp $
 C
 #include <single.h>
 C   /* Deck hucdrv */
@@ -167,7 +167,7 @@ C
 C     Copy the Huckel part into a lower triangular matrix, where the elements
 C     are sorted in consecutive order
 C
-C     Also extract the transformation matrix from STO-3G to full basis
+C     Also extract the transformation matrix from HUCKEL basis to full basis
 C
          IPOS = 1
          DO 110 I = 1, NHAOSY
@@ -180,7 +180,7 @@ C
  110     CONTINUE 
          IF (P6FLAG(6) .OR. IPRRHF.GE.8) THEN
             WRITE (LUPRI,'(/A,I3,/A)')
-     &           ' Extracted STO-3G overlap matrix of symmetry :',ISYM,
+     &           ' Extracted Huckel matrix of symmetry :',ISYM,
      &           ' ------------------------------------------------'
             CALL OUTPAK(HUCMAT,NHAOSY,1,LUPRI)
          END IF
@@ -233,7 +233,7 @@ C     Project eigenvectors onto complete basis
 C
 C     We do this as (S_{NN})^{-1}*(S_{NO}*C_{O})
 C     N and O refers to new (large) and old (small) basis respectively
-C     For STO-3G to STO-3G this gives the identity matrix
+C     For HUCKEL basis to HUCKEL basis this gives the identity matrix
 C
 C     Explicit inversion may take some time.....
 C
@@ -543,10 +543,6 @@ C
             IVKC  = ISTC + (IKROW -1)*NBASI
  107        IKROW1 = IKROW1 + 1
             IF (IKROW1 .GT. NORBI) IKROW1 = 1
-            IF (IKROW1 .EQ. NHUCI) THEN
-               IRETUR = IKROW
-               GO TO 5000
-            END IF
             IVKC1 = ISTC + (IKROW1-1)*NBASI
             CALL DCOPY(NBASI,CMO1(IVKC1),1,CMO(IVKC),1)
 C
@@ -580,6 +576,11 @@ C
 C              Zero norm,
 C              we try the next mo vector from the initial mo's in CMO1
 C
+               IF (IKROW1 .EQ. NHUCI) THEN
+C                 ... we have tried them all!
+                  IRETUR = IKROW
+                  GO TO 5000
+               END IF
                GOTO 107
             END IF
 C
