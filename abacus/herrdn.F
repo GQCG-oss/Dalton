@@ -29,11 +29,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: herrdn.F,v 1.10 2001-04-28 16:07:46 ruud Exp $
+C$Id: herrdn.F,v 1.11 2001-05-25 14:48:04 ruud Exp $
 C
 #include <single.h>
 #ifdef REVISION_LOG
 $Log: not supported by cvs2svn $
+Revision 1.10  2001/04/28 16:07:46  ruud
+Removed a print to unit 6 (now LUPRI), and fixed a nasty little bug
+appearing in some Douglas-Kroll calculations
+
 Revision 1.9  2001/04/21 14:28:16  vebjornb
 Removed all ASSIGN statements, and replaced them with explicit FORMAT labels.
 The ASSIGNs caused trouble when compiling on 64-bit HP - VB
@@ -209,7 +213,7 @@ C
 C
       DATA TABLE /'.PRINT ', '.OLDNOR', '.MAXPRI', '.BIGVEC',
      *            '.MOLINP', '.SYMTHR', '.CM FUN', '.ZCMVAL',
-     *            '.MOLPRI', '.UNCONT'/
+     *            '.XXXXXX', '.UNCONT'/
 C
       NEWDEF = (WORD .EQ. '*READIN')
       ICHANG = 0
@@ -263,7 +267,6 @@ C
                   READ (LUCMD,*) ZCMVAL
                GO TO 100
  9             CONTINUE
-                  PRIBAS = .TRUE.
                GO TO 100
    10          CONTINUE
                   UNCONT = .TRUE.
@@ -326,14 +329,6 @@ C
                CALL QUIT('Error in *READIN input processing')
             END IF
          END IF
-         IF (PRIBAS) THEN
-            WRITE (LUPRI,'(/A)')
-     &           ' The molecular input will be dumped on DALTON.BAS'
-         END IF
-C        IF (GENCON) THEN
-C           WRITE (LUPRI,'(/A)')
-C    *         ' Routines for general contraction used.'
-C        END IF
          WRITE (LUPRI,'()')
       END IF
       RETURN
@@ -372,7 +367,6 @@ C
       INPTST = TSTINP
       BASIS  = .FALSE.
       ATOMBA = .FALSE.
-      PRIBAS = .FALSE.
       OLDNRM = .FALSE.
       TOLLRN = 0.0D0
       ZCMVAL = 1.0D0
