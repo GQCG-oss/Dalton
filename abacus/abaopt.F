@@ -32,7 +32,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: abaopt.F,v 1.7 2001-05-31 06:38:02 vebjornb Exp $
+C$Id: abaopt.F,v 1.8 2001-06-21 12:32:56 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -1203,13 +1203,17 @@ C
       IWOFF  = IWSAV
 #endif
       CALL QEXIT('OPTMIN')
-#if defined (VAR_MPI)
-      IF (NODTOT .GT. 1 .AND. MYNUM .EQ. 0) THEN
-         IJOB = 0
-         CALL MPI_BCAST(IJOB,1,MPI_INTEGER,NODEID(MASTER),
-     &                  MPI_COMM_WORLD,IERR)
-      END IF
-#endif      
+C
+C     Commented out this part, the finalizing is done in the main
+C     program (dalton.F) for all kinds of calculations - vb
+C
+C#if defined (VAR_MPI)
+C      IF (NODTOT .GT. 1 .AND. MYNUM .EQ. 0) THEN
+C         IJOB = 0
+C         CALL MPI_BCAST(IJOB,1,MPI_INTEGER,NODEID(MASTER),
+C     &                  MPI_COMM_WORLD,IERR)
+C      END IF
+C#endif      
       RETURN
       END
 

@@ -1423,6 +1423,7 @@ C
 #include <mxcent.h>
 #include <mxorb.h>
       LOGICAL PARIO
+      CHARACTER WORD*7
 #include <priunit.h>
 #include <inftap.h>
 #include <molinp.h>

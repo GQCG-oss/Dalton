@@ -32,12 +32,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: dalton.F,v 1.7 2001-06-20 13:15:36 vebjornb Exp $
+C$Id: dalton.F,v 1.8 2001-06-21 12:32:56 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
 C
 $Log: not supported by cvs2svn $
+Revision 1.7  2001/06/20 13:15:36  vebjornb
+Only master opens DALTON.OUT, not the slaves - VB
+
 Revision 1.6  2001/05/31 06:38:04  vebjornb
 Updated copyright, authors and reference in all Fortran-files - VB
 
@@ -462,6 +465,7 @@ C
          END IF
          CALL RECVNAMES
          CALL EXEDRV(WORK, LMWORK, IWOFF, WRKDLM)
+         CALL FLSHFO(LUPRI)
 C
 C     Send ending signal to slaves
 C
