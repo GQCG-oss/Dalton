@@ -5,9 +5,9 @@
 cat > twophot_cc2_cs.info <<%EOF%
    twophot_cc2_cs
    --------------
-   Molecule:       HF in C2
-   Wave Function:  CC2 / 6-31G**
-   Test Purpose:   twophoton transition moments
+   Molecule:         HF in C2
+   Wave Function:    CC2 / 6-31G**
+   Test Purpose:     Twophoton transition moments
 %EOF%
 
 #######################################################################
@@ -98,7 +98,7 @@ CRIT2=`$GREP "M\^CD_of\(\-w\): *( |\-)( |0)\.815478" $log |
        $GREP "M\^AB_fo\(w\): * ( |\-)( |0)\.414048" $log | wc -l`
 CRIT3=`$GREP "M\^AB_of\(\-w\) x M\^CD_fo\(w\)   = * ( |0)\.337647" $log | wc -l`
 CRIT4=`$GREP "M\^CD_of\(\-w\) x M\^AB_fo\(w\)\]\* = * ( |0)\.337647" $log | wc -l`
-CRIT5=`$GREP "CC2  S\^of_AB,CD" $log | $GREP "0\.337647.." | wc -l`
+CRIT5=`$GREP "CC2  S\^of_AB,CD" $log | $GREP "(0| )\.337647.." | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[2]=10
 ERROR[2]="CC2 TWOPHOTON TRANSITION MOMENTS OR STRENGTH NOT CORRECT"
