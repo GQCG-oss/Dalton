@@ -232,30 +232,29 @@ abamolden.o : abamolden.F \
   ../include/ccom.h  ../include/chrnos.h \
   ../include/chrsgn.h  ../include/chrxyz.h \
   ../include/codata.h  ../include/dummy.h \
-  ../include/frame.h  ../include/ibtfun.h \
-  ../include/implicit.h  ../include/inforb.h \
-  ../include/inftap.h  ../include/maxaqn.h \
-  ../include/maxorb.h  ../include/molde.h \
-  ../include/mxcent.h  ../include/mxorb.h \
-  ../include/nuclei.h  ../include/pgroup.h \
-  ../include/pi.h  ../include/primit.h \
-  ../include/priunit.h  ../include/symmet.h
+  ../include/ibtfun.h  ../include/implicit.h \
+  ../include/inforb.h  ../include/inftap.h \
+  ../include/maxaqn.h  ../include/maxorb.h \
+  ../include/molde.h  ../include/mxcent.h \
+  ../include/mxorb.h  ../include/nuclei.h \
+  ../include/pgroup.h  ../include/pi.h \
+  ../include/primit.h  ../include/priunit.h \
+  ../include/symmet.h
 abander.o : abander.F \
   ../include/abainf.h  ../include/cbiexc.h \
   ../include/cbinum.h  ../include/cbitro.h \
   ../include/cbiwlk.h  ../include/codata.h \
   ../include/dummy.h  ../include/exeinf.h \
-  ../include/fcsym.h  ../include/frame.h \
-  ../include/gnrinf.h  ../include/huckel.h \
-  ../include/ibtfun.h  ../include/implicit.h \
-  ../include/infpar.h  ../include/inftap.h \
-  ../include/maxaqn.h  ../include/molinp.h \
-  ../include/mxcent.h  ../include/mxorb.h \
-  ../include/nuclei.h  ../include/numder.h \
-  ../include/optinf.h  ../include/pario.h \
-  ../include/past.h  ../include/priunit.h \
-  ../include/symmet.h  ../include/taymol.h \
-  ../include/trkoor.h
+  ../include/fcsym.h  ../include/gnrinf.h \
+  ../include/huckel.h  ../include/ibtfun.h \
+  ../include/implicit.h  ../include/infpar.h \
+  ../include/inftap.h  ../include/maxaqn.h \
+  ../include/molinp.h  ../include/mxcent.h \
+  ../include/mxorb.h  ../include/nuclei.h \
+  ../include/numder.h  ../include/optinf.h \
+  ../include/pario.h  ../include/past.h \
+  ../include/priunit.h  ../include/symmet.h \
+  ../include/taymol.h  ../include/trkoor.h
 abandsym.o : abandsym.F \
   ../include/fcsym.h  ../include/implicit.h \
   ../include/mxcent.h  ../include/nuclei.h \
