@@ -6165,7 +6165,7 @@ C
 #include <trkoor.h>
 #include <huckel.h>
       LOGICAL EXHER, EXSIR, EXABA, BRKALS
-      CHARACTER FILENM*10, TMPLN*80
+      CHARACTER FILENM*10, TMPLN*80, TMPTXT*11
       DIMENSION GEINFO(0:ITRMAX,6), NONT(MXCENT)
       DIMENSION EVEC(MX2CRD,MX2CRD), CSTEP(MXCOOR)
       DIMENSION TMPMAT(NCRTOT*NCRTOT)
@@ -6352,7 +6352,14 @@ C
                      NCLINE(J) = NCLINE(J) + 1
  95               CONTINUE
                   TMPLN = MLINE(INSLIN + 1)
-                  WRITE(TMPLN(5:64),'(3F20.16)') COOX,COOY,COOZ
+                  IPOS = INDEX(TMPLN,'Isotope=')
+                  IF (IPOS .EQ. 0) THEN
+                     TMPTXT = '           '
+                  ELSE
+                     TMPTXT = TMPLN(IPOS:IPOS+11)
+                  END IF
+                  WRITE(TMPLN(5:75),'(3F20.16,1X,A11)') COOX,COOY,COOZ,
+     &                                                  TMPTXT
                   MLINE(INSLIN + 1) = TMPLN
                   NMLINE = NMLINE + 1
                   IXTRA = IXTRA + 1

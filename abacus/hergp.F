@@ -1506,7 +1506,7 @@ C  /* Deck dp0pri */
       RETURN
       END
 C  /* Deck cmmass */
-      SUBROUTINE CMMASS(GEOM,AMASS,NATTYP,ISOTOP,IPRINT)
+      SUBROUTINE CMMASS(GEOM,AMASS,NATTYP,NUMIS,IPRINT)
 C
 C     Determine center of mass from information in common blocks
 C     K.Ruud, june-94
@@ -1516,7 +1516,7 @@ C
 #include <maxaqn.h>
 #include <maxorb.h>
       DIMENSION GEOM(3*NATOMS), AMASS(NATOMS), NATTYP(NATOMS),
-     &          ISOTOP(MXCENT)
+     &          NUMIS(NATOMS)
 #include <orgcom.h>
 #include <nuclei.h>
 #include <cbisol.h>
@@ -1538,12 +1538,13 @@ C
      &                    *CORD(KCOOR,IATOM)
  30               CONTINUE
                   JATOM = JATOM + 1
+                  NUMIS(JATOM) = ISOTOP(IATOM)
                END IF
             END IF
  20      CONTINUE
  10   CONTINUE
 C
-      CALL VIBMAS(AMASS,TOTMAS,ISOTOP,NATTYP,JATOM,GEOM,CMXYZ,IPRINT)
+      CALL VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,JATOM,GEOM,CMXYZ,IPRINT)
       RETURN
       END
 C  /* Deck vibmas */
@@ -1593,8 +1594,8 @@ C
       IF (IPRINT .GE. 0) THEN
         WRITE (LUPRI,'(/23X,A,F12.6,A)') 'Total mass: ',TOTMAS,' amu'
         WRITE (LUPRI,'( 23X,A,F8.3,A/)') 'Natural abundance:',ABUND,' %'
-      END IF
-      IF (IPRINT .GE. 2) WRITE(LUPRI,'(//A,3F12.6)')
+        WRITE(LUPRI,'(//A,3F12.6)')
      &     ' Center-of-mass coordinates (A):',(ORIGIN(K),K=1,3)
+      END IF
       RETURN
       END

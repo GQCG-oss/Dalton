@@ -609,7 +609,7 @@ C           Output: VINRTI              - principal axes of inertia
 C                   AIMOM, BIMOM, CIMOM - principal moments of inertia
 C                   LINEAR              - true for linear molecules
 C
-         CALL ROTANA(GEOM,AMASS,TOTMAS,VINRTI,WRK(KORIG),
+         CALL ROTANA(GEOM,AMASS,VINRTI,WRK(KORIG),
      &               AIMOM,BIMOM,CIMOM,LINEAR,
      &               NATOMS,NCORD,IPRINT)
 C
@@ -695,7 +695,7 @@ C
       RETURN
       END
 C  /* Deck rotana */
-      SUBROUTINE ROTANA(GEOM,AMASS,TOTMAS,VINRTI,VCMNUC,
+      SUBROUTINE ROTANA(GEOM,AMASS,VINRTI,VCMNUC,
      &                  AIMOM,BIMOM,CIMOM,
      &                  LINEAR,NATOMS,NCORD,IPRINT)
 #include <implicit.h>

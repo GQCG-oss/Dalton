@@ -76,7 +76,7 @@ C*****************************************************************************
          KIROT = KROT + 5 * (MAXAXS + 1)
          KMIR = KIROT + 5 * (MAXAXS + 1)
          KTEMP = KMIR + 5 * (MAXMIR + 1)
-         KTEMP2 = KTEMP + 5 * (MAX(2*MXCENT,MXCENT+2*MAXAXS+MAXMIR) + 1)
+         KTEMP2 = KTEMP + 7 * (MAX(2*MXCENT,MXCENT+2*MAXAXS+MAXMIR) + 1)
          KLAST = KTEMP2 + 5 * (MXCENT + 1)
 	 IF (KLAST.GT.LWORK) CALL STOPIT('SYMADD',' ',KLAST,LWORK)
 	 LWRK = LWORK - KLAST + 1
@@ -108,9 +108,9 @@ C *   DIRAXS - Improper rotational axes
 C *   DMRPLN - Mirror planes
 C *   TMPARR + TMP2AR - Temporary arrays
 C ***********************************************************
-         DIMENSION ATMARR(5,0:MXCENT), DRTAXS(5,0:MAXAXS)
+         DIMENSION ATMARR(6,0:MXCENT), DRTAXS(5,0:MAXAXS)
          DIMENSION DIRAXS(5,0:MAXAXS), DMRPLN(5,0:MAXMIR)
-         DIMENSION TMPARR(5,0:LENTMP), WORK(LWORK)
+         DIMENSION TMPARR(7,0:LENTMP), WORK(LWORK)
          DIMENSION TMP2AR(5,0:MXCENT), NONT(KATOM)
          LOGICAL VRML
          PARAMETER (D0 = 0.0D0)
@@ -122,11 +122,11 @@ C ::: IPRTHR - Print level threshold for verbose output. :::
 C
 C     Just to make sure, we zero all temporary arrays
 C
-         CALL DZERO(ATMARR,5*(MXCENT + 1))
+         CALL DZERO(ATMARR,6*(MXCENT + 1))
          CALL DZERO(DRTAXS,5*(MAXAXS + 1))
          CALL DZERO(DIRAXS,5*(MAXAXS + 1))
          CALL DZERO(DMRPLN,5*(MAXMIR + 1))
-         CALL DZERO(TMPARR,5*(LENTMP + 1))
+         CALL DZERO(TMPARR,7*(LENTMP + 1))
          CALL DZERO(TMP2AR,5*(MXCENT + 1))
 C         IF (SOLVNT .OR. DORLM) THEN
 C	    NUCLP = NUCIND - 1
@@ -139,13 +139,14 @@ C	 END IF
             ATMARR(3,I) = CORD(3,I)
             ATMARR(4,I) = ANINT(CHARGE(I))
             ATMARR(5,I) = FLOAT(I)
+            ATMARR(6,I) = FLOAT(ISOTOP(I))
  100	 CONTINUE
          ATMARR(1,0)= FLOAT(I - 1)
          IF (IPREAD .GE. IPRTHR) THEN
             TEXT = 'Original Coordinates                    '
             CALL PRNARR(TEXT, MXCENT, ATMARR)
          END IF
-         CALL SRTATM(MXCENT, ATMARR, .TRUE.)
+         CALL SRTATM(MXCENT, 6, ATMARR, .TRUE.)
 	 IF (.NOT. NOMOVE) THEN
  	    CALL CNTRML(MXCENT, ATMARR)
  	 END IF
@@ -249,6 +250,7 @@ C ::: Then the different elements are counted, and arrays updated. :::
             NAMEX(3*I)   = NAMN(I)//'z'
             NAMEX(3*I-1) = NAMN(I)//'y'
             NAMEX(3*I-2) = NAMN(I)//'x'
+	    ISOTOP(I) = NINT(ATMARR(6,I))
  275     CONTINUE
          NUCIND = NINT(ATMARR(1,0))
          DO 300 I = NUCIND + 1, KATOM
@@ -260,6 +262,7 @@ C ::: Then the different elements are counted, and arrays updated. :::
             CORD(2,I) = D0
             CORD(3,I) = D0
             CHARGE(I) = D0
+	    ISOTOP(I) = 1
  300     CONTINUE
 C ::: We update the coordinates of the input file :::
          DO 400 I = 1, NUCIND
@@ -268,6 +271,9 @@ C ::: We update the coordinates of the input file :::
             WRITE(TMPLN(5:24),'(F20.14)') CORD(1,I)
             WRITE(TMPLN(25:44),'(F20.14)') CORD(2,I)
             WRITE(TMPLN(45:64),'(F20.14)') CORD(3,I)
+	    QMASS = DISOTP(NINT(CHARGE(I)),ISOTOP(I),'MASS')
+	    IF (ISOTOP(I) .GT. 1) WRITE(TMPLN(66:76),'(A8,I3)')
+     &                            'Isotope=', NINT(QMASS)
             MLINE(NC) = TMPLN
  400     CONTINUE
 C ::: Finally the number of atoms are updated. :::
@@ -311,7 +317,7 @@ C ::::::::::::::::::::::::::::::::::::::::::::::
 #include <priunit.h>
          CHARACTER*40 TEXT
          CHARACTER*40 UNDER
-         DIMENSION ARR(5,0:MXM)
+         DIMENSION ARR(6,0:MXM)
          UNDER = '----------------------------------------'
          I = 40
  10      CONTINUE
@@ -322,8 +328,8 @@ C ::::::::::::::::::::::::::::::::::::::::::::::
          UNDER((I+1):40) = '                                        '
          WRITE(LUPRI,'(/1X,A/1X,A)') TEXT, UNDER
          DO 200 I=1,NINT(ARR(1,0))
-            WRITE (LUPRI,11) NINT(ARR(4,I)), (ARR(J,I), J=1,3)
- 11         FORMAT (1X, T5, I3, T10, 3F15.8)
+            WRITE (LUPRI,11) NINT(ARR(4,I)), (ARR(J,I), J=1,3), ARR(6,I)
+ 11         FORMAT (1X, T5, I3, T10, 3F15.8,T2,I3)
  200     CONTINUE
          RETURN
       END
@@ -454,7 +460,7 @@ C :::::::::::::::::::::::::::::::::::::::::::::
 #include <mxsymm.h>
          DIMENSION ATMARR(5,0:MXM), V1(3), V2(3)
          N = NINT(ATMARR(1,0))
-         CALL SRTATM(MXM, ATMARR, .TRUE.)
+         CALL SRTATM(MXM, 6, ATMARR, .TRUE.)
          I = 1
  100     CONTINUE
          IF (I .LT. N) THEN
@@ -491,7 +497,7 @@ C ::: Subtracting two position yields a zero vector for duplicate atoms. :::
          RETURN
       END
 C  /* Deck srtatm */
-      SUBROUTINE SRTATM(IUPPER, ARR, USENRM)
+      SUBROUTINE SRTATM(IUPPER, ILOWER, ARR, USENRM)
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 C ::                                                                      ::
 C ::       Sorts atoms after atom number and distance from origo.         ::
@@ -501,7 +507,7 @@ C ::       The method used is bubble sorting.                             ::
 C ::                                                                      ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include <implicit.h>
-         DIMENSION ARR(5,0:IUPPER)
+         DIMENSION ARR(ILOWER,0:IUPPER)
          DIMENSION ATM1(3), ATM2(3)
          LOGICAL USENRM, SORTED
          N = NINT(ARR(1,0))
@@ -517,16 +523,33 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
                ATM2(1)=ARR(1,J+1)
                ATM2(2)=ARR(2,J+1)
                ATM2(3)=ARR(3,J+1)
-               IF ((NINT(ARR(4,J+1)) .GT. NINT(ARR(4,J))) .OR.
+	       IF (ILOWER .EQ. 6) THEN
+		  IF ((NINT(ARR(4,J+1)) .GT. NINT(ARR(4,J))) .OR.
+     &        ((NINT(ARR(4,J+1)) .EQ. NINT(ARR(4,J))) .AND.
+     &         (NINT(ARR(6,J+1)) .GT. NINT(ARR(6,J)))) .OR.
+     &        ((NINT(ARR(4,J+1)) .EQ. NINT(ARR(4,J))) .AND. 
+     &         (NINT(ARR(6,J+1)) .EQ. NINT(ARR(6,J))) .AND. USENRM .AND.
+     &        ((ATM1(1)*ATM1(1)+ATM1(2)*ATM1(2)+ATM1(3)*ATM1(3)).LT.
+     &        (ATM2(1)*ATM2(1)+ATM2(2)*ATM2(2)+ATM2(3)*ATM2(3)))))THEN
+                     DO 300 K = 1, 6
+			TEMP = ARR(K,J)
+			ARR(K,J) = ARR(K,J+1)
+			ARR(K,J+1) = TEMP
+ 300		     CONTINUE
+		     SORTED = .FALSE.
+		  END IF
+	       ELSE
+		  IF ((NINT(ARR(4,J+1)) .GT. NINT(ARR(4,J))) .OR.
      &        ((NINT(ARR(4,J+1)) .EQ. NINT(ARR(4,J))) .AND. USENRM .AND.
      &        ((ATM1(1)*ATM1(1)+ATM1(2)*ATM1(2)+ATM1(3)*ATM1(3)).LT.
      &        (ATM2(1)*ATM2(1)+ATM2(2)*ATM2(2)+ATM2(3)*ATM2(3)))))THEN
-                  DO 300 K = 1, 5
-                     TEMP = ARR(K,J)
-                     ARR(K,J) = ARR(K,J+1)
-                     ARR(K,J+1) = TEMP
- 300              CONTINUE
-                  SORTED = .FALSE.
+		     DO K = 1, 5
+			TEMP = ARR(K,J)
+			ARR(K,J) = ARR(K,J+1)
+			ARR(K,J+1) = TEMP
+		     END DO
+		     SORTED = .FALSE.
+		  END IF
                END IF
  200        CONTINUE
             I = I + 1
@@ -543,7 +566,7 @@ C ::       is bubble sorting.                                      ::
 C ::                                                               ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include <implicit.h>
-         DIMENSION ARR(5,0:IUPPER)
+         DIMENSION ARR(6,0:IUPPER)
          DIMENSION ATM1(3), ATM2(3)
          LOGICAL SORTED
          N = NINT(ARR(1,0))
@@ -560,7 +583,7 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
                ATM2(2)=ARR(2,J+1)
                ATM2(3)=ARR(3,J+1)
                IF (NINT(ARR(5,J)) .GT. NINT(ARR(5,J+1))) THEN
-                  DO 300 K = 1, 5
+                  DO 300 K = 1, 6
                      TEMP = ARR(K,J)
                      ARR(K,J) = ARR(K,J+1)
                      ARR(K,J+1) = TEMP
@@ -581,25 +604,26 @@ C ::       Centres molecule in space       ::
 C ::                                       ::
 C :::::::::::::::::::::::::::::::::::::::::::
 #include <implicit.h>
-         DIMENSION ATMARR(5,0:MXM), SUM(3)
+         DIMENSION ATMARR(6,0:MXM), SUM(3)
          N = NINT(ATMARR(1,0))
          SUM(1) = 0.0D0
          SUM(2) = 0.0D0
          SUM(3) = 0.0D0
 C ::: Finds the three coordinates of the center of mass, then the molecule :::
 C ::: is moved so that the center of mass coincides with the origin.        :::
+	 TOTMAS = 0.0D0
          DO 100 I=1,N
-               SUM(1) = SUM(1) + ATMARR(1,I)
-               SUM(2) = SUM(2) + ATMARR(2,I)
-               SUM(3) = SUM(3) + ATMARR(3,I)
+	       AMASS = DISOTP(NINT(ATMARR(4,I)),NINT(ATMARR(6,I)),'MASS')
+	       TOTMAS = TOTMAS + AMASS
+               SUM(1) = SUM(1) + ATMARR(1,I)*AMASS
+               SUM(2) = SUM(2) + ATMARR(2,I)*AMASS
+               SUM(3) = SUM(3) + ATMARR(3,I)*AMASS
  100     CONTINUE
-         IF (N .GT. 0) THEN
-            DO 200 I=1,N
-               ATMARR(1,I) = ATMARR(1,I) - SUM(1)/N
-               ATMARR(2,I) = ATMARR(2,I) - SUM(2)/N
-               ATMARR(3,I) = ATMARR(3,I) - SUM(3)/N
- 200        CONTINUE
-         END IF
+	 DO 200 I=1,N
+	    ATMARR(1,I) = ATMARR(1,I) - SUM(1)/TOTMAS
+	    ATMARR(2,I) = ATMARR(2,I) - SUM(2)/TOTMAS
+	    ATMARR(3,I) = ATMARR(3,I) - SUM(3)/TOTMAS
+ 200	 CONTINUE
          RETURN
       END
 C  /* Deck rotmol */
@@ -612,7 +636,7 @@ C ::                                                         ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include <implicit.h>
 #include <mxsymm.h>
-         DIMENSION ATMARR(5,0:MXM), AXVEC(3), V1(3),V2(3),V3(3),V4(3)
+         DIMENSION ATMARR(6,0:MXM), AXVEC(3), V1(3),V2(3),V3(3),V4(3)
          AXNRM=SQRT(AXVEC(1)*AXVEC(1) + AXVEC(2)*AXVEC(2) +
      &                                           AXVEC(3)*AXVEC(3))
          AXVEC(1) = AXVEC(1)/AXNRM
@@ -672,10 +696,10 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include <implicit.h>
 #include <priunit.h>
 #include <mxsymm.h>
-         DIMENSION ATMARR(5, 0:MXM), DRTAXS(5, 0:MAXAXS)
+         DIMENSION ATMARR(6, 0:MXM), DRTAXS(5, 0:MAXAXS)
          DIMENSION DIRAXS(5, 0:MAXAXS), DMRPLN (5, 0:MAXMIR)
-         DIMENSION V1(3), V2(3), V3(3), TMPARR(5, 0:LENTMP)
-         CALL DZERO(TMPARR,5*LENTMP)
+         DIMENSION V1(3), V2(3), V3(3), TMPARR(6, 0:LENTMP)
+         CALL DZERO(TMPARR,6*LENTMP)
          N = NINT(ATMARR(1,0))
          NTOT= N + NINT(DRTAXS(1,0) + DMRPLN(1,0))
 C ::: First we make a new array of vectors, consisting of mirror :::
@@ -719,6 +743,7 @@ ckr	    IF ((NINT(DRTAXS(4,I)) .GT. 2) .AND.
 	       TMPARR(K,J) = ATMARR(K,I)
  135	    CONTINUE
 	    TMPARR(4,J) = 0.0D0
+	    TMPARR(6,J) = 1.0D0
 	    J = J + 1
  130	 CONTINUE
 	 NTOT = J - 1
@@ -812,7 +837,7 @@ C ::                                              ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::
 #include <implicit.h>
 #include <mxsymm.h>
-         DIMENSION ATMARR(5,0:MXM), V1(3), V2(3), V3(3)
+         DIMENSION ATMARR(6,0:MXM), V1(3), V2(3), V3(3)
          N = NINT(ATMARR(1,0))
          LINMOL = .TRUE.
          IF (N .GT. 2) THEN
@@ -848,7 +873,7 @@ C ::                                              ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::
 #include <implicit.h>
 #include <mxsymm.h>
-         DIMENSION ATMARR(5,0:MXM), V1(3), V2(3), V3(3)
+         DIMENSION ATMARR(6,0:MXM), V1(3), V2(3), V3(3)
          LOGICAL LINMOL
          N = NINT(ATMARR(1,0))
          PLNMOL = .TRUE.
@@ -909,7 +934,7 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include <implicit.h>
 #include <mxsymm.h>
 #include <mxcent.h>
-         DIMENSION ATMARR(5,0:MXM), V1(3)
+         DIMENSION ATMARR(6,0:MXM), V1(3)
          DIMENSION IUSED(MXCENT)
          N = NINT(ATMARR(1,0))
          CALL IZERO(IUSED,MXCENT)
@@ -935,7 +960,8 @@ C ::: We then proceed with the rest of the atoms, trying to pair them. :::
                J = I + 1
  250           CONTINUE
                   IF ((IUSED(I) .EQ. 0) .AND. (J .LE. N)) THEN
-                     IF (NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J))) THEN
+                     IF (NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J)) .AND.
+     &                   NINT(ATMARR(6,I)) .EQ. NINT(ATMARR(6,J))) THEN
                         V1(1) = ATMARR(1,I) + ATMARR(1,J)
                         V1(2) = ATMARR(2,I) + ATMARR(2,J)
                         V1(3) = ATMARR(3,I) + ATMARR(3,J)
@@ -973,7 +999,7 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include <implicit.h>
 #include <mxcent.h>
 #include <mxsymm.h>
-         DIMENSION ORGARR(5,0:MXM), ATMARR(5,0:MXM), VEC(3)
+         DIMENSION ORGARR(6,0:MXM), ATMARR(6,0:MXM), VEC(3)
          DIMENSION VROT(3), V1(3), IUSED(MXCENT)
          N = NINT(ORGARR(1,0))
 C ::: Instead of working on the original coordinates, we make a copy.   :::
@@ -983,6 +1009,7 @@ C ::: By doing so, no numerical error is built up by repeated rotation. :::
             ATMARR(2,I) = ORGARR(2,I)
             ATMARR(3,I) = ORGARR(3,I)
             ATMARR(4,I) = ORGARR(4,I)
+            ATMARR(6,I) = ORGARR(6,I)
  100     CONTINUE
 C ::: The molecule is rotated so that the possible mirror plane lies :::
 C ::: in the XY-plane.                                               :::
@@ -1010,7 +1037,8 @@ C ::: Then we go through the rest, trying to find each atoms mirror image :::
                J = I + 1
  350           CONTINUE
                IF ((IUSED(I) .EQ. 0) .AND. (J .LE. N) .AND.
-     &              (NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J)))) THEN
+     &              (NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J))) .AND.
+     &              (NINT(ATMARR(6,I)) .EQ. NINT(ATMARR(6,J)))) THEN
 C ::: The possible mirror atom's position is investigated. First, we :::
 C ::: subtract the XY-comp. of the first atom. If the two project    :::
 C ::: into the same point in the XY-plane, Atom #2 only has its      :::
@@ -1052,7 +1080,7 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include <mxsymm.h>
 #include <mxcent.h>
 #include <priunit.h>
-         DIMENSION ORGARR(5,0:MXM), ATMARR(5,0:2*MXM), ROTVEC(3)
+         DIMENSION ORGARR(6,0:MXM), ATMARR(6,0:2*MXM), ROTVEC(3)
          LOGICAL PROPER,EQL
          DIMENSION VROT(3), V1(3), V2(3)
          DIMENSION IUSED(2*MXCENT)
@@ -1069,6 +1097,7 @@ C ::: The original matrix is copied. :::
             ATMARR(2,I) = ORGARR(2,I)
             ATMARR(3,I) = ORGARR(3,I)
             ATMARR(4,I) = ORGARR(4,I)
+            ATMARR(6,I) = ORGARR(6,I)
  100     CONTINUE
 C
          TEMP=SQRT(ROTVEC(1)*ROTVEC(1)+ROTVEC(2)*ROTVEC(2)+
@@ -1101,6 +1130,7 @@ C ::: a non-zero z-coordinate (after rotation).                     :::
 		  ATMARR(2,IND) = ATMARR(2,I)
 		  ATMARR(3,IND) = -ATMARR(3,I)
 		  ATMARR(4,IND) = -ATMARR(4,I)
+		  ATMARR(6,IND) = ATMARR(6,I)
 		  IND = IND + 1
 	       END IF
  150	    CONTINUE
@@ -1130,9 +1160,11 @@ C ::: We take the XY-component. :::
                IORD = 1
  350           CONTINUE
 	       IF (PROPER) THEN
-		  EQL = (NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J)))
+		  EQL = (NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J)) .AND.
+     &                   NINT(ATMARR(6,I)) .EQ. NINT(ATMARR(6,J)))
 	       ELSE
-		  EQL = (NINT(ATMARR(4,I)) .EQ. -NINT(ATMARR(4,J)))
+		  EQL = (NINT(ATMARR(4,I)) .EQ. -NINT(ATMARR(4,J)) .AND.
+     &                   NINT(ATMARR(6,I)) .EQ. NINT(ATMARR(6,J)))
 		  IF ((J .LT. N) .AND. (.NOT. EQL)) THEN
 		     J = J + 1
 		     GOTO 350
@@ -1190,8 +1222,8 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include <mxsymm.h>
 #include <mxcent.h>
 #include <priunit.h>
-         DIMENSION ATMARR(5,0:MXM), DRTAXS(5,0:MAXAXS)
-         DIMENSION TMPARR(5,0:2*MXM)
+         DIMENSION ATMARR(6,0:MXM), DRTAXS(5,0:MAXAXS)
+         DIMENSION TMPARR(6,0:2*MXM)
          DIMENSION V1(3), V2(3), V3(3), VSTORE(3)
          DIMENSION ICNT(2), IUSED(2*MXCENT)
          LOGICAL ROTAXS, PROP
@@ -1212,7 +1244,8 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 C ::: We have to make sure we get all the equivalent atoms. :::
  105        CONTINUE
             IF ((J .GT. 1) .AND.
-     &           (NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J - 1)))) THEN
+     &           (NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J - 1))) .AND.
+     &           (NINT(ATMARR(6,I)) .EQ. NINT(ATMARR(6,J - 1)))) THEN
                J = J - 1
                GOTO 105
             END IF
@@ -1227,6 +1260,7 @@ C ::: The number of equivalent atoms are counted. :::
  110        CONTINUE
             IF ((J .LE. N) .AND.
      &        (NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J))) .AND.
+     &        (NINT(ATMARR(6,I)) .EQ. NINT(ATMARR(6,J))) .AND.
      &        (((V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3)) -
      &          (V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(3))) .LT.
      &                                      TOLLRN*TOLLRN)) THEN
@@ -1471,7 +1505,7 @@ C ::: The easiest case is when the atoms define the only possible axis. :::
             GOTO 100
          END IF
          CALL DLDPAX(MAXAXS, DRTAXS)
-         CALL SRTATM(MAXAXS, DRTAXS, .FALSE.)
+         CALL SRTATM(MAXAXS, 5, DRTAXS, .FALSE.)
          RETURN
       END
 C  /* Deck fndima */
@@ -1483,8 +1517,8 @@ C ::                                                                ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include <implicit.h>
 #include <mxsymm.h>
-         DIMENSION ATMARR(5,0:MXM), AXIMAR(5,0:MAXAXS)
-         DIMENSION AXARR(5,0:MAXAXS), TMPARR(5,0:2*MXM)
+         DIMENSION ATMARR(6,0:MXM), AXIMAR(5,0:MAXAXS)
+         DIMENSION AXARR(5,0:MAXAXS), TMPARR(6,0:2*MXM)
          DIMENSION V1(3), V2(3)
          N = NINT(ATMARR(1,0))
 C ::: And we call upon FindAx to find all axes for this molecule. :::
@@ -1532,8 +1566,8 @@ C ::                                                     ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include <implicit.h>
 #include <mxsymm.h>
-         DIMENSION ATMARR(5,0:MXM), DMRARR(5,0:MAXMIR)
-         DIMENSION AXARR(5,0:MAXAXS), TMPARR(5,0:MXM)
+         DIMENSION ATMARR(6,0:MXM), DMRARR(5,0:MAXMIR)
+         DIMENSION AXARR(5,0:MAXAXS), TMPARR(6,0:MXM)
          DIMENSION V1(3), V2(3), V3(3), VSTORE(3)
          LOGICAL MIRMOL, PLNMOL, LINMOL
          DMRARR(1,0) = 0.0D0
@@ -1562,8 +1596,10 @@ C ::: information to test a mirror plane.                                :::
             V1(3) = ATMARR(3,I)
             J = I + 1
             IATMNR = NINT(ATMARR(4,I))
+            IATMms = NINT(ATMARR(6,I))
  210        CONTINUE
-            IF ((J .LE. N) .AND. (NINT(ATMARR(4,J)) .EQ. IATMNR)) THEN
+            IF ((J .LE. N) .AND. (NINT(ATMARR(4,J)) .EQ. IATMNR) .AND.
+     &                           (NINT(ATMARR(6,J)) .EQ. IATMMS)) THEN
                V2(1) = ATMARR(1,J)
                V2(2) = ATMARR(2,J)
                V2(3) = ATMARR(3,J)
@@ -1675,7 +1711,7 @@ C ::: The rest must be diagonal/undecided. :::
                   DMRARR(4,I) = 0.0D0
                END IF
  300        CONTINUE
-            CALL SRTATM(MAXMIR, DMRARR, .FALSE.)
+            CALL SRTATM(MAXMIR, 5, DMRARR, .FALSE.)
          END IF
          RETURN
       END
@@ -1690,9 +1726,9 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include <implicit.h>
 #include <mxsymm.h>
 #include <priunit.h>
-         DIMENSION ATMARR(5,0:MXM), DRTAXS(5,0:MAXAXS)
+         DIMENSION ATMARR(6,0:MXM), DRTAXS(5,0:MAXAXS)
          DIMENSION DIRAXS(5,0:MAXAXS), DMRPLN(5,0:MAXMIR)
-         DIMENSION TMPARR(5,0:2*MXM)
+         DIMENSION TMPARR(6,0:2*MXM)
          DIMENSION V1(3), V2(3)
          CHARACTER*15 CLASS
          LOGICAL LINMOL, INVMOL
@@ -1811,8 +1847,8 @@ C ::       Test pair of atoms for given operation       ::
 C ::                                                    ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include <implicit.h>
-         DIMENSION ARR(6, 0:MXM), TARR(5, 0:MXM)
-         DIMENSION TMPARR(5, 0:2), VEC(3)
+         DIMENSION ARR(7, 0:MXM), TARR(6, 0:MXM)
+         DIMENSION TMPARR(6, 0:2), VEC(3)
          LOGICAL GENELM, MIRMOL, ROTAXS, INVMOL
          GENELM = .FALSE.
          TMPARR(1,0) = 2.0D0
@@ -1820,6 +1856,8 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
             TMPARR(I,1) = ARR(I, IATNO1)
             TMPARR(I,2) = ARR(I, IATNO2)
  100     CONTINUE
+	 TMPARR(6,1) = ARR(6, IATNO1)
+	 TMPARR(6,2) = ARR(6, IATNO2)
 C ::: The icode determines what should be tested     :::
 C ::: 1 - mirror plane   2 - C2 axis   3 - inversion :::
          IF (((ICODE .EQ. 1) .AND. (MIRMOL(2,TMPARR, TARR, VEC))) .OR.
@@ -1833,11 +1871,11 @@ C     &                          (NINT(ARR(6,IATNO2)) .EQ. 0))
                TEMP = TEMP + TMPARR(I,1) - TMPARR(I,2)
  110        CONTINUE
 	    IF (TEMP .GT. 0.0D0) THEN
-	       GENELM = (NINT(ARR(6,IATNO2)) .LT. 1)
-	       ARR(6, IATNO2) = ANINT(ARR(6,IATNO2)+1.0D0)
+	       GENELM = (NINT(ARR(7,IATNO2)) .LT. 1)
+	       ARR(7, IATNO2) = ANINT(ARR(7,IATNO2)+1.0D0)
 	    ELSE
-	       GENELM = (NINT(ARR(6,IATNO1)) .LT. 1)
-	       ARR(6, IATNO1) = ANINT(ARR(6,IATNO1)+1.0D0)
+	       GENELM = (NINT(ARR(7,IATNO1)) .LT. 1)
+	       ARR(7, IATNO1) = ANINT(ARR(7,IATNO1)+1.0D0)
             END IF
          END IF
          RETURN
@@ -1846,7 +1884,7 @@ C  /* Deck reduce */
       SUBROUTINE REDUCE(MXM, ATMARR, EXTARR, TMPARR, SYMELM)
 C :::::::::::::::::::::::::::::::::::::::::::::::::
 C ::                                             ::
-C ::       Removes symmetry-dependant atoms      ::
+C ::       Removes symmetry-dependent atoms      ::
 C ::                                             ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::
 #include <implicit.h>
@@ -1854,17 +1892,17 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::
 #include <mxcent.h>
 #include <molinp.h>
 #include <priunit.h>
-         DIMENSION ATMARR(5, 0:MXM), EXTARR(6, 0:MXM)
-         DIMENSION TMPARR(5, 0:MXM), V1(3), V2(3), V3(3)
+         DIMENSION ATMARR(6, 0:MXM), EXTARR(7, 0:MXM)
+         DIMENSION TMPARR(6, 0:MXM), V1(3), V2(3), V3(3)
          CHARACTER STRING*9, SYMELM*(*)
          LOGICAL MIRMOL, ROTAXS, INVMOL, NECESS, GENELM
          N = NINT(ATMARR(1,0))
          EXTARR(1,0) = 1.0D0*N
          DO 100 I = 1, N
-            DO 110 J = 1, 5
+            DO 110 J = 1, 6
                EXTARR(J,I) = ATMARR(J,I)
  110        CONTINUE
-            EXTARR(6,I) = 0.0D0
+            EXTARR(7,I) = 0.0D0
  100     CONTINUE
          IELMNT = 0
          SYMELM = '         '
@@ -1881,11 +1919,12 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::
  130           CONTINUE
                IF (J .LT. N) THEN
                   IF ((ABS(EXTARR(I,J)) .GT. TOLLRN) .AND.
-     &                 (NINT(EXTARR(6,J)) .EQ. 0)) THEN
+     &                 (NINT(EXTARR(7,J)) .EQ. 0)) THEN
                      K = J + 1
  150                 CONTINUE
                      IF ((K .LE. N) .AND.
-     &                (NINT(EXTARR(4,K)) .EQ. NINT(EXTARR(4,J)))) THEN
+     &                (NINT(EXTARR(4,K)) .EQ. NINT(EXTARR(4,J))) .AND.
+     &                (NINT(EXTARR(6,K)) .EQ. NINT(EXTARR(6,J)))) THEN
                        CALL TSTPAR(MXM,EXTARR,TMPARR,J,K,1,V1,GENELM)
                         K = K + 1
                         GOTO 150
@@ -1920,7 +1959,8 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::
                      K = J + 1
  260                 CONTINUE
                      IF ((K .LE. N) .AND.
-     &                (NINT(EXTARR(4,K)) .EQ. NINT(EXTARR(4,J)))) THEN
+     &                (NINT(EXTARR(4,K)) .EQ. NINT(EXTARR(4,J))) .AND.
+     &                (NINT(EXTARR(6,K)) .EQ. NINT(EXTARR(6,J)))) THEN
                         CALL TSTPAR(MXM,EXTARR,TMPARR,J,K,2,V1,GENELM)
                         IF (GENELM) NECESS = .TRUE.
                         K = K + 1
@@ -1964,11 +2004,12 @@ C ::: (another dirty solution!!!)                                     :::
                   V2(2) = EXTARR(2,J)
                   V2(3) = EXTARR(3,J)
                   IF ((V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(3) .GT.
-     &              TOLLRN*TOLLRN).AND.(NINT(EXTARR(6,J)).EQ.0)) THEN
+     &              TOLLRN*TOLLRN).AND.(NINT(EXTARR(7,J)).EQ.0)) THEN
                      K = J + 1
  360                 CONTINUE
                      IF ((K .LE. N) .AND.
-     &                (NINT(EXTARR(4,K)) .EQ. NINT(EXTARR(4,J)))) THEN
+     &                (NINT(EXTARR(4,K)) .EQ. NINT(EXTARR(4,J))) .AND.
+     &                (NINT(EXTARR(6,K)) .EQ. NINT(EXTARR(6,J)))) THEN
                         CALL TSTPAR(MXM,EXTARR,TMPARR,J,K,3,V1,GENELM)
                         K = K + 1
                         GOTO 360
@@ -1982,8 +2023,8 @@ C ::: (another dirty solution!!!)                                     :::
 C ::: All symmetry dependant atoms are removed. :::
          I = 1
          DO 600 J = 1, N
-            IF (NINT(EXTARR(6,J)) .EQ. 0) THEN
-               DO 610 K = 1, 5
+            IF (NINT(EXTARR(7,J)) .EQ. 0) THEN
+               DO 610 K = 1, 6
                   ATMARR(K,I) = EXTARR(K,J)
  610           CONTINUE
                DO 615 K = 1, 3
@@ -2023,7 +2064,7 @@ C
         CHARACTER*(*) SYMELM
         CHARACTER*2 ROTAXS
 C
-        DIMENSION ATMARR(5, 0:MXM), IATAXS(3), ONAXS(3), HAVAXS(3),
+        DIMENSION ATMARR(6, 0:MXM), IATAXS(3), ONAXS(3), HAVAXS(3),
      &            ROTAXS(3)
 C
         ROTAXS(1) = 'YZ'

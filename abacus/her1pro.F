@@ -1635,13 +1635,13 @@ C
      &    '********* '
           DO IATOMC=1,NUCIND
              WRITE (LUPRI,'(I4,I7,3X,F9.5,F15.8,6X,I3,F14.6)')
-     &             IATOMC,ISOTPV(IATOMC),CHARGE(IATOMC),
+     &             IATOMC,ISOTOP(IATOMC),CHARGE(IATOMC),
      &             DISOTP(NINT(CHARGE(IATOMC)),
-     &             ISOTPV(IATOMC),'MASS'),
+     &             ISOTOP(IATOMC),'MASS'),
      &             NINT(DISOTP(NINT(CHARGE(IATOMC)),
-     &             ISOTPV(IATOMC),'NEUTRONS')),
+     &             ISOTOP(IATOMC),'NEUTRONS')),
      &             (DISOTP(NINT(CHARGE(IATOMC)),
-     &             ISOTPV(IATOMC),'NEUTRONS')-BGWEIN*CHARGE(IATOMC))
+     &             ISOTOP(IATOMC),'NEUTRONS')-BGWEIN*CHARGE(IATOMC))
           END DO
         END IF
         INTTYP = 80

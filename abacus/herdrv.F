@@ -237,7 +237,7 @@ C
      &             '.SOMAGM', '.DEROVL', '.DERHAM', '.ELGDIA', 
      &             '.ELGDIL', '.MNF-SO', '.DPTOVL', '.DPTPOT', 
      &             '.XDDXR3', '.AD2DAR', '.PVIOLA', '.WEINBG', 
-     &             '.ISOTOP', '.FNPROP', '.PVP   ', '.1ELPOT',
+     &             '.XXXXXX', '.FNPROP', '.PVP   ', '.1ELPOT',
      &             '.QDBINT', '.QDBTST'/
 C
 C     Check if input has been processed earlier.
@@ -747,11 +747,6 @@ C&&& Nuclear model
             BGWEIN = D1 - D4*BGWEIN
             GOTO 100   
  197     CONTINUE
-            READ (LUCMD, *) NISOPV
-            DO I = 1, NISOPV
-                READ (LUCMD, *) IOLD,INEW
-                ISOTPV(IOLD) = INEW
-            END DO
             GOTO 100 
  198     CONTINUE
             READ (LUCMD, *) X10FNP
@@ -1150,22 +1145,10 @@ C
       CALL GPCLOSE(LUCMD,'KEEP')
       IF (TSTINP) CALL GPCLOSE(LUONEL,' ')
       IF (THRSUP .LT. 0.0D0) THRSUP = THRS
-      IF (DORLM .AND. .NOT. CAVUSR) THEN
-         DO 334 I = 1, MXCENT
-            ISOTOP(I) = 1
- 334     CONTINUE
-         KGEOM = 1
-         KMASS = KGEOM + 3*NATOMS
-         KNAT  = KMASS + NATOMS
-         KLAST = KNAT + (NATOMS + 1)/IRAT
-         IF (KLAST .GT. LWORK) CALL STOPIT('HERDRV','CMMASS',KLAST,
-     &                                     LWORK)
-         CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),ISOTOP,IPRDEF)
-         CALL DCOPY(3,CMXYZ,1,CAVORG,1)
-         WRITE(LUPRI,'(/A,3F12.6)') ' Cavity center (center of mass):',
-     &                               (CAVORG(I), I = 1, 3)
-      END IF
 C
+      IF (DORLM .AND. .NOT. CAVUSR)
+     &   WRITE(LUPRI,'(/A,3F12.6)') ' Cavity center (center of mass):',
+     &                               (CAVORG(I), I = 1, 3)
       RETURN
 C
       END
@@ -2955,9 +2938,6 @@ C
       PVFINN = 1.D0
       BGWEIL = .FALSE.
       PVIOLA = .FALSE.
-      DO I = 1, MXCENT
-         ISOTPV(I) = 1
-      END DO
 C
       RETURN
       END

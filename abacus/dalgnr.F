@@ -168,7 +168,7 @@ C
          P4FLAG(I) = P4FLGB(I)
          P6FLAG(I) = P6FLGB(I)
  200  CONTINUE
-      IPRI4  = IPRI4B
+      IPRI4  = IPRI4B - 2
       IPRI6  = IPRI6B
       IPRSIR = IPRSRB
       IPRCNO = IPRCNB

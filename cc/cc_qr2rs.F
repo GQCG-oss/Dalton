@@ -687,7 +687,7 @@ C
      *          F11.8,A,F11.8)') 
      *    MODEL(1:6),
      *    'Transition strength matrix for (',ISYMI,',',IEXI,') -> (', 
-     *    ISYMF,',',IEXF,') transtion',
+     *    ISYMF,',',IEXF,') transition',
      *    ' Excitation energies:',EIGVI,EIGVF,' and f-i energy ',EIGVFI     
       IF (LDIP) THEN
          WRITE(LUPRI,'(1X,A)') 'Dipole gauge'
@@ -734,7 +734,7 @@ C
      *          F11.8,A,F11.8/)') 
      *    MODEL(1:6),
      *    'Oscillator strength matrix for (',ISYMI,',',IEXI,') -> (', 
-     *    ISYMF,',',IEXF,') transtion',
+     *    ISYMF,',',IEXF,') transition',
      *    ' Excitation energies:',EIGVI,EIGVF,' and f-i energy ',EIGVFI     
       CALL OUTPUT(OSC,1,3,1,3,3,3,1,LUPRI)
       CALL  TNSRAN(OSC,PVAL,PAXIS,

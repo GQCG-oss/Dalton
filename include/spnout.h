@@ -2,4 +2,4 @@
      &        FCFIN, SPNISO, NCSPNI
       COMMON /SPNOUT/ ABUND, ISPPRI, DOSD, DODSO, DOFC, DOPSO,
      &                DOSDFC, DOSELE, ANISON, FCFIN, SPNISO,
-     &                NUCSPI, NCSPNI(MXCENT)
+     &                NUCSPI, NCSPNI(MXCENT), ISOTPS(MXCENT)

@@ -625,7 +625,7 @@ C
      &             '.MAGNET', '.SPIN-S', '.NMR   ',
      &             '.NACME ', '.NOLOND', '.NOHESS',
      &             '.WRTINT', '.ECD   ', '.NODIFC',
-     &             '.MOLGFA', '.SPIN-R', '.ISOTOP',
+     &             '.MOLGFA', '.SPIN-R', '.XXXXXX',
      &             '.PHASEO', '.NOMASV', '.NODARW',
      &             '.ABALNR', '.VROA  ', 'XXXXXXX',
      &             'XXXXXXX', '.HELLMA', '.NOCMC ',
@@ -662,7 +662,6 @@ C     Initialize /ABAINF/
 C
       IPRDEF = IPRUSR
       NWNABA = 0
-      NIS    = 0
       POLAR  = .FALSE.
       TSTINP = .FALSE.
       RESTAR = .FALSE.
@@ -718,9 +717,6 @@ C
       OPTROT = .FALSE.
       LINCPL = .FALSE.
       SKIPAB = .FALSE.
-      DO 41 I = 1, MXCENT
-         ISOTOP(I) = 1
- 41   CONTINUE
       CALL DZERO(ORIGIN,3)
       CALL DZERO(CMXYZ,3)
       CALL DZERO(DIPORG,3)
@@ -857,6 +853,7 @@ C
                MOLHES = .NOT.((WRDSRC .EQ. '**FINAL') .AND. OPTWLK 
      &                         .AND. .NOT. TOTSYM)
             END IF
+            IF (MOLHES) DIPDER = .TRUE.
             GO TO 100
   109    CONTINUE
             RESTAR = .TRUE.
@@ -958,8 +955,6 @@ C
             SPINRO = .TRUE.
          GOTO 100
   130    CONTINUE
-            READ (LUCMD,*) NIS
-            READ (LUCMD, *) (ISOTOP(IS), IS = 1 ,NIS)
          GOTO 100
   131    CONTINUE
             READ (LUCMD,*) (ORIGIN(ICOOR), ICOOR = 1,3)
@@ -1246,8 +1241,6 @@ C
      &            ' Optical rotation strengths'
       IF (SPINRO) WRITE(LUPRI,'(5X,A)') ' Spin-rotation constants'
       IF (MOLGFA) WRITE(LUPRI,'(5X,A)') ' Molecular g-factor'
-      IF (NIS .GT. 0) WRITE(LUPRI,'(/A,20I3)')
-     &     ' Isotopes specified:', (ISOTOP(I), I = 1, NIS)
       IF (.NOT. MASSVE) WRITE(LUPRI,'(5X,A)')
      &     ' No mass-velocity correction calculated'
       IF (.NOT. DARWIN) WRITE(LUPRI,'(5X,A)')
@@ -1606,10 +1599,12 @@ C
       KGEOM = 1
       KMASS = KGEOM + 3*(NATOMS + NFLOAT)
       KNAT  = KMASS + NATOMS + NFLOAT
-      KLAST = KNAT  + (NATOMS + NFLOAT + 1)/IRAT
+      KNUMIS= KNAT  + (NATOMS + NFLOAT + 1)/IRAT
+      KLAST = KNUMIS+ (NATOMS + NFLOAT + 1)/IRAT
       IF (KLAST .GT. LWORK) CALL STOPIT('ABADRV','CMMASS',KLAST,
      &                                   LWORK)
-      CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),ISOTOP,IPRDEF-2)
+      CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),WORK(KNUMIS),
+     &            IPRDEF-2)
       IF (SHIELD .OR. MAGSUS .OR. VCD .OR. ECD .OR. VROA .OR.
      &    SPINRO .OR. MOLGFA .OR. MCD .OR. VERDET .OR. OPTROT) THEN
          IPRGAG = 1

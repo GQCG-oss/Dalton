@@ -283,7 +283,7 @@ C
 #include <mxcent.h>
 #include <maxorb.h>
 #include <priunit.h>
-      DIMENSION ATM(5,0:MXCENT)
+      DIMENSION ATM(6,0:MXCENT)
       DIMENSION DRTAXS(5,0:MAXAXS), DMRPLN(5,0:MAXMIR)
       DIMENSION WORK(LWORK)
       KATMAR = 1
@@ -311,7 +311,7 @@ C
 #include <priunit.h>
 #include <symmet.h>
 #include <codata.h>
-      DIMENSION ATM(5,0:MXCENT)
+      DIMENSION ATM(6,0:MXCENT)
       DIMENSION DRTAXS(5,0:MAXAXS), DMRPLN(5,0:MAXMIR)
       DIMENSION ATMARR(MXCENT,8)
       DIMENSION VEC(3)

@@ -143,7 +143,7 @@ ERROR[3]="MOLECULAR GEOMETRY NOT CORRECT"
 
 # SCF energy:
 CRIT1=`$GREP "Total energy * \-152\.810086303[0-9] au \(Hartrees\)" $log | wc -l`
-CRIT2=`$GREP "\-4158\.1738457[0-9] eV" $log | wc -l`
+CRIT2=`$GREP "\-4158\.1738515[0-9] eV" $log | wc -l`
 CRIT3=`$GREP "\-401202\.824[0-9] kJ\/mol" $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=3
@@ -247,7 +247,7 @@ CRIT8=`$GREP "H\#4 * 2 * 2\.014102" $log | wc -l`
 CRIT9=`$GREP "H\#4 * 3 * 2\.014102" $log | wc -l`
 TEST[10]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
               $CRIT6  \+ $CRIT7  \+ $CRIT8  \+ $CRIT9`
-CTRL[10]=14
+CTRL[10]=21
 ERROR[10]="ISOTOPIC SUBSTITUTIONS NOT CORRECT"
 
 # Vibrational frequencies:

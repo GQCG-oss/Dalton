@@ -506,6 +506,7 @@ C       IPRIM - runs over all primitives
 C       NUCIND2 - runs over all symmetry independent centers
 C******************************************************************************
 #include <implicit.h>
+#include <iratdef.h>
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxorb.h>
@@ -531,6 +532,7 @@ C
       CHARACTER*15 CLASS
       DIMENSION IFXYZ(3)
       LOGICAL ANG, ADDSYM
+#include <cbihr1.h>
 #include <molinp.h>
 #include <ccom.h>
 #include <inftap.h>
@@ -540,6 +542,7 @@ C
 #include <symmet.h>
 #include <aosotr.h>
 #include <gnrinf.h>
+#include <orgcom.h>
 #include <infpar.h>
 #include <numder.h>
 #include <ibtfun.h>
@@ -670,7 +673,6 @@ C
       IF (ZMAT) CALL BUILDZ(IPREAD,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,
      &                  NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,
      &                  KBLOCK,KPRIM,KAOVEC,DOOWN,MXSPD)
-
 C
 C     *************************************************
 C     ***** Add symmetry to molecule if requested *****
@@ -695,6 +697,21 @@ C
       CALL BASPRO(WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,NRC,
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,KPRIM,
      &            KAOVEC,DOOWN)
+C
+C     Determine center of mass
+C
+      KGEOM = 1
+      KMASS = KGEOM + 3*NUCDEP
+      KNAT  = KMASS + NUCDEP
+      KNUMIS= KNAT  + (NUCDEP + 1)/IRAT
+      KLAST = KNUMIS+ (NUCDEP + 1)/IRAT
+      IF (KLAST .GT. LWORK) CALL STOPIT('READI1','CMMASS',KLAST,
+     &                                   LWORK)
+      CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),WORK(KNUMIS),
+     &            IPREAD-1)
+      IF (ADDSYM) CALL DCOPY(3,CMXYZ,1,DIPORG,1)
+      IF (ADDSYM) CALL DCOPY(3,CMXYZ,1,GAGORG,1)
+      IF (.NOT. CAVUSR) CALL DCOPY(3,CMXYZ,1,CAVORG,1)
 C
 C     *************************************************
 C     ***** Print orbital and geometry input data *****
@@ -960,7 +977,7 @@ C
 C         Get basis set from basis set library
 C         ===================================
 C
-           ELSE IF ((BASIS .OR. ATOMBA .OR. (ADDSTO .AND. J .EQ. 2
+            ELSE IF ((BASIS .OR. ATOMBA .OR. (ADDSTO .AND. J .EQ. 2
      &              .AND. Q .NE. 0.0D0)) .AND. .NOT. DIRAC) THEN
               IF (ATOMBA) THEN
                  BASNAM = MLINE(NMLINE-NONT(I))(16:)
@@ -1096,6 +1113,7 @@ C*****************************************************************************
 #include <cbirea.h>
 C
       LOGICAL ANG
+#include <gnrinf.h>
 #include <molinp.h>
 #include <ccom.h>
 #include <nuclei.h>
@@ -1148,6 +1166,14 @@ C           e.g. IRIX free format read of char. var. is not defined).
            CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CORD(J,NUCIND),'REA')
          END DO
 #endif
+         IPOS = INDEX(MLINE(NMLINE),'Isotope=')
+         IF (IPOS .NE. 0) THEN
+            IPOS = IPOS + 8
+            READ (MLINE(NMLINE)(IPOS:),'(I3)') MASSNM
+            ISOTOP(NUCIND) = ISOMAS(NINT(Q),MASSNM)
+         ELSE
+            ISOTOP(NUCIND) = 1
+         END IF
          IF(INPTST .OR. IPREAD .GT. 3) THEN
             WRITE(LUPRI,'(6X,A4,3F20.15)') NAMN(NUCIND),
      &          (CORD(J,NUCIND), J = 1,3)
@@ -3322,6 +3348,7 @@ C
 C
       CHARACTER*4 NAME
       INTEGER NBASE(8), NSIGN(8)
+      LOGICAL LINEAR
       DIMENSION WORK(LWORK)
 C
 #include <nuclei.h>
@@ -3330,6 +3357,7 @@ C
 #include <cbirea.h>
 #include <frame.h>
 C
+#include <orgcom.h>
 #include <chrxyz.h>
 #include <chrsgn.h>
 #include <chrnos.h>
@@ -3349,6 +3377,8 @@ C
       ICRX = 1
       ICRY = 2
       ICRZ = 3
+      NATOMS = 0
+      KMASS  = ICRX + NCOOR
       DO 100 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          NAME   = NAMEX(3*ICENT)(1:4)
@@ -3364,21 +3394,34 @@ C
             ICRX = ICRX + 3
             ICRY = ICRY + 3
             ICRZ = ICRZ + 3
+            WORK(ICRX) = CORD(1,ICENT)
+            WORK(ICRY) = CORD(2,ICENT)
+            WORK(ICRZ) = CORD(3,ICENT)
+            WORK(KMASS + NATOMS) = DISOTP(NINT(CHARGE(ICENT)),1,'MASS')
+            NATOMS = NATOMS + 1
          ELSE
             JATOM = 0
             DO 200 ISYMOP = 0, MAXOPR
                IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
-                  JATOM = JATOM + 1
+                  JATOM  = JATOM + 1
+                  WORK(KMASS + NATOMS) = 
+     *                 DISOTP(NINT(CHARGE(ICENT)),1,'MASS')
+                  WORK(ICRX) = PT(IBTAND(ISYMAX(1,1),ISYMOP))
+     *                        *CORD(1,ICENT)
+                  WORK(ICRY) = PT(IBTAND(ISYMAX(2,1),ISYMOP))
+     *                        *CORD(2,ICENT)
+                  WORK(ICRZ) = PT(IBTAND(ISYMAX(3,1),ISYMOP))
+     *                        *CORD(3,ICENT)
+                  WORK(KMASS) = DISOTP(NINT(CHARGE(ICENT)),1,'MASS')
+                  WORK(KMASS) = DISOTP(NINT(CHARGE(ICENT)),1,'MASS')
+                  NATOMS = NATOMS + 1
                   IF (IPREAD .GT. 0) THEN
                      WRITE (LUPRI,'(1X,I3,3X,A,I2,3X,A,3X,F15.10)')
-     *                     ICRX, NAME,JATOM,CHRXYZ(-1),
-     *                     PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+     *                     ICRX, NAME,JATOM,CHRXYZ(-1),WORK(ICRX)
                      WRITE (LUPRI,'(1X,I3,12X,A,3X,F15.10)')
-     *                     ICRY,CHRXYZ(-2),
-     *                     PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+     *                     ICRY,CHRXYZ(-2),WORK(ICRY)
                      WRITE (LUPRI,'(1X,I3,12X,A,3X,F15.10,/)')
-     *                     ICRZ,CHRXYZ(-3),
-     *                     PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+     *                     ICRZ,CHRXYZ(-3),WORK(ICRZ)
                   END IF
                   ICRX = ICRX + 3
                   ICRY = ICRY + 3
@@ -3392,9 +3435,10 @@ C     ********************************
 C     ***** Symmetry Coordinates *****
 C     ********************************
 C
+      ISTRT = NCOOR+ NATOMS + 1
       IF (LWORK .LT. 2*NCOOR*NCOOR) CALL STOPIT('PRICAR','TRACOR',
      &                                          2*NCOOR*NCOOR,LWORK)
-      CALL TRACOR(WORK(1),WORK(1 + NCOOR*NCOOR),1,NCOOR,IPREAD)
+      CALL TRACOR(WORK(ISTRT),WORK(ISTRT + NCOOR*NCOOR),1,NCOOR,IPREAD)
       IF (MAXREP .GT. 0) THEN
          IF (IPREAD .GT. 0) THEN
             CALL HEADER('Symmetry Coordinates',1)
@@ -3413,7 +3457,7 @@ C
                   IF (ISCOOR .GT. 0) THEN
                      NB = 0
                      DO 600 I = 1, NCOOR
-                        IADR = (I - 1)*NCOOR + ISCOOR
+                        IADR = ISTRT + (I - 1)*NCOOR + ISCOOR
                         NSGN = NINT(WORK(IADR))
                         IF (NSGN .NE. 0) THEN
                            NB = NB + 1
@@ -3443,10 +3487,15 @@ C
 C     Print internuclear distances
 C
       IF (IPREAD .GT. 0) CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,.FALSE.,
-     &                               IDUMMY,WORK,LWORK)
+     &                               IDUMMY,WORK(ISTRT),LWORK)
+C
+C     As a new default, we (almost) always print a rotational analysis, kr-02
+C
+      IF (IPREAD .GT. 0) CALL ROTANA(WORK(1),WORK(KMASS),WORK(ISTRT),
+     &            CMXYZ,AIMOM,BIMOM,CIMOM,LINEAR,NATOMS,NCOOR,IPREAD)
 C
       IF (IPREAD .GT. 0) THEN
-         WRITE(LUPRI,'(A,F18.12)')'  Nuclear repulsion energy :',
+         WRITE(LUPRI,'(//A,F18.12)')'  Nuclear repulsion energy :',
      &                               POTNUC
       END IF
       RETURN
@@ -5550,5 +5599,30 @@ C
      &   ' WARNING: Only spherical-harmonic basis implemented in ERI.',
      &   ' TWOINT is used instead.'
       END IF
+      RETURN
+      END
+C  /* Deck isomas */
+      FUNCTION ISOMAS(ICHARG,MASSNM)
+C
+C     Function to switch from mass number to isotope number sorted
+C     according to abundance, K.Ruud-02
+C
+#include <implicit.h>
+#include <priunit.h>
+C
+      CALL QENTER('ISOMAS')
+      IORD = 0
+      DO I = 1, 5
+         QMASS = DISOTP(ICHARG,I,'MASS')
+         IF (ANINT(QMASS) .EQ. MASSNM) IORD = I
+      END DO
+      IF (IORD .EQ. 0) THEN
+         WRITE (LUPRI,'(/A,I3)') 'Unknown mass for atom with charge ',
+     &        ICHARG
+         CALL QUIT('Unknown mass for chosen atomic charge')
+      ELSE
+         ISOMAS = IORD
+      END IF
+      CALL QEXIT('ISOMAS')
       RETURN
       END

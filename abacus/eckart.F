@@ -75,7 +75,7 @@ C
 C
 C     Define instantaneous geometry
 C     
-      CALL CMMASS(GEOM,AMASS,NATTYP,ISOTPS,IPRINT)
+      CALL CMMASS(GEOM,AMASS,NATTYP,WORK,IPRINT)
       IF (IPRINT .GE. 4) THEN
          CALL HEADER('Instantaneous geometry:',0)
          DO I = 1, NUCDEP

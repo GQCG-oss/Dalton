@@ -12,7 +12,7 @@
      &                IPART(MXCENT), DOREPW(0:7),
      &                NZEROG, IZEROG(MXCOOR), START,
      &                WFPRED, REJECT, KEEPSY, VIBCNV,
-     &                IMAGE, ISOTPS(MXCENT), STRICT,
+     &                IMAGE, STRICT,
      &                NOORTH, NATCON, V3CAL, VIBAVE, NMODIF,
      &                ECKART, DOTEMP, DOCENT, TEMP(MAXTMP), NTEMP,
      &                REUSED

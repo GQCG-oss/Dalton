@@ -7,7 +7,7 @@ cat > vibave_spinspin.info <<%EOF%
    Molecule:         H2O
    Wave Function:    HF / STO-3G
    Test Purpose:     Vibrational average of indirect spin-spin couplings 
-                     for H2O^{17}
+                     for H2O^{18}
 %EOF%
 
 #######################################################################
@@ -20,10 +20,10 @@ H2O
 
     2    
         8.    1 
-O          0.0000000000            0.0000000000           -0.8009956615
+O     0.0000000000        0.0000000000       -0.8009956615 Isotope=18
         1.    2
-H          0.0000000000            1.4325641791            0.4004978308
-H          0.0000000000           -1.4325641791            0.4004978308
+H     0.0000000000        1.4325641791        0.4004978308
+H     0.0000000000       -1.4325641791        0.4004978308
 %EOF%
 
 #######################################################################
@@ -36,9 +36,6 @@ cat > vibave_spinspin.dal <<%EOF%
 .SYMMETRY
   C2v
 .VIBANA
-.ISOTOP
-  1  3
-  2  1  1
 .DISPLA
  0.01
 *VIBANA
@@ -109,7 +106,7 @@ CRIT4=`$GREP "1 * 4130\.[0-9][0-9] * (0| )\.0188[0-9][0-9]" $log | wc -l`
 CRIT5=`$GREP "1 * 2161\.[0-9][0-9] * (0| )\.0098[0-9][0-9]" $log | wc -l`
 CRIT6=`$GREP "4 * 4374\.[0-9][0-9] * (0| )\.0199[0-9][0-9]" $log | wc -l`
 TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
-CTRL[3]=6
+CTRL[3]=29
 ERROR[3]="ISOTOPES/HARM. FREQ. NOT CORRECT"
 
 # Spin-spin average

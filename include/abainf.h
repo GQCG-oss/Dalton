@@ -13,8 +13,7 @@ C
      &        DARWIN, ABALNR, VROA,   NOCMC,  EXPFCK,
      &        RAMAN,  QUADRU, NQCC,   HYPER,  VERDET,
      &        MCD,    HELFEY, LINCPL, ABASOP, SKIPAB
-      COMMON /ABAINF/ NTCSY(8), NSCSY(8), ISOTOP(MXCENT),
-     &                IPRDEF, NWNABA, 
+      COMMON /ABAINF/ NTCSY(8), NSCSY(8), IPRDEF, NWNABA, 
      &                MOLGRD, MOLHES, DIPDER, POLAR,  TSTINP,
      &                VIB,    RESTAR, DOWALK, GDALL,  CCSD,
      &                H2MO,   DOSYM(8),DOLRES,DOEXCI, SHIELD,

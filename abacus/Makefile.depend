@@ -251,7 +251,8 @@ abamag.o : abamag.F \
   ../include/shells.h  ../include/sigma.h \
   ../include/single.h  ../include/spinro.h \
   ../include/spnout.h  ../include/suscpt.h \
-  ../include/symmet.h  ../include/wrkrsp.h
+  ../include/symmet.h  ../include/thrzer.h \
+  ../include/wrkrsp.h
 
 
 abamolden.o : abamolden.F \

@@ -133,7 +133,7 @@ ERROR[6]="RELATIVISTIC CORRECTIONS NOT CORRECT"
 
 # SCF energy, 1st iteration:
 CRIT1=`$GREP "Total energy * \-76\.051459519[0-9] au \(Hartrees\)" $log | wc -l`
-CRIT2=`$GREP "\-2069\.4654231[0-9] eV" $log | wc -l`
+CRIT2=`$GREP "\-2069\.4654259[0-9] eV" $log | wc -l`
 CRIT3=`$GREP "\-199673\.078[0-9] kJ\/mol" $log | wc -l`
 TEST[7]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[7]=3
@@ -205,7 +205,7 @@ ERROR[12]="SECOND GEOMETRY NOT CORRECT"
 
 # SCF energy, 2nd iteration:
 CRIT1=`$GREP "Total energy * \-76\.053397783[0-9] au \(Hartrees\)" $log | wc -l`
-CRIT2=`$GREP "\-2069\.5181659[0-9] eV" $log | wc -l`
+CRIT2=`$GREP "\-2069\.5181688[0-9] eV" $log | wc -l`
 CRIT3=`$GREP "\-199678\.167[0-9] kJ\/mol" $log | wc -l`
 TEST[13]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[13]=3
@@ -304,7 +304,7 @@ CRIT1=`$GREP "O * 15\.994915" $log | wc -l`
 CRIT2=`$GREP "H * 1 * 1\.007825" $log | wc -l`
 CRIT3=`$GREP "H * 2 * 1\.007825" $log | wc -l`
 TEST[23]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3`
-CTRL[23]=3
+CTRL[23]=6
 ERROR[23]="ISOTOPIC MASSES NOT CORRECT"
 
 # Rotational constants:

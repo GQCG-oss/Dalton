@@ -52,14 +52,9 @@ C
       DATA TABDIR/'*VIBANA','*PROPER','*HARMON'/
 C
       DATA TABLE /'.DORDR ', '.SYMMET', '.SDRTST', '.RESTRT', '.DRYRUN',
-     *            '.PARTST', '.NORMAL', '.PRECAL', '.REUSE ', '.ISOTOP',
+     *            '.PARTST', '.NORMAL', '.PRECAL', '.REUSE ', '.XXXXXX',
      *            '.VIBANA', '.TEST N', '.DISPLA', '.PROPER', '.PRINT ', 
      *            '.MANUAL', '.HARMON', '.SPECTR'/
-C
-C     *** Initializing a few local variables. ***
-C
-      NIS = 0
-      NATOMS = 0
 C
 C     *** Initializing variables for *VIBANA and *HARMON. ***
       CALL NVBINI
@@ -135,11 +130,6 @@ C
             REUHES = .TRUE.
             GOTO 100
  10      CONTINUE
-            NOMOVE = .FALSE.
-            READ (LUCMD,*) NIS, NATOMS
-            DO I = 1, NIS
-               READ (LUCMD, *) (ISOTOP(IS), IS = 1 ,NATOMS)
-            END DO
             GOTO 100
  11      CONTINUE
             NUMVIB = .TRUE.
@@ -240,15 +230,6 @@ C
      &           ' will be saved for future work.'
             WRITE (LUPRI,'(5X,A)') 'Hessian will be saved on the file'// 
      &           ' DALTON.HES'
-         END IF
-C
-         IF (NIS.GT.0) THEN
-            WRITE (LUPRI,'(A)') '                                    '
-            WRITE (LUPRI,'(5X,A)')'Other isotopes will be investigated.'
-            WRITE (LUPRI,'(5X,A)') 'These isotopes are: '
-            DO IIS = 1, NIS
-               WRITE (LUPRI,*) (ISOTOP(IATOM),IATOM=1,NATOMS)
-            END DO
          END IF
 C
          IF (NRMCRD.AND.HTEST) THEN
@@ -441,9 +422,6 @@ C     /FCSYM/
       SEPDEG = .FALSE.
 C
 C     /ABAINF/
-      DO 100 I = 1, MXCENT
-         ISOTOP(I) = 1
- 100  CONTINUE
       VIB    = .FALSE.
 C     
 C     /CBIWLK/
@@ -576,7 +554,7 @@ C     *** Space for backup av isotopes if abacus is run. ***
 C
       IF (NAORDR.GT.0) THEN
          KISOTP = KLAST
-         KLAST  = KISOTP + NATOMS
+         KLAST  = KISOTP + NUCDEP
       END IF
 C
 C     *** Symmetry initialization and symmetry ***
@@ -1959,6 +1937,7 @@ C
       CHARACTER*6 CHR
       CHARACTER*4 NAME
       CHARACTER*80 MBKLIN
+      CHARACTER*11 TMPTXT
       DIMENSION MBKLIN(NMBKLN)
       DIMENSION COOR(3,NCOOR/3), NATOM(NUCIND), NLINE(NUCIND), 
      &          NATIND(NUCIND)
@@ -1986,8 +1965,14 @@ C
             NC     = NCLINE(ICENT)
             MULCNT = ISTBNU(ICENT)
             IF (NC .NE. 0) THEN
-               READ (MLINE(NC),9100) NAME
-               DO 300 IOP = 0, MAXOPR
+              READ (MLINE(NC),9100) NAME
+              IPOS = INDEX(MLINE(NC),'Isotope=')
+              IF (IPOS .NE. 0) THEN
+                 READ (MLINE(NC)(IPOS:),'(A11)') TMPTXT
+              ELSE
+                 TMPTXT = '           '
+              END IF
+              DO 300 IOP = 0, MAXOPR
                   IF (IBTAND(IOP,MULCNT) .EQ. 0) THEN
                      IATOM = IATOM + 1
                      CRX = COOR(1,IATOM)
@@ -2008,9 +1993,9 @@ C
                         NC     = NC     + 1
                      END IF
                      IF (BIG) THEN
-                        WRITE (MLINE(NC),9200) NAME,CRX,CRY,CRZ,'*'
+                        WRITE (MLINE(NC),9200) NAME,CRX,CRY,CRZ,TMPTXT
                      ELSE
-                        WRITE (MLINE(NC),9300) NAME,CRX,CRY,CRZ,'*'
+                        WRITE (MLINE(NC),9300) NAME,CRX,CRY,CRZ,TMPTXT
                      END IF
                      ISYM = ISYM + 1
                   END IF
@@ -2069,8 +2054,8 @@ C
       CALL GPCLOSE(LUMOL,'KEEP')
 C     
  9100 FORMAT (A4)
- 9200 FORMAT (A4,3F20.10,7X,A1)
- 9300 FORMAT (A4,3F20.16,7X,A1)
+ 9200 FORMAT (A4,3F20.10,1X,A11)
+ 9300 FORMAT (A4,3F20.16,1X,A11)
 C     
       RETURN
       END
@@ -3420,7 +3405,7 @@ C
 C     *** Calculating center of mass, and mass of each center ***
 C
       CALL DCOPY(NCOOR,CSTART,1,CORTMP,1)
-      CALL CMMASS(CORTMP,AMASS,NATTYP,ISOTOP,IPRINT)
+      CALL CMMASS(CORTMP,AMASS,NATTYP,WORK,IPRINT)
 C
 C     *** Diagonal sqrt(mass)^(-1/2) matrix ***
 C

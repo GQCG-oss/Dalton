@@ -57,6 +57,7 @@ C
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION IDOREP(0:7), IWKVEC(NWKTYP), ISCVEC(NSCTYP)
 #include <abainf.h>
+#include <gnrinf.h>
 #include <nuclei.h>
 #include <cbiwlk.h>
 C
@@ -68,7 +69,7 @@ C
      &            '.VIBCNV', '.GRDEXT', '.MODFOL', '.MASSES',
      &            '.REPS  ', '.ZERGRD', '.EIGEN ', '.DYNAMI',
      &            '.NOGRAD', '.MOMENT', '.NUMERI', '.HARMON',
-     &            '.FRAGME', '.IMAGE ', '.ISOTOP', '.IRC   ',
+     &            '.FRAGME', '.IMAGE ', '.XXXXXX', '.IRC   ',
      &            '.MAXTRU', '.NOORTH', '.NATCON', '.VIBAVE',
      &            '.NORMAL', '.ECKART', '.TEMPER', '.NO CEN',
      &            '.REUSE '/
@@ -84,7 +85,6 @@ C
 C
       SETRAD = .FALSE.
       NIP    = 0
-      NIS    = 0
       IRCSGN = 1
       TRUMAX = 0.10D0
       TRUMX1 = TRUMAX
@@ -238,8 +238,6 @@ Cpeo mass-scaled coordinates as default
                   IMAGE = .TRUE.
                   GO TO 100
    31          CONTINUE
-                  READ (LUCMD, *) NIS
-                  READ (LUCMD, *) (ISOTPS(IS), IS=1,NIS)
                   GO TO 100
    32          CONTINUE
                   IWKVEC(7) = 1
@@ -489,8 +487,6 @@ C
      &           ' Maximum arc length of each step ',TRUMX1
             END IF
          END IF
-         IF (NIS .GT. 0) WRITE (LUPRI,'(/A,20I3)')
-     *      ' Isotops specified:', (ISOTPS(I), I = 1, NIS)
 C
          IF (IPRWLK .NE. IPRDEF) THEN
             WRITE (LUPRI,'(A,I10)') ' Print level in WALK    :',IPRWLK
@@ -531,6 +527,11 @@ C
             ELSE IF (ISCTYP .EQ. 3) THEN
                WRITE (LUPRI,'(A)') ' Mass scaling in this run.'
             END IF
+         END IF
+         IF (IWKTYP .EQ. 6) THEN
+            ITERMX = 6*NUCDEP + 1
+            WRITE (LUPRI,'(/A,I5)') 'Maximum number of iterations '//
+     *           'reset in numerical differentiation to ',ITERMX
          END IF
          IF (NZEROG .GT. 0) THEN
             WRITE (LUPRI,'(/A,16I5)')
@@ -619,8 +620,6 @@ C
       VIBCNV = .FALSE.
       NZEROG = 0
       ZERGRD = 1.D-5
-      DO 410 I = 1, MXCENT
-         ISOTPS(I) = 1
   410 CONTINUE
       NTEMP = 0
 C
@@ -893,7 +892,7 @@ C
      &               ESTART,TACCUM,DISPLC,STPSYX,STPNRX,STPDIX,GRDDIX,
      &               EKIN0,TRUMAX,NCRTOT,N2CRT,NCRIND,NCART,IWKTYP,
      &               IWKIND,IMODEX,ISCTYP,IPOINT,ISTIND,ISTTPX,NXYZ,
-     &               DODIP,IMAGE,ISOTPS,AACCUM,ROAAFD,ROAGND,ROAGLD,
+     &               DODIP,IMAGE,AACCUM,ROAAFD,ROAGND,ROAGLD,
      &               ROAAD,ROAAFU,ROAGNU,ROAGLU,ROAAU,FMATF,VIBAVE,
      &               SUSTO0,SUSTF,GFAC0,GFACF,QUAD0,QUADF,SIGMA0,SIGMAF,
      &               SRC0,SRCF,POLAR0,POLARF,EFG0,EFGF,SSJ0,
@@ -949,7 +948,7 @@ C
          CALL WLKDIA(GRDCAR,HESCAR,EVAL,EVEC,GRDDIA,TMAT,SCAL,WORK,
      &               THRLDP,THRIND,CNDHES,INDHES,LWORK,IZEROG,NZEROG,
      &               DOREPW,NCRTOT,N2CRT,NTMAT,ISCTYP,IWKTYP,PRJTRO,
-     &               ISOTPS,IPRWLK)
+     &               IPRWLK)
       END IF
       IF (IWKTYP .EQ. 6 .AND. ((VIBAVE .AND. .NOT. REUSED) .OR. NMODIF)
      &     .AND. START) THEN
@@ -958,7 +957,8 @@ C        Generate normal coordinates for numerical differentiation
 C
          KAMASS = 1
          KNATYP = KAMASS + NUCDEP
-         KORIG  = KNATYP + (NUCDEP + 1)/IRAT
+         KNUMIS = KNATYP + (NUCDEP + 1)/IRAT
+         KORIG  = KNUMIS + (NUCDEP + 1)/IRAT
          KGEOM  = KORIG  + 3
          KDKIN  = KGEOM  + 3*NUCDEP
          KHESMW = KDKIN  + NCART
@@ -995,8 +995,8 @@ C
          IDIFF = 0
          CALL GPCLOSE(LUHES,'KEEP')
          end if
-         CALL CMMASS(WORK(KGEOM),WORK(KAMASS),WORK(KNATYP),
-     &               ISOTOP,IPRWLK)
+         CALL CMMASS(WORK(KGEOM),WORK(KAMASS),WORK(KNATYP),WORK(KNUMIS),
+     &               IPRWLK)
 C     
 C     Project out translation and rotational motion from the Hessian
 C
@@ -1175,7 +1175,7 @@ C
      &               TRSDIA,EKIN0,STPNRM,IMODE,IWKIND,DOREPW,NCRTOT,
      &               N2CRT,NCRIND,NCART,INDHES,IPOINT,ISTTYP,ISTIND,
      &               IWKTYP,STOP,STATPO,OLDREA,DOHESS,PRJTRO,IMAGE,
-     &               ISOTPS,AACCUM,DONWTN,IPRWLK,REJECT,ERGDIA,
+     &               AACCUM,DONWTN,IPRWLK,REJECT,ERGDIA,
      &               WORK,LWORK)
 C
 C     *************************************
@@ -1224,7 +1224,7 @@ C
      &            TACCUM,TIMSTP,EKINTO,EKINPA,COOR,GRDCAR,HESCAR,STPCAR,
      &            DISPLC,STPSYM,STPNRM,STPDIA,GRDDIA,EKIN0,TRUMAX,
      &            NCRTOT,N2CRT,NCRIND,NCART,IWKTYP,IWKIND,IMODE,ISCTYP,
-     &            ISTIND,ISTTYP,NXYZ,DODIP,IMAGE,IPOINT,AACCUM,ISOTPS,
+     &            ISTIND,ISTTYP,NXYZ,DODIP,IMAGE,IPOINT,AACCUM,
      &            ROAAFD,ROAGND,ROAGLD,ROAAD,ROAAFU,ROAGNU,ROAGLU,ROAAU,
      &            FMATF,VIBAVE,SUSTO0,SUSTF,GFAC0,GFACF,QUAD0,QUADF,
      &            SIGMA0,SIGMAF,SRC0,SRCF,POLAR0,POLARF,
@@ -1247,8 +1247,8 @@ C     WORK(KFMATF) and WORK(KFMATT) is used as temporary arrays here.
 C     The most important point is that we would like to initialize 
 C     WORK(KAMASS)
 C
-         CALL CMMASS(WORK(KFMATF),WORK(KAMASS),WORK(KFMATT),
-     &               ISOTOP,IPRINT)
+         CALL CMMASS(WORK(KFMATF),WORK(KAMASS),WORK(KFMATT),WORK(KLAST),
+     &               IPRINT)
          CALL VIBV3(EVEC,WORK(KFREQA),WORK(KFMATF),
      &              WORK(KFMATT),WORK(KCORR),WORK(KPOS),WORK(KAMASS),
      &              WORK(KLAST),LLEFT,NCART,NUMMOD)
@@ -1259,7 +1259,7 @@ C  /* Deck wlkdia */
       SUBROUTINE WLKDIA(GRDCAR,HESCAR,EVAL,EVEC,GRDDIA,TMAT,SCAL,
      &                  WORK,THRLDP,THRIND,CNDHES,INDHES,LWORK,IZEROG,
      &                  NZEROG,DOREPW,NCRTOT,N2CRT,NTMAT,ISCTYP,IWKTYP,
-     &                  PRJTRO,ISOTPS,IPRINT)
+     &                  PRJTRO,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -1269,8 +1269,7 @@ C
       DIMENSION GRDCAR(NCRTOT), HESCAR(N2CRT),
      *          EVAL(NCRTOT), EVEC(N2CRT), TMAT(NTMAT),
      *          SCAL(NCRTOT), WORK(LWORK), CNDHES(0:7),
-     *          INDHES(0:7),  GRDDIA(NCRTOT), IZEROG(NZEROG),
-     &          ISOTPS(NUCIND)
+     *          INDHES(0:7),  GRDDIA(NCRTOT), IZEROG(NZEROG)
 C
 #include <nuclei.h>
 C
@@ -1281,7 +1280,7 @@ C     ***** Mass scaling *****
 C     ************************
 C
       CALL WLKSCL(SCAL,GRDCAR,HESCAR,DOREPW,NCRTOT,N2CRT,ISCTYP,
-     *            IWKTYP,ISOTPS,IPRINT)
+     *            IWKTYP,IPRINT)
 C
 C     ************************************************
 C     ***** Project out translation and rotation *****
@@ -1289,7 +1288,7 @@ C     ************************************************
 C
       IF (PRJTRO) THEN
          CALL WLKPRJ(GRDCAR,HESCAR,SCAL,TMAT,WORK,THRLDP,
-     *               LWORK,DOREPW,NCRTOT,N2CRT,NTMAT,ISOTPS,IPRINT)
+     *               LWORK,DOREPW,NCRTOT,N2CRT,NTMAT,IPRINT)
       END IF
 C
 C     ***********************************
@@ -1417,7 +1416,7 @@ C
       END
 C  /* Deck wlkscl */
       SUBROUTINE WLKSCL(SCAL,GRDCAR,HESCAR,DOREP,NCRTOT,N2CRT,ISCTYP,
-     &                  IWKTYP,ISOTPS,IPRINT)
+     &                  IWKTYP,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <codata.h>
@@ -1427,8 +1426,7 @@ C  /* Deck wlkscl */
       PARAMETER (D1 = 1.0D0)
 C
       LOGICAL DOREP(0:7), NOCHRG
-      DIMENSION SCAL(NCRTOT), GRDCAR(NCRTOT), HESCAR(N2CRT),
-     &          ISOTPS(NUCIND)
+      DIMENSION SCAL(NCRTOT), GRDCAR(NCRTOT), HESCAR(N2CRT)
 C
 #include <nuclei.h>
 #include <symmet.h>
@@ -1471,7 +1469,7 @@ C
             IF (DOREP(IREP)) THEN
                DO 310 IATOM = 1, NUCIND
                   NATTYP = NINT(CHARGE(IATOM))
-                  DMASS  = DISOTP(NATTYP,ISOTPS(IATOM),'MASS')
+                  DMASS  = DISOTP(NATTYP,ISOTOP(IATOM),'MASS')
                   DO 320 ICOOR = 1, 3
                      JCOOR = 3*(IATOM - 1) + ICOOR
                      ISCOOR = IPTCNT(JCOOR,IREP,1)
@@ -1544,7 +1542,7 @@ C
       END
 C  /* Deck wlkprj */
       SUBROUTINE WLKPRJ(GRDCAR,HESCAR,SCAL,TMAT,WORK,THRLDP,
-     *                  LWORK,DOREPW,NCRTOT,N2CRT,NTMAT,ISOTPS,IPRINT)
+     *                  LWORK,DOREPW,NCRTOT,N2CRT,NTMAT,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
@@ -1554,7 +1552,7 @@ C  /* Deck wlkprj */
 C
       LOGICAL DOREPW(0:7)
       DIMENSION GRDCAR(NCRTOT), HESCAR(N2CRT), SCAL(NCRTOT),
-     *          TMAT(NTMAT), WORK(LWORK), ISOTPS(*)
+     *          TMAT(NTMAT), WORK(LWORK)
 C
 #include <symmet.h>
 #include <trkoor.h>
@@ -1583,7 +1581,7 @@ C
             IF (KLAST .GT. LWORK) CALL STOPIT('WLKPRJ',' ',KLAST,LWORK)
             CALL WLKPR1(GRDCAR,HESCAR(IHESS),SCAL(ISCAL),TMAT(ITMAT),
      *                  WORK(KPRJCT),WORK(KPRJHS),THRLDP,WORK(KPTCOL),
-     *                  NCR,NPR,NTR,NCOOR,IREP,ISOTPS,IPRINT)
+     *                  NCR,NPR,NTR,NCOOR,IREP,IPRINT)
             IHESS = IHESS + NCR*NCR
             ISCAL = ISCAL + NCR
             ITMAT = ITMAT + NPR*NCR
@@ -1593,14 +1591,14 @@ C
       END
 C  /* Deck wlkpr1 */
       SUBROUTINE WLKPR1(GRDCAR,HESCAR,SCAL,TMAT,PROJCT,PRJHES,THRLDP,
-     *                  IPTCOL,NCR,NPR,NTR,NCOOR,IREP,ISOTPS,IPRINT)
+     *                  IPTCOL,NCR,NPR,NTR,NCOOR,IREP,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
       PARAMETER (D1 = 1.0D0)
 C
       DIMENSION TMAT(NCR,NPR), PROJCT(NCR,NCR), HESCAR(NCR,NCR),
      *          SCAL(NCR), PRJHES(NCR,NCR), IPTCOL(NCOOR), GRDCAR(NCR),
-     *          LINDEP(9), ISOTPS(*)
+     *          LINDEP(9)
 #include <cbisol.h>
 C
       IF (IPRINT .GT. 5) THEN
@@ -1621,8 +1619,7 @@ C
 C
 C     ***** Vector representing translation of cavity *****
 C
-      IF (SOLVNT) CALL WLKCVT(TMAT,IPTCOL,NCR,NPR,NTR,IREP,ISOTPS,
-     &                        IPRINT)
+      IF (SOLVNT) CALL WLKCVT(TMAT,IPTCOL,NCR,NPR,NTR,IREP,IPRINT)
 C
       IF (IPRINT .GT. 5) THEN
          CALL HEADER('T matrix in WLKPR1',-1)
@@ -2130,7 +2127,7 @@ C
 #include <mxcent.h>
       PARAMETER (D0 = 0.0D0, D100 = 100.00D00)
 C
-      CHARACTER NAME*4
+      CHARACTER NAME*4, TMPTXT*11
       LOGICAL BIG
       DIMENSION COONEW(3,*)
 C
@@ -2208,10 +2205,16 @@ C
          NC = NCLINE(N)
          IF (NC .NE. 0) THEN
             READ  (MLINE(NC),9100) NAME
-            IF (BIG) THEN
-               WRITE (MLINE(NC),9200) NAME,CRX,CRY,CRZ,'*'
+            IPOS = INDEX(MLINE(NC),'Isotope=')
+            IF (IPOS .NE. 0) THEN
+               READ (MLINE(NC)(IPOS:),'(A11)') TMPTXT
             ELSE
-               WRITE (MLINE(NC),9300) NAME,CRX,CRY,CRZ,'*'
+               TMPTXT = '           '
+            END IF
+            IF (BIG) THEN
+               WRITE (MLINE(NC),9200) NAME,CRX,CRY,CRZ,TMPTXT
+            ELSE
+               WRITE (MLINE(NC),9300) NAME,CRX,CRY,CRZ,TMPTXT
             END IF
          END IF
          COONEW(1,N) = CRX
@@ -2219,8 +2222,8 @@ C
          COONEW(3,N) = CRZ
   100 CONTINUE
  9100 FORMAT (A4)
- 9200 FORMAT (A4,3F20.10,7X,A1)
- 9300 FORMAT (A4,3F20.16,7X,A1)
+ 9200 FORMAT (A4,3F20.10,1X,A11)
+ 9300 FORMAT (A4,3F20.16,1X,A11)
 C
 C Punch MOLECULE input with updated coordinates to LUMOL
 C
@@ -2309,7 +2312,7 @@ C  /* Deck wlkrea */
      &                  ESTART,TACCUM,DISPLC,STPSYM,STPNRM,STPDIX,
      &                  GRDDIX,EKIN0,TRUMAX,NCRTOT,N2CRT,NCRIND,NCART,
      &                  IWKTYP,IWKIND,IMODE,ISCTYP,IPOINT,ISTIND,ISTTYP,
-     &                  NXYZ,DODIP,IMAGE,ISOTPS,AACCUM,ROAAFD,ROAGND,
+     &                  NXYZ,DODIP,IMAGE,AACCUM,ROAAFD,ROAGND,
      &                  ROAGLD,ROAAD,ROAAFU,ROAGNU,ROAGLU,ROAAU,
      &                  FMATF,VIBAVE,SUSTO0,SUSTF,GFAC0,GFACF,QUAD0,
      &                  QUADF,SIGMA0,SIGMAF,SRC0,SRCF,POLAR0,POLARF,
@@ -2324,7 +2327,7 @@ C
      &          GRAD0(NCART), HESS0(NCART,NCART), COOR0(NCRIND),
      &          GRADF(NCART), HESSF(NCART,NCART), STPSYM(NCART),
      &          DIPM0(3), DIPG0(3,NCART), DIPGF(3,NCART),
-     &          STPDIX(NCART), GRDDIX(NCART), ISOTPS(NUCIND),
+     &          STPDIX(NCART), GRDDIX(NCART),
      &          FMATF(NCART,NCART,NCART), SUSTO0(3,3), SUSTF(3,3,NCART),
      &          GFAC0(3,3), GFACF(3,3,NCART), QUAD0(3,3), 
      &          QUADF(3,3,NCART), SIGMA0(3,3,MXCENT), 
@@ -2347,7 +2350,7 @@ C
       READ (LUWLK) IWKTYP,IWKIND,IMODE,ISCTYP,
      &             ERGMOL,GRDNRM,ERGSEC,TRUSTR,STPNRM,
      &             IPOINT,ESTART,TACCUM,DISPLC,ISTIND,ISTTYP,IMAGE,
-     &             ISOTPS,AACCUM,TRUMAX
+     &             AACCUM,TRUMAX
       READ (LUWLK) EVAL, EVEC, STPSYM
       IF (IWKTYP .EQ. 3) READ (LUWLK) PMCAR, STPDIX, GRDDIX, EKIN0
       IF (IWKTYP .EQ. 7) READ (LUWLK) STPDIX, GRDDIX, EKIN0
@@ -2400,7 +2403,7 @@ C  /* Deck wlkwrt */
      &                  HESCAR,STPCAR,DISPLC,STPSYM,STPNRM,STPDIA,
      &                  GRDDIA,EKIN0,TRUMAX,NCRTOT,N2CRT,NCRIND,NCART,
      &                  IWKTYP,IWKIND,IMODE,ISCTYP,ISTIND,ISTTYP,NXYZ,
-     &                  DODIP,IMAGE,IPOINT,AACCUM,ISOTPS,ROAAFD,ROAGND,
+     &                  DODIP,IMAGE,IPOINT,AACCUM,ROAAFD,ROAGND,
      &                  ROAGLD,ROAAD,ROAAFU,ROAGNU,ROAGLU,ROAAU,
      &                  FMATF,VIBAVE,SUSTO0,SUSTF,GFAC0,GFACF,QUAD0,
      &                  QUADF,SIGMA0,SIGMAF,SRC0,SRCF,POLAR0,POLARF,
@@ -2416,7 +2419,7 @@ C
      &          GRAD0(NCART), HESS0(NCART,NCART), COOR0(NCRIND),
      &          GRADF(NCART), HESSF(NCART,NCART), STPSYM(NCART),
      &          DIPM0(3), DIPG0(3,NCART), DIPGF(3,NCART),
-     &          STPDIA(NCART),GRDDIA(NCART), ISOTPS(NUCIND),
+     &          STPDIA(NCART),GRDDIA(NCART),
      &          FMATF(NCART,NCART,NCART), SUSTO0(3,3), SUSTF(3,3,NCART),
      &          GFAC0(3,3), GFACF(3,3,NCART), QUAD0(3,3),
      &          QUADF(3,3,NCART), SIGMA0(3,3,MXCENT), 
@@ -2440,7 +2443,7 @@ C
       WRITE (LUWLK) IWKTYP,IWKIND,IMODE,ISCTYP,
      &              ERGMOL,GRDNRM,ERGSEC,TRUSTR,STPNRM,
      &              IPOINT,ESTART,TACCUM,DISPLC,ISTIND,ISTTYP,IMAGE,
-     &              ISOTPS,AACCUM,TRUMAX
+     &              AACCUM,TRUMAX
       WRITE (LUWLK) EVAL, EVEC, STPSYM
       IF (IWKTYP .EQ. 3) WRITE (LUWLK) PMCAR, STPDIA, GRDDIA, EKIN0
       IF (IWKTYP .EQ. 7) WRITE (LUWLK) STPDIA, GRDDIA, EKIN0
@@ -2489,18 +2492,18 @@ C
                CALL MOLLAB('POINT   ',LUWLK,LUPRI)
   200       CONTINUE
          END IF
-         CALL WLKIRW(IPOINT,AACCUM,STPNRM,ISOTPS,WORK,LWORK,IPRINT)
+         CALL WLKIRW(IPOINT,AACCUM,STPNRM,WORK,LWORK,IPRINT)
          CALL NEWLAB('POINT   ',LUWLK,LUPRI)
          CALL GPCLOSE(LUWLK,'KEEP')
       END IF
       RETURN
       END
 C  /* Deck wlkirw */
-      SUBROUTINE WLKIRW(IPOINT,AACCUM,STPNRM,ISOTPS,WORK,LWORK,IPRINT)
+      SUBROUTINE WLKIRW(IPOINT,AACCUM,STPNRM,WORK,LWORK,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-      DIMENSION ISOTPS(NUCIND), WORK(LWORK)
+      DIMENSION WORK(LWORK)
 #include <nuclei.h>
       KMASS  = 1
       KCOOR  = KMASS  + NUCDEP
@@ -2511,12 +2514,12 @@ C  /* Deck wlkirw */
       KLAST  = KSCTRA + 9*NUCDEP*NUCDEP
       IF (KLAST .GT. LWORK) CALL STOPIT('WLKIRW',' ',KLAST,LWORK)
       CALL WLKIR1(IPOINT,AACCUM,STPNRM,WORK(KCOOR),WORK(KGRAD),
-     &            WORK(KHESS),ISOTPS,WORK(KMASS),WORK(KCSTRA),
+     &            WORK(KHESS),WORK(KMASS),WORK(KCSTRA),
      &            WORK(KSCTRA),IPRINT)
       RETURN
       END
 C  /* Deck wlkir1 */
-      SUBROUTINE WLKIR1(IPOINT,AACCUM,STPNRM,COOR,CGRAD,CHESS,ISOTPS,
+      SUBROUTINE WLKIR1(IPOINT,AACCUM,STPNRM,COOR,CGRAD,CHESS,
      &                  DMASS,CSTRA,SCTRA,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
@@ -2529,7 +2532,7 @@ C  /* Deck wlkir1 */
 #include <nuclei.h>
 #include <taymol.h>
       DIMENSION COOR(MXCOOR), CGRAD(MXCOOR), CHESS(MXCOOR,MXCOOR),
-     &          ISOTPS(NUCIND), DMASS(NUCDEP), CSTRA(*), SCTRA(*)
+     &          DMASS(NUCDEP), CSTRA(*), SCTRA(*)
 #include <ibtfun.h>
 C
       NCOOR = 3*NUCDEP
@@ -2540,7 +2543,7 @@ C
       ICOOR = 0
       IATOM = 0
       DO 100 ICENT = 1, NUCIND
-         DMSS = DISOTP(NINT(CHARGE(ICENT)),ISOTPS(ICENT),'MASS')
+         DMSS = DISOTP(NINT(CHARGE(ICENT)),ISOTOP(ICENT),'MASS')
          MULCNT = ISTBNU(ICENT)
          DO 200 IOP = 0, MAXOPR
             IF (IBTAND(IOP,MULCNT) .EQ. 0) THEN
@@ -2576,7 +2579,7 @@ C  /* Deck wlkres */
      &                  CMDIF,ANHARM,TRSDIA,EKIN0,STPNRM,IMODE,IWKIND,
      &                  DOREPW,NCRTOT,N2CRT,NCRIND,NCART,INDHES,IPOINT,
      &                  ISTTYP,ISTIND,IWKTYP,STOP,STATPO,OLDREA,DOHESS,
-     &                  PRJTRO,IMAGE,ISOTPS,AACCUM,DONWTN,
+     &                  PRJTRO,IMAGE,AACCUM,DONWTN,
      &                  IPRINT,REJECT,ERGDIA,WORK,LWORK)
 C
 C     Print of results
@@ -2600,7 +2603,7 @@ C
      &          OVLPMA(NCART,NCART), STPSYX(NCART), PMCAR(NCART),
      &          PMDIA(NCART), PMDIAX(NCART), PMCARX(NCART),
      &          ANHARM(NCART), TRSDIA(NCART), GRDCAR(NCART),
-     &          ISOTPS(NUCIND), ERGDIA(NCRTOT), WORK(LWORK)
+     &          ERGDIA(NCRTOT), WORK(LWORK)
 C
 #include <nuclei.h>
 #include <symmet.h>
@@ -2648,7 +2651,7 @@ C
          CALL HEADER('Atomic masses',1)
          JATOM = 0
          DO 510 IATOM = 1, NUCIND
-            DMASS = DISOTP(NINT(CHARGE(IATOM)),ISOTPS(IATOM),'MASS')
+            DMASS = DISOTP(NINT(CHARGE(IATOM)),ISOTOP(IATOM),'MASS')
             NDEG  = NUCDEG(IATOM)
             DO 515 IDEG = 1, NDEG
                WRITE (LUPRI,'(2X,A6,2X,F12.6)') NAMDEP(JATOM+IDEG),DMASS
@@ -3174,7 +3177,7 @@ C
          MULCNT = ISTBNU(ICENT)
          FAC    = D1/SQRT(FMULT(MULCNT))
          NATTYP = NINT(CHARGE(ICENT))
-         NISOTP = ISOTPS(ICENT)
+         NISOTP = ISOTOP(ICENT)
          AMASS  = XFAMU*DISOTP(NATTYP,NISOTP,'MASS')
          DO 200 ISYMOP = 0, MAXOPR
             IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
@@ -6721,7 +6724,7 @@ C
          MULCNT = ISTBNU(ICENT)
          FAC    = D1/SQRT(FMULT(MULCNT))
          NATTYP = NINT(CHARGE(ICENT))
-         NISOTP = ISOTPS(ICENT)
+         NISOTP = ISOTOP(ICENT)
          ATMAS  = XFAMU*DISOTP(NATTYP,NISOTP,'MASS')
          DO 110 ISYMOP = 0, MAXOPR
             IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
@@ -7828,18 +7831,18 @@ C
       RETURN
       END
 C  /* Deck wlkcvt */
-      SUBROUTINE WLKCVT(TMAT,IPTCOL,NCR,NPR,NTR,IREP,ISOTPS,IPRINT)
+      SUBROUTINE WLKCVT(TMAT,IPTCOL,NCR,NPR,NTR,IREP,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
       PARAMETER (D0 = 0.00D0, D1 = 1.00D0)
-      DIMENSION TMAT(NCR,NPR), IPTCOL(*), ISOTPS(MXCENT)
+      DIMENSION TMAT(NCR,NPR), IPTCOL(*)
 #include <cbisol.h>
 #include <nuclei.h>
 #include <symmet.h>
-      AMASS(I) = DISOTP(NINT(CHARGE(I)),ISOTPS(I),'MASS')
+      AMASS(I) = DISOTP(NINT(CHARGE(I)),ISOTOP(I),'MASS')
 C
 C     Total mass
 C

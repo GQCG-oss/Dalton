@@ -1224,7 +1224,7 @@ C
                GOTO 100
  10            CONTINUE
                   SPNISO = .TRUE.
-                  READ (LUCMD, *) (ISOTOP(IS), IS = 1, NATOMS)
+                  READ (LUCMD, *) (ISOTPS(IS), IS = 1, NATOMS)
                   ABUND = D0
                GOTO 100
  11            CONTINUE
@@ -2519,14 +2519,14 @@ C
                   CALL TITLER('Indirect spin-spin coupling between '//
      &               NAMDEP(IATOM1)//' and '//
      &               NAMDEP(IATOM2)//':','=',-1)
-                  GVAL1 = DISOTP(NZ1,ISOTOP(IATOM1),'GVAL')
+                  GVAL1 = DISOTP(NZ1,ISOTPS(IATOM1),'GVAL')
                   IF (GVAL1 .NE. 0) THEN
-                     GVAL2 = DISOTP(NZ2,ISOTOP(IATOM2),'GVAL')
+                     GVAL2 = DISOTP(NZ2,ISOTPS(IATOM2),'GVAL')
                      IF (GVAL2 .NE. 0) THEN
-                        ABUND1 = DISOTP(NZ1,ISOTOP(IATOM1),'ABUNDANCE')
-                        ABUND2 = DISOTP(NZ2,ISOTOP(IATOM2),'ABUNDANCE')
-                        NA1    = NINT(DISOTP(NZ1,ISOTOP(IATOM1),'A'))
-                        NA2    = NINT(DISOTP(NZ2,ISOTOP(IATOM2),'A'))
+                        ABUND1 = DISOTP(NZ1,ISOTPS(IATOM1),'ABUNDANCE')
+                        ABUND2 = DISOTP(NZ2,ISOTPS(IATOM2),'ABUNDANCE')
+                        NA1    = NINT(DISOTP(NZ1,ISOTPS(IATOM1),'A'))
+                        NA2    = NINT(DISOTP(NZ2,ISOTPS(IATOM2),'A'))
                         FACTOR = AUTOHZ*GVAL1*GVAL2
                         WRITE(LUPRI,'(/,2X,A,I3,3X,A,F8.3,3X,A,F10.6)')
      &                       'Mass number atom 1: ',NA1, 'abundance: ',

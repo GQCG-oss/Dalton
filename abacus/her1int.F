@@ -838,7 +838,7 @@ C
                IF (MULCHA) FACTOR = FACTOR*CHARGE(IATOMC)/HKAB
                IF (INTTYP .EQ. 80) THEN
                   FACTOR = FACTOR/HKAB*(
-     &            DISOTP(NINT(CHARGE(IATOMC)),ISOTPV(IATOMC),'NEUTRONS')
+     &            DISOTP(NINT(CHARGE(IATOMC)),ISOTOP(IATOMC),'NEUTRONS')
      &            -BGWEIN*CHARGE(IATOMC))
                END IF
                DO 310 ISYMOP = 0, MAXOPR
