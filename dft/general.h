@@ -21,6 +21,13 @@
 #define FSYM(a) a ## _
 #endif
 
+#ifdef VAR_PGF77
+#define __FUNCTION__ "PGI_does_not_define__FUNCTION__"
+#define "PGI"
+#else
+#warning "OK"
+#endif
+
 #define ELEMENTS(arr) (sizeof(arr)/sizeof(arr[0]))
 
 /* define the basic floating-point variable type used by the Fortran code */

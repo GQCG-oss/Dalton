@@ -59,9 +59,6 @@ CFILES =\
 
 EXTRA_FILES = fun-tester.c
 
-CCOMPILE = $(CC)  $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
-FCOMPILE = $(F77) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(FFLAGS)
-
 ftnchek: pre
 	ftnchek $(CHEKFLAGS) *.i > dft.ftnchek
 

@@ -5,8 +5,8 @@
 */
 /* define VAR_MPI if you want to use parallel grid generation 
  * for later parallel MPI calculation.
-
-/* define USE_PTHREADS if you want to use multithreaded grid
+ *
+ * define USE_PTHREADS if you want to use multithreaded grid
  * generation.  It allows to take an advantage of SMP
  * architectures. It is currently implemented for BECKE, BECK2 and SSF
  * type grids (i.e those that do the work in the preprocessing phase.

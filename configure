@@ -162,7 +162,7 @@ case $WHICH in
               ccmplist='cc';;
     linux)    liblist='libmkl_p3.a libatlas.a libblas.a'
               complist='ifc efc pgf77 g77'
-              ccmplist='icc ecc gcc pgcc';;
+              ccmplist='icc ecc pgcc gcc';;
     darwin)   liblist='libatlas.a libblas.a'
               complist='g77 f77'
 #                       f77 is the Absoft v8.0 compiler
@@ -746,7 +746,7 @@ case "$WHICH" in
 		       cpp=${cpp}",-DNO_F90"
 		   fi
             esac
-            copt="$copt -I../include -DSYS_AIX -D_LARGE_FILES -qlonglong -O3 -qarch=auto -qtune=auto"
+            copt="$copt -I../include -DSYS_AIX -D_LARGE_FILES -qlanglbl=stdc99 -DRESTRICT=restrict -O3 -qarch=auto -qtune=auto"
             opt='-O3 -qstrict -qarch=auto -qtune=auto -qmaxmem=-1 -bmaxdata:0x40000000 -bmaxstack:0x10000000 -qextname';;
     iris4d) case $opsys in
                IRIX64) opt='-O2 -64 -mips4 -G 0 -woff 2290 -OPT:Olimit=0'
@@ -920,7 +920,9 @@ case "$WHICH" in
              LIBS="$LIBS -Vaxlib -lsvml"
              ;;
           pgf77)
-             if [ $prc = 'i686' ]; then
+             if grep -q sse2 /proc/cpuinfo >& /dev/null; then
+                 proc='-tp p7'
+             elif [ $prc = 'i686' ]; then
                  proc='-tp p6'
              elif [ $prc = 'i586' ]; then
                  proc='-tp p5'
@@ -928,8 +930,8 @@ case "$WHICH" in
                  proc=''
              fi
              cpp="-DVAR_PGF77 $cpp"
-             copt="-O3"
-             opt="-O3 $proc -Munroll"; safe_opt="$proc"
+             copt="-fastsse $proc -Munroll -c9x -DRESTRICT=restrict"
+             opt="-fastsse $proc -Munroll"; safe_opt="-fastsse $proc"
              ;;
           *)
               test_linux_g77=false
@@ -1114,7 +1116,7 @@ $tab\$(F77) \$(FFLAGS) -c \$*.f
 $tab\$(RM) \$*.f
 
 .c.o:
-$tab\$(CC) \$(CFLAGS) \$(FFLAGS) -c \$*.c
+$tab\$(CC) \$(CFLAGS) -c \$*.c
 
 .F.i:
 $tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) -E \$*.F > \$*.i
@@ -1129,7 +1131,7 @@ EOF
 $tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) \$(FFLAGS) -c \$*.F 
 
 .c.o:
-$tab\$(CC) \$(CFLAGS) \$(FFLAGS) -c \$*.c 
+$tab\$(CC) \$(CFLAGS) -c \$*.c 
 
 .F.i:
 $tab\$(F77) \$(INCLUDES) \$(CPPFLAGS) -E \$*.F > \$*.i
