@@ -515,6 +515,13 @@ Wave Function:    MCSCF (CAS)
 Test Purpose:     Polarizability
 
 
+rsp_mcdbterm
+----------
+Molecule:         H3+
+Wave Function:    MCSCF (CAS) = FCI
+Test Purpose:     B-term (components) of Magnetic circular dichroism
+
+
 rsp_propave
 -----------
 Molecule:         LiH
