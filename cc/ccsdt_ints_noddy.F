@@ -42,14 +42,14 @@ C     XINT2 = XINT2 + (K^p0 C^h0|L^p0 J^h1)
 C
 C
 #include <implicit.h>
-      DIMENSION XINT1(NT1AMX,NVIRT,NVIRT), XINT2(NT1AMX,NRHFT,NRHFT)
-      DIMENSION XLAMDP0(NBAST,NORBT), XLAMDH0(NBAST,NORBT)
-      DIMENSION XLAMDP1(NBAST,NORBT), XLAMDH1(NBAST,NORBT)
-      DIMENSION AOINT(NNBAST,NBAST)
 #include <priunit.h>
 #include <inforb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+      DIMENSION XINT1(NT1AMX,NVIRT,NVIRT), XINT2(NT1AMX,NRHFT,NRHFT)
+      DIMENSION XLAMDP0(NBAST,NORBT), XLAMDH0(NBAST,NORBT)
+      DIMENSION XLAMDP1(NBAST,NORBT), XLAMDH1(NBAST,NORBT)
+      DIMENSION AOINT(NNBAST,NBAST)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -106,15 +106,15 @@ C     XINT1 = XINT1 + (C^p1 K^h1|B^p2 D^h0)
 C     XINT2 = XINT2 + (C^p1 K^h1|L^p0 J^h2)
 C
 #include <implicit.h>
+#include <priunit.h>
+#include <inforb.h>
+#include <ccsdinp.h>
+#include <ccsdsym.h>
       DIMENSION XINT1(NT1AMX,NVIRT,NVIRT), XINT2(NT1AMX,NRHFT,NRHFT)
       DIMENSION XLAMDP0(NBAST,NORBT), XLAMDH0(NBAST,NORBT)
       DIMENSION XLAMDP1(NBAST,NORBT), XLAMDH1(NBAST,NORBT)
       DIMENSION XLAMDP2(NBAST,NORBT), XLAMDH2(NBAST,NORBT)
       DIMENSION AOINT(NNBAST,NBAST)
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C

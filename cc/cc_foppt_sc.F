@@ -58,6 +58,17 @@ C     For CCSD(T) we do not use LUDELD,FNDELD,LUCKJD,FNCKJD,LUDKBC,FNDKBC
 C
       IMPLICIT NONE
 C
+#include <priunit.h>
+#include <dummy.h>
+#include <iratdef.h>
+#include <ccsdsym.h>
+#include <inftap.h>
+#include <ccinftap.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
+#include <ccfop.h>
+#include <second.h>
+C
       INTEGER ISYMTR, ISYMT1, ISYMT2, ISYML1, ISYML2, LWORK
       INTEGER ISYRES, ISINT1, ISINT2, ISYMIM, KFOCKD
       INTEGER KOMG22, KCMO, KEND0, LWRK0, KTROC2
@@ -93,7 +104,7 @@ C
       REAL XT2TP, DDOT, XIAJB, XINT, XTROC, XTROC1, XTROC0
       REAL XTRVI0, XTRVI2, XTRVI3, XTRVI, XTRVI1, XDIA
       REAL XSMAT, XTMAT, XQMAT, XRMAT, ZERO, TWO, HALF
-      REAL DTIME,SECOND
+      REAL DTIME
 #else
       DOUBLE PRECISION T1AM(*), T2TP(*)
       DOUBLE PRECISION L1AM(*), L2TP(*)
@@ -104,20 +115,7 @@ C
       DOUBLE PRECISION XTRVI0, XTRVI2, XTRVI3, XTRVI, XTRVI1, XDIA
       DOUBLE PRECISION XSMAT, XTMAT, XQMAT, XRMAT, ZERO, TWO, HALF
       DOUBLE PRECISION DTIME
-#if !defined (SYS_LINUX)
-      DOUBLE PRECISION SECOND
 #endif
-#endif
-C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccfop.h>
 C
       LOGICAL   C3LRSV, CC1ASV, CC1BSV, LDEBUG
       logical locdbg

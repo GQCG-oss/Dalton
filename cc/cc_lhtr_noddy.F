@@ -63,12 +63,6 @@ C
 #include <maxorb.h>
 #include <maxash.h>
 #include <aovec.h>
-      PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
-C
-      DIMENSION INDEXA(MXCORB)
-      DIMENSION OMEGA1(*),OMEGA2(*),T1AM(*),T2AM(*), C1AM(*), C2AM(*)
-      DIMENSION XLAMDP(*),XLAMDH(*),WORK(LWORK)
-C
 #include <inforb.h>
 #include <infind.h>
 #include <blocks.h>
@@ -76,12 +70,13 @@ C
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 #include <ccsdio.h>
-COMMENT COMMENT
-COMMENT COMMENT
 #include <mxcent.h>
 #include <eribuf.h>
-COMMENT COMMENT
-COMMENT COMMENT
+      PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
+C
+      DIMENSION INDEXA(MXCORB)
+      DIMENSION OMEGA1(*),OMEGA2(*),T1AM(*),T2AM(*), C1AM(*), C2AM(*)
+      DIMENSION XLAMDP(*),XLAMDH(*),WORK(LWORK)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -505,10 +500,10 @@ C  /* Deck temppr */
       SUBROUTINE TEMPPR(T3AM,IOPT)
 C
 #include <implicit.h>
-      DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX)
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
+      DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX)
 C
       CALL AROUND('ENTERED TEMPPR')
       WRITE(LUPRI,*) 'IOPT  = ',IOPT
@@ -563,13 +558,13 @@ C
 C
 C
 #include <implicit.h>
-      DIMENSION OMEGA1(NT1AMX), YIAJB(NT1AMX,NT1AMX)
-      DIMENSION XIAJB(NT1AMX,NT1AMX)
-      DIMENSION C2AM(NT1AMX,NT1AMX), T3AM(NT1AMX,NT1AMX,NT1AMX)
 #include <priunit.h>
 #include <inforb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+      DIMENSION OMEGA1(NT1AMX), YIAJB(NT1AMX,NT1AMX)
+      DIMENSION XIAJB(NT1AMX,NT1AMX)
+      DIMENSION C2AM(NT1AMX,NT1AMX), T3AM(NT1AMX,NT1AMX,NT1AMX)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -612,13 +607,13 @@ C
 C
 C
 #include <implicit.h>
-      DIMENSION OMEGA1(NT1AMX), YIAJB(NT1AMX,NT1AMX)
-      DIMENSION XIAJB(NT1AMX,NT1AMX)
-      DIMENSION C2AM(NT1AMX,NT1AMX), T3AM(NT1AMX,NT1AMX,NT1AMX)
 #include <priunit.h>
 #include <inforb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+      DIMENSION OMEGA1(NT1AMX), YIAJB(NT1AMX,NT1AMX)
+      DIMENSION XIAJB(NT1AMX,NT1AMX)
+      DIMENSION C2AM(NT1AMX,NT1AMX), T3AM(NT1AMX,NT1AMX,NT1AMX)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -662,12 +657,12 @@ C     Note : XIAJB is L and not g.
 C
 C
 #include <implicit.h>
-      DIMENSION OMEGA1(NT1AMX), XIAJB(NT1AMX,NT1AMX)
-      DIMENSION C2AM(NT1AMX,NT1AMX), T3AM(NT1AMX,NT1AMX,NT1AMX)
 #include <priunit.h>
 #include <inforb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+      DIMENSION OMEGA1(NT1AMX), XIAJB(NT1AMX,NT1AMX)
+      DIMENSION C2AM(NT1AMX,NT1AMX), T3AM(NT1AMX,NT1AMX,NT1AMX)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -779,6 +774,10 @@ C
 C
 C
 #include <implicit.h>
+#include <priunit.h>
+#include <inforb.h>
+#include <ccsdinp.h>
+#include <ccsdsym.h>
 C
       PARAMETER (TWO = 2.0D0)
 C
@@ -787,10 +786,6 @@ C
       DIMENSION T3BAR(NT1AMX, NT1AMX,NT1AMX), SCR1(NT1AMX), FOCKD(*)
       DIMENSION T1AM(NT1AMX), T2AM(NT1AMX,NT1AMX)
       LOGICAL LDBG1, LDBG2
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -1050,14 +1045,14 @@ C  /* Deck khtcme */
 C
 C
 #include <implicit.h>
-      DIMENSION XINT1(NT1AMX,NVIRT,NVIRT)
-      DIMENSION XINT3(NT1AMX,NVIRT,NVIRT)
-      DIMENSION XINT2(NT1AMX,NRHFT,NRHFT)
-      DIMENSION XINT4(NT1AMX,NRHFT,NRHFT)
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+      DIMENSION XINT1(NT1AMX,NVIRT,NVIRT)
+      DIMENSION XINT3(NT1AMX,NVIRT,NVIRT)
+      DIMENSION XINT2(NT1AMX,NRHFT,NRHFT)
+      DIMENSION XINT4(NT1AMX,NRHFT,NRHFT)
 C
       PARAMETER (TWO = 2.0D0)
 C
@@ -1162,14 +1157,14 @@ C  /* Deck khtcme */
 C
 C
 #include <implicit.h>
-      DIMENSION XINT1(NT1AMX,NVIRT,NVIRT)
-      DIMENSION XINT3(NT1AMX,NVIRT,NVIRT)
-      DIMENSION XINT2(NT1AMX,NRHFT,NRHFT)
-      DIMENSION XINT4(NT1AMX,NRHFT,NRHFT)
 #include <priunit.h>
 #include <ccorb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+      DIMENSION XINT1(NT1AMX,NVIRT,NVIRT)
+      DIMENSION XINT3(NT1AMX,NVIRT,NVIRT)
+      DIMENSION XINT2(NT1AMX,NRHFT,NRHFT)
+      DIMENSION XINT4(NT1AMX,NRHFT,NRHFT)
 C
       PARAMETER (TWO = 2.0D0)
 C
@@ -1289,6 +1284,10 @@ C
 C     Calculate the doubles of the L3 part of CC3 left hand side doubles
 C
 #include <implicit.h>
+#include <priunit.h>
+#include <inforb.h>
+#include <ccsdinp.h>
+#include <ccsdsym.h>
 C
       INTEGER INDEX, NAI, NBJ, NBK, NAK, NCK, NCJ, NCI, NDJ, NDK, NDI
       INTEGER NBL, NCL, NAL, NAJ, NBI, AI
@@ -1308,10 +1307,6 @@ C
 #endif
       PARAMETER (ONE = 1.0D0, TWO = 2.0D0)
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -1418,6 +1413,10 @@ C
 C     Calculate the doubles of the L3 part of CC3 left hand side singles
 C
 #include <implicit.h>
+#include <priunit.h>
+#include <inforb.h>
+#include <ccsdinp.h>
+#include <ccsdsym.h>
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)
@@ -1446,10 +1445,6 @@ C
 #endif
       PARAMETER (ONE = 1.0D0, TWO = 2.0D0)
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -1759,13 +1754,13 @@ C  /* Deck new_int_output */
       SUBROUTINE NEW_INT_OUTPUT(XINT1,XINT2,XINT3,XINT4)
 C
 #include <implicit.h>
+#include <priunit.h>
+#include <ccorb.h>
+#include <ccsdsym.h>
       DIMENSION XINT1(NRHFT,NVIRT,NVIRT,NRHFT)
       DIMENSION XINT2(NRHFT,NRHFT,NVIRT,NVIRT)
       DIMENSION XINT3(NRHFT,NRHFT,NRHFT,NRHFT)
       DIMENSION XINT4(NVIRT,NVIRT,NVIRT,NVIRT)
-#include <priunit.h>
-#include <ccorb.h>
-#include <ccsdsym.h>
 C
       CALL AROUND('ENTERED NEW_INT_OUTPUT')
 C

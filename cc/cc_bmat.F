@@ -191,6 +191,7 @@ c/* Deck CC_BMAT */
 #include "ccfield.h"
 #include "aovec.h"
 #include "blocks.h"
+#include "second.h"
 
 * local parameters:
       CHARACTER MSGDBG*(16)
@@ -2154,6 +2155,7 @@ c/* Deck CCBMAT2 */
 #include <ccsdinp.h>
 #include <ccorb.h>
 #include <ccfield.h>
+#include <second.h>
 
 
 * local parameters:
@@ -3001,6 +3003,7 @@ c/* Deck CCBINT1 */
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 #include <ccorb.h>
+#include <second.h>
 
 * local parameters:
       LOGICAL LOCDBG
@@ -3314,6 +3317,7 @@ c/* Deck CCBINT3 */
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 #include <ccorb.h>
+#include <second.h>
 
 * local parameters:
       LOGICAL LOCDBG
@@ -5555,6 +5559,7 @@ C  /* Deck ccbpre1int */
 #include <ccsdsym.h>
 #include <ccsdinp.h>
 #include <cciccset.h>
+#include <second.h>
 
       INTEGER ISYM0
       PARAMETER (ISYM0 = 1)

@@ -87,6 +87,7 @@ c*DECK CC_RHTR3
 #include <cclr.h>
 #include <blocks.h>
 #include <ccsdio.h>
+#include <second.h>
 !
       INTEGER LWORK, LUC, LUD, LUCS, LUP, LUM, IERRC, IERRD, IERRCS
       INTEGER IERRP, IERRM, LUDTIM, LUCSIM, IERRDTIM, LUB3

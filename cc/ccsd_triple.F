@@ -64,6 +64,19 @@ C
 #include <maxorb.h>
 #include <maxash.h>
 #include <aovec.h>
+C#include <inforb.h>
+#include <ccorb.h>
+#include <infind.h>
+#include <iratdef.h>
+#include <blocks.h>
+#include <inftap.h>
+#include <ccsdinp.h>
+#include <ccsdsym.h>
+C#include <ccsdio.h>
+#include <mxcent.h>
+#include <eribuf.h>
+#include <ccfield.h>
+
 #if defined (SYS_CRAY)
       REAL ZERO, HALF, ONE, TWO
 #else
@@ -80,18 +93,6 @@ C
       DOUBLE PRECISION XLAMDP(*),XLAMDH(*),WORK(LWORK)
 #endif
 C
-C#include <inforb.h>
-#include <ccorb.h>
-#include <infind.h>
-#include <iratdef.h>
-#include <blocks.h>
-#include <inftap.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
-C#include <ccsdio.h>
-#include <mxcent.h>
-#include <eribuf.h>
-#include <ccfield.h>
 C
       INTEGER INDEX, KCMO, KSCR1, KFOCKD, KINT1, KINT2, KINT1T, KINT2T,
      &        KINT1S, KINT2S, KT3AM, KOME1, KOME2, KIAJB, KSIG2, KYIAJB,
@@ -426,12 +427,12 @@ C
 C
 C
 #include <implicit.h>
-      PARAMETER (TWO=2.0d0)
-      DIMENSION T2AM(NT1AMX,NT1AMX),OMEGA2(NT1AMX,NT1AMX)
 #include <priunit.h>
 #include <inforb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+      PARAMETER (TWO=2.0d0)
+      DIMENSION T2AM(NT1AMX,NT1AMX),OMEGA2(NT1AMX,NT1AMX)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -462,13 +463,13 @@ C
 C
 C
 #include <implicit.h>
-      DIMENSION XINT1(NT1AMX,NVIRT,NVIRT), XINT2(NT1AMX,NRHFT,NRHFT)
-      DIMENSION XLAMDP(NBAST,NORBT), XLAMDH(NBAST,NORBT)
-      DIMENSION AOINT(NNBAST,NBAST)
 #include <priunit.h>
 #include <inforb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+      DIMENSION XINT1(NT1AMX,NVIRT,NVIRT), XINT2(NT1AMX,NRHFT,NRHFT)
+      DIMENSION XLAMDP(NBAST,NORBT), XLAMDH(NBAST,NORBT)
+      DIMENSION AOINT(NNBAST,NBAST)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -522,14 +523,15 @@ C
 C
 C
 #include <implicit.h>
-      PARAMETER (TWO = 2.0D0)
-      DIMENSION XIAJB(NT1AMX,NT1AMX), AOINT(NNBAST,NBAST)
-      DIMENSION YIAJB(NT1AMX,NT1AMX)
-      DIMENSION CMO(NORBT,NORBT)
 #include <priunit.h>
 #include <inforb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+
+      PARAMETER (TWO = 2.0D0)
+      DIMENSION XIAJB(NT1AMX,NT1AMX), AOINT(NNBAST,NBAST)
+      DIMENSION YIAJB(NT1AMX,NT1AMX)
+      DIMENSION CMO(NORBT,NORBT)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -573,14 +575,15 @@ C
 C
 C
 #include <implicit.h>
-      PARAMETER (TWO = 2.0D0)
-      DIMENSION XIAJB(NT1AMX,NT1AMX), AOINT(NNBAST,NBAST)
-      DIMENSION YIAJB(NT1AMX,NT1AMX)
-      DIMENSION XLAMDP(NBAST,NORBT), XLAMDH(NBAST,NORBT)
 #include <priunit.h>
 #include <inforb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+
+      PARAMETER (TWO = 2.0D0)
+      DIMENSION XIAJB(NT1AMX,NT1AMX), AOINT(NNBAST,NBAST)
+      DIMENSION YIAJB(NT1AMX,NT1AMX)
+      DIMENSION XLAMDP(NBAST,NORBT), XLAMDH(NBAST,NORBT)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -628,16 +631,17 @@ C
 C
 C
 #include <implicit.h>
-      DIMENSION XINT1(NT1AMX,NVIRT,NVIRT), XINT2(NT1AMX,NRHFT,NRHFT)
-      DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX),SCR1(NT1AMX),FOCKD(NORBT)
-      DIMENSION T2AM(NT1AMX,NT1AMX)
-      DIMENSION FCKFIELD(NORBT,NORBT)
-      DIMENSION T3AM2(NT1AMX,NT1AMX,NT1AMX)
 #include <priunit.h>
 #include <inforb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
 #include <ccfield.h>
+
+      DIMENSION XINT1(NT1AMX,NVIRT,NVIRT), XINT2(NT1AMX,NRHFT,NRHFT)
+      DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX),SCR1(NT1AMX),FOCKD(NORBT)
+      DIMENSION T2AM(NT1AMX,NT1AMX)
+      DIMENSION FCKFIELD(NORBT,NORBT)
+      DIMENSION T3AM2(NT1AMX,NT1AMX,NT1AMX)
 C
       LOGICAL NONCONV, ITERATIVE
 C
@@ -907,13 +911,14 @@ C
 C
 C
 #include <implicit.h>
-      PARAMETER (TWO = 2.0D0)
-      DIMENSION OMEGA1(NT1AMX),XIAJB(NT1AMX,NT1AMX)
-      DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX)
 #include <priunit.h>
 #include <inforb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+
+      PARAMETER (TWO = 2.0D0)
+      DIMENSION OMEGA1(NT1AMX),XIAJB(NT1AMX,NT1AMX)
+      DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -946,15 +951,15 @@ C
 C
 C
 #include <implicit.h>
+#include <priunit.h>
+#include <inforb.h>
+#include <ccsdinp.h>
+#include <ccsdsym.h>
       PARAMETER (TWO = 2.0D0)
       DIMENSION XINT1T(NT1AMX,NVIRT,NVIRT)
       DIMENSION XINT2T(NT1AMX,NRHFT,NRHFT)
       DIMENSION OMEGA2(NT1AMX,NT1AMX)
       DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX),FOCK(NORBT,NORBT)
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -1029,15 +1034,15 @@ C
 C
 C
 #include <implicit.h>
+#include <priunit.h>
+#include <inforb.h>
+#include <ccsdinp.h>
+#include <ccsdsym.h>
       PARAMETER (TWO = 2.0D0)
       DIMENSION T1AM(NT1AMX)
       DIMENSION XIAJB(NT1AMX,NT1AMX), YIAJB(NT1AMX,NT1AMX)
       DIMENSION SIGMA2(NT1AMX,NT1AMX)
       DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX)
-#include <priunit.h>
-#include <inforb.h>
-#include <ccsdinp.h>
-#include <ccsdsym.h>
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C
@@ -1111,13 +1116,13 @@ C
 C
 C
 #include <implicit.h>
-      DIMENSION XINT1(NT1AMX,NVIRT,NVIRT), XINT2(NT1AMX,NRHFT,NRHFT)
-      DIMENSION XLAMDP(NBAST,NORBT), XLAMDH(NBAST,NORBT)
-      DIMENSION AOINT(NNBAST,NBAST)
 #include <priunit.h>
 #include <inforb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+      DIMENSION XINT1(NT1AMX,NVIRT,NVIRT), XINT2(NT1AMX,NRHFT,NRHFT)
+      DIMENSION XLAMDP(NBAST,NORBT), XLAMDH(NBAST,NORBT)
+      DIMENSION AOINT(NNBAST,NBAST)
 C
       INDEX(I,J) = MAX(I,J)*(MAX(I,J)-3)/2 + I + J
 C

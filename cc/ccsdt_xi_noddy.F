@@ -1192,14 +1192,14 @@ C     response version of T3AM: T3AM needs to be initialized from
 C                               the outside and a frequency is included
 C
 #include <implicit.h>
-      DIMENSION XINT1(NT1AMX,NVIRT,NVIRT), XINT2(NT1AMX,NRHFT,NRHFT)
-      DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX),SCR1(NT1AMX),FOCKD(NORBT)
-      DIMENSION T2AM(NT1AMX,NT1AMX)
-      DIMENSION T3AM2(NT1AMX,NT1AMX,NT1AMX)
 #include <priunit.h>
 #include <inforb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+      DIMENSION XINT1(NT1AMX,NVIRT,NVIRT), XINT2(NT1AMX,NRHFT,NRHFT)
+      DIMENSION T3AM(NT1AMX,NT1AMX,NT1AMX),SCR1(NT1AMX),FOCKD(NORBT)
+      DIMENSION T2AM(NT1AMX,NT1AMX)
+      DIMENSION T3AM2(NT1AMX,NT1AMX,NT1AMX)
 C
       PARAMETER (HALF = 0.5D0)
 C
@@ -1269,13 +1269,13 @@ C     Compute a response Fock matrix:
 C        FOCK(kc) = FOCK(kc) + sum_ia L_kcia t_ia
 C
 #include <implicit.h>
-      DIMENSION XLIAJB(NT1AMX,NT1AMX)
-      DIMENSION T1AM(NT1AMX)
-      DIMENSION FOCK(NORBT,NORBT)
 #include <priunit.h>
 #include <inforb.h>
 #include <ccsdinp.h>
 #include <ccsdsym.h>
+      DIMENSION XLIAJB(NT1AMX,NT1AMX)
+      DIMENSION T1AM(NT1AMX)
+      DIMENSION FOCK(NORBT,NORBT)
 
       DO NK = 1, NRHFT
         DO NC = 1, NVIRT

@@ -51,6 +51,16 @@ C         Isyres = isymt1*isymt2*isymop
 C
       IMPLICIT NONE
 C
+#include <priunit.h>
+#include <dummy.h>
+#include <iratdef.h>
+#include <ccsdsym.h>
+#include <inftap.h>
+#include <ccinftap.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
+#include <second.h>
+C
       INTEGER ISYMT1, ISYMT2, LWORK
       INTEGER ISYMTR, ISYRES, ISINT1, ISINT2, ISYMIM, KFOCKD, KOMG1
       INTEGER KOMG22, KCMO, KEND0, LWRK0, KTROC, KTROC1, KTROC2
@@ -73,7 +83,7 @@ C
       REAL XT2TP, DDOT, XIAJB, XINT, XTROC, XTROC1, XTROC0
       REAL XTRVI0, XTRVI2, XTRVI3, XTRVI, XTRVI1, XDIA
       REAL XSMAT, XTMAT, XQMAT, XRMAT, TWO, ZERO, HALF
-      REAL DTIME, SECOND
+      REAL DTIME
 #else
       DOUBLE PRECISION OMEGA1(*), OMEGA2(*), T1AM(*), T2TP(*)
       DOUBLE PRECISION WORK(LWORK), ONE
@@ -83,19 +93,7 @@ C
       DOUBLE PRECISION XTRVI0, XTRVI2, XTRVI3, XTRVI, XTRVI1, XDIA
       DOUBLE PRECISION XSMAT, XTMAT, XQMAT, XRMAT, TWO, ZERO, HALF
       DOUBLE PRECISION DTIME
-#if !defined (SYS_LINUX)
-      DOUBLE PRECISION SECOND
 #endif
-#endif
-C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
 C
       LOGICAL   C3LRSV, CC1ASV, CC1BSV
       CHARACTER*10 MODEL
@@ -2912,6 +2910,17 @@ C     For CCSD(T) we do not use LUDELD,FNDELD,LUCKJD,FNCKJD,LUDKBC,FNDKBC
 C
       IMPLICIT NONE
 C
+#include <priunit.h>
+#include <dummy.h>
+#include <iratdef.h>
+#include <ccsdsym.h>
+#include <inftap.h>
+#include <ccinftap.h>
+#include <ccorb.h>
+#include <ccsdinp.h>
+#include <ccfop.h>
+#include <second.h>
+C
       INTEGER ISYMTR, ISYMT1, ISYMT2, ISYML1, ISYML2, LWORK
       INTEGER ISYRES, ISINT1, ISINT2, ISYMIM, KFOCKD
       INTEGER KOMG22, KCMO, KEND0, LWRK0, KTROC2
@@ -2946,7 +2955,7 @@ C
       REAL XT2TP, DDOT, XIAJB, XINT, XTROC, XTROC1, XTROC0
       REAL XTRVI0, XTRVI2, XTRVI3, XTRVI, XTRVI1, XDIA
       REAL XSMAT, XTMAT, XQMAT, XRMAT, ZERO, TWO, HALF
-      REAL DTIME,SECOND
+      REAL DTIME
 #else
       DOUBLE PRECISION T1AM(*), T2TP(*)
       DOUBLE PRECISION L1AM(*), L2TP(*)
@@ -2957,20 +2966,7 @@ C
       DOUBLE PRECISION XTRVI0, XTRVI2, XTRVI3, XTRVI, XTRVI1, XDIA
       DOUBLE PRECISION XSMAT, XTMAT, XQMAT, XRMAT, ZERO, TWO, HALF
       DOUBLE PRECISION DTIME
-#if !defined (SYS_LINUX)
-      DOUBLE PRECISION SECOND
 #endif
-#endif
-C
-#include <priunit.h>
-#include <dummy.h>
-#include <iratdef.h>
-#include <ccsdsym.h>
-#include <inftap.h>
-#include <ccinftap.h>
-#include <ccorb.h>
-#include <ccsdinp.h>
-#include <ccfop.h>
 C
       LOGICAL   C3LRSV, CC1ASV, CC1BSV, LDEBUG
       CHARACTER*(*) FNDELD, FNCKJD, FNDKBC, FNTOC, FN3VI, FNDKBC3
@@ -2983,10 +2979,9 @@ C
       CHARACTER*10 MODEL
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
+      PARAMETER (LDEBUG = .FALSE.)
 C
       CALL QENTER('CCSDPT_DENS2')
-C
-      LDEBUG = .FALSE.
 C
 C-------------------------------------------------------------
 C     Set symmetry flags.
@@ -6178,10 +6173,10 @@ C
       LOGICAL LDEBUG
 C
       PARAMETER (HALF = 0.5D0)
+      PARAMETER (LDEBUG = .FALSE.)
 C
       CALL QENTER('SUM_PT3')
 C
-      LDEBUG = .FALSE.
 C
 C
       IF (IOPT .EQ. 1) THEN
@@ -6355,12 +6350,12 @@ C
 #endif
 C
       LOGICAL LDEBUG
+      PARAMETER ( LDEBUG = .FALSE. )
 C
       PARAMETER (ZERO = 0.0D0)
 C
       CALL QENTER('PRINT_PT3')
 C
-      LDEBUG = .FALSE.
 C
 C--------------------------------------------------------------
 C     Remove forbidden elements of the triples amplitudes.
@@ -6692,10 +6687,10 @@ C
 #include <ccsdinp.h>
 C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
+      PARAMETER(LDEBUG = .FALSE.)
 C
       CALL QENTER('CC3_UMAT')
 C
-      LDEBUG = .FALSE.
 C
 C------------------------
 C     Symmetries :
@@ -7487,10 +7482,10 @@ C
 #endif
 C
       LOGICAL LDEBUG
+      PARAMETER(LDEBUG = .FALSE.)
 C
       CALL QENTER('CCSDT_KAPPADIAG')
 C
-      LDEBUG = .FALSE.
 C
       LENGTH = NCKIJ(ISSMAT)
 C
