@@ -1,11 +1,11 @@
       LOGICAL NWPROP, NOMOVE, FSTPRP, NUMELC, CMPARE, SDRTST,
      &        RESTRT, DRYRUN, FRSTNM, PRPVIB, ADSTBK, NOADSY, 
-     &        MANUAL
+     &        MANUAL, MDEANA
       DIMENSION KDRYRN(6)
       COMMON /NUMDER/ KDRYRN, NMORDR, NAORDR, NTORDR, NDCOOR, 
      &                NMREDU, NUMCAL, MEMOFF, NMDPRP, NMRDRP,
      &                NARDRP, NMPCAL, NMEPRP, LUNDPR, NWPROP,
      &                NOMOVE, NUMELC, CMPARE, SDRTST, RESTRT,
      &                DRYRUN, FRSTNM, PRPVIB, MANUAL, ADSTBK,
-     &                NOADSY
+     &                NOADSY, MDEANA
       COMMON /NMDPRP/ NMEXCI, FSTPRP
