@@ -36,8 +36,10 @@ c     DFTINI
 C     intialize DFTCOM common block
       SUBROUTINE DFTINI
 #include <implicit.h>
+#include <mxcent.h>
 	PARAMETER (D0=0D0, D1=1D0)
 #include <dftcom.h>
+#include <dftacb.h>
       HFXFAC = D1
       WDFTX  = D0
       WDFTC  = D0
@@ -62,6 +64,11 @@ c     LEBMIN is in the common block but is used only internall in dftgrd
       NOPRUN = .FALSE.
       DOVWN3 = .FALSE.
       DOVWNI = .TRUE.
+C
+      DFTIPT = 1.0D-20
+      DFTBR1 = 1.0D-20
+      DFTBR2 = 1.0D-20
+C
       RETURN
       END
 C
