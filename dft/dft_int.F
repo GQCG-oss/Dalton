@@ -109,7 +109,6 @@ C     WRITE(2,*) ' node ', mynum,' knows of ', electrons
       ELCTRX = FLOAT(2*NISHT + NASHT)
       ERROR  = ELECTRONS - ELCTRX
       IF (CHECKELS.AND.ABS(ERROR) .GT. DFTELS) THEN
-D        print *,"ERROR=",ERROR,ELECTRONS
          WRITE (LUPRI,'(4(/2X,A,F14.6),/2X,A)')
      &   ' Number of electrons from numerical integration:',ELECTRONS,
      &   ' Number of electrons from orbital occupations:  ',ELCTRX,
