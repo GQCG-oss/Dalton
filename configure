@@ -24,6 +24,8 @@
 # compiler 990831-ekd
 # More intelligent attempts at including pdpack files according to available
 # machine libraries
+# For Red Hat 7.0 the shipped compiler (gcc-g77-2.96-54) does not 
+# work properly ... test and issue warning. kh010302
 #
 
 # set the target def 
@@ -185,7 +187,7 @@ if [ $WHICH = 'rs6000' ]; then
 fi
 
 #
-# For SGI we need to now if this is a 64 or 32 bits computer
+# For SGI we need to know if this is a 64 or 32 bits computer
 #
 
 if [ $WHICH = 'iris4d' ]; then
@@ -278,7 +280,7 @@ if [ "$answer" = "y" ]; then
 #
         if [ $WHICH = 'iris4d' ]; then
             if [ $opsys = 'IRIX64' ]; then
-                pardir="$dirlist /usr/lib64"
+                pardir="$dirlist /usr/lib64 /usr/lib64/mips4/"
             else
                 pardir="$dirlist /usr/lib32"
             fi
@@ -611,7 +613,7 @@ if [ -f Makefile.config ]; then
         done
         if [ "$answer" = "n" ];  then
             $ECHO 'I do not take a backup of Makefile.config. This file will be overwritten'
-	else
+        else
             exec `chmod u+w Makefile.config.orig`
             exec `mv Makefile.config Makefile.config.orig`
             exec `chmod u-w Makefile.config.orig`
@@ -807,6 +809,32 @@ case $WHICH in
                   copt=''
                   opt="-O3 $proc -Munroll"; safe_opt="$proc"
               else
+                  test_linux_g77=false
+                  if [ -s /etc/redhat-release ]; then
+                     if [ `grep "Red Hat Linux 7\.0" /etc/redhat-release | wc -l ` != 0 ]; then
+                        test_linux_g77="true"
+                     fi
+                  elif [ -d /proc ]; then
+                     if [ `cat /proc/version | grep "Red Hat Linux 7\.0" | wc -l` != "0" ]; then
+                        test_linux_g77="true"
+                     fi
+                  fi
+                  if [ $test_linux_g77 != "false" ]; then
+                     if [ `which rpm | wc -l ` != 0 ]; then
+                        if [ `rpm -q gcc-g77 | grep '2.96.54' | wc -l` != 0 ]; then
+                          $ECHO "WARNING   WARNING   WARNING   WARNING   WARNING"
+                          $ECHO "There are problems with the native Red Hat 7.0 compiler."
+                          $ECHO "You should upgrade your gcc and gcc-g77-2.96.54 compiler to version 2.96.69 or later."
+                          $ECHO "Dalton does NOT run correct with the current compiler."
+                          $ECHO "WARNING   WARNING   WARNING   WARNING   WARNING"
+                        fi
+                     else
+                          $ECHO "WARNING   WARNING   WARNING   WARNING   WARNING"
+                          $ECHO "I cannot determine if you use the original g77 compiler from Red Hat Linux 7.0."
+                          $ECHO "If you do, upgrade gcc & gcc-g77 to version 2.96.69 or later."
+                          $ECHO "Dalton does NOT run correct with the gcc-g77 2.96.54 compiler"
+                     fi
+                  fi
                   if [ $prc = 'i686' ]; then
                       proc=pentiumpro
                   elif [ $prc = 'i586' ]; then
