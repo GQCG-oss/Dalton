@@ -242,9 +242,26 @@ line containing the three Cartesian components (*). Default is~(0,0,0).
 \item Property label: \verb|XDIPVEL |, \verb|YDIPVEL |, \verb|ZDIPVEL |
 \end{list}
 
-\item[\Key{DPTOVL}] 
+\item[\Key{DPTOVL}] DPT integrals: Small-component one-electron
+overlap integrals.
 
-\item[\Key{DPTPOT}]
+\begin{list}{}{}
+\item Integral: $\left<\chi_{\mu}\mid\frac{\partial^2}{\partial {\mathbf
+r}^2}\mid\chi_{\nu}\right>$ 
+\item Property labels: \verb|dd/dxdx |, \verb|dd/dxdy |,
+\verb|dd/dxdz |,\verb|dd/dydy |, \verb|dd/dydz |, \verb|dd/dzdz |
+\end{list}
+
+\item[\Key{DPTPOT}] DPT integrals: Small-component one-electron
+potential energy integrals.
+
+\begin{list}{}{}
+\item Integral:$\left<\chi_{\mu}\mid\frac{\partial}{\partial {\mathbf
+r}}\frac{1}{\mathbf{R}_K}\frac{\partial}{\partial {\mathbf
+r}}\mid\chi_{\nu}\right>$ 
+\item Property labels: \verb|DERXXPVP|, \verb|DERXY+YX|,
+\verb|DERXZ+ZX|, \verb|DERYY   |, \verb|DERYZ+ZY|, \verb|DERZZ   |
+\end{list}
 
 \item[\Key{DSO}] Diamagnetic spin-orbit\index{diamagnetic spin-orbit}
 integrals. These are
