@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: herdrv.F,v 1.13 2001-05-18 08:30:02 vebjornb Exp $
+C$Id: herdrv.F,v 1.14 2001-05-28 10:32:04 hjj Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -3002,7 +3002,6 @@ C
       GENCON = .TRUE.
       BASIS  = .FALSE.
       ATOMBA = .FALSE.
-      PRIBAS = .FALSE.
       OLDNRM = .FALSE.
       TOLLRN = 0.0D0
       ZCMVAL = 1.0D0
