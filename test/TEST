@@ -158,7 +158,12 @@ fi
 # set list of test cases:
 #########################################################################
 testcase=$*
-if   [ "$testcase" = "essential" ]; then
+if   [ "$testcase" = "" ]; then
+  echo '    ***********************************'
+  echo '    * ERROR: No testcase(s) specified *'
+  echo '    ***********************************'
+  usage
+elif [ "$testcase" = "essential" ]; then
   testcase=$ESSENTIAL
 elif [ "$testcase" = "short" ]; then
   testcase=$SHORT
