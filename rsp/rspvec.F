@@ -29,11 +29,14 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rspvec.F,v 1.4 2001-03-29 08:06:45 hjj Exp $
+C$Id: rspvec.F,v 1.5 2001-04-03 07:26:27 coriani Exp $
 C
 #include <single.h>
 #ifdef REVLOG
 $Log: not supported by cvs2svn $
+Revision 1.4  2001/03/29 08:06:45  hjj
+Declare MJWOP in LRHYP so compiler knows it is a vector! /HJAaJ.
+
 Revision 1.3  2001/03/18 21:53:36  vebjornb
 Fixed several uninitialized variables
 
@@ -2123,15 +2126,10 @@ C
 c
                                  !GETGP uses variables in wrkrsp.h
                                  CALL GETGP(CLABEL,FC,CMO,UDV,PV,XINDX,
-     *                                              WRK(KFREE),LFREE)
+     *                                         ANTSYM,WRK(KFREE),LFREE)
 
-                                TM1 = DDOT(KZYVAR,WRK(KFREE),1,VECC,1)
-C
-C VB mar 2001:
-C     Assuming D05 should be DP5? (D05 is uninitialized)
-C
-C                                BCONTR = SMOM*TM1*D05
-                                BCONTR = SMOM*TM1*DP5
+                                 TM1 = DDOT(KZYVAR,WRK(KFREE),1,VECC,1)
+                                 BCONTR = SMOM*TM1*DP5
 c
                       WRITE(LUPRI,'(/A,(/A,5X,A,2I5),/A,5X,I8,2I5)')
      *   ' First order moment in a.u. for',
@@ -2139,8 +2137,6 @@ c
      *                       CLABEL,MSYMCX,ISPINC,
      *   ' Excited state no., symmetry, spin: ',IC,MSYMCX,ISPINC
                            WRITE(LUPRI,'(A,2F12.6)')
-c     *   ' Excitation energy in eV,    moment :            ',
-c     *                XTEV*EXCITA(MSYMC,IC,ISPINC+1),TM1
      *   ' Excitation energy in au,    moment :            ',
      *                     EXCITA(MSYMC,IC,ISPINC+1),TM1
                            WRITE(LUPRI,'(/A,F12.6,/A)')
