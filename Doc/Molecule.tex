@@ -8,15 +8,15 @@ The {\mol}-style input is originally based on the input for the {\mol}
 integral program by Alml\"{o}f~\cite{moleculeref}. However, there are
 few remnants of the original input structure. For users of earlier
 releases of the Dalton program, note should be taken of the fact that
-there been major changes in the input structure for the {\mol\} file,
-  though backward compatibility has in most cases been
-  retained\footnote{The two exceptions to the backward are that when
-    using the {\tt ATOMBASIS} keyword, the basis set name has to be
-    preceded by \" Basis=\" . When specifying the Cartesian
-    coordinates of the atoms, it is no longer required that the
-    coordinates start at position 5. However, blanks are no longer
-    allowed in the names of atoms, and the atom names are still
-    restricted to 4 characters.}.
+the input structure for the {\mol\} file has undergone major changes,
+however, backward compatibility has in most cases been
+retained\footnote{The two exceptions to the backward are that when
+using the {\tt ATOMBASIS} keyword, the basis set name has to be
+preceded by \" Basis=\". When specifying the Cartesian
+coordinates of the atoms, it is no longer required that the
+coordinates start at position 5. However, blanks are no longer
+allowed in the names of atoms, and the atom names are still
+restricted to 4 characters.}.
 The program supports both Cartesian\index{Cartesian coordinate input}
 and Z-matrix input\index{Z-matrix input} of the
 molecular coordinates. However, the Z-matrix input provided is only a
@@ -89,18 +89,17 @@ column spacings.
 \end{verbatim}
 
 We now define the input line-by-line.  The {\tt FORMAT} is given
-in parentheses.
+in parenthesis.
 \begin{description}
 \item[1] The word \verb|INTGRL|\index{INTGRL} {\tt (A6)}.
 \item[2-3] Two arbitrary title lines {\tt (A72)}.
 \item[4] General instructions about the molecule.
 
-This line keyword-driven. The general structure of the input is
-\verb|Keyword=|. The input is case sensitive, but it will recognize
+This line is keyword-driven. The general structure of the input is
+\verb|Keyword=|. The input is case sensitive, but \dalton\ will recognize
 the keywords whether specified with only three characters (minimum) or
 the full name (or any intermediate option). The order of the keywords
-is arbitrary. The following keywords are
-recognized for this line:
+is arbitrary. The following keywords are recognized for this line:
 \begin{description}
 \item[Angstrom] Indicates that the atomic Cartesian coordinates are
   given in \AA ngstr\"{o}m, and not in bohr (atomic units) which is
