@@ -44,7 +44,7 @@ may also be omitted in the previous example.
 
 The following input exemplifies the calculation of all orbital-relaxed
 first-order one-electron properties available in \cc, for the hierarchy of 
-wavefunction models SCF (indirectly obtained through CCS), MP2 and CCSD.
+wavefunction models SCF (indirectly obtained through CCS), MP2, CCSD and CCSD(T).
 For details, see Section~\ref{sec:ccfop}.
 \begin{verbatim}
 **GENERAL
@@ -62,6 +62,7 @@ For details, see Section~\ref{sec:ccfop}.
 .CCS              (gives SCF First order properties)
 .MP2              (default if CCSD is calculated)
 .CCSD
+.CC(T)
 *CCFOP
 .ALLONE
 *END OF INPUT
@@ -186,7 +187,7 @@ Note however that linear residues are not available
 for triplet states (The \Sec{CCLRSD} sections should be removed).
 
 \section{Gradient calculation, geometry optimization}
-Available for CCS, CC2, MP2, CCSD using integral direct analytic gradient.
+Available for CCS, CC2, MP2, CCSD and CCSD(T) using integral direct analytic gradient.
 
 \noindent For a single integral-direct gradient calculation:
 \begin{verbatim}
@@ -223,7 +224,7 @@ model in the list.
 *ORBITALS
 .NOSUPSYM
 *CC INPUT
-.CCSD
+.CC(T)
 *END OF
 \end{verbatim}
 
