@@ -1,6 +1,6 @@
 C
-C$Id: odbtch.h,v 1.1.1.1 2001-02-08 13:33:25 hjj Exp $
+C$Id: odbtch.h,v 1.2 2001-03-28 06:46:09 haettig Exp $
 C
-      PARAMETER (NPSORT = 6)
+      PARAMETER (NPSORT = 8)
       LOGICAL DOSORT
       COMMON /ODBTCH/ NODBCH, NODCLS, NODPPR, DOSORT(NPSORT)

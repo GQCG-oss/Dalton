@@ -1,6 +1,8 @@
 C
-C$Id: cbione.h,v 1.1.1.1 2001-02-08 13:33:29 hjj Exp $
+C$Id: cbione.h,v 1.2 2001-03-28 06:46:09 haettig Exp $
 C
-      LOGICAL         SKIP, DIFINT, NODC, NODV, DIFDIP, CUT, HFONLY
+      LOGICAL         SKIP, DIFINT, NODC, NODV, DIFDIP, CUT, HFONLY,
+     &                NCLONE
       COMMON /CBIONE/ IPRINT, SKIP, MAXDIF, IDATOM,
-     *                IDCOOR, DIFINT, NODC, NODV, DIFDIP, CUT, HFONLY
+     &                IDCOOR, DIFINT, NODC, NODV, DIFDIP, CUT, HFONLY,
+     &                NCLONE
