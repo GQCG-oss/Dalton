@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: aba2tex.F,v 1.1.1.1 2001-02-08 13:33:19 hjj Exp $
+C$Id: aba2tex.F,v 1.2 2001-03-30 07:11:38 vebjornb Exp $
 C
 #include <single.h>
 C  /* Deck twoinp */
@@ -382,7 +382,8 @@ C
          IF (LWUSE .GT. LWRK)
      &        CALL STOPIT('TWOEXP','PSORG',LWUSE,LWRK)
 #endif
-         CALL GPOPEN(LUPAO,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+         IF (LUPAO .LE. 0)
+     &        CALL GPOPEN(LUPAO,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
          CALL PSORG(WORK(KLAST),WORK(KLAST),LWUSE,WORK(KNCONT),IPRSOR,
      &              ANTI,PANTI)
          IF (IPRPTR .GE. 2) CALL TIMER('PSORT ',TIMSTR,TIMEND)
