@@ -87,9 +87,6 @@ C
 #endif
       CHARACTER*12 FILNAM
       PARAMETER (LWORK_DEF = INSTALL_WRKMEM)
-#if !defined (SYS_HAL) 
-      PARAMETER (IWOFF = 0)
-#endif
 #if defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_DEC) || (defined (SYS_LINUX) && defined (VAR_PGF77))
       POINTER (WADDR,WORK(1))
 #else
