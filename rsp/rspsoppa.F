@@ -59,6 +59,8 @@ C
 #include <infdim.h>
 #include <iratdef.h>
 C
+      CALL QENTER('SETSOPPA')
+C
 C  Find offsets in XINDX for AB and IJ address arrays and for
 C  the A(2) matrix. They will be placed in infsop.h.
 C
@@ -141,6 +143,7 @@ C
          N2P2HS(I) = NS2P2H(I) + NT2P2H(I)
          N2P2HT(I) = N12P2H(I) + N22P2H(I) + N32P2H(I)
       ENDDO
+      CALL QEXIT('SETSOPPA')
       RETURN
       END
 C
@@ -162,6 +165,8 @@ C
      &          IJSADR(NISHT,NISHT,NSYM), IJTADR(NISHT,NISHT,NSYM),
      &          IJ1ADR(NISHT,NISHT,NSYM), IJ2ADR(NISHT,NISHT,NSYM),
      &          IJ3ADR(NISHT,NISHT,NSYM), IADR1(MAXVIR,MAXOCC)
+C
+      CALL QENTER('SET2SOPPA')
 C
 C  Find offset-arrays for the symmetry packed 2p-2h vectors in SOPPA
 C  (singlet properties) and new IJ offsets for triplet properties
@@ -264,8 +269,9 @@ C  Find also IADR1 (the copy from the call to MP2SET has been overwritten)
 C
       CALL PHADR1(IADR1,1)
 C
-C  End of SETSOPPA
+C  End of SET2SOPPA
 C
+      CALL QEXIT('SET2SOPPA')
       RETURN
       END
 C  /* Deck a0s2 */
