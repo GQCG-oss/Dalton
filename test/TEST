@@ -23,7 +23,8 @@ rsp_mcdbterm rsp_propave rsp_socorr rsp_solvhyper rsp_soppa1excinosymm \
 rsp_soppa1excisymm rsp_soppa3excinosymm rsp_soppa3excisymm \
 rsp_soppafcnosymm rsp_soppafcsymm rsp_soppapolar rsp_soppapolarnosymm \
 rsp_soppapolarsymm rsp_sreslrso rsp_sresqr walk_gradex walk_image \
-walk_modeflw walk_polar walk_vibave walk_vibave2 walk_vibave3"
+walk_modeflw walk_polar walk_vibave walk_vibave2 walk_vibave3 \
+energy_douglaskroll "
 #
 SHORTCC="cc_rsp_alpha2 cc_rsp_beta cc_rsp_beta2 cc_rsp_betafreq \
 cc_rsp_betafreq2 cc_fop_drw2e cc_fop_prop cc_fop_prop2 cc_exgr_prop \

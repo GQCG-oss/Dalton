@@ -437,6 +437,14 @@ Test Purpose:     Check energy calculated directly (using TWOINT)
                   and with symmetry
 
 
+energy_douglaskroll
+-------------------
+Molecule:         N2
+Wave Function:    Hartree-Fock
+Test Purpose:     Check the construction and use of Douglas-Kroll
+                  one-electron potential for the calculation of SCF
+                  energies
+
 energy_nosymm
 -------------
 Molecule:         H2O
