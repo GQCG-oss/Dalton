@@ -1108,7 +1108,16 @@ CHEKFLAGS  = -nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet 
 # -usage=var-unitialized:arg-const-modified:arg-alias
 # -usage=var-unitialized:var-set-unused:arg-unused:arg-const-modified:arg-alias
 #
-default : $def
+default : setcomp $def
+
+# save info on last compilation, used in TSTAMP in gp/gphjj.F
+setcomp:
+	( \\
+	rm -f compinfo.h ; \\
+	echo "#define LAST_DALTON_COMPILATION \"\`date\` by \${LOGNAME}@\${HOST}\"" > compinfo.h ; \\
+	echo "#define F_AND_C_COMPILERS \"\${F77} \${CC}\"" >> compinfo.h ; \\
+	echo "#define LIBRARY_LIST  \"\${LIBS}\"" >> compinfo.h ; \\
+	)
 EOF
 
 #
