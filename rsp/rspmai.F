@@ -31,7 +31,7 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-#include <single.h>
+#include "single.h"
 C
 #ifdef REVISIONLOG
 ===========================================================================
@@ -57,7 +57,7 @@ more polishing of output (and fixed bugs in previous version).
 Revision 1.2 Jan 2000     hjj
 polish: print if TRPLET operator (singlet or triplet was
   missing in output, which made it difficult to follow at times!)
-  removed unnecessary "STOP"'s (which also could cause MPI problems)
+  removed unnecessary "STOP"s (which also could cause MPI problems)
   changed (2) to (*) in DIMENSIONs
   polishing
 
@@ -86,40 +86,40 @@ C
 C We assume that either the SIRIUS module or the SETSIR
 C subroutine has been called before RSPDRV.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION WRK(LWRK)
 C
-#include <iratdef.h>
+#include "iratdef.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
 C
 C Used from common blocks:
 C INFTRA : USEDRC
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <inforb.h>
-#include <infpri.h>
-#include <infmp2.h>
-#include <wrkrsp.h>
-#include <infrsp.h>
-#include <infdim.h>
-#include <inftra.h>
-#include <inftap.h>
-#include <inflr.h>
-#include <infpp.h>
-#include <infc6.h>
-#include <infhyp.h>
-#include <infsmo.h>
-#include <infs0.h>
-#include <infesr.h>
-#include <infcr.h>
-#include <inftmo.h>
-#include <inftpa.h>
-#include <infsop.h>
-#include <gnrinf.h>
-#include <infinp.h>
-#include <absorp.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "inforb.h"
+#include "infpri.h"
+#include "infmp2.h"
+#include "wrkrsp.h"
+#include "infrsp.h"
+#include "infdim.h"
+#include "inftra.h"
+#include "inftap.h"
+#include "inflr.h"
+#include "infpp.h"
+#include "infc6.h"
+#include "infhyp.h"
+#include "infsmo.h"
+#include "infs0.h"
+#include "infesr.h"
+#include "infcr.h"
+#include "inftmo.h"
+#include "inftpa.h"
+#include "infsop.h"
+#include "gnrinf.h"
+#include "infinp.h"
+#include "absorp.h"
 C
       LOGICAL SAVLR, DORESP, FLAGSV, EX
 C
@@ -127,7 +127,7 @@ C
       CALL GETTIM(CSTR,WSTR)
       WRITE (LUPRI,'(//A)')
      *   '  This is output from RESPONSE  -  '//
-     *   'an MCSCF and SOPPA response property program '
+     *   'an MCSCF and SOPPA response property program'
       WRITE (LUPRI,'(1X,78A1/)') ('-',I=1,78)
 C
 C     *************************
@@ -160,7 +160,7 @@ C
       CALL RSPACT
 C
       IF (INPTES) THEN
-         WRITE(LUPRI,'(//,A,/)') 
+         WRITE(LUPRI,'(//,A,/)')
      &        ' *** END of input test for RESPONSE ***'
          CALL QUIT('*** END of input test for RESPONSE ***')
       END IF
@@ -177,7 +177,7 @@ C     990505-hjaaj:
 C     Check if we only want expectation values
 C     (we don't need PV or MO integrals in that case)
 C
-      DORESP = CRCAL.OR.TOMOM.OR.TPAMP 
+      DORESP = CRCAL.OR.TOMOM.OR.TPAMP
       IF (HYPCAL.OR.SOMOM.OR.EXMOM) THEN
          IF (DORESP) THEN
             NWARN = NWARN + 1
@@ -534,26 +534,26 @@ C  /* Deck rsprea */
 C
 C <<< GENERAL INPUT FOR RESPONSE >>>
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
       PARAMETER ( NTABLE = 8 )
 C
-#include <priunit.h>
-#include <infpri.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <inflr.h>
-#include <infpp.h>
-#include <infc6.h>
-#include <infhyp.h>
-#include <infsmo.h>
-#include <infesr.h>
-#include <infcr.h>
-#include <inftmo.h>
-#include <inftpa.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <absorp.h>
+#include "priunit.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inflr.h"
+#include "infpp.h"
+#include "infc6.h"
+#include "infhyp.h"
+#include "infsmo.h"
+#include "infesr.h"
+#include "infcr.h"
+#include "inftmo.h"
+#include "inftpa.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "absorp.h"
 C
       CHARACTER WORD*7, PROMPT*1, TABLE(NTABLE)*7
 C
@@ -580,7 +580,7 @@ C
          NPPCNV(I) = 0
          NTPCN1(I) = 0
          NTPCN2(I) = 0
-         NTMCNV(I) = 0      
+         NTMCNV(I) = 0
       END DO
 C
 C Non-equilibrium solvent parameter read in SIRIUS needs to be reset
@@ -591,7 +591,7 @@ C
   100 READ (LUCMD, '(A7)',END=2100) WORD
       IF (WORD .NE. TABLE(2)) GO TO 100
 C
-  200 CONTINUE 
+  200 CONTINUE
       IF (WORD(1:2) .EQ. '**' .AND. .NOT. WORD .EQ. TABLE(2)) GO TO 1
 C     end of this input module
       PROMPT = WORD(1:1)
@@ -605,7 +605,7 @@ C
          WRITE (LUPRI,'(/,3A,/)')
      *        ' Keyword ',WORD,' not recognized in RSPREA.'
          CALL PRTAB(NTABLE,TABLE,WORD//' input keywords',LUPRI)
-         
+
          CALL QUIT(' ILLEGAL "*" OPTION IN RSPREA')
       ELSE
          WRITE (LUPRI,'(/,3A,/)')
@@ -638,7 +638,7 @@ C
 C
 C     We arrive at 2100 if no input file found. We return.
 C
- 2100 CONTINUE 
+ 2100 CONTINUE
       CALL GPCLOSE(LUCMD,'KEEP')
 C
       RETURN
@@ -649,20 +649,20 @@ C
 C  /* Deck rspinp */
       SUBROUTINE RSPINP(WORD)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infs0.h>
-#include <infpri.h>
-#include <infdim.h>
-#include <maxorb.h>
-#include <infvar.h>
-#include <gnrinf.h>
-#include <qrinf.h>
-#include <infave.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infs0.h"
+#include "infpri.h"
+#include "infdim.h"
+#include "maxorb.h"
+#include "infvar.h"
+#include "gnrinf.h"
+#include "qrinf.h"
+#include "infave.h"
+#include "inftap.h"
 C
       LOGICAL NEWDEF, SET
       PARAMETER ( NTABLE = 19 )
@@ -871,33 +871,33 @@ C
 C Initialize response common blocks
 C 25-Jan-1988; l.r. 14-Sep-1990
 C
-#include <implicit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <inflr.h>
-#include <infpp.h>
-#include <infc6.h>
-#include <infhyp.h>
-#include <infsmo.h>
-#include <infs0.h>
-#include <trhso.h>
-#include <maxorb.h>
-#include <infvar.h>
-#include <qrinf.h>
-#include <infesr.h>
-#include <infspi.h>
-#include <infhso.h>
-#include <infslv.h>
-#include <infcr.h>
-#include <inftmo.h>
-#include <inftpa.h>
-#include <mxcent.h>
-#include <elweak.h>
-#include <absorp.h>
+#include "implicit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inflr.h"
+#include "infpp.h"
+#include "infc6.h"
+#include "infhyp.h"
+#include "infsmo.h"
+#include "infs0.h"
+#include "trhso.h"
+#include "maxorb.h"
+#include "infvar.h"
+#include "qrinf.h"
+#include "infesr.h"
+#include "infspi.h"
+#include "infhso.h"
+#include "infslv.h"
+#include "infcr.h"
+#include "inftmo.h"
+#include "inftpa.h"
+#include "mxcent.h"
+#include "elweak.h"
+#include "absorp.h"
 C
 C     Initialization of RSPINP
       DATA INPTES/.FALSE./, AVDIA /.TRUE./
-      DATA SOPPA /.FALSE./, RSPCI /.FALSE./, NOITRA/.FALSE./ 
+      DATA SOPPA /.FALSE./, RSPCI /.FALSE./, NOITRA/.FALSE./
       DATA CCPPA /.FALSE./
       DATA NOS0MX/.TRUE./
       DATA TRPLET/.FALSE./, TRPFLG/.FALSE./
@@ -940,7 +940,7 @@ C     Initialization of TRHSO for HSOINP
       DATA OLDTRA/.FALSE./
 C     Initialization of INFHSO for HSOINP
       DATA TESTZY/.FALSE./, DOSO1/.TRUE./, DOSO2/.TRUE./, IPRHSO/0/
-      DATA X2MAT/.FALSE./, A2MAT/.FALSE./, X2GRAD/.FALSE./, 
+      DATA X2MAT/.FALSE./, A2MAT/.FALSE./, X2GRAD/.FALSE./,
      &     PHOSPH/.FALSE./, MNFPHO/.FALSE./
 C     Initialization of INFHYP
       DATA HYPCAL/.FALSE./
@@ -988,26 +988,26 @@ C  Initializing ABSORP
       END
 C  /* Deck ppinp */
       SUBROUTINE PPINP(WORD)
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL NEWDEF, SPNDEF
       PARAMETER ( NTABLE = 49 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infpri.h>
-#include <infpp.h>
-#include <rspprp.h>
-#include <infspi.h>
-#include <infhso.h>
-#include <inflr.h>
-#include <inflin.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infpri.h"
+#include "infpp.h"
+#include "rspprp.h"
+#include "infspi.h"
+#include "infhso.h"
+#include "inflr.h"
+#include "inflin.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inftap.h"
 C
       DATA TABLE /'.DIPLEN', '.DIPLNX', '.DIPLNY', '.DIPLNZ',
      *            '.DIPVEL', '.DIPVLX', '.DIPVLY', '.DIPVLZ',
@@ -1281,7 +1281,7 @@ C
          IF (SPNDEF) THEN
             TRPLET = .TRUE.
             TRPFLG = .TRUE.
-            WRITE(LUPRI,'(A,/)') 
+            WRITE(LUPRI,'(A,/)')
      *      ' Spin orbit matrix elements requested'
          END IF
          WRITE(LUPRI,'(A,I4)')
@@ -1311,7 +1311,7 @@ C
      *      ' ABCHK AND ABSYM CANNOT BOTH BE TRUE. ABCHK RESET TO FALSE'
          END IF
          IF (ANTTES) WRITE(LUPRI,'(/A,L1)')
-     *      ' ANTISYMMETRIC TEST OPTION. ANTTES =',ANTTES
+     *      ' ANTISYMMETRY TEST OPTION. ANTTES =',ANTTES
          IF (RESTPP) WRITE(LUPRI,'(/A,L1)')
      *      ' USE TRIAL VECTORS AVAILABLE FOR RESTART. RESTPP =',RESTPP
          IF (ABCHK) WRITE(LUPRI,'(/A,L1)')
@@ -1348,23 +1348,23 @@ C
 C  /* Deck lrinp */
       SUBROUTINE LRINP(WORD)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <inflr.h>
-#include <infpri.h>
-#include <rspprp.h>
-#include <infhso.h>
-#include <maxorb.h>
-#include <infinp.h>
-#include <inftap.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <gnrinf.h>
-#include <chrnos.h>
-#include <elweak.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inflr.h"
+#include "infpri.h"
+#include "rspprp.h"
+#include "infhso.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inftap.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "gnrinf.h"
+#include "chrnos.h"
+#include "elweak.h"
 C
       LOGICAL NEWDEF, SPNDEF
       PARAMETER ( NTABLE = 39 )
@@ -1377,7 +1377,7 @@ C
      *            '.QUADMO', '.QUADXX', '.QUADXY', '.QUADXZ',
      *            '.QUADYY', '.QUADYZ', '.QUADZZ', '.SPIN-O',
      *            '.SPNORX', '.SPNORY', '.SPNORZ', '.PROPRT',
-     *            '.MAXIT ', '.THCLR ', '.MAXITO', 
+     *            '.MAXIT ', '.THCLR ', '.MAXITO',
      *            '.PRINT ', '.FREQUE', '.ABOCHK', '.ISTOCK',
      *            '.MAXOCK', '.SOPRSY', '.RESTLR', '.DIROIT',
      *            '.TRIPLE', '.PV PSO', '.PV SO ', '.PV SO2'/
@@ -1563,12 +1563,12 @@ c ach
                   TRPFLG=.TRUE.
                   ELWEAK=.TRUE.
                   PVPSO =.TRUE.
-C PV from pso                                  
+C PV from pso
 
                   LLROP( INDPRP('PVIOLA X')) = .TRUE.
                   LLROP( INDPRP('PVIOLA Y')) = .TRUE.
                   LLROP( INDPRP('PVIOLA Z')) = .TRUE.
-C for pv  er det aldri symetri ? 
+C for pv  er det aldri symetri ?
 C                  if (NSYM .ne 1 ) call QUIT('PV-cannot be calculated'
 C#     &                 // ' with symmetry' )
 C
@@ -1583,11 +1583,11 @@ C
      &                       'PSO '//CHRNOS(IFIRST)//CHRNOS(ISECND)
      &                       //CHRNOS(ITHIRD)//' '))=.TRUE.
                      enddo
-                  enddo               
+                  enddo
                GO TO 100
  38            CONTINUE
-C PV from spin-orbit                
-                  PVSO =.TRUE.                
+C PV from spin-orbit
+                  PVSO =.TRUE.
                   TRPLET=.TRUE.
                   TRPFLG=.TRUE.
                   ELWEAK = .TRUE.
@@ -1607,7 +1607,7 @@ C PV from spin-orbit 2 el
                TRPLET=.TRUE.
                TRPFLG=.TRUE.
                ELWEAK = .TRUE.
-               
+
                LLROP( INDPRP('PVIOLA X')) = .TRUE.
                LLROP( INDPRP('PVIOLA Y')) = .TRUE.
                LLROP( INDPRP('PVIOLA Z')) = .TRUE.
@@ -1662,7 +1662,7 @@ C PV from spin-orbit 2 el
          IF (SPNDEF) THEN
             TRPLET = .TRUE.
             TRPFLG = .TRUE.
-            WRITE(LUPRI,'(A,L1,/)') 
+            WRITE(LUPRI,'(A,L1,/)')
      *      ' Spin orbit calculation requested               : TRPFLG ='
      *      ,TRPFLG
          END IF
@@ -1704,15 +1704,15 @@ C
 C  /* Deck c6inp */
       SUBROUTINE C6INP(WORD)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infc6.h>
-#include <infpri.h>
-#include <rspprp.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infc6.h"
+#include "infpri.h"
+#include "rspprp.h"
+#include "inftap.h"
 C
       LOGICAL NEWDEF
       PARAMETER ( NTABLE = 41 )
@@ -2063,27 +2063,27 @@ C    Used from common blocks:
 C    INFINP : SUPSYM
 C    INFORB : NSYM, NSSYM
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inforb.h>
-#include <infvar.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infvar.h"
 C
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <inftap.h>
-#include <rspprp.h>
-#include <infpp.h>
-#include <inflr.h>
-#include <infc6.h>
-#include <infsmo.h>
-#include <infhyp.h>
-#include <qrinf.h>
-#include <infesr.h>
-#include <trhso.h>
-#include <infcr.h>
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inftap.h"
+#include "rspprp.h"
+#include "infpp.h"
+#include "inflr.h"
+#include "infc6.h"
+#include "infsmo.h"
+#include "infhyp.h"
+#include "qrinf.h"
+#include "infesr.h"
+#include "trhso.h"
+#include "infcr.h"
 C
 C ****** Used unit names: ******
 C        (the file numbers are now assigned by GPOPEN)
@@ -2150,8 +2150,8 @@ C
 C  /* Deck indprp */
       INTEGER FUNCTION INDPRP(NEWLBL)
 C
-#include <priunit.h>
-#include <rspprp.h>
+#include "priunit.h"
+#include "rspprp.h"
 C
       CHARACTER*8 NEWLBL
       DO 100 I = 1,NPRLBL
@@ -2177,36 +2177,36 @@ C
 C DETERMINE HOW MANY OPERATORS OF EACH SYMMETRY THAT HAS TO BE
 C CALCULATED IN PP AND LR CALCULATION
 C
-#include <implicit.h>
-#include <iratdef.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "dummy.h"
 C
       DIMENSION  WRK(*)
 C
       PARAMETER ( D1 = 1.0D0 , D2 = 2.0D0 , D8=8.0D0 , D1000=1000.D0)
       PARAMETER ( D1INF = 0.99999D0 ,THREQL = 1.0D-8 ,CKMXPR = 1.0D-12)
 C
-#include <maxorb.h>
-#include <maxash.h>
-#include <priunit.h>
-#include <infrsp.h>
-#include <infind.h>
-#include <inforb.h>
-#include <inftap.h>
-#include <infpri.h>
-#include <infpp.h>
-#include <inflr.h>
-#include <infc6.h>
-#include <infhyp.h>
-#include <indqr.h>
-#include <infsmo.h>
-#include <infs0.h>
-#include <rspprp.h>
-#include <infesr.h>
-#include <infcr.h>
-#include <indcr.h>
-#include <inftmo.h>
-#include <inftpa.h>
+#include "maxorb.h"
+#include "maxash.h"
+#include "priunit.h"
+#include "infrsp.h"
+#include "infind.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "infpp.h"
+#include "inflr.h"
+#include "infc6.h"
+#include "infhyp.h"
+#include "indqr.h"
+#include "infsmo.h"
+#include "infs0.h"
+#include "rspprp.h"
+#include "infesr.h"
+#include "infcr.h"
+#include "indcr.h"
+#include "inftmo.h"
+#include "inftpa.h"
 C
       LOGICAL FNDLAB,FNDLB2,TRIMAT,TOFILE
 C
@@ -2388,7 +2388,7 @@ C
  256     CONTINUE
       END IF
       DO 250 IPRP = 1,NPRLBL
- 248     CONTINUE 
+ 248     CONTINUE
          REWIND (LUPROP)
          LABEL = PRPLBL(IPRP)
          IF (LABEL(3:8).EQ.'SPNORB') LABEL(2:2) = '1'
@@ -2455,8 +2455,8 @@ C
             END IF
 C
 C     Ask HERMIT to compute the integrals. As we will probably need more
-C     components later, we write to disk and read them in later when 
-C     necessary, K.Ruud,June 10 1996 
+C     components later, we write to disk and read them in later when
+C     necessary, K.Ruud,June 10 1996
 C
             CALL GPCLOSE(LUPROP,'KEEP')
             NPATOM = 0
@@ -2955,11 +2955,11 @@ C
 C  /* Deck anasym */
       SUBROUTINE ANASYM(NAOPNU,NBOPNU,NCOPNU,IWRK)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <priunit.h>
-#include <inforb.h>
-#include <infrsp.h>
+#include "priunit.h"
+#include "inforb.h"
+#include "infrsp.h"
 C
 C THIS ROUTINE ANALYZES IF OPERATORS THAT ARE SPECIFIED IN QUADRATIC
 C RESPONSE CALCULATIONS HAVE NO MATCHING PARTNERS DUE TO SYMMETRY.
@@ -3040,26 +3040,26 @@ C
 C  /* Deck rspvar */
       SUBROUTINE RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
 C
-#include <implicit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "dummy.h"
 C
       DIMENSION UDV(*),FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*)
       DIMENSION XINDX(*),WRK(*)
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <infpri.h>
-#include <infdim.h>
-#include <infvar.h>
-#include <inforb.h>
-#include <infopt.h>
-#include <inftap.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
-#include <infpp.h>
-#include <inflr.h>
-#include <infsop.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "infpri.h"
+#include "infdim.h"
+#include "infvar.h"
+#include "inforb.h"
+#include "infopt.h"
+#include "inftap.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "infpp.h"
+#include "inflr.h"
+#include "infsop.h"
 C
       CHARACTER*8 OPLBL(8)
       DATA OPLBL/'EXOPSYM1','EXOPSYM2','EXOPSYM3','EXOPSYM4',
@@ -3319,8 +3319,8 @@ C
 C   We assume that either the SIRIUS module or the SETSIR
 C   subroutine has been called before RSPMC.
 C
-#include <implicit.h>
-#include <infdim.h>
+#include "implicit.h"
+#include "infdim.h"
 C
       DIMENSION CMO(*),UDV(*),PV(*),XINDX(LCINDX),
      *          FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*),WRK(*)
@@ -3330,20 +3330,20 @@ C Used from common blocks:
 C SCBRHF : IOPRHF
 C QRINF  : MZCONF(1)
 C
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <inftap.h>
-#include <infopt.h>
-#include <infpri.h>
-#include <inforb.h>
-#include <infvar.h>
-#include <infsop.h>
-#include <inflin.h>
-#include <qrinf.h>
-#include <scbrhf.h>
-#include <infrsp.h>
-#include <wrkrsp.h>
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "inftap.h"
+#include "infopt.h"
+#include "infpri.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infsop.h"
+#include "inflin.h"
+#include "qrinf.h"
+#include "scbrhf.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
 C
 C     ====================================================
 C     Initial checks based on info in Sirius common blocks
@@ -3615,14 +3615,14 @@ C
 C Purpose:
 C  GET MC REFERENCE STATE
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION CREF(LCREF)
 C
-#include <inforb.h>
-#include <infrsp.h>
-#include <inftap.h>
+#include "inforb.h"
+#include "infrsp.h"
+#include "inftap.h"
 C
       IF (LCREF .EQ. 1) THEN
          CREF(1) = 1.0D0
@@ -3667,11 +3667,11 @@ C
 C
 C Linear response input
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <infpri.h>
-#include <infrsp.h>
+#include "infpri.h"
+#include "infrsp.h"
 C
       PARAMETER ( NTABLE = 1 )
       CHARACTER WORD*7, STRING*7, TABLE(NTABLE)*7
@@ -3679,7 +3679,7 @@ C
       DATA TABLE /'.SINGLE'/
 C
   100 READ (LUCMD, '(A7)',END=2100) WORD
-      IF (WORD(1:1).EQ.'*') GO TO 11  
+      IF (WORD(1:1).EQ.'*') GO TO 11
       DO I = 1, NTABLE
          IF (WORD .EQ. TABLE(I)) THEN
             GO TO (1), I
@@ -3712,12 +3712,12 @@ C
 C
 C Quadratic response input
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <infpri.h>
-#include <infrsp.h>
-#include <infpp.h>
+#include "infpri.h"
+#include "infrsp.h"
+#include "infpp.h"
 C
       PARAMETER ( NTABLE = 5 )
       CHARACTER WORD*7, STRING*7, TABLE(NTABLE)*7
@@ -3726,7 +3726,7 @@ C
      &            '.MNFPHO'/
 C
   100 READ (LUCMD, '(A7)',END=2100) WORD
-      IF (WORD(1:1).EQ.'*') GO TO 11  
+      IF (WORD(1:1).EQ.'*') GO TO 11
       DO I = 1, NTABLE
          IF (WORD .EQ. TABLE(I)) THEN
             GO TO (1,2,3,4,5), I
@@ -3791,11 +3791,11 @@ C
 C
 C Cubic response input
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <infpri.h>
-#include <infrsp.h>
+#include "infpri.h"
+#include "infrsp.h"
 C
       PARAMETER ( NTABLE = 3 )
       CHARACTER WORD*7, STRING*7, TABLE(NTABLE)*7
