@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: abaopt.F,v 1.4 2001-03-13 08:43:27 vebjornb Exp $
+C$Id: abaopt.F,v 1.5 2001-03-24 17:36:13 vebjornb Exp $
 C
 #include <single.h>
 #ifdef UNDEF
@@ -4966,9 +4966,17 @@ C
 #include <maxorb.h>
 #include <priunit.h>
 #include <infinp.h>
+#include <gnrinf.h>
 #include <optinf.h>
-      PARAMETER (DP25=0.25D0, THDE=1.0D-10)
+      PARAMETER (DP25=0.25D0)
       LOGICAL REJGEO
+      THDE = 1.0D-10
+C
+C     CC energies are less precise and we have to decrease the
+C     energy threshold
+C
+      IF (DOCCSD) THDE = 1.0D-8
+C
       ERGDIF = ENERGY - ERGOLD
       REJGEO = .FALSE.
       REBILD = .FALSE.
