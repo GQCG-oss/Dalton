@@ -102,26 +102,26 @@ ERROR[2]="GEOMETRY NOT READ CORRECTLY"
 CRIT1=`$GREP "Walk type\: Numerical differentiation" $log | wc -l`
 CRIT2=`$GREP "Vibrational averaging of * molecular properties at an effective geometry" $log | wc -l`
 CRIT3=`$GREP "Molecular properties transformed to the following Eckart frame" $log | wc -l`
-CRIT4=`$GREP "H * (0| )\.0000000000 * (0| )\.0000000000 * 1\.7243524476" $log | wc -l`
-CRIT5=`$GREP "F * (0| )\.0000000000 * (0| )\.0000000000 * (0| )\.0255388031" $log | wc -l`
+CRIT4=`$GREP "H * 0?\.0000000000 * 0?\.0000000000 * 1\.7243524476" $log | wc -l`
+CRIT5=`$GREP "F * 0?\.0000000000 * 0?\.0000000000 * 0?\.0255388031" $log | wc -l`
 TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
 CTRL[3]=10
 ERROR[3]="NUMERICAL DIFFERENTIATION NOT SET UP CORRECTLY"
 
 # Initial gradient
-CRIT1=`$GREP "H * (0| )\.0000000000 * (0| )\.0000000000 * (0| )\.018485145[0-9]" $log | wc -l`
-CRIT2=`$GREP "F * (0| )\.0000000000 * (0| )\.0000000000 * (\-0|\-)\.018485145[0-9]" $log | wc -l`
+CRIT1=`$GREP "H * 0?\.0000000000 * 0?\.0000000000 * 0?\.018485145[0-9]" $log | wc -l`
+CRIT2=`$GREP "F * 0?\.0000000000 * 0?\.0000000000 * -0?\.018485145[0-9]" $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[4]=4
 ERROR[4]="INITIAL GRADIENT NOT CORRECT"
 
 # Initial Hessian
-CRIT1=`$GREP "H * x * (0| )\.01071[0-9]" $log | wc -l`
-CRIT2=`$GREP "H * y * (0| )\.000000 * (0| )\.01071[0-9]" $log | wc -l`
-CRIT3=`$GREP "H * z * (0| )\.000000 * (0| )\.000000 * (0| )\.65526[0-9]" $log | wc -l`
-CRIT4=`$GREP "F * x * (\-0|\-)\.01071[0-9] * (0| )\.000000 * (0| )\.000000 * (0| )\.01071[0-9]" $log | wc -l`
-CRIT5=`$GREP "F * y * (0| )\.000000 * (\-0|\-)\.01071[0-9] * (0| )\.000000 * (0| )\.000000 * (0| )\.01071[0-9]" $log | wc -l`
-CRIT6=`$GREP "F * z * (0| )\.000000 * (0| )\.000000 * (\-0|\-)\.65526[0-9] * (0| )\.000000 * (0| )\.000000 * (0| )\.65526[0-9]" $log | wc -l`
+CRIT1=`$GREP "H * x * 0?\.01071[0-9]" $log | wc -l`
+CRIT2=`$GREP "H * y * -?0?\.000000 * 0?\.01071[0-9]" $log | wc -l`
+CRIT3=`$GREP "H * z * -?0?\.000000 * -?0?\.000000 * 0?\.65526[0-9]" $log | wc -l`
+CRIT4=`$GREP "F * x * -0?\.01071[0-9] * -?0?\.000000 * -?0?\.000000 * 0?\.01071[0-9]" $log | wc -l`
+CRIT5=`$GREP "F * y * -?0?\.000000 * -0?\.01071[0-9] * -?0?\.000000 * -?0?\.000000 * 0?\.01071[0-9]" $log | wc -l`
+CRIT6=`$GREP "F * z * -?0?\.000000 * -?0?\.000000 * -0?\.65526[0-9] * -?0?\.000000 * -?0?\.000000 * 0?\.65526[0-9]" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[5]=6
 ERROR[5]="INITIAL HESSIAN NOT CORRECT"
@@ -143,25 +143,25 @@ CTRL[7]=3
 ERROR[7]="INITIAL CHEMICAL SHIELDING FOR FLUORINE NOT CORRECT"
 
 # Initial shielding summary
-CRIT1=`$GREP "\@1H * 29\.062[0-9] * 21\.050[0-9] * 8\.012[0-9] * 1\.0000 * 22\.984[0-9] * 22\.984[0-9] * (0| )\.0000" $log | wc -l`
-CRIT2=`$GREP "\@1F * 414\.925[0-9] * 478\.027[0-9] * \-63\.102[0-9] * 1\.0000 * 100\.277[0-9] * 100\.277[0-9] * (0| )\.0000" $log | wc -l`
-CRIT3=`$GREP "\@2H * 29\.062[0-9] * 21\.050[0-9] * 8\.012[0-9] * 22\.984[0-9] * (0| )\.0000 * 22\.984[0-9] * (0| )\.0000" $log | wc -l`
-CRIT4=`$GREP "\@2F * 414\.925[0-9] * 478\.027[0-9] * \-63\.102[0-9] * 100\.277[0-9] * (0| )\.0000 * 100\.277[0-9] * (0| )\.0000" $log | wc -l`
+CRIT1=`$GREP "\@1H * 29\.062[0-9] * 21\.050[0-9] * 8\.012[0-9] * 1\.0000 * 22\.984[0-9] * 22\.984[0-9] * 0?\.0000" $log | wc -l`
+CRIT2=`$GREP "\@1F * 414\.925[0-9] * 478\.027[0-9] * \-63\.102[0-9] * 1\.0000 * 100\.277[0-9] * 100\.277[0-9] * 0?\.0000" $log | wc -l`
+CRIT3=`$GREP "\@2H * 29\.062[0-9] * 21\.050[0-9] * 8\.012[0-9] * 22\.984[0-9] * 0?\.0000 * 22\.984[0-9] * 0?\.0000" $log | wc -l`
+CRIT4=`$GREP "\@2F * 414\.925[0-9] * 478\.027[0-9] * \-63\.102[0-9] * 100\.277[0-9] * 0?\.0000 * 100\.277[0-9] * 0?\.0000" $log | wc -l`
 TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[8]=4
 ERROR[8]="SUMMARY OF INITIAL SHIELDINGS NOT CORRECT"
 
 # Projected gradient
-CRIT1=`$GREP "Norm of projected gradient * (0| )\.02614[0-9]" $log | wc -l`
+CRIT1=`$GREP "Norm of projected gradient * 0?\.02614[0-9]" $log | wc -l`
 TEST[9]=`expr	$CRIT1`
 CTRL[9]=1
 ERROR[9]="PROJECTED GRADIENT NOT CORRECT"
 
 # Projected Hessian
-CRIT1=`$GREP "3 * (0| )\.00000000 * (0| )\.00000000 * (0| )\.6552676[0-9] * (0| )\.00000000" $log | wc -l`
-CRIT2=`$GREP "6 * (0| )\.00000000 * (0| )\.00000000 * (\-0|\-)\.6552676[0-9] * (0| )\.00000000" $log | wc -l`
-CRIT3=`$GREP "3 * (0| )\.00000000 * (\-0|\-)\.6552676[0-9]" $log | wc -l`
-CRIT4=`$GREP "6 * (0| )\.00000000 * (0| )\.6552676[0-9]" $log | wc -l`
+CRIT1=`$GREP "3 * 0?\.00000000 * 0?\.00000000 * 0?\.6552676[0-9] * 0?\.00000000" $log | wc -l`
+CRIT2=`$GREP "6 * 0?\.00000000 * 0?\.00000000 * -0?\.6552676[0-9] * 0?\.00000000" $log | wc -l`
+CRIT3=`$GREP "3 * 0?\.00000000 * -0?\.6552676[0-9]" $log | wc -l`
+CRIT4=`$GREP "6 * 0?\.00000000 * 0?\.6552676[0-9]" $log | wc -l`
 TEST[10]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[10]=4
 ERROR[10]="PROJECTED HESSIAN NOT CORRECT"
@@ -173,14 +173,14 @@ CTRL[11]=1
 ERROR[11]="ENERGY AT EFFECTIVE GEOMETRY NOT CORRECT"
 
 # Gradient at effective geometry
-CRIT1=`$GREP "1 * (0| )\.00000000 * (0| )\.00000000 * (0| )\.0184851[0-9] * (0| )\.00000000" $log | wc -l`
-CRIT2=`$GREP "1 * (0| )\.00000000 * (\-0|\-)\.0184851[0-9]" $log | wc -l`
+CRIT1=`$GREP "1 * 0?\.00000000 * 0?\.00000000 * 0?\.0184851[0-9] * 0?\.00000000" $log | wc -l`
+CRIT2=`$GREP "1 * 0?\.00000000 * -0?\.0184851[0-9]" $log | wc -l`
 TEST[12]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[12]=2
 ERROR[12]="GRADIENT AT EFFECTIVE GEOMETRY NOT CORRECT"
 
 # Dipole moment at effective geometry
-CRIT1=`$GREP "1 * (0| )\.00000000 * (0| )\.00000000 * (0| )\.7593853[0-9]" $log | wc -l`
+CRIT1=`$GREP "1 * 0?\.00000000 * 0?\.00000000 * 0?\.7593853[0-9]" $log | wc -l`
 TEST[13]=`expr	$CRIT1`
 CTRL[13]=1
 ERROR[13]="DIPOLE MOMENT AT EFFECTIVE GEOMETRY NOT CORRECT"
@@ -198,7 +198,7 @@ CTRL[15]=1
 ERROR[15]="NUMERICAL DIFFERENTIATION NOT COMPLETED"
 
 # Dipole moment second derivatives
-CRIT1=`$GREP "1 * (0| )\.000000 * (0| )\.000000 * (0| )\.10951[0-9]" $log | wc -l`
+CRIT1=`$GREP "1 * 0?\.000000 * 0?\.000000 * 0?\.10951[0-9]" $log | wc -l`
 TEST[16]=`expr	$CRIT1`
 CTRL[16]=1
 ERROR[16]="DIPOLE MOMENT SECOND DERIVATIVES NOT CORRECT"
@@ -216,15 +216,15 @@ CTRL[18]=1
 ERROR[18]="NUCLEAR SHIELDING TENSOR SECOND DERIVATIVES FOR FLUORINE NOT CORRECT"
 
 # Vibrationally averaged dipole moment
-CRIT1=`$GREP "Z * (0| )\.7593853[0-9] * (0| )\.00077[3-4][0-9][0-9] * (0| )\.7601(60|59)[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Z * 0?\.7593853[0-9] * 0?\.00077[3-4][0-9][0-9] * 0?\.7601(60|59)[0-9][0-9]" $log | wc -l`
 TEST[19]=`expr	$CRIT1`
 CTRL[19]=1
 ERROR[19]="VIBRATIONALLY AVERAGED DIPOLE MOMENT NOT CORRECT"
 
 # Vibrationally averaged nuclear magnetic shielding constants for hydrogen
-CRIT1=`$GREP "Bxmx * 21\.4006844[0-9] * (0| )\.232[0-4]...[0-9] * 21\.632[6-8]...[0-9]" $log | wc -l`
-CRIT2=`$GREP "Bymy * 21\.4006844[0-9] * (0| )\.232[0-4]...[0-9] * 21\.632[6-8]...[0-9]" $log | wc -l`
-CRIT3=`$GREP "Bzmz * 44\.3849888[0-9] * (0| )\.441[2-4]...[0-9] * 44\.826[2-4]...[0-9]" $log | wc -l`
+CRIT1=`$GREP "Bxmx * 21\.4006844[0-9] * 0?\.232[0-4]...[0-9] * 21\.632[6-8]...[0-9]" $log | wc -l`
+CRIT2=`$GREP "Bymy * 21\.4006844[0-9] * 0?\.232[0-4]...[0-9] * 21\.632[6-8]...[0-9]" $log | wc -l`
+CRIT3=`$GREP "Bzmz * 44\.3849888[0-9] * 0?\.441[2-4]...[0-9] * 44\.826[2-4]...[0-9]" $log | wc -l`
 TEST[20]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[20]=3
 ERROR[20]="VIBRATIONALLY AVERAGED NUCLEAR SHIELDING FOR HYDROGEN NOT CORRECT"
@@ -232,7 +232,7 @@ ERROR[20]="VIBRATIONALLY AVERAGED NUCLEAR SHIELDING FOR HYDROGEN NOT CORRECT"
 # Vibrationally averaged nuclear magnetic shielding constants for fluorine
 CRIT1=`$GREP "Bxmx * 381\.4994558[0-9] * \-4\.26[6-9]....[0-9] * 377\.23[0-3]....[0-9]" $log | wc -l`
 CRIT2=`$GREP "Bymy * 381\.4994558[0-9] * \-4\.26[6-9]....[0-9] * 377\.23[0-3]....[0-9]" $log | wc -l`
-CRIT3=`$GREP "Bzmz * 481\.7772347[0-9] * (0| )\.041[8-9]...[0-9] * 481\.8191[0-9]..[0-9]" $log | wc -l`
+CRIT3=`$GREP "Bzmz * 481\.7772347[0-9] * 0?\.041[8-9]...[0-9] * 481\.8191[0-9]..[0-9]" $log | wc -l`
 TEST[21]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[21]=3
 ERROR[21]="VIBRATIONALLY AVERAGED NUCLEAR SHIELDING FOR FLUORINE NOT CORRECT"
