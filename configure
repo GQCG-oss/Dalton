@@ -598,9 +598,9 @@ fi
 # Determine memory size. 
 #
 
-$ECHO 'DALTON uses approximately 800000 words of static allocations'
+$ECHO 'DALTON uses approximately 6500000 words of static allocations'
 $ECHO 'How many words to use as default for scratch memory ?'
-$ECHO '(we do not recommend going below 1000000 words)'
+$ECHO '(we recommend at least 20000000 words, larger for correlated calculations)'
 $ECHO 'Note that scratch memory can be changed through the shell variable WRKMEM'
 read memsiz
 while [ "$memsiz" = "" ]
