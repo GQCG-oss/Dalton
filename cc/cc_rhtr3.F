@@ -3088,7 +3088,7 @@ C
                IF (LWRK1 .LE. 0) THEN
                  WRITE(LUPRI,*)'LWORK :',LWORK
                  WRITE(LUPRI,*)'KEND1 :',KEND1
-                 STOP 'Insufficient space in CC3 (cc_rhtr3.F)'
+                 CALL QUIT('Insufficient space in CC3 (cc_rhtr3.F)')
                ENDIF
 !
 !-----------------------------------------------
