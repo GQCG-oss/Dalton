@@ -1136,11 +1136,11 @@ EFG Principal axis                  N    2
                   Nuclear quadrupole moment for   N    1
                   --------------------------------------
 
-          Spin     :  1.0          Quadrupole moment:0.02020000
+          Spin     :  1.0          Quadrupole moment:0.02044000
                             au           MHz        Gauss
- N    1 14    Vx =       0.559057     2.653443     0.946815
- N    1 14    Vy =       0.559057     2.653443     0.946815
- N    1 14    Vz =      -1.118113    -5.306886    -1.893629
+ N    1 14    Vx =       0.559057     2.684969     0.958064
+ N    1 14    Vy =       0.559057     2.684969     0.958064
+ N    1 14    Vz =      -1.118113    -5.369938    -1.916128
                  Asymmetry constant eta:      0.000000
                  Auxiliary value au  1/T  0.191296D-03
 
@@ -1148,11 +1148,11 @@ EFG Principal axis                  N    2
                   Nuclear quadrupole moment for   N    2
                   --------------------------------------
 
-          Spin     :  1.0          Quadrupole moment:0.02020000
+          Spin     :  1.0          Quadrupole moment:0.02044000
                             au           MHz        Gauss
- N    2 14    Vx =       0.559057     2.653443     0.946815
- N    2 14    Vy =       0.559057     2.653443     0.946815
- N    2 14    Vz =      -1.118113    -5.306886    -1.893629
+ N    2 14    Vx =       0.559057     2.684969     0.958064
+ N    2 14    Vy =       0.559057     2.684969     0.958064
+ N    2 14    Vz =      -1.118113    -5.369938    -1.916128
                  Asymmetry constant eta:      0.000000
                  Auxiliary value au  1/T  0.191296D-03
 
@@ -1682,11 +1682,11 @@ EFG Principal axis                  N    2
                   Nuclear quadrupole moment for   N    1
                   --------------------------------------
 
-          Spin     :  1.0          Quadrupole moment:0.02020000
+          Spin     :  1.0          Quadrupole moment:0.02044000
                             au           MHz        Gauss
- N    1 14    Vx =       0.436982     2.074044     0.740071
- N    1 14    Vy =       0.436982     2.074044     0.740071
- N    1 14    Vz =      -0.873965    -4.148089    -1.480142
+ N    1 14    Vx =       0.436982     2.098686     0.748864
+ N    1 14    Vy =       0.436982     2.098686     0.748864
+ N    1 14    Vz =      -0.873965    -4.197373    -1.497727
                  Asymmetry constant eta:      0.000000
                  Auxiliary value au  1/T  0.116875D-03
 
@@ -1694,11 +1694,11 @@ EFG Principal axis                  N    2
                   Nuclear quadrupole moment for   N    2
                   --------------------------------------
 
-          Spin     :  1.0          Quadrupole moment:0.02020000
+          Spin     :  1.0          Quadrupole moment:0.02044000
                             au           MHz        Gauss
- N    2 14    Vx =       0.436982     2.074044     0.740071
- N    2 14    Vy =       0.436982     2.074044     0.740071
- N    2 14    Vz =      -0.873965    -4.148089    -1.480142
+ N    2 14    Vx =       0.436982     2.098686     0.748864
+ N    2 14    Vy =       0.436982     2.098686     0.748864
+ N    2 14    Vz =      -0.873965    -4.197373    -1.497727
                  Asymmetry constant eta:      0.000000
                  Auxiliary value au  1/T  0.116875D-03
 
@@ -2822,11 +2822,11 @@ EFG Principal axis                  N    2
                   Nuclear quadrupole moment for   N    1
                   --------------------------------------
 
-          Spin     :  1.0          Quadrupole moment:0.02020000
+          Spin     :  1.0          Quadrupole moment:0.02044000
                             au           MHz        Gauss
- N    1 14    Vx =       0.459852     2.182592     0.778803
- N    1 14    Vy =       0.459852     2.182592     0.778803
- N    1 14    Vz =      -0.919705    -4.365183    -1.557606
+ N    1 14    Vx =       0.459852     2.208523     0.788056
+ N    1 14    Vy =       0.459852     2.208523     0.788056
+ N    1 14    Vz =      -0.919705    -4.417047    -1.576113
                  Asymmetry constant eta:      0.000000
                  Auxiliary value au  1/T  0.129429D-03
 
@@ -2834,11 +2834,11 @@ EFG Principal axis                  N    2
                   Nuclear quadrupole moment for   N    2
                   --------------------------------------
 
-          Spin     :  1.0          Quadrupole moment:0.02020000
+          Spin     :  1.0          Quadrupole moment:0.02044000
                             au           MHz        Gauss
- N    2 14    Vx =       0.459852     2.182592     0.778803
- N    2 14    Vy =       0.459852     2.182592     0.778803
- N    2 14    Vz =      -0.919705    -4.365183    -1.557606
+ N    2 14    Vx =       0.459852     2.208523     0.788056
+ N    2 14    Vy =       0.459852     2.208523     0.788056
+ N    2 14    Vz =      -0.919705    -4.417047    -1.576113
                  Asymmetry constant eta:      0.000000
                  Auxiliary value au  1/T  0.129429D-03
 

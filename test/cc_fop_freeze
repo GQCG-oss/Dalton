@@ -104,9 +104,9 @@ CRIT10=`$GREP "Property anisotropy invariant:  [ ]* 15.954597 a.u." $log | wc -l
 CRIT11=`$GREP "1       ( |0)\.559056..     ( |0)\.00000000     ( |0)\.00000000" $log | wc -l`
 CRIT12=`$GREP "2       ( |0)\.00000000     ( |0)\.559056..     ( |0)\.00000000" $log | wc -l`
 CRIT13=`$GREP "3       ( |0)\.00000000     ( |0)\.00000000    -1\.118113.." $log | wc -l`
-CRIT14=`$GREP " N    [12] 14    Vx =       ( |0)\.559057     2\.653443     ( |0)\.946815" $log | wc -l`
-CRIT15=`$GREP " N    [12] 14    Vy =       ( |0)\.559057     2\.653443     ( |0)\.946815" $log | wc -l`
-CRIT16=`$GREP " N    [12] 14    Vz =      -1\.118113    -5\.306886    -1\.893629" $log | wc -l`
+CRIT14=`$GREP " N    [12] 14    Vx =       ( |0)\.559057     2\.684969     ( |0)\.958064" $log | wc -l`
+CRIT15=`$GREP " N    [12] 14    Vy =       ( |0)\.559057     2\.684969     ( |0)\.958064" $log | wc -l`
+CRIT16=`$GREP " N    [12] 14    Vz =      -1\.118113    -5\.369938    -1\.916128" $log | wc -l`
 CRIT17=`$GREP "[1-elec.]* Darwin term: [ ]* ( |0)\.230697" $log | wc -l`
 CRIT18=`$GREP "Mass-Velocity term: [ ]*( -|-0)\.288759" $log | wc -l`
 CRIT19=`$GREP "(Mass-Velocity \+ 1-elec. Darwin terms|Total relativistic correction):[ ]* ( -|-0)\.058062" $log | wc -l`
@@ -130,9 +130,9 @@ CRIT10=`$GREP "Property anisotropy invariant:  [ ]* 16.238433 a.u." $log | wc -l
 CRIT11=`$GREP "1       ( |0)\.436982..     ( |0)\.00000000     ( |0)\.00000000" $log | wc -l`
 CRIT12=`$GREP "2       ( |0)\.00000000     ( |0)\.436982..     ( |0)\.00000000" $log | wc -l`
 CRIT13=`$GREP "3       ( |0)\.00000000     ( |0)\.00000000    ( -|-0)\.873964.." $log | wc -l`
-CRIT14=`$GREP " N    [12] 14    Vx =       ( |0)\.436982     2\.074044     ( |0)\.740071" $log | wc -l`
-CRIT15=`$GREP " N    [12] 14    Vy =       ( |0)\.436982     2\.074044     ( |0)\.740071" $log | wc -l`
-CRIT16=`$GREP " N    [12] 14    Vz =      ( -|-0)\.873965    -4\.148089    -1\.480142" $log | wc -l`
+CRIT14=`$GREP " N    [12] 14    Vx =       ( |0)\.436982     2\.098686     ( |0)\.748864" $log | wc -l`
+CRIT15=`$GREP " N    [12] 14    Vy =       ( |0)\.436982     2\.098686     ( |0)\.748864" $log | wc -l`
+CRIT16=`$GREP " N    [12] 14    Vz =      ( -|-0)\.873965    -4\.197373    -1\.497727" $log | wc -l`
 CRIT17=`$GREP "[1-elec.]* Darwin term: [ ]* ( |0)\.230613" $log | wc -l`
 CRIT18=`$GREP "Mass-Velocity term: [ ]*( -|-0)\.288752" $log | wc -l`
 CRIT19=`$GREP "(Mass-Velocity \+ 1-elec. Darwin terms|Total relativistic correction):[ ]* ( -|-0)\.058138" $log | wc -l`
@@ -157,9 +157,9 @@ CRIT10=`$GREP "Property anisotropy invariant:  [ ]* 16.160733 a.u." $log | wc -l
 CRIT11=`$GREP "1       ( |0)\.459852..     ( |0)\.00000000     ( |0)\.00000000" $log | wc -l`
 CRIT12=`$GREP "2       ( |0)\.00000000     ( |0)\.459852..     ( |0)\.00000000" $log | wc -l`
 CRIT13=`$GREP "3       ( |0)\.00000000     ( |0)\.00000000    ( -|-0)\.919704.." $log | wc -l`
-CRIT14=`$GREP " N    [12] 14    Vx =       ( |0)\.459852     2\.182592     ( |0)\.778803" $log | wc -l`
-CRIT15=`$GREP " N    [12] 14    Vy =       ( |0)\.459852     2\.182592     ( |0)\.778803" $log | wc -l`
-CRIT16=`$GREP " N    [12] 14    Vz =      ( -|-0)\.919705    -4\.365183    -1\.557606" $log | wc -l`
+CRIT14=`$GREP " N    [12] 14    Vx =       ( |0)\.459852     2\.208523     ( |0)\.788056" $log | wc -l`
+CRIT15=`$GREP " N    [12] 14    Vy =       ( |0)\.459852     2\.208523     ( |0)\.788056" $log | wc -l`
+CRIT16=`$GREP " N    [12] 14    Vz =      ( -|-0)\.919705    -4\.417047    -1\.576113" $log | wc -l`
 CRIT17=`$GREP "[1-elec.]* Darwin term: [ ]* ( |0)\.230597" $log | wc -l`
 CRIT18=`$GREP "Mass-Velocity term: [ ]*( -|-0)\.288707" $log | wc -l`
 CRIT19=`$GREP "(Mass-Velocity \+ 1-elec. Darwin terms|Total relativistic correction):[ ]* ( -|-0)\.058110" $log | wc -l`
