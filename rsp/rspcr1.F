@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rspcr1.F,v 1.1.1.1 2001-02-08 13:33:13 hjj Exp $
+C$Id: rspcr1.F,v 1.2 2001-03-08 13:50:32 hjj Exp $
 C
 #include <single.h>
       SUBROUTINE CRINP(WORD)
@@ -1026,10 +1026,10 @@ C CHECK NUMBER OF LINEAR RESPONSE EQUATION TO SOLVE
 C
       IF (NSOLVC .LE. 0) THEN
          WRITE(LUPRI,'(/A)')
-     *     ' rspvec: number of solution vectors incorrect'
+     *     ' CRVEC1: number of solution vectors incorrect'
          WRITE(LUPRI,'(/A)') 'NLRLBL :'
          WRITE(LUPRI,'(/A,4I5)') NLRLBL
-         CALL QUIT(' rspvec: number of solution vectors incorrect')
+         CALL QUIT(' CRVEC1: number of solution vectors incorrect')
       END IF
 C
 C Solve the eigenvalue problem ( E[2] - w S[2] ) N^F = 0
@@ -1043,7 +1043,7 @@ C
 C Solve eigenvalue equation
 C
          WRITE(LUPRI,'(//A/)')
-     *' <<<<< SOLVING EIGENVALUE EQUATIONS >>>>>'
+     *' <<<<< Solving eigenvalue equations for cubic response >>>>>'
          DO 100 KSYMOP = 1,NSYM
 C
 C Set up vectors defining the number of eigenvectors that need
@@ -1112,7 +1112,8 @@ C
 C SOLVE SINGLET LINEAR RESPONSE EQUATIONS
 C
          WRITE(LUPRI,'(//A/)')
-     *' <<<<< SOLVING SET OF LINEAR RESPONSE EQUATIONS >>>>>'
+     *   ' <<<<< Solving set of linear response equations'//
+     *   ' for cubic response >>>>>'
          KEXSIM = 1
          KEXCNV = 1
          DO 200 KSYMOP = 1,NSYM
