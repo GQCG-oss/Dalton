@@ -48,6 +48,7 @@ C
 #include <infvar.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
+#include <rspprp.h>
 #include <infhyp.h>
 #include <qrinf.h>
 #include <infpri.h>
@@ -93,6 +94,7 @@ C
 #include <infind.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
+#include <rspprp.h>
 #include <qrinf.h>
 #include <infpri.h>
 #include <infspi.h>

@@ -87,6 +87,7 @@ C
 #include <infdim.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
+#include "rspprp.h"
 #include <infhyp.h>
 #include <qrinf.h>
 #include <infpri.h>
@@ -854,6 +855,7 @@ C
 #include <infpri.h>
 #include <orbtypdef.h>
 #include <inftap.h>
+#include "rspprp.h"
 #include <infhyp.h>
 #include <infspi.h>
 #include <trhso.h>

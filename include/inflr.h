@@ -1,5 +1,5 @@
       INTEGER MAXLLR
-      PARAMETER ( MAXLLR = 60 )
+      PARAMETER ( MAXLLR = MAXLBL )
       LOGICAL LLROP, SOPRSY, LQRGP
       CHARACTER*8 LBLLR
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)

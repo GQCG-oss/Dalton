@@ -65,6 +65,7 @@ C
 #include <infrsp.h>
 #include <infpri.h>
 #include <orbtypdef.h>
+#include "rspprp.h"
 #include <infhyp.h>
 #include <infspi.h>
 #include <cbgetdis.h>
@@ -575,6 +576,7 @@ C
 #include <infrsp.h>
 #include <infpri.h>
 #include <orbtypdef.h>
+#include "rspprp.h"
 #include <infhyp.h>
 #include <infspi.h>
       LOGICAL LORB,LCON
@@ -649,6 +651,7 @@ C
 #include <infrsp.h>
 #include <infpri.h>
 #include <orbtypdef.h>
+#include "rspprp.h"
 #include <infhyp.h>
 #include <infspi.h>
       LOGICAL LORB,LCON
@@ -755,6 +758,7 @@ C
 #include <priunit.h>
 #include <wrkrsp.h>
 #include <infrsp.h>
+#include "rspprp.h"
 #include <infhyp.h>
 #include <infdim.h>
 #include <infind.h>
@@ -946,6 +950,7 @@ C
 #include <priunit.h>
 #include <wrkrsp.h>
 #include <infrsp.h>
+#include "rspprp.h"
 #include <infhyp.h>
 #include <infdim.h>
 #include <infind.h>
@@ -1176,6 +1181,7 @@ C
 #include <priunit.h>
 #include <wrkrsp.h>
 #include <infrsp.h>
+#include "rspprp.h"
 #include <infhyp.h>
 #include <infdim.h>
 #include <infind.h>
@@ -1393,6 +1399,7 @@ C
 #include <maxash.h>
 #include <priunit.h>
 #include <wrkrsp.h>
+#include "rspprp.h"
 #include <infhyp.h>
 #include <infrsp.h>
 #include <infdim.h>
@@ -1708,6 +1715,7 @@ C
 #include <infind.h>
 #include <wrkrsp.h>
 #include <infpri.h>
+#include "rspprp.h"
 #include <infhyp.h>
 C
       DIMENSION QA(NORBT,NASHDI),QB(NORBT,NASHDI)
@@ -1916,6 +1924,7 @@ C
 #include <infind.h>
 #include <wrkrsp.h>
 #include <infpri.h>
+#include "rspprp.h"
 #include <infhyp.h>
 C
       DIMENSION QA(NORBT,NASHDI),QB(NORBT,NASHDI)
@@ -2245,6 +2254,7 @@ C  /* Deck disac2 */
 #include <inforb.h>
 #include <infrsp.h>
 #include <infind.h>
+#include "rspprp.h"
 #include <infhyp.h>
 #include <infpri.h>
       DIMENSION H2XAC(N2ASHX)

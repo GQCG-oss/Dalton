@@ -54,6 +54,7 @@ C
 #include <infpri.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
+#include <rspprp.h>
 #include <inflr.h>
 #include <indqr.h>
 #include <maxorb.h>

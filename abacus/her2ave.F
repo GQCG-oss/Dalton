@@ -127,6 +127,7 @@ C
 #include <expopt.h>
 #include <dirprt.h>
 #include <infinp.h>
+#include <rspprp.h>
 #include <esg.h>
 #include <ibtfun.h>
       XAND(I) = PT(IBTAND(ISYMAX(1,1),I))

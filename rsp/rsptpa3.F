@@ -68,6 +68,7 @@ C
 #include <infhso.h>
 #include <qrinf.h>
       DIMENSION MJWOP(2,MAXWOP,8)
+#include <rspprp.h>
 #include <indcr.h>
 #include <infcr.h>
 #include <inftpa.h>

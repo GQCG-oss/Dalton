@@ -338,6 +338,7 @@ C
 #include <symmet.h>
 #include <wrkrsp.h>
 #include <cbilrs.h>
+#include "rspprp.h"
 #include <inflr.h>
 #include <infpp.h>
 C

@@ -520,6 +520,7 @@ C
 #include <symmet.h>
 #include <inforb.h>
 #include <ccom.h>
+#include <rspprp.h>
 #include <esg.h>
       PARAMETER (D0 = 0.0D0, D1000 = 1000.0D0)
       DIMENSION WORK(LWORK)

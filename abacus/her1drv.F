@@ -349,6 +349,7 @@ C
 #include <dftcom.h>
 #include <gnrinf.h>
 #include <expopt.h>
+#include <rspprp.h>
 #include <esg.h>
 C
 #include <ibtfun.h>

@@ -94,6 +94,7 @@ C
 #include <infdim.h>
 #include <inftra.h>
 #include <inftap.h>
+#include <rspprp.h>
 #include <inflr.h>
 #include <infpp.h>
 #include <infhyp.h>
@@ -512,6 +513,7 @@ C
 #include <infrsp.h>
 #include <inftap.h>
 #include <wrkrsp.h>
+#include <rspprp.h>
 #include <infpp.h>
 #include <inforb.h>
 #include <infpri.h>
@@ -641,6 +643,7 @@ C
 #include <infpri.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
+#include <rspprp.h>
 #include <inflr.h>
 #include <inftap.h>
 #include <infdim.h>

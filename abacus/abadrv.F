@@ -613,6 +613,7 @@ C
 #include <past.h>
 #include <exeinf.h>
 #include <inftap.h>
+#include <rspprp.h>
 #include <esg.h>
 #include <cbiwlk.h>
 #include <dftcom.h>

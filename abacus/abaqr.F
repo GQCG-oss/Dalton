@@ -254,6 +254,7 @@ cs
 #include <inforb.h>
 #include <cbiqr.h>
 #include <infrsp.h>
+#include "rspprp.h"
 #include <infhyp.h>
 #include <infsmo.h>
 #include <infdim.h>

@@ -2,7 +2,7 @@ C
 C QRSHG  - SHG process                     : w_2= w_3
 C QROPRF - optical refractivity calculation: w_2=-w_3
 C
-      PARAMETER ( MXQROP = 60 , MBQRFR = 60 , MCQRFR = 60 )
+      PARAMETER ( MXQROP = MAXLBL , MBQRFR = MAXLBL , MCQRFR = MAXLBL )
       LOGICAL  HYPCAL,AQROP,BQROP,CQROP,REFCHK,QRSPEC,QRSHG,QRPOCK,
      *         QROPRF,SOCOLL,SSCOLL
       CHARACTER*8 AQRLB,BQRLB,CQRLB

@@ -40,9 +40,9 @@ C
 C
 #include <priunit.h>
 #include <infrsp.h>
+#include "rspprp.h"
 #include <inflr.h>
 #include <infhyp.h>
-#include <rspprp.h>
 #include <infpri.h>
 #include <infspi.h>
 #include <maxorb.h>
@@ -573,10 +573,10 @@ C
 #include <priunit.h>
 #include <infrsp.h>
 #include <inforb.h>
+#include "rspprp.h"
 #include <infsmo.h>
 #include <inflr.h>
 #include <infpp.h>
-#include <rspprp.h>
 #include <infpri.h>
 #include <infspi.h>
 #include <inflin.h>
@@ -932,6 +932,7 @@ C TO BE SOLVED
 C
 #include <implicit.h>
 C
+#include "rspprp.h"
 #include <indqr.h>
 #include <inforb.h>
 #include <infpri.h>
@@ -978,6 +979,7 @@ C
 C
 #include <priunit.h>
 #include <infrsp.h>
+#include "rspprp.h"
 #include <indqr.h>
 #include <infpri.h>
 C
@@ -1014,6 +1016,7 @@ C IN A HYPERPOLARIZABILITY CALCULATION
 C
 #include <implicit.h>
 C
+#include "rspprp.h"
 #include <infhyp.h>
 #include <inforb.h>
 #include <infrsp.h>
@@ -1111,6 +1114,7 @@ C A CALCULATION OF SECOND ORDER TRANSITION MOMENTS
 C
 #include <implicit.h>
 C
+#include "rspprp.h"
 #include <infsmo.h>
 #include <indqr.h>
 #include <inforb.h>
@@ -1201,6 +1205,7 @@ C
 #include <implicit.h>
 C
 #include <infrsp.h>
+#include "rspprp.h"
 #include <infpp.h>
 #include <infsmo.h>
 #include <indqr.h>
@@ -1258,6 +1263,7 @@ C
 C
 #include <priunit.h>
 #include <infrsp.h>
+#include "rspprp.h"
 #include <indqr.h>
 C
       PARAMETER ( DIFFR = 1.0D-8 )
@@ -1301,6 +1307,7 @@ C
 C
 #include <priunit.h>
 #include <inforb.h>
+#include "rspprp.h"
 #include <indqr.h>
 #include <infpri.h>
 #include <infrsp.h>
@@ -1376,6 +1383,7 @@ C
 #include <priunit.h>
 #include <infrsp.h>
 #include <inforb.h>
+#include "rspprp.h"
 #include <indqr.h>
 #include <infpri.h>
 C
@@ -1445,6 +1453,7 @@ C
 C
 #include <priunit.h>
 #include <infrsp.h>
+#include "rspprp.h"
 #include <indqr.h>
 #include <infpri.h>
 C
@@ -1489,6 +1498,7 @@ C
 C
 #include <priunit.h>
 #include <inforb.h>
+#include "rspprp.h"
 #include <indqr.h>
 #include <infpri.h>
 #include <infrsp.h>

@@ -26,6 +26,7 @@ C
 #include <infrsp.h>
 #include <infind.h>
 #include <wrkrsp.h>
+#include "rspprp.h"
 #include "infave.h"
 #include <infpri.h>
 #include <inftap.h>

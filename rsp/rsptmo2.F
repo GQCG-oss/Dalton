@@ -42,6 +42,7 @@ C
 #include <implicit.h>
 C
 #include <priunit.h>
+#include <rspprp.h>
 #include <infsmo.h>
 #include <indcr.h>
 #include <inforb.h>
@@ -142,6 +143,7 @@ C
 C
       PARAMETER ( ZEROTHR = 1.0D-10 )
 C
+#include <rspprp.h>
 #include <infcr.h>
 #include <inforb.h>
 #include <infrsp.h>

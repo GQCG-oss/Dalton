@@ -71,6 +71,7 @@ C
 #include <infhso.h>
 #include <qrinf.h>
       DIMENSION MJWOP(2,MAXWOP,8)
+#include <rspprp.h>
 #include <indcr.h>
 #include <infcr.h>
 #include <infinp.h>
@@ -480,6 +481,7 @@ C
 #include <tstjep.h>
 #include <infhso.h>
 #include <inftap.h>
+#include <rspprp.h>
 #include <qrinf.h>
 #include <indcr.h>
 #include <infcr.h>
@@ -704,6 +706,7 @@ C
 #include <infspi.h>
 #include <wrkrsp.h>
 #include <tstjep.h>
+#include <rspprp.h>
 #include <infhso.h>
 #include <qrinf.h>
 #include <indcr.h>

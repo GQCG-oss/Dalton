@@ -58,6 +58,7 @@ C
 #include <infpri.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
+#include "rspprp.h"
 #include <infc6.h>
 #include <inflr.h>
 #include <infdim.h>
@@ -290,6 +291,7 @@ C
 #include <priunit.h>
 #include <inforb.h>
 #include <infdim.h>
+#include "rspprp.h"
 #include <infc6.h>
 #include <infpri.h>
 #include <infrsp.h>
@@ -446,6 +448,7 @@ c
 c
 #include <priunit.h>
 #include <infrsp.h>
+#include "rspprp.h"
 #include <infc6.h>
 #include <wrkrsp.h>
 C
@@ -658,6 +661,7 @@ c
 c
 #include <priunit.h>
 #include <infrsp.h>
+#include "rspprp.h"
 #include <infc6.h>
 #include <wrkrsp.h>
 #include <infpri.h>

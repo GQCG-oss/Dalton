@@ -66,6 +66,7 @@ C
 #include <thrzer.h>
 #include <infvar.h>
 #include <qrinf.h>
+#include "rspprp.h"
 #include <infhyp.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
@@ -260,6 +261,7 @@ C
 #include <inforb.h>
 #include <infvar.h>
 #include <infrsp.h>
+#include "rspprp.h"
 #include <infcr.h>
 #include <inftpa.h>
 #include <inftmo.h>
@@ -1470,6 +1472,7 @@ C
 C
 #include <priunit.h>
 #include <wrkrsp.h>
+#include "rspprp.h"
 #include <infhyp.h>
 #include <infdim.h>
 #include <inforb.h>
@@ -1558,6 +1561,7 @@ C
       PARAMETER ( D2= 2.0D0 )
 C
 #include <wrkrsp.h>
+#include "rspprp.h"
 #include <infhyp.h>
 #include <maxorb.h>
 #include <maxash.h>
@@ -1991,6 +1995,7 @@ C
 #include <inforb.h>
 #include <infind.h>
 #include <infpri.h>
+#include "rspprp.h"
 #include <infhyp.h>
 #include <infvar.h>
 #include <qrinf.h>
@@ -2221,6 +2226,7 @@ C
 #include <infvar.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
+#include "rspprp.h"
 #include <infhyp.h>
 #include <qrinf.h>
 #include <infpri.h>
@@ -2270,6 +2276,7 @@ C
 #include <maxash.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
+#include "rspprp.h"
 #include <infhyp.h>
 #include <infvar.h>
 #include <infind.h>
@@ -2788,6 +2795,7 @@ C
 #include <infvar.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
+#include "rspprp.h"
 #include <infhyp.h>
 #include <qrinf.h>
 #include <infpri.h>
@@ -2878,6 +2886,7 @@ C
 #include <infdim.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
+#include "rspprp.h"
 #include <infhyp.h>
 #include <qrinf.h>
 #include <infpri.h>
@@ -3513,6 +3522,7 @@ C
 #include <priunit.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
+#include "rspprp.h"
 #include <infhyp.h>
 #include <infvar.h>
 #include <qrinf.h>
@@ -3756,6 +3766,7 @@ C
 #include <inforb.h>
 #include <infind.h>
 #include <infpri.h>
+#include "rspprp.h"
 #include <infhyp.h>
 #include <infvar.h>
 #include <qrinf.h>
@@ -3993,6 +4004,7 @@ C
 #include <inforb.h>
 #include <infrsp.h>
 #include <infvar.h>
+#include "rspprp.h"
 #include <inflr.h>
 #include <wrkrsp.h>
 #include <priunit.h>

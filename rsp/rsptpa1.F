@@ -40,10 +40,10 @@ C
 #include <priunit.h>
 #include <infrsp.h>
 #include <inforb.h>
+#include <rspprp.h>
 #include <inftpa.h>
 #include <inflr.h>
 #include <infpp.h>
-#include <rspprp.h>
 #include <infpri.h>
 #include <infspi.h>
 #include <infcr.h>

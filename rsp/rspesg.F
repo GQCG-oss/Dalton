@@ -17,6 +17,7 @@ C
 #include <infopt.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
+#include "rspprp.h"
 #include <infpp.h>
 #include <inflr.h>
 #include <inforb.h>

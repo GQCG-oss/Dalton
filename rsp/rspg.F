@@ -41,6 +41,7 @@ C /* Deck gdrv */
 #include <inforb.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
+#include "rspprp.h"
 #include <inflr.h> 
 #include <inflin.h>
 #include <dummy.h>
@@ -141,7 +142,7 @@ C
       SUBROUTINE GSET2(CMO,UDV,PV,XINDX,WORK,LWORK)
       IMPLICIT NONE
       REAL*8 CMO(*), UDV(*), PV(*), XINDX(*), WORK(*)
-      INTEGER LWORK
+      INTEGER LWORK, MAXLBL, NPRLBL
 C
       REAL*8 DDOT, DNRM2
       EXTERNAL DDOT, DNRM2
@@ -150,6 +151,7 @@ C
 #include <gtensor.h>
 #include <qrinf.h>
 #include <inforb.h>
+#include "rspprp.h"
 #include <inflr.h>
 #include <dummy.h>
 #include <maxaqn.h>
@@ -220,6 +222,7 @@ C /* Deck ginit */
 #include <gtensor.h>
 #include <maxorb.h>
 #include <infinp.h>
+#include "rspprp.h"
 #include <inflr.h>
 #include "infave.h"
 #include <priunit.h>
@@ -1030,6 +1033,7 @@ C
 C /* Deck gset  */
       SUBROUTINE GOZHSO(I,J,XPROP)
 #include <implicit.h>
+#include "rspprp.h"
 #include <inflr.h>
 #include <wrkrsp.h>
 #include <gtensor.h>
@@ -1325,6 +1329,7 @@ C
 #include <infrsp.h>
 #include <infind.h>
 #include <wrkrsp.h>
+#include "rspprp.h"
 #include "infave.h"
 #include <infpri.h>
 #include <inftap.h>

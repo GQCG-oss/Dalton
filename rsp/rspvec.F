@@ -64,6 +64,7 @@ C
 #include <infvar.h>
 #include <infrsp.h>
 #include <qrinf.h>
+#include <rspprp.h>
 #include <infpp.h>
 #include <infhyp.h>
 #include <infpri.h>
@@ -181,6 +182,7 @@ C
 #include <infdim.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
+#include <rspprp.h>
 #include <indqr.h>
       DIMENSION MJWOP(2,MAXWOP,8)
 #include <qrinf.h>
@@ -424,6 +426,7 @@ C  /INFORB/ : MULD2H
 #include <inftap.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
+#include <rspprp.h>
 #include <infpp.h>
 #include <maxorb.h>
 #include <infvar.h>
@@ -565,6 +568,7 @@ C
 #include <infpri.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
+#include <rspprp.h>
 #include <inflr.h>
 #include <indqr.h>
 #include <maxorb.h>
@@ -800,6 +804,7 @@ C
 #include <maxorb.h>
 #include <infvar.h>
 #include <qrinf.h>
+#include <rspprp.h>
 #include <indqr.h>
 #include <infhyp.h>
 #include <inforb.h>
@@ -1529,6 +1534,7 @@ C
 C
 #include <iratdef.h>
 C
+#include <rspprp.h>
 #include <infrsp.h>
 #include <infsmo.h>
 #include <indqr.h>
@@ -2205,6 +2211,7 @@ C
 #include <iratdef.h>
 C
 #include <priunit.h>
+#include <rspprp.h>
 #include <infrsp.h>
 #include <infpp.h>
 #include <infsmo.h>
@@ -2567,6 +2574,7 @@ C
 #include <infpri.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
+#include <rspprp.h>
 #include <inflr.h>
 #include <indqr.h>
 #include <maxorb.h>
@@ -2766,6 +2774,7 @@ C
 #include <infvar.h>
 #include <infrsp.h>
 #include <qrinf.h>
+#include <rspprp.h>
 #include <infpp.h>
 #include <infhyp.h>
 #include <infpri.h>
@@ -2956,6 +2965,7 @@ C
 #include <infvar.h>
 #include <qrinf.h>
 #include <priunit.h>
+#include <rspprp.h>
 #include <indqr.h>
 #include <infhyp.h>
 #include <inforb.h>

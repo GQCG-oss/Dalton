@@ -41,6 +41,7 @@ C A CALCULATION OF TWO-PHOTON EXCITATION
 C
 #include <implicit.h>
 C
+#include <rspprp.h>
 #include <infsmo.h>
 #include <indcr.h>
 #include <inforb.h>
@@ -128,6 +129,7 @@ C IN A CUBIC RESPONSE TWO-PHOTON CALCULATION
 C
 #include <implicit.h>
 C
+#include <rspprp.h>
 #include <infcr.h>
 #include <inforb.h>
 #include <infrsp.h>

@@ -10,6 +10,7 @@
 #include <infdim.h>
 #include <infpri.h>
 #include <inftap.h>
+#include "rspprp.h"
 #include <esg.h>
 
       KD1MO   = 1
@@ -92,6 +93,7 @@ C
 #include <infopt.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
+#include "rspprp.h"
 #include <infpp.h>
 #include <inflr.h>
 #include <inforb.h>
@@ -156,6 +158,7 @@ C
 #include <maxorb.h>
 #include <infinp.h>
 #include <inftap.h>
+#include "rspprp.h"
 #include <inflr.h>
 #include <wrkrsp.h>
 #include <esg.h>
@@ -422,6 +425,7 @@ C
 #include <infinp.h>
 #include <infspi.h>
 #include <inftap.h>
+#include "rspprp.h"
 #include <inflr.h>
 #include <wrkrsp.h>
 #include <esg.h>
@@ -531,6 +535,7 @@ C
 #include <infopt.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
+#include "rspprp.h"
 #include <infpp.h>
 #include <inflr.h>
 #include <inforb.h>
@@ -720,6 +725,7 @@ C
 #include <maxorb.h>
 #include <infinp.h>
 #include <infrsp.h>
+#include "rspprp.h"
 #include <esg.h>
 
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),FCAC(*),H2AC(*)

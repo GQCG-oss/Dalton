@@ -80,6 +80,7 @@ C     Transform the integrals to MO basis
 
       SUBROUTINE GETESG_DENMAT_FOCMAT(D,F,NBAST,NNBAST)
 #include<implicit.h>
+#include "rspprp.h"
 #include<esg.h>
 #include<dummy.h>
 #include<priunit.h>
@@ -102,6 +103,7 @@ C     Transform the integrals to MO basis
       SUBROUTINE GETESG_DENMAT(DMAT,NDMAT,WRK,LWRK)
 #include<implicit.h>
 #include <mxcent.h>
+#include "rspprp.h"
 #include<esg.h>
 #include<dummy.h>
 #include<inforb.h>
@@ -158,6 +160,7 @@ C
 #include <infopt.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
+#include "rspprp.h"
 #include <infpp.h>
 #include <inflr.h>
 #include <inforb.h>

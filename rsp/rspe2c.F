@@ -1660,6 +1660,7 @@ C
       PARAMETER ( DTOL   = 1.0D-10 )
 C
 #include <priunit.h>
+#include <rspprp.h>
 #include <inflr.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
@@ -3282,6 +3283,7 @@ C
 #include <infopt.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
+#include <rspprp.h>
 #include <infpp.h>
 #include <inflr.h>
 #include <inforb.h>
@@ -3598,6 +3600,7 @@ C
 #include <wrkrsp.h>
 #include <infvar.h>
 #include <inftap.h>
+#include <rspprp.h>
 #include <inflr.h>
 #include <infdim.h>
 #include <inforb.h>
@@ -5216,6 +5219,7 @@ C
 #include <infvar.h>
 #include <priunit.h>
 #include <inftap.h>
+#include <rspprp.h>
 #include <inflr.h>
 #include <inforb.h>
 #include <infpri.h>
@@ -5272,6 +5276,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <codata.h>
+#include <rspprp.h>
 #include <inflr.h>
 #include <mxcent.h>
 #include <elweak.h>

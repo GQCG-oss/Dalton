@@ -286,6 +286,7 @@ C
 #include <energy.h>
 #include <expopt.h>
 #include <dftcom.h>
+#include <rspprp.h>
 #include <esg.h>
 C
       PARAMETER (D0 = 0.0D0)

@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rsphso.F,v 1.7 2004-09-01 13:28:02 vahtras Exp $
+C$Id: rsphso.F,v 1.8 2004-11-15 14:52:24 ruud Exp $
 C
 #include <single.h>
 C  /* Deck hsoctl */
@@ -84,6 +84,7 @@ C-- common blocks:
 #include <wrkrsp.h>
 #include <infpri.h>
 #include <trhso.h>
+#include "rspprp.h"
 #include <infhso.h>
 #include <infhyp.h>
 #include <infsmo.h>
@@ -1340,6 +1341,7 @@ C
       CHARACTER*8 WORD
       DIMENSION  WRK(*), CMO(*)
 #include <dummy.h>
+#include "rspprp.h"
 #include <infhso.h>
 #include <infhyp.h>
 #include <infpp.h>

@@ -59,6 +59,7 @@ C
 #include <infvar.h>
 #include <infrsp.h>
 #include <infpri.h>
+#include "rspprp.h"
 #include <infcr.h>
 C
       DIMENSION ETRS(KZYVR),XINDX(*)
@@ -763,6 +764,7 @@ C
 #include <infvar.h>
 #include <infrsp.h>
 #include <infpri.h>
+#include "rspprp.h"
 #include <infcr.h>
 #include <inftap.h>
 #include <qrinf.h>

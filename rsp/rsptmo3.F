@@ -44,6 +44,7 @@ C
 #include <priunit.h>
 #include <infrsp.h>
 #include <inforb.h>
+#include <rspprp.h>
 #include <indqr.h>
 #include <indcr.h>
 #include <infpri.h>
@@ -128,6 +129,7 @@ C  /INFORB/ : MULD2H
 #include <priunit.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
+#include <rspprp.h>
 #include <infpp.h>
 #include <maxorb.h>
 #include <infvar.h>

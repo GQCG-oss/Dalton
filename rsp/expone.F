@@ -45,6 +45,7 @@ C
 #include "priunit.h"
 C
 C infrsp.h: IPRRSP
+#include "rspprp.h"
 #include "infave.h"
 #include "infrsp.h"
 C

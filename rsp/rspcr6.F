@@ -53,6 +53,7 @@ C
 #include <thrzer.h>
 #include <infvar.h>
 #include <qrinf.h>
+#include <rspprp.h>
 #include <infhyp.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
@@ -182,6 +183,7 @@ C
 #include <inforb.h>
 #include <infvar.h>
 #include <infrsp.h>
+#include <rspprp.h>
 #include <infcr.h>
 #include <infinp.h>
 #include <infpri.h>
@@ -316,6 +318,7 @@ C
 #include <qrinf.h>
 #include <infspi.h>
 #include <infden.h>
+#include <rspprp.h>
 #include <infcr.h>
 #include <indcr.h>
 #include <inftmo.h>

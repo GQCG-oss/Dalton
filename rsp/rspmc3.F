@@ -332,6 +332,7 @@ C
 #include <maxash.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
+#include <rspprp.h>
 #include <infhyp.h>
 #include <infvar.h>
 #include <infind.h>
@@ -536,6 +537,7 @@ C
 #include <maxash.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
+#include <rspprp.h>
 #include <infhyp.h>
 #include <infvar.h>
 #include <infind.h>
@@ -627,6 +629,7 @@ C
 #include <maxash.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
+#include <rspprp.h>
 #include <infhyp.h>
 #include <infvar.h>
 #include <infind.h>
@@ -773,6 +776,7 @@ C
 #include <maxash.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
+#include <rspprp.h>
 #include <infhyp.h>
 #include <infvar.h>
 #include <infind.h>

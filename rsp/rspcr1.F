@@ -39,9 +39,9 @@ C
 C
 #include <priunit.h>
 #include <infrsp.h>
+#include "rspprp.h"
 #include <inflr.h>
 #include <infhyp.h>
-#include <rspprp.h>
 #include <infpri.h>
 #include <infspi.h>
 #include <infcr.h>
@@ -397,6 +397,7 @@ C IN A SECOND HYPERPOLARIZABILITY CALCULATION
 C
 #include <implicit.h>
 C
+#include "rspprp.h"
 #include <infcr.h>
 #include <inforb.h>
 #include <infrsp.h>
@@ -498,6 +499,7 @@ C IN A SECOND HYPERPOLARIZABILITY CALCULATION
 C
 #include <implicit.h>
 C
+#include "rspprp.h"
 #include <infcr.h>
 #include <inforb.h>
 #include <infrsp.h>
@@ -724,6 +726,7 @@ C BASED ON INQRLR
 C
 #include <priunit.h>
 #include <infrsp.h>
+#include "rspprp.h"
 #include <indcr.h>
 #include <indqr.h>
 #include <infpri.h>
@@ -807,6 +810,7 @@ C BASED ON INCRLR
 C
 #include <priunit.h>
 #include <infrsp.h>
+#include "rspprp.h"
 #include <indcr.h>
 #include <indqr.h>
 #include <infpri.h>
@@ -890,6 +894,7 @@ C
 #include <maxorb.h>
 #include <priunit.h>
 #include <infvar.h>
+#include "rspprp.h"
 #include <qrinf.h>
 #include <infpp.h>
 #include <infpri.h>
@@ -1004,6 +1009,7 @@ C
 #include <infdim.h>
 #include <infrsp.h>
 #include <wrkrsp.h>
+#include "rspprp.h"
 #include <indqr.h>
 #include <qrinf.h>
       DIMENSION MJWOP(2,MAXWOP,8)
@@ -1156,6 +1162,7 @@ C
 C
 #include <priunit.h>
 #include <inforb.h>
+#include "rspprp.h"
 #include <indqr.h>
 #include <indcr.h>
 #include <infpri.h>

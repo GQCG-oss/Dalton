@@ -103,6 +103,7 @@ C
 #include "infdim.h"
 #include "inftra.h"
 #include "inftap.h"
+#include "rspprp.h"
 #include "inflr.h"
 #include "infpp.h"
 #include "infc6.h"
@@ -618,6 +619,7 @@ C
 #include "infpri.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
+#include "rspprp.h"
 #include "inflr.h"
 #include "infpp.h"
 #include "infc6.h"
@@ -743,6 +745,7 @@ C
 #include "maxorb.h"
 #include "infvar.h"
 #include "gnrinf.h"
+#include "rspprp.h"
 #include "qrinf.h"
 #include "infave.h"
 #include "inftap.h"
@@ -972,6 +975,7 @@ C
 #include "implicit.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
+#include "rspprp.h"
 #include "inflr.h"
 #include "infpp.h"
 #include "infc6.h"
@@ -1106,8 +1110,8 @@ C
 #include "infrsp.h"
 #include "wrkrsp.h"
 #include "infpri.h"
-#include "infpp.h"
 #include "rspprp.h"
+#include "infpp.h"
 #include "infspi.h"
 #include "infhso.h"
 #include "inflr.h"
@@ -1460,9 +1464,9 @@ C
 #include "priunit.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
+#include "rspprp.h"
 #include "inflr.h"
 #include "infpri.h"
-#include "rspprp.h"
 #include "infhso.h"
 #include "maxorb.h"
 #include "infinp.h"
@@ -1837,9 +1841,9 @@ C
 #include "priunit.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
+#include "rspprp.h"
 #include "infc6.h"
 #include "infpri.h"
-#include "rspprp.h"
 #include "inftap.h"
 C
       LOGICAL NEWDEF
@@ -2322,6 +2326,7 @@ C
 #include "inforb.h"
 #include "inftap.h"
 #include "infpri.h"
+#include "rspprp.h"
 #include "infpp.h"
 #include "inflr.h"
 #include "infc6.h"
@@ -2329,7 +2334,6 @@ C
 #include "indqr.h"
 #include "infsmo.h"
 #include "infs0.h"
-#include "rspprp.h"
 #include "infesr.h"
 #include "infcr.h"
 #include "indcr.h"
@@ -3199,6 +3203,7 @@ C
 #include "inftap.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
+#include "rspprp.h"
 #include "infpp.h"
 #include "inflr.h"
 #include "infsop.h"
@@ -3872,6 +3877,7 @@ C
 C
 #include "infpri.h"
 #include "infrsp.h"
+#include "rspprp.h"
 #include "infpp.h"
 C
       PARAMETER ( NTABLE = 5 )
@@ -4011,6 +4017,7 @@ C
 #include <priunit.h>
 C
 #include <infpri.h>
+#include "rspprp.h"
 #include <esg.h>
 C
       PARAMETER ( NTABLE = 1 )
@@ -4044,8 +4051,8 @@ C
 #include <infrsp.h>
 #include <wrkrsp.h>
 #include <infpri.h>
+#include "rspprp.h"
 #include <infpp.h>
-#include <rspprp.h>
 #include <infspi.h>
 #include <infhso.h>
 #include <inflr.h>

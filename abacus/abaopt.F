@@ -2122,6 +2122,7 @@ C
 #include "dftcom.h"
 #include "molinp.h"
 #include "abainf.h"
+#include "rspprp.h"
 #include "esg.h"
       LOGICAL EXHER, EXSIR, EXABA, EXESG, FNDKEY
       DIMENSION WORK(LWORK)
@@ -2252,6 +2253,7 @@ C
 #include "gnrinf.h"
 #include "optinf.h"
 #include "pvibav.h"
+#include "rspprp.h"
 #include "esg.h"
       LOGICAL EXHER, EXSIR, EXABA, EXESG, FNDKEY
       DIMENSION WORK(LWORK)
@@ -5962,6 +5964,7 @@ C
 #include "optinf.h"
 #include "gnrinf.h"
 #include "priunit.h"
+#include "rspprp.h"
 #include "esg.h"
       DIMENSION CSTEP(MXCOOR), EGRAD(MXCOOR)
       DIMENSION COONEW(3,MXCENT), COOOLD(3,MXCENT), ICRD(3)
