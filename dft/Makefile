@@ -66,6 +66,10 @@ CFILES =\
 
 EXTRA_FILES = fun-tester.c
 
+F_CPPS = $(FFILES:.F=.i)
+
+pre: $(F_CPPS)
+
 ftnchek: pre
 	ftnchek $(CHEKFLAGS) *.i > dft.ftnchek
 
