@@ -542,7 +542,7 @@ C
 #include <sphtrm.h>
 #include <crsdir.h>
       COMMON /DHCINF/ IHCADR(10), IHCSYM(10)
-      DIMENSION JOFFEX(6), JOFFEY(6), JOFFEZ(6),
+      DIMENSION JOFFEX(7), JOFFEY(7), JOFFEZ(7),
      &          INCMXT(3), INCMXU(3), INCMXV(3),
      &          JSTRAT(3), JENDAT(3)
       DIMENSION HERINT(NU1234,*),
