@@ -17,7 +17,8 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat << EODAL > $0.dal
+echo $0
+cat << EODAL > rsp_g_rohf.dal
 **DALTON INPUT
 .RUN RESPONSE
 **INTEGRAL
@@ -40,7 +41,7 @@ cat << EODAL > $0.dal
 **END OF DALTON INPUT
 
 EODAL
-cat << EOMOL > $0.mol
+cat << EOMOL > rsp_g_rohf.mol
 ATOMBASIS
 STO-3G
 ------
@@ -52,7 +53,7 @@ H1      1.5162556382   -1.3708721537    0.0000000000
 H2     -0.7584339548    0.6854360769    1.7695110698
 
 EOMOL
-cat << EOREF > $0.ref
+cat << EOREF > rsp_g_rohf.ref
 
 
     ******************************************************************
@@ -810,7 +811,7 @@ and E(SOMO) :    -0.01059649 au (symmetry 1)
      Date and time (Linux)  : Wed Aug 25 16:57:45 2004
      Host name              : bio79-63.biotech.kth.se                 
 EOREF
-cat << 'EOCHK' > $0.check
+cat << 'EOCHK' > rsp_g_rohf.check
 log=$1
 GREP=egrep
 
