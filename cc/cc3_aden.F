@@ -104,6 +104,10 @@ C
 C
 
 C
+      CALL DZERO(DAB,NMATAB(ISYDEN))
+      CALL DZERO(DIJ,NMATIJ(ISYDEN))
+      CALL DZERO(DIA,NT1AM(ISYDEN))
+C
 C     Open the file
 C
       LU3FOP  = 0
@@ -240,14 +244,16 @@ C
       REAL DAB(*),DIJ(*),DIA(*)
       REAL WORK(LWORK)
       REAL FREQL1,FREQR1,FREQL1R
-      REAL DDOT,XNORMVAL
+      REAL DDOT,XNORMVAL,ONE
 #else
       DOUBLE PRECISION XLAMDP0(*),XLAMDH0(*),FOCK0(*) 
       DOUBLE PRECISION DAB(*),DIJ(*),DIA(*)
       DOUBLE PRECISION WORK(LWORK)
       DOUBLE PRECISION FREQL1,FREQR1,FREQL1R
-      DOUBLE PRECISION DDOT,XNORMVAL
+      DOUBLE PRECISION DDOT,XNORMVAL,ONE
 #endif
+C
+      PARAMETER (ONE = 1.0D0)
 C
       CALL QENTER('CC3_ADENOCC')
 C
@@ -746,9 +752,14 @@ C                 forbidden elements
 C--------------------------------------------------------------
 C
                   CALL W3JK_DIA(WORK(KW3BXKL),ISYW3BXKL,ISYML,L,ISYMK,K,
-     *                          WORK(KFOCKD),FREQL1)
+     *                          WORK(KFOCKD),-FREQL1)
                   CALL T3_FORBIDDEN_JK(WORK(KW3BXKL),ISYMW3BX,ISYML,L,
      *                                ISYMK,K)
+C
+                  !To conform with real sign of t3b multipliers
+                  !(noddy code definition)
+                  CALL DSCAL(NMAABCI(ISYW3BXKL),-ONE,WORK(KW3BXKL),1)
+
 c                 call sum_pt3_jk(work(kw3bxkl),isyml,l,isymk,k,isyw3bxkl,
 c    *                           work(kx3am),4)
 C
@@ -8494,6 +8505,7 @@ C
          FREQL1  = FRQLRZ(IDLSTL)
          LABELL1 = LRZLBL(IDLSTL)
          LORXL1  = LORXLRZ(IDLSTL)
+c
 
          IF (LORXL1) CALL QUIT('NO ORBITAL RELAX. IN CC3_ADENVIR')
 
@@ -8526,6 +8538,7 @@ C
         ISYMR1  = ISYLRT(IDLSTR)
         FREQR1  = FRQLRT(IDLSTR)
         LABELR1 = LRTLBL(IDLSTR)
+c
       ELSE
          CALL QUIT('Unkown right list in CC3_ADENVIR')
       END IF
@@ -9159,6 +9172,10 @@ C
      *                               WORK(KXIAJB),ISINT1,-FREQL1,
      *                               WORK(KDIAGWB),WORK(KFOCKD),B,ISYMB,
      *                               D,ISYMD,ISYML1,WORK(KEND5),LWRK5)
+C
+                  !To conform with real sign of t3b multipliers
+                  !(noddy code definition)
+                  CALL DSCAL(NCKIJ(ISWBMAT),-ONE,WORK(KW3BMAT),1)
 c
 c       call sum_pt3(work(KW3BMAT),isymb,b,isymd,d,
 c    *             ISWBMAT,work(kx3am),4)
@@ -9358,7 +9375,7 @@ C
 COMMENT COMMENT
 c      write(lupri,*) 'w3x (usual) in CC3_ADENVIR'
 c      write(lupri,*) 'w3xD  in CC3_ADENVIR'
-c      write(lupri,*) 'w3x  in CC3_ADENVIR'
+c      write(lupri,*) 'w3bx  in CC3_ADENVIR'
 c      write(lupri,*) 'w3x + 0.5w3xD in CC3_ADENVIR'
 c      call print_pt3(work(kx3am),ISYM0,4)
 COMMENT COMMENT

@@ -689,19 +689,20 @@ C
      *                               WORK(KT2TP),ISYM0,
      *                               WORK(KEND1),LWRK1,
      *                               LENSQW,WORK(KINDSQW),
-     *                               ISYMB,B,ISYMD,D)
+     *                               ISYMB,B,ISYMD,D,.TRUE.)
 C
                   CALL CC3_W3_CY2V(OMEGA2EFF,ISYRES,WORK(KRBJIA),
      *                             WORK(KWMAT),ISWMAT,
      *                             WORK(KTMAT),WORK(KTRVI),WORK(KTRVI1),
      *                             ISINT1,WORK(KEND1),LWRK1,
      *                             WORK(KINDSQW),LENSQW,
-     *                             ISYMB,B,ISYMD,D)
+     *                             ISYMB,B,ISYMD,D,.TRUE.)
 C
                   CALL CC3_W3_CY2O(OMEGA2EFF,ISYRES,WORK(KWMAT),ISWMAT,
      *                             WORK(KTMAT),WORK(KTROC),WORK(KTROC1),
      *                             ISINT1,WORK(KEND1),LWRK1,
-     *                             WORK(KINDSQW),LENSQW,ISYMB,B,ISYMD,D)
+     *                             WORK(KINDSQW),LENSQW,ISYMB,B,ISYMD,D,
+     *                             .TRUE.)
 
                ENDDO   ! B
             ENDDO      ! ISYMB

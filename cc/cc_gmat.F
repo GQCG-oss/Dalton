@@ -257,6 +257,7 @@ c/* Deck CC_GMAT */
 #include <aovec.h>
 #include <blocks.h>
 #include <second.h>
+#include <ccnoddy.h>
 
 * local parameters:
       CHARACTER MSGDBG*(16)
@@ -280,6 +281,16 @@ c/* Deck CC_GMAT */
       INTEGER MXVEC, NGTRAN, IOPTRES, LWORK
       INTEGER IGTRAN(4,NGTRAN)
       INTEGER IGDOTS(MXVEC,NGTRAN)
+
+      CHARACTER*(8) FNTOC
+      CHARACTER*(7) FN3FOP2X
+      CHARACTER*(6) FNCKJD, FN3VI, FN3FOPX
+      CHARACTER*(5) FNDKBC3
+      INTEGER LUTOC,LU3FOP2X,LUCKJD, LU3VI, LU3FOPX,LUDKBC3
+      PARAMETER (FNTOC ='CCSDT_OC',FN3FOP2X='PTFOP2X',
+     *           FNCKJD='CKJDEL',FN3VI ='CC3_VI'  ,
+     *           FN3FOPX='PTFOPX' ,FNDKBC3='DKBC3')
+
 
 #if defined (SYS_CRAY)
       REAL GCON(MXVEC,NGTRAN)
@@ -1558,10 +1569,43 @@ C
          DTIME = SECOND()
 
          IF (CCSDT) THEN
-            CALL CCSDT_GMAT_NODDY(LISTA,IDLSTA,LISTB,IDLSTB,
-     &                            LISTC,IDLSTC,
-     &                            WORK(KDELTA1(ITRAN)),WORK(KDELTA2),
-     &                            WORK(KEND1),LEND1)
+            IF (NODDY_GMAT) THEN
+               CALL CCSDT_GMAT_NODDY(LISTA,IDLSTA,LISTB,IDLSTB,
+     &                               LISTC,IDLSTC,
+     &                               WORK(KDELTA1(ITRAN)),WORK(KDELTA2),
+     &                               WORK(KEND1),LEND1)
+            ELSE
+
+             LUCKJD  = 0
+             LUTOC   = 0
+             LU3VI   = 0
+             LUDKBC3 = 0
+             LU3FOPX  = 0
+             LU3FOP2X = 0
+C
+             CALL WOPEN2(LUCKJD,FNCKJD,64,0)
+             CALL WOPEN2(LUTOC,FNTOC,64,0)
+             CALL WOPEN2(LU3VI,FN3VI,64,0)
+             CALL WOPEN2(LUDKBC3,FNDKBC3,64,0)
+             CALL WOPEN2(LU3FOPX,FN3FOPX,64,0)
+             CALL WOPEN2(LU3FOP2X,FN3FOP2X,64,0)
+
+               CALL CC3_GMAT(LISTA,IDLSTA,LISTB,IDLSTB,
+     &                    LISTC,IDLSTC,WORK(KDELTA1(ITRAN)),
+     *                    WORK(KDELTA2),ISYRES,WORK(KEND1),LEND1,
+     *                    LUCKJD,FNCKJD,LUTOC,FNTOC,
+     *                    LU3VI,FN3VI,LUDKBC3,FNDKBC3,
+     *                    LU3FOPX,FN3FOPX,LU3FOP2X,FN3FOP2X)
+
+             CALL WCLOSE2(LUCKJD,FNCKJD,'KEEP')
+             CALL WCLOSE2(LUTOC,FNTOC,'KEEP')
+             CALL WCLOSE2(LU3VI,FN3VI,'KEEP')
+             CALL WCLOSE2(LUDKBC3,FNDKBC3,'KEEP')
+             CALL WCLOSE2(LU3FOPX,FN3FOPX,'KEEP')
+             CALL WCLOSE2(LU3FOP2X,FN3FOP2X,'KEEP')
+
+
+            END IF
          END IF
 
          TIMTRIP = TIMTRIP + SECOND() - DTIME
@@ -4745,11 +4789,11 @@ c/* Deck CCG_LXD */
 #if defined (SYS_CRAY)
       REAL WORK(LWORK)
       REAL OMEGA1(NT1AMX), OMEGA2(NT2AMX)
-      REAL DDOT, TWO
+      REAL DDOT, TWO, XNORMVAL
 #else
       DOUBLE PRECISION WORK(LWORK)
       DOUBLE PRECISION OMEGA1(NT1AMX), OMEGA2(NT2AMX)
-      DOUBLE PRECISION DDOT, TWO
+      DOUBLE PRECISION DDOT, TWO, XNORMVAL
 #endif
       PARAMETER (TWO = 2.0D0)
 
@@ -5212,7 +5256,6 @@ C           ----------------------------------------------
      &   ddot(nt1amx,work(kome1),1,work(kome1),1)
       end if
 
-
       DO I = 1,NT1AMX
          OMEGA1(I) = OMEGA1(I) + WORK(KOME1+I-1)
       END DO
@@ -5224,7 +5267,6 @@ C           ----------------------------------------------
 
       CALL CC3_L3_OMEGA2_NODDY(WORK(KOME2),WORK(KL3AM),
      *                         WORK(KINT1SBC),WORK(KINT2SBC))
-
       DO I = 1,NT1AMX
          DO J = 1,I
             IJ = NT1AMX*(I-1) + J

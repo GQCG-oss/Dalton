@@ -1993,40 +1993,31 @@ C          ----------------------------------------------
         
         
         IF (CCSDT) THEN
+
+           ! allocate memory for effective rhs vector
            IF ( IOPTRES.GE.0 .AND. IOPTRES.LE.4 ) THEN
-C
              KTHETA1EFF = KEND2
              KTHETA2EFF = KTHETA1EFF + NT1AM(ISYRES)
              KEND2      = KTHETA2EFF + NT2AM(ISYRES)
              LWRK2      = LWORK - KEND2
-C
-             CALL DZERO(WORK(KTHETA1EFF),NT1AM(ISYRES))
-             CALL DZERO(WORK(KTHETA2EFF),NT2AM(ISYRES))
-C
              IF (LWRK2 .LE. NT1AM(ISYRES)) THEN
                CALL QUIT('Insufficient work space in CC_FMAT. (9)')
              END IF
            END IF
-C
-C          for final form with true code for partitioning:
-C          IF ( .NOT. NODDY_FMAT ) THEN
-
-C
-C          IF ( (.NOT. NODDY_FMAT) .AND. (.NOT. IOPTRES.LT.5) ) THEN
+ 
            IF ( (.NOT. NODDY_FMAT)) THEN 
-C
+ 
+C            ----------------------------------------
+C            Calculate <L_2|[[H,T^B_3],\tau_nu_1|HF>
+C            ----------------------------------------
              IF (IOPTRES.LT.5) THEN
-C
-C----------------------------------------
-C Calculate <L_2|[[H,T^B_3],\tau_nu_1|HF>
-C----------------------------------------
-C
+
                CALL CC3_FT3B(LISTL,IDLSTL,LISTR,IDLSTR,IOPTRES,
      *                       WORK(KTHETA1),ISYRES,WORK(KEND2),LWRK2,
      *                       FNCKJD,FNDKBC,FNDELD,FNTOC)
-C
-             END IF
 
+             END IF
+ 
              LUCKJD  = 0
              LUDKBC  = 0
              LUTOC   = 0
@@ -2037,7 +2028,7 @@ C
              LU3FOP2 = 0
              LU3FOPX  = 0
              LU3FOP2X = 0
-C
+ 
              CALL WOPEN2(LUCKJD,FNCKJD,64,0)
              CALL WOPEN2(LUDKBC,FNDKBC,64,0)
              CALL WOPEN2(LUTOC,FNTOC,64,0)
@@ -2048,58 +2039,61 @@ C
              CALL WOPEN2(LU3FOP2,FN3FOP2,64,0)
              CALL WOPEN2(LU3FOPX,FN3FOPX,64,0)
              CALL WOPEN2(LU3FOP2X,FN3FOP2X,64,0)
+
 C
-COMMENT COMMENT
-COMMENT COMMENT
-COMMENT COMMENT Do not use IOPTRES, WORK(KTHETA1EFF),    WORK(KTHETA2EFF)
-COMMENT COMMENT            IFDOTS,  FCONS(MXVEC,NFTRAN)  FILFMA
-COMMENT COMMENT            ITRAN in CC3_FMAT at the moment!!!!!!!   
-COMMENT COMMENT
-COMMENT COMMENT
-C
-C---------------------------------------------
-C Calculate   <L_3|[[H^B,T^0_2],\tau_nu_1]|HF> 
-C           + <L_3|[[H^0,T^B_2],\tau_nu_1]|HF> 
-C and 
-C             <L_3|[H^B,\tau_nu_2]|HF>
-C---------------------------------------------
-C
-C bug fix ? please look at this at some time...
-C ECURR should be put on the call list at some time...
-C bug anyway, ECURR=0.0d0 is only working if LISTL=0.0d00
-C
-C 
-C            ECURRSAV = ECURR 
-C            ECURR    = 0.0d0 
-c bug fix ?
-             CALL CC3_FMAT(LISTL,IDLSTL,LISTR,IDLSTR,IOPTRES,
+C            ---------------------------------------------
+C             Calculate   <L_3|[[H^B,T^0_2],\tau_nu_1]|HF> 
+C                       + <L_3|[[H^0,T^B_2],\tau_nu_1]|HF> 
+C             and 
+C                         <L_3|[H^B,\tau_nu_2]|HF>
+C            ---------------------------------------------
+             IF (IOPTRES.EQ.5) THEN
+               ! in  CC3_BFMAT Omegaeff is used as scratch array.
+               KTHETA1EFF = KEND2
+               KTHETA2EFF = KTHETA1EFF + NT1AM(ISYRES)
+               KEND3      = KTHETA2EFF + NT2AM(ISYRES)
+               LWRK3      = LWORK - KEND3
+   
+               IF (LWRK3 .LT. 0) THEN
+                 CALL QUIT('Insufficient work space in CC_FMAT. (9b)')
+               END IF
+             ELSE
+               KEND3 = KEND2
+               LWRK3 = LWRK2
+             END IF
+ 
+             CALL DZERO(WORK(KTHETA1EFF),NT1AM(ISYRES))
+             CALL DZERO(WORK(KTHETA2EFF),NT2AM(ISYRES))
+ 
+c            CALL CC3_FMAT(LISTL,IDLSTL,LISTR,IDLSTR,IOPTRES,
+c    *                     WORK(KTHETA1),   WORK(KTHETA2),
+c    *                     WORK(KTHETA1EFF),WORK(KTHETA2EFF),
+c    *                     IFDOTS,FCONS,FILFMA,ITRAN,
+c    *                     NFTRAN,MXVEC,WORK(KEND2),LWRK2,
+c    *                     LUCKJD,FNCKJD,LUDKBC,FNDKBC,LUTOC,FNTOC,
+c    *                     LU3VI,FN3VI,LUDKBC3,FNDKBC3,
+c    *                     LU3FOPX,FN3FOPX,LU3FOP2X,FN3FOP2X)
+
+             CALL CC3_BFMAT(LISTL,IDLSTL,LISTR,IDLSTR,
      *                     WORK(KTHETA1),   WORK(KTHETA2),
      *                     WORK(KTHETA1EFF),WORK(KTHETA2EFF),
-     *                     IFDOTS,FCONS,FILFMA,ITRAN,
-     *                     NFTRAN,MXVEC,WORK(KEND2),LWRK2,
-     *                     LUCKJD,FNCKJD,LUDKBC,FNDKBC,LUTOC,FNTOC,
+     *                     ISYRES,
+     *                     WORK(KEND3),LWRK3,
+     *                     LUTOC,FNTOC,
      *                     LU3VI,FN3VI,LUDKBC3,FNDKBC3,
-     *                     LU3FOPX,FN3FOPX,LU3FOP2X,FN3FOP2X)
-C bug fix ? please look at this at some time...
-C             ECURR    = ECURRSAV 
+     *                     LU3FOPX,FN3FOPX,LU3FOP2X,FN3FOP2X,
+     *                     LU3VI2,FN3VI2,LU3FOP,FN3FOP,LU3FOP2,FN3FOP2)
+
 C
-COMMENT COMMENT COMMENT COMMENT 
-C       write(lupri,*) 'KTHETA1EFF just after CC3_FMAT'
-C       do i = 1,nt1am(isyres)
-C           write(lupri,*) i,WORK(KTHETA1EFF-1+i)
-C       end do
-COMMENT COMMENT COMMENT COMMENT 
-C     write(lupri,*) 'KTHETA2EFF just after CC3_FMAT'
-C     call outpak(WORK(KTHETA2EFF),NT1AM(isyres),1,lupri)
-COMMENT COMMENT COMMENT COMMENT 
-C
-C
-C------------------------------------------
-C Calculate <F_3|[[H,T^0_2],\tau_nu_1]|HF>
-C and       <F_3|[H,\tau_nu_2]|HF>
-C------------------------------------------
-C
+C            ------------------------------------------
+C             Calculate <F_3|[[H,T^0_2],\tau_nu_1]|HF>
+C             and       <F_3|[H,\tau_nu_2]|HF>
+C            ------------------------------------------
              IF (IOPTRES.LT.5) THEN
+ 
+               CALL DZERO(WORK(KTHETA1EFF),NT1AM(ISYRES))
+               CALL DZERO(WORK(KTHETA2EFF),NT2AM(ISYRES))
+
                CALL CC3_FMATSD(LISTL,IDLSTL,LISTR,IDLSTR,
      *                     WORK(KTHETA1),WORK(KTHETA2),WORK(KTHETA1EFF),
      *                     WORK(KTHETA2EFF),ISYRES,WORK(KEND2),LWRK2,
@@ -2107,16 +2101,6 @@ C
      *                     LU3VI,FN3VI,LU3VI2,FN3VI2,
      *                     LU3FOP,FN3FOP,LU3FOP2,FN3FOP2)
              ENDIF
-COMMENT COMMENT COMMENT COMMENT 
-C       write(lupri,*) 'KTHETA1 just after CC3_FMATSD'
-C       do i = 1,nt1am(isyres)
-C           write(lupri,*) i,WORK(KTHETA1-1+i)
-C       end do
-COMMENT COMMENT COMMENT COMMENT 
-C     write(lupri,*) 'KTHETA2 just after CC3_FMATSD'
-C     call outpak(WORK(KTHETA2),NT1AM(isyres),1,lupri)
-COMMENT COMMENT COMMENT COMMENT 
-C
 
              CALL WCLOSE2(LUCKJD,FNCKJD,'KEEP')
              CALL WCLOSE2(LUDKBC,FNDKBC,'KEEP')
@@ -2128,22 +2112,28 @@ C
              CALL WCLOSE2(LU3FOP2,FN3FOP2,'KEEP')
              CALL WCLOSE2(LU3FOPX,FN3FOPX,'KEEP')
              CALL WCLOSE2(LU3FOP2X,FN3FOP2X,'KEEP')
-C
-           else
-C
+ 
+           ELSE
+ 
+             IF ( IOPTRES.GE.0 .AND. IOPTRES.LE.4 ) THEN
+               CALL DZERO(WORK(KTHETA1EFF),NT1AM(ISYRES))
+               CALL DZERO(WORK(KTHETA2EFF),NT2AM(ISYRES))
+             END IF
+ 
              CALL CCSDT_FMAT_NODDY(LISTL,IDLSTL,LISTR,IDLSTR,
      &                             IOPTRES,CCSDT_F_ALTER,
      &                             WORK(KTHETA1),   WORK(KTHETA2),
      &                             WORK(KTHETA1EFF),WORK(KTHETA2EFF),
      &                             IFDOTS,FCONS,FILFMA,ITRAN,
      &                             NFTRAN,MXVEC,WORK(KEND2),LWRK2)
-C
-           endif
-C
+ 
+           ENDIF
+ 
            IF (IPRINT .GT. 110) THEN
               CALL AROUND('Omega1 and Omega2 after  F(cc3) : ')
               CALL CC_PRP(WORK(KTHETA1),WORK(KTHETA2),1,1,1)
            ENDIF
+
         END IF
 
 

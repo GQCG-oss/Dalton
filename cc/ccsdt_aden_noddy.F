@@ -425,6 +425,16 @@ C
      &            ONE,WORK(KT1AMY),NVIRT,WORK(KDIJ0),NRHFT,
      &            ONE,DIA,NVIRT)  
  
+c
+      IF (LOCDBG) THEN
+        write(lupri,*)'DAB(total) in noddy after OCC'
+        call output(DAB,1,NVIRT,1,NVIRT,NVIRT,NVIRT,1,lupri)
+        write(lupri,*)'DIJ(total) in noddy after OCC'
+        call output(DIJ,1,NRHFT,1,NRHFT,NRHFT,NRHFT,1,lupri)
+        write(lupri,*)'DIA(total) in noddy after OCC'
+        call output(DIA,1,NVIRT,1,NRHFT,NVIRT,NRHFT,1,lupri)
+      END IF
+c
       IF (HAVETB3T3) THEN
         CALL DGEMM('T','N',NVIRT,NRHFT,NVIRT,
      &             -ONE,WORK(KDAB0R),NVIRT,WORK(KT1AMY),NVIRT,
@@ -1072,6 +1082,7 @@ C
          ISYMY   = ISYLRZ(IDLSTL)
          FREQ    = FRQLRZ(IDLSTL)
          LABELY  = LRZLBL(IDLSTL)
+c
          LORX    = LORXLRZ(IDLSTL)
          IF (LORX) CALL QUIT('NO ORBITAL RELAX. IN CCSDT_GWBIC')
       ELSE
@@ -1936,6 +1947,7 @@ C------------------------------------------------------------
         ISTAMY = ISYLRT(IDLSTR)
         FREQY  = FRQLRT(IDLSTR)
         LABELY = LRTLBL(IDLSTR)
+c
         IF (LORXLRT(IDLSTR)) 
      &   CALL QUIT('NO ORBITAL RELAXED PERTURBATION IN CCSDT_GWTIC')
       ELSE

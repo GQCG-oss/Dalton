@@ -2048,7 +2048,7 @@ C=====================================================================*
       PARAMETER (SECNAM='CC_NODINP')
 
       INTEGER NTABLE
-      PARAMETER (NTABLE = 12)
+      PARAMETER (NTABLE = 15)
 
 * variables:
       LOGICAL SET
@@ -2064,7 +2064,7 @@ C=====================================================================*
       DATA SET /.FALSE./
       DATA TABLE /'.XI    ','.XIDEN ','.ETA   ','.ETADEN','.FMAT  ',
      *            '.FNOALT','.OVLP  ','.OMEGA ','.LHTR  ','.RHTR  ',
-     *            '.FOPDEN','.FINDIF'/
+     *            '.FOPDEN','.FINDIF','.FAMAT ','.GMAT  ','.XXXXXX'/
 
 *---------------------------------------------------------------------*
 * set defaults:
@@ -2073,6 +2073,8 @@ C=====================================================================*
       NODDY_RHTR  = .FALSE.
       NODDY_LHTR  = .FALSE.
       NODDY_DEN   = .FALSE.
+      NODDY_FAMAT = .FALSE.
+      NODDY_GMAT  = .FALSE.
 
       NODDY_XI  = .FALSE.
       NODDY_ETA = .FALSE. 
@@ -2115,7 +2117,7 @@ c         table look up:
 
 c         jump to the appropiate input section:
           IF (IJUMP .LE. NTABLE) THEN
-            GOTO (1,2,3,4,5,6,7,8,9,10,11,12), IJUMP
+            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_NODINP.')
 
 C           ---------------------------------------
@@ -2209,9 +2211,30 @@ C           --------------------------------------------------------
               NODDY_ETA    = .TRUE.
               NODDY_XI     = .TRUE.
               NODDY_FMAT   = .TRUE.
+              NODDY_FAMAT  = .TRUE.
 
               NODDY_XI_ALTER  = .FALSE.
               NODDY_ETA_ALTER = .FALSE. 
+            GO TO 100
+C
+C           ------------------------------------------------
+C           .FAMAT: use noddy code for F{A} matrix 
+C           ------------------------------------------------
+13          CONTINUE
+              NODDY_FAMAT = .TRUE.
+            GO TO 100
+C
+C           ------------------------------------------------
+C           .GMAT  : use noddy code for G matrix
+C           ------------------------------------------------
+14          CONTINUE
+              NODDY_GMAT = .TRUE.
+            GO TO 100
+C
+C           ------------------------------------------------
+C           .XXXXXX: unused
+C           ------------------------------------------------
+15          CONTINUE
             GO TO 100
 C
           ELSE
@@ -2320,11 +2343,25 @@ C
      &  ' and CCSDT_FBMAT'
       END IF
 
+      WRITE(LUPRI,'(/1x,a)') ' in CCQR_FADRV/CC_FAMAT:'
+      IF (NODDY_FAMAT) THEN
+       WRITE(LUPRI,*) '    F matrix transformation: CCSDT_FAMAT_NODDY'
+       WRITE(LUPRI,*) '    F matrix contraction   : CCSDT_FAMAT_NODDY'
+      ELSE
+       WRITE(LUPRI,*) '    F matrix transformation: CCSDT_FAMAT_NODDY'
+       WRITE(LUPRI,*) '    F matrix contraction   : CCSDT_FA_DEN'
+      END IF
+
+      IF (NODDY_GMAT) THEN
+       WRITE(LUPRI,*)'    G matrix calculation: CCSDT_GMAT_NODDY'
+      ELSE
+       WRITE(LUPRI,*)'    G matrix calculation: CC3_GMAT'
+      END IF
 
       RETURN
       END
 C=====================================================================*
-C                    END OF SUBROUTINE CC_OPAINP
+C                    END OF SUBROUTINE CC_NODINP
 C=====================================================================*
 c/* deck cc_qr2rinp */
 C=====================================================================*

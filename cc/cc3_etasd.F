@@ -921,7 +921,7 @@ C
      *                               WORK(KT2TP),ISYM0,
      *                               WORK(KEND4),LWRK4,
      *                               LENSQW,WORK(KINDSQW),
-     *                               ISYMB,B,ISYMD,D)
+     *                               ISYMB,B,ISYMD,D,.TRUE.)
 C
 C-----------------------------------------
 C Calculate <E_3|[H,\tau_nu_2]|HF>
@@ -932,12 +932,13 @@ C
      *                             WORK(KTMAT),WORK(KTRVI),WORK(KTRVI1),
      *                             ISINT1,WORK(KEND4),LWRK4,
      *                             WORK(KINDSQW),LENSQW,
-     *                             ISYMB,B,ISYMD,D)
+     *                             ISYMB,B,ISYMD,D,.TRUE.)
 
                   CALL CC3_W3_CY2O(ETA2EFF,ISYRES,WORK(KWMAT),ISWMAT,
      *                             WORK(KTMAT),WORK(KTROC),WORK(KTROC1),
      *                             ISINT1,WORK(KEND4),LWRK4,
-     *                             WORK(KINDSQW),LENSQW,ISYMB,B,ISYMD,D)
+     *                             WORK(KINDSQW),LENSQW,ISYMB,B,ISYMD,D,
+     *                             .TRUE.)
 
                ENDDO   ! B
             ENDDO      ! ISYMB
@@ -1419,13 +1420,15 @@ C  /* Deck cc3_w3_omega1 */
       SUBROUTINE CC3_W3_OMEGA1(OMEGA1,ISYRES,WMAT,TMAT,ISYMIM,
      *                         XOOOO,XOVVO,XOOVV,XVVVV,ISYINT,
      *                         T2TP,ISYMT2,WORK,LWORK,LENSQ,INDSQ,
-     *                         ISYMIB,IB,ISYMID,ID)
+     *                         ISYMIB,IB,ISYMID,ID,W3X)
 C
 C     Written by K. Hald, Spring 2002.
 C
 C     Calculate the L3 contributions to omega1.
 C
       IMPLICIT NONE
+C
+      LOGICAL W3X
 C
       INTEGER ISYMIM, ISYINT, ISYMT2, LWORK, ISYMIB, IB, ISYMID, ID
       INTEGER LENSQ, INDSQ(LENSQ,6)
@@ -1472,6 +1475,15 @@ C
 C
       PARAMETER (ZERO= 0.0D0, ONE= 1.0D0)
 C
+C If W3X = .TRUE., then WMAT contains wbar_X and all terms in 
+C 1-6 are included
+C else
+C we assume that we get tbar_0 in as WMAT and calculate only
+C those terms in 1-6 which are marked with star (*).
+C
+C Note Wbar_X and Tbar_0 is stored in the same way for fixed IB and ID
+C
+C
 C CALCULATE THE TERMS 1-6 USING W INTERMEDIATE
 C
 C 1.
@@ -1488,22 +1500,22 @@ C 6.
 C     - L^{def}_{lni} t^{de}_{lm} g_{mnfa}
 C
 C 1.  Calculate contribution from g_{oooo}
-C ( Wae(dlon) + Wad(eoln) + Wed(anlo) )* t(dl,em) * g(inmo)
+C ( Wae(dlon)(*) + Wad(eoln) + Wed(anlo) )* t(dl,em) * g(inmo)
 C 
 C 2.  Calculate contribution from g_{vvvv}
-C ( Wdg(fiml) + Wdf(gmil) + Wfg(dlmi) )* t(dl,em) * g(fage)
+C ( Wdg(fiml) + Wdf(gmil) + Wfg(dlmi)(*) )* t(dl,em) * g(fage)
 C 
 C 3.  Calculate contributions from g_{ovvo}
-C -( Waf(dlnm) + Wad(fnlm) + Wdf(amnl) )* t(dl,em) * g(iefn)
+C -( Waf(dlnm)(*) + Wad(fnlm) + Wdf(amnl) )* t(dl,em) * g(iefn)
 C
 C 4.  Calculate contributions from g_{oovv}
-C -( Waf(dlmn) + Wad(fmln) + Wfd(anlm) )* t(dl,em) * g(infe)
+C -( Waf(dlmn)(*) + Wad(fmln) + Wfd(anlm) )* t(dl,em) * g(infe)
 C
 C 5.  Calculate contributions from g_{ovvo}
-C -( Wfe(dlin) + Wfd(eiln) + Wde(fnil) )* t(dl,em) * g(mafn)
+C -( Wfe(dlin)(*) + Wfd(eiln) + Wde(fnil) )* t(dl,em) * g(mafn)
 C
 C 6.  Calculate contributions from g_{oovv}
-C -( Wfe(dlni) + Wfd(enli) + Wde(finl) )* t(dl,em) * g(mnfa)
+C -( Wfe(dlni)(*) + Wfd(enli) + Wde(finl) )* t(dl,em) * g(mnfa)
 C
       CALL QENTER('CC3_W3_OMEGA1')
 C
@@ -1597,77 +1609,82 @@ C
 C    WAD(ckij * tD(ckm)  * g(Ijmi)
 C     GAD(ij,m)          
 C
-      DO I = 1, LENGTH
-         TMAT(I) = WMAT(INDSQ(I,1))
-      ENDDO
+      ! Calculate only when contracting with first-order multipliers
+      IF (W3X) THEN
 C
-      IF (NSYM .GT. 1) THEN
-         IF (LWRK1 .LT. LENGTH) THEN
-            CALL QUIT('Out of memory in CC3_W3_OMEGA1 (CC_GATHER-2)')
+         DO I = 1, LENGTH
+            TMAT(I) = WMAT(INDSQ(I,1))
+         ENDDO
+C
+         IF (NSYM .GT. 1) THEN
+            IF (LWRK1 .LT. LENGTH) THEN
+               CALL QUIT('Out of memory in CC3_W3_OMEGA1 (CC_GATHER-2)')
+            ENDIF
+            CALL CC_GATHER(LENGTH,WORK(KEND1),TMAT,INDSQ(1,6))
+            CALL DCOPY(LENGTH,WORK(KEND1),1,TMAT,1)
          ENDIF
-         CALL CC_GATHER(LENGTH,WORK(KEND1),TMAT,INDSQ(1,6))
-         CALL DCOPY(LENGTH,WORK(KEND1),1,TMAT,1)
-      ENDIF
 C
-      KT2TMP = KEND1
-      KEND2  = KT2TMP + NCKI(ISYCKM)
-      LWRK2  = LWORK  - KEND2
+         KT2TMP = KEND1
+         KEND2  = KT2TMP + NCKI(ISYCKM)
+         LWRK2  = LWORK  - KEND2
 C
-      IF (LWRK2 .LT. 0) THEN
-         CALL QUIT('Memory exceeded in CC3_W3_OMEGA1')
-      ENDIF
+         IF (LWRK2 .LT. 0) THEN
+            CALL QUIT('Memory exceeded in CC3_W3_OMEGA1')
+         ENDIF
 C
-C sort t2tp(ckmD) as TD(cmk)
+C        sort t2tp(ckmD) as TD(cmk)
 C
-      DO ISYMK = 1, NSYM
-         ISYMCM = MULD2H(ISYCKM,ISYMK)
-         DO ISYMC = 1, NSYM
-            ISYMM  = MULD2H(ISYMCM,ISYMC)
-            ISYMCK = MULD2H(ISYMC,ISYMK)
+         DO ISYMK = 1, NSYM
+            ISYMCM = MULD2H(ISYCKM,ISYMK)
+            DO ISYMC = 1, NSYM
+               ISYMM  = MULD2H(ISYMCM,ISYMC)
+               ISYMCK = MULD2H(ISYMC,ISYMK)
 C
-            DO K = 1, NRHF(ISYMK)
-               DO M = 1, NRHF(ISYMM)
+               DO K = 1, NRHF(ISYMK)
+                  DO M = 1, NRHF(ISYMM)
 C
-                  KOFF1 = IT2SP(ISYCKM,ISYMID)
-     *                  + NCKI(ISYCKM)*(ID-1)
-     *                  + ICKI(ISYMCK,ISYMM)
-     *                  + NT1AM(ISYMCK)*(M-1)
-     *                  + IT1AM(ISYMC,ISYMK)
-     *                  + NVIR(ISYMC)*(K-1)
-     *                  + 1
-                  KOFF2 = KT2TMP
-     *                  + ICKI(ISYMCM,ISYMK)
-     *                  + NT1AM(ISYMCM)*(K-1)
-     *                  + IT1AM(ISYMC,ISYMM)
-     *                  + NVIR(ISYMC)*(M-1)
+                     KOFF1 = IT2SP(ISYCKM,ISYMID)
+     *                     + NCKI(ISYCKM)*(ID-1)
+     *                     + ICKI(ISYMCK,ISYMM)
+     *                     + NT1AM(ISYMCK)*(M-1)
+     *                     + IT1AM(ISYMC,ISYMK)
+     *                     + NVIR(ISYMC)*(K-1)
+     *                     + 1
+                     KOFF2 = KT2TMP
+     *                     + ICKI(ISYMCM,ISYMK)
+     *                     + NT1AM(ISYMCM)*(K-1)
+     *                     + IT1AM(ISYMC,ISYMM)
+     *                     + NVIR(ISYMC)*(M-1)
 C
-                  CALL DCOPY(NVIR(ISYMC),T2TP(KOFF1),1,WORK(KOFF2),1)
+                     CALL DCOPY(NVIR(ISYMC),T2TP(KOFF1),1,WORK(KOFF2),1)
 C
+                  ENDDO
                ENDDO
             ENDDO
          ENDDO
-      ENDDO
 C
-      DO ISYMCK = 1, NSYM
+         DO ISYMCK = 1, NSYM
 C
-         ISYMIJ = MULD2H(ISCKIJ,ISYMCK)
-         ISYMM  = MULD2H(ISYCKM,ISYMCK)
+            ISYMIJ = MULD2H(ISCKIJ,ISYMCK)
+            ISYMM  = MULD2H(ISYCKM,ISYMCK)
 C
-         KOFF1  = ISAIKL(ISYMCK,ISYMIJ)
-     *          + 1
-         KOFF2  = KT2TMP
-     *          + ICKI(ISYMCK,ISYMM)
-         KOFF3  = KSCR1
-     *          + IMAIJK(ISYMIJ,ISYMM)
+            KOFF1  = ISAIKL(ISYMCK,ISYMIJ)
+     *             + 1
+            KOFF2  = KT2TMP
+     *             + ICKI(ISYMCK,ISYMM)
+            KOFF3  = KSCR1
+     *             + IMAIJK(ISYMIJ,ISYMM)
 C
-         NTOTIJ = MAX(1,NMATIJ(ISYMIJ))
-         NTOTCK = MAX(1,NT1AM(ISYMCK))
+            NTOTIJ = MAX(1,NMATIJ(ISYMIJ))
+            NTOTCK = MAX(1,NT1AM(ISYMCK))
 C
-         CALL DGEMM('T','N',NMATIJ(ISYMIJ),NRHF(ISYMM),NT1AM(ISYMCK),
-     *              ONE,TMAT(KOFF1),NTOTCK,WORK(KOFF2),NTOTCK,
-     *              ONE,WORK(KOFF3),NTOTIJ)
+            CALL DGEMM('T','N',NMATIJ(ISYMIJ),NRHF(ISYMM),NT1AM(ISYMCK),
+     *                 ONE,TMAT(KOFF1),NTOTCK,WORK(KOFF2),NTOTCK,
+     *                 ONE,WORK(KOFF3),NTOTIJ)
 C
-      ENDDO
+         ENDDO
+C
+      END IF
 C
 C------------------------------------------------
 C     Contract the intermediate with g_{oooo}
@@ -1682,7 +1699,7 @@ C
      *         + 1
 C
 C
-C 1.1 + 1.2 omega contribution addomega
+C 1.1 (+ 1.2) omega contribution addomega
 C
          OMEGA1(NBI) = OMEGA1(NBI) 
      *               - DDOT(NMAIJK(ISYOOO),XOOOO(KOFF1),1,WORK(KSCR1),1)
@@ -1700,93 +1717,98 @@ C-----------------------------------------
 C
 C  TMAT(aonl) = WBD(anlo)
 C
-      DO I = 1, LENGTH
-         TMAT(I) = WMAT(INDSQ(I,2))
-      END DO
+      ! Calculate only when contracting with first-order multipliers
+      IF (W3X) THEN
+C
+         DO I = 1, LENGTH
+            TMAT(I) = WMAT(INDSQ(I,2))
+         END DO
 C
 C -------------------------------
-C     Sort T^{DB}_{lm} as T_{lm}
+C        Sort T^{DB}_{lm} as T_{lm}
 C -------------------------------
 C
-      ISYMBD = MULD2H(ISYMIB,ISYMID)
-      ISYMLM = MULD2H(ISYMBD,ISYMT2)
-      ISYDLM = MULD2H(ISYMLM,ISYMID)
-      ISRMAT = MULD2H(ISWMAT,ISYMLM)
+         ISYMBD = MULD2H(ISYMIB,ISYMID)
+         ISYMLM = MULD2H(ISYMBD,ISYMT2)
+         ISYDLM = MULD2H(ISYMLM,ISYMID)
+         ISRMAT = MULD2H(ISWMAT,ISYMLM)
 C   
-      KMIMAT  = 1 
-      KRMAT   = KMIMAT + NMATIJ(ISYMLM)
-      KSORT   = KRMAT  + N3VOOO(ISRMAT)
-      KEND1   = KSORT  + N3VOOO(ISRMAT)
-      LWRK1   = LWORK  - KEND1
+         KMIMAT  = 1 
+         KRMAT   = KMIMAT + NMATIJ(ISYMLM)
+         KSORT   = KRMAT  + N3VOOO(ISRMAT)
+         KEND1   = KSORT  + N3VOOO(ISRMAT)
+         LWRK1   = LWORK  - KEND1
 C
-      IF (LWRK1 .LT.0 ) THEN
-         CALL QUIT('Out of memory in CC3_W3_OMEGA1 (sort)')
-      ENDIF
+         IF (LWRK1 .LT.0 ) THEN
+            CALL QUIT('Out of memory in CC3_W3_OMEGA1 (sort)')
+         ENDIF
 C
-      DO ISYMM = 1,NSYM
-         ISYML = MULD2H(ISYMLM,ISYMM)
-         ISYMDL = MULD2H(ISYDLM,ISYMM)
-         DO M = 1,NRHF(ISYMM)
-            DO L = 1,NRHF(ISYML)
-               KOFF1 = IT2SP(ISYDLM,ISYMIB)
-     *                  + NCKI(ISYDLM)*(IB-1)
-     *                  + ICKI(ISYMDL,ISYMM)
-     *                  + NT1AM(ISYMDL)*(M-1)
-     *                  + IT1AM(ISYMID,ISYML)
-     *                  + NVIR(ISYMID)*(L-1)
-     *                  + ID
-               KOFF2 = IMATIJ(ISYML,ISYMM)
-     *                  + NRHF(ISYML)*(M-1)
-     *                  + L
-               WORK(KMIMAT-1+KOFF2) = T2TP(KOFF1)
+         DO ISYMM = 1,NSYM
+            ISYML = MULD2H(ISYMLM,ISYMM)
+            ISYMDL = MULD2H(ISYDLM,ISYMM)
+            DO M = 1,NRHF(ISYMM)
+               DO L = 1,NRHF(ISYML)
+                  KOFF1 = IT2SP(ISYDLM,ISYMIB)
+     *                        + NCKI(ISYDLM)*(IB-1)
+     *                        + ICKI(ISYMDL,ISYMM)
+     *                        + NT1AM(ISYMDL)*(M-1)
+     *                        + IT1AM(ISYMID,ISYML)
+     *                        + NVIR(ISYMID)*(L-1)
+     *                        + ID
+                  KOFF2 = IMATIJ(ISYML,ISYMM)
+     *                        + NRHF(ISYML)*(M-1)
+     *                        + L
+                  WORK(KMIMAT-1+KOFF2) = T2TP(KOFF1)
+               ENDDO
             ENDDO
          ENDDO
-      ENDDO
 C
-C       R(aonm) = sum_l ( TMAT(aonl) * T(lm) )
+C        R(aonm) = sum_l ( TMAT(aonl) * T(lm) )
 C
-      DO ISYMM = 1,NSYM
-         ISYML   = MULD2H(ISYMLM,ISYMM)
-         ISYAON  = MULD2H(ISWMAT,ISYML)
-         ISAONM  = MULD2H(ISYAON,ISYMM)
-         KOFFTM  = ISAIKJ(ISYAON,ISYML) + 1
-         KOFFTP  = IMATIJ(ISYML,ISYMM)  + KMIMAT
-         KOFFRE  = ISAIKJ(ISYAON,ISYMM) + KRMAT
-         NL      =  MAX(1,NRHF(ISYML))
-         NAON    =  MAX(1,NCKI(ISYAON))
+         DO ISYMM = 1,NSYM
+            ISYML   = MULD2H(ISYMLM,ISYMM)
+            ISYAON  = MULD2H(ISWMAT,ISYML)
+            ISAONM  = MULD2H(ISYAON,ISYMM)
+            KOFFTM  = ISAIKJ(ISYAON,ISYML) + 1
+            KOFFTP  = IMATIJ(ISYML,ISYMM)  + KMIMAT
+            KOFFRE  = ISAIKJ(ISYAON,ISYMM) + KRMAT
+            NL      =  MAX(1,NRHF(ISYML))
+            NAON    =  MAX(1,NCKI(ISYAON))
 
 C
-         CALL DGEMM('N','N',NCKI(ISYAON),NRHF(ISYMM),
-     *               NRHF(ISYML),ONE,TMAT(KOFFTM),NAON,
-     *               WORK(KOFFTP),NL,ZERO,WORK(KOFFRE),NAON) 
+            CALL DGEMM('N','N',NCKI(ISYAON),NRHF(ISYMM),
+     *                 NRHF(ISYML),ONE,TMAT(KOFFTM),NAON,
+     *                 WORK(KOFFTP),NL,ZERO,WORK(KOFFRE),NAON) 
 C
-      END DO
+         END DO
 C
-C  omega(ai) = sum_onm ( R(aonm) * G(onmi) )
+C        omega(ai) = sum_onm ( R(aonm) * G(onmi) )
 C       
 C
-      IF (NSYM .GT. 1) THEN
-        CALL CC3_SRTVOOO(WORK(KSORT),WORK(KRMAT),ISRMAT)
-        CALL DCOPY(N3VOOO(ISRMAT),WORK(KSORT),1,WORK(KRMAT),1)
-      ENDIF
+         IF (NSYM .GT. 1) THEN
+           CALL CC3_SRTVOOO(WORK(KSORT),WORK(KRMAT),ISRMAT)
+           CALL DCOPY(N3VOOO(ISRMAT),WORK(KSORT),1,WORK(KRMAT),1)
+         ENDIF
 C
 
-      DO ISYMI = 1,NSYM
-         ISYMA  = MULD2H(ISYRES,ISYMI)
-         ISONM  = MULD2H(ISYINT,ISYMI)
-         KOFFRE = I3VOOO(ISYMA,ISONM) + KRMAT 
-         KOFFI  = I3ORHF(ISONM,ISYMI) + 1
-         KOFFAI = IT1AM(ISYMA,ISYMI)  + 1
-         NONM   = MAX(1,NMAIJK(ISONM))
-         NA  = MAX(1,NVIR(ISYMA))
+         DO ISYMI = 1,NSYM
+            ISYMA  = MULD2H(ISYRES,ISYMI)
+            ISONM  = MULD2H(ISYINT,ISYMI)
+            KOFFRE = I3VOOO(ISYMA,ISONM) + KRMAT 
+            KOFFI  = I3ORHF(ISONM,ISYMI) + 1
+            KOFFAI = IT1AM(ISYMA,ISYMI)  + 1
+            NONM   = MAX(1,NMAIJK(ISONM))
+            NA  = MAX(1,NVIR(ISYMA))
 
 C
-C 1.3 omega contribution addomega
+C           1.3 omega contribution addomega
 C
-         CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),
-     *               NMAIJK(ISONM),-ONE,WORK(KOFFRE),NA,
-     *               XOOOO(KOFFI),NONM,ONE,OMEGA1(KOFFAI),NA)
-      END DO
+            CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),
+     *                  NMAIJK(ISONM),-ONE,WORK(KOFFRE),NA,
+     *                  XOOOO(KOFFI),NONM,ONE,OMEGA1(KOFFAI),NA)
+         END DO
+C
+      END IF
 C
 C=============================================
 C 2.     Calculate contribution from g_{vvvv}
@@ -1794,56 +1816,59 @@ C     + L^{dfg}_{lim} t^{de}_{lm} g_{fage} =
 C ( Wdg(fiml) + Wdf(gmil) + Wfg(dlmi) )* t(dl,em) * g(fage)
 C=============================================
 C
-      ISYCKM = MULD2H(ISYMT2,ISYMIB)
-      ISYEIJ = ISYCKM
-      ISYTMP = MULD2H(ISCKIJ,ISYEIJ)
+      ! Calculate only when contracting with first-order multipliers
+      IF (W3X) THEN
 C
-      KSCR1  = 1
-      KT2TMP = KSCR1  + NCKATR(ISYTMP)
-      KEND1  = KT2TMP + NCKI(ISYEIJ)
-      LWRK1  = LWORK  - KEND1
+         ISYCKM = MULD2H(ISYMT2,ISYMIB)
+         ISYEIJ = ISYCKM
+         ISYTMP = MULD2H(ISCKIJ,ISYEIJ)
 C
-      IF (LWRK1 .LT. 0) THEN
-         CALL QUIT('Out of memory in CC3_W3_OMEGA1 (VVVV T2-sort)')
-      ENDIF
+         KSCR1  = 1
+         KT2TMP = KSCR1  + NCKATR(ISYTMP)
+         KEND1  = KT2TMP + NCKI(ISYEIJ)
+         LWRK1  = LWORK  - KEND1
 C
-      CALL DZERO(WORK(KSCR1),NCKATR(ISYTMP))
+         IF (LWRK1 .LT. 0) THEN
+            CALL QUIT('Out of memory in CC3_W3_OMEGA1 (VVVV T2-sort)')
+         ENDIF
+C
+         CALL DZERO(WORK(KSCR1),NCKATR(ISYTMP))
 C
 C----------------
-C     Sort T2   tB(km,c) = t2tp(ckmB) 
+C        Sort T2   tB(km,c) = t2tp(ckmB) 
 C----------------
 C
-      DO ISYMK = 1, NSYM
-         ISYMCM = MULD2H(ISYCKM,ISYMK)
-         DO ISYMC = 1, NSYM
-            ISYMM = MULD2H(ISYMCM,ISYMC)
-            ISYMKM = MULD2H(ISYMK,ISYMM)
-            ISYMCK = MULD2H(ISYMK,ISYMC)
+         DO ISYMK = 1, NSYM
+            ISYMCM = MULD2H(ISYCKM,ISYMK)
+            DO ISYMC = 1, NSYM
+               ISYMM = MULD2H(ISYMCM,ISYMC)
+               ISYMKM = MULD2H(ISYMK,ISYMM)
+               ISYMCK = MULD2H(ISYMK,ISYMC)
 C
-            DO K = 1, NRHF(ISYMK)
-               DO M = 1, NRHF(ISYMM)
-                  KOFF1 = IT2SP(ISYCKM,ISYMIB)
-     *                  + NCKI(ISYCKM)*(IB-1)
-     *                  + ICKI(ISYMCK,ISYMM)
-     *                  + NT1AM(ISYMCK)*(M-1)
-     *                  + IT1AM(ISYMC,ISYMK)
-     *                  + NVIR(ISYMC)*(K-1)
-     *                  + 1
-                  KOFF2 = KT2TMP - 1
-     *                  + IMAIJA(ISYMKM,ISYMC)
-     *                  + IMATIJ(ISYMK,ISYMM)
-     *                  + NRHF(ISYMK)*(M-1)
-     *                  + K
+               DO K = 1, NRHF(ISYMK)
+                  DO M = 1, NRHF(ISYMM)
+                     KOFF1 = IT2SP(ISYCKM,ISYMIB)
+     *                     + NCKI(ISYCKM)*(IB-1)
+     *                     + ICKI(ISYMCK,ISYMM)
+     *                     + NT1AM(ISYMCK)*(M-1)
+     *                     + IT1AM(ISYMC,ISYMK)
+     *                     + NVIR(ISYMC)*(K-1)
+     *                     + 1
+                     KOFF2 = KT2TMP - 1
+     *                     + IMAIJA(ISYMKM,ISYMC)
+     *                     + IMATIJ(ISYMK,ISYMM)
+     *                     + NRHF(ISYMK)*(M-1)
+     *                     + K
 C
-                  CALL DCOPY(NVIR(ISYMC),T2TP(KOFF1),1,
-     *                       WORK(KOFF2),NMATIJ(ISYMKM))
+                     CALL DCOPY(NVIR(ISYMC),T2TP(KOFF1),1,
+     *                          WORK(KOFF2),NMATIJ(ISYMKM))
+                  ENDDO
                ENDDO
             ENDDO
          ENDDO
-      ENDDO
 C
 C--------------------------------
-C     First intermediate
+C        First intermediate
 C--------------------------------
 C
 C  Wdg(fiml) * t(dl,em) * g(fage)
@@ -1853,148 +1878,148 @@ C
 C  TMAT(ck,ij) * tB(ij,e) * gD(cae)
 C       G(ck,e) * GD(ce,a)
 C
-      DO I = 1, LENGTH
-         TMAT(I) = WMAT(I)
-      ENDDO
+         DO I = 1, LENGTH
+            TMAT(I) = WMAT(I)
+         ENDDO
 C
-      IF (NSYM .GT. 1) THEN
-         IF (LWRK1 .LT. LENGTH) THEN
-            CALL QUIT('Out of memory in CC3_W3_OMEGA1 (CC_GATHER-3)')
+         IF (NSYM .GT. 1) THEN
+            IF (LWRK1 .LT. LENGTH) THEN
+               CALL QUIT('Out of memory in CC3_W3_OMEGA1 (CC_GATHER-3)')
+            ENDIF
+            CALL CC_GATHER(LENGTH,WORK(KEND1),TMAT,INDSQ(1,6))
+            CALL DCOPY(LENGTH,WORK(KEND1),1,TMAT,1)
          ENDIF
-         CALL CC_GATHER(LENGTH,WORK(KEND1),TMAT,INDSQ(1,6))
-         CALL DCOPY(LENGTH,WORK(KEND1),1,TMAT,1)
-      ENDIF
 C
-      DO ISYMCK = 1, NSYM
-         ISYMIJ = MULD2H(ISCKIJ,ISYMCK)
-         ISYME  = MULD2H(ISYEIJ,ISYMIJ)
+         DO ISYMCK = 1, NSYM
+            ISYMIJ = MULD2H(ISCKIJ,ISYMCK)
+            ISYME  = MULD2H(ISYEIJ,ISYMIJ)
 C
-         KOFF1 = ISAIKL(ISYMCK,ISYMIJ)
-     *         + 1
-         KOFF2 = KT2TMP
-     *         + IMAIJA(ISYMIJ,ISYME)
-         KOFF3 = KSCR1
-     *         + ICKATR(ISYMCK,ISYME)
+            KOFF1 = ISAIKL(ISYMCK,ISYMIJ)
+     *            + 1
+            KOFF2 = KT2TMP
+     *            + IMAIJA(ISYMIJ,ISYME)
+            KOFF3 = KSCR1
+     *            + ICKATR(ISYMCK,ISYME)
 C
-         NTOTCK = MAX(1,NT1AM(ISYMCK))
-         NTOTIJ = MAX(1,NMATIJ(ISYMIJ))
+            NTOTCK = MAX(1,NT1AM(ISYMCK))
+            NTOTIJ = MAX(1,NMATIJ(ISYMIJ))
 C
-         CALL DGEMM('N','N',NT1AM(ISYMCK),NVIR(ISYME),
-     *              NMATIJ(ISYMIJ),ONE,TMAT(KOFF1),NTOTCK,
-     *              WORK(KOFF2),NTOTIJ,ONE,WORK(KOFF3),
-     *              NTOTCK)
-      ENDDO
-C
-C---------------------
-C     Sort result.
-C---------------------
-C
-      KSCR2  = KEND1
-      KEND2  = KSCR2  + NCKATR(ISYTMP)
-      LWRK2  = LWORK  - KEND2
-C
-      IF (LWRK2 .LT. 0) THEN
-         CALL QUIT('Out of memory in CC3_W3_OMEGA1 (Sorting-1)')
-      ENDIF
-C
-      DO ISYMC = 1, NSYM
-         ISYMEK = MULD2H(ISYMC,ISYTMP)
-         DO ISYMK = 1, NSYM
-            ISYME  = MULD2H(ISYMK,ISYMEK)
-            ISYMCE = MULD2H(ISYMC,ISYME)
-            ISYMCK = MULD2H(ISYMC,ISYMK)
-C
-            DO K = 1, NRHF(ISYMK)
-               DO E = 1, NVIR(ISYME)
-C
-                  KOFF1 = KSCR1
-     *                  + ICKATR(ISYMCK,ISYME)
-     *                  + NT1AM(ISYMCK)*(E-1)
-     *                  + IT1AM(ISYMC,ISYMK)
-     *                  + NVIR(ISYMC)*(K-1)
-                  KOFF2 = KSCR2
-     *                  + ICKASR(ISYMCE,ISYMK)
-     *                  + NMATAB(ISYMCE)*(K-1)
-     *                  + IMATAB(ISYMC,ISYME)
-     *                  + NVIR(ISYMC)*(E-1)
-C
-                  CALL DCOPY(NVIR(ISYMC),WORK(KOFF1),1,
-     *                       WORK(KOFF2),1)
-C
-               ENDDO
-            ENDDO
+            CALL DGEMM('N','N',NT1AM(ISYMCK),NVIR(ISYME),
+     *                 NMATIJ(ISYMIJ),ONE,TMAT(KOFF1),NTOTCK,
+     *                 WORK(KOFF2),NTOTIJ,ONE,WORK(KOFF3),
+     *                 NTOTCK)
          ENDDO
-      ENDDO
 C
-      CALL DCOPY(NCKATR(ISYTMP),WORK(KSCR2),1,WORK(KSCR1),1)
+C---------------------
+C        Sort result.
+C---------------------
 C
-C----------------------------------------
-C     Sort and contract with integral.
-C----------------------------------------
+         KSCR2  = KEND1
+         KEND2  = KSCR2  + NCKATR(ISYTMP)
+         LWRK2  = LWORK  - KEND2
 C
-      ISYVVV = MULD2H(ISYINT,ISYMID)
+         IF (LWRK2 .LT. 0) THEN
+            CALL QUIT('Out of memory in CC3_W3_OMEGA1 (Sorting-1)')
+         ENDIF
 C
-      KSCR2 = KEND1
-      KEND2 = KSCR2 + NMAABC(ISYVVV)
-      LWRK2 = LWORK - KEND2
-C
-      IF (LWRK2 .LT. 0) THEN
-         CALL QUIT('Out of memory in CC3_W3_OMEGA1 (Sort/Contract)')
-      ENDIF
-C
-      DO ISYME = 1, NSYM
-         ISYMAC = MULD2H(ISYVVV,ISYME)
          DO ISYMC = 1, NSYM
-            ISYMA  = MULD2H(ISYMAC,ISYMC)
-            ISYMCE = MULD2H(ISYMC,ISYME)
+            ISYMEK = MULD2H(ISYMC,ISYTMP)
+            DO ISYMK = 1, NSYM
+               ISYME  = MULD2H(ISYMK,ISYMEK)
+               ISYMCE = MULD2H(ISYMC,ISYME)
+               ISYMCK = MULD2H(ISYMC,ISYMK)
 C
-            DO A = 1, NVIR(ISYMA)
-               DO E = 1, NVIR(ISYME)
+               DO K = 1, NRHF(ISYMK)
+                  DO E = 1, NVIR(ISYME)
 C
-                  KOFF1 = IMAABC(ISYMAC,ISYME)
-     *                  + NMATAB(ISYMAC)*(E-1)
-     *                  + IMATAB(ISYMC,ISYMA)
-     *                  + NVIR(ISYMC)*(A-1)
-     *                  + 1
-                  KOFF2 = KSCR2
-     *                  + IMAABC(ISYMCE,ISYMA)
-     *                  + NMATAB(ISYMCE)*(A-1)
-     *                  + IMATAB(ISYMC,ISYME)
-     *                  + NVIR(ISYMC)*(E-1)
+                     KOFF1 = KSCR1
+     *                     + ICKATR(ISYMCK,ISYME)
+     *                     + NT1AM(ISYMCK)*(E-1)
+     *                     + IT1AM(ISYMC,ISYMK)
+     *                     + NVIR(ISYMC)*(K-1)
+                     KOFF2 = KSCR2
+     *                     + ICKASR(ISYMCE,ISYMK)
+     *                     + NMATAB(ISYMCE)*(K-1)
+     *                     + IMATAB(ISYMC,ISYME)
+     *                     + NVIR(ISYMC)*(E-1)
 C
-                  CALL DCOPY(NVIR(ISYMC),XVVVV(KOFF1),1,
-     *                       WORK(KOFF2),1)
+                     CALL DCOPY(NVIR(ISYMC),WORK(KOFF1),1,
+     *                          WORK(KOFF2),1)
 C
+                  ENDDO
                ENDDO
             ENDDO
          ENDDO
-      ENDDO
 C
-      DO ISYMA = 1, NSYM
-         ISYMI = MULD2H(ISYMA,ISYRES)
-         ISYMCE = MULD2H(ISYMA,ISYVVV)
+         CALL DCOPY(NCKATR(ISYTMP),WORK(KSCR2),1,WORK(KSCR1),1)
 C
-         KOFF1 = KSCR2
-     *         + IMAABC(ISYMCE,ISYMA)
-         KOFF2 = KSCR1
-     *         + ICKASR(ISYMCE,ISYMI)
-         KOFF3 = IT1AM(ISYMA,ISYMI)
-     *         + 1
+C----------------------------------------
+C        Sort and contract with integral.
+C----------------------------------------
 C
-         NTOTCE = MAX(1,NMATAB(ISYMCE))
-         NTOTA  = MAX(1,NVIR(ISYMA))
+         ISYVVV = MULD2H(ISYINT,ISYMID)
+C
+         KSCR2 = KEND1
+         KEND2 = KSCR2 + NMAABC(ISYVVV)
+         LWRK2 = LWORK - KEND2
+C
+         IF (LWRK2 .LT. 0) THEN
+            CALL QUIT('Out of memory in CC3_W3_OMEGA1 (Sort/Contract)')
+         ENDIF
+C
+         DO ISYME = 1, NSYM
+            ISYMAC = MULD2H(ISYVVV,ISYME)
+            DO ISYMC = 1, NSYM
+               ISYMA  = MULD2H(ISYMAC,ISYMC)
+               ISYMCE = MULD2H(ISYMC,ISYME)
+C
+               DO A = 1, NVIR(ISYMA)
+                  DO E = 1, NVIR(ISYME)
+C
+                     KOFF1 = IMAABC(ISYMAC,ISYME)
+     *                     + NMATAB(ISYMAC)*(E-1)
+     *                     + IMATAB(ISYMC,ISYMA)
+     *                     + NVIR(ISYMC)*(A-1)
+     *                     + 1
+                     KOFF2 = KSCR2
+     *                     + IMAABC(ISYMCE,ISYMA)
+     *                     + NMATAB(ISYMCE)*(A-1)
+     *                     + IMATAB(ISYMC,ISYME)
+     *                     + NVIR(ISYMC)*(E-1)
+C
+                     CALL DCOPY(NVIR(ISYMC),XVVVV(KOFF1),1,
+     *                          WORK(KOFF2),1)
+C
+                  ENDDO
+               ENDDO
+            ENDDO
+         ENDDO
+C
+         DO ISYMA = 1, NSYM
+            ISYMI = MULD2H(ISYMA,ISYRES)
+            ISYMCE = MULD2H(ISYMA,ISYVVV)
+C
+            KOFF1 = KSCR2
+     *            + IMAABC(ISYMCE,ISYMA)
+            KOFF2 = KSCR1
+     *            + ICKASR(ISYMCE,ISYMI)
+            KOFF3 = IT1AM(ISYMA,ISYMI)
+     *            + 1
+C
+            NTOTCE = MAX(1,NMATAB(ISYMCE))
+            NTOTA  = MAX(1,NVIR(ISYMA))
 C
 C
 C
-C 2.1 omega contribution addomega
+C        2.1 omega contribution addomega
 C
-         CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NMATAB(ISYMCE),
-     *              -ONE,WORK(KOFF1),NTOTCE,WORK(KOFF2),NTOTCE,
-     *              ONE,OMEGA1(KOFF3),NTOTA)
-      ENDDO
+            CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NMATAB(ISYMCE),
+     *                 -ONE,WORK(KOFF1),NTOTCE,WORK(KOFF2),NTOTCE,
+     *                 ONE,OMEGA1(KOFF3),NTOTA)
+         ENDDO
 C
 C---------------------------------------
-C     Second contribution.
+C        Second contribution.
 C---------------------------------------
 C
 C  Wdf(gmil) * t(dl,em) * g(fage)
@@ -2009,161 +2034,163 @@ C  sort     G(ci,e) as M(ce,i)
 C 
 C  eta(ai) = eta(ai) + gD(ce,a) * M(ce,i) 
 C
-      ISYCKM = MULD2H(ISYMT2,ISYMIB)
-      ISYEIJ = ISYCKM
-      ISYTMP = MULD2H(ISCKIJ,ISYEIJ)
+         ISYCKM = MULD2H(ISYMT2,ISYMIB)
+         ISYEIJ = ISYCKM
+         ISYTMP = MULD2H(ISCKIJ,ISYEIJ)
 C
-      KSCR1  = 1
-      KT2TMP = KSCR1  + NCKATR(ISYTMP)
-      KEND1  = KT2TMP + NCKI(ISYCKM)
-      LWRK1  = LWORK  - KEND1
+         KSCR1  = 1
+         KT2TMP = KSCR1  + NCKATR(ISYTMP)
+         KEND1  = KT2TMP + NCKI(ISYCKM)
+         LWRK1  = LWORK  - KEND1
 C
-      IF (LWRK1 .LT. 0) THEN
-         CALL QUIT('Out of memory in CC3_W3_OMEGA1 (T2-sort-2)')
-      ENDIF
+         IF (LWRK1 .LT. 0) THEN
+            CALL QUIT('Out of memory in CC3_W3_OMEGA1 (T2-sort-2)')
+         ENDIF
 C
-      CALL DZERO(WORK(KSCR1),NCKATR(ISYTMP))
+         CALL DZERO(WORK(KSCR1),NCKATR(ISYTMP))
 C
 C----------------
-C     Sort T2   tB(km,c) = t2tp(ckmB)
+C        Sort T2   tB(km,c) = t2tp(ckmB)
 C----------------
 C
-      DO ISYMK = 1, NSYM
-         ISYMCM = MULD2H(ISYCKM,ISYMK)
-         DO ISYMC = 1, NSYM
-            ISYMM = MULD2H(ISYMCM,ISYMC)
-            ISYMKM = MULD2H(ISYMK,ISYMM)
-            ISYMCK = MULD2H(ISYMK,ISYMC)
+         DO ISYMK = 1, NSYM
+            ISYMCM = MULD2H(ISYCKM,ISYMK)
+            DO ISYMC = 1, NSYM
+               ISYMM = MULD2H(ISYMCM,ISYMC)
+               ISYMKM = MULD2H(ISYMK,ISYMM)
+               ISYMCK = MULD2H(ISYMK,ISYMC)
 C
-            DO K = 1, NRHF(ISYMK)
-               DO M = 1, NRHF(ISYMM)
-                  KOFF1 = IT2SP(ISYCKM,ISYMIB)
-     *                  + NCKI(ISYCKM)*(IB-1)
-     *                  + ICKI(ISYMCK,ISYMM)
-     *                  + NT1AM(ISYMCK)*(M-1)
-     *                  + IT1AM(ISYMC,ISYMK)
-     *                  + NVIR(ISYMC)*(K-1)
-     *                  + 1
-                  KOFF2 = KT2TMP - 1
-     *                  + IMAIJA(ISYMKM,ISYMC)
-     *                  + IMATIJ(ISYMK,ISYMM)
-     *                  + NRHF(ISYMK)*(M-1)
-     *                  + K
+               DO K = 1, NRHF(ISYMK)
+                  DO M = 1, NRHF(ISYMM)
+                     KOFF1 = IT2SP(ISYCKM,ISYMIB)
+     *                     + NCKI(ISYCKM)*(IB-1)
+     *                     + ICKI(ISYMCK,ISYMM)
+     *                     + NT1AM(ISYMCK)*(M-1)
+     *                     + IT1AM(ISYMC,ISYMK)
+     *                     + NVIR(ISYMC)*(K-1)
+     *                     + 1
+                     KOFF2 = KT2TMP - 1
+     *                     + IMAIJA(ISYMKM,ISYMC)
+     *                     + IMATIJ(ISYMK,ISYMM)
+     *                     + NRHF(ISYMK)*(M-1)
+     *                     + K
 C
-                  CALL DCOPY(NVIR(ISYMC),T2TP(KOFF1),1,
-     *                       WORK(KOFF2),NMATIJ(ISYMKM))
+                     CALL DCOPY(NVIR(ISYMC),T2TP(KOFF1),1,
+     *                          WORK(KOFF2),NMATIJ(ISYMKM))
+                  ENDDO
                ENDDO
             ENDDO
          ENDDO
-      ENDDO
 C
 C--------------------------------
 C     Second intermediate
 C--------------------------------
 C
-      DO I = 1, LENGTH
-         TMAT(I) = WMAT(INDSQ(I,1))
-      ENDDO
+         DO I = 1, LENGTH
+            TMAT(I) = WMAT(INDSQ(I,1))
+         ENDDO
 C
-      IF (NSYM .GT. 1) THEN
-         IF (LWRK1 .LT. LENGTH) THEN
-            CALL QUIT('Out of memory in CC3_W3_OMEGA1 (CC_GATHER-3)')
+         IF (NSYM .GT. 1) THEN
+            IF (LWRK1 .LT. LENGTH) THEN
+               CALL QUIT('Out of memory in CC3_W3_OMEGA1 (CC_GATHER-3)')
+            ENDIF
+            CALL CC_GATHER(LENGTH,WORK(KEND1),TMAT,INDSQ(1,6))
+            CALL DCOPY(LENGTH,WORK(KEND1),1,TMAT,1)
          ENDIF
-         CALL CC_GATHER(LENGTH,WORK(KEND1),TMAT,INDSQ(1,6))
-         CALL DCOPY(LENGTH,WORK(KEND1),1,TMAT,1)
-      ENDIF
 C
-      DO ISYMCK = 1, NSYM
-         ISYMIJ = MULD2H(ISCKIJ,ISYMCK)
-         ISYME  = MULD2H(ISYEIJ,ISYMIJ)
+         DO ISYMCK = 1, NSYM
+            ISYMIJ = MULD2H(ISCKIJ,ISYMCK)
+            ISYME  = MULD2H(ISYEIJ,ISYMIJ)
 C
-         KOFF1 = ISAIKL(ISYMCK,ISYMIJ)
+            KOFF1 = ISAIKL(ISYMCK,ISYMIJ)
      *         + 1
-         KOFF2 = KT2TMP
+            KOFF2 = KT2TMP
      *         + IMAIJA(ISYMIJ,ISYME)
-         KOFF3 = KSCR1
+            KOFF3 = KSCR1
      *         + ICKATR(ISYMCK,ISYME)
 C
-         NTOTCK = MAX(1,NT1AM(ISYMCK))
-         NTOTIJ = MAX(1,NMATIJ(ISYMIJ))
+            NTOTCK = MAX(1,NT1AM(ISYMCK))
+            NTOTIJ = MAX(1,NMATIJ(ISYMIJ))
 C
-         CALL DGEMM('N','N',NT1AM(ISYMCK),NVIR(ISYME),
+            CALL DGEMM('N','N',NT1AM(ISYMCK),NVIR(ISYME),
      *              NMATIJ(ISYMIJ),ONE,TMAT(KOFF1),NTOTCK,
      *              WORK(KOFF2),NTOTIJ,ONE,WORK(KOFF3),
      *              NTOTCK)
-      ENDDO
+         ENDDO
 C
 C---------------------
-C     Sort result.
+C        Sort result.
 C---------------------
 C
-      KSCR2  = KEND1
-      KEND2  = KSCR2  + NCKATR(ISYTMP)
-      LWRK2  = LWORK  - KEND2
+         KSCR2  = KEND1
+         KEND2  = KSCR2  + NCKATR(ISYTMP)
+         LWRK2  = LWORK  - KEND2
 C
-      IF (LWRK2 .LT. 0) THEN
-         CALL QUIT('Out of memory in CC3_W3_OMEGA1 (Sorting-1)')
-      ENDIF
+         IF (LWRK2 .LT. 0) THEN
+            CALL QUIT('Out of memory in CC3_W3_OMEGA1 (Sorting-1)')
+         ENDIF
 C
-      DO ISYMC = 1, NSYM
-         ISYMEK = MULD2H(ISYMC,ISYTMP)
-         DO ISYMK = 1, NSYM
-            ISYME  = MULD2H(ISYMK,ISYMEK)
-            ISYMCE = MULD2H(ISYMC,ISYME)
-            ISYMCK = MULD2H(ISYMC,ISYMK)
+         DO ISYMC = 1, NSYM
+            ISYMEK = MULD2H(ISYMC,ISYTMP)
+            DO ISYMK = 1, NSYM
+               ISYME  = MULD2H(ISYMK,ISYMEK)
+               ISYMCE = MULD2H(ISYMC,ISYME)
+               ISYMCK = MULD2H(ISYMC,ISYMK)
 C
-            DO K = 1, NRHF(ISYMK)
-               DO E = 1, NVIR(ISYME)
+               DO K = 1, NRHF(ISYMK)
+                  DO E = 1, NVIR(ISYME)
 C
-                  KOFF1 = KSCR1 - 1
-     *                  + ICKATR(ISYMCK,ISYME)
-     *                  + NT1AM(ISYMCK)*(E-1)
-     *                  + IT1AM(ISYMC,ISYMK)
-     *                  + NVIR(ISYMC)*(K-1)
-     *                  + 1
-                  KOFF2 = KSCR2 - 1
-     *                  + ICKASR(ISYMCE,ISYMK)
-     *                  + NMATAB(ISYMCE)*(K-1)
-     *                  + IMATAB(ISYMC,ISYME)
-     *                  + NVIR(ISYMC)*(E-1)
-     *                  + 1
+                     KOFF1 = KSCR1 - 1
+     *                     + ICKATR(ISYMCK,ISYME)
+     *                     + NT1AM(ISYMCK)*(E-1)
+     *                     + IT1AM(ISYMC,ISYMK)
+     *                     + NVIR(ISYMC)*(K-1)
+     *                     + 1
+                     KOFF2 = KSCR2 - 1
+     *                     + ICKASR(ISYMCE,ISYMK)
+     *                     + NMATAB(ISYMCE)*(K-1)
+     *                     + IMATAB(ISYMC,ISYME)
+     *                     + NVIR(ISYMC)*(E-1)
+     *                     + 1
 C
-                  CALL DCOPY(NVIR(ISYMC),WORK(KOFF1),1,
-     *                       WORK(KOFF2),1)
+                     CALL DCOPY(NVIR(ISYMC),WORK(KOFF1),1,
+     *                          WORK(KOFF2),1)
 C
+                  ENDDO
                ENDDO
             ENDDO
          ENDDO
-      ENDDO
 C
-      CALL DCOPY(NCKATR(ISYTMP),WORK(KSCR2),1,WORK(KSCR1),1)
+         CALL DCOPY(NCKATR(ISYTMP),WORK(KSCR2),1,WORK(KSCR1),1)
 C
 C----------------------------------------
-C     Contract with integral.
+C        Contract with integral.
 C----------------------------------------
 C
-      ISYVVV = MULD2H(ISYINT,ISYMID)
+         ISYVVV = MULD2H(ISYINT,ISYMID)
 C
-      DO ISYMA = 1, NSYM
-         ISYMI = MULD2H(ISYMA,ISYRES)
-         ISYMCE = MULD2H(ISYMA,ISYVVV)
+         DO ISYMA = 1, NSYM
+            ISYMI = MULD2H(ISYMA,ISYRES)
+            ISYMCE = MULD2H(ISYMA,ISYVVV)
 C
-         KOFF1 = IMAABC(ISYMCE,ISYMA)
-     *         + 1
-         KOFF2 = KSCR1
-     *         + ICKASR(ISYMCE,ISYMI)
-         KOFF3 = IT1AM(ISYMA,ISYMI)
-     *         + 1
+            KOFF1 = IMAABC(ISYMCE,ISYMA)
+     *            + 1
+            KOFF2 = KSCR1
+     *            + ICKASR(ISYMCE,ISYMI)
+            KOFF3 = IT1AM(ISYMA,ISYMI)
+     *            + 1
 C
-         NTOTCE = MAX(1,NMATAB(ISYMCE))
-         NTOTA  = MAX(1,NVIR(ISYMA))
+            NTOTCE = MAX(1,NMATAB(ISYMCE))
+            NTOTA  = MAX(1,NVIR(ISYMA))
 C
-C 2.2 omega contribution addomega
+C        2.2 omega contribution addomega
 C
-         CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NMATAB(ISYMCE),
-     *              -ONE,XVVVV(KOFF1),NTOTCE,WORK(KOFF2),NTOTCE,
-     *              ONE,OMEGA1(KOFF3),NTOTA)
-      ENDDO
+            CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NMATAB(ISYMCE),
+     *                 -ONE,XVVVV(KOFF1),NTOTCE,WORK(KOFF2),NTOTCE,
+     *                 ONE,OMEGA1(KOFF3),NTOTA)
+         ENDDO
+C
+      END IF
 C
 C third contribution
 C
@@ -2378,43 +2405,47 @@ C
 C   omega1(Bi) = omega(Bi) - Tx(lmie) * t2D(lme) 
 C--------------------------------
 C
-      ISYTMP = MULD2H(ISCKIJ,ISYINT)
-      ISYMI  = MULD2H(ISYRES,ISYMIB)
-      ISYENF = MULD2H(ISYINT,ISYMI)
-      ISYELM = MULD2H(ISYMT2,ISYMID)
+      ! Calculate only when contracting with first-order multipliers
+      IF (W3X) THEN
 C
-      KSCR1 = 1
-      KEND1 = KSCR1 + NMAIJA(ISYELM)
-      LWRK1 = LWORK - KEND1
+
+         ISYTMP = MULD2H(ISCKIJ,ISYINT)
+         ISYMI  = MULD2H(ISYRES,ISYMIB)
+         ISYENF = MULD2H(ISYINT,ISYMI)
+         ISYELM = MULD2H(ISYMT2,ISYMID)
 C
-      IF (LWRK1 .LT. 0) THEN
-         CALL QUIT('Out of memory in CC3_W3_OMEGA1 (OVVO-2)')
-      ENDIF
+         KSCR1 = 1
+         KEND1 = KSCR1 + NMAIJA(ISYELM)
+         LWRK1 = LWORK - KEND1
 C
-      DO I = 1, LENGTH
-         TMAT(I) = WMAT(I)
-      ENDDO
-C
-      IF (NSYM .GT. 1) THEN
-         IF (LWORK .LT. LENGTH) THEN
-            CALL QUIT('Out of memory in CC3_W3_OMEGA1 (CC_GATHER-4)')
+         IF (LWRK1 .LT. 0) THEN
+            CALL QUIT('Out of memory in CC3_W3_OMEGA1 (OVVO-2)')
          ENDIF
-         CALL CC_GATHER(LENGTH,WORK,TMAT,INDSQ(1,6))
-         CALL DCOPY(LENGTH,WORK,1,TMAT,1)
-      ENDIF
+C
+         DO I = 1, LENGTH
+            TMAT(I) = WMAT(I)
+         ENDDO
+C
+         IF (NSYM .GT. 1) THEN
+            IF (LWORK .LT. LENGTH) THEN
+               CALL QUIT('Out of memory in CC3_W3_OMEGA1 (CC_GATHER-4)')
+            ENDIF
+            CALL CC_GATHER(LENGTH,WORK,TMAT,INDSQ(1,6))
+            CALL DCOPY(LENGTH,WORK,1,TMAT,1)
+         ENDIF
 C
 C sort t2 amplitudes  t2tp(elmD) as t2D(mle)
 C
-      DO ISYME = 1, NSYM
-         ISYMLM = MULD2H(ISYELM,ISYME)
-         DO ISYML = 1, NSYM
-            ISYMM  = MULD2H(ISYMLM,ISYML)
-            ISYMEL = MULD2H(ISYME,ISYML)
+         DO ISYME = 1, NSYM
+            ISYMLM = MULD2H(ISYELM,ISYME)
+            DO ISYML = 1, NSYM
+               ISYMM  = MULD2H(ISYMLM,ISYML)
+               ISYMEL = MULD2H(ISYME,ISYML)
 C
-            DO L = 1, NRHF(ISYML)
-               DO M = 1, NRHF(ISYMM)
+               DO L = 1, NRHF(ISYML)
+                  DO M = 1, NRHF(ISYMM)
 C
-                  KOFF1 = IT2SP(ISYELM,ISYMID)
+                     KOFF1 = IT2SP(ISYELM,ISYMID)
      *                  + NCKI(ISYELM)*(ID-1)
      *                  + ICKI(ISYMEL,ISYMM)
      *                  + NT1AM(ISYMEL)*(M-1)
@@ -2422,78 +2453,80 @@ C
      *                  + NVIR(ISYME)*(L-1)
      *                  + 1
 C
-                  KOFF2 = KSCR1 - 1
+                     KOFF2 = KSCR1 - 1
      *                  + IMAIJA(ISYMLM,ISYME)
      *                  + IMATIJ(ISYMM,ISYML)
      *                  + NRHF(ISYMM)*(L-1)
      *                  + M
 C
-                  CALL DCOPY(NVIR(ISYME),T2TP(KOFF1),1,
+                     CALL DCOPY(NVIR(ISYME),T2TP(KOFF1),1,
      *                       WORK(KOFF2),NMATIJ(ISYMLM))
 C
+                  ENDDO
                ENDDO
             ENDDO
          ENDDO
-      ENDDO
 C
-      DO ISYME = 1, NSYM
+         DO ISYME = 1, NSYM
 C
-         ISYMFN = MULD2H(ISYME,ISYENF)
-         ISYMLM = MULD2H(ISCKIJ,ISYMFN)
-         ISYFNI = MULD2H(ISYMI,ISYMFN)
-         ISYLMI = MULD2H(ISYMI,ISYMLM)
+            ISYMFN = MULD2H(ISYME,ISYENF)
+            ISYMLM = MULD2H(ISCKIJ,ISYMFN)
+            ISYFNI = MULD2H(ISYMI,ISYMFN)
+            ISYLMI = MULD2H(ISYMI,ISYMLM)
 C
-         KSCR2 = KEND1
-         KEND2 = KSCR2 + NMAIJK(ISYLMI)
-         LWRK2 = LWORK - KEND2
+            KSCR2 = KEND1
+            KEND2 = KSCR2 + NMAIJK(ISYLMI)
+            LWRK2 = LWORK - KEND2
 C
-         IF (LWRK2 .LT. 0) THEN
-            CALL QUIT('Out of memory in CC3_W3_OMEGA1 (OVVO-3)')
-         ENDIF
+            IF (LWRK2 .LT. 0) THEN
+               CALL QUIT('Out of memory in CC3_W3_OMEGA1 (OVVO-3)')
+            ENDIF
 C
-         DO E = 1, NVIR(ISYME)
+            DO E = 1, NVIR(ISYME)
 C
-            KOFF1 = ISAIKL(ISYMFN,ISYMLM)
+               KOFF1 = ISAIKL(ISYMFN,ISYMLM)
      *            + 1
-            KOFF2 = IT2SP(ISYFNI,ISYME)
+               KOFF2 = IT2SP(ISYFNI,ISYME)
      *            + NCKI(ISYFNI)*(E-1)
      *            + ICKI(ISYMFN,ISYMI)
      *            + 1
-            KOFF3 = KSCR2
+               KOFF3 = KSCR2
      *            + IMAIJK(ISYMLM,ISYMI)
 C
-            NTOTFN = MAX(1,NT1AM(ISYMFN))
-            NTOTLM = MAX(1,NMATIJ(ISYMLM))
+               NTOTFN = MAX(1,NT1AM(ISYMFN))
+               NTOTLM = MAX(1,NMATIJ(ISYMLM))
 C
 C   TMAT(fnlm) * xovvo(fnie)  
 C
 C
-            CALL DGEMM('T','N',NMATIJ(ISYMLM),NRHF(ISYMI),NT1AM(ISYMFN),
+               CALL DGEMM('T','N',NMATIJ(ISYMLM),NRHF(ISYMI),
+     *                  NT1AM(ISYMFN),
      *                 -ONE,TMAT(KOFF1),NTOTFN,XOVVO(KOFF2),NTOTFN,
      *                 ZERO,WORK(KOFF3),NTOTLM)
 C
-            KOFF1 = KSCR2
+               KOFF1 = KSCR2
      *            + IMAIJK(ISYMLM,ISYMI)
-            KOFF2 = KSCR1
+               KOFF2 = KSCR1
      *            + IMAIJA(ISYMLM,ISYME)
      *            + NMATIJ(ISYMLM)*(E-1)
-            KOFF3 = IT1AM(ISYMIB,ISYMI)
+               KOFF3 = IT1AM(ISYMIB,ISYMI)
      *            + IB
 C
-            NTOTB  = MAX(1,NVIR(ISYMIB))
-            NTOTIJ = MAX(1,NMATIJ(ISYMLM))
+               NTOTB  = MAX(1,NVIR(ISYMIB))
+               NTOTIJ = MAX(1,NMATIJ(ISYMLM))
 C
 C   omega1(Bi) = omega(Bi) - Tx(lmie) * t2D(lme) 
 C
 C
 C 3.2 omega contribution addomega
 C
-            CALL DGEMV('T',NMATIJ(ISYMLM),NRHF(ISYMI),-ONE,WORK(KOFF1),
+               CALL DGEMV('T',NMATIJ(ISYMLM),NRHF(ISYMI),-ONE, 
+     *                 WORK(KOFF1),
      *                 NTOTIJ,WORK(KOFF2),1,ONE,OMEGA1(KOFF3),NTOTB)
 C
 C
+             ENDDO
          ENDDO
-      ENDDO
 C
 C----------------------------------------------
 C third contribution
@@ -2507,30 +2540,30 @@ C
 C omega1(ai) = omega1(ai) - TMAT(amln) * t2g(mlni)
 C----------------------------------------------
 C
-      ISYMMLE = MULD2H(ISYMT2,ISYMIB)
-      ISYMENI = MULD2H(ISYINT,ISYMID)
-      ISYMLNI = MULD2H(ISYMMLE,ISYMENI)
-      KGD   = 1
-      KT2B  = KGD  + NCKI(ISYMENI)
-      KMLNI = KT2B + NCKI(ISYMMLE) 
-      KSCR1 = KMLNI + N3ORHF(ISYMLNI)
-      KEND1 = KSCR1 + NCKIJ(ISWMAT)
-      LWRK1 = LWORK - KEND1
+         ISYMMLE = MULD2H(ISYMT2,ISYMIB)
+         ISYMENI = MULD2H(ISYINT,ISYMID)
+         ISYMLNI = MULD2H(ISYMMLE,ISYMENI)
+         KGD   = 1
+         KT2B  = KGD  + NCKI(ISYMENI)
+         KMLNI = KT2B + NCKI(ISYMMLE) 
+         KSCR1 = KMLNI + N3ORHF(ISYMLNI)
+         KEND1 = KSCR1 + NCKIJ(ISWMAT)
+         LWRK1 = LWORK - KEND1
 C
-      CALL DZERO(WORK(KMLNI),N3ORHF(ISYMLNI))
+         CALL DZERO(WORK(KMLNI),N3ORHF(ISYMLNI))
 C
-      DO I = 1, LENGTH
-         TMAT(I) = WMAT(INDSQ(I,3))
-      ENDDO
+         DO I = 1, LENGTH
+            TMAT(I) = WMAT(INDSQ(I,3))
+         ENDDO
 C
-      IF (LWRK1 .LT. 0) THEN
-         CALL QUIT('Out of memory in CC3_W3_OMEGA1 3.3')
-      ENDIF
+         IF (LWRK1 .LT. 0) THEN
+            CALL QUIT('Out of memory in CC3_W3_OMEGA1 3.3')
+         ENDIF
 C
-      IF (NSYM .GT. 1) THEN
-        CALL CC3_SRTVOOO(WORK(KSCR1),TMAT,ISWMAT)
-        CALL DCOPY(LENGTH,WORK(KSCR1),1,TMAT,1)
-      END IF
+         IF (NSYM .GT. 1) THEN
+           CALL CC3_SRTVOOO(WORK(KSCR1),TMAT,ISWMAT)
+           CALL DCOPY(LENGTH,WORK(KSCR1),1,TMAT,1)
+         END IF
 C
 
 C
@@ -2538,129 +2571,131 @@ C----------------
 C     Sort T2   tB(kmc) = t2tp(ckmB)
 C----------------
 C
-      ISYCKM = MULD2H(ISYMT2,ISYMIB)
-      DO ISYMK = 1, NSYM
-         ISYMCM = MULD2H(ISYCKM,ISYMK)
-         DO ISYMC = 1, NSYM
-            ISYMM = MULD2H(ISYMCM,ISYMC)
-            ISYMKM = MULD2H(ISYMK,ISYMM)
-            ISYMCK = MULD2H(ISYMK,ISYMC)
+         ISYCKM = MULD2H(ISYMT2,ISYMIB)
+         DO ISYMK = 1, NSYM
+            ISYMCM = MULD2H(ISYCKM,ISYMK)
+            DO ISYMC = 1, NSYM
+               ISYMM = MULD2H(ISYMCM,ISYMC)
+               ISYMKM = MULD2H(ISYMK,ISYMM)
+               ISYMCK = MULD2H(ISYMK,ISYMC)
 C
-            DO K = 1, NRHF(ISYMK)
-               DO M = 1, NRHF(ISYMM)
-                  KOFF1 = IT2SP(ISYCKM,ISYMIB)
+               DO K = 1, NRHF(ISYMK)
+                  DO M = 1, NRHF(ISYMM)
+                     KOFF1 = IT2SP(ISYCKM,ISYMIB)
      *                  + NCKI(ISYCKM)*(IB-1)
      *                  + ICKI(ISYMCK,ISYMM)
      *                  + NT1AM(ISYMCK)*(M-1)
      *                  + IT1AM(ISYMC,ISYMK)
      *                  + NVIR(ISYMC)*(K-1)
      *                  + 1
-                  KOFF2 = KT2B - 1
+                     KOFF2 = KT2B - 1
      *                  + IMAIJA(ISYMKM,ISYMC)
      *                  + IMATIJ(ISYMK,ISYMM)
      *                  + NRHF(ISYMK)*(M-1)
      *                  + K
 C
-                  CALL DCOPY(NVIR(ISYMC),T2TP(KOFF1),1,
+                     CALL DCOPY(NVIR(ISYMC),T2TP(KOFF1),1,
      *                       WORK(KOFF2),NMATIJ(ISYMKM))
+                  ENDDO
                ENDDO
             ENDDO
          ENDDO
-      ENDDO
 C
 C---------------------------------------
 C sort xovvo(Dnie) as gD(eni) 
 C---------------------------------------
 C 
-      DO ISYME = 1,NSYM 
-         ISYMDNI = MULD2H(ISYINT,ISYME) 
-         ISYMNI  = MULD2H(ISYMDNI,ISYMID)
-         DO ISYMI = 1,NSYM 
-            ISYMN = MULD2H(ISYMNI,ISYMI) 
-            ISYMEN = MULD2H(ISYMENI,ISYMI) 
-            ISYMDN = MULD2H(ISYMDNI,ISYMI)
-            DO E = 1,NVIR(ISYME)
-               DO I = 1,NRHF(ISYMI)
-                  DO N = 1,NRHF(ISYMN) 
-                     KOFF1 = IT2SP(ISYMDNI,ISYME)
+         DO ISYME = 1,NSYM 
+            ISYMDNI = MULD2H(ISYINT,ISYME) 
+            ISYMNI  = MULD2H(ISYMDNI,ISYMID)
+            DO ISYMI = 1,NSYM 
+               ISYMN = MULD2H(ISYMNI,ISYMI) 
+               ISYMEN = MULD2H(ISYMENI,ISYMI) 
+               ISYMDN = MULD2H(ISYMDNI,ISYMI)
+               DO E = 1,NVIR(ISYME)
+                  DO I = 1,NRHF(ISYMI)
+                     DO N = 1,NRHF(ISYMN) 
+                        KOFF1 = IT2SP(ISYMDNI,ISYME)
      *                     + NCKI(ISYMDNI)*(E-1)
      *                     + ICKI(ISYMDN,ISYMI)
      *                     + NT1AM(ISYMDN)*(I-1)
      *                     + IT1AM(ISYMID,ISYMN)
      *                     + NVIR(ISYMID)*(N-1)
      *                     + ID
-                     KOFF2 = KGD - 1
+                        KOFF2 = KGD - 1
      *                     + ICKI(ISYMEN,ISYMI)
      *                     + NT1AM(ISYMEN)*(I-1)
      *                     + IT1AM(ISYME,ISYMN)
      *                     + NVIR(ISYME)*(N-1)
      *                     + E
-                     WORK(KOFF2) = XOVVO(KOFF1)
+                        WORK(KOFF2) = XOVVO(KOFF1)
+                     END DO
                   END DO
                END DO
             END DO
          END DO
-      END DO
 C
 C - WBD(amnl) * t2tp(emlB) * xovvo(Dnie)
 C
 C - TMAT(amln)   t2B(mle)  * gD(eni)
 C
-      DO ISYMI = 1,NSYM
-         ISYMMLN = MULD2H(ISYMLNI,ISYMI)
-         ISYMEN = MULD2H(ISYMENI,ISYMI)
-         DO ISYMN = 1,NSYM
-            ISYME = MULD2H(ISYMEN,ISYMN)
-            ISYMML = MULD2H(ISYMMLE,ISYME) 
-            DO I = 1,NRHF(ISYMI)
+         DO ISYMI = 1,NSYM
+            ISYMMLN = MULD2H(ISYMLNI,ISYMI)
+            ISYMEN = MULD2H(ISYMENI,ISYMI)
+            DO ISYMN = 1,NSYM
+               ISYME = MULD2H(ISYMEN,ISYMN)
+               ISYMML = MULD2H(ISYMMLE,ISYME) 
+               DO I = 1,NRHF(ISYMI)
 C
-               KOFF1 = KT2B
+                  KOFF1 = KT2B
      *               + IMAIJA(ISYMML,ISYME) 
-               KOFF2 = KGD 
+                  KOFF2 = KGD 
      *               + ICKI(ISYMEN,ISYMI)
      *               + NT1AM(ISYMEN)*(I-1)
      *               + IT1AM(ISYME,ISYMN)
 
-               KOFF3 = KMLNI
+                  KOFF3 = KMLNI
      *               + I3ORHF(ISYMMLN,ISYMI) 
      *               + NMAIJK(ISYMMLN)*(I-1)
      *               + IMAIJK(ISYMML,ISYMN)
 C
-               NTOTML = MAX(1,NMATIJ(ISYMML))
-               NTOTE  = MAX(1,NVIR(ISYME))
+                  NTOTML = MAX(1,NMATIJ(ISYMML))
+                  NTOTE  = MAX(1,NVIR(ISYME))
 C          
 C
-               CALL DGEMM('N','N',NMATIJ(ISYMML),NRHF(ISYMN),
+                  CALL DGEMM('N','N',NMATIJ(ISYMML),NRHF(ISYMN),
      *              NVIR(ISYME),
      *              ONE,WORK(KOFF1),NTOTML,WORK(KOFF2),NTOTE,
      *              ONE,WORK(KOFF3),NTOTML)
 C
 
+               END DO
             END DO
          END DO
-      END DO
 C
 C omega1(ai) = omega1(ai) - TMAT(amln) * t2Bgd(mlni)  
 C
 C                                      t2B(mle) * gD(eni)
 C
-      DO ISYMI = 1,NSYM
-         ISYMMLN = MULD2H(ISYMLNI,ISYMI)
-         ISYMA   = MULD2H(ISWMAT,ISYMMLN)
+         DO ISYMI = 1,NSYM
+            ISYMMLN = MULD2H(ISYMLNI,ISYMI)
+            ISYMA   = MULD2H(ISWMAT,ISYMMLN)
 C
-         KOFF1 = I3VOOO(ISYMA,ISYMMLN) + 1
-         KOFF2 = KMLNI + I3ORHF(ISYMMLN,ISYMI)
-         KOFF3 = IT1AM(ISYMA,ISYMI) + 1
+            KOFF1 = I3VOOO(ISYMA,ISYMMLN) + 1
+            KOFF2 = KMLNI + I3ORHF(ISYMMLN,ISYMI)
+            KOFF3 = IT1AM(ISYMA,ISYMI) + 1
 C
-         NTOTA = MAX(1,NVIR(ISYMA))
-         NTOTMLN = MAX(1,NMAIJK(ISYMMLN))
+            NTOTA = MAX(1,NVIR(ISYMA))
+            NTOTMLN = MAX(1,NMAIJK(ISYMMLN))
 C
 C 3.3 omega contribution addomega
 C
-         CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NMAIJK(ISYMMLN),
+            CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NMAIJK(ISYMMLN),
      *              ONE,TMAT(KOFF1),NTOTA,WORK(KOFF2),NTOTMLN,
      *              ONE,OMEGA1(KOFF3),NTOTA)
-      END DO
+         END DO
+C
+      END IF
 C
 C================================================
 C 4.  Calculate contributions from g_{oovv}
@@ -2783,43 +2818,47 @@ C  TX(lmie) = TMAT(fnlm) * ge(fni)        tD(mle)
 C  
 C wmega1(Ai) = wmega1(Ai) -  TX(lmie) *  tD(mle) 
 C
-      ISYTMP = MULD2H(ISCKIJ,ISYINT)
-      ISYMI  = MULD2H(ISYRES,ISYMIB)
-      ISYENF = MULD2H(ISYINT,ISYMI)
-      ISYELM = MULD2H(ISYMT2,ISYMID)
+      ! Calculate only when contracting with first-order multipliers
+      IF (W3X) THEN
 C
-      KSCR1 = 1
-      KEND1 = KSCR1 + NMAIJA(ISYELM)
-      LWRK1 = LWORK - KEND1
+
+         ISYTMP = MULD2H(ISCKIJ,ISYINT)
+         ISYMI  = MULD2H(ISYRES,ISYMIB)
+         ISYENF = MULD2H(ISYINT,ISYMI)
+         ISYELM = MULD2H(ISYMT2,ISYMID)
 C
-      IF (LWRK1 .LT. 0) THEN
-         CALL QUIT('Out of memory in CC3_W3_OMEGA1 (OOVV-2)')
-      ENDIF
+         KSCR1 = 1
+         KEND1 = KSCR1 + NMAIJA(ISYELM)
+         LWRK1 = LWORK - KEND1
 C
-      DO I = 1, LENGTH
-         TMAT(I) = WMAT(INDSQ(I,5))
-      ENDDO
-C
-      IF (NSYM .GT. 1) THEN
-         IF (LWORK .LT. LENGTH) THEN
-            CALL QUIT('Out of memory in CC3_W3_OMEGA1 (CC_GATHER-5)')
+         IF (LWRK1 .LT. 0) THEN
+            CALL QUIT('Out of memory in CC3_W3_OMEGA1 (OOVV-2)')
          ENDIF
-         CALL CC_GATHER(LENGTH,WORK,TMAT,INDSQ(1,6))
-         CALL DCOPY(LENGTH,WORK,1,TMAT,1)
-      ENDIF
+C
+         DO I = 1, LENGTH
+            TMAT(I) = WMAT(INDSQ(I,5))
+         ENDDO
+C
+         IF (NSYM .GT. 1) THEN
+            IF (LWORK .LT. LENGTH) THEN
+               CALL QUIT('Out of memory in CC3_W3_OMEGA1 (CC_GATHER-5)')
+            ENDIF
+            CALL CC_GATHER(LENGTH,WORK,TMAT,INDSQ(1,6))
+            CALL DCOPY(LENGTH,WORK,1,TMAT,1)
+         ENDIF
 C
 C t2tp(elmD) = tD(mle)
 C
-      DO ISYME = 1, NSYM
-         ISYMLM = MULD2H(ISYELM,ISYME)
-         DO ISYML = 1, NSYM
-            ISYMM  = MULD2H(ISYMLM,ISYML)
-            ISYMEL = MULD2H(ISYME,ISYML)
+         DO ISYME = 1, NSYM
+            ISYMLM = MULD2H(ISYELM,ISYME)
+            DO ISYML = 1, NSYM
+               ISYMM  = MULD2H(ISYMLM,ISYML)
+               ISYMEL = MULD2H(ISYME,ISYML)
 C
-            DO L = 1, NRHF(ISYML)
-               DO M = 1, NRHF(ISYMM)
+               DO L = 1, NRHF(ISYML)
+                  DO M = 1, NRHF(ISYMM)
 C
-                  KOFF1 = IT2SP(ISYELM,ISYMID)
+                     KOFF1 = IT2SP(ISYELM,ISYMID)
      *                  + NCKI(ISYELM)*(ID-1)
      *                  + ICKI(ISYMEL,ISYMM)
      *                  + NT1AM(ISYMEL)*(M-1)
@@ -2827,103 +2866,105 @@ C
      *                  + NVIR(ISYME)*(L-1)
      *                  + 1
 C
-                  KOFF2 = KSCR1 - 1
+                     KOFF2 = KSCR1 - 1
      *                  + IMAIJA(ISYMLM,ISYME)
      *                  + IMATIJ(ISYMM,ISYML)
      *                  + NRHF(ISYMM)*(L-1)
      *                  + M
 C
-                  CALL DCOPY(NVIR(ISYME),T2TP(KOFF1),1,
+                     CALL DCOPY(NVIR(ISYME),T2TP(KOFF1),1,
      *                       WORK(KOFF2),NMATIJ(ISYMLM))
 C
+                  ENDDO
                ENDDO
             ENDDO
          ENDDO
-      ENDDO
 C
-      DO ISYME = 1, NSYM
+         DO ISYME = 1, NSYM
 C
-         ISYMFN = MULD2H(ISYME,ISYENF)
-         ISYMLM = MULD2H(ISCKIJ,ISYMFN)
-         ISYFNI = MULD2H(ISYMI,ISYMFN)
-         ISYLMI = MULD2H(ISYMI,ISYMLM)
+            ISYMFN = MULD2H(ISYME,ISYENF)
+            ISYMLM = MULD2H(ISCKIJ,ISYMFN)
+            ISYFNI = MULD2H(ISYMI,ISYMFN)
+            ISYLMI = MULD2H(ISYMI,ISYMLM)
 C
-         KSCR2 = KEND1
-         KSCR3 = KSCR2 + NMAIJK(ISYLMI)
-         KEND2 = KSCR3 + NCKI(ISYFNI)
-         LWRK2 = LWORK - KEND2
+            KSCR2 = KEND1
+            KSCR3 = KSCR2 + NMAIJK(ISYLMI)
+            KEND2 = KSCR3 + NCKI(ISYFNI)
+            LWRK2 = LWORK - KEND2
 C
-         IF (LWRK2 .LT. 0) THEN
-            CALL QUIT('Out of memory in CC3_W3_OMEGA1 (OOVV-3)')
-         ENDIF
+            IF (LWRK2 .LT. 0) THEN
+               CALL QUIT('Out of memory in CC3_W3_OMEGA1 (OOVV-3)')
+            ENDIF
 C
 C g_{infe} = xoovv(fine) = ge(fni)
 C
-         DO E = 1, NVIR(ISYME)
+            DO E = 1, NVIR(ISYME)
 C
-            DO ISYMF = 1, NSYM
-               ISYMN  = MULD2H(ISYMFN,ISYMF)
-               ISYMFI = MULD2H(ISYMI,ISYMF)
-               DO F = 1, NVIR(ISYMF)
-                  DO N = 1, NRHF(ISYMN)
+               DO ISYMF = 1, NSYM
+                  ISYMN  = MULD2H(ISYMFN,ISYMF)
+                  ISYMFI = MULD2H(ISYMI,ISYMF)
+                  DO F = 1, NVIR(ISYMF)
+                     DO N = 1, NRHF(ISYMN)
 C
-                     KOFF1 = IT2SP(ISYFNI,ISYME)
+                        KOFF1 = IT2SP(ISYFNI,ISYME)
      *                     + NCKI(ISYFNI)*(E-1)
      *                     + ICKI(ISYMFI,ISYMN)
      *                     + NT1AM(ISYMFI)*(N-1)
      *                     + IT1AM(ISYMF,ISYMI)
      *                     + F
 C
-                     KOFF2 = KSCR3 - 1
+                        KOFF2 = KSCR3 - 1
      *                     + ICKI(ISYMFN,ISYMI)
      *                     + IT1AM(ISYMF,ISYMN)
      *                     + NVIR(ISYMF)*(N-1)
      *                     + F
 C
-                     CALL DCOPY(NRHF(ISYMI),XOOVV(KOFF1),NVIR(ISYMF),
+                        CALL DCOPY(NRHF(ISYMI),XOOVV(KOFF1),NVIR(ISYMF),
      *                          WORK(KOFF2),NT1AM(ISYMFN))
+                     ENDDO
                   ENDDO
                ENDDO
-            ENDDO
 C
-            KOFF1 = ISAIKL(ISYMFN,ISYMLM)
+               KOFF1 = ISAIKL(ISYMFN,ISYMLM)
      *            + 1
-            KOFF2 = KSCR3
+               KOFF2 = KSCR3
      *            + ICKI(ISYMFN,ISYMI)
-            KOFF3 = KSCR2
+               KOFF3 = KSCR2
      *            + IMAIJK(ISYMLM,ISYMI)
 C
-            NTOTFN = MAX(1,NT1AM(ISYMFN))
-            NTOTLM = MAX(1,NMATIJ(ISYMLM))
+               NTOTFN = MAX(1,NT1AM(ISYMFN))
+               NTOTLM = MAX(1,NMATIJ(ISYMLM))
 C
 C  TX(lmie) = TMAT(fnlm) * ge(fni)   
 C  
-            CALL DGEMM('T','N',NMATIJ(ISYMLM),NRHF(ISYMI),NT1AM(ISYMFN),
+               CALL DGEMM('T','N',NMATIJ(ISYMLM),NRHF(ISYMI),
+     *                  NT1AM(ISYMFN),
      *                 -ONE,TMAT(KOFF1),NTOTFN,WORK(KOFF2),NTOTFN,
      *                 ZERO,WORK(KOFF3),NTOTLM)
 C
-            KOFF1 = KSCR2
+               KOFF1 = KSCR2
      *            + IMAIJK(ISYMLM,ISYMI)
-            KOFF2 = KSCR1
+               KOFF2 = KSCR1
      *            + IMAIJA(ISYMLM,ISYME)
      *            + NMATIJ(ISYMLM)*(E-1)
-            KOFF3 = IT1AM(ISYMIB,ISYMI)
+               KOFF3 = IT1AM(ISYMIB,ISYMI)
      *            + IB
 C
-            NTOTB  = MAX(1,NVIR(ISYMIB))
-            NTOTIJ = MAX(1,NMATIJ(ISYMLM))
+               NTOTB  = MAX(1,NVIR(ISYMIB))
+               NTOTIJ = MAX(1,NMATIJ(ISYMLM))
 C  
 C wmega1(Ai) = wmega1(Ai) -  TX(lmie) *  tD(mle) 
 C
 C
 C 4.2 omega contribution addomega
 C
-            CALL DGEMV('T',NMATIJ(ISYMLM),NRHF(ISYMI),-ONE,WORK(KOFF1),
+               CALL DGEMV('T',NMATIJ(ISYMLM),NRHF(ISYMI),-ONE,
+     *                 WORK(KOFF1),
      *                 NTOTIJ,WORK(KOFF2),1,ONE,OMEGA1(KOFF3),NTOTB)
 C
 
+            ENDDO
          ENDDO
-      ENDDO
 C
 C--------------------------------
 C     Third  contribution
@@ -2938,50 +2979,50 @@ C
 C omega1(ai) = omega1(ai) +  TMAT(amln) * tdxB(mlni)
 C
 C
-      ISYMMLE  = MULD2H(ISYMT2,ISYMID)
-      ISYMENI  = MULD2H(ISYINT,ISYMIB)
-      ISYMLNI = MULD2H(ISYMMLE,ISYMENI)
+         ISYMMLE  = MULD2H(ISYMT2,ISYMID)
+         ISYMENI  = MULD2H(ISYINT,ISYMIB)
+         ISYMLNI = MULD2H(ISYMMLE,ISYMENI)
 C
-      KSCR1 = 1
-      KSCR2 = KSCR1 + NMAIJA(ISYMMLE)
-      KSCR3 = KSCR2 + NMAIJA(ISYMENI) 
-      KSCR4 = KSCR3 + N3ORHF(ISYMLNI) 
-      KEND1 = KSCR4 + NCKIJ(ISWMAT) 
-      LWRK1 = LWORK - KEND1
+         KSCR1 = 1
+         KSCR2 = KSCR1 + NMAIJA(ISYMMLE)
+         KSCR3 = KSCR2 + NMAIJA(ISYMENI) 
+         KSCR4 = KSCR3 + N3ORHF(ISYMLNI) 
+         KEND1 = KSCR4 + NCKIJ(ISWMAT) 
+         LWRK1 = LWORK - KEND1
 C
-      CALL DZERO(WORK(KSCR3),N3ORHF(ISYMLNI))
-      IF (LWRK1 .LT. 0) THEN
-         CALL QUIT('Out of memory in CC3_W3_OMEGA1 4.3')
-      ENDIF
+         CALL DZERO(WORK(KSCR3),N3ORHF(ISYMLNI))
+         IF (LWRK1 .LT. 0) THEN
+            CALL QUIT('Out of memory in CC3_W3_OMEGA1 4.3')
+         ENDIF
 C
-      DO I = 1, LENGTH
-         TMAT(I) = WMAT(INDSQ(I,5))
-      ENDDO
+         DO I = 1, LENGTH
+            TMAT(I) = WMAT(INDSQ(I,5))
+         ENDDO
 C
-      IF (LWORK .LT. NCKIJ(ISCKIJ)) THEN
-         CALL QUIT('Out of memory in CC3_W3_OMEGA1 4.3.1')
-      ENDIF
+         IF (LWORK .LT. NCKIJ(ISCKIJ)) THEN
+            CALL QUIT('Out of memory in CC3_W3_OMEGA1 4.3.1')
+         ENDIF
 C
-      IF (NSYM .GT. 1) THEN
-        CALL CC3_SRTVOOO(WORK(KSCR4),TMAT,ISWMAT)
-        CALL DCOPY(LENGTH,WORK(KSCR4),1,TMAT,1)
-      END IF
+         IF (NSYM .GT. 1) THEN
+           CALL CC3_SRTVOOO(WORK(KSCR4),TMAT,ISWMAT)
+           CALL DCOPY(LENGTH,WORK(KSCR4),1,TMAT,1)
+         END IF
 C
 C
 C t2tp(emlD) = tD(mle) 
 C
-      ISYMEML = MULD2H(ISYMT2,ISYMID)
-      DO ISYME = 1, NSYM
-         ISYMML = MULD2H(ISYMEML,ISYME)
-         DO ISYML = 1, NSYM
-            ISYMM  = MULD2H(ISYMML,ISYML)
-            ISYMEM = MULD2H(ISYME,ISYMM)
+         ISYMEML = MULD2H(ISYMT2,ISYMID)
+         DO ISYME = 1, NSYM
+            ISYMML = MULD2H(ISYMEML,ISYME)
+            DO ISYML = 1, NSYM
+               ISYMM  = MULD2H(ISYMML,ISYML)
+               ISYMEM = MULD2H(ISYME,ISYMM)
 C
-            DO E = 1,NVIR(ISYME)
-               DO L = 1, NRHF(ISYML)
-                  DO M = 1, NRHF(ISYMM)
+               DO E = 1,NVIR(ISYME)
+                  DO L = 1, NRHF(ISYML)
+                     DO M = 1, NRHF(ISYMM)
 C
-                     KOFF1 = IT2SP(ISYMEML,ISYMID)
+                        KOFF1 = IT2SP(ISYMEML,ISYMID)
      *                     + NCKI(ISYMEML)*(ID-1)
      *                     + ICKI(ISYMEM,ISYML)
      *                     + NT1AM(ISYMEM)*(L-1)
@@ -2989,36 +3030,36 @@ C
      *                     + NVIR(ISYME)*(M-1)
      *                     + E
 C
-                     KOFF2 = KSCR1 - 1
+                        KOFF2 = KSCR1 - 1
      *                     + IMAIJA(ISYMML,ISYME)
      *                     + NMATIJ(ISYMML)*(E-1)
      *                     + IMATIJ(ISYMM,ISYML)
      *                     + NRHF(ISYMM)*(L-1)
      *                     + M
 C
-                     WORK(KOFF2) = T2TP(KOFF1)
+                        WORK(KOFF2) = T2TP(KOFF1)
 C
+                     ENDDO
                   ENDDO
                ENDDO
             ENDDO
          ENDDO
-      ENDDO
 C
 C
 C  xoovv(Bine) =  xB(eni)
 C
 C
-      DO ISYME = 1, NSYM
-         ISYMBIN = MULD2H(ISYINT,ISYME)
-         DO ISYMN = 1,NSYM
-            ISYMEN = MULD2H(ISYME,ISYMN)
-            ISYMBI = MULD2H(ISYMBIN,ISYMN)
-            ISYMI  = MULD2H(ISYMBI,ISYMIB)
-            DO E = 1, NVIR(ISYME)
-               DO N = 1, NRHF(ISYMN)
-                  DO I = 1, NRHF(ISYMI)
+         DO ISYME = 1, NSYM
+            ISYMBIN = MULD2H(ISYINT,ISYME)
+            DO ISYMN = 1,NSYM
+               ISYMEN = MULD2H(ISYME,ISYMN)
+               ISYMBI = MULD2H(ISYMBIN,ISYMN)
+               ISYMI  = MULD2H(ISYMBI,ISYMIB)
+               DO E = 1, NVIR(ISYME)
+                  DO N = 1, NRHF(ISYMN)
+                     DO I = 1, NRHF(ISYMI)
 C
-                     KOFF1 = IT2SP(ISYMBIN,ISYME)
+                        KOFF1 = IT2SP(ISYMBIN,ISYME)
      *                     + NCKI(ISYMBIN)*(E-1)
      *                     + ICKI(ISYMBI,ISYMN)
      *                     + NT1AM(ISYMBI)*(N-1)
@@ -3026,74 +3067,76 @@ C
      *                     + NVIR(ISYMIB)*(I-1)
      *                     + IB
 C
-                     KOFF2 = KSCR2 - 1
+                        KOFF2 = KSCR2 - 1
      *                     + ICKI(ISYMEN,ISYMI)
      *                     + NT1AM(ISYMEN)*(I-1)
      *                     + IT1AM(ISYME,ISYMN)
      *                     + NVIR(ISYME)*(N-1)
      *                     + E
 C
-                     WORK(KOFF2) = XOOVV(KOFF1)
+                        WORK(KOFF2) = XOOVV(KOFF1)
+                     ENDDO
                   ENDDO
                ENDDO
             ENDDO
          ENDDO
-      ENDDO
 C
 C                tD(mle) * xB(eni) = tdxB(mlni)
 C
-      DO ISYMI = 1,NSYM
-         ISYMEN = MULD2H(ISYMENI,ISYMI)
-         DO ISYMN = 1,NSYM 
-            ISYME = MULD2H(ISYMEN,ISYMN)
-            ISYMML = MULD2H(ISYMMLE,ISYME)
-            ISYMMLN = MULD2H(ISYMML,ISYMN)
-            DO I = 1,NRHF(ISYMI)
+         DO ISYMI = 1,NSYM
+            ISYMEN = MULD2H(ISYMENI,ISYMI)
+            DO ISYMN = 1,NSYM 
+               ISYME = MULD2H(ISYMEN,ISYMN)
+               ISYMML = MULD2H(ISYMMLE,ISYME)
+               ISYMMLN = MULD2H(ISYMML,ISYMN)
+               DO I = 1,NRHF(ISYMI)
  
-               KOFF1 = KSCR1 
+                  KOFF1 = KSCR1 
      *               + IMAIJA(ISYMML,ISYME)
-               KOFF2 = KSCR2 
+                  KOFF2 = KSCR2 
      *               + ICKI(ISYMEN,ISYMI) 
      *               + NT1AM(ISYMEN)*(I-1)
      *               + IT1AM(ISYME,ISYMN)
-               KOFF3 = KSCR3
+                  KOFF3 = KSCR3
      *               + I3ORHF(ISYMMLN,ISYMI)
      *               + NMAIJK(ISYMMLN) * (I-1) 
      *               + IMAIJK(ISYMML,ISYMN)
 C
-               NTOTML = MAX(1,NMATIJ(ISYMML))
-               NTOTE  = MAX(1,NVIR(ISYME))
+                  NTOTML = MAX(1,NMATIJ(ISYMML))
+                  NTOTE  = MAX(1,NVIR(ISYME))
 C
-               CALL DGEMM('N','N',NMATIJ(ISYMML),NRHF(ISYMN),
+                  CALL DGEMM('N','N',NMATIJ(ISYMML),NRHF(ISYMN),
      *                     NVIR(ISYME),-ONE,WORK(KOFF1),
      *                     NTOTML,WORK(KOFF2),NTOTE,
      *                     ONE,WORK(KOFF3),NTOTML)
 C
+               END DO
             END DO
          END DO
-      END DO
 C
 C omega1(ai) = omega1(ai) +  TMAT(amln) * tdxB(mlni)
 C
-      DO ISYMI = 1,NSYM
-         ISYMMLN = MULD2H(ISYMLNI,ISYMI)
-         ISYMA   = MULD2H(ISYRES,ISYMI)
+         DO ISYMI = 1,NSYM
+            ISYMMLN = MULD2H(ISYMLNI,ISYMI)
+            ISYMA   = MULD2H(ISYRES,ISYMI)
 C
-         KOFF1 = I3VOOO(ISYMA,ISYMMLN) + 1
-         KOFF2 = KSCR3  + I3ORHF(ISYMMLN,ISYMI)
-         KOFF3 = IT1AM(ISYMA,ISYMI) + 1
+            KOFF1 = I3VOOO(ISYMA,ISYMMLN) + 1
+            KOFF2 = KSCR3  + I3ORHF(ISYMMLN,ISYMI)
+            KOFF3 = IT1AM(ISYMA,ISYMI) + 1
 C
-         NTOTMLN = MAX(1,NMAIJK(ISYMMLN))
-         NTOTA   = MAX(1,NVIR(ISYMA))
+            NTOTMLN = MAX(1,NMAIJK(ISYMMLN))
+            NTOTA   = MAX(1,NVIR(ISYMA))
 C
 C 4.3 omega contribution addomega
 C
-         CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),
+            CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),
      *               NMAIJK(ISYMMLN),-ONE,TMAT(KOFF1),
      *               NTOTA,WORK(KOFF2),NTOTMLN,
      *               ONE,OMEGA1(KOFF3),NTOTA)
 C
-      END DO
+         END DO
+C
+      END IF
 C
 C================================================
 C 5.  Calculate contributions from g_{ovvo}
@@ -3179,29 +3222,33 @@ C-----------------------------------------------
 C
 C Tt2(inm) = Tt2(inm) + TMAT(elin) * t2tp(emlD)
 C                                    tD(elm)
-      DO I = 1, LENGTH
-         TMAT(I) = WMAT(INDSQ(I,1))
-      ENDDO
 C
-      IF (NSYM .GT. 1) THEN
-         IF (LWRK1 .LT. LENGTH) THEN
-            CALL QUIT('Out of memory in CC3_W3_OMEGA1 (CC_GATHER-6)')
+      ! Calculate only when contracting with first-order multipliers
+      IF (W3X) THEN
+C           
+         DO I = 1, LENGTH
+            TMAT(I) = WMAT(INDSQ(I,1))
+         ENDDO
+C
+         IF (NSYM .GT. 1) THEN
+            IF (LWRK1 .LT. LENGTH) THEN
+               CALL QUIT('Out of memory in CC3_W3_OMEGA1 (CC_GATHER-6)')
+            ENDIF
+            CALL CC_GATHER(LENGTH,WORK(KEND1),TMAT,INDSQ(1,6))
+            CALL DCOPY(LENGTH,WORK(KEND1),1,TMAT,1)
          ENDIF
-         CALL CC_GATHER(LENGTH,WORK(KEND1),TMAT,INDSQ(1,6))
-         CALL DCOPY(LENGTH,WORK(KEND1),1,TMAT,1)
-      ENDIF
 C
 C t2tp(emlD) = tD(elm)
 C
-      DO ISYMM = 1, NSYM
-         ISYMDL = MULD2H(ISYDLM,ISYMM)
-         DO ISYMD = 1, NSYM
-            ISYML  = MULD2H(ISYMDL,ISYMD)
-            ISYMDM = MULD2H(ISYMD,ISYMM)
-            DO M = 1, NRHF(ISYMM)
-               DO L = 1, NRHF(ISYML)
+         DO ISYMM = 1, NSYM
+            ISYMDL = MULD2H(ISYDLM,ISYMM)
+            DO ISYMD = 1, NSYM
+               ISYML  = MULD2H(ISYMDL,ISYMD)
+               ISYMDM = MULD2H(ISYMD,ISYMM)
+               DO M = 1, NRHF(ISYMM)
+                  DO L = 1, NRHF(ISYML)
 C
-                  KOFF1 = IT2SP(ISYDLM,ISYMID)
+                     KOFF1 = IT2SP(ISYDLM,ISYMID)
      *                  + NCKI(ISYDLM)*(ID-1)
      *                  + ICKI(ISYMDL,ISYMM)
      *                  + NT1AM(ISYMDL)*(M-1)
@@ -3209,40 +3256,42 @@ C
      *                  + NVIR(ISYMD)*(L-1)
      *                  + 1
 C
-                  KOFF2 = KSCR2
+                     KOFF2 = KSCR2
      *                  + ICKI(ISYMDM,ISYML)
      *                  + NT1AM(ISYMDM)*(L-1)
      *                  + IT1AM(ISYMD,ISYMM)
      *                  + NVIR(ISYMD)*(M-1)
 C
-                  CALL DCOPY(NVIR(ISYMD),T2TP(KOFF1),1,
+                     CALL DCOPY(NVIR(ISYMD),T2TP(KOFF1),1,
      *                       WORK(KOFF2),1)
 C
+                  ENDDO
                ENDDO
             ENDDO
          ENDDO
-      ENDDO
 C
 C Tt2(inm) = Tt2(inm) + TMAT(elin) * t2tp(emlD)
 C                                    tD(elm)
-      DO ISYMDL = 1, NSYM
-         ISYMM  = MULD2H(ISYDLM,ISYMDL)
-         ISYMIN = MULD2H(ISCKIJ,ISYMDL)
+         DO ISYMDL = 1, NSYM
+            ISYMM  = MULD2H(ISYDLM,ISYMDL)
+            ISYMIN = MULD2H(ISCKIJ,ISYMDL)
 C
-         KOFF1 = ISAIKL(ISYMDL,ISYMIN)
+            KOFF1 = ISAIKL(ISYMDL,ISYMIN)
      *         + 1
-         KOFF2 = KSCR2
+            KOFF2 = KSCR2
      *         + ICKI(ISYMDL,ISYMM)
-         KOFF3 = KSCR1
+            KOFF3 = KSCR1
      *         + IMAIJK(ISYMIN,ISYMM)
 C
-         NTOTDL = MAX(1,NT1AM(ISYMDL))
-         NTOTIN = MAX(1,NMATIJ(ISYMIN))
+            NTOTDL = MAX(1,NT1AM(ISYMDL))
+            NTOTIN = MAX(1,NMATIJ(ISYMIN))
 C
-         CALL DGEMM('T','N',NMATIJ(ISYMIN),NRHF(ISYMM),NT1AM(ISYMDL),
+            CALL DGEMM('T','N',NMATIJ(ISYMIN),NRHF(ISYMM),NT1AM(ISYMDL),
      *              -ONE,TMAT(KOFF1),NTOTDL,WORK(KOFF2),NTOTDL,
      *              ONE,WORK(KOFF3),NTOTIN)
-      ENDDO
+         ENDDO
+C
+      END IF
 C
 C-------------------------------------------------------
 C     Sort intermediate and integrals and contract
@@ -3360,103 +3409,109 @@ C
 C   omega(ai) = omega(ai) +  xoovv(fnma) * tt2(fnmi)
 C
 C
-      ISYMBLM = MULD2H(ISYMT2,ISYMID)
-      ISYMLM  = MULD2H(ISYMBLM,ISYMIB)
-      ISYFNIM = MULD2H(ISYMLM,ISCKIJ)
+      ! Calculate only when contracting with first-order multipliers
+      IF (W3X) THEN
+C           
+
+         ISYMBLM = MULD2H(ISYMT2,ISYMID)
+         ISYMLM  = MULD2H(ISYMBLM,ISYMIB)
+         ISYFNIM = MULD2H(ISYMLM,ISCKIJ)
 C
-      KSCR1 = 1
-      KSCR2 = KSCR1 + NMATIJ(ISYMLM)
-      KEND1 = KSCR2 + NCKIJ(ISYFNIM)
-      LWRK1 = LWORK - KEND1
+         KSCR1 = 1
+         KSCR2 = KSCR1 + NMATIJ(ISYMLM)
+         KEND1 = KSCR2 + NCKIJ(ISYFNIM)
+         LWRK1 = LWORK - KEND1
 C
-      IF (LWRK1 .LT. 0) THEN
-         CALL QUIT('Out of memory CC3_W3_OMEG 6.)')
-      ENDIF
+         IF (LWRK1 .LT. 0) THEN
+            CALL QUIT('Out of memory CC3_W3_OMEG 6.)')
+         ENDIF
 C
 C
-      CALL DZERO(WORK(KSCR2),NCKIJ(ISYFNIM))
+         CALL DZERO(WORK(KSCR2),NCKIJ(ISYFNIM))
 C
-      DO I = 1, LENGTH
-         TMAT(I) = WMAT(I)
-      ENDDO
+         DO I = 1, LENGTH
+            TMAT(I) = WMAT(I)
+         ENDDO
 
 C
 C -------------------------------
 C     Sort T^{BD}_{mi} as T_{mi}
 C -------------------------------
 C
-      ISYMBD = MULD2H(ISYMIB,ISYMID)
-      ISYMMI = MULD2H(ISYMBD,ISYMT2)
-      ISYBMI = MULD2H(ISYMMI,ISYMIB)
+         ISYMBD = MULD2H(ISYMIB,ISYMID)
+         ISYMMI = MULD2H(ISYMBD,ISYMT2)
+         ISYBMI = MULD2H(ISYMMI,ISYMIB)
 C
-      DO ISYMI = 1,NSYM
-         ISYMM = MULD2H(ISYMMI,ISYMI)
-         ISYMBM = MULD2H(ISYBMI,ISYMI)
-         DO I = 1,NRHF(ISYMI)
-            DO M = 1,NRHF(ISYMM)
-               KOFF1 = IT2SP(ISYBMI,ISYMID)
+         DO ISYMI = 1,NSYM
+            ISYMM = MULD2H(ISYMMI,ISYMI)
+            ISYMBM = MULD2H(ISYBMI,ISYMI)
+            DO I = 1,NRHF(ISYMI)
+               DO M = 1,NRHF(ISYMM)
+                  KOFF1 = IT2SP(ISYBMI,ISYMID)
      *                  + NCKI(ISYBMI)*(ID-1)
      *                  + ICKI(ISYMBM,ISYMI)
      *                  + NT1AM(ISYMBM)*(I-1)
      *                  + IT1AM(ISYMIB,ISYMM)
      *                  + NVIR(ISYMIB)*(M-1)
      *                  + IB
-               KOFF2 = IMATIJ(ISYMM,ISYMI)
+                  KOFF2 = IMATIJ(ISYMM,ISYMI)
      *                  + NRHF(ISYMM)*(I-1)
      *                  + M
-               WORK(KSCR1-1+KOFF2) = T2TP(KOFF1)
+                  WORK(KSCR1-1+KOFF2) = T2TP(KOFF1)
+               ENDDO
             ENDDO
+C
+            KOFF3 = KSCR1 + IMATIJ(ISYMI,ISYMM)
+C
          ENDDO
-C
-         KOFF3 = KSCR1 + IMATIJ(ISYMI,ISYMM)
-C
-      ENDDO
 C
 C - TMAT(fnil) *  t2tp(BlmD       xovvo(fnma)
 C
-      DO ISYML = 1,NSYM
-         ISYMFNI = MULD2H(ISCKIJ,ISYML)
-         ISYMM = MULD2H(ISYMLM,ISYML)
+         DO ISYML = 1,NSYM
+            ISYMFNI = MULD2H(ISCKIJ,ISYML)
+            ISYMM = MULD2H(ISYMLM,ISYML)
 C
-         KOFF1 = ISAIKJ(ISYMFNI,ISYML) + 1
-         KOFF2 = KSCR1 + IMATIJ(ISYML,ISYMM)
-         KOFF3 = KSCR2 + ISAIKJ(ISYMFNI,ISYMM)
+            KOFF1 = ISAIKJ(ISYMFNI,ISYML) + 1
+            KOFF2 = KSCR1 + IMATIJ(ISYML,ISYMM)
+            KOFF3 = KSCR2 + ISAIKJ(ISYMFNI,ISYMM)
 C
-         NTOTL   = MAX(1,NRHF(ISYML))
-         NTOTFNI = MAX(1,NCKI(ISYMFNI))
+            NTOTL   = MAX(1,NRHF(ISYML))
+            NTOTFNI = MAX(1,NCKI(ISYMFNI))
 C
-         CALL DGEMM('N','N',NCKI(ISYMFNI),NRHF(ISYMM),NRHF(ISYML),
+            CALL DGEMM('N','N',NCKI(ISYMFNI),NRHF(ISYMM),NRHF(ISYML),
      *             -ONE,TMAT(KOFF1),NTOTFNI,WORK(KOFF2),NTOTL,
      *              ONE,WORK(KOFF3),NTOTFNI)
 C
-      END DO
+         END DO
 C
 C sort indices of result vedtor FNIM as FNMI
 C
-      IOPT = 2
-      CALL CC3_LSORT2(WORK(KSCR2),ISYFNIM,WORK(KEND1),LWRK1,IOPT)
+         IOPT = 2
+         CALL CC3_LSORT2(WORK(KSCR2),ISYFNIM,WORK(KEND1),LWRK1,IOPT)
 C
 C   omega(ai) = omega(ai) +  xoovv(fnma) * tt2(fnmi)
 C
 
-      DO ISYMI = 1,NSYM
-         ISYMFNM = MULD2H(ISYFNIM,ISYMI)
-         ISYMA   = MULD2H(ISYRES,ISYMI)
+         DO ISYMI = 1,NSYM
+            ISYMFNM = MULD2H(ISYFNIM,ISYMI)
+            ISYMA   = MULD2H(ISYRES,ISYMI)
 C
-         KOFF1 = IT2SP(ISYMFNM,ISYMA) + 1
-         KOFF2 = KSCR2 + ISAIKJ(ISYMFNM,ISYMI)
-         KOFF3 = IT1AM(ISYMA,ISYMI) + 1
+            KOFF1 = IT2SP(ISYMFNM,ISYMA) + 1
+            KOFF2 = KSCR2 + ISAIKJ(ISYMFNM,ISYMI)
+            KOFF3 = IT1AM(ISYMA,ISYMI) + 1
 C
-         NTOTFNM = MAX(1,NCKI(ISYMFNM))
-         NTOTA   = MAX(1,NVIR(ISYMA))
+            NTOTFNM = MAX(1,NCKI(ISYMFNM))
+            NTOTA   = MAX(1,NVIR(ISYMA))
 C
 C 5.3 omega contribution addomega
 C
-         CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NCKI(ISYMFNM),
+            CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NCKI(ISYMFNM),
      *              -ONE,XOVVO(KOFF1),NTOTFNM,WORK(KOFF2),NTOTFNM,
      *              ONE,OMEGA1(KOFF3),NTOTA)
 C
-      END DO
+         END DO
+C
+      END IF
 C
 C================================================
 C 6.  Calculate contributions from g_{oovv}
@@ -3540,29 +3595,33 @@ C-----------------------------------------------
 C     Second contribution to intermediate
 C-----------------------------------------------
 C
-      DO I = 1, LENGTH
-         TMAT(I) = WMAT(INDSQ(I,4))
-      ENDDO
+      ! Calculate only when contracting with first-order multipliers
+      IF (W3X) THEN
+C           
+
+         DO I = 1, LENGTH
+            TMAT(I) = WMAT(INDSQ(I,4))
+         ENDDO
 C
 C  Tt2(inm) = Tt2(inm) + TMAT(elin) * t2tp(emlD)
 C                                    tD(eml)
-      IF (NSYM .GT. 1) THEN
-         IF (LWRK1 .LT. LENGTH) THEN
-            CALL QUIT('Out of memory in CC3_W3_OMEGA1 (CC_GATHER-6)')
+         IF (NSYM .GT. 1) THEN
+            IF (LWRK1 .LT. LENGTH) THEN
+               CALL QUIT('Out of memory in CC3_W3_OMEGA1 (CC_GATHER-6)')
+            ENDIF
+            CALL CC_GATHER(LENGTH,WORK(KEND1),TMAT,INDSQ(1,6))
+            CALL DCOPY(LENGTH,WORK(KEND1),1,TMAT,1)
          ENDIF
-         CALL CC_GATHER(LENGTH,WORK(KEND1),TMAT,INDSQ(1,6))
-         CALL DCOPY(LENGTH,WORK(KEND1),1,TMAT,1)
-      ENDIF
 C
-      DO ISYMM = 1, NSYM
-         ISYMDL = MULD2H(ISYDLM,ISYMM)
-         DO ISYMD = 1, NSYM
-            ISYML  = MULD2H(ISYMDL,ISYMD)
-            ISYMDM = MULD2H(ISYMD,ISYMM)
-            DO M = 1, NRHF(ISYMM)
-               DO L = 1, NRHF(ISYML)
+         DO ISYMM = 1, NSYM
+            ISYMDL = MULD2H(ISYDLM,ISYMM)
+            DO ISYMD = 1, NSYM
+               ISYML  = MULD2H(ISYMDL,ISYMD)
+               ISYMDM = MULD2H(ISYMD,ISYMM)
+               DO M = 1, NRHF(ISYMM)
+                  DO L = 1, NRHF(ISYML)
 C
-                  KOFF1 = IT2SP(ISYDLM,ISYMID)
+                     KOFF1 = IT2SP(ISYDLM,ISYMID)
      *                  + NCKI(ISYDLM)*(ID-1)
      *                  + ICKI(ISYMDL,ISYMM)
      *                  + NT1AM(ISYMDL)*(M-1)
@@ -3570,38 +3629,40 @@ C
      *                  + NVIR(ISYMD)*(L-1)
      *                  + 1
 C
-                  KOFF2 = KSCR2
+                     KOFF2 = KSCR2
      *                  + ICKI(ISYMDM,ISYML)
      *                  + NT1AM(ISYMDM)*(L-1)
      *                  + IT1AM(ISYMD,ISYMM)
      *                  + NVIR(ISYMD)*(M-1)
 C
-                  CALL DCOPY(NVIR(ISYMD),T2TP(KOFF1),1,
+                     CALL DCOPY(NVIR(ISYMD),T2TP(KOFF1),1,
      *                       WORK(KOFF2),1)
 C
+                  ENDDO
                ENDDO
             ENDDO
          ENDDO
-      ENDDO
 C
-      DO ISYMDL = 1, NSYM
-         ISYMM  = MULD2H(ISYDLM,ISYMDL)
-         ISYMIN = MULD2H(ISCKIJ,ISYMDL)
+         DO ISYMDL = 1, NSYM
+            ISYMM  = MULD2H(ISYDLM,ISYMDL)
+            ISYMIN = MULD2H(ISCKIJ,ISYMDL)
 C
-         KOFF1 = ISAIKL(ISYMDL,ISYMIN)
+            KOFF1 = ISAIKL(ISYMDL,ISYMIN)
      *         + 1
-         KOFF2 = KSCR2
+            KOFF2 = KSCR2
      *         + ICKI(ISYMDL,ISYMM)
-         KOFF3 = KSCR1
+            KOFF3 = KSCR1
      *         + IMAIJK(ISYMIN,ISYMM)
 C
-         NTOTDL = MAX(1,NT1AM(ISYMDL))
-         NTOTIN = MAX(1,NMATIJ(ISYMIN))
+            NTOTDL = MAX(1,NT1AM(ISYMDL))
+            NTOTIN = MAX(1,NMATIJ(ISYMIN))
 C
-         CALL DGEMM('T','N',NMATIJ(ISYMIN),NRHF(ISYMM),NT1AM(ISYMDL),
+            CALL DGEMM('T','N',NMATIJ(ISYMIN),NRHF(ISYMM),NT1AM(ISYMDL),
      *              -ONE,TMAT(KOFF1),NTOTDL,WORK(KOFF2),NTOTDL,
      *              ONE,WORK(KOFF3),NTOTIN)
-      ENDDO
+         ENDDO
+C
+      END IF
 C
 C-------------------------------------------------------
 C     Sort intermediate and integrals and contract
@@ -3717,96 +3778,102 @@ C
 C   omega(ai) = omega(ai) +  xoovv(fmna) * tt2(fmni)
 C
 C
-      ISYMBLM = MULD2H(ISYMT2,ISYMID)
-      ISYMLM  = MULD2H(ISYMBLM,ISYMIB)
-      ISYFINM = MULD2H(ISYMLM,ISCKIJ)
+      ! Calculate only when contracting with first-order multipliers
+      IF (W3X) THEN
+C           
+
+         ISYMBLM = MULD2H(ISYMT2,ISYMID)
+         ISYMLM  = MULD2H(ISYMBLM,ISYMIB)
+         ISYFINM = MULD2H(ISYMLM,ISCKIJ)
 C
-      KSCR1 = 1
-      KSCR2 = KSCR1 + NMATIJ(ISYMLM)
-      KEND1 = KSCR2 + NCKIJ(ISYFINM)
-      LWRK1 = LWORK - KEND1
+         KSCR1 = 1
+         KSCR2 = KSCR1 + NMATIJ(ISYMLM)
+         KEND1 = KSCR2 + NCKIJ(ISYFINM)
+         LWRK1 = LWORK - KEND1
 C
-      IF (LWRK1 .LT. 0) THEN
-         CALL QUIT('Out of memory CC3_W3_OMEG 6.)')
-      ENDIF
+         IF (LWRK1 .LT. 0) THEN
+            CALL QUIT('Out of memory CC3_W3_OMEG 6.)')
+         ENDIF
 C
 C
-      CALL DZERO(WORK(KSCR2),NCKIJ(ISYFINM))
+         CALL DZERO(WORK(KSCR2),NCKIJ(ISYFINM))
 C
-      DO I = 1, LENGTH
-         TMAT(I) = WMAT(I)
-      ENDDO
+         DO I = 1, LENGTH
+            TMAT(I) = WMAT(I)
+         ENDDO
 C
 C -------------------------------
 C     Sort T^{BD}_{mi} as T_{mi}
 C -------------------------------
 C
-      ISYMMI = MULD2H(ISYMBD,ISYMT2)
-      ISYBMI = MULD2H(ISYMMI,ISYMIB)
+         ISYMMI = MULD2H(ISYMBD,ISYMT2)
+         ISYBMI = MULD2H(ISYMMI,ISYMIB)
 C
-      DO ISYMI = 1,NSYM
-         ISYMM = MULD2H(ISYMMI,ISYMI)
-         ISYMBM = MULD2H(ISYBMI,ISYMI)
-         DO I = 1,NRHF(ISYMI)
-            DO M = 1,NRHF(ISYMM)
-               KOFF1 = IT2SP(ISYBMI,ISYMID)
+         DO ISYMI = 1,NSYM
+            ISYMM = MULD2H(ISYMMI,ISYMI)
+            ISYMBM = MULD2H(ISYBMI,ISYMI)
+            DO I = 1,NRHF(ISYMI)
+               DO M = 1,NRHF(ISYMM)
+                  KOFF1 = IT2SP(ISYBMI,ISYMID)
      *                  + NCKI(ISYBMI)*(ID-1)
      *                  + ICKI(ISYMBM,ISYMI)
      *                  + NT1AM(ISYMBM)*(I-1)
      *                  + IT1AM(ISYMIB,ISYMM)
      *                  + NVIR(ISYMIB)*(M-1)
      *                  + IB
-               KOFF2 = IMATIJ(ISYMM,ISYMI)
+                  KOFF2 = IMATIJ(ISYMM,ISYMI)
      *                  + NRHF(ISYMM)*(I-1)
      *                  + M
-               WORK(KSCR1-1+KOFF2) = T2TP(KOFF1)
+                  WORK(KSCR1-1+KOFF2) = T2TP(KOFF1)
+               ENDDO
             ENDDO
          ENDDO
-      ENDDO
 C
 C - TMAT(finl) * t2tp(BlmD)    xoovv(fmna)
 C
-      ISYMLM = MULD2H(ISYMBD,ISYMT2)
-      DO ISYML = 1,NSYM
-         ISYMFIN = MULD2H(ISCKIJ,ISYML)
-         ISYMM = MULD2H(ISYMLM,ISYML)
+         ISYMLM = MULD2H(ISYMBD,ISYMT2)
+         DO ISYML = 1,NSYM
+            ISYMFIN = MULD2H(ISCKIJ,ISYML)
+            ISYMM = MULD2H(ISYMLM,ISYML)
 C
-         KOFF1 = ISAIKJ(ISYMFIN,ISYML) + 1
-         KOFF2 = KSCR1 + IMATIJ(ISYML,ISYMM)
-         KOFF3 = KSCR2 + ISAIKJ(ISYMFIN,ISYMM)
+            KOFF1 = ISAIKJ(ISYMFIN,ISYML) + 1
+            KOFF2 = KSCR1 + IMATIJ(ISYML,ISYMM)
+            KOFF3 = KSCR2 + ISAIKJ(ISYMFIN,ISYMM)
 C
-         NTOTL   = MAX(1,NRHF(ISYML))
-         NTOTFIN = MAX(1,NCKI(ISYMFIN))
+            NTOTL   = MAX(1,NRHF(ISYML))
+            NTOTFIN = MAX(1,NCKI(ISYMFIN))
 C
-         CALL DGEMM('N','N',NCKI(ISYMFIN),NRHF(ISYMM),NRHF(ISYML),
+            CALL DGEMM('N','N',NCKI(ISYMFIN),NRHF(ISYMM),NRHF(ISYML),
      *             -ONE,TMAT(KOFF1),NTOTFIN,WORK(KOFF2),NTOTL,
      *              ONE,WORK(KOFF3),NTOTFIN)
-      END DO
+         END DO
 C
 C sort indices of result vedtor FINM as FMNI
 C
-      IOPT = 4 
-      CALL CC3_LSORT2(WORK(KSCR2),ISYFINM,WORK(KEND1),LWRK1,IOPT)
+         IOPT = 4 
+         CALL CC3_LSORT2(WORK(KSCR2),ISYFINM,WORK(KEND1),LWRK1,IOPT)
 C
 C   omega(ai) = omega(ai) +  xoovv(fmna) * tt2(fmni)
 C
-      DO ISYMI = 1,NSYM
-         ISYMFMN = MULD2H(ISYFINM,ISYMI)
-         ISYMA   = MULD2H(ISYRES,ISYMI)
+         DO ISYMI = 1,NSYM
+            ISYMFMN = MULD2H(ISYFINM,ISYMI)
+            ISYMA   = MULD2H(ISYRES,ISYMI)
 C
-         KOFF1 = IT2SP(ISYMFMN,ISYMA) + 1   
-         KOFF2 = KSCR2 + ISAIKJ(ISYMFMN,ISYMI)
-         KOFF3 = IT1AM(ISYMA,ISYMI) + 1
+            KOFF1 = IT2SP(ISYMFMN,ISYMA) + 1   
+            KOFF2 = KSCR2 + ISAIKJ(ISYMFMN,ISYMI)
+            KOFF3 = IT1AM(ISYMA,ISYMI) + 1
 C
-         NTOTFMN = MAX(1,NCKI(ISYMFMN))
-         NTOTA   = MAX(1,NVIR(ISYMA))
+            NTOTFMN = MAX(1,NCKI(ISYMFMN))
+            NTOTA   = MAX(1,NVIR(ISYMA))
 C
 C 6.3 omega contribution addomega
 C
-         CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NCKI(ISYMFMN),
+            CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NCKI(ISYMFMN),
      *              -ONE,XOOVV(KOFF1),NTOTFMN,WORK(KOFF2),NTOTFMN,
      *              ONE,OMEGA1(KOFF3),NTOTA)
-      END DO
+         END DO
+C
+      END IF
 C
 C-------------------
 C     End.
@@ -3900,7 +3967,7 @@ C
 C  /* Deck cc3_w3_cy2v */
       SUBROUTINE CC3_W3_CY2V(XI2,ISYRES,RBJIA,WMAT,ISWMAT,TMAT,TRVIR,
      *                      TRVIR1,ISYINT,WORK,LWORK,INDSQ,LENSQ,
-     *                      ISYMIB,IB,ISYMID,ID)
+     *                      ISYMIB,IB,ISYMID,ID,W3X)
 C
 C    
 C Modified based on CC3_CY2V routine where TWO*WMAT is replaced by WMAT
@@ -3911,6 +3978,15 @@ C                   (exclusive isymib,isymid)
 C                   ISYINT is symmetry of integrals in TRVIR and TROVIR1.
 C                   ISYRES = ISWMAT*ISYINT*ISYMIB*ISYMID
 C                   RBJIA intermediate result vector
+C
+C
+C If W3X = .TRUE., then WMAT contains wbar_X and all terms 
+C 1-3 are included
+C else
+C we assume that we get tbar_0 in as WMAT and calculate only
+C term 3. 
+C
+C Note Wbar_X and Tbar_0 is stored in the same way for fixed IB and ID
 C
 C   XI2(aibj) =  XI2(aibj)
 C
@@ -3923,6 +3999,8 @@ C (3):
 C    + sum_{k} (2W^{CD}_{bjki}-W^{CD}_{bkji}-W^{CD}_{bjik}) * (aC|kD)
 C
       IMPLICIT NONE
+C
+      LOGICAL W3X
 C
       INTEGER ISYRES, ISWMAT, ISYINT , LENSQ, LWORK
       INTEGER INDSQ(LENSQ,6)
@@ -3967,26 +4045,30 @@ C   TMAT(ckij) = 2W^{DB}_{cijk}-W^{DB}_{cikj}-W^{DB}_{ckji}
 C
 C   Use here the symmetry between BJ, DK !!
 C
-      ISCKIJ = ISWMAT 
+      ! Calculate only when contracting with first-order multipliers
+      IF (W3X) THEN
+C           
+
+         ISCKIJ = ISWMAT 
 C
-      ISYMB = ISYMIB
-      ISYMD = ISYMID
-      B = IB
-      D = ID
+         ISYMB = ISYMIB
+         ISYMD = ISYMID
+         B = IB
+         D = ID
 C
-      ISYAIJ = MULD2H(ISYMB,ISYRES)
-      KRMAT  = 1
-      KEND   = KRMAT + NCKI(ISYAIJ)
-      LEND   = LWORK - KEND
-      IF (LEND .LT. 0)THEN
-         CALL QUIT('1. Insufficient core in CC3_W3_CY2V')
-      ENDIF
-      CALL DZERO(WORK(KRMAT), NCKI(ISYAIJ))
-      DO I = 1,LENGTH
+         ISYAIJ = MULD2H(ISYMB,ISYRES)
+         KRMAT  = 1
+         KEND   = KRMAT + NCKI(ISYAIJ)
+         LEND   = LWORK - KEND
+         IF (LEND .LT. 0)THEN
+            CALL QUIT('1. Insufficient core in CC3_W3_CY2V')
+         ENDIF
+         CALL DZERO(WORK(KRMAT), NCKI(ISYAIJ))
+         DO I = 1,LENGTH
 C
-         TMAT(I) =  WMAT(INDSQ(I,1))
+            TMAT(I) =  WMAT(INDSQ(I,1))
 C
-      ENDDO
+         ENDDO
 C
 C---------------------------
 C     (ac|kD) = TRVIR^D_{ck,a}
@@ -3994,45 +4076,46 @@ C
 C     RMAT^B_(aij) =  TRVIR^D_{ck,a} )^T *  TMAT(ckij)
 C---------------------------
 C
-      DO 200 ISYMJ = 1,NSYM
+         DO 200 ISYMJ = 1,NSYM
 C
-         ISYBJ = MULD2H(ISYMB,ISYMJ)
-         ISYAI = MULD2H(ISYBJ,ISYRES)
-         ISYCKI = MULD2H(ISCKIJ,ISYMJ)
+            ISYBJ = MULD2H(ISYMB,ISYMJ)
+            ISYAI = MULD2H(ISYBJ,ISYRES)
+            ISYCKI = MULD2H(ISCKIJ,ISYMJ)
 C
-         DO 210 J = 1,NRHF(ISYMJ)
+            DO 210 J = 1,NRHF(ISYMJ)
 C
-            DO 220 ISYMI = 1,NSYM
+               DO 220 ISYMI = 1,NSYM
 C
-               ISYCK = MULD2H(ISYCKI,ISYMI)
-               ISYMA  = MULD2H(ISYAI,ISYMI)
+                  ISYCK = MULD2H(ISYCKI,ISYMI)
+                  ISYMA  = MULD2H(ISYAI,ISYMI)
 C 
-               NTOTCK = MAX(NT1AM(ISYCK),1)
-               NVIRA  = MAX(NVIR(ISYMA),1)
+                  NTOTCK = MAX(NT1AM(ISYCK),1)
+                  NVIRA  = MAX(NVIR(ISYMA),1)
 C
-               KOFF1 = ICKATR(ISYCK,ISYMA) + 1
-               KOFF2 = ISAIKJ(ISYCKI,ISYMJ)
+                  KOFF1 = ICKATR(ISYCK,ISYMA) + 1
+                  KOFF2 = ISAIKJ(ISYCKI,ISYMJ)
      *               + NCKI(ISYCKI)*(J - 1)
      *               + ISAIK(ISYCK,ISYMI)  + 1
-               KOFF3 = KRMAT
+                  KOFF3 = KRMAT
      *               + ISAIK(ISYAI,ISYMJ)
      *               + NT1AM(ISYAI)*(J - 1)
      *               + IT1AM(ISYMA,ISYMI)
 C
-               CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NT1AM(ISYCK),
+                  CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),
+     *                    NT1AM(ISYCK),
      *                   -ONE,TRVIR(KOFF1),NTOTCK,TMAT(KOFF2),NTOTCK,
      *                    ONE,WORK(KOFF3),NVIRA) 
 C
-  220       CONTINUE
+  220          CONTINUE
 C
-  210    CONTINUE
+  210       CONTINUE
 C
-  200 CONTINUE
+  200    CONTINUE
 C
-      ISYAIJ = MULD2H(ISYMB,ISYRES)
-      IF ( NCKI(ISYAIJ).GT.0 ) THEN
-        CALL CC3_RACC(XI2,WORK(KRMAT),ISYMB,B,ISYRES)
-      END IF
+         ISYAIJ = MULD2H(ISYMB,ISYRES)
+         IF ( NCKI(ISYAIJ).GT.0 ) THEN
+           CALL CC3_RACC(XI2,WORK(KRMAT),ISYMB,B,ISYRES)
+         END IF
 C
 C
 C (2):
@@ -4043,66 +4126,69 @@ C     + sum_{dk} (2W^{BC}_{dkij}-W^{BC}_{djik}-W^{BC}_{dikj}) * (aC|kd)
 C
 C  TMAT(dkij) = 2W^{BC}_{dkij}-W^{BC}_{djik}-W^{BC}_{dikj}
 C
-      ISYMC = ISYMID
-      ISYMB = ISYMIB
-      B  =  IB
-      C  =  ID 
+         ISYMC = ISYMID
+         ISYMB = ISYMIB
+         B  =  IB
+         C  =  ID 
 C
-      ISDKIJ = ISWMAT
-      ISYAIJ = MULD2H(ISYMB,ISYRES)
-      KRMAT  = 1
-      KEND   = KRMAT + NCKI(ISYAIJ)
-      LEND   = LWORK - KEND
-      IF (LEND .LT. 0)THEN
-         CALL QUIT('2. Insufficient core in CC3_W3_CY2V')
-      ENDIF
-      CALL DZERO(WORK(KRMAT), NCKI(ISYAIJ))
+         ISDKIJ = ISWMAT
+         ISYAIJ = MULD2H(ISYMB,ISYRES)
+         KRMAT  = 1
+         KEND   = KRMAT + NCKI(ISYAIJ)
+         LEND   = LWORK - KEND
+         IF (LEND .LT. 0)THEN
+            CALL QUIT('2. Insufficient core in CC3_W3_CY2V')
+         ENDIF
+         CALL DZERO(WORK(KRMAT), NCKI(ISYAIJ))
 C 
-      DO I = 1,LENGTH
+         DO I = 1,LENGTH
 C
-         TMAT(I) =  WMAT(I) 
+            TMAT(I) =  WMAT(I) 
 C
-      ENDDO
+         ENDDO
 C
 C     (ad|kC) = TRVIR1^C(dka)
 C
 C  RMAT^B_(aij) = ( TRVIR1^C(dka) )^T * TMAT(dkij)
 C
-      DO 300 ISYMJ = 1,NSYM
+         DO 300 ISYMJ = 1,NSYM
 C
-         ISYBJ = MULD2H(ISYMB,ISYMJ)
-         ISYAI = MULD2H(ISYBJ,ISYRES)
-         ISYDKI = MULD2H(ISDKIJ,ISYMJ)
+            ISYBJ = MULD2H(ISYMB,ISYMJ)
+            ISYAI = MULD2H(ISYBJ,ISYRES)
+            ISYDKI = MULD2H(ISDKIJ,ISYMJ)
 C
-         DO 310 J = 1,NRHF(ISYMJ)
+            DO 310 J = 1,NRHF(ISYMJ)
 C
-            DO 320 ISYMI = 1,NSYM
+               DO 320 ISYMI = 1,NSYM
 C
-               ISYDK = MULD2H(ISYDKI,ISYMI)
-               ISYMA  = MULD2H(ISYAI,ISYMI)
+                  ISYDK = MULD2H(ISYDKI,ISYMI)
+                  ISYMA  = MULD2H(ISYAI,ISYMI)
 C
-               NTOTDK = MAX(NT1AM(ISYDK),1)
-               NVIRA  = MAX(NVIR(ISYMA),1)
+                  NTOTDK = MAX(NT1AM(ISYDK),1)
+                  NVIRA  = MAX(NVIR(ISYMA),1)
 C
-               KOFF1 = ICKATR(ISYDK,ISYMA) + 1
-               KOFF2 = ISAIKJ(ISYDKI,ISYMJ)
+                  KOFF1 = ICKATR(ISYDK,ISYMA) + 1
+                  KOFF2 = ISAIKJ(ISYDKI,ISYMJ)
      *               + NCKI(ISYDKI)*(J - 1)
      *               + ISAIK(ISYDK,ISYMI)  + 1
-               KOFF3 = KRMAT + ISAIK(ISYAI,ISYMJ)
+                  KOFF3 = KRMAT + ISAIK(ISYAI,ISYMJ)
      *               + NT1AM(ISYAI)*(J - 1)
      *               + IT1AM(ISYMA,ISYMI) 
 C
-               CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NT1AM(ISYDK),
+                  CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),
+     *                    NT1AM(ISYDK),
      *                   -ONE,TRVIR1(KOFF1),NTOTDK,TMAT(KOFF2),NTOTDK,
      *                    ONE,WORK(KOFF3),NVIRA)
 C
-  320       CONTINUE
-  310    CONTINUE
-  300 CONTINUE
+  320          CONTINUE
+  310       CONTINUE
+  300    CONTINUE
 C
-      ISYAIJ = MULD2H(ISYMB,ISYRES)
-      IF ( NCKI(ISYAIJ).GT.0 ) THEN
-        CALL CC3_RACC(XI2,WORK(KRMAT),ISYMB,B,ISYRES)
+         ISYAIJ = MULD2H(ISYMB,ISYRES)
+         IF ( NCKI(ISYAIJ).GT.0 ) THEN
+           CALL CC3_RACC(XI2,WORK(KRMAT),ISYMB,B,ISYRES)
+         END IF
+C
       END IF
 C
 C-----------------------------------
@@ -4172,7 +4258,7 @@ C
 C  /* Deck cc3_w3_cy2o */
       SUBROUTINE CC3_W3_CY2O(XI2,ISYRES,WMAT,ISWMAT,TMAT,TROCC,
      *                      TROCC1,ISYINT,WORK,LWORK,INDSQ,LENSQ,
-     *                      ISYMIB,IB,ISYMID,ID)
+     *                      ISYMIB,IB,ISYMID,ID,W3X)
 C
 C
 C    
@@ -4183,6 +4269,15 @@ C     General symmetry: ISWMAT is symmetry of WMAT and TMAT intermediates.
 C                       (exclusive isymib,isymid)
 C                       ISYINT is symmetry of integrals in TROCC and TROCC1.
 C                       ISYRES = ISWMAT*ISYINT*ISYMIB*ISYMID
+C
+C If W3X = .TRUE., then WMAT contains wbar_X and all terms
+C 1-3 are included
+C else
+C we assume that we get tbar_0 in as WMAT and calculate only
+C term 1.
+C
+C Note Wbar_X and Tbar_0 is stored in the same way for fixed IB and ID
+
 C
 C   XI2(aibj) =  XI2(aibj) 
 C
@@ -4195,6 +4290,8 @@ C (3):
 C    + sum_{ckl} (2W^{AB}_{clki}-W^{AB}_{cikl}-W^{AB}_{ckli}) * (lc|kj) 
 C
       IMPLICIT NONE
+C
+      LOGICAL W3X
 C
       INTEGER ISYRES, ISWMAT, ISYINT, LWORK, LENSQ 
       INTEGER ISYMIB, IB, ISYMID, ID 
@@ -4349,18 +4446,22 @@ C   XI2(aibj) =  XI2(aibj)
 C
 C     + sum_{kl} (2W^{CA}_{bkil}-W^{CA}_{bkli}-W^{CA}_{blik}) * (lc|kj)
 C 
-      A = ID
-      C = IB
+      ! Calculate only when contracting with first-order multipliers
+      IF (W3X) THEN
+C           
+
+         A = ID
+         C = IB
 C
-      ISYMA = ISYMID
-      ISYMC = ISYMIB
+         ISYMA = ISYMID
+         ISYMC = ISYMIB
 C
-      ISYBJI = MULD2H(ISYMA,ISYRES)
-      IF (NCKI(ISYBJI).GT.0) THEN
-        CALL DZERO(WORK(KRMAT1),NCKI(ISYBJI))
+         ISYBJI = MULD2H(ISYMA,ISYRES)
+         IF (NCKI(ISYBJI).GT.0) THEN
+           CALL DZERO(WORK(KRMAT1),NCKI(ISYBJI))
 C
-        ISYAC = MULD2H(ISYMA,ISYMC)
-        JSBIKL = ISWMAT 
+           ISYAC = MULD2H(ISYMA,ISYMC)
+           JSBIKL = ISWMAT 
 C
 C---------------------------------------
 C
@@ -4368,27 +4469,27 @@ C     TMAT(bikl) = (2W^{CA}_{bkil}-W^{CA}_{bkli}-W^{CA}_{blik})
 C
 C---------------------------------------
 C
-        LENGTH = NCKIJ(JSBIKL)
+           LENGTH = NCKIJ(JSBIKL)
 C
-        DO I = 1,LENGTH
+           DO I = 1,LENGTH
 C
-           TMAT(I) =   WMAT(INDSQ(I,1)) 
+              TMAT(I) =   WMAT(INDSQ(I,1)) 
 C
-        ENDDO
+           ENDDO
 C
 C----------------------------------
 C     Symmetry sorting if symmetry.
 C----------------------------------
 C
-        IF (NSYM .GT. 1) THEN
-           CALL CC_GATHER(LENGTH,WORK(KTMATX),TMAT,INDSQ(1,6))
-           CALL DCOPY(LENGTH,WORK(KTMATX),1,TMAT,1)
-        ENDIF
+           IF (NSYM .GT. 1) THEN
+              CALL CC_GATHER(LENGTH,WORK(KTMATX),TMAT,INDSQ(1,6))
+              CALL DCOPY(LENGTH,WORK(KTMATX),1,TMAT,1)
+           ENDIF
 C
-        IF (IPRINT .GT. 55) THEN
-           XTMAT = DDOT(NCKIJ(JSAIKL),TMAT,1,TMAT,1)
-           WRITE(LUPRI,*) 'In CC3_W3_CY2O: 2. Norm of TMAT = ',XTMAT
-        ENDIF
+           IF (IPRINT .GT. 55) THEN
+              XTMAT = DDOT(NCKIJ(JSAIKL),TMAT,1,TMAT,1)
+              WRITE(LUPRI,*) 'In CC3_W3_CY2O: 2. Norm of TMAT = ',XTMAT
+           ENDIF
 C
 C------------------------
 C     Second contraction.
@@ -4399,50 +4500,50 @@ C
 C      M^A_(bij) =   sum(kl) TMAT(bikl)* TTROCC(kljC)
 C
 
-        DO 400 ISYMJ = 1,NSYM
+           DO 400 ISYMJ = 1,NSYM
 C
-           ISYCJ = MULD2H(ISYMC,ISYMJ)
-           ISYKL = MULD2H(ISYINT,ISYCJ)
-           ISYBI = MULD2H(ISYKL,ISWMAT)
-           ISYKLJ = MULD2H(ISYKL,ISYMJ)
+              ISYCJ = MULD2H(ISYMC,ISYMJ)
+              ISYKL = MULD2H(ISYINT,ISYCJ)
+              ISYBI = MULD2H(ISYKL,ISWMAT)
+              ISYKLJ = MULD2H(ISYKL,ISYMJ)
 C
-           NTOTBI = MAX(NT1AM(ISYBI),1)
-           NTOTKL = MAX(NMATIJ(ISYKL),1)
+              NTOTBI = MAX(NT1AM(ISYBI),1)
+              NTOTKL = MAX(NMATIJ(ISYKL),1)
 C
-           KOFF1  = ISAIKL(ISYBI,ISYKL) + 1
-           KOFF2  = ISJIKA(ISYKLJ,ISYMC)
+              KOFF1  = ISAIKL(ISYBI,ISYKL) + 1
+              KOFF2  = ISJIKA(ISYKLJ,ISYMC)
      *            + NMAJIK(ISYKLJ)*(C - 1)
      *            + ISJIK(ISYKL,ISYMJ) + 1
-           KOFF3  = KRMAT1 + ISAIK(ISYBI,ISYMJ) 
+              KOFF3  = KRMAT1 + ISAIK(ISYBI,ISYMJ) 
 C
 
-           CALL DGEMM('N','N',NT1AM(ISYBI),NRHF(ISYMJ),NMATIJ(ISYKL),
+              CALL DGEMM('N','N',NT1AM(ISYBI),NRHF(ISYMJ),NMATIJ(ISYKL),
      *                ONE,TMAT(KOFF1),NTOTBI,TROCC(KOFF2),NTOTKL,
      *                ONE,WORK(KOFF3),NTOTBI)
 C
-  400   CONTINUE
+  400      CONTINUE
 C
 
-        IF (IPRINT .GT. 55) THEN
-           XRMAT = DDOT(NCKI(ISYBJI),WORK(KRMAT1),1,WORK(KRMAT1),1)
-           WRITE(LUPRI,*) '2.In CC3_W3_CY2O: Norm of RMAT1 =  ',XRMAT 
-        ENDIF
+           IF (IPRINT .GT. 55) THEN
+              XRMAT = DDOT(NCKI(ISYBJI),WORK(KRMAT1),1,WORK(KRMAT1),1)
+              WRITE(LUPRI,*) '2.In CC3_W3_CY2O: Norm of RMAT1 =  ',XRMAT 
+           ENDIF
 C 
 C reorder result vector M^A_(bij) as M^A_(bji)
 C
-        CALL CC3_MAJI(WORK(KRMAT1),WORK(KRMAT2),ISYMA,A,ISYRES) 
+           CALL CC3_MAJI(WORK(KRMAT1),WORK(KRMAT2),ISYMA,A,ISYRES) 
 C
-        IF (IPRINT .GT. 55) THEN
-           XRMAT = DDOT(NCKI(ISYBJI),WORK(KRMAT2),1,WORK(KRMAT2),1)
-           WRITE(LUPRI,*) 
+           IF (IPRINT .GT. 55) THEN
+              XRMAT = DDOT(NCKI(ISYBJI),WORK(KRMAT2),1,WORK(KRMAT2),1)
+              WRITE(LUPRI,*) 
      *         'In CC3_W3_CY2O: Reorder :Norm of RMAT2 =  ',XRMAT 
-        ENDIF
+           ENDIF
 C
 C add vector to XI2
 C
-        CALL CC3_RACC(XI2,WORK(KRMAT2),ISYMA,A,ISYRES) 
+           CALL CC3_RACC(XI2,WORK(KRMAT2),ISYMA,A,ISYRES) 
 C
-      END IF
+         END IF
 C
 C-------------------------
 C     Third occupied term.
@@ -4452,20 +4553,20 @@ C             XI2(aibj) =  XI2(aibj)
 C
 C    + sum_{ckl} (2W^{AB}_{clki}-W^{AB}_{cikl}-W^{AB}_{ckli}) * (lc|kj) 
 C
-      B = ID
-      A = IB
+         B = ID
+         A = IB
 C
-      ISYMB = ISYMID
-      ISYMA = ISYMIB
+         ISYMB = ISYMID
+         ISYMA = ISYMIB
 C
-      ISYAB = MULD2H(ISYMA,ISYMB)
-      ISYIJ = MULD2H(ISYAB,ISYRES)
-      IF (NMATIJ(ISYIJ).GT.0) THEN
-        CALL DZERO(WORK,NMATIJ(ISYIJ))
+         ISYAB = MULD2H(ISYMA,ISYMB)
+         ISYIJ = MULD2H(ISYAB,ISYRES)
+         IF (NMATIJ(ISYIJ).GT.0) THEN
+           CALL DZERO(WORK,NMATIJ(ISYIJ))
 C
-        JSCKLI = ISWMAT 
+           JSCKLI = ISWMAT 
 C
-        LENGTH = NCKIJ(JSCKLI)
+           LENGTH = NCKIJ(JSCKLI)
 C
 C----------------------------------
 C
@@ -4473,17 +4574,17 @@ C   TMAT(ckli) = 2W^{AB}_{clki}-W^{AB}_{cikl}-W^{AB}_{ckli}
 C
 C----------------------------------
 C
-        DO I = 1,LENGTH
+           DO I = 1,LENGTH
 C
-           TMAT(I) =  WMAT(INDSQ(I,1))    
+              TMAT(I) =  WMAT(INDSQ(I,1))    
 C
-        ENDDO
+           ENDDO
 C
 C
-        IF (IPRINT .GT. 55) THEN
-           XTMAT = DDOT(NCKIJ(JSAIKL),TMAT,1,TMAT,1)
-           WRITE(LUPRI,*) 'In CC3_W3_CY2O: 3. Norm of TMAT = ',XTMAT
-        ENDIF
+           IF (IPRINT .GT. 55) THEN
+              XTMAT = DDOT(NCKIJ(JSAIKL),TMAT,1,TMAT,1)
+              WRITE(LUPRI,*) 'In CC3_W3_CY2O: 3. Norm of TMAT = ',XTMAT
+           ENDIF
 C
 C-----------------------
 C     Third contraction.
@@ -4496,39 +4597,41 @@ C   XI2(aibj) =  XI2(aibj)
 C             + sum(kl) TMAT(ckli)* TROCC1(cklj) 
 C
 C
-        DO 600 ISYMJ = 1,NSYM
+           DO 600 ISYMJ = 1,NSYM
 C
-           ISYBJ = MULD2H(ISYMB,ISYMJ)
-           ISYAI = MULD2H(ISYBJ,ISYRES)
-           ISYMI  = MULD2H(ISYAI,ISYMA)
-           ISYCKL = MULD2H(ISYMI,JSCKLI)
+              ISYBJ = MULD2H(ISYMB,ISYMJ)
+              ISYAI = MULD2H(ISYBJ,ISYRES)
+              ISYMI  = MULD2H(ISYAI,ISYMA)
+              ISYCKL = MULD2H(ISYMI,JSCKLI)
 C
-           IF (LWORK .LT. NRHF(ISYMI)*NRHF(ISYMJ)) THEN
-              CALL QUIT('Insufficient memory in CCSDT_CY2O')
-           END IF
+              IF (LWORK .LT. NRHF(ISYMI)*NRHF(ISYMJ)) THEN
+                 CALL QUIT('Insufficient memory in CCSDT_CY2O')
+              END IF
 C
-           NTOCKL = MAX(NCKI(ISYCKL),1)
-           NRHFI  = MAX(NRHF(ISYMI),1)
+              NTOCKL = MAX(NCKI(ISYCKL),1)
+              NRHFI  = MAX(NRHF(ISYMI),1)
 C
-           KOFF1  = ISAIKJ(ISYCKL,ISYMI) + 1
-           KOFF2  = ISAIKJ(ISYCKL,ISYMJ) + 1
-           KOFF3  = IMATIJ(ISYMI,ISYMJ) + 1
+              KOFF1  = ISAIKJ(ISYCKL,ISYMI) + 1
+              KOFF2  = ISAIKJ(ISYCKL,ISYMJ) + 1
+              KOFF3  = IMATIJ(ISYMI,ISYMJ) + 1
 C
 
-           CALL DGEMM('T','N',NRHF(ISYMI),NRHF(ISYMJ),NCKI(ISYCKL),
+              CALL DGEMM('T','N',NRHF(ISYMI),NRHF(ISYMJ),NCKI(ISYCKL),
      *                ONE,TMAT(KOFF1),NTOCKL,TROCC1(KOFF2),NTOCKL,
      *                ONE,WORK(KOFF3),NRHFI)
 C
 C
 
-  600   CONTINUE
+  600      CONTINUE
 C
-        IF (IPRINT .GT. 55) THEN
-           XRMAT = DDOT(NMATIJ(ISYIJ),WORK,1,WORK,1)
-           WRITE(LUPRI,*) '3.In CC3_W3_CY2O: Norm of RABIJ =  ',XRMAT 
-        ENDIF
+           IF (IPRINT .GT. 55) THEN
+              XRMAT = DDOT(NMATIJ(ISYIJ),WORK,1,WORK,1)
+              WRITE(LUPRI,*) '3.In CC3_W3_CY2O: Norm of RABIJ =  ',XRMAT 
+           ENDIF
 C
-        CALL CC3_RABIJ(XI2,WORK,ISYMA,A,ISYMB,B,ISYRES)
+           CALL CC3_RABIJ(XI2,WORK,ISYMA,A,ISYMB,B,ISYRES)
+C
+         END IF
 C
       END IF
 C

@@ -121,6 +121,21 @@ C
 C
       CALL QENTER('CCSDT_FBMAT')
 C
+C     Lists check
+C
+      IF (LISTL(1:3).EQ.'L1 ')  THEN
+         IF ( (LISTB(1:3).EQ.'R1 ') .AND. (LISTC(1:3).EQ.'R1 ') ) THEN
+            CONTINUE
+         ELSE
+            WRITE(LUPRI,*)'LISTL = ', LISTL
+            WRITE(LUPRI,*)'LISTB = ', LISTB
+            WRITE(LUPRI,*)'LISTC = ', LISTC
+            WRITE(LUPRI,*)'Only implemented when LISTL = L1 '
+     *      //'and LISTB = R1 and LISTC = R1 '
+            CALL QUIT('Case not implemented in CCSDT_FBMAT')
+         END IF
+      END IF
+C
 C--------------------------
 C     Save and set flags.
 C--------------------------
@@ -348,7 +363,7 @@ C
          LWRK1  = LWORK  - KEND1
 C
          IF (LWRK1 .LT. NT2SQ(ISYMRB)) THEN
-            CALL QUIT('Out of memory in CC3_XI (TOT_T3Y) ')
+            CALL QUIT('Out of memory in CCSDT_FBMAT (TOT_T3Y) ')
          ENDIF
 C
 C        Readin
@@ -481,6 +496,16 @@ C
 C
          IDLSTL = IDOTS(IVEC,ITRAN)
          ISYML  = ILSTSYM(LISTL,IDLSTL)
+C
+C------------------------
+C        Symmetry check 
+C------------------------
+C
+         IF (ISYML .NE. ISYRES) THEN 
+            WRITE(LUPRI,*)'Symmetry mismatch in CCSDT_FBMAT '
+            WRITE(LUPRI,*)'ISYML = ', ISYML, 'not equal ISYRES =',ISYRES
+            CALL QUIT('Symmetry mismatch in CCSDT_FBMAT ')
+         END IF
 C
 C-----------------------------
 C        Read occupied integrals.
@@ -1173,7 +1198,7 @@ C     and put the result into DOTPROD
 C--------------------------------------------
 C
          IOPT = 2
-         CALL CC_RDRSP(LISTL,0,1,IOPT,MODEL,DUMMY,WORK(KEND1))
+         CALL CC_RDRSP(LISTL,IDLSTL,ISYML,IOPT,MODEL,DUMMY,WORK(KEND1))
 C
          CALL CCLR_DIASCL(WORK(KEND1),HALF,ISYML)
          TCON = DDOT(NT2AM(ISYRES),WORK(KOMEG2),1,WORK(KEND1),1)

@@ -62,7 +62,7 @@ C
 #include <ccorb.h>
 
       LOGICAL LOCDBG, FD_TEST, XI_ONLY
-      PARAMETER (LOCDBG=.FALSE., FD_TEST=.false., 
+      PARAMETER (LOCDBG=.true., FD_TEST=.false., 
      &           XI_ONLY = .FALSE.)
 
       INTEGER ISYM0

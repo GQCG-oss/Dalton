@@ -1208,11 +1208,13 @@ C
       REAL TIMTOT, TIRDAO, TIME1O, TIME3O
       REAL TIMEINTDEL, TIME2O2V, TIMHE1, TIMHE2
       REAL DTIME, ZERO, ONE
+      real ddot ,xnormval
 #else
       DOUBLE PRECISION XOOOO(*), XOOVV(*), XOVVO(*),WORK(LWORK)
       DOUBLE PRECISION TIMTOT, TIRDAO, TIME1O, TIME3O
       DOUBLE PRECISION TIMEINTDEL, TIME2O2V, TIMHE1, TIMHE2
       DOUBLE PRECISION DTIME, ZERO, ONE
+      DOUBLE PRECISION ddot ,xnormval
 #if !defined (VAR_G77)
       DOUBLE PRECISION SECOND
 #endif
@@ -1481,7 +1483,7 @@ C------------------------------------------
 C              Work space allocation no. 3.
 C------------------------------------------
 C
-               ISYMTI  = MULD2H(ISYMD,ISYMOP)
+               ISYMTI  = MULD2H(ISYMD,ISYMC2)
                ISYMTI2 = MULD2H(ISYMD,ISYMB2)
 C
                KDSRHF = KEND2
@@ -1526,6 +1528,11 @@ C
                   CALL CC_INT3O(WORK(K3OINT2),WORK(KDSRHF),WORK(KLAMHB),
      *                          ISYMB2,WORK(KLAMDP),WORK(KEND3),LWRK3,
      *                          IDEL,ISYMD,LUIN3O2,FNIN3O2)
+c          xnormval = ddot(NMAIJK(ISYMTI2),WORK(K3OINT2),1,
+c    *                                     WORK(K3OINT2),1)
+c          write(lupri,*)'IDEL,ISYMD,luin3o2',IDEL,ISYMD
+c          write(lupri,*)'WORK(K3OINT2)',xnormval
+
                   DTIME = SECOND() - DTIME
                   TIME3O = TIME3O + DTIME
                ENDIF
@@ -1593,12 +1600,12 @@ C
       IOPT = 3
       CALL CC3_INTSTORE(LUIN3O,FNIN3O,XOOOO,ISYINT,
      *                  WORK(KLAMHB),ISYMB2,WORK(KLAMDH),ISYMOP,
-     *                  LU3V,FN3V,LU4V,FN4V,ISYMB2,
+     *                  LU3V,FN3V,LU4V,FN4V,ISYINT,
      *                  WORK(KEND1),LWRK1,IOPT)
 C
       IF (DO_LAMB) THEN
          KOOOO = KEND1
-         KEND1 = KOOOO + N3ORHF(ISYMB2)
+         KEND1 = KOOOO + N3ORHF(ISYINT)
          LWRK1 = LWORK - KEND1
 C
          IF (LWRK1 .LT. 0) THEN
@@ -1610,7 +1617,7 @@ C
          IOPT = 1
          CALL CC3_INTSTORE(LUIN3O2,FNIN3O2,WORK(KOOOO),ISYINT,
      *                     WORK(KLAMHC),ISYMC2,WORK(KLAMDH),ISYMOP,
-     *                     LU3V,FN3V,LU4V,FN4V,ISYMOP,
+     *                     LU3V,FN3V,LU4V,FN4V,ISYINT,
      *                     WORK(KEND1),LWRK1,IOPT)
 C
          CALL DAXPY(N3ORHF(ISYINT),ONE,WORK(KOOOO),1,XOOOO,1)

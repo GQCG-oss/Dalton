@@ -1429,11 +1429,7 @@ c /* deck ccqr_fadrv */
 *    Written by Christof Haettig, November 1996.
 *
 *=====================================================================*
-#if defined (IMPLICIT_NONE)
-      IMPLICIT NONE  ! makes debugging easier...
-#else
-#  include <implicit.h>
-#endif
+      IMPLICIT NONE  
 #include <priunit.h>
 #include <dummy.h>
 #include <ccorb.h>
@@ -1442,6 +1438,7 @@ c /* deck ccqr_fadrv */
 #include <ccroper.h>
 #include <ccr1rsp.h>
 #include <cclists.h>
+#include <ccnoddy.h>
 
 * local parameters:
       CHARACTER*(19) MSGDBG
@@ -1451,6 +1448,19 @@ c /* deck ccqr_fadrv */
       INTEGER LUFBTA
 
       INTEGER LWORK, NFATRAN, MXVEC
+
+ 
+      CHARACTER*8 FNTOC
+      CHARACTER*4 FNDKBC
+      CHARACTER*5 FNDKBC3
+      CHARACTER*6 FNDELD, FNCKJD, FN3VI, FN3FOPX
+      CHARACTER*7 FN3FOP2X
+ 
+      PARAMETER (FNDELD  = 'CKDELD'  , FNCKJD  = 'CKJDEL'  )
+      PARAMETER (FNDKBC  = 'DKBC'    , FNTOC   = 'CCSDT_OC')
+      PARAMETER (FN3VI   = 'CC3_VI'  )
+      PARAMETER (FN3FOPX = 'PTFOPX'  , FN3FOP2X= 'PTFOP2X' )
+      PARAMETER (FNDKBC3 = 'DKBC3'   )  
 
 #if defined (SYS_CRAY)
       REAL FACON(MXVEC,NFATRAN)
@@ -1475,9 +1485,12 @@ c /* deck ccqr_fadrv */
       INTEGER IFADOTS(MXVEC,NFATRAN)
       INTEGER ISYRES, ISYMTA, ISYMTB, ISYMTC, ISYCTR, IFILE, IRELAX
       INTEGER IVEC, ITRAN, IOPERA, ITAMPB, ITAMPC, IZETAV, IOPT
-      INTEGER KGAMMA1, KGAMMA2, KT1AMPC, KT2AMPC, KEND1, LEND1
+      INTEGER KGAMMA1, KGAMMA2, KT1AMPC, KT2AMPC, KEND1, LWRK1
       INTEGER KEND1A, LEND1A, IADR,  LEN, IOPTRES
       INTEGER IFBTRAN(5)
+      INTEGER MXFADEN, MXINTER, KIDXL_FADEN, KIDXB_FADEN, KIDXC_FADEN,
+     &        KIADR_FADEN, KIDXL_INTER, KIDXR_INTER, KLSTR_INTER,
+     &        KIADR_INTER, NFADEN, NINTER
 
 
 * external functions:
@@ -1518,10 +1531,10 @@ c /* deck ccqr_fadrv */
         KT1AMPC = KEND1A
         KT2AMPC = KT1AMPC + NT1AM(ISYRES)
         KEND1   = KT2AMPC + NT2AM(ISYRES)
-        LEND1   = LWORK - KEND1
+        LWRK1   = LWORK - KEND1
 
 
-        IF (LEND1 .LT. 0) THEN
+        IF (LWRK1 .LT. 0) THEN
           CALL QUIT('Insufficient work space in CCQR_FADRV.')
         END IF
 
@@ -1581,7 +1594,7 @@ C            -----------------------
              END IF
             
              CALL CC_WARSP(LISTC, IFILE, ISYRES, IOPT, MODEL,DUMMY,
-     &                  WORK(KGAMMA1),WORK(KGAMMA2),WORK(KEND1),LEND1)
+     &                  WORK(KGAMMA1),WORK(KGAMMA2),WORK(KEND1),LWRK1)
 
            ELSE IF (OPTION(1:4).EQ.'DOTP') THEN
 C            ---------------------------------
@@ -1647,6 +1660,52 @@ C    &                  LISTL,  IZETAV, WORK,  LWORK   )
        END IF
 
       END DO
+
+*---------------------------------------------------------------------*
+* add triples contributions for contractions (IOPTRES=5):
+*---------------------------------------------------------------------*
+      IF (CCSDT .AND. IOPTRES.EQ.5 .AND. (.NOT.NODDY_FAMAT)) THEN
+
+        MXFADEN = NFATRAN*MXVEC
+        MXINTER = 2*MXFADEN
+
+        KIDXL_FADEN = 1
+        KIDXB_FADEN = KIDXL_FADEN + MXFADEN
+        KIDXC_FADEN = KIDXB_FADEN + MXFADEN
+        KIADR_FADEN = KIDXC_FADEN + MXFADEN
+        KEND1       = KIADR_FADEN + MXFADEN
+
+        KIDXL_INTER = KEND1
+        KIDXR_INTER = KIDXL_INTER + MXINTER  
+        KLSTR_INTER = KIDXR_INTER + MXINTER  
+        KIADR_INTER = KLSTR_INTER + MXINTER  
+        KEND1       = KIADR_INTER + 3 * MXINTER  
+
+        LWRK1 = LWORK - KEND1
+ 
+        IF (LWRK1 .LT. 0) THEN
+          CALL QUIT('Insufficient work space CCQR_FADRV')
+        END IF 
+
+        CALL CCSDT_FA_SETUP(IFATRAN,IFADOTS,NFATRAN,MXVEC,
+     &                      WORK(KIDXL_FADEN),WORK(KIDXB_FADEN),
+     &                      WORK(KIDXC_FADEN),NFADEN,MXFADEN,
+     &                      WORK(KIDXL_INTER),WORK(KIDXR_INTER),
+     &                      WORK(KLSTR_INTER),NINTER,MXINTER,
+     &                      LISTL,LISTO,LISTB,LISTC)
+
+        CALL CCSDT_FA_DEN(LISTL,LISTO,LISTB,LISTC,
+     &                    NFATRAN,MXVEC,IFATRAN,IFADOTS,FACON,
+     &                    FNDELD,FNCKJD,FNDKBC,FNTOC,
+     &                    FN3VI,FNDKBC3,FN3FOPX,FN3FOP2X,
+     &                    WORK(KIDXL_INTER),WORK(KIDXR_INTER),
+     &                    WORK(KLSTR_INTER),NINTER,
+     &                    WORK(KIDXL_FADEN),WORK(KIDXB_FADEN),
+     &                    WORK(KIDXC_FADEN),NFADEN,
+     &                    WORK(KIADR_INTER),WORK(KIADR_FADEN),
+     &                    WORK(KEND1),LWRK1)
+
+      END IF
 
 *---------------------------------------------------------------------*
 * print the results: 
