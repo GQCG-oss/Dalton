@@ -1466,6 +1466,7 @@ c     Write out V-matrix for CC2-R12 model (HF/UniKA/02-05-2003).
 c
       CALL GPOPEN(LU43,'CCR12_V','UNKNOWN',' ','FORMATTED',
      &                   IDUM,LDUM)
+      WRITE(LU43,'(I3)') 1
       WRITE(LU43,'(4E30.20)') WS11
       WRITE(LU43,'(4E30.20)') WT11
       CALL GPCLOSE(LU43,'KEEP')
@@ -1474,6 +1475,7 @@ c     Write out X-matrix for CC2-R12 model (HF/UniKA/02-05-2003).
 c
       CALL GPOPEN(LU43,'CCR12_X','UNKNOWN',' ','FORMATTED',
      &                   IDUM,LDUM)
+      WRITE(LU43,'(I3)') 1
       WRITE(LU43,'(4E30.20)') RS11
       WRITE(LU43,'(4E30.20)') RT11
       CALL GPCLOSE(LU43,'KEEP')
@@ -1701,6 +1703,8 @@ C
 C
       CALL DZERO(FS,NSPAIR)
       CALL DZERO(FT,NSPAIR)
+      CALL DZERO(CS11,NSPAIR*NSPAIR)
+      CALL DZERO(CT11,NSPAIR*NSPAIR)
       F2S = D0
       F2T = D0
       IJ = 0
@@ -1761,6 +1765,8 @@ C
             ELSE
               WRITE(LUPRI,'(I4,4F15.9,2G16.6)') IJ,ES(IJ),ES(IJ)+FS(IJ),
      *                                          ET(IJ),ET(IJ)+FT(IJ)
+              CS11(IJ,IJ) = CNINV(IJ,3)
+              CT11(IJ,IJ) = CNINV(IJ,7)
             END IF
             F2S = F2S + FS(IJ)
             F2T = F2T + FT(IJ)

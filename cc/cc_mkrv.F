@@ -76,18 +76,27 @@ C
       DIMENSION QQ11(NICDIM,NICDIM,NICDIM,NICDIM)
       DIMENSION CS11(NSPAIR,NSPAIR),CT11(NSPAIR,NSPAIR)
       LOGICAL DOA, DOB, DOAP, DOBP, ASTRIX, DONINV, LDUM
-      INTEGER IDUM
+      INTEGER IDUM, JDUM
       CHARACTER*3 APPROX(14,2), IPCC
+      LOGICAL FRSTWR
 #include <r12int.h>
 #include <ccorb.h>
 #include <ccsdsym.h>
 #include <ccsdinp.h>
+      DATA FRSTWR/.TRUE./
       DATA APPROX 
      &/'A  ','A  ','A'' ','A* ','A* ','A*''','B  ',
      & 'B  ','xxx','xxx','B* ','B* ','xxx','xxx',
      & 'A  ','A  ','A'' ','A* ','A* ','A*''','B'' ',
      & 'B'' ','B  ','B  ','B*''','B*''','B* ','B* '/
       INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C
+      LU43 = 43
+      LU44 = 44
+      LU45 = 45
+      LU46 = 46
+      CALL GPOPEN(LU46,'CCR12_K','UNKNOWN',' ','FORMATTED',
+     &                 IDUM,LDUM)
       FF = D1 / SQRT(D2)
 C
       CALL AROUND('Auxiliary-basis MP2-R12 method')
@@ -376,7 +385,23 @@ C
      *                                       B .LE. NORB1(ISYMB)) THEN
 C
 C                                      Sum |ab><ab|
-C                                                      
+C
+C                                      Write out C^(ij)_kl,ab for
+C                                      approximation A, A', B, and *, resp.,
+C                                      for CC2-R12 model (WK/UniKA/30-12-2003).
+C
+c                                      IF (FRSTWR
+c    &                                 .AND. A. LE. NORB1(ISYMA)
+c    &                                 .AND. B. LE. NORB1(ISYMB))
+c    &                                 WRITE (LU46,'(6I5,2E30.20/
+c    &                                               30X,2E30.20)')
+c    &                                 KOFFI,KOFFJ,KOFFK,KOFFL,
+c    &                                 KOFFA,KOFFB,
+c    &                                 - UAKBL,
+c    &                                 -(UAKBL + EIJKL * RAKBL),
+c    &                                 -(UAKBL - SAKBL + EIJKL * RAKBL),
+c    &                                 -(EKLAB * RAKBL + EIJKL * RAKBL)
+C
                                        EIJ = D1 / 
      *                                      (EV(KOFFI) + EV(KOFFJ) -
      *                                       EV(KOFFA) - EV(KOFFB)) 
@@ -606,19 +631,19 @@ c
   301    CONTINUE
   300 CONTINUE
 C
-      IF (IPRINT .LE. 3 .OR. IPDD .GT. 1) GOTO 998
+      IF (IPRINT .LE. 3 .OR. .NOT. FRSTWR) GOTO 998
       CALL AROUND('Singlet <V@> matrix') 
       CALL OUTPUT(VS11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
       CALL AROUND('Singlet <B@> matrix') 
       CALL OUTPUT(US11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
       CALL AROUND('Singlet <S@> matrix') 
-      CALL OUTPUT(QS11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+      CALL OUTPUT(RS11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
       CALL AROUND('Triplet <V@> matrix') 
       CALL OUTPUT(VT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
       CALL AROUND('Triplet <B@> matrix') 
       CALL OUTPUT(UT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
       CALL AROUND('Triplet <S@> matrix') 
-      CALL OUTPUT(QT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
+      CALL OUTPUT(RT11,1,NSPAIR,1,NSPAIR,NSPAIR,NSPAIR,1,LUPRI)
       CALL AROUND('Singlet <B#> matrices') 
       DO MN = 1, NSPAIR 
          WRITE(LUPRI,'(A,I4)') ' PAIR =', MN
@@ -640,40 +665,102 @@ C
   491    CONTINUE
   490 CONTINUE
 C
+      IF (FRSTWR) THEN
+C
+C        Write out V-matrix for CC2-R12 model (WK/UniKA/30-12-2003).
+C
+         CALL GPOPEN(LU43,'CCR12_V','UNKNOWN',' ','FORMATTED',
+     &                      IDUM,LDUM)
+ 1244    READ(LU43,'(I3)',END=1243) IDUM
+         READ(LU43,'(4E30.20)') QS11
+         READ(LU43,'(4E30.20)') QT11
+         GOTO 1244
+ 1243    CONTINUE
+         WRITE(LU43,'(I3)') 2
+         WRITE(LU43,'(4E30.20)') VS11
+         WRITE(LU43,'(4E30.20)') VT11
+         CALL GPCLOSE(LU43,'KEEP')
+C
+C        Write out X-matrix for CC2-R12 model (WK/UniKA/30-12-2003).
+C
+         CALL GPOPEN(LU43,'CCR12_X','UNKNOWN',' ','FORMATTED',
+     &                      IDUM,LDUM)
+ 1246    READ(LU43,'(I3)',END=1245) IDUM
+         READ(LU43,'(4E30.20)') QS11
+         READ(LU43,'(4E30.20)') QT11
+         GOTO 1246
+ 1245    CONTINUE
+         WRITE(LU43,'(I3)') 2
+         WRITE(LU43,'(4E30.20)') RS11
+         WRITE(LU43,'(4E30.20)') RT11
+         CALL GPCLOSE(LU43,'KEEP')
+C
+C        Open files for B and C (WK/UniKA/30-12-2003).
+C
+         CALL GPOPEN(LU44,'CCR12_B','UNKNOWN',' ','FORMATTED',
+     &                    IDUM,LDUM)
+ 1248    READ(LU44,'(2I3)',END=1247) IDUM,JDUM
+         READ(LU44,'(4E30.20)') QS11
+         READ(LU44,'(4E30.20)') QT11
+         GOTO 1248
+ 1247    CALL GPOPEN(LU45,'CCR12_D','UNKNOWN',' ','FORMATTED',
+     &                    IDUM,LDUM)
+ 1250    READ(LU45,'(2I3)',END=1249) IDUM,JDUM
+         READ(LU45,'(4E30.20)') QS11
+         READ(LU45,'(4E30.20)') QT11
+         GOTO 1250
+ 1249    FRSTWR = .FALSE.
+      END IF
+C
       IF (DOB) THEN
          LU43 = 43
          CALL GPOPEN(LU43,'QMATSP','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
-         READ(LU43,'(4E30.20)') US11
+         READ(LU43,'(4E30.20)') QS11
          CALL GPCLOSE(LU43,'KEEP')
          CALL GPOPEN(LU43,'QMATTP','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
-         READ(LU43,'(4E30.20)') UT11
+         READ(LU43,'(4E30.20)') QT11
          CALL GPCLOSE(LU43,'KEEP')
          DO 701 MN = 1, NSPAIR
             DO 702 J = 1, NSPAIR
                DO 703 I = 1, NSPAIR
-                  BS11(I,J,MN) = BS11(I,J,MN) - US11(I,J)
-                  BT11(I,J,MN) = BT11(I,J,MN) - UT11(I,J)
+                  BS11(I,J,MN) = BS11(I,J,MN) - QS11(I,J)
+                  BT11(I,J,MN) = BT11(I,J,MN) - QT11(I,J)
   703         CONTINUE
   702      CONTINUE
   701   CONTINUE   
+        DO J = 1, NSPAIR
+           DO I = 1, NSPAIR
+              US11(I,J) = US11(I,J) - QS11(I,J)
+              UT11(I,J) = UT11(I,J) - QT11(I,J)
+           END DO
+        END DO
         IF (DOBP) THEN         
           LU43 = 43
           CALL GPOPEN(LU43,'XMATSP','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
-          READ(LU43,'(4E30.20)') US11  
+          READ(LU43,'(4E30.20)') QS11  
           CALL GPCLOSE(LU43,'KEEP')
           CALL GPOPEN(LU43,'XMATTP','UNKNOWN',' ','FORMATTED',IDUM,LDUM)
-          READ(LU43,'(4E30.20)') UT11   
+          READ(LU43,'(4E30.20)') QT11   
           CALL GPCLOSE(LU43,'KEEP') 
           DO 704 MN = 1, NSPAIR
              DO 705 J = 1, NSPAIR
                 DO 706 I = 1, NSPAIR
-                   BS11(I,J,MN) = BS11(I,J,MN) + US11(I,J)
-                   BT11(I,J,MN) = BT11(I,J,MN) + UT11(I,J)
+                   BS11(I,J,MN) = BS11(I,J,MN) + QS11(I,J)
+                   BT11(I,J,MN) = BT11(I,J,MN) + QT11(I,J)
   706           CONTINUE
   705        CONTINUE
   704     CONTINUE   
+          DO J = 1, NSPAIR
+             DO I = 1, NSPAIR
+                US11(I,J) = US11(I,J) + QS11(I,J)
+                UT11(I,J) = UT11(I,J) + QT11(I,J)
+             END DO
+          END DO
         END IF
       END IF   
+      WRITE(LU44,'(2I3)') 2, IPDD
+      WRITE(LU44,'(4E30.20)') US11
+      WRITE(LU44,'(4E30.20)') UT11
 C
       IF (IPDD .EQ.  1 .OR. IPDD .EQ.  4 .OR. IPDD .EQ.  7 .OR.
      &    IPDD .EQ.  9 .OR. IPDD .EQ. 11 .OR. IPDD .EQ. 13) THEN
@@ -686,6 +773,8 @@ C
       END IF
       CALL DZERO(FS,NSPAIR)
       CALL DZERO(FT,NSPAIR)
+      CALL DZERO(CS11,NSPAIR*NSPAIR)
+      CALL DZERO(CT11,NSPAIR*NSPAIR)
       F2S = D0
       F2T = D0
       IJ = 0
@@ -746,6 +835,8 @@ C
             ELSE
             WRITE(LUPRI,'(I4,4F15.9,2G16.6)') IJ,ES(IJ),ES(IJ)+FS(IJ),
      *                                       ET(IJ),ET(IJ)+FT(IJ)
+            CS11(IJ,IJ) = CNINV(IJ,3)
+            CT11(IJ,IJ) = CNINV(IJ,7)
             ENDIF
             F2S = F2S + FS(IJ)
             F2T = F2T + FT(IJ) 
@@ -772,7 +863,16 @@ C
      * '              MP2-R12/'//IPCC//' correlation energy =',
      *   E2S+E2T+F2S+F2T
       END IF
+c
+c     Write out amplitudes for CC2-R12 model (WK/UniKA/30-12-2003).
+c
+      WRITE(LU45,'(2I3)') 2,IPDD
+      WRITE(LU45,'(4E30.20)') CS11
+      WRITE(LU45,'(4E30.20)') CT11
   999 CONTINUE
+      CALL GPCLOSE(LU44,'KEEP')
+      CALL GPCLOSE(LU45,'KEEP')
+      CALL GPCLOSE(LU46,'KEEP')
       RETURN
       END
 C  /* Deck ryr*/

@@ -139,7 +139,7 @@ C
       END IF
       LMWORK = 0
 c     70 must be in sync with GNRCHR common block
-      CALL GETMMBAS(LMWORK,BASDIR,IDUMMY)
+      CALL GETMMBAS(LMWORK,BASDIR,IDUMMY,WRKMEM)
 C
 C     Either default memory size,
 C
@@ -150,15 +150,25 @@ C
 C
 C     ... or user specified memory size.
 C
+         DO I=20,1,-1
+           IF(WRKMEM(I:I).NE.' ') GOTO 1312
+         ENDDO
+         CALL QUIT('Empty environment variable WRKMEM')
+ 1312    LWMEM = I
          WRITE(LUERR,'(/A/3A)')
-     &      ' DALTON: user specified work memory size used,',
-     &      '         environment variable WRKMEM = "',WRKMEM,'"'
+     &   ' DALTON: user specified work memory size used,',
+     &   '         environment variable WRKMEM = "',WRKMEM(1:LWMEM),'"'
       END IF
       NBYTES = (LMWORK+2) * 8
-      XMBYTES = NBYTES
-      XMBYTES = XMBYTES / (1024*1024)
-      WRITE(LUERR,'(/A,I12,A,F8.2,A)') ' Work memory size (LMWORK):',
-     &   LMWORK,' =',XMBYTES,' megabytes.'
+      XBYTES = (LMWORK+2) * 8D0
+      GBYTES = XBYTES / (1.024D3**3)
+      IF (GBYTES .GE. 10D0) THEN
+        WRITE(LUERR,'(/A,I12,A,F7.3,A)')' Work memory size (LMWORK+2):',
+     &        LMWORK+2,' =',GBYTES,' gigabytes.'
+      ELSE
+        WRITE(LUERR,'(/A,I12,A,F6.3,A)')' Work memory size (LMWORK+2):',
+     &        LMWORK+2,' =',GBYTES,' gigabytes.'
+      END IF
 C
 C    Dynamic memory allocation
 C
@@ -480,7 +490,7 @@ C
       END IF
 #endif
       END
-      SUBROUTINE GETMMBAS(LMWORK,BASDIR,LBASDR)
+      SUBROUTINE GETMMBAS(LMWORK,BASDIR,LBASDR,WRKMEM)
 #include <implicit.h>
 #include <priunit.h>
       CHARACTER*70 BASDIR
@@ -502,6 +512,7 @@ C
       CALL GETENV ('BASDIR',BASDIR)
 #endif
       READ(WRKMEM, '(I20)', ERR=10) LMWORK
+      IF (LMWORK .LT. 0) GOTO 10
       GOTO 20
    10    WRITE(LUERR,'(/3A)')
      &   ' DALTON: WRKMEM conversion error; WRKMEM = "',WRKMEM,'"'

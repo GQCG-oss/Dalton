@@ -93,7 +93,7 @@ C     *****   memory allocation  *****
 C molecular coefficients and dipole moment integrals
  
       JRDMO = 9
-      CALL READMO(WORK(KCMO),JRDMO,WORK(KFREE),LFREE)
+      CALL READMO(WORK(KCMO),JRDMO,WORK(KEND),LFREE)
       CALL AROUND('Canonical occupied molecular orbitals')
       CALL PRINTORB(NB1,NBA,WORK(KCMO))
 
