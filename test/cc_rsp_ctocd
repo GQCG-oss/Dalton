@@ -203,6 +203,7 @@ else
   exit 1
 fi
 
-' > cc_rsp_ctocd.check
+%EOF%
+
 chmod +x cc_rsp_ctocd.check
 #######################################################################
