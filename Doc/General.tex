@@ -8,43 +8,52 @@ input file for the \siraba\ program.
 \section{General input to DALTON : \Sec{*DALTON}}\label{sec:general}
 
 This input module describes the overall type of calculation that is to
-be done, and also which of the six programs that \siraba\ consists of
-that is to be executed. It also contains three submodules describing the
-performance of parallel calculations and the control of the two different geometry optimization 
-routines. We note that this input module has to start all input files
-for \siraba .
+be done. It also contains four submodules describing the
+performance of parallel calculations, the control of the two different geometry optimization 
+routines, as well as control the general routines for calculating
+numerical geometrical derivatives of molecular energies or selected
+first- and second-order properties. We note that this input module has
+to start all input files for \siraba .
 
 \begin{description}
-\item[\Key{ABACUS}] Alternative keyword to \verb|.PROPERTIES|. Obsolete, do not use.
+%\item[\Key{ABACUS}] Alternative keyword to \verb|.PROPERTIES|. Obsolete, do not use.
 
 \item[\Key{DIRECT}] The calculation is to be done in a direct
 manner\index{direct calculation}, that
 is, the two-electron integrals\index{two-electron integral} are to be
 constructed ``on the fly''
 and not written to disc as is the default. This keyword will only work
-for SCF\index{SCF}\index{HF}\index{Hartree--Fock} wave functions, and
+for SCF\index{SCF}\index{HF}\index{Hartree--Fock} wave functions,
+Density Functional Theory
+calculation\index{DFT}\index{Density-Functional Theory} and for
+coupled-cluster (CC) calculations\index{CC}\index{Coupled-Cluster}. In
+HF and DFT calculations the
 two-electron integrals (and differentiated
 two-electron integrals) will not be written to disc in any part of the
-calculation.
+calculation, whereas in the direct CC approach, the two-electron
+integrals will be stored in three general-indexed batches, thus
+requiring a loop over all basis functions for one of the two-electron
+integral indices~\cite{directCC}.
 
 \item[\Key{DOUGLAS-KROLL}] Include scalar relativistic effects by using the
 Douglas-Kroll transformed one-electron potential and kinetic energy Hamiltonian.
 
-\item[\Key{HERMIT}] Alternative keyword to \verb|.INTEGRALS|. Obsolete, do not use.
+%\item[\Key{HERMIT}] Alternative keyword to \verb|.INTEGRALS|. Obsolete, do not use.
 
 \item[\Key{INPTES}] Test the input of the \Sec{*GENERAL} input
 module. The program will abort after the completion of the input test,
 and no calculation will be executed.
 
-\item[\Key{INTEGRALS}] Invoke the {\her} program for generating molecular one-
+\item[\Key{INTEGRALS}] Invoke the {\her} and/or the {\eri} program for generating molecular one-
 and two-electron integrals. See
-Chapter~\ref{ch:hermit}\index{one-electron integral}\index{two-electron integral}.
+Chapter~\ref{ch:hermit} and the Chapter~\ref{ch:eri}\index{one-electron integral}\index{two-electron integral}.
 
 \item[\Key{ITERATION}]\verb| |\newline
 \verb|READ (LUCMD, '(I5)') ITERNR|
 
 Tells the program at which iteration to start the geometry
-optimization\index{iteration number}. Note that this will {\em not}
+optimization using the \Sec{*WALK} module\index{iteration
+  number}. Note that this will {\em not} 
 affect which molecule
 input file that is going to be read, as this has to be handled by the
 shell script\index{shell script}. It only determines what number the
@@ -58,13 +67,16 @@ calculation (\verb|DALTON.IRC|) or a dynamical trajectory walk (\verb|DALTON.TRJ
 Change the maximum number of geometry iterations\index{iteration number}\index{geometry iteration}\index{geometry optimization!number of iterations}\index{convergence!geometry}
 that can be done. Default
 is~20. This number has to be increased in Intrinsic Reaction Coordinate
-(IRC)\index{IRC}\index{intrinsic reaction coordinate}, dynamical
-trajectory studies\index{dynamics} or numerical
-differentiation/vibrational averaging, as these
-usually require a much larger number of iterations.
+(IRC)\index{IRC}\index{intrinsic reaction coordinate} or dynamical
+trajectory studies\index{dynamics}. For numerical
+differentiation/vibrational averaging, the number of iterations will
+be reset to $6N+1$ (where $N$ is the number of nuclei) as the number
+of required iterations for these calculations are well
+defined. However, changing this variable will override this reset
+option.
 
-\item[\Key{MINIMIZE}] Alternative keyword to \verb|.OPTIMIZE|. Obsolete,
-do not use.
+%\item[\Key{MINIMIZE}] Alternative keyword to \verb|.OPTIMIZE|. Obsolete,
+%do not use.
 
 \item[\Key{OPTIMIZE}] Do a geometry walk\index{geometry walk}. If no
 input is given in the
@@ -79,8 +91,8 @@ the chapter on potential energy surfaces
 describing the input cards for the \Sec{OPTIMIZE} submodule for a more
 detailed description of possible options.
 
-\item[\Key{NMDDRV}] Calls for a generalized numerical
-differentiations. These routines will take advantage of the full
+\item[\Key{NMDDRV}] Calls for a generalized numerical geometry
+differentiation. These routines will take advantage of the full
 molecular point group in order to minimize the number of point to be
 calculated. What order of derivatives and whether any analytical
 derivatives are to be used is determined in the \verb|*NMDDRV| input
@@ -92,32 +104,42 @@ is to be done in parallel\index{parallel calculation}. This also
 implies that the calculation is
 done without writing two-electron integrals to disc. This keyword only
 applies to SCF\index{SCF}\index{HF}\index{Hartree--Fock} wave
-functions, but all two-electron integral
+functions and DFT calculations\index{DFT}\index{Density Functional Theory}, but all two-electron integral
 evaluations in an SCF calculation will be done parallel. More details
 about the parallelization strategy in \siraba\ can be found
-elsewhere~\cite{pndjhapdkrthhkcpl253}.
+in Ref.~\cite{pndjhapdkrthhkcpl253}.
 
 The keyword requires that the program has been installed and compiled
 with the appropriate preprocessor directives for an MPI
-installation\index{MPI}, or the construction of a slave program for
-the PVM installation\index{PVM}.
-
-If MPI\index{MPI} is used as message passing\index{message passing}
-interface, no further keywords are
-needed, as the number of nodes will be set equal to the number of
-nodes asked for when submitting the job. However, if PVM\index{PVM} is used as
-message passing interface, the number of nodes needs to be given in the
-\Sec{PARALLEL} submodule input, and this number have to be equal to
-the number of nodes asked for when submitting the job. Note also that
+installation\index{MPI}.
+%, or the construction of a slave program for
+%the PVM installation\index{PVM}.
+%If MPI\index{MPI} is used as message passing\index{message passing}
+%interface, no further keywords are
+%needed, as the number of nodes will be set equal to the number of
+%nodes asked for when submitting the job. However, if PVM\index{PVM} is used as
+%message passing interface, the number of nodes needs to be given in the
+%\Sec{PARALLEL} submodule input, and this number have to be equal to
+%the number of nodes asked for when submitting the job. 
+Note that
 in order to evaluate the parallelization efficiency\index{parallel efficiency}, a print level of
 at least 2 is needed in the \Sec{PARALLEL} submodule.
+
+\item[\Key{PARNMD}] Option non-functional. Do not use.
 
 \item[\Key{PRESORT}]\index{integral sort} Requests that the
 two-electron integrals should be
 sorted and that the integral transformation routines of Bj\o rn
-Roos should be used during execution of the program. This will only
-work on 32-bit architectures, but is needed in order to be able to run
-with more than 255 basis functions.
+Roos should be used during execution of the program. 
+%This will only
+%work on 32-bit architectures, but is needed in order to be able to run
+%with more than 255 basis functions.
+
+\item[\Key{PRIERR}]\verb| |\newline
+\verb|READ (LUCMD, *) IPRERR|
+\index{error print level}
+Reads in the print level that is to be used in the DALTON.ERR
+file. Default print level is \verb|IPRUSR+1|.
 
 \item[\Key{PRINT}]\verb| |\newline
 \verb|READ (LUCMD, *) IPRUSR|
@@ -148,17 +170,22 @@ calculation.
 Invoke all the programs {\her}, {\sir}, and {\resp} for a single point
 calculation.
 
-\item[\Key{RUNABA}] Alternative keyword to \verb|.RUN PROPERTIES|. Obsolete, do not use.
+\item[\Key{RUN WAVE FUNCTION}]
+
+Invoke the programs {\her} and {\sir} for a single point energy calculation.
+
+%\item[\Key{RUNABA}] Alternative keyword to \verb|.RUN PROPERTIES|. Obsolete, do not use.
 
 \item[\Key{RUNERI}] Force the use of the new, vectorized integral code {\eri} where possible.
 
-\item[\Key{RUNRSP}] Alternative keyword to \verb|.RUN RESPONSE|. Obsolete, do not use.
+%\item[\Key{RUNRSP}] Alternative keyword to \verb|.RUN RESPONSE|. Obsolete, do not use.
 
-\item[\Key{RUNSIR}] Alternative keyword to \verb|.RUN WAVE FUNCTIONS|. Obsolete, do not use.
+%\item[\Key{RUNSIR}] Alternative keyword to \verb|.RUN WAVE FUNCTIONS|. Obsolete, do not use.
 
 \item[\Key{TOTSYM}] Consider only totally symmetric
 perturbations\index{symmetry}.
-This option only affects geometric perturbations and static
+This option only affects geometric perturbations calculated using the
+second-order based \Key{WALK} option and static
 electric-field perturbations requested through the keyword \Key{POLARI}.
 
 \item[\Key{VECLEN}]\verb| |
@@ -166,7 +193,7 @@ electric-field perturbations requested through the keyword \Key{POLARI}.
 \verb|READ(LUCMD,*) IVECLN|
 
 Set the number of Fock matrices to be used during Fock-matrix constructions in 
-direct calculations. This function is only of interest for vectorized machines.
+direct calculations. This function is only of interest for vector machines.
 The default is 128. The larger the number, the more memory will be required 
 in the calculations.
 
@@ -176,7 +203,8 @@ input is given in the
 \Sec{WALK} input submodule, an optimization of the molecular
 geometry\index{geometry optimization} to a stationary point with no
 negative Hessian eigenvalues\index{Hessian} (a
-local minimum) will be done using the a second-order method with analytical Hessians. However, this may changed be appropriate
+local minimum) will be done using the a second-order method with
+analytical Hessians. However, this may be changed by appropriate
 keywords in the submodule \Sec{WALK}, and we refer to examples in
 the chapter on potential energy surfaces
 (Chapter~\ref{ch:geometrywalks}), and  subsection~\ref{sec:abawalk}
@@ -186,7 +214,8 @@ detailed description of possible options.
 \item[\Key{WAVE FUNCTIONS}]
 \index{SCF}\index{HF}\index{Hartree--Fock}\index{MP2}\index{M{\o}ller-Plesset!second-order}\index{MCSCF}\index{CC}
 Invoke the {\sir} program for the evaluation of SCF, MP2, Coupled
-Cluster and MCSCF wave functions. See Chapter~\ref{chap:inpref}.
+Cluster and MCSCF wave functions as well as DFT calculations. See
+Chapter~\ref{chap:inpref}. 
 \end{description}
 
 \subsection{End of General input: \Sec{END OF}}
@@ -196,7 +225,7 @@ may be \Sec{END OF}.
 
 \subsection{General: \Sec{OPTIMIZE}}\label{subsec:minimize}
 
-This submodule is driver for geometry optimizations, although we
+This submodule is the driver for geometry optimizations, although we
 note that the \Sec{WALK} module contains another second-order
 geometry optimization driver\index{geometry optimization}. The
 \Sec{OPTIMIZE} module contains both first and second-order methods
@@ -216,7 +245,10 @@ Use default first-order method\index{first-order optimization}\index{geometry op
 This means that the BFGS update will\index{BFGS update}\index{Hessian update!BFGS}
 be used, and that the optimization carried out in redundant internal
 coordinates\index{redundant internal coordinates}. Same effect as the
-combination of the two keywords \Key{BFGS} and \Key{REDINT}.
+combination of the two keywords \Key{BFGS} and \Key{REDINT}. Since the
+\Key{BFGS} method ensures a positive definite Hessian, the
+\Key{BOFILL} optimization method is used by default in case of
+searches for transition states.
 
 \item[\Key{2NDORD}]
 Use default second-order method\index{second-order optimization}\index{geometry optimization!second-order}.
@@ -243,10 +275,10 @@ to maintain a positive definite Hessian. Note that this also makes it
 unsuitable for transitions state optimization (where one negative
 eigenvalue is sought).
 
-%\item[\Key{BFGSR1}]
-%Use a linear combination of the BFGS and the symmetric rank one
-%updating schemes in the same fashion as Bofill's update. Only suitable
-%for minimizations.
+\item[\Key{BFGSR1}]
+Use a linear combination of the BFGS and the symmetric rank one
+updating schemes in the same fashion as Bofill's update. Only suitable
+for minimizations.
 
 \item[\Key{BOFILL}]
 Bofill's update\cite{jmbjcc15}\index{Bofill's update}\index{Hessian update!Bofill's update}
@@ -344,6 +376,11 @@ step. Works in much the same way as DIIS for wave-functions. However,
 the rational function and level-shifted Newton methods are generally
 more robust and more efficient. Can only be used for minimizations.
 
+\item[\Key{GEOANA}]
+Enables an analysis of the molecular geometry in terms of bond lengths
+and bond angles at each new geometry predicted during the optimization
+procedure.
+
 \item[\Key{GRADIE}]\verb| |
 \newline
 \verb|READ(LUCMD,*) THRGRD|
@@ -381,7 +418,7 @@ last geometry and the Hessian in \verb|DALTON.HES|, minimizing the
 loss of information. Another useful possibility, is to transfer
 the Hessian from a calculation on the same molecule with another
 (smaller) basis and/or a cheaper wave-function. Finally, one can go in
-and edit the file directly to set up a specific forcefield.
+and edit the file directly to set up a specific force field.
 
 \item[\Key{INIMOD}]
 \index{model Hessian}\index{Hessian!model}\index{initial Hessian}\index{Hessian!initial}
@@ -438,7 +475,7 @@ is turned off, as there seems to be no gain in efficiency. Can only be
 used for minimizations.
 
 \item[\Key{M-BFGS}]
-A list of old geometries and gradients are kept. At each new point
+A list of old geometries and gradients are kept. At each new point,
 displacements and gradient difference for the last few steps are
 calculated, and all of these are then used to sequentially update the
 Hessian, the most weight being given to the last displacement and
@@ -464,7 +501,7 @@ Default value is 25.
 \verb|READ(LUCMD,*) MAXREJ|
 
 Read maximum number of rejected steps\index{rejected geometry step}\index{geometry optimization!rejected step}
-in each iterations, default is 5.
+in each iterations, default is 3.
 
 \item[\Key{MODE}]\verb| |
 \newline
@@ -473,7 +510,7 @@ in each iterations, default is 5.
 Only has effect when doing saddle point optimizations\index{mode following}\index{geometry optimization!mode following}.
 Determines which Hessian eigenmode should be maximized (inverted in the image
 method). By default this is the mode corresponding to the lowest
-eigenvalue, i.e. mode number 1. If an optimization does not end up at
+eigenvalue, {\bf i.e.} mode number 1. If an optimization does not end up at
 the correct transition state, it may be worthwhile following other modes
 (only the lower ones are usually interesting).
 
@@ -514,22 +551,22 @@ number of internal coordinates. Constrained geometry optimizations can
 sometimes benefit from having all dihedral angles removed (assuming no
 dihedral angles needs to be frozen).
 
-\item[\Key{NOREIN}]
-When first-order methods are used, the 
-Hessian\index{Hessian!reinitialization} is reinitialized every
-time the Hessian index\index{Hessian!index} becomes non-zero (due to negative
-eigenvalues). This guarantees that the Hessian describes a minimum,
-but valuable information gathered in the Hessian may be
-lost.
-
-\Key{NOREIN}
-Disables this reinitialization, relying on the
-optimization method to restore the Hessian to its correct structure
-(by locating the area near the minimum). This option is particularly
-useful in conjunction with the keyword \Key{INITHE}, as it is usually
-not meaningful to calculate the Hessian at the initial geometry, then
-resetting it to the identity matrix because some negative eigenvalue
-showed up.
+%\item[\Key{NOREIN}]
+%When first-order methods are used, the 
+%Hessian\index{Hessian!reinitialization} is reinitialized every
+%time the Hessian index\index{Hessian!index} becomes non-zero (due to negative
+%eigenvalues). This guarantees that the Hessian describes a minimum,
+%but valuable information gathered in the Hessian may be
+%lost.
+%
+%\Key{NOREIN}
+%Disables this reinitialization, relying on the
+%optimization method to restore the Hessian to its correct structure
+%(by locating the area near the minimum). This option is particularly
+%useful in conjunction with the keyword \Key{INITHE}, as it is usually
+%not meaningful to calculate the Hessian at the initial geometry, then
+%resetting it to the identity matrix because some negative eigenvalue
+%showed up.
 
 \item[\Key{NOTRUS}]
 Turns off the trust radius\index{trust radius}, so that a full Newton step
@@ -571,7 +608,7 @@ update formula should be used for optimization.
 \item[\Key{RANKON}]
 Specifies that a first-order method with the rank one update\index{rank one update}\index{Hessian update!rank one}\index{Hessian update!MS}\index{Hessian update!SR1}
 formula should be used for optimization. This updating is also
-referred to as symmatric rank one (SR1) or Murtagh-Sargent (MS).
+referred to as symmetric rank one (SR1) or Murtagh-Sargent (MS).
 
 \item[\Key{REDINT}]
 Specifies that redundant internal coordinates\index{redundant internal coordinates}\index{coordinate system!redundant internal coordinates}
@@ -644,6 +681,15 @@ Hessian.
 Read a string containing the name of a basis set. When the geometry
 has converged, a single-point energy will be calculated using this
 basis set\index{basis set}.
+
+\item[\Key{STABILIZE}]\verb| |
+\newline
+\verb|READ(LUCMD,*) ISTBLZ|
+
+Tries to ``stabilize'' the predicted new molecular geometries (and
+thus reduce the risk of symmetry breakings) by ignoring all numbers
+appearing in the Cartesian coordinates of the atoms beyond digit
+number \verb|ISTBLZ|.
 
 \item[\Key{STEEPD}]
 Specifies that the first-order steepest descent\index{first-order optimization}\index{steepest descent} method should be
@@ -773,57 +819,18 @@ vibrational analysis has been requested.
 
 \end{description}
 
-\subsection{Numerical differentiation : \Sec{NMDDRV}}
-
-This submodule controls the calculation of force constants from
-available analytical derivatives (for instance molecular
-gradients). Implementation will be described elsewhere. 
-
-\begin{description}
-
-\item[\Key{DORDR}]\verb| |\newline
-\verb|READ (LUCMD,*) NMORDR, NAORDR|
-
-Sets the numerical (NMORDR) and analytical (NAORDR) differentiating
-order for calculating force constants. Current implementation has an
-artificial boundary at the 5. numerical derivative (independent of the
-analytical differentiation order).
-
-\item[\Key{SYMMET}]\verb| |\newline
-\verb|READ (LUCMD,*) FCLASS|
-
-Assigns the molecular point group of the molecule (FCLASS). For
-instance for water FCLASS would be equal to ``C2v''. Main rotational
-axis needs to be set to the z-axis in the .mol file. Additional
-generating elements needs to be the x-axis for a C2 rotation, and the
-xy plane for a mirror plane. The current implementation only allows
-for symmetry use, when differentiating from energies. 
-
-\item[\Key{RSTRT}]
-Controls the restart procedure. If a calculation crashes during a
-force constant calculation, there will be a file in the work directory
-called RSTRT.FC. This will contain all of the information necessary to
-restart the calculation. If this file is available and the keyword is
-used, \dalton\ will attempt to restart the calculation. 
-
-\item[\Key{NORMAL}]
-Using this keyword the numerical differentiation will be carried out
-with respect to normal coordinates. The program will then do the
-necessary numerical differentiation to get the Hessian (and thus
-normal coordinates), before it will carry on calculating the force
-field requested with respect to normal coordinates.
-
-\end{description}
 
 \subsection{Parallel calculations : \Sec{PARALLEL}}
 
 This submodule controls the performance of the parallel
 version\index{parallel calculation}
 of \siraba . The implementation has been described
-elsewhere~\cite{pndjhapdkrthhkcpl253}. When PVM\index{PVM} is used as
-message passing interface\index{message passing}, the
-keyword \Key{NODES} is required, otherwise all keywords are
-optional.
+elsewhere~\cite{pndjhapdkrthhkcpl253}. \dalton\ only support MPI as
+message passing interface in the current release.
+%When PVM\index{PVM} is used as
+%message passing interface\index{message passing}, the
+%keyword \Key{NODES} is required, otherwise all keywords are
+%optional.
 
 \begin{description}
 
@@ -843,21 +850,21 @@ as the process of giving batches to {\em all} slaves. The default is
 integral evaluation, which will give a reasonable control with the
 idle time of each slave.
 
-\item[\Key{ENCODE}]\verb| |\newline
-\verb|READ (LUCMD, '(A7)') WORD|
-
-This keyword only applies if PVM\index{PVM} has been chosen as message passing
-interface. Three different options exists:
-
-\begin{list}{--}{}
-\item\verb|PVMDEFA|
-\item\verb|PVMRAW|
-\item\verb|PVMINPL|
-\end{list}
-
-The default is \verb|PVMDEFA|. We refer to PVM\index{PVM} manuals for a
-closer description of the different ways of encoding the transfer of
-data between nodes.
+%\item[\Key{ENCODE}]\verb| |\newline
+%\verb|READ (LUCMD, '(A7)') WORD|
+%
+%This keyword only applies if PVM\index{PVM} has been chosen as message passing
+%interface. Three different options exists:
+%
+%\begin{list}{--}{}
+%\item\verb|PVMDEFA|
+%\item\verb|PVMRAW|
+%\item\verb|PVMINPL|
+%\end{list}
+%
+%The default is \verb|PVMDEFA|. We refer to PVM\index{PVM} manuals for a
+%closer description of the different ways of encoding the transfer of
+%data between nodes.
 
 \item[\Key{NODES}]\verb| |\newline
 \verb|READ (LUCMD,*) NODES|
@@ -865,13 +872,16 @@ data between nodes.
 When MPI\index{MPI} is used as message passing interface, the
 default value is the number of nodes that has been assigned to the
 job, and these nodes will be partitioned into one master\index{master} and
-\verb|NODES-1| slaves\index{slave}. When PVM is used for message
-passing\index{message passing}, the default is 0,  and it is
-therefore required to specify the number of nodes to be used in the
-calculation when PVM is used. \verb|NODES| will in such calculations
-correspond to the number of slaves the user would like to use in the
-calculation. Note that this number may often have to be adjusted in
-accordance with limits in the queuing system of various computers.
+\verb|NODES-1| slaves\index{slave}. In most cases the program will
+find the number of nodes from the run-shell environment and setting
+equal to the number of nodes requested when submitting the MPI job minus 1.
+%When PVM is used for message
+%passing\index{message passing}, the default is 0,  and it is
+%therefore required to specify the number of nodes to be used in the
+%calculation when PVM is used. \verb|NODES| will in such calculations
+%correspond to the number of slaves the user would like to use in the
+%calculation. Note that this number may often have to be adjusted in
+%accordance with limits in the queuing system of various computers.
 
 %\item[\Key{NTASK}]\verb| |\newline
 %\verb|READ (LUCMD,*) NTASK|
@@ -911,7 +921,8 @@ geometry\index{second-order optimization}
 optimizations  as well as the
 execution of dynamical walks and numerical
 differentiation\index{numerical differentiation} in
-calculations of Raman intensities and optical activity\index{Raman intensity}\index{Raman optical activity}\index{ROA},
+calculations of Raman intensities and optical activity\index{Raman
+  intensity}\index{Raman optical activity}\index{ROA},
 appear in the \Sec{WALK} section.
 
 \begin{description}
@@ -1007,23 +1018,23 @@ more line containing the sign (-1 or 1) of the reaction coordinate. It
 cannot be decided in advance which reaction pathway a specific sign is
 associated with. See also the discussion in Sec.~\ref{sec:irc}.
 
-\item[\Key{ISOTOP}]\verb| |\newline
-\verb|READ (LUCMD, *) NIS|\newline
-\verb|READ (LUCMD, *) (ISOTPS(IS), IS = 1, NIS)|
-
-Specify the isotopic constitution\index{isotopic constitution} of the
-molecule under investigation.
-This is most interesting in dynamic walks\index{dynamics}, 
-when using mass-scaled atomic coordinates\index{mass-weighted coordinates}. 
-Note that the internal structure of
-\aba\ uses Cartesian coordinates, and for vibrational analysis alone
-the keyword \Key{ISOTOP} in the \Sec{VIBANA} input section is to be
-used. Note also that for defining center of mass
-coordinates or for vibrational averaging, there is a similar \verb|.ISOTOP| keyword in the general
-input module, and this will become the only keyword for specifying
-isotopic substitutions in later versions of the program. The
-\Key{ISOTOP} keyword in this input module (\Sec{WALK}) is to become
-obsolete.
+%\item[\Key{ISOTOP}]\verb| |\newline
+%\verb|READ (LUCMD, *) NIS|\newline
+%\verb|READ (LUCMD, *) (ISOTPS(IS), IS = 1, NIS)|
+%
+%Specify the isotopic constitution\index{isotopic constitution} of the
+%molecule under investigation.
+%This is most interesting in dynamic walks\index{dynamics}, 
+%when using mass-scaled atomic coordinates\index{mass-weighted coordinates}. 
+%Note that the internal structure of
+%\aba\ uses Cartesian coordinates, and for vibrational analysis alone
+%the keyword \Key{ISOTOP} in the \Sec{VIBANA} input section is to be
+%used. Note also that for defining center of mass
+%coordinates or for vibrational averaging, there is a similar \verb|.ISOTOP| keyword in the general
+%input module, and this will become the only keyword for specifying
+%isotopic substitutions in later versions of the program. The
+%\Key{ISOTOP} keyword in this input module (\Sec{WALK}) is to become
+%obsolete.
 
 \item[\Key{KEEPSY}] Ensure that the symmetry of the molecule is not
 broken. The threshold for determining a mode as breaking symmetry is
@@ -1175,7 +1186,7 @@ each of these atoms~(*) specifying the atom number and scale
 factors for all three Cartesian coordinates. Default is no scaling of
 the atomic coordinates.
 
-\item[\Key{STRICT}] Strict mode following. Obsolete keyword. Do not use.
+%\item[\Key{STRICT}] Strict mode following. Obsolete keyword. Do not use.
 
 \item[\Key{TEMPERATURES}]\verb| |\newline
 \verb|  READ (LUCMD, *) NTEMP|
@@ -1213,8 +1224,8 @@ respectively.
 Request the calculation of the harmonic contribution to the
 vibrational average of a molecular property.
 
-\item[\Key{VIBCNV}] Requests a vibrational analysis at the optimized
-geometry. Obsolete keyword. Do not use.
+%\item[\Key{VIBCNV}] Requests a vibrational analysis at the optimized
+%geometry. Obsolete keyword. Do not use.
 
 \item[\Key{ZERGRD}]\verb| |\newline
 \verb|READ (LUCMD, *) ZERGRD|
@@ -1226,3 +1237,189 @@ symmetry breaking when using the keyword \Key{KEEPSY} as well as
 when deciding what step to take when starting a walk from a transition
 state.
 \end{description}
+
+\section{Numerical differentiation : \Sec{*NMDDRV}}\label{sec:nmddrv}
+
+This modules can calculate any geometrical derivative of the energy
+using either as high analytical derivatives as possible, or using the
+specified level of analytical derivatives (assuming implemented for
+the choice of wave function). Also performs vibrational averaging over
+selected first- and second-order molecular properties.
+
+\begin{description}
+
+\item[\Key{DISPLACEMENT}]\verb| |\newline
+\verb|READ (LUCMD,*) DISPLC|
+
+Reads in the step lengths (in atomic units) that is to be used in the
+numerical differentiation scheme. Default is 1.0D-2.
+
+\item[\Key{DORDR}]\verb| |\newline
+\verb|READ (LUCMD,*) NMORDR, NAORDR|
+
+Sets the numerical (NMORDR) and analytical (NAORDR) differentiating
+order for calculating force constants. Current implementation has an
+artificial boundary at the 5. numerical derivative (independent of the
+analytical differentiation order). Notice that if you would like to
+calculating 4.derivatives from analytical 2.derivatives the input
+would be \verb|2  2|, since you would like to get 2.order numerical
+derivatives from 2.order analytical derivatives.
+
+\item[\Key{DRYRUN}]\verb| |\newline
+\verb|READ (LUCMD,'(I4)') NMREDU|
+\verb|READ (LUCMD,'(6I4)')| (KDRYRN(II),II=1,NMREDU)
+
+The numerical derivatives will not be calculated, and the program will
+just set up the required displacement. An option number of redundant
+coordinates can be specified, corresponding to translational and
+rotational degrees of freedom.
+
+\item[\Key{HARMONIC FORCE FIELD}]\verb| |\newline
+
+At the end of the calculation, perform an vibrational analysis using
+the calculated Hessian matrix.
+
+\item[\Key{MANUAL}]\verb| |\newline
+
+Dump each individual geometry input file to the \verb|DALTON.OUT|
+file. Primarily of interest for debugging purposes.
+
+\item[\Key{NORMAL}]
+Using this keyword the numerical differentiation will be carried out
+with respect to normal coordinates. The program will then do the
+necessary numerical differentiation to get the Hessian (and thus
+normal coordinates), before it will carry on calculating the
+higher-order force field requested with respect to the calculated normal
+coordinates. 
+
+\item[\Key{PRECALCULATED HESSIAN}]\verb| |\newline
+
+Use a precalculated Hessian available on the \verb|DALTON.HES| file
+when defining normal coordinates. Only active in combination with the
+keyword \Key{NORMAL}.
+
+\item[\Key{SYMMET}]\verb| |\newline
+\verb|READ (LUCMD,*) IDRPRI|
+
+Control the print level in the numerical derivative routines. Default
+is the same as the general print level \verb|IPRUSR|.
+
+\item[\Key{PROPAV}]\verb| |\newline
+
+Indicates that a averaging over vibrational motions of a molecular
+property (including the energy) is to be performed. The input
+for what kind of a vibrational analysis is to be performed is
+specified in the \Sec{PROPAV} module.
+
+\item[\Key{PROPER}]\verb| |\newline
+\verb|READ (LUCMD,*) NMRDRP, NARDRP|
+
+Sets the numerical (NMRDRP) and analytical (NARDRP) differentiating
+order for calculating geometrical derivatives of molecular
+properties. Currently, the possible presence of analytical property
+derivatives cannot be taken advantage of, and the default value of $0$
+for \verb|NARDRP| should be used. Currently, dipole transition
+strengths and vibrationally averaged spin--spin coupling constants
+have been implemented, the former also for Coupled--Cluster wave
+functions\index{CC}\index{Coupled-Cluster}. Notice that vibrationally
+averaged spin--spin coupling constants also can be calculated using
+the \Key{VIBANA} and \Sec{VIBANA} keywords and input section.
+
+\item[\Key{RESTRT}]
+Controls the restart procedure. If a calculation crashes during a
+force constant calculation, there will be a file in the work directory
+called RSTRT.FC. This will contain all of the information necessary to
+restart the calculation. If this file is available and the keyword is
+used, \dalton\ will attempt to restart the calculation. 
+
+\item[\Key{REUSE HESSIAN}]\verb| |\newline
+
+If a (mixed) numerical Hessian has been calculated, it will be saved
+in the file \verb|DALTON.HES| for possible future use.
+
+\item[\Key{SDRTST}]\verb| |\newline
+If analytical Hessian also has been requested and second-order
+numerical derivatives, a comparison of the numerical and analytical
+Hessian will be done. Primarily used for testing.
+
+\item[\Key{SPECTRO INTERFACE}]\verb| |\newline
+
+Write an interface file \verb|DALTON.SPC| containing force fields of
+different orders suited for analysis with the SPECTRO
+program~\cite{spectroref}.
+
+\item[\Key{SYMMET}]\verb| |\newline
+\verb|READ (LUCMD,*) FCLASS|
+
+Assigns the molecular point group of the molecule (FCLASS). For
+instance for water FCLASS would be equal to ``C2v''. Main rotational
+axis needs to be set to the z-axis in the .mol file. Additional
+generating elements needs to be the x-axis for a C2 rotation, and the
+xy plane for a mirror plane. The current implementation only allows
+for symmetry use, when differentiating from energies. 
+
+\item[\Key{TEST N}]\verb| |\newline
+
+Test if the normal coordinates used for calculated geometrical
+derivatives gives rise to force fields with appropriate
+symmetries. Mainly for debugging purposes.
+
+\end{description}
+
+\subsection{Vibrational averaging of molecular properties: \Sec{PROPAV}}
+\label{sec:nmddrv.propan}
+
+This module sets up overall numerical or mixed-numerical/analytical
+geometrical property derivative calculations, as well as performs selected
+post-analyses of the calculated energy and property derivatives in
+terms of zero-point vibrationally averaged properties.
+
+\begin{description}
+
+\item[\Key{ANHA-P}]\verb| |\newline
+
+Requests the calculation of the anharmonic contribution to a
+vibrationally averaged molecular property, requiring the use of the
+first-order perturbed vibrational wave function (requiring knowledge
+about parts of the cubic force field) and the first derivative of the
+molecular property. See also the keyword \Key{HARM-P}. Currently only
+implemented for spin--spin coupling constants.
+
+\item[\Key{EFFECTIVE GEOMETRY}]\verb| |\newline
+
+The effective geometry is calculated. This geometry corresponds to the
+zero-point vibrationally averaged geometry and is thus often referred
+to as the $r_z$ geometry. For more information on the effective
+geometry, see Refs.~\cite{poakrprtjcp112,krpoaprtjcp112}.
+
+\item[\Key{HARM-P}]\verb| |\newline
+
+Requests the calculation of the harmonic contribution to a
+vibrationally averaged molecular property, requiring the use of the
+unperturbed vibrational wave function and the second derivative of the
+molecular property. See also the keyword \Key{ANHA-P}. Currently only
+implemented for spin--spin coupling constants.
+
+\item[\Key{MODE ANALYSIS}]\verb| |\newline
+
+Request an analysis of the contribution of the different vibrational modes
+to the total zero-point vibrational corrections to a molecular property.
+
+\item[\Key{SPIN-SPIN COUPLINGS}]\verb| |\newline
+
+Requests the calculation of indirect spin--spin coupling constants.
+If combined wit the keywords \Key{HARM-P} and \Key{ANHA-P}, the
+zero-point vibrational corrections to these coupling constants will be
+calculated. 
+
+\end{description}
+
+\subsection{Vibrational analysis: \Sec{VIBANA}}
+\label{sec:nmddrv.vibana}
+
+This section is identical to the vibrational analysis module described
+in Chapter~\ref{sec:abavib}, but appears in the \Sec{*NMDDRV} module
+if the Hessian has been calculated numerically using the \Key{NMDDRV}
+keyword. We refer to Chapter~\ref{sec:abavib} for a list of available
+keywords.
+
