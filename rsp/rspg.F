@@ -158,15 +158,21 @@ C
 #include <symmet.h>
 #include <wrkrsp.h>
       INTEGER KFREE, LFREE
-      LOGICAL LDUMMY, FOUND, CONV
+      LOGICAL LDUMMY, FOUND, CONV, OPENED
       INTEGER I, J, KLEN, LU, KANG, ISYM, IPRP, ISO
       REAL*8 RESID, ANTSYM, D0, DNORM
       PARAMETER (D0=0.0D0)
       CHARACTER*8 BLANK
       DATA BLANK/'        '/
       CALL QENTER('GSET2')
-      LU=-1
-      CALL GPOPEN(LU,'RSPVEC','OLD','SEQUENTIAL','UNFORMATTED',0,LDUMMY)
+      INQUIRE(FILE='RSPVEC',OPENED=OPENED,NUMBER=LU)
+      write(2,*)'opened with lu',opened,lu
+      IF (.NOT. OPENED) THEN
+         LU=-1
+         CALL GPOPEN(
+     &      LU,'RSPVEC','OLD','SEQUENTIAL','UNFORMATTED',0,LDUMMY
+     &      )
+      END IF
       REWIND(LU)
       KFREE=1
       LFREE=LWORK
@@ -199,7 +205,10 @@ C
             END IF
          END DO
       END DO
-      CALL GPCLOSE(LU,'KEEP')
+C
+C Restore original state of file
+C
+      IF (.NOT.OPENED) CALL GPCLOSE(LU,'KEEP')
       CALL MEMREL('GSET2',WORK,KANG,KANG,KFREE,LFREE)
       CALL QEXIT('GSET2')
       END
