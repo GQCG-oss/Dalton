@@ -197,7 +197,10 @@ C
 C
 C     PERFORM INTEGRAL TRANSFORMATION
 C
-      IF (FABRHS) THEN
+cSPAS:29.11.2002 debugging newtra for SOPPA
+cSPAS IF (FABRHS) THEN
+      IF (FABRHS .AND. .NOT. (SOPPA .AND. NEWTRA)) THEN
+cKeinSPASMehr:29.11.2002 debugging newtra for SOPPA
          KCMO   = 1
          KWTRA  = KCMO   + NCMOT
          LWTRA  = LWRK   - KWTRA
@@ -225,7 +228,10 @@ cs
 cs
          FLAGSV = DORSP
          DORSP = .TRUE.
-         CALL SIROPI
+cSPAS:29.11.2002 debugging newtra for SOPPA
+cSPAS    CALL SIROPI
+         IF (.NOT. NEWTRA) CALL SIROPI
+cKeinSPASMehr:29.11.2002 debugging newtra for SOPPA
          DORSP = FLAGSV
          CALL TRACTL(JTRLVL,WRK(KCMO),WRK(KWTRA),LWTRA,MWORK) 
       END IF
