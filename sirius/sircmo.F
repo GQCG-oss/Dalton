@@ -631,16 +631,24 @@ C
          JCSYM = JCSYM + NORB2(ISYM)*NBASI       
   200 CONTINUE
 C
+C *** Make sure orbitals are orthonormal /hjaaj-dec-04
+C     (there may be numerical round-off errors ...)
+C
+         KSMAT = 1
+         KWRK  = KSMAT + N2BASX
+         LWRK  = LSCRA - KWRK
+         CALL ORTHO(CMO,SCRA(KSMAT),SCRA(KWRK),LWRK)
+C
 C *** OUTPUT SECTION
 C
       IF (LAUXBS) THEN
         WRITE(LUPRI,'(/A/A)')
      *      '  Canonical primary and secondary basis sets',
      *      '  ISYM       NORB1 MBAS1       NORB2 MBAS2'
-        DO 777 ISYM = 1, NSYM
+        DO ISYM = 1, NSYM
            WRITE(LUPRI,'(I6,6X,2I6,6X,2I6)') 
      *     ISYM, NORB1(ISYM), MBAS1(ISYM), NORB2(ISYM), MBAS2(ISYM)
-  777   CONTINUE 
+        END DO
       END IF
 C
 C *** end of subroutine DELMO
