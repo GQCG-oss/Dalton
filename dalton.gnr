@@ -185,7 +185,7 @@ done
 if [ -s "first.wrl" -a -r "first.wrl" ] ; then
 	tar cf $outnam.tar $tarfilelist *wrl
 else
-	tar af $outnam.tar *wrl
+	tar cf $outnam.tar $tarfilelist
 fi
 
 if [ -s $outnam.tar ] ; then
