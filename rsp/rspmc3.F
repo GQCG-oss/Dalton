@@ -32,12 +32,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 C
-C$Id: rspmc3.F,v 1.2 2001-05-31 06:38:30 vebjornb Exp $
+C$Id: rspmc3.F,v 1.3 2001-07-19 15:24:50 hjj Exp $
 C
 #include <single.h>
 C
 #ifdef REV_LOG
 $Log: not supported by cvs2svn $
+Revision 1.2  2001/05/31 06:38:30  vebjornb
+Updated copyright, authors and reference in all Fortran-files - VB
+
 Revision 1.1.1.1  2001/02/08 13:33:14  hjj
 *** Dalton Master Version *** cvs started 8-Feb-2001.
 
@@ -176,13 +179,14 @@ C
       KONE   = 1
 C
       KH2AX  = 1
-      KFA    = KH2AX  + N2ASHX * N2ASHX
+      LH2AX  = N2ASHX * N2ASHX
       IF (DIROIT) THEN
-         IF (IKLVL.EQ.2) KFA    = KH2AX  + N2ASHX * N2ASHX * 2
-         IF (IKLVL.EQ.3) KFA    = KH2AX  + N2ASHX * N2ASHX * 4
+         IF (IKLVL.EQ.2) LH2AX = LH2AX * 2
+         IF (IKLVL.EQ.3) LH2AX = LH2AX * 4
       END IF
-      KFI    = KFA    + NORBT  * NORBT
-      KQA    = KFI    + NORBT  * NORBT
+      KFA    = KH2AX  + LH2AX
+      KFI    = KFA    + N2ORBX
+      KQA    = KFI    + N2ORBX
       KQB    = KQA    + NORBT  * NASHDI
       KPVD   = KQB    + NORBT  * NASHDI
       KH2    = KPVD   + N2ASHX * N2ASHX
@@ -191,19 +195,25 @@ C
       LFREE  = LWRK   - KFREE
       IF (LFREE.LT.0) CALL ERRWRK('MELTWO',KFREE-1,LWRK)
 C
-      CALL DCOPY(NORBT*NORBT,H1,1,WRK(KFI),1)
+      CALL DCOPY(N2ORBX,H1,1,WRK(KFI),1)
+      CALL DZERO(WORK(KFA),N2ORBX)
+      IF (NASHT .GT. 0) THEN
+         CALL DZERO(QA,NASHT*NORBT)
+         CALL DZERO(QB,NASHT*NORBT)
+         CALL DZERO(H2AX,LH2AX)
+      END IF
+C
       IF (DIROIT) THEN
-         IF (IKLVL.LE.1) CALL DZERO(WRK(KH2AX),N2ASHX*N2ASHX)
-         IF (IKLVL.EQ.2) CALL DZERO(WRK(KH2AX),N2ASHX*N2ASHX*2)
-         IF (IKLVL.EQ.3) CALL DZERO(WRK(KH2AX),N2ASHX*N2ASHX*4)
          INTSYM = 1
       ELSE
-         CALL DZERO(WRK(KH2AX),N2ASHX*N2ASHX)
          INTSYM = IOPSYM
       END IF
 C
 C     We only need the transformed inactive Fock matrix and the
 C     tranformed active two-electron integrals.
+C     However, FA, QA, and QB must also be initialized because
+C     they are referenced in RSPFXD and this has given
+C     floating point exception on DEC alpha. /July 2001 HJAaJ
 C
       LCON = .TRUE.
       LORB = .FALSE.
