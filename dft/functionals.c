@@ -124,7 +124,7 @@ drv3_clear(ThirdFuncDrv* gga)
 
 /* fortran (and not only) functional stub routines */
 int
-dft_isgga_(void)
+FSYM2(dft_isgga)(void)
 {
     return selected_func->is_gga();
 }

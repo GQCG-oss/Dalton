@@ -14,11 +14,19 @@
 #endif
 
 /* Match Fortran name mangling. If the Fortran compiler does not
- * mangle names, define NO_UNDERSCORE in CFLAGS. */
+ * mangle names, define NO_UNDERSCORE in CFLAGS.
+ * g77 and compaq fort (cryptically referred to with HAVE_GCPP below) for linux-alpha
+ * both insert a second underscore if routine name contains at least one underscore /hjaaj Oct04 */
 #ifdef NO_UNDERSCORE
 #define FSYM(a) a
+#define FSYM2(a) a
 #else
 #define FSYM(a) a ## _
+#if defined(VAR_G77) || defined(HAVE_GCPP)
+#define FSYM2(a) a ## __
+#else
+#define FSYM2(a) a ## _
+#endif
 #endif
 
 #if defined(VAR_PGF77)
@@ -78,7 +86,7 @@ void dft_kohn_sham_(real* dmat, real* ksm, real *edfty,
                     real* work, int *lwork, int* ipr);
 void dft_lin_resp_(real* fmat, real *cmo, real *zymat, int *trplet, 
 		   int *ksymop, real* work,int* lwork);
-void FSYM(dft_lin_respf)(real* fmat, real *cmo, real *zymat, int *trplet, 
+void FSYM2(dft_lin_respf)(real* fmat, real *cmo, real *zymat, int *trplet, 
 		   int *ksymop, real* work,int* lwork);
 void dft_mol_grad_(real* dmat, real* work, int* lwork, int* iprint);
 void dftqrcf_(real* fi, real* cmo, real* kappaY, int* symY, int* spinY,

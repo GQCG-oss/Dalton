@@ -162,7 +162,7 @@ struct {
     { (DFTPropEvalMaster)dft_kohn_shamab_, dft_kohn_shamab_slave },
     { (DFTPropEvalMaster)dft_lin_resp_,    dft_lin_resp_slave    },
 #endif
-    { (DFTPropEvalMaster)dft_lin_respf_,   dft_lin_respf_slave   },
+    { (DFTPropEvalMaster)FSYM2(dft_lin_respf),   dft_lin_respf_slave   },
 #if 0
     { (DFTPropEvalMaster)dft_lin_respab_,  dft_lin_respab_slave  },
     { (DFTPropEvalMaster)dft_mol_grad_,    dft_mol_grad_slave    },
@@ -220,7 +220,7 @@ dft_wake_slaves(DFTPropEvalMaster evaluator)
    that slaves should absolutely know but for some reason do not.
 */
 void
-FSYM(dft_cslave)(real* work,int*lwork,int*iprint)
+FSYM2(dft_cslave)(real* work,int*lwork,int*iprint)
 {
     int rank, size;
     if(MPI_Comm_rank(MPI_COMM_WORLD, &rank) ||
@@ -234,7 +234,7 @@ FSYM(dft_cslave)(real* work,int*lwork,int*iprint)
 }
 #else
 void
-FSYM(dft_cslave)(real* work,int*lwork,int*iprint)
+FSYM2(dft_cslave)(real* work,int*lwork,int*iprint)
 {
    fort_print("DFT slave called but does nothing now.");
 }
@@ -257,7 +257,7 @@ dalton_quit(const char* format, ...)
 }
 
 /* Helper functions. Could be bracketed with #ifdef DEBUG or something */
-extern void fort_wrt_(const char* str, const int* len, int ln);
+extern void FSYM2(fort_wrt)(const char* str, const int* len, int ln);
 void
 fort_print(const char* format, ...)
 {
@@ -269,7 +269,7 @@ fort_print(const char* format, ...)
     vsnprintf(line, sizeof(line), format, a);
     va_end(a);
     len = strlen(line);
-    fort_wrt_(line, &len, len);
+    FSYM2(fort_wrt)(line, &len, len);
 }
 
 /* ===================================================================

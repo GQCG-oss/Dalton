@@ -77,7 +77,7 @@ extern void getsos_(real* atv, int* ncnt, real* coorx,
                     real* work, int* lwork, const int* nbast, 
                     const int* dolnd, const int* dogga,
                     const real* dfthri, const int* iprint);
-extern void dft_get_thresholds_(real* dfthri, real *dfthr0);
+extern void FSYM2(dft_get_thresholds)(real* dfthri, real *dfthr0);
 
 
 /* alloc_mat_MO: 
@@ -112,7 +112,7 @@ dft_grid_new(int needgrad, int needlap, int needgb)
     grid->needgb = needgb;
     grid->dogga  = selected_func->is_gga();
     grid->needgrad= needgrad || grid->dogga;
-    dft_get_thresholds_(&dfthri, &dfthr0);
+    FSYM2(dft_get_thresholds)(&dfthri, &dfthr0);
     grid->dfthri = dfthri;
     grid->dfthr0 = dfthr0;
 
@@ -341,7 +341,7 @@ dft_integrator_bl_new(Functional* f, int ndmat,
     grid->coor   = calloc(3*GRID_BUFF_SZ, sizeof(real));
     grid->weight = calloc(GRID_BUFF_SZ, sizeof(real));
     grid->dogga  = f->is_gga();
-    dft_get_thresholds_(&dfthri, &dfthr0);
+    FSYM2(dft_get_thresholds)(&dfthri, &dfthr0);
     grid->dfthri = dfthri;
     grid->needlap= 0;
     grid->needgb = needlondon;
@@ -352,7 +352,7 @@ dft_integrator_bl_new(Functional* f, int ndmat,
     setupsos_(&geodrv, &grid->needgb, &grid->ntypso, &grid->london_off);
     grid->london_off--; /* convert from fortran offset type */
     grid->atv   = calloc(bllen*inforb_.nbast*grid->ntypso, sizeof(real));
-    grid->shlblocks = dal_malloc(2*ishell_cnt_()*sizeof(real));
+    grid->shlblocks = dal_malloc(2*FSYM2(ishell_cnt)()*sizeof(real));
     grid->basblocks = dal_malloc(2*inforb_.nbast*sizeof(real));
 
     /* Allocate memory for rho, taking advantage of the union. */
@@ -402,15 +402,15 @@ grid_blocked_getval(DftIntegratorBl* grid, int ipnt, int bllen,
 extern void
 shltoorb_(const int* nblocks, int (*shlblocks)[2], int shlcnt[],
           int (*basblocks)[2], int *iroidx);
-extern void construct_ioridx_(int *ioridx);
+extern void FSYM2(construct_ioridx)(int *ioridx);
 
 extern void
-getrho_blocked_lda_(real*dmat, const real* atv, 
+FSYM2(getrho_blocked_lda)(real*dmat, const real* atv, 
                     const int *bas_bl_cnt, int (*basblocks)[2], const int *shl,
                     real *tmp, const int * bllen, real *rho);
 
 extern void
-getrho_blocked_gga_(real*dmat, const real* atv, 
+FSYM2(getrho_blocked_gga)(real*dmat, const real* atv, 
                     const int *bas_bl_cnt, int (*basblocks)[2], const int *shl,
                     real *tmp, const int * bllen, real *rho, real (*grad)[3]);
 
@@ -420,7 +420,7 @@ dft_integrate_ao_bl(int ndmat, real *dmat, real *work, int *lwork,
 {
     int npoints, ipnt, i, j;
     int blocksz, lo, hi;
-    int *ioridx = dal_malloc(ishell_cnt_()*2*8*sizeof(real));
+    int *ioridx = dal_malloc(FSYM2(ishell_cnt)()*2*8*sizeof(real));
     real electrons; /* alpha electrons only most of the time */
     DftIntegratorBl* grid;
     real *dmagao;
@@ -428,7 +428,7 @@ dft_integrate_ao_bl(int ndmat, real *dmat, real *work, int *lwork,
     dmagao = dal_malloc(inforb_.nbast*DFT_BLLEN*sizeof(real));
     grid = dft_integrator_bl_new(selected_func, ndmat,
                                  DFT_BLLEN, needlnd);
-    construct_ioridx_(ioridx);
+    FSYM2(construct_ioridx)(ioridx);
 
     /* start integration */
     electrons  = 0.0;
@@ -451,13 +451,13 @@ dft_integrate_ao_bl(int ndmat, real *dmat, real *work, int *lwork,
                 int doff = i*inforb_.n2orbx;
                 int roff = i*DFT_BLLEN;
                 if(grid->dogga)
-                    getrho_blocked_gga_(dmat+doff, grid->atv, grid->bas_bl_cnt,
+                    FSYM2(getrho_blocked_gga)(dmat+doff, grid->atv, grid->bas_bl_cnt,
                                         grid->basblocks, &grid->shl_bl_cnt, 
                                         dmagao, &len,
                                         grid->r.rho  + roff, 
                                         grid->g.grad + roff);
                 else
-                    getrho_blocked_lda_(dmat+doff, grid->atv, grid->bas_bl_cnt,
+                    FSYM2(getrho_blocked_lda)(dmat+doff, grid->atv, grid->bas_bl_cnt,
                                         grid->basblocks, &grid->shl_bl_cnt,
                                         dmagao, &len, grid->r.rho+roff);
                 for(j=0; j<len; j++)

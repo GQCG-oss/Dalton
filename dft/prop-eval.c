@@ -392,7 +392,7 @@ dft_lin_resp_(real* fmat, real *cmo, real *zymat, int *trplet,
     lr_data.ksymop = *ksymop;
     dens.dmata = lr_data.dmat;
 
-    dft_get_ao_dens_mat_(cmo, lr_data.dmat, work, lwork);
+    FSYM2(dft_get_ao_dens_mat)(cmo, lr_data.dmat, work, lwork);
     deq27_(cmo,zymat,&dummy,lr_data.kappa,&dummy,work,lwork);
     if(DFTLR_DEBUG) {
         fort_print("kappa matrix in dft_lin_resp");
@@ -572,7 +572,7 @@ dft_kohn_shamab_slave(real* work, int* lwork, const int* iprint)
     real* dmat = malloc(2*inforb_.n2basx*sizeof(real));
     real* ksm  = calloc(2*inforb_.n2basx,sizeof(real));
     int iprfck = 0;
-    dft_kohn_shamab_(dmat, ksm,  work, lwork, &iprfck);
+    FSYM2(dft_kohn_shamab)(dmat, ksm,  work, lwork, &iprfck);
     free(dmat);
     free(ksm);
 }
@@ -670,7 +670,7 @@ kohn_shamab_cb(DftGrid* grid, DftKohnShamU* exc)
  * in order to reduce the MPI latency penalty.
  */
 void
-dft_kohn_shamab_(real* dmat, real* ksm, real *edfty,
+FSYM2(dft_kohn_shamab)(real* dmat, real* ksm, real *edfty,
                  real* work, int *lwork, int* iprfck)
 {
     int nbast2, i, j, sz;
@@ -681,7 +681,7 @@ dft_kohn_shamab_(real* dmat, real* ksm, real *edfty,
     real electrons, exp_el = 2.0*inforb_.nrhft+inforb_.nasht;
 
     /* WARNING: NO work MAY BE done before syncing slaves! */
-    dft_wake_slaves((DFTPropEvalMaster)dft_kohn_shamab_);/* NO-OP in serial */
+    dft_wake_slaves((DFTPropEvalMaster)FSYM2(dft_kohn_shamab));/* NO-OP in serial */
     dft_kohn_shamab_sync_slaves(dmat);                   /* NO-OP in serial */
 
     dens.dmata = dmat; dens.dmatb = dmat + inforb_.n2basx;
@@ -735,7 +735,7 @@ dft_lin_respab_slave(real* work, int* lwork, const int* iprint)
     real *cmo  = malloc(inforb_.norbt*inforb_.nbast*sizeof(real)); /* IN  */
     real *zymat= malloc(2*inforb_.n2orbx*sizeof(real));            /* IN  */
     int trplet;                         /* IN: will be synced from master */
-    dft_lin_respab_(fmat, fmat+inforb_.n2orbx, cmo, zymat, &trplet,
+    FSYM2(dft_lin_respab)(fmat, fmat+inforb_.n2orbx, cmo, zymat, &trplet,
                     work, lwork);
     free(fmat);
     free(cmo);
@@ -994,7 +994,7 @@ lin_resp_cbab_nogga(DftGrid* grid, LinRespDataab* data)
  */
 
 void
-dft_lin_respab_(real* fmatc, real* fmato,  real *cmo, real *zymat, 
+FSYM2(dft_lin_respab)(real* fmatc, real* fmato,  real *cmo, real *zymat, 
                 int *trplet, int *ksymop, real* work,int* lwork)
 {
     const real DP5R = 0.5;
@@ -1010,7 +1010,7 @@ dft_lin_respab_(real* fmatc, real* fmato,  real *cmo, real *zymat,
     DftDensity dens = { dft_dens_unrestricted, NULL, NULL };    
 
     /* WARNING: NO work MAY BE done before syncing slaves! */
-    dft_wake_slaves((DFTPropEvalMaster)dft_lin_respab_); /* NO-OP in serial */
+    dft_wake_slaves((DFTPropEvalMaster)FSYM2(dft_lin_respab)); /* NO-OP in serial */
     dft_lin_resp_sync_slaves(cmo,zymat,trplet);          /* NO-OP in serial */
 
     times(&starttm);
@@ -1028,7 +1028,7 @@ dft_lin_respab_(real* fmatc, real* fmato,  real *cmo, real *zymat,
 
     /* get alpha/beta densities and corresponding kappas */
 
-    dft_get_ao_dens_matab_(cmo,lr_data.dmatb,lr_data.dmata,work,lwork);
+    FSYM2(dft_get_ao_dens_matab)(cmo,lr_data.dmatb,lr_data.dmata,work,lwork);
     daxpy_(&inforb_.n2basx,&DP5R,lr_data.dmatb,&ONEI,lr_data.dmata,&ONEI);
     dscal_(&inforb_.n2basx,&DP5R,lr_data.dmatb,&ONEI);    
     runit=calloc(inforb_.n2ashx,sizeof(real));
@@ -1323,12 +1323,12 @@ typedef struct {
 } LinRespBlData;
 
 extern void
-getexp_blocked_lda_(const int *idsym, real*dmat, const real* atv, 
+FSYM2(getexp_blocked_lda)(const int *idsym, real*dmat, const real* atv, 
                     const int *nblocks, int (*orbblocks)[2], const int *lda,
                     real *tmp, const int * bllen, real *rho);
 
 extern void
-getexp_blocked_gga_(const int *idsym, real*dmat, const real* atv, 
+FSYM2(getexp_blocked_gga)(const int *idsym, real*dmat, const real* atv, 
                     const int *nblocks, int (*orbblocks)[2], const int *lda,
                     real *tmp, const int * bllen, real (*grad)[4]);
 
@@ -1344,7 +1344,7 @@ lin_resp_cb_b_lda(DftIntegratorBl* grid, real * RESTRICT tmp,
     DftDensProp dp = { 0 };
 
     /* compute vector of transformed densities vt */
-    getexp_blocked_lda_(&data->ksymop, data->kappa, grid->atv,
+    FSYM2(getexp_blocked_lda)(&data->ksymop, data->kappa, grid->atv,
                         grid->bas_bl_cnt, grid->basblocks, &grid->shl_bl_cnt,
                         tmp, &bllen, vt);
 
@@ -1401,7 +1401,7 @@ lin_resp_cb_b_gga(DftIntegratorBl* grid, real * RESTRICT tmp,
     DftDensProp dp = { 0 };
 
     /* compute vector of transformed densities and dens. gradients vt3 */
-    getexp_blocked_gga_(&data->ksymop,data->kappa, grid->atv, grid->bas_bl_cnt,
+    FSYM2(getexp_blocked_gga)(&data->ksymop,data->kappa, grid->atv, grid->bas_bl_cnt,
                         grid->basblocks, &grid->shl_bl_cnt, tmp, &bllen, vt3);
     for(i=blstart; i<blend; i++) {
         SecondDrv vxc;
@@ -1478,7 +1478,7 @@ lin_resp_cb_b_gga(DftIntegratorBl* grid, real * RESTRICT tmp,
    trplet - triplet excitation? (bool)
 */
 void
-FSYM(dft_lin_respf)(real* fmat, real *cmo, real *zymat, int *trplet,
+FSYM2(dft_lin_respf)(real* fmat, real *cmo, real *zymat, int *trplet,
                     int *ksymop, real* work,int* lwork)
 {
     struct tms starttm, endtm; clock_t utm;
@@ -1488,7 +1488,7 @@ FSYM(dft_lin_respf)(real* fmat, real *cmo, real *zymat, int *trplet,
     int i, j;
     
     /* WARNING: NO work MAY BE done before syncing slaves! */
-    dft_wake_slaves((DFTPropEvalMaster)dft_lin_respf_); /* NO-OP in serial */
+    dft_wake_slaves((DFTPropEvalMaster)FSYM2(dft_lin_respf)); /* NO-OP in serial */
     dft_lin_resp_sync_slaves(cmo,zymat,trplet);         /* NO-OP in serial */
     times(&starttm);
     lr_data.dmat  = dal_malloc(inforb_.n2basx*sizeof(real));
@@ -1498,7 +1498,7 @@ FSYM(dft_lin_respf)(real* fmat, real *cmo, real *zymat, int *trplet,
     lr_data.dtgao = dal_malloc(inforb_.nbast *sizeof(real));
     lr_data.trplet= *trplet;
     lr_data.ksymop= *ksymop;
-    dft_get_ao_dens_mat_(cmo, lr_data.dmat, work, lwork);
+    FSYM2(dft_get_ao_dens_mat)(cmo, lr_data.dmat, work, lwork);
     FSYM(deq27)(cmo,zymat,&dummy,lr_data.kappa,&dummy,work,lwork);
     electrons = dft_integrate_ao_bl(1, lr_data.dmat, work, lwork, 0, 
                                     (DftBlockCallback)
@@ -1542,7 +1542,7 @@ dft_lin_respf_slave(real* work, int* lwork, const int* iprint)
     real *zymat= malloc(inforb_.n2orbx*sizeof(real));              /* IN  */
     int trplet;                         /* IN: will be synced from master */
     int ksymop;
-    FSYM(dft_lin_respf)(fmat, cmo, zymat, &trplet, &ksymop, work, lwork);
+    FSYM2(dft_lin_respf)(fmat, cmo, zymat, &trplet, &ksymop, work, lwork);
     free(fmat);
     free(cmo);
     free(zymat); 

@@ -76,8 +76,8 @@ dal_malloc_(size_t sz, const char *place, int line)
 extern void nucbas_(int*, real* , const int*);
 extern void radlmg_(real*rad, real* wght, int *nr, real* raderr,
                     const int*maxrad, int *nucorb, real *aa, const int *);
-extern void get_no_atoms_(int* atom_cnt);
-extern void get_atom_by_icent_(const int* icent, real* charge, int *cnt,
+extern void FSYM2(get_no_atoms)(int* atom_cnt);
+extern void FSYM2(get_atom_by_icent)(const int* icent, real* charge, int *cnt,
                                int *mult, real *x, real *y, real *z);
 
 /* generate a list of atoms from Dalton common block data, taking into
@@ -94,14 +94,14 @@ grid_gen_atom_new(int* atom_cnt)
     real x[8], y[8], z[8], charge;
     GridGenAtom* atoms;
 
-    get_no_atoms_(atom_cnt);
+    FSYM2(get_no_atoms)(atom_cnt);
     atoms = dal_malloc(*atom_cnt*sizeof(GridGenAtom));
     
     icent = 0;
     do {
         int cnt;
         icent++;
-        get_atom_by_icent_(&icent, &charge, &cnt, &mult, x,y,z);
+        FSYM2(get_atom_by_icent)(&icent, &charge, &cnt, &mult, x,y,z);
         for(i=0; i<cnt; i++) {
             atoms[nat].x = x[i];
             atoms[nat].y = y[i];
@@ -968,7 +968,7 @@ struct lmg_data {
     real *aa;
     int maxl;
 };
-void get_maxl_nucind_(int *maxl, int*nucind);
+void FSYM2(get_maxl_nucind)(int *maxl, int*nucind);
 
 static void*
 gen_lmg_init(void)
@@ -976,7 +976,7 @@ gen_lmg_init(void)
     int nucind;
     struct lmg_data *lmg = dal_malloc(sizeof(struct lmg_data));
 
-    get_maxl_nucind_(&lmg->maxl, &nucind);
+    FSYM2(get_maxl_nucind)(&lmg->maxl, &nucind);
     lmg->nucorb = malloc(2*lmg->maxl*nucind*sizeof(int));
     lmg->aa     = calloc(4*lmg->maxl*nucind,sizeof(real));
     if(!lmg->nucorb|| !lmg->aa) {
@@ -1485,7 +1485,7 @@ grid_par_slave(const char *fname)
     MPI_Status s;
     char *     nm = grid_get_fname(fname, mynum);
     FILE *f;
-    int ishlcnt = FSYM(ishell_cnt)();
+    int ishlcnt = FSYM2(ishell_cnt)();
     real *dt = NULL;
     int   dt_sz = 0;
 
@@ -1537,7 +1537,7 @@ save_final(GridGenMolGrid *mg, const char *fname, int point_cnt,
     FILE *f;
     int idx, cnt, newcnt;
     real *rshel2;
-    int nblocks, (*shlblocks)[2] = malloc(2*ishell_cnt_()*sizeof(int));
+    int nblocks, (*shlblocks)[2] = malloc(2*FSYM2(ishell_cnt)()*sizeof(int));
     int bpc = KEY_BITS/3; /* bits per coordinate */
     GridPointKey mask = ~((-1)<<bpc);
     int points_saved = 0;
@@ -1548,7 +1548,7 @@ save_final(GridGenMolGrid *mg, const char *fname, int point_cnt,
         fprintf(stderr,"internal error, cannot save sorted grid file.\n");
         exit(1);
     }
-    rshel2 = dal_malloc(ishell_cnt_()*sizeof(real));
+    rshel2 = dal_malloc(FSYM2(ishell_cnt)()*sizeof(real));
     gtexts_(rshel2);
     for(idx=0; idx<point_cnt; idx += cnt) {
         int closest = 0, i;
@@ -1661,8 +1661,8 @@ create_cubes(GridGenMolGrid *mg, const char* fname,
 struct DftGridReader_ {
     FILE *f;
 };
-void get_grid_paras_(int *grdone, real *radint, int *angmin, int *angint);
-void set_grid_done_(void);
+void FSYM2(get_grid_paras)(int *grdone, real *radint, int *angmin, int *angint);
+void FSYM2(set_grid_done)(void);
 
 DftGridReader*
 grid_open(int nbast, real *dmat, real *work, int *lwork)
@@ -1675,7 +1675,7 @@ grid_open(int nbast, real *dmat, real *work, int *lwork)
     switch(gridType)
         {
         case GRID_TYPE_STANDARD:
-            get_grid_paras_(&grdone, &radint, &angmin, &angint);
+            FSYM2(get_grid_paras)(&grdone, &radint, &angmin, &angint);
             if(!grdone) {
                 int atom_cnt, pnt_cnt;
                 int lwrk = *lwork - nbast;
@@ -1702,7 +1702,7 @@ grid_open(int nbast, real *dmat, real *work, int *lwork)
                                             angmin, angint, work, lwork);
 #endif
                 free(atoms);
-                set_grid_done_();
+                FSYM2(set_grid_done)();
             }
             fname = grid_get_fname("DALTON.QUAD", mynum);
             res->f=fopen(fname, "rb");
@@ -1747,7 +1747,7 @@ grid_open_cmo(int nbast, const real *cmo, real *work, int *lwork)
 {
     real *dmat = dal_malloc(nbast*nbast*sizeof(real));
     DftGridReader *reader;
-    dft_get_ao_dens_mat_(cmo, dmat, work, lwork);
+    FSYM2(dft_get_ao_dens_mat)(cmo, dmat, work, lwork);
     reader = grid_open(nbast, dmat, work, lwork);
     free(dmat);
     return reader;

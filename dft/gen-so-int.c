@@ -86,7 +86,7 @@ so_ints_lda_cb(DftGrid* grid, real* excmat)
    computes DFT contribution to SO integrals for given reference density
    and saves them to usual file.
 */
-void write_soi_(const real* soints, real* wrk, int* lwrk);
+void FSYM2(write_soi)(const real* soints, real* wrk, int* lwrk);
 
 void
 dftsoi_(real* cmo, real* work, int *lwork, int* iprfck)
@@ -106,7 +106,7 @@ dftsoi_(real* cmo, real* work, int *lwork, int* iprfck)
 
     fort_print("Computing DFT_SO integrals....");
     times(&starttm);
-    dft_get_ao_dens_mat_(cmo, dens.dmata, work, lwork);
+    FSYM2(dft_get_ao_dens_mat)(cmo, dens.dmata, work, lwork);
     if(DFTSO_DEBUG) {
     outmat_(dens.dmata,&ONEI,&inforb_.nbast,&ONEI,&inforb_.nbast,
             &inforb_.nbast,&inforb_.nbast);
@@ -133,7 +133,7 @@ dftsoi_(real* cmo, real* work, int *lwork, int* iprfck)
     outmat_(so_ints+inforb_.n2basx*2,&ONEI,&inforb_.nbast,&ONEI,&inforb_.nbast,
             &inforb_.nbast,&inforb_.nbast);
     }
-    write_soi_(so_ints, work, lwork);
+    FSYM2(write_soi)(so_ints, work, lwork);
     free(so_ints);
     free(dens.dmata);
     times(&endtm);
