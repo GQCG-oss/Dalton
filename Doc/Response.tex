@@ -175,6 +175,8 @@ label of the operator given in the integral property file.
 \item{\Key{QRREST}}
 Restart quadratic response\index{quadratic response}\index{response!quadratic}
 calculation.
+Requires that all needed linear response solutions and excitation vectors
+are available on the RSPVEC file.
 \end{description}
 
 \subsection{Linear response calculation: \Sec{LINEAR}}
@@ -182,7 +184,8 @@ calculation.
 A\index{linear response}\index{response!linear} linear response
 \cite{jodlypjjcp91,pjhjajjojcp89} calculation is performed for a given
 choice of operators,
-$\langle\!\langle A; B \rangle\!\rangle_{\omega}$.
+-$\langle\!\langle A; B \rangle\!\rangle_{\omega}$.
+(Note that {\em minus} the linear response properties are written to output.)
 
 In the same \resp\ calculation these linear response properties can be calculated
 together with excitation energies
@@ -361,10 +364,15 @@ CI trial vectors are obtained with Olsen algorithm.
 Calculation of third order properties\index{properties!third order}
  as quadratic response
 functions\index{quadratic response}\index{response!quadratic}.
-$A,B$, and $C$-named options refer to the operators in the quadratic
+$A$, $B$, and $C$-named options refer to the operators in the quadratic
 response function 
 $\langle\!\langle A;B,C \rangle\!\rangle_{\omega_b,\omega_c}$
 \cite{ovhapjhjajthjojcp97,hhhjajpjjojcp97,haovhkpjthjcp98}
+
+The second order properties from the linear response functions
+$\langle\!\langle A;B,\rangle\!\rangle_{\omega_b}$ are also printed
+(if $A$ and $B$ operators have the same spin symmetry),
+as they can be obtained at no extra computational cost.
 
 \begin{description}
 
