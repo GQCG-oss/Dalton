@@ -1,4 +1,4 @@
-
+C
 C...   Copyright (c) 1997 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
@@ -29,11 +29,18 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: herrdn.F,v 1.8 2001-04-21 12:11:59 ruud Exp $
+C$Id: herrdn.F,v 1.9 2001-04-21 14:28:16 vebjornb Exp $
 C
 #include <single.h>
 #ifdef REVISION_LOG
 $Log: not supported by cvs2svn $
+Revision 1.8  2001/04/21 12:11:59  ruud
+Added the possibility of reusing property derivatives in vibrational average
+calculations. Fixed a bug in the temperature part, as well as in the Eckart
+transformations. Fixed huge memory use in herrdn.F. Added SYS_SUN in
+cc/crayio.c and modified a couple of the test cases for accuracy on our
+old HP.
+
 Revision 1.7  2001/04/03 14:25:08  vebjornb
 Changes to ERI (symmetry and general contraction) tuh
 
@@ -2438,47 +2445,68 @@ C
                   CHRSEG = 'gen. cont.'
                END IF
                IF (NNRC .LE. 5) THEN
-                  ASSIGN 1000 TO IFMTA
-                  ASSIGN 1010 TO IFMTB
-                  ASSIGN 1020 TO IFMTC
-                  ASSIGN 1030 TO IFMTD
+                  DO 300 ICOMP = 1, KHK(J)
+                     ITYP = ITYP + 1
+                     DO 330 L = 1, NDEG
+                        IPRIMD = IPRIMD + 1
+                        IF (NDEG .GT. 1) THEN
+                           WRITE (LUPRI,1000) NAMN(ICENT),'#',L,
+     &                          GTOTYP(ITYP),
+     &                          IPRIMD,PRIEXP(IPSTRT),
+     &                          (CPRIMU(1,MM,KBCH),MM=1,NNRC)
+                        ELSE
+                           WRITE (LUPRI,1010) NAMN(ICENT),GTOTYP(ITYP),
+     &                          IPRIMD,PRIEXP(IPSTRT),
+     &                          (CPRIMU(1,MM,KBCH),MM=1,NNRC)
+                        END IF
+                        IF (NNUC .GT. 1) THEN
+                           IPRIMD = IPRIMD + 1
+                           WRITE (LUPRI,1020) CHRSEG,
+     &                          IPRIMD,PRIEXP(IPSTRT+1),
+     &                          (CPRIMU(2,MM,KBCH),MM=1,NNRC)
+                        END IF
+                        DO 350 M = 3, NNUC
+                           IPRIMD = IPRIMD + 1
+                           WRITE (LUPRI,1030) IPRIMD,
+     &                          PRIEXP(IPSTRT-1+M),
+     &                          (CPRIMU(M,MM,KBCH),MM=1,NNRC)
+ 350                    CONTINUE
+ 330                  CONTINUE
+ 300               CONTINUE
                ELSE
-                  ASSIGN 1005 TO IFMTA
-                  ASSIGN 1015 TO IFMTB
-                  ASSIGN 1025 TO IFMTC
-                  ASSIGN 1035 TO IFMTD
+                  DO 400 ICOMP = 1, KHK(J)
+                     ITYP = ITYP + 1
+                     DO 430 L = 1, NDEG
+                        IPRIMD = IPRIMD + 1
+                        IF (NDEG .GT. 1) THEN
+                           WRITE (LUPRI,1005) NAMN(ICENT),'#',L,
+     &                          GTOTYP(ITYP),
+     &                          IPRIMD,PRIEXP(IPSTRT),
+     &                          (CPRIMU(1,MM,KBCH),MM=1,NNRC)
+                        ELSE
+                           WRITE (LUPRI,1015) NAMN(ICENT),GTOTYP(ITYP),
+     &                          IPRIMD,PRIEXP(IPSTRT),
+     &                          (CPRIMU(1,MM,KBCH),MM=1,NNRC)
+                        END IF
+                        IF (NNUC .GT. 1) THEN
+                           IPRIMD = IPRIMD + 1
+                           WRITE (LUPRI,1025) CHRSEG,
+     &                          IPRIMD,PRIEXP(IPSTRT+1),
+     &                          (CPRIMU(2,MM,KBCH),MM=1,NNRC)
+                        END IF
+                        DO 450 M = 3, NNUC
+                           IPRIMD = IPRIMD + 1
+                           WRITE (LUPRI,1035) IPRIMD,
+     &                          PRIEXP(IPSTRT-1+M),
+     &                          (CPRIMU(M,MM,KBCH),MM=1,NNRC)
+ 450                    CONTINUE
+ 430                 CONTINUE
+ 400              CONTINUE
                END IF
-               DO 300 ICOMP = 1, KHK(J)
-                  ITYP = ITYP + 1
-                  DO 400 L = 1, NDEG
-                     IPRIMD = IPRIMD + 1
-                     IF (NDEG .GT. 1) THEN
-                        WRITE (LUPRI,IFMTA) NAMN(ICENT),'#',L,
-     &                                     GTOTYP(ITYP),
-     &                                     IPRIMD,PRIEXP(IPSTRT),
-     &                                     (CPRIMU(1,MM,KBCH),MM=1,NNRC)
-                     ELSE
-                        WRITE (LUPRI,IFMTB) NAMN(ICENT),GTOTYP(ITYP),
-     &                                     IPRIMD,PRIEXP(IPSTRT),
-     &                                     (CPRIMU(1,MM,KBCH),MM=1,NNRC)
-                     END IF
-                     IF (NNUC .GT. 1) THEN
-                        IPRIMD = IPRIMD + 1
-                        WRITE (LUPRI,IFMTC) CHRSEG,
-     &                                     IPRIMD,PRIEXP(IPSTRT+1),
-     &                                     (CPRIMU(2,MM,KBCH),MM=1,NNRC)
-                     END IF
-                     DO 410 M = 3, NNUC
-                        IPRIMD = IPRIMD + 1
-                        WRITE (LUPRI,IFMTD) IPRIMD,PRIEXP(IPSTRT-1+M),
-     &                                     (CPRIMU(M,MM,KBCH),MM=1,NNRC)
-  410                CONTINUE
-  400             CONTINUE
-  300          CONTINUE
-  200       CONTINUE
-  110    CONTINUE
+ 200        CONTINUE
+ 110     CONTINUE
          IBLOCK = IBLOCK + NBLCK(I)
-  100 CONTINUE
+ 100  CONTINUE
  1000 FORMAT(/2X,A4,A1,I1,1X,A4,I4,F16.6,2X,5F8.4)
  1010 FORMAT(/2X,A4,3X,      A4,I4,F16.6,2X,5F8.4)
  1020 FORMAT( 3X,A10,           I4,F16.6,2X,5F8.4)
@@ -5431,6 +5459,7 @@ C
       ISTART = IEND + IPOS
       RETURN
       END
+C  /* Deck molout */
       SUBROUTINE MOLOUT(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &     IPCON,KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI,KASYM,
      &     NSYMOP)
@@ -5538,9 +5567,6 @@ Chj:  skip any additional comment lines before title lines
                   ITYP = NHKOFF(J)
                   IPSTRT = IPRIM + 1
                   IPRIM =  IPRIM + NNUC
-                  ASSIGN 1010 TO IFMTB
-                  ASSIGN 1040 TO IFMTD
-                  ASSIGN 1050 TO IFMTS
                   ITYP = ITYP + 1
                   IPRIMD = IPRIMD + 1
                   IF (N .EQ. 1) THEN
@@ -5548,25 +5574,25 @@ Chj:  skip any additional comment lines before title lines
                      DO 410 M = 1, NNUC
                         IPRIMD = IPRIMD + 1
                         IF (NNRC.LE.3) THEN
-                           WRITE (LUTMP1,IFMTS) PRIEXP(IPSTRT-1+M),
+                           WRITE (LUTMP1,1050) PRIEXP(IPSTRT-1+M),
      &                          (CPRIMU(M,MM,KBCH),MM=1,NNRC)
-                           WRITE (LUTMP2,IFMTS) PRIEXP(IPSTRT-1+M),
+                           WRITE (LUTMP2,1050) PRIEXP(IPSTRT-1+M),
      &                          (CPRIMU(M,MM,KBCH),MM=1,NNRC)
                         ELSE
-                           WRITE (LUTMP1,IFMTS) PRIEXP(IPSTRT - 1 + M),
+                           WRITE (LUTMP1,1050) PRIEXP(IPSTRT - 1 + M),
      &                          (CPRIMU(M,MM,KBCH),MM = 1,3)
-                           WRITE (LUTMP2,IFMTS) PRIEXP(IPSTRT - 1 + M),
+                           WRITE (LUTMP2,1050) PRIEXP(IPSTRT - 1 + M),
      &                          (CPRIMU(M,MM,KBCH),MM = 1,3)
                            DO NLOOP = 1, INT(NNRC/3) - 1
-                              WRITE (LUTMP1,IFMTD) (CPRIMU(M,MM,KBCH),
+                              WRITE (LUTMP1,1040) (CPRIMU(M,MM,KBCH),
      &                             MM = NLOOP*3 + 1, (NLOOP + 1)*3)
-                              WRITE (LUTMP2,IFMTD) (CPRIMU(M,MM,KBCH),
+                              WRITE (LUTMP2,1040) (CPRIMU(M,MM,KBCH),
      &                             MM = NLOOP*3 + 1, (NLOOP + 1)*3)
                            END DO
                            IF (MOD(NNRC,3) .NE. 0) THEN
-                              WRITE (LUTMP1,IFMTD) (CPRIMU(M,MM,KBCH),
+                              WRITE (LUTMP1,1040) (CPRIMU(M,MM,KBCH),
      &                             MM = NNRC - MOD(NNRC,3) + 1, NNRC)
-                              WRITE (LUTMP2,IFMTD) (CPRIMU(M,MM,KBCH),
+                              WRITE (LUTMP2,1040) (CPRIMU(M,MM,KBCH),
      &                             MM = NNRC - MOD(NNRC,3) + 1, NNRC)
                            END IF
                         ENDIF
@@ -5581,17 +5607,17 @@ Chj:  skip any additional comment lines before title lines
                      END DO
                   END DO
  210           CONTINUE
- 200           CONTINUE
- 110        CONTINUE
-            IBLOCK = IBLOCK + NBLCK(I)
- 100     CONTINUE
- 1010    FORMAT(/2X,A4,3X,      A4,3X,A10)
- 1040    FORMAT(20X,3F20.10)
- 1050    FORMAT(F20.10,3F20.10)
+ 200        CONTINUE
+ 110     CONTINUE
+         IBLOCK = IBLOCK + NBLCK(I)
+ 100  CONTINUE
 C
-         WRITE (LUTMP2,'(A)') 'END'
-         CALL GPCLOSE(LUTMP1,'KEEP')
-         CALL GPCLOSE(LUTMP2,'KEEP')
-         CALL GPCLOSE(LUSHB ,'KEEP')
-         RETURN
-         END
+      WRITE (LUTMP2,'(A)') 'END'
+      CALL GPCLOSE(LUTMP1,'KEEP')
+      CALL GPCLOSE(LUTMP2,'KEEP')
+      CALL GPCLOSE(LUSHB ,'KEEP')
+ 1010 FORMAT(/2X,A4,3X,A4,3X,A10)
+ 1040 FORMAT(20X,3F20.10)
+ 1050 FORMAT(F20.10,3F20.10)
+      RETURN
+      END
