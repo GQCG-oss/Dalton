@@ -595,11 +595,11 @@ C
                  ICTO  = JCSYM + (NORB2(ISYM)-IDEL)*NBASI
                  ICFROM= JCSYM + NORB2(ISYM)*NBASI
                  DO 260 JSYM = ISYM+1, NSYM
-                   DO 250 I = 0, NORB2(JSYM)*NBASI
+                   DO 250 I = 0, NORB2(JSYM)*NBAS(JSYM) - 1
                      CMO(ICTO + I) = CMO(ICFROM + I)
   250              CONTINUE
-                   ICTO = ICTO + NORB2(JSYM)*NBASI      
-                   ICFROM = ICFROM + NORB2(JSYM)*NBASI
+                   ICTO = ICTO + NORB2(JSYM)*NBAS(JSYM)   
+                   ICFROM = ICFROM + NORB2(JSYM)*NBAS(JSYM)
   260            CONTINUE
                 END IF
                 NORB2(ISYM) = NORB2(ISYM) - IDEL
