@@ -36,14 +36,15 @@ static int  blyp_read(const char* conf_line);
 static int  b3lyp_read(const char* conf_line);
 static int  b3lypgauss_read(const char* conf_line);
 static int  bp86_read(const char* conf_line);
+static int  bpw91_read(const char* conf_line);
 static int  b3p86_read(const char* conf_line);
+static int  b3p86g_read(const char* conf_line);
 static int  kt1_read(const char* conf_line);
 static int  kt2_read(const char* conf_line);
 static int  kt3_read(const char* conf_line);
 static int  olyp_read(const char* conf_line);
 static int  pbe_read(const char* conf_line);
 static int  pbe0_read(const char* conf_line);
-static int  pw91_read(const char* conf_line);
 
 static int  gga_isgga(void);
 static int  xalpha_read(const char* conf_line);
@@ -54,209 +55,33 @@ static void gga_first(FirstFuncDrv *ds,   real factor, const DftDensProp* dp);
 static void gga_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp);
 static void gga_third(ThirdFuncDrv *ds,   real factor, const DftDensProp* dp);
 
+#define LDA_FUNCTIONAL(name,read) { (name), \
+    fun_false, (read), NULL, gga_energy, gga_first, gga_second, \
+    gga_third }
 
-Functional XAlphaFunctional = {
-    "XAlpha",       /* name */
-    fun_false,   /* gga-corrected */
-    xalpha_read, 
-    NULL,
-    gga_energy, 
-    gga_first,
-    gga_second,
-    gga_third
-};
+#define GGA_FUNCTIONAL(name,read) { (name), \
+    gga_isgga, (read), gga_report, gga_energy, gga_first, gga_second, \
+    gga_third }
 
-Functional LDAFunctional = {
-    "LDA",         /* name */
-    fun_false,     /* not gga-corrected */
-    lda_read,
-    NULL,
-    lda_energy, 
-    lda_first,
-    lda_second,
-    lda_third
-};
-
+Functional XAlphaFunctional = LDA_FUNCTIONAL("XAlpha", xalpha_read);
+Functional LDAFunctional =    LDA_FUNCTIONAL("LDA",     lda_read);
 /* SVWN5 aliases LDA */
-Functional SVWN5Functional = {
-    "SVWN5",       /* name */
-    fun_false,     /* not gga-corrected */
-    lda_read,
-    NULL,
-    lda_energy, 
-    lda_first,
-    lda_second,
-    lda_third
-};
-
-Functional LDAGaussFunctional = {
-    "LDAGauss",    /* name */
-    fun_false,     /* not gga-corrected */
-    ldagauss_read,
-    NULL,
-    gga_energy, 
-    gga_first,
-    gga_second,
-    gga_third
-};
-
-/* SVWN3 aliases LDAGauss */
-Functional SVWN3Functional = {
-    "SVWN3",       /* name */
-    fun_false,     /* not gga-corrected */
-    ldagauss_read,
-    NULL,
-    gga_energy, 
-    gga_first,
-    gga_second,
-    gga_third
-};
-
-Functional GGAKeyFunctional = {
-    "GGAKey",      /* name */
-    gga_isgga,     /* gga-corrected */
-    gga_key_read,
-    gga_report,
-    gga_energy, 
-    gga_first,
-    gga_second,
-    gga_third
-};
-
-Functional BLYPFunctional = {
-    "BLYP",      /* name */
-    gga_isgga,     /* gga-corrected */
-    blyp_read,
-    gga_report,
-    gga_energy, 
-    gga_first,
-    gga_second,
-    gga_third
-};
-
-
-Functional B3LYPFunctional = {
-    "B3LYP",      /* name */
-    gga_isgga,     /* gga-corrected */
-    b3lyp_read,
-    gga_report,
-    gga_energy, 
-    gga_first,
-    gga_second,
-    gga_third
-};
-
-Functional B3LYPGaussFunctional = {
-    "B3LYP-G",      /* name */
-    gga_isgga,     /* gga-corrected */
-    b3lypgauss_read,
-    gga_report,
-    gga_energy, 
-    gga_first,
-    gga_second,
-    gga_third
-};
-
-
-Functional BP86Functional = {
-    "BP86",      /* name */
-    gga_isgga,     /* gga-corrected */
-    bp86_read,
-    gga_report,
-    gga_energy, 
-    gga_first,
-    gga_second,
-    gga_third
-};
-
-Functional B3P86Functional = {
-    "B3P86",      /* name */
-    gga_isgga,     /* gga-corrected */
-    b3p86_read,
-    gga_report,
-    gga_energy, 
-    gga_first,
-    gga_second,
-    gga_third
-};
-
-Functional KT1Functional = {
-    "KT1",      /* name */
-    gga_isgga,     /* gga-corrected */
-    kt1_read,
-    gga_report,
-    gga_energy,
-    gga_first,
-    gga_second,
-    gga_third
-};
-
-Functional KT2Functional = {
-    "KT2",      /* name */
-    gga_isgga,     /* gga-corrected */
-    kt2_read,
-    gga_report,
-    gga_energy,
-    gga_first,
-    gga_second,
-    gga_third
-};
-
-Functional KT3Functional = {
-    "KT3",      /* name */
-     gga_isgga,     /* gga-corrected */
-     kt3_read,
-     gga_report,
-     gga_energy,
-     gga_first,
-     gga_second,
-     gga_third
-};
-
-Functional OLYPFunctional = {
-    "OLYP",      /* name */
-    gga_isgga,     /* gga-corrected */
-    olyp_read,
-    gga_report,
-    gga_energy,
-    gga_first,
-    gga_second,
-    gga_third
-};
-
-Functional PBEFunctional = {
-    "PBE",         /* name */
-    gga_isgga,     /* gga-corrected */
-    pbe_read,
-    gga_report,
-    gga_energy,
-    gga_first,
-    gga_second,
-    gga_third
-};
- 
-Functional PBE0Functional = {
-    "PBE0",         /* name */
-    gga_isgga,     /* gga-corrected */
-    pbe0_read,
-    gga_report,
-    gga_energy,
-    gga_first,
-    gga_second,
-    gga_third
-};
-
-Functional PW91Functional = {
-    "PW91",      /* name */
-    gga_isgga,     /* gga-corrected */
-    pw91_read,
-    gga_report,
-    gga_energy,
-    gga_first,
-    gga_second,
-    gga_third
-};
-
+Functional SVWN5Functional =  LDA_FUNCTIONAL("SVWN5",   lda_read);
+Functional SVWN3Functional =  LDA_FUNCTIONAL("SVWN3",   ldagauss_read);
+Functional B3LYPFunctional =  GGA_FUNCTIONAL("B3LYP",   b3lyp_read);
+Functional B3LYPGaussFunctional = GGA_FUNCTIONAL("B3LYP-G", b3lypgauss_read);
+Functional B3P86Functional =  GGA_FUNCTIONAL("B3P86",   b3p86_read);
+Functional B3P86GFunctional = GGA_FUNCTIONAL("B3P86-G", b3p86g_read);
+Functional BLYPFunctional =   GGA_FUNCTIONAL("BLYP",    blyp_read);
+Functional BP86Functional =   GGA_FUNCTIONAL("BP86",    bp86_read);
+Functional BPW91Functional =  GGA_FUNCTIONAL("BPW91",   bpw91_read);
+Functional GGAKeyFunctional = GGA_FUNCTIONAL("GGAKey",  gga_key_read);
+Functional KT1Functional =    GGA_FUNCTIONAL("KT1",     kt1_read);
+Functional KT2Functional =    GGA_FUNCTIONAL("KT2",     kt2_read);
+Functional KT3Functional =    GGA_FUNCTIONAL("KT3",     kt3_read);
+Functional OLYPFunctional =   GGA_FUNCTIONAL("OLYP" ,   olyp_read);
+Functional PBE0Functional =   GGA_FUNCTIONAL("PBE0",    pbe0_read);
+Functional PBEFunctional =    GGA_FUNCTIONAL("PBE",     pbe_read); 
 
 /* MIXED FUNCTIONALS */
 typedef struct FuncList_ FuncList;
@@ -400,6 +225,28 @@ b3p86_read(const char* conf_line)
 }
 
 static int
+b3p86g_read(const char* conf_line)
+{
+    static const real lypw = 0.81, dirw = 0.8;
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  dirw);
+    gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional,  0.72);
+    gga_fun_list = add_functional(gga_fun_list, &P86cFunctional,   lypw);
+    gga_fun_list = add_functional(gga_fun_list, &VWN3Functional,   1-lypw);
+    dft_set_hf_weight(1-dirw);
+    return 1;
+}
+
+static int
+bpw91_read(const char* conf_line)
+{
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, 1);
+    gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional,  1);
+    gga_fun_list = add_functional(gga_fun_list, &PW91cFunctional,  1);
+    dft_set_hf_weight(0);
+    return 1;
+}
+
+static int
 kt1_read(const char* conf_line)
 {
     static const real ktgam = -0.006;
@@ -461,15 +308,6 @@ pbe0_read(const char* conf_line)
     gga_fun_list = add_functional(gga_fun_list, &PbecFunctional, 1.0);
     gga_fun_list = add_functional(gga_fun_list, &PbexFunctional, 0.75);
     dft_set_hf_weight(0.25);
-    return 1;
-}
-
-static int
-pw91_read(const char* conf_line)
-{
-    gga_fun_list = add_functional(gga_fun_list, &PWggaIIcFunctional, 1.0);
-    gga_fun_list = add_functional(gga_fun_list, &PWggaIIxFunctional, 1.0);
-    dft_set_hf_weight(0);
     return 1;
 }
 

@@ -206,7 +206,7 @@ void drv3_clear(ThirdFuncDrv* gga);  /* set all components to 0 */
 void dft_set_hf_weight(real w);
 
 /* The list of functionals */
-/* generic functionals */
+/* sorted list of generic functionals */
 extern Functional BeckeFunctional;
 extern Functional Example2Functional;
 extern Functional Example3Functional;
@@ -222,8 +222,6 @@ extern Functional LB94Functional;
 extern Functional LYPFunctional;
 extern Functional OPTXFunctional;
 extern Functional P86cFunctional;
-extern Functional PbecFunctional;
-extern Functional PbexFunctional;
 extern Functional PW86xFunctional;
 extern Functional PW91cFunctional;
 extern Functional PW92Functional;
@@ -232,31 +230,33 @@ extern Functional PWggaIIc2Functional;
 extern Functional PWggaIIcFunctional;
 extern Functional PWggaIIxFunctional;
 extern Functional PZ81Functional;
+extern Functional PbecFunctional;
+extern Functional PbexFunctional;
 extern Functional SlaterFunctional;
 extern Functional VWN3Functional;
 extern Functional VWN5Functional;
 extern Functional VWNFunctional;
 extern Functional XAlphaFunctional;
 
-/* mixed functionals */
-extern Functional LDAFunctional;
-extern Functional LDAGaussFunctional;
-extern Functional GGAKeyFunctional;
-extern Functional BLYPFunctional;
+/* sorted list of mixed functionals */
 extern Functional B3LYPFunctional;
 extern Functional B3LYPGaussFunctional;
-extern Functional BP86Functional;
 extern Functional B3P86Functional;
+extern Functional B3P86GFunctional;
+extern Functional BLYPFunctional;
+extern Functional BP86Functional;
+extern Functional BPW91Functional;
 extern Functional Camb3lypFunctional;
+extern Functional GGAKeyFunctional;
 extern Functional KT1Functional;
 extern Functional KT2Functional;
 extern Functional KT3Functional;
+extern Functional LDAFunctional;
 extern Functional OLYPFunctional;
 extern Functional PBE0Functional;
 extern Functional PBEFunctional;
-extern Functional PW91Functional;
-extern Functional SVWN5Functional;
 extern Functional SVWN3Functional;
+extern Functional SVWN5Functional;
 
 /* the list of the functionals */
 extern Functional* available_functionals[];
