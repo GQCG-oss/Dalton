@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: rsphso.F,v 1.5 2003-12-16 17:54:47 ruud Exp $
+C$Id: rsphso.F,v 1.6 2004-01-23 15:46:29 jkp Exp $
 C
 #include <single.h>
 C  /* Deck hsoctl */
@@ -1464,8 +1464,8 @@ C
       INTEGER I2TYP
       INTEGER IPRTWO,IPRNTA,IPRNTB,IPRNTC,IPRNTD
       INTEGER IRNTYP , NUMDIS, IFCTYP(2), ISYMDM(2)
-c      REAL(DOUBLE) TIMEND,TIMSTR,SO1WAL,SO1CPU
-c      REAL(DOUBLE) SO2WAL,SO2CPU,SOCPU,SOWAL
+cF90   REAL(DOUBLE) TIMEND,TIMSTR,SO1WAL,SO1CPU
+cF90   REAL(DOUBLE) SO2WAL,SO2CPU,SOCPU,SOWAL
       LOGICAL TKTIME,RTNTWO
       LOGICAL TRIPLET(2)
       CALL QENTER('HSOFCKAO')
@@ -2233,8 +2233,8 @@ C
       INTEGER IBUF(600)
       INTEGER IB, LENGTH, I,J,K,L,ICOOR, LUHSOAO, COMPONENT,LABEL,ID
       DIMENSION LEFT(2), RIGHT(2)
-c      REAL(DOUBLE) GIJKL,XIJKL,DIJ,DKL,
-c      REAL(DOUBLE) DP5, D1P5, D1, D2, 
+cF90   REAL(DOUBLE) GIJKL,XIJKL,DIJ,DKL,
+cF90   REAL(DOUBLE) DP5, D1P5, D1, D2, 
       PARAMETER(DP5=0.5D0, D1P5=1.5D0, D1=1.0D0, D2=2.0D0)
 C
       CALL QENTER('GETFMATX')
@@ -2258,10 +2258,13 @@ C
       IF (WORD(1:1).EQ.'X') COMPONENT = 1
       IF (WORD(1:1).EQ.'Y') COMPONENT = 2
       IF (WORD(1:1).EQ.'Z') COMPONENT = 3
-      READFILE: DO 
+cF90  READFILE: DO 
+ 100  CONTINUE
          READ(LUHSOAO) BUF, IBUF, LENGTH
-         IF (LENGTH.LE.0) EXIT
-         BUFFER: DO IB=1,LENGTH
+cF90     IF (LENGTH.LE.0) EXIT
+         IF (LENGTH.LE.0) GO TO 300
+cF90     BUFFER: DO IB=1,LENGTH
+         DO 200 IB=1,LENGTH
             LABEL=IBUF(IB)
             I = IBITS(LABEL,24,8)
             J = IBITS(LABEL,16,8)
@@ -2269,9 +2272,11 @@ C
             L = IBITS(LABEL, 0,8)
             IF (L.EQ.0) THEN
                ICOOR = K
-               CYCLE BUFFER
+cF90           CYCLE BUFFER
+               GO TO 200
             END IF
-            IF (ICOOR.NE.COMPONENT) CYCLE BUFFER
+cF90        IF (ICOOR.NE.COMPONENT) CYCLE BUFFER
+            IF (ICOOR.NE.COMPONENT) GO TO 200
             GIJKL=BUF(IB)
             IF (I.EQ.J) GIJKL = DP5*GIJKL
             XIJKL=D1P5*GIJKL
@@ -2291,8 +2296,13 @@ C
                F(J,K,ID) = F(J,K,ID) + XIJKL*D(I,L,ID)
                F(K,J,ID) = F(K,J,ID) - XIJKL*D(L,I,ID)
             END DO
-         END DO BUFFER
-      END DO READFILE
+cF90     END DO BUFFER
+  200    END DO
+cF90  END DO READFILE
+      GO TO 100
+  300 CONTINUE
+C
       CALL GPCLOSE(LUHSOAO,'KEEP')
       CALL QEXIT('GETFMATX')
-      END SUBROUTINE GETFMATX
+cF90  END SUBROUTINE GETFMATX
+      END

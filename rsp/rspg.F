@@ -67,7 +67,8 @@ C
 C
 C Calculate second-order properties
 C
-      DO ISYM=1,NSYM
+cF90  DO ISYM=1,NSYM
+      DO 100 ISYM=1,NSYM
          KSYMOP = ISYM
 C
 C Define variables that depend on symmetry
@@ -75,7 +76,8 @@ C
          CALL RSPVAR(WORK(KUDV),WORK(KFOCK),WORK(KFC),WORK(KFV),
      &      WORK(KFCAC),WORK(KH2AC),WORK(KINDX),WORK(KWRK1),LWRK1)
          CALL MEMCHK('GDRV<-RSPVAR',WORK,1)
-         IF (KZVAR.EQ.0) CYCLE
+cF90     IF (KZVAR.EQ.0) CYCLE
+         IF (KZVAR.EQ.0) GO TO 100
 C
 C Solve linear response equations
 C
@@ -87,7 +89,8 @@ C
      &      )
             CALL MEMCHK('GDRV<-RSPLR',WORK,1)
          END IF
-      END DO
+cF90  END DO
+  100 END DO
 C
       CALL GPRINT(WORK(KWRK1),LWRK1)
 C
