@@ -306,6 +306,11 @@ C     Theory (DPT), JTOP must be increased by 2 (WK/UniKA/14-11-2002).
 C
       IF (FINDPT .OR. DPTINT) JTOP = JTOP + 2
 C
+C     For two-electron Breit terms (orbit-orbit and spin-spin) integrals
+C     (tuh/wk/07-04-2003) 
+C
+      IF (BPH2OO) JTOP = JTOP + 4
+C
       JTOP3 = (JTOP + 1)**3
       NRTOP = (JTOP + 1)*(JTOP + 2)*(JTOP + 3)/6
       KINDHR = 1
@@ -846,6 +851,7 @@ C      PARAMETER (LBUF = 600)
 #include <disbuf.h>
 #include <eribuf.h>
 #include <r12int.h>
+#include <drw2el.h>
 C
       CALL QENTER('TWODSA')
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWODSA','*',103)
@@ -894,14 +900,15 @@ C
       DOINDX = .FALSE.
       CALL AINDEX(ISHLA,NDIST,IDUMMY,DOINDX,IORBSH,JPRINT)
       LDSBUF = LBUF
-      KDSBUF = 1
-      KDSIBF = KDSBUF + NDIST*LDSBUF
+      KDSBF  = 1
+      KDSIBF = KDSBF + NDIST*LDSBUF
       KDSNCT = KDSIBF + (2*NDIST*LDSBUF - 1)/IRAT + 1
       KDSORB = KDSNCT + (NDIST          - 1)/IRAT + 1
       KORBDS = KDSORB + (NDIST          - 1)/IRAT + 1
       KDSEND = KORBDS + (NBASIS         - 1)/IRAT + 1
 C
-      KLAST = KDSEND
+      KDSBUF = 1
+      KLAST = KDSBUF + KDSEND 
       LWRK  = LWORK - KLAST + 1
       IF (KLAST .GT. LWORK) CALL STOPIT('TWODSA',' ',KLAST,LWORK)
 C
@@ -1044,6 +1051,7 @@ C              Check for basis-set identifier (WK/UniKA/04-11-2002).
 C
                SHAEQB = .FALSE.
                SHCEQD = ISHELC .EQ. ISHELD
+               IF (BPH2OO) SHCEQD = .FALSE.
                SHABAB = .FALSE.
 C
 C              *******************************
@@ -1403,6 +1411,11 @@ C
          JMAXB  = NHKTB + 1
          JMAXC  = NHKTC + 1
          JMAXD  = NHKTD + 1
+      ELSE IF (BPH2OO) THEN
+         JMAXA = NHKTA 
+         JMAXB = NHKTB
+         JMAXC = NHKTC
+         JMAXD = NHKTD
       ELSE IF (DIA2SO) THEN
          JMAXA = NHKTA 
          JMAXB = NHKTB - 1
@@ -1632,6 +1645,7 @@ C  /* Deck twood1 */
 #include <implicit.h>
 #include <priunit.h>
 #include <r12int.h>
+#include <drw2el.h>
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <aovec.h>
@@ -1660,7 +1674,6 @@ C  /* Deck twood1 */
      &          NCONTS(MXSHEL,MXAOVC,2),GABRAO(*),
      &          DMRAO(*),DMRSO(*),DINTSKP(*),IREPDM(*),
      &          IXPAB(*),IXPCD(*)
-#include <drw2el.h>
 #include <twocom.h>
 #include <inftap.h>
 #include <blocks.h>
@@ -1684,6 +1697,9 @@ C
       CALL ICOPY(NSETB,JSTRSH(ISHELB,1,IGENAB),MXSHEL,JSTRB,1)
       CALL ICOPY(NSETC,JSTRSH(ISHELC,1,IGENCD),MXSHEL,JSTRC,1)
       CALL ICOPY(NSETD,JSTRSH(ISHELD,1,IGENCD),MXSHEL,JSTRD,1)
+C
+      LAST   = (ISHELA.EQ.IASMAX) .AND. (ISHELB.EQ.IBSMAX) .AND.
+     &         (ISHELC.EQ.ICSMAX) .AND. (ISHELD.EQ.IDSMAX)
 C
 C     Read two-electron densities
 C
@@ -1709,7 +1725,7 @@ C
      &            MULA,MULB,NODCAB,NORTAB,NINDAB,NPNTAB,NREDAB,
      &            KHKTA,KHKTB,EXPECT,DIRFCK,WORK,LWORK,RPRIAB,RCNTAB,
      &            IXPAB,IPRINT)
-      IF (ISUM(NODCAB,NUCTAB,1) .EQ. 0) RETURN
+      IF (ISUM(NODCAB,NUCTAB,1).EQ.0.AND..NOT.LAST) RETURN
 C
 C     Overlap distributions for second electron
 C     =========================================
@@ -1721,7 +1737,7 @@ C
      &            MULC,MULD,NODCCD,NORTCD,NINDCD,NPNTCD,NREDCD,
      &            KHKTC,KHKTD,EXPECT,DIRFCK,WORK,LWORK,RPRICD,RCNTCD,
      &            IXPCD,IPRINT)
-      IF (ISUM(NODCCD,NUCTCD,1) .EQ. 0) RETURN
+      IF (ISUM(NODCCD,NUCTCD,1).EQ.0.AND..NOT.LAST) RETURN
 C
       CALL GETLMN(LMNVLS,IPRINT)
       KHKTAB = KHKTA*KHKTB
@@ -1752,11 +1768,10 @@ C
          NCFTYP = 3
       ELSE IF (MAXDER .EQ. 2) THEN
          NCFTYP = 6
-      ELSE IF (FINDPT .OR. DPTINT) THEN
-         NCFTYP = 6
-      ELSE IF (DIA2SO) THEN
-         NCFTYP = 9
       END IF
+      IF (FINDPT .OR. DPTINT) NCFTYP = 6
+      IF (DIA2SO) NCFTYP = 9
+      IF (BPH2OO) NCFTYP = 3
       MXUCAB = IMXVEC(NUCTAB,NODCAB)
       MXUCCD = IMXVEC(NUCTCD,NODCCD)
       LCOFAB = MXUCAB*(JMAXA+JMAXB+1)*(JMAXA+1)*(JMAXB+1)*3*NCFTYP
@@ -1784,8 +1799,6 @@ C
       END IF
 C
       NSOINT = NOABCD*NINTS
-      LAST   = (ISHELA.EQ.IASMAX) .AND. (ISHELB.EQ.IBSMAX) .AND.
-     &         (ISHELC.EQ.ICSMAX) .AND. (ISHELD.EQ.IDSMAX)
       IF (EXPECT .OR. DIRFCK .OR. SUSCEP .OR. DDFOCK .OR. DIA2SO .OR.
      &           ZFS2EL .OR. LAST .OR. (NSOINT .GT. 0)) THEN
 C        NOPP12 is number of different types of operators (WK/UniKA/19-11-2002).
@@ -1883,6 +1896,7 @@ C  /* Deck symlop */
      &          GABRAO(NSYMBL,NSYMBL),DMRAO(NSYMBL,NSYMBL,NDMAT),
      &          DMRSO(*),DNSBUF(2,NDMAT),DINTSKP(2,4),IREPDM(*),
      &          IXPAB(NUCA*NUCB,2,NODCAB), IXPCD(NUCC*NUCD,2,NODCCD)
+      dimension coefcd(*)
 #include <twocom.h>
 #include <blocks.h>
 #include <symmet.h>
@@ -1926,7 +1940,6 @@ C     ***** Both distributions *****
 C
       JMAX0  = MAXAB + MAXCD
       HKABCD = FMULT(IBTAND(MULAB,MULCD))
-      IF (FINDPT.OR.DPTINT) HKABCD = D2*HKABCD 
       IF (SPNORB) HKABCD = - HKABCD
       IF (UNDIFF .OR. LONDON .OR. SPNORB .OR. DIRFCK .OR. 
      &    DISTRI .OR. SOFOCK .OR. DIA2SO .OR. ZFS2EL .OR. EXPGRA) THEN
@@ -3169,6 +3182,7 @@ C     For two-electron integrals for relativistic Direct Perturbation
 C     Theory (DPT), JMAX must be increased by 2 (WK/UniKA/14-11-2002).
 C
       IF (FINDPT .OR. DPTINT) JMAX = JMAX + 2
+      IF (BPH2OO) JMAX = JMAX + 4
 C
 C     For [r12,T1+T2] integrals, JMAX must be increased by 1. For
 C     r12 integrals, JMAX must be 1 for (ss|ss) integrals, but is
@@ -3185,7 +3199,7 @@ C
 C     Allocate work space for Hermite integrals
 C     More space is needed for R12 method (WK/UniKA/14-11-2002).
 C
-      IF (R12EIN .OR. R12INT .OR. U12INT) THEN
+      IF (R12EIN .OR. R12INT .OR. U12INT .OR. BPH2OO) THEN
          LHRINT = 2*NUABCD*NTUV
       ELSE
          LHRINT = NUABCD*NTUV
@@ -3273,7 +3287,7 @@ C
       KCKMX  = KCKMAX
       NOCNT  = NOCONT
       IDERIV = MAXDER
-      IF (DIA2SO) IDERIV = 1
+      IF (DIA2SO .OR. BPH2OO) IDERIV = 1
       IF (FINDPT.OR.DPTINT) IDERIV = 2
       JM1234 = JMAX
       NU1234 = NUABCD
@@ -3385,6 +3399,7 @@ C
             NTUV34 = (MAX34D + 1)*(MAX34D + 2)*(MAX34D + 3)/6
             MAX34D = MAX34 + IDERIV - 1
             KTUV34 = (MAX34D + 1)*(MAX34D + 2)*(MAX34D + 3)/6
+            LTUV34 = (MAX34D    )*(MAX34D + 1)*(MAX34D + 2)/6
             IF (DIA2SO) KTUV34 = NTUV34
             NCCPP  = NORB12*NUC34
             CALL CCDRIV(AOINT,NCCINT,HERINT,INDHER,COEFAB,COEFCD,CONTA,
@@ -3501,6 +3516,7 @@ C
             NTUV34 = (MAX34D + 1)*(MAX34D + 2)*(MAX34D + 3)/6
             MAX34D = MAX34 + IDERIV - 1
             KTUV34 = (MAX34D + 1)*(MAX34D + 2)*(MAX34D + 3)/6
+            LTUV34 = (MAX34D    )*(MAX34D + 1)*(MAX34D + 2)/6
             NCCPP  = NORB12*NUC34
             CALL CCDRIV(AOINT,NCCINT,HERINT,INDHER,COEFCD,COEFAB,CONTC,
      &                  CONTD,CONTA,CONTB,WORK,LWORK,IPRINT,NPCOC,NPCOD,
@@ -3556,6 +3572,7 @@ C
          IF (DHCEZ1) NHCINT = NHCINT + 1
          IF (DHCEZ2) NHCINT = NHCINT + 1
       END IF
+      IF (BPH2OO) NHCINT = NHCINT + 3
       LHCINT = NCCPP*NTUV34*KHKT12*NHCINT
       IF (DPTINT) LHCINT = LHCINT * 2 
 C
@@ -3594,12 +3611,12 @@ C     ... 980826-hjaaj: check if no contraction and no omissions
       ELSE
          NOCNT = .FALSE.
       END IF
-      IF (R12EIN .OR. V12INT .OR. U12INT)
+      IF ((R12EIN .OR. V12INT .OR. U12INT ) .AND. .NOT.BPH2OO)
      &CALL C1DRIV(HERINT(1,1,1),INDHER,WORK(KHCINT),COEF12,CONT1(1,2),
      &            CONT2(1,2),WORK(KLAST),LWRK,NPCO1,NPCO2,NUCS12,INDHSQ,
      &            IODDHR,IPRINT,LMNV12,WORK(KODD12),NPNT12,NRED12,
      &            NHCINT)
-      IF ((R12INT .OR. U12INT) .AND. .NOT. R12EIN)
+      IF (((R12INT .OR. U12INT) .AND. .NOT. R12EIN) .OR. BPH2OO)
      &CALL C1DRIV(HERINT(1,1,2),INDHER,WORK(KHRINT),COEF12,CONT1(1,2),
      &            CONT2(1,2),WORK(KLAST),LWRK,NPCO1,NPCO2,NUCS12,INDHSQ,
      &            IODDHR,IPRINT,LMNV12,WORK(KODD12),NPNT12,NRED12,

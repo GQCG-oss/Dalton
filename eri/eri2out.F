@@ -43,13 +43,13 @@ C  /* Deck eriout */
 #include <mxcent.h>
 #include <maxorb.h>
 #include <eridst.h>
-#include <eribuf.h>
       DIMENSION SO(NAOINT,*), 
      &          IPNTCR(MAXBCH,4), IPNTUV(KC2MAX,0:NRDER,2),
      &          WORK(LWORK), IODDCC(NRTOP), BUF(*), IBUF(*),
      &          NINTS(MXDIST), NCOUNT(*), INDXBT(*)
 #include <cbieri.h>
 #include <ericom.h>
+#include <eribuf.h>
 #include <symmet.h>
 #include <hertop.h>
 #include <inftap.h>
@@ -158,7 +158,6 @@ C  /* Deck eriou1 */
 #include <maxorb.h>
 #include <aovec.h>
 #include <eridst.h>
-#include <eribuf.h>
       DIMENSION SO(NCCS,MLTPR,MLTPS,MLTPT,KHKTAB,KHKTCD,*), SOPRT(*),
      &          INDORB(LBIN,NIBUF), IPNBCH(*), INDALL(NCCS,2), 
      &          INDXTR(*), LABEL(*), IPNTCR(MAXBCH,4),
@@ -172,6 +171,7 @@ C  /* Deck eriou1 */
 #include <ericom.h>
 #include <erithr.h>
 #include <nuclei.h>
+#include <eribuf.h>
 #include <aobtch.h>
 #include <hertop.h>
 #include <symmet.h>
@@ -297,7 +297,6 @@ C  /* Deck eriwrt */
 #include <aovec.h>
 C
 #include <eridst.h>
-#include <eribuf.h>
       CHARACTER*8 FAODER
       DIMENSION BUF(LBUF,NBUFS), IBUF(LBUF,NIBUF,NBUFS),
      &          BIN(LBIN), IBIN(LBIN,NIBUF),
@@ -308,6 +307,7 @@ C
 #include <nuclei.h>
 #include <ericom.h>
 #include <erithr.h>
+#include <eribuf.h>
 #include <aobtch.h>
 #include <hertop.h>
 #include <inftap.h>
@@ -976,7 +976,6 @@ C
 #include <aovec.h>
 C
 #include <eridst.h>
-#include <symmet.h>
       INTEGER A, B, C, D, AB, CD, R, S, T
       DIMENSION INDORB(NCCS,MLTPR,MLTPS,MLTPT,KHKTAB,KHKTCD,NIBUF),
      &          INDALL(NCCS), INDCD(NCCS), INDXTR(NCCS,MAXREP+1,4),
@@ -992,6 +991,7 @@ C
 #include <erithr.h>
 #include <aobtch.h>
 #include <hertop.h>
+#include <symmet.h>
 C
 #include <ibtfun.h>
 C
@@ -1208,36 +1208,31 @@ C /* Deck erisds */
 #include <maxorb.h>
 #include <eridst.h>
       DIMENSION IPNTCR(MAXBCH,4)
-      DIMENSION INDXBT(MXSHEL*MXCONT,0:7),IPNRPS(8)
-#include <symmet.h>
+      DIMENSION INDXBT(MXSHEL*MXCONT,0:7)
 #include <ericom.h>
 #include <aobtch.h>
-C
-      CALL GETREP(NREPS,IPNRPS,NHKTA,KHKTA,ISTBLA)
+      IANEW = 0
       IDIST = 0
-      DO IREP = 1, NREPS
-         IANEW = 0
-         NIJKL = 0
-         DO N = 1, NPQBCS
-            NA = KNDXBT(IPNTCR(N,1)) - 1
-            DO I = 1, NCTFA
-            DO J = 1, NCTFB
-            DO K = 1, NCTFC
-            DO L = 1, NCTFD
-               NIJKL = NIJKL + 1
-               IAOLD = IANEW
-               IANEW = INDXBT(NA + I,IPNRPS(IREP))
-               IF (IAOLD. NE. IANEW) THEN
-                  IDIST = IDIST + 1
-                  NCCDST(IDIST) = 1
-                  NCCFST(IDIST) = NIJKL 
-               ELSE
-                  NCCDST(IDIST) = NCCDST(IDIST) + 1
-               END IF
-            END DO
-            END DO
-            END DO
-            END DO
+      NIJKL = 0
+      DO N = 1, NPQBCS
+         NA = KNDXBT(IPNTCR(N,1)) - 1
+         DO I = 1, NCTFA
+         DO J = 1, NCTFB
+         DO K = 1, NCTFC
+         DO L = 1, NCTFD
+            NIJKL = NIJKL + 1
+            IAOLD = IANEW
+            IANEW = INDXBT(NA + I,IRPDST)
+            IF (IAOLD. NE. IANEW) THEN
+               IDIST = IDIST + 1
+               NCCDST(IDIST) = 1
+               NCCFST(IDIST) = NIJKL 
+            ELSE
+               NCCDST(IDIST) = NCCDST(IDIST) + 1
+            END IF
+         END DO
+         END DO
+         END DO
          END DO
       END DO
       NDST = IDIST
@@ -1391,7 +1386,6 @@ C  /* Deck erilbd */
 #include <mxcent.h>
 #include <maxorb.h>
 #include <aovec.h>
-#include <eribuf.h>
       PARAMETER (D2=2.0D0, D1=1.0D0)
       INTEGER A, B, C, D, AB, CD, R, S, T
       LOGICAL DOREP(0:7,4), CTRIAB, CTRICD, DCD
@@ -1405,6 +1399,7 @@ C  /* Deck erilbd */
 #include <cbieri.h>
 #include <ericom.h>
 #include <erithr.h>
+#include <eribuf.h>
 #include <aobtch.h>
 #include <hertop.h>
 #include <symmet.h>

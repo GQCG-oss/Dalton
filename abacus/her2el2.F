@@ -384,7 +384,7 @@ C  /* Deck c2hin1 */
 C
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER (D0 = 0.0D0, DP125 = 0.125D0)
+      PARAMETER (D0 = 0.0D0, DP25 = 0.25D0)
 #include <maxaqn.h>
 #include <maxorb.h>
       INTEGER T, U, V
@@ -417,8 +417,8 @@ C
 #include <ibtfun.h>
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from C2HIN1','*',103)
-      IF (FINDPT) ECOFAC = DPTFAC * DP125 * ALPHAC ** 2
-      IF (DPTINT) ECOFAC = DP125 * ALPHAC ** 2
+      IF (FINDPT) ECOFAC = DPTFAC * DP25 * ALPHAC ** 2
+      IF (DPTINT) ECOFAC = DP25 * ALPHAC ** 2
       IF (NO2DPT) ECOFAC = D0
 C
       INCRMT = I340X + 1

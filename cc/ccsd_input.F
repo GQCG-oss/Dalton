@@ -224,7 +224,7 @@ C
       THRLEQ   = 1.0D-05
       THRENR   = 1.0D-08
       THRLDPHF = 1.0D-13
-      NFIELD = 0
+CWMK  NFIELD = 0
       NSIMLE = 0
       NEWCAU = .FALSE.
       LBUF   = 250000

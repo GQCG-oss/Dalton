@@ -764,6 +764,8 @@ C&&& Nuclear model
             IF (NFIELD .GT. MXFELT) CALL QUIT('Too many finite fields')
             EFIELD(NFIELD) = DPTFAC * ALPHAC**2
             LFIELD(NFIELD) = 'DERXXPVP'
+            write(*,*) ' WMK: NFIELD', NFIELD, 
+     &                   EFIELD(NFIELD), LFIELD(NFIELD)
             GOTO 100 
  198     CONTINUE
             READ (LUCMD, *) X10FNP
@@ -2886,6 +2888,7 @@ C/* Deck herini */
 #include <orgcom.h>
 #include <elweak.h>
 #include <r12int.h>
+#include <infinp.h>
 C
 C     Initialize effective core potential parameters
 C
@@ -2999,6 +3002,7 @@ CTSAUE
       DO2DAR = .FALSE.
       AD2DAR = .FALSE.
       FINDPT = .FALSE.
+      NFIELD = 0
       DPTINT = .FALSE.
       NO2DPT = .FALSE.
       DPTFAC = 0.D0

@@ -315,7 +315,7 @@ C     TUH
 C
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER (D0 = 0.0D0, DP125=125D-3)
+      PARAMETER (D0 = 0.0D0, DP25 = 0.25D0)
 #include <maxaqn.h>
       INTEGER T, U, V, TUV
 #include <twoao.h>
@@ -340,8 +340,8 @@ C
 #include <ibtfun.h>
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from C10INT','*',103)
-      IF (DPTINT) ECOFAC = DP125 * ALPHAC ** 2
-      IF (FINDPT) ECOFAC = DPTFAC * DP125 * ALPHAC ** 2
+      IF (DPTINT) ECOFAC = DP25 * ALPHAC ** 2
+      IF (FINDPT) ECOFAC = DPTFAC * DP25 * ALPHAC ** 2
       IF (NO2DPT) ECOFAC = D0
 C
 C     COMMON /DHCINF/

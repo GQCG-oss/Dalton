@@ -1658,7 +1658,7 @@ C
          CALL CC_PRFCKAO(WORK(KFCKHF),1)
       ENDIF                  
 C
-cwmk  IF (ANAAOD) THEN
+      IF (ANAAOD) THEN
         CALL AROUND('Analysis of integral distributions')
 C
         WRITE(LUPRI,'(10X,/,A,D10.5)') 'Thereshold in analysis : ',
@@ -1670,7 +1670,7 @@ C
         WRITE(LUPRI,'(10X,A,I7)')'Total number smaller than thr.  : ',
      *                        ICOUNT1
 C
-cwmk    IF (IPRINT .GT. 45) THEN
+        IF (IPRINT .GT. 45) THEN
           CALL AROUND('(ia|jb) integral vector')
           IF (U12INT .OR. R12SQR) THEN
 C           Output of non-Hermitean integrals (WK/UniKA/04-11-2002).
@@ -1689,8 +1689,8 @@ C           Output of non-Hermitean integrals (WK/UniKA/04-11-2002).
               CALL OUTPAK(XAIBJ(KOFF),NTOTAI,1,LUPRI)
   251       CONTINUE
           END IF
-cwmk    ENDIF
-cwmk  END IF
+        ENDIF
+      END IF
 C
 C-------------------------------------
 C     Write integrals (cJ|dk) to disk.

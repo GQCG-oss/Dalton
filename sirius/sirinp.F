@@ -424,7 +424,7 @@ C     ... It's followed by an abacus run
 C
 C********** Default values section HAMINP *****
 C
-      NFIELD = 0
+CWMK  NFIELD = 0
 C
 C********** Default values section WAVINP and more *****
 C
