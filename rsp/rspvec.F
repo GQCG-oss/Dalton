@@ -3289,7 +3289,7 @@ C
      &        'in symmetry coordinates (ppm)',-1) 
          CALL FCPRI(SIGFC,'SIGMA ',CSTRA,SCTRA)
       END IF
-      IF (SDSUM1 .GT. THRZER) THEN
+      IF (SD1SUM .GT. THRZER) THEN
          CALL HEADER('SD(1) contribution to shielding tensors '//
      &        'in symmetry coordinates (ppm)',-1)
          CALL FCPRI(SIGSD1,'SIGMA ',CSTRA,SCTRA)
