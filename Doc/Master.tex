@@ -10,6 +10,7 @@
 \typeout{***   Converted to LaTeX2e in april 1995, Kenneth Ruud}
 \typeout{***   Added response manual from Linkoeping in feb.96, Kenneth Ruud}
 \typeout{***   Added sirius manual from Hans Joergen/Hans Aagren in Feb.96, kr}
+\typeout{***   Added cc manual in Mar. 2001, Christof Haettig}
 \typeout{***               }
 
 
@@ -91,6 +92,8 @@
 \newcommand{\aba}{{\sc abacus}\index{\sc abacus}}
 \newcommand{\resp}{{\sc response}\index{\sc response}}
 \newcommand{\mol}{{\sc molecule}\index{\sc molecule}}
+\newcommand{\cc}{{\sc cc}\index{\sc cc}}
+\newcommand{\eri}{{\sc eri}\index{\sc eri}}
 \newcommand{\OM}{\mbox{1-matrix}}
 \newcommand{\TM}{\mbox{2-matrix}}
 \newcommand{\grp}[1]{\mbox{$\cal #1$}}
@@ -145,11 +148,37 @@
 
 %
 \author{T.~Helgaker, H.~J.~Aa.~Jensen, P.~J{\o}rgensen, J.~Olsen,
-K.~Ruud, H.~{\AA}gren,\smallskip\\ T.~Andersen, K.~L.~Bak, V.~Bakken,
-O.~Christiansen, P.~Dahle, E.~K.~Dalskov, \\ T.~Enevoldsen, B.~Fernandez,
-H.~Heiberg, H.~Hettema, D.~Jonsson, S.~Kirpekar,\\ R.~Kobayashi,
-H.~Koch, K.~V.~Mikkelsen, P.~Norman, M.~J.~Packer, \\T.~Saue,
-P.~R.~Taylor, and O.~Vahtras}  
+K.~Ruud, H.~{\AA}gren,\smallskip\\ 
+T.~Andersen, 
+K.~L.~Bak, 
+V.~Bakken,
+O.~Christiansen, 
+S.~Coriani, 
+P.~Dahle, 
+E.~K.~Dalskov, \\ 
+T.~Enevoldsen, 
+B.~Fernandez,
+C.~H{\"a}ttig,
+K.~Hald,
+A.~Halkier,
+H.~Heiberg,\\ 
+H.~Hettema, 
+D.~Jonsson, 
+S.~Kirpekar,
+R.~Kobayashi,
+H.~Koch,
+K.~V.~Mikkelsen,\\
+P.~Norman, 
+M.~J.~Packer, 
+T.~P.~Pedersen,
+T.~A.~Ruden,
+A.~Sanchez,
+T.~Saue,\\
+S.~P.~A.~Sauer,
+B.~Schimmelpfenning,
+K.~O.~Sylverster-Hvid,
+P.~R.~Taylor, 
+and O.~Vahtras}  
 %
 \date{\mbox{\ }}
 %
@@ -182,10 +211,27 @@ P.~R.~Taylor, and O.~Vahtras}
 \include{Sirius}
 \include{Abacus}
 \include{Response}
+%%%%%% CC %%%%%%%
+\include{ccintro}
+\include{ccgeneral}
+\include{ccfop}
+\include{cclr}
+\include{ccqr}
+\include{cccr}
+\include{ccexci}
+\include{cclrsd}
+\include{ccsm}
+\include{cctm}
+\include{ccmcd}
+\include{ccqr2r}
+\include{ccgr}
+\include{ccexgr}
+\include{ccexlr}
+%%%%%% end of CC %%%%%%%
 \part{Appendix: DALTON Tool box}
 \include{Appendix}
 \part{References}
-\bibliography{/home/compphys/keruu/katalog/artikler,/home/compphys/keruu/katalog/egen,/home/compphys/keruu/katalog/div}
+\bibliography{artikler,egen,div,cc}
 %
 \part{Index}
 \printindex

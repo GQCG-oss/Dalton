@@ -1,0 +1,51 @@
+\chapter{Coupled Cluster calculations, CC}\label{ch:CC}
+\index{coupled cluster calculations}
+\index{coupled cluster program}
+\index{CCS}
+\index{CC2}
+\index{CCD}
+\index{CCSD}
+\index{CCSD(T)}
+\index{CC3}
+
+The coupled cluster program \cc\ is designed for large-scale
+correlated calculations of energies and properties using the
+hierachy of coupled cluster models: CCS, CC2, CCSD and CC3.
+The program offers almost the same options as the other
+parts of the Dalton program for SCF and MCSCF wave functions.
+It thus contains a wave function optmization section and 
+a response function section
+where linear, quadratic and cubic response functions are calculated.
+For CC3 however, it is only possible to calculate the wave function and 
+singlet excitation energies. 
+\index{response functions}
+At the moment molecular gradients are available 
+only up to the CCSD level \index{gradient}.  
+London orbitals have so far not been implemented 
+for the calculation of magnetic properties.
+\index{magnetic properties}\index{London orbitals} 
+In the manual more details can be found about the specific implementations.
+
+An additional feature of the program is that all levels of correlation
+treatment have been implemented using integral-direct techniques making
+it possible to run calculations using large basis sets.  
+\index{integral-direct techniques}
+
+In this chapter the general structure of the input for the
+coupled cluster program is described.
+The complete input for the coupled cluster program appears as
+sections in the input for the \sir\ program, with the general
+input in \Sec{CC INPUT}. In order to get into the CC program
+one has to specify the \Key{CC} keyword in the general input
+section of \sir\ \Sec{*WAVE FUNCTIONS}. A minimal
+input file f.x.\ for a CCSD(T) energy calculation would be:
+\begin{verbatim}
+**GENERAL
+.RUNSIR
+**WAVE FUNCTIONS
+.CC
+*CC INPUT
+.CC(T)
+*END OF INPUT
+\end{verbatim}
+
