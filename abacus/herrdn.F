@@ -29,11 +29,15 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: herrdn.F,v 1.5 2001-03-28 06:54:54 haettig Exp $
+C$Id: herrdn.F,v 1.6 2001-03-28 07:33:46 ruud Exp $
 C
 #include <single.h>
 #ifdef REVISION_LOG
 $Log: not supported by cvs2svn $
+Revision 1.5  2001/03/28 06:54:54  haettig
+changes due to merge with Trygves version, most changes for FMM and
+symmetrization of one-electron derivatives integrals.
+
 Revision 1.4  2001/03/13 08:43:38  vebjornb
 - Reshuffled include statements and a couple of common blocks to
   more in line with ANSI Fortran (only ABACUS files)
@@ -177,7 +181,7 @@ C
 #if defined (SYS_T3D)
       PARAMETER ( MAXPRD = 14 )
 #else
-      PARAMETER ( MAXPRD = 22 )
+      PARAMETER ( MAXPRD = 25 )
 #endif
       PARAMETER ( NTABLE = 10, D1 = 1.0D0)
       LOGICAL NEWDEF, RELCAL, TSTINP
@@ -331,7 +335,7 @@ C
 #if defined (SYS_T3D)
       PARAMETER (MAXPRD = 14)
 #else
-      PARAMETER (MAXPRD = 22)
+      PARAMETER (MAXPRD = 25)
 #endif
       LOGICAL RELCAL, TSTINP
 #include <maxaqn.h>

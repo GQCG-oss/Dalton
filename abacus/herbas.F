@@ -29,7 +29,7 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id: herbas.F,v 1.2 2001-03-13 08:43:37 vebjornb Exp $
+C$Id: herbas.F,v 1.3 2001-03-28 07:33:46 ruud Exp $
 C
 #include <single.h>
 C
@@ -171,6 +171,10 @@ C           ...  Ga, Ge, As, Se, Br, Kr
          ELSE IF (BASNAM(1:3) .EQ. 'ano') THEN
             ANO = .TRUE.
             BASTMP(1:5) = BASNAM(1:5)
+            ISTART = 6
+         ELSE IF (BASNAM(1:3) .EQ. 'raf') THEN
+            ANO = .TRUE.
+            BASTMP(1:5) = 'raf-r'
             ISTART = 6
          ELSE IF (BASNAM(1:6) .EQ. 'sadlej') THEN
             SADLEJ = .TRUE.
