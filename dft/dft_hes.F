@@ -183,7 +183,8 @@ C
       IF (NODIFC) THEN
          KEY = 'OMAT'
          FAC = D1
-         CALL GPOPEN(LUDA1,'ABACUS.DA1','OLD','DIRECT',' ',LABUFI,OLDDX)
+         IF(IATOM.EQ.0) CALL GPOPEN(LUDA1,'ABACUS.DA1','OLD',
+     &                              'DIRECT',' ',LABUFI,OLDDX)
       ELSE
          KEY = 'DMAT'
          FAC = D2
