@@ -631,11 +631,11 @@ CMAERKE-901019: make input option for MS2
             MS2 = MULTS - 1
          ELSE
 c--renzo
-            if(donevpt)then
+            IF (DONEVPT) THEN
                MS2 = MULTS - 1
-            else
+            ELSE
                MS2 = MOD(MULTS-1,2) !original statement
-            endif
+            ENDIF
 c--renzo
          END IF
 C

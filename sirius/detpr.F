@@ -180,7 +180,7 @@ C. SD basis
      &              XNDXCI(KLTSOB),IOUT)
       ELSE
 C. CSF basis
-        if (.not.donevpt) then
+        if (.not.DONEVPT) then
            CALL ANACSF(CIVEC,XNDXCI(KICONF(1)),XNDXCI(KCFTP),ICSYM,
      &                 NAEL+NBEL,THRES,MAXTRM,XNDXCI(KLTSOB),IOUT)
 #if (defined(VAR_IFC)||defined(VAR_PGF77)||defined(VAR_G77) || !defined (NO_F90))

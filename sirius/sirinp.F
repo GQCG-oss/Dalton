@@ -795,6 +795,17 @@ C
      &      ' but neither CAS nor RAS space defined.'
          INPERR = INPERR + 1
       END IF
+      IF (DONEVPT) THEN
+         IF (.NOT.DOMC .AND. .NOT.DOCI) THEN
+            WRITE (LUPRI,'(/A)') 'INPUT ERROR: NEVPT2 requires,'//
+     &      ' also CI or MCSCF.'
+            INPERR = INPERR + 1
+         ELSE IF (MCTYPE .NE. 1) THEN
+            WRITE (LUPRI,'(/A)') 'INPUT ERROR: NEVPT2 requested,'//
+     &      ' NEVPT2 is only implemented for complecte active space.'
+            INPERR = INPERR + 1
+         END IF
+      END IF
 C
 C     Disable AUTOCC for RHF if RHF not used (HJ aug95)
 C
@@ -864,7 +875,7 @@ C---------------
          FLAG(13) = .TRUE.
          LMOORD   = .FALSE.
 C
-C	 If we restart with DIIS or Roothan Hartree-Fock, then we
+C        If we restart with DIIS or Roothan Hartree-Fock, then we
 C        probably don't have trust radius infomation on file
 C        This statement disables the reading of such info
 C
@@ -886,7 +897,6 @@ C        ... include (ii/aa) and (ia/ia) for orbital diagonal
 C        ... exclude (ii/aa) and (ia/ia) for orbital diagonal
             ITRLVL = 3
          END IF
-	 IF (DONEVPT) ITRLVL=4
       END IF
 C
 C     Set print parameters in /INFTRA/ for TRACTL
@@ -2048,11 +2058,8 @@ C           ... flag for QCHF -- quadratically convergent Hartree-Fock
 C
 C *** Option NEW NEVPT2
   117 CONTINUE
-            DONEVPT  = .TRUE.
-            NUMRUN = NUMRUN + 1
-cele
-	    USEDRC=.TRUE.
-cele
+         DONEVPT  = .TRUE.
+         NUMRUN = NUMRUN + 1
       GO TO 100
 C
       END
@@ -4587,6 +4594,19 @@ C
          WRITE (IWUNIT,1500) (NBAS(I),I=1,NSYM)
          GO TO 8000
       ELSE IF ( DOMC .OR. DOCI ) THEN
+         IF ( DONEVPT ) then
+C Oct 2003 hjaaj: from koopro4.F:
+C     This program calculates the second order correction to the energy
+C     using the n-electron valence state perturbation theory (NEVPT)
+C     in the partially contracted (PC) ad strongly contracted (SC)
+C     variants using Dyall's Hamiltonian for the definition of the
+C     zero order energies. All the equations are based on the spin free
+C     formulation of NEVPT.
+           WRITE (IWUNIT,1050)
+     &     "N-electron valence state 2. order perturbation theory "//
+     &     "using Ken Dyall's zeroth-order Hamiltonian"
+           WRITE (IWUNIT,1051) '  preceeded by :'
+         ENDIF
          IF ( DOMC ) THEN
             WRITE (IWUNIT,1050) 'MC-SCF optimization.'
             IF ( DORSP ) WRITE (IWUNIT,1050)
@@ -4620,9 +4640,6 @@ C
      *      'Type: complete active space calculation (CAS).'
             IF (LUCME.GT.0) WRITE(LUCME,'(A/)')
      *      'Type: complete active space calculation (CAS).'
-           IF ( DONEVPT ) then
-              WRITE (IWUNIT,1050) ' NEVPT2 calculation.'
-           ENDIF
          END IF
       ELSE IF ( DOMP2 ) THEN
          WRITE (IWUNIT,1050) ' Moller-Plesset PT2 calculation.'
@@ -4665,6 +4682,7 @@ C
          WRITE(IWUNIT,1050)
      *      'This is a combination run starting with'
          IRUN = 1
+         IF (DONEVPT) IRUN = 2
          IF (DORHF) THEN
             IF (IOPRHF .EQ. 0) THEN
                WRITE(IWUNIT,1051) 'a RHF calculation'
@@ -5028,7 +5046,7 @@ C
       END
       SUBROUTINE NEVPT2INP(WORD,INPERR,ALLOPT)
 C
-C 17/9 - 1990 Hans Agren
+C  2003 -- input for NEVPT2
 C
 #include <implicit.h>
       PARAMETER (NTABLE = 3)

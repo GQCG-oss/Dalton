@@ -334,27 +334,22 @@ C
 #include <priunit.h>
 C
 C Used from common blocks:
-C   INFINP : FLAG(*),ICI0
-C   INFORB : NNORBT
+C   INFINP : FLAG(*)
 C   INFTAP : LU*
-C   INFTRA : USEDRC
-C   INFPRI : NWARN,LUERR
+C   INFPRI : NINFO, LUERR
 C
 #include <maxorb.h>
 #include <infinp.h>
-#include <inforb.h>
 #include <inftap.h>
-#include <inftra.h>
 #include <infpri.h>
 C
       LOGICAL FEXIST
-C
 C
 C     ***** CALL SIROPI to open MO integral files
 C
       CALL SIROPI
 C
-C     ***** Check LUSUPM
+C     ***** Check LUSUPM for AOSUPINT
 C
       IF (LUSUPM .NE. -1) THEN
          CALL GPINQ(FNSUPM,'EXIST',FEXIST)
@@ -368,12 +363,6 @@ C
       END IF
 C
 C     ***** Open other files
-C
-C
-C     CRAY file opening
-C     IBM AIX file opening
-C     Digital DECstation (ULTRIX) file opening
-C
 C
       IF (FLAG(2) .OR. FLAG(21)) CALL GPOPEN(LUINF,'SIRIUS.ITINFO',
      &     'UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)

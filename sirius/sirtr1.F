@@ -33,14 +33,8 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef UNDEF
-===========================================================================
-/* Comdeck sirtr1_log */
-900115: TODO goer noget ved PRINRM
-                  CALL PRINRM(DTV(1,ICSIM),NNASHX,LUPRI)
-      END
-===========================================================================
-#endif
+c900115: TODO goer noget ved PRINRM
+c        CALL PRINRM(DTV(1,ICSIM),NNASHX,LUPRI)
 C  /* Deck sirtr1 */
       SUBROUTINE SIRTR1(NCSIM1,NOSIM,CMO,
      &                  BCVECS,CREF,INDXCI,DTV,FTV,FTQ,

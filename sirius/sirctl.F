@@ -33,21 +33,6 @@ C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
 #include <single.h>
 C
-#ifdef REV_LOG
-===========================================================================
-Revision 1.4  2000/05/24 12:25:37  hjj
-1) removed now unneccessary QCHF after DIIS
-2) bugfix for GPOPEN call
-
-revision 1.3 2000/04/14 08:34:15 hjj
-removed NINFO = 0, NWARN = 0, this is now in GPIOIN in gptrygve.F /hjaaj
-----------------------------
-revision 1.2 2000/04/13 13:07:24 hjj
-1) improved rewrite LUINDX test for SRDIIS;
-2) Removed LVLCDK and include sirlvlcdk.h, they were used
-for consistency checks when sirius and abacus were separate programs.
-===========================================================================
-#endif
 C  /* Deck sirctl */
       SUBROUTINE SIRCTL(ICONV,WORK,LWORK)
 C
@@ -87,6 +72,8 @@ C Used from common blocks:
 C   INFINP : DO*, MAXMAC
 C   INFORB : NCMOT,
 C   INFVAR : NCONF,JWOPSY,?
+C   INFDIM : MWORK
+C   INFTRA : USEDRC
 C   INFPRI : IPRERR, NWARN
 C   SCBRHF : RHFCAN, MXHFMA, MXHFMI, NFRRHF(8), IOPRHF
 C   GNRINF : WRINDX
@@ -97,6 +84,8 @@ C
 #include <inforb.h>
 #include <infvar.h>
 #include <inftap.h>
+#include <infdim.h>
+#include <inftra.h>
 #include <infpri.h>
 #include <scbrhf.h>
 #include <gnrinf.h>
@@ -469,6 +458,8 @@ C
          CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LWRK1)
          CALL FCVIRT(WORK(KCMO),WORK(KWRK1),LWRK1)
          CALL NEWORB('FCVORB  ',WORK(KCMO),.TRUE.)
+         FLAG(14) = .FALSE.
+         FLAGSV(14) = .FALSE.
       END IF
 C
 C ***************************************************
@@ -593,9 +584,18 @@ C ***************************************************
 C        *** NEVPT ***
 C
       IF (DONEVPT) THEN
-          CALL KOOPRO4(WORK,LWORK)
+         JRDMO = 9
+         KCMO  = 1
+         KWRK1 = KCMO  + NCMOT
+         LWRK1 = LWORK - KWRK1
+         CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LWRK1)
+         USEDRC = .TRUE.
+         CALL TRACTL(4,WORK(KCMO),WORK(KWRK1),LWRK1,MWORK)
+         CALL KOOPRO4(WORK,LWORK)
       ENDIF
+C
 C *** POPULATION ANALYSIS AND PROPERTIES
+C
       IF (FLAG(6) .AND. NUMRUN .GT. 0) THEN
          CALL SIRPOP(WORK,LWORK)
          CALL FLSHFO(LUW4)

@@ -257,7 +257,7 @@ C
       LFREE = LWRK
       CALL MEMGET('REAL', KCMO,NCMOT,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KCREF,NCONF,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KOCC,NORBT,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL', KOCC,NORBT,WRK,KFREE,LFREE)
       IF (FLAG(3)) THEN
          IF ( FLAG(2) .AND. ICONV.EQ.0 ) THEN
             NWARN = NWARN + 1
@@ -409,7 +409,7 @@ C
          REWIND LUIT1
          IF ( .NOT. FNDLAB(TABLE(3),LUIT1) ) THEN
             NWARN = NWARN + 1
-            WRITE (LUW4,'(//2A/)')
+            WRITE (LUPRI,'(//2A/)')
      *         ' WARNING, new orbitals not found on LUIT1,',
      *         ' will try "OLDORB "'
             REWIND LUIT1
@@ -439,7 +439,7 @@ C
             REWIND LUIT1
             IF ( .NOT. FNDLAB(TABLE(3),LUIT1) ) THEN
                NWARN = NWARN + 1
-               WRITE (LUW4,'(//2A/)')
+               WRITE (LUPRI,'(//2A/)')
      *            ' WARNING, new orbitals not found on LUIT1,',
      *            ' will try "OLDORB "'
                REWIND LUIT1
@@ -470,7 +470,7 @@ C
       IF (IPRI4 .GE. 4) P4FLAG(4) = .TRUE.
 c      IF (P4FLAG(4) .AND. NCONF.GT.1 .AND. .NOT.DOCINO) THEN
 c--renzo modif
-      IF (P4FLAG(4) .AND.((nconf.eq.1.and.donevpt).or.(nconf.gt.1)).AND.
+      IF (P4FLAG(4) .AND.((NCONF.eq.1.and.DONEVPT).or.(NCONF.gt.1)).AND.
      $     .NOT.DOCINO) THEN
          IF (LCINDX .GT. LFREE) THEN
             WRITE (LUW4,1077) LCINDX-LFREE
